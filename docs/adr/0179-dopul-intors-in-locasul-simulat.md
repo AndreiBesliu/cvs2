@@ -51,7 +51,7 @@ vrea să vadă, înainte să taie, dopul întors în locaș, cu valorile simulat
 6. **Incrustația cu pereți drepți** vine în felia 12.1↑e-3 (vezi mai jos), iar **treptele** în 12.1↑e-4 (oracolul lor,
    `masoaraPotrivireaTrepte`, are alte rânduri: umărul, tija, flanșa, reazemul).
 
-## Felia 12.1↑e-3: pereții drepți (22.11)
+## Felia 12.1↑e-3: pereții drepți (22.11 – 23.11)
 
 La alegerea owner-ului „12.1↑e-3, pereții drepți”. Fără trepte: ele sunt felia 12.1↑e-4. Contractul dopului (ADR 0171 §3):
 dopul ridicat e oglindit pe X, (x, y) → (x1 + m − x, y − y0 + m), cu fața coborâtă în jur până la h; cel decupat nu se
@@ -77,6 +77,18 @@ oglindește, (x, y) → (x − x0 + m, y − y0 + m), și e tăiat prin placa gr
    marcat. Dopul ridicat, întors și coborât până la primul contact (h* = min(F + M)); cel decupat, neîntors, pus pe fundul
    locașului. Linia întreruptă e tăietura cu fierăstrăul la mijlocul spațiului dintre plăci (pe fund) sau la fața plăcii (pe
    față); la decupat e fața plăcii, până la care se rindeluiește dopul.
+6. **Desenul secțiunii drepte** (din privirea pe secțiunea reală, 23.11). La V, profilul trece prin centrele celulelor:
+   pereții lui sunt înclinați. La pereții drepți, fiecare celulă e o treaptă cât ea, deci pereții ies verticali, la marginea
+   celulei.
+   - Cleiul e doar în locaș, sub fața plăcii: de la suprafața plăcii până la fața de jos a dopului, dar cel mult până la
+     fața plăcii. Deasupra ei e spațiul dintre plăci, nu clei. La dopul decupat, locașul fără dop deasupra e jocul lateral.
+   - La gaura prin foaie (ADR 0175), placa e desenată cât foaia: sub gaură nu e lemn și nici contact (dopul stă acolo pe
+     masă, nu pe placă). Hârtia dopului spune `gaura`.
+   - Geometria desenului e un modul pur (`src/app/sectiuneDesen.ts`), probat pe hârtie; componenta doar îl desenează.
+     Desenul dopului în V nu s-a schimbat.
+7. **Insula rămâne în zona liberă.** Cu secțiunea, insula e cel mult cât zona liberă. Dacă nu încape (o gaură prin foaia de
+   18, un ecran scund), alegerea și cipurile rămân pe loc, iar secțiunea se derulează. Derulează secțiunea, nu insula: cu
+   derularea pe insulă, captura browserului avea o zonă nedesenată deasupra ei, peste pânza 3D.
 
 ## Dovada
 
@@ -88,6 +100,25 @@ oglindește, (x, y) → (x − x0 + m, y − y0 + m), și e tăiat prin placa gr
   - secțiunea dreptunghiului e pe hârtie: fundul la −D, dopul la −S, între plăci H.
 - [citit] ADR 0170 §3, §5–§7, ADR 0178 §1, planșele „Dopul în vederea 3D” și „Potrivirea, pe hârtie”.
 
+Felia 12.1↑e-3 (pereții drepți):
+
+- [măsurat] `incrustatieDreapta.potrivire3d.test.ts`, pe toate cele 8 cazuri drepte ale oracolului
+  (`masoaraPotrivireaDreapta`, pe textul G-code):
+  - jocul lateral: mediana la cel mult 0,01 de oracol, iar toate punctele peretelui în c ± 0,02;
+  - niciun punct al peretelui dopului în afara locașului; adâncimea și înălțimea, la cel mult 0,02 de oracol; niciun rând
+    roșu, cu hârtia panoului;
+  - controlul negativ (dopul cu vârfuri ascuțite) are „Dopul în locaș” roșu, cu locul lui, marcat pe secțiune;
+  - controlul pe hârtie: o valoare scrisă diferit de programe (c cu 0,05; D, h, H cu 0,1) face roșu doar rândul ei;
+  - gaura prin foaia de 10: D e grosimea foii; dopul decupat iese H peste placă, cel ridicat pe față e cât foaia;
+  - dopul în trepte e refuzat, cu motivul; secțiunile celor trei sprijinuri, pe hârtie.
+- [măsurat] `taiereExacta.test.ts`, pe hârtie: linia, arcul în ambele sensuri, nivelul, freza în V, cutia, bisecția.
+- [măsurat] `sectiune.desen.test.ts`, pe secțiuni scrise de mână: treptele, cleiul doar în locaș (și la un joc de trei
+  celule), pragul contactului, dopul decupat, gaura (cu martorul buzunarului de aceeași adâncime), dopul în V neschimbat.
+- [văzut] Privirea pe secțiunea reală, mărită, în Edge: ridicat pe fund și pe față, decupat, gaura (decupat și ridicat),
+  cercul, jocul lateral de 0,5, în engleză, pe un ecran scund. Desenul dopului în V pe cercul R15 e identic octet cu octet
+  înainte și după mutarea geometriei.
+- [măsurat] Otrăvurile (`test/otravuri/12.1e-3.py`): 63 / 63 prinse pe codul final.
+
 ## Ce am respins
 
 - **Oracolul probelor mutat în aplicație:** o singură implementare, dar probele ar pierde verificarea independentă.
@@ -98,6 +129,10 @@ oglindește, (x, y) → (x − x0 + m, y − y0 + m), și e tăiat prin placa gr
   transformarea distanței pe grilă e liniară în celule.
 - **Secțiunea aleasă cu mausul:** utilă, dar o interacțiune nouă; rămâne pentru când o cere cineva.
 - **Dopul întors în vederea 3D:** ar acoperi locașul. Secțiunea arată jocurile.
+- **Jocul lateral măsurat pe grilă** (felia 12.1↑e-3): jocul de pe hârtie e de obicei cât o celulă, deci grila nu-l vede.
+  Se măsoară exact, pe mutări.
+- **Derularea pe insula întreagă** (felia 12.1↑e-3): o proprietate mai puțin, dar captura browserului avea o zonă nedesenată
+  deasupra insulei, iar cipurile se striveau. Derulează doar secțiunea.
 
 ## Ce impune
 
@@ -105,5 +140,8 @@ oglindește, (x, y) → (x − x0 + m, y − y0 + m), și e tăiat prin placa gr
   felul piesei). `CerereCam` primește cererea `potrivire`.
 - Vederea 3D: comutatorul, secțiunea, tabelul; mesajele (ro, en); manualul (ro, en).
 - Probele, e2e-ul vederii, otrăvurile (`test/otravuri/12.1e-2.py`), fișa (rândul 12.1↑e-2), DEVLOG-ul.
+- Felia 12.1↑e-3: `DopCalculat.potrivire` și la dopul drept fără trepte (`fel: 'drept'`, cu `gaura` în hârtie);
+  `potrivireaDreapta` și `functieTaiere` în `src/sim/`; desenul în `src/app/sectiuneDesen.ts`; otrăvurile
+  (`test/otravuri/12.1e-3.py`), fișa (rândul 12.1↑e-3), DEVLOG-ul.
 
 **Se redeschide dacă:** placa 12 arată altă potrivire decât simularea, sau owner-ul vrea secțiunea în alt loc.

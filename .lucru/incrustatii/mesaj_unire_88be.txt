@@ -1,6 +1,0 @@
-Adus origin/main (88be9d6c: 11.3↑d cu documentul v26, A.3, 25.4↑c, ADR 0282) în wip/12.1-incrustatii, peste 12.1↑e-2
-
-Ciocnirea, doar în DEVLOG (adăugări la capăt): DEVLOG-ul lui main întreg, plus intrarea 12.1↑e-2 (singura care îi lipsea;
-intrările comune, identice).
-
-Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>

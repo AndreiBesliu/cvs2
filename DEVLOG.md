@@ -11245,3 +11245,69 @@ de acolo, cu toate worktrees si asa mai departe”. **Started:** 23.11, 10:20. *
 - **`docs/lucru-in-cloud.md`:** nota liniei, citită la pornire și ținută la zi cu fiecare felie; nota sesiunii principale.
 - **Afară:** generatorul documentației din `/admin` citește doar `docs/etape` și `docs/adr`, iar probele documentelor citesc
   fișiere numite, deci `docs/linii` nu schimbă nici build-ul, nici probele.
+
+## 2026-11-22 — Felia 12.1↑e-3: pereții drepți în „Împreună (secțiunea)” (ADR 0179) (Model: Claude Opus 5.5 până la pauză; din 23.11, Claude Fable 5.2)
+
+**Prompt:** owner-ul, la „Ce fac mai departe pe linia incrustațiilor?”: „12.1↑e-3, pereții drepți” (treptele trec la
+12.1↑e-4). Oprită la pauza lui din 22.11 („cand termina background tasks, vreau sa facem pauza”, transmisă de sesiunea
+principală), cu codul și probele scrise (WIP `2b7f889b`). Reluată pe 23.11, în sesiunea cloud a liniei, la brief-ul de
+mutare: „Ești linia incrustațiilor din cncvs2 […] Felia în lucru: 12.1↑e-3 (pereții drepți) […] Rămân, în ordine: 1. E2e-ul
+3D, după reparația testului decupatului. 2. Porțile întregi, în CI […] 3. Otrăvurile, într-o clonă, plus `verifica` pe toate
+listele liniei. […] 4. Privirea pe piesa reală, mărită și întreagă […] 5. Documentele […] 6. Canalul”.
+**Started:** 22.11, 21:52. **Completed:** 23.11, 15:25.
+
+- **Ramura:** `wip/12.1-incrustatii`. Pe 23.11, `main` `8f122eb6` (cu 12.1↑e-2 unită din `082435b4`, 10.3↑o, 3.6v, lucrul în
+  cloud) unit în `e0ce3523`, fără ciocniri. Codul feliei: `2b7f889b` (22.11), `c2b0e2c5` și `78d5c250` (23.11).
+- **Decizia** (ADR 0179, secțiunea feliei): „Împreună (secțiunea)” e pornită și pe dopul cu pereți drepți fără trepte.
+  Dopul ridicat apare întors și coborât până la primul contact; cel decupat, neîntors, pe fundul locașului. Tabelul are cinci
+  rânduri: jocul lateral, dopul în locaș, adâncimea locașului, înălțimea dopului, sprijinul (între plăci, sub dop sau peste
+  placă, de rindeluit).
+- **Jocul lateral, exact, pe mutări:** jocul de pe hârtie e de obicei 0,1 mm, cât o celulă a simulării, deci grila nu-l
+  vede. `src/sim/taiereExacta.ts` dă distanța în plan la cea mai apropiată mutare a unei freze plate aflate sub nivel, minus
+  raza ei; punctele peretelui le dă grila, iar bisecția le face exacte. Restul (adâncimea, înălțimea, sprijinul, secțiunea),
+  pe grile care își corespund prin contract (`src/sim/potrivireDreapta.ts`).
+- **Probele:**
+  - `incrustatieDreapta.potrivire3d.test.ts` (14): aplicația = oracolul pe cele 8 cazuri drepte (jocul, mediana la cel mult
+    0,01; adâncimea și înălțimea la cel mult 0,02), controlul negativ, controlul pe hârtie, gaura, treptele refuzate,
+    secțiunile celor trei sprijinuri, pe hârtie;
+  - `taiereExacta.test.ts` (6), pe hârtie;
+  - `sectiune.desen.test.ts` (9), pe secțiuni scrise de mână;
+  - e2e, `incrustatie3d.spec.ts` (7): dopul drept, cel decupat, gaura prin foaie, treptele cu butonul oprit.
+- **Privirea pe secțiunea reală** (23.11), mărită, în Edge, pe toate variantele: ridicat pe fund și pe față, decupat, gaura
+  (decupat și ridicat), cercul, jocul lateral de 0,5, engleza, un ecran scund. Tabelul și măsurarea erau corecte peste tot;
+  desenul avea patru defecte, pe care probele nu le vedeau:
+  - cleiul lateral nu se vedea la jocul implicit (o celulă: o cale fără arie), iar la 0,5 urca până la fața coborâtă a
+    dopului, prin spațiul dintre plăci; la dopul decupat, jocul lateral rămânea de culoarea fundalului;
+  - la gaura prin foaie, placa avea 1,5 mm de lemn sub gaură și „contact” pe un fund care nu există;
+  - pereții drepți ieșeau ușor înclinați (profilul trecea prin centrele celulelor);
+  - o secțiune înaltă (gaura în foaia de 18) scotea insula de sub bara de jos, cu nota de sub tabel nevăzută.
+- **Reparația** (`c2b0e2c5`): geometria desenului e un modul pur, `src/app/sectiuneDesen.ts`. La pereții drepți, fiecare
+  celulă e o treaptă cât ea; cleiul e doar în locaș, cel mult până la fața plăcii; la gaură, placa e cât foaia (hârtia
+  dopului spune `gaura`). Desenul dopului în V pe cercul R15 e identic octet cu octet înainte și după. Insula e ținută în
+  zona liberă, iar secțiunea se derulează. Derularea pusă întâi pe insulă lăsa în captură o zonă transparentă deasupra ei,
+  peste pânza 3D (17 070 de pixeli), și strivea cipurile: derulează doar secțiunea.
+- **Porțile, în CI:**
+  - pe `e0ce3523` (codul de dinaintea privirii): rapidul și completul verzi (unit 9 802 / 0, 12 sărite; e2e 594 / 594;
+    emulatoarele 104 / 104 și 34 / 34);
+  - pe `78d5c250` (codul final): rapidul verde (compilatoarele, importurile, licențele, traducerile, build-ul determinist,
+    oracolul exportului 2D; unit 9 811 / 0, 12 sărite) și completul verde (unit 9 811 / 0; e2e 595 / 595; emulatoarele 104 / 104 și 34 / 34);
+  - în container, înainte de fiecare push: tipurile, importurile, probele atinse (68 / 68), e2e-ul vederii (7 / 7).
+- **Otrăvurile**, într-o clonă: lista nouă `test/otravuri/12.1e-3.py`, 63.
+  - Pe `e0ce3523`, seturile curate verzi, apoi 46 / 46 prinse din prima.
+  - După reparația desenului, 17 noi (K07, G01–G12, L01–L04) și S05, S06 mutate pe modulul desenului: 16 prinse, L04
+    scăpată (fără regula care ține cipurile întregi, cipul stării se strângea cu 9,4 px). Proba gaurii îi măsoară acum
+    înălțimea înainte și după „Împreună” (`78d5c250`): prinsă.
+  - Pe codul final, lista întreagă: 63 / 63.
+  - Listele vecine, rulate întregi: 12.1e-2, 38 / 38 (J01–J03, U01, U02, U09, U11, U12 reorientate; cele 11 de interfață,
+    din nou pe codul final); 12.1e, 28 / 28 (D07 reorientată). Niciun VOID nou în nicio listă, față de `origin/main`.
+- **Mărimea**, față de `main` `8f122eb6`, cu același build în aceeași clonă: JavaScript +2 401 B gzip (lucrătorul CAM
+  +1 826, cu măsurarea dreaptă și tăietura exactă; vederea 3D +575), CSS +46 B; totalul 761,0 → 763,2 / 800; pornirea
+  (107,9; cu ușa 112,2 / 115), neschimbată.
+- **Uneltele setului de lucru**, în `scripts/`: `otravuri-void-noi.py` (VOID-urile noi ale unei felii),
+  `marime-bucati.py` (mărimea pe bucăți), `privire-sectiune.mjs` (privirea pe secțiunea reală, pe variante). Dosarul
+  `.lucru/` e scos.
+- **Publicat:** canalul `incrustatii` (<https://cncvectorstudio-test--incrustatii-pt5g8i2y.web.app>, până pe 23.12), din
+  `canal.yml`, build-ul `78d5c250`. Gazda canalului nu e pe lista rețelei containerului, deci de aici nu s-a putut deschide;
+  secțiunea a fost privită pe build-ul local al aceluiași commit.
+- **Nu acum:** treptele în secțiune (12.1↑e-4) și bifa „prin foaie” pe fiecare rând (documentul v27), amândouă doar la
+  cuvântul owner-ului.

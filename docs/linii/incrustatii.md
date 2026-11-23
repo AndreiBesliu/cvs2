@@ -2,13 +2,18 @@
 
 <!-- Adusă din memoria sesiunii principale pe 23.11.2026 (mutarea în cloud). De aici înainte o ține la zi linia, pe ramura ei, odată cu feliile. -->
 
-_cncvs2, linia incrustațiilor (etapa 12): worktree `C:\\Users\\besli\\cncvs2-lucru\\incrustatii`, ramura `wip/12.1-incrustatii`; 12.1↑–12.1↑f-4 (v20–v25) UNITE în main (`70bc8169`); 12.1↑e (dopul în 3D, ADR 0178) UNITĂ în main 20.11 (`b3c3970f`); titlul dopului reparat 21.11 (`f9c45042`), UNIT în main 21.11 seara (`3d7e6214`, lotul `8e96ff13`, pe test); 12.1↑e-2 (secțiunea, ADR 0179) GATA 22.11, de unit la `082435b4` (FF peste main `88be9d6c`); 12.1↑e-3 (pereții drepți în secțiune) WIP `2b7f889b`, oprit la pauza din 22.11 23:02 (pașii de reluare în nota comună); bifa pe rând ar lua v27_
+_cncvs2, linia incrustațiilor (etapa 12): din 23.11.2026, în sesiunea cloud a liniei (`docs/lucru-in-cloud.md`), pe ramura `wip/12.1-incrustatii`; 12.1↑–12.1↑f-4 (v20–v25), 12.1↑e (dopul în 3D, ADR 0178) și 12.1↑e-2 (secțiunea, ADR 0179; `3fc56052`, din `082435b4`) UNITE în main; 12.1↑e-3 (pereții drepți în secțiune) GATA pe 23.11, cu PR spre `main`; urmează, doar la cuvântul owner-ului, 12.1↑e-4 (treptele în secțiune); bifa „prin foaie” pe rând ar lua v27_
 
 Pornită pe 06.11.2026 ca sesiune paralelă, la cererea owner-ului („vreau sa deschidem worktrees pentru alte etape sau
 felii”, apoi „Inlays, stage 12”). Lângă ea: alte linii (tăierea vectorilor, planșele, trasarea, imprimanta, biblioteca) și
 sesiunea principală (ține `main`, unește liniile doar la cuvântul owner-ului).
 
-- **Locul:** worktree-ul `C:\Users\besli\cncvs2-lucru\incrustatii` (joncțiuni spre `node_modules` din checkout-ul principal),
+- **Locul, din 23.11:** sesiunea cloud a liniei, pe aceeași ramură. Porțile întregi rulează în CI (rapidul la push, completul
+  pornit pe ramură), otrăvurile într-o clonă din scratchpad, canalul `incrustatii` din `canal.yml`
+  (<https://cncvectorstudio-test--incrustatii-pt5g8i2y.web.app>). Uneltele liniei sunt în `scripts/`: `otravuri-void-noi.py`
+  (VOID-urile noi ale unei felii), `marime-bucati.py` (mărimea pe bucăți), `privire-sectiune.mjs` (privirea pe secțiunea
+  reală, pe variante). Ce urmează descrie locul de dinainte.
+- **Locul, până pe 22.11:** worktree-ul `C:\Users\besli\cncvs2-lucru\incrustatii` (joncțiuni spre `node_modules` din checkout-ul principal),
   e2e pe 4174 cu `CNCVS2_E2E_RETEA=127.0.1`, previzualizarea build-ului pe 4184 (`cncvs2-incrustatii-dist` în
   `Apps/.claude/launch.json`), canalul `incrustatii`: <https://cncvectorstudio-test--incrustatii-pt5g8i2y.web.app> (până pe 20.12).
 - **12.1↑ (V, v20):** răspunsurile „1a; 2 … 3 … 4a+b; 5a; 6 - si a si b” (banda și fața coborâtă ALESE LA EXPORT, banda în
@@ -142,13 +147,34 @@ sesiunea principală (ține `main`, unește liniile doar la cuvântul owner-ului
   38 / 38 (+ 12.1e D03, D06, D07). Canalul pe `a11d855e` (până pe 22.12), verificat cu Playwright. Procesul s-a oprit aseară
   înainte de commit (porțile trecuseră): reluată azi. Rămân: pereții drepți și treptele în secțiune (12.1↑e-3); bifa pe rând
   (acum v27: v26 e a urechilor la locuri alese, 11.3↑d).
-- **12.1↑e-3 WIP (22.11 21:52 – 23:02; owner-ul: „12.1↑e-3, pereții drepți”; treptele → 12.1↑e-4):** oprit la pauza
-  owner-ului („cand termina background tasks, vreau sa facem pauza”, transmisă de sesiunea principală). Comis WIP `2b7f889b`
-  și împins, arborele curat. Codul și probele sunt gata: `potrivireDreapta.ts`, `taiereExacta.ts` (jocul exact pe mutări),
-  descriptorul din `dopDrept.ts`, dispecerul, tabelul cu cinci rânduri, lista `12.1e-3.py` (46). Nerulate: e2e-ul 3D după
-  reparația testului decupatului, porțile lente, otrăvurile, documentele, canalul. Pașii exacți sunt în nota comună
-  `incrustatii-worktree.md`, iar scripturile în `.tmp/unelte-12.1e-3/`. 12.1↑e-2 se unește din `082435b4`, nu din vârful
-  ramurii. La reluare: întâi `git status` și `git log -1` (așteptat `2b7f889b`, curat).
+- **12.1↑e-3 GATA (22.11 21:52 – 23.11; owner-ul: „12.1↑e-3, pereții drepți”; treptele → 12.1↑e-4):** oprită la pauza din
+  22.11 (WIP `2b7f889b`), reluată pe 23.11 în cloud, cu `main` `8f122eb6` unit în `e0ce3523` (fără ciocniri).
+  - „Împreună (secțiunea)” și pe dopul drept fără trepte: `potrivireDreapta.ts`, `taiereExacta.ts` (jocul lateral exact, pe
+    mutări), descriptorul din `dopDrept.ts` (cu `gaura`), dispecerul, tabelul cu cinci rânduri.
+  - Privirea pe secțiunea reală, pe toate variantele, a găsit patru defecte de desen, reparate (`c2b0e2c5`, `78d5c250`):
+    cleiul doar în locaș, pereții verticali, gaura fără fund, insula ținută în zona liberă (derulează secțiunea). Geometria
+    desenului e `src/app/sectiuneDesen.ts`, pură, cu proba ei pe hârtie; desenul în V e neschimbat octet cu octet.
+  - Otrăvurile: `12.1e-3.py` 63 / 63 pe codul final (L04 scăpată întâi, prinsă după întărirea probei gaurii); 12.1e-2
+    38 / 38 și 12.1e 28 / 28, rulate întregi; niciun VOID nou.
+  - Mărimea: JavaScript +2 401 B gzip, CSS +46 B; totalul 761,0 → 763,2 / 800; pornirea, neschimbată.
+  - Cifrele porților și legăturile rulărilor CI sunt în DEVLOG și în PR. `.lucru/` e scos.
+  - Rămân: 12.1↑e-4 (treptele în secțiune; oracolul lor, `masoaraPotrivireaTrepte`, are alte rânduri: umărul, tija, flanșa,
+    reazemul) și bifa „prin foaie” pe rând (v27), amândouă doar la cuvântul owner-ului.
+- **Lecții (12.1↑e-3, în cloud):**
+  - Privirea pe piesa reală se face pe toate variantele (ridicat pe fund și pe față, decupat, gaură, alt joc lateral,
+    engleză, ecran scund) și mărită la perete. Probele comparau numere și treceau; desenul avea patru defecte.
+  - O valoare implicită cât pasul grilei (jocul de 0,1 mm) ascunde un desen degenerat: privește și cu una mai mare (0,5).
+  - `overflow: auto` pe insula vederii 3D lasă în captură o zonă transparentă deasupra ei, peste pânza WebGL; derularea pe un
+    element dinăuntru nu. Se găsește numărând pixelii cu alfa sub 250 din captura întreagă.
+  - Un copil cu `overflow: hidden` (cipurile cu elipsă) al unui flex cu înălțimea limitată se strivește: `flex-shrink: 0`.
+  - CSP-ul oprește foile de stil injectate într-o probă: stilurile de încercare se pun prin `element.style`.
+  - `toBeInViewport({ ratio: 1 })` cade pe subpixeli (0,996) într-un container derulat: `ratio: 0.9`, plus cutia.
+  - E2e-ul și otrăvurile e2e împart portul 4173: nu rulează deodată, iar `vite preview` pornit pentru priviri se oprește
+    înaintea lor.
+  - Un lot de otrăvuri stă sub 30 de minute pe comandă: cam 45 s pe o otravă a setului `dreapta`, 40 s pe una e2e.
+  - Completul durează cam 43 de minute. Cifrele (unit, e2e, emulatoare) se citesc din jurnalul jobului:
+    `gh run view --job=<id> --log`.
+  - Clona locală aduce și ramura de pornire a sesiunii, aflată la `main`: baza pentru mărime se construiește în aceeași clonă.
 - **Lecții (12.1↑e-3):**
   - În `src/sim/` (afară de `timp.ts` și `animatie.ts`), `Math.hypot`, `atan2`, `sin`, `cos`, `pow` și `**` sunt interzise
     (`simulare.unghi.test.ts`): se folosesc √ și funcțiile din `unghi.ts`. Prinde și cod care nu scrie celule.
