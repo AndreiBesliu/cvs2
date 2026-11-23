@@ -12071,6 +12071,69 @@ PR-ul AndreiBesliu/cvs2#8; A.6 era următoarea, „doar la cuvântul owner-ului�
 - **Documentele:** ADR 0260 („Implementarea”, A.6), fișa etapei 3 (rândul `3.Af`) cu traducerea, lista otrăvurilor și
   rândul ei din `docs/otravuri.md`, nota liniei, DEVLOG. **Completed:** 23.11 18:05.
 
+## 2026-11-23 — ADR 0262 propus: utilizarea aplicației (feliile A.8–A.11 ale liniei adminului)
+
+**Prompt:** „in admin, vreau sa vad mai multe statistici/date despre comportamentul utilizatorilor, vreau sa vad ce unelte
+folosesc cel mai des si care este cel mai comun workflow. vreau sa pot deduce care parte a aplicatiei este cea mai utila si
+care nu, si vreau sa folosim asta si la troubleshooting. practic vreau sa stiu fiecare interactiune pe care o are userul cu
+aplicatia, mai putin parolele lor sau date sensibile etc.” (owner-ul, pe 23.11, în sesiunea cloud a liniei adminului, cât
+porțile lui A.6 rulau în CI).
+**Started:** 23.11 18:15.
+
+- **Ce era deja:** `PLAN.md` §5.6 pune fila Analiză în etapa 28 („pâlnia, adopția din id-urile acțiunilor”), iar §3.2 spune
+  că analiza din admin e o vedere a registrului de acțiuni: vreo 105 acțiuni, pornite din bare, taste, paletă și meniuri, prin
+  aceeași funcție (`executa` din `App.tsx`). Jurnalul de erori a mers fără acord, cu o frază în nota de confidențialitate
+  (decizia 13); nota n-are încă operatorul și adresa de contact (ADR 0116 §18).
+- **ADR 0262 propus**, fără cod: evenimentele registrului după o listă albă (fără desen, texte, fișiere, adrese, parole),
+  acordul clienților la prima intrare în cont, loturi prin callable-ul nou `utilizare`, șterse după 90 de zile, sumele zilei
+  scrise de un job de noapte, fila Utilizare (uneltele, ce nu se folosește, fluxurile, frecările, duratele), cronologia unui om
+  pentru troubleshooting, două permisiuni noi; feliile A.8–A.11 (~4–5 felii).
+- **Schița cu formularul celor 7 întrebări:** <https://claude.ai/artifact/Y75BvkeR7kZmBpadwoFyya> (privată; răspunsurile în
+  baza ei, scrise doar de owner; probat: un vizitator nu poate scrie). Datele din schiță sunt de exemplu, marcate așa.
+- **Documentele:** ADR 0262, rândul lui în index, nota liniei, DEVLOG. **Completed:** 23.11 19:10.
+
+## 2026-11-23 — ADR 0262 acceptat; felia A.8a: contractul utilizării, callable-ul `utilizare` și setările din admin
+
+**Prompt:** „am raspuns” (owner-ul, pe 23.11, după formularul schiței ADR 0262: 1 „c”, cu nota care o înlocuiește:
+colectarea pornită pentru toți, legată de cont, disocierea doar la cerere, prin tichet, fără buton în meniul contului, scrisă
+doar în regulament; 2a, 3b, 4a, 5a, 6a; 7a, cu nota „toate astea vin cu mentiunea ca defapta vreau sa pot configura eu din
+admin cat mai multe setari”).
+**Started:** 23.11 19:43.
+
+- **ADR 0262 acceptat** cu răspunsurile, citate în el: §3 (colectarea pentru toți cei cu cont, disocierea prin tichet, de
+  verificat juridic înaintea live-ului), §8 nou (setările din admin: colectarea, clicurile fine, lotul, cele două păstrări,
+  pașii dinaintea unei erori), feliile A.8a, A.8b, A.8c, A.9–A.11 (~6), apoi A.7.
+- **DEVLOG:** unirea lui `main` în ramură (`0feb3ec0`) dublase două intrări ale lui `main` (3.Tr și unirea elicelor); scoase.
+- **A.8a (`bcc654f8`):** lista albă comună editorului și serverului (`shared/utilizare.ts`): serverul reface fiecare eveniment
+  doar din câmpurile felului lui, iar unul cu altceva se aruncă, numărat. Callable-ul `utilizare`: lotul doar cu contul deschis
+  sau din personal, o singură scriere pe lot, cel mult 120 pe cont și pe oră, ștergerea singură după zilele din setări, nimic cu
+  colectarea oprită; setările doar ale owner-ului, pe versiunea văzută, cu auditul. Regulile: `setari/utilizare` doar owner-ul,
+  loturile nimeni din client; TTL și evenimentele neindexate. În fila Setări, „Utilizarea aplicației”, cu istoricul ei.
+- **Probele:** 9 unitare noi; 8 ale callable-ului și 2 ale regulilor, pe emulator; 1 e2e pe emulatoare. **Otrăvurile:** 48 / 48
+  la prima rulare (23 unitare, 14 server, 2 reguli, 9 emulatoare). **Mărimea:** `/admin` 127,5 → 129,9 / 200; pornirea și
+  totalul neschimbate. **La unire se publică și serverul** (funcția `utilizare`, regulile, indexurile).
+- **Documentele:** ADR 0262 (implementarea), fișa etapei 3 (`3.Ag`), registrul otrăvurilor, traducerile, nota liniei.
+  **Completed:** 23.11 20:05.
+
+## 2026-11-23 — Felia A.8b: înregistratorul utilizării în editor și trimiterea în loturi (ADR 0262)
+
+**Prompt:** același „am raspuns” (7a: A.8–A.11 acum), după A.8a.
+**Started:** 23.11 20:10.
+
+- **Codul (`63b5d444`, `588edb3d`):** sursa gestului și un tampon în pornire (`src/app/utilizare.ts`), registrul care spune
+  fiecare rulare (`observaRularile`), ferestrele și refuzurile din `App.tsx`, unealta din editare; înregistratorul în bucata
+  lui (`utilizareLot.ts`, în precache), cu repetările, inelul pașilor, lotul, coada din browser cu contul fiecărui lot, setările
+  aflate și pompa; trimiterea prin bucata contului, pusă de editare (`utilizareTrimitere.ts`, `trimiteUtilizarea`,
+  `trimiteLotul`); serverul nu scrie un lot gol (întrebarea setărilor). Nota de confidențialitate, în ambele limbi.
+- **Mărimea:** prima formă (tot înregistratorul în pornire, importul bucății contului din `main.tsx`) dădea pornirea 110,9 kB și,
+  cu ușa, 115,4 / 115: poarta a căzut. Împărțită, pornirea e 109,2 (cu ușa 113,7, cu Atelierul 114,0 / 115).
+- **Probele:** 20 unitare, 1 a serverului, 3 e2e pe emulatoare. **Otrăvurile:** 40 / 40, după proba cu Delete pe un nod (E08).
+- **Abaterile, scrise în ADR:** coada în `localStorage`; trimiterea pusă de editare; dialogurile trec în A.8c.
+- **CI:** rapidul a căzut la regula `fara-cicluri` (tipurile luate de pornire din înregistrator, care o importă); reparat în
+  `09966989` (`utilizareTipuri.ts`), cu `npm run rapid` local verde (9 914 / 0) înainte de push.
+- **Documentele:** ADR 0262 (implementarea), fișa etapei 3 (`3.Ah`), registrul otrăvurilor, traducerile, nota liniei.
+  **Completed:** 23.11 20:35.
+
 ## 2026-11-23 — Sesiunea principală în cloud: a șasea unire (A.6, Roadmap, Documentație și Setări); linia frezelor, pornită (Model: Claude Fable 5.2)
 
 **Prompt:** același brief de predare al sesiunii principale („unește ce se poate”), la raportul liniei adminului (PR-ul

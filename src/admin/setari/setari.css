@@ -118,3 +118,14 @@
   overflow: auto;
   font-size: var(--fs-2);
 }
+
+/* Comutatoarele utilizării (ADR 0262 §8): bifa lângă nume, explicația dedesubt, aliniată cu numele. */
+.util-setari .set-comutator {
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: baseline;
+  column-gap: var(--sp-2);
+}
+
+.util-setari .set-comutator .admin-slab {
+  grid-column: 2;
+}

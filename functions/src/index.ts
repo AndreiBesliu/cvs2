@@ -20,6 +20,7 @@ import { marcheazaEroarea as marcheaza } from './erori/marcheaza.ts';
 import { acceptaInvitatia as accepta, administreazaPersonalul as administreaza } from './personal/actiuni.ts';
 import { trateazaSugestia } from './sugestii/actiuni.ts';
 import { trateazaTichetul } from './tichete/actiuni.ts';
+import { trateazaUtilizarea } from './utilizare/actiuni.ts';
 import { trateazaContul } from './conturi/actiuni.ts';
 import { administreazaConturile as administreazaConturi } from './conturi/admin.ts';
 import { memorieNoua, trateazaFonturiGoogle } from './fonturi/google.ts';
@@ -108,6 +109,15 @@ export const cont = onCall(
 export const administreazaConturile = onCall(
   { region: REGIUNI.callable, enforceAppCheck: true, maxInstances: 2, memory: '256MiB', timeoutSeconds: 20 },
   async (cerere) => administreazaConturi(getFirestore(), cerere.auth?.uid ?? null, cerere.data),
+);
+
+/**
+ * Utilizarea aplicației (ADR 0262): loturile editorului (contul deschis sau personalul, după lista albă, cel mult
+ * `LOTURI_PE_ORA` pe cont și pe oră) și setările din fila Setări (doar owner-ul, cu auditul în tranzacție).
+ */
+export const utilizare = onCall(
+  { region: REGIUNI.callable, enforceAppCheck: true, maxInstances: 5, memory: '256MiB', timeoutSeconds: 20 },
+  async (cerere) => trateazaUtilizarea(getFirestore(), cerere.auth?.uid ?? null, cerere.data),
 );
 
 const memorieGoogle = memorieNoua();

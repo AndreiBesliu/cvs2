@@ -6,6 +6,7 @@ import type { CererePersonal, RaspunsInvitatie, RaspunsPersonal } from '../../sh
 import type { CerereRaspunsuriRapide, RaspunsRapid, RaspunsRaspunsuriRapide } from '../../shared/raspunsuriRapide.ts';
 import type { CerereSugestie, RaspunsSugestie } from '../../shared/sugestii.ts';
 import type { CerereTichet, RaspunsProiectTichet, RaspunsTichet } from '../../shared/tichete.ts';
+import type { CerereSetariUtilizare, RaspunsSetariUtilizare, SetariUtilizare } from '../../shared/utilizare.ts';
 import { conecteazaBaza, hostPort, type ConexiuneBaza, type ConfigCloud, type MotivFaraConexiune } from './conexiuneBaza.ts';
 import { contAplicatiei } from './contEditor.ts';
 
@@ -93,6 +94,14 @@ export async function setarileConturilor(c: Conexiune, cerere: Extract<CerereCon
  */
 export async function salveazaRaspunsurileRapide(c: Conexiune, lista: readonly RaspunsRapid[], versiune: number): Promise<RaspunsRaspunsuriRapide> {
   return (await httpsCallable<CerereRaspunsuriRapide, RaspunsRaspunsuriRapide>(c.functii, 'tichete')({ actiune: 'raspunsuriRapide', lista, versiune })).data;
+}
+
+/**
+ * Setările utilizării aplicației (ADR 0262 §8), doar owner-ul, din fila Setări: toate, pe versiunea văzută (0 = niciun document
+ * încă), prin callable-ul `utilizare`; refuzurile vin cu motivul.
+ */
+export async function salveazaSetarileUtilizarii(c: Conexiune, setari: SetariUtilizare, versiune: number): Promise<RaspunsSetariUtilizare> {
+  return (await httpsCallable<CerereSetariUtilizare, RaspunsSetariUtilizare>(c.functii, 'utilizare')({ actiune: 'setari', setari, versiune })).data;
 }
 
 export async function marcheazaEroarea(c: Conexiune, amprenta: string, rezolvat: boolean): Promise<{ ok: true; schimbat: boolean }> {
