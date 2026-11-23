@@ -11054,3 +11054,8 @@ apoi „Da, începe”. **Started:** 23.11, 08:13 (ramura). **Completed:** 23.11
   măsurarea pieselor LDraw, randarea 3D; biblioteca în `LDRAW_DIR`, implicit `.tmp/ldraw`, în afara repo-ului).
 - **Probat local:** tipurile (`randare.mts`, venit din `.tmp`, avea tipurile slabe: reparate), regulile de import,
   licențele, randarea pe o piesă a motorului și pe LDraw 6041.
+- **Corectura, după documentația mediilor cloud** (citită pe 23.11; `9e3e288b`, 09:10, apoi rândul despre `node_modules`):
+  pregătirea nu mai iese cu eroare (o eroare ar opri pornirea sesiunii; ce lipsește se spune la „LIPSESC”), Node 26 e pus în
+  locul lui 22, primul în PATH-ul imaginii, Java 21 vine din imagine. Porțile întregi trec în CI (rapidul la push, completul
+  pornit pe ramură), iar comenzile lungi rulează în prim-plan, fiindcă containerul se suspendă când stă. **Completed:** 23.11,
+  09:37.
