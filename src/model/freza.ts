@@ -94,23 +94,24 @@ function interval(x: unknown, max: number, intreg = false): MotivFreza | null {
   return null;
 }
 
-function problemaNume(nume: unknown, alte: readonly FrezaSalvata[], id: string | null): MotivFreza | null {
+function problemaNume(nume: unknown, alte: readonly FrezaSalvata[], id: string | null, rezervate: readonly string[]): MotivFreza | null {
   if (typeof nume !== 'string' || nume.trim() === '') return 'nume-gol';
   // eslint-disable-next-line no-control-regex
   if (/[\u0000-\u001f\u007f-\u009f]/u.test(nume)) return 'nume-caractere';
   if ([...nume.normalize('NFC').trim()].length > MARGINI_FREZA.nume) return 'nume-lung';
   const k = cheieNume(nume);
-  return alte.some((f) => f.id !== id && cheieNume(f.nume) === k) ? 'nume-folosit' : null;
+  return alte.some((f) => f.id !== id && cheieNume(f.nume) === k) || rezervate.some((r) => cheieNume(r) === k) ? 'nume-folosit' : null;
 }
 
 /**
  * Ce nu e bine la o freză, câmp cu câmp (gol: e bună). `alte` sunt frezele bibliotecii (numele unic), iar `id` e al frezei
- * schimbate (numele ei nu se ciocnește cu el însuși). Unghiul și vârful se judecă doar unde țin de fel.
+ * schimbate (numele ei nu se ciocnește cu el însuși); `rezervate` sunt numele frezelor pe care versiunea de azi nu le poate
+ * citi (rămân în bibliotecă). Unghiul și vârful se judecă doar unde țin de fel.
  */
-export function problemeFreza(f: Freza, alte: readonly FrezaSalvata[] = [], id: string | null = null): ProblemeFreza {
+export function problemeFreza(f: Freza, alte: readonly FrezaSalvata[] = [], id: string | null = null, rezervate: readonly string[] = []): ProblemeFreza {
   const p: Partial<Record<CampFreza, MotivFreza>> = {};
   const pune = (c: CampFreza, m: MotivFreza | null): void => { if (m) p[c] = m; };
-  pune('nume', problemaNume(f.nume, alte, id));
+  pune('nume', problemaNume(f.nume, alte, id, rezervate));
   pune('diametru', interval(f.diametru, MARGINI_FREZA.diametru));
   pune('numar', interval(f.numar, MARGINI_FREZA.numar, true));
   if (areUnghi(f.fel)) {
@@ -207,11 +208,13 @@ export type RezultatLista =
  * Lista cu o freză nouă (`id` null) sau schimbată: versiunea crește, data e `acum`, câmpurile necunoscute ale celei vechi
  * rămân, iar cele care nu țin de fel pleacă.
  */
-export function cuFreza(lista: readonly FrezaSalvata[], id: string | null, f: Freza, idNou: () => string, acum: number): RezultatLista {
+export function cuFreza(
+  lista: readonly FrezaSalvata[], id: string | null, f: Freza, idNou: () => string, acum: number, rezervate: readonly string[] = [],
+): RezultatLista {
   const veche = id === null ? null : lista.find((x) => x.id === id);
   if (id !== null && !veche) return { ok: false, probleme: { id: 'lipsa' } };
   if (!veche && lista.length >= MARGINI_FREZA.freze) return { ok: false, probleme: { lista: 'plina' } };
-  const probleme = problemeFreza(f, lista, id);
+  const probleme = problemeFreza(f, lista, id, rezervate);
   if (Object.keys(probleme).length > 0) return { ok: false, probleme };
   if (veche) {
     const noua = curata({ ...veche, ...f, id: veche.id, rev: veche.rev + 1, schimbatLa: acum });
@@ -226,8 +229,8 @@ export function faraFreza(lista: readonly FrezaSalvata[], id: string): { readonl
 }
 
 /** Un nume liber în listă: el însuși, sau cu „(2)”, „(3)”…, scurtat ca sufixul să încapă în 40 de caractere. */
-export function numeLiber(nume: string, lista: readonly Pick<Freza, 'nume'>[]): string {
-  const luate = new Set(lista.map((f) => cheieNume(f.nume)));
+export function numeLiber(nume: string, lista: readonly Pick<Freza, 'nume'>[], rezervate: readonly string[] = []): string {
+  const luate = new Set([...lista.map((f) => f.nume), ...rezervate].map(cheieNume));
   const curat = nume.normalize('NFC').trim();
   if (!luate.has(cheieNume(curat))) return curat;
   for (let k = 2; ; k++) {
@@ -268,17 +271,22 @@ export type PoliticaImport = 'inlocuieste' | 'amandoua' | 'sari';
  * același fișier) o înlocuiește pe aceea (id-ul rămâne, versiunea crește), intră cu un nume liber („(2)”) sau se sare.
  * Una greșită se sare. Dacă lista ar trece de plafon, nimic.
  */
-export function cuImport(lista: readonly FrezaSalvata[], noi: readonly Freza[], politica: PoliticaImport, idNou: () => string, acum: number):
+export function cuImport(
+  lista: readonly FrezaSalvata[], noi: readonly Freza[], politica: PoliticaImport, idNou: () => string, acum: number,
+  rezervate: readonly string[] = [],
+):
   | { readonly ok: true; readonly lista: readonly FrezaSalvata[]; readonly adaugate: number; readonly inlocuite: number; readonly sarite: number }
   | { readonly ok: false; readonly probleme: { readonly lista: 'plina' } } {
   let rez = lista, adaugate = 0, inlocuite = 0, sarite = 0;
   for (const f of noi) {
     const existenta = rez.find((x) => typeof f.nume === 'string' && cheieNume(x.nume) === cheieNume(f.nume));
-    if (existenta && politica === 'sari') { sarite++; continue; }
+    // O freză necitită (a unei versiuni mai noi) nu se poate înlocui: numele ei se ocolește, ca la „amândouă”.
+    const rezervat = typeof f.nume === 'string' && rezervate.some((r) => cheieNume(r) === cheieNume(f.nume));
+    if ((existenta || rezervat) && politica === 'sari') { sarite++; continue; }
     const id = existenta && politica === 'inlocuieste' ? existenta.id : null;
-    const nume = existenta && politica === 'amandoua' ? numeLiber(f.nume, rez) : f.nume;
+    const nume = (existenta && politica === 'amandoua') || rezervat ? numeLiber(f.nume, rez, rezervate) : f.nume;
     if (id === null && rez.length >= MARGINI_FREZA.freze) return { ok: false, probleme: { lista: 'plina' } };
-    const r = cuFreza(rez, id, { ...f, nume }, idNou, acum);
+    const r = cuFreza(rez, id, { ...f, nume }, idNou, acum, rezervate);
     if (!r.ok) { sarite++; continue; }
     rez = r.lista;
     if (id === null) adaugate++; else inlocuite++;
