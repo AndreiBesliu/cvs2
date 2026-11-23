@@ -1262,6 +1262,18 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 23.11.2026, dimineața: **3.Tp↑b (pictogramele) unită în `main`, cu uneltele lucrului în cloud** (worktree-ul `unire`,
+  ramura `unire-2211c`). **3.Tp↑b** (linia `galeria`, ramura `wip/3.Tp-galeria-pe-file`, `e641c18d` din `57457061`; ADR
+  0281): un desen mic, doar linii, de culoarea textului, pe fiecare buton al galeriilor atelierului Easy 3Draw
+  (`PICTOGRAME`, lângă `FAMILII`: o piesă nouă își pune desenul pe un rând, iar o probă unitară i-l cere); pachetul
+  18.18.0; otrăvurile 18 / 18. Porțile unirii, pe `e641c18d`: unit 9 752 / 0, e2e 585 / 585, funcțiile pe emulatoare 104
+  / 104, paginile 33 / 34 la prima trecere: `utilizatori.emulator.spec.ts:101` a așteptat 30 s rezultatul funcției, cu
+  procesorul la 85 %; reluată singură, 3 / 3 (funcțiile, 104 / 104). **Lucrul în cloud** (`b8cdc05e`, la „neata! Putem
+  sa mutam tot acest proiect in sesiune cloud? Vreau sa se faca in continuare sync pe folderul local, dar sesiunea sa
+  lucreze in cloud pe repo din Github” și „Da, începe” ale owner-ului): `scripts/cloud/pregatire.sh` (mediul cloud, ca
+  CI-ul), `docs/lucru-in-cloud.md` (o linie = o sesiune pe ramura ei: porțile ca în CI, otrăvurile într-o clonă, unirea
+  și publicarea), `scripts/rezolva-devlog.py`, `scripts/ldraw/`; unitarele ramurii, 9 748 / 0 (8 sărite), cu tipurile,
+  regulile de import și licențele. Urmează: mediul cloud (owner-ul) și linia-pilot, elicele (3.Tq).
 - 22.11.2026, seara: **11.3↑d (urechile la locurile alese) și A.3 (Tichete) unite în `main`**, în lot (worktree-ul
   `unire`, ramura `unire-2211b`). **11.3↑d** (linia planșelor, ramura `wip/11.1-plansele`, `44046e5d` din `76d5b0b3`;
   ADR 0211, varianta a, la „Da, toate recomandările” ale owner-ului): urechile se aleg pe desen, într-un mod al pânzei
