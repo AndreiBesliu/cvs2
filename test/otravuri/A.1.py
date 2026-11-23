@@ -96,3 +96,9 @@ SETURI = {
     'diagnoza': ['test/unit/admin.test.ts'],
 }
 E2E = ['test/e2e-emulator/azi.emulator.spec.ts']
+# Proba fiecărei otrăvi de emulatoare (`--grep` pe titlul ei), pentru `scripts/otravuri-emulatoare.py`.
+T1, T2, T3, T4, T5 = 'owner: Azi întâi', 'un rol cu o singură permisiune', 'căutarea din antet', 'lista goală are semnul', 'intrarea și'
+GREP = {
+    'E01': T1, 'E02': T1, 'E03': T1, 'E04': T2, 'E05': T1, 'E06': T3, 'E07': T1, 'E08': T2, 'E09': T4, 'E10': T4, 'E11': T4,
+    'E12': T5, 'E13': T1, 'E14': T1, 'E15': T1, 'E16': T1,
+}
