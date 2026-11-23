@@ -7,7 +7,9 @@
  *   închis, cu raza 36,95;
  * - fiecare „Ca LEGO” cu cotele și cu sensul piesei LEGO (6041 e pe stânga; 92842 și 15790, pe dreapta);
  * - un câmp în afara plajei nu schimbă piesa;
- * - „Fă perechea”: aceeași elice, pe dreapta și pe stânga, în listă.
+ * - editorul: fiecare alegere (forma, paleta, profilul, sensul, gaura, conul) și fiecare câmp (rotunjit la pasul lui, doar în
+ *   plajă) ajung în piesă;
+ * - „Fă perechea”: aceeași elice, pe dreapta și pe stânga, în listă, câte bucăți sunt cerute.
  */
 import { readFileSync } from 'node:fs';
 import { test, expect, type Page } from '@playwright/test';
@@ -53,6 +55,11 @@ test('elicea implicită, în fila Elice: 3 palete, Ø72, pasul 0,7, răsucită; 
   await expect(page.locator('#at-el-info')).toHaveText('Pasul 50 mm (0,7 × diametrul). Paleta răsucită: 63° lângă butuc, 13° la vârf. Se tipărește fără suport: la vârf, un strat iese cu 0,9 mm peste cel de dedesubt.');
   await expect(page.locator('#at-cote')).toContainText('× 8 mm');
   await expect(page.locator('#at-avert')).toBeHidden();
+  // editorul, la început: câmpurile și alegerile implicite; niciun „Ca LEGO” apăsat
+  for (const [camp, v] of [['palete', '3'], ['diam', '72'], ['pas', '0.7'], ['lat', '30']] as const) await expect(page.locator(`#at-el-${camp}`)).toHaveValue(v);
+  for (const [grup, v] of [['forma', 'rot'], ['paleta', 'rasucita'], ['profil', 'placa'], ['sens', 'dreapta'], ['gaura', 'x'], ['con', 'nu']] as const)
+    await expect(page.locator(`#at-el-${grup} [aria-pressed="true"]`)).toHaveAttribute('data-v', v);
+  await expect(page.locator('#at-el-repede [aria-pressed="true"]')).toHaveCount(0);
   // un câmp în afara plajei nu schimbă piesa
   await seteaza(page, '#at-el-palete', '12');
   await expect(page.locator('#at-nume-piesa')).toHaveText('Elice Ø72 cu 3 palete, pasul 0,7');
@@ -111,6 +118,69 @@ test('fiecare „Ca LEGO”, cu cotele piesei din LDraw, măsurate față de axa
   await expect(page.locator('#at-el-repede [aria-pressed="true"]')).toHaveCount(0);
 });
 
+test('editorul: fiecare alegere și fiecare câmp ajung în piesă; câmpurile, rotunjite la pasul lor și doar în plajă', async ({ page }) => {
+  await atelierElice(page);
+  const nume = page.locator('#at-nume-piesa'), apasat = (grup: string) => page.locator(`#at-el-${grup} [aria-pressed="true"]`);
+  // alegerile
+  await page.locator('#at-el-forma [data-v="ingust"]').click();
+  await expect(apasat('forma')).toHaveAttribute('data-v', 'ingust');
+  await page.locator('#at-el-forma [data-v="drept"]').click();
+  await expect(apasat('forma')).toHaveAttribute('data-v', 'drept');
+  await page.locator('#at-el-profil [data-v="aripa"]').click();
+  await expect(apasat('profil')).toHaveAttribute('data-v', 'aripa');
+  await expect(nume).toHaveText('Elice Ø72 cu 3 palete, pasul 0,7');
+  // paleta plată: același unghi peste tot, cât la 70 % din rază: atan(0,7 / (0,7 · π)) = 17,66°
+  await page.locator('#at-el-paleta [data-v="plata"]').click();
+  await expect(nume).toHaveText('Elice Ø72 cu 3 palete, pasul 0,7, plată');
+  await expect(page.locator('#at-el-info')).toContainText('Paleta plată, la 18° de la butuc la vârf, ca la LEGO.');
+  await page.locator('#at-el-paleta [data-v="rasucita"]').click();
+  await expect(page.locator('#at-el-info')).toContainText('Paleta răsucită: 63° lângă butuc, 13° la vârf.');
+  await page.locator('#at-el-sens [data-v="stanga"]').click();
+  await expect(nume).toHaveText('Elice Ø72 cu 3 palete, pasul 0,7, stânga');
+  await page.locator('#at-el-sens [data-v="dreapta"]').click();
+  for (const [g, coada] of [['r', ', gaură rotundă'], ['b', ', pentru bară'], ['nu', ', fără gaură'], ['x', '']] as const) {
+    await page.locator(`#at-el-gaura [data-v="${g}"]`).click();
+    await expect(nume).toHaveText('Elice Ø72 cu 3 palete, pasul 0,7' + coada);
+  }
+  // conul: 1,3 · 4 = 5,2 mm peste butucul de 8
+  await page.locator('#at-el-con [data-v="da"]').click();
+  await expect(nume).toHaveText('Elice Ø72 cu 3 palete, pasul 0,7, cu con');
+  await expect(page.locator('#at-cote')).toContainText('× 13,2 mm');
+  await page.locator('#at-el-con [data-v="nu"]').click();
+  await expect(page.locator('#at-cote')).toContainText('× 8 mm');
+  // câmpurile: paletele la întreg, diametrul la zecime, pasul la sutime, lățimea la întreg
+  await seteaza(page, '#at-el-palete', '4.4');
+  await expect(nume).toHaveText('Elice Ø72 cu 4 palete, pasul 0,7');
+  await seteaza(page, '#at-el-diam', '72.26');
+  await expect(nume).toHaveText('Elice Ø72,3 cu 4 palete, pasul 0,7');
+  await seteaza(page, '#at-el-pas', '1.204');
+  await expect(nume).toHaveText('Elice Ø72,3 cu 4 palete, pasul 1,2');
+  // pasul 1,2 · 72,3 = 86,76 mm; răsucită: atan(86,76 / 8π) = 73,8° la butuc, atan(1,2 / π) = 20,9° la vârf; 0,2 / tan 20,9° = 0,52
+  await expect(page.locator('#at-el-info')).toHaveText('Pasul 87 mm (1,2 × diametrul). Paleta răsucită: 74° lângă butuc, 21° la vârf. Se tipărește fără suport: la vârf, un strat iese cu 0,5 mm peste cel de dedesubt.');
+  await seteaza(page, '#at-el-lat', '44.6');
+  await expect(page.locator('#at-el-lat')).toHaveValue('45');
+  // marginile plajei: chiar pe margine intră, dincolo de ea nu (piesa rămâne; la redesenare, câmpul arată iar ce e în piesă)
+  for (const [camp, bun, rau, cum] of [
+    ['palete', '8', '9', 'Elice Ø72,3 cu 8 palete, pasul 1,2'], ['palete', '2', '1', 'Elice Ø72,3 cu 2 palete, pasul 1,2'],
+    ['diam', '200', '200.1', 'Elice Ø200 cu 2 palete, pasul 1,2'], ['diam', '20', '19.9', 'Elice Ø20 cu 2 palete, pasul 1,2'],
+    ['pas', '1.5', '1.51', 'Elice Ø20 cu 2 palete, pasul 1,5'], ['pas', '0.3', '0.29', 'Elice Ø20 cu 2 palete, pasul 0,3'],
+  ] as const) {
+    await seteaza(page, `#at-el-${camp}`, bun);
+    await expect(nume).toHaveText(cum);
+    await seteaza(page, `#at-el-${camp}`, rau);
+    await expect(nume).toHaveText(cum);
+    await page.locator('#at-el-forma [data-v="rot"]').click();
+    await expect(page.locator(`#at-el-${camp}`)).toHaveValue(bun);
+  }
+  for (const [bun, rau] of [['60', '61'], ['15', '14']] as const) {
+    await seteaza(page, '#at-el-lat', bun);
+    await expect(page.locator('#at-el-lat')).toHaveValue(bun);
+    await seteaza(page, '#at-el-lat', rau);
+    await page.locator('#at-el-forma [data-v="rot"]').click();
+    await expect(page.locator('#at-el-lat')).toHaveValue(bun);
+  }
+});
+
 test('„Fă perechea”: aceeași elice, pe dreapta și pe stânga, în listă; elicea din editor e același rând cu cea dreaptă', async ({ page }) => {
   await atelierElice(page);
   await page.locator('#at-el-con [data-v="da"]').click();
@@ -119,4 +189,10 @@ test('„Fă perechea”: aceeași elice, pe dreapta și pe stânga, în listă;
   await page.locator('#at-el-pereche').click();
   await expect(page.locator('#at-lista tr td:first-child')).toHaveText(['Elice Ø72 cu 3 palete, pasul 0,7, cu con', 'Elice Ø72 cu 3 palete, pasul 0,7, stânga, cu con']);
   await expect(page.locator('#at-lista tr[data-id] .pas-n')).toHaveText(['2', '1']);
+  // câte bucăți sunt cerute: încă 3 perechi, din elicea pe stânga (perechea are tot ambele sensuri)
+  await page.locator('#at-el-sens [data-v="stanga"]').click();
+  await page.locator('#at-bucati').fill('3');
+  await page.locator('#at-el-pereche').click();
+  await expect(page.locator('#at-lista tr td:first-child')).toHaveText(['Elice Ø72 cu 3 palete, pasul 0,7, cu con', 'Elice Ø72 cu 3 palete, pasul 0,7, stânga, cu con']);
+  await expect(page.locator('#at-lista tr[data-id] .pas-n')).toHaveText(['5', '4']);
 });

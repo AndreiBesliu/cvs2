@@ -179,3 +179,127 @@ test('marginile: paletele și diametrul în afara plajei se spun', () => {
   assert.equal(L.eliceCote({ pas: 5 }).pd, 1.5);
   assert.equal(L.eliceCote({ latime: 5 }).lat, 15);
 });
+
+/** Razele stațiilor paletei (secțiunile plasei), crescător: de la rădăcina din butuc (r 3,6) la vârf. */
+function statii(v: [number, number, number][]): number[] {
+  const pe = new Map<string, number>();
+  for (const q of v) if (q[0] > 3.5 && Math.abs(q[0] - 4) > 1e-3 && !pe.has(q[0].toFixed(4))) pe.set(q[0].toFixed(4), q[0]);
+  return [...pe.values()].sort((a, b) => a - b);
+}
+/**
+ * Secțiunea paletei 0 la raza unei stații, adusă înapoi din unghiul ei de pe hârtie: u de-a lungul corzii (0 la muchia de fugă),
+ * `mijloc` și `gros` în fiecare punct al corzii (linia de mijloc față de capete, grosimea dintre fața de sus și cea de jos).
+ */
+function sectiune(v: [number, number, number][], rr: number, beta: number, palete: number): { coarda: number; puncte: { x: number; mijloc: number; gros: number }[] } {
+  const brut = v.filter(([r, th]) => Math.abs(r - rr) < 1e-4 && Math.abs(th) < Math.PI / palete)
+    .map(([, th, z]) => ({ u: rr * th * Math.cos(beta) + z * Math.sin(beta), w: -rr * th * Math.sin(beta) + z * Math.cos(beta) }));
+  const u0 = Math.min(...brut.map((q) => q.u)), coarda = Math.max(...brut.map((q) => q.u)) - u0;
+  const pe = new Map<string, number[]>();
+  for (const q of brut) { const k = (q.u - u0).toFixed(5); (pe.get(k) ?? pe.set(k, []).get(k)!).push(q.w); }
+  const puncte = [...pe].map(([k, w]) => ({ x: +k / coarda, mijloc: (Math.max(...w) + Math.min(...w)) / 2, gros: Math.max(...w) - Math.min(...w) })).sort((a, b) => a.x - b.x);
+  const m0 = (puncte[0]!.mijloc + puncte[puncte.length - 1]!.mijloc) / 2;
+  return { coarda, puncte: puncte.map((q) => ({ ...q, mijloc: q.mijloc - m0 })) };
+}
+
+test('secțiunea plăcii curbate, pe hârtie: coarda cerută, grosimea de la 1,2 la 0,8, săgeata de 4 % din coardă, cu fața bombată în sus', () => {
+  // Ø72, lățimea 30 %: coarda cea mai mare 0,3 · 36 = 10,8; la paleta rotunjită, plină între 25 % și 55 % din paletă
+  const p = elice({ gaura: 'nu' }), v = polare(p, centru(p)), raze = statii(v);
+  const beta = (r: number) => Math.atan(50.4 / (2 * Math.PI * r));
+  assert.equal(raze.length, 29);
+  // rădăcina: în butuc cu 0,4 mm (r 3,6), coarda 60 % din cea mai mare (6,48), groasă de 1,2
+  assert.ok(Math.abs(raze[0]! - 3.6) < 1e-9, `rădăcina la r ${raze[0]}`);
+  const rad = sectiune(v, raze[0]!, beta(raze[0]!), 3);
+  assert.ok(Math.abs(rad.coarda - 6.48) < 1e-6, `coarda la rădăcină ${rad.coarda}`);
+  assert.ok(rad.puncte.every((q) => Math.abs(q.gros - 1.2) < 1e-6), `grosimea la rădăcină ${rad.puncte.map((q) => q.gros.toFixed(3))}`);
+  // la mijlocul paletei (stația 12: r = 3,6 + 32,4 · 12 / 28 = 17,486, la 42 % din paletă): coarda întreagă, 10,8; grosimea
+  // 1,2 − 0,4 · 0,4214 = 1,031; linia de mijloc urcă la mijlocul corzii cu 4 % din coardă, 0,432 (parabolă: 4 · 0,04 · x(1 − x))
+  const r12 = raze[12]!, x12 = (r12 - 4) / 32, mij = sectiune(v, r12, beta(r12), 3);
+  assert.ok(Math.abs(r12 - 17.4857) < 1e-3 && Math.abs(x12 - 0.4214) < 1e-3, `stația 12: r ${r12}`);
+  assert.ok(Math.abs(mij.coarda - 10.8) < 1e-6, `coarda la mijloc ${mij.coarda}`);
+  assert.equal(mij.puncte.length, 13);
+  for (const q of mij.puncte) {
+    assert.ok(Math.abs(q.gros - 1.0314) < 1e-3, `grosimea la x ${q.x}: ${q.gros}`);
+    assert.ok(Math.abs(q.mijloc - 4 * 0.04 * q.x * (1 - q.x) * 10.8) < 1e-6, `săgeata la x ${q.x}: ${q.mijloc}`);
+  }
+  assert.ok(Math.abs(mij.puncte[6]!.mijloc - 0.432) < 1e-6, `săgeata la mijlocul corzii ${mij.puncte[6]!.mijloc}`);
+  // vârful: 2,5 · 0,8 = 2 (rotunjit, nu strâns într-un punct), gros de 0,8
+  const varf = sectiune(v, 36, beta(36), 3);
+  assert.ok(Math.abs(varf.coarda - 2.0) < 1e-6 && varf.puncte.every((q) => Math.abs(q.gros - 0.8) < 1e-6), `vârful: coarda ${varf.coarda}`);
+});
+
+test('formele paletei, pe hârtie: rotunjită (eliptică după 55 %), îngustată (jumătate la vârf), dreaptă; rădăcina, de la 60 % la toată coarda pe primul sfert', () => {
+  const beta = (r: number) => Math.atan(50.4 / (2 * Math.PI * r));
+  const coarda = (forma: string, i: number) => {
+    const p = elice({ gaura: 'nu', forma }), v = polare(p, centru(p)), r = statii(v)[i]!;
+    return { c: sectiune(v, r, beta(r), 3).coarda, x: Math.max(0, (r - 4) / 32) };
+  };
+  // vârful (stația 28): dreapta, 10,8; îngustată, 5,4; rotunjită, 2 (cât 2,5 grosimi)
+  assert.ok(Math.abs(coarda('drept', 28).c - 10.8) < 1e-6 && Math.abs(coarda('ingust', 28).c - 5.4) < 1e-6 && Math.abs(coarda('rot', 28).c - 2.0) < 1e-6);
+  // stația i e la r = 3,6 + 32,4 · i / 28, adică la (r − 4) / 32 din paletă. Stația 20 (r 26,743; 71,07 %): îngustată,
+  // 10,8 · (1 − 0,5 · 0,7107) = 6,962; rotunjită, 10,8 · √(1 − ((0,7107 − 0,55) / 0,45)²) = 10,8 · 0,9340 = 10,087; stația 15
+  // (r 20,957; 52,99 %, sub 55 %): rotunjita e încă plină, 10,8
+  const i20 = coarda('ingust', 20), r20 = coarda('rot', 20), r15 = coarda('rot', 15);
+  assert.ok(Math.abs(i20.x - 0.7107) < 1e-4 && Math.abs(i20.c - 6.962) < 2e-3, `îngustată la ${i20.x}: ${i20.c}`);
+  assert.ok(Math.abs(r20.c - 10.087) < 2e-3, `rotunjită la ${r20.x}: ${r20.c}`);
+  assert.ok(Math.abs(r15.x - 0.5299) < 1e-4 && Math.abs(r15.c - 10.8) < 1e-6, `rotunjită la ${r15.x}: ${r15.c}`);
+  // rădăcina, la dreaptă: stația 2 (r 5,914; 5,98 %): 10,8 · (0,6 + 0,4 · 0,0598 / 0,25) = 7,514; stația 7 (r 11,7; 24,06 %):
+  // 10,8 · (0,6 + 0,4 · 0,2406 / 0,25) = 10,638; stația 8 (r 12,857; 27,68 %, peste primul sfert): 10,8
+  const d2 = coarda('drept', 2), d7 = coarda('drept', 7), d8 = coarda('drept', 8);
+  assert.ok(Math.abs(d2.x - 0.0598) < 1e-4 && Math.abs(d2.c - 7.514) < 2e-3, `rădăcina la ${d2.x}: ${d2.c}`);
+  assert.ok(Math.abs(d7.x - 0.2406) < 1e-4 && Math.abs(d7.c - 10.638) < 2e-3, `rădăcina la ${d7.x}: ${d7.c}`);
+  assert.ok(Math.abs(d8.x - 0.2768) < 1e-4 && Math.abs(d8.c - 10.8) < 1e-6, `capătul rădăcinii la ${d8.x}: ${d8.c}`);
+});
+
+test('profilul de aripă (NACA 4412), pe hârtie: gros de 12 % din coardă spre muchia de atac, cel puțin cât placa, cu săgeata de 4 % la 40 % de muchia de atac', () => {
+  // Ø200, 2 palete, lățimea 60 %: coarda 60; stația 12 (r = 3,6 + 96,4 · 12 / 28 = 44,914; la 42,6 %): pasul 0,7 → β = atan(140 / 2πr)
+  const d = { gaura: 'nu', profil: 'aripa', diametru: 200, palete: 2, latime: 60 }, p = elice(d), v = polare(p, centru(p)), r = statii(v)[12]!;
+  const x = (r - 4) / 96, s = sectiune(v, r, Math.atan(140 / (2 * Math.PI * r)), 2), t = 1.2 - 0.4 * x;
+  assert.ok(Math.abs(s.coarda - 60) < 1e-6, `coarda ${s.coarda}`);
+  // punctele corzii sunt pe cosinus (x = ½ − ½ cos(πi / 12)); grosimea NACA la xa = 1 − x de la muchia de atac:
+  // 0,6 · (0,2969 √xa − 0,126 xa − 0,3516 xa² + 0,2843 xa³ − 0,1036 xa⁴) · c; cea mai mare dintre puncte, la xa = 0,25: 0,11882 · 60 = 7,129
+  const cel = s.puncte.reduce((a, b) => (b.gros > a.gros ? b : a));
+  assert.ok(Math.abs(cel.x - 0.75) < 1e-6 && Math.abs(cel.gros - 7.129) < 2e-3, `cel mai gros: la ${cel.x}, ${cel.gros}`);
+  // la muchia de fugă și la cea de atac, cât placa (1,2 − 0,4 · x): profilul nu se subțiază sub două linii de duză
+  assert.ok(Math.abs(s.puncte[0]!.gros - t) < 1e-6 && Math.abs(s.puncte[12]!.gros - t) < 1e-6, `muchiile: ${s.puncte[0]!.gros}, ${s.puncte[12]!.gros} față de ${t}`);
+  assert.ok(s.puncte.every((q) => q.gros >= t - 1e-9));
+  // linia de mijloc: la mijlocul corzii (xa = 0,5), 0,04 / 0,36 · (1 − 0,8 + 0,4 − 0,25) · 60 = 2,333; mai sus spre muchia de atac
+  // (xa = 0,3706, în fața săgeții maxime: 0,25 · (0,8 · 0,3706 − 0,3706²) · 60 = 2,387), mai jos spre cea de fugă (xa = 0,6294:
+  // 0,04 / 0,36 · (0,2 + 0,8 · 0,6294 − 0,6294²) · 60 = 2,049)
+  assert.ok(Math.abs(s.puncte[6]!.mijloc - 2.3333) < 1e-3, `săgeata la mijloc ${s.puncte[6]!.mijloc}`);
+  assert.ok(Math.abs(s.puncte[7]!.mijloc - 2.387) < 2e-3 && Math.abs(s.puncte[5]!.mijloc - 2.049) < 2e-3, `săgeata: ${s.puncte[7]!.mijloc}, ${s.puncte[5]!.mijloc}`);
+});
+
+test('butucul Ø8 × 8 și conul: paleta intră în butuc, conul stă în el cu 0,1 mm și îl închide sus', () => {
+  const p = elice({ gaura: 'nu', con: 'da' }), v = polare(p, centru(p));
+  // butucul: vârfurile de pe r 4, de la masă la 8
+  const butuc = v.filter((q) => Math.abs(q[0] - 4) < 1e-3 && q[2] <= 8 + 1e-9);
+  assert.ok(butuc.length > 100 && Math.abs(Math.min(...butuc.map((q) => q[2]))) < 1e-9 && Math.abs(Math.max(...butuc.map((q) => q[2])) - 8) < 1e-9);
+  // conul: baza pe r 4 la z 7,9 (0,1 mm în butuc, deci lipit de el), centrul bazei și vârful pe axă, la 7,9 și la 8 + 1,3 · 4 = 13,2
+  const axa = v.filter((q) => q[0] < 1e-6).map((q) => q[2]);
+  assert.ok(Math.abs(Math.min(...axa) - 7.9) < 1e-9 && Math.abs(Math.max(...axa) - 13.2) < 1e-9, `conul pe axă: ${Math.min(...axa)} … ${Math.max(...axa)}`);
+  const baza = v.filter((q) => Math.abs(q[0] - 4) < 1e-3 && Math.abs(q[2] - 7.9) < 1e-9);
+  assert.ok(baza.length >= 64, `baza conului: ${baza.length} vârfuri`);
+  // paleta: rădăcina la r 3,6, în butuc (între gaura de cel mult r 2,6 și peretele de la r 4)
+  assert.ok(Math.abs(statii(v)[0]! - 3.6) < 1e-9);
+  // fără con, nimic pe axă peste butuc
+  const fara = elice({ gaura: 'nu' });
+  assert.ok(Math.abs(Math.max(...fara.tri.flat().map((q) => q[2])) - 8) < 1e-9);
+});
+
+test('implicitele și marginile plajei: 3 palete, Ø72, pasul 0,7, lățimea 30 %; fiecare parametru, adus în plaja lui', () => {
+  const c = L.eliceCote({});
+  assert.deepEqual([c.z, c.D, c.pd, c.lat, c.plata], [3, 72, 0.7, 30, false]);
+  // lipsă, gol sau fără sens: implicitul; paletele, la întreg
+  assert.deepEqual([L.eliceCote({ palete: '', diametru: null, pas: 'x', latime: undefined }).z, L.eliceCote({ diametru: '' }).D, L.eliceCote({ pas: 'x' }).pd], [3, 72, 0.7]);
+  assert.equal(L.eliceCote({ palete: 3.4 }).z, 3);
+  assert.equal(L.eliceCote({ palete: 4.6 }).z, 5);
+  // marginile, de ambele părți
+  assert.deepEqual([L.eliceCote({ palete: 1 }).z, L.eliceCote({ palete: 9 }).z], [2, 8]);
+  assert.deepEqual([L.eliceCote({ diametru: 19 }).D, L.eliceCote({ diametru: 201 }).D], [20, 200]);
+  assert.deepEqual([L.eliceCote({ pas: 0.29 }).pd, L.eliceCote({ pas: 1.51 }).pd], [0.3, 1.5]);
+  assert.deepEqual([L.eliceCote({ latime: 14 }).lat, L.eliceCote({ latime: 61 }).lat], [15, 60]);
+  assert.deepEqual(simplu(elice({ diametru: 10 }).avert), ['Diametrul unei elice e între 20 și 200 mm: am făcut-o de 20 mm.']);
+  // în plajă, la margine, nimic de spus
+  assert.deepEqual(simplu(elice({ palete: 2, diametru: 20 }).avert), []);
+  assert.deepEqual(simplu(elice({ palete: 8, diametru: 200 }).avert), []);
+});
