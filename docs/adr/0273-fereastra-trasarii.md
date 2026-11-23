@@ -1,9 +1,11 @@
 # ADR 0273 — Fereastra trasării, refăcută
 
-**Starea:** propus pe 23.11.2026, la „2” (owner-ul, în sesiunea liniei trasării, la „Ce aș face întâi”, punctul 2: „O felie
-de interfață: punctele 1, 2, 4 și 5 de la interfață, plus virgula”), după întrebarea lui „cum se mai poate imbunatati
-trasarea din imagine? si ca functionalitate si ca UI/UX”. Felia 25.9↑, fără mașină, în linia trasării (ramura
-`wip/25.1-trasare`). Codul pornește după răspunsuri.
+**Starea:** acceptat pe 23.11.2026 („gata”, cu formularul schiței: 1a, 2a, 3a și nota „ca de obicei, eu vreau cat mai multe
+optiuni puse la dispozitia userului, deci daca celelalte optiuni sunt compatibile, le vreau ca optiuni de setari”) și
+implementat în felia 25.9↑ (`95b4eb4e`, mai jos). Propus pe 23.11, la „2” (owner-ul, în sesiunea liniei trasării, la „Ce aș
+face întâi”, punctul 2: „O felie de interfață: punctele 1, 2, 4 și 5 de la interfață, plus virgula”), după întrebarea lui
+„cum se mai poate imbunatati trasarea din imagine? si ca functionalitate si ca UI/UX”. Felia 25.9↑, fără mașină, în linia
+trasării (ramura `wip/25.1-trasare`).
 **Completează:** ADR 0220 (fereastra trasării), ADR 0221 (culorile și pastilele), ADR 0223 (opțiunile liniei mediane),
 ADR 0224 (lumina și zona), ADR 0225 (foaia), ADR 0271 (îndreptarea scanărilor), ADR 0272 (bifele imaginii pe foaie).
 **Schița:** <https://claude.ai/artifact/UA5gA9u1wh7cbG8RG5RYjp>. Pe ea sunt fereastra de azi, cu măsurătorile, macheta
@@ -76,7 +78,7 @@ ordinea în care au venit. Măsurată pe 23.11, în aplicația de pe ramură, cu
 
    Zona rămâne în bara previzualizării. Un grup cu o sugestie a raportului primește un semn pe titlu; „Aplică” îl deschide.
    Fereastra ține minte, în browser, ce grupuri ai deschis.
-3. **Simplu / Avansat:** după răspunsul la întrebarea 1.
+3. **Simplu / Avansat:** fără comutator în față (răspunsul 1a); „Simplu”, ca opțiune, sub grupuri (mai jos).
 4. **Mărimea desenului:** lățimea și înălțimea desenului (cutia vectorilor), legate, fiindcă desenul nu se întinde: scrii
    una, cealaltă urmează. Mărimea imaginii rămâne, la alegere în grupul Mărimea (întrebarea 2); ce rămâne fix după ce ai
    scris, la întrebarea 3. Chenarul desenului, punctat, cu mărimea lui, stă pe previzualizare.
@@ -139,3 +141,49 @@ deschidere.
    - **a)** mărimea scrisă: desenul rămâne cât ai scris, iar scara se socotește din nou după fiecare trasare (cel mult o
      trasare în plus, fiindcă petele și golurile sunt în mm);
    - b) scara din clipa în care ai scris: desenul se poate schimba cu fracțiuni de mm, iar câmpul arată noua mărime.
+
+## Răspunsurile (23.11)
+
+Owner-ul a ales recomandările (1a, 2a, 3a), iar nota lui cere și variantele compatibile, ca setări. Toate trei întrebările
+aveau variante care pot sta împreună:
+
+1. **a)** fără comutator în față: grupurile, cu Imaginea și Curățarea strânse la prima deschidere. **b) ca opțiune:** bifa
+   „Simplu: ascunde Imaginea și Curățarea”, sub grupuri, oprită implicit, ținută în browser. **c)** e chiar a), cu grupurile
+   deschise de om (deschiderile se țin).
+2. **a)** mărimea desenului, implicit; **b) ca opțiune:** „Scrii mărimea: Desenului / Imaginii”, în grupul Mărimea, ținută.
+3. **a)** mărimea scrisă rămâne, implicit; **b) ca opțiune:** „Când schimbi setările, rămâne: Mărimea scrisă / Scara”, ținută.
+
+## Implementarea (25.9↑)
+
+- **Fereastra:** `.dialog-trasare` are înălțimea ecranului (`100dvh` − 2 rem) și nu se derulează; corpul (`.trasare-corp`)
+  are două coloane, setările se derulează singure (`.trasare-comenzi`), previzualizarea ia restul: pânza stă absolut într-un
+  loc al ei (`.trasare-panza-loc`), ca mărimea desenată să nu împingă așezarea. Sub 40 rem, o coloană, derulată în corp;
+  acolo rândurile își iau toată înălțimea conținutului (cu `min-height: 0`, setările se strângeau sub previzualizare).
+- **Măsurat pe 23.11** (logoul, fontul lat, ambele limbi): pe toate cele 15 cazuri din tabelul problemei, Importă și
+  previzualizarea stau în ecran, fără derulare; previzualizarea are 1054 × 814 la 1920 × 1080 (înainte 800 × 418) și cel
+  puțin 366 px înălțime pe celelalte; cu toate grupurile și Detaliile deschise, la 1024 × 768, cel puțin 240 px.
+- **Grupurile:** `<details>` cu deschiderea în starea ferestrei; rezumatul se vede doar cât grupul e strâns. Ce ține minte
+  fereastra stă în `cncvs2.trasare.fereastra` (`{ v: 1, deschise, simplu, detalii, marime, fix }`, citit cu implicitele la
+  orice valoare străină, în `src/ui/fereastraTrasareCalcul.ts`).
+- **Mărimea desenului:** ținta scrisă (lățimea sau înălțimea) se duce în lățimea imaginii: după fiecare trasare,
+  `latimeMm · țintă / desen`, cât desenul diferă cu peste 0,0005 mm, de cel mult 3 ori la rând (de obicei o dată: petele și
+  golurile sunt în mm și schimbă cutia doar cu ce scot). Cu „Scara”, ținta se șterge după ce desenul a ajuns la ea, iar
+  câmpurile arată mărimea nouă ca sugestie. Lățimea imaginii se ia din ciornă doar în modul ei (altfel, orice câmp cu
+  valori o scotea). Cererea, ușa și octeții nu se schimbă.
+- **Chenarul desenului:** cutia căilor trasate, cu extremele exacte ale cubicelor (nu cu mânerele), punctată, cu mărimea
+  deasupra, pe un fond al panoului.
+- **Piciorul:** raportul scurt (contururile sau liniile mediane, „Desenul”, abaterea cu două zecimale), sugestiile cu
+  butonul lor (textul de azi alături), avertismentele foii și ale scanării, refuzul și motivul ușii, „Detalii” (ținute;
+  înălțimea lor cel mult min(8 rem, 16 vh), derulate) și acțiunile, cu „Păstrează imaginea pe foaie” în stânga (sfatul ei a
+  trecut în titlul bifei și al lui „Doar imaginea”).
+- **Mărunțișuri găsite la implementare:** titlurile din coloană („Pragul”, „Numărul culorilor”, „Mai late de”) au acum
+  mărimea etichetelor; glisorul estompării e îngust, ca bara previzualizării să stea pe două rânduri la 1024 px cu fontul
+  lat; petele și golurile se arată cu virgula; „Desenul” n-are separatorul miilor (1524,00, nu 1.524,00), ca restul
+  câmpurilor în mm.
+- **Probele:** `test/unit/trasare.fereastra.test.ts` (textul „Desenul”, alegerile ținute, cutia căilor pe hârtie),
+  `test/e2e/trasare-fereastra.spec.ts` (cinci ecrane × trei feluri × două limbi, cu fontul lat, și cu toate deschise;
+  mărimea importată la 0,01 mm; „Scara”; grupurile și Simplu; sugestia ca buton; Detaliile; telefonul; „Drawing” cu punctul).
+  Probele vechi deschid grupurile prin alegerile ținute (`test/e2e/ajutor-trasare.ts`) și așteaptă rândurile din Detalii
+  atașate, nu vizibile; „Desenul” cu virgula în 21 de aserțiuni. Otrăvurile: `test/otravuri/25.9.py` (23), iar 12 din
+  listele trasării, mutate pe codul nou.
+- **Mărimea:** pornirea neschimbată (108,5 kB), totalul 772,7 / 800 (+2,7 kB, în estimarea de 2–4).

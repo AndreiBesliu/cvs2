@@ -2,7 +2,7 @@
 
 <!-- Adusă din memoria sesiunii principale pe 23.11.2026 (mutarea în cloud). De aici înainte o ține la zi linia, pe ramura ei, odată cu feliile. -->
 
-_cncvs2, linia trasării din imagine (etapa 25): 25.1↑–25.3↑b UNITE în main pe 09.11 (`e277836`); 25.4↑ (scanările și pozele, ADR 0224) UNITĂ în main pe 09.11 (`0ebbd99`, de la `304ea37`; vârful `30448ea`); 25.5↑ (foaia pozată oblic, ADR 0225) UNITĂ în main (`07df71f`, de la `1ca446b`; main `0e3725c`); 25.4↑b (lumina pe culori, ADR 0226) UNITĂ în main pe 16.11 (la `94bf287`); 25.3↑c (liniile mediane pe culori, ADR 0227) UNITĂ în main pe 16.11 (`380c053`); 25.3↑d (punctele pierdute, corectura ADR 0222) UNITĂ în main pe 17.11 (`dd21a8a`); 25.3↑e (rezultatul pe fiecare culoare, ADR 0228) UNITĂ în main pe 17.11 (`a3e81f6d`); 25.6↑ (imaginile TIFF, ADR 0229) UNITĂ în main pe 18.11 (`fd63de8e`); 25.7↑ (PDF-urile scanate, ADR 0270) UNITĂ în main pe 18.11 (`9bf53378`); 25.4↑c (îndreptarea scanărilor, ADR 0271) UNITĂ în main pe 22.11 (`9071e62f`); 25.8↑a (imaginile pe foaie, ADR 0272 acceptat „Da, 1a–3a”) UNITĂ în main pe 23.11 (`473f2e20`, PR #6, de la `2e8caa3e`); 25.9↑ (fereastra trasării, refăcută, ADR 0273) PROPUS pe 23.11 la „2”, cu schița și trei întrebări, codul după răspunsuri; 25.8↑b („Calibrează”, „Trasează…” din imaginea de pe foaie), DOAR la cuvântul owner-ului; ADR 0270–0279 ale trasării (următorul liber 0274); linia lucrează din 23.11 într-o sesiune cloud, pe ramura `wip/25.1-trasare` (worktree-ul local `cncvs2-lucru\trasare` e istorie)_
+_cncvs2, linia trasării din imagine (etapa 25): 25.1↑–25.3↑b UNITE în main pe 09.11 (`e277836`); 25.4↑ (scanările și pozele, ADR 0224) UNITĂ în main pe 09.11 (`0ebbd99`, de la `304ea37`; vârful `30448ea`); 25.5↑ (foaia pozată oblic, ADR 0225) UNITĂ în main (`07df71f`, de la `1ca446b`; main `0e3725c`); 25.4↑b (lumina pe culori, ADR 0226) UNITĂ în main pe 16.11 (la `94bf287`); 25.3↑c (liniile mediane pe culori, ADR 0227) UNITĂ în main pe 16.11 (`380c053`); 25.3↑d (punctele pierdute, corectura ADR 0222) UNITĂ în main pe 17.11 (`dd21a8a`); 25.3↑e (rezultatul pe fiecare culoare, ADR 0228) UNITĂ în main pe 17.11 (`a3e81f6d`); 25.6↑ (imaginile TIFF, ADR 0229) UNITĂ în main pe 18.11 (`fd63de8e`); 25.7↑ (PDF-urile scanate, ADR 0270) UNITĂ în main pe 18.11 (`9bf53378`); 25.4↑c (îndreptarea scanărilor, ADR 0271) UNITĂ în main pe 22.11 (`9071e62f`); 25.8↑a (imaginile pe foaie, ADR 0272 acceptat „Da, 1a–3a”) UNITĂ în main pe 23.11 (`473f2e20`, PR #6, de la `2e8caa3e`); 25.9↑ (fereastra trasării, refăcută, ADR 0273, acceptat cu 1a–3a și variantele ca opțiuni) GATA pe 23.11, pe ramură, PR-ul spre `main` de unit de sesiunea principală; 25.8↑b („Calibrează”, „Trasează…” din imaginea de pe foaie), DOAR la cuvântul owner-ului; ADR 0270–0279 ale trasării (următorul liber 0274); linia lucrează din 23.11 într-o sesiune cloud, pe ramura `wip/25.1-trasare` (worktree-ul local `cncvs2-lucru\trasare` e istorie)_
 
 Pornită pe 07.11.2026 de sesiunea principală, după ce owner-ul a întrebat ce se mai poate face în paralel. Lângă ea: incrustațiile
 ([Incrustațiile (12.1↑)](incrustatii.md)), imprimanta ([Imprimanta 3D (K1C)](imprimanta.md)), planșele ([Planșele (etapa 11)](plansele.md)).
@@ -161,6 +161,17 @@ Pornită pe 07.11.2026 de sesiunea principală, după ce owner-ul a întrebat ce
   comutatorul Simplu / Avansat (a: fără), 2 ce mărime scrii la deschidere (a: a desenului), 3 ce rămâne fix după ce ai scris
   mărimea desenului (a: mărimea scrisă). Restul listei (rețetele, efectul reglajelor, clicul pe o pată, freza pe contururi,
   „Drepte și arce”, silueta și șablonul, culorile în incrustații, treptele de gri, radiera) rămâne pe felii ale lor.
+- **25.9↑ GATA** (23.11; ADR 0273 acceptat la „gata”, cu formularul: 1a, 2a, 3a și nota „ca de obicei, eu vreau cat mai
+  multe optiuni puse la dispozitia userului, deci daca celelalte optiuni sunt compatibile, le vreau ca optiuni de setari”;
+  codul la `95b4eb4e`): fereastra cât ecranul (setările se derulează singure, previzualizarea crește, piciorul fix), grupurile
+  cu rezumat (ținute în `cncvs2.trasare.fereastra`; „Simplu” = 1b ca opțiune), mărimea desenului (2a; imaginea = 2b ca
+  opțiune) ținută după alte setări (3a; „Scara” = 3b ca opțiune), raportul scurt cu sugestiile ca butoane și „Detalii”,
+  virgula în „Desenul”. Ușa, cererea și nucleul neschimbate: fereastra duce ținta în lățimea imaginii după fiecare trasare.
+  Lecții: (1) o grilă cu înălțimea fixă și rânduri `auto` strânge un rând sub conținut dacă elementul are `min-height: 0`
+  (pe telefon, setările ajungeau sub previzualizare): pe coloana derulată în corp, `min-height: auto`; (2) pânza în locul ei,
+  absolută: mărimea desenată nu mai împinge așezarea; (3) un câmp cu valori al ciornei (lățimea imaginii) se citește doar în
+  modul lui, altfel orice altă ciornă (petele) îl golea și scotea scara; (4) o otravă din listă se potrivește și ca
+  subșir cu mai multe spații în față: din 95 de otrăvuri pe fișierele ferestrei, doar 12 au ieșit VOID după reașezare.
 - **25.8↑b (urmează, la cuvântul owner-ului):** „Calibrează” (două puncte și distanța), „Trasează…” din imaginea de pe
   foaie (cu zona), numele imaginilor în raportul foii (ADR 0272 §6, §7, §10).
 - **În cloud (din 23.11):**

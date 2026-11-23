@@ -11691,3 +11691,38 @@ interfață, plus virgula”). **Started:** 23.11, 19:20. **Completed:** 23.11, 
 - **Documentele:** ADR 0273 și rândul lui din index, fișa etapei 3 (jurnalul și coada owner-ului), traducerile roadmap-ului
   (4 texte noi), nota liniei (25.8↑a unită; următorul ADR, 0274). `main` (`d6fd5d68`, cu 25.8↑a unită) adus întâi în ramură.
 - **Codul:** după răspunsuri.
+
+## 2026-11-23 — Felia 25.9↑: fereastra trasării, refăcută (ADR 0273, 1a–3a, cu variantele ca opțiuni) (Model: Claude Opus 5.5)
+
+**Prompt:** „gata” (owner-ul, după formularul schiței: 1a, 2a, 3a, cu nota „ca de obicei, eu vreau cat mai multe optiuni puse
+la dispozitia userului, deci daca celelalte optiuni sunt compatibile, le vreau ca optiuni de setari”). **Started:** 23.11,
+19:45. **Completed:** în curs (porțile).
+
+- **Fereastra** (`src/ui/FereastraTrasare.tsx`, `src/ui/DialogImport.tsx`, `src/app/stil.css`): cât ecranul, fără derularea
+  ei; corpul pe două coloane (setările se derulează singure, previzualizarea crește cu fereastra: 1054 × 814 la 1920 × 1080,
+  față de 800 × 418), piciorul mereu la vedere; pe telefon, o coloană derulată în corp. Pe cele 15 cazuri măsurate în ADR, în
+  ambele limbi și cu fontul lat, Importă și previzualizarea stau în ecran.
+- **Grupurile:** Sursa și Rezultatul sus; Imaginea, Trasarea, Curățarea, Mărimea, cu rezumatul pe titlu (cât e strâns);
+  Imaginea și Curățarea strânse la prima deschidere (1a); deschiderile, „Simplu” (1b, ca opțiune), Detaliile, mărimea și ce
+  rămâne fix, ținute în `cncvs2.trasare.fereastra`.
+- **Mărimea desenului** (2a; 2b ca opțiune): lățimea sau înălțimea cutiei vectorilor, legate; ținta se duce în lățimea
+  imaginii după fiecare trasare, cât desenul diferă cu peste 0,0005 mm, de cel mult 3 ori la rând (3a; 3b, „Scara”, ca
+  opțiune: ținta se șterge când desenul a ajuns la ea). Lățimea imaginii se ia din ciornă doar în modul ei (altfel, orice câmp
+  cu valori o scotea). Chenarul desenului, punctat, cu mărimea, pe previzualizare (cutia cu extremele exacte ale cubicelor).
+- **Piciorul:** raportul scurt (contururile sau liniile mediane, „Desenul”, abaterea), sugestiile cu butonul lor (Aplică
+  „Neuniformă”, Îndreaptă foaia, Îndreaptă scanarea, Treci pe Contururi; semnul pe titlul Imaginii), avertismentele, refuzul
+  și motivul ușii, „Detalii” (restul raportului, al ferestrei și al ușii) și acțiunile.
+- **„Desenul”** cu virgula în română și punctul în engleză, fără separatorul miilor, la toate formatele (`textMarime`).
+- **Partea pură:** `src/ui/fereastraTrasareCalcul.ts`, cu `test/unit/trasare.fereastra.test.ts` (6 probe, pe hârtie).
+- **Probele e2e:** `test/e2e/trasare-fereastra.spec.ts` (9: așezarea pe cinci ecrane × trei feluri × două limbi și cu toate
+  deschise; mărimea importată la 0,01 mm; „Scara”; grupurile și Simplu; sugestia; Detaliile; telefonul; „Drawing”);
+  `test/e2e/ajutor-trasare.ts` deschide grupurile pentru probele vechi; „Desenul” cu virgula în 21 de aserțiuni; rândurile din
+  Detalii, așteptate atașate. Vecinele, local: trasarea, importul, imaginile pe foaie, PWA, carcasa, manualul, editarea,
+  132 / 132.
+- **Otrăvurile:** `test/otravuri/25.9.py` (23): în curs, într-o clonă (primele 9 prinse); 12 din listele trasării (25.2, 25.3, 25.4b, 25.4c, 25.5,
+  26.A), mutate pe codul nou, cu aceeași mutație.
+- **Mărimea:** pornirea 108,5 / 115 kB (neschimbată), totalul 772,7 / 800 (+2,7 kB).
+- **Porțile în CI:** în curs.
+- **Documentele:** ADR 0273 (acceptat, răspunsurile, implementarea) și rândul lui din index; manualul (capitolul importului,
+  în ambele limbi); fișa etapei 3 (jurnalul, încercarea în coada owner-ului); traducerile roadmap-ului; `CLAUDE.md` (starea
+  liniei); nota liniei.
