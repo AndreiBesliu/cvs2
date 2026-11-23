@@ -26,6 +26,7 @@ export const en = {
   'actiune.selecteaza': 'Select',
   'actiune.duplica-selectia': 'Duplicate',
   'actiune.trimite-la-extensie': 'Send to extension',
+  'actiune.biblioteca-extensii': 'Extension library',
   'actiune.trimite-la': 'Send to {nume}',
   'actiune.aplica-operatii': 'Apply the operations',
   'actiune.pozitioneaza': 'Position the selection',

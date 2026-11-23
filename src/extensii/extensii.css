@@ -37,8 +37,9 @@
 .meniu-extensii {
   position: fixed;
   z-index: 15;
-  min-width: 15rem;
-  max-width: 22rem;
+  /* Lățime fixă: rândurile nu se mișcă atunci când vine catalogul și un rând primește „Actualizează” (ADR 0231). */
+  width: min(21rem, calc(100vw - 0.5rem));
+  box-sizing: border-box;
   padding: var(--sp-1);
   font-size: var(--fs-2);
   color: var(--t);
@@ -182,104 +183,10 @@
   font: inherit;
 }
 
-.extensii-lista {
-  margin: var(--sp-2) 0;
-  padding: 0;
-  list-style: none;
-}
-
-.extensii-lista li {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--sp-3);
-  padding: var(--sp-2) 0;
-  border-bottom: 1px solid var(--l-margine);
-}
-
-/* Rândul unei extensii instalate: semnul, numele cu sursa și datele ei, apoi „Scoate”, care arată a buton. */
-.extensii-rand {
-  flex: 1;
-  min-width: 0;
-  overflow-wrap: anywhere;
-}
-
-.extensii-lista button {
-  flex: none;
-  border-color: var(--l-camp);
-}
-
-.extensii-lista small {
-  display: block;
-  font-size: var(--fs-2);
-  line-height: 1.4;
-  color: var(--t-slab);
-}
-
 /*
- * Biblioteca (ADR 0230 §D): sub cele instalate, câte un rând pe extensie (numele și versiunea, descrierea, ce cere pe scurt,
- * mărimea și butonul), în culorile meniului. Butonul rândului e un rând al meniului (săgețile ajung la el), dar arată ca un
- * buton, nu ca un rând întreg.
+ * „Actualizează”, în rândul unei extensii instalate (ADR 0230 §D, ADR 0231): un rând al meniului (săgețile ajung la el), dar
+ * arată ca un buton, nu ca un rând întreg.
  */
-.meniu-biblioteca {
-  display: flex;
-  flex-direction: column;
-  gap: var(--sp-1);
-  padding: var(--sp-1) var(--sp-2);
-}
-
-.meniu-biblioteca > strong {
-  font-weight: 600;
-}
-
-.biblioteca-nota,
-.biblioteca-cap span,
-.biblioteca-jos > span:first-child,
-.biblioteca-cip {
-  color: var(--t-slab);
-}
-
-.biblioteca-rand {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  padding: var(--sp-2);
-  border: 1px solid var(--l-margine);
-  border-radius: var(--r-1);
-}
-
-.biblioteca-cap,
-.biblioteca-jos {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--sp-2);
-}
-
-/* Capul rândului: semnul și numele, apoi versiunea. */
-.biblioteca-cap {
-  align-items: center;
-}
-
-.biblioteca-rand p {
-  margin: 0;
-  line-height: 1.4;
-}
-
-.biblioteca-cipuri {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--sp-1);
-}
-
-.biblioteca-cip {
-  padding: 0 6px;
-  font-size: var(--fs-1);
-  border: 1px solid var(--l-margine);
-  border-radius: 99px;
-}
-
 .meniu-extensii .biblioteca-buton[role='menuitem'] {
   display: inline-flex;
   flex-direction: row;
@@ -297,18 +204,6 @@
 .meniu-extensii .biblioteca-buton[role='menuitem']:focus-visible {
   background: color-mix(in oklab, var(--a-plin) 82%, var(--t));
   box-shadow: 0 0 0 2px var(--l-focus);
-}
-
-.biblioteca-ok {
-  font-weight: 600;
-}
-
-.biblioteca-insigna {
-  margin-top: 2px;
-  padding: 0 6px;
-  color: var(--t);
-  background: var(--s-ales);
-  border-radius: 99px;
 }
 
 /*
@@ -348,7 +243,8 @@
 }
 
 /* Avertismentul unei ferestre a extensiilor („vine din afara bibliotecii”, un refuz): o casetă liniștită, nu un rând strident. */
-.dialog-extensii .avertisment {
+.dialog-extensii .avertisment,
+.dialog-biblioteca .avertisment {
   margin: var(--sp-3) 0;
   padding: var(--sp-2) var(--sp-3);
   font-size: var(--fs-3);
@@ -450,13 +346,15 @@
  */
 @media (pointer: coarse) {
   .meniu-extensii [role='menuitem'],
-  .meniu-extensii .biblioteca-buton[role='menuitem'] {
+  .meniu-extensii .biblioteca-buton[role='menuitem'],
+  .dialog-biblioteca .bib-file [role='tab'] {
     min-height: var(--tinta);
   }
 }
 
 :root[data-densitate='mare'] .meniu-extensii [role='menuitem'],
-:root[data-densitate='mare'] .meniu-extensii .biblioteca-buton[role='menuitem'] {
+:root[data-densitate='mare'] .meniu-extensii .biblioteca-buton[role='menuitem'],
+:root[data-densitate='mare'] .dialog-biblioteca .bib-file [role='tab'] {
   min-height: var(--tinta);
 }
 
@@ -512,13 +410,440 @@
   min-width: 0;
 }
 
-/* Numele rămâne text plin: griul e al versiunii de lângă el (`.biblioteca-cap span`). */
-.biblioteca-cap .biblioteca-nume {
-  display: inline-flex;
+.rand-text small {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* O extensie instalată: rândul ei (o deschide) și, când biblioteca are o versiune mai nouă, „Actualizează” lângă el. */
+.rand-instalat {
+  display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: var(--sp-2);
+  gap: var(--sp-1);
+}
+
+.meniu-extensii .rand-instalat > [role='menuitem'].rand-extensie {
+  flex: 1;
+  width: auto;
   min-width: 0;
+}
+
+.meniu-extensii .rand-instalat > .biblioteca-buton[role='menuitem'] {
+  flex: none;
+  margin-right: var(--sp-1);
+}
+
+.rand-instalat > .avertisment {
+  flex-basis: 100%;
+  margin: 0;
+  padding: 0 var(--sp-2) var(--sp-1);
+}
+
+.rand-sageata {
+  margin-left: auto;
+  color: var(--t-slab);
+}
+
+/*
+ * Fereastra „Biblioteca extensiilor” (ADR 0231, direcția B): capul cu filele, apoi lista în stânga și pagina extensiei în
+ * dreapta. Mărimea ei e fixă: nu se schimbă când vine catalogul.
+ */
+.dialog-biblioteca .dialog-cutie {
+  display: flex;
+  flex-direction: column;
+  width: min(61rem, calc(100vw - 2rem));
+  height: min(41rem, calc(100vh - 2rem));
+  max-width: none;
+  padding: 0;
+  overflow: hidden;
+}
+
+.bib-cap {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: var(--sp-2) var(--sp-3) var(--sp-2) var(--sp-5);
+  border-bottom: 1px solid var(--l-margine);
+}
+
+.dialog .bib-cap h2 {
+  margin: 0;
+}
+
+.bib-file {
+  display: inline-flex;
+  gap: 2px;
+  padding: 3px;
+  background: var(--s-peste);
+  border-radius: var(--r-2);
+}
+
+.bib-file [role='tab'] {
+  min-height: calc(var(--tinta) - 8px);
+  padding: 0 var(--sp-3);
+  font-size: var(--fs-2);
+  white-space: nowrap;
+  border-radius: var(--r-1);
+}
+
+.bib-file [role='tab'][aria-selected='true'] {
+  font-weight: 650;
+  background: var(--s-panou);
+  box-shadow: var(--umbra-1);
+}
+
+.bib-inchide,
+.bib-inapoi {
+  font-size: 1.25rem;
+  line-height: 1;
+}
+
+.bib-inchide {
+  margin-left: auto;
+}
+
+/* „Înapoi la listă” apare doar pe un ecran îngust, cât e deschisă pagina unei extensii. */
+.bib-inapoi {
+  display: none;
+}
+
+.bib-corp {
+  flex: 1;
+  display: flex;
+  min-height: 0;
+}
+
+.bib-lista {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  width: 18rem;
+  padding: var(--sp-3);
+  overflow: auto;
+  background: color-mix(in oklab, var(--t) 2.5%, var(--s-panou));
+  border-right: 1px solid var(--l-margine);
+}
+
+.bib-card {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: var(--sp-2);
+  width: 100%;
+  min-height: calc(var(--tinta) + 16px);
+  padding: var(--sp-2);
+  text-align: left;
+  background: var(--s-panou);
+  border: 1px solid var(--l-margine);
+  border-radius: var(--r-2);
+}
+
+.bib-card[aria-current] {
+  border-color: var(--a);
+  box-shadow: 0 0 0 1px var(--a);
+}
+
+.bib-card-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  line-height: 1.3;
+}
+
+.bib-card-text strong {
+  font-weight: 600;
+}
+
+.bib-card-text small {
+  overflow: hidden;
+  color: var(--t-slab);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bib-pil {
+  flex: none;
+  padding: 1px 8px;
+  font-size: var(--fs-1);
+  font-weight: 650;
+  white-space: nowrap;
+  background: var(--s-ales);
+  border-radius: 99px;
+}
+
+.bib-pil.ok {
+  background: var(--s-peste);
+}
+
+.bib-nota {
+  margin: 0;
+  padding: var(--sp-1);
+  font-size: var(--fs-2);
+  color: var(--t-slab);
+}
+
+.bib-nota p {
+  margin: 0 0 var(--sp-2);
+  font-size: var(--fs-3);
   color: var(--t);
+}
+
+.bib-nota button {
+  border-color: var(--l-camp);
+}
+
+/* Cât vine catalogul: două rânduri goale, cât rândurile adevărate. */
+.bib-schelet {
+  display: grid;
+  gap: var(--sp-2);
+}
+
+.bib-schelet span {
+  height: calc(var(--tinta) + 16px);
+  background: var(--s-peste);
+  border-radius: var(--r-2);
+  animation: bib-puls 1.1s ease-in-out infinite alternate;
+}
+
+@keyframes bib-puls {
+  from { opacity: 0.45; }
+  to { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bib-schelet span {
+    animation: none;
+  }
+}
+
+/* Pachetele din afara bibliotecii: la capătul listei, discret. */
+.bib-afara {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  margin-top: auto;
+  padding-top: var(--sp-2);
+  font-size: var(--fs-2);
+  color: var(--t-slab);
+  border-top: 1px solid var(--l-margine);
+}
+
+.bib-afara span {
+  padding: 0 var(--sp-1);
+}
+
+.bib-afara button {
+  padding: 0 var(--sp-1);
+  font-size: var(--fs-2);
+  color: var(--a);
+  text-align: left;
+}
+
+.bib-detaliu {
+  flex: 1;
+  min-width: 0;
+  padding: var(--sp-4) var(--sp-5) var(--sp-5);
+  overflow: auto;
+}
+
+.bib-detaliu > p {
+  margin: 0 0 var(--sp-3);
+  font-size: var(--fs-3);
+}
+
+.bib-pagina {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+}
+
+.bib-pagina p {
+  margin: 0;
+  font-size: var(--fs-3);
+  line-height: 1.45;
+}
+
+.bib-pagina p.confirmare-nota,
+.bib-pagina p.confirmare-sursa {
+  font-size: var(--fs-2);
+}
+
+.pagina-cap {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+}
+
+.pagina-nume {
+  flex: 1;
+  min-width: 0;
+}
+
+.pagina-nume h3 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.pagina-gest {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--sp-1);
+  max-width: 55%;
+}
+
+.pagina-gest p {
+  text-align: right;
+}
+
+.pagina-actiuni {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--sp-2);
+}
+
+.pagina-actiuni button {
+  padding: 0 var(--sp-4);
+  border-color: var(--l-camp);
+}
+
+.pagina-actiuni button.principal:enabled {
+  border-color: var(--a-plin);
+}
+
+.pagina-capturi {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--sp-2);
+}
+
+.pagina-capturi figure {
+  margin: 0;
+  overflow: hidden;
+  line-height: 0;
+  background: var(--s-peste);
+  border: 1px solid var(--l-margine);
+  border-radius: var(--r-1);
+}
+
+.pagina-capturi img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.pagina-coloane {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+  gap: var(--sp-5);
+}
+
+.pagina-coloane .poate {
+  margin-top: 0;
+}
+
+/*
+ * Pe un ecran îngust, biblioteca ia tot ecranul, iar lista și pagina sunt două vederi: un rând ales deschide pagina lui
+ * (`data-ales`), „Înapoi la listă” se întoarce. Capturile se derulează în lateral.
+ */
+@media (max-width: 40rem) {
+  .dialog-biblioteca .dialog-cutie {
+    width: 100vw;
+    height: 100vh;
+    height: 100dvh;
+    max-height: none;
+    border: 0;
+    border-radius: 0;
+  }
+
+  .bib-cap {
+    flex-wrap: wrap;
+    gap: var(--sp-2);
+    padding: var(--sp-2) var(--sp-2) var(--sp-2) var(--sp-3);
+  }
+
+  .dialog .bib-cap h2 {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .bib-file {
+    order: 3;
+    flex-basis: 100%;
+  }
+
+  .bib-file [role='tab'] {
+    flex: 1;
+  }
+
+  .bib-lista {
+    flex: 1;
+    width: auto;
+    border-right: 0;
+  }
+
+  .bib-detaliu {
+    display: none;
+    padding: var(--sp-3);
+  }
+
+  .dialog-biblioteca[data-ales] .bib-lista,
+  .dialog-biblioteca[data-ales] .bib-file {
+    display: none;
+  }
+
+  .dialog-biblioteca[data-ales] .bib-detaliu {
+    display: block;
+  }
+
+  .dialog-biblioteca[data-ales] .bib-inapoi {
+    display: inline-flex;
+  }
+
+  .pagina-cap {
+    flex-wrap: wrap;
+  }
+
+  .pagina-gest {
+    flex-basis: 100%;
+    align-items: stretch;
+    max-width: none;
+  }
+
+  .pagina-gest p {
+    text-align: left;
+  }
+
+  .pagina-actiuni button {
+    flex: 1;
+  }
+
+  .pagina-capturi {
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+  }
+
+  .pagina-capturi figure {
+    flex: 0 0 82%;
+    scroll-snap-align: start;
+  }
+
+  .pagina-coloane {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--sp-3);
+  }
 }
 
 /* Fila unei extensii cu semn: semnul ține locul piesei de puzzle. */

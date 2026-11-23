@@ -130,7 +130,7 @@ function lipsuri(m: Manual, usi: readonly Usa[]): string[] {
   return out;
 }
 
-test('ușile: fiecare are o etichetă cu nume scurt, fără id-uri repetate (sunt 111)', () => {
+test('ușile: fiecare are o etichetă cu nume scurt, fără id-uri repetate (sunt 112)', () => {
   assert.equal(new Set(USI.map((u) => u.id)).size, USI.length);
   for (const u of USI) for (const l of LIMBI_MANUAL) assert.ok(numeScurt(u.eticheta[l]).length >= 2, `${u.id} (${l})`);
   assert.equal(numeScurt('Transformare (S): mânerele'), 'Transformare');
@@ -149,7 +149,7 @@ test('ușile: fiecare are o etichetă cu nume scurt, fără id-uri repetate (sun
   // lista de tăiere (ADR 0210 §6, felia 11.6↑), încă una: `export.raport`. Fereastra Aspectul (ADR 0250 §3, felia 28.1↑b),
   // încă una: `vedere.aspect`. „Trimite la mașină” (ADR 0250, felia 28.1↑d), încă una: `export.trimite`. Legarea căilor (ADR
   // 0182, felia 10.3↑o), încă două: acțiunea `document.leaga-caile` și opțiunile legării.
-  assert.equal(USI.length, 111);
+  assert.equal(USI.length, 112);
 });
 
 test('fiecare ușă e acoperită, în ambele limbi, de un capitol care o numește cu eticheta din interfață', () => {
@@ -333,23 +333,26 @@ test('fiecare setare din „Avansat” (piesele plate, ADR 0191) și grupul ei s
  * „extensii” (null: un control fără etichetă proprie: fișierul ales, rândul unei extensii și fila ei, cu numele ei, ×).
  */
 const CONTROALE_EXTENSII: Readonly<Record<string, string | null>> = {
-  buton: 'extensii.buton', 'fisier-ales': null, deschide: null, 'din-fisier': 'extensii.din-fisier', 'din-adresa': 'extensii.din-adresa',
-  gestioneaza: 'extensii.gestioneaza', fila: null, 'inchide-fereastra': null, adresa: 'extensii.adresa.camp',
-  descarca: 'extensii.adresa.descarca', renunta: 'extensii.instalare.renunta', instaleaza: 'extensii.instalare.instaleaza',
-  scoate: 'extensii.gestionare.scoate', inchide: 'extensii.gestionare.inchide',
+  buton: 'extensii.buton', 'fisier-ales': null, deschide: null, fila: null, 'inchide-fereastra': null,
+  // meniul: drumul spre bibliotecă și „Actualizează” în rândul unei extensii instalate (ADR 0231)
+  biblioteca: 'extensii.biblioteca.rand', 'biblioteca-actualizeaza': 'extensii.actualizare.actualizeaza',
+  // fereastra bibliotecii: filele, rândurile listei, pagina cu gesturile ei, pachetele din afara bibliotecii
+  'fila-toate': 'extensii.biblioteca.fila-toate', 'fila-instalate': 'extensii.biblioteca.fila-instalate', 'rand-biblioteca': null,
+  'inchide-biblioteca': null, 'inapoi-lista': 'extensii.biblioteca.inapoi', 'biblioteca-reincearca': 'extensii.biblioteca.reincearca',
+  'pagina-instaleaza': 'extensii.biblioteca.instaleaza', 'pagina-actualizeaza': 'extensii.biblioteca.actualizeaza',
+  'pagina-deschide': 'extensii.instalare.deschide', 'pagina-scoate': 'extensii.gestionare.scoate',
+  'din-fisier': 'extensii.din-fisier', 'din-adresa': 'extensii.din-adresa',
+  // ferestrele de confirmare: un pachet din fișier sau de la o adresă, o versiune care cere ceva în plus
+  adresa: 'extensii.adresa.camp', descarca: 'extensii.adresa.descarca', renunta: 'extensii.instalare.renunta', instaleaza: 'extensii.instalare.instaleaza',
+  actualizeaza: 'extensii.actualizare.actualizeaza', 'deschide-instalata': 'extensii.instalare.deschide', 'inchide-instalata': 'extensii.instalare.inchide',
   // întrebarea de la „Scoate” (ADR 0231 §B.4)
   'scoate-confirma': 'extensii.gestionare.scoate', 'scoate-pastreaza': 'extensii.scoatere.pastreaza',
   // întrebarea de la închidere, cu lucru nesalvat (ADR 0164 §C)
   'inchidere-ramai': 'extensii.inchidere.ramai', 'inchidere-inchide': 'extensii.inchidere.inchide',
-  // biblioteca (ADR 0230): rândurile din meniu, fereastra actualizării, capătul instalării
-  'biblioteca-instaleaza': 'extensii.biblioteca.instaleaza', 'biblioteca-actualizeaza': 'extensii.biblioteca.actualizeaza',
-  'biblioteca-reincearca': 'extensii.biblioteca.reincearca', actualizeaza: 'extensii.actualizare.actualizeaza',
-  'deschide-instalata': 'extensii.instalare.deschide', 'inchide-instalata': 'extensii.instalare.inchide',
 };
 
 test('fiecare control al extensiilor (data-extensii) e numit în capitolul „extensii”, în ambele limbi', () => {
-  const sursa = `${citeste('src/extensii/Extensii.tsx')}
-${citeste('src/extensii/Instalare.tsx')}`;
+  const sursa = ['Extensii.tsx', 'Instalare.tsx', 'Biblioteca.tsx', 'parti.tsx'].map((f) => citeste(`src/extensii/${f}`)).join('\n');
   assert.doesNotMatch(sursa, /data-extensii=\{/);
   const controale = [...new Set([...sursa.matchAll(/data-extensii="([a-z0-9-]+)"/g)].map((x) => x[1]!))].sort();
   assert.deepEqual(controale, Object.keys(CONTROALE_EXTENSII).sort());

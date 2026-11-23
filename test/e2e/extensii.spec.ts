@@ -1,6 +1,7 @@
 import { test, expect, type Page } from '@playwright/test';
 import { impacheteaza, scrieZip } from '../../scripts/impacheteaza-extensie.ts';
 import { citesteZip } from '../../src/extensii/zip.ts';
+import { biblioteca, deschideBiblioteca, inchideBiblioteca, paginaInstalatei } from './ajutor-biblioteca.ts';
 import { clicDupaReaparitie } from './ajutor-extensii.ts';
 import { eroriJurnal } from './ajutor-jurnal.ts';
 import { adauga } from './ajutor-panza.ts';
@@ -43,7 +44,7 @@ const forme = (page: Page) => page.getByTestId('lista-vectori').locator('button[
 test('din fișier: confirmarea, meniul, fereastra izolată peste Proiectare, ×, reîncărcarea, scoaterea', async ({ page }) => {
   await page.goto('/');
   await expect((await meniul(page)).locator('.meniu-extensii-cap')).toContainText('Nicio extensie instalată încă');
-  await page.getByTestId('meniu-extensii').locator('[data-extensii="din-fisier"]').focus();
+  await page.getByTestId('meniu-extensii').locator('[data-extensii="biblioteca"]').focus();
   await page.keyboard.press('Escape');
   await expect(page.getByTestId('meniu-extensii')).toHaveCount(0);
 
@@ -136,23 +137,23 @@ test('din fișier: confirmarea, meniul, fereastra izolată peste Proiectare, ×,
 
   // După reîncărcare, extensia și datele ei sunt tot acolo; din gestionare se scoate, cu datele ei.
   await page.reload();
-  await expect((await meniul(page)).locator('[data-extensii="deschide"]')).toHaveText(['Salut1.0.0 · deschide fereastra']);
+  await expect((await meniul(page)).locator('[data-extensii="deschide"]')).toHaveText(['Salut1.0.0']);
   await page.getByTestId('meniu-extensii').locator('[data-extensii="deschide"]').click();
   await expect(cadru(page).locator('[data-salut="deschideri"]')).toHaveText('Deschideri: 3');
   await page.locator('[data-extensii="inchide-fereastra"]').click();
-  await (await meniul(page)).locator('[data-extensii="gestioneaza"]').click();
-  const gest = page.getByTestId('extensii-gestionare');
-  await expect(gest.locator('li')).toHaveCount(1);
-  await expect(gest.locator('li')).toContainText('de la salut-1.0.0.zip');
-  await expect(gest.getByTestId('extensii-date')).toHaveText('datele ei: sub 1 kB');
-  await expect(gest.locator('li [data-semn]')).toHaveCount(1);
-  // „Scoate” întreabă întâi și spune ce se pierde (ADR 0231 §B.4); Escape și „Păstrează” se întorc la listă.
-  await gest.locator('[data-extensii="scoate"]').click();
+  // În bibliotecă, la „Instalate”: pagina extensiei, cu sursa și datele ei; de aici se scoate.
+  const p = await paginaInstalatei(page, 'salut');
+  await expect(p.getByTestId('pagina-sursa')).toHaveText(/^de la salut-1\.0\.0\.zip, [\d.]+ · datele ei: sub 1 kB$/);
+  await expect(p.getByTestId('pagina-stare')).toHaveText('Instalată din afara bibliotecii');
+  await expect(p.locator('.pagina-cap [data-semn]')).toHaveCount(1);
+  // „Scoate” întreabă întâi și spune ce se pierde (ADR 0231 §B.4); Escape și „Păstrează” se întorc la pagină.
+  await p.locator('[data-extensii="pagina-scoate"]').click();
   const intrebare = page.getByTestId('extensii-scoatere');
   await expect(intrebare.locator('h2')).toHaveText('Scoți „Salut”?');
   await expect(page.getByTestId('extensii-scoatere-text')).toHaveText(
     '„Salut” se șterge din browserul acesta. Se șterg și datele ei (sub 1 kB): nu se pot aduce înapoi.');
   await expect(intrebare.locator('[data-extensii="scoate-pastreaza"]')).toBeFocused();
+  await expect(biblioteca(page)).toHaveAttribute('inert', '');
   // Gestul care șterge nu arată ca un gest obișnuit: roșul temei, nu accentul (mausul dat la o parte: sub el, butonul e mai închis).
   await page.mouse.move(0, 0);
   const culori = await intrebare.locator('[data-extensii="scoate-confirma"]').evaluate((e) => {
@@ -166,15 +167,16 @@ test('din fișier: confirmarea, meniul, fereastra izolată peste Proiectare, ×,
   expect(culori.buton).toBe(culori.rosu);
   await page.keyboard.press('Escape');
   await expect(intrebare).toHaveCount(0);
-  await expect(gest.locator('li')).toHaveCount(1);
-  await expect(gest.locator('[data-extensii="scoate"]')).toBeFocused();
-  await gest.locator('[data-extensii="scoate"]').click();
+  await expect(biblioteca(page)).toBeVisible();
+  await expect(p.locator('[data-extensii="pagina-scoate"]')).toBeFocused();
+  await p.locator('[data-extensii="pagina-scoate"]').click();
   await intrebare.locator('[data-extensii="scoate-pastreaza"]').click();
-  await expect(gest.locator('li')).toHaveCount(1);
-  await gest.locator('[data-extensii="scoate"]').click();
+  await expect(biblioteca(page).locator('[role="tab"]').nth(1)).toHaveText('Instalate · 1');
+  await p.locator('[data-extensii="pagina-scoate"]').click();
   await intrebare.locator('[data-extensii="scoate-confirma"]').click();
-  await expect(gest).toContainText('Nicio extensie instalată încă');
-  await gest.locator('[data-extensii="inchide"]').click();
+  await expect(page.getByTestId('biblioteca-lista')).toContainText('Nicio extensie instalată încă');
+  await expect(biblioteca(page).locator('[role="tab"]').nth(1)).toHaveText('Instalate · 0');
+  await inchideBiblioteca(page);
   await expect((await meniul(page)).locator('[data-extensii="deschide"]')).toHaveCount(0);
 
   // Instalată din nou, numără de la 1: scoaterea i-a șters datele.
@@ -212,7 +214,7 @@ test('de la adresă și prin link: descărcarea căzută spusă, pachet stricat 
   await page.goto('/');
 
   const adresa = async (url: string): Promise<void> => {
-    await (await meniul(page)).locator('[data-extensii="din-adresa"]').click();
+    await (await deschideBiblioteca(page)).locator('[data-extensii="din-adresa"]').click();
     await page.locator('[data-extensii="adresa"]').fill(url);
     await page.locator('[data-extensii="descarca"]').click();
   };
@@ -253,7 +255,7 @@ test('de la adresă și prin link: descărcarea căzută spusă, pachet stricat 
   await page.locator('[data-extensii="descarca"]').click();
   await expect(page.getByTestId('extensii-inlocuieste')).toHaveText('Înlocuiește versiunea 1.0.0, instalată acum.');
   await page.locator('[data-extensii="instaleaza"]').click();
-  await expect((await meniul(page)).locator('[data-extensii="deschide"]')).toHaveText(['Salut1.1.0 · deschide fereastra']);
+  await expect((await meniul(page)).locator('[data-extensii="deschide"]')).toHaveText(['Salut1.1.0']);
 });
 
 test('un fișier care nu e pachet se refuză cu motivul lui, fără nicio scriere', async ({ page }) => {

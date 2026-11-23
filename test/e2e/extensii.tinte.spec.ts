@@ -1,9 +1,10 @@
 import { test, expect, type Locator, type Page } from '@playwright/test';
 import { pachetTrenulet } from '../../scripts/construieste-trenulet.ts';
 import { impacheteaza } from '../../scripts/impacheteaza-extensie.ts';
+import { deschideBiblioteca, deschideMeniul, inchideBiblioteca, pagina, paginaInstalatei, randLista } from './ajutor-biblioteca.ts';
 
 /**
- * Țintele ferestrelor extensiilor (ADR 0231 §B.7, felia 3.Xh-2): la atingere, fiecare rând al meniului și fiecare buton are
+ * Țintele ferestrelor extensiilor (ADR 0231 §B.7, feliile 3.Xh-2 și 3.Xh-3): la atingere, fiecare rând al meniului și fiecare buton are
  * cel puțin 44 px înălțime; la densitatea mare, cel puțin 48 px cu mausul. Și semnul extensiei în capul ferestrei de
  * confirmare a unui pachet din fișier (din pachet, înainte de instalare).
  */
@@ -18,16 +19,16 @@ async function celPutin(l: Locator, minim: number, ce: string): Promise<void> {
   expect(Math.min(...h), `${ce}: ${JSON.stringify(h)}`).toBeGreaterThanOrEqual(minim);
 }
 
-/** Meniul, biblioteca sosită, fereastra de confirmare a unui pachet din fișier, gestionarea și întrebarea scoaterii. */
+/** Meniul, fereastra bibliotecii (lista și pagina), confirmarea unui pachet din fișier și întrebarea scoaterii. */
 async function drumul(page: Page, minim: number): Promise<void> {
-  await page.locator('[data-extensii="buton"]').click();
-  const meniu = page.getByTestId('meniu-extensii');
-  await expect(page.getByTestId('biblioteca').locator('[data-id="trenulet"]')).toBeVisible();
-  await celPutin(meniu.locator('[role="menuitem"]'), minim, 'rândurile și butoanele meniului');
-  // Fișierul e ales aici direct în câmpul lui: meniul, pe care alegerea din el l-ar fi închis, se închide întâi.
-  await meniu.locator('[data-extensii="din-fisier"]').focus();
-  await page.keyboard.press('Escape');
-  await expect(meniu).toHaveCount(0);
+  const meniu = await deschideMeniul(page);
+  await celPutin(meniu.locator('[role="menuitem"]'), minim, 'rândurile meniului');
+  const b = await deschideBiblioteca(page);
+  await expect(randLista(page, 'trenulet')).toBeVisible();
+  await celPutin(b.locator('.bib-cap button:visible, .bib-lista button:visible'), minim, 'filele, × și rândurile listei');
+  await randLista(page, 'trenulet').click();
+  await celPutin(pagina(page).locator('button:visible'), minim, 'butoanele paginii');
+  await inchideBiblioteca(page);
 
   await page.locator('[data-extensii="fisier-ales"]').setInputFiles({ name: 'salut-1.0.0.zip', mimeType: 'application/zip', buffer: SALUT });
   const instalare = page.getByTestId('extensii-instalare');
@@ -36,12 +37,10 @@ async function drumul(page: Page, minim: number): Promise<void> {
   await instalare.locator('[data-extensii="instaleaza"]').click();
   await expect(instalare).toHaveCount(0);
 
-  if (!await meniu.isVisible()) await page.locator('[data-extensii="buton"]').click();
-  await celPutin(meniu.locator('[data-extensii="deschide"]'), minim, 'rândul extensiei instalate');
-  await meniu.locator('[data-extensii="gestioneaza"]').click();
-  const gest = page.getByTestId('extensii-gestionare');
-  await celPutin(gest.locator('button'), minim, 'butoanele gestionării');
-  await gest.locator('[data-extensii="scoate"]').click();
+  await celPutin((await deschideMeniul(page)).locator('[role="menuitem"]'), minim, 'rândul extensiei instalate');
+  const p = await paginaInstalatei(page, 'salut');
+  await celPutin(p.locator('button:visible'), minim, 'butoanele paginii unei extensii instalate');
+  await p.locator('[data-extensii="pagina-scoate"]').click();
   await celPutin(page.getByTestId('extensii-scoatere').locator('button'), minim, 'butoanele întrebării');
 }
 
@@ -72,7 +71,8 @@ for (const latime of [390, 360, 320]) {
         await expect(cutie).toBeVisible();
         const m = await cutie.evaluate((e) => {
           const r = e.getBoundingClientRect();
-          const afara = [...e.querySelectorAll('*')].filter((x) => { const b = x.getBoundingClientRect(); return b.width > 0 && (b.left < r.left - 0.5 || b.right > r.right + 0.5); })
+          // Capturile se derulează în lateral, anume: ce e în șirul lor nu se judecă.
+          const afara = [...e.querySelectorAll('*')].filter((x) => !x.closest('.pagina-capturi figure')).filter((x) => { const b = x.getBoundingClientRect(); return b.width > 0 && (b.left < r.left - 0.5 || b.right > r.right + 0.5); })
             .map((x) => `${x.tagName.toLowerCase()}.${x.className}`);
           return { stanga: r.left, dreapta: r.right, lat: innerWidth, derulare: e.scrollWidth - e.clientWidth, afara };
         });
@@ -103,10 +103,14 @@ for (const latime of [390, 360, 320]) {
       await expect(page.locator('[data-extensii="instaleaza"]')).toBeFocused();
       await page.locator('[data-extensii="instaleaza"]').click();
       await expect(page.getByTestId('extensii-instalare')).toHaveCount(0);
-      await page.locator('[data-extensii="buton"]').click();
-      await page.getByTestId('meniu-extensii').locator('[data-extensii="gestioneaza"]').click();
-      await incape('extensii-gestionare');
-      await page.getByTestId('extensii-gestionare').locator('[data-extensii="scoate"]').click();
+      // Fereastra bibliotecii: lista, apoi pagina extensiei instalate și întrebarea scoaterii.
+      await deschideBiblioteca(page);
+      await expect(randLista(page, 'trenulet')).toBeVisible();
+      await incape('fereastra-biblioteca');
+      const instalata = await paginaInstalatei(page, 'trenulet');
+      await incape('fereastra-biblioteca');
+      await expect(page.getByTestId('biblioteca-lista')).toBeHidden();
+      await instalata.locator('[data-extensii="pagina-scoate"]').click();
       await incape('extensii-scoatere');
     });
   });

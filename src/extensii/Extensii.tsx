@@ -16,12 +16,13 @@
  * Linkul de instalare (`#instaleaza=<adresa>`) deschide fereastra adresei, completată; nimic nu se descarcă fără clic, iar
  * ancora se șterge din adresă.
  *
- * Biblioteca (ADR 0230): sub cele instalate, secțiunea Biblioteca, cu catalogul cerut la fiecare deschidere a meniului (cele
- * instalate apar pe loc, din browser; nicio cerere la pornire). Fiecare rând: numele, versiunea, descrierea în limba aplicației,
- * ce cere pe scurt, mărimea și „Instalează” (fereastra instalării), „Actualizează la …” (dintr-un clic, în meniu, când versiunea
- * nouă nu cere nimic în plus; altfel fereastra), „Instalată”, o versiune alta sau „Reîncarcă”. O extensie instalată cu o versiune
- * mai nouă în bibliotecă are lângă nume „actualizare: …”. Linkul `#biblioteca=<id>` deschide fereastra rândului; nimic nu se
- * descarcă fără clic.
+ * Biblioteca (ADR 0230, refăcută în ADR 0231): meniul are doar extensiile instalate și drumul spre fereastra „Biblioteca
+ * extensiilor” (`Biblioteca.tsx`, adusă la cerere), unde stau lista, pagina fiecărei extensii, instalarea, actualizarea și
+ * scoaterea. Catalogul se cere la fiecare deschidere a meniului sau a ferestrei (nicio cerere la pornire); cele instalate
+ * apar pe loc, din browser. O extensie instalată cu o versiune mai nouă în bibliotecă are în rândul ei din meniu „Actualizează”:
+ * dintr-un clic când versiunea nouă nu cere nimic în plus, altfel prin fereastra de confirmare. Rândul nu-și schimbă mărimea
+ * când vine catalogul. Linkul `#biblioteca=<id>` deschide fereastra bibliotecii pe pagina extensiei; nimic nu se descarcă
+ * fără clic.
  *
  * Semnul extensiei (ADR 0231 §B.2): lângă numele ei, în rândul instalat, în rândul din bibliotecă și pe fila ei (`Semn.tsx`).
  */
@@ -39,11 +40,8 @@ import { cereCatalogul, instaleazaDinBiblioteca, stareRand, type RefuzBiblioteca
 import type { CadruPornit, GazdaForme, GazdaMasina } from './cadru.ts';
 import { contextPentruExtensie } from './cont.ts';
 import { FaraStocare, listaExtensii, scrieExtensia, type ExtensieInstalata } from './depozit.ts';
-import { CATALOG_PERMISIUNI } from './pachet.ts';
 import { repornireRara } from './repornire.ts';
-import { textMarime } from './marimeText.ts';
 import { Semn, SemnInstalat, useSemnInstalat } from './Semn.tsx';
-import { adresaSemnCatalog } from './semn.ts';
 import type { CerereInstalare } from './tipuri.ts';
 import './extensii.css';
 
@@ -55,6 +53,7 @@ const Instalare = lazy(() => import('./Instalare.tsx').then(cuMesaje).then((m) =
 
 const ANCORA_INSTALARE = '#instaleaza=';
 const ANCORA_BIBLIOTECA = '#biblioteca=';
+const ANCORA_FEREASTRA = '#biblioteca';
 
 /** Catalogul bibliotecii, cum îl vede meniul: se încarcă, a venit, fără rețea, ori un defect al publicării. */
 type StareBiblioteca =
@@ -109,12 +108,15 @@ export function Extensii({ jurnal, fereastra, onFereastra, onDeschisa, onModal, 
   const [locSpatiu] = useState(() => document.getElementById('loc-spatiu-extensie'));
   const [lista, setLista] = useState<readonly ExtensieInstalata[]>([]);
   const [meniu, setMeniu] = useState<{ readonly top: number; readonly left: number } | null>(null);
-  const [cerere, setCerere] = useState<CerereInstalare | null>(null);
+  const [cerere, setCerere] = useState<Exclude<CerereInstalare, { readonly fel: 'fereastra' }> | null>(null);
+  // Fereastra „Biblioteca extensiilor” (ADR 0231); o confirmare (`cerere`) poate sta deasupra ei.
+  const [bib, setBib] = useState<Extract<CerereInstalare, { readonly fel: 'fereastra' }> | null>(null);
   const [deschisa, setDeschisa] = useState<ExtensieInstalata | null>(null);
   const [stare, setStare] = useState<{ readonly fel: 'porneste' | 'pornit' } | { readonly fel: 'esuat'; readonly mesaj: string }>({ fel: 'porneste' });
   // Biblioteca (ADR 0230): catalogul cerut la deschiderea meniului (doar ultima cerere contează) și actualizările din meniu.
   const [biblioteca, setBiblioteca] = useState<StareBiblioteca | null>(null);
   const cerereCatalog = useRef(0);
+  const ultimulCatalog = useRef(0);
   const [progres, setProgres] = useState<Readonly<Record<string, ProgresActualizare>>>({});
   const deschisaRef = useRef(deschisa);
   deschisaRef.current = deschisa;
@@ -163,6 +165,7 @@ export function Extensii({ jurnal, fereastra, onFereastra, onDeschisa, onModal, 
   // Catalogul bibliotecii, cerut din nou la fiecare deschidere a meniului; cel de dinainte rămâne arătat cât vine cel nou.
   const incarcaBiblioteca = (): void => {
     const n = ++cerereCatalog.current;
+    ultimulCatalog.current = Date.now();
     setBiblioteca((b) => (b?.fel === 'ok' ? b : { fel: 'incarca' }));
     void cereCatalogul(adresaCatalog()).then((c) => {
       if (n !== cerereCatalog.current) return;
@@ -170,10 +173,22 @@ export function Extensii({ jurnal, fereastra, onFereastra, onDeschisa, onModal, 
       setBiblioteca(c);
     });
   };
+  // Fereastra bibliotecii: catalogul se cere la deschidere; cel abia cerut de meniu (de unde se deschide de obicei) nu se
+  // cere a doua oară.
+  const deschideBiblioteca = (id: string | null, dinLink: boolean): void => {
+    if (Date.now() - ultimulCatalog.current > 5000) incarcaBiblioteca();
+    setBib({ fel: 'fereastra', id, dinLink });
+  };
   // Linkul de instalare: la pornire și când ancora se schimbă în fila deschisă (un link lipit în aceeași filă). Linkul
-  // bibliotecii (ADR 0230) deschide fereastra rândului ei, cu catalogul cerut de fereastră.
+  // bibliotecii (ADR 0230) deschide fereastra bibliotecii pe pagina extensiei.
   useEffect(() => {
     const dinAncora = (): void => {
+      // Fără id: fereastra bibliotecii, cerută din paleta de comenzi (`extensii.biblioteca`).
+      if (location.hash === ANCORA_FEREASTRA) {
+        history.replaceState(history.state, '', `${location.pathname}${location.search}`);
+        deschideBiblioteca(null, false);
+        return;
+      }
       if (location.hash.startsWith(ANCORA_BIBLIOTECA)) {
         let id = '';
         try {
@@ -182,7 +197,7 @@ export function Extensii({ jurnal, fereastra, onFereastra, onDeschisa, onModal, 
           id = '';
         }
         history.replaceState(history.state, '', `${location.pathname}${location.search}`);
-        if (/^[a-z0-9-]{1,40}$/.test(id)) setCerere({ fel: 'biblioteca', id, rand: null, dinLink: true });
+        if (/^[a-z0-9-]{1,40}$/.test(id)) deschideBiblioteca(id, true);
         return;
       }
       if (!location.hash.startsWith(ANCORA_INSTALARE)) return;
@@ -199,7 +214,7 @@ export function Extensii({ jurnal, fereastra, onFereastra, onDeschisa, onModal, 
     window.addEventListener('hashchange', dinAncora);
     return () => { window.removeEventListener('hashchange', dinAncora); };
   }, []);
-  useEffect(() => { onModal(cerere !== null || intrebare); }, [cerere, intrebare, onModal]);
+  useEffect(() => { onModal(cerere !== null || bib !== null || intrebare); }, [cerere, bib, intrebare, onModal]);
   useEffect(() => {
     onDeschisa(deschisa ? {
       id: deschisa.id, nume: deschisa.manifest.nume,
@@ -246,7 +261,7 @@ export function Extensii({ jurnal, fereastra, onFereastra, onDeschisa, onModal, 
   // „Rămân”: întrebarea pleacă și aplicația nu mai e inertă în aceeași randare (a clicului), apoi focusul înapoi la ×.
   const ramai = (): void => {
     setIntrebare(false);
-    onModal(cerere !== null);
+    onModal(cerere !== null || bib !== null);
     setTimeout(() => { butonInchide.current?.focus(); }, 0);
   };
   // O extensie din meniu: cea deschisă doar se arată; alta o înlocuiește, după închiderea fără pierderi a celei de acum.
@@ -367,98 +382,48 @@ export function Extensii({ jurnal, fereastra, onFereastra, onDeschisa, onModal, 
         }} />
     </span>
   );
-  // Biblioteca (ADR 0230 §D): un rând pe extensie, cu starea lui față de ce e instalat.
+  // Meniul (ADR 0231, direcția B): extensiile instalate, fiecare cu „Actualizează” în rândul ei când biblioteca are o versiune
+  // mai nouă, apoi drumul spre fereastra bibliotecii. Rândurile nu-și schimbă mărimea când vine catalogul.
   const catalog = biblioteca?.fel === 'ok' ? biblioteca.catalog : null;
-  const randBiblioteca = (r: RandBiblioteca): ReactNode => {
-    const instalata = lista.find((x) => x.id === r.id);
-    const s = stareRand(r, instalata?.manifest);
-    const pr = progres[r.id];
-    const descriere = `biblioteca-${r.id}`;
-    let control: ReactNode;
-    if (pr?.fel === 'lucreaza') control = <span role="status">{t('extensii.biblioteca.actualizez')}</span>;
-    else if (s.fel === 'instaleaza') {
-      control = (
-        <button type="button" role="menuitem" className="biblioteca-buton" data-extensii="biblioteca-instaleaza" aria-describedby={descriere}
-          onClick={() => { alege(() => { setCerere({ fel: 'biblioteca', id: r.id, rand: r, dinLink: false }); }); }}>
-          {t('extensii.biblioteca.instaleaza')}
-        </button>
-      );
-    } else if (s.fel === 'actualizeaza') {
-      control = (
-        <button type="button" role="menuitem" className="biblioteca-buton" data-extensii="biblioteca-actualizeaza" aria-describedby={descriere}
-          onClick={() => {
-            // Ce cere în plus versiunea nouă trece prin fereastră; altfel, dintr-un clic, aici.
-            if (s.permisiuniNoi.length > 0) alege(() => { setCerere({ fel: 'biblioteca', id: r.id, rand: r, dinLink: false }); });
-            else void actualizeazaDinMeniu(r);
-          }}>
-          {t('extensii.biblioteca.actualizeaza', { versiune: r.versiune })}
-        </button>
-      );
-    } else if (s.fel === 'instalata') {
-      control = <span className="biblioteca-ok">{pr?.fel === 'gata' ? t('extensii.biblioteca.actualizata', { versiune: pr.versiune }) : t('extensii.biblioteca.instalata')}</span>;
-    } else if (s.fel === 'alta') control = <span>{t('extensii.biblioteca.alta', { versiune: s.versiune })}</span>;
-    else control = <span>{t('extensii.biblioteca.reincarca')}</span>;
-    return (
-      <div key={r.id} className="biblioteca-rand" data-id={r.id} data-stare={s.fel}>
-        <div className="biblioteca-cap">
-          <span className="biblioteca-nume"><Semn adresa={adresaSemnCatalog(r, adresaCatalog())} marime={28} /><strong>{r.nume}</strong></span>
-          <span>{r.versiune}</span>
-        </div>
-        <p id={descriere}>{r.descriere[limba]}</p>
-        <div className="biblioteca-cipuri">
-          {r.permisiuni.map((p) => <span key={p} className="biblioteca-cip">{CATALOG_PERMISIUNI.includes(p) ? t(`extensii.permisiune-scurt.${p}` as CheieSimpla) : p}</span>)}
-        </div>
-        {pr?.fel === 'eroare' && <p className="avertisment" role="alert">{pr.text}</p>}
-        <div className="biblioteca-jos"><span>{textMarime(r.octeti, limba)}</span>{control}</div>
-      </div>
-    );
-  };
-  const sectiuneaBibliotecii = (
-    <div className="meniu-biblioteca" role="group" aria-label={t('extensii.biblioteca')} data-testid="biblioteca">
-      <strong>{t('extensii.biblioteca')}</strong>
-      {(biblioteca === null || biblioteca.fel === 'incarca') && <span className="biblioteca-nota" role="status">{t('extensii.biblioteca.incarca')}</span>}
-      {(biblioteca?.fel === 'retea' || biblioteca?.fel === 'defect') && (
-        <div className="biblioteca-jos">
-          <span role="alert">{biblioteca.fel === 'retea' ? t('extensii.biblioteca.fara-retea') : t('extensii.biblioteca.eroare')}</span>
-          <button type="button" role="menuitem" className="biblioteca-buton" data-extensii="biblioteca-reincearca" onClick={() => { incarcaBiblioteca(); }}>
-            {t('extensii.biblioteca.reincearca')}
-          </button>
-        </div>
-      )}
-      {catalog?.extensii.length === 0 && <span className="biblioteca-nota">{t('extensii.biblioteca.goala')}</span>}
-      {catalog?.extensii.map(randBiblioteca)}
-    </div>
-  );
   const meniul = meniu && (
     <div ref={refMeniu} className="meniu-extensii" data-testid="meniu-extensii" style={{ top: meniu.top, left: meniu.left }}>
-      <div className="meniu-extensii-cap"><strong>{t('extensii.instalate')}</strong>{lista.length === 0 && <span>{t('extensii.niciuna')}</span>}</div>
+      <div className="meniu-extensii-cap"><strong>{t('extensii.buton')}</strong>{lista.length === 0 && <span>{t('extensii.niciuna')}</span>}</div>
       <div role="menu" aria-label={t('extensii.meniu')} onKeyDown={(e) => { tastaInMeniu(e, inchideMeniul); }}>
         {lista.map((x) => {
           const r = catalog?.extensii.find((y) => y.id === x.id);
           const s = r ? stareRand(r, x.manifest) : null;
+          const pr = progres[x.id];
+          const noua = r && s?.fel === 'actualizeaza' ? { rand: r, cere: s.permisiuniNoi.length > 0 } : null;
+          const sub = pr?.fel === 'lucreaza' ? t('extensii.biblioteca.actualizez')
+            : pr?.fel === 'gata' ? t('extensii.meniu.actualizata', { versiune: x.manifest.versiune })
+              : noua ? t('extensii.meniu.noua', { veche: x.manifest.versiune, noua: noua.rand.versiune }) : x.manifest.versiune;
           return (
-            <button key={x.id} type="button" role="menuitem" className="rand-extensie" data-extensii="deschide" data-id={x.id}
-              onClick={() => { alege(() => { deschideExtensia(x); }); }}>
-              <SemnInstalat extensie={x} marime={28} />
-              <span className="rand-text">
-                <span>{x.manifest.nume}</span>
-                <small>{t('extensii.deschide', { versiune: x.manifest.versiune })}</small>
-                {r && s?.fel === 'actualizeaza' && <small className="biblioteca-insigna">{t('extensii.biblioteca.actualizare', { versiune: r.versiune })}</small>}
-              </span>
-            </button>
+            <div key={x.id} className="rand-instalat">
+              <button type="button" role="menuitem" className="rand-extensie" data-extensii="deschide" data-id={x.id}
+                onClick={() => { alege(() => { deschideExtensia(x); }); }}>
+                <SemnInstalat extensie={x} marime={28} />
+                <span className="rand-text"><span>{x.manifest.nume}</span><small>{sub}</small></span>
+              </button>
+              {noua && pr?.fel !== 'lucreaza' && (
+                <button type="button" role="menuitem" className="biblioteca-buton" data-extensii="biblioteca-actualizeaza"
+                  aria-label={t('extensii.biblioteca.actualizeaza', { versiune: noua.rand.versiune })} title={t('extensii.biblioteca.actualizeaza', { versiune: noua.rand.versiune })}
+                  onClick={() => {
+                    // Ce cere în plus versiunea nouă trece prin fereastra de confirmare; altfel, dintr-un clic, aici.
+                    if (noua.cere) alege(() => { setCerere({ fel: 'biblioteca', id: x.id, rand: noua.rand, dinLink: false }); });
+                    else void actualizeazaDinMeniu(noua.rand);
+                  }}>
+                  {t('extensii.actualizare.actualizeaza')}
+                </button>
+              )}
+              {pr?.fel === 'eroare' && <p className="avertisment" role="alert">{pr.text}</p>}
+            </div>
           );
         })}
         {lista.length > 0 && <div className="meniu-separator" role="separator" />}
-        {sectiuneaBibliotecii}
-        <div className="meniu-separator" role="separator" />
-        <button type="button" role="menuitem" data-extensii="din-fisier" onClick={() => { alege(() => { fisier.current?.click(); }); }}>
-          <span>{t('extensii.din-fisier')}</span>
-        </button>
-        <button type="button" role="menuitem" data-extensii="din-adresa" onClick={() => { alege(() => { setCerere({ fel: 'adresa', adresa: '', dinLink: false }); }); }}>
-          <span>{t('extensii.din-adresa')}</span>
-        </button>
-        <button type="button" role="menuitem" data-extensii="gestioneaza" onClick={() => { alege(() => { setCerere({ fel: 'gestioneaza' }); }); }}>
-          <span>{t('extensii.gestioneaza')}</span>
+        <button type="button" role="menuitem" className="rand-extensie" data-extensii="biblioteca" onClick={() => { alege(() => { deschideBiblioteca(null, false); }); }}>
+          <Semn adresa={null} marime={28} />
+          <span className="rand-text"><span>{t('extensii.biblioteca.rand')}</span><small>{t('extensii.biblioteca.rand-nota')}</small></span>
+          <span className="rand-sageata" aria-hidden="true">›</span>
         </button>
       </div>
     </div>
@@ -521,19 +486,35 @@ export function Extensii({ jurnal, fereastra, onFereastra, onDeschisa, onModal, 
       {intrebarea ? createPortal(intrebarea, document.body) : null}
       {locSpatiu && spatiul ? createPortal(spatiul, locSpatiu) : null}
       <Suspense fallback={null}>
+        {bib && (
+          <Instalare cerere={bib} instalate={lista} onDefect={raporteazaDefect}
+            onGata={(_id, deschide) => {
+              setBib(null);
+              // „Deschide”, din pagina extensiei: extensia, în fereastra ei.
+              if (deschide) { deschideInstalata(deschide); return; }
+              // Altfel focusul se întoarce la piesa de puzzle: aplicația nu mai e inertă în aceeași randare, apoi focusul.
+              onModal(cerere !== null || intrebare);
+              setTimeout(() => { buton.current?.focus(); }, 0);
+            }}
+            biblioteca={{
+              catalog: biblioteca ?? { fel: 'incarca' },
+              acoperita: cerere !== null,
+              onReincearca: incarcaBiblioteca,
+              // O versiune nouă peste cea deschisă: cea veche se închide fără pierderi; datele trec la cea nouă.
+              onSchimbata: (id) => { reincarca(); if (deschisaRef.current?.id === id) inchideCuGrija(); },
+              onScoasa: (id) => { reincarca(); if (deschisaRef.current?.id === id) setDeschisa(null); },
+              onCere: (c) => { if (c === 'fisier') fisier.current?.click(); else if (c.fel !== 'fereastra') setCerere(c); },
+            }} />
+        )}
         {cerere && (
           <Instalare cerere={cerere} instalate={lista} onDefect={raporteazaDefect}
             onGata={(id, deschide) => {
               setCerere(null);
               reincarca();
               // „Deschide” după o instalare din bibliotecă (ADR 0230): extensia, în fereastra ei.
-              if (deschide) { deschideInstalata(deschide); return; }
+              if (deschide) { setBib(null); deschideInstalata(deschide); return; }
               // O versiune nouă peste cea deschisă: cea veche se închide fără pierderi; datele trec la cea nouă.
               if (id !== null && deschisa?.id === id) inchideCuGrija();
-            }}
-            onScoasa={(id) => {
-              reincarca();
-              if (deschisa?.id === id) setDeschisa(null);
             }} />
         )}
       </Suspense>

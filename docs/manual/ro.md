@@ -2033,29 +2033,37 @@ de ce.
 
 ## Extensiile
 %% capitol: extensii
-%% acopera: extensii.buton, extensii.trimite-selectia
+%% acopera: extensii.buton, extensii.trimite-selectia, extensii.biblioteca
 
 O extensie adaugă aplicației o fereastră a ei, de exemplu Easy 3Draw. Nu face parte din aplicație: o instalezi
 tu, iar interfața aplicației rămâne aceeași.
 
-- Butonul **Extensii** (piesa de puzzle de lângă numele instanței) deschide meniul: extensiile instalate, **Biblioteca**,
-  apoi **Instalează din fișier (.zip)…**, **Instalează din adresă…** și **Gestionează extensiile…**. Lângă numele unei
-  extensii stă semnul ei, pe care îl vezi și pe fila ei după ce o deschizi; una fără semn are piesa de puzzle.
-- **Biblioteca** arată extensiile noastre, publicate odată cu aplicația, de exemplu Easy 3Draw: numele, versiunea, ce face, ce
-  cere pe scurt și mărimea. **Instalează** deschide fereastra instalării, cu ce cere extensia pe larg; acolo, **Instalează**
-  descarcă pachetul, îl verifică după amprenta lui din bibliotecă și îl pune în browserul acesta, iar **Deschide** îi deschide
-  fereastra (**Închide** o lasă pentru mai târziu). Când biblioteca are o versiune mai nouă a unei extensii instalate, rândul ei
-  din meniu spune „actualizare: …”, iar **Actualizează la …** o aduce dintr-un clic, cu datele ei; dacă versiunea nouă cere
-  ceva în plus, fereastra spune întâi ce, iar **Actualizează** o instalează. Biblioteca se citește la fiecare deschidere a
-  meniului și are nevoie de internet; fără el, **Reîncearcă** o cere din nou, iar extensiile instalate merg ca până acum. Un
-  link de forma `…/#biblioteca=trenulet` deschide fereastra lui Easy 3Draw din bibliotecă; nimic nu se descarcă fără clicul
-  tău. Un pachet instalat din fișier sau de la o adresă vine din afara bibliotecii, iar fereastra îl spune așa.
-- **Instalează din fișier** primește un pachet `.zip`. **Instalează din adresă** cere **Adresa pachetului** (HTTPS), apoi
-  **Descarcă**; gazda trebuie să permită descărcarea din alte pagini, altfel descarci tu fișierul și îl instalezi din
-  fișier. Un link de forma `…/#instaleaza=<adresa>` deschide aceeași fereastră, cu adresa completată; nimic nu se descarcă
-  fără clicul tău.
-- Înainte de instalare, fereastra te întreabă cu numele extensiei („Instalezi „Easy 3Draw”?”) și arată semnul ei, versiunea,
-  de unde vine pachetul, fișierele și mărimea lor și, dacă e cazul, versiunea pe care o înlocuiește. Sub **Ce poate face**
+- Butonul **Extensii** (piesa de puzzle de lângă numele instanței) deschide meniul: extensiile instalate, fiecare cu semnul
+  ei (una fără semn are piesa de puzzle), apoi **Biblioteca extensiilor…**. Un clic pe o extensie îi deschide fereastra, iar
+  semnul ei stă și pe fila ei. Când biblioteca are o versiune mai nouă a unei extensii instalate, rândul ei arată versiunile
+  („18.6.0 → 18.20.0”) și **Actualizează**: o aduce dintr-un clic, cu datele ei. Dacă versiunea nouă cere ceva în plus, o
+  fereastră spune întâi ce, iar acolo **Actualizează** o instalează; la capăt, **Deschide** îi deschide fereastra, iar
+  **Închide** o lasă pentru mai târziu.
+- **Biblioteca extensiilor** e o fereastră, deschisă din meniu sau din **Caută o comandă** (Ctrl+K), de oriunde: în stânga
+  lista, în dreapta pagina extensiei alese. **Toate** arată extensiile
+  noastre, publicate odată cu aplicația, de exemplu Easy 3Draw; **Instalate**, pe cele din browserul acesta, și pe cele
+  venite din afara bibliotecii. Pagina unei extensii are semnul și numele ei, cine o publică, versiunea și mărimea, câteva
+  capturi, descrierea, **Ce poate face** (câte un rând pentru fiecare lucru pe care îl cere extensia) și **Ce e nou**. Gestul
+  stă sus, în pagină: **Instalează** descarcă pachetul, îl verifică după amprenta lui din bibliotecă și îl pune în browserul
+  acesta (merge și offline); **Actualizează la …** aduce versiunea nouă, cu datele ei, iar „Ce e nou” arată atunci doar ce a
+  apărut de la versiunea ta; **Deschide** îi deschide fereastra; **Scoate** o șterge, după o întrebare. Pe telefon, lista și
+  pagina vin pe rând: un rând deschide pagina lui, iar **Înapoi la listă** (‹) te întoarce. Biblioteca se citește la fiecare
+  deschidere și are nevoie de internet; fără el, **Reîncearcă** o cere din nou, iar extensiile instalate rămân la
+  **Instalate** și merg ca până acum. Un link de forma `…/#biblioteca=trenulet` deschide biblioteca pe pagina lui Easy
+  3Draw; nimic nu se descarcă fără clicul tău.
+- La capătul listei, „Din afara bibliotecii”: **Instalează din fișier (.zip)…** primește un pachet `.zip`, iar **Instalează
+  din adresă…** cere **Adresa pachetului** (HTTPS), apoi **Descarcă**; gazda trebuie să permită descărcarea din alte pagini,
+  altfel descarci tu fișierul și îl instalezi din fișier. Un link de forma `…/#instaleaza=<adresa>` deschide aceeași
+  fereastră, cu adresa completată; nimic nu se descarcă fără clicul tău. Un pachet instalat așa vine din afara bibliotecii,
+  iar fereastra îl spune.
+- Înainte de instalarea unui astfel de pachet, fereastra te întreabă cu numele extensiei („Instalezi „Easy 3Draw”?”) și
+  arată semnul ei, versiunea, de unde vine pachetul, fișierele și mărimea lor și, dacă e cazul, versiunea pe care o
+  înlocuiește. Sub **Ce poate face**
   stă câte un rând pentru fiecare lucru pe care îl cere extensia (de exemplu, **Datele în browser**: își ține datele în
   browserul acesta). La o versiune nouă care cere ceva în plus, lista **Versiunea nouă poate și** stă prima, evidențiată.
   **Instalează** o pune în browserul acesta (merge și offline); **Renunță** nu schimbă nimic. Un pachet stricat sau greșit
@@ -2101,10 +2109,9 @@ tu, iar interfața aplicației rămâne aceeași.
   (cu întrebarea de mai sus), pune pauză, îl reia și îl oprește. Starea mașinii stă deasupra butoanelor.
 - Extensia rulează izolată: nu vede proiectele sau portul mașinii și nu iese pe internet; din cont vede doar ce i-ai dat voie
   (mai sus); vorbește cu aplicația doar prin ce îi dă aceasta.
-- **Gestionează extensiile** le arată pe cele instalate, cu semnul, sursa, data și cât ocupă datele lor. **Scoate** te
-  întreabă întâi și spune ce se pierde: extensia și datele ei din browserul acesta (de exemplu, circuitele salvate), care
-  nu se pot aduce înapoi. Acolo, **Scoate** o șterge, iar **Păstrează** (sau Escape) te întoarce la listă. **Închide**
-  închide fereastra.
+- Pagina unei extensii instalate spune de unde a venit, când și cât ocupă datele ei. **Scoate** te întreabă întâi și spune
+  ce se pierde: extensia și datele ei din browserul acesta (de exemplu, circuitele salvate), care nu se pot aduce înapoi.
+  Acolo, **Scoate** o șterge, iar **Păstrează** (sau Escape) te întoarce la pagină.
 
 ## Scurtăturile
 %% capitol: scurtaturi

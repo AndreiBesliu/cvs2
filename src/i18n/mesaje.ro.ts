@@ -30,6 +30,7 @@ export const ro = {
   'actiune.selecteaza': 'Selectează',
   'actiune.duplica-selectia': 'Duplică',
   'actiune.trimite-la-extensie': 'Trimite la extensie',
+  'actiune.biblioteca-extensii': 'Biblioteca extensiilor',
   'actiune.trimite-la': 'Trimite la {nume}',
   'actiune.aplica-operatii': 'Aplică operațiile',
   'actiune.pozitioneaza': 'Poziționează selecția',
