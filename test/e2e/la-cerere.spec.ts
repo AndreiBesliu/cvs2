@@ -32,7 +32,7 @@ test('(calculul vine cu importul) doar dialogul importului se poate încărca: I
   await doarFereastra(page, 'import');
   await page.goto('/');
   await page.locator('[data-camp="fisier-svg"]').setInputFiles('test/placi/placa-02/logo-80mm.svg');
-  await expect(page.getByTestId('import-marime')).toHaveText('Desenul: 80.00 × 40.00 mm');
+  await expect(page.getByTestId('import-marime')).toHaveText('Desenul: 80,00 × 40,00 mm');
   await page.locator('[data-buton="importa"]').click();
   await expect(page.getByRole('dialog')).toHaveCount(0);
   await expect(page.getByTestId('lista-vectori').locator('button[data-instanta]')).toHaveCount(1);

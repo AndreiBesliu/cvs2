@@ -285,7 +285,7 @@ test('formele: o extensie propune un SVG; cvs2 trece la Proiectare și deschide 
   await expect(page.locator('[data-actiune="vedere.proiectare"]')).toHaveAttribute('aria-current', 'page');
   await expect(page.locator('#import-titlu')).toContainText('Importă: salut.svg');
   await expect(page.getByTestId('import-de')).toHaveText('Propus de Salut');
-  await expect(page.getByTestId('import-marime')).toHaveText('Desenul: 30.00 × 20.00 mm');
+  await expect(page.getByTestId('import-marime')).toHaveText('Desenul: 30,00 × 20,00 mm');
   // Renunță: desenul rămâne gol; a doua propunere, apoi Importă: o piesă nouă
   await page.keyboard.press('Escape');
   await expect(page.getByRole('dialog')).toHaveCount(0);

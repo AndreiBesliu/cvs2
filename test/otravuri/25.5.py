@@ -107,7 +107,7 @@ o('E02', FE, '                onSchimba({ foaie: { ...alegeri.foaie, indreapta: 
   '                onSchimba({ zona: null });', 'e2e', 'bifa „Îndreaptă foaia” nu se trimite')
 o('E03', FE, '                  onSchimba({ foaie: { ...alegeri.foaie, format }, zona: null });', '                  onSchimba({ zona: null });', 'e2e',
   'formatul ales nu se trimite')
-o('E04', FE, '          {indreptata && (\n            <span className="trasare-zoom">', '          {false && (\n            <span className="trasare-zoom">', 'e2e',
+o('E04', FE, '            {indreptata && (\n              <span className="trasare-zoom">', '            {false && (\n              <span className="trasare-zoom">', 'e2e',
   'butoanele Colțurile și „Găsește singur” lipsesc')
 o('E05', FE, '              let i = -1, d = 12 / s;', '              let i = -1, d = 0;', 'e2e', 'mânerele nu se apucă')
 o('E06', FE, '              if (c) onSchimba({ foaie: { ...alegeri.foaie, colturi: c }, zona: null });', '              if (c) setColturiCiorna(null);', 'e2e',
@@ -118,12 +118,12 @@ o('E08', FE, '                onClick={() => { onSchimba({ foaie: { ...alegeri.f
   '                onClick={() => undefined}>', 'e2e', '„Găsește singur” nu face nimic')
 o('E09', FE, '                if (modColturi) { setModColturi(false); setVizor({ k: 1, cx: null, cy: null }); }\n', '', 'e2e',
   'Zona nu scoate Colțurile')
-o('E10', FE, '              {foaie && !foaie.indreptata && foaie.sugestie && <p', '              {foaie && !foaie.indreptata && false && <p', 'e2e',
+o('E10', FE, '  const sugestieFoaie = foaie !== null && !foaie.indreptata && foaie.sugestie;', '  const sugestieFoaie = foaie !== null && !foaie.indreptata && false;', 'e2e',
   'sugestia foii nu apare')
-o('E11', FE, "              {foaie?.indreptata && foaie.sursa === 'implicite' && <p", '              {false && <p', 'e2e', 'foaia negăsită nu se spune')
-o('E12', FE, '              {foaie?.indreptata && foaie.sursa !== \'implicite\' && foaie.potrivit === false && foaie.format && (',
-  '              {false && foaie?.format && (', 'e2e', 'proporțiile nepotrivite nu se spun')
-o('E13', FE, '              {foaie?.indreptata && !foaie.format && foaie.proportii.nesigure && (', '              {false && foaie && (', 'e2e',
+o('E11', FE, "            {foaie?.indreptata && foaie.sursa === 'implicite' && <p", '            {false && <p', 'e2e', 'foaia negăsită nu se spune')
+o('E12', FE, '            {foaie?.indreptata && foaie.sursa !== \'implicite\' && foaie.potrivit === false && foaie.format && (',
+  '            {false && foaie?.format && (', 'e2e', 'proporțiile nepotrivite nu se spun')
+o('E13', FE, '            {foaie?.indreptata && !foaie.format && foaie.proportii.nesigure && (', '            {false && foaie && (', 'e2e',
   'proporțiile nesigure nu se spun')
 o('E14', FE, '        s.foaie = { ...a.foaie, alt: { w: altL, h: altI } };\n', '', 'e2e', 'lățimea și înălțimea „Altui format” nu se trimit')
 o('E15', FE, '  const baza = indreptata && !peColturi ? foaieImg : bmp;', '  const baza = bmp;', 'e2e', 'sub vectori, poza în locul foii îndreptate')

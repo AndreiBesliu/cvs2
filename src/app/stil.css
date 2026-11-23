@@ -2716,26 +2716,109 @@ main h1 {
   pointer-events: none;
 }
 
-/* Fereastra trasării din imagine (ADR 0220 §10): lărgită; comenzile în stânga, previzualizarea în dreapta, raportul sub ea.
-   Pe telefon, o coloană. Pânza are fundalul în pătrățele, ca o imagine transparentă să se vadă. */
+/* Fereastra trasării din imagine (ADR 0220 §10, refăcută în ADR 0273 §1): cât ecranul, și nu se derulează ea. Antetul, apoi
+   corpul pe două coloane (setările, care se derulează singure, și previzualizarea, care ia restul și crește cu fereastra),
+   apoi piciorul, mereu la vedere. Pe telefon, o coloană, derulată în corp, cu piciorul tot fix. Pânza are fundalul în
+   pătrățele, ca o imagine transparentă să se vadă. */
 .dialog-cutie.dialog-trasare {
   width: 100%;
-  max-width: min(72rem, calc(100vw - 2rem));
+  max-width: min(90rem, calc(100vw - 2rem));
+  height: calc(100vh - 2rem);
+  height: calc(100dvh - 2rem);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding-bottom: var(--sp-4);
+}
+.dialog-trasare > h2 {
+  margin-bottom: var(--sp-2);
+  overflow-wrap: anywhere;
+}
+.trasare-fereastra {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+  gap: var(--sp-3);
 }
 .trasare-corp {
   display: grid;
-  grid-template-columns: minmax(14rem, 18rem) minmax(0, 1fr);
+  grid-template-columns: minmax(15rem, 20rem) minmax(0, 1fr);
   gap: var(--sp-4);
-  margin-block: var(--sp-3);
+  min-height: 0;
 }
 .trasare-comenzi {
   display: grid;
   gap: var(--sp-2);
   align-content: start;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding-right: var(--sp-2);
 }
-.trasare-comenzi > label {
+.trasare-comenzi > label,
+.trasare-grup-corp > label {
   display: grid;
   gap: 2px;
+}
+/* Grupurile setărilor (ADR 0273 §2): titlul cu săgeata, semnul unei sugestii și rezumatul (doar cât e strâns). */
+.trasare-grup {
+  border-top: 1px solid var(--l-margine);
+  padding-top: var(--sp-2);
+}
+.trasare-grup > summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0 var(--sp-2);
+  cursor: pointer;
+  list-style: none;
+  padding: 2px 0;
+}
+.trasare-grup > summary::-webkit-details-marker {
+  display: none;
+}
+.trasare-grup > summary::before {
+  content: '▸';
+  width: 1em;
+  color: var(--t-slab);
+}
+.trasare-grup[open] > summary::before {
+  content: '▾';
+}
+.trasare-grup-titlu {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  font-weight: 600;
+  color: var(--t);
+}
+.trasare-grup-semn {
+  display: inline-block;
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: var(--a);
+}
+.trasare-grup-rezumat {
+  flex-basis: 100%;
+  padding-left: calc(1em + var(--sp-2));
+  overflow-wrap: anywhere;
+}
+.dialog-trasare .trasare-grup-rezumat {
+  margin: 0;
+}
+.trasare-grup[open] > summary > .trasare-grup-rezumat {
+  display: none;
+}
+.trasare-grup-corp {
+  display: grid;
+  gap: var(--sp-2);
+  padding: var(--sp-2) 0 var(--sp-1);
+}
+.trasare-simplu {
+  border-top: 1px solid var(--l-margine);
+  padding-top: var(--sp-2);
 }
 /* Lumina (ADR 0224): lista, cu rândul ei de sfat dedesubt. */
 .trasare-lumina,
@@ -2777,6 +2860,16 @@ main h1 {
 .trasare-prag > label {
   grid-column: 1 / -1;
 }
+.trasare-prag > span,
+.trasare-culori > span,
+.trasare-prag-lat > span {
+  font-size: var(--fs-2);
+  color: var(--t-slab);
+}
+/* Două câmpuri alăturate cu etichete de lungimi diferite: câmpurile pe aceeași linie. */
+.trasare-format-alt {
+  align-items: end;
+}
 .trasare-prag input[type='range'] {
   width: 100%;
 }
@@ -2801,10 +2894,11 @@ main h1 {
   margin: 0;
 }
 .trasare-previz {
-  display: grid;
+  display: flex;
+  flex-direction: column;
   gap: var(--sp-2);
   min-width: 0;
-  align-content: start;
+  min-height: 0;
 }
 .trasare-bara {
   display: flex;
@@ -2832,9 +2926,22 @@ main h1 {
   display: inline-flex;
   gap: var(--sp-1);
 }
+/* Glisorul estompării, îngust: bara previzualizării stă pe două rânduri și la 1024 px, cu fontul lat. */
+.trasare-bara input[type='range'] {
+  width: 5rem;
+}
+/* Locul pânzei ia tot ce rămâne din coloană; pânza stă în el absolut, ca mărimea ei desenată să nu împingă așezarea. */
+.trasare-panza-loc {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 10rem;
+}
 .trasare-panza {
+  position: absolute;
+  inset: 0;
+  box-sizing: border-box;
   width: 100%;
-  height: min(26rem, 55vh);
+  height: 100%;
   border: 1px solid var(--l-margine);
   border-radius: var(--r-2);
   touch-action: none;
@@ -2856,9 +2963,90 @@ main h1 {
 .trasare-raport p {
   margin: 2px 0;
 }
-@media (max-width: 48rem) {
+/* Piciorul (ADR 0273 §1, §5): raportul scurt, despărțit cu puncte; sugestiile, cu butonul lângă text; Detaliile, derulate
+   singure; acțiunile la capăt, cu imaginea pe foaie în stânga butoanelor. */
+.trasare-picior {
+  display: grid;
+  gap: var(--sp-2);
+  min-width: 0;
+  border-top: 1px solid var(--l-margine);
+  padding-top: var(--sp-3);
+}
+.trasare-picior > p {
+  margin: 0;
+}
+.trasare-scurt {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0 var(--sp-2);
+}
+.trasare-scurt > span:not(:last-child)::after {
+  content: '·';
+  margin-left: var(--sp-2);
+  color: var(--t-slab);
+}
+.trasare-sugestii {
+  display: grid;
+  gap: var(--sp-1);
+}
+.trasare-sugestii p {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-1) var(--sp-2);
+}
+/* Butonul unei sugestii (ADR 0273 §5), cu marginea câmpurilor: o acțiune, nu un text. */
+.trasare-sugestii button {
+  border-color: var(--l-camp);
+}
+.trasare-detalii > summary {
+  width: max-content;
+  cursor: pointer;
+  color: var(--t-slab);
+}
+.trasare-detalii > .trasare-raport {
+  max-height: min(8rem, 16vh);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding-top: var(--sp-1);
+}
+.trasare-actiuni {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--sp-2) var(--sp-4);
+}
+.trasare-actiuni .imagine-foaie {
+  margin: 0 auto 0 0;
+}
+.trasare-actiuni .imagine-foaie p {
+  margin: 0;
+}
+.dialog .trasare-actiuni .butoane {
+  margin-top: 0;
+}
+@media (max-width: 40rem) {
   .trasare-corp {
     grid-template-columns: minmax(0, 1fr);
+    align-content: start;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+  /* În corpul derulat, rândurile își iau toată înălțimea conținutului (cu min-height 0, se strângeau sub previzualizare). */
+  .trasare-comenzi,
+  .trasare-previz {
+    min-height: auto;
+  }
+  .trasare-comenzi {
+    overflow: visible;
+    padding-right: 0;
+  }
+  .trasare-panza-loc {
+    flex: none;
+    height: 18rem;
   }
 }
 /* Lista imaginilor foii (ADR 0272 §5), în panoul foii: miniatura, numele și butoanele pe un rând, opacitatea sub ele. */
