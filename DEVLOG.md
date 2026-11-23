@@ -11497,6 +11497,142 @@ un branch in care sa modificam libraria de plugin-uri? vreau ceva mai frumos si 
 - **Documentele:** decizia în `CLAUDE.md`; indexul ADR (0282: unită în `0ae9c6c1`); `docs/linii/README.md` (elicele unite,
   linia bibliotecii, liniile în lucru în sesiunile lor); `docs/linii/principala.md` („Din container”, starea);
   `docs/lucru-in-cloud.md` (gazda adresei de test la „Allowed domains”); nota elicelor (unită).
+
+## 2026-11-23 — 3.Xh, propunerea: biblioteca extensiilor, refăcută (ADR 0231 propus, cu schița) (sesiune cloud)
+
+**Prompt:** brief-ul liniei „biblioteca”, lipit de owner în sesiunea cloud; cererea lui, exact: „poti sa pornesti un branch
+in care sa modificam libraria de plugin-uri? vreau ceva mai frumos si cu un UI/UX mai bun si atragator”.
+**Started:** 23.11, 13:45. **Completed:** 23.11, 14:25. **Modelul:** nescris aici (regula sesiunii cloud: niciun nume de
+model în repo); e în raportul din chat și în sesiunea din mesajul commit-ului.
+
+- **Privit, pe build-ul de pe `8f122eb`:** 87 de capturi ale bibliotecii de azi (meniul în șase stări, ferestrele instalării,
+  actualizării și gestionării, extensia deschisă; 1440, 1024 și 390 px; două teme; ro și en), cu măsurători în pagină. Zece
+  lucruri găsite, în ADR: nicio imagine, extensia arătată de două ori, meniul care crește de la 250 × 215 la 362 × 377 px
+  când vine catalogul, fereastra instalării cu o frază de 450 de caractere, butonul de 82 × 28 px pe telefon, „Scoate” care
+  șterge fără întrebare, biblioteca negăsită de paletă.
+- **ADR 0231, propus:** trei direcții care se exclud (A meniul de azi, îmbunătățit; B fereastra „Biblioteca extensiilor”,
+  recomandată; C pagina pe tot ecranul), cu ce vede omul, ce cere catalogul și costul fiecăreia; ce se face în orice direcție;
+  marginile din ADR 0230, neschimbate; patru întrebări (unde stă, semnul lui Easy 3Draw, „ce e nou” cerut de probă,
+  capturile); feliile 3.Xh-1 … 3.Xh-4.
+- **Schița:** <https://claude.ai/artifact/RVvJq3q2NPxtTPm2Y8Q8EV>: capturile de azi cu semnele lor, cele trei direcții pe
+  ambele teme, la birou și pe telefon, în română și în engleză, în trei stări, cu trei capturi adevărate ale extensiei; trei
+  desene pentru semn; formularul întrebărilor (baza paginii, `raspunsuri/owner`; scrierea și citirea, probate o dată).
+- **Fără cod de produs.** Indexul ADR, titlul tradus (`node scripts/traduceri.ts --verifica`: 913 texte, 0 fără traducere),
+  nota liniei (`docs/linii/biblioteca.md`). `main` adus în ramură (`8177ab8`, cu 3.Tq), fără ciocniri.
+- **Mediul:** în container lipsește Edge; capturile sunt făcute cu Chrome 153.
+- **Urmează:** răspunsurile owner-ului, apoi 3.Xh-1.
+
+## 2026-11-23 — 3.Xh-1: datele bibliotecii noi (semnul extensiei, descrierea, „ce e nou”, capturile) (sesiune cloud)
+
+**Prompt:** „Da, 1a–4a” (răspunsul owner-ului la cele patru întrebări din ADR 0231, în sesiunea liniei și în formularul
+schiței).
+**Started:** 23.11, 14:30. **Completed:** 15:26. **Modelul:** nescris aici (regula sesiunii cloud: niciun nume de
+model în repo); e în raportul din chat și în sesiunea din mesajul commit-ului.
+
+- **ADR 0231, acceptat:** fereastra „Biblioteca extensiilor” (1a), cărămida ca semn al lui Easy 3Draw (2a), „ce e nou”
+  cerut de probă la fiecare versiune nouă (3a), trei capturi adevărate pe extensie, făcute de un script din repo (4a).
+- **Felia 3.Xh-1, prima din patru** (`76447fe`, apoi commit-ul documentelor), cu probele scrise înaintea codului:
+  - pachetul: `pictograma` în `extensie.json` (un SVG din pachet, cel mult 8 kB); motivul nou `pictograma`;
+  - catalogul: `pictograma`, `capturi`, `despre`, `noutati`, `autor`, opționale, citite tolerant (`sarite`); schema 1;
+  - construcția: semnul din pachet, capturile comise, numele cu amprenta; „ce e nou” cerut pentru versiunea de acum;
+  - `scripts/capturi-biblioteca.ts`: capturile, în română și în engleză (960 × 600, WebP);
+  - poarta build-ului și anteturile pentru imaginile bibliotecii; CSP-ul neschimbat;
+  - interfața de azi: semnul lângă numele extensiei (Biblioteca, extensiile instalate) și pe fila ei; fără semn, piesa de
+    puzzle;
+  - Easy 3Draw 18.20.0: semnul, descrierea lungă, autorul, „ce e nou” pe cinci versiuni, trei capturi pe limbă.
+- **Privit pe capturile mărite ale interfeței adevărate:** rândul extensiei instalate stătea la mijlocul meniului, iar
+  numele din Biblioteca ieșea gri. Probele treceau. Fiecare are acum proba ei e2e, scrisă înaintea reparației.
+- **Abaterea de la schiță:** fondul semnului e gri-albăstrui, nu crem (se pierdea pe fila aleasă); de arătat owner-ului.
+- **Porțile, în container:** tipurile, regulile de import, licențele; unitarele atinse 84 / 84 (toată suita, înaintea
+  ultimelor două reparații: 9 811 / 2 căzute, amândouă reparate apoi: proba manualului și lista fișierelor pachetului);
+  e2e cu Chrome (Edge lipsește): `biblioteca.spec.ts` 9 / 9, extensiile, pluginul și manualul 41 / 41;
+  `npm run determinism`: pornirea 107,9 kB (neschimbată; cu ușa 112,2 / 115), totalul 762,0 / 800 kB (+1,1), `/admin`
+  121,2 / 200; biblioteca: pachetul 457,3 kB, catalogul 4,8 kB, șapte imagini 211,6 kB. Suitele întregi, în CI.
+- **Otrăvurile** (`test/otravuri/3.Xh-1.py`, în clonă): 45 / 45 (35 unitare, 10 prin e2e). La prima rulare, 45 / 46: scăpase
+  ieșirea `faraNoutati` a construcției, citită doar de probă: scoasă, cu otrava ei. Listele vecine (3.Xa–3.Xg): aceleași
+  VOID-uri ca pe `main`.
+- **Regula nouă, pentru toate liniile care schimbă o extensie din bibliotecă:** versiunea nouă, rândul ei de „ce e nou”
+  (primul din `noutati`, în `extensii/biblioteca.json`), apoi `node scripts/biblioteca.ts --scrie`. E în nota liniei
+  (`docs/linii/biblioteca.md`); în `CLAUDE.md` o scrie sesiunea principală, la unire.
+- **Urmează:** 3.Xh-2 (fereastra de confirmare refăcută, „Scoate” cu întrebarea, mesajele pe înțeles, țintele).
+
+## 2026-11-23 — 3.Xh-2: fereastra de confirmare refăcută, „Scoate” cu întrebarea, mesajele pe înțeles, țintele (sesiune cloud)
+
+**Prompt:** același „Da, 1a–4a” (răspunsul owner-ului la ADR 0231; trimis a doua oară în sesiune, cât rula 3.Xh-1); felia a
+doua din cele patru ale ADR-ului, pornită fără altă întrebare.
+**Started:** 23.11, 15:30. **Completed:** 23.11, 16:45. **Modelul:** nescris aici (regula sesiunii cloud: niciun nume de
+model în repo); e în raportul din chat și în sesiunea din mesajul commit-ului.
+
+- **Fereastra de confirmare, una singură** (`5578eaa`, apoi commit-ul documentelor): semnul și numele extensiei în capul ei,
+  de unde vine, „Ce poate face” ca listă, izolarea, butoanele; la o actualizare, „Versiunea nouă poate și” stă prima.
+  Toate ferestrele extensiilor au 34rem (erau cât ecranul: 896 px la 1440).
+- **„Scoate” întreabă întâi** și spune ce se pierde; „Păstrează” (cu focusul) și Escape se întorc la listă, pe rândul
+  extensiei; gestul care șterge e roșu.
+- **Mesajele pe înțeles:** catalogul stricat, descărcarea căzută (fără textul browserului, fără „CORS”), mărimile („sub 1
+  kB”, „457 kB”, „1,6 MB”; `src/extensii/marime.ts`).
+- **Țintele:** la atingere și la densitatea mare, rândurile și butoanele meniului sunt cât `--tinta` (erau 30 și 28 px).
+- **Privit pe capturile mărite** (ambele teme; 1440, 390 și 320 px cu fontul lat): avertismentul era un rând portocaliu
+  strident, „1.616,3 kB”, numele permisiunii mai mare decât titlul listei; iar la 320 px fereastra se deschidea derulată la
+  capăt, cu numele extensiei ascuns. Toate îndreptate; ultima are proba ei, scrisă întâi (a căzut la 390, 360 și 320 px).
+- **Porțile, în container:** tipurile, regulile de import; unitarele atinse 104 / 104; e2e cu Chrome: extensiile, biblioteca,
+  pluginul, țintele și manualul, 48 / 48; `npm run determinism`: pornirea 107,9 kB (neschimbată), totalul 762,7 / 800 kB
+  (+0,7). Suitele întregi, în CI. **Completul din CI pe 3.Xh-1 (`8b608bb`): verde, cu Edge.**
+- **Otrăvurile** (`test/otravuri/3.Xh-2.py`, în clonă): 40 / 40 (12 unitare, 28 prin e2e). La prima rulare, 38 / 42: două
+  probe întărite (regexul lui „să …”: `\b` nu vede marginea de după „ă”; roșul butonului, citit cu mausul peste el), o
+  derulare pusă la zero, de prisos lângă butoanele lipite jos, scoasă cu otrava ei, și o otravă a manualului pe care proba
+  lui n-o poate vedea, scoasă. Trei otrăvuri din listele vecine, golite de felie, mutate pe codul nou (3.Xb E03 și E04,
+  3.Xh-1 N01).
+- **Canalul `biblioteca`:** <https://cncvectorstudio-test--biblioteca-gw7dr9bc.web.app>; gazda lui e acum permisă în mediul
+  sesiunii (aprobată de owner), deci linia verifică singură ce a publicat.
+- **Urmează:** 3.Xh-3 (fereastra „Biblioteca extensiilor”, meniul scurtat, paleta).
+
+## 2026-11-23 — 3.Xh-3: fereastra „Biblioteca extensiilor”, meniul scurtat, acțiunea din paletă (sesiune cloud)
+
+**Prompt:** același „Da, 1a–4a” (răspunsul owner-ului la ADR 0231); felia a treia din cele patru ale ADR-ului, pornită fără
+altă întrebare.
+**Started:** 23.11, 16:50. **Completed:** 23.11, 18:30. **Modelul:** nescris aici (regula sesiunii cloud: niciun nume de
+model în repo); e în raportul din chat și în sesiunea din mesajul commit-ului.
+
+- **Fereastra bibliotecii** (`5831218`, `7628b50`, `b864e6c`, apoi commit-ul documentelor): lista („Toate”, „Instalate”) și
+  pagina extensiei, cu semnul, capturile, descrierea, „Ce poate face”, „Ce e nou” și gestul ei chiar acolo (instalarea,
+  actualizarea dintr-un clic, „Deschide”, „Scoate”); scheletul cât vine catalogul; lista și pagina pe rând, pe telefon.
+- **Meniul, scurtat:** extensiile instalate (cu „Actualizează” în rând), apoi „Biblioteca extensiilor…”; lățime fixă.
+  Fereastra „Extensiile tale” a plecat (fila „Instalate”).
+- **Paleta:** „Biblioteca extensiilor”, de oriunde; grupul „Extensii”. **Găsit pe drum:** paleta nu arăta deloc acțiunile cu
+  prefixul `extensii`, deci nici „Trimite la extensie” (ADR 0166): prefixul n-avea grup.
+- **Găsit de probe și pe capturi:** un nume lung de fișier împingea pagina extensiei în lateral pe telefon (166–236 px);
+  cu un nume lung de extensie, meniul creștea cu 19 px când apărea „Actualizează”; filele bibliotecii aveau 36 px la
+  atingere; focusul nu se întorcea la piesa de puzzle (aplicația era încă inertă). Toate reparate, fiecare cu proba ei.
+- **Abaterile de la ADR**, scrise în „Implementat”: fereastra stă în bucata la cerere a ferestrelor extensiilor (nu într-una
+  nouă); „din fișier” și „din adresă”, la capătul listei; acțiunea paletei costă ~0,1 kB în pornire (registrul e static);
+  actualizarea din meniu stă în rândul extensiei.
+- **Porțile, în container:** tipurile, regulile de import; unitarele atinse 119 / 119; e2e cu Chrome: biblioteca, extensiile,
+  țintele, pluginul, manualul și carcasa, 57 / 57; `npm run determinism`: pornirea 107,9 kB (cu ușa 112,3 / 115), totalul
+  764,4 / 800 kB (+1,7). Suitele întregi, în CI.
+- **Otrăvurile** (`test/otravuri/3.Xh-3.py`, în clonă): 57 / 57 (4 unitare, 53 prin e2e). La prima rulare, 55 / 57: proba
+  „meniul nu sare”, făcută mai aspră (a găsit defectul de mai sus); un cod de prisos, scos cu otrava lui. Otrăvurile din
+  listele vechi al căror cod s-a mutat în fereastra nouă au urmașe aici (3.Xb, 3.Xg, 3.Xh-1, 3.Xh-2: 28 la un loc).
+- **Urmează:** 3.Xh-4 (săgețile în listă și în file, fontul lat la birou, densitatea, recitirea manualului), apoi PR-ul
+  „gata de unit”.
+
+## 2026-11-23 — 3.Xh-4: tastatura în fereastra bibliotecii, fontul lat la birou; felia 3.Xh, gata de unit (sesiune cloud)
+
+**Prompt:** același „Da, 1a–4a” (răspunsul owner-ului la ADR 0231); ultima din cele patru felii ale ADR-ului.
+**Started:** 23.11, 18:35. **Completed:** 23.11, 18:55. **Modelul:** nescris aici (regula sesiunii cloud: niciun nume de
+model în repo); e în raportul din chat și în sesiunea din mesajul commit-ului.
+
+- **Tastatura** (`19f180f`, apoi commit-ul documentelor): focusul pe fila aleasă la deschidere; ← și → între file; ↑ și ↓
+  între rândurile listei, Enter deschide pagina; doar fila aleasă și rândul arătat în ordinea lui Tab; lista e panoul filei.
+- **La birou, cu fontul lat** (1024 și 1280 px): meniul și fereastra încap; numele extensiei nu ajunge sub gesturi.
+- **Porțile, în container:** tipurile, regulile de import; e2e cu Chrome: biblioteca, extensiile, țintele, pluginul,
+  manualul și carcasa, 61 / 61; `npm run determinism`: pornirea 107,9 kB (cu ușa 112,3 / 115), totalul 764,6 / 800 kB.
+- **Otrăvurile** (`test/otravuri/3.Xh-4.py`, în clonă): 10 / 10. La prima rulare, 10 / 11: un plafon de lățime de prisos
+  în capul paginii, scos cu otrava lui.
+- **Toată felia 3.Xh** (propunerea și patru felii, într-o zi): pornirea +0,1 kB, totalul 760,9 → 764,6 / 800 kB;
+  otrăvurile 152 / 152; completul din CI verde pe 3.Xh-1 și 3.Xh-2, pornit pe 3.Xh-3 și pe capătul ramurii. PR-ul
+  `AndreiBesliu/cvs2#4`, gata de unit de sesiunea principală.
+- **De hotărât de owner:** fondul semnului lui Easy 3Draw (gri-albăstrui, nu cremul din schiță).
+
 - **Publicarea pe test** (`bash scripts/cloud/ci-si-publica.sh 8177ab81`, reluat de trei ori, cum e gândit): rapidul pe
   `main` verde; completul pe `main` verde în 44 de minute (unit 9 795 / 0, e2e 598 / 598, emulatoarele 104 / 104 și
   34 / 34); `publica.yml` verde în 3 minute; adresa de test spune `8177ab813f43`. **Găsit:** `gh workflow run publica.yml`
@@ -11590,6 +11726,27 @@ la rapoartele liniilor planșelor și adminului (PR-urile `AndreiBesliu/cvs2#2` 
 - **Nepublicat:** publicarea pe test rămâne la sesiunea principală (sau la cuvântul owner-ului): două publicări pornite din
   sesiuni diferite pot ajunge în ordinea greșită. Deschise, gata de unit acolo: `AndreiBesliu/cvs2#6`, `#8`, `#9`.
 
+## 2026-11-23 — 3.Xh: `main` adus a doua oară în ramură (3.Tr luase 18.20.0); partea bibliotecii, pe 18.21.0 (sesiune cloud)
+
+**Prompt:** niciunul nou: verificarea programată a completului de pe capătul ramurii (după raportul feliei 3.Xh) a găsit
+PR-ul `AndreiBesliu/cvs2#4` cu ciocniri față de `main`.
+**Started:** 23.11, 19:08. **Completed:** 23.11, 19:20 (în container; CI-ul, pe commit-ul împins).
+
+- **Ce s-a întâmplat:** cât rula completul pe `79fbef5`, linia elicelor a unit în `main` reparația probelor atelierului și
+  3.Tr (`d262e57`, apoi `6f85243`), cu elicea de barcă tot ca Easy 3Draw 18.20.0, versiunea luată și de 3.Xh-1 pentru semn.
+- **Ciocnirile, cinci:** `extensii/trenulet/extensie.json` (semnul păstrat, versiunea 18.21.0); `extensii/biblioteca.json`
+  (prezentarea păstrată; „ce e nou”: 18.21.0, semnul, apoi 18.20.0, elicea de barcă, scris acum; amprenta, cu
+  `node scripts/biblioteca.ts --scrie`); `test/e2e/trenulet.spec.ts` (fereastra nouă de confirmare, cu 18.21.0); jurnalul
+  fișei etapei 3 și registrul otrăvurilor (rândurile ambelor părți, după cheie). DEVLOG-ul s-a unit singur.
+- **Otrăvurile:** `verifica` pe listele `3.T*.py` și `3.X*.py`: aceleași VOID-uri ca pe `main` și ca pe capătul ramurii
+  (27, toate vechi); niciunul nou.
+- **Porțile, în container, pe arborele unit:** tipurile, regulile de import (0 încălcări), unitarele documentelor, ale
+  pluginului și ale extensiilor 494 / 494, traducerile roadmap-ului (936, 0 lipsă; un rând schimbat, al lui 3.Xh-1),
+  build-ul determinist, e2e cu Chrome (biblioteca, extensiile, pluginul, manualul, carcasa) 105 / 105. Pornirea 108,0 kB
+  (cu ușa 112,4 / 115), totalul 766,9 / 800 kB, `/admin` 124,1 / 200; Easy 3Draw 18.21.0, 461,1 kB.
+- **Documentele:** ADR 0231 („Versiunea, după 3.Tr”), fișa etapei 3 (rândul lui 3.Xh-1), nota liniei (pasul 5 al regulii:
+  ce face linia unită a doua când `main` aduce aceeași versiune).
+
 ## 2026-11-23 — Felia A.5: Utilizatori și Personal (ADR 0260 §5–§6)
 
 **Prompt:** „Da, pornește A.5” (owner-ul, pe 23.11, în sesiunea cloud a liniei adminului, după unirea lui A.4).
@@ -11670,6 +11827,22 @@ trasării, elicelor și adminului (PR-urile `AndreiBesliu/cvs2#6`, `AndreiBesliu
 - **Publicarea pe test** (`d6fd5d68`): rapidul și completul pe `main`, verzi (completul, 48 de minute); `publica.yml` verde;
   adresa de test spune `d6fd5d68cf33`. Scriptul, reluat de patru ori, a mers cap-coadă cu cele două reparații.
 
+## 2026-11-23 — 3.Xh: `main` adus a treia oară în ramură (25.8↑a, A.5, reparația probelor extensiilor) (sesiune cloud)
+
+**Prompt:** niciunul nou: vestea de pe PR-ul `AndreiBesliu/cvs2#4` că un push în `main` l-a lăsat iar cu ciocniri.
+**Started:** 23.11, 19:33. **Completed:** 23.11, 19:40 (în container; CI-ul, pe commit-ul împins).
+
+- **Ce a adus `main`** (`d6fd5d6`): 25.8↑a (imaginile pe foaie), A.5 (Utilizatori și Personal) și reparația probelor
+  extensiilor (`clicCareInchideCadrul`, `8287d66`).
+- **Ciocnirile, trei:** `test/e2e/extensii.spec.ts` (importurile ambelor părți: ajutoarele bibliotecii și
+  `clicCareInchideCadrul`); `test/unit/manual.test.ts` (ușile: 112 pe fiecare parte, cu altă ușă nouă, deci **113**:
+  `foaie.imagini` și `extensii.biblioteca`); DEVLOG (`scripts/rezolva-devlog.py`).
+- **Otrăvurile:** `verifica` pe toate listele: aceleași VOID-uri ca pe `main` (234), niciunul nou.
+- **Porțile, în container, pe arborele unit:** tipurile, regulile de import (0 încălcări), traducerile (939, 0 lipsă),
+  unitarele documentelor, ale pluginului, ale extensiilor și ale acțiunilor 511 / 511, build-ul determinist, e2e cu Chrome
+  (biblioteca, extensiile, pluginul, manualul, carcasa) 105 / 105. Pornirea 108,6 kB (cu ușa 113,1 / 115), totalul
+  773,8 / 800 kB, `/admin` 125,6 / 200; manualul, 40 de capitole.
+
 
 ## 2026-11-23 — Felia 11.3↑f: urechile după reguli, pe laturi (ADR 0211, varianta c)
 
@@ -11725,6 +11898,21 @@ sesiunii principale). Modelul: al sesiunii, în trailerul commit-urilor.
   afara `.md`), deci porțile de acolo valorează, ca la lotul sesiunii principale.
 - **Documentele:** decizia în `CLAUDE.md` și rândul de stare al regulilor (unită în `f4601938`); indexul liniilor, indexul
   ADR (0211, implementat în 11.3↑d–f), starea din `docs/linii/principala.md`, nota liniei (cu lecția ordinii).
+
+## 2026-11-23 — 3.Xh: `main` adus a patra oară în ramură (11.3↑f) (sesiune cloud)
+
+**Prompt:** niciunul nou: vestea de pe PR-ul `AndreiBesliu/cvs2#4` că un push în `main` l-a lăsat iar cu ciocniri.
+**Started:** 23.11, 19:56. **Completed:** 23.11, 20:00 (în container; CI-ul, pe commit-ul împins).
+
+- **Ce a adus `main`** (`c8b235a`): 11.3↑f (urechile după reguli, pe laturi). Ciocnirea, doar în DEVLOG
+  (`scripts/rezolva-devlog.py`).
+- **Porțile, în container, pe arborele unit:** tipurile, regulile de import, traducerile (941, 0 lipsă), unitarele
+  documentelor, ale pluginului, ale extensiilor și ale acțiunilor 511 / 511, build-ul determinist, e2e cu Chrome
+  (biblioteca, extensiile, pluginul, manualul, carcasa) 61 / 61; `verifica` pe toate listele de otrăvuri: aceleași VOID-uri
+  ca pe `main`. Pornirea 108,6 kB (cu ușa 113,1 / 115), totalul 774,6 / 800 kB, `/admin` 125,6 / 200.
+- **Completul:** cel de pe `8b443ac` e lăsat să meargă (poarta codului feliei, cu `main` de la a treia aducere); unul nou,
+  pe capăt. **De acum, o ciocnire doar în DEVLOG, venită cât rulează completul capătului, așteaptă sfârșitul lui:**
+  altfel, cu `main` unit la fiecare jumătate de oră, completul de un ceas nu mai apucă să se termine pe capăt.
 
 ## 2026-11-23 — Felia A.6: Roadmap, Documentație și Setări (ADR 0260 §8–§9)
 
@@ -11784,6 +11972,22 @@ si sa le salvez in cont” și „Da-mi un prompt pentru o sesiune dedicata frez
 - **Documentele:** decizia în `CLAUDE.md`; indexul liniilor (adminul, frezele); `docs/linii/principala.md` (starea,
   mesajele între sesiuni); `docs/lucru-in-cloud.md` (sesiunile își pot scrie; o linie căreia i se cere unirea îi scrie
   întâi sesiunii principale).
+
+## 2026-11-23 — 3.Xh: completul verde pe capătul ramurii; `main` adus a cincea oară (A.6); PR-ul, gata de unit (sesiune cloud)
+
+**Prompt:** niciunul nou: vestea de pe PR-ul `AndreiBesliu/cvs2#4` că s-au terminat verificările capătului.
+**Started:** 23.11, 20:51. **Completed:** 23.11, 20:55 (în container; rapidul, pe commit-ul împins).
+
+- **Completul cu Edge, verde** pe `18c4941` (capătul de dinainte, cu `main` până la 11.3↑f) și pe `8b443ac` (cu `main` până
+  la 25.8↑a și A.5); înainte, pe `79fbef5` (toată felia) și pe fiecare sub-felie.
+- **`main` adus** (`ee4f629`: A.6, Roadmap, Documentație și Setări ale adminului): venise cât rula completul, cu ciocnirea
+  doar în DEVLOG și codul doar în `src/admin/`, deci a așteptat sfârșitul lui (regula de la a patra aducere).
+- **Porțile, în container, pe arborele unit:** tipurile, regulile de import, traducerile (943, 0 lipsă), unitarele
+  documentelor, ale pluginului, ale extensiilor și ale acțiunilor 515 / 515, build-ul determinist, e2e cu Chrome
+  (biblioteca, extensiile, pluginul, manualul, carcasa) 61 / 61. Pornirea 108,6 kB (cu ușa 113,1 / 115), totalul
+  774,7 / 800 kB, `/admin` 127,5 / 200.
+- **PR-ul trece din ciornă în „gata de unit”** după rapidul de pe commit-ul acesta; unirea, la sesiunea principală.
+
 - **După unire:** promptul frezelor dăduse liniei ADR-urile 0290–0299, luate cu o oră înainte de linia exportului
   (`wip/28.8-export`, pornită de owner; ADR 0290 propus pe ramura ei, nevăzut din `main`). Corectat la 0300–0309, în
   prompt (retrimis owner-ului) și în documente; în prompt, și legătura cu fereastra exportului, unde se alege freza.

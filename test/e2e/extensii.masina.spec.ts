@@ -26,8 +26,8 @@ const stare = (page: Page) => cadru(page).locator('[data-proba="stare"]');
 async function instaleaza(page: Page): Promise<void> {
   await page.goto('/');
   await page.locator('[data-extensii="fisier-ales"]').setInputFiles({ name: 'proba-masina-1.0.0.zip', mimeType: 'application/zip', buffer: PROBA });
-  await expect(page.getByTestId('extensii-permisiuni')).toHaveText(
-    'Cere: să folosească mașina: să încarce programe, să le pornească sau să le reia după confirmarea ta, să pună pauză și să oprească lucrarea.',
+  await expect(page.getByTestId('extensii-permisiuni').locator('li')).toHaveText(
+    ['Mașina încarcă programe, le pornește sau le reia doar după confirmarea ta, pune pauză și oprește lucrarea'],
   );
   await page.locator('[data-extensii="instaleaza"]').click();
   await expect(page.getByTestId('extensii-instalare')).toHaveCount(0);
