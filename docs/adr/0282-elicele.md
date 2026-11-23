@@ -2,7 +2,8 @@
 
 **Starea:** acceptat pe 22.11.2026 (1a, 2a, 3a); **felia 3.Tq implementată pe ramura `wip/3.Tq-elice`, Easy 3Draw 18.19.0**
 (23.11, în sesiunea cloud a liniei; cifrele, la „Implementarea”); **felia 3.Tr (elicea de barcă) implementată pe aceeași
-ramură, Easy 3Draw 18.20.0** (23.11, la „pornește 3.Tr” al owner-ului; „Implementarea (3.Tr)”); 3.Ts, la cuvântul owner-ului.
+ramură, Easy 3Draw 18.20.0** (23.11, la „pornește 3.Tr” al owner-ului; „Implementarea (3.Tr)”; unită în `main` în `d262e57a`);
+3.Ts, la cuvântul owner-ului.
 Propus pe 22.11, la
 cererea owner-ului: „Vreau ca pluginul sa faca si elice, pentru imprimanta, si sa fie
 si configurabile elicele si compatibile cu lego”. **Completează:** ADR 0280 (roțile, fulia, roțile la 90° și șenila),

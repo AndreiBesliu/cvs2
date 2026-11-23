@@ -92,8 +92,8 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
   `8177ab81`; apoi lotul 11.3↑e (planșele, `d3ffcbf3`) și A.4 (adminul, `ddaa7ead`). Înainte, lotul de după pauză
   (`220bd48e`: 12.1↑e-2, 10.3↑o, 3.6v) și uneltele lucrului în cloud.
 - **Liniile** (vezi [indexul](README.md)):
-  - **elicele:** 3.Tq unită; reparația probelor atelierului (la cuvântul owner-ului, în sesiunea liniei), cu porțile în
-    CI; 3.Tr (barca) și 3.Ts (carcasa), la cuvântul owner-ului;
+  - **elicele:** 3.Tq unită; reparația probelor atelierului și 3.Tr (elicea de barcă, 18.20.0), unite în `d262e57a` de
+    sesiunea liniei, la cuvântul owner-ului (publicarea pe test rămâne aici); 3.Ts (carcasa), la cuvântul owner-ului;
   - **planșele:** 11.3↑e unită; 11.3↑f, la cuvântul owner-ului. **Adminul:** A.4 unită; A.5–A.7, la cuvântul owner-ului;
   - **trasarea:** 25.8↑a, cu porțile finale în CI. **Incrustațiile:** 12.1↑e-3 în lucru (ramura mai are `.lucru/`);
   - **biblioteca extensiilor, interfața nouă** (3.Xh, `wip/3.Xh-biblioteca-ui`, ADR 0231–0239, canalul `biblioteca`;

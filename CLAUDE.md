@@ -1285,6 +1285,29 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 23.11.2026, după-amiaza (a treia unire din cloud): **linia elicelor (reparația probelor atelierului și 3.Tr, elicea de
+  barcă) unită în `main`**, la „deocamdata putem face unirea” al owner-ului, în sesiunea liniei (ramura `unire-2311d`, din
+  `c010e3d1`). Ramura `wip/3.Tq-elice`, `8b1255b8`, PR-ul `AndreiBesliu/cvs2#5`, unită în `d262e57a`:
+  - **reparația probelor atelierului** (`baa00ad4`, la „ia reparația probelor atelierului”; doar probe): spec-urile
+    atelierului Easy 3Draw intră în 3D prin `test/e2e/ajutor-atelier.ts` (`threeDinPachet`, three.js din `vendor/`, nu de pe
+    cdnjs; `intraIn3D`, care așteaptă pânza previzualizării): o scriere căzută peste redesenarea de după sosirea lui three.js
+    se pierdea (5 din 101 la sosirea întârziată anume, 0 din 101 cu așteptarea). **O probă nouă a atelierului intră în 3D cu
+    `intraIn3D`, nu cu un clic pe `[data-mod="3d"]`;**
+  - **3.Tr** (la „pornește 3.Tr”; ADR 0282, „Implementarea (3.Tr)”): elicea de barcă, a doua piesă a filei „Elice”: 3–5
+    palete late (conturul „ureche”), pasul constant, înclinate înapoi pe cerc, secțiunea ogivală, butucul cât paletele,
+    capacul rotunjit, „Repede” pe grila de știfturi și „Fă perechea”; tipărită fără suport, cu partea dinspre barcă pe masă.
+    Hotărâte la implementare, cu motivul în ADR: înclinarea pe cerc, nu spre pupa (aceea ar cere suport); fără „Ca LEGO”
+    (singura elice LEGO de apă, a motorului de barcă, nu stă pe un ax LEGO); butucul crește cu elicea. Paletele și butucul
+    celor două elice, din aceleași funcții (`paleteElice`, `butucElice`); elicea din 3.Tq, aceeași la octet (3 456 de
+    combinații). Pachetul 18.20.0; otrăvurile 141 / 141 și 6 / 6.
+
+  Ramura avea `main` adus (`c010e3d1`, ciocnirea doar în DEVLOG, rezolvată cu `rezolva-devlog.py`) și n-are `.lucru/`:
+  arborele unirii e chiar al lui `8b1255b8` (`git diff` gol), deci porțile lui sunt ale unirii. Nimic pe server. Porțile, în
+  CI, verzi pe `8b1255b8`: unit 9 825 / 0 (12 sărite, pe Linux), e2e 604 / 604, funcțiile pe emulatoare 104 / 104, paginile
+  36 / 36; pornirea 107,9 kB (plafonul 115; cu ușa 112,3), totalul 763,1 / 800 kB, `/admin` 124,1 / 200; Easy 3Draw 18.20.0,
+  460,6 kB. Publicarea pe test, la sesiunea principală (sau la cuvântul owner-ului). Urmează, la cuvântul owner-ului: 3.Ts
+  (ventilatorul cu carcasă) și, dacă o vrea, înclinarea spre pupa ca opțiune (cu suport); deschise, gata de unit de
+  sesiunea principală: 25.8↑a (`AndreiBesliu/cvs2#6`), A.5 (`#8`), 11.3↑f (`#9`).
 - 23.11.2026, după-amiaza (a doua unire din cloud): **11.3↑e (urechile „unde ține”) și A.4 (Sugestii ca tablă) unite
   în `main`**, în lot (ramura `unire-2311c`, din `feecf82a`). **11.3↑e** (linia planșelor, ramura `wip/11.1-plansele`,
   `83b690a5`, PR-ul `AndreiBesliu/cvs2#2`; ADR 0211, varianta b), unită în `d3ffcbf3`: în fereastra exportului,

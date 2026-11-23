@@ -2,7 +2,7 @@
 
 <!-- Adusă din memoria sesiunii principale pe 23.11.2026 (mutarea în cloud). De aici înainte o ține la zi linia, pe ramura ei, odată cu feliile. -->
 
-_CNCVS2, elicele din Easy 3Draw (ADR 0282, ACCEPTAT 22.11 cu 1a, 2a, 3a): 3.Tq (elicea) unită în `main` pe 23.11 (`0ae9c6c1`, Easy 3Draw 18.19.0); reparația probelor atelierului (`baa00ad`) și 3.Tr (elicea de barcă, 18.20.0) GATA pe `wip/3.Tq-elice`, în sesiunea cloud a liniei; apoi 3.Ts (carcasa), la cuvântul owner-ului; cotele LEGO măsurate din LDraw, față de axa piesei_
+_CNCVS2, elicele din Easy 3Draw (ADR 0282, ACCEPTAT 22.11 cu 1a, 2a, 3a): 3.Tq (elicea) unită în `main` pe 23.11 (`0ae9c6c1`, Easy 3Draw 18.19.0); reparația probelor atelierului (`baa00ad`) și 3.Tr (elicea de barcă, 18.20.0) unite în `main` pe 23.11 (`d262e57a`), din sesiunea cloud a liniei; apoi 3.Ts (carcasa), la cuvântul owner-ului; cotele LEGO măsurate din LDraw, față de axa piesei_
 
 ## 3.Tq, gata (23.11, în cloud)
 

@@ -11502,3 +11502,17 @@ la rapoartele liniilor planșelor și adminului (PR-urile `AndreiBesliu/cvs2#2` 
   (cu ușa 112,3), totalul 763,1 / 800, `/admin` 124,1 / 200; Easy 3Draw 18.20.0, 460,6 kB.
 - **Documentele:** ADR 0282, indexul ADR, fișa etapei 3 (jurnalul și coada owner-ului), traducerile roadmap-ului (4),
   registrul otrăvurilor, nota liniei.
+
+## 2026-11-23 — Linia elicelor unită în `main` (reparația probelor atelierului și 3.Tr), din sesiunea liniei (Model: Claude Opus 5.5)
+
+**Prompt:** „deocamdata putem face unirea” (în sesiunea cloud a liniei elicelor, după raportul lui 3.Tr).
+**Started:** 23.11, 17:13. **Completed:** 23.11, 17:30 (push-ul în `main`; rapidul pe `main`, după push).
+
+- **Unirea:** `unire-2311d` din `origin/main` (`c010e3d1`), `git merge --no-ff 8b1255b8` → `d262e57a`. Ramura avea `main`
+  adus și n-are `.lucru/`: `git diff 8b1255b8 d262e57a` e gol, deci porțile ramurii sunt ale unirii (rapidul și completul
+  verzi pe `8b1255b8`: unit 9 825 / 0, 12 sărite; e2e 604 / 604; emulatoarele 104 / 104 și 36 / 36; pornirea 107,9 / 115,
+  totalul 763,1 / 800).
+- **Documentele:** decizia în `CLAUDE.md`, indexul notelor, nota sesiunii principale (starea elicelor), indexul ADR și
+  starea ADR 0282, nota liniei.
+- **Nepublicat:** publicarea pe test rămâne la sesiunea principală (sau la cuvântul owner-ului): două publicări pornite din
+  sesiuni diferite pot ajunge în ordinea greșită. Deschise, gata de unit acolo: `AndreiBesliu/cvs2#6`, `#8`, `#9`.
