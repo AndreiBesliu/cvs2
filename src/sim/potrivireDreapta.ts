@@ -7,16 +7,19 @@
  * Ce măsoară:
  * - jocul lateral, exact, pe mutări (`taiereExacta.ts`): punctele peretelui locașului la D/2 le dă grila, bisecția pe tăietura
  *   exactă le face exacte, iar jocul fiecăruia e cât intră punctul, dus pe semifabricat, în zona tăiată din jurul dopului, la h/2;
- * - dopul în locaș: punctele peretelui dopului la h/2 (fără rama semifabricatului), aduse pe foaie, care cad în afara locașului;
+ * - dopul în locaș: punctele peretelui dopului la h/2 (fără rama semifabricatului și fără miezurile golurilor), aduse pe foaie,
+ *   care cad în afara locașului;
  * - adâncimea locașului (mediana fundului, F peste D/2) și înălțimea dopului (mediana feței coborâte, M peste h/2; la cel
  *   decupat, cea mai adâncă tăietură: punțile ridică fundul șanțului în dreptul lor);
  * - sprijinul: pe fund, între plăci h − D; la decupat, peste placă h − D (se rindeluiește); pe față, sub dop D − h.
  * Secțiunea (ADR 0179 §5): dopul ridicat întors și coborât până la primul contact (h* = min(F + M)); cel decupat, neîntors, pe
  * fundul locașului (h* = cel mai înalt fund de sub el).
+ *
+ * Grilele, lemnul dopului și pereții exacți sunt comune cu dopul în trepte (`potrivireTrepte.ts`, felia 12.1↑e-4).
  */
 import { campNou, valoare } from './camp.ts';
 import {
-  banda, CELULA_POTRIVIRE, PLAFON_CELULE_POTRIVIRE, simuleaza, TOLERANTA_POTRIVIRE,
+  banda, CELULA_POTRIVIRE, inDesen, PLAFON_CELULE_POTRIVIRE, simuleaza, TOLERANTA_POTRIVIRE,
   type BandaPotrivire, type ProgramPotrivire, type RandPotrivire, type SectiunePotrivire,
 } from './potrivire.ts';
 import { bisectie, functieTaiere } from './taiereExacta.ts';
@@ -33,9 +36,14 @@ export type HartieDreapta = {
   readonly sprijin: 'fund' | 'fata'; readonly decupat: boolean; readonly gaura: boolean;
 };
 
+/** Cutia de pe foaie din care se face semifabricatul (cu `margine` pe fiecare parte). */
+export type CutiePotrivire = { readonly x0: number; readonly y0: number; readonly x1: number; readonly y1: number };
+
 export type ParametriDreapta = {
-  readonly cutie: { readonly x0: number; readonly y0: number; readonly x1: number; readonly y1: number };
+  readonly cutie: CutiePotrivire;
   readonly margine: number;
+  /** Desenul dopului pe foaie: poligoane închise [x, y, x, y, …], regiune par-impar. Lemnul care nu-l atinge nu e al dopului. */
+  readonly dop: readonly (readonly number[])[];
   readonly hartie: HartieDreapta;
   /** Grosimea semifabricatului dopului (fața lui de sus, în secțiune). */
   readonly grosimeDop: number;
@@ -61,12 +69,27 @@ export type PotrivireDreapta = {
   readonly sectiune: SectiunePotrivire;
 };
 
-const mediana = (v: number[]): number => banda(v).med;
+export const mediana = (v: number[]): number => banda(v).med;
 
-/** Locașul și dopul simulate, jocul lateral exact, dopul în locaș, adâncimile, sprijinul și secțiunea (ADR 0179, 12.1↑e-3). */
-export function potrivireaDreapta(locas: ProgramPotrivire, dop: ProgramPotrivire, p: ParametriDreapta): PotrivireDreapta {
-  const { x0, y0, x1, y1 } = p.cutie, m = p.margine, h = p.hartie, oglindit = !h.decupat;
-  let c = p.celula ?? CELULA_POTRIVIRE;
+type Punct = readonly [number, number];
+
+/**
+ * Locașul și dopul simulate pe grile care își corespund prin contract: celula k e aceeași celulă a foii pe amândouă (dopul
+ * oglindit e citit în oglindă). F e cât s-a scos din placă, M cât s-a scos din dop. Peste `PLAFON_CELULE_POTRIVIRE`, celula se
+ * dublează până încape.
+ */
+export type GrilePotrivire = {
+  readonly c: number; readonly nx: number; readonly ny: number; readonly n: number; readonly gx0: number; readonly gy0: number;
+  readonly F: Float32Array; readonly M: Float32Array;
+  /** Centrul celulei k, pe foaie. */
+  readonly centru: (k: number) => Punct;
+  /** Foaie → semifabricat, după contract. */
+  readonly spreDop: (x: number, y: number) => Punct;
+};
+
+export function grilePotrivire(locas: ProgramPotrivire, dop: ProgramPotrivire, cutie: CutiePotrivire, m: number, oglindit: boolean, celula?: number): GrilePotrivire {
+  const { x0, y0, x1, y1 } = cutie;
+  let c = celula ?? CELULA_POTRIVIRE;
   const celule = (cc: number): readonly [number, number] => [Math.ceil((x1 - x0 + 2 * m) / cc - 1e-9), Math.ceil((y1 - y0 + 2 * m) / cc - 1e-9)];
   let [nx, ny] = celule(c);
   while (nx * ny > PLAFON_CELULE_POTRIVIRE) {
@@ -74,10 +97,10 @@ export function potrivireaDreapta(locas: ProgramPotrivire, dop: ProgramPotrivire
     [nx, ny] = celule(c);
   }
   const gx0 = x0 - m, gy0 = y0 - m, latime = nx * c, inaltime = ny * c;
-  // Foaie → semifabricat, după contract, și grila dopului: imaginea ferestrei (oglindită pe X la dopul ridicat).
-  const spreDop = (x: number, y: number): readonly [number, number] => (oglindit ? [x1 + m - x, y - y0 + m] : [x - x0 + m, y - y0 + m]);
+  const spreDop = (x: number, y: number): Punct => (oglindit ? [x1 + m - x, y - y0 + m] : [x - x0 + m, y - y0 + m]);
   const campLocas = campNou({ x0: gx0, y0: gy0, latime, inaltime, celula: c, sus: 0 });
   simuleaza(campLocas, locas);
+  // Grila dopului: imaginea ferestrei pe semifabricat (oglindită pe X la dopul oglindit).
   const campDop = campNou({ x0: oglindit ? x1 + m - gx0 - latime : gx0 - x0 + m, y0: gy0 - y0 + m, latime, inaltime, celula: c, sus: 0 });
   simuleaza(campDop, dop);
   const n = nx * ny, F = new Float32Array(n), M = new Float32Array(n);
@@ -87,21 +110,62 @@ export function potrivireaDreapta(locas: ProgramPotrivire, dop: ProgramPotrivire
       M[j * nx + i] = -valoare(campDop, oglindit ? nx - 1 - i : i, j);
     }
   }
-  const centru = (k: number): readonly [number, number] => [gx0 + ((k % nx) + 0.5) * c, gy0 + (Math.floor(k / nx) + 0.5) * c];
+  return { c, nx, ny, n, gx0, gy0, F, M, centru: (k) => [gx0 + ((k % nx) + 0.5) * c, gy0 + (Math.floor(k / nx) + 0.5) * c], spreDop };
+}
 
-  // Rama semifabricatului (dopul decupat): lemnul netăiat la h/2 legat de marginea ferestrei; nu e al dopului.
-  const netaiat = (k: number): boolean => M[k]! < h.h / 2;
-  const rama = new Uint8Array(n), coada: number[] = [];
-  const pune = (k: number): void => { if (netaiat(k) && !rama[k]) { rama[k] = 1; coada.push(k); } };
-  for (let i = 0; i < nx; i++) { pune(i); pune((ny - 1) * nx + i); }
-  for (let j = 0; j < ny; j++) { pune(j * nx); pune(j * nx + nx - 1); }
-  while (coada.length > 0) {
-    const k = coada.pop()!, i = k % nx;
-    if (i + 1 < nx) pune(k + 1);
-    if (i > 0) pune(k - 1);
-    if (k + nx < n) pune(k + nx);
-    if (k - nx >= 0) pune(k - nx);
+/**
+ * Lemnul dopului la adâncimea `prag` (1 pe celulă): bucățile netăiate acolo (vecinii pe laturi) care ating desenul dopului
+ * (`inDop`). Celelalte nu sunt ale lui: rama semifabricatului (la dopul decupat, placa din jurul șanțului) și miezurile golurilor
+ * unui dop decupat, rămase în mijlocul șanțului din gol, care cad la decupare.
+ */
+export function lemnDop(g: GrilePotrivire, prag: number, inDop: Uint8Array): Uint8Array {
+  const { nx, n, M } = g;
+  const rez = new Uint8Array(n), vazut = new Uint8Array(n);
+  const netaiat = (k: number): boolean => M[k]! < prag;
+  for (let k0 = 0; k0 < n; k0++) {
+    if (vazut[k0] || !netaiat(k0)) continue;
+    const celule = [k0], coada = [k0];
+    vazut[k0] = 1;
+    let atinge = false;
+    while (coada.length > 0) {
+      const k = coada.pop()!, i = k % nx;
+      if (inDop[k] === 1) atinge = true;
+      for (const kk of [i + 1 < nx ? k + 1 : -1, i > 0 ? k - 1 : -1, k + nx < n ? k + nx : -1, k - nx]) {
+        if (kk >= 0 && !vazut[kk] && netaiat(kk)) { vazut[kk] = 1; coada.push(kk); celule.push(kk); }
+      }
+    }
+    if (atinge) for (const q of celule) rez[q] = 1;
   }
+  return rez;
+}
+
+/**
+ * Punctele exacte ale unui perete: între două celule vecine, una tăiată (`taiat`, unde f < 0) și una de lemn (`lemn`, unde
+ * f ≥ 0), punctul unde f trece prin 0, prin bisecție pe segmentul dintre centrele lor.
+ */
+export function perete(g: GrilePotrivire, taiat: (k: number) => boolean, lemn: (k: number) => boolean, f: (x: number, y: number) => number): Punct[] {
+  const { nx, n } = g, rez: Punct[] = [];
+  for (let k = 0; k < n; k++) {
+    for (const kk of [(k % nx) + 1 < nx ? k + 1 : -1, k + nx < n ? k + nx : -1]) {
+      if (kk < 0) continue;
+      const [a, b] = taiat(k) && lemn(kk) ? [k, kk] : taiat(kk) && lemn(k) ? [kk, k] : [-1, -1];
+      if (a < 0) continue;
+      const pa = g.centru(a), pb = g.centru(b);
+      if (f(pa[0], pa[1]) < 0 && f(pb[0], pb[1]) >= 0) rez.push(bisectie(f, pa[0], pa[1], pb[0], pb[1]));
+    }
+  }
+  return rez;
+}
+
+/** Rândul tabelului: bun sau nu; un rând roșu își spune locul (fără el, dacă nu-l știe). */
+export const rand = (ok: boolean, unde: Punct | null): RandPotrivire => (ok || !unde ? { ok } : { ok, unde });
+
+/** Locașul și dopul simulate, jocul lateral exact, dopul în locaș, adâncimile, sprijinul și secțiunea (ADR 0179, 12.1↑e-3). */
+export function potrivireaDreapta(locas: ProgramPotrivire, dop: ProgramPotrivire, p: ParametriDreapta): PotrivireDreapta {
+  const h = p.hartie, oglindit = !h.decupat;
+  const g = grilePotrivire(locas, dop, p.cutie, p.margine, oglindit, p.celula);
+  const { c, nx, ny, n, gx0, gy0, F, M, centru } = g;
+  const lemn = lemnDop(g, h.h / 2, inDesen(p.dop, gx0, gy0, c, nx, ny));
 
   // Adâncimile, pe grilă.
   const funduri: number[] = [], fete: number[] = [];
@@ -124,60 +188,36 @@ export function potrivireaDreapta(locas: ProgramPotrivire, dop: ProgramPotrivire
   // Pereții, exact: tăietura locașului la D/2 (pe foaie) și a dopului la h/2 (dusă pe foaie prin contract).
   const fL = functieTaiere(locas, -h.D / 2);
   const fD0 = functieTaiere(dop, -h.h / 2);
-  const fD = (x: number, y: number): number => { const [u, v] = spreDop(x, y); return fD0(u, v); };
+  const fD = (x: number, y: number): number => { const [u, v] = g.spreDop(x, y); return fD0(u, v); };
+  // Peretele locașului: o celulă tăiată la D/2 lângă una netăiată; jocul, cât intră punctul în zona tăiată din jurul dopului.
   const jocuri: number[] = [];
-  let kJoc: readonly [number, number] | null = null, iesireJoc = 0;
-  let nDop = 0, afara = 0, kAfara: readonly [number, number] | null = null, iesireAfara = -1;
-  const vecini = (k: number): number[] => {
-    const i = k % nx, v: number[] = [];
-    if (i + 1 < nx) v.push(k + 1);
-    if (k + nx < n) v.push(k + nx);
-    return v;
-  };
-  for (let k = 0; k < n; k++) {
-    for (const kk of vecini(k)) {
-      // Peretele locașului: o celulă tăiată la D/2 lângă una netăiată.
-      const tk = F[k]! >= h.D / 2, tkk = F[kk]! >= h.D / 2;
-      if (tk !== tkk) {
-        const [a, b] = tk ? [centru(k), centru(kk)] : [centru(kk), centru(k)];
-        if (fL(a[0], a[1]) < 0 && fL(b[0], b[1]) >= 0) {
-          const q = bisectie(fL, a[0], a[1], b[0], b[1]);
-          const joc = -fD(q[0], q[1]);
-          jocuri.push(joc);
-          const e = Math.abs(joc - h.c);
-          if (e > TOLERANTA_JOC && e > iesireJoc) { iesireJoc = e; kJoc = q; }
-        }
-      }
-      // Peretele dopului: lemn netăiat la h/2 (fără ramă) lângă o celulă tăiată.
-      const dk = !netaiat(k) || rama[k], dkk = !netaiat(kk) || rama[kk];
-      if (dk !== dkk && !(rama[k] && rama[kk])) {
-        const lemn = dk ? kk : k, taiat = dk ? k : kk;
-        if (rama[lemn]) continue;
-        const a = centru(taiat), b = centru(lemn);
-        if (fD(a[0], a[1]) < 0 && fD(b[0], b[1]) >= 0) {
-          const q = bisectie(fD, a[0], a[1], b[0], b[1]);
-          nDop++;
-          const l = fL(q[0], q[1]);
-          if (!(l < 0)) {
-            afara++;
-            if (l > iesireAfara) { iesireAfara = l; kAfara = q; }
-          }
-        }
-      }
+  let kJoc: Punct | null = null, iesireJoc = 0;
+  for (const q of perete(g, (k) => F[k]! >= h.D / 2, (k) => F[k]! < h.D / 2, fL)) {
+    const joc = -fD(q[0], q[1]);
+    jocuri.push(joc);
+    const e = Math.abs(joc - h.c);
+    if (e > TOLERANTA_JOC && e > iesireJoc) { iesireJoc = e; kJoc = q; }
+  }
+  // Peretele dopului: lemnul lui la h/2 lângă o celulă tăiată; adus pe foaie, punctul trebuie să fie în locaș.
+  let nDop = 0, afara = 0, kAfara: Punct | null = null, iesireAfara = -1;
+  for (const q of perete(g, (k) => M[k]! >= h.h / 2, (k) => lemn[k] === 1, fD)) {
+    nDop++;
+    const l = fL(q[0], q[1]);
+    if (!(l < 0)) {
+      afara++;
+      if (l > iesireAfara) { iesireAfara = l; kAfara = q; }
     }
   }
 
-  // h*: dopul ridicat, întors, la primul contact; cel decupat, pe cel mai înalt fund de sub el (lemnul lui, fără ramă).
-  const piesa = (k: number): boolean => netaiat(k) && !rama[k];
+  // h*: dopul ridicat, întors, la primul contact; cel decupat, pe cel mai înalt fund de sub lemnul lui.
   let asezare = Number.POSITIVE_INFINITY;
   for (let k = 0; k < n; k++) {
     if (oglindit) asezare = Math.min(asezare, F[k]! + M[k]!);
-    else if (piesa(k)) asezare = Math.min(asezare, F[k]!);
+    else if (lemn[k]) asezare = Math.min(asezare, F[k]!);
   }
 
   const sprijin = h.decupat || h.sprijin === 'fund' ? inaltimeDop - adancime : adancime - inaltimeDop;
   const sprijinHartie = h.decupat || h.sprijin === 'fund' ? h.H : h.g;
-  const rand = (ok: boolean, unde: readonly [number, number] | null): RandPotrivire => (ok || !unde ? { ok } : { ok, unde });
   const jocB = banda(jocuri);
   const randuri = {
     joc: rand(jocB.n > 0 && kJoc === null, kJoc ?? (jocB.n === 0 ? centru(n >> 1) : null)),
@@ -194,7 +234,7 @@ export function potrivireaDreapta(locas: ProgramPotrivire, dop: ProgramPotrivire
   for (let i = 0; i < nx; i++) {
     const k = j * nx + i;
     placa[i] = -F[k]!;
-    fataDop[i] = oglindit ? M[k]! - asezare : piesa(k) ? -asezare : Number.NaN;
+    fataDop[i] = oglindit ? M[k]! - asezare : lemn[k] ? -asezare : Number.NaN;
   }
   return {
     fel: 'drept', hartie: h, celula: c, joc: jocB, dop: { n: nDop, afara }, adancime, inaltime: inaltimeDop, asezare, randuri,

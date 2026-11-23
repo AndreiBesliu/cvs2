@@ -64,9 +64,14 @@ oglindește, (x, y) → (x − x0 + m, y − y0 + m), și e tăiat prin placa gr
    „distanța în plan la cea mai apropiată mutare, minus raza frezei ei” e deci negativă în ce s-a tăiat și 0 pe perete. Pe
    peretele locașului, la D/2, punctele le dă grila de 0,1 mm, iar bisecția pe funcție le face exacte. Jocul fiecăruia e cât
    intră punctul, dus pe semifabricat după contract, în zona tăiată din jurul dopului, la h/2. Interferența: punctele
-   peretelui dopului (fără rama semifabricatului), aduse înapoi pe foaie, care cad în afara locașului. Implementarea e a
-   aplicației (`src/sim/taiereExacta.ts`, pe mutările nucleului); oracolul (`masoaraPotrivireaDreapta`) urmează același
-   contract pe textul G-code, cu cititorul lui.
+   peretelui dopului, aduse înapoi pe foaie, care cad în afara locașului. Implementarea e a aplicației
+   (`src/sim/taiereExacta.ts`, pe mutările nucleului); oracolul (`masoaraPotrivireaDreapta`) urmează același contract pe
+   textul G-code, cu cititorul lui.
+   - **Lemnul dopului** (precizarea din 23.11): bucățile netăiate la h/2 care ating desenul dopului (CAM-ul îl dă, aplatizat,
+     în descriptor). Rama semifabricatului nu-l atinge, și nici miezul unui gol al dopului decupat: golul se taie ca profil
+     interior, deci în mijlocul lui rămâne lemn, care cade la decupare. Socotit dop, miezul unui „O” decupat făcea „Dopul în
+     locaș” roșu și punea dopul pe fața plăcii (găsit la pregătirea treptelor, înaintea unirii). Grilele, lemnul dopului și
+     pereții exacți sunt funcții comune cu dopul în trepte (`grilePotrivire`, `lemnDop`, `perete`).
 3. **Adâncimea locașului și înălțimea dopului** sunt medianele pe grilă: fundul locașului (F peste D/2) și fața coborâtă a
    dopului (M peste h/2); la cel decupat, cea mai adâncă tăietură (punțile ridică fundul șanțului în dreptul lor).
 4. **Tabelul** are cinci rânduri: jocul lateral (c, cu toleranța 0,02, ca oracolul), dopul în locaș (niciun punct al
@@ -112,6 +117,9 @@ Felia 12.1↑e-3 (pereții drepți):
   - gaura prin foaia de 10: D e grosimea foii; dopul decupat iese H peste placă, cel ridicat pe față e cât foaia;
   - dopul în trepte e refuzat, cu motivul; secțiunile celor trei sprijinuri, pe hârtie.
 - [măsurat] `taiereExacta.test.ts`, pe hârtie: linia, arcul în ambele sensuri, nivelul, freza în V, cutia, bisecția.
+- [măsurat] Dopul decupat cu gol (un „O” pătrat, 23.11): pe codul de dinainte, „Dopul în locaș” roșu (248 de puncte ale
+  miezului „afară”) și dopul pus la fața plăcii; acum niciun rând roșu, dopul pe fund, golul gol în secțiune. Ieșirile pe cele
+  7 cazuri drepte ale oracolului, cu secțiunea, identice octet cu octet înainte și după funcțiile comune (SHA-256 al JSON-ului).
 - [măsurat] `sectiune.desen.test.ts`, pe secțiuni scrise de mână: treptele, cleiul doar în locaș (și la un joc de trei
   celule), pragul contactului, dopul decupat, gaura (cu martorul buzunarului de aceeași adâncime), dopul în V neschimbat.
 - [văzut] Privirea pe secțiunea reală, mărită, în Edge: ridicat pe fund și pe față, decupat, gaura (decupat și ridicat),

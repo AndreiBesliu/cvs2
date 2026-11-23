@@ -44,17 +44,17 @@ o('T09', TE, '  for (let k = 0; k < 40 && lung(x1 - x0, y1 - y0) > 1e-7; k++) {'
   'bisecția oprită după 4 pași')
 
 # ---- Măsurarea dreaptă (src/sim/potrivireDreapta.ts) ----
-o('P01', PD, ', h = p.hartie, oglindit = !h.decupat;', ', h = p.hartie, oglindit = true;', 'dreapta', 'și dopul decupat oglindit')
+o('P01', PD, '  const h = p.hartie, oglindit = !h.decupat;', '  const h = p.hartie, oglindit = true;', 'dreapta', 'și dopul decupat oglindit')
 o('P02', PD, '(oglindit ? [x1 + m - x, y - y0 + m] :', '(oglindit ? [x1 + m - x, y - y0] :', 'dreapta', 'contractul fără margine pe Y la jocul exact')
-o('P03', PD, '  for (let i = 0; i < nx; i++) { pune(i); pune((ny - 1) * nx + i); }\n  for (let j = 0; j < ny; j++) { pune(j * nx); pune(j * nx + nx - 1); }\n', '',
-  'dreapta', 'fără rama semifabricatului: lemnul ei numărat ca dop')
-o('P05', PD, '          const joc = -fD(q[0], q[1]);', '          const joc = fD(q[0], q[1]);', 'dreapta', 'jocul lateral cu semnul întors')
-o('P06', PD, '          if (e > TOLERANTA_JOC && e > iesireJoc) {', '          if (e > 10 * TOLERANTA_JOC && e > iesireJoc) {', 'dreapta',
+o('P03', PD, '    if (atinge) for (const q of celule) rez[q] = 1;', '    for (const q of celule) rez[q] = 1;', 'dreapta',
+  'tot lemnul netăiat e al dopului: și rama semifabricatului, și miezurile golurilor')
+o('P05', PD, '    const joc = -fD(q[0], q[1]);', '    const joc = fD(q[0], q[1]);', 'dreapta', 'jocul lateral cu semnul întors')
+o('P06', PD, '    if (e > TOLERANTA_JOC && e > iesireJoc) {', '    if (e > 10 * TOLERANTA_JOC && e > iesireJoc) {', 'dreapta',
   'jocul lateral tolerat la 0,2 în loc de 0,02')
-o('P07', PD, '            afara++;\n', '', 'dreapta', 'punctele dopului din afara locașului nenumărate')
+o('P07', PD, '      afara++;\n', '', 'dreapta', 'punctele dopului din afara locașului nenumărate')
 o('P08', PD, '    if (oglindit) asezare = Math.min(asezare, F[k]! + M[k]!);', '    if (oglindit) asezare = Math.min(asezare, F[k]!);', 'dreapta',
   'dopul ridicat neașezat (h* fără fața lui)')
-o('P09', PD, '    else if (piesa(k)) asezare = Math.min(asezare, F[k]!);', '    else asezare = Math.min(asezare, F[k]!);', 'dreapta',
+o('P09', PD, '    else if (lemn[k]) asezare = Math.min(asezare, F[k]!);', '    else asezare = Math.min(asezare, F[k]!);', 'dreapta',
   'dopul decupat așezat și pe fața plăcii din jur')
 o('P10', PD, "  const sprijin = h.decupat || h.sprijin === 'fund' ? inaltimeDop - adancime : adancime - inaltimeDop;",
   '  const sprijin = inaltimeDop - adancime;', 'dreapta', 'pe față, sprijinul măsurat ca între plăci')
@@ -66,18 +66,32 @@ o('P14', PD, '    adancime: rand(Math.abs(adancime - h.D) <= TOLERANTA_POTRIVIRE
 o('P15', PD, '    inaltime: rand(Math.abs(inaltimeDop - h.h) <= TOLERANTA_POTRIVIRE,', '    inaltime: rand(true,', 'dreapta', '„Înălțimea dopului” mereu bună')
 o('P16', PD, '    sprijin: rand(Math.abs(sprijin - sprijinHartie) <= TOLERANTA_POTRIVIRE,', '    sprijin: rand(true,', 'dreapta', 'sprijinul mereu bun')
 o('P17', PD, ' : ny >> 1;', ' : 0;', 'dreapta', 'secțiunea pe marginea ferestrei, nu prin mijloc')
-o('P18', PD, '    fataDop[i] = oglindit ? M[k]! - asezare : piesa(k) ? -asezare : Number.NaN;', '    fataDop[i] = oglindit ? M[k]! - asezare : -asezare;',
+o('P18', PD, '    fataDop[i] = oglindit ? M[k]! - asezare : lemn[k] ? -asezare : Number.NaN;', '    fataDop[i] = oglindit ? M[k]! - asezare : -asezare;',
   'dreapta', 'dopul decupat desenat și în afara lui')
 o('P19', PD, 'marcaj: rosu?.unde ? rosu.unde[0] : null,', 'marcaj: null,', 'dreapta', 'locul diferenței nemarcat pe secțiune')
 o('P20', PD, '      M[j * nx + i] = -valoare(campDop, oglindit ? nx - 1 - i : i, j);', '      M[j * nx + i] = -valoare(campDop, i, j);', 'dreapta',
   'dopul ridicat neoglindit pe grilă')
 o('P21', PD, '  const campDop = campNou({ x0: oglindit ? x1 + m - gx0 - latime : gx0 - x0 + m,', '  const campDop = campNou({ x0: oglindit ? x1 + m - gx0 - latime : gx0 - x0,',
   'dreapta', 'grila dopului decupat fără margine')
-o('P22', PD, '  const netaiat = (k: number): boolean => M[k]! < h.h / 2;', '  const netaiat = (k: number): boolean => M[k]! < h.h;', 'dreapta',
-  'punțile decupatului legate de ramă: dopul luat drept ramă')
-o('P23', PD, '      const tk = F[k]! >= h.D / 2, tkk = F[kk]! >= h.D / 2;', '      const tk = F[k]! >= h.D / 2, tkk = tk;', 'dreapta',
+o('P22', PD, '  const lemn = lemnDop(g, h.h / 2,', '  const lemn = lemnDop(g, h.h,', 'dreapta',
+  'lemnul dopului citit la fundul punților: dopul decupat, legat prin ele de ramă, ia rama cu el')
+o('P23', PD, '  for (const q of perete(g, (k) => F[k]! >= h.D / 2,', '  for (const q of perete(g, () => false,', 'dreapta',
   'niciun punct pe peretele locașului')
-o('P24', PD, '        if (rama[lemn]) continue;\n', '', 'dreapta', 'marginea ramei numărată ca perete al dopului')
+o('P24', PD, '(k) => M[k]! >= h.h / 2, (k) => lemn[k] === 1, fD)', '(k) => M[k]! >= h.h / 2, (k) => M[k]! < h.h / 2, fD)', 'dreapta',
+  'marginea ramei și a miezurilor numărată ca perete al dopului')
+
+# 23.11 (reparația miezurilor, înaintea feliei 12.1↑e-4): grilele, lemnul dopului și pereții exacți au ieșit în funcții comune
+# (`grilePotrivire`, `lemnDop`, `perete`), iar lemnul dopului e doar ce atinge desenul lui (`dop` în descriptor): miezurile
+# golurilor unui dop decupat cad. P01, P03, P05–P07, P09, P18, P22–P24 urmează codul nou; N01–N05 sunt ale reparației.
+o('N01', PD, '      if (inDop[k] === 1) atinge = true;', '      if (inDop[k] === 1 || k >= 0) atinge = true;', 'dreapta',
+  'orice bucată de lemn e a dopului: miezul golului socotit dop')
+o('N02', PD, '      for (const kk of [i + 1 < nx ? k + 1 : -1, i > 0 ? k - 1 : -1, k + nx < n ? k + nx : -1, k - nx]) {',
+  '      for (const kk of [i + 1 < nx ? k + 1 : -1, i > 0 ? k - 1 : -1]) {', 'dreapta', 'bucățile de lemn legate doar pe rânduri')
+o('N03', PD, '      if (f(pa[0], pa[1]) < 0 && f(pb[0], pb[1]) >= 0) rez.push(', '      if (f(pb[0], pb[1]) >= 0) rez.push(', 'dreapta',
+  'punctul de perete căutat și unde partea tăiată nu e tăiată exact')
+o('N04', DD, ' margine: m, dop: desenDop(f.figura.dop),', ' margine: m, dop: [],', 'dreapta', 'potrivirea fără desenul dopului')
+o('N05', DD, "  regiuni.flatMap((r) => [r.exterior, ...r.gauri])", "  regiuni.flatMap((r) => [r.exterior])", 'dreapta',
+  'desenul dopului fără goluri: miezul golului îl atinge')
 
 # ---- Ce îi dă CAM-ul (src/cam/dopDrept.ts) ----
 o('K01', DD, '            D: esteGaura(op) ? (doc.foi[0]?.stoc.grosime ?? op.adancime) : op.adancime,', '            D: op.adancime,', 'dreapta',

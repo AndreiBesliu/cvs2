@@ -44,6 +44,11 @@ export type DescrierePotrivire =
     readonly cutie: { readonly x0: number; readonly y0: number; readonly x1: number; readonly y1: number };
     readonly margine: number;
     /**
+     * Desenul dopului pe foaie (conturul lui, cu golurile): poligoane [x, y, x, y, …], par-impar, arcele aplatizate. Lemnul
+     * simulat care nu-l atinge nu e al dopului: miezurile golurilor unui dop decupat cad.
+     */
+    readonly dop: readonly (readonly number[])[];
+    /**
      * Adâncimea locașului D (la gaură, grosimea foii), jocul lateral c, înălțimea dopului h, spațiul H, jocul g, sprijinul;
      * `gaura`, locașul prin foaie (desenul secțiunii n-are fund sub ea).
      */

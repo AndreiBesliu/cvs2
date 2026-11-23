@@ -98,8 +98,11 @@ export function banda(v: number[]): BandaPotrivire {
   return { n: s.length, min: s[0]!, med: s[(s.length - 1) >> 1]!, max: s[s.length - 1]! };
 }
 
-/** Celulele din desen (par-impar), pe rânduri: trecerile laturilor prin centrul fiecărui rând, sortate, umplute pe perechi. */
-function inDesen(desen: ParametriPotrivire['desen'], gx0: number, gy0: number, c: number, nx: number, ny: number): Uint8Array {
+/**
+ * Celulele din desen (par-impar), pe rânduri: trecerile laturilor prin centrul fiecărui rând, sortate, umplute pe perechi. Și
+ * lemnul dopurilor drepte (`potrivireDreapta.ts`) se alege cu ea, după desenul dopului.
+ */
+export function inDesen(desen: ParametriPotrivire['desen'], gx0: number, gy0: number, c: number, nx: number, ny: number): Uint8Array {
   const rez = new Uint8Array(nx * ny), treceri: number[] = [];
   for (let j = 0; j < ny; j++) {
     const y = gy0 + (j + 0.5) * c;

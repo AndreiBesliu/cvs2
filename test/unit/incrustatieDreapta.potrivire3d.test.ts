@@ -256,6 +256,45 @@ test('controlul pe hârtie: o valoare scrisă diferit de programe face roșu doa
   }
 });
 
+/**
+ * Pătratul de 30 din (30, 30) cu golul de 12 din (39, 39), Ø3, D 3, H 2, marginea 5, pe fund: un „O” pătrat. Dopul decupat
+ * are golul tăiat ca interior, deci în mijlocul golului rămâne un miez de lemn, care cade la decupare.
+ */
+function documentInel(dop: 'decupat' | 'ridicat'): Document {
+  const patrat = (x: number, y: number, l: number): PunctO[] => [[x, y], [x + l, y], [x + l, y + l], [x, y + l]];
+  const noduri = [patrat(30, 30, 30), patrat(39, 39, 12)].map((pol, k) => ({ tip: 'element', id: `a${k}`, matrice: { ...I }, forma: cale(pol) }));
+  return deschis({
+    schema: 26, rev: 0,
+    piese: [{
+      id: 'p', radacina: { tip: 'grup', id: 'r', matrice: { ...I }, copii: noduri },
+      operatii: [{
+        id: 'o', tip: 'buzunar', noduri: noduri.map((x) => x.id), latura: 'interior', sens: 'urcare', adancime: 3, pas: 3, pasLateral: 1.2,
+        scula: { numar: 1, nume: 'freza plata', diametru: 3 }, urechi: null, rampa: null, intrari: null, colturi: null,
+        incrustatie: { fel: 'drept', jocLateral: 0.1, dop, sprijin: 'fund', joc: 0.5, fierastrau: 2, margine: 5 },
+      }],
+    }],
+    foi: [{ id: 'f1', stoc: { latime: 200, inaltime: 150, grosime: 18 }, instante: [{ id: 'i', piesa: 'p', x: 0, y: 0, rotire: 0 }] }],
+  });
+}
+
+test('dopul decupat cu gol: miezul golului (lemnul care cade) nu e al dopului; dopul stă pe fund, niciun rând roșu', () => {
+  for (const dop of ['decupat', 'ridicat'] as const) {
+    const r = calculeazaPotrivirea(documentInel(dop), 0);
+    if (!r.ok) assert.fail(`${dop}: ${r.motiv}`);
+    if (r.potrivire.fel !== 'drept') assert.fail(`${dop}: potrivirea în V, nu dreaptă`);
+    const p = r.potrivire, unde = `${dop}: ${descrie(p)}; h* ${p.asezare}`;
+    assert.ok(Object.values(p.randuri).every((x) => x.ok), `niciun rând roșu: ${unde}`);
+    // Pereții dopului: și ai golului (cel exterior de 29,8 și golul de 12,2, câte o celulă de 0,1), niciunul în afara locașului.
+    assert.ok(p.dop.afara === 0 && p.dop.n > 4 * (298 + 122) * 0.9, `pereții dopului, și ai golului: ${unde}`);
+    assert.ok(Math.abs(p.asezare - 3) <= 0.05, `dopul stă pe fund, la D = 3: ${unde}`);
+    // Secțiunea, prin mijloc (y 45): peste insulă (x 45) placa e la fața ei, iar dopul are acolo golul.
+    const s = p.sectiune, k = coloana(s, 45), inel = coloana(s, 33);
+    assert.ok(Math.abs(s.placa[k]!) <= 0.05, `insula plăcii: ${s.placa[k]}`);
+    assert.ok(dop === 'decupat' ? !Number.isFinite(s.dop[k]!) : s.dop[k]! > 0, `peste insulă, golul dopului: ${s.dop[k]}`);
+    assert.ok(Math.abs(s.placa[inel]! + 3) <= 0.05 && Math.abs(s.dop[inel]! + 3) <= 0.05, `inelul pe fund: ${s.placa[inel]} / ${s.dop[inel]}`);
+  }
+});
+
 /** Dreptunghiul de 30 × 20 din (20, 20), Ø6, cu gaura prin foaia de 10 (ca `incrustatieDreapta.gaura.test.ts`). */
 function documentGaura(incrustatie: Record<string, unknown>): Document {
   return deschis({

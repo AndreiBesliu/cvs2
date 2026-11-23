@@ -19,6 +19,7 @@ import { conturDeTaiat } from './contur.ts';
 import { contururiRegiuni, figuraDreapta, frezeIncrustatieDreapta, refuzIncrustatieDreapta, valoriBuzunarDrept, type NivelDreapta } from './incrustatieDreapta.ts';
 import { puntiPeBucle, type DopCalculat } from './incrustatie.ts';
 import { programDinDocument, type Regim } from './job.ts';
+import { poligon } from './partiUrechi.ts';
 import { lungimeBucla } from './parcurgere.ts';
 
 /** Cât trece marginea regiunii dopului ridicat de marginea semifabricatului, cel puțin (mm): fața se coboară până dincolo. */
@@ -27,6 +28,13 @@ const DINCOLO_DE_MARGINE = 1;
 const TRECERE = 0.5;
 
 const fix = (x: number): string => String(Math.round(x * 1000) / 1000);
+
+/** Săgeata cea mai mare a unei coarde la aplatizarea desenului dopului, pentru potrivirea simulată (mm; grila ei are 0,1 mm). */
+const SAGEATA_DESEN = 0.002;
+
+/** Desenul dopului pe foaie, pentru potrivirea simulată (ADR 0179): exterioarele și golurile regiunilor, ca poligoane. */
+const desenDop = (regiuni: readonly { readonly exterior: Contur; readonly gauri: readonly Contur[] }[]): number[][] =>
+  regiuni.flatMap((r) => [r.exterior, ...r.gauri]).map((c) => Array.from(poligon(c, SAGEATA_DESEN)));
 
 /** Un element de document: calea închisă a conturului, în coordonatele semifabricatului (și pentru dopul în V, `dopV.ts`). */
 export const element = (id: string, c: Contur): Nod => ({
@@ -261,7 +269,7 @@ export function programeDopuriDrepte(doc: Document, regim: Regim, supracursa = 0
       // La gaură, D e grosimea foii, iar dopul ridicat pe față e înalt cât ea: sub el nu rămâne joc (g = D − h = 0).
       ...(treapta ? {} : {
         potrivire: {
-          fel: 'drept' as const, cutie: { x0, y0, x1, y1 }, margine: m,
+          fel: 'drept' as const, cutie: { x0, y0, x1, y1 }, margine: m, dop: desenDop(f.figura.dop),
           hartie: {
             D: esteGaura(op) ? (doc.foi[0]?.stoc.grosime ?? op.adancime) : op.adancime, c: inc.jocLateral, h, H: inc.fierastrau,
             g: esteGaura(op) ? 0 : inc.joc,
