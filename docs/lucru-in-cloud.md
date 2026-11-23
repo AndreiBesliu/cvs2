@@ -49,6 +49,9 @@ PR-urile, rulările CI).
   sesiunea își încheie tura.
 - **Pauza:** la „pauză”, linia lasă să se termine ce rulează deja, comite tot (ca WIP dacă felia nu e gata), împinge
   ramura și se oprește.
+- **Setul de lucru adus din `.tmp`** (`.lucru/<linie>/`, la liniile mutate pe 23.11 cu o felie în lucru): ciornele,
+  scripturile și mesajele pregătite pe calculatorul local, cu un README. Ce trebuie din el intră la locul lui; dosarul
+  `.lucru/` se scoate înainte de raportul „gata de unit”. Ciornele noi stau în `/tmp` sau în `.tmp/` (ignorat), nu în repo.
 
 ## Porțile: în container, ce atinge felia; întregi, în CI
 
@@ -129,7 +132,8 @@ containerul ei, ca o linie, dar pe ramuri `unire-<data>`:
 
 1. **PR-urile gata:** `gh api repos/AndreiBesliu/cvs2/pulls --jq '.[] | "\(.number) \(.head.ref) \(.title)"'`.
 2. **Unirea:** `git switch -c unire-<data> origin/main`, apoi `git merge --no-ff <sha-ul raportat>` pentru fiecare felie
-   (din commit-ul raportat, nu din vârful ramurii, dacă linia a mers mai departe). `DEVLOG.md` se rezolvă cu
+   (din commit-ul raportat, nu din vârful ramurii, dacă linia a mers mai departe). Un commit care mai are `.lucru/` nu se
+   unește (`git ls-tree -d <sha> .lucru` e gol). `DEVLOG.md` se rezolvă cu
    `scripts/rezolva-devlog.py`; o ciocnire în cod se rezolvă cu ambele părți, citind ambele felii, apoi tipurile și probele
    atinse în container.
 3. **Porțile unirii, în CI:** `git push origin unire-<data>` (rapidul pornește singur), apoi

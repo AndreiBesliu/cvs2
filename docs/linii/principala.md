@@ -25,7 +25,8 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
 ## Unirea, pas cu pas (ce s-a învățat)
 
 - Ramura de unire: `unire-<data>` din `origin/main`; `git merge --no-ff <sha>` pentru fiecare felie, cu mesajul
-  „Unește <ramura> (<felia>, <sha>) în main”.
+  „Unește <ramura> (<felia>, <sha>) în main”. Un commit care mai are `.lucru/` (setul de lucru adus din `.tmp` la mutarea
+  în cloud) nu se unește: linia îl scoate întâi.
 - `DEVLOG.md` se ciocnește la aproape fiecare unire: `python3 -X utf8 scripts/rezolva-devlog.py DEVLOG.md` păstrează ambele
   părți. O ciocnire în cod se rezolvă cu ambele părți, citind ambele felii; apoi se caută și în părțile unite automat
   același fel de schimbare (de pildă două cereri noi în protocolul workerului CAM, `src/jobs/protocolCam.ts`,
