@@ -245,16 +245,17 @@ test('lucrarea: aceleași locuri cu rampă, cu intrări și pe linie cu direcți
   }
 });
 
-test('lucrarea: refuzurile spun locul (două urechi prea apropiate, una pe o buclă prea scurtă) și modurile care vin', () => {
+test('lucrarea: refuzurile spun locul (două urechi prea apropiate, una pe o buclă prea scurtă); regulile se taie, „unde ține” cere fundul foii', () => {
   const aproapeUna = programDinDocument(documentCu({ urechi: urechiAlese({ e: [{ x: 0, y: 14 }, { x: 0, y: 16 }] }) }));
   assert.ok(!aproapeUna.ok && aproapeUna.motiv.includes('prea apropiate') && aproapeUna.motiv.includes('lângă X'), aproapeUna.ok ? '' : aproapeUna.motiv);
   const cerc = { tip: 'element' as const, id: 'e', forma: { tip: 'cerc' as const, raza: 1 }, matrice: { ...I } };
   // Drumul are raza 1 + 1,5875: P = 16,26 mm; o ureche de 15 mm cere 16,67.
   const mica = programDinDocument(documentCu({ urechi: urechiAlese({ e: [{ x: 1, y: 0 }] }, { latime: 15 }) }, cerc));
   assert.ok(!mica.ok && mica.motiv.includes('nu încape') && mica.motiv.includes('lângă X'), mica.ok ? '' : mica.motiv);
+  // Regulile pe laturi (11.3↑f) se taie și ele de acum (`urechi.laturi.test.ts`): niciun mod nu mai e refuzat ca „felie următoare”.
   for (const mod of ['lungi', 'scurte', 'mijloc'] as const) {
     const r = programDinDocument(documentCu({ urechi: { numar: 2, latime: 6, grosime: 2, mod } }));
-    assert.ok(!r.ok && r.motiv.includes('felie următoare'), r.ok ? mod : r.motiv);
+    assert.ok(r.ok, r.ok ? mod : r.motiv);
   }
   // „Unde ține” (11.3↑e) se taie de acum, dar doar cu fundul foii (`programFoii`): direct, refuz, nu o tăietură fără urechi.
   const lemn = programDinDocument(documentCu({ urechi: { numar: 2, latime: 6, grosime: 2, mod: 'lemn' } }));

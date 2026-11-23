@@ -37,6 +37,7 @@ import {
   centreDeLa, coloaneUrechi, EPS_VARF, geometrieUrechi, inZonaUrechii, pornireInGol, proiectiePeBucla, urecheCareNuIncape, urechiPeBucla, type GeometrieUrechi,
   type ParametriUrechi,
 } from './urechi.ts';
+import { centrePeLaturi } from './urechiLaturi.ts';
 import { urechiLemnBucla, type FundLemn, type LaturaLemn } from './urechiLemn.ts';
 
 /** Scula din operație, în IR: numărul, numele și diametrul (câmpurile necunoscute ale documentului rămân acolo). */
@@ -213,7 +214,10 @@ export const REGIM_IMPLICIT: Regim = { turatie: 18000, avans: 1000, avansPlonjar
 export type RezultatJob =
   | {
     readonly ok: true; readonly program: Program; readonly avertismente: readonly string[];
-    /** Centrele urechilor „unde ține” (ADR 0211, b), pe drumul frezei, în lume: semnele de lângă traseu. */
+    /**
+     * Centrele urechilor puse de lucrare („unde ține”, ADR 0211, b, și regulile pe laturi, c), pe drumul frezei, în lume:
+     * semnele de lângă traseu.
+     */
     readonly urechiLemn?: readonly Punct[];
   }
   | { readonly ok: false; readonly motiv: string };
@@ -233,6 +237,17 @@ function avertismentLemn(putine: readonly BuclaPutine[]): string {
   const rest = putine.length - numite.length;
   const cate = putine.length === 1 ? 'o buclă are' : `${putine.length} bucle au`;
   return `urechile „unde ține”: ${cate} mai puține urechi decât cere numărul, fiindcă în jurul lor nu e destul lemn de care să țină: ${numite.join('; ')}${rest > 0 ? `; și încă ${rest}` : ''}`;
+}
+
+/**
+ * Avertismentul urechilor pe laturile lungi sau scurte (ADR 0211, c): pe laturile regulii încap mai puține decât cere numărul.
+ * Ca la „unde ține”, cu primele bucle numite: nimic nu se micșorează pe tăcute (ADR 0028).
+ */
+function avertismentLaturi(regula: 'lungi' | 'scurte', putine: readonly BuclaPutine[]): string {
+  const numite = putine.slice(0, BUCLE_NUMITE).map((x) => `${x.id}${x.bucle > 1 ? ` (bucla ${x.j + 1})` : ''}: ${x.k} din ${x.n}`);
+  const rest = putine.length - numite.length;
+  const cate = putine.length === 1 ? 'o buclă are' : `${putine.length} bucle au`;
+  return `urechile pe laturile ${regula}: ${cate} mai puține urechi decât cere numărul, fiindcă pe laturile ei nu încap mai multe: ${numite.join('; ')}${rest > 0 ? `; și încă ${rest}` : ''}`;
 }
 
 /**
@@ -371,6 +386,8 @@ export function programDinDocument(
   // Urechile „unde ține” (ADR 0211, b): buclele cu mai puține decât numărul și centrele lor, în lume.
   const putine: BuclaPutine[] = [];
   const puncteLemn: Punct[] = [];
+  // Regulile pe laturi (ADR 0211, c): buclele cu mai puține urechi decât numărul, pe fiecare regulă.
+  const putineLaturi: Record<'lungi' | 'scurte', BuclaPutine[]> = { lungi: [], scurte: [] };
   // Profilele tuturor tăieturilor, o dată. Un profil care nu iese se raportează mai jos, la tăietura lui. Pe o parte
   // (ADR 0037 §3), partea pe foaie se inversează sub o matrice care oglindește.
   const profile = taieturi.map((u) => profil(conturDe(u), {
@@ -652,11 +669,9 @@ export function programDinDocument(
     // Urechile (ADR 0028 §2): vârful lor se măsoară de la fața de jos a foii, deci puntea are grosimea cerută oricât de
     // adânc merge tăietura.
     let urechi: ParametriUrechi | undefined;
-    // Modurile urechilor (ADR 0211): „egale” (implicit), „alese” și „unde ține” se taie de acum; regulile, în felia lor.
+    // Modurile urechilor (ADR 0211): „egale” (implicit), „alese”, „unde ține” și regulile pe laturi.
     const mod = t.urechi?.mod;
-    if (mod !== undefined && mod !== 'egale' && mod !== 'alese' && mod !== 'lemn') {
-      return { ok: false, motiv: `${t.idLume}: urechile „${mod}” vin într-o felie următoare (ADR 0211): alege „la distanțe egale”, „alese pe desen” sau „unde ține”` };
-    }
+    const regula = t.urechi !== null && (mod === 'lungi' || mod === 'scurte' || mod === 'mijloc') ? mod : undefined;
     // „Unde ține” (ADR 0211, b): urechea ține de o parte a tăieturii (pe dinafară, de foaie; pe dinăuntru, miezul de piesă), deci
     // cere un profil închis cu o parte de deșeu; locurile vin din fundul foii, iar în prima trecere tăietura n-are urechi.
     const lemnAici = t.urechi !== null && mod === 'lemn';
@@ -718,6 +733,21 @@ export function programDinDocument(
         }
       });
       if (!rez.every((r) => r.egale)) centreAlese = rez.map((r) => [...r.centre]);
+    }
+    // Regulile pe laturi (ADR 0211, c): centrele pe laturile fiecărei bucle, apoi drumul locurilor alese. Fără nicio latură
+    // dreaptă, tăietura rămâne a modului „egale”, octet cu octet.
+    if (urechi && regula) {
+      const bucle = pr.treceri[0]?.contururi ?? [];
+      const r = centrePeLaturi(bucle, regula, urechi.latime, urechi.numar);
+      if (typeof r === 'string') return { ok: false, motiv: `${t.idLume}: ${r}` };
+      if (r) {
+        if (regula !== 'mijloc') for (const x of r.putine) putineLaturi[regula].push({ id: t.idLume, j: x.j, bucle: bucle.length, k: x.k, n: x.n });
+        for (const x of r.semne) {
+          const q = punctLa(bucle[x.j] as Contur, x.s)?.p;
+          if (q) puncteLemn.push(q);
+        }
+        centreAlese = r.centre;
+      }
     }
     /** Urechile buclei j înainte de pornire: la locuri alese, centrele ei pe bucla din profil; altfel, ale tăieturii. */
     const urechiInitiale = (j: number): ParametriUrechi | undefined => (urechi && centreAlese ? urechiPeBucla({ ...urechi, bucle: centreAlese }, j) : urechi);
@@ -895,6 +925,9 @@ export function programDinDocument(
     for (const m of tr.miscari) miscari.push(m);
   }
   if (putine.length > 0) avertismente.push(avertismentLemn(putine));
+  for (const regula of ['lungi', 'scurte'] as const) {
+    if (putineLaturi[regula].length > 0) avertismente.push(avertismentLaturi(regula, putineLaturi[regula]));
+  }
   return {
     ok: true, program: { axe: AXE_XYZ, scula: initiala ?? scula, turatie: regim.turatie, zSigur: regim.zSigur, miscari }, avertismente,
     ...(puncteLemn.length > 0 ? { urechiLemn: puncteLemn } : {}),
