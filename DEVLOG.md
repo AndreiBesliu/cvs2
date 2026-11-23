@@ -11213,7 +11213,7 @@ principală, după „neata, continua si porneste si worktrees” al owner-ului)
 (owner-ul, 22.11), apoi, la ADR 0282: „1a, 2a, 3a”. Reluată pe 23.11 în cloud, la cererea sesiunii principale (după „neata! Putem
 sa mutam tot acest proiect in sesiune cloud?” și „Da, începe” ale owner-ului): versiunea, privirea pe piesa reală, otrăvurile,
 porțile, documentele.
-**Started:** 22.11, 21:54 (la răspuns). **Completed:** 23.11, 12:40.
+**Started:** 22.11, 21:54 (la răspuns). **Completed:** 23.11, 12:55.
 
 - **22.11, local (Claude Opus 5.5):** motorul comis la 22:13 (`894bb882`), atelierul la 22:23 (`7f439bbf`), apoi pauza
   cerută de owner (22:23). **23.11 dimineața:** `main` adus de sesiunea principală, cu pictograma elicei (`886e0c62`).
@@ -11242,12 +11242,14 @@ porțile, documentele.
   760,9 / 800, `/admin` 121,2 / 200 (ale lui `main`: pluginul stă doar în pachet, 456,9 kB). Suitele întregi, în CI: rapidul
   la push, completul pornit pe ramură; legăturile, în raportul liniei.
 - **Pilotul cloud, ce a ieșit la mediu** (pentru `docs/lucru-in-cloud.md` și `pregatire.sh`, la sesiunea principală): Node
-  26.13.1, Edge 158, Java 21, firebase-tools 15.18.0 și dependențele erau la locul lor; `gh` n-are un token bun (workflow-urile
-  se pornesc și se citesc prin uneltele GitHub ale sesiunii); `cdnjs.cloudflare.com` e oprit de rețea (previzualizarea 3D a
+  26.13.1, Edge 158, Java 21, firebase-tools 15.18.0 și dependențele erau la locul lor; `gh auth status` spune că token-ul nu e
+  bun, dar `gh run` și `gh workflow` merg (completul l-am pornit prin uneltele GitHub ale sesiunii); `cdnjs.cloudflare.com` e oprit de rețea (previzualizarea 3D a
   paginii de sine stătătoare lipsește, iar eșecul rapid al cererii a scos la iveală cursa de mai sus); `python3` scrie
   `test/otravuri/__pycache__` (neignorat: rulat cu `-B`); sesiunea deschide un PR ciornă pentru ramură (regula mediului).
 - **Rămase, la cuvântul owner-ului:** elicea de barcă (3.Tr), ventilatorul cu carcasă (3.Ts); proba pe imprimantă (coada din
   fișă); numele piesei nu spune forma și profilul; descrierea din bibliotecă n-are loc de „elice” (157 din 160 de caractere).
+- **`main` adus de două ori pe drum** (`220bd48d`, apoi `8f122ebf`, cu mutarea producției în cloud): a doua oară, ciocnirea
+  doar în DEVLOG; nota liniei (`docs/linii/elice.md`), venită din `main`, pusă la zi cu felia și cu capcanele ei.
 
 ## 2026-11-23 — Lucrul în cloud, pasul 2: sesiunea principală în cloud (canalele, publicarea, felul de lucru) (Model: Claude Opus 5.5)
 
