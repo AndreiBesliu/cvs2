@@ -11039,3 +11039,18 @@ pictogramele din ADR 0281”). Lucrată în worktree-ul `galeria` (ramura `wip/3
   încărcare, `proiect.spec.ts:302` (un `toBeEnabled` de 5 s) și `simulare.spec.ts:53` (120 s depășite), au trecut reluate
   singure, 25 / 25 pe fișierele lor; emulatoarele 101 / 101 și 29 / 29).
 - Pachetul Easy 3Draw 18.18.0, înregistrat în bibliotecă după ultima schimbare din `extensii/trenulet`.
+
+## 2026-11-23 — Lucrul în cloud: uneltele în repo, pregătirea mediului, felul de lucru (Model: Claude Opus 5.5)
+
+**Prompt:** „neata! Putem sa mutam tot acest proiect in sesiune cloud? Vreau sa se faca in continuare sync pe folderul
+local, dar sesiunea sa lucreze in cloud pe repo din Github. Cat de complicat este si riscam cumva sa pierdem ceva progres?”,
+apoi „Da, începe”. **Started:** 23.11, 08:13 (ramura). **Completed:** 23.11, 08:20.
+
+- **Starea:** tot lucrul liniilor e pe GitHub (38 de ramuri, worktree-urile curate și împinse); unirea galeriei, singura
+  doar locală, împinsă ca `unire-2211c`.
+- **În repo:** `scripts/cloud/pregatire.sh` (mediul cloud, ca CI-ul: Node 26, npm ci, Edge, Java 21, firebase-tools 15.18.0,
+  Python 3), `docs/lucru-in-cloud.md` (o linie = o sesiune pe ramura ei: porțile ca în CI, otrăvurile în clonă, documentele,
+  unirea și publicarea, pauza), `scripts/rezolva-devlog.py` (ciocnirile din DEVLOG) și `scripts/ldraw/` (aducerea și
+  măsurarea pieselor LDraw, randarea 3D; biblioteca în `LDRAW_DIR`, implicit `.tmp/ldraw`, în afara repo-ului).
+- **Probat local:** tipurile (`randare.mts`, venit din `.tmp`, avea tipurile slabe: reparate), regulile de import,
+  licențele, randarea pe o piesă a motorului și pe LDraw 6041.
