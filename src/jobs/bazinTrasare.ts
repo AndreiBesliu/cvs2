@@ -4,7 +4,7 @@
  * oprește din mijlocul calculului. În Node (testele, fără `Worker`), același calcul rulează în proces, prin aceeași graniță
  * (`structuredClone`, cu transferul); în codul construit ramura aceea nu există (`__CNCVS2_CONSTRUIT__`).
  */
-import type { CerereTrasare, RaspunsTrasare } from './calculTrasare.ts';
+import type { CerereTrasare, OctetiImaginiiFoii, RaspunsTrasare } from './calculTrasare.ts';
 
 /**
  * O trasare anulată (o previzualizare nouă, fereastra închisă): nu e o defecțiune. Clasele sunt ale bazinului trasării, nu
@@ -23,9 +23,9 @@ export class TrasareCazuta extends Error {
 /** Cât așteaptă bazinul o trasare (ADR 0220 §9): o poză de 12 Mpx se trasează în câteva secunde pe un laptop de atelier. */
 export const TERMEN_TRASARE_MS = 30_000;
 
-type Raspuns = { readonly ok: true; readonly raspuns: RaspunsTrasare } | { readonly ok: false; readonly motiv: string };
+type Raspuns<R> = { readonly ok: true; readonly raspuns: R } | { readonly ok: false; readonly motiv: string };
 
-function inWorker(cerere: CerereTrasare, semnal: AbortSignal | undefined, termenMs: number): Promise<RaspunsTrasare> {
+function inWorker<R>(cerere: CerereTrasare, semnal: AbortSignal | undefined, termenMs: number): Promise<R> {
   return new Promise((rezolva, respinge) => {
     let gata = false;
     const w = new Worker(new URL('./lucratorTrasare.ts', import.meta.url), { type: 'module', name: 'trasare' });
@@ -43,7 +43,7 @@ function inWorker(cerere: CerereTrasare, semnal: AbortSignal | undefined, termen
       respinge(e);
     }
     semnal?.addEventListener('abort', anuleaza);
-    w.onmessage = (e: MessageEvent<Raspuns>) => {
+    w.onmessage = (e: MessageEvent<Raspuns<R>>) => {
       if (gata) return;
       termina();
       if (e.data.ok) rezolva(e.data.raspuns);
@@ -64,9 +64,25 @@ async function inProces(cerere: CerereTrasare, semnal: AbortSignal | undefined):
   return structuredClone(r.raspuns, { transfer: r.transfer });
 }
 
+/** Imaginea pentru foaie, în proces (Node, fără `OffscreenCanvas`: doar un fișier păstrat cum e): aceeași graniță. */
+async function imagineaInProces(cerere: CerereTrasare): Promise<OctetiImaginiiFoii | Extract<RaspunsTrasare, { ok: false }>> {
+  const { octetiImaginiiFoii } = await import('./calculTrasare.ts');
+  return structuredClone(await octetiImaginiiFoii(structuredClone(cerere)));
+}
+
 /** O trasare, în workerul ei (în Node, în proces). */
 export function trasareInBazin(cerere: CerereTrasare, o: { readonly semnal?: AbortSignal; readonly termenMs?: number } = {}): Promise<RaspunsTrasare> {
   if (o.semnal?.aborted) return Promise.reject(new TrasareAnulata());
   if (typeof __CNCVS2_CONSTRUIT__ === 'undefined' && typeof Worker === 'undefined') return inProces(cerere, o.semnal);
-  return inWorker(cerere, o.semnal, o.termenMs ?? TERMEN_TRASARE_MS);
+  return inWorker<RaspunsTrasare>(cerere, o.semnal, o.termenMs ?? TERMEN_TRASARE_MS);
+}
+
+/**
+ * Imaginea pentru foaie (ADR 0272), în workerul trasării (în Node, în proces): prelucrată ca pentru trasare, fără trasare,
+ * gata de păstrat; sau refuzul citirii ei.
+ */
+export function imagineaFoiiInBazin(cerere: Omit<CerereTrasare, 'imagineaFoii'>, o: { readonly termenMs?: number } = {}): Promise<OctetiImaginiiFoii | Extract<RaspunsTrasare, { ok: false }>> {
+  const c: CerereTrasare = { ...cerere, imagineaFoii: true };
+  if (typeof __CNCVS2_CONSTRUIT__ === 'undefined' && typeof Worker === 'undefined') return imagineaInProces(c);
+  return inWorker<OctetiImaginiiFoii | Extract<RaspunsTrasare, { ok: false }>>(c, undefined, o.termenMs ?? TERMEN_TRASARE_MS);
 }

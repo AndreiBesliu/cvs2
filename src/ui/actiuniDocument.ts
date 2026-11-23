@@ -1,7 +1,7 @@
 import type { CheieSimpla } from '../i18n/t.ts';
 import {
   instantaPreaDeparte, noduriPiesa, numara, operatieImplicita, plafonDepasit, type Document, type FormaDoc,
-  type Ghidaj, type Instanta, type Nod, type Numaratoare, type Operatie, type Piesa, type TextePlacuta,
+  type Ghidaj, type ImagineFoaie, type Instanta, type Nod, type Numaratoare, type Operatie, type Piesa, type TextePlacuta,
 } from '../model/document.ts';
 // Doar tipul: piesa importului o face modulul previzualizării, adus la cerere (`ImportPregatit.piesa`, felia 2.3c-3).
 import type { ImportPregatit } from '../io/piesa.ts';
@@ -157,6 +157,11 @@ export type ContextDocument = {
   readonly importNou?: () => ImportPregatit;
   /** Punctul în care s-a lăsat fișierul pe planșă (mm ai foii), sau null: centrul desenului cade acolo (felia 2.8b). */
   readonly locImport?: () => { readonly x: number; readonly y: number } | null;
+  /**
+   * Imaginea pusă pe foaie odată cu importul (ADR 0272, „Păstrează imaginea pe foaie”): locul ei în pagina importului; se mută
+   * cu desenul, în același pas de anulare. Id-ul i-l dă comanda.
+   */
+  readonly imagineImport?: () => ImagineFoaie;
   /** Panoul (ADR 0038 §4): colțul stânga-jos nou al cutiei selecției, în mm ai foii; doar axele scrise. */
   readonly pozitieNoua?: () => { readonly x?: number; readonly y?: number };
   /** Panoul: rotirea nouă a singurei instanțe selectate, în grade (se normalizează în [0, 360)). */
@@ -174,6 +179,8 @@ export type ContextDocument = {
   readonly formaNoua?: () => FormaNoua | readonly FormaNoua[];
   /** Ghidajele noi ale foii (ADR 0050): lista întreagă, după un ghidaj adăugat, mutat sau șters. */
   readonly ghidajeNoi?: () => readonly Ghidaj[];
+  /** Imaginile noi ale foii (ADR 0272): lista întreagă, după o imagine pusă, mutată, ascunsă, fixată sau scoasă. */
+  readonly imaginiNoi?: () => readonly ImagineFoaie[];
   /** Deplasările instanțelor, fiecare cu a ei, în mm (alinierea, distribuirea, săgețile; ADR 0050). */
   readonly deplasari?: () => readonly { readonly id: string; readonly dx: number; readonly dy: number }[];
   /** Panoul, fără selecție: materialul nou al foii, în mm; doar mărimile scrise. */
@@ -292,6 +299,20 @@ export function foaieCurenta(doc: Document, id: string | null | undefined) {
 
 /** Foaia activă a contextului, în documentul dat (implicit, cel de acum). */
 export const foaieCtx = (ctx: ContextDocument, doc: Document = ctx.istoric().doc) => foaieCurenta(doc, ctx.foaie?.());
+
+/** Id-ul unei imagini noi a foii (ADR 0272): `im1`, `im2` …, primul liber. */
+export function idImagineNoua(imagini: readonly ImagineFoaie[]): string {
+  const ocupate = new Set(imagini.map((i) => i.id));
+  let k = 1;
+  while (ocupate.has(`im${k}`)) k++;
+  return `im${k}`;
+}
+
+/** Imaginile foii active cu una nouă la capăt, cu primul id liber („Doar imaginea”, ADR 0272). */
+export function cuImagineaNoua(ctx: ContextDocument, imagine: ImagineFoaie): ImagineFoaie[] {
+  const vechi = foaieCtx(ctx).imagini ?? [];
+  return [...vechi, { ...imagine, id: idImagineNoua(vechi) }];
+}
 
 /** Un singur pas de anulare, oricâte lucruri atinge acțiunea. */
 export function pas(comenzi: readonly Comanda[]): Comanda | null {
@@ -567,6 +588,8 @@ export const ACTIUNI_DOCUMENT: readonly Actiune<ContextDocument>[] = [
   laCerere('foaie.stoc', 'actiune.foaie-stoc', (ctx) => (ctx.stocNou ? true : 'motiv.nimic-ales')),
   // Riglele și lipirea (ADR 0050), din modulul editării, la cerere: ghidajele foii și mutarea instanțelor cu deplasări proprii.
   laCerere('foaie.ghidaje', 'actiune.ghidaje', (ctx) => (ctx.ghidajeNoi ? true : 'motiv.nimic-ales')),
+  // Imaginile foii (ADR 0272): din panoul foii, din mânerele unei imagini desfăcute și din import.
+  laCerere('foaie.imagini', 'actiune.imagini', (ctx) => (ctx.imaginiNoi ? true : 'motiv.nimic-ales')),
   // Foile proiectului (ADR 0210 §1, felia 11.1↑): din lista cu foile, din panou și din meniul de clic dreapta. Calculul vine
   // cu modulul editării (ca la degrupare): până atunci, acțiunile spun că se încarcă, nu aruncă.
   laCerere('foaie.adauga', 'actiune.foaie-adauga', dupaCalcul),

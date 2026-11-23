@@ -208,6 +208,15 @@ type Props = {
   readonly onSari?: () => void;
   /** Extensia care a propus fișierul (ADR 0166 §C): „Propus de <extensie>”, sub titlu. */
   readonly de?: string;
+  /**
+   * Imaginea pe foaie (ADR 0272), într-o fereastră a trasării cu imaginea citită: bifa „Păstrează imaginea pe foaie” (cu
+   * „Importă”), „Doar imaginea” (și după un refuz al trasării: imaginea se poate pune oricum), lucrul în curs și motivul unui
+   * eșec. Lipsă: fără ele.
+   */
+  readonly imagineFoaie?: {
+    readonly pastreaza: boolean; readonly onPastreaza: (b: boolean) => void; readonly onDoarImaginea: () => void;
+    readonly lucru: boolean; readonly motiv: CheieSimpla | null;
+  };
   /** O imagine (ADR 0220 §10): alegerile trasării, schimbarea lor și octeții imaginii pentru previzualizare. */
   readonly trasare?: {
     readonly alegeri: AlegeriTrasare; readonly onSchimba: (s: Partial<AlegeriTrasare>) => void; readonly octeti: Uint8Array | null;
@@ -225,7 +234,7 @@ type Props = {
  */
 export function DialogImport({
   nume, stare, pxPeTol, pxAutomat, unitate, unitateWmf, pagina, imaginePdf = false, onImaginePdf, seRecitesc, motiv, onPx, onUnitate,
-  onUnitateWmf, onPagina, onImporta, onInchide, coada, onSari, de, trasare,
+  onUnitateWmf, onPagina, onImporta, onInchide, coada, onSari, de, trasare, imagineFoaie,
 }: Props) {
   const limba = useLimba();
   const mm = new Intl.NumberFormat(limba === 'ro' ? 'ro-RO' : 'en-GB', { maximumSignificantDigits: 12 });
@@ -246,6 +255,8 @@ export function DialogImport({
     : (stare.pagini ?? stare.trasare?.pagini ?? 0);
   // O imagine (ADR 0220): fereastra lărgită, cu panoul trasării și previzualizarea.
   const imagine = trasare !== undefined && (formatImport(nume, '') === 'imagine' || (stare !== 'citire' && stare.format === 'imagine'));
+  // Imaginea pe foaie (ADR 0272): o imagine citită (trasată, ori refuzată după trasare, cu raportul ei).
+  const pe = imagine && imagineFoaie && stare !== 'citire' && (stare.ok ? stare.format === 'imagine' : stare.trasare !== undefined) ? imagineFoaie : null;
   // O pagină PDF cu imagini și vectori (ADR 0270): trasarea imaginii, la cerere, și întoarcerea la vectori.
   const ofera = stare === 'citire' || !onImaginePdf ? null
     : !imaginePdf && stare.format === 'pdf' && (stare.imagini ?? 0) > 0 ? 'imagine'
@@ -364,11 +375,32 @@ export function DialogImport({
           </>
         )}
         {ok && motiv && <p role="status" className="avertisment" data-testid="import-motiv">{t(motiv)}</p>}
+        {pe && (
+          <div className="imagine-foaie" data-imagine-foaie="">
+            {ok && (
+              <label>
+                <input type="checkbox" data-camp="pastreaza-imaginea" checked={pe.pastreaza} disabled={pe.lucru}
+                  onChange={(e) => { pe.onPastreaza(e.target.checked); }} />
+                {t('import.imagine-foaie.pastreaza')}
+              </label>
+            )}
+            <p className="mic">{t('import.imagine-foaie.sfat')}</p>
+            {pe.lucru && <p role="status" data-testid="import-imagine-lucru">{t('import.imagine-foaie.lucru')}</p>}
+            {pe.motiv && <p role="alert" className="avertisment" data-testid="import-imagine-motiv">{t(pe.motiv)}</p>}
+          </div>
+        )}
         <div className="butoane">
           {ok && (
-            <button type="button" disabled={motiv !== null || seRecitesc} title={motiv ? t(motiv) : undefined} data-buton="importa"
+            <button type="button" disabled={motiv !== null || seRecitesc || pe?.lucru === true} title={motiv ? t(motiv) : undefined} data-buton="importa"
               onClick={(e) => { if (e.detail <= 1) onImporta(); }}>
               {t('import.importa')}
+            </button>
+          )}
+          {/* „Doar imaginea” (ADR 0272): fără vectori; și după un refuz al trasării (o poză cu prea multe contururi). */}
+          {pe && (
+            <button type="button" data-buton="doar-imaginea" data-imagine-foaie="" disabled={seRecitesc || pe.lucru}
+              onClick={(e) => { if (e.detail <= 1) pe.onDoarImaginea(); }}>
+              {t('import.imagine-foaie.doar')}
             </button>
           )}
           {stare !== 'citire' && !stare.ok && stare.cod === 'neincarcat' && (

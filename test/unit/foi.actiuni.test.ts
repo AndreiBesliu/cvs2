@@ -224,6 +224,9 @@ test('criteriul din prag: o editare pe foaia activă lasă celelalte foi identic
     ['document.roteste', { rotireNoua: () => 30 }],
     ['foaie.stoc', { stocNou: () => ({ latime: 640 }) }],
     ['foaie.ghidaje', { ghidajeNoi: () => [{ id: 'g1', axa: 'x', poz: 100 }] }],
+    ['foaie.imagini', { imaginiNoi: () => [{
+      id: 'i1', sursa: 'a'.repeat(64), x: 50, y: 40, latime: 100, inaltime: 80, rotire: 0, opacitate: 0.4, vizibila: true, fixata: true,
+    }] }],
     ['foaie.eticheta', { etichetaNoua: () => ({ camp: 'material', valoare: 'Placaj' }) }],
     ['document.sterge-selectia', {}],
   ];

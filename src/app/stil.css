@@ -2215,6 +2215,23 @@ main h1 {
   --ic: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 7h16M10 11v6M14 11v6M6 7l1 12.5A1.5 1.5 0 0 0 8.5 21h7a1.5 1.5 0 0 0 1.5-1.5L18 7M9 7V4.5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 .5.5V7'/%3E%3C/svg%3E");
 }
 
+/* Imaginile foii (ADR 0272 §5): ochiul (vizibilă, tăiat când e ascunsă) și lacătul (fixată, deschis când e desfăcută). */
+[data-icona='imagine.vizibila'] {
+  --ic: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M2.5 12s3.5-6.5 9.5-6.5 9.5 6.5 9.5 6.5-3.5 6.5-9.5 6.5S2.5 12 2.5 12z'/%3E%3Ccircle cx='12' cy='12' r='2.8'/%3E%3C/svg%3E");
+}
+
+[data-icona='imagine.vizibila'][aria-pressed='false'] {
+  --ic: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M2.5 12s3.5-6.5 9.5-6.5 9.5 6.5 9.5 6.5-3.5 6.5-9.5 6.5S2.5 12 2.5 12z'/%3E%3Ccircle cx='12' cy='12' r='2.8'/%3E%3Cpath d='M4 4l16 16'/%3E%3C/svg%3E");
+}
+
+[data-icona='imagine.fixata'] {
+  --ic: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='5' y='11' width='14' height='9.5' rx='1.8'/%3E%3Cpath d='M8.5 11V7.8a3.5 3.5 0 0 1 7 0V11'/%3E%3C/svg%3E");
+}
+
+[data-icona='imagine.fixata'][aria-pressed='false'] {
+  --ic: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='5' y='11' width='14' height='9.5' rx='1.8'/%3E%3Cpath d='M8.5 11V7.8a3.5 3.5 0 0 1 6.6-1.6'/%3E%3C/svg%3E");
+}
+
 [data-icona='istoric.anuleaza'] {
   --ic: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M9 14 4 9l5-5'/%3E%3Cpath d='M4 9h10.5a5.5 5.5 0 0 1 0 11H11'/%3E%3C/svg%3E");
 }
@@ -2842,6 +2859,69 @@ main h1 {
 @media (max-width: 48rem) {
   .trasare-corp {
     grid-template-columns: minmax(0, 1fr);
+  }
+}
+/* Lista imaginilor foii (ADR 0272 §5), în panoul foii: miniatura, numele și butoanele pe un rând, opacitatea sub ele. */
+.prop-imagini {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--sp-3);
+}
+.prop-imagini li {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr) auto;
+  gap: var(--sp-1) var(--sp-2);
+  align-items: center;
+}
+.prop-imagini li > :is(dl, p) {
+  grid-column: 1 / -1;
+  margin: 0;
+}
+.prop-imagine-mini {
+  display: block;
+  width: 40px;
+  height: 30px;
+  object-fit: contain;
+  border: 1px solid var(--l-margine);
+  border-radius: var(--r-1);
+  background: var(--s-camp, transparent);
+}
+.prop-imagine-nume {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.prop-imagine-butoane {
+  display: inline-flex;
+  gap: 2px;
+}
+.prop-imagine-butoane button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 30px;
+  min-height: 30px;
+  padding: 0;
+}
+.prop-imagine-butoane button[aria-pressed='false'] {
+  color: var(--t-slab);
+}
+/* Imaginea pe foaie (ADR 0272): bifa, sfatul și starea, deasupra butoanelor; pe telefon nu se pune (§9, ADR 0250 §7). */
+.imagine-foaie {
+  display: grid;
+  gap: var(--sp-1);
+  margin-top: var(--sp-3);
+}
+.imagine-foaie label {
+  display: inline-flex;
+  gap: var(--sp-2);
+  align-items: center;
+}
+@media (max-width: 40rem) {
+  [data-imagine-foaie] {
+    display: none;
   }
 }
 .trasare-comenzi select,

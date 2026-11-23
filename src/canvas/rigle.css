@@ -425,6 +425,14 @@
   cursor: crosshair;
 }
 
+/* Conturul unei imagini desfăcute de pe foaie (ADR 0272 §4), cu mânerele ei: subțire, punctat. */
+.imagine-contur {
+  fill: none;
+  stroke: var(--a);
+  stroke-width: 1;
+  stroke-dasharray: 4 3;
+}
+
 .desen-previzualizare {
   fill: none;
   stroke: var(--panza-selectie, var(--a));

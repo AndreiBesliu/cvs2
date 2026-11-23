@@ -8,13 +8,140 @@
  * Foile vecine (ADR 0210 §1, felia 11.1↑b) vin într-un mesaj al lor, doar când se schimbă: se desenează estompate, sub
  * foaia activă, la locul lor din rând, fiecare cu numele deasupra; cele din afara pânzei se sar. Foaia activă n-are nume
  * pe pânză: acolo stă rigla ei.
+ *
+ * Imaginile foii active (ADR 0272) vin tot într-un mesaj al lor, cu octeții: se decodează aici, o dată pe amprentă, și se
+ * desenează sub vectori, peste foaie, estompate, pe un strat al lor (§8). Stratul se redesenează doar când se schimbă vederea,
+ * mărimea, imaginile sau o decodare; altfel se copiază. Fiecare imagine se desenează din treapta ei redusă cea mai potrivită
+ * (jumătăți, făcute la cerere): o imagine de 16 Mpx nu se scalează întreagă la fiecare cadru.
  */
-import type { CerereDesen, CerereFoi, FoaieVecina, FormaDesen, RaspunsDesen } from './protocol.ts';
+import type { CerereDesen, CerereFoi, CerereImagini, FoaieVecina, FormaDesen, ImaginePeFoaie, RaspunsDesen } from './protocol.ts';
 
 const lucrator = self as unknown as {
-  onmessage: ((e: MessageEvent<CerereDesen | CerereFoi>) => void) | null;
+  onmessage: ((e: MessageEvent<CerereDesen | CerereFoi | CerereImagini>) => void) | null;
   postMessage(m: RaspunsDesen, transfer: Transferable[]): void;
 };
+
+/** Pânzele software (`willReadFrequently`): un strat accelerat copiat pe pânza software ar cere o citire înapoi la fiecare cadru. */
+const software = { willReadFrequently: true } as const;
+
+let imagini: readonly ImaginePeFoaie[] = [];
+/** Imaginile decodate, după amprentă: treptele lor (întreaga, apoi jumătăți), ori starea decodării. */
+type Trepte = { readonly trepte: Array<ImageBitmap | OffscreenCanvas> };
+const decodate = new Map<string, Trepte | 'decodare' | 'eroare'>();
+/** Crește la fiecare listă nouă de imagini și la fiecare decodare terminată: stratul se redesenează. */
+let versiune = 0;
+let strat: { readonly panza: OffscreenCanvas; readonly g: OffscreenCanvasRenderingContext2D; cheie: string } | null = null;
+/** Ultima cerere desenată: o decodare terminată o desenează din nou, cu imaginea. */
+let desenata: CerereDesen | null = null;
+
+function decodeaza(sursa: string, octeti: Blob): void {
+  decodate.set(sursa, 'decodare');
+  createImageBitmap(octeti).then((bmp) => {
+    if (decodate.get(sursa) !== 'decodare') {
+      bmp.close();
+      return;
+    }
+    decodate.set(sursa, { trepte: [bmp] });
+    versiune++;
+    redeseneaza();
+  }, () => {
+    if (decodate.get(sursa) === 'decodare') decodate.set(sursa, 'eroare');
+    versiune++;
+    redeseneaza();
+  });
+}
+
+/** Imaginile noi: cele care nu mai sunt pe foaie se uită (cu treptele lor), cele noi se decodează. */
+function primesteImagini(lista: readonly ImaginePeFoaie[]): void {
+  imagini = lista;
+  versiune++;
+  const folosite = new Set(lista.map((i) => i.sursa));
+  for (const [s, d] of decodate) {
+    if (folosite.has(s)) continue;
+    if (typeof d === 'object') for (const t of d.trepte) if (t instanceof ImageBitmap) t.close();
+    decodate.delete(s);
+  }
+  for (const im of lista) if (im.octeti && !decodate.has(im.sursa)) decodeaza(im.sursa, im.octeti);
+}
+
+/**
+ * Treapta din care se desenează o imagine care acoperă `latimeEcran` pixeli fizici: cea mai mică încă cel puțin atât de lată
+ * (sub 64 px nu se mai reduce). Jumătățile se fac la cerere și se țin.
+ */
+function treapta(t: Trepte, latimeEcran: number): ImageBitmap | OffscreenCanvas {
+  for (let k = 0; ; k++) {
+    const cur = t.trepte[k];
+    if (!cur) throw new Error('treaptă lipsă');
+    if (cur.width / 2 < latimeEcran || cur.width < 128 || cur.height < 128) return cur;
+    if (!t.trepte[k + 1]) {
+      const w = Math.floor(cur.width / 2), h = Math.floor(cur.height / 2);
+      const jum = new OffscreenCanvas(w, h);
+      const j = jum.getContext('2d', software);
+      if (!j) return cur;
+      j.imageSmoothingQuality = 'high';
+      j.drawImage(cur, 0, 0, w, h);
+      t.trepte.push(jum);
+    }
+  }
+}
+
+/** Stratul imaginilor pentru cererea `c`, pe pânza de `w` × `h` pixeli fizici, cu `s` pixeli fizici pe mm. */
+function stratImagini(c: CerereDesen, w: number, h: number, s: number): OffscreenCanvas | null {
+  const cheie = `${w}x${h}|${c.vedere.scara}|${c.vedere.tx}|${c.vedere.ty}|${c.dpr}|${c.culori.linie}|${versiune}`;
+  if (strat?.cheie === cheie) return strat.panza;
+  if (!strat) {
+    const panza = new OffscreenCanvas(w, h);
+    const sg = panza.getContext('2d', software);
+    if (!sg) return null;
+    strat = { panza, g: sg, cheie: '' };
+  }
+  const { panza, g: x } = strat;
+  if (panza.width !== w || panza.height !== h) {
+    panza.width = w;
+    panza.height = h;
+  }
+  x.setTransform(1, 0, 0, 1, 0, 0);
+  x.clearRect(0, 0, w, h);
+  for (const im of imagini) {
+    // Cele din afara pânzei se sar (cercul care le cuprinde, rotite oricum).
+    const cx = (im.x * c.vedere.scara + c.vedere.tx) * c.dpr, cy = (c.vedere.ty - im.y * c.vedere.scara) * c.dpr;
+    const r = (Math.hypot(im.latime, im.inaltime) / 2) * s;
+    if (cx + r < 0 || cx - r > w || cy + r < 0 || cy - r > h) continue;
+    x.setTransform(s, 0, 0, -s, c.vedere.tx * c.dpr, c.vedere.ty * c.dpr);
+    x.translate(im.x, im.y);
+    x.rotate((im.rotire * Math.PI) / 180);
+    const d = decodate.get(im.sursa);
+    if (typeof d === 'object') {
+      // Rândul de sus al imaginii, sus pe foaie: în sistemul foii (Y în sus), imaginea se întoarce.
+      x.scale(1, -1);
+      x.globalAlpha = im.opacitate;
+      x.imageSmoothingEnabled = true;
+      x.imageSmoothingQuality = 'medium';
+      x.drawImage(treapta(d, im.latime * s), -im.latime / 2, -im.inaltime / 2, im.latime, im.inaltime);
+      x.globalAlpha = 1;
+    } else {
+      // Fără octeți (lipsă, ori încă se citesc): doar locul ei, punctat.
+      x.lineWidth = 1 / s;
+      x.setLineDash([4 / s, 4 / s]);
+      x.strokeStyle = c.culori.linie;
+      x.globalAlpha = 0.6;
+      x.strokeRect(-im.latime / 2, -im.inaltime / 2, im.latime, im.inaltime);
+      x.globalAlpha = 1;
+      x.setLineDash([]);
+    }
+  }
+  strat.cheie = cheie;
+  return panza;
+}
+
+/** O decodare terminată: ultima cerere se desenează din nou (dacă nu așteaptă deja alta). */
+function redeseneaza(): void {
+  if (!ultima) ultima = desenata;
+  if (ultima && !programat) {
+    programat = true;
+    setTimeout(deseneaza, 0);
+  }
+}
 
 let ultima: CerereDesen | null = null;
 let programat = false;
@@ -40,6 +167,7 @@ function deseneaza(): void {
   const c = ultima;
   ultima = null;
   if (!c) return;
+  desenata = c;
   const w = Math.max(1, Math.round(c.latime * c.dpr));
   const h = Math.max(1, Math.round(c.inaltime * c.dpr));
   if (!panza || !g) {
@@ -79,6 +207,14 @@ function deseneaza(): void {
   }
   g.fillStyle = c.culori.foaie;
   g.fillRect(0, 0, c.foaie.latime, c.foaie.inaltime);
+  // Imaginile foii (ADR 0272): peste foaie, sub vectori, din stratul lor.
+  const si = imagini.length > 0 ? stratImagini(c, w, h, s) : null;
+  if (si) {
+    g.save();
+    g.setTransform(1, 0, 0, 1, 0, 0);
+    g.drawImage(si, 0, 0);
+    g.restore();
+  }
 
   /** Lungimea săgeții de sens: ~8 px CSS la orice zoom (ADR 0037 §12), în mm. */
   const sageata = 8 / c.vedere.scara;
@@ -133,6 +269,10 @@ lucrator.onmessage = (e) => {
   // Foile vecine se țin până la mesajul următor; desenul pornește cu cererea care vine după ele.
   if (e.data.tip === 'foi') {
     vecine = e.data.foi;
+    return;
+  }
+  if (e.data.tip === 'imagini') {
+    primesteImagini(e.data.imagini);
     return;
   }
   // Doar ultima cerere contează: dacă vin mai multe cât se desenează, cele intermediare se sar.

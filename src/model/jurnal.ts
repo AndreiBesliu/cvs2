@@ -1,4 +1,4 @@
-import type { Document, Foaie, Ghidaj, Instanta, Piesa, Stoc } from './document.ts';
+import type { Document, Foaie, Ghidaj, ImagineFoaie, Instanta, Piesa, Stoc } from './document.ts';
 
 /**
  * Jurnalul de comenzi (T16, ADR 0016): fiecare schimbare e o comandă cu valorile vechi și cele noi, deci anularea și
@@ -32,6 +32,8 @@ export type Comanda =
   | { readonly tip: 'inlocuieste-piesa'; readonly vechi: Piesa; readonly nou: Piesa }
   | { readonly tip: 'inlocuieste-stoc'; readonly foaie: string; readonly vechi: Stoc; readonly nou: Stoc }
   | { readonly tip: 'inlocuieste-ghidaje'; readonly foaie: string; readonly vechi: readonly Ghidaj[]; readonly nou: readonly Ghidaj[] }
+  /** Imaginile foii (ADR 0272): lista întreagă, după o imagine pusă, mutată, ascunsă, fixată sau scoasă. */
+  | { readonly tip: 'inlocuieste-imagini'; readonly foaie: string; readonly vechi: readonly ImagineFoaie[]; readonly nou: readonly ImagineFoaie[] }
   | { readonly tip: 'degrupeaza'; readonly foaie: string; readonly degrupate: readonly Degrupata[] }
   | { readonly tip: 'regrupeaza'; readonly foaie: string; readonly degrupate: readonly Degrupata[] }
   | ({ readonly tip: 'adauga-foaie' } & FoaieIntreaga)
@@ -220,9 +222,10 @@ function aplicaPas(doc: Document, c: Comanda): Document {
   const fi = indexFoaie(doc, c.foaie);
   const foaie = doc.foi[fi];
   if (!foaie) throw new Error(`foaia ${c.foaie} nu există`);
-  if (c.tip === 'inlocuieste-stoc' || c.tip === 'inlocuieste-ghidaje') {
+  if (c.tip === 'inlocuieste-stoc' || c.tip === 'inlocuieste-ghidaje' || c.tip === 'inlocuieste-imagini') {
     const foi = [...doc.foi];
-    foi[fi] = c.tip === 'inlocuieste-stoc' ? { ...foaie, stoc: c.nou } : { ...foaie, ghidaje: [...c.nou] };
+    foi[fi] = c.tip === 'inlocuieste-stoc' ? { ...foaie, stoc: c.nou }
+      : c.tip === 'inlocuieste-ghidaje' ? { ...foaie, ghidaje: [...c.nou] } : { ...foaie, imagini: [...c.nou] };
     return { ...doc, foi };
   }
   const instante = [...foaie.instante];
@@ -270,6 +273,7 @@ function inversa(c: Comanda): Comanda {
     case 'inlocuieste-piesa': return { tip: c.tip, vechi: c.nou, nou: c.vechi };
     case 'inlocuieste-stoc': return { tip: c.tip, foaie: c.foaie, vechi: c.nou, nou: c.vechi };
     case 'inlocuieste-ghidaje': return { tip: c.tip, foaie: c.foaie, vechi: c.nou, nou: c.vechi };
+    case 'inlocuieste-imagini': return { tip: c.tip, foaie: c.foaie, vechi: c.nou, nou: c.vechi };
     case 'degrupeaza': return { ...c, tip: 'regrupeaza' };
     case 'regrupeaza': return { ...c, tip: 'degrupeaza' };
     case 'adauga-foaie': return { ...c, tip: 'sterge-foaie' };

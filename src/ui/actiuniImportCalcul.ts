@@ -12,10 +12,12 @@ import { LINIE, type Punct, type Varf } from '../geom/contur.ts';
 import { REZOLUTIE } from '../geom/toleranta.ts';
 import { praf, preaDeparte } from '../io/caleImport.ts';
 import { dpiImagine, formatFoaie, TRASARE_IMPLICITA, type AlegeriTrasare } from '../io/imagine.ts';
-import { trasareInBazin, TrasareAnulata, TrasareCazuta } from '../jobs/bazinTrasare.ts';
-import type { CerereTrasare, RaspunsTrasare } from '../jobs/calculTrasare.ts';
+import { imagineaFoiiInBazin, trasareInBazin, TrasareAnulata, TrasareCazuta } from '../jobs/bazinTrasare.ts';
+import type { CerereTrasare, RaspunsTrasare, ZonaTrasare } from '../jobs/calculTrasare.ts';
 import type { CaiTrasate } from '../trasare/trasare.ts';
-import type { AvertismenteImagine, FisierImport, PrevizualizareImport, RaportImagine, UnitateDxf, UnitateWmf } from './actiuniImportTipuri.ts';
+import type {
+  AvertismenteImagine, FisierImport, ImagineDeImport, PrevizualizareImport, RaportImagine, UnitateDxf, UnitateWmf,
+} from './actiuniImportTipuri.ts';
 
 /**
  * Ce cer ușile: px-ul (SVG), limba (`switch` din SVG), unitatea aleasă (un DXF fără unități, un WMF fără antet), pagina (PDF,
@@ -348,6 +350,41 @@ export function previzualizareDinRaspuns(f: FisierImport, r: RaspunsTrasare): Pr
   const c = comune(f, cai, { latime: trasare.latimeMm, inaltime: trasare.inaltimeMm }, undefined, laturi);
   if (!c) return { ok: false, cod: 'plafon', detaliu: 'includeri', format: 'imagine', avertismente, trasare };
   return { ...c, format: 'imagine', trasare, avertismente, contur: r.cai, ...(r.fel === 'mediane' && r.late ? { late: r.late } : {}) };
+}
+
+/**
+ * Locul imaginii întregi în pagina importului (ADR 0272): mărimea în mm și centrul, cu originea paginii în colțul stânga-jos
+ * al zonei trasate (ori al imaginii), Y în sus, ca la căile din `caiDinTrasare`: un pixel al imaginii cade pe foaie în același
+ * punct ca vârful trasat din el.
+ */
+export function asezareInPagina(latimePx: number, inaltimePx: number, mmPePx: number, zona: ZonaTrasare | null): {
+  readonly latime: number; readonly inaltime: number; readonly x: number; readonly y: number;
+} {
+  const zx = zona?.x ?? 0, zy = zona?.y ?? 0, zh = zona?.h ?? inaltimePx;
+  return { latime: latimePx * mmPePx, inaltime: inaltimePx * mmPePx, x: (latimePx / 2 - zx) * mmPePx, y: (zy + zh - inaltimePx / 2) * mmPePx };
+}
+
+/**
+ * Imaginea pentru foaie (ADR 0272): aceeași cerere ca previzualizarea de pe ecran (alegerile ferestrei, pagina unui TIFF,
+ * imaginea paginii unui PDF), fără trasare, în workerul trasării; null dacă imaginea nu se poate citi.
+ */
+export async function imagineaPentruFoaie(f: FisierImport, o: Pick<OptiuniPrevizualizare, 'trasare' | 'pagina'>): Promise<ImagineDeImport | null> {
+  const t = o.trasare ?? TRASARE_IMPLICITA;
+  const format = formatImport(f.nume, '') ?? formatDupaAntet(f.octeti);
+  let cerere: CerereTrasare;
+  if (format === 'imagine') cerere = cerereTrasare(f, t, o.pagina);
+  else if (format === 'pdf') {
+    // Imaginea paginii (ADR 0270), cu DPI-ul și orientarea așezării ei, ca la previzualizare.
+    const im = await imagineaPaginiiPdf(f.octeti, o.pagina ? { pagina: o.pagina } : {});
+    if (!im.ok) return null;
+    cerere = cerereTrasare({ nume: f.nume, octeti: im.fisier.octeti }, t, undefined, { dpi: im.dpi, orientare: im.orientare });
+  } else return null;
+  const r = await imagineaFoiiInBazin(cerere);
+  if (!r.ok) return null;
+  return {
+    octeti: r.octeti, tip: r.tip, latimePx: r.latimePx, inaltimePx: r.inaltimePx, nume: f.nume.slice(0, PLAFON.numeLungime),
+    ...asezareInPagina(r.latimePx, r.inaltimePx, r.mmPePx, r.zona),
+  };
 }
 
 export async function previzualizare(f: FisierImport, o: OptiuniPrevizualizare): Promise<PrevizualizareImport> {

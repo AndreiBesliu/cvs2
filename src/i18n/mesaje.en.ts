@@ -32,6 +32,7 @@ export const en = {
   'actiune.roteste': 'Rotate',
   'actiune.foaie-stoc': 'Sheet size',
   'actiune.ghidaje': 'Sheet guides',
+  'actiune.imagini': 'Sheet images',
   'actiune.foaie-adauga': 'New sheet',
   'actiune.muta-instantele': 'Align',
   'actiune.deseneaza': 'Draw',
