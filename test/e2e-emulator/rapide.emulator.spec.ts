@@ -141,6 +141,9 @@ test('owner-ul: răspunsurile rapide scrise în Setări, salvate cu auditul, pus
   expect([d?.['versiune']?.integerValue, lista(d?.['lista'])]).toEqual(['1', [['Reparat', REPARAT_RO, ''], ['Am primit, ne uităm', PRIMIT_RO, PRIMIT_EN]]]);
   const randuri = (await documente('audit')).filter((x) => x['actiune']?.stringValue === 'setari.raspunsuriRapide');
   expect(randuri.map((x) => [x['tinta']?.stringValue, 'nullValue' in (x['inainte'] ?? {}), lista(x['dupa']).length])).toEqual([['setari/raspunsuriRapide', true, 2]]);
+  // Sub buton, istoricul lor din audit (ADR 0260 §9): prima salvare le adaugă pe amândouă, în ordinea listei.
+  const istoric = sectiune.locator('[data-set-istoric="rapide"] [data-pas]');
+  await expect(istoric).toHaveText([/ · tu · adăugat „Reparat”; adăugat „Am primit, ne uităm”$/]);
 
   // În Tichete: butoanele, în ordinea listei, cu legătura spre Setări; textul pus la cursor, în limba raportării.
   await bara(page, 'tichete').click();
@@ -173,6 +176,8 @@ test('owner-ul: răspunsurile rapide scrise în Setări, salvate cu auditul, pus
   await salveaza.click();
   await expect(sectiune.locator('[data-set="rapide-eroare"]')).toContainText('s-au schimbat de când le-ai deschis', LENT);
   expect(lista((await citeste('setari/raspunsuriRapide'))?.['lista'])).toEqual([['Din altă filă', 'Text.', '']]);
+  // Refuzată, salvarea n-a scris nimic în audit: istoricul are tot rândul de dinainte.
+  await expect(istoric).toHaveCount(1);
   expect(erori).toEqual([]);
 });
 
