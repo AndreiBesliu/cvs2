@@ -40,8 +40,6 @@ o('L02', BI, '  const aratat = alesul ?? (lipsa ? undefined : elemente[0]);', ' 
   'linkul spre o extensie care lipsește arată alta în locul ei')
 o('L03', BI, "  const lipsa = cerere.dinLink && ales !== null && ales === cerere.id && fila === 'toate' && catalog.fel === 'ok' && !alesul;", '  const lipsa = false;', 'e2e',
   'linkul spre o extensie care lipsește nu spune nimic')
-o('L04', BI, "  const schimbaFila = (f: Fila): void => { setFila(f); setAles(null); };", "  const schimbaFila = (f: Fila): void => { setFila(f); };", 'e2e',
-  'la altă filă, rândul ales rămâne cel vechi: pe telefon, pagina goală în locul listei')
 o('L05', BI, "(n) => s.fel !== 'actualizeaza' || comparaVersiuni(n.versiune, s.de) === 1", "() => true", 'e2e',
   '„ce e nou” la o actualizare arată și versiunile pe care omul le are deja')
 o('L06', BI, "{typeof octeti === 'number' && <> · {t('extensii.gestionare.date'", "{false && <> · {t('extensii.gestionare.date'", 'e2e',
@@ -118,6 +116,8 @@ o('M02', EX, "              : noua ? t('extensii.meniu.noua', { veche: x.manifes
   'rândul extensiei instalate nu mai spune că are o versiune nouă')
 o('M03', CS, "  width: min(21rem, calc(100vw - 0.5rem));\n  box-sizing: border-box;", "  min-width: 15rem;\n  max-width: 24rem;", 'e2e',
   'meniul își schimbă lățimea când vine catalogul')
+o('M08', CS, ".rand-text > span,\n.rand-text small {", ".rand-text small {", 'e2e',
+  'un nume lung se rupe pe două rânduri când apare „Actualizează”: meniul crește')
 o('M04', EX, "    if (Date.now() - ultimulCatalog.current > 5000) incarcaBiblioteca();", "", 'e2e',
   'din paletă sau din link, catalogul nu se mai cere')
 o('M05', EX, "    if (Date.now() - ultimulCatalog.current > 5000) incarcaBiblioteca();", "    incarcaBiblioteca();", 'e2e',

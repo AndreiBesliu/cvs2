@@ -42,13 +42,13 @@ async function randul(page: Page): Promise<Rand> {
 }
 
 /** Pachetul de acum, cu alt manifest (aceleași fișiere): o versiune mai veche, eventual cu mai puține permisiuni. */
-async function pachetVechi(versiune: string, faraPermisiuni: readonly string[] = []): Promise<Buffer> {
+async function pachetVechi(versiune: string, faraPermisiuni: readonly string[] = [], nume?: string): Promise<Buffer> {
   const z = await citesteZip(pachetTrenulet().octeti, { fisiere: 256, octetiFisier: 8 * 1024 * 1024, octetiTotal: 16 * 1024 * 1024 });
   if (!z.ok) throw new Error(z.motiv);
   return Buffer.from(scrieZip(z.intrari.map((i) => {
     if (i.nume !== 'extensie.json') return i;
     const m = JSON.parse(new TextDecoder().decode(i.octeti)) as Record<string, unknown> & { permisiuni: string[] };
-    const nou = { ...m, versiune, permisiuni: m.permisiuni.filter((p) => !faraPermisiuni.includes(p)) };
+    const nou = { ...m, versiune, permisiuni: m.permisiuni.filter((p) => !faraPermisiuni.includes(p)), ...(nume ? { nume } : {}) };
     return { nume: i.nume, octeti: new TextEncoder().encode(JSON.stringify(nou)) };
   })));
 }
@@ -177,19 +177,22 @@ test('actualizarea dintr-un clic, din meniu: o versiune veche, din fișier, cu d
   const poarta = new Promise<void>((ok) => { lasa = ok; });
   await page.goto('/');
   const r = await randul(page);
-  await instaleazaDinFisier(page, 'trenulet-18.6.0.zip', await pachetVechi('18.6.0'));
+  // Versiunea veche are un nume mai lung (ca „Planificator Trenuleț” dinainte de ADR 0167): rândul lui, cu „Actualizează”
+  // lângă el, n-are voie să lățească meniul și nici să se rupă pe două rânduri.
+  const VECHI = 'Planificatorul de trenulețe din lemn';
+  await instaleazaDinFisier(page, 'trenulet-18.6.0.zip', await pachetVechi('18.6.0', [], VECHI));
   await scrieDate(page, 'circuit', 'circuitul de dinainte');
   await page.route('**/extensii/catalog.json', async (route) => { await poarta; await route.continue(); });
 
   const m = await deschideMeniul(page);
   const instalata = m.locator('[data-extensii="deschide"][data-id="trenulet"]');
-  await expect(instalata).toHaveText('Easy 3Draw18.6.0');
+  await expect(instalata).toHaveText(`${VECHI}18.6.0`);
   const inainte = await m.boundingBox();
   lasa();
   const actualizeaza = m.locator('[data-extensii="biblioteca-actualizeaza"]');
   await expect(actualizeaza).toHaveText('Actualizează');
   await expect(actualizeaza).toHaveAccessibleName(`Actualizează la ${r.versiune}`);
-  await expect(instalata).toHaveText(`Easy 3Draw18.6.0 → ${r.versiune}`);
+  await expect(instalata).toHaveText(`${VECHI}18.6.0 → ${r.versiune}`);
   const dupa = await m.boundingBox();
   expect(dupa?.height, 'meniul nu crește când vine catalogul (ADR 0231, „meniul sare”)').toBe(inainte?.height);
   expect(dupa?.width).toBe(inainte?.width);

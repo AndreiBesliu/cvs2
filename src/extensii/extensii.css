@@ -404,12 +404,15 @@
 }
 
 .rand-text {
+  flex: 1;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   min-width: 0;
 }
 
+/* Numele și rândul de sub el stau fiecare pe un rând, tăiate cu „…”: rândul nu crește când lângă el apare „Actualizează”. */
+.rand-text > span,
 .rand-text small {
   max-width: 100%;
   overflow: hidden;

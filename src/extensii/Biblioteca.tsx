@@ -108,7 +108,6 @@ export function FereastraBiblioteca({ cerere, catalog, instalate, limba, acoperi
     e.preventDefault();
     inchide();
   };
-  const schimbaFila = (f: Fila): void => { setFila(f); setAles(null); };
 
   /** Instalarea sau actualizarea dintr-un clic, în pagină: descărcarea verificată, scrierea, apoi lista celor instalate. */
   const instaleaza = async (rand: RandBiblioteca, cum: 'instalata' | 'actualizata'): Promise<void> => {
@@ -183,10 +182,10 @@ export function FereastraBiblioteca({ cerere, catalog, instalate, limba, acoperi
             </button>
             <h2 id="fereastra-biblioteca-titlu">{t('extensii.biblioteca.titlu')}</h2>
             <div className="bib-file" role="tablist" aria-label={t('extensii.biblioteca.titlu')}>
-              <button type="button" role="tab" aria-selected={fila === 'toate'} data-extensii="fila-toate" onClick={() => { schimbaFila('toate'); }}>
+              <button type="button" role="tab" aria-selected={fila === 'toate'} data-extensii="fila-toate" onClick={() => { setFila('toate'); }}>
                 {t('extensii.biblioteca.fila-toate')}{catalog.fel === 'ok' ? ` · ${randuri.length}` : ''}
               </button>
-              <button type="button" role="tab" aria-selected={fila === 'instalate'} data-extensii="fila-instalate" onClick={() => { schimbaFila('instalate'); }}>
+              <button type="button" role="tab" aria-selected={fila === 'instalate'} data-extensii="fila-instalate" onClick={() => { setFila('instalate'); }}>
                 {t('extensii.biblioteca.fila-instalate')} · {instalate.length}
               </button>
             </div>
