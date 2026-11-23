@@ -11687,28 +11687,24 @@ porțile lui A.6 rulau în CI).
   baza ei, scrise doar de owner; probat: un vizitator nu poate scrie). Datele din schiță sunt de exemplu, marcate așa.
 - **Documentele:** ADR 0262, rândul lui în index, nota liniei, DEVLOG. **Completed:** 23.11 19:10.
 
-## 2026-11-23 — Felia 3.Tr: elicea de barcă în atelierul Easy 3Draw (ADR 0282) (Model: Claude Fable 5.2)
+## 2026-11-23 — ADR 0262 acceptat; felia A.8a: contractul utilizării, callable-ul `utilizare` și setările din admin
 
+**Prompt:** „am raspuns” (owner-ul, pe 23.11, după formularul schiței ADR 0262: 1 „c”, cu nota care o înlocuiește:
+colectarea pornită pentru toți, legată de cont, disocierea doar la cerere, prin tichet, fără buton în meniul contului, scrisă
+doar în regulament; 2a, 3b, 4a, 5a, 6a; 7a, cu nota „toate astea vin cu mentiunea ca defapta vreau sa pot configura eu din
+admin cat mai multe setari”).
+**Started:** 23.11 19:43.
+
+- **ADR 0262 acceptat** cu răspunsurile, citate în el: §3 (colectarea pentru toți cei cu cont, disocierea prin tichet, de
+  verificat juridic înaintea live-ului), §8 nou (setările din admin: colectarea, clicurile fine, lotul, cele două păstrări,
+  pașii dinaintea unei erori), feliile A.8a, A.8b, A.8c, A.9–A.11 (~6), apoi A.7.
+- **DEVLOG:** unirea lui `main` în ramură (`0feb3ec0`) dublase două intrări ale lui `main` (3.Tr și unirea elicelor); scoase.
 
 ## 2026-11-23 — Sesiunea principală în cloud: a patra unire (25.8↑a, imaginile pe foaie; A.5, Utilizatori și Personal) și o probă instabilă a extensiilor, reparată (Model: Claude Fable 5.2)
 
 **Prompt:** același brief de predare al sesiunii principale („unește ce se poate” e ordin permanent), la rapoartele liniilor
 trasării, elicelor și adminului (PR-urile `AndreiBesliu/cvs2#6`, `AndreiBesliu/cvs2#5` și `AndreiBesliu/cvs2#8`).
 **Started:** 23.11, 16:37. **Completed:** unirea în `main`, 23.11, 19:20; publicarea pe test, în rândul de la capăt.
-
-## 2026-11-23 — Linia elicelor unită în `main` (reparația probelor atelierului și 3.Tr), din sesiunea liniei (Model: Claude Opus 5.5)
-
-**Prompt:** „deocamdata putem face unirea” (în sesiunea cloud a liniei elicelor, după raportul lui 3.Tr).
-**Started:** 23.11, 17:13. **Completed:** 23.11, 17:30 (push-ul în `main`; rapidul pe `main`, după push).
-
-- **Unirea:** `unire-2311d` din `origin/main` (`c010e3d1`), `git merge --no-ff 8b1255b8` → `d262e57a`. Ramura avea `main`
-  adus și n-are `.lucru/`: `git diff 8b1255b8 d262e57a` e gol, deci porțile ramurii sunt ale unirii (rapidul și completul
-  verzi pe `8b1255b8`: unit 9 825 / 0, 12 sărite; e2e 604 / 604; emulatoarele 104 / 104 și 36 / 36; pornirea 107,9 / 115,
-  totalul 763,1 / 800).
-- **Documentele:** decizia în `CLAUDE.md`, indexul notelor, nota sesiunii principale (starea elicelor), indexul ADR și
-  starea ADR 0282, nota liniei.
-- **Nepublicat:** publicarea pe test rămâne la sesiunea principală (sau la cuvântul owner-ului): două publicări pornite din
-  sesiuni diferite pot ajunge în ordinea greșită. Deschise, gata de unit acolo: `AndreiBesliu/cvs2#6`, `#8`, `#9`.
 
 - **Verificate înaintea unirii:** cele trei ramuri fără `.lucru/`, cu `main` (`c010e3d1`) adus; rapidul și completul verzi
   pe commit-urile raportate (`2e8caa3e`, `8b1255b8`, `fe026f9f`); la elice, Easy 3Draw 18.20.0 în `extensie.json` și în

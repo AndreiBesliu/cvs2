@@ -2,7 +2,7 @@
 
 <!-- Adusă din memoria sesiunii principale pe 23.11.2026 (mutarea în cloud). De aici înainte o ține la zi linia, pe ramura ei, odată cu feliile. -->
 
-_CNCVS2, ADR 0260: pagina /admin reproiectată; A.1–A.5 unite în main (A.5: 1b46c955); A.6 (Roadmap, Documentație, Setări) GATA DE UNIT din 23.11, din df098dad (PR-ul AndreiBesliu/cvs2#8); A.7 la cuvântul owner-ului; ADR 0262 (utilizarea aplicației, A.8–A.11) propus, la răspunsurile owner-ului_
+_CNCVS2, ADR 0260: pagina /admin reproiectată; A.1–A.5 unite în main (A.5: 1b46c955); A.6 (Roadmap, Documentație, Setări) GATA DE UNIT din 23.11, din df098dad (PR-ul AndreiBesliu/cvs2#8); ADR 0262 (utilizarea aplicației) acceptat pe 23.11; A.8a în lucru; apoi A.8b, A.8c, A.9–A.11, apoi A.7_
 
 Linia adminului din [sesiunea principală](principala.md): ADR 0260 (intervalul 0260–0269), acceptat pe 13.11.2026 cu ideile 51–62 de pe
 tabla „Harta schițelor”. Owner-ul a cerut „vreau sa faci design si pentru admin”, iar la idei a răspuns „Da la toate”
@@ -41,12 +41,15 @@ tabla „Harta schițelor”. Owner-ul a cerut „vreau sa faci design si pentru
   în baza ei (`raspunsuri`, scrise doar de owner); pentru 0261: <https://claude.ai/artifact/DhLTbJiBTWGdgjobiDcJb2>.
 - **Felia rămasă din ADR 0260:** A.7 telefonul (bara de jos, meniul ☰, tichetul cu răspunsul), doar la cuvântul
   owner-ului; are ~4 kB din ținta de mărime a liniei.
-- **ADR 0262 propus pe 23.11** (utilizarea aplicației, feliile A.8–A.11), la cererea owner-ului de a vedea în admin ce
-  unelte folosesc oamenii, fluxurile cele mai dese, ce nu se folosește și pașii dinaintea unei erori: evenimentele din
-  registrul de acțiuni, după o listă albă, acordul la intrarea în cont, loturi prin callable, sumele zilei noaptea, fila
-  Utilizare și cronologia unui om. Schița și formularul celor 7 întrebări:
-  <https://claude.ai/artifact/Y75BvkeR7kZmBpadwoFyya> (răspunsurile în baza ei, `raspunsuri`, scrise doar de owner). Codul
-  pornește după răspunsuri.
+- **ADR 0262 acceptat pe 23.11** (utilizarea aplicației), la cererea owner-ului de a vedea în admin ce unelte folosesc
+  oamenii, fluxurile cele mai dese, ce nu se folosește și pașii dinaintea unei erori. Schița și formularul:
+  <https://claude.ai/artifact/Y75BvkeR7kZmBpadwoFyya> (răspunsurile în baza ei, `raspunsuri`). Răspunsurile: colectarea
+  pornită pentru toți cei cu cont, fără întrebare și fără buton în meniul contului, spusă doar în nota de confidențialitate;
+  disocierea doar la cerere, prin tichet (A.11); 2a (pașii în raportul erorii), 3b (și clicurile fine, derularea, zoom-ul:
+  A.8c), 4a, 5a, 6a, 7a (A.8–A.11 întâi, apoi A.7), cu nota „vreau sa pot configura eu din admin cat mai multe setari”
+  (`setari/utilizare`, ADR 0262 §8). **Juridic:** legate de cont, evenimentele sunt date personale (GDPR); de verificat
+  înaintea live-ului, spus owner-ului o dată, odată cu acceptarea. Feliile: A.8a (contractul, callable-ul, setările), A.8b
+  (înregistratorul din client), A.8c (clicurile fine), A.9 (jobul și fila), A.10 (fluxurile), A.11 (troubleshooting).
 - **Alegeri față de schițe, de știut la A.7:** schimbarea planului a rămas un formular cu „Salvează planul” (nu butoane
   cu un clic); felul intrării unui om vine din `sursa` documentului (metodele legate mai târziu din fila Cont ar cere o
   citire din Auth, pe server, deci un ADR al liniei).
