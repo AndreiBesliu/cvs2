@@ -509,7 +509,7 @@ export const roAdmin = {
   'admin.set.rapide.p.en-invalid': 'Textul în engleză are cel mult {max} de caractere, fără caractere de control.',
   'admin.set.util.titlu': 'Utilizarea aplicației',
   'admin.set.util.text': 'Ce face în editor fiecare om cu cont (acțiunile, ferestrele, unealta, dialogurile), legat de contul lui, fără desen, texte, fișiere sau parole; spus în nota de confidențialitate. Le schimbi doar tu; fiecare schimbare are rândul ei de audit.',
-  'admin.set.util.acum': 'Editorul nu trimite încă nimic: înregistratorul vine în felia următoare (A.8b). Clicurile fine vin în A.8c, sumele zilei în A.9, pașii erorilor în A.11.',
+  'admin.set.util.acum': 'Editorul trimite acum acțiunile registrului (cu sursa și rezultatul lor), ferestrele și unealta. Dialogurile și clicurile fine vin în A.8c, sumele zilei (fila Utilizare) în A.9, pașii erorilor în A.11.',
   'admin.set.util.se-incarca': 'Se încarcă setările utilizării…',
   'admin.set.util.citire': 'Setările utilizării nu s-au putut citi: {motiv}',
   'admin.set.util.colectare': 'Colectarea',

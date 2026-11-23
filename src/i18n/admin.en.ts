@@ -503,7 +503,7 @@ export const enAdmin = {
   'admin.set.rapide.p.en-invalid': 'The English text has at most {max} characters, with no control characters.',
   'admin.set.util.titlu': 'App usage',
   'admin.set.util.text': 'What each person with an account does in the editor (the actions, windows, tool, dialogs), tied to their account, without drawings, texts, files or passwords; stated in the privacy note. Only you change these; every change has its audit row.',
-  'admin.set.util.acum': 'The editor sends nothing yet: the recorder comes in the next slice (A.8b). Fine clicks come in A.8c, daily totals in A.9, error steps in A.11.',
+  'admin.set.util.acum': 'The editor now sends the registry actions (with their source and result), the windows and the tool. Dialogs and fine clicks come in A.8c, daily totals (the Usage tab) in A.9, error steps in A.11.',
   'admin.set.util.se-incarca': 'Loading the usage settings…',
   'admin.set.util.citire': 'The usage settings could not be read: {motiv}',
   'admin.set.util.colectare': 'Collection',

@@ -111,8 +111,8 @@ foile, extensiile) trec prin el, iar barele, tastele, paleta și meniurile ajung
 | # | Felia |
 | --- | --- |
 | A.8a | Contractul evenimentelor (lista albă) și setările (`shared/utilizare.ts`), callable-ul `utilizare` (lotul, plafoanele pe cont, setările owner-ului cu auditul), colecția cu TTL, regulile, secțiunea „Utilizarea aplicației” din Setări, cu istoricul. |
-| A.8b | Înregistratorul din client (registrul, ferestrele, unealta, dialogurile, sesiunea; inelul pașilor, coada), trimiterea în loturi, fraza din nota de confidențialitate. |
-| A.8c | Clicurile fine (catalogul numelor din sursă), derularea și zoom-ul, calculele lungi, mașina și imprimanta. |
+| A.8b | Înregistratorul din client (registrul, ferestrele, unealta, sesiunea; inelul pașilor, coada), trimiterea în loturi, fraza din nota de confidențialitate. |
+| A.8c | Dialogurile, clicurile fine (catalogul numelor din sursă), derularea și zoom-ul, calculele lungi, mașina și imprimanta. |
 | A.9 | Jobul de noapte (sumele zilei) și fila Utilizare: perioada, cifrele, uneltele, ce nu se folosește, frecările, duratele. |
 | A.10 | Fluxurile: secvențele cele mai dese și pâlnia drumului principal. |
 | A.11 | Troubleshooting: pașii dinaintea unei erori (în raportul ei, în Erori), cronologia unui om (Utilizatori, Tichete) și disocierea unui cont. |
@@ -128,6 +128,20 @@ Estimarea: ~6 felii. A.7 (telefonul) vine după A.11 (întrebarea 7, a).
   `setari/utilizare` citit doar de owner. În fila Setări, „Utilizarea aplicației” (`src/admin/setari/SetariUtilizarii.tsx`), cu
   istoricul din audit (`setari.utilizare`). Un lot nu e o acțiune a personalului: n-are rând de audit. Alegeri: colectarea oprită
   nu numără la plafon; o salvare a setărilor egală cu cele în vigoare (și implicitele, fără document) nu scrie nimic.
+- **A.8b** (23.11, `3.Ah`): în pornire stau doar sursa gestului (`src/app/utilizare.ts`: `sursaDin`, ascultătorii din faza de
+  captură, înaintea celor ai editării, care pot opri propagarea) și un tampon de cel mult 500 de evenimente; registrul spune
+  fiecare rulare (`observaRularile` în `src/ui/actiuni.ts`), aplicația ferestrele și refuzurile din bară și din taste, editarea
+  unealta. Înregistratorul (`src/app/utilizareLot.ts`) vine într-o bucată a lui, adusă imediat după pornire, în precache.
+  Trimiterea (`src/app/utilizareTrimitere.ts`, `trimiteUtilizarea` din `PanouCont.tsx`, `trimiteLotul` din `contEditor.ts`)
+  trece prin bucata contului. Pornirea: +0,7 kB (cu ușa 113,7 / 115). Trei abateri de la propunere:
+  - **coada din browser e în `localStorage`** (`cncvs2.utilizare.loturi`, cu contul fiecărui lot), nu în IndexedDB: se scrie
+    sincron, deci un lot închis la ascunderea paginii nu se pierde la închiderea filei; plafonul rămâne 2 000 de evenimente;
+  - **trimiterea o pune editarea** (`seteazaTrimiterea`), pe drumul ei de azi spre bucata contului: un import din pornire
+    scotea o bucată nouă, comună cu ea; până vine editarea, loturile așteaptă, ca fără rețea;
+  - **dialogurile** (deschise, gata, renunțate) trec în A.8c, cu clicurile fine: amândouă se prind din pagină, nu din registru.
+
+  Un lot gol întreabă setările cât colectarea e oprită (o dată, la pornirea pompei, după 5 s); serverul nu-l scrie. Un lot al
+  altui cont, rămas în același browser, se scoate fără să plece; un cont fără drept golește coada; fără token, coada așteaptă.
 
 ## Probele
 

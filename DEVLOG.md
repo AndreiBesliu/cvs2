@@ -11708,7 +11708,24 @@ admin cat mai multe setari”).
   la prima rulare (23 unitare, 14 server, 2 reguli, 9 emulatoare). **Mărimea:** `/admin` 127,5 → 129,9 / 200; pornirea și
   totalul neschimbate. **La unire se publică și serverul** (funcția `utilizare`, regulile, indexurile).
 - **Documentele:** ADR 0262 (implementarea), fișa etapei 3 (`3.Ag`), registrul otrăvurilor, traducerile, nota liniei.
-  **Completed:** 23.11 20:10.
+  **Completed:** 23.11 20:05.
+
+## 2026-11-23 — Felia A.8b: înregistratorul utilizării în editor și trimiterea în loturi (ADR 0262)
+
+**Prompt:** același „am raspuns” (7a: A.8–A.11 acum), după A.8a.
+**Started:** 23.11 20:10.
+
+- **Codul (`63b5d444`, `588edb3d`):** sursa gestului și un tampon în pornire (`src/app/utilizare.ts`), registrul care spune
+  fiecare rulare (`observaRularile`), ferestrele și refuzurile din `App.tsx`, unealta din editare; înregistratorul în bucata
+  lui (`utilizareLot.ts`, în precache), cu repetările, inelul pașilor, lotul, coada din browser cu contul fiecărui lot, setările
+  aflate și pompa; trimiterea prin bucata contului, pusă de editare (`utilizareTrimitere.ts`, `trimiteUtilizarea`,
+  `trimiteLotul`); serverul nu scrie un lot gol (întrebarea setărilor). Nota de confidențialitate, în ambele limbi.
+- **Mărimea:** prima formă (tot înregistratorul în pornire, importul bucății contului din `main.tsx`) dădea pornirea 110,9 kB și,
+  cu ușa, 115,4 / 115: poarta a căzut. Împărțită, pornirea e 109,2 (cu ușa 113,7, cu Atelierul 114,0 / 115).
+- **Probele:** 20 unitare, 1 a serverului, 3 e2e pe emulatoare. **Otrăvurile:** 40 / 40, după proba cu Delete pe un nod (E08).
+- **Abaterile, scrise în ADR:** coada în `localStorage`; trimiterea pusă de editare; dialogurile trec în A.8c.
+- **Documentele:** ADR 0262 (implementarea), fișa etapei 3 (`3.Ah`), registrul otrăvurilor, traducerile, nota liniei.
+  **Completed:** 23.11 20:35.
 
 ## 2026-11-23 — Sesiunea principală în cloud: a patra unire (25.8↑a, imaginile pe foaie; A.5, Utilizatori și Personal) și o probă instabilă a extensiilor, reparată (Model: Claude Fable 5.2)
 
