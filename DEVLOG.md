@@ -11477,3 +11477,28 @@ la rapoartele liniilor planșelor și adminului (PR-urile `AndreiBesliu/cvs2#2` 
 - **Între timp, la linii:** biblioteca (3.Xh) are ADR 0231 propus, cu schița și patru întrebări la owner
   (`AndreiBesliu/cvs2#4`, ciornă); trasarea (25.8↑a, `AndreiBesliu/cvs2#6`) și reparația probelor atelierului
   (`AndreiBesliu/cvs2#5`) își așteaptă porțile finale.
+
+## 2026-11-23 — Felia 3.Tr: elicea de barcă în atelierul Easy 3Draw (ADR 0282) (Model: Claude Fable 5.2)
+
+**Prompt:** „pornește 3.Tr” (în sesiunea cloud a liniei elicelor, după reparația probelor atelierului).
+**Started:** 23.11, 14:47. **Completed:** 23.11, 16:20 (în container; CI-ul, pe commit-ul împins).
+
+- **Reperul LEGO:** din LDraw, elicea motorului de barcă (48085, piesa u9216): Ø21,6, trei palete ovale, plate, la ≈ 10°,
+  care acoperă ~80 % din disc, pe un arbore de Ø2. Nu stă pe un ax LEGO: reper doar pentru formă.
+- **Proba întâi:** 11 probe unitare cu valorile pe hârtie (calculate separat, cu un script de o singură folosință), căzute
+  toate fără motor („tip necunoscut”); cu motorul, 8 treceau. Două căderi erau ale probelor (o toleranță la rotunjirea
+  cheii, o fereastră nesimetrică), una a motorului: capetele paletei cu fața plată nu se închideau cu tăierea urechilor.
+- **Motorul:** `eliceBarca`, `eliceBarcaCote`, `sectiuneBarca`; paletele și butucul, comune cu elicea (`paleteElice`,
+  `butucElice`). Elicea din 3.Tq, aceeași la octet: amprenta a 3 456 de combinații, înainte și după.
+- **Atelierul:** piesa a doua a filei Elice, editorul, „Repede”, textul, pictograma, 13 texte în engleză. Capturile:
+  desktop și 390 px (fără depășire); pictograma, mărită de 4 ori lângă a elicei.
+- **Hotărâte la implementare** (în ADR, „Implementarea (3.Tr)”): înclinarea pe cerc, nu spre pupa (ar cere suport); fără
+  „Ca LEGO”, cu diametrele pe grila de știfturi; partea dinspre barcă pe masă; butucul crește cu elicea.
+- **Otrăvurile, în clonă:** `3.Tr.py` 141 / 141 (139 din prima; K07 și E18, după probele lor); `3.Tr-en.py` 6 / 6. Lista
+  lui 3.Tq, mutată pe codul comun: 15 otrăvuri aduse la zi, 0 VOID. `verifica` pe toate `3.T*.py`: niciun VOID nou.
+- **`main` adus în ramură** (`c010e3d`, cu 11.3↑e și A.4): ciocnirea, doar în DEVLOG, rezolvată cu `rezolva-devlog.py`.
+- **Porțile, în container:** tipurile, regulile de import (0 încălcări), traducerile (920, 0 lipsă), unitarele pluginului
+  și ale documentelor 170 / 170, build-ul determinist, e2e-ul pluginului și al extensiilor 71 / 71. Pornirea 107,9 / 115
+  (cu ușa 112,3), totalul 763,1 / 800, `/admin` 124,1 / 200; Easy 3Draw 18.20.0, 460,6 kB.
+- **Documentele:** ADR 0282, indexul ADR, fișa etapei 3 (jurnalul și coada owner-ului), traducerile roadmap-ului (4),
+  registrul otrăvurilor, nota liniei.
