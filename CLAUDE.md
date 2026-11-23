@@ -1314,7 +1314,8 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   113,3), totalul 770,9 / 800 kB, `/admin` 127,5 / 200. Nimic pe server. **Linia frezelor** (la „Vreau sa pot crea freze
   l sau profiluri de freze in aplicatie si sa le salvez in cont” și „Da-mi un prompt pentru o sesiune dedicata
   frezelor.” ale owner-ului): felia 16.A↑ (biblioteca de freze, adusă din etapa 16), ramura `wip/16.A-freze` (din
-  `c8b235ab`), ADR-urile 0290–0299, canalul `freze`; întâi ADR 0290 propus și schița cu întrebările (ce e un „profil de
+  `c8b235ab`), ADR-urile 0300–0309 (0290–0299 sunt ale liniei exportului, `wip/28.8-export`, pornită de owner în aceeași
+  zi), canalul `freze`; întâi ADR 0300 propus și schița cu întrebările (ce e un „profil de
   freză”, ce ține o freză, contul și lucrul offline, proiectele când freza se schimbă), apoi codul, la răspunsuri;
   promptul, dat owner-ului ca fișier. Urmează, la raport: 12.1↑e-3 și 12.1↑e-4 (incrustațiile), biblioteca extensiilor
   (3.Xh). La cuvântul owner-ului: A.7 și ADR 0262 (utilizarea aplicației, propus), 25.8↑b, 3.Ts. La owner: răspunsul la

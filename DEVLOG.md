@@ -11791,7 +11791,7 @@ PR-ul `AndreiBesliu/cvs2#4` cu ciocniri față de `main`.
 
 **Prompt:** același brief de predare al sesiunii principale („unește ce se poate” e ordin permanent), la rapoartele liniilor
 trasării, elicelor și adminului (PR-urile `AndreiBesliu/cvs2#6`, `AndreiBesliu/cvs2#5` și `AndreiBesliu/cvs2#8`).
-**Started:** 23.11, 16:37. **Completed:** unirea în `main`, 23.11, 19:20; publicarea pe test, în rândul de la capăt.
+**Started:** 23.11, 16:37. **Completed:** 23.11, 20:30 (unirea în `main` la 19:20, publicarea pe test la 20:30).
 
 - **Verificate înaintea unirii:** cele trei ramuri fără `.lucru/`, cu `main` (`c010e3d1`) adus; rapidul și completul verzi
   pe commit-urile raportate (`2e8caa3e`, `8b1255b8`, `fe026f9f`); la elice, Easy 3Draw 18.20.0 în `extensie.json` și în
@@ -11824,6 +11824,8 @@ trasării, elicelor și adminului (PR-urile `AndreiBesliu/cvs2#6`, `AndreiBesliu
   gol în afara fișierelor `.md`), deci porțile de mai sus sunt ale lui.
 - **Documentele:** decizia în `CLAUDE.md` (a patra unire; a treia e a liniei elicelor) și rândul de stare al trasării;
   indexul ADR (0272); indexul liniilor; `docs/linii/principala.md` (starea, „Din container”, `main` mișcat sub un lot).
+- **Publicarea pe test** (`d6fd5d68`): rapidul și completul pe `main`, verzi (completul, 48 de minute); `publica.yml` verde;
+  adresa de test spune `d6fd5d68cf33`. Scriptul, reluat de patru ori, a mers cap-coadă cu cele două reparații.
 
 ## 2026-11-23 — 3.Xh: `main` adus a treia oară în ramură (25.8↑a, A.5, reparația probelor extensiilor) (sesiune cloud)
 
@@ -11965,7 +11967,7 @@ si sa le salvez in cont” și „Da-mi un prompt pentru o sesiune dedicata frez
   emulatoare 104 / 104, paginile 41 / 41; pornirea 108,5 / 115 (cu ușa 113,0; cu Atelierul 113,3), totalul 770,9 / 800,
   `/admin` 127,5 / 200.
 - **Linia frezelor (16.A↑):** ramura `wip/16.A-freze` făcută din `main` (`c8b235ab`) și împinsă; promptul (ce există azi,
-  ADR 0290 propus cu întrebările, schița; marginile: documentul ține o copie a frezei, v27 pentru un câmp nou, contul prin
+  ADR 0300 propus cu întrebările, schița; marginile: documentul ține o copie a frezei, v27 pentru un câmp nou, contul prin
   callable, mărimea pornirii) trimis owner-ului ca fișier.
 - **Documentele:** decizia în `CLAUDE.md`; indexul liniilor (adminul, frezele); `docs/linii/principala.md` (starea,
   mesajele între sesiuni); `docs/lucru-in-cloud.md` (sesiunile își pot scrie; o linie căreia i se cere unirea îi scrie
@@ -11985,3 +11987,7 @@ si sa le salvez in cont” și „Da-mi un prompt pentru o sesiune dedicata frez
   (biblioteca, extensiile, pluginul, manualul, carcasa) 61 / 61. Pornirea 108,6 kB (cu ușa 113,1 / 115), totalul
   774,7 / 800 kB, `/admin` 127,5 / 200.
 - **PR-ul trece din ciornă în „gata de unit”** după rapidul de pe commit-ul acesta; unirea, la sesiunea principală.
+
+- **După unire:** promptul frezelor dăduse liniei ADR-urile 0290–0299, luate cu o oră înainte de linia exportului
+  (`wip/28.8-export`, pornită de owner; ADR 0290 propus pe ramura ei, nevăzut din `main`). Corectat la 0300–0309, în
+  prompt (retrimis owner-ului) și în documente; în prompt, și legătura cu fereastra exportului, unde se alege freza.
