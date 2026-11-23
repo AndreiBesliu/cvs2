@@ -11812,3 +11812,10 @@ si sa le salvez in cont” și „Da-mi un prompt pentru o sesiune dedicata frez
 - **După unire:** promptul frezelor dăduse liniei ADR-urile 0290–0299, luate cu o oră înainte de linia exportului
   (`wip/28.8-export`, pornită de owner; ADR 0290 propus pe ramura ei, nevăzut din `main`). Corectat la 0300–0309, în
   prompt (retrimis owner-ului) și în documente; în prompt, și legătura cu fereastra exportului, unde se alege freza.
+
+## 2026-11-23 — 16.A↑a: biblioteca de freze în browser, fereastra „Frezele mele” (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, 1a–6a” (owner-ul, la cele șase întrebări ale ADR 0300). **Started:** 23.11, 21:07.
+
+- ADR 0300 trecut pe „acceptat”, cu răspunsurile; felia 16.A↑a pornită (biblioteca în browser, fereastra, frezele de pornire,
+  fișierul, meniul contului și paleta, manualul).

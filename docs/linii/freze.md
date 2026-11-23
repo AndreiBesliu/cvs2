@@ -1,8 +1,8 @@
 # Frezele (16.A↑, ADR 0300–0309)
 
 _cncvs2, biblioteca de freze („Frezele mele”), felia 16.A↑ adusă din etapa 16: ramura `wip/16.A-freze` (din `main`
-`c8b235ab`), ADR-urile 0300–0309, canalul `freze`; ADR 0300 PROPUS pe 23.11, cu schița și șase întrebări; codul pornește
-doar după răspunsurile owner-ului_
+`c8b235ab`), ADR-urile 0300–0309, canalul `freze`; ADR 0300 ACCEPTAT pe 23.11 („Da, 1a–6a”);
+16.A↑a în lucru_
 
 Pornită pe 23.11.2026, în sesiunea cloud a liniei, la cererea owner-ului: „Vreau sa pot crea freze l sau profiluri de freze in
 aplicatie si sa le salvez in cont”. Rândurile din prag: „Bibliotecă de freze cu geometrie reală (dreaptă, bilă, toroidală, V,
@@ -18,7 +18,8 @@ gravare, profil, formă desenată)” și „Freze de profil desenate de utiliza
   lucru), 2 conflictul pe două calculatoare (îmbinarea pe câmpuri), 3 diametrul măsurat (CAM-ul taie cu el), 4 proiectul
   când freza se schimbă (copia cu originea ei, v27), 5 salvarea în cont și planul (cere un plan activ; altfel doar citire),
   6 ordinea feliilor (browserul, alegerea în proiect, apoi contul).
-- **Urmează**, la răspunsuri: 16.A↑a (biblioteca în browser, fereastra, fișierul), apoi b (alegerea în proiect, v27), c
+- **23.11, seara: ADR 0300 acceptat**, cu toate recomandările („Da, 1a–6a”). Pornită felia 16.A↑a.
+- **Feliile**, în ordine: 16.A↑a (biblioteca în browser, fereastra, fișierul), apoi b (alegerea în proiect, v27), c
   (contul), d (calibrarea), e (bila și toroidala), f (profilul desenat), g (valorile pe material).
 
 ## Ce am găsit în cod (23.11)

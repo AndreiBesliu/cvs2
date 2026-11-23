@@ -1,6 +1,6 @@
 # ADR 0300: Biblioteca de freze: „Frezele mele”, în browser și în cont
 
-**Starea:** propus pe 23.11.2026, la cererea owner-ului: „Vreau sa pot crea freze l sau profiluri de freze in aplicatie si
+**Starea:** acceptat pe 23.11.2026, cu toate recomandările („Da, 1a–6a”); propus în aceeași zi, la cererea owner-ului: „Vreau sa pot crea freze l sau profiluri de freze in aplicatie si
 sa le salvez in cont”. Felia 16.A↑ (adusă din etapa 16, fără mașină), linia „freze”: ramura `wip/16.A-freze`, ADR-urile
 0300–0309, canalul `freze`. **Rândurile din prag:** „Bibliotecă de freze cu geometrie reală (dreaptă, bilă, toroidală, V,
 gravare, profil, formă desenată)” și „Freze de profil desenate de utilizator; roundover cu offset față de interior”
@@ -241,6 +241,18 @@ comună a unui atelier cu mai multe conturi.
 6. **Ordinea feliilor:**
    - **a (recomandat):** cea din §11: biblioteca în browser, alegerea în proiect, apoi contul;
    - b: contul înaintea alegerii în proiect (a, c, b).
+
+## Răspunsurile owner-ului
+
+Pe 23.11.2026, exact: „Da, 1a–6a”. Deci:
+
+1. **a:** amândouă: forma desenată e un fel de freză (felia f), iar valorile de lucru stau în fiecare freză; ordinea din §11.
+2. **a:** conflictul se îmbină pe câmpuri; doar un câmp schimbat pe ambele calculatoare întreabă (felia c).
+3. **a:** diametrul măsurat intră în copia din proiect și CAM-ul taie cu el (felia d).
+4. **a:** copia rămâne, cu originea ei în proiect (documentul v27, felia b), iar rândul exportului arată diferența.
+5. **a:** salvarea în cont cere un plan activ; cu proba încheiată sau contul dezactivat, biblioteca din cont doar se citește
+   și se descarcă (capabilitatea `cloud`, felia c).
+6. **a:** întâi biblioteca în browser (16.A↑a), apoi alegerea în proiect (b), apoi contul (c).
 
 ## Se redeschide dacă
 
