@@ -15,7 +15,7 @@ const operatie = (urechi: UrechiOperatie | null): Operatie => ({
   id: 'x1', tip: 'profil', noduri: ['e'], scula: { numar: 1, nume: 'freza 1/8', diametru: 3.175 }, latura: 'exterior', sens: 'urcare',
   adancime: 18, pas: 6, urechi, rampa: null, intrari: null, colturi: null,
 });
-const valori = (urechi: { numar: number; latime: number; grosime: number; mod?: 'alese'; alese?: number } | null) => ({
+const valori = (urechi: { numar: number; latime: number; grosime: number; mod?: 'alese' | 'lemn'; alese?: number } | null) => ({
   latura: 'exterior' as const, sens: 'urcare' as const, adancime: 18, pas: 6, urechi, rampa: null, intrari: null, colturi: null,
 });
 const LOCURI = { e: [{ x: 0, y: 15 }, { x: 80, y: 15 }] };
@@ -44,9 +44,19 @@ test('alese pe un rând fără urechi în document: modul se scrie, fără locur
   assert.deepEqual(r.urechi, { numar: 4, latime: 6, grosime: 2, mod: 'alese' });
 });
 
-test('un mod scris de mână („lemn”) rămâne; bifa scoasă scoate urechile', () => {
-  const o = operatie({ numar: 2, latime: 6, grosime: 2, mod: 'lemn' });
-  assert.deepEqual(operatieDinDialog(o, valori({ numar: 2, latime: 6, grosime: 2 }), SCULA).urechi, { numar: 2, latime: 6, grosime: 2, mod: 'lemn' });
+test('un mod scris de mână (o regulă, „lungi”) rămâne; bifa scoasă scoate urechile', () => {
+  const o = operatie({ numar: 2, latime: 6, grosime: 2, mod: 'lungi' });
+  assert.deepEqual(operatieDinDialog(o, valori({ numar: 2, latime: 6, grosime: 2 }), SCULA).urechi, { numar: 2, latime: 6, grosime: 2, mod: 'lungi' });
   assert.equal(operatieDinDialog(o, valori(null), SCULA).urechi, null);
   assert.equal(operatieDinDialog(o, undefined, SCULA).urechi, o.urechi);
+});
+
+test('„unde ține” (11.3↑e): din „alese”, modul „lemn” fără locuri; înapoi la distanțe egale, fără mod; neschimbat, nicio schimbare', () => {
+  const alese = operatie({ numar: 2, latime: 6, grosime: 2, mod: 'alese', locuri: LOCURI });
+  assert.deepEqual(operatieDinDialog(alese, valori({ numar: 3, latime: 6, grosime: 2, mod: 'lemn' }), SCULA).urechi, { numar: 3, latime: 6, grosime: 2, mod: 'lemn' });
+  const lemn = operatie({ numar: 2, latime: 6, grosime: 2, mod: 'lemn' });
+  assert.deepEqual(operatieDinDialog(lemn, valori({ numar: 2, latime: 6, grosime: 2 }), SCULA).urechi, { numar: 2, latime: 6, grosime: 2 });
+  assert.equal(jsonCanonic(operatieDinDialog(lemn, valori({ numar: 2, latime: 6, grosime: 2, mod: 'lemn' }), SCULA)), jsonCanonic(lemn));
+  // Pe un rând fără urechi în document: modul se scrie.
+  assert.deepEqual(operatieDinDialog(operatie(null), valori({ numar: 2, latime: 6, grosime: 2, mod: 'lemn' }), SCULA).urechi, { numar: 2, latime: 6, grosime: 2, mod: 'lemn' });
 });

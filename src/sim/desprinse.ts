@@ -44,26 +44,35 @@ function panaLaFund(m: Float64Array, prag: number): Float64Array {
   return out;
 }
 
+/** Celula fundului e lemn, dar nu ține de marginea foii (o piesă tăiată de jur împrejur). */
+export const LEMN = 0;
+/** Celula fundului e tăiată prin foaie. */
+export const TAIAT = 1;
+/** Celula fundului e lemn legat de marginea foii (umplerea din margine a ajuns la ea). */
+export const LEGAT = 2;
+
 /**
- * Indicii părților desprinse, crescător, și celula probei. 0: lemn, 1: tăiat prin foaie, 2: lemn legat de marginea foii. O
- * parte se judecă pe celulele cu centrul înăuntrul ei (regula par-impar, pe rândurile câmpului); una fără lemn înăuntru
- * (toată scoasă, sau mai mică decât o celulă) nu se judecă.
+ * Fundul foii la capătul programului (ADR 0210, felia 11.3↑c; ADR 0211, „unde ține”): pe fiecare celulă, `LEMN`, `TAIAT` sau
+ * `LEGAT`, rând după rând (celula (i, j) la `s[j · nx + i]`, cu centrul în ((i + ½) · celula, (j + ½) · celula)).
  */
-export function partiDesprinse(c: CerereDesprinse): { readonly desprinse: readonly number[]; readonly celula: number } {
-  const { latime, inaltime, grosime } = c.foaie;
+export type FundFoaie = { readonly s: Uint8Array; readonly nx: number; readonly ny: number; readonly celula: number };
+
+/** Fundul foii: mutările care ajung la fața de jos, apoi umplerea din marginea foii, prin lemn (vecinii pe laturi). */
+export function fundFoii(foaie: CerereDesprinse['foaie'], grupuri: readonly GrupSimulare[]): FundFoaie {
+  const { latime, inaltime, grosime } = foaie;
   const celula = celulaDesprinse(latime, inaltime);
   const p: ParametriCamp = { x0: 0, y0: 0, latime, inaltime, celula, sus: 0 };
   const F = campNou(p);
   const prag = -grosime + PRAG_FUND;
-  for (const g of c.grupuri) ruleaza(F, g.scula, panaLaFund(g.mutari, prag));
+  for (const g of grupuri) ruleaza(F, g.scula, panaLaFund(g.mutari, prag));
   const { nx, ny } = F;
   const s = new Uint8Array(nx * ny);
-  for (let j = 0; j < ny; j++) for (let i = 0; i < nx; i++) if (valoare(F, i, j) <= prag) s[j * nx + i] = 1;
+  for (let j = 0; j < ny; j++) for (let i = 0; i < nx; i++) if (valoare(F, i, j) <= prag) s[j * nx + i] = TAIAT;
   // Umplerea din marginea foii, prin lemn.
   const coada = new Int32Array(nx * ny);
   let cap = 0, capat = 0;
   const pune = (k: number): void => {
-    if (s[k] === 0) { s[k] = 2; coada[capat++] = k; }
+    if (s[k] === LEMN) { s[k] = LEGAT; coada[capat++] = k; }
   };
   for (let i = 0; i < nx; i++) { pune(i); pune((ny - 1) * nx + i); }
   for (let j = 0; j < ny; j++) { pune(j * nx); pune(j * nx + nx - 1); }
@@ -74,6 +83,16 @@ export function partiDesprinse(c: CerereDesprinse): { readonly desprinse: readon
     if (k >= nx) pune(k - nx);
     if (k < (ny - 1) * nx) pune(k + nx);
   }
+  return { s, nx, ny, celula };
+}
+
+/**
+ * Indicii părților desprinse, crescător, și celula probei, pe fundul foii (`fundFoii`). O parte se judecă pe celulele cu centrul
+ * înăuntrul ei (regula par-impar, pe rândurile câmpului); una fără lemn înăuntru (toată scoasă, sau mai mică decât o celulă)
+ * nu se judecă.
+ */
+export function partiDesprinse(c: CerereDesprinse): { readonly desprinse: readonly number[]; readonly celula: number } {
+  const { s, nx, ny, celula } = fundFoii(c.foaie, c.grupuri);
   const desprinse: number[] = [];
   const xs: number[] = [];
   c.parti.forEach((pol, idx) => {
@@ -95,9 +114,9 @@ export function partiDesprinse(c: CerereDesprinse): { readonly desprinse: readon
         const i0 = Math.max(0, Math.ceil(xs[q]! / celula - 0.5)), i1 = Math.min(nx - 1, Math.floor(xs[q + 1]! / celula - 0.5));
         for (let i = i0; i <= i1; i++) {
           const v = s[j * nx + i];
-          if (v === 1) continue;
+          if (v === TAIAT) continue;
           lemn++;
-          if (v === 2) { legata = true; break; }
+          if (v === LEGAT) { legata = true; break; }
         }
       }
     }

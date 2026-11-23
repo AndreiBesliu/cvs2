@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { areDecizie, filtreaza, numarePeStare, ordoneaza, poateEdita, sugestieDin } from '../../src/admin/sugestii/date.ts';
+import { aleLui, areDecizie, ordoneaza, poateEdita, sugestieDin } from '../../src/admin/sugestii/date.ts';
 import { estePozaValida, VALABILA_MS } from '../../src/app/pozaSugestiei.ts';
 import { baza64, POZA_MAX_BASE64, POZA_MAX_OCTETI, RE_BASE64, tipPoza } from '../../shared/poza.ts';
 import {
@@ -58,18 +58,16 @@ test('rândul: ce lipsește e necunoscut (null), nu inventat; o stare necunoscut
   assert.equal(sugestieDin(ID, { versiune: 2.5 }).versiune, null);
 });
 
-test('ordinea (cele mai noi întâi, datele necunoscute la coadă), filtrele pe stare și pe autor, numărul pe fiecare stare', () => {
+test('ordinea (cele mai noi întâi, datele necunoscute la coadă) și „Ale mele” (doar sugestiile omului)', () => {
   const s = (id: string, cand: string | null, stare: string, autor: string) => sugestieDin(id, { creataLa: cand ? ts(cand) : null, stare, autor });
   const lista = ordoneaza([
     s('a', '2026-10-28T10:00:00Z', 'noua', 'ana'), s('b', null, 'acceptata', 'ion'), s('c', '2026-10-29T10:00:00Z', 'noua', 'ion'),
     s('d', '2026-10-29T09:00:00Z', 'respinsa', 'ana'), s('e', null, 'gata', 'ana'),
   ]);
   assert.deepEqual(lista.map((x) => x.id), ['c', 'd', 'a', 'b', 'e']);
-  assert.deepEqual(filtreaza(lista, 'noua', null).map((x) => x.id), ['c', 'a']);
-  assert.deepEqual(filtreaza(lista, 'toate', 'ana').map((x) => x.id), ['d', 'a', 'e']);
-  assert.deepEqual(filtreaza(lista, 'noua', 'ana').map((x) => x.id), ['a']);
-  assert.deepEqual(filtreaza(lista, 'facuta', null), []);
-  assert.deepEqual(numarePeStare(lista), { noua: 2, acceptata: 1, amanata: 0, respinsa: 1, 'in-lucru': 0, facuta: 0 });
+  assert.deepEqual(aleLui(lista, 'ana').map((x) => x.id), ['d', 'a', 'e']);
+  assert.deepEqual(aleLui(lista, 'cineva'), []);
+  assert.equal(aleLui(lista, null), lista, 'fără „Ale mele”, lista întreagă, aceeași');
 });
 
 test('editarea: doar autorul, doar fără decizie, cu versiunea cunoscută; decizia se arată cu o stare de decizie sau o notă', () => {

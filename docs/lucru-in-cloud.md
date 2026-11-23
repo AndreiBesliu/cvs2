@@ -10,11 +10,14 @@ container. Faptele despre mediu sunt din documentația Claude Code („Cloud env
 Pe claude.ai/code, în ecranul unei sesiuni noi, selectorul de mediu (primul buton de sub caseta mesajului) → **Cloud** →
 **New environment**, cu:
 - **Network access:** *Limited*, cu **Allow package managers** bifat (lista implicită are npm, Ubuntu, `nodejs.org`,
-  `packages.microsoft.com` pentru Edge și GitHub). La **Allowed domains** se adaugă `library.ldraw.org`, pentru uneltele
-  LDraw ale pluginului, și `cncvectorstudio-test.web.app`, adresa de test, de pe care `ci-si-publica.sh` citește versiunea
-  publicată (adăugată pe 23.11, la prima publicare din container: fără ea, proxy-ul răspunde 403). Adresele canalelor
-  (`cncvectorstudio-test--<canal>-<cod>.web.app`) diferă de la canal la canal: un canal se verifică din jurnalul rulării
-  `canal.yml`, nu din container.
+  `packages.microsoft.com` pentru Edge și GitHub). La **Allowed domains** se adaugă:
+  - `library.ldraw.org`, pentru uneltele LDraw ale pluginului;
+  - `cncvectorstudio-test.web.app`, adresa de test, de pe care `ci-si-publica.sh` citește versiunea publicată (adăugată pe
+    23.11, la prima publicare din container: fără ea, proxy-ul răspunde 403). Adresele canalelor
+    (`cncvectorstudio-test--<canal>-<cod>.web.app`) diferă de la canal la canal: un canal se verifică din jurnalul rulării
+    `canal.yml`, nu din container;
+  - `apis.google.com`, pentru probele paginii `/admin` de pe emulatoare: login-ul Google al emulatorului de Auth își
+    încarcă scriptul de acolo, iar fără el nicio probă nu trece de intrare (adăugat pe 23.11, cu aprobarea owner-ului).
 - **Setup script:** comanda de mai jos, care găsește repo-ul clonat și rulează `scripts/cloud/pregatire.sh`:
 
   ```bash
@@ -73,7 +76,9 @@ Containerul are 4 procesoare. Suitele întregi (unitarele, cele aproape 600 de p
 folosește `gh api` (mai jos).
 
 În container rulează probele atinse de felie, de pildă `node --test test/unit/<fișier>.test.ts` sau, după `npm run build`,
-`npx playwright test test/e2e/<fișier>.spec.ts`, plus tipurile (`npm run typecheck`) și traducerile
+`npx playwright test test/e2e/<fișier>.spec.ts`, ori o probă de pe emulatoare (cu `npm --prefix functions run compileaza`
+înainte: `firebase emulators:exec --only auth,firestore,functions,storage --project demo-cncvs2 "npx playwright test -c
+playwright.emulator.config.ts <fișier>"`), plus tipurile (`npm run typecheck`) și traducerile
 (`node scripts/traduceri.ts --verifica`). O probă care pică doar sub încărcare se reia singură, cu fișierul ei, înainte să
 fie socotită o cădere. Cifrele (unitarele, e2e-ul, emulatoarele, mărimea pornirii și totalul) intră în raport și în DEVLOG.
 
@@ -86,6 +91,15 @@ git clone --branch <ramura> . /tmp/otravuri-<felia>
 cd /tmp/otravuri-<felia> && npm ci && npm --prefix functions ci
 python3 -X utf8 scripts/otravuri.py test/otravuri/<felia>.py baza <seturile>
 python3 -X utf8 scripts/otravuri.py test/otravuri/<felia>.py lot 0 <N>
+```
+
+Otrăvurile probelor de pe emulatoare (`test/e2e-emulator/`) au bucla lor, tot în clonă, cu funcțiile compilate; o
+pornire a emulatoarelor pentru toate otrăvurile cerute (27 de otrăvuri, vreo 12 minute):
+
+```bash
+npm --prefix functions run compileaza
+firebase emulators:exec --only auth,firestore,functions,storage --project demo-cncvs2 \
+  "python3 -X utf8 scripts/otravuri-emulatoare.py test/otravuri/<felia>.py baza <ID> [<ID> ...]"
 ```
 
 După fiecare felie, se rulează `verifica` pe toate listele zonei atinse. Un VOID nou (`vechi` nu mai apare exact o dată)
@@ -163,6 +177,7 @@ Un CI roșu pe `main` e incidentul numărul unu: sesiunea principală îl repar�
 ## Uneltele mutate în repo
 
 - `scripts/rezolva-devlog.py`: ciocnirile din `DEVLOG.md`, cu ambele părți păstrate.
+- `scripts/otravuri-emulatoare.py`: otrăvurile probelor de pe emulatoare (bucla locală a liniei adminului, din A.1).
 - `scripts/cloud/ci-si-publica.sh`: CI-ul și publicarea unui commit din `main`, de reluat până iese cu 0 sau 1.
 - `scripts/ldraw/`: pentru pluginul Easy 3Draw.
   - `aduce.py` aduce piesele LDraw (licența CC BY 4.0) în dosarul dat, de pildă `.tmp/ldraw`.

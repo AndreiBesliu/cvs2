@@ -1,11 +1,9 @@
-import { useEffect, useId, useState, type FormEvent, type ReactElement } from 'react';
-import { Bytes, collection, doc, getDoc, getDocs, limit, orderBy, query, where } from 'firebase/firestore/lite';
+import { useCallback, useEffect, useRef, useState, type ReactElement } from 'react';
+import { collection, getDocs, limit, orderBy, query, where } from 'firebase/firestore/lite';
 import type { Permisiune } from '../../../shared/personal.ts';
-import { baza64, COLECTIE_POZE, ID_POZA } from '../../../shared/poza.ts';
+import { baza64 } from '../../../shared/poza.ts';
 import {
-  COLECTIE_SUGESTII, curataTitlu, DESCRIERE_MAX, esteStare, esteTip, esteZona, NOTA_MAX, PLAFON_LISTA_SUGESTII,
-  STARI_SUGESTIE, TIPURI_SUGESTIE, TITLU_MAX, ZONE_SUGESTIE, type CerereSugestie, type ContinutSugestie,
-  type RaspunsSugestie, type StareSugestie, type TipSugestie, type ZonaSugestie,
+  COLECTIE_SUGESTII, curataTitlu, PLAFON_LISTA_SUGESTII, type CerereSugestie, type RaspunsSugestie, type StareSugestie,
 } from '../../../shared/sugestii.ts';
 import { CANAL_POZA, iaPoza, stergePoza, type PozaInAsteptare } from '../../app/pozaSugestiei.ts';
 import { sugestii, type Conexiune } from '../../cloud/conexiune.ts';
@@ -14,29 +12,35 @@ import { useLimba } from '../../ui/useLimba.ts';
 import { ceaMaiRecenta } from '../carcasa/date.ts';
 import { EroareCitire, ListaGoala, SeIncarca } from '../carcasa/stari.tsx';
 import { dataScurta, motivDin, type Masura } from '../erori/date.ts';
-import { areDecizie, filtreaza, numarePeStare, ordoneaza, poateEdita, sugestieDin, type Filtru, type Sugestie } from './date.ts';
+import {
+  aleLui, cuMutarea, dupaDecizie, notaCeruta, ordoneaza, sugestieDin, tabla, type DecizieTrimisa, type Mutare, type Sugestie,
+} from './date.ts';
+import { DetaliuSugestie, NotaMutarii, type Deschis } from './Detaliu.tsx';
+import { Formular } from './Formular.tsx';
+import { TablaSugestii } from './Tabla.tsx';
 import '../personal/personal.css';
 import './sugestii.css';
 
 /**
- * Fila Sugestii (ADR 0107): cine are `sugestii.scrie` scrie o sugestie și își vede sugestiile, cu decizia owner-ului pe
- * fiecare; cu `sugestii.citeste` (și owner-ul), lista întregului personal. Owner-ul decide pe fiecare, cu o notă. Citirile
- * trec prin reguli, la cerere („Reîncarcă”); fiecare schimbare trece prin callable-ul `sugestii`, cu auditul pe server.
- * Editarea și decizia trimit versiunea văzută la deschiderea formularului: una schimbată între timp e refuzată de server.
+ * Fila Sugestii (ADR 0107; tabla: ADR 0260 §4): cine are `sugestii.scrie` scrie o sugestie („Sugestie nouă”) și își vede
+ * sugestiile pe tablă, cu decizia owner-ului; cu `sugestii.citeste` (și owner-ul), ale întregului personal. Owner-ul mută un
+ * card dintr-o coloană în alta (tragerea sau „Mută în…”), cu nota cerută la Respinsă și Amânată, ori decide din detaliu.
+ * Citirile trec prin reguli, la cerere („Reîncarcă”); fiecare schimbare trece prin callable-ul `sugestii`, cu auditul pe
+ * server, pe versiunea văzută: una schimbată între timp e refuzată de server.
  */
-
-/** Unde s-a pornit lucrul: formularul nou (`nou`) sau o sugestie (id-ul ei); eroarea se arată acolo. */
-type Lucru =
-  | { readonly faza: 'liber' }
-  | { readonly faza: 'lucreaza' }
-  | { readonly faza: 'gata'; readonly mesaj: string }
-  | { readonly faza: 'eroare'; readonly motiv: string; readonly loc: string };
 
 /**
- * Formularul deschis: sugestia, felul și versiunea pe care s-a deschis. O sugestie adusă cu altă versiune (reîncărcată după o
- * schimbare) își închide formularul: omul îl redeschide pe varianta nouă, pe care o vede.
+ * Ce se întâmplă acum: o cerere (cu mutarea arătată pe tablă), mesajul ei, sau eroarea, la locul ei (`nou` sau sugestia).
+ * Mesajul unei decizii e discret (doar pentru cititorul de ecran): tabla nu sare sub cursorul care trage.
  */
-type Deschis = { readonly id: string; readonly fel: 'editeaza' | 'decide'; readonly versiune: number | null } | null;
+type Lucru =
+  | { readonly faza: 'liber' }
+  | { readonly faza: 'lucreaza'; readonly mutare: Mutare | null }
+  | { readonly faza: 'gata'; readonly mesaj: string; readonly id: string | null; readonly discret: boolean }
+  | { readonly faza: 'eroare'; readonly motiv: string; readonly loc: string };
+
+/** O mutare care așteaptă nota (Respinsă, Amânată); din meniu, focusul se întoarce apoi pe card. */
+type CereNota = { readonly id: string; readonly spre: StareSugestie; readonly dinMeniu: boolean } | null;
 
 type Fa = (cerere: CerereSugestie, loc: string, mesaj: (r: RaspunsSugestie) => string, dupa?: () => void) => void;
 
@@ -52,12 +56,17 @@ export function FilaSugestii({ con, eu, owner, permisiuni }: {
   const [lista, setLista] = useState<Masura<readonly Sugestie[]> | null>(null);
   const [rev, setRev] = useState(0);
   const [lucru, setLucru] = useState<Lucru>({ faza: 'liber' });
-  const [filtru, setFiltru] = useState<Filtru>('toate');
   const [aleMele, setAleMele] = useState(false);
   const [deschis, setDeschis] = useState<Deschis>(null);
-  // Formularul nou se golește după o trimitere reușită: cheia lui crește.
+  const [detaliu, setDetaliu] = useState<string | null>(null);
+  const [cereNota, setCereNota] = useState<CereNota>(null);
+  const [focus, setFocus] = useState<string | null>(null);
+  const focusGata = useCallback(() => { setFocus(null); }, []);
+  // Formularul nou stă sub „Sugestie nouă”; se golește după o trimitere reușită (cheia lui crește).
+  const [noua, setNoua] = useState(false);
+  const butonNoua = useRef<HTMLButtonElement>(null);
   const [trimise, setTrimise] = useState(0);
-  // Poza planșei lăsată de editor (ADR 0111) intră în formularul nou; una nouă, anunțată pe canal, o înlocuiește.
+  // Poza planșei lăsată de editor (ADR 0111) intră în formularul nou (deschis singur); una nouă, anunțată pe canal, o înlocuiește.
   const [pozaNoua, setPozaNoua] = useState<PozaInAsteptare | null>(null);
   const [revPoza, setRevPoza] = useState(0);
   useEffect(() => {
@@ -79,6 +88,7 @@ export function FilaSugestii({ con, eu, owner, permisiuni }: {
       document.removeEventListener('visibilitychange', vizibila);
     };
   }, [poateScrie]);
+  useEffect(() => { if (pozaNoua) setNoua(true); }, [pozaNoua]);
   // Poza iese din formular abia după ce s-a șters din browser: o reîncărcare imediată n-o mai aduce înapoi.
   const scoatePoza = (): void => {
     const gata = (): void => { setPozaNoua(null); };
@@ -100,22 +110,51 @@ export function FilaSugestii({ con, eu, owner, permisiuni }: {
     return () => { viu = false; };
   }, [con, eu, vedeToate, rev]);
 
+  /** Scrierea și editarea: la răspuns, lista se recitește (documentul nou are câmpuri puse de server). */
   const fa: Fa = (cerere, loc, mesaj, dupa) => {
-    setLucru({ faza: 'lucreaza' });
+    setLucru({ faza: 'lucreaza', mutare: null });
     sugestii(con, cerere).then((r) => {
-      setLucru({ faza: 'gata', mesaj: mesaj(r) });
+      setLucru({ faza: 'gata', mesaj: mesaj(r), id: loc === 'nou' ? null : loc, discret: false });
       setDeschis(null);
       dupa?.();
       setRev((n) => n + 1);
     }, (e: unknown) => { setLucru({ faza: 'eroare', motiv: motivDin(e), loc }); });
   };
 
+  /**
+   * Decizia owner-ului (o mutare pe tablă sau formularul din detaliu): cardul trece în coloana nouă cât cererea e în drum, iar
+   * la răspuns lista ține decizia fără s-o recitească (`dupaDecizie`); la refuz, cardul revine, cu motivul pe el.
+   */
+  const decide = (s: Sugestie, stare: StareSugestie, nota: string, versiune: number, dinMeniu: boolean): void => {
+    const d: DecizieTrimisa = { id: s.id, versiune, stare, nota };
+    setLucru({ faza: 'lucreaza', mutare: { id: s.id, spre: stare, la: new Date() } });
+    if (dinMeniu) setFocus(s.id);
+    sugestii(con, { actiune: 'decide', ...d }).then((r) => {
+      setLista((l) => (l?.ok ? { ok: true, valoare: dupaDecizie(l.valoare, d, r, new Date()) } : l));
+      setLucru({
+        faza: 'gata', id: s.id, discret: true,
+        mesaj: r.schimbat ? t('admin.sug.decisa', { titlu: s.titlu, stare: t(`admin.sug.stare.${stare}`) }) : t('admin.sug.neschimbata'),
+      });
+      setDeschis(null);
+      if (dinMeniu) setFocus(s.id);
+    }, (e: unknown) => {
+      setLucru({ faza: 'eroare', motiv: motivDin(e), loc: s.id });
+      if (dinMeniu) setFocus(s.id);
+    });
+  };
+
   const ocupat = lucru.faza === 'lucreaza';
   // Fără cheia App Check pe instanță, serverul refuză orice scriere: butoanele se opresc și spun de ce.
   const faraAppCheck = con.appCheck === 'oprit';
+  const blocat = ocupat || faraAppCheck;
+  const muta = (s: Sugestie, spre: StareSugestie, dinMeniu: boolean): void => {
+    if (blocat || s.versiune === null || s.stare === spre) return;
+    if (notaCeruta(spre)) setCereNota({ id: s.id, spre, dinMeniu });
+    else decide(s, spre, s.nota, s.versiune, dinMeniu);
+  };
   const toate = lista?.ok ? lista.valoare : [];
-  const numare = numarePeStare(toate);
-  const aratate = filtreaza(toate, filtru, aleMele ? eu : null);
+  const aratate = aleLui(toate, aleMele ? eu : null);
+  const mutare = lucru.faza === 'lucreaza' ? lucru.mutare : null;
   const ultimaDecizie = ceaMaiRecenta(toate.map((s) => s.decisaLa));
   const eroareLa = (loc: string): string | null => (lucru.faza === 'eroare' && lucru.loc === loc ? lucru.motiv : null);
   // Un formular deschis sau închis șterge mesajul de dinainte (o eroare veche n-are ce căuta în formularul nou).
@@ -123,289 +162,103 @@ export function FilaSugestii({ con, eu, owner, permisiuni }: {
     setLucru((l) => (l.faza === 'lucreaza' ? l : { faza: 'liber' }));
     setDeschis((v) => (d && v?.id === d.id && v.fel === d.fel && v.versiune === d.versiune ? null : d));
   };
+  // „Reîncarcă” (sfatul unui refuz pe o versiune veche) șterge și motivul: lista nouă e cea de judecat.
+  const reincarca = (): void => {
+    setRev((n) => n + 1);
+    setLucru((l) => (l.faza === 'eroare' ? { faza: 'liber' } : l));
+  };
+  const sDetaliu = detaliu === null ? null : toate.find((s) => s.id === detaliu) ?? null;
+  const sNota = cereNota === null ? null : toate.find((s) => s.id === cereNota.id) ?? null;
 
   return (
     <div className="pers sug">
-      {lucru.faza === 'lucreaza' ? <p className="admin-mesaj" role="status" aria-busy="true">{t('admin.sug.lucreaza')}</p> : null}
-      {lucru.faza === 'gata' ? <div className="pers-stare" role="status" data-sug="gata"><p>{lucru.mesaj}</p></div> : null}
-      {poateScrie ? (
-        <section className="pers-sectiune" aria-labelledby="sug-noua">
+      {lucru.faza === 'lucreaza' && lucru.mutare === null ? <p className="admin-mesaj" role="status" aria-busy="true">{t('admin.sug.lucreaza')}</p> : null}
+      {lucru.faza === 'gata' && !lucru.discret ? <div className="pers-stare" role="status" data-sug="gata"><p>{lucru.mesaj}</p></div> : null}
+      <p className="sug-ascuns" role="status" data-sug="anunt">{lucru.faza === 'gata' && lucru.discret ? lucru.mesaj : ''}</p>
+      <div className="admin-erori-cap">
+        <h2 className="sug-titlu-fila">{t(vedeToate ? 'admin.sug.toate' : 'admin.sug.ale-tale')} <span className="admin-slab">{toate.length}</span></h2>
+        {vedeToate && poateScrie ? (
+          <div className="admin-segmente" role="group" aria-label={t('admin.sug.vedere')}>
+            <button type="button" aria-pressed={aleMele} data-sug="ale-mele" onClick={() => { setAleMele(true); }}>{t('admin.sug.ale-mele')}</button>
+            <button type="button" aria-pressed={!aleMele} data-sug="toate" onClick={() => { setAleMele(false); }}>{t('admin.sug.filtru.toate')}</button>
+          </div>
+        ) : null}
+        <button type="button" data-sug="reincarca" onClick={reincarca}>{t('admin.sug.reincarca')}</button>
+        {poateScrie ? (
+          <button ref={butonNoua} type="button" className="principal" aria-expanded={noua} data-sug="noua" onClick={() => { setNoua((x) => !x); }}>
+            {t('admin.sug.noua')}
+          </button>
+        ) : null}
+      </div>
+      {!poateScrie ? <p className="admin-mesaj" data-sug="doar-citire">{t('admin.sug.doar-citire')}</p> : null}
+      {owner && faraAppCheck ? <p className="admin-slab" data-sug="fara-appcheck-tabla">{t('admin.erori.fara-appcheck')}</p> : null}
+      {poateScrie && noua ? (
+        <section className="pers-sectiune" aria-labelledby="sug-noua" data-sug="panou-nou">
           <h2 id="sug-noua">{t('admin.sug.noua')}</h2>
           <p className="admin-slab">{t('admin.sug.noua-text')}</p>
           <Formular key={trimise} initial={null} ocupat={ocupat} faraAppCheck={faraAppCheck} eroare={eroareLa('nou')}
-            poza={pozaNoua} scoatePoza={scoatePoza}
+            poza={pozaNoua} scoatePoza={scoatePoza} renunta={() => { setNoua(false); butonNoua.current?.focus(); }}
             trimite={(c) => {
               const cuPoza = pozaNoua;
               const mesaj = (): string => t('admin.sug.trimisa', { titlu: titluScris(c.titlu) });
               const dupa = (): void => {
                 setTrimise((n) => n + 1);
                 if (cuPoza) scoatePoza();
+                setNoua(false);
+                butonNoua.current?.focus();
               };
               if (!cuPoza) {
                 fa({ actiune: 'scrie', ...c }, 'nou', mesaj, dupa);
                 return;
               }
-              setLucru({ faza: 'lucreaza' });
+              setLucru({ faza: 'lucreaza', mutare: null });
               cuPoza.imagine.arrayBuffer().then(
                 (b) => { fa({ actiune: 'scrie', ...c, poza: baza64(new Uint8Array(b)) }, 'nou', mesaj, dupa); },
                 (e: unknown) => { setLucru({ faza: 'eroare', motiv: motivDin(e), loc: 'nou' }); },
               );
             }} />
         </section>
-      ) : <p className="admin-mesaj" data-sug="doar-citire">{t('admin.sug.doar-citire')}</p>}
-      <section className="pers-sectiune" aria-labelledby="sug-lista">
-        <h2 id="sug-lista">{t(vedeToate ? 'admin.sug.toate' : 'admin.sug.ale-tale')} <span className="admin-slab">{toate.length}</span></h2>
-        <div className="admin-randuri">
-          {(['toate', ...STARI_SUGESTIE] as const).map((f) => (
-            <button key={f} type="button" aria-pressed={filtru === f} data-filtru-sug={f} onClick={() => { setFiltru(f); }}>
-              {f === 'toate' ? t('admin.sug.filtru.toate') : t('admin.sug.filtru', { nume: t(`admin.sug.stare.${f}`), n: numare[f] })}
-            </button>
-          ))}
-          {vedeToate && poateScrie ? (
-            <button type="button" aria-pressed={aleMele} data-sug="ale-mele" onClick={() => { setAleMele((x) => !x); }}>{t('admin.sug.ale-mele')}</button>
-          ) : null}
-          <button type="button" data-sug="reincarca" onClick={() => { setRev((n) => n + 1); }}>{t('admin.sug.reincarca')}</button>
-        </div>
-        {lista === null ? <SeIncarca text={t('admin.sug.se-incarca')} />
-          : !lista.ok ? (
-            <EroareCitire text={t('admin.sug.citire', { motiv: lista.motiv })} motiv={lista.motiv} reincarca={() => { setRev((n) => n + 1); }}
-              atribute={{ 'data-sug': 'eroare-lista' }} />
-          )
-            : toate.length === 0 ? <ListaGoala text={t('admin.sug.niciuna')} atribute={{ 'data-sug': 'gol' }} />
-              : aratate.length === 0 ? (
-                <ListaGoala text={t('admin.sug.niciuna-filtru')} atribute={{ 'data-sug': 'gol-filtru' }}
-                  ultima={ultimaDecizie ? t('admin.stari.ultima-decizie', { data: dataScurta(ultimaDecizie, limba) }) : null} />
-              )
-                : (
-                  <ul className="pers-lista">
-                    {aratate.map((s) => (
-                      <Rand key={s.id} con={con} s={s} eu={eu} owner={owner} poateScrie={poateScrie} deschis={deschis} deschide={deschide}
-                        ocupat={ocupat} faraAppCheck={faraAppCheck} eroare={eroareLa(s.id)} fa={fa} limba={limba} />
-                    ))}
-                  </ul>
-                )}
-        {toate.length >= PLAFON_LISTA_SUGESTII ? <p className="admin-slab" data-sug="plafon">{t('admin.sug.plafon', { n: PLAFON_LISTA_SUGESTII })}</p> : null}
-      </section>
-    </div>
-  );
-}
-
-function Rand({ con, s, eu, owner, poateScrie, deschis, deschide, ocupat, faraAppCheck, eroare, fa, limba }: {
-  readonly con: Conexiune; readonly s: Sugestie; readonly eu: string; readonly owner: boolean; readonly poateScrie: boolean; readonly deschis: Deschis;
-  readonly deschide: (d: Deschis) => void; readonly ocupat: boolean; readonly faraAppCheck: boolean; readonly eroare: string | null;
-  readonly fa: Fa; readonly limba: string;
-}): ReactElement {
-  const cine = s.autor === eu ? t('admin.pers.tu') : s.autorEmail ?? s.autor ?? '—';
-  const editabila = poateScrie && poateEdita(s, eu);
-  const editata = s.modificataLa !== null && s.creataLa !== null && s.modificataLa.getTime() > s.creataLa.getTime();
-  const fel = deschis?.id === s.id && deschis.versiune === s.versiune ? deschis.fel : null;
-  return (
-    <li data-sugestie={s.titlu} data-stare={s.stare ?? 'necunoscuta'}>
-      <div className="pers-rand">
-        <span className="pers-cine">{s.titlu}</span>
-        <span className="sug-stare" data-stare={s.stare ?? 'necunoscuta'} data-sug="stare">{t(`admin.sug.stare.${s.stare ?? 'necunoscuta'}`)}</span>
-      </div>
-      <p className="admin-slab sug-meta">
-        {s.tip ? t(`admin.sug.tip.${s.tip}`) : '?'} · {t(`admin.sug.zona.${s.zona ?? 'nespecificata'}`)}
-        {' · '}{t('admin.sug.autor', { cine, data: dataScurta(s.creataLa, limba) })}
-        {editata ? ` · ${t('admin.sug.editata', { data: dataScurta(s.modificataLa, limba) })}` : ''}
-      </p>
-      {s.descriere ? <p className="sug-text" data-sug="descriere-text">{s.descriere}</p> : null}
-      {s.poza ? <PozaSugestiei con={con} s={s} /> : null}
-      {areDecizie(s) ? (
-        <div className="sug-decizia" data-sug="decizia">
-          <p className="admin-slab">{t('admin.sug.decizia', { data: dataScurta(s.decisaLa, limba) })}</p>
-          {s.nota ? <p className="sug-text" data-sug="nota-owner">{s.nota}</p> : null}
-        </div>
       ) : null}
-      {editabila || owner ? (
-        <div className="admin-randuri">
-          {editabila ? (
-            <button type="button" disabled={ocupat} aria-expanded={fel === 'editeaza'} data-sug="editeaza" onClick={() => { deschide({ id: s.id, fel: 'editeaza', versiune: s.versiune }); }}>
-              {t('admin.sug.editeaza')}
-            </button>
-          ) : null}
-          {owner ? (
-            <button type="button" disabled={ocupat || s.versiune === null} aria-expanded={fel === 'decide'} data-sug="decide" onClick={() => { deschide({ id: s.id, fel: 'decide', versiune: s.versiune }); }}>
-              {t('admin.sug.decide')}
-            </button>
-          ) : null}
-        </div>
-      ) : null}
-      {fel === 'editeaza' && editabila ? (
-        <Formular initial={s} ocupat={ocupat} faraAppCheck={faraAppCheck} eroare={eroare} renunta={() => { deschide(null); }}
-          trimite={(c, versiune) => {
-            if (versiune === null) return;
-            fa({ actiune: 'editeaza', id: s.id, versiune, ...c }, s.id, (r) => (r.schimbat ? t('admin.sug.salvata', { titlu: titluScris(c.titlu) }) : t('admin.sug.neschimbata')));
+      {lista === null ? <SeIncarca text={t('admin.sug.se-incarca')} />
+        : !lista.ok ? (
+          <EroareCitire text={t('admin.sug.citire', { motiv: lista.motiv })} motiv={lista.motiv} reincarca={reincarca}
+            atribute={{ 'data-sug': 'eroare-lista' }} />
+        )
+          : toate.length === 0 ? <ListaGoala text={t('admin.sug.niciuna')} atribute={{ 'data-sug': 'gol' }} />
+            : aratate.length === 0 ? (
+              <ListaGoala text={t('admin.sug.niciuna-filtru')} atribute={{ 'data-sug': 'gol-filtru' }}
+                ultima={ultimaDecizie ? t('admin.stari.ultima-decizie', { data: dataScurta(ultimaDecizie, limba) }) : null} />
+            )
+              : (
+                <TablaSugestii tabla={tabla(cuMutarea(aratate, mutare))} eu={eu} owner={owner} blocat={blocat} inDrum={mutare?.id ?? null}
+                  eroareLa={eroareLa} focus={focus} focusGata={focusGata} deschide={(id) => { deschide(null); setDetaliu(id); }} muta={muta} />
+              )}
+      {toate.length >= PLAFON_LISTA_SUGESTII ? <p className="admin-slab" data-sug="plafon">{t('admin.sug.plafon', { n: PLAFON_LISTA_SUGESTII })}</p> : null}
+      {sDetaliu ? (
+        <DetaliuSugestie con={con} s={sDetaliu} eu={eu} owner={owner} poateScrie={poateScrie} deschis={deschis} deschide={deschide}
+          ocupat={ocupat} faraAppCheck={faraAppCheck} eroare={eroareLa(sDetaliu.id)}
+          gata={lucru.faza === 'gata' && lucru.id === sDetaliu.id ? lucru.mesaj : null}
+          editeaza={(c, versiune) => {
+            fa({ actiune: 'editeaza', id: sDetaliu.id, versiune, ...c }, sDetaliu.id,
+              (r) => (r.schimbat ? t('admin.sug.salvata', { titlu: titluScris(c.titlu) }) : t('admin.sug.neschimbata')));
+          }}
+          decide={(stare, nota, versiune) => { decide(sDetaliu, stare, nota, versiune, false); }}
+          inchisa={() => {
+            const id = sDetaliu.id;
+            setDetaliu(null);
+            setDeschis(null);
+            setLucru((l) => (l.faza === 'eroare' && l.loc === id ? { faza: 'liber' } : l));
+            setFocus(id);
           }} />
       ) : null}
-      {fel === 'decide' && owner ? (
-        <Decizie s={s} ocupat={ocupat} faraAppCheck={faraAppCheck} eroare={eroare} renunta={() => { deschide(null); }}
-          decide={(stare, nota, versiune) => {
-            fa({ actiune: 'decide', id: s.id, versiune, stare, nota }, s.id,
-              (r) => (r.schimbat ? t('admin.sug.decisa', { titlu: s.titlu, stare: t(`admin.sug.stare.${stare}`) }) : t('admin.sug.neschimbata')));
+      {cereNota && sNota ? (
+        <NotaMutarii key={`${sNota.id}:${cereNota.spre}`} s={sNota} spre={cereNota.spre}
+          muta={(nota) => { if (sNota.versiune !== null) decide(sNota, cereNota.spre, nota, sNota.versiune, cereNota.dinMeniu); }}
+          inchisa={() => {
+            setCereNota(null);
+            if (cereNota.dinMeniu) setFocus(sNota.id);
           }} />
       ) : null}
-    </li>
-  );
-}
-
-/**
- * Scrierea unei sugestii noi sau editarea uneia fără decizie; versiunea e cea de la deschidere. Formularul nou arată poza
- * planșei adusă din editor (ADR 0111), care pleacă odată cu sugestia, dacă omul n-o scoate.
- */
-function Formular({ initial, ocupat, faraAppCheck, eroare, trimite, renunta, poza, scoatePoza }: {
-  readonly initial: Sugestie | null; readonly ocupat: boolean; readonly faraAppCheck: boolean; readonly eroare: string | null;
-  readonly trimite: (c: ContinutSugestie, versiune: number | null) => void; readonly renunta?: () => void;
-  readonly poza?: PozaInAsteptare | null; readonly scoatePoza?: () => void;
-}): ReactElement {
-  const ajutor = useId();
-  const [versiune] = useState(initial?.versiune ?? null);
-  const [titlu, setTitlu] = useState(initial?.titlu ?? '');
-  const [descriere, setDescriere] = useState(initial?.descriere ?? '');
-  // Fără tip ales dinainte: tipul îl ajută pe owner să le despartă, deci îl alege omul.
-  const [tip, setTip] = useState<TipSugestie | ''>(initial?.tip ?? '');
-  const [zona, setZona] = useState<ZonaSugestie | ''>(initial?.zona ?? '');
-  const trimiteFormular = (e: FormEvent): void => {
-    e.preventDefault();
-    if (tip !== '') trimite({ titlu, descriere, tip, zona: zona === '' ? null : zona }, versiune);
-  };
-  return (
-    <form className="pers-formular sug-formular" onSubmit={trimiteFormular} data-sug={initial ? 'formular-editare' : 'formular'}>
-      <label>
-        <span>{t('admin.sug.titlu')}</span>
-        <input type="text" required maxLength={TITLU_MAX} value={titlu} data-sug="titlu" onChange={(e) => { setTitlu(e.target.value); }} />
-      </label>
-      <label>
-        <span>{t('admin.sug.descriere')}</span>
-        <textarea rows={5} maxLength={DESCRIERE_MAX} value={descriere} aria-describedby={ajutor} data-sug="descriere" onChange={(e) => { setDescriere(e.target.value); }} />
-      </label>
-      <p className="admin-slab sug-ajutor" id={ajutor}>{t('admin.sug.descriere-ajutor')}</p>
-      <div className="sug-alegeri">
-        <label>
-          <span>{t('admin.sug.tip')}</span>
-          <select required value={tip} data-sug="tip" onChange={(e) => { const v = e.target.value; setTip(esteTip(v) ? v : ''); }}>
-            <option value="" disabled>{t('admin.sug.alege-tip')}</option>
-            {TIPURI_SUGESTIE.map((x) => <option key={x} value={x}>{t(`admin.sug.tip.${x}`)}</option>)}
-          </select>
-        </label>
-        <label>
-          <span>{t('admin.sug.zona')}</span>
-          <select value={zona} data-sug="zona" onChange={(e) => { const v = e.target.value; setZona(esteZona(v) ? v : ''); }}>
-            <option value="">{t('admin.sug.zona.nespecificata')}</option>
-            {ZONE_SUGESTIE.map((x) => <option key={x} value={x}>{t(`admin.sug.zona.${x}`)}</option>)}
-          </select>
-        </label>
-      </div>
-      {poza && scoatePoza ? <PozaAtasata poza={poza} scoate={scoatePoza} ocupat={ocupat} /> : null}
-      <div className="admin-randuri">
-        <button type="submit" className="principal" disabled={ocupat || faraAppCheck || titlu.trim() === '' || tip === ''} data-sug="trimite">
-          {t(initial ? 'admin.sug.salveaza' : 'admin.sug.trimite')}
-        </button>
-        {renunta ? <button type="button" onClick={renunta}>{t('admin.pers.renunta')}</button> : null}
-        {faraAppCheck ? <span className="admin-slab" data-sug="fara-appcheck">{t('admin.erori.fara-appcheck')}</span> : null}
-      </div>
-      {eroare ? <p className="admin-eroare" role="alert" data-sug="eroare">{t('admin.sug.esec', { motiv: eroare })}</p> : null}
-    </form>
-  );
-}
-
-/** Adresa locală a unei imagini din browser, cât trăiește componenta (eliberată la schimbare și la ieșire). */
-export function useAdresaImaginii(imagine: Blob | null): string | null {
-  const [adresa, setAdresa] = useState<string | null>(null);
-  useEffect(() => {
-    if (!imagine) {
-      setAdresa(null);
-      return undefined;
-    }
-    const a = URL.createObjectURL(imagine);
-    setAdresa(a);
-    return () => { URL.revokeObjectURL(a); };
-  }, [imagine]);
-  return adresa;
-}
-
-/** Poza planșei adusă din editor, în formularul nou: ora ei și „Scoate poza”. */
-function PozaAtasata({ poza, scoate, ocupat }: { readonly poza: PozaInAsteptare; readonly scoate: () => void; readonly ocupat: boolean }): ReactElement {
-  const limba = useLimba();
-  const adresa = useAdresaImaginii(poza.imagine);
-  return (
-    <figure className="sug-poza" data-sug="poza-atasata">
-      {adresa ? <img src={adresa} alt={t('admin.sug.poza-alt-noua')} /> : null}
-      <figcaption>
-        <span className="admin-slab">{t('admin.sug.poza-din-editor', { ora: dataScurta(new Date(poza.la), limba) })}</span>
-        <button type="button" disabled={ocupat} data-sug="scoate-poza" onClick={scoate}>{t('admin.sug.poza-scoate')}</button>
-      </figcaption>
-    </figure>
-  );
-}
-
-/** Poza unei sugestii trimise, citită la cerere din documentul ei (o listă de sugestii nu aduce octeții). */
-function PozaSugestiei({ con, s }: { readonly con: Conexiune; readonly s: Sugestie }): ReactElement {
-  const [deschisa, setDeschisa] = useState(false);
-  const [imagine, setImagine] = useState<Masura<Blob> | null>(null);
-  useEffect(() => {
-    if (!deschisa || imagine !== null) return undefined;
-    let viu = true;
-    getDoc(doc(con.db, COLECTIE_SUGESTII, s.id, COLECTIE_POZE, ID_POZA)).then((d) => {
-      if (!viu) return;
-      const o: unknown = d.get('octeti');
-      setImagine(o instanceof Bytes
-        ? { ok: true, valoare: new Blob([new Uint8Array(o.toUint8Array())], { type: s.poza?.tip ?? 'image/jpeg' }) }
-        : { ok: false, motiv: t('admin.sug.poza-lipsa') });
-    }, (e: unknown) => { if (viu) setImagine({ ok: false, motiv: motivDin(e) }); });
-    return () => { viu = false; };
-  }, [deschisa, imagine, con, s.id, s.poza]);
-  const adresa = useAdresaImaginii(imagine?.ok ? imagine.valoare : null);
-  return (
-    <div className="sug-poza-rand">
-      <button type="button" aria-expanded={deschisa} data-sug="arata-poza" onClick={() => { setDeschisa((x) => !x); }}>
-        {t(deschisa ? 'admin.sug.poza-ascunde' : 'admin.sug.poza-arata')}
-      </button>
-      {!deschisa ? null
-        : imagine === null ? <p className="admin-mesaj" aria-busy="true">{t('admin.sug.poza-se-incarca')}</p>
-          : !imagine.ok ? <p className="admin-eroare" role="alert" data-sug="poza-eroare">{t('admin.sug.poza-citire', { motiv: imagine.motiv })}</p>
-            : adresa ? (
-              <a href={adresa} target="_blank" rel="noopener">
-                <img className="sug-poza-img" src={adresa} alt={t('admin.sug.poza-alt', { titlu: s.titlu })} data-sug="poza" />
-              </a>
-            ) : null}
     </div>
-  );
-}
-
-/** Decizia owner-ului: starea și nota, pe versiunea de la deschidere. */
-function Decizie({ s, ocupat, faraAppCheck, eroare, decide, renunta }: {
-  readonly s: Sugestie; readonly ocupat: boolean; readonly faraAppCheck: boolean; readonly eroare: string | null;
-  readonly decide: (stare: StareSugestie, nota: string, versiune: number) => void; readonly renunta: () => void;
-}): ReactElement {
-  const [versiune] = useState(s.versiune);
-  const [stare, setStare] = useState<StareSugestie>(s.stare ?? 'noua');
-  const [nota, setNota] = useState(s.nota);
-  const trimite = (e: FormEvent): void => {
-    e.preventDefault();
-    if (versiune !== null) decide(stare, nota, versiune);
-  };
-  return (
-    <form className="pers-formular sug-formular" onSubmit={trimite} data-sug="formular-decizie">
-      <label>
-        <span>{t('admin.sug.stare')}</span>
-        <select value={stare} data-sug="stare-aleasa" onChange={(e) => { const v = e.target.value; if (esteStare(v)) setStare(v); }}>
-          {STARI_SUGESTIE.map((x) => <option key={x} value={x}>{t(`admin.sug.stare.${x}`)}</option>)}
-        </select>
-      </label>
-      <label>
-        <span>{t('admin.sug.nota')}</span>
-        <textarea rows={3} maxLength={NOTA_MAX} value={nota} data-sug="nota" onChange={(e) => { setNota(e.target.value); }} />
-      </label>
-      <div className="admin-randuri">
-        <button type="submit" className="principal" disabled={ocupat || faraAppCheck || versiune === null} data-sug="salveaza-decizia">
-          {t('admin.sug.salveaza-decizia')}
-        </button>
-        <button type="button" onClick={renunta}>{t('admin.pers.renunta')}</button>
-        {faraAppCheck ? <span className="admin-slab">{t('admin.erori.fara-appcheck')}</span> : null}
-      </div>
-      {eroare ? <p className="admin-eroare" role="alert" data-sug="eroare">{t('admin.sug.esec', { motiv: eroare })}</p> : null}
-    </form>
   );
 }

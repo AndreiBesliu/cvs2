@@ -167,6 +167,11 @@ export type RezultatExport =
     /** „Toate foile”: foile din arhivă, cu foile identice, fișierele și timpul fiecăreia. */
     readonly foi?: RezumatFoi;
     /**
+     * Operațiile pieselor desprinse care nu sunt încă „unde ține” (ADR 0211, b), ca rânduri ale ferestrei (`piesă/operație`):
+     * butonul „Pune urechile unde țin” le trece pe „unde ține”.
+     */
+    readonly undeTine?: readonly string[];
+    /**
      * Simularea, pornită de aplicație DUPĂ descărcare (recenzia 19.10: descărcarea aștepta simularea, până la 10 s pe o
      * foaie mare și un fir); semnalul o anulează (un export nou, un parametru schimbat, dialogul închis).
      */
