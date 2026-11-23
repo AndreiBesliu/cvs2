@@ -11699,6 +11699,16 @@ admin cat mai multe setari”).
   verificat juridic înaintea live-ului), §8 nou (setările din admin: colectarea, clicurile fine, lotul, cele două păstrări,
   pașii dinaintea unei erori), feliile A.8a, A.8b, A.8c, A.9–A.11 (~6), apoi A.7.
 - **DEVLOG:** unirea lui `main` în ramură (`0feb3ec0`) dublase două intrări ale lui `main` (3.Tr și unirea elicelor); scoase.
+- **A.8a (`bcc654f8`):** lista albă comună editorului și serverului (`shared/utilizare.ts`): serverul reface fiecare eveniment
+  doar din câmpurile felului lui, iar unul cu altceva se aruncă, numărat. Callable-ul `utilizare`: lotul doar cu contul deschis
+  sau din personal, o singură scriere pe lot, cel mult 120 pe cont și pe oră, ștergerea singură după zilele din setări, nimic cu
+  colectarea oprită; setările doar ale owner-ului, pe versiunea văzută, cu auditul. Regulile: `setari/utilizare` doar owner-ul,
+  loturile nimeni din client; TTL și evenimentele neindexate. În fila Setări, „Utilizarea aplicației”, cu istoricul ei.
+- **Probele:** 9 unitare noi; 8 ale callable-ului și 2 ale regulilor, pe emulator; 1 e2e pe emulatoare. **Otrăvurile:** 48 / 48
+  la prima rulare (23 unitare, 14 server, 2 reguli, 9 emulatoare). **Mărimea:** `/admin` 127,5 → 129,9 / 200; pornirea și
+  totalul neschimbate. **La unire se publică și serverul** (funcția `utilizare`, regulile, indexurile).
+- **Documentele:** ADR 0262 (implementarea), fișa etapei 3 (`3.Ag`), registrul otrăvurilor, traducerile, nota liniei.
+  **Completed:** 23.11 20:10.
 
 ## 2026-11-23 — Sesiunea principală în cloud: a patra unire (25.8↑a, imaginile pe foaie; A.5, Utilizatori și Personal) și o probă instabilă a extensiilor, reparată (Model: Claude Fable 5.2)
 

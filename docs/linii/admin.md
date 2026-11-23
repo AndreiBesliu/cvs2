@@ -2,7 +2,7 @@
 
 <!-- Adusă din memoria sesiunii principale pe 23.11.2026 (mutarea în cloud). De aici înainte o ține la zi linia, pe ramura ei, odată cu feliile. -->
 
-_CNCVS2, ADR 0260: pagina /admin reproiectată; A.1–A.5 unite în main (A.5: 1b46c955); A.6 (Roadmap, Documentație, Setări) GATA DE UNIT din 23.11, din df098dad (PR-ul AndreiBesliu/cvs2#8); ADR 0262 (utilizarea aplicației) acceptat pe 23.11; A.8a în lucru; apoi A.8b, A.8c, A.9–A.11, apoi A.7_
+_CNCVS2, ADR 0260: pagina /admin reproiectată; A.1–A.5 unite în main (A.5: 1b46c955); A.6 (Roadmap, Documentație, Setări) GATA DE UNIT din 23.11, din df098dad (PR-ul AndreiBesliu/cvs2#8); ADR 0262 (utilizarea aplicației) acceptat pe 23.11; A.8a GATA pe ramură (bcc654f8; la unire se publică și serverul); apoi A.8b, A.8c, A.9–A.11, apoi A.7_
 
 Linia adminului din [sesiunea principală](principala.md): ADR 0260 (intervalul 0260–0269), acceptat pe 13.11.2026 cu ideile 51–62 de pe
 tabla „Harta schițelor”. Owner-ul a cerut „vreau sa faci design si pentru admin”, iar la idei a răspuns „Da la toate”
@@ -37,6 +37,10 @@ tabla „Harta schițelor”. Owner-ul a cerut „vreau sa faci design si pentru
   îngust) cu secțiunea de acum; starea ADR-ului sub titlu; istoricul fiecărei setări sub butonul ei, din audit. Fără reguli,
   date sau funcții noi: doar Hosting-ul. `/admin` 125,6 → 127,5 / 200 kB (linia, +21,0 din +25: pentru A.7 rămân ~4 kB).
   Otrăvurile 54 / 54. Raportul și porțile: PR-ul AndreiBesliu/cvs2#8 (de unit din `df098dad`).
+- **A.8a (utilizarea: contractul, callable-ul `utilizare`, setările din admin) GATA pe ramură din 23.11** (`bcc654f8`; `3.Ag`):
+  lista albă în `shared/utilizare.ts`, callable-ul cu loturile și setările, regulile, TTL-ul, secțiunea din Setări. **La unire
+  se publică și serverul:** funcția nouă `utilizare`, regulile Firestore, indexurile (TTL pe `utilizare` și `limiteUtilizare`).
+  `/admin` 127,5 → 129,9 / 200 kB. Otrăvurile 48 / 48.
 - **Întrebarea la owner cu schiță** (ca linia planșelor): o pagină privată cu schițele de încercat și formularul, răspunsurile
   în baza ei (`raspunsuri`, scrise doar de owner); pentru 0261: <https://claude.ai/artifact/DhLTbJiBTWGdgjobiDcJb2>.
 - **Felia rămasă din ADR 0260:** A.7 telefonul (bara de jos, meniul ☰, tichetul cu răspunsul), doar la cuvântul

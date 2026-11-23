@@ -119,6 +119,16 @@ foile, extensiile) trec prin el, iar barele, tastele, paleta și meniurile ajung
 
 Estimarea: ~6 felii. A.7 (telefonul) vine după A.11 (întrebarea 7, a).
 
+## Implementarea
+
+- **A.8a** (23.11, `3.Ag` în fișa etapei 3): `shared/utilizare.ts` (lista albă: `evenimentDin`, `contextDin`, `lotDin`; setările:
+  `setariUtilizareCerute`, `setariUtilizareDin`, `setariPublice`), callable-ul `utilizare` (`functions/src/utilizare/actiuni.ts`:
+  acțiunile `lot` și `setari`), colecțiile `utilizare` (id-ul lotului: sesiunea și numărul) și `limiteUtilizare` (contorul pe cont
+  și pe oră), fără regulă (le scrie doar serverul); TTL pe `expiraLa` al amândurora, iar `evenimente` și `context` neindexate;
+  `setari/utilizare` citit doar de owner. În fila Setări, „Utilizarea aplicației” (`src/admin/setari/SetariUtilizarii.tsx`), cu
+  istoricul din audit (`setari.utilizare`). Un lot nu e o acțiune a personalului: n-are rând de audit. Alegeri: colectarea oprită
+  nu numără la plafon; o salvare a setărilor egală cu cele în vigoare (și implicitele, fără document) nu scrie nimic.
+
 ## Probele
 
 - Lista albă: fiecare acțiune a registrului, rulată, dă un eveniment doar cu câmpurile contractului; un câmp în plus e
