@@ -11059,3 +11059,52 @@ apoi „Da, începe”. **Started:** 23.11, 08:13 (ramura). **Completed:** 23.11
   locul lui 22, primul în PATH-ul imaginii, Java 21 vine din imagine. Porțile întregi trec în CI (rapidul la push, completul
   pornit pe ramură), iar comenzile lungi rulează în prim-plan, fiindcă containerul se suspendă când stă. **Completed:** 23.11,
   09:37.
+
+## 2026-11-21 — Felia 12.1↑e-2: dopul întors în locașul simulat, „Împreună (secțiunea)” (ADR 0179) (Model: Claude Opus 5.5)
+
+**Prompt:** owner-ul, la întrebarea „Ce fac mai departe pe linia incrustațiilor?” (variantele: „12.1↑e-2, secțiunea” / „Bifa pe
+rând (v26)”): „12.1↑e-2, secțiunea”, cu implicitele spuse atunci (potrivirea măsurată în aplicație cu un calcul nou, verificat
+de oracolul probelor; întâi incrustația în V). Reluată pe 22.11, la mesajul sesiunii principale (owner-ul, acolo: „neata,
+continua si porneste si worktrees”): aseară procesul s-a oprit cu felia scrisă și porțile ei trecute, dar necomisă.
+**Started:** 21.11, 19:52. **Completed:** 22.11, 21:35.
+
+- **Ramura:** felia peste reparația titlului dopului (`f9c45042`, unită între timp în `main`, `3d7e6214`). Codul, comis pe 22.11
+  (`9870f7ce`, exact arborele porților de aseară); apoi `main` `40487c43` (3.To, 3.Tp↑a, 10.3↑n, ADR 0182) unit în `ec14bc4a`,
+  fără conflicte, și porțile refăcute pe unire. Nicio otravă VOID nouă, în niciun sens (față de `main` și față de felie).
+- **Decizia**, din ADR 0170 §5–§7, ADR 0178 §1 și planșele „Dopul în vederea 3D” și „Potrivirea, pe hârtie” ale schiței
+  acceptate (<https://claude.ai/artifact/GKxS4iWgdjLghybs2FYxPK>): lângă „Foaia / Dopul N”, comutatorul „Împreună
+  (secțiunea)”, pornit doar pe un dop în V. Arată dopul întors în locașul simulat, în secțiune pe orizontală, cu tabelul
+  valorilor pe hârtie lângă cele simulate.
+- **Proba întâi** (`incrustatie.potrivire3d.test.ts`, 11 probe), care pe codul de dinainte a picat toată (modulul nu exista):
+  - pe toate cele 6 cazuri în V ale oracolului, măsurarea aplicației e a oracolului (oprirea ± 0,01, contactul ± 0,03,
+    medianele jocurilor ± 0,02), fără niciun rând roșu și cu hârtia panoului;
+  - fără freză dreaptă (2 cazuri, jocurile între jumătate și întreg) și cu banda decupată (tăietura și punțile nu intră);
+  - controlul negativ (dopul tăiat ca a doua cavitate): toate patru rândurile roșii, fiecare cu locul lui, marcat pe secțiune;
+  - secțiunea dreptunghiului, pe hârtie: fundul la −D, dopul la −S, între plăci H, în toleranța de 0,05.
+- **Prima variantă a măsurării** alegea benzile după suprafețele simulate (pereții după F = d/t, fundul după F ≈ D), fără
+  desen. Proba a arătat-o pe cercul DeskProto (mediana de sub dop, 0,99 față de 0,97 la oracol). Gândind cazurile, am văzut
+  și slăbiciunea: un fund prea puțin adânc ar fi ieșit din bandă în loc să fie roșu. Benzile sunt acum ale contractului, cu
+  distanța la contur din desenul rasterizat și din transformarea exactă a distanței.
+- **O ramură moartă, scoasă:** excluderea „ramei” benzii nu se putea atinge, fiindcă banda e mai lată decât fereastra
+  (H·t + 1). Porțile pornite înainte au fost oprite și repornite pe conținutul final.
+- **ADR 0179**, acceptat; rândul din index (titlul tradus).
+- **Codul** (`9870f7ce`):
+  - `src/sim/potrivire.ts` (`potrivireaV`): grilele de 0,1 mm prin oglinda contractului, nucleul simulării, desenul
+    rasterizat par-impar pe rânduri, transformarea distanței (Felzenszwalb–Huttenlocher), oprirea h* = min(F + M), benzile,
+    rândurile tabelului, secțiunea;
+  - `DopCalculat.potrivire` (`src/cam/dopV.ts`): cutia, desenul aplatizat (arcele cu săgeata sub 2 µm), marginea, hârtia,
+    adâncimea decupării;
+  - `calculeazaPotrivirea` și cererea `potrivire` în lucrătorul CAM, `potrivireInBazin`, `potrivireSimulata`;
+    `DopSimulat.inV`;
+  - vederea 3D: comutatorul (oprit pe foaie și la dopul drept, cu motivul pe titlu) și secțiunea în insulă
+    (`Sectiune3D.tsx`): desenul la scara 1:1 și tabelul. Mesajele (ro, en), manualul (ro, en).
+  - E2e (`incrustatie3d.spec.ts`): pe cercul R15 în V, comutatorul, tabelul (2.50 / 2.50, 100 %, 0.50, 2.00), desenul,
+    „Foaia” care îl oprește; la dopul drept, comutatorul oprit, cu motivul. Proba de ieri a grupului de butoane, cu comutatorul.
+- **Privirea pe secțiunea reală**, capturată cu Playwright pe build (panoul aplicației era ascuns): placa cu locașul, dopul
+  întors, contactul verde pe pereți, cleiul albastru sub dop, tăietura dintre plăci; tabelul, pe hârtie.
+- **Porțile:** aseară, pe arborele feliei (exact cel comis azi): compilatoarele ×3, importurile (1 321 de module), licențele, traducerile; unit 9 663: 9 655 / 0 (8 sărite); build determinist (343 de fișiere); e2e 571 / 572, cu căderea (o așteptare de 5 s în `trenulet.rotite.spec.ts`, cu mașina încărcată) trecută la reluare, 3 / 3. Azi, pe unirea cu `main` (`ec14bc4a`): compilatoarele ×3, importurile (20 / 0, 1 328 de module), licențele, traducerile (877, 0 lipsă); unit 9 677: 9 669 / 0 (8 sărite, 6,5 min); build determinist (345 de fișiere identice; pornirea 107,2, cu ușa 111,2 / 115, cu Atelierul 111,5; totalul 745,4 / 800); e2e 580 / 580 din prima (11,5 min, 3 lucrători, pornit după 20 de minute fără un minut de liniște). Cu proba refuzurilor (`a11d855e`), unit 9 678: 9 670 / 0.
+- **Otrăvurile:** lista nouă `test/otravuri/12.1e-2.py`, 38: măsurarea M01–M20, ce dă CAM-ul C01–C05, calculul J01–J03, vederea U01–U12 (numerotarea sare peste M10 și U05, gândite și lăsate înainte de rulare, ca echivalente). Seturile curate întâi (`potrivire` 11 / 11, `dop3d` 4 / 4). La prima rulare (`ec14bc4a`), 34 / 38 prinse: J02 („fața plăcii mutată”) a scăpat ca mutant echivalent, fiindcă `sus` doar desparte mișcările în aer de cele în lemn; U08 a ținut 30 de minute fără rezultat și i-a lăsat previzualizarea pe 4174, deci U09–U12 n-au pornit (previzualizarea rămasă, oprită). J02 mutată pe refuzul dopului drept, pe care nu-l proba nimic, cu proba lui nouă (`a11d855e`). La a doua rulare, J02 și U08–U12 prinse: 38 / 38. Reorientate și prinse: 12.1e D03, D06, D07. Celelalte liste, comparate otravă cu otravă cu `main` `40487c43` și cu felia: niciun VOID nou. Arborele, curat la capăt; build-ul, refăcut pe HEAD.
+- **Mărimea:** felia, față de `main` `40487c43`, cu același build în ambii arbori: JavaScript +3 572 B gzip (lucrătorul CAM +1 922, cu măsurarea; vederea 3D +1 621, cu secțiunea și tabelul; calculul interfeței +37; restul, câțiva octeți) și CSS +392 B (vederea 3D); totalul 741,9 → 745,4 / 800; pornirea (107,2) și ușa (111,2 / 115), neschimbate.
+- **Publicat:** canalul `incrustatii` (<https://cncvectorstudio-test--incrustatii-pt5g8i2y.web.app>, până pe 22.12), build-ul `a11d855e` (versiunea `a11d855e17f9`), verificat fără export, cu Playwright (panoul browserului aplicației era ascuns), în engleză, cu un profil curat (nimic lăsat în browserul aplicației). Pe cercul R15 cu incrustația în V (adâncimea 3, fierăstrăul 2), „Plug 1”, apoi „Together (section)”: „Plug 1, flipped in its pocket: the section at Y 50.10 mm”, desenul (placa, dopul întors, contactul verde, cleiul albastru, tăietura) și tabelul 2.50 / 2.50 mm, 100 % of the band / 100 %, 0.50 / 0.50 mm, 2.00 / 2.00 mm; 0 erori în consolă și în jurnalul local.
+- **Nu acum:** incrustația cu pereți drepți și treptele în secțiune (felia 12.1↑e-3), secțiunea aleasă cu mausul; bifa „prin
+  foaie” pe fiecare rând (v26), la cuvântul owner-ului.

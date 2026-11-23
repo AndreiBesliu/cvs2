@@ -15,6 +15,7 @@ import type { StrategieScula, Unitati } from '../post/contract.ts';
 import type { IdContract } from '../post/contracte/index.ts';
 import type { SemifabricatDop } from '../cam/incrustatie.ts';
 import type { FisierExportat, ProgramExportat } from '../post/export.ts';
+import type { PotrivireV } from '../sim/potrivire.ts';
 import type { ProgramSimulat } from '../sim/program.ts';
 import type { ProgramImpachetat } from './impachetare.ts';
 import type { RezumatJob } from './rezumat.ts';
@@ -72,8 +73,11 @@ export type DopExportat = {
   readonly element: string; readonly program: ProgramExportat; readonly fisiere: readonly FisierExportat[]; readonly semifabricat: SemifabricatDop;
 };
 
-/** Un dop al foii, cum îl alege vederea 3D (ADR 0178): elementul primei tăieturi a regiunii lui și semifabricatul lui. */
-export type DopSimulat = { readonly element: string; readonly semifabricat: SemifabricatDop };
+/**
+ * Un dop al foii, cum îl alege vederea 3D (ADR 0178): elementul primei tăieturi a regiunii lui, semifabricatul lui și dacă
+ * e în V (doar atunci are „Împreună (secțiunea)”, ADR 0179).
+ */
+export type DopSimulat = { readonly element: string; readonly semifabricat: SemifabricatDop; readonly inV: boolean };
 
 /**
  * O parte desprinsă (ADR 0210, felia 11.3↑c): un contur tăiat prin foaie de un profil exterior cu urechi, la care, la capătul
@@ -88,6 +92,8 @@ export type CerereCam =
   | { readonly fel: 'traseu'; readonly document: Document }
   /** Vederea 3D (ADR 0057 §1): mutările simulării ale programului documentului, sau ale dopului cu numărul `dop` (ADR 0178). */
   | { readonly fel: 'simulare'; readonly document: Document; readonly dop?: number }
+  /** „Împreună (secțiunea)” (ADR 0179): dopul în V cu numărul `dop` întors în locașul lui, cu potrivirea măsurată. */
+  | { readonly fel: 'potrivire'; readonly document: Document; readonly dop: number }
   /** Timpul jobului de lângă traseu (ADR 0046 §8) pentru un program deja calculat, fără CAM. */
   | { readonly fel: 'timp'; readonly program: ProgramImpachetat; readonly foaie: Montaj['foaie']; readonly setari: string | undefined }
   /** Verificarea vectorilor (ADR 0124): problemele contururilor foii, cu ce se poate repara din ele, fără să schimbe documentul. */
@@ -127,6 +133,9 @@ export type RaspunsSimulare =
     readonly dopuri: readonly DopSimulat[]; readonly motivDopuri?: string;
   }
   | { readonly ok: false; readonly motiv: string };
+
+/** Potrivirea simulată a unui dop în V (ADR 0179), sau de ce nu se poate măsura. */
+export type RaspunsPotrivire = { readonly ok: true; readonly potrivire: PotrivireV } | { readonly ok: false; readonly motiv: string };
 
 export type MesajCam = { readonly id: number; readonly cerere: CerereCam };
 
