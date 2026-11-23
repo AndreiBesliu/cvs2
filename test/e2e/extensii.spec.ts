@@ -1,4 +1,4 @@
-import { test, expect, type Locator, type Page } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
 import { impacheteaza, scrieZip } from '../../scripts/impacheteaza-extensie.ts';
 import { citesteZip } from '../../src/extensii/zip.ts';
 import { clicDupaReaparitie } from './ajutor-extensii.ts';
@@ -146,8 +146,6 @@ test('din fișier: confirmarea, meniul, fereastra izolată peste Proiectare, ×,
   await expect(gest.locator('li')).toContainText('de la salut-1.0.0.zip');
   await expect(gest.getByTestId('extensii-date')).toHaveText('datele ei: sub 1 kB');
   await expect(gest.locator('li [data-semn]')).toHaveCount(1);
-  const fond = (l: Locator) => l.evaluate((e) => getComputedStyle(e).backgroundColor);
-  const accent = await fond(gest.locator('[data-extensii="inchide"]'));
   // „Scoate” întreabă întâi și spune ce se pierde (ADR 0231 §B.4); Escape și „Păstrează” se întorc la listă.
   await gest.locator('[data-extensii="scoate"]').click();
   const intrebare = page.getByTestId('extensii-scoatere');
@@ -155,8 +153,17 @@ test('din fișier: confirmarea, meniul, fereastra izolată peste Proiectare, ×,
   await expect(page.getByTestId('extensii-scoatere-text')).toHaveText(
     '„Salut” se șterge din browserul acesta. Se șterg și datele ei (sub 1 kB): nu se pot aduce înapoi.');
   await expect(intrebare.locator('[data-extensii="scoate-pastreaza"]')).toBeFocused();
-  // Gestul care șterge nu arată ca un gest obișnuit: roșu, nu accentul.
-  expect(await fond(intrebare.locator('[data-extensii="scoate-confirma"]'))).not.toBe(accent);
+  // Gestul care șterge nu arată ca un gest obișnuit: roșul temei, nu accentul (mausul dat la o parte: sub el, butonul e mai închis).
+  await page.mouse.move(0, 0);
+  const culori = await intrebare.locator('[data-extensii="scoate-confirma"]').evaluate((e) => {
+    const martor = document.createElement('span');
+    martor.style.background = 'var(--rosu)';
+    e.append(martor);
+    const rosu = getComputedStyle(martor).backgroundColor;
+    martor.remove();
+    return { buton: getComputedStyle(e).backgroundColor, rosu };
+  });
+  expect(culori.buton).toBe(culori.rosu);
   await page.keyboard.press('Escape');
   await expect(intrebare).toHaveCount(0);
   await expect(gest.locator('li')).toHaveCount(1);

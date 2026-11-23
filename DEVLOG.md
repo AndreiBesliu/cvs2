@@ -11377,3 +11377,33 @@ model în repo); e în raportul din chat și în sesiunea din mesajul commit-ulu
   (primul din `noutati`, în `extensii/biblioteca.json`), apoi `node scripts/biblioteca.ts --scrie`. E în nota liniei
   (`docs/linii/biblioteca.md`); în `CLAUDE.md` o scrie sesiunea principală, la unire.
 - **Urmează:** 3.Xh-2 (fereastra de confirmare refăcută, „Scoate” cu întrebarea, mesajele pe înțeles, țintele).
+
+## 2026-11-23 — 3.Xh-2: fereastra de confirmare refăcută, „Scoate” cu întrebarea, mesajele pe înțeles, țintele (sesiune cloud)
+
+**Prompt:** același „Da, 1a–4a” (răspunsul owner-ului la ADR 0231; trimis a doua oară în sesiune, cât rula 3.Xh-1); felia a
+doua din cele patru ale ADR-ului, pornită fără altă întrebare.
+**Started:** 23.11, 15:30. **Completed:** 23.11, 16:45. **Modelul:** nescris aici (regula sesiunii cloud: niciun nume de
+model în repo); e în raportul din chat și în sesiunea din mesajul commit-ului.
+
+- **Fereastra de confirmare, una singură** (`5578eaa`, apoi commit-ul documentelor): semnul și numele extensiei în capul ei,
+  de unde vine, „Ce poate face” ca listă, izolarea, butoanele; la o actualizare, „Versiunea nouă poate și” stă prima.
+  Toate ferestrele extensiilor au 34rem (erau cât ecranul: 896 px la 1440).
+- **„Scoate” întreabă întâi** și spune ce se pierde; „Păstrează” (cu focusul) și Escape se întorc la listă, pe rândul
+  extensiei; gestul care șterge e roșu.
+- **Mesajele pe înțeles:** catalogul stricat, descărcarea căzută (fără textul browserului, fără „CORS”), mărimile („sub 1
+  kB”, „457 kB”, „1,6 MB”; `src/extensii/marime.ts`).
+- **Țintele:** la atingere și la densitatea mare, rândurile și butoanele meniului sunt cât `--tinta` (erau 30 și 28 px).
+- **Privit pe capturile mărite** (ambele teme; 1440, 390 și 320 px cu fontul lat): avertismentul era un rând portocaliu
+  strident, „1.616,3 kB”, numele permisiunii mai mare decât titlul listei; iar la 320 px fereastra se deschidea derulată la
+  capăt, cu numele extensiei ascuns. Toate îndreptate; ultima are proba ei, scrisă întâi (a căzut la 390, 360 și 320 px).
+- **Porțile, în container:** tipurile, regulile de import; unitarele atinse 104 / 104; e2e cu Chrome: extensiile, biblioteca,
+  pluginul, țintele și manualul, 48 / 48; `npm run determinism`: pornirea 107,9 kB (neschimbată), totalul 762,7 / 800 kB
+  (+0,7). Suitele întregi, în CI. **Completul din CI pe 3.Xh-1 (`8b608bb`): verde, cu Edge.**
+- **Otrăvurile** (`test/otravuri/3.Xh-2.py`, în clonă): 40 / 40 (12 unitare, 28 prin e2e). La prima rulare, 38 / 42: două
+  probe întărite (regexul lui „să …”: `\b` nu vede marginea de după „ă”; roșul butonului, citit cu mausul peste el), o
+  derulare pusă la zero, de prisos lângă butoanele lipite jos, scoasă cu otrava ei, și o otravă a manualului pe care proba
+  lui n-o poate vedea, scoasă. Trei otrăvuri din listele vecine, golite de felie, mutate pe codul nou (3.Xb E03 și E04,
+  3.Xh-1 N01).
+- **Canalul `biblioteca`:** <https://cncvectorstudio-test--biblioteca-gw7dr9bc.web.app>; gazda lui e acum permisă în mediul
+  sesiunii (aprobată de owner), deci linia verifică singură ce a publicat.
+- **Urmează:** 3.Xh-3 (fereastra „Biblioteca extensiilor”, meniul scurtat, paleta).

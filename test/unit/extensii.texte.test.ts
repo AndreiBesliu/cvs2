@@ -22,7 +22,8 @@ test('fiecare permisiune din catalog are numele scurt și „ce poate face”, �
       // Un rând al listei „Ce poate face”: fără punct la capăt și fără „să …” (fraza veche, „Cere: să …”).
       const poate = d[`extensii.poate.${p}`] as string;
       assert.doesNotMatch(poate, /[.;]$/, `${limba}: „extensii.poate.${p}” se termină cu punct`);
-      assert.doesNotMatch(poate, /^(să|to)\b/i, `${limba}: „extensii.poate.${p}” e încă o cerere („să …”)`);
+      // (`\b` nu vede marginea de după „ă”: de aceea spațiul.)
+      assert.doesNotMatch(poate, /^(să|to)\s/i, `${limba}: „extensii.poate.${p}” e încă o cerere („să …”)`);
     }
   }
 });

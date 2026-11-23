@@ -20,7 +20,6 @@ EX = 'src/extensii/Extensii.tsx'
 CS = 'src/extensii/extensii.css'
 RO = 'src/i18n/carcasa.ro.ts'
 EN = 'src/i18n/carcasa.en.ts'
-MR = 'docs/manual/ro.md'
 
 # Mărimea pe înțeles (src/extensii/marime.ts)
 o('M01', MA, "  if (!(octeti > 0)) return { fel: 'zero' };", "  if (octeti === 0) return { fel: 'zero' };", 'marime',
@@ -55,8 +54,6 @@ o('T05', EN, "  'extensii.adresa.esec-retea': 'The download failed. Check the ad
 # Controalele din manual
 o('A01', IN, 'data-extensii="scoate-pastreaza"', 'data-extensii="pastreaza"', 'manual',
   'un control nou al extensiilor, fără locul lui în lista manualului')
-o('A02', MR, 'iar **Păstrează** (sau Escape) te întoarce la listă', 'iar Escape te întoarce la listă', 'manual',
-  'manualul nu mai numește „Păstrează”')
 
 # Fereastra de confirmare (e2e)
 o('E01', IN, "    <Fereastra titlu={t('extensii.instalare.titlu-nume', { nume: p.manifest.nume })} test=\"extensii-instalare\" onEscape={renunta}",
@@ -120,8 +117,6 @@ o('E24', CS, "@media (pointer: coarse) {\n  .meniu-extensii [role='menuitem'],\n
   'la atingere, rândurile meniului rămân de 30 px')
 o('E25', CS, ":root[data-densitate='mare'] .meniu-extensii [role='menuitem'],\n:root[data-densitate='mare'] .meniu-extensii .biblioteca-buton[role='menuitem'] {\n  min-height: var(--tinta);\n}\n", '', 'e2e',
   'la densitatea mare, meniul rămâne strâns')
-o('E26', IN, '    if (cutie.current) cutie.current.scrollTop = 0;', '', 'e2e',
-  'o fereastră înaltă se deschide derulată la butoane')
 o('E27', CS, '  position: sticky;\n  bottom: calc(-1 * var(--sp-5));', '  position: static;', 'e2e',
   'butoanele unei ferestre înalte ies de pe ecran')
 o('E28', CS, '.confirmare-sursa {\n  margin: 2px 0 0;\n  font-size: var(--fs-2);\n  color: var(--t-slab);\n  overflow-wrap: anywhere;\n}',

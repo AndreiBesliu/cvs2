@@ -13,7 +13,7 @@
  * „Deschide”. Pachetul se descarcă abia după clic și se verifică întâi după amprenta din catalog (`biblioteca.ts`); un defect
  * al publicării ajunge și în jurnal (`onDefect`). Un pachet din fișier sau de la o adresă vine „din afara bibliotecii”.
  */
-import { useEffect, useLayoutEffect, useMemo, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
+import { useEffect, useMemo, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
 import '../i18n/carcasa.ts';
 import { mesajeGata } from '../i18n/laCerere.ts';
 import { t, type CheieSimpla } from '../i18n/t.ts';
@@ -118,15 +118,11 @@ function Fereastra({ titlu, test, onEscape, cap, children }: {
     e.preventDefault();
     onEscape();
   };
-  // O fereastră mai înaltă decât ecranul pornește de sus: focusul pus pe butonul ei (jos) ar derula-o la capăt și ar ascunde
-  // despre ce extensie e vorba. Butoanele rămân la vedere, lipite jos (`extensii.css`).
-  const cutie = useRef<HTMLDivElement | null>(null);
-  useLayoutEffect(() => {
-    if (cutie.current) cutie.current.scrollTop = 0;
-  }, [test, titlu]);
+  // O fereastră mai înaltă decât ecranul rămâne sus, cu despre ce extensie e vorba la vedere: butoanele ei sunt lipite jos
+  // (`extensii.css`), deci focusul pus pe unul nu o mai derulează la capăt.
   return (
     <div className="dialog dialog-extensii" role="dialog" aria-modal="true" aria-labelledby={`${test}-titlu`} data-testid={test} onKeyDown={tasta}>
-      <div className="dialog-cutie" ref={cutie}>
+      <div className="dialog-cutie">
         {cap ? (
           <div className="confirmare-cap">
             <Semn adresa={cap.semn} marime={48} />

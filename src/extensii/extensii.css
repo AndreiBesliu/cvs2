@@ -423,6 +423,7 @@
 /*
  * Butoanele rămân la vedere, lipite de marginea de jos a ferestrei, și când fereastra e mai înaltă decât ecranul (un telefon,
  * o extensie care cere multe): textul se derulează pe sub ele. Marginile negative le întind peste marginea interioară a cutiei.
+ * Tot de aceea fereastra pornește de sus: focusul pus pe un buton care e deja la vedere nu o derulează la capăt.
  */
 .dialog-extensii .butoane {
   position: sticky;

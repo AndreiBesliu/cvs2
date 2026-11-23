@@ -121,6 +121,10 @@
       "ro": "3.Tl (roata conică)",
       "en": "3.Tl (the bevel gear)"
     },
+    "091525a3b6ef5a94": {
+      "ro": "Pe canalul `biblioteca`: instalează Easy 3Draw din Bibliotecă și un pachet din fișier, ca să vezi fereastra nouă de confirmare (numele în titlu, „Ce poate face” ca listă); apoi **Gestionează extensiile…** → **Scoate**, care acum întreabă întâi; încearcă și de pe telefon",
+      "en": "On the `biblioteca` channel: install Easy 3Draw from the Library and a package from a file, to see the new confirmation window (the name in the title, “What it can do” as a list); then **Manage extensions…** → **Remove**, which now asks first; try it from a phone too"
+    },
     "093213b412929ab9": {
       "ro": "**Riglele, ghidajele, lipirea și alinierea, adusă din etapa 6** (fără mașină; ADR 0050; cererea owner-ului: „ruler si guides”, „snapping system, aligning”, cu deciziile lui: întâi riglele și lipirea, ghidajele în proiect, lipirea de ghidaje, foaie, forme și grilă, fără agenți). Riglele în mm pe marginile zonei libere; ghidajele trase din riglă, salvate pe foaie (`foaie.ghidaje`, fără schemă nouă: nu schimbă tăierea, iar o versiune veche le păstrează), mutate, șterse pe riglă, cu poziția exactă la dublu clic; lipirea pe fiecare axă (6 px), cu liniile tuturor țintelor atinse; Alt mută liber; alinierea (6 feluri, față de foaie pentru o formă) și distribuirea; săgețile (1 / 10 / 0,1 mm); grila cu pas. Totul la cerere după prima randare: pornirea 94,3 → 94,7 kB (cu ușa 99,4 / 100). **Treceri:** (1) geometria pură, documentul, acțiunile, pânza; (2) e2e: banda ghidajului tras dispărea din pagină (gestul și dublul clic se pierdeau), lipirea arăta doar una din țintele atinse deodată; (3) săgețile prindeau și tastele arborelui proiectului (mutau forma), iar după un clic pe „Aliniază” nu mai mergeau: acum doar cu focusul pe pânză. Uneltele de desen prin tragere sunt felia următoare.",
       "en": "**Rulers, guides, snapping and alignment, brought forward from stage 6** (without the machine; ADR 0050; the owner's request: “ruler and guides”, “snapping system, aligning”, with the owner's decisions: rulers and snapping first, guides in the project, snapping to guides, sheet, shapes and grid, no agents). Rulers in mm on the edges of the free area; guides dragged from a ruler, saved on the sheet (`foaie.ghidaje`, no new schema: they do not change the cut, and an old version keeps them), moved, deleted on the ruler, with the exact position on double-click; snapping on each axis (6 px), with the lines of all the targets hit; Alt moves freely; alignment (6 kinds, against the sheet for a single shape) and distribution; the arrows (1 / 10 / 0.1 mm); the grid with a step. Everything on demand after the first render: startup 94.3 → 94.7 kB (99.4 / 100 with the door). **Passes:** (1) the pure geometry, the document, the actions, the canvas; (2) e2e: the dragged guide's band disappeared from the page (the gesture and the double-click got lost), snapping showed only one of the targets hit at once; (3) the arrows also caught the project tree's keys (they moved the shape), and after a click on “Align” they stopped working: now only with the focus on the canvas. The drag drawing tools are the next slice."
@@ -336,6 +340,10 @@
     "168bdc4d7289a620": {
       "ro": "Editarea nodurilor",
       "en": "Node editing"
+    },
+    "170c8c78a7c3e9ea": {
+      "ro": "3.Xh-2 (ferestrele extensiilor)",
+      "en": "3.Xh-2 (the extension windows)"
     },
     "177e163eb20639aa": {
       "ro": "Migrările pure vN → vN+1, cu corpus de aur (de acum există date pe live).",
@@ -1404,6 +1412,10 @@
     "5bece914e15c12d9": {
       "ro": "Texturi; Export STL / OBJ; Clipart de relief; Laser",
       "en": "Textures; STL / OBJ export; Relief clipart; Laser"
+    },
+    "5c489efe84b3e625": {
+      "ro": "**Biblioteca extensiilor, refăcută: fereastra de confirmare și „Scoate” cu întrebarea** (fără mașină; ADR 0231 §B.3–§B.5 și §B.7; a doua din patru felii, pe ramura `wip/3.Xh-biblioteca-ui`, în sesiunea cloud a liniei). O singură fereastră de confirmare, pentru un pachet din fișier, de la o adresă, din bibliotecă și pentru o versiune care cere ceva în plus: semnul și numele extensiei în capul ei („Instalezi „Easy 3Draw”?”), de unde vine, „Ce poate face” ca listă (câte un rând pe permisiune, în locul unei fraze de 450 de caractere), izolarea, butoanele; la o actualizare, „Versiunea nouă poate și” stă prima, evidențiată. Toate ferestrele extensiilor au 34rem, nu cât ecranul. „Scoate” întreabă întâi și spune ce se pierde (extensia și datele ei, cu mărimea); „Păstrează” (cu focusul) și Escape se întorc la listă, cu focusul pe rândul extensiei; gestul care șterge e roșu. Mesajele pe înțeles: catalogul stricat („Biblioteca nu s-a putut încărca. Încearcă din nou peste puțin.”, cu detaliul doar în jurnal), descărcarea căzută (fără textul browserului și fără „CORS”), mărimile („sub 1 kB”, „457 kB”, „1,6 MB”). La atingere și la densitatea mare, rândurile și butoanele meniului sunt cât ținta (44, 48 sau 56 px; erau 30 și 28). Privirea pe captura de 320 px cu fontul lat a găsit fereastra înaltă deschisă derulată la capăt, cu numele extensiei ascuns: acum butoanele stau lipite jos, la vedere, iar fereastra rămâne sus (proba, scrisă întâi, a căzut la 390, 360 și 320 px). Pornirea neschimbată (107,9 kB), totalul 762,7 / 800 kB (+0,7). Unitare 6 noi, e2e 5 noi (7 rulări); otrăvurile 40 / 40 (12 unitare, 28 prin e2e), în clonă; la prima rulare 38 / 42: două probe întărite (regexul lui „să …”, roșul butonului citit cu mausul peste el), o derulare pusă la zero, de prisos lângă butoanele lipite jos, scoasă cu otrava ei, și o otravă a manualului pe care proba lui n-o poate vedea, scoasă. Completul din CI pe 3.Xh-1 (`8b608bb`), verde, cu Edge. Urmează 3.Xh-3 (fereastra „Biblioteca extensiilor”, meniul scurtat, paleta), 3.Xh-4 (telefonul, tastatura, manualul).",
+      "en": "**The extension library, redone: the confirmation window and “Remove” asking first** (no machine; ADR 0231 §B.3–§B.5 and §B.7; the second of four slices, on branch `wip/3.Xh-biblioteca-ui`, in the line’s cloud session). A single confirmation window, for a package from a file, from an address, from the library and for a version that asks for something more: the extension’s icon and name at its head (“Install “Easy 3Draw”?”), where it comes from, “What it can do” as a list (one row per permission, instead of a 450-character sentence), the isolation, the buttons; on an update, “The new version can also” comes first, highlighted. All the extension windows are 34rem wide, not as wide as the screen. “Remove” asks first and says what is lost (the extension and its data, with their size); “Keep” (focused) and Escape go back to the list, with the focus on the extension’s row; the deleting action is red. Plain messages: the broken catalogue (“The library couldn’t be loaded. Try again in a little while.”, with the detail only in the log), the failed download (without the browser’s text and without “CORS”), the sizes (“under 1 kB”, “457 kB”, “1.6 MB”). On touch and at the large density, the menu’s rows and buttons are as tall as the target (44, 48 or 56 px; they were 30 and 28). Looking at the 320 px capture with the wide font found the tall window opened scrolled to its end, with the extension’s name hidden: now the buttons stay pinned at the bottom, in view, and the window stays at its top (the test, written first, failed at 390, 360 and 320 px). Startup unchanged (107.9 kB), total 762.7 / 800 kB (+0.7). 6 new unit tests, 5 new e2e (7 runs); mutations 40 / 40 (12 unit, 28 through e2e), in a clone; on the first run 38 / 42: two tests strengthened (the regex for “să …”, the button’s red read with the mouse over it), a scroll reset made redundant by the pinned buttons, removed with its mutation, and a manual mutation that the manual’s test cannot see, removed. The full CI on 3.Xh-1 (`8b608bb`), green, with Edge. Next: 3.Xh-3 (the “Extension library” window, the shortened menu, the palette), 3.Xh-4 (the phone, the keyboard, the manual)."
     },
     "5c77800071ce0d79": {
       "ro": "Înclinarea cu arcele făcute curbe",
@@ -2928,6 +2940,10 @@
     "c719dec200621b98": {
       "ro": "Planșele: „Așază pe foi”",
       "en": "Sheets: “Arrange on sheets”"
+    },
+    "c900cbc4702bf291": {
+      "ro": "Biblioteca extensiilor, refăcută: fereastra de confirmare și „Scoate” cu întrebarea",
+      "en": "The extension library, redone: the confirmation window and “Remove” asking first"
     },
     "c91bf52003a8439c": {
       "ro": "V-carve",

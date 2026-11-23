@@ -1,8 +1,8 @@
 # ADR 0231: Biblioteca extensiilor, refăcută: fereastra ei, semnul extensiei, capturile și „ce e nou”
 
 **Starea:** acceptat pe 23.11.2026, cu toate recomandările („Da, 1a–4a”; „Răspunsurile owner-ului”, mai jos), pentru felia
-3.Xh, a liniei bibliotecii (ramura `wip/3.Xh-biblioteca-ui`, din `main` `8f122eb6`). **Implementat:** 3.Xh-1 (datele) pe
-23.11; 3.Xh-2…3.Xh-4 urmează („Implementat”, la capăt). Cererea owner-ului, din aceeași zi: „poti sa pornesti un branch in
+3.Xh, a liniei bibliotecii (ramura `wip/3.Xh-biblioteca-ui`, din `main` `8f122eb6`). **Implementat:** 3.Xh-1 (datele) și
+3.Xh-2 (ferestrele) pe 23.11; 3.Xh-3 și 3.Xh-4 urmează („Implementat”, la capăt). Cererea owner-ului, din aceeași zi: „poti sa pornesti un branch in
 care sa modificam libraria de plugin-uri? vreau ceva mai frumos si cu un UI/UX mai bun si atragator”. **Continuă:** ADR 0230 (biblioteca: toate marginile lui
 rămân, §C), ADR 0127 și 0128 (pachetul, permisiunile arătate la instalare), ADR 0160 (fereastra extensiei), ADR 0164 (tema),
 ADR 0167 (semnul lui Easy 3Draw, lăsat acolo pentru „altă decizie, cu schiță”), ADR 0250 (aranjamentele, densitatea).
@@ -257,3 +257,39 @@ Datele noi ale catalogului (punctul 1):
 - **Probele:** unitare pentru pachet, catalog, construcție, precache, anteturi și semn; e2e în `biblioteca.spec.ts` (semnul
   în Biblioteca, în meniu și pe filă, și fără rețea; extensia fără semn). Otrăvurile: `test/otravuri/3.Xh-1.py`
   (`docs/otravuri.md`).
+
+### 3.Xh-2: fereastra de confirmare, „Scoate” cu întrebarea, mesajele, țintele (23.11.2026)
+
+- **O singură fereastră de confirmare** (§B.3), pentru un pachet din fișier, de la o adresă, din bibliotecă și pentru o
+  versiune nouă. În capul ei stau semnul extensiei (48 px; al unui pachet din fișier vine din pachet, înainte de instalare)
+  și titlul cu numele ei: „Instalezi „Easy 3Draw”?”, „Actualizezi „Easy 3Draw”?”. Dedesubt, de unde vine: „18.20.0 · din
+  fișierul trenulet-18.20.0.zip · 16 fișiere, 1,6 MB”, „18.20.0 · din biblioteca cvs2”, „18.6.0 → 18.20.0 · din biblioteca
+  cvs2”. Urmează avertismentul „din afara bibliotecii” (o casetă, nu un rând portocaliu), „Ce poate face”, izolarea și
+  butoanele: întâi gestul, apoi „Renunță”, ca în restul aplicației.
+- **„Ce poate face” e o listă:** câte un rând pe permisiune, cu numele ei („Datele în browser”) și ce face extensia cu ea
+  („își ține datele în browserul acesta (cel mult 16 MB)”). Fraza „Cere: să …; să …” a plecat (450 de caractere la Easy
+  3Draw). La o actualizare, „Versiunea nouă poate și” stă prima, evidențiată; apoi „Ce putea și până acum”.
+- **Aceeași lățime pentru toate ferestrele extensiilor:** 34rem (544 px), nu cât ecranul (896 px la 1440). Și fereastra
+  adresei, gestionarea și capătul instalării.
+- **„Scoate” întreabă întâi** (§B.4): „Scoți „Easy 3Draw”?”, cu ce se pierde: „se șterge din browserul acesta. Se șterg și
+  datele ei (12 kB): nu se pot aduce înapoi.” (sau „N-are date salvate.”). „Păstrează” are focusul; el și Escape se întorc
+  la listă, cu focusul pe „Scoate” al aceluiași rând. Gestul care șterge e roșu. Rândurile gestionării au semnul extensiei.
+- **Mesajele pe înțeles** (§B.5):
+  - un catalog care nu se poate citi: „Biblioteca nu s-a putut încărca. Încearcă din nou peste puțin.”, în meniu și în
+    fereastra linkului; detaliul („format”, „HTTP 500”) ajunge doar în jurnal, ca până acum;
+  - descărcarea de la o adresă: fără textul browserului („Failed to fetch”) și fără „CORS”; un răspuns al serverului e spus
+    ca atare („Serverul n-a trimis pachetul (răspunsul 404). Verifică adresa.”);
+  - mărimile: „sub 1 kB”, kB întregi până la 1 MB, apoi MB cu o zecimală (`src/extensii/marime.ts`); „1.616,3 kB” și
+    „457,3 kB” au plecat.
+- **Țintele** (§B.7): la atingere și la densitatea mare, rândurile și butoanele meniului sunt cât `--tinta` (44, 48 sau 56
+  px; erau 30 și 28). Cu mausul, la densitatea obișnuită, meniul rămâne strâns.
+- **Într-o fereastră mai înaltă decât ecranul, butoanele rămân lipite jos, la vedere**, iar fereastra rămâne sus. Pe captura
+  de 320 px cu fontul lat, fereastra se deschidea derulată la capăt (focusul pus pe „Instalează” o trăgea în jos), cu numele
+  extensiei și avertismentul ascunse. Proba scrisă întâi a căzut la 390, 360 și 320 px.
+- **Rămase pentru 3.Xh-3**, unde meniul se reface: legenda rândului („18.20.0 · deschide fereastra”), „ce e nou” în
+  fereastra actualizării, scheletul cât vine catalogul.
+- **Măsurat** (`npm run determinism`): pornirea 107,9 kB, neschimbată; totalul 762,7 / 800 kB (+0,7 față de 3.Xh-1).
+- **Probele:** unitare pentru mărime, semnul unui pachet abia citit, textele permisiunilor și controalele din manual; e2e în
+  `extensii.spec.ts`, `biblioteca.spec.ts` și `extensii.tinte.spec.ts` (nou: țintele la atingere și la densitatea mare;
+  390, 360 și 320 px cu fontul lat și un nume de fișier lung). Manualul, în ambele limbi. Otrăvurile:
+  `test/otravuri/3.Xh-2.py` (`docs/otravuri.md`).
