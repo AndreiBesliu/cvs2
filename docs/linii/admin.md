@@ -2,7 +2,7 @@
 
 <!-- Adusă din memoria sesiunii principale pe 23.11.2026 (mutarea în cloud). De aici înainte o ține la zi linia, pe ramura ei, odată cu feliile. -->
 
-_CNCVS2, ADR 0260: pagina /admin reproiectată; A.1–A.3 unite în main (A.3: 528ee187); A.4 (Sugestii ca tablă) GATA DE UNIT din 23.11, pe wip/A.1-admin, cu PR spre main; A.5–A.7 la cuvântul owner-ului_
+_CNCVS2, ADR 0260: pagina /admin reproiectată; A.1–A.4 unite în main (A.4: ddaa7ead); A.5 (Utilizatori și Personal) GATA DE UNIT din 23.11, pe wip/A.1-admin, cu PR spre main; A.6–A.7 la cuvântul owner-ului_
 
 Linia adminului din [sesiunea principală](principala.md): ADR 0260 (intervalul 0260–0269), acceptat pe 13.11.2026 cu ideile 51–62 de pe
 tabla „Harta schițelor”. Owner-ul a cerut „vreau sa faci design si pentru admin”, iar la idei a răspuns „Da la toate”
@@ -22,17 +22,22 @@ tabla „Harta schițelor”. Owner-ul a cerut „vreau sa faci design si pentru
   `shared/raspunsuriRapide.ts`, acțiunea `raspunsuriRapide` a callable-ului `tichete` (owner, versiunea văzută, audit),
   regula `setari/raspunsuriRapide` (cu `tichete.raspunde`), secțiunea din Setări, pastilele din Tichete (la unire s-au
   publicat și regulile Firestore, și funcția `tichete`). `/admin` 113,7 → 121,2 (linia +14,7 din +25). Otrăvurile 59 / 59.
-- **A.4 (Sugestii ca tablă) GATA DE UNIT din 23.11** (`3.Ad`; pornită pe 22.11 la „Da, A.4”, oprită la pauza de seară,
-  încheiată în cloud, cu `main` `8177ab81` adus în `5d4ea694`): tabla deciziilor (o coloană pe stare, Respinsele dedesubt),
-  tragerea și „Mută în…” din tastatură, nota cerută la Respinsă și Amânată, mutarea arătată cât e în drum și ținută după
-  răspuns fără recitire, detaliul ca fereastră, „Sugestie nouă”, „Ale mele” / „Toate”. Fără reguli, date sau funcții noi:
-  **la unire se publică doar Hosting-ul.** `/admin` 121,2 → 124,1 / 200 kB (linia, +17,6 din +25). Otrăvurile 41 / 41 (14
-  unitare, 27 pe emulatoare; E12 scoasă cu regula ei CSS, echivalentă în Edge). Raportul și porțile: PR-ul ramurii spre
-  `main`, AndreiBesliu/cvs2#3.
+- **A.4 UNITĂ în main pe 23.11** (`ddaa7ead`, din `20fb65de`; `3.Ad`; PR-ul AndreiBesliu/cvs2#3): Sugestii ca tablă a
+  deciziilor (o coloană pe stare, tragerea și „Mută în…”, nota cerută la Respinsă și Amânată, mutarea ținută după răspuns
+  fără recitire). `/admin` 121,2 → 124,1. Otrăvurile 41 / 41 (E12 scoasă cu regula ei CSS, echivalentă în Edge).
+- **A.5 (Utilizatori și Personal) GATA DE UNIT din 23.11** (`3.Ae`; pornită la „Da, pornește A.5”, din `main` `c010e3d1`):
+  Utilizatori cu tabelul, filtrele pe plan (cu numere), căutarea, contul ales alături (formularul planului, istoricul din
+  audit doar cu „Audit: citește”); Personal cu felul intrării sub nume, invitațiile în lista oamenilor și matricea
+  rol × permisiune (un rol editat pe coloana lui). Fără reguli, date sau funcții noi: **la unire se publică doar
+  Hosting-ul.** `/admin` 124,1 → 125,6 / 200 kB (linia, +19,1 din +25: pentru A.6 și A.7 rămân ~5,9 kB din țintă).
+  Otrăvurile 61 / 61. Raportul și porțile: PR-ul ramurii spre `main`.
 - **Întrebarea la owner cu schiță** (ca linia planșelor): o pagină privată cu schițele de încercat și formularul, răspunsurile
   în baza ei (`raspunsuri`, scrise doar de owner); pentru 0261: <https://claude.ai/artifact/DhLTbJiBTWGdgjobiDcJb2>.
-- **Feliile rămase:** A.5 Utilizatori și Personal; A.6 Roadmap, Documentație, Setări (istoricul din audit, și al
-  răspunsurilor rapide); A.7 telefonul. Fiecare doar la cuvântul owner-ului.
+- **Feliile rămase:** A.6 Roadmap, Documentație, Setări (istoricul din audit, și al răspunsurilor rapide); A.7 telefonul.
+  Fiecare doar la cuvântul owner-ului.
+- **Alegeri față de schițe, de știut la A.6–A.7:** schimbarea planului a rămas un formular cu „Salvează planul” (nu butoane
+  cu un clic); felul intrării unui om vine din `sursa` documentului (metodele legate mai târziu din fila Cont ar cere o
+  citire din Auth, pe server, deci un ADR al liniei).
 
 **Why:** adminul e pagina personalului, nu ține de aranjamente (ADR 0250); de aceea are linia lui, nu feliile 28.x.
 
@@ -72,4 +77,12 @@ tabla „Harta schițelor”. Owner-ul a cerut „vreau sa faci design si pentru
 - **bancul vizual al liniei** (capturile filelor, în ambele teme, la trei lățimi, cu datele lui pe emulatoare) și lanțurile
   locale n-au intrat în repo: se scot din istorie, `git show 137a08ac:.lucru/admin/vizual/vizual.spec.ts` (se pune într-un
   dosar din `.tmp/`, cu un config copiat din `playwright.emulator.config.ts`, cu `testDir` spre el, ținut în rădăcină:
-  `testDir` e relativ la config).
+  `testDir` e relativ la config).;
+- **un rând de audit se caută cu egalitate pe un singur câmp** (`tinta`), fără `orderBy`: indexul simplu ajunge, ordinea se
+  face în pagină (istoricul Setărilor, în A.6, la fel);
+- o invitație pusă direct în bază într-o probă cere id-ul serverului (sha256 al adresei), altfel anularea e refuzată; iar
+  ordinea oamenilor depinde de uid-ul owner-ului probei (fără adresă în document): rândul lui se caută după insigna fixă;
+- **capturile unei file se fac înaintea otrăvurilor:** așezarea (pragurile de lățime, textele tăiate) se vede doar acolo, iar
+  reparațiile ei cer probe și otrăvuri de așezare;
+- un `select` controlat a cărui valoare nu mai e între opțiuni arată prima opțiune, dar starea rămâne cea veche: formularul
+  unui rând care își schimbă opțiunile pornește din nou cu `key` pe ce le hotărăște.

@@ -1,7 +1,9 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { codAuth } from '../../src/admin/cont/motive.ts';
-import { fileVizibile, invitatieDin, numeRol, omDin, rolDin } from '../../src/admin/personal/date.ts';
+import { enAdmin } from '../../src/i18n/admin.en.ts';
+import { roAdmin } from '../../src/i18n/admin.ro.ts';
+import { etichetaPermisiune, fileVizibile, grupePermisiuni, invitatieDin, numeRol, omDin, rolDin } from '../../src/admin/personal/date.ts';
 import { PERMISIUNI, type Permisiune } from '../../shared/personal.ts';
 
 /** Filele Personal și Cont (ADR 0049), partea pură: filele pe permisiuni, documentele citite ca rânduri. */
@@ -60,4 +62,43 @@ test('codul unui refuz Firebase: din `code`, altfel gol', () => {
   assert.equal(codAuth({ code: 'auth/credential-already-in-use' }), 'auth/credential-already-in-use');
   assert.equal(codAuth(new Error('x')), '');
   assert.equal(codAuth(null), '');
+});
+
+/* ── Matricea rol × permisiune (ADR 0260 §6, felia A.5) ──────────────────────────────────────────────────────────── */
+
+test('grupele matricei: catalogul, pe zone (ce stă înaintea punctului), în ordinea lui; fiecare permisiune o singură dată', () => {
+  assert.deepEqual(grupePermisiuni(), [
+    { zona: 'erori', permisiuni: ['erori.citeste', 'erori.rezolva'] },
+    { zona: 'diagnoza', permisiuni: ['diagnoza.citeste'] },
+    { zona: 'audit', permisiuni: ['audit.citeste'] },
+    { zona: 'documentatie', permisiuni: ['documentatie.citeste'] },
+    { zona: 'sugestii', permisiuni: ['sugestii.scrie', 'sugestii.citeste'] },
+    { zona: 'conturi', permisiuni: ['conturi.citeste', 'conturi.administreaza'] },
+    { zona: 'tichete', permisiuni: ['tichete.citeste', 'tichete.raspunde'] },
+  ]);
+  assert.deepEqual(grupePermisiuni().flatMap((g) => g.permisiuni), [...PERMISIUNI], 'ordinea catalogului, nimic pierdut');
+  // O zonă care revine mai târziu în catalog intră în grupa ei, la locul primei apariții.
+  assert.deepEqual(grupePermisiuni(['erori.citeste', 'audit.citeste', 'erori.rezolva']), [
+    { zona: 'erori', permisiuni: ['erori.citeste', 'erori.rezolva'] }, { zona: 'audit', permisiuni: ['audit.citeste'] },
+  ]);
+});
+
+test('eticheta unei permisiuni, despărțită pentru matrice: zona și fapta; fără „:”, doar zona', () => {
+  assert.deepEqual(etichetaPermisiune('Erori: citește'), { zona: 'Erori', fapta: 'citește' });
+  assert.deepEqual(etichetaPermisiune('Sugestii: citește toate'), { zona: 'Sugestii', fapta: 'citește toate' });
+  assert.deepEqual(etichetaPermisiune('Diagnoză'), { zona: 'Diagnoză', fapta: '' });
+  assert.deepEqual(etichetaPermisiune('A: b: c'), { zona: 'A', fapta: 'b: c' });
+});
+
+test('etichetele reale, în ambele limbi: permisiunile unei grupe au aceeași zonă, iar grupele de mai multe au fapte diferite', () => {
+  for (const [limba, dict] of [['ro', roAdmin], ['en', enAdmin]] as const) {
+    for (const g of grupePermisiuni()) {
+      const e = g.permisiuni.map((p) => etichetaPermisiune(dict[`admin.perm.${p}`]));
+      assert.equal(new Set(e.map((x) => x.zona)).size, 1, `${limba}, ${g.zona}: o singură zonă`);
+      if (g.permisiuni.length > 1) {
+        assert.equal(new Set(e.map((x) => x.fapta)).size, g.permisiuni.length, `${limba}, ${g.zona}: fapte diferite`);
+        assert.ok(e.every((x) => x.fapta !== ''), `${limba}, ${g.zona}: fiecare cu fapta ei`);
+      }
+    }
+  }
 });
