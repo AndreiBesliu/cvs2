@@ -11823,6 +11823,26 @@ admin cat mai multe setari”).
 - **Documentele:** ADR 0262 (implementarea), fișa etapei 3 (`3.Ah`), registrul otrăvurilor, traducerile, nota liniei.
   **Completed:** 23.11 20:35.
 
+## 2026-11-23 — Felia A.8c: dialogurile, clicurile fine, derularea și zoom-ul în utilizarea aplicației (ADR 0262)
+
+**Prompt:** același „am raspuns” (7a: A.8–A.11 acum), după A.8b.
+**Started:** 23.11 20:40.
+
+- **Despărțirea:** calculele lungi, mașina și imprimanta vin pe drumurile lor (workerul CAM, senderul, driverul), nu din
+  pagină: trec în A.8d, scrisă în tabelul feliilor din ADR.
+- **Codul (`27bbd878`, `544adce5`, `2a2f1f96`):** felurile noi în lista albă (`clic`, `derulare`, `zoom`); catalogul controalelor scos din
+  sursă (`scripts/catalog-controale.ts` → `src/app/catalogControale.ts`, 565 de nume) și numele unui control
+  (`numeControl.ts`); ce se prinde din pagină (`utilizareDom.ts`, în bucata înregistratorului): clicul, rotița, dialogurile, cu
+  „gata” după o acțiune reușită sau după butonul principal; numărarea pe cheie și pe pauză (600 ms pentru gesturi); comutatorul
+  clicurilor fine. Nota de confidențialitate, în ambele limbi.
+- **Pe drum:** la otrăvuri, clicul pe un buton al registrului (sau pe o unealtă) ieșea de două ori, clicul și acțiunea, iar
+  alternanța lor rupea numărarea repetărilor: acum pleacă doar acțiunea și unealta, cu sursa lor.
+- **Probele:** 7 unitare noi, 1 a serverului, 1 e2e nouă pe emulatoare, iar proba lotului unui client cere zoom-ul, clicurile
+  și dialogurile (exportul părăsit și făcut, fereastra contului după intrare). **Otrăvurile:** 32 / 33; E11 (captura rotiței)
+  echivalentă azi. **Mărimea:** pornirea neschimbată (109,2); totalul 774,3 → 778,2 / 800.
+- **Documentele:** ADR 0262 (implementarea, A.8d), fișa etapei 3 (`3.Ai`), registrul otrăvurilor, traducerile, nota liniei.
+  **Completed:** 23.11 21:40.
+
 ## 2026-11-23 — Sesiunea principală în cloud: a șasea unire (A.6, Roadmap, Documentație și Setări); linia frezelor, pornită (Model: Claude Fable 5.2)
 
 **Prompt:** același brief de predare al sesiunii principale („unește ce se poate”), la raportul liniei adminului (PR-ul
