@@ -184,6 +184,7 @@ aveau variante care pot sta împreună:
   `test/e2e/trasare-fereastra.spec.ts` (cinci ecrane × trei feluri × două limbi, cu fontul lat, și cu toate deschise;
   mărimea importată la 0,01 mm; „Scara”; grupurile și Simplu; sugestia ca buton; Detaliile; telefonul; „Drawing” cu punctul).
   Probele vechi deschid grupurile prin alegerile ținute (`test/e2e/ajutor-trasare.ts`) și așteaptă rândurile din Detalii
-  atașate, nu vizibile; „Desenul” cu virgula în 21 de aserțiuni. Otrăvurile: `test/otravuri/25.9.py` (23), iar 12 din
-  listele trasării, mutate pe codul nou.
+  atașate, nu vizibile; „Desenul” cu virgula în 21 de aserțiuni. Otrăvurile: `test/otravuri/25.9.py` (24 / 24 prinse; A04,
+  fereastra cât conținutul, scăpase întâi: proba așezării cere acum înălțimea ecranului), iar 12 din listele trasării, mutate
+  pe codul nou.
 - **Mărimea:** pornirea neschimbată (108,5 kB), totalul 772,7 / 800 (+2,7 kB, în estimarea de 2–4).

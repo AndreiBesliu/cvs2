@@ -11719,8 +11719,9 @@ la dispozitia userului, deci daca celelalte optiuni sunt compatibile, le vreau c
   `test/e2e/ajutor-trasare.ts` deschide grupurile pentru probele vechi; „Desenul” cu virgula în 21 de aserțiuni; rândurile din
   Detalii, așteptate atașate. Vecinele, local: trasarea, importul, imaginile pe foaie, PWA, carcasa, manualul, editarea,
   132 / 132.
-- **Otrăvurile:** `test/otravuri/25.9.py` (23): în curs, într-o clonă (primele 9 prinse); 12 din listele trasării (25.2, 25.3, 25.4b, 25.4c, 25.5,
-  26.A), mutate pe codul nou, cu aceeași mutație.
+- **Otrăvurile:** `test/otravuri/25.9.py`, 24 / 24 prinse, într-o clonă (A04, fereastra cât conținutul, scăpase întâi: proba
+  așezării cere acum înălțimea ecranului, și cu Simplu); 12 din listele trasării (25.2, 25.3, 25.4b, 25.4c, 25.5, 26.A),
+  mutate pe codul nou, cu aceeași mutație.
 - **Mărimea:** pornirea 108,5 / 115 kB (neschimbată), totalul 772,7 / 800 (+2,7 kB).
 - **Porțile în CI:** în curs.
 - **Documentele:** ADR 0273 (acceptat, răspunsurile, implementarea) și rândul lui din index; manualul (capitolul importului,
