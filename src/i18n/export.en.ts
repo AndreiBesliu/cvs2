@@ -183,6 +183,16 @@ export const enExport = {
   'export.urechi.locuri': 'Placement:',
   'export.urechi.locuri.egale': 'evenly spaced',
   'export.urechi.locuri.alese': 'picked on the drawing',
+  // Where it holds (ADR 0211, b; slice 11.3↑e).
+  'export.urechi.locuri.lemn': 'where it holds',
+  'export.urechi.locuri.lemn.titlu': 'On export, on every copy, the app looks for the wood the tabs can hold on to: outside, the sheet; inside, the part. Not on the line.',
+  'export.urechi.lemn': 'On export, on every copy: as many as the number asks, as far apart as possible, where they hold on to wood. Show the toolpath to see them.',
+  'export.urechi.undeTine': 'Put the tabs where they hold',
+  'export.urechi.undeTine.titlu': 'Switches the operations of the loose parts to “where it holds”; then export again.',
+  'export.urechi.undeTine.puse': {
+    one: 'One operation switched to “where it holds”: export again.',
+    other: '{n} operations switched to “where it holds”: export again.',
+  },
   'export.urechi.alege': 'Pick on the drawing…',
   'export.urechi.alese': { one: '{n} tab picked', other: '{n} tabs picked' },
   'export.urechi.mod.titlu': 'Tabs: {nume}',

@@ -9,7 +9,7 @@ import { partiCuUrechi } from '../cam/partiUrechi.ts';
 import { programeDopuri } from '../cam/dopV.ts';
 import { programeDopuriDrepte } from '../cam/dopDrept.ts';
 import type { DopCalculat } from '../cam/incrustatie.ts';
-import { programDinDocument, REGIM_IMPLICIT } from '../cam/job.ts';
+import { programDinDocument, REGIM_IMPLICIT, type Regim, type RezultatJob } from '../cam/job.ts';
 import { PLAFON, type Document } from '../model/document.ts';
 import { repara, verificaPentruPanou, type RezultatReparare, type VerificarePanou } from '../model/reparare.ts';
 import { converteste, type RezultatConversie } from '../model/conversie.ts';
@@ -18,7 +18,7 @@ import { taieInPanouri } from '../model/panouri.ts';
 import { taie, type RezultatTaiere } from '../model/taiere.ts';
 import { CONTRACTE } from '../post/contracte/index.ts';
 import { exporta } from '../post/export.ts';
-import { partiDesprinse } from '../sim/desprinse.ts';
+import { fundFoii, partiDesprinse } from '../sim/desprinse.ts';
 import { potrivireaV } from '../sim/potrivire.ts';
 import { potrivireaDreapta } from '../sim/potrivireDreapta.ts';
 import { pregatesteProgram, type ProgramSimulat } from '../sim/program.ts';
@@ -48,6 +48,30 @@ export function numeFisierDop(nume: string, k: number, scurt: boolean): string {
   return m ? `${m[1]}-dop-${k + 1}${m[2]}` : `dop-${k + 1}-${nume}`;
 }
 
+/** Are documentul urechi „unde ține” (ADR 0211, b)? Atunci programul foii se calculează în două treceri. */
+function cuUrechiLemn(doc: Document): boolean {
+  return doc.piese.some((p) => p.operatii.some((o) => o.urechi?.mod === 'lemn'));
+}
+
+/**
+ * Programul foii (ADR 0211, b; felia 11.3↑e). Fără urechi „unde ține”, `programDinDocument`, neschimbat. Cu ele, în două treceri:
+ * întâi cu operațiile „unde ține” tăiate fără urechi; fundul foii la capătul acestui program (mutările care ajung la fața de jos,
+ * apoi umplerea din marginea foii, ca la proba urechilor) spune unde e lemn de care să țină; apoi programul cu urechile puse
+ * acolo. Exportul, traseul și vederea 3D trec pe aici, deci arată aceleași urechi; supracursa și bifa „prin foaie” nu mută fundul
+ * (o tăietură prin foaie rămâne prin foaie).
+ */
+export function programFoii(doc: Document, regim: Regim = REGIM_IMPLICIT, supracursa = 0, prinFoaie = false): RezultatJob {
+  if (!cuUrechiLemn(doc)) return programDinDocument(doc, regim, supracursa, prinFoaie);
+  const foaie = doc.foi[0];
+  if (!foaie) return { ok: false, motiv: 'documentul n-are foaie' };
+  const fara = programDinDocument(doc, regim, supracursa, prinFoaie, 'fara');
+  if (!fara.ok) return fara;
+  const s = pregatesteProgram(fara.program, 0);
+  if (!s.ok) return { ok: false, motiv: `urechile „unde ține”: ${s.motiv}` };
+  const fund = fundFoii(foaie.stoc, [{ scula: s.scula, mutari: s.mutari }, ...(s.apoi ?? [])]);
+  return programDinDocument(doc, regim, supracursa, prinFoaie, fund);
+}
+
 /**
  * Proba urechilor (ADR 0210, felia 11.3↑c): părțile foii tăiate prin ea de un profil exterior cu urechi, judecate pe programul
  * exportat (mutările simulării, înainte să plece spre firul principal). Fără astfel de părți, nimic de calculat; un program pe
@@ -63,7 +87,7 @@ function desprinseFoii(doc: Document, simulare: ProgramSimulat): ParteDesprinsa[
   });
   return r.desprinse.flatMap((k) => {
     const x = parti[k];
-    return x ? [{ instanta: x.instanta, element: x.element, x: x.x, y: x.y }] : [];
+    return x ? [{ instanta: x.instanta, element: x.element, operatie: x.operatie, x: x.x, y: x.y }] : [];
   });
 }
 
@@ -84,7 +108,7 @@ export function dopurileFoii(doc: Document, supracursa: number): { readonly ok: 
 export async function calculeazaExportul(doc: Document, p: ParametriExport): Promise<RaspunsExport> {
   const foaie = doc.foi[0];
   if (!foaie) return { ok: false, motiv: 'documentul n-are foaie' };
-  const job = programDinDocument(doc, REGIM_IMPLICIT, p.supracursa ?? 0, p.prinFoaie === true);
+  const job = programFoii(doc, REGIM_IMPLICIT, p.supracursa ?? 0, p.prinFoaie === true);
   if (!job.ok) return job;
   const iesire = iesireDinFoaie(job.program, foaie.stoc);
   if (iesire) {
@@ -139,8 +163,8 @@ export async function calculeazaExportul(doc: Document, p: ParametriExport): Pro
  * firul principal. Timpul jobului de lângă traseu (ADR 0046 §8) e o cerere separată (`timp`): traseul nu-l așteaptă.
  */
 export function calculeazaTraseul(doc: Document): RaspunsTraseu {
-  const r = programDinDocument(doc);
-  return r.ok ? { ok: true, program: impacheteaza(r.program) } : { ok: false, motiv: r.motiv };
+  const r = programFoii(doc);
+  return r.ok ? { ok: true, program: impacheteaza(r.program), ...(r.urechiLemn ? { urechiLemn: r.urechiLemn } : {}) } : { ok: false, motiv: r.motiv };
 }
 
 /**
@@ -157,7 +181,7 @@ export function calculeazaSimularea(doc: Document, dop?: number): RaspunsSimular
     ? { dopuri: d.dopuri.map((x) => ({ element: x.element, semifabricat: x.semifabricat, sectiune: x.potrivire !== undefined })) }
     : { dopuri: [], motivDopuri: d.motiv };
   if (dop === undefined) {
-    const job = programDinDocument(doc, REGIM_IMPLICIT, 0);
+    const job = programFoii(doc, REGIM_IMPLICIT, 0);
     if (!job.ok) return { ok: false, motiv: job.motiv };
     const p = pregatesteProgram(job.program, 0);
     if (!p.ok) return { ok: false, motiv: p.motiv };
@@ -183,7 +207,8 @@ export function calculeazaPotrivirea(doc: Document, dop: number): RaspunsPotrivi
   const x = d.dopuri[dop];
   if (!x) return { ok: false, motiv: `dopul ${dop + 1} nu mai e în document` };
   if (!x.potrivire) return { ok: false, motiv: `dopul ${dop + 1}: potrivirea simulată a dopului în trepte nu e încă` };
-  const job = programDinDocument(doc, REGIM_IMPLICIT, 0);
+  // Programul foii, ca vederea 3D: cu urechi „unde ține” pe foaie (ADR 0211, b), în două treceri.
+  const job = programFoii(doc, REGIM_IMPLICIT, 0);
   if (!job.ok) return { ok: false, motiv: job.motiv };
   const locas = pregatesteProgram(job.program, 0);
   if (!locas.ok) return { ok: false, motiv: locas.motiv };

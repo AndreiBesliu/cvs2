@@ -1239,7 +1239,7 @@ all projects: another computer, another browser, or the test address versus the 
 | Cut | **outside** (the part stays inside), **inside** (a hole), **on the line** (the cutter on the outline), **pocket** (clears the outline, see below), **drilling** (only on a row with nothing but circles), **V-carve** (carves the shape with the V bit, see below), **V inlay** (the pocket and its plug, see [The V inlay](#incrustatie)), **straight-walled inlay** (a pocket with its plug, see [The straight-walled inlay](#incrustatie-drept)); on an open path: on the line, **left** or **right** (the side the cutter runs on, looking along the arrow on the drawing) |
 | Direction | **climb**: the material that stays is on the right of the travel (M3 spindle); **conventional**: the opposite. It does not matter on the line; there, next to it, **Line direction**: **as drawn**, **reversed** or **shortest path** (an open path starts from the end nearer to where the bit was left; a closed loop stays as drawn) |
 | Depth, Step down | how deep it cuts and how far one pass goes down (mm) |
-| Tabs | bridges that hold the part in the sheet on the last passes: how many per loop, the length and the bridge thickness (from the bottom face); **Placement**: evenly spaced, or picked on the drawing (see [Tabs picked on the drawing](#export)) |
+| Tabs | bridges that hold the part in the sheet on the last passes: how many per loop, the length and the bridge thickness (from the bottom face); **Placement**: evenly spaced, picked on the drawing or where it holds (see [Tabs picked on the drawing](#export)) |
 | Ramp | the cutter goes down along the loop, not straight into the material; the ramp length (at least 1 mm) |
 | Leads | the cutter enters and leaves the outline on a quarter circle, through the waste, so the part's wall keeps no mark |
 | Corners | relief for the corners the cutter cannot reach: **dog-bone** (on the diagonal) or **T-bone** (into the longer wall). A corner whose relief would leave less than 1 mm of material to another wall of the part, or to the relief of another corner (at the base of a thin tongue or finger), goes without it, with a warning. Corners with a curved side (a “D”, a round shoulder, a lens, an imported curve) get the relief too; where the cutter cannot reach the corner at all, a warning says so |
@@ -1622,6 +1622,17 @@ the cutter never enters the wood on a tab. Two tabs too close on the cutter path
 the export, with the place. An element with no picked tab is cut without tabs. With **Show toolpath**, the picked tabs show
 as dots on the outline. This is how you put them towards the edge of the sheet or a wide strip, where they hold, or keep them
 off a side where they would spoil the part.
+
+**Tabs where they hold.** The third placement, **where it holds**, leaves them to the app, on every export and on every copy
+(two copies of the same part have different neighbours). The app first cuts the program with these operations without tabs and
+looks at the bottom of the sheet: where there is wood still joined to its edge. A place is good when the whole tab, carried a
+cutter's width past the cut, lands on that wood (on an inside profile, on the part's wood: the tab holds the core to the part).
+Then it puts as many as “Count, per loop” asks, as far apart as possible; with wood all around, they are exactly the evenly
+spaced ones, byte for byte. If not all of them fit, it places the ones it found and says on which parts; a part with no place
+at all stays among the loose ones (usually one surrounded by neighbours that are too close). It does not work on the line: the
+cutter has no waste side. With **Show toolpath**, the tabs the app placed show on the cutter path as small rings. Next to the
+warning about loose parts, **Put the tabs where they hold** switches their operations in the window to “where it holds”; then
+export again.
 
 **All sheets.** With several [sheets](#foile), the window asks **What to export: The active sheet / All sheets (N)**. **All
 sheets** makes one program per sheet, each exactly the one you would export from its sheet alone, and downloads them in a

@@ -11008,6 +11008,115 @@ rapide propus întâi?”).
   **Completed:** 22.11 16:17 (porțile lente terminate pe 21.11 seara; documentele comise pe 22.11, la cuvântul sesiunii
   principale: „neata, continua si porneste si worktrees”, al owner-ului).
 
+## 2026-11-22 — Felia 11.3↑e: urechile „unde ține” (ADR 0211, varianta b) (Model: Claude Opus 5.5)
+
+**Prompt:** owner-ul, în sesiunea liniei, la „Pornesc 11.3↑e („unde ține”: aplicația pune singură urechile la export, acolo
+unde țin de lemnul foii)? Răspunde „Da, 11.3↑e” sau „Nu acum”.”: „Da, 11.3↑e”.
+**Started:** 22.11, 21:34.
+
+- **`main` `88be9d6c`** a venit prin avans direct (11.3↑d unită în `44046e5d`; ramura n-avea nimic peste el).
+- **Cifrele, pe hârtie, întâi** (ADR 0211, „Proba”): pe placa 11 la 5 mm, cu „unde ține”, cad doar plăcuțele înconjurate de
+  vecine pe toate patru laturile: pe foaia 1 (cinci rânduri pline de câte trei), mijlocul rândurilor 2–4 (numele 5, 8, 11);
+  pe foaia 2 (trei rânduri pline și una la x = 10, y = 75), doar mijlocul rândului 2 (numele 20). Cu urechile la distanțe
+  egale cădeau 9 + 4. La 10 mm, lemnul de 3,65 mm dintre tăieturi e legat de margine, deci programele rămân ale plăcii.
+- **Lucrarea și fereastra**, comise (`8a8c30fc`, `fa86da15`): `src/cam/urechiLemn.ts`, modul „lemn” în `job.ts`, cele două
+  treceri (`programFoii`, `src/jobs/calculCam.ts`; fundul foii, `fundFoii`, scos din `src/sim/desprinse.ts`), „unde ține” în
+  fereastra exportului, butonul „Pune urechile unde țin”, semnele de pe traseu, panoul; ADR 0211 („Implementarea feliei
+  11.3↑e”), manualul (ro, en) și CLAUDE.md, fără cifrele porților.
+- **Verificat până la pauză:** tipurile; regulile de import (20 / 20, 0 încălcări); traducerile; `urechi.lemn.test.ts` (placa
+  11 la 5 mm: 3 + 1 plăcuțe desprinse, cele de pe hârtie, și aceleași prin proba pe G-code; la 10 mm, programele plăcii,
+  octet cu octet; alegerea și fundul pe hârtie, cu arcele și sensul trigonometric); unitarele întregi: 9 759 / 0 (8 sărite).
+- **Pauză:** 22.11, 22:58, la cuvântul owner-ului („cand termina background tasks, vreau sa facem pauza”). Rămân: e2e-ul
+  (mașina n-a avut un minut liniștit în 20 de minute), otrăvurile (lista de 39, nerulată), build-ul determinist, rândul din
+  fișa etapei și traducerea lui, `docs/otravuri.md`, canalul, raportul.
+- **Reluarea în cloud (23.11, 12:14; modelul sesiunii, în trailerul commit-urilor ei, de la `2081f07` încolo).**
+  **Prompt:** brief-ul liniei, prim mesaj al sesiunii cloud: „Ești linia planșelor din cncvs2 […] Linia a fost mutată pe
+  23.11.2026 din worktree-ul local în cloud. […] Felia în lucru: 11.3↑e („unde ține”), pornită la „Da, 11.3↑e” al
+  owner-ului. S-a oprit la pauza din 22.11 seara (WIP `39d801fc`). […] Rămân, în ordine: 1. E2e-ul feliei și al vecinilor.
+  2. Otrăvurile, într-o clonă, plus `verifica` pe toate listele liniei. 3. Porțile întregi, în CI […] 4. Documentele. […]
+  5. Canalul […]”.
+- **`main` `8f122eb6` adus în `2081f07`** (12.1↑e-2, 10.3↑o, 3.6v, uneltele cloud): DEVLOG, cu ambele părți
+  (`scripts/rezolva-devlog.py`); `src/jobs/calculCam.ts`, importurile, cu ambele părți. Potrivirea dopului
+  (`calculeazaPotrivirea`, 12.1↑e-2) lua locașul din `programDinDocument`, care refuză „unde ține” fără fundul foii: acum,
+  din `programFoii`, cu proba interacțiunii (cazul „dreptunghi” al oracolului incrustației și o ramă „unde ține” pe aceeași
+  foaie: aceeași potrivire ca rama cu urechile la distanțe egale; pică pe apelul nereparat).
+- **E2e-ul, în container** (Edge, după build): `urechi-lemn`, `urechi-alese`, `export-urechi`, 3 / 3; vecinii (exportul,
+  „Toate foile”, traseul și oracolul lui, simularea, vederea 3D, incrustația în 3D, supracursa, bazinul CAM, animația,
+  manualul, panoul, legarea, așezarea, raportul foilor, tăierea Atelierului, bucățile la cerere), 110 / 110; din prima.
+- **Otrăvurile** (`test/otravuri/11.3e.py`, într-o clonă): 42 / 42 la capăt (36 unitare, 6 prin e2e): F01, L06 și C09
+  scăpaseră la prima rulare (38 / 41) și au primit probe țintite (umplerea fundului pe orizontală, cu F03 adăugată; partea
+  spre care se duce palierul pe un arc; rezerva golului minim); din listele 11.3c și 11.3d, șase otrăvuri ieșite VOID pe codul
+  feliei, mutate pe el și prinse din nou. `verifica` pe toate listele liniei (11.1–11.7): cele șase VOID-uri noi sunt S07,
+  U05, E01 (11.3c) și C11, C12, A06 (11.3d); rămân 13 VOID-uri vechi, dinaintea feliei, aceleași și pe `main` (11.1b A05; 11.2
+  L03, L09; 11.4 P10, P12, C01, C03, E06, E09; 11.4b T02; 11.4c E07; 11.6 R09; 11.7 R01).
+- **Porțile, în CI, pe `ed87f2e8`:** rapidul (<https://github.com/AndreiBesliu/cvs2/actions/runs/45161951454>) și completul
+  (<https://github.com/AndreiBesliu/cvs2/actions/runs/45161951934>), verzi: unitarele 9 795 / 0 (12 sărite); e2e 593 / 593; pe
+  emulatoare 104 / 104 (funcțiile și regulile) și 34 / 34 (paginile). Build-ul determinist: pornirea 107,9 kB (cu ușa 112,3 /
+  115), totalul 763,1 / 800 kB (+2,2 față de `main`: 760,9 pe `75dc1f9a`), `/admin` 121,2 / 200.
+- **Documentele:** ADR 0211 (varianta b, implementată; potrivirea, probele țintite, porțile), fișa etapei 3 (rândul
+  `11.3↑e`) cu traducerea, registrul otrăvurilor (rândul listei; 11.3c și 11.3d, refăcute), paragraful liniei din
+  `CLAUDE.md`, nota liniei (`docs/linii/plansele.md`); setul de lucru `.lucru/` scos. Canalul `plansele` se publică din
+  GitHub Actions (`canal.yml`), pe vârful ramurii, după rapidul verde.
+  **Completed:** 23.11, 13:54.
+- **A doua aducere a lui `main`** (`8177ab81`: 3.Tq, elicele din atelierul Easy 3Draw, și limita completului, 90 de minute),
+  după documente, fără ciocniri (doar pluginul, documentele lui și CI-ul); porțile finale, pe unire.
+
+## 2026-11-22 — Felia A.4: Sugestii ca tablă a deciziilor (ADR 0260 §4) (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, A.4” (owner-ul, pe 22.11, în sesiunea liniei adminului, după raportul lui A.3).
+**Started:** 22.11 21:42.
+
+- **Ramura:** tot `wip/A.1-admin`, adusă înainte (fast-forward) la `main` `88be9d6c`, care conține A.3 (`528ee187`).
+- **Planul:** fila Sugestii devine tabla din schiță (rândul G, `Admin-Sugestii`): o coloană pe decizie (Fără decizie,
+  Acceptată, În lucru, Amânată, Făcută), Respinsele strânse dedesubt, arătate la cerere; owner-ul trage un card dintr-o
+  coloană în alta sau alege „Mută în…” din meniul cardului (calea din tastatură), prin callable-ul `sugestii` de azi, pe
+  versiunea văzută; nota se cere la Respinsă și la Amânată. Fără reguli noi, fără date noi, fără schimbări pe server.
+- **Făcut pe 22.11** (`4181e6d1`, `4a64e984`): tabla (`src/admin/sugestii/`: `date.ts`, `Tabla.tsx`, `Detaliu.tsx`,
+  `Formular.tsx`, `FilaSugestii.tsx`), cu mutarea arătată cât cererea e în drum și lista ținută după răspuns, fără
+  recitire; nota cerută la Respinsă și Amânată; detaliul ca fereastră; „Sugestie nouă”; „Ale mele” / „Toate”. Bancul vizual
+  a găsit o adresă lungă care ieșea din card (și lățea pagina la 760 px) și mesajele de deasupra tablei, care o împingeau sub
+  cursorul care trage: reparate, cu probe și otrăvuri (E27, E28).
+- **Pauza:** 22.11 seara („cand termina background tasks, vreau sa facem pauza”), cu WIP-ul împins. Atunci: unitarele
+  întregi, e2e-ul feliei 14 / 14, otrăvurile unitare 14 / 14, pe emulatoare 25 din 28.
+- **Reluată pe 23.11, într-o sesiune cloud** (linia mutată din worktree-ul local; brief-ul sesiunii principale: „Felia în
+  lucru: A.4 (Sugestii ca tablă), oprită la pauza din 22.11 seara (WIP `4a64e984`)”), cu `main` `8f122eb6` adus în
+  `141fe90e`. **Reluată:** 23.11, 12:10.
+- **Mediul cloud:** login-ul Google al emulatorului de Auth încarcă `https://apis.google.com/js/api.js`, iar rețeaua
+  mediului o refuza, deci nicio probă a paginii `/admin` nu trecea de intrare. Owner-ul a aprobat gazda în mediu
+  (`apis.google.com`); e trecută în `docs/lucru-in-cloud.md`.
+- **Găsit în cloud, înaintea otrăvurilor:** proba „mutările nu recitesc lista” cădea în container. Număra orice
+  `runQuery` / `batchGet`, iar ultima citire a rezumatului de la intrare (amprenta publicării, `meta/deployment`, din
+  Diagnoza barei) sosea după listă. Acum numără doar citirile sugestiilor (colecția e în corpul cererii), și imediat după
+  prima mutare.
+- **Otrăvurile de pe emulatoare, cele trei rămase:**
+  - E19, nevalidă: titlul probei are paranteze, iar `--grep` e o expresie regulată. Titlul din `GREP`, fără ele: prinsă.
+  - E27, scăpată: proba măsura cardul din banda Respinselor la 700 px, lat de 416 px, în care adresa lungă încăpea
+    (măsurat: cu otrava, rândul adresei are 304 px, într-un card de 169 px la cinci coloane). Adresa lungă e acum pe cardul
+    urmărit în coloana cea mai îngustă și, la 700 px, în a doua coloană: prinsă, pe „adresa stă în card”.
+  - E12, echivalentă: cu otrava, la locul butonului oprit e chiar butonul, iar `dragenter`, `dragover` și `drop` ajung pe
+    el și urcă la bandă (măsurat în Edge), deci cardul cade în bandă și fără `pointer-events: none`. Regula și otrava ei au
+    ieșit; proba lasă acum cardul chiar peste buton.
+- **Bucla otrăvurilor de pe emulatoare, în repo:** `scripts/otravuri-emulatoare.py` (până acum în `.tmp`-ul local, care în
+  cloud nu ține de la o sesiune la alta); lista își spune proba și titlurile (`E2E`, `GREP`; A.1 le avea în script).
+- **Otrăvurile, pe starea finală** (`699921a4`, într-o clonă, în container): 41 / 41 (14 unitare; 27 pe emulatoare, toate
+  rulate din nou, fiecare căzută pe aserțiunea care îi țintește defectul), controalele fără otravă verzi (unitare 5 și 11,
+  proba Sugestiilor 5 / 5). `verifica` pe toate listele: aceleași VOID-uri ca pe `main`, niciunul nou.
+- **Mărimea** (build-ul determinist, față de `main` `8f122eb6`, măsurat la fel): `/admin` 121,2 → 124,1 / 200 kB (+2,9;
+  linia, +17,6 din cei +25); pornirea 107,9 (cu ușa 112,2 / 115) și totalul 760,9 / 800, neschimbate.
+- **Porțile, în CI, pe `699921a4`:** rapidul verde (rularea 45160886438) și completul verde (rularea 45160903650):
+  unitare 9 787 / 0 (12 sărite pe Linux), e2e 592 / 592, emulatoarele 104 / 104 și paginile 36 / 36. Completul a ținut 59
+  de minute din cele 60 ale limitei (pasul unitarelor, 35 de minute; alte rulări din aceeași zi, vreo 43 în total). În
+  container, înainte: proba Sugestiilor 5 / 5, toate paginile pe emulatoare 36 / 36, tipurile, probele documentelor 57 / 57.
+  Commit-urile de după adaugă doar documentele, scot `.lucru/` și aduc `main` `8177ab81` (`5d4ea694`: rapidul verde,
+  unitare 9 800 / 0; mărimile, aceleași); porțile commit-ului final, în raportul din PR (AndreiBesliu/cvs2#3).
+- **Canalul `admin`:** <https://cncvectorstudio-test--admin-pz7pkdut.web.app>, publicat din GitHub (`canal.yml`) cu
+  `5d4ea694`, până pe 23.12.
+- **Documentele:** ADR 0260 („Implementarea”, A.4), fișa etapei 3 (rândul `3.Ad`) cu traducerea, rândul listei și bucla
+  emulatoarelor în `docs/otravuri.md`, nota liniei (`docs/linii/admin.md`), `docs/lucru-in-cloud.md` (gazda permisă, bucla),
+  DEVLOG. Setul de lucru adus din `.tmp` (`.lucru/`) a ieșit: ciornele au intrat în documente, bucla otrăvurilor în
+  `scripts/`, iar bancul vizual și lanțurile locale rămân în istorie (`137a08ac`).
+  **Completed:** 23.11 14:05.
+
 ## 2026-11-22 — Felia 3.Tp↑b: pictogramele pieselor din galeriile atelierului Easy 3Draw (ADR 0281 §4) (Model: Claude Opus 5.5)
 
 **Prompt:** „neata, continua si porneste si worktrees” (owner-ul, pe 22.11, prin sesiunea principală: „Pornește 3.Tp↑b,
@@ -11393,3 +11502,24 @@ un branch in care sa modificam libraria de plugin-uri? vreau ceva mai frumos si 
   fără `--ref` cade în container (gh întreabă prin GraphQL, oprit acolo, care e ramura implicită); scriptul îl pornește
   acum cu `--ref main`, ca pe complet, iar comanda pentru live din `docs/lucru-in-cloud.md` are și ea `--ref main`.
 - **PR-ul `AndreiBesliu/cvs2#1`** s-a închis singur, ca unit, la push-ul în `main`.
+
+## 2026-11-23 — Sesiunea principală în cloud: a doua unire (11.3↑e, urechile „unde ține”; A.4, Sugestii ca tablă) (Model: Claude Fable 5.2)
+
+**Prompt:** același brief de predare al sesiunii principale („Unește PR-urile gata”; „unește ce se poate” e ordin permanent),
+la rapoartele liniilor planșelor și adminului (PR-urile `AndreiBesliu/cvs2#2` și `AndreiBesliu/cvs2#3`).
+**Started:** 23.11, 14:32. **Completed:** unirea în `main`, 23.11, 15:30; publicarea pe test, în rândul de la capăt.
+
+- **Verificate înaintea unirii:** ambele ramuri fără `.lucru/`, cu `main` (`8177ab81`) adus; rapidul și completul verzi pe
+  commit-urile finale (`83b690a5`, planșele; `20fb65de`, adminul, cu completul verde și pe `5d4ea694`).
+- **Unirea, pregătită cât rulau completele liniilor:** `unire-2311c` din `origin/main` (`feecf82a`); 11.3↑e în `d3ffcbf3`
+  (fără ciocniri), A.4 în `ddaa7ead` (ciocnirea, doar în DEVLOG: `rezolva-devlog.py`, ambele părți). În container, pe
+  arborele comun: tipurile (și ale funcțiilor), regulile de import (0 încălcări), traducerile (916, 0 lipsă), probele
+  atinse și cele ale documentelor 120 / 120.
+- **Porțile lotului, în CI, pe `ddaa7ead`**, verzi la prima trecere (completul, 47 de minute): unit 9 813 / 0 (12 sărite),
+  e2e 599 / 599, funcțiile pe emulatoare 104 / 104, paginile 36 / 36; pornirea 107,9 / 115 (cu ușa 112,3), totalul
+  763,1 / 800, `/admin` 124,1 / 200; manualul, 39 de capitole.
+- **Documentele:** decizia în `CLAUDE.md` și rândul de stare al urechilor „unde ține” (unită în `d3ffcbf3`); indexul
+  liniilor (planșele, adminul, trasarea, elicele, biblioteca); starea din `docs/linii/principala.md`.
+- **Între timp, la linii:** biblioteca (3.Xh) are ADR 0231 propus, cu schița și patru întrebări la owner
+  (`AndreiBesliu/cvs2#4`, ciornă); trasarea (25.8↑a, `AndreiBesliu/cvs2#6`) și reparația probelor atelierului
+  (`AndreiBesliu/cvs2#5`) își așteaptă porțile finale.
