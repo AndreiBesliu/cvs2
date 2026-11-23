@@ -245,8 +245,9 @@ Datele noi ale catalogului (punctul 1):
   instalate (28 px) și pe fila extensiei deschise (20 px, în locul piesei de puzzle). O extensie fără semn își arată piesa
   de puzzle pe un fond neutru. Semnul unei extensii instalate vine din pachetul ținut în browser (o adresă `blob:`), deci se
   vede și fără internet. Se arată doar ca `<img>`.
-- **Easy 3Draw 18.20.0:** semnul (cărămida 2 × 2), descrierea lungă, autorul („CNC Vector Studio”), „ce e nou” pentru
-  18.20.0–18.16.0, trei capturi pe limbă (circuitul, atelierul 3D, fila Roți).
+- **Easy 3Draw 18.20.0** (din 23.11 seara, **18.21.0**: vezi „Versiunea, după 3.Tr”, mai jos): semnul (cărămida 2 × 2),
+  descrierea lungă, autorul („CNC Vector Studio”), „ce e nou” pentru 18.20.0–18.16.0, trei capturi pe limbă (circuitul,
+  atelierul 3D, fila Roți).
 - **Abaterea de la schiță:** fondul semnului e gri-albăstrui (`#dbe6ee`), nu crem, iar cărămida e mai mare. Pe fila
   aleasă, cremul se pierdea în fondul filei, iar la 20 px cărămida mică nu se mai citea. Owner-ul îl vede pe canal.
 - **Privirea pe interfața adevărată** (capturi mărite, ambele teme) a găsit două greșeli pe care probele nu le prindeau:
@@ -360,3 +361,8 @@ Datele noi ale catalogului (punctul 1):
 - **Marginile din ADR 0230 și CSP-ul:** neschimbate.
 - **Ce n-a intrat:** căutarea și categoriile (la peste ~20 de extensii), o captură mărită la clic, „ce e nou” în fereastra
   de confirmare a unei actualizări (e în pagina de sub ea).
+- **Versiunea, după 3.Tr (23.11, seara):** cât rula completul feliei, linia elicelor a unit în `main` elicea de barcă
+  (3.Tr), tot ca Easy 3Draw 18.20.0. La aducerea lui `main` în ramură, partea bibliotecii (semnul în pachet) a trecut pe
+  **18.21.0**, iar 18.20.0 a primit rândul ei de „ce e nou” (elicea de barcă); pachetul e unul singur, cu amândouă.
+  Exemplele de mai sus („18.20.0 · din fișierul…”) rămân exemple. **Două linii care schimbă aceeași extensie iau, fiecare,
+  versiunea următoare:** cea unită a doua își ia alta la aducerea lui `main`, cu rândul ei de „ce e nou” deasupra.

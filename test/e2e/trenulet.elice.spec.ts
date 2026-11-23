@@ -14,17 +14,13 @@
 import { readFileSync } from 'node:fs';
 import { test, expect, type Page } from '@playwright/test';
 import { paginiPlanificator } from '../../scripts/construieste-trenulet.ts';
-
-/** three.js din pachet (aceiași octeți ca pe cdnjs, ADR 0163): pagina de sine stătătoare îl cere de pe cdnjs, la intrarea în 3D. */
-const THREE = readFileSync('extensii/trenulet/sursa/vendor/three.min.js');
+import { intraIn3D, THREE, threeDinPachet } from './ajutor-atelier.ts';
 
 async function atelierElice(page: Page): Promise<void> {
-  // three.js vine de aici, nu din rețea: când sosește, partea 3D alege din nou piesa și redesenează editorul. Proba așteaptă
-  // previzualizarea (pornirea încheiată) înainte să atingă editorul: altfel, redesenarea ar cădea în mijlocul unei scrieri
-  await page.route('https://cdnjs.cloudflare.com/**', (r) => r.fulfill({ body: THREE, contentType: 'application/javascript' }));
+  // three.js din pachet, apoi pornirea părții 3D încheiată, înainte ca proba să atingă editorul (`ajutor-atelier.ts`)
+  await threeDinPachet(page);
   await page.setContent(paginiPlanificator().preview);
-  await page.locator('[data-mod="3d"]').first().click();
-  await expect(page.locator('#at-vedere canvas')).toBeAttached();
+  await intraIn3D(page);
   await page.locator('#at-tipuri [data-fila="propulsie"]').click();
   await expect(page.locator('#at-galerie [data-piesa="elice"]')).toHaveAttribute('aria-pressed', 'true');
   await expect(page.locator('#at-nume-piesa')).toHaveText('Elice Ø72 cu 3 palete, pasul 0,7');
@@ -56,7 +52,7 @@ function citesteStl(stl: Buffer): { triunghiuri: number; rele: number; raza: num
 
 test('elicea implicită, în fila Elice: 3 palete, Ø72, pasul 0,7, răsucită; textul cu pasul, unghiurile și consola', async ({ page }) => {
   await atelierElice(page);
-  await expect(page.locator('#at-tipuri [data-fila="propulsie"]')).toHaveText('Elice 1');
+  await expect(page.locator('#at-tipuri [data-fila="propulsie"]')).toHaveText('Elice 2');
   // pe hârtie: P = 0,7 · 72 = 50,4; atan(50,4 / 8π) = 63,498° la butuc (63, la grad); atan(0,7 / π) = 12,56° la vârf;
   // 0,2 / tan 12,56° = 0,898
   await expect(page.locator('#at-el-info')).toHaveText('Pasul 50 mm (0,7 × diametrul). Paleta răsucită: 63° lângă butuc, 13° la vârf. Se tipărește fără suport: la vârf, un strat iese cu 0,9 mm peste cel de dedesubt.');

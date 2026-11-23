@@ -13,9 +13,14 @@
       "autor": "CNC Vector Studio",
       "noutati": [
         {
-          "versiune": "18.20.0",
+          "versiune": "18.21.0",
           "ro": "Semnul extensiei: îl vezi în meniul Extensii, pe fila ei și în bibliotecă.",
           "en": "The extension’s icon: you see it in the Extensions menu, on its tab and in the library."
+        },
+        {
+          "versiune": "18.20.0",
+          "ro": "Elicea de barcă, a doua piesă a filei „Elice”: 3–5 palete late, cu capac rotunjit, tipărită fără suport, cu „Fă perechea”.",
+          "en": "The boat propeller, the second piece of the “Propeller” tab: 3–5 wide blades, with a rounded cap, printed without supports, with “Make the pair”."
         },
         {
           "versiune": "18.19.0",
@@ -61,8 +66,8 @@
           }
         }
       ],
-      "versiune": "18.20.0",
-      "continut": "666b56ff6571e79a58ba36a1be7431151f74e760abf517ffe9f660497cbc6ecc"
+      "versiune": "18.21.0",
+      "continut": "b15bf852b8a57878663b4b0bba2209879005f6281a67796e05afde68884ec696"
     }
   ]
 }

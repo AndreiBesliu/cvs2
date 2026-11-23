@@ -3,6 +3,7 @@ import { test, expect, type Page } from '@playwright/test';
 import { pachetTrenulet, paginiPlanificator } from '../../scripts/construieste-trenulet.ts';
 import { scrieZip } from '../../scripts/impacheteaza-extensie.ts';
 import { citesteZip } from '../../src/extensii/zip.ts';
+import { intraIn3D } from './ajutor-atelier.ts';
 import { clicDupaReaparitie } from './ajutor-extensii.ts';
 import { faraEroriInJurnal } from './ajutor-jurnal.ts';
 
@@ -15,7 +16,7 @@ import { faraEroriInJurnal } from './ajutor-jurnal.ts';
  * - „Salvează fișierul .json” din exportul CNC ajunge descărcare a browserului, din pagina lui cvs2, cu numele dat de
  *   planificator;
  * - ștergerea circuitului, cu confirmarea lui, rămâne și după reîncărcare; jurnalul local, fără erori;
- * - numele (ADR 0167): „Easy 3Draw” 18.20.0, instalat peste „Planificator Trenuleț” 18.6.0, îi ia locul (același id), cu
+ * - numele (ADR 0167): „Easy 3Draw” 18.21.0, instalat peste „Planificator Trenuleț” 18.6.0, îi ia locul (același id), cu
  *   circuitul lui;
  * - „Trimite la cvs2” (ADR 0160 §D): G-code-ul ovalului de exemplu ajunge în dialogul primirii, cu originea extensiei, iar după
  *   „Primește”, în „Lucrarea primită” din fereastra Mașina; planificatorul spune că cvs2 l-a primit;
@@ -30,7 +31,7 @@ import { faraEroriInJurnal } from './ajutor-jurnal.ts';
 test.use({ locale: 'ro-RO' });
 
 const PACHET = Buffer.from(pachetTrenulet().octeti);
-const ZIP = { name: 'trenulet-18.20.0.zip', mimeType: 'application/zip', buffer: PACHET };
+const ZIP = { name: 'trenulet-18.21.0.zip', mimeType: 'application/zip', buffer: PACHET };
 const cadru = (page: Page) => page.frameLocator('iframe.cadru-extensie');
 /**
  * Cât așteaptă probele cadrul extensiei până la „pornit”: un document separat, în procesul lui, cu pachetul adus din
@@ -81,7 +82,7 @@ test('instalat din fișier: pagina în cadru; circuitul, modul și culoarea păs
   await page.locator('[data-extensii="buton"]').click();
   await page.locator('[data-extensii="fisier-ales"]').setInputFiles(ZIP);
   await expect(page.getByTestId('extensii-instalare').locator('h2')).toHaveText('Instalezi „Easy 3Draw”?');
-  await expect(page.getByTestId('extensii-despre')).toHaveText(/^18\.20\.0 · din fișierul trenulet-18\.20\.0\.zip · \d+ (de )?fișiere, [\d,]+ MB$/);
+  await expect(page.getByTestId('extensii-despre')).toHaveText(/^18\.21\.0 · din fișierul trenulet-18\.21\.0\.zip · \d+ (de )?fișiere, [\d,]+ MB$/);
   await expect(page.getByTestId('extensii-permisiuni').locator('li')).toHaveText([
     'Datele în browser își ține datele în browserul acesta (cel mult 16 MB)',
     'Descărcări salvează fișiere ca descărcări (date și desene, nu programe)',
@@ -179,7 +180,7 @@ async function pachetVechi(): Promise<Buffer> {
   })));
 }
 
-test('numele nou (ADR 0167): „Easy 3Draw” 18.20.0, instalat peste „Planificator Trenuleț” 18.6.0, îi ia locul, cu circuitul lui', async ({ page }) => {
+test('numele nou (ADR 0167): „Easy 3Draw” 18.21.0, instalat peste „Planificator Trenuleț” 18.6.0, îi ia locul, cu circuitul lui', async ({ page }) => {
   await page.goto('/');
   await page.locator('[data-extensii="buton"]').click();
   await page.locator('[data-extensii="fisier-ales"]').setInputFiles({ name: 'trenulet-18.6.0.zip', mimeType: 'application/zip', buffer: await pachetVechi() });
@@ -196,7 +197,7 @@ test('numele nou (ADR 0167): „Easy 3Draw” 18.20.0, instalat peste „Planifi
   await page.locator('[data-extensii="buton"]').click();
   await page.locator('[data-extensii="fisier-ales"]').setInputFiles(ZIP);
   await expect(page.getByTestId('extensii-instalare').locator('h2')).toHaveText('Instalezi „Easy 3Draw”?');
-  await expect(page.getByTestId('extensii-despre')).toContainText('18.20.0 · din fișierul trenulet-18.20.0.zip · ');
+  await expect(page.getByTestId('extensii-despre')).toContainText('18.21.0 · din fișierul trenulet-18.21.0.zip · ');
   await page.locator('[data-extensii="instaleaza"]').click();
   // același id: un singur rând în meniu, cu numele nou; circuitul de dinainte, redeschis
   await page.locator('[data-extensii="buton"]').click();
@@ -338,7 +339,7 @@ test('înălțimile (ADR 0168): la zecimi, în profilul imprimantei; locașul du
   await expect.poll(async () => JSON.stringify(await stocat(page, 'db:atelier/curent'))).toMatch(/"stift_h":2,"locas_h":2\.1,"locas_urmeaza":false/);
   await page.reload();
   await deschide(page);
-  await c.locator('[data-mod="3d"]').first().click();
+  await intraIn3D(c);
   await c.locator('details.setari:has(#at-reglaje) > summary').click();
   await expect(stift).toHaveValue('2');
   await expect(locas).toHaveValue('2.1');
@@ -464,7 +465,7 @@ test('parte din cvs2 (ADR 0164): tema și fonturile lui, pe loc; contul, la Circ
 
   // Atelierul: o culoare salvată întâi, apoi alta, cu × imediat: documentul atelierului (citit peste copia locală, la
   // deschidere) o are pe cea nouă.
-  await c.locator('[data-mod="3d"]').first().click();
+  await intraIn3D(c);
   await c.locator('#at-culori [data-c="#1f5fbf"]').click();
   await expect.poll(async () => JSON.stringify(await stocat(page, 'db:atelier/curent'))).toContain('"culoare":"#1f5fbf"');
   await c.locator('#at-culori [data-c="#2e8b4a"]').click();
@@ -560,10 +561,10 @@ test('în engleză (ADR 0165): limba lui cvs2, schimbată pe loc printr-o reporn
   await expect(c.locator('#cnc-stare')).toContainText('does not fit on the 200 × 150 mm board (with the margin). Make the board bigger in the settings.', { timeout: 30_000 });
   await expect(c.locator('#cnc-stare')).toContainText(/^(Straight|Large curve|Small curve|Switch|Adapter|Female|Male)/);
   await c.locator('#foaie-export [data-inchide]').click();
-  await c.locator('[data-mod="3d"]').first().click();
+  await intraIn3D(c);
   // filele (ADR 0281): familiile, cu câte piese au, apoi cele proprii; numele lor, aici (cuvinte fără diacritice, pe care
   // proba de română nu le recunoaște); apoi fiecare piesă a fiecărei familii și fiecare filă proprie, fără română
-  await expect(c.locator('#at-tipuri button:not([hidden])')).toHaveText(['Bricks 10', 'Joints 8', 'Wheels 7', 'Propeller 1', 'From cvs2', 'Calibration']);
+  await expect(c.locator('#at-tipuri button:not([hidden])')).toHaveText(['Bricks 10', 'Joints 8', 'Wheels 7', 'Propeller 2', 'From cvs2', 'Calibration']);
   for (const fila of ['caramizi', 'legaturi', 'roti', 'propulsie']) {
     await c.locator(`#at-tipuri [data-fila="${fila}"]`).click();
     await expect(c.locator(`#at-tipuri [data-fila="${fila}"]`)).toHaveAttribute('aria-pressed', 'true');
@@ -574,8 +575,22 @@ test('în engleză (ADR 0165): limba lui cvs2, schimbată pe loc printr-o reporn
       expect(await romanaRamasa(page, 'Păstrat la repornire'), `${fila} / ${piesa}`).toEqual([]);
     }
   }
-  // elicea (3.Tq), rămasă deschisă: editorul ei, în engleză; cuvintele fără diacritice („Ca LEGO 6041”), pe care proba de
-  // română nu le recunoaște, se cer aici; zecimalele, cu punct
+  // elicea de barcă (3.Tr), rămasă deschisă: editorul ei, în engleză; cuvintele fără diacritice („Capacul:”, „Cu capac”), pe
+  // care proba de română nu le recunoaște, se cer aici; zecimalele, cu punct
+  await expect(c.locator('#at-editor h2')).toHaveText('Boat propeller');
+  await expect(c.locator('#at-nume-piesa')).toHaveText('Boat propeller Ø40 with 3 blades, pitch 1');
+  await expect(c.locator('#at-eb-info')).toHaveText('Pitch 40 mm (1 × diameter): the blade sits at 58° near the hub and 18° at the tip. The blades cover 55% of the disc; the hub is Ø8 × 11.5 mm. It prints without supports, boat side down on the bed: at the tip, each layer overhangs the one below by 0.6 mm.');
+  await expect(c.locator('.at-rand:has(#at-eb-capac) > .mic').first()).toHaveText('Cap:');
+  await expect(c.locator('#at-eb-capac [data-v]')).toHaveText(['None', 'With cap']);
+  await c.locator('#at-eb-capac [data-v="da"]').click();
+  await expect(c.locator('#at-nume-piesa')).toHaveText('Boat propeller Ø40 with 3 blades, pitch 1, with cap');
+  // gaura înaintea capacului, ca în română (locurile din traducere, în aceeași ordine)
+  await c.locator('#at-eb-gaura [data-v="r"]').click();
+  await expect(c.locator('#at-nume-piesa')).toHaveText('Boat propeller Ø40 with 3 blades, pitch 1, round hole, with cap');
+  await c.locator('#at-eb-gaura [data-v="x"]').click();
+  expect(await romanaRamasa(page, 'Păstrat la repornire'), 'elicea de barcă, cu capac').toEqual([]);
+  // elicea (3.Tq): editorul ei, în engleză; cuvintele fără diacritice („Ca LEGO 6041”) se cer aici
+  await c.locator('#at-galerie [data-piesa="elice"]').click();
   await expect(c.locator('#at-editor h2')).toHaveText('Propeller');
   await expect(c.locator('#at-el-repede [data-v]')).toHaveText(['Like LEGO 6041', 'Like LEGO 92842', 'Like LEGO 15790']);
   await expect(c.locator('#at-nume-piesa')).toHaveText('Propeller Ø72 with 3 blades, pitch 0.7');

@@ -55,6 +55,11 @@ si cu un UI/UX mai bun si atragator”.
 - **`main` adus în ramură la încheiere** (`c010e3d`: 11.3↑e și A.4): o singură ciocnire, în DEVLOG, rezolvată cu
   `scripts/rezolva-devlog.py`. Pe arborele unit: pornirea 108,0 kB (cu ușa 112,4 / 115), totalul 766,9 / 800 kB, `/admin`
   124,1 / 200; e2e-ul extensiilor, 61 / 61.
+- **23.11, seara: `main` adus a doua oară** (`6f85243`, cu 3.Tr și reparația probelor atelierului), fiindcă PR-ul avea
+  ciocniri: cât rula completul, linia elicelor luase pentru elicea de barcă tot 18.20.0. Partea bibliotecii e acum
+  **Easy 3Draw 18.21.0** (semnul în pachet); 18.20.0 are rândul ei de „ce e nou”. Ciocnirile: `extensie.json`,
+  `extensii/biblioteca.json`, `trenulet.spec.ts` (confirmarea nouă, cu versiunea nouă), jurnalul fișei și registrul
+  otrăvurilor (rândurile ambelor părți, după cheie). Capturile din bibliotecă nu s-au schimbat (nu arată fila Elice).
 - **Ce n-a intrat** (la cuvântul owner-ului): căutarea și categoriile (la peste ~20 de extensii), o captură mărită la clic,
   „ce e nou” în fereastra de confirmare a unei actualizări.
 
@@ -65,6 +70,11 @@ si cu un UI/UX mai bun si atragator”.
    descrescător);
 3. `node scripts/biblioteca.ts --scrie` (refuză fără rândul de la 2);
 4. proba `test/unit/biblioteca.constructie.test.ts` cade până atunci, cu rândul de scris în mesaj.
+5. **dacă `main` aduce între timp aceeași versiune de la altă linie** (pe 23.11: 3.Tr luase 18.20.0, ca 3.Xh-1), linia
+   unită a doua își ia versiunea următoare la aducerea lui `main`: versiunea din `extensie.json`, rândul ei de „ce e nou”
+   deasupra celui venit din `main` (care rămâne, cu textul lui), numele pachetului din probele e2e
+   (`trenulet.spec.ts`: `ZIP`, cele două rânduri „din fișierul…”), apoi `node scripts/biblioteca.ts --scrie`. Lista din
+   `extensii/biblioteca.json` poate avea mai mult de cinci rânduri: în catalog ajung ultimele cinci.
 
 **Capturile unei extensii** (răspunsul 4a) se refac la cerere, când i se schimbă înfățișarea: `node
 scripts/capturi-biblioteca.ts [dosar]` (serverul de dezvoltare, un browser fără fereastră; scenele sunt în script, `SCENE`),

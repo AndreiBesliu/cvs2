@@ -11571,6 +11571,28 @@ model în repo); e în raportul din chat și în sesiunea din mesajul commit-ulu
   acum cu `--ref main`, ca pe complet, iar comanda pentru live din `docs/lucru-in-cloud.md` are și ea `--ref main`.
 - **PR-ul `AndreiBesliu/cvs2#1`** s-a închis singur, ca unit, la push-ul în `main`.
 
+## 2026-11-23 — Probele atelierului Easy 3Draw așteaptă pornirea părții 3D (Model: Claude Fable 5.2)
+
+**Prompt:** „ia reparația probelor atelierului” (după „ce ramane de facut aici?”, în sesiunea cloud a liniei elicelor).
+**Started:** 23.11, 13:45. **Completed:** 23.11, 14:45 (în container; CI-ul, pe commit-ul împins).
+
+- **Ce era:** la prima intrare în 3D, atelierul aduce three.js, apoi alege din nou piesa și redesenează editorul. O probă
+  care scrie într-un câmp chiar atunci își pierde scrierea (`fill` alege textul, apoi scrie: redesenarea cade între ele).
+  La 3.Tq, doar proba elicei a primit așteptarea; celelalte au rămas cu aceeași cursă, mai rar.
+- **Dovada, înainte:** secvența rotițelor (roata de 8, modulul 0,5), cu three.js întârziat. Din 3 în 3 ms, între 0 și
+  600 ms: 3 scrieri pierdute din 201. Din 1 în 1 ms, între 120 și 220 ms: 5 din 101. Rară: cele șapte spec-uri fără
+  three.js din pachet treceau 240 / 240 în container, unde cererea spre cdnjs (oprit aici) cade repede; în CI, three.js
+  venea din rețea, când apuca.
+- **Reparația, doar în probe:** `test/e2e/ajutor-atelier.ts`, cu `threeDinPachet` (three.js din `vendor/`, nu de pe cdnjs)
+  și `intraIn3D` (apasă „3D” și așteaptă pânza previzualizării, pusă în același pas cu redesenarea). Folosite în cele 11
+  spec-uri ale atelierului și la cele trei intrări în 3D din `trenulet.spec.ts` care nu așteptau. Pluginul nu s-a schimbat
+  (18.19.0, fără `biblioteca.ts --scrie`).
+- **Dovada, după:** aceeași secvență, cu așteptarea: 0 pierdute din 101. Cele 11 spec-uri, de 10 ori fiecare, cu patru
+  lucrători: 390 / 390; `trenulet.spec.ts`, de trei ori: 30 / 30.
+- **Porțile, în container:** tipurile, regulile de import (0 încălcări), traducerile (912, 0 lipsă), unit 9 795 / 0 (12
+  sărite, pe Linux), e2e-ul pluginului 49 / 49. Listele de otrăvuri `3.T*.py` nu țintesc probele: neschimbate.
+- **Documentele:** nota liniei (`docs/linii/elice.md`: ajutorul, regula pentru o probă nouă a atelierului).
+
 ## 2026-11-23 — Sesiunea principală în cloud: a doua unire (11.3↑e, urechile „unde ține”; A.4, Sugestii ca tablă) (Model: Claude Fable 5.2)
 
 **Prompt:** același brief de predare al sesiunii principale („Unește PR-urile gata”; „unește ce se poate” e ordin permanent),
@@ -11591,3 +11613,63 @@ la rapoartele liniilor planșelor și adminului (PR-urile `AndreiBesliu/cvs2#2` 
 - **Între timp, la linii:** biblioteca (3.Xh) are ADR 0231 propus, cu schița și patru întrebări la owner
   (`AndreiBesliu/cvs2#4`, ciornă); trasarea (25.8↑a, `AndreiBesliu/cvs2#6`) și reparația probelor atelierului
   (`AndreiBesliu/cvs2#5`) își așteaptă porțile finale.
+
+## 2026-11-23 — Felia 3.Tr: elicea de barcă în atelierul Easy 3Draw (ADR 0282) (Model: Claude Fable 5.2)
+
+**Prompt:** „pornește 3.Tr” (în sesiunea cloud a liniei elicelor, după reparația probelor atelierului).
+**Started:** 23.11, 14:47. **Completed:** 23.11, 16:20 (în container; CI-ul, pe commit-ul împins).
+
+- **Reperul LEGO:** din LDraw, elicea motorului de barcă (48085, piesa u9216): Ø21,6, trei palete ovale, plate, la ≈ 10°,
+  care acoperă ~80 % din disc, pe un arbore de Ø2. Nu stă pe un ax LEGO: reper doar pentru formă.
+- **Proba întâi:** 11 probe unitare cu valorile pe hârtie (calculate separat, cu un script de o singură folosință), căzute
+  toate fără motor („tip necunoscut”); cu motorul, 8 treceau. Două căderi erau ale probelor (o toleranță la rotunjirea
+  cheii, o fereastră nesimetrică), una a motorului: capetele paletei cu fața plată nu se închideau cu tăierea urechilor.
+- **Motorul:** `eliceBarca`, `eliceBarcaCote`, `sectiuneBarca`; paletele și butucul, comune cu elicea (`paleteElice`,
+  `butucElice`). Elicea din 3.Tq, aceeași la octet: amprenta a 3 456 de combinații, înainte și după.
+- **Atelierul:** piesa a doua a filei Elice, editorul, „Repede”, textul, pictograma, 13 texte în engleză. Capturile:
+  desktop și 390 px (fără depășire); pictograma, mărită de 4 ori lângă a elicei.
+- **Hotărâte la implementare** (în ADR, „Implementarea (3.Tr)”): înclinarea pe cerc, nu spre pupa (ar cere suport); fără
+  „Ca LEGO”, cu diametrele pe grila de știfturi; partea dinspre barcă pe masă; butucul crește cu elicea.
+- **Otrăvurile, în clonă:** `3.Tr.py` 141 / 141 (139 din prima; K07 și E18, după probele lor); `3.Tr-en.py` 6 / 6. Lista
+  lui 3.Tq, mutată pe codul comun: 15 otrăvuri aduse la zi, 0 VOID. `verifica` pe toate `3.T*.py`: niciun VOID nou.
+- **`main` adus în ramură** (`c010e3d`, cu 11.3↑e și A.4): ciocnirea, doar în DEVLOG, rezolvată cu `rezolva-devlog.py`.
+- **Porțile, în container:** tipurile, regulile de import (0 încălcări), traducerile (920, 0 lipsă), unitarele pluginului
+  și ale documentelor 170 / 170, build-ul determinist, e2e-ul pluginului și al extensiilor 71 / 71. Pornirea 107,9 / 115
+  (cu ușa 112,3), totalul 763,1 / 800, `/admin` 124,1 / 200; Easy 3Draw 18.20.0, 460,6 kB.
+- **Documentele:** ADR 0282, indexul ADR, fișa etapei 3 (jurnalul și coada owner-ului), traducerile roadmap-ului (4),
+  registrul otrăvurilor, nota liniei.
+
+## 2026-11-23 — Linia elicelor unită în `main` (reparația probelor atelierului și 3.Tr), din sesiunea liniei (Model: Claude Opus 5.5)
+
+**Prompt:** „deocamdata putem face unirea” (în sesiunea cloud a liniei elicelor, după raportul lui 3.Tr).
+**Started:** 23.11, 17:13. **Completed:** 23.11, 17:30 (push-ul în `main`; rapidul pe `main`, după push).
+
+- **Unirea:** `unire-2311d` din `origin/main` (`c010e3d1`), `git merge --no-ff 8b1255b8` → `d262e57a`. Ramura avea `main`
+  adus și n-are `.lucru/`: `git diff 8b1255b8 d262e57a` e gol, deci porțile ramurii sunt ale unirii (rapidul și completul
+  verzi pe `8b1255b8`: unit 9 825 / 0, 12 sărite; e2e 604 / 604; emulatoarele 104 / 104 și 36 / 36; pornirea 107,9 / 115,
+  totalul 763,1 / 800).
+- **Documentele:** decizia în `CLAUDE.md`, indexul notelor, nota sesiunii principale (starea elicelor), indexul ADR și
+  starea ADR 0282, nota liniei.
+- **Nepublicat:** publicarea pe test rămâne la sesiunea principală (sau la cuvântul owner-ului): două publicări pornite din
+  sesiuni diferite pot ajunge în ordinea greșită. Deschise, gata de unit acolo: `AndreiBesliu/cvs2#6`, `#8`, `#9`.
+
+## 2026-11-23 — 3.Xh: `main` adus a doua oară în ramură (3.Tr luase 18.20.0); partea bibliotecii, pe 18.21.0 (sesiune cloud)
+
+**Prompt:** niciunul nou: verificarea programată a completului de pe capătul ramurii (după raportul feliei 3.Xh) a găsit
+PR-ul `AndreiBesliu/cvs2#4` cu ciocniri față de `main`.
+**Started:** 23.11, 19:08. **Completed:** 23.11, 19:20 (în container; CI-ul, pe commit-ul împins).
+
+- **Ce s-a întâmplat:** cât rula completul pe `79fbef5`, linia elicelor a unit în `main` reparația probelor atelierului și
+  3.Tr (`d262e57`, apoi `6f85243`), cu elicea de barcă tot ca Easy 3Draw 18.20.0, versiunea luată și de 3.Xh-1 pentru semn.
+- **Ciocnirile, cinci:** `extensii/trenulet/extensie.json` (semnul păstrat, versiunea 18.21.0); `extensii/biblioteca.json`
+  (prezentarea păstrată; „ce e nou”: 18.21.0, semnul, apoi 18.20.0, elicea de barcă, scris acum; amprenta, cu
+  `node scripts/biblioteca.ts --scrie`); `test/e2e/trenulet.spec.ts` (fereastra nouă de confirmare, cu 18.21.0); jurnalul
+  fișei etapei 3 și registrul otrăvurilor (rândurile ambelor părți, după cheie). DEVLOG-ul s-a unit singur.
+- **Otrăvurile:** `verifica` pe listele `3.T*.py` și `3.X*.py`: aceleași VOID-uri ca pe `main` și ca pe capătul ramurii
+  (27, toate vechi); niciunul nou.
+- **Porțile, în container, pe arborele unit:** tipurile, regulile de import (0 încălcări), unitarele documentelor, ale
+  pluginului și ale extensiilor 494 / 494, traducerile roadmap-ului (936, 0 lipsă; un rând schimbat, al lui 3.Xh-1),
+  build-ul determinist, e2e cu Chrome (biblioteca, extensiile, pluginul, manualul, carcasa) 105 / 105. Pornirea 108,0 kB
+  (cu ușa 112,4 / 115), totalul 766,9 / 800 kB, `/admin` 124,1 / 200; Easy 3Draw 18.21.0, 461,1 kB.
+- **Documentele:** ADR 0231 („Versiunea, după 3.Tr”), fișa etapei 3 (rândul lui 3.Xh-1), nota liniei (pasul 5 al regulii:
+  ce face linia unită a doua când `main` aduce aceeași versiune).
