@@ -13,52 +13,12 @@ import assert from 'node:assert/strict';
 import { incarca } from '../../src/model/incarcare.ts';
 import { valoriIncrustatieDreapta } from '../../src/model/incrustatie.ts';
 import { calculeazaExport } from '../../src/ui/actiuniExportCalcul.ts';
-import { masoaraPotrivireaTrepte, type MasuraTrepte } from '../oracles/incrustatieDreapta.ts';
+import type { MasuraTrepte } from '../oracles/incrustatieDreapta.ts';
 import { CAZURI_TREPTE, type CazTrepte } from '../oracles/incrustatieDreapta.trepte.cazuri.ts';
-import type { FrezaPlataCaz } from '../oracles/incrustatieDreapta.cazuri.ts';
-import { cutieDesen, type PunctO } from '../oracles/incrustatie.ts';
-import type { SculaOracol } from '../oracles/simulare.ts';
-import { zuriProgram } from './ajutor-incrustatie.ts';
+import { cutieDesen } from '../oracles/incrustatie.ts';
+import { documentTrepte, masoaraTrepte, zuriProgram } from './ajutor-incrustatie.ts';
 
-const I = { a: 1, b: 0, c: 0, d: 1, e: 0, f: 0 };
 const TOL_JOC = 0.02, TOL_Z = 0.05, TOL_RAZA = 0.02;
-const CELULA = 0.05;
-
-const cale = (pol: readonly PunctO[]) => ({ tip: 'cale', inchis: true, varfuri: pol.map(([x, y]) => ({ p: { x, y }, s: { tip: 'L' } })) });
-const sculaDoc = (f: FrezaPlataCaz) => ({ numar: f.numar, nume: 'freza plata', diametru: f.diametru });
-
-/**
- * Documentul v25 al unui caz: o piesă cu desenul și buzunarul cu incrustația în trepte, pe o foaie de 200 × 150 × 18 (la gaură,
- * groasă cât D, iar operația scrie adâncimea 3, pe care gaura o ignoră); `peste`: câmpuri ale incrustației schimbate.
- */
-function documentTrepte(c: CazTrepte, peste: Record<string, unknown> = {}, operatie: Record<string, unknown> = {}): unknown {
-  const noduri = c.desen.map((pol, k) => ({ tip: 'element', id: `a${k}`, matrice: { ...I }, forma: cale(pol) }));
-  const [prima, ...rest] = c.locas;
-  const incrustatie: Record<string, unknown> = {
-    fel: 'drept', jocLateral: c.c, dop: c.dop, sprijin: c.sprijin, joc: c.g, fierastrau: c.H, margine: c.margine,
-    treapta: { adancime: c.d, latime: c.s, ...(c.spre === 'exterior' ? { spre: 'exterior' } : {}) },
-    ...(c.gaura ? { locas: 'gaura' } : {}),
-  };
-  // Un câmp dat `undefined` pleacă (documentul nu-l are).
-  for (const [k, v] of Object.entries(peste)) {
-    if (v === undefined) delete incrustatie[k];
-    else incrustatie[k] = v;
-  }
-  return {
-    schema: 26, rev: 0,
-    piese: [{
-      id: 'p', radacina: { tip: 'grup', id: 'r', matrice: { ...I }, copii: noduri },
-      operatii: [{
-        id: 'inc', tip: 'buzunar', noduri: noduri.map((n) => n.id), latura: 'interior', sens: 'urcare', adancime: c.gaura ? 3 : c.D, pas: c.pas,
-        scula: sculaDoc(prima!), pasLateral: prima!.pasLateral, urechi: null, rampa: null, intrari: null, colturi: null,
-        ...(rest.length > 0 ? { rest: rest.map((r) => ({ scula: sculaDoc(r), pasLateral: r.pasLateral })) } : {}),
-        incrustatie,
-        ...operatie,
-      }],
-    }],
-    foi: [{ id: 'f1', stoc: { latime: 200, inaltime: 150, grosime: c.gaura ? c.D : 18 }, instante: [{ id: 'i', piesa: 'p', x: 0, y: 0, rotire: 0 }] }],
-  };
-}
 
 async function exporta(brut: unknown, supracursa?: number) {
   const d = incarca(brut);
@@ -66,23 +26,7 @@ async function exporta(brut: unknown, supracursa?: number) {
   return calculeazaExport(d.doc, { origine: 'stanga-jos', z0: 'sus', ...(supracursa === undefined ? {} : { supracursa }) });
 }
 
-/** Sculele bucăților unui program, în ordine: cea de la pornire, apoi fiecare `T… M6`, după numărul lor. */
-function scule(text: string, freze: readonly FrezaPlataCaz[]): SculaOracol[] {
-  const dupaNumar = new Map(freze.map((f) => [f.numar, f.diametru]));
-  const m6 = [...text.matchAll(/^T(\d+) M6$/gm)].map((m) => Number(m[1]));
-  const ramase = freze.map((f) => f.numar).filter((n) => n !== m6[0]);
-  const pornire = m6.length === 0 ? freze[0]!.numar : (ramase[0] ?? freze[0]!.numar);
-  return [pornire, ...m6].map((n) => ({ tip: 'plata', diametru: dupaNumar.get(n) ?? NaN }));
-}
-
-const masoara = (c: CazTrepte, locas: string, dop: string): MasuraTrepte => masoaraPotrivireaTrepte(
-  { text: locas, scule: scule(locas, c.locas) }, { text: dop, scule: scule(dop, c.locas) }, c.desen,
-  {
-    d: c.d, D: c.D, tija: c.tija, h: c.h, dop: c.dop, margine: c.margine, latire: c.spre === 'exterior' ? c.s : 0,
-    // Celula grilei grosiere: 0,1 mm la Ø6 (desene mari), 0,05 la frezele mici; bisecția face punctele pereților exacte.
-    celula: c.locas[0]!.diametru >= 6 ? 2 * CELULA : CELULA,
-  },
-);
+const masoara = masoaraTrepte;
 
 async function potrivire(c: CazTrepte, supracursa?: number): Promise<{
   readonly m: MasuraTrepte; readonly locas: string; readonly dop: string; readonly grosime: number; readonly exacta: boolean;

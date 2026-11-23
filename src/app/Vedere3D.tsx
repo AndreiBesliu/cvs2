@@ -4,7 +4,7 @@ import '../i18n/editare.ts';
 import { t } from '../i18n/t.ts';
 import type { Document } from '../model/document.ts';
 import { elementeFoaie } from '../model/lume.ts';
-import type { DopSimulat, PotrivireV, ProgramSimulare, ReliefSimulat } from '../ui/actiuniExportTipuri.ts';
+import type { DopSimulat, Potrivire, ProgramSimulare, ReliefSimulat } from '../ui/actiuniExportTipuri.ts';
 import { textNumar } from '../ui/numar.ts';
 import { useLimba } from '../ui/useLimba.ts';
 import { descriere } from './descriereElement.ts';
@@ -180,10 +180,10 @@ export function Vedere3D({ doc, marime, zona, onInchide }: Props): ReactElement 
   // Elementele foii după id-ul lor în lume, ca titlul fiecărui dop să-și numească incrustația (ADR 0178, precizarea din
   // 21.11); doar cât foaia are dopuri.
   const lume = useMemo(() => (dopuri.lista.length > 0 ? new Map(elementeFoaie(doc, 0).map((e) => [e.idLume, e])) : null), [doc, dopuri.lista]);
-  // „Împreună (secțiunea)” (ADR 0179): pornită doar pe un dop în V; potrivirea lui, măsurată în workerul CAM.
+  // „Împreună (secțiunea)” (ADR 0179): pe dopul ales; potrivirea lui, măsurată în workerul CAM.
   const [impreuna, setImpreuna] = useState(false);
   const [potrivire, setPotrivire] = useState<
-    { readonly fel: 'nimic' | 'calcul' } | { readonly fel: 'gata'; readonly p: PotrivireV } | { readonly fel: 'refuz'; readonly motiv: string }
+    { readonly fel: 'nimic' | 'calcul' } | { readonly fel: 'gata'; readonly p: Potrivire } | { readonly fel: 'refuz'; readonly motiv: string }
   >({ fel: 'nimic' });
   const jobPotrivire = useRef<AbortController | null>(null);
   // Ce s-a simulat (documentul, programul, relieful plăcii și al ferestrei fine) și camera: ținute aici, nu în stare
@@ -507,12 +507,12 @@ export function Vedere3D({ doc, marime, zona, onInchide }: Props): ReactElement 
   const nr = (v: number): string => textNumar(Math.round(v * 1000) / 1000, limba === 'ro');
   // Dopul arătat (ADR 0178), numărat de la 1, ca fișierul lui; null pe foaie.
   const dop = alegere === 'foaie' ? null : alegere + 1;
-  // „Împreună (secțiunea)” (ADR 0179 §1): doar pe un dop în V; altfel oprită, cu motivul pe titlu (rămâne în tab, ca să-l spună).
-  const dopAles = alegere === 'foaie' ? null : dopuri.lista[alegere] ?? null;
-  const poateImpreuna = dopAles?.inV === true;
-  const titluImpreuna = alegere === 'foaie' ? t('editare.3d.impreuna.alege') : poateImpreuna ? t('editare.3d.impreuna.titlu') : t('editare.3d.impreuna.doarV');
+  // „Împreună (secțiunea)” (ADR 0179 §1): pe orice dop ales (în V, cu pereți drepți sau, din felia 12.1↑e-4, în trepte); pe
+  // foaie, oprită, cu motivul pe titlu (rămâne în tab, ca să-l spună).
+  const poateImpreuna = alegere !== 'foaie' && dopuri.lista[alegere] !== undefined;
+  const titluImpreuna = poateImpreuna ? t('editare.3d.impreuna.titlu') : t('editare.3d.impreuna.alege');
   const comutaImpreuna = (): void => {
-    if (!poateImpreuna || alegere === 'foaie') return;
+    if (!poateImpreuna) return;
     if (impreuna) {
       opresteImpreuna();
       return;
@@ -611,7 +611,17 @@ export function Vedere3D({ doc, marime, zona, onInchide }: Props): ReactElement 
           schimbaCamera(nou);
         }}
       />
-      <div className={impreuna ? 'insula stare-3d cu-sectiune' : 'insula stare-3d'} style={{ left: zona.x + 8, top: zona.y + 8 }} data-testid="stare-3d">
+      {/*
+        Insula rămâne în zona liberă: cel mult cât lățimea ei (pe un ecran îngust, altfel intră sub panoul de proprietăți) și,
+        cu secțiunea, cât înălțimea ei (o gaură prin foaia de 18): atunci secțiunea se derulează.
+      */}
+      <div
+        className={impreuna ? 'insula stare-3d cu-sectiune' : 'insula stare-3d'} data-testid="stare-3d"
+        style={{
+          left: zona.x + 8, top: zona.y + 8, ['--zona-latime' as string]: `${Math.max(160, zona.w - 16)}px`,
+          ...(impreuna ? { maxHeight: Math.max(160, zona.h - 16) } : {}),
+        }}
+      >
         {/* Foaia sau un dop (ADR 0178): butoanele apar doar când foaia are dopuri (sau unul e încă ales). */}
         {dopuri.lista.length > 0 || dop !== null ? (
           <span className="alegere-3d" role="group" aria-label={t('editare.3d.alegere')} data-testid="alegere-3d">

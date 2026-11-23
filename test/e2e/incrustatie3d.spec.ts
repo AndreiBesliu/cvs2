@@ -126,7 +126,7 @@ test('„Împreună (secțiunea)”: dopul în V întors în locaș, hârtia lâ
   await deschide(page);
   const grup = page.getByTestId('alegere-3d'), impreuna = page.locator('[data-3d="impreuna"]');
   await expect(impreuna).toBeDisabled();
-  await expect(impreuna).toHaveAttribute('title', 'Alege întâi un dop: secțiunea îl arată întors în locașul lui');
+  await expect(impreuna).toHaveAttribute('title', 'Alege întâi un dop: secțiunea îl arată în locașul lui');
   await grup.locator('[data-3d-alege="dop-1"]').click();
   await expect(panza3d(page)).toHaveAttribute('data-alegere', 'dop-1');
   await expect(impreuna).toBeEnabled();
@@ -156,7 +156,12 @@ test('„Împreună (secțiunea)”: dopul în V întors în locaș, hârtia lâ
   await expect(impreuna).toBeDisabled();
 });
 
-test('„Împreună (secțiunea)” rămâne oprită la dopul cu pereți drepți, cu motivul pe titlu (felia 12.1↑e-3)', async ({ page }) => {
+/**
+ * „Împreună (secțiunea)” la dopul cu pereți drepți (ADR 0179, felia 12.1↑e-3), pe dreptunghiul de 30 × 20 din (20, 20) cu
+ * implicitele panoului (dopul ridicat, pe fund, D 3, jocul lateral 0,1, H 2, Ø6; h = D + H = 5). Tabelul are cinci rânduri,
+ * hârtia lângă simulare, niciunul roșu; secțiunea, prin mijlocul dreptunghiului (y = 30), cu tăietura între plăci.
+ */
+test('„Împreună (secțiunea)” la dopul cu pereți drepți: jocul lateral, dopul în locaș, adâncimea, înălțimea, între plăci', async ({ page }) => {
   await page.goto('/');
   await dreptunghiMic(page);
   await taierea(page).locator('[data-camp="rol"]').selectOption('incrustatie-drept');
@@ -164,6 +169,189 @@ test('„Împreună (secțiunea)” rămâne oprită la dopul cu pereți drepți
   await page.getByTestId('alegere-3d').locator('[data-3d-alege="dop-1"]').click();
   await expect(panza3d(page)).toHaveAttribute('data-alegere', 'dop-1');
   const impreuna = page.locator('[data-3d="impreuna"]');
-  await expect(impreuna).toBeDisabled();
-  await expect(impreuna).toHaveAttribute('title', 'Secțiunea cu dopul în locaș e doar la incrustația în V, deocamdată');
+  await expect(impreuna).toBeEnabled();
+  await expect(impreuna).toHaveAttribute('title', 'Dopul ales, așezat în locașul lui: secțiunea și potrivirea simulată, lângă valorile pe hârtie');
+  await impreuna.click();
+  const sectiune = page.getByTestId('sectiune-3d'), tabel = sectiune.getByTestId('sectiune-tabel');
+  await expect(tabel).toBeVisible({ timeout: 30_000 });
+  await expect(sectiune.locator('h3')).toHaveText(/^Dopul 1, întors în locaș: secțiunea la Y (29\.9\d|30\.0\d) mm$/);
+  const rand = (r: string) => tabel.locator(`tr[data-rand="${r}"] td`);
+  await expect(tabel.locator('tr[data-rand]')).toHaveCount(5);
+  await expect(rand('joc')).toHaveText(['0.10 mm', /^0\.(0[89]|1[0-2]) mm$/]);
+  await expect(rand('dop')).toHaveText(['tot conturul', /^toate cele \d+ puncte$/]);
+  await expect(rand('adancime')).toHaveText(['3.00 mm', /^(2\.9[5-9]|3\.0[0-5]) mm$/]);
+  await expect(rand('inaltime')).toHaveText(['5.00 mm', /^(4\.9[5-9]|5\.0[0-5]) mm$/]);
+  await expect(rand('intre')).toHaveText(['2.00 mm', /^(1\.9[5-9]|2\.0[0-5]) mm$/]);
+  await expect(tabel.locator('tr.diferit')).toHaveCount(0);
+  const svg = sectiune.getByTestId('sectiune-svg');
+  for (const strat of ['placa', 'dop', 'fierastrau']) await expect(svg.locator(`[data-strat="${strat}"]`)).toHaveCount(1);
+  await expect(svg.locator('[data-strat="marcaj"]')).toHaveCount(0);
+  // Pereții sunt verticali (treptele celulelor de 0,1 mm), iar cleiul e doar jocul lateral, de o celulă de fiecare parte (X 20
+  // și X 50), de la fundul locașului (Y 3) până la fața plăcii (Y 0): deasupra ei e spațiul dintre plăci, nu clei.
+  await expect(svg.locator('[data-strat="clei"]')).toHaveAttribute('d', 'M20 0 L20.1 0 L20.1 3 L20 3Z M49.9 0 L50 0 L50 3 L49.9 3Z');
+  await expect(svg.locator('[data-strat="contact"]')).toHaveAttribute('points', '20.1,3 49.9,3');
+  // Tăietura cu fierăstrăul, la mijlocul spațiului dintre plăci: H / 2 = 1 mm peste fața plăcii (Y-ul desenului e −Z).
+  await expect(svg.locator('[data-strat="fierastrau"]')).toHaveAttribute('y1', /^-(0\.9[5-9]\d*|1(\.0[0-5]\d*)?)$/);
+  await expect(sectiune.locator('.sectiune-nota')).toContainText('Jocul lateral e măsurat exact pe trecerile frezei');
+});
+
+/**
+ * Dopul decupat (ADR 0171): intră neîntors, pe fundul locașului, iar ce iese peste placă (H = 2) se rindeluiește. Felul dopului
+ * se alege în fereastra exportului (ca `incrustatieDreapta.spec.ts`), cu freza dopului a lui (Ø3): marginea (5) trebuie să fie
+ * cel puțin cât freza dopului decupat, iar Ø6 ar scoate șanțul din placă. Placa lui e groasă de exact D + H = 5.
+ */
+test('„Împreună (secțiunea)” la dopul decupat: neîntors, „Peste placă (de rindeluit)”, linia la fața plăcii', async ({ page }) => {
+  await page.goto('/');
+  await dreptunghiMic(page);
+  await page.locator('[data-actiune="export.gcode"]').click();
+  await page.locator('tr[data-operatie]').first().locator('[data-camp="latura"]').selectOption('incrustatie-drept');
+  const inc = page.locator('tr[data-detalii]').first().locator('[data-incrustatie][data-fel="drept"]');
+  await inc.locator('[data-camp="inc-dop"]').selectOption('decupat');
+  await inc.locator('[data-camp="inc-freza-dop"]').check();
+  await page.locator('[data-buton="exporta"]').click();
+  await expect(page.getByTestId('export-dopuri')).toContainText('groasă de exact 5 mm');
+  await page.getByRole('button', { name: 'Închide' }).click();
+  await deschide(page);
+  await page.getByTestId('alegere-3d').locator('[data-3d-alege="dop-1"]').click();
+  await expect(panza3d(page)).toHaveAttribute('data-alegere', 'dop-1');
+  const impreuna = page.locator('[data-3d="impreuna"]');
+  await expect(impreuna).toBeEnabled();
+  await impreuna.click();
+  const sectiune = page.getByTestId('sectiune-3d'), tabel = sectiune.getByTestId('sectiune-tabel');
+  await expect(tabel).toBeVisible({ timeout: 30_000 });
+  await expect(sectiune.locator('h3')).toHaveText(/^Dopul 1, în locaș cum a fost tăiat \(neîntors\): secțiunea la Y (29\.9\d|30\.0\d) mm$/);
+  await expect(tabel.locator('tr[data-rand]')).toHaveCount(5);
+  await expect(tabel.locator('tr[data-rand="peste"] th')).toHaveText('Peste placă (de rindeluit)');
+  await expect(tabel.locator('tr[data-rand="peste"] td')).toHaveText(['2.00 mm', /^(1\.9[5-9]|2\.0[0-5]) mm$/]);
+  await expect(tabel.locator('tr.diferit')).toHaveCount(0);
+  const svg = sectiune.getByTestId('sectiune-svg');
+  await expect(svg.locator('[data-strat="fierastrau"]')).toHaveCount(0);
+  await expect(svg.locator('[data-strat="rindea"]')).toHaveAttribute('y1', '0');
+  // În jurul dopului decupat nu mai e lemn al lui: jocul lateral din locaș e clei, până la fața plăcii.
+  await expect(svg.locator('[data-strat="clei"]')).toHaveAttribute('d', 'M20 0 L20.1 0 L20.1 3 L20 3Z M49.9 0 L50 0 L50 3 L49.9 3Z');
+});
+
+/**
+ * Gaura prin foaie (ADR 0175), cu dopul decupat din placa de 18 + 2: secțiunea e înaltă (20 mm la 40 lățime). Placa e desenată
+ * cât foaia (fără lemn sub gaură și fără contact pe un fund care nu e), iar insula rămâne în zona liberă: alegerea și
+ * cipurile pe loc, secțiunea se derulează până la nota de sub tabel.
+ */
+test('„Împreună (secțiunea)” la gaura prin foaie: placa groasă cât foaia, fără fund; insula rămâne în zona liberă, secțiunea se derulează', async ({ page }) => {
+  await page.goto('/');
+  await dreptunghiMic(page);
+  await page.locator('[data-actiune="export.gcode"]').click();
+  await page.locator('tr[data-operatie]').first().locator('[data-camp="latura"]').selectOption('incrustatie-drept');
+  const inc = page.locator('tr[data-detalii]').first().locator('[data-incrustatie][data-fel="drept"]');
+  await inc.locator('[data-camp="inc-locas"]').selectOption('gaura');
+  await inc.locator('[data-camp="inc-dop"]').selectOption('decupat');
+  await inc.locator('[data-camp="inc-freza-dop"]').check();
+  await page.locator('[data-buton="exporta"]').click();
+  await expect(page.getByTestId('export-dopuri')).toContainText('groasă de exact 20 mm');
+  await page.getByRole('button', { name: 'Închide' }).click();
+  await deschide(page);
+  await page.getByTestId('alegere-3d').locator('[data-3d-alege="dop-1"]').click();
+  await expect(panza3d(page)).toHaveAttribute('data-alegere', 'dop-1');
+  const cutie = async (l: ReturnType<Page['locator']>) => (await l.boundingBox()) ?? { x: 0, y: 0, width: 0, height: 0 };
+  // Cipul stării, înaintea secțiunii: înălțimea lui e martorul că, apoi, insula strânsă nu-l strivește.
+  const cip = page.getByTestId('stare-3d-text');
+  await expect(cip).toContainText('Dopul 1 simulat');
+  const inaltimeCip = (await cutie(cip)).height;
+  expect(inaltimeCip).toBeGreaterThan(20);
+  await page.locator('[data-3d="impreuna"]').click();
+  const sectiune = page.getByTestId('sectiune-3d'), tabel = sectiune.getByTestId('sectiune-tabel');
+  await expect(tabel).toBeVisible({ timeout: 30_000 });
+  await expect(tabel.locator('tr[data-rand="adancime"] td')).toHaveText(['18.00 mm', /^(17\.9[5-9]|18\.0[0-5]) mm$/]);
+  await expect(tabel.locator('tr.diferit')).toHaveCount(0);
+  const svg = sectiune.getByTestId('sectiune-svg');
+  // De la fața de sus a dopului (2 peste placă) până la fața de jos a foii (18): 20 mm, fără cei 1,5 mm de sub un buzunar.
+  await expect(svg).toHaveAttribute('viewBox', '15 -2 40 20');
+  await expect(svg.locator('[data-strat="contact"]')).toHaveCount(0);
+  await expect(svg.locator('[data-strat="clei"]')).toHaveAttribute('d', 'M20 0 L20.1 0 L20.1 18 L20 18Z M49.9 0 L50 0 L50 18 L49.9 18Z');
+  // Insula nu trece de zona liberă (sub ea e bara de jos), iar butoanele alegerii rămân la vedere; cipul stării rămâne
+  // întreg: se strânge doar secțiunea, care se derulează.
+  const zona = await cutie(page.locator('.zona-libera')), insula = await cutie(page.getByTestId('stare-3d'));
+  expect(insula.height).toBeGreaterThan(200);
+  expect(insula.y + insula.height).toBeLessThanOrEqual(zona.y + zona.height);
+  await expect(page.getByTestId('alegere-3d')).toBeInViewport({ ratio: 1 });
+  expect(Math.abs((await cutie(cip)).height - inaltimeCip)).toBeLessThan(0.5);
+  // Nota de sub tabel nu încape: se ajunge la ea derulând secțiunea, înăuntrul insulei.
+  const nota = sectiune.locator('.sectiune-nota');
+  await nota.scrollIntoViewIfNeeded();
+  await expect(nota).toBeInViewport({ ratio: 0.9 });
+  const laNota = await cutie(nota);
+  expect(laNota.y + laNota.height).toBeLessThanOrEqual(insula.y + insula.height + 1);
+  await expect(page.getByTestId('alegere-3d')).toBeInViewport({ ratio: 1 });
+});
+
+/**
+ * „Împreună (secțiunea)” la dopul în trepte (ADR 0179, felia 12.1↑e-4). Treapta se scrie din fereastra exportului (ca
+ * `incrustatieDreapta.spec.ts`): adâncimea 8, umărul spre interior, d 3, s 5, cu implicitele (dopul ridicat; la treaptă, pe
+ * umăr; g 0,5, H 2, Ø6, jocul lateral 0,1). Pe hârtie: flanșa d + H = 5 stă pe umăr, tija D − d − g = 4,5 lasă g sub ea,
+ * h = 9,5; locașul 30 × 20 până la 3, deschiderea 20 × 10 (X 25…45) până la 8; flanșa trece de deschidere cu s − c = 4,9.
+ * Tabelul are zece rânduri, niciunul roșu; secțiunea, prin mijloc (y = 30), dopul întors, coborât cu flanșa pe umăr (h* = 7,5).
+ * Pe un ecran de 1024 × 768, insula rămâne în zona liberă și pe lățime: coloana „În simulare” nu intră sub panoul de
+ * proprietăți.
+ */
+test('„Împreună (secțiunea)” la dopul în trepte: jocul la flanșă și la tijă, flanșa pe umăr, umărul, tija, cleiul de sub tijă', async ({ page }) => {
+  await page.setViewportSize({ width: 1024, height: 768 });
+  await page.goto('/');
+  await dreptunghiMic(page);
+  await page.locator('[data-actiune="export.gcode"]').click();
+  const randOp = page.locator('tr[data-operatie]').first();
+  await randOp.locator('[data-camp="latura"]').selectOption('incrustatie-drept');
+  await randOp.locator('[data-camp="adancime"]').fill('8');
+  const inc = page.locator('tr[data-detalii]').first().locator('[data-incrustatie][data-fel="drept"]');
+  await inc.locator('[data-camp="inc-treapta"]').selectOption('interior');
+  await inc.locator('[data-camp="inc-treapta-adancime"]').fill('3');
+  await inc.locator('[data-camp="inc-treapta-latime"]').fill('5');
+  await page.locator('[data-buton="exporta"]').click();
+  await expect(page.getByTestId('export-dopuri')).toContainText(/gros de cel puțin 10[,.]5 mm/);
+  await page.getByRole('button', { name: 'Închide' }).click();
+  await deschide(page);
+  await page.getByTestId('alegere-3d').locator('[data-3d-alege="dop-1"]').click();
+  await expect(panza3d(page)).toHaveAttribute('data-alegere', 'dop-1');
+  const impreuna = page.locator('[data-3d="impreuna"]');
+  await expect(impreuna).toBeEnabled();
+  await expect(impreuna).toHaveAttribute('title', 'Dopul ales, așezat în locașul lui: secțiunea și potrivirea simulată, lângă valorile pe hârtie');
+  await impreuna.click();
+  const sectiune = page.getByTestId('sectiune-3d'), tabel = sectiune.getByTestId('sectiune-tabel');
+  await expect(tabel).toBeVisible({ timeout: 30_000 });
+  await expect(sectiune.locator('h3')).toHaveText(/^Dopul 1, întors în locaș: secțiunea la Y (29\.9\d|30\.0\d) mm$/);
+  const rand = (r: string) => tabel.locator(`tr[data-rand="${r}"] td`);
+  await expect(tabel.locator('tr[data-rand]')).toHaveCount(10);
+  await expect(rand('joc-sus')).toHaveText(['0.10 mm', /^0\.(0[89]|1[0-2]) mm$/]);
+  await expect(rand('joc-jos')).toHaveText(['0.10 mm', /^0\.(0[89]|1[0-2]) mm$/]);
+  await expect(rand('dop')).toHaveText(['tot conturul', /^toate cele \d+ puncte$/]);
+  await expect(rand('reazem')).toHaveText(['tot conturul', /^tot conturul, cel puțin 4\.(8[5-9]|9\d) mm$/]);
+  await expect(rand('umar')).toHaveText(['3.00 mm', /^(2\.9[5-9]|3\.0[0-5]) mm$/]);
+  await expect(rand('adancime')).toHaveText(['8.00 mm', /^(7\.9[5-9]|8\.0[0-5]) mm$/]);
+  await expect(rand('tija')).toHaveText(['4.50 mm', /^(4\.4[5-9]|4\.5[0-5]) mm$/]);
+  await expect(rand('inaltime')).toHaveText(['9.50 mm', /^(9\.4[5-9]|9\.5[0-5]) mm$/]);
+  await expect(tabel.locator('tr[data-rand="sub-tija"] th')).toHaveText('Sub tijă (clei)');
+  await expect(rand('sub-tija')).toHaveText(['0.50 mm', /^0\.(4[5-9]|5[0-5]) mm$/]);
+  await expect(rand('intre')).toHaveText(['2.00 mm', /^(1\.9[5-9]|2\.0[0-5]) mm$/]);
+  await expect(tabel.locator('tr.diferit')).toHaveCount(0);
+  const svg = sectiune.getByTestId('sectiune-svg');
+  for (const strat of ['placa', 'dop', 'fierastrau']) await expect(svg.locator(`[data-strat="${strat}"]`)).toHaveCount(1);
+  await expect(svg.locator('[data-strat="marcaj"]')).toHaveCount(0);
+  // Cleiul: jocul lateral la flanșă (X 20…20,1 și 49,9…50, de la fața plăcii la umăr) și, în deschidere, jocul lateral la tijă
+  // (X 25…25,1 și 44,9…45, de sub flanșă până la fund), cu g sub tijă (tija la 7,5, fundul la 8). Flanșa stă pe umăr: acolo
+  // e contactul.
+  await expect(svg.locator('[data-strat="clei"]')).toHaveAttribute('d',
+    'M20 0 L20.1 0 L20.1 3 L20 3Z M25 3 L25.1 3 L25.1 7.5 L44.9 7.5 L44.9 3 L45 3 L45 8 L25 8Z M49.9 0 L50 0 L50 3 L49.9 3Z');
+  await expect(svg.locator('[data-strat="contact"]')).toHaveCount(2);
+  await expect(svg.locator('[data-strat="contact"]').first()).toHaveAttribute('points', '20.1,3 25,3');
+  await expect(svg.locator('[data-strat="contact"]').last()).toHaveAttribute('points', '45,3 49.9,3');
+  // Tăietura cu fierăstrăul, la mijlocul spațiului dintre plăci: (h − h*) / 2 = (9,5 − 7,5) / 2 = 1 mm peste fața plăcii.
+  await expect(svg.locator('[data-strat="fierastrau"]')).toHaveAttribute('y1', /^-(0\.9[5-9]\d*|1(\.0[0-5]\d*)?)$/);
+  await expect(sectiune.locator('.sectiune-nota')).toContainText('dopul în trepte, întors și coborât în locaș');
+  // Insula, în zona liberă și pe lățime; ultima coloană a tabelului e chiar ea la vedere (nu panoul de deasupra ei).
+  const cutie = async (l: ReturnType<Page['locator']>) => (await l.boundingBox()) ?? { x: 0, y: 0, width: 0, height: 0 };
+  const zona = await cutie(page.locator('.zona-libera')), insula = await cutie(page.getByTestId('stare-3d'));
+  expect(insula.x + insula.width).toBeLessThanOrEqual(zona.x + zona.width + 0.5);
+  const simulat = tabel.locator('thead th').last();
+  await expect(simulat).toHaveText('În simulare');
+  const c = await cutie(simulat);
+  expect(await page.evaluate(([x, y]) => document.elementFromPoint(x, y)?.textContent ?? '', [c.x + c.width / 2, c.y + c.height / 2] as const))
+    .toBe('În simulare');
 });

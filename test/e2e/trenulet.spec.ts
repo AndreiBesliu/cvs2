@@ -16,7 +16,7 @@ import { faraEroriInJurnal } from './ajutor-jurnal.ts';
  * - „Salvează fișierul .json” din exportul CNC ajunge descărcare a browserului, din pagina lui cvs2, cu numele dat de
  *   planificator;
  * - ștergerea circuitului, cu confirmarea lui, rămâne și după reîncărcare; jurnalul local, fără erori;
- * - numele (ADR 0167): „Easy 3Draw” 18.20.0, instalat peste „Planificator Trenuleț” 18.6.0, îi ia locul (același id), cu
+ * - numele (ADR 0167): „Easy 3Draw” 18.21.0, instalat peste „Planificator Trenuleț” 18.6.0, îi ia locul (același id), cu
  *   circuitul lui;
  * - „Trimite la cvs2” (ADR 0160 §D): G-code-ul ovalului de exemplu ajunge în dialogul primirii, cu originea extensiei, iar după
  *   „Primește”, în „Lucrarea primită” din fereastra Mașina; planificatorul spune că cvs2 l-a primit;
@@ -31,7 +31,7 @@ import { faraEroriInJurnal } from './ajutor-jurnal.ts';
 test.use({ locale: 'ro-RO' });
 
 const PACHET = Buffer.from(pachetTrenulet().octeti);
-const ZIP = { name: 'trenulet-18.20.0.zip', mimeType: 'application/zip', buffer: PACHET };
+const ZIP = { name: 'trenulet-18.21.0.zip', mimeType: 'application/zip', buffer: PACHET };
 const cadru = (page: Page) => page.frameLocator('iframe.cadru-extensie');
 /**
  * Cât așteaptă probele cadrul extensiei până la „pornit”: un document separat, în procesul lui, cu pachetul adus din
@@ -81,13 +81,15 @@ test('instalat din fișier: pagina în cadru; circuitul, modul și culoarea păs
   await page.goto('/');
   await page.locator('[data-extensii="buton"]').click();
   await page.locator('[data-extensii="fisier-ales"]').setInputFiles(ZIP);
-  await expect(page.getByTestId('extensii-despre')).toHaveText('„Easy 3Draw” 18.20.0, de la trenulet-18.20.0.zip');
-  await expect(page.getByTestId('extensii-permisiuni')).toHaveText(
-    'Cere: să-și țină datele în browserul acesta (cel mult 16 MB); să salveze fișiere ca descărcări (date și desene, nu programe); '
-    + 'să folosească mașina: să încarce programe, să le pornească sau să le reia după confirmarea ta, să pună pauză și să oprească lucrarea; '
-    + 'să vadă dacă ești conectat, cu ce nume și ce plan (nu adresa, nu parola); '
-    + 'să primească formele pe care i le trimiți din desen și să-ți propună forme pentru desen (le adaugi tu, din Importă).',
-  );
+  await expect(page.getByTestId('extensii-instalare').locator('h2')).toHaveText('Instalezi „Easy 3Draw”?');
+  await expect(page.getByTestId('extensii-despre')).toHaveText(/^18\.21\.0 · din fișierul trenulet-18\.21\.0\.zip · \d+ (de )?fișiere, [\d,]+ MB$/);
+  await expect(page.getByTestId('extensii-permisiuni').locator('li')).toHaveText([
+    'Datele în browser își ține datele în browserul acesta (cel mult 16 MB)',
+    'Descărcări salvează fișiere ca descărcări (date și desene, nu programe)',
+    'Mașina încarcă programe, le pornește sau le reia doar după confirmarea ta, pune pauză și oprește lucrarea',
+    'Contul (nume, plan) vede dacă ești conectat, cu ce nume și ce plan (nu adresa, nu parola)',
+    'Formele din desen primește formele pe care i le trimiți din desen și îți propune forme pentru desen (le adaugi tu, din Importă)',
+  ]);
   await page.locator('[data-extensii="instaleaza"]').click();
   await deschide(page);
 
@@ -178,11 +180,12 @@ async function pachetVechi(): Promise<Buffer> {
   })));
 }
 
-test('numele nou (ADR 0167): „Easy 3Draw” 18.20.0, instalat peste „Planificator Trenuleț” 18.6.0, îi ia locul, cu circuitul lui', async ({ page }) => {
+test('numele nou (ADR 0167): „Easy 3Draw” 18.21.0, instalat peste „Planificator Trenuleț” 18.6.0, îi ia locul, cu circuitul lui', async ({ page }) => {
   await page.goto('/');
   await page.locator('[data-extensii="buton"]').click();
   await page.locator('[data-extensii="fisier-ales"]').setInputFiles({ name: 'trenulet-18.6.0.zip', mimeType: 'application/zip', buffer: await pachetVechi() });
-  await expect(page.getByTestId('extensii-despre')).toHaveText('„Planificator Trenuleț” 18.6.0, de la trenulet-18.6.0.zip');
+  await expect(page.getByTestId('extensii-instalare').locator('h2')).toHaveText('Instalezi „Planificator Trenuleț”?');
+  await expect(page.getByTestId('extensii-despre')).toContainText('18.6.0 · din fișierul trenulet-18.6.0.zip · ');
   await page.locator('[data-extensii="instaleaza"]').click();
   await deschide(page);
   await expect(page.getByTestId('extensie-deschisa')).toHaveText('Planificator Trenuleț');
@@ -193,11 +196,13 @@ test('numele nou (ADR 0167): „Easy 3Draw” 18.20.0, instalat peste „Planifi
   await page.reload();
   await page.locator('[data-extensii="buton"]').click();
   await page.locator('[data-extensii="fisier-ales"]').setInputFiles(ZIP);
-  await expect(page.getByTestId('extensii-despre')).toHaveText('„Easy 3Draw” 18.20.0, de la trenulet-18.20.0.zip');
+  await expect(page.getByTestId('extensii-instalare').locator('h2')).toHaveText('Instalezi „Easy 3Draw”?');
+  await expect(page.getByTestId('extensii-despre')).toContainText('18.21.0 · din fișierul trenulet-18.21.0.zip · ');
   await page.locator('[data-extensii="instaleaza"]').click();
   // același id: un singur rând în meniu, cu numele nou; circuitul de dinainte, redeschis
   await page.locator('[data-extensii="buton"]').click();
-  await expect(page.getByTestId('meniu-extensii').locator('[data-extensii="deschide"] span')).toHaveText(['Easy 3Draw']);
+  await expect(page.getByTestId('meniu-extensii').locator('[data-extensii="deschide"]')).toHaveCount(1);
+  await expect(page.getByTestId('meniu-extensii').locator('[data-extensii="deschide"] .rand-text > span')).toHaveText(['Easy 3Draw']);
   await page.getByTestId('meniu-extensii').locator('[data-extensii="deschide"][data-id="trenulet"]').click();
   await expect(page.getByTestId('spatiu-extensie')).toHaveAttribute('data-stare', 'pornit', PORNIRE);
   await expect(page.getByTestId('extensie-deschisa')).toHaveText('Easy 3Draw');

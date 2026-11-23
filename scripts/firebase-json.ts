@@ -51,6 +51,9 @@ export function configHosting(publicDir: string, hashuri: readonly string[] = []
         // s-a schimbat); un pachet are amprenta în nume, deci o adresă nu-și schimbă niciodată octeții.
         { source: '/extensii/catalog.json', headers: [antet('Cache-Control', 'no-cache')] },
         { source: '/extensii/*.zip', headers: [antet('Cache-Control', 'public, max-age=31536000, immutable')] },
+        // Semnele și capturile din bibliotecă (ADR 0231 §B.1) au și ele amprenta în nume.
+        { source: '/extensii/*.svg', headers: [antet('Cache-Control', 'public, max-age=31536000, immutable')] },
+        { source: '/extensii/*.webp', headers: [antet('Cache-Control', 'public, max-age=31536000, immutable')] },
       ],
     },
   };

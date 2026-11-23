@@ -595,6 +595,8 @@ if (straineInPrecache.length > 0) {
 /**
  * Biblioteca extensiilor (ADR 0230): catalogul din build se citește ca în aplicație, iar în `dist/extensii/` stau exact el și
  * pachetele lui, fiecare cu mărimea și amprenta scrise în catalog (ce verifică gazda la instalare, aici pe octeții publicați).
+ * La fel semnele și capturile din catalog (ADR 0231 §B.1): fiecare lângă el, cu mărimea scrisă și cu amprenta ei în nume; iar
+ * aplicația din același build nu sare nicio dată de prezentare.
  */
 const catalogBiblioteca = a.has(FISIER_CATALOG_BIBLIOTECA)
   ? citesteCatalog(JSON.parse(readFileSync(join('.tmp/build-1', FISIER_CATALOG_BIBLIOTECA), 'utf8')))
@@ -603,8 +605,25 @@ if (!catalogBiblioteca.ok) {
   console.error(`dist/${FISIER_CATALOG_BIBLIOTECA}: ${catalogBiblioteca.detaliu} (biblioteca extensiilor, pluginul din vite.config.ts).`);
   process.exit(1);
 }
+if (catalogBiblioteca.sarite.length > 0) {
+  console.error(`dist/${FISIER_CATALOG_BIBLIOTECA}: aplicația din același build sare ${catalogBiblioteca.sarite.join(', ')} (datele de prezentare, ADR 0231 §B.1).`);
+  process.exit(1);
+}
+const imaginiBiblioteca = catalogBiblioteca.catalog.extensii.flatMap((r) => [...(r.pictograma ? [r.pictograma] : []), ...(r.capturi?.ro ?? []), ...(r.capturi?.en ?? [])]);
+const imagineGresita = imaginiBiblioteca.find((i) => {
+  const cale = join('.tmp/build-1', DIR_BIBLIOTECA, i.fisier);
+  if (!a.has(`${DIR_BIBLIOTECA}/${i.fisier}`) || statSync(cale).size !== i.octeti) return true;
+  return !i.fisier.includes(`-${createHash('sha256').update(readFileSync(cale)).digest('hex').slice(0, 8)}.`);
+});
+if (imagineGresita) {
+  console.error(`dist/${DIR_BIBLIOTECA}/${imagineGresita.fisier}: lipsește, sau n-are mărimea din catalog ori amprenta din nume (ADR 0231 §B.1).`);
+  process.exit(1);
+}
 const fisiereBiblioteca = [...a.keys()].filter((f) => f.startsWith(`${DIR_BIBLIOTECA}/`)).sort();
-const asteptateBiblioteca = [FISIER_CATALOG_BIBLIOTECA, ...catalogBiblioteca.catalog.extensii.map((r) => `${DIR_BIBLIOTECA}/${r.pachet}`)].sort();
+const asteptateBiblioteca = [
+  FISIER_CATALOG_BIBLIOTECA, ...catalogBiblioteca.catalog.extensii.map((r) => `${DIR_BIBLIOTECA}/${r.pachet}`),
+  ...imaginiBiblioteca.map((i) => `${DIR_BIBLIOTECA}/${i.fisier}`),
+].sort();
 const pachetGresit = catalogBiblioteca.catalog.extensii.find((r) => {
   const cale = join('.tmp/build-1', DIR_BIBLIOTECA, r.pachet);
   return !a.has(`${DIR_BIBLIOTECA}/${r.pachet}`) || statSync(cale).size !== r.octeti || createHash('sha256').update(readFileSync(cale)).digest('hex') !== r.sha256;
@@ -756,7 +775,7 @@ console.log(`O versiune nouă schimbă doar ${schimbateDeVersiune.join(' și ')}
 console.log(`JavaScript gzip la pornire: ${pornire.toFixed(1)} kB, cu dicționarul limbii active (date, ${kbLimba.toFixed(1)} kB) (plafon ${PLAFON_PORNIRE_KB}); total: ${total.toFixed(1)} kB (plafon ${PLAFON_TOTAL_KB}); /admin: ${admin.toFixed(1)} kB (plafon ${PLAFON_ADMIN_KB}); testul pas cu pas: ${testPasCuPas.toFixed(1)} kB (plafon ${PLAFON_TEST_KB}, doar online); mașina simulată: ${simulata.toFixed(1)} kB (plafon ${PLAFON_SIMULATA_KB}, doar online); sugestia din editor: ${sugestie.toFixed(1)} kB (plafon ${PLAFON_SUGESTIE_KB}, doar online); contul: ${cont.toFixed(1)} kB (plafon ${PLAFON_CONT_KB}, doar online).`);
 console.log(`Raportorul de erori: în pornire ${kbRaportorPornire.toFixed(2)} kB (plafon ${PLAFON_RAPORTOR_PORNIRE_KB}); la cerere, la prima eroare: ${kbRaportor.toFixed(1)} kB (plafon ${PLAFON_RAPORTOR_KB}) (${inchidere(raportor).map((r) => r.replace('assets/', '')).join(', ')}).`);
 console.log(`Workerul PWA: sw.js ${gz('.tmp/build-1/sw.js').toFixed(1)} kB; precache ${manifest.size} fișiere, ${kbPrecache.toFixed(1)} kB gzip (fără ${[...a.keys()].filter((f) => !inPrecache(f) && !f.startsWith(`${DIR_DOCUMENTATIE}/`) && !f.startsWith(`${DIR_BIBLIOTECA}/`)).join(', ')}, ${DIR_DOCUMENTATIE}/, ${fisiereDoc.length} fișiere, și ${DIR_BIBLIOTECA}/).`);
-console.log(`Biblioteca extensiilor (doar online, la instalare; ADR 0230): ${catalogBiblioteca.catalog.extensii.map((r) => `${r.nume} ${r.versiune}, ${(r.octeti / 1024).toFixed(1)} kB`).join('; ')}; catalogul ${(statSync(join('.tmp/build-1', FISIER_CATALOG_BIBLIOTECA)).size / 1024).toFixed(1)} kB.`);
+console.log(`Biblioteca extensiilor (doar online, la instalare; ADR 0230): ${catalogBiblioteca.catalog.extensii.map((r) => `${r.nume} ${r.versiune}, ${(r.octeti / 1024).toFixed(1)} kB`).join('; ')}; catalogul ${(statSync(join('.tmp/build-1', FISIER_CATALOG_BIBLIOTECA)).size / 1024).toFixed(1)} kB; semnele și capturile (ADR 0231), ${imaginiBiblioteca.length} fișiere, ${(imaginiBiblioteca.reduce((n, i) => n + i.octeti, 0) / 1024).toFixed(1)} kB.`);
 console.log(`Documentația admin (doar online, la cerere): ${fisiereDoc.length} fișiere, ${kbDocBrut.toFixed(0)} kB (${kbDocGz.toFixed(0)} kB gzip); roadmap ${gz(join('.tmp/build-1', FISIER_ROADMAP)).toFixed(1)} kB gzip (în engleză ${gz(join('.tmp/build-1', FISIER_ROADMAP_EN)).toFixed(1)} kB, ${roadmapEnCitit.netraduse} texte netraduse), ${roadmapCitit.etape.length} rânduri de etape, ${catalogCitit.documente.length} documente.`);
 console.log(`Manualul (în precache): ${LIMBI_MANUAL.map((l) => `${l} ${gz(join('.tmp/build-1', fisierManual(l))).toFixed(1)} kB gzip`).join(', ')}, ${capitoleManual[0]?.split(',').length ?? 0} capitole.`);
 console.log(`Mesajele modulelor la cerere (date, în precache): ${MODULE_MESAJE.length} fișiere, ${kbMesaje.toFixed(1)} kB gzip (ambele limbi; ADR 0086); dicționarele de bază: ${fisiereBaza.map((f) => `${f} ${gz(join('.tmp/build-1', f)).toFixed(1)} kB`).join(', ')} gzip (ADR 0095).`);
