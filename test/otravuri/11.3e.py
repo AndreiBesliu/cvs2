@@ -67,9 +67,9 @@ o('J05', JB, '      if (!rez.every((r) => r.egale)) centreAlese = rez.map((r) =>
 o('J06', JB, '      const rez = bucle.map((c) => urechiLemnBucla(c, t.sens, parte, fund, D, u.latime, u.numar, fund.celula, !t.intrari));',
   '      const rez = bucle.map((c) => urechiLemnBucla(c, t.sens, parte, fund, D, u.latime, u.numar, fund.celula, true));', 'lemn',
   'locurile egale și cu intrări (le-ar număra de la pornirea intrării)')
-o('J07', JB, '          if (q) puncteLemn.push(q);', '          void q;', 'lemn', 'traseul fără semnele urechilor')
-o('J08', JB, "    if (mod !== undefined && mod !== 'egale' && mod !== 'alese' && mod !== 'lemn') {", "    if (mod !== undefined && mod !== 'egale' && mod !== 'alese') {",
-  'lemn', '„unde ține” refuzat ca o felie următoare')
+o('J07', JB, '          const q = punctLa(bucle[j] as Contur, s)?.p;\n          if (q) puncteLemn.push(q);', '          const q = punctLa(bucle[j] as Contur, s)?.p;\n          void q;', 'lemn',
+  'traseul fără semnele urechilor')
+# J08 („unde ține” refuzat ca o felie următoare) a ieșit în 11.3↑f: refuzul „felie următoare” a plecat, toate modurile se taie.
 # Cele două treceri (unitare).
 o('T01', CC, '  if (!cuUrechiLemn(doc)) return programDinDocument(doc, regim, supracursa, prinFoaie);', '  return programDinDocument(doc, regim, supracursa, prinFoaie);',
   'lemn', 'o singură trecere (refuzul fără fund)')
@@ -91,10 +91,10 @@ o('B03', EC, "    if (o?.urechi && o.urechi.mod !== 'lemn' && !rez.includes(d.op
   "    if (o?.urechi && o.urechi.mod !== 'lemn') rez.push(d.operatie);", 'lemn', 'o operație de două ori')
 # Scrierea ferestrei (unitare).
 o('V01', VO, "  if (dialog.mod !== 'alese') delete imbinate['locuri'];\n", '', 'ui', 'din „alese” în „unde ține”, locurile rămân')
-o('V02', VO, "(o.mod === 'alese' || o.mod === 'lemn')", "o.mod === 'alese'", 'ui', 'înapoi la distanțe egale, „lemn” rămâne')
+o('V02', VO, "o.mod !== undefined && o.mod !== 'egale') delete imbinate['mod'];", "o.mod === 'alese') delete imbinate['mod'];", 'ui', 'înapoi la distanțe egale, „lemn” rămâne')
 # Interfața (e2e).
-o('E01', DE, "p.modUrechi === 'lemn' ? { mod: 'lemn' as const } : {}) } : null;", '{}) } : null;', 'e2e', 'fereastra nu scrie „unde ține”')
-o('E02', DE, "o.valori.urechi?.mod === 'lemn' ? 'lemn' : 'egale',", "'egale',", 'e2e', 'fereastra redeschisă arată „la distanțe egale”')
+o('E01', DE, "...(p.modUrechi !== 'egale' ? { mod: p.modUrechi } : {}) } : null;", "...(p.modUrechi === 'alese' ? { mod: p.modUrechi } : {}) } : null;", 'e2e', 'fereastra nu scrie „unde ține”')
+o('E02', DE, "modUrechi: o.valori.urechi?.mod ?? 'egale',", "modUrechi: o.valori.urechi?.mod === 'alese' ? 'alese' : 'egale',", 'e2e', 'fereastra redeschisă arată „la distanțe egale”')
 o('E03', 'src/app/App.tsx', "          ...(r.undeTine ? { undeTine: r.undeTine } : {}),\n", '', 'e2e', 'fără butonul „Pune urechile unde țin”')
 o('E04', 'src/app/App.tsx', 'lemn={traseu.urechiLemn}', 'lemn={undefined}', 'e2e', 'traseul fără semnele urechilor „unde ține”')
 o('E05', DE, "        if (r) nou[k] = { ...r, modUrechi: 'lemn' };", "        if (r) nou[k] = { ...r };", 'e2e', 'butonul nu trece rândul')

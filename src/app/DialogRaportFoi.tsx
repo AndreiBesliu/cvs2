@@ -32,7 +32,8 @@ function textOperatie(o: OperatieRaport, n: Intl.NumberFormat): string {
   const fel = o.despartire ? t('export.raport.op.despartire') : o.tip === 'profil' ? t(`export.raport.op.profil.${o.latura}`) : t(`export.raport.op.${o.tip}`);
   const freza = `T${o.scula.numar} ${o.scula.unghi === null ? '' : `V ${n.format(o.scula.unghi)}° `}Ø${n.format(o.scula.diametru)}`;
   const parti = [fel, freza, t('export.raport.op.adancime', { adancime: n.format(o.adancime), n: o.treceri })];
-  if (o.urechi > 0) parti.push(t('export.raport.op.urechi', { n: o.urechi }));
+  if (o.urechiLa === 'mijloc') parti.push(t('export.raport.op.urechi.mijloc'));
+  else if (o.urechi > 0) parti.push(t('export.raport.op.urechi', { n: o.urechi }));
   return parti.join(', ');
 }
 

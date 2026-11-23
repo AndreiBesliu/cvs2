@@ -187,6 +187,13 @@ export const enExport = {
   'export.urechi.locuri.lemn': 'where it holds',
   'export.urechi.locuri.lemn.titlu': 'On export, on every copy, the app looks for the wood the tabs can hold on to: outside, the sheet; inside, the part. Not on the line.',
   'export.urechi.lemn': 'On export, on every copy: as many as the number asks, as far apart as possible, where they hold on to wood. Show the toolpath to see them.',
+  // Rules on the sides (ADR 0211, c; slice 11.3↑f).
+  'export.urechi.locuri.lungi': 'on the long sides',
+  'export.urechi.locuri.scurte': 'on the short sides',
+  'export.urechi.locuri.mijloc': 'in the middle of each side',
+  'export.urechi.locuri.laturi.titlu': 'Sides are the straight stretches of the outline long enough for a tab. On an outline with no straight sides (a circle), the tabs stay evenly spaced.',
+  'export.urechi.laturi': 'The number is shared between these sides, evenly spaced on each; if they do not all fit, the export says how many did. Show the toolpath to see them.',
+  'export.urechi.mijloc': 'One tab in the middle of every straight side, whatever the number. Show the toolpath to see them.',
   'export.urechi.undeTine': 'Put the tabs where they hold',
   'export.urechi.undeTine.titlu': 'Switches the operations of the loose parts to “where it holds”; then export again.',
   'export.urechi.undeTine.puse': {
@@ -297,6 +304,7 @@ export const enExport = {
   'export.raport.op.despartire': 'sheet separation',
   'export.raport.op.adancime': { one: '{adancime} mm, {n} pass', other: '{adancime} mm, {n} passes' },
   'export.raport.op.urechi': { one: '{n} tab', other: '{n} tabs' },
+  'export.raport.op.urechi.mijloc': 'tabs in the middle of each side',
   'export.raport.desen-marcaj': '{marime} (drawing)',
   'export.raport.valori-mai-multe': '{lista}, … ({n})',
   'export.raport.col.marime': 'Size (mm)',

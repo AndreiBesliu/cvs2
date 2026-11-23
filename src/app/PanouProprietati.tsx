@@ -168,9 +168,10 @@ function operatie(o: Operatie, n: number, grosimeFoaie?: number): ReactNode {
         {/* Frezele de rest (ADR 0093): ale buzunarului sau ale fundului plat. */}
         {((o.tip === 'buzunar' ? o.rest : o.tip === 'vcarve' ? o.fundPlat?.rest : undefined) ?? []).length > 0 && rand(t('prop.rest'),
           ((o.tip === 'buzunar' ? o.rest : o.fundPlat?.rest) ?? []).map((r) => t('prop.rest.valoare', { numar: r.scula.numar, diametru: mmFreza(r.scula.diametru), pas: mm(r.pasLateral) })).join('; '))}
-        {/* La locuri alese (ADR 0211), câte sunt alese pe desen, în loc de câte pe buclă; „unde ține” (b), câte cere numărul. */}
+        {/* La locuri alese (ADR 0211), câte sunt alese pe desen, în loc de câte pe buclă; „unde ține” (b) și regulile pe laturi
+            (c), câte cere numărul; la mijlocul laturilor, fără număr. */}
         {rand(t('export.urechi'), o.urechi
-          ? t(o.urechi.mod === 'alese' ? 'prop.urechi.alese' : o.urechi.mod === 'lemn' ? 'prop.urechi.lemn' : 'prop.urechi.valoare', {
+          ? t(o.urechi.mod === undefined || o.urechi.mod === 'egale' ? 'prop.urechi.valoare' : `prop.urechi.${o.urechi.mod}`, {
             numar: o.urechi.mod === 'alese' ? numarUrechiAlese(o) : o.urechi.numar, latime: mm(o.urechi.latime), grosime: mm(o.urechi.grosime),
           }) : t('prop.fara'))}
         {rand(t('export.rampa'), o.rampa ? t('prop.rampa.valoare', { mm: mm(o.rampa.lungime) }) : t('prop.fara'))}
