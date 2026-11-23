@@ -2122,10 +2122,12 @@ it, and the app’s interface stays the same.
   **Download**; the host must allow downloads from other pages, otherwise you download the file yourself and install it
   from the file. A link like `…/#instaleaza=<address>` opens the same window with the address filled in; nothing downloads
   without your click.
-- Before installing, the window shows the name, the version, where the package comes from, its files and their size, what
-  the extension asks for (for example, to keep its data in this browser) and, if there is one, the version it replaces.
-  **Install** keeps it in this browser (it works offline too); **Cancel** changes nothing. A damaged or wrong package is
-  refused, with the reason.
+- Before installing, the window asks you with the extension’s name (“Install “Easy 3Draw”?”) and shows its icon, the
+  version, where the package comes from, its files and their size and, if there is one, the version it replaces. Under
+  **What it can do** there is one row for each thing the extension asks for (for example, **Data in this browser**: it
+  keeps its data in this browser). For a new version that asks for something more, the list **The new version can also**
+  comes first, highlighted. **Install** keeps it in this browser (it works offline too); **Cancel** changes nothing. A
+  damaged or wrong package is refused, with the reason.
 - An extension that asked for it keeps its data (for example, its circuits) in this browser, at most 16 MB. A new version of
   it keeps them.
 - An extension that asked for it can save files (for example, the G-code or the parts to print) as ordinary browser
@@ -2168,8 +2170,10 @@ it, and the app’s interface stays the same.
   starts it (with the question above), pauses, resumes and stops it. The machine’s state sits above the buttons.
 - The extension runs isolated: it can’t see your projects or the machine’s port, and it can’t reach the internet; of your
   account it sees only what you allowed it (above); it talks to the app only through what the app gives it.
-- **Manage extensions** shows the installed ones, with their source, date and how much their data takes; **Remove** deletes
-  one, together with its data, **Close** closes the window.
+- **Manage extensions** shows the installed ones, with their icon, source, date and how much their data takes. **Remove**
+  asks you first and says what is lost: the extension and its data in this browser (for example, the saved circuits), which
+  can’t be brought back. There, **Remove** deletes it, and **Keep** (or Escape) takes you back to the list. **Close**
+  closes the window.
 
 ## Keyboard shortcuts
 %% capitol: scurtaturi

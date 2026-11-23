@@ -2054,10 +2054,12 @@ tu, iar interfața aplicației rămâne aceeași.
   **Descarcă**; gazda trebuie să permită descărcarea din alte pagini, altfel descarci tu fișierul și îl instalezi din
   fișier. Un link de forma `…/#instaleaza=<adresa>` deschide aceeași fereastră, cu adresa completată; nimic nu se descarcă
   fără clicul tău.
-- Înainte de instalare, fereastra arată numele, versiunea, de unde vine pachetul, fișierele și mărimea lor, ce cere extensia
-  (de exemplu, să-și țină datele în browserul acesta) și, dacă e cazul, versiunea pe care o înlocuiește. **Instalează** o
-  pune în browserul acesta (merge și offline); **Renunță** nu schimbă nimic. Un pachet stricat sau greșit se refuză, cu
-  motivul.
+- Înainte de instalare, fereastra te întreabă cu numele extensiei („Instalezi „Easy 3Draw”?”) și arată semnul ei, versiunea,
+  de unde vine pachetul, fișierele și mărimea lor și, dacă e cazul, versiunea pe care o înlocuiește. Sub **Ce poate face**
+  stă câte un rând pentru fiecare lucru pe care îl cere extensia (de exemplu, **Datele în browser**: își ține datele în
+  browserul acesta). La o versiune nouă care cere ceva în plus, lista **Versiunea nouă poate și** stă prima, evidențiată.
+  **Instalează** o pune în browserul acesta (merge și offline); **Renunță** nu schimbă nimic. Un pachet stricat sau greșit
+  se refuză, cu motivul.
 - O extensie care a cerut asta își ține datele (de exemplu, circuitele ei) în browserul acesta, cel mult 16 MB. O versiune
   nouă a ei le păstrează.
 - O extensie care a cerut asta poate salva fișiere (de exemplu, G-code-ul sau piesele de printat) ca descărcări obișnuite
@@ -2099,8 +2101,10 @@ tu, iar interfața aplicației rămâne aceeași.
   (cu întrebarea de mai sus), pune pauză, îl reia și îl oprește. Starea mașinii stă deasupra butoanelor.
 - Extensia rulează izolată: nu vede proiectele sau portul mașinii și nu iese pe internet; din cont vede doar ce i-ai dat voie
   (mai sus); vorbește cu aplicația doar prin ce îi dă aceasta.
-- **Gestionează extensiile** le arată pe cele instalate, cu sursa, data și cât ocupă datele lor; **Scoate** șterge una,
-  împreună cu datele ei, **Închide** închide fereastra.
+- **Gestionează extensiile** le arată pe cele instalate, cu semnul, sursa, data și cât ocupă datele lor. **Scoate** te
+  întreabă întâi și spune ce se pierde: extensia și datele ei din browserul acesta (de exemplu, circuitele salvate), care
+  nu se pot aduce înapoi. Acolo, **Scoate** o șterge, iar **Păstrează** (sau Escape) te întoarce la listă. **Închide**
+  închide fereastra.
 
 ## Scurtăturile
 %% capitol: scurtaturi

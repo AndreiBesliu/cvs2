@@ -4,15 +4,17 @@
  * puzzle pe un fond neutru, cât semnul. Semnul unei extensii instalate vine din pachetul ei, printr-o adresă `blob:` ținută
  * cât e la vedere; nu se pune niciodată în pagină ca SVG.
  */
-import { useEffect, useState, type ReactNode } from 'react';
+import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import type { ExtensieInstalata } from './depozit.ts';
 import { octetiSemn } from './semn.ts';
 
-/** Adresa `blob:` a semnului unei extensii instalate, cât componenta e montată; null fără semn. */
-export function useSemnInstalat(e: ExtensieInstalata | null): string | null {
+/** Mărimile semnului, în px: pe filă, în rânduri, în capul unei ferestre. */
+export type MarimeSemn = 20 | 28 | 48;
+
+/** Adresa `blob:` a unui semn dat ca octeți (din pachet), cât componenta e montată; null fără semn. */
+export function useSemnOcteti(o: Uint8Array | null): string | null {
   const [adresa, setAdresa] = useState<string | null>(null);
   useEffect(() => {
-    const o = e ? octetiSemn(e) : null;
     if (!o) {
       setAdresa(null);
       return;
@@ -20,12 +22,17 @@ export function useSemnInstalat(e: ExtensieInstalata | null): string | null {
     const u = URL.createObjectURL(new Blob([new Uint8Array(o)], { type: 'image/svg+xml' }));
     setAdresa(u);
     return () => { URL.revokeObjectURL(u); };
-  }, [e]);
+  }, [o]);
   return adresa;
 }
 
+/** Adresa `blob:` a semnului unei extensii instalate, cât componenta e montată; null fără semn. */
+export function useSemnInstalat(e: ExtensieInstalata | null): string | null {
+  return useSemnOcteti(useMemo(() => (e ? octetiSemn(e) : null), [e]));
+}
+
 /** Semnul, de la adresa dată (sau piesa de puzzle), într-un pătrat de `marime` px. */
-export function Semn({ adresa, marime }: { readonly adresa: string | null; readonly marime: 20 | 28 }): ReactNode {
+export function Semn({ adresa, marime }: { readonly adresa: string | null; readonly marime: MarimeSemn }): ReactNode {
   // Adresa care n-a putut fi arătată: semnul următor (altă adresă) se încearcă din nou.
   const [stricata, setStricata] = useState<string | null>(null);
   if (adresa === null || adresa === stricata) {
@@ -45,6 +52,6 @@ export function Semn({ adresa, marime }: { readonly adresa: string | null; reado
 }
 
 /** Semnul unei extensii instalate. */
-export function SemnInstalat({ extensie, marime }: { readonly extensie: ExtensieInstalata; readonly marime: 20 | 28 }): ReactNode {
+export function SemnInstalat({ extensie, marime }: { readonly extensie: ExtensieInstalata; readonly marime: MarimeSemn }): ReactNode {
   return <Semn adresa={useSemnInstalat(extensie)} marime={marime} />;
 }

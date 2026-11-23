@@ -7,8 +7,8 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import type { RandBiblioteca } from '../../shared/biblioteca.ts';
 import type { ExtensieInstalata } from '../../src/extensii/depozit.ts';
-import type { Manifest } from '../../src/extensii/pachet.ts';
-import { adresaSemnCatalog, octetiSemn } from '../../src/extensii/semn.ts';
+import type { Manifest, Pachet } from '../../src/extensii/pachet.ts';
+import { adresaSemnCatalog, octetiSemn, octetiSemnPachet } from '../../src/extensii/semn.ts';
 
 const SVG = new TextEncoder().encode('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64"/></svg>');
 const instalata = (manifest: Partial<Manifest>, fisiere: Record<string, Uint8Array>): ExtensieInstalata => ({
@@ -27,6 +27,15 @@ test('fără semn: un manifest fără câmp, un fișier lipsă din rândul insta
   assert.equal(octetiSemn(instalata({ pictograma: 'semn.svg' }, { 'semn.svg': new TextEncoder().encode('<html></html>') })), null, 'nu e SVG');
   // O cheie a prototipului nu e un fișier al pachetului.
   assert.equal(octetiSemn(instalata({ pictograma: 'constructor' }, {})), null);
+});
+
+test('semnul unui pachet abia citit (fereastra de confirmare, înainte de instalare): fișierul numit de manifest', () => {
+  const m = instalata({ pictograma: 'semn.svg' }, {}).manifest;
+  const pachet = (manifest: Manifest, fisiere: Array<[string, Uint8Array]>): Pachet => ({ manifest, fisiere: new Map(fisiere), octeti: 0 });
+  assert.deepEqual(octetiSemnPachet(pachet(m, [['semn.svg', SVG]])), SVG);
+  assert.equal(octetiSemnPachet(pachet(instalata({}, {}).manifest, [['semn.svg', SVG]])), null, 'manifestul nu-l numește');
+  assert.equal(octetiSemnPachet(pachet(m, [])), null, 'fișierul lipsește');
+  assert.equal(octetiSemnPachet(pachet(m, [['semn.svg', new TextEncoder().encode('<html></html>')]])), null, 'nu e SVG');
 });
 
 test('semnul unui rând din bibliotecă: fișierul de lângă catalog; fără el, nimic', () => {

@@ -32,9 +32,9 @@ async function varianta(schimbari: Record<string, unknown>): Promise<Buffer> {
 
 const cadru = (page: Page) => page.frameLocator('iframe.cadru-extensie');
 
-async function instaleaza(page: Page, pachet: Buffer, permisiuni: string): Promise<void> {
+async function instaleaza(page: Page, pachet: Buffer, permisiuni: readonly string[]): Promise<void> {
   await page.locator('[data-extensii="fisier-ales"]').setInputFiles({ name: 'salut-1.0.0.zip', mimeType: 'application/zip', buffer: pachet });
-  await expect(page.getByTestId('extensii-permisiuni')).toHaveText(permisiuni);
+  await expect(page.getByTestId('extensii-permisiuni').locator('li')).toHaveText([...permisiuni]);
   await page.locator('[data-extensii="instaleaza"]').click();
   await expect(page.getByTestId('extensii-instalare')).toHaveCount(0);
 }
@@ -60,7 +60,7 @@ const stocat = (page: Page, cheie: string) => page.evaluate((k) => new Promise<u
   };
 }), cheie);
 
-const STOCARE = 'Cere: să-și țină datele în browserul acesta (cel mult 16 MB).';
+const STOCARE = ['Datele în browser își ține datele în browserul acesta (cel mult 16 MB)'];
 
 test('tema: color-scheme și fonturile lui cvs2 pe rădăcina cadrului, lângă culori, schimbate pe loc; contul, nevăzut fără permisiune', async ({ page }) => {
   await page.goto('/');
@@ -92,7 +92,7 @@ test('contul, cu permisiunea cont: conectat, numele și planul; ieșirea, venit�
   }, TOATE);
   await page.goto('/');
   await instaleaza(page, await varianta({ permisiuni: ['stocare', 'cont'] }),
-    'Cere: să-și țină datele în browserul acesta (cel mult 16 MB); să vadă dacă ești conectat, cu ce nume și ce plan (nu adresa, nu parola).');
+    [...STOCARE, 'Contul (nume, plan) vede dacă ești conectat, cu ce nume și ce plan (nu adresa, nu parola)']);
   await deschide(page);
   const c = cadru(page);
   await expect(c.locator('[data-salut="cont"]')).toHaveText('Contul: Ana (personal)');
@@ -245,7 +245,7 @@ test('repornirea cerută de extensie (ADR 0165): cadrul se reface, cu contextul 
   expect(await eroriJurnal(page)).toEqual([]);
 });
 
-const FORME = 'Cere: să-și țină datele în browserul acesta (cel mult 16 MB); să primească formele pe care i le trimiți din desen și să-ți propună forme pentru desen (le adaugi tu, din Importă).';
+const FORME = [...STOCARE, 'Formele din desen primește formele pe care i le trimiți din desen și îți propune forme pentru desen (le adaugi tu, din Importă)'];
 /** Un dreptunghi de 40 × 20 mm cu o gaură rotundă, importat și ales: forma pe care o trimite omul. */
 async function formaAleasa(page: Page): Promise<void> {
   const svg = '<svg xmlns="http://www.w3.org/2000/svg" width="40mm" height="20mm" viewBox="0 0 40 20">'

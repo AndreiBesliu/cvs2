@@ -99,7 +99,7 @@ o('H02', FJ, "        { source: '/extensii/*.svg', headers: [antet('Cache-Contro
   'semnul se cere din nou la fiecare deschidere')
 
 # De unde ia gazda semnul (src/extensii/semn.ts)
-o('N01', SE, '  return o && esteSvg(o) ? o : null;', '  return o ?? null;', 'semn',
+o('N01', SE, '  const o = e.fisiere[cale];\n  return o && esteSvg(o) ? o : null;', '  const o = e.fisiere[cale];\n  return o ?? null;', 'semn',
   'un fișier care nu e SVG ajunge imagine')
 o('N02', SE, '  return rand.pictograma ? new URL(rand.pictograma.fisier, adresaCatalog).href : null;', '  return rand.pictograma ? rand.pictograma.fisier : null;', 'semn',
   'semnul din bibliotecă nu mai e cerut de lângă catalog')

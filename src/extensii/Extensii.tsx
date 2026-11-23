@@ -41,6 +41,7 @@ import { contextPentruExtensie } from './cont.ts';
 import { FaraStocare, listaExtensii, scrieExtensia, type ExtensieInstalata } from './depozit.ts';
 import { CATALOG_PERMISIUNI } from './pachet.ts';
 import { repornireRara } from './repornire.ts';
+import { textMarime } from './marimeText.ts';
 import { Semn, SemnInstalat, useSemnInstalat } from './Semn.tsx';
 import { adresaSemnCatalog } from './semn.ts';
 import type { CerereInstalare } from './tipuri.ts';
@@ -368,7 +369,6 @@ export function Extensii({ jurnal, fereastra, onFereastra, onDeschisa, onModal, 
   );
   // Biblioteca (ADR 0230 §D): un rând pe extensie, cu starea lui față de ce e instalat.
   const catalog = biblioteca?.fel === 'ok' ? biblioteca.catalog : null;
-  const kb = (n: number): string => new Intl.NumberFormat(limba === 'ro' ? 'ro-RO' : 'en-GB', { maximumFractionDigits: 1 }).format(n / 1024);
   const randBiblioteca = (r: RandBiblioteca): ReactNode => {
     const instalata = lista.find((x) => x.id === r.id);
     const s = stareRand(r, instalata?.manifest);
@@ -409,7 +409,7 @@ export function Extensii({ jurnal, fereastra, onFereastra, onDeschisa, onModal, 
           {r.permisiuni.map((p) => <span key={p} className="biblioteca-cip">{CATALOG_PERMISIUNI.includes(p) ? t(`extensii.permisiune-scurt.${p}` as CheieSimpla) : p}</span>)}
         </div>
         {pr?.fel === 'eroare' && <p className="avertisment" role="alert">{pr.text}</p>}
-        <div className="biblioteca-jos"><span>{t('extensii.biblioteca.marime', { kb: kb(r.octeti) })}</span>{control}</div>
+        <div className="biblioteca-jos"><span>{textMarime(r.octeti, limba)}</span>{control}</div>
       </div>
     );
   };
@@ -419,7 +419,7 @@ export function Extensii({ jurnal, fereastra, onFereastra, onDeschisa, onModal, 
       {(biblioteca === null || biblioteca.fel === 'incarca') && <span className="biblioteca-nota" role="status">{t('extensii.biblioteca.incarca')}</span>}
       {(biblioteca?.fel === 'retea' || biblioteca?.fel === 'defect') && (
         <div className="biblioteca-jos">
-          <span role="alert">{biblioteca.fel === 'retea' ? t('extensii.biblioteca.fara-retea') : t('extensii.biblioteca.eroare', { motiv: biblioteca.detaliu })}</span>
+          <span role="alert">{biblioteca.fel === 'retea' ? t('extensii.biblioteca.fara-retea') : t('extensii.biblioteca.eroare')}</span>
           <button type="button" role="menuitem" className="biblioteca-buton" data-extensii="biblioteca-reincearca" onClick={() => { incarcaBiblioteca(); }}>
             {t('extensii.biblioteca.reincearca')}
           </button>

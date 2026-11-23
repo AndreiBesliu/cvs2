@@ -84,6 +84,10 @@ async function instaleazaDinFisier(page: Page, nume: string, buffer: Buffer): Pr
   await expect(page.getByTestId('extensii-instalare')).toHaveCount(0);
 }
 
+/** Semnul unei extensii (ADR 0231 §B.2): o imagine, încărcată cu adevărat (nu doar pusă în pagină). */
+const semn = (unde: Locator) => unde.locator('img[data-semn]');
+const incarcat = (img: Locator) => expect.poll(() => img.evaluate((i: HTMLImageElement) => i.complete && i.naturalWidth > 0)).toBe(true);
+
 test('din bibliotecă: rândul lui Easy 3Draw, fereastra cu ce cere, instalarea verificată, „Deschide”; apoi „Instalată”', async ({ page }) => {
   const cereri: string[] = [];
   page.on('request', (r: Request) => { cereri.push(r.url()); });
@@ -96,11 +100,19 @@ test('din bibliotecă: rândul lui Easy 3Draw, fereastra cu ce cere, instalarea 
   await expect(rand).toContainText(r.versiune);
   await expect(rand).toContainText(r.descriere.ro);
   await expect(rand).toContainText('mașina');
+  // Mărimea pe înțeles (ADR 0231 §B.5): kB întregi, nu „457,3 kB”.
+  await expect(rand.locator('.biblioteca-jos > span').first()).toHaveText(/^\d+ kB$/);
   await rand.locator('[data-extensii="biblioteca-instaleaza"]').click();
 
   const fereastra = page.getByTestId('extensii-instalare');
-  await expect(page.getByTestId('extensii-despre')).toHaveText(`„Easy 3Draw” ${r.versiune}, din biblioteca cvs2`);
-  await expect(page.getByTestId('extensii-permisiuni')).toContainText('să folosească mașina');
+  await expect(fereastra.locator('h2')).toHaveText('Instalezi „Easy 3Draw”?');
+  await expect(page.getByTestId('extensii-despre')).toHaveText(`${r.versiune} · din biblioteca cvs2`);
+  await expect(page.getByTestId('extensii-permisiuni').locator('li')).toHaveCount(5);
+  await expect(page.getByTestId('extensii-permisiuni').locator('li').nth(2)).toHaveText(
+    'Mașina încarcă programe, le pornește sau le reia doar după confirmarea ta, pune pauză și oprește lucrarea');
+  await expect(fereastra).toContainText(/\d+ kB, descărcați la instalare și verificați după amprenta din bibliotecă\./);
+  // Semnul extensiei, în capul ferestrei, de lângă catalog.
+  await incarcat(semn(fereastra.locator('.confirmare-cap')));
   await expect(page.getByTestId('extensii-din-afara')).toHaveCount(0);
   expect(cereri.filter((u) => RE_PACHET.test(u)), 'nimic descărcat înainte de „Instalează” din fereastră').toEqual([]);
   await fereastra.locator('[data-extensii="instaleaza"]').click();
@@ -176,9 +188,14 @@ test('actualizarea care cere ceva nou: fereastra spune întâi ce cere în plus,
   await deschideMeniul(page);
   await randBiblioteca(page).locator('[data-extensii="biblioteca-actualizeaza"]').click();
   const fereastra = page.getByTestId('extensii-instalare');
-  await expect(page.getByTestId('extensii-despre')).toHaveText(`18.6.0 → ${r.versiune}, din biblioteca cvs2`);
-  await expect(page.getByTestId('extensii-permisiuni-noi')).toHaveText(
-    'Versiunea nouă cere și: să primească formele pe care i le trimiți din desen și să-ți propună forme pentru desen (le adaugi tu, din Importă).');
+  await expect(fereastra.locator('h2')).toHaveText('Actualizezi „Easy 3Draw”?');
+  await expect(page.getByTestId('extensii-despre')).toHaveText(`18.6.0 → ${r.versiune} · din biblioteca cvs2`);
+  // Ce cere în plus stă primul, evidențiat; apoi ce putea și până acum (ADR 0231 §B.3).
+  await expect(fereastra.locator('h3')).toHaveText(['Versiunea nouă poate și', 'Ce putea și până acum']);
+  await expect(page.getByTestId('extensii-permisiuni-noi').locator('li')).toHaveText(
+    ['Formele din desen primește formele pe care i le trimiți din desen și îți propune forme pentru desen (le adaugi tu, din Importă)']);
+  await expect(page.getByTestId('extensii-permisiuni').locator('li')).toHaveCount(4);
+  await expect(fereastra).toContainText('Datele ei rămân.');
   await fereastra.locator('[data-extensii="actualizeaza"]').click();
   await expect(page.getByTestId('extensii-gata')).toContainText(`„Easy 3Draw” ${r.versiune} e instalată`);
   await page.locator('[data-extensii="inchide-instalata"]').click();
@@ -200,13 +217,29 @@ test('fără rețea: biblioteca spune că are nevoie de internet, iar „Reînce
   await faraEroriInJurnal(page);
 });
 
+test('catalogul stricat: mesajul pe înțeles, fără detaliul tehnic, cu „Reîncearcă”; detaliul ajunge doar în jurnal', async ({ page }) => {
+  await page.route('**/extensii/catalog.json', (route) => route.fulfill({ status: 200, contentType: 'application/json', body: '{"format":"altceva"}' }));
+  await page.goto('/');
+  await deschideMeniul(page);
+  const sectiunea = page.getByTestId('biblioteca');
+  await expect(sectiunea.locator('[role="alert"]')).toHaveText('Biblioteca nu s-a putut încărca. Încearcă din nou peste puțin.');
+  await expect(sectiunea.locator('[data-extensii="biblioteca-reincearca"]')).toBeVisible();
+  const erori = await eroriJurnal(page);
+  expect(erori.some((e) => e.mesaj.includes('biblioteca: catalogul (format)')), JSON.stringify(erori)).toBe(true);
+  // La fel din link, în fereastră.
+  await page.goto('about:blank');
+  await page.goto('/#biblioteca=trenulet');
+  await expect(page.getByTestId('extensii-instalare').locator('[role="alert"]')).toHaveText('Biblioteca nu s-a putut încărca. Încearcă din nou peste puțin.');
+});
+
 test('linkul #biblioteca=trenulet: fereastra lui din bibliotecă, nimic descărcat fără clic, ancora ștearsă; un id necunoscut', async ({ page }) => {
   const cereri: string[] = [];
   page.on('request', (r: Request) => { cereri.push(r.url()); });
   await page.goto('/#biblioteca=trenulet');
   const r = await randul(page);
   await expect(page.getByTestId('extensii-link')).toBeVisible();
-  await expect(page.getByTestId('extensii-despre')).toHaveText(`„Easy 3Draw” ${r.versiune}, din biblioteca cvs2`);
+  await expect(page.getByTestId('extensii-instalare').locator('h2')).toHaveText('Instalezi „Easy 3Draw”?');
+  await expect(page.getByTestId('extensii-despre')).toHaveText(`${r.versiune} · din biblioteca cvs2`);
   await expect(page).toHaveURL(/\/$/);
   expect(cereri.filter((u) => RE_PACHET.test(u))).toEqual([]);
   await page.locator('[data-extensii="renunta"]').click();
@@ -228,14 +261,13 @@ test('în engleză: secțiunea, descrierea din catalog și butoanele', async ({ 
   await expect(randBiblioteca(page)).toContainText(r.descriere.en);
   await expect(randBiblioteca(page).locator('[data-extensii="biblioteca-instaleaza"]')).toHaveText('Install');
   await randBiblioteca(page).locator('[data-extensii="biblioteca-instaleaza"]').click();
-  await expect(page.getByTestId('extensii-despre')).toHaveText(`“Easy 3Draw” ${r.versiune}, from the cvs2 library`);
+  await expect(page.getByTestId('extensii-instalare').locator('h2')).toHaveText('Install “Easy 3Draw”?');
+  await expect(page.getByTestId('extensii-despre')).toHaveText(`${r.versiune} · from the cvs2 library`);
+  await expect(page.getByTestId('extensii-instalare').locator('h3')).toHaveText(['What it can do']);
+  await expect(page.getByTestId('extensii-permisiuni').locator('li').first()).toHaveText('Data in this browser keeps its data in this browser (at most 16 MB)');
   await page.locator('[data-extensii="renunta"]').click();
   await faraEroriInJurnal(page);
 });
-
-/** Semnul unei extensii (ADR 0231 §B.2): o imagine, încărcată cu adevărat (nu doar pusă în pagină). */
-const semn = (unde: Locator) => unde.locator('img[data-semn]');
-const incarcat = (img: Locator) => expect.poll(() => img.evaluate((i: HTMLImageElement) => i.complete && i.naturalWidth > 0)).toBe(true);
 
 test('semnul extensiei: în bibliotecă vine de lângă catalog; după instalare, din pachet, în meniu și pe fila ei, și fără rețea', async ({ page }) => {
   await page.goto('/');

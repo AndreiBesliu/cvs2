@@ -49,5 +49,5 @@ o('L01', CAD, "scrie: (cheie, valoare) => cere('stocare.scrie', cheie, valoare),
 # ---- legarea (e2e) ----
 o('E01', GAZ, "serviciu === 'stocare'", "serviciu === 'stocarea'", 'e2e', 'cererea stocării nu ajunge la serviciu')
 o('E02', DEP, '  t.objectStore(DATE).delete(aleExtensiei(id));\n', '', 'e2e', 'scoaterea lasă datele')
-o('E03', INS, 'p.manifest.permisiuni.length === 0 ?', 'true ?', 'e2e', 'fereastra instalării nu spune ce cere extensia')
-o('E04', INS, 'date[x.id] !== undefined && ', 'false && ', 'e2e', 'gestionarea nu arată datele')
+o('E03', INS, '      {permisiuni.length === 0 ? <p data-testid={test}>', '      {true ? <p data-testid={test}>', 'e2e', 'fereastra instalării nu spune ce cere extensia')
+o('E04', INS, "{typeof o === 'number' && <small data-testid=\"extensii-date\">", '{false && <small data-testid="extensii-date">', 'e2e', 'gestionarea nu arată datele')

@@ -193,8 +193,27 @@
   align-items: center;
   justify-content: space-between;
   gap: var(--sp-3);
-  padding: var(--sp-1) 0;
+  padding: var(--sp-2) 0;
   border-bottom: 1px solid var(--l-margine);
+}
+
+/* Rândul unei extensii instalate: semnul, numele cu sursa și datele ei, apoi „Scoate”, care arată a buton. */
+.extensii-rand {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.extensii-lista button {
+  flex: none;
+  border-color: var(--l-camp);
+}
+
+.extensii-lista small {
+  display: block;
+  font-size: var(--fs-2);
+  line-height: 1.4;
+  color: var(--t-slab);
 }
 
 /*
@@ -292,11 +311,152 @@
   border-radius: 99px;
 }
 
-/* Fereastra actualizării: ce cere în plus versiunea nouă, întâi și pus în evidență. */
-.dialog p.nou {
-  padding: var(--sp-1) var(--sp-2);
+/*
+ * Ferestrele extensiilor (ADR 0231 §B.3): aceeași lățime pentru toate, cât să se citească (nu cât ecranul). Fereastra despre
+ * o extensie anume are capul ei: semnul, numele în titlu și, dedesubt, de unde vine.
+ */
+.dialog-extensii .dialog-cutie {
+  width: min(34rem, calc(100vw - 2rem));
+}
+
+.confirmare-cap {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  margin-bottom: var(--sp-4);
+}
+
+.confirmare-cap > div {
+  min-width: 0;
+}
+
+.confirmare-cap h2 {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.confirmare-sursa {
+  margin: 2px 0 0;
+  font-size: var(--fs-2);
+  color: var(--t-slab);
+  overflow-wrap: anywhere;
+}
+
+.confirmare-nota {
+  font-size: var(--fs-2);
+  color: var(--t-slab);
+}
+
+/* Avertismentul unei ferestre a extensiilor („vine din afara bibliotecii”, un refuz): o casetă liniștită, nu un rând strident. */
+.dialog-extensii .avertisment {
+  margin: var(--sp-3) 0;
+  padding: var(--sp-2) var(--sp-3);
+  font-size: var(--fs-3);
+  color: var(--t);
   background: var(--s-atentie);
-  border-radius: var(--r-1);
+  border-radius: var(--r-2);
+}
+
+.dialog-extensii p {
+  font-size: var(--fs-3);
+}
+
+.dialog-extensii p.confirmare-sursa,
+.dialog-extensii p.confirmare-nota {
+  font-size: var(--fs-2);
+}
+
+/* „Ce poate face”: câte un rând pe permisiune, numele ei și, dedesubt, ce face extensia cu ea. */
+.poate {
+  margin: var(--sp-3) 0;
+}
+
+.poate h3 {
+  margin: 0 0 var(--sp-2);
+  font-size: var(--fs-4);
+  font-weight: 650;
+}
+
+.poate ul {
+  display: grid;
+  gap: var(--sp-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.poate li {
+  display: grid;
+  padding-left: var(--sp-3);
+  border-left: 2px solid var(--l-margine);
+}
+
+.poate li strong {
+  font-size: var(--fs-3);
+  font-weight: 600;
+}
+
+.poate li span {
+  font-size: var(--fs-2);
+  color: var(--t-slab);
+}
+
+.poate p {
+  margin: 0;
+}
+
+/* La o actualizare, ce cere în plus versiunea nouă: întâi și pus în evidență. */
+.poate.nou {
+  padding: var(--sp-2) var(--sp-3) var(--sp-3);
+  background: var(--s-atentie);
+  border-radius: var(--r-2);
+}
+
+.poate.nou li {
+  border-left-color: var(--a);
+}
+
+.poate.nou li span {
+  color: var(--t);
+}
+
+/*
+ * Butoanele rămân la vedere, lipite de marginea de jos a ferestrei, și când fereastra e mai înaltă decât ecranul (un telefon,
+ * o extensie care cere multe): textul se derulează pe sub ele. Marginile negative le întind peste marginea interioară a cutiei.
+ */
+.dialog-extensii .butoane {
+  position: sticky;
+  bottom: calc(-1 * var(--sp-5));
+  margin: var(--sp-2) calc(-1 * var(--sp-5)) calc(-1 * var(--sp-5));
+  padding: var(--sp-3) var(--sp-5) var(--sp-5);
+  background: var(--s-panou);
+}
+
+/* Gestul care șterge („Scoate”, în întrebarea lui): roșu, nu accentul. */
+.dialog .butoane button.pericol:first-child:not([data-buton='renunta']) {
+  color: var(--s-panou);
+  background: var(--rosu);
+  border-color: var(--rosu);
+}
+
+.dialog .butoane button.pericol:first-child:not([data-buton='renunta']):hover:enabled {
+  background: color-mix(in oklab, var(--rosu) 85%, var(--t));
+}
+
+/*
+ * Țintele (ADR 0231 §B.7): la atingere și la densitatea mare, rândurile meniului și butoanele lui sunt cât `--tinta` (44 px
+ * la atingere, 48 sau 56 la densitatea mare). Cu mausul, la densitatea obișnuită, meniul rămâne strâns.
+ */
+@media (pointer: coarse) {
+  .meniu-extensii [role='menuitem'],
+  .meniu-extensii .biblioteca-buton[role='menuitem'] {
+    min-height: var(--tinta);
+  }
+}
+
+:root[data-densitate='mare'] .meniu-extensii [role='menuitem'],
+:root[data-densitate='mare'] .meniu-extensii .biblioteca-buton[role='menuitem'] {
+  min-height: var(--tinta);
 }
 
 /*
@@ -323,6 +483,11 @@
 .semn-28 {
   width: 28px;
   height: 28px;
+}
+
+.semn-48 {
+  width: 48px;
+  height: 48px;
 }
 
 .semn-extensie[data-fara-semn] > svg {

@@ -1,4 +1,4 @@
-import { test, expect, type Page } from '@playwright/test';
+import { test, expect, type Locator, type Page } from '@playwright/test';
 import { impacheteaza, scrieZip } from '../../scripts/impacheteaza-extensie.ts';
 import { citesteZip } from '../../src/extensii/zip.ts';
 import { clicDupaReaparitie } from './ajutor-extensii.ts';
@@ -49,9 +49,16 @@ test('din fișier: confirmarea, meniul, fereastra izolată peste Proiectare, ×,
 
   await page.locator('[data-extensii="fisier-ales"]').setInputFiles({ name: 'salut-1.0.0.zip', mimeType: 'application/zip', buffer: Buffer.from(SALUT) });
   const dialog = page.getByTestId('extensii-instalare');
-  await expect(page.getByTestId('extensii-despre')).toHaveText('„Salut” 1.0.0, de la salut-1.0.0.zip');
-  await expect(dialog).toContainText('3 fișiere');
-  await expect(page.getByTestId('extensii-permisiuni')).toHaveText('Cere: să-și țină datele în browserul acesta (cel mult 16 MB).');
+  // Fereastra de confirmare (ADR 0231 §B.3): numele în titlu, de unde vine, ce poate face ca listă, izolarea, butoanele.
+  await expect(dialog.locator('h2')).toHaveText('Instalezi „Salut”?');
+  await expect(page.getByTestId('extensii-despre')).toHaveText(/^1\.0\.0 · din fișierul salut-1\.0\.0\.zip · 3 fișiere, [\d,]+ kB$/);
+  await expect(page.getByTestId('extensii-din-afara')).toHaveText('Vine din afara bibliotecii cvs2: instaleaz-o doar dacă știi de unde e.');
+  await expect(dialog.locator('h3')).toHaveText(['Ce poate face']);
+  await expect(page.getByTestId('extensii-permisiuni').locator('li')).toHaveText(['Datele în browser își ține datele în browserul acesta (cel mult 16 MB)']);
+  await expect(page.getByTestId('extensii-izolare')).toHaveText('Extensia rulează izolată: nu vede proiectele, contul sau portul mașinii.');
+  // Fără semn în pachet, piesa de puzzle; întâi gestul, apoi Renunță.
+  await expect(dialog.locator('.confirmare-cap [data-fara-semn]')).toBeVisible();
+  await expect(dialog.locator('.butoane button')).toHaveText(['Instalează', 'Renunță']);
   await expect(page.locator('.aplicatie')).toHaveAttribute('inert', '');
   await page.locator('[data-extensii="instaleaza"]').click();
   await expect(dialog).toHaveCount(0);
@@ -137,8 +144,28 @@ test('din fișier: confirmarea, meniul, fereastra izolată peste Proiectare, ×,
   const gest = page.getByTestId('extensii-gestionare');
   await expect(gest.locator('li')).toHaveCount(1);
   await expect(gest.locator('li')).toContainText('de la salut-1.0.0.zip');
-  await expect(gest.getByTestId('extensii-date')).toHaveText('datele ei: 0 kB');
+  await expect(gest.getByTestId('extensii-date')).toHaveText('datele ei: sub 1 kB');
+  await expect(gest.locator('li [data-semn]')).toHaveCount(1);
+  const fond = (l: Locator) => l.evaluate((e) => getComputedStyle(e).backgroundColor);
+  const accent = await fond(gest.locator('[data-extensii="inchide"]'));
+  // „Scoate” întreabă întâi și spune ce se pierde (ADR 0231 §B.4); Escape și „Păstrează” se întorc la listă.
   await gest.locator('[data-extensii="scoate"]').click();
+  const intrebare = page.getByTestId('extensii-scoatere');
+  await expect(intrebare.locator('h2')).toHaveText('Scoți „Salut”?');
+  await expect(page.getByTestId('extensii-scoatere-text')).toHaveText(
+    '„Salut” se șterge din browserul acesta. Se șterg și datele ei (sub 1 kB): nu se pot aduce înapoi.');
+  await expect(intrebare.locator('[data-extensii="scoate-pastreaza"]')).toBeFocused();
+  // Gestul care șterge nu arată ca un gest obișnuit: roșu, nu accentul.
+  expect(await fond(intrebare.locator('[data-extensii="scoate-confirma"]'))).not.toBe(accent);
+  await page.keyboard.press('Escape');
+  await expect(intrebare).toHaveCount(0);
+  await expect(gest.locator('li')).toHaveCount(1);
+  await expect(gest.locator('[data-extensii="scoate"]')).toBeFocused();
+  await gest.locator('[data-extensii="scoate"]').click();
+  await intrebare.locator('[data-extensii="scoate-pastreaza"]').click();
+  await expect(gest.locator('li')).toHaveCount(1);
+  await gest.locator('[data-extensii="scoate"]').click();
+  await intrebare.locator('[data-extensii="scoate-confirma"]').click();
   await expect(gest).toContainText('Nicio extensie instalată încă');
   await gest.locator('[data-extensii="inchide"]').click();
   await expect((await meniul(page)).locator('[data-extensii="deschide"]')).toHaveCount(0);
@@ -186,7 +213,12 @@ test('de la adresă și prin link: descărcarea căzută spusă, pachet stricat 
   await expect(page.getByTestId('extensii-adresa-eroare')).toHaveText('Scrie o adresă HTTPS.');
   await page.locator('[data-extensii="adresa"]').fill('https://extensii.test/cazuta.zip');
   await page.locator('[data-extensii="descarca"]').click();
-  await expect(page.getByTestId('extensii-adresa-eroare')).toContainText('Descărcarea n-a mers');
+  // Mesajele pe înțeles (ADR 0231 §B.5): fără textul browserului („Failed to fetch”) și fără „CORS”.
+  await expect(page.getByTestId('extensii-adresa-eroare')).toHaveText(
+    'Descărcarea n-a mers. Verifică adresa și legătura la internet. Dacă gazda nu lasă alte pagini să descarce de la ea, descarcă tu fișierul și instalează-l din fișier.');
+  await page.locator('[data-extensii="adresa"]').fill('https://extensii.test/lipseste.zip');
+  await page.locator('[data-extensii="descarca"]').click();
+  await expect(page.getByTestId('extensii-adresa-eroare')).toHaveText('Serverul n-a trimis pachetul (răspunsul 404). Verifică adresa.');
   await page.locator('[data-extensii="adresa"]').fill('https://extensii.test/stricat.zip');
   await page.locator('[data-extensii="descarca"]').click();
   await expect(page.getByTestId('extensii-refuz')).toHaveAttribute('data-motiv', 'amprenta');
@@ -196,7 +228,8 @@ test('de la adresă și prin link: descărcarea căzută spusă, pachet stricat 
   await page.locator('[data-extensii="renunta"]').click();
 
   await adresa('https://extensii.test/salut.zip');
-  await expect(page.getByTestId('extensii-despre')).toHaveText('„Salut” 1.0.0, de la https://extensii.test/salut.zip');
+  await expect(page.getByTestId('extensii-instalare').locator('h2')).toHaveText('Instalezi „Salut”?');
+  await expect(page.getByTestId('extensii-despre')).toHaveText(/^1\.0\.0 · de la https:\/\/extensii\.test\/salut\.zip · 3 fișiere, [\d,]+ kB$/);
   await page.locator('[data-extensii="instaleaza"]').click();
   await expect(page.getByTestId('extensii-instalare')).toHaveCount(0);
 
