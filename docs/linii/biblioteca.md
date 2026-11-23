@@ -5,9 +5,8 @@
 _Linia „biblioteca”, din 23.11.2026 într-o sesiune cloud: ramura `wip/3.Xh-biblioteca-ui` (din `main` `8f122eb6`, adusă la
 `8177ab8` pe 23.11), ADR-urile 0231–0239, canalul `biblioteca`
 (<https://cncvectorstudio-test--biblioteca-gw7dr9bc.web.app>; gazda lui e permisă în mediul „CNC VS 2” din 23.11). Starea:
-**ADR 0231 ACCEPTAT („Da, 1a–4a”); 3.Xh-1 (datele), 3.Xh-2 (ferestrele de confirmare) și 3.Xh-3 (fereastra bibliotecii)
-GATA pe 23.11; urmează 3.Xh-4 (săgețile în listă, fontul lat la birou, densitatea, recitirea manualului). PR-ul liniei,
-ciornă până la capătul lui 3.Xh: `AndreiBesliu/cvs2#4`.**_
+**ADR 0231 ACCEPTAT („Da, 1a–4a”) și IMPLEMENTAT; 3.Xh, cu cele patru felii ale ei, GATA pe 23.11, de unit de sesiunea
+principală: PR-ul `AndreiBesliu/cvs2#4`.**_
 
 Cererea owner-ului (23.11): „poti sa pornesti un branch in care sa modificam libraria de plugin-uri? vreau ceva mai frumos
 si cu un UI/UX mai bun si atragator”.
@@ -47,8 +46,14 @@ si cu un UI/UX mai bun si atragator”.
   bucată la cerere (`Instalare.tsx` le alege după `cerere.fel`); catalogul îl cere gazda (`Extensii.tsx`,
   `incarcaBiblioteca`), la deschiderea meniului sau a ferestrei, și îl dă ferestrei; ajutoarele probelor e2e sunt în
   `test/e2e/ajutor-biblioteca.ts` (`deschideBiblioteca`, `paginaDinCatalog`, `paginaInstalatei`).
-- **Rămâne pentru 3.Xh-4:** săgețile în listă și în file, fontul lat la 1024 și 1280 px, densitatea mare în fereastră,
-  recitirea manualului.
+- **23.11, 3.Xh-4 (tastatura), gata** (`19f180f`, apoi commit-ul documentelor): focusul pe fila aleasă la deschidere, ← și →
+  între file, ↑ și ↓ între rândurile listei, Enter deschide pagina; doar fila aleasă și rândul arătat în ordinea lui Tab;
+  la 1024 și 1280 px, cu fontul lat, meniul și fereastra încap. Totalul 764,6 / 800 kB (+0,2). Otrăvurile: 10 / 10.
+- **Toată felia 3.Xh:** pornirea +0,1 kB, totalul 760,9 → 764,6 / 800 kB; otrăvurile, 152 / 152 (45, 40, 57, 10). **De
+  spus la unire** (în `CLAUDE.md` scrie sesiunea principală): regula lui „ce e nou” de mai jos; fondul semnului lui Easy
+  3Draw, gri-albăstrui în loc de crem, încă de hotărât de owner; proba cu Edge e doar în CI.
+- **Ce n-a intrat** (la cuvântul owner-ului): căutarea și categoriile (la peste ~20 de extensii), o captură mărită la clic,
+  „ce e nou” în fereastra de confirmare a unei actualizări.
 
 **Regula nouă pentru toate liniile care schimbă o extensie din bibliotecă (răspunsul 3a):**
 1. versiunea nouă în `extensii/<dosar>/extensie.json`;

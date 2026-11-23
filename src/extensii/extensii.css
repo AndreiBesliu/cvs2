@@ -705,7 +705,6 @@
   flex-direction: column;
   align-items: flex-end;
   gap: var(--sp-1);
-  max-width: 55%;
 }
 
 .pagina-gest p {
@@ -824,7 +823,6 @@
   .pagina-gest {
     flex-basis: 100%;
     align-items: stretch;
-    max-width: none;
   }
 
   .pagina-gest p {

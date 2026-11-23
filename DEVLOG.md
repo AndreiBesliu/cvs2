@@ -11436,3 +11436,21 @@ model în repo); e în raportul din chat și în sesiunea din mesajul commit-ulu
   listele vechi al căror cod s-a mutat în fereastra nouă au urmașe aici (3.Xb, 3.Xg, 3.Xh-1, 3.Xh-2: 28 la un loc).
 - **Urmează:** 3.Xh-4 (săgețile în listă și în file, fontul lat la birou, densitatea, recitirea manualului), apoi PR-ul
   „gata de unit”.
+
+## 2026-11-23 — 3.Xh-4: tastatura în fereastra bibliotecii, fontul lat la birou; felia 3.Xh, gata de unit (sesiune cloud)
+
+**Prompt:** același „Da, 1a–4a” (răspunsul owner-ului la ADR 0231); ultima din cele patru felii ale ADR-ului.
+**Started:** 23.11, 18:35. **Completed:** 23.11, 18:55. **Modelul:** nescris aici (regula sesiunii cloud: niciun nume de
+model în repo); e în raportul din chat și în sesiunea din mesajul commit-ului.
+
+- **Tastatura** (`19f180f`, apoi commit-ul documentelor): focusul pe fila aleasă la deschidere; ← și → între file; ↑ și ↓
+  între rândurile listei, Enter deschide pagina; doar fila aleasă și rândul arătat în ordinea lui Tab; lista e panoul filei.
+- **La birou, cu fontul lat** (1024 și 1280 px): meniul și fereastra încap; numele extensiei nu ajunge sub gesturi.
+- **Porțile, în container:** tipurile, regulile de import; e2e cu Chrome: biblioteca, extensiile, țintele, pluginul,
+  manualul și carcasa, 61 / 61; `npm run determinism`: pornirea 107,9 kB (cu ușa 112,3 / 115), totalul 764,6 / 800 kB.
+- **Otrăvurile** (`test/otravuri/3.Xh-4.py`, în clonă): 10 / 10. La prima rulare, 10 / 11: un plafon de lățime de prisos
+  în capul paginii, scos cu otrava lui.
+- **Toată felia 3.Xh** (propunerea și patru felii, într-o zi): pornirea +0,1 kB, totalul 760,9 → 764,6 / 800 kB;
+  otrăvurile 152 / 152; completul din CI verde pe 3.Xh-1 și 3.Xh-2, pornit pe 3.Xh-3 și pe capătul ramurii. PR-ul
+  `AndreiBesliu/cvs2#4`, gata de unit de sesiunea principală.
+- **De hotărât de owner:** fondul semnului lui Easy 3Draw (gri-albăstrui, nu cremul din schiță).

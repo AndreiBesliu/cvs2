@@ -1,8 +1,9 @@
 # ADR 0231: Biblioteca extensiilor, refăcută: fereastra ei, semnul extensiei, capturile și „ce e nou”
 
 **Starea:** acceptat pe 23.11.2026, cu toate recomandările („Da, 1a–4a”; „Răspunsurile owner-ului”, mai jos), pentru felia
-3.Xh, a liniei bibliotecii (ramura `wip/3.Xh-biblioteca-ui`, din `main` `8f122eb6`). **Implementat:** 3.Xh-1 (datele),
-3.Xh-2 (ferestrele de confirmare) și 3.Xh-3 (fereastra bibliotecii) pe 23.11; 3.Xh-4 urmează („Implementat”, la capăt). Cererea owner-ului, din aceeași zi: „poti sa pornesti un branch in
+3.Xh, a liniei bibliotecii (ramura `wip/3.Xh-biblioteca-ui`, din `main` `8f122eb6`). **Implementat** pe 23.11, în cele patru
+felii ale ei: 3.Xh-1 (datele), 3.Xh-2 (ferestrele de confirmare), 3.Xh-3 (fereastra bibliotecii) și 3.Xh-4 (tastatura);
+„Implementat”, la capăt, cu abaterile de la schiță. Cererea owner-ului, din aceeași zi: „poti sa pornesti un branch in
 care sa modificam libraria de plugin-uri? vreau ceva mai frumos si cu un UI/UX mai bun si atragator”. **Continuă:** ADR 0230 (biblioteca: toate marginile lui
 rămân, §C), ADR 0127 și 0128 (pachetul, permisiunile arătate la instalare), ADR 0160 (fereastra extensiei), ADR 0164 (tema),
 ADR 0167 (semnul lui Easy 3Draw, lăsat acolo pentru „altă decizie, cu schiță”), ADR 0250 (aranjamentele, densitatea).
@@ -333,5 +334,29 @@ Datele noi ale catalogului (punctul 1):
   drumurile noi (țintele la atingere și la densitatea mare; 390, 360 și 320 px cu fontul lat; lista și pagina pe rând).
   Proba de încăpere a găsit un nume lung de fișier care împingea pagina în lateral pe telefon (166–236 px): reparat.
   Otrăvurile: `test/otravuri/3.Xh-3.py` (`docs/otravuri.md`).
-- **Rămâne pentru 3.Xh-4:** săgețile în listă și în file, fontul lat la 1024 și 1280 px, densitatea mare în fereastră,
-  recitirea manualului, capturile ferestrei în manual (dacă owner-ul le vrea).
+
+### 3.Xh-4: tastatura și fontul lat la birou (23.11.2026)
+
+- **Tastatura** (§B.7): la deschidere, focusul stă pe fila aleasă (era pe ×); pe un ecran îngust, deschisă pe o pagină
+  dintr-un link, pe „Înapoi la listă”. ← și → schimbă fila, cu focusul după ele; în listă, ↑ și ↓ mută focusul între
+  rânduri (și de la un capăt la celălalt), iar Enter deschide pagina rândului; Escape închide fereastra, cu focusul înapoi
+  la piesa de puzzle. Din file și din listă, doar fila aleasă și rândul arătat sunt în ordinea lui Tab; lista e panoul
+  filei alese (`tabpanel`, cu numele filei).
+- **La birou, cu fontul lat** (Verdana; DejaVu Sans pe Linux), la 1024 și 1280 px: meniul cu „Actualizează” în rând și
+  fereastra bibliotecii încap, iar numele extensiei nu ajunge sub gesturile paginii. Pe telefon (390, 360, 320 px) și la
+  densitatea mare, probele sunt din 3.Xh-2 și 3.Xh-3.
+- **Manualul**, în ambele limbi: fraza tastaturii, în capitolul „Extensiile”.
+- **Măsurat:** pornirea 107,9 kB (cu ușa 112,3 / 115); totalul 764,6 / 800 kB (+0,2).
+- **Otrăvurile:** `test/otravuri/3.Xh-4.py`.
+
+### Toată felia 3.Xh, pe scurt
+
+- Cele zece lucruri găsite pe capturile din 23.11 („Ce e azi”): imaginile (semnul, capturile), extensia arătată o singură
+  dată, meniul care nu mai sare, fereastra de confirmare ca listă, țintele de 44 px, cuvintele pe înțeles, o singură așezare
+  a ferestrelor și „Scoate” cu întrebarea, drumul din paletă, lista care are unde crește (se derulează), actualizarea care
+  spune ce aduce.
+- **Mărimea:** pornirea +0,1 kB (acțiunea paletei); totalul 760,9 → 764,6 / 800 kB (+3,7; estimarea pentru direcția B era
+  ~+6). În `dist/extensii/`, în afara precache-ului: +212 kB de imagini.
+- **Marginile din ADR 0230 și CSP-ul:** neschimbate.
+- **Ce n-a intrat:** căutarea și categoriile (la peste ~20 de extensii), o captură mărită la clic, „ce e nou” în fereastra
+  de confirmare a unei actualizări (e în pagina de sub ea).

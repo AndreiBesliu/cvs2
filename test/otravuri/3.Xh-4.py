@@ -32,9 +32,6 @@ o('K08', BI, "        tabIndex={aratat?.id === e.id ? 0 : -1} {...(aratat?.id ==
   'toate rândurile listei sunt în ordinea lui Tab')
 o('K09', BI, "role=\"tabpanel\" aria-labelledby={`bib-fila-${fila}`}", "role=\"tabpanel\" aria-labelledby=\"bib-fila-toate\"", 'e2e',
   'panoul listei poartă mereu numele filei „Toate”')
-o('K10', CS, ".pagina-gest {\n  flex: none;\n  display: flex;\n  flex-direction: column;\n  align-items: flex-end;\n  gap: var(--sp-1);\n  max-width: 55%;\n}",
-  ".pagina-gest {\n  flex: none;\n  display: flex;\n  flex-direction: column;\n  align-items: flex-end;\n  gap: var(--sp-1);\n}", 'e2e',
-  'cu fontul lat, gesturile paginii nu mai lasă loc numelui extensiei')
 o('K11', CS, ".pagina-nume {\n  flex: 1;\n  min-width: 0;\n}", ".pagina-nume {\n  flex: none;\n}", 'e2e',
   'cu fontul lat, numele extensiei ajunge sub gesturile paginii')
 
