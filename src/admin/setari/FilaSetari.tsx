@@ -9,19 +9,21 @@ import { EroareCitire, SeIncarca } from '../carcasa/stari.tsx';
 import { dataDin, dataScurta, motivDin, type Masura } from '../erori/date.ts';
 import '../personal/personal.css';
 import '../utilizatori/utilizatori.css';
+import { IstoricSetari } from './IstoricSetari.tsx';
 import { RaspunsuriRapide } from './RaspunsuriRapide.tsx';
 
 /**
  * Fila Setări (ADR 0116 §20, felia 14.C↑b), doar a owner-ului: zilele în care aplicația ține dreptul contului fără
  * reconfirmare (offline) și cât se păstrează tichetele rezolvate. Valorile se citesc din `setari/conturi` (regula o dă doar
  * owner-ului; fără document, implicitele) și se schimbă prin callable-ul `administreazaConturile`, cu auditul pe server.
+ * Sub fiecare buton, istoricul setării din audit (ADR 0260 §9, felia A.6): fila e doar a owner-ului, care are „Audit: citește”.
  */
 
 type Citite = { readonly setari: SetariConturi; readonly modificatLa: Date | null; readonly salvate: boolean };
 
 type Lucru = { readonly faza: 'liber' | 'lucreaza' } | { readonly faza: 'gata'; readonly mesaj: string } | { readonly faza: 'eroare'; readonly motiv: string };
 
-export function FilaSetari({ con }: { readonly con: Conexiune }): ReactElement {
+export function FilaSetari({ con, eu }: { readonly con: Conexiune; readonly eu: string }): ReactElement {
   const limba = useLimba();
   const [citite, setCitite] = useState<Masura<Citite> | null>(null);
   const [rev, setRev] = useState(0);
@@ -71,8 +73,9 @@ export function FilaSetari({ con }: { readonly con: Conexiune }): ReactElement {
                   eroare={lucru.faza === 'eroare' ? lucru.motiv : null} salveaza={salveaza} />
               </>
             )}
+        <IstoricSetari con={con} eu={eu} tinta={`${CALE_SETARI.colectie}/${CALE_SETARI.id}`} rev={rev} limba={limba} nume="conturi" />
       </section>
-      <RaspunsuriRapide con={con} />
+      <RaspunsuriRapide con={con} eu={eu} />
     </div>
   );
 }

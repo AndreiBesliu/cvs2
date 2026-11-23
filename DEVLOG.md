@@ -11704,3 +11704,39 @@ tău”): „Da, 11.3↑f”. Modelul sesiunii, în trailerul commit-urilor ei.
   registrul otrăvurilor (rândul listei; 11.3d și 11.3e, refăcute), paragraful liniei din `CLAUDE.md`, nota liniei
   (`docs/linii/plansele.md`). Canalul `plansele` se publică din GitHub Actions (`canal.yml`), pe vârful ramurii, după rapidul
   verde. **Completed:** 23.11, 17:12.
+
+## 2026-11-23 — Felia A.6: Roadmap, Documentație și Setări (ADR 0260 §8–§9)
+
+**Prompt:** „porneste” (owner-ul, pe 23.11, în sesiunea cloud a liniei adminului, după ce A.5 a ajuns gata de unit, cu
+PR-ul AndreiBesliu/cvs2#8; A.6 era următoarea, „doar la cuvântul owner-ului”).
+**Started:** 23.11 17:25.
+
+- **Ramura:** tot `wip/A.1-admin`, peste A.5 (`fe026f9f`, încă neunită: sesiunea principală o unește din commit-ul raportat,
+  nu din vârful ramurii).
+- **Planul:** după schițele rândului G (`Admin-Roadmap`, `Admin-Documentatie`, `Admin-Setari`). Roadmap: „Ce așteaptă de
+  la tine” mereu la vedere, într-o coloană lipită alături de etape. Documentație: cuprinsul paginii alături, cu secțiunea
+  de acum marcată, și starea ADR-ului (acceptat / propus) sub titlu. Setări: istoricul schimbărilor sub buton, din
+  rândurile de audit ale setărilor (și ale răspunsurilor rapide), doar cu „Audit: citește”. Fără reguli, date, indexuri
+  sau funcții noi.
+- **Roadmap** (`cd90a257`): peste 1 400 px, „Ce așteaptă de la tine” într-o coloană lipită alături de etape, cât ecranul de
+  înalt, cu titlul fix și lista derulată în ea; cifrele, peste amândouă coloanele.
+- **Pista cronologiei:** după lățimea secțiunii ei (container), nu a ecranului: un rând de la 42rem în sus, altfel pe rânduri;
+  sub 68,5rem, coloanele strânse și semnele etapelor pe două rânduri. Capturile au arătat semnele peste coloana vecină lângă
+  listă; la 1 024 px intrau acolo și înainte de felie.
+- **Documentație:** cuprinsul (titlurile de nivel 2 și 3, cu ancorele cititorului), alături peste 1 400 px, deasupra mai îngust,
+  cu secțiunea de acum (ultimul titlu urcat la 96 px; la capătul paginii, ultimul) și clicul care duce la titlu, și la al
+  doilea clic; sub titlul unui ADR, insigna stării și ziua din rândul „**Starea:**” (titlul randat separat de rest).
+- **Setări:** sub fiecare buton, istoricul din audit (egalitate pe `tinta`, ordinea în pagină), citit din nou după salvare;
+  fără condiția „Audit: citește” în pagină: fila e doar a owner-ului, care o are (condiția ar fi fost cod fără probă posibilă).
+- **Probele:** 7 unitare noi; pe emulatoare, 3 noi și istoricul în două probe vechi; în container, cele trei fișiere atinse
+  13 / 13 (apoi 6 / 6 după pista pe rânduri); tipurile, regulile de import, unitarele adminului.
+- **Otrăvurile** (`test/otravuri/A.6.py`, într-o clonă): la prima rulare (`326bcf6e`) 52 / 53, E19 scăpată (golul dintre
+  coloanele pistei conta doar între ~960 și ~1 000 px, măsurat pe lățimi); pe `ecba6fa6`, cu pista pe rânduri sub 42rem, proba
+  la 990 și 940 px și otrava pragului (E31): 54 / 54, fiecare pe aserțiunea care îi țintește defectul. Baza de pe emulatoare a
+  avut o cădere de focus în proba răspunsurilor rapide (prima probă a rulării), apoi 3 / 3 verzi. `verifica` pe toate
+  listele: aceleași VOID-uri ca pe A.5.
+- **Mărimea:** `/admin` 125,6 → 127,5 / 200 kB (+1,9; linia, +21,0 din cei +25); pornirea 107,9 (cu ușa 112,3 / 115) și
+  totalul 763,1 / 800, neschimbate.
+- **Porțile, în CI:** în raportul din PR-ul ramurii.
+- **Documentele:** ADR 0260 („Implementarea”, A.6), fișa etapei 3 (rândul `3.Af`) cu traducerea, lista otrăvurilor și
+  rândul ei din `docs/otravuri.md`, nota liniei, DEVLOG. **Completed:** 23.11 18:05.
