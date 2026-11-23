@@ -1276,6 +1276,26 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 23.11.2026, după-amiaza: **3.Tq (elicele) unită în `main`, prima unire din cloud; linia bibliotecii, pornită**
+  (sesiunea principală din cloud, ramura `unire-2311b`, din `8f122eb6`). **3.Tq** (linia elicelor, pilotul lucrului în
+  cloud; ramura `wip/3.Tq-elice`, `40c13d6a`, PR-ul `AndreiBesliu/cvs2#1`; ADR 0282, acceptat cu 1a, 2a, 3a), unită în
+  `0ae9c6c1`: fila „Elice” a atelierului Easy 3Draw, cu elicea din parametri, tipărită fără suport, cu prinderea LEGO,
+  „Ca LEGO” (6041, 92842, 15790, cu cotele măsurate față de axa piesei și cu sensul ei) și „Fă perechea”; pachetul
+  18.19.0; otrăvurile 138 / 138 și 4 / 4. Verificate înaintea unirii: versiunea și amprenta din
+  `extensii/biblioteca.json`, nota liniei, lipsa `.lucru/`. Ramura avea deja `main`: nicio ciocnire, iar arborele unirii
+  e cel al commit-ului raportat. Nimic pe server. Porțile, în CI, verzi la prima trecere pe `0ae9c6c1` (și pe
+  `40c13d6a`, la linie): unit 9 795 / 0 (12 sărite, pe Linux), e2e 598 / 598, funcțiile pe emulatoare 104 / 104,
+  paginile 34 / 34; pornirea 107,8 kB (plafonul 115; cu ușa 112,2), totalul 760,9 / 800 kB, `/admin` 121,2 / 200.
+  **Pilotul sesiunii principale în cloud:** din container merg `gh run`, `gh workflow run`, `gh api` (PR-urile) și
+  push-urile. Adresa de test era oprită de rețeaua mediului (403 de la proxy): gazda `cncvectorstudio-test.web.app` a
+  intrat în mediul „CNC VS 2”, cu aprobarea owner-ului. Completul unirii a ținut 59 min 54 s din cele 60 permise (pasul
+  rapid, 35 de minute pe un runner lent): limita lui e acum 90 de minute. **Linia bibliotecii** (la „poti sa pornesti
+  un branch in care sa modificam libraria de plugin-uri? vreau ceva mai frumos si cu un UI/UX mai bun si atragator” al
+  owner-ului): felia 3.Xh, ramura `wip/3.Xh-biblioteca-ui` (din `8f122eb6`), ADR-urile 0231–0239, canalul `biblioteca`;
+  întâi capturile interfeței de azi, ADR 0231 propus și schița cu întrebările, apoi codul, la răspunsuri. Brief-ul îl
+  lipește owner-ul într-o sesiune cloud nouă: pornirea unei sesiuni din container a fost refuzată de clasificatorul de
+  permisiuni. Urmează: liniile în lucru în cloud (A.4, 12.1↑e-3, 11.3↑e, 25.8↑a), unite la raport; 3.Tr (elicea de
+  barcă) și 3.Ts (ventilatorul cu carcasă), la cuvântul owner-ului.
 - 23.11.2026, la prânz: **mutarea întregii producții în cloud** (la „ca sa fie clar, eu vreau sa mutam toata productia
   proiectului cvs2 in cloud, vreau sa dezvoltam toata aplicatia de acolo, cu toate worktrees si asa mai departe” și „În
   repo, docs/linii” ale owner-ului): ramura `wip/lucru-cloud-2` (`ec745716`), unită în `7c5adbf8`. Uneltele sesiunii

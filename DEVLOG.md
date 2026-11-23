@@ -11289,3 +11289,33 @@ de acolo, cu toate worktrees si asa mai departe”. **Started:** 23.11, 10:20. *
 - **`docs/lucru-in-cloud.md`:** nota liniei, citită la pornire și ținută la zi cu fiecare felie; nota sesiunii principale.
 - **Afară:** generatorul documentației din `/admin` citește doar `docs/etape` și `docs/adr`, iar probele documentelor citesc
   fișiere numite, deci `docs/linii` nu schimbă nici build-ul, nici probele.
+
+## 2026-11-23 — Sesiunea principală în cloud: prima unire din container (3.Tq, elicele); linia bibliotecii, pornită (Model: Claude Fable 5.2)
+
+**Prompt:** brief-ul de predare al sesiunii principale locale, lipit de owner într-o sesiune cloud nouă („Ești sesiunea
+principală a cncvs2 […] Sesiunea principală locală ți-a predat lucrul și se oprește.”); pe drum, owner-ul: „poti sa pornesti
+un branch in care sa modificam libraria de plugin-uri? vreau ceva mai frumos si cu un UI/UX mai bun si atragator”.
+**Started:** 23.11, 12:31. **Completed:** unirea, 23.11, 13:40; publicarea pe test, în intrarea de mai jos.
+
+- **Mediul:** Node 26.13.1; `gh run list` și `gh api …/pulls` merg. Un singur PR, `AndreiBesliu/cvs2#1` (3.Tq, `40c13d6a`).
+- **Verificările dinaintea unirii:** Easy 3Draw 18.19.0 în `extensie.json` și în `extensii/biblioteca.json`, cu amprenta
+  (`biblioteca.constructie.test.ts` trece); nota `docs/linii/elice.md` la zi („gata”); fără `.lucru/`.
+- **Unirea:** `unire-2311b` din `origin/main` (`8f122eb6`), `git merge --no-ff 40c13d6a` → `0ae9c6c1`. Ramura avea deja
+  `main`, deci nicio ciocnire: arborele unirii e cel al commit-ului raportat. În container: tipurile, unitarele atinse
+  28 / 28, traducerile (912, 0 lipsă).
+- **Porțile, în CI, pe `0ae9c6c1`** (rapidul la push, completul pornit cu `gh workflow run`, din container): unit 9 795 / 0
+  (12 sărite), e2e 598 / 598, funcțiile pe emulatoare 104 / 104, paginile 34 / 34; pornirea 107,8 / 115 (cu ușa 112,2),
+  totalul 760,9 / 800, `/admin` 121,2 / 200; Easy 3Draw 18.19.0, 456,9 kB. Completul liniei, pe `40c13d6a`, verde și el.
+- **Găsit la pilot:**
+  - adresa de test era oprită de rețeaua mediului (403 de la proxy), iar `ci-si-publica.sh` își citește de acolo ultimul
+    pas: gazda `cncvectorstudio-test.web.app` adăugată la mediul „CNC VS 2”, cu aprobarea owner-ului (pe card); apoi adresa
+    spune `220bd48e6ce9`, ca la predare;
+  - completul unirii a ținut 59 min 54 s din 60 (pasul rapid 35 de minute, pe un runner lent; celălalt complet, 44 de
+    minute): `timeout-minutes` 60 → 90 în `complet.yml`;
+  - `create_session` (pornirea unei sesiuni din container) e refuzat de clasificatorul de permisiuni: sesiunile liniilor le
+    pornește owner-ul, cu brief-ul primit ca fișier.
+- **Linia bibliotecii (3.Xh):** ramura `wip/3.Xh-biblioteca-ui` făcută din `main` (`8f122eb6`) și împinsă; brief-ul
+  (capturile interfeței de azi, ADR 0231 propus, schița cu întrebările; codul, la răspunsuri) trimis owner-ului ca fișier.
+- **Documentele:** decizia în `CLAUDE.md`; indexul ADR (0282: unită în `0ae9c6c1`); `docs/linii/README.md` (elicele unite,
+  linia bibliotecii, liniile în lucru în sesiunile lor); `docs/linii/principala.md` („Din container”, starea);
+  `docs/lucru-in-cloud.md` (gazda adresei de test la „Allowed domains”); nota elicelor (unită).
