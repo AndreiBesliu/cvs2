@@ -1262,6 +1262,13 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 23.11.2026, dimineața, a doua unire: **corectura pregătirii cloud unită în `main`** (ramura `wip/lucru-cloud`,
+  `383120f5`, unită în `301413f8`). După documentația mediilor cloud (citită pe 23.11), `scripts/cloud/pregatire.sh` nu
+  mai iese cu eroare (o eroare ar opri pornirea sesiunii; ce lipsește se spune la „LIPSESC”), pune Node 26 în locul lui
+  22, primul în PATH-ul imaginii, și ia Java 21 din imagine. `docs/lucru-in-cloud.md`: porțile întregi în CI (rapidul la
+  push, completul pornit pe ramură), comenzile lungi în prim-plan (containerul se suspendă când stă), `npm ci` la
+  pornire dacă lipsesc `node_modules`. Probele care citesc documentele, 57 / 57; `bash -n` pe script. Urmează
+  linia-pilot în cloud, elicele (3.Tq), pe `wip/3.Tq-elice`.
 - 23.11.2026, dimineața: **3.Tp↑b (pictogramele) unită în `main`, cu uneltele lucrului în cloud** (worktree-ul `unire`,
   ramura `unire-2211c`). **3.Tp↑b** (linia `galeria`, ramura `wip/3.Tp-galeria-pe-file`, `e641c18d` din `57457061`; ADR
   0281): un desen mic, doar linii, de culoarea textului, pe fiecare buton al galeriilor atelierului Easy 3Draw
