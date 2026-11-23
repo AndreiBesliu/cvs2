@@ -19,12 +19,32 @@ export type RegimDop = { readonly turatie: number; readonly avans: number; reado
  */
 export type SemifabricatDop = { readonly latime: number; readonly inaltime: number; readonly grosimeMinima: number; readonly exacta?: true };
 
+/**
+ * Ce cere potrivirea simulată a dopului în V (ADR 0179): cutia desenului pe foaie, marginea din oglinda contractului (ADR 0170
+ * §3), valorile pe hârtie (crestele: 0 cu freză dreaptă, ADR 0173) și adâncimea decupării (ADR 0172). Aceeași formă ca
+ * parametrii din `src/sim/potrivire.ts`, fără grilă (CAM-ul nu știe de simulare).
+ */
+export type DescrierePotrivire = {
+  readonly cutie: { readonly x0: number; readonly y0: number; readonly x1: number; readonly y1: number };
+  /** Desenul pe foaie: poligoane închise, câte un șir [x, y, x, y, …] (arcele aplatizate), regiune par-impar. */
+  readonly desen: readonly (readonly number[])[];
+  readonly margine: number;
+  readonly hartie: {
+    readonly D: number; readonly g: number; readonly S: number; readonly H: number; readonly t: number;
+    readonly creastaLocas: number; readonly creastaDop: number;
+  };
+  /** Adâncimea de la care lemnul nu mai e al dopului: vârful punților decupării (ADR 0172); altfel Infinity. */
+  readonly taiata: number;
+};
+
 export type DopCalculat = {
   /** Elementul (în lume) al primei tăieturi a regiunii: după el se recunoaște dopul. */
   readonly element: string;
   readonly program: Program;
   readonly semifabricat: SemifabricatDop;
   readonly avertismente: readonly string[];
+  /** Doar la dopul în V (ADR 0179): ce cere potrivirea simulată. Cel cu pereți drepți, în felia 12.1↑e-3. */
+  readonly potrivire?: DescrierePotrivire;
 };
 
 /**

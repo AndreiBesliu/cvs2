@@ -97,6 +97,42 @@ var Atelier3D = (function () {
   const filaPentru = (t: string): string => FAMILIA.get(t) ?? t;
   /** Ultima piesă aleasă pe fiecare filă de familie; la început, prima din galeria ei. */
   const ultima = new Map(FAMILII.map(([f, , piese]): [string, string] => [f, piese[0]![0]]));
+  // Pictogramele pieselor (ADR 0281, felia 3.Tp↑b): un desen mic pe fiecare buton al galeriilor, ca piesa să se recunoască
+  // fără să fie citită. Fiecare e marcajul unui SVG de 24 × 24, doar cu linii: grosimea, capetele și culoarea (a textului,
+  // deci după temă și după apăsare) le dă `.at-pict`, din head.html. O piesă nouă din FAMILII își pune aici desenul, pe un
+  // rând; până atunci, butonul ei are pictograma generică (un cub), iar proba unitară (`trenulet.pictograme.test.ts`) i-l cere.
+  const PICTOGRAME: Readonly<Record<string, string>> = {
+    caramida: `<rect x="3" y="10" width="18" height="9" rx="1"/><path d="M5.5 10V7.5h4V10M14.5 10V7.5h4V10"/>`,
+    panta: `<path d="M3 19V9.5h6L21 16.5V19z"/><path d="M4.5 9.5V7h4v2.5"/>`,
+    pantaInversa: `<path d="M3 9.5h18V19h-7L3 13z"/><path d="M5 9.5V7h4v2.5M15 9.5V7h4v2.5"/>`,
+    pana: `<path d="M3.5 4.5v15h17z"/><circle cx="7.5" cy="15.5" r="1.6"/><circle cx="7.5" cy="10.5" r="1.6"/><circle cx="12.5" cy="15.5" r="1.6"/>`,
+    rotund: `<path d="M6 11.5v6a6 2.3 0 0 0 12 0v-6"/><ellipse cx="12" cy="11.5" rx="6" ry="2.3"/><path d="M9.8 11.2V8a2.2.85 0 0 1 4.4 0v3.2"/>`,
+    lateral: `<rect x="5" y="9" width="11" height="11" rx="1"/><path d="M8.5 9V6.5h4V9M16 12.5h2.5v4H16"/>`,
+    suport: `<path d="M5 5.5h3.5V15H21v4H5z"/><path d="M5 8H2.5v4H5M13 15v-2.5h4V15"/>`,
+    grinda: `<rect x="2" y="8" width="20" height="8" rx="4"/><circle cx="6" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="18" cy="12" r="2"/>`,
+    caramidaTechnic: `<rect x="3" y="10" width="18" height="9" rx="1"/><path d="M5.5 10V7.5h4V10M14.5 10V7.5h4V10"/><circle cx="7.5" cy="14.5" r="2"/><circle cx="16.5" cy="14.5" r="2"/>`,
+    placaTechnic: `<rect x="2.5" y="6" width="19" height="12" rx="1"/><circle cx="8.5" cy="12" r="2.1"/><circle cx="15.5" cy="12" r="2.1"/><path d="M5 8.8h.01M12 8.8h.01M19 8.8h.01M5 15.2h.01M12 15.2h.01M19 15.2h.01" stroke-width="2.6"/>`,
+    stiftTechnic: `<path d="M10.5 9.5h-7a1 1 0 0 0-1 1v3a1 1 0 0 0 1 1h7M13.5 9.5h7a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-7M2.5 12H6M18 12h3.5"/><rect x="10.5" y="7.5" width="3" height="9" rx=".8"/>`,
+    ax: `<path d="M9.5 3.5h5v6h6v5h-6v6h-5v-6h-6v-5h6z"/>`,
+    bucsa: `<circle cx="12" cy="12" r="8.5"/><path d="M10.8 7.5h2.4v3.3h3.3v2.4h-3.3v3.3h-2.4v-3.3H7.5v-2.4h3.3z"/>`,
+    clema: `<rect x="2.5" y="13" width="9" height="4" rx=".8"/><path d="M5 13v-2.5h4V13M11.5 15H14M19.3 12.2a3.6 3.6 0 1 0 0 5.6"/>`,
+    bara: `<rect x="2" y="10.5" width="20" height="3" rx="1.5"/>`,
+    maner: `<rect x="3" y="8" width="18" height="4" rx=".8"/><path d="M5.5 8V5.5h4V8M14.5 8V5.5h4V8M7.5 12v3.5a2.5 2.5 0 0 0 2.5 2.5h4a2.5 2.5 0 0 0 2.5-2.5V12"/>`,
+    bila: `<rect x="3" y="15.5" width="18" height="4" rx=".8"/><path d="M4.5 15.5V13h3.5v2.5M16 15.5V13h3.5v2.5M10.5 15.5v-2.2M13.5 15.5v-2.2"/><circle cx="12" cy="8.5" r="4.8"/>`,
+    cupa: `<rect x="3" y="15.5" width="18" height="4" rx=".8"/><path d="M4.5 15.5V13h3.5v2.5M16 15.5V13h3.5v2.5M8 4.5v4.5a4 4 0 0 0 8 0V4.5M12 13v2.5"/>`,
+    rotita: `<path d="M10.2 4.6L10.5 1.6L13.5 1.6L13.8 4.6L16 5.5L18.3 3.6L20.4 5.7L18.5 8L19.4 10.2L22.4 10.5L22.4 13.5L19.4 13.8L18.5 16L20.4 18.3L18.3 20.4L16 18.5L13.8 19.4L13.5 22.4L10.5 22.4L10.2 19.4L8 18.5L5.7 20.4L3.6 18.3L5.5 16L4.6 13.8L1.6 13.5L1.6 10.5L4.6 10.2L5.5 8L3.6 5.7L5.7 3.6L8 5.5z"/><path d="M12 9.6v4.8M9.6 12h4.8"/>`,
+    conica: `<path d="M3.5 16.5h17L17 8.5H7zM9 16.5V20h6v-3.5"/><path d="M7 8.5l1-2 1.6 2 1.6-2 1.6 2 1.6-2 1.6 2 1-2 1 2"/>`,
+    coroana: `<path d="M3 13.5V9.5h3v4h3v-4h3v4h3v-4h3v4h3v-4M3 13.5h18v5H3z"/>`,
+    conicaDubla: `<path d="M7 4h10l3.5 6.5v3L17 20H7l-3.5-6.5v-3zM3.5 10.5h17M3.5 13.5h17M7 10.5v3M10 10.5v3M14 10.5v3M17 10.5v3"/>`,
+    fulie: `<circle cx="12" cy="12" r="9.5"/><circle cx="12" cy="12" r="7.5"/><circle cx="12" cy="7.6" r="1.3"/><circle cx="16.2" cy="10.6" r="1.3"/><circle cx="14.6" cy="15.6" r="1.3"/><circle cx="9.4" cy="15.6" r="1.3"/><circle cx="7.8" cy="10.6" r="1.3"/><path d="M12 11v2M11 12h2"/>`,
+    roata: `<circle cx="12" cy="12" r="9.5"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="1.8"/><path d="M12 6v4.2M12 13.8V18M6 12h4.2M13.8 12H18"/>`,
+    senila: `<path d="M8 6.5h8a5.5 5.5 0 0 1 0 11H8a5.5 5.5 0 0 1 0-11z" pathLength="48" stroke-dasharray="2.4 1.6"/><circle cx="8" cy="12" r="2.6"/><circle cx="16" cy="12" r="2.6"/>`,
+  };
+  const PICTOGRAMA_GENERICA = `<path d="M12 3l8 4.5v9L12 21l-8-4.5v-9zM4 7.5l8 4.5 8-4.5M12 12v9"/>`;
+  /** Butonul unei piese din galerie: pictograma ei, apoi numele (pictograma e ascunsă cititoarelor de ecran: butonul se
+   *  numește tot ca piesa). */
+  const butonPiesa = (k: string, n: string) =>
+    `<button type="button" data-piesa="${k}"><svg class="at-pict" viewBox="0 0 24 24" aria-hidden="true">${PICTOGRAME[k] ?? PICTOGRAMA_GENERICA}</svg>${n}</button>`;
   let puneGrila: boolean | null = null, trageGrinda = false;
   // inaltimile (ADR 0168) sunt implicitele motorului (Lego.IMPLICIT; o proba le tine la fel); regulile lor, in Lego.inaltimi
   const SETARI_IMPLICIT = { varianta_stift: 3, varianta_locas: 3, varianta_gaura: 3, varianta_ax: 3, varianta_bara: 3, varianta_cupa: 3, varianta_dinti: 3, varianta_janta: 3, stift_h: 1.9, locas_h: 2.1, locas_urmeaza: true, pat: [180, 180], pat_margine: 5, pat_distanta: 4, culoare: "#c8322b", cuTren: true };
@@ -1875,7 +1911,7 @@ var Atelier3D = (function () {
       if (g.dataset.cautare !== q) {
         g.dataset.cautare = q; delete g.dataset.familie; g.setAttribute("aria-label", "Piesele găsite");
         const gasite = pieseGasite(q);
-        if (gasite.length) g.innerHTML = gasite.map(([k, n]) => `<button type="button" data-piesa="${k}">${n}</button>`).join("");
+        if (gasite.length) g.innerHTML = gasite.map(([k, n]) => butonPiesa(k, n)).join("");
         else { g.innerHTML = `<p class="mic at-galerie-gol"></p>`; g.firstElementChild!.textContent = tr`Nicio piesă nu se potrivește cu „${q}”.`; }
       }
     } else {
@@ -1884,7 +1920,7 @@ var Atelier3D = (function () {
       if (g.dataset.familie !== f) {
         g.dataset.familie = f; g.setAttribute("aria-label", fam[1]);
         delete g.dataset.cautare;
-        g.innerHTML = fam[2].map(([k, n]) => `<button type="button" data-piesa="${k}">${n}</button>`).join("");
+        g.innerHTML = fam[2].map(([k, n]) => butonPiesa(k, n)).join("");
       }
     }
     g.querySelectorAll<HTMLElement>("[data-piesa]").forEach(b => b.setAttribute("aria-pressed", String(vedere === "piesa" && b.dataset.piesa === stare.tip)));

@@ -296,6 +296,12 @@
   color: var(--rosu);
 }
 
+/* Eticheta unui grup de butoane-radio din panou (opțiunile legării, ADR 0182). */
+.eticheta-retea {
+  font-size: var(--fs-2);
+  color: var(--t-slab);
+}
+
 .butoane-retea {
   display: flex;
   justify-content: flex-end;
@@ -788,6 +794,11 @@
   max-width: 22rem;
   font-size: var(--fs-2);
   color: var(--rosu, var(--t));
+}
+
+/* Rezultatul unei comenzi reușite din extensie (legarea căilor, ADR 0182): spus, dar nu ca un refuz. */
+.motiv-extensie.gata {
+  color: var(--t-slab);
 }
 
 .raza {

@@ -4,6 +4,7 @@
  * legătura (`sesiune.ts`) e comună driverelor de același transport (azi WebSocket cu cadre text). Fereastra arată doar ce
  * poate imprimanta legată (`capabilitati`). Azi, un singur driver: familia Creality K1 (`creality.ts`).
  */
+import type { FamilieImprimanta } from '../../../shared/coduriImprimanta.ts';
 
 /** Un fișier din imprimantă, din lista ei: numele, calea și ce mai știe ea despre el. */
 export type FisierImprimanta = {
@@ -85,13 +86,18 @@ export type Imprimanta = {
   readonly filament: number | null;
   /** Felia 3.6s: senzorul spune că s-a terminat filamentul (K1: `materialStatus` 1, cu imprimanta în pauză); null: nespus. */
   readonly faraFilament: boolean | null;
+  /**
+   * Felia 3.6v (ADR 0195 §A.4): o imprimare oprită de o pană de curent așteaptă să fie reluată sau lăsată (K1: `repoPlrStatus`
+   * 1); răspunsul rămâne pe ecranul imprimantei. null: nespus.
+   */
+  readonly reluareDupaPana: boolean | null;
 };
 
 export const IMPRIMANTA_NECUNOSCUTA: Imprimanta = {
   model: null, nume: null, firmware: null, cod: null, fisier: null, progres: null, trecut: null, ramas: null, strat: null,
   straturi: null, duza: null, duzaTinta: null, duzaMax: null, pat: null, patTinta: null, patMax: null, carcasa: null, lumina: null,
   ventilatoare: {}, viteza: null, debit: null, axe: null, ocupata: null, eroare: null, cheieEroare: null, autotest: null,
-  piese: null, anulate: null, piesaAcum: null, pozitie: null, filament: null, faraFilament: null,
+  piese: null, anulate: null, piesaAcum: null, pozitie: null, filament: null, faraFilament: null, reluareDupaPana: null,
 };
 
 /** Bucățile de stare intră peste cea știută; ventilatoarele, fiecare la locul lui (un cadru poate aduce doar unul). */
@@ -256,6 +262,11 @@ export interface DriverText {
    * cvs2; null pentru un nume sau o gazdă care nu trec de regulile driverului.
    */
   adresaFilm(gazda: string, nume: string): string | null;
+  /**
+   * Dicționarul codurilor de eroare al familiei (felia 3.6v, ADR 0195), adus de fereastră la prima eroare; null: niciunul
+   * (fereastra arată codul, ca înainte). Moonraker dă textul erorii direct, deci n-are nevoie de unul.
+   */
+  readonly coduri: FamilieImprimanta | null;
   citeste(text: string): CadruCitit;
   lucrare(i: Imprimanta): StareLucrare;
   capabilitati(i: Imprimanta): Capabilitati;

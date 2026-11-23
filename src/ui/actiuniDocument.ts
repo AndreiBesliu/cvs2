@@ -197,6 +197,11 @@ export type ContextDocument = {
   readonly taiere?: () => TaiereCalculata;
   /** Conversia din panoul Convertește (ADR 0180, felia 10.3↑d), calculată de worker. */
   readonly conversie?: () => ConversieCalculata;
+  /**
+   * Legarea căilor alese (ADR 0182, felia 10.3↑o), pornită de modulul editării: calculul e al workerului, iar rezultatul se
+   * aplică prin `document.repara`. Lipsește cât modulul editării nu e montat.
+   */
+  readonly legaCaile?: () => void;
 };
 
 /**
@@ -624,6 +629,15 @@ export const ACTIUNI_DOCUMENT: readonly Actiune<ContextDocument>[] = [
   laCerere('document.text', 'actiune.text', (ctx) => (ctx.textNou ? true : 'motiv.nimic-ales')),
   // Verificarea vectorilor (ADR 0124 §10): o reparație din panoul ei, calculată de worker, într-un pas.
   laCerere('document.repara', 'actiune.repara', (ctx) => (ctx.reparatie ? true : 'motiv.nimic-ales')),
+  // Legarea căilor (ADR 0182, felia 10.3↑o): din bara editării, din meniul de clic dreapta, din paletă și cu Ctrl+J. Calculul
+  // e al workerului, pornit de modulul editării (`legaCaile`); rezultatul se aplică prin `document.repara`, într-un pas.
+  {
+    id: 'document.leaga-caile',
+    eticheta: 'actiune.leaga-caile',
+    capabilitate: 'desen',
+    activa: (ctx) => (ctx.selectie().length === 0 ? 'motiv.nicio-selectie' : !ctx.legaCaile ? 'motiv.editare-se-incarca' : scrie(ctx)),
+    ruleaza: (ctx) => { ctx.legaCaile?.(); },
+  },
   // Tăierea și conversia vectorilor (ADR 0180): o tăiere din panoul Taie, calculată de worker, într-un pas.
   laCerere('document.taie', 'actiune.taie', (ctx) => (ctx.taiere ? true : 'motiv.nimic-ales')),
   // … și o conversie din panoul Convertește (arce, cercuri, dreptunghiuri), tot calculată de worker, într-un pas.

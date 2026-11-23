@@ -13,16 +13,18 @@ import { programDinDocument, REGIM_IMPLICIT } from '../cam/job.ts';
 import { PLAFON, type Document } from '../model/document.ts';
 import { repara, verificaPentruPanou, type RezultatReparare, type VerificarePanou } from '../model/reparare.ts';
 import { converteste, type RezultatConversie } from '../model/conversie.ts';
+import { leagaCaile, type RezultatLegare } from '../model/legareCai.ts';
 import { taieInPanouri } from '../model/panouri.ts';
 import { taie, type RezultatTaiere } from '../model/taiere.ts';
 import { CONTRACTE } from '../post/contracte/index.ts';
 import { exporta } from '../post/export.ts';
 import { partiDesprinse } from '../sim/desprinse.ts';
+import { potrivireaV } from '../sim/potrivire.ts';
 import { pregatesteProgram, type ProgramSimulat } from '../sim/program.ts';
 import { despacheteaza, impacheteaza, transferabileProgram } from './impachetare.ts';
 import {
-  deTransferat, vederiSimulare, type CerereCam, type DopExportat, type ParametriExport, type ParteDesprinsa, type RaspunsExport, type RaspunsSimulare,
-  type RaspunsTraseu,
+  deTransferat, vederiSimulare, type CerereCam, type DopExportat, type ParametriExport, type ParteDesprinsa, type RaspunsExport, type RaspunsPotrivire,
+  type RaspunsSimulare, type RaspunsTraseu,
 } from './protocolCam.ts';
 import { ASTEPTARE_AX, rezumatJob, rezumatTraseu, sculeProgram, unesteRezumate, type RezumatJob } from './rezumat.ts';
 
@@ -151,7 +153,7 @@ export function calculeazaSimularea(doc: Document, dop?: number): RaspunsSimular
   if (!foaie) return { ok: false, motiv: 'documentul n-are foaie' };
   const d = dopurileFoii(doc, 0);
   const cuDopuri = d.ok
-    ? { dopuri: d.dopuri.map((x) => ({ element: x.element, semifabricat: x.semifabricat })) }
+    ? { dopuri: d.dopuri.map((x) => ({ element: x.element, semifabricat: x.semifabricat, inV: x.potrivire !== undefined })) }
     : { dopuri: [], motivDopuri: d.motiv };
   if (dop === undefined) {
     const job = programDinDocument(doc, REGIM_IMPLICIT, 0);
@@ -169,9 +171,28 @@ export function calculeazaSimularea(doc: Document, dop?: number): RaspunsSimular
   return { ok: true, foaie: { latime: s.latime, inaltime: s.inaltime, grosime: s.grosimeMinima }, simulare: p, ...cuDopuri };
 }
 
+/**
+ * „Împreună (secțiunea)” (ADR 0179): dopul în V cu numărul `dop` (de la 0) întors în locașul lui, pe programele simulării
+ * (fără supracursă, ca vederea 3D): locașul din programul foii, dopul din al lui, potrivirea măsurată de `potrivireaV`.
+ */
+export function calculeazaPotrivirea(doc: Document, dop: number): RaspunsPotrivire {
+  const d = dopurileFoii(doc, 0);
+  if (!d.ok) return { ok: false, motiv: d.motiv };
+  const x = d.dopuri[dop];
+  if (!x) return { ok: false, motiv: `dopul ${dop + 1} nu mai e în document` };
+  if (!x.potrivire) return { ok: false, motiv: `dopul ${dop + 1}: potrivirea simulată e doar la incrustația în V, deocamdată` };
+  const job = programDinDocument(doc, REGIM_IMPLICIT, 0);
+  if (!job.ok) return { ok: false, motiv: job.motiv };
+  const locas = pregatesteProgram(job.program, 0);
+  if (!locas.ok) return { ok: false, motiv: locas.motiv };
+  const p = pregatesteProgram(x.program, 0);
+  if (!p.ok) return { ok: false, motiv: `dopul ${dop + 1}: ${p.motiv}` };
+  return { ok: true, potrivire: potrivireaV(locas, p, { ...x.potrivire, grosimeDop: x.semifabricat.grosimeMinima }) };
+}
+
 /** Răspunsul unei cereri, cu tablourile lui de transferat (ADR 0014). */
 export type RaspunsCalcul = {
-  readonly raspuns: RaspunsExport | RaspunsTraseu | RaspunsSimulare | RezumatJob | VerificarePanou | RezultatReparare | RezultatTaiere | RezultatConversie;
+  readonly raspuns: RaspunsExport | RaspunsTraseu | RaspunsSimulare | RaspunsPotrivire | RezumatJob | VerificarePanou | RezultatReparare | RezultatTaiere | RezultatConversie | RezultatLegare;
   readonly transfer: ArrayBuffer[];
 };
 
@@ -189,6 +210,10 @@ export async function raspunde(c: CerereCam): Promise<RaspunsCalcul> {
       const r = calculeazaSimularea(c.document, c.dop);
       return { raspuns: r, transfer: r.ok ? deTransferat(vederiSimulare(r.simulare)) : [] };
     }
+    case 'potrivire': {
+      const r = calculeazaPotrivirea(c.document, c.dop);
+      return { raspuns: r, transfer: r.ok ? deTransferat([r.potrivire.sectiune.placa, r.potrivire.sectiune.dop]) : [] };
+    }
     case 'timp':
       return { raspuns: rezumatTraseu(despacheteaza(c.program), c.foaie, c.setari), transfer: [] };
     case 'verificare':
@@ -201,5 +226,7 @@ export async function raspunde(c: CerereCam): Promise<RaspunsCalcul> {
       return { raspuns: taieInPanouri(c.document, c.cerere, c.indexFoaie ?? 0), transfer: [] };
     case 'conversie':
       return { raspuns: converteste(c.document, c.cerere, c.indexFoaie ?? 0), transfer: [] };
+    case 'legare':
+      return { raspuns: leagaCaile(c.document, c.cerere, c.optiuni, c.indexFoaie ?? 0), transfer: [] };
   }
 }

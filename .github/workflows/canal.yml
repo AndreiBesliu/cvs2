@@ -1,0 +1,83 @@
+# Un canal de previzualizare al instanței de test pentru ramura unei linii (`scripts/publica-canal.ts`), din GitHub Actions:
+# sesiunile din cloud n-au acreditări Firebase (docs/lucru-in-cloud.md). Adresa principală a testului nu se atinge; canalul
+# expiră în 30 de zile. Identitatea Google vine prin WIF, în mediul `test`, ca la `publica.yml`. Se pornește de pe main:
+#   gh workflow run canal.yml --ref main -f ramura=<ramura> -f canal=<canal>
+# Intrările ajung în `run:` doar prin `env:`, niciodată direct în comandă.
+name: canal
+run-name: canal ${{ inputs.canal }} ${{ inputs.ramura }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      ramura:
+        description: Ramura liniei (de pildă wip/3.Tq-elice)
+        type: string
+        required: true
+      canal:
+        description: Canalul (litere mici, cifre, liniuțe; de pildă elice)
+        type: string
+        required: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: canal-${{ inputs.canal }}
+  cancel-in-progress: false
+
+jobs:
+  canal:
+    name: Canalul
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    environment: test
+    permissions:
+      contents: read
+      actions: read
+      id-token: write
+    steps:
+      - name: Forma intrărilor
+        env:
+          RAMURA: ${{ inputs.ramura }}
+          CANAL: ${{ inputs.canal }}
+        run: |
+          [[ "$CANAL" =~ ^[a-z0-9-]{1,40}$ ]] || { echo "::error::canalul: litere mici, cifre, liniuțe, 1–40"; exit 1; }
+          [[ "$RAMURA" =~ ^[A-Za-z0-9][A-Za-z0-9._/-]{0,99}$ && "$RAMURA" != main ]] || { echo "::error::ramura nu e una de linie"; exit 1; }
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ inputs.ramura }}
+          fetch-depth: 50
+      # Ca la publicare: nivelul rapid verde pe vârful ramurii sau pe cel mai apropiat strămoș verde, doar cu .md între ele.
+      - name: Nivelul rapid verde (pe vârful ramurii sau pe un strămoș, doar cu .md între ele)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          SHA=$(git rev-parse HEAD)
+          for c in $(git rev-list --max-count=50 "$SHA"); do
+            n=$(gh api "repos/$GITHUB_REPOSITORY/actions/workflows/rapid.yml/runs?head_sha=$c&status=success" --jq '.total_count')
+            if [ "$n" -gt 0 ]; then
+              cod=$(git diff --name-only "$c" "$SHA" | grep -vE '\.md$' || true)
+              if [ -n "$cod" ]; then echo "::error::între $c (verde) și $SHA s-au schimbat fișiere de cod: $cod"; exit 1; fi
+              echo "Nivelul rapid verde pe $c."
+              exit 0
+            fi
+          done
+          echo "::error::niciun nivel rapid verde pe $SHA sau pe ultimii 50 de strămoși"
+          exit 1
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 26
+          cache: npm
+      - name: Dependențele și firebase-tools
+        run: npm ci && npm i -g firebase-tools@15.18.0
+      - name: Identitatea Google a testului (WIF)
+        uses: google-github-actions/auth@7c6bc770dae815cd3e89ee6cdf493a5fab2cc093 # v3.0.0
+        with:
+          workload_identity_provider: ${{ vars.WIF_PROVIDER }}
+          service_account: ${{ vars.SA_PUBLICARE }}
+      - name: Build-ul
+        run: npm run build
+      - name: Canalul (adresa lui, în jurnal)
+        env:
+          CANAL: ${{ inputs.canal }}
+        run: node scripts/publica-canal.ts "$CANAL"

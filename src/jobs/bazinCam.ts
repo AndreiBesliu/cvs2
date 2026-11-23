@@ -11,6 +11,7 @@
 import type { Montaj } from '../ir/montaj.ts';
 import type { Document } from '../model/document.ts';
 import type { CerereReparare, OptiuniReparare, RezultatReparare, VerificarePanou } from '../model/reparare.ts';
+import type { CerereLegare, OptiuniLegare, RezultatLegare } from '../model/legareCai.ts';
 import type { CerereConversie, RezultatConversie } from '../model/conversie.ts';
 import type { CererePanouri } from '../model/panouri.ts';
 import type { CerereTaiere, RezultatTaiere } from '../model/taiere.ts';
@@ -18,7 +19,7 @@ import type { OptiuniVerificare } from '../model/verificare.ts';
 import type { RaspunsCalcul } from './calculCam.ts';
 import type { ProgramImpachetat } from './impachetare.ts';
 import { transferabileProgram } from './impachetare.ts';
-import type { CerereCam, MesajCam, ParametriExport, RaspunsExport, RaspunsMesajCam, RaspunsSimulare, RaspunsTraseu } from './protocolCam.ts';
+import type { CerereCam, MesajCam, ParametriExport, RaspunsExport, RaspunsMesajCam, RaspunsPotrivire, RaspunsSimulare, RaspunsTraseu } from './protocolCam.ts';
 import type { RezumatJob } from './rezumat.ts';
 
 /** Cât așteaptă bazinul un calcul CAM (bun-simț: pe 2 304 de forme, exportul întreg ține ~1,5 s pe firul principal). */
@@ -111,6 +112,11 @@ export function simulareInBazin(document: Document, o: OptiuniCam = {}, dop?: nu
   return calculeaza({ fel: 'simulare', document, ...(dop !== undefined ? { dop } : {}) }, [], o) as Promise<RaspunsSimulare>;
 }
 
+/** „Împreună (secțiunea)” (ADR 0179): potrivirea dopului în V cu numărul `dop` (de la 0); secțiunea vine transferată. */
+export function potrivireInBazin(document: Document, dop: number, o: OptiuniCam = {}): Promise<RaspunsPotrivire> {
+  return calculeaza({ fel: 'potrivire', document, dop }, [], o) as Promise<RaspunsPotrivire>;
+}
+
 /** Timpul unui program deja calculat; programul împachetat se transferă (cel dat nu mai e folosibil după apel). */
 export function timpInBazin(program: ProgramImpachetat, foaie: Montaj['foaie'], setari: string | undefined, o: OptiuniCam = {}): Promise<RezumatJob> {
   return calculeaza({ fel: 'timp', program, foaie, setari }, transferabileProgram(program), o) as Promise<RezumatJob>;
@@ -139,4 +145,9 @@ export function panouriInBazin(document: Document, cerere: CererePanouri, o: Opt
 /** Conversia vectorilor (ADR 0180, felia 10.3↑d), pe documentul dat: piesele schimbate. */
 export function conversieInBazin(document: Document, cerere: CerereConversie, o: OptiuniCam = {}, indexFoaie = 0): Promise<RezultatConversie> {
   return calculeaza({ fel: 'conversie', document, cerere, indexFoaie }, [], o) as Promise<RezultatConversie>;
+}
+
+/** Legarea căilor (ADR 0182, felia 10.3↑o), pe documentul dat: piesele schimbate și instanțele de șters. */
+export function legareInBazin(document: Document, cerere: CerereLegare, optiuni: OptiuniLegare, o: OptiuniCam = {}, indexFoaie = 0): Promise<RezultatLegare> {
+  return calculeaza({ fel: 'legare', document, cerere, optiuni, indexFoaie }, [], o) as Promise<RezultatLegare>;
 }

@@ -67,6 +67,7 @@ export const ro = {
   'actiune.repara': 'Repară vectorii',
   'actiune.taie': 'Taie vectorii',
   'actiune.converteste': 'Convertește vectorii',
+  'actiune.leaga-caile': 'Leagă căile',
   'motiv.editare-se-incarca': 'Editarea se încarcă încă: încearcă din nou într-o clipă.',
   'motiv.o-singura-piesa': 'Alege o singură piesă.',
   'motiv.doar-citire': 'Proiectul e deschis în altă filă: aici doar îl citești.',

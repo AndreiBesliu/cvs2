@@ -21,6 +21,10 @@
       "ro": "Printează o conică dublă de 12 și prinde-o la 90° de o conică dublă LEGO de 12 (32270), cu axele întâlnite și planul de mijloc al fiecăreia la 8 mm (1 pas) de axul celeilalte; apoi pe axe paralele (12 mm, jumătate de pas) și o pereche printată de 12 cu 36, cu „Fă perechea” (la 90°, planul celei de 12 la 20 mm de axul celei de 36, al celei de 36 la 8 mm de axul celei de 12)",
       "en": "Print a 12-tooth double bevel gear and mesh it at 90° with a LEGO 12-tooth double bevel gear (32270), with the axles meeting and the middle plane of each 8 mm (1 step) from the other’s axle; then on parallel axles (12 mm, half a step) and a printed pair of 12 with 36, with “Make the pair” (at 90°, the middle plane of the 12-tooth one 20 mm from the axle of the 36-tooth one, that of the 36-tooth one 8 mm from the axle of the 12-tooth one)"
     },
+    "03133dff5fc1ca93": {
+      "ro": "**Pictogramele pieselor** (3.Tp↑b din ADR 0281, fără întrebare; worktree-ul `galeria`, ramura `wip/3.Tp-galeria-pe-file`; „neata, continua si porneste si worktrees”). Pe fiecare buton al galeriilor (al familiei și al căutării), înaintea numelui, un desen mic al piesei, făcut de mână după piesa din vederea 3D: doar linii, de culoarea textului (după temă și după apăsare), ascuns cititoarelor de ecran. O piesă nouă își pune desenul pe un rând, lângă tabela familiilor (până atunci, un cub generic; proba unitară i-l cere). Pachetul 18.18.0. Unitare 4, e2e 4, otrăvuri 18 / 18.",
+      "en": "**The pieces’ icons** (3.Tp↑b in ADR 0281, without a question; the `galeria` worktree, branch `wip/3.Tp-galeria-pe-file`; “neata, continua si porneste si worktrees”). On every button of the galleries (the family’s and the search’s), before the name, a small drawing of the piece, drawn by hand after the piece in the 3D view: lines only, in the text’s colour (so it follows the theme and the pressed state), hidden from screen readers. A new piece adds its drawing on one line, next to the families table (until then, a generic cube; the unit test asks for it). Package 18.18.0. Unit 4, e2e 4, poisons 18 / 18."
+    },
     "033ed581acb87520": {
       "ro": "Fișa etapei și proba de mediu în Drive: instalarea, build-ul, nivelul rapid și Edge, de două ori, cu `git status` curat după",
       "en": "Stage file and environment check in Drive: install, build, rapid level and Edge, twice, with a clean `git status` afterwards"
@@ -52,6 +56,10 @@
     "04c8301864ef8b86": {
       "ro": "**Buzunarul, adus din etapa 5** (fără mașină; ADR 0069; „Ok, dar, in timp ce eu voi face testul, vreau sa poti lucra la ce urmeaza”: lucrat cât owner-ul face testul uneltelor de desen, publicat pe un canal de previzualizare, nu pe adresa de test). În fereastra exportului, „buzunar” e încă o tăietură a rândului (coloana se cheamă acum „Tăietura”): freza scoate tot materialul dinăuntrul conturului, până la adâncime, în inele paralele cu conturul, la un pas lateral de cel mult jumătate din diametru (implicit 40 %), dinăuntru spre perete; între inele nu se ridică cât drumul rămâne în buzunar. Documentul v11 (migrarea doar cu numărul). Refuzate, cu motiv: calea deschisă, insulele, contururile care se ating, freza care nu încape. Manualul („Operațiile de tăiere”) e la zi. Ca să încapă, ușa unui proiect salvat s-a despărțit (ADR 0070): la pornire vin doar verificările, migrările doar pentru un document vechi; pornirea cu ușa 99,9 → 98,6 / 100 kB. **Treceri:** (1) schema v11 și ușa, inelele (arborele, postordinea), legăturile, lucrarea (buzunarul nu e inel), dialogul; oracolul simulării pe G-code-ul exportat: dreptunghiul, L-ul cu pasul maxim, cercul, scoase întregi; o probă pe hârtie a găsit un prag de topologie (40 × 30, pasul 2,4: inelul exact la jumătatea lățimii, o linie, refuzat de offset): inelul se ia la 14,999 mm; `document.aplica-operatii` refuza schimbarea felului (prins de e2e), acum felul e o valoare; pornirea cu ușa ajunsese la 100,2 / 100 kB, de unde ADR 0070; oracolul documentului v11 și lipirea cu el (~24 de fișiere de probe) scrise de aceeași sesiune, nu independent.",
       "en": "**The pocket, brought forward from stage 5** (no machine; ADR 0069; “Ok, but while I do the test, I want you to be able to work on what comes next”: done while the owner runs the drawing tools test, published on a preview channel, not on the test address). In the export window, “pocket” is one more cut for a row (the column is now called “Cut”): the cutter clears all the material inside the outline, down to the depth, in rings parallel to the outline, a side step of at most half the diameter apart (40% by default), from the inside out to the wall; between rings it does not lift as long as the way stays inside the pocket. Document v11 (the migration only changes the number). Refused, with a reason: the open path, islands, outlines that touch, a cutter that does not fit. The manual (“The cutting operations”) is up to date. To make it fit, the door of a saved project was split (ADR 0070): at startup only the checks come, the migrations only for an older document; startup with the door 99.9 → 98.6 / 100 kB. **Passes:** (1) schema v11 and the door, the rings (the tree, post-order), the links, the job (the pocket is not a ring), the dialog; the simulation oracle on the exported G-code: the rectangle, the L with the maximum step, the circle, cleared whole; a paper test found a topology threshold (40 × 30, step 2.4: the ring exactly at half the width, a line, refused by the offset): the ring is taken at 14.999 mm; `document.aplica-operatii` refused changing the kind (caught by e2e), now the kind is a value; startup with the door had reached 100.2 / 100 kB, hence ADR 0070; the v11 document oracle and its glue (~24 test files) written by the same session, not independently."
+    },
+    "04e87b64ccad03b5": {
+      "ro": "Camera imprimantei și codurile ei explicate",
+      "en": "The printer camera and its error codes explained"
     },
     "056096cd570f033f": {
       "ro": "Imaginile pe foaie",
@@ -769,6 +777,10 @@
       "ro": "Unealta Pen și tipurile nodurilor",
       "en": "The Pen tool and the node types"
     },
+    "32d7e6d3d94127a5": {
+      "ro": "Camera imprimantei prin WebRTC",
+      "en": "The printer camera over WebRTC"
+    },
     "32e55f096f4f3a7c": {
       "ro": "fișierele tale reale",
       "en": "your real files"
@@ -1189,6 +1201,10 @@
       "ro": "V-carve-ul",
       "en": "V-carve"
     },
+    "4f67d78b0ea986e3": {
+      "ro": "**Gata pe 22.11.** Codurile imprimantei explicate (ADR 0195, acceptat pe 21.11, grupul 4 al îmbunătățirilor legăturii prin WiFi, cu codurile acceptate pe 07.11): dicționarul cvs2 al familiei K1 (codul de pe ecran, gravitatea, ce faci, linkul în wiki-ul Creality), în cardul erorii și în notificări, adus la prima eroare; pana de curent citită din imprimantă; proba pe imprimanta falsă, apoi ghidul pe imprimanta owner-ului",
+      "en": "**Done on 22.11.** Printer error codes explained (ADR 0195, accepted on 21.11, group 4 of the WiFi link improvements, with the codes accepted on 07.11): cvs2's dictionary for the K1 family (the code on the screen, the severity, what to do, the link into the Creality wiki), in the error card and in the notifications, loaded at the first error; the power loss read from the printer; tested on the fake printer, then the guide on the owner's printer"
+    },
     "4f9a40a7649b8de8": {
       "ro": "Stratul WebGL2 (traseul ca LINE_STRIP; foaia rămâne în workerul vectorilor până la etapa 4; ADR 0038) și panoul de proprietăți editabil, în carcasa din 2.8a; sub-feliile 2.8c–2.8e",
       "en": "The WebGL2 layer (the toolpath as LINE_STRIP; the sheet stays in the vector worker until stage 4; ADR 0038) and the editable properties panel, in the 2.8a shell; sub-slices 2.8c–2.8e"
@@ -1269,9 +1285,17 @@
       "ro": "Profilul pe orice contur",
       "en": "Profile on any contour"
     },
+    "54d9714a4695b1cc": {
+      "ro": "3.6s–3.6u pe imprimantă",
+      "en": "3.6s–3.6u on the printer"
+    },
     "551d992a22ab4c72": {
       "ro": "Linia mediană",
       "en": "Centre line"
+    },
+    "56508803d1b651ac": {
+      "ro": "Pe test, în Easy 3Draw, partea 3D: fiecare piesă are un desen mic pe buton, înaintea numelui; treci prin Cărămizi, Legături și Roți și caută „roata”: piesele se recunosc după desen, în tema luminoasă și în cea întunecată, iar pe telefon butoanele încap",
+      "en": "On test, in Easy 3Draw, the 3D part: every piece has a small drawing on its button, before the name; go through Bricks, Joints and Wheels and search for “roata” (wheel): the pieces are recognisable by their drawings, in the light theme and in the dark one, and on a phone the buttons fit"
     },
     "56a9f2396bb907ee": {
       "ro": "**Decuparea la ultima formă aleasă** (ADR 0180 §4, §6; „Da, 10.3↑c”; `main` `36c75cb` unit întâi în ramură). **Decupează la ultima formă aleasă**: granița (închisă) rămâne; fiecare formă aleasă păstrează ce e de partea aleasă (**Păstrează**: înăuntru / în afară), iar una fără nimic acolo pleacă; **Formele care trec granița** se taie (implicit), se șterg sau rămân întregi; cu „Închide bucățile”, o formă închisă tăiată rămâne închisă pe graniță (un dreptunghi decupat la un cerc devine partea lor comună). Decuparea refolosește împărțirea cuțitului închis (10.3↑b); ștergerile și degruparea sunt un singur pas de anulare. **Treceri:** (1) probele pe hârtie, nucleul și oracolul, verzi din prima; (2) la e2e, panoul cu trei blocuri ieșea din fereastră: acum nu trece de 70 % din ea și se derulează, iar blocul decupării are așezarea din schiță. **Probele:** 8 pe hârtie (`taiere.decupare.test.ts`: cele zece linii în cercul Ø100, cu capetele în ±√(2500 − y²), semidiscul de 1 413,72 mm² și restul, fără închidere, cele trei alegeri pentru formele care trec granița, piesa cu un contur în afară, refuzurile, acțiunea cu ștergeri și anularea), oracolul independent pe 100 de decupări (`taiere.decupare.oracol.test.ts`, cu martorul lui), 1 e2e nou. **Otrăvurile** din `test/otravuri/10.3c.py`: 15, toate prinse la prima rulare (`342eaa7`); K11 și K13 din `10.3b.py`, mutate pe codul nou, prinse și ele. **Pornirea 101,4 (cu ușa 104,9 / 110 kB), neschimbată; totalul 516,6 → 517,2 / 550 kB. Linia, până acum: ~11,1 kB (10.3↑ +6,8, 10.3↑b +3,7, 10.3↑c +0,6), peste ghidul de ~10 kB din brief, cu două felii rămase.**",
@@ -1496,6 +1520,10 @@
     "6873abde95cb8caf": {
       "ro": "Fereastra Aspectul",
       "en": "The Appearance window"
+    },
+    "68e8555ba1a9dd97": {
+      "ro": "Camera imprimantei prin WebRTC (ADR 0195): cardul Camera în fereastra Imprimanta, pornit la clic, cu imaginea direct de pe imprimantă (semnalizarea pe 8000, fără niciun server); proba pe imprimanta falsă, cu o cameră falsă într-o a doua pagină, apoi ghidul",
+      "en": "The printer camera over WebRTC (ADR 0195): the Camera card in the Printer window, started with a click, with the picture straight from the printer (signalling on 8000, no server at all); tested on the fake printer, with a fake camera in a second page, then the guide"
     },
     "696ecb4953d33ecc": {
       "ro": "Plafonul total 500 kB",
@@ -1921,6 +1949,10 @@
       "ro": "**Relieful 1:** nucleul, relieful din imagine, prelucrarea 3D din relief",
       "en": "**Relief 1:** the core, relief from an image, 3D machining from the relief"
     },
+    "88bb1b08d6b78285": {
+      "ro": "Gata pe 22.11",
+      "en": "Done on 22.11"
+    },
     "89ee77330a573300": {
       "ro": "Jurnalul de erori pe server (ADR 0039): funcțiile `cncvs2` pe test, fără să le atingă pe cele vechi; `errorLogs` grupat pe amprentă, cu aparițiile; `logServerError` care nu aruncă; `logClientError` cu App Check și plafon. Regulile noi probate pe emulator, nepublicate (3.3). 12 teste pe emulator, 12 sabotaje prinse (după ce martorul a arătat un eșec fals al instrumentului). **Pe test:** 401 fără App Check și cu un token nesemnat. Publicarea a cerut două reparații: excluderile ancorate (`/src`) și recrearea callable-ului (invocarea publică se pune doar la creare).",
       "en": "Server-side error log (ADR 0039): the `cncvs2` functions on test, without touching the old ones; `errorLogs` grouped by fingerprint, with the occurrences; a `logServerError` that does not throw; `logClientError` with App Check and a cap. The new rules checked on the emulator, not published (3.3). 12 tests on the emulator, 12 sabotages caught (after the control showed a false failure of the tool). **On test:** 401 without App Check and with an unsigned token. Publishing needed two fixes: anchored exclusions (`/src`) and recreating the callable (public invocation is set only at creation)."
@@ -2161,6 +2193,10 @@
       "ro": "Remedierile din testul uneltelor de desen",
       "en": "The fixes from the drawing tools test"
     },
+    "99c2277b56fe658b": {
+      "ro": "Proba grupului 3 pe K1C (3.6s–3.6u, ADR 0194; în `main` din 18.11, pe adresa principală de test: <https://cncvectorstudio-test.web.app/>), după [ghid](https://github.com/AndreiBesliu/cvs2/blob/main/docs/masina/imprimanta-k1c.md), pașii 9–11: o imprimare scurtă cu notificările pornite și cvs2 în fundal (vine notificarea? sunetul?), istoricul la final (durata, filamentul) și, cu timelapse-ul pornit pe ecranul imprimantei, „Filmul ↗”; jurnalul copiat, dacă ceva nu merge",
+      "en": "Test of group 3 on the K1C (3.6s–3.6u, ADR 0194; in `main` since 18.11, on the main test address: <https://cncvectorstudio-test.web.app/>), following the [guide](https://github.com/AndreiBesliu/cvs2/blob/main/docs/masina/imprimanta-k1c.md), steps 9–11: a short print with the notifications on and cvs2 in the background (does the notification come? the sound?), the history at the end (the duration, the filament) and, with timelapse turned on on the printer's screen, “Video ↗”; the log copied if something does not work"
+    },
     "9a3c1ae6540a935d": {
       "ro": "Progresul etapelor viitoare",
       "en": "The progress of future stages"
@@ -2173,6 +2209,10 @@
       "ro": "Unealta Transformare, extensia barei, editarea formelor după plasare",
       "en": "The Transform tool, the bar extension, editing shapes after placement"
     },
+    "9ac4459c462e1ac1": {
+      "ro": "3.Tp↑b (pictogramele)",
+      "en": "3.Tp↑b (the icons)"
+    },
     "9acf4eda676c4ae0": {
       "ro": "Joburile cu mai multe freze din document",
       "en": "Multi-bit jobs from the document"
@@ -2184,6 +2224,14 @@
     "9b0f6911b493d1a9": {
       "ro": "Publicarea pe live (P1, partea 2): workflow-ul cu sha fixat, mediul `live` cu aprobarea owner-ului, WIF; amprenta `meta/deployment`, scrisă de pipeline (mutată din 3.3, ADR 0040 §7); contul de serviciu dedicat al backup-ului",
       "en": "Publishing to live (P1, part 2): the workflow with a pinned sha, the `live` environment with the owner's approval, WIF; the `meta/deployment` fingerprint, written by the pipeline (moved from 3.3, ADR 0040 §7); the backup's dedicated service account"
+    },
+    "9b104e31bf9bdf8f": {
+      "ro": "Dopul întors în locașul simulat",
+      "en": "The plug flipped in the simulated pocket"
+    },
+    "9b328586c71a37f0": {
+      "ro": "**Dopul întors în locașul simulat** (fără mașină; ADR 0179, acceptat din ADR 0170 §5–§7, ADR 0178 §1 și planșele schiței, la alegerea owner-ului „12.1↑e-2, secțiunea”, cu potrivirea măsurată în aplicație de un calcul nou, verificat de oracolul probelor, și întâi incrustația în V; worktree-ul `incrustatii`, ramura `wip/12.1-incrustatii`, cu `main` `40487c43` unit în `ec14bc4a`). În vederea 3D, lângă „Foaia / Dopul N”, „Împreună (secțiunea)”, pornit doar pe un dop în V: dopul întors și coborât până la primul contact în locașul simulat (0,1 mm, în lucrătorul CAM), în secțiune pe orizontală prin mijlocul desenului, cu tabelul planșei (cât intră dopul, pereții în contact, jocul cu clei, spațiul dintre plăci), pe hârtie și în simulare; un rând care iese din toleranță e roșu, cu locul lui, iar secțiunea trece prin el. `potrivireaV` (`src/sim/potrivire.ts`): benzile contractului, cu distanța din desenul rasterizat și transformarea exactă a distanței. Proba, scrisă întâi (`incrustatie.potrivire3d.test.ts`): aplicația = oracolul pe toate cazurile în V (și fără freză dreaptă, și cu banda decupată), controlul negativ cu toate rândurile roșii, secțiunea pe hârtie. E2e: comutatorul, tabelul, desenul; la dopul drept, oprit. Porțile, pe unirea cu `main` (`ec14bc4a`): compilatoarele ×3, importurile, licențele, traducerile (877, 0 lipsă); unit 9 669 / 0 (8 sărite; cu proba refuzurilor, 9 670 / 0); build determinist (345 de fișiere; pornirea cu ușa 111,2 / 115; totalul 745,4 / 800); e2e 580 / 580 din prima. Otrăvurile: lista nouă `12.1e-2.py`, 38: 38 / 38 prinse (J02, scăpată ca echivalentă, mutată pe refuzul dopului drept, cu proba lui nouă; U08–U12, reluate după o previzualizare agățată); 12.1e D03, D06, D07 reorientate, prinse; niciun VOID nou. Mărimea: JavaScript +3 572 B gzip (lucrătorul CAM +1 922, vederea 3D +1 621), CSS +392 B; totalul 741,9 → 745,4 / 800; pornirea și ușa, neschimbate. Publicat pe canalul `incrustatii`, build-ul `a11d855e` (versiunea `a11d855e17f9`, până pe 22.12), verificat fără export (Playwright, în engleză): secțiunea și tabelul pe cercul în V, ca pe hârtie; 0 erori în consolă și în jurnal. Nu acum: pereții drepți și treptele (12.1↑e-3); bifa pe fiecare rând (v26).",
+      "en": "**The plug flipped in the simulated pocket** (no machine; ADR 0179, accepted from ADR 0170 §5–§7, ADR 0178 §1 and the sketch's boards, at the owner's choice “12.1↑e-2, secțiunea”, with the fit measured in the app by a new calculation, checked by the tests' oracle, and the V inlay first; the `incrustatii` worktree, branch `wip/12.1-incrustatii`, with `main` `40487c43` merged in `ec14bc4a`). In the 3D view, next to “Sheet / Plug N”, “Together (section)”, on only for a V plug: the plug flipped and lowered to the first contact in the simulated pocket (0.1 mm, in the CAM worker), in a horizontal section through the middle of the drawing, with the board's table (how far the plug goes in, the walls in contact, the glue gap, the space between the boards), on paper and simulated; a row out of tolerance is red, with its place, and the section goes through it. `potrivireaV` (`src/sim/potrivire.ts`): the contract's bands, with the distance from the rasterised drawing and the exact distance transform. The proof, written first (`incrustatie.potrivire3d.test.ts`): the app = the oracle on every V case (also without a straight bit and with the cut-out band), the negative control with every row red, the section on paper. E2e: the toggle, the table, the drawing; on the straight plug, off. The gates, on the merge with `main` (`ec14bc4a`): the compilers ×3, the imports, the licences, the translations (877, 0 missing); unit 9,669 / 0 (8 skipped; with the refusals' proof, 9,670 / 0); the deterministic build (345 files; startup with the door 111.2 / 115; total 745.4 / 800); e2e 580 / 580 at the first run. The poisons: the new list `12.1e-2.py`, 38: 38 / 38 caught (J02, escaped as an equivalent mutant, moved onto the straight plug's refusal with its new proof; U08–U12, rerun after a hung preview); 12.1e D03, D06, D07 retargeted, caught; no new VOID. The size: JavaScript +3,572 B gzip (the CAM worker +1,922, the 3D view +1,621), CSS +392 B; total 741.9 → 745.4 / 800; startup and the door unchanged. Published on the `incrustatii` channel, the build `a11d855e` (version `a11d855e17f9`, until 22.12), checked without exporting (Playwright, in English): the section and the table on the V circle, as on paper; no errors in the console or the log. Not now: the straight walls and the steps (12.1↑e-3); the box on each row (v26)."
     },
     "9b8d8f97eff6788f": {
       "ro": "Bancul vizual v1 (`npm run banc`, pagina `/banc/` pe instanța de test), cu martorii lui negativi, și unealta de otrăvuri comisă (`scripts/otravuri.py`, `docs/otravuri.md`). Rând completat pe 19.10 din DEVLOG, pentru roadmap-ul din `/admin`.",
@@ -2296,6 +2344,10 @@
     "a316b45e2a5823a3": {
       "ro": "Backup-ul și marcajele (ADR 0041): `backupZilnic` și `verificaBackup` programate pe test (cu `BUCKET_BACKUP` din `functions/.env.cncvectorstudio-test`), marcajul în jurul fiecărui job (pornire, final, succes, eșecuri la rând, eroare, rând în fila Erori), judecata pură în `shared/joburi.ts` și câte o verificare pe job în Diagnoză; regula `marcaje`. 23 de teste pe emulator, 3 e2e, 7 unitare noi; 10 sabotaje prinse, cu martorii. Emulatorul a prins un import care trecea de tipuri și cădea la rulare (`{ v1 }` din pachetul CommonJS). Prima rulare reală: 17.10, 03:00 / 05:00.",
       "en": "The backup and the markers (ADR 0041): `backupZilnic` and `verificaBackup` scheduled on test (with `BUCKET_BACKUP` from `functions/.env.cncvectorstudio-test`), a marker around each job (start, end, success, failures in a row, error, a row in the Errors tab), the pure judgement in `shared/joburi.ts` and one check per job in Diagnostics; the `marcaje` rule. 23 tests on the emulator, 3 e2e, 7 new unit tests; 10 sabotages caught, with the controls. The emulator caught an import that passed the types and failed at runtime (`{ v1 }` from the CommonJS package). The first real run: 17.10, 03:00 / 05:00."
+    },
+    "a374b647cf50278f": {
+      "ro": "Camera MJPEG (ADR 0195), pentru K1 fără WebRTC: fluxul de pe 8080, citit cadru cu cadru în același card; proba pe imprimanta falsă",
+      "en": "The MJPEG camera (ADR 0195), for K1 printers without WebRTC: the stream from 8080, read frame by frame in the same card; tested on the fake printer"
     },
     "a3e058270f81d2bb": {
       "ro": "Planșele, aduse din etapa 11: foaia activă și lista cu foile",
@@ -2737,6 +2789,10 @@
       "ro": "3.Tp (piesele pe file)",
       "en": "3.Tp (the parts on tabs)"
     },
+    "c05fef56bdeed733": {
+      "ro": "**Legarea căilor** (fără mașină; ADR 0182, acceptat pe 21.11 cu 1a, 2a, 3a și nota „cat mai multe optiuni pe care le putem pune la dispozitia userilor”; „Da, începe 10.3↑o”; ramura `wip/10.3o-legare`, din vârful lui 10.3↑n, cu `main` `40487c43` unit). **Leagă căile** (butonul de lângă boolean, meniul de clic dreapta, `Ctrl+J`) face din căile deschise alese o singură cale: capetele care se ating (0,01 mm) devin un nod, pe capătul căii mai devreme în proiect; trei capete într-un punct rămân; între exact două căi, golul se leagă cu o linie; o singură cale aleasă se închide; o cale ale cărei capete se întâlnesc devine închisă, cu operația ei. **Opțiunile legării** (săgeata de lângă buton): lipirea, golul (cu linie, până la N mm, doar lipire), capetele lipite (pe capătul primei, la mijloc), operațiile diferite (nu leagă, ia operația primei). În Verificare, **Leagă** pe rândul capetelor a două căi și **Leagă toate căile**. Refuzurile, cu motiv: operații diferite, piese diferite, piesa pusă de mai multe ori, golul peste opțiuni. **Treceri:** (1) golurile: liniile vin doar între exact două lanțuri (un T sau trei lanțuri ar lega capete depărtate, la întâmplare), iar o singură cale aleasă se închide (deci Ctrl+J din nou, după o legare, o închide); (2) e2e: rezultatul se ștergea pe loc, fiindcă alegerea primește alt tablou după orice schimbare a documentului: se compară după conținut; limba paginii de probă, română; (3) otrăvurile: rotirea lanțului închis era cod mort (mersul pornește chiar de la prima cale): scoasă; probe noi înaintea rulării (prima și a doua cale întoarse la gol, arcul oglindit); L11, nevalidă (un `else` rămas singur), rescrisă și prinsă; (4) CRLF scris de `Path.write_text` din Python în patru fișiere: adus la LF; (5) mărimea: opțiunile într-un modul ușor de la început (lecția lui 10.3↑n), deci legarea a rămas toată în worker; (6) porțile: cu un cerc ales, primul rând activ al meniului de clic dreapta devenise „Leagă căile” (`import.spec.ts:436` aștepta „Duplică”): comanda e acum activă, în bară, în panou și în meniu, doar cu o cale deschisă aleasă. Otrăvurile: 25 / 25 prinse. Porțile: întregi pe vârful feliei (`181e270e`, cu `main` `40487c43` unit): traducerile, cele trei compilatoare, importurile, licențele, unit 9 677 (9 669 trecute, 8 sărite, 0 căderi), build-ul determinist (344 de fișiere identice), e2e 580 / 581 (`import.spec.ts:436`, rândul activ al meniului, reparat; trecerea 6), emulatoarele 101 / 101 și 29 / 29; apoi, pe reparație (`3ad80ef2`): compilatorul, importurile, unit-urile manualului, acțiunilor și legării 30 / 30, e2e `import`, `legare` și `boolean` 30 / 30. **Mărimea:** pornirea +0,1 kB (107,2 → 107,3; cu ușa 111,3 / 115: acțiunea, tasta și eticheta ei în dicționarul de bază), totalul +4,2 kB (742,0 → 746,2 / 800, A/B în clonă, pe `main` `40487c43` și pe `3ad80ef2`): workerul +2,4 kB (legarea), bucata editării +1,6 kB (butoanele, panoul opțiunilor, depozitul, textele), Verificarea +0,2 kB; opțiunile stau într-un modul ușor, deci legarea a rămas toată în worker. Canalul: <https://cncvectorstudio-test--taiere-7mmspw7e.web.app> (până pe 22.12), `3ad80ef2`, verificat (ro, en: două linii trase cu unealta Linie, lipite de lipirea de noduri, alese cu un cadru și legate cu Ctrl+J într-un L (geometria citită din proiect, exactă), panoul opțiunilor în română, Anulează; nicio eroare în consolă).",
+      "en": "**Joining paths** (no machine; ADR 0182, accepted on 21.11 with 1a, 2a, 3a and the note “as many options as we can give users”; “Yes, start 10.3↑o”; branch `wip/10.3o-legare`, from the tip of 10.3↑n, with `main` `40487c43` merged). **Join paths** (the button next to the boolean, the right-click menu, `Ctrl+J`) turns the chosen open paths into a single path: ends that touch (0.01 mm) become one node, on the end of the path that comes earlier in the project; three ends at one point stay; between exactly two paths, the gap is joined with a line; a single chosen path is closed; a path whose ends meet becomes closed, with its operation. **Joining options** (the arrow next to the button): snapping, the gap (with a line, up to N mm, snap only), the snapped ends (on the first path's end, in the middle), different operations (do not join, take the first path's operation). In Checking vectors, **Join** on the row of the ends of two paths and **Join all paths**. Refusals, with a reason: different operations, different parts, a part placed more than once, a gap beyond the options. **Passes:** (1) gaps: lines come only between exactly two chains (a T or three chains would join distant ends at random), and a single chosen path is closed (so Ctrl+J again, after a join, closes it); (2) e2e: the result was cleared at once, because the selection gets a new array after any change of the document: it is compared by content; the test page's language, Romanian; (3) poisons: rotating the closed chain was dead code (the walk starts at the first path itself): removed; new tests before the run (the first and the second path reversed at a gap, the mirrored arc); L11, invalid (an `else` left alone), rewritten and caught; (4) CRLF written by Python's `Path.write_text` in four files: brought back to LF; (5) size: the options in a light module from the start (the lesson of 10.3↑n), so the joining stayed entirely in the worker; (6) gates: with a circle chosen, the first active row of the right-click menu had become “Join paths” (`import.spec.ts:436` expected “Duplicate”): the command is now active, in the bar, the panel and the menu, only with an open path chosen. Poisons: 25 / 25 caught. Gates: full on the slice tip (`181e270e`, with `main` `40487c43` merged): translations, the three compilers, imports, licences, unit 9 677 (9 669 passed, 8 skipped, 0 failures), the deterministic build (344 identical files), e2e 580 / 581 (`import.spec.ts:436`, the active menu row, fixed; pass 6), emulators 101 / 101 and 29 / 29; then, on the fix (`3ad80ef2`): the compiler, imports, the manual, actions and joining units 30 / 30, e2e `import`, `legare` and `boolean` 30 / 30. **Size:** startup +0.1 kB (107.2 → 107.3; with the door 111.3 / 115: the action, the key and its label in the base dictionary), total +4.2 kB (742.0 → 746.2 / 800, A/B in the clone, on `main` `40487c43` and on `3ad80ef2`): the worker +2.4 kB (the joining), the editing chunk +1.6 kB (the buttons, the options panel, the store, the texts), Checking vectors +0.2 kB; the options sit in a light module, so the joining stayed entirely in the worker. The channel: <https://cncvectorstudio-test--taiere-7mmspw7e.web.app> (until 22.12), `3ad80ef2`, checked (ro, en: two lines drawn with the Line tool, snapped by node snapping, chosen with a frame and joined with Ctrl+J into an L (the geometry read from the project, exact), the options panel in Romanian, Undo; no error in the console)."
+    },
     "c083a50de5467f32": {
       "ro": "Transformările selecției, Alt care inversează lipirea",
       "en": "Transforming the selection, Alt inverting snapping"
@@ -2840,6 +2896,10 @@
     "c97105ba831bfb60": {
       "ro": "**Imaginile pe foaie** (propus; ADR 0272; worktree-ul `trasare`, ramura `wip/25.1-trasare`; pornită la „Da, propunerea”, după întrebarea „cât mai este de făcut pentru trasare?”). Cercetarea: Vectric (stratul imaginii, „Bitmap Fading”, „Trace Bitmap” din ea și dintr-o parte a ei), ArtCAM / Carveco (straturile bitmap cu paleta lor, „Bitmap to Vector”), Fusion 360 (pânza atașată, opacitatea, „Calibrate” din două puncte), LightBurn și Inkscape (imaginea ca obiect, trasarea din ea). Propunerea: o imagine rămâne pe foaie sub desen, estompată (40 %), fixată (clicurile ajung la desen) sau desfăcută (mânerele formelor), nici tăiată, nici exportată; octeții ei stau într-o bază IndexedDB după amprenta SHA-256, în afara documentului (scris întreg, cu 20 de versiuni), iar foaia ține doar așezarea (`Foaie.imagini`, fără schemă nouă, ca ghidajele); vine din fereastra trasării („Păstrează imaginea pe foaie”, „Doar imaginea”); lista ei e în panoul foii; „Calibrează” (două puncte și distanța, ca la Fusion 360) și „Trasează…” (vectorii exact peste ea, cu zona) vin în 25.8↑b. Schița, cu macheta interactivă și formularul celor trei întrebări: <https://claude.ai/artifact/Ctc63ZdA6ipkLPA8uGCJyb>. Formele ridicate din culori (reliefurile) rămân o linie a lor.",
       "en": "**Images on the sheet** (proposed; ADR 0272; the `trasare` worktree, the `wip/25.1-trasare` branch; started at “Yes, the proposal”, after the question “how much is left to do for tracing?”). Research: Vectric (the image layer, “Bitmap Fading”, “Trace Bitmap” from it and from a part of it), ArtCAM / Carveco (bitmap layers with their palettes, “Bitmap to Vector”), Fusion 360 (the attached canvas, the opacity, “Calibrate” from two points), LightBurn and Inkscape (the image as an object, tracing from it). The proposal: an image stays on the sheet under the drawing, faded (40 %), locked (clicks reach the drawing) or unlocked (the shape handles), neither cut nor exported; its bytes are kept in an IndexedDB store by their SHA-256 fingerprint, outside the document (written whole, with 20 versions), while the sheet keeps only the placement (`Foaie.imagini`, without a new schema, like the guides); it comes from the trace window (“Keep the image on the sheet”, “Image only”); its list is in the sheet panel; “Calibrate” (two points and the distance, as in Fusion 360) and “Trace…” (the vectors exactly over it, with the area) come in 25.8↑b. The sketch, with the interactive mock-up and the form of the three questions: <https://claude.ai/artifact/Ctc63ZdA6ipkLPA8uGCJyb>. Shapes raised from colours (the reliefs) remain a line of their own."
+    },
+    "c97a049544bc414e": {
+      "ro": "**Codurile imprimantei explicate** (fără imprimantă; ADR 0195 §A, acceptat cu recomandările, „Da, recomandările”: 1a, 2a; în worktree-ul `imprimanta`). Cardul „De la imprimantă” arată codul de pe ecran (CX2585), dacă e gravă sau obișnuită, ce s-a întâmplat și ce faci, cu pagina Creality unde există; banda și notificarea spun la fel. Dicționarul familiei K1 are 126 de chei (Creality Print 4, rezumatul codurilor K1 din wiki-ul Creality, CC5000 de pe K1C-ul owner-ului), cu textele noastre, în română și engleză; vine la prima eroare și merge și fără internet. Pana de curent (`repoPlrStatus`) e un eveniment nou, pornit implicit. La recenzia proprie, trei reparații: linkurile cardului cât textul lor, dicționarul cerut din nou după o cerere căzută, cheia 0. **Probe:** pe hârtie (cheile, linkurile, generatorul, forma, căutarea, pana, notificarea, setarea, precache-ul, cheia 0), manualul, două e2e noi și două actualizate; otrăvurile 46 / 46 (32 pe probele unitare, 14 prin e2e); din lista 3.6s, U02 adusă la codul nou și probată din nou. **Mărimea:** totalul 745,6 / 800 kB (+1,5 față de `main` `69fe779`, măsurat A/B), pornirea 107,2 (neschimbată). Proba pe imprimanta owner-ului: ghidul, pasul 12.",
+      "en": "**Printer error codes explained** (no printer; ADR 0195 §A, accepted with the recommendations, \"Da, recomandările\": 1a, 2a; in the `imprimanta` worktree). The \"From the printer\" card shows the code on the screen (CX2585), whether it is serious or minor, what happened and what to do, with the Creality page where there is one; the banner and the notification say the same. The K1 family dictionary has 126 keys (Creality Print 4, the K1 code summary from the Creality wiki, CC5000 from the owner's K1C), with our own texts, in Romanian and English; it comes at the first error and works offline too. The power cut (`repoPlrStatus`) is a new event, on by default. At our own review, three fixes: the card links as wide as their text, the dictionary asked again after a failed request, key 0. **Tests:** on paper (the keys, the links, the generator, the shape, the lookup, the power cut, the notification, the setting, the precache, key 0), the manual, two new e2e and two updated; the poisons 46 / 46 (32 on the unit tests, 14 through e2e); from the 3.6s list, U02 brought to the new code and caught again. **Size:** total 745.6 / 800 kB (+1.5 against `main` `69fe779`, measured A/B), start-up 107.2 (unchanged). The test on the owner's printer: the guide, step 12."
     },
     "ca05b96eadd17573": {
       "ro": "**V-carve** și gravarea inteligentă",
@@ -3068,6 +3128,10 @@
     "db14e07c4ef0098e": {
       "ro": "înainte să pornim primirea pe live",
       "en": "before we turn receiving on for live"
+    },
+    "db9aaf36cca405a1": {
+      "ro": "Camera MJPEG, pentru K1 fără WebRTC",
+      "en": "The MJPEG camera, for K1 printers without WebRTC"
     },
     "dbb48461078beeca": {
       "ro": "V-carve (+ fund plat); Gravare pe linie + smart engrave",
@@ -3372,6 +3436,10 @@
     "f20ea85a30832b0a": {
       "ro": "Normalizarea `nonzero` la ușă",
       "en": "`nonzero` normalisation at the door"
+    },
+    "f2402bcee11ee800": {
+      "ro": "Pictogramele pieselor",
+      "en": "The pieces’ icons"
     },
     "f254e58163cfe205": {
       "ro": "Lipirea mânerelor de scalare",
