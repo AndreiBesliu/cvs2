@@ -15,10 +15,10 @@ a0 = float(sys.argv[4]) if len(sys.argv) > 4 else -180.0
 a1 = float(sys.argv[5]) if len(sys.argv) > 5 else 180.0
 tri = plat.in_mm(plat.triunghiuri(dosar, piesa + '.dat'))
 cut = [(min(p[i] for t in tri for p in t), max(p[i] for t in tri for p in t)) for i in range(3)]
-c0 = [(lo + hi) / 2 for lo, hi in cut]
 P = []
 for p in esantion(tri, random.Random(1)):
-    a, b, h = p[0] - c0[0], p[1] - c0[1], p[2]
+    # față de axa prin origine, nu față de centrul cutiei (vezi elice_masura.py)
+    a, b, h = p[0], p[1], p[2]
     rr = math.hypot(a, b)
     if abs(rr - r) < 0.3:
         th = math.degrees(math.atan2(b, a))

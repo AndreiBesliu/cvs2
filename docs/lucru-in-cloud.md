@@ -11,7 +11,10 @@ Pe claude.ai/code, în ecranul unei sesiuni noi, selectorul de mediu (primul but
 **New environment**, cu:
 - **Network access:** *Limited*, cu **Allow package managers** bifat (lista implicită are npm, Ubuntu, `nodejs.org`,
   `packages.microsoft.com` pentru Edge și GitHub). La **Allowed domains** se adaugă `library.ldraw.org`, pentru uneltele
-  LDraw ale pluginului.
+  LDraw ale pluginului, și `cncvectorstudio-test.web.app`, adresa de test, de pe care `ci-si-publica.sh` citește versiunea
+  publicată (adăugată pe 23.11, la prima publicare din container: fără ea, proxy-ul răspunde 403). Adresele canalelor
+  (`cncvectorstudio-test--<canal>-<cod>.web.app`) diferă de la canal la canal: un canal se verifică din jurnalul rulării
+  `canal.yml`, nu din container.
 - **Setup script:** comanda de mai jos, care găsește repo-ul clonat și rulează `scripts/cloud/pregatire.sh`:
 
   ```bash
@@ -144,7 +147,8 @@ containerul ei, ca o linie, dar pe ramuri `unire-<data>`:
    (`publica.yml`, serverul și hosting-ul, cu amprenta) și adresa de test. O comandă ține cel mult 30 de minute, iar
    completul durează mai mult: la ieșirea cu 3, scriptul se reia la fel și continuă de unde a rămas.
 6. **Live:** doar la cuvântul owner-ului, pe un commit publicat întreg pe test:
-   `gh workflow run publica.yml -f instanta=live -f sha=<sha>`, apoi aprobarea owner-ului în GitHub (mediul `live`).
+   `gh workflow run publica.yml --ref main -f instanta=live -f sha=<sha>`, apoi aprobarea owner-ului în GitHub (mediul
+   `live`). `--ref` se dă mereu: fără el, `gh` întreabă prin GraphQL (oprit în container) care e ramura implicită.
 
 Un CI roșu pe `main` e incidentul numărul unu: sesiunea principală îl repară înaintea oricărei uniri noi.
 
