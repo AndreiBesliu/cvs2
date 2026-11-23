@@ -2105,7 +2105,9 @@ An extension adds a window of its own to the app, for example Easy 3Draw. It isn
 it, and the app’s interface stays the same.
 
 - The **Extensions** button (the puzzle piece next to the instance name) opens the menu: the installed extensions, the
-  **Library**, then **Install from file (.zip)…**, **Install from address…** and **Manage extensions…**.
+  **Library**, then **Install from file (.zip)…**, **Install from address…** and **Manage extensions…**. Next to an
+  extension’s name sits its icon, which you also see on its tab once you open it; one without an icon shows the puzzle
+  piece.
 - The **Library** shows our extensions, published together with the app, for example Easy 3Draw: the name, the version,
   what it does, what it asks for in short and its size. **Install** opens the install window, with what the extension asks
   for in full; there, **Install** downloads the package, checks it against its fingerprint in the library and keeps it in

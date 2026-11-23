@@ -153,7 +153,9 @@ function biblioteca(): Plugin {
           next();
           return;
         }
-        res.setHeader('Content-Type', cale.endsWith('.json') ? 'application/json; charset=utf-8' : 'application/zip');
+        const fel = cale.endsWith('.json') ? 'application/json; charset=utf-8'
+          : cale.endsWith('.svg') ? 'image/svg+xml' : cale.endsWith('.webp') ? 'image/webp' : 'application/zip';
+        res.setHeader('Content-Type', fel);
         res.end(Buffer.from(continut));
       });
     },

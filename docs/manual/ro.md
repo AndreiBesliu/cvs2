@@ -2039,7 +2039,8 @@ O extensie adaugă aplicației o fereastră a ei, de exemplu Easy 3Draw. Nu face
 tu, iar interfața aplicației rămâne aceeași.
 
 - Butonul **Extensii** (piesa de puzzle de lângă numele instanței) deschide meniul: extensiile instalate, **Biblioteca**,
-  apoi **Instalează din fișier (.zip)…**, **Instalează din adresă…** și **Gestionează extensiile…**.
+  apoi **Instalează din fișier (.zip)…**, **Instalează din adresă…** și **Gestionează extensiile…**. Lângă numele unei
+  extensii stă semnul ei, pe care îl vezi și pe fila ei după ce o deschizi; una fără semn are piesa de puzzle.
 - **Biblioteca** arată extensiile noastre, publicate odată cu aplicația, de exemplu Easy 3Draw: numele, versiunea, ce face, ce
   cere pe scurt și mărimea. **Instalează** deschide fereastra instalării, cu ce cere extensia pe larg; acolo, **Instalează**
   descarcă pachetul, îl verifică după amprenta lui din bibliotecă și îl pune în browserul acesta, iar **Deschide** îi deschide

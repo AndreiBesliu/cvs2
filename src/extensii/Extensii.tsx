@@ -22,6 +22,8 @@
  * nouă nu cere nimic în plus; altfel fereastra), „Instalată”, o versiune alta sau „Reîncarcă”. O extensie instalată cu o versiune
  * mai nouă în bibliotecă are lângă nume „actualizare: …”. Linkul `#biblioteca=<id>` deschide fereastra rândului; nimic nu se
  * descarcă fără clic.
+ *
+ * Semnul extensiei (ADR 0231 §B.2): lângă numele ei, în rândul instalat, în rândul din bibliotecă și pe fila ei (`Semn.tsx`).
  */
 import { lazy, Suspense, useCallback, useEffect, useLayoutEffect, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
@@ -39,6 +41,8 @@ import { contextPentruExtensie } from './cont.ts';
 import { FaraStocare, listaExtensii, scrieExtensia, type ExtensieInstalata } from './depozit.ts';
 import { CATALOG_PERMISIUNI } from './pachet.ts';
 import { repornireRara } from './repornire.ts';
+import { Semn, SemnInstalat, useSemnInstalat } from './Semn.tsx';
+import { adresaSemnCatalog } from './semn.ts';
 import type { CerereInstalare } from './tipuri.ts';
 import './extensii.css';
 
@@ -113,6 +117,9 @@ export function Extensii({ jurnal, fereastra, onFereastra, onDeschisa, onModal, 
   const [progres, setProgres] = useState<Readonly<Record<string, ProgresActualizare>>>({});
   const deschisaRef = useRef(deschisa);
   deschisaRef.current = deschisa;
+  // Semnul extensiei deschise, pe fila ei; dacă imaginea nu se poate arăta, rămâne piesa de puzzle a filei.
+  const semnFila = useSemnInstalat(deschisa);
+  const [semnFilaStricat, setSemnFilaStricat] = useState<string | null>(null);
   const buton = useRef<HTMLButtonElement | null>(null);
   const refMeniu = useRef<HTMLDivElement | null>(null);
   const fisier = useRef<HTMLInputElement | null>(null);
@@ -393,7 +400,10 @@ export function Extensii({ jurnal, fereastra, onFereastra, onDeschisa, onModal, 
     else control = <span>{t('extensii.biblioteca.reincarca')}</span>;
     return (
       <div key={r.id} className="biblioteca-rand" data-id={r.id} data-stare={s.fel}>
-        <div className="biblioteca-cap"><strong>{r.nume}</strong><span>{r.versiune}</span></div>
+        <div className="biblioteca-cap">
+          <span className="biblioteca-nume"><Semn adresa={adresaSemnCatalog(r, adresaCatalog())} marime={28} /><strong>{r.nume}</strong></span>
+          <span>{r.versiune}</span>
+        </div>
         <p id={descriere}>{r.descriere[limba]}</p>
         <div className="biblioteca-cipuri">
           {r.permisiuni.map((p) => <span key={p} className="biblioteca-cip">{CATALOG_PERMISIUNI.includes(p) ? t(`extensii.permisiune-scurt.${p}` as CheieSimpla) : p}</span>)}
@@ -427,11 +437,14 @@ export function Extensii({ jurnal, fereastra, onFereastra, onDeschisa, onModal, 
           const r = catalog?.extensii.find((y) => y.id === x.id);
           const s = r ? stareRand(r, x.manifest) : null;
           return (
-            <button key={x.id} type="button" role="menuitem" data-extensii="deschide" data-id={x.id}
+            <button key={x.id} type="button" role="menuitem" className="rand-extensie" data-extensii="deschide" data-id={x.id}
               onClick={() => { alege(() => { deschideExtensia(x); }); }}>
-              <span>{x.manifest.nume}</span>
-              <small>{t('extensii.deschide', { versiune: x.manifest.versiune })}</small>
-              {r && s?.fel === 'actualizeaza' && <small className="biblioteca-insigna">{t('extensii.biblioteca.actualizare', { versiune: r.versiune })}</small>}
+              <SemnInstalat extensie={x} marime={28} />
+              <span className="rand-text">
+                <span>{x.manifest.nume}</span>
+                <small>{t('extensii.deschide', { versiune: x.manifest.versiune })}</small>
+                {r && s?.fel === 'actualizeaza' && <small className="biblioteca-insigna">{t('extensii.biblioteca.actualizare', { versiune: r.versiune })}</small>}
+              </span>
             </button>
           );
         })}
@@ -450,11 +463,17 @@ export function Extensii({ jurnal, fereastra, onFereastra, onDeschisa, onModal, 
       </div>
     </div>
   );
-  // Fila, după ale aranjamentului: numele extensiei (apăsată cât e fereastra de acum) și × care o închide.
+  // Fila, după ale aranjamentului: semnul extensiei (sau piesa de puzzle), numele ei (apăsată cât e fereastra de acum) și ×
+  // care o închide.
+  const cuSemn = semnFila !== null && semnFila !== semnFilaStricat;
   const fila = deschisa && (
     <span className="fila-extensie" data-testid="fila-extensie">
-      <button type="button" className="cu-eticheta fila" data-icona="extensii.fila" data-extensii="fila"
+      <button type="button" className="cu-eticheta fila" data-icona="extensii.fila" data-extensii="fila" {...(cuSemn ? { 'data-cu-semn': '' } : {})}
         {...(fereastra ? { 'aria-current': 'page' as const } : {})} onClick={onFereastra}>
+        {cuSemn && (
+          <img className="semn-extensie semn-20" data-semn="" src={semnFila} alt="" width={20} height={20} draggable={false}
+            onError={() => { setSemnFilaStricat(semnFila); }} />
+        )}
         <span className="eticheta" data-testid="extensie-deschisa">{deschisa.manifest.nume}</span>
       </button>
       <button ref={butonInchide} type="button" className="fila-inchide" data-extensii="inchide-fereastra"

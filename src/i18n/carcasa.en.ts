@@ -441,6 +441,7 @@ export const enCarcasa = {
   'extensii.motiv.intrare': 'its entry module is missing',
   'extensii.motiv.stil': 'a style sheet is missing',
   'extensii.motiv.permisiune': 'it asks for a permission cvs2 doesn’t offer',
+  'extensii.motiv.pictograma': 'the extension’s icon isn’t a small SVG from the package (at most 8 kB)',
   'extensii.motiv.lipsa': 'a listed file is missing',
   'extensii.motiv.in-plus': 'it has a file that isn’t listed',
   'extensii.motiv.amprenta': 'a file doesn’t match its fingerprint (SHA-256)',

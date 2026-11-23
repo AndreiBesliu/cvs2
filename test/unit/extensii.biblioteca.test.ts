@@ -9,7 +9,8 @@ import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { impacheteaza } from '../../scripts/impacheteaza-extensie.ts';
 import {
-  citesteCatalog, comparaVersiuni, FORMAT_CATALOG, MAX_OCTETI_PACHET, numePachet, SCHEMA_CATALOG, type RandBiblioteca,
+  citesteCatalog, comparaVersiuni, esteNumeFisierBiblioteca, FORMAT_CATALOG, MAX_AUTOR, MAX_CAPTURI, MAX_DESPRE, MAX_NOUTATE, MAX_NOUTATI,
+  MAX_OCTETI_CAPTURA, MAX_OCTETI_PACHET, MAX_OCTETI_PICTOGRAMA, numeFisierBiblioteca, numePachet, SCHEMA_CATALOG, type RandBiblioteca,
 } from '../../shared/biblioteca.ts';
 import {
   cereCatalogul, descarcaPachetul, instaleazaDinBiblioteca, judecaDinBiblioteca, permisiuniNoi, stareRand,
@@ -211,4 +212,102 @@ test('catalogul cerut: bun, fără rețea, un răspuns greșit, un JSON stricat,
   assert.deepEqual(await cereCatalogul('/extensii/catalog.json', fetchFals({ json: '<!doctype html>' }).f), { fel: 'defect', detaliu: 'json' });
   const forma = await cereCatalogul('/extensii/catalog.json', fetchFals({ json: '{"format":"altul"}' }).f);
   assert.equal(forma.fel, 'defect');
+});
+
+/** Datele de prezentare ale unui rând (ADR 0231 §B.1): toate opționale, citite cu îngăduință. */
+const H8 = '0123abcd';
+const PREZENTARE = {
+  pictograma: { fisier: `salut-pictograma-${H8}.svg`, octeti: 1200 },
+  capturi: {
+    ro: [{ fisier: `salut-captura-1-ro-${H8}.webp`, octeti: 30_000, lat: 960, inalt: 600, alt: 'Fereastra extensiei' }],
+    en: [{ fisier: `salut-captura-1-en-${H8}.webp`, octeti: 31_000, lat: 960, inalt: 600, alt: 'The extension window' }],
+  },
+  despre: { ro: 'Extensia de probă, pe larg.', en: 'The test extension, at length.' },
+  noutati: [{ versiune: '1.0.0', ro: 'Prima versiune.', en: 'The first version.' }],
+  autor: 'CNC Vector Studio',
+} as const;
+
+test('datele de prezentare ale unui rând se citesc: semnul, capturile pe limbă, descrierea lungă, „ce e nou”, autorul', () => {
+  const c = citesteCatalog(catalog([{ ...randSalut(), ...PREZENTARE }]));
+  assert.ok(c.ok, c.ok ? '' : c.detaliu);
+  const r = c.catalog.extensii[0];
+  assert.ok(r);
+  assert.deepEqual({ pictograma: r.pictograma, capturi: r.capturi, despre: r.despre, noutati: r.noutati, autor: r.autor }, PREZENTARE);
+  assert.deepEqual(c.sarite, []);
+});
+
+test('un catalog fără datele de prezentare rămâne bun, iar rândul nu le are', () => {
+  const c = citesteCatalog(catalog([randSalut()]));
+  assert.ok(c.ok);
+  const r = c.catalog.extensii[0] as object;
+  for (const camp of ['pictograma', 'capturi', 'despre', 'noutati', 'autor']) assert.equal(camp in r, false, camp);
+  assert.deepEqual(c.sarite, []);
+});
+
+test('o dată de prezentare greșită se sare, cu numele ei; rândul și celelalte date rămân', () => {
+  const captura = PREZENTARE.capturi.ro[0];
+  const noutate = PREZENTARE.noutati[0];
+  const gresite: ReadonlyArray<readonly [string, string, unknown]> = [
+    ['pictograma', 'a altei extensii', { ...PREZENTARE.pictograma, fisier: `altul-pictograma-${H8}.svg` }],
+    ['pictograma', 'alt fel de fișier', { ...PREZENTARE.pictograma, fisier: `salut-pictograma-${H8}.png` }],
+    ['pictograma', 'în alt dosar', { ...PREZENTARE.pictograma, fisier: `../salut-pictograma-${H8}.svg` }],
+    ['pictograma', 'fără amprentă în nume', { ...PREZENTARE.pictograma, fisier: 'salut-pictograma.svg' }],
+    ['pictograma', 'zero octeți', { ...PREZENTARE.pictograma, octeti: 0 }],
+    ['pictograma', 'peste plafon', { ...PREZENTARE.pictograma, octeti: MAX_OCTETI_PICTOGRAMA + 1 }],
+    ['pictograma', 'doar un nume', `salut-pictograma-${H8}.svg`],
+    ['capturi', 'fără engleză', { ro: PREZENTARE.capturi.ro }],
+    ['capturi', 'prea multe', { ro: Array.from({ length: MAX_CAPTURI + 1 }, () => captura), en: [] }],
+    ['capturi', 'alt fel de fișier', { ro: [{ ...captura, fisier: `salut-captura-1-ro-${H8}.png` }], en: [] }],
+    ['capturi', 'a altei extensii', { ro: [{ ...captura, fisier: `altul-captura-1-ro-${H8}.webp` }], en: [] }],
+    ['capturi', 'peste plafon', { ro: [{ ...captura, octeti: MAX_OCTETI_CAPTURA + 1 }], en: [] }],
+    ['capturi', 'fără lățime', { ro: [{ ...captura, lat: 0 }], en: [] }],
+    ['capturi', 'înălțime care nu e întreagă', { ro: [{ ...captura, inalt: 600.5 }], en: [] }],
+    ['capturi', 'fără text alternativ', { ro: [{ ...captura, alt: '' }], en: [] }],
+    ['capturi', 'o listă, nu pe limbi', [captura]],
+    ['despre', 'fără engleză', { ro: 'doar română' }],
+    ['despre', 'prea lungă', { ro: 'd'.repeat(MAX_DESPRE + 1), en: 'd' }],
+    ['noutati', 'prea multe', Array.from({ length: MAX_NOUTATI + 1 }, (_, i) => ({ ...noutate, versiune: `1.0.${i}` }))],
+    ['noutati', 'o versiune care nu e din numere', [{ ...noutate, versiune: 'ieri' }]],
+    ['noutati', 'un rând prea lung', [{ ...noutate, ro: 'n'.repeat(MAX_NOUTATE + 1) }]],
+    ['noutati', 'un rând fără engleză', [{ versiune: '1.0.0', ro: 'doar română' }]],
+    ['noutati', 'un obiect, nu o listă', { '1.0.0': 'Prima versiune.' }],
+    ['autor', 'gol', ''],
+    ['autor', 'prea lung', 'a'.repeat(MAX_AUTOR + 1)],
+    ['autor', 'un număr', 7],
+  ];
+  for (const [camp, ce, valoare] of gresite) {
+    const c = citesteCatalog(catalog([{ ...randSalut(), ...PREZENTARE, [camp]: valoare }]));
+    assert.ok(c.ok, `${camp} (${ce}): catalogul rămâne bun`);
+    const r = c.catalog.extensii[0] as Record<string, unknown>;
+    assert.equal(camp in r, false, `${camp} (${ce}): sărit`);
+    assert.deepEqual(c.sarite, [`salut: ${camp}`], `${camp} (${ce})`);
+    for (const alt of Object.keys(PREZENTARE)) if (alt !== camp) assert.ok(alt in r, `${camp} (${ce}): ${alt} rămâne`);
+    assert.equal(r.id, 'salut');
+  }
+});
+
+test('plafoanele datelor de prezentare: exact la plafon trec', () => {
+  const plin = {
+    pictograma: { ...PREZENTARE.pictograma, octeti: MAX_OCTETI_PICTOGRAMA },
+    capturi: { ro: Array.from({ length: MAX_CAPTURI }, () => ({ ...PREZENTARE.capturi.ro[0], octeti: MAX_OCTETI_CAPTURA })), en: [] },
+    despre: { ro: 'd'.repeat(MAX_DESPRE), en: 'd'.repeat(MAX_DESPRE) },
+    noutati: Array.from({ length: MAX_NOUTATI }, (_, i) => ({ versiune: `1.0.${i}`, ro: 'n'.repeat(MAX_NOUTATE), en: 'n'.repeat(MAX_NOUTATE) })),
+    autor: 'a'.repeat(MAX_AUTOR),
+  };
+  const c = citesteCatalog(catalog([{ ...randSalut(), ...plin }]));
+  assert.ok(c.ok);
+  assert.deepEqual(c.sarite, []);
+  assert.equal(MAX_OCTETI_PICTOGRAMA, LIMITE_PACHET.octetiPictograma, 'semnul din catalog e cel din pachet');
+});
+
+test('numele fișierelor bibliotecii poartă amprenta lor: pachetul, semnul, capturile; altceva nu e al ei', () => {
+  const h = 'ab'.repeat(32);
+  assert.equal(numeFisierBiblioteca('salut', 'pictograma', h, 'svg'), 'salut-pictograma-abababab.svg');
+  assert.equal(numeFisierBiblioteca('salut', 'captura-1-ro', h, 'webp'), 'salut-captura-1-ro-abababab.webp');
+  for (const n of ['salut-1.0.0-0123abcd.zip', 'salut-pictograma-abababab.svg', 'salut-captura-1-ro-abababab.webp']) {
+    assert.equal(esteNumeFisierBiblioteca(n), true, n);
+  }
+  for (const n of ['catalog.json', 'salut.svg', 'salut-pictograma.svg', 'salut-pictograma-abababab.png', 'salut-captura-1-ro-ABABABAB.webp', '../salut-pictograma-abababab.svg', 'sub/salut-pictograma-abababab.svg', 'salut-pictograma-abababab.svg.zip']) {
+    assert.equal(esteNumeFisierBiblioteca(n), false, n);
+  }
 });

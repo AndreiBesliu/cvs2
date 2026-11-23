@@ -1,6 +1,6 @@
-import { test, expect, type Page, type Request } from '@playwright/test';
+import { test, expect, type Locator, type Page, type Request } from '@playwright/test';
 import { pachetTrenulet } from '../../scripts/construieste-trenulet.ts';
-import { scrieZip } from '../../scripts/impacheteaza-extensie.ts';
+import { impacheteaza, scrieZip } from '../../scripts/impacheteaza-extensie.ts';
 import { citesteZip } from '../../src/extensii/zip.ts';
 import { eroriJurnal, faraEroriInJurnal } from './ajutor-jurnal.ts';
 
@@ -15,6 +15,9 @@ import { eroriJurnal, faraEroriInJurnal } from './ajutor-jurnal.ts';
  * - fără rețea: biblioteca spune că are nevoie de internet, iar „Reîncearcă” o aduce;
  * - linkul `#biblioteca=trenulet`: fereastra lui din bibliotecă, nimic descărcat fără clic, ancora ștearsă; un id necunoscut;
  * - în engleză: secțiunea, descrierea și butoanele.
+ *
+ * Semnul extensiei (ADR 0231 §B.2): în rândul din bibliotecă vine de lângă catalog; după instalare, din pachet, în meniu și
+ * pe fila ei, și fără rețea; o extensie fără semn își arată piesa de puzzle.
  */
 test.use({ locale: 'ro-RO' });
 
@@ -227,5 +230,61 @@ test('în engleză: secțiunea, descrierea din catalog și butoanele', async ({ 
   await randBiblioteca(page).locator('[data-extensii="biblioteca-instaleaza"]').click();
   await expect(page.getByTestId('extensii-despre')).toHaveText(`“Easy 3Draw” ${r.versiune}, from the cvs2 library`);
   await page.locator('[data-extensii="renunta"]').click();
+  await faraEroriInJurnal(page);
+});
+
+/** Semnul unei extensii (ADR 0231 §B.2): o imagine, încărcată cu adevărat (nu doar pusă în pagină). */
+const semn = (unde: Locator) => unde.locator('img[data-semn]');
+const incarcat = (img: Locator) => expect.poll(() => img.evaluate((i: HTMLImageElement) => i.complete && i.naturalWidth > 0)).toBe(true);
+
+test('semnul extensiei: în bibliotecă vine de lângă catalog; după instalare, din pachet, în meniu și pe fila ei, și fără rețea', async ({ page }) => {
+  await page.goto('/');
+  await deschideMeniul(page);
+  const inBiblioteca = semn(randBiblioteca(page));
+  await expect(inBiblioteca).toHaveAttribute('src', /\/extensii\/trenulet-pictograma-[0-9a-f]{8}\.svg$/);
+  await incarcat(inBiblioteca);
+  await expect(inBiblioteca).toHaveAttribute('alt', '');
+  // Numele de lângă semn rămâne text plin, de culoarea meniului (nu gri, ca versiunea).
+  const culoare = (l: Locator) => l.evaluate((e) => getComputedStyle(e).color);
+  expect(await culoare(randBiblioteca(page).locator('strong'))).toBe(await culoare(meniu(page)));
+
+  await randBiblioteca(page).locator('[data-extensii="biblioteca-instaleaza"]').click();
+  await page.getByTestId('extensii-instalare').locator('[data-extensii="instaleaza"]').click();
+  await page.locator('[data-extensii="deschide-instalata"]').click();
+  await expect(page.getByTestId('spatiu-extensie')).toHaveAttribute('data-stare', 'pornit');
+  const peFila = semn(page.getByTestId('fila-extensie'));
+  await expect(peFila).toHaveAttribute('src', /^blob:/);
+  await incarcat(peFila);
+  // Numele filei rămâne al extensiei: semnul e doar desen. Și ține locul piesei de puzzle, nu stă lângă ea.
+  const fila = page.getByTestId('fila-extensie').locator('[data-extensii="fila"]');
+  await expect(fila).toHaveAccessibleName('Easy 3Draw');
+  expect(await fila.evaluate((b) => getComputedStyle(b, '::before').display)).toBe('none');
+
+  // Fără rețea, catalogul nu mai vine, dar semnul extensiei instalate e în pachetul ei.
+  await page.route('**/extensii/**', (route) => route.abort('internetdisconnected'));
+  await deschideMeniul(page);
+  await expect(page.locator('[data-extensii="biblioteca-reincearca"]')).toBeVisible();
+  const instalat = semn(meniu(page).locator('[data-extensii="deschide"][data-id="trenulet"]'));
+  await expect(instalat).toHaveAttribute('src', /^blob:/);
+  await incarcat(instalat);
+  await faraEroriInJurnal(page);
+});
+
+test('o extensie fără semn (un pachet din fișier) își arată piesa de puzzle, în meniu și pe fila ei', async ({ page }) => {
+  await page.goto('/');
+  await instaleazaDinFisier(page, 'salut.zip', Buffer.from(impacheteaza('extensii/salut').octeti));
+  await deschideMeniul(page);
+  const rand = meniu(page).locator('[data-extensii="deschide"][data-id="salut"]');
+  await expect(rand.locator('[data-semn]')).toHaveAttribute('data-fara-semn', '');
+  await expect(rand.locator('img')).toHaveCount(0);
+  // Rândul începe din stânga, cu semnul: nu stă la mijlocul meniului.
+  const [cutieRand, cutieSemn] = [await rand.boundingBox(), await rand.locator('[data-semn]').boundingBox()];
+  expect(cutieRand && cutieSemn && cutieSemn.x - cutieRand.x, 'semnul, la marginea din stânga a rândului').toBeLessThanOrEqual(12);
+  await rand.click();
+  await expect(page.getByTestId('spatiu-extensie')).toHaveAttribute('data-stare', 'pornit');
+  const fila = page.getByTestId('fila-extensie').locator('[data-extensii="fila"]');
+  await expect(fila.locator('img')).toHaveCount(0);
+  // Piesa de puzzle a filei (iconița din CSS) rămâne la vedere.
+  expect(await fila.evaluate((b) => getComputedStyle(b, '::before').display)).not.toBe('none');
   await faraEroriInJurnal(page);
 });

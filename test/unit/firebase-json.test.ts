@@ -29,8 +29,11 @@ test('antetul CSP de pe Hosting e CSP-ul din build, plus frame-ancestors, fără
   const doc = cfg.hosting.headers.find((h) => h.source === '/documentatie/**');
   assert.equal(doc?.headers.find((h) => h.key === 'X-Robots-Tag')?.value, 'noindex');
   // Pachetele bibliotecii au amprenta în nume: o adresă nu-și schimbă niciodată octeții, deci se țin oricât.
-  const pachete = cfg.hosting.headers.find((h) => h.source === '/extensii/*.zip');
-  assert.equal(pachete?.headers.find((h) => h.key === 'Cache-Control')?.value, 'public, max-age=31536000, immutable');
+  // La fel semnele și capturile de lângă catalog (ADR 0231 §B.1).
+  for (const cale of ['/extensii/*.zip', '/extensii/*.svg', '/extensii/*.webp']) {
+    const r = cfg.hosting.headers.find((h) => h.source === cale);
+    assert.equal(r?.headers.find((h) => h.key === 'Cache-Control')?.value, 'public, max-age=31536000, immutable', cale);
+  }
 });
 
 test('antetul CSP primește amprentele scripturilor inline ale build-ului (harta importurilor, ADR 0098), pe toate căile', () => {

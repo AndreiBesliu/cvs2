@@ -238,8 +238,9 @@
   gap: var(--sp-2);
 }
 
+/* Capul rândului: semnul și numele, apoi versiunea. */
 .biblioteca-cap {
-  align-items: baseline;
+  align-items: center;
 }
 
 .biblioteca-rand p {
@@ -296,4 +297,65 @@
   padding: var(--sp-1) var(--sp-2);
   background: var(--s-atentie);
   border-radius: var(--r-1);
+}
+
+/*
+ * Semnul unei extensii (ADR 0231 §B.2): un pătrat mic lângă numele ei. Fără semn, piesa de puzzle pe un fond neutru, cât el.
+ */
+.semn-extensie {
+  flex: none;
+  display: block;
+  border-radius: 22%;
+}
+
+.semn-extensie[data-fara-semn] {
+  display: inline-grid;
+  place-items: center;
+  color: var(--t-slab);
+  background: var(--s-peste);
+}
+
+.semn-20 {
+  width: 20px;
+  height: 20px;
+}
+
+.semn-28 {
+  width: 28px;
+  height: 28px;
+}
+
+.semn-extensie[data-fara-semn] > svg {
+  width: 64%;
+  height: 64%;
+}
+
+/* Rândul unei extensii instalate: semnul, apoi numele cu versiunea dedesubt. */
+/* Un buton își pune singur conținutul la mijloc: rândul începe din stânga, spus anume. */
+.meniu-extensii [role='menuitem'].rand-extensie {
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+  gap: var(--sp-2);
+}
+
+.rand-text {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-width: 0;
+}
+
+/* Numele rămâne text plin: griul e al versiunii de lângă el (`.biblioteca-cap span`). */
+.biblioteca-cap .biblioteca-nume {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  min-width: 0;
+  color: var(--t);
+}
+
+/* Fila unei extensii cu semn: semnul ține locul piesei de puzzle. */
+.fila[data-cu-semn]::before {
+  display: none;
 }

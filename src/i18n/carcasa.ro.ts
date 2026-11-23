@@ -463,6 +463,7 @@ export const roCarcasa = {
   'extensii.motiv.intrare': 'îi lipsește modulul de intrare',
   'extensii.motiv.stil': 'îi lipsește o foaie de stil',
   'extensii.motiv.permisiune': 'cere o permisiune pe care cvs2 n-o oferă',
+  'extensii.motiv.pictograma': 'semnul extensiei nu e un SVG mic din pachet (cel mult 8 kB)',
   'extensii.motiv.lipsa': 'lipsește un fișier din listă',
   'extensii.motiv.in-plus': 'are un fișier care nu e în listă',
   'extensii.motiv.amprenta': 'un fișier nu se potrivește cu amprenta lui (SHA-256)',
