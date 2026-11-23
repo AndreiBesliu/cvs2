@@ -60,7 +60,7 @@ test('corpul e închis pe plaja parametrilor (palete, diametre, forme, profile, 
   for (const forma of ['rot', 'ingust', 'drept']) for (const profil of ['placa', 'aripa']) for (const gaura of ['x', 'r', 'b', 'nu'])
     cazuri.push({ forma, profil, gaura });
   for (const palete of [2, 3, 5, 8]) for (const diametru of [20, 30, 200]) cazuri.push({ palete, diametru, sens: palete % 2 ? 'stanga' : 'dreapta', con: 'da' });
-  cazuri.push({ pas: 1.5, latime: 60, palete: 2, diametru: 200 }, { pas: 0.3, latime: 15, palete: 8, diametru: 20 }, { paleta: 'plata', pas: 0.55, diametru: 83.3 });
+  cazuri.push({ pas: 1.5, latime: 60, palete: 2, diametru: 200 }, { pas: 0.3, latime: 15, palete: 8, diametru: 20 }, { paleta: 'plata', pas: 0.59, diametru: 73.9 });
   for (const d of cazuri) {
     const p = elice(d);
     assert.equal(muchiiRele(p.tri), 0, JSON.stringify(d));
@@ -71,7 +71,7 @@ test('corpul e închis pe plaja parametrilor (palete, diametre, forme, profile, 
 test('cotele: diametrul, butucul Ø8 cu gaura din calibrare, înălțimea și conul', () => {
   const e = L.efective();
   // diametrul: cea mai mare rază față de centrul butucului
-  for (const diametru of [30.2, 72, 200]) {
+  for (const diametru of [27.4, 72, 200]) {
     const p = elice({ diametru, gaura: 'nu' }), v = polare(p, centru(p)), R = Math.max(...v.map((q) => q[0]));
     assert.ok(Math.abs(R - diametru / 2) < 0.05, `Ø${diametru}: raza ${R}`);
   }
@@ -98,7 +98,7 @@ test('cotele: diametrul, butucul Ø8 cu gaura din calibrare, înălțimea și co
 });
 
 test('tipărită fără suport: fiecare secțiune a paletei își are punctul cel mai de jos pe masă', () => {
-  for (const d of [{}, { profil: 'aripa' }, { paleta: 'plata', pas: 0.55, diametru: 83.3 }, { palete: 8, diametru: 40, pas: 0.4 }]) {
+  for (const d of [{}, { profil: 'aripa' }, { paleta: 'plata', pas: 0.59, diametru: 73.9 }, { palete: 8, diametru: 40, pas: 0.4 }]) {
     const p = elice({ ...d, gaura: 'nu' }), v = polare(p, centru(p)), R = Math.max(...v.map((q) => q[0]));
     assert.ok(Math.min(...p.tri.flat().map((q) => q[2])) === 0, JSON.stringify(d));
     // pe razele secțiunilor de dincolo de butuc: cel mai de jos punct, la z = 0
@@ -123,12 +123,12 @@ test('unghiul paletei, din plasă: răsucită, atan(P / 2πr); plată, ca la 70 
     const rr = f * 36, astept = Math.atan(50.4 / (2 * Math.PI * rr)) * 180 / Math.PI, m = unghiDinPlasa(v, rr, 3);
     assert.ok(Math.abs(m - astept) < 1, `răsucită, la ${f}: ${m} față de ${astept}`);
   }
-  // plată, ca 15790 din LDraw (Ø83,3, 14°): pasul 0,55 dă la 70 % din rază atan(0,55 · 83,3 / (2π · 0,7 · 41,65)) = 14,0°
-  const dp = { paleta: 'plata', pas: 0.55, diametru: 83.3, gaura: 'nu' }, pp = elice(dp), vp = polare(pp, centru(pp));
-  assert.ok(Math.abs(L.eliceCote(dp).bVarf * 180 / Math.PI - 14.0) < 0.05 && Math.abs(L.eliceCote(dp).bRad - L.eliceCote(dp).bVarf) < 1e-12);
+  // plată, ca 15790 din LDraw (Ø73,9 față de axa ei, 15°): pasul 0,59 dă la 70 % din rază atan(0,59 / (0,7 · π)) = 15,02°
+  const dp = { paleta: 'plata', pas: 0.59, diametru: 73.9, gaura: 'nu' }, pp = elice(dp), vp = polare(pp, centru(pp));
+  assert.ok(Math.abs(L.eliceCote(dp).bVarf * 180 / Math.PI - 15.02) < 0.01 && Math.abs(L.eliceCote(dp).bRad - L.eliceCote(dp).bVarf) < 1e-12);
   for (const f of [0.4, 0.7, 0.9]) {
-    const m = unghiDinPlasa(vp, f * 41.65, 3);
-    assert.ok(Math.abs(m - 14.0) < 1, `plată, la ${f}: ${m}`);
+    const m = unghiDinPlasa(vp, f * 36.95, 3);
+    assert.ok(Math.abs(m - 15.02) < 1, `plată, la ${f}: ${m}`);
   }
 });
 

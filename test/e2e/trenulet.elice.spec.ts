@@ -3,7 +3,9 @@
  * ca pachetul):
  * - fila nouă „Elice” (familia `propulsie`): elicea implicită (3 palete, Ø72, pasul 0,7, răsucită), cu numele, cotele și
  *   textul (pasul 50 mm; 63° lângă butuc, 13° la vârf; consola la vârf 0,9 mm pe strat);
- * - „Ca LEGO 15790” (cotele din LDraw): Ø83,3, paleta plată la 14°, gaura rotundă; cu 4 palete, STL-ul închis, cu raza 41,65;
+ * - „Ca LEGO 15790” (cotele din LDraw, față de axa piesei): Ø73,9, paleta plată la 15°, gaura rotundă; cu 4 palete, STL-ul
+ *   închis, cu raza 36,95;
+ * - fiecare „Ca LEGO” cu cotele și cu sensul piesei LEGO (6041 e pe stânga; 92842 și 15790, pe dreapta);
  * - un câmp în afara plajei nu schimbă piesa;
  * - „Fă perechea”: aceeași elice, pe dreapta și pe stânga, în listă.
  */
@@ -58,22 +60,55 @@ test('elicea implicită, în fila Elice: 3 palete, Ø72, pasul 0,7, răsucită; 
   await expect(page.locator('#at-nume-piesa')).toHaveText('Elice Ø72 cu 3 palete, pasul 0,7');
 });
 
-test('„Ca LEGO 15790”: Ø83,3, paleta plată la 14°, gaura rotundă; cu 4 palete, STL-ul închis, cu raza 41,65', async ({ page }) => {
+test('„Ca LEGO 15790”: Ø73,9, paleta plată la 15°, gaura rotundă; cu 4 palete, STL-ul închis, cu raza 36,95', async ({ page }) => {
   await atelierElice(page);
   await page.locator('#at-el-repede [data-v="15790"]').click();
-  await expect(page.locator('#at-nume-piesa')).toHaveText('Elice Ø83,3 cu 3 palete, pasul 0,55, plată, gaură rotundă');
+  await expect(page.locator('#at-nume-piesa')).toHaveText('Elice Ø73,9 cu 3 palete, pasul 0,59, plată, gaură rotundă');
   await expect(page.locator('#at-el-repede [data-v="15790"]')).toHaveAttribute('aria-pressed', 'true');
-  await expect(page.locator('#at-el-info')).toContainText('Paleta plată, la 14° de la butuc la vârf, ca la LEGO.');
-  // cu 4 palete, cutia e simetrică față de butuc: raza cea mai mare, 83,3 / 2
+  await expect(page.locator('#at-el-info')).toContainText('Paleta plată, la 15° de la butuc la vârf, ca la LEGO.');
+  // cu 4 palete, cutia e simetrică față de butuc: raza cea mai mare, 73,9 / 2
   await seteaza(page, '#at-el-palete', '4');
-  await expect(page.locator('#at-nume-piesa')).toHaveText('Elice Ø83,3 cu 4 palete, pasul 0,55, plată, gaură rotundă');
+  await expect(page.locator('#at-nume-piesa')).toHaveText('Elice Ø73,9 cu 4 palete, pasul 0,59, plată, gaură rotundă');
   await expect(page.locator('#at-el-repede [data-v="15790"]')).toHaveAttribute('aria-pressed', 'false');
   const descarcare = page.waitForEvent('download');
   await page.locator('#at-stl').click();
   const { triunghiuri, rele, raza } = citesteStl(readFileSync(await (await descarcare).path()));
   expect(triunghiuri).toBeGreaterThan(3_000);
   expect(rele).toBe(0);
-  expect(raza).toBeCloseTo(83.3 / 2, 1);
+  expect(raza).toBeCloseTo(73.9 / 2, 1);
+});
+
+test('fiecare „Ca LEGO”, cu cotele piesei din LDraw, măsurate față de axa ei, și cu sensul ei: 6041 pe stânga, 92842 și 15790 pe dreapta', async ({ page }) => {
+  await atelierElice(page);
+  // pe hârtie, din LDraw (raza vârfurilor față de axa găurii; unghiul paletei și coarda la 70 % din rază; semnul pantei):
+  // - 6041: R 13,69 → Ø27,4; 23° → pasul π · 0,7 · tan 23° = 0,93; coarda 8,8 din 13,7 → peste 60 %, deci 60; elicoid stâng;
+  //   P = 0,93 · 27,4 = 25,5 mm; consola 0,2 / tan 22,9° = 0,47
+  // - 92842: R 21,56 → Ø43,1; 15° → 0,59; coarda 6,3 din 21,56 → 29 %; elicoid drept; P = 25,4 mm; consola 0,2 / tan 15° = 0,75
+  // - 15790: R 36,96 → Ø73,9; 15° → 0,59; coarda 9,2 (media) din 36,96 → 25 %; elicoid drept; P = 43,6 mm
+  const LEGO = [
+    ['6041', 'Elice Ø27,4 cu 3 palete, pasul 0,93, plată, stânga', '27.4', '0.93', '60', 'stanga', 'x', 'Pasul 25 mm (0,93 × diametrul). Paleta plată, la 23° de la butuc la vârf, ca la LEGO. Se tipărește fără suport: la vârf, un strat iese cu 0,5 mm peste cel de dedesubt.'],
+    ['92842', 'Elice Ø43,1 cu 3 palete, pasul 0,59, plată, gaură rotundă', '43.1', '0.59', '29', 'dreapta', 'r', 'Pasul 25 mm (0,59 × diametrul). Paleta plată, la 15° de la butuc la vârf, ca la LEGO. Se tipărește fără suport: la vârf, un strat iese cu 0,7 mm peste cel de dedesubt.'],
+    ['15790', 'Elice Ø73,9 cu 3 palete, pasul 0,59, plată, gaură rotundă', '73.9', '0.59', '25', 'dreapta', 'r', 'Pasul 44 mm (0,59 × diametrul). Paleta plată, la 15° de la butuc la vârf, ca la LEGO. Se tipărește fără suport: la vârf, un strat iese cu 0,7 mm peste cel de dedesubt.'],
+  ] as const;
+  // de la 15790 înapoi la 6041: sensul trece pe stânga și la loc (fiecare „Ca LEGO” își pune sensul, nu-l lasă pe cel de dinainte)
+  for (const [piesa, nume, diam, pas, lat, sens, gaura, info] of [LEGO[2], LEGO[0], LEGO[1], LEGO[0]]) {
+    await page.locator(`#at-el-repede [data-v="${piesa}"]`).click();
+    await expect(page.locator('#at-nume-piesa')).toHaveText(nume);
+    await expect(page.locator('#at-el-info')).toHaveText(info);
+    await expect(page.locator('#at-el-palete')).toHaveValue('3');
+    await expect(page.locator('#at-el-diam')).toHaveValue(diam);
+    await expect(page.locator('#at-el-pas')).toHaveValue(pas);
+    await expect(page.locator('#at-el-lat')).toHaveValue(lat);
+    await expect(page.locator('#at-el-sens [aria-pressed="true"]')).toHaveAttribute('data-v', sens);
+    await expect(page.locator('#at-el-gaura [aria-pressed="true"]')).toHaveAttribute('data-v', gaura);
+    await expect(page.locator('#at-el-forma [aria-pressed="true"]')).toHaveAttribute('data-v', 'drept');
+    await expect(page.locator('#at-el-paleta [aria-pressed="true"]')).toHaveAttribute('data-v', 'plata');
+    await expect(page.locator('#at-el-repede [aria-pressed="true"]')).toHaveAttribute('data-v', piesa);
+  }
+  // sensul schimbat de om: nu mai e „Ca LEGO 6041” (piesa LEGO e pe stânga)
+  await page.locator('#at-el-sens [data-v="dreapta"]').click();
+  await expect(page.locator('#at-nume-piesa')).toHaveText('Elice Ø27,4 cu 3 palete, pasul 0,93, plată');
+  await expect(page.locator('#at-el-repede [aria-pressed="true"]')).toHaveCount(0);
 });
 
 test('„Fă perechea”: aceeași elice, pe dreapta și pe stânga, în listă; elicea din editor e același rând cu cea dreaptă', async ({ page }) => {

@@ -20,8 +20,9 @@ print(json.dumps([[list(p) for p in x] for x in t]))`;
   const fisier = join(tmpdir(), 'randare.py');
   writeFileSync(fisier, py);
   tri = JSON.parse(execFileSync(process.platform === 'win32' ? 'python' : 'python3', ['-I', '-B', '-X', 'utf8', fisier], { encoding: 'utf8', maxBuffer: 1 << 28 }));
-  // LDraw: Y în jos; o răsturnăm (y → −y) ca „sus” să fie sus
-  tri = tri.map((t) => t.map(([x, y, z]): P3 => [x, -y, z]).reverse());
+  // LDraw: reper drept, cu Y în jos; o rotim cu 180° în jurul lui X (y → −y, z → −z), ca „sus” să fie sus. Doar y → −y ar fi
+  // o oglindire: la piesele cu sens (elicele, melcul) s-ar vedea piesa pe invers
+  tri = tri.map((t) => t.map(([x, y, z]): P3 => [x, -y, -z]));
 } else {
   const cere = createRequire(import.meta.url);
   const { motoare } = cere('../../extensii/trenulet/sursa/teste/incarca.js');

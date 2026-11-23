@@ -1836,10 +1836,10 @@ var Lego = (function (glob: typeof globalThis) {
   }
 
   // ---------------------------------------------------------------------------------------------- elicea (ADR 0282, 3.Tq)
-  // Elicea, din parametri: 2–8 palete pe un butuc ca la LEGO (Ø8 × 8: 6041, 15790, 65768 din LDraw), cu gaura din calibrare:
+  // Elicea, din parametri: 2–8 palete pe un butuc ca la LEGO (Ø8 × 8: 15790, 65768, 87751 din LDraw), cu gaura din calibrare:
   // pentru ax, rotundă pentru știft, pentru bară sau fără. Diametrul, 20–200 mm. Pasul, ca raport față de diametru: la paleta
   // „răsucită”, unghiul la raza r e β(r) = atan(P / 2πr) (pas constant, ca la elicele adevărate); la „plată”, β e același pe
-  // toată paleta (ca la LEGO: 15790 are 14°, 6041 are 23°), cât dă pasul la 70 % din rază. Coarda: lățimea (procent din rază),
+  // toată paleta (ca la LEGO: 15790 are 15°, 6041 are 23°), cât dă pasul la 70 % din rază. Coarda: lățimea (procent din rază),
   // după formă (rotunjită: plină până la 55 % din paletă, apoi eliptică; îngustată: jumătate la vârf; dreaptă), cu rădăcina la
   // 60 %; la butuc, paletele nu se ating (coarda proiectată, cel mult 85 % din pasul unghiular). Profilul: placă curbată
   // (săgeata 4 % din coardă) sau profil de aripă (NACA 4412); grosimea, de la 1,2 la rădăcină la 0,8 la vârf (două linii de
@@ -2160,8 +2160,6 @@ var Lego = (function (glob: typeof globalThis) {
     // Lungimea e deci a unei curele deschise pe razele r = z · 12 / 2π (cercul lung de z zale): media pe faze a înfășurătoarei
     // convexe a bolțurilor, la câțiva µm (proba); perechile egale, exact 2·d + z·12 (10 cu 10 la 72 mm: 22 de zale, fără joc).
     // `aproape`: vârfurile pinioanelor s-ar atinge (sub 1 mm între ele)
-    // elicea (ADR 0282): cotele din parametri (palete, diametrul, pasul, unghiul paletei la butuc și la vârf, consola la vârf)
-    eliceCote: (d: EliceDef) => { const q = eliceCote(d); return { z: q.z, D: q.D, P: q.P, pd: q.pd, lat: q.lat, plata: q.plata, bRad: q.bRad, bVarf: q.bVarf, consola: q.consola }; },
     senilaMontaj: (z1: unknown, z2: unknown, distanta: unknown) => {
       const a = pinionSenilaCote(z1), b = pinionSenilaCote(z2), d = Math.max(0, +(distanta as number) || 0);
       const r1 = a.z * SENILA.pas / (2 * Math.PI), r2 = b.z * SENILA.pas / (2 * Math.PI), dr = r2 - r1;
@@ -2173,6 +2171,8 @@ var Lego = (function (glob: typeof globalThis) {
       for (let i = 0; i < 60; i++) { const m = (lo + hi) / 2; if (lung(m) < tinta) lo = m; else hi = m; }
       return { z1: a.z, z2: b.z, R1: a.R, R2: b.R, d, L, zale, joc: tinta - L, intins: (lo + hi) / 2, aproape: false };
     },
+    // elicea (ADR 0282): cotele din parametri (palete, diametrul, pasul, unghiul paletei la butuc și la vârf, consola la vârf)
+    eliceCote: (d: EliceDef) => { const q = eliceCote(d); return { z: q.z, D: q.D, P: q.P, pd: q.pd, lat: q.lat, plata: q.plata, bRad: q.bRad, bVarf: q.bVarf, consola: q.consola }; },
     cureaua: (a: FulieDef, b: FulieDef, C: unknown) => {
       const p = fulieCote(a), q = fulieCote(b), c = +(C as number), minim = Math.ceil((p.R + q.R + 0.5) * 10 - 1e-6) / 10;
       return { lungime: lungimeCurea(p.fund, q.fund, c), minim, atinge: !(c >= minim - 1e-9) };

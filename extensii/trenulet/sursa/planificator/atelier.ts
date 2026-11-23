@@ -413,12 +413,14 @@ var Atelier3D = (function () {
     const paleta = c.plata ? tr`Paleta plată, la ${g(c.bVarf)}° de la butuc la vârf, ca la LEGO.` : tr`Paleta răsucită: ${g(c.bRad)}° lângă butuc, ${g(c.bVarf)}° la vârf.`;
     return tr`Pasul ${fmt(c.P, 0)} mm (${fmt(c.pd, 2)} × diametrul). ${paleta} Se tipărește fără suport: la vârf, un strat iese cu ${fmt(c.consola, 1)} mm peste cel de dedesubt.`;
   }
-  // „Ca LEGO” (ADR 0282, cotele din LDraw): diametrul măsurat, paleta plată cu unghiul de la 70 % din rază (6041: 23°, 92842:
-  // 15°, 15790: 14°; pasul = π · 0,7 · tan β), coarda (procent din rază) și gaura
+  // „Ca LEGO” (ADR 0282, cotele din LDraw, măsurate față de axa găurii, nu față de centrul cutiei): diametrul (vârfurile la
+  // 13,69, 21,56 și 36,96 mm de axă: cât spun numele pieselor, 3½, 5½ și 9 știfturi), paleta plată cu unghiul de la 70 % din
+  // rază (6041: 23°; 92842 și 15790: 15°; pasul = π · 0,7 · tan β), coarda (procent din rază), gaura și sensul piesei (6041 e
+  // un elicoid stâng; celelalte două, drepte): elicea tipărită împinge aerul ca piesa LEGO pe care o înlocuiește
   const ELICE_LEGO: Readonly<Record<string, Partial<typeof stare.elice>>> = {
-    "6041": { palete: 3, diametru: 30.2, pas: 0.93, latime: 60, forma: "drept", paleta: "plata", gaura: "x" },
-    "92842": { palete: 3, diametru: 48.5, pas: 0.59, latime: 29, forma: "drept", paleta: "plata", gaura: "r" },
-    "15790": { palete: 3, diametru: 83.3, pas: 0.55, latime: 25, forma: "drept", paleta: "plata", gaura: "r" },
+    "6041": { palete: 3, diametru: 27.4, pas: 0.93, latime: 60, forma: "drept", paleta: "plata", sens: "stanga", gaura: "x" },
+    "92842": { palete: 3, diametru: 43.1, pas: 0.59, latime: 29, forma: "drept", paleta: "plata", sens: "dreapta", gaura: "r" },
+    "15790": { palete: 3, diametru: 73.9, pas: 0.59, latime: 25, forma: "drept", paleta: "plata", sens: "dreapta", gaura: "r" },
   };
   function textDubla(d: { dinti?: number; modul?: number }, pereche: number): string {
     // cum stau axele unei conice duble și ale perechii ei: paralele (distanța, ca la rotițe) și la 90° (planul de mijloc al
