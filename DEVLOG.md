@@ -11295,7 +11295,7 @@ de acolo, cu toate worktrees si asa mai departe”. **Started:** 23.11, 10:20. *
 **Prompt:** brief-ul de predare al sesiunii principale locale, lipit de owner într-o sesiune cloud nouă („Ești sesiunea
 principală a cncvs2 […] Sesiunea principală locală ți-a predat lucrul și se oprește.”); pe drum, owner-ul: „poti sa pornesti
 un branch in care sa modificam libraria de plugin-uri? vreau ceva mai frumos si cu un UI/UX mai bun si atragator”.
-**Started:** 23.11, 12:31. **Completed:** unirea, 23.11, 13:40; publicarea pe test, în intrarea de mai jos.
+**Started:** 23.11, 12:31. **Completed:** 23.11, 14:31 (unirea în `main` la 13:40, publicarea pe test la 14:31).
 
 - **Mediul:** Node 26.13.1; `gh run list` și `gh api …/pulls` merg. Un singur PR, `AndreiBesliu/cvs2#1` (3.Tq, `40c13d6a`).
 - **Verificările dinaintea unirii:** Easy 3Draw 18.19.0 în `extensie.json` și în `extensii/biblioteca.json`, cu amprenta
@@ -11319,3 +11319,9 @@ un branch in care sa modificam libraria de plugin-uri? vreau ceva mai frumos si 
 - **Documentele:** decizia în `CLAUDE.md`; indexul ADR (0282: unită în `0ae9c6c1`); `docs/linii/README.md` (elicele unite,
   linia bibliotecii, liniile în lucru în sesiunile lor); `docs/linii/principala.md` („Din container”, starea);
   `docs/lucru-in-cloud.md` (gazda adresei de test la „Allowed domains”); nota elicelor (unită).
+- **Publicarea pe test** (`bash scripts/cloud/ci-si-publica.sh 8177ab81`, reluat de trei ori, cum e gândit): rapidul pe
+  `main` verde; completul pe `main` verde în 44 de minute (unit 9 795 / 0, e2e 598 / 598, emulatoarele 104 / 104 și
+  34 / 34); `publica.yml` verde în 3 minute; adresa de test spune `8177ab813f43`. **Găsit:** `gh workflow run publica.yml`
+  fără `--ref` cade în container (gh întreabă prin GraphQL, oprit acolo, care e ramura implicită); scriptul îl pornește
+  acum cu `--ref main`, ca pe complet, iar comanda pentru live din `docs/lucru-in-cloud.md` are și ea `--ref main`.
+- **PR-ul `AndreiBesliu/cvs2#1`** s-a închis singur, ca unit, la push-ul în `main`.

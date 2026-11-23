@@ -48,6 +48,10 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
 
 - **Ce merge:** `gh run list` / `gh run view --log`, `gh workflow run` (completul, publicarea), `gh api` pentru PR-uri,
   push-ul ramurii `unire-<data>` și al lui `main`. `gh auth status` spune că token-ul nu e bun: se ignoră.
+- **`gh workflow run` cere mereu `--ref`:** fără el, `gh` întreabă prin GraphQL (oprit în container) care e ramura
+  implicită și cade. Așa a căzut prima publicare (`publica.yml`); `ci-si-publica.sh` dă acum `--ref main`.
+- **Publicarea, cap-coadă** (23.11, `8177ab81`): rapidul 6 minute, completul 44, `publica.yml` 3; scriptul, reluat de trei
+  ori (iese cu 3 cât completul încă rulează), la sfârșit citește sha-ul de pe adresa de test.
 - **Adresa de test** se citește din container doar cu gazda `cncvectorstudio-test.web.app` în rețeaua mediului (adăugată
   pe 23.11, cu aprobarea owner-ului). O gazdă nouă se cere cu unealta mediului: owner-ul o aprobă pe un card.
 - **Cifrele porților** se iau din jurnalul completului: `gh run view <id> --log`, apoi rândurile `ℹ tests / pass / fail /
@@ -84,8 +88,9 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
 
 ## Starea pe 23.11.2026 (după prima unire din cloud)
 
-- **`main`:** 3.Tq (elicele, Easy 3Draw 18.19.0) unită în `0ae9c6c1`, din sesiunea principală din cloud; înainte, lotul de
-  după pauză (`220bd48e`: 12.1↑e-2, 10.3↑o, 3.6v) și uneltele lucrului în cloud.
+- **`main`:** 3.Tq (elicele, Easy 3Draw 18.19.0) unită în `0ae9c6c1`, din sesiunea principală din cloud; pe test e
+  `8177ab81` (unirea și decizia ei). Înainte, lotul de după pauză (`220bd48e`: 12.1↑e-2, 10.3↑o, 3.6v) și uneltele
+  lucrului în cloud.
 - **Liniile** (vezi [indexul](README.md)):
   - **elicele:** 3.Tq unită; 3.Tr (barca) și 3.Ts (carcasa), la cuvântul owner-ului;
   - **în lucru, în sesiunile lor din cloud** (pornite de owner): A.4 (adminul), 12.1↑e-3 (incrustațiile), 11.3↑e

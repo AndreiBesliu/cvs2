@@ -66,7 +66,8 @@ asteapta complet.yml "$FC"; SC=$?
 # 3. Publicarea pe test, o singură dată pe sha (run-name: „publica test <sha>”).
 FP=".displayTitle == \"publica test $SHA\""
 if [ -z "$(rulare publica.yml "$FP")" ]; then
-  gh workflow run publica.yml -f instanta=test -f sha="$SHA" && echo "publica.yml: pornită $(date +%H:%M)" || exit 1
+  # `--ref main` e obligatoriu în container: fără el, gh întreabă prin GraphQL (oprit acolo) care e ramura implicită.
+  gh workflow run publica.yml --ref main -f instanta=test -f sha="$SHA" && echo "publica.yml: pornită $(date +%H:%M)" || exit 1
 fi
 asteapta publica.yml "$FP"; SP=$?
 [ $SP -eq 3 ] && exit 3

@@ -147,7 +147,8 @@ containerul ei, ca o linie, dar pe ramuri `unire-<data>`:
    (`publica.yml`, serverul și hosting-ul, cu amprenta) și adresa de test. O comandă ține cel mult 30 de minute, iar
    completul durează mai mult: la ieșirea cu 3, scriptul se reia la fel și continuă de unde a rămas.
 6. **Live:** doar la cuvântul owner-ului, pe un commit publicat întreg pe test:
-   `gh workflow run publica.yml -f instanta=live -f sha=<sha>`, apoi aprobarea owner-ului în GitHub (mediul `live`).
+   `gh workflow run publica.yml --ref main -f instanta=live -f sha=<sha>`, apoi aprobarea owner-ului în GitHub (mediul
+   `live`). `--ref` se dă mereu: fără el, `gh` întreabă prin GraphQL (oprit în container) care e ramura implicită.
 
 Un CI roșu pe `main` e incidentul numărul unu: sesiunea principală îl repară înaintea oricărei uniri noi.
 
