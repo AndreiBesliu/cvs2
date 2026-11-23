@@ -1,0 +1,14 @@
+11.3↑e, pasul 2: „unde ține” în fereastra exportului, butonul din avertisment și semnele de pe traseu (ADR 0211, b)
+
+- Fereastra exportului: „Locurile: la distanțe egale / alese pe desen / unde ține” (pe linie, oprit), cu nota de sub ea;
+  scrierea (`valoriOperatii.ts`): cu „unde ține”, modul „lemn”, iar locurile alese pleacă; înapoi la distanțe egale, modurile
+  „alese” și „lemn” pleacă (o regulă scrisă de mână rămâne).
+- „Pune urechile unde țin”, lângă avertismente, când exportul are piese desprinse care nu sunt încă „unde ține”: le trece
+  rândurile, într-o singură schimbare, cu nota „… exportă din nou” până la exportul următor.
+- Cu „Arată traseul”, centrele urechilor „unde ține” (din lucrarea traseului), inele mici pe drumul frezei; panoul: „unde ține:
+  N × W mm pe buclă”.
+- Probele: `urechi.dialog.test.ts` (modul în fereastră); `urechi.lemn.test.ts` întărită (sensul trigonometric, arcele, marginea
+  foii, lemnul nelegat, palierul, intrările, vederea 3D); e2e `urechi-lemn.spec.ts` (butonul, exportul fără piese desprinse,
+  palierele pe laturile scurte, semnele); lista otrăvurilor `test/otravuri/11.3e.py` (39).
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>

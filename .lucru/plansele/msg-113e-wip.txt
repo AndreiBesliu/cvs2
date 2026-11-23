@@ -1,0 +1,14 @@
+11.3↑e, WIP (pauză la cuvântul owner-ului): documentele, fără cifrele porților
+
+- ADR 0211: varianta b, în lucru; „Implementarea feliei 11.3↑e” (cele două treceri, locul bun, câte și unde, avertismentul,
+  butonul, semnele, probele) și cifrele de pe hârtie ale plăcii 11 la 5 mm (3 + 1 plăcuțe desprinse, față de 9 + 4).
+  Lista otrăvurilor, scrisă (39), încă nerulată.
+- Manualul (ro, en): „Urechile unde țin”, după „Urechile alese pe desen”, și „Locurile” din tabelul operației.
+- CLAUDE.md: paragraful liniei, „în lucru”.
+- DEVLOG: ce e comis, ce s-a verificat până la pauză (tipurile, importurile 20 / 20, traducerile, `urechi.lemn.test.ts`,
+  unitarele întregi 9 759 / 0, 8 sărite) și ce rămâne: e2e-ul (mașina n-a avut un minut liniștit în 20 de minute), otrăvurile,
+  build-ul determinist, rândul din fișa etapei și traducerea lui, `docs/otravuri.md`, canalul, raportul.
+
+NU e gata de unit.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
