@@ -61,8 +61,8 @@ o('M11', 'src/model/rolPersonal.ts', '  const x = { ...o, urechi: urechiDeSablon
   'piesa cu urechi alese nu-și mai recunoaște rolul')
 o('M12', 'src/model/rolPersonal.ts', '    return { ...structuredClone(v), urechi: structuredClone(urechiDeSablon(v.urechi)), id: x.id,',
   '    return { ...structuredClone(v), id: x.id,', 'model', 'un rol din stocare dă locurile lui pieselor')
-o('M13', 'src/model/raportFoi.ts', "urechi: o.urechi ? (o.urechi.mod === 'alese' ? numarUrechiAlese(o) : o.urechi.numar) : 0,",
-  'urechi: o.urechi?.numar ?? 0,', 'model', 'raportul numără urechile pe buclă și la locuri alese')
+o('M13', 'src/model/raportFoi.ts', "urechi: o.urechi ? (o.urechi.mod === 'alese' ? numarUrechiAlese(o) : o.urechi.mod === 'mijloc' ? 0 : o.urechi.numar) : 0,",
+  "urechi: o.urechi ? (o.urechi.mod === 'mijloc' ? 0 : o.urechi.numar) : 0,", 'model', 'raportul numără urechile pe buclă și la locuri alese')
 # Lucrarea (unitare, pe hârtie și pe programul întreg).
 o('C01', UR, '  return centre.map((_, k) => Math.min(pas[k] as number, pas[(k - 1 + n) % n] as number));', '  return centre.map((_, k) => pas[k] as number);',
   'cam', 'golul doar spre urechea de după')
@@ -80,7 +80,7 @@ o('C09', UR, '    const l = g.flancuri[k] as number;', '    const l = g.l;', 'ca
 o('C10', JB, '  const lista = l && Object.hasOwn(l, t.nod) ? (l[t.nod] ?? []) : [];', '  const lista = l && Object.hasOwn(l, t.nod) ? [] : [];', 'cam',
   'punctele alese nu ajung la lucrare')
 o('C11', JB, "    if (t.urechi && !(alese && alese.length === 0) && !(lemnAici && lemn === 'fara')) {", "    if (t.urechi && !(lemnAici && lemn === 'fara')) {", 'cam', 'elementul fără locuri e judecat ca unul cu urechi')
-o('C12', JB, "    if (mod !== undefined && mod !== 'egale' && mod !== 'alese' && mod !== 'lemn') {", '    if (false) {', 'cam', 'modurile care vin se taie ca „egale”')
+# C12 (modurile care vin se taie ca „egale”) a ieșit în 11.3↑f: refuzul „felie următoare” a plecat, toate modurile se taie.
 o('C13', JB, '        return incepeLa(c, s);', '        return acum[j] ?? c;', 'cam', 'bucla nu pornește în cel mai lung gol')
 o('C14', JB, "          if (fixe && gu && typeof gu !== 'string' && inZonaUrechii(gu, s, lungimeBucla(c))) return false;\n", '', 'cam',
   'intrarea poate porni în zona unei urechi')
@@ -95,11 +95,11 @@ o('A03', AC, "  if (k.lungime < distantaMinima(latime)) return { ok: false, moti
 o('A04', AC, "  if (preaAproape(k, lista, x.s, latime, index)) return", "  if (preaAproape(k, lista, x.s, latime, -1)) return", 'ui',
   'mutarea se ciocnește cu urechea însăși')
 o('A05', AC, '  for (const n of o?.noduri ?? []) {', '  for (const n of Object.keys(l ?? {})) {', 'ui', 'locurile din document și pe chei străine')
-o('A06', VO, "  if (dialog.mod !== 'alese') delete imbinate['locuri'];\n  if (dialog.mod === undefined && (o.mod === 'alese' || o.mod === 'lemn')) delete imbinate['mod'];\n", '', 'ui', 'înapoi la distanțe egale, modul și locurile rămân')
+o('A06', VO, "  if (dialog.mod !== 'alese') delete imbinate['locuri'];\n  if (dialog.mod === undefined && o.mod !== undefined && o.mod !== 'egale') delete imbinate['mod'];\n", '', 'ui', 'înapoi la distanțe egale, modul și locurile rămân')
 o('A07', VO, '  const { alese: _alese, ...dialog } = v;\n  void _alese;\n', '  const dialog = v;\n', 'ui', 'numărul arătat intră în document')
 # Interfața (e2e).
 o('E01', 'src/app/ExportConectat.tsx', "alese: numarUrechiAlese(o) }", 'alese: 0 }', 'e2e', 'fereastra arată mereu 0 urechi alese')
-o('E02', 'src/ui/DialogExport.tsx', "data-camp=\"urechi-numar\" disabled={doarCitire || p.modUrechi === 'alese'}", 'data-camp="urechi-numar" disabled={doarCitire}',
+o('E02', 'src/ui/DialogExport.tsx', 'data-camp="urechi-numar" disabled={doarCitire || faraNumar(p.modUrechi)}', 'data-camp="urechi-numar" disabled={doarCitire}',
   'e2e', 'numărul rămâne de scris cu „alese pe desen”')
 o('E03', 'src/app/ModUrechi.tsx', '      if (!g.mutata) {', '      if (false) {', 'e2e', 'un clic pe ureche n-o scoate')
 

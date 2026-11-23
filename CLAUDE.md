@@ -713,7 +713,15 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   taie pe tăcute fără urechi); cu toate locurile egale bune și fără intrări, programul modului „egale”, octet cu octet. Lângă
   avertismentul pieselor desprinse, „Pune urechile unde țin” trece rândurile lor din fereastră. **Un calcul nou care cere
   programul foii îl ia din `programFoii`** (potrivirea dopului, ADR 0179, trece și ea pe acolo). Pornirea 107,9 kB (cu ușa
-  112,3 / 115), totalul 763,1 / 800. Regulile (c, 11.3↑f) rămân la cuvântul owner-ului.
+  112,3 / 115), totalul 763,1 / 800.
+  **Urechile după reguli, pe laturi (felia 11.3↑f, ADR 0211, varianta c; documentul tot v26)** gata pe 23.11, pe
+  `wip/11.1-plansele`, unită în `main` pe 23.11 (`f4601938`): „pe laturile lungi”, „pe laturile scurte” și „la mijlocul laturilor”
+  (`src/cam/urechiLaturi.ts`, pur). Laturile sunt bucățile drepte ale drumului frezei pe care încape o ureche; numărul de
+  pe buclă se împarte pe laturile regulii, iar centrele intră pe drumul locurilor alese (`centrePeLaturi`, în `job.ts`).
+  Fără laturi drepte, programul modului „egale”, octet cu octet. Lucrarea nu mai are niciun mod refuzat ca „felie
+  următoare”. Pe plăcuțele în rânduri și coloane, urechile de la mijlocul laturilor cad față în față cu ale vecinelor și
+  le țin una de alta (placa 11 la 5 mm: nu se mai desprinde niciuna). Pornirea 107,9 kB (cu ușa 112,3 / 115), totalul
+  763,9 / 800.
   **Degajările aceleiași bucle (ADR 0134, felia 3.U, rămasă din etapa 2)** gata pe 04.11: §5 din ADR 0032 are două condiții
   noi, după cele de până acum: d, pereții piesei (discul de pe drum nu trece de un perete care nu vine din V, iar la sub
   1 mm de el punctul discului cel mai apropiat nu e în K) și e, degajările aceleiași bucle (doi candidați la sub D + 1,
@@ -1299,6 +1307,22 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 23.11.2026, seara (a cincea unire din cloud): **11.3↑f (urechile după reguli, pe laturi) unită în `main`**, la „ok,
+  cand se poate fa unirea” al owner-ului, în sesiunea liniei planșelor (ramura `unire-2311g`, din `d6fd5d68`). Ramura
+  `wip/11.1-plansele`, `527a95f3`, PR-ul `AndreiBesliu/cvs2#9` (ADR 0211, varianta c), unită în `f4601938`: în fereastra
+  exportului, „Locurile” urechilor au și „pe laturile lungi”, „pe laturile scurte” și „la mijlocul laturilor”; laturile
+  sunt bucățile drepte ale drumului frezei pe care încape o ureche, numărul de pe buclă se împarte pe laturile regulii,
+  iar „la mijlocul laturilor” pune câte una pe fiecare; fără laturi drepte, programul modului „egale”, octet cu octet.
+  Pe plăcuțele în rânduri, urechile de la mijlocul laturilor cad față în față cu ale vecinelor (placa 11 la 5 mm: nu se
+  mai desprinde niciuna). Documentul rămâne v26; cu ea, ADR 0211 are toate cele trei variante; otrăvurile 54 / 54.
+  **Ordinea cu lotul sesiunii principale:** unirea a fost pregătită întâi peste `unire-2311d` (`2ee60a88`, pe
+  `unire-2311e`), cât îi rulau porțile; lotul a intrat în `main` refăcut, fără 3.Tr (unită între timp de linia elicelor),
+  deci unirea a fost refăcută peste `d6fd5d68`, cu același cod (`git diff` gol în afara fișierelor `.md`), pe care au
+  trecut porțile. Ciocnirea, doar în DEVLOG. Nimic pe server. Porțile, în CI, pe `2ee60a88` (același cod), verzi la
+  prima trecere: unit 9 878 / 0 (12 sărite, pe Linux), e2e 609 / 609, funcțiile pe emulatoare 104 / 104, paginile
+  38 / 38 (completul, 47 de minute); pornirea 108,5 kB (plafonul 115; cu ușa 113,0, cu Atelierul 113,3), totalul
+  770,8 / 800 kB (+0,8), `/admin` 125,6 / 200. Linia planșelor n-are felie în lucru: tăierea plăcii 11 e a owner-ului,
+  11.5↑b vine după etapa 13.
 - 23.11.2026, seara (a patra unire din cloud): **25.8↑a (imaginile pe foaie) și A.5 (Utilizatori și Personal) unite în
   `main`**, în lot, cu reparația unei probe instabile a extensiilor (ramura `unire-2311e`, din `6f85243f`). **25.8↑a**
   (linia trasării, ramura `wip/25.1-trasare`, `2e8caa3e`, PR-ul `AndreiBesliu/cvs2#6`; ADR 0272), unită în `473f2e20`: o

@@ -1,7 +1,7 @@
 # ADR 0211 — Urechile la locuri alese (etapa 11, varianta c din ADR 0210)
 
 **Starea:** acceptat pe 19.11.2026, cu toate recomandările (1a–7a: „Da, toate recomandările”, la „Pornesc 11.3↑d cu toate
-recomandările?”); varianta a, implementată în felia 11.3↑d (21.11), varianta b, în felia 11.3↑e (23.11; vezi la capăt). Propus în aceeași zi, în linia planșelor
+recomandările?”); varianta a, implementată în felia 11.3↑d (21.11), varianta b, în felia 11.3↑e (23.11), varianta c, în felia 11.3↑f (23.11; vezi la capăt). Propus în aceeași zi, în linia planșelor
 (worktree-ul `plansele`, ramura `wip/11.1-plansele`, din `main` `4b7539a`), la „Da, ADR și schița” (owner-ul, după 11.3↑c).
 **Completează:** ADR 0028 (urechile: profilul Z(s), centrele la distanțe egale), ADR 0027 §4 (pornirea în vârful 0) și
 ADR 0210 (feliile 11.7↑, 11.3↑b și 11.3↑c: urechile nu țin sub 2 × freza, distanța propusă, proba la export).
@@ -205,3 +205,49 @@ se mută în piesă, urechile ei se mută odată cu ea, în loc să rămână î
 - **Porțile** (în CI, pe `ed87f2e8`): unitarele 9 795 / 0 (12 sărite); e2e 593 / 593; pe emulatoare 104 / 104 (funcțiile și
   regulile) și 34 / 34 (paginile). Mărimea: pornirea 107,9 kB (cu ușa 112,3 / 115), totalul 763,1 / 800 kB (+2,2 față de
   `main`: 760,9 pe `75dc1f9a`), `/admin` 121,2 / 200.
+
+## Implementarea feliei 11.3↑f (c, regulile pe laturi; 23.11)
+
+- **Documentul rămâne v26:** modurile „lungi”, „scurte” și „mijloc” erau deja în ușă; nicio migrare. Refuzul „felie următoare”
+  al lucrării a plecat: toate modurile se taie.
+- **Latura** (`src/cam/urechiLaturi.ts`, pur). **Precizare:** laturile se citesc pe drumul frezei (bucla profilului), nu pe
+  desen: pe dinafară au lungimea laturilor desenului, pe dinăuntru sunt mai scurte cu diametrul frezei. O latură e o bucată
+  dreaptă a buclei; liniile care se continuă în aceeași direcție (cel mult 0,057° față de prima) sunt o singură latură, și
+  peste vârful 0; un arc le desparte. **Precizare:** numără doar latura pe care încape o ureche (W ≤ 0,9 · L, regula ADR 0028,
+  cu o rezervă de rotunjire): colțurile rotunjite, teșiturile mici și liniile scurte ale unei curbe nu sunt laturi; pe un
+  dreptunghi cu laturile scurte sub W / 0,9, „scurte” cade pe celelalte.
+- **Regulile:** „lungi”, laturile cele mai lungi; „scurte”, cele mai scurte; „mijloc”, toate, cu câte o ureche la mijloc.
+  **Precizare:** laturile cu cel mult 1 % sub cea mai lungă (peste cea mai scurtă) sunt la fel de lungi: laturile unui desen
+  importat nu sunt egale la bit. Pe un pătrat, toate patru sunt și „lungi”, și „scurte”.
+- **Numărul. Precizare:** „Câte, pe buclă” rămâne numărul de pe buclă (ca la celelalte moduri, în panou și în raport) și se
+  împarte pe laturile regulii: ⌊n / k⌋ pe fiecare, iar restul de e, câte una pe laturile ⌊j · k / e⌋, în ordinea drumului
+  (răspândite: două urechi pe un pătrat stau pe laturi opuse). Pe o latură cu m urechi, centrele la (j + ½) · L / m (ADR 0028
+  §3, pe latură). Cel mult câte încap (W ≤ 0,9 · L / m); restul se spune într-un avertisment al lucrării („urechile pe
+  laturile scurte: o buclă are mai puține urechi decât cere numărul, fiindcă pe laturile ei nu încap mai multe: i1/e: 8 din
+  10”). La „mijloc”, numărul nu contează: câmpul se oprește în fereastră, iar raportul spune regula, fără număr.
+- **Lucrarea** (`job.ts`, prin `centrePeLaturi`): centrele regulii intră pe drumul locurilor alese (flancul din golul fiecărei
+  urechi, pornirea în mijlocul celui mai lung gol, intrările în afara urechilor). Fără nicio latură dreaptă pe buclele
+  tăieturii (un cerc), programul modului „egale”, octet cu octet. **Precizare:** lângă o buclă cu laturi, una fără (o tăietură
+  pe dinăuntru ruptă în două de un gât mai îngust decât freza) rămâne la distanțe egale, cu refuzul modului „egale” dacă
+  urechile nu încap pe ea. Regulile merg și pe linie (bucla e chiar conturul).
+- **Fereastra, panoul, raportul, semnele:** „Locurile: … / pe laturile lungi / pe laturile scurte / la mijlocul laturilor”, cu
+  nota regulii; înapoi la distanțe egale, modul pleacă, iar locurile alese pleacă la orice alt mod. Panoul: „pe laturile
+  lungi: N × W mm pe buclă”; raportul foilor: numărul, iar la mijlocul laturilor, „urechi la mijlocul laturilor”. Cu „Arată
+  traseul”, urechile puse după regulă se văd pe drum, ca inelele celor „unde ține”. Un rol salvat ține regula (nu e a unei
+  piese anume).
+- **Pe hârtie.** Exemplul din ADR (80 × 30, Ø3,175, urechi de 6 mm): „scurte”, două, dă exact programul locurilor alese în (0,
+  15) și (80, 15); „lungi”, două: palierele la y = −R și y = 30 + R, de la x = 37 la 43, cu pornirea la mijlocul unei laturi
+  scurte; patru: la x = 20 și x = 60; „mijloc”: toate patru. **Placa 11 la 5 mm:** cu oricare regulă, urechile plăcuțelor
+  vecine cad față în față (amândouă frezele se ridică în același loc, deci puntea de 2 mm ține plăcuțele una de alta pe toți
+  cei 5 mm dintre ele): nu se mai desprinde niciuna, pe nicio foaie; la distanțe egale cad 9 + 4. A doua plasă, proba pe
+  G-code a plăcii, găsește la fel.
+- **Probele:** `urechi.laturi.test.ts` (16: laturile, regulile, împărțirea, cazurile de margine, lucrarea pe exemplul din ADR,
+  două bucle), `urechi.laturi.placa.test.ts` (5), `urechi.dialog.test.ts`, `urechiLocuri.test.ts` (raportul), e2e
+  `urechi-laturi.spec.ts` (trei dreptunghiuri la 9 mm: „scurte” ține toate copiile, „mijloc” pune patru, „lungi” le leagă față
+  în față; nota, numărul oprit, raportul, semnele, panoul, fereastra redeschisă). Privit: fereastra la 1400 px și la 1024 px
+  cu font lat (cele șase alegeri încap pe un rând); traseul plăcii 11 la 5 mm, cu perechile de urechi față în față. Otrăvurile
+  `test/otravuri/11.3f.py`: 54 / 54 din prima (45 unitare, 9 prin e2e); din listele 11.3d și 11.3e, nouă otrăvuri ieșite VOID
+  pe codul feliei: șapte mutate și prinse din nou, două scoase odată cu refuzul „felie următoare”.
+- **Porțile** (în CI, pe `6291784c`): unitarele 9 836 / 0 (12 sărite); e2e 600 / 600; pe emulatoare 104 / 104 (funcțiile și
+  regulile) și 36 / 36 (paginile). Mărimea: pornirea 107,9 kB (cu ușa 112,3 / 115), totalul 763,9 / 800 kB (+0,8 față de
+  `main` `c010e3d1`), `/admin` 124,1 / 200.
