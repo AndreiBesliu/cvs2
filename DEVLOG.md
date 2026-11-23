@@ -12327,7 +12327,7 @@ spus în sesiunea ei.
 
 **Prompt:** același brief de predare al sesiunii principale („unește ce se poate”), la rapoartele liniilor adminului și
 trasării (PR-urile `AndreiBesliu/cvs2#8` și `AndreiBesliu/cvs2#10`).
-**Started:** 23.11, 22:40. **Completed:** unirea în `main`, 23.11, 23:57; publicarea pe test, în rândul de la capăt.
+**Started:** 23.11, 22:40. **Completed:** unirea în `main`, 23.11, 23:57; publicarea pe test, 24.11, 01:04.
 
 - **Verificate înaintea unirii:** ambele ramuri fără `.lucru/`; adminul avea `main` `ee4f629d`, trasarea `c8b235ab`;
   completul verde pe `09966989` (adminul; după el, doar documente până la `55d26b81`) și pe `1868b4e4` (trasarea; apoi
@@ -12348,6 +12348,9 @@ trasării (PR-urile `AndreiBesliu/cvs2#8` și `AndreiBesliu/cvs2#10`).
   `docs/linii/principala.md` (vârful unei ramuri mișcat după raport).
 - **La owner:** plafoanele (totalul 784,6 / 800, pornirea cu ușa 113,7 / 115), verificarea juridică a utilizării
   aplicației înaintea live-ului, „cine unește în `main`”.
+- **Publicarea (`ebfb1f82`):** rapidul și completul pe `main` verzi (completul, 55 min 58 s), `publica.yml` verde în
+  3 minute, cu serverul: funcția `utilizare` creată, celelalte 12 actualizate, regulile Firestore și Storage și
+  indexurile publicate; adresa de test spune `ebfb1f822ee6` (24.11, 01:04).
 
 ## 2026-11-23 — Plafonul total 900 kB (ADR 0301), pe linia frezelor (Model: Claude Opus 5.5)
 
@@ -12361,3 +12364,30 @@ trasării (PR-urile `AndreiBesliu/cvs2#8` și `AndreiBesliu/cvs2#10`).
   determinist: 376 de fișiere, totalul 793,6 / 900; probele documentației 75 / 75; traducerile, 959, 0 lipsă.
 - **Unirea:** pe `wip/16.A-freze`, peste `2c3fd99b`; unirea în `main` o face sesiunea principală, după lotul ei cu 16.A↑a
   (`unire-2311k`), anunțată prin mesaj.
+
+## 2026-11-24 — Sesiunea principală în cloud: a noua unire (16.A↑a, biblioteca de freze; ADR 0301, plafonul total 900 kB) (Model: Claude Fable 5.2)
+
+**Prompt:** același brief de predare al sesiunii principale („unește ce se poate”), la raportul liniei frezelor (PR-ul
+`AndreiBesliu/cvs2#12`); apoi mesajele liniei: owner-ul îi ceruse unirea („ok, cand e verde fa unirea”) și, mai târziu,
+plafonul („ok, ridica plafonul total la 900 kB”).
+**Started:** 23.11, 23:58. **Completed:** unirea în `main`, 24.11, 01:08; publicarea pe test, în rândul de la capăt.
+
+- **Verificate înaintea unirii:** ramura fără `.lucru/`; completul liniei verde pe `218eed21` (45267981792) și, cu
+  `main` adus, pe `2c3fd99b` (45275343904); doar hosting (nicio funcție, nicio regulă).
+- **Unirea:** `unire-2311k` din `origin/main` (`ebfb1f82`): 16.A↑a în `02a5864a`. Ciocnirile: câte un rând de tabel în
+  fișa etapei 3 (jurnalul feliilor) și în registrul otrăvurilor, ambele părți păstrate. În container: tipurile (și ale
+  funcțiilor), regulile de import (0 încălcări), traducerile (959, 0 lipsă), 147 / 147 probe atinse, build-ul
+  determinist.
+- **Linia a scris înainte să atingă `main`** (regula din `docs/lucru-in-cloud.md`): felia era deja în lot, cu porțile
+  pornite, deci unirea a rămas aici; linia propusese același nume de ramură (`unire-2311k`), deja luat pe `origin`.
+- **Vârful liniei, de două ori:** `2c3fd99b` (`main` adus; în plus doar nota liniei), unit în `1db60249`; apoi
+  `30d5ba17` (ADR 0301: plafonul total 800 → 900 kB, cu `PLAFON_TOTAL_KB = 900` în `scripts/build-determinist.ts`),
+  unit în `813fa675`. Față de `02a5864a`, lotul schimbă doar constanta aceea și documente.
+- **Porțile lotului, în CI**, verzi la prima trecere: completul pe `02a5864a` (49 min 44 s): unit 10 018 / 0 (12
+  sărite), e2e 646 / 646, funcțiile pe emulatoare 115 / 115, paginile 45 / 45; rapidul pe vârful `cfd584a1` (cu
+  plafonul nou). Pornirea 109,4 / 115 (cu ușa 113,9; cu Atelierul 114,2), totalul 793,6 / 900, `/admin` 130,3 / 200.
+- **Documentele:** decizia în `CLAUDE.md`, rândurile de stare ale bibliotecii de freze și ale plafonului; indexul
+  liniilor (nota frezelor, exportul, adminul); starea și o lecție nouă în `docs/linii/principala.md` (o decizie a
+  owner-ului spusă într-o sesiune de linie).
+- **La owner:** fereastra exportului (28.8↑a: acum sau după desene), verificarea juridică a utilizării aplicației
+  înaintea live-ului, „cine unește în `main`”.

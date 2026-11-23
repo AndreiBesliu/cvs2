@@ -1345,6 +1345,26 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 24.11.2026, noaptea (a noua unire din cloud): **16.A↑a (biblioteca de freze) unită în `main`, cu plafonul total
+  de 900 kB** (sesiunea principală, ramura `unire-2311k`, din `ebfb1f82`). **16.A↑a** (linia frezelor, ramura
+  `wip/16.A-freze`, `218eed21`, PR-ul `AndreiBesliu/cvs2#12`; ADR 0300, acceptat de owner cu „Da, 1a–6a”, în sesiunea
+  liniei), unită în `02a5864a`: fereastra „Frezele mele” (din meniul contului și din paletă), cu lista pe feluri,
+  editorul cu silueta la scară, frezele de pornire și fișierul JSON / CSV; frezele (plată, în V, de gravare) stau în
+  browser; documentul și serverul, neschimbate (alegerea în proiect, cu documentul v27, vine în 16.A↑b; contul, în
+  16.A↑c); otrăvurile 46 / 46; felia: pornirea +0,2 kB, totalul +9,0 kB. Owner-ul îi ceruse liniei unirea („ok, cand e
+  verde fa unirea”); linia a scris întâi aici, felia era deja în lot, deci unirea a rămas a sesiunii principale.
+  **Plafonul total 900 kB** (ADR 0301, scris de linia frezelor pe ramura ei, `30d5ba17`, unit în lot în `813fa675`):
+  decizia owner-ului, „ok, ridica plafonul total la 900 kB”, spusă în sesiunea liniei după raportul mărimii
+  (793,6 / 800 cu 16.A↑a). **Pornirea rămâne 115 kB** (cu ușa și cu Atelierul, 114,2: mai sunt 0,8 kB). Ciocnirile, două
+  rânduri de tabel (fișa etapei 3, registrul otrăvurilor), ambele părți păstrate. Porțile lotului, în CI, verzi la prima
+  trecere: completul pe `02a5864a` (49 min 44 s): unit 10 018 / 0 (12 sărite, pe Linux), e2e 646 / 646, funcțiile pe
+  emulatoare 115 / 115, paginile 45 / 45; rapidul pe vârful `cfd584a1`, care schimbă față de `02a5864a` doar constanta
+  plafonului din `scripts/build-determinist.ts` și documente; pornirea 109,4 kB (cu ușa 113,9), **totalul 793,6 / 900
+  kB**, `/admin` 130,3 / 200. Nimic pe server. Înainte, lotul al optulea a ajuns pe test (`ebfb1f82`, 24.11, 01:04), cu
+  serverul: funcția `utilizare` creată, regulile și indexurile publicate. Gata pe ramuri, neunite: 28.8↑a (fereastra
+  exportului, `AndreiBesliu/cvs2#11`: unirea la cuvântul owner-ului, după ce o încearcă pe canalul `export`) și A.8c
+  (adminul; porțile verzi, fără raport încă). **La owner:** fereastra exportului, verificarea juridică (GDPR) a utilizării
+  aplicației înaintea live-ului, „cine unește în `main`”.
 - 23.11.2026, spre miezul nopții (a opta unire din cloud): **A.8a cu A.8b (utilizarea aplicației) și 25.9↑ (fereastra
   trasării, refăcută) unite în `main`**, în lot (sesiunea principală, ramura `unire-2311j`, din `f73f3f37`). **A.8a și
   A.8b** (linia adminului, ramura `wip/A.1-admin`, `55d26b81`, PR-ul `AndreiBesliu/cvs2#8`; ADR 0262, acceptat de owner
