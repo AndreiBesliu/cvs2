@@ -142,8 +142,10 @@ Pornită pe 07.11.2026 de sesiunea principală, după ce owner-ul a întrebat ce
   `dispatchEvent` cu coordonate fracționare: browserul le taie, deci punctul se socotește din valorile rotunjite; (4) o
   scriere de fișiere întreruptă de pauză poate să nu se fi aplicat deloc: verifică arborele, nu memoria; (5) după o
   unire, numărătorile unite de Git pe ambele părți se socotesc din nou (ușile manualului: 110 + 111 → 112; capitolele:
-  39 + 39 → 40, în `manual.spec.ts`). Văzut în captura panoului, în afara feliei: la 1400 px, etichetele câmpurilor
-  Numele și Materialul ale foii apar tăiate la o literă („N”, „M”); rândurile sunt ale planșelor, felia nu le atinge.
+  39 + 39 → 40, în `manual.spec.ts`). După documente, `main` `feecf82a` adus din nou (`948aa29a`, fără ciocniri;
+  mărimea, aceeași), pentru porțile finale. Văzut în captura panoului, în afara feliei: la 1400 px, etichetele
+  câmpurilor Numele și Materialul ale foii apar tăiate la o literă („N”, „M”); rândurile sunt ale planșelor, felia nu le
+  atinge.
 - **25.8↑b (urmează, la cuvântul owner-ului):** „Calibrează” (două puncte și distanța), „Trasează…” din imaginea de pe
   foaie (cu zona), numele imaginilor în raportul foii (ADR 0272 §6, §7, §10).
 - **În cloud (din 23.11):**

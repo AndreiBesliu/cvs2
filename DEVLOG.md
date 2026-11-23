@@ -11022,7 +11022,9 @@ captura panoului”.
   adus (`a5ed2216`): ciocniri doar în DEVLOG și în importul tipurilor din `App.tsx`. Între timp, `main` a trecut documentul
   la v26 (11.3↑d): probele imaginilor spun acum schema documentului nou, nu un număr. În cloud, `main` `8f122eb6` adus
   (`980dd920`): ciocniri în DEVLOG și în numărul ușilor din `manual.test.ts` (110 pe ramură, 111 în `main`: 112 împreună);
-  capitolele manualului, unite de Git pe ambele părți, sunt 40 (`manual.spec.ts`).
+  capitolele manualului, unite de Git pe ambele părți, sunt 40 (`manual.spec.ts`). După documente, `main` `feecf82a` adus
+  din nou (`948aa29a`, fără ciocniri: elicele 3.Tq, în afara pachetului aplicației; tipurile, regulile importurilor,
+  traducerile și mărimea, aceleași), pentru porțile finale.
 - **Documentul:** `Foaie.imagini` (fără schemă nouă), ușa (amprenta, plafoanele, id-urile unice), comanda
   `inlocuieste-imagini`, acțiunea `foaie.imagini` (garda spune ce spune ușa, și pe un șir „5”).
 - **Baza imaginilor** (`src/app/imaginiFoaie.ts`): octeții după amprenta SHA-256, în afara documentului. Curățarea la
