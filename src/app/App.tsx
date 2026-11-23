@@ -420,6 +420,9 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
   // acțiunii, ca la clic (Ctrl+G, Ctrl+Shift+G). Fără modul, refuzul rămâne tăcut.
   const refuzEditare = useRef<((id: string, motiv: CheieSimpla) => void) | null>(null);
   const [setRefuzEditare] = useState(() => (f: ((id: string, motiv: CheieSimpla) => void) | null) => { refuzEditare.current = f; });
+  // Legarea căilor (ADR 0182): pornită de modulul editării (calculul e al workerului); tasta și paleta o cer prin context.
+  const legareEditare = useRef<(() => void) | null>(null);
+  const [setLegareEditare] = useState(() => (f: (() => void) | null) => { legareEditare.current = f; });
   const [cheieStrat, setCheieStrat] = useState(0);
   const [traseuPregatit, setTraseuPregatit] = useState<{ readonly bucati: readonly Bucata[]; readonly rarit: boolean } | null>(null);
   const cerereTraseu = useRef(0);
@@ -781,6 +784,7 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
     doarCitire: () => doarCiteste(mod),
     foaie: () => curenta.current.foaie,
     activeazaFoaie,
+    ...(legareEditare.current ? { legaCaile: legareEditare.current } : {}),
     ...extra,
   });
 
@@ -1527,7 +1531,7 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
                 <Editare doc={doc} indexFoaie={indexActiva} idFoaie={idActiva} selectie={selectieValida} cutie={cutieSelectie} vedere={v} marime={m} linii={l} zona={zona} doarCitire={doarCiteste(mod)} activ={!acoperita && urechiAlese === null}
                   usaAcoperita={fereastra === FEREASTRA_EXTENSIE ? 'extensii.buton' : fereastra === 'imprimanta' ? 'vedere.imprimanta' : 'vedere.masina'}
                   ruleaza={(id, extra) => ruleazaDocument(id, context(extra))} onLipeste={setLipesteStabil} onDesen={setDesenStabil}
-                  onRefuz={setRefuzEditare} reface={stareActiune('istoric.reface').ok} onAseaza={() => { setDialogAsezare(true); }} onAspect={() => { contextVedere.aspect(); }}
+                  onRefuz={setRefuzEditare} onLegare={setLegareEditare} reface={stareActiune('istoric.reface').ok} onAseaza={() => { setDialogAsezare(true); }} onAspect={() => { contextVedere.aspect(); }}
                   sugestie={config.ok && config.config.instanta !== 'live'} config={config.ok ? config.config : null} jurnal={jurnal}
                   {...(config.ok && config.config.instanta !== 'live' && new URLSearchParams(location.search).has('test')
                     ? { test: { versiune: versiuneDin(document), instanta: config.config.instanta } } : {})} />

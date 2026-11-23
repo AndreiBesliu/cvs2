@@ -194,6 +194,50 @@
   background: var(--s-atentie);
 }
 
+/* Felia 3.6v: eroarea explicată (codul de pe ecran, gravitatea, ce faci) și pana de curent. */
+.imprimanta-cod[data-grava="da"] {
+  border-left-color: var(--rosu);
+  background: var(--s-rosu);
+}
+
+.imprimanta-cod-cap {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px var(--sp-2);
+}
+
+.imprimanta-cod-ecran {
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 0.85em;
+  padding: 0 6px;
+  border-radius: var(--r-1);
+  border: 1px solid var(--l-margine);
+  background: var(--s-panou);
+}
+
+.imprimanta-cod-nivel {
+  font-size: 0.75em;
+  font-weight: 650;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.imprimanta-cod-brut {
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 0.75em;
+  color: var(--t-slab);
+}
+
+/* Linkurile cardului țin cât textul lor: în grilă, un link întins pe tot rândul ar prinde clicul și pe gol. */
+.imprimanta-cod > a {
+  justify-self: start;
+}
+
+.imprimanta-pana {
+  border-left-color: var(--rosu);
+}
+
 .imprimanta-nota {
   padding: 6px var(--sp-2);
   border-radius: var(--r-1);

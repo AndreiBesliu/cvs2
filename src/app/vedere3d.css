@@ -66,6 +66,109 @@
   color: var(--t);
 }
 
+/* „Împreună (secțiunea)” oprită (ADR 0179 §1): rămâne în tab, cu motivul pe titlu. */
+.alegere-3d button[aria-disabled='true'] {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/*
+ * Secțiunea (ADR 0179 §5), în insulă, sub cipuri: insula se lărgește cât e pornită. Culorile desenului sunt ale materialelor
+ * (placa de arțar, dopul de nuc, cleiul, contactul, tăietura), nu ale temei; textul tabelului e al temei.
+ */
+.stare-3d.cu-sectiune {
+  max-width: min(48rem, calc(100% - 16px));
+}
+
+.sectiune-3d {
+  --sec-placa: #d9b98a;
+  --sec-dop: #6b4a2e;
+  --sec-clei: #7cb2ff;
+  --sec-contact: #2e9e6a;
+  --sec-fierastrau: #e0882a;
+  --sec-marcaj: #d93a33;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  width: 100%;
+}
+
+.sectiune-3d h3 {
+  margin: 0;
+  font-size: var(--fs-3);
+}
+
+.sectiune-3d svg {
+  width: 100%;
+  height: auto;
+  max-height: 40vh;
+  background: var(--panza-fundal);
+}
+
+.sectiune-placa {
+  fill: var(--sec-placa);
+}
+
+.sectiune-dop {
+  fill: var(--sec-dop);
+}
+
+.sectiune-clei {
+  fill: var(--sec-clei);
+  opacity: 0.75;
+}
+
+.sectiune-contact,
+.sectiune-fierastrau,
+.sectiune-marcaj {
+  fill: none;
+  vector-effect: non-scaling-stroke;
+}
+
+.sectiune-contact {
+  stroke: var(--sec-contact);
+  stroke-width: 3px;
+}
+
+.sectiune-fierastrau {
+  stroke: var(--sec-fierastrau);
+  stroke-width: 2px;
+  stroke-dasharray: 8 5;
+}
+
+.sectiune-marcaj {
+  stroke: var(--sec-marcaj);
+  stroke-width: 2px;
+}
+
+.sectiune-3d table {
+  border-collapse: collapse;
+  font-size: var(--fs-2);
+}
+
+.sectiune-3d th,
+.sectiune-3d td {
+  padding: 2px 12px 2px 0;
+  text-align: left;
+  font-weight: normal;
+}
+
+.sectiune-3d thead th {
+  color: var(--t-slab);
+}
+
+.sectiune-3d tr.diferit th,
+.sectiune-3d tr.diferit td {
+  color: var(--rosu);
+  font-weight: 600;
+}
+
+.sectiune-nota {
+  margin: 0;
+  font-size: var(--fs-1);
+  color: var(--t-slab);
+}
+
 /* Bara selecției stă pe cutia 2D a selecției: în 3D n-ar arăta spre nimic. */
 .panza-cutie:has(.vedere-3d) .bara-selectie {
   display: none;

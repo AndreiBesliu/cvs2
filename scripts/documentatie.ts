@@ -16,6 +16,7 @@
  */
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { genereazaCodurile } from './coduri.ts';
+import { genereazaCoduriImprimanta } from './coduriImprimanta.ts';
 import { EroareManual, genereazaManualul } from './manual.ts';
 import { genereazaMesajele } from './mesaje.ts';
 import { EroareTutorial, genereazaTutorialele } from './tutorial.ts';
@@ -737,6 +738,8 @@ export function genereazaDocumentatia(radacina: string): Map<string, string> {
     ...manual,
     // Dicționarul codurilor controlerului (ADR 0085): date pentru panoul mașinii, în precache, ca manualul.
     ...genereazaCodurile(),
+    // Dicționarul codurilor imprimantelor (felia 3.6v, ADR 0195): câte un fișier pe familie și limbă, tot în precache.
+    ...genereazaCoduriImprimanta(),
     // Mesajele modulelor la cerere (ADR 0086): date, în precache, în locul textelor din JavaScript.
     ...genereazaMesajele(),
     [FISIER_ROADMAP, JSON.stringify(roadmap)],

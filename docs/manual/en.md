@@ -608,6 +608,35 @@ The buttons are active only with two shapes chosen. The boolean is refused, with
 shape is open (a line) or has several outlines (an imported part), if the shapes do not touch (uniting or subtracting would not
 change them), if they have nothing in common (intersecting) or if nothing remains of the first (subtracting).
 
+## Joining paths
+%% capitol: legare
+%% acopera: document.leaga-caile, editare.legare.optiuni
+
+**Join paths** (the button next to the boolean, the right-click menu, `Ctrl+J`) turns the chosen open paths into a single path,
+in one undo step: the lines of an SVG written separately, an outline drawn as two paths with the Pen, what remains after Trim.
+Closed shapes and shapes that are not paths, among the chosen ones, are left alone.
+
+- Ends that touch (at most 0.01 mm apart) become one node: the end of the path that comes earlier in the project. Only two ends
+  at a point: three ends (a T) stay unjoined, and the message says how many.
+- When exactly two paths remain after snapping, their closest ends are joined with a straight line, however far apart. With more
+  paths and gaps between them, join them two at a time. A single open path chosen is closed with a line (so `Ctrl+J` again,
+  after a join, closes it).
+- A path whose ends meet becomes closed; its operation stays the one it had (an engraving on the line stays on the line until
+  you change it).
+- The joined path takes the place of the first path (the same part, the same name, the same direction); the others go.
+
+Joining is refused, with the reason shown next to the buttons, if no open path is chosen, if the gap is larger than the options
+allow, if **the paths have different operations**, if one path is in a part with several shapes and another is not (ungroup
+first) or if the part is placed more than once.
+
+**Joining options** (the arrow next to the button) are kept in the browser, the same in Checking vectors:
+
+- **Snap below**: the distance under which two ends become one node (0.01 mm by default);
+- **The gap between two paths**: **With a line** (default), **Line, up to** a given gap (1 mm by default) or **Snap only**;
+- **Snapped ends**: **On the first path’s end** (default: the first path stays exact) or **In the middle** (both ends move by
+  half);
+- **Different operations**: **Do not join** (default) or **Take the first path’s operation**.
+
 ## Ungrouping
 %% capitol: degrupare
 %% acopera: document.degrupeaza
@@ -1166,7 +1195,8 @@ The check helps you find the mistakes first; the drawing stays yours. A few can 
   contour goes straight through the crossing; above it, the loop becomes a separate shape, in the same part and with the
   same operation (an “8” becomes two shapes, which touch at the crossing). **Repair all loops** does them all at once;
 - **Merge**, on the nodes too close in the same shape: the run of short segments becomes a single node. **Merge all
-  nodes** does them all. The nodes of two different shapes are only shown.
+  nodes** does them all. The ends of two paths are joined, on their row, with **Join** (by snapping: they become one path),
+  and **Join all paths** joins them all (see Joining paths); other nodes of two different shapes are only shown.
 
 Intersections between shapes are only shown: they may be intended, since the bit follows each shape with its role, and the
 export says what cannot be cut. A shape from a part placed more than once is not repaired from here, since the repair
@@ -1807,7 +1837,12 @@ printer works alongside the CNC, so the Machine window stays the CNC’s. `F1` o
   the address is the one on its screen.
 - **The status.** At the top sits the printer strip: the state (Ready, Preparing, Printing, Paused, Stopped, Done), the name,
   the address and the firmware. Below: the job (the file, the progress, the elapsed and remaining time, the layer), the
-  **Temperatures** of the nozzle, the bed and the enclosure and the code the printer reported (its screen shows the text).
+  **Temperatures** of the nozzle, the bed and the enclosure and the error the printer reported, explained: the code on its
+  screen (for example CX2585), whether it is serious or minor, what happened and **What to do**, and where Creality has a
+  page for the code, **Creality page ↗** (a new tab). A code cvs2 doesn't know is said as such, with the **Code list ↗** from
+  the Creality wiki; its text is on the printer's screen. The dictionary (the K1 family: K1, K1C, K1 Max) comes at the first
+  error and works offline too. After a power cut, the card says the printer asks on its screen whether to resume the print;
+  you answer there.
 - **The plate**, while printing or paused, in the job card: the bed seen from above, zoomed on the parts, with the
   printer’s front at the bottom. It shows the parts (their outline; the **current part** with a teal outline; a
   **cancelled** one, crossed out), the **nozzle** (a white dot, only while printing) and, for files sent from cvs2, the
@@ -1826,7 +1861,8 @@ printer works alongside the CNC, so the Machine window stays the CNC’s. `F1` o
   printer’s own list, made of letters, digits, _ . -, reaches the printer; nothing typed by hand.
 - **Notifications** (their card, in the Printer window): **Turn on notifications** asks the browser for permission, once.
   Under **Tell me when** you choose the events: it finished, it stopped, the pause from the file (with its note), another
-  pause, out of filament, an error, the connection lost while printing and the first layer done (off at first). While
+  pause, out of filament, an error (with the code and what to do), a power cut, the connection lost while printing and the
+  first layer done (off at first). While
   cvs2 is hidden, a system notification comes (click it: the Printer window); while it is in front, a banner at the top,
   with **Open Printer** and **Close**. **With sound**: a few short tones. **Also the system notification while cvs2 is in
   front**, if you want it then too. **Percentage in the tab title**: “45 % · CNC Vector Studio”. On the Printer button in
@@ -1987,6 +2023,12 @@ blocks (the deepest point of each), and the status in the corner says so.
   blank). “Plug N” simulates the plug's program on its blank (the face at 0, the bottom at its thickness) and frames it: you
   see the plug standing, the lowered face or the cut-out before you cut it. “Sheet” takes you back to the sheet. If a plug
   cannot be cut, the sheet still shows, and the status says why the plugs are missing.
+- **Together (section)**: on a V plug, the button after the plugs shows the plug flipped and seated in its pocket, in a
+  horizontal section through the middle of the drawing. Next to it, the table puts the paper values (as in the panel) beside
+  the ones simulated at 0.1 mm: how far the plug goes in, how much of the walls touch, the glue gap under the plug and the
+  space between the boards, for the saw. A row more than 0.05 mm off its paper value (or walls touching on less than 95 %) is
+  red, with its place, and the section goes through it. In the drawing, the glue is blue, the walls in contact are green and
+  the dashed line is the saw cut. On a straight-walled plug, the button is off for now.
 
 The colours: the sheet's face, the cuts (darker with depth) and, in blue-grey, the spoilboard where the cutter went through
 the sheet. If you change the document while the view is open, the status says so; “Simulate again” simulates it, with the
@@ -2148,6 +2190,7 @@ it, and the app’s interface stays the same.
 | `Ctrl+D` | Duplicate |
 | `Ctrl+G` | Group |
 | `Ctrl+Shift+G` | Ungroup |
+| `Ctrl+J` | Join paths |
 | `Delete` | Delete selection |
 | `Ctrl+K` | Search commands |
 | `Home` | Show the whole sheet |

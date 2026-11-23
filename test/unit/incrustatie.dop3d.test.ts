@@ -69,7 +69,8 @@ test('lista dopurilor din vederea 3D e a exportului: în V, apoi cel drept, cu s
   const p = await programSimulare(doc);
   if (!p.ok) assert.fail(p.motiv);
   assert.equal(exp.dopuri.length, 2);
-  assert.deepEqual(p.dopuri, exp.dopuri.map((d) => ({ element: d.element, semifabricat: d.semifabricat })));
+  // Întâi dopul în V (cu „Împreună (secțiunea)”, ADR 0179), apoi cel drept (fără ea, până la felia 12.1↑e-3).
+  assert.deepEqual(p.dopuri, exp.dopuri.map((d, k) => ({ element: d.element, semifabricat: d.semifabricat, inV: k === 0 })));
   // Ordinea, pe elemente: întâi dopul în V (instanța `i`, elementul `a0`), apoi cel drept (instanța `j`, elementul `b`).
   assert.deepEqual(p.dopuri.map((d) => d.element), ['i/a0', 'j/b']);
   assert.equal(p.motivDopuri, undefined);

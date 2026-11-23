@@ -597,6 +597,14 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   din `src/model/numarPanou.ts` (pur); înălțimea și verificarea ei stau în `src/model/inaltimeNumar.ts` (ușor: luate din
   `numarPanou.ts`, aduceau locul cifrelor în bucata panoului Taie). Acțiunea `document.taie` pune numerele
   (`TaiereCalculata.numere`) cu id-uri noi în grupurile panourilor, în același pas.
+  **Legarea căilor (felia 10.3↑o, ADR 0182)** gata pe 22.11, pe `wip/10.3o-legare` (din vârful lui 10.3↑n, cu `main` `40487c43`
+  unit), unită în `main` pe 23.11 (`ab7dc43d`): legarea în worker (`src/model/legareCai.ts`, cererea `legare`, cu harta, felul operațiilor și schimbările
+  pieselor din `reparare.ts`), aplicată prin `document.repara`; acțiunea ușoară `document.leaga-caile` (Ctrl+J, paleta) cheamă
+  `legaCaile` din context, dat de `Editare` prin `onLegare`; butonul și săgeata opțiunilor (`PanouLegare.tsx`) în secțiunea
+  booleanului; în Verificare, „Leagă” și „Leagă toate căile”. Opțiunile, în `src/model/legareOptiuni.ts` (ușor: depozitul
+  `src/app/optiuniLegare.ts`, cheia `cncvs2.legare`, îl ia de aici, nu din `legareCai.ts`); textele, în `src/app/textLegare.ts`
+  (comun cu Verificarea, fără ciclu prin `Editare`). Feliile următoare: 10.3↑p (unealta Noduri), 10.3↑q (felurile legăturii),
+  10.3↑r (legarea la import).
   **Foaia activă și lista cu foile (ADR 0210, felia 11.1↑, adusă din etapa 11)** gata pe 07.11, în worktree-ul `plansele`
   (ramura `wip/11.1-plansele`), după „Da, toate”: foaia activă e a ferestrei (o vedere ținută în browser, `cncvs2.foaia`, fără
   revizie și fără anulare); pânza, uneltele, panoul, verificarea, reparația, tăierea, traseul, timpul, vederea 3D și exportul
@@ -860,6 +868,12 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   **3.6u gata pe 18.11** (filmele timelapse): `elapseVideoList` în driver (`filme`, `adresaFilm`), `filmePe` (pur), coloana Filmul
   a cardului Istoricul (filă nouă, fără trimitător); istoricul și filmele, cerute din nou la deschiderea ferestrei (`vizibila`).
   Totalul 732,7 / 800 (+0,5). Grupul 3 încheiat; proba pe K1C: ghidul, pașii 9–11.
+  **Grupul 4 acceptat pe 21.11** (ADR 0195, „Da, recomandările”: 1a, 2a; schița: <https://claude.ai/artifact/BwK8f4t9vrsQ98JeENHKdC>). **3.6v gata pe 22.11, unită în `main` pe 23.11 (`75dc1f9a`)**
+  (codurile explicate): dicționarul familiei K1, 126 de chei, în `coduri/creality-k1.<limba>.json` (precache, plafonul 8 kB),
+  căutat după `key`, apoi după `errcode`; cardul „De la imprimantă” (`EroareImprimanta.tsx`), banda și notificarea cu
+  explicația; pana de curent (`repoPlrStatus`), eveniment nou; la recenzia proprie, trei reparații (linkurile cât textul,
+  dicționarul cerut din nou după o cerere căzută, cheia 0). Totalul 745,6 / 800 (+1,5). Urmează 3.6w
+  (camera WebRTC), la cuvântul owner-ului.
   **Biblioteca extensiilor (ADR 0230, felia 3.Xg)** gata pe 07.11, în worktree-ul `biblioteca`, cu recomandările („Da,
   1a–7a”), **unită în `main` pe 07.11** („Da, unește”): Easy 3Draw se instalează și se actualizează dintr-o listă servită
   lângă aplicație. **La fiecare build,
@@ -1270,6 +1284,44 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 23.11.2026, la prânz: **mutarea întregii producții în cloud** (la „ca sa fie clar, eu vreau sa mutam toata productia
+  proiectului cvs2 in cloud, vreau sa dezvoltam toata aplicatia de acolo, cu toate worktrees si asa mai departe” și „În
+  repo, docs/linii” ale owner-ului): ramura `wip/lucru-cloud-2` (`ec745716`), unită în `7c5adbf8`. Uneltele sesiunii
+  principale în cloud: `.github/workflows/canal.yml` (canalele de previzualizare din GitHub Actions, cu WIF, în mediul
+  `test`, doar pentru o ramură cu rapidul verde), `scripts/cloud/ci-si-publica.sh` (CI-ul și publicarea unui commit din
+  `main`, de reluat în container), `run-name` în `publica.yml`; `docs/lucru-in-cloud.md` v3 (sesiunea principală în
+  cloud, PR-ul liniei gata, canalele, ce rămâne pe calculatorul owner-ului). Notele liniilor în `docs/linii/` (18 note
+  aduse din memoria sesiunii principale, `lectii.md`, indexul și `principala.md`), după ecranul repo-ului public.
+  Publicarea pe test și pe live mergea deja din GitHub (`publica.yml`: serverul și hosting-ul). Urmează: liniile în
+  lucru și sesiunea principală, mutate în cloud.
+- 23.11.2026, dimineața (a treia unire, 10:30): **lotul de după pauză unit în `main`** (worktree-ul `unire`, ramura
+  `unire-2311`, din `308b4cb7`). **12.1↑e-2** (incrustațiile: dopul întors în locașul simulat, ADR 0179), din
+  `082435b4`, nu din vârful `wip/12.1-incrustatii` (WIP 12.1↑e-3), unită în `3fc56052`. **10.3↑o** (legarea căilor, ADR
+  0182; `wip/10.3o-legare`, `27439b08`), unită în `ab7dc43d`: ciocnirile din `src/jobs/calculCam.ts` (tipul răspunsului)
+  și `src/ui/actiuniExportCalcul.ts` (importul), rezolvate cu ambele părți (potrivirea din 12.1↑e-2, legarea din
+  10.3↑o). **3.6v** (codurile imprimantei explicate, ADR 0195; `wip/3.6g-imprimanta`, `19e22f32`), unită în `75dc1f9a`.
+  Nimic pe server: nicio funcție, nicio regulă. Porțile unirii, pe `75dc1f9a`: unit 9 786 / 0 (8 sărite), e2e 592 / 592,
+  funcțiile pe emulatoare 104 / 104, paginile 34 / 34; pornirea 107,9 kB (plafonul 115), totalul 760,9 / 800 kB.
+  Urmează: pilotul în cloud (elicele, 3.Tq), apoi liniile în lucru mutate în cloud (12.1↑e-3, 25.8↑a, 11.3↑e, A.4).
+- 23.11.2026, dimineața, a doua unire: **corectura pregătirii cloud unită în `main`** (ramura `wip/lucru-cloud`,
+  `383120f5`, unită în `301413f8`). După documentația mediilor cloud (citită pe 23.11), `scripts/cloud/pregatire.sh` nu
+  mai iese cu eroare (o eroare ar opri pornirea sesiunii; ce lipsește se spune la „LIPSESC”), pune Node 26 în locul lui
+  22, primul în PATH-ul imaginii, și ia Java 21 din imagine. `docs/lucru-in-cloud.md`: porțile întregi în CI (rapidul la
+  push, completul pornit pe ramură), comenzile lungi în prim-plan (containerul se suspendă când stă), `npm ci` la
+  pornire dacă lipsesc `node_modules`. Probele care citesc documentele, 57 / 57; `bash -n` pe script. Urmează
+  linia-pilot în cloud, elicele (3.Tq), pe `wip/3.Tq-elice`.
+- 23.11.2026, dimineața: **3.Tp↑b (pictogramele) unită în `main`, cu uneltele lucrului în cloud** (worktree-ul `unire`,
+  ramura `unire-2211c`). **3.Tp↑b** (linia `galeria`, ramura `wip/3.Tp-galeria-pe-file`, `e641c18d` din `57457061`; ADR
+  0281): un desen mic, doar linii, de culoarea textului, pe fiecare buton al galeriilor atelierului Easy 3Draw
+  (`PICTOGRAME`, lângă `FAMILII`: o piesă nouă își pune desenul pe un rând, iar o probă unitară i-l cere); pachetul
+  18.18.0; otrăvurile 18 / 18. Porțile unirii, pe `e641c18d`: unit 9 752 / 0, e2e 585 / 585, funcțiile pe emulatoare 104
+  / 104, paginile 33 / 34 la prima trecere: `utilizatori.emulator.spec.ts:101` a așteptat 30 s rezultatul funcției, cu
+  procesorul la 85 %; reluată singură, 3 / 3 (funcțiile, 104 / 104). **Lucrul în cloud** (`b8cdc05e`, la „neata! Putem
+  sa mutam tot acest proiect in sesiune cloud? Vreau sa se faca in continuare sync pe folderul local, dar sesiunea sa
+  lucreze in cloud pe repo din Github” și „Da, începe” ale owner-ului): `scripts/cloud/pregatire.sh` (mediul cloud, ca
+  CI-ul), `docs/lucru-in-cloud.md` (o linie = o sesiune pe ramura ei: porțile ca în CI, otrăvurile într-o clonă, unirea
+  și publicarea), `scripts/rezolva-devlog.py`, `scripts/ldraw/`; unitarele ramurii, 9 748 / 0 (8 sărite), cu tipurile,
+  regulile de import și licențele. Urmează: mediul cloud (owner-ul) și linia-pilot, elicele (3.Tq).
 - 22.11.2026, seara: **11.3↑d (urechile la locurile alese) și A.3 (Tichete) unite în `main`**, în lot (worktree-ul
   `unire`, ramura `unire-2211b`). **11.3↑d** (linia planșelor, ramura `wip/11.1-plansele`, `44046e5d` din `76d5b0b3`;
   ADR 0211, varianta a, la „Da, toate recomandările” ale owner-ului): urechile se aleg pe desen, într-un mod al pânzei

@@ -58,7 +58,7 @@ o('T02', TF, "  if (text === null || text === '') delete parti[sursa];", '  if (
   'o parte goală rămâne în titlu')
 # Fereastra și carcasa (prin e2e).
 o('U01', VE, '      if (!setari.evenimente[e.fel]) continue;' + NL, '', 'e2e', 'evenimentele oprite (primul strat) se anunță tot')
-o('U02', VE, 'const sistem = (ascuns || setari.sistemInFata) && notificaSistemul(', 'const sistem = notificaSistemul(', 'e2e',
+o('U02', VE, "const sistem = (ascuns || setari.sistemInFata) && permisiune() === 'acordata';", "const sistem = permisiune() === 'acordata';", 'e2e',
   'notificarea sistemului și cu cvs2 în față')
 o('U03', VE, "&& clipa.lucrare === 'imprima') return null;", '&& false) return null;', 'e2e', 'banda pauzei rămâne după Reia')
 o('U04', VE, '  useEffect(() => { if (vizibila) setGataNevazut(false); }, [vizibila]);' + NL, '', 'e2e', '✓ rămâne după ce deschizi fereastra')

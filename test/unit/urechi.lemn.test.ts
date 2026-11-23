@@ -17,7 +17,7 @@ import './limbi.ts';
 import { citesteZip } from '../../src/extensii/zip.ts';
 import { cereMesaje } from '../../src/i18n/laCerere.ts';
 import { exportInBazin } from '../../src/jobs/bazinCam.ts';
-import { calculeazaSimularea, programFoii } from '../../src/jobs/calculCam.ts';
+import { calculeazaPotrivirea, calculeazaSimularea, programFoii } from '../../src/jobs/calculCam.ts';
 import { programDinDocument } from '../../src/cam/job.ts';
 import { alegeIndici, centreBune, FUND_LEGAT, FUND_TAIAT, urechiLemnBucla, type FundLemn } from '../../src/cam/urechiLemn.ts';
 import { LEGAT, TAIAT } from '../../src/sim/desprinse.ts';
@@ -25,6 +25,9 @@ import type { Document } from '../../src/model/document.ts';
 import { doarFoaia } from '../../src/model/foi.ts';
 import { LINIE, type Contur } from '../../src/geom/contur.ts';
 import { calculeazaExport, operatiiDesprinse } from '../../src/ui/actiuniExportCalcul.ts';
+import { incarca } from '../../src/model/incarcare.ts';
+import { CAZURI_INCRUSTATIE } from '../oracles/incrustatie.cazuri.ts';
+import { documentCaz } from './ajutor-incrustatie.ts';
 import { servesteMesajele } from './ajutor-mesaje.ts';
 import { cazute } from '../placi/placa-11/cazute.ts';
 import { documentPlaca11, exportPlaca11, numele, PARAMETRI, PLACUTA } from '../placi/placa-11/genereaza.ts';
@@ -252,4 +255,36 @@ test('lucrarea: „unde ține” fără fundul foii se refuză; în prima trecer
   const r = programFoii(doarFoaia(peLinie, d.foi[0]?.id));
   assert.equal(r.ok, false);
   assert.match(r.ok ? '' : r.motiv, /urechile „unde ține” cer un profil pe dinafară sau pe dinăuntru: pe linie, freza taie ambii pereți$/);
+});
+
+test('potrivirea dopului în V (ADR 0179) ia locașul din programul foii: cu o ramă „unde ține” pe aceeași foaie, aceeași potrivire', () => {
+  // Cazul „dreptunghi” al oracolului incrustației (locașul la (20, 20), 12 × 6), pe foaia lui de 200 × 150 × 18; departe de el,
+  // la (100, 80), o piesă 40 × 30 tăiată pe dinafară prin foaie, cu două urechi „unde ține”. Fără cele două treceri, lucrarea
+  // refuză urechile (`programDinDocument`, fără fundul foii), deci și potrivirea.
+  const caz = CAZURI_INCRUSTATIE[0];
+  assert.ok(caz);
+  const brut = documentCaz(caz) as { piese: unknown[]; foi: { instante: unknown[] }[] };
+  const I = { a: 1, b: 0, c: 0, d: 1, e: 0, f: 0 };
+  const cuRama = (mod: 'lemn' | 'egale'): Document => {
+    const d = structuredClone(brut);
+    d.piese.push({
+      id: 'q', radacina: { tip: 'element', id: 'e', matrice: I, forma: { tip: 'dreptunghi', latime: 40, inaltime: 30, razaColt: 0 } },
+      operatii: [{
+        id: 'x1', tip: 'profil', noduri: ['e'], scula: { numar: 3, nume: 'freza 1/8', diametru: 3.175 }, latura: 'exterior', sens: 'urcare',
+        adancime: 18, pas: 6, urechi: { numar: 2, latime: 6, grosime: 2, mod }, rampa: null, intrari: null, colturi: null,
+      }],
+    });
+    d.foi[0]?.instante.push({ id: 'j', piesa: 'q', x: 100, y: 80, rotire: 0 });
+    const r = incarca({ ...d, schema: 26 });
+    if (!r.ok) assert.fail(r.motiv);
+    return r.doc;
+  };
+  const lemn = cuRama('lemn'), egale = cuRama('egale');
+  assert.equal(programDinDocument(lemn).ok, false);
+  const a = calculeazaPotrivirea(lemn, 0), b = calculeazaPotrivirea(egale, 0);
+  assert.ok(a.ok, a.ok ? '' : a.motiv);
+  assert.ok(b.ok, b.ok ? '' : b.motiv);
+  // Rama stă în lemn de jur împrejur: locurile sunt cele de la distanțe egale, deci locașul e același, la bit.
+  assert.deepEqual(a.potrivire, b.potrivire);
+  assert.ok(Object.values(a.potrivire.randuri).every((x) => x.ok), JSON.stringify(a.potrivire.randuri));
 });

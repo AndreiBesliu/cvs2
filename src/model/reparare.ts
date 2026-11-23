@@ -85,10 +85,10 @@ export type RezultatReparare =
 const dist = (p: Punct, q: Punct): number => Math.hypot(p.x - q.x, p.y - q.y);
 
 /** Unde stă un element în lume: elementul, piesa lui și de câte ori e pusă piesa (pe toate foile). */
-type Loc = { readonly e: ElementLume; readonly piesa: Piesa; readonly ori: number };
-type Harta = { readonly loc: (id: string) => Loc | null; readonly elementeInstantei: (instanta: string) => readonly string[] };
+export type Loc = { readonly e: ElementLume; readonly piesa: Piesa; readonly ori: number };
+export type Harta = { readonly loc: (id: string) => Loc | null; readonly elementeInstantei: (instanta: string) => readonly string[] };
 
-function harta(doc: Document, indexFoaie: number): Harta {
+export function harta(doc: Document, indexFoaie: number): Harta {
   const piese = new Map(doc.piese.map((p) => [p.id, p]));
   const ori = new Map<string, number>();
   for (const f of doc.foi) for (const i of f.instante) ori.set(i.piesa, (ori.get(i.piesa) ?? 0) + 1);
@@ -117,7 +117,7 @@ function felulOperatiei(o: Operatie): string {
 }
 
 /** Felurile operațiilor unui element al piesei. */
-function operatiiNod(p: Piesa, nod: string): Set<string> {
+export function operatiiNod(p: Piesa, nod: string): Set<string> {
   return new Set(p.operatii.filter((o) => o.noduri.includes(nod)).map(felulOperatiei));
 }
 
@@ -203,9 +203,9 @@ export function verificaPentruPanou(doc: Document, o: OptiuniVerificare, indexFo
 // ——— Schimbările pieselor ———
 
 /** Ce se schimbă într-o piesă: formele noi ale unor elemente, elementele noi puse după ele, elementele scoase. */
-type Schimbare = { readonly forme: Map<string, FormaCale>; readonly dupa: Map<string, FormaCale[]>; readonly scoase: Set<string> };
+export type Schimbare = { readonly forme: Map<string, FormaCale>; readonly dupa: Map<string, FormaCale[]>; readonly scoase: Set<string> };
 
-function schimbarea(toate: Map<string, Schimbare>, piesa: string): Schimbare {
+export function schimbarea(toate: Map<string, Schimbare>, piesa: string): Schimbare {
   let s = toate.get(piesa);
   if (!s) { s = { forme: new Map(), dupa: new Map(), scoase: new Set() }; toate.set(piesa, s); }
   return s;
@@ -216,7 +216,7 @@ function schimbarea(toate: Map<string, Schimbare>, piesa: string): Schimbare {
  * matricea lui, un id nou și în operațiile lui (se taie la fel). O rădăcină-element cu elemente noi devine un grup. Null:
  * n-ar rămâne nimic din piesă.
  */
-function aplicaSchimbarea(p: Piesa, s: Schimbare): Piesa | null {
+export function aplicaSchimbarea(p: Piesa, s: Schimbare): Piesa | null {
   const folosite = new Set(noduriPiesa(p.radacina).map((x) => x.nod.id));
   const idNou = (baza: string): string => {
     for (let k = 1; ; k++) {
@@ -266,7 +266,7 @@ function rezultat(doc: Document, schimbari: Map<string, Schimbare>, sterse: read
 const mutat = (q: PunctDoc, dx: number, dy: number): PunctDoc => ({ ...q, x: q.x + dx, y: q.y + dy });
 
 /** Calea trece de regulile ușii pe care le poate strica o reparație: cel puțin 2 vârfuri, arcele cu capete diferite. */
-function caleBuna(f: FormaCale): boolean {
+export function caleBuna(f: FormaCale): boolean {
   const n = f.varfuri.length;
   if (n < 2) return false;
   if (!f.inchis && f.varfuri[n - 1]?.s.tip !== 'L') return false;
