@@ -23,6 +23,10 @@ gravare, profil, formă desenată)” și „Freze de profil desenate de utiliza
   (IndexedDB `cncvs2-freze`), fereastra „Frezele mele” din meniul contului și din paletă, frezele de pornire, fișierul JSON /
   CSV, manualul. Unitare 23 noi, e2e 9 noi; suita unitară 9 907 / 9 919; otrăvuri 46 / 46. Pornirea +0,2 kB (legătura),
   totalul +9,0 kB (779,9 / 800).
+- **23.11, 23:10: `main` adus de două ori** (`f73f3f37`: 3.Xh, 12.1↑e-3, 12.1↑e-4; `ebfb1f82`: A.8a, A.8b, 25.9↑).
+  Completul de pe `d4dce8df` căzuse la rândurile meniului contului din proba tichetelor de pe emulatoare (reparat în
+  `218eed21`). Pe ramura cu `ebfb1f82`: pornirea 109,4 kB (cu ușa 113,9, cu Atelierul 114,2 / 115), **totalul 793,6 /
+  800 kB: mai rămân 6,4 kB** (felia singură, tot +9,0).
 - **Feliile**, în ordine: 16.A↑a (biblioteca în browser, fereastra, fișierul), apoi b (alegerea în proiect, v27), c
   (contul), d (calibrarea), e (bila și toroidala), f (profilul desenat), g (valorile pe material).
 
