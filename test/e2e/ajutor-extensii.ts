@@ -22,3 +22,25 @@ export async function clicDupaReaparitie(page: Page, selector: string): Promise<
     await expect(b).toHaveAttribute('data-clic-primit', '', { timeout: 2000 });
   }).toPass({ timeout: 15_000 });
 }
+
+/**
+ * Un clic adevărat pe un buton din cadrul extensiei care își închide cadrul (`host.inchide()`). Se așteaptă urmarea clicului,
+ * cadrul scos din pagină, nu întoarcerea lui: cadrul e alt proces, iar clicul îl trimite sesiunea paginii, deci când cadrul
+ * dispare înainte să-și confirme evenimentul, `click()` nu se mai întoarce, deși fereastra s-a închis (30 s, apoi proba cade).
+ * Văzut în CI pe 18.11 (`extensii.spec.ts`) și de două ori pe 23.11 (`extensii.lucru.spec.ts`); reprodus pe 23.11 cu proba
+ * repetată de 200 de ori pe zece lucrători: 3 clicuri neîntoarse.
+ *
+ * Un clic care cade cu adevărat (butonul lipsește, e acoperit) își spune eroarea: cadrul e încă acolo. Un cadru care nu se
+ * închide pică la așteptarea lui.
+ */
+export async function clicCareInchideCadrul(page: Page, selector: string): Promise<void> {
+  const cadre = page.locator('iframe.cadru-extensie');
+  const inchis = expect(cadre).toHaveCount(0, { timeout: 15_000 });
+  const clic = page.frameLocator('iframe.cadru-extensie').locator(selector).click()
+    .catch(async (e: unknown) => { if (await cadre.count() > 0) throw e; });
+  // cea care pierde întrecerea poate cădea mai târziu (pagina închisă la capătul probei): fără respingeri neprinse
+  inchis.catch(() => { /* judecată mai jos, la `await inchis` */ });
+  clic.catch(() => { /* judecată în întrecere */ });
+  await Promise.race([clic, inchis]);
+  await inchis;
+}
