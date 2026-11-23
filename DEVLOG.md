@@ -11008,11 +11008,69 @@ rapide propus întâi?”).
   **Completed:** 22.11 16:17 (porțile lente terminate pe 21.11 seara; documentele comise pe 22.11, la cuvântul sesiunii
   principale: „neata, continua si porneste si worktrees”, al owner-ului).
 
-## 2026-11-21 — Felia 25.8↑a pornită: imaginile pe foaie (ADR 0272, acceptat: „Da, 1a–3a”) (Model: Claude Opus 5.5)
+## 2026-11-23 — Felia 25.8↑a: imaginile pe foaie (ADR 0272, acceptat: „Da, 1a–3a”, implementat) (Model: Claude Opus 5.5)
 
 **Prompt:** „Da, 1a–3a” (owner-ul, în sesiunea liniei trasării, la întrebarea „Iei cele trei recomandări (1a, 2a, 3a)?”
-despre ADR 0272).
-**Started:** 21.11, 19:15.
+despre ADR 0272). Reluată pe 22.11 la mesajul sesiunii principale: „Reia 25.8↑a (ADR 0272): aseară te-ai oprit la
+curățarea la pornire”, după „neata, continua si porneste si worktrees” al owner-ului. Încheiată pe 23.11 în sesiunea cloud
+a liniei, la brief-ul ei: „Felia în lucru: 25.8↑a (imaginile pe foaie, ADR 0272, acceptat cu „Da, 1a–3a”), oprită la pauza
+din 22.11 seara […] Rămân, în ordine: 1. E2e-urile vecine. 2. Porțile întregi, în CI […] 3. Documentele […] 4. Canalul și
+captura panoului”.
+**Started:** 21.11, 19:15. **Completed:** 23.11 14:38.
+
+- **Ramura:** pornită pe `78a44def` (ADR 0272 propus); lucrul comis în `ad836e58` și `1a313d57`, apoi `main` `88be9d6c`
+  adus (`a5ed2216`): ciocniri doar în DEVLOG și în importul tipurilor din `App.tsx`. Între timp, `main` a trecut documentul
+  la v26 (11.3↑d): probele imaginilor spun acum schema documentului nou, nu un număr. În cloud, `main` `8f122eb6` adus
+  (`980dd920`): ciocniri în DEVLOG și în numărul ușilor din `manual.test.ts` (110 pe ramură, 111 în `main`: 112 împreună);
+  capitolele manualului, unite de Git pe ambele părți, sunt 40 (`manual.spec.ts`).
+- **Documentul:** `Foaie.imagini` (fără schemă nouă), ușa (amprenta, plafoanele, id-urile unice), comanda
+  `inlocuieste-imagini`, acțiunea `foaie.imagini` (garda spune ce spune ușa, și pe un șir „5”).
+- **Baza imaginilor** (`src/app/imaginiFoaie.ts`): octeții după amprenta SHA-256, în afara documentului. Curățarea la
+  pornire, în fila care scrie: nefolosite de document și de versiunile păstrate (citite din text, fără ușă), puse de cel
+  puțin o zi (plasa celorlalte file). Prima scriere a ei, întreruptă de pauză, nu se aplicase: refăcută din fișier.
+- **Importul:** bifa „Păstrează imaginea pe foaie” (oprită, ținută minte) și „Doar imaginea” (și după un refuz al
+  trasării, lăsată pe planșă în punctul lăsat). Imaginea vine din workerul trasării, prelucrată ca în fereastră și codată
+  acolo (`octetiImaginiiFoii`): firul principal nu primește pixelii. Un JPEG / PNG / WebP neprelucrat rămâne fișierul lui;
+  un JPEG prelucrat, tot JPEG (abaterea de la §2, spusă în ADR). Vectorii și imaginea, într-un pas.
+- **Pânza:** stratul imaginilor în workerul ei, sub vectori, din trepte reduse; redesenat doar la schimbarea vederii, a
+  imaginilor sau la o decodare.
+- **Panoul și mânerele:** „Imaginile foii” (miniatura, ochiul, lacătul, opacitatea, coșul); pe o imagine desfăcută,
+  mutarea, scalarea dintr-un colț, rotirea (Shift: 15°).
+- **Pe drum:**
+  - Apăsarea înăuntrul unui contur închis alegea forma, iar după „Importă” cu imaginea, chenarul trasat acoperă aproape
+    toată imaginea: o imagine desfăcută n-ar fi putut fi mutată. Acum forma câștigă doar pe linia ei (`instantaLa` cu
+    `doarContur`).
+  - În e2e, mânerul de rotire ajunsese sub riglă (imaginea scalată, ori lăsată prea sus): proba verifică acum că punctul
+    apăsat e pe pânză (`elementFromPoint`) înaintea gestului.
+  - Un punct de lăsare cu coordonate fracționare: browserul dă evenimentului un `clientY` întreg, deci proba socotește
+    punctul din valorile rotunjite.
+  - În cloud, mediul n-a fost pregătit la pornirea sesiunii (ramura nu avea încă `scripts/cloud/pregatire.sh`, venit din
+    `main`): Node 26, dependențele, Edge și firebase-tools, puse rulând scriptul de mână, după unire.
+- **Probele:** unitare (ușa, jurnalul, acțiunea, paritatea, importul, locul în pagină, mânerele, baza, curățarea, alegerea
+  doar pe contur) și 4 e2e (`imagini-foaie.spec.ts`).
+- **Otrăvurile** (`test/otravuri/25.8a.py`): 43 / 43 (27 unitare, 16 prin e2e); M06 scăpase la prima rulare (doar
+  „vizibilă” ca șir era refuzată): proba cere acum fiecare câmp, lipsă. Din nou 43 / 43 pe `980dd920`, într-o clonă, pe
+  Linux; în listele mai vechi ale liniei, niciun VOID nou față de `main`.
+- **Porțile, pe `980dd920` (arborele unit):**
+  - în CI: rapidul verde; completul verde (unitare 9 816 / 0 căzute, e2e 596 / 596, emulatoarele 104 / 104 și 34 / 34;
+    prima rulare a completului, 595 / 596: `extensii.lucru.spec.ts:110`, clicul pe „Închide” din cadrul extensiei nu s-a
+    mai întors, ca la `extensii.spec.ts:43` din 18.11, în afara feliei; în container, fișierul 9 / 9 și proba repetată
+    15 / 15);
+  - în container (4 procesoare): `tsc` pe cele trei configurații, regulile importurilor, licențele, determinismul,
+    traducerile; unitare 9 816 (9 804 trecute, 12 sărite, niciuna căzută); e2e-urile vecine feliei 132 / 132 (19
+    fișiere: trasarea, importul, imaginile foii, panoul, editarea, selecția, proiectul, pânza, foile, rigla, bucățile la
+    cerere, CSP-ul, pornirea, manualul);
+  - mărimea: totalul 767,9 / 800 kB (`main` 760,9: +7,0), pornirea 108,4 / 115, cu ușa 112,9; `/admin` 121,2 / 200.
+- **Publicat** pe canalul `trasare` (<https://cncvectorstudio-test--trasare-icw58h57.web.app>, până pe 23.12), amprenta
+  `980dd92059a6`, din GitHub Actions (`canal.yml`). Încercat pe canal, din container (gazda canalului, adăugată în lista
+  mediului): cele 4 e2e ale feliei trec și acolo (anteturile reale ale Firebase), iar captura arată miniatura din panou
+  și imaginea rotită cu 30°, cu 0 erori în jurnalul local.
+- **Lecții:**
+  - O probă de gest pe pânză întâi verifică ce e sub punct: o riglă sau o bară care plutește deasupra face gestul fals.
+  - O imagine pusă „sub desen” cere o regulă de alegere: pe linie, forma; înăuntru, imaginea. Altfel conturul trasat al
+    chenarului o acoperă întreagă.
+  - După o unire, numărătorile pe care Git le unește singur pe ambele părți (ușile, capitolele manualului) se socotesc din
+    nou: fiecare parte avea dreptate singură, iar împreună nu mai are niciuna.
 
 ## 2026-11-22 — Felia 3.Tp↑b: pictogramele pieselor din galeriile atelierului Easy 3Draw (ADR 0281 §4) (Model: Claude Opus 5.5)
 

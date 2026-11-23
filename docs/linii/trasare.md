@@ -2,7 +2,7 @@
 
 <!-- Adusă din memoria sesiunii principale pe 23.11.2026 (mutarea în cloud). De aici înainte o ține la zi linia, pe ramura ei, odată cu feliile. -->
 
-_cncvs2, linia trasării din imagine (etapa 25): 25.1↑–25.3↑b UNITE în main pe 09.11 (`e277836`); 25.4↑ (scanările și pozele, ADR 0224) UNITĂ în main pe 09.11 (`0ebbd99`, de la `304ea37`; vârful `30448ea`); 25.5↑ (foaia pozată oblic, ADR 0225) UNITĂ în main (`07df71f`, de la `1ca446b`; main `0e3725c`); 25.4↑b (lumina pe culori, ADR 0226) UNITĂ în main pe 16.11 (la `94bf287`); 25.3↑c (liniile mediane pe culori, ADR 0227) UNITĂ în main pe 16.11 (`380c053`); 25.3↑d (punctele pierdute, corectura ADR 0222) UNITĂ în main pe 17.11 (`dd21a8a`); 25.3↑e (rezultatul pe fiecare culoare, ADR 0228) UNITĂ în main pe 17.11 (`a3e81f6d`); 25.6↑ (imaginile TIFF, ADR 0229) UNITĂ în main pe 18.11 (`fd63de8e`); 25.7↑ (PDF-urile scanate, ADR 0270) UNITĂ în main pe 18.11 (`9bf53378`); 25.4↑c (îndreptarea scanărilor, ADR 0271) UNITĂ în main pe 22.11 (`9071e62f`); 25.8↑a (imaginile pe foaie, ADR 0272 acceptat „Da, 1a–3a”) în PAUZĂ 22.11 seara: cod + otrăvuri 43/43 + main `88be9d6c` adus + canal `2ab74269dc29`, vârful `2ab74269` împins; rămân e2e-urile vecine și documentele (scripturile în `.tmp/documente-0272b.py`, `c`, valorile în `.tmp/valori-0272.json`; pașii în nota comună `trasare-worktree.md`); 758,4 / 800 kB; ADR 0270–0279 ale trasării (următorul liber 0273); e2e-ul worktree-ului pe portul 4183 (4179 e și al clonei `otravuri-taiere`); worktree-ul `cncvs2-lucru\trasare` (ramura `wip/25.1-trasare`) pe disc_
+_cncvs2, linia trasării din imagine (etapa 25): 25.1↑–25.3↑b UNITE în main pe 09.11 (`e277836`); 25.4↑ (scanările și pozele, ADR 0224) UNITĂ în main pe 09.11 (`0ebbd99`, de la `304ea37`; vârful `30448ea`); 25.5↑ (foaia pozată oblic, ADR 0225) UNITĂ în main (`07df71f`, de la `1ca446b`; main `0e3725c`); 25.4↑b (lumina pe culori, ADR 0226) UNITĂ în main pe 16.11 (la `94bf287`); 25.3↑c (liniile mediane pe culori, ADR 0227) UNITĂ în main pe 16.11 (`380c053`); 25.3↑d (punctele pierdute, corectura ADR 0222) UNITĂ în main pe 17.11 (`dd21a8a`); 25.3↑e (rezultatul pe fiecare culoare, ADR 0228) UNITĂ în main pe 17.11 (`a3e81f6d`); 25.6↑ (imaginile TIFF, ADR 0229) UNITĂ în main pe 18.11 (`fd63de8e`); 25.7↑ (PDF-urile scanate, ADR 0270) UNITĂ în main pe 18.11 (`9bf53378`); 25.4↑c (îndreptarea scanărilor, ADR 0271) UNITĂ în main pe 22.11 (`9071e62f`); 25.8↑a (imaginile pe foaie, ADR 0272 acceptat „Da, 1a–3a”) GATA pe 23.11, în cloud: codul la `980dd920` (cu `main` `8f122eb6` adus), otrăvurile 43 / 43, canalul `980dd92059a6`; PR-ul spre `main` deschis, unirea e a sesiunii principale; 767,9 / 800 kB; urmează 25.8↑b („Calibrează”, „Trasează…” din imaginea de pe foaie), DOAR la cuvântul owner-ului; ADR 0270–0279 ale trasării (următorul liber 0273); linia lucrează din 23.11 într-o sesiune cloud, pe ramura `wip/25.1-trasare` (worktree-ul local `cncvs2-lucru\trasare` e istorie)_
 
 Pornită pe 07.11.2026 de sesiunea principală, după ce owner-ul a întrebat ce se mai poate face în paralel. Lângă ea: incrustațiile
 ([Incrustațiile (12.1↑)](incrustatii.md)), imprimanta ([Imprimanta 3D (K1C)](imprimanta.md)), planșele ([Planșele (etapa 11)](plansele.md)).
@@ -125,15 +125,40 @@ Pornită pe 07.11.2026 de sesiunea principală, după ce owner-ul a întrebat ce
   (documentul se scrie întreg, cu 20 de versiuni); punerea din fereastra trasării; lista în panoul foii; 25.8↑b =
   „Calibrează” (două puncte + distanța) și „Trasează…” din ea. Schița: <https://claude.ai/artifact/Ctc63ZdA6ipkLPA8uGCJyb>
   (formularul scrie `raspunsuri/owner` în baza paginii: citește-l cu ArtifactData la „gata”). Codul doar după răspunsuri.
-- **25.8↑a PAUZĂ 22.11 seara** (ADR 0272 acceptat pe 21.11, „Da, 1a–3a”; vârful `2ab74269`, împins; canalul
-  `2ab74269dc29`): `Foaie.imagini` (fără schemă nouă), baza `cncvs2-imagini` (`src/app/imaginiFoaie.ts`), importul (bifa,
-  „Doar imaginea”, `octetiImaginiiFoii` codează în workerul trasării), pânza (`CerereImagini`, stratul în `lucrator.ts`),
-  panoul (`ImaginiFoii.tsx`), mânerele (`ManereImagine.tsx`). Rămân: e2e-urile vecine (după un minut de liniște) și
-  documentele (scripturi gata în `.tmp`). Lecții: (1) o imagine „sub desen” cere regula de alegere: pe linie, forma;
+- **25.8↑a GATA** (21–23.11; ADR 0272 acceptat pe 21.11, „Da, 1a–3a”, și implementat; pauzele din 21.11 și 22.11 seara;
+  încheiată pe 23.11 în sesiunea cloud a liniei; codul la `980dd920`, cu `main` `8f122eb6` adus; canalul `trasare` la
+  `980dd92059a6`, până pe 23.12): `Foaie.imagini` (fără schemă nouă), baza `cncvs2-imagini` (`src/app/imaginiFoaie.ts`),
+  importul (bifa, „Doar imaginea”, `octetiImaginiiFoii` codează în workerul trasării), pânza (`CerereImagini`, stratul
+  în `lucrator.ts`), panoul (`ImaginiFoii.tsx`), mânerele (`ManereImagine.tsx`). Otrăvurile 43 / 43 (și din nou pe
+  arborele unit, pe Linux); totalul 767,9 / 800 kB (felia +7,0), pornirea 108,4 / 115 (cu ușa 112,9). Porțile pe
+  `980dd920`: rapidul și completul verzi în CI (unitare 9 816 / 0 căzute, e2e 596 / 596, emulatoarele 104 / 104 și 34 /
+  34; prima rulare a completului, 595 / 596: `extensii.lucru.spec.ts:110`, clicul pe „Închide” din cadrul extensiei nu
+  s-a mai întors, ca la `extensii.spec.ts:43` din 18.11, în afara feliei; în container, fișierul 9 / 9 și proba repetată
+  15 / 15); în container, unitare 9 816 (9 804 trecute, 12 sărite, niciuna căzută), e2e-urile vecine 132 / 132 (19
+  fișiere: trasarea, importul, imaginile foii, panoul, editarea, selecția, proiectul, pânza, foile, rigla, bucățile la
+  cerere, CSP-ul, pornirea, manualul). Lecții: (1) o imagine „sub desen” cere regula de alegere: pe linie, forma;
   înăuntru, imaginea (`instantaLa` cu `doarContur`), altfel chenarul trasat acoperă toată imaginea; (2) un gest e2e pe
-  pânză verifică întâi cu `elementFromPoint` că punctul e pe pânză (rigla și barele plutesc deasupra); (3) `dispatchEvent`
-  cu coordonate fracționare: browserul le taie, deci punctul se socotește din valorile rotunjite; (4) o scriere de
-  fișiere întreruptă de pauză poate să nu se fi aplicat deloc: verifică arborele, nu memoria.
+  pânză verifică întâi cu `elementFromPoint` că punctul e pe pânză (rigla și barele plutesc deasupra); (3)
+  `dispatchEvent` cu coordonate fracționare: browserul le taie, deci punctul se socotește din valorile rotunjite; (4) o
+  scriere de fișiere întreruptă de pauză poate să nu se fi aplicat deloc: verifică arborele, nu memoria; (5) după o
+  unire, numărătorile unite de Git pe ambele părți se socotesc din nou (ușile manualului: 110 + 111 → 112; capitolele:
+  39 + 39 → 40, în `manual.spec.ts`). Văzut în captura panoului, în afara feliei: la 1400 px, etichetele câmpurilor
+  Numele și Materialul ale foii apar tăiate la o literă („N”, „M”); rândurile sunt ale planșelor, felia nu le atinge.
+- **25.8↑b (urmează, la cuvântul owner-ului):** „Calibrează” (două puncte și distanța), „Trasează…” din imaginea de pe
+  foaie (cu zona), numele imaginilor în raportul foii (ADR 0272 §6, §7, §10).
+- **În cloud (din 23.11):**
+  - Pregătirea mediului rulează doar dacă ramura are `scripts/cloud/pregatire.sh`: la prima sesiune, ramura nu avea încă
+    `main` adus, deci Node era 22 și lipsea `node_modules`; după unire, scriptul rulat de mână (~14 minute, cele mai multe
+    la Edge) le pune pe toate.
+  - În container (4 procesoare): unitarele întregi ~23 de minute, e2e-urile vecine (19 fișiere, 132 de probe) ~3 minute,
+    otrăvurile feliei (43, într-o clonă) ~6 minute. Completul din CI, 45–60 de minute.
+  - Canalul: `gh workflow run canal.yml --ref main -f ramura=wip/25.1-trasare -f canal=trasare` (cere rapidul verde pe
+    vârf); amprenta e primele 12 cifre ale commit-ului. Gazda canalului
+    (`cncvectorstudio-test--trasare-icw58h57.web.app`) e în lista mediului din 23.11: fără ea, proxy-ul o refuză.
+  - Probele pe canal: o configurație Playwright cu `baseURL` pe canal, fără `webServer`, și cu
+    `proxy: { server: process.env.HTTPS_PROXY }` (Edge nu ia singur proxy-ul containerului). Captura panoului: probele
+    din `.tmp/captura/` (neurcate), cu aceeași configurație.
+  - Oracolul Python al trasării (`test/oracles-py/`) rulează în CI; în container, doar dacă îi instalezi cerințele.
 - **Why (25.5↑):** (1) pe poza cea mai obișnuită (telefonul înclinat doar înainte) laturile de sus și de jos rămân
   paralele: focala NU se poate afla, raportul iese cu ~4 % pe lângă; de aceea proporțiile au interval (colțurile ±1 px,
   focala 0,5–1,5 diagonale) și „nesigure”; nu promite proporții „Din poză” fără interval. (2) Un colț ieșit din cadru:
@@ -151,10 +176,11 @@ Pornită pe 07.11.2026 de sesiunea principală, după ce owner-ul a întrebat ce
   („Autoconsistența”).
 - **Why (corectura):** după 25.3↑, logoul privit mărit a arătat defecte pe care toate probele le ratau, în trei runde
   ([„Ieșirea reală, privită mărită”](lectii.md#feedback-iesirea-reala-privita-marita)).
-- **How to apply:** fiecare felie a liniei pornește doar la cuvântul owner-ului; e2e-ul worktree-ului pe 4183 (verifică
-  `netstat -ano | grep :4183` înainte); porțile nucleului rămân corpusul (alb-negru, culori, linii mediane), proba pe zgomot,
-  furcile 20–45°, capetele drepte, proba logoului; fiecare schimbare a nucleului: logoul randat mărit pe plăci
-  (`.tmp/logo-tot.ts`) și comparația cu codul vechi pe configurații întâmplătoare (`.tmp/compara-calitate.ts`). Unirea în `main` e decizia owner-ului; la unire, fișierele
-  comune sunt în nota de predare. Așteaptă poze reale ale owner-ului (umbra tare pe culori, ADR 0226 2a).
+- **How to apply:** fiecare felie a liniei pornește doar la cuvântul owner-ului; felul de lucru e cel din
+  [docs/lucru-in-cloud.md](../lucru-in-cloud.md) (porțile întregi în CI, în container ce atinge felia); porțile nucleului
+  rămân corpusul (alb-negru, culori, linii mediane), proba pe zgomot, furcile 20–45°, capetele drepte, proba logoului;
+  fiecare schimbare a nucleului: logoul randat mărit pe plăci și comparația cu codul vechi pe configurații întâmplătoare
+  (uneltele lor erau în `.tmp`-ul local: se scriu din nou la nevoie). Unirea în `main` e a sesiunii principale, din PR-ul
+  liniei. Așteaptă poze reale ale owner-ului (umbra tare pe culori, ADR 0226 2a).
 
 Legat: [sesiunea principală](principala.md), [Uneltele worktree-urilor locale (de dinainte de cloud)](unelte-worktree.md), „Shell: capcane”, „Mutații: disciplina”.
