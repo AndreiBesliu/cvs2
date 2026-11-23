@@ -215,3 +215,20 @@ test('importul, cu numele care există deja: înlocuiește (id-ul rămâne, vers
   // Înlocuirea nu crește lista: merge și într-o bibliotecă plină.
   assert.ok(cuImport(plina, [{ ...PLATA6, nume: 'F3', avans: 2000 }], 'inlocuieste', idNou, 50).ok);
 });
+
+test('importul peste numele unei freze necitite (a unei versiuni mai noi): „sari” o sare; celelalte o ocolesc cu „(2)”', () => {
+  const rezervate = ['Bilă Ø6'];
+  const bila: Freza = { ...PLATA6, nume: 'bilă ø6' };
+  const idNou = (): string => 'n';
+  const sari = cuImport([], [bila], 'sari', idNou, 1, rezervate);
+  assert.ok(sari.ok);
+  assert.deepEqual([sari.lista.length, sari.adaugate, sari.sarite], [0, 0, 1]);
+  for (const politica of ['amandoua', 'inlocuieste'] as const) {
+    const r = cuImport([], [bila], politica, idNou, 1, rezervate);
+    assert.ok(r.ok);
+    assert.deepEqual(r.lista.map((f) => f.nume), ['bilă ø6 (2)'], politica);
+    assert.deepEqual([r.adaugate, r.inlocuite], [1, 0]);
+  }
+  // Și o freză nouă, salvată de mână, nu poate lua numele.
+  assert.deepEqual(cuFreza([], null, bila, idNou, 1, rezervate), { ok: false, probleme: { nume: 'nume-folosit' } });
+});
