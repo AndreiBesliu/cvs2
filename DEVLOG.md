@@ -11840,3 +11840,74 @@ trasării, elicelor și adminului (PR-urile `AndreiBesliu/cvs2#6`, `AndreiBesliu
   unitarele documentelor, ale pluginului, ale extensiilor și ale acțiunilor 511 / 511, build-ul determinist, e2e cu Chrome
   (biblioteca, extensiile, pluginul, manualul, carcasa) 105 / 105. Pornirea 108,6 kB (cu ușa 113,1 / 115), totalul
   773,8 / 800 kB, `/admin` 125,6 / 200; manualul, 40 de capitole.
+
+
+## 2026-11-23 — Felia 11.3↑f: urechile după reguli, pe laturi (ADR 0211, varianta c)
+
+**Prompt:** owner-ul, în sesiunea liniei, după raportul feliei 11.3↑e („11.3↑f (regulile urechilor) pornește doar la cuvântul
+tău”): „Da, 11.3↑f”. Modelul sesiunii, în trailerul commit-urilor ei.
+**Started:** 23.11, 15:32.
+
+- **`main` `c010e3d1`** (11.3↑e unită în `d3ffcbf3`, A.4) a venit prin avans direct: ramura n-avea nimic peste el. Rapidul
+  de pe `main` și rularea de noapte, verzi.
+- **Deciziile de amănunt** (ADR-ul lasă regulile la un rând; scrise ca precizări în „Implementarea feliei 11.3↑f”): laturile
+  se citesc pe drumul frezei; o latură numără doar dacă pe ea încape o ureche; „lungi” și „scurte” după lungime, cu 1 %
+  toleranță; numărul rămâne pe buclă și se împarte pe laturile regulii, răspândit; „mijloc” nu ține de număr; fără laturi,
+  „egale”.
+- **Probele, întâi** (`urechi.laturi.test.ts`, pe hârtie; apoi funcția): laturile și regulile pe bucle scrise de mână;
+  exemplul din ADR, unde „scurte” dă exact programul locurilor alese în (0, 15) și (80, 15); cercul = „egale”, octet cu octet;
+  rampa, intrările, pe linie, pe dinăuntru; două bucle. Pe placa 11 la 5 mm (`urechi.laturi.placa.test.ts`): cu oricare
+  regulă, urechile plăcuțelor vecine cad față în față și nu se desprinde niciuna (la distanțe egale, 9 + 4), iar proba pe
+  G-code a plăcii găsește la fel.
+- **Codul** (`3de01b1`): `src/cam/urechiLaturi.ts` (pur), legat în `job.ts` pe drumul locurilor alese; refuzul „felie
+  următoare” a plecat; fereastra exportului (trei alegeri noi, notele, numărul oprit la „mijloc”), scrierea, panoul, raportul
+  foilor, semnele de pe traseu, textele (ro, en), manualul („Urechile pe laturi”).
+- **Privit, pe cazul real:** fereastra la 1400 px și la 1024 px cu font lat (cele șase alegeri încap pe un rând); traseul
+  plăcii 11 la 5 mm cu „pe laturile lungi”, cu inelele urechilor față în față între plăcuțele vecine (și mărit, la o pereche).
+- **Otrăvurile** (`test/otravuri/11.3f.py`, într-o clonă, pe `6291784c`): 54 / 54 din prima (45 unitare, 9 prin e2e); din
+  listele 11.3d și 11.3e, nouă otrăvuri ieșite VOID pe codul feliei: șapte mutate și prinse din nou, două scoase odată cu
+  refuzul „felie următoare”. `verifica` pe toate listele liniei: rămân aceleași 13 VOID-uri vechi (11.1b A05; 11.2 L03, L09;
+  11.4 P10, P12, C01, C03, E06, E09; 11.4b T02; 11.4c E07; 11.6 R09; 11.7 R01).
+- **Porțile, în CI, pe `6291784c`:** rapidul (<https://github.com/AndreiBesliu/cvs2/actions/runs/45190357806>) și completul
+  (<https://github.com/AndreiBesliu/cvs2/actions/runs/45191169782>), verzi: unitarele 9 836 / 0 (12 sărite); e2e 600 / 600; pe
+  emulatoare 104 / 104 (funcțiile și regulile) și 36 / 36 (paginile). În container: e2e-ul feliei și al vecinilor 54 / 54, din
+  prima. Build-ul determinist: pornirea 107,9 kB (cu ușa 112,3 / 115), totalul 763,9 / 800 kB (+0,8 față de `main`
+  `c010e3d1`), `/admin` 124,1 / 200.
+- **Documentele:** ADR 0211 (varianta c, implementată, cu precizările), fișa etapei 3 (rândul `11.3↑f`) cu traducerea,
+  registrul otrăvurilor (rândul listei; 11.3d și 11.3e, refăcute), paragraful liniei din `CLAUDE.md`, nota liniei
+  (`docs/linii/plansele.md`). Canalul `plansele` se publică din GitHub Actions (`canal.yml`), pe vârful ramurii, după rapidul
+  verde. **Completed:** 23.11, 17:12.
+
+## 2026-11-23 — Unirea lui 11.3↑f în `main`, din sesiunea liniei planșelor
+
+**Prompt:** „ok, cand se poate fa unirea” (owner-ul, la raportul feliei 11.3↑f, PR-ul `AndreiBesliu/cvs2#9`).
+**Started:** 23.11, 19:01. **Completed:** 23.11, 19:53 (unirea în `main`; publicarea pe test pornește după cea a lotului
+sesiunii principale). Modelul: al sesiunii, în trailerul commit-urilor.
+
+- **Ordinea cu sesiunea principală:** ea avea în porți lotul `unire-2311d` (25.8↑a, 3.Tr, A.5), fără 11.3↑f. Anunțată
+  (`send_message`): 11.3↑f o unesc eu, la cuvântul owner-ului, după lotul ei, cu push fast-forward.
+- **Prima unire:** `unire-2311e` din `675d40ce` (vârful lotului), `git merge --no-ff 527a95f3` (fără `.lucru/`); ciocnirea,
+  doar în DEVLOG (`rezolva-devlog.py`, ambele părți). În container: tipurile, traducerile (925, 0 lipsă), probele
+  documentelor și ale urechilor 121 / 121, a traducerilor 4 / 4. Porțile pe `2ee60a88`: rapidul verde, completul verde la
+  prima trecere (47 de minute): unit 9 878 / 0 (12 sărite), e2e 609 / 609, funcțiile pe emulatoare 104 / 104, paginile
+  38 / 38; pornirea 108,5 / 115 (cu ușa 113,0), totalul 770,8 / 800, `/admin` 125,6 / 200.
+- **Refăcută peste `main`:** lotul a intrat în `main` refăcut (`d6fd5d68`), fără 3.Tr, pe care linia elicelor o unise
+  între timp. Unirea, refăcută pe `unire-2311g` din `d6fd5d68` (`f4601938`): același cod ca `2ee60a88` (`git diff` gol în
+  afara `.md`), deci porțile de acolo valorează, ca la lotul sesiunii principale.
+- **Documentele:** decizia în `CLAUDE.md` și rândul de stare al regulilor (unită în `f4601938`); indexul liniilor, indexul
+  ADR (0211, implementat în 11.3↑d–f), starea din `docs/linii/principala.md`, nota liniei (cu lecția ordinii).
+
+## 2026-11-23 — 3.Xh: `main` adus a patra oară în ramură (11.3↑f) (sesiune cloud)
+
+**Prompt:** niciunul nou: vestea de pe PR-ul `AndreiBesliu/cvs2#4` că un push în `main` l-a lăsat iar cu ciocniri.
+**Started:** 23.11, 19:56. **Completed:** 23.11, 20:00 (în container; CI-ul, pe commit-ul împins).
+
+- **Ce a adus `main`** (`c8b235a`): 11.3↑f (urechile după reguli, pe laturi). Ciocnirea, doar în DEVLOG
+  (`scripts/rezolva-devlog.py`).
+- **Porțile, în container, pe arborele unit:** tipurile, regulile de import, traducerile (941, 0 lipsă), unitarele
+  documentelor, ale pluginului, ale extensiilor și ale acțiunilor 511 / 511, build-ul determinist, e2e cu Chrome
+  (biblioteca, extensiile, pluginul, manualul, carcasa) 61 / 61; `verifica` pe toate listele de otrăvuri: aceleași VOID-uri
+  ca pe `main`. Pornirea 108,6 kB (cu ușa 113,1 / 115), totalul 774,6 / 800 kB, `/admin` 125,6 / 200.
+- **Completul:** cel de pe `8b443ac` e lăsat să meargă (poarta codului feliei, cu `main` de la a treia aducere); unul nou,
+  pe capăt. **De acum, o ciocnire doar în DEVLOG, venită cât rulează completul capătului, așteaptă sfârșitul lui:**
+  altfel, cu `main` unit la fiecare jumătate de oră, completul de un ceas nu mai apucă să se termine pe capăt.

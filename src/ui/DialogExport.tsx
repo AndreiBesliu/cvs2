@@ -25,11 +25,16 @@ export type DirectieOperatie = 'invers' | 'scurt';
 /**
  * Urechile (ADR 0028): câte pe buclă, lungimea palierului pe traseul frezei, grosimea punții de la fața de jos (mm). Cu
  * `mod: 'alese'` (ADR 0211), stau la locurile alese pe desen; `alese` e câte sunt alese în document (doar arătat, nu se scrie).
- * Cu `mod: 'lemn'` (ADR 0211, b), lucrarea le pune la export unde țin de lemnul foii.
+ * Cu `mod: 'lemn'` (ADR 0211, b), lucrarea le pune la export unde țin de lemnul foii; cu o regulă (c: `lungi`, `scurte`,
+ * `mijloc`), pe laturile drepte ale drumului frezei.
  */
 export type UrechiOperatie = {
-  readonly numar: number; readonly latime: number; readonly grosime: number; readonly mod?: 'alese' | 'lemn'; readonly alese?: number;
+  readonly numar: number; readonly latime: number; readonly grosime: number; readonly mod?: ModLocuriUrechi; readonly alese?: number;
 };
+/** Locurile urechilor care se scriu în document (ADR 0211); „la distanțe egale” e lipsa modului. */
+export type ModLocuriUrechi = 'alese' | 'lemn' | 'lungi' | 'scurte' | 'mijloc';
+/** Modurile la care „Câte, pe buclă” nu se scrie: la locuri alese e câte ai pus, la mijlocul laturilor, câte laturi sunt. */
+const faraNumar = (mod: ModLocuriUrechi | 'egale'): boolean => mod === 'alese' || mod === 'mijloc';
 /** Rampa (ADR 0029): lungimea în plan pe care coboară o trecere (mm). */
 export type RampaOperatie = { readonly lungime: number };
 /** Intrările și ieșirile (ADR 0030): raza sfertului de cerc (mm). */
@@ -300,7 +305,7 @@ type Rand = {
    * Locurile urechilor (ADR 0211): la distanțe egale, alese pe desen (atunci numărul e câte ai pus) sau unde ține lemnul (la
    * export, câte cere numărul).
    */
-  readonly modUrechi: 'egale' | 'alese' | 'lemn';
+  readonly modUrechi: ModLocuriUrechi | 'egale';
   readonly rampa: boolean; readonly lungimeRampa: string;
   readonly intrari: boolean; readonly razaIntrare: string;
   /** Degajările: „” = fără. */
@@ -616,7 +621,7 @@ export function DialogExport(
       varfV: text(o.valori.scula?.forma?.varf ?? 0), directie: o.valori.directie ?? '',
       latura: o.valori.latura, sens: o.valori.sens, adancime: text(o.valori.adancime), pas: text(o.valori.pas),
       urechi: inchise && o.valori.urechi !== null, numarUrechi: text(u.numar), latimeUreche: text(u.latime), grosimeUreche: text(u.grosime),
-      modUrechi: o.valori.urechi?.mod === 'alese' ? 'alese' : o.valori.urechi?.mod === 'lemn' ? 'lemn' : 'egale',
+      modUrechi: o.valori.urechi?.mod ?? 'egale',
       rampa: inchise && o.valori.rampa !== null, lungimeRampa: text((o.valori.rampa ?? RAMPA_IMPLICITA).lungime),
       intrari: inchise && o.valori.intrari !== null, razaIntrare: text((o.valori.intrari ?? INTRARI_IMPLICITE).raza),
       colturi: inchise ? o.valori.colturi?.tip ?? '' : '',
@@ -764,7 +769,7 @@ export function DialogExport(
     // Pe un buzunar și pe o găurire, urechile și rampa nu se aplică (ADR 0069 §1, ADR 0087 §1): bifele sunt oprite, deci nu
     // se judecă.
     // La locuri alese (ADR 0211), numărul e câte ai pus: câmpul e oprit și nu se judecă.
-    numar: p !== undefined && (p.tip !== 'profil' || !p.urechi || p.modUrechi === 'alese' || intregInMargini(p.numarUrechi, MARGINI_OPERATIE.urechi)),
+    numar: p !== undefined && (p.tip !== 'profil' || !p.urechi || faraNumar(p.modUrechi) || intregInMargini(p.numarUrechi, MARGINI_OPERATIE.urechi)),
     latime: p !== undefined && (p.tip !== 'profil' || !p.urechi || inMargini(p.latimeUreche, MARGINI_OPERATIE.latimeUreche)),
     grosime: p !== undefined && (p.tip !== 'profil' || !p.urechi || inMargini(p.grosimeUreche, MARGINI_OPERATIE.grosimeUreche)),
     rampa: p !== undefined && (p.tip !== 'profil' || !p.rampa || inMargini(p.lungimeRampa, MARGINI_OPERATIE.lungimeRampa, MARGINI_OPERATIE.lungimeRampaMinima)),
@@ -1070,15 +1075,15 @@ export function DialogExport(
         ...(coborare ? { coborare } : {}), rest, ...strategie, incrustatieDreapta,
       }] as const];
     }
-    // La locuri alese (ADR 0211), numărul (oprit) rămâne al documentului, ori cel implicit, dacă textul lui nu se citește.
-    const alese = p.modUrechi === 'alese';
+    // La locuri alese și la mijlocul laturilor (ADR 0211), numărul (oprit) rămâne al documentului, ori cel implicit, dacă textul
+    // lui nu se citește.
     const numarScris = citesteNumar(p.numarUrechi);
-    const numar = alese && (numarScris === null || !intregInMargini(p.numarUrechi, MARGINI_OPERATIE.urechi))
+    const numar = faraNumar(p.modUrechi) && (numarScris === null || !intregInMargini(p.numarUrechi, MARGINI_OPERATIE.urechi))
       ? o.valori.urechi?.numar ?? URECHI_IMPLICITE.numar : numarScris;
     const latime = citesteNumar(p.latimeUreche), grosime = citesteNumar(p.grosimeUreche);
     if (p.urechi && (numar === null || latime === null || grosime === null)) return [];
     const urechi = p.urechi && numar !== null && latime !== null && grosime !== null
-      ? { numar, latime, grosime, ...(alese ? { mod: 'alese' as const } : p.modUrechi === 'lemn' ? { mod: 'lemn' as const } : {}) } : null;
+      ? { numar, latime, grosime, ...(p.modUrechi !== 'egale' ? { mod: p.modUrechi } : {}) } : null;
     const lungime = citesteNumar(p.lungimeRampa);
     if (p.rampa && lungime === null) return [];
     const rampa = p.rampa && lungime !== null ? { lungime } : null;
@@ -1729,7 +1734,7 @@ export function DialogExport(
                       <div className="campuri-urechi" data-urechi={o.cheie}>
                       <label>
                         {t('export.urechi.numar')}
-                        <input type="text" inputMode="numeric" value={p.numarUrechi} data-camp="urechi-numar" disabled={doarCitire || p.modUrechi === 'alese'}
+                        <input type="text" inputMode="numeric" value={p.numarUrechi} data-camp="urechi-numar" disabled={doarCitire || faraNumar(p.modUrechi)}
                           aria-invalid={!b.numar} onChange={(ev) => { schimba(o.cheie, { numarUrechi: ev.target.value }); }} />
                       </label>
                       <label title={t('export.urechi.latime.titlu')}>
@@ -1761,8 +1766,18 @@ export function DialogExport(
                             disabled={doarCitire || p.latura === 'pe-linie'} onChange={() => { schimba(o.cheie, { modUrechi: 'lemn' }); }} />
                           {t('export.urechi.locuri.lemn')}
                         </label>
+                        {/* Regulile pe laturi (ADR 0211, c): pe laturile drepte ale drumului frezei; fără ele, la distanțe egale. */}
+                        {(['lungi', 'scurte', 'mijloc'] as const).map((regula) => (
+                          <label className="optiune" key={regula} title={t('export.urechi.locuri.laturi.titlu')}>
+                            <input type="radio" name={`urechi-locuri-${o.cheie}`} checked={p.modUrechi === regula} data-camp={`urechi-${regula}`} disabled={doarCitire}
+                              onChange={() => { schimba(o.cheie, { modUrechi: regula }); }} />
+                            {t(`export.urechi.locuri.${regula}`)}
+                          </label>
+                        ))}
                       </div>
                       {p.modUrechi === 'lemn' && <span className="nota" data-nota="urechi-lemn">{t('export.urechi.lemn')}</span>}
+                      {(p.modUrechi === 'lungi' || p.modUrechi === 'scurte') && <span className="nota" data-nota="urechi-laturi">{t('export.urechi.laturi')}</span>}
+                      {p.modUrechi === 'mijloc' && <span className="nota" data-nota="urechi-mijloc">{t('export.urechi.mijloc')}</span>}
                       {p.modUrechi === 'alese' && (<>
                         <button type="button" data-buton="urechi-alege" disabled={doarCitire || !onAlegeUrechi || !b.latime || !b.grosime}
                           onClick={() => {

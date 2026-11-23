@@ -65,6 +65,10 @@ si cu un UI/UX mai bun si atragator”.
   `manual.test.ts` (**113**: fiecare parte adusese câte una peste 111). Pe arborele unit: pornirea 108,6 kB (cu ușa
   113,1 / 115), totalul 773,8 / 800 kB, `/admin` 125,6 / 200; e2e-ul extensiilor și al pluginului, 105 / 105. **Cât PR-ul
   așteaptă unirea, `main` se aduce la fiecare veste de ciocnire** (vestea vine pe PR), iar completul se pornește din nou.
+- **23.11, seara: `main` adus a patra oară** (`c8b235a`: 11.3↑f), ciocnirea doar în DEVLOG. Pe arborele unit: pornirea
+  108,6 kB (cu ușa 113,1 / 115), totalul 774,6 / 800 kB. **O ciocnire doar în DEVLOG, venită cât rulează completul
+  capătului, așteaptă sfârșitul lui** (completul ține un ceas, iar `main` primește o unire cam la jumătate de oră); una
+  în cod sau în probe se aduce pe loc.
 - **Ce n-a intrat** (la cuvântul owner-ului): căutarea și categoriile (la peste ~20 de extensii), o captură mărită la clic,
   „ce e nou” în fereastra de confirmare a unei actualizări.
 
