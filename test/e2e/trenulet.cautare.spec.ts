@@ -118,7 +118,8 @@ test('peste model și peste „Calibrare”, căutarea arată rezultatele; alege
   await expect(page.locator('#at-galerie')).toBeHidden();
   await camp(page).fill('bar');
   await expect(page.locator('#at-galerie')).toBeVisible();
-  await expect(gasite(page)).toHaveText(['Bară']);
+  // „bar” începe și un cuvânt din „Elice de barcă” (fila Elice, după Legături)
+  await expect(gasite(page)).toHaveText(['Bară', 'Elice de barcă']);
   // în vederea modelului nicio piesă nu e „de acum”: nimic apăsat
   await expect(piesaApasata(page)).toHaveCount(0);
   await expect(filaApasata(page)).toHaveCount(0);

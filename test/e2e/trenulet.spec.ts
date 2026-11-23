@@ -16,7 +16,7 @@ import { faraEroriInJurnal } from './ajutor-jurnal.ts';
  * - „Salvează fișierul .json” din exportul CNC ajunge descărcare a browserului, din pagina lui cvs2, cu numele dat de
  *   planificator;
  * - ștergerea circuitului, cu confirmarea lui, rămâne și după reîncărcare; jurnalul local, fără erori;
- * - numele (ADR 0167): „Easy 3Draw” 18.19.0, instalat peste „Planificator Trenuleț” 18.6.0, îi ia locul (același id), cu
+ * - numele (ADR 0167): „Easy 3Draw” 18.20.0, instalat peste „Planificator Trenuleț” 18.6.0, îi ia locul (același id), cu
  *   circuitul lui;
  * - „Trimite la cvs2” (ADR 0160 §D): G-code-ul ovalului de exemplu ajunge în dialogul primirii, cu originea extensiei, iar după
  *   „Primește”, în „Lucrarea primită” din fereastra Mașina; planificatorul spune că cvs2 l-a primit;
@@ -31,7 +31,7 @@ import { faraEroriInJurnal } from './ajutor-jurnal.ts';
 test.use({ locale: 'ro-RO' });
 
 const PACHET = Buffer.from(pachetTrenulet().octeti);
-const ZIP = { name: 'trenulet-18.19.0.zip', mimeType: 'application/zip', buffer: PACHET };
+const ZIP = { name: 'trenulet-18.20.0.zip', mimeType: 'application/zip', buffer: PACHET };
 const cadru = (page: Page) => page.frameLocator('iframe.cadru-extensie');
 /**
  * Cât așteaptă probele cadrul extensiei până la „pornit”: un document separat, în procesul lui, cu pachetul adus din
@@ -81,7 +81,7 @@ test('instalat din fișier: pagina în cadru; circuitul, modul și culoarea păs
   await page.goto('/');
   await page.locator('[data-extensii="buton"]').click();
   await page.locator('[data-extensii="fisier-ales"]').setInputFiles(ZIP);
-  await expect(page.getByTestId('extensii-despre')).toHaveText('„Easy 3Draw” 18.19.0, de la trenulet-18.19.0.zip');
+  await expect(page.getByTestId('extensii-despre')).toHaveText('„Easy 3Draw” 18.20.0, de la trenulet-18.20.0.zip');
   await expect(page.getByTestId('extensii-permisiuni')).toHaveText(
     'Cere: să-și țină datele în browserul acesta (cel mult 16 MB); să salveze fișiere ca descărcări (date și desene, nu programe); '
     + 'să folosească mașina: să încarce programe, să le pornească sau să le reia după confirmarea ta, să pună pauză și să oprească lucrarea; '
@@ -178,7 +178,7 @@ async function pachetVechi(): Promise<Buffer> {
   })));
 }
 
-test('numele nou (ADR 0167): „Easy 3Draw” 18.19.0, instalat peste „Planificator Trenuleț” 18.6.0, îi ia locul, cu circuitul lui', async ({ page }) => {
+test('numele nou (ADR 0167): „Easy 3Draw” 18.20.0, instalat peste „Planificator Trenuleț” 18.6.0, îi ia locul, cu circuitul lui', async ({ page }) => {
   await page.goto('/');
   await page.locator('[data-extensii="buton"]').click();
   await page.locator('[data-extensii="fisier-ales"]').setInputFiles({ name: 'trenulet-18.6.0.zip', mimeType: 'application/zip', buffer: await pachetVechi() });
@@ -193,7 +193,7 @@ test('numele nou (ADR 0167): „Easy 3Draw” 18.19.0, instalat peste „Planifi
   await page.reload();
   await page.locator('[data-extensii="buton"]').click();
   await page.locator('[data-extensii="fisier-ales"]').setInputFiles(ZIP);
-  await expect(page.getByTestId('extensii-despre')).toHaveText('„Easy 3Draw” 18.19.0, de la trenulet-18.19.0.zip');
+  await expect(page.getByTestId('extensii-despre')).toHaveText('„Easy 3Draw” 18.20.0, de la trenulet-18.20.0.zip');
   await page.locator('[data-extensii="instaleaza"]').click();
   // același id: un singur rând în meniu, cu numele nou; circuitul de dinainte, redeschis
   await page.locator('[data-extensii="buton"]').click();
@@ -559,7 +559,7 @@ test('în engleză (ADR 0165): limba lui cvs2, schimbată pe loc printr-o reporn
   await intraIn3D(c);
   // filele (ADR 0281): familiile, cu câte piese au, apoi cele proprii; numele lor, aici (cuvinte fără diacritice, pe care
   // proba de română nu le recunoaște); apoi fiecare piesă a fiecărei familii și fiecare filă proprie, fără română
-  await expect(c.locator('#at-tipuri button:not([hidden])')).toHaveText(['Bricks 10', 'Joints 8', 'Wheels 7', 'Propeller 1', 'From cvs2', 'Calibration']);
+  await expect(c.locator('#at-tipuri button:not([hidden])')).toHaveText(['Bricks 10', 'Joints 8', 'Wheels 7', 'Propeller 2', 'From cvs2', 'Calibration']);
   for (const fila of ['caramizi', 'legaturi', 'roti', 'propulsie']) {
     await c.locator(`#at-tipuri [data-fila="${fila}"]`).click();
     await expect(c.locator(`#at-tipuri [data-fila="${fila}"]`)).toHaveAttribute('aria-pressed', 'true');
@@ -570,8 +570,18 @@ test('în engleză (ADR 0165): limba lui cvs2, schimbată pe loc printr-o reporn
       expect(await romanaRamasa(page, 'Păstrat la repornire'), `${fila} / ${piesa}`).toEqual([]);
     }
   }
-  // elicea (3.Tq), rămasă deschisă: editorul ei, în engleză; cuvintele fără diacritice („Ca LEGO 6041”), pe care proba de
-  // română nu le recunoaște, se cer aici; zecimalele, cu punct
+  // elicea de barcă (3.Tr), rămasă deschisă: editorul ei, în engleză; cuvintele fără diacritice („Capacul:”, „Cu capac”), pe
+  // care proba de română nu le recunoaște, se cer aici; zecimalele, cu punct
+  await expect(c.locator('#at-editor h2')).toHaveText('Boat propeller');
+  await expect(c.locator('#at-nume-piesa')).toHaveText('Boat propeller Ø40 with 3 blades, pitch 1');
+  await expect(c.locator('#at-eb-info')).toHaveText('Pitch 40 mm (1 × diameter): the blade sits at 58° near the hub and 18° at the tip. The blades cover 55% of the disc; the hub is Ø8 × 11.5 mm. It prints without supports, boat side down on the bed: at the tip, each layer overhangs the one below by 0.6 mm.');
+  await expect(c.locator('.at-rand:has(#at-eb-capac) > .mic').first()).toHaveText('Cap:');
+  await expect(c.locator('#at-eb-capac [data-v]')).toHaveText(['None', 'With cap']);
+  await c.locator('#at-eb-capac [data-v="da"]').click();
+  await expect(c.locator('#at-nume-piesa')).toHaveText('Boat propeller Ø40 with 3 blades, pitch 1, with cap');
+  expect(await romanaRamasa(page, 'Păstrat la repornire'), 'elicea de barcă, cu capac').toEqual([]);
+  // elicea (3.Tq): editorul ei, în engleză; cuvintele fără diacritice („Ca LEGO 6041”) se cer aici
+  await c.locator('#at-galerie [data-piesa="elice"]').click();
   await expect(c.locator('#at-editor h2')).toHaveText('Propeller');
   await expect(c.locator('#at-el-repede [data-v]')).toHaveText(['Like LEGO 6041', 'Like LEGO 92842', 'Like LEGO 15790']);
   await expect(c.locator('#at-nume-piesa')).toHaveText('Propeller Ø72 with 3 blades, pitch 0.7');

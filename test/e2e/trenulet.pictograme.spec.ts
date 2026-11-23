@@ -5,7 +5,7 @@
  *   cititoarelor de ecran (butonul se numește tot ca piesa), centrat pe înălțimea butonului;
  * - desenul e doar din linii (fără umplere), de culoarea textului: pe piesa apăsată și pe celelalte, în tema luminoasă și în
  *   cea întunecată; desenul stă în pătratul lui și nu e un punct;
- * - desenele diferă de la o piesă la alta (25 de piese, 25 de desene), iar o piesă găsită la căutare are același desen ca în
+ * - desenele diferă de la o piesă la alta (27 de piese, 27 de desene), iar o piesă găsită la căutare are același desen ca în
  *   galeria familiei ei.
  * Pe telefon, pictograma rămâne pe rândul numelui: o cere proba telefonului din `trenulet.file.spec.ts` (fiecare buton pe un
  * singur rând, cu tot ce are în el).
@@ -23,6 +23,7 @@ const FAMILII: readonly (readonly [string, readonly (readonly [string, string])[
     ['cupa', 'Cupă']]],
   ['roti', [['rotita', 'Roată dințată'], ['conica', 'Roată conică'], ['coroana', 'Roată coroană'], ['conicaDubla', 'Conică dublă'], ['fulie', 'Fulie'],
     ['roata', 'Roată cu anvelopă'], ['senila', 'Șenilă']]],
+  ['propulsie', [['elice', 'Elice'], ['eliceBarca', 'Elice de barcă']]],
 ];
 
 async function deschide(page: Page): Promise<void> {
@@ -80,7 +81,7 @@ test('fiecare piesă, în fiecare galerie, are pictograma ei înaintea numelui, 
     // butonul se numește tot ca piesa: pictograma nu se citește
     for (const [k, n] of piese) await expect(page.locator('#at-galerie').getByRole('button', { name: n, exact: true }), k).toHaveAttribute('data-piesa', k);
   }
-  expect(desene.size).toBe(25);
+  expect(desene.size).toBe(27);
   const dupa = new Map<string, string>();
   for (const [k, d] of desene) {
     expect(dupa.get(d), `${k} are același desen ca ${dupa.get(d)}`).toBeUndefined();
@@ -92,7 +93,7 @@ test('pe piesa apăsată, pictograma ia culoarea ei (alta decât a celorlalte); 
   await deschide(page);
   for (const [f, piese] of FAMILII) {
     await fila(page, f).click();
-    const alta = piese[2]![0];
+    const alta = piese[Math.min(2, piese.length - 1)]![0];
     await page.locator(`#at-galerie [data-piesa="${alta}"]`).click();
     await expect(page.locator(`#at-galerie [data-piesa="${alta}"]`)).toHaveAttribute('aria-pressed', 'true');
     const m = await masoara(page);
