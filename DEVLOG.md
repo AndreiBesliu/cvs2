@@ -11226,3 +11226,22 @@ de acolo, cu toate worktrees si asa mai departe”. **Started:** 23.11, 10:20. *
   sincronizarea folderului).
 - **Probat:** YAML-ul celor două workflow-uri, sintaxa scriptului, filtrele lui pe rulările reale (rapidul și completul
   după sha, publicarea după titlu), doar citind.
+
+## 2026-11-23 — Notele liniilor în repo (`docs/linii/`), la mutarea în cloud (Model: Claude Opus 5.5)
+
+**Prompt:** la „Unde mut notele liniilor, ca sesiunile cloud să le aibă?”, owner-ul: „În repo, docs/linii”.
+**Started:** 23.11, 11:07. **Completed:** 23.11, 11:16.
+
+- **Ce s-a mutat:** cele 18 note cncvs2 din memoria sesiunii principale locale, câte una pe linie, în `docs/linii/<linie>.md`
+  (fără antetul memoriei, cu legăturile dintre ele rezolvate). Le-a adus un script, nu o copiere de mână.
+- **`docs/linii/lectii.md`:** lecțiile generale la care trimit notele (probe, porți, mutații, Firestore, capcanele
+  uneltelor), 21 întregi. 44 de lecții s-au născut în alte proiecte ale owner-ului: din ele a rămas doar rândul scurt, general.
+- **Scrise de mână:** `docs/linii/README.md` (indexul liniilor, cu ramura și starea pe 23.11) și
+  `docs/linii/principala.md` (sesiunea principală: rolul, unirea pas cu pas, felul de lucru al owner-ului, starea, lecțiile
+  cele mai folosite).
+- **Ecranul, înainte de repo-ul public:** fără secrete, fără găurile aplicației vechi încă live (singurul semnal,
+  „inject”, era despre scripturile injectate de Playwright), fără alte proiecte. Prenumele owner-ului și căile locale
+  apăreau deja în repo.
+- **`docs/lucru-in-cloud.md`:** nota liniei, citită la pornire și ținută la zi cu fiecare felie; nota sesiunii principale.
+- **Afară:** generatorul documentației din `/admin` citește doar `docs/etape` și `docs/adr`, iar probele documentelor citesc
+  fișiere numite, deci `docs/linii` nu schimbă nici build-ul, nici probele.

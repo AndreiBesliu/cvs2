@@ -37,9 +37,9 @@ PR-urile, rulările CI).
 
 ## O linie = o sesiune pe ramura ei
 
-- **Ramura:** fiecare linie lucrează pe ramura ei `wip/<felia>-<nume>` (de pildă `wip/3.Tq-elice`). La pornire face
-  `git fetch`, `git status`, `git log -5` și citește ultima intrare a liniei în `DEVLOG.md`, apoi continuă de unde a rămas
-  ramura. Dacă lipsește `node_modules` sau `package-lock.json` diferă de cel din `main`, rulează întâi `npm ci` (și
+- **Ramura și nota:** fiecare linie lucrează pe ramura ei `wip/<felia>-<nume>` (de pildă `wip/3.Tq-elice`) și își ține
+  nota în `docs/linii/<linie>.md` (indexul: `docs/linii/README.md`). La pornire face `git fetch`, `git status`,
+  `git log -5`, citește nota liniei și ultima ei intrare în `DEVLOG.md`, apoi continuă de unde a rămas ramura. Dacă lipsește `node_modules` sau `package-lock.json` diferă de cel din `main`, rulează întâi `npm ci` (și
   `npm --prefix functions ci`). Dacă `node -v` nu e 26, pregătirea mediului a lipsit: se spune în raport.
 - **Cine scrie în `main`:** liniile doar împing ramura lor. În `main` scrie numai sesiunea principală, la unire.
 - **`main` adus în ramură:** înaintea documentelor unei felii, linia aduce `origin/main` în ramura ei. O ciocnire doar în
@@ -91,6 +91,8 @@ se mută pe codul nou sau se scoate împreună cu codul echivalent.
 - **Fișa etapei** (`docs/etape/`), cu rândul feliei și coada owner-ului.
 - **Registrul otrăvurilor:** `docs/otravuri.md`.
 - **`DEVLOG.md`:** Started / Completed, promptul exact, modelul, porțile, otrăvurile.
+- **Nota liniei** (`docs/linii/<linie>.md`): starea, deciziile owner-ului, capcanele găsite, ce rămâne; la zi cu fiecare
+  felie. Repo-ul e public: fără secrete, fără găurile aplicației vechi, fără alte proiecte.
 - **Traducerile roadmap-ului:** `node scripts/traduceri.ts`, apoi completarea textelor noi.
 - **`CLAUDE.md`:** deciziile le scrie sesiunea principală, la unire.
 
@@ -121,8 +123,9 @@ Owner-ul primește LINK-ul canalului când adresa principală a testului e ocupa
 
 ## Sesiunea principală în cloud
 
-Sesiunea principală ține registrul liniilor (rândurile de stare din `CLAUDE.md`), unește feliile gata și publică pe test.
-Lucrează în containerul ei, ca o linie, dar pe ramuri `unire-<data>`:
+Sesiunea principală ține registrul liniilor (rândurile de stare din `CLAUDE.md` și `docs/linii/README.md`), unește
+feliile gata și publică pe test; nota ei, cu felul de lucru al owner-ului, e `docs/linii/principala.md`. Lucrează în
+containerul ei, ca o linie, dar pe ramuri `unire-<data>`:
 
 1. **PR-urile gata:** `gh api repos/AndreiBesliu/cvs2/pulls --jq '.[] | "\(.number) \(.head.ref) \(.title)"'`.
 2. **Unirea:** `git switch -c unire-<data> origin/main`, apoi `git merge --no-ff <sha-ul raportat>` pentru fiecare felie
