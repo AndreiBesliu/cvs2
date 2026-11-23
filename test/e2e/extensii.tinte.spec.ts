@@ -74,11 +74,16 @@ for (const latime of [390, 360, 320]) {
           // Capturile se derulează în lateral, anume: ce e în șirul lor nu se judecă.
           const afara = [...e.querySelectorAll('*')].filter((x) => !x.closest('.pagina-capturi figure')).filter((x) => { const b = x.getBoundingClientRect(); return b.width > 0 && (b.left < r.left - 0.5 || b.right > r.right + 0.5); })
             .map((x) => `${x.tagName.toLowerCase()}.${x.className}`);
-          return { stanga: r.left, dreapta: r.right, lat: innerWidth, derulare: e.scrollWidth - e.clientWidth, afara };
+          // Nici zonele care se derulează în ea (lista, pagina) nu au derulare în lateral; capturile, da, anume.
+          // (Un text tăiat anume cu „…” nu e o derulare: se judecă doar zonele pe care omul le poate derula.)
+          const deruleaza = (x: Element): boolean => x === e || ['auto', 'scroll'].includes(getComputedStyle(x).overflowX);
+          const zone = [e, ...e.querySelectorAll('*')].filter((x) => !x.closest('.pagina-capturi') && deruleaza(x) && x.scrollWidth - x.clientWidth > 1)
+            .map((x) => `${x.tagName.toLowerCase()}.${x.className} +${x.scrollWidth - x.clientWidth}`);
+          return { stanga: r.left, dreapta: r.right, lat: innerWidth, zone, afara };
         });
         expect(m.stanga, `${test}: marginea din stânga`).toBeGreaterThanOrEqual(0);
         expect(m.dreapta, `${test}: marginea din dreapta`).toBeLessThanOrEqual(m.lat);
-        expect(m.derulare, `${test}: fără derulare în lateral`).toBeLessThanOrEqual(0);
+        expect(m.zone, `${test}: fără derulare în lateral`).toEqual([]);
         expect(m.afara, `${test}: nimic nu iese din cutie`).toEqual([]);
       };
       await expect(page.locator('[data-extensii="buton"]')).toBeVisible();
@@ -115,6 +120,37 @@ for (const latime of [390, 360, 320]) {
     });
   });
 }
+
+test.describe('pe telefon, lista și pagina vin pe rând', () => {
+  test.use({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true });
+
+  test('un rând deschide pagina lui, „Înapoi la listă” se întoarce; după „Scoate”, lista', async ({ page }) => {
+    await page.goto('/');
+    await page.locator('[data-extensii="fisier-ales"]').setInputFiles({ name: 'salut-1.0.0.zip', mimeType: 'application/zip', buffer: SALUT });
+    await page.locator('[data-extensii="instaleaza"]').click();
+    await expect(page.getByTestId('extensii-instalare')).toHaveCount(0);
+    const b = await deschideBiblioteca(page);
+    const lista = page.getByTestId('biblioteca-lista');
+    const inapoi = b.locator('[data-extensii="inapoi-lista"]');
+    // La deschidere, lista: pagina și „Înapoi” nu se văd.
+    await expect(randLista(page, 'trenulet')).toBeVisible();
+    await expect(pagina(page)).toBeHidden();
+    await expect(inapoi).toBeHidden();
+    await randLista(page, 'trenulet').click();
+    await expect(pagina(page)).toBeVisible();
+    await expect(lista).toBeHidden();
+    await expect(b.locator('[role="tablist"]')).toBeHidden();
+    await inapoi.click();
+    await expect(lista).toBeVisible();
+    await expect(pagina(page)).toBeHidden();
+    // O extensie scoasă din pagina ei: înapoi la listă (pagina nu rămâne goală).
+    const p = await paginaInstalatei(page, 'salut');
+    await p.locator('[data-extensii="pagina-scoate"]').click();
+    await page.getByTestId('extensii-scoatere').locator('[data-extensii="scoate-confirma"]').click();
+    await expect(lista).toBeVisible();
+    await expect(lista).toContainText('Nicio extensie instalată încă');
+  });
+});
 
 test('la densitatea mare, cu mausul: cel puțin 48 px', async ({ page }) => {
   await page.addInitScript(() => { localStorage.setItem('cncvs2.aranjament', JSON.stringify({ v: 1, aranjament: 'insule', densitate: 'mare' })); });

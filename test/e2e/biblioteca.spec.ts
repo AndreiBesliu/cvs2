@@ -127,6 +127,7 @@ test('din bibliotecă: fereastra, rândul și pagina lui Easy 3Draw (semnul, cap
 
   // Instalarea, în pagină: nimic descărcat înainte de clic; apoi pachetul, verificat.
   expect(cereri.filter((u) => RE_PACHET.test(u)), 'nimic descărcat înainte de „Instalează”').toEqual([]);
+  expect(cereri.filter((u) => u.endsWith('/extensii/catalog.json')).length, 'catalogul abia cerut de meniu nu se cere a doua oară').toBe(1);
   await p.locator('[data-extensii="pagina-instaleaza"]').click();
   await expect(p).toHaveAttribute('data-stare', 'instalata');
   expect(cereri.filter((u) => RE_PACHET.test(u)).map((u) => new URL(u).pathname)).toEqual([`/extensii/${r.pachet}`]);
@@ -327,6 +328,8 @@ test('linkul #biblioteca=trenulet: pagina lui din bibliotecă, nimic descărcat 
   await page.goto('about:blank');
   await page.goto('/#biblioteca=nu-exista');
   await expect(biblioteca(page).getByTestId('pagina-lipsa')).toHaveText('Extensia „nu-exista” nu e în biblioteca acestei instanțe.');
+  await expect(randLista(page, 'trenulet')).toBeVisible();
+  await expect(pagina(page), 'nicio altă extensie arătată în locul celei cerute').toHaveCount(0);
   await inchideBiblioteca(page);
   await faraEroriInJurnal(page);
 });

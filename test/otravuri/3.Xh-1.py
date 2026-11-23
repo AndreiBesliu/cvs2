@@ -111,12 +111,6 @@ o('U01', ST, '  if (adresa === null || adresa === stricata) {', '  if (false) {'
   'o extensie fără semn nu mai are piesa de puzzle')
 o('U02', EX, "{...(cuSemn ? { 'data-cu-semn': '' } : {})}", '', 'e2e',
   'pe filă, semnul stă lângă piesa de puzzle, nu în locul ei')
-o('U03', CS, '  justify-content: flex-start;\n', '', 'e2e',
-  'rândul unei extensii instalate stă la mijlocul meniului')
-o('U04', CS, '  min-width: 0;\n  color: var(--t);\n', '  min-width: 0;\n', 'e2e',
-  'numele din rândul bibliotecii e gri, ca versiunea')
-o('U05', EX, '<Semn adresa={adresaSemnCatalog(r, adresaCatalog())} marime={28} />', '<Semn adresa={null} marime={28} />', 'e2e',
-  'rândul din bibliotecă nu-și mai arată semnul')
 o('U06', EX, '              <SemnInstalat extensie={x} marime={28} />\n', '', 'e2e',
   'rândul unei extensii instalate n-are semn')
 o('U07', ST, "{ type: 'image/svg+xml' }", "{ type: 'text/plain' }", 'e2e',

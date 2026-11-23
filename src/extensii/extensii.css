@@ -664,10 +664,12 @@
   gap: var(--sp-3);
 }
 
+/* Un nume lung fără spații (un fișier, o adresă) se frânge oriunde: pagina nu se derulează în lateral. */
 .bib-pagina p {
   margin: 0;
   font-size: var(--fs-3);
   line-height: 1.45;
+  overflow-wrap: anywhere;
 }
 
 .bib-pagina p.confirmare-nota,
@@ -691,6 +693,7 @@
   font-size: 1.25rem;
   font-weight: 700;
   line-height: 1.2;
+  overflow-wrap: anywhere;
 }
 
 .pagina-gest {
