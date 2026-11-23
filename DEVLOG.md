@@ -11704,3 +11704,22 @@ tău”): „Da, 11.3↑f”. Modelul sesiunii, în trailerul commit-urilor ei.
   registrul otrăvurilor (rândul listei; 11.3d și 11.3e, refăcute), paragraful liniei din `CLAUDE.md`, nota liniei
   (`docs/linii/plansele.md`). Canalul `plansele` se publică din GitHub Actions (`canal.yml`), pe vârful ramurii, după rapidul
   verde. **Completed:** 23.11, 17:12.
+
+## 2026-11-23 — Unirea lui 11.3↑f în `main`, din sesiunea liniei planșelor
+
+**Prompt:** „ok, cand se poate fa unirea” (owner-ul, la raportul feliei 11.3↑f, PR-ul `AndreiBesliu/cvs2#9`).
+**Started:** 23.11, 19:01. **Completed:** 23.11, 19:53 (unirea în `main`; publicarea pe test pornește după cea a lotului
+sesiunii principale). Modelul: al sesiunii, în trailerul commit-urilor.
+
+- **Ordinea cu sesiunea principală:** ea avea în porți lotul `unire-2311d` (25.8↑a, 3.Tr, A.5), fără 11.3↑f. Anunțată
+  (`send_message`): 11.3↑f o unesc eu, la cuvântul owner-ului, după lotul ei, cu push fast-forward.
+- **Prima unire:** `unire-2311e` din `675d40ce` (vârful lotului), `git merge --no-ff 527a95f3` (fără `.lucru/`); ciocnirea,
+  doar în DEVLOG (`rezolva-devlog.py`, ambele părți). În container: tipurile, traducerile (925, 0 lipsă), probele
+  documentelor și ale urechilor 121 / 121, a traducerilor 4 / 4. Porțile pe `2ee60a88`: rapidul verde, completul verde la
+  prima trecere (47 de minute): unit 9 878 / 0 (12 sărite), e2e 609 / 609, funcțiile pe emulatoare 104 / 104, paginile
+  38 / 38; pornirea 108,5 / 115 (cu ușa 113,0), totalul 770,8 / 800, `/admin` 125,6 / 200.
+- **Refăcută peste `main`:** lotul a intrat în `main` refăcut (`d6fd5d68`), fără 3.Tr, pe care linia elicelor o unise
+  între timp. Unirea, refăcută pe `unire-2311g` din `d6fd5d68` (`f4601938`): același cod ca `2ee60a88` (`git diff` gol în
+  afara `.md`), deci porțile de acolo valorează, ca la lotul sesiunii principale.
+- **Documentele:** decizia în `CLAUDE.md` și rândul de stare al regulilor (unită în `f4601938`); indexul liniilor, indexul
+  ADR (0211, implementat în 11.3↑d–f), starea din `docs/linii/principala.md`, nota liniei (cu lecția ordinii).
