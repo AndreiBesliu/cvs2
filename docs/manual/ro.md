@@ -1763,7 +1763,11 @@ setare pe imprimantă. Imprimanta lucrează în paralel cu CNC-ul, deci fereastr
   de pe ecranul ei.
 - **Starea.** Sus stă banda imprimantei: starea (Liberă, Se pregătește, Imprimă, Pauză, Oprită, Gata), numele, adresa și
   firmware-ul. Dedesubt: lucrarea (fișierul, progresul, timpul trecut și cel rămas, stratul), **Temperaturile** duzei, ale
-  patului și din carcasă și codul semnalat de imprimantă (textul lui îl arată ecranul ei).
+  patului și din carcasă și eroarea semnalată de imprimantă, explicată: codul de pe ecranul ei (de exemplu CX2585), dacă e
+  gravă sau obișnuită, ce s-a întâmplat și **Ce faci**, iar unde Creality are o pagină a codului, **Pagina Creality ↗**
+  (o filă nouă). Un cod pe care cvs2 nu-l cunoaște se spune ca atare, cu **Lista codurilor ↗** din wiki-ul Creality; textul
+  lui e pe ecranul imprimantei. Dicționarul (familia K1: K1, K1C, K1 Max) vine la prima eroare și merge și fără internet.
+  După o pană de curent, cardul spune că imprimanta te întreabă pe ecran dacă reia imprimarea; răspunsul îl dai acolo.
 - **Placa**, cât imprimă sau stă în pauză, în cardul lucrării: patul văzut de sus, mărit pe piese, cu fața imprimantei jos.
   Arată piesele (conturul lor; **piesa de acum**, cu un contur turcoaz; una **anulată**, tăiată), **duza** (un punct alb,
   doar cât imprimă) și, pentru fișierele trimise din cvs2, **stratul de acum** (portocaliu) peste cel de dedesubt. Lângă ea,
@@ -1781,7 +1785,8 @@ setare pe imprimantă. Imprimanta lucrează în paralel cu CNC-ul, deci fereastr
   _ . -; nimic scris de mână.
 - **Notificările** (cardul lor, în fereastra Imprimanta): **Pornește notificările** cere o dată permisiunea browserului. Sub
   **Anunță-mă când** alegi evenimentele: s-a terminat, s-a oprit, pauza din fișier (cu nota ei), altă pauză, fără filament,
-  o eroare, legătura pierdută cât imprimă și primul strat gata (oprit de la început). Cât cvs2 e ascuns, vine o notificare
+  o eroare (cu codul și ce faci), o pană de curent, legătura pierdută cât imprimă și primul strat gata (oprit de la început).
+  Cât cvs2 e ascuns, vine o notificare
   a sistemului (clic pe ea: fereastra Imprimanta); cât e în față, o bandă sus, cu **Deschide Imprimanta** și **Închide**.
   **Cu sunet**: câteva tonuri scurte. **Și notificarea sistemului cât cvs2 e în față**, dacă o vrei și atunci. **Procentul
   în titlul filei**: „45 % · CNC Vector Studio”. Pe butonul Imprimanta din bara de sus, un punct și procentul, oriunde ai

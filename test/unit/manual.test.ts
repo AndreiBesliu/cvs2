@@ -285,12 +285,14 @@ const CONTROALE_IMPRIMANTA: Readonly<Record<string, string>> = {
   'felie-corecteaza': 'imprimanta.felie.corecteaza',
   // Felia 3.6u (ADR 0194 §C): filmul unei imprimări, în cardul Istoricul.
   'istoric-film': 'imprimanta.istoric.film',
+  // Din 3.6v, eroarea explicată: pagina codului și lista codurilor.
+  'eroare-wiki': 'imprimanta.eroare.wiki', 'eroare-lista': 'imprimanta.eroare.lista',
 };
 
 test('fiecare control al ferestrei Imprimanta (data-imprimanta) e numit în capitolul „imprimanta”, în ambele limbi', () => {
   // Din 3.6r, și placa are controale (anularea unei piese).
   const fereastra = citeste('src/app/PanouImprimanta.tsx') + citeste('src/app/PlacaImprimanta.tsx') + citeste('src/app/VestiriImprimanta.tsx')
-    + citeste('src/app/IstoricImprimanta.tsx');
+    + citeste('src/app/IstoricImprimanta.tsx') + citeste('src/app/EroareImprimanta.tsx');
   const dialog = citeste('src/app/DialogDinDesen.tsx');
   assert.doesNotMatch(fereastra, /data-imprimanta=\{/);
   assert.doesNotMatch(dialog, /data-imprimanta=\{/);

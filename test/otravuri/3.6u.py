@@ -88,4 +88,4 @@ SETURI = {
             'test/unit/imprimanta.driver.test.ts'],
 }
 # Doar cele două probe e2e ale feliei (liniile lor la commit-ul probat), ca fiecare otravă să nu ruleze tot fișierul.
-E2E = ['test/e2e/imprimanta.spec.ts:1400', 'test/e2e/imprimanta.spec.ts:1452']
+E2E = ['test/e2e/imprimanta.spec.ts:1403', 'test/e2e/imprimanta.spec.ts:1455']
