@@ -559,7 +559,7 @@ test('în engleză (ADR 0165): limba lui cvs2, schimbată pe loc printr-o reporn
   // filele (ADR 0281): familiile, cu câte piese au, apoi cele proprii; numele lor, aici (cuvinte fără diacritice, pe care
   // proba de română nu le recunoaște); apoi fiecare piesă a fiecărei familii și fiecare filă proprie, fără română
   await expect(c.locator('#at-tipuri button:not([hidden])')).toHaveText(['Bricks 10', 'Joints 8', 'Wheels 7', 'Propeller 1', 'From cvs2', 'Calibration']);
-  for (const fila of ['caramizi', 'legaturi', 'roti']) {
+  for (const fila of ['caramizi', 'legaturi', 'roti', 'propulsie']) {
     await c.locator(`#at-tipuri [data-fila="${fila}"]`).click();
     await expect(c.locator(`#at-tipuri [data-fila="${fila}"]`)).toHaveAttribute('aria-pressed', 'true');
     for (const piesa of await c.locator('#at-galerie [data-piesa]').evaluateAll((b) => b.map((x) => (x as HTMLElement).dataset['piesa'] ?? ''))) {
@@ -569,6 +569,16 @@ test('în engleză (ADR 0165): limba lui cvs2, schimbată pe loc printr-o reporn
       expect(await romanaRamasa(page, 'Păstrat la repornire'), `${fila} / ${piesa}`).toEqual([]);
     }
   }
+  // elicea (3.Tq), rămasă deschisă: editorul ei, în engleză; cuvintele fără diacritice („Ca LEGO 6041”), pe care proba de
+  // română nu le recunoaște, se cer aici; zecimalele, cu punct
+  await expect(c.locator('#at-editor h2')).toHaveText('Propeller');
+  await expect(c.locator('#at-el-repede [data-v]')).toHaveText(['Like LEGO 6041', 'Like LEGO 92842', 'Like LEGO 15790']);
+  await expect(c.locator('#at-nume-piesa')).toHaveText('Propeller Ø72 with 3 blades, pitch 0.7');
+  await expect(c.locator('#at-el-info')).toHaveText('Pitch 50 mm (0.7 × diameter). Twisted blade: 63° near the hub, 13° at the tip. Prints without supports: at the tip, each layer overhangs the one below by 0.9 mm.');
+  await c.locator('#at-el-repede [data-v="6041"]').click();
+  await expect(c.locator('#at-nume-piesa')).toHaveText('Propeller Ø27.4 with 3 blades, pitch 0.93, flat, left-hand');
+  await expect(c.locator('#at-el-info')).toContainText('Flat blade, at 23° from hub to tip, like LEGO’s.');
+  expect(await romanaRamasa(page, 'Păstrat la repornire'), 'elicea, ca LEGO 6041').toEqual([]);
   // căutarea (3.Tp↑a), pe numele din limba paginii: „bevel” găsește cele două roți conice; fără potrivire, mesajul în engleză
   await expect(c.locator('#at-cauta')).toHaveAttribute('placeholder', 'Find a piece');
   await c.locator('#at-cauta').fill('bevel');

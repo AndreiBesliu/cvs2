@@ -149,12 +149,16 @@ test('editorul: fiecare alegere și fiecare câmp ajung în piesă; câmpurile, 
   await page.locator('#at-el-con [data-v="nu"]').click();
   await expect(page.locator('#at-cote')).toContainText('× 8 mm');
   // câmpurile: paletele la întreg, diametrul la zecime, pasul la sutime, lățimea la întreg
+  // (câmpul arată, după redesenare, ce a intrat în piesă: valoarea rotunjită, nu ce a scris omul)
   await seteaza(page, '#at-el-palete', '4.4');
   await expect(nume).toHaveText('Elice Ø72 cu 4 palete, pasul 0,7');
+  await expect(page.locator('#at-el-palete')).toHaveValue('4');
   await seteaza(page, '#at-el-diam', '72.26');
   await expect(nume).toHaveText('Elice Ø72,3 cu 4 palete, pasul 0,7');
+  await expect(page.locator('#at-el-diam')).toHaveValue('72.3');
   await seteaza(page, '#at-el-pas', '1.204');
   await expect(nume).toHaveText('Elice Ø72,3 cu 4 palete, pasul 1,2');
+  await expect(page.locator('#at-el-pas')).toHaveValue('1.2');
   // pasul 1,2 · 72,3 = 86,76 mm; răsucită: atan(86,76 / 8π) = 73,8° la butuc, atan(1,2 / π) = 20,9° la vârf; 0,2 / tan 20,9° = 0,52
   await expect(page.locator('#at-el-info')).toHaveText('Pasul 87 mm (1,2 × diametrul). Paleta răsucită: 74° lângă butuc, 21° la vârf. Se tipărește fără suport: la vârf, un strat iese cu 0,5 mm peste cel de dedesubt.');
   await seteaza(page, '#at-el-lat', '44.6');

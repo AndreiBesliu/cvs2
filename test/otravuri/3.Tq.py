@@ -5,7 +5,7 @@
 # pe cilindru, paletele împărțite pe cerc, sensul), butucul (raza, înălțimea, cât cere paleta la rădăcină, gaura), conul (dacă,
 # cât de înalt, așezat în butuc), avertismentele; atelierul (fila și galeria, implicitele editorului, numele piesei, textul
 # elicei, „Ca LEGO” cu cotele și sensul fiecărei piese, alegerile, câmpurile cu plaja și rotunjirea lor, „Fă perechea”),
-# pictograma și traducerea.
+# pictograma și traducerea. Textele fără diacritice rămase în română se văd doar în cvs2, în engleză: lista lor e `3.Tq-en.py`.
 # Se rulează cu `scripts/otravuri.py` (docs/otravuri.md), dintr-o clonă, după commit; setul „e2e” e
 # `test/e2e/trenulet.elice.spec.ts` (pagina de sine stătătoare a planificatorului, din aceleași surse).
 # o(id, fis, vechi, nou, set, ce): `vechi` apare EXACT o dată în fișier; altfel VOID.
@@ -246,7 +246,6 @@ o('R04', A, '$("#at-el-pereche").onclick = adaugaPerecheElice;', '$("#at-el-pere
 # Pictograma și traducerea (unitare).
 o('G01', A, '    elice: `<circle cx="12" cy="12" r="2.2"/><path d="M10.7 10.2C7.8', '    elice2: `<circle cx="12" cy="12" r="2.2"/><path d="M10.7 10.2C7.8', 'pictograme', 'elicea fără pictogramă')
 o('T01', T, ' "Elice": "Propeller",', ' "Elice": "",', 'engleza', 'numele elicei, netradus')
-o('T02', T, ' "Ca LEGO 6041": "Like LEGO 6041",', ' "Ca LEGO 6041": "Ca LEGO 6041",', 'engleza', '„Ca LEGO 6041”, rămas în română')
 
 SETURI = {
     'elice': ['test/unit/trenulet.elice.test.ts'],
