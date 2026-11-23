@@ -12,6 +12,10 @@ Pe claude.ai/code, în ecranul unei sesiuni noi, selectorul de mediu (primul but
 - **Network access:** *Limited*, cu **Allow package managers** bifat (lista implicită are npm, Ubuntu, `nodejs.org`,
   `packages.microsoft.com` pentru Edge și GitHub). La **Allowed domains** se adaugă:
   - `library.ldraw.org`, pentru uneltele LDraw ale pluginului;
+  - `cncvectorstudio-test.web.app`, adresa de test, de pe care `ci-si-publica.sh` citește versiunea publicată (adăugată pe
+    23.11, la prima publicare din container: fără ea, proxy-ul răspunde 403). Adresele canalelor
+    (`cncvectorstudio-test--<canal>-<cod>.web.app`) diferă de la canal la canal: un canal se verifică din jurnalul rulării
+    `canal.yml`, nu din container;
   - `apis.google.com`, pentru probele paginii `/admin` de pe emulatoare: login-ul Google al emulatorului de Auth își
     încarcă scriptul de acolo, iar fără el nicio probă nu trece de intrare (adăugat pe 23.11, cu aprobarea owner-ului).
 - **Setup script:** comanda de mai jos, care găsește repo-ul clonat și rulează `scripts/cloud/pregatire.sh`:

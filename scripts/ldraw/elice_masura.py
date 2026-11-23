@@ -1,6 +1,11 @@
 """Cotele unei elice LDraw: axa de rotație, diametrul, butucul (raza, înălțimea), gaura (cruce sau cerc, raza), paletele
 (câte, iar la 30, 50, 70 și 90 % din rază: unghiul β față de planul rotației, pasul 2πr·tan β, coarda, întinderea pe axă).
 Suprafața e eșantionată uniform (puncte pe triunghiuri, după arie), apoi împărțită pe raze și unghiuri.
+Axa de rotație trece prin originea piesei (gaura butucului e modelată acolo), NU prin centrul cutiei: la o elice cu 3 palete,
+centrul cutiei cade la un sfert de rază de axă, iar razele măsurate de acolo ies cu ~15 % prea mari (15790: Ø83,3 în loc de
+Ø73,9). Unealta arată, ca verificare, raza vârfului fiecărei palete față de axă: trebuie să fie aceeași la toate.
+Semnul pantei e sensul elicei (LDraw are un reper drept, cu −Y în sus): +1 = elicoid drept, elicea „pe dreapta” a motorului
+(15790, 92842, 4617b); −1 = „pe stânga” (6041, 65768).
 Folosire: python -I -B -X utf8 elice_masura.py <dosarul bibliotecii> <piesa> [<piesa> ...]   (piesa fără `.dat`)."""
 import math
 import os
@@ -49,21 +54,31 @@ def segmente(ocupate, n):
 
 def masoara(dosar, piesa):
     tri = plat.in_mm(plat.triunghiuri(dosar, piesa + '.dat'))
-    xs = [p[i] for t in tri for p in t for i in (0,)]
     cut = [(min(p[i] for t in tri for p in t), max(p[i] for t in tri for p in t)) for i in range(3)]
     ext = [hi - lo for lo, hi in cut]
     k = min(range(3), key=lambda i: ext[i])  # axa rotației: întinderea cea mai mică
-    o = [i for i in range(3) if i != k]
-    c0 = [(cut[i][0] + cut[i][1]) / 2 for i in range(3)]
+    o = [(k + 1) % 3, (k + 2) % 3]  # în ordine ciclică: (o0, o1, axa) e un reper drept, ca semnul pantei să fie al elicei
     pts = esantion(tri, random.Random(1))
     P = []
     for p in pts:
-        a, b, h = p[o[0]] - c0[o[0]], p[o[1]] - c0[o[1]], p[k]
+        # față de axa prin origine (nu față de centrul cutiei: vezi antetul)
+        a, b, h = p[o[0]], p[o[1]], p[k]
         P.append((math.hypot(a, b), math.atan2(b, a), h))
     R = max(q[0] for q in P)
-    print(f'== {piesa}: axa {"XYZ"[k]} (întinderile X {ext[0]:.2f}, Y {ext[1]:.2f}, Z {ext[2]:.2f}); Ø {2 * R:.2f} mm; '
+    print(f'== {piesa}: axa {"XYZ"[k]}, prin origine (întinderile X {ext[0]:.2f}, Y {ext[1]:.2f}, Z {ext[2]:.2f}); Ø {2 * R:.2f} mm; '
           f'pe axă {cut[k][0]:.2f} … {cut[k][1]:.2f}')
     NA = 360
+    # verificarea axei: raza vârfului fiecărei palete (grupurile de unghiuri ocupate dincolo de 0,8·R) trebuie să fie aceeași
+    oc = [False] * NA
+    for q in P:
+        if q[0] > 0.8 * R:
+            oc[int((q[1] + math.pi) / (2 * math.pi) * NA) % NA] = True
+    varfuri = []
+    for g in segmente(oc, NA):
+        unghiuri = set(g)
+        varfuri.append(max(q[0] for q in P if q[0] > 0.8 * R and int((q[1] + math.pi) / (2 * math.pi) * NA) % NA in unghiuri))
+    print(f'   vârfurile paletelor, față de axă: {", ".join(f"{x:.2f}" for x in varfuri)}'
+          + ('' if max(varfuri) - min(varfuri) < 0.1 else '   ATENȚIE: nu sunt la aceeași rază, originea nu e pe axă'))
     # butucul: raza până la care unghiurile sunt aproape toate ocupate (în benzi de 0,25 mm); profilul acoperirii
     rh = 0.0
     r = 0.25
