@@ -1,7 +1,10 @@
 # ADR 0282: Elicele în atelierul Easy 3Draw: configurabile, tipărite fără suport, cu prinderea LEGO
 
 **Starea:** acceptat pe 22.11.2026 (1a, 2a, 3a); **felia 3.Tq implementată pe ramura `wip/3.Tq-elice`, Easy 3Draw 18.19.0**
-(23.11, în sesiunea cloud a liniei; cifrele, la „Implementarea”); 3.Tr și 3.Ts, la cuvântul owner-ului. Propus pe 22.11, la
+(23.11, în sesiunea cloud a liniei; cifrele, la „Implementarea”); **felia 3.Tr (elicea de barcă) implementată pe aceeași
+ramură, Easy 3Draw 18.20.0** (23.11, la „pornește 3.Tr” al owner-ului; „Implementarea (3.Tr)”; unită în `main` în `d262e57a`);
+3.Ts, la cuvântul owner-ului.
+Propus pe 22.11, la
 cererea owner-ului: „Vreau ca pluginul sa faca si elice, pentru imprimanta, si sa fie
 si configurabile elicele si compatibile cu lego”. **Completează:** ADR 0280 (roțile, fulia, roțile la 90° și șenila),
 ADR 0281 (piesele pe file), ADR 0169 (rotițele dințate, cu gaura pentru ax din calibrare), ADR 0129 (Planificatorul ca
@@ -143,6 +146,62 @@ Pe ramura `wip/3.Tq-elice`, Easy 3Draw 18.19.0 (22–23.11; din 23.11, în sesiu
   corect (nicio față întoarsă), editorul încape la 390 px. **De încercat pe imprimantă:** la vârf paleta e culcată (13° la elicea implicită, 15° la „Ca LEGO
   15790”), deci dedesubtul ei iese aspru (consola de 0,9, respectiv 0,7 mm pe strat, spusă în editor), iar pe masă stă doar
   butucul și câte o linie subțire sub fiecare paletă: o margine de aderență (brim) din slicer ajută.
+
+## Implementarea (3.Tr): elicea de barcă
+
+Pe ramura `wip/3.Tq-elice`, Easy 3Draw 18.20.0 (23.11, în sesiunea cloud a liniei), la „pornește 3.Tr” al owner-ului.
+Decizia spunea doar „3–5 palete late, înclinate înapoi, pentru bărcile cu motoare LEGO”; restul s-a hotărât la implementare
+și e scris aici, cu motivul.
+
+**Reperul LEGO** (din LDraw, ca la 3.Tq; `scripts/ldraw/aduce.py`, licența CC BY 4.0, în afara repo-ului): niciuna dintre
+elicele LEGO nu e numită „de barcă”; singura făcută pentru apă e cea a motorului de barcă (48085, cu elicea u9216): Ø21,6,
+trei palete ovale, plate, la ≈ 10°, care acoperă ~80 % din disc, pe un butuc de Ø5 cu un arbore de Ø2. Nu stă pe un ax
+LEGO, deci e reperul formei (palete late, rotunde), nu al prinderii: de aceea elicea de barcă n-are „Ca LEGO”, ci
+diametrele pe grila de știfturi.
+
+- **Ce face:** a doua piesă a filei „Elice”, „Elice de barcă”: 3–5 palete, Ø20–120 mm (implicit Ø40, 5 știfturi), pasul
+  0,5–1,6 × diametrul (implicit 1), același de la butuc la vârf (β(r) = atan(P / 2πr), ca la elicele navale), lățimea
+  40–150 % din rază (implicit 100 %), înclinarea înapoi 0–40° (implicit 20°), sensul și „Fă perechea”, gaura din calibrare
+  (ax, știft, bară sau fără), capacul rotunjit, la alegere.
+- **Paleta lată:** conturul e o „ureche”: coarda crește eliptic de la 60 % (la rădăcină) la lățimea cerută (la 60 % din
+  paletă), apoi se rotunjește eliptic spre vârf. Pe fiecare rază, secțiunea reală ocupă cel mult 85 % din pasul dintre
+  palete, deci paletele nu se ating nici la 5 palete cu lățimea 150 % (acoperă atunci 76 % din disc; implicita, 55 %).
+  Editorul spune cât din disc acoperă paletele.
+- **„Înclinate înapoi” e pe cerc, nu spre pupa.** Înclinarea navală are două feluri: pe cerc (skew: vârful rămâne în urma
+  rotației) și pe axă (rake: vârful e împins spre pupa). Cea pe axă ar ridica muchia de jos a paletei de pe masă, cu o
+  pantă de 10–15° față de orizontală: nu se tipărește fără suport. Cea pe cerc doar mută fiecare secțiune pe cercul ei
+  (cu unghiul · x², x fiind locul pe paletă), deci muchia de jos rămâne toată pe masă. S-a făcut cea pe cerc. Dacă owner-ul
+  vrea și înclinarea spre pupa, e o opțiune în plus, cu suport la tipărire.
+- **Secțiunea ogivală** (ca la elicele navale), nu placa curbată a elicei de aer: fața care împinge apa e plată, spatele
+  e bombat; groasă la mijlocul corzii de la 4 % din diametru la rădăcină (între 1,6 și 3 mm) la 0,8 la vârf, cu muchiile
+  de 0,6 (o linie de duză și jumătate).
+- **Cum stă pe masă:** cu partea dinspre barcă jos. Axul intră de jos (dinspre barcă), iar capacul, dacă e ales, închide
+  butucul sus, spre pupa; fața plată a paletei (cea care împinge apa) e cea de sus, care iese curată, iar spatele, cel de
+  dedesubt, mai aspru. Fiecare secțiune își are punctul cel mai de jos la z = 0, ca la elice. Sensul „dreapta” e același
+  elicoid ca la elice: privită dinspre pupa, se rotește în sensul acelor de ceasornic la mers înainte.
+- **Butucul** crește cu elicea: Ø8 sub Ø45, apoi 18 % din diametru (Ø21,6 la Ø120), și e înalt cât cea mai înaltă
+  secțiune a paletei (cel puțin un știft, 8 mm): la elicea implicită, Ø8 × 11,5. Paleta lată e abruptă la rădăcină (58°),
+  deci înaltă; pe un butuc de 8, paletele ar fi ieșit peste el. Capacul e o jumătate de elipsoid, înalt de 1,2 raze.
+- **Motorul** (`lego.ts`): `eliceBarca`, `eliceBarcaCote` (cotele, butucul, unghiurile, consola, cât din disc acoperă
+  paletele) și `sectiuneBarca`. Paletele elicei și ale elicei de barcă ies din aceeași funcție (`paleteElice`; capetele
+  secțiunii cu fața plată se închid ca o fâșie, fiindcă tăierea urechilor pierde punctele coliniare), iar butucul, din
+  `butucElice`. Elicea din 3.Tq a rămas aceeași la octet (amprenta a 3 456 de combinații, înainte și după).
+- **Atelierul** (`atelier.ts`): piesa `eliceBarca` în familia `propulsie`, editorul (`at-eb-*`), „Repede” (Ø24, Ø32, Ø40,
+  Ø56: 3, 4, 5 și 7 știfturi), textul (pasul, unghiurile, acoperirea, butucul, consola), pictograma; lățimea și înclinarea
+  intră în numele piesei doar când nu sunt cele obișnuite (două elice diferite nu pot avea același nume în listă); 13
+  texte în engleză.
+- **Probele:** unitare 12 (`test/unit/trenulet.barca.test.ts`: corpul închis pe plajă, cotele, muchia de jos pe masă,
+  pasul măsurat pe fața plată, secțiunea și conturul pe hârtie, înclinarea, paletele care nu se ating, oglinda,
+  acoperirea față de aceeași sumă făcută pe plasă, vârful la diametrele cu rotunjire, marginile); valorile pe hârtie sunt
+  calculate separat de motor. E2e 5 (`test/e2e/trenulet.barca.spec.ts`), plus filele, căutarea („bar” găsește acum și
+  „Elice de barcă”), pictogramele (și cele două elice, care lipseau din proba e2e) și proba în engleză din cvs2.
+- **Otrăvurile:** `test/otravuri/3.Tr.py`, 141 (87 pe motor, 52 pe atelier prin e2e, pictograma și traducerea): 139 prinse
+  din prima; capacul cu alt profil spre vârf și ordinea „gaură, capac” din nume, după probele lor. `3.Tr-en.py`, 6 / 6.
+  Trei echivalente, lăsate afară cu motivul în listă. Lista lui 3.Tq, mutată pe codul comun (0 VOID).
+- **Ce se vede pe randări și pe capturi:** paletele seamănă cu ale unei elice de barcă (late, rotunde, aplecate înapoi),
+  nu se ating la 5 palete, editorul încape la 390 px. **De încercat pe imprimantă:** la pasul 1, vârful stă la 18°
+  (consola de 0,6 mm pe strat, mai bună decât la elicea de aer); pe masă stau butucul și muchia de jos a fiecărei palete,
+  deci o margine de aderență (brim) ajută și aici.
 
 ## Feliile
 

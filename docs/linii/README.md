@@ -16,7 +16,7 @@ rămâne. Notele au fost aduse pe 23.11.2026 din memoria sesiunii principale loc
 | Linia | Nota | Ramura | Starea pe 23.11 |
 |---|---|---|---|
 | Sesiunea principală | [principala.md](principala.md) | `unire-<data>` | în cloud din 23.11; unește și publică (3.Tq în `0ae9c6c1`; 11.3↑e și A.4 în `ddaa7ead`) |
-| Elicele (Easy 3Draw, 3.Tq–3.Ts, ADR 0282) | [elice.md](elice.md) | `wip/3.Tq-elice` | 3.Tq unită în `main` (`0ae9c6c1`, 18.19.0); reparația probelor atelierului, cu porțile în CI (`AndreiBesliu/cvs2#5`); 3.Tr, 3.Ts la cuvântul owner-ului |
+| Elicele (Easy 3Draw, 3.Tq–3.Ts, ADR 0282) | [elice.md](elice.md) | `wip/3.Tq-elice` | 3.Tq unită în `main` (`0ae9c6c1`, 18.19.0); reparația probelor atelierului și 3.Tr (elicea de barcă, 18.20.0), unite în `main` (`d262e57a`); 3.Ts la cuvântul owner-ului |
 | Adminul (ADR 0260) | [admin.md](admin.md) | `wip/A.1-admin` | A.4 (Sugestii ca tablă) unită în `main` (`ddaa7ead`); A.5–A.7 la cuvântul owner-ului |
 | Incrustațiile (12.1↑) | [incrustatii.md](incrustatii.md) | `wip/12.1-incrustatii` | 12.1↑e-3 (pereții drepți) în lucru, în sesiunea cloud a liniei |
 | Planșele (etapa 11) | [plansele.md](plansele.md) | `wip/11.1-plansele` | 11.3↑e (urechile „unde ține”) unită în `main` (`d3ffcbf3`); 11.3↑f la cuvântul owner-ului; tăierea plăcii 11, la owner |
