@@ -11530,7 +11530,7 @@ un branch in care sa modificam libraria de plugin-uri? vreau ceva mai frumos si 
 
 **Prompt:** același brief de predare al sesiunii principale („Unește PR-urile gata”; „unește ce se poate” e ordin permanent),
 la rapoartele liniilor planșelor și adminului (PR-urile `AndreiBesliu/cvs2#2` și `AndreiBesliu/cvs2#3`).
-**Started:** 23.11, 14:32. **Completed:** unirea în `main`, 23.11, 15:30; publicarea pe test, în rândul de la capăt.
+**Started:** 23.11, 14:32. **Completed:** 23.11, 16:36 (unirea în `main` la 15:23, publicarea pe test la 16:36).
 
 - **Verificate înaintea unirii:** ambele ramuri fără `.lucru/`, cu `main` (`8177ab81`) adus; rapidul și completul verzi pe
   commit-urile finale (`83b690a5`, planșele; `20fb65de`, adminul, cu completul verde și pe `5d4ea694`).
@@ -11546,6 +11546,10 @@ la rapoartele liniilor planșelor și adminului (PR-urile `AndreiBesliu/cvs2#2` 
 - **Între timp, la linii:** biblioteca (3.Xh) are ADR 0231 propus, cu schița și patru întrebări la owner
   (`AndreiBesliu/cvs2#4`, ciornă); trasarea (25.8↑a, `AndreiBesliu/cvs2#6`) și reparația probelor atelierului
   (`AndreiBesliu/cvs2#5`) își așteaptă porțile finale.
+- **Publicarea pe test** (`c010e3d1`): rapidul și completul pe `main`, verzi (completul, 60 de minute); `publica.yml` verde;
+  adresa de test spune `c010e3d18339`. **Găsit:** scriptul a declarat publicarea lipsă („nicio rulare după 10 minute”) la
+  prima întrebare, deși abia o pornise: cele 10 minute se numărau de la pornirea scriptului, care așteptase deja 18 minute
+  completul. Reparat (se numără de la începutul așteptării rulării), reluat: a găsit publicarea verde.
 
 ## 2026-11-23 — Felia 3.Tr: elicea de barcă în atelierul Easy 3Draw (ADR 0282) (Model: Claude Fable 5.2)
 
@@ -11625,3 +11629,41 @@ la rapoartele liniilor planșelor și adminului (PR-urile `AndreiBesliu/cvs2#2` 
   PR-ul ramurii.
 - **Documentele:** ADR 0260 („Implementarea”, A.5), fișa etapei 3 (rândul `3.Ae`) cu traducerea, lista otrăvurilor și
   rândul ei din `docs/otravuri.md`, nota liniei, DEVLOG. **Completed:** 23.11 16:20.
+
+## 2026-11-23 — Sesiunea principală în cloud: a patra unire (25.8↑a, imaginile pe foaie; A.5, Utilizatori și Personal) și o probă instabilă a extensiilor, reparată (Model: Claude Fable 5.2)
+
+**Prompt:** același brief de predare al sesiunii principale („unește ce se poate” e ordin permanent), la rapoartele liniilor
+trasării, elicelor și adminului (PR-urile `AndreiBesliu/cvs2#6`, `AndreiBesliu/cvs2#5` și `AndreiBesliu/cvs2#8`).
+**Started:** 23.11, 16:37. **Completed:** unirea în `main`, 23.11, 19:20; publicarea pe test, în rândul de la capăt.
+
+- **Verificate înaintea unirii:** cele trei ramuri fără `.lucru/`, cu `main` (`c010e3d1`) adus; rapidul și completul verzi
+  pe commit-urile raportate (`2e8caa3e`, `8b1255b8`, `fe026f9f`); la elice, Easy 3Draw 18.20.0 în `extensie.json` și în
+  `extensii/biblioteca.json`, cu amprenta, și nota liniei la zi.
+- **Lotul, întâi pe `unire-2311d`** (din `c010e3d1`): reparația lui `ci-si-publica.sh`, apoi 25.8↑a, 3.Tr și A.5
+  (ciocnirea, doar în DEVLOG). În container, pe arborele comun: tipurile (și ale funcțiilor), regulile de import (0
+  încălcări), traducerile (923, 0 lipsă), probele atinse și cele ale documentelor 116 / 116.
+- **Completul unirii a căzut pe `8c5a309a`:** e2e 607 / 608, `extensii.lucru.spec.ts:110`: clicul pe „Închide” din cadrul
+  extensiei (`host.inchide()`) a rămas la „performing click action” până la limita probei. Aceeași cădere: pe ramura
+  trasării, azi, și pe 18.11 la `extensii.spec.ts:43`. Lotul nu atinge gazda extensiilor. Reluat, completul a trecut.
+- **Proba, reprodusă și reparată** (doar probe):
+  - în container lipsea Edge (pus cu pasul din `pregatire.sh`: Edge 158, ca în CI);
+  - proba singură, 40 / 40 pe patru lucrători; repetată de 200 de ori pe zece lucrători, 3 căderi, cu simptomul din CI;
+  - cauza: cadrul extensiei e alt proces, iar clicul adevărat îl trimite sesiunea paginii; când cadrul e scos (chiar de
+    acel clic) înainte să-și confirme evenimentul, `click()` nu se mai întoarce, deși fereastra s-a închis;
+  - `clicCareInchideCadrul` (`test/e2e/ajutor-extensii.ts`): un clic adevărat, apoi se așteaptă cadrul scos din pagină;
+    un clic care cade cu adevărat își spune eroarea. Folosit în cele două locuri cu acest tipar
+    (`extensii.lucru.spec.ts:164`, `extensii.spec.ts:127`);
+  - cu el, 400 / 400 pe zece lucrători; o urmă temporară a numărat 5 rulări în care clicul nu s-a întors nici la 2 s după
+    ce cadrul dispăruse (deci căderea s-a produs și a fost tolerată, nu doar ocolită de noroc);
+  - otrava (gazda ignoră `host.inchide()`): ambele probe cad, la așteptarea cadrului închis; cele două spec-uri, 13 / 13.
+- **Porțile lotului, în CI, pe `675d40ce`** (cu reparația; completul, 60 min 46 s: peste vechea limită de 60): unit
+  9 855 / 0 (12 sărite), e2e 608 / 608, funcțiile pe emulatoare 104 / 104, paginile 38 / 38; pornirea 108,5 / 115 (cu
+  ușa 113,0; cu Atelierul 113,3), totalul 770,0 / 800, `/admin` 125,6 / 200; manualul, 40 de capitole; Easy 3Draw
+  18.20.0, 460,6 kB.
+- **`main` s-a mișcat sub lot:** la push, `main` nu mai era strămoșul lotului: sesiunea liniei elicelor unise ea 3.Tr
+  (`d262e57a`, decizia în `6f85243f`), la „deocamdata putem face unirea” al owner-ului. Push-ul a fost refuzat, deci nimic
+  nu s-a pierdut. Lotul, refăcut pe `unire-2311e` din `6f85243f`, fără 3.Tr: reparația scriptului (`a3471d0a`), 25.8↑a
+  (`473f2e20`), A.5 (`1b46c955`), reparația probei (`8287d66e`). Codul lui e identic cu al lui `675d40ce` (`git diff`
+  gol în afara fișierelor `.md`), deci porțile de mai sus sunt ale lui.
+- **Documentele:** decizia în `CLAUDE.md` (a patra unire; a treia e a liniei elicelor) și rândul de stare al trasării;
+  indexul ADR (0272); indexul liniilor; `docs/linii/principala.md` (starea, „Din container”, `main` mișcat sub un lot).

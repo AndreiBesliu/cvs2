@@ -15,13 +15,13 @@ rămâne. Notele au fost aduse pe 23.11.2026 din memoria sesiunii principale loc
 
 | Linia | Nota | Ramura | Starea pe 23.11 |
 |---|---|---|---|
-| Sesiunea principală | [principala.md](principala.md) | `unire-<data>` | în cloud din 23.11; unește și publică (3.Tq în `0ae9c6c1`; 11.3↑e și A.4 în `ddaa7ead`) |
+| Sesiunea principală | [principala.md](principala.md) | `unire-<data>` | în cloud din 23.11; unește și publică (pe 23.11: 3.Tq în `0ae9c6c1`; 11.3↑e și A.4 în `ddaa7ead`; 25.8↑a și A.5 în `1b46c955`) |
 | Elicele (Easy 3Draw, 3.Tq–3.Ts, ADR 0282) | [elice.md](elice.md) | `wip/3.Tq-elice` | 3.Tq unită în `main` (`0ae9c6c1`, 18.19.0); reparația probelor atelierului și 3.Tr (elicea de barcă, 18.20.0), unite în `main` (`d262e57a`); 3.Ts la cuvântul owner-ului |
-| Adminul (ADR 0260) | [admin.md](admin.md) | `wip/A.1-admin` | A.4 (Sugestii ca tablă) unită în `main` (`ddaa7ead`); A.5–A.7 la cuvântul owner-ului |
-| Incrustațiile (12.1↑) | [incrustatii.md](incrustatii.md) | `wip/12.1-incrustatii` | 12.1↑e-3 (pereții drepți) în lucru, în sesiunea cloud a liniei |
-| Planșele (etapa 11) | [plansele.md](plansele.md) | `wip/11.1-plansele` | 11.3↑e (urechile „unde ține”) unită în `main` (`d3ffcbf3`); 11.3↑f la cuvântul owner-ului; tăierea plăcii 11, la owner |
-| Trasarea din imagine (25.x↑, ADR 0272) | [trasare.md](trasare.md) | `wip/25.1-trasare` | 25.8↑a (imaginile pe foaie) cu porțile finale în CI, PR-ul `AndreiBesliu/cvs2#6` |
-| Biblioteca extensiilor, interfața nouă (3.Xh, ADR 0231–0239) | [biblioteca.md](biblioteca.md) | `wip/3.Xh-biblioteca-ui` | pornită pe 23.11, la cuvântul owner-ului; ADR 0231 propus, cu schița și patru întrebări la owner (`AndreiBesliu/cvs2#4`, ciornă); codul, la răspunsuri |
+| Adminul (ADR 0260) | [admin.md](admin.md) | `wip/A.1-admin` | A.4 (`ddaa7ead`) și A.5 (`1b46c955`) unite în `main`; A.6 în lucru, în sesiunea cloud a liniei; A.7 la cuvântul owner-ului |
+| Incrustațiile (12.1↑) | [incrustatii.md](incrustatii.md) | `wip/12.1-incrustatii` | 12.1↑e-3 și 12.1↑e-4 în lucru, în sesiunea cloud a liniei (`AndreiBesliu/cvs2#7`, ciornă) |
+| Planșele (etapa 11) | [plansele.md](plansele.md) | `wip/11.1-plansele` | 11.3↑e unită în `main` (`d3ffcbf3`); 11.3↑f (urechile după reguli) raportată gata (`AndreiBesliu/cvs2#9`), în lotul următor; tăierea plăcii 11, la owner |
+| Trasarea din imagine (25.x↑, ADR 0272) | [trasare.md](trasare.md) | `wip/25.1-trasare` | 25.8↑a (imaginile pe foaie) unită în `main` (`473f2e20`); 25.8↑b la cuvântul owner-ului |
+| Biblioteca extensiilor, interfața nouă (3.Xh, ADR 0231–0239) | [biblioteca.md](biblioteca.md) | `wip/3.Xh-biblioteca-ui` | ADR 0231 acceptat („Da, 1a–4a”); 3.Xh-1…3 gata pe ramură, în sesiunea cloud a liniei (`AndreiBesliu/cvs2#4`, încă ciornă) |
 | Tăierea și conversia (10.3↑, ADR 0182) | [taiere.md](taiere.md) | `wip/10.3o-legare` | 10.3↑o unită; urmează 10.3↑p–r |
 | Imprimanta 3D (K1C, 3.6x, ADR 0195) | [imprimanta.md](imprimanta.md) | `wip/3.6g-imprimanta` | 3.6v unită; 3.6w (camera) la cuvântul owner-ului; proba pe aparat, la owner |
 | Aranjamentele (ADR 0250, 0251) | [aranjamente.md](aranjamente.md) | `wip/28.1-aranjamente` | 28.1↑a–d unite; următoarea, la cuvântul owner-ului |

@@ -64,6 +64,20 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
 - **O sesiune nouă nu se pornește din container:** `create_session` e refuzat de clasificatorul de permisiuni. Ramura
   liniei o face sesiunea principală (`git push origin refs/remotes/origin/main:refs/heads/wip/<felia>-<nume>`), brief-ul
   îl primește owner-ul ca fișier și îl lipește într-o sesiune cloud nouă, pe ramura aceea.
+- **`ci-si-publica.sh`, două reparații din 23.11:** publicarea se pornește cu `--ref main`; cele 10 minute în care o
+  rulare trebuie să apară se numără de la începutul așteptării ei (altfel o publicare pornită după o așteptare lungă a
+  completului e declarată lipsă, deși rulează).
+- **Edge poate lipsi din containerul sesiunii principale** (pregătirea mediului nu l-a pus, deși liniile îl aveau): pentru
+  o probă e2e de reprodus, `npx playwright install --with-deps msedge`, pasul din `scripts/cloud/pregatire.sh`.
+- **O probă instabilă care oprește un lot se reproduce și se repară pe ramura de unire** (doar probe, cu otrava ei), apoi
+  porțile rulează pe commit-ul cu reparația: `extensii.lucru.spec.ts:110`, pe 23.11. Încărcarea care a scos-o la iveală:
+  proba repetată de 200 de ori pe zece lucrători (`--repeat-each 200 --workers 10`).
+- **Loturile:** feliile gata în același timp merg într-un lot (porțile unirii judecă atunci arborele lor comun); o felie
+  raportată cât rulează porțile unui lot intră în următorul, fără să le repornească.
+- **`main` se poate mișca sub un lot:** pe 23.11, sesiunea liniei elicelor a unit ea 3.Tr, la cuvântul owner-ului, cât
+  rulau porțile unui lot care o cuprindea. Înaintea push-ului: `git fetch`, apoi `git merge-base --is-ancestor origin/main
+  HEAD`. Dacă `main` s-a mișcat, lotul se reface peste el (fără ce a intrat deja) și se compară codul cu cel de pe commit-ul
+  cu porțile verzi (`git diff --stat <sha> HEAD -- . ':(exclude)*.md'`, gol); dacă diferă, porțile se reiau.
 - **PR-ul liniei** e deschis de sesiunea ei ca ciornă (regula mediului cloud): starea „ciornă” nu spune că felia nu e gata.
   Gata înseamnă raportul liniei (nota ei spune „gata”) și rapidul cu completul verzi pe commit-ul raportat.
 
@@ -86,21 +100,25 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
   printr-o schiță.
 - **Observabilitatea:** erorile ajung în jurnalul aplicației; joburile își lasă marcajul.
 
-## Starea pe 23.11.2026 (după a doua unire din cloud)
+## Starea pe 23.11.2026, seara (după a patra unire din cloud)
 
-- **`main`:** din sesiunea principală din cloud: 3.Tq (elicele, Easy 3Draw 18.19.0) în `0ae9c6c1`, publicată pe test cu
-  `8177ab81`; apoi lotul 11.3↑e (planșele, `d3ffcbf3`) și A.4 (adminul, `ddaa7ead`). Înainte, lotul de după pauză
-  (`220bd48e`: 12.1↑e-2, 10.3↑o, 3.6v) și uneltele lucrului în cloud.
+- **`main`, pe 23.11, din cloud:** 3.Tq (elicele, `0ae9c6c1`; pe test cu `8177ab81`); 11.3↑e (planșele, `d3ffcbf3`) și A.4
+  (adminul, `ddaa7ead`; pe test cu `c010e3d1`); reparația probelor atelierului și 3.Tr (elicea de barcă, Easy 3Draw
+  18.20.0), unite în `d262e57a` de sesiunea liniei, la cuvântul owner-ului; 25.8↑a (trasarea, `473f2e20`) și A.5
+  (adminul, `1b46c955`), cu reparația probei extensiilor (`8287d66e`).
 - **Liniile** (vezi [indexul](README.md)):
-  - **elicele:** 3.Tq unită; reparația probelor atelierului și 3.Tr (elicea de barcă, 18.20.0), unite în `d262e57a` de
-    sesiunea liniei, la cuvântul owner-ului (publicarea pe test rămâne aici); 3.Ts (carcasa), la cuvântul owner-ului;
-  - **planșele:** 11.3↑e unită; 11.3↑f, la cuvântul owner-ului. **Adminul:** A.4 unită; A.5–A.7, la cuvântul owner-ului;
-  - **trasarea:** 25.8↑a, cu porțile finale în CI. **Incrustațiile:** 12.1↑e-3 în lucru (ramura mai are `.lucru/`);
-  - **biblioteca extensiilor, interfața nouă** (3.Xh, `wip/3.Xh-biblioteca-ui`, ADR 0231–0239, canalul `biblioteca`;
-    pornită pe 23.11, la cuvântul owner-ului): ADR 0231 propus, cu schița și întrebările; codul, la răspunsuri;
+  - **planșele:** 11.3↑f (urechile după reguli) raportată gata, în lotul următor;
+  - **adminul:** A.6 (Roadmap, Documentație, Setări) în lucru; A.7, la cuvântul owner-ului;
+  - **incrustațiile:** 12.1↑e-3 și 12.1↑e-4 în lucru, PR-ul încă ciornă;
+  - **biblioteca extensiilor, interfața nouă** (3.Xh, `wip/3.Xh-biblioteca-ui`, ADR 0231 acceptat cu 1a–4a, canalul
+    `biblioteca`): 3.Xh-1…3 gata pe ramură, PR-ul încă ciornă;
+  - **elicele:** 3.Ts (ventilatorul cu carcasă), la cuvântul owner-ului. **Trasarea:** 25.8↑b, la cuvântul owner-ului;
   - **fără felie în lucru:** tăierea (după 10.3↑o: 10.3↑p–r), imprimanta (după 3.6v: 3.6w, camera), aranjamentele (28.1↑).
     Pornesc la cuvântul owner-ului, cu un brief scris de sesiunea principală și lipit de owner într-o sesiune cloud nouă;
   - **încheiate:** ancorele (6.V↑), raportările (15.B↑b), galeria (3.Tp, ADR 0281), probele instabile.
+- **De urmărit:** pornirea cu ușa e la 113,0 / 115 kB (cu Atelierul, 113,3): o felie care mai adaugă în pornire cere întâi
+  loc sau decizia owner-ului pe plafon. În panoul foii, la 1400 px, etichetele „Numele” și „Materialul” apar tăiate la o
+  literă (văzut de linia trasării, și pe `220bd48e`: nu vine dintr-o felie de azi).
 - **Pe calculatorul owner-ului:** worktree-urile vechi (`C:\Users\besli\cncvs2-lucru\*`), toate curate și împinse, rămân
   copie de siguranță până spune owner-ul; probele pe imprimanta K1C și pe mașina CNC; `docs/faza0/`.
 
