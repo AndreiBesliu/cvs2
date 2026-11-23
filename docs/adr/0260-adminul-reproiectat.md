@@ -284,3 +284,47 @@ ideile noi 63–76?”). Felia ei e **A.1**, cu carcasa:
     doar locală, e în repo: `scripts/otravuri-emulatoare.py`.
   - **Mărimea:** `/admin` 121,2 → 124,1 / 200 kB (+2,9; linia ajunge la +17,6 din cei +25). Pornirea (107,9, cu ușa 112,2 /
     115) și totalul (760,9 / 800) sunt cele ale lui `main`.
+- **A.5, 23.11: Utilizatori și Personal** (aceeași ramură, `wip/A.1-admin`, adusă înainte la `main` `c010e3d1`, care conține
+  A.4; `3.Ae` în jurnalul etapei 3; lucrată într-o sesiune cloud). Fără reguli, permisiuni, indexuri, date sau funcții noi.
+  - **Utilizatori, partea pură** (`src/admin/utilizatori/vedere.ts`): filtrele pe plan (Toate, Probă, Gratuit, Expirat,
+    Dezactivat, Personal) cu numărul fiecăruia, după planul arătat la ora citirii; căutarea în conturile încărcate (adresa,
+    numele sau uid-ul, fără diacritice și majuscule); dreptul pe scurt („nelimitat”, „încă N zile”, „din” data expirării);
+    istoricul planului din rândurile de audit ale contului.
+  - **Tabelul:** contul, planul, dreptul și crearea, cele mai noi întâi. Numerele filtrelor urmează căutarea: un filtru
+    arată câte rânduri dă cu textul căutat. Contul ales stă alături (primul arătat, la intrare); un filtru care îl ascunde
+    mută alegerea pe primul arătat, fără s-o mute înapoi. Un cont găsit de căutarea din antet vine ales. Sub 1 100 px,
+    panoul trece sub tabel.
+  - **Panoul contului:** planul de acum, numele, crearea și ultima logare; cu `conturi.administreaza`, schimbarea planului,
+    cu formularul de azi (gratuit, o probă de N zile, dezactivarea sau reactivarea, cu „Salvează planul”). Schița avea trei
+    butoane cu un clic; formularul a rămas, fiindcă o dezactivare dintr-un clic greșit ajunge imediat la client. Cât lista
+    se recitește după o schimbare, nimic nu pleacă: planul arătat ar fi cel vechi, iar serverul l-ar refuza.
+  - **Istoricul planului** se citește doar cu „Audit: citește”: rândurile de audit cu `tinta` egală cu contul (indexul
+    simplu, fără ordine pe server, cel mult 100), ordonate în pagină. Arată deschiderea contului („Cont nou”) și fiecare
+    schimbare, cu planul de după și cine a făcut-o (tu sau personalul). Fără permisiune, nu se arată și nu se cere nimic din
+    audit.
+  - **Personal, oamenii:** sub nume stă felul intrării, din sursa documentului omului: „Google, prin invitație”, „parolă,
+    cont creat aici” sau „adăugat în consolă” (primul owner: felul lui de intrare nu e ținut nicăieri, deci nu se
+    ghicește). Metodele legate mai târziu din fila Cont (ADR 0049 §6) nu se văd aici: ar cere o citire din Auth, pe server.
+    Invitațiile deschise stau în aceeași listă, cu „invitație trimisă”, termenul și rolul. „Adaugă un om” deschide
+    formularul de azi (invitația sau contul cu parolă).
+  - **Matricea rol × permisiune:** o coloană pe rol (owner-ul are „tot”), un rând pe permisiunea din catalog, pe zone
+    (`grupePermisiuni`), cu descrierea permisiunii pe rândul ei. Zona și fapta vin din eticheta de azi a permisiunii
+    („Erori: citește”), despărțită (`etichetaPermisiune`): fără texte noi, iar o probă cere, în ambele limbi, ca permisiunile
+    unei zone să aibă aceeași zonă în etichetă. Un rol se editează pe coloana lui (numele în cap, bifele în celule), cu
+    „Salvează rolul”: aceeași cerere `salveaza-rol`, cu lista întreagă. Cât se editează un rol, celelalte nu se ating. Un rol
+    folosit de un om sau de o invitație nu se șterge. Sub 1 200 px, matricea trece sub oameni; cu multe roluri, se derulează
+    în cardul ei.
+  - **Găsite de capturi** (cele două file la 1440, 1024 și 760 px, în ambele teme): la 1024 px, cu panoul alături, adresele
+    din tabel se rupeau pe trei rânduri (de aici pragul de 1 100 px); matricea era înghesuită lângă oameni sub 1 200 px;
+    căutarea își tăia textul de ajutor; datele cu oră nu încăpeau în coloane (`ziScurta`).
+  - **Probele:** 8 unitare noi (`admin.utilizatori.test.ts`: filtrele, căutarea, dreptul, istoricul, ziua pe scurt;
+    `admin.personal.test.ts`: grupele, eticheta, etichetele reale în ambele limbi). Pe emulatoare, probele celor două file pe
+    așezarea nouă, plus două noi: un cont găsit de căutarea din antet și administrarea fără audit
+    (`utilizatori.emulator.spec.ts`); matricea, editarea pe coloană și așezarea (`personal.emulator.spec.ts`). În proba
+    owner-ului: filtrele, căutarea, istoricul din audit, citirea listei ținută după o schimbare.
+  - **Otrăvurile:** 61 / 61 prinse la prima rulare (`test/otravuri/A.5.py`: 23 unitare, 38 pe emulatoare), fiecare pe
+    aserțiunea care îi țintește defectul, pe `58bb8f54`. Înaintea rulării, patru probe au fost întărite, după ce lista a
+    arătat că otrava lor ar fi scăpat: un sfârșit de probă ținut pe un cont dezactivat, deschiderea contului făcută de
+    cineva din personal, „Salvează planul” oprit cât lista se recitește, „Renunță” din matrice fără nicio cerere spre server.
+  - **Mărimea:** `/admin` 124,1 → 125,6 / 200 kB (+1,5; linia ajunge la +19,1 din cei +25). Pornirea (107,9, cu ușa 112,3 /
+    115) și totalul (763,1 / 800) sunt cele ale lui `main`.

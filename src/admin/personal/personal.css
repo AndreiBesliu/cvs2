@@ -4,6 +4,39 @@
   gap: var(--sp-4);
 }
 
+/* Personal, după schiță (ADR 0260 §6): oamenii la stânga, matricea rolurilor la dreapta; mesajele, pe tot rândul. Coloana
+   matricei poate fi mai îngustă decât tabelul ei: tabelul se derulează în cardul lui, nu lățește pagina. */
+.pers-doua {
+  grid-template-columns: minmax(0, 26rem) minmax(0, 1fr);
+  align-items: start;
+}
+
+.pers-doua > :not(.pers-sectiune) {
+  grid-column: 1 / -1;
+}
+
+.pers-doua > .pers-sectiune {
+  min-width: 0;
+}
+
+@media (max-width: 1200px) {
+  .pers-doua {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* Capul unui card: titlul și butonul lui. */
+.pers-cap {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-2) var(--sp-3);
+}
+
+.pers-cap h2 {
+  flex: 1 1 auto;
+}
+
 .pers-sectiune {
   display: grid;
   gap: var(--sp-3);
@@ -52,15 +85,13 @@
   font-size: var(--fs-2);
 }
 
-.pers-formular,
-.pers-editor {
+.pers-formular {
   display: grid;
   gap: var(--sp-3);
   max-width: 34rem;
 }
 
-.pers-formular label,
-.pers-editor > label {
+.pers-formular label {
   display: grid;
   gap: var(--sp-1);
 }
@@ -101,8 +132,15 @@
 .pers-rand {
   display: flex;
   flex-wrap: wrap;
-  align-items: baseline;
+  align-items: center;
   gap: var(--sp-1) var(--sp-3);
+}
+
+/* Omul: numele, iar sub el cum a intrat (ADR 0260 §6); rolul rămâne la dreapta. */
+.pers-om {
+  flex: 1 1 10rem;
+  min-width: 0;
+  display: grid;
 }
 
 .pers-cine {
@@ -110,61 +148,87 @@
   overflow-wrap: anywhere;
 }
 
-.pers-rol {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--sp-2);
-}
-
-.pers-rol select {
+.pers select.pers-rol {
   width: auto;
   max-width: 100%;
 }
 
-.pers-permisiuni {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--sp-1);
+/* Matricea rol × permisiune: rolurile pe coloane, permisiunile pe rânduri, pe zone; multe roluri se derulează în card. */
+.pers-matrice-loc {
+  display: grid;
+  gap: var(--sp-3);
+  overflow-x: auto;
 }
 
-.pers-permisiune {
-  padding: 0 var(--sp-2);
-  border-radius: 999px;
+.pers-matrice {
+  border-collapse: collapse;
   font-size: var(--fs-2);
-  background: var(--s-peste);
+}
+
+.pers-matrice th,
+.pers-matrice td {
+  padding: 6px 8px;
+  text-align: left;
+  vertical-align: top;
+  font-weight: 400;
+  white-space: nowrap;
+}
+
+.pers-matrice thead th,
+.pers-matrice th[scope='rowgroup'] {
+  font-weight: 600;
+}
+
+.pers-matrice tr[data-zona] > * {
+  border-top: 1px solid var(--l-margine);
+}
+
+.pers-matrice thead th > span {
+  display: block;
+}
+
+.pers-matrice-act {
+  display: flex;
+  gap: var(--sp-1);
+  margin-top: var(--sp-1);
+}
+
+.pers-matrice-act button {
+  min-height: 28px;
+  padding: 0 var(--sp-2);
+  font-size: var(--fs-1);
+  font-weight: 400;
+}
+
+.pers .pers-matrice input[type='text'] {
+  width: 9rem;
+  min-height: 32px;
+  font-size: var(--fs-2);
+}
+
+.pers-matrice input[type='checkbox'] {
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  accent-color: var(--a);
+}
+
+/* Bifa unei permisiuni date: pătratul plin din schiță, pe accent. */
+.pers-da {
+  display: inline-grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  background: var(--a);
+  color: var(--s-panou);
+  font-size: var(--fs-1);
+  font-weight: 700;
 }
 
 .pers-pericol:enabled {
   color: var(--rosu);
   border-color: var(--rosu);
-}
-
-.pers-editor fieldset {
-  display: grid;
-  gap: var(--sp-2);
-  margin: 0;
-  padding: var(--sp-3);
-  border: 1px solid var(--l-margine);
-  border-radius: var(--r-2);
-}
-
-.pers-bifa {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  align-items: start;
-  gap: var(--sp-2);
-}
-
-.pers-bifa input {
-  margin-top: 0.25rem;
-}
-
-.pers-bifa > span {
-  display: grid;
-}
-
-.pers-bifa-nume {
-  font-weight: 600;
 }
 
 .admin-parola {

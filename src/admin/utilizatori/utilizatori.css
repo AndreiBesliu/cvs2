@@ -1,5 +1,7 @@
-/* Filele Utilizatori și Setări (ADR 0116): secțiunile și listele filei Personal (`personal.css`), plus planul contului. */
-.util input[type='number'] {
+/* Filele Utilizatori și Setări (ADR 0116): secțiunile și listele filei Personal (`personal.css`), plus planul contului.
+   Utilizatori, după schiță (ADR 0260 §5): titlul cu căutarea, filtrele pe plan, tabelul și contul ales alături. */
+.util input[type='number'],
+.util input[type='search'] {
   font: inherit;
   font-size: var(--fs-3);
   box-sizing: border-box;
@@ -38,6 +40,118 @@
 
 .util-meta {
   margin: 0;
+}
+
+.util-titlu {
+  flex: 1 1 auto;
+  margin: 0;
+  font-size: var(--fs-4);
+}
+
+/* Căutarea, cât textul ei de ajutor („Caută în conturile încărcate”). */
+.util input[type='search'] {
+  flex: 0 1 17rem;
+  max-width: 17rem;
+}
+
+/* Filtrele se rup pe rânduri unde nu încap (șase, cu numere), nu ies din ecran. */
+.util-filtre {
+  justify-self: start;
+  flex-wrap: wrap;
+}
+
+/* Tabelul ia locul rămas; contul ales are lățimea lui (schița: 300 px). */
+.util-tabel {
+  flex: 1 1 auto;
+  min-width: 0;
+  border-collapse: separate;
+  border-spacing: 0;
+  background: var(--s-panou);
+  border: 1px solid var(--l-margine);
+  border-radius: var(--r-2);
+  overflow: hidden;
+  font-size: var(--fs-2);
+}
+
+.util-tabel th,
+.util-tabel td {
+  padding: 9px 12px;
+  text-align: left;
+}
+
+.util-tabel th {
+  font-weight: 600;
+  background: var(--s-peste);
+}
+
+.util-tabel td {
+  border-top: 1px solid var(--l-margine);
+}
+
+/* Planul, dreptul și data rămân pe un rând; adresa ia restul și se rupe ea. */
+.util-tabel td + td {
+  white-space: nowrap;
+}
+
+.util-tabel tbody tr {
+  cursor: pointer;
+}
+
+.util-tabel tbody tr:hover td {
+  background: var(--s-peste);
+}
+
+.util-tabel tr[data-ales='true'] td {
+  background: var(--s-ales);
+}
+
+.util-tabel tr[data-ales='true'] td:first-child {
+  box-shadow: inset 3px 0 0 var(--a);
+}
+
+/* Adresa e butonul rândului (calea din tastatură): textul obișnuit, la stânga; una lungă se rupe, nu lățește tabelul. */
+.util-tabel td button {
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--t);
+  font: inherit;
+  text-align: left;
+  overflow-wrap: anywhere;
+}
+
+.util-detaliu {
+  flex: 0 0 20rem;
+}
+
+.util-detaliu h3 {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.util-istoric {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--sp-1);
+}
+
+/* Sub 1 100 px, tabelul și panoul nu mai încap alături (adresele s-ar rupe pe trei rânduri): panoul trece sub tabel și
+   curge cu pagina. */
+@media (max-width: 1100px) {
+  .util .admin-erori-corp {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .util-detaliu {
+    flex-basis: auto;
+    position: static;
+    max-height: none;
+    overflow: visible;
+  }
 }
 
 .util-setari {
