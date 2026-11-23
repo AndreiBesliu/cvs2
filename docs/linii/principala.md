@@ -48,6 +48,10 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
 
 - **Ce merge:** `gh run list` / `gh run view --log`, `gh workflow run` (completul, publicarea), `gh api` pentru PR-uri,
   push-ul ramurii `unire-<data>` și al lui `main`. `gh auth status` spune că token-ul nu e bun: se ignoră.
+- **`gh workflow run` cere mereu `--ref`:** fără el, `gh` întreabă prin GraphQL (oprit în container) care e ramura
+  implicită și cade. Așa a căzut prima publicare (`publica.yml`); `ci-si-publica.sh` dă acum `--ref main`.
+- **Publicarea, cap-coadă** (23.11, `8177ab81`): rapidul 6 minute, completul 44, `publica.yml` 3; scriptul, reluat de trei
+  ori (iese cu 3 cât completul încă rulează), la sfârșit citește sha-ul de pe adresa de test.
 - **Adresa de test** se citește din container doar cu gazda `cncvectorstudio-test.web.app` în rețeaua mediului (adăugată
   pe 23.11, cu aprobarea owner-ului). O gazdă nouă se cere cu unealta mediului: owner-ul o aprobă pe un card.
 - **Cifrele porților** se iau din jurnalul completului: `gh run view <id> --log`, apoi rândurile `ℹ tests / pass / fail /
@@ -82,16 +86,18 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
   printr-o schiță.
 - **Observabilitatea:** erorile ajung în jurnalul aplicației; joburile își lasă marcajul.
 
-## Starea pe 23.11.2026 (după prima unire din cloud)
+## Starea pe 23.11.2026 (după a doua unire din cloud)
 
-- **`main`:** 3.Tq (elicele, Easy 3Draw 18.19.0) unită în `0ae9c6c1`, din sesiunea principală din cloud; înainte, lotul de
-  după pauză (`220bd48e`: 12.1↑e-2, 10.3↑o, 3.6v) și uneltele lucrului în cloud.
+- **`main`:** din sesiunea principală din cloud: 3.Tq (elicele, Easy 3Draw 18.19.0) în `0ae9c6c1`, publicată pe test cu
+  `8177ab81`; apoi lotul 11.3↑e (planșele, `d3ffcbf3`) și A.4 (adminul, `ddaa7ead`). Înainte, lotul de după pauză
+  (`220bd48e`: 12.1↑e-2, 10.3↑o, 3.6v) și uneltele lucrului în cloud.
 - **Liniile** (vezi [indexul](README.md)):
-  - **elicele:** 3.Tq unită; 3.Tr (barca) și 3.Ts (carcasa), la cuvântul owner-ului;
-  - **în lucru, în sesiunile lor din cloud** (pornite de owner): A.4 (adminul), 12.1↑e-3 (incrustațiile), 11.3↑e
-    (planșele), 25.8↑a (trasarea). Ramurile lor mai au `.lucru/<linie>/`: se unesc doar după ce linia îl scoate;
-  - **pornită pe 23.11, la cuvântul owner-ului:** biblioteca extensiilor, interfața nouă (3.Xh, `wip/3.Xh-biblioteca-ui`,
-    ADR 0231–0239, canalul `biblioteca`): întâi ADR 0231 propus și schița cu întrebările. Brief-ul i l-am dat owner-ului;
+  - **elicele:** 3.Tq unită; reparația probelor atelierului (la cuvântul owner-ului, în sesiunea liniei), cu porțile în
+    CI; 3.Tr (barca) și 3.Ts (carcasa), la cuvântul owner-ului;
+  - **planșele:** 11.3↑e unită; 11.3↑f, la cuvântul owner-ului. **Adminul:** A.4 unită; A.5–A.7, la cuvântul owner-ului;
+  - **trasarea:** 25.8↑a, cu porțile finale în CI. **Incrustațiile:** 12.1↑e-3 în lucru (ramura mai are `.lucru/`);
+  - **biblioteca extensiilor, interfața nouă** (3.Xh, `wip/3.Xh-biblioteca-ui`, ADR 0231–0239, canalul `biblioteca`;
+    pornită pe 23.11, la cuvântul owner-ului): ADR 0231 propus, cu schița și întrebările; codul, la răspunsuri;
   - **fără felie în lucru:** tăierea (după 10.3↑o: 10.3↑p–r), imprimanta (după 3.6v: 3.6w, camera), aranjamentele (28.1↑).
     Pornesc la cuvântul owner-ului, cu un brief scris de sesiunea principală și lipit de owner într-o sesiune cloud nouă;
   - **încheiate:** ancorele (6.V↑), raportările (15.B↑b), galeria (3.Tp, ADR 0281), probele instabile.

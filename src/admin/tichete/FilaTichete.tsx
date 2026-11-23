@@ -14,7 +14,7 @@ import { ceaMaiRecenta } from '../carcasa/date.ts';
 import { EroareCitire, LegaturaFila, ListaGoala, SeIncarca, useCatSpatiulDeJos, usePublica, useVedeFila, type Tinta } from '../carcasa/stari.tsx';
 import { dataScurta, motivDin, randDin, type Masura, type RandGrup } from '../erori/date.ts';
 import { alesDupaLista } from '../erori/vedere.ts';
-import { useAdresaImaginii } from '../sugestii/FilaSugestii.tsx';
+import { useAdresaImaginii } from '../sugestii/Formular.tsx';
 import { despacheteazaProiect, eRosu, filtreaza, numeFisierProiect, ordoneaza, proiectVerificat, tichetDin, type Filtru, type Tichet } from './date.ts';
 import { eroriSesiune, incapeRapid, insereazaLaCursor, numereFiltru, stareDupaRaspuns, titluTichet } from './vedere.ts';
 import '../sugestii/sugestii.css';

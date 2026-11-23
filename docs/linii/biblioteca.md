@@ -52,6 +52,9 @@ si cu un UI/UX mai bun si atragator”.
 - **Toată felia 3.Xh:** pornirea +0,1 kB, totalul 760,9 → 764,6 / 800 kB; otrăvurile, 152 / 152 (45, 40, 57, 10). **De
   spus la unire** (în `CLAUDE.md` scrie sesiunea principală): regula lui „ce e nou” de mai jos; fondul semnului lui Easy
   3Draw, gri-albăstrui în loc de crem, încă de hotărât de owner; proba cu Edge e doar în CI.
+- **`main` adus în ramură la încheiere** (`c010e3d`: 11.3↑e și A.4): o singură ciocnire, în DEVLOG, rezolvată cu
+  `scripts/rezolva-devlog.py`. Pe arborele unit: pornirea 108,0 kB (cu ușa 112,4 / 115), totalul 766,9 / 800 kB, `/admin`
+  124,1 / 200; e2e-ul extensiilor, 61 / 61.
 - **Ce n-a intrat** (la cuvântul owner-ului): căutarea și categoriile (la peste ~20 de extensii), o captură mărită la clic,
   „ce e nou” în fereastra de confirmare a unei actualizări.
 

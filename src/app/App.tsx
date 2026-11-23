@@ -198,6 +198,8 @@ type StareTraseu = {
   readonly miscari: readonly Miscare[] | null;
   /** Programul calculat (doar „gata”), pentru timpul jobului de lângă traseu (ADR 0046 §8). */
   readonly program?: Program;
+  /** Centrele urechilor „unde ține” ale programului (ADR 0211, b), în lume: semnele lor, ca ale urechilor alese. */
+  readonly urechiLemn?: readonly { readonly x: number; readonly y: number }[];
   readonly motiv: string | null;
 };
 /** Bugetul de vârfuri al stratului la pornire (5 M de segmente țin 60 Hz pe iGPU, s6-V); se înjumătățește la un cadru lent. */
@@ -662,6 +664,7 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
         if (traseuArat.current) calculeazaTraseu();
         setStareExport({
           ok: true, linii: r.program.linii, sha256: r.program.sha256, avertismente: r.avertismente, rezumat: r.rezumat, simulare: 'calcul',
+          ...(r.undeTine ? { undeTine: r.undeTine } : {}),
           ...(fisiere.length > 1 ? { fisiere: fisiere.map(({ nume, linii, sha256 }) => ({ nume, linii, sha256 })) } : {}),
           ...(dopuri.length > 0 ? { dopuri: dopuri.map(({ octeti: _o, ...d }) => d) } : {}), ...(r.foi ? { foi: r.foi } : {}),
         });
@@ -878,11 +881,18 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
       if (cerere !== cerereTraseu.current) return;
       // Traseul de dinainte rămâne sub cipul „se calculează”, ca pânza să nu clipească (și, dacă documentul se schimbă
       // între timp, rămâne el, stins).
-      setTraseu((v) => ({ arata: true, stare: 'calcul', rev: d.rev, miscari: v?.miscari ?? null, ...(v?.program ? { program: v.program } : {}), motiv: null }));
+      setTraseu((v) => ({
+        arata: true, stare: 'calcul', rev: d.rev, miscari: v?.miscari ?? null, ...(v?.program ? { program: v.program } : {}),
+        ...(v?.urechiLemn ? { urechiLemn: v.urechiLemn } : {}), motiv: null,
+      }));
       calc.programTraseu(doarFoaia(d, curenta.current.foaie), ac.signal).then((r) => {
         if (cerere !== cerereTraseu.current) return;
         traseuInCurs.current = null;
-        if (r.ok) setTraseu({ arata: true, stare: 'gata', rev: d.rev, miscari: r.program.miscari, program: r.program, motiv: null });
+        if (r.ok) {
+          setTraseu({
+            arata: true, stare: 'gata', rev: d.rev, miscari: r.program.miscari, program: r.program, ...(r.urechiLemn ? { urechiLemn: r.urechiLemn } : {}), motiv: null,
+          });
+        }
         else refuz(r.motiv);
       }, (e: unknown) => {
         if (e instanceof calc.CalculAnulat) return;
@@ -1534,8 +1544,8 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
                       nume={doc.piese.find((x) => x.id === urechiAlese.piesa)?.nume ?? urechiAlese.piesa} vedere={v} marime={m} zona={zona}
                       onGata={gataUrechi} onRenunta={() => { setUrechiAlese(null); }} />
                   </Suspense>
-                ) : traseu?.arata && cuUrechiAlese ? (
-                  <Suspense fallback={null}><SemneUrechiFoaie doc={doc} indexFoaie={indexActiva} vedere={v} marime={m} /></Suspense>
+                ) : traseu?.arata && (cuUrechiAlese || (traseu.urechiLemn?.length ?? 0) > 0) ? (
+                  <Suspense fallback={null}><SemneUrechiFoaie doc={doc} indexFoaie={indexActiva} vedere={v} marime={m} lemn={traseu.urechiLemn} /></Suspense>
                 ) : null}
               </Suspense>
             )}

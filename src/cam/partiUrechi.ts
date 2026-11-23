@@ -20,6 +20,8 @@ export type ParteCuUrechi = {
   readonly instanta: string;
   /** Id-ul în lume al elementului tăiat (`<instanță>/<element>`). */
   readonly element: string;
+  /** Operația care îl taie, `<piesă>/<operație>`: rândul ei din fereastra exportului (ADR 0211, „Pune urechile unde țin”). */
+  readonly operatie: string;
   /** Vârfurile poligonului, x0, y0, x1, y1, …, în coordonatele documentului (fără vârful de închidere repetat). */
   readonly poligon: Float64Array;
   /** Mijlocul cutiei conturului: locul spus omului. */
@@ -40,7 +42,10 @@ export function partiCuUrechi(doc: Document): ParteCuUrechi[] {
     if (!c.ok || !c.contur.inchis || c.contur.varfuri.length < 2) continue;
     vazute.add(t.idLume);
     const k = cutieContur(c.contur);
-    rez.push({ instanta: t.instanta, element: t.idLume, poligon: poligon(c.contur, TOLERANTA_PARTI), x: (k.minX + k.maxX) / 2, y: (k.minY + k.maxY) / 2 });
+    rez.push({
+      instanta: t.instanta, element: t.idLume, operatie: `${t.piesa}/${t.operatie}`, poligon: poligon(c.contur, TOLERANTA_PARTI),
+      x: (k.minX + k.maxX) / 2, y: (k.minY + k.maxY) / 2,
+    });
   }
   return rez;
 }
