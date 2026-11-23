@@ -995,7 +995,13 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   (`genereaza.ps1`); canalul, amprenta `645208c691d8`.
   **Totalul ramurii, cu `main` adus (`9d1eac56`): 741,6 / 800 kB** (`main` `a64adf63`: 739,4), pornirea 107,2 / 115
   (cu ușa 111,2). **ADR 0272 (imaginile pe foaie, straturile bitmap; feliile 25.8↑a–b) propus pe 21.11,** cu schița
-  (<https://claude.ai/artifact/Ctc63ZdA6ipkLPA8uGCJyb>, formularul în `raspunsuri/owner`): codul pornește după răspunsuri.
+  (<https://claude.ai/artifact/Ctc63ZdA6ipkLPA8uGCJyb>, formularul în `raspunsuri/owner`), acceptat în aceeași zi („Da,
+  1a–3a”). **25.8↑a (imaginile pe foaie) gata pe 23.11, în sesiunea cloud a liniei, unită în `main` pe 23.11
+  (`473f2e20`):** o imagine rămâne pe foaie, sub desen, estompată, nici tăiată, nici exportată („Păstrează imaginea pe
+  foaie” și „Doar imaginea” în fereastra trasării; „Imaginile foii” în panoul Proprietăți, cu nimic selectat); octeții
+  stau în browser (IndexedDB `cncvs2-imagini`, după amprentă), iar foaia ține doar așezarea (`Foaie.imagini`, fără schemă
+  nouă: documentul rămâne v26). Rămâne 25.8↑b („Calibrează”, „Trasează…” din imaginea de pe foaie), la cuvântul owner-ului;
+  următorul ADR al liniei e 0273.
   **Sub plafonul de 600 kB mai încap ~23 kB**, măsurat pe unirile de probă din 09.11: tăierea +19,4, planșele +18,9 (cu
   ușa +4,4 kB: 109,9 / 110), imprimanta +32,6, 6.V↑d +1,5; trasarea și imprimanta împreună au dat 609,8 / 600, iar poarta
   mărimii a căzut. A doua unire mare cere întâi decizia owner-ului pe plafon (sau modulele aduse la prima folosire, ADR 0191
@@ -1285,6 +1291,31 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 23.11.2026, seara (a patra unire din cloud): **25.8↑a (imaginile pe foaie) și A.5 (Utilizatori și Personal) unite în
+  `main`**, în lot, cu reparația unei probe instabile a extensiilor (ramura `unire-2311e`, din `6f85243f`). **25.8↑a**
+  (linia trasării, ramura `wip/25.1-trasare`, `2e8caa3e`, PR-ul `AndreiBesliu/cvs2#6`; ADR 0272), unită în `473f2e20`: o
+  imagine rămâne pe foaie, sub desen, estompată, ca ajutor de desen, nici tăiată, nici exportată; „Păstrează imaginea pe
+  foaie” și „Doar imaginea” în fereastra trasării, „Imaginile foii” în panou (miniatura, ochiul, lacătul, opacitatea,
+  coșul); o imagine desfăcută se mută, se scalează și se rotește; octeții stau în browser, documentul rămâne v26;
+  otrăvurile 43 / 43; totalul +7,0 kB, pornirea +0,5. **A.5** (linia adminului, ramura `wip/A.1-admin`, `fe026f9f`,
+  PR-ul `AndreiBesliu/cvs2#8`; ADR 0260 §5–§6; `3.Ae` în fișa etapei 3), unită în `1b46c955`: Utilizatori cu tabelul
+  conturilor, filtrele pe plan, căutarea, contul ales alături și istoricul planului; Personal cu felul intrării,
+  invitațiile în aceeași listă și matricea rol × permisiune; fără reguli, permisiuni, indexuri sau funcții noi;
+  otrăvurile 61 / 61. Ciocnirea, doar în DEVLOG. **Două sesiuni au scris în `main`:** lotul fusese pregătit pe
+  `unire-2311d` (din `c010e3d1`) cu trei felii, între ele 3.Tr; cât îi rulau porțile, sesiunea liniei elicelor a unit ea
+  3.Tr (`d262e57a`, decizia de mai jos), la cuvântul owner-ului. Push-ul lotului a fost refuzat (nu mai era
+  fast-forward), deci nimic nu s-a pierdut: lotul a fost refăcut peste `6f85243f`, fără 3.Tr, iar codul lui e identic cu
+  al lui `675d40ce`, pe care au trecut porțile (`git diff` gol în afara fișierelor `.md`). **Proba instabilă:** completul
+  unirii a căzut întâi la `extensii.lucru.spec.ts:110` (clicul pe „Închide” din cadrul extensiei nu s-a mai întors, deși
+  fereastra se închisese), ca pe ramura trasării mai devreme și ca pe 18.11 la `extensii.spec.ts:43`; reluat, a trecut.
+  Reprodusă în container (3 din 200, pe zece lucrători) și reparată în `8287d66e` (doar probe): `clicCareInchideCadrul`
+  (`test/e2e/ajutor-extensii.ts`) așteaptă cadrul scos, nu întoarcerea clicului; cu el, 400 / 400, din care în 5 clicul
+  chiar nu s-a întors; otrava (gazda ignoră `host.inchide()`) e prinsă de ambele probe. Nimic pe server. Porțile, în CI,
+  pe `675d40ce` (același cod): unit 9 855 / 0 (12 sărite, pe Linux), e2e 608 / 608, funcțiile pe emulatoare 104 / 104,
+  paginile 38 / 38; pornirea 108,5 kB (plafonul 115; **cu ușa 113,0, cu Atelierul 113,3: mai sunt sub 2 kB**), totalul
+  770,0 / 800 kB, `/admin` 125,6 / 200. Completul a ținut 60 min 46 s: peste vechea limită de 60, sub cea nouă de 90.
+  Urmează, la raport: 11.3↑f (planșele, `AndreiBesliu/cvs2#9`, gata de unit), A.6 (adminul), 12.1↑e-3 și 12.1↑e-4
+  (incrustațiile), biblioteca (3.Xh-1…3 gata pe ramură, PR-ul încă ciornă). La cuvântul owner-ului: 25.8↑b, 3.Ts.
 - 23.11.2026, după-amiaza (a treia unire din cloud): **linia elicelor (reparația probelor atelierului și 3.Tr, elicea de
   barcă) unită în `main`**, la „deocamdata putem face unirea” al owner-ului, în sesiunea liniei (ramura `unire-2311d`, din
   `c010e3d1`). Ramura `wip/3.Tq-elice`, `8b1255b8`, PR-ul `AndreiBesliu/cvs2#5`, unită în `d262e57a`:

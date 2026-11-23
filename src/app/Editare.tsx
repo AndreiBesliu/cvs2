@@ -23,6 +23,8 @@ import { blocText } from '../model/blocText.ts';
 import { blocuriPiesei } from '../model/placute.ts';
 import { useInFereastra } from './inFereastra.ts';
 import { PanouText } from './PanouText.tsx';
+import { ManereImagine } from './ManereImagine.tsx';
+import { manerImagineLovit } from './manereImagine.ts';
 import { textLovit, texteGrupate } from './texteGrupate.ts';
 import {
   capatConstrans, cerculElipsa, deseneaza, formaDesenata, LATURI_MAX, LATURI_MIN, TASTA_UNELTEI, TASTE_UNELTE, tasteUneltei, UNELTE, type FormaDesenata, type ModCerc,
@@ -280,7 +282,7 @@ function scrieLocal(cheie: string, valoare: string): void {
   }
 }
 
-type Extra = Partial<Pick<ContextDocument, 'ghidajeNoi' | 'deplasari' | 'deplasare' | 'formaNoua' | 'transformare' | 'alese' | 'retea' | 'formaEditata' | 'sterge' | 'nodEditat' | 'textNou' | 'reparatie' | 'taiere' | 'conversie' | 'foaieTinta' | 'grupareSurori'>>;
+type Extra = Partial<Pick<ContextDocument, 'ghidajeNoi' | 'imaginiNoi' | 'deplasari' | 'deplasare' | 'formaNoua' | 'transformare' | 'alese' | 'retea' | 'formaEditata' | 'sterge' | 'nodEditat' | 'textNou' | 'reparatie' | 'taiere' | 'conversie' | 'foaieTinta' | 'grupareSurori'>>;
 
 /** Ca la pânză: cât de departe de contur prinde un clic (px) și de la cât începe o tragere (px). */
 const TOLERANTA_CLIC_PX = 4;
@@ -1033,8 +1035,10 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
   const [motivMeniu, setMotivMeniu] = useState<string | null>(null);
   // Ținta ancorei se arată (și se apucă) doar cât se arată și mânerele: pe o formă prea mică pe ecran, nu.
   const ancoraArata = ancora && cutie && manereVazute((cutie.maxX - cutie.minX) * vedere.scara, (cutie.maxY - cutie.minY) * vedere.scara).length > 0 ? ancora : null;
-  const pentruCadru = useRef({ unealta, vedere3d, selectie, doc, vedere, cutie, ruleaza, ancoraArata, indexFoaie });
-  pentruCadru.current = { unealta, vedere3d, selectie, doc, vedere, cutie, ruleaza, ancoraArata, indexFoaie };
+  // Imaginile desfăcute ale foii (ADR 0272 §4): mânerele lor (`ManereImagine`); fixate, clicurile ajung la desen.
+  const imaginiDesfacute = useMemo(() => (doc.foi[indexFoaie]?.imagini ?? []).filter((i) => i.vizibila && !i.fixata), [doc, indexFoaie]);
+  const pentruCadru = useRef({ unealta, vedere3d, selectie, doc, vedere, cutie, ruleaza, ancoraArata, indexFoaie, imaginiDesfacute, doarCitire: p.doarCitire });
+  pentruCadru.current = { unealta, vedere3d, selectie, doc, vedere, cutie, ruleaza, ancoraArata, indexFoaie, imaginiDesfacute, doarCitire: p.doarCitire };
   useEffect(() => {
     const el = radacina.current;
     const panza = el?.closest('.panza-cutie')?.querySelector<HTMLCanvasElement>('canvas.panza');
@@ -1051,6 +1055,13 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
       const p = local(e), v = s.vedere;
       if (s.unealta === 'transformare' && s.cutie && s.selectie.length > 0 && (manerLovit(s.cutie, v, p.x, p.y) || ancoraLovita(s.ancoraArata, v, p.x, p.y))) return;
       const lovita = instantaLa(s.doc, (p.x - v.tx) / v.scara, (v.ty - p.y) / v.scara, TOLERANTA_CLIC_PX / v.scara, s.indexFoaie);
+      // O imagine desfăcută (ADR 0272) ia apăsarea pe mânerele ei și pe interior, în afara liniilor desenului
+      // (`ManereImagine`), oricare ascultător ar veni întâi.
+      if (!s.doarCitire && s.imaginiDesfacute.some((im) => {
+        const m = manerImagineLovit(im, v, p.x, p.y);
+        return m !== null && (m !== 'mutare'
+          || instantaLa(s.doc, (p.x - v.tx) / v.scara, (v.ty - p.y) / v.scara, TOLERANTA_CLIC_PX / v.scara, s.indexFoaie, true) === null);
+      })) return;
       if (lovita && !e.shiftKey) return;
       e.preventDefault();
       e.stopPropagation();
@@ -1420,6 +1431,13 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
           textPoz={(poz) => textNumar(Math.round(poz * 1000) / 1000, true)}
           citestePoz={(s) => citesteNumar(s, true)}
         />
+      ) : null}
+      {(unealta === 'selectie' || unealta === 'transformare') && imaginiDesfacute.length > 0 && foaie && !p.doarCitire && !vedere3d ? (
+        <ManereImagine imagini={imaginiDesfacute} vedere={vedere}
+          manerForma={(x, y) => unealta === 'transformare' && cutie !== null && selectie.length > 0
+            && (manerLovit(cutie, vedere, x, y) !== null || ancoraLovita(ancoraArata, vedere, x, y))}
+          formaLa={(x, y) => instantaLa(doc, (x - vedere.tx) / vedere.scara, (vedere.ty - y) / vedere.scara, TOLERANTA_CLIC_PX / vedere.scara, indexFoaie, true) !== null}
+          onAplica={(id, a) => ruleaza('foaie.imagini', { imaginiNoi: () => (foaie.imagini ?? []).map((i) => (i.id === id ? { ...i, ...a } : i)) })} />
       ) : null}
       {unealta === 'transformare' && cutie && !p.doarCitire && selectie.length > 0 && !vedere3d ? (
         <Manere cutie={cutie} vedere={vedere} doc={doc} indexFoaie={indexFoaie} selectie={selectie}

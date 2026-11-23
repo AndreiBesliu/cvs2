@@ -89,6 +89,19 @@ export type FoaieVecina = {
  */
 export type CerereFoi = { readonly tip: 'foi'; readonly foi: readonly FoaieVecina[] };
 
+/**
+ * O imagine a foii active (ADR 0272), de desenat sub vectori: centrul, mărimea și rotirea (grade, trigonometric) în mm ai
+ * foii, opacitatea și octeții ei (fișierul păstrat), sau null dacă lipsesc ori încă se citesc: atunci pânza arată doar
+ * conturul ei, punctat.
+ */
+export type ImaginePeFoaie = {
+  readonly id: string; readonly sursa: string; readonly x: number; readonly y: number; readonly latime: number;
+  readonly inaltime: number; readonly rotire: number; readonly opacitate: number; readonly octeti: Blob | null;
+};
+
+/** Imaginile vizibile ale foii active, trimise workerului doar când se schimbă (ca foile vecine), înaintea cererii de desen. */
+export type CerereImagini = { readonly tip: 'imagini'; readonly imagini: readonly ImaginePeFoaie[] };
+
 /** `sageti`: câte săgeți de sens (căile deschise din selecție) are imaginea. */
 export type RaspunsDesen = { readonly tip: 'imagine'; readonly cerere: number; readonly imagine: ImageBitmap; readonly sageti: number };
 

@@ -2,7 +2,7 @@ import { test, expect, type Page } from '@playwright/test';
 import { impacheteaza, scrieZip } from '../../scripts/impacheteaza-extensie.ts';
 import { citesteZip } from '../../src/extensii/zip.ts';
 import { biblioteca, deschideBiblioteca, inchideBiblioteca, paginaInstalatei } from './ajutor-biblioteca.ts';
-import { clicDupaReaparitie } from './ajutor-extensii.ts';
+import { clicCareInchideCadrul, clicDupaReaparitie } from './ajutor-extensii.ts';
 import { eroriJurnal } from './ajutor-jurnal.ts';
 import { adauga } from './ajutor-panza.ts';
 
@@ -132,7 +132,7 @@ test('din fișier: confirmarea, meniul, fereastra izolată peste Proiectare, ×,
   // Din extensie: host.inchide(); deschiderea a doua e numărată.
   await (await meniul(page)).locator('[data-extensii="deschide"][data-id="salut"]').click();
   await expect(cadru(page).locator('[data-salut="deschideri"]')).toHaveText('Deschideri: 2');
-  await cadru(page).locator('[data-salut="inchide"]').click();
+  await clicCareInchideCadrul(page, '[data-salut="inchide"]');
   await expect(page.getByTestId('spatiu-extensie')).toHaveCount(0);
 
   // După reîncărcare, extensia și datele ei sunt tot acolo; din gestionare se scoate, cu datele ei.

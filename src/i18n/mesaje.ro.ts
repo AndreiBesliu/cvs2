@@ -37,6 +37,7 @@ export const ro = {
   'actiune.roteste': 'Rotește',
   'actiune.foaie-stoc': 'Mărimea foii',
   'actiune.ghidaje': 'Ghidajele foii',
+  'actiune.imagini': 'Imaginile foii',
   'actiune.foaie-adauga': 'Foaie nouă',
   'actiune.muta-instantele': 'Aliniază',
   'actiune.deseneaza': 'Desenează',

@@ -60,6 +60,11 @@ si cu un UI/UX mai bun si atragator”.
   **Easy 3Draw 18.21.0** (semnul în pachet); 18.20.0 are rândul ei de „ce e nou”. Ciocnirile: `extensie.json`,
   `extensii/biblioteca.json`, `trenulet.spec.ts` (confirmarea nouă, cu versiunea nouă), jurnalul fișei și registrul
   otrăvurilor (rândurile ambelor părți, după cheie). Capturile din bibliotecă nu s-au schimbat (nu arată fila Elice).
+- **23.11, seara: `main` adus a treia oară** (`d6fd5d6`: 25.8↑a, A.5 și reparația probelor extensiilor,
+  `clicCareInchideCadrul`). Ciocnirile: importurile din `extensii.spec.ts` (ambele părți) și numărul ușilor din
+  `manual.test.ts` (**113**: fiecare parte adusese câte una peste 111). Pe arborele unit: pornirea 108,6 kB (cu ușa
+  113,1 / 115), totalul 773,8 / 800 kB, `/admin` 125,6 / 200; e2e-ul extensiilor și al pluginului, 105 / 105. **Cât PR-ul
+  așteaptă unirea, `main` se aduce la fiecare veste de ciocnire** (vestea vine pe PR), iar completul se pornește din nou.
 - **Ce n-a intrat** (la cuvântul owner-ului): căutarea și categoriile (la peste ~20 de extensii), o captură mărită la clic,
   „ce e nou” în fereastra de confirmare a unei actualizări.
 

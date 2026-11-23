@@ -84,7 +84,53 @@ export type CerereTrasare = {
    * vine după foaie și înaintea zonei: cu ea, zona e în pixelii imaginii îndreptate.
    */
   readonly rotire?: { readonly unghi: number | null } | null;
+  /**
+   * Imaginea pentru foaie (ADR 0272): fără trasare, aceleași prelucrări (orientarea, foaia, îndreptarea scanării) și
+   * aceeași scară, iar răspunsul e imaginea întreagă, în pixeli (`fel: 'imagine-foaie'`), cu zona aleasă, ca s-o pună ușa
+   * exact sub vectorii zonei.
+   */
+  readonly imagineaFoii?: boolean;
 };
+
+/**
+ * Imaginea pentru foaie (ADR 0272, `raspundeImagineaFoii`): prelucrată ca pentru trasare, întreagă (fără decupajul zonei),
+ * cu scara ei.
+ */
+export type ImagineaFoii = {
+  readonly ok: true; readonly fel: 'imagine-foaie';
+  /** Pixelii imaginii prelucrate, întregi. */
+  readonly img: ImagineRGBA;
+  /** Mărimea pixelului, ca la trasare: vectorii zonei au aceeași scară. */
+  readonly mmPePx: number;
+  /** Zona trasată din ea (în pixelii ei), sau null: toată. */
+  readonly zona: ZonaTrasare | null;
+  /**
+   * Tipul fișierului, dacă imaginea întreagă e chiar el (un JPEG, PNG sau WebP fără orientare, foaie, îndreptare sau
+   * reducere): se păstrează octeții lui. Null: se codează din pixeli.
+   */
+  readonly originala: TipImagineOriginala | null;
+  /** Fișierul e un JPEG: imaginea prelucrată se codează tot JPEG (o poză ca PNG ar ține de câteva ori mai mult). */
+  readonly jpeg: boolean;
+};
+
+/** Tipurile de fișier care se păstrează cum sunt, pe foaie (ADR 0272): le decodează orice browser. */
+export type TipImagineOriginala = 'image/jpeg' | 'image/png' | 'image/webp';
+
+/** Imaginea pentru foaie, gata de păstrat (ADR 0272): octeții, tipul și mărimea lor în px, scara și zona trasată. */
+export type OctetiImaginiiFoii = {
+  readonly ok: true; readonly fel: 'imagine-foaie';
+  readonly octeti: Blob; readonly tip: string; readonly latimePx: number; readonly inaltimePx: number;
+  readonly mmPePx: number; readonly zona: ZonaTrasare | null;
+};
+
+/** Tipul unui fișier care se poate păstra cum e (ADR 0272), după antet: JPEG, PNG sau WebP; altfel null. */
+export function tipOriginal(a: Uint8Array): TipImagineOriginala | null {
+  const b = (i: number): number => a[i] ?? -1;
+  if (b(0) === 0xff && b(1) === 0xd8 && b(2) === 0xff) return 'image/jpeg';
+  if (b(0) === 0x89 && b(1) === 0x50 && b(2) === 0x4e && b(3) === 0x47) return 'image/png';
+  const riff = b(0) === 0x52 && b(1) === 0x49 && b(2) === 0x46 && b(3) === 0x46;
+  return riff && b(8) === 0x57 && b(9) === 0x45 && b(10) === 0x42 && b(11) === 0x50 ? 'image/webp' : null;
+}
 
 /** Foaia din poză (ADR 0225): îndreptată, sau doar găsită (pentru sugestie). */
 export type FoaieTrasata = {
@@ -325,14 +371,32 @@ export function ariePx(dMm: number, mmPePx: number): number {
   return Math.max(4, (Math.PI * (dMm / 2) ** 2) / (mmPePx * mmPePx));
 }
 
-export async function raspundeTrasare(c: CerereTrasare): Promise<{ raspuns: RaspunsTrasare; transfer: ArrayBuffer[] }> {
+/** Refuzurile citirii imaginii, înaintea trasării (comune trasării și imaginii pentru foaie). */
+type RefuzCitire = Extract<RaspunsTrasare, { cod: 'citire' } | { cod: 'tiff' }>;
+
+/**
+ * Imaginea pregătită pentru trasare: decupajul zonei, imaginea întreagă dinaintea lui, scara și ce s-a găsit pe drum; tipul
+ * fișierului, dacă imaginea întreagă e chiar el, și dacă e un JPEG (imaginea pentru foaie, ADR 0272).
+ */
+type Pregatita = {
+  readonly img: ImagineRGBA; readonly intreaga: ImagineRGBA; readonly sc: Scara; readonly originala: TipImagineOriginala | null;
+  readonly jpeg: boolean;
+};
+
+/**
+ * Pregătirea comună: decodarea (TIFF-ul cu cititorul propriu, restul cu browserul), orientarea unei pagini PDF, foaia
+ * (ADR 0225), scanarea strâmbă (ADR 0271), zona (ADR 0224) și scara.
+ */
+async function pregateste(c: CerereTrasare): Promise<Pregatita | { readonly refuz: RefuzCitire }> {
   let img: ImagineRGBA, redusDin: Scara['redusDin'] = null, dpiFisier = c.dpi, pagini: number | null = null, poza: ImagineRGBA | null = null;
+  let tip: TipImagineOriginala | null = null;
   if (c.imagine instanceof Blob) {
     // TIFF (ADR 0229): browserul nu-l decodează; îl citește cititorul propriu, cu pagina aleasă și DPI-ul paginii.
-    const antet = new Uint8Array(await c.imagine.slice(0, 4).arrayBuffer());
+    const antet = new Uint8Array(await c.imagine.slice(0, 12).arrayBuffer());
+    tip = tipOriginal(antet);
     if ((antet[0] === 0x49 && antet[1] === 0x49 && antet[2] === 42 && antet[3] === 0) || (antet[0] === 0x4d && antet[1] === 0x4d && antet[2] === 0 && antet[3] === 42)) {
       const t = await decodeazaTiff(new Uint8Array(await c.imagine.arrayBuffer()), { pagina: c.pagina ?? 1, maxPixeli: c.maxPixeli ?? PIXELI_MAXIM });
-      if (!t.ok) return { raspuns: { ok: false, cod: 'tiff', motiv: t.cod, detaliu: t.detaliu, ...(t.pagini ? { pagini: t.pagini } : {}) }, transfer: [] };
+      if (!t.ok) return { refuz: { ok: false, cod: 'tiff', motiv: t.cod, detaliu: t.detaliu, ...(t.pagini ? { pagini: t.pagini } : {}) } };
       img = t.img;
       redusDin = t.latime !== img.latime || t.inaltime !== img.inaltime ? { latime: t.latime, inaltime: t.inaltime } : null;
       dpiFisier = t.dpi ?? c.dpi;
@@ -343,10 +407,11 @@ export async function raspundeTrasare(c: CerereTrasare): Promise<{ raspuns: Rasp
       try {
         ({ img, redusDin } = await decodeaza(c.imagine, c.maxPixeli ?? PIXELI_MAXIM));
       } catch (e) {
-        return { raspuns: { ok: false, cod: 'citire', detaliu: e instanceof Error ? e.message : String(e) }, transfer: [] };
+        return { refuz: { ok: false, cod: 'citire', detaliu: e instanceof Error ? e.message : String(e) } };
       }
     }
   } else img = c.imagine;
+  const decodata = img;
   // Imaginea unei pagini PDF (ADR 0270): întoarsă ca pe pagina afișată; fereastra o primește de aici.
   if (c.orientare !== undefined) {
     img = orienteaza(img, c.orientare);
@@ -372,14 +437,65 @@ export async function raspundeTrasare(c: CerereTrasare): Promise<{ raspuns: Rasp
   // Zona (ADR 0224, răspunsul 2a): un decupaj; de aici încolo, imaginea trasată e ea.
   const intreg = { latime: img.latime, inaltime: img.inaltime };
   const zona = c.zona ? zonaIn(c.zona, img.latime, img.inaltime) : null;
+  // Imaginea pentru foaie (ADR 0272): întreagă, înaintea decupajului zonei.
+  const intreaga = img;
   if (zona) img = decupeaza(img, zona);
   // Scara: lățimea aleasă e a imaginii trasate (a zonei, dacă e una); fără ea, formatul foii îndreptate, apoi mărimea fizică
   // din DPI (a fișierului, nu a imaginii reduse), deci pixelul are aceeași mărime cu sau fără zonă.
   const mmPePx = c.latimeMm !== null ? c.latimeMm / img.latime : mmFoaie ?? (25.4 / (dpiFisier ?? DPI_PRESUPUS)) * pxFisier;
   const scara = c.latimeMm !== null ? 'latime' : mmFoaie !== null ? 'foaie' : dpiFisier !== null ? 'fisier' : 'presupus';
   const dpi = (25.4 * pxFisier) / mmPePx;
+  const sc: Scara = { mmPePx, scara, dpi, redusDin, intreg, zona, foaie, rotire, ...(pagini !== null ? { pagini } : {}), ...(poza ? { poza } : {}) };
+  // Imaginea pentru foaie (ADR 0272): fișierul însuși, dacă imaginea întreagă e chiar el (fiecare pas fără efect întoarce
+  // aceeași imagine); un TIFF nu e printre tipuri, iar o imagine dată în pixeli n-are fișier.
+  const originala = tip !== null && redusDin === null && intreaga === decodata ? tip : null;
+  return { img, intreaga, sc, originala, jpeg: tip === 'image/jpeg' };
+}
+
+/**
+ * Imaginea pentru foaie (ADR 0272): fără trasare, aceleași prelucrări și aceeași scară; imaginea întreagă, în pixeli
+ * transferați, cu zona aleasă din ea.
+ */
+export async function raspundeImagineaFoii(c: CerereTrasare): Promise<{ raspuns: ImagineaFoii | RefuzCitire; transfer: ArrayBuffer[] }> {
+  const p = await pregateste(c);
+  if ('refuz' in p) return { raspuns: p.refuz, transfer: [] };
+  const { intreaga, sc, originala, jpeg } = p;
+  const d = intreaga.date instanceof Uint8ClampedArray ? intreaga.date : Uint8ClampedArray.from(intreaga.date);
+  return {
+    raspuns: {
+      ok: true, fel: 'imagine-foaie', img: { latime: intreaga.latime, inaltime: intreaga.inaltime, date: d }, mmPePx: sc.mmPePx, zona: sc.zona,
+      originala, jpeg,
+    },
+    transfer: deTransferat([d]),
+  };
+}
+
+/**
+ * Imaginea pentru foaie, gata de păstrat (ADR 0272; în browser, în workerul trasării, ca firul principal să nu primească
+ * pixelii): octeții fișierului, dacă imaginea e chiar el; altfel imaginea prelucrată, codată JPEG (la 0,92) dintr-un JPEG,
+ * altfel PNG.
+ */
+export async function octetiImaginiiFoii(c: CerereTrasare): Promise<OctetiImaginiiFoii | RefuzCitire> {
+  const { raspuns: r } = await raspundeImagineaFoii(c);
+  if (!r.ok) return r;
+  const baza = { ok: true, fel: 'imagine-foaie', latimePx: r.img.latime, inaltimePx: r.img.inaltime, mmPePx: r.mmPePx, zona: r.zona } as const;
+  if (r.originala && c.imagine instanceof Blob) return { ...baza, octeti: c.imagine, tip: r.originala };
+  const panza = new OffscreenCanvas(r.img.latime, r.img.inaltime);
+  const ctx = panza.getContext('2d');
+  if (!ctx) throw new Error('fără context 2D');
+  // Fără copie (o imagine de 16 Mpx ține 64 MB): pixelii sunt deja un `Uint8ClampedArray` al lor (`raspundeImagineaFoii`).
+  const date = r.img.date instanceof Uint8ClampedArray ? r.img.date as Uint8ClampedArray<ArrayBuffer> : Uint8ClampedArray.from(r.img.date);
+  ctx.putImageData(new ImageData(date, r.img.latime, r.img.inaltime), 0, 0);
+  const tip = r.jpeg ? 'image/jpeg' : 'image/png';
+  return { ...baza, octeti: await panza.convertToBlob(r.jpeg ? { type: tip, quality: 0.92 } : { type: tip }), tip };
+}
+
+export async function raspundeTrasare(c: CerereTrasare): Promise<{ raspuns: RaspunsTrasare; transfer: ArrayBuffer[] }> {
+  const p = await pregateste(c);
+  if ('refuz' in p) return { raspuns: p.refuz, transfer: [] };
+  const { img, sc } = p;
+  const { mmPePx, foaie, rotire, poza } = sc;
   const petePx = ariePx(c.peteMm, mmPePx), gauriPx = ariePx(c.gauriMm, mmPePx);
-  const sc = { mmPePx, scara, dpi, redusDin, intreg, zona, foaie, rotire, ...(pagini !== null ? { pagini } : {}), ...(poza ? { poza } : {}) } as const;
   const deFoaie = [foaie?.previzualizare?.date, rotire?.previzualizare?.date, poza?.date].filter((x): x is Uint8ClampedArray => x instanceof Uint8ClampedArray);
   const m = c.mediane;
   const om: OptiuniMediana = m

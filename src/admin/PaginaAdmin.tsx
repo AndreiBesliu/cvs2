@@ -323,6 +323,7 @@ function CarcasaAdmin({ con, instanta, build, p }: { readonly con: Conexiune; re
   const feluri = FELURI_GASITE.filter((f) => vizibile.includes(FILA_FELULUI[f]));
   const tintaErori = tinta?.fila === 'erori' ? tinta : null;
   const tintaTichete = tinta?.fila === 'tichete' ? tinta : null;
+  const tintaConturi = tinta?.fila === 'utilizatori' ? tinta : null;
   return (
     <ContextCarcasa.Provider value={carcasa}>
       <Cadru instanta={instanta} proiect={con.projectId} carcasa
@@ -355,7 +356,10 @@ function CarcasaAdmin({ con, instanta, build, p }: { readonly con: Conexiune; re
             {aratata === 'documentatie' ? <FilaDocumentatie aducator={aducator} cale={adresa.document} ancora={adresa.ancora} deschide={deschideDocument} /> : null}
             {aratata === 'sugestii' ? <FilaSugestii con={con} eu={p.user.uid} owner={p.owner} permisiuni={p.permisiuni} /> : null}
             {aratata === 'tichete' ? <FilaTichete key={tintaTichete?.id ?? ''} con={con} owner={p.owner} permisiuni={p.permisiuni} tinta={tintaTichete} /> : null}
-            {aratata === 'utilizatori' ? <FilaUtilizatori con={con} poateAdministra={p.permisiuni.has('conturi.administreaza')} /> : null}
+            {aratata === 'utilizatori' ? (
+              <FilaUtilizatori key={tintaConturi?.id ?? ''} con={con} eu={p.user.uid} poateAdministra={p.permisiuni.has('conturi.administreaza')}
+                poateIstoric={p.permisiuni.has('audit.citeste')} tinta={tintaConturi} />
+            ) : null}
             {aratata === 'personal' ? <FilaPersonal con={con} eu={p.user.uid} emailEu={p.user.email ?? null} /> : null}
             {aratata === 'setari' ? <FilaSetari con={con} /> : null}
             {aratata === 'cont' ? <FilaCont con={con} user={p.user} /> : null}

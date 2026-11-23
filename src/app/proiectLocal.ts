@@ -138,6 +138,19 @@ async function documentDin(
   return r.ok ? { ok: true, doc: r.doc } : r;
 }
 
+/**
+ * Textele tuturor versiunilor păstrate ale proiectului, fără ușă (ADR 0272: curățarea imaginilor le citește amprentele); o
+ * bază fără proiect dă lista goală.
+ */
+export async function texteVersiuni(idb: IDBFactory = indexedDB): Promise<unknown[]> {
+  const db = await deschideBaza(idb);
+  try {
+    return await cerere(db.transaction(VERSIUNI, 'readonly').objectStore(VERSIUNI).getAll(INTERVAL()));
+  } finally {
+    db.close();
+  }
+}
+
 async function citeste(db: IDBDatabase): Promise<Versiune | null> {
   return ultimaVersiune(db.transaction(VERSIUNI, 'readonly').objectStore(VERSIUNI));
 }

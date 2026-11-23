@@ -1,7 +1,7 @@
 import { test, expect, type Page } from '@playwright/test';
 import { impacheteaza, scrieZip } from '../../scripts/impacheteaza-extensie.ts';
 import { citesteZip } from '../../src/extensii/zip.ts';
-import { clicDupaReaparitie } from './ajutor-extensii.ts';
+import { clicCareInchideCadrul, clicDupaReaparitie } from './ajutor-extensii.ts';
 import { eroriJurnal } from './ajutor-jurnal.ts';
 
 /**
@@ -161,7 +161,7 @@ test('închiderea: × îi lasă extensiei salvarea; ce rămâne nesalvat e într
   await deschide(page);
   c = cadru(page);
   await c.locator('[data-salut="modifica"]').click();
-  await c.locator('[data-salut="inchide"]').click();
+  await clicCareInchideCadrul(page, '[data-salut="inchide"]');
   await expect(page.locator('iframe.cadru-extensie')).toHaveCount(0);
   await expect(intrebare).toHaveCount(0);
 

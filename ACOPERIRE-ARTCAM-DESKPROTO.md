@@ -70,7 +70,7 @@ Sursa: **S** = ArtCAM · **D** = DeskProto · **S+D** = amândouă · **peste pr
 | Export relief ca STL / OBJ (deschis sau închis cu bază plană), cu toleranță | S | v1 (decis 06.10; era v1.x) | de făcut | — |
 | Rezoluție: cel puțin 4000 × 4000 de puncte (16 milioane), cu editare fluidă | S | v1 (decis 06.10; era v1.x) | de făcut | — |
 | Îmbinări: contour blend, 3D blend, mirror-merge, relief lipit pe vector, cookie cutter | S | v1 (decis 06.10; era v2) | de făcut | — |
-| Straturi bitmap ca suprafață de desen; forme ridicate direct din culori | S | v1 (decis 06.10; era v2) | de făcut (propus pe 21.11: ADR 0272, imaginile pe foaie, feliile 25.8↑a–b: imaginea sub desen, calibrarea, trasarea din ea; schița și întrebările la owner); formele ridicate din culori țin de reliefuri, încă de făcut | — |
+| Straturi bitmap ca suprafață de desen; forme ridicate direct din culori | S | v1 (decis 06.10; era v2) | în lucru (ADR 0272, acceptat pe 21.11: 25.8↑a făcută pe 23.11, imaginea pe foaie sub desen, fixată sau desfăcută, cu mânerele și lista din panoul foii; 25.8↑b: calibrarea din două puncte și trasarea din imaginea de pe foaie); formele ridicate din culori țin de reliefuri, încă de făcut | — |
 | Sculptare: netezire locală, adăugare / scoatere material, ștergere, întindere (smudge) | S | v1 (decis 06.10; era v2) | de făcut | — |
 | Straturi de relief: combinare, vizibilitate, ordine | S | v1 (decis 06.10; era v2) | de făcut | — |
 | Relief pe două fețe (back relief) și prelucrare cu întoarcere (flip machining) | S | v1 (decis 06.10; era v2) | de făcut | — |
