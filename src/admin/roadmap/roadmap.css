@@ -221,7 +221,9 @@
   gap: 6px 3px;
 }
 
-@media (min-width: 900px) {
+/* Toate etapele pe un rând doar cât au loc (~19,5 px pe coloană, cu golurile de 1 px de mai jos; măsurat: la 18 px, „↑13”
+   iese din coloană): după lățimea secțiunii (container), nu a ecranului; mai îngust, pe rânduri, ca pe telefon. */
+@container (min-width: 42rem) {
   .rm-pista {
     grid-template-columns: repeat(33, minmax(0, 1fr));
   }
@@ -678,6 +680,70 @@
 
 .rm-sursa {
   margin: 0;
+}
+
+/*
+ * „Ce așteaptă de la tine” mereu la vedere (ADR 0260 §8): peste 1 400 px, lista stă în stânga, lipită sus, cu titlul fix și
+ * derularea ei proprie, iar etapele alături (pista are încă ~20 px pe coloană). Mai îngust, deasupra etapelor, ca înainte.
+ */
+.rm-etape {
+  display: grid;
+  gap: var(--sp-4);
+  min-width: 0;
+}
+
+/* Pe o pistă îngustă (sub ~32 px pe coloană: alături de listă, sau la 1 024 px), semnele unei etape (↑N, placa, live-ul)
+   trec pe două rânduri, iar coloanele se strâng una lângă alta, ca semnele să nu intre în coloana vecină. */
+.rm-cronologie {
+  container-type: inline-size;
+}
+
+@container (max-width: 68.5rem) {
+  .rm-pista {
+    column-gap: 1px;
+  }
+
+  .rm-aduse {
+    font-size: 0.5625rem;
+  }
+
+  .rm-etapa {
+    grid-template-rows: 0.8rem var(--rm-h) auto 1.6rem auto;
+  }
+
+  .rm-semne {
+    flex-wrap: wrap;
+    justify-content: center;
+    align-content: center;
+    row-gap: 1px;
+    max-width: 100%;
+    height: 1.6rem;
+  }
+}
+
+@media (min-width: 1400px) {
+  .rm {
+    grid-template-columns: 20rem minmax(0, 1fr);
+    align-items: start;
+  }
+
+  .rm-cifre {
+    grid-column: 1 / -1;
+  }
+
+  .rm-owner {
+    position: sticky;
+    top: var(--sp-3);
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr);
+    max-height: calc(100vh - 2 * var(--sp-3));
+    box-sizing: border-box;
+    padding-inline: var(--sp-4);
+  }
+
+  .rm-owner-lista {
+    overflow: auto;
+  }
 }
 
 @media (max-width: 640px) {

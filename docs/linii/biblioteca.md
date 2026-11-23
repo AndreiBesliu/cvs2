@@ -69,6 +69,11 @@ si cu un UI/UX mai bun si atragator”.
   108,6 kB (cu ușa 113,1 / 115), totalul 774,6 / 800 kB. **O ciocnire doar în DEVLOG, venită cât rulează completul
   capătului, așteaptă sfârșitul lui** (completul ține un ceas, iar `main` primește o unire cam la jumătate de oră); una
   în cod sau în probe se aduce pe loc.
+- **23.11, seara: completul cu Edge, verde pe capăt** (`18c4941`, și pe `8b443ac`, `79fbef5` și pe fiecare sub-felie).
+  Apoi `main` adus a cincea oară (`ee4f629`: A.6, doar `src/admin/`; ciocnirea doar în DEVLOG, așteptată până la sfârșitul
+  completului). Pe arborele unit: pornirea 108,6 kB (cu ușa 113,1 / 115), totalul 774,7 / 800 kB, `/admin` 127,5 / 200.
+  **PR-ul `AndreiBesliu/cvs2#4` e „gata de unit”**; o ciocnire nouă în DEVLOG, până la unire, se rezolvă la unire cu
+  `scripts/rezolva-devlog.py` (sau o aduc eu, la veste).
 - **Ce n-a intrat** (la cuvântul owner-ului): căutarea și categoriile (la peste ~20 de extensii), o captură mărită la clic,
   „ce e nou” în fereastra de confirmare a unei actualizări.
 
