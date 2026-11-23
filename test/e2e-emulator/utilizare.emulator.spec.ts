@@ -1,6 +1,7 @@
 import { execSync } from 'node:child_process';
 import { expect, test, type Page } from '@playwright/test';
 import { adauga, deschideMeniulContului, ecran, vedere } from '../e2e/ajutor-panza.ts';
+import { pornesteImprimanta } from '../e2e/imprimantaFalsa.ts';
 
 /**
  * Utilizarea aplicației (ADR 0262, felia A.8b) cap-coadă, pe emulatoare, pe build-ul real: un client cu contul deschis
@@ -227,6 +228,96 @@ test('clicurile fine oprite din Setări: lotul are acțiunile și dialogurile, f
   await expect.poll(async () => (await loturi()).length, LENT).toBe(1);
   const feluri = new Set(((await loturi())[0]?.['evenimente'] as Array<Record<string, unknown>>).map((e) => e['fel']));
   expect([...feluri].sort()).toEqual(['actiune', 'dialog', 'fereastra']);
+});
+
+test('calculele și mașina (felia A.8d): traseul și exportul cu durata și formele în trepte; mașina legată, lucrarea până la capăt, deconectată', async ({ page }) => {
+  test.setTimeout(120_000);
+  await clientConfirmat('ion@exemplu.ro', 'parola-lui-ion');
+  await deschide(page);
+  await intra(page, 'ion@exemplu.ro', 'parola-lui-ion');
+  await adauga(page, 'cerc');
+  // Traseul (tasta T), apoi exportul făcut.
+  await page.evaluate(() => { (document.activeElement as HTMLElement | null)?.blur(); });
+  await page.keyboard.press('t');
+  await expect(page.getByTestId('traseu-timp')).toBeVisible(LENT);
+  await page.locator('[data-actiune="export.gcode"]').click();
+  const descarcare = page.waitForEvent('download');
+  await page.locator('[data-buton="exporta"]').click();
+  await descarcare;
+  await page.locator('[role="dialog"]').getByRole('button', { name: 'Închide', exact: true }).click();
+  // Mașina simulată: legată, un program scurt până la capăt, deconectată.
+  await page.locator('[data-actiune="vedere.masina"]').click();
+  await page.locator('[data-masina="simulata"]').click();
+  const ind = page.getByTestId('indicator-lucrare');
+  await expect(ind).toHaveAttribute('data-fel', 'conectata');
+  await page.locator('[data-masina="fisier-ales"]').setInputFiles({ name: 'scurt.nc', mimeType: 'text/plain', buffer: Buffer.from('G21\nG90\nG54\nG0 X1\nG0 X0\n', 'ascii') });
+  await expect(page.getByTestId('masina-faza')).toHaveAttribute('data-faza', 'pregatit');
+  await page.locator('[data-masina="start"]').click();
+  await expect(ind).toHaveAttribute('data-fel', 'gata', LENT);
+  await page.locator('[data-masina="deconecteaza"]').click();
+  await expect(ind).toHaveCount(0);
+  // Înapoi în Proiectare, importul unui SVG mic (sub 1 000 de octeți), cu numele lui care nu pleacă.
+  await page.locator('[data-actiune="vedere.proiectare"]').click();
+  await page.locator('[data-camp="fisier-svg"]').setInputFiles({
+    name: 'logo-bucatarie.svg', mimeType: 'image/svg+xml',
+    buffer: Buffer.from('<svg xmlns="http://www.w3.org/2000/svg" width="40mm" height="20mm" viewBox="0 0 40 20"><rect x="1" y="1" width="38" height="18"/></svg>', 'utf8'),
+  });
+  await page.locator('[data-buton="importa"]').click();
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+  await ascunde(page);
+  await expect.poll(async () => (await loturi()).length, LENT).toBe(1);
+  const fara = ((await loturi())[0]?.['evenimente'] as Array<Record<string, unknown>>).map(({ t: _t, ...e }) => e);
+  // Un cerc: sub 10 forme; durata, o treaptă (marginea ei de sus, în ms); importul cu octeții și formatul, fără nume.
+  expect(fara).toContainEqual(expect.objectContaining({ fel: 'calcul', id: 'import', rez: 'ok', octeti: 1_000, format: 'svg' }));
+  expect(fara).toContainEqual(expect.objectContaining({ fel: 'calcul', id: 'traseu', rez: 'ok', forme: 10 }));
+  expect(fara).toContainEqual(expect.objectContaining({ fel: 'calcul', id: 'export', rez: 'ok', forme: 10 }));
+  for (const c of fara.filter((e) => e['fel'] === 'calcul')) expect([100, 300, 1_000, 3_000, 10_000, 30_000]).toContain(c['ms']);
+  const masina = fara.filter((e) => e['fel'] === 'masina');
+  expect(masina).toEqual([
+    { fel: 'masina', id: 'legata', cale: 'simulat' }, { fel: 'masina', id: 'pornita' }, { fel: 'masina', id: 'terminata' },
+    { fel: 'masina', id: 'deconectata' },
+  ]);
+  // Nici programul, nici numele fișierului.
+  expect(JSON.stringify(fara)).not.toContain('scurt.nc');
+  expect(JSON.stringify(fara)).not.toContain('bucatarie');
+  expect(JSON.stringify(fara)).not.toContain('G0 X1');
+});
+
+test('imprimanta (felia A.8d): legarea, pauza și reluarea, deconectarea; fără adresă, fișier sau nume', async ({ page }) => {
+  test.setTimeout(120_000);
+  const retea = process.env['CNCVS2_E2E_RETEA'] ?? '127.0.0';
+  const ip = `${retea}.5`;
+  const imp = await pornesteImprimanta({
+    port: 9999, gazda: ip, fisiere: [{ name: 'output_11031835.gcode', timeCost: 1140, material: 'PLA' }], inimaMs: 400, asteptareOkMs: 1200,
+    pasMs: 300, imprima: { fisier: 'output_11031835.gcode', progres: 40 },
+  });
+  try {
+    await clientConfirmat('ion@exemplu.ro', 'parola-lui-ion');
+    await deschide(page);
+    await intra(page, 'ion@exemplu.ro', 'parola-lui-ion');
+    await page.locator('[data-actiune="vedere.imprimanta"]').click();
+    await page.locator('[data-imprimanta="adresa"]').fill(ip);
+    await page.locator('[data-imprimanta="conecteaza"]').click();
+    const stare = page.getByTestId('imprimanta-stare');
+    await expect(stare).toHaveText('Imprimă', LENT);
+    await page.locator('[data-imprimanta="pauza"]').click();
+    await expect(stare).toHaveText('Pauză');
+    await page.locator('[data-imprimanta="reia"]').click();
+    await expect(stare).toHaveText('Imprimă');
+    await page.locator('[data-imprimanta="deconecteaza"]').click();
+    await expect(page.locator('[data-imprimanta="conecteaza"]')).toBeVisible();
+    await ascunde(page);
+    await expect.poll(async () => (await loturi()).length, LENT).toBe(1);
+    const fara = ((await loturi())[0]?.['evenimente'] as Array<Record<string, unknown>>).map(({ t: _t, ...e }) => e);
+    // Găsită imprimând: legarea, fără „pornită” (lucrarea a pornit-o altcineva); pauza; reluarea nu e un eveniment al ei.
+    expect(fara.filter((e) => e['fel'] === 'imprimanta')).toEqual([
+      { fel: 'imprimanta', id: 'legata' }, { fel: 'imprimanta', id: 'pauza' }, { fel: 'imprimanta', id: 'deconectata' },
+    ]);
+    const text = JSON.stringify(fara);
+    for (const x of [ip, 'output_11031835', 'K1C']) expect(text).not.toContain(x);
+  } finally {
+    await imp.inchide();
+  }
 });
 
 test('fără cont: nicio cerere spre utilizare, nimic ținut în browser', async ({ page }) => {

@@ -39,6 +39,44 @@ export const TEME_UTILIZARE = ['deschisa', 'inchisa'] as const;
 export const ECRANE = ['telefon', 'tableta', 'laptop', 'mare'] as const;
 export const BROWSERE = ['chrome', 'edge', 'firefox', 'safari', 'altul'] as const;
 
+/** Calculele lungi (felia A.8d): cele ale bazinului CAM (`src/jobs/protocolCam.ts`) și citirea unui fișier la import. */
+export const CALCULE = [
+  'export', 'traseu', 'simulare', 'potrivire', 'timp', 'verificare', 'reparare', 'taiere', 'panouri', 'conversie', 'legare', 'import',
+] as const;
+export type Calcul = (typeof CALCULE)[number];
+/** Cum s-a încheiat un calcul: cu rezultat, cu o eroare (și un refuz cu motiv), sau anulat (un calcul mai nou, fereastra închisă). */
+export const REZULTATE_CALCUL = ['ok', 'eroare', 'anulat'] as const;
+export type RezultatCalcul = (typeof REZULTATE_CALCUL)[number];
+/** Durata unui calcul, în trepte: valoarea e marginea de sus, în ms (100: sub 0,1 s); ultima ține tot ce trece de 5 minute. */
+export const TREPTE_MS = [100, 300, 1_000, 3_000, 10_000, 30_000, 100_000, 300_000, 1_000_000] as const;
+/** O mărime (formele documentului, octeții fișierului), în trepte: valoarea e marginea de sus (10: sub 10); ultima ține restul. */
+export const TREPTE_MARIME = [10, 100, 1_000, 10_000, 100_000, 1_000_000, 10_000_000, 100_000_000, 1_000_000_000] as const;
+/** Formatul unui fișier importat (`src/io/formatImport.ts`). */
+export const FORMATE_IMPORT = ['svg', 'dxf', 'pdf', 'eps', 'wmf', 'imagine'] as const;
+/** Mașina (felia A.8d): legătura, lucrarea, codurile controlerului; fără G-code și fără adrese. */
+export const EVENIMENTE_MASINA = [
+  'legata', 'deconectata', 'pornita', 'pauza', 'reluata', 'oprita', 'anulata', 'terminata', 'intrerupta', 'eroare', 'alarma', 'blocare',
+] as const;
+export type EvenimentMasina = (typeof EVENIMENTE_MASINA)[number];
+/** Cum e legată mașina. */
+export const CAI_MASINA = ['serial', 'retea', 'simulat'] as const;
+/** Imprimanta (felia A.8d): legătura, lucrarea și evenimentele ei (ADR 0194 §A); fără fișiere și fără adrese. */
+export const EVENIMENTE_IMPRIMANTA = [
+  'legata', 'deconectata', 'pornita', 'gata', 'oprita', 'pauza-fisier', 'pauza', 'fara-filament', 'eroare', 'pana', 'pierduta', 'primul-strat',
+] as const;
+export type EvenimentImprimanta = (typeof EVENIMENTE_IMPRIMANTA)[number];
+/** Codul unei erori a controlerului (`error:N`, `ALARM:N`) sau al imprimantei (cheia ei, altfel `errcode`). */
+export const COD_MAX = 99_999;
+
+/** Pură: treapta unei durate (ms), cea mai mică margine care o cuprinde. */
+export function treaptaMs(ms: number): number {
+  return TREPTE_MS.find((x) => ms < x) ?? TREPTE_MS[TREPTE_MS.length - 1] ?? 0;
+}
+/** Pură: treapta unei mărimi (câte forme, câți octeți). */
+export function treaptaMarime(n: number): number {
+  return TREPTE_MARIME.find((x) => n < x) ?? TREPTE_MARIME[TREPTE_MARIME.length - 1] ?? 0;
+}
+
 /** O acțiune a registrului (`document.roteste`), o unealtă (`dreptunghi`), un dialog (`export`): litere mici, cifre, cratimă, puncte. */
 const RE_ID = /^[a-z][a-z0-9-]{0,39}(?:\.[a-z0-9-]{1,40}){0,3}$/;
 /** Rezultatul unei acțiuni: `ok`, sau cheia motivului refuzului (`motiv.nimic-ales`). */
@@ -59,7 +97,19 @@ export type Eveniment =
   /** Un clic pe un control, după numele lui din cod (`testid.export-gcode`), din catalogul scos din sursă (felia A.8c). */
   | { readonly fel: 'clic'; readonly t: number; readonly id: string; readonly de: Sursa; readonly n?: number }
   /** Derularea sau zoom-ul unui gest (rotița, pe rând), cu câte trepte a avut. */
-  | { readonly fel: 'derulare' | 'zoom'; readonly t: number; readonly de: Sursa; readonly n: number };
+  | { readonly fel: 'derulare' | 'zoom'; readonly t: number; readonly de: Sursa; readonly n: number }
+  /**
+   * Un calcul lung (felia A.8d), cu durata și mărimea în trepte (`TREPTE_MS`, `TREPTE_MARIME`): formele documentului la
+   * calculele CAM, octeții și formatul fișierului la import. Înregistratorul face treptele din valorile brute, înaintea lotului.
+   */
+  | {
+    readonly fel: 'calcul'; readonly t: number; readonly id: Calcul; readonly ms: number; readonly rez: RezultatCalcul;
+    readonly forme?: number; readonly octeti?: number; readonly format?: (typeof FORMATE_IMPORT)[number];
+  }
+  /** Mașina: legarea (cu felul legăturii), lucrarea, codurile controlerului (cu numărul lor). */
+  | { readonly fel: 'masina'; readonly t: number; readonly id: EvenimentMasina; readonly cod?: number; readonly cale?: (typeof CAI_MASINA)[number] }
+  /** Imprimanta: legarea, lucrarea, evenimentele ei (cu codul erorii). */
+  | { readonly fel: 'imprimanta'; readonly t: number; readonly id: EvenimentImprimanta; readonly cod?: number };
 
 export interface ContextLot {
   /** Versiunea build-ului (primele caractere ale commit-ului); `necunoscuta` fără ea. */
@@ -138,6 +188,7 @@ const obiect = (x: unknown): Record<string, unknown> | null => (typeof x === 'ob
 const intreg = (x: unknown, min: number, max: number): x is number => typeof x === 'number' && Number.isSafeInteger(x) && x >= min && x <= max;
 const din = <T extends string>(lista: readonly T[], x: unknown): x is T => typeof x === 'string' && (lista as readonly string[]).includes(x);
 const id = (x: unknown): x is string => typeof x === 'string' && RE_ID.test(x);
+const treapta = (trepte: readonly number[], x: unknown): x is number => typeof x === 'number' && trepte.includes(x);
 /** Cheile obiectului sunt exact cele cerute, plus cele opționale prezente. */
 function cheiExact(o: Record<string, unknown>, cerute: readonly string[], optionale: readonly string[] = []): boolean {
   const chei = Object.keys(o);
@@ -178,6 +229,35 @@ export function evenimentDin(x: unknown, acum: number): Eveniment | null {
     case 'zoom': {
       const { fel, de, n } = o;
       return cheiExact(o, ['fel', 't', 'de', 'n']) && din(SURSE, de) && intreg(n, 1, REPETARI_MAX) ? { fel, t, de, n } : null;
+    }
+    case 'calcul': {
+      if (!cheiExact(o, ['fel', 't', 'id', 'ms', 'rez'], ['forme', 'octeti', 'format'])) return null;
+      const { id: i, ms, rez, forme, octeti, format } = o;
+      if (!din(CALCULE, i) || !treapta(TREPTE_MS, ms) || !din(REZULTATE_CALCUL, rez)) return null;
+      // Formele doar la calculele CAM; octeții și formatul doar la import.
+      if (forme !== undefined && (i === 'import' || !treapta(TREPTE_MARIME, forme))) return null;
+      if (octeti !== undefined && (i !== 'import' || !treapta(TREPTE_MARIME, octeti))) return null;
+      if (format !== undefined && (i !== 'import' || !din(FORMATE_IMPORT, format))) return null;
+      return {
+        fel: 'calcul', t, id: i, ms, rez, ...(forme === undefined ? {} : { forme }), ...(octeti === undefined ? {} : { octeti }),
+        ...(format === undefined ? {} : { format }),
+      };
+    }
+    case 'masina': {
+      if (!cheiExact(o, ['fel', 't', 'id'], ['cod', 'cale'])) return null;
+      const { id: i, cod, cale } = o;
+      if (!din(EVENIMENTE_MASINA, i)) return null;
+      // Codul doar la eroare și la alarmă; felul legăturii doar la legare.
+      if (cod !== undefined && ((i !== 'eroare' && i !== 'alarma') || !intreg(cod, 0, COD_MAX))) return null;
+      if (cale !== undefined && (i !== 'legata' || !din(CAI_MASINA, cale))) return null;
+      return { fel: 'masina', t, id: i, ...(cod === undefined ? {} : { cod }), ...(cale === undefined ? {} : { cale }) };
+    }
+    case 'imprimanta': {
+      if (!cheiExact(o, ['fel', 't', 'id'], ['cod'])) return null;
+      const { id: i, cod } = o;
+      if (!din(EVENIMENTE_IMPRIMANTA, i)) return null;
+      if (cod !== undefined && (i !== 'eroare' || !intreg(cod, 0, COD_MAX))) return null;
+      return { fel: 'imprimanta', t, id: i, ...(cod === undefined ? {} : { cod }) };
     }
     default: return null;
   }

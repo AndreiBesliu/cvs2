@@ -21,6 +21,8 @@ import {
 } from './notificariImprimanta.ts';
 import { intrareCuTermen, useCoduriImprimanta } from './coduriImprimanta.ts';
 import { parteTitlu } from './titluFila.ts';
+import { utilizarea } from './utilizare.ts';
+import { evenimenteImprimanta } from './utilizareImprimanta.ts';
 
 /** Banda își face textul la randare: o eroare își primește explicația când vine dicționarul (3.6v). */
 type Anunt = { readonly e: Eveniment };
@@ -55,6 +57,8 @@ export function Vestiri({ st, stare, strat, pauzaFisier, setari, vizibila, desch
   useEffect(() => {
     const a = inainte.current;
     inainte.current = clipa;
+    // Utilizarea aplicației (ADR 0262, A.8d): toate evenimentele, oricare ar fi setările notificărilor.
+    for (const e of evenimenteImprimanta(a, clipa)) utilizarea.eveniment({ fel: 'imprimanta', ...e });
     if (lucrareNoua(a, clipa)) {
       anuntate.current.clear();
       setGataNevazut(false);

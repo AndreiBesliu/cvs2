@@ -1,6 +1,6 @@
 import {
-  EVENIMENTE_PE_LOT, idBun, REPETARI_MAX, rezultatBun, setariPublice, setariUtilizareDin, type ContextLot,
-  type Eveniment, type Fereastra, type Lot, type SetariPublice, type Sursa,
+  COD_MAX, evenimentDin, EVENIMENTE_PE_LOT, idBun, REPETARI_MAX, rezultatBun, setariPublice, setariUtilizareDin, treaptaMarime,
+  treaptaMs, type ContextLot, type Eveniment, type Fereastra, type Lot, type SetariPublice, type Sursa,
 } from '../../shared/utilizare.ts';
 import type { Config } from './config.ts';
 import { contTinut } from './dreptCont.ts';
@@ -44,6 +44,24 @@ export interface DepsInregistrator {
 
 /** O acțiune ținută ca să-i numărăm repetările (în lot și în inel e același obiect). */
 type Numarabil = Eveniment & { n?: number };
+
+/**
+ * Calculele, mașina și imprimanta (felia A.8d) vin cu valorile brute: durata și mărimile se fac trepte aici, iar un cod din
+ * afara marginilor se lasă deoparte (evenimentul rămâne). Apoi trec prin lista albă, ca pe server.
+ */
+export function inTrepte(ev: Eveniment): Eveniment {
+  if (ev.fel === 'calcul') {
+    return {
+      ...ev, ms: treaptaMs(ev.ms), ...(ev.forme === undefined ? {} : { forme: treaptaMarime(ev.forme) }),
+      ...(ev.octeti === undefined ? {} : { octeti: treaptaMarime(ev.octeti) }),
+    };
+  }
+  if ((ev.fel === 'masina' || ev.fel === 'imprimanta') && ev.cod !== undefined && !(Number.isSafeInteger(ev.cod) && ev.cod >= 0 && ev.cod <= COD_MAX)) {
+    const { cod: _cod, ...fara } = ev;
+    return fara;
+  }
+  return ev;
+}
 
 /** Un gest de derulare sau de zoom: treptele rotiței care vin una după alta, fără o pauză atât de lungă. */
 export const PAUZA_GEST_MS = 600;
@@ -151,6 +169,11 @@ export function creeazaInregistrator(d: DepsInregistrator): Inregistrator {
    */
   const primeste = (ev: Eveniment): void => {
     if ((ev.fel === 'clic' || ev.fel === 'derulare' || ev.fel === 'zoom') && !setari.clicuri) return;
+    if (ev.fel === 'calcul' || ev.fel === 'masina' || ev.fel === 'imprimanta') {
+      const x = evenimentDin(inTrepte(ev), Number.MAX_SAFE_INTEGER);
+      if (x) pune(x);
+      return;
+    }
     if (!('id' in ev) || ev.fel === 'fereastra') pune(ev);
     else if (idBun(ev.id)) pune(ev.fel === 'actiune' && !rezultatBun(ev.rez) ? { ...ev, rez: 'motiv.altul' } : ev);
   };
