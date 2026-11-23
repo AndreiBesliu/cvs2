@@ -248,11 +248,10 @@ o('R03', A, '    pune({ ...d, sens: "dreapta" }, n);\n    pune({ ...d, sens: "st
 o('R04', A, '$("#at-el-pereche").onclick = adaugaPerecheElice;', '$("#at-el-pereche").onclick = adaugaInLista;', 'e2e', '„Fă perechea” doar adaugă elicea din editor')
 
 # Redesenarea editorului cât omul scrie într-un câmp (e2e): fără luarea câmpului întâi, piesa are 4 palete și editorul 3.
+# Lăsată afară, ca echivalentă (rulată pe a6e044d: scăpată, 6 / 6): luarea câmpului mutată după `const t = stare.tip` (un câmp
+# nu schimbă piesa aleasă, iar marcajul se face oricum după).
 o('D01', A, '    if (activ instanceof HTMLElement && e.contains(activ)) activ.blur();\n', '', 'e2e',
   'redesenarea editorului nu ia întâi câmpul în care scrie omul (piesa și editorul spun lucruri diferite)')
-o('D02', A, '    if (activ instanceof HTMLElement && e.contains(activ)) activ.blur();\n    const t = stare.tip;',
-  '    const t = stare.tip;\n    if (activ instanceof HTMLElement && e.contains(activ)) activ.blur();', 'e2e',
-  'câmpul, luat după ce s-a citit piesa de desenat (ordinea: aceeași stare, dar luarea trebuie să rămână înaintea desenării)')
 
 # Pictograma și traducerea (unitare).
 o('G01', A, '    elice: `<circle cx="12" cy="12" r="2.2"/><path d="M10.7 10.2C7.8', '    elice2: `<circle cx="12" cy="12" r="2.2"/><path d="M10.7 10.2C7.8', 'pictograme', 'elicea fără pictogramă')

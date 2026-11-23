@@ -1,7 +1,8 @@
 # ADR 0282: Elicele în atelierul Easy 3Draw: configurabile, tipărite fără suport, cu prinderea LEGO
 
-**Starea:** acceptat pe 22.11.2026 (1a, 2a, 3a), cu felia 3.Tq pornită pe ramura `wip/3.Tq-elice` (worktree-ul
-`rotite`); propus în aceeași zi, la cererea owner-ului: „Vreau ca pluginul sa faca si elice, pentru imprimanta, si sa fie
+**Starea:** acceptat pe 22.11.2026 (1a, 2a, 3a); **felia 3.Tq implementată pe ramura `wip/3.Tq-elice`, Easy 3Draw 18.19.0**
+(23.11, în sesiunea cloud a liniei; cifrele, la „Implementarea”); 3.Tr și 3.Ts, la cuvântul owner-ului. Propus pe 22.11, la
+cererea owner-ului: „Vreau ca pluginul sa faca si elice, pentru imprimanta, si sa fie
 si configurabile elicele si compatibile cu lego”. **Completează:** ADR 0280 (roțile, fulia, roțile la 90° și șenila),
 ADR 0281 (piesele pe file), ADR 0169 (rotițele dințate, cu gaura pentru ax din calibrare), ADR 0129 (Planificatorul ca
 extensie). Al treilea număr al intervalului 0280–0289 al pluginului. Schița, cu macheta de încercat și întrebările:
@@ -65,24 +66,83 @@ Owner-ul a răspuns în conversație pe 22.11.2026: „1a, 2a, 3a”.
 
 - **1a:** o filă nouă, „Elice”, după Roți: elicea, apoi elicea de barcă și ventilatorul cu carcasă.
 - **2a:** elicea întâi (3.Tq), apoi barca (3.Tr), apoi carcasa (3.Ts).
-- **3a:** cotele din LDraw. Aduse cele 9 elice și ce folosesc (100 de fișiere, 183 kB, licența CC BY 4.0), în
-  `C:\Users\besli\cncvs2-lucru\ldraw`, și măsurate cu `unelte/ldraw/elice_masura.py` (suprafața eșantionată: diametrul,
-  butucul, paletele și unghiul lor pe direcția principală a secțiunii cilindrice), `elice_desfasurata.py` (banda cilindrică,
-  desfăcută) și `felie_axa.py` (gaura, la mijlocul butucului):
-  - **6041:** Ø30,2; butucul Ø8, gaură de ax; paletele plate, la ≈ 23°, coarda 7–9.
-  - **92842:** Ø48,5; butucul Ø7,2 × 8, gaură de știft Ø4,8; paletele la ≈ 14–17°, coarda 6–7, cu vârfurile drepte.
-  - **15790:** Ø83,3; butucul Ø8 × 8, gaură de știft Ø4,8; paletele plate, la ≈ 14° de la rădăcină la vârf, coarda 10,4 → 8,3.
-  - **65768, 4617b:** butucul Ø8, gaură de știft Ø4,8.
-  - **41530:** opt pereți drepți, paraleli cu axa (o roată cu palete, nu o elice cu pas); butucul Ø13 × 8, gaură de ax: e reperul
+- **3a:** cotele din LDraw. Aduse cele 9 elice și ce folosesc (licența CC BY 4.0), în afara repo-ului (`.tmp/ldraw`, cu
+  `scripts/ldraw/aduce.py`), și măsurate cu `scripts/ldraw/elice_masura.py` (suprafața eșantionată: diametrul, butucul,
+  paletele și unghiul lor pe direcția principală a secțiunii cilindrice), `elice_desfasurata.py` (banda cilindrică,
+  desfăcută) și `felie_axa.py` (gaura, la mijlocul butucului). **Cotele de mai jos sunt cele corectate pe 23.11** (vezi
+  „Corectura din 23.11”), măsurate față de axa piesei:
+  - **6041:** Ø27,4; butucul Ø8 × 9,6, gaură de ax; paletele plate, la ≈ 23°, coarda 7,7 → 9,2 (se lățesc spre vârf); pe
+    stânga.
+  - **65768:** Ø26,7; butucul Ø8 × 8, gaură de știft Ø4,8; paletele la ≈ 25–26°, coarda 7 → 10; pe stânga.
+  - **2421:** Ø32,0; paletele la ≈ 19–21°, coarda 5; pe dreapta.
+  - **4617b:** Ø43,2; butucul Ø8 × 6,4, gaură de știft Ø4,8; paletele la ≈ 16–20°, coarda 9,3 → 5,8; pe dreapta.
+  - **92842:** Ø43,1; butucul Ø7,5 × 8, gaură de știft Ø4,8; paletele la ≈ 14–17° (15° la 70 % din rază), coarda 7,1 → 5,8, cu
+    vârfurile drepte; pe dreapta.
+  - **15790:** Ø73,9; butucul Ø8 × 8, gaură de știft Ø4,8; paletele plate, la ≈ 15° de la rădăcină la vârf, coarda 10,2 → 8,2;
+    pe dreapta.
+  - **41530:** Ø36,9; opt pereți drepți, paraleli cu axa (o roată cu palete, nu o elice cu pas), gaură de ax: e reperul
     ventilatorului cu carcasă (3.Ts), nu al elicei.
-  - **87751:** șapte palete, aproape plate spre vârf; Ø51,6.
+  - **87751:** Ø49,8; șapte palete, aproape plate spre vârf (16° lângă butuc, 1–2° la vârf); butucul Ø8 × 8, gaură de știft.
+  - **80273:** Ø71,2; cinci palete drepte pe o grindă, gaură pătrată.
 
-  „Diametrul” din numele pieselor e aproximativ (15790, „9”, are 83,3 mm, nu 72), deci „Ca LEGO” ia cotele măsurate.
+  „Diametrul” din numele pieselor (în știfturi) e deci bun, la 1–2 mm: 3½ = 28 (6041: 27,4), 4 = 32 (2421: 32,0), 5½ = 44
+  (92842: 43,1), 9 = 72 (15790: 73,9). „Ca LEGO” ia cotele măsurate.
 
 **Ce schimbă cotele față de propunere:** butucul e Ø8 × 8, ca la LEGO (nu Ø10). Paletele LEGO sunt plate, cu unghiul la
 fel de la rădăcină la vârf, nu cu pas constant: paleta „plată” intră lângă cea „răsucită” (implicită, care trage mai bine),
-iar „Ca LEGO” (6041, 92842, 15790) pune paleta plată, cu unghiul măsurat, la 70 % din rază. Cu multe palete pe butucul LEGO,
-rădăcina iese îngustă: secțiunea reală a paletei (cu grosimea ei) încape în 85 % din pasul dintre palete.
+iar „Ca LEGO” (6041, 92842, 15790) pune paleta plată, cu unghiul măsurat, la 70 % din rază, și sensul piesei. Cu multe
+palete pe butucul LEGO, rădăcina iese îngustă: secțiunea reală a paletei (cu grosimea ei) încape în 85 % din pasul dintre
+palete.
+
+## Corectura din 23.11 (privirea pe piesa reală)
+
+La privirea pe piesele LDraw, randate lângă ale noastre, înaintea unirii:
+
+- **Diametrele măsurate pe 22.11 erau greșite cu ~13 %.** `elice_masura.py` măsura razele față de centrul cutiei piesei, nu
+  față de axa ei de rotație; la o elice cu 3 palete, centrul cutiei cade la un sfert de rază de axă. Așa ieșiseră Ø30,2 /
+  48,5 / 83,3 (și concluzia că numele pieselor ar fi aproximative), în loc de Ø27,4 / 43,1 / 73,9. Dovada: față de originea
+  piesei (unde e modelată gaura butucului), vârfurile celor trei palete sunt la aceeași rază (13,69; 21,56; 36,96 mm), gaura
+  de știft e un cerc cu raza 2,35–2,38, iar aceeași unealtă, pe plasele motorului nostru, dă înapoi cotele din parametri
+  (Ø83,30 cerut: 83,30; 14,0° cerut: 13,9°). Unghiul lui 15790 la 70 % din rază e 15°, nu 14°.
+- **Sensul.** LDraw are un reper drept, deci semnul pantei paletei e sensul elicei: 15790, 92842, 4617b și 2421 sunt elicoizi
+  drepți („dreapta” motorului nostru, măsurată cu aceeași unealtă: +1), iar 6041 și 65768, stângi (−1). „Ca LEGO” pune deci
+  și sensul piesei: elicea tipărită împinge aerul ca piesa LEGO pe care o înlocuiește, la aceeași rotație a motorului.
+- **Uneltele:** `elice_masura.py` și `elice_desfasurata.py` măsoară față de axa prin origine (cu verificarea ei: razele
+  vârfurilor) și dau semnul pantei în reper drept pe orice axă; `randare.mts` rotește piesele LDraw (y → −y, z → −z) în loc
+  să le oglindească (doar y → −y arăta elicele pe invers).
+- **În atelier** (`ELICE_LEGO`): 6041 → Ø27,4, pasul 0,93 (23°), lățimea 60 %, gaura de ax, stânga; 92842 → Ø43,1, pasul
+  0,59 (15°), 29 %, gaura rotundă, dreapta; 15790 → Ø73,9, pasul 0,59 (15°), 25 %, gaura rotundă, dreapta.
+
+## Implementarea (3.Tq)
+
+Pe ramura `wip/3.Tq-elice`, Easy 3Draw 18.19.0 (22–23.11; din 23.11, în sesiunea cloud a liniei, pilotul lucrului în cloud).
+
+- **Motorul** (`extensii/trenulet/sursa/lego/lego.ts`): `elice` (tipul nou al lui `construieste`), `eliceCote` (cotele din
+  parametri, și pentru editor) și `sectiuneElice`. Plaja: 2–8 palete, Ø20–200 mm, pasul 0,3–1,5 × diametrul, lățimea 15–60 %
+  din rază. Butucul Ø8 × 8 (sau cât cere paleta la rădăcină), cu gaura din calibrare (ax, știft, bară sau fără); rădăcina
+  paletei intră 0,4 mm în butuc; 28 de stații pe paletă; grosimea de la 1,2 la 0,8; placa curbată (săgeata 4 %) sau NACA
+  4412, cel puțin cât placa; conul, 1,3 raze de butuc, așezat 0,1 mm în el.
+- **Atelierul** (`planificator/atelier.ts`): fila „Elice” (familia `propulsie`, după Roți), editorul (`at-el-*`), „Ca LEGO”
+  (6041, 92842, 15790), „Fă perechea”, textul cu pasul, unghiurile și consola la vârf, pictograma; 31 de texte în engleză.
+- **Probele:** unitare 13 (`test/unit/trenulet.elice.test.ts`: corpul închis pe plajă, cotele, muchia de jos pe masă,
+  unghiul din plasă, paletele care nu se ating, oglinda, secțiunea plăcii și a profilului de aripă pe hârtie, formele,
+  vârful la diametrele cu rotunjire, butucul și conul, implicitele și marginile); e2e 6 (`test/e2e/trenulet.elice.spec.ts`), plus filele și proba în engleză
+  din cvs2, care parcurge acum și fila Elice.
+- **Otrăvurile:** `test/otravuri/3.Tq.py`, 138 (77 pe motor, 59 pe atelier prin e2e, pictograma și traducerea), toate prinse
+  pe codul final: 134 din prima, una (rotunjirea pasului din câmp) după proba ei, iar din trei socotite întâi echivalente și
+  rulate totuși, una era prinsă și una a cerut proba ei: garda radicalului din forma rotunjită ține plasa întreagă la 99
+  dintre diametrele din 0,1 în 0,1 mm (fără ea, vârful ar fi NaN); `3.Tq-en.py`, 4 / 4 (textele rămase în română fără
+  diacritice, văzute doar în cvs2, în engleză); trei echivalente, lăsate afară cu motivul în liste.
+- **Cursa din editor, găsită de o cădere rară a probei** (1 din 30 sub încărcare): după ce sosește three.js, partea 3D alege
+  din nou piesa și redesenează editorul. Dacă omul tocmai a scris într-un câmp, redesenarea scoate câmpul din pagină, iar
+  browserul îi dă `change` în mijlocul ei: valoarea intra în piesă, dar editorul rămânea desenat cu ce era (piesa cu 4 palete,
+  editorul cu 3 și cu „Ca LEGO 15790” apăsat). `editor()` ia acum întâi câmpul activ, apoi desenează: e pentru toate piesele
+  atelierului. Proba ei ține three.js până scrie omul, apoi îi dă drumul; probele elicei așteaptă pornirea părții 3D.
+- **Ce se vede pe randări și pe capturi:** paletele nu se ating nici la 8 palete (în plan, golul dintre două palete vecine
+  e cel puțin 15 % din pasul dintre ele: la Ø72 cu 8 palete, 0,5 mm lângă butuc și 1,4 mm la raza de 12), plasa e orientată
+  corect (nicio față întoarsă), editorul încape la 390 px. **De încercat pe imprimantă:** la vârf paleta e culcată (13° la elicea implicită, 15° la „Ca LEGO
+  15790”), deci dedesubtul ei iese aspru (consola de 0,9, respectiv 0,7 mm pe strat, spusă în editor), iar pe masă stă doar
+  butucul și câte o linie subțire sub fiecare paletă: o margine de aderență (brim) din slicer ajută.
 
 ## Feliile
 
