@@ -1325,6 +1325,10 @@
       "ro": "Importul PDF și AI, adus din etapa 9, cu spațiul fișierelor",
       "en": "PDF and AI import, brought forward from stage 9, with the files space"
     },
+    "58137cc19173c5a5": {
+      "ro": "Biblioteca extensiilor, refăcută",
+      "en": "The extension library, redone"
+    },
     "5842d67ec9fa1f43": {
       "ro": "Atelierele, regresia, laptopul de atelier",
       "en": "The workshops, regression, the workshop laptop"

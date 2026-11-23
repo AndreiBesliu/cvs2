@@ -1,4 +1,42 @@
-# Biblioteca extensiilor (3.Xg)
+# Biblioteca extensiilor (3.Xg, 3.Xh)
+
+## 3.Xh: interfața nouă a bibliotecii (în lucru, în cloud)
+
+_Linia „biblioteca”, din 23.11.2026 într-o sesiune cloud: ramura `wip/3.Xh-biblioteca-ui` (din `main` `8f122eb6`, adusă la
+`8177ab8` pe 23.11), ADR-urile 0231–0239, canalul `biblioteca`. Starea: **ADR 0231 PROPUS, cu schița; codul așteaptă
+răspunsurile owner-ului.**_
+
+Cererea owner-ului (23.11): „poti sa pornesti un branch in care sa modificam libraria de plugin-uri? vreau ceva mai frumos
+si cu un UI/UX mai bun si atragator”.
+
+- **23.11, propunerea (fără cod de produs):** 87 de capturi ale bibliotecii de azi (11 stări; 1440, 1024 și 390 px; două
+  teme; ro și en), cu zece lucruri găsite și măsurate (în ADR 0231, „Ce e azi”). ADR 0231 propus: trei direcții care se
+  exclud (A meniul îmbunătățit, **B fereastra „Biblioteca extensiilor”, recomandată**, C pagina pe tot ecranul) și ce se face
+  oricum (datele noi ale catalogului, semnul în pachet, o singură fereastră de confirmare, „Scoate” cu întrebarea, scheletul,
+  paleta). Schița: <https://claude.ai/artifact/RVvJq3q2NPxtTPm2Y8Q8EV> (privată, a owner-ului), cu formularul în baza ei:
+  colecția `raspunsuri`, documentul `owner` (`q1`–`q4`, notele `q1n`–`q4n`, `text`, `la`).
+- **Întrebările** (recomandarea e „a” la toate): 1 unde stă biblioteca; 2 semnul lui Easy 3Draw; 3 „ce e nou” cerut de probă
+  la fiecare versiune (o regulă pentru toate liniile care schimbă pluginul); 4 capturile din bibliotecă.
+- **Feliile, după răspunsuri (pentru B):** 3.Xh-1 datele și semnul; 3.Xh-2 fereastra de confirmare și „Scoate”; 3.Xh-3
+  fereastra bibliotecii, meniul scurtat, paleta; 3.Xh-4 telefonul, tastatura, manualul, otrăvurile.
+
+**Capcane găsite (23.11):**
+- **În container lipsește Edge** (pe 23.11 nu era instalat, iar `npx playwright install msedge` n-a răspuns în 150 s).
+  Probele e2e ale liniei rulează local cu Chrome (`chromium.launch({ channel: 'chrome' })`, sau o copie a configurației în
+  `.tmp/` cu `channel: 'chrome'`); cu Edge rulează doar CI-ul complet.
+- **Capturile se fac din `.tmp/`:** `.tmp/capturi-3xh/` (ignorat) are scriptul stărilor (`capturi.mjs`: catalogul ținut,
+  oprit sau stricat cu `page.route`; o versiune veche instalată din fișier, făcută din pachetul de acum cu alt manifest, ca în
+  `biblioteca.spec.ts`), măsurătorile și capturile cadrului extensiei (WebP prin `OffscreenCanvas`, ~30 kB la 960 px). 3D-ul
+  extensiei merge în Chrome fără fereastră cu `--use-angle=swiftshader`.
+- **Culorile calculate ale aplicației sunt `oklab(...)`** (jetoanele derivate cu `color-mix`): un contrast socotit din
+  `getComputedStyle` cu o expresie pentru `rgb()` iese greșit (scriptul a dat 20,99 pe tema luminoasă și 1,33 pe cea întunecată, pentru aceleași elemente). Contrastul nu e măsurat încă:
+  la cod, culoarea se trece întâi printr-o pânză (`fillStyle`, apoi `getImageData`).
+- **`main` se mișcă repede:** 3.Tq a dus Easy 3Draw la 18.19.0 în ziua pornirii. Semnul din pachet (3.Xh-1) cere și el o
+  versiune nouă: numărul se ia după `origin/main` adus, în ziua feliei.
+- **„Scoate” șterge azi fără întrebare** extensia și datele ei (`Gestionare`, `scoateExtensia`): se repară în 3.Xh-2, în
+  orice direcție.
+
+## 3.Xg: biblioteca (încheiată, în `main` din 07.11)
 
 <!-- Adusă din memoria sesiunii principale pe 23.11.2026 (mutarea în cloud). De aici înainte o ține la zi linia, pe ramura ei, odată cu feliile. -->
 

@@ -11319,3 +11319,27 @@ un branch in care sa modificam libraria de plugin-uri? vreau ceva mai frumos si 
 - **Documentele:** decizia în `CLAUDE.md`; indexul ADR (0282: unită în `0ae9c6c1`); `docs/linii/README.md` (elicele unite,
   linia bibliotecii, liniile în lucru în sesiunile lor); `docs/linii/principala.md` („Din container”, starea);
   `docs/lucru-in-cloud.md` (gazda adresei de test la „Allowed domains”); nota elicelor (unită).
+
+## 2026-11-23 — 3.Xh, propunerea: biblioteca extensiilor, refăcută (ADR 0231 propus, cu schița) (sesiune cloud)
+
+**Prompt:** brief-ul liniei „biblioteca”, lipit de owner în sesiunea cloud; cererea lui, exact: „poti sa pornesti un branch
+in care sa modificam libraria de plugin-uri? vreau ceva mai frumos si cu un UI/UX mai bun si atragator”.
+**Started:** 23.11, 13:45. **Completed:** 23.11, 14:25. **Modelul:** nescris aici (regula sesiunii cloud: niciun nume de
+model în repo); e în raportul din chat și în sesiunea din mesajul commit-ului.
+
+- **Privit, pe build-ul de pe `8f122eb`:** 87 de capturi ale bibliotecii de azi (meniul în șase stări, ferestrele instalării,
+  actualizării și gestionării, extensia deschisă; 1440, 1024 și 390 px; două teme; ro și en), cu măsurători în pagină. Zece
+  lucruri găsite, în ADR: nicio imagine, extensia arătată de două ori, meniul care crește de la 250 × 215 la 362 × 377 px
+  când vine catalogul, fereastra instalării cu o frază de 450 de caractere, butonul de 82 × 28 px pe telefon, „Scoate” care
+  șterge fără întrebare, biblioteca negăsită de paletă.
+- **ADR 0231, propus:** trei direcții care se exclud (A meniul de azi, îmbunătățit; B fereastra „Biblioteca extensiilor”,
+  recomandată; C pagina pe tot ecranul), cu ce vede omul, ce cere catalogul și costul fiecăreia; ce se face în orice direcție;
+  marginile din ADR 0230, neschimbate; patru întrebări (unde stă, semnul lui Easy 3Draw, „ce e nou” cerut de probă,
+  capturile); feliile 3.Xh-1 … 3.Xh-4.
+- **Schița:** <https://claude.ai/artifact/RVvJq3q2NPxtTPm2Y8Q8EV>: capturile de azi cu semnele lor, cele trei direcții pe
+  ambele teme, la birou și pe telefon, în română și în engleză, în trei stări, cu trei capturi adevărate ale extensiei; trei
+  desene pentru semn; formularul întrebărilor (baza paginii, `raspunsuri/owner`; scrierea și citirea, probate o dată).
+- **Fără cod de produs.** Indexul ADR, titlul tradus (`node scripts/traduceri.ts --verifica`: 913 texte, 0 fără traducere),
+  nota liniei (`docs/linii/biblioteca.md`). `main` adus în ramură (`8177ab8`, cu 3.Tq), fără ciocniri.
+- **Mediul:** în container lipsește Edge; capturile sunt făcute cu Chrome 153.
+- **Urmează:** răspunsurile owner-ului, apoi 3.Xh-1.
