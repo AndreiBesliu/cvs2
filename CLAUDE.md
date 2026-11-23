@@ -1020,8 +1020,8 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   foaie” și „Doar imaginea” în fereastra trasării; „Imaginile foii” în panoul Proprietăți, cu nimic selectat); octeții
   stau în browser (IndexedDB `cncvs2-imagini`, după amprentă), iar foaia ține doar așezarea (`Foaie.imagini`, fără schemă
   nouă: documentul rămâne v26). Rămâne 25.8↑b („Calibrează”, „Trasează…” din imaginea de pe foaie), la cuvântul owner-ului.
-  **25.9↑ (fereastra trasării, refăcută, ADR 0273) gata pe 23.11, pe aceeași ramură, cu răspunsurile 1a–3a și, la nota
-  owner-ului, celelalte variante ca opțiuni:** fereastra cât ecranul, fără derularea ei (setările se derulează singure,
+  **25.9↑ (fereastra trasării, refăcută, ADR 0273) gata pe 23.11, unită în `main` pe 23.11 (`4fe2d2ad`), cu răspunsurile
+  1a–3a și, la nota owner-ului, celelalte variante ca opțiuni:** fereastra cât ecranul, fără derularea ei (setările se derulează singure,
   previzualizarea crește, piciorul fix); grupurile Imaginea, Trasarea, Curățarea, Mărimea, cu rezumatul pe titlu, ținute în
   browser (`cncvs2.trasare.fereastra`; „Simplu” ascunde Imaginea și Curățarea); mărimea desenului (lățimea sau înălțimea
   cutiei vectorilor, legate), dusă de fereastră în lățimea imaginii după fiecare trasare (sau doar scara; sau lățimea
@@ -1198,6 +1198,18 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   (`src/app/SugestieDinEditor.ts`, `src/app/pozaSugestiei.ts`: IndexedDB și un canal BroadcastChannel; editorul nu încarcă
   Firebase); fila o atașează sugestiei noi, iar serverul o ține în `sugestii/{id}/poze/plansa` (doar `get`, de cine poate
   citi sugestia). Bucățile ei sunt doar online (`DOAR_ONLINE`), cu plafonul lor de 8 kB, în afara totalului.
+  **Utilizarea aplicației (ADR 0262, feliile A.8a și A.8b ale liniei adminului)** gata pe 23.11, în sesiunea cloud a
+  liniei, unită în `main` pe 23.11 (`5325b8fe`): editorul înregistrează acțiunile registrului (cu sursa gestului și
+  rezultatul), ferestrele și unealta și le trimite în loturi, doar cu contul deschis, prin callable-ul `utilizare`
+  (`functions/src/utilizare/`); colectarea e pornită pentru toți cei cu cont și e spusă în nota de confidențialitate;
+  setările (`setari/utilizare`) le schimbă doar owner-ul, din fila Setări. **Un fel nou de eveniment intră întâi în lista
+  albă din `shared/utilizare.ts`:** serverul reface evenimentul doar din câmpurile felului lui și aruncă restul, numărat.
+  **În pornire stau doar sursa gestului și tamponul** (`src/app/utilizare.ts`); înregistratorul (`src/app/utilizareLot.ts`)
+  are bucata lui, iar trimiterea o pune editarea, prin bucata contului: **un `import('./PanouCont.tsx')` din pornire scoate
+  o bucată nouă, comună.** Tipurile comune stau în `utilizareTipuri.ts` (regula `fara-cicluri` numără și importurile doar
+  de tipuri). **Legate de cont, evenimentele sunt date personale (GDPR): de verificat juridic înaintea live-ului** (ADR
+  0262 §3). Urmează A.8c (dialogurile, clicurile fine), A.9–A.11, apoi A.7. **Pornirea 109,2 kB (cu ușa 113,7 / 115; cu
+  Atelierul 114,0), totalul 784,6 / 800, `/admin` 130,3 / 200, contul 30,0 / 32.**
   **Riglele, ghidajele, lipirea și alinierea (ADR 0050, aduse din etapa 6)** gata pe 20.10: ghidajele pe foaie
   (`foaie.ghidaje`, fără schemă nouă), lipirea pură (`src/geom/lipire.ts`), alinierea (`src/geom/aliniere.ts`), totul la
   cerere după prima randare (`src/app/Editare.tsx`); pornirea 99,4 / 100 kB cu ușa (foarte strâmt). **Uneltele de desen
@@ -1318,6 +1330,29 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 23.11.2026, spre miezul nopții (a opta unire din cloud): **A.8a cu A.8b (utilizarea aplicației) și 25.9↑ (fereastra
+  trasării, refăcută) unite în `main`**, în lot (sesiunea principală, ramura `unire-2311j`, din `f73f3f37`). **A.8a și
+  A.8b** (linia adminului, ramura `wip/A.1-admin`, `55d26b81`, PR-ul `AndreiBesliu/cvs2#8`; ADR 0262, acceptat de owner
+  pe 23.11, în sesiunea liniei, din formularul schiței; `3.Ag` și `3.Ah` în fișa etapei 3), unite în `5325b8fe`:
+  editorul înregistrează ce folosesc oamenii (acțiunile registrului, cu sursa gestului și rezultatul, ferestrele,
+  unealta) și trimite loturi, doar cu contul deschis, prin callable-ul nou `utilizare`; serverul reface fiecare eveniment
+  din lista albă (`shared/utilizare.ts`), primește cel mult 120 de loturi pe cont și pe oră și le șterge singur după
+  zilele din setări; setările le schimbă doar owner-ul, din fila Setări („Utilizarea aplicației”); colectarea, pornită
+  pentru toți cei cu cont, e spusă în nota de confidențialitate (răspunsul owner-ului la ADR). Otrăvurile 48 / 48 și
+  40 / 40. **La publicare merge și serverul:** funcția `utilizare`, regulile Firestore, indexurile (TTL pe `utilizare` și
+  `limiteUtilizare`). **Înaintea live-ului:** legate de cont, evenimentele sunt date personale (GDPR), de verificat
+  juridic (ADR 0262 §3). **25.9↑** (linia trasării, ramura `wip/25.1-trasare`, `2acad1d0`, apoi vârful `8c0eded9`, cu
+  `main` adus și doar documente în plus; PR-ul `AndreiBesliu/cvs2#10`; ADR 0273, acceptat cu 1a–3a și cu celelalte
+  variante ca opțiuni), unită în `4fe2d2ad`: fereastra trasării cât ecranul, fără derularea ei, cu previzualizarea care
+  crește și butoanele mereu la vedere; grupurile Imaginea, Trasarea, Curățarea, Mărimea, cu rezumatul pe titlu; mărimea
+  desenului scrisă direct (lățimea sau înălțimea vectorilor); raportul scurt, cu sugestiile ca butoane; otrăvurile
+  24 / 24; felia +2,6 kB. Ciocnirea, doar în dicționarul traducerilor roadmap-ului (ambele părți păstrate, în ordinea
+  cheilor). Porțile lotului, în CI, verzi la prima trecere pe `4fe2d2ad` (completul, 62 min 49 s): unit 9 995 / 0
+  (12 sărite, pe Linux), e2e 637 / 637, funcțiile pe emulatoare 115 / 115, paginile 45 / 45; pornirea 109,2 kB (plafonul
+  115; **cu ușa 113,7, cu Atelierul 114,0: mai e 1 kB**), **totalul 784,6 / 800 kB (mai sunt 15,4 kB)**, `/admin`
+  130,3 / 200, contul 30,0 / 32. Înainte, lotul al șaptelea a ajuns pe test (`f73f3f37`, 23:54). Urmează, la raport:
+  16.A↑a (frezele, `AndreiBesliu/cvs2#12`), 28.8↑a (fereastra exportului, `AndreiBesliu/cvs2#11`), A.8c. **De hotărât de
+  owner: plafoanele** (pornirea și totalul) și „cine unește în `main`”.
 - 23.11.2026, noaptea (a șaptea unire din cloud): **3.Xh (biblioteca extensiilor, refăcută) și 12.1↑e-3 cu 12.1↑e-4
   (pereții drepți și treptele în „Împreună (secțiunea)”) unite în `main`**, în lot (sesiunea principală, ramura
   `unire-2311i`, din `870e8759`). **3.Xh** (linia bibliotecii, ramura `wip/3.Xh-biblioteca-ui`, `611a3c5f`, PR-ul

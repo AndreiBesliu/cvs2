@@ -12250,7 +12250,7 @@ si sa le salvez in cont” și „Da-mi un prompt pentru o sesiune dedicata frez
 **Prompt:** același brief de predare al sesiunii principale („unește ce se poate”), la rapoartele liniilor bibliotecii și
 incrustațiilor (PR-urile `AndreiBesliu/cvs2#4` și `AndreiBesliu/cvs2#7`); linia bibliotecii, cu „ok, uneste-l” al owner-ului
 spus în sesiunea ei.
-**Started:** 23.11, 21:38. **Completed:** unirea în `main`, 23.11, 22:45; publicarea pe test, în rândul de la capăt.
+**Started:** 23.11, 21:38. **Completed:** unirea în `main`, 23.11, 22:45; publicarea pe test, 23.11, 23:54.
 
 - **Înainte:** publicarea lui `ee4f629d` (A.6, cu 11.3↑f): completul pe `main` verde, `publica.yml` verde, adresa de test
   spune `ee4f629d8aa7` (21:37). Între `d6fd5d68` și el, sesiunea planșelor publicase și ea `c8b235ab` (20:58), înainte să-i
@@ -12274,3 +12274,31 @@ spus în sesiunea ei.
   versiunile a două linii pe aceeași extensie, grupul paletei); indexul liniilor; starea din `docs/linii/principala.md`.
 - **La owner:** plafonul total (778,6 / 800: feliile gata și cele în lucru nu mai încap toate), fondul semnului lui Easy
   3Draw, rândul de „ce e nou” al lui 18.20.0.
+- **Publicarea (`f73f3f37`):** rapidul și completul pe `main` verzi (completul, 47 min 40 s), `publica.yml` verde în
+  3 minute; adresa de test spune `f73f3f3765d1` (23:54).
+
+## 2026-11-23 — Sesiunea principală în cloud: a opta unire (A.8a și A.8b, utilizarea aplicației; 25.9↑, fereastra trasării refăcută) (Model: Claude Fable 5.2)
+
+**Prompt:** același brief de predare al sesiunii principale („unește ce se poate”), la rapoartele liniilor adminului și
+trasării (PR-urile `AndreiBesliu/cvs2#8` și `AndreiBesliu/cvs2#10`).
+**Started:** 23.11, 22:40. **Completed:** unirea în `main`, 24.11, 00:05; publicarea pe test, în rândul de la capăt.
+
+- **Verificate înaintea unirii:** ambele ramuri fără `.lucru/`; adminul avea `main` `ee4f629d`, trasarea `c8b235ab`;
+  completul verde pe `09966989` (adminul; după el, doar documente până la `55d26b81`) și pe `1868b4e4` (trasarea; apoi
+  documente până la `2acad1d0`). A.8a și A.8b ating serverul: funcția nouă `utilizare`, regulile Firestore, indexurile
+  (TTL pe `utilizare` și `limiteUtilizare`).
+- **Unirea:** `unire-2311j` din `origin/main` (`f73f3f37`): A.8a și A.8b în `5325b8fe`, 25.9↑ în `4fe2d2ad`. O singură
+  ciocnire, în `docs/traduceri/roadmap.en.json` (două rânduri vecine adăugate de cele două linii): ambele păstrate, în
+  ordinea cheilor; `node scripts/traduceri.ts --verifica`: 956 de texte, 0 fără traducere. În container, pe arborele
+  comun: tipurile (și ale funcțiilor), regulile de import, 110 / 110 probe atinse, build-ul determinist.
+- **Vârful trasării s-a mișcat după raport:** linia a adus `main` (`caa65bcd`) și și-a reluat completul; `8c0eded9`
+  adaugă doar DEVLOG-ul și nota ei. Unit și el în lot (`06b878e0`), cu codul neschimbat față de `4fe2d2ad` (`git diff`
+  gol în afara fișierelor `.md`), deci porțile rămân cele de mai jos.
+- **Porțile lotului, în CI, pe `4fe2d2ad`**, verzi la prima trecere (rapidul, 11 min; completul, 62 min 49 s): unit
+  9 995 / 0 (12 sărite), e2e 637 / 637, funcțiile pe emulatoare 115 / 115, paginile 45 / 45; pornirea 109,2 / 115 (cu
+  ușa 113,7; cu Atelierul 114,0), totalul 784,6 / 800, `/admin` 130,3 / 200, contul 30,0 / 32.
+- **Documentele:** decizia în `CLAUDE.md`, rândul de stare al trasării (25.9↑ unită) și paragraful nou al utilizării
+  aplicației (lista albă, ce stă în pornire, GDPR înaintea live-ului); indexul liniilor; starea și o lecție nouă în
+  `docs/linii/principala.md` (vârful unei ramuri mișcat după raport).
+- **La owner:** plafoanele (totalul 784,6 / 800, pornirea cu ușa 113,7 / 115), verificarea juridică a utilizării
+  aplicației înaintea live-ului, „cine unește în `main`”.

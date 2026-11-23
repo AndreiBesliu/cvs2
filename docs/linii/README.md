@@ -15,12 +15,12 @@ rămâne. Notele au fost aduse pe 23.11.2026 din memoria sesiunii principale loc
 
 | Linia | Nota | Ramura | Starea pe 23.11 |
 |---|---|---|---|
-| Sesiunea principală | [principala.md](principala.md) | `unire-<data>` | în cloud din 23.11; unește și publică (pe 23.11, cinci loturi: `0ae9c6c1`, `ddaa7ead`, `1b46c955`, `4497d639`, `03460cab`) |
+| Sesiunea principală | [principala.md](principala.md) | `unire-<data>` | în cloud din 23.11; unește și publică (pe 23.11, șase loturi: `0ae9c6c1`, `ddaa7ead`, `1b46c955`, `4497d639`, `03460cab`, `4fe2d2ad`) |
 | Elicele (Easy 3Draw, 3.Tq–3.Ts, ADR 0282) | [elice.md](elice.md) | `wip/3.Tq-elice` | 3.Tq unită în `main` (`0ae9c6c1`, 18.19.0); reparația probelor atelierului și 3.Tr (elicea de barcă, 18.20.0), unite în `main` (`d262e57a`); 3.Ts la cuvântul owner-ului |
-| Adminul (ADR 0260) | [admin.md](admin.md) | `wip/A.1-admin` | A.4, A.5 și A.6 unite în `main`; A.8a și A.8b (utilizarea aplicației, ADR 0262; ating serverul) raportate gata (`AndreiBesliu/cvs2#8`); A.7 la cuvântul owner-ului |
+| Adminul (ADR 0260) | [admin.md](admin.md) | `wip/A.1-admin` | A.4, A.5 și A.6 unite în `main`; A.8a și A.8b (utilizarea aplicației, ADR 0262; cu serverul) unite în `main` (`5325b8fe`); urmează A.8c, A.9–A.11, apoi A.7; verificarea juridică (GDPR) înaintea live-ului, la owner |
 | Incrustațiile (12.1↑) | [incrustatii.md](incrustatii.md) | `wip/12.1-incrustatii` | 12.1↑e-3 și 12.1↑e-4 („Împreună (secțiunea)” pe pereții drepți și pe trepte) unite în `main` (`03460cab`); următoarea, la cuvântul owner-ului |
 | Planșele (etapa 11) | [plansele.md](plansele.md) | `wip/11.1-plansele` | 11.3↑f (urechile după reguli) unită în `main` (`f4601938`): ADR 0211 are toate cele trei variante; nicio felie în lucru; tăierea plăcii 11, la owner; 11.5↑b după etapa 13 |
-| Trasarea din imagine (25.x↑, ADR 0272) | [trasare.md](trasare.md) | `wip/25.1-trasare` | 25.8↑a unită în `main` (`473f2e20`); 25.9↑ (fereastra trasării, refăcută, ADR 0273) raportată gata (`AndreiBesliu/cvs2#10`); 25.8↑b la cuvântul owner-ului |
+| Trasarea din imagine (25.x↑, ADR 0272) | [trasare.md](trasare.md) | `wip/25.1-trasare` | 25.8↑a unită în `main` (`473f2e20`); 25.9↑ (fereastra trasării, refăcută, ADR 0273) unită în `main` (`4fe2d2ad`); 25.8↑b la cuvântul owner-ului |
 | Biblioteca extensiilor, interfața nouă (3.Xh, ADR 0231–0239) | [biblioteca.md](biblioteca.md) | `wip/3.Xh-biblioteca-ui` | 3.Xh (ADR 0231) unită în `main` (`2d1e482c`, Easy 3Draw 18.21.0); rămase, la cuvântul owner-ului: căutarea și categoriile, captura mărită, „ce e nou” la actualizare |
 | Biblioteca de freze (16.A↑, ADR 0300–0309) | freze.md (o scrie linia) | `wip/16.A-freze` | ADR 0300; 16.A↑a (biblioteca în browser, „Frezele mele”) în lucru, în sesiunea cloud a liniei (`AndreiBesliu/cvs2#12`, ciornă) |
 | Fereastra exportului (28.8↑, ADR 0290–0299) | export.md (pe ramura liniei) | `wip/28.8-export` | pornită de owner pe 23.11; ADR 0290 propus, cu schița și patru întrebări (`AndreiBesliu/cvs2#11`, ciornă) |
