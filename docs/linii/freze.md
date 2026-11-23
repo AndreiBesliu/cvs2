@@ -2,7 +2,7 @@
 
 _cncvs2, biblioteca de freze („Frezele mele”), felia 16.A↑ adusă din etapa 16: ramura `wip/16.A-freze` (din `main`
 `c8b235ab`), ADR-urile 0300–0309, canalul `freze`; ADR 0300 ACCEPTAT pe 23.11 („Da, 1a–6a”);
-16.A↑a GATA pe ramură (23.11), de încercat pe canalul `freze`; urmează 16.A↑b_
+16.A↑a și ADR 0301 (plafonul total 900 kB) UNITE în `main` (`b1797933`); urmează 16.A↑b_
 
 Pornită pe 23.11.2026, în sesiunea cloud a liniei, la cererea owner-ului: „Vreau sa pot crea freze l sau profiluri de freze in
 aplicatie si sa le salvez in cont”. Rândurile din prag: „Bibliotecă de freze cu geometrie reală (dreaptă, bilă, toroidală, V,
@@ -30,6 +30,9 @@ gravare, profil, formă desenată)” și „Freze de profil desenate de utiliza
 - **23.11, 22:55: plafonul total 900 kB** (ADR 0301, „ok, ridica plafonul total la 900 kB”), pe ramură peste `2c3fd99b`;
   16.A↑a o unește sesiunea principală, în lotul ei (`unire-2311k`), iar ADR 0301 după el. Pornirea rămâne 115 kB: cu
   Atelierul, 114,2 / 115, deci 16.A↑b nu trebuie să pună nimic înaintea primei randări.
+- **24.11, noaptea: 16.A↑a și ADR 0301 unite în `main`** (`b1797933`, a noua unire din cloud, de sesiunea principală, în
+  lotul `unire-2311k`; PR-ul #12 închis ca unit). Completul liniei, verde pe `218eed21` și pe `2c3fd99b`. Ramura adusă la
+  `main`; următoarea felie, 16.A↑b (alegerea în proiect, documentul v27), la cuvântul owner-ului.
 - **Feliile**, în ordine: 16.A↑a (biblioteca în browser, fereastra, fișierul), apoi b (alegerea în proiect, v27), c
   (contul), d (calibrarea), e (bila și toroidala), f (profilul desenat), g (valorile pe material).
 
