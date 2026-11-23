@@ -11687,6 +11687,9 @@ ficare setare sa fie insotita de o ilustratie sugestiva, ca sa ajute userul sa i
 - **Schița:** <https://claude.ai/artifact/FX4y5HfSixLXthAcnrzUQP> (fereastra propusă de încercat, ambele teme, 1280 / 1024;
   capturile; formularul întrebărilor).
 - **Fără cod de produs.** Codul pornește după răspunsurile owner-ului.
+- **`main` adus în ramură** (`c8b235ab`, cu 11.3↑f; ciocnirea doar în DEVLOG, rezolvată cu `rezolva-devlog.py`): urechile au
+  încă trei locuri (pe laturile lungi, pe cele scurte, la mijloc), puse în inventar și în schiță; cifrele refăcute: 91 de câmpuri
+  (72 după o alegere), 53 de poze (1,9 kB), desenele 5,8 kB; totalul 770,9 / 800.
 
 
 ## 2026-11-23 — Felia 11.3↑f: urechile după reguli, pe laturi (ADR 0211, varianta c)

@@ -45,6 +45,10 @@ treapta), găurirea, două foi cu „Toate foile”. Sunt în schiță.
 
 ## Inventarul: setările, după întrebarea la care răspund
 
+**Precizarea din 23.11, după unirea lui 11.3↑f în `main` (`c8b235ab`):** urechile au încă trei locuri (`urechi-lungi`,
+`urechi-scurte`, `urechi-mijloc`, ADR 0211, varianta c), deci fereastra are 91 de câmpuri, 19 mereu la vedere și 72 după o
+alegere sau o condiție; pozele cerute de inventar, ~60. Cifrele de mai sus, din „Ce e azi”, sunt cele de pe `d6fd5d68`.
+
 „Mereu” = pe orice rând de operație (cu ≥ 2 foi, și „Ce exporți”). „Titlu” = explicația de azi e doar în `title`. Desenul:
 **poză** = poza unei alegeri, pe cartonașul ei, desenată de mână; **desen** = desenul întrebării, generat din valorile omului,
 cu cota câmpului activ aprinsă. Numele din prima coloană sunt `data-camp` (sau alt `data-*` unde e scris).
@@ -130,7 +134,7 @@ cu cota câmpului activ aprinsă. Numele din prima coloană sunt `data-camp` (sa
 | --- | --- | --- | --- |
 | `urechi` | profil închis | titlu | desen: de sus, bucla cu urechile la locurile lor; alături, secțiunea de-a lungul tăieturii |
 | `urechi-numar`, `urechi-latime`, `urechi-grosime` | cu urechi (numărul, doar la distanțe egale) | titlu (nu la număr și grosime) | același desen: cotele |
-| `urechi-egale` / `urechi-alese` / `urechi-lemn`, „Alege pe desen…” | cu urechi | titlu, doar la „unde ține” | poză pentru fiecare |
+| `urechi-egale` / `urechi-alese` / `urechi-lemn` / `urechi-lungi` / `urechi-scurte` / `urechi-mijloc`, „Alege pe desen…” | cu urechi (numărul oprit la alese și la mijloc) | titlu la „unde ține” și pe laturi, plus notele la vedere | poză pentru fiecare (6); desenul urechilor le pune la locurile regulii |
 | „Pune urechile unde țin” | după export, cu piese desprinse | titlu | fără |
 
 **V-carve și incrustația în V**
@@ -185,7 +189,7 @@ cu cota câmpului activ aprinsă. Numele din prima coloană sunt `data-camp` (sa
 Două feluri, în același stil: linii de culoarea textului (`currentColor`), lemnul bej, masa gri, traseul în verdele traseului de
 pe pânză, cota câmpului activ în culoarea de accent. Se desenează prin tokenuri, deci merg în ambele teme fără a doua desenare.
 
-- **Pozele alegerilor** (pe cartonașe, 64 × 44): desenate de mână, fixe. Sunt 50 în schiță; inventarul cere ~57 (lipsesc
+- **Pozele alegerilor** (pe cartonașe, 64 × 44): desenate de mână, fixe. Sunt 53 în schiță; inventarul cere ~60 (lipsesc
   direcția pe linie, despărțirea, frezele de rest și lemnul din jurul dopului).
 - **Desenele întrebărilor** (260 × 150, lângă câmpuri): generate din valorile omului, cu valorile pe cote; cota câmpului pe care
   stai (clic, Tab, maus; pe ecranul tactil, atingerea) se aprinde, iar sub desen apare explicația câmpului (textele `….titlu`
@@ -195,8 +199,9 @@ pe pânză, cota câmpului activ în culoarea de accent. Se desenează prin toke
   `src/cam/coborare.ts`), și o probă le compară.
 
 **Costul, măsurat** pe desenele din schiță (terser, apoi gzip -9; în TSX ies de același ordin, iar fiecare felie le măsoară din
-nou): cele 11 desene, cu ajutoarele lor (cote, săgeți), 5,5 kB; cele 50 de poze, 1,8 kB ca JavaScript sau 1,9 kB ca fișier SVG
-de date. Totalul e azi 770,0 / 800 kB, deci 30 kB pentru toate liniile; pornirea (108,5 / 115) nu se schimbă, fiindcă fereastra
+nou): cele 11 desene, cu ajutoarele lor (cote, săgeți), 5,8 kB; cele 53 de poze, 1,9 kB ca JavaScript sau tot 1,9 kB ca fișier SVG
+de date. Totalul e 770,0 / 800 kB pe `d6fd5d68` și 770,9 după unirea lui 11.3↑f (`c8b235ab`), deci ~29 kB pentru toate
+liniile; pornirea (108,5 / 115) nu se schimbă, fiindcă fereastra
 vine la cerere.
 
 ## Întrebările (doar ce se exclude), cu recomandarea întâi
@@ -207,9 +212,9 @@ vine la cerere.
    - **c:** C, pașii, în toate aranjamentele.
 2. **Desenele.**
    - **a (recomandat):** pozele desenate de mână și desenele întrebărilor generate din valori, totul în bucata ferestrei,
-     adusă la cerere: ≈ +7,5 kB pe total.
-   - **b:** la fel, dar pozele într-un fișier de date în precache (ca dicționarul codurilor, ADR 0085): ≈ +5,7 kB JS și 1,9 kB
-     date, cu încă un încărcător și un plafon, pentru 1,8 kB.
+     adusă la cerere: ≈ +8 kB pe total.
+   - **b:** la fel, dar pozele într-un fișier de date în precache (ca dicționarul codurilor, ADR 0085): ≈ +6 kB JS și 1,9 kB
+     date, cu încă un încărcător și un plafon, pentru 1,9 kB.
    - **c:** doar desene fixe, fără valorile omului: ≈ +3,5 kB (estimat).
 3. **Explicația scrisă.**
    - **a (recomandat):** sub desenul întrebării, textul câmpului activ; plus o propoziție scurtă, mereu la vedere, sub câmpurile
