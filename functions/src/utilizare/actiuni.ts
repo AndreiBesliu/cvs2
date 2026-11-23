@@ -18,7 +18,7 @@ import { drepturiIn } from '../personal/drepturi.ts';
  * Utilizarea aplicației (ADR 0262, felia A.8a). Lotul îl trimite editorul oricui are contul deschis (`conturi/{uid}`) sau e în
  * personal; serverul îl reface după lista albă (`lotDin`), îl scrie o singură dată (o reîncercare cade pe același document),
  * cel mult `LOTURI_PE_ORA` pe cont și pe oră, cu ștergerea singură după zilele din setări. Colectarea oprită din Setări nu
- * scrie nimic. Răspunsul spune editorului setările care-i schimbă purtarea. Lotul nu e o acțiune a personalului: fără audit.
+ * scrie nimic, nici un lot gol (editorul întreabă așa setările, cât colectarea e oprită). Răspunsul spune editorului setările care-i schimbă purtarea. Lotul nu e o acțiune a personalului: fără audit.
  *
  * Setările (§8): doar owner-ul, întregi și în margini, pe versiunea văzută, cu auditul în tranzacție.
  */
@@ -50,7 +50,8 @@ async function lot(db: Firestore, uid: string, d: Record<string, unknown>, acum:
     if (!cont.exists && !staff.exists) throw new HttpsError('permission-denied', 'utilizarea vine doar cu contul deschis');
     const setari = setariUtilizareDin(s.exists ? s.data() : undefined).setari;
     const raspuns = { ok: true as const, setari: setariPublice(setari) };
-    if (!setari.colectare || existent.exists) return { ...raspuns, scris: false };
+    // Un lot gol e doar întrebarea editorului după setări (cât colectarea e oprită); unul cu evenimente aruncate se scrie.
+    if (!setari.colectare || existent.exists || (l.evenimente.length === 0 && aruncate === 0)) return { ...raspuns, scris: false };
     const pana = numar(limita.get('numar'));
     if (pana >= LOTURI_PE_ORA) throw new HttpsError('resource-exhausted', `cel mult ${LOTURI_PE_ORA} loturi pe oră`);
     // Contorul orei se șterge singur a doua zi (TTL, ca al jurnalului de erori).

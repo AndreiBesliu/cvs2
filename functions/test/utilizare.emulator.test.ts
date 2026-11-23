@@ -124,6 +124,16 @@ test('colectarea oprită din Setări: lotul nu e scris, nici numărat; editorul 
   assert.equal(ms((await loturi())[0]?.['expiraLa']), T0 + 30 * ZI);
 });
 
+test('un lot gol (editorul întreabă setările, cu colectarea oprită) nu se scrie și nu se numără; unul doar cu evenimente aruncate, da', async () => {
+  assert.deepEqual(await trimite('ana', lot({ evenimente: [] })), { ok: true, scris: false, setari: PUBLICE });
+  assert.equal((await loturi()).length, 0);
+  assert.equal((await db.collection('limiteUtilizare').get()).size, 0);
+  // Evenimentele aruncate (un client stricat) se văd: lotul se scrie, gol, cu numărul lor.
+  assert.equal((await trimite('ana', lot({ nr: 2, evenimente: [{ ...ACTIUNE, text: 'x' }] }))).scris, true);
+  const [l] = await loturi();
+  assert.deepEqual([l?.['evenimente'], l?.['aruncate']], [[], 1]);
+});
+
 test('setările: doar owner-ul, pe versiunea văzută; neschimbate nu scriu; auditul cu cele dinainte și cele de după', async () => {
   const a: SetariUtilizare = { ...SETARI_UTILIZARE_IMPLICITE, clicuri: false, pasiEroare: 10 };
   const b: SetariUtilizare = { ...a, zileSume: 365 };

@@ -46,9 +46,16 @@ export function toate<C>(r: Registru<C>, ctx: C): Array<{ readonly id: string; r
   return [...r.actiuni.values()].map((a) => ({ id: a.id, eticheta: a.eticheta, stare: stare(r, a.id, ctx) }));
 }
 
+/** Cine află de fiecare rulare cerută, cu rezultatul ei (înregistratorul utilizării, ADR 0262); unul pe pagină. */
+let observator: ((id: string, r: RezultatActiune) => void) | null = null;
+export function observaRularile(f: ((id: string, r: RezultatActiune) => void) | null): void {
+  observator = f;
+}
+
 /** Rulează acțiunea doar dacă e permisă și activă; altfel întoarce motivul, fără efect. */
 export function ruleaza<C>(r: Registru<C>, id: string, ctx: C): RezultatActiune {
   const s = stare(r, id, ctx);
+  observator?.(id, s);
   if (!s.ok) return s;
   r.actiuni.get(id)?.ruleaza(ctx);
   return s;

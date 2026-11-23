@@ -44,6 +44,10 @@ const RE_ID = /^[a-z][a-z0-9-]{0,39}(?:\.[a-z0-9-]{1,40}){0,3}$/;
 /** Rezultatul unei acțiuni: `ok`, sau cheia motivului refuzului (`motiv.nimic-ales`). */
 const RE_REZULTAT = /^(?:ok|motiv\.[a-z0-9-]{1,60}(?:\.[a-z0-9-]{1,40}){0,2})$/;
 const RE_SESIUNE = /^[a-z0-9]{16}$/;
+/** Id-ul unei acțiuni, unelte sau al unui dialog e din lista albă (clientul nu trimite altceva). */
+export const idBun = (x: string): boolean => RE_ID.test(x);
+/** Rezultatul unei acțiuni e din lista albă: `ok` sau cheia unui motiv. */
+export const rezultatBun = (x: string): boolean => RE_REZULTAT.test(x);
 const RE_VERSIUNE = /^[A-Za-z0-9._-]{1,40}$/;
 const RE_ARANJAMENT = /^[a-z][a-z0-9-]{0,31}$/;
 

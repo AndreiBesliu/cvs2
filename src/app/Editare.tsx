@@ -56,6 +56,7 @@ import { folosiri } from '../model/pieseLegate.ts';
 import { useLimba } from '../ui/useLimba.ts';
 import type { Config } from './config.ts';
 import { contTinut, puneCont, useContTinut, type ContTinut } from './dreptCont.ts';
+import { seteazaTrimiterea, utilizarea } from './utilizare.ts';
 import type { Jurnal } from './jurnalErori.ts';
 import { capMeniuCont, initiale, numeButon, randuriMeniuCont, type IdMeniuCont } from './meniuCont.ts';
 import { alegereaDeAcum } from '../ui/alegereAranjament.ts';
@@ -406,6 +407,12 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
   useEffect(() => {
     if (unealta !== 'pen') setPenRedeschis((x) => (x.desen ? { cheie: x.cheie, desen: null } : x));
   }, [unealta]);
+  // Unealta aleasă, în utilizarea aplicației (ADR 0262): doar o schimbare, nu Selecția de la deschidere.
+  const primaUnealta = useRef(true);
+  useEffect(() => {
+    if (primaUnealta.current) primaUnealta.current = false;
+    else utilizarea.unealta(unealta);
+  }, [unealta]);
   const [laturi, setLaturi] = useState(() => {
     const n = Number(citeste(CHEIE_LATURI));
     return Number.isInteger(n) && n >= LATURI_MIN && n <= LATURI_MAX ? n : 6;
@@ -518,6 +525,11 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
     }, 1500);
     return () => { clearTimeout(id); };
   }, [p.config]);
+  // Trimiterea utilizării aplicației (ADR 0262, felia A.8b) trece pe același drum, prin modulul panoului contului: așa,
+  // bucata lui rămâne adusă doar de aici, fără o bucată nouă comună cu pornirea.
+  useEffect(() => {
+    seteazaTrimiterea((c, ins) => import('./PanouCont.tsx').then((m) => m.trimiteUtilizarea(c, ins)));
+  }, []);
   const trimiteSugestia = (): void => {
     const fila = window.open(ADRESA_SUGESTII, '_blank');
     if (fila) fila.opener = null;

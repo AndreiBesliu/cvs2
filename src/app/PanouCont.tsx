@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState, type ReactElement, type ReactNode } from 'react';
 import { dreptLaZi, NUME_MAX, ZILE_PROBA, zileRamase, type Drept, type RaspunsDeschide } from '../../shared/conturi.ts';
 import {
-  conecteazaContul, creeazaCont, deschideContul, iesi, intraCuGoogle, intraCuParola, primaStare, reconfirma, retrimiteConfirmarea,
-  schimbaNumele, trimiteResetarea, type ContEditor,
+  codEroare, conecteazaContul, creeazaCont, deschideContul, iesi, intraCuGoogle, intraCuParola, primaStare, reconfirma, retrimiteConfirmarea,
+  schimbaNumele, trimiteLotul, trimiteResetarea, type ContEditor,
 } from '../cloud/contEditor.ts';
 import '../i18n/carcasa.ts';
 import { mesajeGata } from '../i18n/laCerere.ts';
@@ -12,6 +12,8 @@ import type { Config } from './config.ts';
 import { contDinRaspuns, contTinut, puneCont, useContTinut } from './dreptCont.ts';
 import { textEroareCont, useFereastraCont } from './ferestreCont.ts';
 import { puneRaportariNecitite } from './raportariNecitite.ts';
+import type { Inregistrator, RezultatPompa } from './utilizareLot.ts';
+import { trimiteCoada } from './utilizareTrimitere.ts';
 
 /** Raportările (ADR 0116 §C) stau în bucata panoului: aceeași legătură cu contul, tot doar online. */
 export { RaportareNoua, RaportarileMele } from './Raportari.tsx';
@@ -43,6 +45,28 @@ export async function reconfirmaContul(c: Config): Promise<void> {
   if (x === 'indisponibil') return;
   if (x === null) uita();
   else tine(x.uid, x.raspuns);
+}
+
+/** Cât așteaptă un lot răspunsul, cu tot cu tokenul aplicației (App Check poate să nu răspundă niciodată, ADR 0043). */
+const TERMEN_LOT_MS = 60_000;
+
+/**
+ * Trimiterea cozii utilizării (ADR 0262, felia A.8b), cerută de pompa din pornire: contul Firebase al editorului (aceeași
+ * legătură ca reconfirmarea), apoi loturile, pe rând (`trimiteCoada`). Stă aici, în bucata contului, ca pornirea să rămână
+ * fără Firebase.
+ */
+export async function trimiteUtilizarea(c: Config, ins: Pick<Inregistrator, 'loturi' | 'scoate' | 'primesteSetari' | 'golesteTot'>): Promise<RezultatPompa> {
+  const x = conecteazaContul(c);
+  if (!x.ok) return 'stins';
+  const u = await primaStare(x.cont);
+  return trimiteCoada(ins, {
+    uid: u?.uid ?? null,
+    trimite: (lot) => Promise.race([
+      trimiteLotul(x.cont, lot),
+      new Promise<never>((_, nu) => { setTimeout(() => { nu(Object.assign(new Error('termen'), { code: 'functions/deadline-exceeded' })); }, TERMEN_LOT_MS); }),
+    ]),
+    cod: codEroare,
+  });
 }
 
 /** Ieșirea din meniul contului (ADR 0120): contul Firebase se închide în browserul acesta, apoi pleacă și contul ținut. */
