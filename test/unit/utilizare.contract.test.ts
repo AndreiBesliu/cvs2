@@ -19,6 +19,9 @@ const ev = {
   fereastra: { fel: 'fereastra', t: 2000, id: 'masina' },
   unealta: { fel: 'unealta', t: 3000, id: 'dreptunghi', de: 'tasta' },
   dialog: { fel: 'dialog', t: 4000, id: 'export', rez: 'renuntat' },
+  clic: { fel: 'clic', t: 4500, id: 'testid.export-gcode', de: 'bara', n: 2 },
+  derulare: { fel: 'derulare', t: 5000, de: 'panou', n: 7 },
+  zoom: { fel: 'zoom', t: 5500, de: 'panza', n: 3 },
 } as const;
 
 test('lotul bun: evenimentele refăcute doar din câmpurile contractului, nimic aruncat', () => {
@@ -43,6 +46,14 @@ test('un câmp în plus, un fel necunoscut sau o valoare din afara listei arunc�
     { ...ev.fereastra, id: 'birou' },
     { ...ev.unealta, id: 'a'.repeat(42) },
     { ...ev.dialog, rez: 'inchis' },
+    { ...ev.clic, id: 'Buton Salvează' },
+    { ...ev.clic, de: 'mouse' },
+    { ...ev.clic, n: 0 },
+    { ...ev.clic, text: 'Salvează' },
+    { fel: 'derulare', t: 5000, de: 'panou' },
+    { ...ev.derulare, n: 0 },
+    { ...ev.derulare, id: 'lista' },
+    { ...ev.zoom, de: 'roata' },
     { fel: 'tastare', t: 1, tasta: 'a' },
     { ...ev.fereastra, de: 'bara' },
     'document.roteste',

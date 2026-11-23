@@ -24,7 +24,7 @@ export function sursaDin(e: { closest(selector: string): unknown } | null, tasta
   if (e.closest('.meniu-context, .meniu-cont, .meniu-foaie, [role="menu"]')) return 'meniu';
   if (e.closest('[data-panou], .panou-retea, [role="dialog"]')) return 'panou';
   if (e.closest('[role="toolbar"], .meniu-global')) return 'bara';
-  if (e.closest('canvas')) return 'panza';
+  if (e.closest('canvas, .panza-cutie')) return 'panza';
   return 'alt';
 }
 

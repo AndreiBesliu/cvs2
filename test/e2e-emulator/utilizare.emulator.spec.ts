@@ -113,6 +113,15 @@ test('lotul unui client: după lista albă, cu contul lui, sursa fiecărui gest,
   await expect(page.getByTestId('noduri')).toHaveAttribute('data-noduri', '5');
   await page.keyboard.press('Delete');
   await expect(page.getByTestId('noduri')).toHaveAttribute('data-noduri', '4');
+  // Rotița pe pânză (zoom, un gest), apoi fereastra exportului deschisă și închisă fără export (renunțat).
+  const p0 = peEcran(50, 50);
+  await page.mouse.move(p0.x, p0.y);
+  await page.mouse.wheel(0, -120);
+  await page.mouse.wheel(0, -120);
+  await page.locator('[data-actiune="export.gcode"]').click();
+  await expect(page.locator('#export-titlu')).toBeVisible();
+  await page.locator('[role="dialog"]').getByRole('button', { name: 'Închide', exact: true }).click();
+  await expect(page.locator('#export-titlu')).toHaveCount(0);
   await ascunde(page);
   await expect.poll(async () => (await loturi()).length, LENT).toBe(1);
   const [l] = await loturi();
@@ -130,6 +139,12 @@ test('lotul unui client: după lista albă, cu contul lui, sursa fiecărui gest,
   expect(fara).toContainEqual({ fel: 'unealta', id: 'noduri', de: 'bara' });
   expect(fara).toContainEqual({ fel: 'actiune', id: 'document.forma', de: 'panza', rez: 'ok' });
   expect(fara).toContainEqual({ fel: 'actiune', id: 'document.forma', de: 'tasta', rez: 'ok' });
+  // Clicurile fine (felia A.8c): pe fila Mașina (din registru), pe unealta Noduri; zoom-ul pe pânză; dialogul exportului.
+  expect(fara).toContainEqual({ fel: 'clic', id: 'actiune.vedere.masina', de: 'bara' });
+  expect(fara).toContainEqual({ fel: 'clic', id: 'unealta.noduri', de: 'bara' });
+  expect(fara.find((e) => e['fel'] === 'zoom')).toMatchObject({ de: 'panza', n: 2 });
+  expect(fara).toContainEqual({ fel: 'dialog', id: 'eticheta.export-titlu', rez: 'deschis' });
+  expect(fara).toContainEqual({ fel: 'dialog', id: 'eticheta.export-titlu', rez: 'renuntat' });
   const grupare = fara.find((e) => e['id'] === 'document.grupeaza');
   expect(grupare).toMatchObject({ fel: 'actiune', de: 'tasta' });
   expect(String(grupare?.['rez'])).toMatch(/^motiv\./);
@@ -169,6 +184,36 @@ test('colectarea oprită din Setări: lotul nu se scrie, editorul află și nu m
   expect(cereri()).toBe(inainte + 1);
   expect(await loturi()).toEqual([]);
   expect(await page.evaluate(() => localStorage.getItem('cncvs2.utilizare.loturi'))).toBe(JSON.stringify({ v: 1, loturi: [] }));
+});
+
+test('clicurile fine oprite din Setări: lotul are acțiunile și dialogurile, fără clicuri, derulare sau zoom', async ({ page }) => {
+  test.setTimeout(120_000);
+  const r = await fetch(`${FS}/setari/utilizare`, {
+    method: 'PATCH', headers: { Authorization: 'Bearer owner', 'Content-Type': 'application/json' },
+    body: JSON.stringify({ fields: { clicuri: { booleanValue: false }, versiune: { integerValue: '1' } } }),
+  });
+  expect(r.status).toBe(200);
+  // Editorul le-a aflat la o sesiune de dinainte (răspunsul unui lot): ținute în browser.
+  await page.addInitScript(() => {
+    localStorage.setItem('cncvs2.utilizare.setari', JSON.stringify({ colectare: true, clicuri: false, lotMinute: 5, pasiEroare: 30 }));
+  });
+  await clientConfirmat('ion@exemplu.ro', 'parola-lui-ion');
+  await deschide(page);
+  await intra(page, 'ion@exemplu.ro', 'parola-lui-ion');
+  await adauga(page, 'cerc');
+  await page.locator('[data-actiune="vedere.masina"]').click();
+  await page.locator('[data-actiune="vedere.proiectare"]').click();
+  const p0 = (await ecran(page, await vedere(page)))(50, 50);
+  await page.mouse.move(p0.x, p0.y);
+  await page.mouse.wheel(0, -120);
+  await page.locator('[data-actiune="export.gcode"]').click();
+  await expect(page.locator('#export-titlu')).toBeVisible();
+  await page.locator('[role="dialog"]').getByRole('button', { name: 'Închide', exact: true }).click();
+  await expect(page.locator('#export-titlu')).toHaveCount(0);
+  await ascunde(page);
+  await expect.poll(async () => (await loturi()).length, LENT).toBe(1);
+  const feluri = new Set(((await loturi())[0]?.['evenimente'] as Array<Record<string, unknown>>).map((e) => e['fel']));
+  expect([...feluri].sort()).toEqual(['actiune', 'dialog', 'fereastra']);
 });
 
 test('fără cont: nicio cerere spre utilizare, nimic ținut în browser', async ({ page }) => {

@@ -34,6 +34,8 @@ export interface Inregistrator {
   pasi(): readonly Eveniment[];
   /** Câte evenimente are lotul de acum. */
   inLot(): number;
+  /** Câte acțiuni ale registrului au reușit în sesiune (și cele numărate într-una): un dialog închis după una a mers până la capăt. */
+  reusite(): number;
 }
 
 /** Rezultatul unei trimiteri a cozii: toată trimisă; rețeaua (mai târziu); refuzată (nimic nu mai pleacă în sesiunea asta). */

@@ -75,6 +75,15 @@ test('lotul unui client: refăcut după lista albă, cu ora sesiunii, planul și
   assert.equal((await audit()).length, 0, 'un lot nu e o acțiune a personalului: fără audit');
 });
 
+test('clicurile fine, derularea și zoom-ul (felia A.8c) se scriu ca celelalte, după lista albă', async () => {
+  const CLIC = { fel: 'clic', t: 2_000, id: 'testid.export-gcode', de: 'bara', n: 2 };
+  const ZOOM = { fel: 'zoom', t: 3_000, de: 'panza', n: 4 };
+  const DERULARE = { fel: 'derulare', t: 4_000, de: 'panou', n: 1 };
+  assert.equal((await trimite('ana', lot({ evenimente: [CLIC, ZOOM, DERULARE, { ...ZOOM, n: 0 }] }))).scris, true);
+  const [l] = await loturi();
+  assert.deepEqual([l?.['evenimente'], l?.['aruncate']], [[CLIC, ZOOM, DERULARE], 1]);
+});
+
 test('personalul fără cont de client: lotul e scris, cu `personal` și fără plan', async () => {
   assert.equal((await trimite('tot')).scris, true);
   const [l] = await loturi();

@@ -4,7 +4,7 @@ import { lotDin, SETARI_UTILIZARE_IMPLICITE, setariPublice, type ContextLot, typ
 import { preiaUtilizarea, sursaDin, utilizarea } from '../../src/app/utilizare.ts';
 import {
   CHEIE_LOTURI_UTILIZARE, CHEIE_SETARI_UTILIZARE, contextDinMediu, creeazaInregistrator, creeazaPompa, EVENIMENTE_IN_ASTEPTARE,
-  idSesiune, type DepsInregistrator, type RezultatPompa,
+  idSesiune, PAUZA_GEST_MS, type DepsInregistrator, type RezultatPompa,
 } from '../../src/app/utilizareLot.ts';
 import { trimiteCoada } from '../../src/app/utilizareTrimitere.ts';
 import { creeazaRegistru, observaRularile, ruleaza } from '../../src/ui/actiuni.ts';
@@ -71,6 +71,49 @@ test('evenimentele: timpul sesiunii, sursa gestului; o acțiune repetată la râ
   ]);
 });
 
+test('clicurile fine: repetate la rând, numărate într-unul; derularea și zoom-ul, treptele unui gest adunate, până la o pauză', () => {
+  const m = mediu();
+  const clic = { fel: 'clic', id: 'testid.export-gcode', de: 'bara' } as const;
+  m.ins.primeste({ ...clic, t: 1_000 });
+  m.treci(1_500);
+  m.ins.primeste({ ...clic, t: 2_500 });
+  m.ins.primeste({ fel: 'zoom', t: 2_600, de: 'panza', n: 1 });
+  m.treci(PAUZA_GEST_MS);
+  m.ins.primeste({ fel: 'zoom', t: 3_100, de: 'panza', n: 2 });
+  m.treci(PAUZA_GEST_MS + 1);
+  m.ins.primeste({ fel: 'zoom', t: 3_800, de: 'panza', n: 1 });
+  m.ins.primeste({ fel: 'derulare', t: 3_900, de: 'panou', n: 1 });
+  m.ins.primeste({ ...clic, id: 'Buton Salvează', t: 4_000 });
+  assert.deepEqual(m.ins.pasi(), [
+    { ...clic, t: 1_000, n: 2 },
+    { fel: 'zoom', t: 2_600, de: 'panza', n: 3 },
+    { fel: 'zoom', t: 3_800, de: 'panza', n: 1 },
+    { fel: 'derulare', t: 3_900, de: 'panou', n: 1 },
+  ]);
+});
+
+test('clicurile fine oprite din Setări: clicurile, derularea și zoom-ul nu intră deloc; acțiunile și dialogurile, da', () => {
+  const m = mediu({ setari: { clicuri: false } });
+  m.ins.primeste({ fel: 'clic', t: 1, id: 'testid.export-gcode', de: 'bara' });
+  m.ins.primeste({ fel: 'zoom', t: 2, de: 'panza', n: 1 });
+  m.ins.primeste({ fel: 'derulare', t: 3, de: 'panou', n: 1 });
+  m.ins.primeste({ fel: 'dialog', t: 4, id: 'eticheta.export-titlu', rez: 'deschis' });
+  m.ins.actiune('document.roteste', 'ok');
+  assert.deepEqual(m.ins.pasi().map((e) => e.fel), ['dialog', 'actiune']);
+  assert.equal(m.ins.inLot(), 2);
+});
+
+test('acțiunile reușite se numără (și cele repetate, și cele de dinaintea contului); refuzurile, nu', () => {
+  const m = mediu();
+  m.cont(null);
+  m.ins.actiune('document.roteste', 'ok');
+  m.cont('ana');
+  m.ins.actiune('document.roteste', 'ok');
+  m.ins.actiune('document.roteste', 'motiv.nimic-ales');
+  m.ins.actiune('export.gcode', 'ok');
+  assert.equal(m.ins.reusite(), 3);
+});
+
 test('lista albă și în client: un id sau un motiv din afara ei nu intră (motivul ciudat devine „motiv.altul”)', () => {
   const m = mediu();
   m.ins.actiune('Document.Roteste', 'ok');
@@ -123,7 +166,7 @@ test('un eveniment de dinaintea intrării în cont nu intră în lotul de după 
   m.cont('ana');
   m.ins.actiune('document.oglindeste', 'ok');
   m.ins.inchideLotul();
-  assert.deepEqual(m.ins.loturi().map((x) => x.lot.evenimente.map((e) => e.id)), [['document.oglindeste']]);
+  assert.deepEqual(m.ins.loturi().map((x) => x.lot.evenimente.map((e) => ('id' in e ? e.id : e.fel))), [['document.oglindeste']]);
 });
 
 test('lotul plin (200) se închide singur și cere trimiterea', () => {
@@ -137,7 +180,7 @@ test('lotul plin (200) se închide singur și cere trimiterea', () => {
 test('pașii erorilor: ultimele N (din setări); 0 nu ține nimic', () => {
   const m = mediu({ setari: { pasiEroare: 3 } });
   for (const id of ['a.unu', 'a.doi', 'a.trei', 'a.patru']) m.ins.actiune(id, 'ok');
-  assert.deepEqual(m.ins.pasi().map((e) => e.id), ['a.doi', 'a.trei', 'a.patru']);
+  assert.deepEqual(m.ins.pasi().map((e) => ('id' in e ? e.id : e.fel)), ['a.doi', 'a.trei', 'a.patru']);
   const z = mediu({ setari: { pasiEroare: 0 } });
   z.ins.actiune('a.unu', 'ok');
   assert.deepEqual(z.ins.pasi(), []);
@@ -204,6 +247,7 @@ test('sursa unui gest: paleta, tasta, meniul, panoul (și ferestrele), bara, pâ
   assert.equal(sursaDin(el('[role="toolbar"]'), false), 'bara');
   assert.equal(sursaDin(el('.meniu-global'), false), 'bara');
   assert.equal(sursaDin(el('canvas'), false), 'panza');
+  assert.equal(sursaDin(el('.panza-cutie'), false), 'panza', 'straturile de deasupra pânzei (mânerele, traseul)');
   assert.equal(sursaDin(el('div'), false), 'alt');
   assert.equal(sursaDin(null, false), 'alt');
   assert.equal(sursaDin(null, true), 'tasta');
@@ -384,7 +428,7 @@ test('pornirea: evenimentele de dinaintea înregistratorului așteaptă în tamp
   utilizarea.unealta('cerc');
   utilizarea.fereastra('masina');
   const primite: string[] = [];
-  preiaUtilizarea((e) => { primite.push(`${e.fel}:${e.id}:${'de' in e ? e.de : '-'}:${typeof e.t}`); });
+  preiaUtilizarea((e) => { primite.push(`${e.fel}:${'id' in e ? e.id : '-'}:${'de' in e ? e.de : '-'}:${typeof e.t}`); });
   utilizarea.actiune('document.roteste', 'ok');
   assert.deepEqual(primite, ['unealta:cerc:alt:number', 'fereastra:masina:-:number', 'actiune:document.roteste:alt:number']);
 });

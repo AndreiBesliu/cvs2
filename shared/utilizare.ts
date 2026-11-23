@@ -55,7 +55,11 @@ export type Eveniment =
   | { readonly fel: 'actiune'; readonly t: number; readonly id: string; readonly de: Sursa; readonly rez: string; readonly n?: number }
   | { readonly fel: 'fereastra'; readonly t: number; readonly id: Fereastra }
   | { readonly fel: 'unealta'; readonly t: number; readonly id: string; readonly de: Sursa }
-  | { readonly fel: 'dialog'; readonly t: number; readonly id: string; readonly rez: RezultatDialog };
+  | { readonly fel: 'dialog'; readonly t: number; readonly id: string; readonly rez: RezultatDialog }
+  /** Un clic pe un control, după numele lui din cod (`testid.export-gcode`), din catalogul scos din sursă (felia A.8c). */
+  | { readonly fel: 'clic'; readonly t: number; readonly id: string; readonly de: Sursa; readonly n?: number }
+  /** Derularea sau zoom-ul unui gest (rotița, pe rând), cu câte trepte a avut. */
+  | { readonly fel: 'derulare' | 'zoom'; readonly t: number; readonly de: Sursa; readonly n: number };
 
 export interface ContextLot {
   /** Versiunea build-ului (primele caractere ale commit-ului); `necunoscuta` fără ea. */
@@ -162,6 +166,18 @@ export function evenimentDin(x: unknown, acum: number): Eveniment | null {
     case 'dialog': {
       const { id: i, rez } = o;
       return cheiExact(o, ['fel', 't', 'id', 'rez']) && id(i) && din(REZULTATE_DIALOG, rez) ? { fel: 'dialog', t, id: i, rez } : null;
+    }
+    case 'clic': {
+      if (!cheiExact(o, ['fel', 't', 'id', 'de'], ['n'])) return null;
+      const { id: i, de, n } = o;
+      if (!id(i) || !din(SURSE, de)) return null;
+      if (n === undefined) return { fel: 'clic', t, id: i, de };
+      return intreg(n, 1, REPETARI_MAX) ? { fel: 'clic', t, id: i, de, n } : null;
+    }
+    case 'derulare':
+    case 'zoom': {
+      const { fel, de, n } = o;
+      return cheiExact(o, ['fel', 't', 'de', 'n']) && din(SURSE, de) && intreg(n, 1, REPETARI_MAX) ? { fel, t, de, n } : null;
     }
     default: return null;
   }
