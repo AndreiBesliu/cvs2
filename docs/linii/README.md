@@ -15,12 +15,13 @@ rămâne. Notele au fost aduse pe 23.11.2026 din memoria sesiunii principale loc
 
 | Linia | Nota | Ramura | Starea pe 23.11 |
 |---|---|---|---|
-| Sesiunea principală | [principala.md](principala.md) | `unire-<data>` | unește și publică; se mută în cloud după pilot |
-| Elicele (Easy 3Draw, 3.Tq–3.Ts, ADR 0282) | [elice.md](elice.md) | `wip/3.Tq-elice` | 3.Tq, pilotul în cloud; 3.Tr, 3.Ts la cuvântul owner-ului |
-| Adminul (ADR 0260) | [admin.md](admin.md) | `wip/A.1-admin` | A.4 (Sugestii ca tablă) în lucru, WIP `4a64e984` |
-| Incrustațiile (12.1↑) | [incrustatii.md](incrustatii.md) | `wip/12.1-incrustatii` | 12.1↑e-3 (pereții drepți) în lucru, WIP `2b7f889b` |
-| Planșele (etapa 11) | [plansele.md](plansele.md) | `wip/11.1-plansele` | 11.3↑e în lucru, WIP `39d801fc` |
-| Trasarea din imagine (25.x↑, ADR 0272) | [trasare.md](trasare.md) | `wip/25.1-trasare` | 25.8↑a în lucru, WIP `2ab74269` |
+| Sesiunea principală | [principala.md](principala.md) | `unire-<data>` | în cloud din 23.11; unește și publică (prima unire din cloud: 3.Tq, `0ae9c6c1`) |
+| Elicele (Easy 3Draw, 3.Tq–3.Ts, ADR 0282) | [elice.md](elice.md) | `wip/3.Tq-elice` | 3.Tq unită în `main` (`0ae9c6c1`, 18.19.0); 3.Tr, 3.Ts la cuvântul owner-ului |
+| Adminul (ADR 0260) | [admin.md](admin.md) | `wip/A.1-admin` | A.4 (Sugestii ca tablă) în lucru, în sesiunea cloud a liniei |
+| Incrustațiile (12.1↑) | [incrustatii.md](incrustatii.md) | `wip/12.1-incrustatii` | 12.1↑e-3 (pereții drepți) în lucru, în sesiunea cloud a liniei |
+| Planșele (etapa 11) | [plansele.md](plansele.md) | `wip/11.1-plansele` | 11.3↑e în lucru, în sesiunea cloud a liniei |
+| Trasarea din imagine (25.x↑, ADR 0272) | [trasare.md](trasare.md) | `wip/25.1-trasare` | 25.8↑a în lucru, în sesiunea cloud a liniei |
+| Biblioteca extensiilor, interfața nouă (3.Xh, ADR 0231–0239) | [biblioteca.md](biblioteca.md) | `wip/3.Xh-biblioteca-ui` | pornită pe 23.11, la cuvântul owner-ului; întâi ADR 0231 propus și schița; brief-ul, lipit de owner într-o sesiune cloud nouă |
 | Tăierea și conversia (10.3↑, ADR 0182) | [taiere.md](taiere.md) | `wip/10.3o-legare` | 10.3↑o unită; urmează 10.3↑p–r |
 | Imprimanta 3D (K1C, 3.6x, ADR 0195) | [imprimanta.md](imprimanta.md) | `wip/3.6g-imprimanta` | 3.6v unită; 3.6w (camera) la cuvântul owner-ului; proba pe aparat, la owner |
 | Aranjamentele (ADR 0250, 0251) | [aranjamente.md](aranjamente.md) | `wip/28.1-aranjamente` | 28.1↑a–d unite; următoarea, la cuvântul owner-ului |

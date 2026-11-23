@@ -11058,6 +11058,8 @@ unde țin de lemnul foii)? Răspunde „Da, 11.3↑e” sau „Nu acum”.”: �
   `CLAUDE.md`, nota liniei (`docs/linii/plansele.md`); setul de lucru `.lucru/` scos. Canalul `plansele` se publică din
   GitHub Actions (`canal.yml`), pe vârful ramurii, după rapidul verde.
   **Completed:** 23.11, 13:54.
+- **A doua aducere a lui `main`** (`8177ab81`: 3.Tq, elicele din atelierul Easy 3Draw, și limita completului, 90 de minute),
+  după documente, fără ciocniri (doar pluginul, documentele lui și CI-ul); porțile finale, pe unire.
 
 ## 2026-11-22 — Felia 3.Tp↑b: pictogramele pieselor din galeriile atelierului Easy 3Draw (ADR 0281 §4) (Model: Claude Opus 5.5)
 
@@ -11258,6 +11260,50 @@ principală, după „neata, continua si porneste si worktrees” al owner-ului)
   (cu ușa 111,2 / 115), neschimbată. Privit în Edge, la 1280 px (luminos) și la 390 px (întunecat, în română și în engleză): cardul încape, iar „Pagina Creality ↗” ține cât textul (105 px; în engleză, 95), nu tot rândul.
 - **Canalul `imprimanta`:** <https://cncvectorstudio-test--imprimanta-9lyu4r3e.web.app>, cu ultimul commit al feliei.
 
+## 2026-11-22 — Felia 3.Tq: elicea în atelierul Easy 3Draw (ADR 0282); din 23.11, în sesiunea cloud (pilotul) (Model: Claude Opus 5.5, apoi Claude Fable 5.2)
+
+**Prompt:** „Vreau ca pluginul sa faca si elice, pentru imprimanta, si sa fie si configurabile elicele si compatibile cu lego”
+(owner-ul, 22.11), apoi, la ADR 0282: „1a, 2a, 3a”. Reluată pe 23.11 în cloud, la cererea sesiunii principale (după „neata! Putem
+sa mutam tot acest proiect in sesiune cloud?” și „Da, începe” ale owner-ului): versiunea, privirea pe piesa reală, otrăvurile,
+porțile, documentele.
+**Started:** 22.11, 21:54 (la răspuns). **Completed:** 23.11, 12:55.
+
+- **22.11, local (Claude Opus 5.5):** motorul comis la 22:13 (`894bb882`), atelierul la 22:23 (`7f439bbf`), apoi pauza
+  cerută de owner (22:23). **23.11 dimineața:** `main` adus de sesiunea principală, cu pictograma elicei (`886e0c62`).
+- **23.11, în cloud (Claude Fable 5.2), pe `wip/3.Tq-elice`:** versiunea 18.19.0; privirea, otrăvurile, porțile, documentele.
+- **Privirea pe piesa reală** (randări mărite ale motorului: implicita, 8 palete, „Ca LEGO 6041”; piesele LDraw alături;
+  capturile filei la 1440 și la 390 px): elicea arată bine (paletele nu se ating, plasa orientată corect, editorul încape pe
+  telefon). Găsit, lângă piesele LEGO:
+  - **cotele LEGO erau măsurate față de centrul cutiei, nu față de axă**: la 3 palete, centrul cutiei cade la un sfert de rază
+    de axă, deci Ø30,2 / 48,5 / 83,3 în loc de 27,4 / 43,1 / 73,9 (numele pieselor, 3½, 5½ și 9 știfturi, erau bune); unghiul
+    lui 15790 e 15°, nu 14°. Unealta, reparată, dă înapoi pe plasele noastre cotele din parametri;
+  - **6041 e pe stânga** (ca 65768); 15790 și 92842, pe dreapta: „Ca LEGO” pune acum și sensul piesei;
+  - `randare.mts` oglindea piesele LDraw (doar y → −y): acum le rotește.
+- **O cădere rară a probei (1 din 30 sub încărcare) a dus la o cursă în editor:** partea 3D, când sosește three.js, alege din
+  nou piesa și redesenează editorul; un câmp în care omul tocmai a scris primea `change` în mijlocul redesenării, deci piesa
+  avea valoarea nouă, iar editorul rămânea cu cea veche. Reprodusă determinist (three.js ținut, apoi lăsat), reparată în
+  `editor()` (ia întâi câmpul activ), pentru toate piesele; spec-ul elicei, repetat de 40 de ori: 240 / 240.
+- **Otrăvurile** (într-o clonă): `3.Tq.py`, 138 / 138 pe codul final (77 pe motor, 59 pe atelier prin e2e, pictograma și
+  traducerea). Prima rulare: 134 din 136; F15 (pasul din câmp la miime) a cerut proba câmpului după redesenare; „Ca LEGO 6041”
+  rămas în română nu se vede pe probele dicționarului: proba în engleză din cvs2 nu parcurgea fila Elice, acum o parcurge
+  (`3.Tq-en.py`, 4 / 4). Din trei socotite echivalente și rulate totuși, una nu era: fără garda radicalului din forma
+  rotunjită, vârful paletei ar fi NaN la 99 dintre diametrele din 0,1 în 0,1 mm (proba ei, apoi prinsă). Trei echivalente,
+  lăsate afară cu motivul. `verifica` pe toate listele pluginului: aceleași VOID-uri ca în `main`, niciunul nou.
+- **Porțile, în container** (pe codul final, înaintea documentelor): tipurile, regulile de import, traducerile (912, 0 lipsă),
+  textele pluginului (1 361, 0 noi); unitarele pluginului și ale bibliotecii 134 / 134 (elicea, 13), ale documentelor 71 / 71;
+  e2e-ul pluginului și al extensiilor 66 / 66 (elicea, 6); build-ul determinist: pornirea 107,9 / 115 (cu ușa 112,2), totalul
+  760,9 / 800, `/admin` 121,2 / 200 (ale lui `main`: pluginul stă doar în pachet, 456,9 kB). Suitele întregi, în CI: rapidul
+  la push, completul pornit pe ramură; legăturile, în raportul liniei.
+- **Pilotul cloud, ce a ieșit la mediu** (pentru `docs/lucru-in-cloud.md` și `pregatire.sh`, la sesiunea principală): Node
+  26.13.1, Edge 158, Java 21, firebase-tools 15.18.0 și dependențele erau la locul lor; `gh auth status` spune că token-ul nu e
+  bun, dar `gh run` și `gh workflow` merg (completul l-am pornit prin uneltele GitHub ale sesiunii); `cdnjs.cloudflare.com` e oprit de rețea (previzualizarea 3D a
+  paginii de sine stătătoare lipsește, iar eșecul rapid al cererii a scos la iveală cursa de mai sus); `python3` scrie
+  `test/otravuri/__pycache__` (neignorat: rulat cu `-B`); sesiunea deschide un PR ciornă pentru ramură (regula mediului).
+- **Rămase, la cuvântul owner-ului:** elicea de barcă (3.Tr), ventilatorul cu carcasă (3.Ts); proba pe imprimantă (coada din
+  fișă); numele piesei nu spune forma și profilul; descrierea din bibliotecă n-are loc de „elice” (157 din 160 de caractere).
+- **`main` adus de două ori pe drum** (`220bd48d`, apoi `8f122ebf`, cu mutarea producției în cloud): a doua oară, ciocnirea
+  doar în DEVLOG; nota liniei (`docs/linii/elice.md`), venită din `main`, pusă la zi cu felia și cu capcanele ei.
+
 ## 2026-11-23 — Lucrul în cloud, pasul 2: sesiunea principală în cloud (canalele, publicarea, felul de lucru) (Model: Claude Opus 5.5)
 
 **Prompt:** „ca sa fie clar, eu vreau sa mutam toata productia proiectului cvs2 in cloud, vreau sa dezvoltam toata aplicatia
@@ -11296,3 +11342,33 @@ de acolo, cu toate worktrees si asa mai departe”. **Started:** 23.11, 10:20. *
 - **`docs/lucru-in-cloud.md`:** nota liniei, citită la pornire și ținută la zi cu fiecare felie; nota sesiunii principale.
 - **Afară:** generatorul documentației din `/admin` citește doar `docs/etape` și `docs/adr`, iar probele documentelor citesc
   fișiere numite, deci `docs/linii` nu schimbă nici build-ul, nici probele.
+
+## 2026-11-23 — Sesiunea principală în cloud: prima unire din container (3.Tq, elicele); linia bibliotecii, pornită (Model: Claude Fable 5.2)
+
+**Prompt:** brief-ul de predare al sesiunii principale locale, lipit de owner într-o sesiune cloud nouă („Ești sesiunea
+principală a cncvs2 […] Sesiunea principală locală ți-a predat lucrul și se oprește.”); pe drum, owner-ul: „poti sa pornesti
+un branch in care sa modificam libraria de plugin-uri? vreau ceva mai frumos si cu un UI/UX mai bun si atragator”.
+**Started:** 23.11, 12:31. **Completed:** unirea, 23.11, 13:40; publicarea pe test, în intrarea de mai jos.
+
+- **Mediul:** Node 26.13.1; `gh run list` și `gh api …/pulls` merg. Un singur PR, `AndreiBesliu/cvs2#1` (3.Tq, `40c13d6a`).
+- **Verificările dinaintea unirii:** Easy 3Draw 18.19.0 în `extensie.json` și în `extensii/biblioteca.json`, cu amprenta
+  (`biblioteca.constructie.test.ts` trece); nota `docs/linii/elice.md` la zi („gata”); fără `.lucru/`.
+- **Unirea:** `unire-2311b` din `origin/main` (`8f122eb6`), `git merge --no-ff 40c13d6a` → `0ae9c6c1`. Ramura avea deja
+  `main`, deci nicio ciocnire: arborele unirii e cel al commit-ului raportat. În container: tipurile, unitarele atinse
+  28 / 28, traducerile (912, 0 lipsă).
+- **Porțile, în CI, pe `0ae9c6c1`** (rapidul la push, completul pornit cu `gh workflow run`, din container): unit 9 795 / 0
+  (12 sărite), e2e 598 / 598, funcțiile pe emulatoare 104 / 104, paginile 34 / 34; pornirea 107,8 / 115 (cu ușa 112,2),
+  totalul 760,9 / 800, `/admin` 121,2 / 200; Easy 3Draw 18.19.0, 456,9 kB. Completul liniei, pe `40c13d6a`, verde și el.
+- **Găsit la pilot:**
+  - adresa de test era oprită de rețeaua mediului (403 de la proxy), iar `ci-si-publica.sh` își citește de acolo ultimul
+    pas: gazda `cncvectorstudio-test.web.app` adăugată la mediul „CNC VS 2”, cu aprobarea owner-ului (pe card); apoi adresa
+    spune `220bd48e6ce9`, ca la predare;
+  - completul unirii a ținut 59 min 54 s din 60 (pasul rapid 35 de minute, pe un runner lent; celălalt complet, 44 de
+    minute): `timeout-minutes` 60 → 90 în `complet.yml`;
+  - `create_session` (pornirea unei sesiuni din container) e refuzat de clasificatorul de permisiuni: sesiunile liniilor le
+    pornește owner-ul, cu brief-ul primit ca fișier.
+- **Linia bibliotecii (3.Xh):** ramura `wip/3.Xh-biblioteca-ui` făcută din `main` (`8f122eb6`) și împinsă; brief-ul
+  (capturile interfeței de azi, ADR 0231 propus, schița cu întrebările; codul, la răspunsuri) trimis owner-ului ca fișier.
+- **Documentele:** decizia în `CLAUDE.md`; indexul ADR (0282: unită în `0ae9c6c1`); `docs/linii/README.md` (elicele unite,
+  linia bibliotecii, liniile în lucru în sesiunile lor); `docs/linii/principala.md` („Din container”, starea);
+  `docs/lucru-in-cloud.md` (gazda adresei de test la „Allowed domains”); nota elicelor (unită).
