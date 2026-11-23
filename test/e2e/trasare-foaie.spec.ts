@@ -2,6 +2,7 @@ import { test, expect, type Page } from '@playwright/test';
 import { omografie } from '../../src/trasare/colturi.ts';
 import { colturiFoaie, FOAIE_A4, FORME_FOAIE, type CumFoaie } from '../unit/ajutor-poze.ts';
 import { documentSalvat } from './ajutor-document.ts';
+import { grupuriDeschise } from './ajutor-trasare.ts';
 
 /**
  * Foaia pozată oblic (ADR 0225, felia 25.5↑) în aplicația construită: sugestia raportului, „Îndreaptă foaia” cu A4 (pagina e
@@ -12,6 +13,9 @@ import { documentSalvat } from './ajutor-document.ts';
  */
 
 test.use({ locale: 'ro-RO' });
+
+// Câmpurile luminii, foii și scanării stau în grupul Imaginea, strâns la prima deschidere (ADR 0273 §2).
+test.beforeEach(async ({ page }) => { await grupuriDeschise(page); });
 
 const CAMERA: CumFoaie = { W: 1200, H: 900, focala: 1050, inclinare: 25, rotire: 8, laterala: 5, dist: 440 };
 const COLTURI = colturiFoaie(CAMERA);
@@ -222,7 +226,7 @@ test('formatele: „Din poză” (proporțiile estimate, scara de dinainte), „
 test('un scan (foaia umple poza): nicio sugestie; îndreptată, foaia nu se găsește și colțurile stau lângă margini; pe transparență, fără grup', async ({ page }) => {
   await page.goto('/');
   await alegePoza(page, 'scan');
-  await expect(page.getByTestId('trasare-abatere')).toBeVisible();
+  await expect(page.getByTestId('trasare-abatere')).toBeAttached();
   await expect(page.getByTestId('trasare-sugestie-foaie')).toHaveCount(0);
   await page.locator('[data-camp="trasare-foaie"]').check();
   await expect(page.getByTestId('trasare-foaie-negasita')).toContainText('Foaia nu s-a găsit în poză');

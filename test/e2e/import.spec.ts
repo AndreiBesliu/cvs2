@@ -36,7 +36,7 @@ const fisier = (nume: string, text: string) => ({ name: nume, mimeType: 'image/s
 test('logoul plăcii 2 (lățimea declarată 80 mm): dialogul, piesa pe foaie, G-code-ul la 80 + Ø6 și poarta', async ({ page }) => {
   await page.goto('/');
   await page.locator('[data-camp="fisier-svg"]').setInputFiles('test/placi/placa-02/logo-80mm.svg');
-  await expect(page.getByTestId('import-marime')).toHaveText('Desenul: 80.00 × 40.00 mm');
+  await expect(page.getByTestId('import-marime')).toHaveText('Desenul: 80,00 × 40,00 mm');
   await expect(page.getByTestId('import-cai')).toHaveText('3 contururi închise: 1 tăiate pe exterior, 2 pe interior (din imbricare)');
   // Pagina e în mm: alegerea px-ului nu se arată. Elipsa vine ca cubice, cu raportul.
   await expect(page.locator('[data-camp="px"]')).toHaveCount(0);
@@ -90,13 +90,13 @@ test('px din Illustrator: 72 preselectat și spus; 96 la alegere; un fișier str
     + '<switch><foreignObject requiredExtensions="http://ns.adobe.com/AdobeIllustrator/10.0/" width="1" height="1"/>'
     + '<g><rect width="226.77" height="113.385"/><text>x</text></g></switch></svg>';
   await page.locator('[data-camp="fisier-svg"]').setInputFiles(fisier('ai.svg', ai));
-  await expect(page.getByTestId('import-marime')).toHaveText('Desenul: 80.00 × 40.00 mm');
+  await expect(page.getByTestId('import-marime')).toHaveText('Desenul: 80,00 × 40,00 mm');
   await expect(page.locator('[data-camp="px"]')).toHaveValue('72');
   await expect(page.getByText('Fișierul spune că l-a scris Illustrator')).toBeVisible();
   await expect(page.locator('[data-avertisment="sarit-text"]')).toHaveText('1 text sărit: transformă textul în contururi în programul tău');
   await page.locator('[data-camp="px"]').focus();
   await page.locator('[data-camp="px"]').selectOption('96');
-  await expect(page.getByTestId('import-marime')).toHaveText('Desenul: 60.00 × 30.00 mm');
+  await expect(page.getByTestId('import-marime')).toHaveText('Desenul: 60,00 × 30,00 mm');
   // Alegerea rămâne pe ecran (și cu focusul) cât se recitește, iar Escape închide dialogul (recenzia 2.7c).
   await expect(page.locator('[data-camp="px"]')).toBeFocused();
   await page.keyboard.press('Escape');
@@ -148,7 +148,7 @@ test('ușa e adusă în fundal după pornire: o publicare nouă care îi schimb�
   // Acum fișierul vechi „dispare” de pe server, ca după o publicare nouă.
   await page.route(/actiuniImportCalcul-[^/]*\.js$/, (r) => r.abort());
   await page.locator('[data-camp="fisier-svg"]').setInputFiles('test/placi/placa-02/logo-80mm.svg');
-  await expect(page.getByTestId('import-marime')).toHaveText('Desenul: 80.00 × 40.00 mm');
+  await expect(page.getByTestId('import-marime')).toHaveText('Desenul: 80,00 × 40,00 mm');
 });
 
 /**
@@ -320,7 +320,7 @@ test('lăsarea pe planșă (2.8b): „Sari peste” trece la următorul, un fiș
   await expect(page.getByTestId('import-refuz')).toContainText('Doar fișierele SVG, DXF, PDF, AI, EPS, WMF și imaginile PNG, JPEG, WebP, GIF, BMP se importă deocamdată');
   await page.click('[data-buton="sari"]');
   await expect(page.getByTestId('import-coada')).toHaveText('(2 din 3)');
-  await expect(page.getByTestId('import-marime')).toHaveText('Desenul: 20.00 × 20.00 mm');
+  await expect(page.getByTestId('import-marime')).toHaveText('Desenul: 20,00 × 20,00 mm');
   await page.getByRole('button', { name: 'Renunță la toate' }).click();
   await expect(page.locator('.dialog')).toHaveCount(0);
   // Nimic importat: lista e goală.
@@ -338,7 +338,7 @@ test('DXF: patru linii devin un contur închis, gaura e interior, unitățile sp
   await page.goto('/');
   await page.locator('[data-camp="fisier-svg"]').setInputFiles(fisierDxf('Raft lateral.dxf', dxf({ antet: [['$INSUNITS', 70, 4]], entitati: RAFT })));
   await expect(page.locator('#import-titlu')).toHaveText('Importă: Raft lateral.dxf');
-  await expect(page.getByTestId('import-marime')).toHaveText('Desenul: 60.00 × 40.00 mm');
+  await expect(page.getByTestId('import-marime')).toHaveText('Desenul: 60,00 × 40,00 mm');
   await expect(page.getByTestId('import-cai')).toHaveText('2 contururi închise: 1 tăiate pe exterior, 1 pe interior (din imbricare)');
   await expect(page.getByTestId('import-deschise')).toContainText('1 cale deschisă, tăiată pe linie');
   await expect(page.getByTestId('import-unitati')).toHaveText('Unitățile fișierului: un milimetru (mm).');
@@ -361,12 +361,12 @@ test('DXF: patru linii devin un contur închis, gaura e interior, unitățile sp
 test('DXF fără unități: mm, cu alegerea lor; țolul mărește desenul de 25,4 ori; DXF-ul binar și cel rupt, refuzate cu motivul lor', async ({ page }) => {
   await page.goto('/');
   await page.locator('[data-camp="fisier-svg"]').setInputFiles(fisierDxf('vechi.dxf', dxf({ entitati: RAFT })));
-  await expect(page.getByTestId('import-marime')).toHaveText('Desenul: 60.00 × 40.00 mm');
+  await expect(page.getByTestId('import-marime')).toHaveText('Desenul: 60,00 × 40,00 mm');
   await expect(page.locator('[data-camp="unitate"]')).toHaveValue('mm');
   await expect(page.getByTestId('import-unitati')).toHaveText('Fișierul nu-și declară unitățile: alege-le, iar mărimea desenului de mai sus se schimbă.');
   await expect(page.locator('[data-avertisment="unitati-nedeclarate"]')).toHaveText('Fișierul nu-și declară unitățile ($INSUNITS): le alegi mai sus (până atunci, mm)');
   await page.locator('[data-camp="unitate"]').selectOption('inch');
-  await expect(page.getByTestId('import-marime')).toHaveText('Desenul: 1524.00 × 1016.00 mm');
+  await expect(page.getByTestId('import-marime')).toHaveText('Desenul: 1524,00 × 1016,00 mm');
   await expect(page.locator('[data-camp="unitate"]')).toHaveValue('inch');
   await page.locator('[data-buton="renunta"]').click();
   await expect(page.locator('.dialog')).toHaveCount(0);
@@ -645,7 +645,7 @@ test('PDF cu trei pagini: mărimea, straturile ca nume, raportul; pagina aleasă
   await page.locator('[data-camp="fisier-svg"]').setInputFiles('test/fixtures/pdf/in-straturi.pdf');
   await expect(page.locator('#import-titlu')).toHaveText('Importă: in-straturi.pdf');
   // Pagina 1: dreptunghiul (20, 20)–(120, 80) pe DECUPARE și linia (150, 50)–(250, 50) pe GRAVARE; forma de pe stratul oprit, sărită.
-  await expect(page.getByTestId('import-marime')).toHaveText('Desenul: 230.00 × 60.00 mm');
+  await expect(page.getByTestId('import-marime')).toHaveText('Desenul: 230,00 × 60,00 mm');
   const pagina = page.locator('[data-camp="pagina"]');
   await expect(pagina).toHaveValue('1');
   await expect(pagina.locator('option')).toHaveText(['1', '2', '3']);
@@ -660,11 +660,11 @@ test('PDF cu trei pagini: mărimea, straturile ca nume, raportul; pagina aleasă
   await expect(page.locator('[data-camp="px"], [data-camp="unitate"]')).toHaveCount(0);
   // Pagina 3 (decupată și rotită): polilinia de 40 × 100 mm, fără straturi; apoi înapoi la prima.
   await pagina.selectOption('3');
-  await expect(page.getByTestId('import-marime')).toHaveText('Desenul: 40.00 × 100.00 mm');
+  await expect(page.getByTestId('import-marime')).toHaveText('Desenul: 40,00 × 100,00 mm');
   await expect(page.getByTestId('import-straturi')).toHaveCount(0);
   await expect(pagina).toHaveValue('3');
   await pagina.selectOption('1');
-  await expect(page.getByTestId('import-marime')).toHaveText('Desenul: 230.00 × 60.00 mm');
+  await expect(page.getByTestId('import-marime')).toHaveText('Desenul: 230,00 × 60,00 mm');
   await page.click('[data-buton="importa"]');
   await expect(page.locator('.dialog')).toHaveCount(0);
   const doc = await documentSalvat(page, 1) as {
@@ -705,14 +705,14 @@ test('PDF și AI refuzate cu motivul lor (protejat, AI vechi fără desen, AI f�
   const lista = page.locator('[data-camp="pagina"]');
   await lista.focus();
   await lista.selectOption('2');
-  await expect(page.getByTestId('import-marime')).toHaveText('Desenul: 25.40 × 12.70 mm');
+  await expect(page.getByTestId('import-marime')).toHaveText('Desenul: 25,40 × 12,70 mm');
   await expect(page.getByTestId('import-refuz')).toHaveCount(0);
   // Cât se recitește, refuzul rămâne pe ecran (cu lista): lista nu dispare, deci focusul rămâne pe ea.
   await expect(lista).toBeFocused();
   await page.click('[data-buton="importa"]');
   // Un AI de la Illustrator 9 încolo e un PDF: se citește, iar numele piesei e fără extensie.
   await expect(page.getByTestId('import-coada')).toHaveText('(4 din 5)');
-  await expect(page.getByTestId('import-marime')).toHaveText('Desenul: 25.40 × 25.40 mm');
+  await expect(page.getByTestId('import-marime')).toHaveText('Desenul: 25,40 × 25,40 mm');
   await page.click('[data-buton="importa"]');
   await expect(page.getByTestId('import-coada')).toHaveText('(5 din 5)');
   await expect(page.getByTestId('import-refuz')).toHaveText(
@@ -797,7 +797,7 @@ test('EPS: mărimea, laturile, căile deschise, raportul; piesa stă pe foaie un
   await page.locator('[data-camp="fisier-svg"]').setInputFiles('test/fixtures/eps/forme.eps');
   await expect(page.locator('#import-titlu')).toHaveText('Importă: forme.eps');
   // Valorile corpusului trecut prin Ghostscript: cutia desenului de la (10, 10) la (290, 185) mm.
-  await expect(page.getByTestId('import-marime')).toHaveText('Desenul: 280.00 × 175.00 mm');
+  await expect(page.getByTestId('import-marime')).toHaveText('Desenul: 280,00 × 175,00 mm');
   await expect(page.getByTestId('import-cai')).toHaveText('9 contururi închise: 8 tăiate pe exterior, 1 pe interior (din imbricare)');
   await expect(page.getByTestId('import-deschise')).toContainText('8 căi deschise, tăiate pe linie');
   await expect(page.locator('[data-avertisment]')).toHaveText([
@@ -862,7 +862,7 @@ test('WMF cu antet: mărimea, laturile, unitățile din antet, raportul; piesa s
   await page.locator('[data-camp="fisier-svg"]').setInputFiles('test/fixtures/wmf/forme.wmf');
   await expect(page.locator('#import-titlu')).toHaveText('Importă: forme.wmf');
   // Valorile corpusului redat de GDI: cutia desenului de la (12,7, 6,35) la (196,85, 139,7) mm.
-  await expect(page.getByTestId('import-marime')).toHaveText('Desenul: 184.15 × 133.35 mm');
+  await expect(page.getByTestId('import-marime')).toHaveText('Desenul: 184,15 × 133,35 mm');
   await expect(page.getByTestId('import-cai')).toHaveText('11 contururi închise: 10 tăiate pe exterior, 1 pe interior (din imbricare)');
   await expect(page.getByTestId('import-deschise')).toContainText('3 căi deschise, tăiate pe linie');
   await expect(page.getByTestId('import-unitati')).toHaveText('Unitățile fișierului: 1.440 pe țol (antetul placeable).');
@@ -896,14 +896,14 @@ test('WMF fără antet: unitatea se alege (implicit 1/96 țol) și mărimea se s
   ]);
   await expect(page.getByTestId('import-coada')).toHaveText('(1 din 3)');
   // 720 × 520 de unități: la 1/96 țol, 190,5 × 137,58 mm.
-  await expect(page.getByTestId('import-marime')).toHaveText('Desenul: 190.50 × 137.58 mm');
+  await expect(page.getByTestId('import-marime')).toHaveText('Desenul: 190,50 × 137,58 mm');
   await expect(page.getByTestId('import-unitati')).toHaveText('Fișierul nu-și declară unitățile: alege-le, iar mărimea desenului de mai sus se schimbă.');
   await expect(page.locator('[data-avertisment="unitati-nedeclarate"]')).toHaveText(
     'Fișierul n-are antet placeable și nu-și spune mărimea: alegi unitatea mai sus (până atunci, 1/96 țol)',
   );
   await expect(page.locator('[data-camp="unitate-wmf"] option')).toHaveText(['1/96 țol (px, 0,2646 mm)', '1/1440 țol (twip, 0,0176 mm)', '0,01 mm', '0,1 mm', 'un milimetru (mm)']);
   await page.locator('[data-camp="unitate-wmf"]').selectOption('mm');
-  await expect(page.getByTestId('import-marime')).toHaveText('Desenul: 720.00 × 520.00 mm');
+  await expect(page.getByTestId('import-marime')).toHaveText('Desenul: 720,00 × 520,00 mm');
   await page.click('[data-buton="importa"]');
   await expect(page.getByTestId('import-coada')).toHaveText('(2 din 3)');
   await expect(page.getByTestId('import-refuz')).toHaveText(

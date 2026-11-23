@@ -2,7 +2,7 @@
 
 <!-- Adusă din memoria sesiunii principale pe 23.11.2026 (mutarea în cloud). De aici înainte o ține la zi linia, pe ramura ei, odată cu feliile. -->
 
-_CNCVS2, ADR 0260: pagina /admin reproiectată; A.1–A.4 unite în main (A.4: ddaa7ead); A.5 (Utilizatori și Personal) GATA DE UNIT din 23.11, din fe026f9f (PR-ul AndreiBesliu/cvs2#8); A.6 (Roadmap, Documentație, Setări) GATA DE UNIT din 23.11, pe aceeași ramură, după A.5; A.7 la cuvântul owner-ului_
+_CNCVS2, ADR 0260: pagina /admin reproiectată; A.1–A.6 unite în main (A.6: 4497d639); ADR 0262 (utilizarea aplicației) acceptat pe 23.11; A.8a și A.8b GATA DE UNIT din 23.11 (porțile verzi pe 09966989; PR-ul AndreiBesliu/cvs2#8; la unire se publică și serverul: funcția utilizare, regulile, indexurile); apoi A.8c, A.9–A.11, apoi A.7_
 
 Linia adminului din [sesiunea principală](principala.md): ADR 0260 (intervalul 0260–0269), acceptat pe 13.11.2026 cu ideile 51–62 de pe
 tabla „Harta schițelor”. Owner-ul a cerut „vreau sa faci design si pentru admin”, iar la idei a răspuns „Da la toate”
@@ -25,22 +25,41 @@ tabla „Harta schițelor”. Owner-ul a cerut „vreau sa faci design si pentru
 - **A.4 UNITĂ în main pe 23.11** (`ddaa7ead`, din `20fb65de`; `3.Ad`; PR-ul AndreiBesliu/cvs2#3): Sugestii ca tablă a
   deciziilor (o coloană pe stare, tragerea și „Mută în…”, nota cerută la Respinsă și Amânată, mutarea ținută după răspuns
   fără recitire). `/admin` 121,2 → 124,1. Otrăvurile 41 / 41 (E12 scoasă cu regula ei CSS, echivalentă în Edge).
-- **A.5 (Utilizatori și Personal) GATA DE UNIT din 23.11** (`3.Ae`; pornită la „Da, pornește A.5”, din `main` `c010e3d1`):
+- **A.5 UNITĂ în main pe 23.11** (`1b46c955`, din `fe026f9f`; `3.Ae`; pornită la „Da, pornește A.5”, din `main` `c010e3d1`):
   Utilizatori cu tabelul, filtrele pe plan (cu numere), căutarea, contul ales alături (formularul planului, istoricul din
   audit doar cu „Audit: citește”); Personal cu felul intrării sub nume, invitațiile în lista oamenilor și matricea
   rol × permisiune (un rol editat pe coloana lui). Fără reguli, date sau funcții noi: **la unire se publică doar
   Hosting-ul.** `/admin` 124,1 → 125,6 / 200 kB (linia, +19,1 din +25: pentru A.6 și A.7 rămân ~5,9 kB din țintă).
-  Otrăvurile 61 / 61. Raportul și porțile: PR-ul AndreiBesliu/cvs2#8 (de unit doar `fe026f9f`).
-- **A.6 (Roadmap, Documentație, Setări) GATA DE UNIT din 23.11** (`3.Af`; pornită la „porneste”, peste A.5, încă neunită):
+  Otrăvurile 61 / 61.
+- **A.6 (Roadmap, Documentație, Setări) UNITĂ în main pe 23.11** (`4497d639`, din `df098dad`; `3.Af`; pornită la „porneste”, peste A.5, încă neunită):
   „Ce așteaptă de la tine” lipit alături de etape peste 1 400 px; pista cronologiei pe un rând doar cât are loc (container,
   42rem), cu semnele etapelor pe două rânduri pe o pistă îngustă; cuprinsul documentului (alături peste 1 400 px, deasupra mai
   îngust) cu secțiunea de acum; starea ADR-ului sub titlu; istoricul fiecărei setări sub butonul ei, din audit. Fără reguli,
   date sau funcții noi: doar Hosting-ul. `/admin` 125,6 → 127,5 / 200 kB (linia, +21,0 din +25: pentru A.7 rămân ~4 kB).
-  Otrăvurile 54 / 54. Se unește după A.5 (sau odată cu el), din commit-ul raportat în PR.
+  Otrăvurile 54 / 54. Raportul și porțile: PR-ul AndreiBesliu/cvs2#8 (de unit din `df098dad`).
+- **A.8a (utilizarea: contractul, callable-ul `utilizare`, setările din admin) GATA pe ramură din 23.11** (`bcc654f8`; `3.Ag`):
+  lista albă în `shared/utilizare.ts`, callable-ul cu loturile și setările, regulile, TTL-ul, secțiunea din Setări. **La unire
+  se publică și serverul:** funcția nouă `utilizare`, regulile Firestore, indexurile (TTL pe `utilizare` și `limiteUtilizare`).
+  `/admin` 127,5 → 129,9 / 200 kB. Otrăvurile 48 / 48.
+- **A.8b (înregistratorul din editor, trimiterea în loturi) GATA pe ramură din 23.11** (`63b5d444`, `588edb3d`; `3.Ah`): în
+  pornire doar sursa gestului și un tampon; înregistratorul în bucata lui (precache); trimiterea pusă de editare, prin bucata
+  contului (**un `import('./PanouCont.tsx')` din pornire scoate o bucată nouă comună; nu-l adăuga**). Coada în
+  `localStorage`. Pornirea 109,2 kB (cu ușa 113,7, cu Atelierul 114,0 / 115: **sub 1 kB liber**). Otrăvurile 40 / 40.
+  **Regula `fara-cicluri` numără și importurile doar de tipuri:** după ce împarți un modul, `npm run importuri` (sau tot
+  `npm run rapid`) înainte de push; tipurile comune ale utilizării stau în `utilizareTipuri.ts`.
 - **Întrebarea la owner cu schiță** (ca linia planșelor): o pagină privată cu schițele de încercat și formularul, răspunsurile
   în baza ei (`raspunsuri`, scrise doar de owner); pentru 0261: <https://claude.ai/artifact/DhLTbJiBTWGdgjobiDcJb2>.
-- **Felia rămasă:** A.7 telefonul (bara de jos, meniul ☰, tichetul cu răspunsul), doar la cuvântul owner-ului; are ~4 kB
-  din ținta de mărime a liniei.
+- **Felia rămasă din ADR 0260:** A.7 telefonul (bara de jos, meniul ☰, tichetul cu răspunsul), doar la cuvântul
+  owner-ului; are ~4 kB din ținta de mărime a liniei.
+- **ADR 0262 acceptat pe 23.11** (utilizarea aplicației), la cererea owner-ului de a vedea în admin ce unelte folosesc
+  oamenii, fluxurile cele mai dese, ce nu se folosește și pașii dinaintea unei erori. Schița și formularul:
+  <https://claude.ai/artifact/Y75BvkeR7kZmBpadwoFyya> (răspunsurile în baza ei, `raspunsuri`). Răspunsurile: colectarea
+  pornită pentru toți cei cu cont, fără întrebare și fără buton în meniul contului, spusă doar în nota de confidențialitate;
+  disocierea doar la cerere, prin tichet (A.11); 2a (pașii în raportul erorii), 3b (și clicurile fine, derularea, zoom-ul:
+  A.8c), 4a, 5a, 6a, 7a (A.8–A.11 întâi, apoi A.7), cu nota „vreau sa pot configura eu din admin cat mai multe setari”
+  (`setari/utilizare`, ADR 0262 §8). **Juridic:** legate de cont, evenimentele sunt date personale (GDPR); de verificat
+  înaintea live-ului, spus owner-ului o dată, odată cu acceptarea. Feliile: A.8a (contractul, callable-ul, setările), A.8b
+  (înregistratorul din client), A.8c (clicurile fine), A.9 (jobul și fila), A.10 (fluxurile), A.11 (troubleshooting).
 - **Alegeri față de schițe, de știut la A.7:** schimbarea planului a rămas un formular cu „Salvează planul” (nu butoane
   cu un clic); felul intrării unui om vine din `sursa` documentului (metodele legate mai târziu din fila Cont ar cere o
   citire din Auth, pe server, deci un ADR al liniei).

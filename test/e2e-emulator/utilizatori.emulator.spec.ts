@@ -50,7 +50,7 @@ async function scrie(cale: string, d: Record<string, unknown>): Promise<void> {
   expect(r.status, await r.clone().text()).toBe(200);
 }
 
-type Camp = { stringValue?: string; integerValue?: string; nullValue?: null; timestampValue?: string };
+type Camp = { stringValue?: string; integerValue?: string; booleanValue?: boolean; nullValue?: null; timestampValue?: string };
 async function citeste(cale: string): Promise<Record<string, Camp>> {
   const r = await fetch(`${FS}/${cale}`, { headers: { Authorization: 'Bearer owner' } });
   return ((await r.json()) as { fields?: Record<string, Camp> }).fields ?? {};
@@ -319,6 +319,64 @@ test('istoricul setărilor (ADR 0260 §9): rândurile de audit ale fiecărei set
   await expect(rapide).toHaveCount(3);
   await expect(rapide.first()).toHaveText(/ · tu · ordinea$/);
   await expect(conturi).toHaveCount(3);
+});
+
+test('setările utilizării (ADR 0262 §8): implicitele până la prima salvare; owner-ul oprește colectarea și schimbă numerele, pe server, cu auditul și istoricul; în afara marginilor, nu', async ({ page }) => {
+  await deschide(page);
+  await puneRolul(page, await intraCuGoogle(page), 'owner');
+  await page.locator('[data-fila="setari"]').click();
+  const util = page.locator('[data-set="utilizare"]');
+  const camp = (n: string) => util.locator(`[data-set-util="${n}"]`);
+  const salveaza = util.locator('[data-set="util-salveaza"]');
+  await expect(util.locator('[data-set="util-sursa"]')).toHaveText('Nesalvate încă: merg implicitele.', LENT);
+  await expect(camp('colectare')).toBeChecked();
+  await expect(camp('clicuri')).toBeChecked();
+  const IMPLICITE: Record<string, string> = { lot: '5', evenimente: '90', sume: '730', pasi: '30' };
+  for (const [n, v] of Object.entries(IMPLICITE)) await expect(camp(n)).toHaveValue(v);
+  const istoric = page.locator('[data-set-istoric="utilizare"]');
+  await expect(istoric.locator('[data-ist="gol"]')).toHaveText('Nicio schimbare în audit.');
+  // Implicitele, salvate fără nicio schimbare: nimic scris, nici audit.
+  await salveaza.click();
+  await expect(util.locator('[data-set="util-gata"]')).toHaveText('Nimic schimbat.', LENT);
+  expect(await actiuniAudit()).toEqual([]);
+  // În afara marginilor sau gol: butonul oprit.
+  for (const [n, v] of [['lot', '61'], ['lot', '0'], ['evenimente', '6'], ['evenimente', '366'], ['sume', '89'], ['sume', '1096'], ['pasi', '101'], ['pasi', ''], ['lot', '2.5']] as const) {
+    await camp(n).fill(v);
+    await expect(salveaza, `${n} = ${v}`).toBeDisabled();
+    await camp(n).fill(IMPLICITE[n] ?? '');
+    await expect(salveaza).toBeEnabled();
+  }
+  await camp('colectare').uncheck();
+  await camp('lot').fill('10');
+  await camp('pasi').fill('0');
+  await salveaza.click();
+  await expect(util.locator('[data-set="util-gata"]')).toHaveText('Setările utilizării sunt salvate.', LENT);
+  await expect(util.locator('[data-set="util-sursa"]')).toContainText('Schimbate ultima dată pe ');
+  // Fără reîncărcare, formularul arată valorile salvate.
+  await expect(camp('colectare')).not.toBeChecked();
+  await expect(camp('lot')).toHaveValue('10');
+  await expect(camp('pasi')).toHaveValue('0');
+  const s = await citeste('setari/utilizare');
+  expect([s['colectare']?.booleanValue, s['clicuri']?.booleanValue, s['lotMinute']?.integerValue, s['pasiEroare']?.integerValue, s['versiune']?.integerValue])
+    .toEqual([false, true, '10', '0', '1']);
+  expect(await actiuniAudit()).toEqual(['setari.utilizare']);
+  await expect(istoric.locator('[data-pas]')).toHaveText([/^\d{2}\.\d{2}\.\d{4} · tu · colectarea oprită; lotul: 5 → 10 min; pașii dinaintea unei erori: 30 → 0$/]);
+  // Istoricul stă sub butonul secțiunii lui; al conturilor n-a primit nimic.
+  const b = await salveaza.boundingBox();
+  const i = await istoric.boundingBox();
+  expect(b !== null && i !== null && i.y >= b.y + b.height).toBe(true);
+  await expect(page.locator('[data-set-istoric="conturi"] [data-ist="gol"]')).toBeVisible();
+  // A doua salvare, pe versiunea citită după prima: colectarea pornește la loc.
+  await camp('colectare').check();
+  await salveaza.click();
+  await expect(istoric.locator('[data-pas]')).toHaveCount(2, LENT);
+  await expect(istoric.locator('[data-pas]').first()).toHaveText(/ · tu · colectarea pornită$/);
+  expect((await citeste('setari/utilizare'))['versiune']?.integerValue).toBe('2');
+  // Reîncărcată, fila citește valorile salvate.
+  await page.reload();
+  await page.locator('[data-fila="setari"]').click();
+  await expect(camp('lot')).toHaveValue('10', LENT);
+  await expect(camp('colectare')).toBeChecked();
 });
 
 test('un rol care doar citește conturile vede fila Utilizatori, fără schimbarea planului și fără istoric (nicio citire din audit), și nu vede Setările', async ({ page }) => {

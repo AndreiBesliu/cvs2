@@ -1,5 +1,6 @@
 import { test, expect, type Page } from '@playwright/test';
 import { documentSalvat } from './ajutor-document.ts';
+import { grupuriDeschise } from './ajutor-trasare.ts';
 
 /**
  * Scanarea strâmbă (ADR 0271, felia 25.4↑c) în aplicația construită: o scanare desenată în pagină de browser (pânza 2D,
@@ -9,6 +10,9 @@ import { documentSalvat } from './ajutor-document.ts';
  */
 
 test.use({ locale: 'ro-RO' });
+
+// Câmpurile luminii, foii și scanării stau în grupul Imaginea, strâns la prima deschidere (ADR 0273 §2).
+test.beforeEach(async ({ page }) => { await grupuriDeschise(page); });
 
 /** O imagine 800 × 560 desenată și rotită de browser (pozitiv: în sens invers acelor), aleasă în „Importă…”. */
 async function alegeScanarea(page: Page, fel: 'desen' | 'cercuri', unghi: number): Promise<void> {
@@ -108,7 +112,7 @@ test('o scanare rotită cu 2°: sugestia, „Îndreaptă scanarea” cu unghiul 
   await page.mouse.down();
   await page.mouse.move(b.x + 0.65 * b.width, b.y + 0.65 * b.height, { steps: 6 });
   await page.mouse.up();
-  await expect(page.getByTestId('trasare-zona')).toBeVisible();
+  await expect(page.getByTestId('trasare-zona')).toBeAttached();
   await page.locator('[data-buton="trasare-zona"]').click();
   await page.locator('[data-camp="trasare-rotire"]').check();
   await expect(page.getByTestId('trasare-zona')).toHaveCount(0);
@@ -137,7 +141,7 @@ test('o scanare rotită cu 2°: sugestia, „Îndreaptă scanarea” cu unghiul 
   await page.mouse.down();
   await page.mouse.move(b.x + 0.65 * b.width, b.y + 0.65 * b.height, { steps: 6 });
   await page.mouse.up();
-  await expect(page.getByTestId('trasare-zona')).toBeVisible();
+  await expect(page.getByTestId('trasare-zona')).toBeAttached();
   await page.locator('[data-buton="trasare-zona"]').click();
   await page.locator('[data-camp="trasare-rotire-unghi"]').fill('−1,5');
   await expect(page.getByTestId('trasare-rotire')).toContainText('(unghiul scris de tine).');
@@ -156,7 +160,7 @@ test('o scanare rotită cu 2°: sugestia, „Îndreaptă scanarea” cu unghiul 
 test('cercuri, fără linii drepte: nicio sugestie; bifată, avertismentul cere unghiul, iar unul scris se folosește', async ({ page }) => {
   await page.goto('/');
   await alegeScanarea(page, 'cercuri', 3);
-  await expect(page.getByTestId('trasare-abatere')).toBeVisible();
+  await expect(page.getByTestId('trasare-abatere')).toBeAttached();
   await expect(page.getByTestId('trasare-sugestie-rotire')).toHaveCount(0);
   await page.locator('[data-camp="trasare-rotire"]').check();
   await expect(page.getByTestId('trasare-rotire-negasit')).toHaveText('Unghiul scanării nu s-a găsit (desenul n-are destule linii drepte sau rânduri de text): scrie-l în „Unghiul”.');

@@ -124,7 +124,7 @@ o('F06', CAL, "  if (format === 'wmf') return previzualizareWmf(f, o.unitateWmf)
 # ---- Interfața (e2e) ----
 o('E01', CON, '      onUnitateWmf={(u) => { recitesteCu({ unitateWmf: u }); }}', '      onUnitateWmf={(u) => { recitesteCu({ unitate: u === \'mm\' ? \'mm\' : \'cm\' }); }}',
   'e2e', 'alegerea unității WMF schimbă unitatea DXF')
-o('E02', DLG, "            {ok.format === 'wmf' && (ok.unitati.sursa === 'aleasa' ? (", "            {ok.format === 'wmf' && (ok.unitati.sursa === 'antet' ? (",
+o('E02', DLG, "      {ok.format === 'wmf' && (ok.unitati.sursa === 'aleasa' ? (", "      {ok.format === 'wmf' && (ok.unitati.sursa === 'antet' ? (",
   'e2e', 'alegerea unității arătată la un fișier cu antet, unitățile lui ascunse')
 o('E03', APP, 'application/postscript,.wmf" multiple', 'application/postscript" multiple', 'e2e', '.wmf lipsește din fereastra de fișiere')
 

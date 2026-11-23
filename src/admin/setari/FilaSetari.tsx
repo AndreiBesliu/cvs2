@@ -11,12 +11,14 @@ import '../personal/personal.css';
 import '../utilizatori/utilizatori.css';
 import { IstoricSetari } from './IstoricSetari.tsx';
 import { RaspunsuriRapide } from './RaspunsuriRapide.tsx';
+import { SetariUtilizarii } from './SetariUtilizarii.tsx';
 
 /**
  * Fila Setări (ADR 0116 §20, felia 14.C↑b), doar a owner-ului: zilele în care aplicația ține dreptul contului fără
  * reconfirmare (offline) și cât se păstrează tichetele rezolvate. Valorile se citesc din `setari/conturi` (regula o dă doar
  * owner-ului; fără document, implicitele) și se schimbă prin callable-ul `administreazaConturile`, cu auditul pe server.
  * Sub fiecare buton, istoricul setării din audit (ADR 0260 §9, felia A.6): fila e doar a owner-ului, care are „Audit: citește”.
+ * Apoi răspunsurile rapide (ADR 0261) și setările utilizării aplicației (ADR 0262 §8).
  */
 
 type Citite = { readonly setari: SetariConturi; readonly modificatLa: Date | null; readonly salvate: boolean };
@@ -76,6 +78,7 @@ export function FilaSetari({ con, eu }: { readonly con: Conexiune; readonly eu: 
         <IstoricSetari con={con} eu={eu} tinta={`${CALE_SETARI.colectie}/${CALE_SETARI.id}`} rev={rev} limba={limba} nume="conturi" />
       </section>
       <RaspunsuriRapide con={con} eu={eu} />
+      <SetariUtilizarii con={con} eu={eu} />
     </div>
   );
 }

@@ -7,6 +7,7 @@ import {
 import { httpsCallable, type Functions } from 'firebase/functions';
 import type { CerereCont, RaspunsDeschide, RaspunsNume } from '../../shared/conturi.ts';
 import type { CerereTichet, RaspunsRaportarileMele, RaspunsTichet } from '../../shared/tichete.ts';
+import type { CerereLot, Lot, RaspunsLot } from '../../shared/utilizare.ts';
 import { conecteazaBaza, type ConfigCloud, type MotivFaraConexiune } from './conexiuneBaza.ts';
 
 /**
@@ -193,6 +194,11 @@ export async function raportarileMele(ce: ContEditor): Promise<RaspunsRaportaril
 /** Răspunsurile unei raportări, citite de autor: semnul din meniul contului se stinge. */
 export async function marcheazaCitita(ce: ContEditor, id: string): Promise<RaspunsTichet> {
   return (await httpsCallable<CerereTichet, RaspunsTichet>(ce.functii, 'tichete')({ actiune: 'citit', id })).data;
+}
+
+/** Un lot al utilizării aplicației (ADR 0262), prin callable-ul `utilizare`, cu tokenul contului; refuzurile vin cu motivul. */
+export async function trimiteLotul(ce: ContEditor, lot: Lot): Promise<RaspunsLot> {
+  return (await httpsCallable<CerereLot, RaspunsLot>(ce.functii, 'utilizare', { timeout: 30_000 })({ actiune: 'lot', lot })).data;
 }
 
 /**

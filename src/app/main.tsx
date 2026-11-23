@@ -5,6 +5,7 @@ import type { Limba } from '../i18n/tipuri.ts';
 import type { ProgresActualizare } from '../pwa/inregistrare.ts';
 import { programeazaPwa } from '../pwa/pornire.ts';
 import { semnal } from '../ui/CipuriVedere.tsx';
+import { observaRularile } from '../ui/actiuni.ts';
 import { ARANJAMENT_MODERN } from '../ui/aranjament.ts';
 import { ARANJAMENTE_DISPONIBILE, incarcaAranjament } from '../ui/incarcaAranjament.ts';
 import { CHEIE_ARANJAMENT, citesteAlegerea } from '../ui/alegereAranjament.ts';
@@ -15,6 +16,7 @@ import { ErrorBoundary } from './ErrorBoundary.tsx';
 import { deschideProiect } from './proiectLocal.ts';
 import { creeazaJurnal, type Context, type Depozit } from './jurnalErori.ts';
 import { creeazaRaportor, descrieStare } from './raportorPornire.ts';
+import { urmaresteGesturile, utilizarea } from './utilizare.ts';
 import './stil.css';
 
 const CHEIE_LIMBA = 'cncvs2.limba';
@@ -278,6 +280,12 @@ async function porneste(): Promise<void> {
     return;
   }
 
+  // Utilizarea aplicației (ADR 0262, felia A.8b), doar în editor: sursa fiecărui gest și acțiunile registrului, de acum;
+  // înregistratorul (și trimiterea) vin în bucata lor, adusă fără să întârzie prima randare.
+  urmaresteGesturile(window);
+  observaRularile((id, r) => { utilizarea.actiune(id, r.ok ? 'ok' : r.motiv); });
+  import('./utilizareLot.ts').then((m) => { m.pornesteColectarea({ config: config.ok ? config.config : null, depozit, versiune: VERSIUNE, limba }); })
+    .catch((e: unknown) => { jurnal.adaugaLocala('promisiune', e); });
   // Proiectul din browser se deschide înainte de prima randare: o comandă dată între timp ar fi acoperită de el.
   const [proiect, aranjament] = await Promise.all([deschideProiect(), aranjamentGata]);
   // Doar mediul omului (`mediu`: IndexedDB lipsă, blocat, plin, termenul) e „doar local”; o bază la altă versiune, o ușă

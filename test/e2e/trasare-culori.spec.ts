@@ -39,7 +39,7 @@ const pastila = (page: Page, hex: string) => page.locator(`.trasare-pastila[data
 async function logoPeCulori(page: Page): Promise<void> {
   await page.goto('/');
   await page.locator('[data-camp="fisier-svg"]').setInputFiles('test/fixtures/trasare/logo-cvs.png');
-  await expect(page.getByTestId('trasare-abatere')).toBeVisible();
+  await expect(page.getByTestId('trasare-abatere')).toBeAttached();
   await page.locator('[data-camp="trasare-sursa"]').selectOption('culori');
   // Pragul și Inversează nu au sens pe culori: se ascund.
   await expect(page.locator('[data-camp="trasare-prag"]')).toHaveCount(0);
@@ -126,7 +126,7 @@ test('de la tastatură: „Leagă de…” leagă, „Dezleagă” desface; făr
 test('un cerc alb pe transparent (lecția D7), pe culori: o pastilă, transparentul nu e culoare; cercul e o piesă', async ({ page }) => {
   await page.goto('/');
   await page.locator('[data-camp="fisier-svg"]').setInputFiles('test/fixtures/trasare/cerc-alb-transparent.png');
-  await expect(page.getByTestId('trasare-abatere')).toBeVisible();
+  await expect(page.getByTestId('trasare-abatere')).toBeAttached();
   await page.locator('[data-camp="trasare-sursa"]').selectOption('culori');
   await expect(page.getByTestId('trasare-pastile').locator('li')).toHaveCount(1);
   await expect(page.getByTestId('trasare-pastile').locator('li')).toHaveAttribute('data-hex', '#ffffff');
@@ -135,7 +135,7 @@ test('un cerc alb pe transparent (lecția D7), pe culori: o pastilă, transparen
   // Pe o imagine opacă, culoarea marginii e fundalul, nebifată: cercul negru pe alb e singura piesă.
   await page.locator('[data-buton="renunta"]').click();
   await page.locator('[data-camp="fisier-svg"]').setInputFiles('test/fixtures/trasare/cerc-opac-alb.png');
-  await expect(page.getByTestId('trasare-abatere')).toBeVisible();
+  await expect(page.getByTestId('trasare-abatere')).toBeAttached();
   await page.locator('[data-camp="trasare-sursa"]').selectOption('culori');
   const fundal = page.getByTestId('trasare-pastile').locator('li', { hasText: 'fundalul' });
   await expect(fundal).toHaveCount(1);
@@ -256,7 +256,7 @@ test('liniile mediane pe culori (ADR 0227): Rezultatul și pe Culori; legarea pe
   expect(fara.peLinie - cu.peLinie).toBe(3);
   const linii = (n: number): string => (n === 1 ? '1 linie mediană' : `${n} linii mediane`);
   await page.locator('[data-camp="fisier-svg"]').setInputFiles({ name: 'linii.png', mimeType: 'image/png', buffer: png });
-  await expect(page.getByTestId('trasare-abatere')).toBeVisible();
+  await expect(page.getByTestId('trasare-abatere')).toBeAttached();
   await page.locator('[data-camp="trasare-sursa"]').selectOption('culori');
   await expect(page.locator('[data-camp="trasare-leaga-culori"]')).toHaveCount(0);
   await page.locator('[data-camp="trasare-rezultat"]').selectOption('mediane');
@@ -324,7 +324,7 @@ test('rezultatul pe fiecare culoare (ADR 0228): în pastilă, galbenul pe Contur
   const liste = page.locator('[data-camp="trasare-culoare-rezultat"]');
   const fel = (hex: string) => pastila(page, hex).locator('[data-camp="trasare-culoare-rezultat"]');
   await page.locator('[data-camp="fisier-svg"]').setInputFiles({ name: 'linii.png', mimeType: 'image/png', buffer: png });
-  await expect(page.getByTestId('trasare-abatere')).toBeVisible();
+  await expect(page.getByTestId('trasare-abatere')).toBeAttached();
   await page.locator('[data-camp="trasare-sursa"]').selectOption('culori');
   await page.locator('[data-camp="trasare-rezultat"]').selectOption('mediane');
   await expect(page.getByTestId('import-piese')).toHaveText(piese(4));
