@@ -11462,6 +11462,32 @@ la rapoartele liniilor planșelor și adminului (PR-urile `AndreiBesliu/cvs2#2` 
 tău”): „Da, 11.3↑f”. Modelul sesiunii, în trailerul commit-urilor ei.
 **Started:** 23.11, 15:32.
 
-- **`main` `c010e3d0`** (11.3↑e unită în `d3ffcbf3`, A.4) a venit prin avans direct: ramura n-avea nimic peste el. Rapidul
+- **`main` `c010e3d1`** (11.3↑e unită în `d3ffcbf3`, A.4) a venit prin avans direct: ramura n-avea nimic peste el. Rapidul
   de pe `main` și rularea de noapte, verzi.
-
+- **Deciziile de amănunt** (ADR-ul lasă regulile la un rând; scrise ca precizări în „Implementarea feliei 11.3↑f”): laturile
+  se citesc pe drumul frezei; o latură numără doar dacă pe ea încape o ureche; „lungi” și „scurte” după lungime, cu 1 %
+  toleranță; numărul rămâne pe buclă și se împarte pe laturile regulii, răspândit; „mijloc” nu ține de număr; fără laturi,
+  „egale”.
+- **Probele, întâi** (`urechi.laturi.test.ts`, pe hârtie; apoi funcția): laturile și regulile pe bucle scrise de mână;
+  exemplul din ADR, unde „scurte” dă exact programul locurilor alese în (0, 15) și (80, 15); cercul = „egale”, octet cu octet;
+  rampa, intrările, pe linie, pe dinăuntru; două bucle. Pe placa 11 la 5 mm (`urechi.laturi.placa.test.ts`): cu oricare
+  regulă, urechile plăcuțelor vecine cad față în față și nu se desprinde niciuna (la distanțe egale, 9 + 4), iar proba pe
+  G-code a plăcii găsește la fel.
+- **Codul** (`3de01b1`): `src/cam/urechiLaturi.ts` (pur), legat în `job.ts` pe drumul locurilor alese; refuzul „felie
+  următoare” a plecat; fereastra exportului (trei alegeri noi, notele, numărul oprit la „mijloc”), scrierea, panoul, raportul
+  foilor, semnele de pe traseu, textele (ro, en), manualul („Urechile pe laturi”).
+- **Privit, pe cazul real:** fereastra la 1400 px și la 1024 px cu font lat (cele șase alegeri încap pe un rând); traseul
+  plăcii 11 la 5 mm cu „pe laturile lungi”, cu inelele urechilor față în față între plăcuțele vecine (și mărit, la o pereche).
+- **Otrăvurile** (`test/otravuri/11.3f.py`, într-o clonă, pe `6291784c`): 54 / 54 din prima (45 unitare, 9 prin e2e); din
+  listele 11.3d și 11.3e, nouă otrăvuri ieșite VOID pe codul feliei: șapte mutate și prinse din nou, două scoase odată cu
+  refuzul „felie următoare”. `verifica` pe toate listele liniei: rămân aceleași 13 VOID-uri vechi (11.1b A05; 11.2 L03, L09;
+  11.4 P10, P12, C01, C03, E06, E09; 11.4b T02; 11.4c E07; 11.6 R09; 11.7 R01).
+- **Porțile, în CI, pe `6291784c`:** rapidul (<https://github.com/AndreiBesliu/cvs2/actions/runs/45190357806>) și completul
+  (<https://github.com/AndreiBesliu/cvs2/actions/runs/45191169782>), verzi: unitarele 9 836 / 0 (12 sărite); e2e 600 / 600; pe
+  emulatoare 104 / 104 (funcțiile și regulile) și 36 / 36 (paginile). În container: e2e-ul feliei și al vecinilor 54 / 54, din
+  prima. Build-ul determinist: pornirea 107,9 kB (cu ușa 112,3 / 115), totalul 763,9 / 800 kB (+0,8 față de `main`
+  `c010e3d1`), `/admin` 124,1 / 200.
+- **Documentele:** ADR 0211 (varianta c, implementată, cu precizările), fișa etapei 3 (rândul `11.3↑f`) cu traducerea,
+  registrul otrăvurilor (rândul listei; 11.3d și 11.3e, refăcute), paragraful liniei din `CLAUDE.md`, nota liniei
+  (`docs/linii/plansele.md`). Canalul `plansele` se publică din GitHub Actions (`canal.yml`), pe vârful ramurii, după rapidul
+  verde. **Completed:** 23.11, 17:12.
