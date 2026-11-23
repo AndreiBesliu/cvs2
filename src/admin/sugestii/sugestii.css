@@ -332,11 +332,6 @@
   }
 }
 
-/* Fără respinse, butonul e oprit; un card tras peste el cade tot în bandă (un buton oprit nu primește evenimentele mausului). */
-.sug-banda h3 > button:disabled {
-  pointer-events: none;
-}
-
 /* Ferestrele (detaliul, nota cerută): pe panou, cât un text de citit, cu fundalul paginii estompat. */
 .sug-fereastra {
   width: min(40rem, calc(100vw - 2 * var(--sp-4)));

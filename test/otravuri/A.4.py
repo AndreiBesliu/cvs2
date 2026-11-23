@@ -69,8 +69,9 @@ o('E10', FS_, 'tabla={tabla(cuMutarea(aratate, mutare))}', 'tabla={tabla(aratate
   'cât cererea e în drum, cardul stă în coloana veche')
 o('E11', TB, "    if (spre === 'respinsa') setRespinse(true);\n", '', 'e2e',
   'un card trimis în Respinse dispare sub banda strânsă')
-o('E12', CS, '.sug-banda h3 > button:disabled {\n  pointer-events: none;\n}', '.sug-banda h3 > button:disabled {\n  cursor: default;\n}', 'e2e',
-  'fără respinse, un card tras peste butonul oprit al benzii nu cade în ea')
+# E12 (regula `pointer-events: none` de pe butonul oprit al benzii) a ieșit cu regula ei, pe 23.11: în Edge, un buton oprit
+# primește evenimentele tragerii și le lasă să urce (măsurat: `dragenter`, `dragover`, `drop` pe BUTTON), deci cardul cade în
+# bandă și fără ea. Proba lasă acum cardul chiar peste buton.
 o('E13', TB, "e.key === 'ArrowDown' ? (i + 1) % n", "e.key === 'ArrowDown' ? Math.min(i + 1, n - 1)", 'e2e',
   'în meniu, săgeata în jos nu trece de la ultimul rând la primul')
 o('E14', TB, "      setDeschis(false);\n      buton.current?.focus();", '      setDeschis(false);', 'e2e',
@@ -118,6 +119,6 @@ T1, T2 = (S, 'omul scrie și își editează sugestia'), (S, 'decizia pe o suges
 T3, T4, T5 = (S, 'tabla: tragerea, nota cerută'), (S, 'tabla: o mutare refuzată'), (S, 'face poza planșei')
 GREP = {
     'E01': T3, 'E02': T3, 'E03': T3, 'E04': T3, 'E05': T2, 'E06': T3, 'E07': T3, 'E08': T3, 'E09': T4, 'E10': T3,
-    'E11': T3, 'E12': T3, 'E13': T3, 'E14': T3, 'E15': T3, 'E16': T3, 'E17': T4, 'E18': T2, 'E19': T5, 'E20': T1,
+    'E11': T3, 'E13': T3, 'E14': T3, 'E15': T3, 'E16': T3, 'E17': T4, 'E18': T2, 'E19': T5, 'E20': T1,
     'E21': T1, 'E22': T2, 'E23': T3, 'E24': T3, 'E25': T1, 'E26': T1, 'E27': T3, 'E28': T3,
 }

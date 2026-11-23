@@ -300,11 +300,24 @@ test('tabla: tragerea, nota cerută la Respinsă și Amânată, „Mută în…�
   const B = 'SB000000000000000002';
   const C = 'SC000000000000000003';
   await scrie(`sugestii/${A}`, sugestie('Exportul DXF R12', { creataLa: new Date('2026-10-29T12:00:00Z') }));
-  await scrie(`sugestii/${B}`, sugestie('Tema roz', { creataLa: new Date('2026-10-29T11:00:00Z'), autorEmail: 'o.adresa.foarte.lunga.de.email@exemplu-firma.ro' }));
-  await scrie(`sugestii/${C}`, sugestie('Undo după export', { creataLa: new Date('2026-10-29T10:00:00Z') }));
+  await scrie(`sugestii/${B}`, sugestie('Tema roz', { creataLa: new Date('2026-10-29T11:00:00Z') }));
+  await scrie(`sugestii/${C}`, sugestie('Undo după export', { creataLa: new Date('2026-10-29T10:00:00Z'), autorEmail: 'o.adresa.foarte.lunga.de.email@exemplu-firma.ro' }));
   await intraCaOwner(page);
   await page.locator('[data-fila="sugestii"]').click();
   await expect(coloana(page, 'noua').locator('[data-sugestie]')).toHaveCount(3, LENT);
+  // O adresă mai lungă decât cardul se taie în el (nu-l lățește, nu iese din el), iar nimic nu iese din ecran în dreapta.
+  const adresaInCard = async (st: string): Promise<void> => {
+    const c = card(page, st, 'Undo după export');
+    const cutie = await c.boundingBox();
+    const adresa = await c.locator('.sug-card-cine').boundingBox();
+    if (!cutie || !adresa) throw new Error('cardul cu adresa lungă nu e pe pagină');
+    expect(adresa.x + adresa.width, 'adresa stă în card').toBeLessThanOrEqual(cutie.x + cutie.width + 0.5);
+    // Proba spune ceva doar cât cardul e mai îngust decât adresa: tăiată, e mai scurtă decât textul ei.
+    expect(adresa.width, 'cardul e mai îngust decât adresa').toBeLessThan(await c.locator('.sug-card-cine').evaluate((e) => e.scrollWidth));
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), 'pagina nu se lățește').toBe(true);
+  };
+  // Cu cinci coloane, cardul e cel mai îngust.
+  await adresaInCard('noua');
   // De aici, nicio citire a listei (`:runQuery`) și nicio sugestie citită (`batchGet`): mutările țin decizia din răspuns.
   // Doar citirile sugestiilor (colecția e în corpul cererii): rezumatul de la intrare (Diagnoza din bară: marcajele, apoi
   // amprenta publicării) poate fi încă pe drum când lista a sosit.
@@ -341,6 +354,7 @@ test('tabla: tragerea, nota cerută la Respinsă și Amânată, „Mută în…�
   expect(await sus()).toBe(y0);
   const a1 = await citeste(`sugestii/${A}`);
   expect([a1['stare']?.stringValue, a1['nota']?.stringValue, a1['versiune']?.integerValue]).toEqual(['acceptata', '', '2']);
+  expect(citiri, 'prima mutare n-a recitit nimic').toEqual([]);
   await expect(coloana(page, 'noua').locator('[data-sug="numar"]')).toHaveText('2');
   await expect(coloana(page, 'acceptata').locator('[data-sug="numar"]')).toHaveText('1');
 
@@ -426,13 +440,9 @@ test('tabla: tragerea, nota cerută la Respinsă și Amânată, „Mută în…�
   await page.keyboard.press('Escape');
   expect(citiri).toEqual([]);
 
-  // Sub 1 100 px, coloanele trec pe rânduri; o adresă lungă se taie în card, iar nimic nu iese din ecran în dreapta.
+  // Sub 1 100 px, coloanele trec pe rânduri: la 700 px, câte două, cu Amânată în a doua (un card lățit acolo ar ieși din ecran).
   await page.setViewportSize({ width: 700, height: 900 });
-  const b = card(page, 'respinsa', 'Tema roz');
-  const cutie = await b.boundingBox();
-  const adresa = await b.locator('.sug-card-cine').boundingBox();
-  expect(cutie && adresa && adresa.x + adresa.width <= cutie.x + cutie.width + 0.5, 'adresa stă în card').toBe(true);
-  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+  await adresaInCard('amanata');
   expect(erori).toEqual([]);
 });
 
