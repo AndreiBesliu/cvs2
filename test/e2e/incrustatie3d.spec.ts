@@ -251,6 +251,12 @@ test('„Împreună (secțiunea)” la gaura prin foaie: placa groasă cât foai
   await deschide(page);
   await page.getByTestId('alegere-3d').locator('[data-3d-alege="dop-1"]').click();
   await expect(panza3d(page)).toHaveAttribute('data-alegere', 'dop-1');
+  const cutie = async (l: ReturnType<Page['locator']>) => (await l.boundingBox()) ?? { x: 0, y: 0, width: 0, height: 0 };
+  // Cipul stării, înaintea secțiunii: înălțimea lui e martorul că, apoi, insula strânsă nu-l strivește.
+  const cip = page.getByTestId('stare-3d-text');
+  await expect(cip).toContainText('Dopul 1 simulat');
+  const inaltimeCip = (await cutie(cip)).height;
+  expect(inaltimeCip).toBeGreaterThan(20);
   await page.locator('[data-3d="impreuna"]').click();
   const sectiune = page.getByTestId('sectiune-3d'), tabel = sectiune.getByTestId('sectiune-tabel');
   await expect(tabel).toBeVisible({ timeout: 30_000 });
@@ -261,12 +267,13 @@ test('„Împreună (secțiunea)” la gaura prin foaie: placa groasă cât foai
   await expect(svg).toHaveAttribute('viewBox', '15 -2 40 20');
   await expect(svg.locator('[data-strat="contact"]')).toHaveCount(0);
   await expect(svg.locator('[data-strat="clei"]')).toHaveAttribute('d', 'M20 0 L20.1 0 L20.1 18 L20 18Z M49.9 0 L50 0 L50 18 L49.9 18Z');
-  // Insula nu trece de zona liberă (sub ea e bara de jos), iar butoanele alegerii rămân la vedere.
-  const cutie = async (l: ReturnType<Page['locator']>) => (await l.boundingBox()) ?? { x: 0, y: 0, width: 0, height: 0 };
+  // Insula nu trece de zona liberă (sub ea e bara de jos), iar butoanele alegerii rămân la vedere; cipul stării rămâne
+  // întreg: se strânge doar secțiunea, care se derulează.
   const zona = await cutie(page.locator('.zona-libera')), insula = await cutie(page.getByTestId('stare-3d'));
   expect(insula.height).toBeGreaterThan(200);
   expect(insula.y + insula.height).toBeLessThanOrEqual(zona.y + zona.height);
   await expect(page.getByTestId('alegere-3d')).toBeInViewport({ ratio: 1 });
+  expect(Math.abs((await cutie(cip)).height - inaltimeCip)).toBeLessThan(0.5);
   // Nota de sub tabel nu încape: se ajunge la ea derulând secțiunea, înăuntrul insulei.
   const nota = sectiune.locator('.sectiune-nota');
   await nota.scrollIntoViewIfNeeded();
