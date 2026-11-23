@@ -1,0 +1,7 @@
+12.1↑e-2: proba refuzurilor calculului potrivirii (dopul drept, dopul care lipsește); otrava J02 mutată pe refuz
+
+J02 („fața plăcii mutată”, `pregatesteProgram(job.program, 1)`) a scăpat ca mutant echivalent: `sus` doar desparte
+mișcările în aer de cele în lemn. Refuzul dopului drept nu-l proba nimic: proba lui, acum în
+`incrustatie.potrivire3d.test.ts`, iar J02 țintește refuzul.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>

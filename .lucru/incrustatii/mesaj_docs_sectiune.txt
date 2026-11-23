@@ -1,0 +1,11 @@
+12.1↑e-2: DEVLOG, fișa, registrul otrăvurilor (38 / 38; 12.1e D03, D06, D07 reorientate), traducerea, canalul verificat
+
+- DEVLOG: intrarea feliei (promptul owner-ului, reluarea din 22.11, decizia, proba întâi, prima variantă a măsurării și
+  ramura moartă scoasă, codul, privirea pe secțiunea reală, porțile, otrăvurile, mărimea, publicarea).
+- Fișa etapei 3: rândul 12.1↑e-2 (21.11 19:52 – 22.11 21:35), cu traducerea lui.
+- Registrul otrăvurilor: rândul listei `12.1e-2.py` (38 / 38) și nota reorientărilor pe rândul 12.1e.
+- Porțile pe unirea cu main (`ec14bc4a`): unit 9 669 / 0, build determinist 745,4 / 800, e2e 580 / 580; cu proba
+  refuzurilor (`a11d855e`), unit 9 670 / 0. Mărimea: JavaScript +3 572 B gzip, CSS +392 B. Probele documentelor 52 / 52.
+- Canalul `incrustatii` servește `a11d855e17f9` (până pe 22.12), verificat fără export.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
