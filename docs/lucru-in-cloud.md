@@ -1,9 +1,9 @@
 # Lucrul în cloud: o linie pe ramura ei
 
-Din 23.11.2026, liniile proiectului pot lucra în sesiuni cloud (Claude Code pe web), pe repo-ul de pe GitHub, în loc de
-worktree-urile de pe calculatorul owner-ului. Regulile rămân cele din `CLAUDE.md`; aici e doar felul de lucru, adică ce
-făcea până acum fiecare worktree local, spus pentru un container. Faptele despre mediu sunt din documentația Claude Code
-(„Cloud environments”), citită pe 23.11.
+Din 23.11.2026, tot lucrul la cncvs2 se face în sesiuni cloud (Claude Code pe web), pe repo-ul de pe GitHub: liniile și
+sesiunea principală, cea care unește și publică. Calculatorul owner-ului doar își sincronizează folderul din GitHub. Regulile
+rămân cele din `CLAUDE.md`; aici e doar felul de lucru, adică ce făcea până acum fiecare worktree local, spus pentru un
+container. Faptele despre mediu sunt din documentația Claude Code („Cloud environments”), citită pe 23.11.
 
 ## Mediul (o dată, de owner)
 
@@ -30,6 +30,10 @@ Pe claude.ai/code, în ecranul unei sesiuni noi, selectorul de mediu (primul but
 - **Environment variables:** `BASH_DEFAULT_TIMEOUT_MS=1800000` și `BASH_MAX_TIMEOUT_MS=1800000` (comenzile lungi, cum sunt
   porțile, până la 30 de minute). Fără secrete: containerul nu are nevoie de ele.
 - **GitHub:** aplicația Claude instalată pe repo (<https://github.com/apps/claude>), ca sesiunile să poată împinge ramuri.
+
+Sesiunile le pornește owner-ul, pe claude.ai/code: mediul, repo-ul `AndreiBesliu/cvs2`, ramura, apoi brief-ul liniei ca
+prim mesaj. O sesiune cloud nu poate porni alte sesiuni și nu trimite note altora: legătura dintre ele e GitHub (ramurile,
+PR-urile, rulările CI).
 
 ## O linie = o sesiune pe ramura ei
 
@@ -59,7 +63,10 @@ Containerul are 4 procesoare. Suitele întregi (unitarele, cele aproape 600 de p
   gh run view <id> --log-failed                                    # căderile
   ```
 
-În container rulează probele atinse de felie, de pildă `node --test test/unit/<fișier>.test.ts` sau
+`gh` merge prin API-ul REST (GraphQL e oprit în container): `gh run` și `gh workflow` merg, `gh pr` nu. Pentru PR-uri se
+folosește `gh api` (mai jos).
+
+În container rulează probele atinse de felie, de pildă `node --test test/unit/<fișier>.test.ts` sau, după `npm run build`,
 `npx playwright test test/e2e/<fișier>.spec.ts`, plus tipurile (`npm run typecheck`) și traducerile
 (`node scripts/traduceri.ts --verifica`). O probă care pică doar sub încărcare se reia singură, cu fișierul ei, înainte să
 fie socotită o cădere. Cifrele (unitarele, e2e-ul, emulatoarele, mărimea pornirii și totalul) intră în raport și în DEVLOG.
@@ -87,21 +94,65 @@ se mută pe codul nou sau se scoate împreună cu codul echivalent.
 - **Traducerile roadmap-ului:** `node scripts/traduceri.ts`, apoi completarea textelor noi.
 - **`CLAUDE.md`:** deciziile le scrie sesiunea principală, la unire.
 
-## Unirea și publicarea
+## Felia gata: raportul și PR-ul
 
-- **Raportul:** linia raportează felia gata cu ramura și commit-ul (împinse), porțile (cu legăturile rulărilor CI),
-  otrăvurile și ce rămâne.
-- **Unirea:** sesiunea principală unește într-o ramură `unire-<data>` din `origin/main` și rulează porțile pe unire. Apoi
-  scrie decizia în `CLAUDE.md` și face un singur push în `main`.
-- **Publicarea pe test:** CI-ul rapid pornește la push. Completul (`complet.yml`) și publicarea (`publica.yml`, cu sha-ul
-  fixat) se pornesc ca workflow-uri (`gh workflow run`), după ce rapidul și completul sunt verzi pe același sha. Adresa de
-  test își spune apoi sha-ul.
-- **Canalele de previzualizare ale liniilor:** `node scripts/publica-canal.ts` cere acreditările Firebase, pe care
-  containerul nu le are. În cloud, un canal îl publică sesiunea locală a owner-ului sau un workflow.
+Felia e gata de unit cu rapidul și completul verzi pe commit-ul final al ramurii. Linia raportează atunci în chat (ramura și
+commit-ul, porțile cu legăturile rulărilor CI, otrăvurile, ce rămâne) și deschide un PR spre `main`, cu același raport, ca
+sesiunea principală să-l găsească fără ca owner-ul să-l poarte între sesiuni:
+
+```bash
+gh api repos/AndreiBesliu/cvs2/pulls -f head=<ramura> -f base=main -f title="<felia>: <ce face>" -f body="<raportul>"
+```
+
+Repo-ul e public, deci și PR-ul: același ecran ca la commit-uri (niciun secret, nimic despre găurile aplicației vechi încă
+live). Linia nu unește singură PR-ul. Dacă mai lucrează pe ramură după raport, PR-ul se actualizează singur la push.
+
+## Canalele de previzualizare
+
+Un canal al instanței de test (adresa principală neatinsă, 30 de zile) se publică din GitHub Actions, cu identitatea WIF a
+testului, pentru orice ramură cu rapidul verde:
+
+```bash
+gh workflow run canal.yml --ref main -f ramura=<ramura> -f canal=<canal>
+gh run list --workflow canal.yml --limit 1          # adresa canalului e în jurnalul rulării
+```
+
+Owner-ul primește LINK-ul canalului când adresa principală a testului e ocupată de altă felie.
+
+## Sesiunea principală în cloud
+
+Sesiunea principală ține registrul liniilor (rândurile de stare din `CLAUDE.md`), unește feliile gata și publică pe test.
+Lucrează în containerul ei, ca o linie, dar pe ramuri `unire-<data>`:
+
+1. **PR-urile gata:** `gh api repos/AndreiBesliu/cvs2/pulls --jq '.[] | "\(.number) \(.head.ref) \(.title)"'`.
+2. **Unirea:** `git switch -c unire-<data> origin/main`, apoi `git merge --no-ff <sha-ul raportat>` pentru fiecare felie
+   (din commit-ul raportat, nu din vârful ramurii, dacă linia a mers mai departe). `DEVLOG.md` se rezolvă cu
+   `scripts/rezolva-devlog.py`; o ciocnire în cod se rezolvă cu ambele părți, citind ambele felii, apoi tipurile și probele
+   atinse în container.
+3. **Porțile unirii, în CI:** `git push origin unire-<data>` (rapidul pornește singur), apoi
+   `gh workflow run complet.yml --ref unire-<data>`. Ambele verzi pe același commit.
+4. **Decizia și un singur push în `main`:** decizia în `CLAUDE.md` („Decizii luate”, cu porțile), rândurile de stare ale
+   liniilor, indexul ADR; apoi `git push origin HEAD:main` (fast-forward). PR-urile feliilor se închid singure, ca unite.
+5. **Publicarea pe test:** `bash scripts/cloud/ci-si-publica.sh <sha>`: rapidul, completul pe `main`, publicarea
+   (`publica.yml`, serverul și hosting-ul, cu amprenta) și adresa de test. O comandă ține cel mult 30 de minute, iar
+   completul durează mai mult: la ieșirea cu 3, scriptul se reia la fel și continuă de unde a rămas.
+6. **Live:** doar la cuvântul owner-ului, pe un commit publicat întreg pe test:
+   `gh workflow run publica.yml -f instanta=live -f sha=<sha>`, apoi aprobarea owner-ului în GitHub (mediul `live`).
+
+Un CI roșu pe `main` e incidentul numărul unu: sesiunea principală îl repară înaintea oricărei uniri noi.
+
+## Ce rămâne pe calculatorul owner-ului
+
+- **Probele pe aparatele reale**, din rețeaua owner-ului: imprimanta 3D (K1C) și mașina CNC. Feliile lor se dezvoltă în
+  cloud, cu simulatoarele; proba pe aparat o face owner-ul, după ghidul feliei.
+- **`docs/faza0/`** (capturile și analiza aplicației vechi): nu intră niciodată în repo, deci nu e în cloud. Ce trebuie din
+  ele intră în brief-ul liniei, fără găurile aplicației vechi.
+- **Folderul local** (`Apps\cncvs2`): doar se sincronizează din GitHub (`git pull --ff-only`), fără lucru în el.
 
 ## Uneltele mutate în repo
 
 - `scripts/rezolva-devlog.py`: ciocnirile din `DEVLOG.md`, cu ambele părți păstrate.
+- `scripts/cloud/ci-si-publica.sh`: CI-ul și publicarea unui commit din `main`, de reluat până iese cu 0 sau 1.
 - `scripts/ldraw/`: pentru pluginul Easy 3Draw.
   - `aduce.py` aduce piesele LDraw (licența CC BY 4.0) în dosarul dat, de pildă `.tmp/ldraw`.
   - `plat.py`, `felie.py`, `felie_axa.py`, `sectiune.py` dau secțiunile.
