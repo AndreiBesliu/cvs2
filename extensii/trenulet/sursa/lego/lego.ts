@@ -1913,8 +1913,13 @@ var Lego = (function (glob: typeof globalThis) {
     }
     return tri;
   }
+  function butucElice(rh: number, Hh: number, gaura: string | undefined): Tri[] {
+    // butucul elicelor, cu gaura din calibrare: pentru ax (crucea), rotundă (știftul), pentru bară sau fără
+    const G = gaura === "b" ? { g: [cerc(0, 0, ef().baraGauraD / 2)] } : gauraRoata(cerc(0, 0, rh), gaura === "r" || gaura === "nu" ? gaura : "x");
+    return prismaGauri(cerc(0, 0, rh), G.g, 0, Hh);
+  }
   function elice(d: EliceDef): Corp {
-    const e = ef(), avert: string[] = [], q = eliceCote(d), { z, R } = q, rh = ELICE.butucR;
+    const avert: string[] = [], q = eliceCote(d), { z, R } = q, rh = ELICE.butucR;
     if (Number.isFinite(+(d.palete as number)) && q.z !== +(d.palete as number)) avert.push(tr`O elice are între 2 și 8 palete: am făcut-o cu ${q.z}.`);
     if (Number.isFinite(+(d.diametru as number)) && q.D !== +(d.diametru as number)) avert.push(tr`Diametrul unei elice e între 20 și 200 mm: am făcut-o de ${q.D} mm.`);
     const forma = d.forma === "drept" || d.forma === "ingust" ? d.forma : "rot", profil = d.profil === "aripa" ? "aripa" : "placa";
@@ -1941,8 +1946,7 @@ var Lego = (function (glob: typeof globalThis) {
     const hRad = Math.max(...statii.filter(st => st.r <= rh + 0.5).map(st => Math.max(...st.sec.map(p => p[1]))));
     const Hh = Math.max(ELICE.butucH, Math.ceil(hRad * 10) / 10);
     const tri = paleteElice(statii, z, semn);
-    const G = d.gaura === "b" ? { g: [cerc(0, 0, e.baraGauraD / 2)] } : gauraRoata(cerc(0, 0, rh), d.gaura === "r" || d.gaura === "nu" ? d.gaura : "x");
-    tri.push(...prismaGauri(cerc(0, 0, rh), G.g, 0, Hh));
+    tri.push(...butucElice(rh, Hh, d.gaura));
     if (d.con === "da") {
       // conul din față: de la 0,1 mm în butuc până la vârf, înalt cât 1,3 din raza butucului
       const n = N_CERC, z0 = Hh - 0.1, zv = Hh + ELICE.con * rh, con: Tri[] = [];
@@ -2018,12 +2022,11 @@ var Lego = (function (glob: typeof globalThis) {
     return { z, D, R, pd, P, lat, inc, rh, Hh, statii, bRad: beta(rh), bVarf: beta(R), consola: 0.2 / Math.tan(beta(R)), acoperire: z * arie / (Math.PI * R * R) };
   }
   function eliceBarca(d: BarcaDef): Corp {
-    const e = ef(), avert: string[] = [], q = eliceBarcaCote(d), { rh, Hh } = q;
+    const avert: string[] = [], q = eliceBarcaCote(d), { rh, Hh } = q;
     if (Number.isFinite(+(d.palete as number)) && q.z !== +(d.palete as number)) avert.push(tr`O elice de barcă are între 3 și 5 palete: am făcut-o cu ${q.z}.`);
     if (Number.isFinite(+(d.diametru as number)) && q.D !== +(d.diametru as number)) avert.push(tr`Diametrul unei elice de barcă e între 20 și 120 mm: am făcut-o de ${q.D} mm.`);
     const tri = paleteElice(q.statii, q.z, d.sens === "stanga" ? -1 : 1, true);
-    const G = d.gaura === "b" ? { g: [cerc(0, 0, e.baraGauraD / 2)] } : gauraRoata(cerc(0, 0, rh), d.gaura === "r" || d.gaura === "nu" ? d.gaura : "x");
-    tri.push(...prismaGauri(cerc(0, 0, rh), G.g, 0, Hh));
+    tri.push(...butucElice(rh, Hh, d.gaura));
     if (d.capac === "da") {
       // capacul rotunjit (spre pupa): o jumătate de elipsoid, de la 0,1 mm în butuc până la 1,2 raze peste el
       const n = N_CERC, K = BARCA.inele, z0 = Hh - 0.1, hc = Hh + BARCA.capac * rh - z0, cap: Tri[] = [];

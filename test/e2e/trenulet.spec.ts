@@ -579,6 +579,10 @@ test('în engleză (ADR 0165): limba lui cvs2, schimbată pe loc printr-o reporn
   await expect(c.locator('#at-eb-capac [data-v]')).toHaveText(['None', 'With cap']);
   await c.locator('#at-eb-capac [data-v="da"]').click();
   await expect(c.locator('#at-nume-piesa')).toHaveText('Boat propeller Ø40 with 3 blades, pitch 1, with cap');
+  // gaura înaintea capacului, ca în română (locurile din traducere, în aceeași ordine)
+  await c.locator('#at-eb-gaura [data-v="r"]').click();
+  await expect(c.locator('#at-nume-piesa')).toHaveText('Boat propeller Ø40 with 3 blades, pitch 1, round hole, with cap');
+  await c.locator('#at-eb-gaura [data-v="x"]').click();
   expect(await romanaRamasa(page, 'Păstrat la repornire'), 'elicea de barcă, cu capac').toEqual([]);
   // elicea (3.Tq): editorul ei, în engleză; cuvintele fără diacritice („Ca LEGO 6041”) se cer aici
   await c.locator('#at-galerie [data-piesa="elice"]').click();

@@ -137,6 +137,11 @@ test('editorul: fiecare alegere și fiecare câmp ajung în piesă; câmpurile, 
   await seteaza(page, '#at-eb-lat', '100');
   await seteaza(page, '#at-eb-inc', '20');
   await expect(nume).toHaveText('Elice de barcă Ø56,3 cu 4 palete, pasul 1,2');
+  // pasul, la sutime: și în câmp, și în nume
+  await seteaza(page, '#at-eb-pas', '0.754');
+  await expect(page.locator('#at-eb-pas')).toHaveValue('0.75');
+  await expect(nume).toHaveText('Elice de barcă Ø56,3 cu 4 palete, pasul 0,75');
+  await seteaza(page, '#at-eb-pas', '1.2');
   // marginile plajei: chiar pe margine intră, dincolo de ea nu (piesa rămâne; la redesenare, câmpul arată iar ce e în piesă)
   for (const [camp, bun, rau, cum] of [
     ['palete', '5', '6', 'Elice de barcă Ø56,3 cu 5 palete, pasul 1,2'], ['palete', '3', '2', 'Elice de barcă Ø56,3 cu 3 palete, pasul 1,2'],

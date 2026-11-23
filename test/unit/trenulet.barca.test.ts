@@ -190,11 +190,26 @@ test('secțiunea ogivală, pe hârtie: fața plată sus, spatele bombat jos; gro
     assert.ok(Math.abs(s.puncte[6]!.x - 0.5) < 1e-5 && Math.abs(s.puncte[6]!.gros - t) < 1e-5, `stația ${i}: la mijloc ${s.puncte[6]!.gros}`);
     assert.ok(Math.abs(s.puncte[0]!.gros - 0.6) < 1e-9 && Math.abs(s.puncte[12]!.gros - 0.6) < 1e-9, `stația ${i}: muchiile`);
   }
-  // rădăcina mai groasă la elicele mari: 4 % din diametru, între 1,6 și 3: Ø60 → 2,4; Ø120 → 3 (4,8 e peste)
-  for (const [diametru, t] of [[60, 2.4], [120, 3]] as const) {
+  // punctele corzii sunt pe cosinus (mai dese spre muchii): al doilea, la ½ − ½ cos(π / 12) = 0,017037 din coardă
+  const s14 = sectiune(v, raze[14]!, hartie(14).beta, 20 * Math.PI / 180 * hartie(14).x ** 2, 3);
+  assert.ok(Math.abs(s14.puncte[1]!.x - 0.017037) < 2e-6 && Math.abs(s14.puncte[3]!.x - 0.146447) < 2e-6, `punctele corzii: ${s14.puncte.map((q) => q.x.toFixed(4))}`);
+  // rădăcina mai groasă la elicele mari: 4 % din diametru, între 1,6 și 3: Ø20 → 1,6 (0,8 e sub); Ø60 → 2,4; Ø120 → 3 (4,8 e peste)
+  for (const [diametru, t] of [[20, 1.6], [60, 2.4], [120, 3]] as const) {
     const q = L.eliceBarcaCote({ diametru }), vv = polare(barca({ diametru, gaura: 'nu' })), r0 = statii(vv, q.rh)[0]!;
     const s = sectiune(vv, r0, Math.atan(diametru / (2 * Math.PI * r0)), 0, 3);
     assert.ok(Math.abs(r0 - (q.rh - 0.4)) < 1e-9 && Math.abs(s.puncte[6]!.gros - t) < 1e-5, `Ø${diametru}: rădăcina groasă de ${s.puncte[6]!.gros}`);
+  }
+});
+
+test('vârful paletei rămâne întreg la diametrele unde ultima stație cade, din rotunjire, cu un fir dincolo de capătul paletei', () => {
+  // la 80 dintre diametrele din 0,1 în 0,1 mm (20,3, 20,8, 47,7, 55,1 …), locul ultimei stații pe paletă iese 1 + 2e-16:
+  // sub radicalul conturului ar rămâne un număr negativ mic. Vârful trebuie să fie tot coarda de 2 (2,5 grosimi), la raza cerută
+  for (const diametru of [20.3, 22.8, 47.7, 55.1, 70.2]) {
+    const q = L.eliceBarcaCote({ diametru }), p = barca({ diametru, gaura: 'nu' }), v = polare(p), raze = statii(v, q.rh);
+    assert.ok(p.tri.flat(2).every(Number.isFinite), `Ø${diametru}: plasa are numere care nu sunt numere`);
+    assert.equal(muchiiRele(p.tri), 0, `Ø${diametru}`);
+    const rv = raze[28]!, sv = sectiune(v, rv, Math.atan(diametru / (2 * Math.PI * rv)), 20 * Math.PI / 180, 3);
+    assert.ok(Math.abs(rv - diametru / 2) < 1e-9 && Math.abs(sv.coarda - 2) < 1e-6, `Ø${diametru}: vârful la r ${rv}, coarda ${sv.coarda}`);
   }
 });
 
@@ -316,6 +331,8 @@ test('implicitele și marginile: paletele și diametrul în afara plajei se spun
   assert.deepEqual([c({ pas: 5 }).pd, c({ pas: 0.1 }).pd], [1.6, 0.5]);
   assert.deepEqual([c({ latime: 500 }).lat, c({ latime: 5 }).lat], [150, 40]);
   assert.deepEqual([c({ inclinare: 90 }).inc, c({ inclinare: -5 }).inc], [40, 0]);
+  // paletele, la întregul cel mai apropiat
+  assert.deepEqual([c({ palete: 4.6 }).z, c({ palete: 3.4 }).z], [5, 3]);
   // ce nu e număr ia implicitul
   assert.deepEqual([c({ palete: 'x' }).z, c({ diametru: null }).D, c({ pas: '' }).pd, c({ latime: undefined }).lat, c({ inclinare: 'mult' }).inc], [3, 40, 1, 100, 20]);
   // aceeași piesă din valorile implicite scrise și din nimic
