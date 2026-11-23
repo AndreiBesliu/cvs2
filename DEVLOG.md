@@ -11723,3 +11723,24 @@ sesiunii principale). Modelul: al sesiunii, în trailerul commit-urilor.
   afara `.md`), deci porțile de acolo valorează, ca la lotul sesiunii principale.
 - **Documentele:** decizia în `CLAUDE.md` și rândul de stare al regulilor (unită în `f4601938`); indexul liniilor, indexul
   ADR (0211, implementat în 11.3↑d–f), starea din `docs/linii/principala.md`, nota liniei (cu lecția ordinii).
+
+## 2026-11-23 — ADR 0290 propus: biblioteca de freze, „Frezele mele” (Model: Claude Opus 5.5)
+
+**Prompt:** „Vreau sa pot crea freze l sau profiluri de freze in aplicatie si sa le salvez in cont” (owner-ul, 23.11, în
+brief-ul liniei „freze”: ramura `wip/16.A-freze`, ADR-urile 0290–0299, canalul `freze`; întâi propunerea, fără cod de
+produs). **Started:** 23.11, seara, în sesiunea cloud a liniei. **Completed:** 23.11, 21:05.
+
+- **Ce e azi**, citit în cod: copia frezei pe fiecare operație (`SchemaScula`: T, nume, Ø, forma plată / V cu vârf), fără
+  tabelul `scule[]` din plan; valorile de lucru fixe pentru orice freză (`REGIM_IMPLICIT`: 18 000 rot/min, 1 000 și
+  300 mm/min); CAM-ul știe plata și V-ul, simularea și bila, oracolul și profilul ca puncte; nicio dată a omului în cont.
+- **Propunerea (ADR 0290):** fereastra „Frezele mele” (din meniul contului, paletă, export, Tăierea; și offline, și fără
+  cont), alegerea pe rândurile exportului și în Tăierea, documentul v27 (originea copiei, valorile de lucru, lungimea
+  tăișului; fără ele, programele octet cu octet), sincronizarea prin callable-ul `freze` cu copia din browser și îmbinarea pe
+  câmpuri, capabilitatea `cloud`, fișierul JSON și CSV, calibrarea, apoi bila, toroidala și profilul desenat, fiecare cu
+  simularea și oracolul ei. Șapte felii (16.A↑a–g); mărimea estimată: a–d încap (~787 / 800), formele noi cer decizia pe
+  plafon la felia lor.
+- **Schița**, cu machetele pe ambele teme, la birou și pe telefon, editorul frezei de încercat și șase întrebări, cu
+  răspunsurile salvate în pagină (doar owner-ul scrie; un vizitator obișnuit, refuzat): <https://claude.ai/artifact/HntiSsxBQyPFmZoA8B39EP>.
+- **Documentele:** ADR 0290 (propus), rândul în indexul ADR, titlul tradus (`node scripts/traduceri.ts --verifica`: 926,
+  0 lipsă), nota liniei (`docs/linii/freze.md`). Probele documentației în container: 58 / 58.
+- **Codul:** la răspunsurile owner-ului, începând cu 16.A↑a.
