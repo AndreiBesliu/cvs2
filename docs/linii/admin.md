@@ -2,7 +2,7 @@
 
 <!-- Adusă din memoria sesiunii principale pe 23.11.2026 (mutarea în cloud). De aici înainte o ține la zi linia, pe ramura ei, odată cu feliile. -->
 
-_CNCVS2, ADR 0260: pagina /admin reproiectată; A.1–A.6 unite în main (A.6: 4497d639); ADR 0262 (utilizarea aplicației) acceptat pe 23.11; A.8a și A.8b gata pe ramură, porțile pe 09966989 (PR-ul AndreiBesliu/cvs2#8; la unire se publică și serverul); apoi A.8c, A.9–A.11, apoi A.7_
+_CNCVS2, ADR 0260: pagina /admin reproiectată; A.1–A.6 unite în main (A.6: 4497d639); ADR 0262 (utilizarea aplicației) acceptat pe 23.11; A.8a și A.8b GATA DE UNIT din 23.11 (porțile verzi pe 09966989; PR-ul AndreiBesliu/cvs2#8; la unire se publică și serverul: funcția utilizare, regulile, indexurile); apoi A.8c, A.9–A.11, apoi A.7_
 
 Linia adminului din [sesiunea principală](principala.md): ADR 0260 (intervalul 0260–0269), acceptat pe 13.11.2026 cu ideile 51–62 de pe
 tabla „Harta schițelor”. Owner-ul a cerut „vreau sa faci design si pentru admin”, iar la idei a răspuns „Da la toate”
