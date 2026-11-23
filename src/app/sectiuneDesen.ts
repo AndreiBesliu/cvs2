@@ -7,6 +7,8 @@
  * - Cleiul e doar în locaș, sub fața plăcii: de la suprafața plăcii până la fața de jos a dopului, dar cel mult până la fața
  *   plăcii (deasupra ei e spațiul dintre plăci, nu clei). La dopul decupat, locașul fără dop deasupra e jocul lateral.
  * - Gaura prin foaie (ADR 0175): placa e groasă cât foaia; sub gaură nu e lemn și nici contact.
+ * - Dopul în trepte (felia 12.1↑e-4) se desenează ca pereții drepți: umărul e încă o treaptă a plăcii, iar cleiul din jurul tijei
+ *   urcă până la flanșă (fața ei de jos e sub fața plăcii).
  */
 import type { SectiunePotrivire } from '../sim/potrivire.ts';
 
@@ -19,6 +21,10 @@ export type DateDesen =
   | {
     readonly fel: 'drept'; readonly hartie: { readonly D: number; readonly decupat: boolean; readonly gaura: boolean };
     readonly asezare: number; readonly adancime: number; readonly inaltime: number; readonly sectiune: SectiunePotrivire;
+  }
+  | {
+    readonly fel: 'trepte'; readonly hartie: { readonly D: number; readonly decupat: boolean; readonly gaura: boolean };
+    readonly asezare: number; readonly inaltime: number; readonly sectiune: SectiunePotrivire;
   };
 
 /** Căile și liniile desenului, gata de pus în SVG (numerele, cu cel mult trei zecimale). */
@@ -60,8 +66,8 @@ const f = (v: number): string => (Math.round(v * 1000) / 1000).toString();
 const linii = (p: readonly Punct[]): string => p.map(([x, z]) => `${f(x)} ${f(-z)}`).join(' L');
 
 export function desenSectiune(p: DateDesen): DesenSectiune {
-  const s = p.sectiune, n = s.placa.length, c = s.celula, drept = p.fel === 'drept';
-  const gaura = p.fel === 'drept' && p.hartie.gaura, decupat = p.fel === 'drept' && p.hartie.decupat;
+  const s = p.sectiune, n = s.placa.length, c = s.celula, drept = p.fel !== 'v';
+  const gaura = p.fel !== 'v' && p.hartie.gaura, decupat = p.fel !== 'v' && p.hartie.decupat;
   const X0 = s.x0, X1 = s.x0 + n * c;
   const zJos = gaura ? -p.hartie.D : -(p.hartie.D + SUB_FUND), zSus = s.grosimeDop - p.asezare;
   const placa = (i: number): number => s.placa[i]!, dop = (i: number): number => s.dop[i]!;
@@ -104,8 +110,9 @@ export function desenSectiune(p: DateDesen): DesenSectiune {
 
   // Tăietura cu fierăstrăul: la mijlocul spațiului dintre plăci (mediana lui simulată; fără ea, H de pe hârtie). Dopul drept
   // pe față stă cu fața coborâtă pe placă: tăietura e la fața plăcii. Dopul decupat n-are a doua placă: ce iese peste placă se
-  // rindeluiește până la fața ei (ADR 0171).
-  const zTaiere = p.fel === 'v' ? (Number.isFinite(p.intre.med) ? p.intre.med : p.hartie.H) / 2 : decupat ? 0 : Math.max(0, p.inaltime - p.adancime) / 2;
+  // rindeluiește până la fața ei (ADR 0171). Dopul în trepte întors stă cu fața coborâtă la h − h* peste placă.
+  const zTaiere = p.fel === 'v' ? (Number.isFinite(p.intre.med) ? p.intre.med : p.hartie.H) / 2 : decupat ? 0
+    : Math.max(0, p.inaltime - (p.fel === 'trepte' ? p.asezare : p.adancime)) / 2;
   return {
     cutie: `${f(X0)} ${f(-zSus)} ${f(X1 - X0)} ${f(zSus - zJos)}`,
     placa: caleaPlacii, dop: caleaDopului, clei, contact,

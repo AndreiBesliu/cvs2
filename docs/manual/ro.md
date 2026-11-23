@@ -1958,8 +1958,8 @@ fiecăruia), iar starea din colț o spune.
   simulează programul dopului pe semifabricatul lui (fața la 0, fundul la grosimea lui) și îl încadrează: vezi dopul în
   picioare, fața coborâtă sau decuparea, înainte să-l tai. „Foaia” te întoarce la placă. Dacă un dop nu se poate tăia, placa
   se vede tot, iar starea spune de ce lipsesc dopurile.
-- **Împreună (secțiunea)**: pe un dop ales, butonul de după dopuri arată dopul așezat în locașul lui (întors; cel decupat, cum
-  a fost tăiat), în secțiune pe orizontală, prin mijlocul desenului. Lângă ea, tabelul pune valorile pe hârtie (ca în panou)
+- **Împreună (secțiunea)**: pe un dop ales, butonul de după dopuri arată dopul așezat în locașul lui (întors; cel decupat cu
+  pereți drepți, cum a fost tăiat), în secțiune pe orizontală, prin mijlocul desenului. Lângă ea, tabelul pune valorile pe hârtie (ca în panou)
   alături de cele simulate la 0,1 mm. La dopul în V: cât intră dopul, cât din pereți se atinge, jocul cu clei de sub dop și
   spațiul dintre plăci, pentru fierăstrău. La dopul cu pereți drepți: jocul lateral, măsurat exact pe trecerile frezei
   (mediana pe tot conturul; titlul spune intervalul), dopul în locaș (niciun punct al peretelui lui în afara locașului),
@@ -1969,7 +1969,11 @@ fiecăruia), iar starea din colț o spune.
   cleiul e albastru (la pereții drepți, jocul lateral și, pe față, cel de sub dop: doar în locaș, sub fața plăcii), ce se
   atinge e verde, iar linia întreruptă e tăietura cu fierăstrăul (la dopul decupat, fața plăcii, până la care se
   rindeluiește). La gaura prin foaie, placa e desenată cât foaia: sub gaură nu e lemn. Dacă secțiunea nu încape pe ecran,
-  butoanele rămân sus, iar ea se derulează. La dopul în trepte, butonul e oprit deocamdată.
+  butoanele rămân sus, iar ea se derulează. Dopul în trepte intră întors, oricum ar fi fost tăiat, iar tabelul are jocul
+  lateral pe ambele niveluri (la flanșă și la tijă), dopul în locaș, flanșa pe umăr (cât trece peretele flanșei de
+  deschiderea de sub umăr, pe tot conturul; un punct unde nu trece face rândul roșu), adâncimea umărului și a locașului,
+  lungimea tijei, înălțimea dopului, cleiul de sub tijă (pe umăr; la gaura prin foaie, tija e la nivel cu fața de jos, deci 0)
+  sau de deasupra umărului (pe fund) și spațiul dintre plăci sau cât iese dopul decupat peste placă.
 
 Culorile: fața plăcii, tăieturile (mai închise cu adâncimea) și, albastru-gri, masa de sacrificiu acolo unde freza a trecut
 prin foaie. Dacă schimbi documentul cât vederea e deschisă, starea o spune; „Simulează din nou” îl simulează, cu placa

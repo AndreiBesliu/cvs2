@@ -1,7 +1,7 @@
 import type { ReactElement } from 'react';
 import '../i18n/editare.ts';
 import { t } from '../i18n/t.ts';
-import type { Potrivire, PotrivireDreapta, PotrivireV } from '../ui/actiuniExportTipuri.ts';
+import type { Potrivire, PotrivireDreapta, PotrivireTrepte, PotrivireV } from '../ui/actiuniExportTipuri.ts';
 import { desenSectiune } from './sectiuneDesen.ts';
 
 /**
@@ -10,7 +10,9 @@ import { desenSectiune } from './sectiuneDesen.ts';
  * 1:1 pe ambele axe (Z în sus): placa până la D + 1,5 mm sub față (la gaura prin foaie, cât foaia), dopul până la fața lui de
  * sus, jocul cu clei albastru, contactul verde, tăietura cu fierăstrăul la mijlocul spațiului dintre plăci; geometria lui e
  * în `sectiuneDesen.ts`. Valorile, cu două zecimale și punct, ca secțiunea pe hârtie din panou. Dopul în V are patru rânduri;
- * cel cu pereți drepți (felia 12.1↑e-3), cinci: jocul lateral, dopul în locaș, adâncimea, înălțimea, sprijinul.
+ * cel cu pereți drepți (felia 12.1↑e-3), cinci: jocul lateral, dopul în locaș, adâncimea, înălțimea, sprijinul; cel în trepte
+ * (felia 12.1↑e-4), zece: jocul la flanșă și la tijă, dopul în locaș, flanșa pe umăr, umărul, fundul, tija, înălțimea, jocul cu
+ * clei (sub tijă sau deasupra umărului) și spațiul de peste placă.
  */
 type Props = { readonly p: Potrivire; readonly n: number };
 type Rand = {
@@ -89,9 +91,46 @@ function randuriDrepte(p: PotrivireDreapta): Rand[] {
   ];
 }
 
+/**
+ * Rândurile dopului în trepte (felia 12.1↑e-4): jocul lateral pe fiecare nivel, dopul în locaș (flanșa și tija), flanșa pe umăr,
+ * umărul, fundul, tija, înălțimea, jocul cu clei (pe umăr, sub tijă: g, la gaură 0; pe fund, deasupra umărului: g) și spațiul
+ * de peste placă (H: între plăci, sau de rindeluit la dopul decupat).
+ */
+function randuriTrepte(p: PotrivireTrepte): Rand[] {
+  const h = p.hartie, peUmar = h.sprijin === 'umar';
+  const afara = p.sus.dop.afara + p.jos.dop.afara, puncte = p.sus.dop.n + p.jos.dop.n;
+  return [
+    { id: 'joc-sus', eticheta: t('editare.3d.sectiune.joc-sus'), hartie: mm(h.c), simulat: p.sus.joc.n > 0 ? mm(p.sus.joc.med) : '—', r: p.randuri.jocSus, titlu: banda(p.sus.joc) },
+    { id: 'joc-jos', eticheta: t('editare.3d.sectiune.joc-jos'), hartie: mm(h.c), simulat: p.jos.joc.n > 0 ? mm(p.jos.joc.med) : '—', r: p.randuri.jocJos, titlu: banda(p.jos.joc) },
+    {
+      id: 'dop', eticheta: t('editare.3d.sectiune.dop'), hartie: t('editare.3d.sectiune.dop-hartie'),
+      simulat: afara === 0 ? t('editare.3d.sectiune.dop-tot', { n: puncte }) : t('editare.3d.sectiune.dop-afara', { k: afara, n: puncte }), r: p.randuri.dop, titlu: undefined,
+    },
+    {
+      id: 'reazem', eticheta: t('editare.3d.sectiune.reazem'), hartie: t('editare.3d.sectiune.dop-hartie'),
+      simulat: p.reazem.nu === 0 ? t('editare.3d.sectiune.reazem-tot', { min: p.reazem.banda.n > 0 ? p.reazem.banda.min.toFixed(2) : '—' })
+        : t('editare.3d.sectiune.reazem-nu', { k: p.reazem.nu, n: p.reazem.banda.n }),
+      r: p.randuri.reazem, titlu: undefined,
+    },
+    { id: 'umar', eticheta: t('editare.3d.sectiune.umar'), hartie: mm(h.d), simulat: mm(p.umar), r: p.randuri.umar, titlu: undefined },
+    { id: 'adancime', eticheta: t('editare.3d.sectiune.adancime'), hartie: mm(h.D), simulat: mm(p.adancime), r: p.randuri.adancime, titlu: undefined },
+    { id: 'tija', eticheta: t('editare.3d.sectiune.tija'), hartie: mm(h.tija), simulat: mm(p.tija), r: p.randuri.tija, titlu: undefined },
+    { id: 'inaltime', eticheta: t('editare.3d.sectiune.inaltime'), hartie: mm(h.h), simulat: mm(p.inaltime), r: p.randuri.inaltime, titlu: undefined },
+    {
+      id: peUmar ? 'sub-tija' : 'peste-umar', eticheta: t(peUmar ? 'editare.3d.sectiune.sub-tija' : 'editare.3d.sectiune.peste-umar'),
+      hartie: mm(peUmar && h.gaura ? 0 : h.g), simulat: mm(peUmar ? p.adancime - p.umar - p.tija : p.tija - (p.adancime - p.umar)), r: p.randuri.clei, titlu: undefined,
+    },
+    {
+      id: h.decupat ? 'peste' : 'intre', eticheta: t(h.decupat ? 'editare.3d.sectiune.peste' : 'editare.3d.sectiune.intre'), hartie: mm(h.H),
+      simulat: mm(peUmar ? p.inaltime - p.tija - p.umar : p.inaltime - p.adancime), r: p.randuri.placi, titlu: undefined,
+    },
+  ];
+}
+
 export function Sectiune3D({ p, n }: Props): ReactElement {
-  const randuri = p.fel === 'v' ? randuriV(p) : randuriDrepte(p);
-  // Dopul decupat intră cum a fost tăiat, neîntors (ADR 0171); cel în V și cel drept ridicat, întors.
+  const randuri = p.fel === 'v' ? randuriV(p) : p.fel === 'drept' ? randuriDrepte(p) : randuriTrepte(p);
+  // Dopul decupat cu pereți drepți intră cum a fost tăiat, neîntors (ADR 0171); cel în V, cel drept ridicat și cel în trepte
+  // (oricum ar fi tăiat, ADR 0175), întors.
   const titlu = p.fel === 'drept' && p.hartie.decupat ? 'editare.3d.sectiune.titlu-decupat' : 'editare.3d.sectiune.titlu';
   return (
     <>
@@ -118,7 +157,7 @@ export function Sectiune3D({ p, n }: Props): ReactElement {
           ))}
         </tbody>
       </table>
-      <p className="sectiune-nota">{t(p.fel === 'v' ? 'editare.3d.sectiune.nota' : 'editare.3d.sectiune.nota-dreapta', { celula: String(p.celula) })}</p>
+      <p className="sectiune-nota">{t(p.fel === 'v' ? 'editare.3d.sectiune.nota' : p.fel === 'drept' ? 'editare.3d.sectiune.nota-dreapta' : 'editare.3d.sectiune.nota-trepte', { celula: String(p.celula) })}</p>
     </>
   );
 }

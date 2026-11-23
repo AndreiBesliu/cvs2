@@ -95,9 +95,10 @@ import type { RezumatJob } from '../jobs/rezumat.ts';
 export type { DopSimulat, ParametriExport, RaspunsPotrivire } from '../jobs/protocolCam.ts';
 import type { PotrivireV } from '../sim/potrivire.ts';
 import type { PotrivireDreapta } from '../sim/potrivireDreapta.ts';
-export type { PotrivireDreapta, PotrivireV };
-/** Potrivirea simulată a unui dop (ADR 0179): în V, sau cu pereți drepți (felia 12.1↑e-3). */
-export type Potrivire = PotrivireV | PotrivireDreapta;
+import type { PotrivireTrepte } from '../sim/potrivireTrepte.ts';
+export type { PotrivireDreapta, PotrivireTrepte, PotrivireV };
+/** Potrivirea simulată a unui dop (ADR 0179): în V, cu pereți drepți (felia 12.1↑e-3) sau în trepte (12.1↑e-4). */
+export type Potrivire = PotrivireV | PotrivireDreapta | PotrivireTrepte;
 export type { RezumatJob, TimpPortiune } from '../jobs/rezumat.ts';
 
 /**

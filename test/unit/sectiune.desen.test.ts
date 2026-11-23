@@ -116,6 +116,45 @@ test('gaura prin foaia de 18: placa e groasă cât foaia, fără lemn sub gaură
   assert.deepEqual(cuTreapta.contact, ['15.3,10 15.4,10']);
 });
 
+/**
+ * Dopul în trepte (felia 12.1↑e-4), ridicat, pe umăr: D 8, d 3, tija 4,5, h 9,5, g 0,5, H 2; întors, h* = d + tija = 7,5. Celulele:
+ * două în afară (fața coborâtă la H), jocul lateral sus, umărul, jocul lateral al tijei, tija (două), jocul ei, umărul, jocul de
+ * sus, două în afară. Dopul decupat n-are lemn în afara flanșei.
+ */
+const N12 = [N, N, N];
+const TREPTE = { placa: [0, 0, -3, -3, -8, -8, -8, -8, -3, -3, 0, 0], dop: [2, 2, 2, -3, -3, -7.5, -7.5, -3, -3, 2, 2, 2] };
+const peUmar: DateDesen = {
+  fel: 'trepte', hartie: { D: 8, decupat: false, gaura: false }, asezare: 7.5, inaltime: 9.5, sectiune: sectiune(TREPTE.placa, TREPTE.dop, 10.5),
+};
+
+test('treptele, dopul ridicat pe umăr: placa în două trepte, flanșa pe umăr (verde), cleiul sus, lângă tijă și sub ea; tăietura la H / 2', () => {
+  const g = desenSectiune(peUmar);
+  assert.equal(g.cutie, '15 -3 1.2 12.5');
+  assert.equal(g.placa, 'M15 9.5 L15 0 L15.2 0 L15.2 3 L15.4 3 L15.4 8 L15.8 8 L15.8 3 L16 3 L16 0 L16.2 0 L16.2 9.5Z');
+  assert.equal(g.dop, 'M15 -3 L16.2 -3 L16.2 -2 L15.9 -2 L15.9 3 L15.7 3 L15.7 7.5 L15.5 7.5 L15.5 3 L15.3 3 L15.3 -2 L15 -2Z');
+  // Jocul lateral de sus, până la fața plăcii; lângă tijă, de la fundul deschiderii până sub flanșă, cu g sub tijă: o bucată.
+  assert.equal(g.clei, 'M15.2 0 L15.3 0 L15.3 3 L15.2 3Z M15.4 3 L15.5 3 L15.5 7.5 L15.7 7.5 L15.7 3 L15.8 3 L15.8 8 L15.4 8Z M15.9 0 L16 0 L16 3 L15.9 3Z');
+  assert.deepEqual(g.contact, ['15.3,3 15.4,3', '15.8,3 15.9,3']);
+  assert.deepEqual(g.taiere, { fel: 'fierastrau', y: '-1' });
+});
+
+test('treptele, dopul decupat: întors, doar flanșa și tija; jocul de sus e clei până la fața plăcii; rindeaua la fața ei', () => {
+  const g = desenSectiune({ ...peUmar, hartie: { D: 8, decupat: true, gaura: false }, sectiune: sectiune(TREPTE.placa, [...N12, -3, -3, -7.5, -7.5, -3, -3, ...N12], 9.5) });
+  assert.equal(g.cutie, '15 -2 1.2 11.5');
+  assert.equal(g.dop, 'M15.3 -2 L15.9 -2 L15.9 3 L15.7 3 L15.7 7.5 L15.5 7.5 L15.5 3 L15.3 3Z');
+  assert.equal(g.clei, 'M15.2 0 L15.3 0 L15.3 3 L15.2 3Z M15.4 3 L15.5 3 L15.5 7.5 L15.7 7.5 L15.7 3 L15.8 3 L15.8 8 L15.4 8Z M15.9 0 L16 0 L16 3 L15.9 3Z');
+  assert.deepEqual(g.taiere, { fel: 'rindea', y: '0' });
+});
+
+test('treptele la gaura prin foaia de 10: tija la nivel cu fața de jos, fără contact sub ea; placa cât foaia', () => {
+  const placa = [0, 0, -3, -3, -10, -10, -10, -10, -3, -3, 0, 0], dop = [2, 2, 2, -3, -3, -10, -10, -3, -3, 2, 2, 2];
+  const g = desenSectiune({ fel: 'trepte', hartie: { D: 10, decupat: false, gaura: true }, asezare: 10, inaltime: 12, sectiune: sectiune(placa, dop, 13) });
+  assert.equal(g.yJos, '10');
+  assert.deepEqual(g.contact, ['15.3,3 15.4,3', '15.8,3 15.9,3']);
+  assert.equal(g.clei, 'M15.2 0 L15.3 0 L15.3 3 L15.2 3Z M15.4 3 L15.5 3 L15.5 10 L15.4 10Z M15.7 3 L15.8 3 L15.8 10 L15.7 10Z M15.9 0 L16 0 L16 3 L15.9 3Z');
+  assert.deepEqual(g.taiere, { fel: 'fierastrau', y: '-1' });
+});
+
 test('locul diferenței: marcajul trece neschimbat, pe toată înălțimea desenului', () => {
   const g = desenSectiune({ ...peFund, sectiune: sectiune(LOCAS, [2, 2, 2, -3, -3, 2, 2, 2], 6, 15.25) });
   assert.equal(g.marcaj, '15.25');

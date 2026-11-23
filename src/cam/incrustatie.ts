@@ -22,8 +22,8 @@ export type SemifabricatDop = { readonly latime: number; readonly inaltime: numb
 /**
  * Ce cere potrivirea simulată a unui dop (ADR 0179): cutia desenului pe foaie, marginea din contract (ADR 0170 §3, ADR 0171
  * §3) și valorile pe hârtie. Aceeași formă ca parametrii din `src/sim/potrivire.ts` (`fel: 'v'`: desenul aplatizat, crestele,
- * 0 cu freză dreaptă, ADR 0173, și adâncimea decupării, ADR 0172) și din `src/sim/potrivireDreapta.ts` (`fel: 'drept'`, felia
- * 12.1↑e-3), fără grilă (CAM-ul nu știe de simulare).
+ * 0 cu freză dreaptă, ADR 0173, și adâncimea decupării, ADR 0172), din `src/sim/potrivireDreapta.ts` (`fel: 'drept'`, felia
+ * 12.1↑e-3) și din `src/sim/potrivireTrepte.ts` (`fel: 'trepte'`, felia 12.1↑e-4), fără grilă (CAM-ul nu știe de simulare).
  */
 export type DescrierePotrivire =
   | {
@@ -56,6 +56,21 @@ export type DescrierePotrivire =
       readonly D: number; readonly c: number; readonly h: number; readonly H: number; readonly g: number;
       readonly sprijin: 'fund' | 'fata'; readonly decupat: boolean; readonly gaura: boolean;
     };
+  }
+  | {
+    readonly fel: 'trepte';
+    /** Cutia nivelului de sus (desenul, lărgit cu s spre exterior): semifabricatul e ea cu marginea pe fiecare parte. */
+    readonly cutie: { readonly x0: number; readonly y0: number; readonly x1: number; readonly y1: number };
+    readonly margine: number;
+    /** Flanșa și tija dopului pe foaie, ca poligoane par-impar (ca `dop` mai sus). */
+    readonly flansa: readonly (readonly number[])[]; readonly tija: readonly (readonly number[])[];
+    /** Adâncimea locașului D (la gaură, grosimea foii), umărul d, jocul lateral c, tija, înălțimea h, H, g, sprijinul. */
+    readonly hartie: {
+      readonly D: number; readonly d: number; readonly c: number; readonly tija: number; readonly h: number; readonly H: number;
+      readonly g: number; readonly sprijin: 'umar' | 'fund'; readonly decupat: boolean; readonly gaura: boolean;
+    };
+    /** Vârful punților flanșei decupate (de la fața semifabricatului); altfel Infinity. */
+    readonly taiata: number;
   };
 
 export type DopCalculat = {
@@ -64,8 +79,8 @@ export type DopCalculat = {
   readonly program: Program;
   readonly semifabricat: SemifabricatDop;
   readonly avertismente: readonly string[];
-  /** Ce cere potrivirea simulată (ADR 0179): la dopul în V și la cel cu pereți drepți fără trepte (treptele, în 12.1↑e-4). */
-  readonly potrivire?: DescrierePotrivire;
+  /** Ce cere potrivirea simulată (ADR 0179): la dopul în V, la cel cu pereți drepți și la cel în trepte (12.1↑e-4). */
+  readonly potrivire: DescrierePotrivire;
 };
 
 /**

@@ -265,18 +265,25 @@ export function programeDopuriDrepte(doc: Document, regim: Regim, supracursa = 0
       element: t.idLume, program: job.program, semifabricat: { latime, inaltime, grosimeMinima: grosime, ...(inc.dop === 'decupat' ? { exacta: true } : {}) },
       // Avertismentele figurii (colțurile, părțile unite) le spune deja lucrarea foii, la locaș.
       avertismente: [...avertismente, ...job.avertismente.map((a) => `dopul ${t.idLume}: ${a}`)],
-      // Potrivirea simulată (ADR 0179, felia 12.1↑e-3): contractul de mai sus și hârtia panoului; dopul în trepte, mai târziu.
-      // La gaură, D e grosimea foii, iar dopul ridicat pe față e înalt cât ea: sub el nu rămâne joc (g = D − h = 0).
-      ...(treapta ? {} : {
-        potrivire: {
-          fel: 'drept' as const, cutie: { x0, y0, x1, y1 }, margine: m, dop: desenDop(f.figura.dop),
-          hartie: {
-            D: esteGaura(op) ? (doc.foi[0]?.stoc.grosime ?? op.adancime) : op.adancime, c: inc.jocLateral, h, H: inc.fierastrau,
-            g: esteGaura(op) ? 0 : inc.joc,
-            sprijin: inc.sprijin === 'fata' ? 'fata' as const : 'fund' as const, decupat: inc.dop === 'decupat', gaura: esteGaura(op),
-          },
+      // Potrivirea simulată (ADR 0179): contractul de mai sus și hârtia panoului. La gaură, D e grosimea foii, iar dopul ridicat
+      // pe față e înalt cât ea: sub el nu rămâne joc (g = D − h = 0). Dopul în trepte (felia 12.1↑e-4) e mereu oglindit; al celui
+      // decupat, lemnul flanșei se citește deasupra punților (ele o leagă de rama plăcii).
+      potrivire: treapta && jos ? {
+        fel: 'trepte' as const, cutie: { x0, y0, x1, y1 }, margine: m, flansa: desenDop(f.figura.dop), tija: desenDop(jos.dop),
+        hartie: {
+          D: esteGaura(op) ? (doc.foi[0]?.stoc.grosime ?? op.adancime) : op.adancime, d: treapta.d, c: inc.jocLateral, tija: treapta.tija,
+          h, H: inc.fierastrau, g: inc.joc, sprijin: inc.sprijin === 'fund' ? 'fund' as const : 'umar' as const,
+          decupat: inc.dop === 'decupat', gaura: esteGaura(op),
         },
-      }),
+        taiata: inc.dop === 'decupat' ? h - (inc.punti ?? PUNTI_DOP_DREPT).grosime : Number.POSITIVE_INFINITY,
+      } : {
+        fel: 'drept' as const, cutie: { x0, y0, x1, y1 }, margine: m, dop: desenDop(f.figura.dop),
+        hartie: {
+          D: esteGaura(op) ? (doc.foi[0]?.stoc.grosime ?? op.adancime) : op.adancime, c: inc.jocLateral, h, H: inc.fierastrau,
+          g: esteGaura(op) ? 0 : inc.joc,
+          sprijin: inc.sprijin === 'fata' ? 'fata' as const : 'fund' as const, decupat: inc.dop === 'decupat', gaura: esteGaura(op),
+        },
+      },
     });
   }
   return { ok: true, dopuri };

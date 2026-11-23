@@ -21,6 +21,7 @@ import { exporta } from '../post/export.ts';
 import { fundFoii, partiDesprinse } from '../sim/desprinse.ts';
 import { potrivireaV } from '../sim/potrivire.ts';
 import { potrivireaDreapta } from '../sim/potrivireDreapta.ts';
+import { potrivireaTrepte } from '../sim/potrivireTrepte.ts';
 import { pregatesteProgram, type ProgramSimulat } from '../sim/program.ts';
 import { despacheteaza, impacheteaza, transferabileProgram } from './impachetare.ts';
 import {
@@ -178,7 +179,7 @@ export function calculeazaSimularea(doc: Document, dop?: number): RaspunsSimular
   if (!foaie) return { ok: false, motiv: 'documentul n-are foaie' };
   const d = dopurileFoii(doc, 0);
   const cuDopuri = d.ok
-    ? { dopuri: d.dopuri.map((x) => ({ element: x.element, semifabricat: x.semifabricat, sectiune: x.potrivire !== undefined })) }
+    ? { dopuri: d.dopuri.map((x) => ({ element: x.element, semifabricat: x.semifabricat })) }
     : { dopuri: [], motivDopuri: d.motiv };
   if (dop === undefined) {
     const job = programFoii(doc, REGIM_IMPLICIT, 0);
@@ -199,14 +200,13 @@ export function calculeazaSimularea(doc: Document, dop?: number): RaspunsSimular
 /**
  * „Împreună (secțiunea)” (ADR 0179): dopul cu numărul `dop` (de la 0) întors în locașul lui, pe programele simulării (fără
  * supracursă, ca vederea 3D): locașul din programul foii, dopul din al lui. Dopul în V, cu `potrivireaV`; cel cu pereți drepți
- * (felia 12.1↑e-3), cu `potrivireaDreapta`; cel în trepte, refuzat deocamdată (12.1↑e-4).
+ * (felia 12.1↑e-3), cu `potrivireaDreapta`; cel în trepte (felia 12.1↑e-4), cu `potrivireaTrepte`.
  */
 export function calculeazaPotrivirea(doc: Document, dop: number): RaspunsPotrivire {
   const d = dopurileFoii(doc, 0);
   if (!d.ok) return { ok: false, motiv: d.motiv };
   const x = d.dopuri[dop];
   if (!x) return { ok: false, motiv: `dopul ${dop + 1} nu mai e în document` };
-  if (!x.potrivire) return { ok: false, motiv: `dopul ${dop + 1}: potrivirea simulată a dopului în trepte nu e încă` };
   // Programul foii, ca vederea 3D: cu urechi „unde ține” pe foaie (ADR 0211, b), în două treceri.
   const job = programFoii(doc, REGIM_IMPLICIT, 0);
   if (!job.ok) return { ok: false, motiv: job.motiv };
@@ -217,7 +217,9 @@ export function calculeazaPotrivirea(doc: Document, dop: number): RaspunsPotrivi
   const grosimeDop = x.semifabricat.grosimeMinima;
   return {
     ok: true,
-    potrivire: x.potrivire.fel === 'v' ? potrivireaV(locas, p, { ...x.potrivire, grosimeDop }) : potrivireaDreapta(locas, p, { ...x.potrivire, grosimeDop }),
+    potrivire: x.potrivire.fel === 'v' ? potrivireaV(locas, p, { ...x.potrivire, grosimeDop })
+      : x.potrivire.fel === 'drept' ? potrivireaDreapta(locas, p, { ...x.potrivire, grosimeDop })
+        : potrivireaTrepte(locas, p, { ...x.potrivire, grosimeDop }),
   };
 }
 

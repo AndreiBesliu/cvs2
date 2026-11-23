@@ -180,7 +180,7 @@ export function Vedere3D({ doc, marime, zona, onInchide }: Props): ReactElement 
   // Elementele foii după id-ul lor în lume, ca titlul fiecărui dop să-și numească incrustația (ADR 0178, precizarea din
   // 21.11); doar cât foaia are dopuri.
   const lume = useMemo(() => (dopuri.lista.length > 0 ? new Map(elementeFoaie(doc, 0).map((e) => [e.idLume, e])) : null), [doc, dopuri.lista]);
-  // „Împreună (secțiunea)” (ADR 0179): pornită doar pe un dop în V; potrivirea lui, măsurată în workerul CAM.
+  // „Împreună (secțiunea)” (ADR 0179): pe dopul ales; potrivirea lui, măsurată în workerul CAM.
   const [impreuna, setImpreuna] = useState(false);
   const [potrivire, setPotrivire] = useState<
     { readonly fel: 'nimic' | 'calcul' } | { readonly fel: 'gata'; readonly p: Potrivire } | { readonly fel: 'refuz'; readonly motiv: string }
@@ -507,13 +507,12 @@ export function Vedere3D({ doc, marime, zona, onInchide }: Props): ReactElement 
   const nr = (v: number): string => textNumar(Math.round(v * 1000) / 1000, limba === 'ro');
   // Dopul arătat (ADR 0178), numărat de la 1, ca fișierul lui; null pe foaie.
   const dop = alegere === 'foaie' ? null : alegere + 1;
-  // „Împreună (secțiunea)” (ADR 0179 §1): pe un dop în V sau cu pereți drepți fără trepte; altfel oprită, cu motivul pe titlu
-  // (rămâne în tab, ca să-l spună).
-  const dopAles = alegere === 'foaie' ? null : dopuri.lista[alegere] ?? null;
-  const poateImpreuna = dopAles?.sectiune === true;
-  const titluImpreuna = alegere === 'foaie' ? t('editare.3d.impreuna.alege') : poateImpreuna ? t('editare.3d.impreuna.titlu') : t('editare.3d.impreuna.trepte');
+  // „Împreună (secțiunea)” (ADR 0179 §1): pe orice dop ales (în V, cu pereți drepți sau, din felia 12.1↑e-4, în trepte); pe
+  // foaie, oprită, cu motivul pe titlu (rămâne în tab, ca să-l spună).
+  const poateImpreuna = alegere !== 'foaie' && dopuri.lista[alegere] !== undefined;
+  const titluImpreuna = poateImpreuna ? t('editare.3d.impreuna.titlu') : t('editare.3d.impreuna.alege');
   const comutaImpreuna = (): void => {
-    if (!poateImpreuna || alegere === 'foaie') return;
+    if (!poateImpreuna) return;
     if (impreuna) {
       opresteImpreuna();
       return;

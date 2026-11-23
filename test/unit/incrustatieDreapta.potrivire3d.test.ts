@@ -10,7 +10,6 @@
  * - controlul pe hârtie: o valoare scrisă diferit de programe (c cu 0,05, D, h, H cu 0,1) face roșu doar rândul ei;
  * - gaura prin foaie (ADR 0175): D e grosimea foii; dopul decupat iese H peste placă, cel ridicat pe față e cât foaia, fără joc
  *   sub el;
- * - dopul în trepte e refuzat, cu motivul (felia 12.1↑e-4), iar în lista vederii n-are secțiunea;
  * - secțiunile pe hârtie, pe câte un caz al fiecărui sprijin: pe față, fundul la −D, dopul la −(D − g), între plăci 0 (fața
  *   coborâtă pe fața plăcii); pe fund, fundul și dopul la −D, fața coborâtă a dopului la H peste placă; decupat, dopul neîntors
  *   pe fundul locașului, fără nimic în jurul lui, cu fața lui de sus la H peste placă.
@@ -25,11 +24,10 @@ import type { Document } from '../../src/model/document.ts';
 import { incarca } from '../../src/model/incarcare.ts';
 import { potrivireaDreapta, type PotrivireDreapta } from '../../src/sim/potrivireDreapta.ts';
 import { pregatesteProgram } from '../../src/sim/program.ts';
-import { calculeazaExport, programSimulare } from '../../src/ui/actiuniExportCalcul.ts';
+import { calculeazaExport } from '../../src/ui/actiuniExportCalcul.ts';
 import { cutieDesen, type PunctO } from '../oracles/incrustatie.ts';
 import { masoaraPotrivireaDreapta, type MasuraDreapta } from '../oracles/incrustatieDreapta.ts';
 import { CAZURI_DREAPTA, type CazDreapta, type FrezaPlataCaz } from '../oracles/incrustatieDreapta.cazuri.ts';
-import { CAZURI_TREPTE } from '../oracles/incrustatieDreapta.trepte.cazuri.ts';
 import type { SculaOracol } from '../oracles/simulare.ts';
 import { documentDrept } from './ajutor-incrustatie.ts';
 
@@ -157,35 +155,6 @@ test('controlul negativ: dopul cu vârfuri ascuțite (desenul micșorat cu c, co
   // Secțiunea trece prin locul primului rând roșu din tabel (ADR 0179, felia 12.1↑e-3 §5) și îl marchează.
   const primul = [p.randuri.joc, p.randuri.dop, p.randuri.adancime, p.randuri.inaltime, p.randuri.sprijin].find((r) => !r.ok);
   assert.ok(primul?.unde && p.sectiune.marcaj === primul.unde[0] && Math.abs(p.sectiune.y - primul.unde[1]) <= p.celula, `secțiunea prin locul diferenței: ${unde}`);
-});
-
-test('dopul în trepte e refuzat, cu motivul (felia 12.1↑e-4); în lista vederii, fără secțiune', async () => {
-  const c = CAZURI_TREPTE[0]!;
-  const noduri = c.desen.map((pol, k) => ({ tip: 'element', id: `a${k}`, matrice: { ...I }, forma: cale(pol) }));
-  const [prima, ...rest] = c.locas;
-  const doc = deschis({
-    schema: 26, rev: 0,
-    piese: [{
-      id: 'p', radacina: { tip: 'grup', id: 'r', matrice: { ...I }, copii: noduri },
-      operatii: [{
-        id: 'inc', tip: 'buzunar', noduri: noduri.map((n) => n.id), latura: 'interior', sens: 'urcare', adancime: c.gaura ? 3 : c.D, pas: c.pas,
-        scula: sculaDoc(prima!), pasLateral: prima!.pasLateral, urechi: null, rampa: null, intrari: null, colturi: null,
-        ...(rest.length > 0 ? { rest: rest.map((r) => ({ scula: sculaDoc(r), pasLateral: r.pasLateral })) } : {}),
-        incrustatie: {
-          fel: 'drept', jocLateral: c.c, dop: c.dop, sprijin: c.sprijin, joc: c.g, fierastrau: c.H, margine: c.margine,
-          treapta: { adancime: c.d, latime: c.s, ...(c.spre === 'exterior' ? { spre: 'exterior' } : {}) }, ...(c.gaura ? { locas: 'gaura' } : {}),
-        },
-      }],
-    }],
-    foi: [{ id: 'f1', stoc: { latime: 200, inaltime: 150, grosime: c.gaura ? c.D : 18 }, instante: [{ id: 'i', piesa: 'p', x: 0, y: 0, rotire: 0 }] }],
-  });
-  assert.deepEqual(calculeazaPotrivirea(doc, 0), { ok: false, motiv: 'dopul 1: potrivirea simulată a dopului în trepte nu e încă' });
-  const d = programeDopuriDrepte(doc, REGIM_IMPLICIT);
-  if (!d.ok) assert.fail(d.motiv);
-  assert.equal(d.dopuri[0]!.potrivire, undefined, 'dopul în trepte n-are încă potrivirea simulată');
-  const s = await programSimulare(doc);
-  if (!s.ok) assert.fail(s.motiv);
-  assert.deepEqual(s.dopuri.map((x) => x.sectiune), [false], 'în lista vederii, dopul în trepte n-are „Împreună (secțiunea)”');
 });
 
 test('secțiunea dopului pe față, pe hârtie: pe mijloc, fundul la −D, dopul la −(D − g); la margine, fața coborâtă pe placă', () => {
