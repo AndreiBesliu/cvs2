@@ -6,8 +6,68 @@
         "ro": "Planifici circuite de trenuleț din lemn, cu fișierele CNC, și faci piese de printat 3D: cărămizi LEGO, roți dințate sau cu anvelopă, fulii și forme din cvs2.",
         "en": "Plan wooden train tracks with their CNC files, and make 3D-printable parts: LEGO bricks, gears, wheels with tyres, pulleys and shapes from your cvs2 drawing."
       },
-      "versiune": "18.20.0",
-      "continut": "99e952ace45d5b987247048ec365ce8dbd95a2176da8222a59d2bc92236e5753"
+      "despre": {
+        "ro": "Easy 3Draw are două părți. În 2D planifici un circuit de trenuleț din lemn: tragi piesele dintr-un capăt în altul, vezi trenul mergând și exporți fișierele CNC ale plăcilor, cu lista de piese. În 3D faci piese compatibile LEGO pentru imprimantă: cărămizi și plăci, legături, roți dințate, conice și cu anvelopă, fulii, șenile și elice, plus forme trimise din desenul cvs2. Primești STL-ul gata așezat pe pat. Circuitele și listele rămân în browserul tău.",
+        "en": "Easy 3Draw has two parts. In 2D you plan a wooden train track: you drag pieces from one end to the next, watch the train run and export the CNC files of the boards, with the parts list. In 3D you make LEGO-compatible parts for a 3D printer: bricks and plates, joints, gears, bevel gears and wheels with tyres, pulleys, tracks and propellers, plus shapes sent from your cvs2 drawing. You get the STL already laid out on the bed. Your layouts and lists stay in your browser."
+      },
+      "autor": "CNC Vector Studio",
+      "noutati": [
+        {
+          "versiune": "18.21.0",
+          "ro": "Semnul extensiei: îl vezi în meniul Extensii, pe fila ei și în bibliotecă.",
+          "en": "The extension’s icon: you see it in the Extensions menu, on its tab and in the library."
+        },
+        {
+          "versiune": "18.20.0",
+          "ro": "Elicea de barcă, a doua piesă a filei „Elice”: 3–5 palete late, cu capac rotunjit, tipărită fără suport, cu „Fă perechea”.",
+          "en": "The boat propeller, the second piece of the “Propeller” tab: 3–5 wide blades, with a rounded cap, printed without supports, with “Make the pair”."
+        },
+        {
+          "versiune": "18.19.0",
+          "ro": "Elicele: fila nouă „Elice” din atelier, cu elicea din parametri, tipărită fără suport, cu prinderea LEGO și „Fă perechea”.",
+          "en": "Propellers: the new “Propeller” tab of the workshop, with a propeller from parameters, printed without supports, with the LEGO mount and “Make the pair”."
+        },
+        {
+          "versiune": "18.18.0",
+          "ro": "Câte o pictogramă pe fiecare buton al galeriilor din atelier.",
+          "en": "An icon on every button of the workshop galleries."
+        },
+        {
+          "versiune": "18.17.0",
+          "ro": "Căutarea pieselor: „Caută o piesă” găsește piesele din toate filele atelierului.",
+          "en": "Piece search: “Find a piece” finds pieces from all the workshop tabs."
+        },
+        {
+          "versiune": "18.16.0",
+          "ro": "Șenila, în fila Roți: zalele și pinioanele ei, cu montajul pe două pinioane.",
+          "en": "The track, in the Wheels tab: its links and sprockets, with the layout on two sprockets."
+        }
+      ],
+      "capturi": [
+        {
+          "nume": "1-circuit",
+          "alt": {
+            "ro": "Un circuit oval de trenuleț, în planul 2D",
+            "en": "An oval train track in the 2D plan"
+          }
+        },
+        {
+          "nume": "2-atelier",
+          "alt": {
+            "ro": "O cărămidă 2 × 4 în atelierul de piese 3D",
+            "en": "A 2 × 4 brick in the 3D parts workshop"
+          }
+        },
+        {
+          "nume": "3-roti",
+          "alt": {
+            "ro": "O roată dințată cu 24 de dinți, în fila Roți",
+            "en": "A 24-tooth gear in the Wheels tab"
+          }
+        }
+      ],
+      "versiune": "18.21.0",
+      "continut": "b15bf852b8a57878663b4b0bba2209879005f6281a67796e05afde68884ec696"
     }
   ]
 }

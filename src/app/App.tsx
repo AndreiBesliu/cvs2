@@ -222,7 +222,7 @@ const NICIO_VECINA: readonly FoaieVecina[] = [];
  * ferestrelor. Celelalte sunt ale desenului: din Mașina, tastele lor nu fac nimic, iar alese din paletă întorc întâi la
  * Proiectare.
  */
-const ORIUNDE: ReadonlySet<string> = new Set(['vedere.paleta', 'vedere.tema', 'vedere.aspect', 'vedere.freze', ...Object.values(DESCHIDE_FEREASTRA)]);
+const ORIUNDE: ReadonlySet<string> = new Set(['vedere.paleta', 'vedere.tema', 'vedere.aspect', 'vedere.freze', 'extensii.biblioteca', ...Object.values(DESCHIDE_FEREASTRA)]);
 /**
  * Fereastra extensiei deschise (ADR 0160 §A). Nu e în `aranjament.ferestre` (lista ferestrelor aplicației, verificată la
  * încărcare): există doar cât e deschisă o extensie, iar fila ei o pune gazda extensiilor, după ale aranjamentului.
@@ -636,6 +636,8 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
   const contextExtensii: ContextExtensii = {
     extensieForme: () => (extensie?.forme ? { nume: extensie.nume } : null),
     selectie: () => curenta.current.selectie,
+    // Modulul extensiilor (adus după prima randare) ascultă ancora: fereastra bibliotecii se deschide și ancora se șterge.
+    deschideBiblioteca: () => { location.hash = 'biblioteca'; },
     trimiteSelectia: () => {
       const trimite = extensie?.forme;
       if (!trimite) return;

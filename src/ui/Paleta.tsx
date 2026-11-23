@@ -51,6 +51,7 @@ const GRUPURI: ReadonlyArray<readonly [CheieSimpla, readonly string[]]> = [
   ['paleta.grup.istoric', ['istoric']],
   ['paleta.grup.selectie', ['selectie']],
   ['paleta.grup.vedere', ['vedere']],
+  ['paleta.grup.extensii', ['extensii']],
 ];
 
 /** Fără diacritice și fără majuscule: „sterge” găsește „Șterge selecția”. */

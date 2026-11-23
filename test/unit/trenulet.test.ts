@@ -85,7 +85,7 @@ test('pachetul: cvs2 îl citește ca la instalare; intrarea fără importuri, sc
   const { manifest, fisiere } = r.pachet;
   assert.deepEqual([manifest.id, manifest.intrare, manifest.stiluri, manifest.permisiuni], ['trenulet', 'index.js', ['trenulet.css'], ['stocare', 'descarcari', 'masina', 'cont', 'forme']]);
   const surse = scripturi();
-  assert.deepEqual([...fisiere.keys()].sort(), ['body.html', 'index.js', 'js/three.js', 'licente/three.txt', 'texte.en.json', 'trenulet.css', ...surse.map((s) => `js/${s.nume}`)].sort());
+  assert.deepEqual([...fisiere.keys()].sort(), ['body.html', 'index.js', 'js/three.js', 'licente/three.txt', 'pictograma.svg', 'texte.en.json', 'trenulet.css', ...surse.map((s) => `js/${s.nume}`)].sort());
   const text = (c: string): string => new TextDecoder().decode(fisiere.get(c));
   const intrare = text('index.js');
   assert.doesNotMatch(intrare, /^\s*import\b|\bimport\s*\(/m);

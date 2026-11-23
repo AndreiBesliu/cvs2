@@ -16,9 +16,10 @@
  * - `sw.js` (workerul însuși) și bancul vizual (`/banc/`, doar pe instanța de test);
  * - documentația admin (`documentatie/`, ADR 0048: roadmap-ul, catalogul, documentele), doar online ca pagina `/admin`
  *   care o cere la deschiderea filei; ~0,9 MB care n-au ce căuta pe discul fiecărui om;
- * - biblioteca extensiilor (`extensii/`, ADR 0230: catalogul și pachetele, cu numele scris de construcția ei): un pachet
- *   vine doar la cine îl instalează, iar extensia instalată stă apoi în IndexedDB și merge offline; ~410 kB pe discul
- *   fiecărui om, și al celor care nu-l folosesc.
+ * - biblioteca extensiilor (`extensii/`, ADR 0230: catalogul și pachetele, cu numele scris de construcția ei; din ADR
+ *   0231, și semnele și capturile extensiilor): un pachet vine doar la cine îl instalează, iar extensia instalată stă apoi
+ *   în IndexedDB și merge offline (cu semnul ei, care e în pachet); imaginile se cer doar când se deschide biblioteca;
+ *   ~670 kB pe discul fiecărui om, și al celor care nu le folosesc.
  *
  * Fonturile textului (`fonturi/*.ttf`, cu licența lor, ADR 0105) intră: textul se scrie și fără rețea, în atelier.
  * Manualul utilizatorului (`manual/ro.json`, `manual/en.json`, ADR 0058) intră: se citește și fără rețea, ca aplicația. La
@@ -38,7 +39,7 @@
  * Orice alt fișier e „necunoscut”: poarta pică pe el, ca un fel nou de fișier (un font, o imagine în `assets/`) să fie
  * decis aici, nu lăsat tăcut în afara precache-ului.
  */
-import { DIR_BIBLIOTECA, esteNumePachetBiblioteca, FISIER_CATALOG_BIBLIOTECA } from './biblioteca.ts';
+import { DIR_BIBLIOTECA, esteNumeFisierBiblioteca, FISIER_CATALOG_BIBLIOTECA } from './biblioteca.ts';
 
 /**
  * Modulele doar online, după numele bucății lor (`assets/<nume>-<amprentă de 8>.js|css`): `/admin`, testul pas cu pas, mașina
@@ -56,7 +57,7 @@ export function motivPrecache(cale: string): MotivPrecache {
   if (cale.startsWith('banc/')) return 'banc';
   if (cale.startsWith('documentatie/')) return 'documentatie';
   if (cale === FISIER_CATALOG_BIBLIOTECA) return 'biblioteca';
-  if (cale.startsWith(`${DIR_BIBLIOTECA}/`) && esteNumePachetBiblioteca(cale.slice(DIR_BIBLIOTECA.length + 1))) return 'biblioteca';
+  if (cale.startsWith(`${DIR_BIBLIOTECA}/`) && esteNumeFisierBiblioteca(cale.slice(DIR_BIBLIOTECA.length + 1))) return 'biblioteca';
   if (/^manual\/(?:ro|en)\.json$/.test(cale)) return 'precache';
   // Dicționarul controlerelor (`coduri/ro.json`) și al fiecărei familii de imprimante (`coduri/creality-k1.ro.json`, 3.6v).
   if (/^coduri\/(?:[a-z0-9]+(?:-[a-z0-9]+)*\.)?(?:ro|en)\.json$/.test(cale)) return 'precache';

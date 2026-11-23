@@ -108,11 +108,23 @@ test('„Trimite la <extensie>”: fără extensie care primește forme, apoi f�
   if (!a) return;
   let trimise = 0;
   const ctx = (ext: boolean, sel: readonly string[]): ContextExtensii => ({
-    extensieForme: () => (ext ? { nume: 'Salut' } : null), selectie: () => sel, trimiteSelectia: () => { trimise++; },
+    extensieForme: () => (ext ? { nume: 'Salut' } : null), selectie: () => sel, trimiteSelectia: () => { trimise++; }, deschideBiblioteca: () => {},
   });
   assert.equal(a.activa(ctx(false, ['ia'])), 'motiv.fara-extensie-forme');
   assert.equal(a.activa(ctx(true, [])), 'motiv.nimic-ales');
   assert.equal(a.activa(ctx(true, ['ia'])), true);
   a.ruleaza(ctx(true, ['ia']));
   assert.equal(trimise, 1);
+});
+
+test('„Biblioteca extensiilor”, în paleta de comenzi (ADR 0231 §B.6): mereu activă, și fără nicio extensie; cere fereastra bibliotecii', () => {
+  const a = ACTIUNI_EXTENSII.find((x) => x.id === 'extensii.biblioteca');
+  assert.ok(a);
+  if (!a) return;
+  let cerute = 0;
+  const ctx: ContextExtensii = { extensieForme: () => null, selectie: () => [], trimiteSelectia: () => {}, deschideBiblioteca: () => { cerute++; } };
+  assert.equal(a.activa(ctx), true);
+  a.ruleaza(ctx);
+  assert.equal(cerute, 1);
+  assert.equal(a.eticheta, 'actiune.biblioteca-extensii');
 });

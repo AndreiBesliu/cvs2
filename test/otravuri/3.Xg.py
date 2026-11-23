@@ -82,21 +82,12 @@ o('H01', 'scripts/firebase-json.ts', "{ source: '/extensii/catalog.json', header
   'catalogul ținut o oră în cache-ul browserului')
 
 # Interfața (e2e)
-o('E01', EX, '            if (s.permisiuniNoi.length > 0) alege(', '            if (true) alege(', 'e2e',
-  'actualizarea fără nimic nou trece totuși prin fereastră')
-o('E02', EX, '            if (s.permisiuniNoi.length > 0) alege(', '            if (false) alege(', 'e2e',
-  'o versiune care cere ceva nou se instalează dintr-un clic, fără fereastră')
-o('E03', EX, "          onClick={() => { alege(() => { setCerere({ fel: 'biblioteca', id: r.id, rand: r, dinLink: false }); }); }}>\n          {t('extensii.biblioteca.instaleaza')}",
-  "          onClick={() => { void actualizeazaDinMeniu(r); }}>\n          {t('extensii.biblioteca.instaleaza')}", 'e2e',
-  '„Instalează” din meniu descarcă și instalează fără fereastră')
 o('E04', EX, '    setMeniu(r ? { top: Math.round(r.bottom + 4), left: Math.max(4, Math.round(r.left)) } : { top: 48, left: 8 });\n    incarcaBiblioteca();',
   '    setMeniu(r ? { top: Math.round(r.bottom + 4), left: Math.max(4, Math.round(r.left)) } : { top: 48, left: 8 });', 'e2e',
   'catalogul nu se mai cere la deschiderea meniului')
 o('E05', EX, "        history.replaceState(history.state, '', `${location.pathname}${location.search}`);\n        if (/^[a-z0-9-]{1,40}$/.test(id))",
   '        if (/^[a-z0-9-]{1,40}$/.test(id))', 'e2e',
   'linkul bibliotecii rămâne în adresă')
-o('E06', EX, "{r && s?.fel === 'actualizeaza' && <small", '{false && <small', 'e2e',
-  'extensia instalată nu mai spune că are o actualizare')
 o('E07', IN, '      <p className="avertisment" data-testid="extensii-din-afara">{t(\'extensii.instalare.din-afara\')}</p>\n', '', 'e2e',
   'un pachet din fișier nu mai spune că vine din afara bibliotecii')
 o('E08', IN, "onClick={() => { onGata(e.id, e); }}>{t('extensii.instalare.deschide')}", "onClick={() => { onGata(e.id); }}>{t('extensii.instalare.deschide')}", 'e2e',
@@ -104,12 +95,8 @@ o('E08', IN, "onClick={() => { onGata(e.id, e); }}>{t('extensii.instalare.deschi
 o('E09', EX, "    setProgres((p) => ({ ...p, [rand.id]: { fel: 'gata', versiune: rand.versiune } }));\n    reincarca();",
   "    setProgres((p) => ({ ...p, [rand.id]: { fel: 'gata', versiune: rand.versiune } }));", 'e2e',
   'după actualizarea din meniu, lista arată versiunea veche')
-o('E10', IN, "<small>{x.sursa.fel === 'biblioteca'", "<small>{x.sursa.fel === 'fisier'", 'e2e',
-  'gestionarea nu mai spune „din biblioteca cvs2”')
 o('E11', IN, '      if (r.defect) onDefect(new Error(', '      if (false) onDefect(new Error(', 'e2e',
   'amprenta greșită nu ajunge în jurnal')
-o('E12', EX, "data-extensii=\"biblioteca-reincearca\" onClick={() => { incarcaBiblioteca(); }}>", "data-extensii=\"biblioteca-reincearca\" onClick={() => { }}>", 'e2e',
-  '„Reîncearcă” nu mai cere catalogul')
 
 SETURI = {
     'biblioteca': ['test/unit/extensii.biblioteca.test.ts', 'test/unit/biblioteca.constructie.test.ts'],
