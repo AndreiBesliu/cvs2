@@ -13174,6 +13174,30 @@ din sesiunea elicelor: „cand e verde fa unirea”
 - **La owner:** fereastra exportului (`#11`), verificarea juridică a utilizării aplicației înaintea live-ului, „cine
   unește în `main`”; canalul `foi`, de încercat.
 
+## 2026-11-24 — ADR 0302 și 16.A↑h-1: fereastra „Frezele mele” ca listă (Model: Claude Opus 5.5)
+
+**Prompt:** „vreau sa adaugi lista completa cu toate configuratiile posibile, de exemplu, am un fisier exportat din artcam, cu
+toate frezele de acolo. vreau ca frezele sa fi o lista ca in artcam, si doar daca vrea userul si i se pare mai ok, atunci sa
+comute pe configuratorul actual, care sa poata confiigura orice tip de freza, inclusiv pe cele desenate de user sau adaugate
+custom” (owner-ul, cu `FREZE.tdb`), apoi, la cele cinci întrebări: „Da, 1a–5a”. **Started:** 24.11, 12:40.
+
+- **ADR 0302** (`ab36a68c` propus, `d0fa2dde` acceptat): `FREZE.tdb` e baza de scule ArtCAM, binară și nedocumentată, cu
+  conținutul ArtCAM și al producătorilor: nu se citește și nu se copiază (`CLAUDE.md`). În locul ei: un catalog propriu de
+  feluri și mărimi standard (mm și țoli), biblioteca ca listă cu fișa doar de citit și configuratorul la cerere, grupurile
+  omului, felurile fără CAM „în curând”. Schimbă ADR 0300 §2 și §3. Feliile, despărțite la acceptare: h-1 fereastra ca listă,
+  h-2 grupurile, h-3 catalogul, h-4 felurile noi.
+- **16.A↑h-1** (`d535f1cd`, probele întărite `0acfc75b`): fișa frezei alese, cu „Editează”, „Duplică”, „Șterge…”; editorul
+  la „Editează” și „Freză nouă”, întoarcerea la fișă după „Salvează”, „Renunță” și „←”; comutatorul „Listă / Configurator”
+  (`cncvs2.freze.vedere`); focusul; pe drum, textul de sus și nota valorilor la zi cu 16.A↑b-2 și cota siluetei cu virgula
+  în română; manualul (ro, en).
+- **Probele** (întâi, în Edge): `freze.spec.ts` 15 / 15 și `frezeTaiere.spec.ts`, `manual.spec.ts` (24 / 24); proba pe
+  emulatoare trece acum prin fișă. **Otrăvurile** (`test/otravuri/16.A-h1.py`): 16 / 16.
+- **`main` adus** (`8cb76d64`: cotele 10.4↑a-1, elicele 3.Tt, reparația de noapte); ciocnirile doar în DEVLOG, în indexul ADR
+  și în registrul otrăvurilor, cu ambele părți.
+- **Mărimea:** pornirea 110,0 kB (cu ușa 114,7, cu Atelierul 115,0 / 120), totalul 819,0 / 900 cu `main` adus (`main` `64a63b48`: 816,1; 16.A↑b-2, 16.A↑a-2 și
+  16.A↑h-1 împreună +2,9, din care h-1 ~+0,7). Nimic pe
+  server; documentul nu se schimbă. **Completed:** 24.11, 13:20.
+
 ## 2026-11-24 — Felia 3.Xj: căutarea și categoriile în biblioteca extensiilor (ADR 0233) (sesiune cloud)
 
 **Prompt:** „ok, porneste cautarea si categoriile”. **Started:** 24.11, 14:30. **Completed:** 24.11, 16:30.
@@ -13198,30 +13222,6 @@ din sesiunea elicelor: „cand e verde fa unirea”
   bibliotecii și ale extensiilor, verzi local, cu `main` (`64a63b4`) adus. Otrăvurile 78 / 78, în clonă (la prima
   rulare, 76: două probe întărite). Pornirea neschimbată (109,9 kB), totalul 814,3 → 815,6 / 900 kB.
 - **Canalul `biblioteca`:** publicat din `1c21640`.
-
-## 2026-11-24 — ADR 0302 și 16.A↑h-1: fereastra „Frezele mele” ca listă (Model: Claude Opus 5.5)
-
-**Prompt:** „vreau sa adaugi lista completa cu toate configuratiile posibile, de exemplu, am un fisier exportat din artcam, cu
-toate frezele de acolo. vreau ca frezele sa fi o lista ca in artcam, si doar daca vrea userul si i se pare mai ok, atunci sa
-comute pe configuratorul actual, care sa poata confiigura orice tip de freza, inclusiv pe cele desenate de user sau adaugate
-custom” (owner-ul, cu `FREZE.tdb`), apoi, la cele cinci întrebări: „Da, 1a–5a”. **Started:** 24.11, 12:40.
-
-- **ADR 0302** (`ab36a68c` propus, `d0fa2dde` acceptat): `FREZE.tdb` e baza de scule ArtCAM, binară și nedocumentată, cu
-  conținutul ArtCAM și al producătorilor: nu se citește și nu se copiază (`CLAUDE.md`). În locul ei: un catalog propriu de
-  feluri și mărimi standard (mm și țoli), biblioteca ca listă cu fișa doar de citit și configuratorul la cerere, grupurile
-  omului, felurile fără CAM „în curând”. Schimbă ADR 0300 §2 și §3. Feliile, despărțite la acceptare: h-1 fereastra ca listă,
-  h-2 grupurile, h-3 catalogul, h-4 felurile noi.
-- **16.A↑h-1** (`d535f1cd`, probele întărite `0acfc75b`): fișa frezei alese, cu „Editează”, „Duplică”, „Șterge…”; editorul
-  la „Editează” și „Freză nouă”, întoarcerea la fișă după „Salvează”, „Renunță” și „←”; comutatorul „Listă / Configurator”
-  (`cncvs2.freze.vedere`); focusul; pe drum, textul de sus și nota valorilor la zi cu 16.A↑b-2 și cota siluetei cu virgula
-  în română; manualul (ro, en).
-- **Probele** (întâi, în Edge): `freze.spec.ts` 15 / 15 și `frezeTaiere.spec.ts`, `manual.spec.ts` (24 / 24); proba pe
-  emulatoare trece acum prin fișă. **Otrăvurile** (`test/otravuri/16.A-h1.py`): 16 / 16.
-- **`main` adus** (`8cb76d64`: cotele 10.4↑a-1, elicele 3.Tt, reparația de noapte); ciocnirile doar în DEVLOG, în indexul ADR
-  și în registrul otrăvurilor, cu ambele părți.
-- **Mărimea:** pornirea 110,0 kB (cu ușa 114,7, cu Atelierul 115,0 / 120), totalul 819,0 / 900 cu `main` adus (`main` `64a63b48`: 816,1; 16.A↑b-2, 16.A↑a-2 și
-  16.A↑h-1 împreună +2,9, din care h-1 ~+0,7). Nimic pe
-  server; documentul nu se schimbă. **Completed:** 24.11, 13:20.
 
 ## 2026-11-24 — Sesiunea principală în cloud: rapidul lotului 17, oprit de limita de 10 minute; limita unei felii, 15 minute (Model: Claude Fable 5.2)
 
@@ -13379,6 +13379,26 @@ admin, care apare daca esti logat ca admin”
   încărcarea a zece lucrători, clicurile ajung după cele 2 s ale răririi și repornirea se face pe loc). Nevăzută în
   CI; proba depinde acolo de timp.
 
+## 2026-11-24 — Sesiunea principală în cloud: oracolul rampelor, împărțit în șase fișiere (Model: Claude Fable 5.2)
+
+**Prompt:** „ok, imparte oracolul rampelor in mai multe fisiere”
+**Started:** 24.11, 17:15. **Completed:** 24.11, 17:23 (pe ramură; în `main` după rapid).
+
+- **Ce era:** `test/unit/intrari-rampa.corpus.oracol.test.ts`, un singur test de 6 min 19 s (lipirea ADR 0031 pe
+  corpusul 2.5b cu rampe la întâmplare), care scosese o felie a rapidului peste limita ei după lotul 17.
+- **Ce e acum:** judecata fiecărui caz, mutată neschimbată în `test/unit/ajutor-intrari-rampa-corpus.ts`
+  (`lipesteParte`); șase fișiere, `intrari-rampa.corpus.<n>.oracol.test.ts`, fiecare cu partea ei de corpus (cazul k
+  în partea (k mod 6) + 1).
+- **Măsurat, în container:** 338 de cazuri; părțile țin 55, 60, 30, 63, 61 și 55 s; toate șase, în paralel, 2 min 11 s.
+  Numărătorile, pe tot corpusul: 199 de programe, 183 cu rampă și intrări pe aceeași operație, 1 554 de treceri cu
+  rampa pe intrare, 84 de bucle omise, 12 refuzuri prezise, 1 513 punți judecate; nicio încălcare.
+- **Pragurile:** cele ale testului întreg (60, 40, 200, 5, 5, 100) se cer pe părți, fiecare parte cu partea ei din
+  prag, pe măsura a ce numără (rotunjită în sus): sumele sunt 62, 42, 204, 9, 8, 104. Ambele laturi, în fiecare parte.
+- **Paza împărțirii** (în partea 1): exact șase fișiere; părțile acoperă corpusul întreg, fiecare caz o dată; suma
+  minimelor nu coboară sub pragurile vechi. Otrăvuri, de mână, 4 / 4: o parte fără fișier, toate părțile cu cazurile
+  primei, un minim slăbit, cinci părți cu șase fișiere.
+- **Probele:** 7 / 7 (șase părți și paza). Nicio listă de otrăvuri nu numea fișierul vechi.
+
 ## 2026-11-24 — Sesiunea principală în cloud: a nouăsprezecea unire (frezele: b-2, a-2, h-1, h-2; unealta Cote, 10.4↑a-2) (Model: Claude Fable 5.2)
 
 **Prompt:** rapoartele liniilor frezelor („gata de unit”, PR-ul #22: `d0fa2dde`, apoi `ea2b8111`) și cotelor (`1500e4b3`),
@@ -13421,3 +13441,26 @@ separat […] Ține de menținerea CI-ului verde, nu cere cuvântul owner-ului�
   browser (două reporniri în aceeași clipă sunt o singură refacere a cadrului) și e prinsă de proba unitară.
 - Aplicația nu se schimbă: nimic în `src/`.
 
+## 2026-11-24 — Sesiunea principală în cloud: a douăzecea unire (3.Xj, căutarea și categoriile din bibliotecă; oracolul rampelor împărțit) (Model: Claude Fable 5.2)
+
+**Prompt:** raportul liniei bibliotecii („3.Xj e gata de unit”, PR-ul #24), la ordinul în vigoare „unește ce se poate”;
+„ok, imparte oracolul rampelor in mai multe fisiere”
+**Started:** 24.11, 17:40. **Completed:** unirea în `main`, 24.11, 18:27; publicarea pe test, la rândul ei.
+
+- **Lotul, pe `unire-2411v`** (din `7312d685`): oracolul rampelor împărțit (`b491853b`, în `b2a56e23`) și 3.Xj
+  (`c11a1c7f`, în `049c5dda`). Ciocnirile: `CLAUDE.md` și DEVLOG (două decizii adăugate în același loc), indexul
+  liniilor (rândul bibliotecii), catalogul controalelor (scris din nou: 629 de nume). Local, pe arborele unit:
+  tipurile, regulile de import (21), traducerile (1 031), biblioteca extensiilor la zi; e2e 42 / 42 (căutarea,
+  extensiile, comenzile foii, butonul Admin, cotele).
+- **Porțile, în CI:** completul lotului pe `049c5dda` (45426956640, verde la prima trecere, 53 min): unit 10 258 / 0 (12 sărite, pe Linux), e2e 741 / 741, funcțiile pe emulatoare 136 / 136, paginile 57 / 57;
+  rapidul, verde pe `049c5dda` (45426960549); completul liniei, verde pe `51ca1a5` (45413236557). Pornirea 110,2 kB (plafonul 120), totalul 831,8 / 900 kB, `/admin` 138,2 / 200, contul 30,3 / 32.
+  Nimic pe server.
+- **Documentele:** decizia în `CLAUDE.md`, cu rândul de stare al lui 3.Xj; indexul liniilor; starea din
+  `docs/linii/principala.md`.
+- **Rapidul oracolului împărțit** (45425076024, pe `b491853b`): feliile 2:46, 4:34, 6:15, 6:44, 7:31 și 9:20. O
+  parte a oracolului rampelor ține cel mult 1 min 42 s în CI (runnerele sunt cam de două ori mai lente decât
+  containerul). Felia de 9:20 e ținută de alte teste dintr-un singur test: „căile netede din multe cubice…” (258 s) și
+  „poarta de acum și cea de dinainte de ADR 0032…” (195 s). Limita de 15 minute rămâne.
+- **Loturile dinainte:** al șaptesprezecelea și al optsprezecelea, pe test din 17:50 (`29ef7e44`; completul pe `main`
+  45417561144, verde: unit 10 190 / 0, e2e 707 / 707, funcțiile 136 / 136, paginile 57 / 57; proba de fum, bună).
+  Loturile 19–21 (`7312d685`): completul pe `main` (45436221341) rula la unire.
