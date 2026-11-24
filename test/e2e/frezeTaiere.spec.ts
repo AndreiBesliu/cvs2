@@ -1,5 +1,5 @@
 /**
- * Freza din bibliotecă în secțiunea Tăierea (ADR 0300 §4, felia 16.A↑b-2a), în Edge: rândul „Freza” apare cât biblioteca are
+ * Freza din bibliotecă în secțiunea Tăierea (ADR 0300 §4, felia 16.A↑b-2), în Edge: rândul „Freza” apare cât biblioteca are
  * freze și arată doar frezele care merg pe toate formele alese (plate pe un profil, în V la V-carve, niciuna la un amestec);
  * aleasă, freza trece pe operație într-un pas de anulare, cu pasul ei, iar fereastra exportului o arată; numărul T ocupat de
  * altă freză se spune într-o notă; Atelierul (butoanele mari) are același rând, în panou, și cu fontul lat; în engleză.

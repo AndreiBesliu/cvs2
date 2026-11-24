@@ -211,7 +211,7 @@ export function PanouProprietati({
   const [refuzJur, setRefuzJur] = useState<{ readonly cheie: string; readonly motiv: string } | null>(null);
   // Refuzul ultimului − / + (felia 28.1↑d), pentru selecția de atunci.
   const [refuzPlus, setRefuzPlus] = useState<{ readonly cheie: string; readonly motiv: string } | null>(null);
-  // Biblioteca de freze (ADR 0300 §4, felia 16.A↑b-2a), pentru rândul „Freza” din Tăierea: a contului deschis sau cea fără
+  // Biblioteca de freze (ADR 0300 §4, felia 16.A↑b-2), pentru rândul „Freza” din Tăierea: a contului deschis sau cea fără
   // cont, citită din browser la prima deschidere a panoului (fără sincronizare: aceea e a ferestrei „Frezele mele”); și
   // refuzul ultimei freze alese, pentru selecția de atunci.
   const cheieFreze = cheieBibliotecii(useContTinut());

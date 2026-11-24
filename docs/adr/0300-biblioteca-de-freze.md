@@ -382,6 +382,46 @@ fereastra exportului refăcută, PR-ul `AndreiBesliu/cvs2#11`). Documentul răm�
 - **Nimic pe server până la unire;** la publicare merg funcția `freze`, regulile (neschimbate) și indexurile (scutirea câmpului
   `json`). Sincronizarea se încearcă pe adresa principală de test, după publicare (App Check).
 
+## Implementarea (16.A↑b-2)
+
+Pe 24.11.2026, în sesiunea cloud a liniei, pe ramura `wip/16.A-freze`, la „continua cu 16.A↑b-2” al owner-ului. Fereastra
+exportului refăcută (ADR 0290, PR-ul `AndreiBesliu/cvs2#11`) nu era unită, deci feliile lui 16.A↑b s-au renumerotat: **b-2**
+e secțiunea Tăierea (fără fereastra exportului, care se schimbă acolo), **b-3** rândurile exportului (lista „Freza” pe freza
+operației, pe fundul plat, pe frezele de rest, ale dopului și ale benzii; pe fereastra refăcută, după unirea ei), iar **b-4**
+nota „s-a schimbat în bibliotecă” (fostă b-3). Documentul rămâne v27; nimic pe server.
+
+- **Ce formă primește fiecare operație** (`src/model/formaFrezei.ts`, `motivFormaPeOperatie(tip, latura, forma)`): freza în
+  V (și cea de gravare) doar pe linie și în V-carve, V-carve-ul doar cu freza în V, freza plată în rest; aceeași regulă ca
+  lucrarea (ADR 0090, ADR 0092 §3). E o singură funcție, stabilită cu linia reliefului (ADR 0310 §13): bila își adaugă rândul
+  acolo (18.1↑c), toroidala și profilul desenat la fel (16.A↑e–f).
+- **Alegerea, pură** (`src/model/alegereFreza.ts`): frezele oferite sunt cele care merg pe toate operațiile alese, în ordinea
+  bibliotecii; copia din document (`sculaDinBiblioteca`) are T-ul, numele, diametrul, forma, originea (`biblioteca: { id,
+  rev }`), valorile de lucru (`regim`) și tăișul, dacă freza îl are; operațiile pieselor alese primesc copia ca freză
+  principală, pasul pe trecere al frezei și, la buzunar, pasul lateral din procentul ei (în jos la 0,001 mm, deci cel mult raza
+  la 50 %); adâncimea, frezele de rest, fundul plat, dopurile și restul câmpurilor rămân.
+- **Numărul T** (§4, regula ADR 0114 §5): al bibliotecii, cât nicio altă freză a proiectului nu-l are; altfel al unei freze
+  identice; altfel cel mai mic liber. Frezele principale ale operațiilor alese nu se numără (le înlocuiește alegerea), frezele
+  lor de rest, fundul plat și dopurile da. **Identitatea unei freze montate ține acum și turația** (`aceeasiFreza` în
+  `src/model/rol.ts`: diametrul, forma, turația din `regim` sau lipsa ei): același T cu două turații e refuzat la export (16.A↑b-1),
+  deci o turație diferită cere alt număr. Regula trece și la roluri (`numarFreza`, `numereFreze`): un rol personalizat cu
+  valori de lucru (copiat după 16.A↑b-1) nu mai poate primi T-ul unei freze cu altă turație.
+- **Rândul „Freza” din Tăierea** (`src/app/PanouProprietati.tsx`): cât biblioteca are freze, sub pas (și în Atelier, în aceeași
+  listă de valori); biblioteca e a contului deschis pe server sau cea fără cont (`cheieBibliotecii` din `frezeMele.ts`, aceeași
+  ca a ferestrei), citită din browser la prima deschidere a panoului, fără sincronizare (aceea rămâne a ferestrei, §7). Arată
+  freza din bibliotecă a tuturor operațiilor alese; altfel „Scrisă de mână” (aceeași freză pe toate) sau „— (diferite)”; fără
+  nicio freză potrivită, lista e oprită, cu „Nicio freză din bibliotecă nu se potrivește”. Aleasă, trece prin acțiunea
+  `document.aplica-operatii` (un pas de anulare, aceeași judecată a ușii). Un T altul decât al bibliotecii are nota lui („Aici e
+  T2: T1 e deja al altei freze din proiect.”). Exportă păstrează copia: `sculaScrisa` (`src/app/valoriOperatii.ts`) suprascrie
+  doar numărul, diametrul și forma.
+- **Probele:** unitare noi 9 (`test/unit/alegereFreza.test.ts`: forma pe operație, frezele oferite, copia, freza comună,
+  operațiile, pasul lateral, V-carve-ul cu fundul plat, numărul T cu frezele de rest, cu turația și cu aceeași freză pe două
+  numere, rolurile cu turația); în Edge 4 (`test/e2e/frezeTaiere.spec.ts`: rândul ascuns fără bibliotecă, plata pe profil,
+  alegerea într-un pas, exportul, anularea, reîncărcarea; V-carve-ul; amestecul și nota; Atelierul cu fontul lat, în engleză).
+  Otrăvurile: `test/otravuri/16.A-b2.py`, 22 / 22 (R02 scăpase: aceeași freză pe două numere; proba a primit cazul).
+- **Mărimea:** pornirea neschimbată (109,9 kB; cu ușa 114,5, cu Atelierul 114,8 / 120: harta importurilor are o bucată în
+  plus), totalul 810,5 → 812,2 / 900 kB. Biblioteca (`frezeMele.ts`, cu îmbinarea și modelul frezei) stă acum într-o bucată a ei,
+  comună panoului și ferestrei „Frezele mele”.
+
 ## Se redeschide dacă
 
 - owner-ul vrea o bibliotecă comună mai multor conturi ale aceluiași atelier, sau cataloagele publice ale producătorilor;

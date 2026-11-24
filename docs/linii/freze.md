@@ -62,8 +62,19 @@ gravare, profil, formă desenată)” și „Freze de profil desenate de utiliza
   scrie doar ca bilă (o singură scriere pe freză). Ce formă primește fiecare operație stă într-o singură funcție,
   `motivFormaPeOperatie(tip, latura, forma)` în `src/model/formaFrezei.ts`, scrisă de cine ajunge întâi în `main` (16.A↑b-2
   o citește pentru lista „Freza”; 16.A↑e doar lărgește tabelul). „Bilă” în bibliotecă imediat după relief, fără să aștepte
-  16.A↑e. **Schema:** v28 e a cotelor, v29 a reliefului; 16.A↑e și 16.A↑f cer fiecare versiunea lor, de la sesiunea
-  principală, la pornire.
+  16.A↑e. **Schema** (sesiunea principală, 13:08): cotele au rămas fără schemă nouă (ADR 0330, 1a), deci **v28 e al
+  reliefului** (forma `relief` și bila, în 18.1↑c); următorul liber e v29. 16.A↑e și 16.A↑f cer fiecare numărul lor, de la
+  sesiunea principală, când ajung la migrare. Pe 24.11, 13:13: linia reliefului are deja `motivFormaPeOperatie` pe ramura ei
+  (doar V-ul); 16.A↑b-2 a scris-o în `src/model/formaFrezei.ts`, cu aceeași semnătură: cine unește a doua ia versiunea din
+  `main` și își adaugă rândul.
+- **24.11, 11:20–11:55: 16.A↑b-2 gata pe ramură** (la „continua cu 16.A↑b-2” al owner-ului): freza din bibliotecă în secțiunea
+  Tăierea (`f02eb0e4` modelul, `7771b346` panoul, `f0895a1b` otrăvurile, `aa1b418d` proba R02). Fereastra exportului refăcută
+  (PR-ul #11) nu e unită, deci **feliile s-au renumerotat:** b-2 = Tăierea (acum), **b-3 = rândurile exportului** (lista
+  „Freza” pe freza operației, pe fundul plat, pe frezele de rest, ale dopului și ale benzii; pe fereastra refăcută, după
+  unirea ei), **b-4 = nota „s-a schimbat în bibliotecă”** (fostă b-3). Generatorul roadmap-ului nu primește un id ca
+  „16.A↑b-2a” (`RE_ID` din `scripts/documentatie.ts`: după `-N` nu vine literă). Identitatea frezei montate ține acum și
+  turația (`aceeasiFreza`, și la roluri). Biblioteca (`frezeMele.ts`) stă acum într-o bucată comună panoului și ferestrei.
+  Otrăvuri 22 / 22. Totalul 810,5 → 812,2 / 900, pornirea neschimbată (cu Atelierul 114,8 / 120). Nimic pe server.
 - **Feliile**, în ordine: 16.A↑a (biblioteca în browser, fereastra, fișierul), apoi b (alegerea în proiect, v27), c
   (contul), d (calibrarea), e (bila și toroidala), f (profilul desenat), g (valorile pe material).
 

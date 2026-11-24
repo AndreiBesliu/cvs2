@@ -12923,3 +12923,24 @@ scrie brief-ul pentru relief si pentru cote”
   încheiată); starea din `docs/linii/principala.md`.
 - **La owner:** fereastra exportului, verificarea juridică a utilizării aplicației înaintea live-ului, „cine unește
   în `main`”, ADR 0232 (biblioteca); brief-urile reliefului și cotelor, de lipit în sesiuni noi.
+
+## 2026-11-24 — 16.A↑b-2: freza din bibliotecă în secțiunea Tăierea (Model: Claude Opus 5.5)
+
+**Prompt:** „continua cu 16.A↑b-2” (owner-ul, după raportul lui 16.A↑c). **Started:** 24.11, 11:20. Fereastra exportului
+refăcută (PR-ul `AndreiBesliu/cvs2#11`) nu e unită, deci feliile s-au renumerotat: b-2 (secțiunea Tăierea) acum, b-3
+(rândurile exportului) pe fereastra refăcută, după unirea ei, b-4 (nota schimbării din bibliotecă, fostă b-3).
+
+- **Modelul** (`f02eb0e4`): `motivFormaPeOperatie` (`src/model/formaFrezei.ts`, aceeași funcție pe care o folosește linia
+  reliefului, ADR 0310 §13), alegerea pură (`src/model/alegereFreza.ts`: frezele oferite, copia cu originea, valorile și
+  tăișul, pașii, numărul T după ADR 0114 §5). Identitatea frezei montate ține acum și turația (`aceeasiFreza`), și la roluri:
+  același T cu altă turație ar fi refuzat la export. Probele întâi: 9 pe hârtie.
+- **Panoul** (`7771b346`): rândul „Freza” din Tăierea, cât biblioteca are freze; biblioteca contului sau cea fără cont
+  (`cheieBibliotecii`), citită din browser; aplicat prin `document.aplica-operatii`, un pas de anulare; nota T-ului ocupat;
+  manualul (ro, en); catalogul controalelor scris din nou. În Edge: 4 / 4 (cu reîncărcarea și Atelierul cu fontul lat, în
+  engleză); rolul, Atelierul, panoul, frezele, rolurile mele și manualul: 39 / 39.
+- **Otrăvurile** (`test/otravuri/16.A-b2.py`), într-o clonă, pe `f0895a1b`: 22 / 22 (18 pe hârtie, 4 în Edge). R02 (aceeași
+  freză pe două numere) scăpase: proba a primit cazul (`aa1b418d`).
+- **Porțile, în container:** tipurile, importurile (20 / 20), build-ul determinist; pornirea neschimbată (cu ușa 114,5, cu
+  Atelierul 114,8 / 120), totalul 810,5 → 812,2 / 900 (biblioteca stă acum într-o bucată comună panoului și ferestrei).
+- **Documentele:** ADR 0300 („Implementarea (16.A↑b-2)”), fișa etapei 3 (rândul `16.A↑b-2`), pragul, registrul
+  otrăvurilor, traducerile, nota liniei. **Completed:** 24.11, 11:55.

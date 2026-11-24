@@ -885,6 +885,10 @@
       "ro": "Unealta Pen și tipurile nodurilor",
       "en": "The Pen tool and the node types"
     },
+    "328f2cfbefdd7047": {
+      "ro": "Freza din bibliotecă în secțiunea Tăierea",
+      "en": "The library bit in the Cutting section"
+    },
     "32d7e6d3d94127a5": {
       "ro": "Camera imprimantei prin WebRTC",
       "en": "The printer camera over WebRTC"
@@ -3780,6 +3784,10 @@
     "f254e58163cfe205": {
       "ro": "Lipirea mânerelor de scalare",
       "en": "Snapping the scale handles"
+    },
+    "f31c120564e539e7": {
+      "ro": "**Freza din bibliotecă în secțiunea Tăierea** (fără mașină; ADR 0300 §4, „Implementarea (16.A↑b-2)”; ramura `wip/16.A-freze`, în sesiunea cloud a liniei frezelor, la „continua cu 16.A↑b-2” al owner-ului; fereastra exportului refăcută nu e unită, deci rândurile exportului devin b-3, după ea, iar nota schimbării din bibliotecă b-4). `motivFormaPeOperatie` (`src/model/formaFrezei.ts`, stabilită cu linia reliefului, ADR 0310 §13), alegerea pură (`src/model/alegereFreza.ts`: frezele oferite, copia cu originea, valorile și tăișul, pașii, numărul T după ADR 0114 §5); identitatea frezei montate ține acum și turația (și la roluri); rândul „Freza” din Tăierea, cât biblioteca are freze, aplicat prin `document.aplica-operatii` (un pas de anulare), cu nota T-ului ocupat; manualul. Probele: unitare noi 9, în Edge 4; otrăvuri 22 / 22. Pornirea neschimbată (cu Atelierul 114,8 / 120), totalul 810,5 → 812,2 / 900. Nimic pe server.",
+      "en": "**The library bit in the Cutting section** (no machine; ADR 0300 §4, “Implementation (16.A↑b-2)”; branch `wip/16.A-freze`, in the bits line's cloud session, at the owner's “continue with 16.A↑b-2”; the redesigned export window is not merged, so the export rows become b-3, after it, and the library-change note b-4). `motivFormaPeOperatie` (`src/model/formaFrezei.ts`, agreed with the relief line, ADR 0310 §13), the pure choice (`src/model/alegereFreza.ts`: the offered bits, the copy with its origin, values and cutting length, the steps, the T number per ADR 0114 §5); the identity of a mounted bit now includes the spindle speed (in roles too); the “Cutter” row in Cutting, while the library has bits, applied through `document.aplica-operatii` (one undo step), with the note for a taken T; the manual. Tests: 9 new unit tests, 4 in Edge; poisons 22 / 22. Startup unchanged (with the Workshop 114.8 / 120), total 810.5 → 812.2 / 900. Nothing on the server."
     },
     "f3382346df64579e": {
       "ro": "Oracolul independent al ușii documentului v11–v18",

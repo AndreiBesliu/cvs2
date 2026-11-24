@@ -1,5 +1,5 @@
 /**
- * Alegerea unei freze din biblioteca „Frezele mele” pentru operațiile din proiect (ADR 0300 §4, felia 16.A↑b-2a): ce freze se
+ * Alegerea unei freze din biblioteca „Frezele mele” pentru operațiile din proiect (ADR 0300 §4, felia 16.A↑b-2): ce freze se
  * oferă (forma lor merge pe toate operațiile alese, `motivFormaPeOperatie`), copia pe care o primește documentul (originea,
  * valorile de lucru, tăișul: documentul v27, ADR 0300 §5) și numărul T, după regula rolurilor personalizate (ADR 0114 §5):
  * al bibliotecii cât e liber, altfel al unei freze identice (aceeași turație), altfel cel mai mic liber.

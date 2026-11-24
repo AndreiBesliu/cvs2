@@ -1,5 +1,5 @@
 /**
- * Alegerea unei freze din bibliotecă pentru operațiile din proiect (ADR 0300 §4, felia 16.A↑b-2a), pe hârtie: ce formă
+ * Alegerea unei freze din bibliotecă pentru operațiile din proiect (ADR 0300 §4, felia 16.A↑b-2), pe hârtie: ce formă
  * primește fiecare operație (freza în V doar pe linie și în V-carve, V-carve-ul doar cu V), ce freze se oferă pentru
  * operațiile alese, copia din document (originea, valorile de lucru, tăișul), pașii operațiilor și numărul T (al bibliotecii
  * cât e liber; altfel al unei freze identice, cu aceeași turație; altfel cel mai mic liber).

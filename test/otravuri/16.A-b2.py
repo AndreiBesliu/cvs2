@@ -1,4 +1,4 @@
-# Lista de otrăvuri a feliei 16.A↑b-2a (freza din bibliotecă în secțiunea Tăierea; ADR 0300 §4), 24.11.2026, alese de
+# Lista de otrăvuri a feliei 16.A↑b-2 (freza din bibliotecă în secțiunea Tăierea; ADR 0300 §4), 24.11.2026, alese de
 # autor: forma pe operație (V doar pe linie și în V-carve, V-carve-ul doar cu V), frezele oferite, copia din bibliotecă
 # (originea, valorile, tăișul), pașii operațiilor, numărul T (identitatea cu turația, freza înlocuită care nu se numără, frezele
 # de rest care se numără) și rândul din panou (lista, citirea bibliotecii, nota).
