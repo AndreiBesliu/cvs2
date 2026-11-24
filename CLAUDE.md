@@ -1416,6 +1416,24 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 24.11.2026, după-amiaza (a cincisprezecea unire din cloud): **A.7 (adminul pe telefon) unită în `main`** (sesiunea
+  principală, ramura `unire-2411h`, din `41233474`), la „ok, cand e verde fa unirea” al owner-ului. Linia adminului,
+  ramura `wip/A.1-admin`, `c08a24bc`, PR-ul `AndreiBesliu/cvs2#13` (ADR 0260 §7; `3.As` în fișa etapei 3), unită în
+  `458befb9`: sub 640 px, `/admin` are jos o bară cu Azi, Erori și Tichete (doar cele pe care rolul le vede, cu numerele
+  lor) și „Mai mult”, iar restul filelor stau într-un sertar, deschis de ☰ sau de „Mai mult”; un tichet se citește și
+  primește răspuns pe telefon, iar proiectul atașat se descarcă doar de pe calculator; nimic nu iese din ecran în
+  dreapta, iar bara de jos nu acoperă capătul paginii; otrăvurile 9 / 9, toate pe emulatoare. **Cu ea, linia adminului
+  e încheiată** (ADR 0260: A.1–A.7; ADR 0262: A.8–A.11). Nimic pe server; nimic în pornire. Ramura avea `main`
+  (`f536a4cc`, cu plafonul pornirii); nicio ciocnire, iar codul unirii e chiar al lui `c08a24bc` (`git diff` gol în
+  afara fișierelor `.md`). Față de `b064e954`, cu completul verde, `c08a24bc` adaugă doar constanta plafonului din
+  `scripts/build-determinist.ts` și documente, cu rapidul verde pe el. Porțile, în CI, verzi pe `b064e954` (completul,
+  48 min 2 s): unit 10 111 / 0 (12 sărite, pe Linux), e2e 655 / 655, funcțiile pe emulatoare 126 / 126, paginile
+  55 / 55; pornirea 109,9 kB (plafonul 120; cu ușa 114,4, cu Atelierul 114,7), totalul 806,1 / 900 kB, `/admin`
+  138,2 / 200. Înainte, lotul al paisprezecelea a ajuns pe test (`356db9bd`, 24.11, 12:26), cu serverul. Pe ramuri, în
+  lucru: frezele (16.A↑c-1 și 16.A↑c-2, biblioteca de freze în cont), exportul (`AndreiBesliu/cvs2#11`, la cuvântul
+  owner-ului); pornite pe 24.11, cu brief-urile date: relieful (18.1↑) și cotele (10.4↑). Propus, la owner: ADR 0232
+  (`#17`). **La owner:** fereastra exportului, verificarea juridică (GDPR) a utilizării aplicației înaintea live-ului,
+  „cine unește în `main`”.
 - 24.11.2026, la prânz: **două linii noi, relieful și cotele** (la „ce urmeaza in roadmap si nu a fost atins deloc si
   putem incepe” și, după lista cu recomandarea, „ok, scrie brief-ul pentru relief si pentru cote”, în sesiunea
   principală). **Relieful** (felia 18.1↑, adusă din etapa 18: nucleul reliefului, relieful din imagine, prelucrarea 3D
