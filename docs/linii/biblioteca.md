@@ -1,10 +1,10 @@
 # Biblioteca extensiilor (3.Xg, 3.Xh, 3.Xi)
 
-## 3.Xi: stările de lângă drumul bun (propusă, în cloud)
+## 3.Xi: stările de lângă drumul bun (acceptată, în lucru, în cloud)
 
 _Aceeași linie și aceeași ramură (`wip/3.Xh-biblioteca-ui`, adusă la `main` `df9ae53` pe 24.11, fără ciocniri: ramura era
-toată în `main`). Starea: **ADR 0232 PROPUS pe 24.11, cu schița și cinci întrebări; cod de produs nu s-a scris. Codul
-pornește la răspunsurile owner-ului.**_
+toată în `main`). Starea: **ADR 0232 ACCEPTAT pe 24.11 („am raspuns”: 1a, 2a, 3a, 4a, 5a, fără note); în lucru: 3.Xi-1 (stările
+rupte), apoi 3.Xi-2 și 3.Xi-3.**_
 
 Cererea owner-ului (23.11, după unirea lui 3.Xh): „vreau sa faci un audit si sa imi spui ce ai imbunatatie la UI/UX-ul
 functiei de extensii”. La auditul cu 14 constatări și la oferta „fac din ele ADR 0232 propus, cu schița, împărțit pe
@@ -26,6 +26,9 @@ felii”: „ok” (24.11).
 - **24.11: rapidul verde pe propunere** (`bc9da1c`, PR-ul ciornă `AndreiBesliu/cvs2#17`); apoi `main` adus (`fafb95e`:
   25.8↑b), la vestea de ciocnire de pe PR: doar DEVLOG-ul, rezolvat cu `scripts/rezolva-devlog.py`. Ramura n-are cod al ei:
   codul e al lui `main`.
+- **24.11, răspunsurile owner-ului: „am raspuns”** (formularul: 1a, 2a, 3a, 4a, 5a, fără note): punctul versiunii noi din ce
+  se știe deja; o singură extensie deschisă; extensia redeschisă la reîncărcare; `.zip`-ul pe planșă deschide confirmarea;
+  toate cele trei felii, în ordine.
 - **Uneltele auditului** stau în `.tmp/audit-extensii/` (ignorat): `audit.mjs` (grupele A–D: drumul întreg, actualizările,
   catalogul oprit sau stricat, telefonul, tema, engleza; `AUDIT_OUT`, `AUDIT_DOAR`, `AUDIT_SCARA`), `audit2.mjs`
   (contrastul prin pânză, tastatura, pornirea eșuată, țintele pe telefon), `audit3.mjs` (reîncărcarea, `.zip`-ul lăsat pe

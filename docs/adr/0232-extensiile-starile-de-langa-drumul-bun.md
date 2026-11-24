@@ -1,14 +1,14 @@
 # ADR 0232: Extensiile, stările de lângă drumul bun: pornirea eșuată, actualizarea cu extensia deschisă, refuzurile, lipsa internetului
 
-**Starea:** propus pe 24.11.2026, pentru felia 3.Xi a liniei bibliotecii (ramura `wip/3.Xh-biblioteca-ui`, adusă la `main`
+**Starea:** acceptat pe 24.11.2026, cu toate recomandările („am raspuns”; în formularul schiței: 1a, 2a, 3a, 4a, 5a, fără
+note; „Răspunsurile owner-ului”, mai jos); propus în aceeași zi, pentru felia 3.Xi a liniei bibliotecii (ramura `wip/3.Xh-biblioteca-ui`, adusă la `main`
 `df9ae53`). Cererea owner-ului, din 23.11: „vreau sa faci un audit si sa imi spui ce ai imbunatatie la UI/UX-ul functiei de
 extensii”. La auditul cu 14 constatări și la oferta „fac din ele ADR 0232 propus, cu schița, împărțit pe felii”: „ok”.
 **Continuă:** ADR 0231 (fereastra bibliotecii; de acolo vin două lucruri lăsate „la cuvântul owner-ului”: captura mărită și
 „ce e nou” în confirmarea unei actualizări), ADR 0230 (marginile bibliotecii; întrebarea 1 atinge „nicio cerere la
 pornire”), ADR 0160 (fereastra extensiei), ADR 0164 (lucrul nesalvat la închidere), ADR 0132 §3 (fereastra ținută minte),
 ADR 0127 și 0128 (pachetul, permisiunile). **Schița**, cu capturile de azi, machetele propuse și formularul întrebărilor
-(colecția `raspunsuri`, documentul `owner`): <https://claude.ai/artifact/31cWBjVheUbymkfErCmcSy>. Cod de produs nu s-a scris: pornește
-la răspunsuri.
+(colecția `raspunsuri`, documentul `owner`): <https://claude.ai/artifact/31cWBjVheUbymkfErCmcSy>.
 
 ## Ce e azi (auditul din 23.11)
 
@@ -160,6 +160,17 @@ Trei felii, în ordinea în care omul rămâne blocat sau își pierde locul. Ma
 5. **Cât facem.**
    - **a)** Toate cele trei felii, în ordinea de mai sus. **Recomandat.**
    - b) Doar 3.Xi-1 (stările rupte); restul, la cuvântul owner-ului.
+
+## Răspunsurile owner-ului (24.11)
+
+„am raspuns”, cu formularul schiței completat (`raspunsuri/owner`, 24.11, 10:22): **1a, 2a, 3a, 4a, 5a**, fără note.
+
+1. **1a:** punctul de pe butonul Extensii vine din ce se știe deja; catalogul se cere tot doar la deschiderea meniului sau a
+   bibliotecii. „Nicio cerere la pornire” (ADR 0230) rămâne.
+2. **2a:** o singură extensie deschisă; meniul o marchează.
+3. **3a:** la reîncărcare, cvs2 redeschide extensia în care era omul; nu și una care n-a pornit.
+4. **4a:** un `.zip` de extensie lăsat pe planșă deschide confirmarea instalării.
+5. **5a:** toate cele trei felii, în ordinea din tabel: 3.Xi-1, 3.Xi-2, 3.Xi-3.
 
 ## Ce am respins
 
