@@ -13481,7 +13481,7 @@ aducerea lui `main` (`29ef7e44`). **Completed:** 24.11, 17:15 (în container; CI
 ## 2026-11-24 — Felia 10.4↑a-4: panoul cotei, lista, ochiul, „Arată cotele”, cotele foilor vecine (ADR 0330 §5) (Model: Claude Opus 5.5)
 
 **Prompt:** „continuă cu 10.4↑a-4” (owner-ul, 24.11, după 10.4↑a-3). **Started:** 24.11, 18:55, în sesiunea cloud a liniei
-cotelor. **Completed:** 24.11, 19:40 (în container; CI-ul, pe commit-ul împins).
+cotelor. **Completed:** 24.11, 19:14 (în container; CI-ul, pe commit-ul împins).
 
 - **Întâi partea pură:** `cotaDezlegata`, `cotaCuText`, `cotaCuDistanta`, `stareCota` (`src/model/cote.ts`), foile ascunse
   citite din browser (`citesteAscunse`), setarea „Cotele foilor vecine” și comutarea „Cotele pe pânză”, cu probele pe hârtie
@@ -13497,6 +13497,6 @@ cotelor. **Completed:** 24.11, 19:40 (în container; CI-ul, pe commit-ul împins
 - **Porțile, în container:** tipurile; unitarele cotelor, manualului, catalogului, registrului; e2e-urile cotelor, panoului,
   setărilor, manualului, paletei și foilor (34 / 34); build-ul determinist. Pornirea 110,4 → 110,6 kB (cu ușa 115,3, cu
   Atelierul 115,6 / 120), totalul 837,8 → 841,6 / 900.
-- **Otrăvurile** (`test/otravuri/10.4a4.py`, într-o clonă): 10 unitare și 15 e2e; două din `10.4a3.py` (E01, E03), rămase VOID
-  pe codul nou, mutate.
+- **Otrăvurile** (`test/otravuri/10.4a4.py`, într-o clonă): 25 / 25 prinse din prima (10 unitare, 15 e2e); două din
+  `10.4a3.py` (E01, E03), rămase VOID pe codul nou, mutate și prinse.
 

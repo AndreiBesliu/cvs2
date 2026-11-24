@@ -429,8 +429,8 @@ nu „a-3a” și „a-3b”, cum le-a numit întâi sesiunea.)
   (opacitatea 0,45), doar de văzut: nu se aleg și nu se lipesc. Setarea **„Cotele foilor vecine”** (estompate sau ascunse) e în
   Setări › Cotele › Comportamentul; ochiul unei foi și „Cotele pe pânză” le ascund și pe ele.
 - **Manualul:** „Cotele și măsurarea” spune panoul, lista, ochiul, „Arată cotele” și foile vecine; „Setările”, rândul nou.
-- **Cifrele:** unitare noi 6 (panoul 5, „Arată cotele” 1) și setările potrivite; e2e noi 4 (`cote.panou.spec.ts`); otrăvuri:
-  vezi registrul (`test/otravuri/10.4a4.py`). Pornirea 110,4 → 110,6 kB (cu ușa 115,3, cu Atelierul 115,6 / 120: în pornire stau
+- **Cifrele:** unitare noi 6 (panoul 5, „Arată cotele” 1) și setările potrivite; e2e noi 4 (`cote.panou.spec.ts`); otrăvuri
+  25 / 25 din prima (`test/otravuri/10.4a4.py`: 10 unitare, 15 e2e). Pornirea 110,4 → 110,6 kB (cu ușa 115,3, cu Atelierul 115,6 / 120: în pornire stau
   încărcarea rândului din listă, acțiunea `vedere.cote` și eticheta ei), totalul 837,8 → 841,6 / 900 kB (panoul cotei, în
   bucata panoului; rândul listei, 1,3 kB la cerere, cu stilurile lui; depozitul, o bucată comună de 0,7 kB; restul, în bucata
   uneltei).
