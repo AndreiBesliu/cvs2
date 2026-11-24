@@ -87,9 +87,13 @@ test('mai multe loturi decât o pagină: toate numărate; un lot fără forma lu
     });
   }
   await scrieri.commit();
+  // Două loturi fără forma lor: un cont care nu e text; evenimentele care nu sunt o listă.
   await db.doc('utilizare/stricat-1').set({ schema: 1, uid: 42, primit: Timestamp.fromDate(new Date('2026-11-23T09:00:00Z')), evenimente: 'nu' });
+  await db.doc('utilizare/stricat-2').set({
+    schema: 1, uid: 'om1', sesiune: 'stricat000000000', personal: false, primit: Timestamp.fromDate(new Date('2026-11-23T09:00:01Z')), evenimente: 'nu',
+  });
   const r = await agregaUtilizarea(db, new Date('2026-11-24T01:00:00Z'));
-  assert.deepEqual((r['zile'] as Record<string, unknown>)['2026-11-23'], { loturi: n, sarite: 1 });
+  assert.deepEqual((r['zile'] as Record<string, unknown>)['2026-11-23'], { loturi: n, sarite: 2 });
   assert.equal(r['zileSume'], 730);
   const c = segment(await zi('2026-11-23'), 'clienti');
   assert.deepEqual([c['loturi'], c['sesiuni'], (c['actiuni'] as Record<string, Record<string, unknown>>)['document.roteste']?.['n']], [n, n, n]);
