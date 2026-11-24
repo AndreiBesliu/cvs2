@@ -133,7 +133,7 @@ test('owner: Azi întâi, cu cifrele, joburile, ce așteaptă și întâmplăril
   await expect(page.locator('[data-insigna]')).toHaveText('LOCAL');
   // Grupurile, în ordinea din ADR, și Contul meu la capăt.
   await expect(page.locator('[data-admin="bara"] [data-grup-bara]')).toHaveText(['Probleme', 'Produs', 'Clienți', 'Echipa']);
-  await expect(page.locator('[data-admin="bara"] [data-fila]')).toHaveCount(11);
+  await expect(page.locator('[data-admin="bara"] [data-fila]')).toHaveCount(12);
   await expect(page.locator('[data-admin="bara"] [data-fila]').last()).toHaveAttribute('data-fila', 'cont');
 
   // Cifrele: aceleași în bară și pe cartele.

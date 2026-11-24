@@ -5,7 +5,8 @@
  * „Încearcă din nou” cere iar. Forma JSON-ului e verificată (`shared/documentatie.ts`); eroarea „forma” o traduce fila.
  */
 import {
-  FISIER_CATALOG, adresaFisier, esteCatalog, esteRoadmap, fisierDocument, fisierRoadmap, type Catalog, type Roadmap,
+  FISIER_ACTIUNI, FISIER_CATALOG, adresaFisier, esteCatalog, esteCatalogActiuni, esteRoadmap, fisierDocument, fisierRoadmap,
+  type Catalog, type CatalogActiuni, type Roadmap,
 } from '../../../shared/documentatie.ts';
 
 export type Aduce = (adresa: string) => Promise<Response>;
@@ -15,6 +16,8 @@ export interface AducatorDocumentatie {
   readonly roadmap: (limba: 'ro' | 'en') => Promise<Roadmap>;
   readonly catalog: () => Promise<Catalog>;
   readonly document: (cale: string) => Promise<string>;
+  /** Catalogul acțiunilor, pentru fila Utilizare (ADR 0262 §6). */
+  readonly actiuni: () => Promise<CatalogActiuni>;
 }
 
 /** `no-cache`: documentația are nume fixe și se schimbă la fiecare publicare (antetul de pe hosting spune la fel). */
@@ -47,5 +50,6 @@ export function aducatorDocumentatie(aduce: Aduce = aducePrinRetea): AducatorDoc
     roadmap: (limba) => o(fisierRoadmap(limba), json(esteRoadmap)),
     catalog: () => o(FISIER_CATALOG, json(esteCatalog)),
     document: (cale) => o(fisierDocument(cale), (r) => r.text()),
+    actiuni: () => o(FISIER_ACTIUNI, json(esteCatalogActiuni)),
   };
 }

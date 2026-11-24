@@ -26,11 +26,11 @@ function* toateRolurile(): Generator<{ owner: boolean; perm: ReadonlySet<Permisi
   }
 }
 
-test('bara laterală: Azi sus, Probleme, Produs, Clienți, Echipa, Contul meu la capăt; aceleași zece file, plus Azi', () => {
+test('bara laterală: Azi sus, Probleme, Produs, Clienți, Echipa, Contul meu la capăt; aceleași unsprezece file, plus Azi', () => {
   assert.deepEqual(BARA.map((g) => [g.grup, [...g.file]]), [
     [null, ['azi']],
     ['probleme', ['erori', 'tichete', 'diagnoza']],
-    ['produs', ['sugestii', 'roadmap', 'documentatie']],
+    ['produs', ['sugestii', 'utilizare', 'roadmap', 'documentatie']],
     ['clienti', ['utilizatori']],
     ['echipa', ['personal', 'setari']],
     [null, ['cont']],

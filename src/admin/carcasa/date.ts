@@ -17,7 +17,7 @@ export type Grup = 'probleme' | 'produs' | 'clienti' | 'echipa';
 export const BARA: readonly { readonly grup: Grup | null; readonly file: readonly Fila[] }[] = [
   { grup: null, file: ['azi'] },
   { grup: 'probleme', file: ['erori', 'tichete', 'diagnoza'] },
-  { grup: 'produs', file: ['sugestii', 'roadmap', 'documentatie'] },
+  { grup: 'produs', file: ['sugestii', 'utilizare', 'roadmap', 'documentatie'] },
   { grup: 'clienti', file: ['utilizatori'] },
   { grup: 'echipa', file: ['personal', 'setari'] },
   { grup: null, file: ['cont'] },

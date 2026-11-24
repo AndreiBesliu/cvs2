@@ -130,8 +130,8 @@ test('owner-ul vede conturile în tabel, cu filtrele pe plan și căutarea; cont
   await puneRolul(page, await intraCuGoogle(page), 'owner');
   // Filele apar după citirea rolului (asincronă): întâi una vizibilă, apoi lista lor.
   await expect(page.locator('[data-fila="setari"]')).toBeVisible(LENT);
-  // Bara laterală (ADR 0260): Azi, apoi grupurile (Probleme, Produs, Clienți, Echipa) și Contul meu la capăt.
-  expect(await file(page)).toEqual(['azi', 'erori', 'tichete', 'diagnoza', 'sugestii', 'roadmap', 'documentatie', 'utilizatori', 'personal', 'setari', 'cont']);
+  // Bara laterală (ADR 0260): Azi, apoi grupurile (Probleme, Produs, Clienți, Echipa) și Contul meu la capăt; owner-ul vede și Utilizare (ADR 0262).
+  expect(await file(page)).toEqual(['azi', 'erori', 'tichete', 'diagnoza', 'sugestii', 'utilizare', 'roadmap', 'documentatie', 'utilizatori', 'personal', 'setari', 'cont']);
   await page.locator('[data-fila="utilizatori"]').click();
 
   // Cele mai noi întâi; planul de acum: proba lui Bob a trecut. Primul cont vine ales, cu panoul lui alături.

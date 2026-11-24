@@ -4,7 +4,7 @@
  * link intern dintr-un document (deschis cu clic de mijloc) să ducă la același loc. Pure: citirea și scrierea.
  * Fila Azi (ADR 0260 §1) e prima după intrare: o adresă fără `#` o deschide pe ea.
  */
-export const FILE = ['azi', 'erori', 'diagnoza', 'roadmap', 'documentatie', 'sugestii', 'tichete', 'utilizatori', 'personal', 'setari', 'cont'] as const;
+export const FILE = ['azi', 'erori', 'diagnoza', 'roadmap', 'documentatie', 'sugestii', 'utilizare', 'tichete', 'utilizatori', 'personal', 'setari', 'cont'] as const;
 export type Fila = (typeof FILE)[number];
 
 export interface Adresa {
