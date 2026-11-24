@@ -13259,5 +13259,6 @@ custom” (owner-ul, cu `FREZE.tdb`), apoi, la cele cinci întrebări: „Da, 1a
   `frezeTaiere.spec.ts` 20 / 20). **Otrăvurile** (`test/otravuri/16.A-h2.py`): 23 / 24 (G04 echivalentă).
 - **`main` adus** din nou (`e5153528`, limita feliilor rapidului); 16.A↑b-2, 16.A↑a-2 și ADR 0302 (`d0fa2dde`) sunt în lotul
   19 al sesiunii principale.
-- Nimic pe server; documentul nu se schimbă. **Completed:** 24.11, 13:45.
+- **Mărimea:** pornirea 110,0 kB (cu ușa 114,7, cu Atelierul 115,0 / 120), totalul 819,0 → 820,2 / 900 (`main` `647cebb1`:
+  816,1). Nimic pe server; documentul nu se schimbă. **Completed:** 24.11, 13:45.
 
