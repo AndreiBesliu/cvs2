@@ -115,7 +115,8 @@ function textMasura(a: Punct, b: Punct, s: SetariCote, format: FormatCifre): str
   const dx = b.x - a.x, dy = b.y - a.y;
   const f: FormatCifre = { ...format, zecimale: Math.max(format.zecimale, 3), pas: null };
   const parti: string[] = [];
-  if (s.masurare.distanta) parti.push(t('editare.cote.masura.distanta', { v: scrieCifra(Math.hypot(dx, dy), f) }));
+  // Distanța își scrie mereu unitatea (măsura nu e o cotă: fără ea, „120” nu spune în ce).
+  if (s.masurare.distanta) parti.push(t('editare.cote.masura.distanta', { v: scrieCifra(Math.hypot(dx, dy), { ...f, cuUnitate: true }) }));
   if (s.masurare.delta) parti.push(t('editare.cote.masura.dx', { v: scrieCifra(dx, f) }), t('editare.cote.masura.dy', { v: scrieCifra(dy, f) }));
   if (s.masurare.unghi && (dx !== 0 || dy !== 0)) parti.push(t('editare.cote.masura.unghi', { v: textValoare((Math.atan2(dy, dx) * 180) / Math.PI, format.virgula, 2) }));
   return parti.join(' · ');
@@ -123,7 +124,7 @@ function textMasura(a: Punct, b: Punct, s: SetariCote, format: FormatCifre): str
 
 export type CerereCote = { readonly mod: 'd' | 'm'; readonly n: number };
 
-export function StratCote({ doc, indexFoaie, vedere, marime, zona, unealta, activ, loc, locJos, cerere, lipire, grila, virgula, onScrie, onUnealta, poateDublu }: {
+export function StratCote({ doc, indexFoaie, vedere, marime, zona, unealta, activ, loc, locJos, cerere, lipire, grila, virgula, onScrie, onUnealta, onSetari, poateDublu }: {
   readonly doc: Document;
   readonly indexFoaie: number;
   readonly vedere: Vedere;
@@ -146,6 +147,8 @@ export function StratCote({ doc, indexFoaie, vedere, marime, zona, unealta, acti
   /** Lista nouă a cotelor foii (acțiunea `foaie.cote`), cu verdictul ei. */
   readonly onScrie: (cote: readonly Cota[]) => RezultatActiune;
   readonly onUnealta: (u: 'cote' | 'selectie') => void;
+  /** ⚙ din bara uneltei: fereastra Setări, la secțiunea Cotele (ADR 0330 §5, §6). */
+  readonly onSetari?: () => void;
   /** Dublul clic poate trece la Cote (nu e un desen Pen sau o tăiere începută). */
   readonly poateDublu: () => boolean;
 }): ReactElement | null {
@@ -551,6 +554,14 @@ export function StratCote({ doc, indexFoaie, vedere, marime, zona, unealta, acti
               </button>
             );
           })}
+          {onSetari ? (
+            <button type="button" className="aliniaza cote-setari" title={t('editare.cote.setari')} aria-label={t('editare.cote.setari')} data-testid="cote-setari"
+              onClick={onSetari}>
+              <svg className="icona-aliniere" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
+                <path className="contur" d="M8 5.5 A2.5 2.5 0 1 0 8 10.5 A2.5 2.5 0 1 0 8 5.5 Z M7 1.5 H9 L9.4 3.4 L11 4.3 L12.8 3.6 L13.8 5.3 L12.4 6.6 V9.4 L13.8 10.7 L12.8 12.4 L11 11.7 L9.4 12.6 L9 14.5 H7 L6.6 12.6 L5 11.7 L3.2 12.4 L2.2 10.7 L3.6 9.4 V6.6 L2.2 5.3 L3.2 3.6 L5 4.3 L6.6 3.4 Z" />
+              </svg>
+            </button>
+          ) : null}
         </span>,
         loc,
       ) : null}

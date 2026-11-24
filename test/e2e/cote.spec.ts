@@ -195,7 +195,7 @@ test('alegerea cu unealta Cote, săgețile, Delete, anularea; reîncărcarea pă
 
 /**
  * Bara de sus la 1280 px, cu fontul lat (Verdana aici, DejaVu Sans pe Linux, unde `system-ui` e lat), cu unealta Cote și
- * felurile ei în bară (ADR 0330 §5): rămâne întreagă în fereastră, în română și în engleză.
+ * felurile ei în bară, plus ⚙ (ADR 0330 §5): rămâne întreagă în fereastră, în română și în engleză.
  */
 async function baraIncape(page: Page): Promise<void> {
   await page.setViewportSize({ width: 1280, height: 760 });
@@ -203,6 +203,7 @@ async function baraIncape(page: Page): Promise<void> {
   await page.evaluate(() => { document.documentElement.style.setProperty('--font', "Verdana, 'DejaVu Sans', sans-serif"); });
   await alegeCote(page);
   await expect(page.getByTestId('cote-fel-masoara')).toBeVisible();
+  await expect(page.getByTestId('cote-setari')).toBeVisible();
   const bara = await page.locator('.sus > .bara').boundingBox();
   if (!bara) throw new Error('bara n-are cutie');
   expect(bara.x).toBeGreaterThanOrEqual(0);

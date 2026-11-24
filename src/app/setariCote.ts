@@ -189,11 +189,15 @@ export const formatCote = (s: SetariCote, virgulaLimbii: boolean): FormatCifre =
   cuUnitate: s.cifre.cuUnitate,
 });
 
-/** Pură: setările cu un grup adus la implicit („Înapoi la implicit”); lipirea și măsurarea, cu comportamentul. */
-export function grupImplicit(s: SetariCote, grup: 'cifre' | 'linii' | 'comportament'): SetariCote {
-  if (grup === 'comportament') return { ...s, comportament: SETARI_IMPLICITE.comportament, lipire: SETARI_IMPLICITE.lipire, masurare: SETARI_IMPLICITE.masurare };
-  return { ...s, [grup]: SETARI_IMPLICITE[grup] };
-}
+/** Grupurile setărilor, în ordinea ferestrei Setări › Cotele. */
+export const GRUPURI_COTE = ['cifre', 'linii', 'comportament', 'lipire', 'masurare'] as const satisfies readonly (keyof SetariCote)[];
+export type GrupCote = (typeof GRUPURI_COTE)[number];
+
+/** Pură: setările cu un grup adus la implicit („Înapoi la implicit”), celelalte neatinse. */
+export const grupImplicit = (s: SetariCote, grup: GrupCote): SetariCote => ({ ...s, [grup]: SETARI_IMPLICITE[grup] });
+
+/** Pură: grupul are deja valorile implicite (butonul lui „Înapoi la implicit” nu mai are ce face). */
+export const eImplicit = (s: SetariCote, grup: GrupCote): boolean => JSON.stringify(s[grup]) === JSON.stringify(SETARI_IMPLICITE[grup]);
 
 /**
  * Pură: opțiunile lipirii pe puncte, din setări și din tastele ținute, sau null (lipirea oprită: butonul Lipire oprit, sau

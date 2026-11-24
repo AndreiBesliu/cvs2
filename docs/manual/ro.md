@@ -1189,6 +1189,33 @@ Cu unealta Cote, un clic pe linia unei cote o alege: capetele ei se trag pe alt 
 trage sau se mută cu săgețile (1 mm; Shift: 10 mm, Alt: 0,1 mm), **Delete** o șterge. Cu Selecția și cu celelalte unelte,
 cotele nu se aleg: clicul trece la forma de sub ele. Un dublu clic pe o cotă, cu orice unealtă, trece la Cote, cu ea aleasă.
 
+Cum arată cotele (cifrele, unitatea, capetele, liniile de extensie, culoarea) și cum se comportă unealta se alege în
+fereastra **Setări**, secțiunea **Cotele**: din ⚙ al barei uneltei, din meniul contului sau cu `Ctrl+,`.
+
+## Setările
+%% capitol: setari
+%% acopera: vedere.setari
+
+Fereastra **Setări** (`Ctrl+,`; și din meniul contului, „Setări…”, din **Caută o comandă** și din ⚙ al uneltei Cote) ține
+setările aplicației, nu ale unui proiect: fiecare schimbare se aplică pe loc și se ține în acest browser. Secțiunile stau în
+stânga; acum una singură, **Cotele**. Sus stă **cota de probă**, desenată cu setările de acum; fiecare grup are **Înapoi la
+implicit**. Un număr se scrie cu virgulă sau cu punct; unul în afara marginilor rămâne în câmp, spus în roșu, și nu se ține.
+**Închide** (sau Esc) închide fereastra.
+
+- **Cifrele:** unitatea (mm, cm, inch; desenul rămâne în mm), zecimalele (automat: 2, în inch 3; sau 0–6), zerourile de la
+  coadă (tăiate sau păstrate), rotunjirea (la zecimale sau la un pas, de exemplu 0,5), separatorul zecimal (după limba
+  aplicației, virgula sau punctul), unitatea scrisă după cifră, înălțimea cifrelor pe foaie (1–20 mm) și locul cifrei
+  (deasupra liniei, în linie, cu linia întreruptă, sau mereu orizontală).
+- **Liniile și capetele:** capetele (săgeată plină, săgeată deschisă, bară oblică, punct sau fără) și mărimea lor, liniile de
+  extensie (arătate sau ascunse), golul lor față de formă, depășirea liniei de cotă și distanța liniei de cotă la
+  **Păstrează** din Măsoară.
+- **Comportamentul:** dacă cotele noi sunt legate de forme, cu ce fel pornește unealta (Automată sau ultimul folosit), ce
+  urmează după o cotă (rămâne unealta Cote sau înapoi la Selecție), dacă se văd cotele pe pânză (ascunse, se văd doar cu
+  unealta Cote), sub câți pixeli pe ecran se ascund cifrele și culoarea cotelor (a temei sau aleasă).
+- **Lipirea:** punctele de care se lipesc capetele (vârfurile, mijloacele, centrele, cadranele, cutia, foaia, grila),
+  toleranța în pixeli și punctul cel mai apropiat de pe contur (cu Ctrl, mereu sau niciodată).
+- **Măsurarea:** ce arată Măsoară (distanța, Δx și Δy, unghiul) și unde (lângă cursor, în bara de jos).
+
 ## Conversia vectorilor
 %% capitol: conversie
 %% acopera: editare.conversie, document.converteste
@@ -2339,6 +2366,7 @@ tu, iar interfața aplicației rămâne aceeași.
 | `Ctrl+J` | Leagă căile |
 | `Delete` | Șterge selecția |
 | `Ctrl+K` | Caută o comandă |
+| `Ctrl+,` | Setări |
 | `Home` | Arată toată foaia |
 | `PageUp`, `PageDown` | Foaia de dinainte, Foaia următoare (foaia activă, după lista foilor) |
 | `T` | Arată traseul |

@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { citesteSetariCote, formatCote, grupImplicit, optiuniLipireCote, SETARI_IMPLICITE, stilCote, textSetariCote, type SetariCote } from '../../src/app/setariCote.ts';
+import { citesteSetariCote, eImplicit, formatCote, grupImplicit, GRUPURI_COTE, optiuniLipireCote, SETARI_IMPLICITE, stilCote, textSetariCote, type SetariCote } from '../../src/app/setariCote.ts';
 import { STIL_IMPLICIT } from '../../src/model/desenCota.ts';
 
 /**
@@ -115,20 +115,17 @@ test('stilul desenului și scrierea cifrelor, din setări; „după limbă” ur
   assert.equal(formatCote(punct, true).virgula, false, 'punctul ales, și în română');
 });
 
-test('„Înapoi la implicit” pe un grup lasă celelalte neatinse (comportamentul aduce și lipirea, și măsurarea)', () => {
+test('„Înapoi la implicit” pe un grup lasă celelalte neatinse', () => {
   const s = citesteSetariCote(JSON.stringify({
     cifre: { unitate: 'cm' }, linii: { capete: 'fara' },
     comportament: { legate: false }, lipire: { toleranta: 12 }, masurare: { unghi: false },
   }));
-  const c = grupImplicit(s, 'cifre');
-  assert.deepEqual(c.cifre, SETARI_IMPLICITE.cifre);
-  assert.equal(c.linii.capete, 'fara');
-  assert.equal(c.comportament.legate, false);
-  const l = grupImplicit(s, 'linii');
-  assert.equal(l.linii.capete, 'plina');
-  assert.equal(l.cifre.unitate, 'cm');
-  const k = grupImplicit(s, 'comportament');
-  assert.deepEqual([k.comportament, k.lipire, k.masurare], [SETARI_IMPLICITE.comportament, SETARI_IMPLICITE.lipire, SETARI_IMPLICITE.masurare]);
-  assert.equal(k.cifre.unitate, 'cm');
-  assert.equal(k.linii.capete, 'fara');
+  assert.deepEqual(GRUPURI_COTE, ['cifre', 'linii', 'comportament', 'lipire', 'masurare']);
+  for (const g of GRUPURI_COTE) {
+    assert.equal(eImplicit(s, g), false, g);
+    const r = grupImplicit(s, g);
+    assert.deepEqual(r[g], SETARI_IMPLICITE[g], g);
+    assert.ok(eImplicit(r, g));
+    for (const alt of GRUPURI_COTE) if (alt !== g) assert.deepEqual(r[alt], s[alt], `${g} lasă ${alt}`);
+  }
 });
