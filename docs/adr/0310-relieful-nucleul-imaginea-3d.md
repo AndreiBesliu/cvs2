@@ -66,7 +66,7 @@ redeschide.
 ### 2. Octeții: dalele, după amprentă, în afara documentului
 
 - **Dala** are 256 × 256 celule (`PLAN.md` §3.4) și se salvează ca Uint16 cu decalaj și pas pe dală. Eroarea e cel mult
-  (max − min) / 131 070, adică 0,46 µm pe o dală de 60 mm. Un cod e rezervat pentru „gol”. O dală cu aceeași valoare
+  (max − min) / 131 068 (ADR 0311 §5), adică 0,46 µm pe o dală de 60 mm. Un cod e rezervat pentru „gol”. O dală cu aceeași valoare
   peste tot e doar un număr (sau „goală”), fără octeți. Cheia dalei e amprenta SHA-256 a conținutului ei.
 - **Harta dalelor** unui strat (amprentele și constantele, rând cu rând) e tot o resursă, cu amprenta ei. Documentul ține
   doar amprenta hărții, pe strat: 64 de caractere, oricât de mare ar fi relieful. La 4000², harta are 16 × 16 dale,
