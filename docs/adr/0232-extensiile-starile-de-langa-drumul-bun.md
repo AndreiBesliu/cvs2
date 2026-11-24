@@ -211,3 +211,95 @@ Trei felii, în ordinea în care omul rămâne blocat sau își pierde locul. Ma
 - biblioteca trece de ~20 de extensii (căutarea, categoriile);
 - o extensie cere să pornească singură la deschiderea aplicației, fără ca omul s-o fi lăsat deschisă;
 - redeschiderea la reîncărcare încurcă un flux (primirea unei lucrări, testul pas cu pas).
+
+## Implementat
+
+### 3.Xi-1: stările rupte (24.11.2026)
+
+- **„… n-a pornit”** (§A.1): `StarePornire.tsx`, în locul rândului roșu cu eroarea brută. Semnul și numele extensiei, o
+  frază pe înțeles și trei ieșiri: **Încearcă din nou** (cadrul pornește iar), **Vezi în bibliotecă** (fereastra
+  bibliotecii, pe fila „Instalate”, la pagina ei) și **Închide**. Sub **Detalii**, pliate: eroarea, versiunea, de unde a
+  venit pachetul, cu **Copiază**. Aceeași stare, fără detalii, după 10 s de „Pornesc extensia…” („… pornește greu…”);
+  pornirea nu se oprește.
+- **Versiunea nouă peste extensia deschisă** (§A.2): `inainteDeInlocuire` și `dupaInlocuire` (`Extensii.tsx`), pe toate
+  drumurile (meniul, pagina bibliotecii, fereastra de confirmare, un fișier). Extensia își salvează întâi lucrul; ce nu
+  se poate salva aduce întrebarea **înaintea** instalării, iar „Rămân” nu instalează nimic. Altfel extensia se redeschide
+  singură la versiunea nouă, iar cât vine pachetul fila ei spune „se actualizează…”.
+- **Extensia ținută minte** (§A.3, răspunsul 3a): `tinuta.ts`, cheia `cncvs2.extensie-deschisa`. Se scrie când extensia a
+  pornit și se șterge când omul o închide ori când n-a pornit. La pornirea aplicației se redeschide doar dacă mai e
+  instalată și adresa nu cere altceva (`#instaleaza=`, `#biblioteca`, `#primeste-lucrare`, `?test`). Fără nicio cerere de
+  rețea.
+- **Fereastra refuzului** (§A.4): titlul „Pachetul nu se poate instala”, numele fișierului (sau adresa, ori numele și
+  versiunea din bibliotecă), motivul ca propoziție întreagă (`motivText.ts`, un singur loc) și drumul înapoi: **Alege alt
+  fișier…**, **Altă adresă…** sau, pentru o descărcare căzută din bibliotecă, **Încearcă din nou**.
+- **„Închizi …?”** (§A.5): „Rămân” e butonul principal, cu focusul; „Închide oricum” e roșu.
+- **Găsite de probe, reparate aici:** după o actualizare din meniu, butonul apăsat pleca din rând, focusul cădea pe pagină
+  și Escape nu mai închidea meniul (un efect ține acum focusul în meniul deschis); lipsa rețelei arăta textul browserului
+  („Failed to fetch”), acum doar „Nu e legătură la internet.”; după „Închide oricum” nu mai vine a doua întrebare.
+- **Față de propunere:** „Vezi în bibliotecă” deschide fila „Instalate” (pagina din catalog poate lipsi pentru o extensie
+  din fișier). Marginile din ADR 0230 și CSP-ul, neschimbate; pachetele, neschimbate.
+- **Mărimea:** pornirea neschimbată (109,8 kB); totalul 804,7 → 806,0 kB.
+- **Probele:** `extensii.stari.spec.ts` (13), `extensii.tinuta.test.ts`, `extensii.texte.test.ts`; trei pachete de probă
+  (`test/fixtures/extensii/`: una care aruncă la pornire, una care cade doar prima dată, una care nu mai răspunde).
+  Otrăvurile 55 / 56: E17 e echivalentă azi (garda care nu duce focusul la × cât meniul e deschis e dublată de efectul
+  meniului; a rămas ca apărare, fiindcă ordinea celor două ține de planificatorul browserului).
+
+### 3.Xi-2: claritatea (24.11.2026)
+
+- **„Ce poate face”** (§B.6): `dupaSensibilitate` (`pachet.ts`) înșiră permisiunile Mașina, Formele din desen, Contul,
+  Descărcările, Datele în browser, oricum le-ar scrie manifestul; mașina e marcată. O permisiune nouă a catalogului își
+  cere locul în ordine (proba cade până atunci). Fraza izolării: „Rulează izolată: poate doar ce scrie mai sus. Nu-ți
+  vede desenul, proiectele, adresa sau parola și nu ajunge singură la mașină.”
+- **Filele** (§B.7): „Din bibliotecă” și „Instalate”; sub „Instalează”, „Verificată de cvs2 la instalare.”
+- **Fără catalog** (§B.8): cu ceva instalat, fereastra trece singură pe „Instalate”, cu banda („Biblioteca are nevoie de
+  internet. Extensiile instalate merg și fără.”, ori cea a catalogului stricat) și „Reîncearcă”; când catalogul vine, se
+  întoarce la bibliotecă. O filă aleasă de om nu se mai schimbă singură. Fără nicio extensie, pagina arată cele două
+  drumuri din afara bibliotecii.
+- **Meniul** (§B.9): extensia deschisă are punctul, „deschisă” (când rândul n-are altceva de spus) și `aria-current`.
+  Sub `role="menu"` stau doar rânduri de meniu; eroarea unei actualizări stă sub listă, cu numele extensiei.
+- **Fila extensiei** (§B.10): numele tăiat la 22 de caractere, întreg în `title`; × de 28 px, cât `--tinta` la atingere
+  și la densitatea mare. Subtextele, 12 px.
+- **Găsite de probe, reparate aici:** în fereastra bibliotecii, focusul cădea pe pagină când butonul apăsat pleca de pe
+  ecran („Instalează” devine „Deschide”, „Reîncearcă” dispare cât se cere catalogul), iar Escape nu mai închidea
+  fereastra. Acum focusul se întoarce pe gestul principal al paginii (altfel pe fila aleasă), iar Escape închide și de
+  pe pagină. Fără catalog, o extensie instalată din bibliotecă scria „Instalată din afara bibliotecii”; acum, „Instalată
+  din bibliotecă”.
+- **Chenarul capturilor** (§B.11) exista din 3.Xh: n-a mai fost nimic de făcut.
+- **Mărimea:** pornirea neschimbată; totalul 806,0 → 806,5 kB.
+- **Probele:** `extensii.claritate.spec.ts` (11), `extensii.permisiuni.test.ts`, textele. Otrăvurile 41 / 43, după
+  întărirea a două probe (B04: fila aleasă de om se judeca înainte să cadă a doua cerere; B10: butonul „din fișier” al
+  paginii goale nu era apăsat). U10 și U11 rămân: proba manualului caută numele controlului în capitol, iar „din
+  bibliotecă” apare acolo oricum.
+
+### 3.Xi-3: descoperirea (24.11.2026)
+
+- **Captura mărită** (§C.12): `CapturaMarita.tsx`, peste fereastra bibliotecii. Clic sau Enter pe o captură; ← și → (și
+  de la un capăt la celălalt), locul („2 / 3”), textul alternativ ca legendă, × și Escape, care închide doar captura.
+  Focusul se întoarce pe captura la care s-a ajuns. Sub 40rem, capturile rămân imagini, derulate în pagină.
+- **Un `.zip` lăsat pe aplicație** (§C.13, răspunsul 4a): `useZipLasat` (`descoperire.ts`). Gazda îl ia înaintea
+  planșei, cât nu e deschis niciun dialog. Cu `extensie.json` în rădăcină (`numeZip`: doar directorul arhivei, nimic
+  dezarhivat), deschide confirmarea instalării. Altfel îl lasă din nou, în același loc, pentru Import, care spune:
+  „Arhivele .zip nu se importă: dezarhivează desenele și importă-le pe rând. O extensie se instalează din meniul
+  Extensii.” Mai multe fișiere deodată nu sunt atinse.
+- **Paleta** (§C.14): „Deschide <nume>” pentru fiecare extensie instalată, în grupul „Extensii”, după nume. Paleta
+  întreabă gazda printr-un eveniment pe `window` (`cncvs2-extensii`), iar gazda răspunde pe loc; registrul de acțiuni și
+  `App.tsx` nu s-au schimbat, deci **pornirea a rămas aceeași**. Numele evenimentului stă în `Paleta.tsx` și în
+  `descoperire.ts` (o probă îi ține egali): un import adevărat între ele ar lega bucățile.
+- **„Ce e nou”** (§C.15): `data` (`an-lună-zi`), la alegere, pe rândurile `noutati` din `extensii/biblioteca.json` și
+  din catalog (`esteData`). Build-ul refuză o dată greșită; cititorul catalogului o lasă să cadă singură („<id>:
+  noutati.data”), cu rândul întreg. Pagina și confirmarea unei actualizări arată „18.21.0 · 23.11.2026”; confirmarea
+  arată doar rândurile de după versiunea omului (`noutatiDupa`). Rândurile lui Easy 3Draw au primit datele; pachetul lui
+  e același.
+- **Punctul** (§C.16, răspunsul 1a): `noi.ts`, cheia `cncvs2.extensii-noi` (`{ v: 1, noi: { <id>: <versiune> } }`).
+  Se scrie când vine catalogul (la deschiderea meniului sau a bibliotecii), se citește la pornire fără nicio cerere și
+  scade când extensia e actualizată ori scoasă. Numele butonului o spune: „Extensii (o versiune nouă)”.
+- **Găsit de probe, reparat aici:** cu o versiune nouă în bibliotecă, pagina extensiei n-avea „Scoate” (trebuia să
+  actualizezi ca să poți scoate). Acum stă lângă „Actualizează la …” și „Deschide”.
+- **Pe telefon**, cele trei gesturi ale paginii nu mai stau înghesuite: „Actualizează la …” are rândul lui.
+- **Mărimea:** pornirea neschimbată; totalul 806,5 → 808,5 / 900 kB. Toată felia 3.Xi: pornirea +0, totalul +3,8 kB
+  (estimarea era ~+5). Cu `main` (`f536a4c`) adus: pornirea 109,9 kB (plafonul 120; cu ușa 114,4, cu Atelierul 114,7),
+  totalul 809,9 / 900.
+- **Probele:** `extensii.descoperire.spec.ts` (12), `extensii.descoperire.test.ts` (9), lista bibliotecii. Otrăvurile
+  60 / 60 (la prima rulare, 54 din 62). Două gărzi de prisos au ieșit cu otrăvurile lor (forma datei, cerută deja de scrierea ei înapoi;
+  întregul director al arhivei, judecat oricum intrare cu intrare), la fel sortarea din paletă (lista gazdei e deja
+  după nume).

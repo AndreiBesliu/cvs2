@@ -1,10 +1,11 @@
 # Biblioteca extensiilor (3.Xg, 3.Xh, 3.Xi)
 
-## 3.Xi: stările de lângă drumul bun (acceptată, în lucru, în cloud)
+## 3.Xi: stările de lângă drumul bun (gata, neunită, în cloud)
 
 _Aceeași linie și aceeași ramură (`wip/3.Xh-biblioteca-ui`, adusă la `main` `df9ae53` pe 24.11, fără ciocniri: ramura era
-toată în `main`). Starea: **ADR 0232 ACCEPTAT pe 24.11 („am raspuns”: 1a, 2a, 3a, 4a, 5a, fără note); în lucru: 3.Xi-1 (stările
-rupte), apoi 3.Xi-2 și 3.Xi-3.**_
+toată în `main`). Starea: **ADR 0232 acceptat pe 24.11 („am raspuns”: 1a, 2a, 3a, 4a, 5a, fără note) și implementat în aceeași zi: 3.Xi-1 (stările
+rupte), 3.Xi-2 (claritatea), 3.Xi-3 (descoperirea). PR-ul `AndreiBesliu/cvs2#17`, de unit de sesiunea principală, după
+completul verde. Pachetele nu s-au schimbat: Easy 3Draw e 18.22.0 (din 3.Ts, venit cu `main`), deci următoarea versiune e 18.23.0.**_
 
 Cererea owner-ului (23.11, după unirea lui 3.Xh): „vreau sa faci un audit si sa imi spui ce ai imbunatatie la UI/UX-ul
 functiei de extensii”. La auditul cu 14 constatări și la oferta „fac din ele ADR 0232 propus, cu schița, împărțit pe
@@ -33,6 +34,36 @@ felii”: „ok” (24.11).
   catalogul oprit sau stricat, telefonul, tema, engleza; `AUDIT_OUT`, `AUDIT_DOAR`, `AUDIT_SCARA`), `audit2.mjs`
   (contrastul prin pânză, tastatura, pornirea eșuată, țintele pe telefon), `audit3.mjs` (reîncărcarea, `.zip`-ul lăsat pe
   planșă, paleta). Rulează pe `vite preview` (4173), cu Chrome.
+
+**Ce s-a făcut (24.11), pe scurt** (amănuntele, în ADR 0232, „Implementat”):
+- **3.Xi-1** (`db4e087` … `b4a283d`): starea „n-a pornit” / „pornește greu” (`StarePornire.tsx`), versiunea nouă peste
+  extensia deschisă (`inainteDeInlocuire`, `dupaInlocuire`), extensia ținută minte (`tinuta.ts`), fereastra refuzului
+  (`motivText.ts`), „Rămân” principal. Otrăvurile 55 / 56.
+- **3.Xi-2** (`8ab8dfb`, `e7eac72`): ordinea permisiunilor (`dupaSensibilitate`), filele, biblioteca fără catalog, meniul
+  cu extensia deschisă, fila ei, focusul și Escape în fereastra bibliotecii. Otrăvurile 41 / 43.
+- **3.Xi-3** (`690f4da`): captura mărită (`CapturaMarita.tsx`), `.zip`-ul lăsat pe planșă, paleta și punctul
+  (`descoperire.ts`, `noi.ts`), `data` în „ce e nou”, „Scoate” lângă „Actualizează la …”. Otrăvurile 60 / 60 (`8b36ba8`; la prima rulare, 54 din 62).
+- **Mărimea:** pornirea neschimbată, totalul +3,8 kB (804,7 → 808,5). După aducerea lui `main` (`f536a4c`, cu plafonul
+  pornirii 120 kB, ADR 0145): pornirea 109,9 kB (cu ușa 114,4; cu Atelierul 114,7 / 120), totalul 809,9 / 900.
+- **`main` adus pe 24.11** (`98a76e7`): ciocnirea, doar în catalogul controalelor (scris din nou); rândul 18.22.0 al lui
+  Easy 3Draw a primit `data`.
+
+**Reguli rămase de la 3.Xi:**
+- **Un buton care dispare după clic lasă focusul pe pagină** (`body`): o fereastră cu astfel de
+  butoane („Instalează” devine „Deschide”, „Reîncearcă” dispare, „Actualizează” din rândul meniului) își întoarce singură
+  focusul și își închide Escape și de pe pagină. Proba: după clic, `toBeFocused()` pe ce urmează, apoi Escape.
+- **O permisiune nouă a catalogului își cere locul** în `ORDINE_SENSIBILITATE` (`src/extensii/pachet.ts`):
+  `extensii.permisiuni.test.ts` cade până atunci.
+- **Paleta și gazda extensiilor nu se importă una pe alta** (doar tipul cererii, `import type`): vorbesc prin evenimentul
+  `cncvs2-extensii` de pe `window`, cu numele scris în amândouă. Un import adevărat ar lega bucățile și ar atinge pornirea.
+- **O probă care așteaptă o stare după o cerere de rețea oprită numără cererile** (`expect.poll` pe contor), apoi se uită:
+  altfel judecă starea de dinaintea răspunsului (otrava B04).
+- **O probă veche care înșiră gesturile unei pagini le fixează:** `['Actualizează la …', 'Deschide']` ținea ascuns că
+  lipsea „Scoate”. Când o listă pare scurtă, întreabă de ce.
+- **În container, e2e-ul merge și pe al doilea port**, cât o rulare de otrăvuri ține 4173: `.tmp/pw2.config.ts` (copia lui
+  `pw.config.ts` cu 4174 și `npx vite preview --port 4174 --strictPort`). Cu patru procesoare, două rulări deodată țin.
+- **`data` din „ce e nou”** e la alegere; rândul nou al unei versiuni (regula din 3.Xh) o poate primi, ca `"data":
+  "2026-11-24"`.
 
 **Capcane găsite la audit:**
 - **O extensie „stricată” se face împachetând un dosar al ei** (`impacheteaza(<dosar>)`, cu o intrare care aruncă în

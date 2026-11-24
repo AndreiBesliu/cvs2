@@ -12862,3 +12862,63 @@ PR-ul `AndreiBesliu/cvs2#14` („De unit de sesiunea principală”).
 - **Verificat:** build-ul determinist spune „plafon 120” și „114.7 / 120”; traducerile, 990 de texte, 0 lipsă.
 - **Pe aceeași ramură (`unire-2411f`):** rândul publicării lotului al treisprezecelea și nota liniei trasării
   (`e104204f`, PR-ul `AndreiBesliu/cvs2#18`), amândouă doar documente.
+
+
+## 2026-11-24 — Felia 3.Xi-1: stările rupte ale extensiilor (ADR 0232 §A) (sesiune cloud)
+
+**Prompt:** „am raspuns” (formularul schiței lui ADR 0232: 1a, 2a, 3a, 4a, 5a, fără note; 5a = toate cele trei felii, în
+ordine). **Started:** 24.11, 10:25. **Completed:** 24.11, 11:35.
+
+- **O extensie care nu pornește** are o stare a ei, în locul paginii albe cu eroarea brută: **Încearcă din nou**, **Vezi în
+  bibliotecă**, **Închide**; eroarea, versiunea și sursa pachetului, sub **Detalii**, cu **Copiază**. Aceeași stare după
+  10 s de pornire.
+- **O versiune nouă peste extensia deschisă** îi salvează întâi lucrul și o redeschide; ce nu se poate salva aduce
+  întrebarea înaintea instalării, iar „Rămân” nu instalează nimic. Pe toate drumurile: meniul, pagina bibliotecii,
+  fereastra de confirmare, un fișier.
+- **Reîncărcarea paginii** redeschide extensia în care erai (`cncvs2.extensie-deschisa`), fără nicio cerere de rețea.
+- **Un pachet refuzat** are fereastra lui: numele fișierului, motivul ca propoziție, drumul înapoi.
+- **„Închizi …?”:** „Rămân” e principal, „Închide oricum” e roșu.
+- **Găsite de probe:** focusul care cădea din meniu după o actualizare (Escape nu-l mai închidea); textul browserului
+  („Failed to fetch”) la lipsa rețelei.
+- **Porțile:** tipurile, regulile de import, build-ul determinist; e2e-ul extensiilor (cu Chrome); pornirea 109,8 kB
+  (neschimbată), totalul 804,7 → 806,0 / 900 kB. Otrăvurile 55 / 56, în clonă: E17, echivalentă azi.
+
+## 2026-11-24 — Felia 3.Xi-2: claritatea extensiilor (ADR 0232 §B) (sesiune cloud)
+
+**Prompt:** același („am raspuns”: 5a, toate cele trei felii). **Started:** 24.11, 10:55. **Completed:** 24.11, 11:55.
+
+- **„Ce poate face”** înșiră permisiunile după cât de sensibile sunt (mașina prima, marcată); fraza izolării nu le mai
+  contrazice. Filele: „Din bibliotecă” și „Instalate”.
+- **Fără internet** (sau cu un catalog stricat), cu ceva instalat, fereastra trece singură pe „Instalate”, cu o bandă și
+  „Reîncearcă”; fără nicio extensie, pagina arată cele două drumuri din afara bibliotecii.
+- **Meniul** marchează extensia deschisă; eroarea unei actualizări stă sub listă, cu numele extensiei. Fila extensiei
+  taie un nume lung și are un × cât o țintă.
+- **Găsite de probe:** în fereastra bibliotecii, focusul cădea pe pagină când butonul apăsat dispărea („Instalează”,
+  „Reîncearcă”), iar Escape nu mai închidea fereastra; fără catalog, o extensie din bibliotecă scria „din afara
+  bibliotecii”.
+- **Porțile:** ca la 3.Xi-1; 127 de probe e2e ale extensiilor, verzi; totalul 806,0 → 806,5 / 900 kB. Otrăvurile
+  41 / 43, în clonă, după două probe întărite (B04, B10); U10 și U11, la manual, nu se pot prinde.
+
+## 2026-11-24 — Felia 3.Xi-3: descoperirea extensiilor (ADR 0232 §C) (sesiune cloud)
+
+**Prompt:** același („am raspuns”: 5a, toate cele trei felii). **Started:** 24.11, 11:25. **Completed:** 24.11, 12:25.
+
+- **Captura mărită** peste fereastra bibliotecii (← și →, „2 / 3”, legenda, Escape; focusul înapoi pe captură).
+- **Un `.zip` de extensie lăsat pe planșă** deschide confirmarea instalării; alt `.zip` rămâne la Import, al cărui refuz
+  spune de unde se instalează o extensie.
+- **Paleta:** „Deschide <nume>” pentru fiecare extensie instalată, fără nicio schimbare în registru sau în `App.tsx`
+  (pornirea, neschimbată).
+- **„Ce e nou”** arată data versiunii (`data`, la alegere) și apare și în confirmarea unei actualizări.
+- **Punctul de pe butonul Extensii:** din ce s-a aflat la ultima deschidere a meniului (`cncvs2.extensii-noi`), fără
+  nicio cerere la pornire.
+- **Găsit de probe:** cu o versiune nouă în bibliotecă, pagina extensiei n-avea „Scoate”.
+- **Porțile:** tipurile, regulile de import, build-ul determinist; 141 de probe e2e (extensiile, biblioteca, carcasa,
+  importul, paleta), verzi; pornirea neschimbată, totalul 806,5 → 808,5 / 900 kB.
+  Otrăvurile 60 / 60, în clonă; la prima rulare, 54 din 62: două gărzi și o sortare de prisos au ieșit cu otrăvurile lor
+  (forma datei, directorul arhivei, ordinea din paletă), patru probe au fost întărite (intrarea ruptă și comentariul din
+  directorul arhivei, scoaterea fără catalog, a doua extensie din paletă), iar una, la manual, n-avea ce prinde.
+  Completul, pornit pe ramură.
+- **`main` adus** (`f536a4c`: lotul al paisprezecelea, plafonul pornirii 120 kB): ciocnirea, doar în catalogul
+  controalelor, scris din nou; rândul 18.22.0 al lui Easy 3Draw a primit `data`. Pe arborele unit: 135 de probe e2e ale
+  extensiilor, verzi; pornirea 109,9 kB (cu ușa 114,4; cu Atelierul 114,7 / 120), totalul 809,9 / 900 kB.
+- **Toată felia 3.Xi:** pornirea +0, totalul +3,8 kB. PR-ul `AndreiBesliu/cvs2#17`; unirea e a sesiunii principale.
