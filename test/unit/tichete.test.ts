@@ -134,7 +134,8 @@ test('rândul din fila Tichete: ce lipsește e necunoscut (null, gol), nu invent
   });
   // Autorul și sesiunea raportării (A.11d): doar cu forma lor.
   assert.deepEqual([tichetDin('t7', { autor: 'uidAna', sesiune: 'k3j9x0a1b2c3d4e5' }).autor, tichetDin('t7', { sesiune: 'k3j9x0a1b2c3d4e5' }).sesiune], ['uidAna', 'k3j9x0a1b2c3d4e5']);
-  assert.deepEqual([tichetDin('t8', { autor: '', sesiune: 'Sesiunea/../x' }).autor, tichetDin('t8', { sesiune: 7 }).sesiune], [null, null]);
+  const rau = tichetDin('t8', { autor: '', sesiune: 'Sesiunea/../x' });
+  assert.deepEqual([rau.autor, rau.sesiune, tichetDin('t9', { sesiune: 7 }).sesiune], [null, null, null]);
   // Pașii dinaintea raportării (ADR 0262, A.11b): cei buni rămân, ceilalți cad.
   assert.deepEqual(tichetDin('t6', { pasi: [{ fel: 'unealta', id: 'cerc', ms: 5 }, { fel: 'unealta', id: 'Cerc!', ms: 5 }] }).pasi, [{ fel: 'unealta', id: 'cerc', ms: 5 }]);
   // Proiectul atașat (felia 15.B↑b): meta din tichet, cu marginile ei; o formă greșită = fără proiect, nu un buton stricat.
