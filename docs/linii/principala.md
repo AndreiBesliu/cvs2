@@ -132,8 +132,8 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
 
 ## Starea pe 24.11.2026, dimineața (după a douăsprezecea unire din cloud)
 
-- **Pe test:** `883a8caa` (tot până la lotul al unsprezecelea: A.9a și A.9b; publicat pe 24.11 la 07:14, cu serverul:
-  funcția nouă `agregaUtilizarea`, regulile Firestore, indexurile).
+- **Pe test:** `df9ae539` (tot până la lotul al doisprezecelea: A.10 și A.11a; publicat pe 24.11 la 09:41, cu
+  serverul: `logClientError` și `agregaUtilizarea` la zi).
 - **`main`, din cloud:** pe 23.11: 3.Tq (`0ae9c6c1`); 11.3↑e și A.4 (`ddaa7ead`); 3.Tr, unită de linia elicelor
   (`d262e57a`); 25.8↑a și A.5 (`1b46c955`), cu reparația probei extensiilor (`8287d66e`); 11.3↑f, unită de linia
   planșelor (`f4601938`); A.6 (`4497d639`); 3.Xh (`2d1e482c`) și 12.1↑e-3 cu 12.1↑e-4 (`03460cab`); A.8a cu A.8b
@@ -142,12 +142,17 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
 - **Liniile** (vezi [indexul](README.md)):
   - **gata pe ramură, la cuvântul owner-ului:** fereastra exportului (28.8↑a–b-3, ADR 0290; `AndreiBesliu/cvs2#11`),
     după ce o încearcă pe canalul `export`;
-  - **în lucru:** frezele (16.A↑b: alegerea în proiect, documentul v27), adminul (A.11b, bifa pașilor la raportare,
-    cu completul pe `cd00283b`; A.11c, cronologia unui om; apoi A.11d), exportul (desenele, 28.8↑b–f);
-  - **la cuvântul owner-ului:** A.7 (adminul pe telefon), 25.8↑b, 3.Ts, restul bibliotecii extensiilor (căutarea,
-    captura mărită), următoarea felie a incrustațiilor, 11.5↑b (după etapa 13);
-  - **fără felie în lucru:** planșele (tăierea plăcii 11, la owner), elicele, trasarea, incrustațiile, biblioteca,
-    tăierea (după 10.3↑o: 10.3↑p–r), imprimanta (după 3.6v: 3.6w, camera), aranjamentele (28.1↑). Pornesc la cuvântul
+  - **în lucru, cu PR și completul pornit (24.11, 09:30):** trasarea (25.8↑b, `AndreiBesliu/cvs2#14`), frezele
+    (16.A↑b-1, documentul v27, `#16`), elicele (3.Ts, ventilatorul cu carcasă, 18.22.0, `#15`), adminul (A.11b și
+    A.11c, `#13`); se unesc la raportul liniei. Mai multe în același lot: catalogul controalelor se scrie din nou pe
+    ramura de unire (trasarea și adminul l-au atins), deci porți noi acolo; build-ul determinist spune dacă pornirea
+    mai încape;
+  - **în lucru, fără PR de unit:** exportul (desenele, 28.8↑b–f), biblioteca (ADR 0232 propus, întrebările la owner,
+    `#17`);
+  - **la cuvântul owner-ului:** A.7 (adminul pe telefon), restul bibliotecii extensiilor (căutarea, captura mărită),
+    următoarea felie a incrustațiilor, 11.5↑b (după etapa 13);
+  - **fără felie în lucru:** planșele (tăierea plăcii 11, la owner), incrustațiile, tăierea (după 10.3↑o: 10.3↑p–r),
+    imprimanta (după 3.6v: 3.6w, camera), aranjamentele (28.1↑). Pornesc la cuvântul
     owner-ului, cu un brief scris de sesiunea principală și lipit de owner într-o sesiune cloud nouă;
   - **încheiate:** ancorele (6.V↑), raportările (15.B↑b), galeria (3.Tp, ADR 0281), probele instabile.
 - **La owner:**

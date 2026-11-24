@@ -12565,7 +12565,7 @@ PR-ul `AndreiBesliu/cvs2#13` („De unit acum (A.9a, A.9b): `dbb0306a`”).
 **Prompt:** același brief de predare al sesiunii principale („unește ce se poate”), la raportul liniei adminului din
 PR-ul `AndreiBesliu/cvs2#13` („De unit acum (A.9a, A.9b, A.10, A.11a): `0580f504`”). Între timp, owner-ul: „i-am dat sa
 continue, tu ce poti sa faci intre timp?”.
-**Started:** 24.11, 07:35. **Completed:** unirea în `main`, 24.11, 08:31; publicarea pe test, la rândul ei.
+**Started:** 24.11, 07:35. **Completed:** unirea în `main`, 24.11, 08:31; publicarea pe test, 24.11, 09:41.
 
 - **Înainte:** lotul al unsprezecelea pe test (`883a8caa1f21`, 07:14, cu serverul); rândul publicării lui stătea pe
   `unire-2411c` (`c611346a`, doar documente) și intră în `main` cu lotul acesta.
@@ -12592,3 +12592,11 @@ continue, tu ce poti sa faci intre timp?”.
   container).
 - **La owner:** fereastra exportului, verificarea juridică a utilizării aplicației înaintea live-ului, „cine unește în
   `main`”, plafonul pornirii (mai sunt 0,6 kB), răspunsul la lista de mai sus.
+- **Publicarea (`df9ae539`):** rapidul și completul pe `main` verzi (completul, 51 min 41 s), `publica.yml` verde în
+  3 minute, cu serverul: cele 14 funcții actualizate (între ele `logClientError` și `agregaUtilizarea`), regulile și
+  indexurile publicate din nou; adresa de test spune `df9ae5397d8e` (24.11, 09:41). Proba de fum din container:
+  aplicația se deschide cu versiunea publicată, fără erori în consolă; CSP-ul, workerul PWA, catalogul extensiilor,
+  textele, manualul, dicționarul codurilor și documentația răspund; `/admin` arată pagina de intrare.
+- **După publicare:** PR-uri noi, pornite de owner în sesiunile liniilor, cu completul în lucru: trasarea 25.8↑b
+  (`AndreiBesliu/cvs2#14`), frezele 16.A↑b-1 (`#16`, documentul v27), elicele 3.Ts (`#15`), adminul A.11b și A.11c
+  (`#13`); biblioteca, ADR 0232 propus (`#17`, doar documente). Se unesc la raport.
