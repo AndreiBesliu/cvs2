@@ -3,7 +3,7 @@
 _cncvs2, biblioteca de freze („Frezele mele”), felia 16.A↑ adusă din etapa 16: ramura `wip/16.A-freze` (din `main`
 `c8b235ab`), ADR-urile 0300–0309, canalul `freze`; ADR 0300 ACCEPTAT pe 23.11 („Da, 1a–6a”);
 16.A↑a și ADR 0301 (plafonul total 900 kB) UNITE în `main` (`b1797933`); 16.A↑b-1 (documentul v27, valorile frezei în
-program) GATA pe ramură; urmează 16.A↑b-2_
+program) UNITĂ în `main` (`32b33a42`); urmează 16.A↑b-2 sau 16.A↑c, la cuvântul owner-ului_
 
 Pornită pe 23.11.2026, în sesiunea cloud a liniei, la cererea owner-ului: „Vreau sa pot crea freze l sau profiluri de freze in
 aplicatie si sa le salvez in cont”. Rândurile din prag: „Bibliotecă de freze cu geometrie reală (dreaptă, bilă, toroidală, V,
@@ -41,6 +41,14 @@ gravare, profil, formă desenată)” și „Freze de profil desenate de utiliza
   ADR 0290, dacă e unită); **b-3** nota schimbării din bibliotecă. Unitare noi 31; otrăvuri 34 / 34. Pornirea 109,5 kB (cu
   ușa 114,0, cu Atelierul 114,3 / 115: mai rămân 0,7 kB), totalul 800,5 / 900. **De acum, un câmp nou al documentului ia
   v28.**
+- **24.11, 11:29: 16.A↑b-1 unită în `main`** (`112c32f6` în `32b33a42`, a paisprezecea unire din cloud, de sesiunea
+  principală, în lot cu 3.Ts și A.11b–A.11e; vârful `main` `356db9bd`). Completul liniei, verde pe `112c32f6`; porțile
+  lotului, verzi pe `32b33a42` (unit 10 111 / 0, e2e 655 / 655, funcțiile 126 / 126, paginile 53 / 53). Ramura adusă la
+  `356db9bd` (`d751782a`; DEVLOG-ul luat din `main`, unde intrarea feliei era deja). PR-ul #16 rămâne deschis, pentru
+  feliile următoare. **Pornirea, pe `main`: 114,7 / 115 kB cu ușa și cu Atelierul (mai sunt 0,3 kB):** lista „Freza” stă
+  doar în bucățile la cerere (fereastra exportului, panoul Tăierea); dacă atinge pornirea, stop și cifra, la owner.
+  Controalele cu nume cer `node scripts/catalog-controale.ts --scrie`. Întrebarea la owner: 16.A↑b-2 pe fereastra
+  exportului de azi, sau întâi 16.A↑c (contul) cât PR-ul #11 (fereastra refăcută) așteaptă unirea.
 - **Feliile**, în ordine: 16.A↑a (biblioteca în browser, fereastra, fișierul), apoi b (alegerea în proiect, v27), c
   (contul), d (calibrarea), e (bila și toroidala), f (profilul desenat), g (valorile pe material).
 
