@@ -104,7 +104,7 @@ test('felul tăierii din butoane: rolul de acum apăsat; alt rol se scrie pe pie
   await expect(rol(page, 'interior')).toHaveAttribute('aria-pressed', 'true');
   await expect(rol(page, 'exterior')).toHaveAttribute('aria-pressed', 'false');
   await buton(page, 'freza').click();
-  await expect(page.locator('[data-operatie] [data-camp="latura"]')).toHaveValue('interior');
+  await expect(page.locator('[data-operatie] input[data-camp="latura"]:checked')).toHaveValue('interior');
   await page.getByRole('button', { name: 'Închide' }).click();
   await page.locator('[data-actiune="istoric.anuleaza"]').click();
   await expect(rol(page, 'exterior')).toHaveAttribute('aria-pressed', 'true');

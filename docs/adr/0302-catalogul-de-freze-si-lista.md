@@ -103,10 +103,12 @@ materiale, dacă așa vrea.
 | 16.A↑h-1 | Fereastra ca listă: fișa frezei alese, doar de citit, cu „Editează”, „Duplică”, „Șterge”; configuratorul la „Editează” și „Freză nouă”; comutatorul „Listă / Configurator”, ținut în browser |
 | 16.A↑h-2 | Grupurile omului (`grup` pe freză, în fișier și în cont): arborele, „Mută în”, grupul nou, redenumirea |
 | 16.A↑h-3 | Catalogul: felurile de azi (plată, planare, V, gravare) cu mărimile lor; „Pune în frezele mele” (una, un grup, tot) |
-| 16.A↑h-4 | Felurile noi în bibliotecă și în catalog, cu siluetele și editorul lor (bila, toroidala, conica cu vârf rotund, burghiul, profilurile parametrice), „în curând” până la CAM-ul lor (16.A↑e, f) |
+| 16.A↑h-4 | Felurile noi în bibliotecă și în catalog, cu siluetele și editorul lor (bila, toroidala, conica cu vârf rotund, burghiul), „în curând” până la CAM-ul lor (16.A↑e) |
+| 16.A↑h-5 | Profilurile parametrice (roundover, ogee, roman ogee, panou ridicat, canelură), în bibliotecă și în catalog, „în curând” până la CAM-ul lor (16.A↑f) |
 
 Fereastra ca listă (§3) și grupurile (§4) erau o singură felie la propunere; s-au despărțit la acceptare, ca fiecare să încapă
-în jumătatea de zi a unei felii (`PLAN.md` §4), în ordinea din răspunsul 5.
+în jumătatea de zi a unei felii (`PLAN.md` §4), în ordinea din răspunsul 5. Profilurile parametrice au ieșit din 16.A↑h-4
+la implementare, în 16.A↑h-5: fiecare are o siluetă cu mai mulți parametri (raze, trepte, unghiuri), deci altă jumătate de zi.
 
 Mărimea: catalogul e date (JSON în precache, ca manualul), nu JavaScript; fereastra crește cu arborele și fișa.
 
@@ -188,3 +190,56 @@ Pe 24.11.2026, în aceeași sesiune, după 16.A↑h-1:
 Probele (întâi): modelul, fișierul și depozitul (unitare), fereastra în Edge (grupul nou, cel existent, redenumirea cu Escape
 și cu refuzul, reîncărcarea, editorul, „Fără grup”). Otrăvurile: `test/otravuri/16.A-h2.py`.
 
+## Implementarea (16.A↑h-3)
+
+Pe 24.11.2026, în aceeași sesiune, după 16.A↑h-2:
+
+- **Catalogul** (`src/model/catalogFreze.ts`), 69 de freze, din tabelul de la §1, pentru felurile pe care CAM-ul le taie
+  azi: plate Ø1–Ø19,05 (17), de planare Ø19,05–Ø50,8 (5, plate cu grupul lor), V-urile obișnuite (17: 30° și 45° pe Ø6 și
+  Ø12,7; 60° pe Ø6, Ø12, Ø12,7, Ø25,4; 90° și pe Ø31,75; 120° și 150° pe Ø12,7 și Ø25,4), gravarea (30: 10°–60° cu vârful
+  0,1–0,5 pe Ø3,175; 30°, 45°, 60° cu vârful 0,2 și 0,5 pe Ø6). Id-urile sunt fixe (`cat-plata-6`, `cat-v-90-12.7`), iar
+  numele le propune fereastra, în limba omului. **Catalogul e scris din tabel, în bucata ferestrei** (~1 kB), nu ca JSON în
+  precache, cum spunea §7: e mai mic așa.
+- **Valorile de pornire**, din fel și diametru: turația (20 000 până la Ø3,175, 18 000 până la Ø6,35, 16 000 până la
+  Ø12,7, 14 000 până la Ø19,05, apoi 12 000), avansul din două tăișuri și așchia pe dinte în lemn (0,02–0,1 mm, după
+  diametru), rotunjit din 50 în 50, plonjarea o treime din avans, pasul (plata: Ø / 2, cel mult 4; planarea 1, cu pasul
+  lateral 50 %; V-ul 1,5–3), tăișul plăților (6–32 mm; V-ul și gravarea fără, conul îl dă); gravarea: 20 000, un tăiș, 800 și
+  250 mm/min, pasul 0,5. Fișa le spune „de pornire, de verificat pe material”. **Țolii** (1/8"–2") intră ca notă a frezei puse.
+- **„Pune în frezele mele”** (`cuDinCatalog`, în `src/model/dinCatalog.ts`, fără datele catalogului, ca panoul Tăierea, care
+  folosește depozitul, să nu le aducă): o freză cu aceeași geometrie (felul, diametrul, unghiul, vârful) care e deja în
+  bibliotecă se sare și se numără; altfel intră cu un nume liber și cu primul T liber, într-o singură scriere; peste plafon,
+  restul se spune. Plata Ø19,05 și planarea Ø19,05 au aceeași geometrie, deci intră o singură dată.
+- **Fereastra:** sub bibliotecă, „Catalogul (69)”, strâns la început; deschis, grupurile Plate, Planare, În V, Gravare, cu
+  „Pune toate” pe fiecare și „Pune tot ce vezi” lângă titlu; căutarea și filtrul pe fel aleg și din el. O freză din catalog
+  își arată fișa (fără T și fără grup), cu „Pune în frezele mele”, oprit cu „E deja în frezele mele.” când geometria e la om.
+
+Probele (întâi): catalogul și punerea, pe hârtie (unitare), fereastra în Edge. Otrăvurile: `test/otravuri/16.A-h3.py`.
+
+## Implementarea (16.A↑h-4)
+
+Pe 24.11.2026, în aceeași sesiune, după 16.A↑h-3, la „continua cu 16.A↑h-4”:
+
+- **Felurile noi** (`src/model/freza.ts`): bila, toroidala (colțul rotunjit), conica cu vârf rotund și burghiul, după plată,
+  V și gravare. `FELURI_CU_CAM` (plata, v, gravare) spune care se pot alege în proiect: lista „Freza” din Tăierea le oferă
+  doar pe acelea (`frezePotrivite`), iar `sculaDinFreza` refuză celelalte (nu există copie pentru document). **Câmpul nou
+  `raza`** e al toroidalei (raza colțului) și al conicei (raza vârfului): obligatorie la ele, peste 0 și sub Ø / 2; curățarea
+  o scoate de pe celelalte feluri. Unghiul e al V-ului, al gravării, al conicei (unghiul inclus) și al burghiului (unghiul
+  vârfului, 118° implicit).
+- **Capătul pe hârtie** (`inaltimeCon`, din care vin silueta și refuzul tăișului prea scurt): bila R; toroidala r; conica
+  r(1 − sin α) + (R − r·cos α) / tan α, cu α jumătatea unghiului (arcul vârfului, tangent la flanc); burghiul R / tan α.
+- **Silueta** (`src/model/profilFreza.ts`): linia frântă de la vârf la diametru, cu arcele la pași egali (bila, colțul
+  toroidalei, vârful conicei), apoi corpul drept.
+- **Fișierul:** CSV-ul citește felurile și în engleză (ball, bullnose, tapered, drill) și coloana `raza`, la capătul
+  tabelului. **Serverul nu se schimbă:** freza stă în cont ca text JSON, fără judecata felului (ADR 0300 §3); un client vechi
+  ține o freză de fel necunoscut neatinsă.
+- **Catalogul** (`src/model/catalogFreze.ts`), 119 freze: bile Ø1–Ø12,7 (12, pasul lateral 10 %, de finisare), toroidale
+  (6: Ø6 R0,5 / R1, Ø8 R1, Ø10 R1 / R2, Ø12 R2), conice cu vârf rotund pe 1/4" (9: 10°, 15°, 20° cu R0,25, R0,5, R1;
+  18 000, 1 500 și 500 mm/min, pasul 1), burghie Ø1–Ø12 din 0,5 în 0,5 (23, 118°). Punerea în bibliotecă socotește și raza
+  în geometrie: două toroidale cu raze diferite sunt freze diferite.
+- **Fereastra:** felurile noi în lista felului, cu valorile de pornire la schimbare (unghiul 118° la burghiu, 15° la conică;
+  raza 1 la toroidală, 0,5 la conică); câmpul „Raza colțului” / „Raza vârfului”; „Unghiul vârfului” la burghiu; refuzul
+  tăișului spune „Cel puțin capătul” în afara V-ului și a gravării. **„În curând în proiect”** pe rândul listei, în fișă (cu
+  nota) și pe grupul catalogului, la felurile fără CAM.
+
+Probele (întâi): modelul, capătul, profilul, CSV-ul, catalogul și alegerea, pe hârtie (unitare); fereastra și Tăierea în
+Edge. Otrăvurile: `test/otravuri/16.A-h4.py`.

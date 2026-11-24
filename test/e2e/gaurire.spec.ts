@@ -45,9 +45,11 @@ test('găurirea din fereastra exportului: refuzul cu motiv, ciocănirea în cent
   await page.goto('/');
   await adauga(page, 'cerc');
   await page.locator('[data-actiune="export.gcode"]').click();
-  const rand = page.locator('tr[data-operatie]').first();
-  await rand.locator('[data-camp="latura"]').selectOption('gaurire');
-  for (const camp of ['urechi', 'rampa', 'intrari', 'colturi']) await expect(rand.locator(`[data-camp="${camp}"]`)).toBeDisabled();
+  const rand = page.locator('[data-fisa="op"]').first();
+  await rand.locator('input[data-camp="latura"][value="gaurire"]').check();
+  // Ce e al profilului nu apare pe fișă (ADR 0290), cu nota de ce, sub Tăietura.
+  for (const camp of ['urechi', 'rampa', 'intrari', 'colturi']) await expect(rand.locator(`[data-camp="${camp}"]`)).toHaveCount(0);
+  await expect(rand.locator('[data-nota="nu-se-aplica"]')).toBeVisible();
   const retragere = page.locator('[data-camp="retragere"]');
   await expect(retragere).toHaveValue('1');
   await retragere.fill('0');
@@ -94,7 +96,7 @@ test('găurirea din fereastra exportului: refuzul cu motiv, ciocănirea în cent
   if ((await comuta.getAttribute('aria-expanded')) !== 'true') await comuta.click();
   await expect(page.locator('[data-nod="operatie"]')).toHaveText(['Găurire pe 1 cerc: 10 mm în pași de 3 mm, T1 Ø16']);
   await page.locator('[data-actiune="export.gcode"]').click();
-  await expect(page.locator('tr[data-operatie]').first().locator('[data-camp="latura"]')).toHaveValue('gaurire');
+  await expect(page.locator('[data-fisa="op"]').first().locator('input[data-camp="latura"]:checked')).toHaveValue('gaurire');
   await expect(page.locator('[data-camp="retragere"]')).toHaveValue('2');
 });
 
@@ -102,9 +104,11 @@ test('găurirea se oferă doar pe un rând numai cu cercuri: dreptunghiul n-o ar
   await page.goto('/');
   await adauga(page, 'dreptunghi');
   await page.locator('[data-actiune="export.gcode"]').click();
-  const latura = page.locator('tr[data-operatie]').first().locator('[data-camp="latura"]');
+  const latura = page.locator('[data-fisa="op"]').first().locator('[data-alegere="latura"]');
   await expect(latura).toBeVisible();
-  const optiuni = await latura.locator('option').evaluateAll((o) => o.map((x) => (x as HTMLOptionElement).value));
+  // Pe un rând fără cercuri, găurirea stă pe cartonaș, oprită, cu motivul (ADR 0290, 28.8↑b-3).
+  const optiuni = await latura.locator('input:enabled').evaluateAll((o) => o.map((x) => (x as HTMLInputElement).value));
   expect(optiuni).toContain('buzunar');
   expect(optiuni).not.toContain('gaurire');
+  await expect(latura.locator('.dx-card').filter({ has: page.locator('input[value="gaurire"]') })).toContainText('doar pe cercuri');
 });

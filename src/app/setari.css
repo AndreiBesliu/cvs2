@@ -1,0 +1,194 @@
+/* Fereastra Setări (ADR 0330 §6, felia 10.4↑a-3): vine cu bucata ei, la cerere. Secțiunile în stânga, secțiunea aleasă în
+   dreapta; sub 40 rem, secțiunile stau deasupra, pe un rând. Culorile textului sunt cele derivate ale temei (`--t`,
+   `--t-slab`), deci contrastul ține în ambele teme. */
+.dialog-setari {
+  width: min(52rem, calc(100vw - 2rem));
+}
+
+.setari-corp {
+  display: grid;
+  grid-template-columns: 10rem 1fr;
+  gap: var(--sp-4);
+  align-items: start;
+}
+
+.setari-sectiuni {
+  display: grid;
+  gap: var(--sp-1);
+  position: sticky;
+  top: 0;
+}
+
+.setari-sectiuni button {
+  text-align: start;
+}
+
+.setari-sectiuni button[aria-current='page'] {
+  background: var(--s-ales);
+  border-color: var(--a-plin);
+}
+
+.setari-sectiune h3 {
+  margin: 0;
+  font-size: var(--fs-3);
+  font-weight: 650;
+}
+
+.setari-intro {
+  margin: var(--sp-1) 0 var(--sp-3);
+  font-size: var(--fs-2);
+  color: var(--t-slab);
+}
+
+/* Cota de probă: deasupra grupurilor, ținută la vedere cât se derulează. */
+.setari-proba {
+  position: sticky;
+  top: calc(-1 * var(--sp-4));
+  z-index: 1;
+  margin: 0 0 var(--sp-3);
+  padding: var(--sp-2);
+  border: 1px solid var(--l-margine);
+  border-radius: var(--r-2);
+  background: var(--s-panou);
+}
+
+.setari-proba svg {
+  display: block;
+  width: 100%;
+  height: 7rem;
+}
+
+.setari-proba figcaption {
+  font-size: var(--fs-1, 0.75rem);
+  color: var(--t-slab);
+}
+
+.setari-proba-forma {
+  fill: none;
+  stroke: var(--t-slab);
+  stroke-width: 1;
+}
+
+.setari-proba-cota line,
+.setari-proba-gol {
+  stroke: var(--cota);
+  stroke-width: 1;
+  fill: none;
+}
+
+.setari-proba-cota line.setari-proba-bara {
+  stroke-width: 1.5;
+}
+
+.setari-proba-plin,
+.setari-proba-cota text {
+  fill: var(--cota);
+  stroke: none;
+}
+
+.setari-proba-cota text {
+  font-family: var(--font, system-ui, sans-serif);
+}
+
+.setari-grup {
+  margin: 0 0 var(--sp-3);
+  padding: var(--sp-3);
+  border: 1px solid var(--l-margine);
+  border-radius: var(--r-2);
+}
+
+.setari-grup header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-2);
+  margin-bottom: var(--sp-2);
+}
+
+.setari-grup h4 {
+  margin: 0;
+  font-size: var(--fs-3);
+  font-weight: 650;
+}
+
+/* Un rând: eticheta și controlul pe o linie, fraza sub ele. */
+.dialog .setari-rand {
+  display: grid;
+  grid-template-columns: minmax(10rem, 1fr) minmax(8rem, 14rem);
+  align-items: center;
+  gap: var(--sp-1) var(--sp-3);
+  padding: var(--sp-1) 0;
+  font-size: var(--fs-2);
+}
+
+.dialog .setari-rand > label {
+  display: block;
+  color: var(--t);
+}
+
+.dialog .setari-rand > small {
+  grid-column: 1 / -1;
+  color: var(--t-slab);
+}
+
+.dialog .setari-rand input[type='text'],
+.dialog .setari-rand select {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.dialog .setari-rand input[type='color'] {
+  width: 3rem;
+  height: 1.75rem;
+  padding: 0;
+}
+
+.dialog .setari-bifa {
+  grid-template-columns: auto 1fr;
+}
+
+.dialog .setari-bifa > small {
+  grid-column: 2;
+}
+
+.dialog .setari-rand .setari-gresit {
+  color: var(--rosu);
+}
+
+.dialog .setari-rand input[aria-invalid='true'] {
+  border-color: var(--rosu);
+}
+
+.setari-bife {
+  margin: 0 0 var(--sp-2);
+  padding: 0;
+  border: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 var(--sp-4);
+}
+
+.setari-bife legend {
+  width: 100%;
+  padding: 0;
+  margin-bottom: var(--sp-1);
+  font-size: var(--fs-2);
+  color: var(--t);
+}
+
+@media (width < 40rem) {
+  .setari-corp {
+    grid-template-columns: 1fr;
+  }
+
+  .setari-sectiuni {
+    position: static;
+    display: flex;
+    flex-wrap: wrap;
+  }
+
+  .dialog .setari-rand {
+    grid-template-columns: 1fr;
+  }
+}

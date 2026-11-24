@@ -44,19 +44,19 @@ o('D02', D, '  const nivel = (scalar(a, n) + scalar(b, n)) / 2 + d;', '  const n
 o('D03', D, '    if (Math.abs(t) <= s.gol) continue;\n', '', 'desen', 'extensia unui punct de pe linie')
 o('D04', D, '    extensii.push([plus(p, n, sg * s.gol), plus(p, n, t + sg * s.depasire)]);',
   '    extensii.push([plus(p, n, sg * s.gol), plus(p, n, t)]);', 'desen', 'fără depășire')
-o('D05', D, '  const inauntru = lung >= 2 * s.capat;', '  const inauntru = true;', 'desen', 'capetele mereu înăuntru')
+o('D05', D, '    if (lung >= 2 * s.capat) capete = [', '    if (lung >= 0) capete = [', 'desen', 'capetele mereu înăuntru')
 o('D06', D, '  if (unghi > 90 + 1e-9) unghi -= 180;\n', '', 'desen', 'cifra cu capul în jos')
 o('D07', D, "  return ey >= ex ? 'orizontala' : 'verticala';", "  return ey > ex ? 'orizontala' : 'verticala';", 'desen',
   'Automată în colț, la egalitate')
 o('D08', D, "  if (ex === 0 && ey === 0) return 'aliniata';\n", '', 'desen', 'Automată înăuntru: orizontala')
-o('D09', D, "  if (s.includes('.')) s = s.replace(/0+$/, '').replace(/\\.$/, '');", "  s = s.replace(/0+$/, '').replace(/\\.$/, '');", 'desen',
+o('D09', D, "  if (f.zerouri === 'taiate' && s.includes('.')) s = s.replace(/0+$/, '').replace(/\\.$/, '');", "  if (f.zerouri === 'taiate') s = s.replace(/0+$/, '').replace(/\\.$/, '');", 'desen',
   'zerourile întregului tăiate')
 o('D10', D, '  if (v < 0 && r !== 0) s = `-${s}`;', '  if (v < 0) s = `-${s}`;', 'desen', '„-0”')
 o('D11', D, '  const ex = Math.max(0, Math.abs(lx) - hw), ey = Math.max(0, -ly, ly - dc.text.inaltime);',
   '  const ex = Math.max(0, Math.abs(lx) - hw), ey = Math.max(0, Math.abs(ly) - dc.text.inaltime);', 'desen', 'cutia cifrei și sub linie')
 
 # Setările.
-o('S01', S, '&& tol >= TOLERANTA_MINIMA && tol <= TOLERANTA_MAXIMA ? tol', '&& tol >= TOLERANTA_MINIMA ? tol', 'setari', 'toleranța fără margine sus')
+o('S01', S, '    toleranta: numar(l[\'toleranta\'], MARGINI.toleranta, I.lipire.toleranta),', '    toleranta: numar(l[\'toleranta\'], [TOLERANTA_MINIMA, Infinity], I.lipire.toleranta),', 'setari', 'toleranța fără margine sus')
 o('S02', S, '  if (lipire === taste.alt) return null;', '  if (!lipire) return null;', 'setari', 'Alt nu mai inversează')
 o('S03', S, "(s.lipire.contur === 'ctrl' && taste.ctrl)", "(s.lipire.contur === 'ctrl')", 'setari', 'conturul fără Ctrl')
 o('S04', S, '  return { toleranta: s.lipire.toleranta / scara, felurile, grila, peContur };',

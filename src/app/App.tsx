@@ -32,7 +32,7 @@ import { ACTIUNI_EXPORT, type ContextExport, type ParametriExport, type Rezultat
 import {
   ACTIUNI_IMPORT, preincarcaImport, type ContextImport, type FisierImport, type ImportPregatit, type PrevizualizareImport, type AlegeriImport,
 } from '../ui/actiuniImport.ts';
-import type { CerereExport, StareExport } from '../ui/DialogExport.tsx';
+import type { CerereExport, StareExport } from '../ui/exportRand.ts';
 import type { RezumatJob } from '../ui/actiuniExportTipuri.ts';
 import { incarcaMeniuFoaie, incarcaNivelPiesa, ListaVectori, type ActiuniFoi, type FoaieLista, type RandLista } from '../ui/ListaVectori.tsx';
 import { useLimba } from '../ui/useLimba.ts';
@@ -147,6 +147,8 @@ const incarcaPaleta = () => import('../ui/Paleta.tsx').then(cuMesaje);
 const Aspectul = lazy(() => import('./Aspectul.tsx').then(cuMesaje).then((m) => ({ default: m.Aspectul }), () => ({ default: DialogNeincarcat })));
 /** Fereastra „Frezele mele” (ADR 0300 §3, felia 16.A↑a): biblioteca de freze din browser, din paletă și din meniul contului. */
 const FrezeleMele = lazy(() => import('./FrezeleMele.tsx').then(cuMesaje).then((m) => ({ default: m.FrezeleMele }), () => ({ default: DialogNeincarcat })));
+/** Fereastra Setări (ADR 0330 §6, felia 10.4↑a-3): setările cotelor, din meniul contului, din paletă, cu Ctrl+, și din ⚙ al uneltei Cote. */
+const Setari = lazy(() => import('./Setari.tsx').then(cuMesaje).then((m) => ({ default: m.Setari }), () => ({ default: DialogNeincarcat })));
 const incarcaProprietati = () => import('./PanouProprietati.tsx').then(cuMesaje);
 const Paleta = lazy(() => incarcaPaleta().then((m) => ({ default: m.Paleta }), () => ({ default: DialogNeincarcat })));
 // Panoul care nu se poate aduce rămâne gol: e doar de citit, iar selecția se vede și în listă și în bara de jos.
@@ -230,7 +232,7 @@ const NICIO_VECINA: readonly FoaieVecina[] = [];
  * ferestrelor. Celelalte sunt ale desenului: din Mașina, tastele lor nu fac nimic, iar alese din paletă întorc întâi la
  * Proiectare.
  */
-const ORIUNDE: ReadonlySet<string> = new Set(['vedere.paleta', 'vedere.tema', 'vedere.aspect', 'vedere.freze', 'extensii.biblioteca', ...Object.values(DESCHIDE_FEREASTRA)]);
+const ORIUNDE: ReadonlySet<string> = new Set(['vedere.paleta', 'vedere.tema', 'vedere.aspect', 'vedere.freze', 'vedere.setari', 'extensii.biblioteca', ...Object.values(DESCHIDE_FEREASTRA)]);
 /**
  * Fereastra extensiei deschise (ADR 0160 §A). Nu e în `aranjament.ferestre` (lista ferestrelor aplicației, verificată la
  * încărcare): există doar cât e deschisă o extensie, iar fila ei o pune gazda extensiilor, după ale aranjamentului.
@@ -346,6 +348,9 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
   /** Fereastra „Frezele mele” (ADR 0300 §3), tot cu locul focusului de dinainte. */
   const [freze, setFreze] = useState(false);
   const focusFreze = useRef<Element | null>(null);
+  /** Fereastra Setări (ADR 0330 §6), tot cu locul focusului de dinainte. */
+  const [setari, setSetari] = useState(false);
+  const focusSetari = useRef<Element | null>(null);
   /** Raportul foilor (ADR 0210 §6): colțul și Z0 ale exportului, de la fereastra lui; din paletă, cele implicite. */
   const [raport, setRaport] = useState<Pick<ParametriExport, 'origine' | 'z0'> | null>(null);
   /**
@@ -641,6 +646,7 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
     // Paleta întoarce focusul înaintea acțiunii, iar meniul contului îl pune pe butonul Cont: fereastra îl ține minte.
     aspect: () => { focusAspect.current = document.activeElement; setAspect(true); },
     freze: () => { focusFreze.current = document.activeElement; setFreze(true); },
+    setari: () => { focusSetari.current = document.activeElement; setSetari(true); },
   };
   /**
    * „Trimite la <extensie>” (ADR 0166 §B): formele instanțelor alese, calculate la cerere, spre extensia deschisă care le
@@ -884,7 +890,7 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
    * a desenului pe care omul îl vede.
    */
   const dialogDeschis = useRef(false);
-  dialogDeschis.current = dialogExport || coadaImport !== null || cerereLucrare !== null || modalExtensii || modalMasina || dialogAsezare || aspect || freze || raport !== null;
+  dialogDeschis.current = dialogExport || coadaImport !== null || cerereLucrare !== null || modalExtensii || modalMasina || dialogAsezare || aspect || freze || setari || raport !== null;
   /** Un dialog sau paleta: aplicația de sub ele e inertă. Cât pui urechile pe desen (ADR 0211), pânza lucrează. */
   const modal = (dialogDeschis.current && urechiAlese === null) || paleta;
   const modalRef = useRef(modal);
@@ -1612,7 +1618,7 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
                 <Editare doc={doc} indexFoaie={indexActiva} idFoaie={idActiva} selectie={selectieValida} cutie={cutieSelectie} vedere={v} marime={m} linii={l} zona={zona} doarCitire={doarCiteste(mod)} activ={!acoperita && urechiAlese === null && modImagine === null}
                   usaAcoperita={fereastra === FEREASTRA_EXTENSIE ? 'extensii.buton' : fereastra === 'imprimanta' ? 'vedere.imprimanta' : 'vedere.masina'}
                   ruleaza={(id, extra) => ruleazaDocument(id, context(extra))} onLipeste={setLipesteStabil} onDesen={setDesenStabil}
-                  onRefuz={setRefuzEditare} onLegare={setLegareEditare} reface={stareActiune('istoric.reface').ok} onAseaza={() => { setDialogAsezare(true); }} onAspect={() => { contextVedere.aspect(); }} onFreze={() => { contextVedere.freze(); }}
+                  onRefuz={setRefuzEditare} onLegare={setLegareEditare} reface={stareActiune('istoric.reface').ok} onAseaza={() => { setDialogAsezare(true); }} onAspect={() => { contextVedere.aspect(); }} onFreze={() => { contextVedere.freze(); }} onSetari={() => { contextVedere.setari(); }}
                   sugestie={config.ok && config.config.instanta !== 'live'} config={config.ok ? config.config : null} jurnal={jurnal}
                   {...(config.ok && config.config.instanta !== 'live' && new URLSearchParams(location.search).has('test')
                     ? { test: { versiune: versiuneDin(document), instanta: config.config.instanta } } : {})} />
@@ -1782,6 +1788,7 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
           focusInapoi={focusAspect.current} />
       )}
       {freze && <FrezeleMele onInchide={() => { setFreze(false); }} focusInapoi={focusFreze.current} config={config.ok ? config.config : null} />}
+      {setari && <Setari onInchide={() => { setSetari(false); }} focusInapoi={focusSetari.current} />}
       {cerereLucrare && (
         <DialogLucrare
           key={cerereLucrare.lucrare.id}

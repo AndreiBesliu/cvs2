@@ -220,30 +220,43 @@ test('altă extensie, sau o versiune nouă instalată, peste una nesalvată: în
 });
 
 test('repornirea cerută de extensie (ADR 0165): cadrul se reface, cu contextul de acum; cel mult o dată la 2 s, cererile dese adunate; închiderea o oprește', async ({ page }) => {
+  // Ceasul paginii e al probei (`page.clock`): cele 2 s dintre reporniri sunt ale lui, nu ale ceasului adevărat. Altfel proba
+  // depinde de cât de repede ajung clicurile ei la cadrul refăcut: sub încărcare, „două cereri imediat după” ajungeau și după
+  // cele 2 s, iar prima repornea pe loc (2 din 120, pe zece lucrători). Până la `pauseAt`, ceasul curge normal.
+  await page.clock.install();
   await page.goto('/');
   await instaleaza(page, Buffer.from(SALUT), STOCARE);
   await deschide(page);
   const deschideri = cadru(page).locator('[data-salut="deschideri"]');
   await expect(deschideri).toHaveText('Deschideri: 1');
-  // Clicul reface cadrul pe loc: se așteaptă urmarea lui, nu întoarcerea (cursa din `clicCareRefaceCadrul`).
+  // De aici, timpul paginii stă pe loc și trece doar cât îl mută proba (`runFor`).
+  await page.clock.pauseAt(new Date(Date.now() + 60_000));
+  // Prima cerere: pe loc. Clicul reface cadrul: se așteaptă urmarea lui, nu întoarcerea (cursa din `clicCareRefaceCadrul`).
   await clicCareRefaceCadrul(page, '[data-salut="reporneste"]', () => expect(deschideri).toHaveText('Deschideri: 2', { timeout: 15_000 }));
   await expect(page.getByTestId('spatiu-extensie')).toHaveAttribute('data-stare', 'pornit');
-  // Două cereri imediat după: așteaptă până trec cele 2 s și se fac într-o singură repornire.
+  // Două cereri în aceeași clipă a ceasului: se amână amândouă. La 1 999 ms, nimic; la 2 000, o singură repornire.
   await cadru(page).locator('[data-salut="reporneste"]').click();
   await cadru(page).locator('[data-salut="reporneste"]').click();
+  await page.clock.runFor(1999);
   await page.waitForTimeout(300);
   await expect(deschideri).toHaveText('Deschideri: 2');
+  await page.clock.runFor(1);
+  await expect(deschideri).toHaveText('Deschideri: 3', { timeout: 15_000 });
+  await expect(page.getByTestId('spatiu-extensie')).toHaveAttribute('data-stare', 'pornit');
+  // Cele două cereri au fost o singură repornire: oricât ar mai trece, nu vine alta.
+  await page.clock.runFor(10_000);
+  await page.waitForTimeout(300);
   await expect(deschideri).toHaveText('Deschideri: 3');
-  await page.waitForTimeout(2500);
-  await expect(deschideri).toHaveText('Deschideri: 3');
-  // Una amânată, apoi extensia închisă și deschisă din nou: repornirea amânată nu mai are loc, nici în cea redeschisă.
+  // Una pe loc (cele 2 s au trecut), apoi una amânată și extensia închisă și deschisă din nou: repornirea amânată nu mai
+  // are loc, nici în cea redeschisă.
   await clicCareRefaceCadrul(page, '[data-salut="reporneste"]', () => expect(deschideri).toHaveText('Deschideri: 4', { timeout: 15_000 }));
   await cadru(page).locator('[data-salut="reporneste"]').click();
   await page.locator('[data-extensii="inchide-fereastra"]').click();
   await expect(page.getByTestId('spatiu-extensie')).toHaveCount(0);
   await deschide(page);
   await expect(deschideri).toHaveText('Deschideri: 5');
-  await page.waitForTimeout(2500);
+  await page.clock.runFor(10_000);
+  await page.waitForTimeout(300);
   await expect(deschideri).toHaveText('Deschideri: 5');
   expect(await eroriJurnal(page)).toEqual([]);
 });

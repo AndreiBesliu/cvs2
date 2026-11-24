@@ -9,7 +9,7 @@
  * `document.aplica-operatii`, într-un pas de anulare.
  */
 import type { Document, Operatie, Scula } from './document.ts';
-import { sculaDinFreza, type Freza, type FrezaSalvata } from './freza.ts';
+import { areCam, sculaDinFreza, type Freza, type FrezaSalvata } from './freza.ts';
 import { motivFormaPeOperatie } from './formaFrezei.ts';
 import { numarPrintre, sculeProiect } from './rol.ts';
 
@@ -27,6 +27,8 @@ export function sculaDinBiblioteca(f: FrezaSalvata, numar: number): Scula {
 export function frezePotrivite<F extends Freza>(lista: readonly F[], operatii: ReadonlyArray<Pick<Operatie, 'tip' | 'latura'>>): F[] {
   if (operatii.length === 0) return [];
   return lista.filter((f) => {
+    // Felurile fără CAM încă (ADR 0302 §2) nu se oferă: n-au copie pentru document.
+    if (!areCam(f.fel)) return false;
     const forma = sculaDinFreza(f).forma;
     return operatii.every((o) => motivFormaPeOperatie(o.tip, o.latura, forma) === null);
   });

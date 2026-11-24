@@ -126,6 +126,7 @@ export const en = {
   'vedere.toate-foile': 'All sheets on the canvas',
   'vedere.aspect': 'Interface appearance',
   'vedere.freze': 'My bits',
+  'vedere.setari': 'Settings',
   'tema.auto': 'as the system',
   'tema.luminoasa': 'light',
   'tema.intunecata': 'dark',
