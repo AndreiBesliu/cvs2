@@ -1,3 +1,4 @@
+import type { PasiCapturati } from '../../shared/pasiEroare.ts';
 import type { Eveniment, Fereastra, Sursa } from '../../shared/utilizare.ts';
 import type { Config } from './config.ts';
 import type { Inregistrator, RezultatPompa } from './utilizareTipuri.ts';
@@ -42,6 +43,7 @@ export function urmaresteGesturile(w: Window): void {
 }
 
 let tinta: ((e: Eveniment) => void) | null = null;
+let inel: (() => readonly Eveniment[]) | null = null;
 const tampon: Eveniment[] = [];
 const primeste = (e: Eveniment): void => {
   if (tinta) tinta(e);
@@ -59,9 +61,13 @@ export const utilizarea = {
   eveniment: (e: FaraTimp<Eveniment>): void => { primeste({ ...e, t: acum() } as Eveniment); },
 };
 
-/** Înregistratorul preia evenimentele: întâi cele din tampon, apoi fiecare, cum vine. */
-export function preiaUtilizarea(f: (e: Eveniment) => void): void {
+/** Pașii dinaintea unei erori, în clipa ei (felia A.11a): o copie a inelului înregistratorului (fără el, niciunul). */
+export const pasiAcum = (): PasiCapturati => ({ t: acum(), pasi: inel ? inel().map((e) => ({ ...e })) : [] });
+
+/** Înregistratorul preia evenimentele (întâi cele din tampon, apoi fiecare, cum vine) și dă inelul pașilor. */
+export function preiaUtilizarea(f: (e: Eveniment) => void, pasi?: () => readonly Eveniment[]): void {
   tinta = f;
+  inel = pasi ?? null;
   for (const e of tampon.splice(0)) f(e);
 }
 

@@ -73,6 +73,26 @@ test('o eroare de randare din aplicație ajunge în errorLogs: grupul, tipul, bu
   expect(text(a?.['browser'])).toBe(await page.evaluate(() => navigator.userAgent));
 });
 
+test('pașii dinaintea erorii (A.11a): unealta aleasă în editor înaintea erorii ajunge în raport, ca pas, fără nimic din desen', async ({ page }) => {
+  await deschide(page, '/');
+  await expect(page.locator('[data-unealta="dreptunghi"]')).toBeVisible({ timeout: TERMEN });
+  // Înregistratorul vine imediat după pornire; o unealtă aleasă cu clicul e un pas.
+  await page.locator('[data-unealta="dreptunghi"]').click();
+  await page.locator('[data-unealta="cerc"]').click();
+  const mesaj = 'Error: eroare după două unelte';
+  await provoaca(page, 'eroare după două unelte');
+  await expect.poll(() => grupCu(mesaj), { timeout: TERMEN }).toBeDefined();
+  const ultima = (await grupCu(mesaj))?.f['ultima']?.mapValue?.fields ?? {};
+  const pasi = (ultima['pasi'] as { arrayValue?: { values?: Array<{ mapValue?: { fields: Record<string, Valoare> } }> } } | undefined)?.arrayValue?.values
+    ?.map((v) => v.mapValue?.fields ?? {}) ?? [];
+  const unelte = pasi.filter((p) => text(p['fel']) === 'unealta').map((p) => text(p['id']));
+  expect(unelte.slice(-2)).toEqual(['dreptunghi', 'cerc']);
+  for (const p of pasi) {
+    expect(Object.keys(p).every((k) => ['fel', 'id', 'rez', 'ms'].includes(k))).toBe(true);
+    expect(numar(p['ms'])).toBeGreaterThanOrEqual(0);
+  }
+});
+
 test('a patra apariție identică nu mai pleacă: grupul rămâne la 3, iar o eroare nouă trece după ea', async ({ page }) => {
   const apeluri = await deschide(page, '/');
   // Aplicația gata de lucru: butonul de import din bara de sus e activ ("Adaugă dreptunghi" a plecat din bară în 6.C↑, ADR 0052).
