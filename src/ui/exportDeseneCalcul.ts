@@ -143,3 +143,28 @@ export function bandaDesen(adancime: number | null, unghi: number | null, joc: n
     placa: b.placa ?? v.S + v.H + SUB_FATA_DOPULUI, placaMinima: v.fata + b.puntiGrosime,
   };
 }
+
+/**
+ * Dopul incrustației cu pereți drepți (ADR 0171, ADR 0175), ca `valoriIncrustatieDreapta`: înălțimea lui (D + H pe fund sau
+ * decupat, D − g pe față; la gaură, D e grosimea foii și pe față rămâne D), grosimea semifabricatului (exactă la cel decupat,
+ * cu 1 mm sub față la cel ridicat) și, cu treaptă, tija și flanșa după sprijin: pe umăr D − d − g și d + H, pe fund
+ * D − d + g și d − g + H, la gaură D − d și d + H. Fără valori bune (umărul în (0, D)), nimic.
+ */
+export function dopDreptDesen(i: {
+  readonly adancime: number | null; readonly gaura: boolean; readonly dop: 'ridicat' | 'decupat'; readonly sprijin: 'fund' | 'fata' | 'umar';
+  readonly joc: number | null; readonly fierastrau: number | null; readonly treapta: { readonly d: number | null; readonly s: number | null } | null;
+}): { readonly inaltime: number; readonly grosime: number; readonly treapta: { readonly tija: number; readonly flansa: number } | null } | null {
+  const D = i.adancime, g = i.joc ?? 0, H = i.fierastrau ?? 0;
+  if (!pozitiv(D) || g < 0 || H < 0) return null;
+  let inaltime: number, treapta: { tija: number; flansa: number } | null = null;
+  if (i.treapta) {
+    const d = i.treapta.d;
+    if (!pozitiv(d) || d >= D || !pozitiv(i.treapta.s)) return null;
+    const [tija, flansa] = i.gaura ? [D - d, d + H] : i.sprijin === 'fund' ? [D - d + g, d - g + H] : [D - d - g, d + H];
+    treapta = { tija, flansa };
+    inaltime = tija + flansa;
+  } else {
+    inaltime = i.dop === 'ridicat' && i.sprijin === 'fata' ? D - (i.gaura ? 0 : g) : D + H;
+  }
+  return { inaltime, grosime: i.dop === 'decupat' ? inaltime : inaltime + SUB_FATA_DOPULUI, treapta };
+}

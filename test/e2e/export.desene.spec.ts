@@ -358,3 +358,52 @@ test('banda dopului: câmpurile în grupul ei, cu desenul semifabricatului (lă�
   await expect(d).toContainText('fără decupare');
   await expect(d.locator('[data-decupare]')).toHaveCount(0);
 });
+
+test('incrustația cu pereți drepți: locașul, treapta și dopul așezat, desenate din valori (28.8↑e-2)', async ({ page }) => {
+  await deschideCu(page, 'dreptunghi');
+  const e1 = fisa(page, 'e1/e1');
+  await alege(e1, 'latura', 'incrustatie-drept');
+  await e1.locator('[data-camp="adancime"]').fill('6');
+  // Locașul: buzunarul cu fund sau gaura prin foaie, cu jocul lateral pe cotă (mărit în desen).
+  const l = desen(page, 'e1/e1', 'locas');
+  await expect(l).toHaveAttribute('data-locas', 'buzunar');
+  await expect(l.locator('[data-cota="inc-lateral"]')).toContainText('c 0,1');
+  await alege(e1, 'inc-locas', 'gaura');
+  await expect(l).toHaveAttribute('data-locas', 'gaura');
+  await alege(e1, 'inc-locas', 'buzunar');
+  // Treapta: fără, apoi spre interior (desenul sus) și spre exterior (desenul la deschidere), cu cotele umărului.
+  const tr = desen(page, 'e1/e1', 'treapta');
+  await expect(tr).toHaveAttribute('data-treapta', 'fara');
+  await alege(e1, 'inc-treapta', 'interior');
+  await expect(tr).toHaveAttribute('data-treapta', 'interior');
+  await expect(tr.locator('[data-cota="inc-treapta-adancime"]')).toContainText('1,5');
+  await expect(tr.locator('[data-cota="inc-treapta-latime"]')).toContainText('3');
+  await expect(tr).toContainText('desenul e sus');
+  // Dopul pe umăr (D = 6, umărul la 1,5, g = 0,5, H = 2): tija 6 − 1,5 − 0,5 = 4, flanșa 1,5 + 2 = 3,5, semifabricatul 8,5.
+  const d = desen(page, 'e1/e1', 'dop');
+  await expect(d).toHaveAttribute('data-dop', 'ridicat-umar');
+  await expect(d).toContainText('dopul 7,5 mm: tija 4, flanșa 3,5');
+  await expect(d).toContainText('semifabricatul: cel puțin 8,5 mm');
+  await expect(d.locator('[data-sprijin="umar"]')).toHaveCount(1);
+  await expect(d.locator('[data-cota="inc-joc"]')).toContainText('g 0,5');
+  await expect(d.locator('[data-cota="inc-fierastrau"]')).toContainText('H 2');
+  // Pe fund: tija 6 − 1,5 + 0,5 = 5, flanșa 1,5 − 0,5 + 2 = 3.
+  await alege(e1, 'inc-sprijin', 'fund');
+  await expect(d).toHaveAttribute('data-dop', 'ridicat-fund');
+  await expect(d).toContainText('dopul 8 mm: tija 5, flanșa 3');
+  await alege(e1, 'inc-treapta', 'exterior');
+  await expect(tr).toContainText('desenul e jos');
+  // Fără treaptă, pe față: dopul D − g = 5,5; decupat, placa D + H = 8.
+  await alege(e1, 'inc-treapta', 'fara');
+  await alege(e1, 'inc-sprijin', 'fata');
+  await expect(d).toHaveAttribute('data-dop', 'ridicat-fata');
+  await expect(d).toContainText('dopul 5,5 mm');
+  await alege(e1, 'inc-dop', 'decupat');
+  await expect(d).toContainText('placa: 8 mm');
+  await expect(d.locator('[data-semifabricat]')).toHaveCount(0);
+  // Un umăr cât adâncimea nu se desenează.
+  await alege(e1, 'inc-treapta', 'interior');
+  await e1.locator('[data-camp="inc-treapta-adancime"]').fill('6');
+  await expect(tr).toHaveAttribute('data-treapta', 'lipsa');
+  await expect(d).toHaveAttribute('data-dop', 'lipsa');
+});

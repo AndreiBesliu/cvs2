@@ -17,11 +17,11 @@ import { intrareElice, intrareRampa, intrareZigzag, rampeZigzag } from '../../sr
 import { traseuGaurire } from '../../src/cam/gaurire.ts';
 import { traseuVcarve } from '../../src/cam/vcarve.ts';
 import type { Operatie } from '../../src/model/document.ts';
-import { valoriBanda, valoriIncrustatie } from '../../src/model/incrustatie.ts';
+import { valoriBanda, valoriIncrustatie, valoriIncrustatieDreapta } from '../../src/model/incrustatie.ts';
 import { conturDreptunghi } from '../../src/geom/contur.ts';
 import type { Miscare } from '../../src/ir/ir.ts';
 import {
-  bandaDesen, centreUrechiDesen, ciocanire, coborareDesen, incrustatieDesen, treceriEgale, treceriLaterale, vcarveDesen,
+  bandaDesen, centreUrechiDesen, ciocanire, coborareDesen, dopDreptDesen, incrustatieDesen, treceriEgale, treceriLaterale, vcarveDesen,
 } from '../../src/ui/exportDeseneCalcul.ts';
 
 const aproape = (a: number, b: number, eps = 1e-9): boolean => Math.abs(a - b) <= eps * Math.max(1, Math.abs(a), Math.abs(b));
@@ -235,4 +235,35 @@ test('banda dopului desenată are valorile pe hârtie ale panoului și ale dopul
   const h = bandaDesen(3, 60, 0.5, 2, { latime: null, decupare: true, placa: null, puntiGrosime: 1, fund: 3.175, frezaDecupare: null });
   assert.ok(h && Math.abs(h.minima - 6.4844) < 1e-4 && Math.abs(h.e - 1.6547) < 1e-4 && h.placa === 5.5);
   assert.equal(bandaDesen(3, 60, 3, 2, { latime: null, decupare: true, placa: null, puntiGrosime: 1, fund: 3.175, frezaDecupare: null }), null);
+});
+
+test('dopul cu pereți drepți desenat are înălțimea, semifabricatul, tija și flanșa pe hârtie (valoriIncrustatieDreapta)', () => {
+  type Caz = { D: number; gaura: boolean; dop: 'ridicat' | 'decupat'; sprijin: 'fund' | 'fata' | 'umar'; g: number; H: number; treapta?: { d: number; s: number } };
+  const cazuri: Caz[] = [];
+  for (const gaura of [false, true]) {
+    for (const dop of ['ridicat', 'decupat'] as const) {
+      for (const treapta of [undefined, { d: 1.5, s: 3 }]) {
+        // Sprijinurile pe care fereastra le oferă: pe umăr doar cu treaptă, pe fund doar la buzunar, pe față doar fără treaptă.
+        const sprijinuri = [...(treapta ? ['umar' as const] : []), ...(gaura ? [] : ['fund' as const]), ...(treapta ? [] : ['fata' as const])];
+        for (const sprijin of sprijinuri) cazuri.push({ D: 6, gaura, dop, sprijin, g: 0.5, H: 2, ...(treapta ? { treapta } : {}) });
+      }
+    }
+  }
+  assert.ok(cazuri.length >= 10);
+  for (const k of cazuri) {
+    const op = { adancime: k.D, scula: { numar: 1, nume: 'P', diametru: 6 }, incrustatie: {
+      fel: 'drept', jocLateral: 0.1, dop: k.dop, sprijin: k.sprijin, joc: k.g, fierastrau: k.H, margine: 5, ...(k.gaura ? { locas: 'gaura' } : {}),
+      ...(k.treapta ? { treapta: { adancime: k.treapta.d, latime: k.treapta.s } } : {}) } } as unknown as Parameters<typeof valoriIncrustatieDreapta>[0];
+    const v = valoriIncrustatieDreapta(op, 18);
+    const d = dopDreptDesen({ adancime: k.gaura ? 18 : k.D, gaura: k.gaura, dop: k.dop, sprijin: k.sprijin, joc: k.g, fierastrau: k.H,
+      treapta: k.treapta ?? null });
+    assert.ok(v && d, JSON.stringify(k));
+    assert.ok(aproape(d.inaltime, v.inaltime) && aproape(d.grosime, v.grosime), `${JSON.stringify(k)}: ${d.inaltime}/${d.grosime}, pe hârtie ${v.inaltime}/${v.grosime}`);
+    assert.equal(d.treapta === null, v.treapta === null);
+    if (d.treapta && v.treapta) assert.ok(aproape(d.treapta.tija, v.treapta.tija) && aproape(d.treapta.flansa, v.treapta.flansa), JSON.stringify(k));
+  }
+  // Pe hârtie (ADR 0175): D = 6, umărul la 1,5, g = 0,5, H = 2, pe umăr: tija 4, flanșa 3,5, dopul 7,5, semifabricatul 8,5.
+  const h = dopDreptDesen({ adancime: 6, gaura: false, dop: 'ridicat', sprijin: 'umar', joc: 0.5, fierastrau: 2, treapta: { d: 1.5, s: 3 } });
+  assert.ok(h?.treapta && h.treapta.tija === 4 && h.treapta.flansa === 3.5 && h.inaltime === 7.5 && h.grosime === 8.5);
+  assert.equal(dopDreptDesen({ adancime: 6, gaura: false, dop: 'ridicat', sprijin: 'umar', joc: 0.5, fierastrau: 2, treapta: { d: 6, s: 3 } }), null);
 });

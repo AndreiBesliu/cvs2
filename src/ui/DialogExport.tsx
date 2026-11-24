@@ -19,8 +19,8 @@ import { useLimba } from './useLimba.ts';
 import { grupuriOperatie, verdicteGresite, type GrupExport, type VerdictRand } from './exportGrupuri.ts';
 import { coborareDesen, treceriEgale } from './exportDeseneCalcul.ts';
 import {
-  DesenAdancime, DesenBanda, DesenColt, DesenCoborare, DesenFreza, DesenFund, DesenGaurire, DesenGolire, DesenIncrustatie, DesenIntrari, DesenRampa, DesenRest,
-  DesenSens, DesenUrechi, DesenZ0, type DesenComun,
+  DesenAdancime, DesenBanda, DesenColt, DesenCoborare, DesenDopDrept, DesenFreza, DesenFund, DesenGaurire, DesenGolire, DesenIncrustatie, DesenIntrari,
+  DesenLocasDrept, DesenRampa, DesenRest, DesenSens, DesenTreapta, DesenUrechi, DesenZ0, type DesenComun,
 } from './exportDesene.tsx';
 import { Card, Cartonase, GrupCartonase, Poza } from './exportPoze.tsx';
 
@@ -1552,6 +1552,12 @@ export function DialogExport(
                     fierastrau={citesteNumar(p.acelasiSpatiu ? p.jocInc : p.fierastrauInc)} latime={p.latimeBanda.trim() === '' ? null : citesteNumar(p.latimeBanda)}
                     decupare={p.decupareBanda} placa={p.placaBanda.trim() === '' ? null : citesteNumar(p.placaBanda)} puntiGrosime={citesteNumar(p.grosimePunti)}
                     fund={p.fundPlat ? citesteNumar(p.diametruSculaFund) : 0} frezaDecupare={p.frezaBanda ? citesteNumar(p.diametruSculaBanda) : null} />;
+                  case 'locas': return (c) => <DesenLocasDrept c={c} adancime={adancimeRand} gaura={p.locasInc === 'gaura'} lateral={citesteNumar(p.lateralInc)} />;
+                  case 'treapta': return (c) => <DesenTreapta c={c} adancime={adancimeRand} gaura={p.locasInc === 'gaura'} treapta={p.treaptaInc}
+                    d={citesteNumar(p.adancimeTreapta)} s={citesteNumar(p.latimeTreapta)} />;
+                  case 'dop': return (c) => <DesenDopDrept c={c} adancime={adancimeRand} gaura={p.locasInc === 'gaura'} dop={p.dopInc} sprijin={p.sprijinInc}
+                    joc={citesteNumar(p.jocInc)} fierastrau={citesteNumar(p.fierastrauInc)} treapta={p.treaptaInc} d={citesteNumar(p.adancimeTreapta)}
+                    s={citesteNumar(p.latimeTreapta)} />;
                   case 'urechi': return (c) => <DesenUrechi c={c} urechi={p.urechi && !nuProfil} mod={p.modUrechi} numar={citesteNumar(p.numarUrechi)}
                     alese={o.valori.urechi?.alese ?? 0} latime={citesteNumar(p.latimeUreche)} grosime={citesteNumar(p.grosimeUreche)} grosimeFoaie={grosimeFoaie} />;
                   default: return undefined;

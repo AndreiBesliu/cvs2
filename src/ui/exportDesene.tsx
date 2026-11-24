@@ -11,7 +11,7 @@ import '../i18n/export.ts';
 import { susLaMicron } from './actiuniExportTipuri.ts';
 import { t } from '../i18n/t.ts';
 import {
-  bandaDesen, centreUrechiDesen, ciocanire, coborareDesen, incrustatieDesen, RIDICARE_CIOCANIRE, treceriEgale, treceriLaterale, vcarveDesen, type FelCoborare,
+  bandaDesen, centreUrechiDesen, ciocanire, coborareDesen, dopDreptDesen, incrustatieDesen, RIDICARE_CIOCANIRE, treceriEgale, treceriLaterale, vcarveDesen, type FelCoborare,
   type LocuriUrechiDesen,
 } from './exportDeseneCalcul.ts';
 
@@ -611,6 +611,110 @@ export function DesenBanda({ c, adancime, unghi, joc, fierastrau, latime, decupa
       <Cota pentru="banda-latime" c={c} x1={xC} y1={y0 - 8} x2={X(M)} y2={y0 - 8} text={`${c.fz(latime ?? susLaMicron(M))} mm`} tx={(xC + X(M)) / 2} ty={y0 - 12} />
       <Cota pentru="banda-placa" c={c} x1={246} y1={y0} x2={246} y2={Y(P)} text={c.f(P)} tx={242} ty={Y(P) - 4} anc="end" />
       <Jos>{decupare ? t('export.desen.banda.decupat', { e: c.f(v.e), p: c.f(P) }) : t('export.desen.banda.fara')}</Jos>
+    </Desen>
+  );
+}
+
+/** Locașul și treapta incrustației cu pereți drepți, în pixeli: nivelul de sus (U), deschiderea (L), adâncimile umărului și a locașului. */
+type LocasPx = { readonly u0: number; readonly u1: number; readonly l0: number; readonly l1: number; readonly yd: number; readonly yD: number };
+function locasPx(ys: number, k: number, D: number, treapta: 'fara' | 'interior' | 'exterior', d: number, sp: number): LocasPx {
+  const a = 82, b = 178;
+  if (treapta === 'fara') return { u0: a, u1: b, l0: a, l1: b, yd: ys, yD: ys + D * k };
+  return treapta === 'interior'
+    ? { u0: a, u1: b, l0: a + sp, l1: b - sp, yd: ys + d * k, yD: ys + D * k }
+    : { u0: a - sp, u1: b + sp, l0: a, l1: b, yd: ys + d * k, yD: ys + D * k };
+}
+const golLocas = (L: LocasPx, ys: number): string =>
+  `M${r(L.u0)} ${ys}H${r(L.u1)}V${r(L.yd)}H${r(L.l1)}V${r(L.yD)}H${r(L.l0)}V${r(L.yd)}H${r(L.u0)}Z`;
+
+/**
+ * Locașul incrustației cu pereți drepți (ADR 0171, ADR 0175), în secțiune: buzunarul cu fund sau gaura prin foaie, cu dopul în
+ * el și jocul lateral dintre pereți (mărit în desen: e de zecimi).
+ */
+export function DesenLocasDrept({ c, adancime, gaura, lateral }: { c: DesenComun; adancime: number | null; gaura: boolean; lateral: number | null }): ReactNode {
+  const D = adancime !== null && adancime > 0 ? adancime : 6, ys = 40, k = 64 / D, L = locasPx(ys, k, D, 'fara', 0, 0);
+  const cp = lateral !== null && lateral > 0 ? Math.min(Math.max(lateral * 40, 4), 12) : 0, yb = gaura ? L.yD : L.yD + 14;
+  return (
+    <Desen eticheta={t('export.desen.locas')} data-locas={gaura ? 'gaura' : 'buzunar'}>
+      {gaura && <rect className="m" x={6} y={r(yb)} width={248} height={10} />}
+      <rect className="l" data-lemn x={6} y={ys} width={248} height={r(yb - ys)} />
+      <path className="g" d={golLocas(L, ys)} />
+      <rect className="l2" x={r(L.u0 + cp)} y={ys - 14} width={r(L.u1 - L.u0 - 2 * cp)} height={r(L.yD - ys + 14)} />
+      <text x={130} y={ys + 22} textAnchor="middle" className="tare">{t('export.desen.incrustatie.dop')}</text>
+      {cp > 0 && <Cota pentru="inc-lateral" c={c} x1={L.u1 - cp} y1={ys + 34} x2={L.u1} y2={ys + 34} text={`c ${c.f(lateral ?? 0)}`} tx={L.u1 + 6} ty={ys + 38} anc="start" />}
+      <Cota pentru="adancime" c={c} text={`${c.f(D)} mm`} tx={L.u0 - 8} ty={r((ys + L.yD) / 2 + 4)} anc="end" />
+      <Jos>{t(gaura ? 'export.desen.locas.gaura' : 'export.desen.locas.buzunar', { d: c.f(D), c: c.f(lateral ?? 0) })}</Jos>
+    </Desen>
+  );
+}
+
+/** Treapta locașului (ADR 0175), în secțiune: umărul la d de la față, lat de s, spre interior (desenul e sus) sau spre exterior (desenul e la deschidere). */
+export function DesenTreapta({ c, adancime, gaura, treapta, d, s: lat }: {
+  c: DesenComun; adancime: number | null; gaura: boolean; treapta: 'fara' | 'interior' | 'exterior'; d: number | null; s: number | null;
+}): ReactNode {
+  const D = adancime !== null && adancime > 0 ? adancime : 6, ys = 30, k = 72 / D;
+  const bun = treapta === 'fara' || (d !== null && d > 0 && d < D && lat !== null && lat > 0);
+  const tr = bun ? treapta : 'fara', dd = tr === 'fara' ? 0 : d ?? 0, sp = Math.min(Math.max((lat ?? 0) * 6, 8), 30);
+  const L = locasPx(ys, k, D, tr, dd, sp), yb = gaura ? L.yD : L.yD + 12;
+  const desenY = tr === 'exterior' ? L.yd : ys, desen0 = tr === 'exterior' ? L.l0 : L.u0, desen1 = tr === 'exterior' ? L.l1 : L.u1;
+  return (
+    <Desen eticheta={t('export.desen.treapta')} data-treapta={bun ? treapta : 'lipsa'}>
+      {gaura && <rect className="m" x={6} y={r(yb)} width={248} height={10} />}
+      <rect className="l" data-lemn x={6} y={ys} width={248} height={r(yb - ys)} />
+      <path className="g" d={golLocas(L, ys)} />
+      <path className="ua" data-desen-marcat d={`M${r(desen0)} ${r(desenY)}H${r(desen1)}`} />
+      <text x={r((desen0 + desen1) / 2)} y={r(desenY - 5)} textAnchor="middle" className="tare">{t('export.desen.treapta.desen')}</text>
+      {tr !== 'fara' && (<>
+        <Cota pentru="inc-treapta-adancime" c={c} x1={L.u0 - 14} y1={ys} x2={L.u0 - 14} y2={L.yd} text={c.f(dd)} tx={L.u0 - 18} ty={r((ys + L.yd) / 2 + 4)} anc="end" />
+        <Cota pentru="inc-treapta-latime" c={c} x1={Math.min(L.l1, L.u1)} y1={L.yd + 10} x2={Math.max(L.l1, L.u1)} y2={L.yd + 10} text={c.f(lat ?? 0)}
+          tx={Math.max(L.l1, L.u1) + 6} ty={L.yd + 14} anc="start" />
+      </>)}
+      <Jos tare={!bun}>{!bun ? t('export.desen.dop.lipsa') : t(`export.desen.treapta.${tr}`)}</Jos>
+    </Desen>
+  );
+}
+
+/**
+ * Dopul cu pereți drepți așezat în locaș (ADR 0171, ADR 0175), în secțiune, după sprijin: pe fund (atinge fundul, între plăci H),
+ * pe față (fața semifabricatului pe piesă, sub dop g), pe umăr (flanșa pe treaptă, sub tijă g); decupat, fără semifabricat
+ * deasupra. Locul sprijinului, cu accentul; înălțimile, ca `valoriIncrustatieDreapta`.
+ */
+export function DesenDopDrept({ c, adancime, gaura, dop, sprijin, joc, fierastrau, treapta, d, s: lat }: {
+  c: DesenComun; adancime: number | null; gaura: boolean; dop: 'ridicat' | 'decupat'; sprijin: 'fund' | 'fata' | 'umar'; joc: number | null;
+  fierastrau: number | null; treapta: 'fara' | 'interior' | 'exterior'; d: number | null; s: number | null;
+}): ReactNode {
+  const v = dopDreptDesen({ adancime, gaura, dop, sprijin, joc, fierastrau, treapta: treapta === 'fara' ? null : { d, s: lat } });
+  if (!v || adancime === null) {
+    return <Desen eticheta={t('export.desen.dop')} data-dop="lipsa"><rect className="l" data-lemn x={6} y={60} width={248} height={60} /><Jos tare>{t('export.desen.dop.lipsa')}</Jos></Desen>;
+  }
+  const D = adancime, g = joc ?? 0, H = fierastrau ?? 0, dd = treapta === 'fara' ? 0 : d ?? 0;
+  const k = 70 / (D + H), ys = 24 + H * k, sp = Math.min(Math.max((lat ?? 0) * 4, 8), 24);
+  const L = locasPx(ys, k, D, treapta, dd, sp), yb = gaura ? L.yD : L.yD + 10;
+  // Unde stă dopul: vârful lui (fața semifabricatului) și capetele flanșei și tijei.
+  const peFata = treapta === 'fara' && dop === 'ridicat' && sprijin === 'fata';
+  const sus = peFata ? ys : ys - H * k;
+  const jos = peFata ? (gaura ? L.yD : ys + (D - g) * k) : treapta !== 'fara' && sprijin === 'umar' && !gaura ? ys + (D - g) * k : L.yD;
+  const flansa = treapta === 'fara' ? jos : sprijin === 'fund' ? ys + (dd - g) * k : L.yd;
+  const dopCale = `M${r(L.u0 + 1)} ${r(sus)}H${r(L.u1 - 1)}V${r(flansa)}H${r(L.l1 - 1)}V${r(jos)}H${r(L.l0 + 1)}V${r(flansa)}H${r(L.u0 + 1)}Z`;
+  const contact = peFata ? `M${r(L.u0 - 26)} ${ys}H${r(L.u0)}M${r(L.u1)} ${ys}H${r(L.u1 + 26)}`
+    : treapta !== 'fara' && sprijin === 'umar' ? `M${r(Math.min(L.u0, L.l0))} ${r(L.yd)}H${r(Math.max(L.u0, L.l0))}M${r(Math.min(L.u1, L.l1))} ${r(L.yd)}H${r(Math.max(L.u1, L.l1))}`
+      : `M${r(L.l0)} ${r(L.yD)}H${r(L.l1)}`;
+  const gol: readonly [number, number] | null = treapta === 'fara' ? (peFata && !gaura ? [jos, L.yD] : null)
+    : sprijin === 'fund' ? [flansa, L.yd] : !gaura ? [jos, L.yD] : null;
+  return (
+    <Desen eticheta={t('export.desen.dop')} data-dop={`${dop}-${sprijin}`}>
+      {gaura && <rect className="m" x={6} y={r(yb)} width={248} height={8} />}
+      <rect className="l" data-lemn x={6} y={r(ys)} width={248} height={r(yb - ys)} />
+      <path className="g" d={golLocas(L, ys)} />
+      {dop === 'ridicat' && <rect className="l2" data-semifabricat x={r(L.u0 - 30)} y={r(sus - 14)} width={r(L.u1 - L.u0 + 60)} height={14} />}
+      <path className="l2" data-dop-asezat d={dopCale} />
+      <path className="ua" data-sprijin={sprijin} d={contact} />
+      {gol && gol[1] - gol[0] > 0.5 && <Cota pentru="inc-joc" c={c} x1={130} y1={gol[0]} x2={130} y2={gol[1]} text={`g ${c.f(g)}`} tx={136} ty={r((gol[0] + gol[1]) / 2 + 4)} anc="start" />}
+      {!peFata && H > 0 && <Cota pentru="inc-fierastrau" c={c} x1={240} y1={sus} x2={240} y2={ys} text={`H ${c.f(H)}`} tx={236} ty={r((sus + ys) / 2 + 4)} anc="end" />}
+      <text x={130} y={128} textAnchor="middle">{v.treapta
+        ? t('export.desen.dop.trepte', { h: c.f(v.inaltime), t: c.f(v.treapta.tija), f: c.f(v.treapta.flansa) })
+        : t('export.desen.dop.inaltime', { h: c.f(v.inaltime) })}</text>
+      <Jos>{t(dop === 'ridicat' ? 'export.desen.dop.semifabricat' : 'export.desen.dop.placa', { g: c.f(v.grosime) })}</Jos>
     </Desen>
   );
 }
