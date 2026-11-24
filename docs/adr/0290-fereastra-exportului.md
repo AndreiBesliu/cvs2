@@ -427,5 +427,21 @@ cele patru aranjamente, cu harta schițelor schimbată ca la „Cu canvas-ul ara
   benzii în grupul ei.
 - **Mărimea:** totalul 812,7 → 813,4 / 900, pornirea neschimbată.
 - **28.8↑d e încheiată.** Urmează 28.8↑e: ale incrustației cu pereți drepți (locașul, treapta, dopul, sprijinul, jocurile,
-  punțile).
+  punțile), despărțită în e-1 (grupurile și cartonașele) și e-2 (desenele).
+
+## Implementarea 28.8↑e-1 (24.11)
+
+- **Câmpurile incrustației cu pereți drepți trec în grupurile lor:** Locașul (felul locașului, jocul lateral), Treapta (felul
+  treptei, adâncimea și lățimea umărului), Dopul (felul dopului, sprijinul, jocurile, marginea, punțile, frezele dopului). Din
+  28.8↑a stăteau toate în Locașul, iar Treapta și Dopul nu se randau (corpul lor era gol, ca la bandă până la 28.8↑d-2).
+  Cutia fiecărui grup păstrează `data-incrustatie` și `data-fel="drept"`, deci probele care le caută acolo merg mai departe.
+- **Locașul, treapta, dopul și sprijinul sunt cartonașe cu poze** (`inc-locas`, `inc-treapta`, `inc-dop`, `inc-sprijin`).
+  Sprijinul arată doar variantele care se pot, ca lista de dinainte: pe umăr cu treaptă, pe fund la buzunar, pe față fără
+  treaptă; rândul lui are titlul vizibil („Se sprijină”), fiind al doilea rând de cartonașe din grupul Dopul. Mutările
+  sprijinului la schimbarea locașului și a treptei, neschimbate.
+- **Probele** aleg din cartonașe în `export.fisa`, `incrustatie3d`, `incrustatieDreapta` și `supracursa`; variantele
+  sprijinului se citesc pe cartonașe (`[data-alegere="inc-sprijin"] .dx-card > span`).
+- **Mărimea:** bucata ferestrei ~+0,5 kB; pornirea neschimbată de felie.
+- Urmează 28.8↑e-2: desenele locașului, treptei și dopului (secțiunea cu umărul, tija și flanșa, jocurile), din
+  `valoriIncrustatieDreapta`.
 

@@ -1613,7 +1613,7 @@ care). Fereastra are trei părți:
   stai e colorată. Câte rampe face zigzagul pe o trecere se socotește pe trecerea egală, ca în program. Sub
   pas, câte treceri ies și cât scoate fiecare: trecerile sunt egale (10 mm cu pasul 4 dau 3 treceri de 3,33 mm), la fel și în
   desen. Tăietura și alegerile cu puține variante (colțurile, locurile urechilor, direcția pe linie, traseul și coborârea
-  buzunarului, lemnul din jurul dopului, unitățile, schimbarea frezei, foile) sunt cartonașe cu poza fiecărei variante; găurirea stă printre tăieturi și pe un rând fără cercuri, oprită,
+  buzunarului, lemnul din jurul dopului, locașul, treapta, dopul și sprijinul incrustației cu pereți drepți, unitățile, schimbarea frezei, foile) sunt cartonașe cu poza fiecărei variante; găurirea stă printre tăieturi și pe un rând fără cercuri, oprită,
   cu „doar pe cercuri”, iar în listă, sub numele operației, e poza tăieturii ei. Pe cartonașe: clic oriunde pe cartonaș, sau săgețile, după ce ai intrat în grup; cel ales are
   marginea colorată, iar unul care nu se poate alege acum spune de ce (de exemplu „nu pe linie”). Despărțirea foii are și ea
   poza ei, lângă bifă. Ce nu se aplică operației nu apare: pe un buzunar, o găurire sau un V-carve, rampa, intrările, colțurile

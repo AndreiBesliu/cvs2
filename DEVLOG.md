@@ -12829,3 +12829,20 @@ PR-ul `AndreiBesliu/cvs2#14` („De unit de sesiunea principală”).
   verificat intră singură).
 - **La owner:** plafonul pornirii (după lotul următor rămân 0,3 kB), fereastra exportului, verificarea juridică a
   utilizării aplicației, „cine unește în `main`”, ADR 0232 (biblioteca), lista „ce pot face între timp”.
+
+## 2026-11-24 — Linia exportului: `main` adus de două ori; felia 28.8↑e-1, incrustația cu pereți drepți (ADR 0290)
+
+**Prompt:** răspunsul owner-ului la ADR 0290, exact: „1a, 2a, 3a, 4a” (feliile acceptate; după 28.8↑d-2).
+**Started:** 24.11, 07:35.
+
+- **`main` adus de două ori** (A.10 și A.11a, apoi 25.8↑b): ciocnirile, în DEVLOG (ambele părți) și în catalogul controalelor
+  (scris din nou cu `scripts/catalog-controale.ts --scrie`); completul de pe unirea a doua pornit.
+- **28.8↑e împărțită:** e-1 (grupurile și cartonașele), e-2 (desenele).
+- **e-1:** câmpurile incrustației cu pereți drepți în grupurile lor (Locașul, Treapta, Dopul: până acum toate în Locașul);
+  locașul, treapta, dopul și sprijinul pe cartonașe cu poze; sprijinul doar cu variantele care se pot, cu titlul rândului.
+- **Probele:** 1 e2e nouă, 4 spec-uri mutate pe cartonașe; rapidul local 10 077 / 0.
+- **Otrăvurile:** `test/otravuri/28.8e1.py`, 6 / 6.
+- **Manualul** (ro, en), ADR 0290 („Implementarea 28.8↑e-1”), fișa etapei 3, registrul otrăvurilor, nota liniei.
+
+**Completed:** 24.11, 09:00.
+

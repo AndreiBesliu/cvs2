@@ -47,6 +47,8 @@ vreau ca ficare setare sa fie insotita de o ilustratie sugestiva, ca sa ajute us
 - **24.11: 28.8↑d-2 gata** (câmpurile benzii în grupul lor, desenul semifabricatului dopului cu banda, decuparea și puntea), pe
   ramură; neunită. Otrăvurile 11 / 11. Totalul 813,4 / 900 (+0,7 kB). 28.8↑d e încheiată; urmează 28.8↑e (incrustația cu
   pereți drepți).
+- **24.11: 28.8↑e-1 gata** (câmpurile incrustației cu pereți drepți în grupurile lor: Locașul, Treapta, Dopul; locașul, treapta,
+  dopul și sprijinul pe cartonașe), pe ramură; neunită. Otrăvurile 6 / 6. Urmează 28.8↑e-2 (desenele).
 
 ## Ce s-a găsit (23.11)
 
@@ -92,6 +94,10 @@ vreau ca ficare setare sa fie insotita de o ilustratie sugestiva, ca sa ajute us
   un `fill` pune sub maus alt câmp, care ia explicația și cota. O probă care cere cota aprinsă după scriere dă întâi clic în
   câmp (ca omul). Traseul și coborârea buzunarului sunt cartonașe din 28.8↑c (`alege(fisa, 'strategie' | 'coborare', v)`;
   vizibilitatea, pe `[data-alegere="coborare"]`).
+- **Incrustația cu pereți drepți (din 28.8↑e-1):** locașul, treapta, dopul și sprijinul sunt cartonașe
+  (`alege(fisa, 'inc-locas' | 'inc-treapta' | 'inc-dop' | 'inc-sprijin', v)`); variantele sprijinului se citesc pe
+  `[data-alegere="inc-sprijin"] .dx-card > span`. Cutia `[data-incrustatie][data-fel="drept"]` e acum în fiecare din cele trei
+  grupuri: o probă caută câmpuri prin ea, nu o numără.
 - **Un grup cu corpul gol nu se randează** (`corp(g) === null`): așa a stat „banda” până la 28.8↑d-2, cu câmpurile în grupul
   incrustației. Un câmp nou stă în corpul grupului lui din `GRUP_CAMP`, altfel explicația și desenul lui ajung în alt grup.
 - **Catalogul controalelor** (ADR 0262, din `main`, 24.11): se scoate din `data-camp="…"` (și celelalte atribute de nume)

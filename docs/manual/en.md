@@ -1668,7 +1668,7 @@ which). The window has three parts:
   step down, how many passes come out and
   how much each removes: the passes are equal (10 mm with a step of 4 gives 3 passes of 3.33 mm), in the drawing too. The cut
   and the choices with few options (the corners, the tab places, the direction on line, the pocket's path and descent, the
-  wood around the plug, the units, the bit change, the sheets) are cards with a picture of each option; drilling sits among the cuts on a row without circles too, disabled, with
+  wood around the plug, the straight-wall inlay's pocket, step, plug and support, the units, the bit change, the sheets) are cards with a picture of each option; drilling sits among the cuts on a row without circles too, disabled, with
   “circles only”, and in the list, under the operation's name, is the picture of its cut. On the cards: click anywhere on a card, or use the arrow keys once you are in the group; the chosen
   one has a coloured border, and one that cannot be chosen now says why (for example “not on line”). The sheet separation has
   its picture too, next to the box. What does not apply to the operation is not shown: on a pocket, a drilling or a
