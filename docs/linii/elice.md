@@ -4,7 +4,118 @@
 
 _CNCVS2, elicele din Easy 3Draw (ADR 0282, ACCEPTAT 22.11 cu 1a, 2a, 3a): 3.Tq (elicea) unită în `main` pe 23.11 (`0ae9c6c1`, Easy 3Draw 18.19.0); reparația probelor atelierului (`baa00ad`) și 3.Tr (elicea de barcă, 18.20.0) unite în `main` pe 23.11 (`d262e57a`), din sesiunea cloud a liniei; 3.Ts (ventilatorul cu carcasă, 18.22.0) unită în `main` pe 24.11 (`3218781c` în `e14e553a`, lotul al paisprezecelea, de sesiunea principală); toate trei elicele ADR-ului sunt făcute; 3.Tt (înclinarea spre pupa a elicei de barcă, la alegere, 18.23.0)
 unită în `main` pe 24.11 (`ba09a10b` în `d57ca962`, lotul al șaptesprezecelea, de sesiunea principală); versiunea următoare
-a pachetului e 18.24.0; cotele LEGO măsurate din LDraw, față de axa piesei_
+a pachetului e 18.24.0; cotele LEGO măsurate din LDraw, față de axa piesei. **Din 24.11 seara, linia trece în sesiunea
+extensiilor** (predarea, mai jos)._
+
+## Predarea (24.11 seara): linia trece în sesiunea extensiilor
+
+Cererea owner-ului, în sesiunea liniei: „vreau sa predai ce mai ai in lucru si tot ce este nevoie pentru asta sesiunii
+principale, ca aceasta sa mute si lucrul eliciilor in sesiunea extensiilor”. Sesiunea extensiilor e cea a liniei
+bibliotecii (ramura `wip/3.Xh-biblioteca-ui`), care pornește și linia nouă a atelierului (ADR 0340–0349, feliile de la 3.Tv).
+
+- **Starea:** nimic în lucru, nimic necomis. Ramura `wip/3.Tq-elice` e `main` (`878ee5d1`) plus acest commit (doar nota);
+  toate PR-urile liniei sunt închise (`AndreiBesliu/cvs2#1`, `#5`, `#19` unite; `#15` închis, 3.Ts unită de sesiunea
+  principală). Nicio urmărire de PR și nicio verificare programată a liniei. Elicele din `main`: 3.Tq, 3.Tr, 3.Ts, 3.Tt
+  (Easy 3Draw 18.23.0).
+- **Numerele:** pachetul următor e **18.24.0** (dacă linia extensiilor schimbă pluginul înainte, ia ea 18.24.0, iar 3.Tu
+  pe cea de după). ADR-urile pieselor atelierului sunt 0280–0289: 0280 roțile, 0281 filele, 0282 elicele; **0283 e rezervat
+  pentru 3.Tu**. Felia următoare a liniei e **3.Tu**.
+- **În coada owner-ului** (fișa etapei 3, „Ce îi trebuie owner-ului”): tipărirea elicei (3.Tq), a elicei de barcă (3.Tr),
+  a ventilatorului (3.Ts) și a elicei de barcă înclinate spre pupa la 10°, cu suportul slicer-ului (3.Tt).
+- **Rămase mici, fără felie:** numele elicei nu spune forma și profilul (două elice diferite pot avea același nume în
+  listă); descrierea lui Easy 3Draw din bibliotecă avea 157 din 160 de caractere la 3.Tq (de verificat față de forma ei
+  de azi, după 3.Xh–3.Xk).
+
+### 3.Tu, propusă: piesele rotunde pe același ax în „Modelul”
+
+Owner-ul, 24.11 (spus sesiunii principale, cu o captură a filei Elice, vederea „Modelul”): „vad ca nu se pot aseza centrat
+carcasa si elicea de acelasi diametru in model”. În captură: carcasa Ø48 cu 2 urechi la x 0, y 0, z 0, rotorul Ø48 cu 7
+palete la 2, 1, 3; rotorul stă vizibil pe lângă mijlocul inelului.
+
+**Cauza (cercetată, fără cod schimbat).** Vederea „Modelul” e din sursele v18 (`corpModel`, `arataModel`, `puneInModel`,
+`mutaM` în `extensii/trenulet/sursa/planificator/atelier.ts`), nu din feliile elicelor:
+- amprenta pe grilă e `round((dim + 0,2) / 8)` știfturi pe fiecare axă, iar corpul se pune cu **mijlocul cutiei** în
+  mijlocul amprentei (`b = gw · 4 − dim / 2`, apoi `mesh.position = x · 8 + w · 4`); x, y sunt știftul colțului amprentei,
+  iar mutările sunt câte un știft;
+- deci mijlocul cade pe **centrul unui știft** la o amprentă impară și pe **linia dintre știfturi** la una pară;
+- la piesele rotunde din motor, axul e originea piesei, iar `construieste` (din `lego.ts`) întoarce `baza` = colțul cutiei
+  față de origine: **axul e la (−baza[0], −baza[1])** în plasa mutată în origine. La palete impare, axul nu e mijlocul
+  cutiei.
+
+Cifrele (axul în model, `x · 8 + gw · 4 + (−baza − dim / 2)`, luat modulo 8 mm: 4 = centrul unui știft, 0 = linia dintre
+știfturi), pe piesele implicite:
+
+| Piesa | Cutia (mm) | Amprenta | Axul mod 8 (x, y) |
+|---|---|---|---|
+| carcasa Ø48, 2 urechi | 71,2 × 52 | 9 × 7 | 4, 4 |
+| rotorul Ø48, 7 palete | 45,81 × 46,4 | 6 × 6 | 7,70, 0 |
+| carcasa Ø40, 2 urechi | 55,2 × 44 | 7 × 6 | 4, 0 |
+| rotorul Ø40, 7 palete | 37,91 × 38,4 | 5 × 5 | 3,76, 4 |
+| rotița 8 / 24 / 20 / 40 | | 1 / 3 / 3 / 5 | 4, 4 |
+| rotița 12 / 16, conica dublă | | 2 × 2 | 0, 0 |
+| roata (implicită) | 30,4 × 30,4 | 4 × 4 | 0, 0 |
+| fulia, conica, coroana | | 3 × 3 | 4, 4 |
+| elicea (implicită, 3 palete) | 55,33 × 63,39 | 7 × 8 | 3,67, 0 |
+| elicea de barcă (implicită, 3 palete) | 36,25 × 36,35 | 5 × 5 | 2,85, 5,69 |
+
+Deci în captură axele rămân la cel puțin 3,7 mm pe X și 4 mm pe Y, orice mutare s-ar face (carcasa (36, 28), rotorul
+(39,70, 32) față de colțul ei). În general: două piese rotunde cu amprente de paritate diferită nu pot sta pe același ax
+(rotițele de 16 și 24), iar elicele cu palete impare stau pe lângă mijloc cu până la ~1,7 mm. „Pune în model” cu o piesă
+aleasă pune piesa nouă din **același colț** (`x: sel.x, y: sel.y`), cu `z` deasupra ei (`sel.z + inaltimeM(sel)`): de aici
+rotorul la z 3, peste carcasă.
+
+**Întrebările, puse owner-ului pe 24.11 (în sesiunea liniei și, prin sesiunea principală, în raportul ei), cu
+recomandarea întâi; fără răspuns la predare:**
+1. Unde stă axul pieselor rotunde în model: **a** în mijlocul unui știft, ca găurile unei grinzi culcate (rotițele, roata,
+   fulia, conicele, coroana, elicele, rotorul și carcasa); două piese rotunde ajung pe același ax cu mutările de azi; ce e
+   deja în model se mută la redeschidere cu cel mult o jumătate de știft (4 mm); **b** pași de jumătate de știft pentru
+   orice piesă (nimic nu se mișcă, dar elicele cu palete impare rămân cu 0,3–1,7 mm pe lângă ax); **c** un buton „Pe axul
+   piesei…”, care pune piesa aleasă exact pe axul alteia.
+2. „Pune în model” cu o piesă aleasă: **a** piesa nouă intră pe același ax (la cele rotunde) sau cu același mijloc, deasupra
+   ei; **b** din același colț, ca azi.
+3. Rotorul pus cu carcasa lui aleasă: **a** intră în carcasă, la același Z; **b** deasupra, ca orice piesă.
+
+**Cum ar arăta 1a** (schița, nefăcută): pentru piesele al căror motor își are axul în origine (tipurile de mai sus), pivotul
+plasei e axul (`translate(−dim/2 …)` înlocuit cu `translate(baza)`), iar poziția e `x · 8 + 8 · ⌊w / 2⌋ + 4` (la fel pe y,
+cu `w`, `d` după rotire). La amprentele impare, simetrice, nimic nu se mișcă; la cele pare, piesa se mută cu 4 mm. Rotirea
+se face în jurul axului. Grinzile culcate au găurile pe centrele știfturilor, iar urechile carcasei au găurile la k · 8 de
+ax: axul pe centrul unui știft le pune pe toate pe aceeași grilă. Probele: o probă unitară pe funcția pură a poziției (axul
+pe hârtie, pentru fiecare tip și rotire) și un e2e cu carcasa și rotorul Ø48 aduse pe același ax.
+
+**Sonda** (în container, din rădăcina repo-ului: `node sonda.mts`; scriptul de o singură folosință a rămas în scratchpad-ul
+sesiunii, deci e aici):
+
+```ts
+import { createRequire } from 'node:module';
+const cere = createRequire(process.cwd() + '/test/unit/x.ts');
+const { motoare } = cere(process.cwd() + '/extensii/trenulet/sursa/teste/incarca.js');
+const { L } = motoare();
+for (const d of [{ tip: 'ventilator', piesa: 'carcasa', diametru: 48, urechi: 2 }, { tip: 'ventilator', piesa: 'rotor', diametru: 48 }]) {
+  const p = L.construieste(d);
+  const gw = Math.max(1, Math.round((p.dim[0] + 0.2) / 8)), gd = Math.max(1, Math.round((p.dim[1] + 0.2) / 8));
+  const m8 = (v: number) => { const r = Math.round(v * 1000) / 1000; return ((r % 8) + 8) % 8; };
+  console.log(JSON.stringify(d), `${gw}×${gd}`, m8(gw * 4 - p.baza[0] - p.dim[0] / 2), m8(gd * 4 - p.baza[1] - p.dim[1] / 2));
+}
+```
+
+**De știut pentru linia extensiilor:** linia nouă a atelierului (3.Tv…) nu atinge `corpModel` / `arataModel` până nu
+hotărăște owner-ul 3.Tu (înțelegerea cu sesiunea principală, 24.11); dacă le preia aceeași sesiune, cele două felii se pot
+face împreună, în ordinea hotărâtă de owner.
+
+### Cum se lucrează pe linie (pe scurt)
+
+- **Probele elicelor:** unitare `test/unit/trenulet.{elice,barca,ventilator,pupa}.test.ts`, e2e
+  `test/e2e/trenulet.{elice,barca,ventilator,pupa}.spec.ts`, plus `trenulet.spec.ts` (versiunea, proba în engleză din cvs2)
+  și `trenulet.file.spec.ts` (implicitele editorului). Valorile pe hârtie vin din formulele ADR 0282, socotite separat de
+  motor (scripturile de hârtie au fost de o singură folosință; formulele sunt în ADR, la fiecare „Implementarea”).
+- **Otrăvurile:** listele `test/otravuri/3.T{q,r,s,t}.py` și `-en.py`, rulate cu `python3 -B -X utf8 scripts/otravuri.py
+  <listă> verifica|lot A B|e2e …` dintr-o clonă (fetch al ramurii, `checkout --detach FETCH_HEAD`). O schimbare în
+  `lego.ts` sau `atelier.ts` mută ancorele: `verifica` pe toate listele `3.T*.py` după fiecare mutare de cod.
+- **Versiunea:** `extensii/trenulet/extensie.json`, rândul de „ce e nou” primul în `noutati` din `extensii/biblioteca.json`,
+  apoi `node scripts/biblioteca.ts --scrie` (la „conținutul s-a schimbat, versiunea nu”, pune temporar versiunea publicată
+  în `"versiune"` din fața lui `"continut"` și rulează din nou). Textele noi în engleză: `node scripts/texte-trenulet.ts`,
+  apoi `texte.en.json`.
+- **E2e-ul atelierului:** `threeDinPachet` și `intraIn3D` din `test/e2e/ajutor-atelier.ts` (mai jos).
 
 ## 3.Tq, gata (23.11, în cloud)
 

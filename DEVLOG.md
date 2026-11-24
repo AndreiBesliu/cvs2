@@ -13984,7 +13984,7 @@ două rânduri suprapuse)
 
 **Prompt:** „si trebuie sa reparam si asta” (trei capturi ale rândului comenzilor foii); regula „un CI roșu pe `main` e
 incidentul numărul unu” (completul loturilor 19–21, roșu la o probă a extensiilor)
-**Started:** 24.11, 19:35. **Completed:** unirea în `main`, 24.11, @@ORA25@@; publicarea pe test, la rândul ei.
+**Started:** 24.11, 19:35. **Completed:** unirea în `main`, 24.11, 21:57; publicarea pe test, la rândul ei.
 
 - **Lotul, pe `unire-2411aa`** (peste lotul 24): reparația probei extensiilor (`b08898b1`, în `13d9bcad`), 11.1↑d
   (`bff5fbcc`, în `001b6325`) și 3.At (`cadac6c3`); nota liniei bibliotecii (`945a9320`, doar documente). Ciocnirile: DEVLOG și lecțiile
@@ -14000,9 +14000,38 @@ incidentul numărul unu” (completul loturilor 19–21, roșu la o probă a ext
   sosește citirea (`useMesajDupaCitire`, `src/admin/setari/dupaCitire.ts`), bună sau căzută; până atunci formularul e
   ocupat. Probele, pe emulatoare: citirea întârziată anume cu 1,5 s (roșie înaintea reparației: la mesaj, citirea nu
   sosise; verde după) și citirea căzută (mesajul apare, iar după „Reîncarcă” formularul nu rămâne ocupat); cele 11
-  probe ale fișierelor `utilizatori` și `rapide`, verzi. Otrăvurile (`test/otravuri/3.At.py`): @@O25@@.
-- **Porțile, în CI:** @@D25@@
+  probe ale fișierelor `utilizatori` și `rapide`, verzi. Otrăvurile (`test/otravuri/3.At.py`): 5 / 5 din prima, pe emulatoare (mesajul dat la răspunsul salvării, în fiecare din cele trei formulare; mesajul care nu mai vine; citirea căzută care lasă formularul ocupat).
+- **Porțile, în CI:** cu 3.At, codul lotului a trecut în completul lotului 26, care îl cuprinde (45466400696, pe
+  `fdde5947`: unit 10 307 / 0, e2e 788 / 788, funcțiile 136 / 136, paginile 59 / 59); rapidul, verde pe `e533068a`
+  (45466041605). Completul propriu al lotului, pe `cadac6c3` (45465767883), a stat 40 de minute la coadă și rula încă
+  la unire. Mărimea lotului singur (primul complet): pornirea 110,4 kB, totalul 857,5 / 900. Nimic pe server.
+- **Tot în lot, doar documente:** nota liniei bibliotecii (`945a9320`); predarea liniei elicelor către sesiunea
+  extensiilor (`05bdc8ec`, la cererea owner-ului) și decizia liniei noi a atelierului Easy 3Draw (ADR 0340–0349,
+  feliile de la 3.Tv, cu 3.Tu).
 - **Loturile dinainte:** loturile 19–22 sunt pe test din 20:32 (`62569bb2`; completul pe `main` 45445300697, verde;
   publicarea 45457898832; adresa spune `62569bb25907`, proba de fum, bună). Lanțul de publicare pornit în fundal s-a
   oprit la limita lui de timp după ce pornise publicarea; a mers mai departe în GitHub. Loturile 23 (`9bbb1d58`) și 24
   (`878ee5d1`) sunt în `main`; rapidul pe `878ee5d1`, verde (45454985491).
+
+## 2026-11-24 — Sesiunea principală în cloud: a douăzeci și patra unire (frezele: 16.A↑h-5, profilurile parametrice; 16.A↑b-3, freza pe rândurile exportului) (Model: Claude Fable 5.2)
+
+**Prompt:** rapoartele liniei frezelor („16.A↑h-5 gata de unit”, `2fe701d3`; „completul lui 16.A↑b-3 pe `6041109d` e
+VERDE”), la ordinul în vigoare „unește ce se poate”
+**Started:** 24.11, 21:05. **Completed:** unirea în `main`, 24.11, 21:57, în aceeași împingere cu lotul 25; publicarea
+pe test, la rândul ei.
+
+- **Lotul, pe `unire-2411ab`** (peste lotul 25): h-5 (`2fe701d3`, în `4aee5405`, fără ciocniri) și b-3 (`6041109d`,
+  în `fdde5947`; ciocnirile: registrul otrăvurilor și catalogul controalelor, scris din nou: 640 de nume). b-3 a fost
+  pusă în avans, cât îi rula completul propriu; a intrat după ce linia l-a raportat verde (verificat în GitHub).
+  Local, pe arborele unit: tipurile (și ale funcțiilor), regulile de import (21), traducerile (1 073), catalogul,
+  biblioteca extensiilor.
+- **Porțile, în CI:** completul lotului pe `fdde5947` (45466400696, verde la prima trecere, 50 min): unit 10 307 / 0
+  (12 sărite, pe Linux), e2e 788 / 788, funcțiile pe emulatoare 136 / 136, paginile 59 / 59; rapidul, verde pe
+  `fdde5947` (45466401056, feliile între 0:56 și 9:48); completele liniei, verzi: `2fe701d3` (45455123768), `6041109d`
+  (45455611401). Pornirea 110,4 kB (plafonul 120; cu ușa 115,1, cu Atelierul 115,4), totalul 860,1 / 900 kB, `/admin`
+  138,3 / 200, contul 30,3 / 32. Nimic pe server.
+- **Documentele:** decizia în `CLAUDE.md`, cu paragraful de stare al lui h-5 și b-3; indexul liniilor; starea din
+  `docs/linii/principala.md`.
+- **Urmează:** lotul 27, relieful singur (18.1↑a, `feb7bee1`, v28), unit pe `unire-2411ac` (`c5b79526`; ciocnirile:
+  jurnalul feliilor, registrul otrăvurilor, catalogul controalelor, 641 de nume; 208 unitare alese, verzi local);
+  completul lui (45472363389) rula la unire.
