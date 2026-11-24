@@ -25,7 +25,7 @@ const FAMILII: readonly (readonly [string, string, readonly (readonly [string, s
   ['caramizi', 'Cărămizi', [['caramida', 'Cărămidă / placă'], ['panta', 'Pantă'], ['pantaInversa', 'Pantă inversă'], ['pana', 'Pană / aripă'],
     ['rotund', 'Rotund / con'], ['lateral', 'Știfturi pe lateral'], ['suport', 'Suport (bracket)'], ['grinda', 'Grindă'], ['caramidaTechnic', 'Cărămidă Technic'],
     ['placaTechnic', 'Placă cu găuri']]],
-  ['legaturi', 'Legături', [['stiftTechnic', 'Știft'], ['ax', 'Ax'], ['bucsa', 'Bucșă / conector'], ['clema', 'Clemă'], ['bara', 'Bară'], ['maner', 'Mâner'],
+  ['legaturi', 'Legături', [['stiftTechnic', 'Știft'], ['ax', 'Ax'], ['bucsa', 'Bucșă / conector'], ['conector', 'Conector perpendicular'], ['conectorUnghi', 'Conector în unghi'], ['clema', 'Clemă'], ['bara', 'Bară'], ['maner', 'Mâner'],
     ['bila', 'Bilă'], ['cupa', 'Cupă']]],
   ['roti', 'Roți', [['rotita', 'Roată dințată'], ['conica', 'Roată conică'], ['coroana', 'Roată coroană'], ['conicaDubla', 'Conică dublă'], ['fulie', 'Fulie'],
     ['roata', 'Roată cu anvelopă'], ['senila', 'Șenilă']]],
@@ -35,7 +35,7 @@ const FAMILII: readonly (readonly [string, string, readonly (readonly [string, s
 const EDITOR: Readonly<Record<string, string>> = {
   caramida: 'Forma, pe grila de știfturi', panta: 'Pantă', pantaInversa: 'Pantă inversă', pana: 'Pană: aripi, colțuri tăiate, vârfuri',
   rotund: 'Rotund și con', lateral: 'Cărămidă cu știfturi pe lateral', suport: 'Suport (bracket)', grinda: 'Grindă Technic, de orice formă',
-  caramidaTechnic: 'Cărămidă Technic', stiftTechnic: 'Știft Technic', ax: 'Ax Technic', bucsa: 'Bucșă și conector de ax', clema: 'Placă cu clemă',
+  caramidaTechnic: 'Cărămidă Technic', stiftTechnic: 'Știft Technic', ax: 'Ax Technic', bucsa: 'Bucșă și conector de ax', conector: 'Conector perpendicular', conectorUnghi: 'Conector în unghi', clema: 'Placă cu clemă',
   bara: 'Bară', maner: 'Placă cu mâner', bila: 'Placă cu bilă', cupa: 'Placă cu cupă', rotita: 'Roată dințată', conica: 'Roată conică',
   coroana: 'Roată coroană', conicaDubla: 'Conică dublă', fulie: 'Fulie', roata: 'Roată cu anvelopă', senila: 'Șenilă', elice: 'Elice',
   eliceBarca: 'Elice de barcă', ventilator: 'Ventilator cu carcasă',
@@ -59,7 +59,7 @@ const piesaApasata = (page: Page) => page.locator('#at-galerie [aria-pressed="tr
 
 test('filele: Cărămizi, Legături, Roți (cu câte piese au), apoi Calibrare; sub fiecare, piesele familiei ei, cu editorul lor', async ({ page }) => {
   await deschide(page);
-  await expect(page.locator('#at-tipuri button:visible')).toHaveText(['Cărămizi 10', 'Legături 8', 'Roți 7', 'Elice 3', 'Calibrare']);
+  await expect(page.locator('#at-tipuri button:visible')).toHaveText(['Cărămizi 10', 'Legături 10', 'Roți 7', 'Elice 3', 'Calibrare']);
   // la început: Cărămizi, cu cărămida
   await expect(filaApasata(page)).toHaveAttribute('data-fila', 'caramizi');
   await expect(piesaApasata(page)).toHaveAttribute('data-piesa', 'caramida');
@@ -197,14 +197,16 @@ test('o listă salvată de 18.14.0 se deschide la fel: piesa din editor, acum pe
   await laFelCa18140(page);
   // scrise înapoi la deschidere: aceeași stare, aceeași listă, același model (nimic mutat); singura cheie nouă e starea
   // implicită a tipurilor venite după 18.14.0 (șenila, 3.To; elicea, 3.Tq; elicea de barcă, 3.Tr, cu înclinarea spre pupa
-  // de la 3.Tt; ventilatorul, 3.Ts)
+  // de la 3.Tt; ventilatorul, 3.Ts; conectorul perpendicular, 3.Ca; conectorul în unghi, 3.Cb)
   const scris = JSON.parse(await page.evaluate((k) => localStorage.getItem(k) ?? 'null', CHEIE)) as typeof stocat;
-  const { senila, elice, eliceBarca, ventilator, ...stare } = scris.stare as Record<string, unknown>;
+  const { senila, elice, eliceBarca, ventilator, conector, conectorUnghi, ...stare } = scris.stare as Record<string, unknown>;
   expect([stare, scris.lista, scris.model]).toEqual([stocat.stare, stocat.lista, stocat.model]);
   expect(senila).toEqual({ piesa: 'zala', gauriStift: 'da', dinti: 10, gaura: 'x', pereche: 10, distanta: 8 });
   expect(elice).toEqual({ palete: 3, diametru: 72, pas: 0.7, latime: 30, forma: 'rot', paleta: 'rasucita', profil: 'placa', sens: 'dreapta', gaura: 'x', con: 'nu' });
   expect(eliceBarca).toEqual({ palete: 3, diametru: 40, pas: 1, latime: 100, inclinare: 20, pupa: 0, sens: 'dreapta', gaura: 'x', capac: 'nu' });
   expect(ventilator).toEqual({ piesa: 'rotor', palete: 7, diametru: 40, joc: 0.8, pas: 0.8, latime: 45, sens: 'dreapta', gaura: 'x', inel: 'nu', urechi: 2 });
+  expect(conector).toEqual({ gauri: ['xv', 'ro'] });
+  expect(conectorUnghi).toEqual({ mansoane: [[0, 'x'], [135, 'x']], butuc: 'r' });
 });
 
 test('pe claude.ai, lista salvată de 18.14.0 vine din baza artefactului după ce partea 3D a pornit: filele și galeria o urmează', async ({ page }) => {

@@ -17,7 +17,7 @@ var Atelier3D = (function () {
     dinti?: number; unghi?: number; sens?: string; modul?: number; janta?: number; banda?: string; spite?: string; nrSpite?: number; canal?: string;
     latCanal?: number; pereche?: number; butuc?: string; pinion?: number; piesa?: string; gauriStift?: string;
     palete?: number; diametru?: number; pas?: number; latime?: number; paleta?: string; con?: string; inclinare?: number; pupa?: number; capac?: string;
-    joc?: number; inel?: string; urechi?: number };
+    joc?: number; inel?: string; urechi?: number; opritor?: boolean; mansoane?: [number, string][] };
   /** O gaură pe grilă: colțul de celulă și tipul. */
   type Gaura = [number, number, string];
   /** O piesă gata de printat: corpul, mărimea și ce a spus motorul despre ea. */
@@ -50,10 +50,14 @@ var Atelier3D = (function () {
     rotund: { diam: 1, placi: 3, forma: "cilindru", varf_d: 5.4, stifturi: "toate", gaura: "nu" },
     grinda: { cols: 9, rows: 5, celule: [0, 1, 2, 3, 4].map((i): Gaura => [i, 0, "r"]), groasa: true, unealta: "r", fel: "grila", brate: [6, 4], unghiuri: [53.13], gauriInd: [] as string[] },
     caramidaTechnic: { lung: 4, gauri: ["r", "r", "r"], goale: false },
-    ax: { lung: 4 },
+    ax: { lung: 4 } as { lung: number; opritor?: boolean },
     stiftTechnic: { fanta: true, lung: 2, capat: "stift" },
     lateral: { lung: 1, fete: "una" },
     bucsa: { lung: 1, gaura: "x" },
+    // conectorul perpendicular (ADR 0284): câte un cod pe pas, felul găurii (r știft, x ax, p plin) și axa ei (v în sus, o
+    // de-a latul, l în lung, doar la capete); implicit, crucea 1 × 2
+    conector: { gauri: ["xv", "ro"] },
+    conectorUnghi: { mansoane: [[0, "x"], [135, "x"]] as [number, string][], butuc: "r" },
     suport: { lung: 2, adanc: 1, inalt: 1, invers: false },
     clema: { lung: 1, axa: "verticala" },
     maner: { lung: 2, axa: "verticala" },
@@ -98,7 +102,7 @@ var Atelier3D = (function () {
   const FAMILII: readonly Familie[] = [
     ["caramizi", "Cărămizi", [["caramida", "Cărămidă / placă"], ["panta", "Pantă"], ["pantaInversa", "Pantă inversă"], ["pana", "Pană / aripă"], ["rotund", "Rotund / con"],
       ["lateral", "Știfturi pe lateral"], ["suport", "Suport (bracket)"], ["grinda", "Grindă"], ["caramidaTechnic", "Cărămidă Technic"], ["placaTechnic", "Placă cu găuri"]]],
-    ["legaturi", "Legături", [["stiftTechnic", "Știft"], ["ax", "Ax"], ["bucsa", "Bucșă / conector"], ["clema", "Clemă"], ["bara", "Bară"], ["maner", "Mâner"], ["bila", "Bilă"], ["cupa", "Cupă"]]],
+    ["legaturi", "Legături", [["stiftTechnic", "Știft"], ["ax", "Ax"], ["bucsa", "Bucșă / conector"], ["conector", "Conector perpendicular"], ["conectorUnghi", "Conector în unghi"], ["clema", "Clemă"], ["bara", "Bară"], ["maner", "Mâner"], ["bila", "Bilă"], ["cupa", "Cupă"]]],
     ["roti", "Roți", [["rotita", "Roată dințată"], ["conica", "Roată conică"], ["coroana", "Roată coroană"], ["conicaDubla", "Conică dublă"], ["fulie", "Fulie"], ["roata", "Roată cu anvelopă"], ["senila", "Șenilă"]]],
     ["propulsie", "Elice", [["elice", "Elice"], ["eliceBarca", "Elice de barcă"], ["ventilator", "Ventilator cu carcasă"]]]
   ];
@@ -125,6 +129,8 @@ var Atelier3D = (function () {
     placaTechnic: `<rect x="2.5" y="6" width="19" height="12" rx="1"/><circle cx="8.5" cy="12" r="2.1"/><circle cx="15.5" cy="12" r="2.1"/><path d="M5 8.8h.01M12 8.8h.01M19 8.8h.01M5 15.2h.01M12 15.2h.01M19 15.2h.01" stroke-width="2.6"/>`,
     stiftTechnic: `<path d="M10.5 9.5h-7a1 1 0 0 0-1 1v3a1 1 0 0 0 1 1h7M13.5 9.5h7a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-7M2.5 12H6M18 12h3.5"/><rect x="10.5" y="7.5" width="3" height="9" rx=".8"/>`,
     ax: `<path d="M9.5 3.5h5v6h6v5h-6v6h-5v-6h-6v-5h6z"/>`,
+    conector: `<rect x="2.5" y="7" width="19" height="10" rx="1"/><path d="M12 7v10"/><circle cx="7.2" cy="12" r="2.3"/><path d="M16.8 9.6v4.8M14.4 12h4.8"/>`,
+    conectorUnghi: `<circle cx="10" cy="15" r="2.8"/><path d="M12.7 13.2h8.8v3.6h-8.8M9.4 12.3 5.6 8.5 3.1 11l3.8 3.8"/>`,
     bucsa: `<circle cx="12" cy="12" r="8.5"/><path d="M10.8 7.5h2.4v3.3h3.3v2.4h-3.3v3.3h-2.4v-3.3H7.5v-2.4h3.3z"/>`,
     clema: `<rect x="2.5" y="13" width="9" height="4" rx=".8"/><path d="M5 13v-2.5h4V13M11.5 15H14M19.3 12.2a3.6 3.6 0 1 0 0 5.6"/>`,
     bara: `<rect x="2" y="10.5" width="20" height="3" rx="1.5"/>`,
@@ -218,9 +224,20 @@ var Atelier3D = (function () {
     }
     if (d.tip === "caramidaTechnic") return tr`Cărămidă Technic 1×${d.lung}${d.gauri && d.gauri.includes("x") ? tr(", găuri de ax") : ""}${d.goale ? tr(", știfturi goale") : ""}`;
     if (d.tip === "lateral") return tr`Cărămidă 1×${d.lung} cu știfturi pe ${d.fete === "doua" ? tr("două laturi") : tr("o latură")}`;
-    if (d.tip === "ax") return tr`Ax ${d.lung}`;
-    if (d.tip === "stiftTechnic") return `${d.capat === "ax" ? tr("Știft cu ax") : tr("Știft Technic")}${+d.lung! === 3 ? " 3" : ""}${d.fanta ? "" : tr(", fără fantă")}`;
+    if (d.tip === "ax") return tr`Ax ${d.lung}` + (d.opritor ? tr(" cu opritor") : "");
+    if (d.tip === "stiftTechnic") return `${d.capat === "ax" ? tr("Știft cu ax") : d.capat === "bucsa" ? tr("Știft cu bucșă") : tr("Știft Technic")}${+d.lung! === 3 ? " 3" : ""}${d.fanta ? "" : tr(", fără fantă")}`;
     if (d.tip === "bucsa") return +d.lung! === 0.5 ? tr("Bucșă ½") : d.gaura === "xr" ? tr`Conector ax–știft ${d.lung}` : `${+d.lung! === 1 ? tr("Bucșă") : tr("Conector de ax")} ${+d.lung! === 1 ? "" : d.lung}`.trim() + (d.gaura === "r" ? tr(", gaură rotundă") : "");
+    if (d.tip === "conector") {
+      // fiecare pas, pe nume (și în numele fișierului): „ax sus, știft lateral”
+      const pasi = coduriConector(d.gauri).map(c => (c[0] === "p" ? tr("plin") : `${c[0] === "x" ? tr("ax") : tr("știft", "pin")} ${c[1] === "o" ? tr("lateral") : c[1] === "l" ? tr("în lung") : tr("sus", "conector")}`));
+      return tr`Conector 1×${pasi.length}: ${pasi.join(", ")}`;
+    }
+    if (d.tip === "conectorUnghi") {
+      // fiecare braț, pe nume (și în numele fișierului): „ax, ax 135°”; butucul, doar când nu e cel obișnuit (gaura de știft)
+      const fel = (f: string) => (f === "r" ? tr("știft", "pin") : tr("ax"));
+      const brate = mansoaneUnghi(d.mansoane).map(([u, f], k) => (k ? `${fel(f)} ${fmt(u)}°` : fel(f)));
+      return tr`Conector în unghi: ${brate.join(", ")}` + (d.butuc === "x" ? tr(", butuc de ax") : d.butuc === "p" ? tr(", butuc plin") : "");
+    }
     if (d.tip === "suport") return tr`Suport ${d.adanc}×${d.lung} – ${d.inalt}×${d.lung}${d.invers ? tr(", întors") : ""}`;
     if (d.tip === "clema") return tr`Placă 1×${d.lung} cu clemă${d.axa === "orizontala" ? tr(" culcată") : ""}`;
     if (d.tip === "maner") return tr`Placă 1×${d.lung} cu mâner${d.axa === "verticala" ? tr(" în picioare") : ""}`;
@@ -305,6 +322,32 @@ var Atelier3D = (function () {
     const H = d.placi! * 3.2, buza = Math.min(Math.max(0.8, d.buza!), H - 0.8);
     return Math.atan2(H - buza, 8 * (d.adanc! - d.sus!) - 0.1) * 180 / Math.PI;
   }
+  /** Formele gata ale conectorului perpendicular („Repede”). */
+  const CONECTORI: readonly (readonly [string, string, readonly string[]])[] = [["cruce", "Cruce 1×2", ["xv", "ro"]], ["axe", "Ax–știft–ax", ["xv", "ro", "xv"]],
+    ["stifturi", "Două știfturi și ax", ["rv", "rv", "xo"]], ["colt", "Colț pe trei axe", ["xl", "rv", "ro"]]];
+  /** Codurile pașilor unui conector, îndreptate ca în motor: 1–5 pași; felul r / x / p; axa v / o și, doar la capete, l. */
+  function coduriConector(g: readonly unknown[] | undefined): string[] {
+    const lista = Array.isArray(g) && g.length ? g.slice(0, 5) : ["xv", "ro"];
+    return lista.map((cod, k) => {
+      const c = typeof cod === "string" ? cod : "", tip = c[0] === "x" || c[0] === "p" ? c[0] : "r";
+      if (tip === "p") return "p";
+      const axa = c[1] === "o" ? "o" : c[1] === "l" && (k === 0 || k === lista.length - 1) ? "l" : "v";
+      return tip + axa;
+    });
+  }
+  /** Formele gata ale conectorului în unghi („Repede”): unghiurile brațelor; cele numerotate sunt ale conectorilor LEGO. */
+  const CONECTORI_UNGHI: readonly (readonly [string, string, readonly number[]])[] = [["1", "Nr. 1", [0]], ["2", "Nr. 2 (180°)", [0, 180]], ["3", "Nr. 3 (157,5°)", [0, 157.5]],
+    ["4", "Nr. 4 (135°)", [0, 135]], ["5", "Nr. 5 (112,5°)", [0, 112.5]], ["6", "Nr. 6 (90°)", [0, 90]], ["t", "T", [0, 90, 180]], ["cruce", "Cruce", [0, 90, 180, 270]], ["y", "Y", [0, 120, 240]]];
+  /** Brațele unui conector în unghi, îndreptate: primul la 0°, celelalte în ordinea unghiului (la zecimi de grad), fiecare cu
+   *  manșonul lui (`x` de ax, `r` de știft); un braț la mai puțin de 90° de altul e lăsat afară, ca în motor. */
+  function mansoaneUnghi(m: readonly unknown[] | undefined): [number, string][] {
+    const cerute = (Array.isArray(m) ? m : []).filter((b): b is [number, string] => Array.isArray(b) && Number.isFinite(b[0]));
+    if (!cerute.length) return [[0, "x"], [135, "x"]];
+    const u0 = cerute[0]![0], out: [number, string][] = [];
+    const rotite = cerute.map(([u, f]): [number, string] => [Math.round((((u - u0) % 360) + 360) % 360 * 10) / 10 % 360, f === "r" ? "r" : "x"]).sort((a, b) => a[0] - b[0]);
+    for (const b of rotite) if (out.every(([v]) => Math.abs(((b[0] - v) % 360 + 540) % 360 - 180) >= 90 - 1e-6)) out.push(b);
+    return out;
+  }
   function defCurenta(): Def {
     // copia JSON a câmpurilor editorului: netipizată (din JSON.parse), ca în stocare; ce iese din ea se verifică la motor
     const t = stare.tip as Exclude<keyof typeof stare, "tip"> | "calibrare";
@@ -340,7 +383,10 @@ var Atelier3D = (function () {
       delete p.cols; delete p.rows; delete p.unealta; delete p.gauri; delete p.fel; delete p.brate; delete p.unghiuri; delete p.gauriInd;
     }
     if (t === "caramidaTechnic") { p.gauri = Array.from({ length: p.lung === 1 ? 1 : p.lung - 1 }, (_, k) => (["r", "x", "p"].includes(p.gauri && p.gauri[k]) ? p.gauri[k]! : "r")); if (!p.goale) delete p.goale; }
-    if (t === "stiftTechnic") { if (+p.lung !== 3) delete p.lung; if (p.capat !== "ax") delete p.capat; }
+    if (t === "stiftTechnic") { if (+p.lung !== 3) delete p.lung; if (p.capat !== "ax" && p.capat !== "bucsa") delete p.capat; }
+    if (t === "ax" && !p.opritor) delete p.opritor;
+    if (t === "conector") p.gauri = coduriConector(p.gauri);
+    if (t === "conectorUnghi") { p.mansoane = mansoaneUnghi(p.mansoane); if (p.butuc !== "x" && p.butuc !== "p") delete p.butuc; }
     if (t === "dinCvs2") { delete p.deschise; delete p.refuz; }
     if (t === "rotita") {
       // perechea e a editorului; la dinții drepți, unghiul și sensul nu contează (două roți drepte la fel sunt aceeași piesă)
@@ -717,15 +763,17 @@ var Atelier3D = (function () {
     } else if (t === "ax") {
       const p = stare.ax;
       e.innerHTML = `<h2>Ax Technic</h2>
-        <p class="mic">Axul în cruce (Ø 4,75, brațe de 1,75 mm, puțin mai subțiri decât la LEGO, ca să intre în găurile printate). Se printează culcat, pe un braț. Lungimea e în știfturi: axul 4 are 31,8 mm.</p>
-        <div class="at-campuri"><label for="at-a-lung">Lungime (știfturi)<input id="at-a-lung" type="number" min="2" max="20" step="1" value="${p.lung}"></label></div>`;
+        <p class="mic">Axul în cruce (Ø 4,75, brațe de 1,75 mm, puțin mai subțiri decât la LEGO, ca să intre în găurile printate). Se printează culcat, pe un braț. Lungimea e în știfturi: axul 4 are 31,8 mm. Cu opritor, un capăt are un disc de Ø 6, gros de 1 mm: se sprijină pe grindă (intră în lamajul găurii), iar axul nu mai trece prin ea.</p>
+        <div class="at-campuri"><label for="at-a-lung">Lungime (știfturi)<input id="at-a-lung" type="number" min="2" max="20" step="1" value="${p.lung}"></label></div>
+        <label class="bifa"><input type="checkbox" id="at-a-opritor" ${p.opritor ? "checked" : ""}> Cu opritor la un capăt</label>`;
       $("#at-a-lung").onchange = ev => { const v = Math.round(+(ev.target as HTMLInputElement).value); if (v >= 2 && v <= 20) { p.lung = v; schimbat(); } };
+      $("#at-a-opritor").onchange = ev => { p.opritor = (ev.target as HTMLInputElement).checked; schimbat(); };
     } else if (t === "stiftTechnic") {
       const p = stare.stiftTechnic;
       e.innerHTML = `<h2>Știft Technic</h2>
-        <p class="mic">Știftul de 2 (15,8 mm) are gulerul la mijloc; cel de 3 (23,8 mm), la un știft de un capăt, ca să lege trei grinzi. Cu ax, partea scurtă e în cruce: într-o parte se rotește, în cealaltă ține un ax sau o roată. Se printează culcat, pe o față teșită de 0,35 mm; fanta de la capetele rotunde îl face să se strângă în gaură.</p>
+        <p class="mic">Știftul de 2 (15,8 mm) are gulerul la mijloc; cel de 3 (23,8 mm), la un știft de un capăt, ca să lege trei grinzi. Cu ax, partea scurtă e în cruce: într-o parte se rotește, în cealaltă ține un ax sau o roată. Cu bucșă, partea scurtă e un cilindru plin de Ø 7,2, lung de un știft: se sprijină pe grindă și ține loc de bucșă, deci știftul nu mai are guler. Se printează culcat, pe o față teșită de 0,35 mm; fanta de la capetele rotunde îl face să se strângă în gaură.</p>
         <div class="at-rand"><span class="mic">Lungime:</span>${seg("at-s-lung", [["2", "2"], ["3", "3"]], String(p.lung || 2))}
-          <span class="mic">Capătul scurt:</span>${seg("at-s-capat", [["stift", "Știft"], ["ax", "Ax"]], p.capat || "stift")}</div>
+          <span class="mic">Capătul scurt:</span>${seg("at-s-capat", [["stift", "Știft"], ["ax", "Ax"], ["bucsa", "Bucșă"]], p.capat || "stift")}</div>
         <label class="bifa"><input type="checkbox" id="at-s-fanta" ${p.fanta ? "checked" : ""}> Cu fantă la capetele rotunde</label>`;
       $("#at-s-fanta").onchange = ev => { p.fanta = (ev.target as HTMLInputElement).checked; schimbat(); };
       $("#at-s-lung").onclick = ev => { const b = (ev.target as Element).closest<HTMLElement>("[data-v]"); if (!b) return; p.lung = +b.dataset.v!; editor(); schimbat(); };
@@ -738,6 +786,60 @@ var Atelier3D = (function () {
         <div class="at-rand"><span class="mic">Gaura:</span>${seg("at-b-gaura", [["x", "Pentru ax"], ["r", "Rotundă"], ["xr", "Ax + știft"]], p.gaura)}</div>`;
       $("#at-b-lung").onclick = ev => { const b = (ev.target as Element).closest<HTMLElement>("[data-v]"); if (!b) return; p.lung = +b.dataset.v!; if (p.lung === 0.5 && p.gaura === "xr") p.gaura = "x"; editor(); schimbat(); };
       $("#at-b-gaura").onclick = ev => { const b = (ev.target as Element).closest<HTMLElement>("[data-v]"); if (!b) return; p.gaura = b.dataset.v!; if (p.gaura === "xr" && p.lung === 0.5) p.lung = 1; editor(); schimbat(); };
+    } else if (t === "conector") {
+      // conectorul perpendicular (ADR 0284): lungimea, formele gata și, pe fiecare pas, felul găurii și axa ei
+      const p = stare.conector, g = coduriConector(p.gauri), n = g.length, gata = CONECTORI.find(([, , c]) => c.join() === g.join());
+      const pas = (c: string, k: number) => `<div class="at-rand"><span class="mic">${tr`Pasul ${k + 1}:`}</span>${seg("at-co-tip-" + k, [["r", "Știft"], ["x", "Ax"], ["p", "Plin"]], c[0]!)}
+          ${c[0] === "p" ? "" : seg("at-co-axa-" + k, [["v", "În sus"], ["o", "De-a latul"], ...(k === 0 || k === n - 1 ? [["l", "În lung"] as const] : [])], c[1]!)}</div>`;
+      e.innerHTML = `<h2>Conector perpendicular</h2>
+        <p class="mic">Un bloc cât grinda groasă (7,8 × 7,8 mm), cu câte o gaură pe fiecare pas, fiecare pe axa ei: în sus, de-a latul sau, la capete, în lung. Leagă grinzi, axe și știfturi care nu stau în același plan: din el se fac colțurile cadrelor și trecerile de la un ax la altul. Găurile sunt cele ale grinzii, din calibrare. Se printează culcat, fără suport.</p>
+        <div class="at-rand"><span class="mic">Lungime:</span>${seg("at-co-lung", [1, 2, 3, 4, 5].map((v): [string, string] => [String(v), String(v)]), String(n))}</div>
+        <div class="at-rand"><span class="mic">Repede:</span>${seg("at-co-repede", CONECTORI.map(([k, nume]): [string, string] => [k, nume]), gata ? gata[0] : "")}</div>
+        <div id="at-co-pasi">${g.map(pas).join("")}</div>`;
+      const pune = (nou: string[]) => { p.gauri = coduriConector(nou); editor(); schimbat(); };
+      $("#at-co-lung").onclick = ev => { const b = (ev.target as Element).closest<HTMLElement>("[data-v]"); if (!b) return; const m = +b.dataset.v!; pune(Array.from({ length: m }, (_, k) => g[k] ?? "rv")); };
+      $("#at-co-repede").onclick = ev => { const b = (ev.target as Element).closest<HTMLElement>("[data-v]"), f = b && CONECTORI.find(([k]) => k === b.dataset.v); if (f) pune([...f[2]]); };
+      $("#at-co-pasi").onclick = ev => {
+        const b = (ev.target as Element).closest<HTMLElement>("[data-v]"), s = b && b.closest<HTMLElement>(".segment"), m = s && /^at-co-(tip|axa)-(\d)$/.exec(s.id);
+        if (!b || !m) return;
+        const k = +m[2]!, v = b.dataset.v!, vechi = g[k]!;
+        pune(g.map((c, i) => (i !== k ? c : m[1] === "tip" ? (v === "p" ? "p" : v + (vechi[1] ?? "v")) : vechi[0] + v)));
+      };
+    } else if (t === "conectorUnghi") {
+      // conectorul în unghi (ADR 0284, felia 3.Cb): formele gata, numărul brațelor, butucul și, pe fiecare braț, manșonul și unghiul
+      const p = stare.conectorUnghi, m = mansoaneUnghi(p.mansoane), n = m.length, gata = CONECTORI_UNGHI.find(([, , u]) => u.join() === m.map(b => b[0]).join());
+      // între ce unghiuri se poate muta brațul k: la cel puțin 90° de vecini; cu două brațe, până la 180° (dincolo e aceeași piesă, întoarsă)
+      const margini = (k: number): [number, number] => [m[k - 1]![0] + 90, n === 2 ? 180 : 360 - 90 * (n - k)];
+      const brat = ([u, f]: [number, string], k: number) => `<div class="at-rand"><span class="mic">${tr`Brațul ${k + 1}:`}</span>${seg("at-cu-fel-" + k, [["x", "Ax"], ["r", "Știft"]], f)}
+          ${k ? `<label class="at-unghi" for="at-cu-unghi-${k}">Unghiul (°)<input id="at-cu-unghi-${k}" type="number" min="${margini(k)[0]}" max="${margini(k)[1]}" step="22.5" value="${u}"${margini(k)[0] === margini(k)[1] ? " disabled" : ""}></label>` : ""}</div>`;
+      e.innerHTML = `<h2>Conector în unghi</h2>
+        <p class="mic">Un butuc rotund, cu gaura lui în sus, din care pleacă unul până la patru brațe, culcate pe masă. Fiecare braț are un manșon în care intră un ax (sau un știft) cât un pas; brațele stau la cel puțin 90° unul de altul. Formele numerotate au unghiurile conectorilor LEGO. Din el se fac colțurile cadrelor, brațele în unghi și trecerea de la un ax la altul. Găurile sunt cele ale grinzii, din calibrare. Se printează culcat, fără suport.</p>
+        <div class="at-rand"><span class="mic">Repede:</span>${seg("at-cu-repede", CONECTORI_UNGHI.map(([k, nume]): [string, string] => [k, nume]), gata ? gata[0] : "")}</div>
+        <div class="at-rand"><span class="mic">Brațe:</span>${seg("at-cu-nr", [1, 2, 3, 4].map((v): [string, string] => [String(v), String(v)]), String(n))}</div>
+        <div class="at-rand"><span class="mic">Butucul:</span>${seg("at-cu-butuc", [["r", "Știft"], ["x", "Ax"], ["p", "Plin"]], p.butuc === "x" || p.butuc === "p" ? p.butuc : "r")}</div>
+        <div id="at-cu-brate">${m.map(brat).join("")}</div>`;
+      const pune = (nou: [number, string][]) => { p.mansoane = mansoaneUnghi(nou); editor(); schimbat(); };
+      // unghiurile pentru un număr nou de brațe: ce era rămâne, cât se poate; brațul nou vine la 90° după ultimul
+      const cuBrate = (nr: number): number[] => (nr === 1 ? [0] : nr === 2 ? [0, n >= 2 && m[1]![0] <= 180 ? m[1]![0] : 135] : nr === 3 ? (n === 2 && m[1]![0] <= 180 ? [0, m[1]![0], m[1]![0] + 90] : n === 3 ? m.map(b => b[0]) : [0, 90, 180]) : [0, 90, 180, 270]);
+      $("#at-cu-repede").onclick = ev => { const b = (ev.target as Element).closest<HTMLElement>("[data-v]"), f = b && CONECTORI_UNGHI.find(([k]) => k === b.dataset.v); if (f) pune(f[2].map((u, k): [number, string] => [u, m[k] ? m[k]![1] : "x"])); };
+      $("#at-cu-nr").onclick = ev => { const b = (ev.target as Element).closest<HTMLElement>("[data-v]"); if (b) pune(cuBrate(+b.dataset.v!).map((u, k): [number, string] => [u, m[k] ? m[k]![1] : "x"])); };
+      $("#at-cu-butuc").onclick = ev => { const b = (ev.target as Element).closest<HTMLElement>("[data-v]"); if (!b) return; p.butuc = b.dataset.v!; editor(); schimbat(); };
+      $("#at-cu-brate").onclick = ev => {
+        const b = (ev.target as Element).closest<HTMLElement>("[data-v]"), sg = b && b.closest<HTMLElement>(".segment"), g = sg && /^at-cu-fel-(\d)$/.exec(sg.id);
+        if (b && g) pune(m.map(([u, f], i): [number, string] => [u, i === +g[1]! ? b.dataset.v! : f]));
+      };
+      $("#at-cu-brate").onchange = ev => {
+        const c = ev.target as HTMLInputElement, g = /^at-cu-unghi-(\d)$/.exec(c.id);
+        if (!g) return;
+        const k = +g[1]!, v = Math.round(+c.value * 10) / 10, [a, b] = margini(k);
+        // în afara marginilor (și golit: atunci e 0), câmpul se întoarce la ce era; un braț mutat îi împinge pe următorii
+        // la cel puțin 90° de el
+        if (!(v >= a && v <= b)) { editor(); return; }
+        const nou = m.map((x): [number, string] => [x[0], x[1]]);
+        nou[k]![0] = v;
+        for (let i = k + 1; i < n; i++) nou[i]![0] = Math.max(nou[i]![0], nou[i - 1]![0] + 90);
+        pune(nou);
+      };
     } else if (t === "rotita") {
       // roata dințată (ADR 0169): dinții, felul, unghiul și sensul la oblici și în V, grosimea, gaura, modulul; perechea
       const p = stare.rotita, oblic = p.fel !== "drepti", a = Lego.distantaRoti(p.dinti, p.pereche, p.modul), grila = textGrila(a);

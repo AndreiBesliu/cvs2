@@ -7,7 +7,8 @@ Starea:
 **Linia n-are felie în lucru. 3.Xj e în `main` din 24.11 (`049c5dda`, lotul 22). ADR 0233, acceptat de owner pe 24.11
 („da, 1a–5a”, la cele cinci întrebări): rămâne ce e implementat. 3.Xk (doar probe) e în `main` din 24.11 (`373699e6`,
 lotul 24, din `23d9a1b`, la „ok, cand e verde fa unirea” al owner-ului). Ce urmează în bibliotecă pornește la cuvântul
-lui. Pachetele nu s-au schimbat (Easy 3Draw e 18.23.0, din 3.Tt; următoarea versiune, 18.24.0).**_
+lui. Din 24.11 seara, sesiunea liniei lucrează la construcțiile din Easy 3Draw (ADR 0284, nota
+[atelier.md](atelier.md)): 3.Ca a dus pachetul la 18.24.0, iar 3.Cb la 18.25.0; următoarea versiune, 18.26.0.**_
 
 - **Ce s-a făcut** (amănuntele, în ADR 0233, „Implementat”): rafturile bibliotecii (`CATEGORII_BIBLIOTECA`,
   `shared/biblioteca.ts`) și `categorii` în lista bibliotecii și în catalog; căutarea pură (`src/extensii/cautare.ts`);

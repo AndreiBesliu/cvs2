@@ -1062,6 +1062,24 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   clicul nu se mai întoarce când cadrul dispare sub el. **O probă care judecă o regulă de timp a gazdei (rărirea
   repornirilor, un termen) ține ea ceasul paginii** (`page.clock`: `install` înaintea lui `goto`, `pauseAt`, `runFor` cu
   granița exactă; felia 3.Xk, doar probe).
+  **Construcțiile din Easy 3Draw (ADR 0284, feliile 3.Ca–3.Cj)**, în sesiunea cloud a liniei bibliotecii (aceeași
+  ramură), la cererea owner-ului din 24.11 („vreau sa adaugi mai multe tipuri de piese pentru fiecare categoire […]
+  compatibile intre ele nu doar una cate una ci si ca constructii complexe”). ADR 0284, acceptat de owner cu 1a–4a:
+  întâi piesele care leagă în 3D și mecanismele (conectorii, cremaliera, melcul), apoi punctele de prindere („Se prinde
+  cu”), Modelul ca asamblare (orientarea pe trei axe, alipirea, verificarea ca avertisment), construcțiile cu nume și
+  cele gata făcute; cărămizile de clădit și roata cu palete, pe parcurs. **3.Ca (conectorul perpendicular)** gata pe
+  24.11, neunită: tipul `conector`, în fila Legături: un bloc de 1–5 pași, cu găuri de știft sau de ax pe trei axe
+  (în sus, de-a latul și, la capete, în lung); Easy 3Draw 18.24.0. **3.Cb (conectorul în unghi, axul cu opritor,
+  știftul cu bucșă)** gata pe 24.11, neunită: tipul `conectorUnghi`, un butuc cu 1–4 brațe, fiecare cu manșonul lui de
+  ax sau de știft, la cel puțin 90° unul de altul (formele gata au unghiurile conectorilor LEGO numerotați); axul are
+  bifa „Cu opritor la un capăt”, iar știftul, capătul scurt „Bucșă”; Easy 3Draw 18.25.0 (următoarea, 18.26.0). **Motorul
+  face o piesă din corpuri închise care se suprapun puțin: două dintre ele nu-și împart nicio muchie** (altfel STL-ul
+  iese cu muchii fără pereche la cine îl citește); proba unitară o cere cu `muchiiFaraPereche`
+  (`test/unit/ajutor-plasa-lego.ts`, ajutoarele comune ale probelor pe plase). **O piesă nouă a atelierului atinge și probele
+  vechi care numără** (filele, galeriile, căutarea, starea unei liste vechi, versiunea): lista lor e în
+  `docs/linii/atelier.md`. Doar pachetul extensiei se schimbă: pornirea și totalul aplicației, neatinse. **Din 24.11
+  seara, linia ține și lucrul elicelor** (predat la cererea owner-ului): 3.Tu (piesele rotunde pe același ax în
+  „Modelul”, ADR 0283), la răspunsurile lui la cele trei întrebări din `docs/linii/elice.md`.
   **Cotele pe desen: modelul și proba G-code-ului (ADR 0330, felia 10.4↑a-1, adusă din etapa 10)** gata pe 24.11, în
   sesiunea cloud a liniei (ramura `wip/10.4-cote`), unită în `main` pe 24.11 (`f25249cf`), fără interfață încă. ADR
   0330, acceptat de owner cu 1a–6a și cu nota lui: toate setările cotelor stau într-o fereastră nouă, „Setări”, nu în

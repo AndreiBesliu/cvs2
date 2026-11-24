@@ -936,15 +936,23 @@ var Lego = (function (glob: typeof globalThis) {
     else if (cuStifturi) tri.push(...stifturi(st, H, e.stiftD));
     return { tri, avert: [] };
   }
-  function ax({ lung = 3 }: { lung?: number }): Corp {
+  function ax({ lung = 3, opritor = false }: { lung?: number; opritor?: boolean }): Corp {
     // axul in cruce, culcat pe un brat: sectiunea in planul yz, intinsa pe x; (u, v, w) -> (w, u, v) pastreaza orientarea
     const d = P.ax_d, L = P.pas * lung - 0.2;
     const sec = cruce(d / 2, d / 2, d, P.ax_lat);
-    return { tri: axe(prisma(sec, 0, L), ([u, v, w]) => [w, u, v], false), avert: [] };
+    if (!opritor) return { tri: axe(prisma(sec, 0, L), ([u, v, w]) => [w, u, v], false), avert: [] };
+    // axul cu opritor (ADR 0284, felia 3.Cb): la un capat, in lungimea axului, un disc cat gulerul stiftului, gros de 1 mm,
+    // taiat de masa; se sprijina pe fata grinzii (intra in lamaj) si axul nu mai trece prin gaura
+    // conturul discului: cercul intreg (cu extremele lui exacte), din care ramane ce e deasupra mesei, inchis de coarda de pe masa
+    const rg = P.guler_d / 2, lo = 1, x0 = Math.sqrt(Math.max(0, rg * rg - d * d / 4)), disc: Poli = [[d / 2 + x0, 0]];
+    for (let i = -15; i <= 47; i++) { const t = Math.PI * i / 32, w = d / 2 + rg * Math.sin(t); if (w > 1e-9) disc.push([d / 2 + rg * Math.cos(t), w]); }
+    disc.push([d / 2 - x0, 0]);
+    const f = ([u, v, w]: P3): P3 => [w, u, v];
+    return { tri: [...axe(prisma(sec, 0, L - lo + 0.01), f, false), ...axe(prisma(disc, L - lo, L), f, false)], avert: [] };
   }
   function stiftTechnic({ fanta = true, lung = 2, capat = "stift" }: { fanta?: boolean; lung?: number; capat?: string }): Corp {
     // stiftul Technic de 2 sau 3 (cu gulerul la 1 de un capat), culcat pe o fata taiata (0,35 mm), cu fanta la capetele
-    // rotunde; cu `capat: "ax"`, partea scurta e ax in cruce (stiftul cu ax)
+    // rotunde; cu `capat: "ax"`, partea scurta e ax in cruce (stiftul cu ax); cu `capat: "bucsa"`, o bucsa plina
     const n = +lung === 3 ? 3 : 2, r = P.stift_technic_d / 2, L = n * P.pas - 0.2, gl = P.guler_lat, rg = P.guler_d / 2, taie = 0.35, ax0 = r - taie;
     const taieCu = (poli: readonly P2[], f: (q: P2) => number): Poli => { const out: Poli = []; for (let i = 0; i < poli.length; i++) { const A = poli[i], B = poli[(i + 1) % poli.length], fa = f(A!), fb = f(B!); if (fa >= 0) out.push(A!); if (fa * fb < 0) { const t = fa / (fa - fb); out.push([A![0] + (B![0] - A![0]) * t, A![1] + (B![1] - A![1]) * t]); } } return out; };
     const d = (rr: number, a: number, b: number) => {
@@ -955,10 +963,17 @@ var Lego = (function (glob: typeof globalThis) {
       p = taieCu(p, q => q[1]); p = taieCu(p, q => q[0] - a); p = taieCu(p, q => b - q[0]);
       return trig(p);
     };
-    const f = ([u, v, w]: P3): P3 => [w, u, v], tri: Tri[] = [], cuAx = capat === "ax";
+    const f = ([u, v, w]: P3): P3 => [w, u, v], tri: Tri[] = [], cuAx = capat === "ax", cuBucsa = capat === "bucsa";
     const lf = fanta ? 5 : 0, xg = n === 2 ? L / 2 : L - (P.pas - 0.1), xa = xg - gl / 2, xb = xg + gl / 2, f2 = 0.4;
     // capetele (cu fanta), corpul si gulerul
-    for (const [w0, w1] of (cuAx ? [[0, lf]] : [[0, lf], [L - lf, L]]) as P2[]) if (lf) for (const [a, b] of [[-rg, -f2], [f2, rg]] as P2[]) tri.push(...axe(prisma(d(r, a, b), w0, w1), f, false));
+    for (const [w0, w1] of (cuAx || cuBucsa ? [[0, lf]] : [[0, lf], [L - lf, L]]) as P2[]) if (lf) for (const [a, b] of [[-rg, -f2], [f2, rg]] as P2[]) tri.push(...axe(prisma(d(r, a, b), w0, w1), f, false));
+    if (cuBucsa) {
+      // stiftul cu bucsa (ADR 0284, felia 3.Cb): partea de stift pana unde ar fi fost gulerul, apoi o bucsa plina, lunga de un
+      // pas, taiata de masa ca restul; bucsa se sprijina pe fata grinzii, deci gulerul nu mai e
+      const rb = P.bucsa_d / 2;
+      tri.push(...axe(prisma(d(r, -rg, rg), lf ? lf - 0.01 : 0, xg + 0.01), f, false), ...axe(prisma(d(rb, -rb, rb), xg, L), f, false));
+      return { tri, avert: [] };
+    }
     if (!cuAx) tri.push(...axe(prisma(d(r, -rg, rg), lf - 0.01, L - lf + 0.01), f, false));
     else {
       tri.push(...axe(prisma(d(r, -rg, rg), lf - 0.01, xb), f, false));
@@ -988,6 +1003,42 @@ var Lego = (function (glob: typeof globalThis) {
     }
     return tri;
   }
+  function conector({ gauri = null }: { gauri?: readonly string[] | null }): Corp {
+    // conectorul perpendicular (ADR 0284): un bloc culcat, de 1 pana la 5 pasi, cu sectiunea patrata cat grinda groasa.
+    // Fiecare pas are gaura lui: de stift ("r", cu lamaj pe fetele prin care iese), de ax ("x") sau niciuna ("p"), pe axa
+    // lui: in sus ("v"), de-a latul ("o") sau, doar la capete, in lung ("l"). Codul unui pas e felul si axa ("xv", "ro").
+    // Gaurile stau in pasi diferiti, deci nu se taie; cea in lung intra din capat cat un pas si se opreste in vecin.
+    const lista: readonly unknown[] = Array.isArray(gauri) && gauri.length ? gauri.slice(0, 5) : ["xv", "ro"];
+    const e = ef(), s = P.pas, g = P.grinda_groasa, h = P.lamaj_h, n = lista.length, m = g / 2, tri: Tri[] = [], avert: string[] = [];
+    let lungLaMijloc = false, cuGaura = false;
+    lista.forEach((cod, k) => {
+      const c = typeof cod === "string" ? cod : "", capat0 = k === 0, capat1 = k === n - 1;
+      let tip = c[0] === "x" || c[0] === "p" ? c[0] : "r";
+      const axa = c[1] === "o" || c[1] === "l" ? c[1] : "v";
+      if (axa === "l" && !capat0 && !capat1 && tip !== "p") { lungLaMijloc = true; tip = "p"; }
+      if (tip !== "p") cuGaura = true;
+      // capetele blocului sunt trase cu 0,1 (ca axul); pasii vecini se suprapun cu 0,02
+      const cx = s * k + s / 2, x0 = capat0 ? 0.1 : s * k - 0.01, x1 = capat1 ? s * n - 0.1 : s * (k + 1) + 0.01;
+      // sectiunea si gaura, in planul perpendicular pe axa gaurii, intinse apoi pe ea (intre w0 si w1)
+      const peLung = axa === "l", ext = peLung ? dreptunghi(0, 0, g, g) : dreptunghi(x0, 0, x1, g), ct: P2 = peLung ? [m, m] : [cx, m];
+      const w0 = peLung ? x0 : 0, w1 = peLung ? x1 : g;
+      let corp: Tri[];
+      if (tip === "p") corp = prisma(ext, w0, w1);
+      else if (tip === "x") corp = inel(ext, cruce(ct[0], ct[1], e.axGauraD, e.axGauraLat), ct, w0, w1);
+      else {
+        // lamajul, pe fetele prin care iese gaura: amandoua, sau doar capatul blocului la gaura in lung
+        const jos = !peLung || capat0, sus = !peLung || capat1, a = jos ? w0 + h : w0, b = sus ? w1 - h : w1;
+        corp = inel(ext, cerc(ct[0], ct[1], e.gauraD / 2), ct, jos ? a - 0.01 : a, sus ? b + 0.01 : b);
+        if (jos) corp.push(...inel(ext, cerc(ct[0], ct[1], e.lamajD / 2), ct, w0, a));
+        if (sus) corp.push(...inel(ext, cerc(ct[0], ct[1], e.lamajD / 2), ct, b, w1));
+      }
+      // (u, v, w) -> (u, w, v) intoarce orientarea (ca la caramida Technic); (w, u, v) o pastreaza (ca la ax)
+      tri.push(...(axa === "v" ? corp : axa === "o" ? axe(corp, ([u, v, w]) => [u, w, v], true) : axe(corp, ([u, v, w]) => [w, u, v], false)));
+    });
+    if (lungLaMijloc) avert.push(tr("O gaură în lung merge doar la capetele blocului: pasul din mijloc rămâne plin."));
+    else if (!cuGaura) avert.push(tr("Blocul n-are nicio gaură: alege una, de știft sau de ax."));
+    return { tri, avert };
+  }
   function suport({ lung = 2, adanc = 1, inalt = 1, invers = false }: { lung?: number; adanc?: number; inalt?: number; invers?: boolean }): Corp {
     // suportul (bracket): o placa culcata si una in picioare, in fata ei, cu stifturi spre inainte. Normal: placa culcata
     // jos; intors: sus (atunci cere suport la printare). Stifturile din fata sunt la 4 mm (+ 8 mm pe rand) de jos.
@@ -1006,6 +1057,47 @@ var Lego = (function (glob: typeof globalThis) {
     for (let k = 0; k <= n; k++) { const u = unghi + ao + (2 * Math.PI - 2 * ao) * k / n; p.push([cx + ro * Math.cos(u), cy + ro * Math.sin(u)]); }
     for (let k = 0; k <= n; k++) { const u = unghi + 2 * Math.PI - ai - (2 * Math.PI - 2 * ai) * k / n; p.push([cx + ri * Math.cos(u), cy + ri * Math.sin(u)]); }
     return p;
+  }
+  function conectorUnghi({ mansoane = null, butuc = "r" }: { mansoane?: readonly (readonly [number, string])[] | null; butuc?: string }): Corp {
+    // conectorul in unghi (ADR 0284, felia 3.Cb; ca forma, conectorii LEGO numerotati): un butuc rotund in picioare, cu gaura
+    // lui verticala (`r` de stift, cu lamaj pe fete; `x` de ax; `p` plin), si 1–4 brate patrate (cat grinda groasa), in planul
+    // mesei. Fiecare brat are pe axa lui un manson orb, adanc de un pas: de la o jumatate de pas de centru pana la gura
+    // (un pas si jumatate, trasa cu 0,1); `x` de ax (crucea), `r` de stift (gaura grinzii, cu lamaj la gura).
+    // Doua brate la mai putin de 90° ar intra unul in mansonul celuilalt: al doilea e lasat afara.
+    const e = ef(), s = P.pas, g = P.grinda_groasa, m = g / 2, h = P.lamaj_h, a0 = e.lamajD / 2 + 0.2, a1 = s / 2, a2 = 1.5 * s - 0.1, tri: Tri[] = [], avert: string[] = [];
+    const cerute = (Array.isArray(mansoane) ? mansoane : []).filter((b): b is readonly [number, string] => Array.isArray(b) && Number.isFinite(b[0]));
+    const lista: (readonly [number, string])[] = [];
+    let afara = false;
+    for (const [u, fel] of cerute.length ? cerute : ([[0, "x"], [135, "x"]] as const)) {
+      const ung = ((u % 360) + 360) % 360;
+      if (lista.some(([v]) => Math.abs(((ung - v) % 360 + 540) % 360 - 180) < 90 - 1e-6)) { afara = true; continue; }
+      lista.push([ung, fel === "r" ? "r" : "x"]);
+    }
+    // butucul
+    const rotund = cerc(0, 0, m, 64), c0: P2 = [0, 0];
+    if (butuc === "p") tri.push(...prisma(rotund, 0, g));
+    else if (butuc === "x") tri.push(...inel(rotund, cruce(0, 0, e.axGauraD, e.axGauraLat), c0, 0, g));
+    else {
+      tri.push(...inel(rotund, cerc(0, 0, e.gauraD / 2), c0, h - 0.01, g - h + 0.01));
+      tri.push(...inel(rotund, cerc(0, 0, e.lamajD / 2), c0, 0, h), ...inel(rotund, cerc(0, 0, e.lamajD / 2), c0, g - h, g));
+    }
+    // umarul bratului, vazut de sus: din dreptul centrului butucului pana la fundul mansonului, lat cat bratul, fara cercul
+    // gaurii (cu lamajul ei): laturile bratului pleaca tangent din butuc, fara crestaturi, iar gaura butucului ramane libera.
+    // Incepe la 0,2 mm dupa centru, nu chiar in dreptul lui: acolo coltul lui ar cadea pe un varf al cercului butucului, iar
+    // doua corpuri care isi impart o muchie ies „deschise” la cine citeste STL-ul (la 0,2, coltul e la 5 µm de cerc)
+    const ub = 0.2, t1 = Math.acos(ub / a0), umar: Poli = [[ub, -m], [a1 + 0.01, -m], [a1 + 0.01, m], [ub, m]];
+    for (let i = 0; i <= 16; i++) { const t = t1 - 2 * t1 * i / 16; umar.push([i === 0 || i === 16 ? ub : a0 * Math.cos(t), a0 * Math.sin(t)]); }
+    // mansonul: sectiunea (lateral, vertical) intinsa de-a lungul bratului; apoi totul, rotit in jurul verticalei
+    const ext = dreptunghi(-m, 0, m, g), ct: P2 = [0, m];
+    for (const [ung, fel] of lista) {
+      const co = Math.cos(ung * Math.PI / 180), si = Math.sin(ung * Math.PI / 180);
+      tri.push(...axe(prisma(umar, 0, g), ([x, y, z]) => [x * co - y * si, x * si + y * co, z], false));
+      const corp = fel === "x" ? inel(ext, cruce(0, m, e.axGauraD, e.axGauraLat), ct, a1, a2)
+        : [...inel(ext, cerc(0, m, e.gauraD / 2), ct, a1, a2 - h + 0.01), ...inel(ext, cerc(0, m, e.lamajD / 2), ct, a2 - h, a2)];
+      tri.push(...axe(corp, ([v, w, u]) => [u * co - v * si, u * si + v * co, w], false));
+    }
+    if (afara) avert.push(tr("Două brațe stau la cel puțin 90° unul de altul, altfel intră unul în manșonul celuilalt: am lăsat afară ce nu încăpea."));
+    return { tri, avert };
   }
   function clema({ lung = 1, axa = "verticala", goale = false }: { lung?: number; axa?: string; goale?: boolean }): Corp {
     // placa 1 x n cu o clema in fata (tine o bara de 3,2): cu axa in sus (bara sta in picioare) sau culcata, de-a lungul
@@ -2241,7 +2333,7 @@ var Lego = (function (glob: typeof globalThis) {
   }
 
   // ---------------------------------------------------------------------------------------------- piesa dupa definitie
-  const TIPURI = { caramida, lateral, panta, pantaInversa, pana, rotund, grinda, caramidaTechnic, ax, stiftTechnic, bucsa, suport, clema, maner, bara, bila, cupa, rotita, roata, fulie, conica, coroana, conicaDubla, senila, elice, eliceBarca, ventilator, dinCvs2 };
+  const TIPURI = { caramida, lateral, panta, pantaInversa, pana, rotund, grinda, caramidaTechnic, ax, stiftTechnic, bucsa, conector, conectorUnghi, suport, clema, maner, bara, bila, cupa, rotita, roata, fulie, conica, coroana, conicaDubla, senila, elice, eliceBarca, ventilator, dinCvs2 };
   function construieste(def: DefPiesa) {
     const f = TIPURI[def.tip];
     if (!f) throw new Error("tip necunoscut: " + def.tip);
