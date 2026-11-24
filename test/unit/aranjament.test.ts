@@ -58,6 +58,8 @@ test('aranjamentul implicit e cel al prototipului B: bara de sus în aceeași or
 test('meniul global (ADR 0132): filele ferestrelor, locul lucrării, apoi căutarea, limba, tema și contul; ferestrele în ordine', () => {
   assert.deepEqual(ARANJAMENT_MODERN.zone.meniu, [
     { id: 'ferestre', intrari: [{ control: 'ferestre' }] },
+    // Locul butonului Admin, doar pentru personal (cererea owner-ului din 24.11): între file și locul lucrării.
+    { id: 'personal', intrari: [{ control: 'admin' }] },
     { id: 'lucrare', intrari: [{ control: 'lucrare' }] },
     { id: 'vedere', intrari: [{ actiune: 'vedere.paleta', aspect: 'cauta' }, { control: 'limba' }, { actiune: 'vedere.tema' }, { control: 'cont' }] },
   ]);

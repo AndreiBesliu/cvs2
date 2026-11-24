@@ -50,7 +50,7 @@ export const DESCHIDE_FEREASTRA: { readonly [F in IdFereastra]: string } = {
 /** `cont`: locul butonului Cont (ADR 0116), lângă temă (cererea owner-ului din 01.11), umplut tot de modulul editării. */
 /** `ferestre`: filele ferestrelor aranjamentului (ADR 0132), în ordinea lor; fila ferestrei de acum e apăsată. */
 /** `lucrare`: locul indicatorului lucrării (ADR 0132 §5), umplut de fereastra Mașina, după prima ei deschidere. */
-export const CONTROALE = ['limba', 'unelte', 'vectori', 'cont', 'ferestre', 'lucrare'] as const;
+export const CONTROALE = ['limba', 'unelte', 'vectori', 'cont', 'ferestre', 'lucrare', 'admin'] as const;
 export type IdControl = (typeof CONTROALE)[number];
 
 /**
@@ -113,6 +113,8 @@ export const ARANJAMENT_MODERN: Aranjament = {
   zone: {
     meniu: [
       { id: 'ferestre', intrari: [{ control: 'ferestre' }] },
+      // Butonul Admin, la mijlocul meniului, doar cu un cont al personalului (cererea owner-ului din 24.11).
+      { id: 'personal', intrari: [{ control: 'admin' }] },
       { id: 'lucrare', intrari: [{ control: 'lucrare' }] },
       // Căutarea, limba, tema și contul sunt ale aplicației întregi, deci în meniu, nu în colțul barei de desen (ADR 0132).
       // Contul stă lângă temă (cererea owner-ului din 01.11: „account ar trebui sa sta in alta parte, langa theme button”).

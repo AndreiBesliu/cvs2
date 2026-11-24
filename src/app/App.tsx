@@ -135,6 +135,8 @@ const incarcaPrimirea = () => import('./DialogLucrare.tsx').then(cuMesaje);
 const DialogLucrare = lazy(() => incarcaPrimirea().then((m) => ({ default: m.DialogLucrare }), () => ({ default: DialogNeincarcat })));
 // „Așază pe foi” (ADR 0210 §3): dialogul și calculul lui vin la primul gest.
 const incarcaAsezarea = () => import('./DialogAsezare.tsx').then(cuMesaje);
+// Comenzile foii pe pânză (ADR 0210 §1, felia 11.1↑c): din bucata meniului foii, preîncărcată după pornire.
+const ControaleFoi = lazy(() => incarcaMeniuFoaie().then((m) => ({ default: m.ControaleFoi }), () => ({ default: () => null })));
 const DialogAsezare = lazy(() => incarcaAsezarea().then((m) => ({ default: m.DialogAsezare }), () => ({ default: DialogNeincarcat })));
 // Raportul foilor și lista de tăiere (ADR 0210 §6, felia 11.6↑): din fereastra exportului și din paletă.
 const incarcaRaport = () => import('./DialogRaportFoi.tsx').then(cuMesaje);
@@ -735,6 +737,18 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
       }
       return [{ id: f.id, x: (locuri[k] ?? 0) - x0, y: 0, latime: f.stoc.latime, inaltime: f.stoc.inaltime, nume: numeFoaie(f, k, sablonFoaie), forme: d.forme }];
     });
+  }, [doc, indexActiva, toateFoile, limbaActiva]);
+  // Foile de pe pânză, cu cea activă (ADR 0210 §1, felia 11.1↑c): sub fiecare, rândul comenzilor din meniul ei.
+  const foiPePanza = useMemo(() => {
+    const una = (f: Document['foi'][number], k: number, x: number) => ({
+      id: f.id, nume: numeFoaie(f, k, sablonFoaie), x, latime: f.stoc.latime, inaltime: f.stoc.inaltime, piese: f.instante.length, activa: k === indexActiva,
+    });
+    const activa = doc.foi[indexActiva];
+    if (!activa) return [];
+    if (!toateFoile || doc.foi.length < 2) return [una(activa, indexActiva, 0)];
+    const locuri = locuriFoi(doc);
+    const x0 = locuri[indexActiva] ?? 0;
+    return doc.foi.map((f, k) => una(f, k, (locuri[k] ?? 0) - x0));
   }, [doc, indexActiva, toateFoile, limbaActiva]);
   // Imaginile foii active (ADR 0272): octeții citiți din baza lor la cerere; cele vizibile, pe pânză, sub vectori.
   const octetiImagini = useOctetiImagini(foaie?.imagini);
@@ -1345,6 +1359,9 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
         return <div className="loc-vectori" id="loc-vectori" />;
       case 'cont':
         return <div className="loc-cont" id="loc-cont" />;
+      case 'admin':
+        // Butonul Admin, doar pentru personal: îl pune modulul editării, care știe contul ținut.
+        return <div className="loc-admin" id="loc-admin" />;
       case 'lucrare':
         return <div className="loc-lucrare" id="loc-lucrare" />;
       case 'ferestre':
@@ -1615,6 +1632,10 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
                       jurnal={(e) => { jurnal.adauga('promisiune', e); }} />
                   </Suspense>
                 )}
+                {/* Comenzile fiecărei foi, sub ea (felia 11.1↑c): doar unde se poate scrie și cât nu ține un mod al pânzei. */}
+                {!doarCiteste(mod) && !acoperita && !urechiAlese && !modImagine ? (
+                  <Suspense fallback={null}><ControaleFoi foi={foiPePanza} vedere={v} cursor={cursor} actiuni={actiuniFoi} /></Suspense>
+                ) : null}
                 {modImagine && (
                   <Suspense fallback={null}>
                     <ModImagine fel={modImagine.fel} imagine={modImagine.foaie === idActiva ? foaie?.imagini?.find((i) => i.id === modImagine.id) : undefined}

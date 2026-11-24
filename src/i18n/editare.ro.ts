@@ -847,6 +847,8 @@ export const roEditare = {
   'editare.sugestie': 'Trimite o sugestie: pentru owner, cu poza planșei',
   'editare.cont': 'Contul: logarea, planul, raportările și manualul',
   'editare.cont.buton': 'Cont',
+  'editare.admin': 'Admin',
+  'editare.admin.titlu': 'Administrarea, într-o filă nouă (doar pentru personal)',
   'editare.cont.meniu': 'Meniul contului',
   'editare.cont.al-meu': 'Contul meu…',
   'editare.cont.intra': 'Intră sau creează cont…',
