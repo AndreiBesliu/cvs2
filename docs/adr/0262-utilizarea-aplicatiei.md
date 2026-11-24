@@ -119,10 +119,11 @@ foile, extensiile) trec prin el, iar barele, tastele, paleta și meniurile ajung
 | A.10 | Fluxurile: secvențele cele mai dese și pâlnia drumului principal. |
 | A.11a | Pașii dinaintea unei erori: în raportul ei (clientul, serverul) și în fila Erori. |
 | A.11b | Bifa „Atașează pașii” la o raportare, cu pașii în fila Tichete. |
-| A.11c | Cronologia unui om, cu „Utilizare: sesiuni”: din Utilizatori („Activitatea”) și din Tichete (sesiunea raportării). |
-| A.11d | Disocierea unui cont (din Utilizatori, la cererea omului printr-un tichet), cu pseudonimul pus de server. |
+| A.11c | Cronologia unui om, cu „Utilizare: sesiuni”, din Utilizatori („Activitatea”). |
+| A.11d | Sesiunea raportării în Tichete: raportarea ține sesiunea de utilizare, iar fila o deschide în cronologie. |
+| A.11e | Disocierea unui cont (din Utilizatori, la cererea omului printr-un tichet), cu pseudonimul pus de server. |
 
-Estimarea: ~8 felii (A.8c s-a despărțit în A.8c și A.8d pe 23.11, A.9 în A.9a și A.9b pe 24.11, A.11 în A.11a–A.11d pe 24.11). A.7 (telefonul) vine după A.11 (întrebarea 7, a).
+Estimarea: ~8 felii (A.8c s-a despărțit în A.8c și A.8d pe 23.11, A.9 în A.9a și A.9b pe 24.11, A.11 în A.11a–A.11e pe 24.11). A.7 (telefonul) vine după A.11 (întrebarea 7, a).
 
 ## Implementarea
 
@@ -247,6 +248,15 @@ Estimarea: ~8 felii (A.8c s-a despărțit în A.8c și A.8d pe 23.11, A.9 în A.
   (`pasiDin`), ca la raportul unei erori, îi scrie în tichet (`pasi`, doar când sunt) și pune în audit doar câți. Fila Tichete
   îi arată în raportare, cu numele din catalog; lista pașilor e o componentă comună cu fila Erori (`src/admin/pasi/Pasi.tsx`).
   Manualul spune bifa, în ambele limbi.
+- **A.11c** (24.11, `3.Ap`): **cronologia unui om**. Permisiunea nouă **„Utilizare: sesiuni”** (date despre o persoană, deci
+  separată de sume). Regulile rămân închise pe `utilizare`: cronologia trece prin callable-ul `utilizare` (acțiunea
+  `cronologie`), care cere permisiunea, aduce loturile contului cele mai noi întâi, câte `PAGINA_CRONOLOGIE` (20), cu clipa
+  ultimului lot drept cursor (indexul compus `uid` + `primit`), trece evenimentele încă o dată prin lista albă (un lot scris
+  altfel nu scapă ce nu e în ea) și scrie fiecare citire în audit (`utilizare.cronologie`, cine, al cui, câte loturi). În
+  Utilizatori, contul ales are **Activitatea**, doar cu permisiunea: nimic nu se citește până la clic (citirea costă și se
+  auditează), apoi sesiunile, cele mai noi întâi (`src/admin/utilizatori/activitate.ts`), fiecare deschisă la cerere, cu
+  pașii ei (clipa față de pornirea paginii, numele din catalog, felul, rezultatul) și „Mai vechi”. Descrierea unui pas e
+  comună Erori, Tichete și Activității (`DescrierePas`).
 
 ## Probele
 

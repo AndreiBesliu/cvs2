@@ -12357,6 +12357,22 @@ admin cat mai multe setari”).
 - **Documentele:** ADR 0262 (implementarea), fișa etapei 3 (`3.Ao`), registrul otrăvurilor, traducerile, nota liniei.
   **Completed:** 24.11 07:55.
 
+## 2026-11-24 — Felia A.11c: cronologia unui om (ADR 0262)
+
+**Prompt:** același „am raspuns” (7a: A.8–A.11 acum), după A.11b.
+**Started:** 24.11 07:55.
+
+- **Despărțirea:** restul lui A.11 în A.11d (sesiunea raportării în Tichete) și A.11e (disocierea), în tabelul din ADR.
+- **Codul (`40148488`, `36e8a3a5`):** permisiunea `utilizare.sesiuni`, acțiunea `cronologie` a callable-ului `utilizare` (cu
+  auditul), indexul compus pe loturi, „Activitatea” în Utilizatori (`activitate.ts`, `Activitatea.tsx`), `DescrierePas`
+  comună.
+- **Pe drum:** encoder-ul REST al probei Utilizatori nu știa valori booleene (contextul lotului ieșea hartă).
+- **Probele:** 3 unitare noi, 1 a serverului, 1 e2e pe emulatoare, matricea cu 13 permisiuni. **Otrăvurile:** 19 / 19.
+  **Porțile locale:** rapidul 10 057 / 0, emulatoarele 124 / 124 și 52 / 52. **Mărimea:** totalul 800,4 / 900, `/admin`
+  136,9 / 200.
+- **Documentele:** ADR 0262 (implementarea, despărțirea), fișa etapei 3 (`3.Ap`), registrul otrăvurilor, traducerile, nota
+  liniei. **Completed:** 24.11 08:35.
+
 ## 2026-11-23 — Sesiunea principală în cloud: a șasea unire (A.6, Roadmap, Documentație și Setări); linia frezelor, pornită (Model: Claude Fable 5.2)
 
 **Prompt:** același brief de predare al sesiunii principale („unește ce se poate”), la raportul liniei adminului (PR-ul
