@@ -13829,3 +13829,24 @@ e în `main` […] Acum poți aduce `main` în ramură și deschide PR-ul lui 3.
   acum doar 3.Xk: proba din `test/e2e/extensii.lucru.spec.ts`, lista de otrăvuri `test/otravuri/3.Xk.py` și documente.
 - **PR-ul `AndreiBesliu/cvs2#24`**, refolosit pentru 3.Xk (titlul și descrierea, schimbate); o unește sesiunea
   principală, la raport.
+
+## 2026-11-24 — Sesiunea principală în cloud: clicul pe „Închide” din cadrul unei extensii, pierdut (probă instabilă, reparată) (Model: Claude Fable 5.2)
+
+**Prompt:** completul de pe `main` pentru loturile 19–21 (`7312d685`, rularea 45436221341), roșu la o singură probă;
+regula „un CI roșu pe `main` e incidentul numărul unu”
+**Started:** 24.11, 18:50. **Completed:** 24.11, 19:30, pe ramura `unire-2411z` (intră în `main` cu lotul următor).
+
+- **Căderea:** `extensii.spec.ts:44`, la linia 135: după a doua deschidere a extensiei „Salut”, clicul pe „Închide”
+  din cadru n-a ajuns la buton, iar cadrul a rămas deschis cele 15 s ale așteptării. E cursa din
+  `clicDupaReaparitie` (un clic dat imediat după ce cadrul apare se pierde, fără nicio eroare), nu cea reparată pe
+  23.11 (clicul ajuns, dar neîntors). Publicarea loturilor 19–21 a căzut de la ea; lotul 22 (`62569bb2`) le cuprinde
+  și a mers mai departe.
+- **Nu s-a reprodus local:** 150 din 150 cu ajutorul vechi, pe 8 lucrători. Deci a fost provocată: o probă nouă
+  (`extensii.spec.ts`, „un clic care nu ajunge la butonul de închidere…”) oprește primul clic înainte să ajungă la
+  extensie, o singură dată. Cu ajutorul vechi cade („Expected: 0, Received: 1”), cu cel nou trece.
+- **Reparația, doar în probe:** `clicCareInchideCadrul` (`test/e2e/ajutor-extensii.ts`) repetă clicul cât cadrul e
+  încă acolo (cel mult 25 s); un clic ajuns închide cadrul o singură dată, deci al doilea nu mai are pe ce să cadă.
+  Un clic care cade cu adevărat își spune tot eroarea lui.
+- **Probele:** cele două fișiere ale extensiilor, repetate de 12 ori pe 8 lucrători: 168 / 168. Otrava (gazda ignoră
+  `host.inchide()`, în `src/extensii/cadru.ts`): cele trei probe care folosesc ajutorul cad toate, în sub 30 s
+  fiecare. Lecția, în `docs/linii/principala.md`.

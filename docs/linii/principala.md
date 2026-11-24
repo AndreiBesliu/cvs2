@@ -226,6 +226,8 @@ folosite la unire și publicare:
 - un rezultat geometric se privește pe cazul REAL, mărit și întreg, înaintea raportului.
 - un clic în cadrul unei extensii care îi închide sau îi reface cadrul nu se așteaptă cu `click()`: se așteaptă
   urmarea lui (`clicCareInchideCadrul`, `clicCareRefaceCadrul` din `test/e2e/ajutor-extensii.ts`);
+- o cădere din CI care nu se reproduce local se provoacă: se strică anume pasul bănuit (clicul înghițit o dată) și
+  se arată că ajutorul vechi cade, iar cel nou trece (24.11, `extensii.spec.ts:135`: 150 din 150 treceau local);
 - o probă pe corpus care trece de un minut se împarte pe părți ale corpusului, câte un fișier pe parte, cu pragurile
   pe părți și cu proba care păzește împărțirea (`test/unit/ajutor-parti.ts`; 24.11: oracolul rampelor, căile netede
   din multe cubice, echivalența porții); listele de otrăvuri care numeau fișierul întreg primesc și părțile;
