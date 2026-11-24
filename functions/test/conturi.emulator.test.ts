@@ -25,7 +25,8 @@ const db = getFirestore();
 const T0 = new Date(Date.UTC(2026, 10, 1, 10, 0));
 const ROL_ERORI = 'RErori00000000000000';
 const ROL_GOL = 'RGol0000000000000000';
-const FARA_OPRITE = CAPABILITATI.filter((c) => c !== 'export-gcode' && c !== 'masina');
+// Fără drept se opresc exportul G-code, senderul și scrierea în cont (ADR 0116 §9, ADR 0300 §7).
+const FARA_OPRITE = CAPABILITATI.filter((c) => c !== 'export-gcode' && c !== 'masina' && c !== 'cloud');
 
 beforeEach(async () => {
   assert.equal((await fetch(`http://${gazda}/emulator/v1/projects/${PROIECT}/databases/(default)/documents`, { method: 'DELETE' })).status, 200);

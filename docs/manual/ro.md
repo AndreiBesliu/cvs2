@@ -1228,9 +1228,9 @@ schimba pe toate: rândul spune de câte ori e pusă.
 %% acopera: vedere.freze
 
 Fereastra **Frezele mele** ține frezele tale. Se deschide din meniul **Cont** (rândul **Frezele mele…**) sau din paleta de
-comenzi. Merge și fără cont și fără rețea: biblioteca stă în acest browser (salvarea în cont vine într-o felie următoare). În
-curând alegi o freză din bibliotecă pe rândurile exportului și în secțiunea Tăierea; până atunci, freza se scrie pe rând, ca
-înainte (vezi [Exportul G-code](#export)).
+comenzi. Merge și fără cont și fără rețea: fără cont, biblioteca stă în acest browser; cu contul deschis, stă în contul tău
+și o ai pe orice calculator pe care intri în cont (vezi mai jos). În curând alegi o freză din bibliotecă pe rândurile
+exportului și în secțiunea Tăierea; până atunci, freza se scrie pe rând, ca înainte (vezi [Exportul G-code](#export)).
 
 **Lista**, în stânga, are frezele pe feluri (Plate, În V, Gravare), fiecare cu silueta mică, T-ul preferat, turația și
 avansul. **Caută o freză** filtrează după nume, iar butoanele **Toate**, **Plate**, **În V** și **Gravare** arată un singur
@@ -1265,9 +1265,24 @@ Separatorul (`;`, `,` sau tab) se găsește singur; cu `;`, numerele pot avea vi
 întâmplă cu un nume care există deja: **Păstrează-le pe amândouă** (implicit; cea nouă primește „(2)”), **Înlocuiește** sau
 **Sari**. Rândurile greșite se sar și se numără.
 
-Jos, fereastra spune unde stă biblioteca: **Doar în acest browser**. Într-o fereastră privată sau cu datele site-ului
-blocate, frezele țin doar cât fila, iar fereastra o spune. O bibliotecă scrisă de o versiune mai nouă a aplicației doar se
-citește.
+Jos, fereastra spune unde stă biblioteca: **Doar în acest browser** (fără cont). Într-o fereastră privată sau cu datele
+site-ului blocate, frezele țin doar cât fila, iar fereastra o spune. O bibliotecă scrisă de o versiune mai nouă a aplicației
+doar se citește.
+
+**Cu contul deschis**, fereastra lucrează pe biblioteca contului, ținută și în acest browser, deci merge și fără rețea. Se
+sincronizează cu contul când deschizi fereastra, la câteva secunde după fiecare schimbare și când revine rețeaua; butonul
+**Sincronizează**, jos, o face pe loc. Jos scrie **În cont, la zi**, **Se sincronizează cu contul…** sau **Fără rețea: se
+trimite la reconectare**. Contul ține cel mult 500 de freze; una care nu mai are loc rămâne în acest browser, iar fereastra
+le numără. Cu proba încheiată sau cu contul dezactivat, biblioteca din cont doar se citește: schimbările rămân aici.
+
+La prima deschidere cu contul, dacă în acest browser ai freze pe care contul nu le are, fereastra întreabă **Adaugi cele N
+freze din acest browser în cont?**: **Da, adaugă-le** le copiază în cont (o freză cu un nume luat primește „(2)”), iar **Nu
+acum** te mai întreabă la o deschidere următoare. Biblioteca fără cont rămâne neatinsă: o vezi din nou după ieșirea din cont.
+
+Dacă aceeași freză s-a schimbat pe două calculatoare între două sincronizări, câmpurile schimbate doar pe unul se adună
+singure. Un câmp schimbat pe amândouă (sau o freză ștearsă pe unul și schimbată pe altul) e un **conflict**: o bandă
+deasupra listei spune freza și câmpurile, cu **Păstrează-o pe a mea**, **Păstrează-o pe cea din cont** și **Păstrează-le pe
+amândouă** (a ta rămâne ca o freză nouă, cu „(2)”).
 
 ## Operațiile de tăiere
 %% capitol: operatii

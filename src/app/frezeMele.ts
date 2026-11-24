@@ -1,7 +1,9 @@
 /**
  * Biblioteca de freze din browser (ADR 0300 §7, felia 16.A↑a): IndexedDB `cncvs2-freze`, o înregistrare pe bibliotecă
- * (`{ v, freze }`), cu cheia `local` (fără cont; din felia 16.A↑c, și una pe cont). Fiecare schimbare citește, schimbă și scrie
- * într-o singură tranzacție, deci două file nu-și pierd schimbările; celelalte file află printr-un `BroadcastChannel`.
+ * (`{ v, freze }`), cu cheia `local` (fără cont) și, din felia 16.A↑c, `cont:<uid>` pentru fiecare cont, cu starea
+ * sincronizării lângă freze (`sincron`). Fiecare schimbare citește, schimbă și scrie într-o singură tranzacție, deci două
+ * file nu-și pierd schimbările; celelalte file află printr-un `BroadcastChannel`. Câmpurile înregistrării pe care o schimbare
+ * nu le atinge (starea sincronizării, ale unei versiuni mai noi) rămân.
  *
  * Frezele pe care versiunea de azi nu le poate citi (ale unei versiuni mai noi) rămân neatinse la scriere, iar numele lor
  * rămân luate. O listă scrisă de o versiune mai nouă doar se citește. Fără stocare (fereastră privată, date blocate), sau
@@ -11,11 +13,14 @@ import { useSyncExternalStore } from 'react';
 import {
   cuFreza, cuImport, faraFreza, frezaDinDate, type Freza, type FrezaSalvata, type PoliticaImport, type ProblemeFreza,
 } from '../model/freza.ts';
+import { sincronDate, sincronDin, type BibliotecaCont, type StareSincron } from '../model/frezeSincron.ts';
 
 export const BAZA_FREZE = 'cncvs2-freze';
 const BIBLIOTECI = 'biblioteci';
 /** Cheia bibliotecii fără cont. */
 export const CHEIE_LOCALA = 'local';
+/** Cheia bibliotecii unui cont (ADR 0300 §7): copia lui din browser, sincronizată cu contul. */
+export const cheieCont = (uid: string): string => `cont:${uid}`;
 export const VERSIUNE_FREZE = 1;
 
 /** Ce citește și scrie stocarea: în browser IndexedDB, în teste un fals. */
@@ -34,6 +39,8 @@ export type StareFreze = {
   readonly scriere: boolean;
   /** Câte freze din bibliotecă nu le poate citi versiunea de azi (rămân neatinse). */
   readonly necitite: number;
+  /** Starea sincronizării cu contul (la biblioteca fără cont, goală). */
+  readonly sincron: StareSincron;
 };
 
 export type ProblemeLista = ProblemeFreza | { readonly id: 'lipsa' } | { readonly lista: 'plina' | 'versiune' };
@@ -55,23 +62,39 @@ export type FrezeMele = {
   /** Mai multe deodată (frezele de pornire): fiecare cu un nume liber. */
   readonly adaugaToate: (freze: readonly Freza[]) => Promise<RezultatMaiMulte>;
   readonly importa: (freze: readonly Freza[], politica: PoliticaImport) => Promise<RezultatMaiMulte>;
+  /**
+   * O schimbare a sincronizării (frezele, cele brute și starea, deodată), pe ce e în depozit acum; `f` întoarce null când nu
+   * schimbă nimic. Fals: n-a schimbat (nimic de schimbat, sau lista e a unei versiuni mai noi).
+   */
+  readonly schimbaCont: (f: (b: BibliotecaCont) => BibliotecaCont | null) => Promise<boolean>;
 };
 
-type Citita = { readonly freze: readonly FrezaSalvata[]; readonly brute: readonly unknown[]; readonly scriere: boolean };
+type Citita = {
+  readonly freze: readonly FrezaSalvata[];
+  readonly brute: readonly unknown[];
+  readonly scriere: boolean;
+  /** Restul înregistrării (starea sincronizării, câmpurile unei versiuni mai noi), păstrat la scriere. */
+  readonly extra: Readonly<Record<string, unknown>>;
+};
 
 const obiect = (x: unknown): x is Record<string, unknown> => typeof x === 'object' && x !== null && !Array.isArray(x);
 
 /** Biblioteca dintr-o valoare a depozitului: frezele bune, cele necitite (păstrate) și dacă se poate scrie. */
 function citesteDate(x: unknown): Citita {
-  if (!obiect(x) || !Array.isArray(x['freze']) || typeof x['v'] !== 'number') return { freze: [], brute: [], scriere: true };
+  if (!obiect(x) || !Array.isArray(x['freze']) || typeof x['v'] !== 'number') return { freze: [], brute: [], scriere: true, extra: {} };
   const freze: FrezaSalvata[] = [], brute: unknown[] = [];
   const iduri = new Set<string>();
   for (const f of x['freze'] as unknown[]) {
     const b = frezaDinDate(f);
     if (b && !iduri.has(b.id)) { freze.push(b); iduri.add(b.id); } else brute.push(f);
   }
-  return { freze, brute, scriere: x['v'] <= VERSIUNE_FREZE };
+  const { v: _v, freze: _f, ...extra } = x;
+  void _v; void _f;
+  return { freze, brute, scriere: x['v'] <= VERSIUNE_FREZE, extra };
 }
+
+/** Înregistrarea de scris: frezele (citite, apoi cele brute) și restul ei. */
+const deScris = (c: Citita): Record<string, unknown> => ({ ...c.extra, v: VERSIUNE_FREZE, freze: [...c.freze, ...c.brute] });
 
 /** Numele frezelor necitite: rămân luate. */
 const numeBrute = (brute: readonly unknown[]): string[] =>
@@ -90,8 +113,9 @@ class RefuzLista extends Error {
  * aplicată pe ce e în depozit în clipa scrierii.
  */
 export function creeazaFrezeMele(depozit: DepozitFreze | null, idNou: () => string, acum: () => number, cheie: string = CHEIE_LOCALA): FrezeMele {
-  let stare: StareFreze = { incarcata: false, freze: [], pastrate: depozit !== null, scriere: true, necitite: 0 };
+  let stare: StareFreze = { incarcata: false, freze: [], pastrate: depozit !== null, scriere: true, necitite: 0, sincron: sincronDin(undefined) };
   let brute: readonly unknown[] = [];
+  let extra: Readonly<Record<string, unknown>> = {};
   const ascultatori = new Set<() => void>();
   const pune = (s: StareFreze): void => {
     stare = s;
@@ -99,7 +123,8 @@ export function creeazaFrezeMele(depozit: DepozitFreze | null, idNou: () => stri
   };
   const puneCitita = (c: Citita, pastrate: boolean): void => {
     brute = c.brute;
-    pune({ incarcata: true, freze: c.freze, pastrate, scriere: c.scriere, necitite: c.brute.length });
+    extra = c.extra;
+    pune({ incarcata: true, freze: c.freze, pastrate, scriere: c.scriere, necitite: c.brute.length, sincron: sincronDin(c.extra['sincron']) });
   };
   const citeste = async (): Promise<void> => {
     if (!depozit) { pune({ ...stare, incarcata: true, pastrate: false }); return; }
@@ -127,8 +152,8 @@ export function creeazaFrezeMele(depozit: DepozitFreze | null, idNou: () => stri
           const r = f(c.freze, numeBrute(c.brute));
           if (!r.ok) throw new RefuzLista(r.probleme);
           rezultat = r.rez;
-          citita = { freze: r.lista, brute: c.brute, scriere: true };
-          return { v: VERSIUNE_FREZE, freze: [...r.lista, ...c.brute] };
+          citita = { freze: r.lista, brute: c.brute, scriere: true, extra: c.extra };
+          return deScris(citita);
         });
         puneCitita(citita!, true);
         return { ok: true, ...(rezultat as R) };
@@ -152,6 +177,35 @@ export function creeazaFrezeMele(depozit: DepozitFreze | null, idNou: () => stri
     aboneaza: (f) => {
       ascultatori.add(f);
       return () => { ascultatori.delete(f); };
+    },
+    schimbaCont: async (f) => {
+      const din = (c: Citita): BibliotecaCont => ({ freze: c.freze, brute: c.brute, sincron: sincronDin(c.extra['sincron']) });
+      const in_ = (c: Citita, b: BibliotecaCont): Citita =>
+        ({ freze: b.freze, brute: b.brute, scriere: true, extra: { ...c.extra, sincron: sincronDate(b.sincron) } });
+      if (stare.pastrate && depozit) {
+        let citita: Citita | null = null;
+        try {
+          await depozit.actualizeaza(cheie, (acum) => {
+            const c = citesteDate(acum);
+            if (!c.scriere) throw new RefuzLista({ lista: 'versiune' });
+            const b = f(din(c));
+            if (b === null) throw new RefuzLista({ lista: 'versiune' });
+            citita = in_(c, b);
+            return deScris(citita);
+          });
+          puneCitita(citita!, true);
+          return true;
+        } catch (e) {
+          if (e instanceof RefuzLista) return false;
+          // Stocarea a căzut: de acum, biblioteca ține cât fila.
+        }
+      }
+      if (!stare.scriere) return false;
+      const c: Citita = { freze: stare.freze, brute, scriere: true, extra };
+      const b = f(din(c));
+      if (b === null) return false;
+      puneCitita(in_(c, b), false);
+      return true;
     },
     incarca: citeste,
     reincarca: async () => {
@@ -239,32 +293,49 @@ function idFreza(): string {
 }
 
 const CANAL = 'cncvs2-freze';
-let biblioteca: FrezeMele | null = null;
+const biblioteci = new Map<string, FrezeMele>();
+let canal: BroadcastChannel | null | undefined;
 
-/** Biblioteca de freze a browserului: una pe filă, la zi cu celelalte file. */
-export function frezeMele(): FrezeMele {
-  if (biblioteca) return biblioteca;
-  const b = creeazaFrezeMele(depozitBrowser(), idFreza, () => Date.now());
-  let canal: BroadcastChannel | null = null;
+/** Canalul filelor: mesajul e cheia bibliotecii schimbate (vechiul „schimbat” e al bibliotecii fără cont). */
+function canalFile(): BroadcastChannel | null {
+  if (canal !== undefined) return canal;
   try {
     canal = new BroadcastChannel(CANAL);
-    canal.onmessage = () => { void b.reincarca(); };
+    canal.onmessage = (e: MessageEvent) => {
+      const cheie = typeof e.data === 'string' && e.data !== 'schimbat' ? e.data : CHEIE_LOCALA;
+      void biblioteci.get(cheie)?.reincarca();
+    };
   } catch {
     // Fără canal (browser vechi): fiecare filă vede schimbările celorlalte la următoarea deschidere a ferestrei.
+    canal = null;
   }
-  const anunta = <T>(p: Promise<T>): Promise<T> => p.then((r) => { canal?.postMessage('schimbat'); return r; });
-  biblioteca = {
+  return canal;
+}
+
+/** Biblioteca de freze a browserului cu cheia dată (fără cont, sau a unui cont): una pe filă, la zi cu celelalte file. */
+export function frezeMele(cheie: string = CHEIE_LOCALA): FrezeMele {
+  const gasita = biblioteci.get(cheie);
+  if (gasita) return gasita;
+  const b = creeazaFrezeMele(depozitBrowser(), idFreza, () => Date.now(), cheie);
+  const c = canalFile();
+  const anunta = <T>(p: Promise<T>): Promise<T> => p.then((r) => { c?.postMessage(cheie); return r; });
+  const noua: FrezeMele = {
     ...b,
     salveaza: (id, f) => anunta(b.salveaza(id, f)),
     sterge: (id) => anunta(b.sterge(id)),
     adaugaToate: (freze) => anunta(b.adaugaToate(freze)),
     importa: (freze, politica) => anunta(b.importa(freze, politica)),
+    schimbaCont: (f) => anunta(b.schimbaCont(f)),
   };
-  return biblioteca;
+  biblioteci.set(cheie, noua);
+  return noua;
 }
 
-/** Starea bibliotecii, pentru React; se schimbă doar când biblioteca se schimbă. */
-export function useFrezeMele(): StareFreze {
-  const b = frezeMele();
+/** Starea bibliotecii cu cheia dată, pentru React; se schimbă doar când biblioteca se schimbă. */
+export function useFrezeMele(cheie: string = CHEIE_LOCALA): StareFreze {
+  const b = frezeMele(cheie);
   return useSyncExternalStore(b.aboneaza, b.stare);
 }
+
+/** Un id nou de freză (pentru copia din „Păstrează-le pe amândouă”). */
+export { idFreza };
