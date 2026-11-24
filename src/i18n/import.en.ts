@@ -253,6 +253,8 @@ export const enImport = {
   'import.trasare.scara.presupus': 'assumed (the file does not state it, as for an SVG)',
   'import.trasare.scara.latime': 'from the width',
   'import.trasare.scara.foaie': 'from the paper size',
+  'import.trasare.scara.imagine': 'from the image on the sheet',
+  'import.trasare.din-foaie': 'From the image on the sheet: the vectors land exactly over it, at its scale and place. The paper and the scan are not straightened here (put the image again, straightened, from "Import…").',
   'import.trasare.vedere': 'View',
   'import.trasare.vedere.imagine': 'Image',
   'import.trasare.vedere.vectori': 'Vectors',

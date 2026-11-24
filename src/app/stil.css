@@ -3096,6 +3096,13 @@ main h1 {
 .prop-imagine-butoane button[aria-pressed='false'] {
   color: var(--t-slab);
 }
+/* „Calibrează” și „Trasează…” (felia 25.8↑b): pe rândul lor, sub opacitate, cât lățimea rândului. */
+.prop-imagine-meniu {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-1);
+}
 /* Imaginea pe foaie (ADR 0272): bifa, sfatul și starea, deasupra butoanelor; pe telefon nu se pune (§9, ADR 0250 §7). */
 .imagine-foaie {
   display: grid;

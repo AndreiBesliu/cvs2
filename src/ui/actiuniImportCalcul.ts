@@ -311,7 +311,7 @@ export async function previzualizareImagine(f: FisierImport, t: AlegeriTrasare |
  * scara, zona, culorile (cu felul fiecăreia, ADR 0228) sau liniile mediane, cu opțiunile lor cât măcar o culoare e pe linii,
  * foaia (ADR 0225: doar cu „Îndreaptă foaia”, cu formatul și colțurile mutate) și scanarea (ADR 0271: doar cu „Îndreaptă
  * scanarea”, cu unghiul scris sau null). Imaginea unei pagini PDF (ADR 0270) își ia DPI-ul și orientarea din așezarea pe
- * pagină.
+ * pagină. Trasată din imaginea de pe foaie (ADR 0272 §7), scara e a ei, fără foaie și scanare de îndreptat.
  */
 export function cerereTrasare(f: FisierImport, a: AlegeriTrasare, pagina?: number, pdf?: AsezarePdf): CerereTrasare {
   const peCulori = a.sursa === 'culori';
@@ -326,8 +326,11 @@ export function cerereTrasare(f: FisierImport, a: AlegeriTrasare, pagina?: numbe
     ...(pdf ? { orientare: pdf.orientare } : {}),
     ...(peCulori ? { culori: a.culori } : {}), ...(a.rezultat === 'mediane' ? { rezultat: 'mediane' } : {}),
     ...(peLinii ? { mediane: a.mediane } : {}),
-    ...(a.foaie.indreapta ? { foaie: { colturi: a.foaie.colturi, format: formatFoaie(a.foaie) } } : {}),
-    ...(a.rotire.indreapta ? { rotire: { unghi: a.rotire.unghi } } : {}),
+    ...(a.latimeIntreaga !== undefined ? { latimeIntreaga: a.latimeIntreaga }
+      : {
+        ...(a.foaie.indreapta ? { foaie: { colturi: a.foaie.colturi, format: formatFoaie(a.foaie) } } : {}),
+        ...(a.rotire.indreapta ? { rotire: { unghi: a.rotire.unghi } } : {}),
+      }),
     ...(pagina !== undefined && pagina > 1 ? { pagina } : {}),
   };
 }

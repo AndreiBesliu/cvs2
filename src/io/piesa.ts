@@ -54,6 +54,11 @@ export type ImportPregatit = DateImport & {
    * fiecare din aceeași pagină, deci la locul ei față de celelalte.
    */
   readonly impreuna?: readonly ImportPregatit[];
+  /**
+   * Trasat din imaginea de pe foaie (ADR 0272 §7): punctul (cx, cy) al paginii cade în (x, y) al foii, cu pagina rotită cu
+   * `rotire` grade în jurul lui; vectorii vin exact peste imagine, oricare ar fi punctul lăsat.
+   */
+  readonly peImagine?: { readonly x: number; readonly y: number; readonly rotire: number; readonly cx: number; readonly cy: number };
 };
 
 /** Importul pregătit din datele lui: constructorul e `piesaDinImport`, pe aceleași date; ușa e `incarca`. */

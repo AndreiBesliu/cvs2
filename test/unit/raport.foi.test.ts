@@ -118,6 +118,22 @@ test('foile identice: copia legată și copia separată (alte id-uri, aceleași 
   assert.deepEqual(r.materiale.map((m) => [m.grosime, m.foi]), [[10, 4], [12, 1]]);
 });
 
+test('numele imaginilor foii (ADR 0272 §10): fiecare o dată, din toate foile identice; ele nu despart foile; fără nume, id-ul', () => {
+  const im = (id: string, nume?: string) => ({
+    id, sursa: 'ab'.repeat(32), ...(nume ? { nume } : {}), x: 50, y: 50, latime: 100, inaltime: 80, rotire: 0, opacitate: 0.4, vizibila: true,
+    fixata: true,
+  });
+  const d = doc([piesaDr('p', 80, 30, 10)], [
+    { ...foaie('f1', [300, 200, 10], [inst('a', 'p', 10, 10)]), imagini: [im('im1', 'poza.jpg'), im('im2', 'schita.png')] },
+    { ...foaie('f2', [300, 200, 10], [inst('b', 'p', 10, 10)]), imagini: [im('im1', 'schita.png'), im('im3')] },
+    foaie('f3', [300, 200, 10], [inst('c', 'p', 20, 10)]),
+  ]);
+  const r = raportFoi(d, 'taiata', sablon);
+  assert.deepEqual(r.foi.map((f) => [f.nume, f.identice, f.imagini]), [
+    ['Foaia 1', [1], ['poza.jpg', 'schita.png', 'im3']], ['Foaia 3', [], []],
+  ]);
+});
+
 test('CSV-ul: BOM, `;` cu virgula zecimală (Excel în română) sau `,` cu punctul; ghilimelele; foile, totalurile, materialele', () => {
   schimbaLimba('ro');
   const locuri = [290, 180, 70].flatMap((y) => [10, 170, 330].map((x) => ({ x, y })));

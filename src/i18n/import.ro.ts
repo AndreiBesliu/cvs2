@@ -266,6 +266,8 @@ export const roImport = {
   'import.trasare.scara.presupus': 'presupus (fișierul nu-l spune, ca la un SVG)',
   'import.trasare.scara.latime': 'din lățime',
   'import.trasare.scara.foaie': 'din formatul foii',
+  'import.trasare.scara.imagine': 'din imaginea de pe foaie',
+  'import.trasare.din-foaie': 'Din imaginea de pe foaie: vectorii vin exact peste ea, la scara și locul ei. Foaia și scanarea nu se îndreaptă aici (pune imaginea din nou, îndreptată, din „Importă…”).',
   'import.trasare.vedere': 'Vederea',
   'import.trasare.vedere.imagine': 'Imaginea',
   'import.trasare.vedere.vectori': 'Vectorii',

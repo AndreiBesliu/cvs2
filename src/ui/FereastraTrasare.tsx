@@ -70,6 +70,11 @@ type Props = {
   readonly detalii?: ReactNode;
   /** Acțiunile ferestrei (imaginea pe foaie, butoanele), la capătul piciorului. */
   readonly actiuni?: ReactNode;
+  /**
+   * Trasată din imaginea de pe foaie (ADR 0272 §7; felia 25.8↑b): scara e a imaginii, deci fără grupul Mărimea; foaia și
+   * scanarea nu se îndreaptă (vectorii vin exact peste imagine), deci fără ele și fără sugestiile lor.
+   */
+  readonly dinFoaie?: boolean;
 };
 
 /** Raportul trasării din previzualizare (și dintr-un refuz după trasare, ca „prea multe contururi”), sau null. */
@@ -138,7 +143,7 @@ function caleDin(c: CaiTrasate): Path2D {
  * sau butoanele, mutarea prin tragere), apoi raportul: abaterea măsurată, imaginea, curățarea. Pe culori (ADR 0221), în locul
  * pragului și al lui Inversează, culorile (`PanouCulori`), iar imaginea previzualizării e cea pictată în culorile ei.
  */
-export function PanouTrasare({ alegeri, onSchimba, octeti, stare, seRecitesc, freza, sus, alerte, detalii, actiuni }: Props) {
+export function PanouTrasare({ alegeri, onSchimba, octeti, stare, seRecitesc, freza, sus, alerte, detalii, actiuni, dinFoaie = false }: Props) {
   const limba = useLimba();
   const nr = (x: number, z: number): string => new Intl.NumberFormat(limba === 'ro' ? 'ro-RO' : 'en-GB', { maximumFractionDigits: z, minimumFractionDigits: z }).format(x);
   /** O mărime de foaie, cu cel mult o zecimală (210, 215,9). */
@@ -557,8 +562,8 @@ export function PanouTrasare({ alegeri, onSchimba, octeti, stare, seRecitesc, fr
   // Sugestiile raportului (ADR 0273 §5): fiecare cu butonul ei, care schimbă alegerea și deschide grupul Imaginea (al cărui
   // titlu poartă semnul cât e una).
   const sugestieLumina = raport !== null && raport.sursa !== 'alfa' && raport.lumina === 'uniforma' && raport.inegala !== null && raport.inegala > SUGESTIE_INEGALA;
-  const sugestieFoaie = foaie !== null && !foaie.indreptata && foaie.sugestie;
-  const sugestieRotire = rotire !== null && rotire.sugestie && rotire.gasit !== null;
+  const sugestieFoaie = !dinFoaie && foaie !== null && !foaie.indreptata && foaie.sugestie;
+  const sugestieRotire = !dinFoaie && rotire !== null && rotire.sugestie && rotire.gasit !== null;
   // Rezumatele grupurilor (ADR 0273 §2): valorile de acum, pe titlul grupului.
   const arataLumina = peCulori ? raport?.transparenta !== true : raport ? raport.sursa === 'lum' : alegeri.sursa === 'lum';
   const rezumatImagine = [
@@ -611,7 +616,7 @@ export function PanouTrasare({ alegeri, onSchimba, octeti, stare, seRecitesc, fr
               {/* Lumina vine înaintea culorilor (ADR 0226): ea schimbă ce culori se găsesc. */}
               {peCulori && !raport?.transparenta && panouLumina}
               {!peCulori && (raport ? raport.sursa === 'lum' : alegeri.sursa === 'lum') && panouLumina}
-              {raport && !raport.transparenta && (
+              {raport && !raport.transparenta && !dinFoaie && (
                 <div className="trasare-foaie" role="group" aria-label={t('import.trasare.foaie.grup')} data-testid="trasare-grup-foaie">
                   <label className="rand">
                     <input type="checkbox" checked={alegeri.foaie.indreapta} data-camp="trasare-foaie" onChange={(e) => {
@@ -722,61 +727,63 @@ export function PanouTrasare({ alegeri, onSchimba, octeti, stare, seRecitesc, fr
               </label>
             </GrupSetari>
           )}
-          <GrupSetari id="marime" deschis={tinute.deschise.marime} onDeschis={(o) => { deschide('marime', o); }} rezumat={rezumatMarime}>
-            {/* Ce mărime scrii (ADR 0273 §4, răspunsul 2a): a desenului, implicit, sau a imaginii, ca până la 25.9↑. */}
-            <label>
-              {t('import.trasare.marime-fel')}
-              <select value={tinute.marime} data-camp="trasare-marime-fel" onChange={(e) => {
-                const m = e.target.value === 'imagine' ? 'imagine' : 'desen';
-                setTinta(null);
-                setScris(null);
-                setCiorna({ ...ciorna, desenL: '', desenI: '', latime: alegeri.latimeMm === null ? '' : String(Number(alegeri.latimeMm.toFixed(2))) });
-                tine({ marime: m });
-              }}>
-                <option value="desen">{t('import.trasare.marime-fel.desen')}</option>
-                <option value="imagine">{t('import.trasare.marime-fel.imagine')}</option>
-              </select>
-            </label>
-            {tinute.marime === 'desen' ? (
-              <>
-                <span className="trasare-format-alt">
-                  <label>
-                    {t('import.trasare.desen.latime')}
-                    <input type="text" inputMode="decimal" value={ciorna.desenL} placeholder={desen ? mm2(desen.latime) : ''} data-camp="trasare-desen-l"
-                      onChange={(e) => { setCiorna({ ...ciorna, desenL: e.target.value, desenI: '' }); setScris({ fel: 'l', text: e.target.value }); }} />
-                  </label>
-                  <label>
-                    {t('import.trasare.desen.inaltime')}
-                    <input type="text" inputMode="decimal" value={ciorna.desenI} placeholder={desen ? mm2(desen.inaltime) : ''} data-camp="trasare-desen-i"
-                      onChange={(e) => { setCiorna({ ...ciorna, desenI: e.target.value, desenL: '' }); setScris({ fel: 'i', text: e.target.value }); }} />
-                  </label>
-                </span>
-                <p className="mic">{t('import.trasare.desen.sfat')}</p>
-                {/* Ce rămâne fix după ce ai scris (răspunsul 3a): mărimea scrisă, implicit, sau scara din clipa scrierii. */}
-                <label>
-                  {t('import.trasare.fix')}
-                  <select value={tinute.fix} data-camp="trasare-fix" onChange={(e) => { tine({ fix: e.target.value === 'scara' ? 'scara' : 'marime' }); }}>
-                    <option value="marime">{t('import.trasare.fix.marime')}</option>
-                    <option value="scara">{t('import.trasare.fix.scara')}</option>
-                  </select>
-                </label>
-              </>
-            ) : (
+          {!dinFoaie && (
+            <GrupSetari id="marime" deschis={tinute.deschise.marime} onDeschis={(o) => { deschide('marime', o); }} rezumat={rezumatMarime}>
+              {/* Ce mărime scrii (ADR 0273 §4, răspunsul 2a): a desenului, implicit, sau a imaginii, ca până la 25.9↑. */}
               <label>
-                {t('import.trasare.latime')}
-                <input type="text" inputMode="decimal" value={ciorna.latime} placeholder={raport ? nr(raport.latimeMm, 1) : ''} data-camp="trasare-latime"
-                  onChange={(e) => { setCiorna({ ...ciorna, latime: e.target.value }); }} />
+                {t('import.trasare.marime-fel')}
+                <select value={tinute.marime} data-camp="trasare-marime-fel" onChange={(e) => {
+                  const m = e.target.value === 'imagine' ? 'imagine' : 'desen';
+                  setTinta(null);
+                  setScris(null);
+                  setCiorna({ ...ciorna, desenL: '', desenI: '', latime: alegeri.latimeMm === null ? '' : String(Number(alegeri.latimeMm.toFixed(2))) });
+                  tine({ marime: m });
+                }}>
+                  <option value="desen">{t('import.trasare.marime-fel.desen')}</option>
+                  <option value="imagine">{t('import.trasare.marime-fel.imagine')}</option>
+                </select>
               </label>
-            )}
-            {raport && (
-              <p className="mic" data-testid="trasare-scara">
-                {t('import.trasare.scara', {
-                  inaltime: nr(raport.inaltimeMm, 1), mm: nr(raport.mmPePx, 3), dpi: nr(raport.dpi, 0),
-                  sursa: t(`import.trasare.scara.${raport.scara}`),
-                })}
-              </p>
-            )}
-          </GrupSetari>
+              {tinute.marime === 'desen' ? (
+                <>
+                  <span className="trasare-format-alt">
+                    <label>
+                      {t('import.trasare.desen.latime')}
+                      <input type="text" inputMode="decimal" value={ciorna.desenL} placeholder={desen ? mm2(desen.latime) : ''} data-camp="trasare-desen-l"
+                        onChange={(e) => { setCiorna({ ...ciorna, desenL: e.target.value, desenI: '' }); setScris({ fel: 'l', text: e.target.value }); }} />
+                    </label>
+                    <label>
+                      {t('import.trasare.desen.inaltime')}
+                      <input type="text" inputMode="decimal" value={ciorna.desenI} placeholder={desen ? mm2(desen.inaltime) : ''} data-camp="trasare-desen-i"
+                        onChange={(e) => { setCiorna({ ...ciorna, desenI: e.target.value, desenL: '' }); setScris({ fel: 'i', text: e.target.value }); }} />
+                    </label>
+                  </span>
+                  <p className="mic">{t('import.trasare.desen.sfat')}</p>
+                  {/* Ce rămâne fix după ce ai scris (răspunsul 3a): mărimea scrisă, implicit, sau scara din clipa scrierii. */}
+                  <label>
+                    {t('import.trasare.fix')}
+                    <select value={tinute.fix} data-camp="trasare-fix" onChange={(e) => { tine({ fix: e.target.value === 'scara' ? 'scara' : 'marime' }); }}>
+                      <option value="marime">{t('import.trasare.fix.marime')}</option>
+                      <option value="scara">{t('import.trasare.fix.scara')}</option>
+                    </select>
+                  </label>
+                </>
+              ) : (
+                <label>
+                  {t('import.trasare.latime')}
+                  <input type="text" inputMode="decimal" value={ciorna.latime} placeholder={raport ? nr(raport.latimeMm, 1) : ''} data-camp="trasare-latime"
+                    onChange={(e) => { setCiorna({ ...ciorna, latime: e.target.value }); }} />
+                </label>
+              )}
+              {raport && (
+                <p className="mic" data-testid="trasare-scara">
+                  {t('import.trasare.scara', {
+                    inaltime: nr(raport.inaltimeMm, 1), mm: nr(raport.mmPePx, 3), dpi: nr(raport.dpi, 0),
+                    sursa: t(`import.trasare.scara.${raport.scara}`),
+                  })}
+                </p>
+              )}
+            </GrupSetari>
+          )}
           {/* Simplu (ADR 0273, întrebarea 1, opțiunea b ca setare): doar Sursa, Rezultatul, Trasarea și Mărimea. */}
           <label className="rand mic trasare-simplu">
             <input type="checkbox" checked={tinute.simplu} data-camp="trasare-simplu" onChange={(e) => { tine({ simplu: e.target.checked }); }} />
