@@ -135,7 +135,7 @@ export function ExportConectat({
           scula: {
             numar: o.scula.numar, diametru: o.scula.diametru,
             ...(o.scula.forma ? { forma: { tip: 'v' as const, unghi: o.scula.forma.unghi, ...(o.scula.forma.varf !== undefined ? { varf: o.scula.forma.varf } : {}) } } : {}),
-            // Freza din „Frezele mele” (ADR 0300 §4, felia 16.A↑b-3a): originea ei, dacă documentul o are; altfel scrisă de mână.
+            // Freza din „Frezele mele” (ADR 0300 §4, felia 16.A↑b-3): originea ei, dacă documentul o are; altfel scrisă de mână.
             origine: origineDin(o.scula),
           },
           latura: o.latura, sens: o.sens, adancime: o.adancime, pas: o.pas,
@@ -214,7 +214,7 @@ export function ExportConectat({
    * rangul fiecăreia în ordinea omului, 0 … n − 1, sau fără rang în ordinea automată (ADR 0133 §3).
    */
   /**
-   * Frezele din „Frezele mele” care merg pe tăietura unui rând (ADR 0300 §4, felia 16.A↑b-3a): copia fiecăreia cu T-ul ei
+   * Frezele din „Frezele mele” care merg pe tăietura unui rând (ADR 0300 §4, felia 16.A↑b-3): copia fiecăreia cu T-ul ei
    * preferat (fereastra îl schimbă după celelalte freze), originea, pasul și pasul lateral.
    */
   const biblioteca = useBibliotecaProiect();

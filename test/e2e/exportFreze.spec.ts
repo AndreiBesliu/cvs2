@@ -1,5 +1,5 @@
 /**
- * Freza din „Frezele mele” pe rândurile ferestrei exportului (ADR 0300 §4, felia 16.A↑b-3a), în Edge: lista „Din frezele mele”
+ * Freza din „Frezele mele” pe rândurile ferestrei exportului (ADR 0300 §4, felia 16.A↑b-3), în Edge: lista „Din frezele mele”
  * din grupul Freza al fișei oferă doar frezele care merg pe tăietura rândului (plate pe un profil, în V la V-carve); aleasă, rândul
  * primește T-ul, Ø-ul, forma și pasul ei; Exportă scrie originea în document (panoul Tăierea o citește), iar un diametru schimbat
  * de mână face freza „Scrisă de mână” și scoate originea; T-ul ocupat de altă freză a ferestrei trece pe cel mai mic liber.

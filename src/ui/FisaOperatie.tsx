@@ -50,7 +50,7 @@ export interface ContextFisa {
   readonly frezeRest: (cheie: string, p: Rand, fel: 'buzunar' | 'fund' | 'dop', oprit: boolean) => ReactNode;
   /** Grupul unei întrebări: desenul și explicația în stânga, câmpurile și greșelile în dreapta (comun cu foaia și mașina). */
   readonly grup: (id: GrupExport, fisa: string, corp: ReactNode, greseli?: readonly string[], desen?: (c: DesenComun) => ReactNode) => ReactNode;
-  /** Frezele din „Frezele mele” care merg pe tăietura rândului (ADR 0300 §4, felia 16.A↑b-3a); lipsă = fără listă. */
+  /** Frezele din „Frezele mele” care merg pe tăietura rândului (ADR 0300 §4, felia 16.A↑b-3); lipsă = fără listă. */
   readonly frezeOferite: ((r: Pick<Rand, 'tip' | 'latura'>) => readonly FrezaOferita[]) | undefined;
   /** Freza aleasă din listă pe rândul dat: T-ul, Ø-ul, forma, pașii și originea ei. */
   readonly alegeFreza: (cheie: string, f: FrezaOferita) => void;
@@ -73,7 +73,7 @@ export function FisaOperatie({ cheie, loc, c: ctx }: { readonly cheie: string; r
   const titluDeschis = deschis ? t('export.deschise.titlu') : buz ? t('export.buzunar.nu-se-aplica') : gaura ? t('export.gaurire.nu-se-aplica')
     : vc ? t('export.vcarve.nu-se-aplica') : undefined;
   const greseli = greseliRand(o.cheie);
-  // Frezele din „Frezele mele” care merg pe tăietura rândului (ADR 0300 §4, felia 16.A↑b-3a).
+  // Frezele din „Frezele mele” care merg pe tăietura rândului (ADR 0300 §4, felia 16.A↑b-3).
   const oferite = frezeOferite ? frezeOferite(p) : [];
   const aici = (g: GrupExport): string[] => greseli.filter(([, x]) => x === g).map(([m]) => m);
   const grupuri = grupuriOperatie({
@@ -161,7 +161,7 @@ export function FisaOperatie({ cheie, loc, c: ctx }: { readonly cheie: string; r
         {titluDeschis !== undefined && <p className="nota" data-nota="nu-se-aplica">{titluDeschis}</p>}
       </div>);
       case 'freza': return (<div className="dx-rand">
-        {/* Freza din „Frezele mele” (ADR 0300 §4, felia 16.A↑b-3a): doar cele care merg pe tăietura rândului. */}
+        {/* Freza din „Frezele mele” (ADR 0300 §4, felia 16.A↑b-3): doar cele care merg pe tăietura rândului. */}
         {oferite.length > 0 || p.origineScula ? (
         <label className="freza-biblioteca">
           {t('export.freza.biblioteca')}

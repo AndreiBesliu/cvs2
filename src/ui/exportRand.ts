@@ -44,7 +44,7 @@ export type ColturiOperatie = { readonly tip: 'dog-bone' | 't-bone' };
 export type SculaOperatie = {
   readonly numar: number; readonly diametru: number; readonly forma?: { readonly tip: 'v'; readonly unghi: number; readonly varf?: number };
   /**
-   * Freza din „Frezele mele” a rândului (ADR 0300 §4, felia 16.A↑b-3a): numele, originea, valorile de lucru și tăișul ei, scrise
+   * Freza din „Frezele mele” a rândului (ADR 0300 §4, felia 16.A↑b-3): numele, originea, valorile de lucru și tăișul ei, scrise
    * de Exportă lângă T, Ø și formă; `null` = scrisă de mână (originea pleacă din document); lipsă = rămâne cea din document.
    */
   readonly origine?: OrigineFreza | null;
@@ -292,7 +292,7 @@ export type Rand = {
   /** Freza rândului (ADR 0084), ca text: numărul și diametrul. */
   readonly numarScula: string; readonly diametruScula: string;
   /**
-   * Freza din „Frezele mele” a rândului (ADR 0300 §4, felia 16.A↑b-3a): originea ei (din document sau aleasă în listă); `null` =
+   * Freza din „Frezele mele” a rândului (ADR 0300 §4, felia 16.A↑b-3): originea ei (din document sau aleasă în listă); `null` =
    * scrisă de mână. Un diametru sau o formă schimbate de mână o scot.
    */
   readonly origineScula: OrigineFreza | null;

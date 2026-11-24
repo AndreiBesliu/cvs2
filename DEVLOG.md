@@ -13741,3 +13741,21 @@ la ordinul în vigoare „unește ce se poate”
 - **Loturile dinainte:** al șaptesprezecelea și al optsprezecelea, pe test din 17:50 (`29ef7e44`; completul pe `main`
   45417561144, verde: unit 10 190 / 0, e2e 707 / 707, funcțiile 136 / 136, paginile 57 / 57; proba de fum, bună).
   Loturile 19–21 (`7312d685`): completul pe `main` (45436221341) rula la unire.
+
+## 2026-11-24 — 16.A↑b-3: freza din „Frezele mele” pe rândurile exportului (Model: Claude Opus 5.5)
+
+**Prompt:** „continua cu 16.A↑b-3”, apoi, la întrebarea „Pe ce construiesc b-3?”, „Pe #11, acum”. **Started:** 24.11, 17:05.
+
+- **Ramura** nouă `wip/16.A-freze-b3`: `wip/16.A-freze` (`0b1f36e8`, cu 16.A↑h-5) și fereastra exportului refăcută
+  (`wip/28.8-export`, `4ee623d3`, PR-ul #11) aduse împreună (`48f4de8c`; ciocnirile, în traducerile roadmap-ului și în
+  catalogul controalelor). Se unește doar după #11 sau odată cu ea.
+- **Felia** (`5b875a26`): lista „Din frezele mele” în grupul Freza al fișei, cu frezele potrivite tăieturii rândului, date de
+  aplicație; aleasă, T-ul (regula rolurilor, printre frezele ferestrei), Ø-ul, forma, pasul și pasul lateral; originea pe rând,
+  scrisă de Exportă (`origine` pe freză: lipsă = rămâne, `null` = pleacă); „Scrisă de mână” la un Ø sau o formă schimbate.
+  Biblioteca proiectului, comună cu Tăierea (`src/app/bibliotecaProiect.ts`). Manualul (ro, en). Fundul plat, frezele de rest,
+  dopul și banda au ieșit în felia nouă 16.A↑b-5.
+- **Probele** (întâi): unitare noi 3, în Edge 2 (și 99 / 99 ale exportului și frezelor). **Otrăvurile**
+  (`test/otravuri/16.A-b3a.py`): 16 / 16, după proba T-ului cu două freze identice și otrava S03 mutată.
+- **Mărimea** (cu #11): pornirea neschimbată (110,3 kB; cu ușa 114,9, cu Atelierul 115,2 / 120), totalul 852,1 → 853,3 / 900.
+  Nimic pe server; documentul rămâne v27. **Completed:** 24.11, 17:55.
+

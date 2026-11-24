@@ -17,7 +17,7 @@ function sculaScrisa(o: Operatie['scula'], s: SculaOperatie): Operatie['scula'] 
     const { biblioteca: _b, regim: _r, tais: _t, ...fara } = x;
     void _b; void _r; void _t;
     if (s.origine === null) {
-      // Scrisă de mână (ADR 0300 §4, felia 16.A↑b-3a): originea, valorile de lucru și tăișul bibliotecii pleacă; numele vechi
+      // Scrisă de mână (ADR 0300 §4, felia 16.A↑b-3): originea, valorile de lucru și tăișul bibliotecii pleacă; numele vechi
       // era al frezei din bibliotecă, deci și el, după formă.
       if (!o.biblioteca) return x;
       return { ...fara, nume: s.forma ? `freza V${s.forma.unghi}${(s.forma.varf ?? 0) > 0 ? ` varf ${s.forma.varf}` : ''}` : 'freza plata' };

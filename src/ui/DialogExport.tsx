@@ -93,7 +93,7 @@ type Props = {
    */
   readonly onAlegeUrechi?: (cheie: string, urechi: { readonly numar: number; readonly latime: number; readonly grosime: number }) => void;
   /**
-   * Frezele din „Frezele mele” care merg pe tăietura unui rând (ADR 0300 §4, felia 16.A↑b-3a), în ordinea bibliotecii; lipsă =
+   * Frezele din „Frezele mele” care merg pe tăietura unui rând (ADR 0300 §4, felia 16.A↑b-3), în ordinea bibliotecii; lipsă =
    * fără listă (de exemplu, o bibliotecă goală).
    */
   readonly frezeOferite?: (r: Pick<Rand, 'tip' | 'latura'>) => readonly FrezaOferita[];
@@ -541,7 +541,7 @@ export function DialogExport(
     return rez;
   };
   /**
-   * Freza aleasă din „Frezele mele” pe rândul `cheie` (ADR 0300 §4, felia 16.A↑b-3a): T-ul (regula rolurilor, printre frezele
+   * Freza aleasă din „Frezele mele” pe rândul `cheie` (ADR 0300 §4, felia 16.A↑b-3): T-ul (regula rolurilor, printre frezele
    * ferestrei), Ø-ul, forma, pasul pe trecere și, la buzunar, pasul lateral ei; originea, pentru Exportă.
    */
   const alegeFreza = (cheie: string, f: FrezaOferita): void => {

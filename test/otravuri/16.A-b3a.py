@@ -1,4 +1,4 @@
-# Lista de otrăvuri a feliei 16.A↑b-3a (freza din „Frezele mele” pe rândurile ferestrei exportului; ADR 0300 §4), aleasă de autor:
+# Lista de otrăvuri a feliei 16.A↑b-3 (freza din „Frezele mele” pe rândurile ferestrei exportului; ADR 0300 §4), aleasă de autor:
 # regula T a rândului (al bibliotecii, al frezei identice, cel mai mic liber; turația, forma), scrierea originii la Exportă
 # (numele, ștergerea la „scrisă de mână”, păstrarea fără câmp, tăișul și valorile care pleacă), fereastra (diametrul și unghiul
 # schimbate de mână, pasul, frezele ferestrei fără rândul ales, originea trimisă la Exportă și citită din document) și aplicația

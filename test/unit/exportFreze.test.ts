@@ -1,5 +1,5 @@
 /**
- * Freza din biblioteca „Frezele mele” pe rândurile ferestrei exportului (ADR 0300 §4, felia 16.A↑b-3a), pe hârtie:
+ * Freza din biblioteca „Frezele mele” pe rândurile ferestrei exportului (ADR 0300 §4, felia 16.A↑b-3), pe hârtie:
  *
  * - **scrierea originii** (`operatieDinDialog`): un rând cu originea frezei scrie numele, originea (id, versiunea), valorile de
  *   lucru și tăișul ei lângă T, Ø și formă; fără originea rândului (`null`), ele pleacă din document, cu numele după formă; fără
