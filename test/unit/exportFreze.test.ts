@@ -56,6 +56,8 @@ test('numărul T al rândului: al bibliotecii cât e liber, altfel al unei freze
   assert.equal(numarPentruRand([], p12), 6);
   // T6 e al unei freze identice (aceeași formă, același Ø, aceeași turație): tot T6.
   assert.equal(numarPentruRand([{ numar: 6, diametru: 12, turatie: 16000 }], p12), 6);
+  // Două freze identice, pe T3 și pe T6: tot T6, al bibliotecii (nu prima identică găsită).
+  assert.equal(numarPentruRand([{ numar: 3, diametru: 12, turatie: 16000 }, { numar: 6, diametru: 12, turatie: 16000 }], p12), 6);
   // T6 e al unei freze identice scrise de mână (turația necunoscută): tot T6.
   assert.equal(numarPentruRand([{ numar: 6, diametru: 12 }], p12), 6);
   // T6 e al altei freze, iar o freză identică are T3: T3.

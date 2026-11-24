@@ -25,7 +25,7 @@ o('R03', R, '(a.turatie === undefined || b.turatie === undefined || a.turatie ==
 o('R04', R, '  return formaEgala && egal(a.diametru, b.diametru)', '  return egal(a.diametru, b.diametru)', 'model', 'forma nu contează')
 o('S01', V, '      ...x, nume: r.nume, biblioteca:', '      ...x, biblioteca:', 'model', 'numele frezei din bibliotecă nu se scrie')
 o('S02', V, '      return { ...fara, nume: s.forma ?', '      return { ...x, nume: s.forma ?', 'model', '„scrisă de mână” lasă originea în document')
-o('S03', V, '    if (s.origine === null) {', '    if (!s.origine) {', 'model', 'un apelant fără câmpul `origine` șterge originea')
+o('S03', V, '    if (s.origine === undefined) return x;\n', '', 'model', 'un apelant fără câmpul `origine` nu mai păstrează scula')
 o('S04', V, "  if (s.origine.tais === undefined) delete c['tais'];\n", '', 'model', 'tăișul frezei de dinainte rămâne')
 o('W01', F, '{ diametruScula: ev.target.value, origineScula: null }', '{ diametruScula: ev.target.value }', 'e2e',
   'diametrul schimbat de mână păstrează originea')
