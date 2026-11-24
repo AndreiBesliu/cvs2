@@ -14,6 +14,7 @@ import {
 } from './actiuniImport.ts';
 import { textMarime } from './fereastraTrasareCalcul.ts';
 import { PanouTrasare } from './FereastraTrasare.tsx';
+import { AlegereRezultat, type RezultatImagine } from './AlegereRezultat.tsx';
 import { useLimba } from './useLimba.ts';
 
 // „prea-multe” (o imagine trasată) e plural, după numărul contururilor: textRefuz îl scrie înaintea tabelului.
@@ -223,6 +224,8 @@ type Props = {
    * și fără îndreptări (vectorii vin exact peste imagine).
    */
   readonly dinFoaie?: boolean;
+  /** O imagine adusă cu „Importă…” (ADR 0310 §7): alegerea de sus, Vectori sau Relief; lipsă: fără ea (imaginea de pe foaie). */
+  readonly rezultatImagine?: { readonly ales: RezultatImagine; readonly onAlege: (r: RezultatImagine) => void };
   /** O imagine (ADR 0220 §10): alegerile trasării, schimbarea lor și octeții imaginii pentru previzualizare. */
   readonly trasare?: {
     readonly alegeri: AlegeriTrasare; readonly onSchimba: (s: Partial<AlegeriTrasare>) => void; readonly octeti: Uint8Array | null;
@@ -240,7 +243,7 @@ type Props = {
  */
 export function DialogImport({
   nume, stare, pxPeTol, pxAutomat, unitate, unitateWmf, pagina, imaginePdf = false, onImaginePdf, seRecitesc, motiv, onPx, onUnitate,
-  onUnitateWmf, onPagina, onImporta, onInchide, coada, onSari, de, trasare, imagineFoaie, dinFoaie = false,
+  onUnitateWmf, onPagina, onImporta, onInchide, coada, onSari, de, trasare, imagineFoaie, dinFoaie = false, rezultatImagine,
 }: Props) {
   const limba = useLimba();
   const mm = new Intl.NumberFormat(limba === 'ro' ? 'ro-RO' : 'en-GB', { maximumSignificantDigits: 12 });
@@ -420,7 +423,10 @@ export function DialogImport({
         {imagine ? (
           <PanouTrasare key={`${coada?.k ?? 1}:${nume}`} alegeri={trasare.alegeri} onSchimba={trasare.onSchimba} octeti={trasare.octeti} stare={stare}
             seRecitesc={seRecitesc} {...(trasare.freza === undefined ? {} : { freza: trasare.freza })} dinFoaie={dinFoaie}
-            sus={<>{dinFoaie && <p className="mic" data-testid="import-din-foaie">{t('import.trasare.din-foaie')}</p>}{alegerePagina}{ofertaPdf}</>}
+            sus={<>
+              {rezultatImagine && <AlegereRezultat ales={rezultatImagine.ales} onAlege={rezultatImagine.onAlege} />}
+              {dinFoaie && <p className="mic" data-testid="import-din-foaie">{t('import.trasare.din-foaie')}</p>}{alegerePagina}{ofertaPdf}
+            </>}
             alerte={<>{refuz}{motivul}</>} detalii={info} actiuni={<>{peFoaie}{butoane}</>} />
         ) : (
           <>

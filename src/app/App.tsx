@@ -2,6 +2,7 @@ import { Fragment, lazy, Suspense, useEffect, useMemo, useRef, useState, useSync
 import { Panza } from '../canvas/Panza.tsx';
 import { treaptaZoom, type Bucata, type FoaieVecina, type GestDesen, type Lipeste, type Vedere } from '../canvas/protocol.ts';
 import { imaginiPentruPanza, useOctetiImagini } from './octetiImagini.ts';
+import { imaginiReliefuri, reliefuriFoaie, useDesenReliefuri } from './reliefDesen.ts';
 import type { StareStrat } from '../canvas/StratTraseu.tsx';
 import type { Miscare, Program } from '../ir/ir.ts';
 import { CUTIE_GOALA, uneste } from '../geom/cutie.ts';
@@ -736,7 +737,17 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
   }, [doc, indexActiva, toateFoile, limbaActiva]);
   // Imaginile foii active (ADR 0272): octeții citiți din baza lor la cerere; cele vizibile, pe pânză, sub vectori.
   const octetiImagini = useOctetiImagini(foaie?.imagini);
-  const imaginiPanza = useMemo(() => imaginiPentruPanza(foaie?.imagini, octetiImagini), [foaie?.imagini, octetiImagini]);
+  const imaginiFoii = useMemo(() => imaginiPentruPanza(foaie?.imagini, octetiImagini), [foaie?.imagini, octetiImagini]);
+  // Reliefurile foii active (ADR 0310 §7): umbrite, peste imagini, sub vectori; desenul vine la cerere, doar cu un relief pe
+  // foaie. Lista rămâne aceeași cât nu se schimbă niciun relief (pânza primește pixelii doar atunci).
+  const reliefuriAcum = useMemo(() => reliefuriFoaie(doc, indexActiva), [doc, indexActiva]);
+  const semnReliefuri = JSON.stringify(reliefuriAcum.map((r) => [r.id, r.cheie, r.x, r.y, r.latime, r.inaltime, r.rotire, r.oglindita]));
+  const reliefuri = useMemo(() => reliefuriAcum, [semnReliefuri]);
+  const desene = useDesenReliefuri(reliefuri, (e) => { jurnal.adauga('promisiune', e); });
+  const imaginiPanza = useMemo(() => {
+    const r = imaginiReliefuri(reliefuri, desene);
+    return r.length === 0 ? imaginiFoii : [...imaginiFoii, ...r];
+  }, [imaginiFoii, reliefuri, desene]);
   // Piesele puse de mai multe ori (ADR 0210 §2): câte instanțe are fiecare piesă și a câta e fiecare instanță, în ordinea
   // proiectului (foile, apoi instanțele lor), pentru „(4 din 12)” din listă.
   const surori = useMemo(() => {
@@ -804,10 +815,13 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
     if (mod !== 'scriitor' || curatat.current) return undefined;
     const ceas = setTimeout(() => {
       curatat.current = true;
-      import('./imaginiFoaie.ts').then((m) => m.curataLaPornire(curenta.current.istoric.doc)).catch((e: unknown) => {
+      const cadere = (e: unknown): void => {
         if (eroareDeMediu(e)) jurnal.adaugaLocala('salvare', e);
         else jurnal.adauga('salvare', e);
-      });
+      };
+      import('./imaginiFoaie.ts').then((m) => m.curataLaPornire(curenta.current.istoric.doc)).catch(cadere);
+      // Dalele și hărțile reliefurilor nefolosite (ADR 0310 §2), la fel.
+      import('./reliefStocare.ts').then((m) => m.curataLaPornire(curenta.current.istoric.doc)).catch(cadere);
     }, 10_000);
     return () => { clearTimeout(ceas); };
   }, [mod, jurnal]);
@@ -1476,6 +1490,7 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
               onEticheta={(camp, valoare) => aplicaDinPanou('foaie.eticheta', { etichetaNoua: () => ({ camp, valoare }) })}
               onImagini={(lista) => aplicaDinPanou('foaie.imagini', { imaginiNoi: () => lista })}
               octetiImagini={octetiImagini}
+              desenRelief={(k) => desene.get(k)}
               onModImagine={(fel, id) => { if (idActiva) setModImagine({ fel, id, foaie: idActiva }); }}
               onPlusUnu={() => aplicaDinPanou('piesa.plus-unu', {})}
               onInca={(total) => aplicaDinPanou('piesa.inca', { cateInTotal: () => total })}

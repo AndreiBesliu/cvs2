@@ -29,8 +29,11 @@ export type CerereRelief =
     /** Fișierul (decodat aici, de browser) sau pixelii gata decodați. */
     readonly imagine: Blob | PixeliRelief;
     readonly optiuni: OptiuniImagine;
-    /** Lățimea reliefului pe foaie, în mm: celula = lățimea / pixelii pe orizontală (o celulă = un pixel, ADR 0310 §5). */
-    readonly latimeMm: number;
+    /**
+     * Scara (o celulă = un pixel, ADR 0310 §5): lățimea reliefului pe foaie, în mm (celula = lățimea / pixelii pe
+     * orizontală), sau pixelii pe țol (celula = 25,4 / dpi), cât lățimea nu e scrisă.
+     */
+    readonly scara: { readonly latimeMm: number } | { readonly dpi: number };
   }
   | {
     readonly tip: 'desen';
@@ -83,9 +86,9 @@ async function decodeaza(b: Blob): Promise<PixeliRelief | RefuzRelief> {
   return { latime: d.width, inaltime: d.height, rgba: d.data };
 }
 
-/** Celula din lățimea scrisă, sau motivul pentru care nu se poate (marginile grilei, ADR 0311 §1). */
-export function celulaDinLatime(latimeMm: number, nx: number, ny: number): number | 'celula' {
-  const c = latimeMm / nx;
+/** Celula din scară (lățimea scrisă, ori DPI-ul), sau motivul pentru care nu se poate (marginile grilei, ADR 0311 §1). */
+export function celulaDinScara(scara: { readonly latimeMm: number } | { readonly dpi: number }, nx: number, ny: number): number | 'celula' {
+  const c = 'latimeMm' in scara ? scara.latimeMm / nx : 25.4 / scara.dpi;
   if (!Number.isFinite(c) || c < CELULA_MINIMA || c > CELULA_MAXIMA) return 'celula';
   if (nx * c > LATURA_MM_MAXIMA || ny * c > LATURA_MM_MAXIMA) return 'celula';
   return c;
@@ -96,8 +99,8 @@ async function dinImagine(c: Extract<CerereRelief, { tip: 'din-imagine' }>): Pro
   if ('ok' in px) return px;
   const nx = px.latime, ny = px.inaltime;
   if (nx > LATURA_MAXIMA || ny > LATURA_MAXIMA) return { ok: false, cod: 'prea-mare', detaliu: `${nx} × ${ny}` };
-  const celula = celulaDinLatime(c.latimeMm, nx, ny);
-  if (celula === 'celula') return { ok: false, cod: 'celula', detaliu: String(c.latimeMm / nx) };
+  const celula = celulaDinScara(c.scara, nx, ny);
+  if (celula === 'celula') return { ok: false, cod: 'celula' };
   const valori = reliefDinPixeli(px.rgba, nx, ny, c.optiuni);
   const st = await stratDinGrila(valori, nx, ny);
   // Ce se arată e citit din dalele cuantizate (ADR 0310 §2), ca un relief cu acest singur strat: compusul pornește de la 0,
