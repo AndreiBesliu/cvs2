@@ -150,7 +150,7 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
   printr-o schiță.
 - **Observabilitatea:** erorile ajung în jurnalul aplicației; joburile își lasă marcajul.
 
-## Starea pe 24.11.2026, la prânz (după a paisprezecea unire din cloud)
+## Starea pe 24.11.2026, după-amiaza (după a cincisprezecea unire din cloud)
 
 - **Pe test:** `356db9bd` (tot până la lotul al paisprezecelea: 3.Ts, A.11b–A.11e, 16.A↑b-1; publicat pe 24.11 la
   12:26, cu serverul: `utilizare`, `tichete`, regulile, indexurile). `main` e mai departe cu plafonul pornirii
@@ -160,13 +160,13 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
   planșelor (`f4601938`); A.6 (`4497d639`); 3.Xh (`2d1e482c`) și 12.1↑e-3 cu 12.1↑e-4 (`03460cab`); A.8a cu A.8b
   (`5325b8fe`) și 25.9↑ (`4fe2d2ad`). Pe 24.11: 16.A↑a (`02a5864a`), cu ADR 0301 (`813fa675`); A.8c și A.8d (`80d3eb70`);
   A.9a și A.9b (`95dddbe0`); A.10 și A.11a (`7f6f4069`); 25.8↑b (`f7f4510f`); 3.Ts (`e14e553a`), A.11b–A.11e
-  (`8ccb66e8`) și 16.A↑b-1, cu documentul v27 (`32b33a42`).
+  (`8ccb66e8`) și 16.A↑b-1, cu documentul v27 (`32b33a42`); A.7 (`458befb9`).
 - **Liniile** (vezi [indexul](README.md)):
   - **gata pe ramură, la cuvântul owner-ului:** fereastra exportului (28.8↑a–b-3, ADR 0290; `AndreiBesliu/cvs2#11`),
     după ce o încearcă pe canalul `export`;
-  - **în lucru, pe ramuri:** adminul (A.7, adminul pe telefon, peste commit-ul unit; `AndreiBesliu/cvs2#13`), frezele
-    (16.A↑b-2: lista „Freza” pe rândurile exportului și în Tăierea), exportul (28.8↑, `#11`: unirea la cuvântul
-    owner-ului); se unesc la raportul liniei;
+  - **în lucru, pe ramuri:** frezele (16.A↑c-1 și 16.A↑c-2, biblioteca de freze în cont: serverul și clientul; apoi
+    16.A↑b-2, lista „Freza” în export), exportul (28.8↑, `#11`: unirea la cuvântul owner-ului); se unesc la raportul
+    liniei;
   - **pornite pe 24.11, la cuvântul owner-ului (brief-urile, date ca fișiere):** relieful (18.1↑, `wip/18.1-relief`,
     ADR 0310–0329, canalul `relief`) și cotele (10.4↑, `wip/10.4-cote`, ADR 0330–0339, canalul `cote`); amândouă
     încep cu ADR-ul propus și întrebările. Schema: v28 rezervat cotelor, v29 reliefului;
@@ -177,7 +177,8 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
     10.3↑o: 10.3↑p–r),
     imprimanta (după 3.6v: 3.6w, camera), aranjamentele (28.1↑). Pornesc la cuvântul
     owner-ului, cu un brief scris de sesiunea principală și lipit de owner într-o sesiune cloud nouă;
-  - **încheiate:** ancorele (6.V↑), raportările (15.B↑b), galeria (3.Tp, ADR 0281), probele instabile.
+  - **încheiate:** ancorele (6.V↑), raportările (15.B↑b), galeria (3.Tp, ADR 0281), probele instabile, adminul
+    (ADR 0260 și 0262: A.1–A.11, cu A.7 unită pe 24.11).
 - **La owner:**
   - „cine unește în `main`” (recomandarea: doar sesiunea principală; pe 23–24.11, biblioteca și frezele au scris întâi
     aici, iar felia era deja în lot: unirea a rămas aici);

@@ -12406,6 +12406,23 @@ admin cat mai multe setari”).
 - **Documentele:** ADR 0262 (implementarea), fișa etapei 3 (`3.Ar`), registrul otrăvurilor, traducerile, nota liniei.
   **Completed:** 24.11 09:50.
 
+## 2026-11-24 — Felia A.7: adminul pe telefon (ADR 0260)
+
+**Prompt:** același „am raspuns” la ADR 0262 (7a: „A.8–A.11 acum, apoi A.7”), după A.11e.
+**Started:** 24.11 09:55.
+
+- **Codul (`ee526edf`):** ☰ în antet și bara de jos (`FILE_JOS`, după drepturi) în carcasa din `PaginaAdmin.tsx`, sertarul
+  (`data-deschis`, închis de o filă aleasă și de Escape), regulile de sub 640 px rescrise în `admin.css`, textul proiectului
+  pe telefon în fila Tichete.
+- **După captură:** numele din bara de jos stăteau la stânga când n-aveau număr (`flex: 1` din bara laterală); centrate.
+- **Probele:** 2 e2e noi pe emulatoare. **Otrăvurile:** 9 / 9 (E08 după măsurarea dinaintea clicului). **Porțile locale:**
+  rapidul 10 057 / 0, emulatoarele 126 / 126 și 54 / 54. **Mărimea:** `/admin` 138,2 / 200.
+- **Între timp:** sesiunea principală a unit A.9a–A.11a în `main` (`883a8caa`, `df9ae539`); `main` adus în ramură
+  (`c3f80a74`, fără ciocniri); PR-ul și mesajul către ea spun ce e de unit (A.11b, A.11c din `d74b3b8f`, sau A.11b–A.11e după
+  completul pe `eaa0a356`).
+- **Documentele:** ADR 0260 (implementarea A.7), fișa etapei 3 (`3.As`), registrul otrăvurilor, traducerile, nota liniei.
+  **Completed:** 24.11 10:35.
+
 ## 2026-11-23 — Sesiunea principală în cloud: a șasea unire (A.6, Roadmap, Documentație și Setări); linia frezelor, pornită (Model: Claude Fable 5.2)
 
 **Prompt:** același brief de predare al sesiunii principale („unește ce se poate”), la raportul liniei adminului (PR-ul
@@ -12944,3 +12961,21 @@ scrie brief-ul pentru relief si pentru cote”
   `docs/linii/principala.md`. Intervalele, verificate libere pe toate ramurile `origin/wip/*`. Schema: v28 rezervat
   cotelor, v29 reliefului. Brief-urile de lipit, date owner-ului ca fișiere.
 - **Pe aceeași ramură (`unire-2411g`):** rândul publicării lotului al paisprezecelea.
+
+## 2026-11-24 — Sesiunea principală în cloud: a cincisprezecea unire (A.7, adminul pe telefon) (Model: Claude Fable 5.2)
+
+**Prompt:** „pare ca e gata adminul” (cu o captură a sesiunii liniei); „ok, cand e verde fa unirea”
+**Started:** 24.11, 12:38. **Completed:** unirea în `main`, 24.11, 12:46; publicarea pe test, la rândul ei.
+
+- **La captură nu era încă gata:** rapidul era verde pe `c08a24bc`, dar completul liniei pe `b064e954` (45369919331)
+  încă rula. Unirea, pregătită între timp pe `unire-2411h` (din `41233474`): A.7 în `458befb9`, fără ciocniri;
+  `git diff` gol față de `c08a24bc` în afara fișierelor `.md`; catalogul controalelor la zi, tipurile, regulile de
+  import (0 încălcări), traducerile (992, 0 lipsă).
+- **Porțile, în CI:** completul verde pe `b064e954` (48 min 2 s): unit 10 111 / 0 (12 sărite), e2e 655 / 655,
+  funcțiile pe emulatoare 126 / 126, paginile 55 / 55; rapidul verde pe `c08a24bc` (care adaugă doar constanta
+  plafonului pornirii și documente). Pornirea 109,9 / 120 (cu ușa 114,4; cu Atelierul 114,7), totalul 806,1 / 900,
+  `/admin` 138,2 / 200. Nimic pe server.
+- **Documentele:** decizia în `CLAUDE.md` și rândul de stare al lui A.7; indexul liniilor (linia adminului,
+  încheiată); starea din `docs/linii/principala.md`.
+- **La owner:** fereastra exportului, verificarea juridică a utilizării aplicației înaintea live-ului, „cine unește
+  în `main`”, ADR 0232 (biblioteca); brief-urile reliefului și cotelor, de lipit în sesiuni noi.
