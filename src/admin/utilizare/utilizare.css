@@ -1,0 +1,118 @@
+/*
+ * Fila Utilizare (ADR 0262 §6, felia A.9b). Fără bibliotecă de grafice: barele sunt CSS, lățimea vine din `--p` (ca în
+ * roadmap). Bara unei acțiuni are două tonuri: toată, cât e folosită; partea închisă, cât din taste și din paletă.
+ */
+.uz {
+  display: grid;
+  gap: var(--sp-3);
+}
+.uz-alegeri {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-3);
+  align-items: center;
+}
+.uz-cifre {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+  gap: var(--sp-2);
+  margin: 0;
+}
+.uz-cifre > div {
+  border: 1px solid var(--l-margine);
+  border-radius: var(--r-2, 8px);
+  padding: var(--sp-2) var(--sp-3);
+}
+.uz-cifre dt {
+  font-size: var(--fs-1);
+  color: var(--t-slab, inherit);
+}
+.uz-cifre dd {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.uz-sectiune h3 {
+  margin: var(--sp-3) 0 var(--sp-2);
+  font-size: var(--fs-3);
+}
+.uz-sectiune h4 {
+  margin: var(--sp-2) 0 var(--sp-1);
+  font-size: var(--fs-2);
+}
+.uz-bare {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  font-size: var(--fs-2);
+  display: grid;
+  gap: var(--sp-1);
+}
+.uz-bare li {
+  display: grid;
+  grid-template-columns: minmax(8rem, 14rem) 1fr auto;
+  gap: var(--sp-2);
+  align-items: center;
+}
+.uz-bara {
+  display: block;
+  height: 0.75rem;
+  width: calc(var(--p, 0) * 100%);
+  min-width: 2px;
+  background: color-mix(in oklab, var(--a) 45%, var(--s-panou));
+  border-radius: 3px;
+  overflow: hidden;
+}
+.uz-bara-taste {
+  display: block;
+  height: 100%;
+  width: calc(var(--p, 0) * 100%);
+  background: var(--a);
+}
+.uz-numar {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.uz-tabel {
+  border-collapse: collapse;
+  width: 100%;
+  max-width: 44rem;
+  font-size: var(--fs-2);
+}
+.uz-tabel thead th {
+  font-weight: 600;
+  color: var(--t-slab);
+}
+.uz-tabel th[scope='row'] {
+  font-weight: 400;
+}
+.uz-tabel th,
+.uz-tabel td {
+  text-align: left;
+  padding: var(--sp-1) var(--sp-2);
+  border-bottom: 1px solid var(--l-margine);
+}
+.uz-tabel td {
+  font-variant-numeric: tabular-nums;
+}
+.uz-lista {
+  margin: 0;
+  padding-left: var(--sp-4);
+  font-size: var(--fs-2);
+}
+.uz-segment {
+  font-size: var(--fs-2);
+}
+@media (max-width: 40rem) {
+  .uz-bare li {
+    grid-template-columns: 1fr auto;
+  }
+  .uz-numar {
+    grid-row: 1;
+    grid-column: 2;
+  }
+  .uz-bara {
+    grid-column: 1 / -1;
+  }
+}

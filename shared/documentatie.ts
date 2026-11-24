@@ -177,3 +177,21 @@ export function esteCatalog(x: unknown): x is Catalog {
     && x['documente'].every((d) => obiect(d) && typeof d['cale'] === 'string' && typeof d['eticheta'] === 'string'
       && (CATEGORII as readonly unknown[]).includes(d['categorie']));
 }
+
+/**
+ * Catalogul acțiunilor (ADR 0262 §6, felia A.9b), generat la build din registrul de acțiuni și din lista uneltelor, cu
+ * etichetele lor în ambele limbi: fila Utilizare arată și ce n-a folosit nimeni (o acțiune fără niciun eveniment nu apare în
+ * sume), cu numele de pe ecran.
+ */
+export const FISIER_ACTIUNI = `${DIR_DOCUMENTATIE}/actiuni.json`;
+export interface IntrareActiune { readonly id: string; readonly ro: string; readonly en: string }
+export interface CatalogActiuni {
+  readonly schema: 1;
+  readonly actiuni: readonly IntrareActiune[];
+  readonly unelte: readonly IntrareActiune[];
+}
+const esteIntrare = (x: unknown): x is IntrareActiune => obiect(x) && typeof x['id'] === 'string' && typeof x['ro'] === 'string' && typeof x['en'] === 'string';
+export function esteCatalogActiuni(x: unknown): x is CatalogActiuni {
+  return obiect(x) && x['schema'] === 1 && Array.isArray(x['actiuni']) && Array.isArray(x['unelte'])
+    && x['actiuni'].every(esteIntrare) && x['unelte'].every(esteIntrare);
+}

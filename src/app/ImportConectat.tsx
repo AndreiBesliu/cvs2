@@ -13,6 +13,7 @@ import { mesajeGata } from '../i18n/laCerere.ts';
 import type { CheieSimpla } from '../i18n/t.ts';
 import type { ImagineFoaie } from '../model/document.ts';
 import { OPACITATE_IMAGINE, pastreaza } from './imaginiFoaie.ts';
+import { utilizarea } from './utilizare.ts';
 
 /** Mesajele modulului, ca date (ADR 0086): cine îl încarcă le așteaptă (`cuMesaje`); un refuz îl vede tot el. */
 export const mesaje = mesajeGata();
@@ -118,13 +119,26 @@ export function ImportConectat({ fisiere, punct, registruImport, contextImport, 
     setImagineInLucru(false);
     setMotivImagine(null);
     setDialog({ fisier: f, nume: f.nume, ...a, pxAutomat: automat, ...(vechi ? { stare: vechi, seRecitesc: true } : { stare: 'citire' }) });
+    // Utilizarea aplicației (ADR 0262, A.8d): durata citirii, octeții și formatul fișierului, fără numele lui.
+    const pornitLa = performance.now();
+    const format = formatImport(f.nume, '');
+    const spune = (rez: 'ok' | 'eroare' | 'anulat'): void => {
+      utilizarea.eveniment({
+        fel: 'calcul', id: 'import', ms: performance.now() - pornitLa, rez, octeti: f.octeti.length, ...(format === null ? {} : { format }),
+      });
+    };
     const pornit = ruleaza(registruImport, 'import.svg', contextImport(f, a, (r) => {
-      if (c !== cerere.current) return;
+      if (c !== cerere.current) {
+        spune('anulat');
+        return;
+      }
       if (oprire.current === ac) oprire.current = null;
       if (!automat && a.pxPeTol === 96 && r.ok && r.format === 'svg' && r.px && r.illustrator) {
+        // Recitit cu 72 px pe țol: se numără citirea de după.
         citeste(f, { ...a, pxPeTol: 72 }, true);
         return;
       }
+      spune(r.ok ? 'ok' : 'eroare');
       setDialog({ fisier: f, nume: f.nume, ...a, pxAutomat: automat, stare: r });
     }, ac.signal));
     // Acțiunea oprită (fila a trecut între timp pe „doar citire”): dialogul nu așteaptă un rezultat care nu vine.

@@ -100,6 +100,7 @@ const CERE: Readonly<Record<Exclude<Fila, 'azi'>, readonly Permisiune[] | 'owner
   roadmap: ['documentatie.citeste'],
   documentatie: ['documentatie.citeste'],
   sugestii: ['sugestii.scrie', 'sugestii.citeste'],
+  utilizare: ['utilizare.citeste'],
   tichete: ['tichete.citeste', 'tichete.raspunde'],
   utilizatori: ['conturi.citeste', 'conturi.administreaza'],
   personal: 'owner',

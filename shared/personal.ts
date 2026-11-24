@@ -11,11 +11,12 @@
  * decizia pe sugestii (ADR 0107): `sugestii.scrie` dă scrierea și sugestiile proprii, `sugestii.citeste` pe toate; la fel
  * setările conturilor (ADR 0116 §20). Conturile clienților (ADR 0116 §19): `conturi.citeste` dă lista, `conturi.administreaza`
  * dă și planul (gratuit, proba, dezactivarea), deci și lista. Raportările clienților (ADR 0116 §13): `tichete.citeste` dă fila
- * Tichete, `tichete.raspunde` dă și răspunsul și starea, deci și citirea.
+ * Tichete, `tichete.raspunde` dă și răspunsul și starea, deci și citirea. Utilizarea aplicației (ADR 0262 §6):
+ * `utilizare.citeste` dă sumele zilelor (fila Utilizare), fără conturi.
  */
 export const PERMISIUNI = [
   'erori.citeste', 'erori.rezolva', 'diagnoza.citeste', 'audit.citeste', 'documentatie.citeste', 'sugestii.scrie', 'sugestii.citeste',
-  'conturi.citeste', 'conturi.administreaza', 'tichete.citeste', 'tichete.raspunde',
+  'conturi.citeste', 'conturi.administreaza', 'tichete.citeste', 'tichete.raspunde', 'utilizare.citeste',
 ] as const;
 export type Permisiune = (typeof PERMISIUNI)[number];
 

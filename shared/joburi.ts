@@ -18,6 +18,8 @@ export const JOBURI = [
   { nume: 'verificaBackup', programare: '0 5 * * *', fus: 'Europe/Bucharest', intervalOre: 24, timeoutSecunde: 120 },
   // Tichetele rezolvate mai vechi decât păstrarea din fila Setări, cu poza și proiectul lor (ADR 0116 §16, felia 15.B↑b).
   { nume: 'pastrareTichete', programare: '0 4 * * *', fus: 'Europe/Bucharest', intervalOre: 24, timeoutSecunde: 300 },
+  // Sumele zilei ale utilizării aplicației, din loturile primite ieri și alaltăieri (ADR 0262 §5, felia A.9a).
+  { nume: 'agregaUtilizarea', programare: '30 2 * * *', fus: 'Europe/Bucharest', intervalOre: 24, timeoutSecunde: 540 },
 ] as const satisfies readonly DefinitieJob[];
 
 export type NumeJob = (typeof JOBURI)[number]['nume'];

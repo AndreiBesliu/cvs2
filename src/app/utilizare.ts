@@ -24,7 +24,7 @@ export function sursaDin(e: { closest(selector: string): unknown } | null, tasta
   if (e.closest('.meniu-context, .meniu-cont, .meniu-foaie, [role="menu"]')) return 'meniu';
   if (e.closest('[data-panou], .panou-retea, [role="dialog"]')) return 'panou';
   if (e.closest('[role="toolbar"], .meniu-global')) return 'bara';
-  if (e.closest('canvas')) return 'panza';
+  if (e.closest('canvas, .panza-cutie')) return 'panza';
   return 'alt';
 }
 
@@ -48,10 +48,15 @@ const primeste = (e: Eveniment): void => {
   else if (tampon.length < TAMPON_MAX) tampon.push(e);
 };
 
+/** Un eveniment fără timp: îl pune fațada. */
+export type FaraTimp<E> = E extends unknown ? Omit<E, 't'> : never;
+
 export const utilizarea = {
   actiune: (id: string, rez: string): void => { primeste({ fel: 'actiune', t: acum(), id, de: sursa(), rez }); },
   fereastra: (id: Fereastra): void => { primeste({ fel: 'fereastra', t: acum(), id }); },
   unealta: (id: string): void => { primeste({ fel: 'unealta', t: acum(), id, de: sursa() }); },
+  /** Calculele, mașina, imprimanta (felia A.8d), cu valorile brute: treptele le face înregistratorul. */
+  eveniment: (e: FaraTimp<Eveniment>): void => { primeste({ ...e, t: acum() } as Eveniment); },
 };
 
 /** Înregistratorul preia evenimentele: întâi cele din tampon, apoi fiecare, cum vine. */

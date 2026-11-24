@@ -57,7 +57,7 @@ test('regulile: catalogul din cod e cel din reguli (fiecare permisiune e verific
   for (const p of inReguli) assert.ok((PERMISIUNI as readonly string[]).includes(p ?? ''), `${p ?? ''} din reguli nu e în catalog`);
   assert.deepEqual([...new Set(inReguli)].sort(), [
     'audit.citeste', 'conturi.administreaza', 'conturi.citeste', 'diagnoza.citeste', 'erori.citeste', 'sugestii.citeste', 'sugestii.scrie',
-    'tichete.citeste', 'tichete.raspunde',
+    'tichete.citeste', 'tichete.raspunde', 'utilizare.citeste',
   ]);
   assert.ok(reguli.includes("'^[A-Za-z0-9]{20}$'"), 'forma id-ului de rol din reguli');
   assert.ok(!/nivelRol|'support'|'admin'/.test(reguli), 'treptele vechi au ieșit din reguli');

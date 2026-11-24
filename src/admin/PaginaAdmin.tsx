@@ -1,5 +1,6 @@
 import {
-  createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type FormEvent, type ReactElement, type ReactNode,
+  createContext, lazy, Suspense, useCallback, useContext, useEffect, useMemo, useRef, useState, type FormEvent, type ReactElement,
+  type ReactNode,
 } from 'react';
 import type { User } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore/lite';
@@ -30,6 +31,9 @@ import { FilaPersonal } from './personal/FilaPersonal.tsx';
 import { FilaRoadmap } from './roadmap/FilaRoadmap.tsx';
 import { FilaSetari } from './setari/FilaSetari.tsx';
 import { FilaSugestii } from './sugestii/FilaSugestii.tsx';
+
+/** Fila Utilizare (ADR 0262 §6–§7): o bucată a ei, adusă la deschidere, cu plafonul ei, în afara paginii de la intrare. */
+const FilaUtilizare = lazy(() => import('./utilizare/FilaUtilizare.tsx').then((m) => ({ default: m.FilaUtilizare })));
 import { FilaTichete } from './tichete/FilaTichete.tsx';
 import { FilaUtilizatori } from './utilizatori/FilaUtilizatori.tsx';
 import './admin.css';
@@ -355,6 +359,9 @@ function CarcasaAdmin({ con, instanta, build, p }: { readonly con: Conexiune; re
             {aratata === 'roadmap' ? <FilaRoadmap aducator={aducator} deschide={deschideDocument} /> : null}
             {aratata === 'documentatie' ? <FilaDocumentatie aducator={aducator} cale={adresa.document} ancora={adresa.ancora} deschide={deschideDocument} /> : null}
             {aratata === 'sugestii' ? <FilaSugestii con={con} eu={p.user.uid} owner={p.owner} permisiuni={p.permisiuni} /> : null}
+            {aratata === 'utilizare' ? (
+              <Suspense fallback={<p className="admin-slab" aria-busy="true">…</p>}><FilaUtilizare con={con} aducator={aducator} /></Suspense>
+            ) : null}
             {aratata === 'tichete' ? <FilaTichete key={tintaTichete?.id ?? ''} con={con} owner={p.owner} permisiuni={p.permisiuni} tinta={tintaTichete} /> : null}
             {aratata === 'utilizatori' ? (
               <FilaUtilizatori key={tintaConturi?.id ?? ''} con={con} eu={p.user.uid} poateAdministra={p.permisiuni.has('conturi.administreaza')}

@@ -6,12 +6,14 @@
  * iconițele (numele întreg stă în eticheta accesibilă). Din 3.6s (ADR 0194), titlul trece prin `titluFila.ts`, ca partea
  * imprimantei să nu-l șteargă pe al mașinii (și invers).
  */
-import { useEffect, useLayoutEffect, useState, type ReactNode } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { t } from '../i18n/t.ts';
 import { indicatorLucrare, type Indicator } from '../machine/indicator.ts';
 import type { SesiuneMasina, StareSesiune } from '../machine/sesiune.ts';
 import { parteTitlu } from './titluFila.ts';
+import { utilizarea } from './utilizare.ts';
+import { evenimenteMasina } from './utilizareMasina.ts';
 
 /** Cuvântul stării, în limba omului (fără procent: acela vine separat, ca pe telefon să rămână doar el). */
 function cuvant(i: Indicator): string {
@@ -50,6 +52,12 @@ export function IndicatorLucrare({ s, st, onDeschide }: {
   const [loc, setLoc] = useState<HTMLElement | null>(null);
   useLayoutEffect(() => { setLoc(document.getElementById('loc-lucrare')); });
   const i = indicatorLucrare(st);
+  // Utilizarea aplicației (ADR 0262, A.8d): legarea, lucrarea și codurile, din stările la rând ale sesiunii.
+  const inainte = useRef<StareSesiune | null>(null);
+  useEffect(() => {
+    for (const e of evenimenteMasina(inainte.current, st)) utilizarea.eveniment({ fel: 'masina', ...e });
+    inainte.current = st;
+  }, [st]);
   const parte = parteMasina(i);
   useEffect(() => { parteTitlu('masina', parte); }, [parte]);
   useEffect(() => () => { parteTitlu('masina', null); }, []);
