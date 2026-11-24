@@ -2,7 +2,7 @@
 
 <!-- Adusă din memoria sesiunii principale pe 23.11.2026 (mutarea în cloud). De aici înainte o ține la zi linia, pe ramura ei, odată cu feliile. -->
 
-_CNCVS2, ADR 0260: pagina /admin reproiectată; A.1–A.6 unite în main (A.6: 4497d639); ADR 0262 (utilizarea aplicației) acceptat pe 23.11; A.8a și A.8b unite în main pe 23.11 (PR-ul AndreiBesliu/cvs2#8, din 55d26b81); A.8c și A.8d în PR-ul AndreiBesliu/cvs2#13 (completul pe ba1b4b0c); A.9a (sumele zilei, jobul agregaUtilizarea), A.9b (fila Utilizare), A.10 (fluxurile), A.11a (pașii dinaintea unei erori), A.11b (pașii la raportare), A.11c (cronologia unui om), A.11d (sesiunea raportării) și A.11e (disocierea) gata pe aceeași ramură, în același PR (la unire se publică funcțiile agregaUtilizarea, logClientError, tichete și utilizare, regulile, indexurile); urmează A.7 (telefonul)_
+_CNCVS2, ADR 0260: pagina /admin reproiectată; A.1–A.6 unite în main (A.6: 4497d639); ADR 0262 (utilizarea aplicației) acceptat pe 23.11; A.8a și A.8b unite în main pe 23.11 (PR-ul AndreiBesliu/cvs2#8, din 55d26b81); A.8c și A.8d în PR-ul AndreiBesliu/cvs2#13 (completul pe ba1b4b0c); A.9a (sumele zilei, jobul agregaUtilizarea), A.9b (fila Utilizare), A.10 (fluxurile), A.11a (pașii dinaintea unei erori), A.11b (pașii la raportare), A.11c (cronologia unui om), A.11d (sesiunea raportării), A.11e (disocierea) și A.7 (telefonul, ultima felie a ADR 0260) gata pe aceeași ramură, în același PR (la unire se publică funcțiile tichete și utilizare, regulile, indexurile); liniile ADR 0260 și ADR 0262 au toate feliile gata_
 
 Linia adminului din [sesiunea principală](principala.md): ADR 0260 (intervalul 0260–0269), acceptat pe 13.11.2026 cu ideile 51–62 de pe
 tabla „Harta schițelor”. Owner-ul a cerut „vreau sa faci design si pentru admin”, iar la idei a răspuns „Da la toate”
@@ -93,6 +93,10 @@ tabla „Harta schițelor”. Owner-ul a cerut „vreau sa faci design si pentru
 - **A.11e (disocierea) GATA pe ramură din 24.11** (`2e023ac1`, `a07c0a34`, `70617d54`; `3.Ar`): **legătura cont →
   pseudonim stă doar în `utilizareDisociate/{uid}`**, fără regulă (refuzată oricui din client); contul are doar
   `disociatLa`, auditul fără pseudonim. Cu ea, A.11 e încheiată (A.11a–A.11e). Otrăvurile 12 / 12.
+- **A.7 (telefonul) GATA pe ramură din 24.11** (`ee526edf`, `2a71cc02`, `2f1347d7`; `3.As`): sub 640 px, bara de jos
+  (`FILE_JOS`, după drepturi) și ☰; bara laterală e un sertar (`data-deschis`). **Un element nou al carcasei care trebuie
+  să fie la vedere pe telefon se probează la 390 px și față de bara de jos** (`conversatia.emulator.spec.ts`, „pe telefon”).
+  Cu A.7, ADR 0260 are toate feliile. Otrăvurile 9 / 9.
 - **După unirea PR-ului** (A.8a–A.8b, de owner, pe 23.11, cât lucram la A.8c): `main` adus în ramură printr-o unire obișnuită
   (**un push forțat al unei ramuri refăcute e refuzat de permisiuni**; ciocnirile doar în tabele), apoi catalogul controalelor
   scris din nou și **funcțiile compilate din nou** (`npm --prefix functions run compileaza`: probele pe emulatoare folosesc `functions/lib`, iar un contract nou în

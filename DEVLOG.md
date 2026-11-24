@@ -12406,6 +12406,23 @@ admin cat mai multe setari”).
 - **Documentele:** ADR 0262 (implementarea), fișa etapei 3 (`3.Ar`), registrul otrăvurilor, traducerile, nota liniei.
   **Completed:** 24.11 09:50.
 
+## 2026-11-24 — Felia A.7: adminul pe telefon (ADR 0260)
+
+**Prompt:** același „am raspuns” la ADR 0262 (7a: „A.8–A.11 acum, apoi A.7”), după A.11e.
+**Started:** 24.11 09:55.
+
+- **Codul (`ee526edf`):** ☰ în antet și bara de jos (`FILE_JOS`, după drepturi) în carcasa din `PaginaAdmin.tsx`, sertarul
+  (`data-deschis`, închis de o filă aleasă și de Escape), regulile de sub 640 px rescrise în `admin.css`, textul proiectului
+  pe telefon în fila Tichete.
+- **După captură:** numele din bara de jos stăteau la stânga când n-aveau număr (`flex: 1` din bara laterală); centrate.
+- **Probele:** 2 e2e noi pe emulatoare. **Otrăvurile:** 9 / 9 (E08 după măsurarea dinaintea clicului). **Porțile locale:**
+  rapidul 10 057 / 0, emulatoarele 126 / 126 și 54 / 54. **Mărimea:** `/admin` 138,2 / 200.
+- **Între timp:** sesiunea principală a unit A.9a–A.11a în `main` (`883a8caa`, `df9ae539`); `main` adus în ramură
+  (`c3f80a74`, fără ciocniri); PR-ul și mesajul către ea spun ce e de unit (A.11b, A.11c din `d74b3b8f`, sau A.11b–A.11e după
+  completul pe `eaa0a356`).
+- **Documentele:** ADR 0260 (implementarea A.7), fișa etapei 3 (`3.As`), registrul otrăvurilor, traducerile, nota liniei.
+  **Completed:** 24.11 10:35.
+
 ## 2026-11-23 — Sesiunea principală în cloud: a șasea unire (A.6, Roadmap, Documentație și Setări); linia frezelor, pornită (Model: Claude Fable 5.2)
 
 **Prompt:** același brief de predare al sesiunii principale („unește ce se poate”), la raportul liniei adminului (PR-ul
