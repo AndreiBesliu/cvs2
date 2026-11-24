@@ -3,7 +3,7 @@
 _cncvs2, biblioteca de freze („Frezele mele”), felia 16.A↑ adusă din etapa 16: ramura `wip/16.A-freze` (din `main`
 `c8b235ab`), ADR-urile 0300–0309 (liber: 0303), canalul `freze`; ADR 0300 ACCEPTAT pe 23.11 („Da, 1a–6a”), ADR 0302 ACCEPTAT pe
 24.11 („Da, 1a–5a”); 16.A↑a, ADR 0301, 16.A↑b-1 și 16.A↑c UNITE în `main`; 16.A↑b-2 și 16.A↑a-2 GATA pe ramură (PR-ul #22);
-16.A↑h-1 și 16.A↑h-2 în lotul 21 de unire; 16.A↑h-3 GATA pe ramură; urmează 16.A↑h-4 (felurile noi)_
+16.A↑h-1 și 16.A↑h-2 în lotul 21 de unire; 16.A↑h-3 și 16.A↑h-4 GATA pe ramură; urmează 16.A↑h-5 (profilurile)_
 
 Pornită pe 23.11.2026, în sesiunea cloud a liniei, la cererea owner-ului: „Vreau sa pot crea freze l sau profiluri de freze in
 aplicatie si sa le salvez in cont”. Rândurile din prag: „Bibliotecă de freze cu geometrie reală (dreaptă, bilă, toroidală, V,
@@ -102,6 +102,11 @@ gravare, profil, formă desenată)” și „Freze de profil desenate de utiliza
   panoului Tăierea, deci ce importă el ajunge și în bucata panoului: punerea din catalog stă în `dinCatalog.ts`, fără datele
   catalogului. Otrăvuri 23 / 23. 16.A↑h-1 și h-2: în lotul 21 al sesiunii principale (`db43ed08`). Urmează 16.A↑h-4 (felurile
   noi „în curând”).
+- **24.11, 15:08–15:55: 16.A↑h-4 gata pe ramură** (`64bc5769`, documentele): bila, toroidala, conica cu vârf rotund și
+  burghiul în bibliotecă și în catalog (119), cu `raza`, capătul și silueta, „în curând în proiect”; Tăierea și copia pentru
+  document doar pentru `FELURI_CU_CAM`. Serverul nu se schimbă: un client vechi ține felul necunoscut neatins. Profilurile
+  parametrice au ieșit în 16.A↑h-5. **Capcană:** un arc desenat din puncte, cu capătul scris exact, poate trece de probe care
+  verifică doar „pe cerc”; proba pașilor egali îl prinde. Otrăvuri 23 / 24.
 - **Feliile**, în ordine: 16.A↑a (biblioteca în browser, fereastra, fișierul), apoi b (alegerea în proiect, v27), c
   (contul), d (calibrarea), e (bila și toroidala), f (profilul desenat), g (valorile pe material).
 
