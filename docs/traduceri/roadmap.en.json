@@ -965,6 +965,10 @@
       "ro": "Pluginul ca parte din cvs2: tema, fonturile, contul văzut, închiderea fără pierderi",
       "en": "The plugin as part of cvs2: the theme, the fonts, the account it sees, closing without losses"
     },
+    "34910aae1c389f5b": {
+      "ro": "Profilurile parametrice în „Frezele mele” și în catalog",
+      "en": "The parametric profiles in “My bits” and in the catalog"
+    },
     "34ad38b3a468f121": {
       "ro": "Panourile pe foi",
       "en": "Panels on sheets"
@@ -3924,6 +3928,10 @@
     "e930fc44f93eb2b1": {
       "ro": "Uneltele de desen prin tragere",
       "en": "Drag drawing tools"
+    },
+    "e9baed326849d5d0": {
+      "ro": "**Profilurile parametrice în „Frezele mele” și în catalog** (fără mașină; ADR 0302 §1, §7, „Implementarea (16.A↑h-5)”; ramura `wip/16.A-freze`, în sesiunea cloud a liniei frezelor, felia despărțită din 16.A↑h-4). Rotunjirea (roundover), ogee-ul, ogee-ul roman (cu câmpul nou `treapta`, jos și sus) și panoul ridicat (fundul plat, teșitura față de fața plăcii, sub 90°, și scobitura opțională), cu marginile lor, capătul pe hârtie și silueta; canelura are silueta bilei, deci nu e un fel separat. Toate „în curând în proiect”, ca felurile din 16.A↑h-4. CSV-ul citește felurile (și în engleză) și coloana `treapta`. Catalogul crește la 149 (11 rotunjiri, 7 ogee, 4 ogee roman, 8 panouri); punerea socotește fundul plat și treapta. În fereastră, la trecerea pe un profil, diametrul se schimbă doar dacă cel scris nu-l cuprinde; etichetele și motivele, pe fel; manualul. Probele (întâi): unitare noi 3, în Edge 1 (și două extinse); otrăvuri 29 / 29 (F11 scăpase: proba citirii are acum și o rotunjire). Pornirea neschimbată, totalul +1,1 kB (835,7 / 900). Nimic pe server; documentul nu se schimbă.",
+      "en": "**The parametric profiles in “My bits” and in the catalog** (no machine; ADR 0302 §1, §7, “Implementation (16.A↑h-5)”; branch `wip/16.A-freze`, in the bits line’s cloud session, the slice split off from 16.A↑h-4). The roundover, the ogee, the Roman ogee (with the new `treapta` field, the fillet at the bottom and the top) and the raised panel (the flat bottom, the bevel from the panel face, below 90°, and the optional cove), with their limits, the end height on paper and the silhouette; the veining bit has the ball’s silhouette, so it is not a separate kind. All “coming soon to projects”, like the kinds of 16.A↑h-4. The CSV reads the kinds (also in English) and the `treapta` column. The catalog grows to 149 (11 roundovers, 7 ogees, 4 Roman ogees, 8 panels); adding counts the flat bottom and the fillet. In the window, switching to a profile changes the diameter only if the written one cannot hold it; labels and reasons per kind; the manual. Tests (first): 3 new unit, 1 in Edge (and two extended); poisons 29 / 29 (F11 had escaped: the reading test now also has a roundover). Startup unchanged, total +1.1 kB (835.7 / 900). Nothing on the server; the document does not change."
     },
     "ea0986b31ece9b65": {
       "ro": "**Senderul, postul cu contracte, observabilitatea**, primul live",

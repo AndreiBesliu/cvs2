@@ -1317,23 +1317,27 @@ fișă o mută: în alt grup, înapoi **Fără grup (pe fel)** sau, cu **Grup no
 frezele lui (un nume care e deja al altui grup le unește, iar un nume gol le întoarce pe felurile lor). Grupul merge cu
 freza în fișier și în cont.
 
-**Catalogul**, sub frezele tale (**Catalogul (119)**, strâns la început), are frezele obișnuite: plate de la Ø1 la Ø19,05,
+**Catalogul**, sub frezele tale (**Catalogul (149)**, strâns la început), are frezele obișnuite: plate de la Ø1 la Ø19,05,
 de planare de la Ø19,05 la Ø50,8, în V (30°–150°), de gravare (10°–60°, cu vârful de 0,1–0,5), bile, toroidale, conice cu
-vârf rotund și burghie, cu mărimile în milimetri și în țoli (nota „1/4"”). Valorile lor de lucru sunt de pornire, din diametru, de verificat pe materialul tău. O freză din
+vârf rotund, burghie, rotunjiri, ogee, ogee roman și panouri ridicate, cu mărimile în milimetri și în țoli (nota „1/4"”). Valorile lor de lucru sunt de pornire, din diametru, de verificat pe materialul tău. O freză din
 catalog își arată fișa; **Pune în frezele mele** o copiază în bibliotecă, cu primul T liber, iar **Pune toate**, lângă un
 grup, și **Pune tot ce vezi**, lângă titlu (după căutare și filtru), pun mai multe deodată. O freză care e deja la tine
-(același fel, diametru, unghi și vârf) nu se pune a doua oară: fișa spune **E deja în frezele mele.**
+(același fel, diametru, unghi, vârf, rază și treaptă) nu se pune a doua oară: fișa spune **E deja în frezele mele.**
 
-**Bila, toroidala, conica și burghiul** stau în biblioteca ta și în catalog, cu **în curând în proiect**: în secțiunea
-Tăierea se aleg abia când aplicația le va putea tăia. Până atunci, le ții la un loc cu celelalte.
+**Bila, toroidala, conica, burghiul și profilurile** (rotunjirea, ogee-ul, ogee-ul roman, panoul ridicat) stau în biblioteca
+ta și în catalog, cu **în curând în proiect**: în secțiunea Tăierea se aleg abia când aplicația le va putea tăia. Până
+atunci, le ții la un loc cu celelalte. O freză de canelură (cu vârful rotund, „core box”) e o **Bilă**.
 
 **Freză nouă** deschide editorul, cu câmpurile:
 - **Numele**: gol, freza primește numele propus din fel și diametru („Plată Ø6”, „V60 Ø6”, „Gravare 30° vârf 0,2 Ø3,175”).
   Două freze nu pot avea același nume (fără deosebire de majuscule);
 - **Felul**: **Plată**, **În V** (cu **Unghiul inclus**, între 1° și 179°), **Gravare** (o freză în V cu **Vârful plat**,
   mai mic decât diametrul), **Bilă**, **Toroidală** (cu **Raza colțului**), **Conică** (cu vârful rotund: **Unghiul inclus**
-  și **Raza vârfului**) sau **Burghiu** (cu **Unghiul vârfului**, 118° de obicei); o rază e peste 0 și sub jumătatea
-  diametrului;
+  și **Raza vârfului**), **Burghiu** (cu **Unghiul vârfului**, 118° de obicei), **Rotunjire** (cu **Raza rotunjirii**),
+  **Ogee** (două arce de aceeași rază, **Raza arcelor**, sub un sfert din diametru), **Ogee roman** (ogee-ul cu o
+  **Treaptă** jos și sus) sau **Panou ridicat** (**Fundul plat**, **Teșitura**, față de fața plăcii, sub 90°, și, dacă are,
+  **Raza scobiturii**); în rest, o rază e peste 0 și sub jumătatea diametrului. La un profil, diametrul se schimbă singur
+  doar dacă cel scris nu-l cuprinde;
 - **Diametrul** (cel mult 100 mm), **Lungimea tăișului** (dacă o știi; la V și la gravare, cel puțin cât conul),
   **Tăișuri** (dacă le știi) și **T preferat** (1–999, numărul de pe portscule);
 - **Valorile de lucru**: **Turația** (rot/min), **Avansul** și **Plonjarea** (mm/min), **Pasul pe trecere** (mm) și
@@ -1353,8 +1357,8 @@ dată: una ștearsă nu revine singură. Cu biblioteca goală, **Adaugă frezele
 
 **Exportă…** salvează biblioteca în fișierul `frezele-mele.cvs2freze.json`, pe care îl aduci cu **Importă…** pe alt
 calculator. **Importă…** citește și un CSV (salvat, de exemplu, din Excel), cu un rând de antet și coloanele `nume`, `fel`
-(`plata`, `v`, `gravare`, `bila`, `toroidala`, `conica` sau `burghiu`), `diametru`, `unghi`, `varf`, `raza`, `numar` (T-ul), `turatie`, `avans`, `plonjare`, `pas`,
-`pas_lateral`, `tais`, `taisuri`, `nota` și `grup`, în orice ordine (`raza` doar la toroidală și conică). Doar `nume`, `fel` și `diametru` sunt necesare; fără celelalte,
+(`plata`, `v`, `gravare`, `bila`, `toroidala`, `conica`, `burghiu`, `rotunjire`, `ogee`, `ogee-roman` sau `panou`), `diametru`, `unghi`, `varf`, `raza`, `treapta`, `numar` (T-ul), `turatie`, `avans`, `plonjare`, `pas`,
+`pas_lateral`, `tais`, `taisuri`, `nota` și `grup`, în orice ordine (`raza` la toroidală, conică și profiluri, `treapta` la ogee-ul roman, `varf` la gravare și panou). Doar `nume`, `fel` și `diametru` sunt necesare; fără celelalte,
 T-ul e 1, turația 18 000, avansul 1 000, plonjarea 300, pasul cât raza (la freza plată) sau 1 mm, iar pasul lateral 40 %.
 Separatorul (`;`, `,` sau tab) se găsește singur; cu `;`, numerele pot avea virgula zecimală. Înainte de import alegi ce se
 întâmplă cu un nume care există deja: **Păstrează-le pe amândouă** (implicit; cea nouă primește „(2)”), **Înlocuiește** sau

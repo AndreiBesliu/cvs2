@@ -1362,23 +1362,27 @@ you type (at most 40 characters). Your groups come first in the list, by name; *
 all its bits (a name that already belongs to another group merges them, and an empty name puts them back under their kinds).
 The group travels with the bit in the file and in the account.
 
-**The catalogue**, below your bits (**Catalogue (119)**, folded at first), holds the common bits: flat from Ø1 to Ø19.05,
-surfacing from Ø19.05 to Ø50.8, V (30°–150°), engraving (10°–60°, with a 0.1–0.5 tip), ball, bull nose, tapered ball nose and
-drills, with their sizes in millimetres and in inches (the note “1/4"”). Their working values are starting values, from the diameter, to check on your material. A
+**The catalogue**, below your bits (**Catalogue (149)**, folded at first), holds the common bits: flat from Ø1 to Ø19.05,
+surfacing from Ø19.05 to Ø50.8, V (30°–150°), engraving (10°–60°, with a 0.1–0.5 tip), ball, bull nose, tapered ball nose,
+drills, roundovers, ogees, Roman ogees and raised panels, with their sizes in millimetres and in inches (the note “1/4"”). Their working values are starting values, from the diameter, to check on your material. A
 catalogue bit shows its details; **Add to my bits** copies it to the library, with the first free T, while **Add all**, next to
 a group, and **Add everything shown**, next to the title (after the search and the filter), add several at once. A bit you
-already have (same kind, diameter, angle and tip) is not added twice: the details say **Already in my bits.**
+already have (same kind, diameter, angle, tip, radius and fillet) is not added twice: the details say **Already in my bits.**
 
-**Ball, bull nose, tapered and drill bits** sit in your library and in the catalogue, marked **coming to projects**: in the
-Cutting section you can pick them once the app can cut them. Until then, you keep them together with the others.
+**Ball, bull nose, tapered and drill bits and the profiles** (roundover, ogee, Roman ogee, raised panel) sit in your library
+and in the catalogue, marked **coming to projects**: in the Cutting section you can pick them once the app can cut them.
+Until then, you keep them together with the others. A veining (core box) bit is a **Ball**.
 
 **New bit** opens the editor, with the fields:
 - **Name**: left empty, the bit gets the name proposed from its kind and diameter (“Flat Ø6”, “V60 Ø6”, “Engraving 30° tip
   0.2 Ø3.175”). Two bits cannot share a name (case does not matter);
 - **Kind**: **Flat**, **V** (with the **Included angle**, between 1° and 179°), **Engraving** (a V bit with a **Flat tip**,
   smaller than the diameter), **Ball**, **Bull nose** (with the **Corner radius**), **Tapered** (with a round tip: the
-  **Included angle** and the **Tip radius**) or **Drill** (with the **Point angle**, usually 118°); a radius is above 0 and
-  below half the diameter;
+  **Included angle** and the **Tip radius**), **Drill** (with the **Point angle**, usually 118°), **Roundover** (with the
+  **Roundover radius**), **Ogee** (two arcs of the same radius, the **Arc radius**, below a quarter of the diameter),
+  **Roman ogee** (the ogee with a **Fillet** at the bottom and the top) or **Raised panel** (the **Flat bottom**, the
+  **Bevel**, from the panel face, below 90°, and, if it has one, the **Cove radius**); otherwise a radius is above 0 and
+  below half the diameter. For a profile, the diameter changes by itself only if the one you wrote cannot hold it;
 - **Diameter** (at most 100 mm), **Cutting length** (if you know it; for V and engraving bits, at least the cone),
   **Flutes** (if you know them) and **Preferred T** (1–999, the number on the tool holder);
 - **Working values**: **Spindle speed** (rpm), **Feed** and **Plunge** (mm/min), **Step-down** (mm) and **Stepover** (% of
@@ -1399,8 +1403,8 @@ missing ones.
 
 **Export…** saves the library to the file `frezele-mele.cvs2freze.json`, which you bring in with **Import…** on another
 computer. **Import…** also reads a CSV (saved from Excel, for example) with a header row and the columns `nume`, `fel`
-(`plata`, `v`, `gravare`, `bila`, `toroidala`, `conica` or `burghiu`), `diametru`, `unghi`, `varf`, `raza`, `numar` (the T), `turatie`, `avans`, `plonjare`, `pas`,
-`pas_lateral`, `tais`, `taisuri`, `nota` and `grup`, in any order (`raza` only for bull nose and tapered bits). Only `nume`, `fel` and `diametru` are required; without the others,
+(`plata`, `v`, `gravare`, `bila`, `toroidala`, `conica`, `burghiu`, `rotunjire`, `ogee`, `ogee-roman` or `panou`), `diametru`, `unghi`, `varf`, `raza`, `treapta`, `numar` (the T), `turatie`, `avans`, `plonjare`, `pas`,
+`pas_lateral`, `tais`, `taisuri`, `nota` and `grup`, in any order (`raza` for bull nose, tapered and profile bits, `treapta` for the Roman ogee, `varf` for engraving and raised panel bits). Only `nume`, `fel` and `diametru` are required; without the others,
 the T is 1, the spindle speed 18,000, the feed 1,000, the plunge 300, the step-down half the diameter (for a flat bit) or
 1 mm, and the stepover 40 %. The separator (`;`, `,` or tab) is found on its own; with `;`, numbers may use a decimal comma.
 Before importing, you choose what happens to a name that already exists: **Keep both** (the default; the new one gets

@@ -13588,6 +13588,20 @@ catalogul). **Started:** 24.11, 14:42.
 - **Mărimea:** pornirea neschimbată (110,2 kB; cu ușa 114,8, cu Atelierul 115,1 / 120), totalul 822,6 → 823,8 / 900. Nimic
   pe server (frezele stau în cont ca text JSON); documentul nu se schimbă. **Completed:** 24.11, 15:55.
 
+## 2026-11-24 — 16.A↑h-5: profilurile parametrice în bibliotecă și în catalog (Model: Claude Opus 5.5)
+
+**Prompt:** „continua cu 16.A↑h-5” (felia despărțită din 16.A↑h-4, ADR 0302 §7). **Started:** 24.11, 16:32.
+
+- **Felia** (`5018701c`): rotunjirea, ogee-ul, ogee-ul roman (câmpul nou `treapta`) și panoul ridicat (fundul plat, teșitura,
+  scobitura opțională), cu marginile, capătul pe hârtie și silueta; canelura e o bilă. CSV-ul (felurile și în engleză, coloana
+  `treapta`), catalogul (149), fereastra (diametrul schimbat doar dacă nu cuprinde profilul, etichetele și motivele pe fel),
+  manualul (ro, en). Toate „în curând în proiect”.
+- **Probele** (întâi): unitare noi 3, în Edge 1 (și două extinse). **Otrăvurile** (`test/otravuri/16.A-h5.py`): 29 / 29; F11
+  scăpase la prima trecere (proba citirii avea doar ogee-ul roman, pe care judecata îl prindea oricum).
+- **Mărimea:** pornirea neschimbată (110,2 kB; cu ușa 114,9, cu Atelierul 115,2 / 120), totalul 834,6 → 835,7 / 900 (față de
+  `88b048aa`). Nimic pe server; documentul nu se schimbă. 16.A↑h-3 și 16.A↑h-4: raportate sesiunii principale (`88b048aa`).
+  **Completed:** 24.11, 17:00.
+
 ## 2026-11-24 — 16.A↑a-2: frezele standard, puse singure în bibliotecă (Model: Claude Opus 5.5)
 
 **Prompt:** „sa ai in vedere ca biblioteca de freze trebuie sa fie populata cu freze default standard.” (owner-ul, după

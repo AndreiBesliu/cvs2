@@ -2,15 +2,15 @@
  * „Pune în frezele mele” din catalog (ADR 0302 §1, felia 16.A↑h-3), fără datele catalogului: depozitul bibliotecii (comun
  * ferestrei și panoului Tăierea) îl folosește, iar catalogul însuși (`catalogFreze.ts`) rămâne doar în bucata ferestrei.
  */
-import { areRaza, areUnghi, cuFreza, MARGINI_FREZA, numeLiber, type Freza, type FrezaFaraNume, type FrezaSalvata } from './freza.ts';
+import { areRaza, areTreapta, areUnghi, areVarf, cuFreza, MARGINI_FREZA, numeLiber, type Freza, type FrezaFaraNume, type FrezaSalvata } from './freza.ts';
 
 const egal = (a: number | undefined, b: number | undefined): boolean => (a === undefined || b === undefined ? a === b : Math.abs(a - b) < 1e-9);
 
-/** Aceeași freză, după geometrie (felul, diametrul, unghiul, vârful, raza): numele și valorile de lucru nu contează. */
+/** Aceeași freză, după geometrie (felul, diametrul, unghiul, vârful, raza, treapta): numele și valorile de lucru nu contează. */
 export function aceeasiGeometrie(a: FrezaFaraNume, b: FrezaFaraNume): boolean {
   return a.fel === b.fel && egal(a.diametru, b.diametru)
-    && (!areUnghi(a.fel) || egal(a.unghi, b.unghi)) && (a.fel !== 'gravare' || egal(a.varf, b.varf))
-    && (!areRaza(a.fel) || egal(a.raza, b.raza));
+    && (!areUnghi(a.fel) || egal(a.unghi, b.unghi)) && (!areVarf(a.fel) || egal(a.varf, b.varf))
+    && (!areRaza(a.fel) || egal(a.raza, b.raza)) && (!areTreapta(a.fel) || egal(a.treapta, b.treapta));
 }
 
 /**
