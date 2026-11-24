@@ -72,5 +72,8 @@ SETURI = {
     'arce': [
         'test/unit/cam.degajari.arce.test.ts', 'test/unit/degajari.arce.oracol.test.ts', 'test/unit/degajari.arce.corpus.oracol.test.ts',
         'test/unit/cale.recenzie.test.ts', 'test/unit/cam.degajari.bucla.test.ts', 'test/unit/degajari.bucla.oracol.test.ts',
+        # Proba căilor netede din `cale.recenzie` stă din 24.11.2026 în patru fișiere: merg cu ea.
+        'test/unit/cale.recenzie.cubice.1.test.ts', 'test/unit/cale.recenzie.cubice.2.test.ts',
+        'test/unit/cale.recenzie.cubice.3.test.ts', 'test/unit/cale.recenzie.cubice.4.test.ts',
     ],
 }

@@ -14,6 +14,8 @@ export const TASTE: ReadonlyArray<readonly [tasta: string, actiune: string]> = [
   ['Ctrl+J', 'document.leaga-caile'],
   ['Delete', 'document.sterge-selectia'],
   ['Ctrl+K', 'vedere.paleta'],
+  // Setările (ADR 0330 §6), ca în alte programe.
+  ['Ctrl+,', 'vedere.setari'],
   ['Home', 'vedere.potriveste'],
   ['T', 'vedere.traseu'],
   // Foaia activă (ADR 0210 §1): fără Ctrl, fiindcă Ctrl + PgUp / PgDn schimbă filele browserului.

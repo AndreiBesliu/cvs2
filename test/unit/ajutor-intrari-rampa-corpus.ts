@@ -15,13 +15,13 @@
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { readdirSync } from 'node:fs';
 import { laDocument, poarta, type ContextPoarta } from '../oracles/poarta.ts';
 import { regiuneDinDocument } from '../oracles/regiune.ts';
 import { masoaraIntrariCuRampa } from '../oracles/intrari-rampa.ts';
 import { corpusIntrariRampa } from '../oracles/intrari-rampa.cazuri.ts';
 import { programulAplicatiei } from './ajutor-lipire.ts';
 import { AVANS_PLONJARE, SCHEMA, mesaje, puntiProgram } from './ajutor-intrari-rampa.ts';
+import { cazurilePartii as partea, cereImpartirea, cereMinimele } from './ajutor-parti.ts';
 
 /** În câte părți se împarte corpusul: tot atâtea fișiere de probă. */
 export const PARTI = 6;
@@ -64,8 +64,7 @@ export const MINIME: readonly Readonly<Record<Prag, number>>[] = [
 
 /** Cazurile unei părți (1 … PARTI): cele de pe pozițiile k cu k mod PARTI = parte − 1. */
 export function cazurilePartii<T>(corpus: readonly T[], parte: number, parti = PARTI): T[] {
-  if (!Number.isInteger(parte) || parte < 1 || parte > parti) throw new Error(`partea ${parte} din ${parti}`);
-  return corpus.filter((_, k) => k % parti === parte - 1);
+  return partea(corpus, parte, parti);
 }
 
 /** Lipirea pe o parte a corpusului: judecata fiecărui caz e cea a testului întreg, neschimbată. */
@@ -120,28 +119,13 @@ export async function lipesteParte(parte: number): Promise<Lipire> {
   };
 }
 
-/** Fișierele părților, cum stau pe disc lângă ajutor. */
-export function fisiereleCorpusului(): string[] {
-  return readdirSync(import.meta.dirname).filter((f) => /^intrari-rampa\.corpus\..*\.test\.ts$/.test(f)).sort();
-}
-
 /** Înregistrează proba unei părți (apelată din fișierul ei). */
 export function probaPartii(parte: number): void {
   if (parte === 1) {
     test('lipire, împărțirea corpusului 2.5b cu rampe: exact câte un fișier pe parte, părțile acoperă corpusul întreg, fiecare caz o dată, iar minimele pe părți nu coboară sub pragurile testului întreg', () => {
-      assert.deepEqual(fisiereleCorpusului(), Array.from({ length: PARTI }, (_, k) => `intrari-rampa.corpus.${k + 1}.oracol.test.ts`));
-      const corpus = corpusIntrariRampa().map((c, k) => `${k}: ${c.nume}`);
-      const parti = Array.from({ length: PARTI }, (_, k) => cazurilePartii(corpus, k + 1));
-      assert.equal(parti.reduce((s, p) => s + p.length, 0), corpus.length);
-      assert.deepEqual(parti.flat().sort(), [...corpus].sort());
-      assert.equal(new Set(parti.flat()).size, corpus.length);
-      assert.equal(MINIME.length, PARTI);
-      for (const prag of Object.keys(PRAGURI) as Prag[]) {
-        const suma = MINIME.reduce((s, m) => s + m[prag], 0);
-        assert.ok(suma >= PRAGURI[prag], `${prag}: suma minimelor ${suma} sub pragul ${PRAGURI[prag]}`);
-      }
-      assert.throws(() => cazurilePartii(corpus, 0));
-      assert.throws(() => cazurilePartii(corpus, PARTI + 1));
+      cereImpartirea(import.meta.dirname, /^intrari-rampa\.corpus\..*\.test\.ts$/, (n) => `intrari-rampa.corpus.${n}.oracol.test.ts`, PARTI,
+        corpusIntrariRampa().map((c, k) => `${k}: ${c.nume}`));
+      cereMinimele(PRAGURI, MINIME, PARTI);
     });
   }
   test(`lipire: corpusul 2.5b cu rampe la întâmplare, partea ${parte} din ${PARTI} (intrări 0,5–20, rampe 1–30; foi de 3–18 mm, toate colțurile, ambele Z0, toate laturile, ambele sensuri, urechi): orice program trece 1, 2, 3, 5, 9–12; un refuz neprezis e unul de dinainte; punțile urechilor, judecate`, { timeout: 600_000 }, async () => {

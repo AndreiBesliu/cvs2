@@ -11,6 +11,9 @@
 # verde. Alt număr de felii doar ar fi mutat din nou zarul; limita rămâne o pază împotriva unui test agățat.
 # Tot pe 24.11, la cuvântul owner-ului, oracolul acela a fost împărțit în șase fișiere, pe părți ale corpusului
 # (`intrari-rampa.corpus.<n>.oracol.test.ts`, 30–63 s fiecare); limita de 15 minute rămâne, ca pază.
+# După ea, felia cea mai lungă ținea tot 9 min 20 s, din alte două teste dintr-un singur test: și ele au fost împărțite în
+# câte patru fișiere (`cale.recenzie.cubice.<n>.test.ts`, `degajari.poarta.<n>.oracol.test.ts`). Împărțirea și paza ei:
+# `test/unit/ajutor-parti.ts`.
 # `--test-shard` trebuie să stea ÎNAINTEA fișierelor: după ele, Node îl ignoră pe tăcute (măsurat pe 10.10).
 name: rapid
 
