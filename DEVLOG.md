@@ -12228,6 +12228,48 @@ admin cat mai multe setari”).
 - **Documentele:** ADR 0262 (implementarea), fișa etapei 3 (`3.Ah`), registrul otrăvurilor, traducerile, nota liniei.
   **Completed:** 23.11 20:35.
 
+## 2026-11-23 — Felia A.8c: dialogurile, clicurile fine, derularea și zoom-ul în utilizarea aplicației (ADR 0262)
+
+**Prompt:** același „am raspuns” (7a: A.8–A.11 acum), după A.8b.
+**Started:** 23.11 20:40.
+
+- **Despărțirea:** calculele lungi, mașina și imprimanta vin pe drumurile lor (workerul CAM, senderul, driverul), nu din
+  pagină: trec în A.8d, scrisă în tabelul feliilor din ADR.
+- **Codul (`27bbd878`, `544adce5`, `2a2f1f96`):** felurile noi în lista albă (`clic`, `derulare`, `zoom`); catalogul controalelor scos din
+  sursă (`scripts/catalog-controale.ts` → `src/app/catalogControale.ts`, 565 de nume) și numele unui control
+  (`numeControl.ts`); ce se prinde din pagină (`utilizareDom.ts`, în bucata înregistratorului): clicul, rotița, dialogurile, cu
+  „gata” după o acțiune reușită sau după butonul principal; numărarea pe cheie și pe pauză (600 ms pentru gesturi); comutatorul
+  clicurilor fine. Nota de confidențialitate, în ambele limbi.
+- **Pe drum:** la otrăvuri, clicul pe un buton al registrului (sau pe o unealtă) ieșea de două ori, clicul și acțiunea, iar
+  alternanța lor rupea numărarea repetărilor: acum pleacă doar acțiunea și unealta, cu sursa lor.
+- **Probele:** 7 unitare noi, 1 a serverului, 1 e2e nouă pe emulatoare, iar proba lotului unui client cere zoom-ul, clicurile
+  și dialogurile (exportul părăsit și făcut, fereastra contului după intrare). **Otrăvurile:** 32 / 33; E11 (captura rotiței)
+  echivalentă azi. **Mărimea:** pornirea neschimbată (109,2); totalul 774,3 → 778,2 / 800.
+- **Documentele:** ADR 0262 (implementarea, A.8d), fișa etapei 3 (`3.Ai`), registrul otrăvurilor, traducerile, nota liniei.
+  **Completed:** 23.11 21:40.
+
+## 2026-11-23 — Felia A.8d: calculele lungi, mașina și imprimanta în utilizarea aplicației (ADR 0262)
+
+**Prompt:** același „am raspuns” (7a: A.8–A.11 acum), după A.8c.
+**Started:** 23.11 22:00.
+
+- **Codul (`8b31c5b6`, `31a94dd5`):** felurile noi în lista albă (`calcul`, `masina`, `imprimanta`), cu treptele duratei și ale
+  mărimii (`TREPTE_MS`, `TREPTE_MARIME`); observatorul bazinului (`src/jobs/observatorCalcul.ts`), pus din pornire; citirea
+  importului în `ImportConectat.tsx`; mașina din stările sesiunii (`utilizareMasina.ts`, prin indicatorul lucrării), imprimanta
+  din clipele ferestrei (`utilizareImprimanta.ts`, prin evenimentele notificărilor); treptele și lista albă în înregistrator.
+  Nota de confidențialitate, în ambele limbi.
+- **Pe drum:** numărarea formelor arunca pe un document stricat, înaintea workerului (`cam.bazin.test.ts` a căzut): acum o
+  numărare căzută lasă evenimentul fără forme, iar calculul își spune singur refuzul.
+- **PR-ul `AndreiBesliu/cvs2#8` unit de owner** (A.8a, A.8b, din `55d26b81`), cât lucram: `main` (`b1797933`, cu biblioteca
+  de freze și plafonul de 900 kB) adus în ramură printr-o unire (ciocnirile doar în tabelele fișei și ale otrăvurilor, rândurile
+  păstrate de ambele părți), cu catalogul controalelor scris din nou; o ramură refăcută din `main` ar fi cerut un push forțat,
+  refuzat. Porțile complete ale lui A.8c, pe `d5b35050`, verzi: unitare 9 996 / 0, e2e 628 / 628, funcțiile 116 / 116, paginile
+  46 / 46.
+- **Probele:** 6 unitare noi, 1 a serverului, 2 e2e noi pe emulatoare (importul, traseul, exportul și mașina simulată;
+  imprimanta falsă). **Otrăvurile:** 36 / 36. **Mărimea:** pornirea neschimbată (109,4); totalul 793,8 → 799,6 / 900, cu A.8c.
+- **Documentele:** ADR 0262 (implementarea), fișa etapei 3 (`3.Aj`), registrul otrăvurilor, traducerile, nota liniei.
+  **Completed:** 23.11 23:55.
+
 ## 2026-11-23 — Sesiunea principală în cloud: a șasea unire (A.6, Roadmap, Documentație și Setări); linia frezelor, pornită (Model: Claude Fable 5.2)
 
 **Prompt:** același brief de predare al sesiunii principale („unește ce se poate”), la raportul liniei adminului (PR-ul

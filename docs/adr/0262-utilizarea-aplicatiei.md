@@ -112,12 +112,13 @@ foile, extensiile) trec prin el, iar barele, tastele, paleta și meniurile ajung
 | --- | --- |
 | A.8a | Contractul evenimentelor (lista albă) și setările (`shared/utilizare.ts`), callable-ul `utilizare` (lotul, plafoanele pe cont, setările owner-ului cu auditul), colecția cu TTL, regulile, secțiunea „Utilizarea aplicației” din Setări, cu istoricul. |
 | A.8b | Înregistratorul din client (registrul, ferestrele, unealta, sesiunea; inelul pașilor, coada), trimiterea în loturi, fraza din nota de confidențialitate. |
-| A.8c | Dialogurile, clicurile fine (catalogul numelor din sursă), derularea și zoom-ul, calculele lungi, mașina și imprimanta. |
+| A.8c | Dialogurile, clicurile fine (catalogul numelor din sursă), derularea și zoom-ul. |
+| A.8d | Calculele lungi (durata, mărimile în trepte), mașina și imprimanta. |
 | A.9 | Jobul de noapte (sumele zilei) și fila Utilizare: perioada, cifrele, uneltele, ce nu se folosește, frecările, duratele. |
 | A.10 | Fluxurile: secvențele cele mai dese și pâlnia drumului principal. |
 | A.11 | Troubleshooting: pașii dinaintea unei erori (în raportul ei, în Erori), cronologia unui om (Utilizatori, Tichete) și disocierea unui cont. |
 
-Estimarea: ~6 felii. A.7 (telefonul) vine după A.11 (întrebarea 7, a).
+Estimarea: ~7 felii (A.8c s-a despărțit în A.8c și A.8d pe 23.11). A.7 (telefonul) vine după A.11 (întrebarea 7, a).
 
 ## Implementarea
 
@@ -142,6 +143,44 @@ Estimarea: ~6 felii. A.7 (telefonul) vine după A.11 (întrebarea 7, a).
 
   Un lot gol întreabă setările cât colectarea e oprită (o dată, la pornirea pompei, după 5 s); serverul nu-l scrie. Un lot al
   altui cont, rămas în același browser, se scoate fără să plece; un cont fără drept golește coada; fără token, coada așteaptă.
+- **A.8c** (23.11, `3.Ai`): ce se prinde din pagină stă în bucata înregistratorului (`src/app/utilizareDom.ts`), nu în pornire:
+  - **clicul** pe un control, din faza de captură, cu numele lui (`src/app/numeControl.ts`): primul atribut de nume
+    (`data-actiune`, `data-unealta`, `data-testid`, `data-buton`, `data-camp`… până la `id` și `aria-labelledby`) cu o valoare
+    din catalogul scos din sursă, și zona gestului;
+  - **rotița**: zoom pe pânză (și pe straturile ei, `.panza-cutie`), derulare în rest; treptele unui gest, fără o pauză mai
+    lungă de 600 ms între ele, se numără într-un singur eveniment;
+  - **dialogurile** (tot ce are `role="dialog"`, văzute cu un `MutationObserver`): deschis, apoi „gata” dacă între timp a
+    reușit o acțiune a registrului sau s-a apăsat butonul principal (`.principal`, `type="submit"`), altfel „renunțat”.
+
+  Catalogul (`scripts/catalog-controale.ts` scrie `src/app/catalogControale.ts`: 565 de nume, ~3 kB gzip) are doar valorile
+  scrise de mână ale atributelor de nume, de pe controale și ferestre, fără `src/admin/`. **Un atribut de nume nou, scris de
+  mână pe un control, cere `node scripts/catalog-controale.ts --scrie`** (altfel cade `test/unit/utilizare.catalog.test.ts`, din
+  poarta rapidă). Clicurile, derularea și zoom-ul urmează comutatorul „clicuri” din Setări; dialogurile intră mereu. Trei abateri:
+  - **fără „cifrele scoase”** (§1): o valoare calculată (`data-testid={…}`, un nume de foaie, de font) nu pleacă deloc, nici cu
+    cifrele înlocuite; pleacă doar numele scrise în sursă;
+  - **un clic pe un buton al registrului sau pe o unealtă nu pleacă**: acțiunea și unealta lui se înregistrează deja, cu sursa;
+    două evenimente pe un clic ar fi rupt și numărarea repetărilor (clic, acțiune, clic, acțiune);
+  - **calculele lungi, mașina și imprimanta trec în A.8d**: vin pe drumurile lor (workerul CAM, senderul, driverul imprimantei),
+    nu din pagină.
+- **A.8d** (23.11, `3.Aj`): trei feluri noi în lista albă, fiecare cu câmpurile lui și doar acolo unde au sens:
+  - **`calcul`**: calculele bazinului CAM (`export`, `traseu`, `simulare`, `potrivire`, `timp`, `verificare`, `reparare`,
+    `taiere`, `panouri`, `conversie`, `legare`) și citirea importului (`import`); durata în trepte (`TREPTE_MS`: marginea de
+    sus, de la 0,1 s la peste 5 minute), cum s-a încheiat (`ok`, `eroare`, `anulat`), formele documentului la calculele CAM și
+    octeții și formatul fișierului la import, tot în trepte (`TREPTE_MARIME`); niciun nume și nicio valoare exactă;
+  - **`masina`**: legată (cu felul legăturii: serial, rețea, simulată), lucrarea pornită, pusă pe pauză, reluată, oprită de
+    program, anulată de om, terminată, întreruptă, codurile controlerului (eroarea și alarma cu numărul lor, blocarea) și
+    deconectată; fără G-code, adrese sau poziții;
+  - **`imprimanta`**: legată, lucrarea pornită aici, evenimentele imprimării (ADR 0194 §A: finalul, oprirea, pauzele, lipsa
+    filamentului, eroarea cu cheia ei, pana de curent, legătura pierdută, primul strat) și deconectată; fără fișiere, adrese
+    sau temperaturi.
+
+  Bazinul spune fiecare calcul unui observator (`src/jobs/observatorCalcul.ts`; bazinul nu importă interfața), pus din
+  pornire; un ascultător care aruncă și un document stricat nu schimbă calculul. Mașina și imprimanta se citesc din stările
+  lor la rând, pure (`src/app/utilizareMasina.ts`, prin indicatorul lucrării; `src/app/utilizareImprimanta.ts`, prin
+  evenimentele notificărilor, toate, oricare ar fi setările lor). Valorile vin brute; înregistratorul face treptele, lasă
+  deoparte un cod din afara marginilor și trece evenimentul prin lista albă, ca serverul. Două alegeri: o lucrare a
+  imprimantei găsită în curs la legare nu e „pornită” (a pornit-o altcineva, altundeva), iar o legătură pierdută care revine
+  nu e o legare nouă.
 
 ## Probele
 

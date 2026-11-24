@@ -2,7 +2,7 @@
 
 <!-- Adusă din memoria sesiunii principale pe 23.11.2026 (mutarea în cloud). De aici înainte o ține la zi linia, pe ramura ei, odată cu feliile. -->
 
-_CNCVS2, ADR 0260: pagina /admin reproiectată; A.1–A.6 unite în main (A.6: 4497d639); ADR 0262 (utilizarea aplicației) acceptat pe 23.11; A.8a și A.8b GATA DE UNIT din 23.11 (porțile verzi pe 09966989; PR-ul AndreiBesliu/cvs2#8; la unire se publică și serverul: funcția utilizare, regulile, indexurile); apoi A.8c, A.9–A.11, apoi A.7_
+_CNCVS2, ADR 0260: pagina /admin reproiectată; A.1–A.6 unite în main (A.6: 4497d639); ADR 0262 (utilizarea aplicației) acceptat pe 23.11; A.8a și A.8b unite în main pe 23.11 (PR-ul AndreiBesliu/cvs2#8, din 55d26b81); A.8c și A.8d gata pe ramură, cu main (b1797933) adus, în CI (completul pe ba1b4b0c), PR-ul AndreiBesliu/cvs2#13; la unire se publică și funcția utilizare (contractul nou); apoi A.9–A.11, apoi A.7_
 
 Linia adminului din [sesiunea principală](principala.md): ADR 0260 (intervalul 0260–0269), acceptat pe 13.11.2026 cu ideile 51–62 de pe
 tabla „Harta schițelor”. Owner-ul a cerut „vreau sa faci design si pentru admin”, iar la idei a răspuns „Da la toate”
@@ -47,6 +47,21 @@ tabla „Harta schițelor”. Owner-ul a cerut „vreau sa faci design si pentru
   `localStorage`. Pornirea 109,2 kB (cu ușa 113,7, cu Atelierul 114,0 / 115: **sub 1 kB liber**). Otrăvurile 40 / 40.
   **Regula `fara-cicluri` numără și importurile doar de tipuri:** după ce împarți un modul, `npm run importuri` (sau tot
   `npm run rapid`) înainte de push; tipurile comune ale utilizării stau în `utilizareTipuri.ts`.
+- **A.8c (dialogurile, clicurile fine, derularea, zoom-ul) GATA pe ramură din 23.11** (`27bbd878`, `544adce5`, `2a2f1f96`;
+  `3.Ai`): ce se prinde din pagină în `utilizareDom.ts` (bucata înregistratorului); numele unui control doar din catalogul scos
+  din sursă (**un atribut de nume nou, scris de mână pe un control, cere `node scripts/catalog-controale.ts --scrie`**, altfel
+  cade `utilizare.catalog.test.ts`; la o unire cu ciocnire în `catalogControale.ts`, se scrie din nou, nu se rezolvă de mână);
+  un clic pe un buton al registrului sau pe o unealtă nu pleacă (acțiunea și unealta lui au deja evenimentul). Calculele lungi,
+  mașina și imprimanta: A.8d. Pornirea neschimbată; totalul 774,3 → 778,2 / 800. Otrăvurile 32 / 33 (E11 echivalentă).
+- **A.8d (calculele lungi, mașina, imprimanta) GATA pe ramură din 23.11** (`8b31c5b6`, `31a94dd5`; `3.Aj`): felurile `calcul`,
+  `masina`, `imprimanta`, cu durata și mărimile în trepte; observatorul bazinului (`src/jobs/observatorCalcul.ts`, pus din
+  `main.tsx`: **bazinul nu importă interfața**); mașina și imprimanta din stările la rând (`utilizareMasina.ts`,
+  `utilizareImprimanta.ts`), câte un modul pe bucată (**un modul comun celor două ferestre ar scoate o bucată nouă**). Utilizarea
+  nu schimbă un calcul (`formele` prinde un document stricat). Otrăvurile 36 / 36. Totalul 793,8 → 799,6 / 900 cu A.8c.
+- **După unirea PR-ului** (A.8a–A.8b, de owner, pe 23.11, cât lucram la A.8c): `main` adus în ramură printr-o unire obișnuită
+  (**un push forțat al unei ramuri refăcute e refuzat de permisiuni**; ciocnirile doar în tabele), apoi catalogul controalelor
+  scris din nou și **funcțiile compilate din nou** (`npm --prefix functions run compileaza`: probele pe emulatoare folosesc `functions/lib`, iar un contract nou în
+  `shared/` fără compilare face serverul să arunce felurile noi).
 - **Întrebarea la owner cu schiță** (ca linia planșelor): o pagină privată cu schițele de încercat și formularul, răspunsurile
   în baza ei (`raspunsuri`, scrise doar de owner); pentru 0261: <https://claude.ai/artifact/DhLTbJiBTWGdgjobiDcJb2>.
 - **Felia rămasă din ADR 0260:** A.7 telefonul (bara de jos, meniul ☰, tichetul cu răspunsul), doar la cuvântul
@@ -59,7 +74,8 @@ tabla „Harta schițelor”. Owner-ul a cerut „vreau sa faci design si pentru
   A.8c), 4a, 5a, 6a, 7a (A.8–A.11 întâi, apoi A.7), cu nota „vreau sa pot configura eu din admin cat mai multe setari”
   (`setari/utilizare`, ADR 0262 §8). **Juridic:** legate de cont, evenimentele sunt date personale (GDPR); de verificat
   înaintea live-ului, spus owner-ului o dată, odată cu acceptarea. Feliile: A.8a (contractul, callable-ul, setările), A.8b
-  (înregistratorul din client), A.8c (clicurile fine), A.9 (jobul și fila), A.10 (fluxurile), A.11 (troubleshooting).
+  (înregistratorul din client), A.8c (clicurile fine, dialogurile), A.8d (calculele lungi, mașina, imprimanta), A.9 (jobul și
+  fila), A.10 (fluxurile), A.11 (troubleshooting).
 - **Alegeri față de schițe, de știut la A.7:** schimbarea planului a rămas un formular cu „Salvează planul” (nu butoane
   cu un clic); felul intrării unui om vine din `sursa` documentului (metodele legate mai târziu din fila Cont ar cere o
   citire din Auth, pe server, deci un ADR al liniei).

@@ -16,6 +16,7 @@ import { ErrorBoundary } from './ErrorBoundary.tsx';
 import { deschideProiect } from './proiectLocal.ts';
 import { creeazaJurnal, type Context, type Depozit } from './jurnalErori.ts';
 import { creeazaRaportor, descrieStare } from './raportorPornire.ts';
+import { observaCalculele } from '../jobs/observatorCalcul.ts';
 import { urmaresteGesturile, utilizarea } from './utilizare.ts';
 import './stil.css';
 
@@ -284,6 +285,9 @@ async function porneste(): Promise<void> {
   // înregistratorul (și trimiterea) vin în bucata lor, adusă fără să întârzie prima randare.
   urmaresteGesturile(window);
   observaRularile((id, r) => { utilizarea.actiune(id, r.ok ? 'ok' : r.motiv); });
+  observaCalculele(({ fel, ms, rez, forme }) => {
+    utilizarea.eveniment({ fel: 'calcul', id: fel, ms, rez, ...(forme === undefined ? {} : { forme }) });
+  });
   import('./utilizareLot.ts').then((m) => { m.pornesteColectarea({ config: config.ok ? config.config : null, depozit, versiune: VERSIUNE, limba }); })
     .catch((e: unknown) => { jurnal.adaugaLocala('promisiune', e); });
   // Proiectul din browser se deschide înainte de prima randare: o comandă dată între timp ar fi acoperită de el.

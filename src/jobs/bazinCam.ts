@@ -9,7 +9,7 @@
  * din `vite.config.ts`): CAM-ul stă doar în worker, nu și pe firul principal (poarta din `scripts/build-determinist.ts`).
  */
 import type { Montaj } from '../ir/montaj.ts';
-import type { Document } from '../model/document.ts';
+import { numara, type Document } from '../model/document.ts';
 import type { CerereReparare, OptiuniReparare, RezultatReparare, VerificarePanou } from '../model/reparare.ts';
 import type { CerereLegare, OptiuniLegare, RezultatLegare } from '../model/legareCai.ts';
 import type { CerereConversie, RezultatConversie } from '../model/conversie.ts';
@@ -20,6 +20,7 @@ import type { RaspunsCalcul } from './calculCam.ts';
 import type { ProgramImpachetat } from './impachetare.ts';
 import { transferabileProgram } from './impachetare.ts';
 import type { CerereCam, MesajCam, ParametriExport, RaspunsExport, RaspunsMesajCam, RaspunsPotrivire, RaspunsSimulare, RaspunsTraseu } from './protocolCam.ts';
+import { spuneCalculul } from './observatorCalcul.ts';
 import type { RezumatJob } from './rezumat.ts';
 
 /** Cât așteaptă bazinul un calcul CAM (bun-simț: pe 2 304 de forme, exportul întreg ține ~1,5 s pe firul principal). */
@@ -91,10 +92,33 @@ async function inProces(cerere: CerereCam, transfer: Transferable[], semnal: Abo
   return structuredClone(r.raspuns, { transfer: r.transfer });
 }
 
+/** Formele documentului, pentru utilizarea aplicației; un document stricat nu le are (calculul îl refuză el, cu motivul lui). */
+function formele(d: Document): number | undefined {
+  try {
+    return numara(d).elementeLume;
+  } catch {
+    return undefined;
+  }
+}
+
 async function calculeaza(cerere: CerereCam, transfer: Transferable[], o: OptiuniCam): Promise<unknown> {
   if (o.semnal?.aborted) throw new CalculAnulat();
-  if (typeof __CNCVS2_CONSTRUIT__ === 'undefined' && typeof Worker === 'undefined') return inProces(cerere, transfer, o.semnal);
-  return inWorker(cerere, transfer, o.semnal, o.termenMs ?? TERMEN_CAM_MS);
+  // Utilizarea aplicației (ADR 0262, A.8d): durata, rezultatul și formele documentului, numărate înainte de plecarea cererii.
+  const pornit = performance.now();
+  const forme = 'document' in cerere ? formele(cerere.document) : undefined;
+  const spune = (rez: 'ok' | 'eroare' | 'anulat'): void => {
+    spuneCalculul({ fel: cerere.fel, ms: performance.now() - pornit, rez, ...(forme === undefined ? {} : { forme }) });
+  };
+  try {
+    const r = typeof __CNCVS2_CONSTRUIT__ === 'undefined' && typeof Worker === 'undefined'
+      ? await inProces(cerere, transfer, o.semnal)
+      : await inWorker(cerere, transfer, o.semnal, o.termenMs ?? TERMEN_CAM_MS);
+    spune('ok');
+    return r;
+  } catch (e) {
+    spune(e instanceof CalculAnulat ? 'anulat' : 'eroare');
+    throw e;
+  }
 }
 
 /** Exportul (fereastra exportului): programul, fișierele, rezumatul și mutările simulării. */
