@@ -105,6 +105,11 @@ test('corpul e închis și are cotele de pe hârtie pe toată plaja (1–5 pași
     assert.equal(plin(p, [g.length * S - 0.5, G - 0.3, 0.3]), true, g.join(' '));
     assert.equal(plin(p, [g.length * S + 0.4, G / 2, G / 2]), false, g.join(' '));
     assert.equal(plin(p, [1, 1, G + 0.4]), false, g.join(' '));
+    // o singură bucată: la granița dintre pași (și de o parte, și de alta) e lemn, lângă muchie, departe de găuri
+    for (let k = 1; k < g.length; k++) for (const dx of [-0.3, -0.15, 0, 0.15, 0.3]) {
+      assert.equal(plin(p, [S * k - 0.1 + dx, 0.3, 0.3]), true, g.join(' ') + ' granița ' + k);
+      assert.equal(plin(p, [S * k - 0.1 + dx, G - 0.3, G - 0.3]), true, g.join(' ') + ' granița ' + k);
+    }
   }
 });
 
@@ -115,8 +120,11 @@ test('gaura de știft e a grinzii, pe fiecare axă: Ø din calibrare prin tot bl
       assert.equal(plin(p, punct(1, axa, t, 0, 0)), false, nume);
       assert.equal(plin(p, punct(1, axa, t, RG - 0.15, 0)), false, nume);
       assert.equal(plin(p, punct(1, axa, t, 0, RG - 0.15)), false, nume);
-      assert.equal(plin(p, punct(1, axa, t, RG + 0.15, 0)), true, nume);
-      assert.equal(plin(p, punct(1, axa, t, 0, -(RG + 0.15))), true, nume);
+      // în toate cele patru direcții: o gaură mutată din mijlocul pasului iese la una dintre ele
+      for (const [u, w] of [[1, 0], [-1, 0], [0, 1], [0, -1]] as const) {
+        assert.equal(plin(p, punct(1, axa, t, u * (RG - 0.15), w * (RG - 0.15))), false, nume);
+        assert.equal(plin(p, punct(1, axa, t, u * (RG + 0.15), w * (RG + 0.15))), true, nume);
+      }
     }
     // lamajul: la jumătatea adâncimii lui e gol până la raza lui; dincolo de el, lemn
     for (const t of [G / 2 - HL / 2, -(G / 2 - HL / 2)]) {

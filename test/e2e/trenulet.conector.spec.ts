@@ -63,6 +63,11 @@ test('configuratorul: lungimea, felul și axa fiecărui pas; „În lung” doar
   // două capete: amândoi pașii pot avea gaura în lung
   await expect(alegeri(page, 'at-co-axa-0')).toHaveText(['În sus', 'De-a latul', 'În lung']);
   await expect(alegeri(page, 'at-co-axa-1')).toHaveText(['În sus', 'De-a latul', 'În lung']);
+  // felul se schimbă, axa rămâne: știftul de-a latul devine ax de-a latul, și înapoi
+  await page.locator('#at-co-tip-1 [data-v="x"]').click();
+  await expect(nume(page)).toHaveText('Conector 1×2: ax sus, ax lateral');
+  await page.locator('#at-co-tip-1 [data-v="r"]').click();
+  await expect(nume(page)).toHaveText('Conector 1×2: ax sus, știft lateral');
   // lungimea 3: pasul nou e o gaură de știft în sus; cel din mijloc nu mai are „În lung”
   await page.locator('#at-co-lung [data-v="3"]').click();
   await expect(nume(page)).toHaveText('Conector 1×3: ax sus, știft lateral, știft sus');
