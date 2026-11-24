@@ -497,6 +497,7 @@ test('disocierea (ADR 0262, A.11e): cine administrează conturile desparte utili
   const dis = detaliu(page).locator('[data-util="disociere"]');
   // Întâi întreabă; „Renunță” nu face nimic.
   await dis.locator('[data-util="disociaza"]').click();
+  await expect(dis.locator('[data-util="confirma-disocierea"]')).toBeEnabled();
   await expect(dis).toContainText('Nu se poate desface din aplicație.');
   await dis.getByRole('button', { name: 'Renunță' }).click();
   await expect(dis.locator('[data-util="disociaza"]')).toBeVisible();
