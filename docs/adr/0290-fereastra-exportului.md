@@ -503,3 +503,27 @@ cele patru aranjamente, cu harta schițelor schimbată ca la „Cu canvas-ul ara
   două (intrările de R200 pe dreptunghi).
 - **Mărimea:** totalul 821,8 → 821,9 / 900 kB.
 - Urmează 28.8↑f-3: fișa operației ca componentă de sine stătătoare.
+
+## Implementarea 28.8↑f-3 (24.11)
+
+- **Fișa operației e o componentă a ei,** `FisaOperatie` (`src/ui/FisaOperatie.tsx`): titlul, locul în ordinea tăierii, grupurile
+  felului operației (desenul, explicația, câmpurile, greșelile) și greșelile fără grup. Tot ce îi trebuie vine prin `ContextFisa`:
+  - rândurile și operațiile, totalul, citirea doar;
+  - schimbarea, verdictul rândului (`BunRand`), greșelile și conflictul frezelor;
+  - trecerile, tăietura rândului, formatele, grosimea foii și supracursa;
+  - grupul (comun cu foaia și mașina) și frezele de rest.
+
+  Fereastra exportului o pune una sub alta. Clasicul (28.2↑) și Pas cu pas (28.4↑) o pot pune în panoul lor, cu starea lor,
+  fără să copieze fișa.
+- **Tipurile rândului și ajutoarele lui pure** (implicitele, verificările câmpurilor, banda, frezele de rest, sensurile) trec în
+  `src/ui/exportRand.ts`, fără React, ca fereastra și fișa să le ia fără ciclu (regula `fara-cicluri` numără și importurile de
+  tipuri). Tipurile exportului (`OperatieExport`, `ValoriOperatie`, `CerereExport`, `StareExport`…) se iau de acolo: aplicația,
+  `valoriOperatii.ts` și două probe s-au mutat pe el.
+- **Nimic nu s-a schimbat pe ecran:** aceleași elemente și atribute. Poarta mutării au fost cele 47 de spec-uri e2e care deschid
+  exportul (296 / 296). Proba grupurilor (`export.grupuri.test.ts`) citește câmpurile din ambele surse. Catalogul controalelor
+  e neschimbat.
+- **Probele noi:** locul fiecărei fișe („locul N din M”), câmpul frezei marcat la conflict și adâncimea peste foaie („în masă”
+  cât ține supracursa, altfel „trece de supracursă”). Ultimele două au venit din otrăvurile care scăpaseră.
+- **Otrăvurile:** 7 / 7 (`test/otravuri/28.8f3.py`), pe legătura dintre fereastră și fișă; două scăpate întâi au întărit probele.
+- **Mărimea:** totalul 821,9 → 822,1 / 900 kB (granița noului modul); pornirea neschimbată.
+- **Cu f-3, felia 28.8↑f e încheiată, iar ADR 0290 are toate feliile (a–f).**

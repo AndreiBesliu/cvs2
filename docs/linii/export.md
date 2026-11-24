@@ -57,6 +57,9 @@ vreau ca ficare setare sa fie insotita de o ilustratie sugestiva, ca sa ajute us
   Otrăvurile 9 / 9. Urmează f-2 (Rezultatul pe grupuri) și f-3 (fișa operației ca componentă de sine stătătoare).
 - **24.11: 28.8↑f-2 gata** (Rezultatul pe grupuri: de văzut, fișierele, rezumatul, simularea; timpul și avertismentele în
   rândul listei), pe ramură; neunită. Otrăvurile 7 / 7. Urmează f-3.
+- **24.11: 28.8↑f-3 gata** (fișa operației ca componentă, `FisaOperatie` cu `ContextFisa`; tipurile și ajutoarele rândului în
+  `exportRand.ts`), pe ramură; neunită. Otrăvurile 7 / 7. **Linia are toate feliile ADR 0290 (a–f)**; unirea, la cuvântul
+  owner-ului.
 
 ## Ce s-a găsit (23.11)
 
@@ -123,6 +126,10 @@ vreau ca ficare setare sa fie insotita de o ilustratie sugestiva, ca sa ajute us
   afara ei sau a panoului fișelor, niciun text mai lat decât cutia lui; pe telefon, rândurile listei atinse, banda sub o
   cincime de ecran, fiecare element al ei cât ecranul; în densitatea mare, 48 px pe fiecare țintă. Un grup nou al fișei sau o
   alegere nouă trece prin ea dacă apare pe una din tăieturile ei; altfel, se adaugă acolo.
+- **Din 28.8↑f-3, fișa unei operații stă în `src/ui/FisaOperatie.tsx`** (câmpurile, desenele și cartonașele ei), iar foaia,
+  mașina, lista, Rezultatul și starea în `DialogExport.tsx`. Tipurile și ajutoarele pure ale rândului (`Rand`, `BunRand`,
+  implicitele, verificările) stau în `exportRand.ts`. Ce îi trebuie fișei nou intră în `ContextFisa`, nu ca import din
+  fereastră (ar face un ciclu). Proba grupurilor citește `data-camp` din ambele surse.
 - **Caseta explicației își ține înălțimea** (`rezervaExplicatii`): un text nou mai lung (un `title` nou în grup) e măsurat singur.
   O probă care compară poziții după un focus le măsoară în conținutul panoului (`[data-fise]`, cu `scrollTop`): focusul poate
   derula panoul.

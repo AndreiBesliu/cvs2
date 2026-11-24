@@ -13042,3 +13042,17 @@ PR-ul `AndreiBesliu/cvs2#14` („De unit de sesiunea principală”).
 - **Manualul** (ro, en), ADR 0290 („Implementarea 28.8↑f-2”), fișa etapei 3, registrul otrăvurilor, nota liniei.
 
 **Completed:** 24.11, 11:40.
+
+## 2026-11-24 — Linia exportului: felia 28.8↑f-3, fișa operației ca componentă; linia are toate feliile (ADR 0290)
+
+**Prompt:** răspunsul owner-ului la ADR 0290, exact: „1a, 2a, 3a, 4a” (feliile acceptate; după 28.8↑f-2).
+**Started:** 24.11, 11:40.
+
+- **`FisaOperatie`** (`src/ui/FisaOperatie.tsx`) randează fișa unei operații din `ContextFisa`; tipurile și ajutoarele pure ale
+  rândului trec în `src/ui/exportRand.ts` (fără ciclu); importatorii tipurilor exportului s-au mutat pe el. Nimic schimbat pe
+  ecran: spec-urile e2e care deschid exportul, 296 / 296; rapidul local 10 123 / 0; totalul 822,1 / 900 kB.
+- **Probele noi:** locul fișei, câmpul frezei la conflict, adâncimea în masă (ultimele două, din otrăvurile scăpate).
+- **Otrăvurile:** `test/otravuri/28.8f3.py`, 7 / 7.
+- **ADR 0290** („Implementarea 28.8↑f-3”: feliile a–f gata), fișa etapei 3, registrul otrăvurilor, nota liniei.
+
+**Completed:** 24.11, 12:40.
