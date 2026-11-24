@@ -1,6 +1,7 @@
 import type { CatalogActiuni } from '../../../shared/documentatie.ts';
 import {
-  estimeaza, P_ACTIUNE, P_OAMENI, RE_ZI, schitaDin, schitaNoua, uneste, type Numere, type Schita, type SumaCalcul, type SumaDialog,
+  estimeaza, P_ACTIUNE, P_OAMENI, PASI_PALNIE, RE_ZI, schitaDin, schitaNoua, uneste, type Numere, type PasPalnie, type Schita, type SumaCalcul,
+  type SumaDialog, type SumaSecventa,
 } from '../../../shared/utilizareZi.ts';
 
 /**
@@ -37,6 +38,10 @@ export interface SumePerioada {
   coduriMasina: Numere;
   imprimanta: Numere;
   coduriImprimanta: Numere;
+  /** Secvențele (A.10), adunate pe zile: de câte ori și în câte sesiuni. */
+  secvente: Map<string, SumaSecventa>;
+  /** Pâlnia (A.10), pe pași: sesiunile adunate, oamenii uniți. */
+  palnie: { sesiuni: number; oameni: Schita }[];
 }
 
 const obiect = (x: unknown): x is Record<string, unknown> => typeof x === 'object' && x !== null && !Array.isArray(x);
@@ -61,6 +66,7 @@ export function sumePerioada(zile: readonly unknown[], alegere: AlegereSegment):
   const r: SumePerioada = {
     zile: 0, oameni: schitaNoua(P_OAMENI), sesiuni: 0, evenimente: 0, aruncate: 0, durataSesiune: {}, actiuni: new Map(), unelte: new Map(),
     ferestre: {}, dialoguri: new Map(), clicuri: {}, calcule: new Map(), masina: {}, coduriMasina: {}, imprimanta: {}, coduriImprimanta: {},
+    secvente: new Map(), palnie: PASI_PALNIE.map(() => ({ sesiuni: 0, oameni: schitaNoua(P_OAMENI) })),
   };
   for (const d of zile) {
     if (!obiect(d) || typeof d['zi'] !== 'string' || !RE_ZI.test(d['zi']) || !obiect(d['segmente'])) continue;
@@ -123,6 +129,25 @@ export function sumePerioada(zile: readonly unknown[], alegere: AlegereSegment):
       adunaNumere(r.coduriMasina, s['coduriMasina']);
       adunaNumere(r.imprimanta, s['imprimanta']);
       adunaNumere(r.coduriImprimanta, s['coduriImprimanta']);
+      if (obiect(s['secvente'])) {
+        for (const [k, x] of Object.entries(s['secvente'])) {
+          if (!obiect(x)) continue;
+          const y = r.secvente.get(k) ?? { n: 0, s: 0 };
+          y.n += numar(x['n']);
+          y.s += numar(x['s']);
+          r.secvente.set(k, y);
+        }
+      }
+      if (obiect(s['palnie'])) {
+        const palnie = s['palnie'];
+        PASI_PALNIE.forEach((pas, i) => {
+          const x = palnie[pas];
+          const y = r.palnie[i];
+          if (!obiect(x) || !y) return;
+          y.sesiuni += numar(x['sesiuni']);
+          y.oameni = unesteIn(y.oameni, x['oameni'], P_OAMENI);
+        });
+      }
     }
   }
   return r;
@@ -131,12 +156,19 @@ export function sumePerioada(zile: readonly unknown[], alegere: AlegereSegment):
 /** Câți oameni (aproximativ, rotunjit). */
 export const oameni = (s: Schita): number => Math.round(estimeaza(s));
 
-export interface Cifre { readonly oameni: number; readonly sesiuni: number; readonly exporturi: number; readonly refuzate: number }
-/** Cifrele de sus: oamenii activi, sesiunile, programele G-code exportate (calculele de export reușite), acțiunile refuzate. */
+export interface Cifre {
+  readonly oameni: number; readonly sesiuni: number; readonly durata: number | null; readonly exporturi: number; readonly refuzate: number;
+}
+/**
+ * Cifrele de sus: oamenii activi, sesiunile, durata unei sesiuni (mediana, ca treaptă în minute), programele G-code exportate
+ * (calculele de export reușite), acțiunile refuzate.
+ */
 export function cifre(p: SumePerioada): Cifre {
   let refuzate = 0;
   for (const a of p.actiuni.values()) refuzate += Math.max(0, a.n - a.ok);
-  return { oameni: oameni(p.oameni), sesiuni: p.sesiuni, exporturi: p.calcule.get('export')?.ok ?? 0, refuzate };
+  return {
+    oameni: oameni(p.oameni), sesiuni: p.sesiuni, durata: cuantila(p.durataSesiune, 0.5), exporturi: p.calcule.get('export')?.ok ?? 0, refuzate,
+  };
 }
 
 /** Sursele unui gest pornit din taste sau din paletă (scurtăturile); restul sunt butoanele (bara, panoul, meniul, pânza). */
@@ -204,4 +236,25 @@ export function durate(p: SumePerioada): RandDurata[] {
   return [...p.calcule].map(([id, c]) => ({
     id, n: c.ok + c.eroare + c.anulat, mediana: cuantila(c.ms, 0.5), lente: cuantila(c.ms, 0.95), erori: c.eroare, anulate: c.anulat,
   })).filter((r) => r.n > 0).sort((a, b) => b.n - a.n || (a.id < b.id ? -1 : 1));
+}
+
+export interface RandSecventa { readonly pasi: readonly string[]; readonly n: number; readonly s: number }
+/** Fluxurile: secvențele de `lungime` acțiuni din cele mai multe sesiuni, apoi cele mai dese. */
+export function secventeleDese(p: SumePerioada, lungime: number, k = 8): RandSecventa[] {
+  return [...p.secvente].map(([cheie, x]) => ({ cheie, pasi: cheie.split('>'), ...x })).filter((r) => r.pasi.length === lungime)
+    .sort((a, b) => b.s - a.s || b.n - a.n || (a.cheie < b.cheie ? -1 : 1)).slice(0, k).map(({ pasi, n, s }) => ({ pasi, n, s }));
+}
+
+export interface RandPas { readonly pas: PasPalnie; readonly sesiuni: number; readonly oameni: number; readonly seOpresc: number | null }
+/**
+ * Pâlnia: câte sesiuni ajung la fiecare pas (și câți oameni) și câte se opresc acolo (ajung la pas, dar nu la următorul; la
+ * ultimul pas, nimic). Pe sume adunate din zile, o sesiune care trece de miezul nopții se numără în fiecare zi a ei.
+ */
+export function palnie(p: SumePerioada): RandPas[] {
+  return PASI_PALNIE.map((pas, i) => {
+    const x = p.palnie[i];
+    const urm = p.palnie[i + 1];
+    const sesiuni = x?.sesiuni ?? 0;
+    return { pas, sesiuni, oameni: x ? oameni(x.oameni) : 0, seOpresc: urm ? Math.max(0, sesiuni - urm.sesiuni) : null };
+  });
 }
