@@ -143,6 +143,8 @@ test('ce nu se poate se îndreaptă și se spune: lungimea (3–16), înălțime
   assert.equal(arc({ lung: 'x', inalt: null }).avert.length, 0);
   assert.equal(amprentaPlasei(arc({ lung: 'x', inalt: null })), amprentaPlasei(arc()));
   assert.equal(Lm.arcCote({ lung: 5.6 }).lung, 6);
+  assert.equal(arc({ lung: 5.6, inalt: 1.4 }).avert.length, 0);
+  assert.equal(amprentaPlasei(arc({ lung: 5.6, inalt: 1.4 })), amprentaPlasei(arc({ lung: 6, inalt: 1 })));
 });
 
 test('aceeași cerere dă aceeași plasă', () => {

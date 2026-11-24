@@ -18,6 +18,12 @@
       ],
       "noutati": [
         {
+          "versiune": "18.27.0",
+          "data": "2026-11-25",
+          "ro": "Arcul, în fila „Cărămizi”: o cărămidă 1 × n cu o boltă dedesubt și știfturi pe toată lungimea, de la 1 × 3 la 1 × 16, înaltă de 1–4 cărămizi, cu bolta înaltă sau joasă.",
+          "en": "The arch, in the “Bricks” tab: a 1 × n brick with an arch underneath and studs along its whole length, from 1 × 3 to 1 × 16, 1–4 bricks tall, with a high or a low arch."
+        },
+        {
           "versiune": "18.26.0",
           "data": "2026-11-24",
           "ro": "Cremaliera, în fila „Roți”: o bară cu dinți care se prinde cu roțile dințate de aici, pe știfturi sau cu găuri de știft; îți spune unde stă axul roții și pune perechea în listă.",
@@ -106,8 +112,8 @@
           }
         }
       ],
-      "versiune": "18.26.0",
-      "continut": "4b4590a7713d038d99b1daa210d5abcbc31ca687988d91f17ff18e0eaef6e190"
+      "versiune": "18.27.0",
+      "continut": "e354841b14844c02b79aa5f4aed2aeb215b19780478f1025fb81905fbf98217f"
     }
   ]
 }

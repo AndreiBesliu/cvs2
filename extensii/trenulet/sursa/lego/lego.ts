@@ -479,7 +479,7 @@ var Lego = (function (glob: typeof globalThis) {
     const n = Math.round(Math.min(16, Math.max(3, Number.isFinite(lc) ? lc : 4))), c = Math.round(Math.min(4, Math.max(1, Number.isFinite(ic) ? ic : 1)));
     const joasa = d.bolta === "joasa", H = 3 * P.placa * c, xa = P.pas - 0.1, xb = P.pas * (n - 1) + 0.1, w = xb - xa;
     const maxim = Math.min(w / 2, H - 1.6), s = joasa ? maxim / 2 : maxim;
-    return { n, c, joasa, H, xa, xb, w, s, R: (w * w / 4 + s * s) / (2 * s), lungRea: Number.isFinite(lc) && n !== lc && n !== Math.round(lc), inaltRea: Number.isFinite(ic) && c !== ic && c !== Math.round(ic) };
+    return { n, c, joasa, H, xa, xb, w, s, R: (w * w / 4 + s * s) / (2 * s), lungRea: Number.isFinite(lc) && n !== Math.round(lc), inaltRea: Number.isFinite(ic) && c !== Math.round(ic) };
   }
   function arc(d: ArcDef): Corp {
     const e = ef(), q = arcCote(d), s = P.pas, tri: Tri[] = [], avert: string[] = [];
