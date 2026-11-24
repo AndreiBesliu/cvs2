@@ -1,7 +1,7 @@
 import { beforeEach, test } from 'node:test';
 import assert from 'node:assert/strict';
 import { getApps, initializeApp } from 'firebase-admin/app';
-import { getFirestore, type Timestamp } from 'firebase-admin/firestore';
+import { getFirestore, Timestamp } from 'firebase-admin/firestore';
 import { HttpsError } from 'firebase-functions/v2/https';
 import { oraFerestrei } from '../../shared/erori.ts';
 import {
@@ -216,11 +216,18 @@ test('cronologia unui om (A.11c): doar cu „Utilizare: sesiuni”; cele mai noi
   const p2 = await cron('ses', { uid: 'ana', pana: p1.loturi.at(-1)?.primit });
   assert.deepEqual(p2.loturi.map((l) => l.nr), [3, 2, 1]);
   assert.equal(p2.maiVechi, false);
-  assert.equal((await cron('own', { uid: 'ion' })).loturi.length, 1);
+  // Un lot scris altfel (o schemă veche, un eveniment stricat): evenimentul din afara listei de azi nu pleacă, numărat la aruncate.
+  await db.doc('utilizare/ionnnnnnnnnnnnn1-2').set({
+    schema: 1, uid: 'ion', sesiune: 'ionnnnnnnnnnnnn1', nr: 2, primit: Timestamp.fromMillis(T0 + 60_000), inceput: Timestamp.fromMillis(T0),
+    context: CONTEXT, evenimente: [ACTIUNE, { fel: 'actiune', t: 2, id: 'document.roteste', de: 'bara', rez: 'ok', geometrie: [1, 2] }], aruncate: 0,
+  });
+  const ion = await cron('own', { uid: 'ion' });
+  assert.deepEqual(ion.loturi.map((l) => [l.nr, l.evenimente.length, l.aruncate]), [[2, 1, 1], [1, 2, 0]]);
+  assert.ok(!JSON.stringify(ion).includes('geometrie'));
   assert.deepEqual((await cron('own', { uid: 'nimeni' })).loturi, []);
   // Auditul: cine, al cui, câte loturi (refuzurile nu scriu).
   const a = (await audit()).filter((x) => x['actiune'] === 'utilizare.cronologie');
   assert.deepEqual(a.map((x) => [x['cine'], x['tinta'], (x['dupa'] as Record<string, unknown>)['loturi']]), [
-    ['ses', 'utilizare/ana', 20], ['ses', 'utilizare/ana', 3], ['own', 'utilizare/ion', 1], ['own', 'utilizare/nimeni', 0],
+    ['ses', 'utilizare/ana', 20], ['ses', 'utilizare/ana', 3], ['own', 'utilizare/ion', 2], ['own', 'utilizare/nimeni', 0],
   ]);
 });

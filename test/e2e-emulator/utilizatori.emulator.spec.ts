@@ -444,6 +444,8 @@ test('activitatea unui om (ADR 0262, A.11c): doar cu „Utilizare: sesiuni”, c
   await lot('anaaaaaaaaaaaaa1', 1, Date.now() - 2 * ZI, [A(1_000, 'document.importa'), A(5_000, 'document.taie', 'motiv.nimic-ales')]);
   await lot('anaaaaaaaaaaaaa2', 1, Date.now() - 3_600_000, [A(2_000, 'document.rol'), { fel: 'unealta', t: 3_000, id: 'noduri', de: 'tasta' }]);
   await lot('anaaaaaaaaaaaaa2', 2, Date.now() - 3_000_000, [A(65_000, 'export.gcode')]);
+  // O sesiune veche, de 20 de loturi: cu ea, cronologia are două pagini.
+  for (let i = 1; i <= 20; i++) await lot('anaaaaaaaaaaaaa0', i, Date.now() - 5 * ZI + i * 60_000, [A(i * 1_000, 'document.roteste')]);
   await scrie(`roluri/${ACT}`, { nume: 'Activitate', permisiuni: ['conturi.citeste', 'utilizare.sesiuni'] });
   await deschide(page);
   await puneRolul(page, await intraCuGoogle(page), ACT);
@@ -453,8 +455,13 @@ test('activitatea unui om (ADR 0262, A.11c): doar cu „Utilizare: sesiuni”, c
   const act = detaliu(page).locator('[data-util="activitate"]');
   await expect(act.locator('[data-sesiune]')).toHaveCount(0);
   await act.locator('[data-util="arata-activitatea"]').click();
-  await expect(act.locator('[data-sesiune]')).toHaveCount(2, LENT);
+  // Prima pagină (20 de loturi): cele două sesiuni noi și 17 loturi ale celei vechi; „Mai vechi” aduce restul, fără dubluri.
+  await expect(act.locator('[data-sesiune]')).toHaveCount(3, LENT);
   await expect(act.locator('[data-sesiune]').first()).toHaveAttribute('data-sesiune', 'anaaaaaaaaaaaaa2');
+  await expect(act.locator('[data-sesiune="anaaaaaaaaaaaaa0"] summary')).toContainText('17 pași');
+  await act.locator('[data-util="mai-vechi"]').click();
+  await expect(act.locator('[data-sesiune="anaaaaaaaaaaaaa0"] summary')).toContainText('20 de pași', LENT);
+  await expect(act.locator('[data-sesiune]')).toHaveCount(3);
   await expect(act.locator('[data-sesiune]').first().locator('summary')).toContainText('versiunea ed4c30c777de · 3 pași · 1:03');
   await act.locator('[data-sesiune="anaaaaaaaaaaaaa2"] summary').click();
   await expect(act.locator('[data-sesiune="anaaaaaaaaaaaaa2"] li')).toHaveText([
