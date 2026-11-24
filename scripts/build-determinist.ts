@@ -25,7 +25,9 @@ import { cspPentru, hashuriInline } from './cspHtml.ts';
  *   înaintea primei randări la fiecare pornire (99,1 kB înainte de „loc în pachetul de pornire”); 100 kB până pe 28.10, 110 kB
  *   din 28.10 (ADR 0100: decizia owner-ului; fiecare bucată nouă la cerere își pune numele în lista de preîncărcare din pornire),
  *   115 kB din 13.11 (ADR 0252: decizia owner-ului, „Da, 115 ／ 800”; după unirea planșelor, pornirea cu ușa era 109,7 kB,
- *   iar aranjamentele cer alegerea și densitatea înaintea primei randări, ~1–1,5 kB);
+ *   iar aranjamentele cer alegerea și densitatea înaintea primei randări, ~1–1,5 kB), 120 kB din 24.11 (ADR 0145: decizia
+ *   owner-ului, „ok, ridica plafonul pornirii la 120 kB”; după lotul al paisprezecelea, pornirea cu ușa și cu Atelierul
+ *   era 114,7 kB, iar feliile următoare ale frezelor, exportului și aranjamentelor nu mai încăpeau în cei 0,3 kB rămași);
  * - totalul, cu bucățile încărcate la cerere și workerele; 330 kB din 25.10 (ADR 0075: totul rămâne în precache, ca
  *   aplicația să meargă întreagă offline), 400 kB din 28.10 (ADR 0096: decizia owner-ului; se descarcă în fundal, cu
  *   progresul în bara de jos, ADR 0097), 450 kB din 30.10 (ADR 0109: decizia owner-ului, „1”; workerul CAM are copia lui de
@@ -45,7 +47,7 @@ import { cspPentru, hashuriInline } from './cspHtml.ts';
  *   eroare. Din 3.2, Firebase-ul comun (aplicația, App Check, funcțiile: `conexiuneBaza-*`) e o bucată împărțită de admin
  *   și de raportor: adminul se măsoară cu tot ce aduce (închiderea lui), raportorul la fel, cu plafonul lui.
  */
-const PLAFON_PORNIRE_KB = 115;
+const PLAFON_PORNIRE_KB = 120;
 const PLAFON_TOTAL_KB = 900;
 const PLAFON_ADMIN_KB = 200;
 /**

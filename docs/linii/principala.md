@@ -143,8 +143,9 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
 
 ## Starea pe 24.11.2026, la prânz (după a paisprezecea unire din cloud)
 
-- **Pe test:** `df9ae539` (tot până la lotul al doisprezecelea: A.10 și A.11a; publicat pe 24.11 la 09:41, cu
-  serverul: `logClientError` și `agregaUtilizarea` la zi).
+- **Pe test:** `fafb95e7` (tot până la lotul al treisprezecelea: 25.8↑b; publicat pe 24.11 la 11:33). Lotul al
+  paisprezecelea (`356db9bd`: 3.Ts, A.11b–A.11e, 16.A↑b-1) e în `main` din 11:28, cu CI-ul și publicarea în lucru
+  (cu serverul: `utilizare`, `tichete`, regulile, două indexuri compuse pe `utilizare`).
 - **`main`, din cloud:** pe 23.11: 3.Tq (`0ae9c6c1`); 11.3↑e și A.4 (`ddaa7ead`); 3.Tr, unită de linia elicelor
   (`d262e57a`); 25.8↑a și A.5 (`1b46c955`), cu reparația probei extensiilor (`8287d66e`); 11.3↑f, unită de linia
   planșelor (`f4601938`); A.6 (`4497d639`); 3.Xh (`2d1e482c`) și 12.1↑e-3 cu 12.1↑e-4 (`03460cab`); A.8a cu A.8b
@@ -166,6 +167,8 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
     owner-ului, cu un brief scris de sesiunea principală și lipit de owner într-o sesiune cloud nouă;
   - **încheiate:** ancorele (6.V↑), raportările (15.B↑b), galeria (3.Tp, ADR 0281), probele instabile.
 - **La owner:**
+  - PR-urile rămase deschise după unire (`#15` elicele, `#16` frezele: ramurile și-au adus `main` peste commit-ul
+    unit, deci GitHub nu le-a închis): le închide owner-ul sau, la cuvântul lui, sesiunea principală;
   - „cine unește în `main`” (recomandarea: doar sesiunea principală; pe 23–24.11, biblioteca și frezele au scris întâi
     aici, iar felia era deja în lot: unirea a rămas aici);
   - fereastra exportului: unirea lui 28.8↑a acum sau după desene;
@@ -176,9 +179,10 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
     mai scurtă (fără al doilea complet pe `main` când codul e identic cu cel verificat; schimbă o regulă a porților),
     lista „ce e nou pe test, de încercat”, rezumatul pentru verificarea juridică, lista ramurilor unite de șters.
     Fără răspuns, niciuna nu pornește.
-- **Plafoanele:** totalul e 806,1 / 900 kB (ADR 0301, decizia owner-ului din noaptea de 23 spre 24.11). **Pornirea a
-  rămas 115 kB:** cu ușa 114,4, cu Atelierul 114,7 (după lotul al paisprezecelea), deci mai sunt 0,3 kB. O felie care
-  adaugă în pornire nu mai încape: cere întâi loc (o bucată mutată la cerere) sau decizia owner-ului.
+- **Plafoanele:** totalul e 806,1 / 900 kB (ADR 0301, decizia owner-ului din noaptea de 23 spre 24.11). **Pornirea e
+  120 kB din 24.11** (ADR 0145, „ok, ridica plafonul pornirii la 120 kB”, spus în sesiunea principală): cu ușa 114,4,
+  cu Atelierul 114,7, deci mai sunt ~5,3 kB. Regula feliilor rămâne: ce nu trebuie înaintea primei randări stă la
+  cerere, iar felia își spune în raport cât adaugă în pornire.
 - **Documentul e v27** (frezele, 16.A↑b-1): un câmp nou ia v28. O probă care citește documentul salvat cere versiunea
   curentă (`placute.spec.ts` a căzut cu `schema: 26` în completul liniei frezelor).
 - **De urmărit:** în panoul foii, la 1400 px, etichetele „Numele” și „Materialul” apar tăiate la o literă (văzut de

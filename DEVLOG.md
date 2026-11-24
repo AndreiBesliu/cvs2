@@ -12781,7 +12781,7 @@ continue, tu ce poti sa faci intre timp?”.
 
 **Prompt:** același brief de predare al sesiunii principale („unește ce se poate”), la raportul liniei trasării din
 PR-ul `AndreiBesliu/cvs2#14` („De unit de sesiunea principală”).
-**Started:** 24.11, 09:50. **Completed:** unirea în `main`, 24.11, 10:20; publicarea pe test, la rândul ei.
+**Started:** 24.11, 09:50. **Completed:** unirea în `main`, 24.11, 10:20; publicarea pe test, 24.11, 11:33.
 
 - **Înainte:** lotul al doisprezecelea pe test (`df9ae5397d8e`, 09:41, cu serverul); rândul publicării lui stătea pe
   `unire-2411d` (`791171d8`, doar documente) și intră în `main` cu lotul acesta.
@@ -12806,6 +12806,10 @@ PR-ul `AndreiBesliu/cvs2#14` („De unit de sesiunea principală”).
   verificat intră singură).
 - **La owner:** plafonul pornirii (după lotul următor rămân 0,3 kB), fereastra exportului, verificarea juridică a
   utilizării aplicației, „cine unește în `main`”, ADR 0232 (biblioteca), lista „ce pot face între timp”.
+- **Publicarea (`fafb95e7`):** rapidul și completul pe `main` verzi (completul, 59 de minute), `publica.yml` verde în
+  4 minute; adresa de test spune `fafb95e75707` (24.11, 11:33). `publica.yml` a pornit când `main` trecuse deja la
+  lotul al paisprezecelea și a construit sha-ul dat, cum trebuie. Proba de fum din container: versiunea publicată,
+  nicio eroare în consolă, toate fișierele de date răspund.
 
 ## 2026-11-24 — Sesiunea principală în cloud: a paisprezecea unire (3.Ts, ventilatorul cu carcasă; A.11b–A.11e, utilizarea aplicației; 16.A↑b-1, documentul v27) (Model: Claude Fable 5.2)
 
@@ -12836,3 +12840,19 @@ PR-ul `AndreiBesliu/cvs2#14` („De unit de sesiunea principală”).
   publicarea lui vine înaintea acestui lot (`publica.yml` construiește sha-ul dat).
 - **La owner:** plafonul pornirii (mai sunt 0,3 kB), fereastra exportului, verificarea juridică a utilizării
   aplicației, „cine unește în `main`”, ADR 0232 (biblioteca), lista „ce pot face între timp”.
+
+## 2026-11-24 — Sesiunea principală în cloud: plafonul pornirii 120 kB (ADR 0145) (Model: Claude Fable 5.2)
+
+**Prompt:** „ok, ridica plafonul pornirii la 120 kB”
+**Started:** 24.11, 11:45.
+
+- **De ce:** după lotul al paisprezecelea, pornirea e 109,9 kB, cu ușa 114,4 și cu Atelierul 114,7 / 115: 0,3 kB
+  rămași, cu felii ale frezelor, exportului și aranjamentelor la rând.
+- **Ce s-a schimbat:** `PLAFON_PORNIRE_KB = 120` în `scripts/build-determinist.ts` (cele trei măsuri ale porții stau
+  sub el: pornirea, cu ușa, cu ușa și cu aranjamentul ales); ADR 0145, rândul lui în indexul ADR, titlul tradus în
+  roadmap; decizia și rândul de stare în `CLAUDE.md`; plafoanele în `docs/linii/principala.md`.
+- **Numărul ADR-ului:** 0145, din golul 0145–0149 de lângă celelalte plafoane ale liniei principale (0143, 0144); liber
+  pe toate ramurile `origin/wip/*`.
+- **Verificat:** build-ul determinist spune „plafon 120” și „114.7 / 120”; traducerile, 990 de texte, 0 lipsă.
+- **Pe aceeași ramură (`unire-2411f`):** rândul publicării lotului al treisprezecelea și nota liniei trasării
+  (`e104204f`, PR-ul `AndreiBesliu/cvs2#18`), amândouă doar documente.
