@@ -11,6 +11,11 @@
  * (`frezeSincronizare.ts`): la deschidere, după fiecare schimbare și la revenirea rețelei. Bara de jos spune unde stă
  * biblioteca; un conflict (aceeași freză schimbată pe două calculatoare) cere alegerea omului, iar la prima deschidere cu
  * contul, frezele din acest browser se pot aduce în cont.
+ *
+ * Din 16.A↑h-1 (ADR 0302 §3), fereastra pornește ca listă: freza aleasă își arată în dreapta fișa, doar de citit (felul,
+ * silueta, geometria, valorile de lucru, nota), cu „Editează”, „Duplică”, „Șterge”; editorul („configuratorul”) se deschide la
+ * „Editează” și la „Freză nouă”, iar „Salvează” și „Renunță” întorc la fișă. Comutatorul „Listă / Configurator” (ținut în
+ * browser, `cncvs2.freze.vedere`) ține editorul mereu deschis, ca înainte de listă.
  */
 import { useEffect, useMemo, useRef, useState, type ChangeEvent, type KeyboardEvent, type ReactNode } from 'react';
 import '../i18n/freze.ts';
@@ -51,6 +56,24 @@ const MAXIM: Readonly<Partial<Record<CampFreza, number>>> = {
 
 const fara = (x: number | undefined, ro: boolean): string => (x === undefined || !Number.isFinite(x) ? '' : textNumar(x, ro));
 
+/** Vederea ferestrei (ADR 0302 §3): lista cu fișa doar de citit, sau editorul mereu deschis. */
+type Vedere = 'lista' | 'configurator';
+const CHEIE_VEDERE = 'cncvs2.freze.vedere';
+function vedereTinuta(): Vedere {
+  try {
+    return localStorage.getItem(CHEIE_VEDERE) === 'configurator' ? 'configurator' : 'lista';
+  } catch {
+    return 'lista';
+  }
+}
+function tineVedere(v: Vedere): void {
+  try {
+    localStorage.setItem(CHEIE_VEDERE, v);
+  } catch {
+    // Fără stocare (fereastră privată, date blocate): vederea ține doar cât e deschisă pagina.
+  }
+}
+
 
 /** Cel mai mic T pe care nicio freză a bibliotecii nu-l are (o freză nouă îl primește). */
 function tLiber(lista: readonly FrezaSalvata[]): number {
@@ -87,6 +110,7 @@ function ciornaNoua(lista: readonly FrezaSalvata[], ro: boolean): Ciorna {
 
 /** Silueta frezei la scară (profilul h(r) oglindit, cu coada deasupra), sau nimic dacă valorile nu sunt încă bune. */
 function Silueta({ f, mare }: { readonly f: Freza; readonly mare: boolean }): ReactNode {
+  const ro = useLimba() === 'ro';
   const R = f.diametru / 2;
   const a = f.fel === 'gravare' && f.varf !== undefined ? Math.min(f.varf / 2, R) : 0;
   const con = inaltimeCon(f);
@@ -107,9 +131,9 @@ function Silueta({ f, mare }: { readonly f: Freza; readonly mare: boolean }): Re
       {mare ? (
         <>
           <line className="cota" x1={X(-R)} y1={Y(sus) - 10} x2={X(R)} y2={Y(sus) - 10} />
-          <text className="cota-text" x={W / 2} y={Y(sus) - 14} textAnchor="middle">Ø{textNumar(f.diametru)}</text>
+          <text className="cota-text" x={W / 2} y={Y(sus) - 14} textAnchor="middle">Ø{textNumar(f.diametru, ro)}</text>
           {f.fel !== 'plata' && f.unghi !== undefined ? (
-            <text className="cota-text" x={W / 2} y={Y(0) + 16} textAnchor="middle">{`${textNumar(f.unghi)}°`}</text>
+            <text className="cota-text" x={W / 2} y={Y(0) + 16} textAnchor="middle">{`${textNumar(f.unghi, ro)}°`}</text>
           ) : null}
         </>
       ) : null}
@@ -178,12 +202,24 @@ export function FrezeleMele({ onInchide, focusInapoi, config }: {
   const [initiala, setInitiala] = useState<Ciorna | null>(null);
   const [toateProblemele, setToateProblemele] = useState(false);
   const [pas, setPas] = useState<'lista' | 'editor'>('lista');
+  const [vedere, setVedere] = useState<Vedere>(vedereTinuta);
+  /** În vederea „Listă”: editorul frezei alese e deschis (altfel, fișa ei). */
+  const [editeaza, setEditeaza] = useState(false);
   const [mesaj, setMesaj] = useState('');
   const [stergere, setStergere] = useState(false);
   const [importat, setImportat] = useState<{ readonly freze: readonly Freza[]; readonly sarite: number; readonly politica: PoliticaImport } | null>(null);
   const refCauta = useRef<HTMLInputElement>(null);
   const refFisier = useRef<HTMLInputElement>(null);
   const refEditor = useRef<HTMLFormElement>(null);
+  const refCorp = useRef<HTMLDivElement>(null);
+  /** Unde merge focusul după randarea următoare (fișa și editorul își iau locul unul altuia, deci butonul apăsat dispare). */
+  const deFocus = useRef<string | null>(null);
+  useEffect(() => {
+    const s = deFocus.current;
+    if (s === null) return;
+    deFocus.current = null;
+    refCorp.current?.querySelector<HTMLElement>(s)?.focus();
+  });
 
   useEffect(() => {
     refCauta.current?.focus();
@@ -198,6 +234,7 @@ export function FrezeleMele({ onInchide, focusInapoi, config }: {
     setCiorna(null);
     setInitiala(null);
     setPas('lista');
+    setEditeaza(false);
     setAmanat(uid !== null && amanate.has(uid));
   }, [cheie, uid]);
 
@@ -216,13 +253,21 @@ export function FrezeleMele({ onInchide, focusInapoi, config }: {
     if (JSON.stringify(c) !== JSON.stringify(initiala)) { setCiorna(c); setInitiala(c); }
   }, [stare.freze, aleasa, schimbata, initiala, ro]);
 
-  const deschide = (id: string | 'nou' | null, c: Ciorna | null): void => {
+  /** Deschide freza (fișa ei, sau editorul cu `editor`; în vederea „Configurator”, mereu editorul). */
+  const deschide = (id: string | 'nou' | null, c: Ciorna | null, editor = false): void => {
     setAleasa(id);
     setCiorna(c);
     setInitiala(c);
     setToateProblemele(false);
     setStergere(false);
+    setEditeaza(editor);
     setPas(id === null ? 'lista' : 'editor');
+  };
+  /** Din editor, înapoi la fișa frezei (vederea „Listă”), cu focusul pe „Editează”. */
+  const laFisa = (): void => {
+    setEditeaza(false);
+    setStergere(false);
+    deFocus.current = '[data-freze="editeaza"]';
   };
   const motivLista = (p: ProblemeLista): string => {
     if ('lista' in p) return p.lista === 'plina' ? t('freze.motiv.plina', { max: MARGINI_FREZA.freze }) : t('freze.motiv.versiune');
@@ -253,6 +298,8 @@ export function FrezeleMele({ onInchide, focusInapoi, config }: {
       setInitiala(c);
       setToateProblemele(false);
     }
+    // În vederea „Listă”, freza salvată își arată fișa.
+    if (vedere === 'lista') laFisa();
     setMesaj(t('freze.stare.salvat'));
     sincronizare.programeaza();
     return r.id;
@@ -268,13 +315,46 @@ export function FrezeleMele({ onInchide, focusInapoi, config }: {
     pleaca(() => { deschide(f.id, ciornaDin(f, ro)); setMesaj(''); });
   };
   const noua = (): void => {
-    pleaca(() => { deschide('nou', ciornaNoua(biblioteca.stare().freze, ro)); setMesaj(''); });
+    pleaca(() => {
+      deschide('nou', ciornaNoua(biblioteca.stare().freze, ro), true);
+      setMesaj('');
+      deFocus.current = '[data-freze-camp="nume"]';
+    });
+  };
+  /** „Editează”, din fișă: editorul frezei alese, cu focusul pe nume. */
+  const editeazaFisa = (): void => {
+    setEditeaza(true);
+    setStergere(false);
+    setPas('editor');
+    setMesaj('');
+    deFocus.current = '[data-freze-camp="nume"]';
+  };
+  /** Comutatorul „Listă / Configurator”; spre listă, editorul pleacă întâi (o schimbare bună se salvează). */
+  const comuta = (v: Vedere): void => {
+    if (v === vedere) return;
+    const aplica = (): void => {
+      setVedere(v);
+      tineVedere(v);
+      setEditeaza(false);
+      setStergere(false);
+    };
+    if (v === 'lista' && aleasa !== 'nou') pleaca(aplica);
+    else aplica();
   };
   const inchide = (): void => { pleaca(onInchide); };
   const renunta = (): void => {
     if (aleasa === 'nou') deschide(null, null);
-    else { setCiorna(initiala); setToateProblemele(false); }
+    else {
+      setCiorna(initiala);
+      setToateProblemele(false);
+      if (vedere === 'lista') laFisa();
+    }
     setMesaj('');
+  };
+  /** „←” din editor: în vederea „Listă”, înapoi la fișă; altfel (și la o freză nouă), la listă. */
+  const inapoi = (): void => {
+    if (vedere === 'lista' && aleasa !== 'nou') pleaca(laFisa);
+    else pleaca(() => { setPas('lista'); });
   };
   const duplica = (): void => {
     const f = stare.freze.find((x) => x.id === aleasa);
@@ -424,6 +504,9 @@ export function FrezeleMele({ onInchide, focusInapoi, config }: {
   const deAdus = uid !== null && locala.incarcata && stare.incarcata && !amanat && sincronizare.stare.ultima !== null
     ? deAdusDinBrowser({ freze: stare.freze, brute: [], sincron: stare.sincron }, locala.freze).length : 0;
   const conflict = conflicte[0];
+  /** Editorul se vede la o freză nouă, în vederea „Configurator” și după „Editează”; altfel, fișa frezei alese. */
+  const cuEditor = aleasa === 'nou' || vedere === 'configurator' || editeaza;
+  const deFisa = !cuEditor && aleasa !== null ? stare.freze.find((x) => x.id === aleasa) ?? null : null;
   const numeConflict = ((): string => {
     if (!conflict) return '';
     const aici = stare.freze.find((f) => f.id === conflict[0]);
@@ -435,6 +518,73 @@ export function FrezeleMele({ onInchide, focusInapoi, config }: {
       return '';
     }
   })();
+
+  /** Fișa frezei alese, doar de citit (vederea „Listă”, ADR 0302 §3): felul, silueta, geometria, valorile de lucru, nota. */
+  const fisa = (f: FrezaSalvata): ReactNode => {
+    const mm = t('freze.unitate.mm');
+    const geometria: (readonly [string, string, string])[] = [
+      ['fel', t('freze.felul'), t(`freze.fel.${f.fel}`)],
+      ['diametru', t('freze.diametru'), `${nr(f.diametru)} ${mm}`],
+    ];
+    if (f.fel !== 'plata' && f.unghi !== undefined) geometria.push(['unghi', t('freze.unghi'), `${nr(f.unghi)}${t('freze.unitate.grade')}`]);
+    if (f.fel === 'gravare' && f.varf !== undefined) geometria.push(['varf', t('freze.varf'), `${nr(f.varf)} ${mm}`]);
+    if (f.tais !== undefined) geometria.push(['tais', t('freze.tais'), `${nr(f.tais)} ${mm}`]);
+    if (f.taisuri !== undefined) geometria.push(['taisuri', t('freze.taisuri'), nr(f.taisuri)]);
+    geometria.push(['numar', t('freze.numar'), `T${f.numar}`]);
+    const lucru: readonly (readonly [string, string, string])[] = [
+      ['turatie', t('freze.turatie'), `${nr(f.turatie)} ${t('freze.unitate.rpm')}`],
+      ['avans', t('freze.avans'), `${nr(f.avans)} ${t('freze.unitate.mm-min')}`],
+      ['plonjare', t('freze.plonjare'), `${nr(f.plonjare)} ${t('freze.unitate.mm-min')}`],
+      ['pas', t('freze.pas'), `${nr(f.pas)} ${mm}`],
+      ['pasLateral', t('freze.pas-lateral'), `${nr(f.pasLateral)} ${t('freze.unitate.procent')}`],
+    ];
+    const valori = (r: readonly (readonly [string, string, string])[]): ReactNode => (
+      <dl className="freze-valori">
+        {r.map(([k, e, v]) => (
+          <div key={k}>
+            <dt>{e}</dt>
+            <dd data-freze-valoare={k}>{v}</dd>
+          </div>
+        ))}
+      </dl>
+    );
+    return (
+      <section className="freze-editor freze-fisa" data-freze="fisa" aria-labelledby="freze-fisa-titlu">
+        <button type="button" className="freze-inapoi" data-freze="inapoi" onClick={() => { setPas('lista'); setStergere(false); }}>← {t('freze.inapoi')}</button>
+        <h3 id="freze-fisa-titlu">{f.nume}</h3>
+        <div className="freze-editor-sus">
+          <section className="freze-fisa-parte" aria-labelledby="freze-fisa-geometria">
+            <h4 id="freze-fisa-geometria">{t('freze.geometria')}</h4>
+            {valori(geometria)}
+          </section>
+          <figure className="freze-silueta-mare">
+            <Silueta f={f} mare />
+          </figure>
+        </div>
+        <section className="freze-fisa-parte" aria-labelledby="freze-fisa-lucru">
+          <h4 id="freze-fisa-lucru">{t('freze.lucru')}</h4>
+          {valori(lucru)}
+        </section>
+        {f.nota !== undefined && f.nota !== '' ? (
+          <p className="freze-fisa-nota"><span>{t('freze.nota')}</span> <span data-freze-valoare="nota">{f.nota}</span></p>
+        ) : null}
+        {stergere ? (
+          <div className="freze-stergere" role="group" aria-label={t('freze.sterge.intrebare', { nume: f.nume })}>
+            <p>{t('freze.sterge.intrebare', { nume: f.nume })}</p>
+            <div className="butoane">
+              <button type="button" data-freze="sterge-da" className="pericol" onClick={sterge}>{t('freze.sterge.da')}</button>
+              <button type="button" data-buton="renunta" onClick={() => { setStergere(false); }}>{t('freze.sterge.nu')}</button>
+            </div>
+          </div>
+        ) : null}
+        <div className="butoane freze-butoane">
+          <button type="button" className="principal" data-freze="editeaza" disabled={doarCitire} onClick={editeazaFisa}>{t('freze.editeaza')}</button>
+          <button type="button" data-freze="duplica" disabled={doarCitire} onClick={duplica}>{t('freze.duplica')}</button>
+          <button type="button" data-freze="sterge" disabled={doarCitire} onClick={() => { setStergere(true); }}>{t('freze.sterge')}</button>
+        </div>
+      </section>
+    );
+  };
 
   return (
     <div className="dialog" role="dialog" aria-modal="true" aria-labelledby="freze-titlu" data-testid="dialog-freze" onKeyDown={tasta}>
@@ -477,6 +627,13 @@ export function FrezeleMele({ onInchide, focusInapoi, config }: {
               </button>
             ))}
           </div>
+          <div className="freze-vedere" role="group" aria-label={t('freze.vedere')}>
+            {(['lista', 'configurator'] as const).map((v) => (
+              <button key={v} type="button" data-freze-vedere={v} aria-pressed={vedere === v} onClick={() => { comuta(v); }}>
+                {t(`freze.vedere.${v}`)}
+              </button>
+            ))}
+          </div>
           <span className="freze-actiuni">
             <button type="button" className="principal" data-freze="noua" disabled={doarCitire} onClick={noua}>{t('freze.noua')}</button>
             <button type="button" data-freze="importa" disabled={doarCitire} onClick={() => { refFisier.current?.click(); }}>{t('freze.importa')}</button>
@@ -504,7 +661,7 @@ export function FrezeleMele({ onInchide, focusInapoi, config }: {
             </div>
           </div>
         ) : null}
-        <div className="freze-corp" data-pas={pas}>
+        <div ref={refCorp} className="freze-corp" data-pas={pas}>
           <div className="freze-lista" role="region" aria-label={t('freze.lista')}>
             {!stare.incarcata ? <p className="freze-gol">{t('freze.incarca')}</p> : null}
             {stare.incarcata && stare.freze.length === 0 ? (
@@ -539,10 +696,12 @@ export function FrezeleMele({ onInchide, focusInapoi, config }: {
               );
             })}
           </div>
-          {ciorna && freza ? (
+          {deFisa ? fisa(deFisa) : ciorna && freza && cuEditor ? (
             <form ref={refEditor} className="freze-editor" aria-labelledby="freze-editor-titlu" noValidate
               onSubmit={(e) => { e.preventDefault(); void salveaza(); }}>
-              <button type="button" className="freze-inapoi" data-freze="inapoi" onClick={() => { pleaca(() => { setPas('lista'); }); }}>← {t('freze.inapoi')}</button>
+              <button type="button" className="freze-inapoi" data-freze="inapoi" onClick={inapoi}>
+                ← {vedere === 'lista' && aleasa !== 'nou' ? t('freze.inapoi.fisa') : t('freze.inapoi')}
+              </button>
               <h3 id="freze-editor-titlu">{aleasa === 'nou' ? t('freze.noua.titlu') : freza.nume}</h3>
               <div className="freze-editor-sus">
                 <div className="freze-editor-campuri">
@@ -611,8 +770,9 @@ export function FrezeleMele({ onInchide, focusInapoi, config }: {
               ) : null}
               <div className="butoane freze-butoane">
                 <button type="submit" data-freze="salveaza" disabled={doarCitire || (!schimbata && aleasa !== 'nou')}>{t('freze.salveaza')}</button>
-                <button type="button" data-buton="renunta" data-freze="renunta" disabled={!schimbata && aleasa !== 'nou'} onClick={renunta}>{t('freze.renunta')}</button>
-                {aleasa !== 'nou' ? (
+                <button type="button" data-buton="renunta" data-freze="renunta"
+                  disabled={vedere === 'configurator' && !schimbata && aleasa !== 'nou'} onClick={renunta}>{t('freze.renunta')}</button>
+                {aleasa !== 'nou' && vedere === 'configurator' ? (
                   <>
                     <button type="button" data-freze="duplica" disabled={doarCitire} onClick={duplica}>{t('freze.duplica')}</button>
                     <button type="button" data-freze="sterge" disabled={doarCitire} onClick={() => { setStergere(true); }}>{t('freze.sterge')}</button>

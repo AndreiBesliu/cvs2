@@ -1235,7 +1235,14 @@ iar până atunci freza se scrie acolo pe rând, ca înainte (vezi [Exportul G-c
 
 **Lista**, în stânga, are frezele pe feluri (Plate, În V, Gravare), fiecare cu silueta mică, T-ul preferat, turația și
 avansul. **Caută o freză** filtrează după nume, iar butoanele **Toate**, **Plate**, **În V** și **Gravare** arată un singur
-fel. Pe telefon, lista vine întâi; o freză aleasă se deschide pe tot ecranul, iar **Frezele** te întoarce la listă.
+fel. O freză aleasă își arată în dreapta **fișa**, doar de citit: felul, silueta la scară, geometria, valorile de lucru și
+nota, cu butoanele **Editează**, **Duplică** și **Șterge…**. Pe telefon, lista vine întâi; fișa unei freze se deschide pe tot
+ecranul, iar **Frezele** te întoarce la listă.
+
+**Listă** și **Configurator**, lângă filtre, aleg cum lucrează fereastra: în **Listă** (cum pornește), editorul se deschide
+doar la **Editează** și la **Freză nouă**, iar după **Salvează** sau **Renunță la schimbări** te întorci la fișă (pe telefon,
+**Fișa** face același lucru); în **Configurator**, o freză aleasă se deschide direct în editor, cu **Duplică** și **Șterge…**
+acolo. Alegerea rămâne ținută în acest browser.
 
 **Freză nouă** deschide editorul, cu câmpurile:
 - **Numele**: gol, freza primește numele propus din fel și diametru („Plată Ø6”, „V60 Ø6”, „Gravare 30° vârf 0,2 Ø3,175”).
@@ -1249,7 +1256,7 @@ fel. Pe telefon, lista vine întâi; o freză aleasă se deschide pe tot ecranul
 - **Nota**: producătorul, codul, de unde e.
 
 Silueta din dreapta e la scară. Numerele se scriu cu virgulă sau cu punct. **Salvează** păstrează freza, iar **Renunță la
-schimbări** pune la loc ce era. Dacă alegi altă freză sau închizi fereastra cu schimbări nesalvate, ele se salvează singure
+schimbări** pune la loc ce era (în **Listă**, și închide editorul). Dacă alegi altă freză sau închizi fereastra cu schimbări nesalvate, ele se salvează singure
 când sunt bune; altfel fereastra rămâne și arată câmpurile de reparat. **Duplică** face o copie a frezei, iar **Șterge…**
 cere confirmarea; proiectele care o folosesc își păstrează copia ei.
 

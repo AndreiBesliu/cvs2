@@ -311,6 +311,72 @@
   flex-wrap: wrap;
 }
 
+/* Comutatorul „Listă / Configurator” (ADR 0302 §3): două butoane lipite. */
+.freze-vedere {
+  display: inline-flex;
+}
+
+.freze-vedere button + button {
+  margin-inline-start: -1px;
+}
+
+.freze-vedere button:first-child {
+  border-start-end-radius: 0;
+  border-end-end-radius: 0;
+}
+
+.freze-vedere button:last-child {
+  border-start-start-radius: 0;
+  border-end-start-radius: 0;
+}
+
+/* Fișa frezei, doar de citit: perechile nume / valoare pe două coloane; pe telefon, una sub alta când nu încap. */
+.freze-fisa-parte {
+  display: grid;
+  gap: var(--sp-2);
+  min-width: 0;
+  border: 1px solid var(--l-margine);
+  border-radius: var(--r-2);
+  padding: var(--sp-2) var(--sp-3) var(--sp-3);
+}
+
+.freze-fisa-parte h4 {
+  margin: 0;
+  font-weight: 650;
+  font-size: var(--fs-3);
+}
+
+.freze-valori {
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(7.5rem, 1fr));
+  gap: var(--sp-2) var(--sp-3);
+}
+
+.freze-valori div {
+  min-width: 0;
+}
+
+.freze-valori dt {
+  font-size: var(--fs-2);
+  color: var(--t-slab);
+}
+
+.freze-valori dd {
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+
+.freze-fisa-nota {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.freze-fisa-nota span:first-child {
+  color: var(--t-slab);
+}
+
 .freze-jos {
   display: flex;
   flex-wrap: wrap;

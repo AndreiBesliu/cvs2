@@ -88,9 +88,10 @@ async function alDoilea(browser: Browser): Promise<{ readonly page: Page; readon
   return { page, inchide: () => ctx.close() };
 }
 
-/** Deschide freza cu numele dat în editor și schimbă un câmp, apoi salvează. */
+/** Deschide freza cu numele dat în editor (din fișă, „Editează”) și schimbă un câmp, apoi salvează. */
 async function schimba(f: Locator, n: string, c: string, valoare: string): Promise<void> {
   await nume(f).getByText(n, { exact: true }).click();
+  await f.locator('[data-freze="fisa"] [data-freze="editeaza"]').click();
   await camp(f, c).fill(valoare);
   await f.locator('[data-freze="salveaza"]').click();
   await expect(f.locator('[data-freze="mesaj"]')).toHaveText('Salvat');
@@ -130,7 +131,7 @@ test('două browsere ale aceluiași cont: aducerea din browser, schimbarea, conf
     await expect.poll(async () => (await dinCont(uid)).get('Plată Ø6')?.['avans'], LENT).toBe(1200);
     await a.locator('[data-freze="sincronizeaza"]').click();
     await nume(a).getByText('Plată Ø6', { exact: true }).click();
-    await expect(camp(a, 'avans')).toHaveValue('1200', LENT);
+    await expect(a.locator('[data-freze-valoare="avans"]')).toHaveText('1200 mm/min', LENT);
     // Același câmp pe amândouă: A întâi (ajunge în cont), apoi B, care primește conflictul.
     await schimba(a, 'Plată Ø6', 'pas', '2');
     await expect.poll(async () => (await dinCont(uid)).get('Plată Ø6')?.['pas'], LENT).toBe(2);
@@ -144,7 +145,7 @@ test('două browsere ale aceluiași cont: aducerea din browser, schimbarea, conf
     await expect(stare(b)).toHaveText('În cont, la zi', LENT);
     await a.locator('[data-freze="sincronizeaza"]').click();
     await nume(a).getByText('Plată Ø6', { exact: true }).click();
-    await expect(camp(a, 'pas')).toHaveValue('4', LENT);
+    await expect(a.locator('[data-freze-valoare="pas"]')).toHaveText('4 mm', LENT);
     // O ștergere pe A ajunge pe B.
     await a.locator('[data-freze="sterge"]').click();
     await a.locator('[data-freze="sterge-da"]').click();
@@ -178,7 +179,7 @@ test('cu proba trecută: biblioteca din cont se citește, iar o schimbare rămâ
   await f.locator('[data-freze="sincronizeaza"]').click();
   await expect(stare(f)).toHaveText(/Contul doar se citește/u, LENT);
   expect((await dinCont(uid)).get('Plată Ø3')?.['avans']).toBe(1000);
-  await expect(camp(f, 'avans')).toHaveValue('900');
+  await expect(f.locator('[data-freze-valoare="avans"]')).toHaveText('900 mm/min');
   // Contul nu se poate scrie, deci frezele standard nu i se pun (ar rămâne doar aici).
   expect((await dinCont(uid)).size).toBe(1);
   // Ieșirea din cont: fereastra arată biblioteca fără cont (cu frezele standard); cea a contului rămâne în browser.

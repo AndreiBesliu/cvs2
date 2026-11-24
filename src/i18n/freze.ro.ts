@@ -3,7 +3,7 @@ import type { DictionarRoPentru } from './tipuri.ts';
 
 /** Mesajele ferestrei „Frezele mele” (ADR 0300, felia 16.A↑a), în română: exact cheile din engleză (`freze.en.ts`). */
 export const roFreze = {
-  'freze.intro': 'Frezele tale, ținute în acest browser. În curând le alegi la export și în secțiunea Tăierea.',
+  'freze.intro': 'Frezele tale, ținute în acest browser. Le alegi pe forme în secțiunea Tăierea.',
   'freze.intro.cont': 'Frezele tale, în contul tău: le ai pe orice calculator pe care intri în cont. Merg și fără rețea; schimbările pleacă la reconectare.',
   'freze.loc.la-zi': 'În cont, la zi',
   'freze.loc.sincronizeaza': 'Se sincronizează cu contul…',
@@ -51,6 +51,11 @@ export const roFreze = {
   'freze.niciuna-gasita': 'Nicio freză nu se potrivește căutării.',
   'freze.alege': 'Alege o freză din listă sau fă una nouă.',
   'freze.inapoi': 'Frezele',
+  'freze.inapoi.fisa': 'Fișa',
+  'freze.editeaza': 'Editează',
+  'freze.vedere': 'Vederea ferestrei',
+  'freze.vedere.lista': 'Listă',
+  'freze.vedere.configurator': 'Configurator',
   'freze.noua.titlu': 'Freză nouă',
   'freze.nume': 'Numele',
   'freze.nume.ajutor': 'Gol: {nume}',
@@ -71,7 +76,7 @@ export const roFreze = {
   'freze.plonjare': 'Plonjarea',
   'freze.pas': 'Pasul pe trecere',
   'freze.pas-lateral': 'Pasul lateral',
-  'freze.lucru.nota': 'Intră în program când alegi freza la export (în curând).',
+  'freze.lucru.nota': 'Intră în program când alegi freza în secțiunea Tăierea.',
   'freze.nota': 'Nota',
   'freze.nota.ajutor': 'Producătorul, codul, de unde e',
   'freze.unitate.mm': 'mm',

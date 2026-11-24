@@ -1277,7 +1277,14 @@ export rows it comes soon, and until then the bit is typed there on the row, as 
 
 The **list**, on the left, groups the bits by kind (Flat, V, Engraving), each with a small profile, the preferred T, the
 spindle speed and the feed. **Search for a bit** filters by name, and the **All**, **Flat**, **V** and **Engraving** buttons
-show a single kind. On a phone, the list comes first; a bit you pick opens full screen, and **Bits** takes you back.
+show a single kind. A bit you pick shows its **details** on the right, read-only: the kind, the profile to scale, the geometry,
+the working values and the note, with the **Edit**, **Duplicate** and **Delete…** buttons. On a phone, the list comes first;
+a bit's details open full screen, and **Bits** takes you back.
+
+**List** and **Configurator**, next to the filters, choose how the window works: in **List** (how it starts), the editor
+opens only with **Edit** and **New bit**, and after **Save** or **Discard changes** you are back at the details (on a phone,
+**Details** does the same); in **Configurator**, a bit you pick opens straight in the editor, with **Duplicate** and
+**Delete…** there. The choice is kept in this browser.
 
 **New bit** opens the editor, with the fields:
 - **Name**: left empty, the bit gets the name proposed from its kind and diameter (“Flat Ø6”, “V60 Ø6”, “Engraving 30° tip
@@ -1291,7 +1298,7 @@ show a single kind. On a phone, the list comes first; a bit you pick opens full 
 - **Note**: the maker, the code, where it came from.
 
 The profile on the right is to scale. Numbers take a comma or a point. **Save** keeps the bit, and **Discard changes** puts
-back what was there. If you pick another bit or close the window with unsaved changes, they are saved on their own when they
+back what was there (in **List**, it also closes the editor). If you pick another bit or close the window with unsaved changes, they are saved on their own when they
 are valid; otherwise the window stays and shows the fields to fix. **Duplicate** makes a copy of the bit, and **Delete…** asks
 first; projects that use it keep their copy.
 
