@@ -23,7 +23,7 @@ import { mesajeGata } from '../i18n/laCerere.ts';
 import { t } from '../i18n/t.ts';
 import { citesteFisierFreze, textFisierFreze, type MotivFisierFreze } from '../io/frezeFisier.ts';
 import {
-  areCam, areRaza, areUnghi, cheieNume, FELURI_FREZA, FREZE_PORNIRE, grupurileListei, inaltimeCon, MARGINI_FREZA, numeLiber, problemeFreza, type CampFreza, type FelFreza,
+  areCam, areRaza, areTreapta, areUnghi, areVarf, cheieNume, FELURI_FREZA, FREZE_PORNIRE, grupurileListei, inaltimeCon, MARGINI_FREZA, numeLiber, problemeFreza, type CampFreza, type FelFreza,
   type Freza, type FrezaFaraNume, type FrezaSalvata, type MotivFreza, type PoliticaImport, type ProblemeFreza,
 } from '../model/freza.ts';
 import { CATALOG_FREZE, GRUPURI_CATALOG, tolFreza, type FrezaCatalog } from '../model/catalogFreze.ts';
@@ -48,9 +48,9 @@ mesaje.catch(() => undefined);
 type Ciorna = { readonly fel: FelFreza } & { readonly [K in Exclude<CampFreza, never>]: string };
 type CampText = 'nume' | 'nota' | 'grup';
 const CAMPURI_NUMERE: readonly Exclude<CampFreza, CampText>[] = [
-  'diametru', 'unghi', 'varf', 'raza', 'tais', 'taisuri', 'numar', 'turatie', 'avans', 'plonjare', 'pas', 'pasLateral',
+  'diametru', 'unghi', 'varf', 'raza', 'treapta', 'tais', 'taisuri', 'numar', 'turatie', 'avans', 'plonjare', 'pas', 'pasLateral',
 ];
-const OPTIONALE: ReadonlySet<CampFreza> = new Set(['tais', 'taisuri', 'raza']);
+const OPTIONALE: ReadonlySet<CampFreza> = new Set(['tais', 'taisuri', 'raza', 'treapta']);
 /** Cel mai mare număr al fiecărui câmp, pentru mesajul marginilor. */
 const MAXIM: Readonly<Partial<Record<CampFreza, number>>> = {
   diametru: MARGINI_FREZA.diametru, tais: MARGINI_FREZA.tais, taisuri: MARGINI_FREZA.taisuri, numar: MARGINI_FREZA.numar,
@@ -98,7 +98,8 @@ function tLiber(lista: readonly FrezaSalvata[]): number {
 function ciornaDin(f: Freza, ro: boolean, numeGol = false): Ciorna {
   return {
     fel: f.fel, nume: numeGol ? '' : f.nume, nota: f.nota ?? '', grup: f.grup ?? '',
-    diametru: fara(f.diametru, ro), unghi: fara(f.unghi ?? UNGHI_V_IMPLICIT, ro), varf: fara(f.varf, ro), raza: fara(f.raza, ro), tais: fara(f.tais, ro),
+    diametru: fara(f.diametru, ro), unghi: fara(f.unghi ?? UNGHI_V_IMPLICIT, ro), varf: fara(f.varf, ro), raza: fara(f.raza, ro),
+    treapta: fara(f.treapta, ro), tais: fara(f.tais, ro),
     taisuri: fara(f.taisuri, ro), numar: fara(f.numar, ro), turatie: fara(f.turatie, ro), avans: fara(f.avans, ro),
     plonjare: fara(f.plonjare, ro), pas: fara(f.pas, ro), pasLateral: fara(f.pasLateral, ro),
   };
@@ -114,8 +115,9 @@ function frezaDin(c: Ciorna, ro: boolean): Freza {
     v[k] = s === '' ? (OPTIONALE.has(k) ? undefined : Number.NaN) : (citesteNumar(s) ?? Number.NaN);
   }
   if (!areUnghi(c.fel)) v['unghi'] = undefined;
-  if (c.fel !== 'gravare') v['varf'] = undefined;
+  if (!areVarf(c.fel)) v['varf'] = undefined;
   if (!areRaza(c.fel)) v['raza'] = undefined;
+  if (!areTreapta(c.fel)) v['treapta'] = undefined;
   const f = v as FrezaFaraNume;
   return { ...f, nume: c.nume.trim() === '' ? numePropus(f, ro) : c.nume };
 }
@@ -124,19 +126,49 @@ function ciornaNoua(lista: readonly FrezaSalvata[], ro: boolean): Ciorna {
   return ciornaDin({ ...FREZE_PORNIRE[1]!, numar: tLiber(lista), nume: '' }, ro, true);
 }
 
-/** Eticheta unghiului: al vârfului la burghiu, inclus la celelalte. */
-const textUnghi = (fel: FelFreza): string => t(fel === 'burghiu' ? 'freze.unghi.burghiu' : 'freze.unghi');
-/** Eticheta razei: a colțului la toroidală, a vârfului la conică. */
-const textRaza = (fel: FelFreza): string => t(fel === 'toroidala' ? 'freze.raza.toroidala' : 'freze.raza.conica');
+/** Eticheta unghiului: al vârfului la burghiu, al teșiturii la panou, inclus la celelalte. */
+const textUnghi = (fel: FelFreza): string => t(fel === 'burghiu' ? 'freze.unghi.burghiu' : fel === 'panou' ? 'freze.unghi.panou' : 'freze.unghi');
+/** Eticheta vârfului: fundul plat la panou. */
+const textVarf = (fel: FelFreza): string => t(fel === 'panou' ? 'freze.varf.panou' : 'freze.varf');
+/** Eticheta razei: a colțului la toroidală, a vârfului la conică, a rotunjirii, a arcelor ogee-ului, a scobiturii panoului. */
+function textRaza(fel: FelFreza): string {
+  switch (fel) {
+    case 'toroidala': return t('freze.raza.toroidala');
+    case 'rotunjire': return t('freze.raza.rotunjire');
+    case 'ogee': case 'ogee-roman': return t('freze.raza.ogee');
+    case 'panou': return t('freze.raza.panou');
+    default: return t('freze.raza.conica');
+  }
+}
 
-/** Ciorna cu alt fel: unghiul, vârful și raza primesc valorile obișnuite ale felului, unde lipsesc sau erau ale altui fel. */
+/** Valorile obișnuite ale profilurilor (16.A↑h-5): raza, treapta, unghiul, fundul plat și diametrul care le cuprinde. */
+const PROFIL_IMPLICIT: Readonly<Partial<Record<FelFreza, { readonly d: number; readonly raza?: number; readonly treapta?: number }>>> = {
+  rotunjire: { d: 12, raza: 3 }, ogee: { d: 18, raza: 3 }, 'ogee-roman': { d: 21, raza: 3, treapta: 1.5 }, panou: { d: 50.8 },
+};
+
+/**
+ * Ciorna cu alt fel: unghiul, vârful, raza și treapta primesc valorile obișnuite ale felului, unde lipsesc sau erau ale altui
+ * fel; la un profil, diametrul se schimbă doar dacă cel scris nu-l cuprinde (pe Ø6, o rotunjire R3 n-ar avea vârf).
+ */
 function cuFel(c: Ciorna, x: FelFreza, ro: boolean): Ciorna {
   const gol = (v: string): boolean => v.trim() === '';
-  const unghiFel = (f: FelFreza): number => (f === 'burghiu' ? 118 : f === 'conica' ? 15 : UNGHI_V_IMPLICIT);
+  const unghiFel = (f: FelFreza): number => (f === 'burghiu' ? 118 : f === 'conica' ? 15 : f === 'panou' ? 12 : UNGHI_V_IMPLICIT);
+  const varfFel = (f: FelFreza): number => (f === 'panou' ? 6.35 : 0.2);
   const unghi = areUnghi(x) && (gol(c.unghi) || unghiFel(x) !== unghiFel(c.fel)) ? textNumar(unghiFel(x), ro) : c.unghi;
-  const varf = x === 'gravare' && gol(c.varf) ? textNumar(0.2, ro) : c.varf;
-  const raza = areRaza(x) && (gol(c.raza) || x !== c.fel) ? textNumar(x === 'toroidala' ? 1 : 0.5, ro) : c.raza;
-  return { ...c, fel: x, unghi, varf, raza };
+  const varf = areVarf(x) && (gol(c.varf) || x !== c.fel) ? textNumar(varfFel(x), ro) : c.varf;
+  const p = PROFIL_IMPLICIT[x];
+  const razaFel = p ? p.raza : x === 'toroidala' ? 1 : 0.5;
+  const raza = areRaza(x) && (gol(c.raza) || x !== c.fel) ? (razaFel === undefined ? '' : textNumar(razaFel, ro)) : c.raza;
+  const treapta = areTreapta(x) && (gol(c.treapta) || x !== c.fel) ? textNumar(p?.treapta ?? 1.5, ro) : c.treapta;
+  const n = { ...c, fel: x, unghi, varf, raza, treapta };
+  if (!p) return n;
+  // Diametrul: cel scris, dacă profilul încape în el; altfel, cel obișnuit al profilului.
+  const incape = (d: string): boolean => {
+    const f = frezaDin({ ...n, diametru: d }, ro);
+    const pr = problemeFreza({ ...f, tais: undefined });
+    return !pr.diametru && !pr.raza && !pr.treapta && !pr.varf;
+  };
+  return incape(c.diametru) ? n : { ...n, diametru: textNumar(p.d, ro) };
 }
 
 /** Silueta frezei la scară (profilul h(r) oglindit, cu coada deasupra), sau nimic dacă valorile nu sunt încă bune. */
@@ -145,7 +177,8 @@ function Silueta({ f, mare }: { readonly f: Freza; readonly mare: boolean }): Re
   const R = f.diametru / 2;
   const con = inaltimeCon(f);
   // Lungimea desenată: tăișul, dacă e știut, cel puțin capătul; plata și felurile fără con, și ceva cilindru deasupra.
-  const lung = f.fel === 'plata' ? f.diametru * 2 : f.fel === 'v' || f.fel === 'gravare' || f.fel === 'conica' ? 0 : f.diametru * 1.5;
+  const lung = f.fel === 'plata' ? f.diametru * 2 : f.fel === 'v' || f.fel === 'gravare' || f.fel === 'conica' ? 0
+    : PROFIL_IMPLICIT[f.fel] ? Math.max(con * 2, f.diametru * 0.5) : f.diametru * 1.5;
   const L = Math.max(f.tais ?? 0, con, lung);
   if (!(R > 0) || !Number.isFinite(L) || !(L > 0)) return <svg className="freza-silueta" viewBox="0 0 40 40" aria-hidden="true" />;
   const W = mare ? 200 : 40, H = mare ? 220 : 40, m = mare ? 30 : 3;
@@ -194,6 +227,7 @@ function numeCamp(k: string): string {
     case 'pasLateral': return t('freze.pas-lateral');
     case 'nota': return t('freze.nota');
     case 'raza': return t('freze.raza');
+    case 'treapta': return t('freze.treapta');
     case 'grup': return t('freze.grup');
     default: return k;
   }
@@ -564,9 +598,15 @@ export function FrezeleMele({ onInchide, focusInapoi, config }: {
       case 'grup-lung': return t('freze.motiv.nume-lung', { max: MARGINI_FREZA.grup });
       case 'grup-caractere': return t('freze.motiv.nume-caractere');
       case 'margini':
-        if (k === 'unghi') return t('freze.motiv.unghi', { min: MARGINI_FREZA.unghiMinim, max: MARGINI_FREZA.unghiMaxim });
+        if (k === 'unghi') {
+          return t('freze.motiv.unghi', { min: MARGINI_FREZA.unghiMinim, max: freza!.fel === 'panou' ? MARGINI_FREZA.unghiPanou : MARGINI_FREZA.unghiMaxim });
+        }
         if (k === 'varf') return t('freze.motiv.pozitiv');
-        if (k === 'raza') return t('freze.motiv.raza');
+        if (k === 'raza') {
+          const fel = freza!.fel;
+          return t(fel === 'ogee' || fel === 'ogee-roman' ? 'freze.motiv.raza.ogee' : fel === 'panou' ? 'freze.motiv.raza.panou' : 'freze.motiv.raza');
+        }
+        if (k === 'treapta') return t('freze.motiv.treapta');
         return t('freze.motiv.margini', { max: textNumar(MAXIM[k] ?? 0, ro) });
     }
   };
@@ -641,8 +681,9 @@ export function FrezeleMele({ onInchide, focusInapoi, config }: {
       ['diametru', t('freze.diametru'), `${nr(f.diametru)} ${mm}`],
     ];
     if (areUnghi(f.fel) && f.unghi !== undefined) geometria.push(['unghi', textUnghi(f.fel), `${nr(f.unghi)}${t('freze.unitate.grade')}`]);
-    if (f.fel === 'gravare' && f.varf !== undefined) geometria.push(['varf', t('freze.varf'), `${nr(f.varf)} ${mm}`]);
+    if (areVarf(f.fel) && f.varf !== undefined) geometria.push(['varf', textVarf(f.fel), `${nr(f.varf)} ${mm}`]);
     if (areRaza(f.fel) && f.raza !== undefined) geometria.push(['raza', textRaza(f.fel), `${nr(f.raza)} ${mm}`]);
+    if (areTreapta(f.fel) && f.treapta !== undefined) geometria.push(['treapta', t('freze.treapta'), `${nr(f.treapta)} ${mm}`]);
     if (f.tais !== undefined) geometria.push(['tais', t('freze.tais'), `${nr(f.tais)} ${mm}`]);
     if (f.taisuri !== undefined) geometria.push(['taisuri', t('freze.taisuri'), nr(f.taisuri)]);
     if (!dinCat) geometria.push(['numar', t('freze.numar'), `T${f.numar}`]);
@@ -958,8 +999,9 @@ export function FrezeleMele({ onInchide, focusInapoi, config }: {
                 <div className="freze-grila">
                   {camp('diametru', t('freze.diametru'), t('freze.unitate.mm'))}
                   {areUnghi(fel) ? camp('unghi', textUnghi(fel), t('freze.unitate.grade')) : null}
-                  {fel === 'gravare' ? camp('varf', t('freze.varf'), t('freze.unitate.mm')) : null}
+                  {areVarf(fel) ? camp('varf', textVarf(fel), t('freze.unitate.mm')) : null}
                   {areRaza(fel) ? camp('raza', textRaza(fel), t('freze.unitate.mm')) : null}
+                  {areTreapta(fel) ? camp('treapta', t('freze.treapta'), t('freze.unitate.mm')) : null}
                   {camp('tais', t('freze.tais'), t('freze.unitate.mm'))}
                   {camp('taisuri', t('freze.taisuri'), null)}
                   {camp('numar', t('freze.numar'), null)}

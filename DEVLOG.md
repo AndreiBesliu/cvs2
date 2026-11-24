@@ -13588,6 +13588,20 @@ catalogul). **Started:** 24.11, 14:42.
 - **Mărimea:** pornirea neschimbată (110,2 kB; cu ușa 114,8, cu Atelierul 115,1 / 120), totalul 822,6 → 823,8 / 900. Nimic
   pe server (frezele stau în cont ca text JSON); documentul nu se schimbă. **Completed:** 24.11, 15:55.
 
+## 2026-11-24 — 16.A↑h-5: profilurile parametrice în bibliotecă și în catalog (Model: Claude Opus 5.5)
+
+**Prompt:** „continua cu 16.A↑h-5” (felia despărțită din 16.A↑h-4, ADR 0302 §7). **Started:** 24.11, 16:32.
+
+- **Felia** (`5018701c`): rotunjirea, ogee-ul, ogee-ul roman (câmpul nou `treapta`) și panoul ridicat (fundul plat, teșitura,
+  scobitura opțională), cu marginile, capătul pe hârtie și silueta; canelura e o bilă. CSV-ul (felurile și în engleză, coloana
+  `treapta`), catalogul (149), fereastra (diametrul schimbat doar dacă nu cuprinde profilul, etichetele și motivele pe fel),
+  manualul (ro, en). Toate „în curând în proiect”.
+- **Probele** (întâi): unitare noi 3, în Edge 1 (și două extinse). **Otrăvurile** (`test/otravuri/16.A-h5.py`): 29 / 29; F11
+  scăpase la prima trecere (proba citirii avea doar ogee-ul roman, pe care judecata îl prindea oricum).
+- **Mărimea:** pornirea neschimbată (110,2 kB; cu ușa 114,9, cu Atelierul 115,2 / 120), totalul 834,6 → 835,7 / 900 (față de
+  `88b048aa`). Nimic pe server; documentul nu se schimbă. 16.A↑h-3 și 16.A↑h-4: raportate sesiunii principale (`88b048aa`).
+  **Completed:** 24.11, 17:00.
+
 ## 2026-11-24 — 16.A↑a-2: frezele standard, puse singure în bibliotecă (Model: Claude Opus 5.5)
 
 **Prompt:** „sa ai in vedere ca biblioteca de freze trebuie sa fie populata cu freze default standard.” (owner-ul, după
@@ -13745,6 +13759,23 @@ separat […] Ține de menținerea CI-ului verde, nu cere cuvântul owner-ului�
   45417561144, verde: unit 10 190 / 0, e2e 707 / 707, funcțiile 136 / 136, paginile 57 / 57; proba de fum, bună).
   Loturile 19–21 (`7312d685`): completul pe `main` (45436221341) rula la unire.
 
+## 2026-11-24 — 16.A↑b-3: freza din „Frezele mele” pe rândurile exportului (Model: Claude Opus 5.5)
+
+**Prompt:** „continua cu 16.A↑b-3”, apoi, la întrebarea „Pe ce construiesc b-3?”, „Pe #11, acum”. **Started:** 24.11, 17:05.
+
+- **Ramura** nouă `wip/16.A-freze-b3`: `wip/16.A-freze` (`0b1f36e8`, cu 16.A↑h-5) și fereastra exportului refăcută
+  (`wip/28.8-export`, `4ee623d3`, PR-ul #11) aduse împreună (`48f4de8c`; ciocnirile, în traducerile roadmap-ului și în
+  catalogul controalelor). Se unește doar după #11 sau odată cu ea.
+- **Felia** (`5b875a26`): lista „Din frezele mele” în grupul Freza al fișei, cu frezele potrivite tăieturii rândului, date de
+  aplicație; aleasă, T-ul (regula rolurilor, printre frezele ferestrei), Ø-ul, forma, pasul și pasul lateral; originea pe rând,
+  scrisă de Exportă (`origine` pe freză: lipsă = rămâne, `null` = pleacă); „Scrisă de mână” la un Ø sau o formă schimbate.
+  Biblioteca proiectului, comună cu Tăierea (`src/app/bibliotecaProiect.ts`). Manualul (ro, en). Fundul plat, frezele de rest,
+  dopul și banda au ieșit în felia nouă 16.A↑b-5.
+- **Probele** (întâi): unitare noi 3, în Edge 2 (și 99 / 99 ale exportului și frezelor). **Otrăvurile**
+  (`test/otravuri/16.A-b3a.py`): 16 / 16, după proba T-ului cu două freze identice și otrava S03 mutată.
+- **Mărimea** (cu #11): pornirea neschimbată (110,3 kB; cu ușa 114,9, cu Atelierul 115,2 / 120), totalul 852,1 → 853,3 / 900.
+  Nimic pe server; documentul rămâne v27. **Completed:** 24.11, 17:55.
+
 ## 2026-11-24 — Sesiunea principală în cloud: cele două teste grele rămase în rapid, împărțite în câte patru fișiere (Model: Claude Fable 5.2)
 
 **Prompt:** „ok, imparte si cele doua teste grele ramase”
@@ -13891,3 +13922,103 @@ palete”
 - **Probele feliei:** unitare 8, e2e 4; probele pluginului și ale extensiilor, 170 / 170 în browser; otrăvurile 47 / 47
   (31 în unitare, 16 prin browser). Easy 3Draw 18.24.0, cu rândul de „ce e nou”; doar pachetul se schimbă.
 - **Găsit pe drum:** unealta probei (numărul de înfășurare) avea semnul întors; au arătat-o așteptările „în lemn”.
+
+## 2026-11-24 — Sesiunea principală în cloud: clicul pe „Închide” din cadrul unei extensii, pierdut (probă instabilă, reparată) (Model: Claude Fable 5.2)
+
+**Prompt:** completul de pe `main` pentru loturile 19–21 (`7312d685`, rularea 45436221341), roșu la o singură probă;
+regula „un CI roșu pe `main` e incidentul numărul unu”
+**Started:** 24.11, 18:50. **Completed:** 24.11, 19:30, pe ramura `unire-2411z` (intră în `main` cu lotul următor).
+
+- **Căderea:** `extensii.spec.ts:44`, la linia 135: după a doua deschidere a extensiei „Salut”, clicul pe „Închide”
+  din cadru n-a ajuns la buton, iar cadrul a rămas deschis cele 15 s ale așteptării. E cursa din
+  `clicDupaReaparitie` (un clic dat imediat după ce cadrul apare se pierde, fără nicio eroare), nu cea reparată pe
+  23.11 (clicul ajuns, dar neîntors). Publicarea loturilor 19–21 a căzut de la ea; lotul 22 (`62569bb2`) le cuprinde
+  și a mers mai departe.
+- **Nu s-a reprodus local:** 150 din 150 cu ajutorul vechi, pe 8 lucrători. Deci a fost provocată: o probă nouă
+  (`extensii.spec.ts`, „un clic care nu ajunge la butonul de închidere…”) oprește primul clic înainte să ajungă la
+  extensie, o singură dată. Cu ajutorul vechi cade („Expected: 0, Received: 1”), cu cel nou trece.
+- **Reparația, doar în probe:** `clicCareInchideCadrul` (`test/e2e/ajutor-extensii.ts`) repetă clicul cât cadrul e
+  încă acolo (cel mult 25 s); un clic ajuns închide cadrul o singură dată, deci al doilea nu mai are pe ce să cadă.
+  Un clic care cade cu adevărat își spune tot eroarea lui.
+- **Probele:** cele două fișiere ale extensiilor, repetate de 12 ori pe 8 lucrători: 168 / 168. Otrava (gazda ignoră
+  `host.inchide()`, în `src/extensii/cadru.ts`): cele trei probe care folosesc ajutorul cad toate, în sub 30 s
+  fiecare. Lecția, în `docs/linii/principala.md`.
+
+## 2026-11-24 — Felia 11.1↑d: rândul comenzilor foii nu trece de foaia lui (sesiunea principală în cloud) (Model: Claude Fable 5.2)
+
+**Prompt:** „si trebuie sa reparam si asta” (trei capturi: rândul comenzilor mai lat decât foaia, cu pânza micșorată;
+două rânduri suprapuse)
+**Started:** 24.11, 19:20. **Completed:** 24.11, 19:32, pe ramura `wip/11.1d-rand-foaie` (intră în `main` cu lotul ei).
+
+- **Ce era:** rândul de șapte butoane de sub foaie are 214 px (354 la densitatea mare), oricât de mică e foaia pe
+  ecran. Cu pânza micșorată ieșea peste foaia vecină, iar cu mausul pe ea, cele două rânduri se suprapuneau.
+- **Ce e acum** (ADR 0210, „Felia 11.1↑d”): rândul e întreg doar cât încape sub foaia lui; mai îngust, se strânge
+  într-un buton, „⋯” („Arată comenzile foii”), care îl desface peste ce e alături; sub lățimea unui buton nu se mai
+  arată. Mausul plecat, Escape (cu focusul întors pe „⋯”) sau o comandă aleasă îl strâng la loc. Mărimea butonului se
+  măsoară. Un rând desfăcut și întrebarea ștergerii nu ies din pânză.
+- **Găsit de probă:** cu cursorul pe rând, rotița nu micșora pânza (rândul e frate al pânzei). Rândul îi dă pânzei
+  rotița, cu locul cursorului.
+- **Probele:** `controaleFoi.test.ts` (7), `controale-foi.spec.ts` (9), manualul în ambele limbi, catalogul
+  controalelor (639 de nume).
+- **Otrăvurile** (`test/otravuri/11.1d.py`): 22 / 22 pe `7104265b`. La prima rulare, 18; patru au scăpat și au cerut
+  probe mai tari: focusul la desfacere (un clic care nu dă focus butonului, ca în Safari), focusul după Escape (dat de
+  pe altă comandă decât prima: butonul refolosit de React își ținea singur focusul), strângerea după o comandă (dată
+  de la tastatură, cu mausul departe: altfel îl strângea mausul plecat), locul cursorului la rotiță (punctul foii de
+  sub cursor rămâne pe loc). Patru otrăvuri din `11.1c.py`, mutate pe codul nou, prinse.
+- **Mărimea:** în porțile lotului.
+
+## 2026-11-24 — Sesiunea principală în cloud: a douăzeci și treia unire (11.1↑d, rândul comenzilor foii; proba extensiilor reparată; 3.At, cursa din fila Setări) (Model: Claude Fable 5.2)
+
+**Prompt:** „si trebuie sa reparam si asta” (trei capturi ale rândului comenzilor foii); regula „un CI roșu pe `main` e
+incidentul numărul unu” (completul loturilor 19–21, roșu la o probă a extensiilor)
+**Started:** 24.11, 19:35. **Completed:** unirea în `main`, 24.11, 21:57; publicarea pe test, la rândul ei.
+
+- **Lotul, pe `unire-2411aa`** (peste lotul 24): reparația probei extensiilor (`b08898b1`, în `13d9bcad`), 11.1↑d
+  (`bff5fbcc`, în `001b6325`) și 3.At (`cadac6c3`); nota liniei bibliotecii (`945a9320`, doar documente). Ciocnirile: DEVLOG și lecțiile
+  din `docs/linii/principala.md`. Local, pe arborele unit: tipurile, regulile de import (21), traducerile, catalogul
+  controalelor și biblioteca extensiilor, la zi.
+- **Primul complet al lotului** (45449914076, pe `001b6325`), roșu la o singură probă, pe emulatoare:
+  `utilizatori.emulator.spec.ts:325`, „setările utilizării”, la „lot = 61” (butonul Salvează, activ în loc de oprit);
+  restul verde (unit 10 300 / 0, e2e 785 / 785, funcțiile 136 / 136, paginile 56 din 57). Fără legătură cu lotul.
+- **Cauza, la rădăcină (3.At, `cadac6c3`):** în fila Setări, mesajul salvării apărea la răspunsul callable-ului, iar
+  formularul se remonta la citirea de după (`key={citiri}`), cu valorile citite, peste ce se scrisese între ele. În
+  CI, citirea a întârziat: proba a scris „61” după „Nimic schimbat.”, apoi formularul s-a umplut din nou cu 5. Aceeași
+  cursă era în toate cele trei formulare (conturile, utilizarea, răspunsurile rapide). Reparația: mesajul e ținut până
+  sosește citirea (`useMesajDupaCitire`, `src/admin/setari/dupaCitire.ts`), bună sau căzută; până atunci formularul e
+  ocupat. Probele, pe emulatoare: citirea întârziată anume cu 1,5 s (roșie înaintea reparației: la mesaj, citirea nu
+  sosise; verde după) și citirea căzută (mesajul apare, iar după „Reîncarcă” formularul nu rămâne ocupat); cele 11
+  probe ale fișierelor `utilizatori` și `rapide`, verzi. Otrăvurile (`test/otravuri/3.At.py`): 5 / 5 din prima, pe emulatoare (mesajul dat la răspunsul salvării, în fiecare din cele trei formulare; mesajul care nu mai vine; citirea căzută care lasă formularul ocupat).
+- **Porțile, în CI:** cu 3.At, codul lotului a trecut în completul lotului 26, care îl cuprinde (45466400696, pe
+  `fdde5947`: unit 10 307 / 0, e2e 788 / 788, funcțiile 136 / 136, paginile 59 / 59); rapidul, verde pe `e533068a`
+  (45466041605). Completul propriu al lotului, pe `cadac6c3` (45465767883), a stat 40 de minute la coadă și rula încă
+  la unire. Mărimea lotului singur (primul complet): pornirea 110,4 kB, totalul 857,5 / 900. Nimic pe server.
+- **Tot în lot, doar documente:** nota liniei bibliotecii (`945a9320`); predarea liniei elicelor către sesiunea
+  extensiilor (`05bdc8ec`, la cererea owner-ului) și decizia liniei noi a atelierului Easy 3Draw (ADR 0340–0349,
+  feliile de la 3.Tv, cu 3.Tu).
+- **Loturile dinainte:** loturile 19–22 sunt pe test din 20:32 (`62569bb2`; completul pe `main` 45445300697, verde;
+  publicarea 45457898832; adresa spune `62569bb25907`, proba de fum, bună). Lanțul de publicare pornit în fundal s-a
+  oprit la limita lui de timp după ce pornise publicarea; a mers mai departe în GitHub. Loturile 23 (`9bbb1d58`) și 24
+  (`878ee5d1`) sunt în `main`; rapidul pe `878ee5d1`, verde (45454985491).
+
+## 2026-11-24 — Sesiunea principală în cloud: a douăzeci și patra unire (frezele: 16.A↑h-5, profilurile parametrice; 16.A↑b-3, freza pe rândurile exportului) (Model: Claude Fable 5.2)
+
+**Prompt:** rapoartele liniei frezelor („16.A↑h-5 gata de unit”, `2fe701d3`; „completul lui 16.A↑b-3 pe `6041109d` e
+VERDE”), la ordinul în vigoare „unește ce se poate”
+**Started:** 24.11, 21:05. **Completed:** unirea în `main`, 24.11, 21:57, în aceeași împingere cu lotul 25; publicarea
+pe test, la rândul ei.
+
+- **Lotul, pe `unire-2411ab`** (peste lotul 25): h-5 (`2fe701d3`, în `4aee5405`, fără ciocniri) și b-3 (`6041109d`,
+  în `fdde5947`; ciocnirile: registrul otrăvurilor și catalogul controalelor, scris din nou: 640 de nume). b-3 a fost
+  pusă în avans, cât îi rula completul propriu; a intrat după ce linia l-a raportat verde (verificat în GitHub).
+  Local, pe arborele unit: tipurile (și ale funcțiilor), regulile de import (21), traducerile (1 073), catalogul,
+  biblioteca extensiilor.
+- **Porțile, în CI:** completul lotului pe `fdde5947` (45466400696, verde la prima trecere, 50 min): unit 10 307 / 0
+  (12 sărite, pe Linux), e2e 788 / 788, funcțiile pe emulatoare 136 / 136, paginile 59 / 59; rapidul, verde pe
+  `fdde5947` (45466401056, feliile între 0:56 și 9:48); completele liniei, verzi: `2fe701d3` (45455123768), `6041109d`
+  (45455611401). Pornirea 110,4 kB (plafonul 120; cu ușa 115,1, cu Atelierul 115,4), totalul 860,1 / 900 kB, `/admin`
+  138,3 / 200, contul 30,3 / 32. Nimic pe server.
+- **Documentele:** decizia în `CLAUDE.md`, cu paragraful de stare al lui h-5 și b-3; indexul liniilor; starea din
+  `docs/linii/principala.md`.
+- **Urmează:** lotul 27, relieful singur (18.1↑a, `feb7bee1`, v28), unit pe `unire-2411ac` (`c5b79526`; ciocnirile:
+  jurnalul feliilor, registrul otrăvurilor, catalogul controalelor, 641 de nume; 208 unitare alese, verzi local);
+  completul lui (45472363389) rula la unire.

@@ -268,11 +268,12 @@ test('catalogul: grupurile cu mărimile lor, fișa unei freze din catalog, „Pu
   const cat = f.locator('[data-freze="catalog"]');
   const bib = (x: Locator): Locator => x.locator('[data-freza] .freze-rand-nume');
   // Strâns la început: doar titlul, cu numărul frezelor.
-  await expect(f.locator('[data-freze="catalog-arata"]')).toHaveText('Catalogul (119)');
+  await expect(f.locator('[data-freze="catalog-arata"]')).toHaveText('Catalogul (149)');
   await expect(cat.locator('[data-catalog]')).toHaveCount(0);
   await f.locator('[data-freze="catalog-arata"]').click();
   await expect(cat.locator('.freze-grupa h3')).toHaveText([
     'Plate (17)', 'Planare (5)', 'În V (17)', 'Gravare (30)', 'Bilă (12)', 'Toroidale (6)', 'Conice cu vârf rotund (9)', 'Burghie (23)',
+    'Rotunjiri (11)', 'Ogee (7)', 'Ogee roman (4)', 'Panouri ridicate (8)',
   ]);
   await expect(cat.locator('[data-catalog="cat-plata-6.35"]')).toContainText('1/4" · 18000 rot/min · 1800 mm/min');
   // Fișa unei freze din catalog: valorile de pornire și nota țolilor, doar de citit, fără Editează.
@@ -300,10 +301,10 @@ test('catalogul: grupurile cu mărimile lor, fișa unei freze din catalog, „Pu
   await cat.locator('[data-catalog-grup="planare"] [data-freze="catalog-pune-grup"]').click();
   await expect(f.locator('[data-freze="mesaj"]')).toHaveText('Puse: 5 · erau deja: 0');
   await cat.locator('[data-freze="catalog-pune-tot"]').click();
-  await expect(f.locator('[data-freze="mesaj"]')).toHaveText('Puse: 106 · erau deja: 13');
+  await expect(f.locator('[data-freze="mesaj"]')).toHaveText('Puse: 136 · erau deja: 13');
   // Plata Ø19,05 e aceeași freză cu planarea Ø19,05 (aceeași geometrie): o singură dată.
-  await expect(bib(f)).toHaveCount(118);
-  await expect(f.locator('[data-freze="stare"]')).toContainText('118 freze');
+  await expect(bib(f)).toHaveCount(148);
+  await expect(f.locator('[data-freze="stare"]')).toContainText('148 de freze');
   // Căutarea și filtrul aleg și din catalog.
   await f.locator('[data-freze="cauta"]').fill('ø25,4');
   await expect(cat.locator('[data-catalog] .freze-rand-nume')).toHaveText(['Plată Ø25,4', 'V60 Ø25,4', 'V90 Ø25,4', 'V120 Ø25,4', 'V150 Ø25,4']);
@@ -350,6 +351,73 @@ test('felurile noi (16.A↑h-4): toroidala și burghiul în editor, cu câmpuril
   await f.locator('[data-catalog="cat-bila-6"]').click();
   await expect(fisa(f).getByRole('heading', { name: 'Bilă Ø6', level: 3 })).toBeVisible();
   await expect(fisa(f).locator('[data-freze="curand"]')).toBeVisible();
+  await expect(page.getByTestId('jurnal')).toHaveText('0 erori în jurnalul local');
+});
+
+test('profilurile (16.A↑h-5): rotunjirea, ogee-ul roman cu treapta, panoul cu fundul plat și scobitura opțională; în catalog, „în curând”', async ({ page }) => {
+  await page.goto('/');
+  const f = await deschideFrezele(page);
+  await standard(f);
+  // Rotunjirea: raza 3 și, fiindcă pe Ø6 n-ar încăpea, diametrul 12; fără unghi; o rază de Ø / 2 se refuză.
+  await f.locator('[data-freze="noua"]').click();
+  await f.locator('[data-freze-fel="rotunjire"]').click();
+  await expect(camp(f, 'raza')).toHaveValue('3');
+  await expect(camp(f, 'diametru')).toHaveValue('12');
+  await expect(camp(f, 'unghi')).toHaveCount(0);
+  await expect(f.locator('.freze-camp').filter({ hasText: 'Raza rotunjirii' })).toHaveCount(1);
+  await expect(camp(f, 'nume')).toHaveAttribute('placeholder', 'Rotunjire R3 Ø12');
+  await camp(f, 'raza').fill('6');
+  await expect(f.locator('#freze-eroare-raza')).toHaveText('Peste 0 și sub jumătatea diametrului.');
+  await camp(f, 'raza').fill('3');
+  await f.locator('[data-freze="salveaza"]').click();
+  await expect(valoare(f, 'fel')).toHaveText('Rotunjire');
+  await expect(valoare(f, 'raza')).toHaveText('3 mm');
+  await expect(fisa(f).locator('[data-freze="curand"]')).toBeVisible();
+  await expect(fisa(f).getByRole('img', { name: 'Silueta frezei' })).toBeVisible();
+  await expect(f.getByRole('heading', { name: 'Rotunjiri (1)' })).toBeVisible();
+  // Ogee-ul roman: raza arcelor și treapta, cu diametrul care le cuprinde (21); o treaptă prea mare se refuză.
+  await f.locator('[data-freze="noua"]').click();
+  await f.locator('[data-freze-fel="ogee-roman"]').click();
+  await expect(camp(f, 'raza')).toHaveValue('3');
+  await expect(camp(f, 'treapta')).toHaveValue('1,5');
+  await expect(camp(f, 'diametru')).toHaveValue('21');
+  await expect(f.locator('.freze-camp').filter({ hasText: 'Raza arcelor' })).toHaveCount(1);
+  await camp(f, 'treapta').fill('5');
+  await expect(f.locator('#freze-eroare-treapta')).toHaveText('Peste 0 și cât încap arcele și treptele: 2 × raza + treapta sub Ø / 2.');
+  // Ogee-ul simplu n-are treaptă; raza lui e sub un sfert din diametru.
+  await f.locator('[data-freze-fel="ogee"]').click();
+  await expect(camp(f, 'treapta')).toHaveCount(0);
+  await camp(f, 'raza').fill('6');
+  await expect(f.locator('#freze-eroare-raza')).toHaveText('Peste 0 și sub un sfert din diametru.');
+  // Din ogee-ul de Ø21, panoul își păstrează diametrul (fundul plat încape).
+  await f.locator('[data-freze-fel="panou"]').click();
+  await expect(camp(f, 'diametru')).toHaveValue('21');
+  await f.locator('[data-freze="renunta"]').click();
+  // Panoul nou (de pe Ø6, unde fundul plat de 1/4" n-ar încăpea): teșitura față de fața plăcii (12°), fundul plat de 1/4",
+  // diametrul de 2", scobitura goală (opțională).
+  await f.locator('[data-freze="noua"]').click();
+  await f.locator('[data-freze-fel="panou"]').click();
+  await expect(camp(f, 'unghi')).toHaveValue('12');
+  await expect(camp(f, 'varf')).toHaveValue('6,35');
+  await expect(camp(f, 'diametru')).toHaveValue('50,8');
+  await expect(camp(f, 'raza')).toHaveValue('');
+  await expect(f.locator('.freze-camp').filter({ hasText: 'Teșitura (față de fața plăcii)' })).toHaveCount(1);
+  await expect(f.locator('.freze-camp').filter({ hasText: 'Fundul plat' })).toHaveCount(1);
+  await expect(camp(f, 'nume')).toHaveAttribute('placeholder', 'Panou 12° Ø50,8');
+  await camp(f, 'unghi').fill('90');
+  await expect(f.locator('#freze-eroare-unghi')).toHaveText('Între 1° și 89°.');
+  await camp(f, 'unghi').fill('12');
+  await camp(f, 'raza').fill('200');
+  await expect(f.locator('#freze-eroare-raza')).toHaveText('Peste 0, cât încape scobitura între fundul plat și diametru.');
+  await camp(f, 'raza').fill('6,35');
+  await expect(camp(f, 'nume')).toHaveAttribute('placeholder', 'Panou 12° R6,35 Ø50,8');
+  await f.locator('[data-freze="renunta"]').click();
+  // Catalogul: grupurile profilurilor, cu „în curând”; fișa unui panou cu scobitură.
+  await f.locator('[data-freze="catalog-arata"]').click();
+  for (const g of ['rotunjire', 'ogee', 'ogee-roman', 'panou']) await expect(f.locator(`[data-catalog-grup="${g}"]`)).toContainText('în curând în proiect');
+  await f.locator('[data-catalog="cat-panou-12-r6.35-50.8"]').click();
+  await expect(fisa(f).getByRole('heading', { name: 'Panou 12° R6,35 Ø50,8', level: 3 })).toBeVisible();
+  await expect(valoare(f, 'varf')).toHaveText('6,35 mm');
   await expect(page.getByTestId('jurnal')).toHaveText('0 erori în jurnalul local');
 });
 

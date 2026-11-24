@@ -1,6 +1,7 @@
 /**
  * Catalogul de freze (ADR 0302 §1, felia 16.A↑h-3): felurile pe care CAM-ul le taie azi (plata, cu planarea ca plată mare,
- * V-ul și gravarea), cu mărimile lor standard, în milimetri și în țoli. E scris de noi, din tabelul ADR-ului: nimic copiat
+ * V-ul și gravarea), cu mărimile lor standard, în milimetri și în țoli; apoi, „în curând”, bila, toroidala, conica, burghiul
+ * (16.A↑h-4) și profilurile (16.A↑h-5). E scris de noi, din tabelul ADR-ului: nimic copiat
  * din alt program. E doar de citit; „Pune în frezele mele” face o copie în bibliotecă, a omului.
  *
  * Valorile de lucru sunt de pornire, de verificat pe material (calculatorul avansului vine cu 16.A↑g): turația după diametru,
@@ -13,7 +14,7 @@ import type { FrezaFaraNume } from './freza.ts';
 export { cuDinCatalog } from './dinCatalog.ts';
 
 /** Grupurile catalogului, în ordinea lor: planarea e o freză plată, cu grupul ei. */
-export const GRUPURI_CATALOG = ['plata', 'planare', 'v', 'gravare', 'bila', 'toroidala', 'conica', 'burghiu'] as const;
+export const GRUPURI_CATALOG = ['plata', 'planare', 'v', 'gravare', 'bila', 'toroidala', 'conica', 'burghiu', 'rotunjire', 'ogee', 'ogee-roman', 'panou'] as const;
 export type GrupCatalog = (typeof GRUPURI_CATALOG)[number];
 
 /** O freză a catalogului: id-ul fix și grupul ei, fără nume (îl propune fereastra, în limba omului). */
@@ -87,6 +88,32 @@ function burghiu(d: number): FrezaCatalog {
   return { id: `cat-burghiu-${d}`, grupCatalog: 'burghiu', fel: 'burghiu', diametru: d, unghi: 118, tais, numar: 1, ...lucru(d, Math.min(d, 6), 40) };
 }
 
+/**
+ * Profilurile (16.A↑h-5), „în curând” până la CAM-ul lor (16.A↑f): rotunjirea și ogee-urile cu vârful (bucata de sub arce) de
+ * Ø6, ogee-ul roman cu treapta 1,5; panoul ridicat cu fundul plat de 1/4". Valorile de pornire, ca la plata de același
+ * diametru, cu pasul 2 (profilul se taie în câteva treceri).
+ */
+const mm = (x: number): number => Math.round(x * 1000) / 1000;
+function rotunjire(r: number): FrezaCatalog {
+  return { id: `cat-rotunjire-${r}`, grupCatalog: 'rotunjire', fel: 'rotunjire', diametru: mm(2 * r + 6), raza: r, numar: 1, ...lucru(mm(2 * r + 6), 2, 40) };
+}
+
+function ogee(r: number): FrezaCatalog {
+  return { id: `cat-ogee-${r}`, grupCatalog: 'ogee', fel: 'ogee', diametru: mm(4 * r + 6), raza: r, numar: 1, ...lucru(mm(4 * r + 6), 2, 40) };
+}
+
+function ogeeRoman(r: number, t: number): FrezaCatalog {
+  const d = mm(4 * r + 2 * t + 6);
+  return { id: `cat-ogee-roman-${r}-${t}`, grupCatalog: 'ogee-roman', fel: 'ogee-roman', diametru: d, raza: r, treapta: t, numar: 1, ...lucru(d, 2, 40) };
+}
+
+function panou(d: number, unghi: number, raza?: number): FrezaCatalog {
+  return {
+    id: `cat-panou-${unghi}${raza === undefined ? '' : `-r${raza}`}-${d}`, grupCatalog: 'panou', fel: 'panou', diametru: d, unghi, varf: 6.35,
+    ...(raza === undefined ? {} : { raza }), numar: 1, ...lucru(d, 2, 40),
+  };
+}
+
 /** V-urile obișnuite: unghiul și diametrele lui. */
 const V: readonly (readonly [number, readonly number[]])[] = [
   [30, [6, 12.7]], [45, [6, 12.7]], [60, [6, 12, 12.7, 25.4]], [90, [6, 12, 12.7, 25.4, 31.75]], [120, [12.7, 25.4]], [150, [12.7, 25.4]],
@@ -102,4 +129,8 @@ export const CATALOG_FREZE: readonly FrezaCatalog[] = [
   ...([[6, 0.5], [6, 1], [8, 1], [10, 1], [10, 2], [12, 2]] as const).map(([d, r]) => toroidala(d, r)),
   ...[10, 15, 20].flatMap((u) => [0.25, 0.5, 1].map((r) => conica(u, r))),
   ...Array.from({ length: 23 }, (_, i) => burghiu(1 + i / 2)),
+  ...[2, 3, 3.175, 4, 5, 6, 6.35, 8, 9.525, 10, 12.7].map(rotunjire),
+  ...[2, 3, 3.175, 4, 5, 6, 6.35].map(ogee),
+  ...[3, 4, 5, 6].map((r) => ogeeRoman(r, 1.5)),
+  ...[38.1, 50.8].flatMap((d) => [panou(d, 10), panou(d, 12), panou(d, 15), panou(d, 12, 6.35)]),
 ];

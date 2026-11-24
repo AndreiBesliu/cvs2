@@ -50,7 +50,7 @@ export function numarPentruAlegere(doc: Document, piese: readonly string[], s: S
 }
 
 /** Pasul lateral al buzunarului: procentul frezei din diametru, în jos la 0,001 mm (deci cel mult raza, la cel mult 50 %). */
-function pasLateralDin(f: Freza): number {
+export function pasLateralDin(f: Freza): number {
   const x = (f.pasLateral * f.diametru) / 100;
   const jos = Math.floor(x * 1000) / 1000;
   return jos > 0 ? jos : x;

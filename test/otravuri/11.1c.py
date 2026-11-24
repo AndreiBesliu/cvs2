@@ -39,19 +39,19 @@ o('C10', CC, "  ['foaie.muta-sus', 'actiune.foaie-muta-sus'],\n  ['foaie.muta-jo
 o('E01', MF, 'vizibil={f.activa || peste === f.id}', 'vizibil={f.activa}', 'e2e', 'mausul pe o foaie vecină nu-i arată rândul')
 o('E02', MF, 'vizibil={f.activa || peste === f.id}', 'vizibil={true}', 'e2e', 'toate rândurile se văd mereu')
 o('E03', MF, 'vizibil={f.activa || peste === f.id}', 'vizibil={peste === f.id}', 'e2e', 'rândul foii active se vede doar cu mausul pe ea')
-o('E04', MF, "data-vizibil={vizibil || intreaba ? 'da' : 'nu'}", "data-vizibil={vizibil ? 'da' : 'nu'}", 'e2e',
+o('E04', MF, "data-vizibil={vizibil || intreaba || extins ? 'da' : 'nu'}", "data-vizibil={vizibil || extins ? 'da' : 'nu'}", 'e2e',
   'întrebarea ștergerii se stinge când mausul pleacă de pe foaie')
 o('E05', MF, "if (id === 'foaie.sterge' && f.piese > 0) {\n                    onIntreaba(f.id);", "if (false) {\n                    onIntreaba(f.id);", 'e2e',
   'o foaie cu piese se șterge fără întrebare')
-o('E06', MF, "onClick={() => { onIntreaba(null); actiuni.ruleaza('foaie.sterge', f.id); }}", 'onClick={() => { onIntreaba(null); }}', 'e2e',
+o('E06', MF, "onClick={() => { onIntreaba(null); onExtinde(null); actiuni.ruleaza('foaie.sterge', f.id); }}", 'onClick={() => { onIntreaba(null); onExtinde(null); }}', 'e2e',
   '„Șterge foaia” din întrebare nu șterge')
 o('E07', MF, 'data-meniu-foaie-articol="sterge-nu" onClick={() => { onIntreaba(null); }}', 'data-meniu-foaie-articol="sterge-nu" onClick={() => { }}', 'e2e',
   '„Renunță” lasă întrebarea pe rând')
 o('E08', MF, 'aria-label={t(eticheta)} disabled={!s.ok}', 'aria-label={t(eticheta)} disabled={false}', 'e2e', 'un refuz nu stinge butonul')
 o('E09', MF, "title={s.ok ? t(eticheta) : `${t(eticheta)}: ${t(s.motiv)}`}", 'title={t(eticheta)}', 'e2e', 'butonul stins nu-și spune motivul')
-o('E10', MF, "title={t('lista.foaie-proprietati')} onClick={() => { actiuni.proprietati(f.id); }} />", "title={t('lista.foaie-proprietati')} onClick={() => { actiuni.aseaza(f.id); }} />", 'e2e',
+o('E10', MF, "title={t('lista.foaie-proprietati')} onClick={() => { onExtinde(null); actiuni.proprietati(f.id); }} />", "title={t('lista.foaie-proprietati')} onClick={() => { onExtinde(null); actiuni.aseaza(f.id); }} />", 'e2e',
   '„Nume, mărime și material…” deschide așezarea')
-o('E11', MF, "title={t('lista.foaie-aseaza')} onClick={() => { actiuni.aseaza(f.id); }} />", "title={t('lista.foaie-aseaza')} onClick={() => { actiuni.proprietati(f.id); }} />", 'e2e',
+o('E11', MF, "title={t('lista.foaie-aseaza')} onClick={() => { onExtinde(null); actiuni.aseaza(f.id); }} />", "title={t('lista.foaie-aseaza')} onClick={() => { onExtinde(null); actiuni.proprietati(f.id); }} />", 'e2e',
   '„Așază pe foi…” deschide panoul foii')
 o('E12', MF, "aria-label={t('lista.foaie-proprietati')}\n", "aria-label={t('lista.foaie-aseaza')}\n", 'e2e', 'numele accesibil al primului buton e al altuia')
 o('E13', AP, 'if (!toateFoile || doc.foi.length < 2) return [una(activa, indexActiva, 0)];', 'if (doc.foi.length < 2) return [una(activa, indexActiva, 0)];', 'e2e',
