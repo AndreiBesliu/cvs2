@@ -2,9 +2,10 @@
 
 ## 3.Xj: căutarea și categoriile (gata, de unit, în cloud)
 
-_Aceeași linie și aceeași ramură (`wip/3.Xh-biblioteca-ui`, cu `main` adus de trei ori pe 24.11: `64a63b4`, fără
+_Aceeași linie și aceeași ramură (`wip/3.Xh-biblioteca-ui`, cu `main` adus de patru ori pe 24.11: `64a63b4`, fără
 ciocniri; `a96881a`, cu cele trei obișnuite (DEVLOG-ul, traducerile, catalogul controalelor); `29ef7e4`, cu proba
-repornirii, luată din `main`). Starea:
+repornirii, luată din `main`; `7312d68`, loturile 19–21, cu DEVLOG-ul, indexul liniilor și catalogul controalelor).
+Starea:
 **ADR 0233 scris și implementat pe 24.11, la „ok, porneste cautarea si categoriile” al owner-ului, cu alegerile
 recomandate; cinci întrebări pentru el stau în ADR („Întrebările”). PR-ul `AndreiBesliu/cvs2#24`, de unit de sesiunea
 principală după completul verde. Pachetele nu s-au schimbat (Easy 3Draw e 18.23.0, din 3.Tt, venit cu `main`;
@@ -17,10 +18,16 @@ următoarea versiune, 18.24.0).**_
   o singură extensie; câte rafturi pe extensie; cât de îngăduitoare e căutarea. Fiecare se schimbă fără să atingă restul.
 - **Probele:** `test/unit/extensii.cautare.test.ts`, `test/e2e/extensii.cautare.spec.ts` (biblioteca de probă cu cinci
   extensii: `raftDeProba` din `ajutor-biblioteca.ts`), țintele în `extensii.tinte.spec.ts`. Otrăvurile, în clonă: 78 / 78 (la prima rulare, 76: U06 și E06, cu probele întărite).
-- **Mărimea:** pornirea neschimbată; totalul +1,3 kB (814,3 → 815,6; cu `main` `a96881a` adus, 816,8 → 818,1 / 900 kB,
-  pornirea 110,1 kB, cu ușa 114,8, cu Atelierul 115,1 / 120).
+- **Mărimea:** pornirea neschimbată; totalul +1,3 kB (814,3 → 815,6; cu `main` `7312d68` adus, 830,5 → 831,8 / 900 kB,
+  pornirea 110,2 kB, cu ușa 114,9, cu Atelierul 115,2 / 120).
 - **CI:** rapidul verde pe `1c21640`; primul complet, căzut la o probă mai veche a extensiilor (regula de mai jos);
-  completul de pe capătul cu `main` `29ef7e4` adus hotărăște unirea.
+  **completul verde pe `51ca1a5`** (codul feliei cu `main` `a96881a`; 69 min 27 s); completul de pe capătul cu `main`
+  `7312d68` adus (`e46d70e`) hotărăște unirea.
+- **Felia următoare, hotărâtă cu sesiunea principală (24.11), după unirea lui 3.Xj, pe PR separat, doar probe:** rândul
+  235 al probei repornirii („două cereri imediat după”) cade 2 din 120 sub zece lucrători, când clicurile ajung după
+  cele 2 s. De făcut: cele trei cereri dintr-un singur `evaluate` din cadru, în întrecere cu urmarea; proba judecă doar
+  numărul final de deschideri; cu repetările dinainte și de după (120–150 pe zece lucrători) și cu otrava răririi
+  (intervalul 0 sau cererea a doua neamânată). Nu cere cuvântul owner-ului (ține CI-ul verde).
 - **Canalul `biblioteca`:** <https://cncvectorstudio-test--biblioteca-gw7dr9bc.web.app> (până pe 24.12.2026).
 
 **Reguli rămase de la 3.Xj:**
