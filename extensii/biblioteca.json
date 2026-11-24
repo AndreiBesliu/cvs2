@@ -13,6 +13,11 @@
       "autor": "CNC Vector Studio",
       "noutati": [
         {
+          "versiune": "18.23.0",
+          "ro": "Elicea de barcă se poate înclina și spre pupa, 0–15°: paletele se ridică spre vârf, ca la elicele bărcilor rapide, și se tipăresc cu suport sub ele.",
+          "en": "The boat propeller can now be raked aft, 0–15°: the blades rise toward the tip, as on fast boat propellers, and print with supports under them."
+        },
+        {
           "versiune": "18.22.0",
           "data": "2026-11-24",
           "ro": "Ventilatorul cu carcasă, a treia piesă a filei „Elice”: rotorul (3–12 palete, cu inel la alegere) și carcasa cu urechi pentru grinzi, cu „Fă ventilatorul”.",
@@ -78,8 +83,8 @@
           }
         }
       ],
-      "versiune": "18.22.0",
-      "continut": "a63d1cbeb51a0f536f45d62f13a4f4b44e8d935acb18e3d17f7fc8b5aae6bba1"
+      "versiune": "18.23.0",
+      "continut": "ae3af10b6b7ca97eb48d914ba3b1e5ceb661312f4c205d43475b4504c894ec08"
     }
   ]
 }
