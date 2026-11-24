@@ -238,12 +238,15 @@ test('grupurile omului: „Grupul” din fișă (un grup nou, unul existent) și
   await page.reload();
   const g = await deschideFrezele(page);
   await expect(titluri(g)).toHaveText(['Esență tare (2)', 'Plate (2)', 'În V (1)', 'Gravare (1)']);
-  // În editor, câmpul „Grupul”: golit, freza se întoarce pe felul ei.
+  // În editor, câmpul „Grupul”: alt nume, alt grup.
   await editeaza(g, 'V90 Ø12');
   await expect(camp(g, 'grup')).toHaveValue('Esență tare');
-  await camp(g, 'grup').fill('');
+  await camp(g, 'grup').fill('Aluminiu');
   await g.locator('[data-freze="salveaza"]').click();
-  await expect(grupul(g)).toHaveText('Fără grup (pe fel)');
+  await expect(grupul(g)).toHaveText('Aluminiu');
+  await expect(titluri(g)).toHaveText(['Aluminiu (1)', 'Esență tare (1)', 'Plate (2)', 'În V (1)', 'Gravare (1)']);
+  // „Fără grup (pe fel)”, din fișă: freza se întoarce pe felul ei.
+  await fisa(g).locator('[data-freze="muta"]').selectOption({ label: 'Fără grup (pe fel)' });
   await expect(titluri(g)).toHaveText(['Esență tare (1)', 'Plate (2)', 'În V (2)', 'Gravare (1)']);
   // Redenumit gol: grupul se desface, iar frezele lui se întorc pe felurile lor.
   await g.locator('[data-freze="grup-redenumeste"]').click();
