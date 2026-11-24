@@ -2,7 +2,8 @@
 
 _cncvs2, biblioteca de freze („Frezele mele”), felia 16.A↑ adusă din etapa 16: ramura `wip/16.A-freze` (din `main`
 `c8b235ab`), ADR-urile 0300–0309, canalul `freze`; ADR 0300 ACCEPTAT pe 23.11 („Da, 1a–6a”);
-16.A↑a și ADR 0301 (plafonul total 900 kB) UNITE în `main` (`b1797933`); urmează 16.A↑b_
+16.A↑a și ADR 0301 (plafonul total 900 kB) UNITE în `main` (`b1797933`); 16.A↑b-1 (documentul v27, valorile frezei în
+program) GATA pe ramură; urmează 16.A↑b-2_
 
 Pornită pe 23.11.2026, în sesiunea cloud a liniei, la cererea owner-ului: „Vreau sa pot crea freze l sau profiluri de freze in
 aplicatie si sa le salvez in cont”. Rândurile din prag: „Bibliotecă de freze cu geometrie reală (dreaptă, bilă, toroidală, V,
@@ -33,6 +34,13 @@ gravare, profil, formă desenată)” și „Freze de profil desenate de utiliza
 - **24.11, noaptea: 16.A↑a și ADR 0301 unite în `main`** (`b1797933`, a noua unire din cloud, de sesiunea principală, în
   lotul `unire-2311k`; PR-ul #12 închis ca unit). Completul liniei, verde pe `218eed21` și pe `2c3fd99b`. Ramura adusă la
   `main`; următoarea felie, 16.A↑b (alegerea în proiect, documentul v27), la cuvântul owner-ului.
+- **24.11, dimineața: 16.A↑b-1 gata pe ramură** (la „continua” al owner-ului; `7fb16ec3` documentul v27, `f999c180`
+  corpusul de aur, `c5be2f07` programul, plus documentele). Felia 16.A↑b s-a împărțit: **b-1** documentul v27 (`biblioteca`,
+  `regim`, `tais` pe orice freză) și valorile frezei în program (turația, avansul, plonjarea, refuzul peste tăiș, turațiile pe
+  același T), fără interfață; **b-2** lista „Freza” pe rândurile exportului și în Tăierea (după fereastra exportului refăcută,
+  ADR 0290, dacă e unită); **b-3** nota schimbării din bibliotecă. Unitare noi 31; otrăvuri 34 / 34. Pornirea 109,5 kB (cu
+  ușa 114,0, cu Atelierul 114,3 / 115: mai rămân 0,7 kB), totalul 800,5 / 900. **De acum, un câmp nou al documentului ia
+  v28.**
 - **Feliile**, în ordine: 16.A↑a (biblioteca în browser, fereastra, fișierul), apoi b (alegerea în proiect, v27), c
   (contul), d (calibrarea), e (bila și toroidala), f (profilul desenat), g (valorile pe material).
 
@@ -40,9 +48,10 @@ gravare, profil, formă desenată)” și „Freze de profil desenate de utiliza
 
 - **Copia frezei** stă pe fiecare operație (`scula: { numar, nume, diametru, forma? }`, `SchemaScula`), și la fundul plat,
   la frezele de rest, la dop și la bandă: o singură schemă le acoperă pe toate. Tabelul `scule[]` din `PLAN.md` §3.2 nu există.
-- **Valorile de lucru sunt fixe:** `REGIM_IMPLICIT` (`src/cam/job.ts`: 18 000 rot/min, 1 000 și 300 mm/min, Z sigur 5),
-  pentru orice freză; fereastra exportului îl spune într-o notă (`export.regim`). Câmpul `regim` din v27 trebuie să lase
-  programele fără el octet cu octet.
+- **Valorile de lucru erau fixe:** `REGIM_IMPLICIT` (`src/cam/job.ts`: 18 000 rot/min, 1 000 și 300 mm/min, Z sigur 5),
+  pentru orice freză; fereastra exportului îl spune într-o notă (`export.regim`). Din 16.A↑b-1, `regimFrezei`
+  (`src/cam/regimFreza.ts`) ia valorile frezei, iar fără ele întoarce chiar regimul lucrării (programele de azi, octet cu
+  octet). Nota din fereastră rămâne de schimbat în 16.A↑b-2, odată cu alegerea frezei.
 - **Formele:** CAM-ul, plata și V-ul (cu vârf); IR-ul și nucleul simulării, și bila (elicea cu bila, încă refuzată); oracolul
   simulării, și profilul ca puncte (r, h). Toroidala nu e nicăieri.
 - **Contul:** nicio dată a omului nu stă încă pe server; biblioteca ar fi prima. Callable-urile cer App Check, deci
@@ -66,6 +75,13 @@ gravare, profil, formă desenată)” și „Freze de profil desenate de utiliza
   nou: `git fetch origin`, apoi `git ls-tree --name-only origin/<ramura> docs/adr/` pe fiecare `origin/wip/*`.
 - **Fereastra exportului se desenează din nou pe altă linie** (ADR 0290, `wip/28.8-export`): felia 16.A↑b pune alegerea din
   bibliotecă în secțiunea „Freza” a fișei, dacă fereastra nouă e unită întâi; altfel pe rândul de azi.
+- **Clona din container e superficială** (`git rev-parse --is-shallow-repository` dă `true`): `node scripts/corpus-documente.ts
+  --istorie` cade la commit-urile vechi din `ISTORIE` („Not a valid object name”). Întâi `git fetch --unshallow origin`.
+- **O versiune nouă a documentului mută probele versiunii curente** (lanțurile `PE_Vn ? ridicaPanaLaO(…, n)`, `migreazaVnVn+1O`,
+  `SCHEMA_CURENTA_O`, „mai nouă” în cazurile v9 / v10, `schema: n }` în ieșirile migrate): pe 16.A↑b-1, după diff-ul lui
+  `63a1eca0` (v26), cu un script pentru lanțuri; rămase, le găsește suita unitară.
+- **Mașina estimării (GRBL 1.1h din fabrică) are 500 mm/min pe axe:** un avans peste el nu scurtează timpul. O probă a
+  estimării cu avansul frezei folosește un avans sub 500.
 - **`node scripts/traduceri.ts --help` scrie fișierul** (nu cunoaște `--help`): adaugă textele noi cu `en` gol. Verificarea e
   `--verifica`.
 
