@@ -59,6 +59,10 @@ test('fără freze în bibliotecă, rândul nu apare; cu ele, doar cele plate pe
   await page.locator('[data-actiune="istoric.anuleaza"]').click();
   await expect(aleasa(page)).toHaveText('Scrisă de mână');
   await expect(taierea(page).locator('[data-camp="pas"]')).toHaveValue('3');
+  // După reîncărcare, panoul își citește singur biblioteca din browser, fără fereastra „Frezele mele”.
+  await page.reload();
+  await page.getByTestId('lista-vectori').locator('button[data-instanta]').first().click();
+  await expect(oferite(page)).toHaveText(['Plată Ø3,175', 'Plată Ø6', 'Plată Ø12']);
   await expect(page.getByTestId('jurnal')).toHaveText('0 erori în jurnalul local');
 });
 
