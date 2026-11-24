@@ -94,6 +94,11 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
   ca mesaj al liniei, cu ADR-ul scris pe ramura ei: se verifică în git (commit-ul, ADR-ul cu vorbele owner-ului) și se
   ia în lotul în lucru. Dacă atinge doar o constantă a porții, rapidul rulat pe vârf ajunge; completul rămâne cel de pe
   codul produsului.
+- **Catalogul controalelor** (din 24.11, A.8c): la unirea a două linii care au pus controale cu nume, `node
+  scripts/catalog-controale.ts` pe ramura de unire; dacă nu e la zi, `--scrie`, iar porțile se reiau pe ramura de unire
+  (fișierul generat e cod).
+- **Un PR cu mai multe felii se unește la commit-ul raportat, nu la vârf:** pe 24.11, adminul a raportat „de unit acum:
+  `fbbc8934`” (A.8c, A.8d), cu A.9a și începutul lui A.9b deja pe ramură, cu completul lor încă în lucru.
 - **PR-ul liniei** e deschis de sesiunea ei ca ciornă (regula mediului cloud): starea „ciornă” nu spune că felia nu e gata.
   Gata înseamnă raportul liniei (nota ei spune „gata”) și rapidul cu completul verzi pe commit-ul raportat.
 
@@ -116,20 +121,21 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
   printr-o schiță.
 - **Observabilitatea:** erorile ajung în jurnalul aplicației; joburile își lasă marcajul.
 
-## Starea pe 24.11.2026, noaptea (după a noua unire din cloud)
+## Starea pe 24.11.2026, spre dimineață (după a zecea unire din cloud)
 
-- **Pe test:** `ebfb1f82` (tot până la lotul al optulea: utilizarea aplicației și fereastra trasării; publicat pe 24.11
-  la 01:04, cu serverul: funcția `utilizare`, regulile, indexurile); lotul al nouălea (`813fa675`: frezele și plafonul
-  de 900 kB), în curs de publicare.
+- **Pe test:** `b1797933` (tot până la lotul al nouălea: frezele și plafonul de 900 kB; publicat pe 24.11 la 02:07,
+  doar hosting). Lotul al zecelea (`80d3eb70`: A.8c și A.8d), în curs de publicare, cu serverul (funcția `utilizare`).
 - **`main`, din cloud:** pe 23.11: 3.Tq (`0ae9c6c1`); 11.3↑e și A.4 (`ddaa7ead`); 3.Tr, unită de linia elicelor
   (`d262e57a`); 25.8↑a și A.5 (`1b46c955`), cu reparația probei extensiilor (`8287d66e`); 11.3↑f, unită de linia
   planșelor (`f4601938`); A.6 (`4497d639`); 3.Xh (`2d1e482c`) și 12.1↑e-3 cu 12.1↑e-4 (`03460cab`); A.8a cu A.8b
-  (`5325b8fe`) și 25.9↑ (`4fe2d2ad`). Pe 24.11: 16.A↑a (`02a5864a`), cu ADR 0301 (`813fa675`).
+  (`5325b8fe`) și 25.9↑ (`4fe2d2ad`). Pe 24.11: 16.A↑a (`02a5864a`), cu ADR 0301 (`813fa675`); A.8c și A.8d (`80d3eb70`).
 - **Liniile** (vezi [indexul](README.md)):
-  - **gata pe ramură, neunite:** 28.8↑a (fereastra exportului pe listă și fișă, ADR 0290; `AndreiBesliu/cvs2#11`;
-    unirea la cuvântul owner-ului, după ce o încearcă pe canalul `export`) și A.8c (adminul: dialogurile și clicurile
-    fine ale utilizării; porțile verzi pe `d5b35050`, fără raport și fără PR încă);
-  - **în lucru:** frezele (16.A↑b: alegerea în proiect, documentul v27), adminul (A.8d, apoi A.9–A.11), exportul
+  - **pe ramură, cu completul verde, neraportate încă:** A.9a (sumele zilei, jobul `agregaUtilizarea`, permisiunea
+    „Utilizare: citește”) și începutul lui A.9b, pe `c549a600` (`AndreiBesliu/cvs2#13`); la unire merg funcția nouă,
+    regulile Firestore (`utilizareZi`) și indexurile;
+  - **gata pe ramură, la cuvântul owner-ului:** fereastra exportului (28.8↑a–b-2, ADR 0290; `AndreiBesliu/cvs2#11`),
+    după ce o încearcă pe canalul `export`;
+  - **în lucru:** frezele (16.A↑b: alegerea în proiect, documentul v27), adminul (A.9b, apoi A.10, A.11), exportul
     (desenele, 28.8↑b–f);
   - **la cuvântul owner-ului:** A.7 (adminul pe telefon), 25.8↑b, 3.Ts, restul bibliotecii extensiilor (căutarea,
     captura mărită), următoarea felie a incrustațiilor, 11.5↑b (după etapa 13);
@@ -144,7 +150,7 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
   - verificarea juridică (GDPR) a utilizării aplicației, înaintea live-ului (ADR 0262 §3); pe test, colectarea merge
     din 24.11;
   - fondul semnului lui Easy 3Draw (gri-albăstrui, nu crem) și rândul de „ce e nou” al lui 18.20.0.
-- **Plafoanele:** totalul e 793,6 / 900 kB (ADR 0301, decizia owner-ului din noaptea de 23 spre 24.11). **Pornirea a
+- **Plafoanele:** totalul e 799,6 / 900 kB (ADR 0301, decizia owner-ului din noaptea de 23 spre 24.11). **Pornirea a
   rămas 115 kB:** cu ușa 113,9, cu Atelierul 114,2, deci mai sunt 0,8 kB; o felie care adaugă în pornire cere întâi loc
   (o bucată mutată la cerere) sau decizia owner-ului.
 - **De urmărit:** în panoul foii, la 1400 px, etichetele „Numele” și „Materialul” apar tăiate la o literă (văzut de
