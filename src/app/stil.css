@@ -2429,8 +2429,10 @@ nav button[aria-pressed='true'] {
     display: none;
   }
 
+  /* Ordinea tăierii trece la capătul benzii: întâi se văd operațiile, care se ating mai des. */
   .dx-lista .ordine-taierii {
     flex: 0 0 auto;
+    order: 1;
     margin: 0;
   }
 

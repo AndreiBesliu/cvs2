@@ -16,7 +16,9 @@ o('E01', CSS, "  .dx-lista > .dx-nav-op {\n    flex: 0 0 15rem;", "  .dx-lista >
   'pe telefon, rândul operației strâns de bandă (cum era)')
 o('E02', CSS, "  .dx-lista .ordine-taierii .nota {\n    display: none;", "  .dx-lista .ordine-taierii .nota {\n    display: inline;", 'e2e',
   'pe telefon, nota ordinii pe bandă (cum era)')
-o('E03', CSS, "width: min(70rem, calc(100vw - 2rem));", "width: 70rem;", 'e2e', 'fereastra de 70 rem, oricât de îngust e ecranul')
+o('E03', CSS, "width: min(70rem, calc(100vw - 2rem));\n  max-width: calc(100vw - 2rem);", "width: 70rem;\n  max-width: none;", 'e2e',
+  'fereastra de 70 rem, oricât de îngust e ecranul')
+o('E09', CSS, "    flex: 0 0 auto;\n    order: 1;", "    flex: 0 0 auto;\n    order: 0;", 'e2e', 'pe telefon, ordinea tăierii înaintea operațiilor')
 o('E04', CSS, ".dx-nume {\n  font-size: var(--fs-3);\n  font-weight: 600;\n  overflow-wrap: anywhere;",
   ".dx-nume {\n  font-size: var(--fs-3);\n  font-weight: 600;\n  white-space: nowrap;\n  overflow: hidden;", 'e2e',
   'numele operației din listă tăiat, pe un rând')

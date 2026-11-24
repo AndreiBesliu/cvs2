@@ -30,9 +30,9 @@ function ceIese(page: Page): Promise<string[]> {
     const cutie = document.querySelector('.dialog-cutie'), fise = document.querySelector('[data-fise]'), lista = document.querySelector('[data-lista]');
     if (!cutie || !fise || !lista) return ['fără fereastră'];
     const c = cutie.getBoundingClientRect(), f = fise.getBoundingClientRect();
+    const iese: string[] = c.left < -1 || c.right > innerWidth + 1 ? [`fereastra iese din ecran: ${String(Math.round(c.left))}..${String(Math.round(c.right))}`] : [];
     const nume = (e: Element): string => `${e.tagName.toLowerCase()}${e.id ? `#${e.id}` : ''}${[...e.classList].map((x) => `.${x}`).join('')}${
       e instanceof HTMLElement ? Object.entries(e.dataset).map(([k, v]) => `[${k}=${v ?? ''}]`).join('') : ''}`;
-    const iese: string[] = [];
     for (const e of cutie.querySelectorAll('*')) {
       const s = getComputedStyle(e), r = e.getBoundingClientRect();
       if (s.display === 'none' || s.visibility === 'hidden' || (r.width === 0 && r.height === 0)) continue;
@@ -84,7 +84,12 @@ for (const [locale, limba] of [['ro-RO', 'română'], ['en-GB', 'engleză']] as 
         await deschide(page);
         const lista = page.locator('[data-lista]');
         const banda = (await lista.boundingBox())?.height ?? 999;
-        expect(banda, 'banda listei').toBeLessThan(844 * 0.3);
+        expect(banda, 'banda listei').toBeLessThan(844 * 0.2);
+        // Fiecare element al benzii încape în ecran (se vede întreg, derulat), iar prima operație se vede fără derulare.
+        const late = await lista.evaluate((l) => [...l.children].filter((x) => x.getBoundingClientRect().width > innerWidth - 32)
+          .map((x) => `${x.className} ${String(Math.round(x.getBoundingClientRect().width))}`));
+        expect(late, 'elementele benzii').toEqual([]);
+        expect((await page.locator('[data-nav-op]').first().boundingBox())?.x ?? 999, 'prima operație').toBeLessThan(390 - 48);
         for (const nav of ['masina', 'e2/e2', 'e1/e1', 'foaia']) {
           await page.locator(`[data-nav="${nav}"]`).tap();
           await expect(page.locator(`[data-nav="${nav}"]`)).toHaveAttribute('aria-current', 'true');
