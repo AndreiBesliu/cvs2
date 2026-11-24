@@ -175,11 +175,11 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
     `AndreiBesliu/cvs2#26`; se unesc în ordinea h-5, apoi b-3), relieful (18.1↑a, `wip/18.1-relief`,
     `AndreiBesliu/cvs2#25`, cu v28: își aduce `main` și își reface porțile; intră singur în lotul lui), cotele
     (10.4↑a-4, panoul cotei); se unesc la raportul liniei;
-  - **la owner:** elicele (3.Tu: unde stă axul pieselor rotunde în vederea „Modelul” din Easy 3Draw; trei întrebări,
-    cu recomandările liniei: 1a, 2a, 3a; ar fi Easy 3Draw 18.24.0 și ADR 0283);
+  - **la owner:** 3.Tu (unde stă axul pieselor rotunde în vederea „Modelul” din Easy 3Draw; trei întrebări, cu
+    recomandările 1a, 2a, 3a, în `docs/linii/elice.md`; ADR 0283): din 24.11 seara, a liniei atelierului;
   - **pornită pe 24.11, cu ADR-ul propus întâi:** atelierul Easy 3Draw (piese și configuratoare noi, compatibile în
     construcții; cererea owner-ului, în sesiunea liniei bibliotecii, pe ramura ei; ADR 0340–0349, feliile de la 3.Tv;
-    nu atinge „Modelul” până hotărăște owner-ul pe 3.Tu);
+    ia și lucrul liniei elicelor, predat pe 24.11 seara la cererea owner-ului: 3.Tu, la răspunsurile lui);
   - **la cuvântul owner-ului:** următoarea felie a bibliotecii extensiilor, a incrustațiilor și a trasării, 11.5↑b
     (după etapa 13);
   - **fără felie în lucru:** planșele (tăierea plăcii 11, la owner), incrustațiile, trasarea, tăierea (după
@@ -188,12 +188,13 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
     owner-ului, cu un brief scris de sesiunea principală și lipit de owner într-o sesiune cloud nouă;
   - **încheiate:** ancorele (6.V↑), raportările (15.B↑b), galeria (3.Tp, ADR 0281), probele instabile, adminul
     (ADR 0260 și 0262: A.1–A.11, cu A.7 unită pe 24.11), fereastra exportului (ADR 0290: 28.8↑a–g, unite pe 24.11;
-    sesiunea se poate arhiva), biblioteca extensiilor (3.Xh–3.Xk; ce urmează, la cuvântul owner-ului).
+    sesiunea se poate arhiva), biblioteca extensiilor (3.Xh–3.Xk; ce urmează, la cuvântul owner-ului), elicele
+    (3.Tq–3.Tt; linia predată atelierului, sesiunea ei se poate arhiva după lotul 25).
 - **La owner:**
   - „cine unește în `main`” (recomandarea: doar sesiunea principală; pe 23–24.11, biblioteca și frezele au scris întâi
     aici, iar felia era deja în lot: unirea a rămas aici);
   - arhivarea sesiunii exportului (se poate, din 24.11) și ștergerea ramurii ei de pe `origin`;
-  - cele trei întrebări ale liniei elicelor (axul pieselor rotunde în „Modelul”);
+  - cele trei întrebări ale lui 3.Tu (axul pieselor rotunde în „Modelul”), acum la linia atelierului;
   - plafonul total: 856,8 / 900 kB, mai sunt 43,2 kB (relieful cere ~13, b-3 ~1,2);
   - verificarea juridică (GDPR) a utilizării aplicației, înaintea live-ului (ADR 0262 §3); pe test, colectarea merge
     din 24.11;
