@@ -152,6 +152,14 @@ test('Rezultatul pe grupuri: întâi ce e de văzut, apoi fișierele, timpul și
   await desc;
   await expect(rez.locator('[data-rezultat="avertismente"]')).toContainText('intrarea omisă');
   expect(await grupuri()).toEqual(['avertismente', 'fisiere', 'timp', 'simulare']);
-  await expect(meta).toContainText('1 avertisment');
+  await expect(meta).toHaveText(`${(/: (.+)$/.exec(await rez.locator('[data-rezumat="timp"]').innerText())?.[1] ?? '?')} · 1 avertisment`);
   await expect(page.locator('[data-nav="rezultatul"]')).toHaveAttribute('data-avertisment', '');
+  // Și pe dreptunghi (R200): două avertismente, numărate.
+  await fisa(page, 'e1/e1').locator('[data-camp="intrari"]').check();
+  await fisa(page, 'e1/e1').locator('[data-camp="intrari-raza"]').fill('200');
+  desc = page.waitForEvent('download');
+  await page.locator('[data-buton="exporta"]').click();
+  await desc;
+  await expect(rez.locator('[data-testid="export-avertismente"] li')).toHaveCount(2);
+  await expect(meta).toContainText('2 avertismente');
 });
