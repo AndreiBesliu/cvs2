@@ -1,6 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { citesteSetariCote, optiuniLipireCote, SETARI_IMPLICITE, textSetariCote, type SetariCote } from '../../src/app/setariCote.ts';
+import { citesteSetariCote, formatCote, grupImplicit, optiuniLipireCote, SETARI_IMPLICITE, stilCote, textSetariCote, type SetariCote } from '../../src/app/setariCote.ts';
+import { STIL_IMPLICIT } from '../../src/model/desenCota.ts';
 
 /**
  * Setările cotelor (ADR 0330 §6), grupurile feliei a-2: implicitele din tabelul ADR-ului, citirea înapoi, fiecare câmp greșit
@@ -9,7 +10,9 @@ import { citesteSetariCote, optiuniLipireCote, SETARI_IMPLICITE, textSetariCote,
 
 test('implicitele, din tabelul ADR 0330 §6', () => {
   assert.deepEqual(SETARI_IMPLICITE, {
-    comportament: { legate: true, pornire: 'automata', dupa: 'ramane' },
+    cifre: { unitate: 'mm', zecimale: null, zerouri: 'taiate', pas: null, separator: 'limba', cuUnitate: false, inaltime: 3.5, loc: 'deasupra' },
+    linii: { capete: 'plina', marime: 2.5, extensii: true, gol: 1, depasire: 2, distanta: 10 },
+    comportament: { legate: true, pornire: 'automata', dupa: 'ramane', pePanza: true, pragCifre: 6, culoare: null },
     lipire: { felurile: { varf: true, mijloc: true, centru: true, cadran: true, cutie: true, foaie: true, grila: true }, toleranta: 8, contur: 'ctrl' },
     masurare: { distanta: true, delta: true, unghi: true, cursor: true, bara: true },
   });
@@ -20,7 +23,9 @@ test('implicitele, din tabelul ADR 0330 §6', () => {
 
 test('citite înapoi exact, cu versiunea în text', () => {
   const s: SetariCote = {
-    comportament: { legate: false, pornire: 'ultimul', dupa: 'selectie' },
+    cifre: { unitate: 'inch', zecimale: 4, zerouri: 'pastrate', pas: 0.25, separator: 'punct', cuUnitate: true, inaltime: 5, loc: 'in-linie' },
+    linii: { capete: 'oblica', marime: 3, extensii: false, gol: 0, depasire: 5, distanta: 25 },
+    comportament: { legate: false, pornire: 'ultimul', dupa: 'selectie', pePanza: false, pragCifre: 0, culoare: '#ff8800' },
     lipire: { felurile: { varf: true, mijloc: false, centru: true, cadran: false, cutie: true, foaie: false, grila: true }, toleranta: 12.5, contur: 'mereu' },
     masurare: { distanta: true, delta: false, unghi: true, cursor: false, bara: true },
   };
@@ -36,7 +41,7 @@ test('un câmp greșit ia implicitul lui; celelalte rămân', () => {
     lipire: { felurile: { varf: false, mijloc: 1 }, toleranta: 3, contur: 'uneori' },
     masurare: { distanta: false, cursor: null },
   }));
-  assert.deepEqual(r.comportament, { legate: true, pornire: 'automata', dupa: 'selectie' });
+  assert.deepEqual(r.comportament, { legate: true, pornire: 'automata', dupa: 'selectie', pePanza: true, pragCifre: 6, culoare: null });
   assert.equal(r.lipire.felurile.varf, false);
   assert.equal(r.lipire.felurile.mijloc, true);
   assert.equal(r.lipire.toleranta, 8, 'sub 4 px: implicitul');
@@ -65,4 +70,65 @@ test('lipirea: butonul Lipire și Alt (inversează), Ctrl pentru conturul cel ma
   assert.equal(optiuniLipireCote(niciodata, { alt: false, ctrl: true }, true, null, 4)?.peContur, false);
   const faraMijloc = { ...s, lipire: { ...s.lipire, felurile: { ...s.lipire.felurile, mijloc: false } } };
   assert.ok(!optiuniLipireCote(faraMijloc, fara, true, null, 4)?.felurile.has('mijloc'));
+});
+
+test('cifrele, liniile și pânza: marginile din tabel, fiecare câmp greșit la implicitul lui', () => {
+  const r = (x: object): SetariCote => citesteSetariCote(JSON.stringify(x));
+  assert.equal(r({ cifre: { zecimale: 6 } }).cifre.zecimale, 6);
+  assert.equal(r({ cifre: { zecimale: 7 } }).cifre.zecimale, null, 'peste 6: automat');
+  assert.equal(r({ cifre: { zecimale: 1.5 } }).cifre.zecimale, null, 'neîntreg');
+  assert.equal(r({ cifre: { zecimale: 0 } }).cifre.zecimale, 0);
+  assert.equal(r({ cifre: { pas: 0.0005 } }).cifre.pas, null, 'sub 0,001');
+  assert.equal(r({ cifre: { pas: 101 } }).cifre.pas, null, 'peste 100');
+  assert.equal(r({ cifre: { pas: 0.5 } }).cifre.pas, 0.5);
+  assert.equal(r({ cifre: { pas: '0.5' } }).cifre.pas, null, 'un text nu e un pas');
+  assert.equal(r({ cifre: { unitate: 'yard' } }).cifre.unitate, 'mm');
+  assert.equal(r({ cifre: { separator: 'spatiu' } }).cifre.separator, 'limba');
+  assert.equal(r({ cifre: { inaltime: 0.5 } }).cifre.inaltime, 3.5);
+  assert.equal(r({ cifre: { inaltime: 20 } }).cifre.inaltime, 20);
+  assert.equal(r({ cifre: { loc: 'sub' } }).cifre.loc, 'deasupra');
+  assert.equal(r({ linii: { capete: 'cerc' } }).linii.capete, 'plina');
+  assert.equal(r({ linii: { marime: 11 } }).linii.marime, 2.5);
+  assert.equal(r({ linii: { gol: -1, depasire: 5.5 } }).linii.gol, 1);
+  assert.equal(r({ linii: { depasire: 5.5 } }).linii.depasire, 2);
+  assert.equal(r({ linii: { distanta: 1.9 } }).linii.distanta, 10);
+  assert.equal(r({ linii: { distanta: 100 } }).linii.distanta, 100);
+  assert.equal(r({ comportament: { pragCifre: 13 } }).comportament.pragCifre, 6);
+  assert.equal(r({ comportament: { culoare: 'red' } }).comportament.culoare, null);
+  assert.equal(r({ comportament: { culoare: '#FF8800' } }).comportament.culoare, null, 'doar litere mici, ca din alegătorul culorii');
+  assert.equal(r({ comportament: { culoare: '#00aa33' } }).comportament.culoare, '#00aa33');
+  assert.equal(r({ comportament: { pePanza: 0 } }).comportament.pePanza, true);
+});
+
+test('stilul desenului și scrierea cifrelor, din setări; „după limbă” urmează limba aplicației', () => {
+  assert.deepEqual(stilCote(SETARI_IMPLICITE), STIL_IMPLICIT, 'implicitele setărilor sunt chiar stilul implicit al desenului');
+  const s: SetariCote = { ...SETARI_IMPLICITE, cifre: { ...SETARI_IMPLICITE.cifre, inaltime: 5, loc: 'orizontala' }, linii: { ...SETARI_IMPLICITE.linii, capete: 'punct', marime: 4, extensii: false, gol: 0.5, depasire: 3 } };
+  assert.deepEqual(stilCote(s), { gol: 0.5, depasire: 3, capat: 4, inaltime: 5, capete: 'punct', extensii: false, loc: 'orizontala' });
+  assert.deepEqual(formatCote(SETARI_IMPLICITE, true), { unitate: 'mm', zecimale: 2, zerouri: 'taiate', pas: null, virgula: true, cuUnitate: false });
+  assert.equal(formatCote(SETARI_IMPLICITE, false).virgula, false, 'în engleză, punctul');
+  const inch = { ...SETARI_IMPLICITE, cifre: { ...SETARI_IMPLICITE.cifre, unitate: 'inch' as const } };
+  assert.equal(formatCote(inch, true).zecimale, 3, 'automat, în inch: 3');
+  assert.equal(formatCote({ ...inch, cifre: { ...inch.cifre, zecimale: 1 } }, true).zecimale, 1, 'alese: cele alese');
+  const virgula = { ...SETARI_IMPLICITE, cifre: { ...SETARI_IMPLICITE.cifre, separator: 'virgula' as const } };
+  assert.equal(formatCote(virgula, false).virgula, true, 'virgula aleasă, și în engleză');
+  const punct = { ...SETARI_IMPLICITE, cifre: { ...SETARI_IMPLICITE.cifre, separator: 'punct' as const } };
+  assert.equal(formatCote(punct, true).virgula, false, 'punctul ales, și în română');
+});
+
+test('„Înapoi la implicit” pe un grup lasă celelalte neatinse (comportamentul aduce și lipirea, și măsurarea)', () => {
+  const s = citesteSetariCote(JSON.stringify({
+    cifre: { unitate: 'cm' }, linii: { capete: 'fara' },
+    comportament: { legate: false }, lipire: { toleranta: 12 }, masurare: { unghi: false },
+  }));
+  const c = grupImplicit(s, 'cifre');
+  assert.deepEqual(c.cifre, SETARI_IMPLICITE.cifre);
+  assert.equal(c.linii.capete, 'fara');
+  assert.equal(c.comportament.legate, false);
+  const l = grupImplicit(s, 'linii');
+  assert.equal(l.linii.capete, 'plina');
+  assert.equal(l.cifre.unitate, 'cm');
+  const k = grupImplicit(s, 'comportament');
+  assert.deepEqual([k.comportament, k.lipire, k.masurare], [SETARI_IMPLICITE.comportament, SETARI_IMPLICITE.lipire, SETARI_IMPLICITE.masurare]);
+  assert.equal(k.cifre.unitate, 'cm');
+  assert.equal(k.linii.capete, 'fara');
 });
