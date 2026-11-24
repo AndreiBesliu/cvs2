@@ -225,8 +225,9 @@ folosite la unire și publicare:
 - un rezultat geometric se privește pe cazul REAL, mărit și întreg, înaintea raportului.
 - un clic în cadrul unei extensii care îi închide sau îi reface cadrul nu se așteaptă cu `click()`: se așteaptă
   urmarea lui (`clicCareInchideCadrul`, `clicCareRefaceCadrul` din `test/e2e/ajutor-extensii.ts`);
-- un oracol pe corpus care trece de un minut se împarte pe părți ale corpusului, câte un fișier pe parte, cu pragurile
-  pe părți și cu proba care păzește împărțirea (24.11, oracolul rampelor: `ajutor-intrari-rampa-corpus.ts`);
+- o probă pe corpus care trece de un minut se împarte pe părți ale corpusului, câte un fișier pe parte, cu pragurile
+  pe părți și cu proba care păzește împărțirea (`test/unit/ajutor-parti.ts`; 24.11: oracolul rampelor, căile netede
+  din multe cubice, echivalența porții); listele de otrăvuri care numeau fișierul întreg primesc și părțile;
 - înaintea unirii se citesc și rapidul, și completul ramurii de unire: completul poate fi verde cu rapidul oprit de
   limita unei felii (24.11, lotul 17: felia 5 din 6, peste 10 minute; limita e acum 15, `rapid.yml`);
 - nu se comite în timpul unei rulări locale e2e sau pe emulatoare: trei probe compară versiunea construită cu

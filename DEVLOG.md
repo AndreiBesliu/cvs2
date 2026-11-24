@@ -13447,3 +13447,26 @@ la ordinul în vigoare „unește ce se poate”
 - **Loturile dinainte:** al șaptesprezecelea și al optsprezecelea, pe test din 17:50 (`29ef7e44`; completul pe `main`
   45417561144, verde: unit 10 190 / 0, e2e 707 / 707, funcțiile 136 / 136, paginile 57 / 57; proba de fum, bună).
   Loturile 19–21 (`7312d685`): completul pe `main` (45436221341) rula la unire.
+
+## 2026-11-24 — Sesiunea principală în cloud: cele două teste grele rămase în rapid, împărțite în câte patru fișiere (Model: Claude Fable 5.2)
+
+**Prompt:** „ok, imparte si cele doua teste grele ramase”
+**Started:** 24.11, 18:35. **Completed:** 24.11, 18:44 (pe ramură; în `main` după rapid).
+
+- **De ce:** cu oracolul rampelor împărțit, felia cea mai lungă a rapidului ținea tot 9 min 20 s (rularea 45425076024),
+  din două teste dintr-un singur test: „căile netede din multe cubice se taie…” (258 s în CI) și „poarta de acum și cea
+  de dinainte de ADR 0032…” (195 s în CI).
+- **Căile netede** (`cale.recenzie.test.ts`): cele 24 de cazuri (bule de 32 și de 128 de cubice, exterior și interior,
+  câte patru semințe), în `cale.recenzie.cubice.<1…4>.test.ts`, câte șase. Judecata unui caz, neschimbată, în
+  `ajutor-cale-recenzie.ts` (`abatereaCubicelor`), cu ajutoarele ei (`piesa`, `bula`, `puncte`), pe care fișierul de
+  bază le ia de acolo. Măsurat, în container: 184 s într-un test → 46, 47, 47 și 43 s.
+- **Echivalența porții** (`degajari.octeti.oracol.test.ts`): cele 461 de programe scrise de mână, în
+  `degajari.poarta.<1…4>.oracol.test.ts`. Programele și judecata, neschimbate, în `ajutor-degajari-poarta.ts`.
+  Măsurat: 125 s → 36, 32, 30 și 29 s; pe părți, 116 / 115 / 115 / 115 programe și 70 / 87 / 63 / 83 cu încălcări;
+  nicio diferență de verdict. Pragurile întregului (300, 100), pe părți: 76 / 75 / 75 / 75 și 24 / 29 / 21 / 28.
+- **Comun:** `test/unit/ajutor-parti.ts` (`cazurilePartii`, `cereImpartirea`, `cereMinimele`), folosit și de oracolul
+  rampelor (paza lui, rescrisă pe el, trece la fel).
+- **Probele:** 28 / 28 pe fișierele atinse (2 min 31 s, în paralel); tipurile. Mutații de control, de mână, 7 (9
+  rulări), toate prinse.
+- **Listele de otrăvuri:** `2.3c-b.py`, `2.8.py` și `3.V.py` numeau `cale.recenzie`; seturile lor au primit și cele
+  patru fișiere ale cubicelor. Niciuna nu numea `degajari.octeti`.

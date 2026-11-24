@@ -1458,9 +1458,12 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
     `gh run list --workflow complet.yml --limit 1`.
   - **O felie a rapidului are 15 minute** (din 24.11; înainte 10): împărțirea fișierelor pe felii se mută la fiecare
     fișier de test nou. Oracolul rampelor, care ținea singur peste 6 minute, e împărțit din 24.11 în șase fișiere
-    (`intrari-rampa.corpus.<n>.oracol.test.ts`, prin `test/unit/ajutor-intrari-rampa-corpus.ts`): **un oracol pe corpus
-    care trece de un minut se împarte la fel, pe părți ale corpusului, cu pragurile pe părți și cu proba care păzește
-    împărțirea.** Un rapid
+    (`intrari-rampa.corpus.<n>.oracol.test.ts`, prin `test/unit/ajutor-intrari-rampa-corpus.ts`); la fel, în câte
+    patru, proba căilor netede din multe cubice (`cale.recenzie.cubice.<n>.test.ts`) și echivalența porții de dinainte
+    de ADR 0032 (`degajari.poarta.<n>.oracol.test.ts`). **O probă pe corpus care trece de un minut se împarte la fel,
+    pe părți ale corpusului, cu `test/unit/ajutor-parti.ts`: câte un fișier pe parte, pragurile pe părți (suma lor cel
+    puțin cât pragul întreg) și proba care păzește împărțirea. O listă de otrăvuri care numea fișierul întreg primește
+    și fișierele părților.** Un rapid
     „cancelled” pe o singură felie, la limită, e împărțirea, nu un test agățat: se citește jurnalul feliei (ultimul
     fișier tipărit e cel dinaintea celui lent). Înaintea unirii se citesc și rapidul, și completul ramurii de unire.
   - Local, tot nivelul rapid: `npm run rapid`. E2e-ul în Edge: `npm run build && npm run e2e`.
@@ -1527,6 +1530,19 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 24.11.2026, seara: **și cele două teste grele rămase în rapid, împărțite** („ok, imparte si cele doua teste grele
+  ramase”, în sesiunea principală, după cifrele rapidului cu oracolul rampelor împărțit: felia cea mai lungă ținea tot
+  9 min 20 s). **„Căile netede din multe cubice se taie…”** (`cale.recenzie.test.ts`, 24 de cazuri într-un test: 184 s
+  în container, 258 s în CI) stă acum în `cale.recenzie.cubice.<1…4>.test.ts`, câte șase cazuri: 43–47 s pe parte.
+  **„Poarta de acum și cea de dinainte de ADR 0032 dau aceleași încălcări…”** (`degajari.octeti.oracol.test.ts`, 461
+  de programe într-un test: 125 s în container, 195 s în CI) stă în `degajari.poarta.<1…4>.oracol.test.ts`: 30–36 s
+  pe parte, cu pragurile întregului (300 de programe, 100 cu încălcări) cerute pe părți (sumele: 301, 102). Judecata
+  fiecărui caz e neschimbată, mutată în `ajutor-cale-recenzie.ts` și `ajutor-degajari-poarta.ts`; împărțirea și paza ei
+  sunt comune, în `test/unit/ajutor-parti.ts`, folosit acum și de oracolul rampelor. Mutații de control, de mână, 7
+  (9 rulări), toate prinse: o parte fără fișier și numărul părților greșit (la cubice), o parte fără fișier și un minim
+  slăbit (la poartă), împărțirea comună greșită (prinsă de toate cele trei paze), încălcările nenumărate, raza greșită
+  în judecata cubicelor. Listele de otrăvuri care numeau `cale.recenzie` (2.3c-b, 2.8, 3.V) au primit și fișierele
+  părților. Limita unei felii a rapidului rămâne 15 minute.
 - 24.11.2026, seara (a douăzecea unire din cloud): **3.Xj (căutarea și categoriile în biblioteca extensiilor) și
   oracolul rampelor împărțit, unite în `main`**, în lot (sesiunea principală, ramura `unire-2411v`, din `7312d685`).
   **Oracolul rampelor** (`b491853b`, scris de sesiunea principală la „ok, imparte oracolul rampelor in mai multe
