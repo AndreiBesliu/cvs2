@@ -2,7 +2,7 @@
 
 <!-- Adusă din memoria sesiunii principale pe 23.11.2026 (mutarea în cloud). De aici înainte o ține la zi linia, pe ramura ei, odată cu feliile. -->
 
-_CNCVS2, ADR 0260: pagina /admin reproiectată; A.1–A.6 unite în main (A.6: 4497d639); ADR 0262 (utilizarea aplicației) acceptat pe 23.11; A.8a și A.8b unite în main pe 23.11 (PR-ul AndreiBesliu/cvs2#8, din 55d26b81); A.8c și A.8d gata pe ramură, cu main (b1797933) adus, în CI (completul pe ba1b4b0c), PR-ul AndreiBesliu/cvs2#13; la unire se publică și funcția utilizare (contractul nou); apoi A.9–A.11, apoi A.7_
+_CNCVS2, ADR 0260: pagina /admin reproiectată; A.1–A.6 unite în main (A.6: 4497d639); ADR 0262 (utilizarea aplicației) acceptat pe 23.11; A.8a și A.8b unite în main pe 23.11 (PR-ul AndreiBesliu/cvs2#8, din 55d26b81); A.8c și A.8d în PR-ul AndreiBesliu/cvs2#13 (completul pe ba1b4b0c); A.9a gata pe aceeași ramură (sumele zilei, jobul agregaUtilizarea; la unire se publică funcțiile utilizare și agregaUtilizarea, regulile, indexurile); apoi A.9b, A.10, A.11, apoi A.7_
 
 Linia adminului din [sesiunea principală](principala.md): ADR 0260 (intervalul 0260–0269), acceptat pe 13.11.2026 cu ideile 51–62 de pe
 tabla „Harta schițelor”. Owner-ul a cerut „vreau sa faci design si pentru admin”, iar la idei a răspuns „Da la toate”
@@ -58,6 +58,11 @@ tabla „Harta schițelor”. Owner-ul a cerut „vreau sa faci design si pentru
   `main.tsx`: **bazinul nu importă interfața**); mașina și imprimanta din stările la rând (`utilizareMasina.ts`,
   `utilizareImprimanta.ts`), câte un modul pe bucată (**un modul comun celor două ferestre ar scoate o bucată nouă**). Utilizarea
   nu schimbă un calcul (`formele` prinde un document stricat). Otrăvurile 36 / 36. Totalul 793,8 → 799,6 / 900 cu A.8c.
+- **A.9a (sumele zilei, jobul de noapte) GATA pe ramură din 24.11** (`5668d6d6`, `4c9e191f`, `d25a0557`; `3.Ak`): sumele
+  pure în `shared/utilizareZi.ts` (`SumatorZi`, comun jobului și filei), oamenii într-o schiță HyperLogLog (**fără conturi în
+  sume**; unirea pe zile = maximul pe registru), jobul `agregaUtilizarea` în `JOBURI` (**un job nou se numără și în proba
+  Azi de pe emulatoare**, și în Diagnoza, cu eticheta `admin.diag.job.*`), permisiunea `utilizare.citeste` (**o permisiune
+  nouă se numără în matricea din `personal.emulator.spec.ts`**, nu doar în `personal.test.ts`). Otrăvurile 27 / 27.
 - **După unirea PR-ului** (A.8a–A.8b, de owner, pe 23.11, cât lucram la A.8c): `main` adus în ramură printr-o unire obișnuită
   (**un push forțat al unei ramuri refăcute e refuzat de permisiuni**; ciocnirile doar în tabele), apoi catalogul controalelor
   scris din nou și **funcțiile compilate din nou** (`npm --prefix functions run compileaza`: probele pe emulatoare folosesc `functions/lib`, iar un contract nou în

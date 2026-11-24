@@ -12270,6 +12270,23 @@ admin cat mai multe setari”).
 - **Documentele:** ADR 0262 (implementarea), fișa etapei 3 (`3.Aj`), registrul otrăvurilor, traducerile, nota liniei.
   **Completed:** 23.11 23:55.
 
+## 2026-11-24 — Felia A.9a: sumele zilei ale utilizării și jobul de noapte (ADR 0262)
+
+**Prompt:** același „am raspuns” (7a: A.8–A.11 acum), după A.8d.
+**Started:** 24.11 00:00.
+
+- **Despărțirea:** A.9 în A.9a (jobul, sumele, permisiunea) și A.9b (fila Utilizare), scrisă în tabelul feliilor din ADR.
+- **Codul (`5668d6d6`, `4c9e191f`, `d25a0557`):** `shared/utilizareZi.ts` (sumele pure, schița HyperLogLog a oamenilor,
+  zilele în fusul României), jobul `agregaUtilizarea` (`functions/src/utilizare/agregare.ts`, 02:30, ieri și alaltăieri, pe
+  pagini, cu marcajul), catalogul joburilor, permisiunea `utilizare.citeste` cu eticheta ei, regula `utilizareZi`, indexurile
+  (TTL, sumele neindexate); probele paginilor Azi și Personal, cu un job și o permisiune în plus.
+- **Pe drum:** sesiunea worker-ului s-a repornit în mijlocul rapidului; lucrul necomis a rămas întreg, comis imediat după.
+- **Probele:** 6 unitare noi, 2 ale jobului și 1 a regulilor, pe emulator. **Otrăvurile:** 27 / 27, după un lot stricat în
+  plus în proba jobului (J05). **Porțile locale:** rapidul 10 036 / 0, emulatoarele 120 / 120 și 48 / 48. **Mărimea:**
+  pornirea și totalul neschimbate; `/admin` 131,5 / 200.
+- **Documentele:** ADR 0262 (implementarea, A.9b), fișa etapei 3 (`3.Ak`), registrul otrăvurilor, traducerile, nota liniei.
+  **Completed:** 24.11 00:55.
+
 ## 2026-11-23 — Sesiunea principală în cloud: a șasea unire (A.6, Roadmap, Documentație și Setări); linia frezelor, pornită (Model: Claude Fable 5.2)
 
 **Prompt:** același brief de predare al sesiunii principale („unește ce se poate”), la raportul liniei adminului (PR-ul
