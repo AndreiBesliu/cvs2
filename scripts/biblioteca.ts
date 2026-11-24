@@ -22,7 +22,7 @@ import { createHash } from 'node:crypto';
 import { readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import {
-  comparaVersiuni, DIR_BIBLIOTECA, FISIER_CATALOG_BIBLIOTECA, FORMAT_CATALOG, MAX_ALT, MAX_AUTOR, MAX_CAPTURI, MAX_DESCRIERE, MAX_DESPRE,
+  comparaVersiuni, DIR_BIBLIOTECA, esteData, FISIER_CATALOG_BIBLIOTECA, FORMAT_CATALOG, MAX_ALT, MAX_AUTOR, MAX_CAPTURI, MAX_DESCRIERE, MAX_DESPRE,
   MAX_NOUTATE, MAX_NOUTATI, MAX_OCTETI_CAPTURA, MAX_OCTETI_PICTOGRAMA, numeFisierBiblioteca, numePachet, RE_VERSIUNE_BIBLIOTECA,
   SCHEMA_CATALOG, type CapturaBiblioteca, type CatalogBiblioteca, type DescriereRand, type NoutateBiblioteca, type PrezentareRand,
   type RandBiblioteca,
@@ -80,7 +80,8 @@ export function citesteLista(cale = LISTA_BIBLIOTECA): InregistrareBiblioteca[] 
         const n = y as Partial<NoutateBiblioteca> | null;
         const t = peLimbi(n, MAX_NOUTATE);
         if (!n || !t || typeof n.versiune !== 'string' || !RE_VERSIUNE_BIBLIOTECA.test(n.versiune)) return gresit('noutati', `versiunea din numere, textul în română și în engleză, 1–${MAX_NOUTATE} caractere`);
-        return { versiune: n.versiune, ...t };
+        if (n.data !== undefined && !esteData(n.data)) return gresit('noutati', `data versiunii ${n.versiune}, an-lună-zi (de exemplu "2026-11-23")`);
+        return { versiune: n.versiune, ...t, ...(n.data !== undefined ? { data: n.data } : {}) };
       });
       for (let k = 1; k < noutati.length; k++) {
         if (comparaVersiuni(noutati[k - 1]!.versiune, noutati[k]!.versiune) !== 1) gresit('noutati', `versiunile de la cea mai nouă în jos, fiecare o dată: ${noutati[k]!.versiune}`);

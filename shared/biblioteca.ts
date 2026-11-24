@@ -41,7 +41,8 @@ export type DescriereRand = { readonly ro: string; readonly en: string };
 /** Un fișier de lângă catalog: numele (cu amprenta lui) și mărimea. */
 export type ImagineBiblioteca = { readonly fisier: string; readonly octeti: number };
 export type CapturaBiblioteca = ImagineBiblioteca & { readonly lat: number; readonly inalt: number; readonly alt: string };
-export type NoutateBiblioteca = { readonly versiune: string; readonly ro: string; readonly en: string };
+/** Un rând de „ce e nou”; `data` (an-lună-zi), la alegere: când a apărut versiunea (ADR 0232 §C.15). */
+export type NoutateBiblioteca = { readonly versiune: string; readonly ro: string; readonly en: string; readonly data?: string };
 /** Datele de prezentare ale unui rând (ADR 0231 §B.1), toate opționale. */
 export type PrezentareRand = {
   /** Semnul extensiei, un SVG: `<id>-pictograma-<amprenta>.svg`. */
@@ -74,6 +75,13 @@ export type CatalogBiblioteca = {
   readonly schema: typeof SCHEMA_CATALOG;
   readonly extensii: readonly RandBiblioteca[];
 };
+
+/** O dată de calendar, an-lună-zi (`2026-11-23`): o zi care există. */
+export function esteData(x: unknown): x is string {
+  if (typeof x !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(x)) return false;
+  const d = new Date(`${x}T00:00:00Z`);
+  return !Number.isNaN(d.getTime()) && d.toISOString().slice(0, 10) === x;
+}
 
 /** Numele pachetului unei versiuni: se schimbă odată cu octeții (amprenta), deci un cache nu dă niciodată alt conținut. */
 export function numePachet(id: string, versiune: string, sha256: string): string {
@@ -135,16 +143,20 @@ function citestePrezentare(id: string, r: Readonly<Record<string, unknown>>): { 
     return ro && en ? { ro, en } : null;
   });
   const despre = camp('despre', (x) => citesteDescriere(x, MAX_DESPRE));
+  let dataSarita = false;
   const noutati = camp('noutati', (x) => {
     if (!Array.isArray(x) || x.length > MAX_NOUTATI) return null;
     const out: NoutateBiblioteca[] = [];
     for (const y of x) {
       const o = obiect(y);
       if (!o || typeof o.versiune !== 'string' || !RE_VERSIUNE_BIBLIOTECA.test(o.versiune) || !text(o.ro, MAX_NOUTATE) || !text(o.en, MAX_NOUTATE)) return null;
-      out.push({ versiune: o.versiune, ro: o.ro, en: o.en });
+      // O dată greșită cade singură, cu numele ei: rândul rămâne.
+      if (o.data !== undefined && !esteData(o.data)) dataSarita = true;
+      out.push({ versiune: o.versiune, ro: o.ro, en: o.en, ...(esteData(o.data) ? { data: o.data } : {}) });
     }
     return out;
   });
+  if (noutati && dataSarita) sarite.push(`${id}: noutati.data`);
   const autor = camp('autor', (x) => (text(x, MAX_AUTOR) ? x : null));
   return {
     prezentare: {

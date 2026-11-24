@@ -11,8 +11,18 @@ import { mesajeGata } from '../i18n/laCerere.ts';
 export const mesaje = mesajeGata();
 mesaje.catch(() => undefined);
 
-/** O acțiune a registrului, cum o arată paleta: din `toate()` (`actiuni.ts`). */
-export type ElementPaleta = { readonly id: string; readonly eticheta: CheieSimpla; readonly stare: RezultatActiune };
+/** O acțiune a registrului, cum o arată paleta: din `toate()` (`actiuni.ts`). `nume`: parametrul etichetei (o extensie). */
+export type ElementPaleta = { readonly id: string; readonly eticheta: CheieSimpla; readonly stare: RezultatActiune; readonly nume?: string };
+
+/**
+ * Extensiile instalate ajung în paletă fără registru (ADR 0232 §C.14), ca pornirea să nu crească: paleta întreabă gazda
+ * lor printr-un eveniment pe `window`, iar gazda, dacă e încărcată, răspunde pe loc, în `detail`. Tot prin el, paleta îi
+ * cere s-o deschidă pe cea aleasă. Numele evenimentului stă și în gazdă (`src/extensii/descoperire.ts`).
+ */
+export type CerereExtensiiPaleta = { instalate?: Array<{ id: string; nume: string }>; readonly deschide?: string };
+const EVENIMENT_EXTENSII = 'cncvs2-extensii';
+const DESCHIDE_EXTENSIA = 'extensii.deschide:';
+const numeleLui = (e: ElementPaleta): string => (e.nume === undefined ? t(e.eticheta) : t(e.eticheta, { nume: e.nume }));
 
 type Props = {
   readonly elemente: readonly ElementPaleta[];
@@ -67,6 +77,13 @@ export function Paleta({ elemente, tasta, onAlege, onInchide, focusInapoi }: Pro
   const [text, setText] = useState('');
   const [activ, setActiv] = useState(0);
   const camp = useRef<HTMLInputElement>(null);
+  // „Deschide <nume>” pentru fiecare extensie instalată, după nume; fără gazdă (încă neîncărcată), niciuna.
+  const [extensii] = useState<readonly ElementPaleta[]>(() => {
+    const d: CerereExtensiiPaleta = { instalate: [] };
+    window.dispatchEvent(new CustomEvent(EVENIMENT_EXTENSII, { detail: d }));
+    return [...(d.instalate ?? [])].sort((a, b) => a.nume.localeCompare(b.nume))
+      .map((x) => ({ id: `${DESCHIDE_EXTENSIA}${x.id}`, eticheta: 'paleta.deschide-extensie', nume: x.nume, stare: { ok: true } }));
+  });
   // Focusul intră în câmp; la închidere (curățarea rulează după ce aplicația nu mai e inertă) se întoarce unde era.
   useEffect(() => {
     camp.current?.focus();
@@ -76,8 +93,8 @@ export function Paleta({ elemente, tasta, onAlege, onInchide, focusInapoi }: Pro
   const q = simplu(text.trim());
   const grupuri = GRUPURI.map(([cheie, prefixe]) => ({
     cheie,
-    elemente: elemente
-      .filter((e) => prefixe.includes(e.id.split('.')[0] ?? '') && (!q || simplu(`${t(e.eticheta)} ${t(cheie)}`).includes(q)))
+    elemente: [...elemente, ...extensii]
+      .filter((e) => prefixe.includes(e.id.split('.')[0] ?? '') && (!q || simplu(`${numeleLui(e)} ${t(cheie)}`).includes(q)))
       // În grup, cele care se pot rula acum vin primele; gesturile, la urmă.
       .sort((a, b) => Number(a.id in GESTURI) - Number(b.id in GESTURI) || Number(!a.stare.ok) - Number(!b.stare.ok)),
   })).filter((g) => g.elemente.length > 0);
@@ -89,7 +106,11 @@ export function Paleta({ elemente, tasta, onAlege, onInchide, focusInapoi }: Pro
   }, [curent]);
 
   const alege = (e: ElementPaleta | undefined): void => {
-    if (e?.stare.ok && !(e.id in GESTURI)) onAlege(e.id);
+    if (e?.id.startsWith(DESCHIDE_EXTENSIA)) {
+      // O extensie: paleta se închide, iar gazda extensiilor o deschide (ca din meniul ei).
+      onInchide();
+      window.dispatchEvent(new CustomEvent(EVENIMENT_EXTENSII, { detail: { deschide: e.id.slice(DESCHIDE_EXTENSIA.length) } satisfies CerereExtensiiPaleta }));
+    } else if (e?.stare.ok && !(e.id in GESTURI)) onAlege(e.id);
   };
 
   const apasa = (ev: React.KeyboardEvent<HTMLInputElement>): void => {
@@ -148,7 +169,7 @@ export function Paleta({ elemente, tasta, onAlege, onInchide, focusInapoi }: Pro
                     onPointerMove={() => { if (e !== curent) setActiv(lista.indexOf(e)); }}
                     onClick={() => { alege(e); }}
                   >
-                    <span className="paleta-nume">{t(e.eticheta)}</span>
+                    <span className="paleta-nume">{numeleLui(e)}</span>
                     {gest ? <span className="paleta-motiv">{t(gest)}</span>
                       : !e.stare.ok && <span className="paleta-motiv">{t(e.stare.motiv)}</span>}
                     {k && <kbd>{k}</kbd>}

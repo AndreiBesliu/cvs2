@@ -45,6 +45,7 @@ import { cereCatalogul, instaleazaDinBiblioteca, stareRand } from './biblioteca.
 import type { CadruPornit, GazdaForme, GazdaMasina } from './cadru.ts';
 import { contextPentruExtensie } from './cont.ts';
 import { FaraStocare, listaExtensii, scrieExtensia, type ExtensieInstalata } from './depozit.ts';
+import { usePaleta, useVeste, useZipLasat } from './descoperire.ts';
 import { motivText } from './motivText.ts';
 import { repornireRara } from './repornire.ts';
 import { Semn, SemnInstalat, useSemnInstalat } from './Semn.tsx';
@@ -113,6 +114,8 @@ export function Extensii({ jurnal, fereastra, onFereastra, onDeschisa, onModal, 
   const [locFila] = useState(() => document.getElementById('loc-fila-extensie'));
   const [locSpatiu] = useState(() => document.getElementById('loc-spatiu-extensie'));
   const [lista, setLista] = useState<readonly ExtensieInstalata[]>([]);
+  // Lista celor instalate s-a citit măcar o dată (până atunci e goală fără să fie adevărat).
+  const [listaCitita, setListaCitita] = useState(false);
   const [meniu, setMeniu] = useState<{ readonly top: number; readonly left: number } | null>(null);
   const [cerere, setCerere] = useState<Exclude<CerereInstalare, { readonly fel: 'fereastra' }> | null>(null);
   // Fereastra „Biblioteca extensiilor” (ADR 0231); o confirmare (`cerere`) poate sta deasupra ei.
@@ -177,6 +180,7 @@ export function Extensii({ jurnal, fereastra, onFereastra, onDeschisa, onModal, 
   useEffect(() => {
     void listaExtensii().then((l) => {
       setLista(l);
+      setListaCitita(true);
       const x = deRedeschis(extensiaTinuta(), l, adresaLaPornire);
       if (x) setDeschisa((d) => d ?? x);
     }, (e: unknown) => { if (!(e instanceof FaraStocare)) jurnal.adauga('fereastra', e); });
@@ -344,6 +348,10 @@ export function Extensii({ jurnal, fereastra, onFereastra, onDeschisa, onModal, 
     if (deschisa?.id === x.id && deschisa.instalat !== x.instalat) inchideCuGrija(() => { setDeschisa(x); });
     else deschideExtensia(x);
   };
+  // Descoperirea (ADR 0232 §C): vestea despre o versiune nouă, extensiile în paleta de comenzi, un `.zip` lăsat pe aplicație.
+  const versiuniNoi = useVeste(biblioteca, lista, listaCitita);
+  usePaleta(lista, (x) => { setMeniu(null); deschideExtensia(x); });
+  useZipLasat((f) => { setMeniu(null); setCerere({ fel: 'fisier', fisier: f }); });
   /**
    * „Actualizează la …” dintr-un clic, în meniu (ADR 0230 §D): versiunea nouă nu cere nimic în plus, deci fără fereastră.
    * Descărcarea verificată, scrierea, apoi lista; o versiune veche deschisă își salvează întâi lucrul și se redeschide la cea
@@ -450,14 +458,17 @@ export function Extensii({ jurnal, fereastra, onFereastra, onDeschisa, onModal, 
     return () => { o.disconnect(); sistem.removeEventListener('change', trimite); };
   }, []);
 
+  // Un punct pe buton când o extensie instalată are o versiune nouă (ADR 0232 §C.16), din ce se știe deja.
+  const numeButon = versiuniNoi > 0 ? t('extensii.buton.noi', { n: versiuniNoi }) : t('extensii.buton');
   const butonul = (
     <span className="extensii">
-      <button ref={buton} type="button" className="extensii-buton" data-extensii="buton" aria-label={t('extensii.buton')} title={t('extensii.buton')}
+      <button ref={buton} type="button" className="extensii-buton" data-extensii="buton" aria-label={numeButon} title={numeButon}
         aria-haspopup="menu" aria-expanded={meniu !== null} onClick={() => { if (meniu) setMeniu(null); else deschideMeniul(); }}>
         <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
           <path d="M10 3a2 2 0 0 1 4 0v2h4a1 1 0 0 1 1 1v4h-2a2 2 0 0 0 0 4h2v4a1 1 0 0 1-1 1h-4v-2a2 2 0 0 0-4 0v2H6a1 1 0 0 1-1-1v-4h2a2 2 0 0 0 0-4H5V6a1 1 0 0 1 1-1h4z"
             fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
         </svg>
+        {versiuniNoi > 0 && <span className="buton-punct" data-testid="extensii-punct" aria-hidden="true" />}
       </button>
       <input ref={fisier} type="file" accept=".zip,application/zip" hidden data-extensii="fisier-ales"
         onChange={(e) => {

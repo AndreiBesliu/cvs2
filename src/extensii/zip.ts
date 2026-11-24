@@ -39,6 +39,29 @@ const latin1 = (b: Uint8Array): string => {
   return s;
 };
 
+/**
+ * Numele intrărilor unui `.zip`, citite doar din directorul central (nimic nu se dezarhivează), sau null dacă nu e o arhivă
+ * citibilă. După ele se recunoaște o extensie lăsată pe planșă (ADR 0232 §C.13); judecata pachetului rămâne a cititorului.
+ */
+export function numeZip(octeti: Uint8Array): string[] | null {
+  const v = new DataView(octeti.buffer, octeti.byteOffset, octeti.byteLength);
+  let eocd = -1;
+  for (let i = octeti.length - 22; i >= Math.max(0, octeti.length - 22 - 0xffff); i--) {
+    if (v.getUint32(i, true) === 0x06054b50) { eocd = i; break; }
+  }
+  if (eocd < 0) return null;
+  const total = v.getUint16(eocd + 10, true), marimeDir = v.getUint32(eocd + 12, true), startDir = v.getUint32(eocd + 16, true);
+  if (startDir + marimeDir > eocd) return null;
+  const nume: string[] = [];
+  for (let k = 0, p = startDir; k < total; k++) {
+    if (p + 46 > eocd || v.getUint32(p, true) !== 0x02014b50) return null;
+    const ln = v.getUint16(p + 28, true), le = v.getUint16(p + 30, true), lc = v.getUint16(p + 32, true);
+    nume.push(latin1(octeti.subarray(p + 46, p + 46 + ln)));
+    p += 46 + ln + le + lc;
+  }
+  return nume;
+}
+
 /** Intrările unui `.zip`, în ordinea directorului central (dosarele sărite), sau motivul refuzului. */
 export async function citesteZip(octeti: Uint8Array, limite: LimiteZip): Promise<RezultatZip> {
   const v = new DataView(octeti.buffer, octeti.byteOffset, octeti.byteLength);

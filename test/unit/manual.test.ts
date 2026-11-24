@@ -346,6 +346,8 @@ const CONTROALE_EXTENSII: Readonly<Record<string, string | null>> = {
   'din-fisier': 'extensii.din-fisier', 'din-adresa': 'extensii.din-adresa',
   // pagina fără nicio extensie de arătat: aceleași două drumuri (ADR 0232 §B.8)
   'pagina-din-fisier': 'extensii.din-fisier', 'pagina-din-adresa': 'extensii.din-adresa',
+  // captura mărită (ADR 0232 §C.12): imaginea din pagină și cele trei butoane-semn ale ei
+  captura: null, 'captura-inapoi': null, 'captura-inainte': null, 'captura-inchide': null,
   // ferestrele de confirmare: un pachet din fișier sau de la o adresă, o versiune care cere ceva în plus
   adresa: 'extensii.adresa.camp', descarca: 'extensii.adresa.descarca', renunta: 'extensii.instalare.renunta', instaleaza: 'extensii.instalare.instaleaza',
   actualizeaza: 'extensii.actualizare.actualizeaza', 'deschide-instalata': 'extensii.instalare.deschide', 'inchide-instalata': 'extensii.instalare.inchide',
@@ -362,7 +364,7 @@ const CONTROALE_EXTENSII: Readonly<Record<string, string | null>> = {
 };
 
 test('fiecare control al extensiilor (data-extensii) e numit în capitolul „extensii”, în ambele limbi', () => {
-  const sursa = ['Extensii.tsx', 'Instalare.tsx', 'Biblioteca.tsx', 'parti.tsx', 'StarePornire.tsx'].map((f) => citeste(`src/extensii/${f}`)).join('\n');
+  const sursa = ['Extensii.tsx', 'Instalare.tsx', 'Biblioteca.tsx', 'parti.tsx', 'StarePornire.tsx', 'CapturaMarita.tsx'].map((f) => citeste(`src/extensii/${f}`)).join('\n');
   assert.doesNotMatch(sursa, /data-extensii=\{/);
   const controale = [...new Set([...sursa.matchAll(/data-extensii="([a-z0-9-]+)"/g)].map((x) => x[1]!))].sort();
   assert.deepEqual(controale, Object.keys(CONTROALE_EXTENSII).sort());

@@ -10,7 +10,7 @@
  * O nepotrivire e un defect al publicării (`defect: true`, de pus în jurnal), nu al omului; lipsa rețelei nu e.
  * `fetch`, `crypto.subtle` și scrierea vin ca parametri unde contează: aceeași judecată în Node (probele) și în browser.
  */
-import { ADRESA_CATALOG, citesteCatalog, comparaVersiuni, type CatalogBiblioteca, type RandBiblioteca } from '../../shared/biblioteca.ts';
+import { ADRESA_CATALOG, citesteCatalog, comparaVersiuni, type CatalogBiblioteca, type NoutateBiblioteca, type RandBiblioteca } from '../../shared/biblioteca.ts';
 import type { ExtensieInstalata } from './depozit.ts';
 import { API, CATALOG_PERMISIUNI, citestePachet, type Manifest, type MotivPachet, type Pachet, type RezultatPachet } from './pachet.ts';
 
@@ -54,6 +54,14 @@ export function stareRand(
   if (c === -1) return { fel: 'actualizeaza', de: instalata.versiune, permisiuniNoi: permisiuniNoi(instalata.permisiuni, rand.permisiuni) };
   if (c === 0) return { fel: 'instalata' };
   return { fel: 'alta', versiune: instalata.versiune };
+}
+
+/**
+ * Pură: rândurile de „ce e nou” de după versiunea omului (`de`), de la cea mai nouă în jos; fără versiune (o instalare),
+ * toate. O versiune instalată care nu se poate compara nu arată nimic drept nou față de ea.
+ */
+export function noutatiDupa(noutati: readonly NoutateBiblioteca[] | undefined, de: string | null): NoutateBiblioteca[] {
+  return (noutati ?? []).filter((n) => de === null || comparaVersiuni(n.versiune, de) === 1);
 }
 
 const refuz = (motiv: RefuzBiblioteca['motiv'], defect: boolean, detaliu?: string): RefuzBiblioteca =>

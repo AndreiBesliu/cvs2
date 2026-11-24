@@ -27,6 +27,22 @@
   cursor: pointer;
 }
 
+/* O versiune nouă a unei extensii instalate (ADR 0232 §C.16): un punct în colțul butonului. */
+.extensii-buton {
+  position: relative;
+}
+
+.buton-punct {
+  position: absolute;
+  top: 1px;
+  right: 1px;
+  width: 7px;
+  height: 7px;
+  background: var(--a);
+  border: 1px solid var(--s-panou);
+  border-radius: 50%;
+}
+
 .extensii-buton:hover,
 .extensii-buton:focus-visible,
 .extensii-buton[aria-expanded='true'] {
@@ -1012,4 +1028,115 @@
   display: grid;
   justify-items: start;
   gap: var(--sp-2);
+}
+
+/* „Ce e nou”: versiunea și data ei pe un rând, data mai ștearsă. */
+.noutate-cap small {
+  font-size: var(--fs-1);
+  color: var(--t-slab);
+}
+
+/*
+ * Captura mărită (ADR 0232 §C.12): peste tot ecranul, deasupra ferestrei bibliotecii. Butonul unei capturi din pagină e doar
+ * imaginea ei, cu inelul focusului.
+ */
+.pagina-capturi figure > button {
+  display: block;
+  width: 100%;
+  padding: 0;
+  line-height: 0;
+  background: none;
+  border: 0;
+  border-radius: inherit;
+  cursor: zoom-in;
+}
+
+.pagina-capturi figure > button:focus-visible {
+  outline: 2px solid var(--a);
+  outline-offset: -2px;
+}
+
+.captura-marita {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  display: grid;
+  place-items: center;
+  padding: var(--sp-4) calc(var(--tinta) + var(--sp-4));
+  background: rgb(0 0 0 / 90%);
+  outline: none;
+}
+
+.captura-marita figure {
+  display: grid;
+  gap: var(--sp-2);
+  margin: 0;
+  min-width: 0;
+}
+
+.captura-marita img {
+  display: block;
+  max-width: 100%;
+  max-height: calc(100vh - 6rem);
+  width: auto;
+  height: auto;
+  margin: 0 auto;
+  background: #fff;
+  border-radius: var(--r-1);
+}
+
+.captura-marita figcaption {
+  display: flex;
+  gap: var(--sp-3);
+  justify-content: space-between;
+  font-size: var(--fs-2);
+  color: #fff;
+}
+
+.captura-loc {
+  flex: none;
+  font-variant-numeric: tabular-nums;
+}
+
+.captura-marita button {
+  position: absolute;
+  display: grid;
+  place-items: center;
+  width: var(--tinta);
+  height: var(--tinta);
+  padding: 0;
+  font-size: 1.5rem;
+  line-height: 1;
+  color: #fff;
+  background: rgb(255 255 255 / 12%);
+  border: 0;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.captura-marita button:hover,
+.captura-marita button:focus-visible {
+  background: rgb(255 255 255 / 28%);
+}
+
+.captura-marita button:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
+}
+
+.captura-sageata {
+  top: calc(50% - var(--tinta) / 2);
+}
+
+.captura-sageata.inapoi {
+  left: var(--sp-2);
+}
+
+.captura-sageata.inainte {
+  right: var(--sp-2);
+}
+
+.captura-inchide {
+  top: var(--sp-2);
+  right: var(--sp-2);
 }

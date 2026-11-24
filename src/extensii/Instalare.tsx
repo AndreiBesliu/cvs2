@@ -19,12 +19,12 @@ import type { Limba } from '../i18n/tipuri.ts';
 import { useLimba } from '../ui/useLimba.ts';
 import type { RandBiblioteca } from '../../shared/biblioteca.ts';
 import { FereastraBiblioteca, type CatalogVazut } from './Biblioteca.tsx';
-import { instaleazaDinBiblioteca, stareRand, type RefuzBiblioteca } from './biblioteca.ts';
+import { instaleazaDinBiblioteca, noutatiDupa, stareRand, type RefuzBiblioteca } from './biblioteca.ts';
 import { FaraStocare, scrieExtensia, type ExtensieInstalata, type SursaExtensie } from './depozit.ts';
 import type { CerereInstalare } from './tipuri.ts';
 import { textMarime } from './marimeText.ts';
 import { citestePachet, LIMITE_PACHET, type MotivPachet, type Pachet } from './pachet.ts';
-import { adresaCatalog, Fereastra, motivText, Poate, textSursa } from './parti.tsx';
+import { adresaCatalog, Fereastra, motivText, Noutati, Poate, textSursa } from './parti.tsx';
 import { useSemnInstalat, useSemnOcteti } from './Semn.tsx';
 import { adresaSemnCatalog, octetiSemnPachet } from './semn.ts';
 
@@ -389,6 +389,7 @@ function InstalareBiblioteca({ cerere, instalate, limba, onGata, onDefect, inain
       {(noi.length === 0 || pastrate.length > 0) && (
         <Poate titlu={noi.length > 0 ? t('extensii.poate.pana-acum') : t('extensii.poate.titlu')} permisiuni={pastrate} limba={limba} />
       )}
+      {actualizare && <Noutati noutati={noutatiDupa(rand.noutati, s.de)} limba={limba} test="confirmare-noutati" />}
       {actualizare && <p>{t('extensii.actualizare.date')}</p>}
       {!actualizare && <p className="confirmare-nota">{t('extensii.instalare.marime-biblioteca', { marime: textMarime(rand.octeti, limba) })}</p>}
       <p className="confirmare-nota" data-testid="extensii-izolare">{t('extensii.instalare.izolare')}</p>

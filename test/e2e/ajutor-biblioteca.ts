@@ -78,6 +78,8 @@ export async function pachetVechi(versiune: string, faraPermisiuni: readonly str
  */
 export async function bibliotecaDeProba(page: Page, rand: {
   readonly id: string; readonly nume: string; readonly versiune: string; readonly permisiuni: readonly string[]; readonly octeti: Buffer;
+  /** „Ce e nou”, de la versiunea cea mai nouă în jos (cu data, la alegere). */
+  readonly noutati?: ReadonlyArray<{ readonly versiune: string; readonly ro: string; readonly en: string; readonly data?: string }>;
 }): Promise<(cum: 'ok' | 'cade' | Promise<void>) => void> {
   const sha256 = createHash('sha256').update(rand.octeti).digest('hex');
   const pachet = `${rand.id}-${rand.versiune}-${sha256.slice(0, 8)}.zip`;
@@ -86,6 +88,7 @@ export async function bibliotecaDeProba(page: Page, rand: {
     extensii: [{
       id: rand.id, nume: rand.nume, versiune: rand.versiune, api: 1, permisiuni: rand.permisiuni,
       descriere: { ro: 'O extensie de probă.', en: 'A test extension.' }, pachet, octeti: rand.octeti.length, sha256,
+      ...(rand.noutati ? { noutati: rand.noutati } : {}),
     }],
   };
   let cum: 'ok' | 'cade' | Promise<void> = 'ok';

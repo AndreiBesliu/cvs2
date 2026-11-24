@@ -18,11 +18,12 @@
 import { useEffect, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
 import { t } from '../i18n/t.ts';
 import type { Limba } from '../i18n/tipuri.ts';
-import { comparaVersiuni, type CatalogBiblioteca, type RandBiblioteca } from '../../shared/biblioteca.ts';
-import { instaleazaDinBiblioteca, stareRand, type StareRand } from './biblioteca.ts';
+import type { CatalogBiblioteca, RandBiblioteca } from '../../shared/biblioteca.ts';
+import { instaleazaDinBiblioteca, noutatiDupa, stareRand, type StareRand } from './biblioteca.ts';
+import { CapturaMarita } from './CapturaMarita.tsx';
 import { FaraStocare, octetiDate, scrieExtensia, type ExtensieInstalata } from './depozit.ts';
 import { textMarime } from './marimeText.ts';
-import { adresaCatalog, IntrebareScoatere, motivText, Poate, textSursa } from './parti.tsx';
+import { adresaCatalog, IntrebareScoatere, motivText, Noutati, Poate, textSursa } from './parti.tsx';
 import { Semn, useSemnInstalat } from './Semn.tsx';
 import { adresaSemnCatalog } from './semn.ts';
 import type { CerereInstalare } from './tipuri.ts';
@@ -347,8 +348,12 @@ function Pagina({ element, limba, progres, octeti, onInstaleaza, onActualizeaza,
   const permisiuni = rand?.permisiuni ?? instalata?.manifest.permisiuni ?? [];
   const pastrate = permisiuni.filter((p) => !noi.includes(p));
   // „Ce e nou”: la o actualizare, doar versiunile de după cea instalată.
-  const noutati = (rand?.noutati ?? []).filter((n) => s.fel !== 'actualizeaza' || comparaVersiuni(n.versiune, s.de) === 1);
+  const noutati = noutatiDupa(rand?.noutati, s.fel === 'actualizeaza' ? s.de : null);
   const capturi = rand?.capturi?.[limba] ?? [];
+  // Captura mărită (ADR 0232 §C.12): a câta e, sau null; doar unde fereastra are loc (nu pe un ecran îngust).
+  const [marita, setMarita] = useState<number | null>(null);
+  const locCapturi = useRef<HTMLDivElement | null>(null);
+  const marire = !matchMedia('(max-width: 40rem)').matches;
 
   return (
     <article className="bib-pagina" data-testid="biblioteca-pagina" data-id={element.id} data-stare={s.fel}>
@@ -376,7 +381,8 @@ function Pagina({ element, limba, progres, octeti, onInstaleaza, onActualizeaza,
                 {t('extensii.instalare.deschide')}
               </button>
             )}
-            {instalata && s.fel !== 'actualizeaza' && (
+            {/* „Scoate” rămâne și cât biblioteca are o versiune nouă: nimeni nu trebuie să actualizeze ca să poată scoate. */}
+            {instalata && (
               <button type="button" data-extensii="pagina-scoate" disabled={lucreaza} onClick={() => { onScoate(instalata); }}>{t('extensii.gestionare.scoate')}</button>
             )}
           </div>
@@ -395,13 +401,27 @@ function Pagina({ element, limba, progres, octeti, onInstaleaza, onActualizeaza,
         </p>
       )}
       {capturi.length > 0 && (
-        <div className="pagina-capturi" data-testid="pagina-capturi">
-          {capturi.map((c) => (
-            <figure key={c.fisier}>
-              <img src={new URL(c.fisier, adresaCatalog()).href} alt={c.alt} width={c.lat} height={c.inalt} loading="lazy" draggable={false} />
-            </figure>
-          ))}
+        <div ref={locCapturi} className="pagina-capturi" data-testid="pagina-capturi">
+          {capturi.map((c, i) => {
+            const img = <img src={new URL(c.fisier, adresaCatalog()).href} alt={c.alt} width={c.lat} height={c.inalt} loading="lazy" draggable={false} />;
+            // La birou, captura se mărește la clic (sau Enter); pe un ecran îngust rămâne cum e, derulată în pagină.
+            return (
+              <figure key={c.fisier}>
+                {marire ? <button type="button" data-extensii="captura" title={t('extensii.captura.mareste')} onClick={() => { setMarita(i); }}>{img}</button> : img}
+              </figure>
+            );
+          })}
         </div>
+      )}
+      {marita !== null && (
+        <CapturaMarita capturi={capturi.map((c) => ({ adresa: new URL(c.fisier, adresaCatalog()).href, alt: c.alt, lat: c.lat, inalt: c.inalt }))}
+          loc={marita} onLoc={setMarita}
+          onInchide={() => {
+            const i = marita;
+            setMarita(null);
+            // Focusul, înapoi pe captura la care s-a ajuns.
+            locCapturi.current?.querySelectorAll<HTMLButtonElement>('[data-extensii="captura"]')[i]?.focus();
+          }} />
       )}
       {rand && <p data-testid="pagina-descriere">{rand.despre?.[limba] ?? rand.descriere[limba]}</p>}
       <div className="pagina-coloane">
@@ -412,14 +432,7 @@ function Pagina({ element, limba, progres, octeti, onInstaleaza, onActualizeaza,
           )}
         </div>
         <div>
-          {noutati.length > 0 && (
-            <section className="poate">
-              <h3>{t('extensii.biblioteca.nou')}</h3>
-              <ul className="pagina-noutati" data-testid="pagina-noutati">
-                {noutati.map((n) => <li key={n.versiune}><strong>{n.versiune}</strong> <span>{n[limba]}</span></li>)}
-              </ul>
-            </section>
-          )}
+          <Noutati noutati={noutati} limba={limba} test="pagina-noutati" />
           <p className="confirmare-nota" data-testid="extensii-izolare">{t('extensii.instalare.izolare')}</p>
         </div>
       </div>

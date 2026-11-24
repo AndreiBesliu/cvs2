@@ -25,9 +25,16 @@ test.use({ locale: 'ro-RO' });
 
 type Rand = {
   id: string; nume: string; versiune: string; pachet: string; descriere: { ro: string; en: string };
-  despre: { ro: string; en: string }; noutati: Array<{ versiune: string; ro: string; en: string }>;
+  despre: { ro: string; en: string }; noutati: Array<{ versiune: string; ro: string; en: string; data?: string }>;
   capturi: { ro: Array<{ fisier: string; alt: string }>; en: Array<{ fisier: string; alt: string }> };
 };
+
+/** Un rând de „ce e nou”, cum îl arată pagina: versiunea, data ei (unde e scrisă, ADR 0232 §C.15) și textul. */
+function randNou(n: { versiune: string; ro: string; en: string; data?: string } | undefined, limba: 'ro' | 'en'): string {
+  if (!n) return '?';
+  const zi = n.data?.split('-').reverse().join(limba === 'ro' ? '.' : '/');
+  return `${n.versiune}${zi ? ` · ${zi}` : ''} ${n[limba]}`;
+}
 const RE_PACHET = /\/extensii\/trenulet-[^/]+\.zip$/;
 
 async function randul(page: Page): Promise<Rand> {
@@ -107,7 +114,7 @@ test('din bibliotecă: fereastra, rândul și pagina lui Easy 3Draw (semnul, cap
   await expect(p.getByTestId('extensii-permisiuni').locator('li')).toHaveCount(5);
   const noutati = p.getByTestId('pagina-noutati').locator('li');
   await expect(noutati).toHaveCount(r.noutati.length);
-  await expect(noutati.first()).toHaveText(`${r.versiune} ${r.noutati[0]?.ro ?? '?'}`);
+  await expect(noutati.first()).toHaveText(randNou(r.noutati[0], 'ro'));
   await expect(p.getByTestId('extensii-izolare')).toBeVisible();
   await expect(p.getByTestId('pagina-stare')).toHaveText('Verificată de cvs2 la instalare.');
 
@@ -207,10 +214,10 @@ test('actualizarea din pagină: ce e nou de la versiunea ta, „Actualizează la
   await expect(randLista(page, 'trenulet')).toContainText(r.versiune);
   await expect(p).toHaveAttribute('data-stare', 'actualizeaza');
   await expect(p.getByTestId('pagina-stare')).toHaveText('Ai 18.17.0. Datele ei rămân.');
-  await expect(p.locator('.pagina-actiuni button')).toHaveText([`Actualizează la ${r.versiune}`, 'Deschide']);
+  await expect(p.locator('.pagina-actiuni button')).toHaveText([`Actualizează la ${r.versiune}`, 'Deschide', 'Scoate']);
   // „Ce e nou” arată doar versiunile de după a ta (ADR 0231, „actualizarea nu spune ce aduce”).
   const noi = r.noutati.filter((n) => n.versiune !== '18.17.0' && n.versiune !== '18.16.0');
-  await expect(p.getByTestId('pagina-noutati').locator('li')).toHaveText(noi.map((n) => `${n.versiune} ${n.ro}`));
+  await expect(p.getByTestId('pagina-noutati').locator('li')).toHaveText(noi.map((n) => randNou(n, 'ro')));
   await p.locator('[data-extensii="pagina-actualizeaza"]').click();
   await expect(p).toHaveAttribute('data-stare', 'instalata');
   await expect(page.getByTestId('extensii-instalare')).toHaveCount(0);
@@ -232,7 +239,9 @@ test('actualizarea care cere ceva nou: pagina arată ce cere în plus, iar ferea
   await expect(fereastra.locator('h2')).toHaveText('Actualizezi „Easy 3Draw”?');
   await expect(fereastra.getByTestId('extensii-despre')).toHaveText(`18.6.0 → ${r.versiune} · din biblioteca cvs2`);
   // Ce cere în plus stă primul, evidențiat; apoi ce putea și până acum (ADR 0231 §B.3).
-  await expect(fereastra.locator('h3')).toHaveText(['Versiunea nouă poate și', 'Ce putea și până acum']);
+  await expect(fereastra.locator('h3')).toHaveText(['Versiunea nouă poate și', 'Ce putea și până acum', 'Ce e nou']);
+  // „Ce e nou” (ADR 0232 §C.15): doar versiunile de după cea instalată.
+  await expect(fereastra.getByTestId('confirmare-noutati').locator('li').first()).toHaveText(randNou(r.noutati[0], 'ro'));
   await expect(fereastra.getByTestId('extensii-permisiuni-noi').locator('li')).toHaveText([FORME]);
   await expect(fereastra.getByTestId('extensii-permisiuni').locator('li')).toHaveCount(4);
   await expect(fereastra).toContainText('Datele ei rămân.');
@@ -414,7 +423,7 @@ test('în engleză: fereastra, pagina cu descrierea, capturile și „ce e nou�
   await expect(p.getByTestId('pagina-descriere')).toHaveText(r.despre.en);
   await expect(p.getByTestId('pagina-capturi').locator('img').first()).toHaveAttribute('alt', r.capturi.en[0]?.alt ?? '?');
   await expect(p.getByTestId('pagina-capturi').locator('img').first()).toHaveAttribute('src', new RegExp(`${r.capturi.en[0]?.fisier ?? '?'}$`));
-  await expect(p.getByTestId('pagina-noutati').locator('li').first()).toHaveText(`${r.versiune} ${r.noutati[0]?.en ?? '?'}`);
+  await expect(p.getByTestId('pagina-noutati').locator('li').first()).toHaveText(randNou(r.noutati[0], 'en'));
   await expect(p.getByTestId('pagina-poate').locator('h3')).toHaveText(['What it can do']);
   await expect(p.locator('[data-extensii="pagina-instaleaza"]')).toHaveText('Install');
   await expect(p.getByTestId('pagina-stare')).toHaveText('Checked by cvs2 when you install it.');

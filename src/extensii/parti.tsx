@@ -6,7 +6,7 @@
 import { useState, type KeyboardEvent, type ReactNode } from 'react';
 import { t, type CheieSimpla } from '../i18n/t.ts';
 import type { Limba } from '../i18n/tipuri.ts';
-import { ADRESA_CATALOG } from '../../shared/biblioteca.ts';
+import { ADRESA_CATALOG, type NoutateBiblioteca } from '../../shared/biblioteca.ts';
 import { scoateExtensia, type ExtensieInstalata, type SursaExtensie } from './depozit.ts';
 import { dupaSensibilitate, PERMISIUNI_SENSIBILE } from './pachet.ts';
 import { textMarime } from './marimeText.ts';
@@ -74,6 +74,32 @@ export function Poate({ titlu, permisiuni, limba, test = 'extensii-permisiuni', 
           ))}
         </ul>
       )}
+    </section>
+  );
+}
+
+/** Data unei versiuni (`2026-11-23`), cum o scrie limba aplicației; miezul zilei locale, ca ziua să nu alunece. */
+const dataText = (iso: string, limba: Limba): string => new Date(`${iso}T12:00:00`).toLocaleDateString(limba === 'ro' ? 'ro-RO' : 'en-GB');
+
+/**
+ * „Ce e nou” (ADR 0231 §B.1; ADR 0232 §C.15): câte un rând pe versiune, de la cea mai nouă în jos, cu data ei, unde e
+ * scrisă. Fără rânduri, nimic. Pe pagina extensiei și în confirmarea unei actualizări.
+ */
+export function Noutati({ noutati, limba, test }: {
+  readonly noutati: readonly NoutateBiblioteca[]; readonly limba: Limba; readonly test: string;
+}): ReactNode {
+  if (noutati.length === 0) return null;
+  return (
+    <section className="poate">
+      <h3>{t('extensii.biblioteca.nou')}</h3>
+      <ul className="pagina-noutati" data-testid={test}>
+        {noutati.map((n) => (
+          <li key={n.versiune}>
+            <p className="noutate-cap"><strong>{n.versiune}</strong>{n.data !== undefined && <small> · <time dateTime={n.data}>{dataText(n.data, limba)}</time></small>}</p>
+            {' '}<span>{n[limba]}</span>
+          </li>
+        ))}
+      </ul>
     </section>
   );
 }

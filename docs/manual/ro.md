@@ -2178,21 +2178,23 @@ tu, iar interfața aplicației rămâne aceeași.
 
 - Butonul **Extensii** (piesa de puzzle de lângă numele instanței) deschide meniul: extensiile instalate, fiecare cu semnul
   ei (una fără semn are piesa de puzzle), apoi **Biblioteca extensiilor…**. Un clic pe o extensie îi deschide fereastra, iar
-  semnul ei stă și pe fila ei. Când biblioteca are o versiune mai nouă a unei extensii instalate, rândul ei arată versiunile
+  semnul ei stă și pe fila ei. O extensie instalată se deschide și din **Caută o comandă** (Ctrl+K): „Deschide Easy
+  3Draw”. Un punct pe buton spune că o extensie instalată are o versiune nouă în bibliotecă: aplicația o știe de când ai
+  deschis ultima dată meniul sau biblioteca (la pornire nu cere nimic), iar punctul pleacă după actualizare sau scoatere. Când biblioteca are o versiune mai nouă a unei extensii instalate, rândul ei arată versiunile
   („18.6.0 → 18.20.0”) și **Actualizează**: o aduce dintr-un clic, cu datele ei. O extensie deschisă își salvează întâi
   lucrul, apoi se redeschide singură la versiunea nouă; dacă are modificări pe care nu le poate salva, te întreabă înainte,
   iar **Rămân** oprește actualizarea. Dacă versiunea nouă cere ceva în plus, o
-  fereastră spune întâi ce, iar acolo **Actualizează** o instalează; la capăt, **Deschide** îi deschide fereastra, iar
+  fereastră spune întâi ce cere și ce e nou de la versiunea ta, iar acolo **Actualizează** o instalează; la capăt, **Deschide** îi deschide fereastra, iar
   **Închide** o lasă pentru mai târziu.
 - **Biblioteca extensiilor** e o fereastră, deschisă din meniu sau din **Caută o comandă** (Ctrl+K), de oriunde: în stânga
   lista, în dreapta pagina extensiei alese. **Din bibliotecă** arată extensiile
   noastre, publicate odată cu aplicația, de exemplu Easy 3Draw; **Instalate**, pe cele din browserul acesta, și pe cele
   venite din afara bibliotecii. Pagina unei extensii are semnul și numele ei, cine o publică, versiunea și mărimea, câteva
-  capturi, descrierea, **Ce poate face** (câte un rând pentru fiecare lucru pe care îl cere extensia, cu cel mai sensibil,
-  mașina, primul și marcat) și **Ce e nou**. Gestul
+  capturi (la birou, un clic pe una o mărește: ← și → trec la celelalte, Escape o închide), descrierea, **Ce poate face** (câte un rând pentru fiecare lucru pe care îl cere extensia, cu cel mai sensibil,
+  mașina, primul și marcat) și **Ce e nou** (cu data fiecărei versiuni, unde e scrisă). Gestul
   stă sus, în pagină: **Instalează** descarcă pachetul, îl verifică după amprenta lui din bibliotecă și îl pune în browserul
   acesta (merge și offline); **Actualizează la …** aduce versiunea nouă, cu datele ei, iar „Ce e nou” arată atunci doar ce a
-  apărut de la versiunea ta; **Deschide** îi deschide fereastra; **Scoate** o șterge, după o întrebare. Pe telefon, lista și
+  apărut de la versiunea ta; **Deschide** îi deschide fereastra; **Scoate** o șterge, după o întrebare (și când biblioteca are o versiune nouă). Pe telefon, lista și
   pagina vin pe rând: un rând deschide pagina lui, iar **Înapoi la listă** (‹) te întoarce. De la tastatură: ← și →
   schimbă fila, ↑ și ↓ mută între rândurile listei, Enter deschide pagina rândului, iar Escape închide biblioteca. Biblioteca se citește la fiecare
   deschidere și are nevoie de internet; fără el, fereastra trece singură pe **Instalate** (extensiile instalate merg ca
@@ -2203,7 +2205,8 @@ tu, iar interfața aplicației rămâne aceeași.
   din adresă…** cere **Adresa pachetului** (HTTPS), apoi **Descarcă**; gazda trebuie să permită descărcarea din alte pagini,
   altfel descarci tu fișierul și îl instalezi din fișier. Un link de forma `…/#instaleaza=<adresa>` deschide aceeași
   fereastră, cu adresa completată; nimic nu se descarcă fără clicul tău. Un pachet instalat așa vine din afara bibliotecii,
-  iar fereastra îl spune.
+  iar fereastra îl spune. Un pachet `.zip` de extensie lăsat pe planșă deschide aceeași fereastră de confirmare; altă arhivă
+  `.zip` rămâne la Import, care spune că arhivele nu se importă.
 - Înainte de instalarea unui astfel de pachet, fereastra te întreabă cu numele extensiei („Instalezi „Easy 3Draw”?”) și
   arată semnul ei, versiunea, de unde vine pachetul, fișierele și mărimea lor și, dacă e cazul, versiunea pe care o
   înlocuiește. Sub **Ce poate face**
