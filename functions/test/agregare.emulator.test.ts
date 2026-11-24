@@ -99,3 +99,16 @@ test('mai multe loturi decât o pagină: toate numărate; un lot fără forma lu
   assert.deepEqual([c['loturi'], c['sesiuni'], (c['actiuni'] as Record<string, Record<string, unknown>>)['document.roteste']?.['n']], [n, n, n]);
   assert.equal(Math.round(estimeaza(schitaDin(c['oameni'], P_OAMENI) ?? schitaNoua(P_OAMENI))), 7);
 });
+
+test('fluxurile (A.10) ajung întregi în sumele zilei: cheile secvențelor, cu puncte și „>”, și pâlnia', async () => {
+  const A = (t: number, id: string) => ({ fel: 'actiune', t, id, de: 'bara', rez: 'ok' });
+  await lot('ana', '2026-11-23T08:00:00Z', {
+    evenimente: [A(1, 'document.importa'), A(2, 'document.rol'), { fel: 'calcul', t: 3, id: 'export', ms: 1_000, rez: 'ok', forme: 10 }, A(4, 'vedere.masina')],
+  });
+  await lot('ion', '2026-11-23T09:00:00Z', { evenimente: [A(1, 'document.importa')] });
+  await agregaUtilizarea(db, new Date('2026-11-24T01:00:00Z'));
+  const c = segment(await zi('2026-11-23'), 'clienti');
+  assert.deepEqual(c['secvente'], { 'document.importa>document.rol>vedere.masina': { n: 1, s: 1 } });
+  const palnie = c['palnie'] as Record<string, { sesiuni: number }>;
+  assert.deepEqual(['deschidere', 'continut', 'rol', 'export', 'masina'].map((p) => palnie[p]?.sesiuni), [2, 2, 1, 1, 0]);
+});

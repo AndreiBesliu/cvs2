@@ -117,6 +117,26 @@ test('raportul nevalid nu scrie nimic; instanța o pune serverul, nu clientul', 
   assert.equal(ultima['uid'], null);
 });
 
+test('pașii dinaintea erorii (A.11a): verificați pas cu pas și scriși în grup și în apariție; cei stricați aruncați, raportul nu', async () => {
+  const pasi = [
+    { fel: 'actiune', id: 'document.importa', rez: 'ok', ms: 4_000 },
+    { fel: 'actiune', id: 'document.roteste', rez: 'ok', ms: 1_000, geometrie: [[0, 0], [10, 10]] },
+    { fel: 'dialog', id: 'eticheta.export-titlu', rez: 'renuntat', ms: 500 },
+    { fel: 'clic', id: 'Numele foii mele', ms: 200 },
+  ];
+  assert.deepEqual(await trateazaRaportClient(db, { ...raport, pasi }, peIp('1.1.1.1'), T0), { ok: true });
+  const id = amprenta('client', 'randare', raport.mesaj);
+  const asteptati = [pasi[0], pasi[2]];
+  const ultima = (await db.collection(COLECTIE).doc(id).get()).data()?.['ultima'] as Record<string, unknown>;
+  assert.deepEqual(ultima['pasi'], asteptati);
+  const [a] = (await db.collection(COLECTIE).doc(id).collection('aparitii').get()).docs;
+  assert.deepEqual(a?.get('pasi'), asteptati);
+  // Fără pași (sau doar stricați), câmpul lipsește; un raport vechi, fără ei, se scrie ca înainte.
+  assert.deepEqual(await trateazaRaportClient(db, { ...raport, mesaj: 'alt defect', pasi: 'nu' }, peIp('1.1.1.1'), T0), { ok: true });
+  const alt = (await db.collection(COLECTIE).doc(amprenta('client', 'randare', 'alt defect')).get()).data()?.['ultima'] as Record<string, unknown>;
+  assert.equal('pasi' in alt, false);
+});
+
 test('logServerError: sursa server, tipul = locul, contextul JSON și uid-ul; nu aruncă pe valori ciudate', async () => {
   assert.equal(await logServerError('job:curatenie', null, { uid: null, piesa: 'p1' }, db, T0), true);
   const g = (await db.collection(COLECTIE).doc(amprenta('server', 'job:curatenie', 'null aruncat')).get()).data();

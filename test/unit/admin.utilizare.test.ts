@@ -4,7 +4,7 @@ import { catalogActiuni } from '../../scripts/catalogActiuni.ts';
 import { esteCatalogActiuni, type CatalogActiuni } from '../../shared/documentatie.ts';
 import { SumatorZi, type LotZi } from '../../shared/utilizareZi.ts';
 import {
-  celeMaiFolosite, cifre, cuantila, dialoguriParasite, durate, nefolosite, primaZi, refuzuri, sumePerioada,
+  celeMaiFolosite, cifre, cuantila, dialoguriParasite, durate, nefolosite, palnie, primaZi, refuzuri, secventeleDese, sumePerioada,
 } from '../../src/admin/utilizare/date.ts';
 
 /**
@@ -43,12 +43,14 @@ const z2 = zi('2026-11-23', [
 test('perioada pe segmente: numerele adunate, oamenii uniți (Ana în ambele zile, o dată), personalul deoparte; o zi stricată, sărită', () => {
   const c = sumePerioada([z1, z2, { zi: 'ieri', segmente: {} }, null, { zi: '2026-11-24', segmente: 'nu' }], 'clienti');
   assert.equal(c.zile, 2);
-  assert.deepEqual(cifre(c), { oameni: 2, sesiuni: 3, exporturi: 2, refuzate: 3 });
+  // Durata unei sesiuni: toate sub un minut (mediana, ca treaptă: 1 minut).
+  assert.deepEqual(cifre(c), { oameni: 2, sesiuni: 3, durata: 1, exporturi: 2, refuzate: 3 });
   const r = c.actiuni.get('document.roteste');
   assert.deepEqual([r?.n, r?.ok, r?.de, r?.motive], [7, 5, { bara: 4, tasta: 2, meniu: 1 }, { 'motiv.nimic-ales': 2 }]);
   const p = sumePerioada([z1, z2], 'personal');
-  assert.deepEqual(cifre(p), { oameni: 1, sesiuni: 1, exporturi: 0, refuzate: 0 });
-  assert.deepEqual(cifre(sumePerioada([z1, z2], 'toti')), { oameni: 3, sesiuni: 4, exporturi: 2, refuzate: 3 });
+  assert.deepEqual(cifre(p), { oameni: 1, sesiuni: 1, durata: 1, exporturi: 0, refuzate: 0 });
+  assert.deepEqual(cifre(sumePerioada([z1, z2], 'toti')), { oameni: 3, sesiuni: 4, durata: 1, exporturi: 2, refuzate: 3 });
+  assert.equal(cifre(sumePerioada([], 'clienti')).durata, null);
 });
 
 test('cele mai folosite: de câte ori, câți oameni, câte din taste și paletă', () => {
@@ -90,6 +92,37 @@ test('duratele: mediana și cele mai lente 5 %, ca trepte; erorile și anulăril
   assert.equal(cuantila({ '1000': 1, '100': 3 }, 0.5), 100, 'cheile se ordonează ca numere');
   const c = sumePerioada([z1, z2], 'clienti');
   assert.deepEqual(durate(c), [{ id: 'export', n: 3, mediana: 3000, lente: 30000, erori: 1, anulate: 0 }]);
+});
+
+test('fluxurile pe perioadă (A.10): secvențele adunate pe zile, cele din mai multe sesiuni întâi; pâlnia cu oamenii uniți și cei care se opresc', () => {
+  const A = (t: number, id: string) => ({ fel: 'actiune', t, id, de: 'bara', rez: 'ok' });
+  const EXPORT = (t: number) => ({ fel: 'calcul', t, id: 'export', ms: 1_000, rez: 'ok', forme: 10 });
+  const DRUM = [A(1, 'document.importa'), A(2, 'document.rol'), A(3, 'export.gcode')];
+  const f1 = zi('2026-11-22', [
+    lot('ana', 'sesiunea-ana-0001', false, [...DRUM, EXPORT(4)]),
+    lot('ion', 'sesiunea-ion-0001', false, DRUM),
+  ]);
+  const f2 = zi('2026-11-23', [
+    lot('ana', 'sesiunea-ana-0002', false, [...DRUM, A(4, 'vedere.masina'), EXPORT(5), { fel: 'masina', t: 6, id: 'pornita' }]),
+    lot('vlad', 'sesiunea-vlad-001', false, [{ fel: 'fereastra', t: 1, id: 'proiectare' }]),
+  ]);
+  const c = sumePerioada([f1, f2], 'clienti');
+  assert.deepEqual(secventeleDese(c, 3), [
+    { pasi: ['document.importa', 'document.rol', 'export.gcode'], n: 3, s: 3 },
+    { pasi: ['document.rol', 'export.gcode', 'vedere.masina'], n: 1, s: 1 },
+  ]);
+  assert.deepEqual(secventeleDese(c, 4), [{ pasi: ['document.importa', 'document.rol', 'export.gcode', 'vedere.masina'], n: 1, s: 1 }]);
+  assert.deepEqual(secventeleDese(c, 3, 1).length, 1);
+  assert.deepEqual(palnie(c), [
+    { pas: 'deschidere', sesiuni: 4, oameni: 3, seOpresc: 1 },
+    { pas: 'continut', sesiuni: 3, oameni: 2, seOpresc: 0 },
+    { pas: 'rol', sesiuni: 3, oameni: 2, seOpresc: 1 },
+    { pas: 'export', sesiuni: 2, oameni: 1, seOpresc: 1 },
+    { pas: 'masina', sesiuni: 1, oameni: 1, seOpresc: null },
+  ]);
+  // O zi de dinainte de A.10, fără fluxuri: se citește, fără secvențe și cu pâlnia goală.
+  const vechi = sumePerioada([{ zi: '2026-11-20', segmente: { clienti: { sesiuni: 2 } } }], 'clienti');
+  assert.deepEqual([secventeleDese(vechi, 3), palnie(vechi).map((r) => r.sesiuni)], [[], [0, 0, 0, 0, 0]]);
 });
 
 test('perioada: ziua de început, după calendar', () => {

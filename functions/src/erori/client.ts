@@ -1,5 +1,6 @@
 import type { Firestore } from 'firebase-admin/firestore';
 import { ipApelant, PLAFON_RATA, valideazaRaport } from '../../../shared/erori.ts';
+import { pasiDin } from '../../../shared/pasiEroareVerificare.ts';
 import { instantaDinProiect } from '../instanta.ts';
 import { hashScurt, scrieEroare } from './scrie.ts';
 
@@ -19,8 +20,10 @@ export interface CerereClient {
 export async function trateazaRaportClient(db: Firestore, data: unknown, cerere: CerereClient, acum: Date = new Date()): Promise<RaspunsClient> {
   const v = valideazaRaport(data);
   if (!v.ok) return { ok: false, motiv: 'nevalid' };
+  // Pașii dinaintea erorii (ADR 0262 §4, felia A.11a): verificați din nou, pas cu pas; ce nu e un pas se aruncă, nu raportul.
+  const pasi = pasiDin((data as Record<string, unknown>)['pasi']);
   try {
-    const r = await scrieEroare(db, { sursa: 'client', ...v.raport, instanta: instantaDinProiect(), uid: cerere.uid }, [
+    const r = await scrieEroare(db, { sursa: 'client', ...v.raport, instanta: instantaDinProiect(), uid: cerere.uid, ...(pasi.length > 0 ? { pasi } : {}) }, [
       { cheie: `ip_${hashScurt(ipApelant(cerere.xff, cerere.ip))}`, maxim: PLAFON_RATA.peIp },
       { cheie: 'client', maxim: PLAFON_RATA.globalClient },
     ], acum);
