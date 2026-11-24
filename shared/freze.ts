@@ -22,9 +22,12 @@ export const PAGINA_FREZE = 100;
  */
 export const STERSE_IN_CONT = 500;
 
-/** Id-ul unei freze: ca cele date de aplicație, folosit și ca id al documentului. */
+/**
+ * Id-ul unei freze: ca cele date de aplicație, folosit și ca id al documentului (Firestore refuză id-urile `__…__`; ca
+ * cheie, nici `__proto__` nu e bun).
+ */
 const ID = /^[A-Za-z0-9_-]{1,64}$/;
-export const esteIdFreza = (x: unknown): x is string => typeof x === 'string' && ID.test(x);
+export const esteIdFreza = (x: unknown): x is string => typeof x === 'string' && ID.test(x) && !/^__.*__$/.test(x);
 
 /** O freză în cont: versiunea ei în cont și JSON-ul ei, sau `null` dacă e ștearsă. Versiunea 0 = n-a fost niciodată. */
 export type FrezaInCont = { readonly id: string; readonly versiune: number; readonly json: string | null };

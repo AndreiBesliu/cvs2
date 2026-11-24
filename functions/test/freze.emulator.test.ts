@@ -63,6 +63,7 @@ test('fără om, fără cont deschis, cerere greșită: refuzat, fără nicio sc
     null, 'lista', { actiune: 'zboara' }, { actiune: 'lista' }, { actiune: 'lista', dupa: -1 }, { actiune: 'lista', dupa: 1.5 },
     { actiune: 'scrie', freze: [] },
     { actiune: 'scrie', freze: [{ id: 'a b', vazuta: 0, json: json('a b') }] },
+    { actiune: 'scrie', freze: [{ id: '__proto__', vazuta: 0, json: json('__proto__') }] },
     { actiune: 'scrie', freze: [{ id: 'a', vazuta: 0, json: json('b') }] },
     { actiune: 'scrie', freze: [{ id: 'a', vazuta: 0, json: '[1]' }] },
     { actiune: 'scrie', freze: [{ id: 'a', vazuta: 0, json: '{' }] },
