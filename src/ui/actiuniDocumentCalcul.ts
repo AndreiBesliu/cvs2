@@ -2,10 +2,10 @@ import { CUTIE_GOALA, uneste, type Cutie } from '../geom/cutie.ts';
 import { IDENTITATE, rotatie } from '../geom/matrice.ts';
 // Doar tipul: piesa importului o face modulul previzualizării, adus la cerere (`ImportPregatit.piesa`, felia 2.3c-3).
 import type { ImportPregatit } from '../io/piesa.ts';
-import { instantaPreaDeparte, noduriPiesa, numara, operatieImplicita, PLAFON, plafonDepasit, type Document, type Foaie, type FormaDoc, type Ghidaj, type ImagineFoaie, type Instanta, type Nod, type Operatie, type Piesa, type Stoc, type TextePlacuta } from '../model/document.ts';
+import { instantaPreaDeparte, noduriPiesa, numara, operatieImplicita, PLAFON, plafonDepasit, type Cota, type Document, type Foaie, type FormaDoc, type Ghidaj, type ImagineFoaie, type Instanta, type Nod, type Operatie, type Piesa, type Stoc, type TextePlacuta } from '../model/document.ts';
 import type { Actiune } from './actiuni.ts';
 import { is } from 'valibot';
-import { operatieInMargini, SchemaDocument } from '../model/schemaDocument.ts';
+import { operatieInMargini, problemaCote, SchemaDocument } from '../model/schemaDocument.ts';
 import { adancimeDeschise } from '../io/adancime.ts';
 import { operatiiPlacutei } from '../io/placuteOperatii.ts';
 import type { RezultatPlacuta } from '../text/placute.ts';
@@ -533,6 +533,24 @@ export const CALCUL_DOCUMENT: CalculDocument = {
       ctx.scrie(executa(h, { tip: 'inlocuieste-ghidaje', foaie: foaie.id, vechi, nou: nou.map((g) => ({ ...g })) }));
     },
   },
+  // Cotele foii (ADR 0330): lista întreagă, judecată ca la ușă (judecata vine cu unealta Cote); aceeași listă nu e o comandă.
+  'foaie.cote': {
+    activa: (ctx) => {
+      const c = ctx.coteNoi?.();
+      if (!c) return 'motiv.nimic-ales';
+      const s = scrie(ctx);
+      if (s !== true) return s;
+      return coteBune(ctx.istoric().doc, foaieCtx(ctx, ctx.istoric().doc).id, c) ? true : 'motiv.plafon';
+    },
+    ruleaza: (ctx) => {
+      const nou = ctx.coteNoi?.();
+      const h = ctx.istoric();
+      const foaie = foaieCtx(ctx, h.doc);
+      const vechi = foaie.cote ?? [];
+      if (!nou || !coteBune(h.doc, foaie.id, nou) || jsonCanonic(nou) === jsonCanonic(vechi)) return;
+      ctx.scrie(executa(h, { tip: 'inlocuieste-cote', foaie: foaie.id, vechi, nou: nou.map((c) => structuredClone(c)) }));
+    },
+  },
   // Imaginile foii (ADR 0272): lista întreagă, judecată ca la ușă; aceeași listă nu e o comandă.
   'foaie.imagini': {
     activa: (ctx) => {
@@ -998,6 +1016,15 @@ function mutaFoaia(directie: -1 | 1): Pick<Actiune<ContextDocument>, 'activa' | 
       if (c) ctx.scrie(executa(h, c));
     },
   };
+}
+
+/**
+ * Lista de cote a foii `idFoaie` trece de ușă (ADR 0330 §2): judecata cotelor, pe documentul cu ea (fără judecata adusă,
+ * `problemaCote` refuză, deci nimic nu se scrie pe nejudecate).
+ */
+function coteBune(doc: Document, idFoaie: string, cote: readonly Cota[]): boolean {
+  const foi = doc.foi.map((f) => (f.id === idFoaie ? { ...f, cote: [...cote] } : f));
+  return problemaCote({ ...doc, foi }) === null;
 }
 
 /**

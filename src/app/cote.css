@@ -1,0 +1,102 @@
+/*
+ * Cotele pe pânză (ADR 0330 §5): culoarea lor e tokenul temei `--cota` (alta decât a formelor, a selecției, a ghidajelor și a
+ * traseului); cele dezlegate, punctate, în roșul avertismentelor. Stratul nu prinde evenimente: cu Selecția, clicul trece la
+ * forma de sub cote (unealta ascultă pe fereastră, ca Pen-ul).
+ */
+.strat-cote {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.cota line {
+  stroke: var(--cota);
+  stroke-width: 1;
+}
+
+.cota .cota-capat {
+  fill: var(--cota);
+  stroke: none;
+}
+
+.cota text {
+  fill: var(--cota);
+  font-family: var(--font, system-ui, sans-serif);
+}
+
+.cota-dezlegata line {
+  stroke: var(--rosu);
+  stroke-dasharray: 5 3;
+}
+
+.cota-dezlegata .cota-capat,
+.cota-dezlegata text {
+  fill: var(--rosu);
+}
+
+.cota-aleasa line {
+  stroke-width: 2;
+}
+
+.cota-noua line,
+.cota-elastic {
+  stroke: var(--cota);
+  stroke-dasharray: 6 3;
+  stroke-width: 1;
+}
+
+.cota-maner {
+  fill: var(--s-panou);
+  stroke: var(--cota);
+  stroke-width: 1.5;
+}
+
+.cota-maner-dezlegat {
+  stroke: var(--rosu);
+}
+
+.cota-pus {
+  fill: var(--cota);
+}
+
+.cota-lipire rect,
+.cota-lipire polygon,
+.cota-lipire circle,
+.cota-lipire path {
+  fill: none;
+  stroke: var(--l-focus);
+  stroke-width: 1.5;
+}
+
+.masura line {
+  stroke: var(--cota);
+  stroke-width: 1;
+  stroke-dasharray: 4 3;
+}
+
+.masura circle {
+  fill: var(--cota);
+}
+
+.cip-masura {
+  position: absolute;
+  pointer-events: auto;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.cip-masura button {
+  margin-inline-start: 0.5rem;
+}
+
+.cip-masura-jos {
+  font-variant-numeric: tabular-nums;
+}
+
+.cote-feluri {
+  display: contents;
+}
+
+.panza-cutie:has(.strat-cote[data-fel]) .panza {
+  cursor: crosshair;
+}
