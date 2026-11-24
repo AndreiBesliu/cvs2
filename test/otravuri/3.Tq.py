@@ -114,7 +114,7 @@ o('P17', E, '      for (let k = 0; k < 8; k++) {\n        const lat = Math.max(.
   '      for (let k = 0; k < 0; k++) {\n        const lat = Math.max(...sec.map(p => p[0])) - Math.min(...sec.map(p => p[0]));', 'elice', 'coarda nelimitată (paletele late se întrepătrund)')
 o('P18', E, 'sectiuneElice(cc, t, profil)\n        .map(([u, v]): P2 => [(u - cc / 2) * Math.cos(b) - v * Math.sin(b), (u - cc / 2) * Math.sin(b) + v * Math.cos(b)]);',
   'sectiuneElice(cc, t, profil)\n        .map(([u, v]): P2 => [(u - cc / 2) * Math.cos(b) + v * Math.sin(b), (u - cc / 2) * Math.sin(b) + v * Math.cos(b)]);', 'elice', 'secțiunea forfecată, nu rotită (grosimea se strică)')
-o('P19', E, 'return { r, sec: sec.map(([s, h]): P2 => [s, h - zmin]) };', 'return { r, sec: sec.map(([s, h]): P2 => [s, h]) };', 'elice',
+o('P19', E, 'return { r, sec: sec.map(([s, h]): P2 => [s, h - zmin]) };\n    });\n    const hRad', 'return { r, sec: sec.map(([s, h]): P2 => [s, h]) };\n    });\n    const hRad', 'elice',
   'secțiunile rămân centrate pe coardă (jumătate din paletă sub masă)')
 o('P20', E, 'const zmin = Math.min(...sec.map(p => p[1]));\n      return { r, sec: sec.map(([s, h]): P2 => [s, h - zmin]) };', 'const zmin = Math.min(...sec.map(p => p[1])) - 0.3;\n      return { r, sec: sec.map(([s, h]): P2 => [s, h - zmin]) };', 'elice', 'paleta la 0,3 mm deasupra mesei (în aer)')
 o('P21', E, 'const th = 2 * Math.PI * k / z;\n      const p3 = (st: StatieElice, [s, h]: P2): P3 => { const f = st.rot ? th + semn * (s / st.r + st.rot) : th + semn * s / st.r;',
@@ -164,10 +164,10 @@ o('V03', E, 'avert.push(tr`O elice are între 2 și 8 palete: am făcut-o cu ${q
   'avertismentul spune paletele cerute, nu cele făcute')
 o('V04', E, 'avert.push(tr`Diametrul unei elice e între 20 și 200 mm: am făcut-o de ${q.D} mm.`);', 'avert.push(tr`Diametrul unei elice e între 20 și 200 mm: am făcut-o de ${q.R} mm.`);', 'elice',
   'avertismentul spune raza')
-o('V05', E, 'conicaDubla, senila, elice, eliceBarca, dinCvs2 };', 'conicaDubla, senila, eliceBarca, dinCvs2 };', 'elice', 'elicea scoasă din tipurile motorului')
+o('V05', E, 'conicaDubla, senila, elice, eliceBarca, ventilator, dinCvs2 };', 'conicaDubla, senila, eliceBarca, ventilator, dinCvs2 };', 'elice', 'elicea scoasă din tipurile motorului')
 
 # Atelierul (e2e).
-o('E01', A, '    ["propulsie", "Elice", [["elice", "Elice"], ["eliceBarca", "Elice de barcă"]]]', '    ["roti2", "Elice", [["elice", "Elice"], ["eliceBarca", "Elice de barcă"]]]', 'e2e', 'fila Elice, cu altă cheie (familia `propulsie` lipsește)')
+o('E01', A, '    ["propulsie", "Elice", [["elice", "Elice"], ["eliceBarca", "Elice de barcă"], ["ventilator", "Ventilator cu carcasă"]]]', '    ["roti2", "Elice", [["elice", "Elice"], ["eliceBarca", "Elice de barcă"], ["ventilator", "Ventilator cu carcasă"]]]', 'e2e', 'fila Elice, cu altă cheie (familia `propulsie` lipsește)')
 o('E02', A, 'elice: { palete: 3, diametru: 72, pas: 0.7, latime: 30, forma: "rot",', 'elice: { palete: 4, diametru: 72, pas: 0.7, latime: 30, forma: "rot",', 'e2e', 'editorul pornește cu 4 palete')
 o('E03', A, 'elice: { palete: 3, diametru: 72, pas: 0.7, latime: 30, forma: "rot",', 'elice: { palete: 3, diametru: 72, pas: 0.7, latime: 35, forma: "rot",', 'e2e', 'editorul pornește cu lățimea 35 %')
 o('E04', A, 'forma: "rot", paleta: "rasucita", profil: "placa", sens: "dreapta", gaura: "x", con: "nu" },',

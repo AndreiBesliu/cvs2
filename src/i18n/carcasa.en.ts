@@ -87,6 +87,7 @@ export const enCarcasa = {
   'raport.text': 'What happened (or the idea, the question)',
   'raport.poza': 'Attach a picture of the sheet',
   'raport.proiect': 'Attach the project (so the team can open it)',
+  'raport.pasi': { one: 'Attach the last step in the app', other: 'Attach the last {n} steps in the app' },
   'raport.proiect.marime': 'The open project is {marime}.',
   'raport.proiect.prea-mare': 'The project is {marime}; at most {max} can be attached. Untick it to send without it.',
   'raport.proiect.lipsa': 'No open project to attach.',
@@ -100,6 +101,8 @@ export const enCarcasa = {
   'raport.date.amprente-calcul': 'Fingerprints of the errors in this session: computing…',
   'raport.date.fara-erori': 'No errors in this session',
   'raport.date.proiect': 'The open project ({marime}), compressed',
+  'raport.date.sesiune': 'The number of the work session, so the team can find what was done in it',
+  'raport.date.pasi': { one: 'The last step in the app (only what you did, no content)', other: 'The last {n} steps in the app (only what you did, no content)' },
   'raport.date.amprente': {
     one: 'The fingerprint of {n} error from this session, without its content',
     other: 'The fingerprints of {n} errors from this session, without their content',

@@ -7,6 +7,23 @@
         { "fieldPath": "rezolvat", "order": "ASCENDING" },
         { "fieldPath": "ultimaData", "order": "DESCENDING" }
       ]
+    },
+    {
+      "collectionGroup": "utilizare",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "uid", "order": "ASCENDING" },
+        { "fieldPath": "primit", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "utilizare",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "uid", "order": "ASCENDING" },
+        { "fieldPath": "sesiune", "order": "ASCENDING" },
+        { "fieldPath": "primit", "order": "DESCENDING" }
+      ]
     }
   ],
   "fieldOverrides": [

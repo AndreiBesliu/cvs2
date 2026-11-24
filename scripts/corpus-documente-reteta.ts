@@ -5,7 +5,7 @@
  *
  * Proiectul trăiește prin versiuni, ca al unui om: versiunea N deschide salvarea versiunii N − 1 cu ușa ei (deci cu
  * migrarea ei), adaugă ce a adus versiunea N (v2 grupul și a doua instanță, v3 operațiile … v23 literele unei plăcuțe, v24
- * punțile dopului decupat, v25 gaura prin foaie, v26 urechile capacului la locuri alese), apoi
+ * punțile dopului decupat, v25 gaura prin foaie, v26 urechile capacului la locuri alese, v27 frezele din bibliotecă), apoi
  * salvează, după ce ușa ei a primit documentul neschimbat. v1 îl desenează de la zero. `gol` e documentul nou al lui v1.
  *
  *   node scripts/corpus-documente-reteta.ts <salvarea N − 1 | -> <ieșirea> proiect|gol [<deschis>]
@@ -220,6 +220,17 @@ const ADAUGIRI: Readonly<Record<number, (d: Obj) => void>> = {
     const u = op(d, 'capac')['urechi'];
     u['mod'] = 'alese';
     u['locuri'] = { capac: [{ x: 60, y: 0 }, { x: 60, y: 80 }, { x: 120, y: 40 }] };
+    d['rev'] += 1;
+  },
+  // v27 (ADR 0300 §5): freza capacului vine din bibliotecă, cu valorile ei de lucru și tăișul; freza de rest a buzunarului
+  // are valorile ei, freza fundului plat al etichetei tăișul, iar freza benzii doar originea.
+  27: (d) => {
+    Object.assign(op(d, 'capac')['scula'], {
+      biblioteca: { id: '5d0c7a2e-41f3-4b8e-9a6d-2c1e8f7b3a90', rev: 3 }, regim: { turatie: 20_000, avans: 1_200, plonjare: 400 }, tais: 22,
+    });
+    op(d, 'buzunar')['rest'][0]['scula']['regim'] = { turatie: 24_000, avans: 600, plonjare: 200 };
+    op(d, 'eticheta')['fundPlat']['scula']['tais'] = 12;
+    op(d, 'eticheta')['incrustatie']['banda']['freza']['biblioteca'] = { id: 'e9b4f1d3-07a2-4c5e-8b6f-1a3d5c7e9f02', rev: 1 };
     d['rev'] += 1;
   },
 };

@@ -147,6 +147,15 @@ test('raportarea din editor, cu poza și amprenta erorii din sesiune; răspunsul
   await r.locator('[data-camp="raport-fel-idee"]').check();
   await r.locator('[data-camp="raport-text"]').fill('Grila ar trebui\nsă se vadă mai bine.');
   await r.locator('[data-camp="raport-poza"]').check();
+  // Pașii din aplicație (ADR 0262, A.11b), doar cu bifa: luați la deschiderea ferestrei, cu numărul lor în ce mai pleacă.
+  await expect(r.locator('[data-raport-date-pasi]')).toHaveCount(0);
+  const bifaPasi = r.locator('[data-camp="raport-pasi"]');
+  await expect(bifaPasi).toBeEnabled();
+  await expect(r.locator('label:has([data-camp="raport-pasi"])')).toContainText('pași din aplicație');
+  await bifaPasi.check();
+  await expect(r.locator('[data-raport-date-pasi]')).toContainText('pași din aplicație (doar ce ai făcut, fără conținut)');
+  // Sesiunea de lucru (A.11d) pleacă mereu, doar ca număr, și e spusă în ce mai pleacă.
+  await expect(r.locator('[data-raport-date-sesiune]')).toHaveText('Numărul sesiunii de lucru, ca echipa să găsească ce s-a făcut în ea');
   // Proiectul deschis, doar cu bifa: mărimea lui (JSON-ul canonic, cât salvează editorul) sub bifă și în ce mai pleacă.
   await expect(r.locator('[data-raport="proiect"]')).toHaveCount(0);
   await r.locator('[data-camp="raport-proiect"]').check();
@@ -178,6 +187,30 @@ test('raportarea din editor, cu poza și amprenta erorii din sesiune; răspunsul
   expect(numar(poza['marime'])).toBeGreaterThan(1000);
   expect(numar(poza['marime'])).toBeLessThanOrEqual(400 * 1024);
   expect((await documente(`tichete/${tichet?.id ?? ''}/poze`)).map((x) => x.id)).toEqual(['plansa']);
+  // Pașii: dreptunghiul adăugat din paletă e printre ei, ca acțiune reușită; doar câmpurile unui pas.
+  const pasi = (f['pasi']?.arrayValue?.values ?? []).map((v) => v.mapValue?.fields ?? {});
+  expect(pasi.some((p) => text(p['fel']) === 'actiune' && text(p['id']) === 'document.adauga-dreptunghi' && text(p['rez']) === 'ok')).toBe(true);
+  for (const p of pasi) expect(Object.keys(p).every((k) => ['fel', 'id', 'rez', 'ms'].includes(k))).toBe(true);
+  const sesiune = text(f['sesiune']);
+  expect(sesiune).toMatch(/^[a-z0-9]{16}$/);
+  // Lotul sesiunii pleacă la ascunderea paginii (ca la închiderea filei): cronologia îl găsește după numărul ei.
+  await page.evaluate(() => {
+    Object.defineProperty(document, 'visibilityState', { configurable: true, get: () => 'hidden' });
+    document.dispatchEvent(new Event('visibilitychange'));
+  });
+  await expect.poll(async () => (await documente('utilizare')).some((l) => text(l.f['sesiune']) === sesiune), LENT).toBe(true);
+  // Un lot al Anei din altă sesiune (altă zi): „Sesiunea raportării” nu-l arată.
+  const alt = await fetch(`${FS}/utilizare/zzzzzzzzzzzzzzz1-1`, {
+    method: 'PATCH', headers: { Authorization: 'Bearer owner', 'Content-Type': 'application/json' },
+    body: JSON.stringify({ fields: {
+      schema: { integerValue: '1' }, uid: { stringValue: uid }, sesiune: { stringValue: 'zzzzzzzzzzzzzzz1' }, nr: { integerValue: '1' },
+      primit: { timestampValue: new Date(Date.now() - 86_400_000).toISOString() }, inceput: { timestampValue: new Date(Date.now() - 86_500_000).toISOString() },
+      evenimente: { arrayValue: { values: [{ mapValue: { fields: {
+        fel: { stringValue: 'actiune' }, t: { integerValue: '1000' }, id: { stringValue: 'document.roteste' }, de: { stringValue: 'bara' }, rez: { stringValue: 'ok' },
+      } } }] } }, aruncate: { integerValue: '0' },
+    } }),
+  });
+  expect(alt.status, await alt.clone().text()).toBe(200);
   // Proiectul: în tichet doar meta lui (fișierul e în Storage), cu mărimea și amprenta versiunii salvate.
   const proiect = f['proiect']?.mapValue?.fields ?? {};
   expect([numar(proiect['marime']), text(proiect['sha256']), numar(proiect['schema'])]).toEqual([
@@ -196,6 +229,19 @@ test('raportarea din editor, cu poza și amprenta erorii din sesiune; răspunsul
   await expect(eroareSesiune).toContainText('eroare de probă pentru raportare', LENT);
   await expect(eroareSesiune.locator('[data-tic="spre-erori"]')).toHaveText('Deschide în Erori ›');
   await expect(detaliu.locator('[data-tic="aplicatia"]')).toContainText(BUILD);
+  // Pașii atașați, cu numele acțiunii din catalog.
+  await expect(detaliu.locator('[data-admin="pasi"] summary')).toContainText('dinaintea raportării');
+  await expect(detaliu.locator('[data-admin="pasi"] [data-pas-id="document.adauga-dreptunghi"]')).toContainText('Adaugă dreptunghi · acțiune');
+  // Sesiunea raportării (A.11d), cu „Utilizare: sesiuni” (owner-ul o are): citită la cerere, doar sesiunea aceea.
+  const ses = detaliu.locator('[data-util="activitate"]');
+  await expect(ses.locator('h4')).toHaveText('Sesiunea raportării');
+  await ses.locator('[data-util="arata-activitatea"]').click();
+  await expect(ses.locator('[data-sesiune]')).toHaveCount(1, LENT);
+  await expect(ses.locator('[data-sesiune]')).toHaveAttribute('data-sesiune', sesiune);
+  await ses.locator('summary').click();
+  // Loturile se strâng doar cu contul deschis: dreptunghiul de dinaintea intrării nu e în ele, trimiterea raportării da.
+  await expect(ses.locator('[data-pas-id="buton.raport-trimite"]')).toContainText('buton.raport-trimite · clic');
+  await expect(ses.locator('[data-pas-id="document.adauga-dreptunghi"]')).toHaveCount(0);
   // Proiectul, descărcat prin callable (din Storage, pe server), despachetat și verificat: versiunea salvată, octet cu octet.
   const descarcaProiect = detaliu.locator('[data-tic="descarca-proiect"]');
   await expect(descarcaProiect).toHaveText(`Descarcă proiectul (${kb} kB, schema ${(JSON.parse(salvat) as { schema: number }).schema})`);
@@ -240,6 +286,19 @@ test('raportarea din editor, cu poza și amprenta erorii din sesiune; răspunsul
   await expect(buton.getByTestId('cont-semn')).toHaveCount(0, LENT);
   await expect.poll(async () => numar((await documente('tichete'))[0]?.f['necititeAutor']), LENT).toBe(0);
   await mele.locator('[data-buton="inchide-raport"]').click();
-  await expect((await deschideMeniulContului(page)).getByTestId('meniu-cont-necitite')).toHaveCount(0);
+  const m3 = await deschideMeniulContului(page);
+  await expect(m3.getByTestId('meniu-cont-necitite')).toHaveCount(0);
+
+  // O a doua raportare, fără bifa pașilor (A.11b): tichetul pleacă fără ei, deși inelul are pași.
+  await m3.locator('[data-meniu-cont="raporteaza"]').click();
+  const r2 = page.getByTestId('dialog-raportare');
+  await expect(r2.locator('[data-camp="raport-pasi"]')).toBeEnabled(LENT);
+  await r2.locator('[data-camp="raport-text"]').fill('Fără pași.');
+  await r2.locator('[data-buton="raport-trimite"]').click();
+  await expect(r2.locator('[data-raport="trimis"]')).toBeVisible(LENT);
+  await r2.locator('[data-buton="inchide-raport"]').click();
+  const fara = (await documente('tichete')).find((x) => text(x.f['text']) === 'Fără pași.');
+  expect(fara).toBeDefined();
+  expect(fara?.f['pasi']).toBeUndefined();
   expect(erori).toEqual(['eroare de probă pentru raportare']);
 });

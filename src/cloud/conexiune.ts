@@ -6,7 +6,9 @@ import type { CererePersonal, RaspunsInvitatie, RaspunsPersonal } from '../../sh
 import type { CerereRaspunsuriRapide, RaspunsRapid, RaspunsRaspunsuriRapide } from '../../shared/raspunsuriRapide.ts';
 import type { CerereSugestie, RaspunsSugestie } from '../../shared/sugestii.ts';
 import type { CerereTichet, RaspunsProiectTichet, RaspunsTichet } from '../../shared/tichete.ts';
-import type { CerereSetariUtilizare, RaspunsSetariUtilizare, SetariUtilizare } from '../../shared/utilizare.ts';
+import type {
+  CerereCronologie, CerereDisociere, CerereSetariUtilizare, RaspunsDisociere, RaspunsSetariUtilizare, SetariUtilizare,
+} from '../../shared/utilizare.ts';
 import { conecteazaBaza, hostPort, type ConexiuneBaza, type ConfigCloud, type MotivFaraConexiune } from './conexiuneBaza.ts';
 import { contAplicatiei } from './contEditor.ts';
 
@@ -102,6 +104,18 @@ export async function salveazaRaspunsurileRapide(c: Conexiune, lista: readonly R
  */
 export async function salveazaSetarileUtilizarii(c: Conexiune, setari: SetariUtilizare, versiune: number): Promise<RaspunsSetariUtilizare> {
   return (await httpsCallable<CerereSetariUtilizare, RaspunsSetariUtilizare>(c.functii, 'utilizare')({ actiune: 'setari', setari, versiune })).data;
+}
+
+/** Cronologia unui cont (ADR 0262 §6, felia A.11c): o pagină, prin callable-ul `utilizare`; cere „Utilizare: sesiuni”. */
+export async function cronologiaContului(c: Conexiune, uid: string, pana?: number, sesiune?: string): Promise<unknown> {
+  return (await httpsCallable<CerereCronologie, unknown>(c.functii, 'utilizare')({
+    actiune: 'cronologie', uid, ...(pana === undefined ? {} : { pana }), ...(sesiune === undefined ? {} : { sesiune }),
+  })).data;
+}
+
+/** Disocierea utilizării unui cont (ADR 0262 §3, felia A.11e), prin callable-ul `utilizare`; cere „Conturi: administrează”. */
+export async function disociazaUtilizarea(c: Conexiune, uid: string): Promise<RaspunsDisociere> {
+  return (await httpsCallable<CerereDisociere, RaspunsDisociere>(c.functii, 'utilizare')({ actiune: 'disociaza', uid })).data;
 }
 
 export async function marcheazaEroarea(c: Conexiune, amprenta: string, rezolvat: boolean): Promise<{ ok: true; schimbat: boolean }> {
