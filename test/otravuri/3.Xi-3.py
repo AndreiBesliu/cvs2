@@ -111,8 +111,6 @@ o('P02', PL, "      window.dispatchEvent(new CustomEvent(EVENIMENT_EXTENSII, { d
   'alegerea unei extensii în paletă doar închide paleta')
 o('P03', PL, "      // O extensie: paleta se închide, iar gazda extensiilor o deschide (ca din meniul ei).\n      onInchide();\n", "", 'e2e',
   'paleta rămâne deschisă peste extensia aleasă')
-o('P04', PL, "return [...(d.instalate ?? [])].sort((a, b) => a.nume.localeCompare(b.nume))", "return [...(d.instalate ?? [])]", 'e2e',
-  'extensiile din paletă nu mai stau după nume')
 o('P05', PL, "const numeleLui = (e: ElementPaleta): string => (e.nume === undefined ? t(e.eticheta) : t(e.eticheta, { nume: e.nume }));", "const numeleLui = (e: ElementPaleta): string => t(e.eticheta);", 'e2e',
   'rândul din paletă nu spune numele extensiei')
 o('P06', DE, "      if (x) acum.current.deschide(x);", "      if (x) acum.current.deschide(acum.current.lista[0] ?? x);", 'e2e',

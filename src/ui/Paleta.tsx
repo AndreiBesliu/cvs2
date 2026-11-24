@@ -77,12 +77,11 @@ export function Paleta({ elemente, tasta, onAlege, onInchide, focusInapoi }: Pro
   const [text, setText] = useState('');
   const [activ, setActiv] = useState(0);
   const camp = useRef<HTMLInputElement>(null);
-  // „Deschide <nume>” pentru fiecare extensie instalată, după nume; fără gazdă (încă neîncărcată), niciuna.
+  // „Deschide <nume>” pentru fiecare extensie instalată, în ordinea meniului ei (după nume); fără gazdă (încă neîncărcată), niciuna.
   const [extensii] = useState<readonly ElementPaleta[]>(() => {
     const d: CerereExtensiiPaleta = { instalate: [] };
     window.dispatchEvent(new CustomEvent(EVENIMENT_EXTENSII, { detail: d }));
-    return [...(d.instalate ?? [])].sort((a, b) => a.nume.localeCompare(b.nume))
-      .map((x) => ({ id: `${DESCHIDE_EXTENSIA}${x.id}`, eticheta: 'paleta.deschide-extensie', nume: x.nume, stare: { ok: true } }));
+    return (d.instalate ?? []).map((x) => ({ id: `${DESCHIDE_EXTENSIA}${x.id}`, eticheta: 'paleta.deschide-extensie', nume: x.nume, stare: { ok: true } }));
   });
   // Focusul intră în câmp; la închidere (curățarea rulează după ce aplicația nu mai e inertă) se întoarce unde era.
   useEffect(() => {

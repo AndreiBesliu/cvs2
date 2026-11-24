@@ -132,14 +132,37 @@ test('punctul de pe butonul Extensii: din ce s-a aflat la ultima deschidere a me
   expect(await veste(page)).toBeNull();
 });
 
-test('punctul pleacă și când extensia cu versiunea nouă e scoasă', async ({ page }) => {
+test('punctul pleacă și când extensia cu versiunea nouă e scoasă, și fără catalog (după reîncărcare, fără internet)', async ({ page }) => {
+  await bibliotecaDeProba(page, { id: 'salut', nume: 'Salut', versiune: '1.0.1', permisiuni: ['stocare'], octeti: await salut({ versiune: '1.0.1' }) });
+  await page.goto('/');
+  await instaleaza(page, 'salut-1.0.0.zip', Buffer.from(SALUT));
+  await instaleaza(page, 'salut2-1.0.0.zip', await salut({ id: 'salut2', nume: 'Salut 2' }));
+  await deschideMeniul(page);
+  await inchideMeniul(page);
+  await expect(punct(page)).toBeVisible();
+  // După reîncărcare, fără internet: vestea e doar cea ținută. Scoaterea extensiei o consumă, fără catalog.
+  await page.route('**/extensii/catalog.json', (r) => r.abort('failed'));
+  await page.reload();
+  await expect(punct(page)).toBeVisible();
+  // „Scoate” stă lângă „Deschide” (și, cu catalogul la îndemână, lângă „Actualizează la …”): nimeni nu trebuie să actualizeze ca să poată scoate.
+  const p = await paginaInstalatei(page, 'salut');
+  await expect(biblioteca(page).getByTestId('biblioteca-fara-catalog')).toBeVisible();
+  await p.locator('[data-extensii="pagina-scoate"]').click();
+  await page.locator('[data-extensii="scoate-confirma"]').click();
+  await expect(page.getByTestId('extensii-scoatere')).toHaveCount(0);
+  await page.keyboard.press('Escape');
+  await expect(biblioteca(page)).toHaveCount(0);
+  await expect(punct(page)).toHaveCount(0);
+  expect(await veste(page)).toBeNull();
+});
+
+test('cu o versiune nouă în bibliotecă, pagina extensiei are și „Scoate”, lângă „Actualizează la …” și „Deschide”', async ({ page }) => {
   await bibliotecaDeProba(page, { id: 'salut', nume: 'Salut', versiune: '1.0.1', permisiuni: ['stocare'], octeti: await salut({ versiune: '1.0.1' }) });
   await page.goto('/');
   await instaleaza(page, 'salut-1.0.0.zip', Buffer.from(SALUT));
   await deschideMeniul(page);
   await inchideMeniul(page);
   await expect(punct(page)).toBeVisible();
-  // „Scoate” stă lângă „Actualizează la …”: nimeni nu trebuie să actualizeze ca să poată scoate.
   const p = await paginaInstalatei(page, 'salut');
   await expect(p.locator('.pagina-actiuni button')).toHaveText(['Actualizează la 1.0.1', 'Deschide', 'Scoate']);
   await p.locator('[data-extensii="pagina-scoate"]').click();
@@ -147,6 +170,7 @@ test('punctul pleacă și când extensia cu versiunea nouă e scoasă', async ({
   await expect(page.getByTestId('extensii-scoatere')).toHaveCount(0);
   await page.keyboard.press('Escape');
   await expect(biblioteca(page)).toHaveCount(0);
+  // Cu catalogul la îndemână, vestea se socotește din el: extensia scoasă nu mai are ce actualiza.
   await expect(punct(page)).toHaveCount(0);
   expect(await veste(page)).toBeNull();
 });
@@ -183,6 +207,11 @@ test('paleta de comenzi: „Deschide <nume>” pentru fiecare extensie instalat�
   await paleta.getByRole('combobox').fill('extensii');
   await expect(page.locator('[id^="paleta-extensii.deschide:"]')).toHaveText(['Deschide Banc de probă', 'Deschide Salut']);
   await expect(page.locator('[id="paleta-extensii.biblioteca"]')).toBeVisible();
+  // A doua din listă, cu un clic: se deschide ea, în locul celei de acum.
+  await page.locator('[id="paleta-extensii.deschide:salut"]').click();
+  await expect(paleta).toHaveCount(0);
+  await expect(page.locator('[data-extensii="fila"]')).toHaveText('Salut');
+  await expect(spatiu(page)).toHaveAttribute('data-stare', 'pornit');
 });
 
 test('un .zip de extensie lăsat pe planșă deschide confirmarea instalării, cu avertismentul „din afara bibliotecii”', async ({ page }) => {
