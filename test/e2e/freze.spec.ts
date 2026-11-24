@@ -135,12 +135,20 @@ test('lista întâi: fișa frezei alese, doar de citit; „Editează” deschide
   // „Editează”: configuratorul, cu valorile frezei; „Salvează” întoarce la fișă, cu valoarea nouă.
   await fisa(f).locator('[data-freze="editeaza"]').click();
   await expect(f.getByRole('heading', { name: 'V90 Ø12', level: 3 })).toBeVisible();
+  await expect(camp(f, 'nume')).toBeFocused();
   await expect(camp(f, 'diametru')).toHaveValue('12');
+  // În editorul din listă, „Duplică” și „Șterge” stau pe fișă, iar „Renunță” merge și fără schimbări (înapoi la fișă).
+  await expect(f.locator('[data-freze="duplica"]')).toHaveCount(0);
+  await f.locator('[data-freze="renunta"]').click();
+  await expect(valoare(f, 'diametru')).toHaveText('12 mm');
+  await expect(fisa(f).locator('[data-freze="editeaza"]')).toBeFocused();
+  await fisa(f).locator('[data-freze="editeaza"]').click();
   await camp(f, 'avans').fill('1100');
   await f.locator('[data-freze="salveaza"]').click();
   await expect(f.locator('[data-freze="mesaj"]')).toHaveText('Salvat');
   await expect(valoare(f, 'avans')).toHaveText('1100 mm/min');
   await expect(f.locator('[data-freze-camp]')).toHaveCount(0);
+  await expect(fisa(f).locator('[data-freze="editeaza"]')).toBeFocused();
   // „Renunță”: fișa, cu valorile de dinainte.
   await editeaza(f, 'V90 Ø12');
   await camp(f, 'diametru').fill('10');
@@ -179,9 +187,11 @@ test('comutatorul „Configurator”: alegerea deschide direct editorul; ținut 
   await expect(g.locator('[data-freze-vedere="configurator"]')).toHaveAttribute('aria-pressed', 'true');
   await g.locator('[data-freza]').filter({ hasText: 'V60 Ø6' }).click();
   await expect(camp(g, 'unghi')).toHaveValue('60');
-  // „Listă”: freza aleasă își arată fișa.
+  // „Listă”, cu o schimbare nesalvată: schimbarea se salvează, apoi freza aleasă își arată fișa.
+  await camp(g, 'avans').fill('1300');
   await g.locator('[data-freze-vedere="lista"]').click();
   await expect(valoare(g, 'unghi')).toHaveText('60°');
+  await expect(valoare(g, 'avans')).toHaveText('1300 mm/min');
   await expect(g.locator('[data-freze-camp]')).toHaveCount(0);
 });
 
@@ -365,7 +375,9 @@ test('la 1280 px, cu fontul lat: fereastra încape, fără derulare pe orizontal
   await standard(f);
   await f.locator('[data-freza]').filter({ hasText: 'Gravare' }).click();
   await expect(f.locator('.freze-lista')).toBeVisible();
-  await expect(valoare(f, 'varf')).toBeVisible();
+  await expect(valoare(f, 'varf')).toHaveText('0,2 mm');
+  // Cota siluetei, cu virgula în română.
+  await expect(fisa(f).locator('figure')).toContainText('Ø3,175');
   await faraDepasire(page);
   await fisa(f).locator('[data-freze="editeaza"]').click();
   await expect(camp(f, 'varf')).toBeVisible();
