@@ -2,7 +2,8 @@
 
 ## 3.Xj: căutarea și categoriile (gata, de unit, în cloud)
 
-_Aceeași linie și aceeași ramură (`wip/3.Xh-biblioteca-ui`, cu `main` `64a63b4` adus pe 24.11, fără ciocniri). Starea:
+_Aceeași linie și aceeași ramură (`wip/3.Xh-biblioteca-ui`, cu `main` adus de două ori pe 24.11: `64a63b4`, fără
+ciocniri, și `a96881a`, cu cele trei obișnuite: DEVLOG-ul, traducerile, catalogul controalelor). Starea:
 **ADR 0233 scris și implementat pe 24.11, la „ok, porneste cautarea si categoriile” al owner-ului, cu alegerile
 recomandate; cinci întrebări pentru el stau în ADR („Întrebările”). PR-ul `AndreiBesliu/cvs2#24`, de unit de sesiunea
 principală după completul verde. Pachetele nu s-au schimbat (Easy 3Draw e 18.23.0, din 3.Tt, venit cu `main`;
@@ -15,7 +16,11 @@ următoarea versiune, 18.24.0).**_
   o singură extensie; câte rafturi pe extensie; cât de îngăduitoare e căutarea. Fiecare se schimbă fără să atingă restul.
 - **Probele:** `test/unit/extensii.cautare.test.ts`, `test/e2e/extensii.cautare.spec.ts` (biblioteca de probă cu cinci
   extensii: `raftDeProba` din `ajutor-biblioteca.ts`), țintele în `extensii.tinte.spec.ts`. Otrăvurile, în clonă: 78 / 78 (la prima rulare, 76: U06 și E06, cu probele întărite).
-- **Mărimea:** pornirea neschimbată (109,9 kB); totalul 814,3 → 815,6 / 900 kB.
+- **Mărimea:** pornirea neschimbată; totalul +1,3 kB (814,3 → 815,6; cu `main` `a96881a` adus, 816,8 → 818,1 / 900 kB,
+  pornirea 110,1 kB, cu ușa 114,8, cu Atelierul 115,1 / 120).
+- **CI:** rapidul verde pe `1c21640`; primul complet, căzut la o probă mai veche a extensiilor (regula de mai jos);
+  completul de pe `51ca1a5` (cu reparația ei și cu `main` adus) hotărăște unirea.
+- **Canalul `biblioteca`:** <https://cncvectorstudio-test--biblioteca-gw7dr9bc.web.app> (până pe 24.12.2026).
 
 **Reguli rămase de la 3.Xj:**
 - **Un raft nou** intră în `CATEGORII_BIBLIOTECA`, cu numele lui în ambele limbi (`extensii.categorie.<id>` în mesajele
