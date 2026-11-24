@@ -113,7 +113,7 @@ test('raza, diametrul, unghiul și fracțiile: marginile, fiecare câmp greșit 
   assert.equal(r({ raza: { prefixR: 'RAZA=123' } }).raza.prefixR, 'RAZA=123', 'opt semne');
   assert.equal(r({ raza: { prefixR: 'RAZA=1234' } }).raza.prefixR, 'R', 'nouă: prea lung');
   assert.equal(r({ raza: { prefixD: 7 } }).raza.prefixD, 'Ø');
-  assert.equal(r({ raza: { prefixD: '⌀⌀⌀⌀⌀⌀⌀⌀' } }).raza.prefixD, '⌀⌀⌀⌀⌀⌀⌀⌀', 'semnele, nu unitățile UTF-16');
+  assert.equal(r({ raza: { prefixD: '𝜙𝜙𝜙𝜙𝜙𝜙𝜙𝜙' } }).raza.prefixD, '𝜙𝜙𝜙𝜙𝜙𝜙𝜙𝜙', 'opt semne în afara planului de bază: semnele, nu unitățile UTF-16');
   assert.equal(r({ raza: { unghiuri: 'radiani' } }).raza.unghiuri, 'zecimale');
   assert.equal(r({ raza: { unghiuri: 'gms' } }).raza.unghiuri, 'gms');
   assert.equal(r({ raza: { zecimaleUnghi: 4 } }).raza.zecimaleUnghi, 4);

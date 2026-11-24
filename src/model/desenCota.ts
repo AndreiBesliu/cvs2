@@ -367,11 +367,12 @@ export function desenUnghi(p: readonly Punct[], d: number, s1: number, s2: numbe
 
 /**
  * Calea SVG a unui arc, pe un ecran cu Y în jos: `sx` și `sy` duc un punct al foii pe ecran, `k` e scara (raza pe ecran). Cu
- * Y întors, sensul trigonometric al foii e sensul acelor de ceasornic pe ecran, deci arcul se scrie cu sweep-flag 1.
+ * Y întors, sensul trigonometric al foii rămâne cel invers acelor de ceasornic la vedere, iar în SVG (Y în jos) acela e
+ * sensul unghiurilor negative: sweep-flag 0.
  */
 export function caleArc(a: ArcDesen, sx: (x: number) => number, sy: (y: number) => number, k: number): string {
   const p0 = peArc(a, a.de), p1 = peArc(a, a.de + a.baleiaj), r = a.raza * k;
-  return `M${sx(p0.x)} ${sy(p0.y)} A${r} ${r} 0 ${a.baleiaj > Math.PI ? 1 : 0} 1 ${sx(p1.x)} ${sy(p1.y)}`;
+  return `M${sx(p0.x)} ${sy(p0.y)} A${r} ${r} 0 ${a.baleiaj > Math.PI ? 1 : 0} 0 ${sx(p1.x)} ${sy(p1.y)}`;
 }
 
 /** Desenul oricărei cote cunoscute, după felul ei, cu punctele citite; null pentru un fel necunoscut sau fără desen. */

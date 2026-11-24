@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { cifraCota, desenCota, desenRadial, desenUnghi, distantaLaDesen, distantaRadiala, formatImplicit, laturiUnghi, linieUnghiDinCursor, scrieCifra, scrieUnghi, STIL_IMPLICIT, textCota, type CapatDesen, type DesenCota, type FormatCifre } from '../../src/model/desenCota.ts';
+import { caleArc, cifraCota, desenCota, desenRadial, desenUnghi, distantaLaDesen, distantaRadiala, formatImplicit, laturiUnghi, linieUnghiDinCursor, scrieCifra, scrieUnghi, STIL_IMPLICIT, textCota, type CapatDesen, type DesenCota, type FormatCifre } from '../../src/model/desenCota.ts';
 import type { Cota } from '../../src/model/document.ts';
 import { valoareCota } from '../../src/model/cote.ts';
 
@@ -214,7 +214,8 @@ test('inch în fracții: întregul și fracția simplificată, rotunjite la cel 
   assert.equal(fr(2.999), '3', 'aproape de întreg');
   assert.equal(fr(0), '0');
   assert.equal(fr(-0.5), '-1/2');
-  assert.equal(fr(1 / 128), '0', 'sub jumătate de 1/16: zero, fără minus');
+  assert.equal(fr(1 / 128), '0', 'sub jumătate de 1/16: zero');
+  assert.equal(fr(-1 / 128), '0', 'și negativ, fără „-0”');
   assert.equal(fr(1.5, 16, true), '1 1/2 in');
   assert.equal(fr(0.3, 2), '1/2', 'la 1/2: 0,3 → 1/2');
   // Zecimalele, zerourile, pasul și separatorul nu țin de fracții.
@@ -244,4 +245,10 @@ test('cifra după fel: raza și diametrul cu prefixele lor (și golite), unghiul
   assert.equal(cifraCota('aliniata', 120.5, F), '120,5');
   assert.equal(cifraCota('raza', 25.4, { ...F, unitate: 'fractii' }), 'R1');
   assert.equal(textCota({ id: 'c', fel: 'diametru', text: '4× <>' }, cifraCota('diametru', 10, F)), '4× Ø10');
+});
+
+test('calea SVG a arcului, pe ecranul cu Y în jos: sensul trigonometric al foii e sweep-flag 0; arcul mare are large-arc 1', () => {
+  const sx = (x: number): number => 100 + 2 * x, sy = (y: number): number => 100 - 2 * y;
+  assert.equal(caleArc({ centru: P(0, 0), raza: 10, de: 0, baleiaj: Math.PI / 2 }, sx, sy, 2), 'M120 100 A20 20 0 0 0 100 80');
+  assert.match(caleArc({ centru: P(0, 0), raza: 10, de: 0, baleiaj: 1.5 * Math.PI }, sx, sy, 2), /^M120 100 A20 20 0 1 0 /);
 });

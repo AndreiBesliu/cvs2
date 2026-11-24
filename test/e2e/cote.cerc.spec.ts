@@ -15,8 +15,11 @@ const strat = (page: Page) => page.getByTestId('strat-cote');
 const cote = (page: Page) => page.locator('[data-testid="strat-cote"] g[data-cota]');
 const sfat = (page: Page) => page.getByTestId('cote-sfat');
 
+async function peEcran(page: Page, p: P): Promise<P> {
+  return (await ecran(page, await vedere(page)))(p.x, p.y);
+}
 async function clic(page: Page, p: P): Promise<void> {
-  const s = (await ecran(page, await vedere(page)))(p.x, p.y);
+  const s = await peEcran(page, p);
   await page.mouse.move(s.x, s.y, { steps: 2 });
   await page.mouse.click(s.x, s.y);
 }
@@ -35,6 +38,11 @@ test('Rază pe cerc: un clic oriunde pe el, cifra afară, pe punctul numit cel m
   await adauga(page, 'cerc');
   await alegeCote(page, 'raza');
   await expect(sfat(page)).toContainText('Alege un cerc sau un arc');
+  // Esc renunță la cercul ales.
+  await clic(page, pePolar(C, 15, 30));
+  await expect(strat(page)).toHaveAttribute('data-cerc', '');
+  await page.keyboard.press('Escape');
+  await expect(strat(page)).not.toHaveAttribute('data-cerc', '');
   await clic(page, pePolar(C, 15, 30));
   await expect(strat(page)).toHaveAttribute('data-cerc', '');
   await expect(sfat(page)).toContainText('Du cifra unde vrei');
@@ -46,6 +54,9 @@ test('Rază pe cerc: un clic oriunde pe el, cifra afară, pe punctul numit cel m
   await expect(c).toHaveAttribute('data-text', 'R15');
   await expect(c).toHaveAttribute('data-stare', 'legata');
   await expect(strat(page)).not.toHaveAttribute('data-cerc', '');
+  // Linia razei e verticală (prin cadranul de sus), nu spre alt punct al cercului.
+  const l = c.locator('line.cota-linie').first();
+  expect(Math.abs(Number(await l.getAttribute('x1')) - Number(await l.getAttribute('x2')))).toBeLessThan(0.5);
 
   await page.locator('[data-unealta="selectie"]').click();
   await clic(page, pePolar(C, 15, 200));
@@ -109,6 +120,16 @@ test('Unghi din trei vârfuri: vârful, apoi câte un punct pe fiecare latură, 
   await expect(c).toHaveAttribute('data-fel', 'unghi');
   await expect(c).toHaveAttribute('data-text', '30,96°');
   await expect(c.locator('path.cota-arc')).toHaveCount(1);
+  // Arcul desenat trece prin sector: mijlocul căii SVG e mijlocul arcului (la 15,48°, pe raza cursorului).
+  const R0 = Math.hypot(40, 8);
+  // În coordonatele stratului (ale vederii pânzei: x = tx + X · scara, y = ty − Y · scara).
+  const mijloc = await c.locator('path.cota-arc').evaluate((el) => {
+    const p = el as SVGPathElement, q = p.getPointAtLength(p.getTotalLength() / 2);
+    return { x: q.x, y: q.y };
+  });
+  const v = await vedere(page), m = pePolar({ x: 20, y: 20 }, R0, (Math.atan2(60, 100) * 90) / Math.PI);
+  const asteptat = { x: v.tx + m.x * v.scara, y: v.ty - m.y * v.scara };
+  expect(Math.hypot(mijloc.x - asteptat.x, mijloc.y - asteptat.y)).toBeLessThan(2);
   // Aleasă (clic pe arc, la raza cursorului de la punere): panoul spune raza arcului, iar o rază nouă nu schimbă unghiul.
   const R = Math.hypot(40, 8);
   await clic(page, pePolar({ x: 20, y: 20 }, R, 15));
@@ -125,22 +146,36 @@ test('Unghi din trei vârfuri: vârful, apoi câte un punct pe fiecare latură, 
   await expect(panou).toBeVisible();
   await page.keyboard.press('ArrowUp');
   await expect(raza).toHaveValue('26');
+  // Tras de arc în sectorul de lângă prelungirea laturii de jos: unghiul suplementar, 180 − 30,96 = 149,04.
+  const s0 = await peEcran(page, pePolar({ x: 20, y: 20 }, 26, 15));
+  const s1 = await peEcran(page, { x: 5, y: 25 });
+  await page.mouse.move(s0.x, s0.y);
+  await page.mouse.down();
+  await page.mouse.move(s1.x, s1.y, { steps: 6 });
+  await page.mouse.up();
+  await expect(c).toHaveAttribute('data-text', '149,04°');
 
-  // Setări › Raza, diametrul, unghiul: grade, minute, secunde (30°57′49,52″).
+  // Setări › Raza, diametrul, unghiul: grade, minute, secunde (149,0362…° = 149°2′10,48″).
   await page.locator('[data-unealta="selectie"]').focus();
   await page.keyboard.press('Control+,');
   const dialog = page.getByTestId('dialog-setari');
   await expect(dialog).toBeVisible();
   await dialog.locator('[data-setare="raza.unghiuri"]').selectOption('gms');
-  await expect(c).toHaveAttribute('data-text', '30°57′49,52″');
+  await expect(c).toHaveAttribute('data-text', '149°2′10,48″');
   await dialog.locator('[data-setare="raza.zecimaleUnghi"]').selectOption('0');
-  await expect(c).toHaveAttribute('data-text', '30°57′50″');
+  await expect(c).toHaveAttribute('data-text', '149°2′10″');
 });
 
 test('Unghi din două laturi, cu sectorul din cursor; la Automată, o latură apoi alta: unghiul, iar la laturi paralele distanța dintre ele', async ({ page }) => {
   await page.goto('/');
   await adauga(page, 'dreptunghi');
   await alegeCote(page, 'unghi');
+  // Latura de sus, apoi cea de jos: paralele, deci fără unghi (refuzat, cu motivul); Esc renunță.
+  await clic(page, { x: 50, y: 80 });
+  await clic(page, { x: 50, y: 20 });
+  await expect(sfat(page)).toContainText('Laturile sunt paralele');
+  await page.keyboard.press('Escape');
+  await expect(sfat(page)).toContainText('Alege o latură, sau vârful unghiului');
   // Latura de jos, apoi cea din dreapta (departe de vârfuri și de mijloace, care încep un punct): unghiul dintre ele, 90, în
   // sectorul de lângă colț. Un al doilea clic pe aceeași latură nu face nimic.
   await clic(page, { x: 60, y: 20 });
