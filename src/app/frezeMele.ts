@@ -21,6 +21,8 @@ const BIBLIOTECI = 'biblioteci';
 export const CHEIE_LOCALA = 'local';
 /** Cheia bibliotecii unui cont (ADR 0300 §7): copia lui din browser, sincronizată cu contul. */
 export const cheieCont = (uid: string): string => `cont:${uid}`;
+/** Cheia bibliotecii folosite acum (ADR 0300 §7): a contului cu dreptul primit (adresa confirmată), altfel cea fără cont. */
+export const cheieBibliotecii = (cont: { readonly uid: string; readonly drept: unknown } | null): string => (cont?.drept ? cheieCont(cont.uid) : CHEIE_LOCALA);
 export const VERSIUNE_FREZE = 1;
 
 /** Ce citește și scrie stocarea: în browser IndexedDB, în teste un fals. */

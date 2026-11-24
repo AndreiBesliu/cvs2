@@ -1229,8 +1229,9 @@ schimba pe toate: rândul spune de câte ori e pusă.
 
 Fereastra **Frezele mele** ține frezele tale. Se deschide din meniul **Cont** (rândul **Frezele mele…**) sau din paleta de
 comenzi. Merge și fără cont și fără rețea: fără cont, biblioteca stă în acest browser; cu contul deschis, stă în contul tău
-și o ai pe orice calculator pe care intri în cont (vezi mai jos). În curând alegi o freză din bibliotecă pe rândurile
-exportului și în secțiunea Tăierea; până atunci, freza se scrie pe rând, ca înainte (vezi [Exportul G-code](#export)).
+și o ai pe orice calculator pe care intri în cont (vezi mai jos). O freză din bibliotecă o alegi pentru formele alese în
+secțiunea Tăierea a panoului de proprietăți (vezi [Operațiile de tăiere](#operatii)); pe rândurile exportului vine în curând,
+iar până atunci freza se scrie acolo pe rând, ca înainte (vezi [Exportul G-code](#export)).
 
 **Lista**, în stânga, are frezele pe feluri (Plate, În V, Gravare), fiecare cu silueta mică, T-ul preferat, turația și
 avansul. **Caută o freză** filtrează după nume, iar butoanele **Toate**, **Plate**, **În V** și **Gravare** arată un singur
@@ -1302,6 +1303,14 @@ litera cu golurile ei, dintr-o dată. La schimbarea rolului rămân freza, sensu
 implicit. Freza în V merge doar pe linie și în V-carve: la V-carve, o freză plată devine una V60 cu același diametru, iar la
 alt rol, o freză în V devine plată. La V-carve, adâncimea e cel mult cât conul frezei (la V60 Ø6, 5,196 mm). Sub rol, **Adâncimea** și **Pasul** se scriu pe toate operațiile formelor alese (cu valori
 diferite, câmpul e gol). O piesă cu mai multe copii își schimbă rolul pentru toate. Traseul arătat se reface singur.
+
+**Freza**, sub pas (cât biblioteca [Frezele mele](#freze) are freze), arată frezele din bibliotecă care merg pe toate formele
+alese: freza în V și cea de gravare doar pe linie și în V-carve, freza plată în rest (nu și în V-carve). Aleasă, freza trece
+pe toate operațiile formelor alese, într-un pas de anulare, cu valorile ei de lucru (turația, avansul, plonjarea), lungimea
+tăișului, pasul pe trecere și, la buzunar, pasul lateral (din procentul ei); adâncimea, fundul plat și frezele de rest
+rămân. Numărul T e cel din bibliotecă, dacă e liber în proiect; altfel al unei freze identice (același diametru, aceeași
+formă, aceeași turație), altfel cel mai mic liber, iar o notă sub listă îl spune. Lista arată freza din bibliotecă a formelor
+alese, **Scrisă de mână** când au aceeași freză scrisă în fereastra exportului, sau „—” când au freze diferite.
 
 **Rolurile mele.** Un rol cu toate valorile lui (freza, sensul, adâncimea, pasul, urechile, rampa, intrările, degajările,
 coborârea, traseul buzunarului, frezele de rest, fundul plat) se păstrează cu **Salvează ca rol…**, sub câmpurile Tăierii:
