@@ -1434,13 +1434,13 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   filelor stau într-un sertar (☰ din antet sau „Mai mult”; îl închide o filă aleasă sau Escape); un tichet se citește
   și primește răspuns pe telefon, iar proiectul atașat se descarcă doar de pe calculator. Nimic pe server. **Cu ea,
   linia adminului e încheiată** (ADR 0260: A.1–A.7; ADR 0262: A.8–A.11); o felie nouă pornește la cuvântul owner-ului.
+  **`/admin` 138,2 / 200.**
   **3.At (fila Setări din `/admin`: mesajul salvării după citirea de după)** gata pe 24.11, scrisă de sesiunea
   principală (linia adminului fiind încheiată), unită în `main` pe 24.11 (`cadac6c3`): după „Salvează”, cele trei
   formulare ale Setărilor (conturile, utilizarea aplicației, răspunsurile rapide) arată mesajul abia când sosește
   citirea de după, din care formularul se umple din nou; până atunci rămân ocupate. **Un formular al adminului care se
   umple din nou din citirea de după salvare își ține mesajul până la ea (`useMesajDupaCitire`,
   `src/admin/setari/dupaCitire.ts`), iar o probă care scrie într-un formular după o salvare așteaptă întâi mesajul.**
-  **`/admin` 138,2 / 200.**
   **Riglele, ghidajele, lipirea și alinierea (ADR 0050, aduse din etapa 6)** gata pe 20.10: ghidajele pe foaie
   (`foaie.ghidaje`, fără schemă nouă), lipirea pură (`src/geom/lipire.ts`), alinierea (`src/geom/aliniere.ts`), totul la
   cerere după prima randare (`src/app/Editare.tsx`); pornirea 99,4 / 100 kB cu ușa (foarte strâmt). **Uneltele de desen
