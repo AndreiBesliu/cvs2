@@ -138,3 +138,28 @@ test('cu „Toate foile pe pânză” oprit rămâne doar rândul foii active; �
   await page.getByRole('button', { name: 'EN', exact: true }).click();
   await expect(articol(page, 'f2', 'foaie.duplica')).toHaveAttribute('aria-label', 'Duplicate the sheet');
 });
+
+test('întrebarea ștergerii rămâne la vedere și cu mausul plecat de pe foaia vecină; în fereastra Mașina, rândurile nu se arată', async ({ page }) => {
+  await page.goto('/');
+  await adauga(page, 'dreptunghi');
+  await lista(page).locator('[data-actiune="foaie.adauga"]').click();
+  await expect(foaie(page, 'f2')).toHaveAttribute('data-activa', 'da');
+  await incadreazaToate(page);
+  // Foaia 1 (vecină, cu dreptunghiul): mausul pe ea, apoi „Șterge foaia” din rândul ei.
+  const peFoaie = (await ecran(page, await vedere(page)))(-250, 100);
+  await page.mouse.move(peFoaie.x, peFoaie.y);
+  await articol(page, 'f1', 'foaie.sterge').click();
+  await expect(rand(page, 'f1')).toContainText('Ștergi foaia și piesa de pe ea?');
+  // Mausul pleacă pe fundalul dintre foi: întrebarea nu se stinge cât n-a primit răspuns.
+  const intre = (await ecran(page, await vedere(page)))(-50, 100);
+  await page.mouse.move(intre.x, intre.y);
+  await expect(rand(page, 'f1')).toHaveAttribute('data-vizibil', 'da');
+  await expect(rand(page, 'f1')).toHaveCSS('opacity', '1');
+  await articol(page, 'f1', 'sterge-nu').click();
+  await expect(lista(page).locator('[data-foaie]')).toHaveCount(2);
+  // Proiectarea acoperită de fereastra Mașina: niciun rând; înapoi în Proiectare, rândul foii active e la loc.
+  await page.locator('[data-actiune="vedere.masina"]').click();
+  await expect(page.locator('[data-controale-foaie]')).toHaveCount(0);
+  await page.locator('[data-actiune="vedere.proiectare"]').click();
+  await expect(rand(page, 'f2')).toHaveAttribute('data-vizibil', 'da');
+});
