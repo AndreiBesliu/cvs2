@@ -166,3 +166,25 @@ Probele (scrise întâi, în Edge): fișa și întoarcerile, comutatorul (ținut
 comutare), telefonul (390, 360, 320 px, cu fontul lat), 1280 px; probele de dinainte trec acum prin fișă (și cea pe
 emulatoare). Otrăvurile: `test/otravuri/16.A-h1.py`. Nimic pe server; documentul nu se schimbă.
 
+## Implementarea (16.A↑h-2)
+
+Pe 24.11.2026, în aceeași sesiune, după 16.A↑h-1:
+
+- **Câmpul `grup`** al frezei (`src/model/freza.ts`): opțional, text de cel mult 40 de caractere, fără caractere de control,
+  curățat la capete la salvare; gol, câmpul pleacă și freza stă pe felul ei (asta ține locul lui „Fără grup” din §4: frezele
+  fără grup al omului stau grupate pe feluri, ca înainte). Merge cu freza în fișierul JSON, în CSV (coloana `grup`) și în
+  cont (sincronizarea îmbină orice câmp, deci nimic nou acolo); o versiune mai veche a aplicației îl păstrează, ca pe orice
+  câmp necunoscut. Documentul nu se schimbă: grupul ține de bibliotecă, nu de copia din proiect.
+- **Grupurile listei** (`grupurileListei`): întâi ale omului, după nume, fără deosebire de majuscule (numele afișat e al
+  primei frezei a grupului), apoi felurile, în ordinea lor. Un grup există cât are freze: un grup nou se face mutând o freză
+  în el.
+- **Redenumirea** (`cuGrupRedenumit`, `redenumesteGrup` în depozit): toate frezele grupului, într-o singură scriere, cu
+  versiunea crescută (contul vede schimbarea fiecăreia); un nume care e deja al altui grup le unește, cu numele acelui grup;
+  gol, frezele se întorc pe felurile lor.
+- **Fereastra:** pe titlul unui grup al omului, „✎” deschide redenumirea pe loc (Enter aplică, Escape renunță); pe fișă,
+  lista „Grupul” arată grupul frezei și o mută (alt grup, „Fără grup (pe fel)” sau „Grup nou…”, cu numele scris); în editor,
+  câmpul „Grupul”, cu grupurile existente propuse.
+
+Probele (întâi): modelul, fișierul și depozitul (unitare), fereastra în Edge (grupul nou, cel existent, redenumirea cu Escape
+și cu refuzul, reîncărcarea, editorul, „Fără grup”). Otrăvurile: `test/otravuri/16.A-h2.py`.
+
