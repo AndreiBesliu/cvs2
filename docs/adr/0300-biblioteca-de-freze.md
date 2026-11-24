@@ -182,8 +182,8 @@ cu măsurătoarea.
 | 16.A↑b | Alegerea în proiect: lista pe rândurile exportului (și fundul plat, restul, dopul, banda), rândul „Freza” în Tăierea, numerele T, documentul v27, valorile de lucru în program (turația la schimbare, avansul, plonjarea; estimarea timpului cu ele), refuzul adâncimii peste tăiș, nota „s-a schimbat în bibliotecă” | canalul `freze` |
 | 16.A↑c | Contul: callable-ul `freze`, colecția, regulile, capabilitatea `cloud`, sincronizarea, conflictul, prima logare cu o bibliotecă fără cont; probele pe emulatoare | adresa de test, după unire și publicarea serverului |
 | 16.A↑d | Calibrarea: valorile măsurate în editor, folosite de CAM (după răspunsul 3), legate de fișa plăcii 4 | canalul `freze` |
-| 16.A↑e | Bila și toroidala (ADR 0301): simularea, oracolul, CAM-ul | canalul `freze` |
-| 16.A↑f | Profilul desenat (ADR 0302): editorul siluetei, simularea, oracolul, canelura și roundover-ul | canalul `freze` |
+| 16.A↑e | Bila și toroidala (ADR-ul ei; 0301 și 0302 au luat plafonul și catalogul): simularea, oracolul, CAM-ul | canalul `freze` |
+| 16.A↑f | Profilul desenat (ADR-ul lui): editorul siluetei, simularea, oracolul, canelura și roundover-ul | canalul `freze` |
 | 16.A↑g | Valorile pe material (seturi pe eticheta materialului foii, ADR 0210 §1) și calculatorul avansului | canalul `freze` |
 
 Mai târziu, la cuvântul owner-ului: Rolurile mele în cont (aceeași sincronizare), burghiul cu vârf la găurire, biblioteca
