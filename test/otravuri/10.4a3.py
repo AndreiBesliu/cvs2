@@ -54,10 +54,10 @@ o('B07', S, '  capat: s.linii.marime,', '  capat: 2.5,', 'setari', 'mărimea cap
 o('B08', S, "      pePanza: bif(c['pePanza'], I.comportament.pePanza),", '      pePanza: I.comportament.pePanza,', 'setari', '„Cotele pe pânză” nu se citește')
 o('B09', S, '  toleranta: [TOLERANTA_MINIMA, TOLERANTA_MAXIMA],', '  toleranta: [TOLERANTA_MINIMA, Infinity],', 'setari', 'toleranța fără margine sus')
 # Fereastra și pânza (e2e).
-o('E01', U, '  const vizibile = unealta || setari.comportament.pePanza;', '  const vizibile = true;', 'e2e', 'cotele ascunse se văd')
+o('E01', U, '  const vizibile = unealta || (setari.comportament.pePanza && !ascunse.has(idFoaie));', '  const vizibile = true;', 'e2e', 'cotele ascunse se văd')
 o('E02', U, "      data-ascunse={vizibile ? undefined : ''} style={setari.comportament.culoare ? ({ '--cota': setari.comportament.culoare } as CSSProperties) : undefined}>",
   "      data-ascunse={vizibile ? undefined : ''}>", 'e2e', 'culoarea aleasă nu ajunge pe pânză')
-o('E03', U, '              {h >= setari.comportament.pragCifre ? (', '              {h >= 6 ? (', 'e2e', 'pragul cifrelor nu se citește')
+o('E03', U, '      {h >= prag ? (', '      {h >= 6 ? (', 'e2e', 'pragul cifrelor nu se citește')
 o('E04', U, '  if (c.fel === \'bara\') return <line className="cota-capat-bara"', '  if (c.fel === \'bara\') return <line className="cota-capat"', 'e2e',
   'bara oblică desenată ca o săgeată')
 o('E05', U, '{ ...f, cuUnitate: true }', 'f', 'e2e', 'distanța măsurii fără unitate')

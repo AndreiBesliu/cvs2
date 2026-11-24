@@ -1198,15 +1198,22 @@ de alta a urmei, punctată mai rar; cu îmbinare, în locul fâșiei se văd din
 
 ## Cotele și măsurarea
 %% capitol: cote
-%% acopera: unealta.cote, foaie.cote
+%% acopera: unealta.cote, foaie.cote, vedere.cote
 
 Unealta **Cote** (`D`; butonul ei stă în extensia barei, după Convertește) pune pe desen cote care arată o mărime: lungimea unei laturi, distanța dintre două puncte
-pe X, pe Y sau dreaptă. O cotă **nu se taie niciodată**: G-code-ul exportat e același cu și fără cote. Cotele sunt ale foii
+pe X, pe Y sau dreaptă, raza sau diametrul unui cerc ori al unui arc, unghiul dintre două laturi. O cotă **nu se taie niciodată**: G-code-ul exportat e același cu și fără cote. Cotele sunt ale foii
 pe care au fost puse (**Cotele foii**), se salvează cu proiectul și au culoarea lor pe pânză. Felul se alege în bară:
-- **Automată** (la început): un clic pe o latură dreaptă îi ia lungimea; altfel, două puncte, iar cota e orizontală dacă duci
-  linia deasupra sau dedesubt, verticală dacă o duci la stânga sau la dreapta, aliniată dacă o duci între ele (**Shift**:
-  aliniată oricum);
+- **Automată** (la început): un clic pe o latură dreaptă îi ia lungimea, iar un clic pe altă latură, înainte de locul liniei,
+  face unghiul dintre ele (sau, la două laturi paralele, distanța dintre ele); un clic pe un cerc îi ia diametrul, pe un arc
+  raza; altfel, două puncte, iar cota e orizontală dacă duci linia deasupra sau dedesubt, verticală dacă o duci la stânga sau
+  la dreapta, aliniată dacă o duci între ele (**Shift**: aliniată oricum). Un clic chiar pe un vârf sau pe mijlocul unei
+  laturi începe o cotă din două puncte;
 - **Orizontală**, **Verticală**, **Aliniată**: două puncte, apoi locul liniei de cotă;
+- **Rază**, **Diametru**: un clic pe un cerc sau pe un arc, apoi locul cifrei, înăuntru sau afară; linia trece prin punctul
+  numit al cercului (vârf, mijloc, cadran) cel mai apropiat de cursor, legat. Pe o linie, o elipsă sau o curbă, refuzat, cu
+  motivul;
+- **Unghi**: un clic pe o latură, apoi pe a doua; sau trei puncte: vârful, apoi câte unul pe fiecare latură. Apoi duci arcul în
+  unghiul pe care îl vrei (dintre cele patru ale celor două drepte) și dai clic;
 - **Măsoară** (`M`): două puncte, fără urmă. Distanța, Δx, Δy și unghiul față de orizontală se văd lângă cursor și în bara de
   jos; **Enter** (sau **Păstrează**) o face cotă aliniată, **Esc** o șterge.
 
@@ -1222,8 +1229,21 @@ scos), cota se **dezleagă**: rămâne în ultimul loc văzut, punctată, în ro
 pe amândouă). „Duplică foaia” copiază și cotele, legate de formele copiei.
 
 Cu unealta Cote, un clic pe linia unei cote o alege: capetele ei se trag pe alt punct (se leagă din nou de el), linia se
-trage sau se mută cu săgețile (1 mm; Shift: 10 mm, Alt: 0,1 mm), **Delete** o șterge. Cu Selecția și cu celelalte unelte,
+trage sau se mută cu săgețile (1 mm; Shift: 10 mm, Alt: 0,1 mm; la rază, diametru și unghi, sus și dreapta duc cifra sau
+arcul mai departe, jos și stânga mai aproape), **Delete** o șterge. Tras, arcul unui unghi trece și în alt unghi dintre laturi. Cu Selecția și cu celelalte unelte,
 cotele nu se aleg: clicul trece la forma de sub ele. Un dublu clic pe o cotă, cu orice unealtă, trece la Cote, cu ea aleasă.
+
+Cu o cotă aleasă, **panoul de proprietăți** arată doar ce e al ei: felul; **valoarea exactă**, cu toate cifrele, și
+**Copiază** (o pune în clipboard); legătura (legată de formă, liberă sau dezlegată, cu motivul) și **Dezleagă** (capetele
+rămân unde sunt, iar cota nu mai urmează forma); **textul**, în care `<>` e valoarea, cu prefixul ei (de exemplu „4× <>” dă
+„4× Ø10”; gol, se vede doar valoarea); **distanța liniei** de cotă, în mm (la rază și diametru, **locul cifrei** față de cerc,
+pozitiv afară; la unghi, **raza arcului**); **Șterge**. Distanța dintre două laturi paralele oblice e o cotă liberă: un desen
+fix, fiindcă piciorul ei pe a doua latură nu e un punct al formei.
+
+În **listă**, sub piesele foii active, rândul **Cote (N)**: deschis, arată cotele foii (valoarea, felul, „dezlegată”), iar un
+clic pe una trece la unealta Cote, cu ea aleasă. **Ochiul** de pe rând ascunde cotele foii pe pânză (nu le șterge; cu
+unealta Cote se văd oricum). **Arată cotele** (din **Caută o comandă**) le ascunde sau le arată pe toate, ca setarea „Cotele
+pe pânză”. Cu **Toate foile pe pânză**, cotele foilor vecine se văd estompate, lângă foile lor (sau ascunse, din Setări).
 
 Cum arată cotele (cifrele, unitatea, capetele, liniile de extensie, culoarea) și cum se comportă unealta se alege în
 fereastra **Setări**, secțiunea **Cotele**: din ⚙ al barei uneltei, din meniul contului sau cu `Ctrl+,`.
@@ -1238,16 +1258,22 @@ stânga; acum una singură, **Cotele**. Sus stă **cota de probă**, desenată c
 implicit**. Un număr se scrie cu virgulă sau cu punct; unul în afara marginilor rămâne în câmp, spus în roșu, și nu se ține.
 **Închide** (sau Esc) închide fereastra.
 
-- **Cifrele:** unitatea (mm, cm, inch; desenul rămâne în mm), zecimalele (automat: 2, în inch 3; sau 0–6), zerourile de la
+- **Cifrele:** unitatea (mm, cm, inch, inch în fracții; desenul rămâne în mm), zecimalele (automat: 2, în inch 3; sau 0–6),
+  în fracții fracția cea mai mică (1/2 … 1/64; cifra se scrie simplificată: 1 1/2, 3/8), zerourile de la
   coadă (tăiate sau păstrate), rotunjirea (la zecimale sau la un pas, de exemplu 0,5), separatorul zecimal (după limba
   aplicației, virgula sau punctul), unitatea scrisă după cifră, înălțimea cifrelor pe foaie (1–20 mm) și locul cifrei
   (deasupra liniei, în linie, cu linia întreruptă, sau mereu orizontală).
 - **Liniile și capetele:** capetele (săgeată plină, săgeată deschisă, bară oblică, punct sau fără) și mărimea lor, liniile de
   extensie (arătate sau ascunse), golul lor față de formă, depășirea liniei de cotă și distanța liniei de cotă la
   **Păstrează** din Măsoară.
+- **Raza, diametrul, unghiul:** prefixele razei și diametrului (implicit „R” și „Ø”; cel mult 8 semne, gol: fără), unghiurile
+  în grade zecimale (30,5°) sau în grade, minute și secunde (30°30′0″), zecimalele unghiului (0–4; în grade-minute-secunde, ale
+  secundelor) și linia razei (din centru, din afară, sau după locul cifrei: din centru cu cifra înăuntru, din afară cu cifra
+  afară).
 - **Comportamentul:** dacă cotele noi sunt legate de forme, cu ce fel pornește unealta (Automată sau ultimul folosit), ce
   urmează după o cotă (rămâne unealta Cote sau înapoi la Selecție), dacă se văd cotele pe pânză (ascunse, se văd doar cu
-  unealta Cote), sub câți pixeli pe ecran se ascund cifrele și culoarea cotelor (a temei sau aleasă).
+  unealta Cote), cotele foilor vecine (estompate sau ascunse), sub câți pixeli pe ecran se ascund cifrele și culoarea cotelor
+  (a temei sau aleasă).
 - **Lipirea:** punctele de care se lipesc capetele (vârfurile, mijloacele, centrele, cadranele, cutia, foaia, grila),
   toleranța în pixeli și punctul cel mai apropiat de pe contur (cu Ctrl, mereu sau niciodată).
 - **Măsurarea:** ce arată Măsoară (distanța, Δx și Δy, unghiul) și unde (lângă cursor, în bara de jos).

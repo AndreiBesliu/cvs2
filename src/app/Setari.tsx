@@ -13,12 +13,13 @@ import '../i18n/editare.ts';
 import { mesajeGata } from '../i18n/laCerere.ts';
 import { t, type CheieSimpla } from '../i18n/t.ts';
 import type { Punct } from '../geom/conturBaza.ts';
-import { desenLiniar, FELURI_CAPAT, LOCURI_CIFRA, scrieCifra, type DesenCota } from '../model/desenCota.ts';
+import { caleArc, cifraCota, desenCota, FELURI_CAPAT, LINII_RAZEI, LOCURI_CIFRA, type DesenCota } from '../model/desenCota.ts';
+import type { Cota } from '../model/document.ts';
 import { citesteNumar, textNumar } from '../ui/numar.ts';
 import { useLimba } from '../ui/useLimba.ts';
 import {
-  eImplicit, FELURI_LIPIRE, formatCote, grupImplicit, GRUPURI_COTE, MARGINI, schimbaSetariCote, stilCote, UNITATI_COTE, useSetariCote,
-  type GrupCote, type SetariCote,
+  eImplicit, FELURI_LIPIRE, formatCote, FRACTII_COTE, grupImplicit, GRUPURI_COTE, MARGINI, PREFIX_MAXIM, schimbaSetariCote, stilCote, UNITATI_COTE,
+  useSetariCote, type GrupCote, type SetariCote,
 } from './setariCote.ts';
 import './setari.css';
 
@@ -77,6 +78,19 @@ function CampNumar({ id, setare, eticheta, nota, valoare, margini, la, virgula }
   );
 }
 
+/** Un text scurt (prefixul razei, al diametrului): ținut la fiecare schimbare, cât are cel mult `maxim` semne. */
+function CampText({ id, setare, eticheta, nota, valoare, maxim, la }: {
+  readonly id: string; readonly setare: string; readonly eticheta: string; readonly nota?: string; readonly valoare: string;
+  readonly maxim: number; readonly la: (v: string) => void;
+}): ReactNode {
+  return (
+    <Rand id={id} eticheta={eticheta} {...(nota ? { nota } : {})}>
+      <input id={id} type="text" autoComplete="off" spellCheck={false} data-setare={setare} value={valoare} maxLength={maxim}
+        aria-describedby={nota ? `${id}-nota` : undefined} onChange={(e) => { const v = e.currentTarget.value; if ([...v].length <= maxim) la(v); }} />
+    </Rand>
+  );
+}
+
 /** O alegere dintre câteva valori, ca listă. */
 function Alegere<T extends string>({ id, setare, eticheta, nota, valoare, valori, la }: {
   readonly id: string; readonly setare: string; readonly eticheta: string; readonly nota?: string; readonly valoare: T;
@@ -122,23 +136,41 @@ function Grup({ grup, s, children }: { readonly grup: GrupCote; readonly s: Seta
 }
 
 /**
- * Cota de probă: un dreptunghi de 120,5 × 40 mm cu o cotă orizontală deasupra și una verticală la dreapta, desenate cu
- * setările de acum, în mm (viewBox-ul le cuprinde pe toate; liniile au grosimea ecranului, nu a scării).
+ * Cota de probă: un dreptunghi de 120,5 × 40 mm cu o cotă orizontală deasupra și una verticală la dreapta, un cerc de rază 14
+ * cu raza lui și un unghi de 25° sub dreptunghi, desenate cu setările de acum, în mm (viewBox-ul le cuprinde pe toate; liniile
+ * au grosimea ecranului, nu a scării).
  */
+const L_PROBA = 120.5, H_PROBA = 40;
+const CERC_PROBA = { x: L_PROBA + 50, y: 20, r: 14 };
+const UNGHI_PROBA = { v: { x: 10, y: -30 }, a: (25 * Math.PI) / 180, l: 55 };
+const COTE_PROBA: readonly { readonly cota: Cota; readonly p: readonly Punct[]; readonly v: number }[] = [
+  { cota: { id: 'o', fel: 'orizontala', linie: { d: 12 } }, p: [{ x: 0, y: H_PROBA }, { x: L_PROBA, y: H_PROBA }], v: L_PROBA },
+  { cota: { id: 'v', fel: 'verticala', linie: { d: -14 } }, p: [{ x: L_PROBA, y: 0 }, { x: L_PROBA, y: H_PROBA }], v: H_PROBA },
+  {
+    cota: { id: 'r', fel: 'raza', linie: { d: 6 } },
+    p: [{ x: CERC_PROBA.x, y: CERC_PROBA.y }, { x: CERC_PROBA.x + CERC_PROBA.r * Math.SQRT1_2, y: CERC_PROBA.y + CERC_PROBA.r * Math.SQRT1_2 }],
+    v: CERC_PROBA.r,
+  },
+  {
+    cota: { id: 'u', fel: 'unghi', linie: { d: 40, s1: 1, s2: 1 } },
+    p: [UNGHI_PROBA.v, { x: UNGHI_PROBA.v.x + UNGHI_PROBA.l, y: UNGHI_PROBA.v.y },
+      { x: UNGHI_PROBA.v.x + UNGHI_PROBA.l * Math.cos(UNGHI_PROBA.a), y: UNGHI_PROBA.v.y + UNGHI_PROBA.l * Math.sin(UNGHI_PROBA.a) }],
+    v: 25,
+  },
+];
+
 function Proba({ s, virgula }: { readonly s: SetariCote; readonly virgula: boolean }): ReactNode {
   const stil = stilCote(s), format = formatCote(s, virgula);
-  const L = 120.5, H = 40;
-  const cote: { readonly dc: DesenCota | null; readonly text: string }[] = [
-    { a: { x: 0, y: H }, b: { x: L, y: H }, fel: 'orizontala' as const, d: 12, v: L },
-    { a: { x: L, y: 0 }, b: { x: L, y: H }, fel: 'verticala' as const, d: 14, v: H },
-  ].map((c) => {
-    const text = scrieCifra(c.v, format);
-    return { dc: desenLiniar(c.fel, c.a, c.b, c.d, stil, text), text };
+  const L = L_PROBA, H = H_PROBA, C = CERC_PROBA, U = COTE_PROBA[3]?.p ?? [];
+  const cote: { readonly dc: DesenCota | null; readonly text: string; readonly fel: string }[] = COTE_PROBA.map((c) => {
+    const text = cifraCota(c.cota.fel, c.v, format);
+    return { dc: desenCota(c.cota, c.p, stil, text), text, fel: c.cota.fel };
   });
-  const puncte: Punct[] = [{ x: 0, y: 0 }, { x: L, y: H }];
+  const puncte: Punct[] = [{ x: 0, y: 0 }, { x: L, y: H }, { x: C.x - C.r, y: C.y - C.r }, { x: C.x + C.r, y: C.y + C.r }, ...U];
   for (const { dc, text } of cote) {
     if (!dc) continue;
     for (const b of [...dc.bucati, ...dc.extensii]) puncte.push(b[0], b[1]);
+    for (const a of dc.arce) puncte.push(...[0, 0.5, 1].map((k) => ({ x: a.centru.x + a.raza * Math.cos(a.de + k * a.baleiaj), y: a.centru.y + a.raza * Math.sin(a.de + k * a.baleiaj) })));
     const w = [...text].length * 0.6 * dc.text.inaltime;
     puncte.push({ x: dc.text.p.x - w, y: dc.text.p.y - w }, { x: dc.text.p.x + w, y: dc.text.p.y + w });
   }
@@ -150,9 +182,12 @@ function Proba({ s, virgula }: { readonly s: SetariCote; readonly virgula: boole
       <svg viewBox={`${x0} ${-y1} ${x1 - x0} ${y1 - y0}`} role="img" aria-label={t('setari.proba')}
         style={s.comportament.culoare ? ({ '--cota': s.comportament.culoare } as CSSProperties) : undefined}>
         <rect className="setari-proba-forma" x={0} y={-H} width={L} height={H} vectorEffect="non-scaling-stroke" />
-        {cote.map(({ dc, text }, k) => dc ? (
-          <g key={k} className="setari-proba-cota" data-text={text}>
+        <circle className="setari-proba-forma" cx={C.x} cy={-C.y} r={C.r} vectorEffect="non-scaling-stroke" />
+        <polyline className="setari-proba-forma" points={[U[1], U[0], U[2]].map((q) => (q ? `${q.x},${y(q.y)}` : '')).join(' ')} vectorEffect="non-scaling-stroke" />
+        {cote.map(({ dc, text, fel }, k) => dc ? (
+          <g key={k} className="setari-proba-cota" data-text={text} data-fel={fel}>
             {[...dc.extensii, ...dc.bucati].map((b, j) => <line key={j} x1={b[0].x} y1={y(b[0].y)} x2={b[1].x} y2={y(b[1].y)} vectorEffect="non-scaling-stroke" />)}
+            {dc.arce.map((a, j) => <path key={`a${j}`} d={caleArc(a, (v) => v, y, 1)} vectorEffect="non-scaling-stroke" />)}
             {dc.capete.map((c, j) => c.fel === 'bara'
               ? <line key={`c${j}`} className="setari-proba-bara" x1={c.bucata[0].x} y1={y(c.bucata[0].y)} x2={c.bucata[1].x} y2={y(c.bucata[1].y)} vectorEffect="non-scaling-stroke" />
               : c.fel === 'punct'
@@ -168,12 +203,13 @@ function Proba({ s, virgula }: { readonly s: SetariCote; readonly virgula: boole
   );
 }
 
-/** Secțiunea Cotele: cifrele, liniile și capetele, comportamentul, lipirea, măsurarea (tabelul ADR 0330 §6). */
+/** Secțiunea Cotele: cifrele, liniile și capetele, raza și unghiul, comportamentul, lipirea, măsurarea (tabelul ADR 0330 §6). */
 function SectiuneCote({ s, virgula }: { readonly s: SetariCote; readonly virgula: boolean }): ReactNode {
   const id = useId();
   const pune = (n: SetariCote): void => { schimbaSetariCote(n); };
   const cifre = (c: Partial<SetariCote['cifre']>): void => { pune({ ...s, cifre: { ...s.cifre, ...c } }); };
   const linii = (l: Partial<SetariCote['linii']>): void => { pune({ ...s, linii: { ...s.linii, ...l } }); };
+  const raza = (r: Partial<SetariCote['raza']>): void => { pune({ ...s, raza: { ...s.raza, ...r } }); };
   const comp = (c: Partial<SetariCote['comportament']>): void => { pune({ ...s, comportament: { ...s.comportament, ...c } }); };
   const lipire = (l: Partial<SetariCote['lipire']>): void => { pune({ ...s, lipire: { ...s.lipire, ...l } }); };
   const masurare = (m: Partial<SetariCote['masurare']>): void => { pune({ ...s, masurare: { ...s.masurare, ...m } }); };
@@ -183,6 +219,8 @@ function SectiuneCote({ s, virgula }: { readonly s: SetariCote; readonly virgula
     <CampNumar id={`${id}-${k}`} setare={setare} eticheta={t(eticheta)} valoare={valoare} margini={margini} la={la} virgula={virgula} {...(nota ? { nota: t(nota) } : {})} />
   );
   const zecimale = s.cifre.zecimale === null ? 'auto' : String(s.cifre.zecimale);
+  // În fracții de inch, zecimalele și rotunjirea nu se aplică (fracția e rotunjirea); zerourile și separatorul țin și de unghiuri.
+  const fractii = s.cifre.unitate === 'fractii';
   return (
     <div className="setari-sectiune" data-sectiune="cote">
       <h3 id={`${id}-titlu`}>{t('setari.sectiune.cote')}</h3>
@@ -191,15 +229,22 @@ function SectiuneCote({ s, virgula }: { readonly s: SetariCote; readonly virgula
       <Grup grup="cifre" s={s}>
         <Alegere id={`${id}-unitate`} setare="cifre.unitate" eticheta={t('setari.cote.unitate')} nota={t('setari.cote.unitate.nota')}
           valoare={s.cifre.unitate} valori={v('setari.cote.unitate', UNITATI_COTE)} la={(x) => { cifre({ unitate: x }); }} />
-        <Alegere id={`${id}-zecimale`} setare="cifre.zecimale" eticheta={t('setari.cote.zecimale')} valoare={zecimale}
-          valori={[{ v: 'auto', text: t('setari.cote.zecimale.auto') }, ...['0', '1', '2', '3', '4', '5', '6'].map((x) => ({ v: x, text: x }))]}
-          la={(x) => { cifre({ zecimale: x === 'auto' ? null : Number(x) }); }} />
+        {fractii ? (
+          <Alegere id={`${id}-fractie`} setare="cifre.fractie" eticheta={t('setari.cote.fractie')} nota={t('setari.cote.fractie.nota')} valoare={String(s.cifre.fractie)}
+            valori={FRACTII_COTE.map((x) => ({ v: String(x), text: `1/${x}` }))} la={(x) => { cifre({ fractie: Number(x) }); }} />
+        ) : (
+          <Alegere id={`${id}-zecimale`} setare="cifre.zecimale" eticheta={t('setari.cote.zecimale')} valoare={zecimale}
+            valori={[{ v: 'auto', text: t('setari.cote.zecimale.auto') }, ...['0', '1', '2', '3', '4', '5', '6'].map((x) => ({ v: x, text: x }))]}
+            la={(x) => { cifre({ zecimale: x === 'auto' ? null : Number(x) }); }} />
+        )}
         <Alegere id={`${id}-zerouri`} setare="cifre.zerouri" eticheta={t('setari.cote.zerouri')} valoare={s.cifre.zerouri}
           valori={v('setari.cote.zerouri', ['taiate', 'pastrate'] as const)} la={(x) => { cifre({ zerouri: x }); }} />
-        <Alegere id={`${id}-rotunjire`} setare="cifre.rotunjire" eticheta={t('setari.cote.rotunjire')} nota={t('setari.cote.rotunjire.nota')}
-          valoare={s.cifre.pas === null ? 'zecimale' : 'pas'} valori={v('setari.cote.rotunjire', ['zecimale', 'pas'] as const)}
-          la={(x) => { cifre({ pas: x === 'pas' ? (s.cifre.pas ?? 0.5) : null }); }} />
-        {s.cifre.pas !== null ? nr('pas', 'cifre.pas', 'setari.cote.pas', s.cifre.pas, MARGINI.pas, (x) => { cifre({ pas: x }); }) : null}
+        {fractii ? null : (
+          <Alegere id={`${id}-rotunjire`} setare="cifre.rotunjire" eticheta={t('setari.cote.rotunjire')} nota={t('setari.cote.rotunjire.nota')}
+            valoare={s.cifre.pas === null ? 'zecimale' : 'pas'} valori={v('setari.cote.rotunjire', ['zecimale', 'pas'] as const)}
+            la={(x) => { cifre({ pas: x === 'pas' ? (s.cifre.pas ?? 0.5) : null }); }} />
+        )}
+        {s.cifre.pas !== null && !fractii ? nr('pas', 'cifre.pas', 'setari.cote.pas', s.cifre.pas, MARGINI.pas, (x) => { cifre({ pas: x }); }) : null}
         <Alegere id={`${id}-separator`} setare="cifre.separator" eticheta={t('setari.cote.separator')} valoare={s.cifre.separator}
           valori={v('setari.cote.separator', ['limba', 'virgula', 'punct'] as const)} la={(x) => { cifre({ separator: x }); }} />
         <Bifa id={`${id}-cu-unitate`} setare="cifre.cuUnitate" eticheta={t('setari.cote.cu-unitate')} nota={t('setari.cote.cu-unitate.nota')}
@@ -218,6 +263,18 @@ function SectiuneCote({ s, virgula }: { readonly s: SetariCote; readonly virgula
         {nr('depasire', 'linii.depasire', 'setari.cote.depasire', s.linii.depasire, MARGINI.depasire, (x) => { linii({ depasire: x }); })}
         {nr('distanta', 'linii.distanta', 'setari.cote.distanta', s.linii.distanta, MARGINI.distanta, (x) => { linii({ distanta: x }); }, 'setari.cote.distanta.nota')}
       </Grup>
+      <Grup grup="raza" s={s}>
+        <CampText id={`${id}-prefix-r`} setare="raza.prefixR" eticheta={t('setari.cote.prefix-r')} nota={t('setari.cote.prefix.nota')}
+          valoare={s.raza.prefixR} maxim={PREFIX_MAXIM} la={(x) => { raza({ prefixR: x }); }} />
+        <CampText id={`${id}-prefix-d`} setare="raza.prefixD" eticheta={t('setari.cote.prefix-d')}
+          valoare={s.raza.prefixD} maxim={PREFIX_MAXIM} la={(x) => { raza({ prefixD: x }); }} />
+        <Alegere id={`${id}-unghiuri`} setare="raza.unghiuri" eticheta={t('setari.cote.unghiuri')} nota={t('setari.cote.unghiuri.nota')} valoare={s.raza.unghiuri}
+          valori={v('setari.cote.unghiuri', ['zecimale', 'gms'] as const)} la={(x) => { raza({ unghiuri: x }); }} />
+        <Alegere id={`${id}-zecimale-unghi`} setare="raza.zecimaleUnghi" eticheta={t('setari.cote.zecimale-unghi')} valoare={String(s.raza.zecimaleUnghi)}
+          valori={['0', '1', '2', '3', '4'].map((x) => ({ v: x, text: x }))} la={(x) => { raza({ zecimaleUnghi: Number(x) }); }} />
+        <Alegere id={`${id}-linia-razei`} setare="raza.linia" eticheta={t('setari.cote.linia-razei')} nota={t('setari.cote.linia-razei.nota')} valoare={s.raza.linia}
+          valori={v('setari.cote.linia-razei', LINII_RAZEI)} la={(x) => { raza({ linia: x }); }} />
+      </Grup>
       <Grup grup="comportament" s={s}>
         <Bifa id={`${id}-legate`} setare="comportament.legate" eticheta={t('setari.cote.legate')} nota={t('setari.cote.legate.nota')}
           valoare={s.comportament.legate} la={(x) => { comp({ legate: x }); }} />
@@ -227,6 +284,8 @@ function SectiuneCote({ s, virgula }: { readonly s: SetariCote; readonly virgula
           valori={v('setari.cote.dupa', ['ramane', 'selectie'] as const)} la={(x) => { comp({ dupa: x }); }} />
         <Bifa id={`${id}-pe-panza`} setare="comportament.pePanza" eticheta={t('setari.cote.pe-panza')} nota={t('setari.cote.pe-panza.nota')}
           valoare={s.comportament.pePanza} la={(x) => { comp({ pePanza: x }); }} />
+        <Alegere id={`${id}-vecine`} setare="comportament.vecine" eticheta={t('setari.cote.vecine')} nota={t('setari.cote.vecine.nota')}
+          valoare={s.comportament.vecine} valori={v('setari.cote.vecine', ['estompate', 'ascunse'] as const)} la={(x) => { comp({ vecine: x }); }} />
         {nr('prag', 'comportament.pragCifre', 'setari.cote.prag', s.comportament.pragCifre, MARGINI.pragCifre, (x) => { comp({ pragCifre: x }); }, 'setari.cote.prag.nota')}
         <Alegere id={`${id}-culoare`} setare="comportament.culoare" eticheta={t('setari.cote.culoare')} valoare={s.comportament.culoare === null ? 'tema' : 'aleasa'}
           valori={v('setari.cote.culoare', ['tema', 'aleasa'] as const)} la={(x) => { comp({ culoare: x === 'tema' ? null : (s.comportament.culoare ?? '#0080a0') }); }} />

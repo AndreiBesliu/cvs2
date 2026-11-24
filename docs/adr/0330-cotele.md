@@ -405,6 +405,90 @@ nu „a-3a” și „a-3b”, cum le-a numit întâi sesiunea.)
   825,4 → 832,3 / 900 kB (fereastra 3,6 kB și stilurile ei 0,8; setările și desenul cotelor, o bucată comună a uneltei
   și a ferestrei, 3,2 kB, din care 1,0 au plecat din bucata uneltei).
 
+## Implementarea (10.4↑a-4)
+
+24.11, pe ramura `wip/10.4-cote`, la „continuă cu 10.4↑a-4” al owner-ului.
+- **Depozitul cotelor văzute în afara uneltei** (`src/ui/coteVedere.ts`, fără niciun import din model): unealta Cote (bucata
+  ei, la cerere) publică acolo cota aleasă (felul, valoarea exactă, cifra, textul, legătura, distanța și ce poate schimba) și
+  rândurile foii active; panoul de proprietăți și lista le citesc de acolo, deci nu trag codul cotelor în bucata lor. Cota
+  aleasă stă tot acolo (lista o poate alege), iar cererea listei („treci la Cote cu cota asta”) o ascultă editorul fără să se
+  redeseneze la fiecare publicare (`laCerereaListei`).
+- **Panoul cotei** (`src/app/PanouCota.tsx`, în bucata panoului): cu o cotă aleasă, doar ce e al ei: felul; valoarea exactă
+  (`textNumar`, mm sau °) și **Copiază**; legătura (legată, liberă, dezlegată cu motivul: forma lipsă sau alte noduri) și
+  **Dezleagă**; textul, cu `<>`; distanța liniei de cotă; **Șterge**. Schimbările trec prin acțiunea `foaie.cote` a uneltei,
+  deci fiecare e un pas de anulare. Funcțiile pure, în `src/model/cote.ts`: `cotaDezlegata` (fiecare capăt legat își scrie
+  punctul citit acum și pierde legătura), `cotaCuText` (gol, doar spații sau doar „<>” scoate câmpul), `cotaCuDistanta`,
+  `stareCota`.
+- **Lista** (`src/ui/ListaCote.tsx`, la cerere, doar pentru o foaie cu cote): sub piesele foii active, **Cote (N)**, închis la
+  început (o cotă aleasă îl deschide); deschis, cotele foii (cifra, felul, „dezlegată”); un clic pe una trece la unealta Cote,
+  cu ea aleasă. **Ochiul** ascunde cotele foii pe pânză, nu le șterge; ținut în browser (`cncvs2.cote-ascunse`, id-urile
+  foilor), nu în proiect. Cu unealta Cote, cotele se văd oricum.
+- **„Arată cotele”** (`vedere.cote`, în paletă) comută aceeași setare ca „Cotele pe pânză” din Setări (`comutaPePanza`); bucata
+  setărilor vine la cerere, deci pornirea nu o aduce.
+- **Cotele foilor vecine:** cu „Toate foile pe pânză”, unealta le desenează lângă foile lor (`locuriFoi`), estompate
+  (opacitatea 0,45), doar de văzut: nu se aleg și nu se lipesc. Setarea **„Cotele foilor vecine”** (estompate sau ascunse) e în
+  Setări › Cotele › Comportamentul; ochiul unei foi și „Cotele pe pânză” le ascund și pe ele.
+- **Manualul:** „Cotele și măsurarea” spune panoul, lista, ochiul, „Arată cotele” și foile vecine; „Setările”, rândul nou.
+- **Cifrele:** unitare noi 6 (panoul 5, „Arată cotele” 1) și setările potrivite; e2e noi 4 (`cote.panou.spec.ts`); otrăvuri
+  25 / 25 din prima (`test/otravuri/10.4a4.py`: 10 unitare, 15 e2e). Pornirea 110,4 → 110,6 kB (cu ușa 115,3, cu Atelierul 115,6 / 120: în pornire stau
+  încărcarea rândului din listă, acțiunea `vedere.cote` și eticheta ei), totalul 837,8 → 841,6 / 900 kB (panoul cotei, în
+  bucata panoului; rândul listei, 1,3 kB la cerere, cu stilurile lui; depozitul, o bucată comună de 0,7 kB; restul, în bucata
+  uneltei).
+
+## Implementarea (10.4↑b)
+
+24.11, pe ramura `wip/10.4-cote`, la „10.4↑b” al owner-ului.
+- **Desenul** (`src/model/desenCota.ts`, pur, comun pânzei, ferestrei Setări și exportului din felia c):
+  - **Raza** (`desenRadial`): centrul și punctul de pe cerc; `linie.d` e locul cifrei față de cerc, pe direcția razei (pozitiv
+    afară). „Linia razei”: din centru (linia c → p, săgeata cu vârful pe cerc, spre afară), din afară (linia de dincolo de
+    cerc, săgeata spre centru) sau după loc (cifra înăuntru: din centru; afară: din afară). Cifra afară stă la cel puțin un
+    gol (din afară, și un capăt) de cerc; înăuntru, între centru și săgeată; linia trece pe sub toată cifra.
+  - **Diametrul**: linia prin centru, de la punctul opus la cel ales, cu câte o săgeată spre afară; cifra înăuntru, pe linie
+    (oprită înaintea săgeților), sau afară, pe prelungirea de dincolo de punctul ales.
+  - **Unghiul** (`desenUnghi`, `laturiUnghi`): trei puncte (vârful și câte unul pe fiecare latură) sau patru (două laturi;
+    vârful, la încrucișarea dreptelor lor; paralele: fără desen). `linie.d` e raza arcului, `s1` și `s2` aleg semidreptele,
+    deci sectorul; arcul merge în sens trigonometric prin el. Extensiile: pe semidreapta unei laturi care nu ajunge la arc, de
+    după capătul ei (sau de după vârf) până la depășire; la o latură care începe dincolo de arc, de la arc până înaintea ei.
+    Săgețile stau pe coarda de un capăt a arcului, iar pe un arc mai scurt decât două capete, în afară, cu arcul prelungit.
+    Cifra, la mijlocul arcului, citibilă după tangentă: deasupra (toată în afara arcului; când „sus”-ul ei e spre vârf, baza
+    ei urcă cu o înălțime), în linie (arcul întrerupt cât ea) sau orizontală (afară, lângă mijloc).
+  - Locul cifrei din cursor (`distantaRadiala`, `linieUnghiDinCursor`: cursorul = α·e1 + β·e2, deci s1 = semnul lui α, s2 al lui
+    β), alegerea pe arc (`distantaLaDesen`, la arc, nu la coardă), calea SVG a arcului (`caleArc`; pe ecranul cu Y în jos,
+    sensul trigonometric al foii e sweep-flag 0: proba mijlocului căii a prins arcul oglindit față de coardă), `desenCota` după
+    fel. Cifra pe o linie dreaptă (`textPeLinie`) e comună cotelor liniare și razelor; desenul liniarelor a rămas același.
+- **Cifrele:** `cifraCota`: raza și diametrul cu prefixul lor, unghiul cu `scrieUnghi` (grade zecimale; sau grade, minute,
+  secunde, numărate în unități întregi de secundă, ca rotunjirea să nu dea „60″”; zecimalele, ale secundelor), restul cu
+  `scrieCifra`, care știe acum **inch în fracții** (întregul și fracția simplificată, la cel mult 1/numitor, fără „-0”).
+  `<>` din textul cotei e cifra cu prefixul ei („4× <>” dă „4× Ø10”).
+- **Setările** (Setări › Cotele): grupul nou **„Raza, diametrul, unghiul”**: prefixele (cel mult 8 semne, numărate ca semne;
+  gol: fără), unghiurile (zecimale sau grade-minute-secunde), zecimalele unghiului (0–4, implicit 2), linia razei (implicit
+  după loc); unitatea **„inch în fracții”**, cu **fracția cea mai mică** (1/2 … 1/64, implicit 1/16): cu ea, zecimalele și
+  rotunjirea nu se arată (fracția e rotunjirea), iar zerourile și separatorul rămân (țin și de unghiuri). Cota de probă are și
+  un cerc cu raza lui și un unghi de 25°; verticala ei stă acum la dreapta dreptunghiului (în a-3, d = 14 o ducea înăuntru).
+- **Unealta:** **Rază**, **Diametru** și **Unghi** în bară (opt feluri și ⚙; bara de sus tot încape la 1280 px cu fontul lat,
+  în ambele limbi).
+  - Rază și Diametru: un clic oriunde pe un cerc sau pe un arc îl alege (centrul, legat de centrul arcului); punctul de pe cerc
+    e cel numit (vârf, mijloc, cadran) cel mai apropiat ca unghi de cursor, legat, deci cota urmează cercul la scalare. Cu
+    cotele libere (setarea), punctul din direcția cursorului. Pe o linie, o elipsă sau o curbă: refuzat, cu motivul.
+  - Automată: un cerc întreg (închis, doar arce ale aceluiași cerc, 360°) dă diametrul, un arc raza; o latură dreaptă dă
+    lungimea, iar un clic pe altă latură, înainte de locul liniei, face unghiul dintre ele; la două laturi paralele, distanța:
+    verticală între orizontale, orizontală între verticale (legate), aliniată între oblice, liberă (piciorul pe a doua latură
+    nu e un punct al formei, deci o cotă legată ar arăta o valoare greșită după o mutare). Un clic chiar pe un vârf sau pe
+    mijlocul unei laturi începe, ca în a-2, o cotă din două puncte.
+  - Unghi: o latură, apoi a doua (aceeași latură, a doua oară, nu face nimic; paralele: refuzat, cu motivul), sau trei puncte
+    (vârful, apoi câte unul pe fiecare latură); apoi arcul, în sectorul cursorului.
+  - Tragerea liniei unei cote alese e a felului ei (locul cifrei, raza și sectorul arcului); săgețile: la rază, diametru și
+    unghi, sus și dreapta duc cifra (arcul) mai departe, jos și stânga mai aproape. Esc renunță și la cercul ales.
+- **Panoul:** „Locul cifrei (de la cerc)” la rază și diametru, „Raza arcului” la unghi (pozitivă, cel puțin 0,1 mm); exemplul
+  textului e „4× <>”.
+- **Manualul:** „Cotele și măsurarea” (felurile noi, Automată, săgețile, panoul) și „Setările” (grupul nou, fracțiile).
+- **Cifrele:** unitare noi 16 (desenul și cifrele 15, setările 1) și cele potrivite; e2e noi 5 (`cote.cerc.spec.ts`), plus
+  probele Setărilor potrivite (șase grupuri, patru cote de probă); otrăvuri 49 / 49 (`test/otravuri/10.4b.py`: 31 unitare, 18 e2e), 44 din prima; cinci au scăpat întâi și sunt prinse după
+  probele noi (diametrul cu cifra înăuntru, cifra arcului cu „sus”-ul spre vârf, unghiul din patru puncte în `desenCota`,
+  minutele rotunjite, arcul cotei de probă din Setări în alt sector). Pornirea
+  110,6 kB, neschimbată (cu ușa 115,3, cu Atelierul 115,6 / 120: felurile noi, setările și desenul stau în bucățile uneltei și
+  ale ferestrei Setări, la cerere), totalul 860,6 → 864,8 / 900 kB (după lotul 24 adus).
+
 ## Răspunsurile owner-ului (24.11.2026)
 
 Salvate în schiță (`raspunsuri/owner`, 12:52), apoi „am raspuns” în chat: **1a, 2a, 3a, 4a, 5a, 6a**, cu nota, exactă:

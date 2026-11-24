@@ -15,6 +15,8 @@ const NivelPiesa = lazy(() => incarcaNivelPiesa().then((m) => ({ default: m.Nive
 /** Meniul unei foi (ADR 0210 §1), tot la cerere: la primul ⋯ sau clic dreapta pe o foaie, ori preîncărcat după pornire. */
 export const incarcaMeniuFoaie = () => import('./MeniuFoaie.tsx').then(cuMesaje);
 const MeniuFoaie = lazy(() => incarcaMeniuFoaie().then((m) => ({ default: m.MeniuFoaie }), () => ({ default: () => null })));
+/** Rândul cotelor foii active (ADR 0330 §5, felia 10.4↑a-4), tot la cerere: doar o foaie cu cote îl aduce. */
+const ListaCote = lazy(() => import('./ListaCote.tsx').then(cuMesaje).then((m) => ({ default: m.ListaCote }), () => ({ default: () => null })));
 
 /**
  * Lista de vectori (owner-ul, la încercarea prototipului de planșe, `BRIEF.md` §16.3): ce stă pe foaie, în ordinea foii.
@@ -52,6 +54,8 @@ export type FoaieLista = {
   readonly detalii: readonly string[];
   /** Câte instanțe are (ștergerea cere confirmare când nu e goală). */
   readonly piese: number;
+  /** Câte cote are (ADR 0330 §5): foaia activă le arată sub piese, în rândul „Cote (N)”. */
+  readonly cote?: number;
   readonly activa: boolean;
 };
 
@@ -168,6 +172,7 @@ export function ListaVectori({ foi, randuri, onAlege, onActiveaza, actiuni }: Pr
               })}
             </ul>
           )}
+          {f.activa && (f.cote ?? 0) > 0 ? <Suspense fallback={null}><ListaCote foaie={f.id} n={f.cote ?? 0} /></Suspense> : null}
         </section>
       ))}
       {actiuni && (

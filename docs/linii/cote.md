@@ -84,6 +84,14 @@ față. Fără cod de produs până la răspunsuri. De hotărât acolo, între a
   Ctrl+, și ⚙). Panoul cotei, lista, „Arată cotele” și cotele foilor vecine trec în a-4 (numite întâi a-3a și a-3b:
   id-urile fișelor au doar cifre după cratimă).
   **Urmează:** 10.4↑a-4, la cuvântul owner-ului.
+- **24.11, 10.4↑a-4 gata pe ramură** (la „continuă cu 10.4↑a-4”; codul la `cc55148f`): panoul cotei, rândul „Cote (N)” din
+  listă cu ochiul, „Arată cotele”, cotele foilor vecine (estompate sau ascunse). Felia a încheiat 10.4↑a.
+  **Urmează:** 10.4↑b (raza, diametrul, unghiul, inch în fracții), la cuvântul owner-ului.
+- **24.11, 10.4↑a-4 cu `main` (lotul 24) adus** (`91dd065c`): ciocnirile doar în DEVLOG și în catalogul controalelor (scris din
+  nou). E commit-ul de unit pentru a-4.
+- **24.11, 10.4↑b gata pe ramură** (la „10.4↑b”): raza, diametrul, unghiul (și în Automată: cerc, arc, două laturi), cu
+  setările lor (prefixele, unghiurile, linia razei) și inch în fracții. Proba mijlocului căii SVG a prins arcul unghiului
+  oglindit față de coardă (sweep-flag, reparat). **Urmează:** 10.4↑c (exportul), la cuvântul owner-ului.
 
 ## Deciziile owner-ului
 
@@ -105,6 +113,8 @@ față. Fără cod de produs până la răspunsuri. De hotărât acolo, între a
   pe emulatoare; ușa lui intră în `RANDURI_MENIU_CONT` din `manual.test.ts`.
 - **Setările pe hârtie:** pragul cifrelor se probează la înălțimea implicită (după 7 mm, cifra are 16 px pe ecran), iar cifra
   „mereu orizontală” cere și o aliniată trasă spre stânga sau în jos (la orizontală și verticală, normala e mereu aceeași).
+- **Panoul și lista nu importă modelul cotelor:** unealta publică ce trebuie arătat în `src/ui/coteVedere.ts`; un câmp nou al
+  panoului se publică acolo, iar o schimbare trece tot prin `foaie.cote` (un pas de anulare).
 - **Lista felurilor ca valoare** (`FELURI_COTA`) stă în `cote.ts`, nu în `document.ts`: acela e în pornire, iar o valoare
   exportată de acolo ar intra în pachet.
 - **„Duplică foaia”** (`comandaDuplicareLegata`, `src/model/pieseLegate.ts`) copiază tot ce are foaia, deci și cotele, cu
