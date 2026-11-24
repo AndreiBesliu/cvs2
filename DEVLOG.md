@@ -12596,6 +12596,34 @@ PR-ul `AndreiBesliu/cvs2#13` („De unit acum (A.9a, A.9b): `dbb0306a`”).
 - **Documentele:** ADR 0272 („Implementarea (25.8↑b)”, precizările la §6, §10), indexul ADR, manualul (ro, en), fișa etapei 3
   (jurnalul, încercarea în coada owner-ului), traducerile roadmap-ului, `CLAUDE.md`, nota liniei.
 
+## 2026-11-24 — Felia 3.Ts: ventilatorul cu carcasă în atelierul Easy 3Draw (ADR 0282) (Model: Claude Opus 5.5)
+
+**Prompt:** „continua” (în sesiunea cloud a liniei elicelor, după unirea lui 3.Tr în `main` și publicarea pe test).
+**Started:** 24.11, 07:38. **Completed:** 24.11, 09:14 (în container; CI-ul, pe commit-ul împins).
+
+- **Reperul LEGO:** din LDraw, 50899 (rotor cu inel în jurul paletelor, pe o gaură care nu e de ax Technic) și 41530
+  (palete curbe, fără pas). Niciuna nu e un ventilator în tub pe un ax LEGO: de la 50899 vine ideea inelului, nu cotele.
+- **Proba întâi:** 11 probe unitare cu valorile pe hârtie (calculate separat, cu un script de o singură folosință), apoi
+  motorul. Două ajustări ale probelor la scriere: vârfurile luate o singură dată (o medie pe `tri.flat()` e trasă spre
+  vârfurile din mai multe triunghiuri) și toleranța de 1e-3 pe ce face `prismaGauri` (mută vârfurile cu 0,0001 mm).
+- **Motorul:** `ventilator`, `ventilatorCote`, `carcasaVentilator`, `laturiCerc`; paletele din `paleteElice`, butucul din
+  `butucElice`. Elicea și elicea de barcă, neschimbate.
+- **Atelierul:** a treia piesă a filei Elice, cu piesa (rotorul sau carcasa), „Repede”, câmpurile comune, alegerile
+  fiecărei piese, textul, „Fă ventilatorul”, pictograma, 22 de texte în engleză; rotorul și carcasa, cu aceleași chei oricum
+  s-ar adăuga (`defVentilator`). Capturile: desktop și 390 px (fără depășire).
+- **Privirea pe randare** a găsit peretele carcasei peste marginea găurii, deasupra urechii (un știft băgat de sus l-ar fi
+  lovit): lamajul taie acum un canal și prin peretele de deasupra, cu 0,8 mm spre interior, doar unde ajunge la tub; proba
+  scrisă întâi (căzută), apoi codul.
+- **Hotărâte la implementare** (în ADR, „Implementarea (3.Ts)”): „jocul din calibrare” citit în două; găurile urechilor pe
+  grila axului; inelul ca la 50899, fără „Ca LEGO”; carcasa din paletele fără inel.
+- **Otrăvurile, în clonă:** `3.Ts.py` 134 / 134: 125 din prima; nouă scăpate pe probele unitare, prinse după probele lor țintite (cazurile la care rotunjirea, inelul sau rezoluția cercurilor contează); E49, echivalentă, scoasă cu motivul. `3.Ts-en.py` 9 / 9 (N08, după proba numelui în engleză cu gaura și inelul). Listele lui 3.Tq (3) și 3.Tr (8), mutate pe codul nou și rulate din nou: toate prinse.
+- **Porțile, în container:** tipurile, regulile de import (0 încălcări), traducerile, unitarele pluginului, ale bibliotecii
+  și ale extensiilor 241 / 241, build-ul determinist, e2e-ul atelierului și al bibliotecii. Pornirea 109,4 / 115 (cu ușa
+  113,9), totalul 799,6 / 900, `/admin` 133,2 / 200 (neschimbate: pluginul e în afara pachetului); Easy 3Draw 18.22.0,
+  466,1 kB.
+- **Documentele:** ADR 0282, indexul ADR, fișa etapei 3 (jurnalul și coada owner-ului), traducerile roadmap-ului,
+  registrul otrăvurilor, nota liniei.
+
 - **Publicarea (`883a8caa`):** rapidul și completul pe `main` verzi (completul, 63 min 54 s), `publica.yml` verde în
   3 minute, cu serverul: funcția `agregaUtilizarea` creată, regulile Firestore și indexurile publicate; adresa de test
   spune `883a8caa1f21` (24.11, 07:14).
