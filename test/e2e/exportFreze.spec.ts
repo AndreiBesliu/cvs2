@@ -29,6 +29,8 @@ test('pe rând: doar frezele potrivite; aleasă, T, Ø, forma și pasul ei; Expo
   // Freza operației e scrisă de mână (T1 Ø6); pe un profil, doar frezele plate standard, în ordinea bibliotecii.
   await expect(lista(e1).locator('option:checked')).toHaveText('Scrisă de mână');
   await expect(oferite(e1)).toHaveText(['Plată Ø3,175', 'Plată Ø6', 'Plată Ø12']);
+  // T6 scris de mână pe rândul ăsta (Ø6) nu e al altei freze: freza rândului pleacă, deci Plată Ø12 își ia T6.
+  await e1.locator('[data-camp="scula"]').fill('6');
   await lista(e1).selectOption({ label: 'Plată Ø12' });
   // T6 al bibliotecii (nicio altă freză în fereastră), Ø12, pasul 4.
   await expect(e1.locator('[data-camp="scula"]')).toHaveValue('6');
@@ -54,6 +56,9 @@ test('pe rând: doar frezele potrivite; aleasă, T, Ø, forma și pasul ei; Expo
   await expect(e1.locator('[data-camp="forma-scula"]')).toHaveValue('v');
   await expect(e1.locator('[data-camp="unghi-v"]')).toHaveValue('90');
   await expect(e1.locator('[data-camp="diametru"]')).toHaveValue('12');
+  // Unghiul schimbat de mână: altă freză, scrisă de mână.
+  await e1.locator('[data-camp="unghi-v"]').fill('60');
+  await expect(lista(e1).locator('option:checked')).toHaveText('Scrisă de mână');
   await expect(page.getByTestId('jurnal')).toHaveText('0 erori în jurnalul local');
 });
 

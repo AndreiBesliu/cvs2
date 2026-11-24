@@ -42,6 +42,9 @@ test('scrierea originii: fără ea pe rând, originea pleacă din document; făr
   assert.deepEqual(scrisa.scula, { numar: 6, nume: 'freza plata', diametru: 10 });
   // Un apelant fără câmpul `origine` (o operație fără rând în fereastră): scula rămâne a documentului.
   assert.deepEqual(operatieDinDialog(din, undefined, { numar: 6, diametru: 12 }).scula, din.scula);
+  // Altă freză din bibliotecă, fără tăiș și fără valori de lucru: tăișul și valorile vechi pleacă, nu rămân ale celei de dinainte.
+  const alta = operatieDinDialog(din, undefined, { numar: 6, diametru: 12, origine: { nume: 'A mea', biblioteca: { id: 'm1', rev: 1 } } });
+  assert.deepEqual(alta.scula, { numar: 6, nume: 'A mea', diametru: 12, biblioteca: { id: 'm1', rev: 1 } });
   // Un Exportă fără nicio schimbare, cu originea citită din document: aceeași scula, cu cheile în aceeași ordine.
   const aceeasi = operatieDinDialog(din, undefined, { numar: 6, diametru: 12, origine: { nume: 'Plată Ø12', biblioteca: { id: 'p12', rev: 3 }, regim: ORIGINE.regim!, tais: 30 } });
   assert.equal(JSON.stringify(aceeasi.scula), JSON.stringify(din.scula));
