@@ -4,7 +4,8 @@ import type { CatalogActiuni } from '../../../shared/documentatie.ts';
 import { CALCULE, TREPTE_MS, type Calcul } from '../../../shared/utilizare.ts';
 import { COLECTIE_UTILIZARE_ZI, ziuaLocala } from '../../../shared/utilizareZi.ts';
 import type { Conexiune } from '../../cloud/conexiune.ts';
-import { limba, t } from '../../i18n/t.ts';
+import { limba, t, traduce, type Cheie } from '../../i18n/t.ts';
+import type { Limba } from '../../i18n/tipuri.ts';
 import type { AducatorDocumentatie } from '../documentatie/aducere.ts';
 import { motivDin, type Masura } from '../erori/date.ts';
 import {
@@ -23,6 +24,20 @@ import './utilizare.css';
 
 const esteCalcul = (x: string): x is Calcul => (CALCULE as readonly string[]).includes(x);
 const barPe = (p: number): CSSProperties => ({ ['--p' as string]: String(Math.max(0, Math.min(1, p))) }) as CSSProperties;
+
+/**
+ * Textul unui motiv de refuz, dacă e o cheie a mesajelor de bază (încărcate și în `/admin`), fără locuri de completat; altfel
+ * null, și fila arată cheia. Motivele editorului (din mesajele lui, aduse la cerere) rămân chei.
+ */
+function textMotiv(motiv: string, l: Limba): string | null {
+  if (!motiv.startsWith('motiv.')) return null;
+  try {
+    const x = traduce(l, motiv as Cheie);
+    return /\{\w+\}/.test(x) ? null : x;
+  } catch {
+    return null;
+  }
+}
 
 /** Treapta unei durate, ca text: „sub 0,3 s”, „sub 5 min”; ultima, „peste 5 min”. */
 function textTreapta(ms: number | null, l: string): string {
@@ -126,7 +141,7 @@ export function FilaUtilizare({ con, aducator }: { readonly con: Conexiune; read
                 <span className="uz-bara" style={barPe(r.n / maxim)} title={t('admin.uz.taste', { n: r.taste })}>
                   <span className="uz-bara-taste" style={barPe(r.n > 0 ? r.taste / r.n : 0)} />
                 </span>
-                <span className="uz-numar">{t('admin.uz.rand', { n: r.n, oameni: r.oameni })}</span>
+                <span className="uz-numar">{t('admin.uz.rand', { n: r.oameni, ori: r.n })}</span>
               </li>
             ))}
           </ol>
@@ -156,13 +171,20 @@ export function FilaUtilizare({ con, aducator }: { readonly con: Conexiune; read
         <h4>{t('admin.uz.refuzuri')}</h4>
         {refuz.length === 0 ? <p className="admin-slab">{t('admin.uz.nimic')}</p> : (
           <ol className="uz-lista" data-uz="refuzuri">
-            {refuz.map((r) => <li key={`${r.id} ${r.motiv}`} data-uz-refuz={r.id}>{numeActiune(r.id)} · <code>{r.motiv}</code> · {r.n}</li>)}
+            {refuz.map((r) => {
+              const text = textMotiv(r.motiv, l);
+              return (
+                <li key={`${r.id} ${r.motiv}`} data-uz-refuz={r.id} data-uz-motiv={r.motiv}>
+                  {numeActiune(r.id)} · {text === null ? <code>{r.motiv}</code> : <span title={r.motiv}>{text}</span>} · {r.n}
+                </li>
+              );
+            })}
           </ol>
         )}
         <h4>{t('admin.uz.parasite')}</h4>
         {parasite.length === 0 ? <p className="admin-slab">{t('admin.uz.nimic')}</p> : (
           <ol className="uz-lista" data-uz="parasite">
-            {parasite.map((d) => <li key={d.id} data-uz-parasit={d.id}><code>{d.id}</code> · {t('admin.uz.parasit', { renuntat: d.renuntat, deschis: d.deschis })}</li>)}
+            {parasite.map((d) => <li key={d.id} data-uz-parasit={d.id}><code>{d.id}</code> · {t('admin.uz.parasit', { n: d.deschis, renuntat: d.renuntat })}</li>)}
           </ol>
         )}
       </section>

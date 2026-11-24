@@ -104,12 +104,17 @@ test('owner-ul: perioada fără ziua de azi, cifrele, cele mai folosite, ce nu s
   await expect(prima).toHaveAttribute('data-uz-folosita', 'document.roteste');
   await expect(prima).toContainText('Rotește');
   await expect(prima).toContainText('7 · ≈ 2 oameni');
+  await expect(page.locator('[data-uz-folosita="export.gcode"]')).toContainText('1 · ≈ 1 om');
+  await expect(page.locator('[data-uz-perioada="30"]')).toHaveText('30 de zile');
   // Ce nu se folosește: din catalog, cele cu 0 oameni întâi.
   const nefolosite = page.locator('[data-uz-nefolosita]');
   await expect(nefolosite).toHaveCount(15);
   await expect(nefolosite.first().locator('td').first()).toHaveText('0');
-  await expect(page.locator('[data-uz-refuz="document.roteste"]')).toContainText('motiv.nimic-ales · 2');
-  await expect(page.locator('[data-uz-parasit="eticheta.export-titlu"]')).toContainText('1 din 1 deschideri');
+  // Motivul, în cuvinte (cheia mesajelor de bază), cu cheia în titlu; pluralul după numărul deschiderilor.
+  const refuz = page.locator('[data-uz-refuz="document.roteste"]');
+  await expect(refuz).toContainText('Rotește · N-ai ales nimic. · 2');
+  await expect(refuz).toHaveAttribute('data-uz-motiv', 'motiv.nimic-ales');
+  await expect(page.locator('[data-uz-parasit="eticheta.export-titlu"]')).toContainText('1 din 1 deschidere');
   const exp = page.locator('[data-uz-durata="export"] td');
   await expect(exp).toHaveText(['3', 'sub 3 s', 'sub 30 s', '1']);
   // 90 de zile: și ziua de acum 40 de zile (Vlad); 7 zile: din nou doar cele două.
