@@ -51,6 +51,9 @@ test('din meniul contului, cu Ctrl+, și din ⚙: Cotele, cu cota de probă; Esc
   await expect(dialog(page).getByTestId('setari-proba').locator('[data-text="120,5"]')).toHaveCount(1);
   // Toate grupurile au implicitele: „Înapoi la implicit” nu are ce face.
   await expect(dialog(page).locator('[data-setari-implicit]:disabled')).toHaveCount(5);
+  // Cât e deschisă, tastele desenului nu ating Proiectarea (R ar alege Dreptunghiul).
+  await page.keyboard.press('r');
+  await expect(page.locator('[data-unealta="selectie"]')).toHaveAttribute('aria-pressed', 'true');
   await page.keyboard.press('Escape');
   await expect(dialog(page)).toHaveCount(0);
   await expect(page.locator('[data-editare="cont"]')).toBeFocused();
@@ -112,6 +115,18 @@ test('un număr în afara marginilor e spus și nu se ține; unul bun, cu virgul
   await cuCota(page);
   const inainte = await cota(page).locator('text').getAttribute('font-size');
   await deschideSetarile(page);
+  // Pragul cifrelor: peste înălțimea lor pe ecran, cifrele se ascund (rămâne titlul); la 0, nu se ascund niciodată.
+  const px = Number(await cota(page).locator('text').getAttribute('font-size'));
+  expect(px).toBeLessThan(12);
+  const prag = setare(page, 'comportament.pragCifre');
+  await prag.fill('12');
+  await prag.press('Enter');
+  await expect(cota(page).locator('text')).toHaveCount(0);
+  await expect(cota(page).locator('title')).toHaveCount(1);
+  await prag.fill('0');
+  await prag.press('Enter');
+  await expect(cota(page).locator('text')).toHaveCount(1);
+  await expect(cota(page).locator('text')).toHaveAttribute('font-size', inainte ?? '');
   const camp = setare(page, 'cifre.inaltime');
   await expect(camp).toHaveValue('3,5');
   await camp.fill('25');
