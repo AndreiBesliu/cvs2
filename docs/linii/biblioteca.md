@@ -23,6 +23,9 @@ felii”: „ok” (24.11).
 - **Întrebările** (recomandarea e „a” la toate): 1 vestea despre o versiune nouă (punctul din ce se știe deja, fără
   cerere la pornire); 2 câte extensii stau deschise deodată (una); 3 reîncărcarea paginii (redeschide extensia); 4 un
   `.zip` de extensie lăsat pe planșă (confirmarea instalării); 5 cât facem (toate trei feliile).
+- **24.11: rapidul verde pe propunere** (`bc9da1c`, PR-ul ciornă `AndreiBesliu/cvs2#17`); apoi `main` adus (`fafb95e`:
+  25.8↑b), la vestea de ciocnire de pe PR: doar DEVLOG-ul, rezolvat cu `scripts/rezolva-devlog.py`. Ramura n-are cod al ei:
+  codul e al lui `main`.
 - **Uneltele auditului** stau în `.tmp/audit-extensii/` (ignorat): `audit.mjs` (grupele A–D: drumul întreg, actualizările,
   catalogul oprit sau stricat, telefonul, tema, engleza; `AUDIT_OUT`, `AUDIT_DOAR`, `AUDIT_SCARA`), `audit2.mjs`
   (contrastul prin pânză, tastatura, pornirea eșuată, țintele pe telefon), `audit3.mjs` (reîncărcarea, `.zip`-ul lăsat pe

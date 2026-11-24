@@ -62,6 +62,11 @@ export type FoaieRaport = {
   readonly piese: readonly RandPiesa[];
   /** Foile identice cu ea (locul lor, de la 0), spuse aici, nu separat. */
   readonly identice: readonly number[];
+  /**
+   * Numele imaginilor de pe foaie (ADR 0272 §10: ajutoare de desen, nu se taie, deci nu despart foile identice), fiecare o
+   * dată, din toate foile identice cu ea; fără nume, id-ul imaginii.
+   */
+  readonly imagini: readonly string[];
 };
 
 export type TotalPiesa = Omit<RandPiesa, 'rotiri' | 'valori'> & {
@@ -157,7 +162,13 @@ function randuri(f: Foaie, piese: ReadonlyMap<string, Piesa>, fel: MarimeRaport)
 
 export function raportFoi(doc: Document, fel: MarimeRaport, sablonFoaie: (n: number) => string): RaportFoi {
   const piese = new Map(doc.piese.map((p) => [p.id, p]));
-  const grupuri = new Map<string, number[]>();
+  const grupuri = new Map<string, { readonly identice: number[]; readonly imagini: string[] }>();
+  const cuImaginile = (lista: string[], f: Foaie): void => {
+    for (const im of f.imagini ?? []) {
+      const n = im.nume ?? im.id;
+      if (!lista.includes(n)) lista.push(n);
+    }
+  };
   const foi: FoaieRaport[] = [];
   const totaluri = new Map<string, Mutabil<Omit<TotalPiesa, 'materiale' | 'foi'>> & { materiale: (string | null)[]; foi: number[] }>();
   const materiale = new Map<string, Mutabil<TotalMaterial>>();
@@ -180,11 +191,13 @@ export function raportFoi(doc: Document, fel: MarimeRaport, sablonFoaie: (n: num
     const s = semnatura(f, piese);
     const grup = grupuri.get(s);
     if (grup) {
-      grup.push(k);
+      grup.identice.push(k);
+      cuImaginile(grup.imagini, f);
       return;
     }
-    const identice: number[] = [];
-    grupuri.set(s, identice);
+    const identice: number[] = [], imagini: string[] = [];
+    cuImaginile(imagini, f);
+    grupuri.set(s, { identice, imagini });
     const operatii = new Map<string, OperatieRaport>();
     for (const id of new Set(f.instante.map((i) => i.piesa))) {
       for (const o of piese.get(id)?.operatii ?? []) {
@@ -195,7 +208,7 @@ export function raportFoi(doc: Document, fel: MarimeRaport, sablonFoaie: (n: num
     foi.push({
       k, id: f.id, nume: numeFoaie(f, k, sablonFoaie), material, latime: f.stoc.latime, inaltime: f.stoc.inaltime, grosime: f.stoc.grosime,
       folosita: r6((arie * 100) / (f.stoc.latime * f.stoc.inaltime)), operatii: [...operatii.values()],
-      piese: rs.map(({ rotiriSet: _s, ...r }) => r), identice,
+      piese: rs.map(({ rotiriSet: _s, ...r }) => r), identice, imagini,
     });
   });
   return { foi, piese: [...totaluri.values()], materiale: [...materiale.values()] };

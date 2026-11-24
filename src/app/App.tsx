@@ -48,6 +48,7 @@ import { legareLaPornire } from './imprimantaLaPornire.ts';
 import { foaiaTinuta, tineFoaia, tineToateFoile, toateFoileTinute } from './foaiaActiva.ts';
 import type { Jurnal } from './jurnalErori.ts';
 import type { CerereLucrare } from './DialogLucrare.tsx';
+import type { ZonaRelativa } from './modImagineCalcul.ts';
 import type { LucrarePrimita } from './primireLucrare.ts';
 import { lucrarePornita } from './lucrare.ts';
 // Doar tipul ferestrei Mașina: bucata ei rămâne la cerere (un import de valoare ar trage-o în pornire).
@@ -122,6 +123,8 @@ const DialogExport = lazy(() => incarcaDialogExport().then((m) => ({ default: m.
 const incarcaUrechile = () => import('./ModUrechi.tsx').then(cuMesaje);
 const ModUrechi = lazy(() => incarcaUrechile().then((m) => ({ default: m.ModUrechi })));
 const SemneUrechiFoaie = lazy(() => incarcaUrechile().then((m) => ({ default: m.SemneUrechiFoaie })));
+// „Calibrează” și „Trasează…” din imaginea de pe foaie (ADR 0272 §6, §7): modul pânzei, la cerere, din rândul imaginii.
+const ModImagine = lazy(() => import('./ModImagine.tsx').then(cuMesaje).then((m) => ({ default: m.ModImagine })));
 // Cipul timpului de lângă traseu (ADR 0046 §8): la cerere, ca durata și textele lui să nu stea în pornire (ADR 0042).
 const CipTimpTraseu = lazy(() => import('../ui/CipTimpTraseu.tsx').then(cuMesaje).then((m) => ({ default: m.CipTimpTraseu })));
 const DialogImport = lazy(() => incarcaDialogImport().then((m) => ({ default: m.ImportConectat }), () => ({ default: DialogNeincarcat })));
@@ -348,6 +351,8 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
   const [urechiAlese, setUrechiAlese] = useState<{
     readonly piesa: string; readonly operatie: string; readonly numar: number; readonly latime: number; readonly grosime: number;
   } | null>(null);
+  /** Modul pânzei pe o imagine a foii (ADR 0272 §6, §7): calibrarea ori zona de trasat; editorul stă oprit cât ține. */
+  const [modImagine, setModImagine] = useState<{ readonly fel: 'calibrare' | 'zona'; readonly id: string; readonly foaie: string } | null>(null);
   // Extensia deschisă, cu fereastra ei (ADR 0160 §A), și o fereastră a extensiilor deschisă (instalarea, gestionarea, ADR 0127
   // §C), care face aplicația inertă, ca dialogurile ei; tot așa confirmarea cerută de o extensie (ADR 0160 §B).
   // Cu permisiunea `forme` (ADR 0166), extensia deschisă primește formele trimise din bara selecției (`forme`).
@@ -491,6 +496,8 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
     readonly fisiere: readonly File[]; readonly punct: { readonly x: number; readonly y: number } | null;
     /** Extensia care a propus fișierul (ADR 0166 §C), spusă în fereastră. */
     readonly de?: string;
+    /** Trasarea din imaginea de pe foaie (ADR 0272 §7): imaginea și zona trasă pe ea (null: toată); fără fișiere. */
+    readonly dinFoaie?: { readonly imagine: ImagineFoaie; readonly zona: ZonaRelativa | null };
   } | null>(null);
   /**
    * Numărul ultimei cereri de export. Un rezultat întârziat (calculul se încarcă la cerere) e al altor parametri dacă între
@@ -1469,6 +1476,7 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
               onEticheta={(camp, valoare) => aplicaDinPanou('foaie.eticheta', { etichetaNoua: () => ({ camp, valoare }) })}
               onImagini={(lista) => aplicaDinPanou('foaie.imagini', { imaginiNoi: () => lista })}
               octetiImagini={octetiImagini}
+              onModImagine={(fel, id) => { if (idActiva) setModImagine({ fel, id, foaie: idActiva }); }}
               onPlusUnu={() => aplicaDinPanou('piesa.plus-unu', {})}
               onInca={(total) => aplicaDinPanou('piesa.inca', { cateInTotal: () => total })}
               onDesprinde={() => aplicaDinPanou('piesa.desprinde', {})}
@@ -1568,7 +1576,7 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
             {...(desen ? { desen } : {})}
             suprapunere={(v, m, l) => (
               <Suspense fallback={null}>
-                <Editare doc={doc} indexFoaie={indexActiva} idFoaie={idActiva} selectie={selectieValida} cutie={cutieSelectie} vedere={v} marime={m} linii={l} zona={zona} doarCitire={doarCiteste(mod)} activ={!acoperita && urechiAlese === null}
+                <Editare doc={doc} indexFoaie={indexActiva} idFoaie={idActiva} selectie={selectieValida} cutie={cutieSelectie} vedere={v} marime={m} linii={l} zona={zona} doarCitire={doarCiteste(mod)} activ={!acoperita && urechiAlese === null && modImagine === null}
                   usaAcoperita={fereastra === FEREASTRA_EXTENSIE ? 'extensii.buton' : fereastra === 'imprimanta' ? 'vedere.imprimanta' : 'vedere.masina'}
                   ruleaza={(id, extra) => ruleazaDocument(id, context(extra))} onLipeste={setLipesteStabil} onDesen={setDesenStabil}
                   onRefuz={setRefuzEditare} onLegare={setLegareEditare} reface={stareActiune('istoric.reface').ok} onAseaza={() => { setDialogAsezare(true); }} onAspect={() => { contextVedere.aspect(); }} onFreze={() => { contextVedere.freze(); }}
@@ -1585,6 +1593,18 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
                 ) : traseu?.arata && (cuUrechiAlese || (traseu.urechiLemn?.length ?? 0) > 0) ? (
                   <Suspense fallback={null}><SemneUrechiFoaie doc={doc} indexFoaie={indexActiva} vedere={v} marime={m} lemn={traseu.urechiLemn} /></Suspense>
                 ) : null}
+                {modImagine && (
+                  <Suspense fallback={null}>
+                    <ModImagine fel={modImagine.fel} imagine={modImagine.foaie === idActiva ? foaie?.imagini?.find((i) => i.id === modImagine.id) : undefined}
+                      vedere={v} marime={m} zona={zona} onIesi={() => { setModImagine(null); }}
+                      onCalibreaza={(a) => aplicaDinPanou('foaie.imagini', { imaginiNoi: () => (foaie?.imagini ?? []).map((i) => (i.id === modImagine.id ? { ...i, ...a } : i)) })}
+                      onTraseaza={(z) => {
+                        const im = foaie?.imagini?.find((i) => i.id === modImagine.id);
+                        setModImagine(null);
+                        if (im && !doarCiteste(mod)) setCoadaImport({ fisiere: [], punct: null, dinFoaie: { imagine: im, zona: z } });
+                      }} />
+                  </Suspense>
+                )}
               </Suspense>
             )}
             textLasare={t('import.lasa-aici')}
@@ -1594,7 +1614,7 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
               dată reia garda de 0,3 s din CSS (`apare`), în care clicul trece prin ea. Între timp își păstrează focusul
               (Duplică apăsat de la tastatură nu-l pierde).
             */}
-            {selectieValida.length > 0 && aranjament.zone.selectie.length > 0 && urechiAlese === null && (
+            {selectieValida.length > 0 && aranjament.zone.selectie.length > 0 && urechiAlese === null && modImagine === null && (
               <div key={String(modal)} className="insula" role="toolbar" aria-label={t('bara.selectie')}>
                 {grupuri('selectie')}
               </div>
@@ -1693,6 +1713,7 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
           fisiere={coadaImport.fisiere}
           punct={coadaImport.punct}
           {...(coadaImport.de === undefined ? {} : { de: coadaImport.de })}
+          {...(coadaImport.dinFoaie ? { dinFoaie: coadaImport.dinFoaie } : {})}
           {...(frezaImport === undefined ? {} : { freza: frezaImport })}
           registruImport={registruImport}
           contextImport={contextImport}

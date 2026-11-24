@@ -2,7 +2,7 @@
 
 <!-- Adusă din memoria sesiunii principale pe 23.11.2026 (mutarea în cloud). De aici înainte o ține la zi linia, pe ramura ei, odată cu feliile. -->
 
-_cncvs2, linia trasării din imagine (etapa 25): 25.1↑–25.3↑b UNITE în main pe 09.11 (`e277836`); 25.4↑ (scanările și pozele, ADR 0224) UNITĂ în main pe 09.11 (`0ebbd99`, de la `304ea37`; vârful `30448ea`); 25.5↑ (foaia pozată oblic, ADR 0225) UNITĂ în main (`07df71f`, de la `1ca446b`; main `0e3725c`); 25.4↑b (lumina pe culori, ADR 0226) UNITĂ în main pe 16.11 (la `94bf287`); 25.3↑c (liniile mediane pe culori, ADR 0227) UNITĂ în main pe 16.11 (`380c053`); 25.3↑d (punctele pierdute, corectura ADR 0222) UNITĂ în main pe 17.11 (`dd21a8a`); 25.3↑e (rezultatul pe fiecare culoare, ADR 0228) UNITĂ în main pe 17.11 (`a3e81f6d`); 25.6↑ (imaginile TIFF, ADR 0229) UNITĂ în main pe 18.11 (`fd63de8e`); 25.7↑ (PDF-urile scanate, ADR 0270) UNITĂ în main pe 18.11 (`9bf53378`); 25.4↑c (îndreptarea scanărilor, ADR 0271) UNITĂ în main pe 22.11 (`9071e62f`); 25.8↑a (imaginile pe foaie, ADR 0272 acceptat „Da, 1a–3a”) UNITĂ în main pe 23.11 (`473f2e20`, PR #6, de la `2e8caa3e`); 25.9↑ (fereastra trasării, refăcută, ADR 0273, acceptat cu 1a–3a și variantele ca opțiuni) GATA pe 23.11, pe ramură, PR-ul spre `main` de unit de sesiunea principală; 25.8↑b („Calibrează”, „Trasează…” din imaginea de pe foaie), DOAR la cuvântul owner-ului; ADR 0270–0279 ale trasării (următorul liber 0274); linia lucrează din 23.11 într-o sesiune cloud, pe ramura `wip/25.1-trasare` (worktree-ul local `cncvs2-lucru\trasare` e istorie)_
+_cncvs2, linia trasării din imagine (etapa 25): 25.1↑–25.3↑b UNITE în main pe 09.11 (`e277836`); 25.4↑ (scanările și pozele, ADR 0224) UNITĂ în main pe 09.11 (`0ebbd99`, de la `304ea37`; vârful `30448ea`); 25.5↑ (foaia pozată oblic, ADR 0225) UNITĂ în main (`07df71f`, de la `1ca446b`; main `0e3725c`); 25.4↑b (lumina pe culori, ADR 0226) UNITĂ în main pe 16.11 (la `94bf287`); 25.3↑c (liniile mediane pe culori, ADR 0227) UNITĂ în main pe 16.11 (`380c053`); 25.3↑d (punctele pierdute, corectura ADR 0222) UNITĂ în main pe 17.11 (`dd21a8a`); 25.3↑e (rezultatul pe fiecare culoare, ADR 0228) UNITĂ în main pe 17.11 (`a3e81f6d`); 25.6↑ (imaginile TIFF, ADR 0229) UNITĂ în main pe 18.11 (`fd63de8e`); 25.7↑ (PDF-urile scanate, ADR 0270) UNITĂ în main pe 18.11 (`9bf53378`); 25.4↑c (îndreptarea scanărilor, ADR 0271) UNITĂ în main pe 22.11 (`9071e62f`); 25.8↑a (imaginile pe foaie, ADR 0272 acceptat „Da, 1a–3a”) UNITĂ în main pe 23.11 (`473f2e20`, PR #6, de la `2e8caa3e`); 25.9↑ (fereastra trasării, refăcută, ADR 0273, acceptat cu 1a–3a și variantele ca opțiuni) UNITĂ în main pe 23.11 (`4fe2d2ad`, PR #10); 25.8↑b („Calibrează”, „Trasează…” din imaginea de pe foaie, ADR 0272 §6, §7, §10) GATA pe 24.11, pe ramură, PR-ul spre `main` de unit de sesiunea principală; ADR 0270–0279 ale trasării (următorul liber 0274); linia lucrează din 23.11 într-o sesiune cloud, pe ramura `wip/25.1-trasare` (worktree-ul local `cncvs2-lucru\trasare` e istorie)_
 
 Pornită pe 07.11.2026 de sesiunea principală, după ce owner-ul a întrebat ce se mai poate face în paralel. Lângă ea: incrustațiile
 ([Incrustațiile (12.1↑)](incrustatii.md)), imprimanta ([Imprimanta 3D (K1C)](imprimanta.md)), planșele ([Planșele (etapa 11)](plansele.md)).
@@ -176,8 +176,20 @@ Pornită pe 07.11.2026 de sesiunea principală, după ce owner-ul a întrebat ce
   subșir cu mai multe spații în față: din 95 de otrăvuri pe fișierele ferestrei, doar 12 au ieșit VOID după reașezare;
   (5) `lot 0 23` rulează [0, 23): numără lista înainte (A04, a 24-a, scăpase și a cerut o probă nouă); (6) o probă e2e cu
   animația la 500× (95 s în ~0,2 s) cade sub încărcare: completul a căzut o dată pe ea, reparată doar în probă (20× și 1×).
-- **25.8↑b (urmează, la cuvântul owner-ului):** „Calibrează” (două puncte și distanța), „Trasează…” din imaginea de pe
-  foaie (cu zona), numele imaginilor în raportul foii (ADR 0272 §6, §7, §10).
+- **25.9↑ UNITĂ în `main`** pe 23.11 (`4fe2d2ad`, PR #10, a opta unire a sesiunii principale).
+- **25.8↑b GATA** (24.11, la „pornește 25.8↑b”; ADR 0272 §6, §7, §10; `main` `883a8caa` adus întâi, fără ciocniri; codul
+  `36e2cc24`, probele zonei `9f665851`): **Calibrează** și **Trasează…** în rândul imaginii pornesc un mod al pânzei
+  (`src/app/ModImagine.tsx`, la cerere, cu banda urechilor; partea pură `src/app/modImagineCalcul.ts`): două capete pe
+  imagine (Shift: pe axa ei), trase, distanța în bandă, scalarea în jurul primului; zona trasă (în cadrul imaginii) ori toată
+  imaginea deschide fereastra cu `dinFoaie` (scara `latimeIntreaga`, fără Mărime și îndreptări), iar `ImportPregatit.peImagine`
+  pune vectorii peste ea. Raportul foilor: numele imaginilor (CSV-ul neschimbat). Otrăvurile 46 / 46. PR-ul
+  `AndreiBesliu/cvs2#14`, cu `main` `df9ae539` adus (`01474f96`); completul verde la prima trecere (unit 10 066 / 0, e2e
+  649 / 649, emulatoarele 122 / 122 și 51 / 51); pornirea cu Atelierul 114,6 / 115, totalul 804,7 / 900. Lecții: (1) cadrul
+  selecției, textul, Pen-ul și mânerele ascultă pe `window` la captură, deci înaintea unui mod al pânzei pus pe cutia ei:
+  modul trece prin `Editare.activ`, iar ele îl respectă (Pen-ul doar își oprește clicurile și tastele, desenul rămâne);
+  (2) o probă e2e care pornește un mod la cerere așteaptă banda lui înainte de primul clic (altfel clicul ajunge la pânză);
+  (3) cutia vârfurilor unui cerc trasat din cubice nu e centrată pe cerc: proba cere fiecare vârf pe cerc;
+  (4) 0,3 · 800 e exact 240 în virgulă mobilă: marginea sub un întreg se probează cu 0,57 · 100.
 - **În cloud (din 23.11):**
   - Pregătirea mediului rulează doar dacă ramura are `scripts/cloud/pregatire.sh`: la prima sesiune, ramura nu avea încă
     `main` adus, deci Node era 22 și lipsea `node_modules`; după unire, scriptul rulat de mână (~14 minute, cele mai multe

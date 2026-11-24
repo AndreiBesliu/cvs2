@@ -218,6 +218,11 @@ type Props = {
     readonly pastreaza: boolean; readonly onPastreaza: (b: boolean) => void; readonly onDoarImaginea: () => void;
     readonly lucru: boolean; readonly motiv: CheieSimpla | null;
   };
+  /**
+   * Trasată din imaginea de pe foaie (ADR 0272 §7; felia 25.8↑b): fereastra trasării de la început, cu nota ei, fără Mărime
+   * și fără îndreptări (vectorii vin exact peste imagine).
+   */
+  readonly dinFoaie?: boolean;
   /** O imagine (ADR 0220 §10): alegerile trasării, schimbarea lor și octeții imaginii pentru previzualizare. */
   readonly trasare?: {
     readonly alegeri: AlegeriTrasare; readonly onSchimba: (s: Partial<AlegeriTrasare>) => void; readonly octeti: Uint8Array | null;
@@ -235,7 +240,7 @@ type Props = {
  */
 export function DialogImport({
   nume, stare, pxPeTol, pxAutomat, unitate, unitateWmf, pagina, imaginePdf = false, onImaginePdf, seRecitesc, motiv, onPx, onUnitate,
-  onUnitateWmf, onPagina, onImporta, onInchide, coada, onSari, de, trasare, imagineFoaie,
+  onUnitateWmf, onPagina, onImporta, onInchide, coada, onSari, de, trasare, imagineFoaie, dinFoaie = false,
 }: Props) {
   const limba = useLimba();
   const mm = new Intl.NumberFormat(limba === 'ro' ? 'ro-RO' : 'en-GB', { maximumSignificantDigits: 12 });
@@ -255,7 +260,7 @@ export function DialogImport({
     ? (stare.format === 'pdf' ? stare.pagini : stare.format === 'imagine' ? stare.trasare.pagini ?? 0 : 0)
     : (stare.pagini ?? stare.trasare?.pagini ?? 0);
   // O imagine (ADR 0220): fereastra lărgită, cu panoul trasării și previzualizarea.
-  const imagine = trasare !== undefined && (formatImport(nume, '') === 'imagine' || (stare !== 'citire' && stare.format === 'imagine'));
+  const imagine = trasare !== undefined && (dinFoaie || formatImport(nume, '') === 'imagine' || (stare !== 'citire' && stare.format === 'imagine'));
   // Imaginea pe foaie (ADR 0272): o imagine citită (trasată, ori refuzată după trasare, cu raportul ei).
   const pe = imagine && imagineFoaie && stare !== 'citire' && (stare.ok ? stare.format === 'imagine' : stare.trasare !== undefined) ? imagineFoaie : null;
   // O pagină PDF cu imagini și vectori (ADR 0270): trasarea imaginii, la cerere, și întoarcerea la vectori.
@@ -414,8 +419,9 @@ export function DialogImport({
             la imaginea următoare. */}
         {imagine ? (
           <PanouTrasare key={`${coada?.k ?? 1}:${nume}`} alegeri={trasare.alegeri} onSchimba={trasare.onSchimba} octeti={trasare.octeti} stare={stare}
-            seRecitesc={seRecitesc} {...(trasare.freza === undefined ? {} : { freza: trasare.freza })}
-            sus={<>{alegerePagina}{ofertaPdf}</>} alerte={<>{refuz}{motivul}</>} detalii={info} actiuni={<>{peFoaie}{butoane}</>} />
+            seRecitesc={seRecitesc} {...(trasare.freza === undefined ? {} : { freza: trasare.freza })} dinFoaie={dinFoaie}
+            sus={<>{dinFoaie && <p className="mic" data-testid="import-din-foaie">{t('import.trasare.din-foaie')}</p>}{alegerePagina}{ofertaPdf}</>}
+            alerte={<>{refuz}{motivul}</>} detalii={info} actiuni={<>{peFoaie}{butoane}</>} />
         ) : (
           <>
             {alegerePagina}

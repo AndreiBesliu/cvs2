@@ -339,7 +339,9 @@ export type ProprietatiEditare = {
   /**
    * Fereastra Proiectare e cea de acum (ADR 0132 §3; implicit, da). Acoperită de Mașina, tastele desenului (uneltele, săgețile,
    * Escape, oglindirea, nodurile) nu ating desenul pe care omul nu-l vede; F1 deschide capitolul mașinii, iar meniul contului
-   * merge ca oriunde.
+   * merge ca oriunde. Tot oprit stă editorul cât ține un mod al pânzei (urechile alese, „Calibrează” și „Trasează…” din
+   * imaginea foii, felia 25.8↑b): cadrul selecției, textul, Pen-ul și mânerele (ale formelor și ale imaginilor) nu iau clicurile
+   * modului.
    */
   readonly activ?: boolean;
   /** Ușa ferestrei care acoperă Proiectarea, pentru F1 (implicit, Mașina; fereastra unei extensii, ADR 0160 §A). */
@@ -1055,8 +1057,8 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
   const ancoraArata = ancora && cutie && manereVazute((cutie.maxX - cutie.minX) * vedere.scara, (cutie.maxY - cutie.minY) * vedere.scara).length > 0 ? ancora : null;
   // Imaginile desfăcute ale foii (ADR 0272 §4): mânerele lor (`ManereImagine`); fixate, clicurile ajung la desen.
   const imaginiDesfacute = useMemo(() => (doc.foi[indexFoaie]?.imagini ?? []).filter((i) => i.vizibila && !i.fixata), [doc, indexFoaie]);
-  const pentruCadru = useRef({ unealta, vedere3d, selectie, doc, vedere, cutie, ruleaza, ancoraArata, indexFoaie, imaginiDesfacute, doarCitire: p.doarCitire });
-  pentruCadru.current = { unealta, vedere3d, selectie, doc, vedere, cutie, ruleaza, ancoraArata, indexFoaie, imaginiDesfacute, doarCitire: p.doarCitire };
+  const pentruCadru = useRef({ unealta, vedere3d, selectie, doc, vedere, cutie, ruleaza, ancoraArata, indexFoaie, imaginiDesfacute, doarCitire: p.doarCitire, activ });
+  pentruCadru.current = { unealta, vedere3d, selectie, doc, vedere, cutie, ruleaza, ancoraArata, indexFoaie, imaginiDesfacute, doarCitire: p.doarCitire, activ };
   useEffect(() => {
     const el = radacina.current;
     const panza = el?.closest('.panza-cutie')?.querySelector<HTMLCanvasElement>('canvas.panza');
@@ -1069,7 +1071,7 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
     };
     const apasa = (e: PointerEvent): void => {
       const s = pentruCadru.current;
-      if (e.target !== panza || e.button !== 0 || spatiu || e.defaultPrevented || s.vedere3d || (s.unealta !== 'selectie' && s.unealta !== 'transformare')) return;
+      if (e.target !== panza || e.button !== 0 || spatiu || e.defaultPrevented || s.vedere3d || !s.activ || (s.unealta !== 'selectie' && s.unealta !== 'transformare')) return;
       const p = local(e), v = s.vedere;
       if (s.unealta === 'transformare' && s.cutie && s.selectie.length > 0 && (manerLovit(s.cutie, v, p.x, p.y) || ancoraLovita(s.ancoraArata, v, p.x, p.y))) return;
       const lovita = instantaLa(s.doc, (p.x - v.tx) / v.scara, (v.ty - p.y) / v.scara, TOLERANTA_CLIC_PX / v.scara, s.indexFoaie);
@@ -1221,7 +1223,7 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
     if (!el || !panza) return undefined;
     const apasa = (e: PointerEvent): void => {
       const s = pentruCadru.current;
-      if (e.target !== panza || e.button !== 0 || e.defaultPrevented || s.vedere3d) return;
+      if (e.target !== panza || e.button !== 0 || e.defaultPrevented || s.vedere3d || !s.activ) return;
       e.preventDefault();
       e.stopPropagation();
       const r = el.getBoundingClientRect(), v = s.vedere;
@@ -1450,14 +1452,14 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
           citestePoz={(s) => citesteNumar(s, true)}
         />
       ) : null}
-      {(unealta === 'selectie' || unealta === 'transformare') && imaginiDesfacute.length > 0 && foaie && !p.doarCitire && !vedere3d ? (
+      {(unealta === 'selectie' || unealta === 'transformare') && imaginiDesfacute.length > 0 && foaie && !p.doarCitire && !vedere3d && activ ? (
         <ManereImagine imagini={imaginiDesfacute} vedere={vedere}
           manerForma={(x, y) => unealta === 'transformare' && cutie !== null && selectie.length > 0
             && (manerLovit(cutie, vedere, x, y) !== null || ancoraLovita(ancoraArata, vedere, x, y))}
           formaLa={(x, y) => instantaLa(doc, (x - vedere.tx) / vedere.scara, (vedere.ty - y) / vedere.scara, TOLERANTA_CLIC_PX / vedere.scara, indexFoaie, true) !== null}
           onAplica={(id, a) => ruleaza('foaie.imagini', { imaginiNoi: () => (foaie.imagini ?? []).map((i) => (i.id === id ? { ...i, ...a } : i)) })} />
       ) : null}
-      {unealta === 'transformare' && cutie && !p.doarCitire && selectie.length > 0 && !vedere3d ? (
+      {unealta === 'transformare' && cutie && !p.doarCitire && selectie.length > 0 && !vedere3d && activ ? (
         <Manere cutie={cutie} vedere={vedere} doc={doc} indexFoaie={indexFoaie} selectie={selectie}
           aplica={(tr) => ruleaza('document.transforma', { transformare: () => tr })}
           lipire={(alt) => (lipire !== alt
@@ -1531,7 +1533,7 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
           desparte={desparteLaNod} />
       ) : null}
       {unealta === 'pen' && !vedere3d && !p.doarCitire ? (
-        <Pen vedere={vedere} marime={marime} zona={zona}
+        <Pen vedere={vedere} marime={marime} zona={zona} oprit={!activ}
           lipire={(alt) => (lipire !== alt
             ? (q) => lipeste(tinteToate, { minX: q.x, minY: q.y, maxX: q.x, maxY: q.y }, 0, 0, { toleranta: TOLERANTA_LIPIRE_PX / vedere.scara, grila: pasGrila })
             : null)}
@@ -1559,7 +1561,7 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
               ? (q) => lipeste(tinteToate, { minX: q.x, minY: q.y, maxX: q.x, maxY: q.y }, 0, 0, { toleranta: TOLERANTA_LIPIRE_PX / vedere.scara, grila: pasGrila })
               : null)}
             pen={(o) => (
-              <Pen vedere={vedere} marime={marime} zona={zona} cutit sfat={o.sfat} initial={null} redeschide={() => false}
+              <Pen vedere={vedere} marime={marime} zona={zona} cutit sfat={o.sfat} initial={null} redeschide={() => false} oprit={!activ}
                 lipire={(alt) => (lipire !== alt
                   ? (q) => lipeste(tinteToate, { minX: q.x, minY: q.y, maxX: q.x, maxY: q.y }, 0, 0, { toleranta: TOLERANTA_LIPIRE_PX / vedere.scara, grila: pasGrila })
                   : null)}
@@ -2556,9 +2558,14 @@ const RAZA_NOD_PX = 6;
  * Ctrl+Shift+Z îl redeschide (`redeschide`), cu pașii lui. Nodurile se lipesc (Alt inversează), mânerele nu. Forma pleacă prin
  * `document.deseneaza`; apăsările pe pânză sunt ale Pen-ului (nu aleg și nu mută), afară de deplasarea cu Space.
  */
-function Pen({ vedere, marime, zona, lipire, onLinii, termina, initial, redeschide, cutit = false, sfat }: {
+function Pen({ vedere, marime, zona, lipire, onLinii, termina, initial, redeschide, cutit = false, sfat, oprit = false }: {
   /** Felul Pen al cuțitului (ADR 0181): calea pusă e cuțitul (culoarea lui), iar sfatul e al lui. */
   readonly cutit?: boolean;
+  /**
+   * Editorul nu e activ (un mod al pânzei, ca „Calibrează” din imaginea foii, ori o fereastră peste el): desenul în lucru
+   * rămâne, dar clicurile și tastele nu-l ating.
+   */
+  readonly oprit?: boolean;
   readonly sfat?: string;
   readonly vedere: Vedere;
   readonly marime: { readonly latime: number; readonly inaltime: number };
@@ -2578,8 +2585,8 @@ function Pen({ vedere, marime, zona, lipire, onLinii, termina, initial, redeschi
   // Punctul de sub maus (în lume, lipit), pentru segmentul următor; `null` cât se trage sau în afara pânzei.
   const [cursor, setCursor] = useState<Punct | null>(null);
   const radacina = useRef<HTMLDivElement | null>(null);
-  const acum = useRef({ noduri, vedere, lipire, onLinii, termina, redeschide });
-  acum.current = { ...acum.current, vedere, lipire, onLinii, termina, redeschide };
+  const acum = useRef({ noduri, vedere, lipire, onLinii, termina, redeschide, oprit });
+  acum.current = { ...acum.current, vedere, lipire, onLinii, termina, redeschide, oprit };
   // Pașii desenului (ADR 0074 §4): nodurile dinaintea fiecărui pas (un clic sau o tragere, Backspace) și cei anulați.
   const pasi = useRef<{ trecut: Array<readonly NodCuManere[]>; viitor: Array<readonly NodCuManere[]> }>({ trecut: [...(initial?.trecut ?? [])], viitor: [] });
   useEffect(() => {
@@ -2618,7 +2625,7 @@ function Pen({ vedere, marime, zona, lipire, onLinii, termina, initial, redeschi
       acum.current.onLinii([]);
     };
     const apasa = (e: PointerEvent): void => {
-      if (e.target !== panza || e.button !== 0 || spatiu) return;
+      if (e.target !== panza || e.button !== 0 || spatiu || acum.current.oprit) return;
       e.preventDefault();
       e.stopPropagation();
       panza.setPointerCapture(e.pointerId);
@@ -2674,7 +2681,7 @@ function Pen({ vedere, marime, zona, lipire, onLinii, termina, initial, redeschi
     // Dublu clic: calea se închide pe primul nod (ADR 0074 §4); cu prea puține noduri ca să se închidă, rămâne deschisă.
     const dublu = (e: MouseEvent): void => {
       const n = acum.current.noduri;
-      if (e.target !== panza || n.length === 0) return;
+      if (e.target !== panza || n.length === 0 || acum.current.oprit) return;
       e.preventDefault();
       e.stopPropagation();
       gata(sePoateInchide(n), n);
@@ -2682,7 +2689,7 @@ function Pen({ vedere, marime, zona, lipire, onLinii, termina, initial, redeschi
     const tasta = (e: KeyboardEvent): void => {
       if (e.code === 'Space') spatiu = e.type === 'keydown';
       const n = acum.current.noduri;
-      if (e.type !== 'keydown') return;
+      if (e.type !== 'keydown' || acum.current.oprit) return;
       const tinta = e.target;
       if (tinta instanceof Element && tinta.closest('input, textarea, select, [contenteditable="true"], [role="dialog"], dialog') !== null) return;
       if (e.ctrlKey || e.metaKey) {

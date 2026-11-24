@@ -119,6 +119,11 @@ export type AlegeriTrasare = {
   readonly foaie: AlegeriFoaie;
   /** Scanarea strâmbă (ADR 0271), pe imaginile opace; după foaie, înaintea zonei. */
   readonly rotire: AlegeriRotire;
+  /**
+   * Trasată din imaginea de pe foaie (ADR 0272 §7): lățimea ei întreagă pe foaie, în mm. Scara e a ei (lățimea scrisă nu mai
+   * contează), iar foaia și scanarea nu se îndreaptă: vectorii vin exact peste imagine.
+   */
+  readonly latimeIntreaga?: number;
 };
 
 /**
