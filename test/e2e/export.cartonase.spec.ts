@@ -111,3 +111,37 @@ test('tăietura: cartonașele cu poze, găurirea oprită pe un rând fără cerc
   await expect(e1.locator('[data-grup="golire"]')).toHaveCount(1);
   await expect(e1.locator('[data-grup="urechi"]')).toHaveCount(0);
 });
+
+test('incrustația cu pereți drepți: Locașul, Treapta și Dopul, fiecare în grupul lui, cu alegerile pe cartonașe (28.8↑e-1)', async ({ page }) => {
+  await deschide(page);
+  const e1 = fisa(page, 'e1/e1');
+  await alege(e1, 'latura', 'incrustatie-drept');
+  const locas = e1.locator('[data-grup="locas"]'), treapta = e1.locator('[data-grup="treapta"]'), dop = e1.locator('[data-grup="dop"]');
+  // Fiecare întrebare în grupul ei (până la 28.8↑e-1, toate stăteau în Locașul, iar Treapta și Dopul nu se arătau).
+  await expect(locas.locator('[data-camp="inc-lateral"]')).toHaveCount(1);
+  await expect(locas.locator('input[data-camp="inc-locas"]')).toHaveCount(2);
+  await expect(treapta.locator('input[data-camp="inc-treapta"]')).toHaveCount(3);
+  await expect(dop.locator('input[data-camp="inc-dop"]')).toHaveCount(2);
+  await expect(dop.locator('[data-camp="inc-margine"]')).toHaveCount(1);
+  for (const [camp, n] of [['inc-locas', 2], ['inc-treapta', 3], ['inc-dop', 2], ['inc-sprijin', 2]] as const) {
+    await expect(e1.locator(`[data-alegere="${camp}"] .dx-poza`), camp).toHaveCount(n);
+  }
+  // Explicația grupului Treapta e a lui, iar câmpul umărului își aduce titlul acolo.
+  await expect(treapta.locator('[data-explicatie]')).toContainText('Un umăr în locaș');
+  // Sprijinul arată doar variantele care se pot: fără treaptă, pe fund și pe față; cu treaptă, pe umăr și pe fund; la gaură, pe umăr.
+  await expect(dop.locator('.dx-subtitlu')).toHaveText('Se sprijină');
+  await expect(dop.locator('[data-alegere="inc-sprijin"] .dx-card > span')).toHaveText(['pe fundul locașului', 'pe fața plăcii']);
+  await alege(e1, 'inc-treapta', 'interior');
+  await expect(dop.locator('[data-alegere="inc-sprijin"] .dx-card > span')).toHaveText(['pe umăr', 'pe fundul locașului']);
+  await expect(aleasa(e1, 'inc-sprijin')).toHaveValue('umar');
+  await treapta.locator('[data-camp="inc-treapta-adancime"]').click();
+  await expect(treapta.locator('[data-explicatie]')).toContainText('Cât de adânc e nivelul de sus');
+  await alege(e1, 'inc-locas', 'gaura');
+  await expect(dop.locator('[data-alegere="inc-sprijin"] .dx-card > span')).toHaveText(['pe umăr']);
+  await alege(e1, 'inc-dop', 'decupat');
+  await expect(dop.locator('[data-camp="dop-punti-numar"]')).toHaveCount(1);
+  // Decupat, cu treaptă: sprijinul rămâne de ales (pe umăr); fără treaptă, dopul decupat n-are sprijin.
+  await expect(dop.locator('input[data-camp="inc-sprijin"]')).toHaveCount(1);
+  await alege(e1, 'inc-treapta', 'fara');
+  await expect(dop.locator('input[data-camp="inc-sprijin"]')).toHaveCount(0);
+});

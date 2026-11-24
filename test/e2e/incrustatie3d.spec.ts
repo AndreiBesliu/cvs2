@@ -1,5 +1,6 @@
 import { test, expect, type Page } from '@playwright/test';
 import { adauga } from './ajutor-panza.ts';
+import { alege } from './ajutor-export.ts';
 
 /**
  * Dopul în vederea 3D (ADR 0178, felia 12.1↑e), în Edge, cu WebGL2. Pe dreptunghiul de 30 × 20 din (20, 20), cu rolul
@@ -206,7 +207,7 @@ test('„Împreună (secțiunea)” la dopul decupat: neîntors, „Peste placă
   await page.locator('[data-actiune="export.gcode"]').click();
   await page.locator('[data-fisa="op"]').first().locator('input[data-camp="latura"][value="incrustatie-drept"]').check();
   const inc = page.locator('[data-fisa="op"]').first().locator('[data-incrustatie][data-fel="drept"]');
-  await inc.locator('[data-camp="inc-dop"]').selectOption('decupat');
+  await alege(inc, 'inc-dop', 'decupat');
   await inc.locator('[data-camp="inc-freza-dop"]').check();
   await page.locator('[data-buton="exporta"]').click();
   await expect(page.getByTestId('export-dopuri')).toContainText('groasă de exact 5 mm');
@@ -242,8 +243,8 @@ test('„Împreună (secțiunea)” la gaura prin foaie: placa groasă cât foai
   await page.locator('[data-actiune="export.gcode"]').click();
   await page.locator('[data-fisa="op"]').first().locator('input[data-camp="latura"][value="incrustatie-drept"]').check();
   const inc = page.locator('[data-fisa="op"]').first().locator('[data-incrustatie][data-fel="drept"]');
-  await inc.locator('[data-camp="inc-locas"]').selectOption('gaura');
-  await inc.locator('[data-camp="inc-dop"]').selectOption('decupat');
+  await alege(inc, 'inc-locas', 'gaura');
+  await alege(inc, 'inc-dop', 'decupat');
   await inc.locator('[data-camp="inc-freza-dop"]').check();
   await page.locator('[data-buton="exporta"]').click();
   await expect(page.getByTestId('export-dopuri')).toContainText('groasă de exact 20 mm');
@@ -301,7 +302,7 @@ test('„Împreună (secțiunea)” la dopul în trepte: jocul la flanșă și l
   await randOp.locator('input[data-camp="latura"][value="incrustatie-drept"]').check();
   await randOp.locator('[data-camp="adancime"]').fill('8');
   const inc = page.locator('[data-fisa="op"]').first().locator('[data-incrustatie][data-fel="drept"]');
-  await inc.locator('[data-camp="inc-treapta"]').selectOption('interior');
+  await alege(inc, 'inc-treapta', 'interior');
   await inc.locator('[data-camp="inc-treapta-adancime"]').fill('3');
   await inc.locator('[data-camp="inc-treapta-latime"]').fill('5');
   await page.locator('[data-buton="exporta"]').click();

@@ -6,6 +6,7 @@
  */
 import { test, expect, type Page } from '@playwright/test';
 import { adauga } from './ajutor-panza.ts';
+import { alege } from './ajutor-export.ts';
 
 test.use({ locale: 'ro-RO' });
 
@@ -33,7 +34,7 @@ for (const [latime, inaltime] of [[1280, 800], [1024, 768]] as const) {
     await e1.locator('[data-camp="intrari"]').check();
     const e2 = fisa(page, 'e2/e2');
     await e2.locator('input[data-camp="latura"][value="incrustatie-drept"]').check();
-    await e2.locator('[data-camp="inc-treapta"]').selectOption('interior');
+    await alege(e2, 'inc-treapta', 'interior');
     await expect(e2.locator('[data-camp="inc-treapta-latime"]')).toBeVisible();
     for (const sel of ['.dialog-cutie', '[data-fise]', '[data-lista]']) expect(await iese(page, sel), sel).toBeLessThanOrEqual(0);
     await e1.locator('input[data-camp="latura"][value="vcarve"]').check();

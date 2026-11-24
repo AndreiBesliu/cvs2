@@ -1515,6 +1515,13 @@ nav button[aria-pressed='true'] {
 }
 
 /* Locurile urechilor (ADR 0211): cartonașele lor (din 28.8↑b-2), pe tot rândul, sub câmpuri. */
+/* Titlul unui al doilea rând de cartonașe în același grup (Dopul: „Se sprijină”, 28.8↑e-1). */
+.dialog .dx-subtitlu {
+  flex-basis: 100%;
+  font-weight: 600;
+  font-size: var(--fs-2);
+}
+
 .dialog .locuri-urechi {
   flex-basis: 100%;
 }

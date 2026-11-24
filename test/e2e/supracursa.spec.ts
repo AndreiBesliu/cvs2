@@ -9,6 +9,7 @@ import { masoaraPotrivireaDreapta } from '../oracles/incrustatieDreapta.ts';
 import type { DesenO } from '../oracles/incrustatie.ts';
 import type { SculaOracol } from '../oracles/simulare.ts';
 import { adauga } from './ajutor-panza.ts';
+import { alege } from './ajutor-export.ts';
 
 test.use({ locale: 'ro-RO' });
 
@@ -65,8 +66,8 @@ test('supracursa: lângă Z0, valorile greșite oprite, gaura și decuparea dopu
   // Gaura cu dopul decupat, cu marginea 8 (freza Ø6 a locașului).
   await page.locator('[data-fisa="op"]').first().locator('input[data-camp="latura"][value="incrustatie-drept"]').check();
   const inc = page.locator('[data-fisa="op"]').first().locator('[data-incrustatie][data-fel="drept"]');
-  await inc.locator('[data-camp="inc-locas"]').selectOption('gaura');
-  await inc.locator('[data-camp="inc-dop"]').selectOption('decupat');
+  await alege(inc, 'inc-locas', 'gaura');
+  await alege(inc, 'inc-dop', 'decupat');
   await inc.locator('[data-camp="inc-margine"]').fill('8');
 
   const descarcari: Download[] = [];
@@ -107,8 +108,8 @@ test('supracursa 0: gaura și decuparea dopului exact prin plăcile lor, ca îna
   await expect(page.locator('[data-camp="supracursa"]')).toHaveValue('0');
   await page.locator('[data-fisa="op"]').first().locator('input[data-camp="latura"][value="incrustatie-drept"]').check();
   const inc = page.locator('[data-fisa="op"]').first().locator('[data-incrustatie][data-fel="drept"]');
-  await inc.locator('[data-camp="inc-locas"]').selectOption('gaura');
-  await inc.locator('[data-camp="inc-dop"]').selectOption('decupat');
+  await alege(inc, 'inc-locas', 'gaura');
+  await alege(inc, 'inc-dop', 'decupat');
   await inc.locator('[data-camp="inc-margine"]').fill('8');
   const descarcari: Download[] = [];
   page.on('download', (d) => { descarcari.push(d); });

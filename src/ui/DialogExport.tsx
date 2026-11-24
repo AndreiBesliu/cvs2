@@ -1982,46 +1982,42 @@ export function DialogExport(
                       </div>
                       )}
                   </div>);
-                  case 'locas': case 'treapta': case 'dop': return g === 'locas' ? (<div className="dx-rand">
-                      {/* Incrustația cu pereți drepți (ADR 0171 §5, răspunsurile 1, 2 și 4): jocul lateral, dopul ridicat sau decupat,
-                          sprijinul celui ridicat, spațiul folosit (H sau g), marginea și, la cerere, frezele dopului. */}
-                      {buz && p.incrustatieDreapta && (
-                      <div className="campuri-incrustatie" data-incrustatie={o.cheie} data-fel="drept">
+                  case 'locas': case 'treapta': case 'dop': {
+                    // Incrustația cu pereți drepți (ADR 0171 §5, ADR 0175; felia 28.8↑e-1): fiecare întrebare în grupul ei, cu alegerile
+                    // pe cartonașe. Cutia fiecărui grup păstrează `data-incrustatie` și `data-fel`, ca până acum.
+                    if (!(buz && p.incrustatieDreapta)) return null;
+                    const cutie = (copii: ReactNode): ReactNode => (
+                      <div className="dx-rand"><div className="campuri-incrustatie" data-incrustatie={o.cheie} data-fel="drept">{copii}</div></div>
+                    );
+                    if (g === 'locas') return cutie(<>
+                      {/* Locașul (ADR 0175): buzunarul sau gaura prin foaie; la gaură, dopul ridicat stă pe față (n-are fund). */}
+                      <Cartonase data-camp="inc-locas" poze="locas" eticheta={t('export.incrustatie-drept.locas')} nume={`locas-${o.cheie}`} valoare={p.locasInc}
+                        oprit={doarCitire} titlu={t('export.incrustatie-drept.locas.titlu')}
+                        onAlege={(locasInc) => {
+                          schimba(o.cheie, { locasInc, ...(locasInc === 'gaura' && p.sprijinInc === 'fund' ? { sprijinInc: p.treaptaInc === 'fara' ? 'fata' : 'umar' } : {}) });
+                        }}
+                        variante={[{ v: 'buzunar', text: t('export.incrustatie-drept.locas.buzunar'), nota: t('export.card.locas.buzunar') },
+                          { v: 'gaura', text: t('export.incrustatie-drept.locas.gaura'), nota: t('export.card.locas.gaura') }]} />
                       <label title={t('export.incrustatie-drept.lateral.titlu')}>
                         {t('export.incrustatie-drept.lateral')}
                         <input type="text" inputMode="decimal" value={p.lateralInc} data-camp="inc-lateral" disabled={doarCitire}
                           aria-invalid={!inMargini(p.lateralInc, MARGINI_OPERATIE.adancime)} onChange={(ev) => { schimba(o.cheie, { lateralInc: ev.target.value }); }} />
                       </label>
-                      {/* Locașul (ADR 0175): buzunarul sau gaura prin foaie; la gaură, dopul ridicat stă pe față (n-are fund). */}
-                      <label title={t('export.incrustatie-drept.locas.titlu')}>
-                        {t('export.incrustatie-drept.locas')}
-                        <select value={p.locasInc} data-camp="inc-locas" disabled={doarCitire}
-                          onChange={(ev) => {
-                            const locasInc = ev.target.value === 'gaura' ? 'gaura' : 'buzunar';
-                            schimba(o.cheie, { locasInc, ...(locasInc === 'gaura' && p.sprijinInc === 'fund' ? { sprijinInc: p.treaptaInc === 'fara' ? 'fata' : 'umar' } : {}) });
-                          }}>
-                          <option value="buzunar">{t('export.incrustatie-drept.locas.buzunar')}</option>
-                          <option value="gaura">{t('export.incrustatie-drept.locas.gaura')}</option>
-                        </select>
-                      </label>
+                    </>);
+                    if (g === 'treapta') return cutie(<>
                       {/* Treapta (ADR 0175 §5): umărul locașului, cu adâncimea și lățimea lui (ascunse fără treaptă; valorile rămân în
                           rând). Sprijinul se mută odată cu ea: cu treaptă, pe umăr; fără ea, de pe umăr pe fund (la gaură, pe față). */}
-                      <label title={t('export.incrustatie-drept.treapta.titlu')}>
-                        {t('export.incrustatie-drept.treapta')}
-                        <select value={p.treaptaInc} data-camp="inc-treapta" disabled={doarCitire}
-                          onChange={(ev) => {
-                            const v = ev.target.value;
-                            const treaptaInc = v === 'interior' || v === 'exterior' ? v : 'fara';
-                            const sprijinInc = treaptaInc === 'fara'
-                              ? (p.sprijinInc === 'umar' ? (p.locasInc === 'gaura' ? 'fata' : 'fund') : p.sprijinInc)
-                              : (p.treaptaInc === 'fara' || p.sprijinInc === 'fata' ? 'umar' : p.sprijinInc);
-                            schimba(o.cheie, { treaptaInc, sprijinInc });
-                          }}>
-                          <option value="fara">{t('export.incrustatie-drept.treapta.fara')}</option>
-                          <option value="interior">{t('export.incrustatie-drept.treapta.interior')}</option>
-                          <option value="exterior">{t('export.incrustatie-drept.treapta.exterior')}</option>
-                        </select>
-                      </label>
+                      <Cartonase data-camp="inc-treapta" poze="treapta" eticheta={t('export.incrustatie-drept.treapta')} nume={`treapta-${o.cheie}`}
+                        valoare={p.treaptaInc} oprit={doarCitire} titlu={t('export.incrustatie-drept.treapta.titlu')}
+                        onAlege={(treaptaInc) => {
+                          const sprijinInc = treaptaInc === 'fara'
+                            ? (p.sprijinInc === 'umar' ? (p.locasInc === 'gaura' ? 'fata' : 'fund') : p.sprijinInc)
+                            : (p.treaptaInc === 'fara' || p.sprijinInc === 'fata' ? 'umar' : p.sprijinInc);
+                          schimba(o.cheie, { treaptaInc, sprijinInc });
+                        }}
+                        variante={[{ v: 'fara', text: t('export.incrustatie-drept.treapta.fara'), nota: t('export.card.treapta.fara') },
+                          { v: 'interior', text: t('export.incrustatie-drept.treapta.interior'), nota: t('export.card.treapta.interior') },
+                          { v: 'exterior', text: t('export.incrustatie-drept.treapta.exterior'), nota: t('export.card.treapta.exterior') }]} />
                       {p.treaptaInc !== 'fara' && (<>
                       <label title={t('export.incrustatie-drept.treapta.adancime.titlu')}>
                         {t('export.incrustatie-drept.treapta.adancime')}
@@ -2034,25 +2030,25 @@ export function DialogExport(
                           aria-invalid={!inMargini(p.latimeTreapta, MARGINI_OPERATIE.latimeUmar)} onChange={(ev) => { schimba(o.cheie, { latimeTreapta: ev.target.value }); }} />
                       </label>
                       </>)}
-                      <label title={t('export.incrustatie-drept.dop.titlu')}>
-                        {t('export.incrustatie-drept.dop')}
-                        <select value={p.dopInc} data-camp="inc-dop" disabled={doarCitire}
-                          onChange={(ev) => { schimba(o.cheie, { dopInc: ev.target.value === 'decupat' ? 'decupat' : 'ridicat' }); }}>
-                          <option value="ridicat">{t('export.incrustatie-drept.dop.ridicat')}</option>
-                          <option value="decupat">{t('export.incrustatie-drept.dop.decupat')}</option>
-                        </select>
-                      </label>
-                      {(p.dopInc === 'ridicat' || p.treaptaInc !== 'fara') && (
-                      <label title={t(p.treaptaInc === 'fara' ? 'export.incrustatie-drept.sprijin.titlu' : 'export.incrustatie-drept.sprijin-trepte.titlu')}>
-                        {t('export.incrustatie-drept.sprijin')}
-                        <select value={p.sprijinInc} data-camp="inc-sprijin" disabled={doarCitire}
-                          onChange={(ev) => { const v = ev.target.value; schimba(o.cheie, { sprijinInc: v === 'fata' ? 'fata' : v === 'umar' ? 'umar' : 'fund' }); }}>
-                          {p.treaptaInc !== 'fara' && <option value="umar">{t('export.incrustatie-drept.sprijin.umar')}</option>}
-                          {p.locasInc !== 'gaura' && <option value="fund">{t('export.incrustatie-drept.sprijin.fund')}</option>}
-                          {p.treaptaInc === 'fara' && <option value="fata">{t('export.incrustatie-drept.sprijin.fata')}</option>}
-                        </select>
-                      </label>
-                      )}
+                    </>);
+                    return cutie(<>
+                      <Cartonase data-camp="inc-dop" poze="dop" eticheta={t('export.incrustatie-drept.dop')} nume={`dop-${o.cheie}`} valoare={p.dopInc}
+                        oprit={doarCitire} titlu={t('export.incrustatie-drept.dop.titlu')} onAlege={(dopInc) => { schimba(o.cheie, { dopInc }); }}
+                        variante={[{ v: 'ridicat', text: t('export.incrustatie-drept.dop.ridicat'), nota: t('export.card.dop.ridicat') },
+                          { v: 'decupat', text: t('export.incrustatie-drept.dop.decupat'), nota: t('export.card.dop.decupat') }]} />
+                      {/* Sprijinul: pe umăr doar cu treaptă, pe fund doar la buzunar, pe față doar fără treaptă (ca până acum). */}
+                      {(p.dopInc === 'ridicat' || p.treaptaInc !== 'fara') && (<>
+                      <span className="dx-subtitlu">{t('export.incrustatie-drept.sprijin')}</span>
+                      <Cartonase data-camp="inc-sprijin" poze="sprijin" eticheta={t('export.incrustatie-drept.sprijin')} nume={`sprijin-${o.cheie}`}
+                        valoare={p.sprijinInc} oprit={doarCitire}
+                        titlu={t(p.treaptaInc === 'fara' ? 'export.incrustatie-drept.sprijin.titlu' : 'export.incrustatie-drept.sprijin-trepte.titlu')}
+                        onAlege={(sprijinInc) => { schimba(o.cheie, { sprijinInc }); }}
+                        variante={[
+                          ...(p.treaptaInc !== 'fara' ? [{ v: 'umar' as const, text: t('export.incrustatie-drept.sprijin.umar'), nota: t('export.card.sprijin.umar') }] : []),
+                          ...(p.locasInc !== 'gaura' ? [{ v: 'fund' as const, text: t('export.incrustatie-drept.sprijin.fund'), nota: t('export.card.sprijin.fund') }] : []),
+                          ...(p.treaptaInc === 'fara' ? [{ v: 'fata' as const, text: t('export.incrustatie-drept.sprijin.fata'), nota: t('export.card.sprijin.fata') }] : []),
+                        ]} />
+                      </>)}
                       {/* Jocul g: sub dopul ridicat pe față; în trepte, sub tijă (pe umăr) sau deasupra umărului (pe fund); nu la gaură. */}
                       {jocFolosit(p) && (
                       <label title={t(p.treaptaInc === 'fara' ? 'export.incrustatie-drept.joc.titlu' : p.sprijinInc === 'fund' ? 'export.incrustatie-drept.joc-umar.titlu' : 'export.incrustatie-drept.joc-tija.titlu')}>
@@ -2115,9 +2111,8 @@ export function DialogExport(
                       {frezeRest(o.cheie, p, 'dop', doarCitire)}
                       </>)}
                       <p className="nota-incrustatie">{t('export.incrustatie-drept.nota')}</p>
-                      </div>
-                      )}
-                  </div>) : null;
+                    </>);
+                  }
                   default: return null;
                 }
               };
