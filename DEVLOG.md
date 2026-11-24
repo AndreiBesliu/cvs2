@@ -12942,6 +12942,9 @@ ordine). **Started:** 24.11, 10:25. **Completed:** 24.11, 11:35.
 - **`main` adus** (`f536a4c`: lotul al paisprezecelea, plafonul pornirii 120 kB): ciocnirea, doar în catalogul
   controalelor, scris din nou; rândul 18.22.0 al lui Easy 3Draw a primit `data`. Pe arborele unit: 135 de probe e2e ale
   extensiilor, verzi; pornirea 109,9 kB (cu ușa 114,4; cu Atelierul 114,7 / 120), totalul 809,9 / 900 kB.
+- **În CI:** rapidul și completul, verzi pe `cd40988` (completul, 48 min 30 s). Canalul `biblioteca`, publicat din
+  `5e096e3`: <https://cncvectorstudio-test--biblioteca-gw7dr9bc.web.app> (până pe 24.12). Apoi `main` adus încă de două
+  ori (`4123347`, doar documente; `4ef990f`, A.7: cod doar al adminului; ciocnirea, în dicționarul traducerilor).
 - **Toată felia 3.Xi:** pornirea +0, totalul +3,8 kB. PR-ul `AndreiBesliu/cvs2#17`; unirea e a sesiunii principale.
 
 ## 2026-11-24 — Sesiunea principală în cloud: două linii noi, relieful (18.1↑) și cotele (10.4↑); PR-ul #16, închis (Model: Claude Fable 5.2)

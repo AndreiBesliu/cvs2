@@ -45,8 +45,13 @@ felii”: „ok” (24.11).
   (`descoperire.ts`, `noi.ts`), `data` în „ce e nou”, „Scoate” lângă „Actualizează la …”. Otrăvurile 60 / 60 (`8b36ba8`; la prima rulare, 54 din 62).
 - **Mărimea:** pornirea neschimbată, totalul +3,8 kB (804,7 → 808,5). După aducerea lui `main` (`f536a4c`, cu plafonul
   pornirii 120 kB, ADR 0145): pornirea 109,9 kB (cu ușa 114,4; cu Atelierul 114,7 / 120), totalul 809,9 / 900.
-- **`main` adus pe 24.11** (`98a76e7`): ciocnirea, doar în catalogul controalelor (scris din nou); rândul 18.22.0 al lui
-  Easy 3Draw a primit `data`.
+- **`main` adus pe 24.11**, de trei ori: `f536a4c` (ciocnirea, doar în catalogul controalelor, scris din nou; rândul
+  18.22.0 al lui Easy 3Draw a primit `data`), `4123347` (doar documente; DEVLOG-ul) și `4ef990f` (A.7, adminul pe telefon:
+  cod doar în `src/admin`; ciocnirea, doar în dicționarul traducerilor, cu ambele părți păstrate).
+- **Porțile în CI:** rapidul și completul, verzi pe `cd40988` (completul, 48 min 30 s); după el, capătul are doar
+  documente și ce a venit din `main`. Local: suita unitară întreagă, 10 130 trecute (12 sărite), nicio cădere.
+- **Canalul `biblioteca`:** <https://cncvectorstudio-test--biblioteca-gw7dr9bc.web.app> (până pe 24.12.2026), publicat
+  din `5e096e3` cu `canal.yml`; verificat din container (versiunea, catalogul cu datele, textele noi).
 
 **Reguli rămase de la 3.Xi:**
 - **Un buton care dispare după clic lasă focusul pe pagină** (`body`): o fereastră cu astfel de
