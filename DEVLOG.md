@@ -12789,3 +12789,33 @@ PR-ul `AndreiBesliu/cvs2#14` („De unit de sesiunea principală”).
   verificat intră singură).
 - **La owner:** plafonul pornirii (după lotul următor rămân 0,3 kB), fereastra exportului, verificarea juridică a
   utilizării aplicației, „cine unește în `main`”, ADR 0232 (biblioteca), lista „ce pot face între timp”.
+
+## 2026-11-24 — Sesiunea principală în cloud: a paisprezecea unire (3.Ts, ventilatorul cu carcasă; A.11b–A.11e, utilizarea aplicației; 16.A↑b-1, documentul v27) (Model: Claude Fable 5.2)
+
+**Prompt:** același brief de predare al sesiunii principale („unește ce se poate”), la rapoartele liniilor: elicele
+(PR-ul `AndreiBesliu/cvs2#15`, „gata de unit”), adminul (mesajul liniei: „`c3f80a74` e gata de unit”), frezele
+(mesajul liniei: „16.A↑b-1 e gata de unit”).
+**Started:** 24.11, 10:21. **Completed:** unirea în `main`, 24.11, 11:28; publicarea pe test, la rândul ei.
+
+- **Ramura de unire, înaintea ultimelor rapoarte:** `unire-2411e` din `fafb95e7` (cu 25.8↑b), la 10:22: 3.Ts
+  (`3218781c`) în `e14e553a`, A.11b–A.11e (`c3f80a74`) în `8ccb66e8`, 16.A↑b-1 (`112c32f6`) în `32b33a42`.
+  Ciocnirile: DEVLOG (`rezolva-devlog.py`), un rând de tabel în fișa etapei 3 (ambele părți), catalogul controalelor
+  (scris din nou: 603 nume). Completul lotului, pornit atunci; elicele erau verzi, adminul și frezele încă rulau.
+- **Rapoartele:** adminul, verde pe `eaa0a356` (codul lui `c3f80a74`; 45350813422), 10:44; frezele, verzi pe
+  `112c32f6` (45351574708), 10:47. Adminul împinsese între timp A.7 peste commit-ul raportat: rămâne pentru lotul
+  următor. Vârfurile elicelor (`5e05b325`) și frezelor (`34b5fa1b`) aduceau doar `main`: unirea lor de probă peste
+  lot, zero fișiere schimbate în afara `.md`.
+- **În container:** tipurile (și ale funcțiilor), regulile de import (0 încălcări), traducerile (989, 0 lipsă),
+  biblioteca la zi (Easy 3Draw 18.22.0), build-ul determinist.
+- **Porțile lotului, în CI, pe `32b33a42`** (completul 45355480148, 48 min 55 s, verde la prima trecere): unit
+  10 111 / 0 (12 sărite), e2e 655 / 655, funcțiile pe emulatoare 126 / 126, paginile 53 / 53; pornirea 109,9 / 115
+  (în CI 109,8; cu ușa 114,4; cu Atelierul 114,7), totalul 806,1 / 900, `/admin` 137,9 / 200, contul 30,1 / 32.
+- **La publicare merge și serverul:** funcțiile `utilizare` și `tichete`, regulile Firestore, două indexuri compuse
+  pe `utilizare`.
+- **Documentele:** decizia în `CLAUDE.md`, rândurile de stare (documentul v27 și valorile frezei; A.11b–A.11e;
+  versiunea Easy 3Draw; următorul câmp al documentului ia v28); indexul liniilor; starea și o lecție în
+  `docs/linii/principala.md` (porțile unui lot pot porni înaintea ultimului raport).
+- **Lotul al treisprezecelea** (`fafb95e7`, 25.8↑b): la unire, completul lui pe `main` încă rula (pornit 10:30);
+  publicarea lui vine înaintea acestui lot (`publica.yml` construiește sha-ul dat).
+- **La owner:** plafonul pornirii (mai sunt 0,3 kB), fereastra exportului, verificarea juridică a utilizării
+  aplicației, „cine unește în `main`”, ADR 0232 (biblioteca), lista „ce pot face între timp”.

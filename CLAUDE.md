@@ -1405,6 +1405,38 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 24.11.2026, la prânz (a paisprezecea unire din cloud): **3.Ts (ventilatorul cu carcasă), A.11b–A.11e (utilizarea
+  aplicației: pașii la raportare, cronologia unui om, sesiunea raportării, disocierea) și 16.A↑b-1 (documentul v27 și
+  valorile frezei în program) unite în `main`**, în lot (sesiunea principală, ramura `unire-2411e`, din `fafb95e7`).
+  **3.Ts** (linia elicelor, ramura `wip/3.Tq-elice`, `3218781c`, PR-ul `AndreiBesliu/cvs2#15`; ADR 0282, „Implementarea
+  (3.Ts)”; la „continua” al owner-ului, în sesiunea liniei), unită în `e14e553a`: a treia piesă a filei „Elice” din
+  atelierul Easy 3Draw, cu două piese: rotorul (3–12 palete răsucite, cu pas constant, cu un inel la alegere) și carcasa
+  (tubul tipărit în picioare, cu 2 sau 4 urechi groase cât o grindă, cu găurile pe grila axului); „Repede” pe grila de
+  știfturi și „Fă ventilatorul”; privirea pe randare a găsit peretele carcasei peste marginea găurii de deasupra
+  urechii, reparat cu un canal prin perete; pachetul 18.22.0; otrăvurile 134 / 134 și 9 / 9. **A.11b–A.11e** (linia
+  adminului, ramura `wip/A.1-admin`, `c3f80a74`, PR-ul `AndreiBesliu/cvs2#13`; ADR 0262; `3.Ao`–`3.Ar` în fișa etapei
+  3), unite în `8ccb66e8`: bifa „Atașează ultimii pași din aplicație” la raportare, arătați în fila Tichete;
+  permisiunea nouă „Utilizare: sesiuni”, cu Activitatea unui cont (fila Utilizatori) și Sesiunea raportării (fila
+  Tichete), citite prin server, cu auditul fiecărei citiri; „Desparte utilizarea de cont…”, cu pseudonimul ținut doar
+  pe server; otrăvurile 10 / 10, 19 / 19, 11 / 11 și 12 / 12. A.11 e încheiată. **16.A↑b-1** (linia frezelor, ramura
+  `wip/16.A-freze`, `112c32f6`, PR-ul `AndreiBesliu/cvs2#16`; ADR 0300 §5; la „continua” al owner-ului), unită în
+  `32b33a42`: **documentul v27** (`biblioteca`, `regim` și `tais` pe orice freză a unei operații; migrarea doar cu
+  numărul), oracolul documentului și corpusul de aur la v27, iar în program turația, avansul și plonjarea fiecărei freze
+  (fără valori, programul de azi, octet cu octet); fără interfață încă (vine în 16.A↑b-2); otrăvurile 34 / 34. **Un
+  câmp nou al documentului ia de acum v28.** Completul liniei căzuse întâi la `placute.spec.ts` (cerea documentul salvat
+  la v26), reparat în `112c32f6`. Ciocnirile lotului: DEVLOG, un rând de tabel în fișa etapei 3 și catalogul
+  controalelor, scris din nou pe ramura de unire (trasarea și adminul îl atinseseră). Adminul împinsese A.7 peste
+  commit-ul raportat: s-a unit commit-ul, nu vârful; vârfurile elicelor și frezelor aduceau doar `main`. **La publicare
+  merge și serverul:** funcțiile `utilizare` și `tichete`, regulile Firestore (colecția pseudonimelor rămâne închisă) și
+  două indexuri compuse pe `utilizare`. Porțile lotului, în CI, verzi la prima trecere pe `32b33a42` (completul,
+  48 min 55 s): unit 10 111 / 0 (12 sărite, pe Linux), e2e 655 / 655, funcțiile pe emulatoare 126 / 126, paginile
+  53 / 53; completele liniilor, verzi (`3218781c`; `eaa0a356`, cu codul lui `c3f80a74`; `112c32f6`); **pornirea
+  109,9 kB (plafonul 115; cu ușa 114,4, cu Atelierul 114,7: mai sunt 0,3 kB)**, totalul 806,1 / 900 kB, `/admin`
+  137,9 / 200, contul 30,1 / 32. Lotul al treisprezecelea (`fafb95e7`, 25.8↑b) era încă în drum spre test: completul
+  lui pe `main` rula la unire. Urmează, la raport: A.7 (adminul pe telefon, pe ramură), 16.A↑b-2. Neunită, la cuvântul
+  owner-ului: fereastra exportului (`AndreiBesliu/cvs2#11`). Propus, la owner: ADR 0232 (auditul UI/UX al extensiilor,
+  `#17`). **La owner:** plafonul pornirii (mai sunt 0,3 kB: următoarea felie care adaugă în pornire nu mai încape),
+  fereastra exportului, verificarea juridică (GDPR) a utilizării aplicației înaintea live-ului, „cine unește în `main`”.
 - 24.11.2026, înainte de prânz (a treisprezecea unire din cloud): **25.8↑b („Calibrează” și „Trasează…” din imaginea
   de pe foaie) unită în `main`** (sesiunea principală, ramura `unire-2411d`, din `df9ae539`). Linia trasării, ramura
   `wip/25.1-trasare`, `ed6014c5`, PR-ul `AndreiBesliu/cvs2#14` (ADR 0272 §6, §7, §10; pornită de owner în sesiunea
