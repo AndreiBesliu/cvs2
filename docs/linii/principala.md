@@ -222,6 +222,8 @@ folosite la unire și publicare:
 - proba se face în mediul bugului (fusul, limba, platforma: CI-ul pe Linux nu e Windows-ul local);
 - otrăvurile se rulează într-o clonă; un VOID nou se mută pe codul nou sau se scoate cu codul echivalent;
 - un rezultat geometric se privește pe cazul REAL, mărit și întreg, înaintea raportului.
+- înaintea unirii se citesc și rapidul, și completul ramurii de unire: completul poate fi verde cu rapidul oprit de
+  limita unei felii (24.11, lotul 17: felia 5 din 6, peste 10 minute; limita e acum 15, `rapid.yml`);
 - nu se comite în timpul unei rulări locale e2e sau pe emulatoare: trei probe compară versiunea construită cu
   ultimul commit și cad doar din cauza asta (24.11);
 - evenimentele scoase din două stări văzute la rând pot sări o stare scurtă (starea se vede la redesenare): o
