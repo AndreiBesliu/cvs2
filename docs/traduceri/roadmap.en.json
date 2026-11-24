@@ -953,6 +953,10 @@
       "ro": "Joburile cu mai multe scule din document: freza pe operație în fereastra exportului, ordinea, jobul CAM cu diametrul fiecărei tăieturi, simularea și estimarea peste schimbări, strategia aleasă, fișierele separate descărcate și încărcate în sender",
       "en": "Multi-tool jobs from the document: the bit per operation in the export window, the order, the CAM job with each cut’s diameter, simulation and estimation across changes, the chosen strategy, separate files downloaded and loaded into the sender"
     },
+    "374e2966866ee30b": {
+      "ro": "Adminul pe telefon",
+      "en": "The admin on a phone"
+    },
     "3775e3c8b69ac9f6": {
       "ro": "Publicarea pe live",
       "en": "Publishing to live"
@@ -2056,6 +2060,10 @@
     "8108a6373dfdea25": {
       "ro": "14.B↑: fila Sugestii",
       "en": "14.B↑: the Suggestions tab"
+    },
+    "8230b4230d1b1cf6": {
+      "ro": "**Adminul pe telefon** (felia A.7 din ADR 0260, ultima a ei; fără mașină; a nouăsprezecea felie a liniei adminului, `3.As` în fișă; aceeași ramură, `wip/A.1-admin`, peste A.11e, încă neunită; lucrată într-o sesiune cloud). Pe un telefon (sub 640 px), `/admin` are acum jos o bară cu **Azi**, **Erori** și **Tichete** (doar cele pe care rolul le vede, cu numerele lor) și **Mai mult**; în antet, butonul **☰**. Restul filelor stau într-un sertar, deschis de ☰ sau de „Mai mult” și închis de o filă aleasă sau de Escape. Un tichet se citește și primește răspuns pe telefon; proiectul atașat se descarcă doar de pe calculator (pe telefon, un text spune asta, cu mărimea lui). Nimic nu iese din ecran în dreapta, iar bara de jos nu acoperă capătul paginii. Nimic pe server. **Probele:** 2 e2e noi pe emulatoare (owner-ul pe telefon, cu tot drumul, apoi înapoi pe calculator; un rol doar cu tichetele, cu bara de jos după drepturi). **Otrăvurile:** 9 / 9, toate pe emulatoare; E08 (bara peste capătul conținutului) cădea întâi pe o așteptare, iar proba măsoară acum butonul față de bară înaintea clicului. **Mărimea:** pornirea și totalul neschimbate (109,6 / 115; 800,6 / 900); `/admin` 137,9 → 138,2 / 200.",
+      "en": "**The admin on a phone** (slice A.7 of ADR 0260, its last; no machine; the nineteenth slice of the admin line, `3.As` in the sheet; same branch, `wip/A.1-admin`, on top of A.11e, not merged yet; worked in a cloud session). On a phone (under 640 px), `/admin` now has at the bottom a bar with **Today**, **Errors** and **Tickets** (only those the role sees, with their numbers) and **More**; in the header, the **☰** button. The other tabs sit in a drawer, opened by ☰ or by “More” and closed by a chosen tab or by Escape. A ticket is read and answered on a phone; the attached project is downloaded only on a computer (on a phone, a text says so, with its size). Nothing goes off the screen to the right, and the bottom bar does not cover the end of the page. Nothing on the server. **Tests:** 2 new e2e tests on the emulators (the owner on a phone, along the whole path, then back on a computer; a role with only the tickets, with the bottom bar by rights). **Poisons:** 9 / 9, all on the emulators; E08 (the bar over the end of the content) at first failed on a wait, and the test now measures the button against the bar before the click. **Size:** startup and total unchanged (109.6 / 115; 800.6 / 900); `/admin` 137.9 → 138.2 / 200."
     },
     "824fb32478e4221b": {
       "ro": "oricând",
