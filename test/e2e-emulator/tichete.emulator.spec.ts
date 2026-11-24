@@ -254,6 +254,19 @@ test('raportarea din editor, cu poza și amprenta erorii din sesiune; răspunsul
   await expect(buton.getByTestId('cont-semn')).toHaveCount(0, LENT);
   await expect.poll(async () => numar((await documente('tichete'))[0]?.f['necititeAutor']), LENT).toBe(0);
   await mele.locator('[data-buton="inchide-raport"]').click();
-  await expect((await deschideMeniulContului(page)).getByTestId('meniu-cont-necitite')).toHaveCount(0);
+  const m3 = await deschideMeniulContului(page);
+  await expect(m3.getByTestId('meniu-cont-necitite')).toHaveCount(0);
+
+  // O a doua raportare, fără bifa pașilor (A.11b): tichetul pleacă fără ei, deși inelul are pași.
+  await m3.locator('[data-meniu-cont="raporteaza"]').click();
+  const r2 = page.getByTestId('dialog-raportare');
+  await expect(r2.locator('[data-camp="raport-pasi"]')).toBeEnabled(LENT);
+  await r2.locator('[data-camp="raport-text"]').fill('Fără pași.');
+  await r2.locator('[data-buton="raport-trimite"]').click();
+  await expect(r2.locator('[data-raport="trimis"]')).toBeVisible(LENT);
+  await r2.locator('[data-buton="inchide-raport"]').click();
+  const fara = (await documente('tichete')).find((x) => text(x.f['text']) === 'Fără pași.');
+  expect(fara).toBeDefined();
+  expect(fara?.f['pasi']).toBeUndefined();
   expect(erori).toEqual(['eroare de probă pentru raportare']);
 });
