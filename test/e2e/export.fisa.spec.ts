@@ -52,6 +52,9 @@ test('lista: foaia, mașina, apoi operațiile în ordinea tăierii; clicul aduce
   // Interiorul (cercul) se taie înaintea exteriorului (ordinea automată, ADR 0133).
   await expect(lista).toHaveCount(4);
   expect(await lista.evaluateAll((b) => b.map((x) => x.getAttribute('data-nav')))).toEqual(['foaia', 'masina', 'e2/e2', 'e1/e1']);
+  // Fiecare fișă își spune locul în ordinea tăierii (din 28.8↑f-3, fișa e o componentă a ei, cu totalul din context).
+  await expect(fisa(page, 'e2/e2').locator('.dx-loc')).toHaveText('locul 1 din 2 în ordinea tăierii');
+  await expect(fisa(page, 'e1/e1').locator('.dx-loc')).toHaveText('locul 2 din 2 în ordinea tăierii');
   await page.locator('[data-nav="e1/e1"]').click();
   await expect(page.locator('[data-nav="e1/e1"]')).toHaveAttribute('aria-current', 'true');
   await expect.poll(async () => {
