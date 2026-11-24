@@ -16,7 +16,7 @@ rămâne. Notele au fost aduse pe 23.11.2026 din memoria sesiunii principale loc
 | Linia | Nota | Ramura | Starea pe 23.11 |
 |---|---|---|---|
 | Sesiunea principală | [principala.md](principala.md) | `unire-<data>` | în cloud din 23.11; unește și publică (pe 23.11, șase loturi: `0ae9c6c1`, `ddaa7ead`, `1b46c955`, `4497d639`, `03460cab`, `4fe2d2ad`; pe 24.11: `813fa675`, `80d3eb70`, `95dddbe0`, `7f6f4069`, `f7f4510f`, `32b33a42`, `458befb9`) |
-| Elicele (Easy 3Draw, 3.Tq–3.Ts, ADR 0282) | [elice.md](elice.md) | `wip/3.Tq-elice` | 3.Tq unită în `main` (`0ae9c6c1`, 18.19.0); reparația probelor atelierului și 3.Tr (elicea de barcă, 18.20.0), unite în `main` (`d262e57a`); 3.Ts (ventilatorul cu carcasă, 18.22.0), pornită de owner pe 24.11, unită în `main` (`e14e553a`); 3.Tt (înclinarea spre pupa a elicei de barcă, la alegere, 18.23.0), unită în `main` (`d57ca962`, `AndreiBesliu/cvs2#19`); următoarea, la cuvântul owner-ului |
+| Elicele (Easy 3Draw, 3.Tq–3.Tt, ADR 0282) | [elice.md](elice.md) | `wip/3.Tq-elice` | 3.Tq unită în `main` (`0ae9c6c1`, 18.19.0); reparația probelor atelierului și 3.Tr (elicea de barcă, 18.20.0), unite în `main` (`d262e57a`); 3.Ts (ventilatorul cu carcasă, 18.22.0), pornită de owner pe 24.11, unită în `main` (`e14e553a`); 3.Tt (înclinarea spre pupa a elicei de barcă, la alegere, 18.23.0), unită în `main` (`d57ca962`, `AndreiBesliu/cvs2#19`); din 24.11 seara, predată sesiunii extensiilor (la cererea owner-ului), cu 3.Tu propusă (piesele rotunde pe același ax în „Modelul”, ADR 0283 rezervat, 18.24.0), la răspunsurile owner-ului |
 | Adminul (ADR 0260) | [admin.md](admin.md) | `wip/A.1-admin` | A.4, A.5 și A.6 unite în `main`; A.8a și A.8b (utilizarea aplicației, ADR 0262; cu serverul) unite în `main` (`5325b8fe`) și publicate pe test; A.8c și A.8d (clicurile fine, dialogurile, calculele, mașina, imprimanta) unite în `main` (`80d3eb70`); A.9a și A.9b (sumele zilei, jobul de noapte, fila Utilizare; cu serverul) unite în `main` (`95dddbe0`); A.10 și A.11a (fluxurile; pașii dinaintea unei erori; cu serverul) unite în `main` (`7f6f4069`); A.11b–A.11e (pașii la raportare, cronologia unui om, sesiunea raportării, disocierea; cu serverul) unite în `main` (`8ccb66e8`): A.11 încheiată; A.7 (adminul pe telefon) unită în `main` (`458befb9`): linia e încheiată (A.1–A.11), o felie nouă pornește la cuvântul owner-ului; verificarea juridică (GDPR) înaintea live-ului, la owner |
 | Incrustațiile (12.1↑) | [incrustatii.md](incrustatii.md) | `wip/12.1-incrustatii` | 12.1↑e-3 și 12.1↑e-4 („Împreună (secțiunea)” pe pereții drepți și pe trepte) unite în `main` (`03460cab`); următoarea, la cuvântul owner-ului |
 | Planșele (etapa 11) | [plansele.md](plansele.md) | `wip/11.1-plansele` | 11.3↑f (urechile după reguli) unită în `main` (`f4601938`): ADR 0211 are toate cele trei variante; nicio felie în lucru; tăierea plăcii 11, la owner; 11.5↑b după etapa 13 |
@@ -38,7 +38,7 @@ rămâne. Notele au fost aduse pe 23.11.2026 din memoria sesiunii principale loc
 | [rotite.md](rotite.md) | rotițele dințate (3.Th, ADR 0169) |
 | [roti-senile.md](roti-senile.md) | roțile, fuliile, conicele, șenila (3.Tj–3.To), galeria pe file (3.Tp, ADR 0281) |
 | [biblioteca.md](biblioteca.md) | biblioteca extensiilor (3.Xg): versiunea și amprenta la fiecare schimbare |
-| [elice.md](elice.md) | elicele (3.Tq–3.Ts, ADR 0282) |
+| [elice.md](elice.md) | elicele (3.Tq–3.Tt, ADR 0282; 3.Tu propusă) |
 
 ## Încheiate și de referință
 
