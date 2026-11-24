@@ -3,7 +3,7 @@
 _cncvs2, biblioteca de freze („Frezele mele”), felia 16.A↑ adusă din etapa 16: ramura `wip/16.A-freze` (din `main`
 `c8b235ab`), ADR-urile 0300–0309 (liber: 0303), canalul `freze`; ADR 0300 ACCEPTAT pe 23.11 („Da, 1a–6a”), ADR 0302 ACCEPTAT pe
 24.11 („Da, 1a–5a”); 16.A↑a, ADR 0301, 16.A↑b-1 și 16.A↑c UNITE în `main`; 16.A↑b-2 și 16.A↑a-2 GATA pe ramură (PR-ul #22);
-în lucru 16.A↑h-1 (fereastra ca listă)_
+16.A↑h-1 și 16.A↑h-2 GATA pe ramură; urmează 16.A↑h-3 (catalogul)_
 
 Pornită pe 23.11.2026, în sesiunea cloud a liniei, la cererea owner-ului: „Vreau sa pot crea freze l sau profiluri de freze in
 aplicatie si sa le salvez in cont”. Rândurile din prag: „Bibliotecă de freze cu geometrie reală (dreaptă, bilă, toroidală, V,
@@ -81,12 +81,22 @@ gravare, profil, formă desenată)” și „Freze de profil desenate de utiliza
   apare (Tăierea n-are liste acolo). Otrăvuri 15 / 16 (E05, echivalentă). **Capcană:** cu setul pus de la prima pornire, orice
   probă e2e care deschide Tăierea vede acum rândul „Freza” (o probă care cere o bibliotecă goală folosește `bibliotecaGoala`
   din `test/e2e/ajutor-freze.ts`). PR-ul #22 are acum 16.A↑b-2 și 16.A↑a-2.
-- **24.11, ~13:40: ADR 0302 propus, apoi acceptat** („Da, 1a–5a”), la cererea owner-ului cu fișierul ArtCAM `FREZE.tdb`
+- **24.11, ~12:45: ADR 0302 propus, apoi acceptat** („Da, 1a–5a”), la cererea owner-ului cu fișierul ArtCAM `FREZE.tdb`
   („vreau ca frezele să fie o listă ca în ArtCAM … și doar dacă vrea userul … să comute pe configuratorul actual”). Fișierul
   e baza de scule ArtCAM, binară, nedocumentată, cu conținutul ArtCAM și al producătorilor: nu se citește și nu se copiază
   (`CLAUDE.md`); din el s-au luat doar felurile și ideea grupurilor. Feliile, despărțite la acceptare: **h-1** fereastra ca
   listă (fișa doar de citit, configuratorul la „Editează” / „Freză nouă”, comutatorul), **h-2** grupurile omului (`grup`),
   **h-3** catalogul propriu, **h-4** felurile noi „în curând”. Pornită 16.A↑h-1.
+- **24.11, 12:57–13:20: 16.A↑h-1 gata pe ramură** (`d535f1cd`, `0acfc75b`, documentele): fereastra pornește ca listă, cu fișa
+  frezei doar de citit (`data-freze="fisa"`, valorile cu `data-freze-valoare`), editorul la „Editează” / „Freză nouă” și
+  comutatorul „Listă / Configurator” (`cncvs2.freze.vedere`). **Capcană:** o probă e2e care schimbă o freză trece acum prin
+  fișă („Editează”), iar după „Salvează” editorul se închide (în „Listă”); valorile se citesc din fișă. Otrăvuri 16 / 16.
+  `main` adus (`8cb76d64`). Urmează 16.A↑h-2 (grupurile).
+- **24.11, 13:22–13:45: 16.A↑h-2 gata pe ramură** (`6cfa2231`, `04c02209`, `60e7f68e`, documentele): grupurile omului
+  (`grup` pe freză, în fișier și în cont, fără schemă nouă), lista pe grupuri, „Grupul” din fișă, „✎” pe titlu, câmpul din
+  editor. **Capcană:** un control care dispare după acțiune (câmpul redenumirii) lasă focusul în afara ferestrei, iar
+  Escape (ascultat pe fereastră) nu mai ajunge; focusul se mută explicit (`deFocus`). Otrăvuri 23 / 24. PR-ul #22:
+  `d0fa2dde` e în lotul 19 al sesiunii principale. Urmează 16.A↑h-3 (catalogul).
 - **Feliile**, în ordine: 16.A↑a (biblioteca în browser, fereastra, fișierul), apoi b (alegerea în proiect, v27), c
   (contul), d (calibrarea), e (bila și toroidala), f (profilul desenat), g (valorile pe material).
 

@@ -1272,7 +1272,20 @@ iar până atunci freza se scrie acolo pe rând, ca înainte (vezi [Exportul G-c
 
 **Lista**, în stânga, are frezele pe feluri (Plate, În V, Gravare), fiecare cu silueta mică, T-ul preferat, turația și
 avansul. **Caută o freză** filtrează după nume, iar butoanele **Toate**, **Plate**, **În V** și **Gravare** arată un singur
-fel. Pe telefon, lista vine întâi; o freză aleasă se deschide pe tot ecranul, iar **Frezele** te întoarce la listă.
+fel. O freză aleasă își arată în dreapta **fișa**, doar de citit: felul, silueta la scară, geometria, valorile de lucru și
+nota, cu butoanele **Editează**, **Duplică** și **Șterge…**. Pe telefon, lista vine întâi; fișa unei freze se deschide pe tot
+ecranul, iar **Frezele** te întoarce la listă.
+
+**Listă** și **Configurator**, lângă filtre, aleg cum lucrează fereastra: în **Listă** (cum pornește), editorul se deschide
+doar la **Editează** și la **Freză nouă**, iar după **Salvează** sau **Renunță la schimbări** te întorci la fișă (pe telefon,
+**Fișa** face același lucru); în **Configurator**, o freză aleasă se deschide direct în editor, cu **Duplică** și **Șterge…**
+acolo. Alegerea rămâne ținută în acest browser.
+
+**Grupurile** sunt ale tale. O freză fără grup stă pe felul ei (Plate, În V, Gravare), ca la început. Lista **Grupul** din
+fișă o mută: în alt grup, înapoi **Fără grup (pe fel)** sau, cu **Grup nou…**, într-un grup nou, cu numele scris (cel mult
+40 de caractere). Grupurile tale vin primele în listă, după nume; **✎** de lângă titlul unui grup îl redenumește, cu toate
+frezele lui (un nume care e deja al altui grup le unește, iar un nume gol le întoarce pe felurile lor). Grupul merge cu
+freza în fișier și în cont.
 
 **Freză nouă** deschide editorul, cu câmpurile:
 - **Numele**: gol, freza primește numele propus din fel și diametru („Plată Ø6”, „V60 Ø6”, „Gravare 30° vârf 0,2 Ø3,175”).
@@ -1283,10 +1296,11 @@ fel. Pe telefon, lista vine întâi; o freză aleasă se deschide pe tot ecranul
   **Tăișuri** (dacă le știi) și **T preferat** (1–999, numărul de pe portscule);
 - **Valorile de lucru**: **Turația** (rot/min), **Avansul** și **Plonjarea** (mm/min), **Pasul pe trecere** (mm) și
   **Pasul lateral** (% din diametru, cel mult 50);
-- **Nota**: producătorul, codul, de unde e.
+- **Nota**: producătorul, codul, de unde e;
+- **Grupul**: gol, freza stă pe felul ei; lista de sub câmp are grupurile tale.
 
 Silueta din dreapta e la scară. Numerele se scriu cu virgulă sau cu punct. **Salvează** păstrează freza, iar **Renunță la
-schimbări** pune la loc ce era. Dacă alegi altă freză sau închizi fereastra cu schimbări nesalvate, ele se salvează singure
+schimbări** pune la loc ce era (în **Listă**, și închide editorul). Dacă alegi altă freză sau închizi fereastra cu schimbări nesalvate, ele se salvează singure
 când sunt bune; altfel fereastra rămâne și arată câmpurile de reparat. **Duplică** face o copie a frezei, iar **Șterge…**
 cere confirmarea; proiectele care o folosesc își păstrează copia ei.
 
@@ -1298,7 +1312,7 @@ dată: una ștearsă nu revine singură. Cu biblioteca goală, **Adaugă frezele
 **Exportă…** salvează biblioteca în fișierul `frezele-mele.cvs2freze.json`, pe care îl aduci cu **Importă…** pe alt
 calculator. **Importă…** citește și un CSV (salvat, de exemplu, din Excel), cu un rând de antet și coloanele `nume`, `fel`
 (`plata`, `v` sau `gravare`), `diametru`, `unghi`, `varf`, `numar` (T-ul), `turatie`, `avans`, `plonjare`, `pas`,
-`pas_lateral`, `tais`, `taisuri` și `nota`, în orice ordine. Doar `nume`, `fel` și `diametru` sunt necesare; fără celelalte,
+`pas_lateral`, `tais`, `taisuri`, `nota` și `grup`, în orice ordine. Doar `nume`, `fel` și `diametru` sunt necesare; fără celelalte,
 T-ul e 1, turația 18 000, avansul 1 000, plonjarea 300, pasul cât raza (la freza plată) sau 1 mm, iar pasul lateral 40 %.
 Separatorul (`;`, `,` sau tab) se găsește singur; cu `;`, numerele pot avea virgula zecimală. Înainte de import alegi ce se
 întâmplă cu un nume care există deja: **Păstrează-le pe amândouă** (implicit; cea nouă primește „(2)”), **Înlocuiește** sau

@@ -11,6 +11,11 @@
  * (`frezeSincronizare.ts`): la deschidere, după fiecare schimbare și la revenirea rețelei. Bara de jos spune unde stă
  * biblioteca; un conflict (aceeași freză schimbată pe două calculatoare) cere alegerea omului, iar la prima deschidere cu
  * contul, frezele din acest browser se pot aduce în cont.
+ *
+ * Din 16.A↑h-1 (ADR 0302 §3), fereastra pornește ca listă: freza aleasă își arată în dreapta fișa, doar de citit (felul,
+ * silueta, geometria, valorile de lucru, nota), cu „Editează”, „Duplică”, „Șterge”; editorul („configuratorul”) se deschide la
+ * „Editează” și la „Freză nouă”, iar „Salvează” și „Renunță” întorc la fișă. Comutatorul „Listă / Configurator” (ținut în
+ * browser, `cncvs2.freze.vedere`) ține editorul mereu deschis, ca înainte de listă.
  */
 import { useEffect, useMemo, useRef, useState, type ChangeEvent, type KeyboardEvent, type ReactNode } from 'react';
 import '../i18n/freze.ts';
@@ -18,8 +23,8 @@ import { mesajeGata } from '../i18n/laCerere.ts';
 import { t } from '../i18n/t.ts';
 import { citesteFisierFreze, textFisierFreze, type MotivFisierFreze } from '../io/frezeFisier.ts';
 import {
-  FELURI_FREZA, FREZE_PORNIRE, inaltimeCon, MARGINI_FREZA, numeLiber, problemeFreza, type CampFreza, type FelFreza, type Freza,
-  type FrezaFaraNume, type FrezaSalvata, type MotivFreza, type PoliticaImport, type ProblemeFreza,
+  cheieNume, FELURI_FREZA, FREZE_PORNIRE, grupurileListei, inaltimeCon, MARGINI_FREZA, numeLiber, problemeFreza, type CampFreza, type FelFreza,
+  type Freza, type FrezaFaraNume, type FrezaSalvata, type MotivFreza, type PoliticaImport, type ProblemeFreza,
 } from '../model/freza.ts';
 import { UNGHI_V_IMPLICIT } from '../model/document.ts';
 import { cuFrezeleBrowserului, deAdusDinBrowser, type Alegere } from '../model/frezeSincron.ts';
@@ -38,7 +43,8 @@ mesaje.catch(() => undefined);
 
 /** Câmpurile editorului, ca text scris de om (felul, separat). */
 type Ciorna = { readonly fel: FelFreza } & { readonly [K in Exclude<CampFreza, never>]: string };
-const CAMPURI_NUMERE: readonly Exclude<CampFreza, 'nume' | 'nota'>[] = [
+type CampText = 'nume' | 'nota' | 'grup';
+const CAMPURI_NUMERE: readonly Exclude<CampFreza, CampText>[] = [
   'diametru', 'unghi', 'varf', 'tais', 'taisuri', 'numar', 'turatie', 'avans', 'plonjare', 'pas', 'pasLateral',
 ];
 const OPTIONALE: ReadonlySet<CampFreza> = new Set(['tais', 'taisuri']);
@@ -51,6 +57,30 @@ const MAXIM: Readonly<Partial<Record<CampFreza, number>>> = {
 
 const fara = (x: number | undefined, ro: boolean): string => (x === undefined || !Number.isFinite(x) ? '' : textNumar(x, ro));
 
+/** Selectorul lui „✎” de pe titlul grupului dat (după redenumire sau renunțare, focusul revine acolo). */
+const focusRedenumire = (grup: string): string => `[data-freze-grup="${CSS.escape(grup)}"] [data-freze="grup-redenumeste"]`;
+
+/** Valoarea opțiunii „Grup nou…” din lista „Grupul” a fișei (un grup nu poate avea caractere de control, deci nu se ciocnește). */
+const NOU = '\u0000nou';
+
+/** Vederea ferestrei (ADR 0302 §3): lista cu fișa doar de citit, sau editorul mereu deschis. */
+type Vedere = 'lista' | 'configurator';
+const CHEIE_VEDERE = 'cncvs2.freze.vedere';
+function vedereTinuta(): Vedere {
+  try {
+    return localStorage.getItem(CHEIE_VEDERE) === 'configurator' ? 'configurator' : 'lista';
+  } catch {
+    return 'lista';
+  }
+}
+function tineVedere(v: Vedere): void {
+  try {
+    localStorage.setItem(CHEIE_VEDERE, v);
+  } catch {
+    // Fără stocare (fereastră privată, date blocate): vederea ține doar cât e deschisă pagina.
+  }
+}
+
 
 /** Cel mai mic T pe care nicio freză a bibliotecii nu-l are (o freză nouă îl primește). */
 function tLiber(lista: readonly FrezaSalvata[]): number {
@@ -61,7 +91,7 @@ function tLiber(lista: readonly FrezaSalvata[]): number {
 
 function ciornaDin(f: Freza, ro: boolean, numeGol = false): Ciorna {
   return {
-    fel: f.fel, nume: numeGol ? '' : f.nume, nota: f.nota ?? '',
+    fel: f.fel, nume: numeGol ? '' : f.nume, nota: f.nota ?? '', grup: f.grup ?? '',
     diametru: fara(f.diametru, ro), unghi: fara(f.unghi ?? UNGHI_V_IMPLICIT, ro), varf: fara(f.varf, ro), tais: fara(f.tais, ro),
     taisuri: fara(f.taisuri, ro), numar: fara(f.numar, ro), turatie: fara(f.turatie, ro), avans: fara(f.avans, ro),
     plonjare: fara(f.plonjare, ro), pas: fara(f.pas, ro), pasLateral: fara(f.pasLateral, ro),
@@ -70,7 +100,9 @@ function ciornaDin(f: Freza, ro: boolean, numeGol = false): Ciorna {
 
 /** Freza din textele editorului: un câmp opțional gol pleacă, un număr greșit e NaN (îl spune judecata). */
 function frezaDin(c: Ciorna, ro: boolean): Freza {
-  const v: Record<string, unknown> = { fel: c.fel, nota: c.nota.trim() === '' ? undefined : c.nota.trim() };
+  const v: Record<string, unknown> = {
+    fel: c.fel, nota: c.nota.trim() === '' ? undefined : c.nota.trim(), grup: c.grup.trim() === '' ? undefined : c.grup.trim(),
+  };
   for (const k of CAMPURI_NUMERE) {
     const s = c[k].trim();
     v[k] = s === '' ? (OPTIONALE.has(k) ? undefined : Number.NaN) : (citesteNumar(s) ?? Number.NaN);
@@ -87,6 +119,7 @@ function ciornaNoua(lista: readonly FrezaSalvata[], ro: boolean): Ciorna {
 
 /** Silueta frezei la scară (profilul h(r) oglindit, cu coada deasupra), sau nimic dacă valorile nu sunt încă bune. */
 function Silueta({ f, mare }: { readonly f: Freza; readonly mare: boolean }): ReactNode {
+  const ro = useLimba() === 'ro';
   const R = f.diametru / 2;
   const a = f.fel === 'gravare' && f.varf !== undefined ? Math.min(f.varf / 2, R) : 0;
   const con = inaltimeCon(f);
@@ -107,9 +140,9 @@ function Silueta({ f, mare }: { readonly f: Freza; readonly mare: boolean }): Re
       {mare ? (
         <>
           <line className="cota" x1={X(-R)} y1={Y(sus) - 10} x2={X(R)} y2={Y(sus) - 10} />
-          <text className="cota-text" x={W / 2} y={Y(sus) - 14} textAnchor="middle">Ø{textNumar(f.diametru)}</text>
+          <text className="cota-text" x={W / 2} y={Y(sus) - 14} textAnchor="middle">Ø{textNumar(f.diametru, ro)}</text>
           {f.fel !== 'plata' && f.unghi !== undefined ? (
-            <text className="cota-text" x={W / 2} y={Y(0) + 16} textAnchor="middle">{`${textNumar(f.unghi)}°`}</text>
+            <text className="cota-text" x={W / 2} y={Y(0) + 16} textAnchor="middle">{`${textNumar(f.unghi, ro)}°`}</text>
           ) : null}
         </>
       ) : null}
@@ -134,6 +167,7 @@ function numeCamp(k: string): string {
     case 'pas': return t('freze.pas');
     case 'pasLateral': return t('freze.pas-lateral');
     case 'nota': return t('freze.nota');
+    case 'grup': return t('freze.grup');
     default: return k;
   }
 }
@@ -178,12 +212,28 @@ export function FrezeleMele({ onInchide, focusInapoi, config }: {
   const [initiala, setInitiala] = useState<Ciorna | null>(null);
   const [toateProblemele, setToateProblemele] = useState(false);
   const [pas, setPas] = useState<'lista' | 'editor'>('lista');
+  const [vedere, setVedere] = useState<Vedere>(vedereTinuta);
+  /** În vederea „Listă”: editorul frezei alese e deschis (altfel, fișa ei). */
+  const [editeaza, setEditeaza] = useState(false);
+  /** Grupul redenumit din titlul lui (numele de acum) și textul scris. */
+  const [redenumit, setRedenumit] = useState<{ readonly grup: string; readonly nou: string } | null>(null);
+  /** „Grupul” → „Grup nou…”: numele scris pentru grupul nou al frezei din fișă. */
+  const [grupNou, setGrupNou] = useState<string | null>(null);
   const [mesaj, setMesaj] = useState('');
   const [stergere, setStergere] = useState(false);
   const [importat, setImportat] = useState<{ readonly freze: readonly Freza[]; readonly sarite: number; readonly politica: PoliticaImport } | null>(null);
   const refCauta = useRef<HTMLInputElement>(null);
   const refFisier = useRef<HTMLInputElement>(null);
   const refEditor = useRef<HTMLFormElement>(null);
+  const refCorp = useRef<HTMLDivElement>(null);
+  /** Unde merge focusul după randarea următoare (fișa și editorul își iau locul unul altuia, deci butonul apăsat dispare). */
+  const deFocus = useRef<string | null>(null);
+  useEffect(() => {
+    const s = deFocus.current;
+    if (s === null) return;
+    deFocus.current = null;
+    refCorp.current?.querySelector<HTMLElement>(s)?.focus();
+  });
 
   useEffect(() => {
     refCauta.current?.focus();
@@ -198,6 +248,7 @@ export function FrezeleMele({ onInchide, focusInapoi, config }: {
     setCiorna(null);
     setInitiala(null);
     setPas('lista');
+    setEditeaza(false);
     setAmanat(uid !== null && amanate.has(uid));
   }, [cheie, uid]);
 
@@ -216,13 +267,23 @@ export function FrezeleMele({ onInchide, focusInapoi, config }: {
     if (JSON.stringify(c) !== JSON.stringify(initiala)) { setCiorna(c); setInitiala(c); }
   }, [stare.freze, aleasa, schimbata, initiala, ro]);
 
-  const deschide = (id: string | 'nou' | null, c: Ciorna | null): void => {
+  /** Deschide freza (fișa ei, sau editorul cu `editor`; în vederea „Configurator”, mereu editorul). */
+  const deschide = (id: string | 'nou' | null, c: Ciorna | null, editor = false): void => {
     setAleasa(id);
     setCiorna(c);
     setInitiala(c);
     setToateProblemele(false);
     setStergere(false);
+    setEditeaza(editor);
+    setGrupNou(null);
     setPas(id === null ? 'lista' : 'editor');
+  };
+  /** Din editor, înapoi la fișa frezei (vederea „Listă”), cu focusul pe „Editează”. */
+  const laFisa = (): void => {
+    setEditeaza(false);
+    setStergere(false);
+    setGrupNou(null);
+    deFocus.current = '[data-freze="editeaza"]';
   };
   const motivLista = (p: ProblemeLista): string => {
     if ('lista' in p) return p.lista === 'plina' ? t('freze.motiv.plina', { max: MARGINI_FREZA.freze }) : t('freze.motiv.versiune');
@@ -253,6 +314,8 @@ export function FrezeleMele({ onInchide, focusInapoi, config }: {
       setInitiala(c);
       setToateProblemele(false);
     }
+    // În vederea „Listă”, freza salvată își arată fișa.
+    if (vedere === 'lista') laFisa();
     setMesaj(t('freze.stare.salvat'));
     sincronizare.programeaza();
     return r.id;
@@ -268,13 +331,85 @@ export function FrezeleMele({ onInchide, focusInapoi, config }: {
     pleaca(() => { deschide(f.id, ciornaDin(f, ro)); setMesaj(''); });
   };
   const noua = (): void => {
-    pleaca(() => { deschide('nou', ciornaNoua(biblioteca.stare().freze, ro)); setMesaj(''); });
+    pleaca(() => {
+      deschide('nou', ciornaNoua(biblioteca.stare().freze, ro), true);
+      setMesaj('');
+      deFocus.current = '[data-freze-camp="nume"]';
+    });
+  };
+  /** „Editează”, din fișă: editorul frezei alese, cu focusul pe nume. */
+  const editeazaFisa = (): void => {
+    setEditeaza(true);
+    setStergere(false);
+    setPas('editor');
+    setMesaj('');
+    deFocus.current = '[data-freze-camp="nume"]';
+  };
+  /** Comutatorul „Listă / Configurator”; spre listă, editorul pleacă întâi (o schimbare bună se salvează). */
+  const comuta = (v: Vedere): void => {
+    if (v === vedere) return;
+    const aplica = (): void => {
+      setVedere(v);
+      tineVedere(v);
+      setEditeaza(false);
+      setStergere(false);
+    };
+    if (v === 'lista' && aleasa !== 'nou') pleaca(aplica);
+    else aplica();
+  };
+  /** „Grupul”, din fișă: freza intră în grupul ales (gol: înapoi pe felul ei). */
+  const mutaIn = (f: FrezaSalvata, grup: string): void => {
+    void biblioteca.salveaza(f.id, { ...f, grup: grup.trim() === '' ? undefined : grup }).then((r) => {
+      if (!r.ok) {
+        const p = r.probleme;
+        setMesaj('grup' in p && p.grup ? textMotiv('grup', p.grup) : motivLista(p));
+        return;
+      }
+      setGrupNou(null);
+      setMesaj(t('freze.stare.salvat'));
+      sincronizare.programeaza();
+      deFocus.current = '[data-freze="muta"]';
+    });
+  };
+  /** Redenumirea din titlul grupului (ADR 0302 §4): toate frezele lui; gol, înapoi pe felurile lor. */
+  const redenumeste = (): void => {
+    if (!redenumit) return;
+    void biblioteca.redenumesteGrup(redenumit.grup, redenumit.nou).then((r) => {
+      if (!r.ok) {
+        const p = r.probleme;
+        setMesaj('grup' in p && p.grup ? textMotiv('grup', p.grup) : motivLista(p));
+        return;
+      }
+      setRedenumit(null);
+      setMesaj(t('freze.stare.salvat'));
+      sincronizare.programeaza();
+      // Focusul, pe „✎” al grupului cu numele nou; desfăcut (numele gol), pe căutare.
+      const k = cheieNume(redenumit.nou);
+      const g = redenumit.nou.trim() === '' ? undefined
+        : grupurileListei(biblioteca.stare().freze).find((x) => x.grup !== null && cheieNume(x.grup) === k)?.grup;
+      if (g === undefined || g === null) refCauta.current?.focus();
+      else deFocus.current = focusRedenumire(g);
+    });
+  };
+  /** Renunțarea la redenumire (butonul sau Escape): câmpul se închide, iar focusul revine pe „✎” al grupului. */
+  const renuntaRedenumire = (): void => {
+    if (redenumit) deFocus.current = focusRedenumire(redenumit.grup);
+    setRedenumit(null);
   };
   const inchide = (): void => { pleaca(onInchide); };
   const renunta = (): void => {
     if (aleasa === 'nou') deschide(null, null);
-    else { setCiorna(initiala); setToateProblemele(false); }
+    else {
+      setCiorna(initiala);
+      setToateProblemele(false);
+      if (vedere === 'lista') laFisa();
+    }
     setMesaj('');
+  };
+  /** „←” din editor: în vederea „Listă”, înapoi la fișă; altfel (și la o freză nouă), la listă. */
+  const inapoi = (): void => {
+    if (vedere === 'lista' && aleasa !== 'nou') pleaca(laFisa);
+    else pleaca(() => { setPas('lista'); });
   };
   const duplica = (): void => {
     const f = stare.freze.find((x) => x.id === aleasa);
@@ -356,7 +491,9 @@ export function FrezeleMele({ onInchide, focusInapoi, config }: {
     if (e.key !== 'Escape') return;
     e.preventDefault();
     e.stopPropagation();
-    if (stergere) setStergere(false);
+    if (redenumit) renuntaRedenumire();
+    else if (grupNou !== null) setGrupNou(null);
+    else if (stergere) setStergere(false);
     else if (importat) setImportat(null);
     else inchide();
   };
@@ -378,13 +515,15 @@ export function FrezeleMele({ onInchide, focusInapoi, config }: {
       case 'nume-caractere': return t('freze.motiv.nume-caractere');
       case 'nume-folosit': return t('freze.motiv.nume-folosit');
       case 'nota-lunga': return t('freze.motiv.nota-lunga', { max: MARGINI_FREZA.nota });
+      case 'grup-lung': return t('freze.motiv.nume-lung', { max: MARGINI_FREZA.grup });
+      case 'grup-caractere': return t('freze.motiv.nume-caractere');
       case 'margini':
         if (k === 'unghi') return t('freze.motiv.unghi', { min: MARGINI_FREZA.unghiMinim, max: MARGINI_FREZA.unghiMaxim });
         if (k === 'varf') return t('freze.motiv.pozitiv');
         return t('freze.motiv.margini', { max: textNumar(MAXIM[k] ?? 0, ro) });
     }
   };
-  const camp = (k: Exclude<CampFreza, 'nume' | 'nota'>, eticheta: string, unitate: string | null): ReactNode => {
+  const camp = (k: Exclude<CampFreza, CampText>, eticheta: string, unitate: string | null): ReactNode => {
     const p = vizibila(k) ? probleme[k] : undefined;
     return (
       <label className="freze-camp" key={k}>
@@ -404,6 +543,7 @@ export function FrezeleMele({ onInchide, focusInapoi, config }: {
   const fel = ciorna?.fel ?? 'plata';
   const pNume = vizibila('nume') ? probleme.nume : undefined;
   const pNota = vizibila('nota') ? probleme.nota : undefined;
+  const pGrup = vizibila('grup') ? probleme.grup : undefined;
   const nr = (x: number): string => textNumar(x, ro);
   const conflicte = [...stare.sincron.conflicte];
   const legatura = sincronizare.stare;
@@ -424,6 +564,9 @@ export function FrezeleMele({ onInchide, focusInapoi, config }: {
   const deAdus = uid !== null && locala.incarcata && stare.incarcata && !amanat && sincronizare.stare.ultima !== null
     ? deAdusDinBrowser({ freze: stare.freze, brute: [], sincron: stare.sincron }, locala.freze).length : 0;
   const conflict = conflicte[0];
+  /** Editorul se vede la o freză nouă, în vederea „Configurator” și după „Editează”; altfel, fișa frezei alese. */
+  const cuEditor = aleasa === 'nou' || vedere === 'configurator' || editeaza;
+  const deFisa = !cuEditor && aleasa !== null ? stare.freze.find((x) => x.id === aleasa) ?? null : null;
   const numeConflict = ((): string => {
     if (!conflict) return '';
     const aici = stare.freze.find((f) => f.id === conflict[0]);
@@ -435,6 +578,100 @@ export function FrezeleMele({ onInchide, focusInapoi, config }: {
       return '';
     }
   })();
+
+  /** Grupurile omului din toată biblioteca (pentru „Grupul” din fișă și din editor). */
+  const grupuri = grupurileListei(stare.freze).flatMap((g) => (g.grup !== null ? [g.grup] : []));
+
+  /** Fișa frezei alese, doar de citit (vederea „Listă”, ADR 0302 §3): felul, silueta, geometria, valorile de lucru, nota. */
+  const fisa = (f: FrezaSalvata): ReactNode => {
+    const mm = t('freze.unitate.mm');
+    const geometria: (readonly [string, string, string])[] = [
+      ['fel', t('freze.felul'), t(`freze.fel.${f.fel}`)],
+      ['diametru', t('freze.diametru'), `${nr(f.diametru)} ${mm}`],
+    ];
+    if (f.fel !== 'plata' && f.unghi !== undefined) geometria.push(['unghi', t('freze.unghi'), `${nr(f.unghi)}${t('freze.unitate.grade')}`]);
+    if (f.fel === 'gravare' && f.varf !== undefined) geometria.push(['varf', t('freze.varf'), `${nr(f.varf)} ${mm}`]);
+    if (f.tais !== undefined) geometria.push(['tais', t('freze.tais'), `${nr(f.tais)} ${mm}`]);
+    if (f.taisuri !== undefined) geometria.push(['taisuri', t('freze.taisuri'), nr(f.taisuri)]);
+    geometria.push(['numar', t('freze.numar'), `T${f.numar}`]);
+    const lucru: readonly (readonly [string, string, string])[] = [
+      ['turatie', t('freze.turatie'), `${nr(f.turatie)} ${t('freze.unitate.rpm')}`],
+      ['avans', t('freze.avans'), `${nr(f.avans)} ${t('freze.unitate.mm-min')}`],
+      ['plonjare', t('freze.plonjare'), `${nr(f.plonjare)} ${t('freze.unitate.mm-min')}`],
+      ['pas', t('freze.pas'), `${nr(f.pas)} ${mm}`],
+      ['pasLateral', t('freze.pas-lateral'), `${nr(f.pasLateral)} ${t('freze.unitate.procent')}`],
+    ];
+    const valori = (r: readonly (readonly [string, string, string])[]): ReactNode => (
+      <dl className="freze-valori">
+        {r.map(([k, e, v]) => (
+          <div key={k}>
+            <dt>{e}</dt>
+            <dd data-freze-valoare={k}>{v}</dd>
+          </div>
+        ))}
+      </dl>
+    );
+    return (
+      <section className="freze-editor freze-fisa" data-freze="fisa" aria-labelledby="freze-fisa-titlu">
+        <button type="button" className="freze-inapoi" data-freze="inapoi" onClick={() => { setPas('lista'); setStergere(false); }}>← {t('freze.inapoi')}</button>
+        <h3 id="freze-fisa-titlu">{f.nume}</h3>
+        <div className="freze-fisa-grup">
+          {grupNou === null ? (
+            <label className="freze-muta">
+              <span>{t('freze.grup')}</span>
+              <select data-freze="muta" value={f.grup ?? ''} disabled={doarCitire}
+                onChange={(e) => {
+                  const v = e.currentTarget.value;
+                  if (v === NOU) { setGrupNou(''); setMesaj(''); deFocus.current = '[data-freze="grup-nou"]'; } else mutaIn(f, v);
+                }}>
+                <option value="">{t('freze.grup.fara')}</option>
+                {grupuri.map((g) => <option key={g} value={g}>{g}</option>)}
+                <option value={NOU}>{t('freze.grup.nou')}</option>
+              </select>
+            </label>
+          ) : (
+            <form className="freze-muta" onSubmit={(e) => { e.preventDefault(); if (grupNou.trim() !== '') mutaIn(f, grupNou); }}>
+              <span>{t('freze.grup')}</span>
+              <input type="text" data-freze="grup-nou" aria-label={t('freze.grup.nume')} value={grupNou}
+                onChange={(e) => { setGrupNou(e.currentTarget.value); setMesaj(''); }} />
+              <button type="submit" data-freze="grup-nou-da" disabled={grupNou.trim() === ''}>{t('freze.grup.nou.da')}</button>
+              <button type="button" data-buton="renunta" onClick={() => { setGrupNou(null); }}>{t('freze.import.renunta')}</button>
+            </form>
+          )}
+        </div>
+        <div className="freze-editor-sus">
+          <section className="freze-fisa-parte" aria-labelledby="freze-fisa-geometria">
+            <h4 id="freze-fisa-geometria">{t('freze.geometria')}</h4>
+            {valori(geometria)}
+          </section>
+          <figure className="freze-silueta-mare">
+            <Silueta f={f} mare />
+          </figure>
+        </div>
+        <section className="freze-fisa-parte" aria-labelledby="freze-fisa-lucru">
+          <h4 id="freze-fisa-lucru">{t('freze.lucru')}</h4>
+          {valori(lucru)}
+        </section>
+        {f.nota !== undefined && f.nota !== '' ? (
+          <p className="freze-fisa-nota"><span>{t('freze.nota')}</span> <span data-freze-valoare="nota">{f.nota}</span></p>
+        ) : null}
+        {stergere ? (
+          <div className="freze-stergere" role="group" aria-label={t('freze.sterge.intrebare', { nume: f.nume })}>
+            <p>{t('freze.sterge.intrebare', { nume: f.nume })}</p>
+            <div className="butoane">
+              <button type="button" data-freze="sterge-da" className="pericol" onClick={sterge}>{t('freze.sterge.da')}</button>
+              <button type="button" data-buton="renunta" onClick={() => { setStergere(false); }}>{t('freze.sterge.nu')}</button>
+            </div>
+          </div>
+        ) : null}
+        <div className="butoane freze-butoane">
+          <button type="button" className="principal" data-freze="editeaza" disabled={doarCitire} onClick={editeazaFisa}>{t('freze.editeaza')}</button>
+          <button type="button" data-freze="duplica" disabled={doarCitire} onClick={duplica}>{t('freze.duplica')}</button>
+          <button type="button" data-freze="sterge" disabled={doarCitire} onClick={() => { setStergere(true); }}>{t('freze.sterge')}</button>
+        </div>
+      </section>
+    );
+  };
 
   return (
     <div className="dialog" role="dialog" aria-modal="true" aria-labelledby="freze-titlu" data-testid="dialog-freze" onKeyDown={tasta}>
@@ -477,6 +714,13 @@ export function FrezeleMele({ onInchide, focusInapoi, config }: {
               </button>
             ))}
           </div>
+          <div className="freze-vedere" role="group" aria-label={t('freze.vedere')}>
+            {(['lista', 'configurator'] as const).map((v) => (
+              <button key={v} type="button" data-freze-vedere={v} aria-pressed={vedere === v} onClick={() => { comuta(v); }}>
+                {t(`freze.vedere.${v}`)}
+              </button>
+            ))}
+          </div>
           <span className="freze-actiuni">
             <button type="button" className="principal" data-freze="noua" disabled={doarCitire} onClick={noua}>{t('freze.noua')}</button>
             <button type="button" data-freze="importa" disabled={doarCitire} onClick={() => { refFisier.current?.click(); }}>{t('freze.importa')}</button>
@@ -504,7 +748,7 @@ export function FrezeleMele({ onInchide, focusInapoi, config }: {
             </div>
           </div>
         ) : null}
-        <div className="freze-corp" data-pas={pas}>
+        <div ref={refCorp} className="freze-corp" data-pas={pas}>
           <div className="freze-lista" role="region" aria-label={t('freze.lista')}>
             {!stare.incarcata ? <p className="freze-gol">{t('freze.incarca')}</p> : null}
             {stare.incarcata && stare.freze.length === 0 ? (
@@ -515,14 +759,33 @@ export function FrezeleMele({ onInchide, focusInapoi, config }: {
               </div>
             ) : null}
             {stare.freze.length > 0 && vazute.length === 0 ? <p className="freze-gol">{t('freze.niciuna-gasita')}</p> : null}
-            {FELURI_FREZA.map((g) => {
-              const din = vazute.filter((f) => f.fel === g);
-              if (din.length === 0) return null;
+            {grupurileListei(vazute).map((g, i) => {
+              const id = g.fel !== null ? `freze-grupa-${g.fel}` : `freze-grupa-g${i}`;
+              const titlu = g.grup ?? t(`freze.grupa.${g.fel!}`);
+              const scrie = redenumit !== null && g.grup !== null && redenumit.grup === g.grup;
               return (
-                <section key={g} className="freze-grupa" aria-labelledby={`freze-grupa-${g}`}>
-                  <h3 id={`freze-grupa-${g}`}>{t('freze.grupa', { fel: t(`freze.grupa.${g}`), n: din.length })}</h3>
+                <section key={g.grup !== null ? `g:${g.grup}` : `f:${g.fel!}`} className="freze-grupa" aria-labelledby={id}
+                  data-freze-grup={g.grup ?? undefined}>
+                  <div className="freze-grupa-cap">
+                    <h3 id={id}>{t('freze.grupa', { fel: titlu, n: g.freze.length })}</h3>
+                    {g.grup !== null && !scrie ? (
+                      <button type="button" className="freze-grupa-redenumeste" data-freze="grup-redenumeste" disabled={doarCitire}
+                        aria-label={t('freze.grup.redenumeste', { grup: g.grup })} title={t('freze.grup.redenumeste', { grup: g.grup })}
+                        onClick={() => { setRedenumit({ grup: g.grup!, nou: g.grup! }); setMesaj(''); deFocus.current = '[data-freze="grup-nume-nou"]'; }}>
+                        ✎
+                      </button>
+                    ) : null}
+                  </div>
+                  {scrie ? (
+                    <form className="freze-grupa-nume" onSubmit={(e) => { e.preventDefault(); redenumeste(); }}>
+                      <input type="text" data-freze="grup-nume-nou" aria-label={t('freze.grup.nume')} value={redenumit.nou}
+                        placeholder={t('freze.grup.fara')} onChange={(e) => { const v = e.currentTarget.value; setRedenumit((r) => (r ? { ...r, nou: v } : r)); setMesaj(''); }} />
+                      <button type="submit" data-freze="grup-redenumeste-da">{t('freze.grup.redenumeste.da')}</button>
+                      <button type="button" data-buton="renunta" onClick={renuntaRedenumire}>{t('freze.import.renunta')}</button>
+                    </form>
+                  ) : null}
                   <ul>
-                    {din.map((f) => (
+                    {g.freze.map((f) => (
                       <li key={f.id}>
                         <button type="button" className="freze-rand" data-freza={f.id} aria-current={f.id === aleasa ? 'true' : undefined}
                           onClick={() => { alege(f); }}>
@@ -539,10 +802,12 @@ export function FrezeleMele({ onInchide, focusInapoi, config }: {
               );
             })}
           </div>
-          {ciorna && freza ? (
+          {deFisa ? fisa(deFisa) : ciorna && freza && cuEditor ? (
             <form ref={refEditor} className="freze-editor" aria-labelledby="freze-editor-titlu" noValidate
               onSubmit={(e) => { e.preventDefault(); void salveaza(); }}>
-              <button type="button" className="freze-inapoi" data-freze="inapoi" onClick={() => { pleaca(() => { setPas('lista'); }); }}>← {t('freze.inapoi')}</button>
+              <button type="button" className="freze-inapoi" data-freze="inapoi" onClick={inapoi}>
+                ← {vedere === 'lista' && aleasa !== 'nou' ? t('freze.inapoi.fisa') : t('freze.inapoi')}
+              </button>
               <h3 id="freze-editor-titlu">{aleasa === 'nou' ? t('freze.noua.titlu') : freza.nume}</h3>
               <div className="freze-editor-sus">
                 <div className="freze-editor-campuri">
@@ -600,6 +865,13 @@ export function FrezeleMele({ onInchide, focusInapoi, config }: {
                   aria-invalid={pNota ? true : undefined} aria-describedby={pNota ? 'freze-eroare-nota' : undefined} onChange={scrie('nota')} />
                 {pNota ? <small className="freze-eroare" id="freze-eroare-nota">{textMotiv('nota', pNota)}</small> : null}
               </label>
+              <label className="freze-camp freze-camp-lat">
+                <span>{t('freze.grup')}</span>
+                <input type="text" data-freze-camp="grup" list="freze-grupuri" value={ciorna.grup} placeholder={t('freze.grup.fara')} disabled={doarCitire}
+                  aria-invalid={pGrup ? true : undefined} aria-describedby={pGrup ? 'freze-eroare-grup' : undefined} onChange={scrie('grup')} />
+                <datalist id="freze-grupuri">{grupuri.map((g) => <option key={g} value={g} />)}</datalist>
+                {pGrup ? <small className="freze-eroare" id="freze-eroare-grup">{textMotiv('grup', pGrup)}</small> : null}
+              </label>
               {stergere ? (
                 <div className="freze-stergere" role="group" aria-label={t('freze.sterge.intrebare', { nume: freza.nume })}>
                   <p>{t('freze.sterge.intrebare', { nume: freza.nume })}</p>
@@ -611,8 +883,9 @@ export function FrezeleMele({ onInchide, focusInapoi, config }: {
               ) : null}
               <div className="butoane freze-butoane">
                 <button type="submit" data-freze="salveaza" disabled={doarCitire || (!schimbata && aleasa !== 'nou')}>{t('freze.salveaza')}</button>
-                <button type="button" data-buton="renunta" data-freze="renunta" disabled={!schimbata && aleasa !== 'nou'} onClick={renunta}>{t('freze.renunta')}</button>
-                {aleasa !== 'nou' ? (
+                <button type="button" data-buton="renunta" data-freze="renunta"
+                  disabled={vedere === 'configurator' && !schimbata && aleasa !== 'nou'} onClick={renunta}>{t('freze.renunta')}</button>
+                {aleasa !== 'nou' && vedere === 'configurator' ? (
                   <>
                     <button type="button" data-freze="duplica" disabled={doarCitire} onClick={duplica}>{t('freze.duplica')}</button>
                     <button type="button" data-freze="sterge" disabled={doarCitire} onClick={() => { setStergere(true); }}>{t('freze.sterge')}</button>

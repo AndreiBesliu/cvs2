@@ -13174,6 +13174,30 @@ din sesiunea elicelor: „cand e verde fa unirea”
 - **La owner:** fereastra exportului (`#11`), verificarea juridică a utilizării aplicației înaintea live-ului, „cine
   unește în `main`”; canalul `foi`, de încercat.
 
+## 2026-11-24 — ADR 0302 și 16.A↑h-1: fereastra „Frezele mele” ca listă (Model: Claude Opus 5.5)
+
+**Prompt:** „vreau sa adaugi lista completa cu toate configuratiile posibile, de exemplu, am un fisier exportat din artcam, cu
+toate frezele de acolo. vreau ca frezele sa fi o lista ca in artcam, si doar daca vrea userul si i se pare mai ok, atunci sa
+comute pe configuratorul actual, care sa poata confiigura orice tip de freza, inclusiv pe cele desenate de user sau adaugate
+custom” (owner-ul, cu `FREZE.tdb`), apoi, la cele cinci întrebări: „Da, 1a–5a”. **Started:** 24.11, 12:40.
+
+- **ADR 0302** (`ab36a68c` propus, `d0fa2dde` acceptat): `FREZE.tdb` e baza de scule ArtCAM, binară și nedocumentată, cu
+  conținutul ArtCAM și al producătorilor: nu se citește și nu se copiază (`CLAUDE.md`). În locul ei: un catalog propriu de
+  feluri și mărimi standard (mm și țoli), biblioteca ca listă cu fișa doar de citit și configuratorul la cerere, grupurile
+  omului, felurile fără CAM „în curând”. Schimbă ADR 0300 §2 și §3. Feliile, despărțite la acceptare: h-1 fereastra ca listă,
+  h-2 grupurile, h-3 catalogul, h-4 felurile noi.
+- **16.A↑h-1** (`d535f1cd`, probele întărite `0acfc75b`): fișa frezei alese, cu „Editează”, „Duplică”, „Șterge…”; editorul
+  la „Editează” și „Freză nouă”, întoarcerea la fișă după „Salvează”, „Renunță” și „←”; comutatorul „Listă / Configurator”
+  (`cncvs2.freze.vedere`); focusul; pe drum, textul de sus și nota valorilor la zi cu 16.A↑b-2 și cota siluetei cu virgula
+  în română; manualul (ro, en).
+- **Probele** (întâi, în Edge): `freze.spec.ts` 15 / 15 și `frezeTaiere.spec.ts`, `manual.spec.ts` (24 / 24); proba pe
+  emulatoare trece acum prin fișă. **Otrăvurile** (`test/otravuri/16.A-h1.py`): 16 / 16.
+- **`main` adus** (`8cb76d64`: cotele 10.4↑a-1, elicele 3.Tt, reparația de noapte); ciocnirile doar în DEVLOG, în indexul ADR
+  și în registrul otrăvurilor, cu ambele părți.
+- **Mărimea:** pornirea 110,0 kB (cu ușa 114,7, cu Atelierul 115,0 / 120), totalul 819,0 / 900 cu `main` adus (`main` `64a63b48`: 816,1; 16.A↑b-2, 16.A↑a-2 și
+  16.A↑h-1 împreună +2,9, din care h-1 ~+0,7). Nimic pe
+  server; documentul nu se schimbă. **Completed:** 24.11, 13:20.
+
 ## 2026-11-24 — Sesiunea principală în cloud: rapidul lotului 17, oprit de limita de 10 minute; limita unei felii, 15 minute (Model: Claude Fable 5.2)
 
 **Prompt:** (fără prompt nou: rapidul de pe `main` n-a ieșit verde după a șaptesprezecea unire)
@@ -13193,6 +13217,26 @@ din sesiunea elicelor: „cand e verde fa unirea”
 - **De hotărât de owner, fără grabă:** oracolul de 6 minute se poate împărți în mai multe fișiere (feliile s-ar
   echilibra și rapidul ar coborî iar spre 6–7 minute) sau muta în nivelul complet.
 - **Lecția:** înaintea unirii se citesc și rapidul, și completul ramurii de unire, nu doar completul.
+
+## 2026-11-24 — 16.A↑h-2: grupurile omului în „Frezele mele” (Model: Claude Opus 5.5)
+
+**Prompt:** felia a doua din ADR 0302, în ordinea acceptată de owner („Da, 1a–5a”: întâi fereastra ca listă, apoi grupurile).
+**Started:** 24.11, 13:22.
+
+- **Codul** (`6cfa2231`): câmpul `grup` al frezei (`src/model/freza.ts`: marginile, curățarea, `grupurileListei`,
+  `cuGrupRedenumit`), coloana CSV `grup` (`src/io/frezeFisier.ts`), redenumirea în depozit, într-o singură scriere
+  (`redenumesteGrup`); fereastra: lista pe grupuri (ale omului întâi, după nume, apoi felurile), „✎” pe titlul unui grup,
+  „Grupul” din fișă (alt grup, „Fără grup (pe fel)”, „Grup nou…”), câmpul „Grupul” din editor; manualul (ro, en). Contul și
+  sincronizarea, neschimbate: îmbinarea pe câmpuri ia și grupul.
+- **Focusul** (`60e7f68e`): otrava E06 (starea redenumirii lăsată după aplicare) a arătat că după redenumire focusul cădea în
+  afara ferestrei, iar Escape nu mai ajungea la ea; acum focusul revine pe „✎” al grupului (desfăcut, pe căutare), și după
+  renunțare.
+- **Probele** (întâi): unitare noi 4 și CSV-ul (77 / 77 pe frezele), în Edge 1 nouă (`freze.spec.ts` 14 / 14, cu
+  `frezeTaiere.spec.ts` 20 / 20). **Otrăvurile** (`test/otravuri/16.A-h2.py`): 23 / 24 (G04 echivalentă).
+- **`main` adus** din nou (`e5153528`, limita feliilor rapidului); 16.A↑b-2, 16.A↑a-2 și ADR 0302 (`d0fa2dde`) sunt în lotul
+  19 al sesiunii principale.
+- **Mărimea:** pornirea 110,0 kB (cu ușa 114,7, cu Atelierul 115,0 / 120), totalul 819,0 → 820,2 / 900 (`main` `647cebb1`:
+  816,1). Nimic pe server; documentul nu se schimbă. **Completed:** 24.11, 13:45.
 
 ## 2026-11-24 — Feliile 11.1↑c și 14.C↑d: comenzile foii pe pânză; butonul Admin, doar pentru personal (sesiunea principală în cloud) (Model: Claude Fable 5.2)
 

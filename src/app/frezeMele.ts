@@ -11,7 +11,7 @@
  */
 import { useSyncExternalStore } from 'react';
 import {
-  cuFreza, cuImport, cuStandard, faraFreza, frezaDinDate, type Freza, type FrezaSalvata, type FrezaStandard, type PoliticaImport,
+  cuFreza, cuGrupRedenumit, cuImport, cuStandard, faraFreza, frezaDinDate, type Freza, type FrezaSalvata, type FrezaStandard, type PoliticaImport,
   type ProblemeFreza,
 } from '../model/freza.ts';
 import { sincronDate, sincronDin, type BibliotecaCont, type StareSincron } from '../model/frezeSincron.ts';
@@ -80,6 +80,8 @@ export type FrezeMele = {
    * minte că s-a hotărât); fără (butonul „Adaugă frezele standard”), cele care lipsesc. Le pune pe ce e în depozit acum.
    */
   readonly puneStandard: (standard: readonly FrezaStandard[], primaData: boolean) => Promise<RezultatMaiMulte>;
+  /** Redenumirea unui grup al omului (ADR 0302 §4): toate frezele lui, într-o singură scriere; gol, înapoi pe feluri. */
+  readonly redenumesteGrup: (vechi: string, nou: string) => Promise<RezultatStergere>;
 };
 
 type Citita = {
@@ -240,6 +242,11 @@ export function creeazaFrezeMele(depozit: DepozitFreze | null, idNou: () => stri
       const r = faraFreza(lista, id);
       return r.ok ? { ok: true, lista: r.lista, rez: {} } : { ok: false, probleme: { id: 'lipsa' } };
     }),
+    redenumesteGrup: (vechi, nou) => schimba((lista) => {
+      const r = cuGrupRedenumit(lista, vechi, nou, acum());
+      if (r.ok) return { ok: true, lista: r.lista, rez: {} };
+      return { ok: false, probleme: r.motiv === 'lipsa' ? { id: 'lipsa' } : { grup: r.motiv } };
+    }),
     adaugaToate: (freze) => schimba((lista, rezervate) => {
       const r = cuImport(lista, freze, 'amandoua', idNou, acum(), rezervate);
       return r.ok ? { ok: true, lista: r.lista, rez: { adaugate: r.adaugate, inlocuite: r.inlocuite, sarite: r.sarite } } : r;
@@ -380,6 +387,7 @@ export function frezeMele(cheie: string = CHEIE_LOCALA): FrezeMele {
     ...b,
     salveaza: (id, f) => anunta(b.salveaza(id, f)),
     sterge: (id) => anunta(b.sterge(id)),
+    redenumesteGrup: (vechi, nou) => anunta(b.redenumesteGrup(vechi, nou)),
     adaugaToate: (freze) => anunta(b.adaugaToate(freze)),
     importa: (freze, politica) => anunta(b.importa(freze, politica)),
     schimbaCont: (f) => anunta(b.schimbaCont(f)),

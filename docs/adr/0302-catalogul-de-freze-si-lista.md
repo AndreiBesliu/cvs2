@@ -141,3 +141,50 @@ Pe 24.11.2026, exact: „Da, 1a–5a”. Deci:
    comutatorul „Listă / Configurator” îl ține mereu deschis, pentru cine vrea.
 4. **a:** grupurile sunt ale omului, libere; implicit, frezele stau pe feluri.
 5. **a:** întâi fereastra ca listă, apoi grupurile (despărțite la acceptare, §7), apoi catalogul, apoi felurile noi.
+
+## Implementarea (16.A↑h-1)
+
+Pe 24.11.2026, în sesiunea cloud a liniei frezelor, imediat după răspunsuri, pe ramura `wip/16.A-freze`:
+
+- **Vederea** (`src/app/FrezeleMele.tsx`): „Listă” (implicit) sau „Configurator”, două butoane lângă filtre, ținute în
+  browser (`cncvs2.freze.vedere`; fără stocare, doar cât e deschisă pagina).
+- **Fișa** (vederea „Listă”): freza aleasă își arată în dreapta felul, silueta la scară, geometria (diametrul, unghiul la V și
+  la gravare, vârful la gravare, tăișul și tăișurile doar dacă sunt știute, T-ul), valorile de lucru și nota, doar de citit
+  (`<dl>`, câte o valoare cu `data-freze-valoare`), cu „Editează”, „Duplică” și „Șterge…” (întrebarea, ca în editor). Pe telefon,
+  fișa ia ecranul, iar „Frezele” întoarce la listă.
+- **Editorul** e cel de azi, deschis de „Editează” și de „Freză nouă”; în „Listă”, „Salvează” și „Renunță la schimbări”
+  (activ și fără schimbări) întorc la fișă, iar „←” (telefonul) duce la fișă, cu aceeași plecare ca restul ferestrei (o
+  schimbare bună se salvează, una greșită ține editorul pe loc). „Duplică” și „Șterge” stau pe fișă, nu și în editor.
+- **„Configurator”** e fereastra de dinainte: alegerea deschide direct editorul, care rămâne deschis după „Salvează”, cu
+  „Duplică” și „Șterge” în el. Comutarea spre „Listă” pleacă întâi din editor (o schimbare bună se salvează).
+- **Focusul:** fișa și editorul își iau locul unul altuia, deci butonul apăsat dispare; focusul merge pe nume la „Editează”
+  și pe „Editează” la întoarcerea în fișă.
+- **Pe drum:** textul de sus al ferestrei și nota valorilor de lucru spuneau încă „în curând” despre alegerea frezei (o face
+  secțiunea Tăierea din 16.A↑b-2); cota siluetei scria numerele cu punct și în română.
+
+Probele (scrise întâi, în Edge): fișa și întoarcerile, comutatorul (ținut după reîncărcare, cu o schimbare nesalvată la
+comutare), telefonul (390, 360, 320 px, cu fontul lat), 1280 px; probele de dinainte trec acum prin fișă (și cea pe
+emulatoare). Otrăvurile: `test/otravuri/16.A-h1.py`. Nimic pe server; documentul nu se schimbă.
+
+## Implementarea (16.A↑h-2)
+
+Pe 24.11.2026, în aceeași sesiune, după 16.A↑h-1:
+
+- **Câmpul `grup`** al frezei (`src/model/freza.ts`): opțional, text de cel mult 40 de caractere, fără caractere de control,
+  curățat la capete la salvare; gol, câmpul pleacă și freza stă pe felul ei (asta ține locul lui „Fără grup” din §4: frezele
+  fără grup al omului stau grupate pe feluri, ca înainte). Merge cu freza în fișierul JSON, în CSV (coloana `grup`) și în
+  cont (sincronizarea îmbină orice câmp, deci nimic nou acolo); o versiune mai veche a aplicației îl păstrează, ca pe orice
+  câmp necunoscut. Documentul nu se schimbă: grupul ține de bibliotecă, nu de copia din proiect.
+- **Grupurile listei** (`grupurileListei`): întâi ale omului, după nume, fără deosebire de majuscule (numele afișat e al
+  primei frezei a grupului), apoi felurile, în ordinea lor. Un grup există cât are freze: un grup nou se face mutând o freză
+  în el.
+- **Redenumirea** (`cuGrupRedenumit`, `redenumesteGrup` în depozit): toate frezele grupului, într-o singură scriere, cu
+  versiunea crescută (contul vede schimbarea fiecăreia); un nume care e deja al altui grup le unește, cu numele acelui grup;
+  gol, frezele se întorc pe felurile lor.
+- **Fereastra:** pe titlul unui grup al omului, „✎” deschide redenumirea pe loc (Enter aplică, Escape renunță); pe fișă,
+  lista „Grupul” arată grupul frezei și o mută (alt grup, „Fără grup (pe fel)” sau „Grup nou…”, cu numele scris); în editor,
+  câmpul „Grupul”, cu grupurile existente propuse.
+
+Probele (întâi): modelul, fișierul și depozitul (unitare), fereastra în Edge (grupul nou, cel existent, redenumirea cu Escape
+și cu refuzul, reîncărcarea, editorul, „Fără grup”). Otrăvurile: `test/otravuri/16.A-h2.py`.
+
