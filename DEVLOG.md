@@ -13198,6 +13198,31 @@ custom” (owner-ul, cu `FREZE.tdb`), apoi, la cele cinci întrebări: „Da, 1a
   16.A↑h-1 împreună +2,9, din care h-1 ~+0,7). Nimic pe
   server; documentul nu se schimbă. **Completed:** 24.11, 13:20.
 
+## 2026-11-24 — Felia 3.Xj: căutarea și categoriile în biblioteca extensiilor (ADR 0233) (sesiune cloud)
+
+**Prompt:** „ok, porneste cautarea si categoriile”. **Started:** 24.11, 14:30. **Completed:** 24.11, 16:30.
+
+- **ADR 0233**, scris și implementat cu alegerile recomandate; cinci întrebări pentru owner (rafturile, unde stă Easy
+  3Draw, dacă rămân la vedere cu o singură extensie, câte rafturi pe extensie, cât de îngăduitoare e căutarea).
+- **Rafturile** sunt ale aplicației (`CATEGORII_BIBLIOTECA`); pe care stă o extensie o spune lista bibliotecii
+  (`categorii`, 1–3), nu pachetul. Easy 3Draw: Jucării și modele, Imprimare 3D, CNC și trasee; pachetul, neschimbat.
+- **Căutarea** (`src/extensii/cautare.ts`, pură): oriunde în nume, la început de cuvânt în descrieri, autor și numele
+  rafturilor; fără diacritice; toate cuvintele; potrivirile din nume, primele.
+- **Fereastra:** o bară sub cap, cu câmpul, „N din M” și pastilele rafturilor prezente; rafturile pe pagina extensiei;
+  starea „nimic”; „/”, ↓, Enter, Escape. Nimic ținut minte, nimic trimis.
+- **Ce au arătat capturile:** în coloana listei, cinci rafturi ocupau trei rânduri: bara a trecut pe toată lățimea.
+- **Găsit în trecere, nereparat aici:** la 320 px, la atingere, rândul de sus al aplicației își suprapune butoanele (în
+  engleză, Extensii e sub butonul de căutare); raportat sesiunii principale.
+- **O probă instabilă a extensiilor, reparată** (doar probe): completul ramurii a căzut la `extensii.lucru.spec.ts:222`
+  (clicul pe „Repornește” din cadrul extensiei nu s-a mai întors); reprodus 16 din 150 pe zece lucrători, reparat cu
+  `clicCareRefaceCadrul` (150 din 150; otrava „gazda ignoră repornirea”, prinsă).
+  Sesiunea principală o reparase în aceeași oră în `main` (`29ef7e44`): la aducerea lui `main`, ramura a trecut pe
+  varianta lui.
+- **Porțile:** tipurile, regulile de import, build-ul determinist; rapidul din CI, verde pe `1c21640`; probele
+  bibliotecii și ale extensiilor, verzi local, cu `main` (`64a63b4`) adus. Otrăvurile 78 / 78, în clonă (la prima
+  rulare, 76: două probe întărite). Pornirea neschimbată (109,9 kB), totalul 814,3 → 815,6 / 900 kB.
+- **Canalul `biblioteca`:** publicat din `1c21640`.
+
 ## 2026-11-24 — Sesiunea principală în cloud: rapidul lotului 17, oprit de limita de 10 minute; limita unei felii, 15 minute (Model: Claude Fable 5.2)
 
 **Prompt:** (fără prompt nou: rapidul de pe `main` n-a ieșit verde după a șaptesprezecea unire)

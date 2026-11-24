@@ -8,6 +8,10 @@
  * autorul. Toate sunt opționale și se citesc cu îngăduință: una pe care fila de acum n-o înțelege (un catalog mai nou decât
  * ea) se sare, cu numele în `sarite`, iar rândul rămâne bun. Construcția și poarta build-ului cer `sarite` gol. Semnul și
  * capturile stau lângă catalog, cu amprenta în nume, ca pachetele.
+ *
+ * Categoriile (ADR 0233): rafturile bibliotecii sunt ale aplicației (`CATEGORII_BIBLIOTECA`), iar pe ce rafturi stă o
+ * extensie o spune lista bibliotecii, nu pachetul. Se citesc tot cu îngăduință: o categorie pe care fila n-o știe cade
+ * singură, cu celelalte rămase.
  */
 
 export const FORMAT_CATALOG = 'cvs2-biblioteca';
@@ -25,6 +29,15 @@ export const MAX_NOUTATE = 240;
 export const MAX_AUTOR = 60;
 export const MAX_CAPTURI = 4;
 export const MAX_ALT = 120;
+/**
+ * Rafturile bibliotecii (ADR 0233), în ordinea în care se arată. Numele lor, în limba aplicației, stau în mesajele carcasei
+ * (`extensii.categorie.<id>`). Un raft nou intră aici, cu numele lui în ambele limbi.
+ */
+export const CATEGORII_BIBLIOTECA = ['desen', 'cnc', 'imprimare', 'masina', 'modele'] as const;
+export type CategorieBiblioteca = typeof CATEGORII_BIBLIOTECA[number];
+/** O extensie stă pe cel mult atâtea rafturi; primul e cel principal. */
+export const MAX_CATEGORII = 3;
+export const esteCategorie = (x: unknown): x is CategorieBiblioteca => (CATEGORII_BIBLIOTECA as readonly unknown[]).includes(x);
 /** Semnul din catalog e cel din pachet (`LIMITE_PACHET.octetiPictograma`). */
 export const MAX_OCTETI_PICTOGRAMA = 8 * 1024;
 export const MAX_OCTETI_CAPTURA = 150 * 1024;
@@ -54,6 +67,8 @@ export type PrezentareRand = {
   /** „Ce e nou”, de la versiunea cea mai nouă în jos, cel mult `MAX_NOUTATI`. */
   readonly noutati?: readonly NoutateBiblioteca[];
   readonly autor?: string;
+  /** Rafturile pe care stă extensia (ADR 0233), cel mult `MAX_CATEGORII`, fiecare o dată; primul e cel principal. */
+  readonly categorii?: readonly CategorieBiblioteca[];
 };
 /** Un rând al catalogului: o extensie, în versiunea publicată odată cu aplicația. */
 export type RandBiblioteca = PrezentareRand & {
@@ -158,10 +173,20 @@ function citestePrezentare(id: string, r: Readonly<Record<string, unknown>>): { 
   });
   if (noutati && dataSarita) sarite.push(`${id}: noutati.data`);
   const autor = camp('autor', (x) => (text(x, MAX_AUTOR) ? x : null));
+  // Categoriile: forma greșită (nu o listă de texte, prea multe, una de două ori) cade cu totul; una pe care fila n-o știe
+  // (un catalog mai nou decât ea) cade singură, cu numele câmpului, iar cele știute rămân.
+  let categorieSarita = false;
+  const categorii = camp('categorii', (x) => {
+    if (!Array.isArray(x) || x.length > MAX_CATEGORII || !x.every((y) => typeof y === 'string') || new Set(x).size !== x.length) return null;
+    const stiute = (x as string[]).filter(esteCategorie);
+    categorieSarita = stiute.length !== x.length;
+    return stiute;
+  });
+  if (categorii && categorieSarita) sarite.push(`${id}: categorii`);
   return {
     prezentare: {
       ...(pictograma ? { pictograma } : {}), ...(capturiPeLimbi ? { capturi: capturiPeLimbi } : {}), ...(despre ? { despre } : {}),
-      ...(noutati ? { noutati } : {}), ...(autor !== undefined ? { autor } : {}),
+      ...(noutati ? { noutati } : {}), ...(autor !== undefined ? { autor } : {}), ...(categorii && categorii.length > 0 ? { categorii } : {}),
     },
     sarite,
   };

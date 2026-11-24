@@ -996,6 +996,22 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   una pe alta** (ar lega bucățile și ar atinge pornirea). Un rând de „ce e nou” poate primi `"data": "an-lună-zi"`.
   Pachetele nu s-au schimbat de felie (Easy 3Draw era 18.22.0; din 3.Tt e 18.23.0; următoarea, 18.24.0). Cu `main` (`f536a4c`) adus: pornirea
   109,9 kB (plafonul 120; cu ușa 114,4, cu Atelierul 114,7), totalul 809,9 / 900; felia: pornirea +0, totalul +3,8 kB.
+  **Căutarea și categoriile în bibliotecă (ADR 0233, felia 3.Xj)** gata pe 24.11, în sesiunea cloud a liniei (aceeași
+  ramură, PR-ul `AndreiBesliu/cvs2#24`), neunită, la „ok, porneste cautarea si categoriile” al owner-ului, cu alegerile
+  recomandate (cinci întrebări pentru el, în ADR): sub capul ferestrei bibliotecii, o bară cu câmpul „Caută o extensie”
+  (oriunde în nume, la început de cuvânt în descrieri, autor și numele rafturilor; fără diacritice; toate cuvintele;
+  regula, pură, în `src/extensii/cautare.ts`) și cu pastilele rafturilor prezente în listă; pagina extensiei își spune
+  rafturile. **Rafturile sunt ale aplicației (`CATEGORII_BIBLIOTECA`, `shared/biblioteca.ts`): unul nou intră acolo, cu
+  numele lui în ambele limbi (`extensii.categorie.<id>`). Pe ce rafturi stă o extensie o spune lista bibliotecii
+  (`"categorii"` în `extensii/biblioteca.json`, 1–3, primul fiind cel principal), nu pachetul: o schimbare a lor nu cere
+  o versiune nouă, iar o probă cere fiecărei extensii din listă cel puțin un raft.** Catalogul le poartă ca dată de
+  prezentare, citită cu îngăduință. Căutarea și raftul ales țin de fereastra deschisă: nu se țin minte și nu pleacă
+  nicăieri. Pornirea +0, totalul +1,3 kB (cu `main` `a96881a` adus: pornirea 110,1 kB, cu ușa 114,8, cu Atelierul
+  115,1 / 120; totalul 818,1 / 900). **O probă care dă clic, în cadrul extensiei, pe ceva
+  ce îi reface cadrul pe loc (`host.reporneste()`) folosește `clicCareRefaceCadrul` (`test/e2e/ajutor-extensii.ts`),
+  cum cea care îl închide folosește `clicCareInchideCadrul`:** clicul nu se mai întoarce când cadrul dispare sub el
+  (completul feliei, căzut la `extensii.lucru.spec.ts:222`; reprodus 16 din 150 pe zece lucrători). Reparația e cea din
+  `main` (`29ef7e44`, făcută de sesiunea principală în aceeași oră): ajutorul primește și urmarea de așteptat.
   **Cotele pe desen: modelul și proba G-code-ului (ADR 0330, felia 10.4↑a-1, adusă din etapa 10)** gata pe 24.11, în
   sesiunea cloud a liniei (ramura `wip/10.4-cote`), unită în `main` pe 24.11 (`f25249cf`), fără interfață încă. ADR
   0330, acceptat de owner cu 1a–6a și cu nota lui: toate setările cotelor stau într-o fereastră nouă, „Setări”, nu în
