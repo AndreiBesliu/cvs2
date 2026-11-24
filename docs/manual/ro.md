@@ -1258,6 +1258,13 @@ fișă o mută: în alt grup, înapoi **Fără grup (pe fel)** sau, cu **Grup no
 frezele lui (un nume care e deja al altui grup le unește, iar un nume gol le întoarce pe felurile lor). Grupul merge cu
 freza în fișier și în cont.
 
+**Catalogul**, sub frezele tale (**Catalogul (69)**, strâns la început), are frezele obișnuite: plate de la Ø1 la Ø19,05,
+de planare de la Ø19,05 la Ø50,8, în V (30°–150°) și de gravare (10°–60°, cu vârful de 0,1–0,5), cu mărimile în milimetri
+și în țoli (nota „1/4"”). Valorile lor de lucru sunt de pornire, din diametru, de verificat pe materialul tău. O freză din
+catalog își arată fișa; **Pune în frezele mele** o copiază în bibliotecă, cu primul T liber, iar **Pune toate**, lângă un
+grup, și **Pune tot ce vezi**, lângă titlu (după căutare și filtru), pun mai multe deodată. O freză care e deja la tine
+(același fel, diametru, unghi și vârf) nu se pune a doua oară: fișa spune **E deja în frezele mele.**
+
 **Freză nouă** deschide editorul, cu câmpurile:
 - **Numele**: gol, freza primește numele propus din fel și diametru („Plată Ø6”, „V60 Ø6”, „Gravare 30° vârf 0,2 Ø3,175”).
   Două freze nu pot avea același nume (fără deosebire de majuscule);

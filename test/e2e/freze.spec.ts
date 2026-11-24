@@ -261,6 +261,51 @@ test('grupurile omului: „Grupul” din fișă (un grup nou, unul existent) și
   await expect(page.getByTestId('jurnal')).toHaveText('0 erori în jurnalul local');
 });
 
+test('catalogul: grupurile cu mărimile lor, fișa unei freze din catalog, „Pune în frezele mele” pentru una, un grup, tot', async ({ page }) => {
+  await page.goto('/');
+  const f = await deschideFrezele(page);
+  await standard(f);
+  const cat = f.locator('[data-freze="catalog"]');
+  const bib = (x: Locator): Locator => x.locator('[data-freza] .freze-rand-nume');
+  // Strâns la început: doar titlul, cu numărul frezelor.
+  await expect(f.locator('[data-freze="catalog-arata"]')).toHaveText('Catalogul (69)');
+  await expect(cat.locator('[data-catalog]')).toHaveCount(0);
+  await f.locator('[data-freze="catalog-arata"]').click();
+  await expect(cat.locator('.freze-grupa h3')).toHaveText(['Plate (17)', 'Planare (5)', 'În V (17)', 'Gravare (30)']);
+  await expect(cat.locator('[data-catalog="cat-plata-6.35"]')).toContainText('1/4" · 18000 rot/min · 1800 mm/min');
+  // Fișa unei freze din catalog: valorile de pornire și nota țolilor, doar de citit, fără Editează.
+  await cat.locator('[data-catalog="cat-plata-6.35"]').click();
+  await expect(fisa(f).getByRole('heading', { name: 'Plată Ø6,35', level: 3 })).toBeVisible();
+  await expect(valoare(f, 'avans')).toHaveText('1800 mm/min');
+  await expect(valoare(f, 'nota')).toHaveText('1/4"');
+  await expect(fisa(f)).toContainText('Valori de pornire, de verificat pe material.');
+  await expect(fisa(f).locator('[data-freze="editeaza"]')).toHaveCount(0);
+  // Pusă: intră în bibliotecă, cu primul T liber; fișa spune că e deja acolo.
+  await fisa(f).locator('[data-freze="catalog-pune"]').click();
+  await expect(f.locator('[data-freze="mesaj"]')).toHaveText('Puse: 1 · erau deja: 0');
+  await expect(fisa(f).locator('[data-freze="catalog-pune"]')).toBeDisabled();
+  await expect(fisa(f)).toContainText('E deja în frezele mele.');
+  await expect(f.locator('[data-freza]').filter({ hasText: 'Plată Ø6,35' })).toContainText('T7 ·');
+  // O freză a catalogului care e deja în bibliotecă (din setul standard): de la început, „E deja”.
+  await cat.locator('[data-catalog="cat-v-90-12"]').click();
+  await expect(fisa(f).locator('[data-freze="catalog-pune"]')).toBeDisabled();
+  // Tot grupul Planare, apoi tot catalogul: doar ce lipsește.
+  await cat.locator('[data-catalog-grup="planare"] [data-freze="catalog-pune-grup"]').click();
+  await expect(f.locator('[data-freze="mesaj"]')).toHaveText('Puse: 5 · erau deja: 0');
+  await cat.locator('[data-freze="catalog-pune-tot"]').click();
+  await expect(f.locator('[data-freze="mesaj"]')).toHaveText('Puse: 56 · erau deja: 13');
+  // Plata Ø19,05 e aceeași freză cu planarea Ø19,05 (aceeași geometrie): o singură dată.
+  await expect(bib(f)).toHaveCount(68);
+  await expect(f.locator('[data-freze="stare"]')).toContainText('68 de freze');
+  // Căutarea și filtrul aleg și din catalog.
+  await f.locator('[data-freze="cauta"]').fill('ø25,4');
+  await expect(cat.locator('[data-catalog] .freze-rand-nume')).toHaveText(['Plată Ø25,4', 'V60 Ø25,4', 'V90 Ø25,4', 'V120 Ø25,4', 'V150 Ø25,4']);
+  await f.locator('[data-freze="cauta"]').fill('');
+  await f.locator('[data-freze-filtru="gravare"]').click();
+  await expect(cat.locator('.freze-grupa h3')).toHaveText(['Gravare (30)']);
+  await expect(page.getByTestId('jurnal')).toHaveText('0 erori în jurnalul local');
+});
+
 test('goală (frezele standard șterse): nu revin singure, nici după reîncărcare; „Adaugă frezele standard” le pune la loc', async ({ page }) => {
   await page.goto('/');
   await bibliotecaGoala(page);

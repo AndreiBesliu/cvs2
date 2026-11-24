@@ -1300,6 +1300,13 @@ you type (at most 40 characters). Your groups come first in the list, by name; *
 all its bits (a name that already belongs to another group merges them, and an empty name puts them back under their kinds).
 The group travels with the bit in the file and in the account.
 
+**The catalogue**, below your bits (**Catalogue (69)**, folded at first), holds the common bits: flat from Ø1 to Ø19.05,
+surfacing from Ø19.05 to Ø50.8, V (30°–150°) and engraving (10°–60°, with a 0.1–0.5 tip), with their sizes in millimetres and
+in inches (the note “1/4"”). Their working values are starting values, from the diameter, to check on your material. A
+catalogue bit shows its details; **Add to my bits** copies it to the library, with the first free T, while **Add all**, next to
+a group, and **Add everything shown**, next to the title (after the search and the filter), add several at once. A bit you
+already have (same kind, diameter, angle and tip) is not added twice: the details say **Already in my bits.**
+
 **New bit** opens the editor, with the fields:
 - **Name**: left empty, the bit gets the name proposed from its kind and diameter (“Flat Ø6”, “V60 Ø6”, “Engraving 30° tip
   0.2 Ø3.175”). Two bits cannot share a name (case does not matter);

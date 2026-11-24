@@ -26,6 +26,8 @@ import {
   cheieNume, FELURI_FREZA, FREZE_PORNIRE, grupurileListei, inaltimeCon, MARGINI_FREZA, numeLiber, problemeFreza, type CampFreza, type FelFreza,
   type Freza, type FrezaFaraNume, type FrezaSalvata, type MotivFreza, type PoliticaImport, type ProblemeFreza,
 } from '../model/freza.ts';
+import { CATALOG_FREZE, GRUPURI_CATALOG, tolFreza, type FrezaCatalog } from '../model/catalogFreze.ts';
+import { aceeasiGeometrie } from '../model/dinCatalog.ts';
 import { UNGHI_V_IMPLICIT } from '../model/document.ts';
 import { cuFrezeleBrowserului, deAdusDinBrowser, type Alegere } from '../model/frezeSincron.ts';
 import { citesteNumar, textNumar } from '../ui/numar.ts';
@@ -56,6 +58,9 @@ const MAXIM: Readonly<Partial<Record<CampFreza, number>>> = {
 };
 
 const fara = (x: number | undefined, ro: boolean): string => (x === undefined || !Number.isFinite(x) ? '' : textNumar(x, ro));
+
+/** O freză a catalogului, cu numele propus în limba de acum și nota țolilor. */
+type CatalogCuNume = { readonly c: FrezaCatalog; readonly nume: string; readonly tol: string | undefined };
 
 /** Selectorul lui „✎” de pe titlul grupului dat (după redenumire sau renunțare, focusul revine acolo). */
 const focusRedenumire = (grup: string): string => `[data-freze-grup="${CSS.escape(grup)}"] [data-freze="grup-redenumeste"]`;
@@ -219,6 +224,9 @@ export function FrezeleMele({ onInchide, focusInapoi, config }: {
   const [redenumit, setRedenumit] = useState<{ readonly grup: string; readonly nou: string } | null>(null);
   /** „Grupul” → „Grup nou…”: numele scris pentru grupul nou al frezei din fișă. */
   const [grupNou, setGrupNou] = useState<string | null>(null);
+  /** Catalogul (ADR 0302 §1): deschis sub bibliotecă, și freza lui aleasă (fișa ei, doar de citit). */
+  const [catalogDeschis, setCatalogDeschis] = useState(false);
+  const [aleasaCatalog, setAleasaCatalog] = useState<string | null>(null);
   const [mesaj, setMesaj] = useState('');
   const [stergere, setStergere] = useState(false);
   const [importat, setImportat] = useState<{ readonly freze: readonly Freza[]; readonly sarite: number; readonly politica: PoliticaImport } | null>(null);
@@ -226,6 +234,8 @@ export function FrezeleMele({ onInchide, focusInapoi, config }: {
   const refFisier = useRef<HTMLInputElement>(null);
   const refEditor = useRef<HTMLFormElement>(null);
   const refCorp = useRef<HTMLDivElement>(null);
+  /** Catalogul cu numele propuse și nota țolilor, în limba de acum. */
+  const catalog = useMemo((): readonly CatalogCuNume[] => CATALOG_FREZE.map((c) => ({ c, nume: numePropus(c, ro), tol: tolFreza(c.diametru) })), [ro]);
   /** Unde merge focusul după randarea următoare (fișa și editorul își iau locul unul altuia, deci butonul apăsat dispare). */
   const deFocus = useRef<string | null>(null);
   useEffect(() => {
@@ -276,6 +286,7 @@ export function FrezeleMele({ onInchide, focusInapoi, config }: {
     setStergere(false);
     setEditeaza(editor);
     setGrupNou(null);
+    setAleasaCatalog(null);
     setPas(id === null ? 'lista' : 'editor');
   };
   /** Din editor, înapoi la fișa frezei (vederea „Listă”), cu focusul pe „Editează”. */
@@ -389,6 +400,19 @@ export function FrezeleMele({ onInchide, focusInapoi, config }: {
         : grupurileListei(biblioteca.stare().freze).find((x) => x.grup !== null && cheieNume(x.grup) === k)?.grup;
       if (g === undefined || g === null) refCauta.current?.focus();
       else deFocus.current = focusRedenumire(g);
+    });
+  };
+  /** O freză a catalogului, aleasă: fișa ei, doar de citit (editorul de dinainte pleacă întâi). */
+  const alegeCatalog = (id: string): void => {
+    pleaca(() => { deschide(null, null); setAleasaCatalog(id); setPas('editor'); setMesaj(''); });
+  };
+  /** „Pune în frezele mele”: frezele date ale catalogului, cu numele propus și nota țolilor, cele care nu sunt deja. */
+  const puneDinCatalog = (alese: readonly CatalogCuNume[]): void => {
+    void biblioteca.puneDinCatalog(alese.map((x) => ({ ...x.c, nume: x.nume, ...(x.tol !== undefined ? { nota: x.tol } : {}) }))).then((r) => {
+      if (!r.ok) { setMesaj(motivLista(r.probleme)); return; }
+      const plina = r.plina ? ` ${t('freze.catalog.plina', { max: MARGINI_FREZA.freze })}` : '';
+      setMesaj(t('freze.catalog.rezultat', { adaugate: r.adaugate, existente: r.existente }) + plina);
+      if (r.adaugate > 0) sincronizare.programeaza();
     });
   };
   /** Renunțarea la redenumire (butonul sau Escape): câmpul se închide, iar focusul revine pe „✎” al grupului. */
@@ -539,6 +563,8 @@ export function FrezeleMele({ onInchide, focusInapoi, config }: {
   };
 
   const q = cauta.trim().toLocaleLowerCase(limba);
+  const catalogVazut = catalog.filter((x) => (filtru === 'toate' || x.c.fel === filtru) && (q === '' || x.nume.toLocaleLowerCase(limba).includes(q)));
+  const dinCatalog = aleasaCatalog !== null ? catalog.find((x) => x.c.id === aleasaCatalog) ?? null : null;
   const vazute = stare.freze.filter((f) => (filtru === 'toate' || f.fel === filtru) && (q === '' || f.nume.toLocaleLowerCase(limba).includes(q)));
   const fel = ciorna?.fel ?? 'plata';
   const pNume = vizibila('nume') ? probleme.nume : undefined;
@@ -583,7 +609,9 @@ export function FrezeleMele({ onInchide, focusInapoi, config }: {
   const grupuri = grupurileListei(stare.freze).flatMap((g) => (g.grup !== null ? [g.grup] : []));
 
   /** Fișa frezei alese, doar de citit (vederea „Listă”, ADR 0302 §3): felul, silueta, geometria, valorile de lucru, nota. */
-  const fisa = (f: FrezaSalvata): ReactNode => {
+  const fisa = (f: Freza, catalogDeja?: boolean): ReactNode => {
+    /** Fișa unei freze din catalog (`catalogDeja` dat): fără T, fără grup, cu „Pune în frezele mele”. */
+    const dinCat = catalogDeja !== undefined;
     const mm = t('freze.unitate.mm');
     const geometria: (readonly [string, string, string])[] = [
       ['fel', t('freze.felul'), t(`freze.fel.${f.fel}`)],
@@ -593,7 +621,7 @@ export function FrezeleMele({ onInchide, focusInapoi, config }: {
     if (f.fel === 'gravare' && f.varf !== undefined) geometria.push(['varf', t('freze.varf'), `${nr(f.varf)} ${mm}`]);
     if (f.tais !== undefined) geometria.push(['tais', t('freze.tais'), `${nr(f.tais)} ${mm}`]);
     if (f.taisuri !== undefined) geometria.push(['taisuri', t('freze.taisuri'), nr(f.taisuri)]);
-    geometria.push(['numar', t('freze.numar'), `T${f.numar}`]);
+    if (!dinCat) geometria.push(['numar', t('freze.numar'), `T${f.numar}`]);
     const lucru: readonly (readonly [string, string, string])[] = [
       ['turatie', t('freze.turatie'), `${nr(f.turatie)} ${t('freze.unitate.rpm')}`],
       ['avans', t('freze.avans'), `${nr(f.avans)} ${t('freze.unitate.mm-min')}`],
@@ -615,14 +643,15 @@ export function FrezeleMele({ onInchide, focusInapoi, config }: {
       <section className="freze-editor freze-fisa" data-freze="fisa" aria-labelledby="freze-fisa-titlu">
         <button type="button" className="freze-inapoi" data-freze="inapoi" onClick={() => { setPas('lista'); setStergere(false); }}>← {t('freze.inapoi')}</button>
         <h3 id="freze-fisa-titlu">{f.nume}</h3>
-        <div className="freze-fisa-grup">
+        {!dinCat ? (
+          <div className="freze-fisa-grup">
           {grupNou === null ? (
             <label className="freze-muta">
               <span>{t('freze.grup')}</span>
               <select data-freze="muta" value={f.grup ?? ''} disabled={doarCitire}
                 onChange={(e) => {
                   const v = e.currentTarget.value;
-                  if (v === NOU) { setGrupNou(''); setMesaj(''); deFocus.current = '[data-freze="grup-nou"]'; } else mutaIn(f, v);
+                  if (v === NOU) { setGrupNou(''); setMesaj(''); deFocus.current = '[data-freze="grup-nou"]'; } else mutaIn(f as FrezaSalvata, v);
                 }}>
                 <option value="">{t('freze.grup.fara')}</option>
                 {grupuri.map((g) => <option key={g} value={g}>{g}</option>)}
@@ -630,7 +659,7 @@ export function FrezeleMele({ onInchide, focusInapoi, config }: {
               </select>
             </label>
           ) : (
-            <form className="freze-muta" onSubmit={(e) => { e.preventDefault(); if (grupNou.trim() !== '') mutaIn(f, grupNou); }}>
+            <form className="freze-muta" onSubmit={(e) => { e.preventDefault(); if (grupNou.trim() !== '') mutaIn(f as FrezaSalvata, grupNou); }}>
               <span>{t('freze.grup')}</span>
               <input type="text" data-freze="grup-nou" aria-label={t('freze.grup.nume')} value={grupNou}
                 onChange={(e) => { setGrupNou(e.currentTarget.value); setMesaj(''); }} />
@@ -638,7 +667,8 @@ export function FrezeleMele({ onInchide, focusInapoi, config }: {
               <button type="button" data-buton="renunta" onClick={() => { setGrupNou(null); }}>{t('freze.import.renunta')}</button>
             </form>
           )}
-        </div>
+          </div>
+        ) : null}
         <div className="freze-editor-sus">
           <section className="freze-fisa-parte" aria-labelledby="freze-fisa-geometria">
             <h4 id="freze-fisa-geometria">{t('freze.geometria')}</h4>
@@ -655,7 +685,8 @@ export function FrezeleMele({ onInchide, focusInapoi, config }: {
         {f.nota !== undefined && f.nota !== '' ? (
           <p className="freze-fisa-nota"><span>{t('freze.nota')}</span> <span data-freze-valoare="nota">{f.nota}</span></p>
         ) : null}
-        {stergere ? (
+        {dinCat ? <p className="freze-ajutor">{t('freze.catalog.pornire')}</p> : null}
+        {stergere && !dinCat ? (
           <div className="freze-stergere" role="group" aria-label={t('freze.sterge.intrebare', { nume: f.nume })}>
             <p>{t('freze.sterge.intrebare', { nume: f.nume })}</p>
             <div className="butoane">
@@ -664,11 +695,19 @@ export function FrezeleMele({ onInchide, focusInapoi, config }: {
             </div>
           </div>
         ) : null}
-        <div className="butoane freze-butoane">
-          <button type="button" className="principal" data-freze="editeaza" disabled={doarCitire} onClick={editeazaFisa}>{t('freze.editeaza')}</button>
-          <button type="button" data-freze="duplica" disabled={doarCitire} onClick={duplica}>{t('freze.duplica')}</button>
-          <button type="button" data-freze="sterge" disabled={doarCitire} onClick={() => { setStergere(true); }}>{t('freze.sterge')}</button>
-        </div>
+        {dinCat ? (
+          <div className="butoane freze-butoane">
+            <button type="button" className="principal" data-freze="catalog-pune" disabled={doarCitire || catalogDeja}
+              onClick={() => { if (dinCatalog) puneDinCatalog([dinCatalog]); }}>{t('freze.catalog.pune')}</button>
+            {catalogDeja ? <span className="freze-ajutor" data-freze="catalog-deja">{t('freze.catalog.deja')}</span> : null}
+          </div>
+        ) : (
+          <div className="butoane freze-butoane">
+            <button type="button" className="principal" data-freze="editeaza" disabled={doarCitire} onClick={editeazaFisa}>{t('freze.editeaza')}</button>
+            <button type="button" data-freze="duplica" disabled={doarCitire} onClick={duplica}>{t('freze.duplica')}</button>
+            <button type="button" data-freze="sterge" disabled={doarCitire} onClick={() => { setStergere(true); }}>{t('freze.sterge')}</button>
+          </div>
+        )}
       </section>
     );
   };
@@ -801,8 +840,56 @@ export function FrezeleMele({ onInchide, focusInapoi, config }: {
                 </section>
               );
             })}
+            <section className="freze-catalog" data-freze="catalog" aria-labelledby="freze-catalog-titlu">
+              <div className="freze-grupa-cap freze-catalog-cap">
+                <button type="button" id="freze-catalog-titlu" className="freze-catalog-arata" data-freze="catalog-arata" aria-expanded={catalogDeschis}
+                  onClick={() => { setCatalogDeschis((x) => !x); }}>
+                  {t('freze.catalog.titlu', { n: CATALOG_FREZE.length })}
+                </button>
+                {catalogDeschis && catalogVazut.length > 0 ? (
+                  <button type="button" data-freze="catalog-pune-tot" disabled={doarCitire} onClick={() => { puneDinCatalog(catalogVazut); }}>
+                    {t('freze.catalog.pune-tot')}
+                  </button>
+                ) : null}
+              </div>
+              {catalogDeschis ? <p className="freze-ajutor freze-catalog-nota">{t('freze.catalog.nota')}</p> : null}
+              {catalogDeschis ? GRUPURI_CATALOG.map((g) => {
+                const din = catalogVazut.filter((x) => x.c.grupCatalog === g);
+                if (din.length === 0) return null;
+                const titlu = t(`freze.grupa.${g}`);
+                return (
+                  <section key={g} className="freze-grupa" data-catalog-grup={g} aria-labelledby={`freze-catalog-${g}`}>
+                    <div className="freze-grupa-cap">
+                      <h3 id={`freze-catalog-${g}`}>{t('freze.grupa', { fel: titlu, n: din.length })}</h3>
+                      <button type="button" className="freze-catalog-grup" data-freze="catalog-pune-grup" disabled={doarCitire}
+                        aria-label={t('freze.catalog.pune-grup', { grup: titlu })} onClick={() => { puneDinCatalog(din); }}>
+                        {t('freze.catalog.pune-toate')}
+                      </button>
+                    </div>
+                    <ul>
+                      {din.map((x) => (
+                        <li key={x.c.id}>
+                          <button type="button" className="freze-rand" data-catalog={x.c.id} aria-current={x.c.id === aleasaCatalog ? 'true' : undefined}
+                            onClick={() => { alegeCatalog(x.c.id); }}>
+                            <Silueta f={{ ...x.c, nume: x.nume }} mare={false} />
+                            <span className="freze-rand-text">
+                              <span className="freze-rand-nume">{x.nume}</span>
+                              <span className="freze-rand-detalii">
+                                {(x.tol !== undefined ? `${x.tol} · ` : '') + t('freze.catalog.rand', { turatie: nr(x.c.turatie), avans: nr(x.c.avans) })}
+                              </span>
+                            </span>
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  </section>
+                );
+              }) : null}
+            </section>
           </div>
-          {deFisa ? fisa(deFisa) : ciorna && freza && cuEditor ? (
+          {dinCatalog ? fisa({ ...dinCatalog.c, nume: dinCatalog.nume, ...(dinCatalog.tol !== undefined ? { nota: dinCatalog.tol } : {}) },
+            stare.freze.some((x) => aceeasiGeometrie(x, dinCatalog.c)))
+            : deFisa ? fisa(deFisa) : ciorna && freza && cuEditor ? (
             <form ref={refEditor} className="freze-editor" aria-labelledby="freze-editor-titlu" noValidate
               onSubmit={(e) => { e.preventDefault(); void salveaza(); }}>
               <button type="button" className="freze-inapoi" data-freze="inapoi" onClick={inapoi}>
