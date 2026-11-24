@@ -1,9 +1,11 @@
 # ADR 0284: Construcțiile din Easy 3Draw: piese noi pe familii, punctele de prindere și Modelul ca asamblare
 
-**Starea:** propus pe 24.11.2026, la cererea owner-ului („ok, vreau sa adaugi mai multe tipuri de piese pentru fiecare
-categoire, sau sa imbunatatesti piesele si configuratoarele care exista deja. vreau ca userii sa poata crea cat mai multe
-piese, care sa fie si compatibile intre ele nu doar una cate una ci si ca constructii complexe”), scrisă în sesiunea cloud
-a liniei bibliotecii (ramura `wip/3.Xh-biblioteca-ui`). Codul pornește după răspunsurile lui la „Întrebările”.
+**Starea:** acceptat pe 24.11.2026, cu toate recomandările (1a, 2a, 3a și toate cele patru grupe de piese, alese de owner
+la întrebările puse în sesiune; „Răspunsurile owner-ului”, mai jos). Propus în aceeași zi, la cererea lui („ok, vreau sa
+adaugi mai multe tipuri de piese pentru fiecare categoire, sau sa imbunatatesti piesele si configuratoarele care exista
+deja. vreau ca userii sa poata crea cat mai multe piese, care sa fie si compatibile intre ele nu doar una cate una ci si
+ca constructii complexe”), în sesiunea cloud a liniei bibliotecii (ramura `wip/3.Xh-biblioteca-ui`). **Felia 3.Ca
+(conectorul perpendicular) implementată pe 24.11** („Implementat”, la capăt).
 **Continuă:** ADR 0169 (rotițele), 0280 (roțile, fuliile, conicele, șenila), 0281 (piesele pe file), 0282 (elicele),
 0168 (înălțimile din profilul imprimantei). **Se leagă de:** felia 3.Tu a liniei elicelor (unde stă axul pieselor rotunde
 în vederea „Modelul”; propusă ca ADR 0283, la răspunsurile owner-ului): partea D de aici pleacă de la ce hotărăște ea.
@@ -99,7 +101,7 @@ elice. Fiecare e un șablon din parametri, nu un desen fix.
 
 | # | Felia | Ce aduce |
 |---|---|---|
-| 3.Ca | Conectorul perpendicular | piesa și configuratorul; „Ca LEGO” pentru formele uzuale |
+| 3.Ca | Conectorul perpendicular | piesa și configuratorul; „Repede” pentru formele uzuale (gata pe 24.11) |
 | 3.Cb | Conectorul în unghi; axul cu opritor, știftul lung cu bucșă | piesa și opțiunile noi |
 | 3.Cc | Cremaliera și melcul | cu montajul față de roata dințată și „Fă perechea” |
 | 3.Cd | Arcul, balamaua, placa turnantă | trei piese în Cărămizi |
@@ -131,9 +133,43 @@ elice. Fiecare e un șablon din parametri, nu un desen fix.
 3. **Construcțiile gata (3.Ci).** (a) Da, cele patru de mai sus, după Model; (b) nu acum; (c) altele: spune care.
 4. **Lista pieselor noi.** (a) Cea de mai sus; (b) scoți sau adaugi: spune care.
 
+## Răspunsurile owner-ului (24.11.2026)
+
+1. **Cu ce începem:** a, piesele care leagă în 3D și mecanismele (3.Ca–3.Cc).
+2. **Verificarea din Model:** a, avertisment (piesa rămâne unde o pui).
+3. **Construcțiile gata:** a, cele patru (șasiul, cutia de angrenaje, brațul de macara, barca cu elice), după Model.
+4. **Lista pieselor noi:** toate cele patru grupe (conectorii 3D, mecanismele, cărămizile de clădit, roata cu palete).
+
 ## Se redeschide dacă
 
 - owner-ul alege altă ordine sau altă listă de piese;
 - 3.Tu (axul pieselor rotunde în Model) hotărăște altfel decât presupune partea D;
 - o piesă nouă nu se poate printa fără suport la mărimile uzuale (atunci, în două bucăți sau cu altă așezare);
 - pachetul extensiei trece de o mărime care îngreunează instalarea (azi, sub 0,5 MB).
+
+## Implementat (3.Ca, 24.11.2026)
+
+**Conectorul perpendicular** (tipul `conector`, fila Legături, Easy 3Draw 18.24.0):
+
+- **Piesa:** un bloc culcat, de 1 până la 5 pași, cu secțiunea pătrată cât grosimea grinzii groase (7,8 × 7,8 mm) și
+  lungimea 8·n − 0,2 mm. Fiecare pas are gaura lui, în mijlocul pasului: de știft (cu lamaj pe fețele prin care iese), de
+  ax (crucea) sau niciuna, pe axa lui: în sus, de-a latul sau, doar la capete, în lung. Găurile stau în pași diferiți,
+  deci nu se taie una pe alta; cea în lung intră din capăt cât un pas și se oprește în vecin (singură, trece prin tot).
+  Diametrele și jocurile sunt cele ale grinzii, din calibrare. Se printează culcat, fără suport.
+- **Configuratorul:** lungimea, formele gata („Repede”: crucea 1 × 2, ax–știft–ax, două știfturi și ax, colțul pe trei
+  axe) și, pe fiecare pas, felul găurii și axa ei. „În lung” se poate alege doar la capete; un pas ajuns la mijloc își
+  trece gaura în sus; un pas plin n-are axă. Numele piesei își spune pașii („Conector 1×3: ax în lung, știft sus, știft
+  lateral”), deci două forme diferite au nume și fișiere diferite.
+- **Față de propunere:** formele gata nu poartă numere de piese LEGO. Cotele pieselor LEGO se măsoară din LDraw, iar
+  fișierele lui nu sunt în containerul sesiunii; forma (ce gaură, pe ce axă) nu are nevoie de ele, iar mărimile sunt
+  cele ale grinzii de aici. Colțurile blocului sunt drepte (stă cu o față întreagă pe pat).
+- **Motorul spune ce nu se poate:** o gaură în lung la mijloc rămâne plină, cu avertisment; blocul fără nicio gaură, la
+  fel. Peste 5 pași se iau primii cinci; un cod necunoscut e o gaură de știft în sus.
+- **Probele:** unitare 8 (`test/unit/trenulet.conector.test.ts`): corpul închis și cotele pe toată plaja (peste 80 de
+  forme), iar găurile judecate punct cu punct, după numărul de înfășurare al plasei (în lemn sau în gol), fără să știe
+  cum e făcută piesa: diametrul din calibrare în cele patru direcții, lamajul pe fețe, crucea axului, gaura în lung care
+  se oprește în vecin, blocul dintr-o bucată. E2e 4 (`test/e2e/trenulet.conector.spec.ts`): fila și piesa, configuratorul,
+  STL-ul descărcat (închis, cu cotele), lista și modelul, avertismentul. Probele filelor, căutării („con” o găsește) și
+  pictogramelor, la zi.
+- **Mărimea:** doar pachetul extensiei (480,9 → 481,1 kB cu stilul); aplicația, neschimbată.
+- **Rămase pentru felia următoare (3.Cb):** conectorul în unghi, axul cu opritor, știftul lung cu bucșă.

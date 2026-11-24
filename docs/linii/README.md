@@ -38,6 +38,7 @@ rămâne. Notele au fost aduse pe 23.11.2026 din memoria sesiunii principale loc
 | [rotite.md](rotite.md) | rotițele dințate (3.Th, ADR 0169) |
 | [roti-senile.md](roti-senile.md) | roțile, fuliile, conicele, șenila (3.Tj–3.To), galeria pe file (3.Tp, ADR 0281) |
 | [biblioteca.md](biblioteca.md) | biblioteca extensiilor (3.Xg): versiunea și amprenta la fiecare schimbare |
+| [constructii.md](constructii.md) | construcțiile (3.Ca–3.Cj, ADR 0284): piesele noi pe familii, punctele de prindere, Modelul ca asamblare; în sesiunea liniei bibliotecii, pe `wip/3.Xh-biblioteca-ui` |
 | [elice.md](elice.md) | elicele (3.Tq–3.Ts, ADR 0282) |
 
 ## Încheiate și de referință

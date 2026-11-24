@@ -13871,3 +13871,23 @@ ele nu doar una cate una ci si ca constructii complexe”
   Doar pachetul extensiei s-ar schimba.
 - **Coordonarea:** sesiunea principală, întrebată (cine mai scrie în sursele pluginului, numerele, ramura); 3.Tu a liniei
   elicelor (axul pieselor rotunde în Model, propusă ca ADR 0283) rămâne a ei, iar partea de Model de aici vine după ea.
+
+## 2026-11-24 — Felia 3.Ca: conectorul perpendicular în atelierul Easy 3Draw (ADR 0284, acceptat) (sesiune cloud)
+
+**Prompt:** răspunsurile owner-ului la cele patru întrebări din ADR 0284, puse în sesiune: „Piesele care leagă în 3D
+(Recomandat)”, „Avertizează (Recomandat)”, „Da, patru (Recomandat)”, „Conectori 3D, Mecanisme, Cărămizi de clădit, Roata cu
+palete”
+**Started:** 24.11, 21:40. **Completed:** 24.11, 23:00 (felia, cu otrăvurile); unirea, la sesiunea principală.
+
+- **ADR 0284, acceptat** cu toate recomandările (1a–4a): „Răspunsurile owner-ului”, în ADR.
+- **Piesa** (tipul `conector`, fila Legături): un bloc culcat de 1–5 pași, 7,8 × 7,8 mm în secțiune; fiecare pas are gaura
+  lui (de știft, cu lamaj; de ax; sau niciuna) pe axa lui: în sus, de-a latul sau, doar la capete, în lung. Proba unitară,
+  scrisă întâi (a căzut cu „tip necunoscut: conector”), judecă găurile punct cu punct, după numărul de înfășurare al
+  plasei.
+- **Configuratorul:** lungimea, patru forme gata, felul și axa fiecărui pas; numele piesei își spune pașii. Engleza: 18
+  texte noi. Pe telefon, pașii au loc între ei (văzut în captură, nu în probe).
+- **Probele vechi, la zi:** filele („Legături 9”), galeriile și desenele, căutarea „con”, starea unei liste vechi,
+  versiunea 18.24.0.
+- **Probele feliei:** unitare 8, e2e 4; probele pluginului și ale extensiilor, 170 / 170 în browser; otrăvurile 47 / 47
+  (31 în unitare, 16 prin browser). Easy 3Draw 18.24.0, cu rândul de „ce e nou”; doar pachetul se schimbă.
+- **Găsit pe drum:** unealta probei (numărul de înfășurare) avea semnul întors; au arătat-o așteptările „în lemn”.
