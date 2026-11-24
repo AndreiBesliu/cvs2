@@ -6,6 +6,7 @@ import {
 } from 'firebase/auth';
 import { httpsCallable, type Functions } from 'firebase/functions';
 import type { CerereCont, RaspunsDeschide, RaspunsNume } from '../../shared/conturi.ts';
+import type { CerereFreze, RaspunsListaFreze, RaspunsScrieFreze } from '../../shared/freze.ts';
 import type { CerereTichet, RaspunsRaportarileMele, RaspunsTichet } from '../../shared/tichete.ts';
 import type { CerereLot, Lot, RaspunsLot } from '../../shared/utilizare.ts';
 import { conecteazaBaza, type ConfigCloud, type MotivFaraConexiune } from './conexiuneBaza.ts';
@@ -199,6 +200,11 @@ export async function marcheazaCitita(ce: ContEditor, id: string): Promise<Raspu
 /** Un lot al utilizării aplicației (ADR 0262), prin callable-ul `utilizare`, cu tokenul contului; refuzurile vin cu motivul. */
 export async function trimiteLotul(ce: ContEditor, lot: Lot): Promise<RaspunsLot> {
   return (await httpsCallable<CerereLot, RaspunsLot>(ce.functii, 'utilizare', { timeout: 30_000 })({ actiune: 'lot', lot })).data;
+}
+
+/** Biblioteca de freze în cont (ADR 0300 §7), prin callable-ul `freze`; refuzurile vin cu motivul. */
+export async function apeleazaFrezele(ce: ContEditor, cerere: CerereFreze): Promise<RaspunsListaFreze | RaspunsScrieFreze> {
+  return (await httpsCallable<CerereFreze, RaspunsListaFreze | RaspunsScrieFreze>(ce.functii, 'freze', { timeout: 60_000 })(cerere)).data;
 }
 
 /**

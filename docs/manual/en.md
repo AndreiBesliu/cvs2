@@ -1270,9 +1270,10 @@ would change all of them: the row says how many times it is placed.
 %% acopera: vedere.freze
 
 The **My bits** window keeps your bits. It opens from the **Account** menu (the **My bits…** row) or from the command
-palette. It works without an account and offline: the library lives in this browser (saving it in your account comes in a
-later slice). Soon you will pick a bit from the library on the export rows and in the Cutting section; until then, the bit is
-typed on the row, as before (see [Exporting G-code](#export)).
+palette. It works without an account and offline: without an account, the library lives in this browser; with your account
+open, it lives in your account and you have it on any computer where you sign in (see below). Soon you will pick a bit from
+the library on the export rows and in the Cutting section; until then, the bit is typed on the row, as before (see
+[Exporting G-code](#export)).
 
 The **list**, on the left, groups the bits by kind (Flat, V, Engraving), each with a small profile, the preferred T, the
 spindle speed and the feed. **Search for a bit** filters by name, and the **All**, **Flat**, **V** and **Engraving** buttons
@@ -1307,9 +1308,26 @@ the T is 1, the spindle speed 18,000, the feed 1,000, the plunge 300, the step-d
 Before importing, you choose what happens to a name that already exists: **Keep both** (the default; the new one gets
 “(2)”), **Replace** or **Skip**. Rows that are wrong are skipped and counted.
 
-At the bottom, the window says where the library lives: **Only in this browser**. In a private window or with the site’s
+At the bottom, the window says where the library lives: **Only in this browser** (without an account). In a private window or with the site’s
 data blocked, the bits last only as long as the tab, and the window says so. A library written by a newer version of the app
 is read-only.
+
+**With your account open**, the window works on the account's library, also kept in this browser, so it works offline too. It
+syncs with the account when you open the window, a few seconds after each change and when the connection comes back; the
+**Sync** button at the bottom does it right away. The bottom line reads **In the account, up to date**, **Syncing with the
+account…** or **Offline: sent when the connection is back**. The account holds at most 500 bits; one that no longer fits stays
+in this browser, and the window counts them. With the trial over or the account disabled, the library in the account is
+read-only: changes stay here.
+
+The first time you open it with your account, if this browser has bits the account does not have, the window asks **Add the
+N bits from this browser to the account?**: **Yes, add them** copies them into the account (a bit with a taken name gets
+“(2)”), and **Not now** asks again another time. The library without an account stays untouched: you see it again after
+signing out.
+
+If the same bit was changed on two computers between two syncs, the fields changed on only one of them are merged by
+themselves. A field changed on both (or a bit deleted on one and changed on the other) is a **conflict**: a band above the
+list names the bit and the fields, with **Keep mine**, **Keep the one in the account** and **Keep both** (yours stays as a new
+bit, with “(2)”).
 
 ## The cutting operations
 %% capitol: operatii

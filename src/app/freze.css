@@ -72,7 +72,8 @@
 }
 
 .freze-import,
-.freze-stergere {
+.freze-stergere,
+.freze-banda {
   display: grid;
   gap: var(--sp-2);
   padding: var(--sp-3);
@@ -82,7 +83,8 @@
 }
 
 .freze-import p,
-.freze-stergere p {
+.freze-stergere p,
+.freze-banda p {
   margin: 0;
   font-size: var(--fs-3);
 }
@@ -375,4 +377,15 @@
     justify-self: center;
     width: 100%;
   }
+}
+
+/* Conflictul și întrebarea frezelor din browser (felia 16.A↑c): banda de deasupra listei, cu butoanele pe rând (pe telefon, unele
+   sub altele când nu încap). */
+.freze-banda {
+  border-color: var(--a);
+  background: var(--s-atentie);
+}
+
+.freze-banda .butoane {
+  flex-wrap: wrap;
 }
