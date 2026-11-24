@@ -13530,3 +13530,20 @@ aducerea lui `main` (`29ef7e44`). **Completed:** 24.11, 17:15 (în container; CI
   (fereastra scoasă din garda „dialog deschis”), prinsă după Ctrl+K în probă: tasta R ține de editor, nu de registru. Trei din `10.4a2.py` (D05, D09, S01),
   rămase VOID pe codul nou, mutate și prinse.
 - **Capcană:** pragul cifrelor se probează la înălțimea implicită (după „Înălțimea cifrelor” 7 mm, cifra are 16 px pe ecran).
+
+## 2026-11-24 — Sesiunea principală în cloud: a douăzeci și una unire (10.4↑a-3, fereastra Setări; 16.A↑h-3 și h-4, catalogul de freze; testele grele împărțite) (Model: Claude Fable 5.2)
+
+**Prompt:** rapoartele liniilor cotelor (`9209756f`) și frezelor (`88b048aa`), la ordinul în vigoare „unește ce se
+poate”; „ok, imparte si cele doua teste grele ramase”
+**Started:** 24.11, 18:45. **Completed:** unirea în `main`, 24.11, @@ORA@@; publicarea pe test, la rândul ei.
+
+- **Lotul, pe `unire-2411x`** (din `62569bb2`): împărțirea testelor (`49ce2793`), cotele a-3 (`9209756f`, în
+  `08e2e50d`), frezele h-3 și h-4 (`88b048aa`, în `9fd71053`). Ciocnirile: DEVLOG, registrul otrăvurilor (un rând
+  dublat de unire, scos: rămâne cel al liniei cotelor), catalogul controalelor (scris din nou: 634 de nume). Local, pe
+  arborele unit: tipurile (și ale funcțiilor), regulile de import (21), traducerile (1 037); e2e 51 / 51 (Setările,
+  cotele, contul, frezele, freza în Tăierea, comenzile foii, butonul Admin).
+- **Porțile, în CI:** completul lotului pe `9fd71053` (45440961385, @@COMPLET@@): @@PORTI@@; rapidul, @@RAPID@@;
+  completele liniilor, verzi: `aa47863d` (45428218032), `5bdea116` (45428773807). @@MARIMI@@. Nimic pe server.
+- **Documentele:** decizia în `CLAUDE.md`, cu rândurile de stare ale lui a-3, h-3 și h-4; indexul liniilor; starea din
+  `docs/linii/principala.md`.
+- **Loturile dinainte:** @@INAINTE@@
