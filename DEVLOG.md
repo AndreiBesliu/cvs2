@@ -12290,7 +12290,7 @@ admin cat mai multe setari”).
 ## 2026-11-24 — Felia A.9b: fila Utilizare din admin (ADR 0262)
 
 **Prompt:** același „am raspuns” (7a: A.8–A.11 acum), după A.9a.
-**Started:** 24.11 00:55.
+**Started:** 24.11 02:50.
 
 - **Codul (`c549a600`, `c85a44c8`, `c70c52df`):** catalogul acțiunilor generat la build (`scripts/catalogActiuni.ts`,
   `documentatie/actiuni.json`), partea pură a filei (`src/admin/utilizare/date.ts`), fila (`FilaUtilizare.tsx`, bucata ei
@@ -12302,6 +12302,43 @@ admin cat mai multe setari”).
   totalul neschimbate; `/admin` 133,2 / 200; fila 3,8 / 25.
 - **Documentele:** ADR 0262 (implementarea), fișa etapei 3 (`3.Al`), registrul otrăvurilor, traducerile, nota liniei.
   **Completed:** 24.11 05:05.
+- **După:** `main` (cu A.8c și A.8d unite, `80d3eb70`) adus în ramură (`dbb0306a`, doar documente); PR-ul
+  `AndreiBesliu/cvs2#13` poartă acum A.9a și A.9b.
+
+## 2026-11-24 — Felia A.10: fluxurile (ADR 0262)
+
+**Prompt:** același „am raspuns” (7a: A.8–A.11 acum), după A.9b.
+**Started:** 24.11 05:10.
+
+- **Codul (`94fede7d`):** secvențele (3 și 4 acțiuni reușite la rând, pe sesiune, cele mai dese 150 pe zi) și pâlnia (pasul
+  cel mai departe al fiecărei sesiuni, cu oamenii pe pas) în sumele zilei (`fluxuri` din `shared/utilizareZi.ts`), adunate
+  pe perioadă (`secventeleDese`, `palnie`), secțiunea Fluxurile din filă; durata unei sesiuni în cifre (lipsea din A.9b).
+- **După captură:** fiecare rând avea grila lui, deci barele rândurilor cu text lung ieșeau mai scurte; acum o grilă comună
+  (subgrid).
+- **Probele:** 4 unitare noi, 1 a jobului pe emulator, proba filei cu fluxurile. **Otrăvurile:** 23 / 23. **Porțile
+  locale:** rapidul 10 049 / 0, emulatoarele 121 / 121 și 50 / 50. **Mărimea:** `/admin` 133,7 / 200, fila 4,4 / 25.
+- **Documentele:** ADR 0262 (implementarea), fișa etapei 3 (`3.Am`), registrul otrăvurilor, traducerile, nota liniei.
+  **Completed:** 24.11 05:50.
+
+## 2026-11-24 — Felia A.11a: pașii dinaintea unei erori (ADR 0262)
+
+**Prompt:** același „am raspuns” (7a: A.8–A.11 acum), după A.10.
+**Started:** 24.11 05:40.
+
+- **Despărțirea:** A.11 în A.11a (pașii în raportul erorii și în Erori), A.11b (bifa la raportare), A.11c (cronologia unui
+  om), A.11d (disocierea), scrisă în tabelul feliilor din ADR.
+- **Codul (`82ec5424`):** `shared/pasiEroare.ts` (pașii) și `shared/pasiEroareVerificare.ts` (verificarea), captura în
+  `raportorPornire.ts` prin `pasiAcum`, pașii în `raportDin`, serverul (`logClientError`, `scrieEroare`), fila Erori, nota de
+  confidențialitate. Verificarea despărțită după ce poarta mărimii a arătat bucata raportorului cu tot contractul utilizării.
+- **Pe drum:** un șir englez stricat de un apostrof (prins de serverul e2e); o cădere de o dată a probei mașinii din A.8d în
+  suita pe emulatoare (lotul fără evenimentele mașinii), nereprodusă: singură 4 / 4, fișierul de 3 ori 18 / 18, suita din
+  nou 51 / 51. Notată deschisă.
+- **Probele:** 3 unitare noi și cazurile din raportor și admin, 1 a serverului, 2 e2e pe emulatoare, nota contului.
+  **Otrăvurile:** 29 / 29. **Porțile locale:** rapidul 10 054 / 0, emulatoarele 122 / 122 și 51 / 51. **Mărimea:** pornirea
+  109,6 / 115 (cu Atelierul 114,4), totalul 800,1 / 900, `/admin` 135,0 / 200.
+- **Între timp:** completul pe `6b79c317` (A.9a, A.9b) verde; PR-ul `AndreiBesliu/cvs2#13` spune „de unit acum: `dbb0306a`”.
+- **Documentele:** ADR 0262 (implementarea, despărțirea), fișa etapei 3 (`3.An`), registrul otrăvurilor, traducerile, nota
+  liniei. **Completed:** 24.11 06:50.
 
 ## 2026-11-23 — Sesiunea principală în cloud: a șasea unire (A.6, Roadmap, Documentație și Setări); linia frezelor, pornită (Model: Claude Fable 5.2)
 
@@ -12499,7 +12536,7 @@ PR-ul `AndreiBesliu/cvs2#13` („De unit acum (A.8c, A.8d): `fbbc8934`”).
 
 **Prompt:** același brief de predare al sesiunii principale („unește ce se poate”), la raportul liniei adminului din
 PR-ul `AndreiBesliu/cvs2#13` („De unit acum (A.9a, A.9b): `dbb0306a`”).
-**Started:** 24.11, 05:00. **Completed:** unirea în `main`, 24.11, 05:59; publicarea pe test, în rândul de la capăt.
+**Started:** 24.11, 05:00. **Completed:** unirea în `main`, 24.11, 05:59; publicarea pe test, 24.11, 07:14.
 
 - **Înainte:** lotul al zecelea pe test (`89962b4d0fa5`, 04:59, cu serverul); rândul publicării lui stătea pe
   `unire-2411b` (`14eb0edb`, doar documente) și intră în `main` cu lotul acesta.
@@ -12553,3 +12590,40 @@ PR-ul `AndreiBesliu/cvs2#13` („De unit acum (A.9a, A.9b): `dbb0306a`”).
   114,5 / 115 (rămân 0,5 kB).
 - **Documentele:** ADR 0272 („Implementarea (25.8↑b)”, precizările la §6, §10), indexul ADR, manualul (ro, en), fișa etapei 3
   (jurnalul, încercarea în coada owner-ului), traducerile roadmap-ului, `CLAUDE.md`, nota liniei.
+
+- **Publicarea (`883a8caa`):** rapidul și completul pe `main` verzi (completul, 63 min 54 s), `publica.yml` verde în
+  3 minute, cu serverul: funcția `agregaUtilizarea` creată, regulile Firestore și indexurile publicate; adresa de test
+  spune `883a8caa1f21` (24.11, 07:14).
+
+## 2026-11-24 — Sesiunea principală în cloud: a douăsprezecea unire (A.10 și A.11a, utilizarea aplicației: fluxurile, pașii dinaintea unei erori) (Model: Claude Fable 5.2)
+
+**Prompt:** același brief de predare al sesiunii principale („unește ce se poate”), la raportul liniei adminului din
+PR-ul `AndreiBesliu/cvs2#13` („De unit acum (A.9a, A.9b, A.10, A.11a): `0580f504`”). Între timp, owner-ul: „i-am dat sa
+continue, tu ce poti sa faci intre timp?”.
+**Started:** 24.11, 07:35. **Completed:** unirea în `main`, 24.11, 08:31; publicarea pe test, la rândul ei.
+
+- **Înainte:** lotul al unsprezecelea pe test (`883a8caa1f21`, 07:14, cu serverul); rândul publicării lui stătea pe
+  `unire-2411c` (`c611346a`, doar documente) și intră în `main` cu lotul acesta.
+- **Întrebarea owner-ului:** răspunsul, cu ce se face deja (unirea la raport; adresa de test deschisă într-un browser din
+  container după publicare: versiunea, CSP-ul, workerul PWA, catalogul extensiilor, textele, manualul, dicționarele,
+  documentația, pagina de intrare a `/admin`) și cu ce pornește doar la cuvântul lui: publicarea mai scurtă (fără al
+  doilea complet pe `main` când codul e identic cu cel verificat), lista „ce e nou pe test”, rezumatul pentru
+  verificarea juridică, lista ramurilor unite de șters. Fără răspuns încă.
+- **Raportul liniei:** la 07:46, completul era verde pe `82ec5424` (45328103114), dar ramura mersese mai departe cu
+  A.11b, fără commit de unit scris. Am întrebat linia (`send_message`); la 08:28, PR-ul spunea `0580f504`.
+- **Verificate înaintea unirii:** ramura fără `.lucru/`; `0580f504` adaugă peste `82ec5424` doar traducerile
+  roadmap-ului, otrăvurile lui A.11a (`.py`) și documente, cu rapidul verde pe el (45328844970).
+- **Unirea:** pe `unire-2411c` (din `883a8caa`): A.10 și A.11a în `7f6f4069`, fără nicio ciocnire; `git diff` gol
+  față de `0580f504` în afara fișierelor `.md`. În container: catalogul controalelor la zi, tipurile (și ale
+  funcțiilor), regulile de import (0 încălcări), traducerile (971, 0 lipsă), 93 / 93 probe atinse, 58 / 58 probe ale
+  documentelor, build-ul determinist.
+- **Porțile, în CI, pe `82ec5424`** (completul, 42 min 8 s): unit 10 054 / 0 (12 sărite), e2e 646 / 646, funcțiile pe
+  emulatoare 122 / 122, paginile 51 / 51; pornirea 109,6 / 115 (în CI 109,5; cu ușa 114,1; cu Atelierul 114,4),
+  totalul 800,1 / 900, `/admin` 135,0 / 200.
+- **La publicare merge și serverul:** funcțiile `logClientError` (primește pașii) și `agregaUtilizarea` (scrie
+  fluxurile); fără reguli sau indexuri noi.
+- **Documentele:** decizia în `CLAUDE.md` și rândul de stare al lui A.10 și A.11a; indexul liniilor; starea și două
+  lecții în `docs/linii/principala.md` (ramura care merge mai departe fără raport; adresa de test într-un browser din
+  container).
+- **La owner:** fereastra exportului, verificarea juridică a utilizării aplicației înaintea live-ului, „cine unește în
+  `main`”, plafonul pornirii (mai sunt 0,6 kB), răspunsul la lista de mai sus.

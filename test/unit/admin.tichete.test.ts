@@ -48,7 +48,7 @@ test('„Răspunde și …”: un tichet nou sau deschis se rezolvă, unul rezol
 
 const grup = (id: string): RandGrup => ({
   id, sursa: 'client', tip: 'TypeError', mesaj: `TypeError: ${id}`, numar: 1, oameni: 1, primaData: null, ultimaData: null, rezolvat: false,
-  ultima: { cand: null, tip: '', mesaj: '', stiva: '', build: '', instanta: '', adresa: '', browser: '', uid: null, context: '' },
+  ultima: { cand: null, tip: '', mesaj: '', stiva: '', build: '', instanta: '', adresa: '', browser: '', uid: null, context: '', pasi: [] },
 });
 
 test('erorile din sesiune: în ordinea amprentelor din tichet, cu grupul citit; una lipsă din jurnal o spune, una necitită lipsește', () => {

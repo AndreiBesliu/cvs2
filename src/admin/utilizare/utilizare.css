@@ -47,12 +47,14 @@
   padding: 0;
   font-size: var(--fs-2);
   display: grid;
-  gap: var(--sp-1);
+  grid-template-columns: minmax(8rem, 14rem) 1fr auto;
+  gap: var(--sp-1) var(--sp-2);
 }
+/* O grilă comună tuturor rândurilor (subgrid): barele au aceeași lățime de pornire, deci se pot compara. */
 .uz-bare li {
   display: grid;
-  grid-template-columns: minmax(8rem, 14rem) 1fr auto;
-  gap: var(--sp-2);
+  grid-column: 1 / -1;
+  grid-template-columns: subgrid;
   align-items: center;
 }
 .uz-bara {
@@ -69,6 +71,22 @@
   height: 100%;
   width: calc(var(--p, 0) * 100%);
   background: var(--a);
+}
+.uz-bara-plina {
+  background: var(--a);
+}
+.uz-secvente {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(20rem, 100%), 1fr));
+  gap: var(--sp-3);
+}
+.uz-secvente h5 {
+  margin: 0 0 var(--sp-1);
+  font-size: var(--fs-2);
+  font-weight: 600;
+}
+.uz-secvente li + li {
+  margin-top: var(--sp-1);
 }
 .uz-numar {
   font-variant-numeric: tabular-nums;
@@ -105,7 +123,7 @@
   font-size: var(--fs-2);
 }
 @media (max-width: 40rem) {
-  .uz-bare li {
+  .uz-bare {
     grid-template-columns: 1fr auto;
   }
   .uz-numar {

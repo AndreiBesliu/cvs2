@@ -2,6 +2,7 @@ import { getToken } from 'firebase/app-check';
 import { httpsCallable } from 'firebase/functions';
 import { cheieAmprenta } from '../../shared/amprenta.ts';
 import { faraInterogare, PLAFON_ADRESA, PLAFON_MESAJ, PLAFON_SCURT, PLAFON_STIVA, taie, type RaportClient, type TipEroare } from '../../shared/erori.ts';
+import { pasDin, type PasiCapturati } from '../../shared/pasiEroare.ts';
 import { conecteazaBaza, type ConfigCloud } from './conexiuneBaza.ts';
 
 /**
@@ -77,9 +78,13 @@ export function mesajRaportat(mesaj: string): string {
   return taie(m.trim() ? m : MESAJ_GOL, PLAFON_MESAJ);
 }
 
-/** Raportul (`RaportClient`, ADR 0039 §5): doar câmpurile contractului, curățate și tăiate la plafoanele lui. */
-export function raportDin(i: IntrareRaport, build: string, browser: string, limba: string): RaportClient {
+/**
+ * Raportul (`RaportClient`, ADR 0039 §5): doar câmpurile contractului, curățate și tăiate la plafoanele lui; cu pașii
+ * dinaintea erorii (felia A.11a), doar felul, id-ul, rezultatul și cât înainte de ea, când inelul are vreunul.
+ */
+export function raportDin(i: IntrareRaport, build: string, browser: string, limba: string, pasi?: PasiCapturati): RaportClient {
   return {
+    ...(pasi && pasi.pasi.length > 0 ? { pasi: pasi.pasi.map((e) => pasDin(e, pasi.t)) } : {}),
     tip: i.tip,
     mesaj: mesajRaportat(i.mesaj),
     stiva: taie(curataText(i.stiva), PLAFON_STIVA),
