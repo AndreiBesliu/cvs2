@@ -70,6 +70,14 @@ test('adâncimea: trecerile egale ale lucrării, iar cota câmpului activ se apr
   // O valoare greșită nu desenează trecerile.
   await e1.locator('[data-camp="pas"]').fill('0');
   await expect(d.locator('[data-trecere]')).toHaveCount(0);
+  // Peste grosimea foii: „în masă” cât ține supracursa, altfel „trece de supracursă” (supracursa vine din fișa foii).
+  const gros = Number((/foaia, ([\d,]+) mm/.exec(await d.textContent() ?? '')?.[1] ?? 'NaN').replace(',', '.'));
+  expect(Number.isFinite(gros), 'grosimea foii în desen').toBe(true);
+  await e1.locator('[data-camp="pas"]').fill('4');
+  await e1.locator('[data-camp="adancime"]').fill(String(gros + 0.3).replace('.', ','));
+  await expect(d).toContainText('trece de supracursă');
+  await page.locator('[data-fisa="foaia"] [data-camp="supracursa"]').fill('0,5');
+  await expect(d).toContainText('în masă 0,3 mm');
 });
 
 test('colțul XY0 se alege și din desen; Z0 și supracursa se văd pe secțiune', async ({ page }) => {
