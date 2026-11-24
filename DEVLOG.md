@@ -12921,3 +12921,20 @@ schiță publicată”). **Started:** 24.11, 10:32, în sesiunea cloud a liniei.
   0 lipsă), nota liniei (`docs/linii/cote.md`). `main` adus în ramură (`e3a9e512`, A.7), fără ciocniri. Probele
   documentației în container: 42 / 42.
 - **Codul:** la răspunsurile owner-ului, începând cu 10.4↑a.
+
+## 2026-11-24 — ADR 0330 acceptat (1a–6a), cu setările cotelor într-o fereastră „Setări” (Model: Claude Opus 5.5)
+
+**Prompt:** „am raspuns” (owner-ul, după răspunsurile salvate în schiță la 10:52: 1a–6a, cu nota „vreau cat mai multe
+optiuni si setari pe care un user le poate selecta si configura pentru sistemul de cote. dar nu le vreau in zona de
+design/proiectare. vreau o zona de settings generale si acolo sa se poata seta toate astea”). **Started:** 24.11, 10:58.
+**Completed:** 24.11, 11:20 (documentele; codul continuă cu 10.4↑a-1).
+
+- **ADR 0330, acceptat:** răspunsurile, cu nota exactă; §6 rescris: fereastra nouă „Setări” (meniul contului, paleta,
+  Ctrl+, și ⚙ din bara uneltei), secțiunea Cotele, cu ~35 de setări în opt grupuri (cifrele, liniile și capetele, raza,
+  diametrul și unghiul, comportamentul, lipirea, măsurarea, exportul, raportul), fiecare în felia care o folosește;
+  setările sunt ale aplicației, ținute în browser, aplicate tuturor cotelor; o cotă nu mai ține stil. Bara uneltei: doar
+  felurile și ⚙; panoul: doar ce e al cotei. Feliile: 10.4↑a-1 (modelul și proba), a-2 (unealta), a-3 (Setări, panoul,
+  lista, manualul), b, c, d.
+- **Schița, versiunea 2:** macheta „Setări › Cotele”, cu o cotă de probă care se redesenează după unitate (și inch în
+  fracții), zecimale, zerouri, rotunjire, separator, înălțime, locul cifrei, capete, liniile de extensie.
+- **Documentele:** rândul indexului ADR (acceptat), nota liniei (deciziile owner-ului), DEVLOG; traducerile: 993, 0 lipsă.

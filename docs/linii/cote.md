@@ -63,6 +63,19 @@ față. Fără cod de produs până la răspunsuri. De hotărât acolo, între a
   pagină, `raspunsuri/owner`, scrise doar de owner): <https://claude.ai/artifact/BvsaqPKoKWsypCi1tphDvu>. **Urmează:**
   răspunsurile owner-ului, apoi 10.4↑a, cu proba G-code-ului (cu și fără cote) scrisă prima.
 
+- **24.11, ADR 0330 acceptat** (owner-ul, în schiță, 10:52, apoi „am raspuns”): 1a–6a, cu nota „vreau cat mai multe
+  optiuni si setari pe care un user le poate selecta si configura pentru sistemul de cote. dar nu le vreau in zona de
+  design/proiectare. vreau o zona de settings generale si acolo sa se poata seta toate astea”. De aici: o fereastră nouă,
+  „Setări” (meniul contului, paleta, Ctrl+,), secțiunea Cotele, cu toate setările (ADR 0330 §6); bara uneltei doar cu
+  felurile și ⚙; panoul doar cu ce e al cotei; setările ale aplicației (browser), nu ale cotei. 10.4↑a s-a împărțit în
+  a-1 (modelul și proba G-code-ului), a-2 (unealta), a-3 (Setări, panoul, lista, manualul). Schița, la zi (versiunea 2).
+
+## Deciziile owner-ului
+
+- **24.11:** 1a (pe foaie, fără schemă nouă: v28 rămâne liber), 2a (legată implicit), 3a (doar cu unealta Cote), 4a
+  (Măsoară în aceeași unealtă, M), 5a (DIMENSION implicit în DXF), 6a (nu se taie; „Fă desen din cotă”); setările,
+  cât mai multe, într-o zonă de setări generale, nu în Proiectare.
+
 ## Capcane găsite
 
 - **Glosarul planului e `PLAN.md` §2**, nu §3 (nota spunea §3; §3 e arhitectura).

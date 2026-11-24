@@ -1,6 +1,8 @@
 # ADR 0330: Cotele pe desen și măsurarea
 
-**Starea:** propus pe 24.11.2026, în linia „cote” (ramura `wip/10.4-cote`, din `main` `41233474`, ADR-urile 0330–0339,
+**Starea:** acceptat pe 24.11.2026, cu răspunsurile owner-ului din schiță: 1a–6a, plus nota „vreau cât mai multe opțiuni și
+setări […] pentru sistemul de cote, dar nu le vreau în zona de design / proiectare; vreau o zonă de settings generale”
+(secțiunea „Răspunsurile owner-ului”, la capăt: setările stau într-o fereastră nouă, „Setări”, §6). Propus în aceeași zi, în linia „cote” (ramura `wip/10.4-cote`, din `main` `41233474`, ADR-urile 0330–0339,
 canalul `cote`), pornită de owner în aceeași zi („ce urmeaza in roadmap si nu a fost atins deloc si putem incepe”, apoi „ok,
 scrie brief-ul pentru relief si pentru cote”). Felia 10.4↑, adusă din etapa 10, fără mașină. **Rândul din prag:** „Cote
 (nici ArtCAM nu le are: doar rigle și măsurare)”, peste prag, v1 (decis pe 06.10; `ACOPERIRE-ARTCAM-DESKPROTO.md`, A).
@@ -9,7 +11,7 @@ foaie), 0088 și 0089 (exportul 2D), 0140 (Relief SingleLine), 0181 (felurile un
 (foile, raportul foilor), 0272 (imaginile pe foaie, tot fără schemă nouă). **Schimbă:** glosarul planului (`PLAN.md`
 §2, termenul 3, „element … sau cotă”): cota nu e un nod al piesei, ci stă pe foaie (§2); dacă owner-ul alege altfel
 (întrebarea 1), rămâne cum scrie planul. **Schița**, cu machetele și întrebările (răspunsurile se salvează în pagină):
-<https://claude.ai/artifact/BvsaqPKoKWsypCi1tphDvu>. **Codul:** la răspunsuri.
+<https://claude.ai/artifact/BvsaqPKoKWsypCi1tphDvu>. **Codul:** felia 10.4↑a-1, pornită la răspunsuri.
 
 ## Ce e azi
 
@@ -60,7 +62,7 @@ de un cititor independent, fără să-i citim textul.
 ### 2. Unde stă: pe foaie, fără schemă nouă (întrebarea 1)
 
 - `foaie.cote?: Cota[]`, lângă ghidaje și imagini, în mm ai foii (originea în colțul stânga-jos, Y în sus), ca ghidajele:
-  - `{ id, fel, puncte, linie, stil?, text? }`;
+  - `{ id, fel, puncte, linie, text? }`; stilul nu e al cotei, ci al setărilor (§6);
   - `puncte`: 2 sau 3 ancore, după fel; `linie`: unde stă linia de cotă (distanța ei față de puncte, partea, locul cifrei);
   - ancora: `{ x, y, legatura? }`, iar legătura e `{ instanta, nod, loc, n }`. `loc` e un vârf k, mijlocul segmentului k,
     centrul (cercului sau al arcului k), un cadran al cercului ori un colț sau un mijloc al cutiei elementului; `n` e numărul
@@ -82,8 +84,8 @@ de un cititor independent, fără să-i citim textul.
 - **Implicit, legată:** fiecare capăt ține locul lui de pe formă. La desenare, punctul se citește din lume, deci cota se
   mută și își schimbă cifra odată cu forma: la mutare, rotire, scalare, oglindire, înclinare, editarea din panou. Pe o piesă
   pusă de mai multe ori, cota e a instanței pe care a fost pusă.
-- **Liberă, la cerere:** comutatorul „Legată” din bara uneltei (pentru cotele noi) și „Dezleagă” din panou. O cotă liberă e
-  un desen fix.
+- **Liberă, la cerere:** setarea „Cotele noi sunt legate” (Setări › Cotele, §6) și „Dezleagă” din panou. O cotă liberă e un
+  desen fix.
 - **Dezlegarea, cinstită:** un capăt se dezleagă singur când forma nu mai e pe foaia cotei (ștearsă, mutată pe altă foaie,
   desprinsă) sau când numărul segmentelor ei s-a schimbat (un nod adăugat sau scos: vârful k n-ar mai fi același). Capătul
   rămâne în ultimul punct văzut, scris în același pas de anulare cu comanda care l-a dezlegat (o comandă a cotelor pusă în
@@ -106,8 +108,8 @@ de un cititor independent, fără să-i citim textul.
 ### 5. Unealta (întrebările 3 și 4)
 
 - **O singură unealtă, „Cote”**, tasta **D**, în bara uneltelor după Text (și unde stau uneltele în celelalte aranjamente,
-  ADR 0250). **M** deschide aceeași unealtă pe „Măsoară”. Bara ei, ca a Cuțitului (ADR 0181): felurile, ca butoane cu
-  iconiță; comutatorul „Legată”; „Opțiunile cotelor ▾”, un panou sub buton (§6).
+  ADR 0250). **M** deschide aceeași unealtă pe „Măsoară”. Bara ei, ca a Cuțitului (ADR 0181): doar felurile, ca butoane cu
+  iconiță (numele la trecerea mausului), și ⚙, care deschide Setări › Cotele. Nicio setare în Proiectare (nota owner-ului).
 - **Pusul:** clic pe primul punct, clic pe al doilea, apoi mausul alege locul liniei de cotă; al treilea clic o pune. La
   Automată, un clic pe o latură, un cerc sau un arc (fără punct lipit sub cursor) alege forma. Esc renunță la cota începută.
 - **Lipirea pe puncte, nouă** (pură, `src/geom/lipirePuncte.ts`): vârfurile, mijloacele laturilor, centrele cercurilor și
@@ -119,8 +121,9 @@ de un cititor independent, fără să-i citim textul.
   Delete o șterge, săgețile mută linia de cotă, un capăt tras pe alt punct o leagă din nou. **Cu Selecția și cu celelalte
   unelte, cotele nu se aleg:** clicul trece la forma de sub ele, deci o cotă nu încurcă alegerea, mutarea sau transformarea
   formelor. Dublu clic pe o cotă, cu orice unealtă, trece la Cote, cu ea aleasă.
-- **Panoul de proprietăți**, cu o cotă aleasă: felul; valoarea, exactă, cu toate cifrele, și „Copiază”; legătura (legată
-  sau dezlegată, cu motivul; „Dezleagă”); textul (§6); stilul; distanța liniei de cotă, în mm; Șterge.
+- **Panoul de proprietăți**, cu o cotă aleasă, doar ce e al ei: felul; valoarea, exactă, cu toate cifrele, și „Copiază”;
+  legătura (legată sau dezlegată, cu motivul; „Dezleagă”); textul ei, cu `<>` pentru valoare (un prefix și un sufix:
+  „4× Ø<>”, „<> pe ambele părți”); distanța liniei de cotă, în mm; Șterge. Stilul e în Setări (§6).
 - **Lista** (arborele proiectului): sub foaia activă, rândul „Cote (N)”, cu ochiul (ascunde cotele foii pe pânză, nu le
   șterge) și cotele ei (valoarea, felul, „dezlegată”); un clic trece la Cote, cu cota aleasă.
 - **Vederea:** „Arată cotele” (`vedere.cote`, în paletă, ținută în browser), pornită implicit.
@@ -128,33 +131,69 @@ de un cititor independent, fără să-i citim textul.
   e ce se exportă; sub 6 px pe ecran, cifrele se ascund (rămân liniile), iar valoarea apare la trecerea mausului. Culoarea
   cotelor e un token nou al temei (`--cota`), alta decât a formelor, a selecției, a ghidajelor și a traseului; cele
   dezlegate, punctate, în roșu.
-- **Bara de sus la 1280 px**, cu fontul lat, în ambele limbi: butonul nou se măsoară la felia a. Dacă nu încape, unealta
+- **Bara de sus la 1280 px**, cu fontul lat, în ambele limbi: butonul nou se măsoară la felia a-2. Dacă nu încape, unealta
   trece în extensia barei, lângă Taie și Convertește, cu aceeași tastă.
 
-### 6. Cum arată
+### 6. Setările cotelor, în fereastra „Setări” (nota owner-ului)
 
-Fiecare valoare e o opțiune. Implicitul vine din „Opțiunile cotelor”, ținute în browser (`cncvs2.cote`), și se copiază pe
-fiecare cotă nouă, deci desenul arată la fel pe alt calculator; cota aleasă își schimbă stilul din panou.
+- **O fereastră nouă, „Setări”**, a setărilor generale ale aplicației: din meniul contului („Setări…”, după „Aspectul…”),
+  din paletă (`vedere.setari`) și cu Ctrl+, (ca în alte programe); din ⚙ al uneltei Cote, deschisă direct la secțiunea
+  Cotele. Secțiunile stau în stânga (pe telefon, o listă, apoi secțiunea pe tot ecranul); acum una singură, **Cotele**.
+  Alte preferințe de azi (lipirea, grila, colțurile, ancora) se pot muta acolo mai târziu, la cuvântul owner-ului;
+  „Aspectul…” rămâne fereastra lui. Fereastra vine la cerere, ca „Aspectul”.
+- **Setările sunt ale aplicației, nu ale cotei:** se aplică pe loc tuturor cotelor, din toate proiectele, și se țin în
+  browser (`cncvs2.cote`, JSON cu versiune), ca celelalte preferințe. În cont, sincronizate, mai târziu, la cuvântul
+  owner-ului (ca frezele, ADR 0300 §7). Pe alt calculator, cotele arată după setările lui; exportul scrie stilul de atunci.
+- **Fiecare grup are „Înapoi la implicit”**, iar fiecare setare o frază scurtă despre ce face, cu un mic desen viu (cota de
+  probă, desenată cu setările de acum).
+- **Ce se poate seta** (cât mai mult, după notă), fiecare în felia care îl folosește:
 
-| Opțiunea | Valorile | Implicit |
-|---|---|---|
-| Unitatea | mm, inch (cu ″) | mm |
-| Zecimalele | 0–4, fără zerourile de la coadă („120”, „120,5”, „120,25”) | 2 (la inch, 3) |
-| Separatorul | după limba aplicației (virgula în română, punctul în engleză), ca riglele | — |
-| Înălțimea cifrelor | 1–20 mm pe foaie | 3,5 mm |
-| Capetele | săgeată plină, săgeată deschisă, bară oblică, punct | săgeată plină |
-| Locul cifrei | deasupra liniei, în linie (linia întreruptă) | deasupra |
-| Textul | valoarea, cu un prefix și un sufix („4× Ø<>”, „<> pe ambele părți”); `<>` e valoarea | valoarea |
+| Grupul | Setarea | Valorile | Implicit | Felia |
+|---|---|---|---|---|
+| Cifrele | Unitatea | mm, cm, inch, inch în fracții (1/2 … 1/64) | mm | a-3 (fracțiile: b) |
+| | Zecimalele | 0–6 | 2 (inch: 3) | a-3 |
+| | Zerourile de la coadă | tăiate („120”, „120,5”), păstrate („120,00”) | tăiate | a-3 |
+| | Rotunjirea | la zecimale, sau la un pas (0,5; 0,25; 0,1…) | la zecimale | a-3 |
+| | Separatorul zecimal | după limba aplicației, virgula, punctul | după limbă | a-3 |
+| | Unitatea scrisă după cifră | fără, cu („120 mm”) | fără | a-3 |
+| | Înălțimea cifrelor | 1–20 mm pe foaie | 3,5 mm | a-3 |
+| | Locul cifrei | deasupra liniei, în linie (linia întreruptă), mereu orizontală | deasupra | a-3 |
+| Liniile și capetele | Capetele | săgeată plină, săgeată deschisă, bară oblică, punct, fără | săgeată plină | a-3 |
+| | Mărimea capetelor | 1–10 mm | 2,5 mm | a-3 |
+| | Liniile de extensie | arătate, ascunse; golul față de formă (0–5 mm) și depășirea liniei de cotă (0–5 mm) | arătate; 1 și 2 mm | a-3 |
+| | Distanța liniei de cotă față de formă, la punere | 2–100 mm | 10 mm | a-3 |
+| Raza, diametrul, unghiul | Prefixele | „R”, „Ø” (de scris) | R, Ø | b |
+| | Unghiurile | grade zecimale, grade-minute-secunde; zecimalele 0–4 | zecimale, 2 | b |
+| | Linia razei | din centru, din afară, după loc | după loc | b |
+| Comportamentul | Cotele noi sunt legate | da, nu | da | a-2 |
+| | Unealta pornește cu | Automată, ultimul fel folosit | Automată | a-2 |
+| | După o cotă | rămâne unealta Cote, înapoi la Selecție | rămâne | a-2 |
+| | Cotele pe pânză | arătate, ascunse (ca „Arată cotele”) | arătate | a-3 |
+| | Cotele foilor vecine | estompate, ascunse | estompate | a-3 |
+| | Cifrele se ascund sub | 0–12 px pe ecran | 6 px | a-3 |
+| | Culoarea pe pânză | a temei, aleasă | a temei | a-3 |
+| Lipirea | Punctele | vârfurile, mijloacele, centrele, cadranele, cutia, foaia, grila (fiecare bifat) | toate | a-2 |
+| | Toleranța | 4–20 px | 8 px | a-2 |
+| | Punctul cel mai apropiat de pe contur | cu Ctrl, mereu, niciodată | cu Ctrl | a-2 |
+| Măsurarea | Ce arată | distanța, Δx și Δy, unghiul (bife) | toate | a-2 |
+| | Unde | lângă cursor, în bara de jos (bife) | amândouă | a-2 |
+| Exportul | Cu cotele (implicitul bifei din „Exportă vectori”) | da, nu | nu | c |
+| | Cotele în DXF | Cote (DIMENSION), Linii și cifre | DIMENSION | c |
+| | Cifrele | trăsături, text | trăsături | c |
+| | Stratul | numele (ASCII) și culoarea | COTE | c |
+| | Grosimea liniilor în PDF și SVG | 0,05–1 mm | 0,1 mm | c |
+| Raportul foilor | Cu cotele (implicitul bifei) | da, nu | nu | d |
 
 **Cifrele** sunt trăsăturile lui Relief SingleLine (ADR 0140, OFL), extrase la build pentru semnele unei cote (cifrele, virgula,
-punctul, minus, plus, R, Ø, °, ″, ×, ±, spațiul), într-un tabel mic: aceleași pe pânză, în export și în „Fă desen din cotă”,
-fără să încarce fontul. Un text al omului cu alte litere aduce fontul întreg, prin cititorul textului, la cerere.
+punctul, minus, plus, R, Ø, °, ′, ″, ×, ±, /, spațiul), într-un tabel mic: aceleași pe pânză, în export și în „Fă desen din
+cotă”, fără să încarce fontul. Un text al omului cu alte litere aduce fontul întreg, prin cititorul textului, la cerere.
 
 ### 7. Exportul (întrebarea 5; felia c)
 
 - **„Exportă vectori”** primește bifa **„Cu cotele”**, oprită implicit (vectorii pentru laser sau pentru alt CAM rămân cum
-  sunt azi), ținută în browser. Cotele intră pe un strat al lor, **COTE** (ASCII, cu culoarea lui).
-- **DXF**, cu lista „Cotele în DXF”:
+  sunt azi; implicitul e în Setări). Sub ea, un rând spune felul ales în Setări („DIMENSION, cifrele ca trăsături”), cu
+  legătura spre ele. Cotele intră pe un strat al lor, **COTE** (numele și culoarea, din Setări).
+- **DXF**, după setarea „Cotele în DXF”:
   - **„Cote (DIMENSION)”**, implicit: entitatea DIMENSION, cu felul ei (rotită pentru orizontală și verticală, aliniată,
     unghiulară din două linii sau din trei puncte, rază, diametru), punctele de definiție exacte, valoarea scrisă, stilul
     `CNCVS2` (înălțimea, capetele, zecimalele, separatorul, zerourile) și blocul anonim `*Dn` cu desenul cotei. AutoCAD și
@@ -162,7 +201,7 @@ fără să încarce fontul. Un text al omului cu alte litere aduce fontul între
   - **„Linii și cifre”:** același desen, direct în ENTITIES, pentru programele care nu știu DIMENSION.
 - **SVG** (grupul stratului, ca un strat Inkscape), **PDF** (stratul OCG „COTE”) și **EPS** (culoarea și comentariul): liniile,
   capetele și cifrele ca vectori.
-- **Cifrele** ies implicit ca trăsături (identice oriunde, fără fonturi); la alegere, **ca text** (MTEXT în DXF, `<text>` în
+- **Cifrele** ies implicit ca trăsături (identice oriunde, fără fonturi); după setare, **ca text** (MTEXT în DXF, `<text>` în
   SVG, Helvetica din cele 14 fonturi standard în PDF și EPS), editabil în alt program, dar desenat cu fontul lui.
 - **Raportul foilor** (ADR 0210 §6): bifa „Cu cotele” la desenul fiecărei foi (felia d).
 
@@ -183,16 +222,19 @@ fără să încarce fontul. Un text al omului cu alte litere aduce fontul între
 Unealta, lipirea pe puncte, desenul cotelor, panoul și judecata vin într-o bucată la cerere: la prima apăsare pe D sau M,
 sau după prima randare a unui document cu cote. În pornire intră doar acțiunile din registru (unealta, „Arată cotele”),
 tastele, privirea „are cote?” a ușii și comanda jurnalului: estimat +0,3 kB (114,7 → ~115,0 / 120). Bucata cotelor ~8 kB,
-exportul ~3–4 kB în bucata lui, deci totalul ~806 → ~818 / 900 kB. Fiecare felie spune în raport cifrele măsurate.
+fereastra Setări ~3 kB (la cerere, ca „Aspectul”), exportul ~3–4 kB în bucata lui, deci totalul ~806 → ~821 / 900 kB.
+Fiecare felie spune în raport cifrele măsurate.
 
 ### 10. Feliile
 
 | Felia | Ce aduce | Se încearcă |
 |---|---|---|
-| 10.4↑a | Proba G-code-ului (prima); modelul (cota, ancora, ușa, judecata la cerere, jurnalul, dezlegarea); lipirea pe puncte; unealta Cote (D) cu Automată (latura, două puncte), Orizontală, Verticală, Aliniată și Măsoară (M); legată și liberă; pe pânză; alegerea, mânerele, Delete; panoul; lista; „Arată cotele”; stilul implicit; manualul (ro, en) | canalul `cote` |
-| 10.4↑b | Raza, diametrul, unghiul (și în Automată); „Opțiunile cotelor” (§6) | canalul `cote` |
-| 10.4↑c | Exportul: „Cu cotele”, stratul COTE, DXF ca DIMENSION sau ca linii și cifre, SVG, PDF, EPS, cifrele ca trăsături sau ca text; oracolul pe corpus | canalul `cote` |
-| 10.4↑d | Lanțul, linia de bază, „Cotează selecția”, „Fă desen din cotă”, cotele în raportul foilor | canalul `cote` |
+| 10.4↑a-1 | Proba G-code-ului (prima); modelul (cota, ancora, punctele și valorile pe hârtie, ușa cu judecata la cerere, comanda jurnalului); regula de import; fără interfață | unitarele |
+| 10.4↑a-2 | Lipirea pe puncte; unealta Cote (D) cu Automată (latura, două puncte), Orizontală, Verticală, Aliniată și Măsoară (M), pe pânză; legată, dezlegarea în același pas de anulare; alegerea, mânerele, Delete; setările comportamentului, ale lipirii și ale măsurării (citite, încă fără fereastră) | canalul `cote` |
+| 10.4↑a-3 | Fereastra Setări, cu secțiunea Cotele (setările de până aici); panoul cotei; lista; „Arată cotele”; manualul (ro, en): „Cotele și măsurarea”, „Setările”, tastele D, M, Ctrl+, | canalul `cote` |
+| 10.4↑b | Raza, diametrul, unghiul (și în Automată), cu setările lor; inch în fracții | canalul `cote` |
+| 10.4↑c | Exportul: „Cu cotele”, stratul COTE, DXF ca DIMENSION sau ca linii și cifre, SVG, PDF, EPS, cifrele ca trăsături sau ca text, cu setările lor; oracolul pe corpus | canalul `cote` |
+| 10.4↑d | Lanțul, linia de bază, „Cotează selecția”, „Fă desen din cotă”, cotele în raportul foilor, cu setarea lui | canalul `cote` |
 
 Mai târziu, la cuvântul owner-ului: toleranțele scrise pe cotă (±0,1), lungimea unui arc sau a unui contur întreg, cota între
 două foi.
@@ -211,8 +253,12 @@ două foi.
 - **Exportul** (oracolul independent, Python, nimic din `src/`): ezdxf citește fișierul cu 0 erori și 0 reparații; fiecare
   DIMENSION are felul și blocul ei, iar `get_measurement()` e valoarea pe hârtie; „Linii și cifre”: entitățile pe stratul
   COTE; PDF-ul prin PyMuPDF (stratul OCG „COTE”, căile lui); SVG-ul măsurat de Edge; EPS-ul prin Ghostscript.
+- **Setările:** fiecare setare citită înapoi din browser, cu valorile din afara marginilor aduse la implicit; o setare
+  schimbată redesenează cotele pe loc; „Înapoi la implicit”.
 - **E2e (Edge):** D și M, fiecare fel, legarea (forma mutată, cifra nouă), dezlegarea, Delete, anularea, reîncărcarea, lista
-  și ochiul, Selecția care trece prin cote; la 1280 px cu fontul lat, în ambele limbi; pe telefon.
+  și ochiul, Selecția care trece prin cote, fereastra Setări (din meniul contului, din paletă, cu Ctrl+, și din ⚙); la
+  1280 px cu fontul lat, în ambele limbi; pe telefon. **Un rând nou în meniul contului** se numără în `cont.spec.ts` și în
+  proba tichetelor de pe emulatoare (`test/e2e-emulator/tichete.emulator.spec.ts`).
 - **Otrăvurile** fiecărei felii, în clonă (`test/otravuri/10.4-*.py`).
 
 ## Ce am respins
@@ -227,7 +273,7 @@ două foi.
 - **Lipirea de fiecare vârf al tuturor formelor:** zeci de mii de ținte la un import mare; doar formele de lângă cursor.
 - **Cotele cu mărime fixă pe ecran** (ca riglele): exportul și tiparul ar arăta altfel decât pânza.
 
-## Întrebările pentru owner (doar ce se exclude), cu recomandarea în față
+## Întrebările pentru owner (doar ce se exclude), cu recomandarea în față (răspunse: 1a–6a, la capăt)
 
 1. **Unde stă cota:**
    - **a (recomandat):** pe foaie, lângă ghidaje și imagini, fără schemă nouă; v28 rămâne liber;
@@ -257,4 +303,21 @@ Ordinea feliilor e cea din §10; dacă vrei exportul înaintea razei și unghiul
 - owner-ul vrea cotele să meargă cu piesa (pe fiecare instanță, în plăcuțe, în copii): atunci întrebarea 1, b;
 - un program al owner-ului citește greșit DIMENSION sau stratul COTE;
 - bara de sus nu mai încape la 1280 px cu fontul lat (§5: unealta trece în extensie);
-- se cer cote 3D (pe relief, pe vederea 3D) sau toleranțe.
+- se cer cote 3D (pe relief, pe vederea 3D) sau toleranțe;
+- owner-ul vrea stilul cotelor ținut în proiect sau în cont, nu doar în browser.
+
+## Răspunsurile owner-ului (24.11.2026)
+
+Salvate în schiță (`raspunsuri/owner`, 10:52), apoi „am raspuns” în chat: **1a, 2a, 3a, 4a, 5a, 6a**, cu nota, exactă:
+„vreau cat mai multe optiuni si setari pe care un user le poate selecta si configura pentru sistemul de cote. dar nu le
+vreau in zona de design/proiectare. vreau o zona de settings generale si acolo sa se poata seta toate astea”.
+
+Ce a schimbat nota față de propunere:
+- „Opțiunile cotelor ▾” din bara uneltei și stilul din panou au plecat: toate setările stau în fereastra nouă „Setări”,
+  secțiunea Cotele (§6), mult mai multe decât în propunere (unitatea cu fracțiile de inch, rotunjirea la pas, zerourile,
+  unitatea scrisă, liniile de extensie, capetele și mărimea lor, unghiurile, comportamentul, lipirea, măsurarea, exportul).
+- Bara uneltei are doar felurile și ⚙; comutatorul „Legată” a devenit setarea „Cotele noi sunt legate”.
+- O cotă nu mai ține stil: setările sunt ale aplicației și se aplică tuturor cotelor, pe loc (§6). Felia 10.4↑a s-a
+  împărțit în a-1 (modelul și proba), a-2 (unealta), a-3 (Setări, panoul, lista, manualul).
+- Ținute în browser, nu în proiect: asta e alegerea sesiunii, din „setări generale”; se redeschide dacă owner-ul vrea
+  stilul ținut în proiect (atunci o setare „pentru proiectul acesta”) sau în cont.
