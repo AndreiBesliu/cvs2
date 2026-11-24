@@ -74,6 +74,11 @@ față. Fără cod de produs până la răspunsuri. De hotărât acolo, între a
   ușii la cerere, comanda jurnalului, regula de import; otrăvuri 30 / 30. Fără interfață: owner-ul n-are încă ce încerca.
   **Urmează:** 10.4↑a-2, unealta Cote pe pânză (lipirea pe puncte, felurile liniare, Măsoară, legarea și dezlegarea în
   același pas, alegerea și mânerele).
+- **24.11, 10.4↑a-1 unită de sesiunea principală** în lotul 17 (`f25249cf`, la `47be5f42`); `main` (`fdce5f1b`) adus și în
+  ramură (`2fb75c06`).
+- **24.11, 10.4↑a-2 gata pe ramură** (codul la `ca5ab922`): lipirea pe puncte, desenul cotei liniare, setările citite, dezlegarea în
+  același pas, cotele foilor copiate legate de instanțele noi, unealta Cote (D, M) pe pânză; butonul ei în extensia barei.
+  **Urmează:** 10.4↑a-3 (fereastra Setări, panoul cotei, lista, „Arată cotele”), la cuvântul owner-ului.
 
 ## Deciziile owner-ului
 
@@ -96,3 +101,10 @@ față. Fără cod de produs până la răspunsuri. De hotărât acolo, între a
 - **„Duplică foaia”** (`comandaDuplicareLegata`, `src/model/pieseLegate.ts`) copiază tot ce are foaia, deci și cotele, cu
   legăturile spre instanțele foii vechi: pe foaia nouă ies dezlegate. De hotărât la a-2 (le leagă din nou de instanțele noi).
 - **Orele** din DEVLOG și din fișe sunt ale României (UTC+2), nu UTC.
+- **Bara de sus, cu încă o unealtă, ieșea din 1280 px** (Transformarea, fontul lat, română: 1 296 px). Butonul Cote stă în
+  extensia barei (ADR 0330 §5); orice unealtă nouă are aceeași problemă.
+- **Probele e2e pe pânză:** jos, la 1280 × 720, bara de jos acoperă marginea foii (un clic acolo nimerește un buton); o
+  tastă a editorului cere focusul în bara uneltelor (`[data-unealta="selectie"]`), nu pe pânză (canvasul nu ia focus);
+  bucata uneltei vine la cerere, deci primul clic așteaptă stratul ei.
+- **Liniile de extensie pleacă de lângă vârfuri:** alese la clic, ar fura începutul unei cote noi; cota se alege doar de
+  pe linie și de pe cifră, iar un punct numit al unei forme bate cota.

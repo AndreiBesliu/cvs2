@@ -44,3 +44,24 @@ export async function clicCareInchideCadrul(page: Page, selector: string): Promi
   await Promise.race([clic, inchis]);
   await inchis;
 }
+
+/**
+ * Un clic adevărat pe un buton din cadrul extensiei care își reface cadrul pe loc (`host.reporneste()`): aceeași cursă ca la
+ * `clicCareInchideCadrul`. Cadrul vechi dispare înainte să-și confirme evenimentul, iar `click()` nu se mai întoarce, deși
+ * repornirea s-a făcut (30 s, apoi proba cade). Văzut în CI pe 24.11 (`extensii.lucru.spec.ts:228`, rularea 45404468217) și
+ * reprodus în aceeași zi cu proba repetată de 120 de ori pe zece lucrători: 6 clicuri neîntoarse, la cele două clicuri care
+ * repornesc pe loc. Se așteaptă urmarea clicului (`urmare`: ce se vede în cadrul nou), nu întoarcerea lui.
+ *
+ * Un clic care cade cu adevărat (butonul lipsește, e acoperit) își spune eroarea dacă urmarea nu vine; o repornire care nu
+ * are loc pică la așteptarea urmării.
+ */
+export async function clicCareRefaceCadrul(page: Page, selector: string, urmare: () => Promise<void>): Promise<void> {
+  const venita = urmare();
+  // cea care pierde întrecerea poate cădea mai târziu (pagina închisă la capătul probei): fără respingeri neprinse
+  venita.catch(() => { /* judecată mai jos, la `await venita` */ });
+  const clic = page.frameLocator('iframe.cadru-extensie').locator(selector).click()
+    .catch(async (e: unknown) => { try { await venita; } catch { throw e; } });
+  clic.catch(() => { /* judecată în întrecere */ });
+  await Promise.race([clic, venita]);
+  await venita;
+}

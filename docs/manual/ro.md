@@ -1160,6 +1160,35 @@ colțul pânzei o spune. Cât tragi (Linie, Liber), capetele prelungite se văd 
 o nuanță roșie, peste formele pe care cuțitul le împarte de tot; cu spațiu sau suprapunere, fâșia lor se vede de o parte și
 de alta a urmei, punctată mai rar; cu îmbinare, în locul fâșiei se văd dinții, pe formele pe care urma le trece de tot.
 
+## Cotele și măsurarea
+%% capitol: cote
+%% acopera: unealta.cote, foaie.cote
+
+Unealta **Cote** (`D`; butonul ei stă în extensia barei, după Convertește) pune pe desen cote care arată o mărime: lungimea unei laturi, distanța dintre două puncte
+pe X, pe Y sau dreaptă. O cotă **nu se taie niciodată**: G-code-ul exportat e același cu și fără cote. Cotele sunt ale foii
+pe care au fost puse (**Cotele foii**), se salvează cu proiectul și au culoarea lor pe pânză. Felul se alege în bară:
+- **Automată** (la început): un clic pe o latură dreaptă îi ia lungimea; altfel, două puncte, iar cota e orizontală dacă duci
+  linia deasupra sau dedesubt, verticală dacă o duci la stânga sau la dreapta, aliniată dacă o duci între ele (**Shift**:
+  aliniată oricum);
+- **Orizontală**, **Verticală**, **Aliniată**: două puncte, apoi locul liniei de cotă;
+- **Măsoară** (`M`): două puncte, fără urmă. Distanța, Δx, Δy și unghiul față de orizontală se văd lângă cursor și în bara de
+  jos; **Enter** (sau **Păstrează**) o face cotă aliniată, **Esc** o șterge.
+
+Pusul: clic pe primul punct, clic pe al doilea, apoi duci linia de cotă unde vrei și dai al treilea clic; **Esc** renunță la
+cota începută. Punctele se lipesc de vârfuri (un pătrat lângă cursor), de mijlocul laturilor (un triunghi), de centrele
+cercurilor și ale arcelor (un cerc), de cadranele cercurilor (un romb), de colțurile și mijloacele cutiei unei forme, de
+colțurile, mijloacele și centrul foii și de grila pornită. Cu **Ctrl**, cel mai apropiat punct de pe contur; **Alt**
+inversează lipirea, ca peste tot.
+
+O cotă pusă pe punctele unei forme e **legată** de ea: mutată, rotită, scalată, oglindită sau înclinată forma (și din
+panou), cota o urmează și își schimbă cifra. Ștearsă forma, mutată pe altă foaie sau cu alte noduri (un nod adăugat sau
+scos), cota se **dezleagă**: rămâne în ultimul loc văzut, punctată, în roșu, în același pas de anulare (Ctrl+Z le întoarce
+pe amândouă). „Duplică foaia” copiază și cotele, legate de formele copiei.
+
+Cu unealta Cote, un clic pe linia unei cote o alege: capetele ei se trag pe alt punct (se leagă din nou de el), linia se
+trage sau se mută cu săgețile (1 mm; Shift: 10 mm, Alt: 0,1 mm), **Delete** o șterge. Cu Selecția și cu celelalte unelte,
+cotele nu se aleg: clicul trece la forma de sub ele. Un dublu clic pe o cotă, cu orice unealtă, trece la Cote, cu ea aleasă.
+
 ## Conversia vectorilor
 %% capitol: conversie
 %% acopera: editare.conversie, document.converteste
@@ -2350,7 +2379,8 @@ tu, iar interfața aplicației rămâne aceeași.
 | `Home` | Arată toată foaia |
 | `PageUp`, `PageDown` | Foaia de dinainte, Foaia următoare (foaia activă, după lista foilor) |
 | `T` | Arată traseul |
-| `V` `S` `N` `K` `B` `R` `O` `E` `L` `P` `X` | uneltele: Selecție, Transformare, Noduri, Cuțit, Pen, Dreptunghi, Cerc, Elipsă, Linie, Poligon, Text (tasta e scrisă și în colțul butonului) |
+| `V` `S` `N` `K` `B` `R` `O` `E` `L` `P` `X` `D` | uneltele: Selecție, Transformare, Noduri, Cuțit, Pen, Dreptunghi, Cerc, Elipsă, Linie, Poligon, Text, Cote (tasta e scrisă și în colțul butonului; Cote stă în extensia barei) |
+| `M` | unealta Cote, pe Măsoară |
 | `Shift+H`, `Shift+V` | Oglindește orizontal, Oglindește vertical |
 | săgețile | mută selecția 1 mm (Shift: 10 mm, Alt: 0,1 mm); în vederea 3D, rotesc placa |
 | `Alt+←`, `Alt+→` (în textul uneltei Text) | spațiul între literele alese, cu 0,1 mm mai strâns / mai larg |
@@ -2361,6 +2391,8 @@ tu, iar interfața aplicației rămâne aceeași.
 | dublu clic pe ținta ancorei (unealta Transformare) | ancora înapoi în punctul ales în selector |
 | `Shift` / `Ctrl` / `Alt`, cât desenezi | pătrat, cerc, pași de 15° / fără proporție (cercul devine elipsă) / din centru (linia, din mijloc) |
 | `Delete`, `Backspace` (cu unealta Noduri și un nod ales) | scoate nodul ales |
+| `Delete`, săgețile, `Esc` (cu unealta Cote și o cotă aleasă) | șterge cota / îi mută linia / o lasă |
+| `Enter` (cu unealta Cote, pe Măsoară) | păstrează măsura ca o cotă aliniată |
 | `Enter` (cu unealta Pen) | termină calea începută |
 | `Ctrl+Z`, `Ctrl+Y` (cu unealta Pen și o cale începută) | anulează / reface ultimul pas al căii |
 | `Ctrl+Shift+Z` (imediat după o cale terminată cu Pen) | redeschide calea, cu pașii ei |
