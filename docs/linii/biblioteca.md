@@ -1,21 +1,21 @@
 # Biblioteca extensiilor (3.Xg, 3.Xh, 3.Xi, 3.Xj)
 
-## 3.Xj: căutarea și categoriile (gata, de unit, în cloud)
+## 3.Xj: căutarea și categoriile (unită în `main`); 3.Xk: proba repornirii (gata, de unit, în cloud)
 
-_Aceeași linie și aceeași ramură (`wip/3.Xh-biblioteca-ui`, cu `main` adus de patru ori pe 24.11: `64a63b4`, fără
-ciocniri; `a96881a`, cu cele trei obișnuite (DEVLOG-ul, traducerile, catalogul controalelor); `29ef7e4`, cu proba
-repornirii, luată din `main`; `7312d68`, loturile 19–21, cu DEVLOG-ul, indexul liniilor și catalogul controalelor).
+_Aceeași linie și aceeași ramură (`wip/3.Xh-biblioteca-ui`, cu `main` adus de cinci ori pe 24.11; ultima, `62569bb`,
+lotul 22, cu ciocnirea doar în DEVLOG).
 Starea:
-**ADR 0233 scris și implementat pe 24.11, la „ok, porneste cautarea si categoriile” al owner-ului, cu alegerile
-recomandate; cinci întrebări pentru el stau în ADR („Întrebările”). PR-ul `AndreiBesliu/cvs2#24`, de unit de sesiunea
-principală după completul verde. Pachetele nu s-au schimbat (Easy 3Draw e 18.23.0, din 3.Tt, venit cu `main`;
-următoarea versiune, 18.24.0).**_
+**3.Xj e în `main` din 24.11 (`049c5dda`, lotul 22; completul lotului, verde). ADR 0233, acceptat de owner pe 24.11
+(„da, 1a–5a”, la cele cinci întrebări): rămâne ce e implementat. 3.Xk (doar probe) e pe ramură, cu PR-ul
+`AndreiBesliu/cvs2#24` refolosit pentru ea; o unește sesiunea principală, la raport, după rapidul și completul verzi.
+Pachetele nu s-au schimbat (Easy 3Draw e 18.23.0, din 3.Tt; următoarea versiune, 18.24.0).**_
 
 - **Ce s-a făcut** (amănuntele, în ADR 0233, „Implementat”): rafturile bibliotecii (`CATEGORII_BIBLIOTECA`,
   `shared/biblioteca.ts`) și `categorii` în lista bibliotecii și în catalog; căutarea pură (`src/extensii/cautare.ts`);
   bara de sub capul ferestrei (`.bib-filtre` în `Biblioteca.tsx`), starea „nimic”, rafturile paginii, tastatura.
-- **Întrebările pentru owner** (recomandarea, „a”, e cea făcută): rafturile; unde stă Easy 3Draw; dacă rămân la vedere cu
-  o singură extensie; câte rafturi pe extensie; cât de îngăduitoare e căutarea. Fiecare se schimbă fără să atingă restul.
+- **Întrebările pentru owner, cu răspunsul lui din 24.11 („da, 1a–5a”):** rafturile; unde stă Easy 3Draw; la vedere și
+  cu o singură extensie; cel mult trei rafturi pe extensie; cât de îngăduitoare e căutarea. Rămâne ce e făcut; fiecare
+  se poate schimba fără să atingă restul, dacă se răzgândește la încercare.
 - **Probele:** `test/unit/extensii.cautare.test.ts`, `test/e2e/extensii.cautare.spec.ts` (biblioteca de probă cu cinci
   extensii: `raftDeProba` din `ajutor-biblioteca.ts`), țintele în `extensii.tinte.spec.ts`. Otrăvurile, în clonă: 78 / 78 (la prima rulare, 76: U06 și E06, cu probele întărite).
 - **Mărimea:** pornirea neschimbată; totalul +1,3 kB (814,3 → 815,6; cu `main` `7312d68` adus, 830,5 → 831,8 / 900 kB,
@@ -23,8 +23,8 @@ următoarea versiune, 18.24.0).**_
 - **CI:** rapidul verde pe `1c21640`; primul complet, căzut la o probă mai veche a extensiilor (regula de mai jos);
   **completul verde pe `51ca1a5`** (codul feliei cu `main` `a96881a`; 69 min 27 s); completul de pe capătul cu `main`
   `7312d68` adus (`e46d70e`) hotărăște unirea.
-- **3.Xk, felia mică de după, doar probe (hotărâtă cu sesiunea principală pe 24.11; gata local pe 24.11, `1772f95`,
-  de împins după ce 3.Xj e în `main`, pe PR separat):** „două cereri imediat după”, din proba repornirii, depindea de cât
+- **3.Xk, felia mică de după, doar probe (hotărâtă cu sesiunea principală pe 24.11; gata pe 24.11, `1772f95`, cu
+  `main` `62569bb` adus în `abd0dfe`; PR-ul `AndreiBesliu/cvs2#24`, rămas doar cu ea):** „două cereri imediat după”, din proba repornirii, depindea de cât
   de repede ajungeau clicurile la cadrul refăcut (2 din 120 sub zece lucrători, la sesiunea principală; la mine, 0 din
   450). În loc de trei cereri dintr-un `evaluate` (ordinea mesajelor față de randarea lui React ar fi fost altă cursă),
   **ceasul paginii e al probei** (`page.clock.install()`, `pauseAt` înaintea primei cereri, `runFor`): la 1 999 ms nimic,

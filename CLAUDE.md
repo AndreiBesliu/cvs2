@@ -997,30 +997,24 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   Pachetele nu s-au schimbat de felie (Easy 3Draw era 18.22.0; din 3.Tt e 18.23.0; următoarea, 18.24.0). Cu `main` (`f536a4c`) adus: pornirea
   109,9 kB (plafonul 120; cu ușa 114,4, cu Atelierul 114,7), totalul 809,9 / 900; felia: pornirea +0, totalul +3,8 kB.
   **Căutarea și categoriile în biblioteca extensiilor (ADR 0233, felia 3.Xj)** gata pe 24.11, în sesiunea cloud a
-  liniei (la „ok, porneste cautarea si categoriile” al owner-ului, cu alegerile recomandate), unită în `main` pe 24.11
-  (`049c5dda`): categoriile sunt rafturile bibliotecii, cu lista lor în aplicație (Desen și forme, CNC și trasee,
-  Imprimare 3D, Mașina, Jucării și modele); pe ce rafturi stă o extensie (cel mult trei) o spune lista bibliotecii
-  (`categorii`, în `extensii/biblioteca.json`), nu pachetul. „Caută o extensie” filtrează lista la fiecare literă
-  (`src/extensii/cautare.ts`), fără diacritice și majuscule; pastilele rafturilor, cu numărul lor; starea „nimic găsit”;
-  „/” duce în câmp. **Pachetele nu se schimbă pentru o categorie nouă** (Easy 3Draw rămâne 18.23.0). **La owner, cinci
-  întrebări în ADR 0233** (rafturile, unde stă Easy 3Draw, dacă rămân la vedere cu o singură extensie, câte rafturi pe
-  extensie, cât de îngăduitoare e căutarea). Felia: pornirea +0, totalul +1,3 kB.
-  **Căutarea și categoriile în bibliotecă (ADR 0233, felia 3.Xj)** gata pe 24.11, în sesiunea cloud a liniei (aceeași
-  ramură, PR-ul `AndreiBesliu/cvs2#24`), neunită, la „ok, porneste cautarea si categoriile” al owner-ului, cu alegerile
-  recomandate (cinci întrebări pentru el, în ADR): sub capul ferestrei bibliotecii, o bară cu câmpul „Caută o extensie”
-  (oriunde în nume, la început de cuvânt în descrieri, autor și numele rafturilor; fără diacritice; toate cuvintele;
-  regula, pură, în `src/extensii/cautare.ts`) și cu pastilele rafturilor prezente în listă; pagina extensiei își spune
-  rafturile. **Rafturile sunt ale aplicației (`CATEGORII_BIBLIOTECA`, `shared/biblioteca.ts`): unul nou intră acolo, cu
-  numele lui în ambele limbi (`extensii.categorie.<id>`). Pe ce rafturi stă o extensie o spune lista bibliotecii
-  (`"categorii"` în `extensii/biblioteca.json`, 1–3, primul fiind cel principal), nu pachetul: o schimbare a lor nu cere
-  o versiune nouă, iar o probă cere fiecărei extensii din listă cel puțin un raft.** Catalogul le poartă ca dată de
-  prezentare, citită cu îngăduință. Căutarea și raftul ales țin de fereastra deschisă: nu se țin minte și nu pleacă
-  nicăieri. Pornirea +0, totalul +1,3 kB (cu `main` `7312d68` adus: pornirea 110,2 kB, cu ușa 114,9, cu Atelierul
-  115,2 / 120; totalul 831,8 / 900). **O probă care dă clic, în cadrul extensiei, pe ceva
-  ce îi reface cadrul pe loc (`host.reporneste()`) folosește `clicCareRefaceCadrul` (`test/e2e/ajutor-extensii.ts`),
-  cum cea care îl închide folosește `clicCareInchideCadrul`:** clicul nu se mai întoarce când cadrul dispare sub el
-  (completul feliei, căzut la `extensii.lucru.spec.ts:222`; reprodus 16 din 150 pe zece lucrători). Reparația e cea din
-  `main` (`29ef7e44`, făcută de sesiunea principală în aceeași oră): ajutorul primește și urmarea de așteptat.
+  liniei (la „ok, porneste cautarea si categoriile” al owner-ului), unită în `main` pe 24.11 (`049c5dda`). **ADR 0233,
+  acceptat de owner cu „da, 1a–5a”** (cele cinci întrebări: rafturile, unde stă Easy 3Draw, la vedere și cu o singură
+  extensie, cel mult trei rafturi pe extensie, cât de îngăduitoare e căutarea): rămâne ce e implementat. Sub capul
+  ferestrei bibliotecii, o bară cu câmpul „Caută o extensie” (oriunde în nume, la început de cuvânt în descrieri, autor
+  și numele rafturilor; fără diacritice; toate cuvintele; regula, pură, în `src/extensii/cautare.ts`) și cu pastilele
+  rafturilor prezente în listă, cu numărul lor; starea „nimic găsit”; „/” duce în câmp; pagina extensiei își spune
+  rafturile. **Rafturile sunt ale aplicației (`CATEGORII_BIBLIOTECA`, `shared/biblioteca.ts`: Desen și forme, CNC și
+  trasee, Imprimare 3D, Mașina, Jucării și modele): unul nou intră acolo, cu numele lui în ambele limbi
+  (`extensii.categorie.<id>`). Pe ce rafturi stă o extensie o spune lista bibliotecii (`"categorii"` în
+  `extensii/biblioteca.json`, 1–3, primul fiind cel principal), nu pachetul: o schimbare a lor nu cere o versiune nouă
+  (Easy 3Draw rămâne 18.23.0), iar o probă cere fiecărei extensii din listă cel puțin un raft.** Catalogul le poartă ca
+  dată de prezentare, citită cu îngăduință. Căutarea și raftul ales țin de fereastra deschisă: nu se țin minte și nu
+  pleacă nicăieri. Felia: pornirea +0, totalul +1,3 kB (în `main`: pornirea 110,2 / 120 kB, totalul 831,8 / 900).
+  **O probă care dă clic, în cadrul extensiei, pe ceva ce îi reface cadrul pe loc (`host.reporneste()`) folosește
+  `clicCareRefaceCadrul` (`test/e2e/ajutor-extensii.ts`), cum cea care îl închide folosește `clicCareInchideCadrul`:**
+  clicul nu se mai întoarce când cadrul dispare sub el. **O probă care judecă o regulă de timp a gazdei (rărirea
+  repornirilor, un termen) ține ea ceasul paginii** (`page.clock`: `install` înaintea lui `goto`, `pauseAt`, `runFor` cu
+  granița exactă; felia 3.Xk, doar probe).
   **Cotele pe desen: modelul și proba G-code-ului (ADR 0330, felia 10.4↑a-1, adusă din etapa 10)** gata pe 24.11, în
   sesiunea cloud a liniei (ramura `wip/10.4-cote`), unită în `main` pe 24.11 (`f25249cf`), fără interfață încă. ADR
   0330, acceptat de owner cu 1a–6a și cu nota lui: toate setările cotelor stau într-o fereastră nouă, „Setări”, nu în

@@ -13464,3 +13464,18 @@ separat […] Ține de menținerea CI-ului verde, nu cere cuvântul owner-ului�
 - **Loturile dinainte:** al șaptesprezecelea și al optsprezecelea, pe test din 17:50 (`29ef7e44`; completul pe `main`
   45417561144, verde: unit 10 190 / 0, e2e 707 / 707, funcțiile 136 / 136, paginile 57 / 57; proba de fum, bună).
   Loturile 19–21 (`7312d685`): completul pe `main` (45436221341) rula la unire.
+
+## 2026-11-24 — ADR 0233 acceptat („da, 1a–5a”); 3.Xk cu `main` adus (lotul 22), pe PR-ul ei (sesiune cloud)
+
+**Prompt:** „da, 1a–5a” (la cele cinci întrebări din ADR 0233); mesajul sesiunii principale din 24.11, 18:30 („Lotul 22
+e în `main` […] Acum poți aduce `main` în ramură și deschide PR-ul lui 3.Xk”)
+**Started:** 24.11, 18:30. **Completed:** documentele și PR-ul, 24.11, 18:45; rapidul și completul, în CI.
+
+- **ADR 0233, acceptat:** rămâne ce e implementat la toate cinci (rafturile, unde stă Easy 3Draw, la vedere și cu o
+  singură extensie, cel mult trei rafturi, cât de îngăduitoare e căutarea). Scris în ADR („Starea”, „Întrebările”), în
+  indexul ADR, în coada owner-ului din fișa etapei 3, în nota liniei și în `CLAUDE.md` (unde cele două paragrafe ale lui
+  3.Xj, al sesiunii principale și al liniei, au rămas unul singur).
+- **`main` (`62569bb`, lotul 22) adus în ramură** (`abd0dfe`): ciocnirea, doar în DEVLOG. Față de `main`, ramura are
+  acum doar 3.Xk: proba din `test/e2e/extensii.lucru.spec.ts`, lista de otrăvuri `test/otravuri/3.Xk.py` și documente.
+- **PR-ul `AndreiBesliu/cvs2#24`**, refolosit pentru 3.Xk (titlul și descrierea, schimbate); o unește sesiunea
+  principală, la raport.
