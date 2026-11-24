@@ -1671,7 +1671,8 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   Porțile lotului, în CI: primul complet (pe `001b6325`), roșu doar la proba de mai sus (unit 10 300 / 0, e2e
   785 / 785, funcțiile 136 / 136, paginile 56 din 57); cu 3.At, codul lotului a trecut în completul lotului 26, care
   îl cuprinde (45466400696, pe `fdde5947`: cifrele, în decizia unirii a douăzeci și patra); rapidul, verde pe
-  `e533068a`. Completul propriu al lotului, pe `cadac6c3`, a stat 40 de minute la coadă și rula încă la unire. Felia
+  `e533068a`. Completul propriu al lotului, pe `cadac6c3` (45465767883), a stat 40 de minute la coadă și a ieșit și
+  el verde, cu câteva minute înaintea unirii (unit 10 300 / 0, e2e 785 / 785, funcțiile 136 / 136, paginile 59 / 59). Felia
   rândului foii: totalul +0,7 kB (857,5 / 900), pornirea neschimbată. Loturile 19–22 sunt pe test din 20:32
   (`62569bb2`; proba de fum, bună).
 - 24.11.2026, seara (a douăzeci și doua unire din cloud): **fereastra „Exportă G-code”, refăcută (28.8↑a–g), și proba

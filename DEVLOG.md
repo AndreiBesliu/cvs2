@@ -14003,8 +14003,9 @@ incidentul numărul unu” (completul loturilor 19–21, roșu la o probă a ext
   probe ale fișierelor `utilizatori` și `rapide`, verzi. Otrăvurile (`test/otravuri/3.At.py`): 5 / 5 din prima, pe emulatoare (mesajul dat la răspunsul salvării, în fiecare din cele trei formulare; mesajul care nu mai vine; citirea căzută care lasă formularul ocupat).
 - **Porțile, în CI:** cu 3.At, codul lotului a trecut în completul lotului 26, care îl cuprinde (45466400696, pe
   `fdde5947`: unit 10 307 / 0, e2e 788 / 788, funcțiile 136 / 136, paginile 59 / 59); rapidul, verde pe `e533068a`
-  (45466041605). Completul propriu al lotului, pe `cadac6c3` (45465767883), a stat 40 de minute la coadă și rula încă
-  la unire. Mărimea lotului singur (primul complet): pornirea 110,4 kB, totalul 857,5 / 900. Nimic pe server.
+  (45466041605). Completul propriu al lotului, pe `cadac6c3` (45465767883), a stat 40 de minute la coadă și a ieșit
+  și el verde, la 21:58, cu câteva minute înaintea unirii (aflat după ea: unit 10 300 / 0, e2e 785 / 785, funcțiile
+  136 / 136, paginile 59 / 59). Mărimea lotului singur (primul complet): pornirea 110,4 kB, totalul 857,5 / 900. Nimic pe server.
 - **Tot în lot, doar documente:** nota liniei bibliotecii (`945a9320`); predarea liniei elicelor către sesiunea
   extensiilor (`05bdc8ec`, la cererea owner-ului) și decizia liniei noi a atelierului Easy 3Draw (ADR 0340–0349,
   feliile de la 3.Tv, cu 3.Tu).
