@@ -39,6 +39,7 @@ import {
 } from '../model/pieseLegate.ts';
 import { aplica } from '../geom/matrice.ts';
 import { comenziAsezare, distantaPropusa, planAsezare, type OptiuniAsezare } from '../model/asezare.ts';
+import { coteCopiate } from '../model/cote.ts';
 import { optiuniTinute } from '../app/asezareTinuta.ts';
 import { alegereTinuta, type AlegereGrupare } from './grupareSurori.ts';
 import {
@@ -1014,18 +1015,22 @@ function comandaDuplicare(doc: Document, id: string): { readonly ok: true; reado
   const ocupate = new Set<string>();
   const noi: Array<{ readonly piesa: Piesa; readonly pozitie: number }> = [];
   const instante: Instanta[] = [];
+  const perechi: Array<[string, string]> = [];
   for (const original of sursa.instante) {
     const vechi = piese.get(original.piesa);
     if (!vechi) continue;
     const nid = idNou(doc, ocupate);
     ocupate.add(nid);
+    perechi.push([original.id, nid]);
     const { radacina, ...rest } = vechi;
     noi.push({ piesa: { ...structuredClone(rest), radacina: copieArbore(radacina), id: nid }, pozitie: doc.piese.length + noi.length });
     instante.push({ ...structuredClone(original), id: nid, piesa: nid });
   }
-  const { instante: _instante, nume: _nume, ...restFoaie } = sursa;
+  const { instante: _instante, nume: _nume, cote, ...restFoaie } = sursa;
   const idCopie = idFoaieNoua(doc);
-  const foaie: Foaie = { ...structuredClone(restFoaie), id: idCopie, instante };
+  // Cotele foii (ADR 0330 §3) trec pe instanțele copiei (o instanță fără piesă nu se copiază: capetele ei rămân dezlegate).
+  const harta = new Map(perechi);
+  const foaie: Foaie = { ...structuredClone(restFoaie), id: idCopie, instante, ...(cote ? { cote: coteCopiate(cote, harta) } : {}) };
   const comanda: Comanda = { tip: 'adauga-foaie', foaie, pozitie: k + 1, piese: noi };
   const dupa = executa(istoricDin(doc), comanda).doc;
   return is(SchemaDocument, JSON.parse(JSON.stringify(dupa))) ? { ok: true, comanda, id: idCopie } : { ok: false, motiv: 'motiv.plafon' };

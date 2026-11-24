@@ -117,3 +117,21 @@ export function valoareCota(c: Cota, p: readonly Punct[]): number | null {
     }
   }
 }
+
+/**
+ * Cotele unei foi copiate („Duplică foaia”, cu piese noi sau legate; ADR 0210 §1, §2): capetele legate trec pe instanțele
+ * copiei, după `harta` (id-ul vechi → cel nou), cu aceleași noduri (copia arborelui le păstrează). O cotă cu un fel necunoscut
+ * se copiază neatinsă. Fără cote: nimic.
+ */
+export function coteCopiate(cote: readonly Cota[], harta: ReadonlyMap<string, string>): Cota[] {
+  return cote.map((c) => {
+    if (!felCunoscut(c.fel) || !Array.isArray(c.puncte)) return structuredClone(c);
+    return {
+      ...structuredClone(c),
+      puncte: c.puncte.map((a) => {
+        const nou = a.legatura ? harta.get(a.legatura.instanta) : undefined;
+        return nou && a.legatura ? { ...structuredClone(a), legatura: { ...structuredClone(a.legatura), instanta: nou } } : structuredClone(a);
+      }),
+    };
+  });
+}
