@@ -1556,8 +1556,8 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   23 / 24 (una, practic echivalentă). Linia frezelor merge mai departe cu 16.A↑h-5 (profilurile), la „continua cu
   16.A↑h-5” al owner-ului: s-a unit commit-ul raportat. Documentul rămâne v27; nimic pe server. Ciocnirile: DEVLOG,
   registrul otrăvurilor și catalogul controalelor (scris din nou, 634 de nume). Porțile lotului, în CI, pe `9fd71053`
-  (completul @@COMPLET@@): @@PORTI@@; rapidul, @@RAPID@@; completele liniilor, verzi (`aa47863d`; `5bdea116`);
-  @@MARIMI@@. @@INAINTE@@ **ADR 0233 (rafturile bibliotecii), acceptat de owner cu „da, 1a–5a”**, în sesiunea liniei
+  (completul, verde la prima trecere, 70 min cu așteptarea la coadă): unit 10 285 / 0 (12 sărite, pe Linux), e2e 750 / 750, funcțiile pe emulatoare 136 / 136, paginile 57 / 57; rapidul, verde pe `9fd71053`, cu feliile între 4 și 7 minute; completele liniilor, verzi (`aa47863d`; `5bdea116`);
+  pornirea 110,4 kB (plafonul 120), totalul 840,5 / 900 kB, `/admin` 138,2 / 200, contul 30,3 / 32. Loturile 19–22 (`62569bb2`) erau în drum spre test: publicarea loturilor 19–21 căzuse la o probă instabilă a extensiilor (`extensii.spec.ts:135`, clicul pe „Închide” din cadru, pierdut; reparată pe ramură, intră cu lotul următor), iar completul lotului 22 pe `main` rula la unire. **ADR 0233 (rafturile bibliotecii), acceptat de owner cu „da, 1a–5a”**, în sesiunea liniei
   bibliotecii: rămâne ce e implementat. În lucru, pe ramuri: biblioteca (3.Xk, doar probe: repornirea extensiei, cu
   ceasul paginii ținut de probă; porțile în lucru), relieful (18.1↑a, v28: își reface porțile peste `main`; intră
   singur în lotul lui), frezele (16.A↑h-5). **Gata pe ramură, la cuvântul owner-ului:** fereastra exportului
