@@ -359,7 +359,9 @@ cele patru aranjamente, cu harta schițelor schimbată ca la „Cu canvas-ul ara
   cele două incrustații. Găurirea stă și pe un rând fără cercuri, oprită, cu „doar pe cercuri” (inventarul: „cu motivul sub
   cele oprite”); pe o cale deschisă, tăieturile contururilor închise nu apar (nota de sub Tăietura spune de ce).
 - **În listă,** sub numele operației, poza tăieturii ei (1,6 rem), pe rândul textului. Pe o coloană a ei, numele se rupea pe
-  patru rânduri, iar rândurile de ~156 px făceau ca tragerea din ordinea de mână să nu mai pornească în probă.
+  patru rânduri, iar rândurile de ~156 px făceau ca tragerea din ordinea de mână să nu mai pornească în probă. Și așa, rândul
+  are ~117 px, iar lista (~480 px văzuți la 1280 × 720) se derulează: în completul de pe `a0613840`, mânerul celui de-al
+  doilea rând ieșea, cu fonturile runner-ului, sub marginea listei. Proba aduce acum ținta în vedere, ca omul (`6fc38abf`).
 - **Inputul unui cartonaș oprit rămâne ascuns:** regula câmpurilor oprite (`.dialog input:disabled`, 0,55) îl arăta ca un
   cerc peste cartonaș, și pe colțurile de pe linie din 28.8↑b-2.
 - **Probele** aleg cartonașul (`input[data-camp="latura"][value="…"]`), iar valoarea se citește pe cel bifat (`:checked`);
@@ -369,3 +371,29 @@ cele patru aranjamente, cu harta schițelor schimbată ca la „Cu canvas-ul ara
   buzunarului (28.8↑c). Urmează 28.8↑c: desenele și pozele buzunarului (traseul, pasul lateral, coborârea, frezele de rest) și
   ale găuririi.
 
+## Implementarea 28.8↑c (24.11)
+
+- **Traseul buzunarului și coborârea sunt cartonașe** (`<Cartonase data-camp="strategie">`, `data-camp="coborare"`), cu pozele
+  lor (inelele, liniile paralele; plonjarea, rampa, zigzagul, elicea). Traseul vine primul în grup, apoi pasul lateral și
+  unghiul. Câmpurile, valorile și programul nu se schimbă.
+- **Desenul golirii** (de sus): trei treceri cu urma frezei, lată cât freza, la pasul lateral; urmele vecine se suprapun mai
+  închis, iar suprapunerea (D − s, în mm și procente) e scrisă dedesubt. Pe inele, lângă perete, prima la R de el, apoi R + s,
+  R + 2s, ca inelele lucrării (`ineleBuzunar`); pe linii paralele, aceleași treceri rotite la unghiul lor față de X, cu arcul
+  unghiului. Peste D / 2 (cum judecă fereastra), fără urme.
+- **Desenul coborârii** (din lateral, pe o trecere): pe **trecerea egală** a lucrării (adâncimea / n, nu pasul scris): rampa de
+  trecere / tan(unghi), zigzagul cu ⌈trecere / (lungime · tan(unghi))⌉ rampe dus-întors, elicea cu turele ei pe cercul de rază
+  dată; plonjarea, drept în jos. O valoare refuzată de fereastră (unghiul peste 45°) nu se desenează.
+- **Nota „N rampe pe trecere” e acum a lucrării:** se socotea pe pasul scris; cu 10 mm și pasul 6 (două treceri de 5), la 3° și
+  20 mm, spunea 6 rampe, iar programul face 5. Acum se socotește pe trecerea egală, ca `intrareZigzag`.
+- **Desenul frezelor de rest** (de sus): colțul în care freza lasă raza ei (R) și cea mai mică freză de rest, raza ei; lemnul
+  rămas în colț. E schițat din valori, nu o poză fixă: raza din colț e chiar raza frezei.
+- **Desenul găuririi:** ciocănirea pas cu pas, ca `traseuGaurire` pe un cerc cât freza: fiecare pas tăiat în jos, ridicarea de
+  1 mm, ieșirea la al N-lea pas și coborârea rapidă la 0,5 mm deasupra fundului; textul spune pașii și ieșirea.
+- **Probele:** formulele (`treceriLaterale`, `coborareDesen`, `ciocanire`, în `exportDeseneCalcul.ts`) față de lucrare, măsurate
+  pe mișcările ei (lungimea în plan a coborârii, rampele, Z-urile ciocănirii) în `export.desene.test.ts`; e2e-ul desenelor și
+  al cartonașelor (`export.desene.spec.ts`); `buzunar.spec.ts` și `paralel.spec.ts` aleg din cartonașe.
+- **Găsit pe drum:** cota câmpului activ urmează ultimul dintre focus și maus (regula din 28.8↑b-1); cu mausul lăsat pe un
+  cartonaș, derularea de la scrierea într-un câmp pune sub el alt câmp, care ia explicația. Pentru om e ce vede sub maus; proba
+  dă clic în câmp, ca omul.
+- **Mărimea:** totalul 808,8 → 811,4 / 900 (desenele, ~2,6 kB, peste estimarea de ~1,5), pornirea neschimbată (109,4 / 115).
+- Urmează 28.8↑d: ale V-carve-ului, fundului plat, incrustației în V și benzii dopului.

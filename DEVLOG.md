@@ -12625,3 +12625,24 @@ PR-ul `AndreiBesliu/cvs2#13` („De unit acum (A.9a, A.9b): `dbb0306a`”).
   completul); indexul liniilor; starea din `docs/linii/principala.md`.
 - **La owner:** fereastra exportului (28.8↑a–b-3: acum sau după desene), verificarea juridică a utilizării aplicației
   înaintea live-ului, „cine unește în `main`”.
+
+## 2026-11-24 — Linia exportului: completul de pe b-3 reparat; felia 28.8↑c, buzunarul și găurirea (ADR 0290)
+
+**Prompt:** răspunsul owner-ului la ADR 0290, exact: „1a, 2a, 3a, 4a” (feliile acceptate; după 28.8↑b-3).
+**Started:** 24.11, 04:10.
+
+- **Completul de pe `a0613840` a picat** în două probe ale lui b-3: `incrustatieBanda.spec.ts:205` încă alegea tăietura din
+  listă (scăpată la mutare), iar tragerea din ordinea de mână (`export.spec.ts:653`) apăsa sub marginea listei derulate: cu
+  poza tăieturii, rândurile au ~117 px, iar mânerul celui de-al doilea stătea local la 5 px de margine, pe runner dincolo.
+  Reprodus la 700 px înălțime; ajutorul aduce ținta în vedere, ca omul (`6fc38abf`). Completul vechi de pe `10c0700e`, oprit.
+- **28.8↑c:** traseul și coborârea buzunarului ca cartonașe cu poze; desenele golirii (urmele la pasul lateral, ca inelele),
+  coborârii (pe trecerea egală), frezelor de rest (raza din colț) și găuririi (ciocănirea pas cu pas).
+- **Găsit pe drum:** nota „N rampe pe trecere” se socotea pe pasul scris, nu pe trecerea egală a lucrării; acum e a programului.
+- **Probele:** formulele față de lucrare, măsurate pe mișcările ei; e2e-ul desenelor; două spec-uri mutate pe cartonașe.
+  Rapidul local 10 053 / 0.
+- **Otrăvurile:** `test/otravuri/28.8c.py`, 20 / 20 (E07 după proba pantei).
+- **Manualul** (ro, en), ADR 0290 („Implementarea 28.8↑c”), fișa etapei 3, registrul otrăvurilor, nota liniei.
+- **Mărimea:** totalul 811,4 / 900 (+2,6 kB), pornirea neschimbată.
+
+**Completed:** 24.11, 05:20.
+

@@ -36,6 +36,10 @@ vreau ca ficare setare sa fie insotita de o ilustratie sugestiva, ca sa ajute us
 - **24.11: 28.8↑b-3 gata** (tăietura ca cartonașe, poza tăieturii în listă; inputul cartonașelor oprite ascuns), pe ramură și
   pe canalul `export`; neunită. Otrăvurile 7 / 7. Totalul 808,8 / 900. 28.8↑b e încheiată; urmează 28.8↑c (buzunarul și
   găurirea).
+- **24.11: 28.8↑c gata** (traseul și coborârea buzunarului ca cartonașe; desenele golirii, coborârii, frezelor de rest și
+  găuririi; nota rampelor zigzagului pe trecerea egală), pe ramură și pe canalul `export`; neunită. Otrăvurile 20 / 20.
+  Totalul 811,4 / 900 (+2,6 kB). Detaliile: ADR 0290, „Implementarea 28.8↑c”. Înainte, completul de pe b-3 reparat
+  (`6fc38abf`). Urmează 28.8↑d (V-carve-ul, fundul plat, incrustația în V, banda).
 
 ## Ce s-a găsit (23.11)
 
@@ -77,6 +81,10 @@ vreau ca ficare setare sa fie insotita de o ilustratie sugestiva, ca sa ajute us
   care trage sau dă clic cu mausul pe un rând aduce întâi ținta în vedere (`tragePeRand` din `export.spec.ts`): mausul nu apasă
   ce taie marginea listei. Pe 24.11, mânerul celui de-al doilea rând stătea local la 5 px de ea, iar pe runner, cu fonturile
   lui, dincolo: completul a picat doar acolo (reprodus local la 700 px înălțime).
+- **Cota câmpului activ urmează ultimul dintre focus și maus:** cu mausul lăsat pe un cartonaș (după `alege`), derularea de la
+  un `fill` pune sub maus alt câmp, care ia explicația și cota. O probă care cere cota aprinsă după scriere dă întâi clic în
+  câmp (ca omul). Traseul și coborârea buzunarului sunt cartonașe din 28.8↑c (`alege(fisa, 'strategie' | 'coborare', v)`;
+  vizibilitatea, pe `[data-alegere="coborare"]`).
 - **Catalogul controalelor** (ADR 0262, din `main`, 24.11): se scoate din `data-camp="…"` (și celelalte atribute de nume)
   scrise în sursă pe un control sau pe o componentă; un nume dat prin proprietate (`camp={…}`) sau din șablon nu intră, iar
   un `id="…"` pe o componentă intră. După o schimbare a câmpurilor, `node scripts/catalog-controale.ts --scrie`
