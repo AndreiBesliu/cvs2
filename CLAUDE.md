@@ -1571,6 +1571,16 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 24.11.2026, seara: **o linie nouă, atelierul Easy 3Draw: piese și configuratoare** (cererea owner-ului, scrisă în
+  sesiunea liniei bibliotecii: „ok, vreau sa adaugi mai multe tipuri de piese pentru fiecare categoire, sau sa
+  imbunatatesti piesele si configuratoarele care exista deja. vreau ca userii sa poata crea cat mai multe piese, care
+  sa fie si compatibile intre ele nu doar una cate una ci si ca constructii complexe”). O lucrează sesiunea liniei
+  bibliotecii, pe ramura ei (`wip/3.Xh-biblioteca-ui`, canalul `biblioteca`), cu ADR-urile 0340–0349 și feliile de la
+  3.Tv; nota liniei, `docs/linii/atelier.md`. Întâi inventarul, ADR 0340 propus și schița cu întrebările, apoi codul,
+  la răspunsuri. **Vederea „Modelul” (3.Tu, ADR 0283) rămâne a liniei elicelor**, la răspunsurile owner-ului la cele
+  trei întrebări ale ei (axul pieselor rotunde în mijlocul unui știft; „Pune în model” pe același ax; rotorul în
+  carcasa lui): linia nouă nu atinge `corpModel` și `arataModel` până atunci. Două linii pe aceeași extensie iau
+  versiuni diferite (în `main` e 18.23.0).
 - 24.11.2026, seara (a douăzeci și treia unire din cloud): **11.1↑d (rândul comenzilor foii nu trece de foaia lui),
   reparația unei probe instabile a extensiilor și o cursă reparată în fila Setări din `/admin` (3.At), unite în
   `main`**, în lot (sesiunea principală, ramura `unire-2411aa`,

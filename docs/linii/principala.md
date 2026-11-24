@@ -121,8 +121,9 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
   a vârfului: zero fișiere schimbate în afara `.md`). Câștigul: o jumătate de oră.
 - **Intervalele ADR, la 24.11:** 0145–0149 sesiunea principală (lângă plafoanele 0143, 0144; 0145 e plafonul pornirii),
   0230–0239 biblioteca, 0240–0249 ancorele, 0250–0259 aranjamentele, 0260–0269 adminul, 0270–0279 trasarea, 0280–0289
-  pluginul, 0290–0299 exportul, 0300–0309 frezele, 0310–0329 relieful, 0330–0339 cotele. Următoarea linie nouă ia de
-  la 0340.
+  pluginul (0283 e ținut de linia elicelor, pentru 3.Tu), 0290–0299 exportul, 0300–0309 frezele, 0310–0329 relieful,
+  0330–0339 cotele, 0340–0349 atelierul Easy 3Draw (piesele și configuratoarele, feliile de la 3.Tv). Următoarea linie
+  nouă ia de la 0350.
 - **Un PR rămas deschis după unire** (ramura a mers mai departe peste commit-ul unit, deci GitHub nu-l închide) se
   închide doar la cuvântul owner-ului, cu un comentariu care trimite la commit-ul de unire; înainte, se uită ce mai e
   pe ramură: pe 24.11, la `#16`, frezele aveau deja două felii noi, neunite, pentru care linia deschide alt PR.
@@ -176,6 +177,9 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
     (10.4↑a-4, panoul cotei); se unesc la raportul liniei;
   - **la owner:** elicele (3.Tu: unde stă axul pieselor rotunde în vederea „Modelul” din Easy 3Draw; trei întrebări,
     cu recomandările liniei: 1a, 2a, 3a; ar fi Easy 3Draw 18.24.0 și ADR 0283);
+  - **pornită pe 24.11, cu ADR-ul propus întâi:** atelierul Easy 3Draw (piese și configuratoare noi, compatibile în
+    construcții; cererea owner-ului, în sesiunea liniei bibliotecii, pe ramura ei; ADR 0340–0349, feliile de la 3.Tv;
+    nu atinge „Modelul” până hotărăște owner-ul pe 3.Tu);
   - **la cuvântul owner-ului:** următoarea felie a bibliotecii extensiilor, a incrustațiilor și a trasării, 11.5↑b
     (după etapa 13);
   - **fără felie în lucru:** planșele (tăierea plăcii 11, la owner), incrustațiile, trasarea, tăierea (după
