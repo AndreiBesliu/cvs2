@@ -354,7 +354,7 @@ function CarcasaAdmin({ con, instanta, build, p }: { readonly con: Conexiune; re
           <main className="admin-continut" ref={panou} aria-label={t(`admin.fila.${aratata}`)}>
             {vizibile.every((f) => f === 'cont') ? <p className="admin-mesaj" data-admin="fara-file">{t('admin.cont.fara-file', { rol: p.numeRol })}</p> : null}
             {aratata === 'azi' ? <FilaAzi parti={parti} sumar={sumar} reincarca={() => { setRev((r) => r + 1); }} aducator={aducator} /> : null}
-            {aratata === 'erori' ? <FilaErori key={tintaErori?.id ?? ''} con={con} poateMarca={p.permisiuni.has('erori.rezolva')} tinta={tintaErori} /> : null}
+            {aratata === 'erori' ? <FilaErori key={tintaErori?.id ?? ''} con={con} poateMarca={p.permisiuni.has('erori.rezolva')} tinta={tintaErori} aducator={aducator} /> : null}
             {aratata === 'diagnoza' ? <FilaDiagnoza con={con} instanta={instanta} build={build} rol={p.numeRol} /> : null}
             {aratata === 'roadmap' ? <FilaRoadmap aducator={aducator} deschide={deschideDocument} /> : null}
             {aratata === 'documentatie' ? <FilaDocumentatie aducator={aducator} cale={adresa.document} ancora={adresa.ancora} deschide={deschideDocument} /> : null}

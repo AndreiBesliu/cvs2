@@ -16,7 +16,7 @@ process.env['TZ'] = 'Europe/Bucharest';
 
 const rand = (id: string, sursa: RandGrup['sursa']): RandGrup => ({
   id, sursa, tip: 't', mesaj: id, numar: 1, oameni: 1, primaData: null, ultimaData: null, rezolvat: false,
-  ultima: { cand: null, tip: '', mesaj: '', stiva: '', build: '', instanta: '', adresa: '', browser: '', uid: null, context: '' },
+  ultima: { cand: null, tip: '', mesaj: '', stiva: '', build: '', instanta: '', adresa: '', browser: '', uid: null, context: '', pasi: [] },
 });
 
 test('filtrul pe sursă: toate, doar browserul (client), doar serverul; o sursă necunoscută doar la „toate”', () => {

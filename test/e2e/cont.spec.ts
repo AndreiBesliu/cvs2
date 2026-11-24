@@ -91,6 +91,8 @@ test('butonul Cont deschide meniul: fără cont, logarea, manualul și sugestia;
   await expect(dialog.locator('[data-cont="indisponibil"]')).toHaveText('Contul nu e disponibil pe instanța asta (fără configurația Firebase).');
   await dialog.getByTestId('cont-nota').locator('summary').click();
   await expect(dialog.getByTestId('cont-nota')).toContainText('Operatorul datelor: [de completat de owner].');
+  // Pașii dinaintea unei erori (ADR 0262 §4, A.11a) sunt spuși în notă.
+  await expect(dialog.getByTestId('cont-nota')).toContainText('raportul unei erori poartă și ultimii pași dinaintea ei');
   await page.keyboard.press('Escape');
   await expect(dialog).toHaveCount(0);
   await expect(page.getByTestId('jurnal')).toHaveText('0 erori în jurnalul local');

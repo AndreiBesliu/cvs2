@@ -1,4 +1,6 @@
 import { PLAFON_OAMENI } from '../../../shared/erori.ts';
+import type { PasEroare } from '../../../shared/pasiEroare.ts';
+import { pasiDin } from '../../../shared/pasiEroareVerificare.ts';
 
 /**
  * Rândurile filei Erori (ADR 0040 §4), din documentele `errorLogs` (ADR 0039 §2). Pure: primesc datele unui document și
@@ -19,6 +21,8 @@ export interface Aparitie {
   readonly browser: string;
   readonly uid: string | null;
   readonly context: string;
+  /** Pașii dinaintea erorii (ADR 0262 §4, felia A.11a), cel mai vechi primul; ce nu e un pas, sărit. */
+  readonly pasi: readonly PasEroare[];
 }
 
 export interface RandGrup {
@@ -48,7 +52,7 @@ export function aparitieDin(d: Readonly<Record<string, unknown>>): Aparitie {
   return {
     cand: dataDin(d['cand']), tip: text(d['tip']), mesaj: text(d['mesaj']), stiva: text(d['stiva']), build: text(d['build']),
     instanta: text(d['instanta']), adresa: text(d['adresa']), browser: text(d['browser']),
-    uid: typeof d['uid'] === 'string' ? d['uid'] : null, context: text(d['context']),
+    uid: typeof d['uid'] === 'string' ? d['uid'] : null, context: text(d['context']), pasi: pasiDin(d['pasi']),
   };
 }
 
@@ -89,4 +93,11 @@ export function motivDin(e: unknown): string {
     if (cod || mesaj) return cod || mesaj;
   }
   return String(e);
+}
+
+/** Cât înainte de eroare, scurt: „−0,4 s”, „−12 s”, „−3 min”. */
+export function textInainte(ms: number, limba: string): string {
+  const nr = new Intl.NumberFormat(limba === 'en' ? 'en-GB' : 'ro-RO', { maximumFractionDigits: 1 });
+  if (ms >= 60_000) return `−${nr.format(Math.round(ms / 60_000))} min`;
+  return `−${nr.format(ms < 10_000 ? Math.round(ms / 100) / 10 : Math.round(ms / 1000))} s`;
 }

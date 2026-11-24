@@ -1,5 +1,6 @@
 import { Timestamp, type Firestore } from 'firebase-admin/firestore';
 import { oraFerestrei, PLAFON_OAMENI, RETENTIE_ZILE, type Sursa } from '../../../shared/erori.ts';
+import type { PasEroare } from '../../../shared/pasiEroare.ts';
 import { amprenta } from './amprenta.ts';
 
 // Hash-urile stau în modulul lor, fără Firestore (le iau și probele din rădăcină); aici rămân la îndemâna celor de până acum.
@@ -23,6 +24,8 @@ export interface Aparitie {
   readonly limba: string;
   readonly uid: string | null;
   readonly context?: string;
+  /** Pașii dinaintea erorii (ADR 0262 §4, felia A.11a), doar la client, verificați. */
+  readonly pasi?: readonly PasEroare[];
 }
 
 /** Un plafon de rată: cel mult `maxim` apariții pe oră pentru `cheie`. */
@@ -51,6 +54,7 @@ export async function scrieEroare(db: Firestore, a: Aparitie, plafoane: readonly
   const ultima = {
     cand, tip: a.tip, mesaj: a.mesaj, stiva: a.stiva, build: a.build, instanta: a.instanta, adresa: a.adresa,
     browser: a.browser, limba: a.limba, uid: a.uid, ...(a.context === undefined ? {} : { context: a.context }),
+    ...(a.pasi === undefined ? {} : { pasi: a.pasi }),
   };
   return db.runTransaction(async (tx): Promise<RezultatScriere> => {
     const [g, ...contoare] = await tx.getAll(grup, ...limite.map((l) => l.ref));

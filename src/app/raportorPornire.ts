@@ -1,6 +1,7 @@
 import type { ConfigCloud } from '../cloud/conexiuneBaza.ts';
 import type { ModulRaportor, RezultatTrimitere, Trimitere } from '../cloud/raportor.ts';
 import type { IntrareEroare, Jurnal } from './jurnalErori.ts';
+import type { PasiCapturati } from '../../shared/pasiEroare.ts';
 
 /**
  * Raportorul de erori, partea din pornire (felia 3.2, ADR 0043): mică și fără Firebase. Ascultă jurnalul local, ține
@@ -64,6 +65,8 @@ export interface DepsRaportor {
   /** Implicit `navigator.userAgent`. */
   readonly browser?: string;
   readonly limba: () => string;
+  /** Pașii dinaintea erorii, luați în clipa ei (felia A.11a; `pasiAcum`); fără ei, raportul pleacă fără pași. */
+  readonly pasi?: () => PasiCapturati;
   readonly amana?: (f: () => void, ms: number) => void;
   readonly avertizeaza?: (mesaj: string) => void;
 }
@@ -104,7 +107,7 @@ export function creeazaRaportor(deps: DepsRaportor): Raportor {
   let inLucru = false;
   let avertizat = false;
   let trimitere: Promise<Trimitere | null> | null = null;
-  const coada: Array<{ readonly intrare: IntrareEroare; readonly limba: string }> = [];
+  const coada: Array<{ readonly intrare: IntrareEroare; readonly limba: string; readonly pasi: PasiCapturati | undefined }> = [];
   let modul: ModulRaportor | null = null;
   const peCheie = new Map<string, number>();
   let acceptate = 0;
@@ -147,7 +150,7 @@ export function creeazaRaportor(deps: DepsRaportor): Raportor {
     }
     acceptate++;
     peCheie.set(cheie, vazute + 1);
-    coada.push({ intrare: i, limba: deps.limba() });
+    coada.push({ intrare: i, limba: deps.limba(), pasi: deps.pasi?.() });
     if (faza === 'pornit') void pompa();
   };
 
@@ -218,7 +221,7 @@ export function creeazaRaportor(deps: DepsRaportor): Raportor {
       while (t && modul && faza === 'pornit' && coada.length > 0) {
         const x = coada[0];
         if (!x) break;
-        const r = modul.raportDin(x.intrare, deps.build, browser, x.limba);
+        const r = modul.raportDin(x.intrare, deps.build, browser, x.limba, x.pasi);
         let rez = await incearca(t, r);
         if (rez === 'retea' && faza === 'pornit') {
           n.reincercari++;
