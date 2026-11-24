@@ -41,6 +41,25 @@ function bazaRelief(page: Page, amprenta: string): Promise<{ harta: string | nul
   }, amprenta);
 }
 
+/** Culoarea medie a pânzei într-un pătrat de 5 × 5 pixeli fizici în jurul punctului (x, y) al foii (mm). */
+async function culoareLa(page: Page, x: number, y: number): Promise<[number, number, number]> {
+  return page.evaluate(([x, y]) => {
+    const p = document.querySelector<HTMLCanvasElement>('[data-testid="panza"]');
+    if (!p) throw new Error('fără pânză');
+    const scara = Number(p.dataset.scara), tx = Number(p.dataset.tx), ty = Number(p.dataset.ty), dpr = Number(p.dataset.dpr);
+    const c = document.createElement('canvas');
+    c.width = p.width;
+    c.height = p.height;
+    const g = c.getContext('2d');
+    if (!g) throw new Error('fără context 2d');
+    g.drawImage(p, 0, 0);
+    const d = g.getImageData(Math.floor((x * scara + tx) * dpr) - 2, Math.floor((ty - y * scara) * dpr) - 2, 5, 5).data;
+    const s = [0, 0, 0];
+    for (let i = 0; i < d.length; i += 4) for (let k = 0; k < 3; k++) s[k] = (s[k] ?? 0) + (d[i + k] ?? 0);
+    return s.map((v) => v / (d.length / 4)) as [number, number, number];
+  }, [x, y] as const);
+}
+
 async function deschideRelief(page: Page, fisier: string): Promise<void> {
   await page.goto('/');
   await page.locator('[data-camp="fisier-svg"]').setInputFiles(fisier);
@@ -68,6 +87,10 @@ test('logoul ca relief: grila cât imaginea, scara presupusă, amprenta ca în N
   const b = await bazaRelief(page, n.amprenta);
   expect(b.harta).not.toBeNull();
   expect(b.dale).toBe(n.dale);
+  // Pe planșă: colțul stânga-sus al logoului e transparent, deci planul zero, umbrit ca un plan (gri, 0,25 + 0,75 · √2/2 din
+  // alb = 199); foaia din afara reliefului rămâne deschisă.
+  await expect.poll(async () => (await culoareLa(page, 2, 84)).map(Math.round)).toEqual([199, 199, 199]);
+  expect(Math.min(...await culoareLa(page, 150, 150))).toBeGreaterThan(230);
   // Pe planșă și în panou: piesa aleasă, cu secțiunea Relieful.
   await expect(page.getByTestId('lista-vectori').locator('li')).toContainText('logo-cvs');
   await expect(page.getByTestId('prop-relief')).toBeVisible();

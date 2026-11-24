@@ -1,7 +1,7 @@
 import { conturCerc, conturDreptunghi, LINIE, type Contur, type Segment } from '../geom/conturBaza.ts';
 import { cutieContur, type Cutie } from '../geom/cutie.ts';
 import { transformaContur, type Matrice } from '../geom/matrice.ts';
-import type { FormaContur, FormaDoc, SegmentDoc } from './document.ts';
+import type { FormaContur, FormaDoc, Nod, SegmentDoc } from './document.ts';
 
 /** Segmentul căii, în forma geometriei: doar câmpurile cu sens (cele necunoscute rămân în document). */
 function segmentCale(s: SegmentDoc): Segment {
@@ -29,6 +29,11 @@ export function conturElement(e: { readonly forma: FormaContur; readonly matrice
 /** Un element cu contur (nu relief, ADR 0310 §1): doar el intră în conturul exact, în CAM-ul 2D și în ușile vectorilor. */
 export function esteContur<T extends { readonly forma: FormaDoc }>(e: T): e is T & { readonly forma: FormaContur } {
   return e.forma.tip !== 'relief';
+}
+
+/** Arborele are un element `relief` (ADR 0310): verificarea ușoară din pornire, care aduce desenul reliefurilor la cerere. */
+export function areRelief(n: Nod): boolean {
+  return n.tip === 'grup' ? n.copii.some(areRelief) : n.forma.tip === 'relief';
 }
 
 /**

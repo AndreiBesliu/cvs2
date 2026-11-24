@@ -1,8 +1,7 @@
 import { Fragment, lazy, Suspense, useEffect, useMemo, useRef, useState, useSyncExternalStore, type ButtonHTMLAttributes, type ComponentProps, type ReactNode } from 'react';
 import { Panza } from '../canvas/Panza.tsx';
-import { treaptaZoom, type Bucata, type FoaieVecina, type GestDesen, type Lipeste, type Vedere } from '../canvas/protocol.ts';
+import { treaptaZoom, type Bucata, type FoaieVecina, type GestDesen, type ImaginePeFoaie, type Lipeste, type Vedere } from '../canvas/protocol.ts';
 import { imaginiPentruPanza, useOctetiImagini } from './octetiImagini.ts';
-import { imaginiReliefuri, reliefuriFoaie, useDesenReliefuri } from './reliefDesen.ts';
 import type { StareStrat } from '../canvas/StratTraseu.tsx';
 import type { Miscare, Program } from '../ir/ir.ts';
 import { CUTIE_GOALA, uneste } from '../geom/cutie.ts';
@@ -10,7 +9,7 @@ import { cuMesaje, incarcaLimba, t, type CheieSimpla } from '../i18n/t.ts';
 import { LIMBI, type Limba } from '../i18n/tipuri.ts';
 import { avertismente, type Avertisment } from '../model/avertismente.ts';
 import { documentNou, type Document, type ImagineFoaie, type LocUreche, type Operatie } from '../model/document.ts';
-import { cutieElement } from '../model/forme.ts';
+import { areRelief, cutieElement } from '../model/forme.ts';
 import { comandaInaltimi } from '../model/inaltimeImprimanta.ts';
 import { executa as executaComanda, istoricNou, type Istoric } from '../model/jurnal.ts';
 import { elementeFoaie, type ElementLume } from '../model/lume.ts';
@@ -126,6 +125,8 @@ const ModUrechi = lazy(() => incarcaUrechile().then((m) => ({ default: m.ModUrec
 const SemneUrechiFoaie = lazy(() => incarcaUrechile().then((m) => ({ default: m.SemneUrechiFoaie })));
 // „Calibrează” și „Trasează…” din imaginea de pe foaie (ADR 0272 §6, §7): modul pânzei, la cerere, din rândul imaginii.
 const ModImagine = lazy(() => import('./ModImagine.tsx').then(cuMesaje).then((m) => ({ default: m.ModImagine })));
+// Reliefurile foii (ADR 0310 §7): desenul lor, la cerere, doar cu un relief pe foaia activă.
+const ReliefuriFoii = lazy(() => import('./ReliefuriFoii.tsx'));
 // Cipul timpului de lângă traseu (ADR 0046 §8): la cerere, ca durata și textele lui să nu stea în pornire (ADR 0042).
 const CipTimpTraseu = lazy(() => import('../ui/CipTimpTraseu.tsx').then(cuMesaje).then((m) => ({ default: m.CipTimpTraseu })));
 const DialogImport = lazy(() => incarcaDialogImport().then((m) => ({ default: m.ImportConectat }), () => ({ default: DialogNeincarcat })));
@@ -738,16 +739,16 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
   // Imaginile foii active (ADR 0272): octeții citiți din baza lor la cerere; cele vizibile, pe pânză, sub vectori.
   const octetiImagini = useOctetiImagini(foaie?.imagini);
   const imaginiFoii = useMemo(() => imaginiPentruPanza(foaie?.imagini, octetiImagini), [foaie?.imagini, octetiImagini]);
-  // Reliefurile foii active (ADR 0310 §7): umbrite, peste imagini, sub vectori; desenul vine la cerere, doar cu un relief pe
-  // foaie. Lista rămâne aceeași cât nu se schimbă niciun relief (pânza primește pixelii doar atunci).
-  const reliefuriAcum = useMemo(() => reliefuriFoaie(doc, indexActiva), [doc, indexActiva]);
-  const semnReliefuri = JSON.stringify(reliefuriAcum.map((r) => [r.id, r.cheie, r.x, r.y, r.latime, r.inaltime, r.rotire, r.oglindita]));
-  const reliefuri = useMemo(() => reliefuriAcum, [semnReliefuri]);
-  const desene = useDesenReliefuri(reliefuri, (e) => { jurnal.adauga('promisiune', e); });
-  const imaginiPanza = useMemo(() => {
-    const r = imaginiReliefuri(reliefuri, desene);
-    return r.length === 0 ? imaginiFoii : [...imaginiFoii, ...r];
-  }, [imaginiFoii, reliefuri, desene]);
+  // Reliefurile foii active (ADR 0310 §7): umbrite, peste imagini, sub vectori. În pornire stă doar verificarea; desenul
+  // (`ReliefuriFoii`, cu baza și workerul) vine la cerere, doar cu un relief pe foaie.
+  const areReliefuri = useMemo(() => {
+    const puse = new Set((foaie?.instante ?? []).map((i) => i.piesa));
+    return doc.piese.some((p) => puse.has(p.id) && areRelief(p.radacina));
+  }, [doc.piese, foaie?.instante]);
+  const [imaginiRelief, setImaginiRelief] = useState<readonly ImaginePeFoaie[]>([]);
+  const [deseneRelief, setDeseneRelief] = useState<ReadonlyMap<string, { readonly z: { readonly min: number; readonly max: number } | null } | null>>(new Map());
+  const imaginiPanza = useMemo(
+    () => (areReliefuri && imaginiRelief.length > 0 ? [...imaginiFoii, ...imaginiRelief] : imaginiFoii), [imaginiFoii, imaginiRelief, areReliefuri]);
   // Piesele puse de mai multe ori (ADR 0210 §2): câte instanțe are fiecare piesă și a câta e fiecare instanță, în ordinea
   // proiectului (foile, apoi instanțele lor), pentru „(4 din 12)” din listă.
   const surori = useMemo(() => {
@@ -1490,7 +1491,7 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
               onEticheta={(camp, valoare) => aplicaDinPanou('foaie.eticheta', { etichetaNoua: () => ({ camp, valoare }) })}
               onImagini={(lista) => aplicaDinPanou('foaie.imagini', { imaginiNoi: () => lista })}
               octetiImagini={octetiImagini}
-              desenRelief={(k) => desene.get(k)}
+              desenRelief={(k) => deseneRelief.get(k)}
               onModImagine={(fel, id) => { if (idActiva) setModImagine({ fel, id, foaie: idActiva }); }}
               onPlusUnu={() => aplicaDinPanou('piesa.plus-unu', {})}
               onInca={(total) => aplicaDinPanou('piesa.inca', { cateInTotal: () => total })}
@@ -1608,6 +1609,12 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
                 ) : traseu?.arata && (cuUrechiAlese || (traseu.urechiLemn?.length ?? 0) > 0) ? (
                   <Suspense fallback={null}><SemneUrechiFoaie doc={doc} indexFoaie={indexActiva} vedere={v} marime={m} lemn={traseu.urechiLemn} /></Suspense>
                 ) : null}
+                {areReliefuri && (
+                  <Suspense fallback={null}>
+                    <ReliefuriFoii doc={doc} indexFoaie={indexActiva} onImagini={setImaginiRelief} onDesene={setDeseneRelief}
+                      jurnal={(e) => { jurnal.adauga('promisiune', e); }} />
+                  </Suspense>
+                )}
                 {modImagine && (
                   <Suspense fallback={null}>
                     <ModImagine fel={modImagine.fel} imagine={modImagine.foaie === idActiva ? foaie?.imagini?.find((i) => i.id === modImagine.id) : undefined}
