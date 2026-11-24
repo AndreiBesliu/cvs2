@@ -152,6 +152,8 @@ test('marginile: înclinarea spre pupa e între 0 și 15°, adusă în plajă f�
   assert.deepEqual([c({ pupa: 30 }).pupa, c({ pupa: -5 }).pupa, c({ pupa: 15 }).pupa, c({ pupa: 7.5 }).pupa], [15, 0, 15, 7.5]);
   assert.deepEqual([c({}).pupa, c({ pupa: 'mult' }).pupa, c({ pupa: null }).pupa, c({ pupa: '' }).pupa], [0, 0, 0, 0]);
   assert.deepEqual([c({ pupa: 30 }).urca, c({ pupa: -5 }).urca], [c({ pupa: 15 }).urca, 0]);
+  // și sub un grad se ridică: pe hârtie, 16 · tan 0,5° = 0,13963
+  assert.ok(Math.abs(c({ pupa: 0.5 }).urca - 0.13963) < 5e-6, `la 0,5°: ${c({ pupa: 0.5 }).urca}`);
   assert.deepEqual(simplu(barca({ pupa: 30 }).avert), []);
   assert.deepEqual(barca({ pupa: 30 }).tri, barca({ pupa: 15 }).tri);
 });
