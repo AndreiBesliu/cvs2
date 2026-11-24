@@ -356,9 +356,15 @@ var Atelier3D = (function () {
     if ((t === "conica" || t === "coroana") && +p.modul === 1) delete p.modul;
     if (t === "conicaDubla") { delete p.pereche; if (+p.modul === 1) delete p.modul; }
     if (t === "senila") { delete p.pereche; delete p.distanta; if (p.piesa === "pinion") delete p.gauriStift; else { delete p.dinti; delete p.gaura; } }
-    // carcasa nu are sens, gaură sau inel; rotorul, urechi
-    if (t === "ventilator") { if (p.piesa === "carcasa") { delete p.sens; delete p.gaura; delete p.inel; } else delete p.urechi; }
+    if (t === "ventilator") return defVentilator(p.piesa === "carcasa" ? "carcasa" : "rotor");
     return { tip: t, ...p };
+  }
+  function defVentilator(piesa: string): Def {
+    // rotorul sau carcasa ventilatorului din editor, cu aceleași chei, în aceeași ordine, oricum s-ar face (din editor sau din
+    // „Fă ventilatorul”): lista le adună pe aceeași linie. Carcasa nu are sens, gaură sau inel; rotorul, urechi
+    const p = JSON.parse(JSON.stringify({ ...stare.ventilator, piesa }));
+    if (piesa === "carcasa") { delete p.sens; delete p.gaura; delete p.inel; } else delete p.urechi;
+    return { tip: "ventilator", ...p };
   }
   function gauriCaramida(p: { celule: readonly (readonly [number, number, ...unknown[]])[]; gauri?: readonly Gaura[]; stifturi?: boolean | string }): Gaura[] {
     // gaurile verticale [i, j, tip] din colturile celulelor, doar unde sunt patru celule in jur
@@ -1813,9 +1819,9 @@ var Atelier3D = (function () {
   function adaugaVentilator() {
     // rotorul și carcasa lui (aceleași palete, diametru, joc, pas și lățime), câte bucăți sunt cerute
     laZi();
-    const n = bucatiCerute(), p = stare.ventilator, comun = { tip: "ventilator", palete: p.palete, diametru: p.diametru, joc: p.joc, pas: p.pas, latime: p.latime };
-    pune({ ...comun, piesa: "rotor", sens: p.sens, gaura: p.gaura, inel: p.inel }, n);
-    pune({ ...comun, piesa: "carcasa", urechi: p.urechi }, n);
+    const n = bucatiCerute();
+    pune(defVentilator("rotor"), n);
+    pune(defVentilator("carcasa"), n);
     salveaza(); randeazaLista();
     toast(tr`${n} × ventilatorul (rotorul și carcasa) în listă.`);
   }

@@ -236,4 +236,10 @@ test('„Fă ventilatorul”: rotorul și carcasa lui, în listă (cu inelul și
   await expect(page.locator('#at-lista tr td:first-child')).toHaveText([IMPLICIT + ', cu inel', 'Carcasă de ventilator Ø40 × 9, cu 4 urechi']);
   // în editor rămâne rotorul
   await expect(page.locator('#at-ve-piesa [aria-pressed="true"]')).toHaveAttribute('data-v', 'rotor');
+  // aceeași carcasă, adăugată din editor după ce rotorul și-a schimbat sensul (al lui, nu al carcasei), ajunge pe aceeași linie
+  await page.locator('#at-ve-sens [data-v="stanga"]').click();
+  await page.locator('#at-ve-piesa [data-v="carcasa"]').click();
+  await page.locator('#at-adauga').click();
+  await expect(page.locator('#at-lista tr td:first-child')).toHaveText([IMPLICIT + ', cu inel', 'Carcasă de ventilator Ø40 × 9, cu 4 urechi']);
+  await expect(page.locator('#at-lista tr .pas-n')).toHaveText(['1', '2']);
 });
