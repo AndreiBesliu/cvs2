@@ -16,7 +16,7 @@ test('frezele de rest: Ø12, apoi Ø3, din fereastra exportului; fundul plat, Ø
   await adauga(page, 'dreptunghi');
   await page.locator('[data-actiune="export.gcode"]').click();
   const rand = page.locator('[data-fisa="op"]').first();
-  await rand.locator('[data-camp="latura"]').selectOption('buzunar');
+  await rand.locator('input[data-camp="latura"][value="buzunar"]').check();
   await rand.locator('[data-camp="diametru"]').fill('12');
   await rand.locator('[data-camp="adancime"]').fill('10');
   await rand.locator('[data-camp="pas"]').fill('5');

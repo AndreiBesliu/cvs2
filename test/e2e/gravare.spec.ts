@@ -25,7 +25,7 @@ test('gravarea pe linie cu freza de gravare: V pe exterior refuzat; pe linie, cu
   await expect(page.getByTestId('export-invalid')).toContainText('Freza în V taie pe linie sau într-un V-carve');
   await expect(rand.locator('[data-camp="directie"]')).toHaveCount(0);
   // Pe linie: direcția apare, cu „ca desenul”.
-  await rand.locator('[data-camp="latura"]').selectOption('pe-linie');
+  await rand.locator('input[data-camp="latura"][value="pe-linie"]').check();
   await expect(aleasa(rand, 'directie')).toHaveValue('');
   await alege(rand, 'directie', 'invers');
   // Vârful: cât diametrul nu trece.
@@ -63,7 +63,7 @@ test('gravarea pe linie cu freza de gravare: V pe exterior refuzat; pe linie, cu
   await expect(panou).toContainText('invers');
   await page.locator('[data-actiune="export.gcode"]').click();
   const din = page.locator('[data-fisa="op"]').first();
-  await expect(din.locator('[data-camp="latura"]')).toHaveValue('pe-linie');
+  await expect(din.locator('input[data-camp="latura"]:checked')).toHaveValue('pe-linie');
   await expect(din.locator('[data-camp="varf-v"]')).toHaveValue('0,25');
   await expect(aleasa(din, 'directie')).toHaveValue('invers');
 });

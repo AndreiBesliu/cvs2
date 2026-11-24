@@ -1957,6 +1957,18 @@ nav button[aria-pressed='true'] {
   cursor: pointer;
 }
 
+/*
+ * Operația din listă: poza tăieturii ei, mică, la începutul rândului de sub nume (ADR 0290, felia 28.8↑b-3); pe o coloană a ei,
+ * numele s-ar rupe pe patru rânduri, iar lista s-ar lungi.
+ */
+.dx-meta > .dx-poza {
+  display: inline-block;
+  width: 1.6rem;
+  height: 1.1rem;
+  margin-right: var(--sp-1);
+  vertical-align: middle;
+}
+
 .dialog .dx-nav:hover {
   background: color-mix(in oklab, var(--t) 6%, var(--s-peste));
 }
@@ -2175,7 +2187,9 @@ nav button[aria-pressed='true'] {
   cursor: pointer;
 }
 
-.dx-card > input {
+/* Și oprit: regula câmpurilor oprite (`.dialog input:disabled`, 0,55) l-ar face vizibil, un cerc peste cartonaș. */
+.dialog .dx-card > input,
+.dialog .dx-card > input:disabled {
   position: absolute;
   inset: 0;
   z-index: 1;

@@ -63,7 +63,7 @@ test('supracursa: lângă Z0, valorile greșite oprite, gaura și decuparea dopu
   await expect(camp).toHaveAttribute('aria-invalid', 'false');
   await expect(page.getByTestId('export-invalid')).toHaveCount(0);
   // Gaura cu dopul decupat, cu marginea 8 (freza Ø6 a locașului).
-  await page.locator('[data-fisa="op"]').first().locator('[data-camp="latura"]').selectOption('incrustatie-drept');
+  await page.locator('[data-fisa="op"]').first().locator('input[data-camp="latura"][value="incrustatie-drept"]').check();
   const inc = page.locator('[data-fisa="op"]').first().locator('[data-incrustatie][data-fel="drept"]');
   await inc.locator('[data-camp="inc-locas"]').selectOption('gaura');
   await inc.locator('[data-camp="inc-dop"]').selectOption('decupat');
@@ -105,7 +105,7 @@ test('supracursa 0: gaura și decuparea dopului exact prin plăcile lor, ca îna
   await dreptunghiMic(page);
   await page.locator('[data-actiune="export.gcode"]').click();
   await expect(page.locator('[data-camp="supracursa"]')).toHaveValue('0');
-  await page.locator('[data-fisa="op"]').first().locator('[data-camp="latura"]').selectOption('incrustatie-drept');
+  await page.locator('[data-fisa="op"]').first().locator('input[data-camp="latura"][value="incrustatie-drept"]').check();
   const inc = page.locator('[data-fisa="op"]').first().locator('[data-incrustatie][data-fel="drept"]');
   await inc.locator('[data-camp="inc-locas"]').selectOption('gaura');
   await inc.locator('[data-camp="inc-dop"]').selectOption('decupat');

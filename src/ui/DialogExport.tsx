@@ -1242,6 +1242,10 @@ export function DialogExport(
     const tr = treceriEgale(citesteNumar(p.adancime), citesteNumar(p.pas));
     return tr ? [tr.n, tr.d] : [null, 0];
   };
+  /** Tăietura unui rând, ca valoare a cartonașului ei (și poza ei, în listă). */
+  const taieturaRand = (p: Rand): Latura | 'buzunar' | 'gaurire' | 'vcarve' | 'incrustatie' | 'incrustatie-drept' =>
+    p.tip === 'vcarve' ? (p.incrustatie ? 'incrustatie' : 'vcarve') : p.tip === 'buzunar' ? (p.incrustatieDreapta ? 'incrustatie-drept' : 'buzunar')
+      : p.tip === 'gaurire' ? 'gaurire' : p.latura;
   /** Numele tăieturii unui rând, scurt, pentru listă (aceleași cuvinte ca în lista „Tăietura”). */
   const numeTaietura = (p: Rand): string => p.tip === 'buzunar' ? t(p.incrustatieDreapta ? 'export.latura.incrustatie-drept' : CHEI_LATURA.buzunar)
     : p.tip === 'gaurire' ? t('export.latura.gaurire') : p.tip === 'vcarve' ? t(p.incrustatie ? 'export.latura.incrustatie' : 'export.latura.vcarve')
@@ -1393,7 +1397,7 @@ export function DialogExport(
                   <button type="button" className="dx-nav" data-nav={o.cheie} aria-current={curent === o.cheie} data-gresit={gresit ? '' : undefined}
                     onClick={() => { du(o.cheie); }}>
                     <span className="dx-nume">{o.descriere}</span>
-                    <span className="dx-meta">{numeTaietura(p)} · T{p.numarScula} Ø{p.diametruScula} · {p.adancime} mm</span>
+                    <span className="dx-meta"><Poza k={`latura.${taieturaRand(p)}`} />{numeTaietura(p)} · T{p.numarScula} Ø{p.diametruScula} · {p.adancime} mm</span>
                   </button>
                 </div>
               );
@@ -1541,29 +1545,29 @@ export function DialogExport(
               const corp = (g: GrupExport): ReactNode => {
                 switch (g) {
                   case 'taietura': return (<div className="dx-rand">
-                    <label>
-                      {t('export.latura')}
-                    {/* Buzunarul (ADR 0069) e încă o alegere a tăieturii, doar pe un rând cu contururi închise; găurirea (ADR 0087),
-                        doar pe un rând numai cu cercuri. */}
-                    <select value={nuProfil ? (vc && p.incrustatie ? 'incrustatie' : buz && p.incrustatieDreapta ? 'incrustatie-drept' : p.tip) : p.latura}
-                      data-camp="latura" disabled={doarCitire} title={deschis ? t('export.latura.deschise.titlu') : undefined}
-                      onChange={(ev) => {
-                        const v = ev.target.value;
+                    {/* Buzunarul (ADR 0069), V-carve-ul și incrustațiile sunt alte tăieturi, doar pe un rând cu contururi închise; găurirea
+                        (ADR 0087), doar pe un rând numai cu cercuri (altfel oprită, cu motivul). */}
+                    <Cartonase data-camp="latura" poze="latura" eticheta={t('export.latura')} nume={`latura-${o.cheie}`} valoare={taieturaRand(p)}
+                      oprit={doarCitire} titlu={deschis ? t('export.latura.deschise.titlu') : undefined}
+                      onAlege={(v) => {
                         // Incrustația (ADR 0170) e un V-carve care își declară dopul, cu freza dreaptă pusă (fața dopului o cere); cea
                         // cu pereți drepți (ADR 0171), un buzunar care își declară dopul.
                         const fara = { incrustatie: false, incrustatieDreapta: false } as const;
                         schimba(o.cheie, v === 'incrustatie' ? { ...fara, tip: 'vcarve', incrustatie: true, fundPlat: true }
                           : v === 'incrustatie-drept' ? { ...fara, tip: 'buzunar', incrustatieDreapta: true }
-                            : v === 'buzunar' || v === 'gaurire' || v === 'vcarve' ? { ...fara, tip: v } : { ...fara, tip: 'profil', latura: v as Latura });
-                      }}>
-                      {laturiOferite(o.deschise, o.noduri, p.latura).map((l) => <option key={l} value={l}>{t(CHEI_LATURA[l])}</option>)}
-                      {!deschis && <option value="buzunar">{t(CHEI_LATURA.buzunar)}</option>}
-                      {!deschis && o.cercuri === true && <option value="gaurire">{t('export.latura.gaurire')}</option>}
-                      {!deschis && <option value="vcarve">{t('export.latura.vcarve')}</option>}
-                      {!deschis && <option value="incrustatie">{t('export.latura.incrustatie')}</option>}
-                      {!deschis && <option value="incrustatie-drept">{t('export.latura.incrustatie-drept')}</option>}
-                    </select>
-                    </label>
+                            : v === 'buzunar' || v === 'gaurire' || v === 'vcarve' ? { ...fara, tip: v } : { ...fara, tip: 'profil', latura: v });
+                      }}
+                      variante={[
+                        ...laturiOferite(o.deschise, o.noduri, p.latura).map((l) => ({ v: l, text: t(CHEI_LATURA[l]), nota: t(`export.card.latura.${l}`) })),
+                        ...(deschis ? [] : [
+                          { v: 'buzunar' as const, text: t(CHEI_LATURA.buzunar), nota: t('export.card.latura.buzunar') },
+                          { v: 'gaurire' as const, text: t('export.latura.gaurire'), nota: t('export.card.latura.gaurire'),
+                            motiv: o.cercuri === true ? undefined : t('export.card.latura.cercuri') },
+                          { v: 'vcarve' as const, text: t('export.latura.vcarve'), nota: t('export.card.latura.vcarve') },
+                          { v: 'incrustatie' as const, text: t('export.latura.incrustatie'), nota: t('export.card.latura.incrustatie') },
+                          { v: 'incrustatie-drept' as const, text: t('export.latura.incrustatie-drept'), nota: t('export.card.latura.incrustatie-drept') },
+                        ]),
+                      ]} />
                     {/* Pe linie, direcția (ADR 0092 §4): ca desenul, invers sau cel mai scurt drum. */}
                     {p.tip === 'profil' && p.latura === 'pe-linie' && (
                     <Cartonase data-camp="directie" poze="directie" eticheta={t('export.directie')} nume={`directie-${o.cheie}`} valoare={p.directie}

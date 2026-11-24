@@ -16,7 +16,7 @@ test('buzunarul din fereastra exportului: dreptunghiul 100 × 60 se golește la 
   await adauga(page, 'dreptunghi');
   await page.locator('[data-actiune="export.gcode"]').click();
   const rand = page.locator('[data-fisa="op"]').first();
-  await rand.locator('[data-camp="latura"]').selectOption('buzunar');
+  await rand.locator('input[data-camp="latura"][value="buzunar"]').check();
   const pas = page.locator('[data-camp="pas-lateral"]');
   await expect(pas).toHaveValue('2,4');
   // Ce e al profilului nu apare pe fișă (ADR 0290), cu nota de ce, sub Tăietura.
@@ -58,7 +58,7 @@ test('buzunarul din fereastra exportului: dreptunghiul 100 × 60 se golește la 
   if ((await comuta.getAttribute('aria-expanded')) !== 'true') await comuta.click();
   await expect(page.locator('[data-nod="operatie"]')).toHaveText(['Buzunar pe 1 contur: 3 mm în treceri de 3 mm, T1 Ø6']);
   await page.locator('[data-actiune="export.gcode"]').click();
-  await expect(page.locator('[data-fisa="op"]').first().locator('[data-camp="latura"]')).toHaveValue('buzunar');
+  await expect(page.locator('[data-fisa="op"]').first().locator('input[data-camp="latura"]:checked')).toHaveValue('buzunar');
   await expect(page.locator('[data-camp="pas-lateral"]')).toHaveValue('2,4');
 });
 
@@ -72,7 +72,7 @@ test('coborârea în buzunar: zigzagul își arată rampele, elicea iese în pro
   await page.goto('/');
   await adauga(page, 'dreptunghi');
   await page.locator('[data-actiune="export.gcode"]').click();
-  await page.locator('[data-fisa="op"]').first().locator('[data-camp="latura"]').selectOption('buzunar');
+  await page.locator('[data-fisa="op"]').first().locator('input[data-camp="latura"][value="buzunar"]').check();
   const cob = page.locator('[data-camp="coborare"]');
   await expect(cob).toHaveValue('plonjare');
   await expect(page.locator('[data-camp="unghi-coborare"]')).toHaveCount(0);

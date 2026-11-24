@@ -63,7 +63,7 @@ test('incrustația în V: rolul din panou, valorile pe hârtie, exportul cu fiș
   // Fereastra exportului: rândul incrustației, cu freza în V, fundul plat și valorile din panou.
   await page.locator('[data-actiune="export.gcode"]').click();
   const rand = page.locator('[data-fisa="op"]').first();
-  await expect(rand.locator('[data-camp="latura"]')).toHaveValue('incrustatie');
+  await expect(rand.locator('input[data-camp="latura"]:checked')).toHaveValue('incrustatie');
   await expect(rand.locator('[data-camp="forma-scula"]')).toHaveValue('v');
   const detalii = page.locator('[data-fisa="op"]').first();
   await expect(detalii.locator('[data-camp="fund-plat"]')).toBeChecked();
@@ -129,7 +129,7 @@ test('incrustația din fereastra exportului: fundul plat bifat singur; „Acela�
   await adauga(page, 'cerc');
   await page.locator('[data-actiune="export.gcode"]').click();
   const rand = page.locator('[data-fisa="op"]').first();
-  await rand.locator('[data-camp="latura"]').selectOption('incrustatie');
+  await rand.locator('input[data-camp="latura"][value="incrustatie"]').check();
   const detalii = page.locator('[data-fisa="op"]').first();
   await expect(detalii.locator('[data-camp="fund-plat"]')).toBeChecked();
   await expect(detalii.locator('[data-camp="inc-joc"]')).toHaveValue('0,5');

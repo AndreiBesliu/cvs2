@@ -32,11 +32,11 @@ for (const [latime, inaltime] of [[1280, 800], [1024, 768]] as const) {
     await e1.locator('[data-camp="rampa"]').check();
     await e1.locator('[data-camp="intrari"]').check();
     const e2 = fisa(page, 'e2/e2');
-    await e2.locator('[data-camp="latura"]').selectOption('incrustatie-drept');
+    await e2.locator('input[data-camp="latura"][value="incrustatie-drept"]').check();
     await e2.locator('[data-camp="inc-treapta"]').selectOption('interior');
     await expect(e2.locator('[data-camp="inc-treapta-latime"]')).toBeVisible();
     for (const sel of ['.dialog-cutie', '[data-fise]', '[data-lista]']) expect(await iese(page, sel), sel).toBeLessThanOrEqual(0);
-    await e1.locator('[data-camp="latura"]').selectOption('vcarve');
+    await e1.locator('input[data-camp="latura"][value="vcarve"]').check();
     await e1.locator('[data-camp="forma-scula"]').selectOption('v');
     for (const sel of ['.dialog-cutie', '[data-fise]']) expect(await iese(page, sel), sel).toBeLessThanOrEqual(0);
     // Niciun câmp al fișelor nu iese din fișa lui.
@@ -88,7 +88,7 @@ test('valoarea greșită se spune în grupul câmpului, cu punctul în listă ș
   await deschide(page);
   const e1 = fisa(page, 'e1/e1');
   // Incrustația în V pornește cu freza plată (captura din 23.11): motivul stă la Freza.
-  await e1.locator('[data-camp="latura"]').selectOption('incrustatie');
+  await e1.locator('input[data-camp="latura"][value="incrustatie"]').check();
   await expect(e1.locator('[data-grup="freza"] [data-greseala]')).toContainText('V-carve-ul cere o freză în V');
   await expect(page.locator('[data-nav="e1/e1"][data-gresit]')).toHaveCount(1);
   await expect(page.locator('[data-nav="e2/e2"][data-gresit]')).toHaveCount(0);

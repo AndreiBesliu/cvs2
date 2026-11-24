@@ -317,7 +317,7 @@ test('sensul de tăiere (ADR 0027): gaura în urcare e trigonometric (G3); trecu
   await page.locator('[data-actiune="export.gcode"]').click();
   await expect(sens).toHaveValue('opozitie');
   // Pe linie, sensul nu schimbă nimic: câmpul e oprit.
-  await page.locator('[data-operatie="e1/e1"] select[data-camp="latura"]').selectOption('pe-linie');
+  await page.locator('[data-operatie="e1/e1"] input[data-camp="latura"][value="pe-linie"]').check();
   await expect(sens).toBeDisabled();
 });
 
@@ -440,10 +440,10 @@ test('intrările (ADR 0030): bifate pe dreptunghi, freza plonjează în deșeu �
   await expect(page.getByTestId('export-invalid')).toHaveText(/^Intrările: raza trebuie să fie un număr între 0,5 și 10\.000 mm/);
   await raza.fill('3');
   // Pe linie, bifa se oprește: nu există parte de deșeu.
-  await rand.locator('select[data-camp="latura"]').selectOption('pe-linie');
+  await rand.locator('input[data-camp="latura"][value="pe-linie"]').check();
   await expect(bifa).toBeDisabled();
   await expect(page.locator('[data-intrari="e1/e1"]')).toHaveCount(0);
-  await rand.locator('select[data-camp="latura"]').selectOption('exterior');
+  await rand.locator('input[data-camp="latura"][value="exterior"]').check();
   await expect(bifa).toBeChecked();
   // Gaura (cercul R15, interior) cu raza 30: nici 30, nici 15 nu încap în bucla de rază 12.
   await page.locator('[data-operatie="e2/e2"] [data-camp="intrari"]').check();
@@ -512,7 +512,7 @@ test('intrările cu rampă (ADR 0031): rampa coboară pe sfertul intrării, la f
     supracursa: 0, asteptareAx: 3, avansPlonjare: 300, regiune: regiuneDinDocument(doc as Parameters<typeof regiuneDinDocument>[0]),
   })).toEqual([]);
   // Pe linie, intrările se opresc, iar nota dispare.
-  await rand.locator('select[data-camp="latura"]').selectOption('pe-linie');
+  await rand.locator('input[data-camp="latura"][value="pe-linie"]').check();
   await expect(nota).toHaveCount(0);
 });
 
@@ -521,7 +521,7 @@ test('degajările (ADR 0032): dog-bone pe gaură, drumul din fiecare colț al tr
   await adauga(page, 'dreptunghi');
   await page.locator('[data-actiune="export.gcode"]').click();
   const rand = page.locator('[data-operatie="e1/e1"]');
-  await rand.locator('select[data-camp="latura"]').selectOption('interior');
+  await rand.locator('input[data-camp="latura"][value="interior"]').check();
   await expect(aleasa(rand, 'colturi')).toHaveValue('');
   await alege(rand, 'colturi', 'dog-bone');
   const d = page.waitForEvent('download');
@@ -536,7 +536,7 @@ test('degajările (ADR 0032): dog-bone pe gaură, drumul din fiecare colț al tr
   await page.getByRole('button', { name: 'Închide' }).click();
   await page.locator('[data-actiune="export.gcode"]').click();
   await expect(aleasa(rand, 'colturi')).toHaveValue('dog-bone');
-  await rand.locator('select[data-camp="latura"]').selectOption('pe-linie');
+  await rand.locator('input[data-camp="latura"][value="pe-linie"]').check();
   await expect(rand.locator('input[data-camp="colturi"]:enabled')).toHaveCount(0);
   await expect(aleasa(rand, 'colturi')).toHaveValue('');
 });
@@ -737,7 +737,7 @@ test('ordinea de mână (ADR 0133 §2): V-carve-urile aceleiași piese, cu acele
   const chei = await randuriOrdine(page);
   const [prima, a2] = chei as [string, string];
   for (const k of [prima, a2]) {
-    await page.locator(`[data-fisa="op"][data-operatie="${k}"] [data-camp="latura"]`).selectOption('vcarve');
+    await page.locator(`[data-fisa="op"][data-operatie="${k}"] input[data-camp="latura"][value="vcarve"]`).check();
     await page.locator(`[data-fisa="op"][data-operatie="${k}"] [data-camp="forma-scula"]`).selectOption('v');
   }
   // Aceleași valori: al doilea rând se sapă odată cu primul.

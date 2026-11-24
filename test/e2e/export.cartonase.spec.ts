@@ -43,7 +43,7 @@ test('colțurile: trei cartonașe cu poze; clicul pe nume și săgețile aleg, c
   await page.keyboard.press('ArrowLeft');
   await expect(aleasa(e1, 'colturi')).toHaveValue('dog-bone');
   // Pe linie, colțurile nu se aleg: oprite, cu motivul scris.
-  await e1.locator('[data-camp="latura"]').selectOption('pe-linie');
+  await e1.locator('input[data-camp="latura"][value="pe-linie"]').check();
   await expect(e1.locator('input[data-camp="colturi"]:enabled')).toHaveCount(0);
   await expect(e1.locator('[data-nota="colturi-linie"]')).toContainText('nu există deșeu');
 });
@@ -61,7 +61,7 @@ test('locurile urechilor: șase cartonașe cu poze; „unde ține” oprit pe li
   // Desenul urechilor urmează alegerea (28.8↑b-1): pe laturile scurte, urechile stau pe laturi verticale.
   const u = e1.locator('[data-grup="urechi"] [data-desen] [data-ureche]');
   expect(new Set(await u.evaluateAll((x) => x.map((e) => e.getAttribute('data-latura'))))).toEqual(new Set(['v']));
-  await e1.locator('[data-camp="latura"]').selectOption('pe-linie');
+  await e1.locator('input[data-camp="latura"][value="pe-linie"]').check();
   await expect(e1.locator('[data-camp="urechi-lemn"]')).toBeDisabled();
   await expect(loc.filter({ hasText: 'unde ține' })).toContainText('nu pe linie');
 });
@@ -70,7 +70,7 @@ test('direcția pe linie, unitățile și despărțirea au pozele lor; cartonaș
   await page.setViewportSize({ width: 1024, height: 768 });
   await deschide(page);
   const e1 = fisa(page, 'e1/e1');
-  await e1.locator('[data-camp="latura"]').selectOption('pe-linie');
+  await e1.locator('input[data-camp="latura"][value="pe-linie"]').check();
   await expect(e1.locator('[data-alegere="directie"] .dx-card svg.dx-poza')).toHaveCount(3);
   await e1.locator('[data-alegere="directie"] .dx-card').filter({ hasText: 'cel mai scurt drum' }).click();
   await expect(aleasa(e1, 'directie')).toHaveValue('scurt');
@@ -80,4 +80,34 @@ test('direcția pe linie, unitățile și despărțirea au pozele lor; cartonaș
   await expect(aleasa(masina, 'unitati')).toHaveValue('inch');
   const late = await page.locator('[data-fisa], .dx-carduri').evaluateAll((s) => s.filter((x) => x.scrollWidth > x.clientWidth + 1).length);
   expect(late).toBe(0);
+});
+
+test('tăietura: cartonașele cu poze, găurirea oprită pe un rând fără cercuri, poza tăieturii în listă (28.8↑b-3)', async ({ page }) => {
+  await deschide(page);
+  const e1 = fisa(page, 'e1/e1'), e2 = fisa(page, 'e2/e2');
+  const carduri = e1.locator('[data-alegere="latura"] .dx-card');
+  // Un contur închis: exterior, interior, pe linie, buzunar, găurire, V-carve și cele două incrustații, fiecare cu poza ei.
+  await expect(carduri).toHaveCount(8);
+  await expect(carduri.locator('svg.dx-poza')).toHaveCount(8);
+  await expect(aleasa(e1, 'latura')).toHaveValue('exterior');
+  // Pe dreptunghi, găurirea nu se poate alege și spune de ce; pe cerc, da.
+  await expect(e1.locator('input[data-camp="latura"][value="gaurire"]')).toBeDisabled();
+  await expect(carduri.filter({ has: page.locator('input[value="gaurire"]') })).toContainText('doar pe cercuri');
+  // Inputul oprit rămâne nevăzut (regula câmpurilor oprite l-ar arăta ca un cerc peste cartonaș).
+  expect(await e1.locator('input[data-camp="latura"][value="gaurire"]').evaluate((x) => getComputedStyle(x).opacity)).toBe('0');
+  // Pe rândul din listă, poza stă lângă text, pe rândul lui.
+  const [poza, text] = await Promise.all([page.locator('[data-nav="e1/e1"] .dx-meta svg').boundingBox(), page.locator('[data-nav="e1/e1"] .dx-meta').boundingBox()]);
+  expect(poza && text && text.height < poza.height + 8).toBe(true);
+  await expect(e2.locator('input[data-camp="latura"][value="gaurire"]')).toBeEnabled();
+  // Alegerea schimbă și rândul din listă: numele tăieturii și poza ei.
+  const nav = page.locator('[data-nav="e1/e1"] .dx-meta');
+  await expect(nav.locator('svg.dx-poza')).toHaveCount(1);
+  const pozaInainte = await nav.locator('svg.dx-poza').innerHTML();
+  await carduri.filter({ hasText: 'buzunar' }).click();
+  await expect(aleasa(e1, 'latura')).toHaveValue('buzunar');
+  await expect(nav).toContainText('buzunar');
+  expect(await nav.locator('svg.dx-poza').innerHTML()).not.toBe(pozaInainte);
+  // Fișa buzunarului își arată grupurile lui (Cum golește), nu pe ale profilului.
+  await expect(e1.locator('[data-grup="golire"]')).toHaveCount(1);
+  await expect(e1.locator('[data-grup="urechi"]')).toHaveCount(0);
 });

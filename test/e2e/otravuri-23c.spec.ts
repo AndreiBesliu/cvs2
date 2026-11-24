@@ -90,9 +90,9 @@ test('E04: un rând cu un contur închis și o linie deschisă nu oferă stânga
   } as { rev: number });
   await page.reload();
   await page.locator('[data-actiune="export.gcode"]').click();
-  const latura = page.locator('[data-operatie="p/o1"] [data-camp="latura"]');
-  await expect(latura.locator('option[value="pe-linie"]')).toHaveCount(1);
-  await expect(latura.locator('option[value="stanga"], option[value="dreapta"]')).toHaveCount(0);
+  const latura = page.locator('[data-operatie="p/o1"] [data-alegere="latura"]');
+  await expect(latura.locator('input[value="pe-linie"]')).toHaveCount(1);
+  await expect(latura.locator('input[value="stanga"], input[value="dreapta"]')).toHaveCount(0);
 });
 
 test('E05: marcajul „despărțire” pus din dialog se vede bifat la redeschiderea dialogului', async ({ page }) => {

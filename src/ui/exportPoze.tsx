@@ -12,6 +12,16 @@ const sag = (d: string): ReactNode => <path className="dv" d={d} />;
 
 /** Pozele, după numele alegerii (`<camp>.<valoare>`). */
 export const POZE: Readonly<Record<string, ReactNode>> = {
+  'latura.exterior': <><rect className="l" x={17} y={13} width={30} height={18} rx={1} /><rect className="d" x={11} y={7} width={42} height={30} rx={6} /><circle className="f" cx={53} cy={22} r={4} /></>,
+  'latura.interior': <>{LEMN}<rect className="g contur" x={16} y={10} width={32} height={24} rx={1} /><rect className="d" x={21} y={15} width={22} height={14} rx={3} /><circle className="f" cx={43} cy={22} r={4} /></>,
+  'latura.pe-linie': <><path className="lat" d="M7 33C19 3 38 43 57 11" /><path className="c" d="M7 33C19 3 38 43 57 11" /><circle className="f" cx={57} cy={11} r={4} /></>,
+  'latura.stanga': <><path className="c" d="M8 32L56 14" /><path className="d" d="M6.4 27.3L54.4 9.3" /><circle className="f" cx={54.4} cy={9.3} r={4} /></>,
+  'latura.dreapta': <><path className="c" d="M8 32L56 14" /><path className="d" d="M9.6 36.7L57.6 18.7" /><circle className="f" cx={57.6} cy={18.7} r={4} /></>,
+  'latura.buzunar': <>{LEMN}<rect className="g contur" x={12} y={9} width={40} height={26} rx={2} /><rect className="d" x={16} y={13} width={32} height={18} rx={3} /><rect className="d" x={21} y={18} width={22} height={8} rx={2} /></>,
+  'latura.vcarve': <><path className="l" d="M3 16H21L32 38L43 16H61V41H3Z" /><path className="f" d="M29 2H35V8H38L32 20L26 8H29Z" /><path className="d" d="M32 21V37" /></>,
+  'latura.gaurire': <>{LEMN}<circle className="g contur" cx={16} cy={22} r={5} /><circle className="g contur" cx={32} cy={22} r={5} /><circle className="g contur" cx={48} cy={22} r={5} /><path className="c" d="M45 22h6M48 19v6" /></>,
+  'latura.incrustatie': <><path className="l" d="M3 26H21L32 42L43 26H61V43H3Z" /><path className="l2" d="M18 3H46V9H43L32 25L21 9H18Z" /></>,
+  'latura.incrustatie-drept': <><path className="l" d="M3 27H20V39H44V27H61V43H3Z" /><path className="l2" d="M14 4H50V10H43V21H21V10H14Z" /></>,
   'colturi.': <><rect className="l" x={3} y={3} width={58} height={38} /><path className="g" d="M3 41V12H45A9 9 0 0 1 54 21V41Z" /><path className="cs" d="M3 12H54V41" /></>,
   'colturi.dog-bone': <><rect className="l" x={3} y={3} width={58} height={38} /><path className="g" d="M3 41V12H45.4A5.5 5.5 0 1 1 54 20.6V41Z" /></>,
   'colturi.t-bone': <><rect className="l" x={3} y={3} width={58} height={38} /><path className="g" d="M3 41V12H43A5.5 5.5 0 0 1 54 12V41Z" /></>,

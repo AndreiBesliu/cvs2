@@ -1641,9 +1641,10 @@ which). The window has three parts:
   section of the cut with its passes, the bit path around the part or the hole (in climb, what stays is to the right of the
   path), the ramp from the side, the lead-ins from above, the tabs where the chosen rule puts them and their section. The values
   sit on dimension lines, and the one of the field you are on is coloured. Under the step down, how many passes come out and
-  how much each removes: the passes are equal (10 mm with a step of 4 gives 3 passes of 3.33 mm), in the drawing too. The
-  choices with few options (the corners, the tab places, the direction on line, the units, the bit change, the sheets) are
-  cards with a picture of each option: click anywhere on a card, or use the arrow keys once you are in the group; the chosen
+  how much each removes: the passes are equal (10 mm with a step of 4 gives 3 passes of 3.33 mm), in the drawing too. The cut
+  and the choices with few options (the corners, the tab places, the direction on line, the units, the bit change, the
+  sheets) are cards with a picture of each option; drilling sits among the cuts on a row without circles too, disabled, with
+  “circles only”, and in the list, under the operation's name, is the picture of its cut. On the cards: click anywhere on a card, or use the arrow keys once you are in the group; the chosen
   one has a coloured border, and one that cannot be chosen now says why (for example “not on line”). The sheet separation has
   its picture too, next to the box. What does not apply to the operation is not shown: on a pocket, a drilling or a
   V-carve, the profile's ramp, lead-ins, corners and tabs are missing, and a note under Cut says why;
