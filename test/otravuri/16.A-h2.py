@@ -51,6 +51,10 @@ o('E08', W, "    fel: f.fel, nume: numeGol ? '' : f.nume, nota: f.nota ?? '', gr
   "    fel: f.fel, nume: numeGol ? '' : f.nume, nota: f.nota ?? '', grup: '',", 'e2e', 'editorul nu arată grupul frezei')
 o('E09', W, "              <select data-freze=\"muta\" value={f.grup ?? ''} disabled={doarCitire}",
   "              <select data-freze=\"muta\" value=\"\" disabled={doarCitire}", 'e2e', 'fișa nu arată grupul frezei')
+o('E10', W, '    if (redenumit) deFocus.current = focusRedenumire(redenumit.grup);\n', '', 'e2e',
+  'renunțat la redenumire, focusul se pierde (Escape nu mai ajunge la fereastră)')
+o('E11', W, '      if (g === undefined || g === null) refCauta.current?.focus();\n      else deFocus.current = focusRedenumire(g);\n', '', 'e2e',
+  'redenumit, focusul se pierde')
 
 SETURI = {
     'model': ['test/unit/freza.test.ts'],

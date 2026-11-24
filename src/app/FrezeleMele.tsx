@@ -23,7 +23,7 @@ import { mesajeGata } from '../i18n/laCerere.ts';
 import { t } from '../i18n/t.ts';
 import { citesteFisierFreze, textFisierFreze, type MotivFisierFreze } from '../io/frezeFisier.ts';
 import {
-  FELURI_FREZA, FREZE_PORNIRE, grupurileListei, inaltimeCon, MARGINI_FREZA, numeLiber, problemeFreza, type CampFreza, type FelFreza,
+  cheieNume, FELURI_FREZA, FREZE_PORNIRE, grupurileListei, inaltimeCon, MARGINI_FREZA, numeLiber, problemeFreza, type CampFreza, type FelFreza,
   type Freza, type FrezaFaraNume, type FrezaSalvata, type MotivFreza, type PoliticaImport, type ProblemeFreza,
 } from '../model/freza.ts';
 import { UNGHI_V_IMPLICIT } from '../model/document.ts';
@@ -56,6 +56,9 @@ const MAXIM: Readonly<Partial<Record<CampFreza, number>>> = {
 };
 
 const fara = (x: number | undefined, ro: boolean): string => (x === undefined || !Number.isFinite(x) ? '' : textNumar(x, ro));
+
+/** Selectorul lui „✎” de pe titlul grupului dat (după redenumire sau renunțare, focusul revine acolo). */
+const focusRedenumire = (grup: string): string => `[data-freze-grup="${CSS.escape(grup)}"] [data-freze="grup-redenumeste"]`;
 
 /** Valoarea opțiunii „Grup nou…” din lista „Grupul” a fișei (un grup nu poate avea caractere de control, deci nu se ciocnește). */
 const NOU = '\u0000nou';
@@ -380,7 +383,18 @@ export function FrezeleMele({ onInchide, focusInapoi, config }: {
       setRedenumit(null);
       setMesaj(t('freze.stare.salvat'));
       sincronizare.programeaza();
+      // Focusul, pe „✎” al grupului cu numele nou; desfăcut (numele gol), pe căutare.
+      const k = cheieNume(redenumit.nou);
+      const g = redenumit.nou.trim() === '' ? undefined
+        : grupurileListei(biblioteca.stare().freze).find((x) => x.grup !== null && cheieNume(x.grup) === k)?.grup;
+      if (g === undefined || g === null) refCauta.current?.focus();
+      else deFocus.current = focusRedenumire(g);
     });
+  };
+  /** Renunțarea la redenumire (butonul sau Escape): câmpul se închide, iar focusul revine pe „✎” al grupului. */
+  const renuntaRedenumire = (): void => {
+    if (redenumit) deFocus.current = focusRedenumire(redenumit.grup);
+    setRedenumit(null);
   };
   const inchide = (): void => { pleaca(onInchide); };
   const renunta = (): void => {
@@ -477,7 +491,7 @@ export function FrezeleMele({ onInchide, focusInapoi, config }: {
     if (e.key !== 'Escape') return;
     e.preventDefault();
     e.stopPropagation();
-    if (redenumit) setRedenumit(null);
+    if (redenumit) renuntaRedenumire();
     else if (grupNou !== null) setGrupNou(null);
     else if (stergere) setStergere(false);
     else if (importat) setImportat(null);
@@ -767,7 +781,7 @@ export function FrezeleMele({ onInchide, focusInapoi, config }: {
                       <input type="text" data-freze="grup-nume-nou" aria-label={t('freze.grup.nume')} value={redenumit.nou}
                         placeholder={t('freze.grup.fara')} onChange={(e) => { const v = e.currentTarget.value; setRedenumit((r) => (r ? { ...r, nou: v } : r)); setMesaj(''); }} />
                       <button type="submit" data-freze="grup-redenumeste-da">{t('freze.grup.redenumeste.da')}</button>
-                      <button type="button" data-buton="renunta" onClick={() => { setRedenumit(null); }}>{t('freze.import.renunta')}</button>
+                      <button type="button" data-buton="renunta" onClick={renuntaRedenumire}>{t('freze.import.renunta')}</button>
                     </form>
                   ) : null}
                   <ul>

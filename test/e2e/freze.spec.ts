@@ -227,6 +227,7 @@ test('grupurile omului: „Grupul” din fișă (un grup nou, unul existent) și
   await page.keyboard.press('Escape');
   await expect(nou).toHaveCount(0);
   await expect(f).toBeVisible();
+  await expect(f.locator('[data-freze="grup-redenumeste"]')).toBeFocused();
   await f.locator('[data-freze="grup-redenumeste"]').click();
   await nou.fill('x'.repeat(41));
   await nou.press('Enter');
@@ -234,6 +235,10 @@ test('grupurile omului: „Grupul” din fișă (un grup nou, unul existent) și
   await nou.fill('Esență tare');
   await nou.press('Enter');
   await expect(titluri(f)).toHaveText(['Esență tare (2)', 'Plate (2)', 'În V (1)', 'Gravare (1)']);
+  // Redenumit: focusul pe „✎” al grupului; Escape închide acum fereastra (nimic nu mai e deschis în ea).
+  await expect(f.locator('[data-freze-grup="Esență tare"] [data-freze="grup-redenumeste"]')).toBeFocused();
+  await page.keyboard.press('Escape');
+  await expect(f).toHaveCount(0);
   // După reîncărcare, grupul e tot acolo.
   await page.reload();
   const g = await deschideFrezele(page);
