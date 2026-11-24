@@ -263,6 +263,15 @@ Estimarea: ~8 felii (A.8c s-a despărțit în A.8c și A.8d pe 23.11, A.9 în A.
   `sesiune` + `primit`), cu sesiunea în audit. În fila Tichete, cine are „Utilizare: sesiuni” vede **Sesiunea raportării**:
   aceeași Activitate, la cerere, doar cu sesiunea aceea a autorului. Loturile se strâng doar cu contul deschis, deci ce a
   făcut omul înainte să intre în cont nu e acolo (e în pașii atașați, A.11b).
+- **A.11e** (24.11, `3.Ar`): **disocierea**, la cererea omului printr-un tichet, din Utilizatori, de cine are „Conturi:
+  administrează” (cei care schimbă și planul), după un pas de confirmare. Acțiunea `disociaza` a callable-ului `utilizare`
+  face un pseudonim aleator (`p` + 32 de cifre hexa), îl ține doar în `utilizareDisociate/{uid}` (nicio regulă: refuzată
+  oricui din client, și owner-ului), îl pune pe loturile de până acum (pe pagini de 400, până nu mai rămâne niciunul) și, prin
+  `lot`, pe cele care vin. Contul primește doar `disociatLa`; auditul, doar că s-a făcut (fără pseudonim). A doua oară nu
+  schimbă nimic. După ea, cronologia contului (și sesiunea unei raportări) nu mai găsește nimic; sumele zilei rămân (oamenii
+  se numără după pseudonim). Alegerea de aici: legătura cont → pseudonim rămâne pe server (pseudonimizare, nu anonimizare),
+  ca loturile de după să aibă același pseudonim cu cele de dinainte, cum cere §3; dacă juristul cere ruperea ei, se șterge
+  documentul și loturile noi primesc un pseudonim pe lot.
 
 ## Probele
 

@@ -12390,6 +12390,22 @@ admin cat mai multe setari”).
 - **Documentele:** ADR 0262 (implementarea), fișa etapei 3 (`3.Aq`), registrul otrăvurilor, traducerile, nota liniei.
   **Completed:** 24.11 09:15.
 
+## 2026-11-24 — Felia A.11e: disocierea (ADR 0262)
+
+**Prompt:** același „am raspuns” (7a: A.8–A.11 acum), după A.11d.
+**Started:** 24.11 09:20.
+
+- **Codul (`2e023ac1`, `70617d54`):** acțiunea `disociaza` a callable-ului `utilizare` (pseudonimul în
+  `utilizareDisociate/{uid}`, rescrierea loturilor pe pagini, `disociatLa` pe cont, auditul), `lot` cu pseudonimul, regula
+  (nicio potrivire: refuzată), „Utilizarea aplicației, despărțită de cont” în Utilizatori (`Disocierea.tsx`), cu confirmare.
+- **Alegerea:** legătura cont → pseudonim stă pe server, ca loturile de după să aibă același pseudonim cu cele de dinainte
+  (ADR §3); scrisă în ADR, cu ce se face dacă juristul cere ruperea ei.
+- **Probele:** modelul contului, serverul și regulile pe emulator, 1 e2e. **Otrăvurile:** 12 / 12. **Porțile locale:**
+  rapidul 10 057 / 0, emulatoarele 126 / 126 și 53 / 53. **Mărimea:** `/admin` 137,9 / 200.
+- **Între timp:** completul pe `d74b3b8f` (A.11c) verde. Cu A.11e, A.11 e încheiată; urmează A.7 (telefonul).
+- **Documentele:** ADR 0262 (implementarea), fișa etapei 3 (`3.Ar`), registrul otrăvurilor, traducerile, nota liniei.
+  **Completed:** 24.11 09:50.
+
 ## 2026-11-23 — Sesiunea principală în cloud: a șasea unire (A.6, Roadmap, Documentație și Setări); linia frezelor, pornită (Model: Claude Fable 5.2)
 
 **Prompt:** același brief de predare al sesiunii principale („unește ce se poate”), la raportul liniei adminului (PR-ul
