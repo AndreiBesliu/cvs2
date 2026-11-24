@@ -85,7 +85,10 @@ degroșarea și finisarea pe relief), unde stă relieful în document și unde s
   migrării: îi scriu chiar înainte; dacă cotele n-au luat v28 până atunci, relieful îl ia pe acela (fără versiuni lipsă;
   unirile cu schemă intră în ordinea numerelor). (2) Bila o aduce relieful, dacă owner-ul răspunde „a” la întrebarea 3,
   cu forma câmpului stabilită cu linia frezelor (sesiunea `session_01QcxiUZGaEoi6ADRcuJvDGp`): propunerea,
-  `scula.forma = { tip: 'bila' }`, e în ADR 0310 §13 și i-a fost trimisă; aștept răspunsul ei înaintea codului.
+  `scula.forma = { tip: 'bila' }`, e în ADR 0310 §13 și i-a fost trimisă. **Linia frezelor, de acord (24.11, 12:53)**,
+  cu precizările trecute în §13: toroidala `{ tip: 'toroidala', raza }` cu raza < Ø / 2 strict; locurile care presupun
+  azi că orice formă e V; funcția comună `motivFormaPeOperatie` în `src/model/formaFrezei.ts`, scrisă de cine ajunge
+  întâi în `main`; „Bilă” în bibliotecă după relief; bila în oracolul documentului și în corpusul de aur.
   (3) Rândurile degroșării și finisării în fereastra exportului: după ce fereastra refăcută (28.8, PR-ul #11) e în
   `main`; îi scriu întâi sesiunii principale. ADR-ul propus îl ia în `main` la cererea mea (doar documente) sau cu
   prima felie.

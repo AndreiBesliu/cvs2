@@ -250,6 +250,27 @@ linia frezelor, a cărei e modelul frezei (`src/model/freza.ts`, `sculaDinFreza`
 - **În bibliotecă:** felul „bilă” (`FELURI_FREZA`, `sculaDinFreza` → `{ tip: 'bila' }`), al liniei frezelor; până atunci,
   bila se alege pe rândul exportului, ca freza în V la început.
 
+**Răspunsul liniei frezelor (24.11, de acord), cu precizările ei:**
+
+- **O singură scriere pe freză.** Lipsa formei rămâne plata (fără `{ tip: 'plata' }` în document), deci documentele de azi
+  rămân octet cu octet. Toroidala (16.A↑e) va fi `{ tip: 'toroidala', raza }`, cu raza finită și 0 < raza < Ø / 2
+  strict; raza = Ø / 2 se scrie doar ca bilă, fiindcă recunoașterea frezei din bibliotecă și unirea operațiilor compară
+  forma. Bila nu primește `raza`.
+- **Locurile care presupun azi că orice formă e V**, de trecut pe variantă odată cu bila (compilatorul le arată pe cele
+  care citesc `unghi`, dar nu și mesajele): forma din document → IR (`src/cam/job.ts`, `src/cam/dopV.ts`); motivul „T… e
+  plată” pentru orice formă care nu e V (`src/cam/job.ts`, `src/cam/incrustatie.ts`), care trebuie să numească forma;
+  `src/model/rol.ts`, `src/model/raportFoi.ts`, `src/app/PanouProprietati.tsx`.
+- **Ce formă primește fiecare operație stă într-o singură funcție pură din model:** `src/model/formaFrezei.ts`, cu
+  `motivFormaPeOperatie(tip, latura, forma)` (motivul sau null), folosită de lucrare, de secțiunea Tăierea și de rândul
+  exportului. Cine ajunge întâi în `main` o scrie: relieful, cu V-ul de azi plus bila pe finisarea reliefului; sau linia
+  frezelor (16.A↑b-2), cu V-ul de azi, iar relieful adaugă bila. 16.A↑e doar lărgește tabelul.
+- **Biblioteca:** după ce relieful e în `main`, linia frezelor poate pune „Bilă” în bibliotecă fără să aștepte 16.A↑e
+  (ADR 0300 §2: un fel apare când CAM-ul îl poate tăia), oferită doar operațiilor care o primesc. `biblioteca`, `regim` și
+  `tais` merg pe bilă ca pe orice freză (`src/cam/regimFreza.ts`). Pasul lateral din bibliotecă e un procent din diametru;
+  dacă finisarea lucrează cu creasta, conversia e a reliefului: h = R − √(R² − (s/2)²), fără câmp nou.
+- **Oracolul documentului și corpusul de aur:** bila acceptată de la v29 și refuzată înainte, în `problemeOperatieO`, cu
+  frontiera pe hârtie; în `ADAUGIRI`, o bilă pe o operație de relief.
+
 ## Întrebările (recomandarea întâi)
 
 1. **Unde stă relieful.**
