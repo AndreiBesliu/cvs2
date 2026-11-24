@@ -45,6 +45,10 @@
       "ro": "Riglele, ghidajele salvate pe foaie",
       "en": "Rulers, guides saved on the sheet"
     },
+    "03f61c8e5994c14b": {
+      "ro": "**„Calibrează” și „Trasează…” din imaginea de pe foaie** (fără mașină; ADR 0272 §6, §7, §10; pornită la „pornește 25.8↑b”; ramura `wip/25.1-trasare`, în sesiunea cloud a liniei, cu `main` `883a8caa` adus întâi, fără ciocniri). Rândul imaginii are **Calibrează** și **Trasează…**; modul pânzei (banda de sus, ca la urechi) ia clicurile: două capete pe imagine (Shift: pe axa ei), trase apoi unde trebuie, distanța adevărată în bandă, imaginea scalată uniform în jurul primului capăt, într-un pas; zona trasă peste imagine (în cadrul ei, și rotită) sau „Toată imaginea” deschide fereastra trasării cu imaginea din baza imaginilor, la scara ei (`latimeIntreaga`), fără Mărime și fără îndreptări, iar „Importă” pune vectorii exact peste ea (`peImagine`: locul și rotirea ei). Editorul stă oprit cât ține un mod al pânzei (cadrul, textul, Pen-ul, mânerele nu-i mai iau clicurile; și la urechile alese). Raportul foilor spune numele imaginilor fiecărei foi. Otrăvurile 46 / 46 (C08 și C09, pixelii zonei, scăpaseră întâi).",
+      "en": "**\"Calibrate\" and \"Trace…\" from the image on the sheet** (no machine; ADR 0272 §6, §7, §10; started at \"pornește 25.8↑b\"; branch `wip/25.1-trasare`, in the line's cloud session, with `main` `883a8caa` brought in first, without conflicts). The image row has **Calibrate** and **Trace…**; the canvas mode (the band at the top, as for tabs) takes the clicks: two ends on the image (Shift: along its axis), then dragged where they belong, the true distance in the band, the image scaled uniformly around the first end, in one step; an area dragged over the image (in its frame, rotated too) or \"Whole image\" opens the tracing window with the image from the image store, at its scale (`latimeIntreaga`), without Size and without straightening, and \"Import\" places the vectors exactly over it (`peImagine`: its place and rotation). The editor is switched off while a canvas mode lasts (the frame, the text, the Pen, the handles no longer take its clicks; also for the chosen tabs). The sheets report names each sheet's images. Poisons 46 / 46 (C08 and C09, the area's pixels, had escaped at first)."
+    },
     "04125177931fbd4a": {
       "ro": "3.9",
       "en": "3.9"
@@ -1717,6 +1721,10 @@
       "ro": "Caneluri / bevel / Raised Round; Freze de profil desenate; Biblioteca de freze (completă)",
       "en": "Flutes / bevel / Raised Round; Drawn profile bits; The bit library (complete)"
     },
+    "6e17f784ff4e6e0b": {
+      "ro": "Încercarea lui „Calibrează” și „Trasează…” din imaginea de pe foaie (25.8↑b, ADR 0272) pe canalul `trasare` (<https://cncvectorstudio-test--trasare-icw58h57.web.app>; ramura `wip/25.1-trasare`): pune pe foaie o poză cu o riglă sau o cotă (**Doar imaginea**); în **Imaginile foii**, **Calibrează**: clic pe cele două capete (Shift: pe axa imaginii), scrie distanța adevărată, Enter; apoi **Trasează…**: trage peste imagine zona de trasat (ori **Toată imaginea**), **Importă**: vectorii vin peste imagine, și pe una rotită; raportul foilor îi spune numele. Spune unde vectorii nu stau peste imagine, unde banda încurcă sau ce ți-ar mai trebui la calibrare",
+      "en": "Trying \"Calibrate\" and \"Trace…\" from the image on the sheet (25.8↑b, ADR 0272) on the `trasare` channel (<https://cncvectorstudio-test--trasare-icw58h57.web.app>; branch `wip/25.1-trasare`): put on the sheet a photo with a ruler or a dimension (**Image only**); in **Sheet images**, **Calibrate**: click the two ends (Shift: along the image axis), type the true distance, Enter; then **Trace…**: drag over the image the area to trace (or **Whole image**), **Import**: the vectors land over the image, a rotated one too; the sheets report names it. Say where the vectors do not sit over the image, where the band gets in the way or what else you would need when calibrating"
+    },
     "6e1c3251d27d3de2": {
       "ro": "3.Th (jocul dintre dinți)",
       "en": "3.Th (the backlash between teeth)"
@@ -2817,6 +2825,10 @@
       "ro": "Simularea",
       "en": "Simulation"
     },
+    "b57670279b07424c": {
+      "ro": "„Calibrează” și „Trasează…” din imaginea de pe foaie",
+      "en": "\"Calibrate\" and \"Trace…\" from the image on the sheet"
+    },
     "b585e6ff16935d58": {
       "ro": "6.V↑–6.V↑c pe test",
       "en": "6.V↑–6.V↑c on test"
@@ -2980,6 +2992,10 @@
     "bf287520e101f78f": {
       "ro": "Planșele: toate foile pe pânză",
       "en": "Sheets: all sheets on the canvas"
+    },
+    "bf28b55254a3bac9": {
+      "ro": "25.8↑b",
+      "en": "25.8↑b"
     },
     "bfacf22c38e45a2b": {
       "ro": "**Tăierea în panouri** (fără mașină; ADR 0181 §7; „continua”, după pauza din 11.11; ramura nouă `wip/10.3k-panouri`, din `main`, nu din vârful cu mutarea fișierelor, oprită; `origin/main` `c85cc18` și `44c47fa`, cu imprimanta 3.6s, unite). În panoul Taie, blocul **Taie în panouri**: formele alese (fără alegere, toate de pe foaie) se taie pe o grilă peste cutia lor, cu **mărimea panoului** (implicit, materialul foii; panourile **egale** sau **din colț**) sau cu **numărul de panouri**, cu închiderea, spațiul și îmbinarea opțiunilor; firma de 2 400 × 1 000 la 1 200 × 900 dă patru panouri de 1 200 × 500, iar din colț, două de 1 200 × 900 și două de 1 200 × 100. Bucățile fiecărui panou devin un grup, „Panoul 1” … (rând cu rând, de jos), și stau unde erau; un text cu literele de o parte și de alta a unei linii care nu le atinge se desparte și el; pe foaie, bucățile unei forme vin în ordinea panourilor; peste 100 de panouri, refuzul; cât lucrezi în bloc, grila se vede pe pânză. Un singur pas de anulare. **Treceri:** (1) e2e: panourile ieșeau pe foaie în ordinea tăierii (1, 3, 2, 4); (2) otrăvurile: cinci probe care lipseau, scrise la alegerea lor, apoi G02 (o cutie fără lățime trecea de plafon), scăpată la rulare, cu proba ei; (3) mărimea: prima variantă creștea totalul cu 9,1 kB, din care 7,4 în worker (gruparea citește blocurile de text cu valibot): gruparea a trecut pe firul principal; (4) la verificarea canalului, grupul lua id-ul formei tăiate, iar după Anulează alegerea rămasă arăta spre ea: id-urile grupurilor ocolesc și documentul de dinainte (un filtru al alegerii, pus atunci și în bloc, s-a dovedit de prisos la otrăvuri: scos). Otrăvurile: 46, 45 prinse (G02, după proba ei), M03 echivalentă; H10, echivalentă, a scos filtrul ei. Porțile, pe unirea cu `main` (`5ab3941`, cu planșele, 12.1↑b-2, 25.4↑b, 25.3↑c, 28.1↑a și 11.6↑): unit 9 392 (0 căderi), e2e 488 / 488 și emulatoarele 101 / 101 și 21 / 21 pe unirea cu `bfdf2ed`; pe ce ating `380c053` și `5ab3941`, unit 511 / 511 și 399 / 399, e2e 41 / 41 și 66 / 66. **Mărimea:** pornirea neschimbată (106,3; cu ușa 110,3 / 115), totalul +4,8 kB (703,4 → 708,2 / 800; prima variantă, +9,1). Canalul: <https://cncvectorstudio-test--taiere-7mmspw7e.web.app> (până pe 13.12), `9835062`, verificat (ro, en, Anulează, nicio eroare).",

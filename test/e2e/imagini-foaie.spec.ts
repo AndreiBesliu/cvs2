@@ -329,7 +329,10 @@ const px = (x: number, y: number): { x: number; y: number } => ({ x: x * MM, y: 
 
 type Nod = { tip: 'element' | 'grup'; matrice: { a: number; b: number; c: number; d: number; e: number; f: number }; copii?: Nod[];
   forma?: { tip: string; varfuri?: Array<{ p: { x: number; y: number } }> } };
-type DocPiese = Doc & { piese: Array<{ id: string; radacina: Nod }>; foi: Array<{ instante: Array<{ piesa: string; x: number; y: number; rotire: number }> }> };
+type DocPiese = {
+  rev: number; piese: Array<{ id: string; radacina: Nod }>;
+  foi: Array<{ imagini?: Imagine[]; instante: Array<{ piesa: string; x: number; y: number; rotire: number }> }>;
+};
 
 /** Vârfurile tuturor căilor de pe foaia 1, în mm ai foii (prin matricile nodurilor și ale instanței), și cutia lor. */
 function cutieVarfuri(d: DocPiese): { minX: number; minY: number; maxX: number; maxY: number; varfuri: Array<{ x: number; y: number }> } {
@@ -462,7 +465,7 @@ test('„Trasează…” din imaginea rotită de pe foaie: toată imaginea; vect
   }
   await page.locator('[data-buton="importa"]').click();
   await expect(page.getByTestId('trasare-panou')).toHaveCount(0);
-  const d = await doc(page, 6) as DocPiese;
+  const d = await doc(page, 6) as unknown as DocPiese;
   expect(d.foi[0]?.instante.map((i) => i.rotire)).toEqual([90]);
   expect(d.foi[0]?.imagini?.length).toBe(1);
   // Chenarul gros (marginea lui de afară: px 97–703 × 77–483), la scara imaginii de pe foaie, rotit cu ea în jurul centrului
@@ -500,7 +503,7 @@ test('„Trasează…” cu o zonă trasă pe foaie peste imagine: doar discul d
   await page.locator('[data-buton="importa"]').click();
   await expect(page.getByTestId('trasare-panou')).toHaveCount(0);
   // Fiecare vârf trasat stă pe cercul discului din imagine (centrul px (520, 230), raza 60 px), la locul lui de pe foaie.
-  const { varfuri } = cutieVarfuri(await doc(page, 2) as DocPiese);
+  const { varfuri } = cutieVarfuri(await doc(page, 2) as unknown as DocPiese);
   const c = px(520, 230);
   expect(varfuri.length).toBeGreaterThan(3);
   for (const q of varfuri) expect(Math.abs(Math.hypot(q.x - c.x, q.y - c.y) - 60 * MM), `${q.x}, ${q.y}`).toBeLessThan(0.3);

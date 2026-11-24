@@ -59,6 +59,8 @@ export function ImaginiFoii({ imagini, octeti, doarCitire, oprit, onImagini, onM
         {imagini.map((im) => {
           const nume = im.nume ?? im.id;
           const o = octeti.get(im.sursa);
+          // „Calibrează” și „Trasează…” cer imaginea văzută și octeții ei citiți.
+          const fara = doarCitire || !im.vizibila || !o;
           return (
             <li key={im.id} data-imagine={im.id}>
               <Miniatura octeti={o} />
@@ -91,12 +93,15 @@ export function ImaginiFoii({ imagini, octeti, doarCitire, oprit, onImagini, onM
               </dl>
               {onMod && (
                 <span className="prop-imagine-meniu">
-                  {([['calibrare', 'imagine-calibreaza', 'prop.imagine.calibreaza'], ['zona', 'imagine-traseaza', 'prop.imagine.traseaza']] as const).map(([fel, buton, cheie]) => (
-                    <button key={fel} type="button" data-buton={buton} disabled={doarCitire || !im.vizibila || !o}
-                      title={oprit ?? (im.vizibila ? t(`${cheie}.sfat`) : t('prop.imagine.ascunsa'))} onClick={() => { onMod(fel, im.id); }}>
-                      {t(cheie)}
-                    </button>
-                  ))}
+                  {/* Numele butoanelor stau scrise ca atribute (catalogul controalelor, ADR 0262, le citește din sursă). */}
+                  <button type="button" data-buton="imagine-calibreaza" disabled={fara}
+                    title={oprit ?? t(im.vizibila ? 'prop.imagine.calibreaza.sfat' : 'prop.imagine.ascunsa')} onClick={() => { onMod('calibrare', im.id); }}>
+                    {t('prop.imagine.calibreaza')}
+                  </button>
+                  <button type="button" data-buton="imagine-traseaza" disabled={fara}
+                    title={oprit ?? t(im.vizibila ? 'prop.imagine.traseaza.sfat' : 'prop.imagine.ascunsa')} onClick={() => { onMod('zona', im.id); }}>
+                    {t('prop.imagine.traseaza')}
+                  </button>
                 </span>
               )}
               {o === null && <p className="prop-nota" data-motiv="imagine-lipsa">{t('prop.imagine.lipsa')}</p>}

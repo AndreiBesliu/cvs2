@@ -1034,7 +1034,14 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   (`473f2e20`):** o imagine rămâne pe foaie, sub desen, estompată, nici tăiată, nici exportată („Păstrează imaginea pe
   foaie” și „Doar imaginea” în fereastra trasării; „Imaginile foii” în panoul Proprietăți, cu nimic selectat); octeții
   stau în browser (IndexedDB `cncvs2-imagini`, după amprentă), iar foaia ține doar așezarea (`Foaie.imagini`, fără schemă
-  nouă: documentul rămâne v26). Rămâne 25.8↑b („Calibrează”, „Trasează…” din imaginea de pe foaie), la cuvântul owner-ului.
+  nouă: documentul rămâne v26). **25.8↑b („Calibrează” și „Trasează…” din imaginea de pe foaie) gata pe 24.11, pe aceeași
+  ramură, la „pornește 25.8↑b”:** butoanele din rândul imaginii pornesc un mod al pânzei (`src/app/ModImagine.tsx`, la
+  cerere; partea pură în `modImagineCalcul.ts`), cu banda lui: calibrarea din două puncte și distanța adevărată (scalarea în
+  jurul primului punct), ori zona de trasat (sau toată imaginea); fereastra trasării deschisă de acolo are scara imaginii
+  (`latimeIntreaga`), fără Mărime și fără îndreptări, iar „Importă” pune vectorii exact peste ea (`ImportPregatit.peImagine`);
+  raportul foilor spune numele imaginilor. **Cât ține un mod al pânzei, editorul e oprit (`Editare.activ`): cadrul
+  selecției, textul, Pen-ul și mânerele ascultă pe `window` la captură, deci un mod nou al pânzei trece și el prin `activ`,
+  altfel ele îi iau clicurile.**
   **25.9↑ (fereastra trasării, refăcută, ADR 0273) gata pe 23.11, unită în `main` pe 23.11 (`4fe2d2ad`), cu răspunsurile
   1a–3a și, la nota owner-ului, celelalte variante ca opțiuni:** fereastra cât ecranul, fără derularea ei (setările se derulează singure,
   previzualizarea crește, piciorul fix); grupurile Imaginea, Trasarea, Curățarea, Mărimea, cu rezumatul pe titlu, ținute în

@@ -103,7 +103,7 @@ o('A05', ED, "imaginiDesfacute.length > 0 && foaie && !p.doarCitire && !vedere3d
   'mânerele imaginii desfăcute iau clicurile modului')
 o('A06', ED, "      if (e.target !== panza || e.button !== 0 || spatiu || acum.current.oprit) return;", "      if (e.target !== panza || e.button !== 0 || spatiu) return;", 'e2e',
   'Pen-ul ia clicurile modului')
-o('A07', IF, "disabled={doarCitire || !im.vizibila || !o}", "disabled={doarCitire}", 'e2e', 'butoanele merg pe o imagine ascunsă')
+o('A07', IF, "const fara = doarCitire || !im.vizibila || !o;", "const fara = doarCitire;", 'e2e', 'butoanele merg pe o imagine ascunsă')
 
 # ── Fereastra din imaginea foii ───────────────────────────────────────────────────────────────────────────────────────
 o('F01', IC, "    return { ...ok.pregatit, peImagine: asezarePeImagine(dinFoaie.imagine, r.intreg.latimePx, r.intreg.inaltimePx, r.mmPePx, r.zona) };",

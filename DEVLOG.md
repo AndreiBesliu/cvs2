@@ -12519,3 +12519,37 @@ PR-ul `AndreiBesliu/cvs2#13` („De unit acum (A.9a, A.9b): `dbb0306a`”).
   completul); indexul liniilor; starea din `docs/linii/principala.md`.
 - **La owner:** fereastra exportului (28.8↑a–b-3: acum sau după desene), verificarea juridică a utilizării aplicației
   înaintea live-ului, „cine unește în `main`”.
+
+## 2026-11-24 — Felia 25.8↑b: „Calibrează” și „Trasează…” din imaginea de pe foaie, numele imaginilor în raportul foii (ADR 0272 §6, §7, §10) (Model: Claude Opus 5.5)
+
+**Prompt:** „pornește 25.8↑b”. **Started:** 24.11, 05:00 (după aducerea lui `main` `883a8caa`, fără ciocniri). **Completed:**
+24.11, 09:30.
+
+- **Rândul imaginii** (`src/app/ImaginiFoii.tsx`): **Calibrează** și **Trasează…**, sub opacitate, doar pe o imagine
+  vizibilă cu octeții citiți.
+- **Modul pânzei** (`src/app/ModImagine.tsx`, la cerere; partea pură `src/app/modImagineCalcul.ts`), cu banda urechilor:
+  calibrarea din două capete pe imagine (Shift: pe axa ei), trase apoi, distanța de acum lângă linie, câmpul distanței
+  adevărate ales în bandă, Aplică / Enter: scalarea uniformă în jurul primului capăt, un pas (`foaie.imagini`); zona trasă
+  peste imagine (în cadrul ei, și rotită, tăiată la ea) ori „Toată imaginea”. Escape și Renunță ies; modul se închide
+  singur dacă imaginea pleacă ori se ascunde.
+- **Editorul oprit cât ține un mod al pânzei** (`src/app/Editare.tsx`): cadrul selecției, textul, Pen-ul (desenul rămâne) și
+  mânerele (ale formelor și ale imaginilor) ascultau pe `window` la captură și luau clicurile modului; acum trec prin
+  `activ` (și în modul urechilor alese).
+- **Fereastra din imaginea de pe foaie** (`ImportConectat` cu `dinFoaie`, `DialogImport`, `FereastraTrasare`): octeții din
+  baza imaginilor, numele tipului lor, zona în pixeli; scara imaginii (`AlegeriTrasare.latimeIntreaga` →
+  `CerereTrasare.latimeIntreaga`, workerul pe imaginea întreagă, scara „din imaginea de pe foaie”), fără Mărime, îndreptări,
+  „Păstrează” și „Doar imaginea”; „Importă” pune vectorii exact peste imagine (`ImportPregatit.peImagine`, comanda
+  importului rotește și mută instanța).
+- **Raportul foilor:** numele imaginilor fiecărei foi (din foile identice, o dată); CSV-ul neschimbat (lista de tăiere).
+- **Probele:** `test/unit/imagini.calibrare.test.ts` (10, pe hârtie, cu importul peste o imagine rotită cu 30°, scalată și
+  cu zonă), scara fixă în `import.imagine.test.ts`, raportul în `raport.foi.test.ts`; 3 e2e în `imagini-foaie.spec.ts`
+  (calibrarea cu imaginea desfăcută și ascunsă pe drum, trasarea din imaginea micșorată și rotită cu 90°, zona cu Pen-ul ales
+  și raportul). Vecinele, local: 149 / 149 (23 de fișiere: trasarea, importul, imaginile, panoul, editarea, selecția, Pen-ul,
+  cuțitul, textul, ancorele, urechile, raportul, manualul). Unitarele întregi, local: 10 056 trecute, 12 sărite, una căzută
+  (catalogul controalelor, ADR 0262: butoanele noi, scrise ca atribute, apoi `node scripts/catalog-controale.ts --scrie`).
+- **Otrăvurile:** `test/otravuri/25.8b.py`, 46 / 46 într-o clonă (24 unitare, 22 prin e2e); C08 și C09 (pixelii zonei)
+  scăpaseră întâi: 0,3 · 800 e exact 240 în virgulă mobilă, iar zona îngustă de probă nu atingea toleranța.
+- **Mărimea:** totalul 804,3 / 900 kB (+4,7), pornirea 109,7 / 115 (+0,3, în `App.tsx`), cu ușa 114,2, cu Atelierul
+  114,5 / 115 (rămân 0,5 kB).
+- **Documentele:** ADR 0272 („Implementarea (25.8↑b)”, precizările la §6, §10), indexul ADR, manualul (ro, en), fișa etapei 3
+  (jurnalul, încercarea în coada owner-ului), traducerile roadmap-ului, `CLAUDE.md`, nota liniei.
