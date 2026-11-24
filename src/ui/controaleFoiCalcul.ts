@@ -36,6 +36,40 @@ export function loculRandului(f: FoaiePePanza, vedere: { readonly scara: number;
   return { stanga: vedere.tx + f.x * vedere.scara, sus: vedere.ty + DISTANTA_RAND_PX };
 }
 
+/** Golul dintre butoanele rândului și marginea lui (umplutura de 2 px și bordura de 1 px), ca în `stil.css`. */
+export const GOL_BUTOANE_PX = 2;
+export const MARGINE_RAND_PX = 3;
+/** Câte comenzi are rândul întreg: panoul foii, așezarea și cele cinci ale registrului. */
+export const BUTOANE_RAND = 7;
+
+/** Pură: lățimea pe ecran (px) a unui rând cu `n` butoane late de `buton` px. */
+export function latimeRand(n: number, buton: number): number {
+  return n * buton + (n - 1) * GOL_BUTOANE_PX + 2 * MARGINE_RAND_PX;
+}
+
+/** Cum stă rândul sub foaia lui: întreg, strâns într-un singur buton („⋯”, care îl deschide) sau deloc. */
+export type FelRand = 'intreg' | 'strans' | 'ascuns';
+
+/**
+ * Pură: rândul nu trece de lățimea foii lui (felia 11.1↑d). Cu pânza micșorată, foaia ajunge mai îngustă decât cele șapte
+ * butoane: rândul ieșea peste foaia vecină, iar două rânduri se suprapuneau. Când nu încape întreg, se strânge într-un
+ * buton; când nici el nu încape, nu se arată.
+ */
+export function felRand(latimeFoaiePx: number, buton: number): FelRand {
+  if (!(latimeFoaiePx > 0) || !(buton > 0)) return 'ascuns';
+  if (latimeFoaiePx >= latimeRand(BUTOANE_RAND, buton)) return 'intreg';
+  return latimeFoaiePx >= latimeRand(1, buton) ? 'strans' : 'ascuns';
+}
+
+/**
+ * Pură: marginea din stânga a unui rând deschis peste lățimea foii (rândul strâns, desfăcut, sau întrebarea ștergerii),
+ * ținut în pânză: nu iese din marginea ei din dreapta, dar nici din cea din stânga.
+ */
+export function stangaInPanza(stanga: number, latimeRandPx: number, latimePanza: number, margine = 4): number {
+  if (!(latimePanza > 0) || !(latimeRandPx > 0)) return stanga;
+  return Math.max(margine, Math.min(stanga, latimePanza - latimeRandPx - margine));
+}
+
 /** Rândurile registrului, în ordinea meniului foii (`MeniuFoaie.tsx`), cu eticheta fiecăruia; ștergerea la capăt. */
 export const RANDURI_FOAIE = [
   ['foaie.duplica', 'actiune.foaie-duplica'],

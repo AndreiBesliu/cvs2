@@ -163,3 +163,107 @@ test('întrebarea ștergerii rămâne la vedere și cu mausul plecat de pe foaia
   await page.locator('[data-actiune="vedere.proiectare"]').click();
   await expect(rand(page, 'f2')).toHaveAttribute('data-vizibil', 'da');
 });
+
+/**
+ * Micșorează pânza cu rotița până când o foaie de 300 mm e mai îngustă pe ecran decât `px`. Cursorul stă în mijlocul foii
+ * active: zoom-ul ține pe loc punctul de sub cursor, deci cursorul rămâne pe foaie, nu ajunge pe un rând sau pe o riglă.
+ */
+async function micsoreazaSub(page: Page, px: number): Promise<number> {
+  const c = (await ecran(page, await vedere(page)))(150, 100);
+  await page.mouse.move(c.x, c.y);
+  for (let k = 0; k < 40; k++) {
+    const v = await vedere(page);
+    if (300 * v.scara < px) return 300 * v.scara;
+    await page.mouse.wheel(0, 120);
+  }
+  throw new Error(`pânza nu s-a micșorat destul: ${300 * (await vedere(page)).scara} px`);
+}
+
+test('cu pânza micșorată, rândul nu trece de foaia lui: se strânge în „⋯”, rândurile a două foi nu se suprapun; „⋯” îl desface, comanda merge, iar mausul plecat sau Escape îl strâng la loc', async ({ page }) => {
+  await page.goto('/');
+  await adauga(page, 'dreptunghi');
+  await lista(page).locator('[data-actiune="foaie.adauga"]').click();
+  await expect(foaie(page, 'f2')).toHaveAttribute('data-activa', 'da');
+  await incadreazaToate(page);
+  // La mărimea de pornire rândul încape: întreg.
+  await expect(rand(page, 'f2')).toHaveAttribute('data-fel', 'intreg');
+  // Foaia sub 200 px pe ecran: rândul de șapte butoane (214 px) nu mai încape.
+  const latimeFoaie = await micsoreazaSub(page, 200);
+  expect(latimeFoaie).toBeGreaterThan(40);
+  const r2 = rand(page, 'f2');
+  await expect(r2).toHaveAttribute('data-fel', 'strans');
+  await expect(r2.locator('button')).toHaveCount(1);
+  await expect(articol(page, 'f2', 'mai-mult')).toHaveAttribute('aria-label', 'Arată comenzile foii');
+  const c2 = await r2.boundingBox();
+  const colt2 = await coltFoaie(page, 0);
+  if (!c2) throw new Error('rândul n-are cutie');
+  expect(c2.x).toBeGreaterThan(colt2.x - 1.5);
+  expect(c2.x + c2.width).toBeLessThan(colt2.x + latimeFoaie + 1.5);
+  // Mausul pe foaia vecină: și rândul ei e strâns, sub ea, fără să atingă rândul foii active.
+  const peVecina = (await ecran(page, await vedere(page)))(-250, 100);
+  await page.mouse.move(peVecina.x, peVecina.y);
+  const r1 = rand(page, 'f1');
+  await expect(r1).toHaveAttribute('data-vizibil', 'da');
+  await expect(r1).toHaveAttribute('data-fel', 'strans');
+  const c1 = await r1.boundingBox();
+  if (!c1) throw new Error('rândul vecinei n-are cutie');
+  expect(c1.x + c1.width).toBeLessThan(c2.x);
+  const colt1 = await coltFoaie(page, -400);
+  expect(c1.x + c1.width).toBeLessThan(colt1.x + latimeFoaie + 1.5);
+  // „⋯” desface rândul foii active: cele șapte comenzi, peste ce e alături, cu focusul pe prima.
+  await articol(page, 'f2', 'mai-mult').click();
+  await expect(r2).toHaveAttribute('data-peste', 'da');
+  await expect(r2.locator('[data-meniu-foaie-articol]')).toHaveCount(7);
+  expect(await r2.locator('[data-meniu-foaie-articol]').evaluateAll((b) => b.map((x) => x.getAttribute('data-meniu-foaie-articol')))).toEqual(ARTICOLE);
+  await expect(articol(page, 'f2', 'proprietati')).toBeFocused();
+  await expect(r2).toHaveCSS('z-index', '2');
+  // Escape îl strânge la loc, cu focusul înapoi pe „⋯”.
+  await page.keyboard.press('Escape');
+  await expect(r2).toHaveAttribute('data-fel', 'strans');
+  await expect(articol(page, 'f2', 'mai-mult')).toBeFocused();
+  // Desfăcut din nou, mausul plecat de pe rând îl strânge.
+  await articol(page, 'f2', 'mai-mult').click();
+  await expect(r2.locator('[data-meniu-foaie-articol]')).toHaveCount(7);
+  const departe = (await ecran(page, await vedere(page)))(150, 150);
+  await page.mouse.move(departe.x, departe.y);
+  await expect(r2).toHaveAttribute('data-fel', 'strans');
+  // O comandă din rândul desfăcut merge și îl strânge: „Duplică foaia”.
+  await articol(page, 'f2', 'mai-mult').click();
+  await articol(page, 'f2', 'foaie.duplica').click();
+  await expect(lista(page).locator('[data-foaie]')).toHaveCount(3);
+  await expect(page.locator('[data-controale-foaie][data-peste="da"]')).toHaveCount(0);
+});
+
+test('rotița de pe rândul unei foi e a pânzei: cu cursorul pe rând, pânza se micșorează la fel', async ({ page }) => {
+  await page.goto('/');
+  await adauga(page, 'dreptunghi');
+  const r = rand(page, 'f1');
+  await expect(r).toHaveAttribute('data-vizibil', 'da');
+  const inainte = (await vedere(page)).scara;
+  await articol(page, 'f1', 'foaie.duplica').hover();
+  await page.mouse.wheel(0, 240);
+  await expect.poll(async () => (await vedere(page)).scara).toBeLessThan(inainte * 0.8);
+  // Punctul de sub cursor rămâne pe loc: rândul e tot sub cursor (zoom-ul e centrat pe el), deci a doua rotiță merge și ea.
+  const dupa = (await vedere(page)).scara;
+  await page.mouse.wheel(0, 240);
+  await expect.poll(async () => (await vedere(page)).scara).toBeLessThan(dupa * 0.8);
+});
+
+test('la densitatea mare butoanele sunt cât ținta, deci rândul se strânge mai devreme; sub lățimea unui buton nu se mai arată', async ({ page }) => {
+  await page.addInitScript(() => { localStorage.setItem('cncvs2.aranjament', JSON.stringify({ v: 1, aranjament: 'insule', densitate: 'mare' })); });
+  await page.goto('/');
+  await expect(page.locator('html')).toHaveAttribute('data-densitate', 'mare');
+  await adauga(page, 'dreptunghi');
+  await lista(page).locator('[data-actiune="foaie.adauga"]').click();
+  await incadreazaToate(page);
+  // Între 214 și 354 px: cu butoanele obișnuite (28 px) rândul ar încăpea; cu cele mari (48 px), nu.
+  const latime = await micsoreazaSub(page, 330);
+  expect(latime).toBeGreaterThan(220);
+  const r2 = rand(page, 'f2');
+  await expect(r2).toHaveAttribute('data-fel', 'strans');
+  const buton = await articol(page, 'f2', 'mai-mult').boundingBox();
+  expect(buton?.width).toBe(48);
+  // Mult micșorată: foaia sub 54 px (un buton cu marginile lui): niciun rând.
+  await micsoreazaSub(page, 50);
+  await expect(page.locator('[data-controale-foaie]')).toHaveCount(0);
+});

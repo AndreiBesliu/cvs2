@@ -157,7 +157,10 @@ marginea ei de jos: **Nume, mărime și material…**, **Așază pe foi…**, **
 dreapta) și **Șterge foaia**. Numele fiecăreia apare când ții mausul pe iconiță; una care nu se poate folosi e stinsă, cu
 motivul lângă nume. Rândul foii active se vede mereu; al unei foi estompate apare cât ții mausul pe ea sau pe rând. La
 ștergerea unei foi cu piese, rândul întreabă întâi: **Șterge foaia** sau **Renunță**. Pe un ecran cu atingere se vede doar
-rândul foii active.
+rândul foii active. Rândul nu trece de lățimea foii lui: cu pânza micșorată, când cele șapte iconițe nu mai încap sub foaie, rândul
+se strânge într-un singur buton, **⋯** („Arată comenzile foii”), care îl desface; mausul plecat de pe rând sau Escape îl
+strâng la loc, iar sub o foaie foarte mică pe ecran rândul nu se mai arată. Cu cursorul pe rând, rotița mărește și micșorează
+pânza, ca peste tot pe ea.
 
 **Mută pe altă foaie.** Piesele alese trec pe altă foaie din [meniul de clic dreapta](#meniu) al pânzei: **Mută pe** și numele
 foii, sau **Mută pe o foaie nouă**. Sau tragi rândul unei piese din listă peste altă foaie (dacă e în selecție, pleacă toată

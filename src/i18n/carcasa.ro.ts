@@ -178,6 +178,7 @@ export const roCarcasa = {
   'lista.foaie-proprietati': 'Nume, mărime și material…',
   'lista.foaie-aseaza': 'Așază pe foi…',
   'panza.foaie-comenzi': 'Comenzile foii „{nume}”',
+  'panza.foaie-arata-comenzile': 'Arată comenzile foii',
   // Dialogul „Așază pe foi” (ADR 0210 §3, `DialogAsezare.tsx`).
   'aseaza.titlu': 'Așază pe foi',
   'aseaza.ce': 'Ce așază',
