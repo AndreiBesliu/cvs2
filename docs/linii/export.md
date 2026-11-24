@@ -52,6 +52,9 @@ vreau ca ficare setare sa fie insotita de o ilustratie sugestiva, ca sa ajute us
 - **24.11: 28.8↑e-2 gata** (desenele locașului, treptei și dopului așezat, din `dopDreptDesen`), pe ramură; neunită.
   Otrăvurile 19 / 19. Totalul 820,4 / 900 (+1,5 kB). 28.8↑e e încheiată; urmează 28.8↑f (rezultatul în fereastră,
   Atelierul și densitatea mare, fișa de sine stătătoare, privirea cu fontul lat).
+- **24.11: 28.8↑f-1 gata** (privirea cu fontul lat: pe telefon, rândul operației își ține lățimea, nota ordinii lipsește de pe
+  bandă, ordinea stă la capăt; în densitatea mare, câmpurile, bifele și butoanele listei au 48 px), pe ramură; neunită.
+  Otrăvurile 9 / 9. Urmează f-2 (Rezultatul pe grupuri) și f-3 (fișa operației ca componentă de sine stătătoare).
 
 ## Ce s-a găsit (23.11)
 
@@ -114,6 +117,10 @@ vreau ca ficare setare sa fie insotita de o ilustratie sugestiva, ca sa ajute us
   28.8e2 E03 și E08, la ~6,2 s: o așteptare de 5 s), și niciodată altfel: 66 de rulări în paralel, 24 cu procesorul plin, 44 în
   serie, 33 în clona refăcută. Eroarea n-a fost prinsă (unealta păstrează doar numele probei). Dacă mai cade, se rulează
   spec-ul direct în clonă, cu `--workers=1`, ca să se vadă așteptarea care expiră.
+- **Proba privirii** (`export.privire.spec.ts`, din 28.8↑f-1) cere, cu fontul lat, ro și en: fereastra în ecran, nimic în
+  afara ei sau a panoului fișelor, niciun text mai lat decât cutia lui; pe telefon, rândurile listei atinse, banda sub o
+  cincime de ecran, fiecare element al ei cât ecranul; în densitatea mare, 48 px pe fiecare țintă. Un grup nou al fișei sau o
+  alegere nouă trece prin ea dacă apare pe una din tăieturile ei; altfel, se adaugă acolo.
 - **Caseta explicației își ține înălțimea** (`rezervaExplicatii`): un text nou mai lung (un `title` nou în grup) e măsurat singur.
   O probă care compară poziții după un focus le măsoară în conținutul panoului (`[data-fise]`, cu `scrollTop`): focusul poate
   derula panoul.

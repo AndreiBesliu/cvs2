@@ -13011,3 +13011,20 @@ PR-ul `AndreiBesliu/cvs2#14` („De unit de sesiunea principală”).
   publicarea lui vine înaintea acestui lot (`publica.yml` construiește sha-ul dat).
 - **La owner:** plafonul pornirii (mai sunt 0,3 kB), fereastra exportului, verificarea juridică a utilizării
   aplicației, „cine unește în `main`”, ADR 0232 (biblioteca), lista „ce pot face între timp”.
+
+## 2026-11-24 — Linia exportului: `main` adus; felia 28.8↑f-1, privirea cu fontul lat (ADR 0290)
+
+**Prompt:** răspunsul owner-ului la ADR 0290, exact: „1a, 2a, 3a, 4a” (feliile acceptate; după 28.8↑e-2).
+**Started:** 24.11, 10:20.
+
+- **`main` adus** (lotul al paisprezecelea: 3.Ts, A.11b–A.11e, 16.A↑b-1 cu documentul v27): ciocnirile în DEVLOG, în indexul
+  ADR (rândul 0282 din `main`, 0290 din ramură) și în catalogul controalelor (scris din nou); rapidul local 10 123 / 0,
+  spec-urile e2e ale exportului 59 / 59; completul pornit pe `5018c3c8`; canalul `export` publicat.
+- **28.8↑f împărțită:** f-1 (privirea), f-2 (Rezultatul), f-3 (fișa operației de sine stătătoare).
+- **f-1:** proba privirii (fontul lat, 1280 / 1024 / 390 px, ro și en, Atelier cu densitatea mare). A găsit pe telefon rândul
+  operației strâns (îi lua atingerea celui următor) și banda listei cât jumătate de ecran; în densitatea mare, câmpurile de
+  32 px și bifele de 24. Reparate în CSS.
+- **Otrăvurile:** `test/otravuri/28.8f1.py`, 9 / 9 (două scăpate întâi au întărit proba).
+- **Manualul** (ro, en), ADR 0290 („Implementarea 28.8↑f-1”), fișa etapei 3, registrul otrăvurilor, nota liniei.
+
+**Completed:** 24.11, 11:05.

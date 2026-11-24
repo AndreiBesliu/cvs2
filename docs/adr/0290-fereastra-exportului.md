@@ -461,3 +461,29 @@ cele patru aranjamente, cu harta schițelor schimbată ca la „Cu canvas-ul ara
   E05.
 - **Mărimea:** totalul 820,4 / 900 kB (+1,5); pornirea neschimbată de felie.
 - Urmează 28.8↑f: rezultatul în fereastră, Atelierul și densitatea mare, fișa de sine stătătoare, privirea cu fontul lat.
+
+## Implementarea 28.8↑f-1 (24.11)
+
+- **28.8↑f s-a împărțit** în f-1 (privirea cu fontul lat, telefonul, densitatea mare), f-2 (Rezultatul pe grupuri) și f-3
+  (fișa operației ca componentă de sine stătătoare).
+- **Proba privirii** (`test/e2e/export.privire.spec.ts`) rulează cu fontul lat al probelor de așezare (Verdana aici, DejaVu
+  Sans pe Linux), în română și în engleză:
+  - la 1280 și 1024 px, pe fiecare tăietură (și cu urechile, rampa, intrările, treapta, buzunarul cu elicea și cel paralel):
+    fereastra stă în ecran, nimic nu iese din ea sau din panoul fișelor, niciun text nu e mai lat decât cutia lui;
+  - la 390 px, la atingere: fiecare rând al listei se atinge și își aduce fișa, banda listei are sub o cincime din ecran,
+    fiecare element al ei încape în ecran, iar prima operație se vede fără derulare;
+  - în Atelier, cu densitatea mare: fiecare țintă (butoanele, câmpurile, alegerile, bifele, cartonașele) are cel puțin 48 px și
+    se lovește în centrul ei, și cu ordinea mea.
+- **Ce a găsit, pe telefon:**
+  - rândul unei operații se strângea pe bandă la coloana locului (30 px), iar numele lui trecea peste rândul următor și îi lua
+    atingerea: a doua operație nu se putea alege;
+  - nota ordinii făcea banda cât jumătate de ecran.
+
+  Acum rândul are 15 rem, nota nu apare pe bandă (Automată / A mea rămân), iar ordinea tăierii stă la capătul benzii.
+- **Ce a găsit, în densitatea mare:** câmpurile și listele derulante ale ferestrei rămâneau de 32 px, bifele de 24, butoanele
+  listei de 44 (lista e un `<nav>`). Acum au ținta densității (48 px, 56 la atingere), doar în fereastra exportului.
+- **Otrăvurile:** 9 / 9 (`test/otravuri/28.8f1.py`). Două au scăpat întâi și au întărit proba: fereastra de 70 rem (`max-width`
+  o ținea în ecran; acum se otrăvesc amândouă, iar proba cere fereastra în ecran) și nota ordinii pe bandă (după reparație nu
+  mai înălța banda, ci făcea un element de ~1 000 px; proba cere fiecare element al benzii cât ecranul).
+- **Mărimea:** doar CSS; totalul JavaScript neschimbat (821,8 / 900 kB, cu `main` adus).
+- Urmează 28.8↑f-2: Rezultatul pe grupuri.

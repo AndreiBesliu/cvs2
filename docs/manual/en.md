@@ -1645,7 +1645,9 @@ drawing, it closes by itself.
 which). The window has three parts:
 - the **list**, on the left: **Sheet and origin**, **Machine and file**, then the [operations](#operatii), in the order they
   are cut, each with what it cuts, the bit and the depth; after the export, also the **Result**. A click brings the chosen card
-  to the top; as you scroll, the list marks the card you have reached;
+  to the top; as you scroll, the list marks the card you have reached. On a narrow screen, the list sits at the top, on a row
+  that scrolls, with the cutting order at the end; with **Big buttons** (see [Appearance](#aspect)), the window's fields and
+  checkboxes get the large target too;
 - the **cards**, on the right, one under the other. Each has its fields grouped by question (What cut, Bit, How deep, Cut
   direction, Ramp, Lead-ins, Corners, Tabs; on a pocket, How it clears, How it goes down, Rest bits; on a V-carve, Flat bottom;
   on an inlay, its own). On the left of each group, its explanation; when you hover over a field or go into it, the field's

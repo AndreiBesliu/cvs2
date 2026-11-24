@@ -1593,7 +1593,8 @@ plin cât e în material. `Esc` sau **×** închid animația; dacă schimbi dese
 care). Fereastra are trei părți:
 - **lista**, în stânga: **Foaia și originea**, **Mașina și fișierul**, apoi [operațiile](#operatii), în ordinea în care se
   taie, fiecare cu ce taie, freza și adâncimea; după export, și **Rezultatul**. Un clic aduce sus fișa aleasă; cât derulezi,
-  lista marchează fișa la care ai ajuns;
+  lista marchează fișa la care ai ajuns. Pe un ecran îngust, lista stă sus, pe un rând care se derulează, cu ordinea tăierii
+  la capăt; cu **Butoane mari** (vezi [Aspectul](#aspect)), câmpurile și bifele ferestrei au și ele ținta mare;
 - **fișele**, în dreapta, una sub alta. Fiecare are câmpurile grupate pe întrebări (Ce tăiere, Freza, Cât de adânc, Sensul de
   tăiere, Rampa, Intrările, Colțurile, Urechile; la un buzunar, Cum golește, Cum coboară, Frezele de rest; la un V-carve,
   Fundul plat; la o incrustație, ale ei). În stânga fiecărui grup, explicația lui; când treci cu mausul peste un câmp sau intri
