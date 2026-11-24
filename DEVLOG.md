@@ -13972,6 +13972,24 @@ fără altă întrebare)
 - **Probele pluginului în browser:** 67 / 67. Easy 3Draw 18.26.0 (488,7 kB), cu rândul de „ce e nou”; doar pachetul se
   schimbă.
 
+## 2026-11-25 — Felia 3.Cd: arcul în atelierul Easy 3Draw (ADR 0284) (sesiune cloud)
+
+**Prompt:** (aceeași cerere a owner-ului și aceleași răspunsuri la ADR 0284 ca la 3.Ca; felia a patra din plan, pornită
+fără altă întrebare; răspunsul lui „Cărămizi de clădit”, la lista pieselor noi)
+**Started:** 25.11, 00:12. **Completed:** 25.11, 00:29 (felia, cu otrăvurile; orele, după ceasul containerului).
+
+- **Arcul** (tipul `arc`, fila Cărămizi): cărămida 1 × n cu boltă dedesubt și știfturi pe toată lungimea; picioarele sunt
+  cărămizi 1 × 1 ale motorului; bolta, un arc de cerc (jumătate din deschidere, cel mult înălțimea fără 1,6 mm) sau joasă.
+- **Proba, scrisă întâi:** a căzut cu „tip necunoscut”, apoi a prins o muchie împărțită de punte și de peretele
+  piciorului (STL „deschis”): marginea de jos a punții stă la 0,01 mm de masă.
+- **Balamaua și placa turnantă, despărțite de felie** (trec în 3.Ck): jocurile lor de mișcare se potrivesc pe piese
+  tipărite, nu pe hârtie.
+- **Probele vechi, la zi:** „Cărămizi 11”, galeriile și desenele, căutarea, starea unei liste vechi, versiunea 18.27.0.
+- **Otrăvurile:** 58 / 58, la prima rulare (38 în probele unitare, 20 prin browser).
+- **Probele pluginului în browser:** 70 / 70. Easy 3Draw 18.27.0 (491,4 kB), cu rândul de „ce e nou”; doar pachetul se
+  schimbă.
+- **Neîmpinsă până la unirea lotului 28** (3.Ca și 3.Cb), la rugămintea sesiunii principale.
+
 ## 2026-11-24 — Sesiunea principală în cloud: clicul pe „Închide” din cadrul unei extensii, pierdut (probă instabilă, reparată) (Model: Claude Fable 5.2)
 
 **Prompt:** completul de pe `main` pentru loturile 19–21 (`7312d685`, rularea 45436221341), roșu la o singură probă;

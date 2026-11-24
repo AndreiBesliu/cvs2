@@ -105,13 +105,14 @@ elice. Fiecare e un șablon din parametri, nu un desen fix.
 | 3.Ca | Conectorul perpendicular | piesa și configuratorul; „Repede” pentru formele uzuale (gata pe 24.11) |
 | 3.Cb | Conectorul în unghi; axul cu opritor, știftul lung cu bucșă | piesa și opțiunile noi |
 | 3.Cc | Cremaliera | cu montajul față de roata dințată și „Fă perechea” (gata pe 24.11); melcul a trecut în 3.Cj |
-| 3.Cd | Arcul, balamaua, placa turnantă | trei piese în Cărămizi |
+| 3.Cd | Arcul | piesa și configuratorul (gata pe 25.11) |
 | 3.Ce | Punctele de prindere și „Se prinde cu” | motorul și panoul din configurator, pentru toate piesele |
 | 3.Cf | Modelul: orientarea pe trei axe și alipirea la prinderi | după 3.Tu (ADR 0283; a acestei linii din 24.11 seara) |
 | 3.Cg | Modelul: verificarea (prins, plutește, se ciocnește) | avertismente pe piese și în listă |
 | 3.Ch | Construcțiile cu nume și lista lor de piese | mai multe construcții în atelier |
 | 3.Ci | Construcțiile gata | patru șabloane |
 | 3.Cj | Melcul, cama și manivela, cadrul, roata cu palete | restul pieselor din B |
+| 3.Ck | Balamaua și placa turnantă | despărțite de 3.Cd: au jocuri de mișcare care se potrivesc pe piese tipărite |
 
 ## Marginile
 
@@ -250,4 +251,28 @@ ale axului și ale știftului); Easy 3Draw 18.25.0.
 - **Probele:** unitare 9 (`test/unit/trenulet.cremaliera.test.ts`), e2e 4 (`test/e2e/trenulet.cremaliera.spec.ts`).
   Probele filelor („Roți 8”), galeriilor și pictogramelor, la zi.
 - **Mărimea:** doar pachetul extensiei (485,4 → 488,7 kB); aplicația, neschimbată.
-- **Felia următoare (3.Cd):** arcul, balamaua, placa turnantă.
+- **Felia următoare (3.Cd):** arcul (mai jos).
+
+## Implementat (3.Cd, 25.11.2026)
+
+**Arcul** (tipul `arc`, fila Cărămizi; Easy 3Draw 18.27.0).
+
+- **Piesa:** o cărămidă 1 × n (3–16 știfturi), înaltă de 1–4 cărămizi, cu știfturi pe toată lungimea și cu o boltă
+  dedesubt. Picioarele sunt primul și ultimul știft: două cărămizi 1 × 1 ale motorului, goale pe dedesubt, deci stau pe
+  știfturi; între ele, puntea, care intră 0,5 mm în pereții picioarelor.
+- **Bolta:** un arc de cerc prin cele două colțuri de jos ale deschiderii (deschiderea e (n − 2) × 8 + 0,2 mm). Urcă
+  jumătate din deschidere (semicerc), dar nu mai mult decât înălțimea piesei fără 1,6 mm: arcul 1 × 4 urcă 8 mm și lasă
+  1,6 mm deasupra; arcul 1 × 6 × 2 e un semicerc de 16,1 mm. „Joasă” urcă pe jumătate.
+- **Configuratorul:** lungimea, înălțimea în cărămizi, bolta (înaltă sau joasă), mărimile uzuale („Repede”: 1×3, 1×4,
+  1×6, 1×6×2, 1×8×2, 1×12×3) și cotele bolții în cuvinte. Numele e ca la arcele LEGO („Arc 1×6×2”).
+- **Tipărirea:** în picioare. O boltă rotundă și mică iese de obicei curat fără suport; una lată sau joasă are vârful
+  aproape orizontal și cere suport sub ea. Configuratorul o spune; pragul adevărat îl arată imprimanta.
+- **Găsit pe drum:** muchia de la piciorul bolții cădea exact pe muchia de jos a peretelui piciorului (două corpuri cu
+  o muchie comună); marginea de jos a punții stă acum la 0,01 mm de masă.
+- **Balamaua și placa turnantă au trecut în 3.Ck.** Amândouă au jocuri de mișcare (între articulații, între discuri)
+  care nu se pot hotărî pe hârtie: se potrivesc pe piese tipărite, după ce owner-ul încearcă primele piese ale liniei.
+- **Probele:** unitare 7 (`test/unit/trenulet.arc.test.ts`: bolta judecată punct cu punct pe cerc, picioarele comparate
+  cu o cărămidă 1 × 1, legătura, știfturile), e2e 3 (`test/e2e/trenulet.arc.spec.ts`). Probele filelor („Cărămizi 11”),
+  galeriilor și pictogramelor, la zi.
+- **Mărimea:** doar pachetul extensiei (488,7 → 491,4 kB); aplicația, neschimbată.
+- **Felia următoare (3.Ce):** punctele de prindere și „Se prinde cu”.
