@@ -12340,6 +12340,72 @@ admin cat mai multe setari”).
 - **Documentele:** ADR 0262 (implementarea, despărțirea), fișa etapei 3 (`3.An`), registrul otrăvurilor, traducerile, nota
   liniei. **Completed:** 24.11 06:50.
 
+## 2026-11-24 — Felia A.11b: pașii atașați la o raportare (ADR 0262)
+
+**Prompt:** același „am raspuns” (7a: A.8–A.11 acum), după A.11a; pe drum, owner-ul: „continua cu A.8c” (A.8c era deja în
+`main`, din `fbbc8934`; linia a continuat cu A.11b).
+**Started:** 24.11 06:55.
+
+- **Codul (`60025fb7`, `26a18b7b`):** bifa în `Raportari.tsx` (pașii luați la deschidere), contractul `tichete`, serverul
+  (`raporteaza`: verificarea, scrierea, auditul), fila Tichete, lista pașilor comună cu Erori (`src/admin/pasi/Pasi.tsx`),
+  manualul, catalogul controalelor scris din nou (atributul nou `data-camp="raport-pasi"`).
+- **Probele:** cazurile din citire și din server, proba cap-coadă (cu o a doua raportare, fără bifă, după otrava E06).
+  **Otrăvurile:** 10 / 10. **Porțile locale:** rapidul 10 054 / 0, emulatoarele 123 / 123 și 51 / 51. **Mărimea:** totalul
+  800,2 / 900, contul 30,1 / 32, `/admin` 135,2 / 200.
+- **Între timp:** completul pe `82ec5424` (A.10, A.11a) verde: unitare 10 054 / 0, e2e 646 / 646, funcțiile 122 / 122,
+  paginile 51 / 51.
+- **Documentele:** ADR 0262 (implementarea), fișa etapei 3 (`3.Ao`), registrul otrăvurilor, traducerile, nota liniei.
+  **Completed:** 24.11 07:55.
+
+## 2026-11-24 — Felia A.11c: cronologia unui om (ADR 0262)
+
+**Prompt:** același „am raspuns” (7a: A.8–A.11 acum), după A.11b.
+**Started:** 24.11 07:55.
+
+- **Despărțirea:** restul lui A.11 în A.11d (sesiunea raportării în Tichete) și A.11e (disocierea), în tabelul din ADR.
+- **Codul (`40148488`, `36e8a3a5`):** permisiunea `utilizare.sesiuni`, acțiunea `cronologie` a callable-ului `utilizare` (cu
+  auditul), indexul compus pe loturi, „Activitatea” în Utilizatori (`activitate.ts`, `Activitatea.tsx`), `DescrierePas`
+  comună.
+- **Pe drum:** encoder-ul REST al probei Utilizatori nu știa valori booleene (contextul lotului ieșea hartă).
+- **Probele:** 3 unitare noi, 1 a serverului, 1 e2e pe emulatoare, matricea cu 13 permisiuni. **Otrăvurile:** 19 / 19.
+  **Porțile locale:** rapidul 10 057 / 0, emulatoarele 124 / 124 și 52 / 52. **Mărimea:** totalul 800,4 / 900, `/admin`
+  136,9 / 200.
+- **Documentele:** ADR 0262 (implementarea, despărțirea), fișa etapei 3 (`3.Ap`), registrul otrăvurilor, traducerile, nota
+  liniei. **Completed:** 24.11 08:35.
+
+## 2026-11-24 — Felia A.11d: sesiunea raportării (ADR 0262)
+
+**Prompt:** același „am raspuns” (7a: A.8–A.11 acum), după A.11c.
+**Started:** 24.11 08:40.
+
+- **Codul (`1ae86894`):** sesiunea dată de înregistrator (`sesiuneaAcum`), trimisă de raportare, ținută de serverul
+  tichetelor, filtrul pe sesiune al cronologiei (indexul al doilea), „Sesiunea raportării” în fila Tichete (`Activitatea`, cu
+  `sesiune`).
+- **Pe drum:** loturile se strâng doar cu contul deschis, deci proba cap-coadă caută în sesiune trimiterea raportării, nu
+  dreptunghiul de dinaintea intrării; build-ul din `dist/` trebuie refăcut după fiecare commit (proba compară versiunea).
+- **Probele:** cazurile noi din citire și din server, proba cap-coadă (cu un lot al altei sesiuni). **Otrăvurile:** 11 / 11
+  (T01 după proba îndreptată). **Porțile locale:** rapidul 10 057 / 0, emulatoarele 124 / 124 și 52 / 52. **Mărimea:** totalul
+  800,6 / 900, `/admin` 137,1 / 200.
+- **Între timp:** completul pe `cd00283b` (A.11b) verde.
+- **Documentele:** ADR 0262 (implementarea), fișa etapei 3 (`3.Aq`), registrul otrăvurilor, traducerile, nota liniei.
+  **Completed:** 24.11 09:15.
+
+## 2026-11-24 — Felia A.11e: disocierea (ADR 0262)
+
+**Prompt:** același „am raspuns” (7a: A.8–A.11 acum), după A.11d.
+**Started:** 24.11 09:20.
+
+- **Codul (`2e023ac1`, `70617d54`):** acțiunea `disociaza` a callable-ului `utilizare` (pseudonimul în
+  `utilizareDisociate/{uid}`, rescrierea loturilor pe pagini, `disociatLa` pe cont, auditul), `lot` cu pseudonimul, regula
+  (nicio potrivire: refuzată), „Utilizarea aplicației, despărțită de cont” în Utilizatori (`Disocierea.tsx`), cu confirmare.
+- **Alegerea:** legătura cont → pseudonim stă pe server, ca loturile de după să aibă același pseudonim cu cele de dinainte
+  (ADR §3); scrisă în ADR, cu ce se face dacă juristul cere ruperea ei.
+- **Probele:** modelul contului, serverul și regulile pe emulator, 1 e2e. **Otrăvurile:** 12 / 12. **Porțile locale:**
+  rapidul 10 057 / 0, emulatoarele 126 / 126 și 53 / 53. **Mărimea:** `/admin` 137,9 / 200.
+- **Între timp:** completul pe `d74b3b8f` (A.11c) verde. Cu A.11e, A.11 e încheiată; urmează A.7 (telefonul).
+- **Documentele:** ADR 0262 (implementarea), fișa etapei 3 (`3.Ar`), registrul otrăvurilor, traducerile, nota liniei.
+  **Completed:** 24.11 09:50.
+
 ## 2026-11-23 — Sesiunea principală în cloud: a șasea unire (A.6, Roadmap, Documentație și Setări); linia frezelor, pornită (Model: Claude Fable 5.2)
 
 **Prompt:** același brief de predare al sesiunii principale („unește ce se poate”), la raportul liniei adminului (PR-ul
@@ -12557,34 +12623,6 @@ PR-ul `AndreiBesliu/cvs2#13` („De unit acum (A.9a, A.9b): `dbb0306a`”).
 - **La owner:** fereastra exportului (28.8↑a–b-3: acum sau după desene), verificarea juridică a utilizării aplicației
   înaintea live-ului, „cine unește în `main`”.
 
-## 2026-11-24 — Felia 3.Ts: ventilatorul cu carcasă în atelierul Easy 3Draw (ADR 0282) (Model: Claude Opus 5.5)
-
-**Prompt:** „continua” (în sesiunea cloud a liniei elicelor, după unirea lui 3.Tr în `main` și publicarea pe test).
-**Started:** 24.11, 07:38. **Completed:** 24.11, 09:14 (în container; CI-ul, pe commit-ul împins).
-
-- **Reperul LEGO:** din LDraw, 50899 (rotor cu inel în jurul paletelor, pe o gaură care nu e de ax Technic) și 41530
-  (palete curbe, fără pas). Niciuna nu e un ventilator în tub pe un ax LEGO: de la 50899 vine ideea inelului, nu cotele.
-- **Proba întâi:** 11 probe unitare cu valorile pe hârtie (calculate separat, cu un script de o singură folosință), apoi
-  motorul. Două ajustări ale probelor la scriere: vârfurile luate o singură dată (o medie pe `tri.flat()` e trasă spre
-  vârfurile din mai multe triunghiuri) și toleranța de 1e-3 pe ce face `prismaGauri` (mută vârfurile cu 0,0001 mm).
-- **Motorul:** `ventilator`, `ventilatorCote`, `carcasaVentilator`, `laturiCerc`; paletele din `paleteElice`, butucul din
-  `butucElice`. Elicea și elicea de barcă, neschimbate.
-- **Atelierul:** a treia piesă a filei Elice, cu piesa (rotorul sau carcasa), „Repede”, câmpurile comune, alegerile
-  fiecărei piese, textul, „Fă ventilatorul”, pictograma, 22 de texte în engleză; rotorul și carcasa, cu aceleași chei oricum
-  s-ar adăuga (`defVentilator`). Capturile: desktop și 390 px (fără depășire).
-- **Privirea pe randare** a găsit peretele carcasei peste marginea găurii, deasupra urechii (un știft băgat de sus l-ar fi
-  lovit): lamajul taie acum un canal și prin peretele de deasupra, cu 0,8 mm spre interior, doar unde ajunge la tub; proba
-  scrisă întâi (căzută), apoi codul.
-- **Hotărâte la implementare** (în ADR, „Implementarea (3.Ts)”): „jocul din calibrare” citit în două; găurile urechilor pe
-  grila axului; inelul ca la 50899, fără „Ca LEGO”; carcasa din paletele fără inel.
-- **Otrăvurile, în clonă:** `3.Ts.py` 134 / 134: 125 din prima; nouă scăpate pe probele unitare, prinse după probele lor țintite (cazurile la care rotunjirea, inelul sau rezoluția cercurilor contează); E49, echivalentă, scoasă cu motivul. `3.Ts-en.py` 9 / 9 (N08, după proba numelui în engleză cu gaura și inelul). Listele lui 3.Tq (3) și 3.Tr (8), mutate pe codul nou și rulate din nou: toate prinse.
-- **Porțile, în container:** tipurile, regulile de import (0 încălcări), traducerile, unitarele pluginului, ale bibliotecii
-  și ale extensiilor 241 / 241, build-ul determinist, e2e-ul atelierului și al bibliotecii. Pornirea 109,4 / 115 (cu ușa
-  113,9), totalul 799,6 / 900, `/admin` 133,2 / 200 (neschimbate: pluginul e în afara pachetului); Easy 3Draw 18.22.0,
-  466,1 kB.
-- **Documentele:** ADR 0282, indexul ADR, fișa etapei 3 (jurnalul și coada owner-ului), traducerile roadmap-ului,
-  registrul otrăvurilor, nota liniei.
-
 ## 2026-11-24 — Felia 25.8↑b: „Calibrează” și „Trasează…” din imaginea de pe foaie, numele imaginilor în raportul foii (ADR 0272 §6, §7, §10) (Model: Claude Opus 5.5)
 
 **Prompt:** „pornește 25.8↑b”. **Started:** 24.11, 05:00 (după aducerea lui `main` `883a8caa`, fără ciocniri). **Completed:**
@@ -12623,6 +12661,59 @@ PR-ul `AndreiBesliu/cvs2#13` („De unit acum (A.9a, A.9b): `dbb0306a`”).
   rămân 0,4 kB), totalul 804,7 / 900, `/admin` 135,0 / 200.
 - **Documentele:** ADR 0272 („Implementarea (25.8↑b)”, precizările la §6, §10), indexul ADR, manualul (ro, en), fișa etapei 3
   (jurnalul, încercarea în coada owner-ului), traducerile roadmap-ului, `CLAUDE.md`, nota liniei.
+
+## 2026-11-24 — Felia 3.Ts: ventilatorul cu carcasă în atelierul Easy 3Draw (ADR 0282) (Model: Claude Opus 5.5)
+
+**Prompt:** „continua” (în sesiunea cloud a liniei elicelor, după unirea lui 3.Tr în `main` și publicarea pe test).
+**Started:** 24.11, 07:38. **Completed:** 24.11, 09:14 (în container; CI-ul, pe commit-ul împins).
+
+- **Reperul LEGO:** din LDraw, 50899 (rotor cu inel în jurul paletelor, pe o gaură care nu e de ax Technic) și 41530
+  (palete curbe, fără pas). Niciuna nu e un ventilator în tub pe un ax LEGO: de la 50899 vine ideea inelului, nu cotele.
+- **Proba întâi:** 11 probe unitare cu valorile pe hârtie (calculate separat, cu un script de o singură folosință), apoi
+  motorul. Două ajustări ale probelor la scriere: vârfurile luate o singură dată (o medie pe `tri.flat()` e trasă spre
+  vârfurile din mai multe triunghiuri) și toleranța de 1e-3 pe ce face `prismaGauri` (mută vârfurile cu 0,0001 mm).
+- **Motorul:** `ventilator`, `ventilatorCote`, `carcasaVentilator`, `laturiCerc`; paletele din `paleteElice`, butucul din
+  `butucElice`. Elicea și elicea de barcă, neschimbate.
+- **Atelierul:** a treia piesă a filei Elice, cu piesa (rotorul sau carcasa), „Repede”, câmpurile comune, alegerile
+  fiecărei piese, textul, „Fă ventilatorul”, pictograma, 22 de texte în engleză; rotorul și carcasa, cu aceleași chei oricum
+  s-ar adăuga (`defVentilator`). Capturile: desktop și 390 px (fără depășire).
+- **Privirea pe randare** a găsit peretele carcasei peste marginea găurii, deasupra urechii (un știft băgat de sus l-ar fi
+  lovit): lamajul taie acum un canal și prin peretele de deasupra, cu 0,8 mm spre interior, doar unde ajunge la tub; proba
+  scrisă întâi (căzută), apoi codul.
+- **Hotărâte la implementare** (în ADR, „Implementarea (3.Ts)”): „jocul din calibrare” citit în două; găurile urechilor pe
+  grila axului; inelul ca la 50899, fără „Ca LEGO”; carcasa din paletele fără inel.
+- **Otrăvurile, în clonă:** `3.Ts.py` 134 / 134: 125 din prima; nouă scăpate pe probele unitare, prinse după probele lor țintite (cazurile la care rotunjirea, inelul sau rezoluția cercurilor contează); E49, echivalentă, scoasă cu motivul. `3.Ts-en.py` 9 / 9 (N08, după proba numelui în engleză cu gaura și inelul). Listele lui 3.Tq (3) și 3.Tr (8), mutate pe codul nou și rulate din nou: toate prinse.
+- **Porțile, în container:** tipurile, regulile de import (0 încălcări), traducerile, unitarele pluginului, ale bibliotecii
+  și ale extensiilor 241 / 241, build-ul determinist, e2e-ul atelierului și al bibliotecii. Pornirea 109,4 / 115 (cu ușa
+  113,9), totalul 799,6 / 900, `/admin` 133,2 / 200 (neschimbate: pluginul e în afara pachetului); Easy 3Draw 18.22.0,
+  466,1 kB.
+- **Documentele:** ADR 0282, indexul ADR, fișa etapei 3 (jurnalul și coada owner-ului), traducerile roadmap-ului,
+  registrul otrăvurilor, nota liniei.
+
+## 2026-11-24 — 16.A↑b-1: documentul v27 și valorile frezei în program (Model: Claude Opus 5.5)
+
+**Prompt:** „continua” (owner-ul, după unirea lui 16.A↑a și ADR 0301 în `main`). **Started:** 24.11, 07:35.
+
+- `main` adus (`883a8caa`: A.9a, A.9b) în `59d22614`. Felia 16.A↑b împărțită în trei: **b-1** (documentul v27, valorile
+  frezei în program; fără interfață), **b-2** (lista „Freza” pe rândurile exportului și în Tăierea), **b-3** (nota schimbării
+  din bibliotecă, „Ia valorile noi”, recunoașterea fără origine).
+- **Documentul v27** (`7fb16ec3`): `biblioteca`, `regim`, `tais` pe orice freză a unei operații (scula, frezele de rest,
+  fundul plat și frezele lui de rest, frezele dopului, freza benzii); migrarea v26 → v27 doar cu numărul, ciocnirea pe
+  fiecare loc. Oracolul documentului la v27 (`FREZE_OPERATIE_O`, pașii `[]` în ciocniri, `problemeFrezaV27O`), cazurile pe
+  hârtie, `document.v27.oracol.test.ts` 16 / 16; probele versiunii curente pe 27, după diff-ul lui `63a1eca0` (v26), cu un
+  script pentru lanțuri. Corpusul de aur la v27 (`f999c180`): clona era superficială, deci întâi `git fetch --unshallow`;
+  intrarea v26 din `59d2261`, aceiași octeți; în ieșirile vechi, doar numărul.
+- **Programul** (`c5be2f07`): `src/cam/regimFreza.ts` (`regimFrezei`, `refuzTais`), legat în `job.ts`, `vcarve.ts`
+  (avansurile frezelor fundului) și `dopV.ts`. Proba `freze.program.test.ts` 15 / 15, scrisă înainte (14 căzute pe codul
+  vechi). Capcana: mașina estimării are 500 mm/min pe axe, deci proba timpului folosește un avans de 250.
+- **Porțile, în container:** tipurile, importurile (20 / 20, 0 încălcări), suita unitară întreagă 10 076 / 10 088 (12 sărite,
+  0 căzute), build-ul determinist (379 de fișiere); pornirea 109,4 → 109,5 kB (cu ușa
+  114,0, cu Atelierul 114,3 / 115), totalul 799,6 → 800,5 / 900; traducerile (969, 0 lipsă).
+- **Otrăvurile** (`test/otravuri/16.A-b1.py`), într-o clonă: 34 / 34 prinse (11 pe document, 23 pe program); C23 (tăișul
+  pe dopul în V) cerea o aserțiune nouă în probă, pusă înaintea rulării. `verifica` pe toate listele: aceleași 242 de
+  VOID-uri ca pe `main` `883a8caa`.
+- **Documentele:** ADR 0300 („Implementarea (16.A↑b-1)”), fișa etapei 3 (rândul `16.A↑b-1`), pragul, registrul
+  otrăvurilor, traducerile, nota liniei. **Completed:** 24.11, 08:55.
 
 - **Publicarea (`883a8caa`):** rapidul și completul pe `main` verzi (completul, 63 min 54 s), `publica.yml` verde în
   3 minute, cu serverul: funcția `agregaUtilizarea` creată, regulile Firestore și indexurile publicate; adresa de test
@@ -12698,3 +12789,33 @@ PR-ul `AndreiBesliu/cvs2#14` („De unit de sesiunea principală”).
   verificat intră singură).
 - **La owner:** plafonul pornirii (după lotul următor rămân 0,3 kB), fereastra exportului, verificarea juridică a
   utilizării aplicației, „cine unește în `main`”, ADR 0232 (biblioteca), lista „ce pot face între timp”.
+
+## 2026-11-24 — Sesiunea principală în cloud: a paisprezecea unire (3.Ts, ventilatorul cu carcasă; A.11b–A.11e, utilizarea aplicației; 16.A↑b-1, documentul v27) (Model: Claude Fable 5.2)
+
+**Prompt:** același brief de predare al sesiunii principale („unește ce se poate”), la rapoartele liniilor: elicele
+(PR-ul `AndreiBesliu/cvs2#15`, „gata de unit”), adminul (mesajul liniei: „`c3f80a74` e gata de unit”), frezele
+(mesajul liniei: „16.A↑b-1 e gata de unit”).
+**Started:** 24.11, 10:21. **Completed:** unirea în `main`, 24.11, 11:28; publicarea pe test, la rândul ei.
+
+- **Ramura de unire, înaintea ultimelor rapoarte:** `unire-2411e` din `fafb95e7` (cu 25.8↑b), la 10:22: 3.Ts
+  (`3218781c`) în `e14e553a`, A.11b–A.11e (`c3f80a74`) în `8ccb66e8`, 16.A↑b-1 (`112c32f6`) în `32b33a42`.
+  Ciocnirile: DEVLOG (`rezolva-devlog.py`), un rând de tabel în fișa etapei 3 (ambele părți), catalogul controalelor
+  (scris din nou: 603 nume). Completul lotului, pornit atunci; elicele erau verzi, adminul și frezele încă rulau.
+- **Rapoartele:** adminul, verde pe `eaa0a356` (codul lui `c3f80a74`; 45350813422), 10:44; frezele, verzi pe
+  `112c32f6` (45351574708), 10:47. Adminul împinsese între timp A.7 peste commit-ul raportat: rămâne pentru lotul
+  următor. Vârfurile elicelor (`5e05b325`) și frezelor (`34b5fa1b`) aduceau doar `main`: unirea lor de probă peste
+  lot, zero fișiere schimbate în afara `.md`.
+- **În container:** tipurile (și ale funcțiilor), regulile de import (0 încălcări), traducerile (989, 0 lipsă),
+  biblioteca la zi (Easy 3Draw 18.22.0), build-ul determinist.
+- **Porțile lotului, în CI, pe `32b33a42`** (completul 45355480148, 48 min 55 s, verde la prima trecere): unit
+  10 111 / 0 (12 sărite), e2e 655 / 655, funcțiile pe emulatoare 126 / 126, paginile 53 / 53; pornirea 109,9 / 115
+  (în CI 109,8; cu ușa 114,4; cu Atelierul 114,7), totalul 806,1 / 900, `/admin` 137,9 / 200, contul 30,1 / 32.
+- **La publicare merge și serverul:** funcțiile `utilizare` și `tichete`, regulile Firestore, două indexuri compuse
+  pe `utilizare`.
+- **Documentele:** decizia în `CLAUDE.md`, rândurile de stare (documentul v27 și valorile frezei; A.11b–A.11e;
+  versiunea Easy 3Draw; următorul câmp al documentului ia v28); indexul liniilor; starea și o lecție în
+  `docs/linii/principala.md` (porțile unui lot pot porni înaintea ultimului raport).
+- **Lotul al treisprezecelea** (`fafb95e7`, 25.8↑b): la unire, completul lui pe `main` încă rula (pornit 10:30);
+  publicarea lui vine înaintea acestui lot (`publica.yml` construiește sha-ul dat).
+- **La owner:** plafonul pornirii (mai sunt 0,3 kB), fereastra exportului, verificarea juridică a utilizării
+  aplicației, „cine unește în `main`”, ADR 0232 (biblioteca), lista „ce pot face între timp”.

@@ -35,6 +35,7 @@ test.beforeEach(async () => {
 function val(x: unknown): unknown {
   if (x === null) return { nullValue: null };
   if (typeof x === 'string') return { stringValue: x };
+  if (typeof x === 'boolean') return { booleanValue: x };
   if (typeof x === 'number') return { integerValue: String(x) };
   if (x instanceof Date) return { timestampValue: x.toISOString() };
   if (Array.isArray(x)) return { arrayValue: { values: x.map(val) } };
@@ -429,4 +430,86 @@ test('un cont găsit de căutarea din antet vine ales, cu panoul lui; un rol car
   await expect(rand(page, 'ana@exemplu.ro')).toHaveAttribute('data-plan', 'gratuit', LENT);
   await expect(page.locator('[data-util="istoric"], [data-util="istoric-gol"], [data-util="istoric-eroare"]')).toHaveCount(0);
   expect((await citeste('conturi/ana'))['plan']?.stringValue).toBe('gratuit');
+});
+
+test('activitatea unui om (ADR 0262, A.11c): doar cu „Utilizare: sesiuni”, citită la cerere; sesiunile cele mai noi întâi, cu pașii și numele lor; citirea în audit', async ({ page, browser }) => {
+  const ACT = 'RActivitate000000000';
+  await puneCont('ana', new Date(Date.now() - ZI), new Date(Date.now() + 9 * ZI));
+  const CTX = { versiune: 'ed4c30c777de', limba: 'ro', aranjament: 'insule', tema: 'deschisa', ecran: 'laptop', browser: 'edge', atingere: false, online: true };
+  const lot = (sesiune: string, nr: number, primit: number, evenimente: unknown[]) => scrie(`utilizare/${sesiune}-${nr}`, {
+    schema: 1, uid: 'ana', sesiune, nr, instanta: 'local', plan: 'proba', personal: false, primit: new Date(primit), inceput: new Date(primit - 120_000),
+    context: CTX, evenimente, aruncate: 0, expiraLa: new Date(primit + 90 * ZI),
+  });
+  const A = (t: number, id: string, rez = 'ok') => ({ fel: 'actiune', t, id, de: 'bara', rez });
+  await lot('anaaaaaaaaaaaaa1', 1, Date.now() - 2 * ZI, [A(1_000, 'document.importa'), A(5_000, 'document.taie', 'motiv.nimic-ales')]);
+  await lot('anaaaaaaaaaaaaa2', 1, Date.now() - 3_600_000, [A(2_000, 'document.rol'), { fel: 'unealta', t: 3_000, id: 'noduri', de: 'tasta' }]);
+  await lot('anaaaaaaaaaaaaa2', 2, Date.now() - 3_000_000, [A(65_000, 'export.gcode')]);
+  // O sesiune veche, de 20 de loturi: cu ea, cronologia are două pagini.
+  for (let i = 1; i <= 20; i++) await lot('anaaaaaaaaaaaaa0', i, Date.now() - 5 * ZI + i * 60_000, [A(i * 1_000, 'document.roteste')]);
+  await scrie(`roluri/${ACT}`, { nume: 'Activitate', permisiuni: ['conturi.citeste', 'utilizare.sesiuni'] });
+  await deschide(page);
+  await puneRolul(page, await intraCuGoogle(page), ACT);
+  await page.locator('[data-fila="utilizatori"]').click();
+  await expect(detaliu(page).locator('h3')).toHaveText('ana@exemplu.ro', LENT);
+  // Nimic citit până la clic; apoi sesiunile, cea mai nouă întâi.
+  const act = detaliu(page).locator('[data-util="activitate"]');
+  await expect(act.locator('[data-sesiune]')).toHaveCount(0);
+  await act.locator('[data-util="arata-activitatea"]').click();
+  // Prima pagină (20 de loturi): cele două sesiuni noi și 17 loturi ale celei vechi; „Mai vechi” aduce restul, fără dubluri.
+  await expect(act.locator('[data-sesiune]')).toHaveCount(3, LENT);
+  await expect(act.locator('[data-sesiune]').first()).toHaveAttribute('data-sesiune', 'anaaaaaaaaaaaaa2');
+  await expect(act.locator('[data-sesiune="anaaaaaaaaaaaaa0"] summary')).toContainText('17 pași');
+  await act.locator('[data-util="mai-vechi"]').click();
+  await expect(act.locator('[data-sesiune="anaaaaaaaaaaaaa0"] summary')).toContainText('20 de pași', LENT);
+  await expect(act.locator('[data-sesiune]')).toHaveCount(3);
+  await expect(act.locator('[data-sesiune]').first().locator('summary')).toContainText('versiunea ed4c30c777de · 3 pași · 1:03');
+  await act.locator('[data-sesiune="anaaaaaaaaaaaaa2"] summary').click();
+  await expect(act.locator('[data-sesiune="anaaaaaaaaaaaaa2"] li')).toHaveText([
+    '+0:02 Rolul de tăiere · acțiune', '+0:03 Noduri · unealtă', '+1:05 Exportă G-code · acțiune',
+  ]);
+  await act.locator('[data-sesiune="anaaaaaaaaaaaaa1"] summary').click();
+  await expect(act.locator('[data-sesiune="anaaaaaaaaaaaaa1"] li').nth(1)).toHaveText('+0:05 Taie vectorii · acțiune · motiv.nimic-ales');
+  await expect(act.locator('[data-util="mai-vechi"]')).toHaveCount(0);
+  // Citirea e în audit (cine, al cui).
+  await expect.poll(actiuniAudit, LENT).toContain('utilizare.cronologie');
+
+  // Un rol doar cu conturile: fără activitate (nici butonul).
+  await scrie(`roluri/${CONT_CIT}`, { nume: 'Conturi', permisiuni: ['conturi.citeste'] });
+  const alta = await browser.newPage();
+  await deschide(alta);
+  await puneRolul(alta, await intraCuGoogle(alta), CONT_CIT);
+  await alta.locator('[data-fila="utilizatori"]').click();
+  await expect(alta.locator('[data-util="detaliu"] h3')).toHaveText('ana@exemplu.ro', LENT);
+  await expect(alta.locator('[data-util="activitate"]')).toHaveCount(0);
+  await alta.close();
+});
+
+test('disocierea (ADR 0262, A.11e): cine administrează conturile desparte utilizarea de cont, cu confirmare; activitatea nu mai găsește nimic; contul rămâne cu data', async ({ page }) => {
+  await puneCont('ana', new Date(Date.now() - ZI), new Date(Date.now() + 9 * ZI));
+  await scrie('utilizare/anaaaaaaaaaaaaa1-1', {
+    schema: 1, uid: 'ana', sesiune: 'anaaaaaaaaaaaaa1', nr: 1, primit: new Date(Date.now() - 3_600_000), inceput: new Date(Date.now() - 3_700_000),
+    evenimente: [{ fel: 'actiune', t: 1_000, id: 'document.roteste', de: 'bara', rez: 'ok' }], aruncate: 0,
+  });
+  await deschide(page);
+  await puneRolul(page, await intraCuGoogle(page), 'owner');
+  await page.locator('[data-fila="utilizatori"]').click();
+  await expect(detaliu(page).locator('h3')).toHaveText('ana@exemplu.ro', LENT);
+  const dis = detaliu(page).locator('[data-util="disociere"]');
+  // Întâi întreabă; „Renunță” nu face nimic.
+  await dis.locator('[data-util="disociaza"]').click();
+  await expect(dis.locator('[data-util="confirma-disocierea"]')).toBeEnabled();
+  await expect(dis).toContainText('Nu se poate desface din aplicație.');
+  await dis.getByRole('button', { name: 'Renunță' }).click();
+  await expect(dis.locator('[data-util="disociaza"]')).toBeVisible();
+  await dis.locator('[data-util="disociaza"]').click();
+  await dis.locator('[data-util="confirma-disocierea"]').click();
+  await expect(dis.locator('[data-util="disociat-acum"]')).toHaveText('Gata: un lot despărțit de cont.', LENT);
+  await expect(dis.locator('[data-util="disociat"]')).toContainText('Despărțită de cont din', LENT);
+  await expect(dis.locator('[data-util="disociaza"]')).toHaveCount(0);
+  // Lotul are acum pseudonimul, nu contul; activitatea contului nu mai găsește nimic.
+  const lot = await citeste('utilizare/anaaaaaaaaaaaaa1-1');
+  expect(lot['uid']?.stringValue).toMatch(/^p[0-9a-f]{32}$/);
+  await detaliu(page).locator('[data-util="arata-activitatea"]').click();
+  await expect(detaliu(page).locator('[data-util="activitate-gol"]')).toBeVisible(LENT);
+  await expect.poll(actiuniAudit, LENT).toContain('utilizare.disociaza');
 });

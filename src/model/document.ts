@@ -14,7 +14,7 @@
  * mai veche. Un câmp nou CU SENS (fața de jos, montajele, sculele) intră doar cu o schemă nouă și o migrare: o versiune
  * veche n-are voie să taie fără să înțeleagă un câmp.
  */
-export const VERSIUNE_SCHEMA = 26;
+export const VERSIUNE_SCHEMA = 27;
 
 /** Plafoanele stau pe artefact (T23): un document care le trece e refuzat la ușă, nu tăiat. */
 export const PLAFON = {
@@ -50,6 +50,13 @@ export const PLAFON = {
   numarScula: 999,
   /** Diametrul sculei, în mm. */
   diametruScula: 100,
+  /**
+   * Valorile de lucru ale unei freze (ADR 0300 §5, documentul v27): turația (rot/min), avansul și plonjarea (mm/min), fiecare
+   * cel mult atât.
+   */
+  regimFreza: 100_000,
+  /** Versiunea unei freze din bibliotecă (ADR 0300 §5): un întreg sigur, de la 1. */
+  revFreza: Number.MAX_SAFE_INTEGER,
   /** Frezele de rest ale unui buzunar sau ale unui fund plat (ADR 0093). */
   freziRest: 8,
   /** Adâncimea și pasul unei operații, în mm (cât grosimea maximă a unei foi). */
@@ -96,7 +103,21 @@ export type Nod = ElementNod | GrupNod;
  * ascuțit. Potrivirea lui cu diametrul o judecă lucrarea.
  */
 export type FormaSculaDoc = { tip: 'v'; unghi: number; varf?: number; [cheie: string]: unknown };
-export type Scula = { numar: number; nume: string; diametru: number; forma?: FormaSculaDoc; [cheie: string]: unknown };
+/** De unde vine copia unei freze (ADR 0300 §5, v27): id-ul ei din biblioteca „Frezele mele” și versiunea copiată. */
+export type OrigineFreza = { id: string; rev: number; [cheie: string]: unknown };
+/**
+ * Valorile de lucru ale unei freze (ADR 0300 §5, v27): turația (rot/min, întreagă), avansul și plonjarea (mm/min). Lipsă,
+ * lucrarea folosește regimul ei implicit (`REGIM_IMPLICIT`), deci programele de până la v27 rămân octet cu octet.
+ */
+export type RegimFreza = { turatie: number; avans: number; plonjare: number; [cheie: string]: unknown };
+/**
+ * Scula unei operații. Din v27 (ADR 0300 §5): `biblioteca` (originea copiei, fără efect asupra tăierii), `regim` (valorile de
+ * lucru ale frezei) și `tais` (lungimea tăișului, mm: o adâncime mai mare e refuzată la export).
+ */
+export type Scula = {
+  numar: number; nume: string; diametru: number; forma?: FormaSculaDoc;
+  biblioteca?: OrigineFreza; regim?: RegimFreza; tais?: number; [cheie: string]: unknown;
+};
 export const UNGHI_V_MINIM = 1;
 export const UNGHI_V_MAXIM = 179;
 /** Unghiul implicit al frezei în V (ADR 0090), în grade: în fereastra exportului și la rolul V-carve din panou (ADR 0112). */
@@ -329,7 +350,7 @@ export type Foaie = {
   id: string; nume?: string; material?: unknown; stoc: Stoc; instante: Instanta[]; ghidaje?: Ghidaj[]; imagini?: ImagineFoaie[];
   [cheie: string]: unknown;
 };
-export type Document = { schema: 26; rev: number; piese: Piesa[]; foi: Foaie[]; [cheie: string]: unknown };
+export type Document = { schema: 27; rev: number; piese: Piesa[]; foi: Foaie[]; [cheie: string]: unknown };
 
 /** Nodurile unei piese, în preordine, cu adâncimea lor (rădăcina are 1). Iterativ: arborele poate fi adânc. */
 export function noduriPiesa(radacina: Nod): Array<{ readonly nod: Nod; readonly adancime: number }> {

@@ -248,6 +248,11 @@ test('(o) ciocnirile: fiecare câmp nou, pe un document al versiunii dinainte, s
     20: ['incrustatie'], 21: ['incrustatie.jocLateral', 'incrustatie.dop', 'incrustatie.sprijin', 'incrustatie.frezeDop'],
     22: ['incrustatie.banda'], 23: ['instanta:texte'], 24: ['incrustatie.punti'], 25: ['incrustatie.locas', 'incrustatie.treapta'],
     26: ['urechi.mod', 'urechi.locuri'],
+    27: ['scula.biblioteca', 'scula.regim', 'scula.tais', 'rest[].scula.biblioteca', 'rest[].scula.regim', 'rest[].scula.tais',
+      'fundPlat.scula.biblioteca', 'fundPlat.scula.regim', 'fundPlat.scula.tais', 'fundPlat.rest[].scula.biblioteca',
+      'fundPlat.rest[].scula.regim', 'fundPlat.rest[].scula.tais', 'incrustatie.frezeDop[].scula.biblioteca',
+      'incrustatie.frezeDop[].scula.regim', 'incrustatie.frezeDop[].scula.tais', 'incrustatie.banda.freza.biblioteca',
+      'incrustatie.banda.freza.regim', 'incrustatie.banda.freza.tais'],
   });
   const op = docV18({ tip: 'dreptunghi', latime: 10, inaltime: 10, razaColt: 0 }, [{ id: 'o', scula: { forma: { varf: 1 } }, fundPlat: { scula: { forma: { varf: 1 } }, rest: [] }, pasLateral: 1, coborare: 1, retragereCompleta: 1, directie: 1, rest: 1, strategie: 1, rang: 1, incrustatie: { jocLateral: 1, dop: 1, sprijin: 1, frezeDop: 1, banda: 1 } }]);
   // Rândul 23 e al instanței (`texte`, ADR 0210 §7): îl judecă proba v23; aici, pașii pe operație, până la v22.

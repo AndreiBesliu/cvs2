@@ -53,9 +53,9 @@ export const MARGINI_FREZA = {
   unghiMaxim: UNGHI_V_MAXIM,
   tais: PLAFON.adancimeOperatie,
   taisuri: 12,
-  turatie: 100_000,
-  avans: 100_000,
-  plonjare: 100_000,
+  turatie: PLAFON.regimFreza,
+  avans: PLAFON.regimFreza,
+  plonjare: PLAFON.regimFreza,
   pas: PLAFON.adancimeOperatie,
   /** Pasul lateral, în procente din diametru: cel mult jumătate (buzunarul, ADR 0069). */
   pasLateral: 50,

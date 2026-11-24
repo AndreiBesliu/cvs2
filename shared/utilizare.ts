@@ -82,6 +82,8 @@ const RE_ID = /^[a-z][a-z0-9-]{0,39}(?:\.[a-z0-9-]{1,40}){0,3}$/;
 /** Rezultatul unei acțiuni: `ok`, sau cheia motivului refuzului (`motiv.nimic-ales`). */
 const RE_REZULTAT = /^(?:ok|motiv\.[a-z0-9-]{1,60}(?:\.[a-z0-9-]{1,40}){0,2})$/;
 const RE_SESIUNE = /^[a-z0-9]{16}$/;
+/** Forma id-ului unei sesiuni de utilizare (raportarea îl ține, cronologia filtrează după el; felia A.11d). */
+export const esteSesiune = (x: unknown): x is string => typeof x === 'string' && RE_SESIUNE.test(x);
 /** Id-ul unei acțiuni, unelte sau al unui dialog e din lista albă (clientul nu trimite altceva). */
 export const idBun = (x: string): boolean => RE_ID.test(x);
 /** Rezultatul unei acțiuni e din lista albă: `ok` sau cheia unui motiv. */
@@ -182,6 +184,52 @@ export interface RaspunsSetariUtilizare {
   readonly ok: true;
   readonly schimbat: boolean;
   readonly versiune: number;
+}
+
+/**
+ * Disocierea unui cont (ADR 0262 §3, felia A.11e): legătura cont → pseudonim stă doar pe server, în colecția asta (regulile o
+ * țin închisă); contul primește doar data despărțirii (`disociatLa`).
+ */
+export const COLECTIE_DISOCIERI = 'utilizareDisociate';
+export interface CerereDisociere {
+  readonly actiune: 'disociaza';
+  readonly uid: string;
+}
+export interface RaspunsDisociere {
+  readonly ok: true;
+  /** Fals: contul era deja despărțit. */
+  readonly schimbat: boolean;
+  /** Câte loturi de până acum au primit pseudonimul. */
+  readonly loturi: number;
+}
+
+/** Cronologia unui om (ADR 0262 §6, felia A.11c): câte loturi pe pagină, cele mai noi întâi. */
+export const PAGINA_CRONOLOGIE = 20;
+export interface CerereCronologie {
+  readonly actiune: 'cronologie';
+  /** Contul al cărui lucru se citește. */
+  readonly uid: string;
+  /** Doar loturile primite înainte de clipa asta (ms): pagina următoare, mai veche. */
+  readonly pana?: number;
+  /** Doar loturile unei sesiuni (sesiunea unei raportări, felia A.11d). */
+  readonly sesiune?: string;
+}
+/** Un lot în cronologie: sesiunea, numărul, clipele (ms), contextul și evenimentele, așa cum le-a scris serverul. */
+export interface LotCronologie {
+  readonly id: string;
+  readonly sesiune: string;
+  readonly nr: number;
+  readonly primit: number;
+  readonly inceput: number;
+  readonly context: ContextLot | null;
+  readonly evenimente: readonly Eveniment[];
+  readonly aruncate: number;
+}
+export interface RaspunsCronologie {
+  readonly ok: true;
+  readonly loturi: readonly LotCronologie[];
+  /** Mai sunt loturi, mai vechi decât ultimul din pagină. */
+  readonly maiVechi: boolean;
 }
 
 const obiect = (x: unknown): Record<string, unknown> | null => (typeof x === 'object' && x !== null && !Array.isArray(x) ? x as Record<string, unknown> : null);
