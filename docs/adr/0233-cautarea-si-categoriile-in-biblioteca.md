@@ -145,3 +145,11 @@ Nimic nu spune ce fel de extensie e una (pentru desen, pentru mașină, pentru i
   acolo meniul de la tastatură; problema e raportată sesiunii principale.
 - **Mărimea:** pornirea neschimbată (109,9 kB; cu ușa 114,4, cu Atelierul 114,7 / 120); totalul 814,3 → 815,6 / 900 kB
   (+1,3); catalogul bibliotecii, 5,3 kB.
+- **Otrăvurile**, în clonă (`test/otravuri/3.Xj.py`): 78 / 78. La prima rulare, 76: „id-ul extensiei nu se mai caută”
+  trecea fiindcă „trenu” se găsea și în descriere, iar „în engleză se caută în descrierea românească” trecea pe
+  biblioteca adevărată, unde cuvântul căutat era și în descrierea lungă. Amândouă probele caută acum pe biblioteca de
+  probă, cu un cuvânt pus într-un singur loc.
+- **O probă instabilă a extensiilor, reparată pe drum** (doar probe): completul feliei a căzut la
+  `extensii.lucru.spec.ts:222`, „repornirea cerută de extensie”: clicul pe „Repornește” din cadrul extensiei nu s-a mai
+  întors (cadrul refăcut îl lasă fără răspuns), ca la „Închide” pe 23.11. Reprodus (16 din 150, pe zece lucrători) și
+  reparat cu `clicCareRefaceCadrul` (`test/e2e/ajutor-extensii.ts`): 150 din 150; otrava „gazda ignoră repornirea”, prinsă.
