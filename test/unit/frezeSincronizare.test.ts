@@ -33,6 +33,16 @@ class Server {
   cereri: CerereFreze[] = [];
   /** Fără rețea: fiecare cerere cade ca a clientului Firebase. */
   jos = false;
+  /** Ultima versiune a unui semn de ștergere plecat (peste plafonul semnelor): cine e în urma ei primește lista întreagă. */
+  purjat = 0;
+
+  /** Semnul ștergerii unei freze pleacă (ca peste plafonul semnelor, pe server). */
+  purjeaza(id: string): void {
+    const f = this.freze.get(id);
+    if (!f || f.json !== null) throw new Error('nu e un semn');
+    this.freze.delete(id);
+    this.purjat = Math.max(this.purjat, f.versiune);
+  }
 
   cheama = (x: CerereFreze): Promise<RaspunsListaFreze | RaspunsScrieFreze> => {
     if (this.jos) return Promise.reject(Object.assign(new Error('fără rețea'), { code: 'functions/unavailable' }));
@@ -41,11 +51,13 @@ class Server {
     this.cereri.push(c);
     const vii = (): number => [...this.freze.values()].filter((f) => f.json !== null).length;
     if (c.actiune === 'lista') {
-      const toate = [...this.freze.values()].filter((f) => f.versiune > c.dupa).sort((a, b) => a.versiune - b.versiune);
+      const complet = c.dupa === 0 || c.dupa < this.purjat;
+      const de = complet ? 0 : c.dupa;
+      const toate = [...this.freze.values()].filter((f) => f.versiune > de).sort((a, b) => a.versiune - b.versiune);
       const mai = toate.length > this.pagina;
       const freze = toate.slice(0, this.pagina);
       return Promise.resolve({
-        ok: true, freze, mai, pana: mai ? freze[freze.length - 1]!.versiune : this.versiune, complet: c.dupa === 0, poateScrie: this.poateScrie, numar: vii(),
+        ok: true, freze, mai, pana: mai ? freze[freze.length - 1]!.versiune : this.versiune, complet, poateScrie: this.poateScrie, numar: vii(),
       });
     }
     if (!this.poateScrie) return Promise.reject(Object.assign(new Error('plan'), { code: 'functions/permission-denied' }));
@@ -160,4 +172,22 @@ test(`loturile: cel mult ${LOT_FREZE} de freze pe cerere`, async () => {
   const scrieri = s.cereri.filter((c): c is Extract<CerereFreze, { actiune: 'scrie' }> => c.actiune === 'scrie');
   assert.deepEqual(scrieri.map((c) => c.freze.length), [LOT_FREZE, 7]);
   assert.equal(s.freze.size, LOT_FREZE + 7);
+});
+
+test('rămas în urma semnelor ștergerii plecate din cont: lista întreagă; o freză știută care lipsește pleacă, una schimbată aici e conflict', async () => {
+  const s = new Server(), a = calculator('a'), b = calculator('b');
+  await a.incarca(); await b.incarca();
+  for (const f of [PLATA6, V60, { ...PLATA6, nume: 'Plată Ø3', diametru: 3 }]) await a.salveaza(null, f);
+  await sincronizeaza(a, s.cheama);
+  await sincronizeaza(b, s.cheama);
+  // B șterge două; semnele lor pleacă din cont înainte ca A să afle de ele. A a schimbat între timp una dintre ele.
+  await b.sterge(id(b, 'V60 Ø6'));
+  await b.sterge(id(b, 'Plată Ø3'));
+  await sincronizeaza(b, s.cheama);
+  s.purjeaza(id(a, 'V60 Ø6'));
+  s.purjeaza(id(a, 'Plată Ø3'));
+  await a.salveaza(id(a, 'Plată Ø3'), { ...PLATA6, nume: 'Plată Ø3', diametru: 3, avans: 900 });
+  await sincronizeaza(a, s.cheama);
+  assert.deepEqual(nume(a), ['Plată Ø3', 'Plată Ø6']);
+  assert.deepEqual([...a.stare().sincron.conflicte.values()].map((c) => c.campuri), [['*']]);
 });

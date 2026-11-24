@@ -73,7 +73,8 @@ export async function sincronizeaza(b: FrezeMele, cheama: Cheama): Promise<FelSi
       const acum = await citeste(b);
       if (!acum) break;
       const t = deTrimis(acum);
-      const scrise = t.scrise.filter((f) => !refuzate.has(f.id) && !(runda > 0 && acum.sincron.plina.includes(f.id)));
+      // O freză pe care contul a refuzat-o (plin) se mai încearcă doar la trecerea următoare.
+      const scrise = t.scrise.filter((f) => !refuzate.has(f.id));
       const sterse = t.sterse;
       if (scrise.length === 0 && sterse.length === 0) break;
       const trimite = async (lot: DeTrimis, cerere: CerereFreze): Promise<void> => {

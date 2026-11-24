@@ -119,7 +119,11 @@ test('ștergerea cere versiunea văzută, lasă un semn pe care celălalt calcul
   ]);
   assert.equal((await lista('ana', 3)).freze.length, 0);
   // Scrisă cu semnul văzut, freza revine.
+  assert.equal((await db.doc('conturi/ana/sincron/freze').get()).get('sterse'), 1);
   assert.deepEqual((await scrie('ana', [{ id: 'a', vazuta: 3, json: json('a', 'înapoi') }])).rezultate, [{ id: 'a', stare: 'scrisa', versiune: 4 }]);
+  // Readusă, freza nu mai e un semn al ștergerii: nici în numărătoare, nici în căutarea semnelor.
+  assert.equal((await db.doc('conturi/ana/sincron/freze').get()).get('sterse'), 0);
+  assert.equal((await db.collection('conturi/ana/freze').where('stearsaLa', '>', 0).get()).size, 0);
   const l = await lista('ana', 0);
   assert.deepEqual(l.freze, [{ id: 'b', versiune: 2, json: json('b') }, { id: 'a', versiune: 4, json: json('a', 'înapoi') }]);
   assert.equal(l.numar, 2);
