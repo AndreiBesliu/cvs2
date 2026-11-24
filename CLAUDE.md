@@ -1487,7 +1487,10 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   își pornea urma exact pe rândul foii active; un gest nu poate începe pe rând, deci proba pornește acum de deasupra
   plăcii. Varianta de rezervă, la cuvântul owner-ului: și rândul foii active doar cu mausul pe ea. Ciocnirile unirii:
   DEVLOG, fișa etapei 3 și catalogul controalelor (scris din nou, 622 de nume). Porțile, în CI, pe `7584747a`
-  (completul @@COMPLET@@): @@PORTI@@; @@MARIMI@@. @@INAINTE@@ Pe ramuri, în lucru: frezele (16.A↑b-2 și 16.A↑a-2,
+  (completul, verde la prima trecere, 66 min pe un runner lent): unit 10 190 / 0 (12 sărite, pe Linux), e2e 707 / 707, funcțiile pe emulatoare 136 / 136, paginile 57 / 57; rapidul, verde și pe `a1723e7d`, cu `main`
+  (`647cebb1`) adus; pornirea 110,1 kB (plafonul 120), totalul 816,8 / 900 kB, `/admin` 138,2 / 200, contul 30,3 / 32. Înainte, lotul al șaisprezecelea a ajuns pe test (`fdce5f1b`, 24.11, 15:35), cu
+  serverul: funcția `freze` creată, indexurile și regulile publicate; lotul al șaptesprezecelea, cu limita rapidului
+  (`647cebb1`), era în drum: completul lui pe `main` rula la unire. Pe ramuri, în lucru: frezele (16.A↑b-2 și 16.A↑a-2,
   `AndreiBesliu/cvs2#22`; ADR 0302 propus, la owner), biblioteca (3.Xj), relieful (18.1↑a), cotele (10.4↑a-2, la
   „continuă” al owner-ului), exportul (`#11`, la cuvântul owner-ului). **La owner:** fereastra exportului, verificarea
   juridică (GDPR) a utilizării aplicației înaintea live-ului, „cine unește în `main`”, meniul de sus la 320 px la

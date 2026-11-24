@@ -13203,14 +13203,17 @@ un buton pentru admin, care apare daca esti logat ca admin” (cu o captură a m
 **Prompt:** „ok, cand sunt verzi frezele fa unirea, pana atunci vreau sa faci ceva simplu. vreau ca plansele sa aiba
 controalele din meniu si sub ele, si sa apara doar la hover sau cand sunt selectate”; „si vreau in meniu un buton pentru
 admin, care apare daca esti logat ca admin”
-**Started:** 24.11, 15:10. **Completed:** unirea în `main`, 24.11, @@ORA@@; publicarea pe test, la rândul ei.
+**Started:** 24.11, 15:10. **Completed:** unirea în `main`, 24.11, 16:15; publicarea pe test, la rândul ei.
 
 - **Unirea, pe `unire-2411n`** (din `64a63b48`): ramura `wip/11.1c-controale-foi` (`9a8aa992`) în `7584747a`.
   Ciocnirile: DEVLOG, fișa etapei 3 (rândurile de după `3.As`, toate păstrate) și catalogul controalelor (scris din
   nou: 622 de nume). Local, pe arborele unit: tipurile, regulile de import (21), traducerile (1 015), catalogul; e2e
   39 / 39 (comenzile foii, butonul Admin, Cuțitul, foile, contul).
-- **Porțile, în CI:** completul unirii pe `7584747a` (45400216151, @@COMPLET@@): @@PORTI@@. @@MARIMI@@. Completul
-  ramurii, pe baza veche (`124f2d74`, 45392375164): @@RAMURA@@.
+- **Porțile, în CI:** completul unirii pe `7584747a` (45400216151, verde la prima trecere, 66 min pe un runner
+  lent): unit 10 190 / 0 (12 sărite, pe Linux), e2e 707 / 707, funcțiile pe emulatoare 136 / 136, paginile 57 / 57; rapidul, verde pe `7584747a` și pe `a1723e7d` (cu `main` `647cebb1` adus: limita de 15 minute).
+  Pornirea 110,1 kB (plafonul 120), totalul 816,8 / 900 kB, `/admin` 138,2 / 200, contul 30,3 / 32. Completul ramurii, pe baza veche (`124f2d74`, 45392375164): verde.
 - **Documentele:** decizia în `CLAUDE.md`, cu rândurile de stare ale celor două felii; starea din
   `docs/linii/principala.md`.
-- **Loturile dinainte:** @@INAINTE@@
+- **Loturile dinainte:** al șaisprezecelea, pe test din 15:35 (`fdce5f1b`; funcția `freze` creată, indexurile și
+  regulile publicate; proba de fum, bună; scriptul de publicare, reluat o dată după timpul lui de așteptare); al
+  șaptesprezecelea, cu limita rapidului (`647cebb1`): completul pe `main` (45407064678) rula la unire.
