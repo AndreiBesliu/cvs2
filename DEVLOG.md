@@ -13262,3 +13262,47 @@ custom” (owner-ul, cu `FREZE.tdb`), apoi, la cele cinci întrebări: „Da, 1a
 - **Mărimea:** pornirea 110,0 kB (cu ușa 114,7, cu Atelierul 115,0 / 120), totalul 819,0 → 820,2 / 900 (`main` `647cebb1`:
   816,1). Nimic pe server; documentul nu se schimbă. **Completed:** 24.11, 13:45.
 
+## 2026-11-24 — Feliile 11.1↑c și 14.C↑d: comenzile foii pe pânză; butonul Admin, doar pentru personal (sesiunea principală în cloud) (Model: Claude Fable 5.2)
+
+**Prompt:** „ok, cand sunt verzi frezele fa unirea, pana atunci vreau sa faci ceva simplu. vreau ca plansele sa aiba
+controalele din meniu si sub ele, si sa apara doar la hover sau cand sunt selectate” (cu două capturi); „si vreau in meniu
+un buton pentru admin, care apare daca esti logat ca admin” (cu o captură a meniului)
+**Started:** 24.11, 13:17. **Completed:** 24.11, 14:25 (pe ramura `wip/11.1c-controale-foi`; unirea, după porți).
+
+- **11.1↑c (ADR 0210 §1):** sub fiecare foaie de pe pânză, rândul cu cele șapte comenzi ale meniului „⋯”, ca iconițe;
+  al foii active mereu, al unei vecine doar cu mausul pe ea, pe fâșia de sub ea sau pe rând. Același registru ca
+  meniul (refuzul stins, cu motivul); ștergerea unei foi cu piese întreabă în rând. Partea pură în
+  `src/ui/controaleFoiCalcul.ts`, componenta în bucata meniului foii, la cerere.
+- **14.C↑d (ADR 0132 §11):** butonul Admin în meniul global, la mijloc, doar cu planul `personal`; un link spre
+  `/admin`, în altă filă; nu se arată pe telefon; nu dă niciun drept.
+- **Probele:** unitare 4 (calculul) și grupurile meniului; e2e 10 (`controale-foi.spec.ts` 6, `admin-buton.spec.ts`
+  4), local 10 / 10; manualul în ambele limbi (115 uși); catalogul controalelor scris din nou (607 nume).
+- **Otrăvurile** (`test/otravuri/11.1c.py`, în clonă): 41 / 41; 39 la prima rulare, A09 (grupul gol ocupă loc) și A11
+  (butonul lipit de file) prinse după întărirea probei.
+- **Mărimea:** pornirea 109,9 → 110,0 kB (plafonul 120), totalul 806,1 → 806,9 / 900 kB. Documentul și serverul,
+  neschimbate.
+- **Canalul `foi`:** <https://cncvectorstudio-test--foi-027ryryb.web.app> (din `501751e0`, cu tot codul feliilor).
+- **Porțile, în CI:** rapidul verde pe `501751e0`. Primul complet (45384962428) a căzut la o probă, din 664:
+  `cutit.spec.ts:421`, a cărei urmă trasă cu mâna pornea la 10 mm sub foaie, exact pe rândul comenzilor foii active.
+  Reprodusă local; proba își pornește acum urma de deasupra plăcii și o termină peste rând (`124f2d74`). Completul,
+  repornit (45392375164).
+
+## 2026-11-24 — Sesiunea principală în cloud: a optsprezecea unire (11.1↑c, comenzile foii pe pânză; 14.C↑d, butonul Admin) (Model: Claude Fable 5.2)
+
+**Prompt:** „ok, cand sunt verzi frezele fa unirea, pana atunci vreau sa faci ceva simplu. vreau ca plansele sa aiba
+controalele din meniu si sub ele, si sa apara doar la hover sau cand sunt selectate”; „si vreau in meniu un buton pentru
+admin, care apare daca esti logat ca admin”
+**Started:** 24.11, 15:10. **Completed:** unirea în `main`, 24.11, 16:15; publicarea pe test, la rândul ei.
+
+- **Unirea, pe `unire-2411n`** (din `64a63b48`): ramura `wip/11.1c-controale-foi` (`9a8aa992`) în `7584747a`.
+  Ciocnirile: DEVLOG, fișa etapei 3 (rândurile de după `3.As`, toate păstrate) și catalogul controalelor (scris din
+  nou: 622 de nume). Local, pe arborele unit: tipurile, regulile de import (21), traducerile (1 015), catalogul; e2e
+  39 / 39 (comenzile foii, butonul Admin, Cuțitul, foile, contul).
+- **Porțile, în CI:** completul unirii pe `7584747a` (45400216151, verde la prima trecere, 66 min pe un runner
+  lent): unit 10 190 / 0 (12 sărite, pe Linux), e2e 707 / 707, funcțiile pe emulatoare 136 / 136, paginile 57 / 57; rapidul, verde pe `7584747a` și pe `a1723e7d` (cu `main` `647cebb1` adus: limita de 15 minute).
+  Pornirea 110,1 kB (plafonul 120), totalul 816,8 / 900 kB, `/admin` 138,2 / 200, contul 30,3 / 32. Completul ramurii, pe baza veche (`124f2d74`, 45392375164): verde.
+- **Documentele:** decizia în `CLAUDE.md`, cu rândurile de stare ale celor două felii; starea din
+  `docs/linii/principala.md`.
+- **Loturile dinainte:** al șaisprezecelea, pe test din 15:35 (`fdce5f1b`; funcția `freze` creată, indexurile și
+  regulile publicate; proba de fum, bună; scriptul de publicare, reluat o dată după timpul lui de așteptare); al
+  șaptesprezecelea, cu limita rapidului (`647cebb1`): completul pe `main` (45407064678) rula la unire.
