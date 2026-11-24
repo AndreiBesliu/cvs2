@@ -1609,7 +1609,17 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   principală, la cerere. Linia își adusese `main` de trei ori și rezolvase ea ciocnirile de cod (`App.tsx`,
   `src/model/cote.ts`, `src/model/formaFrezei.ts`); la unire au rămas doar jurnalul feliilor, registrul otrăvurilor
   și catalogul controalelor (scris din nou, 641 de nume). Nimic pe server. Porțile lotului, în CI, pe `c5b79526`
-  @@P27@@
+  (completul 45472363389, verde la prima trecere, 56 min): unit 10 369 / 0 (12 sărite, pe Linux), e2e 791 / 791,
+  funcțiile pe emulatoare 136 / 136, paginile 59 / 59; rapidul, verde pe `c5b79526`; completul liniei, verde pe
+  `feb7bee1` (45463407432); pornirea 110,9 kB (plafonul 120; cu ușa 115,9, cu Atelierul 116,2: mai sunt 3,8 kB),
+  **totalul 873,5 / 900 kB (mai sunt 26,5 kB)**, `/admin` 138,3 / 200, contul 30,3 / 32. Loturile 25 și 26 intraseră
+  în `main` cu o jumătate de oră înainte (`52a0aaa1`); pe test e lotul 22 (`62569bb2`), iar loturile 23–27 pleacă
+  acum într-o singură publicare. La linii: cotele (10.4↑a-4 și 10.4↑b: raza, diametrul, unghiul, inch în fracții;
+  +4,2 kB; aduc `main` de după relief), frezele (16.A↑b-5, apoi b-4), atelierul Easy 3Draw (3.Ca, conectorul
+  perpendicular, cu porțile în lucru; 3.Tu la răspunsurile owner-ului), relieful (18.1↑b). **La owner:** plafonul
+  total (cu cotele rămân ~22 kB) și al pornirii (3,8 kB), cele trei întrebări ale lui 3.Tu, arhivarea sesiunilor
+  exportului și elicelor, verificarea juridică (GDPR) a utilizării aplicației înaintea live-ului, „cine unește în
+  `main`”, meniul de sus la 320 px la atingere.
 - 24.11.2026, seara (a douăzeci și patra unire din cloud): **frezele: profilurile parametrice (16.A↑h-5) și freza din
   bibliotecă pe rândurile exportului (16.A↑b-3), unite în `main`**, în lot (sesiunea principală, ramura `unire-2411ab`,
   peste lotul 25, cu care a intrat în aceeași împingere). **16.A↑h-5** (linia frezelor, ramura `wip/16.A-freze`,

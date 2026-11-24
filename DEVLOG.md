@@ -14036,3 +14036,26 @@ pe test, la rândul ei.
 - **Urmează:** lotul 27, relieful singur (18.1↑a, `feb7bee1`, v28), unit pe `unire-2411ac` (`c5b79526`; ciocnirile:
   jurnalul feliilor, registrul otrăvurilor, catalogul controalelor, 641 de nume; 208 unitare alese, verzi local);
   completul lui (45472363389) rula la unire.
+
+## 2026-11-24 — Sesiunea principală în cloud: a douăzeci și cincea unire (18.1↑a, relieful din imagine, pe planșă; documentul v28) (Model: Claude Fable 5.2)
+
+**Prompt:** raportul liniei reliefului („18.1↑a: de unit `feb7bee1`”, cu rapidul și completul verzi), la ordinul în
+vigoare „unește ce se poate”
+**Started:** 24.11, 21:45. **Completed:** unirea în `main`, 24.11, 22:36; publicarea pe test, pornită după ea.
+
+- **Lotul, pe `unire-2411ac`** (peste lotul 26), relieful singur: `feb7bee1`, în `c5b79526`. Linia își adusese `main`
+  de trei ori și rezolvase ciocnirile de cod; la unire au rămas jurnalul feliilor, registrul otrăvurilor (rândul lui
+  10.4a2, dublat de unire: a rămas cel din `main`) și catalogul controalelor (scris din nou: 641 de nume). Local, pe
+  arborele unit: tipurile (și ale funcțiilor), regulile de import (22), traducerile (1 077), catalogul, biblioteca
+  extensiilor; 208 unitare alese (manualul, documentația, oracolul v28, corpusul de aur, frezele, relieful, grupurile
+  și desenele exportului), verzi.
+- **Porțile, în CI:** completul lotului pe `c5b79526` (45472363389, verde la prima trecere, 56 min): unit 10 369 / 0
+  (12 sărite, pe Linux), e2e 791 / 791, funcțiile pe emulatoare 136 / 136, paginile 59 / 59; rapidul, verde pe
+  `c5b79526` (45472365786, feliile între 1:34 și 8:32); completul liniei, verde pe `feb7bee1` (45463407432). Pornirea
+  110,9 kB (plafonul 120; cu ușa 115,9, cu Atelierul 116,2), totalul 873,5 / 900 kB (lotul 26: 860,1; relieful,
+  +13,4), `/admin` 138,3 / 200, contul 30,3 / 32. Nimic pe server.
+- **Documentele:** decizia în `CLAUDE.md`, cu paragraful de stare al reliefului și cu versiunea documentului (v28; un
+  câmp nou ia v29); numerele liniei atelierului, îndreptate (ADR 0284, feliile 3.Ca–3.Cj, acceptate de owner în
+  sesiunea liniei); indexul liniilor; starea din `docs/linii/principala.md`.
+- **Loturile dinainte:** 25 și 26, în `main` din 22:03 (`52a0aaa1`; rapidul pe `main`, la coadă la unire). Pe test,
+  lotul 22 (`62569bb2`, 20:32).
