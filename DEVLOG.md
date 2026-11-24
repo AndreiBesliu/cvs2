@@ -12890,6 +12890,27 @@ unită în `32b33a42`).
 - **Documentele:** ADR 0300 („Implementarea (16.A↑c)”), fișa etapei 3 (rândul `16.A↑c`), pragul, registrul otrăvurilor,
   traducerile, nota liniei. **Completed:** 24.11, 10:30.
 
+## 2026-11-24 — Felia 3.Tt: înclinarea spre pupa a elicei de barcă, la alegere, în atelierul Easy 3Draw (ADR 0282) (Model: Claude Opus 5.5)
+
+**Prompt:** „pornește înclinarea spre pupa ca opțiune” (în sesiunea cloud a liniei elicelor, după unirea lui 3.Ts în `main`).
+**Started:** 24.11, 11:41. **Completed:** 24.11, 12:32 (în container; CI-ul, pe commit-ul împins).
+
+- **Proba întâi:** amprenta a 24 de elice de barcă, luată din motorul lui 18.22.0 înaintea schimbării, și 6 probe unitare cu
+  valorile pe hârtie (scriptul de hârtie al lui 3.Tr, cu ridicarea adăugată), roșii pe motorul vechi; apoi 3 probe e2e.
+- **Motorul:** `eliceBarcaCote` primește `pupa` (0–15°, implicit 0): fiecare secțiune urcă cu max(0, r − rh) · tan θ;
+  butucul, cât cel mai înalt vârf; `urca` spune cât urcă vârful. Fără înclinare, aceeași plasă, la octet.
+- **Atelierul:** câmpul „Înclinarea spre pupa (°)”, numele („spre pupa N°”, după înclinarea înapoi), textul (cât urcă vârful,
+  suportul de sub palete, pus de programul de feliere), piesa din listă fără `pupa` la 0 (o listă salvată cu 18.22.0 o adună
+  pe linia ei); 5 texte în engleză („Rake aft”). Pachetul 18.23.0, cu rândul lui de „ce e nou”.
+- **Pe drum:** proba STL-ului cerea un butuc „peste 11,5”; la 4 palete, fără înclinare e 8,9, iar la 15° exact 11,5: proba
+  cere acum valoarea de pe hârtie. Randarea: paletele urcă spre vârf, butucul și rădăcina stau pe masă.
+- **Otrăvurile, în clonă:** `3.Tt.py` 35 / 35 (17 pe motor, 18 prin e2e), `3.Tt-en.py` 5 / 5; câmpul nou a mutat 35 de ancore
+  din `3.Tr.py` și 2 din `3.Tr-en.py`, aduse pe codul nou și rulate din nou: toate prinse.
+- **Porțile, în container:** tipurile, regulile de import (0 încălcări), traducerile (993 / 0), unitarele pluginului, ale
+  bibliotecii și ale documentelor, e2e-ul elicei de barcă, al înclinării și al pluginului în cvs2 (13 / 13).
+- **Documentele:** ADR 0282 („Implementarea (3.Tt)”), indexul ADR, fișa etapei 3 (jurnalul și coada owner-ului), traducerile
+  roadmap-ului, registrul otrăvurilor, nota liniei.
+
 - **Publicarea (`356db9bd`):** rapidul și completul pe `main` verzi (completul, 47 de minute), `publica.yml` verde în
   4 minute, cu serverul: cele 14 funcții actualizate (între ele `utilizare`, `tichete`, `logClientError`), regulile și
   indexurile publicate; adresa de test spune `356db9bdd1ee` (24.11, 12:26); catalogul bibliotecii, Easy 3Draw 18.22.0.
@@ -13011,6 +13032,34 @@ scrie brief-ul pentru relief si pentru cote”
 - **La owner:** fereastra exportului, verificarea juridică a utilizării aplicației înaintea live-ului, „cine unește
   în `main`”, ADR 0232 (biblioteca); brief-urile reliefului și cotelor, de lipit în sesiuni noi.
 
+## 2026-11-24 — Sesiunea principală în cloud: a șaisprezecea unire (16.A↑c, frezele în cont; 3.Xi, extensiile) (Model: Claude Fable 5.2)
+
+**Prompt:** „ok, cand sunt verzi frezele fa unirea, pana atunci vreau sa faci ceva simplu. vreau ca plansele sa aiba
+controalele din meniu si sub ele, si sa apara doar la hover sau cand sunt selectate”; de la linia bibliotecii, cuvântul
+owner-ului din sesiunea ei: „ok, cand e verde fa unirea”
+**Started:** 24.11, 12:55. **Completed:** unirea în `main`, 24.11, 14:09; publicarea pe test, la rândul ei.
+
+- **Lotul, pe `unire-2411k`** (din `4ef990f5`): frezele, commit-ul raportat `9943b23f`, în `6b74074d` (linia a mers
+  mai departe pe ramură cu 16.A↑b-2, vârful `0ffb2599`: nu intră); biblioteca, `0f043f31`, în `f12308de`. Ciocnirile:
+  DEVLOG, un rând în fișa etapei 3 și catalogul controalelor (scris din nou). Local: tipurile (și ale funcțiilor),
+  regulile de import, traducerile, catalogul, biblioteca extensiilor la zi.
+- **Porțile, în CI:** completul lotului verde la prima trecere pe `f12308de` (45382387841, 50 min 24 s): unit
+  10 162 / 0 (12 sărite), e2e 694 / 694, funcțiile pe emulatoare 136 / 136, paginile 57 / 57; completele liniilor,
+  verzi: frezele pe `a70f1ea2` (45375653806), biblioteca pe `da00b854` (45382002579; vârful `0f043f31` adaugă doar
+  documente). Pornirea 109,9 / 120 (cu ușa 114,4; cu Atelierul 114,7), totalul 814,3 / 900, `/admin` 138,2 / 200,
+  contul 30,3 / 32.
+- **La publicare merge și serverul:** funcția nouă `freze`, indexurile (scutirea câmpului `json`), `cont` și
+  `administreazaConturile` cu capabilitatea `cloud`; regulile, neschimbate.
+- **Lotul 15, pe test:** `e3a9e512`, 24.11, 13:54; proba de fum (versiunea, CSP-ul, workerul, catalogul extensiilor,
+  mesajele, manualul, codurile, documentația, pagina de intrare a adminului), bună.
+- **Documentele:** decizia în `CLAUDE.md`, cu rândul de stare al lui 16.A↑c și al lui 3.Xi, cu ADR-urile acceptate ale
+  liniilor noi (0310, 0330) și cu schema (v28 la relief, cotele fără schemă); indexul liniilor; starea din
+  `docs/linii/principala.md`.
+- **Pe drum:** 3.Tt (elicele) unită de probă peste lot, pe `unire-2411l` (`595723e5`), cu completul pornit; feliile
+  11.1↑c și 14.C↑d (comenzile foii pe pânză; butonul Admin), în lucru pe `wip/11.1c-controale-foi`, cu canalul `foi`.
+- **La owner:** fereastra exportului (`#11`), verificarea juridică a utilizării aplicației înaintea live-ului, „cine
+  unește în `main`”.
+
 ## 2026-11-24 — ADR 0330 propus: cotele pe desen și măsurarea (Model: Claude Opus 5.5)
 
 **Prompt:** brief-ul liniei cotelor (owner-ul, 24.11, într-o sesiune cloud nouă: „Ești sesiunea liniei cotelor…”; ramura
@@ -13079,28 +13128,32 @@ sesiunea cloud a liniei cotelor. **Completed:** 24.11, 13:35 (în container; CI-
 
 ## 2026-11-24 — Sesiunea principală în cloud: a șaisprezecea unire (16.A↑c, frezele în cont; 3.Xi, extensiile) (Model: Claude Fable 5.2)
 
-**Prompt:** „ok, cand sunt verzi frezele fa unirea, pana atunci vreau sa faci ceva simplu. vreau ca plansele sa aiba
-controalele din meniu si sub ele, si sa apara doar la hover sau cand sunt selectate”; de la linia bibliotecii, cuvântul
-owner-ului din sesiunea ei: „ok, cand e verde fa unirea”
-**Started:** 24.11, 12:55. **Completed:** unirea în `main`, 24.11, 14:09; publicarea pe test, la rândul ei.
 
-- **Lotul, pe `unire-2411k`** (din `4ef990f5`): frezele, commit-ul raportat `9943b23f`, în `6b74074d` (linia a mers
-  mai departe pe ramură cu 16.A↑b-2, vârful `0ffb2599`: nu intră); biblioteca, `0f043f31`, în `f12308de`. Ciocnirile:
-  DEVLOG, un rând în fișa etapei 3 și catalogul controalelor (scris din nou). Local: tipurile (și ale funcțiilor),
-  regulile de import, traducerile, catalogul, biblioteca extensiilor la zi.
-- **Porțile, în CI:** completul lotului verde la prima trecere pe `f12308de` (45382387841, 50 min 24 s): unit
-  10 162 / 0 (12 sărite), e2e 694 / 694, funcțiile pe emulatoare 136 / 136, paginile 57 / 57; completele liniilor,
-  verzi: frezele pe `a70f1ea2` (45375653806), biblioteca pe `da00b854` (45382002579; vârful `0f043f31` adaugă doar
-  documente). Pornirea 109,9 / 120 (cu ușa 114,4; cu Atelierul 114,7), totalul 814,3 / 900, `/admin` 138,2 / 200,
-  contul 30,3 / 32.
-- **La publicare merge și serverul:** funcția nouă `freze`, indexurile (scutirea câmpului `json`), `cont` și
-  `administreazaConturile` cu capabilitatea `cloud`; regulile, neschimbate.
-- **Lotul 15, pe test:** `e3a9e512`, 24.11, 13:54; proba de fum (versiunea, CSP-ul, workerul, catalogul extensiilor,
-  mesajele, manualul, codurile, documentația, pagina de intrare a adminului), bună.
-- **Documentele:** decizia în `CLAUDE.md`, cu rândul de stare al lui 16.A↑c și al lui 3.Xi, cu ADR-urile acceptate ale
-  liniilor noi (0310, 0330) și cu schema (v28 la relief, cotele fără schemă); indexul liniilor; starea din
-  `docs/linii/principala.md`.
-- **Pe drum:** 3.Tt (elicele) unită de probă peste lot, pe `unire-2411l` (`595723e5`), cu completul pornit; feliile
-  11.1↑c și 14.C↑d (comenzile foii pe pânză; butonul Admin), în lucru pe `wip/11.1c-controale-foi`, cu canalul `foi`.
+## 2026-11-24 — Sesiunea principală în cloud: a șaptesprezecea unire (reparația căderii de noapte; 10.4↑a-1, cotele; 3.Tt, elicele) (Model: Claude Fable 5.2)
+
+**Prompt:** (revenire programată: completul de noapte); rapoartele liniilor cotelor și elicelor, cu cuvântul owner-ului
+din sesiunea elicelor: „cand e verde fa unirea”
+**Started:** 24.11, 14:10. **Completed:** unirea în `main`, 24.11, 15:06; publicarea pe test, la rândul ei.
+
+- **Incidentul numărul unu:** completul de noapte programat, roșu pe `main` (`4ef990f5`, 45380945393), la o singură
+  probă de pe emulatoare (`utilizare.emulator.spec.ts:233`, 54 trecute): evenimentele mașinii erau „legata, terminata,
+  deconectata”, fără „pornita”. Cauza: `evenimenteMasina` compară două stări văzute la rând, iar un program de câteva
+  linii pe mașina simulată a trecut de la „pregătit” la „terminat” între două redesenări. Reprodusă într-o probă unitară
+  (`sir(legata, terminat)`), apoi reparată în `src/app/utilizareMasina.ts` (`bae574a8`): de la „legată” sau „gata”, o
+  pauză, o oprire, capătul sau întreruperea spun întâi pornirea. Patru otrăvuri noi în `test/otravuri/A.8d.py`
+  (M08–M11), prinse. Linia bibliotecii a găsit aceeași cauză și a scris aici.
+- **Lotul, pe `unire-2411m`** (din `fdce5f1b`): reparația; cotele, commit-ul raportat `47be5f42`, în `f25249cf`
+  (linia merge mai departe cu a-2); elicele, `ba09a10b`, în `d57ca962`; nota liniei bibliotecii (`e0922fc3`, doar
+  documente). Ciocnirile: DEVLOG și un rând din registrul otrăvurilor. Local: tipurile (și ale funcțiilor), regulile
+  de import (21, cu `cam-fara-cote`), traducerile, catalogul, biblioteca extensiilor la zi (Easy 3Draw 18.23.0).
+- **Porțile, în CI:** completul lotului pe `d57ca962` (45391345265, verde la prima trecere, 52 min cu așteptarea la coadă):
+  unit 10 186 / 0 (12 sărite, pe Linux), e2e 697 / 697, funcțiile pe emulatoare 136 / 136, paginile 57 / 57; completele liniilor,
+  verzi: cotele pe `47be5f42` (45382281125), elicele pe `ba09a10b` (45382892343). Pornirea 110,0 kB (plafonul 120; cu ușa 114,6, cu Atelierul 114,9, măsurate de linia cotelor), totalul 815,9 / 900 kB, `/admin` 138,2 / 200, contul 30,3 / 32. Nimic pe server.
+- **Lotul 16:** în drum spre test: completul lui pe `main` (45392060715) rula la unire; publicarea, după el, cu
+  serverul (funcția `freze`).
+- **Documentele:** decizia în `CLAUDE.md`, cu rândul de stare al cotelor, versiunea lui Easy 3Draw și regula
+  evenimentelor mașinii; indexul liniilor; starea și lecția din `docs/linii/principala.md`.
 - **La owner:** fereastra exportului (`#11`), verificarea juridică a utilizării aplicației înaintea live-ului, „cine
   unește în `main`”.
+
+  unește în `main`”; canalul `foi`, de încercat.

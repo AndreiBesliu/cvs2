@@ -19,10 +19,10 @@ o('N02', T, ' "Cu capac": "With cap",', ' "Cu capac": "Cu capac",', 'e2e', '„C
 o('N03', T, ' ", cu capac": ", with cap",', ' ", cu capac": ", cu capac",', 'e2e', '„cu capac” din numele piesei, rămas în română')
 o('N04', A, 'const s = d.sens === "stanga" ? tr(", stânga") : "", c = d.capac === "da" ? tr(", cu capac") : "";',
   'const s = d.sens === "stanga" ? tr(", stânga") : "", c = d.capac === "da" ? ", cu capac" : "";', 'e2e', '„cu capac” din numele piesei, netrecut prin traducere')
-o('N05', T, ' "Elice de barcă Ø{0} cu {1} palete, pasul {2}{3}{4}{5}{6}{7}": "Boat propeller Ø{0} with {1} blades, pitch {2}{3}{4}{5}{6}{7}",',
-  ' "Elice de barcă Ø{0} cu {1} palete, pasul {2}{3}{4}{5}{6}{7}": "Boat propeller Ø{0} with {1} blades, pitch {2}{3}{4}{5}{7}{6}",', 'e2e',
+o('N05', T, ' "Elice de barcă Ø{0} cu {1} palete, pasul {2}{3}{4}{5}{6}{7}{8}": "Boat propeller Ø{0} with {1} blades, pitch {2}{3}{4}{5}{6}{7}{8}",',
+  ' "Elice de barcă Ø{0} cu {1} palete, pasul {2}{3}{4}{5}{6}{7}{8}": "Boat propeller Ø{0} with {1} blades, pitch {2}{3}{4}{5}{6}{8}{7}",', 'e2e',
   'numele în engleză, cu gaura și capacul schimbate între ele')
-o('N06', T, 'The blades cover {4}% of the disc; the hub is Ø{5} × {6} mm.', 'The blades cover {4}% of the disc; the hub is Ø{6} × {5} mm.', 'e2e',
+o('N06', T, 'The blades cover {4}% of the disc; the hub is Ø{5} × {6} mm. It prints', 'The blades cover {4}% of the disc; the hub is Ø{6} × {5} mm. It prints', 'e2e',
   'textul în engleză, cu diametrul și înălțimea butucului schimbate între ele')
 
 SETURI = {}
