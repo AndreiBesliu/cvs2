@@ -4,8 +4,8 @@ import { adaugaZile, SumatorZi, ziuaLocala, type LotZi } from '../../shared/util
 /**
  * Fila Utilizare din `/admin` (ADR 0262 §6, felia A.9b), pe emulatoare: sumele zilelor scrise ca de jobul de noapte (cu
  * sumatorul lui), apoi fila: perioada (ieri și zilele dinainte, fără azi), cine (clienții, personalul), cifrele, cele mai
- * folosite, ce nu se folosește (din catalogul generat la build), frecările, duratele; un rol doar cu „Utilizare: citește” o
- * vede, unul fără ea, nu.
+ * folosite, ce nu se folosește (din catalogul generat la build), fluxurile (A.10: pâlnia, secvențele), frecările, duratele; un
+ * rol doar cu „Utilizare: citește” o vede, unul fără ea, nu.
  */
 
 test.use({ locale: 'ro-RO' });
@@ -56,6 +56,7 @@ async function zilele(): Promise<void> {
   const azi = ziuaLocala(Date.now());
   await zi(adaugaZile(azi, -1), [
     lot('ana', 'aaaaaaaaaaaaaaa1', false, [
+      { fel: 'actiune', t: 500, id: 'document.importa', de: 'bara', rez: 'ok' }, { fel: 'actiune', t: 600, id: 'document.rol', de: 'panou', rez: 'ok' },
       ROTESTE(1_000, 'bara', 'ok', 3), ROTESTE(2_000, 'tasta'), ROTESTE(3_000, 'bara', 'motiv.nimic-ales'),
       { fel: 'actiune', t: 4_000, id: 'export.gcode', de: 'paleta', rez: 'ok' },
       { fel: 'dialog', t: 5_000, id: 'eticheta.export-titlu', rez: 'deschis' }, { fel: 'dialog', t: 6_000, id: 'eticheta.export-titlu', rez: 'renuntat' },
@@ -115,6 +116,15 @@ test('owner-ul: perioada fără ziua de azi, cifrele, cele mai folosite, ce nu s
   await expect(refuz).toContainText('Rotește · N-ai ales nimic. · 2');
   await expect(refuz).toHaveAttribute('data-uz-motiv', 'motiv.nimic-ales');
   await expect(page.locator('[data-uz-parasit="eticheta.export-titlu"]')).toContainText('1 din 1 deschidere');
+  // Fluxurile (A.10): Ana importă, pune rolul și exportă (ieri); celelalte două sesiuni se opresc la deschidere.
+  await expect(cifra(page, 'durata')).toHaveText('sub 1 min');
+  await expect(page.locator('[data-uz-pas="deschidere"] .uz-numar')).toHaveText('3 sesiuni · ≈ 2 oameni · se opresc aici: 2');
+  await expect(page.locator('[data-uz-pas="rol"] .uz-numar')).toHaveText('o sesiune · ≈ 1 om');
+  await expect(page.locator('[data-uz-pas="export"] .uz-numar')).toHaveText('o sesiune · ≈ 1 om · se opresc aici: 1');
+  await expect(page.locator('[data-uz-pas="masina"] .uz-numar')).toHaveText('0 sesiuni · ≈ 0 oameni');
+  const secventa = page.locator('[data-uz-secvente="3"] [data-uz-secventa="document.importa>document.rol>document.roteste"]');
+  await expect(secventa).toHaveText('Importă → Rolul de tăiere → Rotește · într-o sesiune, o dată');
+  await expect(page.locator('[data-uz-secvente="4"] [data-uz-secventa]')).toHaveCount(1);
   const exp = page.locator('[data-uz-durata="export"] td');
   await expect(exp).toHaveText(['3', 'sub 3 s', 'sub 30 s', '1']);
   // 90 de zile: și ziua de acum 40 de zile (Vlad); 7 zile: din nou doar cele două.

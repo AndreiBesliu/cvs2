@@ -2,15 +2,15 @@ import { useEffect, useMemo, useState, type CSSProperties, type ReactElement } f
 import { collection, getDocs, query, where } from 'firebase/firestore/lite';
 import type { CatalogActiuni } from '../../../shared/documentatie.ts';
 import { CALCULE, TREPTE_MS, type Calcul } from '../../../shared/utilizare.ts';
-import { COLECTIE_UTILIZARE_ZI, ziuaLocala } from '../../../shared/utilizareZi.ts';
+import { COLECTIE_UTILIZARE_ZI, LUNGIMI_SECVENTA, TREPTE_SESIUNE_MIN, ziuaLocala } from '../../../shared/utilizareZi.ts';
 import type { Conexiune } from '../../cloud/conexiune.ts';
 import { limba, t, traduce, type Cheie } from '../../i18n/t.ts';
 import type { Limba } from '../../i18n/tipuri.ts';
 import type { AducatorDocumentatie } from '../documentatie/aducere.ts';
 import { motivDin, type Masura } from '../erori/date.ts';
 import {
-  ALEGERI_SEGMENT, celeMaiFolosite, cifre, dialoguriParasite, durate, nefolosite, PERIOADE, primaZi, refuzuri, sumePerioada,
-  type AlegereSegment, type Perioada,
+  ALEGERI_SEGMENT, celeMaiFolosite, cifre, dialoguriParasite, durate, nefolosite, palnie, PERIOADE, primaZi, refuzuri, secventeleDese,
+  sumePerioada, type AlegereSegment, type Perioada,
 } from './date.ts';
 import './utilizare.css';
 
@@ -37,6 +37,16 @@ function textMotiv(motiv: string, l: Limba): string | null {
   } catch {
     return null;
   }
+}
+
+/** Treapta duratei unei sesiuni, ca text: „sub 15 min”, „sub 2 h”; ultima, „peste 8 h”. */
+function textSesiune(min: number | null, l: string): string {
+  if (min === null) return '–';
+  const nr = new Intl.NumberFormat(l === 'ro' ? 'ro-RO' : 'en-GB', { maximumFractionDigits: 1 });
+  const v = (x: number): string => (x >= 60 ? `${nr.format(x / 60)} h` : `${nr.format(x)} min`);
+  const ultima = TREPTE_SESIUNE_MIN[TREPTE_SESIUNE_MIN.length - 1];
+  const penultima = TREPTE_SESIUNE_MIN[TREPTE_SESIUNE_MIN.length - 2] ?? 0;
+  return min === ultima ? t('admin.uz.peste', { v: v(penultima) }) : t('admin.uz.sub', { v: v(min) });
 }
 
 /** Treapta unei durate, ca text: „sub 0,3 s”, „sub 5 min”; ultima, „peste 5 min”. */
@@ -120,6 +130,8 @@ export function FilaUtilizare({ con, aducator }: { readonly con: Conexiune; read
   const refuz = refuzuri(sume);
   const parasite = dialoguriParasite(sume);
   const dur = durate(sume);
+  const pal = palnie(sume);
+  const deschideri = pal[0]?.sesiuni ?? 0;
   return (
     <div className="uz" data-uz="fila">
       {alegeri}
@@ -127,6 +139,7 @@ export function FilaUtilizare({ con, aducator }: { readonly con: Conexiune; read
       <dl className="uz-cifre">
         <div data-uz-cifra="oameni"><dt>{t('admin.uz.cifra.oameni')}</dt><dd>{t('admin.uz.aprox', { n: c.oameni })}</dd></div>
         <div data-uz-cifra="sesiuni"><dt>{t('admin.uz.cifra.sesiuni')}</dt><dd>{c.sesiuni}</dd></div>
+        <div data-uz-cifra="durata"><dt>{t('admin.uz.cifra.durata')}</dt><dd>{textSesiune(c.durata, l)}</dd></div>
         <div data-uz-cifra="exporturi"><dt>{t('admin.uz.cifra.exporturi')}</dt><dd>{c.exporturi}</dd></div>
         <div data-uz-cifra="refuzate"><dt>{t('admin.uz.cifra.refuzate')}</dt><dd>{c.refuzate}</dd></div>
       </dl>
@@ -164,6 +177,44 @@ export function FilaUtilizare({ con, aducator }: { readonly con: Conexiune; read
               </tbody>
             </table>
           )}
+      </section>
+
+      <section className="uz-sectiune" aria-labelledby="uz-fluxuri">
+        <h3 id="uz-fluxuri">{t('admin.uz.fluxuri')}</h3>
+        <h4>{t('admin.uz.palnie')} <span className="admin-slab">{t('admin.uz.palnie.nota')}</span></h4>
+        <ol className="uz-bare" data-uz="palnie">
+          {pal.map((r) => (
+            <li key={r.pas} data-uz-pas={r.pas}>
+              <span className="uz-nume">{t(`admin.uz.pas.${r.pas}`)}</span>
+              <span className="uz-bara uz-bara-plina" style={barPe(deschideri > 0 ? r.sesiuni / deschideri : 0)} />
+              <span className="uz-numar">
+                {t('admin.uz.sesiuni', { n: r.sesiuni })} · {t('admin.uz.oameni', { n: r.oameni })}
+                {r.seOpresc ? <span className="admin-slab" data-uz-opresc={r.seOpresc}> · {t('admin.uz.opresc', { n: r.seOpresc })}</span> : null}
+              </span>
+            </li>
+          ))}
+        </ol>
+        <h4>{t('admin.uz.secvente')} <span className="admin-slab">{t('admin.uz.secvente.nota')}</span></h4>
+        <div className="uz-secvente">
+          {LUNGIMI_SECVENTA.map((L) => {
+            const randuri = secventeleDese(sume, L);
+            return (
+              <div key={L} data-uz-secvente={L}>
+                <h5>{t(`admin.uz.secvente.${L}`)}</h5>
+                {randuri.length === 0 ? <p className="admin-slab">{t('admin.uz.nimic')}</p> : (
+                  <ol className="uz-lista">
+                    {randuri.map((r) => (
+                      <li key={r.pasi.join('>')} data-uz-secventa={r.pasi.join('>')}>
+                        {r.pasi.map((id, i) => <span key={i}>{i > 0 ? ' → ' : ''}{numeActiune(id)}</span>)}
+                        <span className="admin-slab"> · {t('admin.uz.insesiuni', { n: r.s })}, {t('admin.uz.ori', { n: r.n })}</span>
+                      </li>
+                    ))}
+                  </ol>
+                )}
+              </div>
+            );
+          })}
+        </div>
       </section>
 
       <section className="uz-sectiune" aria-labelledby="uz-frecari">
