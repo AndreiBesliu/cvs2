@@ -338,9 +338,12 @@ cele patru aranjamente, cu harta schițelor schimbată ca la „Cu canvas-ul ara
 - **Cartonașele** (`src/ui/exportPoze.tsx`): colțurile, locurile urechilor, direcția pe linie, unitățile, schimbarea frezei și
   foile. Fiecare variantă are poza ei, desenată de mână (64 × 44, aceleași clase ca desenele), numele și o notă scurtă. Un
   cartonaș e un `<label>` cu un input radio transparent peste el: clicul oriunde îl alege, săgețile trec între variante, iar
-  probele lucrează pe input (`test/e2e/ajutor-export.ts`: `alege`, `aleasa`). `data-camp` stă pe grup, sau pe fiecare variantă
-  unde fiecare are numele ei (locurile urechilor); proba scanării câmpurilor găsește și `<Cartonase camp="…">` și
-  `camp: '…'`. Foile rămân butoane (`data-foi`, `aria-pressed`), cu poza și aspectul de cartonaș.
+  probele lucrează pe input (`test/e2e/ajutor-export.ts`: `alege`, `aleasa`). `data-camp` stă pe fiecare input, scris în
+  sursă (`<Cartonase data-camp="colturi">`, `<Card data-camp="urechi-lungi">`), ca generatorul catalogului controalelor
+  (ADR 0262, unit în `main` pe 24.11) să-l vadă; grupul are `data-alegere`. Așa, clicurile pe cartonașe se înregistrează cu
+  aceleași nume ca listele de dinainte, plus cele trei reguli ale urechilor, care lipseau din catalog (erau făcute din
+  șablon). Cotele desenelor își iau câmpul din `pentru`, nu din `id` (generatorul le-ar fi luat drept controale). Foile
+  rămân butoane (`data-foi`, `aria-pressed`), cu poza și aspectul de cartonaș.
 - **O variantă oprită spune de ce,** pe cartonaș („nu pe linie” la „unde ține”); colțurile pe linie sunt toate oprite, cu nota
   de sub ele. Inch lipsește unde postul nu-l scrie, ca înainte.
 - **Rămân liste:** tăietura (28.8↑b-3: ~55 de folosiri în 21 de spec-uri), colțul XY0, Z0, sensul și forma frezei (desenul

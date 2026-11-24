@@ -21,7 +21,7 @@ import { treceriEgale } from './exportDeseneCalcul.ts';
 import {
   DesenAdancime, DesenColt, DesenFreza, DesenIntrari, DesenRampa, DesenSens, DesenUrechi, DesenZ0, type DesenComun,
 } from './exportDesene.tsx';
-import { Cartonase, Poza } from './exportPoze.tsx';
+import { Card, Cartonase, GrupCartonase, Poza } from './exportPoze.tsx';
 
 type Latura = LaturaExport;
 /** Sensul de tăiere (ADR 0027): urcare = materialul păstrat în dreapta sensului de mers, cu axul M3. */
@@ -1477,13 +1477,13 @@ export function DialogExport(
         )}
               </div>)}
               {grup('unitati', 'masina', <div className="dx-rand">
-          <Cartonase camp="unitati" poze="unitati" eticheta={t('export.unitati')} nume="unitati" valoare={unitati}
+          <Cartonase data-camp="unitati" poze="unitati" eticheta={t('export.unitati')} nume="unitati" valoare={unitati}
             variante={[{ v: 'mm', text: t('export.unitati.mm') }, ...(postAles?.inch !== false ? [{ v: 'inch' as const, text: t('export.unitati.inch') }] : [])]}
             onAlege={(v) => { schimbat(); setUnitati(v); }} />
               </div>)}
               {scule.size > 1 && grup('schimbare', 'masina', <div className="dx-rand">
           {scule.size > 1 && (
-            <Cartonase<StrategieScula> camp="strategie" poze="strategie" eticheta={t('export.strategie')} nume="strategie-masina" valoare={strategie} mari
+            <Cartonase<StrategieScula> data-camp="strategie" poze="strategie" eticheta={t('export.strategie')} nume="strategie-masina" valoare={strategie} mari
               titlu={t('export.strategie.titlu')} variante={(postAles?.strategii ?? []).map((x) => ({ v: x, text: t(`export.strategie.${x}` as CheieSimpla) }))}
               onAlege={(v) => { schimbat(); setStrategie(v); }} />
           )}
@@ -1566,7 +1566,7 @@ export function DialogExport(
                     </label>
                     {/* Pe linie, direcția (ADR 0092 §4): ca desenul, invers sau cel mai scurt drum. */}
                     {p.tip === 'profil' && p.latura === 'pe-linie' && (
-                    <Cartonase camp="directie" poze="directie" eticheta={t('export.directie')} nume={`directie-${o.cheie}`} valoare={p.directie}
+                    <Cartonase data-camp="directie" poze="directie" eticheta={t('export.directie')} nume={`directie-${o.cheie}`} valoare={p.directie}
                       oprit={doarCitire} titlu={t('export.directie.titlu')} onAlege={(v) => { schimba(o.cheie, { directie: v }); }}
                       variante={[{ v: '', text: t('export.directie.desen') }, { v: 'invers', text: t('export.directie.invers') }, { v: 'scurt', text: t('export.directie.scurt') }]} />
                     )}
@@ -1684,7 +1684,7 @@ export function DialogExport(
                   </div>);
                   case 'colturi': return (<div className="dx-rand">
                     {/* Pe linie, nu există parte de deșeu pentru degajare (ADR 0032 §6). */}
-                    <Cartonase camp="colturi" poze="colturi" eticheta={t('export.colturi')} nume={`colturi-${o.cheie}`}
+                    <Cartonase data-camp="colturi" poze="colturi" eticheta={t('export.colturi')} nume={`colturi-${o.cheie}`}
                       valoare={p.latura === 'pe-linie' || nuProfil ? '' : p.colturi} titlu={t('export.colturi.titlu')}
                       oprit={doarCitire || deschis || nuProfil || p.latura === 'pe-linie'} onAlege={(v) => { schimba(o.cheie, { colturi: v }); }}
                       variante={[{ v: '', text: t('export.colturi.rotunde'), nota: t('export.card.colturi.fara') },
@@ -1720,16 +1720,25 @@ export function DialogExport(
                           de lemn (cere o parte de deșeu, deci nu pe linie) sau după reguli, pe laturile drepte ale drumului frezei. */}
                       <div className="locuri-urechi">
                         <span className="dx-eticheta">{t('export.urechi.locuri')}</span>
-                        <Cartonase poze="urechi" eticheta={t('export.urechi.locuri')} nume={`urechi-locuri-${o.cheie}`} valoare={p.modUrechi} oprit={doarCitire}
-                          onAlege={(v) => { schimba(o.cheie, { modUrechi: v }); }} variante={[
-                            { v: 'egale', camp: 'urechi-egale', text: t('export.urechi.locuri.egale') },
-                            { v: 'lungi', camp: 'urechi-lungi', text: t('export.urechi.locuri.lungi'), titlu: t('export.urechi.locuri.laturi.titlu') },
-                            { v: 'scurte', camp: 'urechi-scurte', text: t('export.urechi.locuri.scurte'), titlu: t('export.urechi.locuri.laturi.titlu') },
-                            { v: 'mijloc', camp: 'urechi-mijloc', text: t('export.urechi.locuri.mijloc'), titlu: t('export.urechi.locuri.laturi.titlu') },
-                            { v: 'alese', camp: 'urechi-alese', text: t('export.urechi.locuri.alese') },
-                            { v: 'lemn', camp: 'urechi-lemn', text: t('export.urechi.locuri.lemn'), titlu: t('export.urechi.locuri.lemn.titlu'),
-                              motiv: p.latura === 'pe-linie' ? t('export.card.urechi.linie') : undefined },
-                          ]} />
+                        <GrupCartonase eticheta={t('export.urechi.locuri')} data-alegere="urechi-locuri">
+                          <Card data-camp="urechi-egale" poze="urechi" nume={`urechi-locuri-${o.cheie}`} oprit={doarCitire} ales={p.modUrechi === 'egale'}
+                            x={{ v: 'egale' as const, text: t('export.urechi.locuri.egale') }} onAlege={(v) => { schimba(o.cheie, { modUrechi: v }); }} />
+                          <Card data-camp="urechi-lungi" poze="urechi" nume={`urechi-locuri-${o.cheie}`} oprit={doarCitire} ales={p.modUrechi === 'lungi'}
+                            x={{ v: 'lungi' as const, text: t('export.urechi.locuri.lungi'), titlu: t('export.urechi.locuri.laturi.titlu') }}
+                            onAlege={(v) => { schimba(o.cheie, { modUrechi: v }); }} />
+                          <Card data-camp="urechi-scurte" poze="urechi" nume={`urechi-locuri-${o.cheie}`} oprit={doarCitire} ales={p.modUrechi === 'scurte'}
+                            x={{ v: 'scurte' as const, text: t('export.urechi.locuri.scurte'), titlu: t('export.urechi.locuri.laturi.titlu') }}
+                            onAlege={(v) => { schimba(o.cheie, { modUrechi: v }); }} />
+                          <Card data-camp="urechi-mijloc" poze="urechi" nume={`urechi-locuri-${o.cheie}`} oprit={doarCitire} ales={p.modUrechi === 'mijloc'}
+                            x={{ v: 'mijloc' as const, text: t('export.urechi.locuri.mijloc'), titlu: t('export.urechi.locuri.laturi.titlu') }}
+                            onAlege={(v) => { schimba(o.cheie, { modUrechi: v }); }} />
+                          <Card data-camp="urechi-alese" poze="urechi" nume={`urechi-locuri-${o.cheie}`} oprit={doarCitire} ales={p.modUrechi === 'alese'}
+                            x={{ v: 'alese' as const, text: t('export.urechi.locuri.alese') }} onAlege={(v) => { schimba(o.cheie, { modUrechi: v }); }} />
+                          <Card data-camp="urechi-lemn" poze="urechi" nume={`urechi-locuri-${o.cheie}`} oprit={doarCitire} ales={p.modUrechi === 'lemn'}
+                            x={{ v: 'lemn' as const, text: t('export.urechi.locuri.lemn'), titlu: t('export.urechi.locuri.lemn.titlu'),
+                              motiv: p.latura === 'pe-linie' ? t('export.card.urechi.linie') : undefined }}
+                            onAlege={(v) => { schimba(o.cheie, { modUrechi: v }); }} />
+                        </GrupCartonase>
                       </div>
                       {p.modUrechi === 'lemn' && <span className="nota" data-nota="urechi-lemn">{t('export.urechi.lemn')}</span>}
                       {(p.modUrechi === 'lungi' || p.modUrechi === 'scurte') && <span className="nota" data-nota="urechi-laturi">{t('export.urechi.laturi')}</span>}

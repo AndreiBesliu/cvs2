@@ -22,7 +22,7 @@ async function deschide(page: Page): Promise<void> {
 test('colțurile: trei cartonașe cu poze; clicul pe nume și săgețile aleg, cel ales e marcat', async ({ page }) => {
   await deschide(page);
   const e1 = fisa(page, 'e1/e1');
-  const carduri = e1.locator('[data-camp="colturi"] .dx-card');
+  const carduri = e1.locator('[data-alegere="colturi"] .dx-card');
   await expect(carduri).toHaveCount(3);
   await expect(carduri.locator('svg.dx-poza')).toHaveCount(3);
   await expect(carduri).toContainText(['rotunde', 'dog-bone', 'T-bone']);
@@ -44,7 +44,7 @@ test('colțurile: trei cartonașe cu poze; clicul pe nume și săgețile aleg, c
   await expect(aleasa(e1, 'colturi')).toHaveValue('dog-bone');
   // Pe linie, colțurile nu se aleg: oprite, cu motivul scris.
   await e1.locator('[data-camp="latura"]').selectOption('pe-linie');
-  await expect(e1.locator('[data-camp="colturi"] input:enabled')).toHaveCount(0);
+  await expect(e1.locator('input[data-camp="colturi"]:enabled')).toHaveCount(0);
   await expect(e1.locator('[data-nota="colturi-linie"]')).toContainText('nu există deșeu');
 });
 
@@ -71,11 +71,11 @@ test('direcția pe linie, unitățile și despărțirea au pozele lor; cartonaș
   await deschide(page);
   const e1 = fisa(page, 'e1/e1');
   await e1.locator('[data-camp="latura"]').selectOption('pe-linie');
-  await expect(e1.locator('[data-camp="directie"] .dx-card svg.dx-poza')).toHaveCount(3);
-  await e1.locator('[data-camp="directie"] .dx-card').filter({ hasText: 'cel mai scurt drum' }).click();
+  await expect(e1.locator('[data-alegere="directie"] .dx-card svg.dx-poza')).toHaveCount(3);
+  await e1.locator('[data-alegere="directie"] .dx-card').filter({ hasText: 'cel mai scurt drum' }).click();
   await expect(aleasa(e1, 'directie')).toHaveValue('scurt');
   const masina = page.locator('[data-fisa="masina"]');
-  await expect(masina.locator('[data-camp="unitati"] .dx-card svg.dx-poza')).toHaveCount(2);
+  await expect(masina.locator('[data-alegere="unitati"] .dx-card svg.dx-poza')).toHaveCount(2);
   await alege(masina, 'unitati', 'inch');
   await expect(aleasa(masina, 'unitati')).toHaveValue('inch');
   const late = await page.locator('[data-fisa], .dx-carduri').evaluateAll((s) => s.filter((x) => x.scrollWidth > x.clientWidth + 1).length);

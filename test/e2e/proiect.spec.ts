@@ -290,8 +290,8 @@ test('în fila care doar citește, urechile scrise de scriitor se văd, oprite, 
   await expect(a2.locator('[data-operatie="e1/e1"] [data-camp="urechi"]')).toBeDisabled();
   await expect(a2.locator('[data-operatie="e1/e1"] [data-camp="rampa"]')).toBeDisabled();
   await expect(a2.locator('[data-operatie="e1/e1"] [data-camp="intrari"]')).toBeDisabled();
-  await expect(a2.locator('[data-operatie="e1/e1"] [data-camp="colturi"] input')).toHaveCount(3);
-  await expect(a2.locator('[data-operatie="e1/e1"] [data-camp="colturi"] input:enabled')).toHaveCount(0);
+  await expect(a2.locator('[data-operatie="e1/e1"] input[data-camp="colturi"]')).toHaveCount(3);
+  await expect(a2.locator('[data-operatie="e1/e1"] input[data-camp="colturi"]:enabled')).toHaveCount(0);
   for (const c of ['urechi-numar', 'urechi-latime', 'urechi-grosime']) {
     await expect(a2.locator(`[data-urechi="e1/e1"] [data-camp="${c}"]`)).toBeDisabled();
   }

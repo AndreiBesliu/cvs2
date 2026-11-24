@@ -65,8 +65,12 @@ vreau ca ficare setare sa fie insotita de o ilustratie sugestiva, ca sa ajute us
 - **Desenele (din 28.8↑b-1):** `[data-grup="…"] [data-desen] svg`; cotele `[data-cota="<data-camp>"]`, aprinse cu `data-aprinsa`;
   colțurile `[data-colt]` (cel ales, `data-ales`), urechile `[data-ureche]` (cu `data-latura` `o` / `v`), trecerile `[data-trecere]`.
   Ce spune un desen nou (o formulă) se socotește în `exportDeseneCalcul.ts` și se compară cu lucrarea în `export.desene.test.ts`.
-- **Cartonașele (din 28.8↑b-2):** o alegere e `[data-camp="…"] input[value="…"]`; în probe, `alege(loc, camp, v)` și
-  `aleasa(loc, camp)` din `test/e2e/ajutor-export.ts`. Clicul pe un cartonaș se dă pe cartonaș (`.dx-card`), nu pe textul
+- **Cartonașele (din 28.8↑b-2):** o alegere e `input[data-camp="…"][value="…"]` (grupul, `[data-alegere="…"]`); în probe,
+  `alege(loc, camp, v)` și `aleasa(loc, camp)` din `test/e2e/ajutor-export.ts`.
+- **Catalogul controalelor** (ADR 0262, din `main`, 24.11): se scoate din `data-camp="…"` (și celelalte atribute de nume)
+  scrise în sursă pe un control sau pe o componentă; un nume dat prin proprietate (`camp={…}`) sau din șablon nu intră, iar
+  un `id="…"` pe o componentă intră. După o schimbare a câmpurilor, `node scripts/catalog-controale.ts --scrie`
+  (`utilizare.catalog.test.ts` cade până atunci). Clicul pe un cartonaș se dă pe cartonaș (`.dx-card`), nu pe textul
   lui: inputul transparent îl acoperă. Tokenurile pozelor stau pe `.dx-ilu`.
 - **Otrăvurile cu multe spec-uri e2e** (~2–3 min fiecare) se rulează câte două: o repornire a procesului oprește rularea, iar
   otrava în lucru rămâne aplicată în clonă (`git status` acolo, înainte de reluare).

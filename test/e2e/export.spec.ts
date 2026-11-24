@@ -537,7 +537,7 @@ test('degajările (ADR 0032): dog-bone pe gaură, drumul din fiecare colț al tr
   await page.locator('[data-actiune="export.gcode"]').click();
   await expect(aleasa(rand, 'colturi')).toHaveValue('dog-bone');
   await rand.locator('select[data-camp="latura"]').selectOption('pe-linie');
-  await expect(rand.locator('[data-camp="colturi"] input:enabled')).toHaveCount(0);
+  await expect(rand.locator('input[data-camp="colturi"]:enabled')).toHaveCount(0);
   await expect(aleasa(rand, 'colturi')).toHaveValue('');
 });
 
@@ -588,7 +588,7 @@ test('posturile atelierelor (ADR 0125): NcStudio cu apostrof și setările lui; 
   await expect(page.getByTestId('post-setari')).toHaveText('Verifică pe controler, înainte de pornire: N4063 = 1; N4034 = 0; N4035 = 0.');
   // RichAuto citește doar mm: inch dispare din listă, iar exportul iese în mm, fără comentarii, cu nume scurt.
   await page.locator('[data-camp="post"]').selectOption('richauto');
-  await expect(page.locator('[data-camp="unitati"] input[value="inch"]')).toHaveCount(0);
+  await expect(page.locator('input[data-camp="unitati"][value="inch"]')).toHaveCount(0);
   await expect(aleasa(page.locator('[data-fisa="masina"]'), 'unitati')).toHaveValue('mm');
   await expect(page.getByTestId('post-setari')).toContainText('AbsCntr = Off');
   const d = page.waitForEvent('download');

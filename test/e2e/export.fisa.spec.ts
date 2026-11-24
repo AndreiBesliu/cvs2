@@ -67,7 +67,8 @@ test('lista: foaia, mașina, apoi operațiile în ordinea tăierii; clicul aduce
   // Fișa foii are colțul, Z0 și supracursa; a mașinii, postul și unitățile.
   await page.locator('[data-nav="foaia"]').click();
   for (const c of ['origine', 'z0', 'supracursa']) await expect(page.locator(`[data-fisa="foaia"] [data-camp="${c}"]`)).toBeVisible();
-  for (const c of ['post', 'unitati']) await expect(page.locator(`[data-fisa="masina"] [data-camp="${c}"]`)).toBeVisible();
+  await expect(page.locator('[data-fisa="masina"] [data-camp="post"]')).toBeVisible();
+  await expect(page.locator('[data-fisa="masina"] [data-alegere="unitati"]')).toBeVisible();
 });
 
 test('explicația câmpului activ stă la vedere în grupul lui; sub pas, trecerile', async ({ page }) => {

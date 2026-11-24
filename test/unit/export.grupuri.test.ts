@@ -12,14 +12,12 @@ import {
 const SURSA = readFileSync(new URL('../../src/ui/DialogExport.tsx', import.meta.url), 'utf8');
 
 /**
- * Câmpurile ferestrei, din sursă: `data-camp="x"`, cartonașele (`<Cartonase camp="x"`, din 28.8↑b-2, și variantele cu numele lor,
- * `camp: 'x'`) și listele frezelor de rest (`${pre}rest-…`, pe trei liste).
+ * Câmpurile ferestrei, din sursă: `data-camp="x"` (și pe cartonașe, din 28.8↑b-2, scris tot așa, pentru catalogul controalelor)
+ * și listele frezelor de rest (`${pre}rest-…`, pe trei liste).
  */
 function campuriDinSursa(): Set<string> {
   const out = new Set<string>();
   for (const m of SURSA.matchAll(/data-camp="([a-z0-9-]+)"/g)) out.add(m[1] ?? '');
-  for (const m of SURSA.matchAll(/<Cartonase(?:<[A-Za-z]+>)? camp="([a-z0-9-]+)"/g)) out.add(m[1] ?? '');
-  for (const m of SURSA.matchAll(/\bcamp: '([a-z0-9-]+)'/g)) out.add(m[1] ?? '');
   for (const m of SURSA.matchAll(/data-camp=\{`\$\{pre\}([a-z0-9-]+)`\}/g)) for (const pre of ['', 'fund-', 'dop-']) out.add(`${pre}${m[1] ?? ''}`);
   return out;
 }

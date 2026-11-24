@@ -41,29 +41,45 @@ export const Poza = ({ k }: { k: string }): ReactNode =>
 
 /** O variantă: valoarea, textul, o notă scurtă sub el; `motiv` o oprește și se scrie în locul notei. */
 export type Varianta<T extends string> = {
-  readonly v: T; readonly text: string; readonly nota?: string; readonly motiv?: string | undefined; readonly camp?: string; readonly titlu?: string;
+  readonly v: T; readonly text: string; readonly nota?: string; readonly motiv?: string | undefined; readonly titlu?: string;
 };
 
 /**
- * Cartonașele unei alegeri: un grup de butoane radio cu poza fiecărei variante (`poze.<valoare>` din `POZE`). `camp` e
- * `data-camp` al grupului (pentru probe și pentru explicația câmpului activ); o variantă cu `camp` propriu îl poartă pe inputul
- * ei; `nume` e numele grupului radio, unic în fereastră.
+ * Un cartonaș: un input radio transparent peste poză, nume și notă. `data-camp` (scris în sursă, ca generatorul catalogului
+ * controalelor să-l vadă, ADR 0262) stă pe input: îl citesc probele, explicația câmpului activ și utilizarea aplicației.
  */
-export function Cartonase<T extends string>({ camp, poze, eticheta, nume, valoare, variante, onAlege, oprit = false, titlu, mari = false }: {
-  camp?: string; poze: string; eticheta: string; nume: string; valoare: T | undefined; variante: readonly Varianta<T>[]; onAlege: (v: T) => void; oprit?: boolean;
-  titlu?: string | undefined; mari?: boolean;
+export function Card<T extends string>({ 'data-camp': camp, poze, nume, x, ales, oprit, onAlege }: {
+  'data-camp': string; poze: string; nume: string; x: Varianta<T>; ales: boolean; oprit: boolean; onAlege: (v: T) => void;
 }): ReactNode {
   return (
-    <div className={mari ? 'dx-carduri mari' : 'dx-carduri'} role="radiogroup" aria-label={eticheta} data-camp={camp} title={titlu}>
-      {variante.map((x) => (
-        <label className="dx-card" key={x.v} title={x.motiv ?? x.titlu}>
-          <input type="radio" name={nume} value={x.v} checked={x.v === valoare} disabled={oprit || x.motiv !== undefined} data-camp={x.camp}
-            onChange={() => { onAlege(x.v); }} />
-          <Poza k={`${poze}.${x.v}`} />
-          <span>{x.text}</span>
-          {(x.motiv ?? x.nota) !== undefined && <small>{x.motiv ?? x.nota}</small>}
-        </label>
-      ))}
-    </div>
+    <label className="dx-card" title={x.motiv ?? x.titlu}>
+      <input type="radio" name={nume} value={x.v} checked={ales} disabled={oprit || x.motiv !== undefined} data-camp={camp}
+        onChange={() => { onAlege(x.v); }} />
+      <Poza k={`${poze}.${x.v}`} />
+      <span>{x.text}</span>
+      {(x.motiv ?? x.nota) !== undefined && <small>{x.motiv ?? x.nota}</small>}
+    </label>
+  );
+}
+
+/** Grupul cartonașelor (radiogroup); `mari` pentru textele lungi; `data-alegere`, numele alegerii (câmpul e pe inputuri). */
+export const GrupCartonase = ({ eticheta, titlu, mari = false, children, ...rest }: {
+  eticheta: string; titlu?: string | undefined; mari?: boolean; children: ReactNode; 'data-alegere'?: string;
+}): ReactNode => (
+  <div className={mari ? 'dx-carduri mari' : 'dx-carduri'} role="radiogroup" aria-label={eticheta} title={titlu} {...rest}>{children}</div>
+);
+
+/**
+ * Cartonașele unei alegeri cu un singur nume (`data-camp` pe fiecare input; grupul are `data-alegere` cu același nume): o
+ * variantă pe cartonaș, cu poza ei (`poze.<valoare>` din `POZE`); `nume` e numele grupului radio, unic în fereastră.
+ */
+export function Cartonase<T extends string>({ 'data-camp': camp, poze, eticheta, nume, valoare, variante, onAlege, oprit = false, titlu, mari = false }: {
+  'data-camp': string; poze: string; eticheta: string; nume: string; valoare: T | undefined; variante: readonly Varianta<T>[]; onAlege: (v: T) => void;
+  oprit?: boolean; titlu?: string | undefined; mari?: boolean;
+}): ReactNode {
+  return (
+    <GrupCartonase eticheta={eticheta} titlu={titlu} mari={mari} data-alegere={camp}>
+      {variante.map((x) => <Card key={x.v} data-camp={camp} poze={poze} nume={nume} x={x} ales={x.v === valoare} oprit={oprit} onAlege={onAlege} />)}
+    </GrupCartonase>
   );
 }

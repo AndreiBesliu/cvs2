@@ -23,8 +23,8 @@ const Sv = ({ x, y, g, c = 'sv' }: { x: number; y: number; g: number; c?: string
   <path className={c} d={varf(x, y, -Math.cos((g * Math.PI) / 180), -Math.sin((g * Math.PI) / 180), 7, 3.6)} />;
 
 /** O cotă: linia cu săgeți la capete și textul; aprinsă când omul stă pe câmpul ei. */
-function Cota({ id, c, x1, y1, x2, y2, text, tx, ty, anc = 'middle' }: {
-  id: string; c: DesenComun; x1?: number; y1?: number; x2?: number; y2?: number; text: string; tx: number; ty: number; anc?: 'start' | 'middle' | 'end';
+function Cota({ pentru: id, c, x1, y1, x2, y2, text, tx, ty, anc = 'middle' }: {
+  pentru: string; c: DesenComun; x1?: number; y1?: number; x2?: number; y2?: number; text: string; tx: number; ty: number; anc?: 'start' | 'middle' | 'end';
 }): ReactNode {
   let linie: ReactNode = null;
   if (x1 !== undefined && y1 !== undefined && x2 !== undefined && y2 !== undefined) {
@@ -91,7 +91,7 @@ export function DesenZ0({ c, z0, supracursa, prinFoaie }: { c: DesenComun; z0: '
       <rect className="g" x={196} y={y0} width={16} height={yb - y0 + (prinFoaie ? sp : 0)} />
       <text x={158} y={y0 - 6} textAnchor="middle">{t('export.desen.z0.gaura')}</text>
       <text x={204} y={y0 - 20} textAnchor="middle">{t('export.desen.z0.foaia')}</text>
-      {sp > 0 && <Cota id="supracursa" c={c} x1={140} y1={yb} x2={140} y2={yb + sp} text={c.f(sup)} tx={136} ty={yb + sp / 2 + 4} anc="end" />}
+      {sp > 0 && <Cota pentru="supracursa" c={c} x1={140} y1={yb} x2={140} y2={yb + sp} text={c.f(sup)} tx={136} ty={yb + sp / 2 + 4} anc="end" />}
       <path className="ua" d={`M6 ${yz}H${z0 === 'sus' ? 96 : 140}`} /><text x={8} y={yz - 6} className="tare z0">Z0</text>
       <Jos>{sp > 0 ? t('export.desen.z0.cu', { mm: c.f(sup) }) : t('export.desen.z0.fara')}</Jos>
     </Desen>
@@ -113,19 +113,19 @@ export function DesenFreza({ c, numar, diametru, v, unghi, varfPlat }: {
         <path className="sg-l" d={`M${r(130 - 20 * s)} ${r(yv - 20 * co)}A20 20 0 0 1 ${r(130 + 20 * s)} ${r(yv - 20 * co)}`} />
         <text x={130} y={r(yv - 24)} textAnchor="middle">{`${unghi === null ? '?' : c.f(unghi)}°`}</text>
       </g>
-      <Cota id="varf-v" c={c} text={t('export.desen.freza.varf', { mm: varfPlat === null ? '?' : c.f(varfPlat) })} tx={172} ty={yv + 4} anc="start" />
-      <Cota id="diametru" c={c} x1={96} y1={30} x2={164} y2={30} text={`Ø ${D} mm`} tx={130} ty={24} />
+      <Cota pentru="varf-v" c={c} text={t('export.desen.freza.varf', { mm: varfPlat === null ? '?' : c.f(varfPlat) })} tx={172} ty={yv + 4} anc="start" />
+      <Cota pentru="diametru" c={c} x1={96} y1={30} x2={164} y2={30} text={`Ø ${D} mm`} tx={130} ty={24} />
     </>);
   } else {
     corp = (<>
       <path className="f" d="M116 6H144V44H150V112H110V44H116Z" /><path className="c slab" d="M114 52L144 104M114 76L132 108" />
-      <Cota id="diametru" c={c} x1={110} y1={126} x2={150} y2={126} text={`Ø ${D} mm`} tx={130} ty={141} />
+      <Cota pentru="diametru" c={c} x1={110} y1={126} x2={150} y2={126} text={`Ø ${D} mm`} tx={130} ty={141} />
     </>);
   }
   return (
     <Desen eticheta={t('export.desen.freza')}>
       {corp}
-      <Cota id="scula" c={c} text={`T${numar.trim() === '' ? '?' : numar.trim()}`} tx={104} ty={20} anc="end" />
+      <Cota pentru="scula" c={c} text={`T${numar.trim() === '' ? '?' : numar.trim()}`} tx={104} ty={20} anc="end" />
     </Desen>
   );
 }
@@ -152,8 +152,8 @@ export function DesenAdancime({ c, adancime, pas, grosime, supracursa }: {
       {tr && tr.n > 40 && <rect className="g" x={sx} y={y0} width={sw} height={r(Ad * k)} />}
       {benzi}
       {tr ? (<>
-        <Cota id="adancime" c={c} x1={sx + sw + 12} y1={y0} x2={sx + sw + 12} y2={y0 + Ad * k} text={`${c.f(A)} mm`} tx={sx + sw + 18} ty={y0 + (Ad * k) / 2 + 4} anc="start" />
-        <Cota id="pas" c={c} x1={sx - 12} y1={y0} x2={sx - 12} y2={y0 + Math.min(tr.d, Ad) * k} text={c.f(tr.d)} tx={sx - 18} ty={y0 + (Math.min(tr.d, Ad) * k) / 2 + 4} anc="end" />
+        <Cota pentru="adancime" c={c} x1={sx + sw + 12} y1={y0} x2={sx + sw + 12} y2={y0 + Ad * k} text={`${c.f(A)} mm`} tx={sx + sw + 18} ty={y0 + (Ad * k) / 2 + 4} anc="start" />
+        <Cota pentru="pas" c={c} x1={sx - 12} y1={y0} x2={sx - 12} y2={y0 + Math.min(tr.d, Ad) * k} text={c.f(tr.d)} tx={sx - 18} ty={y0 + (Math.min(tr.d, Ad) * k) / 2 + 4} anc="end" />
         <text x={130} y={r(yb + 30)} textAnchor="middle" className="tare">{t('export.desen.treceri', { n: tr.n, mm: c.f(tr.d) })}</text>
         {grosime !== undefined && A > grosime + 1e-9 && (
           <text x={248} y={r(yb + 11)} textAnchor="end">{A > grosime + supracursa + 1e-9 ? t('export.desen.adancime.peste') : t('export.desen.adancime.masa', { mm: c.f(A - grosime) })}</text>
@@ -222,8 +222,8 @@ export function DesenRampa({ c, rampa, lungime, adancime, pas }: {
         <path className="g" d={`M${x0} ${y0}L${r(x1)} ${r(yd)}H250V${y0}Z`} />
         <path className="d" d={`M${x0} ${y0 - 14}V${y0}L${r(x1)} ${r(yd)}H246`} /><Sv x={250} y={yd} g={0} c="dv" />
         <path className="d slab" d={`M${x0} ${r(yd + 1)}H${r(x1)}`} strokeDasharray="3 3" />
-        <Cota id="rampa-lungime" c={c} x1={x0} y1={yd + 16} x2={x1} y2={yd + 16} text={`${c.f(L)} mm`} tx={(x0 + x1) / 2} ty={yd + 30} />
-        {tr && <Cota id="pas" c={c} x1={14} y1={y0} x2={14} y2={yd} text={c.f(tr.d)} tx={18} ty={(y0 + yd) / 2 + 4} anc="start" />}
+        <Cota pentru="rampa-lungime" c={c} x1={x0} y1={yd + 16} x2={x1} y2={yd + 16} text={`${c.f(L)} mm`} tx={(x0 + x1) / 2} ty={yd + 30} />
+        {tr && <Cota pentru="pas" c={c} x1={14} y1={y0} x2={14} y2={yd} text={c.f(tr.d)} tx={18} ty={(y0 + yd) / 2 + 4} anc="start" />}
         <text x={r(Math.min(x1 + 6, 170))} y={r(yd + 32)}>{t('export.desen.rampa.apoi')}</text>
       </>) : (<>
         <path className="g" d={`M${x0 - 6} ${y0}V${r(yd)}H250V${y0}Z`} /><path className="d" d={`M${x0} ${y0 - 18}V${r(yd)}H246`} /><Sv x={250} y={yd} g={0} c="dv" />
@@ -243,7 +243,7 @@ export function DesenIntrari({ c, intrari, raza }: { c: DesenComun; intrari: boo
       {intrari && R > 0 ? (<>
         <path className="d" d={`M${r(xa - Rp)} ${r(y - Rp)}A${r(Rp)} ${r(Rp)} 0 0 0 ${xa} ${y}H${xb}A${r(Rp)} ${r(Rp)} 0 0 0 ${r(xb + Rp)} ${r(y - Rp)}`} />
         <Sv x={xb + Rp} y={y - Rp - 1} g={-90} c="dv" />
-        <Cota id="intrari-raza" c={c} x1={xa} y1={y - Rp} x2={xa} y2={y} text={`R ${c.f(R)}`} tx={xa + 6} ty={y - Rp / 2 + 4} anc="start" />
+        <Cota pentru="intrari-raza" c={c} x1={xa} y1={y - Rp} x2={xa} y2={y} text={`R ${c.f(R)}`} tx={xa + 6} ty={y - Rp / 2 + 4} anc="start" />
         <circle className="f" cx={xb} cy={y} r={10} />
       </>) : (<>
         <path className="d" d={`M70 ${y - 30}V${y}H200`} /><Sv x={204} y={y} g={0} c="dv" /><circle className="f" cx={70} cy={y} r={10} />
@@ -289,14 +289,14 @@ export function DesenUrechi({ c, urechi, mod, numar, alese, latime, grosime, gro
         return <path key={i} className="ua" data-ureche data-latura={o ? 'o' : 'v'} d={o ? `M${r(px - lp / 2)} ${r(py)}H${r(px + lp / 2)}` : `M${r(px)} ${r(py - lp / 2)}V${r(py + lp / 2)}`} />;
       })}
       {mod === 'egale' || mod === 'lungi' || mod === 'scurte'
-        ? <Cota id="urechi-numar" c={c} text={nota} tx={78} ty={126} />
+        ? <Cota pentru="urechi-numar" c={c} text={nota} tx={78} ty={126} />
         : <text x={78} y={126} textAnchor="middle">{nota}</text>}
       <text x={dx} y={dy - 26}>{t('export.desen.urechi.sectiune')}</text>
       <rect className="m" x={dx} y={dy + dh} width={dw} height={8} /><rect className="g" x={dx} y={dy} width={dw} height={dh} /><path className="cs" d={`M${dx} ${dy}H${dx + dw}`} />
       {urechi && (<>
         <rect className="l" x={r(tx)} y={r(dy + dh - th)} width={r(tw)} height={r(th)} />
-        <Cota id="urechi-latime" c={c} x1={tx} y1={dy + dh - th - 10} x2={tx + tw} y2={dy + dh - th - 10} text={`${c.f(L)} mm`} tx={dx + dw / 2} ty={dy + dh - th - 15} />
-        <Cota id="urechi-grosime" c={c} x1={dx + dw + 6} y1={dy + dh - th} x2={dx + dw + 6} y2={dy + dh} text={c.f(G)} tx={dx + dw + 2} ty={dy + dh + 20} anc="end" />
+        <Cota pentru="urechi-latime" c={c} x1={tx} y1={dy + dh - th - 10} x2={tx + tw} y2={dy + dh - th - 10} text={`${c.f(L)} mm`} tx={dx + dw / 2} ty={dy + dh - th - 15} />
+        <Cota pentru="urechi-grosime" c={c} x1={dx + dw + 6} y1={dy + dh - th} x2={dx + dw + 6} y2={dy + dh} text={c.f(G)} tx={dx + dw + 2} ty={dy + dh + 20} anc="end" />
       </>)}
     </Desen>
   );
