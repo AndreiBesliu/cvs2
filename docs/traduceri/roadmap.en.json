@@ -641,6 +641,10 @@
       "ro": "Contractele atelierelor",
       "en": "The workshop contracts"
     },
+    "272dfeeddd72dcfa": {
+      "ro": "**Utilizarea aplicației: sesiunea raportării** (felia A.11d din ADR 0262; fără mașină; a șaptesprezecea felie a liniei adminului, `3.Aq` în fișă; aceeași ramură, `wip/A.1-admin`, peste A.11c, încă neunită; lucrată într-o sesiune cloud). O raportare ține acum numărul sesiunii de lucru din care a pornit (doar numărul, spus în „Ce mai pleacă odată cu raportarea”), iar în `/admin`, fila Tichete, cine are „Utilizare: sesiuni” vede **Sesiunea raportării**: ce a făcut omul în sesiunea aceea, la cerere, cu pașii ei, ca Activitatea din Utilizatori, doar pentru sesiunea aceea. Serverul ține numărul doar cu forma lui; cronologia pe o sesiune intră în audit, cu sesiunea. **La unire se publică și:** funcțiile `tichete` și `utilizare` și al doilea index compus pe loturi (contul, sesiunea, ora primirii). **Probele:** cazurile noi din citirea tichetului și din server (sesiunea ținută sau aruncată, cronologia pe o sesiune); proba cap-coadă pe emulatoare: raportarea pleacă cu sesiunea, iar fila Tichete o arată fără lotul altei sesiuni a aceluiași om. **Otrăvurile:** 11 / 11 (2 unitare, 4 ale serverului, 5 pe emulatoare); T01 (o sesiune cu altă formă citită ca bună) a scăpat întâi și e prinsă după proba îndreptată. **Mărimea:** pornirea neschimbată (109,6 / 115); totalul 800,4 → 800,6 / 900; `/admin` 136,9 → 137,1 / 200; contul 30,1 / 32.",
+      "en": ""
+    },
     "27578d1a54a1df39": {
       "ro": "Fluxul senderului, ca mașină de stare pură",
       "en": "The sender flow, as a pure state machine"
@@ -3320,6 +3324,10 @@
     "d7cdc162c25b149e": {
       "ro": "numele pluginului, Easy 3Draw",
       "en": "the plugin’s name, Easy 3Draw"
+    },
+    "d7dab78151d6b1f9": {
+      "ro": "Utilizarea aplicației: sesiunea raportării",
+      "en": ""
     },
     "d7f544591d209f6b": {
       "ro": "**Gata pe 09.11.** Placa și stratul viu (ADR 0193): în fereastra Imprimanta, cât imprimă, patul văzut de sus cu piesele, duza și stratul de acum (căile lui, pe fișierele trimise din cvs2, ținute în browser; stratul din filamentul folosit); imprimanta falsă „imprimă” fișierul primit",

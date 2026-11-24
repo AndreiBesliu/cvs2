@@ -2,7 +2,7 @@
 
 <!-- Adusă din memoria sesiunii principale pe 23.11.2026 (mutarea în cloud). De aici înainte o ține la zi linia, pe ramura ei, odată cu feliile. -->
 
-_CNCVS2, ADR 0260: pagina /admin reproiectată; A.1–A.6 unite în main (A.6: 4497d639); ADR 0262 (utilizarea aplicației) acceptat pe 23.11; A.8a și A.8b unite în main pe 23.11 (PR-ul AndreiBesliu/cvs2#8, din 55d26b81); A.8c și A.8d în PR-ul AndreiBesliu/cvs2#13 (completul pe ba1b4b0c); A.9a (sumele zilei, jobul agregaUtilizarea), A.9b (fila Utilizare), A.10 (fluxurile), A.11a (pașii dinaintea unei erori), A.11b (pașii la raportare) și A.11c (cronologia unui om) gata pe aceeași ramură, în același PR (la unire se publică funcțiile agregaUtilizarea, logClientError, tichete și utilizare, regulile, indexurile); apoi A.11d, A.11e, apoi A.7_
+_CNCVS2, ADR 0260: pagina /admin reproiectată; A.1–A.6 unite în main (A.6: 4497d639); ADR 0262 (utilizarea aplicației) acceptat pe 23.11; A.8a și A.8b unite în main pe 23.11 (PR-ul AndreiBesliu/cvs2#8, din 55d26b81); A.8c și A.8d în PR-ul AndreiBesliu/cvs2#13 (completul pe ba1b4b0c); A.9a (sumele zilei, jobul agregaUtilizarea), A.9b (fila Utilizare), A.10 (fluxurile), A.11a (pașii dinaintea unei erori), A.11b (pașii la raportare), A.11c (cronologia unui om) și A.11d (sesiunea raportării) gata pe aceeași ramură, în același PR (la unire se publică funcțiile agregaUtilizarea, logClientError, tichete și utilizare, regulile, indexurile); apoi A.11e (disocierea), apoi A.7_
 
 Linia adminului din [sesiunea principală](principala.md): ADR 0260 (intervalul 0260–0269), acceptat pe 13.11.2026 cu ideile 51–62 de pe
 tabla „Harta schițelor”. Owner-ul a cerut „vreau sa faci design si pentru admin”, iar la idei a răspuns „Da la toate”
@@ -87,6 +87,9 @@ tabla „Harta schițelor”. Owner-ul a cerut „vreau sa faci design si pentru
   **O permisiune nouă se numără în matricea din `personal.emulator.spec.ts`** (rândul și numărul de bife) și în grupele din
   `admin.personal.test.ts`. Encoder-ul REST al probelor știe acum și valori booleene (`utilizatori.emulator.spec.ts`).
   Otrăvurile 19 / 19.
+- **A.11d (sesiunea raportării) GATA pe ramură din 24.11** (`1ae86894`, `8878b345`, `65bc77a1`, `ca631347`; `3.Aq`): **loturile
+  se strâng doar cu contul deschis**, deci sesiunea raportării are doar ce a venit după intrare. **Proba e2e a Tichetelor
+  compară versiunea cu commit-ul: `npm run build` după fiecare commit**, înaintea suitei pe emulatoare. Otrăvurile 11 / 11.
 - **După unirea PR-ului** (A.8a–A.8b, de owner, pe 23.11, cât lucram la A.8c): `main` adus în ramură printr-o unire obișnuită
   (**un push forțat al unei ramuri refăcute e refuzat de permisiuni**; ciocnirile doar în tabele), apoi catalogul controalelor
   scris din nou și **funcțiile compilate din nou** (`npm --prefix functions run compileaza`: probele pe emulatoare folosesc `functions/lib`, iar un contract nou în

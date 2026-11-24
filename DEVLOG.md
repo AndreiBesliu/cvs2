@@ -12373,6 +12373,23 @@ admin cat mai multe setari”).
 - **Documentele:** ADR 0262 (implementarea, despărțirea), fișa etapei 3 (`3.Ap`), registrul otrăvurilor, traducerile, nota
   liniei. **Completed:** 24.11 08:35.
 
+## 2026-11-24 — Felia A.11d: sesiunea raportării (ADR 0262)
+
+**Prompt:** același „am raspuns” (7a: A.8–A.11 acum), după A.11c.
+**Started:** 24.11 08:40.
+
+- **Codul (`1ae86894`):** sesiunea dată de înregistrator (`sesiuneaAcum`), trimisă de raportare, ținută de serverul
+  tichetelor, filtrul pe sesiune al cronologiei (indexul al doilea), „Sesiunea raportării” în fila Tichete (`Activitatea`, cu
+  `sesiune`).
+- **Pe drum:** loturile se strâng doar cu contul deschis, deci proba cap-coadă caută în sesiune trimiterea raportării, nu
+  dreptunghiul de dinaintea intrării; build-ul din `dist/` trebuie refăcut după fiecare commit (proba compară versiunea).
+- **Probele:** cazurile noi din citire și din server, proba cap-coadă (cu un lot al altei sesiuni). **Otrăvurile:** 11 / 11
+  (T01 după proba îndreptată). **Porțile locale:** rapidul 10 057 / 0, emulatoarele 124 / 124 și 52 / 52. **Mărimea:** totalul
+  800,6 / 900, `/admin` 137,1 / 200.
+- **Între timp:** completul pe `cd00283b` (A.11b) verde.
+- **Documentele:** ADR 0262 (implementarea), fișa etapei 3 (`3.Aq`), registrul otrăvurilor, traducerile, nota liniei.
+  **Completed:** 24.11 09:30.
+
 ## 2026-11-23 — Sesiunea principală în cloud: a șasea unire (A.6, Roadmap, Documentație și Setări); linia frezelor, pornită (Model: Claude Fable 5.2)
 
 **Prompt:** același brief de predare al sesiunii principale („unește ce se poate”), la raportul liniei adminului (PR-ul

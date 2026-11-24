@@ -257,6 +257,12 @@ Estimarea: ~8 felii (A.8c s-a despărțit în A.8c și A.8d pe 23.11, A.9 în A.
   auditează), apoi sesiunile, cele mai noi întâi (`src/admin/utilizatori/activitate.ts`), fiecare deschisă la cerere, cu
   pașii ei (clipa față de pornirea paginii, numele din catalog, felul, rezultatul) și „Mai vechi”. Descrierea unui pas e
   comună Erori, Tichete și Activității (`DescrierePas`).
+- **A.11d** (24.11, `3.Aq`): **sesiunea raportării**. Înregistratorul își dă id-ul sesiunii odată cu inelul
+  (`preiaUtilizarea`, `sesiuneaAcum`), iar raportarea îl trimite mereu, doar ca număr, spus în „Ce mai pleacă”; serverul
+  tichetelor îl ține doar cu forma lui (`esteSesiune`). Cronologia primește un filtru pe sesiune (indexul compus `uid` +
+  `sesiune` + `primit`), cu sesiunea în audit. În fila Tichete, cine are „Utilizare: sesiuni” vede **Sesiunea raportării**:
+  aceeași Activitate, la cerere, doar cu sesiunea aceea a autorului. Loturile se strâng doar cu contul deschis, deci ce a
+  făcut omul înainte să intre în cont nu e acolo (e în pașii atașați, A.11b).
 
 ## Probele
 
