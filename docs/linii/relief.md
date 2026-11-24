@@ -2,7 +2,7 @@
 
 _cncvs2, relieful 2.5D / 3D, felia 18.1↑ adusă din etapa 18 („Relieful 1: nucleul, relieful din imagine, prelucrarea 3D
 din relief”): ramura `wip/18.1-relief` (din `main`, 24.11), ADR-urile 0310–0329, canalul `relief`; PORNITĂ pe 24.11, la
-cuvântul owner-ului; ADR 0310 PROPUS pe 24.11, cu schița și șase întrebări; codul, după răspunsuri_
+cuvântul owner-ului; ADR 0310 ACCEPTAT pe 24.11 (1a–6a); felia 18.1↑a în lucru_
 
 Pornită pe 24.11.2026, la „ce urmeaza in roadmap si nu a fost atins deloc si putem incepe” și „ok, scrie brief-ul pentru
 relief si pentru cote” ale owner-ului (în sesiunea principală). E primul lucru din blocul relief + 3D (etapele 18–24),
@@ -95,3 +95,8 @@ degroșarea și finisarea pe relief), unde stă relieful în document și unde s
 - **De ținut minte:** în codul vederii 3D, „relieful” (`ReliefSimulat`, `reliefPentru`) e câmpul simulării, nu modelul
   de aici; numele noi din `src/relief/` trebuie să nu se încurce cu ele. Codul vechi (ediția întâi) nu e în container:
   verdictele portării se sprijină pe `LECTII.md` §3.2 și pe s5.
+- **24.11, 12:55: ADR 0310 acceptat**, cu toate recomandările (formularul schiței: 1a, 2a, 3a, 4a, 5a, 6a; fără note):
+  relieful e element al piesei, pe planșa Proiectare; întâi ce se taie (a, b, c, d, apoi e–i); bila o aduce relieful, în
+  aceeași versiune cu forma `relief`; plafonul 8192 × 8192 celule; oracolul îl scrie linia, înaintea nucleului, fără
+  agent; litofania de pe placă pe o placă albă translucidă de 6 mm (grosimea 0,8–3,0 mm, bila Ø1,5–Ø3). Anunțate
+  sesiunea principală și linia frezelor. Pornită felia 18.1↑a.

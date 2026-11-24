@@ -1,9 +1,10 @@
 # ADR 0310: Relieful din imagine și prelucrarea 3D din relief: nucleul, straturile, litofania
 
-**Starea:** propus pe 24.11.2026, la pornirea liniei reliefului („ce urmeaza in roadmap si nu a fost atins deloc si putem
+**Starea:** acceptat pe 24.11.2026, cu toate recomandările (1a–6a, din formularul schiței, salvat la 12:55); propus în
+aceeași zi, la pornirea liniei reliefului („ce urmeaza in roadmap si nu a fost atins deloc si putem
 incepe” și „ok, scrie brief-ul pentru relief si pentru cote”, în sesiunea principală). Felia 18.1↑, adusă din etapa 18
 („Relieful 1: nucleul, relieful din imagine, prelucrarea 3D din relief”), linia „relief”: ramura `wip/18.1-relief`,
-ADR-urile 0310–0329, canalul `relief`. Fără cod de produs până la răspunsurile owner-ului. **Schița**, cu machetele și
+ADR-urile 0310–0329, canalul `relief`. Codul pornește cu felia 18.1↑a, cu oracolul scris întâi (5a). **Schița**, cu machetele și
 întrebările: <https://claude.ai/artifact/Kbh5T2HAi3aMuYTQ59qz6h> (răspunsurile se salvează în pagină, în `raspunsuri/owner`).
 
 **Rândurile pragului** (`ACOPERIRE-ARTCAM-DESKPROTO.md`): din C, „Relief din imagine”, „Alinierea pixelilor imaginii cu
@@ -38,7 +39,7 @@ redeschide.
   2,67 M de puncte în 2,2 s pe 16 workere, combinarea la 4000² în 13–15 ms, pensula în 0,3–2,6 ms [măsurat, s5].
 - **Mărimea:** pornirea 114,7 / 120 kB (cu ușa și cu Atelierul), totalul 806,1 / 900 kB.
 
-## Decizia (propusă)
+## Decizia (acceptată cu 1a–6a)
 
 ### 1. Relieful e un element al piesei (întrebarea 1)
 
@@ -231,7 +232,7 @@ Variantele care pot sta împreună intră ca opțiuni, cu recomandarea ca implic
 - litofania: lumina liniară sau după material, din față sau din spate, rama;
 - fișierul pe 16 biți: PNG sau TIFF.
 
-### 13. Freza bilă în document (dacă răspunsul la întrebarea 3 e „a”)
+### 13. Freza bilă în document (răspunsul la întrebarea 3: „a”)
 
 Sesiunea principală e de acord (24.11) ca bila să intre odată cu forma `relief`, cu forma câmpului stabilită împreună cu
 linia frezelor, a cărei e modelul frezei (`src/model/freza.ts`, `sculaDinFreza`). Propunerea trimisă liniei frezelor:
@@ -271,7 +272,7 @@ linia frezelor, a cărei e modelul frezei (`src/model/freza.ts`, `sculaDinFreza`
 - **Oracolul documentului și corpusul de aur:** bila acceptată de la v29 și refuzată înainte, în `problemeOperatieO`, cu
   frontiera pe hârtie; în `ADAUGIRI`, o bilă pe o operație de relief.
 
-## Întrebările (recomandarea întâi)
+## Întrebările (recomandarea întâi; răspunsurile owner-ului: 1a, 2a, 3a, 4a, 5a, 6a)
 
 1. **Unde stă relieful.**
    - **a) Element al piesei, pe planșa Proiectare, lângă vectori,** cu straturile lui (recomandat). Piesa cu relief se
