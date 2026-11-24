@@ -225,6 +225,14 @@ test('Setări: prefixele razei și diametrului, linia razei, inch în fracții; 
   await expect(proba.locator('[data-text]')).toHaveCount(4);
   await expect(proba.locator('[data-fel="raza"]')).toHaveAttribute('data-text', 'R14');
   await expect(proba.locator('[data-fel="unghi"]')).toHaveAttribute('data-text', '25°');
+  // Arcul unghiului de probă, în sectorul lui: vârful în (10, −30), laturile la 0° și 25°, raza 40; mijlocul arcului, la 12,5°
+  // (în viewBox-ul probei, Y e întors).
+  const m = await proba.locator('[data-fel="unghi"] path').first().evaluate((el) => {
+    const p = el as SVGPathElement, q = p.getPointAtLength(p.getTotalLength() / 2);
+    return { x: q.x, y: q.y };
+  });
+  const u = (12.5 * Math.PI) / 180;
+  expect(Math.hypot(m.x - (10 + 40 * Math.cos(u)), m.y + (-30 + 40 * Math.sin(u)))).toBeLessThan(0.5);
   const prefix = dialog.locator('[data-setare="raza.prefixR"]');
   await prefix.fill('r=');
   await expect(c).toHaveAttribute('data-text', 'r=15');
