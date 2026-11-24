@@ -17,9 +17,10 @@ import { legaturi, muta, ordineAutomata, ordineDinRanguri, riscuri, type RandOrd
 import { PrevizualizareSimulare } from './PrevizualizareSimulare.tsx';
 import { useLimba } from './useLimba.ts';
 import { grupuriOperatie, verdicteGresite, type GrupExport, type VerdictRand } from './exportGrupuri.ts';
-import { treceriEgale } from './exportDeseneCalcul.ts';
+import { coborareDesen, treceriEgale } from './exportDeseneCalcul.ts';
 import {
-  DesenAdancime, DesenColt, DesenFreza, DesenIntrari, DesenRampa, DesenSens, DesenUrechi, DesenZ0, type DesenComun,
+  DesenAdancime, DesenColt, DesenCoborare, DesenFreza, DesenGaurire, DesenGolire, DesenIntrari, DesenRampa, DesenRest, DesenSens, DesenUrechi,
+  DesenZ0, type DesenComun,
 } from './exportDesene.tsx';
 import { Card, Cartonase, GrupCartonase, Poza } from './exportPoze.tsx';
 
@@ -1537,6 +1538,12 @@ export function DialogExport(
                     fel={p.tip !== 'profil' || p.latura === 'interior' ? 'gaura' : p.latura} />;
                   case 'rampa': return (c) => <DesenRampa c={c} rampa={p.rampa && !nuProfil} lungime={citesteNumar(p.lungimeRampa)} adancime={adancimeRand} pas={citesteNumar(p.pas)} />;
                   case 'intrari': return (c) => <DesenIntrari c={c} intrari={p.intrari && p.latura !== 'pe-linie' && !nuProfil} raza={citesteNumar(p.razaIntrare)} />;
+                  case 'golire': return (c) => <DesenGolire c={c} diametru={citesteNumar(p.diametruScula)} pas={citesteNumar(p.pasLateral)}
+                    paralel={p.strategie === 'paralel'} unghi={citesteNumar(p.unghiParalel)} />;
+                  case 'coborare': return (c) => <DesenCoborare c={c} fel={p.coborare} bun={b.coborare} trecere={treceriEgale(adancimeRand, citesteNumar(p.pas))?.d ?? null}
+                    unghi={citesteNumar(p.unghiCoborare)} lungime={citesteNumar(p.lungimeZigzag)} raza={citesteNumar(p.razaElice)} />;
+                  case 'rest': return (c) => <DesenRest c={c} diametru={citesteNumar(p.diametruScula)} rest={p.rest.map((x) => citesteNumar(x.diametru))} />;
+                  case 'gaurire': return (c) => <DesenGaurire c={c} adancime={adancimeRand} pas={citesteNumar(p.pas)} retragere={citesteNumar(p.retragereCompleta)} />;
                   case 'urechi': return (c) => <DesenUrechi c={c} urechi={p.urechi && !nuProfil} mod={p.modUrechi} numar={citesteNumar(p.numarUrechi)}
                     alese={o.valori.urechi?.alese ?? 0} latime={citesteNumar(p.latimeUreche)} grosime={citesteNumar(p.grosimeUreche)} grosimeFoaie={grosimeFoaie} />;
                   default: return undefined;
@@ -1764,19 +1771,15 @@ export function DialogExport(
                   case 'golire': return (<div className="dx-rand">
                       {buz && (
                       <div className="campuri-buzunar" data-buzunar={o.cheie}>
+                      {/* Strategia (ADR 0094): inelele sau liniile paralele, cu unghiul lor; apoi pasul lateral, comun. */}
+                      <Cartonase data-camp="strategie" poze="golire" eticheta={t('export.paralel')} nume={`golire-${o.cheie}`} valoare={p.strategie}
+                        oprit={doarCitire} titlu={t('export.paralel.titlu')} onAlege={(v) => { schimba(o.cheie, { strategie: v }); }}
+                        variante={[{ v: 'inele', text: t('export.paralel.inele'), nota: t('export.card.golire.inele') },
+                          { v: 'paralel', text: t('export.paralel.linii'), nota: t('export.card.golire.paralel') }]} />
                       <label title={t('export.pas-lateral.titlu')}>
                         {t('export.pas-lateral')}
                         <input type="text" inputMode="decimal" value={p.pasLateral} data-camp="pas-lateral" disabled={doarCitire}
                           aria-invalid={!b.pasLateral} onChange={(ev) => { schimba(o.cheie, { pasLateral: ev.target.value }); }} />
-                      </label>
-                      {/* Strategia (ADR 0094): inelele sau liniile paralele, cu unghiul lor. */}
-                      <label title={t('export.paralel.titlu')}>
-                        {t('export.paralel')}
-                        <select value={p.strategie} data-camp="strategie" disabled={doarCitire}
-                          onChange={(ev) => { schimba(o.cheie, { strategie: ev.target.value === 'paralel' ? 'paralel' : 'inele' }); }}>
-                          <option value="inele">{t('export.paralel.inele')}</option>
-                          <option value="paralel">{t('export.paralel.linii')}</option>
-                        </select>
                       </label>
                       {p.strategie === 'paralel' && (
                       <label title={t('export.paralel.unghi.titlu')}>
@@ -1792,13 +1795,9 @@ export function DialogExport(
                       {buz && (<>
                       {/* Coborârea în buzunar (ADR 0076): felul, apoi câmpurile lui; strategia paralelă coboară prin plonjare. */}
                       {p.strategie === 'inele' && (<>
-                      <label title={t('export.coborare.titlu')}>
-                        {t('export.coborare')}
-                        <select value={p.coborare} data-camp="coborare" disabled={doarCitire}
-                          onChange={(ev) => { const f = FELURI_COBORARE.find((x) => x === ev.target.value); if (f) schimba(o.cheie, { coborare: f }); }}>
-                          {FELURI_COBORARE.map((f) => <option key={f} value={f}>{t(`export.coborare.${f}`)}</option>)}
-                        </select>
-                      </label>
+                      <Cartonase data-camp="coborare" poze="coborare" eticheta={t('export.coborare')} nume={`coborare-${o.cheie}`} valoare={p.coborare}
+                        oprit={doarCitire} titlu={t('export.coborare.titlu')} onAlege={(v) => { schimba(o.cheie, { coborare: v }); }}
+                        variante={FELURI_COBORARE.map((f) => ({ v: f, text: t(`export.coborare.${f}`), nota: t(`export.card.coborare.${f}`) }))} />
                       {p.coborare !== 'plonjare' && (
                       <label title={t('export.coborare.unghi.titlu')}>
                         {t('export.coborare.unghi')}
@@ -1816,11 +1815,12 @@ export function DialogExport(
                       </label>
                       )}
                       {p.coborare === 'zigzag' && (() => {
-                        // Câte rampe face zigzagul pe o trecere (cu pasul rândului), cum le va tăia lucrarea.
-                        const u = citesteNumar(p.unghiCoborare), l = citesteNumar(p.lungimeZigzag), pas = citesteNumar(p.pas);
-                        if (u === null || l === null || pas === null || !(u > 0 && l > 0 && pas > 0)) return null;
-                        const n = Math.max(1, Math.ceil(pas / (l * Math.tan((u * Math.PI) / 180)) - 1e-9));
-                        return <span className="nota-coborare" data-camp="rampe-zigzag">{t('export.coborare.rampe', { n })}</span>;
+                        // Câte rampe face zigzagul pe o trecere, cum le va tăia lucrarea: pe trecerea egală (adâncimea / n), nu pe pasul
+                        // scris (10 mm cu pasul 6 = două treceri de 5).
+                        const z = coborareDesen('zigzag', treceriEgale(adancimeRand, citesteNumar(p.pas))?.d ?? null, citesteNumar(p.unghiCoborare),
+                          citesteNumar(p.lungimeZigzag), null);
+                        if (z?.fel !== 'zigzag') return null;
+                        return <span className="nota-coborare" data-camp="rampe-zigzag">{t('export.coborare.rampe', { n: z.rampe })}</span>;
                       })()}
                       {p.coborare === 'elice' && (
                       <label title={t('export.coborare.raza.titlu')}>

@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs';
 import { poarta } from '../oracles/poarta.ts';
 import { judeca } from '../oracles/simulare.ts';
 import { adauga } from './ajutor-panza.ts';
+import { alege, aleasa } from './ajutor-export.ts';
 
 test.use({ locale: 'ro-RO' });
 
@@ -73,10 +74,10 @@ test('coborârea în buzunar: zigzagul își arată rampele, elicea iese în pro
   await adauga(page, 'dreptunghi');
   await page.locator('[data-actiune="export.gcode"]').click();
   await page.locator('[data-fisa="op"]').first().locator('input[data-camp="latura"][value="buzunar"]').check();
-  const cob = page.locator('[data-camp="coborare"]');
-  await expect(cob).toHaveValue('plonjare');
+  const op = page.locator('[data-fisa="op"]').first();
+  await expect(aleasa(op, 'coborare')).toHaveValue('plonjare');
   await expect(page.locator('[data-camp="unghi-coborare"]')).toHaveCount(0);
-  await cob.selectOption('zigzag');
+  await alege(op, 'coborare', 'zigzag');
   await expect(page.locator('[data-camp="unghi-coborare"]')).toHaveValue('3');
   await expect(page.locator('[data-camp="lungime-zigzag"]')).toHaveValue('20');
   await expect(page.locator('[data-camp="rampe-zigzag"]')).toHaveText('3 rampe pe trecere');
@@ -84,7 +85,7 @@ test('coborârea în buzunar: zigzagul își arată rampele, elicea iese în pro
   await expect(page.locator('[data-buton="exporta"]')).toBeDisabled();
   await expect(page.getByTestId('export-invalid')).toContainText('Coborârea în buzunar');
   await page.locator('[data-camp="unghi-coborare"]').fill('3');
-  await cob.selectOption('elice');
+  await alege(op, 'coborare', 'elice');
   await expect(page.locator('[data-camp="raza-elice"]')).toHaveValue('3');
   await expect(page.locator('[data-camp="lungime-zigzag"]')).toHaveCount(0);
   const descarcare = page.waitForEvent('download');
@@ -116,6 +117,6 @@ test('coborârea în buzunar: zigzagul își arată rampele, elicea iese în pro
   if ((await panou.getAttribute('data-deschis')) !== 'true') await page.locator('[data-actiune="vedere.proprietati"]').first().click();
   await expect(panou).toContainText('Elice, 3°, raza 3.00 mm');
   await page.locator('[data-actiune="export.gcode"]').click();
-  await expect(page.locator('[data-camp="coborare"]')).toHaveValue('elice');
+  await expect(aleasa(page.locator('[data-fisa="op"]').first(), 'coborare')).toHaveValue('elice');
   await expect(page.locator('[data-camp="raza-elice"]')).toHaveValue('3');
 });

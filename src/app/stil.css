@@ -2135,6 +2135,8 @@ nav button[aria-pressed='true'] {
 .dx-ilu .slab { opacity: 0.45; }
 .dx-ilu .d { fill: none; stroke: var(--traseu-taiere); stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
 .dx-ilu .lat { fill: none; stroke: var(--traseu-taiere); stroke-width: 6; opacity: 0.28; stroke-linecap: round; }
+/* Urma frezei pe o trecere a buzunarului (28.8↑c): două urme vecine se suprapun mai închis. */
+.dx-ilu .urma { fill: var(--traseu-taiere); opacity: 0.16; }
 .dx-ilu .dv { fill: var(--traseu-taiere); }
 .dx-ilu .f { fill: var(--scula); stroke: currentColor; stroke-width: 0.8; }
 .dx-ilu .u { fill: var(--a); }

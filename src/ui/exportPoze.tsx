@@ -41,6 +41,12 @@ export const POZE: Readonly<Record<string, ReactNode>> = {
   'strategie.m6-controler': <><rect className="g contur" x={8} y={8} width={48} height={26} rx={5} /><text x={32} y={26} textAnchor="middle" className="tare">T2 M6</text></>,
   'strategie.m0-comentariu': <><rect className="g contur" x={4} y={8} width={56} height={26} rx={5} /><text x={32} y={26} textAnchor="middle" className="tare">M0 ;T2</text></>,
   'strategie.fisiere-separate': <><path className="g contur" d="M14 8H30L36 14V36H14Z" /><path className="g contur" d="M26 4H42L48 10V32H26Z" /><text x={37} y={24} textAnchor="middle">-2</text></>,
+  'golire.inele': <>{LEMN}<rect className="g contur" x={8} y={7} width={48} height={30} rx={2} /><rect className="d" x={12} y={11} width={40} height={22} rx={3} /><rect className="d" x={17} y={16} width={30} height={12} rx={2} /><path className="d" d="M22 21H42" /></>,
+  'golire.paralel': <>{LEMN}<rect className="g contur" x={8} y={7} width={48} height={30} rx={2} /><path className="d" d="M13 12H51V17H13V22H51V27H13V32H51" /></>,
+  'coborare.plonjare': <><rect className="l" x={3} y={14} width={58} height={27} /><path className="d" d="M12 3V30H58" />{sag('M12 31l-3-6h6z')}</>,
+  'coborare.rampa': <><rect className="l" x={3} y={14} width={58} height={27} /><path className="d" d="M6 7L14 14L44 30H58" />{sag('M59 30l-6 3v-6z')}</>,
+  'coborare.zigzag': <><rect className="l" x={3} y={14} width={58} height={27} /><path className="d" d="M6 7L12 14L32 19L12 24L32 29H58" />{sag('M59 29l-6 3v-6z')}</>,
+  'coborare.elice': <><rect className="l" x={3} y={14} width={58} height={27} /><path className="d" d="M14 6V14Q34 16.5 14 19Q34 21.5 14 24Q34 26.5 14 29H58" />{sag('M59 29l-6 3v-6z')}</>,
   'foi.activa': <><rect className="g contur slab" x={6} y={10} width={26} height={20} /><rect className="l" x={30} y={6} width={28} height={22} /><path className="ua" d="M30 34H58" /></>,
   'foi.toate': <><rect className="l" x={6} y={12} width={26} height={20} /><rect className="l" x={30} y={6} width={28} height={22} /><path className="ua" d="M6 38H32M30 34H58" /></>,
 };

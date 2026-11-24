@@ -3,13 +3,15 @@
  * desenează din valorile omului. Cota câmpului pe care stă omul se aprinde (`aprins`, numele `data-camp` al câmpului). Stilul e
  * al tokenurilor (`.dx-ilu` din `stil.css`): lemnul, masa, freza, traseul verde, cota activă în accent, în ambele teme.
  *
- * Sunt schițe la scară liberă: valorile stau scrise pe cote, iar ce spun (trecerile, partea piesei, locurile urechilor) e socotit
- * ca în lucrare (`exportDeseneCalcul.ts`, cu proba lui).
+ * Sunt schițe la scară liberă: valorile stau scrise pe cote, iar ce spun (trecerile, partea piesei, locurile urechilor, pasul
+ * lateral, coborârea, ciocănirea) e socotit ca în lucrare (`exportDeseneCalcul.ts`, cu proba lui).
  */
 import type { ReactNode } from 'react';
 import '../i18n/export.ts';
 import { t } from '../i18n/t.ts';
-import { centreUrechiDesen, treceriEgale, type LocuriUrechiDesen } from './exportDeseneCalcul.ts';
+import {
+  centreUrechiDesen, ciocanire, coborareDesen, RIDICARE_CIOCANIRE, treceriEgale, treceriLaterale, type FelCoborare, type LocuriUrechiDesen,
+} from './exportDeseneCalcul.ts';
 
 /** Formatul numerelor în desene (zecimalele limbii); `aprins` = câmpurile grupului cu focusul și de sub maus. */
 export type DesenComun = { readonly f: (x: number) => string; readonly aprins: readonly string[] };
@@ -298,6 +300,192 @@ export function DesenUrechi({ c, urechi, mod, numar, alese, latime, grosime, gro
         <Cota pentru="urechi-latime" c={c} x1={tx} y1={dy + dh - th - 10} x2={tx + tw} y2={dy + dh - th - 10} text={`${c.f(L)} mm`} tx={dx + dw / 2} ty={dy + dh - th - 15} />
         <Cota pentru="urechi-grosime" c={c} x1={dx + dw + 6} y1={dy + dh - th} x2={dx + dw + 6} y2={dy + dh} text={c.f(G)} tx={dx + dw + 2} ty={dy + dh + 20} anc="end" />
       </>)}
+    </Desen>
+  );
+}
+
+/** Un unghi pe desen: arcul din (cx, cy), de la a0 la a1 (grade, pe ecran, în sensul acelor), cu textul; aprins ca o cotă. */
+function Unghi({ pentru, c, cx, cy, raza, a0, a1, text, tx, ty, anc = 'start' }: {
+  pentru: string; c: DesenComun; cx: number; cy: number; raza: number; a0: number; a1: number; text: string; tx: number; ty: number; anc?: 'start' | 'middle' | 'end';
+}): ReactNode {
+  const p = (a: number): string => `${r(cx + raza * Math.cos((a * Math.PI) / 180))} ${r(cy + raza * Math.sin((a * Math.PI) / 180))}`;
+  const mare = Math.abs(a1 - a0) > 180 ? 1 : 0, sens = a1 > a0 ? 1 : 0;
+  return (
+    <g className="cota" data-cota={pentru} data-aprinsa={c.aprins.includes(pentru) ? '' : undefined}>
+      {Math.abs(a1 - a0) > 0.5 && <path className="sg-l" d={`M${p(a0)}A${raza} ${raza} 0 ${mare} ${sens} ${p(a1)}`} />}
+      <text x={r(tx)} y={r(ty)} textAnchor={anc}>{text}</text>
+    </g>
+  );
+}
+
+/**
+ * Buzunarul văzut de sus (ADR 0069, ADR 0094): trei treceri, fiecare cu urma frezei (lată cât freza), la pasul lateral; urmele
+ * vecine se suprapun, mai închis. Pe inele, lângă perete: prima trece la raza frezei de el, ca inelele lucrării. Pe linii
+ * paralele, aceleași treceri rotite la unghiul lor față de X.
+ */
+export function DesenGolire({ c, diametru, pas, paralel, unghi }: {
+  c: DesenComun; diametru: number | null; pas: number | null; paralel: boolean; unghi: number | null;
+}): ReactNode {
+  const tr = treceriLaterale(diametru, pas);
+  if (!tr || diametru === null || pas === null) {
+    return (
+      <Desen eticheta={t('export.desen.golire')} data-paralel={String(paralel)}>
+        <rect className="g" x={6} y={14} width={248} height={104} /><Jos tare>{t('export.desen.golire.lipsa')}</Jos>
+      </Desen>
+    );
+  }
+  const R = diametru / 2, k = Math.min(16, (paralel ? 80 : 150) / (2 * pas + diametru));
+  // Pe inele, de la perete (x = 34); pe linii, în jurul mijlocului desenului, apoi rotite: o linie la θ față de X e o linie
+  // verticală rotită cu 90 − θ, în sensul acelor pe ecran.
+  const xp = paralel ? 130 - (pas + R) * k + R * k : 34, y0 = paralel ? 0 : 18, y1 = paralel ? 136 : 122;
+  const cx = paralel ? tr.centre.map((x) => xp + (x - R) * k) : tr.centre.map((x) => xp + x * k);
+  const a = unghi !== null && Number.isFinite(unghi) && unghi >= 0 && unghi < 180 ? unghi : 0;
+  const treceri = (
+    <g transform={paralel ? `rotate(${r(90 - a)} 130 68)` : undefined}>
+      {cx.map((x, i) => <rect key={`u${i}`} className="urma" data-trecere-laterala={i + 1} x={r(x - R * k)} y={y0} width={r(diametru * k)} height={y1 - y0} />)}
+      {cx.map((x, i) => (<g key={`d${i}`}>
+        <path className="d" d={`M${r(x)} ${y0 + 4}V${y1 - 8}`} /><Sv x={x} y={y1 - 3} g={90} c="dv" />
+        <circle className="c slab" data-freza-laterala cx={r(x)} cy={68} r={r(R * k)} />
+      </g>))}
+      {!paralel && <Cota pentru="pas-lateral" c={c} x1={cx[0] ?? 0} y1={14} x2={cx[1] ?? 0} y2={14} text={c.f(pas)} tx={(cx[1] ?? 0) + 6} ty={18} anc="start" />}
+    </g>
+  );
+  return (
+    <Desen eticheta={t('export.desen.golire')} data-paralel={String(paralel)}>
+      {paralel ? (<>
+        <rect className="g" x={6} y={6} width={248} height={124} />
+        <path className="cs" d="M70 68H246" /><text x={248} y={64} textAnchor="end" className="tare">X</text>
+        {treceri}
+        <Unghi pentru="unghi-paralel" c={c} cx={130} cy={68} raza={44} a0={0} a1={-a} text={`${c.f(a)}°`} tx={180} ty={60} />
+        <Cota pentru="pas-lateral" c={c} text={t('export.desen.golire.pas', { mm: c.f(pas) })} tx={10} ty={20} anc="start" />
+      </>) : (<>
+        <rect className="l" data-lemn x={6} y={6} width={28} height={124} /><rect className="g" x={34} y={6} width={220} height={124} />
+        <text x={8} y={15} className="tare">{t('export.desen.golire.perete')}</text>
+        {treceri}
+      </>)}
+      <Jos>{t('export.desen.golire.suprapun', { mm: c.f(tr.suprapunere), p: c.f(Math.round(tr.procent)) })}</Jos>
+    </Desen>
+  );
+}
+
+/**
+ * Coborârea în buzunar văzută din lateral (ADR 0076), pe o trecere (cea egală a lucrării), cu drumul desfășurat: drept în jos,
+ * rampa pe inel, zigzagul dus-întors sau elicea (din lateral, o spirală). Schiță: panta e mărită, valorile stau pe cote.
+ */
+export function DesenCoborare({ c, fel, bun, trecere, unghi, lungime, raza }: {
+  c: DesenComun; fel: FelCoborare; bun: boolean; trecere: number | null; unghi: number | null; lungime: number | null; raza: number | null;
+}): ReactNode {
+  // `bun`: verdictul ferestrei pe valorile coborârii (marginile documentului): o valoare refuzată nu se desenează.
+  const cob = bun ? coborareDesen(fel, trecere, unghi, lungime, raza) : null, y0 = 44, yd = 84, x0 = 34;
+  const lemn = (<>
+    <rect className="l" data-lemn x={6} y={y0} width={248} height={70} /><text x={254} y={16} textAnchor="end">{t('export.desen.rampa.bucla')}</text>
+    {trecere !== null && trecere > 0 && <Cota pentru="pas" c={c} x1={14} y1={y0} x2={14} y2={yd} text={c.f(trecere)} tx={18} ty={(y0 + yd) / 2 + 4} anc="start" />}
+  </>);
+  const fin = (x: number): ReactNode => (<><path className="d" d={`M${r(x)} ${yd}H246`} /><Sv x={250} y={yd} g={0} c="dv" /></>);
+  const ung = (x: number, y: number, a: number): ReactNode => unghi !== null
+    ? <Unghi pentru="unghi-coborare" c={c} cx={x} cy={y} raza={28} a0={0} a1={a} text={`${c.f(unghi)}°`} tx={x + 32} ty={y + 12} /> : null;
+  let corp: ReactNode, jos: string;
+  if (!cob) {
+    corp = <path className="d slab" d={`M${x0} ${y0 - 22}V${y0}`} />;
+    jos = t('export.desen.coborare.lipsa');
+  } else if (cob.fel === 'plonjare') {
+    corp = (<><path className="g" d={`M${x0 - 6} ${y0}V${yd}H250V${y0}Z`} /><path className="d" d={`M${x0} ${y0 - 26}V${yd}`} />{fin(x0)}</>);
+    jos = t('export.desen.coborare.plonjare');
+  } else if (cob.fel === 'rampa') {
+    const x1 = 190;
+    corp = (<><path className="g" d={`M${x0} ${y0}L${x1} ${yd}H250V${y0}Z`} /><path className="d" d={`M${x0} ${y0 - 22}V${y0}L${x1} ${yd}`} />{fin(x1)}{ung(x0, y0, 14.4)}</>);
+    jos = t('export.desen.coborare.rampa', { mm: c.f(Math.round(cob.lungime * 10) / 10) });
+  } else if (cob.fel === 'zigzag') {
+    const n = Math.min(cob.rampe, 12), x1 = 150, h = (yd - y0) / n;
+    const pts = Array.from({ length: n + 1 }, (_, i) => `${i % 2 === 0 ? x0 : x1} ${r(y0 + i * h)}`);
+    const ramp = Array.from({ length: n }, (_, i) => <path key={i} className="d" data-rampa={i + 1} d={`M${pts[i]}L${pts[i + 1]}`} />);
+    corp = (<>
+      <path className="g" d={`M${x0} ${y0}L${x1} ${r(y0 + h)}V${yd}H250V${y0}Z`} /><path className="d" d={`M${x0} ${y0 - 22}V${y0}`} />{ramp}{fin(n % 2 === 1 ? x1 : x0)}
+      {ung(x0, y0, (Math.atan2(h, x1 - x0) * 180) / Math.PI)}
+      {lungime !== null && <Cota pentru="lungime-zigzag" c={c} x1={x0} y1={yd + 14} x2={x1} y2={yd + 14} text={`${c.f(lungime)} mm`} tx={(x0 + x1) / 2} ty={yd + 28} />}
+    </>);
+    jos = t('export.desen.coborare.zigzag', { n: cob.rampe, mm: c.f(cob.lungime) });
+  } else {
+    // Elicea din lateral: x = centru + r · sin, coborând liniar; cel mult 6 ture desenate, apoi cercul plin, la fund.
+    const ture = Math.min(cob.ture, 6), xc = 74, rx = 30, pe = 24, N = Math.max(2, Math.ceil(ture * pe));
+    const pts = Array.from({ length: N + 1 }, (_, i) => {
+      const u = (i / N) * ture;
+      return `${r(xc + rx * Math.sin(2 * Math.PI * u))} ${r(y0 + (yd - y0) * (u / ture))}`;
+    });
+    const cerc = Array.from({ length: pe + 1 }, (_, i) => `${r(xc + rx * Math.sin(2 * Math.PI * (ture + i / pe)))} ${yd}`);
+    corp = (<>
+      <rect className="g" x={xc - rx - 4} y={y0} width={2 * rx + 8} height={yd - y0} />
+      <path className="d" data-elice d={`M${pts[0]}L${pts.slice(1).join('L')}L${cerc.join('L')}`} />{fin(xc + rx * Math.sin(2 * Math.PI * (ture + 1)))}
+      {raza !== null && <Cota pentru="raza-elice" c={c} x1={xc} y1={y0 - 12} x2={xc + rx} y2={y0 - 12} text={`R ${c.f(raza)}`} tx={xc + rx + 6} ty={y0 - 8} anc="start" />}
+      {unghi !== null && <Cota pentru="unghi-coborare" c={c} text={`${c.f(unghi)}°`} tx={xc + rx + 12} ty={(y0 + yd) / 2 + 4} anc="start" />}
+    </>);
+    jos = t('export.desen.coborare.elice', { ture: c.f(Math.round(cob.ture * 10) / 10), r: raza === null ? '?' : c.f(raza) });
+  }
+  return (
+    <Desen eticheta={t('export.desen.coborare')} data-coborare={cob ? fel : 'lipsa'}>
+      {lemn}{corp}<Jos tare={!cob}>{jos}</Jos>
+    </Desen>
+  );
+}
+
+/**
+ * Colțul buzunarului văzut de sus (ADR 0093): freza lasă în colț raza ei; freza de rest cea mai mică o duce la raza ei. Lemnul
+ * rămas în colț, cât îl lasă fiecare.
+ */
+export function DesenRest({ c, diametru, rest }: { c: DesenComun; diametru: number | null; rest: readonly (number | null)[] }): ReactNode {
+  const Ra = diametru !== null && diametru > 0 ? diametru / 2 : null;
+  const mici = Ra === null ? [] : rest.filter((d): d is number => d !== null && d > 0 && d < 2 * Ra);
+  const Rb = mici.length > 0 ? Math.min(...mici) / 2 : null;
+  const X = 40, Y = 22, k = Ra === null ? 1 : 50 / Ra;
+  const colt = (raza: number): string => `M${X} ${Y}H${r(X + raza * k)}A${r(raza * k)} ${r(raza * k)} 0 0 0 ${X} ${r(Y + raza * k)}Z`;
+  return (
+    <Desen eticheta={t('export.desen.rest')}>
+      <rect className="l" data-lemn x={6} y={6} width={248} height={Y - 6} /><rect className="l" x={6} y={6} width={X - 6} height={124} />
+      <rect className="g" x={X} y={Y} width={254 - X} height={130 - Y} />
+      {Ra !== null && (<>
+        {Rb !== null ? (<><path className="g2" d={colt(Ra)} /><path className="l" data-ramas d={colt(Rb)} /></>) : <path className="l" data-ramas d={colt(Ra)} />}
+        <circle className="c" cx={X + Ra * k} cy={Y + Ra * k} r={r(Ra * k)} />
+        <text x={r(X + Ra * k * 1.72)} y={r(Y + Ra * k * 1.72 + 6)} className="tare">{`Ø ${c.f(2 * Ra)}`}</text>
+        {Rb !== null && (<>
+          <circle className="d" cx={r(X + Rb * k)} cy={r(Y + Rb * k)} r={r(Rb * k)} />
+          <Cota pentru="rest-diametru" c={c} text={`Ø ${c.f(2 * Rb)}`} tx={X + Rb * k} ty={Y + Rb * k + 4} />
+        </>)}
+      </>)}
+      <Jos>{Ra === null ? t('export.desen.rest.lipsa') : Rb === null ? t('export.desen.rest.fara', { mm: c.f(Ra) })
+        : t('export.desen.rest.cu', { a: c.f(2 * Ra), ra: c.f(Ra), b: c.f(2 * Rb), rb: c.f(Rb) })}</Jos>
+    </Desen>
+  );
+}
+
+/**
+ * Ciocănirea găuririi (ADR 0087), pas cu pas, ca lucrarea: fiecare pas tăiat în jos (verde), ridicarea de 1 mm sau ieșirea
+ * din gaură și coborârea rapidă înapoi (punctat). În lateral e timpul, nu locul: freza stă deasupra centrului găurii.
+ */
+export function DesenGaurire({ c, adancime, pas, retragere }: { c: DesenComun; adancime: number | null; pas: number | null; retragere: number | null }): ReactNode {
+  const m = ciocanire(adancime, pas, retragere), tr = treceriEgale(adancime, pas), A = adancime ?? 0;
+  const ys = 22, y0 = 36, yb = 112, k = A > 0 ? (yb - y0) / A : 0, x0 = 30;
+  const y = (z: number | 'sus'): number => (z === 'sus' ? ys : y0 - z * k);
+  // Cel mult 80 de mișcări desenate (pași foarte mulți ar ieși o pată); textul spune toți pașii.
+  const pasi = m ? m.slice(0, 80) : [], dx = pasi.length > 0 ? Math.min(20, 214 / pasi.length) : 0;
+  const linii: ReactNode[] = [];
+  let x = x0, yc = ys;
+  for (const [i, p] of pasi.entries()) {
+    const x2 = x + dx, y2 = y(p.z), d = `M${r(x)} ${r(yc)}L${r(x2)} ${r(y2)}`;
+    linii.push(p.taie ? <path key={i} className="d" data-coboara d={d} /> : <path key={i} className="cs" data-iese={p.z === 'sus' ? '' : undefined} d={d} />);
+    x = x2; yc = y2;
+  }
+  return (
+    <Desen eticheta={t('export.desen.gaurire')}>
+      <rect className="l" data-lemn x={6} y={y0} width={248} height={yb - y0} /><path className="cs" d={`M6 ${ys}H254`} />
+      <text x={8} y={ys - 6}>{t('export.desen.gaurire.sus')}</text><text x={252} y={ys - 6} textAnchor="end">{t('export.desen.gaurire.timp')}</text>
+      {m && tr ? (<>
+        {linii}
+        <Cota pentru="pas" c={c} x1={16} y1={y0} x2={16} y2={y0 + tr.d * k} text={c.f(Math.round(tr.d * 100) / 100)} tx={20} ty={y0 + (tr.d * k) / 2 + 4} anc="start" />
+        <text x={130} y={130} textAnchor="middle">
+          {`${t('export.desen.gaurire.pasi', { n: tr.n, mm: c.f(Math.round(tr.d * 100) / 100) })}; ${t('export.desen.gaurire.ridica', { mm: c.f(RIDICARE_CIOCANIRE) })}`}
+        </text>
+        <Cota pentru="retragere" c={c} text={t('export.desen.gaurire.iese', { n: retragere ?? 1 })} tx={130} ty={145} />
+      </>) : <Jos tare>{t('export.desen.gaurire.lipsa')}</Jos>}
     </Desen>
   );
 }

@@ -2,10 +2,12 @@
  * Desenele întrebărilor din fereastra exportului (ADR 0290, felia 28.8↑b-1): colțul XY0, Z0 cu supracursa, freza, adâncimea cu
  * trecerile, sensul, rampa, intrările și urechile au fiecare desenul lui, lângă câmpuri, desenat din valorile omului. Cota
  * câmpului pe care stai se aprinde, colțul XY0 se alege și din desen, iar desenul spune ce face programul (trecerile egale, partea
- * piesei, urechile după regula lucrării).
+ * piesei, urechile după regula lucrării). Din 28.8↑c, și buzunarul (traseul și coborârea pe cartonașe; trecerile laterale, coborârea
+ * și frezele de rest desenate) și găurirea (ciocănirea pas cu pas).
  */
 import { test, expect, type Page } from '@playwright/test';
 import { adauga } from './ajutor-panza.ts';
+import { alege, aleasa } from './ajutor-export.ts';
 
 test.use({ locale: 'ro-RO' });
 
@@ -159,4 +161,102 @@ test('explicația își ține locul: focusul și mausul nu mută fișa (clicul n
   }
   await tinta.check();
   await expect(tinta).toBeChecked();
+});
+
+/** O formă (dreptunghiul sau cercul, e1/e1), apoi fereastra exportului. */
+async function deschideCu(page: Page, forma: 'dreptunghi' | 'cerc'): Promise<void> {
+  await page.goto('/');
+  await adauga(page, forma);
+  await page.locator('[data-actiune="export.gcode"]').click();
+  await expect(page.locator('[data-nav]').first()).toBeVisible();
+}
+
+test('buzunarul: traseul și coborârea pe cartonașe; trecerile laterale, coborârea și frezele de rest desenate din valori', async ({ page }) => {
+  await deschideCu(page, 'dreptunghi');
+  const e1 = fisa(page, 'e1/e1');
+  await alege(e1, 'latura', 'buzunar');
+  await e1.locator('[data-camp="adancime"]').fill('10');
+  await e1.locator('[data-camp="pas"]').fill('6');
+  // Traseul: inelele implicit; fiecare variantă cu poza ei.
+  await expect(aleasa(e1, 'strategie')).toHaveValue('inele');
+  await expect(e1.locator('[data-alegere="strategie"] .dx-poza')).toHaveCount(2);
+  // Ø6 cu pasul lateral 2,4 (40 %): trei urme, două vecine se suprapun 3,6 mm (60 %).
+  const g = desen(page, 'e1/e1', 'golire');
+  await expect(g.locator('[data-trecere-laterala]')).toHaveCount(3);
+  await expect(g).toHaveAttribute('data-paralel', 'false');
+  await expect(g.locator('[data-cota="pas-lateral"]')).toContainText('2,4');
+  await expect(g).toContainText('se suprapun 3,6 mm (60 %)');
+  const pasLateral = e1.locator('[data-camp="pas-lateral"]');
+  await pasLateral.fill('3');
+  await expect(g).toContainText('se suprapun 3 mm (50 %)');
+  await expect(g.locator('[data-cota="pas-lateral"]')).toHaveAttribute('data-aprinsa', '');
+  // Peste jumătate din freză (cum judecă fereastra), fără urme.
+  await pasLateral.fill('3,5');
+  await expect(g.locator('[data-trecere-laterala]')).toHaveCount(0);
+  await expect(g).toContainText('cel mult jumătate din freză');
+  await pasLateral.fill('2,4');
+  // Liniile paralele: aceleași urme, rotite la unghi; coborârea nu mai e (liniile coboară prin plonjare).
+  await alege(e1, 'strategie', 'paralel');
+  await expect(g).toHaveAttribute('data-paralel', 'true');
+  await expect(g.locator('[data-trecere-laterala]')).toHaveCount(3);
+  await e1.locator('[data-camp="unghi-paralel"]').fill('30');
+  await expect(g.locator('[data-cota="unghi-paralel"]')).toContainText('30°');
+  await expect(e1.locator('[data-grup="coborare"]')).toHaveCount(0);
+  await alege(e1, 'strategie', 'inele');
+
+  // Coborârea: plonjarea implicit, cu poza fiecărui fel.
+  const cob = desen(page, 'e1/e1', 'coborare');
+  await expect(aleasa(e1, 'coborare')).toHaveValue('plonjare');
+  await expect(e1.locator('[data-alegere="coborare"] .dx-poza')).toHaveCount(4);
+  await expect(cob).toHaveAttribute('data-coborare', 'plonjare');
+  // 10 cu pasul 6 = două treceri de 5: la 3° și 20 mm, ⌈5 / (20 · tan 3°)⌉ = 5 rampe (nu 6, cât ar da pasul scris).
+  await alege(e1, 'coborare', 'zigzag');
+  await expect(cob).toHaveAttribute('data-coborare', 'zigzag');
+  await expect(cob.locator('[data-rampa]')).toHaveCount(5);
+  await expect(cob).toContainText('5 rampe de 20 mm');
+  await expect(e1.locator('[data-camp="rampe-zigzag"]')).toHaveText('5 rampe pe trecere');
+  await expect(cob.locator('[data-cota="lungime-zigzag"]')).toContainText('20 mm');
+  await e1.locator('[data-camp="unghi-coborare"]').focus();
+  await expect(cob.locator('[data-cota="unghi-coborare"]')).toHaveAttribute('data-aprinsa', '');
+  // Rampa: 5 / tan 3° = 95,4 mm; elicea de R 3: 95,4 / (2π · 3) = 5,1 ture.
+  await alege(e1, 'coborare', 'rampa');
+  await expect(cob).toContainText('rampa de 95,4 mm');
+  await alege(e1, 'coborare', 'elice');
+  await expect(cob.locator('[data-elice]')).toHaveCount(1);
+  await expect(cob.locator('[data-cota="raza-elice"]')).toContainText('R 3');
+  await expect(cob).toContainText('5,1 ture pe R 3');
+  // Un unghi peste 45° (refuzat de fereastră): desenul nu inventează o coborâre.
+  await e1.locator('[data-camp="unghi-coborare"]').fill('60');
+  await expect(cob).toHaveAttribute('data-coborare', 'lipsa');
+
+  // Frezele de rest: fără ele, în colț rămâne raza frezei; cu Ø3 adăugată, raza ei.
+  const rest = desen(page, 'e1/e1', 'rest');
+  await expect(rest).toContainText('în colț rămâne raza frezei, R 3');
+  await e1.locator('[data-camp="rest-adauga"]').click();
+  await expect(rest).toContainText('Ø6 lasă R 3 în colț; Ø3, doar R 1,5');
+  await expect(rest.locator('[data-ramas]')).toHaveCount(1);
+});
+
+test('găurirea: ciocănirea pas cu pas, ca lucrarea: coborârile, ridicarea de 1 mm, ieșirea la al N-lea pas', async ({ page }) => {
+  await deschideCu(page, 'cerc');
+  const e1 = fisa(page, 'e1/e1');
+  await alege(e1, 'latura', 'gaurire');
+  await e1.locator('[data-camp="adancime"]').fill('10');
+  await e1.locator('[data-camp="pas"]').fill('4');
+  await e1.locator('[data-camp="retragere"]').fill('2');
+  const d = desen(page, 'e1/e1', 'gaurire');
+  // 10 cu pasul 4: trei pași de 3,33; după primul se ridică 1 mm, după al doilea iese din gaură.
+  await expect(d.locator('[data-coboara]')).toHaveCount(3);
+  await expect(d.locator('[data-iese]')).toHaveCount(1);
+  await expect(d).toContainText('3 pași de 3,33 mm; se ridică 1 mm');
+  await expect(d.locator('[data-cota="retragere"]')).toContainText('o dată la 2 pași');
+  // Clicul în câmp îl aprinde (mausul rămas pe cartonașul tăieturii ar aprinde, după derulare, câmpul de sub el).
+  await e1.locator('[data-camp="retragere"]').click();
+  await expect(d.locator('[data-cota="retragere"]')).toHaveAttribute('data-aprinsa', '');
+  await e1.locator('[data-camp="retragere"]').fill('1');
+  await expect(d.locator('[data-iese]')).toHaveCount(2);
+  await expect(d.locator('[data-cota="retragere"]')).toContainText('după fiecare pas');
+  await e1.locator('[data-camp="retragere"]').fill('0');
+  await expect(d.locator('[data-coboara]')).toHaveCount(0);
+  await expect(d).toContainText('scrie adâncimea, pasul și ieșirea');
 });
