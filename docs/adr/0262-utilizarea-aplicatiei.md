@@ -117,9 +117,12 @@ foile, extensiile) trec prin el, iar barele, tastele, paleta și meniurile ajung
 | A.9a | Jobul de noapte și sumele zilei (`utilizareZi`), cu permisiunea „Utilizare: citește” și regula lor. |
 | A.9b | Fila Utilizare: perioada, cifrele, uneltele, ce nu se folosește, frecările, duratele. |
 | A.10 | Fluxurile: secvențele cele mai dese și pâlnia drumului principal. |
-| A.11 | Troubleshooting: pașii dinaintea unei erori (în raportul ei, în Erori), cronologia unui om (Utilizatori, Tichete) și disocierea unui cont. |
+| A.11a | Pașii dinaintea unei erori: în raportul ei (clientul, serverul) și în fila Erori. |
+| A.11b | Bifa „Atașează pașii” la o raportare, cu pașii în fila Tichete. |
+| A.11c | Cronologia unui om, cu „Utilizare: sesiuni”: din Utilizatori („Activitatea”) și din Tichete (sesiunea raportării). |
+| A.11d | Disocierea unui cont (din Utilizatori, la cererea omului printr-un tichet), cu pseudonimul pus de server. |
 
-Estimarea: ~8 felii (A.8c s-a despărțit în A.8c și A.8d pe 23.11, A.9 în A.9a și A.9b pe 24.11). A.7 (telefonul) vine după A.11 (întrebarea 7, a).
+Estimarea: ~8 felii (A.8c s-a despărțit în A.8c și A.8d pe 23.11, A.9 în A.9a și A.9b pe 24.11, A.11 în A.11a–A.11d pe 24.11). A.7 (telefonul) vine după A.11 (întrebarea 7, a).
 
 ## Implementarea
 
@@ -228,6 +231,16 @@ Estimarea: ~8 felii (A.8c s-a despărțit în A.8c și A.8d pe 23.11, A.9 în A.
   Tot aici, cifra care lipsea din A.9b: **durata unei sesiuni** (mediana, ca treaptă). Barele filei stau pe o grilă comună
   (subgrid), ca lungimile să se poată compara între rânduri. Fără reguli, permisiuni, indexuri sau funcții noi (jobul își
   schimbă doar sumele; la unire se publică odată cu A.9a).
+- **A.11a** (24.11, `3.An`): **pașii dinaintea unei erori**. Partea din pornire a raportorului (`raportorPornire.ts`) ia, în
+  clipa în care eroarea intră în coadă, o copie a inelului înregistratorului (`pasiAcum` din `src/app/utilizare.ts`, pe care
+  înregistratorul îl dă la `preiaUtilizarea`), nu la trimitere: ce face omul între eroare și trimitere nu intră. Bucata
+  raportorului face din fiecare eveniment un pas (`pasDin`, `shared/pasiEroare.ts`): felul, id-ul (la derulare și zoom,
+  zona), rezultatul (la mașină și imprimantă, codul) și cât înainte de eroare; fără pași, raportul n-are câmpul. Serverul
+  (`logClientError`) îi verifică pas cu pas (`pasiDin`, `shared/pasiEroareVerificare.ts`, după contractul utilizării; ultimii
+  100) și aruncă ce nu e un pas, nu raportul; îi scrie în `ultima` a grupului și în apariție. Fila Erori îi arată sub detaliu,
+  cel mai vechi primul, cu numele acțiunilor și ale uneltelor din catalog și cu rezultatul doar când nu e „ok”. Verificarea
+  stă în modulul ei, ca bucata raportorului să nu aducă tot contractul utilizării (18,5 / 25 kB la prima eroare). Fraza în
+  nota de confidențialitate. Pornirea crește cu ~0,2 kB (copia inelului, captura).
 
 ## Probele
 

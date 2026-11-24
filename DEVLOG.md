@@ -12320,6 +12320,26 @@ admin cat mai multe setari”).
 - **Documentele:** ADR 0262 (implementarea), fișa etapei 3 (`3.Am`), registrul otrăvurilor, traducerile, nota liniei.
   **Completed:** 24.11 05:50.
 
+## 2026-11-24 — Felia A.11a: pașii dinaintea unei erori (ADR 0262)
+
+**Prompt:** același „am raspuns” (7a: A.8–A.11 acum), după A.10.
+**Started:** 24.11 05:40.
+
+- **Despărțirea:** A.11 în A.11a (pașii în raportul erorii și în Erori), A.11b (bifa la raportare), A.11c (cronologia unui
+  om), A.11d (disocierea), scrisă în tabelul feliilor din ADR.
+- **Codul (`82ec5424`):** `shared/pasiEroare.ts` (pașii) și `shared/pasiEroareVerificare.ts` (verificarea), captura în
+  `raportorPornire.ts` prin `pasiAcum`, pașii în `raportDin`, serverul (`logClientError`, `scrieEroare`), fila Erori, nota de
+  confidențialitate. Verificarea despărțită după ce poarta mărimii a arătat bucata raportorului cu tot contractul utilizării.
+- **Pe drum:** un șir englez stricat de un apostrof (prins de serverul e2e); o cădere de o dată a probei mașinii din A.8d în
+  suita pe emulatoare (lotul fără evenimentele mașinii), nereprodusă: singură 4 / 4, fișierul de 3 ori 18 / 18, suita din
+  nou 51 / 51. Notată deschisă.
+- **Probele:** 3 unitare noi și cazurile din raportor și admin, 1 a serverului, 2 e2e pe emulatoare, nota contului.
+  **Otrăvurile:** 29 / 29. **Porțile locale:** rapidul 10 054 / 0, emulatoarele 122 / 122 și 51 / 51. **Mărimea:** pornirea
+  109,6 / 115 (cu Atelierul 114,4), totalul 800,1 / 900, `/admin` 135,0 / 200.
+- **Între timp:** completul pe `6b79c317` (A.9a, A.9b) verde; PR-ul `AndreiBesliu/cvs2#13` spune „de unit acum: `dbb0306a`”.
+- **Documentele:** ADR 0262 (implementarea, despărțirea), fișa etapei 3 (`3.An`), registrul otrăvurilor, traducerile, nota
+  liniei. **Completed:** 24.11 06:50.
+
 ## 2026-11-23 — Sesiunea principală în cloud: a șasea unire (A.6, Roadmap, Documentație și Setări); linia frezelor, pornită (Model: Claude Fable 5.2)
 
 **Prompt:** același brief de predare al sesiunii principale („unește ce se poate”), la raportul liniei adminului (PR-ul

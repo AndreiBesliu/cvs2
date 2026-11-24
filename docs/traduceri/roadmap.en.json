@@ -265,6 +265,10 @@
       "ro": "Textul pe curbă și proba fonturilor",
       "en": "Text on a curve and the font samples"
     },
+    "1048f62a748ee3ca": {
+      "ro": "Utilizarea aplicației: pașii dinaintea unei erori",
+      "en": "App usage: the steps before an error"
+    },
     "10b3ffffc47b0db0": {
       "ro": "Unealta Pen și tipurile nodurilor, aduse din etapa 6",
       "en": "The Pen tool and the node types, brought forward from stage 6"
@@ -2632,6 +2636,10 @@
     "a93dd14ea6480464": {
       "ro": "Dog-bone și T-bone",
       "en": "Dog-bone and T-bone"
+    },
+    "a9476a88f026ebdb": {
+      "ro": "**Utilizarea aplicației: pașii dinaintea unei erori** (felia A.11a din ADR 0262; A.11 s-a despărțit în A.11a–A.11d; fără mașină; a paisprezecea felie a liniei adminului, `3.An` în fișă; aceeași ramură, `wip/A.1-admin`, peste A.10, încă neunită; lucrată într-o sesiune cloud). Când apare o eroare în aplicație, raportul ei poartă acum și ultimii pași ai omului dinaintea ei (implicit 30, din Setări; 0 îi oprește): ce acțiuni, ferestre, unelte, dialoguri, calcule, mașina și imprimanta, cu rezultatul și cât înainte de eroare, fără nimic din desen. Pașii se iau chiar în clipa erorii (ce face omul până pleacă raportul nu intră). Serverul îi verifică pe fiecare după aceeași listă albă și aruncă ce nu e un pas, nu raportul. În `/admin`, fila Erori îi arată sub eroarea aleasă, cel mai vechi primul, cu numele acțiunilor. Nota de confidențialitate o spune, în ambele limbi. **La unire se publică și funcția `logClientError`.** **Probele:** 3 unitare noi (pașii din fiecare fel de eveniment, verificarea, copia inelului) și cazurile din raportor (captura în clipa erorii) și din admin; 1 a serverului, pe emulator; 2 e2e pe emulatoare (o eroare din editor după două unelte alese ajunge cu pașii în `errorLogs`; fila Erori îi arată) și nota contului. **Otrăvurile:** 29 / 29 (22 unitare, 3 ale serverului, 4 pe emulatoare). **Mărimea:** pornirea 109,4 → 109,6 (cu ușa 114,1, cu Atelierul 114,4 / 115); totalul 799,6 → 800,1 / 900; `/admin` 133,7 → 135,0 / 200; raportorul, la prima eroare, 18,1 → 18,5 / 25.",
+      "en": "**App usage: the steps before an error** (slice A.11a of ADR 0262; A.11 was split into A.11a–A.11d; no machine; the fourteenth slice of the admin line, `3.An` in the sheet; same branch, `wip/A.1-admin`, on top of A.10, not merged yet; worked in a cloud session). When an error happens in the app, its report now also carries the person's last steps before it (30 by default, from Settings; 0 turns them off): which actions, windows, tools, dialogs, computations, the machine and the printer, with the result and how long before the error, with nothing from the drawing. The steps are taken at the very moment of the error (what the person does until the report leaves is not included). The server checks each of them against the same allowlist and drops what is not a step, not the report. In `/admin`, the Errors tab shows them under the chosen error, oldest first, with the action names. The privacy note says so, in both languages. **On merge, the `logClientError` function is published too.** **Tests:** 3 new unit tests (the steps from each kind of event, the check, the copy of the ring) and the cases in the reporter (capture at the moment of the error) and in admin; 1 of the server, on the emulator; 2 e2e on the emulators (an error in the editor after two chosen tools reaches `errorLogs` with the steps; the Errors tab shows them) and the account note. **Poisons:** 29 / 29 (22 unit, 3 of the server, 4 on the emulators). **Size:** startup 109.4 → 109.6 (with the door 114.1, with the Workshop 114.4 / 115); total 799.6 → 800.1 / 900; `/admin` 133.7 → 135.0 / 200; the reporter, at the first error, 18.1 → 18.5 / 25."
     },
     "a96348ed8b13f442": {
       "ro": "Printează o fulie „Ca LEGO Ø24” și pune un elastic LEGO între ea și o fulie LEGO 4185, cu axele la 4 pași (cureaua: 133,1 mm pe fundul canalelor); apoi „Fă perechea” cu altă mărime",
