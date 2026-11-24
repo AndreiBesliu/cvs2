@@ -466,6 +466,38 @@ var Lego = (function (glob: typeof globalThis) {
     } else if (cuStifturi) tri.push(...stifturi(celule.map(([i, j]) => [s * i + s / 2, s * j + s / 2]), H, e.stiftD));
     return { tri, avert };
   }
+  // un parametru numeric cerut: numărul lui (și scris ca text); ce lipsește sau nu e număr dă NaN, deci implicitul piesei
+  const numarCerut = (v: unknown): number => (v === null || v === undefined || v === "" || typeof v === "boolean" ? NaN : +(v as number));
+  // Arcul (ADR 0284, felia 3.Cd): o cărămidă 1 × n, înaltă de 1–4 cărămizi, cu știfturi pe toată lungimea și cu o boltă
+  // dedesubt. Picioarele sunt primul și ultimul știft: două cărămizi 1 × 1 (goale pe dedesubt, deci stau pe știfturi);
+  // între ele, puntea: profilul (x, z) cu bolta, întins pe lățime. Bolta e un arc de cerc prin cele două colțuri de jos ale
+  // deschiderii; urcă jumătate din deschidere (semicerc), dar nu mai mult decât înălțimea fără 1,6 mm (cât rămâne
+  // deasupra, ca la arcul LEGO 1 × 4); „joasă” urcă pe jumătate.
+  type ArcDef = { lung?: unknown; inalt?: unknown; bolta?: unknown };
+  function arcCote(d: ArcDef) {
+    const lc = numarCerut(d.lung), ic = numarCerut(d.inalt);
+    const n = Math.round(Math.min(16, Math.max(3, Number.isFinite(lc) ? lc : 4))), c = Math.round(Math.min(4, Math.max(1, Number.isFinite(ic) ? ic : 1)));
+    const joasa = d.bolta === "joasa", H = 3 * P.placa * c, xa = P.pas - 0.1, xb = P.pas * (n - 1) + 0.1, w = xb - xa;
+    const maxim = Math.min(w / 2, H - 1.6), s = joasa ? maxim / 2 : maxim;
+    return { n, c, joasa, H, xa, xb, w, s, R: (w * w / 4 + s * s) / (2 * s), lungRea: Number.isFinite(lc) && n !== lc && n !== Math.round(lc), inaltRea: Number.isFinite(ic) && c !== ic && c !== Math.round(ic) };
+  }
+  function arc(d: ArcDef): Corp {
+    const e = ef(), q = arcCote(d), s = P.pas, tri: Tri[] = [], avert: string[] = [];
+    if (q.lungRea) avert.push(tr`Un arc are între 3 și 16 știfturi: l-am făcut de ${q.n}.`);
+    if (q.inaltRea) avert.push(tr`Un arc are între 1 și 4 cărămizi înălțime: l-am făcut de ${q.c}.`);
+    // picioarele, cu știfturile lor
+    tri.push(...caramida({ celule: [[0, 0], [q.n - 1, 0]], placi: 3 * q.c }).tri);
+    // puntea: intră 0,5 mm în pereții picioarelor; bolta are multe colțuri intrate, deci fețele se fac cu earcut. Marginea
+    // ei de jos stă la 0,01 mm de masă: la zero, muchia de la piciorul bolții ar fi chiar muchia de jos a peretelui
+    // piciorului, iar două corpuri care își împart o muchie ies „deschise” la cine citește STL-ul
+    const xm = (q.xa + q.xb) / 2, zc = q.s - q.R, a0 = Math.asin(Math.min(1, q.w / 2 / q.R)), zj = 0.01, pod: Poli = [[q.xa - 0.5, zj], [q.xa, zj]];
+    for (let i = 1; i < 48; i++) { const a = -a0 + 2 * a0 * i / 48; pod.push([xm + q.R * Math.sin(a), zc + q.R * Math.cos(a)]); }
+    pod.push([q.xb, zj], [q.xb + 0.5, zj], [q.xb + 0.5, q.H], [q.xa - 0.5, q.H]);
+    tri.push(...axe(prismaGauri(pod, [], 0.1, s - 0.1), ([u, v, w]) => [u, w, v], true));
+    // știfturile de pe punte
+    tri.push(...stifturi(Array.from({ length: q.n - 2 }, (_, k): P2 => [s * (k + 1) + s / 2, s / 2]), q.H, e.stiftD));
+    return { tri, avert };
+  }
   function lateral({ lung = 1, fete = "una" }: { lung?: number; fete?: string }): Corp {
     // caramida 1 x n cu stifturi si pe latura lunga (SNOT): stiftul lateral la 5,6 mm de jos, ca o piesa prinsa in el sa
     // iasa la nivel cu fata de sus. Plina, cu locasuri dedesubt; se printeaza in picioare (stifturile laterale sunt scurte).
@@ -1349,9 +1381,8 @@ var Lego = (function (glob: typeof globalThis) {
   // cărămizi Technic ridicate cu k plăci, respectiv al k-lea rând de găuri de deasupra, cu cel mai mic k la care sub dinți
   // rămâne lemn (0,5 mm peste placă; 0,8 mm peste lamajul găurii).
   type CremalieraDef = { lung?: unknown; modul?: unknown; prindere?: unknown; roata?: unknown };
-  const numar = (v: unknown): number => (v === null || v === undefined || v === "" || typeof v === "boolean" ? NaN : +(v as number));
   function cremalieraCote(d: CremalieraDef) {
-    const e = ef(), lungCerut = numar(d.lung), zCerut = numar(d.roata), mCerut = numar(d.modul);
+    const e = ef(), lungCerut = numarCerut(d.lung), zCerut = numarCerut(d.roata), mCerut = numarCerut(d.modul);
     const n = Math.round(Math.min(24, Math.max(2, Number.isFinite(lungCerut) ? lungCerut : 4)));
     const z = Math.round(Math.min(80, Math.max(8, Number.isFinite(zCerut) ? zCerut : 8)));
     const m = Math.min(3, Math.max(0.5, Math.round((Number.isFinite(mCerut) ? mCerut : 1) * 10) / 10));
@@ -2388,7 +2419,7 @@ var Lego = (function (glob: typeof globalThis) {
   }
 
   // ---------------------------------------------------------------------------------------------- piesa dupa definitie
-  const TIPURI = { caramida, lateral, panta, pantaInversa, pana, rotund, grinda, caramidaTechnic, ax, stiftTechnic, bucsa, conector, conectorUnghi, suport, clema, maner, bara, bila, cupa, rotita, cremaliera, roata, fulie, conica, coroana, conicaDubla, senila, elice, eliceBarca, ventilator, dinCvs2 };
+  const TIPURI = { caramida, lateral, panta, pantaInversa, pana, rotund, arc, grinda, caramidaTechnic, ax, stiftTechnic, bucsa, conector, conectorUnghi, suport, clema, maner, bara, bila, cupa, rotita, cremaliera, roata, fulie, conica, coroana, conicaDubla, senila, elice, eliceBarca, ventilator, dinCvs2 };
   function construieste(def: DefPiesa) {
     const f = TIPURI[def.tip];
     if (!f) throw new Error("tip necunoscut: " + def.tip);
@@ -2476,6 +2507,8 @@ var Lego = (function (glob: typeof globalThis) {
     contururi, insetRectiliniu, conturPana, pozitiiGauriPana, centreIndoita,
     // rotitele (ADR 0169): distanta dintre axele a doua roti care se prind (modulul m), pentru atelier
     distantaRoti: (z1: number, z2: number, m = 1) => m * (z1 + z2) / 2,
+    // arcul (ADR 0284): cotele din parametri: deschiderea dintre picioare, cât urcă bolta, raza ei, cât rămâne deasupra
+    arcCote: (d: ArcDef) => { const q = arcCote(d); return { lung: q.n, inalt: q.c, bolta: q.joasa ? "joasa" : "inalta", deschidere: q.w, sageata: q.s, raza: q.R, deasupra: q.H - q.s, inaltime: q.H }; },
     // cremaliera (ADR 0284): cotele din parametri: câți dinți încap, cu câte trepte e ridicat axul roții pereche (plăci, la
     // prinderea pe știfturi; rânduri de găuri, la cea cu găuri), înălțimea liniei de divizare și a axului roții deasupra feței
     // de jos, cât înaintează cremaliera la o rotație a roții, înălțimea piesei
