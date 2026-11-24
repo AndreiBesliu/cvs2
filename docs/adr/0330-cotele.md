@@ -306,9 +306,33 @@ Ordinea feliilor e cea din §10; dacă vrei exportul înaintea razei și unghiul
 - se cer cote 3D (pe relief, pe vederea 3D) sau toleranțe;
 - owner-ul vrea stilul cotelor ținut în proiect sau în cont, nu doar în browser.
 
+## Implementarea (10.4↑a-1)
+
+24.11, pe ramura `wip/10.4-cote` (`472e6107`), fără interfață:
+- **Proba scrisă prima** (`test/unit/cote.neatinse.test.ts`): pe tot corpusul CAM (`ajutor-corpus-cam.ts`, plăcile 1 și 2 și
+  fiecare fel de lucrare, cu fiecare post, unitate și strategie) și pe placa 11 („Toate foile”), fiecare foaie primește nouă
+  cote (orizontală, verticală și aliniată legate de vârf, cutie și mijloc; raza legată de centru și de cadran; diametrul;
+  unghiul din trei puncte și dintre două laturi; una dezlegată; una cu un fel necunoscut). Exportul (octeții, SHA-256,
+  avertismentele, fișierele), traseul, verificarea vectorilor și raportul foilor ies exact ca fără cote.
+- **Modelul:** tipurile în `document.ts` (`Foaie.cote`, `Cota`, `AncoraCota`, `LegaturaCota`, `LocCota`, `LinieCota`;
+  `PLAFON.cote` = 2 000); `src/model/cote.ts`, pur: `indexLume`, `punctAncora` (liberă; legată, din conturul în lume, cu
+  cadranul pe axele elementului; dezlegată la forma lipsă sau la alt număr de segmente ori la un loc care nu mai e pe formă),
+  `valoareCota` (fiecare fel, exactă; null pentru un fel necunoscut, laturi paralele sau de lungime zero).
+- **Ușa:** `judecataCote.ts` (pe documentul brut; o legătură spre o formă care nu mai e rămâne bună), înregistrată în
+  `schemaDocument.ts` (`problemaCote`; o listă goală nu cere judecata), chemată de `usaCurenta.ts` după urechi; ușa întreagă o
+  aduce mereu, iar pornirea doar pentru un document cu cote (`cuCote`, în `proiectLocal.ts`, lângă plăcuțe).
+- **Jurnalul:** `inlocuieste-cote`, cu inversa exactă; lista goală scoate câmpul (un proiect fără cote rămâne cum era).
+- **Regula de import** `cam-fara-cote`: `src/cam`, `src/post`, `src/sim` și `src/jobs` nu importă `cote.ts` și
+  `judecataCote.ts` (capcana: `test/capcane/jobs/importa-cote.ts`).
+- **Cifrele:** unitare noi 18; unitarele ușii, documentului, foilor și jurnalului 3 546 / 3 546; regulile de import 21 / 21;
+  otrăvuri 30 / 30 (`test/otravuri/10.4a1.py`). Pornirea 110,0 kB (+0,1; cu ușa 114,6, cu Atelierul 114,9 / 120), totalul
+  807,6 / 900 kB (+1,5, judecata la cerere).
+- **De ținut minte pentru a-2:** „Duplică foaia” copiază și cotele, cu legăturile spre instanțele foii vechi, deci pe foaia
+  nouă ies dezlegate; la fel o cotă a cărei piesă se mută pe altă foaie. A-2 hotărăște dacă le leagă din nou.
+
 ## Răspunsurile owner-ului (24.11.2026)
 
-Salvate în schiță (`raspunsuri/owner`, 10:52), apoi „am raspuns” în chat: **1a, 2a, 3a, 4a, 5a, 6a**, cu nota, exactă:
+Salvate în schiță (`raspunsuri/owner`, 12:52), apoi „am raspuns” în chat: **1a, 2a, 3a, 4a, 5a, 6a**, cu nota, exactă:
 „vreau cat mai multe optiuni si setari pe care un user le poate selecta si configura pentru sistemul de cote. dar nu le
 vreau in zona de design/proiectare. vreau o zona de settings generale si acolo sa se poata seta toate astea”.
 

@@ -12901,7 +12901,7 @@ scrie brief-ul pentru relief si pentru cote”
 
 **Prompt:** brief-ul liniei cotelor (owner-ul, 24.11, într-o sesiune cloud nouă: „Ești sesiunea liniei cotelor…”; ramura
 `wip/10.4-cote`, ADR-urile 0330–0339, canalul `cote`; „Prima livrare, fără cod de produs: ADR 0330, propus […] plus o
-schiță publicată”). **Started:** 24.11, 10:32, în sesiunea cloud a liniei. **Completed:** 24.11, 11:05.
+schiță publicată”). **Started:** 24.11, 12:32, în sesiunea cloud a liniei. **Completed:** 24.11, 12:51.
 
 - **Ce e azi**, citit în cod: riglele foii și linia de cotă a formelor ieșite (`cotePeste`, ADR 0060); lipirea doar pe
   axe (`src/geom/lipire.ts`); foaia ține deja, fără schemă nouă, ghidajele, imaginile și materialul; exportul 2D fără
@@ -12924,10 +12924,10 @@ schiță publicată”). **Started:** 24.11, 10:32, în sesiunea cloud a liniei.
 
 ## 2026-11-24 — ADR 0330 acceptat (1a–6a), cu setările cotelor într-o fereastră „Setări” (Model: Claude Opus 5.5)
 
-**Prompt:** „am raspuns” (owner-ul, după răspunsurile salvate în schiță la 10:52: 1a–6a, cu nota „vreau cat mai multe
+**Prompt:** „am raspuns” (owner-ul, după răspunsurile salvate în schiță la 12:52: 1a–6a, cu nota „vreau cat mai multe
 optiuni si setari pe care un user le poate selecta si configura pentru sistemul de cote. dar nu le vreau in zona de
-design/proiectare. vreau o zona de settings generale si acolo sa se poata seta toate astea”). **Started:** 24.11, 10:58.
-**Completed:** 24.11, 11:20 (documentele; codul continuă cu 10.4↑a-1).
+design/proiectare. vreau o zona de settings generale si acolo sa se poata seta toate astea”). **Started:** 24.11, 12:53.
+**Completed:** 24.11, 12:57 (documentele; codul continuă cu 10.4↑a-1).
 
 - **ADR 0330, acceptat:** răspunsurile, cu nota exactă; §6 rescris: fereastra nouă „Setări” (meniul contului, paleta,
   Ctrl+, și ⚙ din bara uneltei), secțiunea Cotele, cu ~35 de setări în opt grupuri (cifrele, liniile și capetele, raza,
@@ -12938,3 +12938,27 @@ design/proiectare. vreau o zona de settings generale si acolo sa se poata seta t
 - **Schița, versiunea 2:** macheta „Setări › Cotele”, cu o cotă de probă care se redesenează după unitate (și inch în
   fracții), zecimale, zerouri, rotunjire, separator, înălțime, locul cifrei, capete, liniile de extensie.
 - **Documentele:** rândul indexului ADR (acceptat), nota liniei (deciziile owner-ului), DEVLOG; traducerile: 993, 0 lipsă.
+
+## 2026-11-24 — Felia 10.4↑a-1: modelul cotelor și proba G-code-ului (ADR 0330 §2, §3, §8) (Model: Claude Opus 5.5)
+
+**Prompt:** „am raspuns” (owner-ul, 24.11; după ADR-ul acceptat, codul pornește cu 10.4↑a-1). **Started:** 24.11, 12:58, în
+sesiunea cloud a liniei cotelor. **Completed:** 24.11, 13:35 (în container; CI-ul, pe commit-ul împins).
+
+- **Întâi proba** (`test/unit/cote.neatinse.test.ts`), verde din prima (cotele erau încă un câmp necunoscut): pe tot corpusul
+  CAM și pe placa 11, nouă cote pe fiecare foaie (fiecare fel, legate de vârf, cutie, mijloc, centru, cadran; una dezlegată;
+  una dintr-o versiune mai nouă); exportul, traseul, verificarea vectorilor și raportul foilor ies ca fără cote.
+- **Apoi probele modelului și ale ușii**, roșii întâi (modulele lipseau), verzi după cod: `cote.model.test.ts` (7: punctele
+  pe hârtie, prin instanța rotită cu 90°; dezlegarea; valorile, cu unghiul din trei puncte și dintre două laturi),
+  `cote.usa.test.ts` (8: refuzurile, câmpurile necunoscute, cheile `__proto__`, privirea de la pornire, jurnalul, ușa fără
+  judecata adusă, într-un proces separat).
+- **Codul:** tipurile în `document.ts` (lista felurilor, ca valoare, în `cote.ts`, ca să nu intre în pornire);
+  `src/model/cote.ts`; `src/model/judecataCote.ts`; `problemaCote` și înregistrarea în `schemaDocument.ts`; `cuCote` și
+  apelul în `usaCurenta.ts`; importul în `incarcare.ts`; pornirea (`proiectLocal.ts`) aduce judecata doar pentru un document
+  cu cote; `inlocuieste-cote` în `jurnal.ts`; regula `cam-fara-cote` cu capcana ei.
+- **Porțile, în container:** tipurile; regulile de import (21 / 21 capcane, 0 încălcări); unitarele ușii, documentului
+  (oracolele v1–v27, corpusul de aur), foilor, jurnalului și cotelor 3 546 / 3 546; build-ul determinist; traducerile (995,
+  0 lipsă). Pornirea 110,0 kB (+0,1; cu ușa 114,6, cu Atelierul 114,9 / 120), totalul 807,6 / 900 (+1,5).
+- **Otrăvurile** (`test/otravuri/10.4a1.py`, într-o clonă, după commit): 30 / 30 prinse; `verifica` pe listele zonei:
+  aceleași VOID-uri ca pe `main`.
+- **Capcane:** am scris întâi orele în UTC; proiectul scrie ora României (corectate). „Duplică foaia” copiază și cotele, cu
+  legăturile foii vechi (pe foaia nouă ies dezlegate): de hotărât la a-2.

@@ -63,12 +63,17 @@ față. Fără cod de produs până la răspunsuri. De hotărât acolo, între a
   pagină, `raspunsuri/owner`, scrise doar de owner): <https://claude.ai/artifact/BvsaqPKoKWsypCi1tphDvu>. **Urmează:**
   răspunsurile owner-ului, apoi 10.4↑a, cu proba G-code-ului (cu și fără cote) scrisă prima.
 
-- **24.11, ADR 0330 acceptat** (owner-ul, în schiță, 10:52, apoi „am raspuns”): 1a–6a, cu nota „vreau cat mai multe
+- **24.11, ADR 0330 acceptat** (owner-ul, în schiță, 12:52, apoi „am raspuns”): 1a–6a, cu nota „vreau cat mai multe
   optiuni si setari pe care un user le poate selecta si configura pentru sistemul de cote. dar nu le vreau in zona de
   design/proiectare. vreau o zona de settings generale si acolo sa se poata seta toate astea”. De aici: o fereastră nouă,
   „Setări” (meniul contului, paleta, Ctrl+,), secțiunea Cotele, cu toate setările (ADR 0330 §6); bara uneltei doar cu
   felurile și ⚙; panoul doar cu ce e al cotei; setările ale aplicației (browser), nu ale cotei. 10.4↑a s-a împărțit în
   a-1 (modelul și proba G-code-ului), a-2 (unealta), a-3 (Setări, panoul, lista, manualul). Schița, la zi (versiunea 2).
+
+- **24.11, 10.4↑a-1 gata pe ramură** (`472e6107`): proba G-code-ului scrisă prima, modelul (`src/model/cote.ts`), judecata
+  ușii la cerere, comanda jurnalului, regula de import; otrăvuri 30 / 30. Fără interfață: owner-ul n-are încă ce încerca.
+  **Urmează:** 10.4↑a-2, unealta Cote pe pânză (lipirea pe puncte, felurile liniare, Măsoară, legarea și dezlegarea în
+  același pas, alegerea și mânerele).
 
 ## Deciziile owner-ului
 
@@ -86,3 +91,8 @@ față. Fără cod de produs până la răspunsuri. De hotărât acolo, între a
   trebuie să intre în același pas de anulare; `executa` din `src/model/jurnal.ts` e locul comun (ca `inregistreazaFoile`).
   Altfel, cota dezlegată sare înapoi la punctul de la desenare.
 - **Bara de sus:** un buton nou de unealtă se probează la 1280 px cu fontul lat, în ambele limbi (ADR 0181, 10.3↑j).
+- **Lista felurilor ca valoare** (`FELURI_COTA`) stă în `cote.ts`, nu în `document.ts`: acela e în pornire, iar o valoare
+  exportată de acolo ar intra în pachet.
+- **„Duplică foaia”** (`comandaDuplicareLegata`, `src/model/pieseLegate.ts`) copiază tot ce are foaia, deci și cotele, cu
+  legăturile spre instanțele foii vechi: pe foaia nouă ies dezlegate. De hotărât la a-2 (le leagă din nou de instanțele noi).
+- **Orele** din DEVLOG și din fișe sunt ale României (UTC+2), nu UTC.
