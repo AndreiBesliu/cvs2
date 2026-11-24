@@ -121,9 +121,10 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
   a vârfului: zero fișiere schimbate în afara `.md`). Câștigul: o jumătate de oră.
 - **Intervalele ADR, la 24.11:** 0145–0149 sesiunea principală (lângă plafoanele 0143, 0144; 0145 e plafonul pornirii),
   0230–0239 biblioteca, 0240–0249 ancorele, 0250–0259 aranjamentele, 0260–0269 adminul, 0270–0279 trasarea, 0280–0289
-  pluginul (0283 e ținut de linia elicelor, pentru 3.Tu), 0290–0299 exportul, 0300–0309 frezele, 0310–0329 relieful,
-  0330–0339 cotele, 0340–0349 atelierul Easy 3Draw (piesele și configuratoarele, feliile de la 3.Tv). Următoarea linie
-  nouă ia de la 0350.
+  pluginul (din 24.11 seara, întreg al liniei atelierului Easy 3Draw: 0283 pentru 3.Tu, 0284 construcțiile, cu
+  feliile 3.Ca–3.Cj), 0290–0299 exportul, 0300–0309 frezele, 0310–0329 relieful, 0330–0339 cotele, 0340–0349 tot
+  atelierul, după 0289. Următoarea linie nouă ia de la 0350. **Numerele unei linii noi se dau înainte ca linia să-i
+  ceară owner-ului acceptarea ADR-ului** (24.11: atelierul avea ADR-ul acceptat sub 0284 când a citit „0340”).
 - **Un PR rămas deschis după unire** (ramura a mers mai departe peste commit-ul unit, deci GitHub nu-l închide) se
   închide doar la cuvântul owner-ului, cu un comentariu care trimite la commit-ul de unire; înainte, se uită ce mai e
   pe ramură: pe 24.11, la `#16`, frezele aveau deja două felii noi, neunite, pentru care linia deschide alt PR.
@@ -178,7 +179,8 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
   - **la owner:** 3.Tu (unde stă axul pieselor rotunde în vederea „Modelul” din Easy 3Draw; trei întrebări, cu
     recomandările 1a, 2a, 3a, în `docs/linii/elice.md`; ADR 0283): din 24.11 seara, a liniei atelierului;
   - **pornită pe 24.11, cu ADR-ul propus întâi:** atelierul Easy 3Draw (piese și configuratoare noi, compatibile în
-    construcții; cererea owner-ului, în sesiunea liniei bibliotecii, pe ramura ei; ADR 0340–0349, feliile de la 3.Tv;
+    construcții; cererea owner-ului, în sesiunea liniei bibliotecii, pe ramura ei; ADR 0284, acceptat cu 1a–4a,
+    feliile 3.Ca–3.Cj; 3.Ca, conectorul perpendicular, gata pe ramură, cu porțile în lucru;
     ia și lucrul liniei elicelor, predat pe 24.11 seara la cererea owner-ului: 3.Tu, la răspunsurile lui);
   - **la cuvântul owner-ului:** următoarea felie a bibliotecii extensiilor, a incrustațiilor și a trasării, 11.5↑b
     (după etapa 13);

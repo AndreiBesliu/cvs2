@@ -1637,9 +1637,14 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   care exista deja. vreau ca userii sa poata crea cat mai multe piese, care sa fie si compatibile intre ele nu doar una
   cate una ci si ca constructii complexe”. În sesiunea liniei elicelor: „vreau sa predai ce mai ai in lucru si tot ce
   este nevoie pentru asta sesiunii principale, ca aceasta sa mute si lucrul eliciilor in sesiunea extensiilor”. Deci:
-  - linia atelierului o lucrează sesiunea extensiilor, pe ramura ei (`wip/3.Xh-biblioteca-ui`, canalul `biblioteca`),
-    cu ADR-urile 0340–0349 și feliile de la 3.Tv; nota liniei, `docs/linii/atelier.md`. Întâi inventarul, ADR 0340
-    propus și schița cu întrebările, apoi codul, la răspunsuri;
+  - linia atelierului o lucrează sesiunea extensiilor, pe ramura ei (`wip/3.Xh-biblioteca-ui`, canalul `biblioteca`);
+    nota liniei, `docs/linii/atelier.md`. **Numerele, îndreptate în aceeași seară:** ADR-ul liniei e **0284**
+    („Construcțiile din Easy 3Draw: piese noi pe familii, punctele de prindere și Modelul ca asamblare”), propus și
+    acceptat de owner în sesiunea liniei, cu 1a–4a, înainte ca linia să fi citit numerele date de sesiunea principală
+    (0340–0349, feliile de la 3.Tv); feliile lui sunt **3.Ca–3.Cj**. Rămân așa: 0284 e în intervalul pluginului
+    (0280–0289, acum întreg al liniei), literele erau libere, iar o redenumire după acceptare n-ar aduce nimic.
+    0340–0349 rămâne al liniei, pentru ADR-urile de după 0289. Prima felie, 3.Ca (conectorul perpendicular, Easy
+    3Draw 18.24.0), e gata pe ramură, cu porțile în lucru;
   - **linia elicelor e predată** (`05bdc8ec`, doar documente: `docs/linii/elice.md`, „Predarea”): n-are nimic în
     lucru; cele patru elice sunt în `main` (3.Tq–3.Tt, Easy 3Draw 18.23.0). **3.Tu (piesele rotunde pe același ax în
     vederea „Modelul”; ADR 0283, rezervat) trece la linia atelierului**, cu analiza, cifrele și schița din notă. Cele
