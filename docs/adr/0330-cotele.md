@@ -483,7 +483,9 @@ nu „a-3a” și „a-3b”, cum le-a numit întâi sesiunea.)
   textului e „4× <>”.
 - **Manualul:** „Cotele și măsurarea” (felurile noi, Automată, săgețile, panoul) și „Setările” (grupul nou, fracțiile).
 - **Cifrele:** unitare noi 16 (desenul și cifrele 15, setările 1) și cele potrivite; e2e noi 5 (`cote.cerc.spec.ts`), plus
-  probele Setărilor potrivite (șase grupuri, patru cote de probă); otrăvuri: 31 / 31 unitare, patru prinse după probele noi; cele e2e în lucru (`test/otravuri/10.4b.py`). Pornirea
+  probele Setărilor potrivite (șase grupuri, patru cote de probă); otrăvuri 49 / 49 (`test/otravuri/10.4b.py`: 31 unitare, 18 e2e), 44 din prima; cinci au scăpat întâi și sunt prinse după
+  probele noi (diametrul cu cifra înăuntru, cifra arcului cu „sus”-ul spre vârf, unghiul din patru puncte în `desenCota`,
+  minutele rotunjite, arcul cotei de probă din Setări în alt sector). Pornirea
   110,6 kB, neschimbată (cu ușa 115,3, cu Atelierul 115,6 / 120: felurile noi, setările și desenul stau în bucățile uneltei și
   ale ferestrei Setări, la cerere), totalul 860,6 → 864,8 / 900 kB (după lotul 24 adus).
 

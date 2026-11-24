@@ -13899,4 +13899,5 @@ cotelor. **Completed:** 24.11, 19:14 (în container; CI-ul, pe commit-ul împins
 - **Porțile, în container:** tipurile, regulile de import; unitarele cotelor, manualului și catalogului; e2e-urile cotelor,
   panoului, setărilor și manualului (27 / 27); build-ul determinist. Pornirea 110,6 kB (neschimbată), totalul 860,6 → 864,8 /
   900.
-- **Otrăvurile** (`test/otravuri/10.4b.py`, într-o clonă): 31 / 31 unitare (P04, P14, P18 și P22 au scăpat întâi și sunt prinse după probele noi); cele 18 e2e, în lucru.
+- **Otrăvurile** (`test/otravuri/10.4b.py`, într-o clonă): 49 / 49 (31 unitare, 18 e2e); P04, P14, P18, P22 și E18 au scăpat
+  întâi și sunt prinse după probele noi (patru unitare, plus arcul cotei de probă din Setări).
