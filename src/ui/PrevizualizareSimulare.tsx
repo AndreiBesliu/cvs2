@@ -61,7 +61,7 @@ export function PrevizualizareSimulare({ s, limba }: Props) {
       className="simulare" data-testid="export-simulare" aria-labelledby="simulare-titlu"
       data-amprenta={s.amprenta} data-fire={s.fire} data-volum={s.volum} data-adancime={s.adancimeMax}
     >
-      <h3 id="simulare-titlu">{t('simulare.titlu')}</h3>
+      <h4 id="simulare-titlu">{t('simulare.titlu')}</h4>
       <canvas
         ref={panza} width={s.previzualizare.latime} height={s.previzualizare.inaltime}
         role="img" aria-label={t('simulare.harta')} data-simulare="harta"

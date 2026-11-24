@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { adauga } from './ajutor-panza.ts';
+import { alege, aleasa } from './ajutor-export.ts';
 
 /**
  * Panoul mașinii (ADR 0081, felia 3.6b), în Edge: cu mașina simulată (doar în afara instanței live), ultimul export se
@@ -178,8 +179,8 @@ async function exportDouaFreze(page: import('@playwright/test').Page, strategie?
   const rand = page.locator('[data-operatie="e2/e2"]');
   await rand.locator('[data-camp="scula"]').fill('2');
   await rand.locator('[data-camp="diametru"]').fill('3');
-  await expect(page.locator('[data-camp="strategie"]')).toHaveValue('bariera-sender');
-  if (strategie) await page.locator('[data-camp="strategie"]').selectOption(strategie);
+  await expect(aleasa(page.locator('[data-fisa="masina"]'), 'strategie')).toHaveValue('bariera-sender');
+  if (strategie) await alege(page.locator('[data-fisa="masina"]'), 'strategie', strategie);
   const nume: string[] = [];
   page.on('download', (d) => { nume.push(d.suggestedFilename()); });
   await page.locator('[data-buton="exporta"]').click();

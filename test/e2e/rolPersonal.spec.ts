@@ -73,7 +73,7 @@ test('rolul salvat din panou trece pe un cerc, rămâne după reîncărcare, se 
   await rol(page).selectOption({ label: 'Decupare placaj' });
   // Fereastra exportului: rândul dreptunghiului și al cercului, amândouă cu valorile rolului.
   await page.locator('[data-actiune="export.gcode"]').click();
-  await expect.poll(() => valori(page, '[data-operatie] [data-camp="latura"]')).toEqual(['exterior', 'exterior']);
+  await expect.poll(() => valori(page, '[data-operatie] input[data-camp="latura"]:checked')).toEqual(['exterior', 'exterior']);
   await expect.poll(() => valori(page, '[data-operatie] [data-camp="adancime"]')).toEqual(['6,5', '6,5']);
   await expect.poll(() => valori(page, '[data-operatie] [data-camp="pas"]')).toEqual(['2', '2']);
   await page.getByRole('button', { name: 'Închide' }).click();

@@ -90,9 +90,9 @@ test('E04: un rând cu un contur închis și o linie deschisă nu oferă stânga
   } as { rev: number });
   await page.reload();
   await page.locator('[data-actiune="export.gcode"]').click();
-  const latura = page.locator('[data-operatie="p/o1"] [data-camp="latura"]');
-  await expect(latura.locator('option[value="pe-linie"]')).toHaveCount(1);
-  await expect(latura.locator('option[value="stanga"], option[value="dreapta"]')).toHaveCount(0);
+  const latura = page.locator('[data-operatie="p/o1"] [data-alegere="latura"]');
+  await expect(latura.locator('input[value="pe-linie"]')).toHaveCount(1);
+  await expect(latura.locator('input[value="stanga"], input[value="dreapta"]')).toHaveCount(0);
 });
 
 test('E05: marcajul „despărțire” pus din dialog se vede bifat la redeschiderea dialogului', async ({ page }) => {
@@ -115,12 +115,12 @@ test('E05: marcajul „despărțire” pus din dialog se vede bifat la redeschid
   await expect(page.locator('[data-operatie="e1/deschise"] [data-camp="despartire"]')).toBeChecked();
 });
 
-test('E06: bifa „Despărțire” e inactivă pe un rând doar cu contururi închise', async ({ page }) => {
+test('E06: bifa „Despărțire” nu se poate pune pe un rând doar cu contururi închise (din ADR 0290, nu apare pe fișă)', async ({ page }) => {
   await page.goto('/');
   await adauga(page, 'dreptunghi');
   await page.locator('[data-actiune="export.gcode"]').click();
   await expect(page.locator('[data-operatie]')).toHaveCount(1);
-  await expect(page.locator('[data-operatie] [data-camp="despartire"]')).toBeDisabled();
+  await expect(page.locator('[data-operatie] [data-camp="despartire"]')).toHaveCount(0);
 });
 
 test('E07: al doilea clic al unui dublu-clic (detail = 2) pe „Importă” nu importă nimic', async ({ page }) => {
