@@ -14,6 +14,7 @@ import {
   cuFreza, cuGrupRedenumit, cuImport, cuStandard, faraFreza, frezaDinDate, type Freza, type FrezaSalvata, type FrezaStandard, type PoliticaImport,
   type ProblemeFreza,
 } from '../model/freza.ts';
+import { cuDinCatalog } from '../model/dinCatalog.ts';
 import { sincronDate, sincronDin, type BibliotecaCont, type StareSincron } from '../model/frezeSincron.ts';
 
 export const BAZA_FREZE = 'cncvs2-freze';
@@ -54,6 +55,9 @@ export type StareFreze = {
 export type ProblemeLista = ProblemeFreza | { readonly id: 'lipsa' } | { readonly lista: 'plina' | 'versiune' };
 export type RezultatSalvare = { readonly ok: true; readonly id: string } | { readonly ok: false; readonly probleme: ProblemeLista };
 export type RezultatStergere = { readonly ok: true } | { readonly ok: false; readonly probleme: ProblemeLista };
+export type RezultatCatalog =
+  | { readonly ok: true; readonly adaugate: number; readonly existente: number; readonly plina: boolean }
+  | { readonly ok: false; readonly probleme: ProblemeLista };
 export type RezultatMaiMulte =
   | { readonly ok: true; readonly adaugate: number; readonly inlocuite: number; readonly sarite: number }
   | { readonly ok: false; readonly probleme: ProblemeLista };
@@ -82,6 +86,8 @@ export type FrezeMele = {
   readonly puneStandard: (standard: readonly FrezaStandard[], primaData: boolean) => Promise<RezultatMaiMulte>;
   /** Redenumirea unui grup al omului (ADR 0302 §4): toate frezele lui, într-o singură scriere; gol, înapoi pe feluri. */
   readonly redenumesteGrup: (vechi: string, nou: string) => Promise<RezultatStergere>;
+  /** „Pune în frezele mele” (ADR 0302 §1): frezele alese din catalog, cele care nu sunt deja, într-o singură scriere. */
+  readonly puneDinCatalog: (freze: readonly Freza[]) => Promise<RezultatCatalog>;
 };
 
 type Citita = {
@@ -242,6 +248,10 @@ export function creeazaFrezeMele(depozit: DepozitFreze | null, idNou: () => stri
       const r = faraFreza(lista, id);
       return r.ok ? { ok: true, lista: r.lista, rez: {} } : { ok: false, probleme: { id: 'lipsa' } };
     }),
+    puneDinCatalog: (freze) => schimba((lista, rezervate) => {
+      const r = cuDinCatalog(lista, freze, idNou, acum(), rezervate);
+      return { ok: true, lista: r.lista, rez: { adaugate: r.adaugate, existente: r.existente, plina: r.plina } };
+    }),
     redenumesteGrup: (vechi, nou) => schimba((lista) => {
       const r = cuGrupRedenumit(lista, vechi, nou, acum());
       if (r.ok) return { ok: true, lista: r.lista, rez: {} };
@@ -388,6 +398,7 @@ export function frezeMele(cheie: string = CHEIE_LOCALA): FrezeMele {
     salveaza: (id, f) => anunta(b.salveaza(id, f)),
     sterge: (id) => anunta(b.sterge(id)),
     redenumesteGrup: (vechi, nou) => anunta(b.redenumesteGrup(vechi, nou)),
+    puneDinCatalog: (freze) => anunta(b.puneDinCatalog(freze)),
     adaugaToate: (freze) => anunta(b.adaugaToate(freze)),
     importa: (freze, politica) => anunta(b.importa(freze, politica)),
     schimbaCont: (f) => anunta(b.schimbaCont(f)),

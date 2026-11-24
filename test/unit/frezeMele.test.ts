@@ -245,3 +245,18 @@ test('redenumirea unui grup (ADR 0302 §4): în depozit, toate frezele lui deoda
   assert.equal(d.scrieri, inainte + 1);
 });
 
+test('„Pune în frezele mele” (ADR 0302 §1): în depozit, într-o singură scriere, cele care nu sunt deja', async () => {
+  const d = new Depozit();
+  const b = creeazaFrezeMele(d, (() => { let i = 0; return () => `f${++i}`; })(), () => 7);
+  await b.incarca();
+  await b.salveaza(null, PLATA6);
+  const inainte = d.scrieri;
+  const r = await b.puneDinCatalog([{ ...PLATA6, nume: 'Plată Ø6 din catalog' }, { ...V60, nume: 'V60 Ø6' }]);
+  assert.deepEqual(r, { ok: true, adaugate: 1, existente: 1, plina: false });
+  assert.equal(d.scrieri, inainte + 1);
+  assert.deepEqual(b.stare().freze.map((f) => [f.nume, f.numar]), [['Plată Ø6', 2], ['V60 Ø6', 1]]);
+  const alta = creeazaFrezeMele(d, () => 'x', () => 8);
+  await alta.incarca();
+  assert.deepEqual(alta.stare().freze.map((f) => f.nume), ['Plată Ø6', 'V60 Ø6']);
+});
+
