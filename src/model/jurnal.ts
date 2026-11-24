@@ -1,4 +1,4 @@
-import type { Document, Foaie, Ghidaj, ImagineFoaie, Instanta, Piesa, Stoc } from './document.ts';
+import type { Cota, Document, Foaie, Ghidaj, ImagineFoaie, Instanta, Piesa, Stoc } from './document.ts';
 
 /**
  * Jurnalul de comenzi (T16, ADR 0016): fiecare schimbare e o comandă cu valorile vechi și cele noi, deci anularea și
@@ -10,7 +10,8 @@ import type { Document, Foaie, Ghidaj, ImagineFoaie, Instanta, Piesa, Stoc } fro
  *   instanță a unei piese, cât timp nivelul doi e ascuns);
  * - `inlocuieste-instanta` / `inlocuieste-piesa` schimbă una cu valorile ei noi;
  * - `inlocuieste-stoc` schimbă materialul unei foi (lățimea, înălțimea, grosimea; ADR 0038 §4);
- * - `inlocuieste-ghidaje` schimbă lista ghidajelor unei foi (ADR 0050);
+ * - `inlocuieste-ghidaje` schimbă lista ghidajelor unei foi (ADR 0050); `inlocuieste-cote`, lista cotelor ei (ADR 0330), iar
+ *   lista goală scoate câmpul (o foaie fără cote rămâne cum era);
  * - `degrupeaza` / `regrupeaza` pun în locul fiecărei instanțe (și piese) vechi părțile ei, sau invers, într-o singură
  *   trecere prin liste (ADR 0103): o degrupare de mii de părți nu copiază listele o dată pe parte. Gruparea (ADR 0130) e un
  *   `regrupeaza` cu locurile părților, deci inversa ei le pune exact unde erau;
@@ -34,6 +35,7 @@ export type Comanda =
   | { readonly tip: 'inlocuieste-ghidaje'; readonly foaie: string; readonly vechi: readonly Ghidaj[]; readonly nou: readonly Ghidaj[] }
   /** Imaginile foii (ADR 0272): lista întreagă, după o imagine pusă, mutată, ascunsă, fixată sau scoasă. */
   | { readonly tip: 'inlocuieste-imagini'; readonly foaie: string; readonly vechi: readonly ImagineFoaie[]; readonly nou: readonly ImagineFoaie[] }
+  | { readonly tip: 'inlocuieste-cote'; readonly foaie: string; readonly vechi: readonly Cota[]; readonly nou: readonly Cota[] }
   | { readonly tip: 'degrupeaza'; readonly foaie: string; readonly degrupate: readonly Degrupata[] }
   | { readonly tip: 'regrupeaza'; readonly foaie: string; readonly degrupate: readonly Degrupata[] }
   | ({ readonly tip: 'adauga-foaie' } & FoaieIntreaga)
@@ -228,6 +230,12 @@ function aplicaPas(doc: Document, c: Comanda): Document {
       : c.tip === 'inlocuieste-ghidaje' ? { ...foaie, ghidaje: [...c.nou] } : { ...foaie, imagini: [...c.nou] };
     return { ...doc, foi };
   }
+  if (c.tip === 'inlocuieste-cote') {
+    const foi = [...doc.foi];
+    const { cote: _, ...fara } = foaie;
+    foi[fi] = c.nou.length > 0 ? { ...fara, cote: [...c.nou] } : fara;
+    return { ...doc, foi };
+  }
   const instante = [...foaie.instante];
   let piese = doc.piese;
   if (c.tip === 'inlocuieste-instanta') {
@@ -274,6 +282,7 @@ function inversa(c: Comanda): Comanda {
     case 'inlocuieste-stoc': return { tip: c.tip, foaie: c.foaie, vechi: c.nou, nou: c.vechi };
     case 'inlocuieste-ghidaje': return { tip: c.tip, foaie: c.foaie, vechi: c.nou, nou: c.vechi };
     case 'inlocuieste-imagini': return { tip: c.tip, foaie: c.foaie, vechi: c.nou, nou: c.vechi };
+    case 'inlocuieste-cote': return { tip: c.tip, foaie: c.foaie, vechi: c.nou, nou: c.vechi };
     case 'degrupeaza': return { ...c, tip: 'regrupeaza' };
     case 'regrupeaza': return { ...c, tip: 'degrupeaza' };
     case 'adauga-foaie': return { ...c, tip: 'sterge-foaie' };
@@ -283,9 +292,33 @@ function inversa(c: Comanda): Comanda {
   }
 }
 
-/** O comandă nouă: se aplică, intră în trecut, iar viitorul (refacerile posibile) se golește. */
+/**
+ * Cotele (ADR 0330 §3): după o comandă, capetele legate care se dezleagă (forma ștearsă, mutată pe altă foaie, cu alte noduri)
+ * își scriu ultimul punct văzut, în același pas de anulare. Funcția vine cu modulul lor (`jurnalCote.ts`, adus cu judecata
+ * cotelor, deci cu orice document care le are, și cu unealta Cote): un document fără cote n-o cere.
+ */
+let dupaCote: ((inainte: Document, dupa: Document) => readonly Comanda[]) | null = null;
+
+/** Înregistrarea dezlegării cotelor, de modulul lor. */
+export function inregistreazaCotele(f: (inainte: Document, dupa: Document) => readonly Comanda[]): void {
+  dupaCote = f;
+}
+
+/**
+ * O comandă nouă: se aplică, intră în trecut, iar viitorul (refacerile posibile) se golește. Dacă dezleagă capetele unor cote,
+ * scrierea lor intră în același pas (un `lot` cu comanda și cu ea), deci anularea le întoarce pe amândouă.
+ */
 export function executa(h: Istoric, c: Comanda): Istoric {
-  return { doc: aplica(h.doc, c), trecut: [...h.trecut, c].slice(-PLAFON_ISTORIC), viitor: [] };
+  let doc = aplicaPas(h.doc, c);
+  let pas = c;
+  if (dupaCote && c.tip !== 'inlocuieste-cote') {
+    const extra = dupaCote(h.doc, doc);
+    if (extra.length > 0) {
+      doc = extra.reduce(aplicaPas, doc);
+      pas = { tip: 'lot', comenzi: [c, ...extra] };
+    }
+  }
+  return { doc: { ...doc, rev: h.doc.rev + 1 }, trecut: [...h.trecut, pas].slice(-PLAFON_ISTORIC), viitor: [] };
 }
 
 export function anuleaza(h: Istoric): Istoric {

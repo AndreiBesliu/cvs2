@@ -86,6 +86,8 @@ const USI: readonly Usa[] = [
   { id: 'editare.meniu', eticheta: eticheta('editare.meniu') },
   { id: 'editare.sugestie', eticheta: eticheta('editare.sugestie') },
   { id: 'editare.cont', eticheta: eticheta('editare.cont') },
+  // Butonul Admin din meniul global, doar pentru personal (cererea owner-ului din 24.11).
+  { id: 'editare.admin', eticheta: eticheta('editare.admin') },
 ];
 
 /**
@@ -95,7 +97,7 @@ const USI: readonly Usa[] = [
 const CONTROALE_EDITARE: Readonly<Record<string, string>> = {
   lipire: 'editare.lipire', grila: 'editare.grila', 'pas-grila': 'editare.grila', laturi: 'unealta.poligon', raza: 'unealta.cerc',
   ancora: 'unealta.transformare', colturi: 'unealta.transformare', 'alt-fix': 'unealta.transformare', 'cerc-mod': 'unealta.cerc',
-  aliniere: 'editare.aliniere', 'aliniere-bloc': 'editare.aliniere-bloc', 'vedere-3d': 'editare.3d', manual: 'editare.manual', sugestie: 'editare.sugestie', cont: 'editare.cont',
+  aliniere: 'editare.aliniere', 'aliniere-bloc': 'editare.aliniere-bloc', 'vedere-3d': 'editare.3d', manual: 'editare.manual', sugestie: 'editare.sugestie', cont: 'editare.cont', admin: 'editare.admin',
   retea: 'document.copiaza-in-retea',
   // Butonul benzii violet (ADR 0210 §2): «Desprinde-o doar pe aceasta».
   desprinde: 'piesa.desprinde',
@@ -150,8 +152,10 @@ test('ușile: fiecare are o etichetă cu nume scurt, fără id-uri repetate (sun
   // încă una: `vedere.aspect`. „Trimite la mașină” (ADR 0250, felia 28.1↑d), încă una: `export.trimite`. Imaginile foii
   // (ADR 0272, felia 25.8↑a), încă una: `foaie.imagini`. Legarea căilor (ADR 0182, felia 10.3↑o), încă două: acțiunea
   // `document.leaga-caile` și opțiunile legării. Biblioteca extensiilor (ADR 0231, felia 3.Xh-3), încă una:
-  // `extensii.biblioteca`. Fereastra „Frezele mele” (ADR 0300 §3, felia 16.A↑a), încă una: `vedere.freze`.
-  assert.equal(USI.length, 114);
+  // `extensii.biblioteca`. Fereastra „Frezele mele” (ADR 0300 §3, felia 16.A↑a), încă una: `vedere.freze`. Butonul Admin
+  // (ADR 0132 §11, felia 14.C↑d), încă una: `editare.admin`. Cotele (ADR 0330, felia 10.4↑a-2), încă două: unealta Cote și
+  // acțiunea `foaie.cote`.
+  assert.equal(USI.length, 117);
 });
 
 test('fiecare ușă e acoperită, în ambele limbi, de un capitol care o numește cu eticheta din interfață', () => {

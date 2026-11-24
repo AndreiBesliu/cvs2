@@ -1,4 +1,4 @@
-import { lazy, Suspense, useState, useSyncExternalStore, type ReactNode } from 'react';
+import { lazy, Suspense, useEffect, useState, useSyncExternalStore, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { ancoraPanou } from './ancoraPanou.ts';
 // Calculul acțiunilor pe care le dă fereastra asta (`actiuniDocument.ts`, `laCerere`) vine cu ea, nu în pachetul de pornire.
@@ -18,11 +18,15 @@ import type { CerereText } from '../ui/actiuniDocument.ts';
 import type { CampEticheta } from '../model/jurnal.ts';
 import { dinParametri, LATURI_MAX, LATURI_MIN, parametri, type Parametri } from '../model/formeParametrice.ts';
 import { ROLURI, roluriOferite, rolPiesei, type Rol } from '../model/rol.ts';
+import { frezaBibliotecii, frezePotrivite, operatiiCuFreza } from '../model/alegereFreza.ts';
 import { rolPersonalPiesei, type RolPersonal } from '../model/rolPersonal.ts';
 import type { RezultatActiune } from '../ui/actiuni.ts';
 import { PanouRoluri } from './PanouRoluri.tsx';
 import { ImaginiFoii } from './ImaginiFoii.tsx';
 import { useRoluriMele } from './roluriMele.ts';
+import { useContTinut } from './dreptCont.ts';
+import { CHEIE_LOCALA, cheieBibliotecii, frezeMele, useFrezeMele } from './frezeMele.ts';
+import { cuFrezeleStandard } from './frezeStandard.ts';
 import { cuMajuscula, frezaComuna, plusMinus } from './taiereButoane.ts';
 import type { Taierea } from '../ui/aranjament.ts';
 import { CampNumeric } from '../ui/CampNumeric.tsx';
@@ -208,6 +212,20 @@ export function PanouProprietati({
   const [refuzJur, setRefuzJur] = useState<{ readonly cheie: string; readonly motiv: string } | null>(null);
   // Refuzul ultimului − / + (felia 28.1↑d), pentru selecția de atunci.
   const [refuzPlus, setRefuzPlus] = useState<{ readonly cheie: string; readonly motiv: string } | null>(null);
+  // Biblioteca de freze (ADR 0300 §4, felia 16.A↑b-2), pentru rândul „Freza” din Tăierea: a contului deschis, citită din
+  // browser (fără sincronizare: aceea e a ferestrei „Frezele mele”), dacă are freze sau a primit setul standard; altfel cea
+  // fără cont, care primește frezele standard o dată (ADR 0300 §3, precizarea din 24.11). Și refuzul ultimei freze alese,
+  // pentru selecția de atunci.
+  const cheieCont = cheieBibliotecii(useContTinut());
+  const dinCont = useFrezeMele(cheieCont);
+  const faraCont = useFrezeMele(CHEIE_LOCALA);
+  const biblioteca = cheieCont !== CHEIE_LOCALA && (dinCont.standard || dinCont.freze.length > 0) ? dinCont : faraCont;
+  useEffect(() => {
+    const b = frezeMele(cheieCont);
+    if (!b.stare().incarcata) void b.incarca();
+    void cuFrezeleStandard();
+  }, [cheieCont]);
+  const [refuzFreza, setRefuzFreza] = useState<{ readonly cheie: string; readonly motiv: string } | null>(null);
   // Literele plăcuței în lucru (fontul se aduce) sau refuzul lor, pentru selecția de atunci (ADR 0210 §4); «Din CSV…»
   // deschisă (pentru selecția de atunci) și ce a făcut ultima ei rulare.
   const [placuta, setPlacuta] = useState<{ readonly cheie: string; readonly motiv: string | null } | null>(null);
@@ -388,6 +406,20 @@ export function PanouProprietati({
   const numeFreza = freza === null ? t('prop.atelier.freze-diferite')
     : freza.forma?.tip === 'v' ? t('prop.atelier.freza.v', { unghi: freza.forma.unghi, diametru: diametru(freza.diametru) })
       : t('prop.atelier.freza.plata', { diametru: diametru(freza.diametru) });
+  // Freza din bibliotecă (ADR 0300 §4): doar frezele care merg pe toate operațiile alese; aleasă, le schimbă freza și pașii,
+  // într-un pas de anulare. Arătată e freza comună din bibliotecă; altfel „Scrisă de mână” (aceeași freză pe toate) sau „—”.
+  // Numărul T din proiect poate fi altul decât al bibliotecii (ocupat de altă freză): nota o spune.
+  const frezeOferite = frezePotrivite(biblioteca.freze, operatiiAlese);
+  const idBiblioteca = frezaBibliotecii(operatiiAlese);
+  const frezaAleasa = frezeOferite.find((f) => f.id === idBiblioteca) ?? null;
+  const sculeEgale = operatiiAlese.every((o) => jsonCanonic(o.scula) === jsonCanonic(operatiiAlese[0]?.scula ?? null));
+  const numarAles = frezaAleasa ? operatiiAlese[0]?.scula.numar : undefined;
+  const alegeFreza = (id: string): void => {
+    const f = frezeOferite.find((x) => x.id === id);
+    const noi = f ? operatiiCuFreza(doc, piese.map((p) => p.id), f) : null;
+    const rez: RezultatActiune = noi ? onOperatii(noi) : { ok: false, motiv: 'motiv.operatie-invalida' };
+    setRefuzFreza(rez.ok ? null : { cheie, motiv: t(rez.motiv) });
+  };
 
   // Tăierea (ADR 0112): în listă stă după formă; din butoane (Atelier, felia 28.1↑d) stă prima, sub notă, ca pe planșa
   // „C · Întunecat”.
@@ -463,6 +495,19 @@ export function PanouProprietati({
           ? rand(t('prop.adancime'), t('prop.inc.gaura.adancime', { mm: mm(foaie.stoc.grosime) }))
           : rand(t('prop.adancime'), camp(t('prop.adancime'), 'adancime', comun((o) => o.adancime), 'mm', false, (x) => scrieValori({ adancime: x }))))}
         {!butoane && operatiiAlese.length > 0 && rand(t('prop.pas'), camp(t('prop.pas'), 'pas', comun((o) => o.pas), 'mm', false, (x) => scrieValori({ pas: x })))}
+        {/* În Atelier (butoanele mari, fără liste), freza rămâne pe cartela ei, schimbată din fereastra exportului. */}
+        {!butoane && operatiiAlese.length > 0 && biblioteca.freze.length > 0 && rand(t('prop.freza'), (
+          <select key={`${cheie}/freza`} value={frezaAleasa?.id ?? ''} data-camp="freza" aria-label={t('prop.freza')}
+            disabled={doarCitire || frezeOferite.length === 0} {...(oprit ? { title: oprit } : {})}
+            onChange={(ev) => { alegeFreza(ev.target.value); }}>
+            {frezaAleasa === null && (
+              <option value="" disabled>
+                {frezeOferite.length === 0 ? t('prop.freza.nicio') : sculeEgale ? t('prop.freza.mana') : t('prop.rol.diferite')}
+              </option>
+            )}
+            {frezeOferite.map((f) => <option key={f.id} value={f.id}>{f.nume}</option>)}
+          </select>
+        ))}
         {incrustatii && rand(t('prop.inc.joc'), camp(t('prop.inc.joc'), 'inc-joc', comunInc((i) => i.joc), 'mm', false, (x) => scrieIncrustatie({ joc: x })))}
         {incrustatii && rand(t('prop.inc.fierastrau'), camp(t('prop.inc.fierastrau'), 'inc-fierastrau', comunInc((i) => i.fierastrau), 'mm', false,
           (x) => scrieIncrustatie({ fierastrau: x })))}
@@ -538,6 +583,10 @@ export function PanouProprietati({
       {copii && <p className="prop-nota">{t('prop.rol.copii')}</p>}
       {refuzRol?.cheie === cheie && <p className="camp-motiv" role="alert" data-motiv="rol">{refuzRol.motiv}</p>}
       {refuzJur?.cheie === cheie && <p className="camp-motiv" role="alert" data-motiv="inc-jur">{refuzJur.motiv}</p>}
+      {frezaAleasa && numarAles !== undefined && numarAles !== frezaAleasa.numar && (
+        <p className="prop-nota" data-nota="freza-numar">{t('prop.freza.numar', { aici: numarAles, biblioteca: frezaAleasa.numar })}</p>
+      )}
+      {refuzFreza?.cheie === cheie && <p className="camp-motiv" role="alert" data-motiv="freza">{refuzFreza.motiv}</p>}
       <PanouRoluri piese={piese} cheie={cheie} />
     </section>
   );

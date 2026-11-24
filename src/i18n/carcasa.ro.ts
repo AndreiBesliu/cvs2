@@ -21,7 +21,7 @@ export const roCarcasa = {
   'paleta.gest.document.aplica-operatii': 'La Exportă, din fereastra lui.',
   'paleta.gest.panou': 'Din panoul de proprietăți.',
   'prop.titlu': 'Proprietăți',
-  'prop.nota': 'Scrie o valoare și apasă Enter (sau ieși din câmp); Escape revine. Rolul, adâncimea și pasul se schimbă aici; restul operațiilor, din fereastra Exportă G-code.',
+  'prop.nota': 'Scrie o valoare și apasă Enter (sau ieși din câmp); Escape revine. Rolul, adâncimea, pasul și freza din bibliotecă se schimbă aici; restul operațiilor, din fereastra Exportă G-code.',
   'prop.taierea': 'Tăierea',
   'prop.rol': 'Rolul',
   'prop.rol.diferite': '— (diferite)',
@@ -38,6 +38,9 @@ export const roCarcasa = {
   'prop.atelier.freza.operatii': { one: 'pentru o operație', few: 'pentru {n} operații', other: 'pentru {n} de operații' },
   'prop.atelier.schimba': 'Schimbă',
   'prop.atelier.schimba.titlu': 'Freza se alege în fereastra Exportă G-code.',
+  'prop.freza.mana': 'Scrisă de mână',
+  'prop.freza.nicio': 'Nicio freză din bibliotecă nu se potrivește',
+  'prop.freza.numar': 'Aici e T{aici}: T{biblioteca} e deja al altei freze din proiect.',
   'cont.titlu': 'Contul',
   'cont.indisponibil': 'Contul nu e disponibil pe instanța asta (fără configurația Firebase).',
   'cont.incarca': 'Se deschide contul…',
@@ -174,6 +177,7 @@ export const roCarcasa = {
   // Meniul foii din listă (ADR 0210 §1, `MeniuFoaie.tsx`).
   'lista.foaie-proprietati': 'Nume, mărime și material…',
   'lista.foaie-aseaza': 'Așază pe foi…',
+  'panza.foaie-comenzi': 'Comenzile foii „{nume}”',
   // Dialogul „Așază pe foi” (ADR 0210 §3, `DialogAsezare.tsx`).
   'aseaza.titlu': 'Așază pe foi',
   'aseaza.ce': 'Ce așază',

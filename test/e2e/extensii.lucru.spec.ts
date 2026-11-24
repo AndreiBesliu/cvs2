@@ -1,7 +1,7 @@
 import { test, expect, type Page } from '@playwright/test';
 import { impacheteaza, scrieZip } from '../../scripts/impacheteaza-extensie.ts';
 import { citesteZip } from '../../src/extensii/zip.ts';
-import { clicCareInchideCadrul, clicDupaReaparitie } from './ajutor-extensii.ts';
+import { clicCareInchideCadrul, clicCareRefaceCadrul, clicDupaReaparitie } from './ajutor-extensii.ts';
 import { eroriJurnal } from './ajutor-jurnal.ts';
 
 /**
@@ -225,8 +225,8 @@ test('repornirea cerută de extensie (ADR 0165): cadrul se reface, cu contextul 
   await deschide(page);
   const deschideri = cadru(page).locator('[data-salut="deschideri"]');
   await expect(deschideri).toHaveText('Deschideri: 1');
-  await cadru(page).locator('[data-salut="reporneste"]').click();
-  await expect(deschideri).toHaveText('Deschideri: 2');
+  // Clicul reface cadrul pe loc: se așteaptă urmarea lui, nu întoarcerea (cursa din `clicCareRefaceCadrul`).
+  await clicCareRefaceCadrul(page, '[data-salut="reporneste"]', () => expect(deschideri).toHaveText('Deschideri: 2', { timeout: 15_000 }));
   await expect(page.getByTestId('spatiu-extensie')).toHaveAttribute('data-stare', 'pornit');
   // Două cereri imediat după: așteaptă până trec cele 2 s și se fac într-o singură repornire.
   await cadru(page).locator('[data-salut="reporneste"]').click();
@@ -237,8 +237,7 @@ test('repornirea cerută de extensie (ADR 0165): cadrul se reface, cu contextul 
   await page.waitForTimeout(2500);
   await expect(deschideri).toHaveText('Deschideri: 3');
   // Una amânată, apoi extensia închisă și deschisă din nou: repornirea amânată nu mai are loc, nici în cea redeschisă.
-  await cadru(page).locator('[data-salut="reporneste"]').click();
-  await expect(deschideri).toHaveText('Deschideri: 4');
+  await clicCareRefaceCadrul(page, '[data-salut="reporneste"]', () => expect(deschideri).toHaveText('Deschideri: 4', { timeout: 15_000 }));
   await cadru(page).locator('[data-salut="reporneste"]').click();
   await page.locator('[data-extensii="inchide-fereastra"]').click();
   await expect(page.getByTestId('spatiu-extensie')).toHaveCount(0);

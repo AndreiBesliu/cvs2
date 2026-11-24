@@ -1,6 +1,8 @@
 import { MIGRARI } from './migrari.ts';
 // Judecata literelor plăcuțelor (v23): ușa întreagă o are mereu (se înregistrează în `schemaDocument.ts`).
 import './judecataTexte.ts';
+// La fel, judecata cotelor foilor (ADR 0330 §2).
+import './judecataCote.ts';
 import { incarcaCu, type RezultatIncarcare } from './usaCurenta.ts';
 
 /**

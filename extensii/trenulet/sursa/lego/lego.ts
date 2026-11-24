@@ -1966,15 +1966,17 @@ var Lego = (function (glob: typeof globalThis) {
   // cu gaura din calibrare, ca să stea pe un ax LEGO. Conturul paletei e o „ureche”: coarda crește eliptic de la 60 % (la
   // rădăcină) la lățimea cerută (la 60 % din paletă), apoi se rotunjește eliptic spre vârf; pe fiecare rază, paleta ocupă cel
   // mult 85 % din pasul dintre palete (nu se ating). Paletele sunt înclinate înapoi pe cerc (skew): mijlocul corzii rămâne în
-  // urma rotației cu unghiul cerut · x² (x, locul pe paletă). Înclinarea spre pupa (pe axă) ar ridica muchia de jos de pe
-  // masă, deci n-ar ieși fără suport: nu se face. Secțiunea e ogivală: fața plată (cea care împinge apa, spre pupa) sus,
-  // spatele bombat jos; groasă la mijlocul corzii de la 4 % din diametru (între 1,6 și 3) la 0,8 la vârf, cu muchiile de 0,6.
-  // Tipărită fără suport, cu partea dinspre barcă pe masă: fiecare secțiune își are punctul cel mai de jos la z = 0 (muchia de
-  // atac jos, cea de fugă sus). Butucul: Ø8, sau 18 % din diametru la elicele mari, înalt cât paletele (cel puțin 8).
+  // urma rotației cu unghiul cerut · x² (x, locul pe paletă). Înclinarea spre pupa (pe axă, rake; 3.Tt), la alegere, 0–15°
+  // (implicit 0): fiecare secțiune urcă cu max(0, r − rh) · tan θ, deci muchia de jos pleacă de pe masă de la butuc și se
+  // tipărește cu suport sub palete; fără ea, elicea e cea de dinainte, la octet. Secțiunea e ogivală: fața plată (cea care
+  // împinge apa, spre pupa) sus, spatele bombat jos; groasă la mijlocul corzii de la 4 % din diametru (între 1,6 și 3) la 0,8
+  // la vârf, cu muchiile de 0,6. Fără înclinarea spre pupa, tipărită fără suport, cu partea dinspre barcă pe masă: fiecare
+  // secțiune își are punctul cel mai de jos la z = 0 (muchia de atac jos, cea de fugă sus). Butucul: Ø8, sau 18 % din diametru
+  // la elicele mari, înalt cât cel mai înalt vârf al paletelor (cel puțin 8).
   // Capacul rotunjit, la alegere, îl închide sus (spre pupa); axul intră de jos (dinspre barcă). Sensul „dreapta”: privită
   // dinspre pupa (de sus), se rotește în sensul acelor de ceasornic la mers înainte (același elicoid ca „dreapta” elicei).
-  const BARCA = { butucMin: 4, butucRap: 0.09, butucH: 8, tRap: 0.04, tMin: 1.6, tMax: 3, tVarf: 0.8, muchie: 0.6, plin: 0.6, radacina: 0.6, umplere: 0.85, statii: 28, perSuprafata: 12, capac: 1.2, inele: 6 };
-  type BarcaDef = { palete?: unknown; diametru?: unknown; pas?: unknown; latime?: unknown; inclinare?: unknown; sens?: string; gaura?: string; capac?: string };
+  const BARCA = { butucMin: 4, butucRap: 0.09, butucH: 8, tRap: 0.04, tMin: 1.6, tMax: 3, tVarf: 0.8, muchie: 0.6, plin: 0.6, radacina: 0.6, umplere: 0.85, statii: 28, perSuprafata: 12, capac: 1.2, inele: 6, pupaMax: 15 };
+  type BarcaDef = { palete?: unknown; diametru?: unknown; pas?: unknown; latime?: unknown; inclinare?: unknown; pupa?: unknown; sens?: string; gaura?: string; capac?: string };
   function sectiuneBarca(c: number, t: number): P2[] {
     // secțiunea ogivală în (u, v): u de-a lungul corzii, fața plată la v = 0, spatele sub ea (parabolă: muchiile de 0,6, t la
     // mijloc); pe față într-un sens, apoi pe spate înapoi (în sensul acelor, ca secțiunea elicei)
@@ -1991,7 +1993,10 @@ var Lego = (function (glob: typeof globalThis) {
     const D = Math.min(120, Math.max(20, nr(d.diametru, 40))), R = D / 2;
     const pd = Math.min(1.6, Math.max(0.5, nr(d.pas, 1))), P = pd * D;
     const lat = Math.min(150, Math.max(40, nr(d.latime, 100))), inc = Math.min(40, Math.max(0, nr(d.inclinare, 20)));
+    const pupa = Math.min(BARCA.pupaMax, Math.max(0, nr(d.pupa, 0)));
     const rh = Math.max(BARCA.butucMin, Math.round(BARCA.butucRap * D * 10) / 10), r0 = rh - 0.4;
+    // înclinarea spre pupa: cât urcă secțiunea de la raza r (la butuc, nimic)
+    const urca = (r: number) => (pupa > 0 ? Math.max(0, r - rh) * Math.tan(pupa * Math.PI / 180) : 0);
     const tRad = Math.min(BARCA.tMax, Math.max(BARCA.tMin, BARCA.tRap * D)), cmax = lat / 100 * R, N = BARCA.statii;
     const beta = (r: number) => Math.atan(P / (2 * Math.PI * r));
     // secțiunile, de la puțin din butuc la vârf: (s, h) după rotirea cu β în jurul mijlocului corzii, cu punctul de jos pe masă
@@ -2006,10 +2011,11 @@ var Lego = (function (glob: typeof globalThis) {
       const U = BARCA.umplere * 2 * Math.PI * r / z;
       let c = Math.max(x >= 0.5 ? 2.5 * t : t, cmax * g), sec = roteste(c);
       for (let k = 0; k < 40 && latime(sec) > U; k++) { c = Math.max(t, c * U / latime(sec) * 0.995); sec = roteste(c); }
-      const zmin = Math.min(...sec.map(p => p[1]));
-      return { r, sec: sec.map(([s, h]): P2 => [s, h - zmin]), rot: inc * Math.PI / 180 * x * x, lat: latime(sec), h: Math.max(...sec.map(p => p[1])) - zmin };
+      // punctul cel mai de jos pe masă, apoi ridicată cu înclinarea spre pupa (fără ea, secțiunea e cea de dinainte, la octet)
+      const zmin = Math.min(...sec.map(p => p[1])), u = urca(r);
+      return { r, sec: sec.map(([s, h]): P2 => [s, u > 0 ? h - zmin + u : h - zmin]), rot: inc * Math.PI / 180 * x * x, lat: latime(sec), h: Math.max(...sec.map(p => p[1])) - zmin + u };
     });
-    // butucul, cât cea mai înaltă secțiune (la zecime în sus), cel puțin cât un știft
+    // butucul, cât cel mai înalt vârf al paletelor (la zecime în sus), cel puțin cât un știft
     const Hh = Math.max(BARCA.butucH, Math.ceil(Math.max(...statii.map(st => st.h)) * 10 - 1e-9) / 10);
     // cât din disc acoperă paletele, privite de-a lungul axei: lățimile pe cerc, adunate de la butuc la vârf (trapeze)
     let arie = 0;
@@ -2019,7 +2025,7 @@ var Lego = (function (glob: typeof globalThis) {
       const ra = Math.max(A.r, rh), la = A.r >= rh ? A.lat : A.lat + (B.lat - A.lat) * (rh - A.r) / (B.r - A.r);
       arie += (la + B.lat) / 2 * (B.r - ra);
     }
-    return { z, D, R, pd, P, lat, inc, rh, Hh, statii, bRad: beta(rh), bVarf: beta(R), consola: 0.2 / Math.tan(beta(R)), acoperire: z * arie / (Math.PI * R * R) };
+    return { z, D, R, pd, P, lat, inc, pupa, urca: urca(R), rh, Hh, statii, bRad: beta(rh), bVarf: beta(R), consola: 0.2 / Math.tan(beta(R)), acoperire: z * arie / (Math.PI * R * R) };
   }
   function eliceBarca(d: BarcaDef): Corp {
     const avert: string[] = [], q = eliceBarcaCote(d), { rh, Hh } = q;
@@ -2368,7 +2374,7 @@ var Lego = (function (glob: typeof globalThis) {
     // elicea (ADR 0282): cotele din parametri (palete, diametrul, pasul, unghiul paletei la butuc și la vârf, consola la vârf)
     eliceCote: (d: EliceDef) => { const q = eliceCote(d); return { z: q.z, D: q.D, P: q.P, pd: q.pd, lat: q.lat, plata: q.plata, bRad: q.bRad, bVarf: q.bVarf, consola: q.consola }; },
     // elicea de barcă (ADR 0282): cotele din parametri (și butucul, unghiurile, consola la vârf, cât din disc acoperă paletele)
-    eliceBarcaCote: (d: BarcaDef) => { const q = eliceBarcaCote(d); return { z: q.z, D: q.D, P: q.P, pd: q.pd, lat: q.lat, inc: q.inc, rh: q.rh, Hh: q.Hh, bRad: q.bRad, bVarf: q.bVarf, consola: q.consola, acoperire: q.acoperire }; },
+    eliceBarcaCote: (d: BarcaDef) => { const q = eliceBarcaCote(d); return { z: q.z, D: q.D, P: q.P, pd: q.pd, lat: q.lat, inc: q.inc, pupa: q.pupa, urca: q.urca, rh: q.rh, Hh: q.Hh, bRad: q.bRad, bVarf: q.bVarf, consola: q.consola, acoperire: q.acoperire }; },
     // ventilatorul cu carcasă (ADR 0282): cotele din parametri (vârful paletelor, butucul, inelul, carcasa și urechile ei)
     ventilatorCote: (d: VentDef) => { const q = ventilatorCote(d); return { z: q.z, D: q.D, joc: q.joc, Rt: q.Rt, pd: q.pd, P: q.P, lat: q.lat, rh: q.rh, Hh: q.Hh, Hinel: q.Hinel, Hc: q.Hc, k: q.k, urechi: q.urechi, bRad: q.bRad, bVarf: q.bVarf, consola: q.consola }; },
     cureaua: (a: FulieDef, b: FulieDef, C: unknown) => {

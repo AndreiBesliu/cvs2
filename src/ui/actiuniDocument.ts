@@ -1,6 +1,6 @@
 import type { CheieSimpla } from '../i18n/t.ts';
 import {
-  instantaPreaDeparte, noduriPiesa, numara, operatieImplicita, plafonDepasit, type Document, type FormaDoc,
+  instantaPreaDeparte, noduriPiesa, numara, operatieImplicita, plafonDepasit, type Cota, type Document, type FormaDoc,
   type Ghidaj, type ImagineFoaie, type Instanta, type Nod, type Numaratoare, type Operatie, type Piesa, type TextePlacuta,
 } from '../model/document.ts';
 // Doar tipul: piesa importului o face modulul previzualizării, adus la cerere (`ImportPregatit.piesa`, felia 2.3c-3).
@@ -181,6 +181,8 @@ export type ContextDocument = {
   readonly ghidajeNoi?: () => readonly Ghidaj[];
   /** Imaginile noi ale foii (ADR 0272): lista întreagă, după o imagine pusă, mutată, ascunsă, fixată sau scoasă. */
   readonly imaginiNoi?: () => readonly ImagineFoaie[];
+  /** Cotele noi ale foii (ADR 0330): lista întreagă, după o cotă pusă, mutată, legată din nou sau ștearsă. */
+  readonly coteNoi?: () => readonly Cota[];
   /** Deplasările instanțelor, fiecare cu a ei, în mm (alinierea, distribuirea, săgețile; ADR 0050). */
   readonly deplasari?: () => readonly { readonly id: string; readonly dx: number; readonly dy: number }[];
   /** Panoul, fără selecție: materialul nou al foii, în mm; doar mărimile scrise. */
@@ -590,6 +592,8 @@ export const ACTIUNI_DOCUMENT: readonly Actiune<ContextDocument>[] = [
   laCerere('foaie.ghidaje', 'actiune.ghidaje', (ctx) => (ctx.ghidajeNoi ? true : 'motiv.nimic-ales')),
   // Imaginile foii (ADR 0272): din panoul foii, din mânerele unei imagini desfăcute și din import.
   laCerere('foaie.imagini', 'actiune.imagini', (ctx) => (ctx.imaginiNoi ? true : 'motiv.nimic-ales')),
+  // Cotele foii (ADR 0330): din unealta Cote, la cerere (ca ghidajele).
+  laCerere('foaie.cote', 'actiune.cote', (ctx) => (ctx.coteNoi ? true : 'motiv.nimic-ales')),
   // Foile proiectului (ADR 0210 §1, felia 11.1↑): din lista cu foile, din panou și din meniul de clic dreapta. Calculul vine
   // cu modulul editării (ca la degrupare): până atunci, acțiunile spun că se încarcă, nu aruncă.
   laCerere('foaie.adauga', 'actiune.foaie-adauga', dupaCalcul),

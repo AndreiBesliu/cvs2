@@ -14,6 +14,7 @@ import {
 } from '../model/frezeSincron.ts';
 import type { Config } from './config.ts';
 import { frezeMele, idFreza, type FrezeMele } from './frezeMele.ts';
+import type { FrezaStandard } from '../model/freza.ts';
 
 /** O cerere către callable-ul `freze`; aruncă erorile clientului Firebase (cu `code`). */
 export type Cheama = (c: CerereFreze) => Promise<RaspunsListaFreze | RaspunsScrieFreze>;
@@ -49,8 +50,13 @@ function* loturi<T>(l: readonly T[]): Generator<readonly T[]> {
   for (let i = 0; i < l.length; i += LOT_FREZE) yield l.slice(i, i + LOT_FREZE);
 }
 
-/** O trecere: ia din cont, apoi trimite (de cel mult trei ori, cât îmbinările mai lasă ceva de trimis). */
-export async function sincronizeaza(b: FrezeMele, cheama: Cheama): Promise<FelSincronizare> {
+/**
+ * O trecere: ia din cont, apoi trimite (de cel mult trei ori, cât îmbinările mai lasă ceva de trimis). Cu `standard`, la prima
+ * trecere a acestui browser: un cont care n-a avut niciodată freze (versiunea lui e 0) primește frezele standard (ADR 0300 §3,
+ * precizarea din 24.11), cu id-urile lor fixe, deci două calculatoare care le pun deodată nu le dublează; unul cu freze (sau
+ * cu frezele șterse) doar ține minte că s-a hotărât, ca una ștearsă să nu revină.
+ */
+export async function sincronizeaza(b: FrezeMele, cheama: Cheama, standard?: () => readonly FrezaStandard[]): Promise<FelSincronizare> {
   try {
     const inceput = await citeste(b);
     if (!inceput) return 'eroare';
@@ -67,6 +73,7 @@ export async function sincronizeaza(b: FrezeMele, cheama: Cheama): Promise<FelSi
       if (!r.mai) break;
     }
     if (complet) await b.schimbaCont((c) => cuListaCompleta(c, vazute));
+    if (standard && !b.stare().standard && poateScrie) await b.puneStandard(pana === 0 ? standard() : [], true);
     if (!poateScrie) return 'citire';
     const refuzate = new Set<string>();
     for (let runda = 0; runda < 3; runda++) {
@@ -107,13 +114,15 @@ type Legatura = {
   dinNou: boolean;
   ceas: ReturnType<typeof setTimeout> | null;
   cheama: Cheama | null;
+  /** Frezele standard, în limba ferestrei (pentru un cont fără freze). */
+  standard: (() => readonly FrezaStandard[]) | null;
 };
 const legaturi = new Map<string, Legatura>();
 
 function legatura(cheie: string): Legatura {
   let l = legaturi.get(cheie);
   if (!l) {
-    l = { stare: { ruleaza: false, ultima: null }, ascultatori: new Set(), dinNou: false, ceas: null, cheama: null };
+    l = { stare: { ruleaza: false, ultima: null }, ascultatori: new Set(), dinNou: false, ceas: null, cheama: null, standard: null };
     legaturi.set(cheie, l);
   }
   return l;
@@ -131,7 +140,7 @@ function porneste(cheie: string): void {
   if (l.stare.ruleaza) { l.dinNou = true; return; }
   const cheama = l.cheama;
   puneStare(l, { ...l.stare, ruleaza: true });
-  void sincronizeaza(frezeMele(cheie), cheama).then((fel) => {
+  void sincronizeaza(frezeMele(cheie), cheama, l.standard ?? undefined).then((fel) => {
     puneStare(l, { ruleaza: false, ultima: fel });
     if (l.dinNou) { l.dinNou = false; porneste(cheie); }
   });
@@ -157,8 +166,9 @@ export type Sincronizare = {
  * Sincronizarea bibliotecii din fereastră: doar pentru biblioteca unui cont (`uid`), cu configurația aplicației; o trecere
  * la deschidere și la revenirea rețelei. Fără cont (sau fără configurație), nimic.
  */
-export function useSincronizare(cheie: string, uid: string | null, config: Config | null): Sincronizare {
+export function useSincronizare(cheie: string, uid: string | null, config: Config | null, standard?: () => readonly FrezaStandard[]): Sincronizare {
   const l = legatura(cheie);
+  l.standard = standard ?? null;
   const activa = uid !== null && config !== null;
   useEffect(() => {
     if (!activa) { l.cheama = null; return; }

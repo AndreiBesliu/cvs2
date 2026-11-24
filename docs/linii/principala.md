@@ -150,32 +150,30 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
   printr-o schiță.
 - **Observabilitatea:** erorile ajung în jurnalul aplicației; joburile își lasă marcajul.
 
-## Starea pe 24.11.2026, după-amiaza (după a șaisprezecea unire din cloud)
+## Starea pe 24.11.2026, după-amiaza (după a nouăsprezecea unire din cloud)
 
-- **Pe test:** `e3a9e512` (tot până la lotul al cincisprezecelea: A.7, cu plafonul pornirii, ADR 0145, și notele
-  liniilor noi; publicat pe 24.11 la 13:54, fără server; proba de fum, bună). Lotul al șaisprezecelea (16.A↑c, 3.Xi)
-  e în drum, cu serverul: funcția nouă `freze`, indexurile, `cont` și `administreazaConturile` cu capabilitatea
-  `cloud`.
+- **Pe test:** `fdce5f1b` (tot până la lotul al șaisprezecelea: 16.A↑c, 3.Xi; publicat pe 24.11 la 15:35, cu
+  serverul: funcția `freze` creată, indexurile și regulile; proba de fum, bună). În drum: lotul al șaptesprezecelea cu
+  limita rapidului (`647cebb1`; completul pe `main` rula la 16:15), apoi loturile 18 și 19 împreună.
 - **`main`, din cloud:** pe 23.11: 3.Tq (`0ae9c6c1`); 11.3↑e și A.4 (`ddaa7ead`); 3.Tr, unită de linia elicelor
   (`d262e57a`); 25.8↑a și A.5 (`1b46c955`), cu reparația probei extensiilor (`8287d66e`); 11.3↑f, unită de linia
   planșelor (`f4601938`); A.6 (`4497d639`); 3.Xh (`2d1e482c`) și 12.1↑e-3 cu 12.1↑e-4 (`03460cab`); A.8a cu A.8b
   (`5325b8fe`) și 25.9↑ (`4fe2d2ad`). Pe 24.11: 16.A↑a (`02a5864a`), cu ADR 0301 (`813fa675`); A.8c și A.8d (`80d3eb70`);
   A.9a și A.9b (`95dddbe0`); A.10 și A.11a (`7f6f4069`); 25.8↑b (`f7f4510f`); 3.Ts (`e14e553a`), A.11b–A.11e
   (`8ccb66e8`) și 16.A↑b-1, cu documentul v27 (`32b33a42`); A.7 (`458befb9`); 16.A↑c (`6b74074d`) și 3.Xi
-  (`f12308de`).
+  (`f12308de`); reparația utilizării mașinii (`bae574a8`), 10.4↑a-1 (`f25249cf`) și 3.Tt (`d57ca962`); 11.1↑c și 14.C↑d,
+  scrise în sesiunea principală (`7584747a`); proba repornirii extensiei, reparată (`29ef7e44`); 16.A↑b-2 și 16.A↑a-2
+  (`33fadb06`), 10.4↑a-2 (`f3283b33`), 16.A↑h-1 și 16.A↑h-2 (`db43ed08`).
 - **Liniile** (vezi [indexul](README.md)):
-  - **gata pe ramură, la cuvântul owner-ului:** fereastra exportului (28.8↑a–b-3, ADR 0290; `AndreiBesliu/cvs2#11`),
-    după ce o încearcă pe canalul `export`;
-  - **gata, pe ramura de unire `unire-2411l` (peste lotul 16), cu porțile în lucru:** elicele, 3.Tt (înclinarea
-    spre pupa a elicei de barcă, la alegere; Easy 3Draw 18.23.0; `AndreiBesliu/cvs2#19`, `ba09a10b`);
-  - **în lucru, pe ramuri:** frezele (16.A↑b-2, freza din bibliotecă în secțiunea Tăierea, vârful `0ffb2599`; apoi
-    b-3, rândurile exportului, după `#11`, și b-4, nota schimbării din bibliotecă), relieful (18.1↑a, `wip/18.1-relief`,
-    ADR 0310 acceptat cu 1a–6a; documentul v28 e al ei), cotele (10.4↑a-1, `wip/10.4-cote`, ADR 0330 acceptat cu
-    1a–6a; fără schemă: `foaie.cote`; de unit devreme, ca relieful să aducă `main` înaintea migrării lui), exportul
-    (28.8↑, `#11`: unirea la cuvântul owner-ului); se unesc la raportul liniei;
-  - **în sesiunea principală, la cererea owner-ului din 24.11:** comenzile foii pe pânză, sub fiecare foaie (11.1↑c),
-    și butonul Admin din meniu, doar pentru personal (14.C↑d), pe `wip/11.1c-controale-foi`, cu canalul `foi`;
-    otrăvurile 41 / 41 (două prinse după întărirea probei); unirea după ce le încearcă owner-ul;
+  - **gata pe ramură, la cuvântul owner-ului:** fereastra exportului (toate feliile ADR 0290, a–f;
+    `AndreiBesliu/cvs2#11`, vârful `5c7d8d1c`, completul în lucru), după ce o încearcă pe canalul `export`; linia
+    recomandă unirea înaintea lui 16.A↑b-3; a mutat fișa unei operații în `src/ui/FisaOperatie.tsx` și tipurile în
+    `src/ui/exportRand.ts`;
+  - **în lucru, pe ramuri:** frezele (16.A↑h-3, catalogul, din ADR 0302, acceptat de owner cu 1a–5a; apoi h-4;
+    după `#11`: b-3, rândurile exportului, după `#11`, și b-4, nota schimbării din bibliotecă), relieful
+    (18.1↑a, `wip/18.1-relief`, ADR 0310 acceptat cu 1a–6a; documentul v28 e al ei; aduce `main` cu cotele înaintea
+    migrării; a luat v28 pe ramură), cotele (10.4↑a-3, fereastra Setări, la cuvântul owner-ului), biblioteca (3.Xj, căutarea și categoriile, ADR 0233, pornită de owner pe 24.11), exportul (28.8↑, `#11`: unirea la cuvântul
+    owner-ului); se unesc la raportul liniei;
   - **la cuvântul owner-ului:** restul bibliotecii extensiilor (căutarea, captura mărită), următoarea felie a
     incrustațiilor, a trasării și a elicelor, 11.5↑b (după etapa 13);
   - **fără felie în lucru:** planșele (tăierea plăcii 11, la owner), incrustațiile, trasarea, elicele, tăierea (după
@@ -205,6 +203,12 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
   curentă (`placute.spec.ts` a căzut cu `schema: 26` în completul liniei frezelor).
 - **De urmărit:** în panoul foii, la 1400 px, etichetele „Numele” și „Materialul” apar tăiate la o literă (văzut de
   linia trasării, și pe `220bd48e`: nu vine dintr-o felie de azi).
+- **De urmărit:** `extensii.lucru.spec.ts`, „două cereri imediat după” repornire (rândul 235): sub încărcare mare
+  (zece lucrători), clicurile ajung după cele 2 s ale răririi și proba cade (2 din 120, local); nevăzută în CI.
+- **De urmărit, la owner (design):** la 320 px, la atingere (`pointer: coarse`, `--tinta` 44 px), rândul de sus al
+  meniului își suprapune butoanele (marca, Extensii, căutarea): o atingere pe Extensii deschide paleta. La 360 și
+  390 px e bine; cu mausul, probele trec (ținta de 36 px). Șapte controale de 44 px nu încap pe 320: ce pleacă de pe
+  rând e o alegere a aranjamentelor. Găsit de linia bibliotecii pe 24.11, nereparat.
 - **Pe calculatorul owner-ului:** worktree-urile vechi (`C:\Users\besli\cncvs2-lucru\*`), toate curate și împinse, rămân
   copie de siguranță până spune owner-ul; probele pe imprimanta K1C și pe mașina CNC; `docs/faza0/`.
 
@@ -217,3 +221,12 @@ folosite la unire și publicare:
 - proba se face în mediul bugului (fusul, limba, platforma: CI-ul pe Linux nu e Windows-ul local);
 - otrăvurile se rulează într-o clonă; un VOID nou se mută pe codul nou sau se scoate cu codul echivalent;
 - un rezultat geometric se privește pe cazul REAL, mărit și întreg, înaintea raportului.
+- un clic în cadrul unei extensii care îi închide sau îi reface cadrul nu se așteaptă cu `click()`: se așteaptă
+  urmarea lui (`clicCareInchideCadrul`, `clicCareRefaceCadrul` din `test/e2e/ajutor-extensii.ts`);
+- înaintea unirii se citesc și rapidul, și completul ramurii de unire: completul poate fi verde cu rapidul oprit de
+  limita unei felii (24.11, lotul 17: felia 5 din 6, peste 10 minute; limita e acum 15, `rapid.yml`);
+- nu se comite în timpul unei rulări locale e2e sau pe emulatoare: trei probe compară versiunea construită cu
+  ultimul commit și cad doar din cauza asta (24.11);
+- evenimentele scoase din două stări văzute la rând pot sări o stare scurtă (starea se vede la redesenare): o
+  probă cap-coadă care le numără cade rar, doar sub încărcare; reparația e în cod (starea sărită se deduce), nu o
+  așteptare în probă (24.11, „pornita” a mașinii, `utilizare.emulator.spec.ts:233`).

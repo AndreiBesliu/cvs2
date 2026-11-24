@@ -1,10 +1,9 @@
 # Frezele (16.A↑, ADR 0300–0309)
 
 _cncvs2, biblioteca de freze („Frezele mele”), felia 16.A↑ adusă din etapa 16: ramura `wip/16.A-freze` (din `main`
-`c8b235ab`), ADR-urile 0300–0309, canalul `freze`; ADR 0300 ACCEPTAT pe 23.11 („Da, 1a–6a”);
-16.A↑a și ADR 0301 (plafonul total 900 kB) UNITE în `main` (`b1797933`); 16.A↑b-1 (documentul v27, valorile frezei în
-program) UNITĂ în `main` (`32b33a42`); 16.A↑c (biblioteca în cont) GATA pe ramură; urmează 16.A↑b-2 (după unirea ferestrei
-exportului, PR-ul #11) sau 16.A↑d, la cuvântul owner-ului_
+`c8b235ab`), ADR-urile 0300–0309 (liber: 0303), canalul `freze`; ADR 0300 ACCEPTAT pe 23.11 („Da, 1a–6a”), ADR 0302 ACCEPTAT pe
+24.11 („Da, 1a–5a”); 16.A↑a, ADR 0301, 16.A↑b-1 și 16.A↑c UNITE în `main`; 16.A↑b-2 și 16.A↑a-2 GATA pe ramură (PR-ul #22);
+16.A↑h-1 și 16.A↑h-2 GATA pe ramură; urmează 16.A↑h-3 (catalogul)_
 
 Pornită pe 23.11.2026, în sesiunea cloud a liniei, la cererea owner-ului: „Vreau sa pot crea freze l sau profiluri de freze in
 aplicatie si sa le salvez in cont”. Rândurile din prag: „Bibliotecă de freze cu geometrie reală (dreaptă, bilă, toroidală, V,
@@ -62,8 +61,42 @@ gravare, profil, formă desenată)” și „Freze de profil desenate de utiliza
   scrie doar ca bilă (o singură scriere pe freză). Ce formă primește fiecare operație stă într-o singură funcție,
   `motivFormaPeOperatie(tip, latura, forma)` în `src/model/formaFrezei.ts`, scrisă de cine ajunge întâi în `main` (16.A↑b-2
   o citește pentru lista „Freza”; 16.A↑e doar lărgește tabelul). „Bilă” în bibliotecă imediat după relief, fără să aștepte
-  16.A↑e. **Schema:** v28 e a cotelor, v29 a reliefului; 16.A↑e și 16.A↑f cer fiecare versiunea lor, de la sesiunea
-  principală, la pornire.
+  16.A↑e. **Schema** (sesiunea principală, 13:08): cotele au rămas fără schemă nouă (ADR 0330, 1a), deci **v28 e al
+  reliefului** (forma `relief` și bila, în 18.1↑c); următorul liber e v29. 16.A↑e și 16.A↑f cer fiecare numărul lor, de la
+  sesiunea principală, când ajung la migrare. Pe 24.11, 13:13: linia reliefului are deja `motivFormaPeOperatie` pe ramura ei
+  (doar V-ul); 16.A↑b-2 a scris-o în `src/model/formaFrezei.ts`, cu aceeași semnătură: cine unește a doua ia versiunea din
+  `main` și își adaugă rândul.
+- **24.11, 11:20–11:55: 16.A↑b-2 gata pe ramură** (la „continua cu 16.A↑b-2” al owner-ului): freza din bibliotecă în secțiunea
+  Tăierea (`f02eb0e4` modelul, `7771b346` panoul, `f0895a1b` otrăvurile, `aa1b418d` proba R02). Fereastra exportului refăcută
+  (PR-ul #11) nu e unită, deci **feliile s-au renumerotat:** b-2 = Tăierea (acum), **b-3 = rândurile exportului** (lista
+  „Freza” pe freza operației, pe fundul plat, pe frezele de rest, ale dopului și ale benzii; pe fereastra refăcută, după
+  unirea ei), **b-4 = nota „s-a schimbat în bibliotecă”** (fostă b-3). Generatorul roadmap-ului nu primește un id ca
+  „16.A↑b-2a” (`RE_ID` din `scripts/documentatie.ts`: după `-N` nu vine literă). Identitatea frezei montate ține acum și
+  turația (`aceeasiFreza`, și la roluri). Biblioteca (`frezeMele.ts`) stă acum într-o bucată comună panoului și ferestrei.
+  Otrăvuri 22 / 22. Totalul 810,5 → 812,2 / 900, pornirea neschimbată (cu Atelierul 114,8 / 120). Nimic pe server.
+- **24.11, 12:20–13:10: 16.A↑a-2 gata pe ramură** (la „sa ai in vedere ca biblioteca de freze trebuie sa fie populata cu freze
+  default standard”): setul de pornire cu id-uri fixe (`ID_PORNIRE`), pus singur o dată în biblioteca fără cont (fereastra
+  sau panoul) și în cont la prima sincronizare a unui cont care n-a avut niciodată freze; steagul `standard` în înregistrare
+  (șterse, nu revin); întrebarea „Adaugi … din acest browser” nu mai numără frezele standard; în Atelier, rândul „Freza” nu
+  apare (Tăierea n-are liste acolo). Otrăvuri 15 / 16 (E05, echivalentă). **Capcană:** cu setul pus de la prima pornire, orice
+  probă e2e care deschide Tăierea vede acum rândul „Freza” (o probă care cere o bibliotecă goală folosește `bibliotecaGoala`
+  din `test/e2e/ajutor-freze.ts`). PR-ul #22 are acum 16.A↑b-2 și 16.A↑a-2.
+- **24.11, ~12:45: ADR 0302 propus, apoi acceptat** („Da, 1a–5a”), la cererea owner-ului cu fișierul ArtCAM `FREZE.tdb`
+  („vreau ca frezele să fie o listă ca în ArtCAM … și doar dacă vrea userul … să comute pe configuratorul actual”). Fișierul
+  e baza de scule ArtCAM, binară, nedocumentată, cu conținutul ArtCAM și al producătorilor: nu se citește și nu se copiază
+  (`CLAUDE.md`); din el s-au luat doar felurile și ideea grupurilor. Feliile, despărțite la acceptare: **h-1** fereastra ca
+  listă (fișa doar de citit, configuratorul la „Editează” / „Freză nouă”, comutatorul), **h-2** grupurile omului (`grup`),
+  **h-3** catalogul propriu, **h-4** felurile noi „în curând”. Pornită 16.A↑h-1.
+- **24.11, 12:57–13:20: 16.A↑h-1 gata pe ramură** (`d535f1cd`, `0acfc75b`, documentele): fereastra pornește ca listă, cu fișa
+  frezei doar de citit (`data-freze="fisa"`, valorile cu `data-freze-valoare`), editorul la „Editează” / „Freză nouă” și
+  comutatorul „Listă / Configurator” (`cncvs2.freze.vedere`). **Capcană:** o probă e2e care schimbă o freză trece acum prin
+  fișă („Editează”), iar după „Salvează” editorul se închide (în „Listă”); valorile se citesc din fișă. Otrăvuri 16 / 16.
+  `main` adus (`8cb76d64`). Urmează 16.A↑h-2 (grupurile).
+- **24.11, 13:22–13:45: 16.A↑h-2 gata pe ramură** (`6cfa2231`, `04c02209`, `60e7f68e`, documentele): grupurile omului
+  (`grup` pe freză, în fișier și în cont, fără schemă nouă), lista pe grupuri, „Grupul” din fișă, „✎” pe titlu, câmpul din
+  editor. **Capcană:** un control care dispare după acțiune (câmpul redenumirii) lasă focusul în afara ferestrei, iar
+  Escape (ascultat pe fereastră) nu mai ajunge; focusul se mută explicit (`deFocus`). Otrăvuri 23 / 24. PR-ul #22:
+  `d0fa2dde` e în lotul 19 al sesiunii principale. Urmează 16.A↑h-3 (catalogul).
 - **Feliile**, în ordine: 16.A↑a (biblioteca în browser, fereastra, fișierul), apoi b (alegerea în proiect, v27), c
   (contul), d (calibrarea), e (bila și toroidala), f (profilul desenat), g (valorile pe material).
 
