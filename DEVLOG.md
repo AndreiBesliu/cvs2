@@ -13307,23 +13307,6 @@ admin, care apare daca esti logat ca admin”
 - **Documentele:** ADR 0300 („Implementarea (16.A↑a-2)”, §3 schimbat), manualul (ro, en), fișa etapei 3, pragul, registrul
   otrăvurilor, traducerile, nota liniei. **Completed:** 24.11, 13:10.
 
-## 2026-11-24 — Sesiunea principală în cloud: a nouăsprezecea unire (16.A↑b-2, freza în Tăierea; 16.A↑a-2, frezele standard) (Model: Claude Fable 5.2)
-
-**Prompt:** raportul liniei frezelor („gata de unit”, PR-ul #22, `d0fa2dde`), la ordinul în vigoare „unește ce se poate”
-**Started:** 24.11, 15:40. **Completed:** unirea în `main`, 24.11, @@ORA@@; publicarea pe test, la rândul ei.
-
-- **Unirea, pe `unire-2411p`** (peste lotul 18): `d0fa2dde` în `33fadb06` (linia merge mai departe cu h-1 și h-2: nu
-  intră). Ciocnirile: DEVLOG, indexul ADR (0302 înaintea lui 0330), registrul otrăvurilor (ambele părți), catalogul
-  controalelor (scris din nou: 623 de nume). Local: tipurile (și ale funcțiilor), regulile de import (21),
-  traducerile (1 020), biblioteca extensiilor la zi; e2e 39 / 39 (frezele, freza în Tăierea, Atelierul, comenzile
-  foii, butonul Admin).
-- **Porțile, în CI:** completul lotului pe `33fadb06` (45404468217, @@COMPLET@@): @@PORTI@@; rapidul, verde pe
-  `33fadb06` (45404468191; felia cea mai lungă, 10 min 12 s, sub limita nouă de 15); completul liniei, verde pe
-  `e46cc944` (45395676774). @@MARIMI@@. Nimic pe server.
-- **Documentele:** decizia în `CLAUDE.md`, cu rândul de stare al celor două felii și ADR 0302 acceptat; indexul
-  liniilor; starea din `docs/linii/principala.md`.
-- **Loturile dinainte:** @@INAINTE@@
-
 ## 2026-11-24 — Felia 10.4↑a-2: unealta Cote pe pânză (ADR 0330 §3, §5, §6) (Model: Claude Opus 5.5)
 
 **Prompt:** „continuă” (owner-ul, 24.11, după 10.4↑a-1). **Started:** 24.11, 14:34, în sesiunea cloud a liniei cotelor.
@@ -13370,3 +13353,25 @@ admin, care apare daca esti logat ca admin”
 - **Rămas, de urmărit:** celelalte 2 căderi din 120, la rândul 235 („două cereri imediat după” repornire: sub
   încărcarea a zece lucrători, clicurile ajung după cele 2 s ale răririi și repornirea se face pe loc). Nevăzută în
   CI; proba depinde acolo de timp.
+
+## 2026-11-24 — Sesiunea principală în cloud: a nouăsprezecea unire (frezele: b-2, a-2, h-1, h-2; unealta Cote, 10.4↑a-2) (Model: Claude Fable 5.2)
+
+**Prompt:** rapoartele liniilor frezelor („gata de unit”, PR-ul #22: `d0fa2dde`, apoi `ea2b8111`) și cotelor (`1500e4b3`),
+la ordinul în vigoare „unește ce se poate”
+**Started:** 24.11, 15:40. **Completed:** unirea în `main`, 24.11, @@ORA@@; publicarea pe test, la rândul ei.
+
+- **Trei loturi, un complet:** lotul 19 (frezele b-2 și a-2, `33fadb06`) și-a avut completul lui (45404468217), căzut
+  la o probă din afara lui (`extensii.lucru.spec.ts:222`, vezi intrarea de mai sus); între timp au raportat gata
+  cotele (lotul 20, `f3283b33`) și frezele h-1, h-2 (lotul 21, `db43ed08`). Le-am strâns pe `unire-2411s`, peste
+  `main` cu proba reparată (`29ef7e44`), cu un singur complet. Completul lotului 20 singur, pornit înainte, l-am oprit.
+- **Ciocnirile:** DEVLOG (fără intrări dublate), indexul ADR (0302 înaintea lui 0330, cu rândul 0330 al liniei
+  cotelor), registrul otrăvurilor, fișa etapei 3, catalogul controalelor (scris din nou: 624 de nume),
+  `test/unit/manual.test.ts` (ușile: 117). Local, pe arborele unit: tipurile (și ale funcțiilor), regulile de import
+  (21), traducerile (1 026), biblioteca extensiilor la zi; e2e 61 / 61 (frezele, freza în Tăierea, cotele, comenzile
+  foii, butonul Admin, extensiile, ancorele).
+- **Porțile, în CI:** completul pe `db43ed08` (45416114600, @@COMPLET@@): @@PORTI@@; rapidul, @@RAPID@@; completele
+  liniilor, verzi: `e46cc944` (45395676774), `46da7102` (45405547787), `1500e4b3` (45403378058). @@MARIMI@@. Nimic pe
+  server.
+- **Documentele:** decizia în `CLAUDE.md`, cu rândurile de stare ale celor cinci felii și ADR 0302 acceptat; indexul
+  liniilor; starea din `docs/linii/principala.md`.
+- **Loturile dinainte:** @@INAINTE@@
