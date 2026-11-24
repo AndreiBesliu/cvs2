@@ -112,7 +112,7 @@ test('la căutare, fiecare piesă găsită are pictograma și același desen ca 
     await fila(page, f).click();
     for (const x of await masoara(page)) desene.set(x.piesa, x.desen);
   }
-  for (const [text, gasite] of [['con', ['rotund', 'bucsa', 'conector', 'conica', 'conicaDubla']], ['ro', ['rotund', 'rotita', 'conica', 'coroana', 'roata']]] as const) {
+  for (const [text, gasite] of [['con', ['rotund', 'bucsa', 'conector', 'conectorUnghi', 'conica', 'conicaDubla']], ['ro', ['rotund', 'rotita', 'conica', 'coroana', 'roata']]] as const) {
     await page.locator('#at-cauta').fill(text);
     await expect(butoane(page)).toHaveCount(gasite.length);
     const m = await masoara(page);
