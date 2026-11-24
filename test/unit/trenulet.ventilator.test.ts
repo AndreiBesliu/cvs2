@@ -105,7 +105,9 @@ test('rotorul: vârful la Ø / 2 − jocul, butucul (Ø8, sau un sfert din rază
   }
   // butucul: max(4; un sfert din raza vârfului, la zecime): Ø40 → 4,8; Ø24 → 4; Ø120 cu jocul 2 → 14,5; înălțimea, cât cea mai
   // înaltă secțiune a paletei, la zecime în sus, cel puțin 8: implicit 8 (paletele, 4,59); Ø120, 3 palete, pasul 1,5, lățimea 60 → 27
-  for (const [d, rh, Hh] of [[{}, 4.8, 8], [{ diametru: 24 }, 4, 8], [{ diametru: 120, joc: 2 }, 14.5, 12.4], [{ diametru: 120, palete: 3, pas: 1.5, latime: 60 }, 14.8, 27]] as const) {
+  // Ø56,3 cu jocul 1,5: 0,25 · 26,65 = 6,6625 → 6,7 (la zecime)
+  for (const [d, rh, Hh] of [[{}, 4.8, 8], [{ diametru: 24 }, 4, 8], [{ diametru: 120, joc: 2 }, 14.5, 12.4], [{ diametru: 120, palete: 3, pas: 1.5, latime: 60 }, 14.8, 27],
+    [{ diametru: 56.3, joc: 1.5 }, 6.7, 8]] as const) {
     const q = L.ventilatorCote(d);
     assert.ok(Math.abs(q.rh - rh) < 1e-9 && Math.abs(q.Hh - Hh) < 1e-9, `${JSON.stringify(d)}: butucul ${q.rh} × ${q.Hh}`);
     const p = rotor({ ...d, gaura: 'nu' });
@@ -138,6 +140,17 @@ test('inelul prins de palete (ca LEGO 50899): gros de 1,2, în același contur (
   assert.deepEqual([...new Set(pereti.map((w) => w[2].toFixed(6)))].sort(), ['0.000000', '4.600000']);
   const varfPalete = Math.max(...v.filter((w) => w[0] < 18.5).map((w) => w[0]));
   assert.ok(Math.abs(varfPalete - 18.4) < 1e-6, `paletele, până la ${varfPalete}`);
+  // inelul, din paletele cu inel (până la Rt − 0,8), la zecime în sus, cel puțin 2: Ø24, 3 palete, pasul 0,5, lățimea 30 → paletele
+  // cu inel 2,122 (fără, 2,095) → 2,2; Ø24 cu jocul 0,3, pasul 0,3, lățimea 15 → paletele 1,51 → 2
+  for (const [d, Hinel] of [[{ diametru: 24, palete: 3, pas: 0.5, latime: 30 }, 2.2], [{ diametru: 24, palete: 3, pas: 0.3, latime: 15, joc: 0.3 }, 2]] as const) {
+    assert.equal(L.ventilatorCote({ ...d, inel: 'da' }).Hinel, Hinel, JSON.stringify(d));
+    const Rt = L.ventilatorCote(d).Rt, w = polare(rotor({ ...d, inel: 'da', gaura: 'nu' })).filter((q) => Math.abs(q[0] - Rt) < 1e-3);
+    assert.ok(Math.abs(Math.max(...w.map((q) => q[2])) - Hinel) < 1e-9, `${JSON.stringify(d)}: inelul înalt de ${Math.max(...w.map((q) => q[2]))}`);
+  }
+  // inelul e un cerc fin: între două vârfuri, săgeata cel mult 0,02 mm (paletele nu ies printre colțuri)
+  const sus = v.filter((w) => Math.abs(w[0] - 19.2) < 1e-3 && w[2] > 1).map((w) => w[1]).sort((a, b) => a - b);
+  const gol = Math.max(...sus.map((a, i) => (i ? a - sus[i - 1]! : a + 2 * Math.PI - sus[sus.length - 1]!)));
+  assert.ok(19.2 * (1 - Math.cos(gol / 2)) <= 0.02 + 1e-6, `inelul, săgeata ${19.2 * (1 - Math.cos(gol / 2))}`);
   // fără inel, nimic între 18,5 și 19,2 nu e perete
   assert.ok(!polare(rotor({ gaura: 'nu' })).some((w) => Math.abs(w[0] - 18) < 1e-3));
 });
@@ -239,6 +252,12 @@ test('carcasa: tubul (Ø interior cerut, peretele 2), înaltă cât paletele + 4
     assert.ok(rotunda(mij, e.gauraD!), `gaura la ${cx}: ${JSON.stringify(mij)}`);
     assert.ok(rotunda(jos, e.lamajD!) && rotunda(sus, e.lamajD!), `lamajul la ${cx}: ${JSON.stringify([jos, sus])}`);
   }
+  // urechea pornește chiar din peretele carcasei: laturile ei drepte încep pe cercul de afară (fără fantă între ele)
+  for (const sy of [1, -1]) assert.ok(pts.some(([x, y, z]) => z === 0 && x > 0 && Math.abs(y - sy * 3.6) < 1e-3 && Math.abs(Math.hypot(x, y) - 22) < 1e-3), `latura urechii, la y ${sy * 3.6}`);
+  // golul carcasei e un cerc fin: între două vârfuri, săgeata cel mult 0,02 mm
+  const golSus = pts.filter(([x, y, z]) => z === 9 && Math.abs(Math.hypot(x, y) - 20) < 1e-3).map(([x, y]) => Math.atan2(y, x)).sort((a, b) => a - b);
+  const pasGol = Math.max(...golSus.map((a, i) => (i ? a - golSus[i - 1]! : a + 2 * Math.PI - golSus[golSus.length - 1]!)));
+  assert.ok(20 * (1 - Math.cos(pasGol / 2)) <= 0.02 + 1e-6, `golul, săgeata ${20 * (1 - Math.cos(pasGol / 2))}`);
   // deasupra urechii (7,79–9), canalul lamajului trece și prin peretele carcasei: un știft intră și de sus; spre interior rămân
   // 0,8 mm de perete (lamajul începe la 24 − 3,2 = 20,8)
   for (const zz of [7.79, 9]) for (const cx of [24, -24]) {
@@ -255,8 +274,9 @@ test('carcasa: tubul (Ø interior cerut, peretele 2), înaltă cât paletele + 4
   const p4 = carcasa({ urechi: 4 }), pts4 = puncte(p4);
   assert.ok(Math.abs(p4.dim[0]! - 55.2) < 1e-3 && Math.abs(p4.dim[1]! - 55.2) < 1e-3, `cu 4 urechi: ${p4.dim}`);
   for (const [cx, cy] of [[0, 24], [0, -24], [24, 0], [-24, 0]] as const) assert.ok(rotunda(gaura(cx, cy, 0.79, pts4), e.gauraD!), `gaura la (${cx}, ${cy})`);
-  // k = ⌈(Ø/2 + 0,8 + lamaj/2) / 8⌉: Ø24 → 2 (16); Ø48 → 4 (32, fiindcă 24 + 0,8 + 3,2 = 28); Ø120 → 8 (64)
-  for (const [diametru, k] of [[24, 2], [40, 3], [48, 4], [120, 8]] as const) {
+  // k = ⌈(Ø/2 + 0,8 + lamaj/2) / 8⌉: Ø24 → 2 (16); Ø41 → 4 (32, fiindcă 20,5 + 0,8 + 3,2 = 24,5; după gaură, 23,8, ar fi 3);
+  // Ø48 → 4 (32, fiindcă 24 + 0,8 + 3,2 = 28); Ø120 → 8 (64)
+  for (const [diametru, k] of [[24, 2], [40, 3], [41, 4], [48, 4], [120, 8]] as const) {
     assert.equal(L.ventilatorCote({ diametru }).k, k, `Ø${diametru}`);
     const pp = puncte(carcasa({ diametru }));
     assert.ok(rotunda(gaura(8 * k, 0, 0.79, pp), e.gauraD!) && rotunda(gaura(8 * k, 0, 0, pp), e.lamajD!), `Ø${diametru}: gaura la ${8 * k}`);
@@ -281,9 +301,15 @@ test('carcasa se potrivește rotorului: jocul pe rază, înălțimea cât palete
   }
   // pe hârtie: Ø24 cu jocul 0,3 → 8; Ø120 cu jocul 2 → 17; Ø120, 3 palete, pasul 1,5, lățimea 60 → 31
   assert.deepEqual([L.ventilatorCote({ diametru: 24, joc: 0.3 }).Hc, L.ventilatorCote({ diametru: 120, joc: 2 }).Hc, L.ventilatorCote({ diametru: 120, palete: 3, pas: 1.5, latime: 60 }).Hc], [8, 17, 31]);
-  // carcasa nu depinde de inel, sens sau gaură
+  // cel puțin cât un știft: Ø24 cu jocul 0,3, 3 palete, pasul 0,3, lățimea 15 → paletele 1,51, deci ⌈1,51⌉ + 4 = 6 → 8
+  assert.equal(L.ventilatorCote({ diametru: 24, palete: 3, pas: 0.3, latime: 15, joc: 0.3 }).Hc, 8);
+  // carcasa nu depinde de inel, sens sau gaură (și unde paletele cu inel ar cere alta: Ø24, 3 palete, pasul 1,2 → fără inel
+  // 3,977, deci 8; cu inel 4,016, care ar da 9)
   const baza = carcasa().tri;
   for (const d of [{ inel: 'da' }, { sens: 'stanga' }, { gaura: 'r' }]) assert.deepEqual(carcasa(d).tri, baza, JSON.stringify(d));
+  const mica = { diametru: 24, palete: 3, pas: 1.2 };
+  assert.deepEqual([L.ventilatorCote(mica).Hc, L.ventilatorCote({ ...mica, inel: 'da' }).Hc], [8, 8]);
+  assert.deepEqual(carcasa({ ...mica, inel: 'da' }).tri, carcasa(mica).tri);
 });
 
 test('implicitele și marginile: paletele și diametrul în afara plajei se spun; jocul, pasul, lățimea și urechile se aduc în plajă', () => {
