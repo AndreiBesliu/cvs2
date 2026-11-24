@@ -13802,18 +13802,21 @@ aducerea lui `main` (`29ef7e44`). **Completed:** 24.11, 17:15 (în container; CI
 
 **Prompt:** rapoartele liniilor cotelor (`9209756f`) și frezelor (`88b048aa`), la ordinul în vigoare „unește ce se
 poate”; „ok, imparte si cele doua teste grele ramase”
-**Started:** 24.11, 18:45. **Completed:** unirea în `main`, 24.11, @@ORA@@; publicarea pe test, la rândul ei.
+**Started:** 24.11, 18:45. **Completed:** unirea în `main`, 24.11, 19:57; publicarea pe test, la rândul ei.
 
 - **Lotul, pe `unire-2411x`** (din `62569bb2`): împărțirea testelor (`49ce2793`), cotele a-3 (`9209756f`, în
   `08e2e50d`), frezele h-3 și h-4 (`88b048aa`, în `9fd71053`). Ciocnirile: DEVLOG, registrul otrăvurilor (un rând
   dublat de unire, scos: rămâne cel al liniei cotelor), catalogul controalelor (scris din nou: 634 de nume). Local, pe
   arborele unit: tipurile (și ale funcțiilor), regulile de import (21), traducerile (1 037); e2e 51 / 51 (Setările,
   cotele, contul, frezele, freza în Tăierea, comenzile foii, butonul Admin).
-- **Porțile, în CI:** completul lotului pe `9fd71053` (45440961385, @@COMPLET@@): @@PORTI@@; rapidul, @@RAPID@@;
-  completele liniilor, verzi: `aa47863d` (45428218032), `5bdea116` (45428773807). @@MARIMI@@. Nimic pe server.
+- **Porțile, în CI:** completul lotului pe `9fd71053` (45440961385, verde la prima trecere, 70 min cu așteptarea la coadă): unit 10 285 / 0 (12 sărite, pe Linux), e2e 750 / 750, funcțiile pe emulatoare 136 / 136, paginile 57 / 57; rapidul, verde pe `9fd71053` (45440961836), cu feliile între 4:00 și 6:51 (înaintea împărțirilor, cea mai lungă ținea 9:20);
+  completele liniilor, verzi: `aa47863d` (45428218032), `5bdea116` (45428773807). pornirea 110,4 kB (plafonul 120), totalul 840,5 / 900 kB, `/admin` 138,2 / 200, contul 30,3 / 32. Nimic pe server.
 - **Documentele:** decizia în `CLAUDE.md`, cu rândurile de stare ale lui a-3, h-3 și h-4; indexul liniilor; starea din
   `docs/linii/principala.md`.
-- **Loturile dinainte:** @@INAINTE@@
+- **Loturile dinainte:** pe test e tot `29ef7e44` (loturile până la 18). Publicarea loturilor 19–21 (`7312d685`) a căzut la o probă
+  instabilă a extensiilor (completul pe `main` 45436221341: `extensii.spec.ts:135`, clicul pe „Închide” din cadru,
+  pierdut; reparată pe `unire-2411z`, intră cu lotul următor). Lotul 22 (`62569bb2`) le cuprinde: completul lui pe
+  `main` (45445300697) rula la unire.
 
 ## 2026-11-24 — ADR 0233 acceptat („da, 1a–5a”); 3.Xk cu `main` adus (lotul 22), pe PR-ul ei (sesiune cloud)
 
@@ -13829,6 +13832,29 @@ e în `main` […] Acum poți aduce `main` în ramură și deschide PR-ul lui 3.
   acum doar 3.Xk: proba din `test/e2e/extensii.lucru.spec.ts`, lista de otrăvuri `test/otravuri/3.Xk.py` și documente.
 - **PR-ul `AndreiBesliu/cvs2#24`**, refolosit pentru 3.Xk (titlul și descrierea, schimbate); o unește sesiunea
   principală, la raport.
+
+## 2026-11-24 — Sesiunea principală în cloud: a douăzeci și doua unire (28.8↑a–g, fereastra „Exportă G-code”, refăcută; 3.Xk) (Model: Claude Fable 5.2)
+
+**Prompt:** „da, uneste fereastra exportului cand e verde si sa imi spui cand pot sa o arhivez”; raportul liniei
+bibliotecii („3.Xk e gata de unit”), la ordinul în vigoare „unește ce se poate”
+**Started:** 24.11, 19:00. **Completed:** unirea în `main`, 24.11, 20:01; publicarea pe test, cu lotul 25.
+
+- **Lotul, pe `unire-2411y`** (peste lotul 23): fereastra exportului (`4ee623d3`, în `c4ca5ec2`; nota liniei,
+  `ef8a6dd6`, adusă după) și 3.Xk (`23d9a1b1`, în `373699e6`). Ciocnirile: DEVLOG, traducerile roadmap-ului (ambele
+  părți, după cheie), catalogul controalelor (scris din nou). Local, pe arborele unit: tipurile, regulile de import,
+  traducerile, catalogul, biblioteca extensiilor la zi.
+- **Porțile, în CI:** completul lotului pe `8b218d47` (45443271357, verde la prima trecere, 60 min): unit 10 297 / 0
+  (12 sărite, pe Linux), e2e 781 / 781, funcțiile pe emulatoare 136 / 136, paginile 57 / 57; rapidul, verde pe
+  `8b218d47` (45443272195, feliile între 2:21 și 7:07); completele liniilor, verzi: `4ee623d3` (45437037510),
+  `23d9a1b1` (45438616103). Pornirea 110,4 kB (plafonul 120; cu ușa 115,1, cu Atelierul 115,4), totalul 856,8 / 900 kB
+  (lotul 23: 840,5; fereastra exportului, +16,3), `/admin` 138,2 / 200, contul 30,3 / 32. Nimic pe server.
+- **Documentele:** decizia în `CLAUDE.md`, cu paragraful de stare al ferestrei exportului (fișa, `GRUP_CAMP`,
+  selectorii noi ai probelor); indexul liniilor (exportul: încheiată, cu nota în `main`); starea din
+  `docs/linii/principala.md`.
+- **Pentru owner:** sesiunea liniei exportului se poate arhiva (din ADR 0290 nu rămâne nimic; nicio întrebare
+  deschisă); ramura `wip/28.8-export` de pe `origin` intră în lista de șters; canalul `export` expiră singur.
+- **Loturile dinainte:** lotul 23, în `main` din 20:00 (`9bbb1d58`). Pe test e tot `29ef7e44`; completul lotului 22 pe
+  `main` (45445300697) rula la unire.
 
 ## 2026-11-24 — Sesiunea principală în cloud: clicul pe „Închide” din cadrul unei extensii, pierdut (probă instabilă, reparată) (Model: Claude Fable 5.2)
 
