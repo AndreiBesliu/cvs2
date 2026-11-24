@@ -12995,7 +12995,8 @@ scrie brief-ul pentru relief si pentru cote”
 ## 2026-11-24 — Sesiunea principală în cloud: a cincisprezecea unire (A.7, adminul pe telefon) (Model: Claude Fable 5.2)
 
 **Prompt:** „pare ca e gata adminul” (cu o captură a sesiunii liniei); „ok, cand e verde fa unirea”
-**Started:** 24.11, 12:38. **Completed:** unirea în `main`, 24.11, 12:46; publicarea pe test, la rândul ei.
+**Started:** 24.11, 12:38. **Completed:** unirea în `main`, 24.11, 12:46; publicarea pe test, 24.11, 13:54
+(`e3a9e512`; completul pe `main` 47 min 49 s; fără server; proba de fum, bună).
 
 - **La captură nu era încă gata:** rapidul era verde pe `c08a24bc`, dar completul liniei pe `b064e954` (45369919331)
   încă rula. Unirea, pregătită între timp pe `unire-2411h` (din `41233474`): A.7 în `458befb9`, fără ciocniri;
@@ -13009,3 +13010,31 @@ scrie brief-ul pentru relief si pentru cote”
   încheiată); starea din `docs/linii/principala.md`.
 - **La owner:** fereastra exportului, verificarea juridică a utilizării aplicației înaintea live-ului, „cine unește
   în `main`”, ADR 0232 (biblioteca); brief-urile reliefului și cotelor, de lipit în sesiuni noi.
+
+## 2026-11-24 — Sesiunea principală în cloud: a șaisprezecea unire (16.A↑c, frezele în cont; 3.Xi, extensiile) (Model: Claude Fable 5.2)
+
+**Prompt:** „ok, cand sunt verzi frezele fa unirea, pana atunci vreau sa faci ceva simplu. vreau ca plansele sa aiba
+controalele din meniu si sub ele, si sa apara doar la hover sau cand sunt selectate”; de la linia bibliotecii, cuvântul
+owner-ului din sesiunea ei: „ok, cand e verde fa unirea”
+**Started:** 24.11, 12:55. **Completed:** unirea în `main`, 24.11, 14:09; publicarea pe test, la rândul ei.
+
+- **Lotul, pe `unire-2411k`** (din `4ef990f5`): frezele, commit-ul raportat `9943b23f`, în `6b74074d` (linia a mers
+  mai departe pe ramură cu 16.A↑b-2, vârful `0ffb2599`: nu intră); biblioteca, `0f043f31`, în `f12308de`. Ciocnirile:
+  DEVLOG, un rând în fișa etapei 3 și catalogul controalelor (scris din nou). Local: tipurile (și ale funcțiilor),
+  regulile de import, traducerile, catalogul, biblioteca extensiilor la zi.
+- **Porțile, în CI:** completul lotului verde la prima trecere pe `f12308de` (45382387841, 50 min 24 s): unit
+  10 162 / 0 (12 sărite), e2e 694 / 694, funcțiile pe emulatoare 136 / 136, paginile 57 / 57; completele liniilor,
+  verzi: frezele pe `a70f1ea2` (45375653806), biblioteca pe `da00b854` (45382002579; vârful `0f043f31` adaugă doar
+  documente). Pornirea 109,9 / 120 (cu ușa 114,4; cu Atelierul 114,7), totalul 814,3 / 900, `/admin` 138,2 / 200,
+  contul 30,3 / 32.
+- **La publicare merge și serverul:** funcția nouă `freze`, indexurile (scutirea câmpului `json`), `cont` și
+  `administreazaConturile` cu capabilitatea `cloud`; regulile, neschimbate.
+- **Lotul 15, pe test:** `e3a9e512`, 24.11, 13:54; proba de fum (versiunea, CSP-ul, workerul, catalogul extensiilor,
+  mesajele, manualul, codurile, documentația, pagina de intrare a adminului), bună.
+- **Documentele:** decizia în `CLAUDE.md`, cu rândul de stare al lui 16.A↑c și al lui 3.Xi, cu ADR-urile acceptate ale
+  liniilor noi (0310, 0330) și cu schema (v28 la relief, cotele fără schemă); indexul liniilor; starea din
+  `docs/linii/principala.md`.
+- **Pe drum:** 3.Tt (elicele) unită de probă peste lot, pe `unire-2411l` (`595723e5`), cu completul pornit; feliile
+  11.1↑c și 14.C↑d (comenzile foii pe pânză; butonul Admin), în lucru pe `wip/11.1c-controale-foi`, cu canalul `foi`.
+- **La owner:** fereastra exportului (`#11`), verificarea juridică a utilizării aplicației înaintea live-ului, „cine
+  unește în `main`”.
