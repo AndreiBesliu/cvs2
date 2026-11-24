@@ -2,7 +2,8 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   aceleasiSetariUtilizare, EVENIMENTE_PE_LOT, expiraUtilizareLa, idLot, lotDin, MARGINI_UTILIZARE, REPETARI_MAX, SESIUNE_MAX_MS,
-  SETARI_UTILIZARE_IMPLICITE, setariPublice, setariUtilizareCerute, setariUtilizareDin, type SetariUtilizare,
+  SETARI_UTILIZARE_IMPLICITE, setariPublice, setariUtilizareCerute, setariUtilizareDin, treaptaMarime, treaptaMs, TREPTE_MARIME, TREPTE_MS,
+  type SetariUtilizare,
 } from '../../shared/utilizare.ts';
 
 /**
@@ -19,6 +20,17 @@ const ev = {
   fereastra: { fel: 'fereastra', t: 2000, id: 'masina' },
   unealta: { fel: 'unealta', t: 3000, id: 'dreptunghi', de: 'tasta' },
   dialog: { fel: 'dialog', t: 4000, id: 'export', rez: 'renuntat' },
+  clic: { fel: 'clic', t: 4500, id: 'testid.export-gcode', de: 'bara', n: 2 },
+  derulare: { fel: 'derulare', t: 5000, de: 'panou', n: 7 },
+  zoom: { fel: 'zoom', t: 5500, de: 'panza', n: 3 },
+  calcul: { fel: 'calcul', t: 6000, id: 'export', ms: 3_000, rez: 'ok', forme: 1_000 },
+  importul: { fel: 'calcul', t: 6100, id: 'import', ms: 300, rez: 'eroare', octeti: 1_000_000, format: 'dxf' },
+  anulat: { fel: 'calcul', t: 6200, id: 'traseu', ms: 100, rez: 'anulat' },
+  legata: { fel: 'masina', t: 7000, id: 'legata', cale: 'retea' },
+  alarma: { fel: 'masina', t: 7100, id: 'alarma', cod: 9 },
+  terminata: { fel: 'masina', t: 7200, id: 'terminata' },
+  imprimanta: { fel: 'imprimanta', t: 8000, id: 'eroare', cod: 2_029 },
+  pauzaFisier: { fel: 'imprimanta', t: 8100, id: 'pauza-fisier' },
 } as const;
 
 test('lotul bun: evenimentele refăcute doar din câmpurile contractului, nimic aruncat', () => {
@@ -43,6 +55,37 @@ test('un câmp în plus, un fel necunoscut sau o valoare din afara listei arunc�
     { ...ev.fereastra, id: 'birou' },
     { ...ev.unealta, id: 'a'.repeat(42) },
     { ...ev.dialog, rez: 'inchis' },
+    { ...ev.clic, id: 'Buton Salvează' },
+    { ...ev.clic, de: 'mouse' },
+    { ...ev.clic, n: 0 },
+    { ...ev.clic, text: 'Salvează' },
+    { fel: 'derulare', t: 5000, de: 'panou' },
+    { ...ev.derulare, n: 0 },
+    { ...ev.derulare, id: 'lista' },
+    { ...ev.zoom, de: 'roata' },
+    // Calculele: durata și mărimea doar în trepte; formele doar la CAM, octeții și formatul doar la import.
+    { ...ev.calcul, ms: 2_999 },
+    { ...ev.calcul, forme: 1_234 },
+    { ...ev.calcul, id: 'trasare' },
+    { ...ev.calcul, rez: 'gata' },
+    { ...ev.calcul, octeti: 1_000 },
+    { ...ev.calcul, format: 'svg' },
+    { ...ev.importul, forme: 10 },
+    { ...ev.importul, format: 'docx' },
+    { ...ev.importul, nume: 'bucatarie.dxf' },
+    { fel: 'calcul', t: 6000, id: 'export', rez: 'ok' },
+    // Mașina: codul doar la eroare și la alarmă, felul legăturii doar la legare; nicio adresă.
+    { ...ev.alarma, cod: 100_000 },
+    { ...ev.terminata, cod: 9 },
+    { ...ev.legata, cale: 'usb' },
+    { ...ev.terminata, cale: 'serial' },
+    { ...ev.legata, adresa: '192.168.1.10' },
+    { ...ev.terminata, id: 'explodata' },
+    // Imprimanta: codul doar la eroare; nici fișierul.
+    { ...ev.pauzaFisier, cod: 1 },
+    { ...ev.imprimanta, cod: -1 },
+    { ...ev.pauzaFisier, fisier: 'piesa.gcode' },
+    { ...ev.imprimanta, id: 'pauzaFisier' },
     { fel: 'tastare', t: 1, tasta: 'a' },
     { ...ev.fereastra, de: 'bara' },
     'document.roteste',
@@ -53,6 +96,15 @@ test('un câmp în plus, un fel necunoscut sau o valoare din afara listei arunc�
   assert.ok(r);
   assert.equal(r.aruncate, rele.length);
   assert.deepEqual(r.lot.evenimente, [ev.actiune, ev.dialog]);
+});
+
+test('treptele: cea mai mică margine care cuprinde valoarea, ultima pentru tot ce trece', () => {
+  assert.deepEqual([0, 99, 100, 299, 2_500, 299_999, 300_000, 5e9].map(treaptaMs), [100, 100, 300, 300, 3_000, 300_000, 1_000_000, 1_000_000]);
+  assert.deepEqual([0, 9, 10, 999, 1_000, 123_456, 2e9].map(treaptaMarime), [10, 10, 100, 1_000, 10_000, 1_000_000, 1_000_000_000]);
+  for (const x of [0, 1, 5, 77, 1e4, 3e5, 1e7, 1e12]) {
+    assert.ok((TREPTE_MS as readonly number[]).includes(treaptaMs(x)));
+    assert.ok((TREPTE_MARIME as readonly number[]).includes(treaptaMarime(x)));
+  }
 });
 
 test('lotul: sesiunea, numărul, ceasul sesiunii și contextul sunt cerute; prea multe evenimente refuză lotul', () => {
