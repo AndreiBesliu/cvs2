@@ -50,7 +50,7 @@ export const GRUP_CAMP: Readonly<Record<string, readonly GrupExport[]>> = {
   origine: ['origine'], z0: ['z0'], supracursa: ['z0'], 'supracursa-prin-foaie': ['z0'],
   post: ['post'], unitati: ['unitati'], strategie: ['schimbare', 'golire'], 'setari-masina': ['setari'],
   latura: ['taietura'], directie: ['taietura'], despartire: ['taietura'],
-  scula: ['freza'], diametru: ['freza'], 'forma-scula': ['freza'], 'unghi-v': ['freza'], 'varf-v': ['freza'],
+  scula: ['freza'], diametru: ['freza'], 'freza-biblioteca': ['freza'], 'forma-scula': ['freza'], 'unghi-v': ['freza'], 'varf-v': ['freza'],
   adancime: ['adancime'], pas: ['adancime'],
   sens: ['sens'],
   rampa: ['rampa'], 'rampa-lungime': ['rampa'],

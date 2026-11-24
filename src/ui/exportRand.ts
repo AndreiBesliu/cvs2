@@ -43,7 +43,51 @@ export type ColturiOperatie = { readonly tip: 'dog-bone' | 't-bone' };
  */
 export type SculaOperatie = {
   readonly numar: number; readonly diametru: number; readonly forma?: { readonly tip: 'v'; readonly unghi: number; readonly varf?: number };
+  /**
+   * Freza din „Frezele mele” a rândului (ADR 0300 §4, felia 16.A↑b-3a): numele, originea, valorile de lucru și tăișul ei, scrise
+   * de Exportă lângă T, Ø și formă; `null` = scrisă de mână (originea pleacă din document); lipsă = rămâne cea din document.
+   */
+  readonly origine?: OrigineFreza | null;
 };
+/** Originea unei freze din „Frezele mele” (ADR 0300 §5): numele, id-ul și versiunea, valorile de lucru și tăișul, dacă le are. */
+export type OrigineFreza = {
+  readonly nume: string; readonly biblioteca: { readonly id: string; readonly rev: number };
+  readonly regim?: { readonly turatie: number; readonly avans: number; readonly plonjare: number };
+  readonly tais?: number;
+};
+/**
+ * O freză din bibliotecă oferită unui rând (ADR 0300 §4): copia ei (T-ul preferat, Ø, forma, originea), pasul pe trecere și pasul
+ * lateral al buzunarului (mm, din procentul frezei). Le dă aplicația, după felul și latura rândului (`frezePotrivite`).
+ */
+export type FrezaOferita = {
+  readonly id: string; readonly nume: string; readonly scula: SculaOperatie & { readonly origine: OrigineFreza };
+  readonly pas: number; readonly pasLateral: number;
+};
+/** O freză a ferestrei, pentru numărul T (ADR 0114 §5): numărul, diametrul, forma și turația, dacă e știută. */
+export type FrezaRand = { readonly numar: number; readonly diametru: number; readonly forma?: SculaOperatie['forma']; readonly turatie?: number };
+
+/** Aceeași freză montată: aceeași formă (unghiul, vârful), același diametru și, unde amândouă o știu, aceeași turație. */
+function aceeasiFrezaRand(a: FrezaRand, b: FrezaRand): boolean {
+  const egal = (x: number, y: number): boolean => Math.abs(x - y) < 1e-9;
+  const formaEgala = a.forma === undefined || b.forma === undefined ? a.forma === b.forma
+    : egal(a.forma.unghi, b.forma.unghi) && egal(a.forma.varf ?? 0, b.forma.varf ?? 0);
+  return formaEgala && egal(a.diametru, b.diametru) && (a.turatie === undefined || b.turatie === undefined || a.turatie === b.turatie);
+}
+
+/**
+ * Numărul T al frezei `f` pe un rând (regula rolurilor, ADR 0114 §5), printre celelalte freze ale ferestrei (`alte`): al ei, cât
+ * nicio altă freză nu-l are (sau doar freze identice); altfel al unei freze identice; altfel cel mai mic liber.
+ */
+export function numarPentruRand(alte: readonly FrezaRand[], f: FrezaRand): number {
+  const peNumar = alte.filter((a) => a.numar === f.numar);
+  if (peNumar.every((a) => aceeasiFrezaRand(a, f))) return f.numar;
+  const identica = alte.find((a) => aceeasiFrezaRand(a, f));
+  if (identica) return identica.numar;
+  const luate = new Set(alte.map((a) => a.numar));
+  let k = 1;
+  while (luate.has(k) && k < MARGINI_OPERATIE.numarScula) k++;
+  return k;
+}
 /** Ce se schimbă dintr-o operație în dialog, cu freza ei (ADR 0084: fiecare rând are freza lui; lipsă = cea din document). */
 export type ValoriOperatie = {
   readonly scula?: SculaOperatie;
@@ -247,6 +291,11 @@ export const spatiuFolosit = (p: RandSprijin): boolean => p.treaptaInc !== 'fara
 export type Rand = {
   /** Freza rândului (ADR 0084), ca text: numărul și diametrul. */
   readonly numarScula: string; readonly diametruScula: string;
+  /**
+   * Freza din „Frezele mele” a rândului (ADR 0300 §4, felia 16.A↑b-3a): originea ei (din document sau aleasă în listă); `null` =
+   * scrisă de mână. Un diametru sau o formă schimbate de mână o scot.
+   */
+  readonly origineScula: OrigineFreza | null;
   /** Forma frezei (ADR 0090), unghiul V și diametrul vârfului plat (ADR 0092; 0 = ascuțit), ca text. */
   readonly formaScula: 'plata' | 'v'; readonly unghiV: string; readonly varfV: string;
   /** Direcția pe linie (ADR 0092 §4): „” = ca desenul. */

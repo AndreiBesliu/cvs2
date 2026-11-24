@@ -24,7 +24,7 @@ import {
   INTRARI_IMPLICITE, intregInMargini, jocFolosit, laturi, LUNGIME_ZIGZAG_IMPLICITA, margineBuna, MAXIM_REST, PLACUTE_NUMITE, puntiBune,
   RAMPA_IMPLICITA, razaEliceImplicita, restBun, rezervaExplicatii, spatiuFolosit, UNGHI_COBORARE_IMPLICIT, URECHI_IMPLICITE, type BunRand,
   type CerereExport, type FrezaRestOperatie, type IncrustatieDreaptaOperatie, type Latura, type OperatieExport, type Rand, type RandRest,
-  type SculaOperatie, type StareExport, type ValoriOperatie,
+  numarPentruRand, type FrezaOferita, type FrezaRand, type SculaOperatie, type StareExport, type ValoriOperatie,
 } from './exportRand.ts';
 
 type Props = {
@@ -92,6 +92,11 @@ type Props = {
    * rândului; „Gata” sau „Renunță” o aduc înapoi, cum era.
    */
   readonly onAlegeUrechi?: (cheie: string, urechi: { readonly numar: number; readonly latime: number; readonly grosime: number }) => void;
+  /**
+   * Frezele din „Frezele mele” care merg pe tăietura unui rând (ADR 0300 §4, felia 16.A↑b-3a), în ordinea bibliotecii; lipsă =
+   * fără listă (de exemplu, o bibliotecă goală).
+   */
+  readonly frezeOferite?: (r: Pick<Rand, 'tip' | 'latura'>) => readonly FrezaOferita[];
 };
 
 /** Rezumatul jobului (ADR 0046): timpul, apoi tabelul pe operații și cel pe scule, cu distanțele de tăiere și de rapide. */
@@ -193,7 +198,7 @@ export function DialogExport(
   {
     operatii, ordineAutomata: automataLucrarii, baza, descrieri, doarCitire, onExporta, onInchide, onReseteaza, stare, setariMasina,
     onSetariMasina, supracursa, onSupracursa, prinFoaie, onPrinFoaie, onDeschideInMasina, trimite = false, foaie, placute, foi,
-    placuteToate, onRaport, grosimeFoaie, onAlegeUrechi,
+    placuteToate, onRaport, grosimeFoaie, onAlegeUrechi, frezeOferite,
   }: Props,
 ) {
   const limba = useLimba();
@@ -234,7 +239,7 @@ export function DialogExport(
     const puntiRand = banda?.punti ?? dr?.punti ?? PUNTI_DOP_DREPT;
     const diametruDop = dop0?.diametru ?? Math.round((o.valori.scula?.diametru ?? 6) * 500) / 1000;
     return [o.cheie, {
-      numarScula: text(o.valori.scula?.numar ?? 1), diametruScula: text(o.valori.scula?.diametru ?? 6),
+      numarScula: text(o.valori.scula?.numar ?? 1), diametruScula: text(o.valori.scula?.diametru ?? 6), origineScula: o.valori.scula?.origine ?? null,
       formaScula: o.valori.scula?.forma ? 'v' : 'plata', unghiV: text(o.valori.scula?.forma?.unghi ?? UNGHI_V_IMPLICIT),
       varfV: text(o.valori.scula?.forma?.varf ?? 0), directie: o.valori.directie ?? '',
       latura: o.valori.latura, sens: o.valori.sens, adancime: text(o.valori.adancime), pas: text(o.valori.pas),
@@ -505,6 +510,53 @@ export function DialogExport(
       return vechi ? { ...v, [id]: { ...vechi, ...p } } : v;
     });
   };
+  /**
+   * Frezele ferestrei, afară de freza principală a rândului `fara` (ADR 0114 §5, pentru T-ul unei freze alese din bibliotecă):
+   * freza fiecărui rând, cu turația originii, și frezele lui în plus (fundul plat, dopul, banda, frezele de rest).
+   */
+  const frezeFerestrei = (fara: string): FrezaRand[] => {
+    const rez: FrezaRand[] = [];
+    const pune = (n: number | null, d: number | null, extra: Omit<FrezaRand, 'numar' | 'diametru'> = {}): void => {
+      if (n !== null && d !== null) rez.push({ numar: n, diametru: d, ...extra });
+    };
+    for (const o of operatii) {
+      const p = param[o.cheie];
+      if (!p) continue;
+      if (o.cheie !== fara) {
+        const u = p.formaScula === 'v' ? citesteNumar(p.unghiV) : null, vf = p.formaScula === 'v' ? citesteNumar(p.varfV) : null;
+        const turatie = p.origineScula?.regim?.turatie;
+        pune(citesteNumar(p.numarScula), citesteNumar(p.diametruScula), {
+          ...(u !== null ? { forma: { tip: 'v' as const, unghi: u, ...(vf !== null && vf > 0 ? { varf: vf } : {}) } } : {}),
+          ...(turatie !== undefined ? { turatie } : {}),
+        });
+      }
+      if (p.tip === 'vcarve' && p.fundPlat) pune(citesteNumar(p.numarSculaFund), citesteNumar(p.diametruSculaFund));
+      const dopPropriu = p.tip === 'buzunar' && p.incrustatieDreapta && p.frezaDop;
+      if (dopPropriu) pune(citesteNumar(p.numarSculaDop), citesteNumar(p.diametruSculaDop));
+      if (p.tip === 'vcarve' && p.incrustatie && p.jurDop === 'banda' && p.decupareBanda && p.frezaBanda) pune(citesteNumar(p.numarSculaBanda), citesteNumar(p.diametruSculaBanda));
+      for (const r of [...(p.tip === 'buzunar' ? p.rest : []), ...(p.tip === 'vcarve' && p.fundPlat ? p.restFund : []), ...(dopPropriu ? p.restDop : [])]) {
+        pune(citesteNumar(r.numar), citesteNumar(r.diametru));
+      }
+    }
+    return rez;
+  };
+  /**
+   * Freza aleasă din „Frezele mele” pe rândul `cheie` (ADR 0300 §4, felia 16.A↑b-3a): T-ul (regula rolurilor, printre frezele
+   * ferestrei), Ø-ul, forma, pasul pe trecere și, la buzunar, pasul lateral ei; originea, pentru Exportă.
+   */
+  const alegeFreza = (cheie: string, f: FrezaOferita): void => {
+    const s = f.scula;
+    const numar = numarPentruRand(frezeFerestrei(cheie), {
+      numar: s.numar, diametru: s.diametru, ...(s.forma ? { forma: s.forma } : {}),
+      ...(s.origine.regim ? { turatie: s.origine.regim.turatie } : {}),
+    });
+    const p = param[cheie];
+    schimba(cheie, {
+      numarScula: text(numar), diametruScula: text(s.diametru), formaScula: s.forma ? 'v' : 'plata',
+      ...(s.forma ? { unghiV: text(s.forma.unghi), varfV: text(s.forma.varf ?? 0) } : {}),
+      pas: text(f.pas), ...(p?.tip === 'buzunar' ? { pasLateral: text(f.pasLateral) } : {}), origineScula: s.origine,
+    });
+  };
   // „Pune urechile unde țin” (ADR 0211, b): rândurile pieselor desprinse, cu urechi, care sunt în fereastră, trec pe „unde
   // ține”, într-o singură schimbare; nota spune câte, până la exportul următor.
   const [undeTinePuse, setUndeTinePuse] = useState<number | null>(null);
@@ -634,6 +686,8 @@ export function DialogExport(
     const scula: SculaOperatie = {
       numar: numarScula, diametru: diametruScula,
       ...(unghiV !== null ? { forma: { tip: 'v' as const, unghi: unghiV, ...(varfV !== null && varfV > 0 ? { varf: varfV } : {}) } } : {}),
+      // Freza din „Frezele mele” (ADR 0300 §4): originea ei, sau `null` (scrisă de mână: originea pleacă din document).
+      origine: p.origineScula,
     };
     // V-carve-ul (ADR 0090): latura interior, nimic din profil; adâncimea e cea maximă. Fundul plat (ADR 0091): cu bifa pusă.
     if (p.tip === 'vcarve') {
@@ -929,7 +983,7 @@ export function DialogExport(
   // Ce îi trebuie fișei unei operații (ADR 0290, felia 28.8↑f-3): aceeași componentă o pot pune Clasicul și Pas cu pas.
   const contextFisa: ContextFisa = {
     dupaCheie, param, total: ordine.length, doarCitire, schimba, randBun, greseliRand, conflict, treceri, taieturaRand, text, fmtFreza, fmtTrecere,
-    grosimeFoaie, supracursaCitita, cuSupracursa, onAlegeUrechi, frezeRest, grup,
+    grosimeFoaie, supracursaCitita, cuSupracursa, onAlegeUrechi, frezeRest, grup, frezeOferite, alegeFreza,
   };
   return (
     <div className="dialog" role="dialog" aria-modal="true" aria-labelledby="export-titlu" ref={radacina}

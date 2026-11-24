@@ -24,9 +24,7 @@ import type { RezultatActiune } from '../ui/actiuni.ts';
 import { PanouRoluri } from './PanouRoluri.tsx';
 import { ImaginiFoii } from './ImaginiFoii.tsx';
 import { useRoluriMele } from './roluriMele.ts';
-import { useContTinut } from './dreptCont.ts';
-import { CHEIE_LOCALA, cheieBibliotecii, frezeMele, useFrezeMele } from './frezeMele.ts';
-import { cuFrezeleStandard } from './frezeStandard.ts';
+import { useBibliotecaProiect } from './bibliotecaProiect.ts';
 import { cuMajuscula, frezaComuna, plusMinus } from './taiereButoane.ts';
 import type { Taierea } from '../ui/aranjament.ts';
 import { CampNumeric } from '../ui/CampNumeric.tsx';
@@ -216,15 +214,7 @@ export function PanouProprietati({
   // browser (fără sincronizare: aceea e a ferestrei „Frezele mele”), dacă are freze sau a primit setul standard; altfel cea
   // fără cont, care primește frezele standard o dată (ADR 0300 §3, precizarea din 24.11). Și refuzul ultimei freze alese,
   // pentru selecția de atunci.
-  const cheieCont = cheieBibliotecii(useContTinut());
-  const dinCont = useFrezeMele(cheieCont);
-  const faraCont = useFrezeMele(CHEIE_LOCALA);
-  const biblioteca = cheieCont !== CHEIE_LOCALA && (dinCont.standard || dinCont.freze.length > 0) ? dinCont : faraCont;
-  useEffect(() => {
-    const b = frezeMele(cheieCont);
-    if (!b.stare().incarcata) void b.incarca();
-    void cuFrezeleStandard();
-  }, [cheieCont]);
+  const biblioteca = useBibliotecaProiect();
   const [refuzFreza, setRefuzFreza] = useState<{ readonly cheie: string; readonly motiv: string } | null>(null);
   // Literele plăcuței în lucru (fontul se aduce) sau refuzul lor, pentru selecția de atunci (ADR 0210 §4); «Din CSV…»
   // deschisă (pentru selecția de atunci) și ce a făcut ultima ei rulare.

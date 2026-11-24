@@ -6,13 +6,26 @@ import { esteCaleDeschisa, type Document, type Operatie } from '../model/documen
 import { grupeazaPeScula, taieturiFoaie, type ElementLume } from '../model/lume.ts';
 import { conturElement } from '../model/forme.ts';
 import { DialogExport } from '../ui/DialogExport.tsx';
-import type { CerereExport, OperatieExport, StareExport } from '../ui/exportRand.ts';
+import type { CerereExport, FrezaOferita, OperatieExport, OrigineFreza, Rand, StareExport } from '../ui/exportRand.ts';
+import { frezePotrivite, pasLateralDin, sculaDinBiblioteca } from '../model/alegereFreza.ts';
+import type { Scula } from '../model/document.ts';
+import { useBibliotecaProiect } from './bibliotecaProiect.ts';
 import { cuprinse } from '../model/ordine.ts';
 import { numePlacutei, placuteCuTextIesit } from '../model/placuteIesire.ts';
 import { iesireTextTinuta } from './iesireTextTinuta.ts';
 import { operatieDinDialog } from './valoriOperatii.ts';
 import { numarUrechiAlese } from '../model/urechiLocuri.ts';
 import { mesajeGata } from '../i18n/laCerere.ts';
+
+/** Originea frezei din „Frezele mele” a unei scule din document (ADR 0300 §5): numele, id-ul, valorile de lucru, tăișul. */
+function origineDin(s: Scula): OrigineFreza | null {
+  if (!s.biblioteca) return null;
+  return {
+    nume: s.nume, biblioteca: { id: s.biblioteca.id, rev: s.biblioteca.rev },
+    ...(s.regim ? { regim: { turatie: s.regim.turatie, avans: s.regim.avans, plonjare: s.regim.plonjare } } : {}),
+    ...(s.tais !== undefined ? { tais: s.tais } : {}),
+  };
+}
 
 /** Mesajele modulului, ca date (ADR 0086): cine îl încarcă le așteaptă (`cuMesaje`); un refuz îl vede tot el. */
 export const mesaje = mesajeGata();
@@ -122,6 +135,8 @@ export function ExportConectat({
           scula: {
             numar: o.scula.numar, diametru: o.scula.diametru,
             ...(o.scula.forma ? { forma: { tip: 'v' as const, unghi: o.scula.forma.unghi, ...(o.scula.forma.varf !== undefined ? { varf: o.scula.forma.varf } : {}) } } : {}),
+            // Freza din „Frezele mele” (ADR 0300 §4, felia 16.A↑b-3a): originea ei, dacă documentul o are; altfel scrisă de mână.
+            origine: origineDin(o.scula),
           },
           latura: o.latura, sens: o.sens, adancime: o.adancime, pas: o.pas,
           urechi: o.urechi ? {
@@ -198,6 +213,34 @@ export function ExportConectat({
    * Exportă: valorile din dialog, ca operațiile noi ale fiecărei piese de pe foaie (aplicația le scrie într-un singur pas), cu
    * rangul fiecăreia în ordinea omului, 0 … n − 1, sau fără rang în ordinea automată (ADR 0133 §3).
    */
+  /**
+   * Frezele din „Frezele mele” care merg pe tăietura unui rând (ADR 0300 §4, felia 16.A↑b-3a): copia fiecăreia cu T-ul ei
+   * preferat (fereastra îl schimbă după celelalte freze), originea, pasul și pasul lateral.
+   */
+  const biblioteca = useBibliotecaProiect();
+  const frezeOferite = useMemo(() => {
+    const dupaFel = new Map<string, readonly FrezaOferita[]>();
+    return (r: Pick<Rand, 'tip' | 'latura'>): readonly FrezaOferita[] => {
+      const k = `${r.tip}/${r.latura}`;
+      const gata = dupaFel.get(k);
+      if (gata) return gata;
+      const lista = frezePotrivite(biblioteca.freze, [{ tip: r.tip, latura: r.latura }]).map((f): FrezaOferita => {
+        const s = sculaDinBiblioteca(f, f.numar);
+        const origine = origineDin(s)!;
+        return {
+          id: f.id, nume: f.nume, pas: f.pas, pasLateral: pasLateralDin(f),
+          scula: {
+            numar: s.numar, diametru: s.diametru,
+            ...(s.forma ? { forma: { tip: 'v' as const, unghi: s.forma.unghi, ...(s.forma.varf !== undefined ? { varf: s.forma.varf } : {}) } } : {}),
+            origine,
+          },
+        };
+      });
+      dupaFel.set(k, lista);
+      return lista;
+    };
+  }, [biblioteca.freze]);
+
   const exporta = (c: CerereExport): void => {
     const loc = c.ordine ? new Map(c.ordine.map((k, i) => [k, i])) : null;
     const noi = new Map<string, Operatie[]>();
@@ -238,6 +281,7 @@ export function ExportConectat({
       {...(placute ? { placute } : {})}
       {...(placuteToate ? { placuteToate } : {})}
       foi={toate.foi.length}
+      {...(biblioteca.freze.length > 0 ? { frezeOferite } : {})}
       {...(onRaport ? { onRaport } : {})}
       {...(onAlegeUrechi ? {
         onAlegeUrechi: (cheie: string, u: { readonly numar: number; readonly latime: number; readonly grosime: number }) => {

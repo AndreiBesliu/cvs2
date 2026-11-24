@@ -11,6 +11,26 @@ import type {
  * „freza plata”), ca un Exportă fără schimbare să nu scrie o comandă.
  */
 function sculaScrisa(o: Operatie['scula'], s: SculaOperatie): Operatie['scula'] {
+  const cuOrigine = (x: Operatie['scula']): Operatie['scula'] => {
+    // Fără câmpul `origine` (un apelant fără rând în fereastră), scula rămâne cu originea din document.
+    if (s.origine === undefined) return x;
+    const { biblioteca: _b, regim: _r, tais: _t, ...fara } = x;
+    void _b; void _r; void _t;
+    if (s.origine === null) {
+      // Scrisă de mână (ADR 0300 §4, felia 16.A↑b-3a): originea, valorile de lucru și tăișul bibliotecii pleacă; numele vechi
+      // era al frezei din bibliotecă, deci și el, după formă.
+      if (!o.biblioteca) return x;
+      return { ...fara, nume: s.forma ? `freza V${s.forma.unghi}${(s.forma.varf ?? 0) > 0 ? ` varf ${s.forma.varf}` : ''}` : 'freza plata' };
+    }
+    // Din bibliotecă: numele, originea, valorile de lucru și tăișul ei, la locul lor dacă documentul le avea (un Exportă fără
+    // nicio schimbare scrie aceeași operație, la octet).
+    const r = s.origine;
+    return {
+      ...x, nume: r.nume, biblioteca: { id: r.biblioteca.id, rev: r.biblioteca.rev },
+      ...(r.regim ? { regim: { turatie: r.regim.turatie, avans: r.regim.avans, plonjare: r.regim.plonjare } } : {}),
+      ...(r.tais !== undefined ? { tais: r.tais } : {}),
+    };
+  };
   const { forma: _vechi, ...baza } = o;
   void _vechi;
   if (s.forma) {
@@ -19,9 +39,18 @@ function sculaScrisa(o: Operatie['scula'], s: SculaOperatie): Operatie['scula'] 
       : `freza V${s.forma.unghi}${varf > 0 ? ` varf ${varf}` : ''}`;
     const { varf: _v, ...formaVeche } = o.forma ?? {};
     void _v;
-    return { ...baza, numar: s.numar, diametru: s.diametru, nume, forma: { ...formaVeche, tip: 'v', unghi: s.forma.unghi, ...(varf > 0 ? { varf } : {}) } };
+    return curat(cuOrigine({ ...baza, numar: s.numar, diametru: s.diametru, nume, forma: { ...formaVeche, tip: 'v', unghi: s.forma.unghi, ...(varf > 0 ? { varf } : {}) } }), s);
   }
-  return { ...baza, numar: s.numar, diametru: s.diametru, nume: o.forma ? 'freza plata' : o.nume };
+  return curat(cuOrigine({ ...baza, numar: s.numar, diametru: s.diametru, nume: o.forma ? 'freza plata' : o.nume }), s);
+}
+
+/** Câmpurile originii pe care freza din bibliotecă nu le are (tăișul, valorile de lucru) pleacă; restul rămân la locul lor. */
+function curat(x: Operatie['scula'], s: SculaOperatie): Operatie['scula'] {
+  if (!s.origine) return x;
+  const c: Record<string, unknown> = { ...x };
+  if (s.origine.tais === undefined) delete c['tais'];
+  if (s.origine.regim === undefined) delete c['regim'];
+  return c as Operatie['scula'];
 }
 
 /**
