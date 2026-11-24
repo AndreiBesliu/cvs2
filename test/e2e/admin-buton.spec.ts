@@ -22,7 +22,8 @@ test('fără cont și cu un cont de client, butonul Admin nu există, iar grupul
   await page.goto('/');
   await expect(page.locator('[data-editare="cont"]')).toBeVisible();
   await expect(buton(page)).toHaveCount(0);
-  await expect(page.locator('header.meniu-global [data-grup="personal"]')).toBeHidden();
+  // Grupul gol e scos din așezare (nu doar gol): altfel ar lua un loc și un spațiu între grupurile meniului.
+  await expect(page.locator('header.meniu-global [data-grup="personal"]')).toHaveCSS('display', 'none');
 });
 
 test('cu un cont de client în probă, butonul Admin nu apare', async ({ page }) => {
@@ -50,6 +51,11 @@ test('cu un cont al personalului: „Admin” în meniu, între file și căutar
   expect(cutie.x).toBeGreaterThan(file.x + file.width);
   expect(cutie.x + cutie.width).toBeLessThan(cauta.x);
   expect(Math.abs((cutie.y + cutie.height / 2) - (file.y + file.height / 2))).toBeLessThan(4);
+  // La mijlocul locului liber dintre file și căutare, nu lipit de file: golurile din stânga și din dreapta lui sunt cam egale.
+  const stanga = cutie.x - (file.x + file.width);
+  const dreapta = cauta.x - (cutie.x + cutie.width);
+  expect(stanga).toBeGreaterThan(60);
+  expect(Math.abs(stanga - dreapta)).toBeLessThan(0.25 * (stanga + dreapta));
   // Meniul e al aplicației întregi: butonul rămâne și în fereastra Mașina.
   await page.locator('[data-actiune="vedere.masina"]').click();
   await expect(buton(page)).toBeVisible();

@@ -344,6 +344,36 @@ plăcuțelor: v21 dacă 11.4↑ ajunge în `main` înaintea lui 12.1↑b (ADR 01
   mutată exact cu 400 mm și cursorul, comutatorul oprit și ținut după reîncărcare), manualul (96 de uși), otrăvurile
   `test/otravuri/11.1b.py`: 19; toate prinse la prima rulare (`235ed5d`): 6 unitare și 13 prin e2e, în clonă, pe portul 4178.
 
+## Felia 11.1↑c (comenzile foii pe pânză, gata pe 24.11)
+
+Cererea owner-ului din 24.11, în sesiunea principală: „vreau ca plansele sa aiba controalele din meniu si sub ele, si sa
+apara doar la hover sau cand sunt selectate”, cu două capturi (meniul „⋯” al foii din listă și săgeți spre locul de sub
+fiecare foaie, pe pânză).
+
+- **Sub fiecare foaie de pe pânză**, la stânga, la 6 px sub marginea ei de jos, un rând cu cele șapte comenzi ale meniului
+  foii, ca iconițe, în ordinea lui: „Nume, mărime și material…”, „Așază pe foi…”, „Duplică foaia”, „Duplică foaia cu aceleași
+  piese”, „Mută foaia mai sus”, „Mută foaia mai jos”, „Șterge foaia”. Numele comenzii e în sfat și în numele accesibil.
+  Meniul „⋯” din listă rămâne.
+- **Când se vede:** rândul foii active (cea selectată), mereu; al unei foi vecine, doar cât mausul stă pe foaie, pe fâșia de
+  sub ea (cât rândul, deci mausul dus de pe foaie pe rând nu trece printr-un gol) sau pe rând, și cât focusul e în el. La
+  atingere (fără maus) rămâne doar rândul foii active. Cu „Toate foile pe pânză” oprit, la fel.
+- **Aceleași comenzi, același registru:** rândul cheamă acțiunile meniului (`ActiuniFoi`), pe foaia de sub el, fără s-o facă
+  activă; un refuz e stins, cu motivul în sfat, ca în meniu. Ștergerea unei foi cu piese întreabă întâi, în rând („Ștergi
+  foaia și piesele de pe ea?”, „Șterge foaia”, „Renunță”), iar întrebarea rămâne la vedere și cu mausul plecat.
+- **Unde nu se arată:** într-un proiect deschis doar pentru citire, sub fereastra Mașina sau Imprimanta (Proiectarea
+  acoperită) și cât ține un mod al pânzei (urechile alese, imaginea de pe foaie).
+- **Codul:** partea pură în `src/ui/controaleFoiCalcul.ts` (`foaiaDeSub`, `loculRandului`, `RANDURI_FOAIE`, comune cu
+  meniul); componenta `ControaleFoi` în bucata meniului foii (`src/ui/MeniuFoaie.tsx`, la cerere, preîncărcată după
+  pornire); `App.tsx` îi dă foile de pe pânză (cea activă la x = 0, vecinele din `locuriFoi`), vederea și semnalul
+  cursorului. Rândul unei foi se redesenează doar când i se schimbă foaia, vederea sau starea, nu la fiecare mișcare a
+  mausului. Documentul nu se schimbă.
+- **Măsurat** (cu butonul Admin, felia 14.C↑d, ADR 0132 §11): pornirea 109,9 → 110,0 kB (plafonul 120), totalul
+  806,1 → 806,9 / 900 kB.
+- **Probele:** `controaleFoi.test.ts` (foaia de sub cursor, fâșia pe hârtie, locul rândului, ordinea comenzilor), e2e
+  `controale-foi.spec.ts` (cele șapte comenzi și stările lor față de meniu, locul rândului, mausul pe foaia vecină și pe
+  fâșie, dublarea din rândul vecinei, ștergerea cu întrebare și anularea ei, panoul foii, așezarea, mutarea, „Toate foile”
+  oprit, engleza, fereastra Mașina), manualul. Otrăvurile: `test/otravuri/11.1c.py`.
+
 ## Felia 11.2↑ (gata pe 08.11)
 
 - **«Încă…»** (panoul Proprietăți, la „Piesa”, cu o singură piesă aleasă) cere „Câte în total” (mai multe decât acum, cel
