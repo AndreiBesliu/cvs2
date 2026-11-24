@@ -118,9 +118,9 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
 
 ## Starea pe 24.11.2026, noaptea (după a noua unire din cloud)
 
-- **Pe test:** `ebfb1f82` (tot până la lotul al optulea: utilizarea aplicației și fereastra trasării; publicat pe 24.11
-  la 01:04, cu serverul: funcția `utilizare`, regulile, indexurile); lotul al nouălea (`813fa675`: frezele și plafonul
-  de 900 kB), în curs de publicare.
+- **Pe test:** `b1797933` (tot până la lotul al nouălea: frezele și plafonul de 900 kB; publicat pe 24.11 la 02:07,
+  doar hosting). Lotul al optulea (`ebfb1f82`: utilizarea aplicației și fereastra trasării) a ajuns la 01:04, cu
+  serverul: funcția `utilizare`, regulile, indexurile.
 - **`main`, din cloud:** pe 23.11: 3.Tq (`0ae9c6c1`); 11.3↑e și A.4 (`ddaa7ead`); 3.Tr, unită de linia elicelor
   (`d262e57a`); 25.8↑a și A.5 (`1b46c955`), cu reparația probei extensiilor (`8287d66e`); 11.3↑f, unită de linia
   planșelor (`f4601938`); A.6 (`4497d639`); 3.Xh (`2d1e482c`) și 12.1↑e-3 cu 12.1↑e-4 (`03460cab`); A.8a cu A.8b

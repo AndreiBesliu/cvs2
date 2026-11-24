@@ -12370,7 +12370,7 @@ trasării (PR-urile `AndreiBesliu/cvs2#8` și `AndreiBesliu/cvs2#10`).
 **Prompt:** același brief de predare al sesiunii principale („unește ce se poate”), la raportul liniei frezelor (PR-ul
 `AndreiBesliu/cvs2#12`); apoi mesajele liniei: owner-ul îi ceruse unirea („ok, cand e verde fa unirea”) și, mai târziu,
 plafonul („ok, ridica plafonul total la 900 kB”).
-**Started:** 23.11, 23:58. **Completed:** unirea în `main`, 24.11, 01:08; publicarea pe test, în rândul de la capăt.
+**Started:** 23.11, 23:58. **Completed:** unirea în `main`, 24.11, 01:06; publicarea pe test, 24.11, 02:07.
 
 - **Verificate înaintea unirii:** ramura fără `.lucru/`; completul liniei verde pe `218eed21` (45267981792) și, cu
   `main` adus, pe `2c3fd99b` (45275343904); doar hosting (nicio funcție, nicio regulă).
@@ -12391,3 +12391,5 @@ plafonul („ok, ridica plafonul total la 900 kB”).
   owner-ului spusă într-o sesiune de linie).
 - **La owner:** fereastra exportului (28.8↑a: acum sau după desene), verificarea juridică a utilizării aplicației
   înaintea live-ului, „cine unește în `main`”.
+- **Publicarea (`b1797933`):** rapidul și completul pe `main` verzi (completul, 49 min 15 s), `publica.yml` verde în
+  3 minute (doar hosting); adresa de test spune `b1797933c0e6` (24.11, 02:07).
