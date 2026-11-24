@@ -148,6 +148,9 @@ test('cu „Toate foile pe pânză”, cotele foii vecine se văd estompate lân
   await expect(vecine).toHaveCount(1);
   await expect(vecine.locator('g[data-cota]')).toHaveAttribute('data-text', '100');
   await expect(vecine).toHaveCSS('opacity', '0.45');
+  // Lângă foaia ei, la stânga foii active (foaia 1 stă înaintea foii 2 pe rândul pânzei).
+  const x0 = (await ecran(page, await vedere(page)))(0, 0).x;
+  expect(Number(await vecine.locator('line.cota-linie').first().getAttribute('x2'))).toBeLessThan(x0);
   // Ascunse din Setări.
   await page.keyboard.press('Control+,');
   await page.getByTestId('dialog-setari').locator('[data-setare="comportament.vecine"]').selectOption('ascunse');
