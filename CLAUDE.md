@@ -1405,6 +1405,10 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   26 h = roșu. Un CI roșu pe `main` e incidentul numărul unu.
   - Comenzile: `gh run list --workflow rapid.yml --branch main --limit 1` și
     `gh run list --workflow complet.yml --limit 1`.
+  - **O felie a rapidului are 15 minute** (din 24.11; înainte 10): împărțirea fișierelor pe felii se mută la fiecare
+    fișier de test nou, iar oracolul `intrari-rampa.corpus.oracol.test.ts` ține singur peste 6 minute. Un rapid
+    „cancelled” pe o singură felie, la limită, e împărțirea, nu un test agățat: se citește jurnalul feliei (ultimul
+    fișier tipărit e cel dinaintea celui lent). Înaintea unirii se citesc și rapidul, și completul ramurii de unire.
   - Local, tot nivelul rapid: `npm run rapid`. E2e-ul în Edge: `npm run build && npm run e2e`.
   - Funcțiile, regulile și pagina `/admin` pe emulatoare: `npm run test:emulator` (Java ≥ 21: pe mașina asta, JBR-ul din
     Android Studio, ales de script; în CI, în nivelul complet).

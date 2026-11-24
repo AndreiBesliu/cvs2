@@ -5,6 +5,10 @@
 # degajărilor) sunt 4 felii, ca fiecare să rămână sub 5 minute. Din 3.6c, 6: fișierele se împart după poziția lor în listă,
 # deci trei fișiere noi au adus în felia 4 teste grele (peste 10 minute, oprită de limită). Fiecare push rulează tot; restul
 # pașilor, o dată.
+# Limita unei felii e 15 minute din 24.11: fișierele noi ale lotului al șaptesprezecelea au mutat din nou împărțirea, iar în
+# felia 5 `intrari-rampa.corpus.oracol.test.ts` (un singur test, 6 min 19 s de unul singur) a ajuns să pornească după alte
+# oracole grele și a trecut de 10 minute, de două ori la rând (rulările 45391347194 și 45400028790), deși completul era
+# verde. Alt număr de felii doar ar fi mutat din nou zarul; limita rămâne o pază împotriva unui test agățat.
 # `--test-shard` trebuie să stea ÎNAINTEA fișierelor: după ele, Node îl ignoră pe tăcute (măsurat pe 10.10).
 name: rapid
 
@@ -25,7 +29,7 @@ jobs:
   rapid:
     name: Nivelul rapid (felia ${{ matrix.felia }} din 6)
     runs-on: ubuntu-24.04
-    timeout-minutes: 10
+    timeout-minutes: 15
     strategy:
       fail-fast: false
       matrix:
