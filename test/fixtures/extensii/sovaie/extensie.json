@@ -1,0 +1,9 @@
+{
+  "format": "cvs2-extensie",
+  "api": 1,
+  "id": "sovaie",
+  "nume": "Șovăie",
+  "versiune": "1.2.0",
+  "intrare": "index.js",
+  "permisiuni": ["stocare"]
+}

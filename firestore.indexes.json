@@ -35,6 +35,7 @@
     { "collectionGroup": "utilizare", "fieldPath": "context", "indexes": [] },
     { "collectionGroup": "limiteUtilizare", "fieldPath": "expiraLa", "ttl": true, "indexes": [] },
     { "collectionGroup": "utilizareZi", "fieldPath": "expiraLa", "ttl": true, "indexes": [] },
-    { "collectionGroup": "utilizareZi", "fieldPath": "segmente", "indexes": [] }
+    { "collectionGroup": "utilizareZi", "fieldPath": "segmente", "indexes": [] },
+    { "collectionGroup": "freze", "fieldPath": "json", "indexes": [] }
   ]
 }

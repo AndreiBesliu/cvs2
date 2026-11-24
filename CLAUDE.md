@@ -323,6 +323,19 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   adâncime peste tăiș se refuză. Fără interfață încă: urmează 16.A↑b-2 (lista „Freza” pe rândurile exportului și în
   Tăierea) și 16.A↑b-3 (nota schimbării din bibliotecă). **Un câmp nou al documentului ia v28. O probă e2e care citește
   documentul salvat cere versiunea curentă:** `placute.spec.ts` a căzut în completul liniei cu `schema: 26`.
+  **Biblioteca de freze în cont (ADR 0300 §3, §7, felia 16.A↑c)** gata pe 24.11, unită în `main` pe 24.11
+  (`6b74074d`), la „b, pornește 16.A↑c” al owner-ului: callable-ul `freze` (`functions/src/freze/`, contractul în
+  `shared/freze.ts`); frezele omului stau pe server în `conturi/{uid}/freze/{id}`, ca text JSON neatins, fiecare cu
+  versiunea ei, cu contorul în `conturi/{uid}/sincron/freze` (**fără nicio regulă: închise clientului**; totul trece
+  prin callable). **Capabilitatea nouă `cloud`** (proba, planul gratuit, personalul): fără ea, `lista` merge, iar
+  `scrie` și `sterge` se refuză. În browser, biblioteca contului (`cont:<uid>`) se îmbină pe câmpuri față de ultima
+  versiune comună (`src/model/frezeSincron.ts`, pură; trecerea în `src/app/frezeSincronizare.ts`: la deschiderea
+  ferestrei, la 2 s după o schimbare, la revenirea rețelei, cu „Sincronizează”); o ciocnire pe același câmp aduce banda
+  cu „Păstrează-o pe a mea”, „pe cea din cont”, „amândouă”; la prima deschidere cu contul, „Adaugi cele N freze din
+  acest browser în cont?”. **Cererile pleacă prin bucata contului (`cheamaFrezele`).** Documentul rămâne v27. Felia:
+  pornirea +0, totalul +4,4 kB, contul 30,1 → 30,3 / 32. **Feliile următoare, renumerotate:** 16.A↑b-2 (freza din
+  bibliotecă în secțiunea Tăierea, în lucru), 16.A↑b-3 (rândurile exportului, după fereastra exportului refăcută,
+  `AndreiBesliu/cvs2#11`), 16.A↑b-4 (nota „s-a schimbat în bibliotecă”).
   **Plafonul pornirii 120 kB (ADR 0145, decizia owner-ului din 24.11, „ok, ridica plafonul pornirii la 120 kB”):** după
   lotul al paisprezecelea, pornirea era 109,9 kB, cu ușa 114,4 și cu Atelierul 114,7 / 115, iar feliile următoare ale
   frezelor, exportului și aranjamentelor nu mai încăpeau în 0,3 kB. Poarta judecă tot trei măsuri sub același plafon
@@ -936,6 +949,16 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   Capturile unei extensii se refac cu `node scripts/capturi-biblioteca.ts [dosar]` și se comit. **Un prefix nou de acțiuni
   cere grupul lui în `src/ui/Paleta.tsx`** (paleta nu arăta deloc acțiunile `extensii`). Pornirea 108,6 kB (cu ușa
   113,1 / 115), totalul 778,6 / 800.
+  **Extensiile, stările de lângă drumul bun (ADR 0232, felia 3.Xi)** gata pe 24.11, în sesiunea cloud a liniei
+  (aceeași ramură, PR-ul `AndreiBesliu/cvs2#17`), unită în `main` pe 24.11 (`f12308de`), după auditul cerut de owner și răspunsurile lui („am raspuns”: 1a–5a):
+  o extensie care nu pornește are starea ei, cu trei ieșiri; o versiune nouă redeschide extensia deschisă; reîncărcarea
+  o redeschide (`cncvs2.extensie-deschisa`); fără internet, biblioteca trece pe „Instalate”; captura mărită; un `.zip` de
+  extensie lăsat pe planșă; „Deschide <nume>” în paletă; punctul de pe butonul Extensii (`cncvs2.extensii-noi`, fără
+  nicio cerere la pornire). **O permisiune nouă a extensiilor își cere locul în `ORDINE_SENSIBILITATE`
+  (`src/extensii/pachet.ts`).** **Paleta și gazda extensiilor vorbesc prin evenimentul `cncvs2-extensii`; nu se importă
+  una pe alta** (ar lega bucățile și ar atinge pornirea). Un rând de „ce e nou” poate primi `"data": "an-lună-zi"`.
+  Pachetele nu s-au schimbat (Easy 3Draw e 18.22.0, din 3.Ts; următoarea, 18.23.0). Cu `main` (`f536a4c`) adus: pornirea
+  109,9 kB (plafonul 120; cu ușa 114,4, cu Atelierul 114,7), totalul 809,9 / 900; felia: pornirea +0, totalul +3,8 kB.
   **Raportările (15.B↑b) și imprimanta (3.6g, 3.6h, 3.6i pașii 1–2; ADR 0191 acceptat, codul 3.6j încă pe ramură) unite în
   `main` pe 07.11**, peste biblioteca extensiilor (`b501571`, `6e61bee`, apoi `e9cf6ee` cu DEVLOG-ul bibliotecii): **pornirea
   101,7 (cu ușa 105,3 / 110 kB), totalul 535,0 / 550, /admin 106,5 / 200, contul 29,6 / 32.** **Pe test (și pe live), serverul
@@ -1416,6 +1439,35 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 24.11.2026, după-amiaza (a șaisprezecea unire din cloud): **16.A↑c (biblioteca de freze în cont) și 3.Xi
+  (extensiile, stările de lângă drumul bun) unite în `main`**, în lot (sesiunea principală, ramura `unire-2411k`, din
+  `4ef990f5`), la „ok, cand sunt verzi frezele fa unirea” al owner-ului (în sesiunea principală) și la „ok, cand e
+  verde fa unirea”, spus în sesiunea liniei bibliotecii, care a scris întâi aici. **16.A↑c** (linia frezelor, ramura
+  `wip/16.A-freze`, `9943b23f`, PR-ul `AndreiBesliu/cvs2#20`; ADR 0300 §3, §7; la „b, pornește 16.A↑c”), unită în
+  `6b74074d`: frezele omului se țin în cont, prin callable-ul nou `freze` (`conturi/{uid}/freze`, închise clientului);
+  capabilitatea nouă `cloud`; îmbinarea pe câmpuri față de ultima versiune comună, banda conflictului, „Adaugi cele N
+  freze din acest browser în cont?” la prima deschidere cu contul; documentul rămâne v27; otrăvurile 47 / 47. Linia a
+  mers mai departe pe ramură (16.A↑b-2, vârful `0ffb2599`): s-a unit commit-ul raportat. **3.Xi** (linia bibliotecii,
+  ramura `wip/3.Xh-biblioteca-ui`, `0f043f31`, PR-ul `AndreiBesliu/cvs2#17`; ADR 0232, acceptat de owner cu 1a–5a, în
+  sesiunea liniei), unită în `f12308de`: starea unei extensii care nu pornește, redeschiderea după o versiune nouă și
+  după reîncărcare, filele „Din bibliotecă” și „Instalate”, captura mărită, un `.zip` de extensie lăsat pe planșă,
+  „Deschide <nume>” în paletă, punctul de pe butonul Extensii; pachetele, neschimbate (Easy 3Draw 18.22.0); otrăvurile
+  55 / 56, 41 / 43 și 60 / 60. Ciocnirile lotului, doar în DEVLOG, în fișa etapei 3 și în catalogul controalelor (scris
+  din nou). **La publicare merge și serverul:** funcția nouă `freze` (callable, `europe-central2`, App Check),
+  `firestore.indexes.json` (scutirea câmpului `json`), `cont` și `administreazaConturile` cu capabilitatea `cloud`;
+  regulile nu se schimbă. Porțile lotului, în CI, verzi la prima trecere pe `f12308de` (completul, 50 min 24 s): unit
+  10 162 / 0 (12 sărite, pe Linux), e2e 694 / 694, funcțiile pe emulatoare 136 / 136, paginile 57 / 57; completele
+  liniilor, verzi (`a70f1ea2`; `da00b854`); pornirea 109,9 kB (plafonul 120; cu ușa 114,4, cu Atelierul 114,7), totalul
+  814,3 / 900 kB, `/admin` 138,2 / 200, contul 30,3 / 32. Înainte, lotul al cincisprezecelea a ajuns pe test
+  (`e3a9e512`, 24.11, 13:54). **Liniile noi, acceptate de owner în sesiunile lor:** relieful, ADR 0310 (1a–6a);
+  cotele, ADR 0330 (1a–6a). **Schema, schimbată față de decizia de la prânz:** v28 e a reliefului (forma `relief`,
+  felia 18.1↑a); cotele nu cer schemă (stau pe foaie, `foaie.cote`, ca ghidajele și imaginile); următorul număr liber
+  e v29, dat de sesiunea principală la cerere. Urmează, pe ramura de unire `unire-2411l`: 3.Tt (elicele, înclinarea
+  spre pupa, Easy 3Draw 18.23.0, `AndreiBesliu/cvs2#19`). În lucru în sesiunea principală, la cererea owner-ului din
+  24.11 („vreau ca plansele sa aiba controalele din meniu si sub ele, si sa apara doar la hover sau cand sunt
+  selectate”; „si vreau in meniu un buton pentru admin, care apare daca esti logat ca admin”): feliile 11.1↑c și
+  14.C↑d, pe `wip/11.1c-controale-foi`, cu canalul `foi`. **La owner:** fereastra exportului (`#11`), verificarea
+  juridică (GDPR) a utilizării aplicației înaintea live-ului, „cine unește în `main`”.
 - 24.11.2026, după-amiaza (a cincisprezecea unire din cloud): **A.7 (adminul pe telefon) unită în `main`** (sesiunea
   principală, ramura `unire-2411h`, din `41233474`), la „ok, cand e verde fa unirea” al owner-ului. Linia adminului,
   ramura `wip/A.1-admin`, `c08a24bc`, PR-ul `AndreiBesliu/cvs2#13` (ADR 0260 §7; `3.As` în fișa etapei 3), unită în

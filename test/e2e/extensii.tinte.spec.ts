@@ -132,6 +132,39 @@ for (const latime of [390, 360, 320]) {
       await instalata.locator('[data-extensii="pagina-scoate"]').click();
       await incape('extensii-scoatere');
     });
+
+    test('refuzul unui pachet și starea „n-a pornit” încap în lățime, cu butoanele pe ecran (ADR 0232 §A)', async ({ page }) => {
+      await page.goto('/');
+      await page.evaluate((f) => { document.documentElement.style.setProperty('--font', f); }, FONT_LAT);
+      await expect(page.locator('[data-extensii="buton"]')).toBeVisible();
+      // Refuzul: un fișier care nu e arhivă, cu un nume lung, fără locuri de rupere.
+      await page.locator('[data-extensii="fisier-ales"]').setInputFiles({ name: 'poza_de_vacanta_cu_un_nume_foarte_lung_si_fara_spatii_2026_11_24.zip', mimeType: 'application/zip', buffer: Buffer.from('nu e o arhivă') });
+      await expect(page.getByTestId('extensii-refuz')).toBeVisible();
+      await incapeIn(page, 'extensii-instalare');
+      const peEcran = async (l: Locator): Promise<void> => {
+        const cutii = await l.evaluateAll((e) => e.map((x) => { const r = x.getBoundingClientRect(); return { st: r.left, dr: r.right, jos: r.bottom, taiat: x.scrollWidth > x.clientWidth + 1 }; }));
+        expect(cutii.length).toBeGreaterThan(0);
+        for (const c of cutii) {
+          expect(c.st).toBeGreaterThanOrEqual(0);
+          expect(c.dr).toBeLessThanOrEqual(latime);
+          expect(c.taiat).toBe(false);
+        }
+      };
+      await peEcran(page.getByTestId('extensii-instalare').locator('button'));
+      await page.locator('[data-extensii="inchide-refuz"]').click();
+      // „… n-a pornit”: o extensie care aruncă la pornire, cu detaliile desfăcute.
+      await page.locator('[data-extensii="fisier-ales"]').setInputFiles({ name: 'cade.zip', mimeType: 'application/zip', buffer: Buffer.from(impacheteaza('test/fixtures/extensii/cade').octeti) });
+      await page.locator('[data-extensii="instaleaza"]').click();
+      await expect(page.getByTestId('extensii-instalare')).toHaveCount(0);
+      await (await deschideMeniul(page)).locator('[data-extensii="deschide"][data-id="cade"]').click();
+      const stare = page.getByTestId('stare-pornire');
+      await expect(stare).toHaveAttribute('data-fel', 'esuat');
+      await stare.locator('summary').click();
+      await expect(stare.getByTestId('stare-mesaj')).toBeVisible();
+      await peEcran(stare.locator('button'));
+      await peEcran(stare.locator('h2, p'));
+      expect(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(1);
+    });
   });
 }
 

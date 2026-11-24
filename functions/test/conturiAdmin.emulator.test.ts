@@ -29,7 +29,8 @@ const P0 = T0.getTime() + ZILE_PROBA * ZI_MS;
 const ROL_CIT = 'RContCit000000000000';
 const ROL_ADM = 'RContAdm000000000000';
 const ROL_ERORI = 'RErori00000000000000';
-const FARA_OPRITE = CAPABILITATI.filter((c) => c !== 'export-gcode' && c !== 'masina');
+// Fără drept se opresc exportul G-code, senderul și scrierea în cont (ADR 0116 §9, ADR 0300 §7).
+const FARA_OPRITE = CAPABILITATI.filter((c) => c !== 'export-gcode' && c !== 'masina' && c !== 'cloud');
 
 beforeEach(async () => {
   assert.equal((await fetch(`http://${gazda}/emulator/v1/projects/${PROIECT}/databases/(default)/documents`, { method: 'DELETE' })).status, 200);

@@ -12,7 +12,8 @@ import {
 import { planEfectiv, SETARI_IMPLICITE, setariDin } from '../../shared/conturiPlan.ts';
 
 const T0 = Date.UTC(2026, 10, 1, 10, 0);
-const FARA_OPRITE = CAPABILITATI.filter((c) => c !== 'export-gcode' && c !== 'masina');
+// Fără drept se opresc exportul G-code, senderul și scrierea în cont (ADR 0116 §9, ADR 0300 §7).
+const FARA_OPRITE = CAPABILITATI.filter((c) => c !== 'export-gcode' && c !== 'masina' && c !== 'cloud');
 
 test('setările: implicitele owner-ului (7 zile offline, un an de păstrare); valorile întregi din margini, restul la implicit', () => {
   assert.deepEqual(SETARI_IMPLICITE, { zileOffline: 7, zilePastrareTichete: 365 });
@@ -24,10 +25,11 @@ test('setările: implicitele owner-ului (7 zile offline, un an de păstrare); va
   assert.deepEqual(setariDin({ zileOffline: 2.5, zilePastrareTichete: '400' }), SETARI_IMPLICITE);
 });
 
-test('capabilitățile: proba, planul gratuit și personalul au tot; expiratul și dezactivatul, fără exportul G-code și sender', () => {
+test('capabilitățile: proba, planul gratuit și personalul au tot; expiratul și dezactivatul, fără exportul G-code, sender și scrierea în cont', () => {
   for (const p of ['proba', 'gratuit', 'personal'] as const) assert.deepEqual(capabilitatiPlan(p), [...CAPABILITATI]);
   for (const p of ['expirat', 'dezactivat'] as const) assert.deepEqual(capabilitatiPlan(p), FARA_OPRITE);
   assert.ok(FARA_OPRITE.includes('desen') && FARA_OPRITE.includes('export-vectori'));
+  assert.ok(CAPABILITATI.includes('cloud') && !(FARA_OPRITE as readonly string[]).includes('cloud'));
 });
 
 test('planul efectiv: personalul câștigă; gratuitul și dezactivatul rămân; proba până la sfârșitul ei, apoi expirată', () => {

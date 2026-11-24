@@ -1228,9 +1228,9 @@ schimba pe toate: rândul spune de câte ori e pusă.
 %% acopera: vedere.freze
 
 Fereastra **Frezele mele** ține frezele tale. Se deschide din meniul **Cont** (rândul **Frezele mele…**) sau din paleta de
-comenzi. Merge și fără cont și fără rețea: biblioteca stă în acest browser (salvarea în cont vine într-o felie următoare). În
-curând alegi o freză din bibliotecă pe rândurile exportului și în secțiunea Tăierea; până atunci, freza se scrie pe rând, ca
-înainte (vezi [Exportul G-code](#export)).
+comenzi. Merge și fără cont și fără rețea: fără cont, biblioteca stă în acest browser; cu contul deschis, stă în contul tău
+și o ai pe orice calculator pe care intri în cont (vezi mai jos). În curând alegi o freză din bibliotecă pe rândurile
+exportului și în secțiunea Tăierea; până atunci, freza se scrie pe rând, ca înainte (vezi [Exportul G-code](#export)).
 
 **Lista**, în stânga, are frezele pe feluri (Plate, În V, Gravare), fiecare cu silueta mică, T-ul preferat, turația și
 avansul. **Caută o freză** filtrează după nume, iar butoanele **Toate**, **Plate**, **În V** și **Gravare** arată un singur
@@ -1265,9 +1265,24 @@ Separatorul (`;`, `,` sau tab) se găsește singur; cu `;`, numerele pot avea vi
 întâmplă cu un nume care există deja: **Păstrează-le pe amândouă** (implicit; cea nouă primește „(2)”), **Înlocuiește** sau
 **Sari**. Rândurile greșite se sar și se numără.
 
-Jos, fereastra spune unde stă biblioteca: **Doar în acest browser**. Într-o fereastră privată sau cu datele site-ului
-blocate, frezele țin doar cât fila, iar fereastra o spune. O bibliotecă scrisă de o versiune mai nouă a aplicației doar se
-citește.
+Jos, fereastra spune unde stă biblioteca: **Doar în acest browser** (fără cont). Într-o fereastră privată sau cu datele
+site-ului blocate, frezele țin doar cât fila, iar fereastra o spune. O bibliotecă scrisă de o versiune mai nouă a aplicației
+doar se citește.
+
+**Cu contul deschis**, fereastra lucrează pe biblioteca contului, ținută și în acest browser, deci merge și fără rețea. Se
+sincronizează cu contul când deschizi fereastra, la câteva secunde după fiecare schimbare și când revine rețeaua; butonul
+**Sincronizează**, jos, o face pe loc. Jos scrie **În cont, la zi**, **Se sincronizează cu contul…** sau **Fără rețea: se
+trimite la reconectare**. Contul ține cel mult 500 de freze; una care nu mai are loc rămâne în acest browser, iar fereastra
+le numără. Cu proba încheiată sau cu contul dezactivat, biblioteca din cont doar se citește: schimbările rămân aici.
+
+La prima deschidere cu contul, dacă în acest browser ai freze pe care contul nu le are, fereastra întreabă **Adaugi cele N
+freze din acest browser în cont?**: **Da, adaugă-le** le copiază în cont (o freză cu un nume luat primește „(2)”), iar **Nu
+acum** te mai întreabă la o deschidere următoare. Biblioteca fără cont rămâne neatinsă: o vezi din nou după ieșirea din cont.
+
+Dacă aceeași freză s-a schimbat pe două calculatoare între două sincronizări, câmpurile schimbate doar pe unul se adună
+singure. Un câmp schimbat pe amândouă (sau o freză ștearsă pe unul și schimbată pe altul) e un **conflict**: o bandă
+deasupra listei spune freza și câmpurile, cu **Păstrează-o pe a mea**, **Păstrează-o pe cea din cont** și **Păstrează-le pe
+amândouă** (a ta rămâne ca o freză nouă, cu „(2)”).
 
 ## Operațiile de tăiere
 %% capitol: operatii
@@ -2180,35 +2195,45 @@ tu, iar interfața aplicației rămâne aceeași.
 
 - Butonul **Extensii** (piesa de puzzle de lângă numele instanței) deschide meniul: extensiile instalate, fiecare cu semnul
   ei (una fără semn are piesa de puzzle), apoi **Biblioteca extensiilor…**. Un clic pe o extensie îi deschide fereastra, iar
-  semnul ei stă și pe fila ei. Când biblioteca are o versiune mai nouă a unei extensii instalate, rândul ei arată versiunile
-  („18.6.0 → 18.20.0”) și **Actualizează**: o aduce dintr-un clic, cu datele ei. Dacă versiunea nouă cere ceva în plus, o
-  fereastră spune întâi ce, iar acolo **Actualizează** o instalează; la capăt, **Deschide** îi deschide fereastra, iar
+  semnul ei stă și pe fila ei. O extensie instalată se deschide și din **Caută o comandă** (Ctrl+K): „Deschide Easy
+  3Draw”. Un punct pe buton spune că o extensie instalată are o versiune nouă în bibliotecă: aplicația o știe de când ai
+  deschis ultima dată meniul sau biblioteca (la pornire nu cere nimic), iar punctul pleacă după actualizare sau scoatere. Când biblioteca are o versiune mai nouă a unei extensii instalate, rândul ei arată versiunile
+  („18.6.0 → 18.20.0”) și **Actualizează**: o aduce dintr-un clic, cu datele ei. O extensie deschisă își salvează întâi
+  lucrul, apoi se redeschide singură la versiunea nouă; dacă are modificări pe care nu le poate salva, te întreabă înainte,
+  iar **Rămân** oprește actualizarea. Dacă versiunea nouă cere ceva în plus, o
+  fereastră spune întâi ce cere și ce e nou de la versiunea ta, iar acolo **Actualizează** o instalează; la capăt, **Deschide** îi deschide fereastra, iar
   **Închide** o lasă pentru mai târziu.
 - **Biblioteca extensiilor** e o fereastră, deschisă din meniu sau din **Caută o comandă** (Ctrl+K), de oriunde: în stânga
-  lista, în dreapta pagina extensiei alese. **Toate** arată extensiile
+  lista, în dreapta pagina extensiei alese. **Din bibliotecă** arată extensiile
   noastre, publicate odată cu aplicația, de exemplu Easy 3Draw; **Instalate**, pe cele din browserul acesta, și pe cele
   venite din afara bibliotecii. Pagina unei extensii are semnul și numele ei, cine o publică, versiunea și mărimea, câteva
-  capturi, descrierea, **Ce poate face** (câte un rând pentru fiecare lucru pe care îl cere extensia) și **Ce e nou**. Gestul
+  capturi (la birou, un clic pe una o mărește: ← și → trec la celelalte, Escape o închide), descrierea, **Ce poate face** (câte un rând pentru fiecare lucru pe care îl cere extensia, cu cel mai sensibil,
+  mașina, primul și marcat) și **Ce e nou** (cu data fiecărei versiuni, unde e scrisă). Gestul
   stă sus, în pagină: **Instalează** descarcă pachetul, îl verifică după amprenta lui din bibliotecă și îl pune în browserul
   acesta (merge și offline); **Actualizează la …** aduce versiunea nouă, cu datele ei, iar „Ce e nou” arată atunci doar ce a
-  apărut de la versiunea ta; **Deschide** îi deschide fereastra; **Scoate** o șterge, după o întrebare. Pe telefon, lista și
+  apărut de la versiunea ta; **Deschide** îi deschide fereastra; **Scoate** o șterge, după o întrebare (și când biblioteca are o versiune nouă). Pe telefon, lista și
   pagina vin pe rând: un rând deschide pagina lui, iar **Înapoi la listă** (‹) te întoarce. De la tastatură: ← și →
   schimbă fila, ↑ și ↓ mută între rândurile listei, Enter deschide pagina rândului, iar Escape închide biblioteca. Biblioteca se citește la fiecare
-  deschidere și are nevoie de internet; fără el, **Reîncearcă** o cere din nou, iar extensiile instalate rămân la
-  **Instalate** și merg ca până acum. Un link de forma `…/#biblioteca=trenulet` deschide biblioteca pe pagina lui Easy
+  deschidere și are nevoie de internet; fără el, fereastra trece singură pe **Instalate** (extensiile instalate merg ca
+  până acum), iar **Reîncearcă** cere biblioteca din nou. Fără nicio extensie instalată, pagina îți arată cele două
+  drumuri din afara bibliotecii. Un link de forma `…/#biblioteca=trenulet` deschide biblioteca pe pagina lui Easy
   3Draw; nimic nu se descarcă fără clicul tău.
 - La capătul listei, „Din afara bibliotecii”: **Instalează din fișier (.zip)…** primește un pachet `.zip`, iar **Instalează
   din adresă…** cere **Adresa pachetului** (HTTPS), apoi **Descarcă**; gazda trebuie să permită descărcarea din alte pagini,
   altfel descarci tu fișierul și îl instalezi din fișier. Un link de forma `…/#instaleaza=<adresa>` deschide aceeași
   fereastră, cu adresa completată; nimic nu se descarcă fără clicul tău. Un pachet instalat așa vine din afara bibliotecii,
-  iar fereastra îl spune.
+  iar fereastra îl spune. Un pachet `.zip` de extensie lăsat pe planșă deschide aceeași fereastră de confirmare; altă arhivă
+  `.zip` rămâne la Import, care spune că arhivele nu se importă.
 - Înainte de instalarea unui astfel de pachet, fereastra te întreabă cu numele extensiei („Instalezi „Easy 3Draw”?”) și
   arată semnul ei, versiunea, de unde vine pachetul, fișierele și mărimea lor și, dacă e cazul, versiunea pe care o
   înlocuiește. Sub **Ce poate face**
   stă câte un rând pentru fiecare lucru pe care îl cere extensia (de exemplu, **Datele în browser**: își ține datele în
   browserul acesta). La o versiune nouă care cere ceva în plus, lista **Versiunea nouă poate și** stă prima, evidențiată.
-  **Instalează** o pune în browserul acesta (merge și offline); **Renunță** nu schimbă nimic. Un pachet stricat sau greșit
-  se refuză, cu motivul.
+  **Instalează** o pune în browserul acesta (merge și offline); **Renunță** nu schimbă nimic.
+- Un pachet stricat sau greșit se refuză într-o fereastră a lui, „Pachetul nu se poate instala”, cu numele fișierului (sau
+  adresa) și motivul, pe înțeles. **Alege alt fișier…** deschide din nou alegerea fișierului, **Altă adresă…** te întoarce
+  la adresă, iar **Închide** nu schimbă nimic. Când un pachet din bibliotecă nu s-a putut descărca, **Încearcă din nou** îl
+  cere iar.
 - O extensie care a cerut asta își ține datele (de exemplu, circuitele ei) în browserul acesta, cel mult 16 MB. O versiune
   nouă a ei le păstrează.
 - O extensie care a cerut asta poate salva fișiere (de exemplu, G-code-ul sau piesele de printat) ca descărcări obișnuite
@@ -2223,14 +2248,20 @@ tu, iar interfața aplicației rămâne aceeași.
 - Extensia primește și limba aplicației. Easy 3Draw vorbește română sau engleză, după **Limba** din bara de sus;
   la o limbă schimbată, repornește singur, după ce își salvează lucrul (circuitul, setările, atelierul). Comentariile din
   G-code rămân în română, ca în exportul aplicației.
-- Un clic pe o extensie din meniu îi deschide fereastra: lângă **Proiectare** și **Mașina** apare o filă cu numele ei, iar
-  dedesubt, pe tot ecranul, stă extensia. Treci oricând la altă fereastră: extensia rămâne deschisă, cu ce ai lucrat în ea, iar
+- Un clic pe o extensie din meniu îi deschide fereastra: lângă **Proiectare** și **Mașina** apare o filă cu numele ei (un
+  nume lung e tăiat cu „…”), iar în meniu rândul ei e marcat cu un punct și „deschisă”. Dedesubt,
+  pe tot ecranul, stă extensia. Treci oricând la altă fereastră: extensia rămâne deschisă, cu ce ai lucrat în ea, iar
   o comandă a desenului aleasă din **Caută o comandă** te duce întâi la Proiectare. **×**, lângă numele ei, închide
   extensia: întâi îi lasă câteva secunde să salveze ce avea de salvat (Easy 3Draw își salvează atunci circuitul,
   setările și atelierul). Dacă tot rămân modificări nesalvate, te întreabă: **Rămân** (sau Escape) o lasă deschisă, **Închide
   oricum** o închide, iar modificările se pierd. La fel, cât extensia are modificări nesalvate, reîncărcarea sau închiderea
-  filei te întreabă, prin fereastra browserului. După o reîncărcare a paginii, aplicația pornește fără extensie. F1 deschide
-  capitolul acesta.
+  filei te întreabă, prin fereastra browserului. După o reîncărcare a paginii, aplicația redeschide extensia în care erai;
+  una pe care ai închis-o, sau care n-a pornit, nu se redeschide. F1 deschide capitolul acesta.
+- Dacă o extensie nu pornește, fereastra ei o spune („… n-a pornit”) și îți dă trei ieșiri: **Încearcă din nou** o pornește
+  iar, **Vezi în bibliotecă** îi deschide pagina (de unde o poți actualiza sau scoate), iar **Închide** o închide. Desenul și
+  proiectele tale nu sunt atinse. Sub **Detalii** stau eroarea, versiunea și de unde a venit pachetul, de trimis autorului
+  ei (**Copiază**). Aceleași ieșiri apar și când pornirea trece de 10 secunde („… pornește greu…”), fără ca pornirea să se
+  oprească.
 - O extensie care a cerut asta poate folosi mașina, prin fereastra **Mașina**: vede starea ei (legătura, lucrarea cu
   procentul, programul încărcat), încarcă un program G-code, verificat la fel ca unul adus cu **Fișier…** (fereastra Mașina
   scrie lângă el de la cine e), pune pauză și oprește lucrarea. Ca să pornească sau să reia lucrarea, te întreabă întâi,

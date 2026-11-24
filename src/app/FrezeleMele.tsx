@@ -6,6 +6,11 @@
  * Editorul ține textele scrise (cu virgula sau punctul zecimal); „Salvează” le judecă (`problemeFreza`) și le scrie în
  * bibliotecă. O schimbare nesalvată nu se pierde: plecarea (altă freză, una nouă, închiderea) o salvează dacă e bună, altfel
  * rămâne pe loc și arată câmpurile de reparat. Vine la cerere, cu mesajele ei (`freze`); merge și fără cont, și offline.
+ *
+ * Cu un cont deschis (felia 16.A↑c), fereastra lucrează pe biblioteca contului din browser și o sincronizează cu contul
+ * (`frezeSincronizare.ts`): la deschidere, după fiecare schimbare și la revenirea rețelei. Bara de jos spune unde stă
+ * biblioteca; un conflict (aceeași freză schimbată pe două calculatoare) cere alegerea omului, iar la prima deschidere cu
+ * contul, frezele din acest browser se pot aduce în cont.
  */
 import { useEffect, useMemo, useRef, useState, type ChangeEvent, type KeyboardEvent, type ReactNode } from 'react';
 import '../i18n/freze.ts';
@@ -17,9 +22,13 @@ import {
   type FrezaFaraNume, type FrezaSalvata, type MotivFreza, type PoliticaImport, type ProblemeFreza,
 } from '../model/freza.ts';
 import { UNGHI_V_IMPLICIT } from '../model/document.ts';
+import { cuFrezeleBrowserului, deAdusDinBrowser, type Alegere } from '../model/frezeSincron.ts';
 import { citesteNumar, textNumar } from '../ui/numar.ts';
 import { useLimba } from '../ui/useLimba.ts';
-import { frezeMele, useFrezeMele, type ProblemeLista } from './frezeMele.ts';
+import type { Config } from './config.ts';
+import { useContTinut } from './dreptCont.ts';
+import { CHEIE_LOCALA, cheieCont, frezeMele, useFrezeMele, type ProblemeLista } from './frezeMele.ts';
+import { useSincronizare } from './frezeSincronizare.ts';
 import './freze.css';
 
 /** Mesajele modulului, ca date (ADR 0086): cine îl încarcă le așteaptă (`cuMesaje`). */
@@ -114,6 +123,30 @@ function Silueta({ f, mare }: { readonly f: Freza; readonly mare: boolean }): Re
   );
 }
 
+/** Numele unui câmp al frezei, pentru conflict (un câmp necunoscut, al unei versiuni mai noi, cu numele lui din date). */
+function numeCamp(k: string): string {
+  switch (k) {
+    case 'nume': return t('freze.nume');
+    case 'fel': return t('freze.felul');
+    case 'diametru': return t('freze.diametru');
+    case 'unghi': return t('freze.unghi');
+    case 'varf': return t('freze.varf');
+    case 'tais': return t('freze.tais');
+    case 'taisuri': return t('freze.taisuri');
+    case 'numar': return t('freze.numar');
+    case 'turatie': return t('freze.turatie');
+    case 'avans': return t('freze.avans');
+    case 'plonjare': return t('freze.plonjare');
+    case 'pas': return t('freze.pas');
+    case 'pasLateral': return t('freze.pas-lateral');
+    case 'nota': return t('freze.nota');
+    default: return k;
+  }
+}
+
+/** Conturile care au spus „Nu acum” la frezele din browser, în fila asta (întrebarea revine la reîncărcare). */
+const amanate = new Set<string>();
+
 const MOTIV_IMPORT: Readonly<Record<MotivFisierFreze, () => string>> = {
   gol: () => t('freze.import.motiv.gol'),
   json: () => t('freze.import.motiv.json'),
@@ -124,14 +157,24 @@ const MOTIV_IMPORT: Readonly<Record<MotivFisierFreze, () => string>> = {
   'prea-multe': () => t('freze.import.motiv.prea-multe', { max: MARGINI_FREZA.freze }),
 };
 
-export function FrezeleMele({ onInchide, focusInapoi }: {
+export function FrezeleMele({ onInchide, focusInapoi, config }: {
   readonly onInchide: () => void;
   /** Unde era focusul înainte: acolo se întoarce la închidere. */
   readonly focusInapoi: Element | null;
+  /** Configurația aplicației (legătura cu contul); fără ea, biblioteca rămâne doar în browser. */
+  readonly config: Config | null;
 }): ReactNode {
   const limba = useLimba();
   const ro = limba === 'ro';
-  const stare = useFrezeMele();
+  const cont = useContTinut();
+  // Biblioteca contului doar cu contul deschis pe server (adresa confirmată); altfel, cea fără cont.
+  const uid = cont?.drept ? cont.uid : null;
+  const cheie = uid ? cheieCont(uid) : CHEIE_LOCALA;
+  const biblioteca = frezeMele(cheie);
+  const stare = useFrezeMele(cheie);
+  const locala = useFrezeMele(CHEIE_LOCALA);
+  const sincronizare = useSincronizare(cheie, uid, config);
+  const [amanat, setAmanat] = useState(() => uid !== null && amanate.has(uid));
   const [cauta, setCauta] = useState('');
   const [filtru, setFiltru] = useState<FelFreza | 'toate'>('toate');
   /** Freza din editor: id-ul ei, `nou` pentru una nouă, sau nimic. */
@@ -148,16 +191,34 @@ export function FrezeleMele({ onInchide, focusInapoi }: {
   const refEditor = useRef<HTMLFormElement>(null);
 
   useEffect(() => {
-    void frezeMele().incarca();
     refCauta.current?.focus();
     return () => { if (focusInapoi instanceof HTMLElement) focusInapoi.focus(); };
   }, [focusInapoi]);
+  // Altă bibliotecă (intrarea în cont sau ieșirea, cât fereastra e deschisă): editorul se închide.
+  useEffect(() => {
+    void frezeMele(cheie).incarca();
+    if (cheie !== CHEIE_LOCALA) void frezeMele(CHEIE_LOCALA).incarca();
+    setAleasa(null);
+    setCiorna(null);
+    setInitiala(null);
+    setPas('lista');
+    setAmanat(uid !== null && amanate.has(uid));
+  }, [cheie, uid]);
 
   const doarCitire = !stare.scriere;
   const freza = useMemo(() => (ciorna ? frezaDin(ciorna, ro) : null), [ciorna, ro]);
   const idEditor = aleasa === 'nou' ? null : aleasa;
   const probleme: ProblemeFreza = freza ? problemeFreza(freza, stare.freze, idEditor) : {};
   const schimbata = ciorna !== null && initiala !== null && JSON.stringify(ciorna) !== JSON.stringify(initiala);
+
+  // O schimbare venită din cont (sau din altă filă) pe freza din editor, nesalvată aici: editorul o arată; ștearsă, se închide.
+  useEffect(() => {
+    if (aleasa === null || aleasa === 'nou' || schimbata) return;
+    const f = stare.freze.find((x) => x.id === aleasa);
+    if (!f) { setAleasa(null); setCiorna(null); setInitiala(null); setPas('lista'); return; }
+    const c = ciornaDin(f, ro);
+    if (JSON.stringify(c) !== JSON.stringify(initiala)) { setCiorna(c); setInitiala(c); }
+  }, [stare.freze, aleasa, schimbata, initiala, ro]);
 
   const deschide = (id: string | 'nou' | null, c: Ciorna | null): void => {
     setAleasa(id);
@@ -182,13 +243,13 @@ export function FrezeleMele({ onInchide, focusInapoi }: {
       refEditor.current?.querySelector<HTMLElement>('[aria-invalid="true"]')?.focus();
       return null;
     }
-    const r = await frezeMele().salveaza(idEditor, freza);
+    const r = await biblioteca.salveaza(idEditor, freza);
     if (!r.ok) {
       setToateProblemele(true);
       setMesaj(motivLista(r.probleme));
       return null;
     }
-    const salvata = frezeMele().stare().freze.find((f) => f.id === r.id);
+    const salvata = biblioteca.stare().freze.find((f) => f.id === r.id);
     if (salvata) {
       const c = ciornaDin(salvata, ro);
       setAleasa(r.id);
@@ -197,6 +258,7 @@ export function FrezeleMele({ onInchide, focusInapoi }: {
       setToateProblemele(false);
     }
     setMesaj(t('freze.stare.salvat'));
+    sincronizare.programeaza();
     return r.id;
   };
   /** Plecarea din editor: fără schimbări, direct; cu schimbări bune, după salvare; cu schimbări greșite, deloc. */
@@ -210,7 +272,7 @@ export function FrezeleMele({ onInchide, focusInapoi }: {
     pleaca(() => { deschide(f.id, ciornaDin(f, ro)); setMesaj(''); });
   };
   const noua = (): void => {
-    pleaca(() => { deschide('nou', ciornaNoua(frezeMele().stare().freze, ro)); setMesaj(''); });
+    pleaca(() => { deschide('nou', ciornaNoua(biblioteca.stare().freze, ro)); setMesaj(''); });
   };
   const inchide = (): void => { pleaca(onInchide); };
   const renunta = (): void => {
@@ -221,26 +283,29 @@ export function FrezeleMele({ onInchide, focusInapoi }: {
   const duplica = (): void => {
     const f = stare.freze.find((x) => x.id === aleasa);
     if (!f) return;
-    void frezeMele().salveaza(null, { ...f, nume: numeLiber(t('freze.copie', { nume: f.nume }), stare.freze) }).then((r) => {
+    void biblioteca.salveaza(null, { ...f, nume: numeLiber(t('freze.copie', { nume: f.nume }), stare.freze) }).then((r) => {
       if (!r.ok) { setMesaj(motivLista(r.probleme)); return; }
-      const s = frezeMele().stare().freze.find((x) => x.id === r.id);
+      const s = biblioteca.stare().freze.find((x) => x.id === r.id);
       if (s) deschide(s.id, ciornaDin(s, ro));
       setMesaj(t('freze.stare.salvat'));
+      sincronizare.programeaza();
     });
   };
   const sterge = (): void => {
     if (!aleasa || aleasa === 'nou') return;
-    void frezeMele().sterge(aleasa).then((r) => {
+    void biblioteca.sterge(aleasa).then((r) => {
       if (!r.ok) { setMesaj(motivLista(r.probleme)); return; }
       deschide(null, null);
       setMesaj(t('freze.stare.sters'));
+      sincronizare.programeaza();
       refCauta.current?.focus();
     });
   };
   const pornire = (): void => {
     const freze = FREZE_PORNIRE.map((f) => ({ ...f, nume: numePropus(f, ro) }));
-    void frezeMele().adaugaToate(freze).then((r) => {
+    void biblioteca.adaugaToate(freze).then((r) => {
       setMesaj(r.ok ? t('freze.import.rezultat', { adaugate: r.adaugate, inlocuite: r.inlocuite, sarite: r.sarite }) : motivLista(r.probleme));
+      if (r.ok) sincronizare.programeaza();
     });
   };
   const exporta = (): void => {
@@ -264,10 +329,33 @@ export function FrezeleMele({ onInchide, focusInapoi }: {
   };
   const importa = (): void => {
     if (!importat) return;
-    void frezeMele().importa(importat.freze, importat.politica).then((r) => {
+    void biblioteca.importa(importat.freze, importat.politica).then((r) => {
       setImportat(null);
       setMesaj(r.ok ? t('freze.import.rezultat', { adaugate: r.adaugate, inlocuite: r.inlocuite, sarite: r.sarite + importat.sarite }) : motivLista(r.probleme));
+      if (r.ok) sincronizare.programeaza();
     });
+  };
+  /** Conflictul unei freze, la alegerea omului; editorul ei se închide (arată apoi ce a rămas). */
+  const rezolva = (id: string, alegere: Alegere): void => {
+    if (aleasa === id) deschide(null, null);
+    void sincronizare.rezolva(id, alegere);
+  };
+  /** Frezele din acest browser, aduse în cont (prima deschidere cu contul). */
+  const aduDinBrowser = (): void => {
+    const locale = locala.freze;
+    let adaugate = 0;
+    void biblioteca.schimbaCont((c) => {
+      const r = cuFrezeleBrowserului(c, locale, MARGINI_FREZA.freze);
+      adaugate = r.adaugate;
+      return r.adaugate > 0 ? r.b : null;
+    }).then(() => {
+      setMesaj(t('freze.aduse.rezultat', { n: adaugate }));
+      sincronizare.programeaza();
+    });
+  };
+  const amana = (): void => {
+    if (uid !== null) amanate.add(uid);
+    setAmanat(true);
   };
   const tasta = (e: KeyboardEvent): void => {
     if (e.key !== 'Escape') return;
@@ -322,9 +410,34 @@ export function FrezeleMele({ onInchide, focusInapoi }: {
   const pNume = vizibila('nume') ? probleme.nume : undefined;
   const pNota = vizibila('nota') ? probleme.nota : undefined;
   const nr = (x: number): string => textNumar(x, ro);
-  const stareText = !stare.incarcata ? t('freze.incarca')
-    : doarCitire ? t('freze.stare.versiune')
-      : !stare.pastrate ? t('freze.stare.memorie') : t('freze.stare.browser');
+  const conflicte = [...stare.sincron.conflicte];
+  const legatura = sincronizare.stare;
+  /** Unde stă biblioteca și ce face legătura cu contul (felul pastilei: obișnuit sau „atenție”). */
+  const [stareText, stareFel] = ((): [string, 'incarca' | 'atentie' | 'browser'] => {
+    if (!stare.incarcata) return [t('freze.incarca'), 'incarca'];
+    if (doarCitire) return [t('freze.stare.versiune'), 'atentie'];
+    if (!stare.pastrate) return [t('freze.stare.memorie'), 'atentie'];
+    if (uid === null) return [t('freze.stare.browser'), 'browser'];
+    if (conflicte.length > 0) return [t('freze.loc.conflict', { n: conflicte.length }), 'atentie'];
+    if (legatura.ruleaza || legatura.ultima === null) return [t('freze.loc.sincronizeaza'), 'browser'];
+    if (legatura.ultima !== 'la-zi') return [t(`freze.loc.${legatura.ultima}`), 'atentie'];
+    if (stare.sincron.plina.length > 0) return [t('freze.loc.plina', { n: stare.sincron.plina.length, max: MARGINI_FREZA.freze }), 'atentie'];
+    return [t('freze.loc.la-zi'), 'browser'];
+  })();
+  const deAdus = uid !== null && locala.incarcata && stare.incarcata && !amanat
+    ? deAdusDinBrowser({ freze: stare.freze, brute: [], sincron: stare.sincron }, locala.freze).length : 0;
+  const conflict = conflicte[0];
+  const numeConflict = ((): string => {
+    if (!conflict) return '';
+    const aici = stare.freze.find((f) => f.id === conflict[0]);
+    if (aici) return aici.nume;
+    try {
+      const x: unknown = JSON.parse(conflict[1].json ?? 'null');
+      return typeof x === 'object' && x !== null && typeof (x as { nume?: unknown }).nume === 'string' ? (x as { nume: string }).nume : '';
+    } catch {
+      return '';
+    }
+  })();
 
   return (
     <div className="dialog" role="dialog" aria-modal="true" aria-labelledby="freze-titlu" data-testid="dialog-freze" onKeyDown={tasta}>
@@ -333,7 +446,30 @@ export function FrezeleMele({ onInchide, focusInapoi }: {
           <h2 id="freze-titlu">{t('vedere.freze')}</h2>
           <button type="button" className="freze-inchide" data-freze="inchide" aria-label={t('freze.inchide')} onClick={inchide}>✕</button>
         </div>
-        <p className="freze-intro">{t('freze.intro')}</p>
+        <p className="freze-intro">{uid === null ? t('freze.intro') : t('freze.intro.cont')}</p>
+        {conflict ? (
+          <div className="freze-banda" role="group" aria-labelledby="freze-conflict-text" data-freze="conflict" data-freza={conflict[0]}>
+            <p id="freze-conflict-text">
+              {conflict[1].campuri.includes('*')
+                ? t('freze.conflict.sters', { nume: numeConflict })
+                : t('freze.conflict.campuri', { nume: numeConflict, campuri: conflict[1].campuri.map(numeCamp).join(', ') })}
+            </p>
+            <div className="butoane">
+              <button type="button" data-freze="conflict-mea" onClick={() => { rezolva(conflict[0], 'mea'); }}>{t('freze.conflict.mea')}</button>
+              <button type="button" data-freze="conflict-cont" onClick={() => { rezolva(conflict[0], 'cont'); }}>{t('freze.conflict.cont')}</button>
+              <button type="button" data-freze="conflict-amandoua" onClick={() => { rezolva(conflict[0], 'amandoua'); }}>{t('freze.conflict.amandoua')}</button>
+            </div>
+          </div>
+        ) : null}
+        {deAdus > 0 && !doarCitire ? (
+          <div className="freze-banda" role="group" aria-labelledby="freze-aduse-text" data-freze="aduse">
+            <p id="freze-aduse-text">{t('freze.aduse.intrebare', { n: deAdus })}</p>
+            <div className="butoane">
+              <button type="button" className="principal" data-freze="aduse-da" onClick={aduDinBrowser}>{t('freze.aduse.da')}</button>
+              <button type="button" data-freze="aduse-nu" onClick={amana}>{t('freze.aduse.nu')}</button>
+            </div>
+          </div>
+        ) : null}
         <div className="freze-unelte" data-pas={pas}>
           <input ref={refCauta} type="search" className="freze-cauta" data-freze="cauta" placeholder={t('freze.cauta')} aria-label={t('freze.cauta')}
             value={cauta} onChange={(e) => { setCauta(e.currentTarget.value); }} />
@@ -493,9 +629,12 @@ export function FrezeleMele({ onInchide, focusInapoi }: {
         </div>
         <div className="freze-jos">
           <span className="freze-stare" data-freze="stare">
-            <span className="freze-pastila" data-stare={!stare.incarcata ? 'incarca' : doarCitire || !stare.pastrate ? 'atentie' : 'browser'}>{stareText}</span>
+            <span className="freze-pastila" data-stare={stareFel}>{stareText}</span>
             {stare.incarcata ? <span>{t('freze.stare.cate', { n: stare.freze.length })}</span> : null}
             {stare.necitite > 0 ? <span>{t('freze.stare.necitite', { n: stare.necitite })}</span> : null}
+            {uid !== null && stare.incarcata && !legatura.ruleaza ? (
+              <button type="button" className="freze-sincronizeaza" data-freze="sincronizeaza" onClick={sincronizare.acum}>{t('freze.sincronizeaza')}</button>
+            ) : null}
           </span>
           <span className="freze-mesaj" role="status" data-freze="mesaj">{mesaj}</span>
         </div>

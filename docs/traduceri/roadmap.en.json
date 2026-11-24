@@ -33,6 +33,10 @@
       "ro": "Fișa etapei și proba de mediu în Drive: instalarea, build-ul, nivelul rapid și Edge, de două ori, cu `git status` curat după",
       "en": "Stage file and environment check in Drive: install, build, rapid level and Edge, twice, with a clean `git status` afterwards"
     },
+    "034ff757f86b0a03": {
+      "ro": "înaintea unirii lui 3.Xi",
+      "en": "before 3.Xi is merged"
+    },
     "0360dd0ba18ef822": {
       "ro": "Emulatorul GRBL 1.1h ca fixtură (ADR 0079): numără ce primește (bufferul de 128 de octeți, timpul real, pierderile), liniile, planificatorul de 15 blocuri cu timpul lui, stările (hold, alarmă, repornire), răspunsurile `$`; un flux de probă cu numărarea caracterelor; 100 000 de linii fără pierderi; rejucarea programelor plăcilor 1 și 2",
       "en": "The GRBL 1.1h emulator as a fixture (ADR 0079): it counts what it receives (the 128-byte buffer, the realtime bytes, the losses), the lines, the 15-block planner with its timing, the states (hold, alarm, restart), the `$` replies; a test stream with character counting; 100,000 lines without losses; replaying the programs of plates 1 and 2"
@@ -953,6 +957,10 @@
       "ro": "Joburile cu mai multe scule din document: freza pe operație în fereastra exportului, ordinea, jobul CAM cu diametrul fiecărei tăieturi, simularea și estimarea peste schimbări, strategia aleasă, fișierele separate descărcate și încărcate în sender",
       "en": "Multi-tool jobs from the document: the bit per operation in the export window, the order, the CAM job with each cut’s diameter, simulation and estimation across changes, the chosen strategy, separate files downloaded and loaded into the sender"
     },
+    "36b5b31323268995": {
+      "ro": "**Extensiile, stările de lângă drumul bun: descoperirea** (fără mașină; ADR 0232 §C; a treia și ultima felie, aceeași ramură, în sesiunea cloud a liniei). Un clic pe o captură din pagina extensiei o mărește peste fereastră (← și →, „2 / 3”, legenda, Escape). Un `.zip` de extensie lăsat pe planșă deschide confirmarea instalării; alt `.zip` rămâne la Import, al cărui refuz spune de unde se instalează o extensie. Paleta de comenzi are „Deschide <nume>” pentru fiecare extensie instalată. „Ce e nou” arată data versiunii (câmpul `data`, la alegere, în `extensii/biblioteca.json`) și apare și în confirmarea unei actualizări, doar de la versiunea omului. Un punct pe butonul Extensii spune că o extensie instalată are o versiune nouă, din ce s-a aflat la ultima deschidere a meniului (`cncvs2.extensii-noi`), fără nicio cerere la pornire. Găsit de probe: cu o versiune nouă în bibliotecă, pagina extensiei n-avea „Scoate”. Manualul, în ambele limbi. Pornirea neschimbată, totalul 806,5 → 808,5 / 900 kB; cu `main` (`f536a4c`) adus: pornirea 109,9 kB (plafonul 120; cu ușa 114,4, cu Atelierul 114,7), totalul 809,9 / 900. E2e 12 noi, unitare 9; otrăvurile 60 / 60, în clonă (la prima rulare, 54 din 62: două gărzi și o sortare de prisos scoase, patru probe întărite, o otravă fără obiect scoasă). **Toată felia 3.Xi:** pornirea +0, totalul +3,8 kB; PR-ul liniei, `AndreiBesliu/cvs2#17`.",
+      "en": "**Extensions, the states beside the happy path: discovery** (no machine; ADR 0232 §C; the third and last slice, same branch, in the line’s cloud session). A click on a screenshot on the extension’s page enlarges it over the window (← and →, “2 / 3”, the caption, Escape). An extension’s `.zip` dropped on the sheet opens the install confirmation; any other `.zip` stays with Import, whose refusal says where an extension is installed from. The command palette has “Open <name>” for each installed extension. “What’s new” shows the version’s date (the optional `data` field in `extensii/biblioteca.json`) and also appears in an update’s confirmation, only since the user’s version. A dot on the Extensions button says an installed extension has a new version, from what was learned the last time the menu was opened (`cncvs2.extensii-noi`), with no request at startup. Found by the tests: with a new version in the library, the extension’s page had no “Remove”. The manual, in both languages. Startup unchanged, total 806.5 → 808.5 / 900 kB; with `main` (`f536a4c`) brought in: startup 109.9 kB (cap 120; with the door 114.4, with the Workshop layout 114.7), total 809.9 / 900. 12 new e2e tests, 9 unit tests; mutations 60 / 60, in a clone (on the first run, 54 of 62: two redundant guards and a redundant sort removed, four tests strengthened, one mutation without an object removed). **The whole 3.Xi slice:** startup +0, total +3.8 kB; the line’s PR, `AndreiBesliu/cvs2#17`."
+    },
     "374e2966866ee30b": {
       "ro": "Adminul pe telefon",
       "en": "The admin on a phone"
@@ -1120,6 +1128,10 @@
     "40b501e9ce398524": {
       "ro": "Urechile la locuri alese, cu mausul",
       "en": "Tabs at chosen places, with the mouse"
+    },
+    "415478e75c6849e7": {
+      "ro": "**Extensiile, stările de lângă drumul bun: claritatea** (fără mașină; ADR 0232 §B; a doua din trei felii, aceeași ramură, în sesiunea cloud a liniei). „Ce poate face” înșiră permisiunile după cât de sensibile sunt, cu mașina prima și marcată; fraza izolării nu le mai contrazice. Filele se numesc „Din bibliotecă” și „Instalate”. Fără internet (sau cu un catalog stricat), cu ceva instalat, fereastra trece singură pe „Instalate”, cu o bandă și „Reîncearcă”; fără nicio extensie, pagina arată cele două drumuri din afara bibliotecii. Meniul marchează extensia deschisă; eroarea unei actualizări stă sub listă, cu numele extensiei. Fila extensiei taie un nume lung și are un × cât o țintă; subtextele au 12 px. Găsite de probe: în fereastra bibliotecii, focusul cădea pe pagină când butonul apăsat pleca de pe ecran, iar Escape nu mai închidea fereastra; fără catalog, o extensie din bibliotecă scria „din afara bibliotecii”. Manualul, în ambele limbi. Pornirea neschimbată, totalul 806,0 → 806,5 / 900 kB. E2e 11 noi, unitare 1 fișier; otrăvurile 41 / 43, în clonă, după două probe întărite (U10 și U11, la manual, nu se pot prinde: „din bibliotecă” apare oricum în capitol).",
+      "en": "**Extensions, the states beside the happy path: clarity** (no machine; ADR 0232 §B; the second of three slices, same branch, in the line’s cloud session). “What it can do” lists the permissions by how sensitive they are, with the machine first and marked; the isolation sentence no longer contradicts them. The tabs are called “Library” and “Installed”. Without internet (or with a broken catalogue), with something installed, the window switches to “Installed” by itself, with a band and “Try again”; with no extension, the page shows the two ways from outside the library. The menu marks the open extension; a failed update’s error sits under the list, with the extension’s name. The extension’s tab cuts a long name and has a × the size of a target; the sub-texts are 12 px. Found by the tests: in the library window, the focus fell to the page when the pressed button left the screen, and Escape no longer closed the window; without a catalogue, an extension from the library said “from outside the library”. The manual, in both languages. Startup unchanged, total 806.0 → 806.5 / 900 kB. 11 new e2e tests, 1 unit file; mutations 41 / 43, in a clone, after two strengthened tests (U10 and U11, on the manual, cannot be caught: “library” appears in the chapter anyway)."
     },
     "4156b068e6443d05": {
       "ro": "Stratul WebGL2 și panoul de proprietăți editabil",
@@ -1829,6 +1841,10 @@
       "ro": "**Biblioteca extensiilor, refăcută: datele și semnul** (fără mașină; ADR 0231, acceptat cu „Da, 1a–4a”; ramura `wip/3.Xh-biblioteca-ui`, în sesiunea cloud a liniei; „poti sa pornesti un branch in care sa modificam libraria de plugin-uri? vreau ceva mai frumos si cu un UI/UX mai bun si atragator”). Întâi propunerea, fără cod de produs (23.11, 13:45–14:25): 87 de capturi ale bibliotecii de azi, cu zece lucruri găsite și măsurate, ADR-ul cu trei direcții și schița cu patru întrebări (<https://claude.ai/artifact/RVvJq3q2NPxtTPm2Y8Q8EV>). Cu răspunsurile (fereastra „Biblioteca extensiilor”, cărămida ca semn al lui Easy 3Draw, „ce e nou” cerut de probă, trei capturi adevărate pe extensie), prima din patru felii: semnul extensiei stă în pachet (`pictograma` în `extensie.json`, un SVG de cel mult 8 kB) și ajunge în catalog; catalogul primește, opțional, `capturi`, `despre`, `noutati` și `autor`, citite tolerant (un câmp greșit se sare și e numit; schema rămâne 1); capturile se fac cu `node scripts/capturi-biblioteca.ts` (960 × 600, WebP, în română și în engleză) și se comit; „ce e nou” e cerut la fiecare versiune nouă a unei extensii din bibliotecă (proba construcției cade, iar `--scrie` refuză); poarta build-ului cere fiecare imagine din catalog, cu mărimea și amprenta ei; anteturile `immutable` pentru imaginile bibliotecii; CSP-ul neschimbat. În interfața de azi, semnul stă lângă numele extensiei, în Biblioteca și la extensiile instalate, și pe fila extensiei deschise (și fără internet, din pachet); fără semn, piesa de puzzle. Easy 3Draw 18.20.0 (18.21.0 de la aducerea lui `main` cu 3.Tr, care luase aceeași versiune), cu semnul, descrierea lungă, „ce e nou” pe cinci versiuni și trei capturi pe limbă. Privirea pe capturile mărite a găsit rândul extensiei instalate la mijlocul meniului și numele din Biblioteca gri: reparate, fiecare cu proba ei scrisă întâi. Pornirea neschimbată (107,9 kB), totalul 762,0 / 800 kB (+1,1). Unitare 19 noi, e2e 2 noi; otrăvurile 45 / 45 (35 unitare, 10 prin e2e), în clonă; la prima rulare 45 / 46: scăpase ieșirea `faraNoutati` a construcției, citită doar de probă, scoasă cu otrava ei. Urmează 3.Xh-2 (fereastra de confirmare refăcută, „Scoate” cu întrebarea), 3.Xh-3 (fereastra bibliotecii), 3.Xh-4 (telefonul, tastatura, manualul).",
       "en": "**The extension library, redone: the data and the icon** (no machine; ADR 0231, accepted with “Yes, 1a–4a”; branch `wip/3.Xh-biblioteca-ui`, in the line’s cloud session; “poti sa pornesti un branch in care sa modificam libraria de plugin-uri? vreau ceva mai frumos si cu un UI/UX mai bun si atragator”). First the proposal, with no product code (23.11, 13:45–14:25): 87 captures of today’s library, with ten things found and measured, the ADR with three directions and the sketch with four questions (<https://claude.ai/artifact/RVvJq3q2NPxtTPm2Y8Q8EV>). With the answers (the “Extension library” window, the brick as Easy 3Draw’s icon, “what’s new” required by a test, three real captures per extension), the first of four slices: the extension’s icon lives in the package (`pictograma` in `extensie.json`, an SVG of at most 8 kB) and reaches the catalogue; the catalogue gains the optional `capturi`, `despre`, `noutati` and `autor`, read tolerantly (a wrong field is skipped and named; the schema stays 1); the captures are made with `node scripts/capturi-biblioteca.ts` (960 × 600, WebP, in Romanian and in English) and committed; “what’s new” is required at every new version of a library extension (the build test fails, and `--scrie` refuses); the build gate requires every image in the catalogue, with its size and its hash; `immutable` headers for the library’s images; the CSP unchanged. In today’s interface, the icon sits next to the extension’s name, in the Library and on the installed extensions, and on the tab of the open extension (also without internet, from the package); without an icon, the puzzle piece. Easy 3Draw 18.20.0 (18.21.0 since `main` was brought in with 3.Tr, which had taken the same version), with the icon, the long description, “what’s new” for five versions and three captures per language. Looking at the enlarged captures found the installed extension’s row in the middle of the menu and the name in the Library grey: fixed, each with its test written first. Startup unchanged (107.9 kB), total 762.0 / 800 kB (+1.1). 19 new unit tests, 2 new e2e; mutations 45 / 45 (35 unit, 10 through e2e), in a clone; on the first run 45 / 46: the build’s `faraNoutati` output, read only by a test, had escaped, removed together with its mutation. Next: 3.Xh-2 (the confirmation window redone, “Remove” asking first), 3.Xh-3 (the library window), 3.Xh-4 (the phone, the keyboard, the manual)."
     },
+    "7314c81c00580aaf": {
+      "ro": "Biblioteca de freze în cont",
+      "en": "The bit library in the account"
+    },
     "733512c823e0b297": {
       "ro": "Buzunar, găurire, ordinea, frezele, animația",
       "en": "Pocket, drilling, ordering, bits, animation"
@@ -2101,6 +2117,10 @@
       "ro": "Răspunsurile rapide ale tichetelor",
       "en": "Quick replies to tickets"
     },
+    "83fdcd79d7ccb525": {
+      "ro": "Extensiile, stările de lângă drumul bun: stările rupte",
+      "en": "Extensions, the states beside the happy path: the broken states"
+    },
     "840a57fccc735807": {
       "ro": "3.Tr (elicea de barcă)",
       "en": "3.Tr (the boat propeller)"
@@ -2348,6 +2368,10 @@
     "939d19db6e9069d7": {
       "ro": "**Planificatorul Trenuleț adaptat pentru cvs2** (fără mașină; ADR 0161; a doua felie a pasului E2 din linia Trenuleț, în worktree-ul `wip/trenulet`; „Da, pornește 3.Tb”). Intrarea extensiei pune `window.cvs2`, iar sursele rămân aceleași pentru claude.ai, copia de pe calculator și extensie. În cvs2, textul circuitelor spune că stau doar în browserul acesta, „Trimite la cvs2” vorbește de fereastra Mașina, iar three.js nu se mai cere de pe cdnjs. Marcajul și șabloanele n-au atribute `style`: clasele țin locul lor, culorile din date se pun prin CSSOM, deci cadrul nu mai are niciun refuz CSP. În exportul CNC, „Pe mașină, prin cvs2”: starea, încărcarea, pornirea și reluarea cu confirmarea lui cvs2, pauza, oprirea. `referinte.js --compara` (622 de ieșiri, 0 diferențe) intră în poarta unitară. Probele: 3 teste unitare noi, 2 e2e noi în Edge, 26 / 26 de otrăvuri prinse.",
       "en": "**The Trenuleț planner adapted for cvs2** (no machine; ADR 0161; the second slice of step E2 of the Trenuleț line, in the `wip/trenulet` worktree; “Da, pornește 3.Tb”). The extension’s entry sets `window.cvs2`, and the sources stay the same for claude.ai, the desktop copy and the extension. In cvs2, the circuits text says they are kept only in this browser, “Send to cvs2” talks about the Machine window, and three.js is no longer requested from cdnjs. The markup and the templates have no `style` attributes: classes take their place, the colours from data are set through CSSOM, so the frame has no CSP refusal any more. In the CNC export, “On the machine, through cvs2”: the state, loading, starting and resuming with cvs2’s confirmation, pause, stop. `referinte.js --compara` (622 outputs, 0 differences) joins the unit gate. Tests: 3 new unit tests, 2 new e2e in Edge, 26 / 26 poisons caught."
+    },
+    "93fcb11f784b6505": {
+      "ro": "Pe canalul `biblioteca`: instalează Easy 3Draw din bibliotecă, deschide-l și reîncarcă pagina (se redeschide singur); lasă un `.zip` de extensie pe planșă; din Ctrl+K, „Deschide Easy 3Draw”; în pagina lui din bibliotecă, dă clic pe o captură; oprește internetul și deschide biblioteca (trece pe „Instalate”). Spune ce nu e cum vrei",
+      "en": "On the `biblioteca` channel: install Easy 3Draw from the library, open it and reload the page (it reopens by itself); drop an extension `.zip` on the sheet; from Ctrl+K, “Open Easy 3Draw”; on its library page, click a screenshot; turn the internet off and open the library (it switches to “Installed”). Say what is not the way you want it"
     },
     "941fdab27d034083": {
       "ro": "Proba urechilor la export",
@@ -2661,6 +2685,10 @@
       "ro": "Planșele: „Toate foile” la export",
       "en": "Sheets: “All sheets” at export"
     },
+    "a78bd606d48ede80": {
+      "ro": "Extensiile, stările de lângă drumul bun: descoperirea",
+      "en": "Extensions, the states beside the happy path: discovery"
+    },
     "a81771a5db28cbb8": {
       "ro": "Emulatorul GRBL 1.1h ca fixtură",
       "en": "The GRBL 1.1h emulator as a fixture"
@@ -2824,6 +2852,10 @@
     "b19268d56f328f8e": {
       "ro": "Vectori, noduri, boolean, offset, aliniere; Transformare și copiere",
       "en": "Vectors, nodes, boolean, offset, alignment; Transform and copy"
+    },
+    "b20ad1945d13f688": {
+      "ro": "3.Xi (stările de lângă drumul bun, ADR 0232)",
+      "en": "3.Xi (the states beside the happy path, ADR 0232)"
     },
     "b223d4396665501e": {
       "ro": "Urechile după reguli, pe laturi",
@@ -3024,6 +3056,10 @@
     "bcc1f02d66a99ec9": {
       "ro": "Importul PDF și AI",
       "en": "PDF and AI import"
+    },
+    "bccb8336c0b64ede": {
+      "ro": "**Extensiile, stările de lângă drumul bun: stările rupte** (fără mașină; ADR 0232 §A, acceptat cu „am raspuns”: 1a–5a în formularul schiței; prima din trei felii, pe ramura `wip/3.Xh-biblioteca-ui`, în sesiunea cloud a liniei; „vreau sa faci un audit si sa imi spui ce ai imbunatatie la UI/UX-ul functiei de extensii”, apoi „ok” la ADR-ul propus). O extensie care nu pornește are o stare a ei: semnul și numele, o frază pe înțeles, **Încearcă din nou**, **Vezi în bibliotecă** și **Închide**, cu eroarea sub **Detalii** (și **Copiază**); la fel după 10 s de pornire („… pornește greu…”). O versiune nouă peste extensia deschisă îi salvează întâi lucrul și o redeschide; ce nu se poate salva aduce întrebarea înaintea instalării, iar „Rămân” nu instalează nimic. După o reîncărcare a paginii, aplicația redeschide extensia în care erai (`cncvs2.extensie-deschisa`; nu una închisă de om sau care n-a pornit). Un pachet refuzat are fereastra lui: numele fișierului, motivul ca propoziție și drumul înapoi. „Rămân” e butonul principal, „Închide oricum” e roșu. Găsite de probe: focusul care cădea din meniu după o actualizare, textul browserului la lipsa rețelei. Manualul, în ambele limbi. Pornirea 109,8 kB (neschimbată), totalul 804,7 → 806,0 / 900 kB. E2e 13 noi, unitare 2 fișiere; otrăvurile 55 / 56, în clonă (E17, echivalentă azi).",
+      "en": "**Extensions, the states beside the happy path: the broken states** (no machine; ADR 0232 §A, accepted with “am raspuns”: 1a–5a in the sketch’s form; the first of three slices, on the `wip/3.Xh-biblioteca-ui` branch, in the line’s cloud session; “vreau sa faci un audit si sa imi spui ce ai imbunatatie la UI/UX-ul functiei de extensii”, then “ok” to the proposed ADR). An extension that does not start has a state of its own: its icon and name, a plain sentence, **Try again**, **See in the library** and **Close**, with the error under **Details** (and **Copy**); the same after 10 s of starting (“… is slow to start…”). A new version over the open extension saves its work first and reopens it; what cannot be saved brings the question before the install, and “Stay” installs nothing. After a page reload, the app reopens the extension you were in (`cncvs2.extensie-deschisa`; not one you closed or one that did not start). A refused package has its own window: the file name, the reason as a sentence and the way back. “Stay” is the primary button, “Close anyway” is red. Found by the tests: the focus that fell out of the menu after an update, the browser’s text when the network is missing. The manual, in both languages. Startup 109.8 kB (unchanged), total 804.7 → 806.0 / 900 kB. 13 new e2e tests, 2 unit files; mutations 55 / 56, in a clone (E17, equivalent today)."
     },
     "bd168fc0e094cf92": {
       "ro": "**Pluginul ca parte din cvs2: tema, fonturile, contul văzut, închiderea fără pierderi** (fără mașină; ADR 0164; în worktree-ul `wip/trenulet`; „Da, pornește A”, după direcția nouă a owner-ului: pluginul devine un atelier de forme 3D pentru printare, iar întâi vine comunicarea cu cvs2). Cadrul primește și `color-scheme` (tema aleasă în cvs2) și fonturile; planificatorul își leagă de ele suprafețele, textul, marginile, roșul, inelul de focus și fonturile, pe loc, și își ține masa, lemnul, cărămizile și verdele de semnal. Permisiunea nouă `cont`: extensia vede dacă ești conectat, numele și planul de la zi (fără adresă, uid sau parolă), schimbate pe loc și din altă filă; planificatorul îl arată la Circuite. `host.nesalvat` și `host.laInchidere`: × (și altă extensie deschisă, o versiune nouă instalată) îi cere întâi extensiei salvările, cel mult 5 s, și întreabă („Rămân”, „Închide oricum”) doar ce rămâne nesalvat; reîncărcarea întreabă prin browser. Planificatorul: salvările amânate (circuitul, setările CNC, mașina, atelierul) trec prin gazdă și pleacă pe loc la închidere. Pachetul 18.4.0.",
@@ -3260,6 +3296,10 @@
     "ccfd4cbed32bc5bf": {
       "ro": "Offsetul",
       "en": "The offset"
+    },
+    "cd2a02c25df112af": {
+      "ro": "**Biblioteca de freze în cont** (fără mașină; ADR 0300 §3, §7, „Implementarea (16.A↑c)”; ramura `wip/16.A-freze`, în sesiunea cloud a liniei frezelor, la „b, pornește 16.A↑c” al owner-ului: 16.A↑b-2 așteaptă fereastra exportului refăcută). Serverul: callable-ul `freze` (`functions/src/freze/actiuni.ts`, contractul în `shared/freze.ts`): frezele în `conturi/{uid}/freze/{id}`, ca text JSON neatins, cu versiunea lor în cont; lista pe pagini de la versiunea știută, scrierea și ștergerea cu versiunea văzută (altfel conflict), plafoanele (500 de freze vii, 8 KB, 50 pe cerere), semnele ștergerii și lista întreagă pentru un calculator rămas în urma lor; regulile închise clientului; capabilitatea nouă `cloud` (fără ea, doar citire). Clientul: biblioteca contului în browser (`cont:<uid>`, cu starea sincronizării), îmbinarea pe câmpuri față de ultima versiune comună (`src/model/frezeSincron.ts`), trecerea (`src/app/frezeSincronizare.ts`) la deschidere, la 2 s după o schimbare, la revenirea rețelei și cu „Sincronizează”; banda conflictului (a mea, din cont, amândouă), „Adaugi cele N freze din acest browser în cont?”, bara de jos; manualul. Probele: callable-ul pe emulator 9, unitare noi 20, cap-coadă pe emulatoare cu două browsere 2; otrăvuri 47 / 47. Pornirea neschimbată (cu Atelierul 114,7 / 115), totalul 806,1 → 810,5 / 900, contul 30,1 → 30,3 / 32. La publicare merge și serverul (funcția `freze`, indexurile). Urmează 16.A↑b-2 (după unirea ferestrei exportului) sau 16.A↑d (calibrarea), la cuvântul owner-ului.",
+      "en": "**The bit library in the account** (no machine; ADR 0300 §3, §7, “Implementation (16.A↑c)”; branch `wip/16.A-freze`, in the cloud session of the bits line, at the owner’s “b, pornește 16.A↑c”: 16.A↑b-2 waits for the redone export window). The server: the `freze` callable (`functions/src/freze/actiuni.ts`, the contract in `shared/freze.ts`): the bits in `conturi/{uid}/freze/{id}`, as untouched JSON text, with their version in the account; the list in pages from the known version, writing and deleting with the version seen (otherwise a conflict), the caps (500 live bits, 8 KB, 50 per request), the deletion marks and the full list for a computer left behind them; the rules closed to the client; the new `cloud` capability (without it, read-only). The client: the account’s library in the browser (`cont:<uid>`, with the sync state), the field-by-field merge against the last common version (`src/model/frezeSincron.ts`), the pass (`src/app/frezeSincronizare.ts`) on opening, 2 s after a change, when the network comes back and with “Sync”; the conflict band (mine, the account’s, both), “Add the N bits from this browser to the account?”, the bottom bar; the manual. The tests: the callable on the emulator 9, new unit tests 20, end to end on the emulators with two browsers 2; poisons 47 / 47. Startup unchanged (with the Workshop 114.7 / 115), the total 806.1 → 810.5 / 900, the account 30.1 → 30.3 / 32. Publishing also takes the server (the `freze` function, the indexes). Next: 16.A↑b-2 (after the export window is merged) or 16.A↑d (calibration), at the owner’s word."
     },
     "cd3be2c0e3441cd1": {
       "ro": "3.Tn (conicele duble)",
@@ -3772,6 +3812,14 @@
     "f062430b2298842e": {
       "ro": "Gazda extensiilor",
       "en": "The extension host"
+    },
+    "f06487d30a7453f2": {
+      "ro": "Extensiile, stările de lângă drumul bun: claritatea",
+      "en": "Extensions, the states beside the happy path: clarity"
+    },
+    "f173f93fbaa5e4d8": {
+      "ro": "Extensiile, stările de lângă drumul bun",
+      "en": "Extensions, the states beside the happy path"
     },
     "f20ea85a30832b0a": {
       "ro": "Normalizarea `nonzero` la ușă",

@@ -6,8 +6,9 @@
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { CHEIE_LOCALA, creeazaFrezeMele, VERSIUNE_FREZE, type DepozitFreze } from '../../src/app/frezeMele.ts';
+import { CHEIE_LOCALA, cheieCont, creeazaFrezeMele, VERSIUNE_FREZE, type DepozitFreze } from '../../src/app/frezeMele.ts';
 import { FREZE_PORNIRE, type Freza } from '../../src/model/freza.ts';
+import { SINCRON_GOL } from '../../src/model/frezeSincron.ts';
 
 const PLATA6: Freza = {
   nume: 'Plată Ø6', fel: 'plata', diametru: 6, tais: 22, taisuri: 2, numar: 2,
@@ -43,7 +44,7 @@ test('dus-întors: adăugarea, schimbarea, ștergerea ajung în depozit; altă b
   const d = new Depozit();
   const b = creeazaFrezeMele(d, ids(), () => 1000);
   await b.incarca();
-  assert.deepEqual(b.stare(), { incarcata: true, freze: [], pastrate: true, scriere: true, necitite: 0 });
+  assert.deepEqual(b.stare(), { incarcata: true, freze: [], pastrate: true, scriere: true, necitite: 0, sincron: SINCRON_GOL });
   const a = await b.salveaza(null, PLATA6);
   assert.deepEqual(a, { ok: true, id: 'id1' });
   const v = await b.salveaza(null, V60);
@@ -94,7 +95,7 @@ test('un depozit stricat sau care aruncă: biblioteca ține cât fila, iar stare
   d.date.set(CHEIE_LOCALA, 'stricat');
   const b = creeazaFrezeMele(d, ids(), () => 9);
   await b.incarca();
-  assert.deepEqual(b.stare(), { incarcata: true, freze: [], pastrate: true, scriere: true, necitite: 0 });
+  assert.deepEqual(b.stare(), { incarcata: true, freze: [], pastrate: true, scriere: true, necitite: 0, sincron: SINCRON_GOL });
   d.aruncaScriere = true;
   assert.deepEqual(await b.salveaza(null, PLATA6), { ok: true, id: 'id1' });
   assert.equal(b.stare().pastrate, false);
@@ -106,7 +107,7 @@ test('un depozit stricat sau care aruncă: biblioteca ține cât fila, iar stare
   // Fără depozit deloc (fereastră privată): la fel, din prima.
   const fara = creeazaFrezeMele(null, ids(), () => 9);
   await fara.incarca();
-  assert.deepEqual(fara.stare(), { incarcata: true, freze: [], pastrate: false, scriere: true, necitite: 0 });
+  assert.deepEqual(fara.stare(), { incarcata: true, freze: [], pastrate: false, scriere: true, necitite: 0, sincron: SINCRON_GOL });
   const blocat = new Depozit();
   blocat.aruncaCitire = true;
   const c = creeazaFrezeMele(blocat, ids(), () => 9);
@@ -147,4 +148,39 @@ test('pornirea și importul trec prin aceeași listă; starea e aceeași referin
   const inainte = auzite;
   await b.sterge(b.stare().freze[0]!.id);
   assert.equal(auzite, inainte);
+});
+
+test('biblioteca unui cont (felia 16.A↑c): sincronizarea își scrie starea lângă freze; schimbările omului o păstrează', async () => {
+  const d = new Depozit();
+  const b = creeazaFrezeMele(d, ids(), () => 1000, cheieCont('ana'));
+  await b.incarca();
+  const r = await b.salveaza(null, PLATA6);
+  assert.ok(r.ok);
+  const salvata = b.stare().freze[0]!;
+  // Sincronizarea: baza frezei, versiunea contului, plus o freză brută venită din cont.
+  const bruta = { id: 'x', rev: 1, schimbatLa: 1, nume: 'Bilă', fel: 'bila', diametru: 6 };
+  assert.equal(await b.schimbaCont((c) => ({
+    freze: c.freze, brute: [bruta], sincron: { ...c.sincron, dupa: 4, baze: new Map([[salvata.id, { versiune: 3, json: '{}' }]]) },
+  })), true);
+  assert.equal(b.stare().sincron.dupa, 4);
+  assert.equal(b.stare().necitite, 1);
+  // O schimbare a omului nu atinge starea sincronizării.
+  assert.ok((await b.salveaza(salvata.id, { ...PLATA6, avans: 1500 })).ok);
+  const brut = d.date.get(cheieCont('ana')) as { sincron: { dupa: number; baze: unknown[] }; freze: unknown[] };
+  assert.equal(brut.sincron.dupa, 4);
+  assert.deepEqual(brut.sincron.baze, [{ id: salvata.id, versiune: 3, json: '{}' }]);
+  assert.equal(brut.freze.length, 2);
+  // Altă bibliotecă peste același depozit vede starea; cea fără cont rămâne separată.
+  const alta = creeazaFrezeMele(d, ids(), () => 2000, cheieCont('ana'));
+  await alta.incarca();
+  assert.equal(alta.stare().sincron.baze.get(salvata.id)?.versiune, 3);
+  const locala = creeazaFrezeMele(d, ids(), () => 2000);
+  await locala.incarca();
+  assert.deepEqual(locala.stare().freze, []);
+  // Nimic de schimbat: nu scrie; o listă a unei versiuni mai noi: refuzată.
+  const scrieri = d.scrieri;
+  assert.equal(await b.schimbaCont(() => null), false);
+  assert.equal(d.scrieri, scrieri);
+  d.date.set(cheieCont('ana'), { v: VERSIUNE_FREZE + 1, freze: [] });
+  assert.equal(await b.schimbaCont((c) => c), false);
 });

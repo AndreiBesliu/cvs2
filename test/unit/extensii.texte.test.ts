@@ -44,3 +44,47 @@ test('textele vechi, fraza „Cere: …” și detaliul tehnic din mesaje, au pl
     assert.doesNotMatch(`${String(d['extensii.adresa.esec-retea'])} ${String(d['extensii.adresa.esec-http'])}`, /CORS|undefined/, `${limba}: mesajul descărcării`);
   }
 });
+
+/** Motivele unui refuz (ADR 0232 §A.4): ale pachetului (`pachet.ts`, `zip.ts`) și ale bibliotecii (`biblioteca.ts`). */
+const MOTIVE = [
+  'nu-e-zip', 'zip64', 'criptat', 'metoda', 'prea-multe', 'prea-mare', 'crc', 'stricat', 'fara-manifest', 'manifest', 'api', 'id', 'cale',
+  'intrare', 'stil', 'permisiune', 'pictograma', 'lipsa', 'in-plus', 'amprenta', 'amprenta-biblioteca', 'biblioteca-nepotrivita', 'retea', 'http',
+];
+
+test('fiecare motiv de refuz e o propoziție întreagă, pe înțeles, în ambele limbi', () => {
+  for (const [limba, d] of Object.entries(DICTIONARE)) {
+    const chei = Object.keys(d).filter((k) => k.startsWith('extensii.motiv.')).map((k) => k.slice('extensii.motiv.'.length)).sort();
+    assert.deepEqual(chei, [...MOTIVE].sort(), `${limba}: lista motivelor`);
+    for (const m of MOTIVE) {
+      const text = d[`extensii.motiv.${m}`] as string;
+      // Stă singură în fereastra refuzului și după „Actualizarea n-a mers.”: începe cu literă mare și se termină cu punct.
+      assert.match(text, /^\p{Lu}/u, `${limba}: „${m}” nu începe cu literă mare: ${text}`);
+      assert.match(text, /\.$/, `${limba}: „${m}” nu se termină cu punct: ${text}`);
+    }
+    // Termenul tehnic rămâne, mic, în paranteză (pentru autorul extensiei), nu ca subiect al propoziției.
+    for (const [m, termen] of [['zip64', 'ZIP64'], ['crc', 'CRC'], ['api', 'HostApi'], ['amprenta', 'SHA-256']] as const) {
+      assert.ok((d[`extensii.motiv.${m}`] as string).includes(`(${termen})`), `${limba}: „${m}” și-a pierdut termenul (${termen})`);
+    }
+    // Învelișurile nu mai lipesc motivul după două puncte.
+    assert.equal(d['extensii.instalare.refuz'], undefined, `${limba}: „extensii.instalare.refuz” nu mai e folosită`);
+    assert.doesNotMatch(d['extensii.biblioteca.esec'] as string, /: \{motiv\}/, `${limba}: „extensii.biblioteca.esec”`);
+    assert.equal(d['extensii.spatiu.esuat'], undefined, `${limba}: „extensii.spatiu.esuat” (eroarea brută pe pagină) a plecat`);
+  }
+});
+
+test('fraza izolării nu contrazice permisiunile de deasupra ei; termenii de programator au plecat (ADR 0232 §B)', () => {
+  const ro = DICTIONARE.ro, en = DICTIONARE.en;
+  // „nu vede … contul sau portul mașinii” stătea sub „Contul: vede dacă ești conectat” și „Mașina: încarcă programe”.
+  assert.equal(ro['extensii.instalare.izolare'], 'Rulează izolată: poate doar ce scrie mai sus. Nu-ți vede desenul, proiectele, adresa sau parola și nu ajunge singură la mașină.');
+  assert.doesNotMatch(ro['extensii.instalare.izolare'] as string, /contul|portul/);
+  assert.match(en['extensii.instalare.izolare'] as string, /only what is listed above/);
+  assert.doesNotMatch(en['extensii.instalare.izolare'] as string, /your account|port/);
+  assert.equal(ro['extensii.biblioteca.verificat'], 'Verificată de cvs2 la instalare.');
+  assert.doesNotMatch(en['extensii.biblioteca.verificat'] as string, /fingerprint/i);
+  // Filele: „Toate” era doar catalogul, mai mic decât „Instalate” când sunt extensii din fișier.
+  assert.equal(ro['extensii.biblioteca.fila-toate'], 'Din bibliotecă');
+  assert.equal(en['extensii.biblioteca.fila-toate'], 'Library');
+  // Lângă o listă goală, pagina nu mai spune „Alege o extensie din listă”.
+  assert.equal(ro['extensii.biblioteca.alege'], undefined);
+  assert.equal(en['extensii.biblioteca.alege'], undefined);
+});

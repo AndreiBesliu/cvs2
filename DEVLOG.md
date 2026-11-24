@@ -12768,6 +12768,29 @@ continue, tu ce poti sa faci intre timp?”.
   container).
 - **La owner:** fereastra exportului, verificarea juridică a utilizării aplicației înaintea live-ului, „cine unește în
   `main`”, plafonul pornirii (mai sunt 0,6 kB), răspunsul la lista de mai sus.
+
+## 2026-11-24 — 3.Xi: auditul extensiilor și ADR 0232 propus (stările de lângă drumul bun), cu schița (sesiune cloud)
+
+**Prompt:** „vreau sa faci un audit si sa imi spui ce ai imbunatatie la UI/UX-ul functiei de extensii” (23.11, seara);
+apoi, la auditul cu 14 constatări și la oferta „fac din ele ADR 0232 propus, cu schița, împărțit pe felii”: „ok” (24.11).
+**Started:** 23.11, 22:30 (auditul); 24.11, 08:50 (propunerea). **Completed:** 24.11, 09:45.
+
+- **Auditul (fără cod de produs):** aplicația construită, parcursă cu Playwright (Chrome), aproape 40 de capturi: drumul
+  întreg la 1440 px, actualizările, catalogul oprit și stricat, telefonul, tema întunecată, engleza; plus măsurători
+  (mărimi, ținte, contrast prin pânză, tastatura). Stări provocate anume: o extensie care aruncă la pornire, o versiune
+  veche deschisă și actualizată din meniu, un fișier care nu e pachet, un `.zip` lăsat pe planșă, pagina reîncărcată.
+- **Ce a ieșit:** drumul bun e solid; 14 goluri în stările de lângă el (pagina albă a extensiei care nu pornește,
+  „Actualizează” care închide extensia deschisă, reîncărcarea care o pierde, fraza izolării care contrazice permisiunile,
+  refuzul sub titlul „Instalezi o extensie?”, filele „Toate · 1” / „Instalate · 3”, lipsa internetului, capturile de
+  197 × 123 px, `.zip`-ul refuzat de Import, × de 24 px pe fila extensiei și altele).
+- **ADR 0232 propus:** trei felii (3.Xi-1 stările rupte, 3.Xi-2 claritate, 3.Xi-3 descoperire), marginile păstrate,
+  pornirea +0, totalul estimat +5 kB; cinci întrebări, cu recomandarea „a”.
+- **Schița:** <https://claude.ai/artifact/31cWBjVheUbymkfErCmcSy>, cu captura de azi și macheta propusă la fiecare
+  constatare și cu formularul întrebărilor (colecția `raspunsuri`, documentul `owner`); privită o dată înaintea
+  publicării (1320 și 400 px, ambele teme: nimic ieșit din pagină, nicio eroare).
+- **Ramura:** adusă la `main` (`df9ae53`), fără ciocniri (era toată în `main`). Indexul ADR, nota liniei, titlul tradus.
+- **Urmează:** codul lui 3.Xi-1, la răspunsurile owner-ului.
+
 - **Publicarea (`df9ae539`):** rapidul și completul pe `main` verzi (completul, 51 min 41 s), `publica.yml` verde în
   3 minute, cu serverul: cele 14 funcții actualizate (între ele `logClientError` și `agregaUtilizarea`), regulile și
   indexurile publicate din nou; adresa de test spune `df9ae5397d8e` (24.11, 09:41). Proba de fum din container:
@@ -12840,6 +12863,33 @@ PR-ul `AndreiBesliu/cvs2#14` („De unit de sesiunea principală”).
   publicarea lui vine înaintea acestui lot (`publica.yml` construiește sha-ul dat).
 - **La owner:** plafonul pornirii (mai sunt 0,3 kB), fereastra exportului, verificarea juridică a utilizării
   aplicației, „cine unește în `main`”, ADR 0232 (biblioteca), lista „ce pot face între timp”.
+
+## 2026-11-24 — 16.A↑c: biblioteca de freze în cont (Model: Claude Opus 5.5)
+
+**Prompt:** „b, pornește 16.A↑c” (owner-ul, la întrebarea: 16.A↑b-2 pe fereastra exportului de azi, sau întâi contul cât
+PR-ul `AndreiBesliu/cvs2#11` așteaptă unirea). **Started:** 24.11, 09:31 (după aducerea lui `main` `356db9bd`, cu 16.A↑b-1
+unită în `32b33a42`).
+
+- **Serverul** (`95e1fe1a`): callable-ul `freze` (`functions/src/freze/actiuni.ts`, contractul în `shared/freze.ts`): frezele
+  în `conturi/{uid}/freze/{id}`, ca text JSON neatins, versiunea lor din contorul contului; lista pe pagini, scrierea și
+  ștergerea cu versiunea văzută, plafoanele, semnele ștergerii și lista întreagă; capabilitatea `cloud`. Probele pe emulator
+  întâi (9), plus regulile. Prima rulare a căzut pe `FieldValue.delete()` într-un `set` fără `merge` (eroarea, din jurnalul
+  erorilor de pe emulator): documentul se scrie acum întreg.
+- **Clientul** (`a4032473`): îmbinarea pe câmpuri, pură (`src/model/frezeSincron.ts`, 14 probe pe hârtie), biblioteca pe cont
+  în depozit (`cont:<uid>`, starea lângă freze, restul înregistrării păstrat), trecerea (`src/app/frezeSincronizare.ts`, 5
+  probe peste un server fals cu două calculatoare), apelul prin bucata contului, fereastra (bara de jos, conflictul, aducerea
+  din browser, editorul la zi), manualul (ro, en).
+- **Cap-coadă** (`2c54281a`): două browsere ale aceluiași cont pe emulatoare, 2 / 2 din prima.
+- **Otrăvurile** (`test/otravuri/16.A-c.py`), într-o clonă, pe `623d4d01`: 47 / 47 (25 pe hârtie, 15 pe emulatorul
+  Firestore, 7 pe fereastră, pe emulatoare). Trei probe întărite înaintea rulării (numărătoarea semnelor după readucere,
+  lista întreagă în client, contul plin încercat o dată pe trecere).
+- **Porțile, în container:** suita unitară 10 131 / 10 143 (12 sărite, 0 căzute), tipurile (și ale funcțiilor), importurile
+  (20 / 20), build-ul determinist; pornirea neschimbată
+  (cu ușa 114,4, cu Atelierul 114,7 / 115), totalul 806,1 → 810,5 / 900, contul 30,1 → 30,3 / 32; traducerile (991, 0
+  lipsă); e2e-ul ferestrei, al contului și al manualului 19 / 19.
+- **Documentele:** ADR 0300 („Implementarea (16.A↑c)”), fișa etapei 3 (rândul `16.A↑c`), pragul, registrul otrăvurilor,
+  traducerile, nota liniei. **Completed:** 24.11, 10:30.
+
 - **Publicarea (`356db9bd`):** rapidul și completul pe `main` verzi (completul, 47 de minute), `publica.yml` verde în
   4 minute, cu serverul: cele 14 funcții actualizate (între ele `utilizare`, `tichete`, `logClientError`), regulile și
   indexurile publicate; adresa de test spune `356db9bdd1ee` (24.11, 12:26); catalogul bibliotecii, Easy 3Draw 18.22.0.
@@ -12860,6 +12910,69 @@ PR-ul `AndreiBesliu/cvs2#14` („De unit de sesiunea principală”).
 - **Verificat:** build-ul determinist spune „plafon 120” și „114.7 / 120”; traducerile, 990 de texte, 0 lipsă.
 - **Pe aceeași ramură (`unire-2411f`):** rândul publicării lotului al treisprezecelea și nota liniei trasării
   (`e104204f`, PR-ul `AndreiBesliu/cvs2#18`), amândouă doar documente.
+
+
+## 2026-11-24 — Felia 3.Xi-1: stările rupte ale extensiilor (ADR 0232 §A) (sesiune cloud)
+
+**Prompt:** „am raspuns” (formularul schiței lui ADR 0232: 1a, 2a, 3a, 4a, 5a, fără note; 5a = toate cele trei felii, în
+ordine). **Started:** 24.11, 10:25. **Completed:** 24.11, 11:35.
+
+- **O extensie care nu pornește** are o stare a ei, în locul paginii albe cu eroarea brută: **Încearcă din nou**, **Vezi în
+  bibliotecă**, **Închide**; eroarea, versiunea și sursa pachetului, sub **Detalii**, cu **Copiază**. Aceeași stare după
+  10 s de pornire.
+- **O versiune nouă peste extensia deschisă** îi salvează întâi lucrul și o redeschide; ce nu se poate salva aduce
+  întrebarea înaintea instalării, iar „Rămân” nu instalează nimic. Pe toate drumurile: meniul, pagina bibliotecii,
+  fereastra de confirmare, un fișier.
+- **Reîncărcarea paginii** redeschide extensia în care erai (`cncvs2.extensie-deschisa`), fără nicio cerere de rețea.
+- **Un pachet refuzat** are fereastra lui: numele fișierului, motivul ca propoziție, drumul înapoi.
+- **„Închizi …?”:** „Rămân” e principal, „Închide oricum” e roșu.
+- **Găsite de probe:** focusul care cădea din meniu după o actualizare (Escape nu-l mai închidea); textul browserului
+  („Failed to fetch”) la lipsa rețelei.
+- **Porțile:** tipurile, regulile de import, build-ul determinist; e2e-ul extensiilor (cu Chrome); pornirea 109,8 kB
+  (neschimbată), totalul 804,7 → 806,0 / 900 kB. Otrăvurile 55 / 56, în clonă: E17, echivalentă azi.
+
+## 2026-11-24 — Felia 3.Xi-2: claritatea extensiilor (ADR 0232 §B) (sesiune cloud)
+
+**Prompt:** același („am raspuns”: 5a, toate cele trei felii). **Started:** 24.11, 10:55. **Completed:** 24.11, 11:55.
+
+- **„Ce poate face”** înșiră permisiunile după cât de sensibile sunt (mașina prima, marcată); fraza izolării nu le mai
+  contrazice. Filele: „Din bibliotecă” și „Instalate”.
+- **Fără internet** (sau cu un catalog stricat), cu ceva instalat, fereastra trece singură pe „Instalate”, cu o bandă și
+  „Reîncearcă”; fără nicio extensie, pagina arată cele două drumuri din afara bibliotecii.
+- **Meniul** marchează extensia deschisă; eroarea unei actualizări stă sub listă, cu numele extensiei. Fila extensiei
+  taie un nume lung și are un × cât o țintă.
+- **Găsite de probe:** în fereastra bibliotecii, focusul cădea pe pagină când butonul apăsat dispărea („Instalează”,
+  „Reîncearcă”), iar Escape nu mai închidea fereastra; fără catalog, o extensie din bibliotecă scria „din afara
+  bibliotecii”.
+- **Porțile:** ca la 3.Xi-1; 127 de probe e2e ale extensiilor, verzi; totalul 806,0 → 806,5 / 900 kB. Otrăvurile
+  41 / 43, în clonă, după două probe întărite (B04, B10); U10 și U11, la manual, nu se pot prinde.
+
+## 2026-11-24 — Felia 3.Xi-3: descoperirea extensiilor (ADR 0232 §C) (sesiune cloud)
+
+**Prompt:** același („am raspuns”: 5a, toate cele trei felii). **Started:** 24.11, 11:25. **Completed:** 24.11, 12:25.
+
+- **Captura mărită** peste fereastra bibliotecii (← și →, „2 / 3”, legenda, Escape; focusul înapoi pe captură).
+- **Un `.zip` de extensie lăsat pe planșă** deschide confirmarea instalării; alt `.zip` rămâne la Import, al cărui refuz
+  spune de unde se instalează o extensie.
+- **Paleta:** „Deschide <nume>” pentru fiecare extensie instalată, fără nicio schimbare în registru sau în `App.tsx`
+  (pornirea, neschimbată).
+- **„Ce e nou”** arată data versiunii (`data`, la alegere) și apare și în confirmarea unei actualizări.
+- **Punctul de pe butonul Extensii:** din ce s-a aflat la ultima deschidere a meniului (`cncvs2.extensii-noi`), fără
+  nicio cerere la pornire.
+- **Găsit de probe:** cu o versiune nouă în bibliotecă, pagina extensiei n-avea „Scoate”.
+- **Porțile:** tipurile, regulile de import, build-ul determinist; 141 de probe e2e (extensiile, biblioteca, carcasa,
+  importul, paleta), verzi; pornirea neschimbată, totalul 806,5 → 808,5 / 900 kB.
+  Otrăvurile 60 / 60, în clonă; la prima rulare, 54 din 62: două gărzi și o sortare de prisos au ieșit cu otrăvurile lor
+  (forma datei, directorul arhivei, ordinea din paletă), patru probe au fost întărite (intrarea ruptă și comentariul din
+  directorul arhivei, scoaterea fără catalog, a doua extensie din paletă), iar una, la manual, n-avea ce prinde.
+  Completul, pornit pe ramură.
+- **`main` adus** (`f536a4c`: lotul al paisprezecelea, plafonul pornirii 120 kB): ciocnirea, doar în catalogul
+  controalelor, scris din nou; rândul 18.22.0 al lui Easy 3Draw a primit `data`. Pe arborele unit: 135 de probe e2e ale
+  extensiilor, verzi; pornirea 109,9 kB (cu ușa 114,4; cu Atelierul 114,7 / 120), totalul 809,9 / 900 kB.
+- **În CI:** rapidul și completul, verzi pe `cd40988` (completul, 48 min 30 s). Canalul `biblioteca`, publicat din
+  `5e096e3`: <https://cncvectorstudio-test--biblioteca-gw7dr9bc.web.app> (până pe 24.12). Apoi `main` adus încă de două
+  ori (`4123347`, doar documente; `4ef990f`, A.7: cod doar al adminului; ciocnirea, în dicționarul traducerilor).
+- **Toată felia 3.Xi:** pornirea +0, totalul +3,8 kB. PR-ul `AndreiBesliu/cvs2#17`; unirea e a sesiunii principale.
 
 ## 2026-11-24 — Sesiunea principală în cloud: două linii noi, relieful (18.1↑) și cotele (10.4↑); PR-ul #16, închis (Model: Claude Fable 5.2)
 
@@ -12882,7 +12995,8 @@ scrie brief-ul pentru relief si pentru cote”
 ## 2026-11-24 — Sesiunea principală în cloud: a cincisprezecea unire (A.7, adminul pe telefon) (Model: Claude Fable 5.2)
 
 **Prompt:** „pare ca e gata adminul” (cu o captură a sesiunii liniei); „ok, cand e verde fa unirea”
-**Started:** 24.11, 12:38. **Completed:** unirea în `main`, 24.11, 12:46; publicarea pe test, la rândul ei.
+**Started:** 24.11, 12:38. **Completed:** unirea în `main`, 24.11, 12:46; publicarea pe test, 24.11, 13:54
+(`e3a9e512`; completul pe `main` 47 min 49 s; fără server; proba de fum, bună).
 
 - **La captură nu era încă gata:** rapidul era verde pe `c08a24bc`, dar completul liniei pe `b064e954` (45369919331)
   încă rula. Unirea, pregătită între timp pe `unire-2411h` (din `41233474`): A.7 în `458befb9`, fără ciocniri;
@@ -12962,3 +13076,31 @@ sesiunea cloud a liniei cotelor. **Completed:** 24.11, 13:35 (în container; CI-
   aceleași VOID-uri ca pe `main`.
 - **Capcane:** am scris întâi orele în UTC; proiectul scrie ora României (corectate). „Duplică foaia” copiază și cotele, cu
   legăturile foii vechi (pe foaia nouă ies dezlegate): de hotărât la a-2.
+
+## 2026-11-24 — Sesiunea principală în cloud: a șaisprezecea unire (16.A↑c, frezele în cont; 3.Xi, extensiile) (Model: Claude Fable 5.2)
+
+**Prompt:** „ok, cand sunt verzi frezele fa unirea, pana atunci vreau sa faci ceva simplu. vreau ca plansele sa aiba
+controalele din meniu si sub ele, si sa apara doar la hover sau cand sunt selectate”; de la linia bibliotecii, cuvântul
+owner-ului din sesiunea ei: „ok, cand e verde fa unirea”
+**Started:** 24.11, 12:55. **Completed:** unirea în `main`, 24.11, 14:09; publicarea pe test, la rândul ei.
+
+- **Lotul, pe `unire-2411k`** (din `4ef990f5`): frezele, commit-ul raportat `9943b23f`, în `6b74074d` (linia a mers
+  mai departe pe ramură cu 16.A↑b-2, vârful `0ffb2599`: nu intră); biblioteca, `0f043f31`, în `f12308de`. Ciocnirile:
+  DEVLOG, un rând în fișa etapei 3 și catalogul controalelor (scris din nou). Local: tipurile (și ale funcțiilor),
+  regulile de import, traducerile, catalogul, biblioteca extensiilor la zi.
+- **Porțile, în CI:** completul lotului verde la prima trecere pe `f12308de` (45382387841, 50 min 24 s): unit
+  10 162 / 0 (12 sărite), e2e 694 / 694, funcțiile pe emulatoare 136 / 136, paginile 57 / 57; completele liniilor,
+  verzi: frezele pe `a70f1ea2` (45375653806), biblioteca pe `da00b854` (45382002579; vârful `0f043f31` adaugă doar
+  documente). Pornirea 109,9 / 120 (cu ușa 114,4; cu Atelierul 114,7), totalul 814,3 / 900, `/admin` 138,2 / 200,
+  contul 30,3 / 32.
+- **La publicare merge și serverul:** funcția nouă `freze`, indexurile (scutirea câmpului `json`), `cont` și
+  `administreazaConturile` cu capabilitatea `cloud`; regulile, neschimbate.
+- **Lotul 15, pe test:** `e3a9e512`, 24.11, 13:54; proba de fum (versiunea, CSP-ul, workerul, catalogul extensiilor,
+  mesajele, manualul, codurile, documentația, pagina de intrare a adminului), bună.
+- **Documentele:** decizia în `CLAUDE.md`, cu rândul de stare al lui 16.A↑c și al lui 3.Xi, cu ADR-urile acceptate ale
+  liniilor noi (0310, 0330) și cu schema (v28 la relief, cotele fără schemă); indexul liniilor; starea din
+  `docs/linii/principala.md`.
+- **Pe drum:** 3.Tt (elicele) unită de probă peste lot, pe `unire-2411l` (`595723e5`), cu completul pornit; feliile
+  11.1↑c și 14.C↑d (comenzile foii pe pânză; butonul Admin), în lucru pe `wip/11.1c-controale-foi`, cu canalul `foi`.
+- **La owner:** fereastra exportului (`#11`), verificarea juridică a utilizării aplicației înaintea live-ului, „cine
+  unește în `main`”.
