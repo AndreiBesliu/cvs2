@@ -13832,3 +13832,26 @@ e în `main` […] Acum poți aduce `main` în ramură și deschide PR-ul lui 3.
   acum doar 3.Xk: proba din `test/e2e/extensii.lucru.spec.ts`, lista de otrăvuri `test/otravuri/3.Xk.py` și documente.
 - **PR-ul `AndreiBesliu/cvs2#24`**, refolosit pentru 3.Xk (titlul și descrierea, schimbate); o unește sesiunea
   principală, la raport.
+
+## 2026-11-24 — Sesiunea principală în cloud: a douăzeci și doua unire (28.8↑a–g, fereastra „Exportă G-code”, refăcută; 3.Xk) (Model: Claude Fable 5.2)
+
+**Prompt:** „da, uneste fereastra exportului cand e verde si sa imi spui cand pot sa o arhivez”; raportul liniei
+bibliotecii („3.Xk e gata de unit”), la ordinul în vigoare „unește ce se poate”
+**Started:** 24.11, 19:00. **Completed:** unirea în `main`, 24.11, 20:01; publicarea pe test, cu lotul 25.
+
+- **Lotul, pe `unire-2411y`** (peste lotul 23): fereastra exportului (`4ee623d3`, în `c4ca5ec2`; nota liniei,
+  `ef8a6dd6`, adusă după) și 3.Xk (`23d9a1b1`, în `373699e6`). Ciocnirile: DEVLOG, traducerile roadmap-ului (ambele
+  părți, după cheie), catalogul controalelor (scris din nou). Local, pe arborele unit: tipurile, regulile de import,
+  traducerile, catalogul, biblioteca extensiilor la zi.
+- **Porțile, în CI:** completul lotului pe `8b218d47` (45443271357, verde la prima trecere, 60 min): unit 10 297 / 0
+  (12 sărite, pe Linux), e2e 781 / 781, funcțiile pe emulatoare 136 / 136, paginile 57 / 57; rapidul, verde pe
+  `8b218d47` (45443272195, feliile între 2:21 și 7:07); completele liniilor, verzi: `4ee623d3` (45437037510),
+  `23d9a1b1` (45438616103). Pornirea 110,4 kB (plafonul 120; cu ușa 115,1, cu Atelierul 115,4), totalul 856,8 / 900 kB
+  (lotul 23: 840,5; fereastra exportului, +16,3), `/admin` 138,2 / 200, contul 30,3 / 32. Nimic pe server.
+- **Documentele:** decizia în `CLAUDE.md`, cu paragraful de stare al ferestrei exportului (fișa, `GRUP_CAMP`,
+  selectorii noi ai probelor); indexul liniilor (exportul: încheiată, cu nota în `main`); starea din
+  `docs/linii/principala.md`.
+- **Pentru owner:** sesiunea liniei exportului se poate arhiva (din ADR 0290 nu rămâne nimic; nicio întrebare
+  deschisă); ramura `wip/28.8-export` de pe `origin` intră în lista de șters; canalul `export` expiră singur.
+- **Loturile dinainte:** lotul 23, în `main` din 20:00 (`9bbb1d58`). Pe test e tot `29ef7e44`; completul lotului 22 pe
+  `main` (45445300697) rula la unire.
