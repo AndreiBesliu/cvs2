@@ -1,11 +1,12 @@
 # Biblioteca extensiilor (3.Xg, 3.Xh, 3.Xi)
 
-## 3.Xi: stările de lângă drumul bun (gata, neunită, în cloud)
+## 3.Xi: stările de lângă drumul bun (încheiată, în `main` din 24.11)
 
 _Aceeași linie și aceeași ramură (`wip/3.Xh-biblioteca-ui`, adusă la `main` `df9ae53` pe 24.11, fără ciocniri: ramura era
 toată în `main`). Starea: **ADR 0232 acceptat pe 24.11 („am raspuns”: 1a, 2a, 3a, 4a, 5a, fără note) și implementat în aceeași zi: 3.Xi-1 (stările
-rupte), 3.Xi-2 (claritatea), 3.Xi-3 (descoperirea). PR-ul `AndreiBesliu/cvs2#17`, de unit de sesiunea principală, după
-completul verde. Pachetele nu s-au schimbat: Easy 3Draw e 18.22.0 (din 3.Ts, venit cu `main`), deci următoarea versiune e 18.23.0.**_
+rupte), 3.Xi-2 (claritatea), 3.Xi-3 (descoperirea). Unită în `main` pe 24.11 (`f12308de`, PR-ul `AndreiBesliu/cvs2#17`),
+de sesiunea principală, în lotul al șaisprezecelea, la „ok, cand e verde fa unirea” al owner-ului. Linia n-are felie în
+lucru; rămase, la cuvântul owner-ului: căutarea și categoriile din bibliotecă. Pachetele nu s-au schimbat: Easy 3Draw e 18.22.0 (din 3.Ts, venit cu `main`), deci următoarea versiune e 18.23.0.**_
 
 Cererea owner-ului (23.11, după unirea lui 3.Xh): „vreau sa faci un audit si sa imi spui ce ai imbunatatie la UI/UX-ul
 functiei de extensii”. La auditul cu 14 constatări și la oferta „fac din ele ADR 0232 propus, cu schița, împărțit pe
@@ -48,8 +49,9 @@ felii”: „ok” (24.11).
 - **`main` adus pe 24.11**, de trei ori: `f536a4c` (ciocnirea, doar în catalogul controalelor, scris din nou; rândul
   18.22.0 al lui Easy 3Draw a primit `data`), `4123347` (doar documente; DEVLOG-ul) și `4ef990f` (A.7, adminul pe telefon:
   cod doar în `src/admin`; ciocnirea, doar în dicționarul traducerilor, cu ambele părți păstrate).
-- **Porțile în CI:** rapidul și completul, verzi pe `cd40988` (completul, 48 min 30 s); după el, capătul are doar
-  documente și ce a venit din `main`. Local: suita unitară întreagă, 10 130 trecute (12 sărite), nicio cădere.
+- **Porțile în CI:** rapidul și completul, verzi pe `cd40988` (completul, 48 min 30 s) și, cu `main` adus (`4ef990f`), pe
+  `da00b85` (completul, 55 min 21 s); capătul unit, `0f043f3`, are în plus doar documente. Completul lotului, verde pe
+  `f12308de` (50 min 24 s). Local: suita unitară întreagă, 10 130 trecute (12 sărite), nicio cădere.
 - **Canalul `biblioteca`:** <https://cncvectorstudio-test--biblioteca-gw7dr9bc.web.app> (până pe 24.12.2026), publicat
   din `5e096e3` cu `canal.yml`; verificat din container (versiunea, catalogul cu datele, textele noi).
 
@@ -82,13 +84,13 @@ felii”: „ok” (24.11).
 - **Scheletul bibliotecii și „Pornesc extensia…” nu se prind pe captură** fără întârziere pusă anume: catalogul vine pe
   loc, iar Easy 3Draw pornește în 0,2 s.
 
-## 3.Xh: interfața nouă a bibliotecii (în lucru, în cloud)
+## 3.Xh: interfața nouă a bibliotecii (încheiată, în `main` din 23.11)
 
 _Linia „biblioteca”, din 23.11.2026 într-o sesiune cloud: ramura `wip/3.Xh-biblioteca-ui` (din `main` `8f122eb6`, adusă la
 `8177ab8` pe 23.11), ADR-urile 0231–0239, canalul `biblioteca`
 (<https://cncvectorstudio-test--biblioteca-gw7dr9bc.web.app>; gazda lui e permisă în mediul „CNC VS 2” din 23.11). Starea:
-**ADR 0231 ACCEPTAT („Da, 1a–4a”) și IMPLEMENTAT; 3.Xh, cu cele patru felii ale ei, GATA pe 23.11, de unit de sesiunea
-principală: PR-ul `AndreiBesliu/cvs2#4`.**_
+**ADR 0231 ACCEPTAT („Da, 1a–4a”) și IMPLEMENTAT; 3.Xh, cu cele patru felii ale ei, GATA pe 23.11 și unită în `main` în
+aceeași zi (`2d1e482c`, PR-ul `AndreiBesliu/cvs2#4`), de sesiunea principală.**_
 
 Cererea owner-ului (23.11): „poti sa pornesti un branch in care sa modificam libraria de plugin-uri? vreau ceva mai frumos
 si cu un UI/UX mai bun si atragator”.
