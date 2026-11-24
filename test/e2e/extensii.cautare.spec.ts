@@ -103,6 +103,22 @@ test('căutarea filtrează lista la fiecare literă: în nume oriunde, în descr
   await expect(pagina(page)).toHaveAttribute('data-id', 'ceas');
 });
 
+test('în engleză se caută în textele englezești, nu în cele românești', async ({ page }) => {
+  await page.addInitScript(() => { localStorage.setItem('cncvs2.limba', 'en'); });
+  await cuRaftul(page);
+  const c = cautare(page);
+  // „finger-jointed” e doar în descrierea englezească a cutiilor; „grosimea”, doar în cea românească.
+  await c.fill('finger');
+  await vazute(page, ['cutii']);
+  await expect(gasite(page)).toHaveText('1 of 5');
+  await c.fill('grosimea');
+  await vazute(page, []);
+  await expect(nimic(page)).toContainText('No extension matches “grosimea”.');
+  // Numele rafturilor, tot în limba aplicației.
+  await c.fill('toys');
+  await vazute(page, ['tren']);
+});
+
 test('nimic găsit: starea spune ce s-a căutat și are drumul înapoi; pagina nu arată altă extensie', async ({ page }) => {
   await cuRaftul(page);
   const c = cautare(page);

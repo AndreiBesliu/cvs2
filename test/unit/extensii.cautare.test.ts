@@ -49,8 +49,8 @@ test('în nume, un cuvânt căutat se găsește oriunde; în descriere, doar la 
   // Fără diacritice, de ambele părți.
   assert.deepEqual(ids(cauta(RAFT, 'caramizi', null).vizibile), ['trenulet']);
   assert.deepEqual(ids(cauta(RAFT, 'ÎMBINĂRI', null).vizibile), ['cutii']);
-  // Id-ul extensiei se caută ca numele.
-  assert.deepEqual(ids(cauta(RAFT, 'trenu', null).vizibile), ['trenulet']);
+  // Id-ul extensiei se caută ca numele: „loca” nu e nici în „Proba mea”, nici în vreo descriere.
+  assert.deepEqual(ids(cauta(RAFT, 'loca', null).vizibile), ['local']);
 });
 
 test('fiecare cuvânt căutat trebuie găsit, fiecare unde poate: unul în nume, altul în descriere', () => {
