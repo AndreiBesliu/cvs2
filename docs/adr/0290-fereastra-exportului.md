@@ -308,3 +308,28 @@ cele patru aranjamente, cu harta schițelor schimbată ca la „Cu canvas-ul ara
   mai sare sub mausul omului (reprodus cu o probă care debifa „și tăieturile cât foaia” după export).
 - Eroarea unui export refuzat stă jos, lângă butoane, nu în Rezultat.
 - Mărimea: totalul 770,8 → 773,1 / 800 kB (+2,3), pornirea neschimbată (108,5 / 115).
+
+## Implementarea 28.8↑b-1 (23.11–24.11)
+
+- **Felia 28.8↑b s-a împărțit la pornire** în b-1 (desenele întrebărilor, generate din valori) și b-2 (alegerile ca cartonașe cu
+  poze: tăietura, sensul, direcția, colțurile, locurile urechilor, despărțirea, foile, Z0, unitățile, schimbarea, forma frezei).
+  Cartonașele schimbă câmpurile din liste în butoane radio, deci mută ~60 de folosiri ale câmpurilor în 21 de spec-uri: au felia lor.
+- **Desenele** (`src/ui/exportDesene.tsx`, în bucata ferestrei): colțul XY0, Z0 cu supracursa, freza, adâncimea, sensul, rampa,
+  intrările, urechile. Stau deasupra explicației, în stânga grupului (coloana are 11–17 rem); pe ecranul îngust, deasupra
+  câmpurilor, cel mult 20 rem. Tokenurile lemnului, ale mesei și ale frezei au ambele teme (`.dx-desen`). Fiecare desen e un
+  `role="img"` cu numele lui; un clic pe un colț din desenul XY0 îl alege, iar lista rămâne câmpul pentru tastatură.
+- **Ce spun e socotit ca în lucrare** (`src/ui/exportDeseneCalcul.ts`, fără importuri din ea): trecerile egale și locurile
+  urechilor, la distanțe egale și după reguli (pe un dreptunghi cu laturile desenului). Proba `export.desene.test.ts` le compară
+  cu `adancimiTreceri`, `geometrieUrechi` și `urechiPeLaturi`. Locurile alese și „unde ține” sunt schițate: se știu doar pe
+  desen și la export. Sensul: cu M3, la urcare ce rămâne stă în dreapta drumului (exteriorul orar, gaura trigonometric; pe o
+  parte, freza merge în sensul desenului când partea ei e stânga și sensul e urcarea, ADR 0037 §8).
+- **Cota câmpului activ** (focusul sau mausul) se aprinde; explicația, ca în 28.8↑a.
+- **Caseta explicației își ține înălțimea** (`rezervaExplicatii`): cea a celui mai lung text al grupului (al lui și titlurile
+  câmpurilor), măsurată pe o copie goală, cu `box-sizing: border-box`. Fără ea, cu desenul, stânga grupului e mai înaltă decât
+  câmpurile, iar la clic focusul schimba textul la apăsare: grupul își schimba înălțimea și ce era dedesubt fugea de sub cursor
+  înainte de ridicare (bifa Urechi nu se mai bifa, în probă ca pentru om).
+- **Mărimea:** bucata ferestrei 21,3 → 26,2 kB gzip, totalul 795,9 → 800,8 / 900 (+4,9 kB), pornirea neschimbată (109,4 / 115).
+  E peste cei ~3 kB estimați pentru tot 28.8↑b: desenele în JSX ies mai mari decât aceleași desene ca șiruri în schiță, iar
+  textele lor stau în mesaje (date, în afara totalului). Pentru feliile c–e, estimarea se reface din cifra asta (~0,6 kB pe
+  desen).
+

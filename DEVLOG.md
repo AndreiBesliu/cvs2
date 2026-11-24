@@ -12439,3 +12439,22 @@ plafonul („ok, ridica plafonul total la 900 kB”).
   owner-ului spusă într-o sesiune de linie).
 - **La owner:** fereastra exportului (28.8↑a: acum sau după desene), verificarea juridică a utilizării aplicației
   înaintea live-ului, „cine unește în `main`”.
+
+## 2026-11-24 — Linia exportului: felia 28.8↑b-1, desenele întrebărilor (ADR 0290)
+
+**Prompt:** răspunsul owner-ului la ADR 0290, exact: „1a, 2a, 3a, 4a” (feliile acceptate; după 28.8↑a, următoarea din tabel).
+**Started:** 23.11, 23:20.
+
+- **Felia 28.8↑b împărțită** în b-1 (desenele generate din valori) și b-2 (alegerile ca cartonașe cu poze, cu ~60 de folosiri
+  ale câmpurilor mutate în 21 de spec-uri).
+- **Desenele** (`src/ui/exportDesene.tsx`): colțul XY0 (un clic pe un colț din desen îl alege), Z0 cu supracursa, freza,
+  adâncimea cu trecerile, sensul, rampa, intrările, urechile; deasupra explicației, cu cota câmpului activ aprinsă, în ambele teme.
+  Trecerile și locurile urechilor, socotite ca în lucrare (`src/ui/exportDeseneCalcul.ts`), probate față de ea.
+- **Găsit pe drum:** cu desenul, la clic, focusul schimba explicația la apăsare, grupul își schimba înălțimea și bifa fugea de
+  sub cursor (proba nu mai putea bifa Urechi). Caseta explicației își ține acum înălțimea celui mai lung text al grupului.
+- **Probele:** `export.desene.test.ts`, `export.desene.spec.ts` (7). Unit 10 023 / 0; e2e-ul ferestrei 133 / 133.
+- **Otrăvurile:** `test/otravuri/28.8b.py`, 16 / 16 prinse; E03 și E07 din `28.8a.py`, mutate cu codul lor, prinse.
+- **Manualul** (ro, en), ADR 0290 („Implementarea 28.8↑b-1”), rândul din fișa etapei 3, registrul otrăvurilor, nota liniei.
+- **Mărimea:** totalul +4,9 kB (800,8 / 900), peste estimarea de ~3 kB pentru tot 28.8↑b; pornirea neschimbată (109,4 / 115).
+
+**Completed:** 24.11, 00:15.
