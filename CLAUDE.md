@@ -1223,8 +1223,20 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   are bucata lui, iar trimiterea o pune editarea, prin bucata contului: **un `import('./PanouCont.tsx')` din pornire scoate
   o bucată nouă, comună.** Tipurile comune stau în `utilizareTipuri.ts` (regula `fara-cicluri` numără și importurile doar
   de tipuri). **Legate de cont, evenimentele sunt date personale (GDPR): de verificat juridic înaintea live-ului** (ADR
-  0262 §3). Urmează A.8c (dialogurile, clicurile fine), A.9–A.11, apoi A.7. **Pornirea 109,2 kB (cu ușa 113,7 / 115; cu
-  Atelierul 114,0), totalul 784,6 / 800, `/admin` 130,3 / 200, contul 30,0 / 32.**
+  0262 §3). **Pornirea 109,2 kB (cu ușa 113,7 / 115; cu Atelierul 114,0), totalul 784,6 / 800, `/admin` 130,3 / 200,
+  contul 30,0 / 32.**
+  **A.8c și A.8d (dialogurile, clicurile fine, derularea și zoom-ul; calculele lungi, mașina și imprimanta)** gata pe
+  23.11, unite în `main` pe 24.11 (`80d3eb70`): clicul pe un control pleacă doar cu numele lui din cod (`numeControl.ts`),
+  iar numele sunt strânse în `src/app/catalogControale.ts`; un nume făcut din textul omului (al unei foi, al unui font) nu
+  pleacă niciodată. **Un atribut de nume nou, scris de mână pe un control al editorului, cere `node
+  scripts/catalog-controale.ts --scrie`** (altfel cade `test/unit/utilizare.catalog.test.ts`, din poarta rapidă); la o
+  ciocnire în fișierul generat, se scrie din nou, nu se rezolvă de mână. La unirea a două linii care au pus controale,
+  catalogul se scrie din nou pe ramura de unire. Totul se prinde din pagină, în bucata înregistratorului
+  (`src/app/utilizareDom.ts`), nu în pornire. Felurile `calcul` (durata și mărimea în trepte, prin
+  `src/jobs/observatorCalcul.ts`), `masina` și `imprimanta` pleacă fără nume, adrese, G-code sau valori exacte. **Utilizarea
+  nu schimbă niciodată un calcul:** un document stricat sau un ascultător care aruncă îl lasă cum era. Urmează A.9
+  (sumele zilei, jobul de noapte și fila Utilizare), A.10, A.11, apoi A.7. **Pornirea 109,4 kB (cu ușa 113,9 / 115; cu
+  Atelierul 114,2), totalul 799,6 / 900, `/admin` 131,3 / 200, contul 30,0 / 32.**
   **Riglele, ghidajele, lipirea și alinierea (ADR 0050, aduse din etapa 6)** gata pe 20.10: ghidajele pe foaie
   (`foaie.ghidaje`, fără schemă nouă), lipirea pură (`src/geom/lipire.ts`), alinierea (`src/geom/aliniere.ts`), totul la
   cerere după prima randare (`src/app/Editare.tsx`); pornirea 99,4 / 100 kB cu ușa (foarte strâmt). **Uneltele de desen
@@ -1345,6 +1357,28 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 24.11.2026, spre dimineață (a zecea unire din cloud): **A.8c și A.8d (utilizarea aplicației: dialogurile, clicurile
+  fine, calculele, mașina și imprimanta) unite în `main`** (sesiunea principală, ramura `unire-2411a`, din `b1797933`).
+  Linia adminului, ramura `wip/A.1-admin`, `fbbc8934`, PR-ul `AndreiBesliu/cvs2#13` (ADR 0262; `3.Ai` și `3.Aj` în fișa
+  etapei 3), unite în `80d3eb70`. **A.8c:** clicul pe un control pleacă după numele lui din cod (catalogul
+  `src/app/catalogControale.ts`, strâns de `scripts/catalog-controale.ts`); un clic pe un buton al registrului sau pe o
+  unealtă nu pleacă a doua oară; rotița e zoom pe pânză și derulare în rest, cu treptele unui gest într-un eveniment;
+  dialogurile: deschis, apoi „gata” sau „renunțat”; clicurile, derularea și zoom-ul se opresc din Setări. **A.8d:**
+  felurile `calcul` (calculele bazinului CAM și citirea importului, cu durata și mărimea în trepte), `masina` (legarea,
+  lucrarea, codurile controlerului) și `imprimanta` (legarea, lucrarea, evenimentele), fără nume, adrese, G-code sau
+  valori exacte; nota de confidențialitate le spune, în ambele limbi. Otrăvurile 32 / 33 (E11, rotița prinsă la bubbling,
+  echivalentă azi) și 36 / 36. **Regula ei, pentru toate liniile:** un atribut de nume nou, scris de mână pe un control,
+  cere `node scripts/catalog-controale.ts --scrie`; la unirea a două linii cu controale noi, catalogul se scrie din nou
+  pe ramura de unire. Ramura avea `main` (`b1797933`); nicio ciocnire, iar codul unirii e chiar al lui `ba1b4b0c` (`git
+  diff` gol în afara fișierelor `.md`), pe care au trecut porțile liniei. **La publicare merge și serverul:** funcția
+  `utilizare`, cu felurile noi ale contractului; fără reguli sau indexuri noi. Porțile, în CI, verzi pe `ba1b4b0c`
+  (completul, 61 min 29 s): unit 10 031 / 0 (12 sărite, pe Linux), e2e 646 / 646, funcțiile pe emulatoare 117 / 117,
+  paginile 48 / 48; pornirea 109,4 kB (plafonul 115; cu ușa 113,9, cu Atelierul 114,2), totalul 799,6 / 900 kB, `/admin`
+  131,3 / 200. Înainte, lotul al nouălea a ajuns pe test (`b1797933`, 24.11, 02:07). Pe aceeași ramură a liniei, cu
+  completul verde pe `c549a600`, dar neraportate încă: A.9a (sumele zilei, jobul de noapte `agregaUtilizarea`, permisiunea
+  „Utilizare: citește”) și începutul lui A.9b; vin în lotul următor, cu funcția, regulile și indexurile lor. Neunită, la
+  cuvântul owner-ului: fereastra exportului (28.8↑a–b-2, `AndreiBesliu/cvs2#11`). **La owner:** fereastra exportului,
+  verificarea juridică (GDPR) a utilizării aplicației înaintea live-ului, „cine unește în `main`”.
 - 24.11.2026, noaptea (a noua unire din cloud): **16.A↑a (biblioteca de freze) unită în `main`, cu plafonul total
   de 900 kB** (sesiunea principală, ramura `unire-2311k`, din `ebfb1f82`). **16.A↑a** (linia frezelor, ramura
   `wip/16.A-freze`, `218eed21`, PR-ul `AndreiBesliu/cvs2#12`; ADR 0300, acceptat de owner cu „Da, 1a–6a”, în sesiunea
