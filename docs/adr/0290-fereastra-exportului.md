@@ -487,3 +487,19 @@ cele patru aranjamente, cu harta schițelor schimbată ca la „Cu canvas-ul ara
   mai înălța banda, ci făcea un element de ~1 000 px; proba cere fiecare element al benzii cât ecranul).
 - **Mărimea:** doar CSS; totalul JavaScript neschimbat (821,8 / 900 kB, cu `main` adus).
 - Urmează 28.8↑f-2: Rezultatul pe grupuri.
+
+## Implementarea 28.8↑f-2 (24.11)
+
+- **Fișa Rezultatul are patru grupuri**, fiecare cu titlul lui, în ordinea în care contează înaintea tăierii:
+  - **De văzut înainte de tăiere** (avertismentele și „Pune urechile unde țin”), doar când sunt, pe fondul avertismentelor;
+  - **Fișierele**: fișierul (sau fișierele, sau arhiva foilor), dopurile, „Deschide în Mașina”;
+  - **Rezumatul jobului** și **Simularea**, ale căror titluri trec din h3 în h4 (erau la nivelul titlului fișei).
+- **În listă**, rândul Rezultatului spune timpul estimat (al rezumatului) și câte avertismente are, cu un punct în culoarea lor
+  (`data-avertisment`), cum o greșeală are punctul roșu.
+- **Nimic nu s-a schimbat în ce scrie exportul:** aceleași elemente, cu aceleași `data-testid`, doar așezate pe grupuri.
+- **Probele:** una nouă în `export.fisa.spec.ts` (ordinea grupurilor, titlurile, timpul din listă egal cu al rezumatului, unul
+  și apoi două avertismente numărate); proba rezumatului în engleză citește titlul ca h4.
+- **Otrăvurile:** 7 / 7 (`test/otravuri/28.8f2.py`); cu un singur avertisment, „mereu unul” ar fi trecut, deci proba cere și
+  două (intrările de R200 pe dreptunghi).
+- **Mărimea:** totalul 821,8 → 821,9 / 900 kB.
+- Urmează 28.8↑f-3: fișa operației ca componentă de sine stătătoare.

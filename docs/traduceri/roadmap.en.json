@@ -2597,6 +2597,10 @@
       "ro": "Testul pas cu pas",
       "en": "The step-by-step test"
     },
+    "a1057675d6493940": {
+      "ro": "**Rezultatul pe grupuri: întâi ce e de văzut, apoi fișierele, timpul și simularea** (fără mașină; ADR 0290, „Implementarea 28.8↑f-2”). Fișa Rezultatul are „De văzut înainte de tăiere” (doar cu avertismente), „Fișierele” (cu dopurile și „Deschide în Mașina”), „Rezumatul jobului” și „Simularea”, fiecare cu titlul lui; în listă, rândul Rezultatului spune timpul estimat și câte avertismente are, cu un punct. **Probele:** 1 e2e nouă, 1 mutată pe h4; rapidul local 10 123 / 0. **Otrăvurile:** `28.8f2.py`, 7 / 7 (e2e).",
+      "en": "**The Result in groups: first what to check, then the files, the time and the simulation** (no machine; ADR 0290, “Implementarea 28.8↑f-2”). The Result card has “Check before cutting” (only with warnings), “Files” (with the plugs and “Open in Machine”), “Job summary” and “Simulation”, each with its title; in the list, the Result row gives the estimated time and how many warnings it has, with a dot. **Tests:** 1 new e2e, 1 moved to h4; the local fast tier 10,123 / 0. **Poisons:** `28.8f2.py`, 7 / 7 (e2e)."
+    },
     "a17680231b9f3053": {
       "ro": "Instanța de test (exportul Firestore confirmat de owner, apoi doar hosting) și fișa plăcii 1, cu programele A și B",
       "en": "The test instance (Firestore export confirmed by the owner, then hosting only) and the plate 1 file, with programs A and B"
@@ -3032,6 +3036,10 @@
     "bab19750b60980cd": {
       "ro": "**Incrustația cu pereți drepți: Locașul, Treapta și Dopul în grupurile lor, alegerile pe cartonașe** (fără mașină; ADR 0290, „Implementarea 28.8↑e-1”). Câmpurile trec în grupurile lor (din 28.8↑a stăteau toate în Locașul, iar Treapta și Dopul nu se arătau); felul locașului, al treptei, al dopului și sprijinul se aleg pe cartonașe cu poze, iar sprijinul arată doar variantele care se pot, cu titlul rândului lui. **Probele:** 1 e2e nouă (grupurile, cartonașele, variantele sprijinului), 4 spec-uri mutate pe cartonașe; rapidul local 10 077 / 0. **Otrăvurile:** `28.8e1.py`, 6 / 6 (e2e). Desenele vin în 28.8↑e-2.",
       "en": "**The straight-wall inlay: Pocket, Step and Plug in their own groups, the choices as cards** (no machine; ADR 0290, “Implementation of 28.8↑e-1”). The fields move into their groups (since 28.8↑a they all sat in Pocket, and Step and Plug did not show); the pocket kind, the step, the plug kind and the support are picked on picture cards, and the support shows only the options that are possible, with its row's title. **Probes:** 1 new e2e one (the groups, the cards, the support options), 4 specs moved to the cards; the local fast tier 10,077 / 0. **Poisons:** `28.8e1.py`, 6 / 6 (e2e). The drawings come in 28.8↑e-2."
+    },
+    "bb2ff39baaea230d": {
+      "ro": "Rezultatul pe grupuri: întâi ce e de văzut, apoi fișierele, timpul și simularea",
+      "en": "The Result in groups: first what to check, then the files, the time and the simulation"
     },
     "bb6a0f611110b2d4": {
       "ro": "Fluxul senderului ca mașini de stare pure (ADR 0080): încărcarea programului (octeții exportați, hash-ul, refuzurile: ASCII, `\\r`, liniile peste 70 de octeți, WCS-ul, `M6` străin, finalul), citirea răspunsurilor și a rapoartelor pe N axe, cele 11 reguli din `docs/PORTARE.md` §3.4 (octeții, răspunsurile, eroarea în flux, bufferul pierdut, sfârșitul, bariera, citirile, hold-ul, timpul real, WCS-ul); probat pe emulator",

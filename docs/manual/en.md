@@ -1644,7 +1644,9 @@ drawing, it closes by itself.
 **Export G-code** opens the export window, for the active sheet (with several [sheets](#foile), the window's title says
 which). The window has three parts:
 - the **list**, on the left: **Sheet and origin**, **Machine and file**, then the [operations](#operatii), in the order they
-  are cut, each with what it cuts, the bit and the depth; after the export, also the **Result**. A click brings the chosen card
+  are cut, each with what it cuts, the bit and the depth; after the export, also the **Result**, with the estimated time and how
+  many warnings it has (a coloured dot, if any). Its card holds, in order: **Check before cutting** (the warnings, only when
+  there are some), **Files** (with **Open in Machine**), **Job summary** and **Simulation**. A click brings the chosen card
   to the top; as you scroll, the list marks the card you have reached. On a narrow screen, the list sits at the top, on a row
   that scrolls, with the cutting order at the end; with **Big buttons** (see [Appearance](#aspect)), the window's fields and
   checkboxes get the large target too;

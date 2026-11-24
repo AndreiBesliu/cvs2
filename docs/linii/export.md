@@ -55,6 +55,8 @@ vreau ca ficare setare sa fie insotita de o ilustratie sugestiva, ca sa ajute us
 - **24.11: 28.8↑f-1 gata** (privirea cu fontul lat: pe telefon, rândul operației își ține lățimea, nota ordinii lipsește de pe
   bandă, ordinea stă la capăt; în densitatea mare, câmpurile, bifele și butoanele listei au 48 px), pe ramură; neunită.
   Otrăvurile 9 / 9. Urmează f-2 (Rezultatul pe grupuri) și f-3 (fișa operației ca componentă de sine stătătoare).
+- **24.11: 28.8↑f-2 gata** (Rezultatul pe grupuri: de văzut, fișierele, rezumatul, simularea; timpul și avertismentele în
+  rândul listei), pe ramură; neunită. Otrăvurile 7 / 7. Urmează f-3.
 
 ## Ce s-a găsit (23.11)
 

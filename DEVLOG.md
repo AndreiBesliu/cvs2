@@ -13028,3 +13028,17 @@ PR-ul `AndreiBesliu/cvs2#14` („De unit de sesiunea principală”).
 - **Manualul** (ro, en), ADR 0290 („Implementarea 28.8↑f-1”), fișa etapei 3, registrul otrăvurilor, nota liniei.
 
 **Completed:** 24.11, 11:05.
+
+## 2026-11-24 — Linia exportului: felia 28.8↑f-2, Rezultatul pe grupuri (ADR 0290)
+
+**Prompt:** răspunsul owner-ului la ADR 0290, exact: „1a, 2a, 3a, 4a” (feliile acceptate; după 28.8↑f-1).
+**Started:** 24.11, 11:05.
+
+- **Rezultatul** are grupurile „De văzut înainte de tăiere” (doar cu avertismente), „Fișierele”, „Rezumatul jobului” și
+  „Simularea”, fiecare cu titlul lui; în listă, rândul lui spune timpul estimat și câte avertismente are, cu un punct.
+- **Probele:** 1 e2e nouă (cu unul și apoi două avertismente), proba rezumatului în engleză pe h4; rapidul local 10 123 / 0;
+  spec-urile e2e care citesc rezultatul (35 de fișiere), 192 + 6 / 198.
+- **Otrăvurile:** `test/otravuri/28.8f2.py`, 7 / 7.
+- **Manualul** (ro, en), ADR 0290 („Implementarea 28.8↑f-2”), fișa etapei 3, registrul otrăvurilor, nota liniei.
+
+**Completed:** 24.11, 11:40.
