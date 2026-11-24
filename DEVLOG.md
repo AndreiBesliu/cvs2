@@ -13198,6 +13198,31 @@ custom” (owner-ul, cu `FREZE.tdb`), apoi, la cele cinci întrebări: „Da, 1a
   16.A↑h-1 împreună +2,9, din care h-1 ~+0,7). Nimic pe
   server; documentul nu se schimbă. **Completed:** 24.11, 13:20.
 
+## 2026-11-24 — Felia 3.Xj: căutarea și categoriile în biblioteca extensiilor (ADR 0233) (sesiune cloud)
+
+**Prompt:** „ok, porneste cautarea si categoriile”. **Started:** 24.11, 14:30. **Completed:** 24.11, 16:30.
+
+- **ADR 0233**, scris și implementat cu alegerile recomandate; cinci întrebări pentru owner (rafturile, unde stă Easy
+  3Draw, dacă rămân la vedere cu o singură extensie, câte rafturi pe extensie, cât de îngăduitoare e căutarea).
+- **Rafturile** sunt ale aplicației (`CATEGORII_BIBLIOTECA`); pe care stă o extensie o spune lista bibliotecii
+  (`categorii`, 1–3), nu pachetul. Easy 3Draw: Jucării și modele, Imprimare 3D, CNC și trasee; pachetul, neschimbat.
+- **Căutarea** (`src/extensii/cautare.ts`, pură): oriunde în nume, la început de cuvânt în descrieri, autor și numele
+  rafturilor; fără diacritice; toate cuvintele; potrivirile din nume, primele.
+- **Fereastra:** o bară sub cap, cu câmpul, „N din M” și pastilele rafturilor prezente; rafturile pe pagina extensiei;
+  starea „nimic”; „/”, ↓, Enter, Escape. Nimic ținut minte, nimic trimis.
+- **Ce au arătat capturile:** în coloana listei, cinci rafturi ocupau trei rânduri: bara a trecut pe toată lățimea.
+- **Găsit în trecere, nereparat aici:** la 320 px, la atingere, rândul de sus al aplicației își suprapune butoanele (în
+  engleză, Extensii e sub butonul de căutare); raportat sesiunii principale.
+- **O probă instabilă a extensiilor, reparată** (doar probe): completul ramurii a căzut la `extensii.lucru.spec.ts:222`
+  (clicul pe „Repornește” din cadrul extensiei nu s-a mai întors); reprodus 16 din 150 pe zece lucrători, reparat cu
+  `clicCareRefaceCadrul` (150 din 150; otrava „gazda ignoră repornirea”, prinsă).
+  Sesiunea principală o reparase în aceeași oră în `main` (`29ef7e44`): la aducerea lui `main`, ramura a trecut pe
+  varianta lui.
+- **Porțile:** tipurile, regulile de import, build-ul determinist; rapidul din CI, verde pe `1c21640`; probele
+  bibliotecii și ale extensiilor, verzi local, cu `main` (`64a63b4`) adus. Otrăvurile 78 / 78, în clonă (la prima
+  rulare, 76: două probe întărite). Pornirea neschimbată (109,9 kB), totalul 814,3 → 815,6 / 900 kB.
+- **Canalul `biblioteca`:** publicat din `1c21640`.
+
 ## 2026-11-24 — Sesiunea principală în cloud: rapidul lotului 17, oprit de limita de 10 minute; limita unei felii, 15 minute (Model: Claude Fable 5.2)
 
 **Prompt:** (fără prompt nou: rapidul de pe `main` n-a ieșit verde după a șaptesprezecea unire)
@@ -13384,6 +13409,26 @@ catalogul). **Started:** 24.11, 14:42.
   încărcarea a zece lucrători, clicurile ajung după cele 2 s ale răririi și repornirea se face pe loc). Nevăzută în
   CI; proba depinde acolo de timp.
 
+## 2026-11-24 — Sesiunea principală în cloud: oracolul rampelor, împărțit în șase fișiere (Model: Claude Fable 5.2)
+
+**Prompt:** „ok, imparte oracolul rampelor in mai multe fisiere”
+**Started:** 24.11, 17:15. **Completed:** 24.11, 17:23 (pe ramură; în `main` după rapid).
+
+- **Ce era:** `test/unit/intrari-rampa.corpus.oracol.test.ts`, un singur test de 6 min 19 s (lipirea ADR 0031 pe
+  corpusul 2.5b cu rampe la întâmplare), care scosese o felie a rapidului peste limita ei după lotul 17.
+- **Ce e acum:** judecata fiecărui caz, mutată neschimbată în `test/unit/ajutor-intrari-rampa-corpus.ts`
+  (`lipesteParte`); șase fișiere, `intrari-rampa.corpus.<n>.oracol.test.ts`, fiecare cu partea ei de corpus (cazul k
+  în partea (k mod 6) + 1).
+- **Măsurat, în container:** 338 de cazuri; părțile țin 55, 60, 30, 63, 61 și 55 s; toate șase, în paralel, 2 min 11 s.
+  Numărătorile, pe tot corpusul: 199 de programe, 183 cu rampă și intrări pe aceeași operație, 1 554 de treceri cu
+  rampa pe intrare, 84 de bucle omise, 12 refuzuri prezise, 1 513 punți judecate; nicio încălcare.
+- **Pragurile:** cele ale testului întreg (60, 40, 200, 5, 5, 100) se cer pe părți, fiecare parte cu partea ei din
+  prag, pe măsura a ce numără (rotunjită în sus): sumele sunt 62, 42, 204, 9, 8, 104. Ambele laturi, în fiecare parte.
+- **Paza împărțirii** (în partea 1): exact șase fișiere; părțile acoperă corpusul întreg, fiecare caz o dată; suma
+  minimelor nu coboară sub pragurile vechi. Otrăvuri, de mână, 4 / 4: o parte fără fișier, toate părțile cu cazurile
+  primei, un minim slăbit, cinci părți cu șase fișiere.
+- **Probele:** 7 / 7 (șase părți și paza). Nicio listă de otrăvuri nu numea fișierul vechi.
+
 ## 2026-11-24 — Sesiunea principală în cloud: a nouăsprezecea unire (frezele: b-2, a-2, h-1, h-2; unealta Cote, 10.4↑a-2) (Model: Claude Fable 5.2)
 
 **Prompt:** rapoartele liniilor frezelor („gata de unit”, PR-ul #22: `d0fa2dde`, apoi `ea2b8111`) și cotelor (`1500e4b3`),
@@ -13408,3 +13453,27 @@ la ordinul în vigoare „unește ce se poate”
 - **Loturile dinainte:** pe test, al șaisprezecelea (`fdce5f1b`). Al șaptesprezecelea și al optsprezecelea, cu proba
   reparată (`29ef7e44`): completul pe `main` (45417561144) rula la unire; cel dinainte, pe `647cebb1`, căzuse la proba
   instabilă a extensiilor.
+
+## 2026-11-24 — Sesiunea principală în cloud: a douăzecea unire (3.Xj, căutarea și categoriile din bibliotecă; oracolul rampelor împărțit) (Model: Claude Fable 5.2)
+
+**Prompt:** raportul liniei bibliotecii („3.Xj e gata de unit”, PR-ul #24), la ordinul în vigoare „unește ce se poate”;
+„ok, imparte oracolul rampelor in mai multe fisiere”
+**Started:** 24.11, 17:40. **Completed:** unirea în `main`, 24.11, 18:27; publicarea pe test, la rândul ei.
+
+- **Lotul, pe `unire-2411v`** (din `7312d685`): oracolul rampelor împărțit (`b491853b`, în `b2a56e23`) și 3.Xj
+  (`c11a1c7f`, în `049c5dda`). Ciocnirile: `CLAUDE.md` și DEVLOG (două decizii adăugate în același loc), indexul
+  liniilor (rândul bibliotecii), catalogul controalelor (scris din nou: 629 de nume). Local, pe arborele unit:
+  tipurile, regulile de import (21), traducerile (1 031), biblioteca extensiilor la zi; e2e 42 / 42 (căutarea,
+  extensiile, comenzile foii, butonul Admin, cotele).
+- **Porțile, în CI:** completul lotului pe `049c5dda` (45426956640, verde la prima trecere, 53 min): unit 10 258 / 0 (12 sărite, pe Linux), e2e 741 / 741, funcțiile pe emulatoare 136 / 136, paginile 57 / 57;
+  rapidul, verde pe `049c5dda` (45426960549); completul liniei, verde pe `51ca1a5` (45413236557). Pornirea 110,2 kB (plafonul 120), totalul 831,8 / 900 kB, `/admin` 138,2 / 200, contul 30,3 / 32.
+  Nimic pe server.
+- **Documentele:** decizia în `CLAUDE.md`, cu rândul de stare al lui 3.Xj; indexul liniilor; starea din
+  `docs/linii/principala.md`.
+- **Rapidul oracolului împărțit** (45425076024, pe `b491853b`): feliile 2:46, 4:34, 6:15, 6:44, 7:31 și 9:20. O
+  parte a oracolului rampelor ține cel mult 1 min 42 s în CI (runnerele sunt cam de două ori mai lente decât
+  containerul). Felia de 9:20 e ținută de alte teste dintr-un singur test: „căile netede din multe cubice…” (258 s) și
+  „poarta de acum și cea de dinainte de ADR 0032…” (195 s). Limita de 15 minute rămâne.
+- **Loturile dinainte:** al șaptesprezecelea și al optsprezecelea, pe test din 17:50 (`29ef7e44`; completul pe `main`
+  45417561144, verde: unit 10 190 / 0, e2e 707 / 707, funcțiile 136 / 136, paginile 57 / 57; proba de fum, bună).
+  Loturile 19–21 (`7312d685`): completul pe `main` (45436221341) rula la unire.
