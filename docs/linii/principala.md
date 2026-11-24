@@ -99,6 +99,15 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
   (fișierul generat e cod).
 - **Un PR cu mai multe felii se unește la commit-ul raportat, nu la vârf:** pe 24.11, adminul a raportat „de unit acum:
   `fbbc8934`” (A.8c, A.8d), cu A.9a și începutul lui A.9b deja pe ramură, cu completul lor încă în lucru.
+- **O ramură care merge mai departe fără raport:** pe 24.11, adminul avea completul verde pe `82ec5424` (A.10, A.11a) și
+  lucra deja la A.11b, fără să fi scris commit-ul de unit. Sesiunea principală întreabă linia (`send_message`, cu
+  variantele: commit-ul de acum sau lotul următor), nu alege singură; linia a scris `0580f504` în PR în 40 de minute.
+- **Adresa de test, deschisă într-un browser din container** (24.11, după `883a8caa`): Edge prin proxy-ul mediului
+  (`chromium.launch({ channel: 'msedge', proxy: { server: process.env.HTTPS_PROXY } })`, dintr-un script din afara
+  repo-ului, cu `require` pe `node_modules/playwright` al repo-ului). Se văd: versiunea din
+  `<meta name="cncvs2-versiune">`, antetul CSP, workerul PWA, `/extensii/catalog.json`, `/mesaje/*.json`,
+  `/manual/ro.json`, `/coduri/ro.json`, `/documentatie/*.json`, pagina de intrare a `/admin`. Logarea nu merge (gazdele
+  Google sunt oprite de proxy), deci ce e după cont rămâne al probelor de pe emulatoare.
 - **PR-ul liniei** e deschis de sesiunea ei ca ciornă (regula mediului cloud): starea „ciornă” nu spune că felia nu e gata.
   Gata înseamnă raportul liniei (nota ei spune „gata”) și rapidul cu completul verzi pe commit-ul raportat.
 
@@ -121,22 +130,20 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
   printr-o schiță.
 - **Observabilitatea:** erorile ajung în jurnalul aplicației; joburile își lasă marcajul.
 
-## Starea pe 24.11.2026, spre dimineață (după a zecea unire din cloud)
+## Starea pe 24.11.2026, dimineața (după a douăsprezecea unire din cloud)
 
-- **Pe test:** `b1797933` (tot până la lotul al nouălea: frezele și plafonul de 900 kB; publicat pe 24.11 la 02:07,
-  doar hosting). Lotul al zecelea (`80d3eb70`: A.8c și A.8d), în curs de publicare, cu serverul (funcția `utilizare`).
+- **Pe test:** `883a8caa` (tot până la lotul al unsprezecelea: A.9a și A.9b; publicat pe 24.11 la 07:14, cu serverul:
+  funcția nouă `agregaUtilizarea`, regulile Firestore, indexurile).
 - **`main`, din cloud:** pe 23.11: 3.Tq (`0ae9c6c1`); 11.3↑e și A.4 (`ddaa7ead`); 3.Tr, unită de linia elicelor
   (`d262e57a`); 25.8↑a și A.5 (`1b46c955`), cu reparația probei extensiilor (`8287d66e`); 11.3↑f, unită de linia
   planșelor (`f4601938`); A.6 (`4497d639`); 3.Xh (`2d1e482c`) și 12.1↑e-3 cu 12.1↑e-4 (`03460cab`); A.8a cu A.8b
-  (`5325b8fe`) și 25.9↑ (`4fe2d2ad`). Pe 24.11: 16.A↑a (`02a5864a`), cu ADR 0301 (`813fa675`); A.8c și A.8d (`80d3eb70`).
+  (`5325b8fe`) și 25.9↑ (`4fe2d2ad`). Pe 24.11: 16.A↑a (`02a5864a`), cu ADR 0301 (`813fa675`); A.8c și A.8d (`80d3eb70`);
+  A.9a și A.9b (`95dddbe0`); A.10 și A.11a (`7f6f4069`).
 - **Liniile** (vezi [indexul](README.md)):
-  - **pe ramură, cu completul verde, neraportate încă:** A.9a (sumele zilei, jobul `agregaUtilizarea`, permisiunea
-    „Utilizare: citește”) și începutul lui A.9b, pe `c549a600` (`AndreiBesliu/cvs2#13`); la unire merg funcția nouă,
-    regulile Firestore (`utilizareZi`) și indexurile;
-  - **gata pe ramură, la cuvântul owner-ului:** fereastra exportului (28.8↑a–b-2, ADR 0290; `AndreiBesliu/cvs2#11`),
+  - **gata pe ramură, la cuvântul owner-ului:** fereastra exportului (28.8↑a–b-3, ADR 0290; `AndreiBesliu/cvs2#11`),
     după ce o încearcă pe canalul `export`;
-  - **în lucru:** frezele (16.A↑b: alegerea în proiect, documentul v27), adminul (A.9b, apoi A.10, A.11), exportul
-    (desenele, 28.8↑b–f);
+  - **în lucru:** frezele (16.A↑b: alegerea în proiect, documentul v27), adminul (A.11b, bifa pașilor la raportare,
+    cu completul pe `cd00283b`; A.11c, cronologia unui om; apoi A.11d), exportul (desenele, 28.8↑b–f);
   - **la cuvântul owner-ului:** A.7 (adminul pe telefon), 25.8↑b, 3.Ts, restul bibliotecii extensiilor (căutarea,
     captura mărită), următoarea felie a incrustațiilor, 11.5↑b (după etapa 13);
   - **fără felie în lucru:** planșele (tăierea plăcii 11, la owner), elicele, trasarea, incrustațiile, biblioteca,
@@ -149,10 +156,14 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
   - fereastra exportului: unirea lui 28.8↑a acum sau după desene;
   - verificarea juridică (GDPR) a utilizării aplicației, înaintea live-ului (ADR 0262 §3); pe test, colectarea merge
     din 24.11;
-  - fondul semnului lui Easy 3Draw (gri-albăstrui, nu crem) și rândul de „ce e nou” al lui 18.20.0.
-- **Plafoanele:** totalul e 799,6 / 900 kB (ADR 0301, decizia owner-ului din noaptea de 23 spre 24.11). **Pornirea a
-  rămas 115 kB:** cu ușa 113,9, cu Atelierul 114,2, deci mai sunt 0,8 kB; o felie care adaugă în pornire cere întâi loc
-  (o bucată mutată la cerere) sau decizia owner-ului.
+  - fondul semnului lui Easy 3Draw (gri-albăstrui, nu crem) și rândul de „ce e nou” al lui 18.20.0;
+  - ce face sesiunea principală între loturi (întrebarea lui din 24.11, „tu ce poti sa faci intre timp?”): publicarea
+    mai scurtă (fără al doilea complet pe `main` când codul e identic cu cel verificat; schimbă o regulă a porților),
+    lista „ce e nou pe test, de încercat”, rezumatul pentru verificarea juridică, lista ramurilor unite de șters.
+    Fără răspuns, niciuna nu pornește.
+- **Plafoanele:** totalul e 800,1 / 900 kB (ADR 0301, decizia owner-ului din noaptea de 23 spre 24.11). **Pornirea a
+  rămas 115 kB:** cu ușa 114,1, cu Atelierul 114,4 (după A.11a), deci mai sunt 0,6 kB; o felie care adaugă în pornire
+  cere întâi loc (o bucată mutată la cerere) sau decizia owner-ului.
 - **De urmărit:** în panoul foii, la 1400 px, etichetele „Numele” și „Materialul” apar tăiate la o literă (văzut de
   linia trasării, și pe `220bd48e`: nu vine dintr-o felie de azi).
 - **Pe calculatorul owner-ului:** worktree-urile vechi (`C:\Users\besli\cncvs2-lucru\*`), toate curate și împinse, rămân

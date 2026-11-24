@@ -12576,7 +12576,7 @@ plafonul („ok, ridica plafonul total la 900 kB”).
 
 **Prompt:** același brief de predare al sesiunii principale („unește ce se poate”), la raportul liniei adminului din
 PR-ul `AndreiBesliu/cvs2#13` („De unit acum (A.8c, A.8d): `fbbc8934`”).
-**Started:** 24.11, 03:55. **Completed:** unirea în `main`, 24.11, 04:05; publicarea pe test, în rândul de la capăt.
+**Started:** 24.11, 03:55. **Completed:** unirea în `main`, 24.11, 03:58; publicarea pe test, 24.11, 04:59.
 
 - **Înainte:** lotul al nouălea pe test (`b1797933c0e6`, 02:07); rândul publicării lui stătea pe `unire-2411a`
   (`d321e587`, doar documente) și intră în `main` cu lotul acesta.
@@ -12595,3 +12595,66 @@ PR-ul `AndreiBesliu/cvs2#13` („De unit acum (A.8c, A.8d): `fbbc8934`”).
   felii se unește la commit-ul raportat).
 - **La owner:** fereastra exportului (28.8↑a–b-2: acum sau după desene), verificarea juridică a utilizării aplicației
   înaintea live-ului, „cine unește în `main`”.
+- **Publicarea (`89962b4d`):** rapidul și completul pe `main` verzi (completul, 50 min 44 s), `publica.yml` verde în
+  3 minute, cu serverul (funcția `utilizare`, cu felurile noi); adresa de test spune `89962b4d0fa5` (24.11, 04:59).
+
+## 2026-11-24 — Sesiunea principală în cloud: a unsprezecea unire (A.9a și A.9b, utilizarea aplicației: sumele zilei, jobul de noapte, fila Utilizare) (Model: Claude Fable 5.2)
+
+**Prompt:** același brief de predare al sesiunii principale („unește ce se poate”), la raportul liniei adminului din
+PR-ul `AndreiBesliu/cvs2#13` („De unit acum (A.9a, A.9b): `dbb0306a`”).
+**Started:** 24.11, 05:00. **Completed:** unirea în `main`, 24.11, 05:59; publicarea pe test, 24.11, 07:14.
+
+- **Înainte:** lotul al zecelea pe test (`89962b4d0fa5`, 04:59, cu serverul); rândul publicării lui stătea pe
+  `unire-2411b` (`14eb0edb`, doar documente) și intră în `main` cu lotul acesta.
+- **Verificate înaintea unirii:** ramura fără `.lucru/`, cu `main` `89962b4d` adus; codul lui `dbb0306a` e chiar al lui
+  `6b79c317`, pe care completul liniei e verde (45316082377). Vârful ramurii a mers mai departe cu A.10 (fluxurile,
+  `50a427f2`), neraportată: nu intră în lot.
+- **Unirea:** `unire-2411b` din `origin/main` (`89962b4d`): A.9a și A.9b în `95dddbe0`, fără nicio ciocnire; `git diff`
+  gol față de `6b79c317` în afara fișierelor `.md`, deci porțile liniei sunt ale unirii. În container: catalogul
+  controalelor la zi, tipurile (și ale funcțiilor), regulile de import (0 încălcări), traducerile (967, 0 lipsă),
+  92 / 92 probe atinse, build-ul determinist.
+- **Porțile, în CI, pe `6b79c317`** (completul, 52 min 37 s): unit 10 045 / 0 (12 sărite), e2e 646 / 646, funcțiile pe
+  emulatoare 120 / 120, paginile 50 / 50; pornirea 109,4 / 115 (cu ușa 113,9; cu Atelierul 114,2), totalul
+  799,6 / 900, `/admin` 133,2 / 200.
+- **La publicare merge și serverul:** funcția nouă `agregaUtilizarea` (jobul de la 02:30), regulile Firestore
+  (`utilizareZi`), indexurile (TTL pe `utilizareZi`).
+- **Documentele:** decizia în `CLAUDE.md` și rândul de stare al lui A.9a și A.9b (pregătit pe ramură cât rula
+  completul); indexul liniilor; starea din `docs/linii/principala.md`.
+- **La owner:** fereastra exportului (28.8↑a–b-3: acum sau după desene), verificarea juridică a utilizării aplicației
+  înaintea live-ului, „cine unește în `main`”.
+- **Publicarea (`883a8caa`):** rapidul și completul pe `main` verzi (completul, 63 min 54 s), `publica.yml` verde în
+  3 minute, cu serverul: funcția `agregaUtilizarea` creată, regulile Firestore și indexurile publicate; adresa de test
+  spune `883a8caa1f21` (24.11, 07:14).
+
+## 2026-11-24 — Sesiunea principală în cloud: a douăsprezecea unire (A.10 și A.11a, utilizarea aplicației: fluxurile, pașii dinaintea unei erori) (Model: Claude Fable 5.2)
+
+**Prompt:** același brief de predare al sesiunii principale („unește ce se poate”), la raportul liniei adminului din
+PR-ul `AndreiBesliu/cvs2#13` („De unit acum (A.9a, A.9b, A.10, A.11a): `0580f504`”). Între timp, owner-ul: „i-am dat sa
+continue, tu ce poti sa faci intre timp?”.
+**Started:** 24.11, 07:35. **Completed:** unirea în `main`, 24.11, 08:31; publicarea pe test, la rândul ei.
+
+- **Înainte:** lotul al unsprezecelea pe test (`883a8caa1f21`, 07:14, cu serverul); rândul publicării lui stătea pe
+  `unire-2411c` (`c611346a`, doar documente) și intră în `main` cu lotul acesta.
+- **Întrebarea owner-ului:** răspunsul, cu ce se face deja (unirea la raport; adresa de test deschisă într-un browser din
+  container după publicare: versiunea, CSP-ul, workerul PWA, catalogul extensiilor, textele, manualul, dicționarele,
+  documentația, pagina de intrare a `/admin`) și cu ce pornește doar la cuvântul lui: publicarea mai scurtă (fără al
+  doilea complet pe `main` când codul e identic cu cel verificat), lista „ce e nou pe test”, rezumatul pentru
+  verificarea juridică, lista ramurilor unite de șters. Fără răspuns încă.
+- **Raportul liniei:** la 07:46, completul era verde pe `82ec5424` (45328103114), dar ramura mersese mai departe cu
+  A.11b, fără commit de unit scris. Am întrebat linia (`send_message`); la 08:28, PR-ul spunea `0580f504`.
+- **Verificate înaintea unirii:** ramura fără `.lucru/`; `0580f504` adaugă peste `82ec5424` doar traducerile
+  roadmap-ului, otrăvurile lui A.11a (`.py`) și documente, cu rapidul verde pe el (45328844970).
+- **Unirea:** pe `unire-2411c` (din `883a8caa`): A.10 și A.11a în `7f6f4069`, fără nicio ciocnire; `git diff` gol
+  față de `0580f504` în afara fișierelor `.md`. În container: catalogul controalelor la zi, tipurile (și ale
+  funcțiilor), regulile de import (0 încălcări), traducerile (971, 0 lipsă), 93 / 93 probe atinse, 58 / 58 probe ale
+  documentelor, build-ul determinist.
+- **Porțile, în CI, pe `82ec5424`** (completul, 42 min 8 s): unit 10 054 / 0 (12 sărite), e2e 646 / 646, funcțiile pe
+  emulatoare 122 / 122, paginile 51 / 51; pornirea 109,6 / 115 (în CI 109,5; cu ușa 114,1; cu Atelierul 114,4),
+  totalul 800,1 / 900, `/admin` 135,0 / 200.
+- **La publicare merge și serverul:** funcțiile `logClientError` (primește pașii) și `agregaUtilizarea` (scrie
+  fluxurile); fără reguli sau indexuri noi.
+- **Documentele:** decizia în `CLAUDE.md` și rândul de stare al lui A.10 și A.11a; indexul liniilor; starea și două
+  lecții în `docs/linii/principala.md` (ramura care merge mai departe fără raport; adresa de test într-un browser din
+  container).
+- **La owner:** fereastra exportului, verificarea juridică a utilizării aplicației înaintea live-ului, „cine unește în
+  `main`”, plafonul pornirii (mai sunt 0,6 kB), răspunsul la lista de mai sus.
