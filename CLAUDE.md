@@ -1071,7 +1071,11 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   (în sus, de-a latul și, la capete, în lung); Easy 3Draw 18.24.0. **3.Cb (conectorul în unghi, axul cu opritor,
   știftul cu bucșă)** gata pe 24.11, neunită: tipul `conectorUnghi`, un butuc cu 1–4 brațe, fiecare cu manșonul lui de
   ax sau de știft, la cel puțin 90° unul de altul (formele gata au unghiurile conectorilor LEGO numerotați); axul are
-  bifa „Cu opritor la un capăt”, iar știftul, capătul scurt „Bucșă”; Easy 3Draw 18.25.0 (următoarea, 18.26.0). **Motorul
+  bifa „Cu opritor la un capăt”, iar știftul, capătul scurt „Bucșă”; Easy 3Draw 18.25.0. **3.Cc (cremaliera)** gata pe
+  24.11, neunită: tipul `cremaliera`, în fila Roți, cu dinții roților de aici, pe știfturi sau cu găuri de știft,
+  înaltă după roata pereche (axul roții cade pe grilă), cu „Fă perechea”; Easy 3Draw 18.26.0 (următoarea, 18.27.0);
+  melcul a trecut în 3.Cj. **O piesă care se prinde cu alta își probează prinderea pe plasele amândurora, cu martori**
+  (proba cremalierei: `patrundere`, în `test/unit/trenulet.cremaliera.test.ts`). **Motorul
   face o piesă din corpuri închise care se suprapun puțin: două dintre ele nu-și împart nicio muchie** (altfel STL-ul
   iese cu muchii fără pereche la cine îl citește); proba unitară o cere cu `muchiiFaraPereche`
   (`test/unit/ajutor-plasa-lego.ts`, ajutoarele comune ale probelor pe plase). **O piesă nouă a atelierului atinge și probele

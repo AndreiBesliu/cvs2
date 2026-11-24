@@ -313,6 +313,10 @@
       "ro": "Textul vertical, adus din etapa 7",
       "en": "Vertical text, brought forward from stage 7"
     },
+    "1152c03a34f229cc": {
+      "ro": "3.Cc (cremaliera, ADR 0284)",
+      "en": "3.Cc (the rack, ADR 0284)"
+    },
     "11b10003c6645f32": {
       "ro": "Inlay în V și cu pereți drepți",
       "en": "V inlay and straight-wall inlay"
@@ -1493,6 +1497,10 @@
       "ro": "Loc în pachetul de pornire pentru 2.8: ușa de încărcare a proiectului vine la cerere, pornirea fără `await` la nivelul modulului; 99,9 → 96,1 kB din 100. Rând completat pe 19.10 din DEVLOG, pentru roadmap-ul din `/admin`.",
       "en": "Room in the startup bundle for 2.8: the project loading door comes on demand, startup without a module-level `await`; 99.9 → 96.1 kB of 100. Row completed on 19.10 from the DEVLOG, for the roadmap in `/admin`."
     },
+    "529382429846edbd": {
+      "ro": "Cremaliera în atelierul Easy 3Draw",
+      "en": "The rack in the Easy 3Draw workshop"
+    },
     "52bf5a3bebab3608": {
       "ro": "lucrul de zi cu zi după primul live",
       "en": "day-to-day work after the first live"
@@ -2545,6 +2553,10 @@
       "ro": "Biblioteca de freze în browser, fereastra „Frezele mele”",
       "en": "The bit library in the browser, the “My bits” window"
     },
+    "963b709ae8f6fa50": {
+      "ro": "Easy 3Draw 18.26.0 (din Bibliotecă, pe canalul `biblioteca` sau pe adresa principală de test, după publicare): fila Roți → **Cremalieră**. Apasă **Fă perechea** (cremaliera 1 × 4 și roata de 8), printează-le (cremaliera în picioare, cu dinții în sus), pune cremaliera pe o placă și roata pe un ax trecut printr-o cărămidă Technic ridicată cu o placă: roata se învârte pe cremalieră fără să sară și fără să se înțepenească? Spune dacă jocul dintre dinți e bun sau prea mare",
+      "en": "Easy 3Draw 18.26.0 (from the Library, on the `biblioteca` channel or on the main test address, once published): the Wheels tab → **Rack**. Press **Make the pair** (the 1 × 4 rack and the 8-tooth gear), print them (the rack upright, teeth up), put the rack on a plate and the gear on an axle through a Technic brick raised by one plate: does the gear turn along the rack without skipping and without jamming? Say whether the play between the teeth is right or too large"
+    },
     "963c06c9d4116c99": {
       "ro": "Pe canalul `biblioteca`: piesa de puzzle → **Biblioteca extensiilor…**; uită-te la pagina lui Easy 3Draw (capturile, descrierea, „Ce e nou”), instalează-l de acolo, apoi **Deschide**; încearcă fila **Instalate**, **Scoate** și, din Ctrl+K, „Biblioteca extensiilor”; și de pe telefon (lista și pagina vin pe rând)",
       "en": "On the `biblioteca` channel: the puzzle piece → **Extension library…**; look at Easy 3Draw’s page (the captures, the description, “What’s new”), install it from there, then **Open**; try the **Installed** tab, **Remove** and, from Ctrl+K, “Extension library”; and from a phone too (the list and the page come one at a time)"
@@ -3424,6 +3436,10 @@
     "c719dec200621b98": {
       "ro": "Planșele: „Așază pe foi”",
       "en": "Sheets: “Arrange on sheets”"
+    },
+    "c763879464848f1a": {
+      "ro": "**Cremaliera în atelierul Easy 3Draw** (fără mașină; ADR 0284; a treia felie a construcțiilor; în sesiunea cloud a liniei, pe `wip/3.Xh-biblioteca-ui`; Easy 3Draw 18.26.0). Tipul `cremaliera`, în fila Roți: o bară lată cât un știft, lungă de 2–24 de știfturi, cu dinți drepți deasupra, cu profilul roților de aici (20°, jocul din calibrare), câți încap întregi (10 pe cremaliera 1 × 4). Se prinde pe știfturi (dedesubt e o placă 1 × n) sau cu găuri de știft de-a latul. Înălțimea ei ține de roata pereche: linia de divizare stă acolo unde axul roții cade pe grilă (gaura unei cărămizi Technic ridicate cu k plăci, sau găurile de la k pași mai sus). Configuratorul scrie montajul în cuvinte și cursa pe o rotație a roții; „Fă perechea” pune în listă cremaliera și roata ei. **Angrenarea e probată pe plase:** roata motorului, cu axul unde spune montajul, se rostogolește pe cremalieră fără să intre în ea, iar martorii (prea aproape, decalat, în sensul greșit) intră. Melcul a trecut în 3.Cj (cere întâi dovada angrenării și o hotărâre despre tipărire). Probele: unitare 9, e2e 4; otrăvurile 72 / 72 (una, echivalentă, înlocuită; una a cerut o probă mai tare). Doar pachetul extensiei se schimbă (488,7 kB).",
+      "en": "**The rack in the Easy 3Draw workshop** (no machine; ADR 0284; the third slice of the builds; in the line’s cloud session, on `wip/3.Xh-biblioteca-ui`; Easy 3Draw 18.26.0). Type `cremaliera`, in the Wheels tab: a bar one stud wide, 2–24 studs long, with straight teeth on top, with the profile of the gears made here (20°, the play from the calibration), as many as fit whole (10 on the 1 × 4 rack). It sits on studs (underneath it is a 1 × n plate) or has pin holes across it. Its height depends on the mating gear: the pitch line sits where the gear’s axle falls on the grid (the hole of a Technic brick raised by k plates, or the holes k steps higher). The configurator writes the mounting in words and the travel per turn of the gear; “Make the pair” puts the rack and its gear in the list. **The meshing is proved on the meshes:** the engine’s gear, with its axle where the mounting says, rolls along the rack without entering it, while the witnesses (too close, offset, the wrong direction) do. The worm moved to 3.Cj (it first needs the proof of meshing and a decision about printing). Tests: 9 unit, 4 e2e; mutations 72 / 72 (one, equivalent, replaced; one needed a stronger test). Only the extension package changes (488.7 kB)."
     },
     "c8ec2318b17e54c9": {
       "ro": "**Cotele: fereastra Setări, cu secțiunea Cotele** (fără mașină; ADR 0330 §6, „Implementarea (10.4↑a-3)”; ramura `wip/10.4-cote`, în sesiunea cloud a liniei cotelor, la „continua” al owner-ului; panoul cotei, lista, „Arată cotele” și cotele foilor vecine trec în 10.4↑a-4). Setările din tabelul §6, citite câmp cu câmp cu marginile lor: cifrele (unitatea mm / cm / inch, zecimalele, zerourile, rotunjirea la un pas, separatorul, unitatea scrisă, înălțimea, locul cifrei), liniile și capetele (săgeată plină sau deschisă, bară oblică, punct, fără; mărimea, extensiile, golul, depășirea, distanța la punere), pânza (arătate, pragul cifrelor, culoarea), cu „Înapoi la implicit” pe fiecare grup. Desenul cotei și cifrele, pe pânză, urmează setările pe loc (`src/model/desenCota.ts`: felurile capetelor, cifra în linie cu linia întreruptă, cifra mereu orizontală, `scrieCifra`). Fereastra (`src/app/Setari.tsx`, la cerere): secțiunile în stânga, cota de probă, grupurile; un număr în afara marginilor e spus și nu se ține; se deschide din meniul contului („Setări…”), din paletă (`vedere.setari`), cu Ctrl+, și din ⚙ al uneltei Cote. Manualul: capitolul „Setările” (ro, en), Ctrl+, în scurtături. Unitare noi 8 (desenul 5, setările 3), e2e noi 7 (`setari.spec.ts`, cu telefonul și engleza), plus rândul nou al meniului în probele lui; otrăvuri 37 / 37 (23 unitare, 14 e2e; A12 și E12 prinse după probele întărite), iar trei din a-2 mutate pe codul nou. Pornirea 110,1 → 110,4 kB (cu ușa 115,1, cu Atelierul 115,4 / 120), totalul 825,4 → 832,3 / 900. Urmează 10.4↑a-4 (panoul cotei, lista, „Arată cotele”), la cuvântul owner-ului.",

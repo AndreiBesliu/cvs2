@@ -104,14 +104,14 @@ elice. Fiecare e un șablon din parametri, nu un desen fix.
 |---|---|---|
 | 3.Ca | Conectorul perpendicular | piesa și configuratorul; „Repede” pentru formele uzuale (gata pe 24.11) |
 | 3.Cb | Conectorul în unghi; axul cu opritor, știftul lung cu bucșă | piesa și opțiunile noi |
-| 3.Cc | Cremaliera și melcul | cu montajul față de roata dințată și „Fă perechea” |
+| 3.Cc | Cremaliera | cu montajul față de roata dințată și „Fă perechea” (gata pe 24.11); melcul a trecut în 3.Cj |
 | 3.Cd | Arcul, balamaua, placa turnantă | trei piese în Cărămizi |
 | 3.Ce | Punctele de prindere și „Se prinde cu” | motorul și panoul din configurator, pentru toate piesele |
 | 3.Cf | Modelul: orientarea pe trei axe și alipirea la prinderi | după 3.Tu (ADR 0283; a acestei linii din 24.11 seara) |
 | 3.Cg | Modelul: verificarea (prins, plutește, se ciocnește) | avertismente pe piese și în listă |
 | 3.Ch | Construcțiile cu nume și lista lor de piese | mai multe construcții în atelier |
 | 3.Ci | Construcțiile gata | patru șabloane |
-| 3.Cj | Cama și manivela, cadrul, roata cu palete | restul pieselor din B |
+| 3.Cj | Melcul, cama și manivela, cadrul, roata cu palete | restul pieselor din B |
 
 ## Marginile
 
@@ -215,4 +215,39 @@ ale axului și ale știftului); Easy 3Draw 18.25.0.
   motor). Probele filelor („Legături 10”), galeriilor, căutării („con”) și
   pictogramelor, la zi.
 - **Mărimea:** doar pachetul extensiei (481,1 → 485,4 kB); aplicația, neschimbată.
-- **Felia următoare (3.Cc):** cremaliera și melcul.
+- **Felia următoare (3.Cc):** cremaliera (mai jos).
+
+## Implementat (3.Cc, 24.11.2026)
+
+**Cremaliera** (tipul `cremaliera`, fila Roți; Easy 3Draw 18.26.0).
+
+- **Piesa:** o bară lată cât un știft (7,8 mm), lungă de 2–24 de știfturi, cu dinți drepți deasupra. Dinții au profilul
+  cu care motorul taie roțile de aici (20°, capul m, piciorul 1,25·m): la linia de divizare, dintele are π·m / 2 − 2 ×
+  jocul din calibrare, deci jocul cu o roată e același ca între două roți. Încap doar dinți întregi, așezați pe mijlocul
+  piesei (cremaliera 1 × 4 are 10 dinți, ca cea LEGO). Se printează în picioare, cu dinții în sus, fără suport.
+- **Prinderea:** pe știfturi (dedesubt e chiar placa 1 × n a motorului, fără știfturi sus) sau cu găuri de știft de-a
+  latul, câte una pe pas, la înălțimea găurilor unei grinzi.
+- **Înălțimea, după roata pereche:** linia de divizare stă acolo unde axul roții cade pe grilă: în gaura unei cărămizi
+  Technic (5,8 mm) ridicate cu k plăci, respectiv în găurile de la k pași (8 mm) deasupra găurilor cremalierei, cu cel mai
+  mic k la care sub dinți rămâne lemn (0,5 mm peste placă; 0,8 mm peste lamajul găurii). Pentru roata de 8, pe știfturi:
+  linia de divizare la 5 mm, axul la 9 mm, cărămida cu o placă mai sus. Configuratorul scrie montajul în cuvinte și cât
+  înaintează cremaliera la o rotație a roții (π·m·z); „Fă perechea” pune în listă cremaliera și roata ei (aceeași piesă
+  cu roata din editorul roților).
+- **Angrenarea e probată pe plase, nu doar pe hârtie:** roata făcută de motor, cu axul unde spune montajul, se
+  rostogolește peste un pas întreg fără să intre în cremalieră; martorii (axul coborât peste jocul de la fund, o jumătate
+  de pas alături, rostogolirea în sensul greșit) intră, iar jocul dintre dinți iese cel de pe hârtie (2 × jocul de fiecare
+  parte).
+- **Lăsat pentru mai târziu:** dinții nu se continuă de la o cremalieră la alta pusă cap la cap (pasul π·m nu cade pe
+  grila de 8 mm; LEGO folosește pasul de 3,2 mm): pentru o cursă lungă se face o cremalieră mai lungă (până la 24 de
+  știfturi, 191,8 mm). Pasul „pe grilă” rămâne o opțiune de adăugat dacă e cerută.
+- **Melcul a trecut în 3.Cj.** Are nevoie întâi de dovada, pe plase, că nu se pătrunde cu roata dreaptă (dinții roții
+  sunt drepți, spira e înclinată) și de o hotărâre despre tipărire: la diametrul de divizare de 8 mm, cerut de grila
+  LEGO (axele la 4 + z / 2 mm), între gaura de ax și fundul spirei rămân 0,25 mm, iar flancul de jos al spirei stă în
+  consolă la 70°.
+- **Găsit pe drum:** fețele barei cu dinți nu se pot triunghiula cu `prisma` (poligonul are multe colțuri intrate și
+  ieșea cu muchii deschise); se fac cu `prismaGauri` (earcut). Câmpurile editorului au prefixul lor (`at-crm-`): `at-cr-`
+  e al coroanei, `at-cm-` al clemei.
+- **Probele:** unitare 9 (`test/unit/trenulet.cremaliera.test.ts`), e2e 4 (`test/e2e/trenulet.cremaliera.spec.ts`).
+  Probele filelor („Roți 8”), galeriilor și pictogramelor, la zi.
+- **Mărimea:** doar pachetul extensiei (485,4 → 488,7 kB); aplicația, neschimbată.
+- **Felia următoare (3.Cd):** arcul, balamaua, placa turnantă.

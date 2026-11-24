@@ -13951,6 +13951,27 @@ palete”
 - **Probele pluginului și ale extensiilor în browser:** 63 / 63 și 82 / 82. Easy 3Draw 18.25.0 (485,4 kB), cu rândul de
   „ce e nou”; doar pachetul se schimbă.
 
+## 2026-11-24 — Felia 3.Cc: cremaliera în atelierul Easy 3Draw (ADR 0284) (sesiune cloud)
+
+**Prompt:** (aceeași cerere a owner-ului și aceleași răspunsuri la ADR 0284 ca la 3.Ca; felia a treia din plan, pornită
+fără altă întrebare)
+**Started:** 24.11, 23:26. **Completed:** 25.11, 00:06 (felia, cu otrăvurile; orele, după ceasul containerului).
+
+- **Cremaliera** (tipul `cremaliera`, fila Roți): bara cu dinții roților de aici, pe știfturi sau cu găuri de știft;
+  înălțimea, după roata pereche, ca axul roții să cadă pe grilă; montajul scris în cuvinte; „Fă perechea”.
+- **Proba, scrisă întâi**, cu angrenarea judecată pe plase (roata motorului rostogolită pe cremalieră, cu martori): a
+  trecut din prima rulare a motorului; au căzut trei probe ale plasei, fiindcă `prisma` nu triunghiulează un pieptene
+  (muchii deschise): bara cu dinți se face cu `prismaGauri`.
+- **Melcul, despărțit de felie** (trece în 3.Cj): la diametrul cerut de grila LEGO, miezul lui rămâne de 0,25 mm în jurul
+  găurii de ax, iar spira stă în consolă la 70°; cere întâi dovada angrenării și o hotărâre despre tipărire.
+- **Probele vechi, la zi:** „Roți 8”, galeriile și desenele, starea unei liste vechi, versiunea 18.26.0.
+- **Otrăvurile:** 72 / 72 (46 în probele unitare, 26 prin browser). La prima rulare au scăpat două: una era practic
+  echivalentă (bara coborâtă peste lamaj: partea întoarsă a inelului se anulează cu bara, numărul de înfășurare e același
+  peste tot), înlocuită cu una care se vede; cealaltă (roata de 5 dinți, primită de câmp) nu se vedea fiindcă motorul o
+  îndrepta tot la 8, valoarea de dinainte: marginile de jos se judecă acum de la alte valori.
+- **Probele pluginului în browser:** 67 / 67. Easy 3Draw 18.26.0 (488,7 kB), cu rândul de „ce e nou”; doar pachetul se
+  schimbă.
+
 ## 2026-11-24 — Sesiunea principală în cloud: clicul pe „Închide” din cadrul unei extensii, pierdut (probă instabilă, reparată) (Model: Claude Fable 5.2)
 
 **Prompt:** completul de pe `main` pentru loturile 19–21 (`7312d685`, rularea 45436221341), roșu la o singură probă;
