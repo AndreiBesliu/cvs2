@@ -387,7 +387,7 @@ async function capturaStabila(page: Page): Promise<Captura> {
 /** Exportul, ca omul: dialogul, laturile alese pe rânduri, Ø6, descărcarea; întoarce textul fișierului. */
 async function exporta(page: Page, laturi: Readonly<Record<string, string>> = {}): Promise<string> {
   await page.locator('[data-actiune="export.gcode"]').click();
-  for (const [r, latura] of Object.entries(laturi)) await page.locator(`[data-operatie="${r}"] select[data-camp="latura"]`).selectOption(latura);
+  for (const [r, latura] of Object.entries(laturi)) await page.locator(`[data-operatie="${r}"] input[data-camp="latura"][value="${latura}"]`).check();
   // Freza fiecărui rând (ADR 0084): Ø6 pe toate.
   for (const d of await page.locator('[data-camp="diametru"]').all()) await expect(d).toHaveValue('6');
   const d = page.waitForEvent('download');

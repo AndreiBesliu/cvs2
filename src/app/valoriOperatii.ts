@@ -2,7 +2,7 @@ import type { BandaDop, FrezaRest, FundPlat, Incrustatie, IncrustatieDreapta, In
 import { PUNTI_DOP_DREPT } from '../model/incrustatie.ts';
 import type {
   BandaOperatie, FrezaRestOperatie, FundPlatOperatie, IncrustatieDreaptaOperatie, IncrustatieOperatie, SculaOperatie, ValoriOperatie,
-} from '../ui/DialogExport.tsx';
+} from '../ui/exportRand.ts';
 
 /**
  * Scula scrisă de Exportă (ADR 0084, ADR 0090): numărul și diametrul rândului, forma lui (în V cu unghiul și vârful, sau

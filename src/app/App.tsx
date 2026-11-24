@@ -32,7 +32,7 @@ import { ACTIUNI_EXPORT, type ContextExport, type ParametriExport, type Rezultat
 import {
   ACTIUNI_IMPORT, preincarcaImport, type ContextImport, type FisierImport, type ImportPregatit, type PrevizualizareImport, type AlegeriImport,
 } from '../ui/actiuniImport.ts';
-import type { CerereExport, StareExport } from '../ui/DialogExport.tsx';
+import type { CerereExport, StareExport } from '../ui/exportRand.ts';
 import type { RezumatJob } from '../ui/actiuniExportTipuri.ts';
 import { incarcaMeniuFoaie, incarcaNivelPiesa, ListaVectori, type ActiuniFoi, type FoaieLista, type RandLista } from '../ui/ListaVectori.tsx';
 import { useLimba } from '../ui/useLimba.ts';

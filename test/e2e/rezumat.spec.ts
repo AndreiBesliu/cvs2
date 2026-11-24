@@ -97,7 +97,7 @@ test('în engleză: titlul, timpul și rândurile au textele lor', async ({ brow
   await page.locator('[data-actiune="export.gcode"]').click();
   await exporta(page);
   const rez = page.getByTestId('export-rezumat');
-  await expect(rez.locator('h3')).toHaveText('Job summary');
+  await expect(rez.locator('h4')).toHaveText('Job summary');
   // Sub un minut, cu o zecimală (punctul englezesc); peste, minute și secunde.
   await expect(rez.locator('[data-rezumat="timp"]')).toHaveText(/^Estimated time: (\d+\.\d s|\d+ min \d\d s)$/);
   await expect(rez.locator('tr[data-rand="restul"] th')).toHaveText('Start and end (safe Z, spindle and its wait, retract)');
