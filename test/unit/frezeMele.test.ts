@@ -68,7 +68,7 @@ test('dus-întors: adăugarea, schimbarea, ștergerea ajung în depozit; altă b
 
 test('frezele pe care versiunea de azi nu le citește rămân neatinse în depozit; lista unei versiuni mai noi doar se citește', async () => {
   const d = new Depozit();
-  const bila = { id: 'x', rev: 1, schimbatLa: 5, nume: 'Bilă Ø6', fel: 'bila', diametru: 6 };
+  const bila = { id: 'x', rev: 1, schimbatLa: 5, nume: 'Bilă Ø6', fel: 'necunoscut', diametru: 6 };
   d.date.set(CHEIE_LOCALA, { v: 1, freze: [{ ...PLATA6, id: 'a', rev: 1, schimbatLa: 5 }, bila] });
   const b = creeazaFrezeMele(d, ids(), () => 9);
   await b.incarca();
@@ -243,5 +243,20 @@ test('redenumirea unui grup (ADR 0302 §4): în depozit, toate frezele lui deoda
   assert.deepEqual(await b.redenumesteGrup('nimic', 'X'), { ok: false, probleme: { id: 'lipsa' } });
   assert.deepEqual(await b.redenumesteGrup('esență tare', 'x'.repeat(41)), { ok: false, probleme: { grup: 'grup-lung' } });
   assert.equal(d.scrieri, inainte + 1);
+});
+
+test('„Pune în frezele mele” (ADR 0302 §1): în depozit, într-o singură scriere, cele care nu sunt deja', async () => {
+  const d = new Depozit();
+  const b = creeazaFrezeMele(d, (() => { let i = 0; return () => `f${++i}`; })(), () => 7);
+  await b.incarca();
+  await b.salveaza(null, PLATA6);
+  const inainte = d.scrieri;
+  const r = await b.puneDinCatalog([{ ...PLATA6, nume: 'Plată Ø6 din catalog' }, { ...V60, nume: 'V60 Ø6' }]);
+  assert.deepEqual(r, { ok: true, adaugate: 1, existente: 1, plina: false });
+  assert.equal(d.scrieri, inainte + 1);
+  assert.deepEqual(b.stare().freze.map((f) => [f.nume, f.numar]), [['Plată Ø6', 2], ['V60 Ø6', 1]]);
+  const alta = creeazaFrezeMele(d, () => 'x', () => 8);
+  await alta.incarca();
+  assert.deepEqual(alta.stare().freze.map((f) => f.nume), ['Plată Ø6', 'V60 Ø6']);
 });
 

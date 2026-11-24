@@ -249,7 +249,9 @@ def u(*nume):
 NUMAR = u('numar', 'actiuni.panou')
 NUMAR2 = sorted(set(NUMAR + u('actiuni', 'actiuni.export', 'export.calcul')))
 PANOU = u('actiuni.panou')
-PANOU2 = sorted(set(PANOU + u('actiuni', 'model', 'document.oracol', 'actiuni.export', 'cale.recenzie', 'document.v9.actiuni.oracol',
+# Proba căilor netede din `cale.recenzie` stă din 24.11.2026 în patru fișiere (`cale.recenzie.cubice.<n>`): merg cu ea.
+PANOU2 = sorted(set(PANOU + u('actiuni', 'model', 'document.oracol', 'actiuni.export', 'cale.recenzie',
+                             *['cale.recenzie.cubice.%d' % k for k in range(1, 5)], 'document.v9.actiuni.oracol',
                              'import.actiuni', 'import.deschise')))
 TRASEU = u('traseu.desen')
 TRASEU2 = sorted(set(TRASEU + u('aranjament', 'lant', 'post.grbl', 'cam.cale', 'cam.deschise')))

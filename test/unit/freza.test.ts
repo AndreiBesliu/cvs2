@@ -7,7 +7,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  cheieNume, cuFreza, cuFreze, cuGrupRedenumit, cuImport, cuStandard, faraFreza, FREZE_PORNIRE, ID_PORNIRE, frezaDinDate, frezaImportata, grupurileListei,
+  cheieNume, cuFreza, cuFreze, cuGrupRedenumit, cuImport, cuStandard, faraFreza, FELURI_CU_CAM, FELURI_FREZA, FREZE_PORNIRE, ID_PORNIRE, frezaDinDate,
+  frezaImportata, grupurileListei,
   inaltimeCon, MARGINI_FREZA, numeLiber,
   problemeFreza, sculaDinFreza, type Freza, type FrezaSalvata,
 } from '../../src/model/freza.ts';
@@ -152,7 +153,7 @@ test('datele ținute: o freză salvată se citește înapoi, cu câmpurile necun
   const citita = frezaDinDate(JSON.parse(JSON.stringify(s)));
   assert.deepEqual(citita, s);
   for (const rau of [null, 1, 'x', [], { ...s, id: '' }, { ...s, rev: 0 }, { ...s, rev: 1.5 }, { ...s, schimbatLa: 'ieri' },
-    { ...s, fel: 'bila' }, { ...s, diametru: 0 }, { ...s, nume: 3 }, { ...s, nota: 4 }]) {
+    { ...s, fel: 'necunoscut' }, { ...s, diametru: 0 }, { ...s, nume: 3 }, { ...s, nota: 4 }]) {
     assert.equal(frezaDinDate(rau), null, JSON.stringify(rau));
   }
   // Din fișier vine fără id și fără versiune; un id adus din alt browser nu se ia.
@@ -311,5 +312,49 @@ test('redenumirea unui grup: toate frezele lui, cu versiunea crescută; spre un 
   assert.deepEqual(cuGrupRedenumit(l, 'lemn', 'x'.repeat(MARGINI_FREZA.grup + 1), 9), { ok: false, motiv: 'grup-lung' });
   assert.deepEqual(cuGrupRedenumit(l, 'lemn', 'a\u0001', 9), { ok: false, motiv: 'grup-caractere' });
   assert.deepEqual(cuGrupRedenumit(l, 'nimic', 'X', 9), { ok: false, motiv: 'lipsa' });
+});
+
+test('felurile noi (ADR 0302 §2, felia 16.A↑h-4): bila, toroidala, conica cu vârf rotund, burghiul; în bibliotecă, fără CAM încă', () => {
+  assert.deepEqual(FELURI_FREZA, ['plata', 'v', 'gravare', 'bila', 'toroidala', 'conica', 'burghiu']);
+  assert.deepEqual(FELURI_CU_CAM, ['plata', 'v', 'gravare']);
+  const BILA: Freza = { ...PLATA6, nume: 'Bilă Ø6', fel: 'bila', tais: undefined };
+  const TOR: Freza = { ...PLATA6, nume: 'Toroidală', fel: 'toroidala', raza: 1, tais: undefined };
+  const CON: Freza = { ...PLATA6, nume: 'Conică', fel: 'conica', unghi: 15, raza: 0.5, tais: undefined };
+  const BUR: Freza = { ...PLATA6, nume: 'Burghiu Ø6', fel: 'burghiu', unghi: 118, tais: undefined };
+  for (const f of [BILA, TOR, CON, BUR]) assert.deepEqual(problemeFreza(f), {}, f.nume);
+  // Raza: a colțului la toroidală, a vârfului la conică; peste 0 și sub jumătatea diametrului (la Ø / 2 ar fi o bilă).
+  assert.deepEqual(problemeFreza({ ...TOR, raza: undefined }), { raza: 'lipsa' });
+  assert.deepEqual(problemeFreza({ ...TOR, raza: 0 }), { raza: 'margini' });
+  assert.deepEqual(problemeFreza({ ...TOR, raza: 3 }), { raza: 'margini' });
+  assert.deepEqual(problemeFreza({ ...CON, raza: 3 }), { raza: 'margini' });
+  // Unghiul: al conicei și al vârfului burghiului, ca la V.
+  assert.deepEqual(problemeFreza({ ...CON, unghi: undefined }), { unghi: 'lipsa' });
+  assert.deepEqual(problemeFreza({ ...BUR, unghi: 180 }), { unghi: 'margini' });
+  // Capătul, pe hârtie: bila R; toroidala r; conica r(1 − sin α) + (R − r cos α) / tan α, cu α jumătatea unghiului;
+  // burghiul R / tan(θ / 2).
+  const aproape = (a: number, b: number): void => { assert.ok(Math.abs(a - b) < 1e-9, `${a} față de ${b}`); };
+  aproape(inaltimeCon(BILA), 3);
+  aproape(inaltimeCon(TOR), 1);
+  const a = (7.5 * Math.PI) / 180;
+  aproape(inaltimeCon(CON), 0.5 * (1 - Math.sin(a)) + (3 - 0.5 * Math.cos(a)) / Math.tan(a));
+  aproape(inaltimeCon(BUR), 3 / Math.tan((59 * Math.PI) / 180));
+  // Tăișul cel puțin cât capătul.
+  assert.deepEqual(problemeFreza({ ...BILA, tais: 2.9 }), { tais: 'con' });
+  assert.deepEqual(problemeFreza({ ...BILA, tais: 3 }), {});
+  // Salvată: doar câmpurile felului (raza la toroidală și conică, unghiul la V, gravare, conică, burghiu, vârful la gravare).
+  const b = cuFreza([], null, { ...BILA, unghi: 60, raza: 1, varf: 0.2 }, () => 'a', 5);
+  assert.ok(b.ok);
+  assert.deepEqual(['unghi', 'raza', 'varf'].map((k) => k in b.lista[0]!), [false, false, false]);
+  const t = cuFreza([], null, { ...TOR, unghi: 60 }, () => 'a', 5);
+  assert.ok(t.ok);
+  assert.deepEqual([('unghi' in t.lista[0]!), t.lista[0]!.raza], [false, 1]);
+  const c = cuFreza([], null, CON, () => 'a', 5);
+  assert.ok(c.ok);
+  assert.deepEqual([c.lista[0]!.unghi, c.lista[0]!.raza], [15, 0.5]);
+  // Citită: o rază care nu e număr strică freza.
+  assert.equal(frezaDinDate({ ...salvata(TOR, 'a'), raza: 'x' }), null);
+  assert.equal(frezaDinDate(salvata(TOR, 'a'))?.raza, 1);
+  // Copia pentru document: doar felurile pe care CAM-ul le taie.
+  assert.throws(() => sculaDinFreza(BILA), /CAM/u);
 });
 
