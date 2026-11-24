@@ -14105,3 +14105,21 @@ cotelor. **Completed:** 24.11, 19:14 (în container; CI-ul, pe commit-ul împins
   900.
 - **Otrăvurile** (`test/otravuri/10.4b.py`, într-o clonă): 49 / 49 (31 unitare, 18 e2e); P04, P14, P18, P22 și E18 au scăpat
   întâi și sunt prinse după probele noi (patru unitare, plus arcul cotei de probă din Setări).
+
+## 2026-11-24 — Sesiunea principală în cloud: a douăzeci și șasea unire (cotele: 10.4↑a-4, panoul cotei și lista; 10.4↑b, raza, diametrul, unghiul) (Model: Claude Fable 5.2)
+
+**Prompt:** raportul liniei cotelor („10.4↑a-4 și 10.4↑b, gata de unit”, `98575aff`), la ordinul în vigoare „unește ce
+se poate”
+**Started:** 24.11, 23:38. **Completed:** unirea în `main`, 24.11, 23:35; publicarea pe test, cu lotul următor.
+
+- **Unirea, pe `unire-2411ae`** (din `893e45bb`): `98575aff`, în `1eea83dd`. Linia avea `main` adus, deci nicio
+  ciocnire, iar arborele unirii e identic cu al commit-ului raportat (`git diff 98575aff` gol): a intrat singură, pe
+  porțile lui.
+- **Porțile, în CI, pe `98575aff`:** completul 45482827371, verde: unit 10 379 / 0 (12 sărite, pe Linux), e2e
+  800 / 800, funcțiile pe emulatoare 136 / 136, paginile 59 / 59; rapidul, verde. Mărimea (măsurată de linie, pe
+  `main` `893e45bb`): pornirea 110,9 → 111,2 kB (cu ușa 116,1, cu Atelierul 116,5 / 120), totalul 873,5 → 880,9 / 900.
+  Nimic pe server.
+- **Documentele:** decizia în `CLAUDE.md`, cu paragraful de stare al celor două felii; indexul liniilor; starea din
+  `docs/linii/principala.md`.
+- **În drum:** publicarea loturilor 23–27 (`893e45bb`): completul pe `main` (45484077948) rula. Lotul 28 (atelierul
+  Easy 3Draw: 3.Ca și 3.Cb, `7157ecc5`, pe `unire-2411ad`) își reface porțile peste `main`-ul cu cotele.

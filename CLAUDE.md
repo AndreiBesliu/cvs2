@@ -1084,6 +1084,20 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   `tichete.emulator.spec.ts`. Id-urile feliilor primesc după cratimă doar cifre (`RE_ID` din `scripts/documentatie.ts`):
   „a-3”, nu „a-3a”. Urmează 10.4↑a-4 (panoul cotei, lista, „Arată cotele”), la cuvântul owner-ului. Felia: pornirea
   +0,2 kB, totalul +6,9 kB.
+  **Panoul cotei, lista și „Arată cotele” (ADR 0330 §5, felia 10.4↑a-4); raza, diametrul, unghiul și inch în fracții
+  (§4, §6, felia 10.4↑b)** gata pe 24.11, unite în `main` pe 24.11 (`1eea83dd`), la „continuă cu 10.4↑a-4” și
+  „10.4↑b” ale owner-ului, spuse în sesiunea liniei. **a-4:** unealta Cote publică cota aleasă și rândurile foii
+  active într-un depozit mic, fără model (`src/ui/coteVedere.ts`); panoul cotei (`src/app/PanouCota.tsx`: felul,
+  valoarea exactă cu Copiază, legătura cu Dezleagă, textul cu `<>`, distanța liniei, Șterge); lista „Cote (N)” sub
+  piesele foii active (`src/ui/ListaCote.tsx`, la cerere), cu ochiul care le ascunde de pe pânză
+  (`cncvs2.cote-ascunse`); „Arată cotele” (`vedere.cote`); cu „Toate foile pe pânză”, cotele foilor vecine se văd
+  estompate (sau ascunse, din Setări). **b:** Rază, Diametru și Unghi în bara uneltei, și în Automată (cercul dă
+  diametrul, arcul raza, două laturi unghiul); desenul pur e `src/model/desenCota.ts`; inch în fracții, unghiul în
+  grade zecimale sau în grade-minute-secunde, prefixele razei și diametrului; în Setări › Cotele, grupul „Raza,
+  diametrul, unghiul”. Raza pe o linie, elipsă sau curbă e refuzată, cu motivul. Documentul rămâne v28 (cotele stau
+  pe foaie); nimic pe server. Urmează 10.4↑c (exportul cotelor: DIMENSION în DXF, liniile și cifrele în SVG / PDF /
+  EPS), la cuvântul owner-ului. Feliile: pornirea +0,3 kB (111,2; cu ușa 116,1, cu Atelierul 116,5 / 120), totalul
+  +7,4 kB (880,9 / 900).
   **Relieful din imagine, pe planșă (ADR 0310, ADR 0311, felia 18.1↑a, adusă din etapa 18; documentul v28)** gata pe
   24.11, în sesiunea cloud a liniei (ramura `wip/18.1-relief`), unită în `main` pe 24.11 (`c5b79526`). ADR 0310,
   acceptat de owner cu „1a–6a”. Din „Importă…”, o imagine (PNG, JPEG, WebP, GIF, BMP) se face **relief** cu alegerea
@@ -1598,6 +1612,24 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 24.11.2026, noaptea (a douăzeci și șasea unire din cloud): **cotele: panoul cotei cu lista (10.4↑a-4) și raza,
+  diametrul, unghiul, inch în fracții (10.4↑b), unite în `main`** (sesiunea principală, ramura `unire-2411ae`, din
+  `893e45bb`). Linia cotelor, ramura `wip/10.4-cote`, `98575aff`, PR-ul `AndreiBesliu/cvs2#21` (ADR 0330 §4–§6; la
+  „continuă cu 10.4↑a-4” și „10.4↑b” ale owner-ului, în sesiunea liniei), unite în `1eea83dd`: panoul cotei, lista
+  „Cote (N)” cu ochiul, „Arată cotele”, cotele foilor vecine estompate; Rază, Diametru și Unghi, și în Automată;
+  inch în fracții și unghiul în grade-minute-secunde; otrăvurile 25 / 25 și 49 / 49 (cinci, prinse după probele
+  noi). Documentul rămâne v28; nimic pe server. Linia își adusese `main` de după relief (`893e45bb`) și rezolvase
+  ciocnirile (DEVLOG, fișa etapei 3, catalogul controalelor, scris din nou: 646 de nume); **arborele unirii e chiar
+  al lui `98575aff`** (`git diff` gol), deci a intrat singură, pe porțile lui, fără alt complet: completul
+  45482827371, verde (unit 10 379 / 0, 12 sărite pe Linux; e2e 800 / 800; funcțiile pe emulatoare 136 / 136;
+  paginile 59 / 59), rapidul, verde; pornirea 111,2 kB (plafonul 120; cu ușa 116,1, **cu Atelierul 116,5: mai sunt
+  3,5 kB**), **totalul 880,9 / 900 kB (mai sunt 19,1 kB)**, `/admin` 138,3 / 200. Publicarea loturilor 23–27
+  (`893e45bb`) era în drum la unire (completul pe `main` rula); cotele pleacă spre test cu lotul următor, al
+  atelierului Easy 3Draw (3.Ca și 3.Cb, unite pe `unire-2411ad`, care își reface porțile peste `main`-ul acesta).
+  **La owner:** plafoanele (totalul, 19,1 kB; pornirea, 3,5 kB: frezele b-5, relieful 18.1↑b și exportul cotelor
+  nu mai încap toate), cele trei întrebări ale lui 3.Tu, arhivarea sesiunilor exportului și elicelor, verificarea
+  juridică (GDPR) a utilizării aplicației înaintea live-ului, „cine unește în `main`”, meniul de sus la 320 px la
+  atingere.
 - 24.11.2026, noaptea (a douăzeci și cincea unire din cloud): **relieful din imagine, pe planșă (18.1↑a), unit în
   `main`, cu documentul v28**, singur în lotul lui (sesiunea principală, ramura `unire-2411ac`, peste lotul 26).
   Linia reliefului, ramura `wip/18.1-relief`, `feb7bee1`, PR-ul `AndreiBesliu/cvs2#25` (ADR 0310, acceptat de owner
