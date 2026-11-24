@@ -12499,7 +12499,7 @@ PR-ul `AndreiBesliu/cvs2#13` („De unit acum (A.8c, A.8d): `fbbc8934`”).
 
 **Prompt:** același brief de predare al sesiunii principale („unește ce se poate”), la raportul liniei adminului din
 PR-ul `AndreiBesliu/cvs2#13` („De unit acum (A.9a, A.9b): `dbb0306a`”).
-**Started:** 24.11, 05:00. **Completed:** unirea în `main`, 24.11, 05:59; publicarea pe test, în rândul de la capăt.
+**Started:** 24.11, 05:00. **Completed:** unirea în `main`, 24.11, 05:59; publicarea pe test, 24.11, 07:14.
 
 - **Înainte:** lotul al zecelea pe test (`89962b4d0fa5`, 04:59, cu serverul); rândul publicării lui stătea pe
   `unire-2411b` (`14eb0edb`, doar documente) și intră în `main` cu lotul acesta.
@@ -12519,3 +12519,6 @@ PR-ul `AndreiBesliu/cvs2#13` („De unit acum (A.9a, A.9b): `dbb0306a`”).
   completul); indexul liniilor; starea din `docs/linii/principala.md`.
 - **La owner:** fereastra exportului (28.8↑a–b-3: acum sau după desene), verificarea juridică a utilizării aplicației
   înaintea live-ului, „cine unește în `main`”.
+- **Publicarea (`883a8caa`):** rapidul și completul pe `main` verzi (completul, 63 min 54 s), `publica.yml` verde în
+  3 minute, cu serverul: funcția `agregaUtilizarea` creată, regulile Firestore și indexurile publicate; adresa de test
+  spune `883a8caa1f21` (24.11, 07:14).

@@ -123,9 +123,8 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
 
 ## Starea pe 24.11.2026, dimineața (după a unsprezecea unire din cloud)
 
-- **Pe test:** `89962b4d` (tot până la lotul al zecelea: A.8c și A.8d; publicat pe 24.11 la 04:59, cu serverul: funcția
-  `utilizare`, cu felurile noi). Lotul al unsprezecelea (`95dddbe0`: A.9a și A.9b), în curs de publicare, cu serverul
-  (funcția nouă `agregaUtilizarea`, regulile Firestore, indexurile).
+- **Pe test:** `883a8caa` (tot până la lotul al unsprezecelea: A.9a și A.9b; publicat pe 24.11 la 07:14, cu serverul:
+  funcția nouă `agregaUtilizarea`, regulile Firestore, indexurile).
 - **`main`, din cloud:** pe 23.11: 3.Tq (`0ae9c6c1`); 11.3↑e și A.4 (`ddaa7ead`); 3.Tr, unită de linia elicelor
   (`d262e57a`); 25.8↑a și A.5 (`1b46c955`), cu reparația probei extensiilor (`8287d66e`); 11.3↑f, unită de linia
   planșelor (`f4601938`); A.6 (`4497d639`); 3.Xh (`2d1e482c`) și 12.1↑e-3 cu 12.1↑e-4 (`03460cab`); A.8a cu A.8b
