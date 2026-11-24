@@ -1051,10 +1051,26 @@ nav button[aria-pressed='true'] {
   opacity: 1;
 }
 
-.controale-foaie button {
+.controale-foaie button,
+.controale-foaie-masura {
   min-width: 28px;
   min-height: 28px;
   padding: 0 4px;
+}
+
+/* Un rând mai lat decât foaia lui (cel strâns, desfăcut, sau întrebarea ștergerii) stă peste rândurile vecine. */
+.controale-foaie[data-peste='da'] {
+  z-index: 2;
+}
+
+/* Butonul după care se măsoară rândul (felia 11.1↑d): aceleași mărimi ca un buton al rândului, nevăzut și neatins. */
+.controale-foaie-masura {
+  position: absolute;
+  left: 0;
+  top: 0;
+  box-sizing: border-box;
+  visibility: hidden;
+  pointer-events: none;
 }
 
 .controale-foaie button.cu-text {
@@ -1068,7 +1084,8 @@ nav button[aria-pressed='true'] {
   font-weight: 600;
 }
 
-:root[data-densitate='mare'] .controale-foaie button {
+:root[data-densitate='mare'] .controale-foaie button,
+:root[data-densitate='mare'] .controale-foaie-masura {
   min-width: var(--tinta);
   min-height: var(--tinta);
 }
@@ -1078,7 +1095,8 @@ nav button[aria-pressed='true'] {
     display: none;
   }
 
-  .controale-foaie button {
+  .controale-foaie button,
+  .controale-foaie-masura {
     min-width: var(--tinta);
     min-height: var(--tinta);
   }
@@ -1091,6 +1109,11 @@ nav button[aria-pressed='true'] {
 }
 
 /* Iconițele comenzilor foii: așezarea (o grilă), copia, copia legată (cu veriga), mutarea (pe pânză: la stânga, la dreapta), coșul. */
+/* „⋯”: rândul strâns, sub o foaie mai îngustă pe ecran decât cele șapte butoane. */
+[data-icona='foaie.mai-mult'] {
+  --ic: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='black'%3E%3Ccircle cx='6' cy='12' r='1.7'/%3E%3Ccircle cx='12' cy='12' r='1.7'/%3E%3Ccircle cx='18' cy='12' r='1.7'/%3E%3C/svg%3E");
+}
+
 [data-icona='foaie.aseaza'] {
   --ic: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='4' y='4' width='7' height='9' rx='1'/%3E%3Crect x='13' y='4' width='7' height='5' rx='1'/%3E%3Crect x='13' y='11' width='7' height='9' rx='1'/%3E%3Crect x='4' y='15' width='7' height='5' rx='1'/%3E%3C/svg%3E");
 }

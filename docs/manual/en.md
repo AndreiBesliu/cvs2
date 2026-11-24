@@ -162,7 +162,10 @@ sheet with the same parts**, **Move the sheet up** (the left arrow: on the canva
 the sheet down** (the right arrow) and **Delete the sheet**. Each one's name shows when you hold the mouse over the icon; one
 that cannot be used is dimmed, with the reason next to the name. The active sheet's row is always visible; a dimmed sheet's
 row shows while you hold the mouse over the sheet or over the row. When deleting a sheet with parts, the row asks first:
-**Delete the sheet** or **Cancel**. On a touch screen only the active sheet's row is visible.
+**Delete the sheet** or **Cancel**. On a touch screen only the active sheet's row is visible. The row never goes past its sheet's width: with the canvas zoomed out, when the seven icons no longer fit under the sheet,
+the row folds into a single button, **⋯** (“Show the sheet commands”), which opens it; moving the mouse off the row or pressing
+Escape folds it back, and under a sheet that is very small on screen the row is not shown. With the cursor on the row, the wheel
+zooms the canvas, as anywhere on it.
 
 **Move to another sheet.** The chosen parts go to another sheet from the canvas [right-click menu](#meniu): **Move to** and the
 sheet's name, or **Move to a new sheet**. Or drag a part's row from the list onto another sheet (if it is in the selection, the

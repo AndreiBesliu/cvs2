@@ -1,4 +1,4 @@
-import { memo, useEffect, useRef, useState, useSyncExternalStore, type ReactNode } from 'react';
+import { memo, useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore, type ReactNode } from 'react';
 import '../i18n/carcasa.ts';
 // Etichetele acțiunilor planșelor stau în mesajele editorului (ADR 0210): fereastra le așteaptă înainte de randare.
 import '../i18n/editare.ts';
@@ -6,7 +6,7 @@ import { mesajeGata } from '../i18n/laCerere.ts';
 import { t } from '../i18n/t.ts';
 import type { RezultatActiune } from './actiuni.ts';
 import type { PunctFoaie, Semnal } from './CipuriVedere.tsx';
-import { foaiaDeSub, loculRandului, RANDURI_FOAIE, type FoaiePePanza } from './controaleFoiCalcul.ts';
+import { felRand, foaiaDeSub, loculRandului, RANDURI_FOAIE, stangaInPanza, type FoaiePePanza } from './controaleFoiCalcul.ts';
 import { useLimba } from './useLimba.ts';
 
 /** Mesajele modulului, ca date (ADR 0086): cine îl încarcă le așteaptă (`cuMesaje`); un refuz îl vede tot el. */
@@ -99,35 +99,80 @@ export function MeniuFoaie({ foaie, piese, actiuni, inchide }: Props): ReactNode
   );
 }
 
+/**
+ * Rotița de pe rând e a pânzei (felia 11.1↑d): rândul stă pe pânză, sub foaie, deci cu cursorul pe el zoom-ul merge la fel.
+ * Pânza își ascultă rotița pe elementul ei, iar rândul îi e frate, nu copil: evenimentul i se dă mai departe, cu același loc.
+ */
+function roataLaPanza(e: React.WheelEvent): void {
+  const panza = document.querySelector('[data-testid="panza"]');
+  if (!panza) return;
+  panza.dispatchEvent(new WheelEvent('wheel', {
+    deltaX: e.deltaX, deltaY: e.deltaY, deltaMode: e.deltaMode, clientX: e.clientX, clientY: e.clientY,
+    ctrlKey: e.ctrlKey, shiftKey: e.shiftKey, altKey: e.altKey, metaKey: e.metaKey, cancelable: true,
+  }));
+}
+
 type PropsRand = {
   readonly f: FoaiePePanza;
   readonly vedere: { readonly scara: number; readonly tx: number; readonly ty: number };
   readonly vizibil: boolean;
+  /** Rândul încape întreg sub foaie, ori e strâns într-un buton (felia 11.1↑d). */
+  readonly fel: 'intreg' | 'strans';
+  /** Rândul strâns, desfăcut de om: se vede întreg, peste ce e alături, până pleacă mausul sau alege o comandă. */
+  readonly extins: boolean;
   readonly intreaba: boolean;
+  /** Lățimea pânzei (px): un rând desfăcut sau întrebarea nu ies din ea. */
+  readonly latimePanza: number;
   readonly actiuni: ActiuniFoi;
   readonly onIntreaba: (foaie: string | null) => void;
+  readonly onExtinde: (foaie: string | null) => void;
 };
 
 /** Rândul unei foi: redesenat doar când i se schimbă foaia, vederea, starea sau acțiunile, nu la fiecare mișcare a mausului. */
-const RandFoaie = memo(function RandFoaie({ f, vedere, vizibil, intreaba, actiuni, onIntreaba }: PropsRand): ReactNode {
+const RandFoaie = memo(function RandFoaie({ f, vedere, vizibil, fel, extins, intreaba, latimePanza, actiuni, onIntreaba, onExtinde }: PropsRand): ReactNode {
   const loc = loculRandului(f, vedere);
+  const strans = fel === 'strans' && !extins && !intreaba;
+  // Un rând mai lat decât foaia (desfăcut, sau cu întrebarea) stă peste vecini și nu iese din pânză.
+  const peste = !strans && (fel === 'strans' || intreaba);
+  const rand = useRef<HTMLDivElement>(null);
+  const [stanga, setStanga] = useState(loc.stanga);
+  useLayoutEffect(() => {
+    const lat = peste ? rand.current?.offsetWidth ?? 0 : 0;
+    setStanga(peste ? stangaInPanza(loc.stanga, lat, latimePanza) : loc.stanga);
+  }, [peste, loc.stanga, latimePanza, intreaba]);
+  // Tastatura: rândul desfăcut primește focusul pe prima comandă; Escape îl strânge și întoarce focusul pe „⋯”.
+  const revine = useRef(false);
+  useEffect(() => {
+    if (extins) rand.current?.querySelector<HTMLButtonElement>('button:not([disabled])')?.focus();
+    else if (revine.current) {
+      revine.current = false;
+      rand.current?.querySelector<HTMLButtonElement>('button')?.focus();
+    }
+  }, [extins]);
   return (
-    <div className="controale-foaie" role="toolbar" aria-label={t('panza.foaie-comenzi', { nume: f.nume })} data-controale-foaie={f.id}
-      data-vizibil={vizibil || intreaba ? 'da' : 'nu'} style={{ left: loc.stanga, top: loc.sus }}>
+    <div ref={rand} className="controale-foaie" role="toolbar" aria-label={t('panza.foaie-comenzi', { nume: f.nume })} data-controale-foaie={f.id}
+      data-vizibil={vizibil || intreaba || extins ? 'da' : 'nu'} data-fel={strans ? 'strans' : 'intreg'} data-peste={peste ? 'da' : 'nu'}
+      style={{ left: stanga, top: loc.sus }}
+      onWheel={roataLaPanza}
+      onPointerLeave={extins ? () => { onExtinde(null); } : undefined}
+      onKeyDown={extins ? (e) => { if (e.key === 'Escape') { e.stopPropagation(); revine.current = true; onExtinde(null); } } : undefined}>
       {intreaba ? (
         <>
           <span className="controale-foaie-intrebare">{t('lista.foaie-sterge-confirma', { n: f.piese })}</span>
-          <button type="button" className="cu-text" data-meniu-foaie-articol="sterge-da" onClick={() => { onIntreaba(null); actiuni.ruleaza('foaie.sterge', f.id); }}>
+          <button type="button" className="cu-text" data-meniu-foaie-articol="sterge-da" onClick={() => { onIntreaba(null); onExtinde(null); actiuni.ruleaza('foaie.sterge', f.id); }}>
             {t('actiune.foaie-sterge')}
           </button>
           <button type="button" className="cu-text" data-meniu-foaie-articol="sterge-nu" onClick={() => { onIntreaba(null); }}>{t('lista.renunta')}</button>
         </>
+      ) : strans ? (
+        <button type="button" data-icona="foaie.mai-mult" data-meniu-foaie-articol="mai-mult" aria-expanded={false} aria-label={t('panza.foaie-arata-comenzile')}
+          title={t('panza.foaie-arata-comenzile')} onClick={() => { onExtinde(f.id); }} />
       ) : (
         <>
           <button type="button" data-icona="vedere.proprietati" data-meniu-foaie-articol="proprietati" aria-label={t('lista.foaie-proprietati')}
-            title={t('lista.foaie-proprietati')} onClick={() => { actiuni.proprietati(f.id); }} />
+            title={t('lista.foaie-proprietati')} onClick={() => { onExtinde(null); actiuni.proprietati(f.id); }} />
           <button type="button" data-icona="foaie.aseaza" data-meniu-foaie-articol="aseaza" aria-label={t('lista.foaie-aseaza')}
-            title={t('lista.foaie-aseaza')} onClick={() => { actiuni.aseaza(f.id); }} />
+            title={t('lista.foaie-aseaza')} onClick={() => { onExtinde(null); actiuni.aseaza(f.id); }} />
           {RANDURI_FOAIE.map(([id, eticheta]) => {
             const s = actiuni.stare(id, f.id);
             return (
@@ -138,6 +183,7 @@ const RandFoaie = memo(function RandFoaie({ f, vedere, vizibil, intreaba, actiun
                     onIntreaba(f.id);
                     return;
                   }
+                  onExtinde(null);
                   actiuni.ruleaza(id, f.id);
                 }} />
             );
@@ -161,17 +207,44 @@ type PropsControale = {
  * Comenzile foii pe pânză (ADR 0210 §1, felia 11.1↑c): sub fiecare foaie, rândul cu cele șapte comenzi ale meniului ei, ca
  * iconițe, prin același registru (un refuz e stins, cu motivul în titlu). Al foii active se vede mereu; al unei foi vecine,
  * doar cu mausul pe ea, pe fâșia de sub ea sau pe rând (și cu focusul în el). Ștergerea unei foi cu piese întreabă întâi, în rând.
+ * Rândul nu trece de lățimea foii lui (felia 11.1↑d): cu pânza micșorată se strânge într-un buton, „⋯”, care îl desface peste ce
+ * e alături; sub lățimea unui buton nu se arată.
  */
 export function ControaleFoi({ foi, vedere, cursor, actiuni }: PropsControale): ReactNode {
   useLimba();
   const p = useSyncExternalStore(cursor.asculta, cursor.citeste);
   const peste = foaiaDeSub(p, foi, vedere.scara);
   const [confirma, setConfirma] = useState<string | null>(null);
+  const [extins, setExtins] = useState<string | null>(null);
+  // Mărimea unui buton (se schimbă cu densitatea și la atingere) și lățimea pânzei, măsurate, nu presupuse.
+  const strat = useRef<HTMLDivElement>(null);
+  const masura = useRef<HTMLButtonElement>(null);
+  const [buton, setButon] = useState(28);
+  const [latimePanza, setLatimePanza] = useState(0);
+  useLayoutEffect(() => {
+    const citeste = (): void => {
+      const b = masura.current?.offsetWidth ?? 0;
+      if (b > 0) setButon(b);
+      setLatimePanza(strat.current?.clientWidth ?? 0);
+    };
+    citeste();
+    if (typeof ResizeObserver === 'undefined') return undefined;
+    const o = new ResizeObserver(citeste);
+    if (masura.current) o.observe(masura.current);
+    if (strat.current) o.observe(strat.current);
+    return () => { o.disconnect(); };
+  }, []);
   return (
-    <div className="controale-foi">
-      {foi.map((f) => (
-        <RandFoaie key={f.id} f={f} vedere={vedere} vizibil={f.activa || peste === f.id} intreaba={confirma === f.id} actiuni={actiuni} onIntreaba={setConfirma} />
-      ))}
+    <div className="controale-foi" ref={strat}>
+      <button type="button" ref={masura} className="controale-foaie-masura" data-icona="foaie.mai-mult" tabIndex={-1} aria-hidden="true" disabled />
+      {foi.map((f) => {
+        const fel = felRand(f.latime * vedere.scara, buton);
+        if (fel === 'ascuns') return null;
+        return (
+          <RandFoaie key={f.id} f={f} vedere={vedere} vizibil={f.activa || peste === f.id} fel={fel} extins={extins === f.id} intreaba={confirma === f.id}
+            latimePanza={latimePanza} actiuni={actiuni} onIntreaba={setConfirma} onExtinde={setExtins} />
+        );
+      })}
     </div>
   );
 }

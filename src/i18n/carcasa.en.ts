@@ -164,6 +164,7 @@ export const enCarcasa = {
   'lista.foaie-proprietati': 'Name, size and material…',
   'lista.foaie-aseaza': 'Arrange on sheets…',
   'panza.foaie-comenzi': 'Commands of the sheet “{nume}”',
+  'panza.foaie-arata-comenzile': 'Show the sheet commands',
   'aseaza.titlu': 'Arrange on sheets',
   'aseaza.ce': 'What to arrange',
   'aseaza.ce.alese': { one: 'the chosen part', other: 'the chosen parts ({n})' },
