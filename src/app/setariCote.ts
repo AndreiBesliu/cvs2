@@ -1,7 +1,7 @@
 /**
  * Setările cotelor (ADR 0330 §6), ale aplicației, nu ale unei cote: ținute în browser (`cncvs2.cote`, JSON cu versiune),
  * aplicate pe loc tuturor cotelor. Grupurile: cifrele și liniile (a-3), comportamentul, lipirea, măsurarea (a-2, plus
- * pânza în a-3); fereastra Setări le scrie. Orice valoare lipsă, de alt tip sau în afara marginilor ia implicitul ei, câmp
+ * pânza în a-3 și foile vecine în a-4); fereastra Setări le scrie. Orice valoare lipsă, de alt tip sau în afara marginilor ia implicitul ei, câmp
  * cu câmp: o setare stricată nu le strică pe celelalte.
  */
 import { useSyncExternalStore } from 'react';
@@ -49,6 +49,8 @@ export type SetariCote = {
     readonly dupa: 'ramane' | 'selectie';
     /** Cotele pe pânză (ca „Arată cotele”); cu unealta Cote aleasă se văd oricum. */
     readonly pePanza: boolean;
+    /** Cotele foilor vecine, cu „Toate foile pe pânză”: estompate, ca foile lor, sau ascunse. */
+    readonly vecine: 'estompate' | 'ascunse';
     /** Sub atâția pixeli pe ecran, cifrele se ascund (0–12; 0: niciodată). */
     readonly pragCifre: number;
     /** Culoarea pe pânză („#rrggbb”), sau null: a temei. */
@@ -74,7 +76,7 @@ export type SetariCote = {
 export const SETARI_IMPLICITE: SetariCote = {
   cifre: { unitate: 'mm', zecimale: null, zerouri: 'taiate', pas: null, separator: 'limba', cuUnitate: false, inaltime: 3.5, loc: 'deasupra' },
   linii: { capete: 'plina', marime: 2.5, extensii: true, gol: 1, depasire: 2, distanta: 10 },
-  comportament: { legate: true, pornire: 'automata', dupa: 'ramane', pePanza: true, pragCifre: 6, culoare: null },
+  comportament: { legate: true, pornire: 'automata', dupa: 'ramane', pePanza: true, vecine: 'estompate', pragCifre: 6, culoare: null },
   lipire: { felurile: { varf: true, mijloc: true, centru: true, cadran: true, cutie: true, foaie: true, grila: true }, toleranta: 8, contur: 'ctrl' },
   masurare: { distanta: true, delta: true, unghi: true, cursor: true, bara: true },
 };
@@ -144,6 +146,7 @@ export function citesteSetariCote(text: string | null): SetariCote {
       pornire: unul(c['pornire'], ['automata', 'ultimul'], I.comportament.pornire),
       dupa: unul(c['dupa'], ['ramane', 'selectie'], I.comportament.dupa),
       pePanza: bif(c['pePanza'], I.comportament.pePanza),
+      vecine: unul(c['vecine'], ['estompate', 'ascunse'], I.comportament.vecine),
       pragCifre: numar(c['pragCifre'], MARGINI.pragCifre, I.comportament.pragCifre),
       culoare: culoare === null || (typeof culoare === 'string' && CULOARE.test(culoare)) ? culoare : I.comportament.culoare,
     },
@@ -245,4 +248,10 @@ function asculta(f: () => void): () => void {
 /** Setările, ca stare React: o schimbare (din fereastra Setări, din altă parte a aplicației) redesenează pe loc. */
 export function useSetariCote(): SetariCote {
   return useSyncExternalStore(asculta, setariCote, setariCote);
+}
+
+/** „Arată cotele” (`vedere.cote`, ADR 0330 §5): comută cotele pe pânză, aceeași setare ca în fereastra Setări. */
+export function comutaPePanza(): void {
+  const s = setariCote();
+  schimbaSetariCote({ ...s, comportament: { ...s.comportament, pePanza: !s.comportament.pePanza } });
 }

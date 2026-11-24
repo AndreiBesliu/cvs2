@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { citesteSetariCote, eImplicit, formatCote, grupImplicit, GRUPURI_COTE, optiuniLipireCote, SETARI_IMPLICITE, stilCote, textSetariCote, type SetariCote } from '../../src/app/setariCote.ts';
+import { citesteSetariCote, comutaPePanza, eImplicit, formatCote, grupImplicit, GRUPURI_COTE, setariCote, optiuniLipireCote, SETARI_IMPLICITE, stilCote, textSetariCote, type SetariCote } from '../../src/app/setariCote.ts';
 import { STIL_IMPLICIT } from '../../src/model/desenCota.ts';
 
 /**
@@ -12,7 +12,7 @@ test('implicitele, din tabelul ADR 0330 §6', () => {
   assert.deepEqual(SETARI_IMPLICITE, {
     cifre: { unitate: 'mm', zecimale: null, zerouri: 'taiate', pas: null, separator: 'limba', cuUnitate: false, inaltime: 3.5, loc: 'deasupra' },
     linii: { capete: 'plina', marime: 2.5, extensii: true, gol: 1, depasire: 2, distanta: 10 },
-    comportament: { legate: true, pornire: 'automata', dupa: 'ramane', pePanza: true, pragCifre: 6, culoare: null },
+    comportament: { legate: true, pornire: 'automata', dupa: 'ramane', pePanza: true, vecine: 'estompate', pragCifre: 6, culoare: null },
     lipire: { felurile: { varf: true, mijloc: true, centru: true, cadran: true, cutie: true, foaie: true, grila: true }, toleranta: 8, contur: 'ctrl' },
     masurare: { distanta: true, delta: true, unghi: true, cursor: true, bara: true },
   });
@@ -25,7 +25,7 @@ test('citite înapoi exact, cu versiunea în text', () => {
   const s: SetariCote = {
     cifre: { unitate: 'inch', zecimale: 4, zerouri: 'pastrate', pas: 0.25, separator: 'punct', cuUnitate: true, inaltime: 5, loc: 'in-linie' },
     linii: { capete: 'oblica', marime: 3, extensii: false, gol: 0, depasire: 5, distanta: 25 },
-    comportament: { legate: false, pornire: 'ultimul', dupa: 'selectie', pePanza: false, pragCifre: 0, culoare: '#ff8800' },
+    comportament: { legate: false, pornire: 'ultimul', dupa: 'selectie', pePanza: false, vecine: 'ascunse', pragCifre: 0, culoare: '#ff8800' },
     lipire: { felurile: { varf: true, mijloc: false, centru: true, cadran: false, cutie: true, foaie: false, grila: true }, toleranta: 12.5, contur: 'mereu' },
     masurare: { distanta: true, delta: false, unghi: true, cursor: false, bara: true },
   };
@@ -41,7 +41,7 @@ test('un câmp greșit ia implicitul lui; celelalte rămân', () => {
     lipire: { felurile: { varf: false, mijloc: 1 }, toleranta: 3, contur: 'uneori' },
     masurare: { distanta: false, cursor: null },
   }));
-  assert.deepEqual(r.comportament, { legate: true, pornire: 'automata', dupa: 'selectie', pePanza: true, pragCifre: 6, culoare: null });
+  assert.deepEqual(r.comportament, { legate: true, pornire: 'automata', dupa: 'selectie', pePanza: true, vecine: 'estompate', pragCifre: 6, culoare: null });
   assert.equal(r.lipire.felurile.varf, false);
   assert.equal(r.lipire.felurile.mijloc, true);
   assert.equal(r.lipire.toleranta, 8, 'sub 4 px: implicitul');
@@ -98,6 +98,8 @@ test('cifrele, liniile și pânza: marginile din tabel, fiecare câmp greșit la
   assert.equal(r({ comportament: { culoare: '#FF8800' } }).comportament.culoare, null, 'doar litere mici, ca din alegătorul culorii');
   assert.equal(r({ comportament: { culoare: '#00aa33' } }).comportament.culoare, '#00aa33');
   assert.equal(r({ comportament: { pePanza: 0 } }).comportament.pePanza, true);
+  assert.equal(r({ comportament: { vecine: 'pe jumatate' } }).comportament.vecine, 'estompate');
+  assert.equal(r({ comportament: { vecine: 'ascunse' } }).comportament.vecine, 'ascunse');
 });
 
 test('stilul desenului și scrierea cifrelor, din setări; „după limbă” urmează limba aplicației', () => {
@@ -128,4 +130,13 @@ test('„Înapoi la implicit” pe un grup lasă celelalte neatinse', () => {
     assert.ok(eImplicit(r, g));
     for (const alt of GRUPURI_COTE) if (alt !== g) assert.deepEqual(r[alt], s[alt], `${g} lasă ${alt}`);
   }
+});
+
+test('„Arată cotele” comută „Cotele pe pânză” din setări, fără să atingă restul', () => {
+  const inainte = setariCote();
+  comutaPePanza();
+  assert.equal(setariCote().comportament.pePanza, !inainte.comportament.pePanza);
+  assert.deepEqual({ ...setariCote(), comportament: { ...setariCote().comportament, pePanza: inainte.comportament.pePanza } }, inainte);
+  comutaPePanza();
+  assert.deepEqual(setariCote(), inainte);
 });
