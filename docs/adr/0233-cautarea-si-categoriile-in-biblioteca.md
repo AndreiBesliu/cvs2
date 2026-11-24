@@ -1,9 +1,10 @@
 # ADR 0233: Căutarea și categoriile în biblioteca extensiilor
 
-**Starea:** în lucru din 24.11.2026, la cuvântul owner-ului („ok, porneste cautarea si categoriile”, după raportul feliei
-3.Xi, care le lăsa „la cuvântul tău”), și implementat în aceeași zi **cu alegerile recomandate**: felia 3.Xj a liniei
-bibliotecii (ramura `wip/3.Xh-biblioteca-ui`, din `main` `fdce5f1`). Cinci alegeri țin de owner și stau la „Întrebările”,
-cu recomandarea în față; fiecare se schimbă fără să atingă restul. **Schimbă:** ADR 0231 („Căutarea și categoriile, acum:
+**Starea:** acceptat pe 24.11.2026, cu toate recomandările („da, 1a–5a”, la cele cinci întrebări, după ce felia a intrat în
+`main`). Pornit pe 24.11.2026, la cuvântul lui („ok, porneste cautarea si categoriile”, după raportul feliei 3.Xi, care le lăsa
+„la cuvântul tău”), și implementat în aceeași zi cu alegerile recomandate: felia 3.Xj a liniei bibliotecii (ramura
+`wip/3.Xh-biblioteca-ui`, din `main` `fdce5f1`), unită în `main` pe 24.11 (`049c5dda`). Cele cinci alegeri care țineau
+de owner stau la „Întrebările”, cu răspunsul lui; fiecare se poate schimba fără să atingă restul. **Schimbă:** ADR 0231 („Căutarea și categoriile, acum:
 catalogul are o extensie”; „Se redeschide dacă: catalogul trece de ~20 de extensii”) și ADR 0232 („rămân pentru peste ~20
 de extensii”): owner-ul le vrea de acum, cu o singură extensie în bibliotecă. **Continuă:** ADR 0231 (fereastra
 bibliotecii, tastatura ei), ADR 0232 (filele „Din bibliotecă” / „Instalate”, lipsa internetului), ADR 0230 (catalogul de
@@ -101,6 +102,8 @@ Nimic nu spune ce fel de extensie e una (pentru desen, pentru mașină, pentru i
 
 ## Întrebările (recomandarea e „a”, cea implementată)
 
+**Răspunsul owner-ului, 24.11.2026: „da, 1a–5a”.** Rămâne ce e implementat, la toate cinci.
+
 1. **Rafturile.** (a) cele cinci din A.1; (b) altele: spune care (un raft e un rând în listă și două texte).
 2. **Unde stă Easy 3Draw.** (a) Jucării și modele (principal), Imprimare 3D, CNC și trasee; (b) altfel.
 3. **Cu o singură extensie în bibliotecă.** (a) câmpul și rafturile, mereu la vedere; (b) abia de la un număr de
@@ -125,7 +128,7 @@ Nimic nu spune ce fel de extensie e una (pentru desen, pentru mașină, pentru i
 
 ## Se redeschide dacă
 
-- owner-ul răspunde altfel la una dintre întrebări;
+- owner-ul se răzgândește la una dintre întrebări (pe 24.11 a răspuns „a” la toate);
 - biblioteca trece de ~20 de extensii (sortarea, evidențierea textului găsit, eventual rafturile ca o coloană);
 - o extensie din afara bibliotecii are nevoie de un raft (atunci, raftul în pachet, cu judecata lui);
 - lista de rafturi trece de vreo opt (pastilele nu mai încap pe un rând: o listă derulantă).

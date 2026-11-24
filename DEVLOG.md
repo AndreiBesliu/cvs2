@@ -13704,6 +13704,23 @@ la ordinul în vigoare „unește ce se poate”
   reparată (`29ef7e44`): completul pe `main` (45417561144) rula la unire; cel dinainte, pe `647cebb1`, căzuse la proba
   instabilă a extensiilor.
 
+## 2026-11-24 — Felia 3.Xk: proba repornirii cerute de extensie, fără ceasul adevărat (doar probe) (sesiune cloud)
+
+**Prompt:** hotărâtă cu sesiunea principală („Rândul 235: da, fă-o ca felie mică, doar probe, după unirea lui 3.Xj, pe PR
+separat […] Ține de menținerea CI-ului verde, nu cere cuvântul owner-ului”). **Started:** 24.11, 17:40. **Completed:**
+24.11, 18:10.
+
+- **Ce cădea:** „două cereri imediat după” (`extensii.lucru.spec.ts:222`): sub încărcare, clicurile probei ajungeau la
+  cadrul refăcut și după cele 2 s ale răririi, iar prima repornea pe loc (2 din 120 pe zece lucrători, la sesiunea
+  principală; în containerul liniei, 0 din 450).
+- **Reparația (doar probe):** ceasul paginii e al probei (`page.clock`), oprit înaintea primei cereri și mutat cu
+  `runFor`: la 1 999 ms nimic, la 2 000 o singură repornire; fără așteptările de 2,5 s (proba ține ~7 s, nu ~10).
+- **Dovada:** cu o întârziere de 2,1 s pusă anume înaintea celor două clicuri, proba veche cade 5 din 5 („Deschideri: 4”
+  în loc de 2), cea nouă trece 5 din 5. Repetată de 300 de ori pe doisprezece lucrători: 300 trecute.
+- **Otrăvurile** 8 / 8, în clonă (`test/otravuri/3.Xk.py`): 7 prin e2e; a opta (cererile dese neadunate) nu se vede din
+  browser (două reporniri în aceeași clipă sunt o singură refacere a cadrului) și e prinsă de proba unitară.
+- Aplicația nu se schimbă: nimic în `src/`.
+
 ## 2026-11-24 — Sesiunea principală în cloud: a douăzecea unire (3.Xj, căutarea și categoriile din bibliotecă; oracolul rampelor împărțit) (Model: Claude Fable 5.2)
 
 **Prompt:** raportul liniei bibliotecii („3.Xj e gata de unit”, PR-ul #24), la ordinul în vigoare „unește ce se poate”;
@@ -13797,3 +13814,18 @@ poate”; „ok, imparte si cele doua teste grele ramase”
 - **Documentele:** decizia în `CLAUDE.md`, cu rândurile de stare ale lui a-3, h-3 și h-4; indexul liniilor; starea din
   `docs/linii/principala.md`.
 - **Loturile dinainte:** @@INAINTE@@
+
+## 2026-11-24 — ADR 0233 acceptat („da, 1a–5a”); 3.Xk cu `main` adus (lotul 22), pe PR-ul ei (sesiune cloud)
+
+**Prompt:** „da, 1a–5a” (la cele cinci întrebări din ADR 0233); mesajul sesiunii principale din 24.11, 18:30 („Lotul 22
+e în `main` […] Acum poți aduce `main` în ramură și deschide PR-ul lui 3.Xk”)
+**Started:** 24.11, 18:30. **Completed:** documentele și PR-ul, 24.11, 18:45; rapidul și completul, în CI.
+
+- **ADR 0233, acceptat:** rămâne ce e implementat la toate cinci (rafturile, unde stă Easy 3Draw, la vedere și cu o
+  singură extensie, cel mult trei rafturi, cât de îngăduitoare e căutarea). Scris în ADR („Starea”, „Întrebările”), în
+  indexul ADR, în coada owner-ului din fișa etapei 3, în nota liniei și în `CLAUDE.md` (unde cele două paragrafe ale lui
+  3.Xj, al sesiunii principale și al liniei, au rămas unul singur).
+- **`main` (`62569bb`, lotul 22) adus în ramură** (`abd0dfe`): ciocnirea, doar în DEVLOG. Față de `main`, ramura are
+  acum doar 3.Xk: proba din `test/e2e/extensii.lucru.spec.ts`, lista de otrăvuri `test/otravuri/3.Xk.py` și documente.
+- **PR-ul `AndreiBesliu/cvs2#24`**, refolosit pentru 3.Xk (titlul și descrierea, schimbate); o unește sesiunea
+  principală, la raport.

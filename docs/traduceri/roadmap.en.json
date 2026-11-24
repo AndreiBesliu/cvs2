@@ -593,6 +593,10 @@
       "ro": "După unirea lui 12.1↑b–c: viteza benzii, rândurile legate, arborele, lemnul din jurul…",
       "en": "After merging 12.1↑b–c: the band’s speed, the linked rows, the tree, the wood around…"
     },
+    "20fa40e76ff185ae": {
+      "ro": "**Proba repornirii cerute de extensie, fără ceasul adevărat** (fără mașină; doar probe; ADR 0165; hotărâtă cu sesiunea principală, ca să țină CI-ul verde, după ce `extensii.lucru.spec.ts:222` a oprit două complete pe 24.11). Clicul care nu se mai întorcea e reparat din `main` (`29ef7e44`, `clicCareRefaceCadrul`). Rămăsese „două cereri imediat după”: sub încărcare, clicurile probei ajungeau la cadrul refăcut și după cele 2 s ale răririi, iar prima repornea pe loc (2 din 120, pe zece lucrători, la sesiunea principală). Acum cele 2 s sunt ale ceasului paginii (`page.clock`), oprit înaintea primei cereri și mutat de probă: la 1 999 ms nimic, la 2 000 o singură repornire; fără așteptările de 2,5 s. Dovada: cu o întârziere de 2,1 s pusă anume înaintea celor două clicuri, proba veche cade 5 din 5 („Deschideri: 4”), cea nouă trece 5 din 5; repetată de 300 de ori pe doisprezece lucrători, 300 trecute. Otrăvurile 8 / 8 (una, cererile dese neadunate, nu se vede din browser și e a probei unitare). Aplicația nu se schimbă.",
+      "en": "**The extension-requested restart test, without the real clock** (no machine; tests only; ADR 0165; agreed with the main session, to keep CI green, after `extensii.lucru.spec.ts:222` stopped two full runs on 24.11). The click that never returned is repaired from `main` (`29ef7e44`, `clicCareRefaceCadrul`). What remained was “two requests right after”: under load, the test’s clicks reached the rebuilt frame even after the 2 s of the throttle, and the first one restarted at once (2 of 120, on ten workers, in the main session). Now the 2 s belong to the page’s clock (`page.clock`), paused before the first request and moved by the test: nothing at 1,999 ms, a single restart at 2,000; without the 2.5 s waits. The evidence: with a 2.1 s delay inserted on purpose before the two clicks, the old test fails 5 of 5 (“Deschideri: 4”), the new one passes 5 of 5; repeated 300 times on twelve workers, 300 passed. Mutations 8 / 8 (one, frequent requests not merged, cannot be seen from the browser and belongs to the unit test). The app does not change."
+    },
     "2110580dc0e85e37": {
       "ro": "Utilizarea aplicației: înregistratorul din editor și trimiterea în loturi",
       "en": "App usage: the recorder in the editor and sending in batches"
@@ -2553,10 +2557,6 @@
       "ro": "Remedierile din testul uneltelor de desen",
       "en": "The fixes from the drawing tools test"
     },
-    "9946a971d4642b94": {
-      "ro": "înaintea unirii lui 3.Xj",
-      "en": "before merging 3.Xj"
-    },
     "99c2277b56fe658b": {
       "ro": "Proba grupului 3 pe K1C (3.6s–3.6u, ADR 0194; în `main` din 18.11, pe adresa principală de test: <https://cncvectorstudio-test.web.app/>), după [ghid](https://github.com/AndreiBesliu/cvs2/blob/main/docs/masina/imprimanta-k1c.md), pașii 9–11: o imprimare scurtă cu notificările pornite și cvs2 în fundal (vine notificarea? sunetul?), istoricul la final (durata, filamentul) și, cu timelapse-ul pornit pe ecranul imprimantei, „Filmul ↗”; jurnalul copiat, dacă ceva nu merge",
       "en": "Test of group 3 on the K1C (3.6s–3.6u, ADR 0194; in `main` since 18.11, on the main test address: <https://cncvectorstudio-test.web.app/>), following the [guide](https://github.com/AndreiBesliu/cvs2/blob/main/docs/masina/imprimanta-k1c.md), steps 9–11: a short print with the notifications on and cvs2 in the background (does the notification come? the sound?), the history at the end (the duration, the filament) and, with timelapse turned on on the printer's screen, “Video ↗”; the log copied if something does not work"
@@ -2732,6 +2732,10 @@
     "a316b45e2a5823a3": {
       "ro": "Backup-ul și marcajele (ADR 0041): `backupZilnic` și `verificaBackup` programate pe test (cu `BUCKET_BACKUP` din `functions/.env.cncvectorstudio-test`), marcajul în jurul fiecărui job (pornire, final, succes, eșecuri la rând, eroare, rând în fila Erori), judecata pură în `shared/joburi.ts` și câte o verificare pe job în Diagnoză; regula `marcaje`. 23 de teste pe emulator, 3 e2e, 7 unitare noi; 10 sabotaje prinse, cu martorii. Emulatorul a prins un import care trecea de tipuri și cădea la rulare (`{ v1 }` din pachetul CommonJS). Prima rulare reală: 17.10, 03:00 / 05:00.",
       "en": "The backup and the markers (ADR 0041): `backupZilnic` and `verificaBackup` scheduled on test (with `BUCKET_BACKUP` from `functions/.env.cncvectorstudio-test`), a marker around each job (start, end, success, failures in a row, error, a row in the Errors tab), the pure judgement in `shared/joburi.ts` and one check per job in Diagnostics; the `marcaje` rule. 23 tests on the emulator, 3 e2e, 7 new unit tests; 10 sabotages caught, with the controls. The emulator caught an import that passed the types and failed at runtime (`{ v1 }` from the CommonJS package). The first real run: 17.10, 03:00 / 05:00."
+    },
+    "a328b7fe720aaeea": {
+      "ro": "Proba repornirii cerute de extensie, fără ceasul adevărat",
+      "en": "The extension-requested restart test, without the real clock"
     },
     "a374b647cf50278f": {
       "ro": "Camera MJPEG (ADR 0195), pentru K1 fără WebRTC: fluxul de pe 8080, citit cadru cu cadru în același card; proba pe imprimanta falsă",
@@ -2940,10 +2944,6 @@
     "af2f5cd6c3409f38": {
       "ro": "Desenele și pozele buzunarului și ale găuririi",
       "en": "Drawings and pictures for the pocket and for drilling"
-    },
-    "af89e8c2679e9dfd": {
-      "ro": "3.Xj (căutarea și categoriile, ADR 0233)",
-      "en": "3.Xj (search and categories, ADR 0233)"
     },
     "af990a3532a6a2ae": {
       "ro": "**Tăietura ca cartonașe cu poze** (fără mașină; ADR 0290, ultima parte a lui 28.8↑b). Tăietura își arată toate variantele, fiecare cu poza ei (exteriorul, interiorul, pe linie; stânga și dreapta pe o cale deschisă; buzunarul, găurirea, V-carve-ul, incrustația în V, cea cu pereți drepți), ca cartonașele din 28.8↑b-2; găurirea stă printre ele și pe un rând fără cercuri, oprită, cu „doar pe cercuri”. În listă, sub numele operației, poza tăieturii ei, pe rândul textului. **Găsite pe drum:** cu poza pe o coloană a ei, numele operației se rupea pe patru rânduri, iar tragerea din ordinea de mână nu mai pornea în probă (rândurile de ~156 px); poza stă acum în rândul de sub nume. Inputul unui cartonaș oprit rămânea la vedere, un cerc peste el (regula câmpurilor oprite, opacitatea 0,55), și pe colțurile de pe linie din 28.8↑b-2: acum rămâne ascuns, cu o probă. **Probele:** `export.cartonase.spec.ts` (4), 23 de spec-uri mutate de pe listă pe cartonaș (~55 de folosiri); e2e-ul ferestrei 174 / 174, probele unitare atinse 84 / 84, catalogul controalelor la zi. **Otrăvurile:** `28.8b3.py`, 7 / 7 prinse. Manualul (ro, en). **Mărimea:** totalul 808,8 / 900 (bucata ferestrei +0,7 kB), pornirea neschimbată (109,4 / 115).",
@@ -3172,6 +3172,10 @@
     "bb6a0f611110b2d4": {
       "ro": "Fluxul senderului ca mașini de stare pure (ADR 0080): încărcarea programului (octeții exportați, hash-ul, refuzurile: ASCII, `\\r`, liniile peste 70 de octeți, WCS-ul, `M6` străin, finalul), citirea răspunsurilor și a rapoartelor pe N axe, cele 11 reguli din `docs/PORTARE.md` §3.4 (octeții, răspunsurile, eroarea în flux, bufferul pierdut, sfârșitul, bariera, citirile, hold-ul, timpul real, WCS-ul); probat pe emulator",
       "en": "The sender flow as pure state machines (ADR 0080): loading the program (the exported bytes, the hash, the refusals: ASCII, `\\r`, lines over 70 bytes, the WCS, a foreign `M6`, the ending), reading the replies and the reports on N axes, the 11 rules of `docs/PORTARE.md` §3.4 (the bytes, the replies, the error in the stream, the lost buffer, the end, the barrier, the reads, the hold, realtime, the WCS); proven on the emulator"
+    },
+    "bbd04b3d00d93505": {
+      "ro": "3.Xj (căutarea și categoriile, ADR 0233, acceptat)",
+      "en": "3.Xj (search and categories, ADR 0233, accepted)"
     },
     "bbd371c504093180": {
       "ro": "O placă de probă tăiată dintr-o lucrare trimisă din Planificatorul Trenuleț prin primire (ADR 0126), pe adresa principală a instanței de test (unită în `main` pe 06.11)",
@@ -3685,9 +3689,9 @@
       "ro": "înainte să pornim primirea pe live",
       "en": "before we turn receiving on for live"
     },
-    "db2dcb25d0ffb682": {
-      "ro": "Pe canalul `biblioteca`: deschide biblioteca, caută („lego”, „draw”), alege un raft din bara de sus și unul de pe pagina lui Easy 3Draw. Apoi răspunde la cele cinci întrebări din ADR 0233 (rafturile, unde stă Easy 3Draw, dacă rămân la vedere cu o singură extensie, câte rafturi pe extensie, cât de îngăduitoare e căutarea); recomandarea e „a” la toate, cea făcută",
-      "en": "On the `biblioteca` channel: open the library, search (“lego”, “draw”), pick a shelf from the top bar and one from Easy 3Draw’s page. Then answer the five questions in ADR 0233 (the shelves, where Easy 3Draw sits, whether they stay visible with a single extension, how many shelves per extension, how forgiving the search is); the recommendation is “a” for all, the one built"
+    "db7a2118d7389e29": {
+      "ro": "Pe canalul `biblioteca` (sau pe adresa principală de test, după publicarea lotului cu 3.Xj): deschide biblioteca, caută („lego”, „draw”), alege un raft din bara de sus și unul de pe pagina lui Easy 3Draw. Cele cinci întrebări din ADR 0233 au răspunsul tău din 24.11 („da, 1a–5a”); spune dacă, la încercare, vrei altfel la vreuna",
+      "en": "On the `biblioteca` channel (or on the main test address, once the batch with 3.Xj is published): open the library, search (“lego”, “draw”), pick a shelf from the top bar and one from Easy 3Draw's page. The five questions in ADR 0233 have your answer from 24.11 (“da, 1a–5a”); say if, after trying it, you want any of them otherwise"
     },
     "db9aaf36cca405a1": {
       "ro": "Camera MJPEG, pentru K1 fără WebRTC",
