@@ -88,12 +88,12 @@ test('peImagine: în cadrul rotit, marginea inclusă', () => {
 
 test('zonaInPixeli: pixelii atinși, fără un pixel în plus la marginile întregi, cel puțin unul, în imagine', () => {
   assert.deepEqual(zonaInPixeli({ x0: 0.25, y0: 0.3, x1: 0.75, y1: 0.8 }, 800, 560), { x: 200, y: 168, w: 400, h: 280 });
-  // 0,3 · 800 = 239,99999999999997 în virgulă mobilă: tot 240.
-  assert.deepEqual(zonaInPixeli({ x0: 0.3, y0: 0, x1: 1, y1: 1 }, 800, 10), { x: 240, y: 0, w: 560, h: 10 });
+  // 0,57 · 100 = 56,99999999999999 în virgulă mobilă: tot 57 (la fel pe Y).
+  assert.deepEqual(zonaInPixeli({ x0: 0.57, y0: 0.57, x1: 1, y1: 1 }, 100, 100), { x: 57, y: 57, w: 43, h: 43 });
   assert.deepEqual(zonaInPixeli({ x0: 0.1001, y0: 0.5, x1: 0.1002, y1: 0.5001 }, 100, 100), { x: 10, y: 50, w: 1, h: 1 });
   assert.deepEqual(zonaInPixeli({ x0: 0.9999, y0: 0.9999, x1: 1, y1: 1 }, 100, 100), { x: 99, y: 99, w: 1, h: 1 });
   // O zonă mai îngustă decât toleranța marginilor: tot un pixel.
-  assert.deepEqual(zonaInPixeli({ x0: 0.5, y0: 0.5, x1: 0.50000001, y1: 0.50000001 }, 100, 100), { x: 50, y: 50, w: 1, h: 1 });
+  assert.deepEqual(zonaInPixeli({ x0: 0.5, y0: 0.5, x1: 0.5 + 1e-12, y1: 0.5 + 1e-12 }, 100, 100), { x: 50, y: 50, w: 1, h: 1 });
 });
 
 test('asezarePeImagine: centrul imaginii în pagina importului, ca `asezareInPagina`, cu zonă și fără', () => {
