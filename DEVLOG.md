@@ -13222,3 +13222,22 @@ custom” (owner-ul, cu `FREZE.tdb`), apoi, la cele cinci întrebări: „Da, 1a
   16.A↑h-1 împreună +2,9, din care h-1 ~+0,7). Nimic pe
   server; documentul nu se schimbă. **Completed:** 24.11, 13:20.
 
+## 2026-11-24 — Sesiunea principală în cloud: rapidul lotului 17, oprit de limita de 10 minute; limita unei felii, 15 minute (Model: Claude Fable 5.2)
+
+**Prompt:** (fără prompt nou: rapidul de pe `main` n-a ieșit verde după a șaptesprezecea unire)
+**Started:** 24.11, 15:17. **Completed:** 24.11, 15:26 (împins în `main`; rapidul și completul, la rândul lor).
+
+- **Ce s-a văzut:** rapidul de pe `main` (`64a63b48`, 45400028790) a ieșit „cancelled”: felia 5 din 6 a testelor unitare
+  a fost oprită de limita jobului, la 10 minute; celelalte cinci, verzi în 4–6 minute. La fel pe ramura de unire
+  (`d57ca962`, 45391347194), ceea ce n-am verificat înaintea unirii: m-am uitat doar la complet, care era verde (el
+  rulează toate unitarele într-un singur pas, cu altă limită).
+- **Cauza:** nu un test agățat. Node împarte fișierele pe felii după poziția lor în lista sortată, iar fișierele noi ale
+  lotului (cotele, elicele) au mutat împărțirea: în felia 5 au ajuns, cu alte oracole grele înaintea lui,
+  `intrari-rampa.corpus.oracol.test.ts` (un singur test, 6 min 19 s de unul singur, măsurat în container; 12 s
+  `cote.neatinse`, deci nu el). Jurnalul feliei se oprește exact înaintea lui, cu cinci minute de tăcere până la limită.
+  E a treia oară (2.6, 3.6c, acum); primele două s-au rezolvat cu mai multe felii.
+- **Reparația:** limita unei felii a rapidului, 10 → 15 minute (`.github/workflows/rapid.yml`), cu motivul în antetul
+  lui. Alt număr de felii doar ar fi mutat din nou împărțirea. Limita rămâne o pază împotriva unui test agățat.
+- **De hotărât de owner, fără grabă:** oracolul de 6 minute se poate împărți în mai multe fișiere (feliile s-ar
+  echilibra și rapidul ar coborî iar spre 6–7 minute) sau muta în nivelul complet.
+- **Lecția:** înaintea unirii se citesc și rapidul, și completul ramurii de unire, nu doar completul.
