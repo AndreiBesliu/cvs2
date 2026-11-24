@@ -188,3 +188,28 @@ Pe 24.11.2026, în aceeași sesiune, după 16.A↑h-1:
 Probele (întâi): modelul, fișierul și depozitul (unitare), fereastra în Edge (grupul nou, cel existent, redenumirea cu Escape
 și cu refuzul, reîncărcarea, editorul, „Fără grup”). Otrăvurile: `test/otravuri/16.A-h2.py`.
 
+## Implementarea (16.A↑h-3)
+
+Pe 24.11.2026, în aceeași sesiune, după 16.A↑h-2:
+
+- **Catalogul** (`src/model/catalogFreze.ts`), 69 de freze, din tabelul de la §1, pentru felurile pe care CAM-ul le taie
+  azi: plate Ø1–Ø19,05 (17), de planare Ø19,05–Ø50,8 (5, plate cu grupul lor), V-urile obișnuite (17: 30° și 45° pe Ø6 și
+  Ø12,7; 60° pe Ø6, Ø12, Ø12,7, Ø25,4; 90° și pe Ø31,75; 120° și 150° pe Ø12,7 și Ø25,4), gravarea (30: 10°–60° cu vârful
+  0,1–0,5 pe Ø3,175; 30°, 45°, 60° cu vârful 0,2 și 0,5 pe Ø6). Id-urile sunt fixe (`cat-plata-6`, `cat-v-90-12.7`), iar
+  numele le propune fereastra, în limba omului. **Catalogul e scris din tabel, în bucata ferestrei** (~1 kB), nu ca JSON în
+  precache, cum spunea §7: e mai mic așa.
+- **Valorile de pornire**, din fel și diametru: turația (20 000 până la Ø3,175, 18 000 până la Ø6,35, 16 000 până la
+  Ø12,7, 14 000 până la Ø19,05, apoi 12 000), avansul din două tăișuri și așchia pe dinte în lemn (0,02–0,1 mm, după
+  diametru), rotunjit din 50 în 50, plonjarea o treime din avans, pasul (plata: Ø / 2, cel mult 4; planarea 1, cu pasul
+  lateral 50 %; V-ul 1,5–3), tăișul plăților (6–32 mm; V-ul și gravarea fără, conul îl dă); gravarea: 20 000, un tăiș, 800 și
+  250 mm/min, pasul 0,5. Fișa le spune „de pornire, de verificat pe material”. **Țolii** (1/8"–2") intră ca notă a frezei puse.
+- **„Pune în frezele mele”** (`cuDinCatalog`, în `src/model/dinCatalog.ts`, fără datele catalogului, ca panoul Tăierea, care
+  folosește depozitul, să nu le aducă): o freză cu aceeași geometrie (felul, diametrul, unghiul, vârful) care e deja în
+  bibliotecă se sare și se numără; altfel intră cu un nume liber și cu primul T liber, într-o singură scriere; peste plafon,
+  restul se spune. Plata Ø19,05 și planarea Ø19,05 au aceeași geometrie, deci intră o singură dată.
+- **Fereastra:** sub bibliotecă, „Catalogul (69)”, strâns la început; deschis, grupurile Plate, Planare, În V, Gravare, cu
+  „Pune toate” pe fiecare și „Pune tot ce vezi” lângă titlu; căutarea și filtrul pe fel aleg și din el. O freză din catalog
+  își arată fișa (fără T și fără grup), cu „Pune în frezele mele”, oprit cu „E deja în frezele mele.” când geometria e la om.
+
+Probele (întâi): catalogul și punerea, pe hârtie (unitare), fereastra în Edge. Otrăvurile: `test/otravuri/16.A-h3.py`.
+
