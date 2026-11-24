@@ -629,6 +629,8 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
   const [locNoduri, setLocNoduri] = useState<HTMLElement | null>(null);
   // Locul butonului Cont (ADR 0116), lângă temă; fără el, în extensie, lângă „?”.
   const [locCont, setLocCont] = useState<HTMLElement | null>(null);
+  // Locul butonului Admin, în meniul global: doar un cont al personalului îl umple.
+  const [locAdmin, setLocAdmin] = useState<HTMLElement | null>(null);
   // Locul rândului tastelor (ADR 0240 §E.25), în bara de jos.
   const [locTaste, setLocTaste] = useState<HTMLElement | null>(null);
   useLayoutEffect(() => {
@@ -636,6 +638,7 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
     setLocExtensie(document.getElementById('loc-extensie'));
     setLocVectori(document.getElementById('loc-vectori'));
     setLocCont(document.getElementById('loc-cont'));
+    setLocAdmin(document.getElementById('loc-admin'));
     setLocTaste(document.getElementById('loc-taste'));
   });
   // Tastele ținute acum, pentru rândul tastelor (ADR 0240 §E.25): evidențiate cât se țin.
@@ -1871,6 +1874,14 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
             <svg className="cont-sageata" width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><path d="M2 3.5 L5 6.5 L8 3.5" /></svg>
           </button>
         );
+        // Butonul Admin (cererea owner-ului din 24.11): doar cu un cont al personalului, cum îl spune serverul în dreptul
+        // ținut (planul `personal`); deschide pagina de administrare în altă filă, ca proiectul să rămână deschis aici.
+        const butonAdmin = contul?.drept?.plan === 'personal' ? (
+          <a className="buton cu-eticheta admin-buton" href="/admin" target="_blank" rel="noopener" data-editare="admin" data-icona="vedere.admin"
+            title={t('editare.admin.titlu')}>
+            <span className="eticheta">{t('editare.admin')}</span>
+          </a>
+        ) : null;
         // Fără locul lui lângă temă (un aranjament fără controlul `cont`), butonul stă la capătul extensiei barei. Manualul și
         // sugestia stau în meniul lui (ADR 0120), nu în bară; F1 deschide manualul de oriunde.
         const contSectiune = locCont ? null : (
@@ -2018,6 +2029,7 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
             {locExtensie ? createPortal(sectiuni, locExtensie) : null}
             {locVectori ? createPortal(vectoriSectiune, locVectori) : null}
             {locCont ? createPortal(butonCont, locCont) : null}
+            {locAdmin && butonAdmin ? createPortal(butonAdmin, locAdmin) : null}
           </>
         );
       })()}

@@ -7,7 +7,7 @@ nouă întrebări și recomandarea fiecăreia, owner-ul a răspuns „Da, cu rec
 mai stă în docul din dreapta: e o fereastră), aranjamentul carcasei din felia 2.8a (o zonă nouă, `meniu`, și lista ferestrelor;
 marca și grupul din dreapta-sus trec în meniu), ADR 0120 (butonul Cont stă în meniul global). **Continuă:** ADR 0082, 0085, 0119
 (conținutul ferestrei e al panoului de până acum). **Completat** pe 04.11 de 13.A↑c: meniul pe telefon (§10), după comparația
-cu capturi din aplicație și „Yes, B”.
+cu capturi din aplicație și „Yes, B”; și pe 24.11 de 14.C↑d: butonul Admin, doar pentru personal (§11).
 
 **Problema.** Panoul mașinii stătea în docul din dreapta, sub proprietăți, lat de 15,5 rem: jog-ul, palparea, jurnalul și starea
 lucrării se înghesuiau într-o coloană îngustă, iar în timpul unei lucrări omul nu vedea de nicăieri altundeva că mașina merge
@@ -87,6 +87,23 @@ canal l-a prins așa). Alegerea se face o dată, la montare: schimbată după, a
 - De ce: rularea completă din CI (Linux, unde `system-ui` e un font lat) a picat pe 03.11 și 04.11, fiindcă indicatorul cădea
   pe un al treilea rând. Rândul încăpea doar cu fontul îngust al Windows-ului; un telefon îngust sau fila unei extensii îl
   rupeau la fel. Owner-ul a ales varianta după capturi din aplicație, la 390 px („Yes, B”).
+
+**11. Butonul Admin** (14.C↑d, 24.11; cererea owner-ului: „si vreau in meniu un buton pentru admin, care apare daca esti logat
+ca admin”, cu o captură a meniului și un chenar la mijlocul lui).
+- **Cine îl vede:** doar un cont al personalului, adică planul `personal` din dreptul contului ținut de aplicație (ADR 0116:
+  planul îl calculează serverul, la logare și la fiecare reîmprospătare). Un client (probă, gratuit, expirat) sau un om fără
+  cont nu are butonul, iar grupul lui nu ocupă nimic în meniu.
+- **Unde stă:** grupul nou `personal` al zonei `meniu` (controlul `admin` al aranjamentului), între filele ferestrelor și
+  indicatorul lucrării, împins spre mijloc; în toate ferestrele (meniul e al aplicației). Îl pune modulul editării, care știe
+  contul, în `#loc-admin`, ca butonul Cont: nimic nou în pornire în afara locului gol.
+- **Ce face:** e un link spre `/admin`, deschis în altă filă (`target="_blank"`, `rel="noopener"`), ca proiectul să rămână
+  deschis. Nu dă nimic în plus: pagina `/admin` cere tot logarea și rolul ei (ADR 0040, 0049), iar regulile serverului rămân
+  singura pază. Un om cu planul `personal` fără rol în `staff` vede butonul și, în `/admin`, pagina fără drepturi.
+- **Pe telefon** (sub 40 rem) butonul nu se arată: meniul rămâne pe cele două rânduri din §10. Adminul are pe telefon bara lui
+  (ADR 0260 §7), la adresa `/admin`.
+- **Probele:** `admin-buton.spec.ts` (fără cont, client în probă, personal: locul între file și căutare, legătura, fila nouă,
+  titlul în ambele limbi, fereastra Mașina; telefonul), `aranjament.test.ts` (grupurile meniului), manualul (ușa
+  `editare.admin`, în capitolul contului). Otrăvurile: `test/otravuri/11.1c.py`, A01–A11.
 
 ## Probele
 

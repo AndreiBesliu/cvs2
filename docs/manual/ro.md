@@ -151,6 +151,14 @@ pornește foile estompate: pornit, le încadrează pe toate; oprit, rămâne doa
 - **Mută foaia mai sus** și **Mută foaia mai jos** schimbă ordinea foilor în listă.
 - **Șterge foaia** o scoate, cu piesele ei; dacă are piese, meniul întreabă întâi. Ultima foaie a proiectului rămâne.
 
+**Comenzile foii, pe pânză.** Aceleași comenzi stau și sub fiecare foaie de pe pânză, ca un rând de iconițe, la stânga, sub
+marginea ei de jos: **Nume, mărime și material…**, **Așază pe foi…**, **Duplică foaia**, **Duplică foaia cu aceleași piese**,
+**Mută foaia mai sus** (săgeata spre stânga: pe pânză, foaia trece înaintea vecinei), **Mută foaia mai jos** (săgeata spre
+dreapta) și **Șterge foaia**. Numele fiecăreia apare când ții mausul pe iconiță; una care nu se poate folosi e stinsă, cu
+motivul lângă nume. Rândul foii active se vede mereu; al unei foi estompate apare cât ții mausul pe ea sau pe rând. La
+ștergerea unei foi cu piese, rândul întreabă întâi: **Șterge foaia** sau **Renunță**. Pe un ecran cu atingere se vede doar
+rândul foii active.
+
 **Mută pe altă foaie.** Piesele alese trec pe altă foaie din [meniul de clic dreapta](#meniu) al pânzei: **Mută pe** și numele
 foii, sau **Mută pe o foaie nouă**. Sau tragi rândul unei piese din listă peste altă foaie (dacă e în selecție, pleacă toată
 selecția). Fiecare piesă își păstrează locul și rotirea; dacă iese din foaia nouă, apare avertismentul obișnuit. Foaia activă
@@ -2168,7 +2176,7 @@ Tot pe instanța de test, o sugestie pentru owner, cu poza planșei, se trimite 
 
 ## Contul
 %% capitol: cont
-%% acopera: editare.cont, editare.sugestie
+%% acopera: editare.cont, editare.sugestie, editare.admin
 
 Butonul **Cont** din colțul din dreapta-sus, lângă butonul temei (titlul lui: „Contul: logarea, planul, raportările și
 manualul”), deschide meniul contului. Logat, butonul arată inițialele și primul nume. Sus în meniu stau numele și planul de
@@ -2187,6 +2195,10 @@ azi, cu zilele de probă rămase; fără cont, „Nu ești logat”. Rândurile:
 
 Meniul merge și din tastatură: săgețile trec între rânduri, Enter alege, Escape îl închide. Panoul contului și raportările cer
 internet: fără rețea nu se deschid, dar aplicația merge mai departe cu ultimul drept primit.
+
+**Admin.** Cu un cont al personalului, în meniul de sus, între filele ferestrelor și căutare, apare butonul **Admin** (titlul
+lui: „Administrarea, într-o filă nouă (doar pentru personal)”). Deschide pagina de administrare într-o filă nouă, iar proiectul
+rămâne deschis în fila de acum. Cu un cont de client sau fără cont, butonul nu apare; pe telefon, nici atât.
 
 - **Raportează o problemă…:** alegi ce trimiți (o problemă, o idee sau o întrebare), scrii ce s-a întâmplat și, dacă vrei,
   bifezi **Atașează poza planșei**. Cu **Atașează proiectul (ca echipa să-l deschidă)** pleacă și proiectul deschis, exact cum

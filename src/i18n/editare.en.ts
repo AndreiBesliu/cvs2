@@ -846,6 +846,8 @@ export const enEditare = {
   'editare.sugestie': 'Send a suggestion: for the owner, with a picture of the sheet',
   'editare.cont': 'Account: sign in, the plan, reports and the manual',
   'editare.cont.buton': 'Account',
+  'editare.admin': 'Admin',
+  'editare.admin.titlu': 'Administration, in a new tab (staff only)',
   'editare.cont.meniu': 'Account menu',
   'editare.cont.al-meu': 'Your account…',
   'editare.cont.intra': 'Sign in or create an account…',
