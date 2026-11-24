@@ -4,7 +4,7 @@
  * cuantizată: ce se vede, ce se salvează și ce se taie).
  */
 import { sha256 } from './amprenta.ts';
-import { citeste, cuantizeaza, octetiDala, valoriDala, type Dala } from './dala.ts';
+import { citeste, cuantizeaza, dalaDinOcteti, octetiDala, valoriDala, type Dala } from './dala.ts';
 import { CELULE_DALA, dale as numarDale, LATURA_DALA } from './grila.ts';
 import { textHarta, type Harta, type IntrareDala } from './harta.ts';
 
@@ -51,4 +51,25 @@ export function grilaDinDale(nx: number, ny: number, dale: readonly Dala[]): Flo
     for (let b = 0; b < lb; b++) out.set(tampon.subarray(b * LATURA_DALA, b * LATURA_DALA + la), (j0 + b) * nx + i0);
   });
   return out;
+}
+
+/**
+ * Dalele unui strat, în ordinea hărții, din octeții lor (după amprentă): o intrare goală e dala goală, un număr e constanta, o
+ * amprentă e dala citită din octeții ei. Octeții care lipsesc ori nu sunt o dală (sau nu au amprenta cerută: verificarea e a
+ * celui care îi aduce) dau lista amprentelor lipsă, nu o dală inventată.
+ */
+export function daleDinHarta(
+  harta: Harta, octeti: (amprenta: string) => Uint8Array | undefined,
+): { readonly ok: true; readonly dale: readonly Dala[] } | { readonly ok: false; readonly lipsa: readonly string[] } {
+  const dale: Dala[] = [], lipsa: string[] = [];
+  for (const e of harta.dale) {
+    if (e === null) dale.push({ fel: 'gol' });
+    else if (typeof e === 'number') dale.push({ fel: 'constanta', m: e });
+    else {
+      const o = octeti(e), d = o ? dalaDinOcteti(o) : null;
+      if (d) dale.push(d);
+      else lipsa.push(e);
+    }
+  }
+  return lipsa.length === 0 ? { ok: true, dale } : { ok: false, lipsa };
 }

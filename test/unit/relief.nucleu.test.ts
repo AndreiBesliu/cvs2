@@ -12,7 +12,7 @@ import { CAZURI_DALA, CAZURI_IMAGINE, COMPUNERE_HARTIE, HARTA_2X1 } from '../ora
 import { reliefDinPixeli, ordin, ponderi, SIGMA_MAXIM } from '../../src/relief/imagine.ts';
 import { citeste, cuantizeaza, dalaDinOcteti, octetiDala, valoriDala, type Dala } from '../../src/relief/dala.ts';
 import { compune, MODURI } from '../../src/relief/compunere.ts';
-import { grilaDinDale, stratDinGrila } from '../../src/relief/strat.ts';
+import { daleDinHarta, grilaDinDale, stratDinGrila } from '../../src/relief/strat.ts';
 import { hartaDinText, textHarta } from '../../src/relief/harta.ts';
 import { CELULE_DALA, motivGrila } from '../../src/relief/grila.ts';
 
@@ -183,4 +183,22 @@ test('imaginea → relief: un relief întreg trecut prin strat se citește cu er
     if (Number.isNaN(a)) { assert.ok(Number.isNaN(b)); continue; }
     assert.ok(Math.abs(a - b) <= 13 / 131_068 + 1e-6, `[${k}]: ${a} → ${b}`);
   }
+});
+
+test('stratul: dalele citite din hartă și din octeții lor dau aceeași grilă; octeții lipsă sau stricați sunt numiți, nu inventați', async () => {
+  const nx = 512, ny = 260, v = new Float32Array(nx * ny);
+  for (let k = 0; k < v.length; k++) v[k] = rnd() < 0.1 ? NaN : (k % 7) * 0.25;
+  // O dală constantă (plină, deci fără goluri) și una goală, pe lângă cele cu coduri.
+  for (let j = 0; j < 256; j++) for (let i = 256; i < nx; i++) v[j * nx + i] = 1.5;
+  for (let j = 256; j < ny; j++) for (let i = 256; i < nx; i++) v[j * nx + i] = NaN;
+  const st = await stratDinGrila(v, nx, ny);
+  assert.deepEqual(st.harta.dale.map((e) => (e === null ? 'gol' : typeof e)), ['string', 'number', 'string', 'gol']);
+  const r = daleDinHarta(st.harta, (h) => st.octeti.get(h));
+  assert.ok(r.ok);
+  assert.deepEqual([...grilaDinDale(nx, ny, r.dale)], [...grilaDinDale(nx, ny, st.dale)]);
+  const prima = st.harta.dale[0] as string;
+  const lipsa = daleDinHarta(st.harta, (h) => (h === prima ? undefined : st.octeti.get(h)));
+  assert.deepEqual(lipsa, { ok: false, lipsa: [prima] });
+  const stricat = daleDinHarta(st.harta, (h) => (h === prima ? new Uint8Array(10) : st.octeti.get(h)));
+  assert.deepEqual(stricat, { ok: false, lipsa: [prima] });
 });
