@@ -1068,7 +1068,13 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   cu”), Modelul ca asamblare (orientarea pe trei axe, alipirea, verificarea ca avertisment), construcțiile cu nume și
   cele gata făcute; cărămizile de clădit și roata cu palete, pe parcurs. **3.Ca (conectorul perpendicular)** gata pe
   24.11, neunită: tipul `conector`, în fila Legături: un bloc de 1–5 pași, cu găuri de știft sau de ax pe trei axe
-  (în sus, de-a latul și, la capete, în lung); Easy 3Draw 18.24.0. **O piesă nouă a atelierului atinge și probele
+  (în sus, de-a latul și, la capete, în lung); Easy 3Draw 18.24.0. **3.Cb (conectorul în unghi, axul cu opritor,
+  știftul cu bucșă)** gata pe 24.11, neunită: tipul `conectorUnghi`, un butuc cu 1–4 brațe, fiecare cu manșonul lui de
+  ax sau de știft, la cel puțin 90° unul de altul (formele gata au unghiurile conectorilor LEGO numerotați); axul are
+  bifa „Cu opritor la un capăt”, iar știftul, capătul scurt „Bucșă”; Easy 3Draw 18.25.0 (următoarea, 18.26.0). **Motorul
+  face o piesă din corpuri închise care se suprapun puțin: două dintre ele nu-și împart nicio muchie** (altfel STL-ul
+  iese cu muchii fără pereche la cine îl citește); proba unitară o cere cu `muchiiFaraPereche`
+  (`test/unit/ajutor-plasa-lego.ts`, ajutoarele comune ale probelor pe plase). **O piesă nouă a atelierului atinge și probele
   vechi care numără** (filele, galeriile, căutarea, starea unei liste vechi, versiunea): lista lor e în
   `docs/linii/atelier.md`. Doar pachetul extensiei se schimbă: pornirea și totalul aplicației, neatinse. **Din 24.11
   seara, linia ține și lucrul elicelor** (predat la cererea owner-ului): 3.Tu (piesele rotunde pe același ax în

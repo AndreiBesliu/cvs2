@@ -13908,7 +13908,7 @@ ele nu doar una cate una ci si ca constructii complexe”
 **Prompt:** răspunsurile owner-ului la cele patru întrebări din ADR 0284, puse în sesiune: „Piesele care leagă în 3D
 (Recomandat)”, „Avertizează (Recomandat)”, „Da, patru (Recomandat)”, „Conectori 3D, Mecanisme, Cărămizi de clădit, Roata cu
 palete”
-**Started:** 24.11, 21:40. **Completed:** 24.11, 23:00 (felia, cu otrăvurile); unirea, la sesiunea principală.
+**Started:** 24.11, 21:35. **Completed:** 24.11, 22:12 (felia, cu otrăvurile; orele, după ceasul containerului); unirea, la sesiunea principală.
 
 - **ADR 0284, acceptat** cu toate recomandările (1a–4a): „Răspunsurile owner-ului”, în ADR.
 - **Piesa** (tipul `conector`, fila Legături): un bloc culcat de 1–5 pași, 7,8 × 7,8 mm în secțiune; fiecare pas are gaura
@@ -13926,6 +13926,30 @@ palete”
   `docs/linii/atelier.md`, intervalul ADR 0340–0349, feliile „de la 3.Tv”) și i-a predat lucrul elicelor (3.Tu, ADR
   0283), la cererea owner-ului. Nota liniei se numește acum `atelier.md`; ADR 0284 și feliile 3.Ca–3.Cj, acceptate de
   owner înaintea numerotării ei, rămân de confirmat cu ea la unire.
+
+## 2026-11-24 — Felia 3.Cb: conectorul în unghi, axul cu opritor, știftul cu bucșă (ADR 0284) (sesiune cloud)
+
+**Prompt:** (aceeași cerere a owner-ului și aceleași răspunsuri la ADR 0284 ca la 3.Ca: „Piesele care leagă în 3D
+(Recomandat)”; felia a doua din plan, pornită fără altă întrebare)
+**Started:** 24.11, 22:20. **Completed:** 24.11, 23:17 (felia, cu otrăvurile; orele, după ceasul containerului).
+
+- **Conectorul în unghi** (tipul `conectorUnghi`, fila Legături): un butuc rotund cu 1–4 brațe pătrate, fiecare cu un
+  manșon orb de un pas (de ax sau de știft), la cel puțin 90° unul de altul; nouă forme gata (Nr. 1–6, T, Cruce, Y);
+  unghiul fiecărui braț, scris între marginile lui.
+- **Axul cu opritor** (bifa din configuratorul axului) și **știftul cu bucșă** (al treilea capăt scurt al știftului).
+- **Probele, scrise întâi:** unitare 13 (au căzut cu „tip necunoscut” și cu cotele axului simplu), e2e 6. Ajutoarele
+  probelor pe plase, scoase în `test/unit/ajutor-plasa-lego.ts` (și proba lui 3.Ca le ia de acolo).
+- **Găsite pe drum:** discul opritorului, teșit sub axă (proba punct cu punct); crestăturile dintre butuc și brațe
+  (captura; brațul pleacă acum tangent din butuc); o muchie împărțită de butuc și de umărul brațului, deci STL-ul ieșea
+  „deschis” (proba din browser a STL-ului; acum și proba unitară o cere).
+- **Probele vechi, la zi:** „Legături 10”, galeriile și desenele, căutarea „con” (6 piese), starea unei liste vechi,
+  versiunea 18.25.0.
+- **Otrăvurile:** 76 / 76 (45 în probele unitare, 31 prin browser). Patru au scăpat la prima rulare: un unghi care nu e
+  număr și un gol între capătul cu fantă și corpul știftului (probe mai tari); o piesă stricată din stocare (probă nouă,
+  cu trei otrăvuri în plus); iar una era echivalentă: verificarea „câmp golit” era de prisos (golit e 0, sub margine),
+  deci a ieșit din cod.
+- **Probele pluginului și ale extensiilor în browser:** 63 / 63 și 82 / 82. Easy 3Draw 18.25.0 (485,4 kB), cu rândul de
+  „ce e nou”; doar pachetul se schimbă.
 
 ## 2026-11-24 — Sesiunea principală în cloud: clicul pe „Închide” din cadrul unei extensii, pierdut (probă instabilă, reparată) (Model: Claude Fable 5.2)
 

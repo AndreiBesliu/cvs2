@@ -173,4 +173,46 @@ elice. Fiecare e un șablon din parametri, nu un desen fix.
   STL-ul descărcat (închis, cu cotele), lista și modelul, avertismentul. Probele filelor, căutării („con” o găsește) și
   pictogramelor, la zi.
 - **Mărimea:** doar pachetul extensiei (480,9 → 481,1 kB cu stilul); aplicația, neschimbată.
-- **Rămase pentru felia următoare (3.Cb):** conectorul în unghi, axul cu opritor, știftul lung cu bucșă.
+- **Felia următoare (3.Cb):** conectorul în unghi, axul cu opritor, știftul lung cu bucșă (mai jos).
+
+## Implementat (3.Cb, 24.11.2026)
+
+**Conectorul în unghi** (tipul `conectorUnghi`, fila Legături), **axul cu opritor** și **știftul cu bucșă** (opțiuni noi
+ale axului și ale știftului); Easy 3Draw 18.25.0.
+
+- **Conectorul în unghi:** un butuc rotund în picioare (Ø 7,8), cu gaura lui verticală (de știft, cu lamaj pe ambele
+  fețe; de ax; sau plin), din care pleacă 1–4 brațe pătrate (7,8 × 7,8), culcate pe masă. Fiecare braț are pe axa lui un
+  manșon orb, adânc de un pas: de la 4 mm de centrul butucului până la gură (11,9 mm); de ax (crucea) sau de știft (gaura
+  grinzii, cu lamaj la gură). Laturile brațului pleacă tangent din butuc (un „umăr” plin, fără cercul găurii), deci
+  piesa n-are crestături între butuc și brațe. Se printează culcat, fără suport.
+- **Unghiurile:** două brațe stau la cel puțin 90° unul de altul. Sub 90°, un braț ar intra în manșonul celuilalt
+  (socotit pe hârtie: la 67,5°, colțul manșonului cade în brațul vecin); de aceea plaja din propunere („de la 0° la
+  180°”) e, de fapt, 90°–180° pentru două brațe, iar „0°” e conectorul cu un singur braț. Motorul lasă afară brațul
+  care nu încape și o spune.
+- **Configuratorul:** formele gata („Repede”: Nr. 1–6, cu unghiurile conectorilor LEGO numerotați: un braț, 180°,
+  157,5°, 135°, 112,5°, 90°; apoi T, Cruce, Y), numărul brațelor (1–4), butucul, iar pe fiecare braț manșonul și, de la
+  al doilea, unghiul față de primul (în trepte de 22,5° sau scris de mână, la zecimi de grad). Câmpul primește doar ce
+  încape între marginile lui (la cel puțin 90° de vecini; cu două brațe, până la 180°, fiindcă dincolo e aceeași piesă,
+  întoarsă); un braț mutat îi împinge pe următorii. O formă gata și un alt număr de brațe țin manșoanele alese. Numele
+  piesei își spune brațele („Conector în unghi: ax, știft 120°, ax 240°, butuc de ax”).
+- **Axul cu opritor:** bifa „Cu opritor la un capăt” în configuratorul axului. Un disc cât gulerul știftului (Ø 6),
+  gros de 1 mm, în lungimea axului (axul 4 are tot 31,8 mm), tăiat de masă ca să stea culcat. Se sprijină pe fața
+  grinzii (intră în lamajul găurii, Ø 6,4). Fără bifă, axul e cel de până acum, triunghi cu triunghi.
+- **Știftul cu bucșă:** al treilea capăt scurt al știftului („Știft”, „Ax”, „Bucșă”), la 2 și la 3. Partea scurtă e un
+  cilindru plin de Ø 7,2 (cât bucșa), lung de un pas, tăiat de masă; știftul nu mai are guler (bucșa se sprijină pe
+  grindă) și are fantă doar la capătul rotund.
+- **Găsite pe drum, de probe și la privire:** (1) discul opritorului ieșea teșit sub axă (conturul sărea de la masă
+  direct la mijloc): l-a prins proba punct cu punct; (2) brațul conectorului pornea drept din peretele rotund al
+  butucului, cu crestături de jumătate de milimetru pe părți: văzut în captură, îndreptat cu umărul tangent; (3) colțul
+  umărului cădea exact pe un vârf al cercului butucului, deci două corpuri închise își împărțeau o muchie, iar STL-ul
+  ieșea „deschis” la cine îl citește: l-a prins proba din browser a STL-ului; umărul începe acum la 0,2 mm după centru,
+  iar proba unitară judecă plasa și ca STL (`muchiiFaraPereche`).
+- **Lăsat cum era:** știftul obișnuit „fără fantă” iese mai lung cu 0,02 mm (corpul lui pornește de la −0,01); e așa din
+  v18, iar referințele lui sunt fixate. Știftul cu bucșă nu moștenește abaterea.
+- **Probele:** unitare 13 (`test/unit/trenulet.unghi.test.ts`, 9; `test/unit/trenulet.opritor.test.ts`, 4), cu
+  ajutoarele comune în `test/unit/ajutor-plasa-lego.ts` (numărul de înfășurare, amprenta plasei, muchiile ca în STL);
+  e2e 6 (`test/e2e/trenulet.unghi.spec.ts`; una deschide un conector stricat venit din stocare și îl cere îndreptat ca în
+  motor). Probele filelor („Legături 10”), galeriilor, căutării („con”) și
+  pictogramelor, la zi.
+- **Mărimea:** doar pachetul extensiei (481,1 → 485,4 kB); aplicația, neschimbată.
+- **Felia următoare (3.Cc):** cremaliera și melcul.
