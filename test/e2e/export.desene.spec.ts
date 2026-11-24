@@ -15,6 +15,16 @@ const fisa = (page: Page, cheie: string) => page.locator(`[data-fisa="op"][data-
 const desen = (page: Page, loc: string, grup: string) =>
   page.locator(`${loc === 'foaia' ? '[data-fisa="foaia"]' : `[data-fisa="op"][data-operatie="${loc}"]`} [data-grup="${grup}"] [data-desen] svg`);
 
+/**
+ * Mausul, în afara ferestrei. Lăsat unde a fost butonul „Exportă G-code”, stă peste panoul fișelor (la 1280 px), care ascultă
+ * `pointerover` (explicația și cota sub maus). Proba adâncimii cădea rar, doar sub încărcare, la cota aprinsă (28.8↑f-3); cu mausul
+ * stând pe loc, derularea n-a mutat cota în încercări, deci cauza nu e dovedită, dar mausul nu mai are cum s-o mute. O probă care
+ * vrea mausul pe un câmp îl duce acolo.
+ */
+async function mausulDeoparte(page: Page): Promise<void> {
+  await page.mouse.move(2, 2);
+}
+
 /** Dreptunghiul (e1/e1, exterior) și cercul din el (e2/e2, interior), apoi fereastra exportului. */
 async function deschide(page: Page): Promise<void> {
   await page.goto('/');
@@ -22,6 +32,7 @@ async function deschide(page: Page): Promise<void> {
   await adauga(page, 'cerc');
   await page.locator('[data-actiune="export.gcode"]').click();
   await expect(page.locator('[data-nav]').first()).toBeVisible();
+  await mausulDeoparte(page);
 }
 
 test('fiecare întrebare a foii și a profilului are desenul ei, în ambele teme', async ({ page }) => {
@@ -177,6 +188,7 @@ async function deschideCu(page: Page, forma: 'dreptunghi' | 'cerc'): Promise<voi
   await adauga(page, forma);
   await page.locator('[data-actiune="export.gcode"]').click();
   await expect(page.locator('[data-nav]').first()).toBeVisible();
+  await mausulDeoparte(page);
 }
 
 test('buzunarul: traseul și coborârea pe cartonașe; trecerile laterale, coborârea și frezele de rest desenate din valori', async ({ page }) => {

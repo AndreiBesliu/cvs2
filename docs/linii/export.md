@@ -122,6 +122,10 @@ vreau ca ficare setare sa fie insotita de o ilustratie sugestiva, ca sa ajute us
   28.8e2 E03 și E08, la ~6,2 s: o așteptare de 5 s), și niciodată altfel: 66 de rulări în paralel, 24 cu procesorul plin, 44 în
   serie, 33 în clona refăcută. Eroarea n-a fost prinsă (unealta păstrează doar numele probei). Dacă mai cade, se rulează
   spec-ul direct în clonă, cu `--workers=1`, ca să se vadă așteptarea care expiră.
+  Pe 24.11 a căzut și aici, în cele 47 de spec-uri ale exportului, tot la cota aprinsă: mausul rămânea peste panoul fișelor
+  (unde era butonul „Exportă G-code”), care ascultă `pointerover`. Cu mausul pe loc, derularea n-a mutat cota în încercări, deci
+  cauza nu e dovedită; de atunci, `export.desene.spec.ts` duce mausul în afara ferestrei (`mausulDeoparte`). Dacă mai cade, e
+  altceva.
 - **Proba privirii** (`export.privire.spec.ts`, din 28.8↑f-1) cere, cu fontul lat, ro și en: fereastra în ecran, nimic în
   afara ei sau a panoului fișelor, niciun text mai lat decât cutia lui; pe telefon, rândurile listei atinse, banda sub o
   cincime de ecran, fiecare element al ei cât ecranul; în densitatea mare, 48 px pe fiecare țintă. Un grup nou al fișei sau o
