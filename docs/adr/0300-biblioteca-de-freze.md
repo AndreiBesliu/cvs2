@@ -63,7 +63,8 @@ Se fac amândouă; diferă doar ordinea feliilor.
 | Nota | producătorul, codul, orice (≤ 200 de caractere) | a |
 
 Intern, fiecare freză are un id, versiunea (`rev`) și data schimbării. Felurile apar în listă doar când CAM-ul le poate
-tăia: plata, V-ul și gravarea acum; bila, toroidala și profilul desenat cu feliile lor.
+tăia: plata, V-ul și gravarea acum; bila, toroidala și profilul desenat cu feliile lor. **Schimbat de ADR 0302 §2** (24.11): felurile fără CAM apar
+în catalog și în bibliotecă, cu „în curând”; lista „Freza” din proiect le oferă abia cu CAM-ul lor.
 
 ### 3. Fereastra „Frezele mele”
 
@@ -72,7 +73,9 @@ tăia: plata, V-ul și gravarea acum; bila, toroidala și profilul desenat cu fe
   densitatea lui (ADR 0250).
 - **Pe birou:** lista în stânga (căutarea, filtrul pe fel, grupată pe fel, fiecare cu silueta mică, diametrul, T-ul și starea
   sincronizării), editorul frezei alese în dreapta (câmpurile felului ei, silueta desenată la scară cu cotele, valorile de
-  lucru). **Pe telefon** (sub 48 rem): lista, apoi editorul pe tot ecranul, cu „Înapoi”.
+  lucru). **Pe telefon** (sub 48 rem): lista, apoi editorul pe tot ecranul, cu „Înapoi”. **Schimbat de ADR 0302 §3** (24.11): în dreapta stă întâi fișa
+  frezei alese, doar de citit; editorul („configuratorul”) se deschide la „Editează” și la „Freză nouă”, iar comutatorul
+  „Listă / Configurator” îl poate ține mereu deschis.
 - **Butoanele:** Freză nouă, Duplică, Șterge (cu întrebarea; proiectele își păstrează copia, §5), Importă…, Exportă….
 - **Bara de jos a ferestrei** spune unde stă biblioteca: „În cont, la zi”, „Doar în acest browser”, „Fără rețea: se trimite
   la reconectare” sau „O freză în conflict”.

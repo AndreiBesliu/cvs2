@@ -1,11 +1,12 @@
 # ADR 0302: Catalogul de freze și biblioteca ca listă, cu configuratorul la cerere
 
-**Starea:** propus pe 24.11.2026, în sesiunea cloud a liniei frezelor (ramura `wip/16.A-freze`), la cererea owner-ului:
-„vreau să adaugi lista completă cu toate configurațiile posibile, de exemplu, am un fișier exportat din ArtCAM, cu toate
-frezele de acolo. Vreau ca frezele să fie o listă ca în ArtCAM, și doar dacă vrea userul și i se pare mai ok, atunci să
-comute pe configuratorul actual, care să poată configura orice tip de freză, inclusiv pe cele desenate de user sau adăugate
-custom”, cu fișierul `FREZE.tdb` atașat. **Completează:** ADR 0300 (§2 felurile, §3 fereastra, §8 fișierul, §9 formele noi).
-Codul vine după răspunsuri.
+**Starea:** acceptat pe 24.11.2026, cu toate recomandările („Da, 1a–5a”). Propus în aceeași zi, în sesiunea cloud a liniei
+frezelor (ramura `wip/16.A-freze`), la cererea owner-ului: „vreau să adaugi lista completă cu toate configurațiile posibile,
+de exemplu, am un fișier exportat din ArtCAM, cu toate frezele de acolo. Vreau ca frezele să fie o listă ca în ArtCAM, și doar
+dacă vrea userul și i se pare mai ok, atunci să comute pe configuratorul actual, care să poată configura orice tip de freză,
+inclusiv pe cele desenate de user sau adăugate custom”, cu fișierul `FREZE.tdb` atașat. **Completează:** ADR 0300 (§2
+felurile, §3 fereastra, §8 fișierul, §9 formele noi); **schimbă** ADR 0300 §2 (felurile fără CAM apar în bibliotecă, §2 de mai
+jos) și §3 (fereastra e întâi o listă, §3 de mai jos).
 
 ## Ce e azi
 
@@ -33,7 +34,7 @@ serializarea MFC a programului, fără documentație publică. Conține:
 formatului ar fi reverse engineering. Amândouă le exclude regula din `CLAUDE.md`. Ce se poate lua, ca referință funcțională:
 că o bibliotecă bună are aceste **feluri**, mărimi standard în milimetri și în țoli, și grupuri pe care omul le alege.
 
-## Decizia propusă
+## Decizia
 
 ### 1. Catalogul, al nostru
 
@@ -99,9 +100,13 @@ materiale, dacă așa vrea.
 
 | Felia | Ce aduce |
 |---|---|
-| 16.A↑h-1 | Fereastra ca listă: arborele cu grupuri, fișa doar de citit, configuratorul la cerere, comutatorul; grupurile omului (`grup`) |
-| 16.A↑h-2 | Catalogul: felurile de azi (plată, planare, V, gravare) cu mărimile lor; „Pune în frezele mele” (una, un grup, tot) |
-| 16.A↑h-3 | Felurile noi în bibliotecă și în catalog, cu siluetele și editorul lor (bila, toroidala, conica cu vârf rotund, burghiul, profilurile parametrice), „în curând” până la CAM-ul lor (16.A↑e, f) |
+| 16.A↑h-1 | Fereastra ca listă: fișa frezei alese, doar de citit, cu „Editează”, „Duplică”, „Șterge”; configuratorul la „Editează” și „Freză nouă”; comutatorul „Listă / Configurator”, ținut în browser |
+| 16.A↑h-2 | Grupurile omului (`grup` pe freză, în fișier și în cont): arborele, „Mută în”, grupul nou, redenumirea |
+| 16.A↑h-3 | Catalogul: felurile de azi (plată, planare, V, gravare) cu mărimile lor; „Pune în frezele mele” (una, un grup, tot) |
+| 16.A↑h-4 | Felurile noi în bibliotecă și în catalog, cu siluetele și editorul lor (bila, toroidala, conica cu vârf rotund, burghiul, profilurile parametrice), „în curând” până la CAM-ul lor (16.A↑e, f) |
+
+Fereastra ca listă (§3) și grupurile (§4) erau o singură felie la propunere; s-au despărțit la acceptare, ca fiecare să încapă
+în jumătatea de zi a unei felii (`PLAN.md` §4), în ordinea din răspunsul 5.
 
 Mărimea: catalogul e date (JSON în precache, ca manualul), nu JavaScript; fereastra crește cu arborele și fișa.
 
@@ -113,7 +118,7 @@ Mărimea: catalogul e date (JSON în precache, ca manualul), nu JavaScript; fere
 - **Catalogul pus întreg în biblioteca fiecăruia:** sute de freze pe care omul nu le are, amestecate cu ale lui; catalogul
   rămâne separat, iar biblioteca vine doar cu frezele standard (16.A↑a-2).
 
-## Întrebările pentru owner, cu recomandarea în față
+## Întrebările pentru owner, cu recomandarea în față (la propunere)
 
 1. **Lista ArtCAM:** a) catalog propriu, cu felurile și mărimile standard, fără nimic copiat din ArtCAM (recomandat); b) o
    excepție scrisă de la regula din `CLAUDE.md`, pe riscul tău (nu o recomand).
@@ -124,3 +129,15 @@ Mărimea: catalogul e date (JSON în precache, ca manualul), nu JavaScript; fere
 4. **Grupurile:** a) ale omului, libere, implicit pe feluri (recomandat); b) doar pe feluri, fixe.
 5. **Ordinea:** a) întâi fereastra ca listă (16.A↑h-1), apoi catalogul (h-2), apoi felurile noi (h-3) (recomandat); b) întâi
    catalogul.
+
+## Răspunsurile owner-ului
+
+Pe 24.11.2026, exact: „Da, 1a–5a”. Deci:
+
+1. **a:** catalogul e al nostru, cu felurile și mărimile standard; nimic copiat din ArtCAM, iar `FREZE.tdb` nu se citește.
+2. **a:** felurile fără CAM apar în catalog și în bibliotecă, cu „în curând”; lista „Freza” din proiect le oferă abia cu
+   CAM-ul lor.
+3. **a:** fereastra pornește ca listă, cu fișa doar de citit; configuratorul vine la „Editează” și la „Freză nouă”, iar
+   comutatorul „Listă / Configurator” îl ține mereu deschis, pentru cine vrea.
+4. **a:** grupurile sunt ale omului, libere; implicit, frezele stau pe feluri.
+5. **a:** întâi fereastra ca listă, apoi grupurile (despărțite la acceptare, §7), apoi catalogul, apoi felurile noi.
