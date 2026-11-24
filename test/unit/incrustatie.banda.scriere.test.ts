@@ -9,7 +9,7 @@ import assert from 'node:assert/strict';
 import { operatieDinDialog } from '../../src/app/valoriOperatii.ts';
 import { incarca } from '../../src/model/incarcare.ts';
 import type { Operatie } from '../../src/model/document.ts';
-import type { BandaOperatie } from '../../src/ui/DialogExport.tsx';
+import type { BandaOperatie } from '../../src/ui/exportRand.ts';
 
 const I = { a: 1, b: 0, c: 0, d: 1, e: 0, f: 0 };
 const scula = { numar: 2, diametru: 6, forma: { tip: 'v' as const, unghi: 60 } };

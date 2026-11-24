@@ -513,9 +513,29 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   V-carve-urile legate, iar exteriorul tăiat înaintea unei operații de pe piesă sau din interiorul ei cere bifa; Exportă
   scrie rangurile 0 … n−1 (în Automată, le scoate). **O comandă care înlocuiește operațiile unei piese le dă locul prin
   `cuRangulPiesei` (`src/model/ordine.ts`); rolul personalizat nu ține rangul.** Rândurile ferestrei nu mai stau în ordinea
-  documentului: o probă le caută după cheie (`tr[data-operatie="e2/e2"]`), nu după loc. **Pornirea 100,0 (cu ușa 103,5 /
+  documentului: o probă le caută după cheie (`tr[data-operatie="e2/e2"]`; din fereastra refăcută, ADR 0290,
+  `[data-fisa="op"][data-operatie="e2/e2"]`), nu după loc. **Pornirea 100,0 (cu ușa 103,5 /
   110 kB), totalul 455,3 / 500, /admin 105,4 / 200; după unirea cu 13.A↑b, pornirea 100,2 (cu ușa 103,7 / 110 kB), totalul
   455,4 / 500.**
+  **Fereastra „Exportă G-code”, refăcută (ADR 0290, feliile 28.8↑a–g, aduse din etapa 28)** gata pe 24.11, în sesiunea
+  cloud a liniei (ramura `wip/28.8-export`), unită în `main` pe 24.11 (`c4ca5ec2`), din cererea owner-ului din 23.11
+  („nu imi place deloc fereastra asta […] vreau ca ficare setare sa fie insotita de o ilustratie sugestiva”): în
+  stânga, lista (foaia și originea, mașina și fișierul, operațiile în ordinea tăierii, Rezultatul); în dreapta, fișa
+  celei alese, cu câmpurile pe grupuri, după întrebarea la care răspund. Fiecare grup are explicația câmpului activ la
+  vedere, greșeala lui lângă cauză („Du-mă la …”) și desenul întrebării, făcut din valorile omului, cu cota câmpului
+  activ aprinsă; alegerile sunt cartonașe cu poze; Rezultatul vine pe grupuri (de văzut, fișierele, rezumatul,
+  simularea); Esc și un clic în afară închid fereastra. **Nu schimbă ce face fereastra:** aceleași câmpuri, aceleași
+  valori, același program, octet cu octet; documentul rămâne v27. Fișa unei operații e `src/ui/FisaOperatie.tsx` (cu
+  `ContextFisa`: ce îi trebuie nou intră acolo, nu ca import din fereastră), tipurile și ajutoarele rândului sunt în
+  `src/ui/exportRand.ts`, iar foaia, mașina, lista și Rezultatul în `src/ui/DialogExport.tsx`. **Un câmp nou al
+  ferestrei își cere grupul în `GRUP_CAMP` (`src/ui/exportGrupuri.ts`; altfel cade `export.grupuri.test.ts`),
+  explicația (`….titlu`, în ambele limbi) și locul în proba privirii (`export.privire.spec.ts`: fontul lat, telefonul,
+  densitatea mare); ce spune un desen nou se socotește în `src/ui/exportDeseneCalcul.ts` și se compară cu lucrarea în
+  `export.desene.test.ts`.** **Selectorii probelor s-au schimbat:** o operație e `[data-fisa="op"][data-operatie="…"]`
+  (în listă, `[data-nav-op="…"]` și `[data-nav="…"]`), o alegere e un cartonaș (`alege(loc, camp, v)` și `aleasa(loc,
+  camp)` din `test/e2e/ajutor-export.ts`), iar ce nu se aplică nu apare (`toHaveCount(0)`), nu e oprit. Celelalte
+  capcane sunt în `docs/linii/export.md`. Fișa e gata de luat de Clasic (28.2↑) și de Pas cu pas (28.4↑), fără copiere.
+  Felia: pornirea +0, totalul +16,3 kB (856,8 / 900).
   **Aldinul și cursivul sintetic (ADR 0123, felia 7.5↑, adusă din etapa 7)** gata pe 02.11, în worktree-ul `wip/7.5-text`:
   bifele **Aldin** și **Cursiv** din panoul textului, pentru orice font. Cursivul înclină fiecare literă față de linia ei de
   bază, exact; aldinul așază literele la înălțimea miezului (h − 2d), le îngroașă cu d prin fațada offsetului
@@ -1537,6 +1557,36 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 24.11.2026, seara (a douăzeci și doua unire din cloud): **fereastra „Exportă G-code”, refăcută (28.8↑a–g), și proba
+  repornirii extensiei (3.Xk) unite în `main`**, în lot (sesiunea principală, ramura `unire-2411y`, peste lotul 23), la
+  „da, uneste fereastra exportului cand e verde si sa imi spui cand pot sa o arhivez” al owner-ului (în sesiunea
+  principală) și la „ok, cand e verde fa unirea”, spus de el în sesiunile celor două linii. **28.8↑a–g** (linia
+  exportului, ramura `wip/28.8-export`, `4ee623d3`, cu nota liniei din `ef8a6dd6`; PR-ul `AndreiBesliu/cvs2#11`; ADR
+  0290, acceptat de owner cu „1a, 2a, 3a, 4a”), unite în `c4ca5ec2`: lista operațiilor și fișa celei alese, cu
+  câmpurile pe grupuri, după întrebarea la care răspund; explicația câmpului activ la vedere și greșeala în grupul
+  ei; desenul fiecărei întrebări, din valorile omului, cu cota câmpului activ aprinsă; alegerile ca cartonașe cu poze;
+  Rezultatul pe grupuri; Esc și un clic în afară închid fereastra (28.8↑g, cerută de owner după ce a încercat-o pe
+  canal: „e ok”). **Nu schimbă ce face fereastra:** aceleași câmpuri, aceleași valori, același program, octet cu octet.
+  Otrăvurile, pe felii, toate prinse, afară de una echivalentă (28.8↑g, E03). **3.Xk** (linia bibliotecii, ramura
+  `wip/3.Xh-biblioteca-ui`, `23d9a1b1`, PR-ul `AndreiBesliu/cvs2#24`), unită în `373699e6`: doar probe (proba
+  repornirii cerute de extensie ține ea ceasul paginii; otrăvurile 8 / 8). **ADR 0233 (rafturile bibliotecii),
+  acceptat de owner cu „da, 1a–5a”:** rămâne ce e implementat. Documentul rămâne v27; nimic pe server. Ciocnirile:
+  DEVLOG, traducerile roadmap-ului (ambele părți, după cheie) și catalogul controalelor (scris din nou). Porțile
+  lotului, în CI, pe `8b218d47` (completul, verde la prima trecere, 60 min): unit 10 297 / 0 (12 sărite, pe Linux), e2e
+  781 / 781, funcțiile pe emulatoare 136 / 136, paginile 57 / 57; rapidul, verde pe `8b218d47`; completele liniilor,
+  verzi (`4ee623d3`; `23d9a1b1`); pornirea 110,4 kB (plafonul 120; cu ușa 115,1, cu Atelierul 115,4), **totalul
+  856,8 / 900 kB (mai sunt 43,2 kB)**, `/admin` 138,2 / 200, contul 30,3 / 32. Lotul 23 a intrat în `main` cu câteva
+  minute înainte (`9bbb1d58`); pe test e tot `29ef7e44`, iar completul lotului 22 pe `main` rula la unire. Urmează
+  lotul 25: reparația probei extensiilor de la `extensii.spec.ts:135` și 11.1↑d (rândul comenzilor foii nu trece de
+  foaia lui, cerută de owner cu trei capturi: „si trebuie sa reparam si asta”); completul lui rula la unire. Apoi, o
+  singură publicare pentru loturile 23–25. La linii: frezele (16.A↑h-5; 16.A↑b-3, lista „Din frezele mele” pe
+  rândurile exportului, făcută peste fereastra nouă, la „Pe #11, acum” al owner-ului, `AndreiBesliu/cvs2#26`), cotele
+  (10.4↑a-4), relieful (18.1↑a, v28, singur în lotul lui), elicele (3.Tu, la răspunsurile owner-ului).
+  **La owner:** sesiunea liniei exportului se poate arhiva (din ADR 0290 nu rămâne nimic; ramura ei de pe `origin` intră
+  în lista de șters); cele trei întrebări ale liniei elicelor despre vederea „Modelul” din Easy 3Draw (unde stă axul
+  pieselor rotunde: owner-ul a văzut că o carcasă și un rotor de același diametru nu se pot așeza centrat); plafonul
+  total (mai sunt 43 kB; relieful cere ~13); verificarea juridică (GDPR) a utilizării aplicației înaintea live-ului;
+  „cine unește în `main`”; meniul de sus la 320 px la atingere.
 - 24.11.2026, seara (a douăzeci și una unire din cloud): **fereastra Setări a cotelor (10.4↑a-3), catalogul de freze
   și felurile noi (16.A↑h-3, 16.A↑h-4) și împărțirea celor două teste grele din rapid, unite în `main`**, în lot
   (sesiunea principală, ramura `unire-2411x`, din `62569bb2`). **Împărțirea testelor** (`49ce2793`, scrisă de sesiunea

@@ -2,6 +2,7 @@ import { test, expect } from '@playwright/test';
 import { readFileSync } from 'node:fs';
 import { judeca } from '../oracles/simulare.ts';
 import { adauga } from './ajutor-panza.ts';
+import { alege, aleasa } from './ajutor-export.ts';
 
 test.use({ locale: 'ro-RO' });
 
@@ -15,14 +16,14 @@ test('strategia paralelă din fereastra exportului: liniile la 30°, fundul plat
   await page.goto('/');
   await adauga(page, 'dreptunghi');
   await page.locator('[data-actiune="export.gcode"]').click();
-  const rand = page.locator('tr[data-operatie]').first();
-  await rand.locator('[data-camp="latura"]').selectOption('buzunar');
+  const rand = page.locator('[data-fisa="op"]').first();
+  await rand.locator('input[data-camp="latura"][value="buzunar"]').check();
   await rand.locator('[data-camp="diametru"]').fill('12');
   await rand.locator('[data-camp="adancime"]').fill('10');
   await rand.locator('[data-camp="pas"]').fill('5');
   await page.locator('[data-camp="pas-lateral"]').fill('4,8');
-  await expect(page.locator('[data-camp="coborare"]')).toBeVisible();
-  await page.locator('[data-camp="strategie"]').selectOption('paralel');
+  await expect(rand.locator('[data-alegere="coborare"]')).toBeVisible();
+  await alege(rand, 'strategie', 'paralel');
   await expect(page.locator('[data-camp="coborare"]')).toHaveCount(0);
   const unghi = page.locator('[data-camp="unghi-paralel"]');
   await expect(unghi).toHaveValue('0');
@@ -52,6 +53,6 @@ test('strategia paralelă din fereastra exportului: liniile la 30°, fundul plat
   if ((await panou.getAttribute('data-deschis')) !== 'true') await page.locator('[data-actiune="vedere.proprietati"]').first().click();
   await expect(panou).toContainText('linii paralele la 30°');
   await page.locator('[data-actiune="export.gcode"]').click();
-  await expect(page.locator('[data-camp="strategie"]')).toHaveValue('paralel');
+  await expect(aleasa(page.locator('[data-fisa="op"]').first(), 'strategie')).toHaveValue('paralel');
   await expect(page.locator('[data-camp="unghi-paralel"]')).toHaveValue('30');
 });

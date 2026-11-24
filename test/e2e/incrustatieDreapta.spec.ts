@@ -4,6 +4,7 @@ import { masoaraPotrivireaDreapta, masoaraPotrivireaTrepte } from '../oracles/in
 import type { DesenO } from '../oracles/incrustatie.ts';
 import type { SculaOracol } from '../oracles/simulare.ts';
 import { adauga } from './ajutor-panza.ts';
+import { alege, aleasa } from './ajutor-export.ts';
 
 test.use({ locale: 'ro-RO' });
 
@@ -89,12 +90,12 @@ test('incrustația cu pereți drepți: rolul din panou, valorile pe hârtie, exp
 
   // Fereastra exportului: rândul incrustației, cu valorile din panou.
   await page.locator('[data-actiune="export.gcode"]').click();
-  const rand = page.locator('tr[data-operatie]').first();
-  await expect(rand.locator('[data-camp="latura"]')).toHaveValue('incrustatie-drept');
-  const inc = page.locator('tr[data-detalii]').first().locator('[data-incrustatie][data-fel="drept"]');
+  const rand = page.locator('[data-fisa="op"]').first();
+  await expect(rand.locator('input[data-camp="latura"]:checked')).toHaveValue('incrustatie-drept');
+  const inc = page.locator('[data-fisa="op"]').first().locator('[data-incrustatie][data-fel="drept"]');
   await expect(inc.locator('[data-camp="inc-lateral"]')).toHaveValue('0,1');
-  await expect(inc.locator('[data-camp="inc-dop"]')).toHaveValue('ridicat');
-  await expect(inc.locator('[data-camp="inc-sprijin"]')).toHaveValue('fund');
+  await expect(aleasa(inc, 'inc-dop')).toHaveValue('ridicat');
+  await expect(aleasa(inc, 'inc-sprijin')).toHaveValue('fund');
   await expect(inc.locator('[data-camp="inc-fierastrau"]')).toHaveValue('2');
   await expect(inc.locator('[data-camp="inc-margine"]')).toHaveValue('5');
   await expect(inc.locator('[data-camp="inc-freza-dop"]')).not.toBeChecked();
@@ -146,17 +147,17 @@ test('din fereastra exportului: sprijinul pe față, apoi dopul decupat cu freza
   await page.goto('/');
   await dreptunghiMic(page);
   await page.locator('[data-actiune="export.gcode"]').click();
-  const rand = page.locator('tr[data-operatie]').first();
-  await rand.locator('[data-camp="latura"]').selectOption('incrustatie-drept');
-  const inc = page.locator('tr[data-detalii]').first().locator('[data-incrustatie][data-fel="drept"]');
+  const rand = page.locator('[data-fisa="op"]').first();
+  await rand.locator('input[data-camp="latura"][value="incrustatie-drept"]').check();
+  const inc = page.locator('[data-fisa="op"]').first().locator('[data-incrustatie][data-fel="drept"]');
   await expect(inc.locator('[data-camp="inc-lateral"]')).toHaveValue('0,1');
   await expect(inc.locator('[data-camp="inc-fierastrau"]')).toHaveValue('2');
   // Pe față: jocul de sub dop, în locul spațiului de deasupra.
-  await inc.locator('[data-camp="inc-sprijin"]').selectOption('fata');
+  await alege(inc, 'inc-sprijin', 'fata');
   await expect(inc.locator('[data-camp="inc-joc"]')).toHaveValue('0,5');
   await expect(inc.locator('[data-camp="inc-fierastrau"]')).toHaveCount(0);
   // Decupat: fără sprijin; spațiul de deasupra e cât iese dopul peste placă.
-  await inc.locator('[data-camp="inc-dop"]').selectOption('decupat');
+  await alege(inc, 'inc-dop', 'decupat');
   await expect(inc.locator('[data-camp="inc-sprijin"]')).toHaveCount(0);
   await expect(inc.locator('[data-camp="inc-joc"]')).toHaveCount(0);
   await expect(inc.locator('label').filter({ has: page.locator('[data-camp="inc-fierastrau"]') })).toContainText('Cât iese peste placă (mm)');
@@ -210,13 +211,13 @@ test('freza dopului, bifată, pornește de la primul T liber al proiectului, fă
   await adauga(page, 'cerc');
   await taierea(page).locator('[data-camp="rol"]').selectOption('incrustatie');
   await page.locator('[data-actiune="export.gcode"]').click();
-  const randuri = page.locator('tr[data-operatie]'), detalii = page.locator('tr[data-detalii]');
+  const randuri = page.locator('[data-fisa="op"]'), detalii = page.locator('[data-fisa="op"]');
   await expect(randuri).toHaveCount(2);
   // Rândul dreptunghiului: cel care nu e incrustație în V.
-  const laturi = await randuri.locator('[data-camp="latura"]').evaluateAll((s) => s.map((x) => (x as HTMLSelectElement).value));
+  const laturi = await randuri.locator('input[data-camp="latura"]:checked').evaluateAll((s) => s.map((x) => (x as HTMLInputElement).value));
   const k = laturi.findIndex((v) => v !== 'incrustatie');
-  await randuri.nth(k).locator('[data-camp="latura"]').selectOption('incrustatie-drept');
-  const numere = await page.locator('tr[data-operatie] [data-camp="scula"], tr[data-detalii] [data-camp="fund-scula"]')
+  await randuri.nth(k).locator('input[data-camp="latura"][value="incrustatie-drept"]').check();
+  const numere = await page.locator('[data-fisa="op"] [data-camp="scula"], [data-fisa="op"] [data-camp="fund-scula"]')
     .evaluateAll((e) => e.map((x) => Number((x as HTMLInputElement).value)));
   const dop = detalii.nth(k).locator('[data-incrustatie][data-fel="drept"]');
   await dop.locator('[data-camp="inc-freza-dop"]').check();
@@ -233,12 +234,12 @@ test('punțile dopului decupat: alese în fereastră, judecate, scrise în proie
   await page.goto('/');
   await dreptunghiMic(page);
   await page.locator('[data-actiune="export.gcode"]').click();
-  const rand = page.locator('tr[data-operatie]').first();
-  await rand.locator('[data-camp="latura"]').selectOption('incrustatie-drept');
-  const inc = page.locator('tr[data-detalii]').first().locator('[data-incrustatie][data-fel="drept"]');
+  const rand = page.locator('[data-fisa="op"]').first();
+  await rand.locator('input[data-camp="latura"][value="incrustatie-drept"]').check();
+  const inc = page.locator('[data-fisa="op"]').first().locator('[data-incrustatie][data-fel="drept"]');
   // Pe dopul ridicat (implicit), fără punți.
   await expect(inc.locator('[data-camp="dop-punti-numar"]')).toHaveCount(0);
-  await inc.locator('[data-camp="inc-dop"]').selectOption('decupat');
+  await alege(inc, 'inc-dop', 'decupat');
   await expect(inc.locator('[data-camp="dop-punti-numar"]')).toHaveValue('4');
   await expect(inc.locator('[data-camp="dop-punti-latime"]')).toHaveValue('4');
   await expect(inc.locator('[data-camp="dop-punti-grosime"]')).toHaveValue('1');
@@ -266,11 +267,11 @@ test('punțile dopului decupat: alese în fereastră, judecate, scrise în proie
   await expect(page.getByTestId('prop-incrustatie-hartie')).toContainText('Punțile dopuluipe buclă: 2, de 6.00 × 1.50 mm');
   // Înapoi în fereastră: valorile din proiect; pe dopul ridicat, ascunse.
   await page.locator('[data-actiune="export.gcode"]').click();
-  const din = page.locator('tr[data-detalii]').first().locator('[data-incrustatie][data-fel="drept"]');
+  const din = page.locator('[data-fisa="op"]').first().locator('[data-incrustatie][data-fel="drept"]');
   await expect(din.locator('[data-camp="dop-punti-numar"]')).toHaveValue('2');
   await expect(din.locator('[data-camp="dop-punti-latime"]')).toHaveValue('6');
   await expect(din.locator('[data-camp="dop-punti-grosime"]')).toHaveValue('1,5');
-  await din.locator('[data-camp="inc-dop"]').selectOption('ridicat');
+  await alege(din, 'inc-dop', 'ridicat');
   await expect(din.locator('[data-camp="dop-punti-numar"]')).toHaveCount(0);
 });
 
@@ -285,21 +286,21 @@ test('gaura prin foaie: aleasă în fereastră, adâncimea din foaie, dopul decu
   await page.goto('/');
   await dreptunghiMic(page);
   await page.locator('[data-actiune="export.gcode"]').click();
-  const rand = page.locator('tr[data-operatie]').first();
-  await rand.locator('[data-camp="latura"]').selectOption('incrustatie-drept');
-  const inc = page.locator('tr[data-detalii]').first().locator('[data-incrustatie][data-fel="drept"]');
-  await expect(inc.locator('[data-camp="inc-locas"]')).toHaveValue('buzunar');
-  await expect(inc.locator('[data-camp="inc-sprijin"]')).toHaveValue('fund');
-  await inc.locator('[data-camp="inc-locas"]').selectOption('gaura');
+  const rand = page.locator('[data-fisa="op"]').first();
+  await rand.locator('input[data-camp="latura"][value="incrustatie-drept"]').check();
+  const inc = page.locator('[data-fisa="op"]').first().locator('[data-incrustatie][data-fel="drept"]');
+  await expect(aleasa(inc, 'inc-locas')).toHaveValue('buzunar');
+  await expect(aleasa(inc, 'inc-sprijin')).toHaveValue('fund');
+  await alege(inc, 'inc-locas', 'gaura');
   // Adâncimea: a foii, oprită; sprijinul doar pe față, fără jocul de sub dop.
   await expect(rand.locator('[data-camp="adancime"]')).toHaveValue('18');
   await expect(rand.locator('[data-camp="adancime"]')).toBeDisabled();
-  await expect(inc.locator('[data-camp="inc-sprijin"]')).toHaveValue('fata');
-  await expect(inc.locator('[data-camp="inc-sprijin"] option')).toHaveCount(1);
+  await expect(aleasa(inc, 'inc-sprijin')).toHaveValue('fata');
+  await expect(inc.locator('input[data-camp=\"inc-sprijin\"]')).toHaveCount(1);
   await expect(inc.locator('[data-camp="inc-joc"]')).toHaveCount(0);
   await expect(page.getByTestId('export-invalid')).toHaveCount(0);
   // Decupat, cu marginea 8 (freza Ø6 a locașului).
-  await inc.locator('[data-camp="inc-dop"]').selectOption('decupat');
+  await alege(inc, 'inc-dop', 'decupat');
   await inc.locator('[data-camp="inc-margine"]').fill('8');
 
   const descarcari: Download[] = [];
@@ -323,9 +324,9 @@ test('gaura prin foaie: aleasă în fereastră, adâncimea din foaie, dopul decu
   await expect(page.getByTestId('prop-incrustatie-hartie')).toContainText('Locașulgaură prin foaie');
   await expect(taierea(page)).toContainText('prin foaie, 18.00 mm');
   await page.locator('[data-actiune="export.gcode"]').click();
-  const din = page.locator('tr[data-detalii]').first().locator('[data-incrustatie][data-fel="drept"]');
-  await expect(din.locator('[data-camp="inc-locas"]')).toHaveValue('gaura');
-  await expect(page.locator('tr[data-operatie]').first().locator('[data-camp="adancime"]')).toHaveValue('18');
+  const din = page.locator('[data-fisa="op"]').first().locator('[data-incrustatie][data-fel="drept"]');
+  await expect(aleasa(din, 'inc-locas')).toHaveValue('gaura');
+  await expect(page.locator('[data-fisa="op"]').first().locator('[data-camp="adancime"]')).toHaveValue('18');
 });
 
 /**
@@ -339,12 +340,12 @@ test('gaura cu dopul ridicat: sprijinul trece de pe fund pe față, iar Exportă
   await page.goto('/');
   await dreptunghiMic(page);
   await page.locator('[data-actiune="export.gcode"]').click();
-  await page.locator('tr[data-operatie]').first().locator('[data-camp="latura"]').selectOption('incrustatie-drept');
-  const inc = page.locator('tr[data-detalii]').first().locator('[data-incrustatie][data-fel="drept"]');
-  await expect(inc.locator('[data-camp="inc-dop"]')).toHaveValue('ridicat');
-  await expect(inc.locator('[data-camp="inc-sprijin"]')).toHaveValue('fund');
-  await inc.locator('[data-camp="inc-locas"]').selectOption('gaura');
-  await expect(inc.locator('[data-camp="inc-sprijin"]')).toHaveValue('fata');
+  await page.locator('[data-fisa="op"]').first().locator('input[data-camp="latura"][value="incrustatie-drept"]').check();
+  const inc = page.locator('[data-fisa="op"]').first().locator('[data-incrustatie][data-fel="drept"]');
+  await expect(aleasa(inc, 'inc-dop')).toHaveValue('ridicat');
+  await expect(aleasa(inc, 'inc-sprijin')).toHaveValue('fund');
+  await alege(inc, 'inc-locas', 'gaura');
+  await expect(aleasa(inc, 'inc-sprijin')).toHaveValue('fata');
 
   const descarcari: Download[] = [];
   page.on('download', (d) => { descarcari.push(d); });
@@ -380,15 +381,15 @@ test('treapta: sprijinul trece pe umăr, Exportă scrie locașul în două nivel
   await page.goto('/');
   await dreptunghiMic(page);
   await page.locator('[data-actiune="export.gcode"]').click();
-  const rand = page.locator('tr[data-operatie]').first();
-  await rand.locator('[data-camp="latura"]').selectOption('incrustatie-drept');
+  const rand = page.locator('[data-fisa="op"]').first();
+  await rand.locator('input[data-camp="latura"][value="incrustatie-drept"]').check();
   await rand.locator('[data-camp="adancime"]').fill('8');
-  const inc = page.locator('tr[data-detalii]').first().locator('[data-incrustatie][data-fel="drept"]');
-  await expect(inc.locator('[data-camp="inc-treapta"]')).toHaveValue('fara');
+  const inc = page.locator('[data-fisa="op"]').first().locator('[data-incrustatie][data-fel="drept"]');
+  await expect(aleasa(inc, 'inc-treapta')).toHaveValue('fara');
   await expect(inc.locator('[data-camp="inc-treapta-adancime"]')).toHaveCount(0);
-  await inc.locator('[data-camp="inc-treapta"]').selectOption('interior');
-  await expect(inc.locator('[data-camp="inc-sprijin"] option')).toHaveText(['pe umăr', 'pe fundul locașului']);
-  await expect(inc.locator('[data-camp="inc-sprijin"]')).toHaveValue('umar');
+  await alege(inc, 'inc-treapta', 'interior');
+  await expect(inc.locator('[data-alegere=\"inc-sprijin\"] .dx-card > span')).toHaveText(['pe umăr', 'pe fundul locașului']);
+  await expect(aleasa(inc, 'inc-sprijin')).toHaveValue('umar');
   await inc.locator('[data-camp="inc-treapta-adancime"]').fill('3');
   await inc.locator('[data-camp="inc-treapta-latime"]').fill('5');
   // Pe umăr: jocul de sub tijă (g) și spațiul de deasupra (H), amândouă.
@@ -418,14 +419,14 @@ test('treapta: sprijinul trece pe umăr, Exportă scrie locașul în două nivel
   }
 
   // Fără treaptă: sprijinul pleacă de pe umăr, iar exportul trece (cu „pe umăr” rămas, lucrarea l-ar refuza).
-  await inc.locator('[data-camp="inc-treapta"]').selectOption('fara');
-  await expect(inc.locator('[data-camp="inc-sprijin"] option')).toHaveText(['pe fundul locașului', 'pe fața plăcii']);
+  await alege(inc, 'inc-treapta', 'fara');
+  await expect(inc.locator('[data-alegere=\"inc-sprijin\"] .dx-card > span')).toHaveText(['pe fundul locașului', 'pe fața plăcii']);
   await page.locator('[data-buton="exporta"]').click();
   await expect.poll(() => descarcari.length).toBe(4);
   await expect(page.getByTestId('export-dopuri')).toContainText('gros de cel puțin 11 mm');
 
   // Din nou cu treaptă, scrisă în proiect: panoul o arată, pe hârtie, cu tija și flanșa.
-  await inc.locator('[data-camp="inc-treapta"]').selectOption('interior');
+  await alege(inc, 'inc-treapta', 'interior');
   await page.locator('[data-buton="exporta"]').click();
   await expect.poll(() => descarcari.length).toBe(6);
   await page.getByRole('button', { name: 'Închide' }).click();
@@ -444,11 +445,11 @@ test('treapta: câmpul greșit oprește exportul; spre exterior scrisă și citi
   await page.goto('/');
   await dreptunghiMic(page);
   await page.locator('[data-actiune="export.gcode"]').click();
-  const rand = page.locator('tr[data-operatie]').first();
-  await rand.locator('[data-camp="latura"]').selectOption('incrustatie-drept');
+  const rand = page.locator('[data-fisa="op"]').first();
+  await rand.locator('input[data-camp="latura"][value="incrustatie-drept"]').check();
   await rand.locator('[data-camp="adancime"]').fill('8');
-  const inc = page.locator('tr[data-detalii]').first().locator('[data-incrustatie][data-fel="drept"]');
-  await inc.locator('[data-camp="inc-treapta"]').selectOption('exterior');
+  const inc = page.locator('[data-fisa="op"]').first().locator('[data-incrustatie][data-fel="drept"]');
+  await alege(inc, 'inc-treapta', 'exterior');
   await inc.locator('[data-camp="inc-treapta-adancime"]').fill('3');
   await inc.locator('[data-camp="inc-treapta-latime"]').fill('0');
   await expect(page.getByTestId('export-invalid')).toContainText('adâncimea și lățimea umărului pozitive');
@@ -469,14 +470,14 @@ test('treapta: câmpul greșit oprește exportul; spre exterior scrisă și citi
 
   // Înapoi în fereastră: treapta citită din proiect.
   await page.locator('[data-actiune="export.gcode"]').click();
-  const din = page.locator('tr[data-detalii]').first().locator('[data-incrustatie][data-fel="drept"]');
-  await expect(din.locator('[data-camp="inc-treapta"]')).toHaveValue('exterior');
+  const din = page.locator('[data-fisa="op"]').first().locator('[data-incrustatie][data-fel="drept"]');
+  await expect(aleasa(din, 'inc-treapta')).toHaveValue('exterior');
   await expect(din.locator('[data-camp="inc-treapta-adancime"]')).toHaveValue('3');
   await expect(din.locator('[data-camp="inc-treapta-latime"]')).toHaveValue('4');
   // Pe fund, apoi gaura: sprijinul trece pe umăr; la gaură, doar el se poate.
-  await din.locator('[data-camp="inc-sprijin"]').selectOption('fund');
-  await din.locator('[data-camp="inc-locas"]').selectOption('gaura');
-  await expect(din.locator('[data-camp="inc-sprijin"] option')).toHaveText(['pe umăr']);
+  await alege(din, 'inc-sprijin', 'fund');
+  await alege(din, 'inc-locas', 'gaura');
+  await expect(din.locator('[data-alegere=\"inc-sprijin\"] .dx-card > span')).toHaveText(['pe umăr']);
   await page.locator('[data-buton="exporta"]').click();
   await expect.poll(() => descarcari.length).toBe(4);
   await expect(page.getByTestId('export-dopuri')).toContainText('gros de cel puțin 21 mm');
