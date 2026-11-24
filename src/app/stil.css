@@ -2391,6 +2391,23 @@ nav button[aria-pressed='true'] {
   padding: 0 var(--sp-3);
 }
 
+/*
+ * Densitatea mare (ADR 0250 §5; Atelier, la tabletă), în fereastra exportului (ADR 0290, felia 28.8↑f-1): câmpurile, bifele și
+ * butoanele listei au ținta butoanelor (48 px, 56 la atingere), nu 32 și 24 px.
+ */
+:root[data-densitate='mare'] .dialog-export input[type='text'],
+:root[data-densitate='mare'] .dialog-export select,
+:root[data-densitate='mare'] .dialog-export .dx-lista button {
+  min-height: var(--tinta);
+}
+
+:root[data-densitate='mare'] .dialog-export label:has(> input[type='checkbox']),
+:root[data-densitate='mare'] .dialog-export label.alegere {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--tinta);
+}
+
 /* Pe un ecran îngust, lista trece deasupra, pe orizontală, iar explicația deasupra câmpurilor. */
 @media (max-width: 48rem) {
   .dx-corp {
@@ -2413,8 +2430,20 @@ nav button[aria-pressed='true'] {
   }
 
   .dx-lista .ordine-taierii {
-    flex: 0 0 14rem;
+    flex: 0 0 auto;
     margin: 0;
+  }
+
+  /*
+   * Pe bandă, nota ordinii (șase rânduri) ar face banda cât jumătate de telefon; Automată / A mea rămân. Rândul unei operații își
+   * ține lățimea: strâns de bandă la coloana locului, numele lui trecea peste rândul următor și îi lua atingerea (28.8↑f-1).
+   */
+  .dx-lista .ordine-taierii .nota {
+    display: none;
+  }
+
+  .dx-lista > .dx-nav-op {
+    flex: 0 0 15rem;
   }
 
   .dialog .dx-nav {
