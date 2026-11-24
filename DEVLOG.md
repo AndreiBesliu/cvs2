@@ -13268,7 +13268,7 @@ admin, care apare daca esti logat ca admin”
 ## 2026-11-24 — Felia 10.4↑a-3: fereastra Setări, cu secțiunea Cotele (ADR 0330 §6) (Model: Claude Opus 5.5)
 
 **Prompt:** „continua” (owner-ul, 24.11, după 10.4↑a-2). **Started:** 24.11, 16:42, în sesiunea cloud a liniei cotelor, după
-aducerea lui `main` (`29ef7e44`). **Completed:** 24.11, 17:30 (în container; CI-ul, pe commit-ul împins).
+aducerea lui `main` (`29ef7e44`). **Completed:** 24.11, 17:15 (în container; CI-ul, pe commit-ul împins).
 
 - **Împărțirea:** a-3 = fereastra Setări, cu toate setările de până aici și efectul lor pe desen; a-4 = panoul cotei,
   lista, „Arată cotele”, cotele foilor vecine, cu setarea lor (numite întâi a-3a și a-3b: id-urile fișelor au doar cifre
@@ -13289,7 +13289,8 @@ aducerea lui `main` (`29ef7e44`). **Completed:** 24.11, 17:30 (în container; CI
   traducerilor; e2e-urile cotelor, setărilor, contului, manualului, testului, aranjamentelor, frezelor, Atelierului și
   paletei (55 / 55); build-ul determinist. Pornirea 110,1 → 110,4 kB (cu ușa 115,1, cu Atelierul 115,4 / 120), totalul
   825,4 → 832,3 / 900.
-- **Otrăvurile** (`test/otravuri/10.4a3.py`, într-o clonă): 23 unitare, 14 e2e; A12 (cifra orizontală de partea normalei)
-  a scăpat întâi, prinsă după proba nouă (o aliniată trasă spre stânga și în jos). Trei din `10.4a2.py` (D05, D09, S01),
+- **Otrăvurile** (`test/otravuri/10.4a3.py`, într-o clonă): 37 / 37 prinse (23 unitare, 14 e2e). Două au scăpat întâi:
+  A12 (cifra orizontală de partea normalei), prinsă după proba nouă (o aliniată trasă spre stânga și în jos), și E12
+  (fereastra scoasă din garda „dialog deschis”), prinsă după Ctrl+K în probă: tasta R ține de editor, nu de registru. Trei din `10.4a2.py` (D05, D09, S01),
   rămase VOID pe codul nou, mutate și prinse.
 - **Capcană:** pragul cifrelor se probează la înălțimea implicită (după „Înălțimea cifrelor” 7 mm, cifra are 16 px pe ecran).

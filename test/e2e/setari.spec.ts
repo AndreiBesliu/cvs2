@@ -54,6 +54,10 @@ test('din meniul contului, cu Ctrl+, și din ⚙: Cotele, cu cota de probă; Esc
   // Cât e deschisă, tastele desenului nu ating Proiectarea (R ar alege Dreptunghiul).
   await page.keyboard.press('r');
   await expect(page.locator('[data-unealta="selectie"]')).toHaveAttribute('aria-pressed', 'true');
+  // Nici tastele aplicației (registrul): Ctrl+K nu deschide paleta peste fereastră.
+  await page.keyboard.press('Control+k');
+  await expect(page.locator('.paleta[role="dialog"]')).toHaveCount(0);
+  await expect(dialog(page)).toBeVisible();
   await page.keyboard.press('Escape');
   await expect(dialog(page)).toHaveCount(0);
   await expect(page.locator('[data-editare="cont"]')).toBeFocused();
