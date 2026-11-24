@@ -405,6 +405,36 @@ nu „a-3a” și „a-3b”, cum le-a numit întâi sesiunea.)
   825,4 → 832,3 / 900 kB (fereastra 3,6 kB și stilurile ei 0,8; setările și desenul cotelor, o bucată comună a uneltei
   și a ferestrei, 3,2 kB, din care 1,0 au plecat din bucata uneltei).
 
+## Implementarea (10.4↑a-4)
+
+24.11, pe ramura `wip/10.4-cote`, la „continuă cu 10.4↑a-4” al owner-ului.
+- **Depozitul cotelor văzute în afara uneltei** (`src/ui/coteVedere.ts`, fără niciun import din model): unealta Cote (bucata
+  ei, la cerere) publică acolo cota aleasă (felul, valoarea exactă, cifra, textul, legătura, distanța și ce poate schimba) și
+  rândurile foii active; panoul de proprietăți și lista le citesc de acolo, deci nu trag codul cotelor în bucata lor. Cota
+  aleasă stă tot acolo (lista o poate alege), iar cererea listei („treci la Cote cu cota asta”) o ascultă editorul fără să se
+  redeseneze la fiecare publicare (`laCerereaListei`).
+- **Panoul cotei** (`src/app/PanouCota.tsx`, în bucata panoului): cu o cotă aleasă, doar ce e al ei: felul; valoarea exactă
+  (`textNumar`, mm sau °) și **Copiază**; legătura (legată, liberă, dezlegată cu motivul: forma lipsă sau alte noduri) și
+  **Dezleagă**; textul, cu `<>`; distanța liniei de cotă; **Șterge**. Schimbările trec prin acțiunea `foaie.cote` a uneltei,
+  deci fiecare e un pas de anulare. Funcțiile pure, în `src/model/cote.ts`: `cotaDezlegata` (fiecare capăt legat își scrie
+  punctul citit acum și pierde legătura), `cotaCuText` (gol, doar spații sau doar „<>” scoate câmpul), `cotaCuDistanta`,
+  `stareCota`.
+- **Lista** (`src/ui/ListaCote.tsx`, la cerere, doar pentru o foaie cu cote): sub piesele foii active, **Cote (N)**, închis la
+  început (o cotă aleasă îl deschide); deschis, cotele foii (cifra, felul, „dezlegată”); un clic pe una trece la unealta Cote,
+  cu ea aleasă. **Ochiul** ascunde cotele foii pe pânză, nu le șterge; ținut în browser (`cncvs2.cote-ascunse`, id-urile
+  foilor), nu în proiect. Cu unealta Cote, cotele se văd oricum.
+- **„Arată cotele”** (`vedere.cote`, în paletă) comută aceeași setare ca „Cotele pe pânză” din Setări (`comutaPePanza`); bucata
+  setărilor vine la cerere, deci pornirea nu o aduce.
+- **Cotele foilor vecine:** cu „Toate foile pe pânză”, unealta le desenează lângă foile lor (`locuriFoi`), estompate
+  (opacitatea 0,45), doar de văzut: nu se aleg și nu se lipesc. Setarea **„Cotele foilor vecine”** (estompate sau ascunse) e în
+  Setări › Cotele › Comportamentul; ochiul unei foi și „Cotele pe pânză” le ascund și pe ele.
+- **Manualul:** „Cotele și măsurarea” spune panoul, lista, ochiul, „Arată cotele” și foile vecine; „Setările”, rândul nou.
+- **Cifrele:** unitare noi 6 (panoul 5, „Arată cotele” 1) și setările potrivite; e2e noi 4 (`cote.panou.spec.ts`); otrăvuri:
+  vezi registrul (`test/otravuri/10.4a4.py`). Pornirea 110,4 → 110,6 kB (cu ușa 115,3, cu Atelierul 115,6 / 120: în pornire stau
+  încărcarea rândului din listă, acțiunea `vedere.cote` și eticheta ei), totalul 837,8 → 841,6 / 900 kB (panoul cotei, în
+  bucata panoului; rândul listei, 1,3 kB la cerere, cu stilurile lui; depozitul, o bucată comună de 0,7 kB; restul, în bucata
+  uneltei).
+
 ## Răspunsurile owner-ului (24.11.2026)
 
 Salvate în schiță (`raspunsuri/owner`, 12:52), apoi „am raspuns” în chat: **1a, 2a, 3a, 4a, 5a, 6a**, cu nota, exactă:

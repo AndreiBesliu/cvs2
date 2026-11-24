@@ -13477,3 +13477,26 @@ aducerea lui `main` (`29ef7e44`). **Completed:** 24.11, 17:15 (în container; CI
   (fereastra scoasă din garda „dialog deschis”), prinsă după Ctrl+K în probă: tasta R ține de editor, nu de registru. Trei din `10.4a2.py` (D05, D09, S01),
   rămase VOID pe codul nou, mutate și prinse.
 - **Capcană:** pragul cifrelor se probează la înălțimea implicită (după „Înălțimea cifrelor” 7 mm, cifra are 16 px pe ecran).
+
+## 2026-11-24 — Felia 10.4↑a-4: panoul cotei, lista, ochiul, „Arată cotele”, cotele foilor vecine (ADR 0330 §5) (Model: Claude Opus 5.5)
+
+**Prompt:** „continuă cu 10.4↑a-4” (owner-ul, 24.11, după 10.4↑a-3). **Started:** 24.11, 18:55, în sesiunea cloud a liniei
+cotelor. **Completed:** 24.11, 19:40 (în container; CI-ul, pe commit-ul împins).
+
+- **Întâi partea pură:** `cotaDezlegata`, `cotaCuText`, `cotaCuDistanta`, `stareCota` (`src/model/cote.ts`), foile ascunse
+  citite din browser (`citesteAscunse`), setarea „Cotele foilor vecine” și comutarea „Cotele pe pânză”, cu probele pe hârtie
+  (`cote.panou.test.ts`, 5; `cote.setari.test.ts`, +1).
+- **Depozitul cotelor** (`src/ui/coteVedere.ts`, fără model): cota aleasă, panoul și rândurile publicate de unealtă, cererile
+  listei (ascultate de editor fără redesenare), foile ascunse. Așa, panoul și lista nu trag codul cotelor în bucata lor.
+- **Interfața:** panoul cotei (`src/app/PanouCota.tsx`), rândul „Cote (N)” din listă cu ochiul (`src/ui/ListaCote.tsx`, la
+  cerere), acțiunea `vedere.cote` („Arată cotele”), cotele foilor vecine estompate (desenul unei cote, scos în `CotaSvg`), rândul
+  nou din Setări, manualul (ro, en), catalogul controalelor.
+- **E2e** (`test/e2e/cote.panou.spec.ts`, 4): panoul (felul, valoarea, Copiază în clipboard, textul cu <>, distanța, Dezleagă,
+  apoi forma scalată fără ca cota să se schimbe, Șterge și anularea); lista (rândul, clicul care trece la unealtă, ochiul, ținut
+  după reîncărcare); „Arată cotele” din paletă; foile vecine (estompate, la stânga foii active, ascunse din Setări).
+- **Porțile, în container:** tipurile; unitarele cotelor, manualului, catalogului, registrului; e2e-urile cotelor, panoului,
+  setărilor, manualului, paletei și foilor (34 / 34); build-ul determinist. Pornirea 110,4 → 110,6 kB (cu ușa 115,3, cu
+  Atelierul 115,6 / 120), totalul 837,8 → 841,6 / 900.
+- **Otrăvurile** (`test/otravuri/10.4a4.py`, într-o clonă): 10 unitare și 15 e2e; două din `10.4a3.py` (E01, E03), rămase VOID
+  pe codul nou, mutate.
+
