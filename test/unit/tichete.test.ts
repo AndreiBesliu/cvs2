@@ -123,15 +123,17 @@ test('rândul din fila Tichete: ce lipsește e necunoscut (null, gol), nu invent
   });
   assert.deepEqual(plin, {
     id: 't1', fel: 'idee', text: 'Grila\nmai groasă', autorEmail: 'ana@exemplu.ro', creatLa: new Date('2026-11-02T09:00:00Z'), stare: 'deschis',
-    aplicatia: { ...APP, plan: null }, amprente: [A, B], poza: { tip: 'image/jpeg', marime: 1200 }, proiect: null,
+    aplicatia: { ...APP, plan: null }, amprente: [A, B], pasi: [], poza: { tip: 'image/jpeg', marime: 1200 }, proiect: null,
     raspunsuri: [{ deEmail: 'echipa@exemplu.ro', text: 'Vine.', la: new Date('2026-11-02T10:00:00Z') }, { deEmail: null, text: '', la: null }],
     versiune: 3, rezolvatLa: new Date('2026-11-02T11:00:00Z'),
   });
   const gol = tichetDin('t2', { fel: 'altceva', stare: 'inchis', aplicatia: 'nu', amprente: 'nu', poza: { tip: 'image/gif', marime: 3 }, versiune: 0, rezolvatLa: '2026-11-02' });
   assert.deepEqual(gol, {
-    id: 't2', fel: null, text: '', autorEmail: null, creatLa: null, stare: null, aplicatia: null, amprente: [], poza: null, proiect: null,
+    id: 't2', fel: null, text: '', autorEmail: null, creatLa: null, stare: null, aplicatia: null, amprente: [], pasi: [], poza: null, proiect: null,
     raspunsuri: [], versiune: null, rezolvatLa: null,
   });
+  // Pașii dinaintea raportării (ADR 0262, A.11b): cei buni rămân, ceilalți cad.
+  assert.deepEqual(tichetDin('t6', { pasi: [{ fel: 'unealta', id: 'cerc', ms: 5 }, { fel: 'unealta', id: 'Cerc!', ms: 5 }] }).pasi, [{ fel: 'unealta', id: 'cerc', ms: 5 }]);
   // Proiectul atașat (felia 15.B↑b): meta din tichet, cu marginile ei; o formă greșită = fără proiect, nu un buton stricat.
   assert.deepEqual(tichetDin('t4', { proiect: META }).proiect, META);
   assert.equal(tichetDin('t5', { proiect: { ...META, sha256: 'x' } }).proiect, null);

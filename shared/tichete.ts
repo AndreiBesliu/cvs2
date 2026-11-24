@@ -1,3 +1,4 @@
+import type { PasEroare } from './pasiEroare.ts';
 /**
  * Raportările clienților, adică tichetele (ADR 0116 §C, felia 15.B↑a), comune clientului și serverului: ce are un tichet,
  * stările lui și validările cererilor. Le scrie doar serverul (callable-ul `tichete`, cu auditul în aceeași tranzacție);
@@ -174,6 +175,8 @@ export type CerereTichet =
   | {
     readonly actiune: 'raporteaza'; readonly fel: FelTichet; readonly text: string; readonly aplicatia: AplicatiaTichet;
     readonly amprente: readonly string[]; readonly poza?: string; readonly proiect?: string;
+    /** Pașii dinaintea raportării, doar cu bifa (ADR 0262, felia A.11b); serverul îi verifică pas cu pas. */
+    readonly pasi?: readonly PasEroare[];
   }
   | { readonly actiune: 'mele' }
   | { readonly actiune: 'citit'; readonly id: string }

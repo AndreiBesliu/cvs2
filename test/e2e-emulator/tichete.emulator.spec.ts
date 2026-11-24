@@ -147,6 +147,13 @@ test('raportarea din editor, cu poza și amprenta erorii din sesiune; răspunsul
   await r.locator('[data-camp="raport-fel-idee"]').check();
   await r.locator('[data-camp="raport-text"]').fill('Grila ar trebui\nsă se vadă mai bine.');
   await r.locator('[data-camp="raport-poza"]').check();
+  // Pașii din aplicație (ADR 0262, A.11b), doar cu bifa: luați la deschiderea ferestrei, cu numărul lor în ce mai pleacă.
+  await expect(r.locator('[data-raport-date-pasi]')).toHaveCount(0);
+  const bifaPasi = r.locator('[data-camp="raport-pasi"]');
+  await expect(bifaPasi).toBeEnabled();
+  await expect(r.locator('label:has([data-camp="raport-pasi"])')).toContainText('pași din aplicație');
+  await bifaPasi.check();
+  await expect(r.locator('[data-raport-date-pasi]')).toContainText('pași din aplicație (doar ce ai făcut, fără conținut)');
   // Proiectul deschis, doar cu bifa: mărimea lui (JSON-ul canonic, cât salvează editorul) sub bifă și în ce mai pleacă.
   await expect(r.locator('[data-raport="proiect"]')).toHaveCount(0);
   await r.locator('[data-camp="raport-proiect"]').check();
@@ -178,6 +185,10 @@ test('raportarea din editor, cu poza și amprenta erorii din sesiune; răspunsul
   expect(numar(poza['marime'])).toBeGreaterThan(1000);
   expect(numar(poza['marime'])).toBeLessThanOrEqual(400 * 1024);
   expect((await documente(`tichete/${tichet?.id ?? ''}/poze`)).map((x) => x.id)).toEqual(['plansa']);
+  // Pașii: dreptunghiul adăugat din paletă e printre ei, ca acțiune reușită; doar câmpurile unui pas.
+  const pasi = (f['pasi']?.arrayValue?.values ?? []).map((v) => v.mapValue?.fields ?? {});
+  expect(pasi.some((p) => text(p['fel']) === 'actiune' && text(p['id']) === 'document.adauga-dreptunghi' && text(p['rez']) === 'ok')).toBe(true);
+  for (const p of pasi) expect(Object.keys(p).every((k) => ['fel', 'id', 'rez', 'ms'].includes(k))).toBe(true);
   // Proiectul: în tichet doar meta lui (fișierul e în Storage), cu mărimea și amprenta versiunii salvate.
   const proiect = f['proiect']?.mapValue?.fields ?? {};
   expect([numar(proiect['marime']), text(proiect['sha256']), numar(proiect['schema'])]).toEqual([
@@ -196,6 +207,9 @@ test('raportarea din editor, cu poza și amprenta erorii din sesiune; răspunsul
   await expect(eroareSesiune).toContainText('eroare de probă pentru raportare', LENT);
   await expect(eroareSesiune.locator('[data-tic="spre-erori"]')).toHaveText('Deschide în Erori ›');
   await expect(detaliu.locator('[data-tic="aplicatia"]')).toContainText(BUILD);
+  // Pașii atașați, cu numele acțiunii din catalog.
+  await expect(detaliu.locator('[data-admin="pasi"] summary')).toContainText('dinaintea raportării');
+  await expect(detaliu.locator('[data-admin="pasi"] [data-pas-id="document.adauga-dreptunghi"]')).toContainText('Adaugă dreptunghi · acțiune');
   // Proiectul, descărcat prin callable (din Storage, pe server), despachetat și verificat: versiunea salvată, octet cu octet.
   const descarcaProiect = detaliu.locator('[data-tic="descarca-proiect"]');
   await expect(descarcaProiect).toHaveText(`Descarcă proiectul (${kb} kB, schema ${(JSON.parse(salvat) as { schema: number }).schema})`);

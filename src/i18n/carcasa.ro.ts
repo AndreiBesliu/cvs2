@@ -96,6 +96,7 @@ export const roCarcasa = {
   'raport.text': 'Ce s-a întâmplat (sau ideea, întrebarea)',
   'raport.poza': 'Atașează poza planșei',
   'raport.proiect': 'Atașează proiectul (ca echipa să-l deschidă)',
+  'raport.pasi': { one: 'Atașează ultimul pas din aplicație', few: 'Atașează ultimii {n} pași din aplicație', other: 'Atașează ultimii {n} de pași din aplicație' },
   'raport.proiect.marime': 'Proiectul deschis are {marime}.',
   'raport.proiect.prea-mare': 'Proiectul are {marime}; se pot atașa cel mult {max}. Debifează-l ca să trimiți fără el.',
   'raport.proiect.lipsa': 'Niciun proiect deschis de atașat.',
@@ -109,6 +110,10 @@ export const roCarcasa = {
   'raport.date.amprente-calcul': 'Amprentele erorilor din sesiune: se calculează…',
   'raport.date.fara-erori': 'Nicio eroare în sesiunea asta',
   'raport.date.proiect': 'Proiectul deschis ({marime}), comprimat',
+  'raport.date.pasi': {
+    one: 'Ultimul pas din aplicație (doar ce ai făcut, fără conținut)', few: 'Ultimii {n} pași din aplicație (doar ce ai făcut, fără conținut)',
+    other: 'Ultimii {n} de pași din aplicație (doar ce ai făcut, fără conținut)',
+  },
   'raport.date.amprente': {
     one: 'Amprenta unei erori din sesiunea asta, fără conținutul ei',
     few: 'Amprentele a {n} erori din sesiunea asta, fără conținutul lor',

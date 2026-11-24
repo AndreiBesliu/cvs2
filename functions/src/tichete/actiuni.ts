@@ -17,6 +17,7 @@ import { scrieAudit } from '../audit.ts';
 import { logServerError } from '../erori/jurnal.ts';
 import type { Fisiere } from '../fisiere.ts';
 import { drepturiIn } from '../personal/drepturi.ts';
+import { pasiDin } from '../../../shared/pasiEroareVerificare.ts';
 import { pozaDin } from '../poza.ts';
 import { proiectDin } from './proiect.ts';
 
@@ -82,6 +83,8 @@ async function raporteaza(
   if (amprente === null) throw argument('amprentele erorilor');
   const poza = pozaDin(d['poza']);
   const proiect = proiectDin(d['proiect']);
+  // Pașii dinaintea raportării (ADR 0262, felia A.11b), doar cu bifa: verificați pas cu pas, ca la raportul unei erori.
+  const pasi = pasiDin(d['pasi']);
   const zi = ziUtc(acum);
   const refCont = db.collection(COLECTIE_CONTURI).doc(uid);
   const refStaff = db.collection(COLECTII_PERSONAL.staff).doc(uid);
@@ -109,13 +112,14 @@ async function raporteaza(
       tx.set(refLimita, { zi, numar: azi + 1 });
       tx.create(ref, {
         schema: 1, autor: uid, autorEmail, fel, text, aplicatia, amprente, poza: meta, proiect: proiect?.meta ?? null, stare: 'nou',
+        ...(pasi.length > 0 ? { pasi } : {}),
         creatLa: cand, modificatLa: cand, rezolvatLa: null, raspunsuri: [], ultimulRaspunsLa: null, necititeAutor: 0, versiune: 1,
       });
       if (poza && meta) tx.create(ref.collection(COLECTIE_POZE).doc(ID_POZA), { schema: 1, ...meta, octeti: poza.octeti, creataLa: cand });
       scrieAudit(tx, db, {
         cand, cine: uid, rol: drepturi.rol, actiune: 'tichete.raporteaza', tinta: `${COLECTIE_TICHETE}/${ref.id}`, inainte: null,
         dupa: {
-          fel, caractere: [...text].length, amprente: amprente.length, poza: meta,
+          fel, caractere: [...text].length, amprente: amprente.length, pasi: pasi.length, poza: meta,
           proiect: proiect ? { marime: proiect.meta.marime, comprimat: proiect.meta.comprimat } : null,
         },
       });

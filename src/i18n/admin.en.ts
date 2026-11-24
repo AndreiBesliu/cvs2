@@ -62,6 +62,8 @@ export const enAdmin = {
   'admin.erori.stiva': 'Stack',
   'admin.erori.pasi': { one: 'The step before it', other: 'The {n} steps before it' },
   'admin.erori.pasi.nota': 'oldest first; the last one is right before the error',
+  'admin.tic.pasi': { one: 'The step before the report', other: 'The {n} steps before the report' },
+  'admin.tic.pasi.nota': 'attached by the person; oldest first, the last one right before the report window',
   'admin.erori.pas.actiune': 'action',
   'admin.erori.pas.fereastra': 'window',
   'admin.erori.pas.unealta': 'tool',

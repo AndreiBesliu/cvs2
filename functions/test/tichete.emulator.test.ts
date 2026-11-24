@@ -97,13 +97,29 @@ test('raportarea: clientul cu contul deschis raportează, cu câmpurile curăța
   assert.equal(ms(d['creatLa']), ceas);
   const a = await audit();
   assert.deepEqual(a.map((x) => [x['actiune'], x['cine'], x['rol'], x['tinta'], x['inainte']]), [['tichete.raporteaza', 'ana', null, `tichete/${r.id}`, null]]);
-  assert.deepEqual(a[0]?.['dupa'], { fel: 'problema', caractere: 28, amprente: 2, poza: null, proiect: null });
+  assert.deepEqual(a[0]?.['dupa'], { fel: 'problema', caractere: 28, amprente: 2, pasi: 0, poza: null, proiect: null });
+  assert.equal('pasi' in d, false, 'fără bifă, tichetul n-are pași');
   // Personalul raportează și fără cont deschis în editor; owner-ul, fără e-mail în personal și fără token, fără adresă; cu
   // token, cu adresa din el.
   const o = await raporteaza('own', { fel: 'intrebare', amprente: [] });
   assert.equal((await tichetul(o.id))['autorEmail'], null);
   const t = (await fa('own', { actiune: 'raporteaza', fel: 'idee', text: 'x', aplicatia: { ...APLICATIA, plan: null } }, { email: 'Owner@Exemplu.RO' })) as RaspunsTichet;
   assert.deepEqual([(await tichetul(t.id))['autorEmail'], (await tichetul(t.id))['amprente'], (await tichetul(t.id))['aplicatia']], ['owner@exemplu.ro', [], { ...APLICATIA, plan: null }]);
+});
+
+test('pașii dinaintea raportării (A.11a–b), cu bifa: verificați pas cu pas, scriși în tichet; în audit doar câți; cei stricați aruncați', async () => {
+  const pasi = [
+    { fel: 'actiune', id: 'document.adauga-dreptunghi', rez: 'ok', ms: 9_000 },
+    { fel: 'clic', id: 'Numele foii mele', ms: 100 },
+    { fel: 'dialog', id: 'eticheta.raport-titlu', rez: 'deschis', ms: 50, text: 'ce a scris omul' },
+    { fel: 'fereastra', id: 'proiectare', ms: 20 },
+  ];
+  const r = await raporteaza('ana', { pasi });
+  assert.deepEqual((await tichetul(r.id))['pasi'], [pasi[0], pasi[3]]);
+  assert.equal((await audit()).at(-1)?.['dupa']?.['pasi'], 2);
+  // Pași care nu sunt o listă: tichetul pleacă, fără pași.
+  const g = await raporteaza('ana', { pasi: 'nu' });
+  assert.equal('pasi' in (await tichetul(g.id)), false);
 });
 
 test('raportarea: fără cont deschis, fără logare, câmpuri greșite sau peste plafoane = refuz, fără nicio scriere; exact la plafoane trece', async () => {
@@ -131,7 +147,7 @@ test('poza planșei: în documentul ei, lângă tichet; tichetul ține doar tipu
   assert.deepEqual((await tichetul(r.id))['poza'], { tip: 'image/jpeg', marime: POZA_MAX_OCTETI });
   const p = (await db.doc(`tichete/${r.id}/poze/plansa`).get()).data() ?? {};
   assert.deepEqual([p['tip'], p['marime'], (p['octeti'] as Buffer).length], ['image/jpeg', POZA_MAX_OCTETI, POZA_MAX_OCTETI]);
-  assert.deepEqual((await audit())[0]?.['dupa'], { fel: 'problema', caractere: 28, amprente: 1, poza: { tip: 'image/jpeg', marime: POZA_MAX_OCTETI }, proiect: null });
+  assert.deepEqual((await audit())[0]?.['dupa'], { fel: 'problema', caractere: 28, amprente: 1, pasi: 0, poza: { tip: 'image/jpeg', marime: POZA_MAX_OCTETI }, proiect: null });
 });
 
 /* ── Proiectul atașat (felia 15.B↑b) ─────────────────────────────────────────────────────────────────────────────────── */
@@ -163,7 +179,7 @@ test('proiectul atașat: gzip-ul cererii ajunge neschimbat în Storage; tichetul
   assert.deepEqual(octeti, Buffer.from(p, 'base64'), 'octet cu octet ce a trimis editorul');
   const [m] = await bucket.file(caleProiectTichet(r.id)).getMetadata();
   assert.equal(m.contentType, 'application/gzip');
-  assert.deepEqual((await audit())[0]?.['dupa'], { fel: 'problema', caractere: 28, amprente: 1, poza: null, proiect: { marime: meta.marime, comprimat: meta.comprimat } });
+  assert.deepEqual((await audit())[0]?.['dupa'], { fel: 'problema', caractere: 28, amprente: 1, pasi: 0, poza: null, proiect: { marime: meta.marime, comprimat: meta.comprimat } });
   // Fără bifă: fără proiect, nimic în Storage. Raportările mele arată mărimea, ca omul să vadă ce a trimis.
   const fara = await raporteaza('ana', { text: 'Fără proiect' });
   assert.equal((await tichetul(fara.id))['proiect'], null);

@@ -13,7 +13,9 @@ import { useLimba } from '../../ui/useLimba.ts';
 import { ceaMaiRecenta } from '../carcasa/date.ts';
 import { EroareCitire, LegaturaFila, ListaGoala, SeIncarca, useCatSpatiulDeJos, usePublica, useVedeFila, type Tinta } from '../carcasa/stari.tsx';
 import { dataScurta, motivDin, randDin, type Masura, type RandGrup } from '../erori/date.ts';
+import type { AducatorDocumentatie } from '../documentatie/aducere.ts';
 import { alesDupaLista } from '../erori/vedere.ts';
+import { PasiDinainte, useNumeActiuni } from '../pasi/Pasi.tsx';
 import { useAdresaImaginii } from '../sugestii/Formular.tsx';
 import { despacheteazaProiect, eRosu, filtreaza, numeFisierProiect, ordoneaza, proiectVerificat, tichetDin, type Filtru, type Tichet } from './date.ts';
 import { eroriSesiune, incapeRapid, insereazaLaCursor, numereFiltru, stareDupaRaspuns, titluTichet } from './vedere.ts';
@@ -42,10 +44,12 @@ type Lucru =
   | { readonly faza: 'gata'; readonly mesaj: string; readonly loc: string }
   | { readonly faza: 'eroare'; readonly motiv: string; readonly loc: string };
 
-export function FilaTichete({ con, owner, permisiuni, tinta = null }: {
+export function FilaTichete({ con, owner, permisiuni, tinta = null, aducator }: {
   readonly con: Conexiune; readonly owner: boolean; readonly permisiuni: ReadonlySet<Permisiune>; readonly tinta?: Tinta | null;
+  readonly aducator?: AducatorDocumentatie;
 }): ReactElement {
   const limba = useLimba();
+  const nume = useNumeActiuni(aducator, limba);
   const publica = usePublica();
   const poateRaspunde = owner || permisiuni.has('tichete.raspunde');
   const [lista, setLista] = useState<Masura<readonly Tichet[]> | null>(null);
@@ -186,7 +190,7 @@ export function FilaTichete({ con, owner, permisiuni, tinta = null }: {
                     ))}
                   </ul>
                   {tichet ? (
-                    <DetaliuTichet key={tichet.id} con={con} x={tichet} poateRaspunde={poateRaspunde} ocupat={ocupat} limba={limba} acum={acum}
+                    <DetaliuTichet key={tichet.id} con={con} x={tichet} nume={nume} poateRaspunde={poateRaspunde} ocupat={ocupat} limba={limba} acum={acum}
                       lucru={lucru.faza !== 'liber' && lucru.loc === tichet.id ? lucru : null}
                       compune={poateRaspunde ? (
                         <Raspuns x={tichet} text={ciorne.get(tichet.id) ?? ''} scrie={(s) => { scrie(tichet.id, s); }} ocupat={ocupat}
@@ -230,8 +234,8 @@ function CipStare({ stare }: { readonly stare: StareTichet | null }): ReactEleme
  * Tichetul ales, ca o conversație: capul (titlul, starea, felul, schimbarea stării), raportarea clientului, răspunsurile
  * echipei, apoi câmpul răspunsului (doar cu `tichete.raspunde`). Lipit sus la derulare, cu conversația derulată în el.
  */
-function DetaliuTichet({ con, x, poateRaspunde, ocupat, limba, acum, lucru, compune, schimbaStarea }: {
-  readonly con: Conexiune; readonly x: Tichet; readonly poateRaspunde: boolean; readonly ocupat: boolean; readonly limba: string; readonly acum: number;
+function DetaliuTichet({ con, x, poateRaspunde, ocupat, limba, acum, lucru, compune, schimbaStarea, nume }: {
+  readonly con: Conexiune; readonly x: Tichet; readonly nume: ReadonlyMap<string, string>; readonly poateRaspunde: boolean; readonly ocupat: boolean; readonly limba: string; readonly acum: number;
   readonly lucru: Exclude<Lucru, { faza: 'liber' }> | null; readonly compune: ReactNode; readonly schimbaStarea: (x: Tichet, s: StareTichet) => void;
 }): ReactElement {
   const ore = x.creatLa ? Math.floor((acum - x.creatLa.getTime()) / 3_600_000) : 0;
@@ -267,6 +271,7 @@ function DetaliuTichet({ con, x, poateRaspunde, ocupat, limba, acum, lucru, comp
           {x.poza ? <PozaTichetului con={con} x={x} /> : null}
           {x.proiect ? <ProiectulTichetului con={con} id={x.id} meta={x.proiect} /> : null}
           <ErorileSesiunii con={con} amprente={x.amprente} />
+          {x.pasi.length > 0 ? <PasiDinainte pasi={x.pasi} nume={nume} titlu={t('admin.tic.pasi', { n: x.pasi.length })} nota={t('admin.tic.pasi.nota')} /> : null}
           {a ? (
             <p className="admin-slab tic-aplicatia" data-tic="aplicatia">
               {t('admin.tic.aplicatia', { versiune: a.versiune, instanta: a.instanta, limba: a.limba, plan: a.plan ?? t('admin.tic.fara-plan') })}
