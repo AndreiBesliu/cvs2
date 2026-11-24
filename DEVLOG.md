@@ -12559,3 +12559,36 @@ PR-ul `AndreiBesliu/cvs2#13` („De unit acum (A.9a, A.9b): `dbb0306a`”).
 - **Publicarea (`883a8caa`):** rapidul și completul pe `main` verzi (completul, 63 min 54 s), `publica.yml` verde în
   3 minute, cu serverul: funcția `agregaUtilizarea` creată, regulile Firestore și indexurile publicate; adresa de test
   spune `883a8caa1f21` (24.11, 07:14).
+
+## 2026-11-24 — Sesiunea principală în cloud: a douăsprezecea unire (A.10 și A.11a, utilizarea aplicației: fluxurile, pașii dinaintea unei erori) (Model: Claude Fable 5.2)
+
+**Prompt:** același brief de predare al sesiunii principale („unește ce se poate”), la raportul liniei adminului din
+PR-ul `AndreiBesliu/cvs2#13` („De unit acum (A.9a, A.9b, A.10, A.11a): `0580f504`”). Între timp, owner-ul: „i-am dat sa
+continue, tu ce poti sa faci intre timp?”.
+**Started:** 24.11, 07:35. **Completed:** unirea în `main`, 24.11, 08:31; publicarea pe test, la rândul ei.
+
+- **Înainte:** lotul al unsprezecelea pe test (`883a8caa1f21`, 07:14, cu serverul); rândul publicării lui stătea pe
+  `unire-2411c` (`c611346a`, doar documente) și intră în `main` cu lotul acesta.
+- **Întrebarea owner-ului:** răspunsul, cu ce se face deja (unirea la raport; adresa de test deschisă într-un browser din
+  container după publicare: versiunea, CSP-ul, workerul PWA, catalogul extensiilor, textele, manualul, dicționarele,
+  documentația, pagina de intrare a `/admin`) și cu ce pornește doar la cuvântul lui: publicarea mai scurtă (fără al
+  doilea complet pe `main` când codul e identic cu cel verificat), lista „ce e nou pe test”, rezumatul pentru
+  verificarea juridică, lista ramurilor unite de șters. Fără răspuns încă.
+- **Raportul liniei:** la 07:46, completul era verde pe `82ec5424` (45328103114), dar ramura mersese mai departe cu
+  A.11b, fără commit de unit scris. Am întrebat linia (`send_message`); la 08:28, PR-ul spunea `0580f504`.
+- **Verificate înaintea unirii:** ramura fără `.lucru/`; `0580f504` adaugă peste `82ec5424` doar traducerile
+  roadmap-ului, otrăvurile lui A.11a (`.py`) și documente, cu rapidul verde pe el (45328844970).
+- **Unirea:** pe `unire-2411c` (din `883a8caa`): A.10 și A.11a în `7f6f4069`, fără nicio ciocnire; `git diff` gol
+  față de `0580f504` în afara fișierelor `.md`. În container: catalogul controalelor la zi, tipurile (și ale
+  funcțiilor), regulile de import (0 încălcări), traducerile (971, 0 lipsă), 93 / 93 probe atinse, 58 / 58 probe ale
+  documentelor, build-ul determinist.
+- **Porțile, în CI, pe `82ec5424`** (completul, 42 min 8 s): unit 10 054 / 0 (12 sărite), e2e 646 / 646, funcțiile pe
+  emulatoare 122 / 122, paginile 51 / 51; pornirea 109,6 / 115 (în CI 109,5; cu ușa 114,1; cu Atelierul 114,4),
+  totalul 800,1 / 900, `/admin` 135,0 / 200.
+- **La publicare merge și serverul:** funcțiile `logClientError` (primește pașii) și `agregaUtilizarea` (scrie
+  fluxurile); fără reguli sau indexuri noi.
+- **Documentele:** decizia în `CLAUDE.md` și rândul de stare al lui A.10 și A.11a; indexul liniilor; starea și două
+  lecții în `docs/linii/principala.md` (ramura care merge mai departe fără raport; adresa de test într-un browser din
+  container).
+- **La owner:** fereastra exportului, verificarea juridică a utilizării aplicației înaintea live-ului, „cine unește în
+  `main`”, plafonul pornirii (mai sunt 0,6 kB), răspunsul la lista de mai sus.

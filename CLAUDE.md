@@ -1246,8 +1246,18 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   refuzurile; cele mai folosite acțiuni; ce nu se folosește (din catalogul acțiunilor generat la build,
   `documentatie/actiuni.json`); frecările; duratele calculelor. **Probele filelor Azi și Personal numără joburile și
   permisiunile (4 și 12), iar probele barei numără filele:** un job, o permisiune sau o filă nouă a adminului le
-  schimbă. Urmează A.10 (fluxurile), A.11 (troubleshooting și disocierea), apoi A.7. **`/admin` 133,2 / 200 kB; pornirea
-  și totalul, neschimbate (109,4; 799,6 / 900).**
+  schimbă. **`/admin` 133,2 / 200 kB; pornirea și totalul, neschimbate (109,4; 799,6 / 900).**
+  **A.10 și A.11a (fluxurile; pașii dinaintea unei erori)** gata pe 24.11, unite în `main` pe 24.11 (`7f6f4069`): jobul
+  de noapte scrie și fluxurile zilei (`fluxuri`, în `shared/utilizareZi.ts`): secvențele de 3 și 4 acțiuni reușite la
+  rând și pâlnia drumului principal (deschiderea, desenul sau importul, rolul, exportul G-code, lucrarea pe mașină);
+  fila Utilizare le arată, cu durata unei sesiuni. Raportul unei erori poartă ultimii pași ai omului dinaintea ei
+  (implicit 30, din Setări; 0 îi oprește), fără nimic din desen, iar fila Erori îi arată. **Pașii se iau în clipa
+  erorii** (`pasiAcum`, din `src/app/utilizare.ts`, dat raportorului în `main.tsx`), nu la trimitere. **Verificarea lor stă în
+  `shared/pasiEroareVerificare.ts`** (serverul și adminul), nu în `shared/pasiEroare.ts`: altfel bucata raportorului
+  aduce tot contractul utilizării. **Un fel nou de eveniment cere rândul lui și în `FELURI_PAS`** (compilatorul o
+  spune). Urmează A.11b (bifa „Atașează ultimii pași” la raportare), A.11c (cronologia unui om), A.11d (disocierea),
+  apoi A.7. **Pornirea 109,6 kB (cu ușa 114,1 / 115; cu Atelierul 114,4: mai sunt 0,6 kB), totalul 800,1 / 900,
+  `/admin` 135,0 / 200.**
   **Riglele, ghidajele, lipirea și alinierea (ADR 0050, aduse din etapa 6)** gata pe 20.10: ghidajele pe foaie
   (`foaie.ghidaje`, fără schemă nouă), lipirea pură (`src/geom/lipire.ts`), alinierea (`src/geom/aliniere.ts`), totul la
   cerere după prima randare (`src/app/Editare.tsx`); pornirea 99,4 / 100 kB cu ușa (foarte strâmt). **Uneltele de desen
@@ -1368,6 +1378,29 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 24.11.2026, dimineața (a douăsprezecea unire din cloud): **A.10 și A.11a (utilizarea aplicației: fluxurile și pașii
+  dinaintea unei erori) unite în `main`** (sesiunea principală, ramura `unire-2411c`, din `883a8caa`). Linia adminului,
+  ramura `wip/A.1-admin`, `0580f504`, PR-ul `AndreiBesliu/cvs2#13` (ADR 0262; `3.Am` și `3.An` în fișa etapei 3), unite
+  în `7f6f4069`. **A.10:** jobul de noapte scrie și fluxurile zilei: secvențele (3 și 4 acțiuni reușite la rând, pe
+  sesiune; cele mai dese 150 pe zi) și drumul principal ca pâlnie (deschiderea, desenul sau importul, rolul, exportul
+  G-code reușit, lucrarea pe mașină; fiecare sesiune, până la pasul cel mai departe); în fila Utilizare, secțiunea
+  Fluxurile și durata unei sesiuni (mediana); otrăvurile 23 / 23. **A.11a:** raportul unei erori poartă ultimii pași ai
+  omului dinaintea ei (implicit 30, din Setări; 0 îi oprește): felul, id-ul, rezultatul și cât înainte, fără nimic din
+  desen; pașii se iau în clipa erorii; serverul îi verifică pas cu pas și aruncă ce nu e un pas, nu raportul; fila Erori
+  îi arată sub eroarea aleasă; nota de confidențialitate o spune, în ambele limbi; A.11 s-a despărțit în A.11a–A.11d;
+  otrăvurile 29 / 29. Ramura mersese mai departe (A.11b, A.11c), deci sesiunea principală a întrebat linia ce commit
+  unește, iar linia l-a scris în PR. Față de `82ec5424`, cu completul verde, `0580f504` adaugă doar traducerile
+  roadmap-ului, otrăvurile și documente (rapidul verde pe el); codul unirii e chiar al lui `0580f504` (`git diff` gol în
+  afara fișierelor `.md`). Ramura avea `main` `89962b4d` (până la `883a8caa`, doar documente); nicio ciocnire. **La
+  publicare merge și serverul:** funcțiile `logClientError` (primește pașii) și `agregaUtilizarea` (scrie fluxurile);
+  fără reguli, permisiuni sau indexuri noi. Porțile, în CI, verzi pe `82ec5424` (completul, 42 min 8 s): unit
+  10 054 / 0 (12 sărite, pe Linux), e2e 646 / 646, funcțiile pe emulatoare 122 / 122, paginile 51 / 51; **pornirea
+  109,6 kB (plafonul 115; cu ușa 114,1, cu Atelierul 114,4: mai sunt 0,6 kB)**, totalul 800,1 / 900 kB, `/admin`
+  135,0 / 200. Înainte, lotul al unsprezecelea a ajuns pe test (`883a8caa`, 24.11, 07:14), cu serverul. Pe ramura liniei,
+  în lucru: A.11b (bifa „Atașează ultimii pași” la raportare; completul pe `cd00283b`), A.11c (cronologia unui om), apoi
+  A.11d și A.7. Neunită, la cuvântul owner-ului: fereastra exportului (`AndreiBesliu/cvs2#11`). **La owner:** fereastra
+  exportului, verificarea juridică (GDPR) a utilizării aplicației înaintea live-ului, „cine unește în `main`”, plafonul
+  pornirii (mai sunt 0,6 kB).
 - 24.11.2026, dimineața (a unsprezecea unire din cloud): **A.9a și A.9b (utilizarea aplicației: sumele zilei, jobul de
   noapte și fila Utilizare) unite în `main`** (sesiunea principală, ramura `unire-2411b`, din `89962b4d`). Linia
   adminului, ramura `wip/A.1-admin`, `dbb0306a`, PR-ul `AndreiBesliu/cvs2#13` (ADR 0262; `3.Ak` și `3.Al` în fișa etapei
