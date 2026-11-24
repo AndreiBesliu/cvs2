@@ -87,6 +87,11 @@ față. Fără cod de produs până la răspunsuri. De hotărât acolo, între a
 - **24.11, 10.4↑a-4 gata pe ramură** (la „continuă cu 10.4↑a-4”; codul la `cc55148f`): panoul cotei, rândul „Cote (N)” din
   listă cu ochiul, „Arată cotele”, cotele foilor vecine (estompate sau ascunse). Felia a încheiat 10.4↑a.
   **Urmează:** 10.4↑b (raza, diametrul, unghiul, inch în fracții), la cuvântul owner-ului.
+- **24.11, 10.4↑a-4 cu `main` (lotul 24) adus** (`91dd065c`): ciocnirile doar în DEVLOG și în catalogul controalelor (scris din
+  nou). E commit-ul de unit pentru a-4.
+- **24.11, 10.4↑b gata pe ramură** (la „10.4↑b”): raza, diametrul, unghiul (și în Automată: cerc, arc, două laturi), cu
+  setările lor (prefixele, unghiurile, linia razei) și inch în fracții. Proba mijlocului căii SVG a prins arcul unghiului
+  oglindit față de coardă (sweep-flag, reparat). **Urmează:** 10.4↑c (exportul), la cuvântul owner-ului.
 
 ## Deciziile owner-ului
 

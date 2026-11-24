@@ -13878,3 +13878,25 @@ cotelor. **Completed:** 24.11, 19:14 (în container; CI-ul, pe commit-ul împins
 - **Otrăvurile** (`test/otravuri/10.4a4.py`, într-o clonă): 25 / 25 prinse din prima (10 unitare, 15 e2e); două din
   `10.4a3.py` (E01, E03), rămase VOID pe codul nou, mutate și prinse.
 
+## 2026-11-24 — Felia 10.4↑b: raza, diametrul, unghiul (și în Automată), cu setările lor; inch în fracții (ADR 0330 §4, §6) (Model: Claude Opus 5.5)
+
+**Prompt:** „10.4↑b” (owner-ul, 24.11, după 10.4↑a-4). **Started:** 24.11, 20:10, în sesiunea cloud a liniei cotelor.
+**Completed:** 24.11, 22:20 (în container; CI-ul, pe commit-ul împins).
+
+- **Întâi `main` adus peste a-4** (lotul 24, fereastra exportului și 3.Xk: `91dd065c`; ciocnirile, DEVLOG și catalogul
+  controalelor), ca sesiunea principală să aibă commit-ul de unit al lui a-4; lucrul la b, pus deoparte cât timp.
+- **Desenul pur** (`src/model/desenCota.ts`): `desenRadial` (raza din centru, din afară sau după loc; diametrul prin centru),
+  `desenUnghi` și `laturiUnghi` (trei puncte sau două laturi; arcul în sectorul s1, s2; extensiile; săgețile pe coardă sau în
+  afară; cifra deasupra, în linie sau orizontală), locul din cursor, alegerea pe arc, calea SVG, `desenCota` după fel; cifrele:
+  inch în fracții, unghiul zecimal sau grade-minute-secunde, prefixele (`cifraCota`). Probele pe hârtie întâi
+  (`cote.cerc.test.ts`, 15).
+- **Setările:** grupul „Raza, diametrul, unghiul” și unitatea „inch în fracții”, cu fracția cea mai mică; fereastra Setări, cu
+  cota de probă lărgită (o rază, un unghi).
+- **Unealta:** Rază, Diametru, Unghi; Automată pe cerc, arc, două laturi (unghiul; la paralele, distanța); refuzul razei pe o
+  linie, elipsă sau curbă; tragerea și săgețile pe felurile noi; panoul (locul cifrei, raza arcului); manualul (ro, en).
+- **Găsit pe drum:** arcul unghiului se desena oglindit față de coardă (sweep-flag 1 pe un ecran cu Y în jos); prins de proba
+  nouă a mijlocului căii SVG, reparat (`caleArc`).
+- **Porțile, în container:** tipurile, regulile de import; unitarele cotelor, manualului și catalogului; e2e-urile cotelor,
+  panoului, setărilor și manualului (27 / 27); build-ul determinist. Pornirea 110,6 kB (neschimbată), totalul 860,6 → 864,8 /
+  900.
+- **Otrăvurile** (`test/otravuri/10.4b.py`, într-o clonă): 31 / 31 unitare (P04, P14, P18 și P22 au scăpat întâi și sunt prinse după probele noi); cele 18 e2e, în lucru.
