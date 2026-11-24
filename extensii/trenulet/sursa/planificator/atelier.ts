@@ -885,19 +885,19 @@ var Atelier3D = (function () {
       e.innerHTML = `<h2>Cremalieră</h2>
         <p class="mic">O bară cu dinți drepți, care face din rotirea unei roți dințate o mișcare în linie dreaptă (și invers). Dinții sunt cei ai roților de aici (același modul, 20°), cu jocul din calibrare. Se prinde pe știfturi, ca o placă 1 × n, sau cu știfturi Technic prin găurile ei. Înălțimea ei e aleasă după roata pereche, ca axul roții să cadă pe grilă. Se printează în picioare, cu dinții în sus, fără suport.</p>
         <div class="at-campuri">
-          <label for="at-cr-lung">Lungime (știfturi)<input id="at-cr-lung" type="number" min="2" max="24" step="1" value="${q.lung}"></label>
-          <label for="at-cr-roata">Roata pereche (dinți)<input id="at-cr-roata" type="number" min="8" max="80" step="1" value="${q.z}"></label>
-          <label for="at-cr-modul">Modul<input id="at-cr-modul" type="number" min="0.5" max="3" step="0.1" value="${q.m}"></label>
+          <label for="at-crm-lung">Lungime (știfturi)<input id="at-crm-lung" type="number" min="2" max="24" step="1" value="${q.lung}"></label>
+          <label for="at-crm-roata">Roata pereche (dinți)<input id="at-crm-roata" type="number" min="8" max="80" step="1" value="${q.z}"></label>
+          <label for="at-crm-modul">Modul<input id="at-crm-modul" type="number" min="0.5" max="3" step="0.1" value="${q.m}"></label>
         </div>
-        <div class="at-rand"><span class="mic">Prinderea:</span>${seg("at-cr-prindere", [["stifturi", "Pe știfturi"], ["gauri", "Cu găuri de știft"]], q.prindere)}</div>
-        <div class="at-rand"><span class="mic" id="at-cr-montaj">${tr`${q.dinti} dinți. Axul roții de ${q.z} stă la ${fmt(q.axa)} mm deasupra feței de jos a cremalierei: ${unde}. La o rotație a roții, cremaliera înaintează ${fmt(q.cursa)} mm.`}</span></div>
-        <div class="at-rand"><button class="btn" type="button" id="at-cr-fa-pereche">Fă perechea</button><span class="mic">${tr("pune în listă cremaliera și roata ei")}</span></div>`;
+        <div class="at-rand"><span class="mic">Prinderea:</span>${seg("at-crm-prindere", [["stifturi", "Pe știfturi"], ["gauri", "Cu găuri de știft"]], q.prindere)}</div>
+        <div class="at-rand"><span class="mic" id="at-crm-montaj">${tr`${q.dinti} dinți. Axul roții de ${q.z} stă la ${fmt(q.axa)} mm deasupra feței de jos a cremalierei: ${unde}. La o rotație a roții, cremaliera înaintează ${fmt(q.cursa)} mm.`}</span></div>
+        <div class="at-rand"><button class="btn" type="button" id="at-crm-fa-pereche">Fă perechea</button><span class="mic">${tr("pune în listă cremaliera și roata ei")}</span></div>`;
       const camp = (id: string, a: number, b: number, f: (v: number) => void) => { $(id).onchange = ev => { const v = +(ev.target as HTMLInputElement).value; if (v >= a && v <= b) { f(v); schimbat(); } editor(); }; };
-      camp("#at-cr-lung", 2, 24, v => { p.lung = Math.round(v); });
-      camp("#at-cr-roata", 8, 80, v => { p.roata = Math.round(v); });
-      camp("#at-cr-modul", 0.5, 3, v => { p.modul = Math.round(v * 10) / 10; });
-      $("#at-cr-prindere").onclick = ev => { const b = (ev.target as Element).closest<HTMLElement>("[data-v]"); if (!b) return; p.prindere = b.dataset.v!; editor(); schimbat(); };
-      $("#at-cr-fa-pereche").onclick = adaugaPerecheCremaliera;
+      camp("#at-crm-lung", 2, 24, v => { p.lung = Math.round(v); });
+      camp("#at-crm-roata", 8, 80, v => { p.roata = Math.round(v); });
+      camp("#at-crm-modul", 0.5, 3, v => { p.modul = Math.round(v * 10) / 10; });
+      $("#at-crm-prindere").onclick = ev => { const b = (ev.target as Element).closest<HTMLElement>("[data-v]"); if (!b) return; p.prindere = b.dataset.v!; editor(); schimbat(); };
+      $("#at-crm-fa-pereche").onclick = adaugaPerecheCremaliera;
     } else if (t === "roata") {
       // roata cu anvelopă (ADR 0280): felul, mărimea, banda de rulare, fața, gaura; janta și anvelopa, împreună
       const p = stare.roata, faraJanta = p.fel === "anvelopa", faraAnvelopa = p.fel === "janta";

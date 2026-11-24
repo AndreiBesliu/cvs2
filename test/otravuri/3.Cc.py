@@ -146,20 +146,20 @@ o('E11', AT, MONTAJ, MONTAJ.replace('înaintează ${fmt(q.cursa)} mm', 'înainte
   'montajul dă altă cursă pe rotație')
 o('E12', AT, 'q = Lego.cremalieraMontaj(p);\n      const unde = q.prindere === "gauri" ?', 'q = Lego.cremalieraMontaj(p);\n      const unde = q.prindere !== "gauri" ?', 'e2e',
   'montajul descrie cealaltă prindere')
-o('E13', AT, 'camp("#at-cr-lung", 2, 24, v => { p.lung = Math.round(v); });', 'camp("#at-cr-lung", 2, 40, v => { p.lung = Math.round(v); });', 'e2e',
+o('E13', AT, 'camp("#at-crm-lung", 2, 24, v => { p.lung = Math.round(v); });', 'camp("#at-crm-lung", 2, 40, v => { p.lung = Math.round(v); });', 'e2e',
   'lungimea 30 e primită (și tăiată de motor, cu avertisment)')
-o('E14', AT, 'camp("#at-cr-lung", 2, 24, v => { p.lung = Math.round(v); });', 'camp("#at-cr-lung", 0, 24, v => { p.lung = Math.round(v); });', 'e2e',
+o('E14', AT, 'camp("#at-crm-lung", 2, 24, v => { p.lung = Math.round(v); });', 'camp("#at-crm-lung", 0, 24, v => { p.lung = Math.round(v); });', 'e2e',
   'lungimea 1 și câmpul golit sunt primite')
-o('E15', AT, 'camp("#at-cr-roata", 8, 80, v => { p.roata = Math.round(v); });', 'camp("#at-cr-roata", 2, 80, v => { p.roata = Math.round(v); });', 'e2e',
+o('E15', AT, 'camp("#at-crm-roata", 8, 80, v => { p.roata = Math.round(v); });', 'camp("#at-crm-roata", 2, 80, v => { p.roata = Math.round(v); });', 'e2e',
   'roata de 5 dinți e primită (și îndreptată de motor, cu avertisment)')
-o('E16', AT, 'camp("#at-cr-roata", 8, 80, v => { p.roata = Math.round(v); });', 'camp("#at-cr-roata", 8, 99, v => { p.roata = Math.round(v); });', 'e2e',
+o('E16', AT, 'camp("#at-crm-roata", 8, 80, v => { p.roata = Math.round(v); });', 'camp("#at-crm-roata", 8, 99, v => { p.roata = Math.round(v); });', 'e2e',
   'roata de 90 de dinți e primită')
-o('E17', AT, 'camp("#at-cr-modul", 0.5, 3, v => { p.modul = Math.round(v * 10) / 10; });', 'camp("#at-cr-modul", 0.5, 9, v => { p.modul = Math.round(v * 10) / 10; });', 'e2e',
+o('E17', AT, 'camp("#at-crm-modul", 0.5, 3, v => { p.modul = Math.round(v * 10) / 10; });', 'camp("#at-crm-modul", 0.5, 9, v => { p.modul = Math.round(v * 10) / 10; });', 'e2e',
   'modulul 4 e primit')
-o('E18', AT, '$("#at-cr-prindere").onclick = ev => { const b = (ev.target as Element).closest<HTMLElement>("[data-v]"); if (!b) return; p.prindere = b.dataset.v!; editor(); schimbat(); };',
-  '$("#at-cr-prindere").onclick = ev => { const b = (ev.target as Element).closest<HTMLElement>("[data-v]"); if (!b) return; p.prindere = "gauri"; editor(); schimbat(); };', 'e2e',
+o('E18', AT, '$("#at-crm-prindere").onclick = ev => { const b = (ev.target as Element).closest<HTMLElement>("[data-v]"); if (!b) return; p.prindere = b.dataset.v!; editor(); schimbat(); };',
+  '$("#at-crm-prindere").onclick = ev => { const b = (ev.target as Element).closest<HTMLElement>("[data-v]"); if (!b) return; p.prindere = "gauri"; editor(); schimbat(); };', 'e2e',
   'prinderea rămâne cea cu găuri, orice s-ar alege')
-o('E19', AT, 'camp("#at-cr-roata", 8, 80, v => { p.roata = Math.round(v); });', 'camp("#at-cr-roata", 8, 80, v => { p.lung = Math.round(v); });', 'e2e',
+o('E19', AT, 'camp("#at-crm-roata", 8, 80, v => { p.roata = Math.round(v); });', 'camp("#at-crm-roata", 8, 80, v => { p.lung = Math.round(v); });', 'e2e',
   'roata pereche scrisă schimbă lungimea')
 # --- atelierul: perechea
 PER = 'roata: Def = { tip: "rotita", dinti: q.z, fel: "drepti", grosime: 3.8, gaura: "x" };'
@@ -173,7 +173,7 @@ o('E23', AT, 'pune(d, n); pune(roata, n);', 'pune(d, n);', 'e2e',
   '„Fă perechea” pune doar cremaliera')
 o('E24', AT, 'în listă (axul roții la ${fmt(q.axa)} mm deasupra feței de jos).`);', 'în listă (axul roții la ${fmt(q.divizare)} mm deasupra feței de jos).`);', 'e2e',
   'mesajul perechii dă altă înălțime a axului')
-o('E25', AT, '$("#at-cr-fa-pereche").onclick = adaugaPerecheCremaliera;', '$("#at-cr-fa-pereche").onclick = adaugaPerecheRoti;', 'e2e',
+o('E25', AT, '$("#at-crm-fa-pereche").onclick = adaugaPerecheCremaliera;', '$("#at-crm-fa-pereche").onclick = adaugaPerecheRoti;', 'e2e',
   '„Fă perechea” e legat de perechea roților')
 
 SETURI = {
