@@ -130,15 +130,18 @@ function Marca(): ReactElement {
  * proiectul, apoi căutarea, limba, „Înapoi la aplicație” și meniul contului, când pagina le are. Sub el, conținutul: un card
  * centrat (fără `carcasa`) sau carcasa cu bara laterală.
  */
-function Cadru({ children, instanta, proiect, cautare, cont, carcasa = false }: {
+function Cadru({ children, instanta, proiect, cautare, cont, meniu, carcasa = false }: {
   readonly children: ReactNode; readonly instanta?: string; readonly proiect?: string; readonly cautare?: ReactElement | null;
   readonly cont?: ReactElement; readonly carcasa?: boolean;
+  /** Butonul ☰ al filelor, doar în carcasă (arătat doar pe telefon, ADR 0260 §10). */
+  readonly meniu?: ReactElement;
 }): ReactElement {
   const alege = useContext(AlegeLimba);
   const activa = useLimba();
   return (
     <div className="admin">
       <header className="admin-antet">
+        {meniu}
         <Marca />
         <h1>{t('admin.titlu')}</h1>
         {instanta ? <span className="admin-insigna" data-insigna={insigna(instanta)}>{instanta.toUpperCase()}</span> : null}
@@ -252,6 +255,9 @@ const unite = (vechi: readonly Gasibil[] = [], noi: readonly Gasibil[]): Gasibil
  * noi, sugestiile fără decizie) și punctul Diagnozei, citite la intrare și la „Reîncarcă” din fila Azi; antetul cu căutarea
  * în ce au citit filele și meniul contului. O adresă fără `#` deschide Azi.
  */
+/** Filele din bara de jos a telefonului (ADR 0260 §10), cele pe care rolul le vede; restul, în „Mai mult”. */
+const FILE_JOS: readonly Fila[] = ['azi', 'erori', 'tichete'];
+
 function CarcasaAdmin({ con, instanta, build, p }: { readonly con: Conexiune; readonly instanta: string; readonly build: string; readonly p: Personal }): ReactElement {
   const [adresa, setAdresa] = useState<Adresa>(() => citesteAdresa(globalThis.location?.hash ?? '') ?? { fila: 'azi', document: null, ancora: null });
   const [aducator] = useState(() => aducatorDocumentatie());
@@ -278,6 +284,15 @@ function CarcasaAdmin({ con, instanta, build, p }: { readonly con: Conexiune; re
   const vizibile = useMemo(() => fileBarei(p.owner, p.permisiuni), [p]);
   const parti = useMemo(() => partiAzi(p.owner, p.permisiuni), [p]);
   const aratata = filaAratata(adresa.fila, vizibile);
+  // Pe telefon (ADR 0260 §10, felia A.7): bara laterală e un sertar, deschis de ☰ sau de „Mai mult” și închis de o filă aleasă.
+  const [sertar, setSertar] = useState(false);
+  useEffect(() => { setSertar(false); }, [aratata]);
+  useEffect(() => {
+    if (!sertar) return undefined;
+    const tasta = (e: KeyboardEvent): void => { if (e.key === 'Escape') setSertar(false); };
+    window.addEventListener('keydown', tasta);
+    return () => { window.removeEventListener('keydown', tasta); };
+  }, [sertar]);
   const [tinta, setTinta] = useState<(Tinta & { readonly fila: Fila }) | null>(null);
   const [surse, setSurse] = useState<ReadonlyMap<FelGasit, readonly Gasibil[]>>(() => new Map());
 
@@ -332,9 +347,13 @@ function CarcasaAdmin({ con, instanta, build, p }: { readonly con: Conexiune; re
     <ContextCarcasa.Provider value={carcasa}>
       <Cadru instanta={instanta} proiect={con.projectId} carcasa
         cautare={feluri.length > 0 ? <Cautare surse={surse} feluri={feluri} /> : null}
-        cont={<MeniuCont text={t('admin.cont.rol', { email: p.user.email ?? p.user.uid, rol: p.numeRol })} iesi={() => { void iesi(con); }} />}>
+        cont={<MeniuCont text={t('admin.cont.rol', { email: p.user.email ?? p.user.uid, rol: p.numeRol })} iesi={() => { void iesi(con); }} />}
+        meniu={(
+          <button type="button" className="admin-meniu-file" data-admin="meniu-file" aria-expanded={sertar} aria-controls="admin-bara"
+            aria-label={t('admin.file')} title={t('admin.file')} onClick={() => { setSertar((x) => !x); }}>☰</button>
+        )}>
         <div className="admin-carcasa">
-          <nav className="admin-bara" aria-label={t('admin.file')} data-admin="bara">
+          <nav className="admin-bara" id="admin-bara" aria-label={t('admin.file')} data-admin="bara" data-deschis={sertar}>
             {grupuriBarei(vizibile).map((g) => (
               <div key={g.grup ?? g.file[0]} className="admin-bara-grup">
                 {g.grup ? <span className="admin-bara-titlu" data-grup-bara={g.grup}>{t(`admin.grup.${g.grup}`)}</span> : null}
@@ -371,6 +390,20 @@ function CarcasaAdmin({ con, instanta, build, p }: { readonly con: Conexiune; re
             {aratata === 'setari' ? <FilaSetari con={con} eu={p.user.uid} /> : null}
             {aratata === 'cont' ? <FilaCont con={con} user={p.user} /> : null}
           </main>
+          <nav className="admin-jos" aria-label={t('admin.jos')} data-admin="jos">
+            {FILE_JOS.filter((f) => vizibile.includes(f)).map((f) => {
+              const n = numere[f];
+              return (
+                <LegaturaFila key={f} fila={f} data-jos={f} aria-current={f === aratata ? 'page' : undefined}>
+                  <span className="admin-bara-nume">{t(`admin.fila.${f}`)}</span>
+                  {n ? <span className="admin-numar" data-numar="">{n}</span> : null}
+                </LegaturaFila>
+              );
+            })}
+            <button type="button" data-jos="mai-mult" aria-expanded={sertar} aria-controls="admin-bara" onClick={() => { setSertar((x) => !x); }}>
+              {t('admin.jos.mai-mult')}
+            </button>
+          </nav>
         </div>
       </Cadru>
     </ContextCarcasa.Provider>
