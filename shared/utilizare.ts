@@ -186,6 +186,23 @@ export interface RaspunsSetariUtilizare {
   readonly versiune: number;
 }
 
+/**
+ * Disocierea unui cont (ADR 0262 §3, felia A.11e): legătura cont → pseudonim stă doar pe server, în colecția asta (regulile o
+ * țin închisă); contul primește doar data despărțirii (`disociatLa`).
+ */
+export const COLECTIE_DISOCIERI = 'utilizareDisociate';
+export interface CerereDisociere {
+  readonly actiune: 'disociaza';
+  readonly uid: string;
+}
+export interface RaspunsDisociere {
+  readonly ok: true;
+  /** Fals: contul era deja despărțit. */
+  readonly schimbat: boolean;
+  /** Câte loturi de până acum au primit pseudonimul. */
+  readonly loturi: number;
+}
+
 /** Cronologia unui om (ADR 0262 §6, felia A.11c): câte loturi pe pagină, cele mai noi întâi. */
 export const PAGINA_CRONOLOGIE = 20;
 export interface CerereCronologie {

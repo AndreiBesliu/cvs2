@@ -11,6 +11,7 @@ import type { AducatorDocumentatie } from '../documentatie/aducere.ts';
 import { dataScurta, motivDin, ziScurta, type Masura } from '../erori/date.ts';
 import { useNumeActiuni } from '../pasi/Pasi.tsx';
 import { Activitatea } from './Activitatea.tsx';
+import { Disocierea } from './Disocierea.tsx';
 import { contDin, planAfisat, PLAFON_LISTA_CONTURI, type ContClient } from './date.ts';
 import { cautaConturi, dreptScurt, FILTRE_PLAN, istoricPlan, numarPePlan, pePlan, type FiltruPlan, type PasPlan } from './vedere.ts';
 import '../personal/personal.css';
@@ -158,7 +159,7 @@ export function FilaUtilizatori({ con, eu, poateAdministra, poateIstoric, poateA
                       </tbody>
                     </table>
                     <Detaliu key={cont.uid} con={con} eu={eu} c={cont} acum={acum} limba={limba} poateAdministra={poateAdministra} poateIstoric={poateIstoric} rev={rev}
-                      activitate={poateActivitate ? nume : null}
+                      activitate={poateActivitate ? nume : null} reciteste={reincarca}
                       ocupat={ocupat} faraAppCheck={faraAppCheck} eroare={lucru.faza === 'eroare' && lucru.uid === cont.uid ? lucru.motiv : null}
                       schimba={(s) => { schimba(cont, s); }} />
                   </div>
@@ -178,8 +179,8 @@ function textPlan(c: ContClient, plan: Plan, acum: number, limba: string): strin
 }
 
 /** Contul ales, alături de tabel: planul de acum, numele și logările, schimbarea planului, istoricul lui. */
-function Detaliu({ con, eu, c, acum, limba, poateAdministra, poateIstoric, activitate, rev, ocupat, faraAppCheck, eroare, schimba }: {
-  readonly activitate: ReadonlyMap<string, string> | null;
+function Detaliu({ con, eu, c, acum, limba, poateAdministra, poateIstoric, activitate, reciteste, rev, ocupat, faraAppCheck, eroare, schimba }: {
+  readonly activitate: ReadonlyMap<string, string> | null; readonly reciteste: () => void;
   readonly con: Conexiune; readonly eu: string; readonly c: ContClient; readonly acum: number; readonly limba: string; readonly poateAdministra: boolean;
   readonly poateIstoric: boolean; readonly rev: number; readonly ocupat: boolean; readonly faraAppCheck: boolean; readonly eroare: string | null;
   readonly schimba: (s: SchimbarePlan) => void;
@@ -204,6 +205,7 @@ function Detaliu({ con, eu, c, acum, limba, poateAdministra, poateIstoric, activ
       ) : null}
       {poateIstoric ? <Istoric con={con} eu={eu} uid={c.uid} rev={rev} limba={limba} /> : null}
       {activitate ? <Activitatea con={con} uid={c.uid} nume={activitate} limba={limba} /> : null}
+      {poateAdministra ? <Disocierea con={con} uid={c.uid} disociatLa={c.disociatLa} limba={limba} faraAppCheck={faraAppCheck} dupa={reciteste} /> : null}
     </section>
   );
 }

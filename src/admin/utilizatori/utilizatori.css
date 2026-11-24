@@ -180,3 +180,15 @@
 .util-sesiuni .admin-pasi {
   margin: var(--sp-1) 0 var(--sp-2);
 }
+
+/* Disocierea (ADR 0262, A.11e): confirmarea, pe un rând, sub textul ei. */
+.util-confirma {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+  align-items: center;
+}
+.util-confirma p {
+  flex-basis: 100%;
+  margin: 0;
+}

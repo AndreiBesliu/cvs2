@@ -23,6 +23,10 @@ test('contul: câmpurile documentului, planul ținut, planul văzut (în milisec
     ['ana', 'ana@exemplu.ro', 'Ana', '2026-10-31T09:00:00.000Z', '2026-11-01T08:00:00.000Z', 'proba', PANA, false],
   );
   assert.deepEqual(c.vazut, { plan: 'proba', probaPana: Date.parse(PANA) });
+  // Disocierea (A.11e): doar data; fără ea, nedespărțit.
+  assert.equal(c.disociatLa, null);
+  assert.equal(contDin('ana', { disociatLa: ts('2026-11-24T08:00:00Z') }).disociatLa?.toISOString(), '2026-11-24T08:00:00.000Z');
+  assert.equal(contDin('ana', { disociatLa: '2026-11-24' }).disociatLa, null);
 });
 
 test('ce lipsește e necunoscut: fără câmpuri, un plan ținut ciudat (văzut ca text, arătat ca expirat), un drept stricat (nu e personal)', () => {

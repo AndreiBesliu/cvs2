@@ -5,7 +5,7 @@ import { getFirestore, Timestamp } from 'firebase-admin/firestore';
 import { HttpsError } from 'firebase-functions/v2/https';
 import { oraFerestrei } from '../../shared/erori.ts';
 import {
-  LOTURI_PE_ORA, PAGINA_CRONOLOGIE, SETARI_UTILIZARE_IMPLICITE, setariPublice, type RaspunsCronologie, type RaspunsLot, type RaspunsSetariUtilizare,
+  LOTURI_PE_ORA, PAGINA_CRONOLOGIE, SETARI_UTILIZARE_IMPLICITE, setariPublice, type RaspunsCronologie, type RaspunsDisociere, type RaspunsLot, type RaspunsSetariUtilizare,
   type SetariUtilizare,
 } from '../../shared/utilizare.ts';
 import { COLECTIE_AUDIT } from '../src/audit.ts';
@@ -236,4 +236,41 @@ test('cronologia unui om (A.11c): doar cu „Utilizare: sesiuni”; cele mai noi
     ['ses', 'utilizare/ana', 20], ['ses', 'utilizare/ana', 3], ['own', 'utilizare/ion', 2], ['own', 'utilizare/nimeni', 0],
     ['ses', 'utilizare/ana', 10], ['ses', 'utilizare/ion', 0],
   ]);
+});
+
+test('disocierea unui cont (A.11e): cine administrează conturile; un pseudonim pentru loturile de până acum și pentru cele care vin; contul doar cu data; a doua oară, nimic', async () => {
+  for (let i = 1; i <= 3; i++) assert.equal((await trimite('ana', lot({ nr: i }), T0 + i * 60_000)).scris, true);
+  assert.equal((await trimite('ion', lot({ sesiune: 'ionnnnnnnnnnnnn1' }))).scris, true);
+  const dis = (cine: string, uid: unknown) => fa(cine, { actiune: 'disociaza', uid }, T0 + ZI) as Promise<RaspunsDisociere>;
+  await db.doc('roluri/RSesiuni00000000000a').set({ nume: 'Sesiuni', permisiuni: ['utilizare.sesiuni'] });
+  await db.doc('staff/ses').set({ rol: 'RSesiuni00000000000a' });
+  assert.equal(await cod(dis('ses', 'ana')), 'permission-denied');
+  assert.equal(await cod(dis('ana', 'ana')), 'permission-denied');
+  assert.equal(await cod(dis('tot', 'nimeni')), 'not-found');
+  assert.equal(await cod(dis('tot', 'a/b')), 'invalid-argument');
+  // „Tot” are „Conturi: administrează”.
+  assert.deepEqual(await dis('tot', 'ana'), { ok: true, schimbat: true, loturi: 3 });
+  const toate = await loturi();
+  const aleAnei = toate.filter((l) => l['sesiune'] === 'k3j9x0a1b2c3d4e5');
+  const pseudonim = aleAnei[0]?.['uid'];
+  assert.match(String(pseudonim), /^p[0-9a-f]{32}$/);
+  assert.ok(aleAnei.every((l) => l['uid'] === pseudonim), 'același pseudonim pe toate');
+  assert.equal(toate.filter((l) => l['uid'] === 'ana').length, 0);
+  assert.equal(toate.filter((l) => l['uid'] === 'ion').length, 1, 'alt cont, neatins');
+  // Contul: doar data; legătura stă doar în colecția serverului.
+  const cont = (await db.doc('conturi/ana').get()).data() ?? {};
+  assert.equal(ms(cont['disociatLa']), T0 + ZI);
+  assert.ok(!JSON.stringify(cont).includes(String(pseudonim)));
+  assert.equal((await db.doc('utilizareDisociate/ana').get()).get('pseudonim'), pseudonim);
+  // Lotul care vine după: sub pseudonim.
+  assert.equal((await trimite('ana', lot({ nr: 4 }), T0 + 2 * ZI)).scris, true);
+  assert.equal((await db.doc('utilizare/k3j9x0a1b2c3d4e5-4').get()).get('uid'), pseudonim);
+  // Cronologia contului nu mai găsește nimic.
+  assert.deepEqual((await fa('own', { actiune: 'cronologie', uid: 'ana' }, T0 + 3 * ZI) as RaspunsCronologie).loturi, []);
+  // A doua oară: nimic schimbat, același pseudonim.
+  assert.deepEqual(await dis('own', 'ana'), { ok: true, schimbat: false, loturi: 0 });
+  assert.equal((await db.doc('utilizareDisociate/ana').get()).get('pseudonim'), pseudonim);
+  const a = (await audit()).filter((x) => x['actiune'] === 'utilizare.disociaza');
+  assert.deepEqual(a.map((x) => [x['cine'], x['tinta'], x['dupa']]), [['tot', 'conturi/ana', { disociat: true }]]);
+  assert.ok(!JSON.stringify(a).includes(String(pseudonim)), 'pseudonimul nu e în audit');
 });

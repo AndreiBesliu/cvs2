@@ -6,7 +6,9 @@ import type { CererePersonal, RaspunsInvitatie, RaspunsPersonal } from '../../sh
 import type { CerereRaspunsuriRapide, RaspunsRapid, RaspunsRaspunsuriRapide } from '../../shared/raspunsuriRapide.ts';
 import type { CerereSugestie, RaspunsSugestie } from '../../shared/sugestii.ts';
 import type { CerereTichet, RaspunsProiectTichet, RaspunsTichet } from '../../shared/tichete.ts';
-import type { CerereCronologie, CerereSetariUtilizare, RaspunsSetariUtilizare, SetariUtilizare } from '../../shared/utilizare.ts';
+import type {
+  CerereCronologie, CerereDisociere, CerereSetariUtilizare, RaspunsDisociere, RaspunsSetariUtilizare, SetariUtilizare,
+} from '../../shared/utilizare.ts';
 import { conecteazaBaza, hostPort, type ConexiuneBaza, type ConfigCloud, type MotivFaraConexiune } from './conexiuneBaza.ts';
 import { contAplicatiei } from './contEditor.ts';
 
@@ -109,6 +111,11 @@ export async function cronologiaContului(c: Conexiune, uid: string, pana?: numbe
   return (await httpsCallable<CerereCronologie, unknown>(c.functii, 'utilizare')({
     actiune: 'cronologie', uid, ...(pana === undefined ? {} : { pana }), ...(sesiune === undefined ? {} : { sesiune }),
   })).data;
+}
+
+/** Disocierea utilizării unui cont (ADR 0262 §3, felia A.11e), prin callable-ul `utilizare`; cere „Conturi: administrează”. */
+export async function disociazaUtilizarea(c: Conexiune, uid: string): Promise<RaspunsDisociere> {
+  return (await httpsCallable<CerereDisociere, RaspunsDisociere>(c.functii, 'utilizare')({ actiune: 'disociaza', uid })).data;
 }
 
 export async function marcheazaEroarea(c: Conexiune, amprenta: string, rezolvat: boolean): Promise<{ ok: true; schimbat: boolean }> {

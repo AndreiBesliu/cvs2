@@ -483,3 +483,32 @@ test('activitatea unui om (ADR 0262, A.11c): doar cu „Utilizare: sesiuni”, c
   await expect(alta.locator('[data-util="activitate"]')).toHaveCount(0);
   await alta.close();
 });
+
+test('disocierea (ADR 0262, A.11e): cine administrează conturile desparte utilizarea de cont, cu confirmare; activitatea nu mai găsește nimic; contul rămâne cu data', async ({ page }) => {
+  await puneCont('ana', new Date(Date.now() - ZI), new Date(Date.now() + 9 * ZI));
+  await scrie('utilizare/anaaaaaaaaaaaaa1-1', {
+    schema: 1, uid: 'ana', sesiune: 'anaaaaaaaaaaaaa1', nr: 1, primit: new Date(Date.now() - 3_600_000), inceput: new Date(Date.now() - 3_700_000),
+    evenimente: [{ fel: 'actiune', t: 1_000, id: 'document.roteste', de: 'bara', rez: 'ok' }], aruncate: 0,
+  });
+  await deschide(page);
+  await puneRolul(page, await intraCuGoogle(page), 'owner');
+  await page.locator('[data-fila="utilizatori"]').click();
+  await expect(detaliu(page).locator('h3')).toHaveText('ana@exemplu.ro', LENT);
+  const dis = detaliu(page).locator('[data-util="disociere"]');
+  // Întâi întreabă; „Renunță” nu face nimic.
+  await dis.locator('[data-util="disociaza"]').click();
+  await expect(dis).toContainText('Nu se poate desface din aplicație.');
+  await dis.getByRole('button', { name: 'Renunță' }).click();
+  await expect(dis.locator('[data-util="disociaza"]')).toBeVisible();
+  await dis.locator('[data-util="disociaza"]').click();
+  await dis.locator('[data-util="confirma-disocierea"]').click();
+  await expect(dis.locator('[data-util="disociat-acum"]')).toHaveText('Gata: un lot despărțit de cont.', LENT);
+  await expect(dis.locator('[data-util="disociat"]')).toContainText('Despărțită de cont din', LENT);
+  await expect(dis.locator('[data-util="disociaza"]')).toHaveCount(0);
+  // Lotul are acum pseudonimul, nu contul; activitatea contului nu mai găsește nimic.
+  const lot = await citeste('utilizare/anaaaaaaaaaaaaa1-1');
+  expect(lot['uid']?.stringValue).toMatch(/^p[0-9a-f]{32}$/);
+  await detaliu(page).locator('[data-util="arata-activitatea"]').click();
+  await expect(detaliu(page).locator('[data-util="activitate-gol"]')).toBeVisible(LENT);
+  await expect.poll(actiuniAudit, LENT).toContain('utilizare.disociaza');
+});
