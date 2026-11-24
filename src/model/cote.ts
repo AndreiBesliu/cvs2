@@ -48,14 +48,18 @@ function mijloc(c: Contur, k: number): Punct {
   return { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
 }
 
-/** Punctul unui loc pe elementul din lume, sau `noduri` dacă locul nu mai e pe forma lui. */
-function punctLoc(e: ElementLume, loc: LocCota, n: number): Punct | 'noduri' {
+/**
+ * Punctul unui loc pe elementul din lume, sau `noduri` dacă locul nu mai e pe forma lui. Lipirea pe puncte (`puncteCote.ts`)
+ * își face punctele tot de aici, deci un capăt lipit e exact punctul în care cota îl citește după aceea; ea dă și conturul
+ * elementului, făcut o singură dată (`c`), ca o formă cu mii de vârfuri să nu-l refacă pentru fiecare punct.
+ */
+export function punctLoc(e: ElementLume, loc: LocCota, n: number, contur?: Contur): Punct | 'noduri' {
   if (loc.fel === 'cutie') {
     const b = cutieElement(e);
     const col = loc.i % 3, rand = Math.floor(loc.i / 3);
     return { x: [b.minX, (b.minX + b.maxX) / 2, b.maxX][col] ?? b.minX, y: [b.minY, (b.minY + b.maxY) / 2, b.maxY][rand] ?? b.minY };
   }
-  const c = conturElement(e);
+  const c = contur ?? conturElement(e);
   const m = numarSegmente(c);
   if (m !== n) return 'noduri';
   if (loc.fel === 'varf') return c.varfuri[loc.k]?.p ?? 'noduri';
