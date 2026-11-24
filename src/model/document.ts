@@ -14,7 +14,7 @@
  * mai veche. Un câmp nou CU SENS (fața de jos, montajele, sculele) intră doar cu o schemă nouă și o migrare: o versiune
  * veche n-are voie să taie fără să înțeleagă un câmp.
  */
-export const VERSIUNE_SCHEMA = 27;
+export const VERSIUNE_SCHEMA = 28;
 
 /** Plafoanele stau pe artefact (T23): un document care le trece e refuzat la ușă, nu tăiat. */
 export const PLAFON = {
@@ -101,7 +101,7 @@ export type ModRelief = (typeof MODURI_RELIEF)[number];
 /** Un strat al unui relief (ADR 0310 §1): `dale` e amprenta hărții dalelor lui (ADR 0311 §6), cu octeții în afara documentului. */
 export type StratRelief = { id: string; nume?: string; mod: ModRelief; vizibil: boolean; dale: string; [cheie: string]: unknown };
 /**
- * Relieful (ADR 0310 §1, ADR 0311 §1, documentul v29): o grilă de nx × ny celule pătrate de latura `celula` (mm), cu originea
+ * Relieful (ADR 0310 §1, ADR 0311 §1, documentul v28): o grilă de nx × ny celule pătrate de latura `celula` (mm), cu originea
  * în colțul stânga-jos, și straturile ei, de jos în sus. Matricea compusă a elementului e o similitudine.
  */
 export type FormaRelief = { tip: 'relief'; nx: number; ny: number; celula: number; straturi: StratRelief[]; [cheie: string]: unknown };
@@ -372,7 +372,7 @@ export type Foaie = {
   id: string; nume?: string; material?: unknown; stoc: Stoc; instante: Instanta[]; ghidaje?: Ghidaj[]; imagini?: ImagineFoaie[];
   [cheie: string]: unknown;
 };
-export type Document = { schema: 27; rev: number; piese: Piesa[]; foi: Foaie[]; [cheie: string]: unknown };
+export type Document = { schema: 28; rev: number; piese: Piesa[]; foi: Foaie[]; [cheie: string]: unknown };
 
 /** Nodurile unei piese, în preordine, cu adâncimea lor (rădăcina are 1). Iterativ: arborele poate fi adânc. */
 export function noduriPiesa(radacina: Nod): Array<{ readonly nod: Nod; readonly adancime: number }> {

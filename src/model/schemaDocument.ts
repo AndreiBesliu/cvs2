@@ -1,7 +1,9 @@
 import * as v from 'valibot';
 import { compune, esteSimilitudine, IDENTITATE } from '../geom/matrice.ts';
 import {
-  areArce, instantaPreaDeparte, MODURI_URECHI, noduriPiesa, numara, plafonDepasit, PLAFON, RETRAGERE_COMPLETA_MAXIMA, UNGHI_COBORARE_MAXIM, UNGHI_V_MAXIM, UNGHI_V_MINIM, VERSIUNE_SCHEMA, type Document, type Nod, type Piesa,
+  areArce, CELULA_RELIEF_MAXIMA, CELULA_RELIEF_MINIMA, instantaPreaDeparte, LATURA_RELIEF_MAXIMA, MODURI_RELIEF, MODURI_URECHI, noduriPiesa, numara,
+  plafonDepasit, PLAFON, RETRAGERE_COMPLETA_MAXIMA, STRATURI_RELIEF_MAXIM, UNGHI_COBORARE_MAXIM, UNGHI_V_MAXIM, UNGHI_V_MINIM, VERSIUNE_SCHEMA,
+  type Document, type Nod, type Piesa,
 } from './document.ts';
 
 /**
@@ -67,6 +69,30 @@ const SchemaCale = v.pipe(
     return (Math.hypot(b.x - a.x, b.y - a.y) / 4) * (k + 1 / k) <= PLAFON.latura;
   }), `un arc al căii are raza peste ${PLAFON.latura} mm`),
 );
+/**
+ * Relieful (ADR 0310 §1, ADR 0311 §1, documentul v28): grila nx × ny (cel mult 8192 pe latură), celula pătrată în
+ * [0,001, 100] mm, latura în mm cel mult cât a documentului; 1–32 de straturi, cu id-uri unice în relief, modul unul din cele
+ * șase, ochiul și amprenta hărții dalelor (64 de cifre hexazecimale mici). Octeții dalelor stau în afara documentului.
+ */
+const latRelief = v.pipe(v.number(), v.integer(), v.minValue(1), v.maxValue(LATURA_RELIEF_MAXIMA));
+const SchemaStratRelief = v.looseObject({
+  id: Id, nume: Nume, mod: v.picklist(MODURI_RELIEF), vizibil: v.boolean(), dale: v.pipe(v.string(), v.regex(/^[0-9a-f]{64}$/)),
+});
+const SchemaRelief = v.pipe(
+  v.looseObject({
+    tip: v.literal('relief'),
+    nx: latRelief,
+    ny: latRelief,
+    celula: v.pipe(v.number(), v.finite(), v.minValue(CELULA_RELIEF_MINIMA), v.maxValue(CELULA_RELIEF_MAXIMA)),
+    straturi: v.pipe(
+      v.array(SchemaStratRelief),
+      v.minLength(1, 'un relief are cel puțin un strat'),
+      v.maxLength(STRATURI_RELIEF_MAXIM, `un relief are cel mult ${STRATURI_RELIEF_MAXIM} de straturi`),
+    ),
+  }),
+  v.check((f) => f.nx * f.celula <= PLAFON.latura && f.ny * f.celula <= PLAFON.latura, `relieful trece de ${PLAFON.latura} mm pe o latură`),
+  v.check((f) => new Set(f.straturi.map((s) => s.id)).size === f.straturi.length, 'două straturi ale reliefului au același id'),
+);
 const SchemaForma = v.variant('tip', [
   v.pipe(
     v.looseObject({
@@ -79,6 +105,7 @@ const SchemaForma = v.variant('tip', [
   ),
   v.looseObject({ tip: v.literal('cerc'), raza: pozitiv(PLAFON.latura) }),
   SchemaCale,
+  SchemaRelief,
 ]);
 
 const SchemaElement = v.looseObject({ tip: v.literal('element'), id: Id, nume: Nume, forma: SchemaForma, matrice: SchemaMatrice });
@@ -289,13 +316,20 @@ export function matriciInMargini(p: Piesa): string | null {
     if (x.nod.tip === 'element' && areArce(x.nod.forma) && !esteSimilitudine(m)) {
       return `piesa ${p.id}: ${x.nod.id} are arce sub o matrice neuniformă (elipsele vin mai târziu)`;
     }
+    // Celula reliefului rămâne pătrată (ADR 0310 §1): matricea lui compusă e o similitudine.
+    if (x.nod.tip === 'element' && x.nod.forma.tip === 'relief' && !esteSimilitudine(m)) {
+      return `piesa ${p.id}: relieful ${x.nod.id} stă sub o matrice care nu e o similitudine (celula trebuie să rămână pătrată)`;
+    }
     if (x.nod.tip === 'grup') for (const copil of x.nod.copii) stiva.push({ nod: copil, m });
   }
   return null;
 }
 
-/** Problema operațiilor unei piese (ADR 0025), sau null: id-uri unice în piesă, noduri distincte, toate elemente ale ei. */
-function problemaOperatii(p: Piesa, elemente: ReadonlySet<string>): string | null {
+/**
+ * Problema operațiilor unei piese (ADR 0025), sau null: id-uri unice în piesă, noduri distincte, toate elemente ale ei, niciunul
+ * un relief (ADR 0310 §1: operațiile de azi taie contururi; ale reliefului vin cu felia 18.1↑c).
+ */
+function problemaOperatii(p: Piesa, elemente: ReadonlySet<string>, reliefuri: ReadonlySet<string> = new Set()): string | null {
   const ids = new Set<string>();
   for (const o of p.operatii) {
     if (ids.has(o.id)) return `piesa ${p.id} are două operații cu id-ul ${o.id}`;
@@ -303,6 +337,8 @@ function problemaOperatii(p: Piesa, elemente: ReadonlySet<string>): string | nul
     if (new Set(o.noduri).size !== o.noduri.length) return `operația ${o.id} din piesa ${p.id} referă un nod de două ori`;
     const lipsa = o.noduri.find((n) => !elemente.has(n));
     if (lipsa !== undefined) return `operația ${o.id} din piesa ${p.id} referă ${lipsa}, care nu e un element al piesei`;
+    const relief = o.noduri.find((n) => reliefuri.has(n));
+    if (relief !== undefined) return `operația ${o.id} din piesa ${p.id} referă relieful ${relief}: operațiile 2D taie doar contururi`;
   }
   return null;
 }
@@ -325,14 +361,16 @@ function problemaDeAnsamblu(d: Document): string | null {
     if (piese.has(p.id)) return `două piese au id-ul ${p.id}`;
     const ids = new Set<string>();
     const idsElemente = new Set<string>();
+    const reliefuri = new Set<string>();
     for (const { nod, adancime } of noduriPiesa(p.radacina)) {
       if (adancime > PLAFON.adancime) return `piesa ${p.id} trece de ${PLAFON.adancime} de niveluri`;
       if (ids.has(nod.id)) return `piesa ${p.id} are două noduri cu id-ul ${nod.id}`;
       ids.add(nod.id);
       if (nod.tip === 'element') idsElemente.add(nod.id);
+      if (nod.tip === 'element' && nod.forma.tip === 'relief') reliefuri.add(nod.id);
     }
     piese.add(p.id);
-    const op = problemaOperatii(p, idsElemente);
+    const op = problemaOperatii(p, idsElemente, reliefuri);
     if (op) return op;
   }
   const foi = new Set<string>();

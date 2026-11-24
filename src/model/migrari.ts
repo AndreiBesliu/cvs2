@@ -692,6 +692,30 @@ function v26v27(doc: Brut): ReturnType<Migrare> {
 }
 
 /**
+ * v27 → v28 (ADR 0310 §1, ADR 0311): relieful, o formă nouă a elementului, schimbă doar numărul. Un v27 nu poate avea un
+ * element cu forma `relief` (la v27, o formă necunoscută): un astfel de document nu e un v27 valid, iar migrarea îl refuză,
+ * ca să nu-l facă v28 pe tăcute (schema curentă l-ar primi).
+ */
+function v27v28(doc: Brut): ReturnType<Migrare> {
+  const ob = (x: unknown): x is Brut => typeof x === 'object' && x !== null && !Array.isArray(x);
+  const piese = doc['piese'];
+  for (const p of Array.isArray(piese) ? piese : []) {
+    if (!ob(p)) continue;
+    const stiva: unknown[] = [p['radacina']];
+    while (stiva.length > 0) {
+      const n = stiva.pop();
+      if (!ob(n)) continue;
+      const f = n['forma'];
+      if (n['tip'] === 'element' && ob(f) && f['tip'] === 'relief') {
+        return { ok: false, motiv: `elementul v27 ${String(n['id'])} din piesa ${String(p['id'])} are forma „relief”, pe care v28 o aduce: nu e un document v27 valid` };
+      }
+      if (Array.isArray(n['copii'])) stiva.push(...(n['copii'] as unknown[]));
+    }
+  }
+  return { ok: true, doc: { ...doc, schema: 28 } };
+}
+
+/**
  * Migrările pure, vN → vN+1. Cheia e versiunea de PLECARE. Lista crește; o migrare scrisă nu se mai schimbă. Fiecare
  * lucrează doar pe forma pe care o promite: v1 → v2 își validează intrarea cu schema v1 înghețată; v2 → v3 … v19 → v20
  * lucrează defensiv, iar schema curentă (care conține toate regulile de dinainte) judecă rezultatul.
@@ -734,5 +758,6 @@ export const MIGRARI: Readonly<Record<number, Migrare>> = {
   24: v24v25,
   25: v25v26,
   26: v26v27,
+  27: v27v28,
 };
 

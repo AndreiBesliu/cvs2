@@ -169,7 +169,7 @@ test('ușa v12: coborârea are felul și parametrii în margini (unghiul în (0,
   const fara = { ...(doc(buzunar()) as Record<string, unknown>), schema: 11 };
   const a = incarca(fara);
   assert.ok(a.ok);
-  if (a.ok) assert.deepEqual(a.doc, { ...fara, schema: 27 });
+  if (a.ok) assert.deepEqual(a.doc, { ...fara, schema: 28 });
 });
 
 /** Programul exportat, judecat de oracolul simulării: scos la −6 în deschiderea dreptunghiului, neatins în afară. */
