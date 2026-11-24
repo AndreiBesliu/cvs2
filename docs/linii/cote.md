@@ -12,8 +12,8 @@ poate merge în paralel cu orice.
 
 `ACOPERIRE-ARTCAM-DESKPROTO.md`, secțiunea A: „Cote (nici ArtCAM nu le are: doar rigle și măsurare)”, peste prag, v1
 (decis pe 06.10), „de făcut”. Etapa 10 o închide împreună cu verificarea vectorilor (făcută), tăierea și conversia (în
-lucru) și transformarea traseelor (nepornită, altă felie). În vocabularul planului (`PLAN.md` §3), **cota e un element al
-documentului**, ca un contur sau un text.
+lucru) și transformarea traseelor (nepornită, altă felie). În glosarul planului (`PLAN.md` §2, termenul 3), **cota e
+un element al documentului**, ca un contur sau un text; ADR 0330 propune altfel (cota stă pe foaie, nu în piesă).
 
 ## Ce există și se refolosește
 
@@ -55,4 +55,21 @@ față. Fără cod de produs până la răspunsuri. De hotărât acolo, între a
 
 ## Starea
 
-- **24.11:** linia pornită; ramura făcută din `main`; nicio felie începută.
+- **24.11:** linia pornită; ramura făcută din `main` (`41233474`), cu `main` adus (`e3a9e512`, A.7).
+- **24.11, ADR 0330 propus**, fără cod de produs: unealta Cote (D), cu felurile în bara ei și „Măsoară” (M); lipirea pe
+  puncte; cota legată de formă, dezlegată cinstit; pe foaie, fără schemă nouă (deci v28 poate rămâne liber, dacă owner-ul
+  ia 1a); cifrele din trăsăturile lui Relief; nu se taie niciodată; exportul pe stratul COTE (DXF ca DIMENSION sau ca
+  linii și cifre); patru felii (10.4↑a–d). Schița, cu machetele și cele șase întrebări (răspunsurile se salvează în
+  pagină, `raspunsuri/owner`, scrise doar de owner): <https://claude.ai/artifact/BvsaqPKoKWsypCi1tphDvu>. **Urmează:**
+  răspunsurile owner-ului, apoi 10.4↑a, cu proba G-code-ului (cu și fără cote) scrisă prima.
+
+## Capcane găsite
+
+- **Glosarul planului e `PLAN.md` §2**, nu §3 (nota spunea §3; §3 e arhitectura).
+- **Ezdxf calculează singur valoarea unei cote DXF** (`Dimension.get_measurement()`, din punctele de definiție), deci
+  oracolul exportului compară valoarea pe hârtie fără să citească textul scris de noi. Sonda din 24.11: o orizontală,
+  o aliniată, o rază, un diametru și un unghi din trei puncte, citite cu 0 erori și 0 reparații (`recover`).
+- **Dezlegarea cere un singur loc:** punctul văzut al unei cote dezlegate de o comandă (ștergerea, nodurile schimbate)
+  trebuie să intre în același pas de anulare; `executa` din `src/model/jurnal.ts` e locul comun (ca `inregistreazaFoile`).
+  Altfel, cota dezlegată sare înapoi la punctul de la desenare.
+- **Bara de sus:** un buton nou de unealtă se probează la 1280 px cu fontul lat, în ambele limbi (ADR 0181, 10.3↑j).

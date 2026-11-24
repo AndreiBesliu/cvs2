@@ -12896,3 +12896,28 @@ scrie brief-ul pentru relief si pentru cote”
   încheiată); starea din `docs/linii/principala.md`.
 - **La owner:** fereastra exportului, verificarea juridică a utilizării aplicației înaintea live-ului, „cine unește
   în `main`”, ADR 0232 (biblioteca); brief-urile reliefului și cotelor, de lipit în sesiuni noi.
+
+## 2026-11-24 — ADR 0330 propus: cotele pe desen și măsurarea (Model: Claude Opus 5.5)
+
+**Prompt:** brief-ul liniei cotelor (owner-ul, 24.11, într-o sesiune cloud nouă: „Ești sesiunea liniei cotelor…”; ramura
+`wip/10.4-cote`, ADR-urile 0330–0339, canalul `cote`; „Prima livrare, fără cod de produs: ADR 0330, propus […] plus o
+schiță publicată”). **Started:** 24.11, 10:32, în sesiunea cloud a liniei. **Completed:** 24.11, 11:05.
+
+- **Ce e azi**, citit în cod: riglele foii și linia de cotă a formelor ieșite (`cotePeste`, ADR 0060); lipirea doar pe
+  axe (`src/geom/lipire.ts`); foaia ține deja, fără schemă nouă, ghidajele, imaginile și materialul; exportul 2D fără
+  text, cu DIMSTYLE gol; Relief SingleLine inclus; tastele D și M libere.
+- **Cercetarea** (referință funcțională): Vectric (cotele: lungime, orizontală / verticală, unghi, arc; redimensionarea
+  piesei le schimbă), CorelDRAW (orizontală / verticală, paralelă, unghiulară, segmentul), Inkscape (Măsoară, M, cu
+  „Mark dimension”), Onshape (D). Sonda ezdxf 1.4.4: cinci cote DXF recitite cu 0 erori, iar `get_measurement()` dă
+  120, 50, 25, 50 și 90.
+- **Propunerea (ADR 0330):** unealta Cote (D) cu felurile în bara ei (Automată, orizontală, verticală, aliniată, rază,
+  diametru, unghi, lanț, linie de bază) și „Măsoară” (M); lipirea pe puncte; legată de formă, cu dezlegarea în același
+  pas de anulare; pe foaie, fără schemă nouă; cifrele din trăsăturile lui Relief; nu se taie niciodată (proba G-code-ului
+  scrisă prima); exportul pe stratul COTE, cu DXF ca DIMENSION sau ca linii și cifre; „Fă desen din cotă” pentru gravură.
+  Patru felii (10.4↑a–d); pornirea estimată +0,3 kB, totalul ~818 / 900.
+- **Schița**, cu machetele (pânza, legată / liberă de încercat, panoul, lista, opțiunile, exportul, gravura) și șase
+  întrebări, cu răspunsurile salvate în pagină (doar owner-ul scrie): <https://claude.ai/artifact/BvsaqPKoKWsypCi1tphDvu>.
+- **Documentele:** ADR 0330 (propus), rândul în indexul ADR, titlul tradus (`node scripts/traduceri.ts --verifica`: 993,
+  0 lipsă), nota liniei (`docs/linii/cote.md`). `main` adus în ramură (`e3a9e512`, A.7), fără ciocniri. Probele
+  documentației în container: 42 / 42.
+- **Codul:** la răspunsurile owner-ului, începând cu 10.4↑a.
