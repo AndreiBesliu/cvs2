@@ -142,3 +142,8 @@ următoare a pachetului: 18.28.0._
   refuzată nu se vede când roata de dinainte e chiar 8.
 - **Nu împinge pe ramură între raportul unei felii și unirea ei** (rugămintea sesiunii principale): felia următoare se
   lucrează local și se împinge după unire, sau la sfârșitul turei, dacă trebuie.
+- **O probă nu ține scrisă de mână o versiune din „ce e nou”:** catalogul poartă doar ultimele cinci rânduri
+  (`MAX_NOUTATI`), deci un rând căutat pe nume dispare după cinci versiuni noi. Completul lui 3.Cc și 3.Cd a căzut așa
+  (`extensii.descoperire.spec.ts`, rândul lui 18.21.0, ieșit din catalog la 18.26.0); proba citește acum din lista
+  bibliotecii un rând cu dată dintre cele rămase. La fel, orice probă care privește catalogul adevărat își ia valorile
+  din `extensii/biblioteca.json`.

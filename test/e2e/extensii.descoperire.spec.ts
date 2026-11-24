@@ -1,6 +1,8 @@
+import { readFileSync } from 'node:fs';
 import { test, expect, type Locator, type Page, type Request } from '@playwright/test';
 import { impacheteaza, scrieZip } from '../../scripts/impacheteaza-extensie.ts';
 import { citesteZip } from '../../src/extensii/zip.ts';
+import { MAX_NOUTATI } from '../../shared/biblioteca.ts';
 import { biblioteca, bibliotecaDeProba, deschideBiblioteca, deschideMeniul, pagina, paginaDinCatalog, paginaInstalatei } from './ajutor-biblioteca.ts';
 
 /**
@@ -61,17 +63,33 @@ async function lasaPePanza(page: Page, nume: string, octeti: Uint8Array, tip = '
   await panza.dispatchEvent('drop', { dataTransfer: dt, clientX, clientY });
 }
 
+/**
+ * Un rând de „ce e nou” cu dată al lui Easy 3Draw, dintre cele pe care le poartă catalogul (ultimele `MAX_NOUTATI`),
+ * citit din lista bibliotecii: o versiune scrisă aici de mână iese din catalog după cinci versiuni noi (proba a căzut așa
+ * la 18.26.0, cu rândul lui 18.21.0).
+ */
+function randCuData(): { versiune: string; data: string; zi: string; luna: string; an: string } {
+  const lista = JSON.parse(readFileSync('extensii/biblioteca.json', 'utf8')) as { extensii: { dosar: string; noutati?: { versiune: string; data?: string }[] }[] };
+  const r = (lista.extensii.find((x) => x.dosar === 'trenulet')?.noutati ?? []).slice(0, MAX_NOUTATI).find((x) => x.data !== undefined);
+  if (r?.data === undefined) throw new Error('niciun rând cu dată printre cele din catalog');
+  const [an, luna, zi] = r.data.split('-') as [string, string, string];
+  return { versiune: r.versiune, data: r.data, zi, luna, an };
+}
+
 test('„Ce e nou” arată data versiunii, unde e scrisă, în limba aplicației', async ({ page }) => {
+  const r = randCuData(), alVersiunii = { has: page.locator('strong', { hasText: new RegExp(`^${r.versiune.replaceAll('.', '\\.')}$`) }) };
   await page.goto('/');
   const p = await paginaDinCatalog(page, 'trenulet');
-  const rand = p.getByTestId('pagina-noutati').locator('li').filter({ has: page.locator('strong', { hasText: /^18\.21\.0$/ }) });
-  await expect(rand.locator('time')).toHaveAttribute('datetime', '2026-11-23');
-  await expect(rand.locator('time')).toHaveText('23.11.2026');
+  const rand = p.getByTestId('pagina-noutati').locator('li').filter(alVersiunii);
+  await expect(rand.locator('time')).toHaveAttribute('datetime', r.data);
+  await expect(rand.locator('time')).toHaveText(`${r.zi}.${r.luna}.${r.an}`);
+  // catalogul poartă cel mult ultimele cinci rânduri
+  expect(await p.getByTestId('pagina-noutati').locator('li').count()).toBeLessThanOrEqual(MAX_NOUTATI);
   await page.keyboard.press('Escape');
   await expect(biblioteca(page)).toHaveCount(0);
   await page.getByRole('navigation', { name: 'Limba' }).getByRole('button', { name: 'EN', exact: true }).click();
   const en = await paginaDinCatalog(page, 'trenulet');
-  await expect(en.getByTestId('pagina-noutati').locator('li').filter({ has: page.locator('strong', { hasText: /^18\.21\.0$/ }) }).locator('time')).toHaveText('23/11/2026');
+  await expect(en.getByTestId('pagina-noutati').locator('li').filter(alVersiunii).locator('time')).toHaveText(`${r.zi}/${r.luna}/${r.an}`);
 });
 
 test('confirmarea unei actualizări arată „Ce e nou” doar de după versiunea omului; un rând fără dată arată doar versiunea', async ({ page }) => {

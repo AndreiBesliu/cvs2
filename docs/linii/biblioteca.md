@@ -336,3 +336,7 @@ dintr-o listă servită lângă aplicație.
 Legat: [sesiunea principală](principala.md), [Uneltele worktree-urilor locale (de dinainte de cloud)](unelte-worktree.md), [„Segmentează (plan mic)”](lectii.md#feedback-segmentare-plan-mic).
 
 **Worktree-ul scos (08.11)**, la „dupa ce verifici care worktree a terminat si a fost integrat in maine, vreau sa inchizi tu acel worktree si sa il arhivezi”: `cncvs2-lucru\biblioteca` (joncțiunile întâi), ramura locală ștearsă, sesiunea arhivată. Pe `origin` rămâne `wip/3.Xg-biblioteca`, în lista de șters a owner-ului. O felie nouă a liniei pornește dintr-un worktree nou, din `main`.
+
+_Din 25.11: proba „«Ce e nou» arată data versiunii” (`test/e2e/extensii.descoperire.spec.ts`) își ia versiunea din
+`extensii/biblioteca.json` (un rând cu dată dintre ultimele `MAX_NOUTATI`), nu o ține scrisă: rândul lui 18.21.0 a ieșit
+din catalog la 18.26.0 și a oprit un complet._

@@ -14038,6 +14038,10 @@ fără altă întrebare; răspunsul lui „Cărămizi de clădit”, la lista pi
 - **Probele pluginului în browser:** 70 / 70. Easy 3Draw 18.27.0 (491,4 kB), cu rândul de „ce e nou”; doar pachetul se
   schimbă.
 - **Neîmpinsă până la unirea lotului 28** (3.Ca și 3.Cb), la rugămintea sesiunii principale.
+- **După felie:** completul lui 3.Cc și 3.Cd (45501872646, pe `e8c9fd15`) a căzut la o singură probă, a bibliotecii, din
+  816: „Ce e nou” arată data versiunii (`extensii.descoperire.spec.ts`). Proba, scrisă la 3.Xi, căuta pe nume rândul lui
+  18.21.0, iar catalogul poartă doar ultimele cinci rânduri: de la 18.26.0, rândul nu mai e. Proba citește acum rândul
+  din lista bibliotecii (fără cod de produs schimbat); completul, pornit din nou.
 
 ## 2026-11-24 — Sesiunea principală în cloud: clicul pe „Închide” din cadrul unei extensii, pierdut (probă instabilă, reparată) (Model: Claude Fable 5.2)
 
