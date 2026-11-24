@@ -13829,3 +13829,26 @@ e în `main` […] Acum poți aduce `main` în ramură și deschide PR-ul lui 3.
   acum doar 3.Xk: proba din `test/e2e/extensii.lucru.spec.ts`, lista de otrăvuri `test/otravuri/3.Xk.py` și documente.
 - **PR-ul `AndreiBesliu/cvs2#24`**, refolosit pentru 3.Xk (titlul și descrierea, schimbate); o unește sesiunea
   principală, la raport.
+
+## 2026-11-24 — Felia 11.1↑d: rândul comenzilor foii nu trece de foaia lui (sesiunea principală în cloud) (Model: Claude Fable 5.2)
+
+**Prompt:** „si trebuie sa reparam si asta” (trei capturi: rândul comenzilor mai lat decât foaia, cu pânza micșorată;
+două rânduri suprapuse)
+**Started:** 24.11, 19:20. **Completed:** 24.11, 19:32, pe ramura `wip/11.1d-rand-foaie` (intră în `main` cu lotul ei).
+
+- **Ce era:** rândul de șapte butoane de sub foaie are 214 px (354 la densitatea mare), oricât de mică e foaia pe
+  ecran. Cu pânza micșorată ieșea peste foaia vecină, iar cu mausul pe ea, cele două rânduri se suprapuneau.
+- **Ce e acum** (ADR 0210, „Felia 11.1↑d”): rândul e întreg doar cât încape sub foaia lui; mai îngust, se strânge
+  într-un buton, „⋯” („Arată comenzile foii”), care îl desface peste ce e alături; sub lățimea unui buton nu se mai
+  arată. Mausul plecat, Escape (cu focusul întors pe „⋯”) sau o comandă aleasă îl strâng la loc. Mărimea butonului se
+  măsoară. Un rând desfăcut și întrebarea ștergerii nu ies din pânză.
+- **Găsit de probă:** cu cursorul pe rând, rotița nu micșora pânza (rândul e frate al pânzei). Rândul îi dă pânzei
+  rotița, cu locul cursorului.
+- **Probele:** `controaleFoi.test.ts` (7), `controale-foi.spec.ts` (9), manualul în ambele limbi, catalogul
+  controalelor (639 de nume).
+- **Otrăvurile** (`test/otravuri/11.1d.py`): 22 / 22 pe `7104265b`. La prima rulare, 18; patru au scăpat și au cerut
+  probe mai tari: focusul la desfacere (un clic care nu dă focus butonului, ca în Safari), focusul după Escape (dat de
+  pe altă comandă decât prima: butonul refolosit de React își ținea singur focusul), strângerea după o comandă (dată
+  de la tastatură, cu mausul departe: altfel îl strângea mausul plecat), locul cursorului la rotiță (punctul foii de
+  sub cursor rămâne pe loc). Patru otrăvuri din `11.1c.py`, mutate pe codul nou, prinse.
+- **Mărimea:** în porțile lotului.
