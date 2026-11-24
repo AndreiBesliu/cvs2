@@ -1395,7 +1395,7 @@ amândouă** (a ta rămâne ca o freză nouă, cu „(2)”).
 Fiecare formă are o operație: un **profil** (freza merge de-a lungul conturului, în treceri, până la adâncime), un
 **buzunar** (freza scoate tot materialul dinăuntrul unui contur închis, până la adâncime), pe cercuri o **găurire**
 (gaura cât cercul, vezi mai jos) sau un **V-carve** (freza în V sapă forma pe mijlocul ei, vezi mai jos). Operațiile se schimbă din
-fereastra **Exportă G-code**, câte un rând pe formă; la export, fereastra **aplică operațiile** în proiect.
+fereastra **Exportă G-code**, câte o fișă pe operație (vezi [Exportul G-code](#export)); la export, fereastra **aplică operațiile** în proiect.
 
 **Rolul de tăiere** se alege și din panoul de proprietăți, în secțiunea **Tăierea**, pentru oricâte forme alese: **exterior**,
 **interior**, **pe linie**, **stânga** sau **dreapta** (pe o cale deschisă), **buzunar**, **găurire** (doar cercuri),
@@ -1428,7 +1428,7 @@ adresa de test față de cea live au lista lor.
 
 | Câmpul | Ce înseamnă |
 |---|---|
-| Tăietura | **exterior** (piesa rămâne înăuntru), **interior** (o gaură), **pe linie** (freza pe contur), **buzunar** (golește conturul, vezi mai jos), **găurire** (doar pe un rând numai cu cercuri), **V-carve** (sapă forma cu freza în V, vezi mai jos), **incrustație în V** (locașul și dopul lui, vezi [Incrustația în V](#incrustatie)), **incrustație cu pereți drepți** (un buzunar cu dopul lui, vezi [Incrustația cu pereți drepți](#incrustatie-drept)); pe o cale deschisă: pe linie, **stânga** sau **dreapta** (partea pe care merge freza, privind în sensul săgeții de pe planșă) |
+| Tăietura | **exterior** (piesa rămâne înăuntru), **interior** (o gaură), **pe linie** (freza pe contur), **buzunar** (golește conturul, vezi mai jos), **găurire** (doar pe o operație numai cu cercuri), **V-carve** (sapă forma cu freza în V, vezi mai jos), **incrustație în V** (locașul și dopul lui, vezi [Incrustația în V](#incrustatie)), **incrustație cu pereți drepți** (un buzunar cu dopul lui, vezi [Incrustația cu pereți drepți](#incrustatie-drept)); pe o cale deschisă: pe linie, **stânga** sau **dreapta** (partea pe care merge freza, privind în sensul săgeții de pe planșă) |
 | Sens | **urcare**: materialul care rămâne e în dreapta sensului de mers (ax M3); **opoziție**: invers. Pe linie nu contează; acolo, alături, **Direcția**: **ca desenul**, **invers** sau **cel mai scurt drum** (o cale deschisă pornește din capătul mai apropiat de locul în care a rămas freza; o buclă închisă rămâne cum e desenată) |
 | Adâncimea, Pasul | cât de adânc se taie și cât coboară o trecere (mm) |
 | Urechi | punți care țin piesa în foaie pe ultimele treceri: câte pe buclă, lungimea și grosimea punții (de la fața de jos); **Locurile**: la distanțe egale, alese pe desen, unde ține sau pe laturi (vezi [Urechile alese pe desen](#export)) |
@@ -1446,14 +1446,14 @@ ridice cât drumul rămâne în buzunar. Cu pasul lateral de cel mult jumătate 
 doar colțurile pe care nicio freză rotundă nu le atinge (cu raza frezei). Unde buzunarul e mai îngust decât freza, ea nu
 intră. Pe un buzunar nu există urechi, intrări sau degajări, iar rampa profilului e înlocuită de coborâre.
 
-**Traseul buzunarului.** Sub rândul unui buzunar, **Traseul** alege între **inele (paralele cu conturul)**, implicit, și
+**Traseul buzunarului.** Pe fișa unui buzunar, la **Cum golește**, **Traseul** alege între **inele (paralele cu conturul)**, implicit, și
 **linii paralele**, la **Unghiul** dat față de X (de la 0 până sub 180°), cu pasul lateral între ele. Pe fiecare trecere, freza
 trece întâi pe linii, legate la adâncime doar cu linia vecină și doar dacă drumul rămâne în buzunar (altfel se ridică), apoi pe
 o **trecere de profil** de-a lungul marginii, ca peretele să iasă exact pe vector, nu în trepte. Liniile coboară prin plonjare
 (rampa, zigzagul și elicea sunt ale inelelor); pe linii, freza taie dus-întors, deci alternativ în urcare și în opoziție, iar
-trecerea de profil urmează sensul rândului. Insulele și frezele de rest merg la fel ca la inele.
+trecerea de profil urmează sensul operației. Insulele și frezele de rest merg la fel ca la inele.
 
-**Frezele de rest.** Sub rândul unui buzunar, **Adaugă o freză de rest** pune după freza rândului una mai mică (implicit
+**Frezele de rest.** Pe fișa unui buzunar, **Adaugă o freză de rest** pune după freza operației una mai mică (implicit
 jumătate din diametru, cu T-ul următor liber și pasul de 40 %); se pot pune mai multe, fiecare mai mică decât cea dinainte, și
 se scot cu ×. Fiecare taie doar unde cea dinainte n-a ajuns: colțurile și fâșiile mai înguste decât ea, pe aceleași treceri;
 nu mai trece pe lângă pereții pe care cea mare i-a tăiat deja. Colțurile rămân cu raza celei mai mici. De exemplu, un buzunar
@@ -1485,8 +1485,8 @@ ale insulei nu contează. Cu altă adâncime, fiecare buzunar se taie întreg: u
 Două contururi de aceeași adâncime care se ating sau se intersectează sunt refuzate (unește-le întâi cu booleanul sau dă-le
 adâncimi diferite). Între o insulă și perete, un loc mai îngust decât freza rămâne netăiat.
 
-**Găurirea.** Pe un rând numai cu cercuri, Tăietura are și **găurire**: gaura iese cât cercul din desen, cu freza plată a
-rândului, scrisă doar cu mișcări simple (G0, G1, G2, G3), fără ciclurile de găurire G81–G83 pe care GRBL nu le are.
+**Găurirea.** Pe o operație numai cu cercuri, Tăietura are și **găurire**: gaura iese cât cercul din desen, cu freza plată a
+operației, scrisă doar cu mișcări simple (G0, G1, G2, G3), fără ciclurile de găurire G81–G83 pe care GRBL nu le are.
 - Un **cerc cât freza** (diametrul ei, ± 0,02 mm) se găurește în centru, **cu ciocănire**: freza coboară cu pasul pe trecere,
   cu avansul de plonjare; după fiecare pas se ridică 1 mm (rupe așchia), iar la fiecare al câtelea pas scris la **Iese la
   fiecare al … pas** iese până la Z sigur (scoate așchia) și coboară repede până la 0,5 mm deasupra fundului.
@@ -1501,12 +1501,12 @@ rândului, scrisă doar cu mișcări simple (G0, G1, G2, G3), fără ciclurile d
 coboară în fiecare punct cât încape între pereți: adâncimea e distanța până la cel mai apropiat perete împărțită la
 tan(θ/2), unde θ e unghiul frezei (la 90°, cât distanța; la 60°, de 1,73 ori mai mult). Pereții ies înclinați, exact pe
 contur, iar colțurile ascuțite rămân ascuțite: literele, ornamentele, conturul unui logo.
-- Contururile rândului se citesc împreună, par-impar: un „O” e inelul dintre cele două contururi, nu două forme. La fel
-  rândurile V-carve ale aceleiași forme cu aceleași valori (freza, adâncimea, pasul, fundul plat): un text pus pe V-carve rând
-  cu rând se sapă cu golurile lui. Cu valori diferite, fiecare rând e o regiune separată.
+- Contururile operației se citesc împreună, par-impar: un „O” e inelul dintre cele două contururi, nu două forme. La fel
+  operațiile V-carve ale aceleiași forme cu aceleași valori (freza, adâncimea, pasul, fundul plat): un text pus pe V-carve, operație
+  cu operație, se sapă cu golurile lui. Cu valori diferite, fiecare operație e o regiune separată.
 - **Adâncimea** e cea maximă. Unde forma e mai lată decât freza la acea adâncime, freza merge la ea pe mijloc și pe un contur
   paralel cu peretele, iar între ele rămâne un **fund plat**.
-- **Fundul plat cu freza dreaptă**: bifa de sub rândul V-carve-ului, cu freza dreaptă (numărul ei, alt T decât V-ul; implicit
+- **Fundul plat cu freza dreaptă**: bifa de pe fișa V-carve-ului (grupul **Fundul plat**), cu freza dreaptă (numărul ei, alt T decât V-ul; implicit
   T-ul V-ului + 1, Ø3,175) și pasul ei lateral (cel mult jumătate din diametru, implicit 40 %). Întâi freza dreaptă scoate
   fundul, nivel cu nivel, fără să atingă pereții; apoi freza în V taie pereții și colțurile în care cea dreaptă nu ajunge
   (colțurile ascuțite ale fundului și canalele mai înguste decât ea), cu inele dese: acolo rămâne o creastă de cel mult
@@ -1515,7 +1515,7 @@ contur, iar colțurile ascuțite rămân ascuțite: literele, ornamentele, contu
   după ea alte freze drepte, tot mai mici, care scot fundul doar unde cea dinainte n-a ajuns (ca la buzunar); freza în V
   vine după toate, doar unde n-a ajuns cea mai mică.
 - **Pasul**: la fiecare trecere, freza coboară cel mult cu pasul față de trecerea de dinainte.
-- Freza rândului trebuie să fie **în V** (vezi [Exportul G-code](#export)), iar conul ei, ((diametrul − vârful) / 2) / tan(θ/2),
+- Freza operației trebuie să fie **în V** (vezi [Exportul G-code](#export)), iar conul ei, ((diametrul − vârful) / 2) / tan(θ/2),
   trebuie să ajungă la adâncimea cerută; altfel exportul e refuzat, cu motivul. Pe un V-carve nu există urechi, rampă, intrări,
   degajări sau despărțire, iar o cale deschisă e refuzată.
 
@@ -1525,7 +1525,7 @@ canalului e lat cât vârful; în V-carve, freza coboară doar unde forma e mai 
 rotunjite cu jumătate din vârf (o regiune peste tot mai îngustă decât vârful e refuzată, cu motivul). Două freze cu același
 T, același unghi și alt vârf sunt două freze: exportul cere numere diferite.
 
-**Gravarea pe linie.** Pe linie, freza poate fi și în V: centrul ei merge exact pe vector, la adâncimea rândului, iar canalul
+**Gravarea pe linie.** Pe linie, freza poate fi și în V: centrul ei merge exact pe vector, la adâncimea operației, iar canalul
 iese lat de vârful + 2 · adâncimea · tan(θ/2) (la V90 și 1 mm: 2 mm), cu pereții înclinați. Conul frezei trebuie să ajungă la
 adâncime, ca la V-carve. **Pe o parte** (exterior, interior, stânga, dreapta), **într-un buzunar** sau **la găurire**, freza
 în V e refuzată, cu motivul: acolo lucrarea ar decala-o ca pe o freză plată, iar peretele n-ar ieși unde e desenat (teșirea
@@ -1537,7 +1537,7 @@ colțuri ca să le ascută. De exemplu, un pătrat de 20 mm la 2 mm, cu freza dr
 0,25 mm: pereții ies la 15°, iar colțurile la suprafață au raza de 0,13 mm (cu Ø2 singură ar fi 1 mm). Deocamdată fundul îl
 scoate o singură freză dreaptă; mai multe, de la cea mai mare la cea mai mică, vin cu buzunarul cu mai multe freze.
 
-Fiecare rând își are freza lui (vezi [Exportul G-code](#export)). Regimul e fix deocamdată: axul la 18 000 rot/min (cu 3 s de așteptare), avansul 1 000 mm/min, plonjarea 300 mm/min, Z sigur 5 mm;
+Fiecare operație își are freza ei (vezi [Exportul G-code](#export)). Regimul e fix deocamdată: axul la 18 000 rot/min (cu 3 s de așteptare), avansul 1 000 mm/min, plonjarea 300 mm/min, Z sigur 5 mm;
 interioarele se taie primele.
 
 ## Incrustația în V
@@ -1546,17 +1546,17 @@ interioarele se taie primele.
 O **incrustație în V** pune un dop dintr-un lemn în locașul săpat în altul: locașul e un V-carve al desenului, iar dopul e
 același desen, oglindit, săpat în V pe semifabricatul lui, ca să intre în locaș și să se oprească înainte de fund. Se alege ca
 rol: **incrustație în V**, din secțiunea **Tăierea** a panoului de proprietăți sau din lista Tăietura a ferestrei **Exportă
-G-code**. Freza rândului e în V, ascuțită (fără vârf plat), iar fundul plat cu freza dreaptă e pus: el scoate fundul locașului
+G-code**. Freza operației e în V, ascuțită (fără vârf plat), iar fundul plat cu freza dreaptă e pus: el scoate fundul locașului
 și lemnul din jurul dopului.
 
-**Fără freză dreaptă**, scoate bifa **Fundul plat cu freza dreaptă** de pe rândul incrustației: atunci freza în V face tot.
+**Fără freză dreaptă**, scoate bifa **Fundul plat cu freza dreaptă** de pe fișa incrustației: atunci freza în V face tot.
 Fundul locașului îl scoate cu inele dese, la jocul pentru clei · tan(θ/2) unul de altul (creasta cel mult jumătate din joc,
 deci sub dop rămâne cel puțin jumătate pentru clei), iar fața coborâtă a dopului sau fundul benzii, cu inele la spațiul pentru
 fierăstrău · tan(θ/2) (creasta cel mult jumătate din el, între plăci). E mai lent decât cu o freză dreaptă: avertismentul
 spune câte inele face; peste 400 într-o regiune, exportul e refuzat, cu sfatul. Cu banda, decuparea din placă cere atunci
 **Altă freză pentru decupare** (o freză dreaptă); fără ea, scoate decuparea.
 
-Valorile incrustației, sub Adâncime și Pas în panou și pe rândul ei din fereastra exportului:
+Valorile incrustației, sub Adâncime și Pas în panou și pe fișa ei din fereastra exportului:
 
 - **Jocul pentru clei** (g; implicit 0,5 mm, cel puțin 0,1): cât rămâne sub dop. Dopul se sapă de la adâncimea locașului
   minus jocul (S = D − g), deci se oprește pe pereți, cu g deasupra fundului.
@@ -1566,7 +1566,7 @@ Valorile incrustației, sub Adâncime și Pas în panou și pe rândul ei din fe
 - **Marginea dopului** (implicit 5 mm): cât lemn rămâne în jurul desenului pe semifabricatul dopului (cu banda, dincolo de
   ea și de șanțul ei).
 
-**Lemnul din jurul dopului**, ales în secțiunea **Tăierea** a panoului (pentru toate formele alese) sau pe rândul
+**Lemnul din jurul dopului**, ales în secțiunea **Tăierea** a panoului (pentru toate formele alese) sau pe fișa
 incrustației din fereastra exportului; valorile benzii se aleg în fereastră:
 
 - **fața coborâtă toată** (implicit): freza dreaptă coboară toată fața semifabricatului dopului, până dincolo de margini, deci
@@ -1619,7 +1619,7 @@ drepți](#incrustatie-drept)).
 O **incrustație cu pereți drepți** pune un dop cu pereți verticali în locașul săpat în altă placă: locașul e un buzunar al
 desenului, iar dopul e același contur, tăiat cu freza plată pe semifabricatul lui, mai mic cu un joc lateral pe toată
 lungimea. Se alege ca rol: **incrustație cu pereți drepți**, din secțiunea **Tăierea** a panoului de proprietăți sau din lista
-Tăietura a ferestrei **Exportă G-code**. Freza rândului e plată; buzunarul își păstrează frezele de rest, strategia și
+Tăietura a ferestrei **Exportă G-code**. Freza operației e plată; buzunarul își păstrează frezele de rest, strategia și
 coborârea.
 
 **Colțurile le potrivește aplicația.** Freza e rotundă: în locaș, vârfurile desenului ies rotunjite cu raza ei (R), iar la dop,
@@ -1628,13 +1628,13 @@ pe care freza îl ocolește pe dinafară, se rotunjesc unghiurile intrânde (cu 
 concentrice, iar jocul e același pe tot conturul, și în colțuri. Cât se retrage cel mai ascuțit vârf față de desen apare ca
 avertisment după export. O parte a desenului mai îngustă decât freza nu încape în locaș: exportul o refuză.
 
-Valorile incrustației, în panou (sub Adâncime și Pas) și pe rândul ei din fereastra exportului:
+Valorile incrustației, în panou (sub Adâncime și Pas) și pe fișa ei din fereastra exportului:
 
 - **Jocul lateral** (c; implicit 0,1 mm): cât rămâne între pereții dopului și ai locașului, pe fiecare parte. Locașul rămâne
   cât desenul, dopul se micșorează cu c. Trebuie să fie sub raza celei mai mici freze a locașului.
-- **Locașul** (doar în fereastra exportului): **buzunar**, cu fund, la adâncimea rândului; sau **gaură prin foaie**: locașul
+- **Locașul** (doar în fereastra exportului): **buzunar**, cu fund, la adâncimea operației; sau **gaură prin foaie**: locașul
   trece prin placă, ca buzunar pe toată grosimea, iar adâncimea e grosimea foii (plus supracursa), ținută la zi cu foaia (pe
-  rând și în panou apare „prin foaie”). Gaura n-are fund: dopul decupat stă la nivel cu fața de jos (îl apeși pe o suprafață
+  fișă și în panou apare „prin foaie”). Gaura n-are fund: dopul decupat stă la nivel cu fața de jos (îl apeși pe o suprafață
   plană la lipire, iar partea de deasupra, H, se rindeluiește), iar cel ridicat se sprijină cu fața pe placă, înalt cât ea.
 - **Treapta** (doar în fereastra exportului): **fără**; **spre interior**: locașul are un umăr, cu nivelul de sus cât desenul,
   până la **Adâncimea umărului** (d; implicit jumătate din adâncimea locașului, la gaură din grosimea foii), iar sub el o
@@ -1642,7 +1642,7 @@ Valorile incrustației, în panou (sub Adâncime și Pas) și pe rândul ei din 
   **spre exterior**: desenul e deschiderea, iar nivelul de sus e mai lat cu s pe fiecare parte (ca falțul unui geam).
   Ambele niveluri au colțurile potrivite ca locașul simplu, cu același joc lateral. Dopul are o **flanșă** pe nivelul de sus
   și o **tijă** pe deschidere, și se taie mereu oglindit, cu tija în sus, apoi îl întorci în locaș. Fără treaptă, câmpurile
-  umărului se ascund (valorile rămân în rând).
+  umărului se ascund (valorile rămân pe fișă).
 - **Dopul** (doar în fereastra exportului): **ridicat pe semifabricat**: dopul rămâne în picioare pe semifabricatul lui
   (desenul oglindit, fața coborâtă în jur), îl întorci în locaș și tai spatele; sau **decupat prin placă**: dopul se taie prin
   toată placa lui, cu punți (desenul neoglindit), și intră în locaș fără întoarcere.
@@ -1717,7 +1717,43 @@ plin cât e în material. `Esc` sau **×** închid animația; dacă schimbi dese
 %% acopera: export.gcode
 
 **Exportă G-code** deschide fereastra exportului, pentru foaia activă (cu mai multe [foi](#foile), titlul ferestrei spune
-care). Pe lângă [operații](#operatii), alegi:
+care). Fereastra are trei părți:
+- **lista**, în stânga: **Foaia și originea**, **Mașina și fișierul**, apoi [operațiile](#operatii), în ordinea în care se
+  taie, fiecare cu ce taie, freza și adâncimea; după export, și **Rezultatul**, cu timpul estimat și câte avertismente are (un
+  punct colorat, dacă are). Fișa lui are, în ordine: **De văzut înainte de tăiere** (avertismentele, doar când sunt), **Fișierele**
+  (cu **Deschide în Mașina**), **Rezumatul jobului** și **Simularea**. Un clic aduce sus fișa aleasă; cât derulezi,
+  lista marchează fișa la care ai ajuns. Pe un ecran îngust, lista stă sus, pe un rând care se derulează, cu ordinea tăierii
+  la capăt; cu **Butoane mari** (vezi [Aspectul](#aspect)), câmpurile și bifele ferestrei au și ele ținta mare;
+- **fișele**, în dreapta, una sub alta. Fiecare are câmpurile grupate pe întrebări (Ce tăiere, Freza, Cât de adânc, Sensul de
+  tăiere, Rampa, Intrările, Colțurile, Urechile; la un buzunar, Cum golește, Cum coboară, Frezele de rest; la un V-carve,
+  Fundul plat; la o incrustație, ale ei). În stânga fiecărui grup, explicația lui; când treci cu mausul peste un câmp sau intri
+  în el, explicația câmpului. Deasupra explicației, la colțul XY0, la Z0 și supracursă, la freză, adâncime, sens, rampă,
+  intrări și urechi, desenul întrebării, făcut din valorile tale: foaia cu colțul ales (un clic pe alt colț din desen îl alege),
+  secțiunea foii pe masă cu Z0 și tăieturile care trec în masă, profilul frezei, secțiunea tăieturii cu trecerile, drumul
+  frezei în jurul piesei sau al găurii (ce rămâne stă în dreapta drumului la urcare), rampa din lateral, intrările de sus,
+  urechile la locurile regulii alese și secțiunea lor. La un buzunar: trecerile văzute de sus, cu urma frezei, la pasul lateral
+  (prima la raza frezei de perete, iar două vecine se suprapun cât scrie dedesubt; pe linii paralele, rotite la unghiul lor),
+  coborârea din lateral, pe o trecere (rampa, zigzagul cu rampele lui, elicea cu turele ei; o valoare greșită nu se
+  desenează) și colțul în care freza lasă raza ei, iar freza de rest cea mai mică, pe a ei. La o găurire: ciocănirea pas cu
+  pas (cât coboară, ridicarea de 1 mm, ieșirea din gaură la al câtelea pas). La un V-carve: secțiunea cu pereții tăiați de freza V
+  până la adâncimea maximă și, între ei, fundul plat al frezei drepte (de la ce lățime începe), inelele V ale unei incrustații
+  fără ea sau lemnul care rămâne fără fund plat. La o incrustație în V: locașul și dopul întors, cu cât intră dopul, jocul de
+  sub el, spațiul dintre plăci, unde se ating pereții și marginea dopului; cu banda îngustă, grupul ei arată semifabricatul dopului
+  în secțiune, cu banda, decuparea prin placă (la ce distanță de desen) și puntea. La o incrustație cu pereți drepți: locașul cu fund sau prin foaie, cu jocul lateral (mărit în desen); treapta, spre interior (desenul rămâne pe față) sau spre exterior (desenul coboară la umăr); dopul așezat pe sprijinul ales (fund, față, umăr), cu jocul de sub el, cât de înalt iese (cu tija și flanșa, la treaptă) și cât de gros trebuie să fie semifabricatul sau placa. Valorile stau pe cote, iar cota câmpului pe care
+  stai e colorată. Câte rampe face zigzagul pe o trecere se socotește pe trecerea egală, ca în program. Sub
+  pas, câte treceri ies și cât scoate fiecare: trecerile sunt egale (10 mm cu pasul 4 dau 3 treceri de 3,33 mm), la fel și în
+  desen. Tăietura și alegerile cu puține variante (colțurile, locurile urechilor, direcția pe linie, traseul și coborârea
+  buzunarului, lemnul din jurul dopului, locașul, treapta, dopul și sprijinul incrustației cu pereți drepți, unitățile, schimbarea frezei, foile) sunt cartonașe cu poza fiecărei variante; găurirea stă printre tăieturi și pe un rând fără cercuri, oprită,
+  cu „doar pe cercuri”, iar în listă, sub numele operației, e poza tăieturii ei. Pe cartonașe: clic oriunde pe cartonaș, sau săgețile, după ce ai intrat în grup; cel ales are
+  marginea colorată, iar unul care nu se poate alege acum spune de ce (de exemplu „nu pe linie”). Despărțirea foii are și ea
+  poza ei, lângă bifă. Ce nu se aplică operației nu apare: pe un buzunar, o găurire sau un V-carve, rampa, intrările, colțurile
+  și urechile profilului lipsesc, iar o notă sub Tăietura spune de ce;
+- **jos**, mereu la vedere: **Exportă**, **Închide**, **Raportul foilor…**, confirmările și, cât o valoare e greșită, motivul,
+  cu **Du-mă la …**, care aduce fișa ei și intră în câmpul de reparat. Valoarea greșită se spune și în grupul câmpului, iar
+  fișa ei are un punct roșu în listă. Fereastra se închide cu **Închide**, cu Esc sau cu un clic în afara ei; valorile
+  operațiilor schimbate în ea se scriu în proiect doar la **Exportă**.
+
+În fișele foii și mașinii alegi:
 - **colțul de origine** al foii (stânga-jos, dreapta-jos, dreapta-sus, stânga-sus): unde e zero-ul X/Y pe mașină;
 - **Z0**: fața de sus a materialului sau fața de jos (masa de sacrificiu);
 - **Supracursa** (mm, între 0 și 2, implicit 0): cât coboară tăieturile prin placă sub fața ei de jos, în masa de sacrificiu,
@@ -1733,7 +1769,7 @@ care). Pe lângă [operații](#operatii), alegi:
   ajunge). Un post scris doar după documentația controlerului, încă neprobat pe o mașină, poartă o notă: urmărește primul
   program în aer;
 - **Unitățile**: mm (implicit) sau inch (cu 5 zecimale și avansul în inch/min); antetul rămâne în mm. RichAuto citește doar mm;
-- **Schimbarea frezei**, doar când rândurile au freze diferite: **oprire în senderul aplicației** (implicit pe familia GRBL:
+- **Schimbarea frezei**, doar când operațiile au freze diferite: **oprire în senderul aplicației** (implicit pe familia GRBL:
   lucrarea se oprește la `T… M6`, scoți freza, o pui pe următoarea, palpezi Z și **Continui**), **M6 la controler** (grblHAL,
   FluidNC, cu schimbarea configurată acolo; implicit pe Syntec, Mach3 și Mach4), **M0, cu freza în comentariu** sau **câte un
   fișier pe freză** (se descarcă toate; implicit pe NcStudio și RichAuto, care n-au M06).
@@ -1756,25 +1792,26 @@ antetul programului: verifică-le pe controler înainte de pornire.
 Pe aceste cinci posturi, o deplasare rapidă care schimbă și XY, și Z se scrie în două linii (urcarea întâi, coborârea la
 urmă): acolo, `G0` poate merge pe fiecare axă cu viteza ei.
 
-Fiecare rând are **freza** lui: numărul sculei (T), diametrul (mm) și forma: **plată** sau **în V**, cu unghiul inclus al
-vârfului (între 1° și 179°, implicit 60°; la V, diametrul e cel al părții tăietoare). Rândurile cu freze diferite se taie cu o
+Fiecare operație are **freza** ei (grupul **Freza** al fișei): numărul sculei (T), diametrul (mm) și forma: **plată** sau **în V**, cu unghiul inclus al
+vârfului (între 1° și 179°, implicit 60°; la V, diametrul e cel al părții tăietoare). Operațiile cu freze diferite se taie cu o
 schimbare între ele: în ordinea automată, în fiecare clasă (interioarele, apoi pe linie, apoi exterioarele), întâi freza deja
 montată, ca schimbările să fie cât mai puține. Același număr cu două diametre sau două forme e refuzat: fiecare freză cere
 numărul ei.
 
-**Ordinea tăierii** stă deasupra tabelului. Rândurile apar în ordinea în care se taie, cu locul lor în coloana **#**:
+**Ordinea tăierii** stă în listă, deasupra operațiilor. Operațiile apar în ordinea în care se taie, cu locul lor în stânga (fișa
+spune „locul N din M”):
 - **Automată** (implicit): interioarele întâi, apoi liniile, la urmă exterioarele și despărțirile foii; în fiecare, grupate pe
   freză. O latură sau o freză schimbată în fereastră reface ordinea la export;
-- **A mea**: se taie de sus în jos. Muți un rând trăgând de mânerul lui (cele șase puncte) sau cu săgețile **↑** / **↓**. Lista
+- **A mea**: se taie de sus în jos. Muți o operație trăgând de mânerul ei (cele șase puncte) sau cu săgețile **↑** / **↓**. Lista
   pornește din ordinea automată, iar **Înapoi la ordinea automată** o readuce. Ordinea se scrie în proiect la **Exportă**:
   fereastra redeschisă o arată, iar traseul, timpul, animația și vederea 3D o urmează. O operație nouă (o formă desenată, un
   import, un text) vine la capăt. Schimbările de freză urmează ordinea ta, deci pot fi mai multe decât în cea automată.
 
 V-carve-urile aceleiași piese, cu aceleași valori (freza, adâncimea, pasul, sensul, fundul plat), se sapă ca o singură
-regiune: rândul de după primul arată **cu N**, adică se sapă odată cu rândul N. Buzunarele nu se unesc: fiecare se taie la
+regiune: în listă, operația de după prima arată **cu N**, adică se sapă odată cu locul N. Buzunarele nu se unesc: fiecare se taie la
 locul lui. Dacă în ordinea ta exteriorul unei piese vine înaintea altei operații a ei sau a unei forme din interiorul ei (un
 cerc desenat în dreptunghi), sau o despărțire a foii înaintea altei operații, piesa se poate desprinde înainte să fie gata:
-fereastra numește rândurile, iar **Exportă** cere bifa **Taie în ordinea mea** (orice mutare o șterge).
+fereastra numește operațiile, iar **Exportă** cere bifa **Taie în ordinea mea** (orice mutare o șterge).
 
 Butonul **Exportă** descarcă fișierul și arată câte linii are și amprenta lui SHA-256 (cu ea verifici că pe mașină ajunge
 exact fișierul ăsta). Dacă freza ar ieși din foaie, fereastra spune cu cât și unde, iar exportul cere confirmarea ta că acolo
@@ -1789,7 +1826,7 @@ desprinde cât freza încă taie lângă ea. Exportul o spune printre avertismen
 locul ei pe foaie („lângă X 70, Y 119”); cu **Toate foile**, pe fiecare foaie. Programul se descarcă oricum: e un
 avertisment, nu un refuz. Proba e a programului, deci prinde orice așezare, și pe cea mutată de mână.
 
-**Urechile alese pe desen.** Sub urechile unui rând, **Locurile: la distanțe egale / alese pe desen**. Cu
+**Urechile alese pe desen.** La urechile unei operații, **Locurile: la distanțe egale / alese pe desen**. Cu
 **alese pe desen**, câmpul „Câte, pe buclă” se oprește (numărul e câte ai pus), iar **Alege pe desen…** ascunde fereastra și
 pune pânza în modul urechilor operației: conturul ei apare pe fiecare copie a piesei de pe foaie, cu urechile alese ca puncte
 mici. Un clic pe contur pune o ureche, pe cel mai apropiat punct al lui; un clic pe o ureche o scoate; trasă, urechea alunecă
@@ -1828,7 +1865,7 @@ foile** face câte un program pe foaie, fiecare exact cel pe care l-ai exporta d
 arhivă `.zip` (`cncvs2-stanga-jos-foile.zip`), cu foaia în numele fiecărui fișier (`cncvs2-stanga-jos-foaia-2.nc`); pe
 RichAuto, `CNCVS2.ZIP`, cu fiecare foaie în dosarul ei (`F2/CNCVS2.NC`). Foile identice (aceleași piese în aceleași locuri,
 cu aceleași operații, ca după „Duplică foaia cu aceleași piese”) ies o dată, cu ×N în nume (`…-foaia-1-x3.nc`: se taie de
-trei ori), iar o foaie fără nimic de tăiat nu intră. Rândurile ferestrei rămân ale foii active: celelalte foi își păstrează
+trei ori), iar o foaie fără nimic de tăiat nu intră. Fișele ferestrei rămân ale foii active: celelalte foi își păstrează
 operațiile lor. După export, fereastra arată foile, fișierele și timpul fiecăreia, apoi timpul tuturor. O foaie din care iese
 freza (alta decât cea activă, a cărei confirmare o dai aici) se exportă singură, cu confirmarea ei. **Deschide în Mașina**
 încarcă programul foii active. Plăcuțele din care iese textul sunt, aici, ale tuturor foilor: dacă ai ales confirmarea în

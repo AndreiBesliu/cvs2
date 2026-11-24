@@ -2,6 +2,7 @@ import { test, expect } from '@playwright/test';
 import { readFileSync } from 'node:fs';
 import { judeca } from '../oracles/simulare.ts';
 import { adauga } from './ajutor-panza.ts';
+import { alege, aleasa } from './ajutor-export.ts';
 
 test.use({ locale: 'ro-RO' });
 
@@ -16,7 +17,7 @@ test('gravarea pe linie cu freza de gravare: V pe exterior refuzat; pe linie, cu
   await page.goto('/');
   await adauga(page, 'dreptunghi');
   await page.locator('[data-actiune="export.gcode"]').click();
-  const rand = page.locator('tr[data-operatie]').first();
+  const rand = page.locator('[data-fisa="op"]').first();
   // Freza în V pe exterior (latura implicită): oprit, cu motivul.
   await rand.locator('[data-camp="forma-scula"]').selectOption('v');
   await expect(rand.locator('[data-camp="varf-v"]')).toHaveValue('0');
@@ -24,10 +25,9 @@ test('gravarea pe linie cu freza de gravare: V pe exterior refuzat; pe linie, cu
   await expect(page.getByTestId('export-invalid')).toContainText('Freza în V taie pe linie sau într-un V-carve');
   await expect(rand.locator('[data-camp="directie"]')).toHaveCount(0);
   // Pe linie: direcția apare, cu „ca desenul”.
-  await rand.locator('[data-camp="latura"]').selectOption('pe-linie');
-  const directie = rand.locator('[data-camp="directie"]');
-  await expect(directie).toHaveValue('');
-  await directie.selectOption('invers');
+  await rand.locator('input[data-camp="latura"][value="pe-linie"]').check();
+  await expect(aleasa(rand, 'directie')).toHaveValue('');
+  await alege(rand, 'directie', 'invers');
   // Vârful: cât diametrul nu trece.
   await rand.locator('[data-camp="diametru"]').fill('3,175');
   await rand.locator('[data-camp="unghi-v"]').fill('30');
@@ -62,8 +62,8 @@ test('gravarea pe linie cu freza de gravare: V pe exterior refuzat; pe linie, cu
   await expect(panou).toContainText('T1, V 30° cu vârful de 0.25 mm, Ø3.175 mm');
   await expect(panou).toContainText('invers');
   await page.locator('[data-actiune="export.gcode"]').click();
-  const din = page.locator('tr[data-operatie]').first();
-  await expect(din.locator('[data-camp="latura"]')).toHaveValue('pe-linie');
+  const din = page.locator('[data-fisa="op"]').first();
+  await expect(din.locator('input[data-camp="latura"]:checked')).toHaveValue('pe-linie');
   await expect(din.locator('[data-camp="varf-v"]')).toHaveValue('0,25');
-  await expect(din.locator('[data-camp="directie"]')).toHaveValue('invers');
+  await expect(aleasa(din, 'directie')).toHaveValue('invers');
 });

@@ -14,7 +14,7 @@ const cip = (page: Page) => page.getByTestId('traseu-stare');
 const butonTraseu = (page: Page) => page.locator('[data-actiune="vedere.traseu"]');
 const taierea = (page: Page) => page.getByTestId('prop-taierea');
 const rol = (page: Page) => taierea(page).locator('[data-camp="rol"]');
-const latura = (page: Page) => page.locator('[data-operatie] [data-camp="latura"]');
+const latura = (page: Page) => page.locator('[data-operatie] input[data-camp="latura"]:checked');
 /** Valorile tuturor câmpurilor găsite, în ordine (rândurile ferestrei exportului). */
 const valori = (page: Page, selector: string): Promise<string[]> =>
   page.locator(selector).evaluateAll((els) => els.map((e) => (e as HTMLInputElement | HTMLSelectElement).value));
@@ -91,7 +91,7 @@ test('mai multe forme: rolul și adâncimea diferite arată „—” și câmpu
   await expect(taierea(page).locator('[data-camp="adancime"]')).toHaveValue('2');
   await page.locator('[data-actiune="export.gcode"]').click();
   await expect(latura(page)).toHaveCount(2);
-  await expect.poll(() => valori(page, '[data-operatie] [data-camp="latura"]')).toEqual(['pe-linie', 'pe-linie']);
+  await expect.poll(() => valori(page, '[data-operatie] input[data-camp="latura"]:checked')).toEqual(['pe-linie', 'pe-linie']);
   await expect.poll(() => valori(page, '[data-operatie] [data-camp="adancime"]')).toEqual(['2', '2']);
   await page.getByRole('button', { name: 'Închide' }).click();
   // Rolul a fost un singur pas: o anulare scoate adâncimea, a doua rolul.
@@ -116,7 +116,7 @@ test('două cercuri alese devin găuriri; un dreptunghi alăturat scoate găurir
   await expect(rol(page)).toHaveValue('gaurire');
   await page.locator('[data-actiune="export.gcode"]').click();
   await expect(latura(page)).toHaveCount(2);
-  await expect.poll(() => valori(page, '[data-operatie] [data-camp="latura"]')).toEqual(['gaurire', 'gaurire']);
+  await expect.poll(() => valori(page, '[data-operatie] input[data-camp="latura"]:checked')).toEqual(['gaurire', 'gaurire']);
   await page.getByRole('button', { name: 'Închide' }).click();
   await adauga(page, 'dreptunghi');
   await fereastra(page, { x: 10, y: 95 }, { x: 135, y: 10 });

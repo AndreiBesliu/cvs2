@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs';
 import { poarta } from '../oracles/poarta.ts';
 import { judeca } from '../oracles/simulare.ts';
 import { adauga } from './ajutor-panza.ts';
+import { alege, aleasa } from './ajutor-export.ts';
 
 test.use({ locale: 'ro-RO' });
 
@@ -15,11 +16,13 @@ test('buzunarul din fereastra exportului: dreptunghiul 100 × 60 se golește la 
   await page.goto('/');
   await adauga(page, 'dreptunghi');
   await page.locator('[data-actiune="export.gcode"]').click();
-  const rand = page.locator('tr[data-operatie]').first();
-  await rand.locator('[data-camp="latura"]').selectOption('buzunar');
+  const rand = page.locator('[data-fisa="op"]').first();
+  await rand.locator('input[data-camp="latura"][value="buzunar"]').check();
   const pas = page.locator('[data-camp="pas-lateral"]');
   await expect(pas).toHaveValue('2,4');
-  for (const camp of ['urechi', 'rampa', 'intrari', 'colturi']) await expect(rand.locator(`[data-camp="${camp}"]`)).toBeDisabled();
+  // Ce e al profilului nu apare pe fișă (ADR 0290), cu nota de ce, sub Tăietura.
+  for (const camp of ['urechi', 'rampa', 'intrari', 'colturi']) await expect(rand.locator(`[data-camp="${camp}"]`)).toHaveCount(0);
+  await expect(rand.locator('[data-nota="nu-se-aplica"]')).toBeVisible();
   // Peste raza frezei (Ø6): exportul e oprit, cu motivul.
   await pas.fill('3,5');
   await expect(page.locator('[data-buton="exporta"]')).toBeDisabled();
@@ -56,7 +59,7 @@ test('buzunarul din fereastra exportului: dreptunghiul 100 × 60 se golește la 
   if ((await comuta.getAttribute('aria-expanded')) !== 'true') await comuta.click();
   await expect(page.locator('[data-nod="operatie"]')).toHaveText(['Buzunar pe 1 contur: 3 mm în treceri de 3 mm, T1 Ø6']);
   await page.locator('[data-actiune="export.gcode"]').click();
-  await expect(page.locator('tr[data-operatie]').first().locator('[data-camp="latura"]')).toHaveValue('buzunar');
+  await expect(page.locator('[data-fisa="op"]').first().locator('input[data-camp="latura"]:checked')).toHaveValue('buzunar');
   await expect(page.locator('[data-camp="pas-lateral"]')).toHaveValue('2,4');
 });
 
@@ -70,11 +73,11 @@ test('coborârea în buzunar: zigzagul își arată rampele, elicea iese în pro
   await page.goto('/');
   await adauga(page, 'dreptunghi');
   await page.locator('[data-actiune="export.gcode"]').click();
-  await page.locator('tr[data-operatie]').first().locator('[data-camp="latura"]').selectOption('buzunar');
-  const cob = page.locator('[data-camp="coborare"]');
-  await expect(cob).toHaveValue('plonjare');
+  await page.locator('[data-fisa="op"]').first().locator('input[data-camp="latura"][value="buzunar"]').check();
+  const op = page.locator('[data-fisa="op"]').first();
+  await expect(aleasa(op, 'coborare')).toHaveValue('plonjare');
   await expect(page.locator('[data-camp="unghi-coborare"]')).toHaveCount(0);
-  await cob.selectOption('zigzag');
+  await alege(op, 'coborare', 'zigzag');
   await expect(page.locator('[data-camp="unghi-coborare"]')).toHaveValue('3');
   await expect(page.locator('[data-camp="lungime-zigzag"]')).toHaveValue('20');
   await expect(page.locator('[data-camp="rampe-zigzag"]')).toHaveText('3 rampe pe trecere');
@@ -82,7 +85,7 @@ test('coborârea în buzunar: zigzagul își arată rampele, elicea iese în pro
   await expect(page.locator('[data-buton="exporta"]')).toBeDisabled();
   await expect(page.getByTestId('export-invalid')).toContainText('Coborârea în buzunar');
   await page.locator('[data-camp="unghi-coborare"]').fill('3');
-  await cob.selectOption('elice');
+  await alege(op, 'coborare', 'elice');
   await expect(page.locator('[data-camp="raza-elice"]')).toHaveValue('3');
   await expect(page.locator('[data-camp="lungime-zigzag"]')).toHaveCount(0);
   const descarcare = page.waitForEvent('download');
@@ -114,6 +117,6 @@ test('coborârea în buzunar: zigzagul își arată rampele, elicea iese în pro
   if ((await panou.getAttribute('data-deschis')) !== 'true') await page.locator('[data-actiune="vedere.proprietati"]').first().click();
   await expect(panou).toContainText('Elice, 3°, raza 3.00 mm');
   await page.locator('[data-actiune="export.gcode"]').click();
-  await expect(page.locator('[data-camp="coborare"]')).toHaveValue('elice');
+  await expect(aleasa(page.locator('[data-fisa="op"]').first(), 'coborare')).toHaveValue('elice');
   await expect(page.locator('[data-camp="raza-elice"]')).toHaveValue('3');
 });
