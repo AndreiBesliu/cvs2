@@ -103,19 +103,31 @@ test('Orizontală, Verticală, Aliniată din bară; un vârf de pe linia de exte
   await clic(page, { x: 140, y: 50 });
   await expect(cote(page).first()).toHaveAttribute('data-text', '60');
   await page.getByTestId('cote-fel-aliniata').click();
+  // (95, 20) e pe linia de extensie a cotei verticale, departe de orice punct: extensia nu alege cota, clicul pune un punct.
+  await clic(page, { x: 95, y: 20 });
+  await expect(strat(page)).toHaveAttribute('data-puse', '1');
+  await expect(strat(page)).not.toHaveAttribute('data-aleasa', /.+/);
+  await page.keyboard.press('Escape');
   // (20, 20) e pe linia de extensie a cotei verticale: vârful bate cota.
   await clic(page, { x: 20, y: 20 });
   await expect(strat(page)).toHaveAttribute('data-puse', '1');
   await clic(page, { x: 120, y: 80 });
   await clic(page, { x: 60, y: 70 });
   await expect(cote(page).nth(1)).toHaveAttribute('data-text', '116,62');
+  // O orizontală între vârfurile de jos, cu linia de cotă chiar pe latura de sus (y = 80): un clic pe vârful (20, 80), care
+  // stă pe linia ei, începe o cotă nouă (vârful bate cota).
   await page.getByTestId('cote-fel-orizontala').click();
+  await clic(page, { x: 20, y: 20 });
+  await clic(page, { x: 120, y: 20 });
+  await clic(page, { x: 70, y: 80 });
+  await expect(cote(page)).toHaveCount(3);
   await clic(page, { x: 20, y: 80 });
   await expect(strat(page)).toHaveAttribute('data-puse', '1');
+  await expect(strat(page)).not.toHaveAttribute('data-aleasa', /.+/);
   await page.keyboard.press('Escape');
   await expect(strat(page)).toHaveAttribute('data-puse', '0');
   await expect(page.locator('[data-unealta="cote"]')).toHaveAttribute('aria-pressed', 'true');
-  await expect(cote(page)).toHaveCount(2);
+  await expect(cote(page)).toHaveCount(3);
 });
 
 test('M: măsoară fără urmă (lângă cursor și în bara de jos); Enter o păstrează ca cotă aliniată', async ({ page }) => {
@@ -163,17 +175,22 @@ test('alegerea cu unealta Cote, săgețile, Delete, anularea; reîncărcarea pă
   await expect(cote(page).first()).toHaveAttribute('data-text', '100');
   await expect(page.locator('[data-unealta="selectie"]')).toHaveAttribute('aria-pressed', 'true');
   // Cu Selecția, un clic pe linia cotei (unde nu e nicio formă) e ca unul pe gol: nici cota, nici altă alegere.
-  const alese = page.getByTestId('lista-vectori').locator('button[aria-pressed="true"]');
+  const alese = page.getByTestId('lista-vectori').locator('button[data-instanta][aria-pressed="true"]');
   await clic(page, { x: 250, y: 150 });
-  const peGol = await alese.count();
+  await expect(alese).toHaveCount(0);
   await clic(page, { x: 50, y: 101 });
-  await expect(alese).toHaveCount(peGol);
+  await expect(alese).toHaveCount(0);
   await expect(strat(page)).not.toHaveAttribute('data-aleasa', /.+/);
   // Dublu clic pe cotă: unealta Cote, cu ea aleasă.
   const s = await peEcran(page, { x: 50, y: 101 });
   await page.mouse.dblclick(s.x, s.y);
   await expect(page.locator('[data-unealta="cote"]')).toHaveAttribute('aria-pressed', 'true');
   await expect(strat(page)).toHaveAttribute('data-aleasa', /c\d+/);
+  // Cu unealta Cote, un clic pe un vârf începe o cotă și nu alege forma (pânza nu primește clicul).
+  await page.keyboard.press('Escape');
+  await clic(page, { x: 20, y: 20 });
+  await expect(strat(page)).toHaveAttribute('data-puse', '1');
+  await expect(alese).toHaveCount(0);
 });
 
 /**
