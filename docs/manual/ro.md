@@ -1160,6 +1160,35 @@ colțul pânzei o spune. Cât tragi (Linie, Liber), capetele prelungite se văd 
 o nuanță roșie, peste formele pe care cuțitul le împarte de tot; cu spațiu sau suprapunere, fâșia lor se vede de o parte și
 de alta a urmei, punctată mai rar; cu îmbinare, în locul fâșiei se văd dinții, pe formele pe care urma le trece de tot.
 
+## Cotele și măsurarea
+%% capitol: cote
+%% acopera: unealta.cote, foaie.cote
+
+Unealta **Cote** (`D`; butonul ei stă în extensia barei, după Convertește) pune pe desen cote care arată o mărime: lungimea unei laturi, distanța dintre două puncte
+pe X, pe Y sau dreaptă. O cotă **nu se taie niciodată**: G-code-ul exportat e același cu și fără cote. Cotele sunt ale foii
+pe care au fost puse (**Cotele foii**), se salvează cu proiectul și au culoarea lor pe pânză. Felul se alege în bară:
+- **Automată** (la început): un clic pe o latură dreaptă îi ia lungimea; altfel, două puncte, iar cota e orizontală dacă duci
+  linia deasupra sau dedesubt, verticală dacă o duci la stânga sau la dreapta, aliniată dacă o duci între ele (**Shift**:
+  aliniată oricum);
+- **Orizontală**, **Verticală**, **Aliniată**: două puncte, apoi locul liniei de cotă;
+- **Măsoară** (`M`): două puncte, fără urmă. Distanța, Δx, Δy și unghiul față de orizontală se văd lângă cursor și în bara de
+  jos; **Enter** (sau **Păstrează**) o face cotă aliniată, **Esc** o șterge.
+
+Pusul: clic pe primul punct, clic pe al doilea, apoi duci linia de cotă unde vrei și dai al treilea clic; **Esc** renunță la
+cota începută. Punctele se lipesc de vârfuri (un pătrat lângă cursor), de mijlocul laturilor (un triunghi), de centrele
+cercurilor și ale arcelor (un cerc), de cadranele cercurilor (un romb), de colțurile și mijloacele cutiei unei forme, de
+colțurile, mijloacele și centrul foii și de grila pornită. Cu **Ctrl**, cel mai apropiat punct de pe contur; **Alt**
+inversează lipirea, ca peste tot.
+
+O cotă pusă pe punctele unei forme e **legată** de ea: mutată, rotită, scalată, oglindită sau înclinată forma (și din
+panou), cota o urmează și își schimbă cifra. Ștearsă forma, mutată pe altă foaie sau cu alte noduri (un nod adăugat sau
+scos), cota se **dezleagă**: rămâne în ultimul loc văzut, punctată, în roșu, în același pas de anulare (Ctrl+Z le întoarce
+pe amândouă). „Duplică foaia” copiază și cotele, legate de formele copiei.
+
+Cu unealta Cote, un clic pe linia unei cote o alege: capetele ei se trag pe alt punct (se leagă din nou de el), linia se
+trage sau se mută cu săgețile (1 mm; Shift: 10 mm, Alt: 0,1 mm), **Delete** o șterge. Cu Selecția și cu celelalte unelte,
+cotele nu se aleg: clicul trece la forma de sub ele. Un dublu clic pe o cotă, cu orice unealtă, trece la Cote, cu ea aleasă.
+
 ## Conversia vectorilor
 %% capitol: conversie
 %% acopera: editare.conversie, document.converteste
@@ -1237,12 +1266,26 @@ schimba pe toate: rândul spune de câte ori e pusă.
 
 Fereastra **Frezele mele** ține frezele tale. Se deschide din meniul **Cont** (rândul **Frezele mele…**) sau din paleta de
 comenzi. Merge și fără cont și fără rețea: fără cont, biblioteca stă în acest browser; cu contul deschis, stă în contul tău
-și o ai pe orice calculator pe care intri în cont (vezi mai jos). În curând alegi o freză din bibliotecă pe rândurile
-exportului și în secțiunea Tăierea; până atunci, freza se scrie pe rând, ca înainte (vezi [Exportul G-code](#export)).
+și o ai pe orice calculator pe care intri în cont (vezi mai jos). O freză din bibliotecă o alegi pentru formele alese în
+secțiunea Tăierea a panoului de proprietăți (vezi [Operațiile de tăiere](#operatii)); pe rândurile exportului vine în curând,
+iar până atunci freza se scrie acolo pe rând, ca înainte (vezi [Exportul G-code](#export)).
 
 **Lista**, în stânga, are frezele pe feluri (Plate, În V, Gravare), fiecare cu silueta mică, T-ul preferat, turația și
 avansul. **Caută o freză** filtrează după nume, iar butoanele **Toate**, **Plate**, **În V** și **Gravare** arată un singur
-fel. Pe telefon, lista vine întâi; o freză aleasă se deschide pe tot ecranul, iar **Frezele** te întoarce la listă.
+fel. O freză aleasă își arată în dreapta **fișa**, doar de citit: felul, silueta la scară, geometria, valorile de lucru și
+nota, cu butoanele **Editează**, **Duplică** și **Șterge…**. Pe telefon, lista vine întâi; fișa unei freze se deschide pe tot
+ecranul, iar **Frezele** te întoarce la listă.
+
+**Listă** și **Configurator**, lângă filtre, aleg cum lucrează fereastra: în **Listă** (cum pornește), editorul se deschide
+doar la **Editează** și la **Freză nouă**, iar după **Salvează** sau **Renunță la schimbări** te întorci la fișă (pe telefon,
+**Fișa** face același lucru); în **Configurator**, o freză aleasă se deschide direct în editor, cu **Duplică** și **Șterge…**
+acolo. Alegerea rămâne ținută în acest browser.
+
+**Grupurile** sunt ale tale. O freză fără grup stă pe felul ei (Plate, În V, Gravare), ca la început. Lista **Grupul** din
+fișă o mută: în alt grup, înapoi **Fără grup (pe fel)** sau, cu **Grup nou…**, într-un grup nou, cu numele scris (cel mult
+40 de caractere). Grupurile tale vin primele în listă, după nume; **✎** de lângă titlul unui grup îl redenumește, cu toate
+frezele lui (un nume care e deja al altui grup le unește, iar un nume gol le întoarce pe felurile lor). Grupul merge cu
+freza în fișier și în cont.
 
 **Freză nouă** deschide editorul, cu câmpurile:
 - **Numele**: gol, freza primește numele propus din fel și diametru („Plată Ø6”, „V60 Ø6”, „Gravare 30° vârf 0,2 Ø3,175”).
@@ -1253,21 +1296,23 @@ fel. Pe telefon, lista vine întâi; o freză aleasă se deschide pe tot ecranul
   **Tăișuri** (dacă le știi) și **T preferat** (1–999, numărul de pe portscule);
 - **Valorile de lucru**: **Turația** (rot/min), **Avansul** și **Plonjarea** (mm/min), **Pasul pe trecere** (mm) și
   **Pasul lateral** (% din diametru, cel mult 50);
-- **Nota**: producătorul, codul, de unde e.
+- **Nota**: producătorul, codul, de unde e;
+- **Grupul**: gol, freza stă pe felul ei; lista de sub câmp are grupurile tale.
 
 Silueta din dreapta e la scară. Numerele se scriu cu virgulă sau cu punct. **Salvează** păstrează freza, iar **Renunță la
-schimbări** pune la loc ce era. Dacă alegi altă freză sau închizi fereastra cu schimbări nesalvate, ele se salvează singure
+schimbări** pune la loc ce era (în **Listă**, și închide editorul). Dacă alegi altă freză sau închizi fereastra cu schimbări nesalvate, ele se salvează singure
 când sunt bune; altfel fereastra rămâne și arată câmpurile de reparat. **Duplică** face o copie a frezei, iar **Șterge…**
 cere confirmarea; proiectele care o folosesc își păstrează copia ei.
 
-**Adaugă frezele de pornire** apare cât biblioteca e goală: șase freze obișnuite (plate Ø3,175, Ø6 și Ø12, V60 Ø6, V90 Ø12
-și gravare 30° cu vârful 0,2 și Ø3,175), cu valorile implicite ale aplicației (18 000 rot/min, avansul 1 000 mm/min,
-plonjarea 300 mm/min). Le schimbi apoi după frezele tale.
+**Frezele standard** vin singure: la prima deschidere a ferestrei sau a panoului de proprietăți, biblioteca primește șase
+freze obișnuite (plate Ø3,175, Ø6 și Ø12, V60 Ø6, V90 Ø12 și gravare 30° cu vârful 0,2 și Ø3,175), cu valorile implicite ale
+aplicației (18 000 rot/min, avansul 1 000 mm/min, plonjarea 300 mm/min). Le schimbi apoi după frezele tale. Se pun o singură
+dată: una ștearsă nu revine singură. Cu biblioteca goală, **Adaugă frezele standard** le pune la loc pe cele care lipsesc.
 
 **Exportă…** salvează biblioteca în fișierul `frezele-mele.cvs2freze.json`, pe care îl aduci cu **Importă…** pe alt
 calculator. **Importă…** citește și un CSV (salvat, de exemplu, din Excel), cu un rând de antet și coloanele `nume`, `fel`
 (`plata`, `v` sau `gravare`), `diametru`, `unghi`, `varf`, `numar` (T-ul), `turatie`, `avans`, `plonjare`, `pas`,
-`pas_lateral`, `tais`, `taisuri` și `nota`, în orice ordine. Doar `nume`, `fel` și `diametru` sunt necesare; fără celelalte,
+`pas_lateral`, `tais`, `taisuri`, `nota` și `grup`, în orice ordine. Doar `nume`, `fel` și `diametru` sunt necesare; fără celelalte,
 T-ul e 1, turația 18 000, avansul 1 000, plonjarea 300, pasul cât raza (la freza plată) sau 1 mm, iar pasul lateral 40 %.
 Separatorul (`;`, `,` sau tab) se găsește singur; cu `;`, numerele pot avea virgula zecimală. Înainte de import alegi ce se
 întâmplă cu un nume care există deja: **Păstrează-le pe amândouă** (implicit; cea nouă primește „(2)”), **Înlocuiește** sau
@@ -1283,8 +1328,9 @@ sincronizează cu contul când deschizi fereastra, la câteva secunde după fiec
 trimite la reconectare**. Contul ține cel mult 500 de freze; una care nu mai are loc rămâne în acest browser, iar fereastra
 le numără. Cu proba încheiată sau cu contul dezactivat, biblioteca din cont doar se citește: schimbările rămân aici.
 
-La prima deschidere cu contul, dacă în acest browser ai freze pe care contul nu le are, fereastra întreabă **Adaugi cele N
-freze din acest browser în cont?**: **Da, adaugă-le** le copiază în cont (o freză cu un nume luat primește „(2)”), iar **Nu
+Un cont care n-a avut niciodată freze primește frezele standard la prima sincronizare; un cont cu frezele șterse nu le mai
+primește. La prima deschidere cu contul, dacă în acest browser ai freze pe care contul nu le are (în afara celor standard),
+fereastra întreabă **Adaugi cele N freze din acest browser în cont?**: **Da, adaugă-le** le copiază în cont (o freză cu un nume luat primește „(2)”), iar **Nu
 acum** te mai întreabă la o deschidere următoare. Biblioteca fără cont rămâne neatinsă: o vezi din nou după ieșirea din cont.
 
 Dacă aceeași freză s-a schimbat pe două calculatoare între două sincronizări, câmpurile schimbate doar pe unul se adună
@@ -1310,6 +1356,14 @@ litera cu golurile ei, dintr-o dată. La schimbarea rolului rămân freza, sensu
 implicit. Freza în V merge doar pe linie și în V-carve: la V-carve, o freză plată devine una V60 cu același diametru, iar la
 alt rol, o freză în V devine plată. La V-carve, adâncimea e cel mult cât conul frezei (la V60 Ø6, 5,196 mm). Sub rol, **Adâncimea** și **Pasul** se scriu pe toate operațiile formelor alese (cu valori
 diferite, câmpul e gol). O piesă cu mai multe copii își schimbă rolul pentru toate. Traseul arătat se reface singur.
+
+**Freza**, sub pas (cât biblioteca [Frezele mele](#freze) are freze), arată frezele din bibliotecă care merg pe toate formele
+alese: freza în V și cea de gravare doar pe linie și în V-carve, freza plată în rest (nu și în V-carve). Aleasă, freza trece
+pe toate operațiile formelor alese, într-un pas de anulare, cu valorile ei de lucru (turația, avansul, plonjarea), lungimea
+tăișului, pasul pe trecere și, la buzunar, pasul lateral (din procentul ei); adâncimea, fundul plat și frezele de rest
+rămân. Numărul T e cel din bibliotecă, dacă e liber în proiect; altfel al unei freze identice (același diametru, aceeași
+formă, aceeași turație), altfel cel mai mic liber, iar o notă sub listă îl spune. Lista arată freza din bibliotecă a formelor
+alese, **Scrisă de mână** când au aceeași freză scrisă în fereastra exportului, sau „—” când au freze diferite.
 
 **Rolurile mele.** Un rol cu toate valorile lui (freza, sensul, adâncimea, pasul, urechile, rampa, intrările, degajările,
 coborârea, traseul buzunarului, frezele de rest, fundul plat) se păstrează cu **Salvează ca rol…**, sub câmpurile Tăierii:
@@ -2323,7 +2377,8 @@ tu, iar interfața aplicației rămâne aceeași.
 | `Home` | Arată toată foaia |
 | `PageUp`, `PageDown` | Foaia de dinainte, Foaia următoare (foaia activă, după lista foilor) |
 | `T` | Arată traseul |
-| `V` `S` `N` `K` `B` `R` `O` `E` `L` `P` `X` | uneltele: Selecție, Transformare, Noduri, Cuțit, Pen, Dreptunghi, Cerc, Elipsă, Linie, Poligon, Text (tasta e scrisă și în colțul butonului) |
+| `V` `S` `N` `K` `B` `R` `O` `E` `L` `P` `X` `D` | uneltele: Selecție, Transformare, Noduri, Cuțit, Pen, Dreptunghi, Cerc, Elipsă, Linie, Poligon, Text, Cote (tasta e scrisă și în colțul butonului; Cote stă în extensia barei) |
+| `M` | unealta Cote, pe Măsoară |
 | `Shift+H`, `Shift+V` | Oglindește orizontal, Oglindește vertical |
 | săgețile | mută selecția 1 mm (Shift: 10 mm, Alt: 0,1 mm); în vederea 3D, rotesc placa |
 | `Alt+←`, `Alt+→` (în textul uneltei Text) | spațiul între literele alese, cu 0,1 mm mai strâns / mai larg |
@@ -2334,6 +2389,8 @@ tu, iar interfața aplicației rămâne aceeași.
 | dublu clic pe ținta ancorei (unealta Transformare) | ancora înapoi în punctul ales în selector |
 | `Shift` / `Ctrl` / `Alt`, cât desenezi | pătrat, cerc, pași de 15° / fără proporție (cercul devine elipsă) / din centru (linia, din mijloc) |
 | `Delete`, `Backspace` (cu unealta Noduri și un nod ales) | scoate nodul ales |
+| `Delete`, săgețile, `Esc` (cu unealta Cote și o cotă aleasă) | șterge cota / îi mută linia / o lasă |
+| `Enter` (cu unealta Cote, pe Măsoară) | păstrează măsura ca o cotă aliniată |
 | `Enter` (cu unealta Pen) | termină calea începută |
 | `Ctrl+Z`, `Ctrl+Y` (cu unealta Pen și o cale începută) | anulează / reface ultimul pas al căii |
 | `Ctrl+Shift+Z` (imediat după o cale terminată cu Pen) | redeschide calea, cu pașii ei |

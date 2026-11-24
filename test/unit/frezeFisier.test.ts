@@ -87,8 +87,18 @@ test('CSV-ul: o coloană necesară lipsă (nume, fel, diametru) e refuzul; un r�
   assert.equal(rw.freze[0]?.nume, 'Plată');
 });
 
+test('CSV-ul cu grupul (ADR 0302 §4): coloana `grup`, curățată; goală, freza stă pe felul ei; JSON-ul îl duce și îl aduce', () => {
+  const r = citesteFisierFreze(enc('nume;fel;diametru;grup\nA;plata;6; Lemn \nB;plata;8;\n'));
+  assert.ok(r.ok);
+  assert.deepEqual(r.freze.map((f) => [f.nume, f.grup]), [['A', 'Lemn'], ['B', undefined]]);
+  assert.equal('grup' in r.freze[1]!, false);
+  const j = citesteFisierFreze(enc(textFisierFreze([{ ...PLATA6, id: 'a', rev: 1, schimbatLa: 1, grup: 'Lemn' }])));
+  assert.ok(j.ok);
+  assert.equal(j.freze[0]?.grup, 'Lemn');
+});
+
 test('coloanele CSV, în ordinea din manual', () => {
-  assert.deepEqual(COLOANE_CSV, ['nume', 'fel', 'diametru', 'unghi', 'varf', 'numar', 'turatie', 'avans', 'plonjare', 'pas', 'pas_lateral', 'tais', 'taisuri', 'nota']);
+  assert.deepEqual(COLOANE_CSV, ['nume', 'fel', 'diametru', 'unghi', 'varf', 'numar', 'turatie', 'avans', 'plonjare', 'pas', 'pas_lateral', 'tais', 'taisuri', 'nota', 'grup']);
 });
 
 function farăNedefinite(f: Freza): Freza {

@@ -21,6 +21,8 @@
   --traseu-taiere: #0a7d53;
   --traseu-rapid: #7d8590;
   --animatie: #c2410c;
+  /* Cotele pe pânză (ADR 0330 §5): altă culoare decât formele, selecția, ghidajele și traseul. */
+  --cota: #006d8f;
   --s-panou: #ffffff;
   --t: #1d232b;
   --a: #a64d00;
@@ -48,6 +50,7 @@
     --traseu-taiere: #3ccf91;
     --traseu-rapid: #8b949e;
     --animatie: #ff8a4c;
+    --cota: #5cc8e6;
     --s-panou: #1e2329;
     --t: #e8e4dc;
     --a: #f2a33a;
@@ -73,6 +76,7 @@
   --traseu-taiere: #3ccf91;
   --traseu-rapid: #8b949e;
   --animatie: #ff8a4c;
+  --cota: #5cc8e6;
   --s-panou: #1e2329;
   --t: #e8e4dc;
   --a: #f2a33a;
