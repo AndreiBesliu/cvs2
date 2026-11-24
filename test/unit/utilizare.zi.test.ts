@@ -121,3 +121,20 @@ test('sumatorul: pe loturi scrise de mână, segmentele, acțiunile cu repetări
   const text = JSON.stringify(r);
   for (const u of ['ana', 'ion', 'owner']) assert.ok(!text.includes(`"${u}"`), u);
 });
+
+test('schița mică pe numere mari: estimarea brută (nu numărarea liniară), în eroarea ei; registrele țin maximul', () => {
+  for (const n of [1_000, 5_000]) {
+    const e = estimeaza(schitaCu(P_ACTIUNE, uiduri(n)));
+    assert.ok(Math.abs(e - n) <= n * 0.3, `${n} oameni: ${Math.round(e)}`);
+  }
+});
+
+test('durata sesiunii în zi: de la primul la ultimul ei eveniment, nu de la începutul sesiunii', () => {
+  const s = new SumatorZi('2026-11-23');
+  s.adauga({
+    uid: 'ana', sesiune: 'dddddddddddddddd', personal: false, aruncate: 0, evenimente: [
+      { fel: 'fereastra', t: 3_600_000, id: 'masina' }, { fel: 'fereastra', t: 3_660_000, id: 'proiectare' },
+    ],
+  });
+  assert.deepEqual(s.rezultat().segmente.clienti.durataSesiune, { 5: 1 });
+});
