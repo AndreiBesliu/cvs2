@@ -84,6 +84,9 @@ test('diametrul: linia prin centru, de la punctul opus la cel ales, două săge�
   egal(a.linie[0], 0, -25, 'tot prin centru');
   egal(a.linie[1], 0, 36.15, 'prelungită pe sub cifră: 25 + 8 + 3,15');
   egal(a.text.p, -1.05, 33, 'cifra la 8 dincolo de cerc');
+  // Cifra înăuntru nu trece de săgeată: la d = −1, centrul ei la r − capăt − gol − w/2 = 25 − 2,5 − 1,05 − 3,15 = 18,3.
+  egal((desenRadial('diametru', P(0, 0), P(0, 25), -1, S, 'Ø50') as DesenCota).text.p, -1.05, 18.3, 'cifra oprită înaintea săgeții');
+  egal((desenRadial('diametru', P(0, 0), P(0, 25), -49, S, 'Ø50') as DesenCota).text.p, -1.05, -18.3, 'și înaintea celei opuse');
   // Linia razei nu schimbă diametrul.
   assert.deepEqual(desenRadial('diametru', P(0, 0), P(0, 25), 8, { ...S, raza: 'centru' }, 'Ø50'), a);
 });
@@ -125,6 +128,12 @@ test('desenul unghiului drept: arcul de la 0° la 90° pe raza d, săgețile în
   // Cifra: tangenta la 45° e (−1, 1), citită la −45°; „sus”-ul ei e spre afară, deci baza la R + gol = 21,05 de vârf.
   aproape(r.text.unghi, -45, 'cifra citibilă, de-a lungul tangentei');
   egal(r.text.p, 21.05 * Math.SQRT1_2, 21.05 * Math.SQRT1_2, 'baza cifrei, la mijlocul arcului, în afară');
+  // Arcul de la 180° la 270°: tangenta din mijloc (225°) se citește tot la −45°, dar „sus”-ul cifrei e acum spre vârf, deci
+  // baza ei stă la R + gol + înălțime (24,55), ca toată cifra să fie în afara arcului.
+  const j = desenUnghi([P(0, 0), P(-50, 0), P(0, -40)], 20, 1, 1, S, '90°') as DesenCota;
+  aproape(j.arc?.de ?? 0, Math.PI, 'de la 180°');
+  aproape(j.text.unghi, -45, 'citibilă');
+  egal(j.text.p, -24.55 * Math.SQRT1_2, -24.55 * Math.SQRT1_2, 'baza cifrei, cu înălțimea ei mai departe');
 });
 
 test('unghiul cu o latură întoarsă: arcul în celălalt sector, extensia pe prelungirea laturii, de după vârf', () => {
@@ -196,6 +205,10 @@ test('desenul oricărei cote, după fel: liniar, rază, diametru, unghi; un fel 
   assert.deepEqual(desenCota({ id: 'c', fel: 'diametru', linie: { d: 4 } }, pr, S), desenRadial('diametru', P(10, 20), P(40, 20), 4, S));
   const pu = [P(0, 0), P(50, 0), P(0, 40)];
   assert.deepEqual(desenCota({ id: 'c', fel: 'unghi', linie: { d: 20, s1: -1 } }, pu, S), desenUnghi(pu, 20, -1, 1, S));
+  const p4 = [P(0, 0), P(10, 0), P(20, 5), P(20, 30)];
+  const u4 = desenCota({ id: 'c', fel: 'unghi', linie: { d: 3, s2: -1 } }, p4, S);
+  assert.ok(u4);
+  assert.deepEqual(u4, desenUnghi(p4, 3, 1, -1, S), 'și din două laturi (patru puncte)');
   assert.equal(desenCota({ id: 'c', fel: 'cota-3d', linie: { d: 1 } }, pr, S), null);
   assert.equal(desenCota({ id: 'c', fel: 'raza', linie: { d: 1 } }, [P(0, 0)], S), null);
   assert.equal(desenCota({ id: 'c', fel: 'raza' }, pr, S), null, 'fără linie');
@@ -231,6 +244,7 @@ test('unghiul: grade zecimale (zecimalele, zerourile, separatorul) sau grade-min
   assert.equal(scrieUnghi(30.5, { ...F, unghi: 'gms' }), '30°30′0″');
   assert.equal(scrieUnghi(30 + 15 / 60 + 9 / 3600, { ...F, unghi: 'gms', zecimaleUnghi: 0 }), '30°15′9″');
   assert.equal(scrieUnghi(59.99999, { ...F, unghi: 'gms', zecimaleUnghi: 0 }), '60°0′0″', 'rotunjirea nu dă „60″”');
+  assert.equal(scrieUnghi(10 + 7 / 60 + 40 / 3600, { ...F, unghi: 'gms', zecimaleUnghi: 0 }), '10°7′40″', 'minutele se taie, nu se rotunjesc');
   // 10,123456° = 36 444,4416″ → 10°7′24,44″.
   assert.equal(scrieUnghi(10.123456, { ...F, unghi: 'gms' }), '10°7′24,44″');
   assert.equal(scrieUnghi(10.123456, { ...F, unghi: 'gms', zerouri: 'pastrate', zecimaleUnghi: 4 }), '10°7′24,4416″');
