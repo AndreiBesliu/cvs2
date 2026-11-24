@@ -1420,6 +1420,22 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 24.11.2026, la prânz: **două linii noi, relieful și cotele** (la „ce urmeaza in roadmap si nu a fost atins deloc si
+  putem incepe” și, după lista cu recomandarea, „ok, scrie brief-ul pentru relief si pentru cote”, în sesiunea
+  principală). **Relieful** (felia 18.1↑, adusă din etapa 18: nucleul reliefului, relieful din imagine, prelucrarea 3D
+  din relief): ramura `wip/18.1-relief`, ADR-urile 0310–0329, canalul `relief`, nota `docs/linii/relief.md`. E primul
+  lucru din blocul relief + 3D (etapele 18–24), care ține 31 din cele 40 de rânduri v1 ale pragului încă nepornite; se
+  sprijină pe ce e deja hotărât (straturi Float32 pe dale de 256 × 256, calculul în workere, fără GPU în v1, CAM 3D doar
+  pe câmpul conservativ: `PLAN.md` §3, ADR 0010–0012, 0015) și pe sonda `docs/faza2/sonde/s5-relief`. **Cotele** (felia
+  10.4↑, rândul „Cote” din prag, etapa 10): ramura `wip/10.4-cote`, ADR-urile 0330–0339, canalul `cote`, nota
+  `docs/linii/cote.md`. Amândouă pornesc cu ADR-ul propus, schița și întrebările, apoi codul, la răspunsuri. **Schema
+  documentului:** e v27; rezervate, v28 pentru cote și v29 pentru relief (numărul îl dă sesiunea principală, la cerere).
+  Brief-urile, date owner-ului ca fișiere, de lipit în câte o sesiune cloud nouă, pe ramura ei. Celelalte neatinse, în
+  ordinea în care pot porni: 3D din modele (etapa 20, după nucleul reliefului), textura din freză, ghilotina și
+  burghiele multiple (etapa 17), transformarea traseelor (etapa 10, după fereastra exportului), canelurile, teșirea și
+  Raised Round (etapa 16, după 16.A↑b), facturarea (etapa 27, după deciziile owner-ului pe niveluri); și patru linii
+  hotărâte pe 13.11, nepornite: proiectele multiple cu fișierul `.cvs2`, clipboardul, simularea ca vedere unică,
+  editarea textului pe loc.
 - 24.11.2026, la prânz: **plafonul pornirii 120 kB** („ok, ridica plafonul pornirii la 120 kB”, în sesiunea principală,
   după raportul unirii a paisprezecea: pornirea cu ușa și cu Atelierul era la 114,7 / 115 kB, cu 0,3 kB rămași). ADR
   0145 (scris de sesiunea principală, pe `unire-2411f`); constanta porții din `scripts/build-determinist.ts`. Sub

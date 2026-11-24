@@ -12822,7 +12822,7 @@ PR-ul `AndreiBesliu/cvs2#14` („De unit de sesiunea principală”).
 **Prompt:** același brief de predare al sesiunii principale („unește ce se poate”), la rapoartele liniilor: elicele
 (PR-ul `AndreiBesliu/cvs2#15`, „gata de unit”), adminul (mesajul liniei: „`c3f80a74` e gata de unit”), frezele
 (mesajul liniei: „16.A↑b-1 e gata de unit”).
-**Started:** 24.11, 10:21. **Completed:** unirea în `main`, 24.11, 11:28; publicarea pe test, la rândul ei.
+**Started:** 24.11, 10:21. **Completed:** unirea în `main`, 24.11, 11:28; publicarea pe test, 24.11, 12:26.
 
 - **Ramura de unire, înaintea ultimelor rapoarte:** `unire-2411e` din `fafb95e7` (cu 25.8↑b), la 10:22: 3.Ts
   (`3218781c`) în `e14e553a`, A.11b–A.11e (`c3f80a74`) în `8ccb66e8`, 16.A↑b-1 (`112c32f6`) în `32b33a42`.
@@ -12846,6 +12846,10 @@ PR-ul `AndreiBesliu/cvs2#14` („De unit de sesiunea principală”).
   publicarea lui vine înaintea acestui lot (`publica.yml` construiește sha-ul dat).
 - **La owner:** plafonul pornirii (mai sunt 0,3 kB), fereastra exportului, verificarea juridică a utilizării
   aplicației, „cine unește în `main`”, ADR 0232 (biblioteca), lista „ce pot face între timp”.
+- **Publicarea (`356db9bd`):** rapidul și completul pe `main` verzi (completul, 47 de minute), `publica.yml` verde în
+  4 minute, cu serverul: cele 14 funcții actualizate (între ele `utilizare`, `tichete`, `logClientError`), regulile și
+  indexurile publicate; adresa de test spune `356db9bdd1ee` (24.11, 12:26); catalogul bibliotecii, Easy 3Draw 18.22.0.
+  Proba de fum din container: versiunea publicată, nicio eroare în consolă.
 
 ## 2026-11-24 — Sesiunea principală în cloud: plafonul pornirii 120 kB (ADR 0145) (Model: Claude Fable 5.2)
 
@@ -12922,3 +12926,21 @@ ordine). **Started:** 24.11, 10:25. **Completed:** 24.11, 11:35.
   controalelor, scris din nou; rândul 18.22.0 al lui Easy 3Draw a primit `data`. Pe arborele unit: 135 de probe e2e ale
   extensiilor, verzi; pornirea 109,9 kB (cu ușa 114,4; cu Atelierul 114,7 / 120), totalul 809,9 / 900 kB.
 - **Toată felia 3.Xi:** pornirea +0, totalul +3,8 kB. PR-ul `AndreiBesliu/cvs2#17`; unirea e a sesiunii principale.
+
+## 2026-11-24 — Sesiunea principală în cloud: două linii noi, relieful (18.1↑) și cotele (10.4↑); PR-ul #16, închis (Model: Claude Fable 5.2)
+
+**Prompt:** „ok, inchide tu PR-urile #15 si #16”; „ce urmeaza in roadmap si nu a fost atins deloc si putem incepe”; „ok,
+scrie brief-ul pentru relief si pentru cote”
+**Started:** 24.11, 12:00. **Completed:** 24.11, 12:26.
+
+- **PR-urile:** `#15` (elicele) era deja închis de la 11:37; `#16` (frezele), închis cu un comentariu care trimite la
+  `32b33a42`. Ramura frezelor avea deja două felii noi, neunite (16.A↑c-1, 16.A↑c-2): linia deschide alt PR pentru ele.
+- **Ce e neatins în roadmap:** din roadmap-ul generat (`dist/documentatie/roadmap.json`) și din prag: etapele fără
+  nicio felie sunt 16 (restul), 17, 18–24, 27, 29, 30; 40 de rânduri v1 „de făcut”, din care 31 relief și 3D.
+  Recomandarea: relieful (etapa 18), apoi cotele (etapa 10), mică.
+- **Liniile noi:** relieful (18.1↑, `wip/18.1-relief`, ADR 0310–0329, canalul `relief`) și cotele (10.4↑,
+  `wip/10.4-cote`, ADR 0330–0339, canalul `cote`); notele lor în `docs/linii/` (ce e hotărât, ce se citește întâi,
+  prima livrare: ADR-ul propus cu întrebările); indexul; decizia în `CLAUDE.md`; intervalele ADR și trei lecții în
+  `docs/linii/principala.md`. Intervalele, verificate libere pe toate ramurile `origin/wip/*`. Schema: v28 rezervat
+  cotelor, v29 reliefului. Brief-urile de lipit, date owner-ului ca fișiere.
+- **Pe aceeași ramură (`unire-2411g`):** rândul publicării lotului al paisprezecelea.
