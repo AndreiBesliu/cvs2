@@ -513,9 +513,29 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   V-carve-urile legate, iar exteriorul tăiat înaintea unei operații de pe piesă sau din interiorul ei cere bifa; Exportă
   scrie rangurile 0 … n−1 (în Automată, le scoate). **O comandă care înlocuiește operațiile unei piese le dă locul prin
   `cuRangulPiesei` (`src/model/ordine.ts`); rolul personalizat nu ține rangul.** Rândurile ferestrei nu mai stau în ordinea
-  documentului: o probă le caută după cheie (`tr[data-operatie="e2/e2"]`), nu după loc. **Pornirea 100,0 (cu ușa 103,5 /
+  documentului: o probă le caută după cheie (`tr[data-operatie="e2/e2"]`; din fereastra refăcută, ADR 0290,
+  `[data-fisa="op"][data-operatie="e2/e2"]`), nu după loc. **Pornirea 100,0 (cu ușa 103,5 /
   110 kB), totalul 455,3 / 500, /admin 105,4 / 200; după unirea cu 13.A↑b, pornirea 100,2 (cu ușa 103,7 / 110 kB), totalul
   455,4 / 500.**
+  **Fereastra „Exportă G-code”, refăcută (ADR 0290, feliile 28.8↑a–g, aduse din etapa 28)** gata pe 24.11, în sesiunea
+  cloud a liniei (ramura `wip/28.8-export`), unită în `main` pe 24.11 (`c4ca5ec2`), din cererea owner-ului din 23.11
+  („nu imi place deloc fereastra asta […] vreau ca ficare setare sa fie insotita de o ilustratie sugestiva”): în
+  stânga, lista (foaia și originea, mașina și fișierul, operațiile în ordinea tăierii, Rezultatul); în dreapta, fișa
+  celei alese, cu câmpurile pe grupuri, după întrebarea la care răspund. Fiecare grup are explicația câmpului activ la
+  vedere, greșeala lui lângă cauză („Du-mă la …”) și desenul întrebării, făcut din valorile omului, cu cota câmpului
+  activ aprinsă; alegerile sunt cartonașe cu poze; Rezultatul vine pe grupuri (de văzut, fișierele, rezumatul,
+  simularea); Esc și un clic în afară închid fereastra. **Nu schimbă ce face fereastra:** aceleași câmpuri, aceleași
+  valori, același program, octet cu octet; documentul rămâne v27. Fișa unei operații e `src/ui/FisaOperatie.tsx` (cu
+  `ContextFisa`: ce îi trebuie nou intră acolo, nu ca import din fereastră), tipurile și ajutoarele rândului sunt în
+  `src/ui/exportRand.ts`, iar foaia, mașina, lista și Rezultatul în `src/ui/DialogExport.tsx`. **Un câmp nou al
+  ferestrei își cere grupul în `GRUP_CAMP` (`src/ui/exportGrupuri.ts`; altfel cade `export.grupuri.test.ts`),
+  explicația (`….titlu`, în ambele limbi) și locul în proba privirii (`export.privire.spec.ts`: fontul lat, telefonul,
+  densitatea mare); ce spune un desen nou se socotește în `src/ui/exportDeseneCalcul.ts` și se compară cu lucrarea în
+  `export.desene.test.ts`.** **Selectorii probelor s-au schimbat:** o operație e `[data-fisa="op"][data-operatie="…"]`
+  (în listă, `[data-nav-op="…"]` și `[data-nav="…"]`), o alegere e un cartonaș (`alege(loc, camp, v)` și `aleasa(loc,
+  camp)` din `test/e2e/ajutor-export.ts`), iar ce nu se aplică nu apare (`toHaveCount(0)`), nu e oprit. Celelalte
+  capcane sunt în `docs/linii/export.md`. Fișa e gata de luat de Clasic (28.2↑) și de Pas cu pas (28.4↑), fără copiere.
+  Felia: pornirea +0, totalul +16,3 kB (856,8 / 900).
   **Aldinul și cursivul sintetic (ADR 0123, felia 7.5↑, adusă din etapa 7)** gata pe 02.11, în worktree-ul `wip/7.5-text`:
   bifele **Aldin** și **Cursiv** din panoul textului, pentru orice font. Cursivul înclină fiecare literă față de linia ei de
   bază, exact; aldinul așază literele la înălțimea miezului (h − 2d), le îngroașă cu d prin fațada offsetului
@@ -1004,30 +1024,24 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   Pachetele nu s-au schimbat de felie (Easy 3Draw era 18.22.0; din 3.Tt e 18.23.0; următoarea, 18.24.0). Cu `main` (`f536a4c`) adus: pornirea
   109,9 kB (plafonul 120; cu ușa 114,4, cu Atelierul 114,7), totalul 809,9 / 900; felia: pornirea +0, totalul +3,8 kB.
   **Căutarea și categoriile în biblioteca extensiilor (ADR 0233, felia 3.Xj)** gata pe 24.11, în sesiunea cloud a
-  liniei (la „ok, porneste cautarea si categoriile” al owner-ului, cu alegerile recomandate), unită în `main` pe 24.11
-  (`049c5dda`): categoriile sunt rafturile bibliotecii, cu lista lor în aplicație (Desen și forme, CNC și trasee,
-  Imprimare 3D, Mașina, Jucării și modele); pe ce rafturi stă o extensie (cel mult trei) o spune lista bibliotecii
-  (`categorii`, în `extensii/biblioteca.json`), nu pachetul. „Caută o extensie” filtrează lista la fiecare literă
-  (`src/extensii/cautare.ts`), fără diacritice și majuscule; pastilele rafturilor, cu numărul lor; starea „nimic găsit”;
-  „/” duce în câmp. **Pachetele nu se schimbă pentru o categorie nouă** (Easy 3Draw rămâne 18.23.0). **La owner, cinci
-  întrebări în ADR 0233** (rafturile, unde stă Easy 3Draw, dacă rămân la vedere cu o singură extensie, câte rafturi pe
-  extensie, cât de îngăduitoare e căutarea). Felia: pornirea +0, totalul +1,3 kB.
-  **Căutarea și categoriile în bibliotecă (ADR 0233, felia 3.Xj)** gata pe 24.11, în sesiunea cloud a liniei (aceeași
-  ramură, PR-ul `AndreiBesliu/cvs2#24`), neunită, la „ok, porneste cautarea si categoriile” al owner-ului, cu alegerile
-  recomandate (cinci întrebări pentru el, în ADR): sub capul ferestrei bibliotecii, o bară cu câmpul „Caută o extensie”
-  (oriunde în nume, la început de cuvânt în descrieri, autor și numele rafturilor; fără diacritice; toate cuvintele;
-  regula, pură, în `src/extensii/cautare.ts`) și cu pastilele rafturilor prezente în listă; pagina extensiei își spune
-  rafturile. **Rafturile sunt ale aplicației (`CATEGORII_BIBLIOTECA`, `shared/biblioteca.ts`): unul nou intră acolo, cu
-  numele lui în ambele limbi (`extensii.categorie.<id>`). Pe ce rafturi stă o extensie o spune lista bibliotecii
-  (`"categorii"` în `extensii/biblioteca.json`, 1–3, primul fiind cel principal), nu pachetul: o schimbare a lor nu cere
-  o versiune nouă, iar o probă cere fiecărei extensii din listă cel puțin un raft.** Catalogul le poartă ca dată de
-  prezentare, citită cu îngăduință. Căutarea și raftul ales țin de fereastra deschisă: nu se țin minte și nu pleacă
-  nicăieri. Pornirea +0, totalul +1,3 kB (cu `main` `7312d68` adus: pornirea 110,2 kB, cu ușa 114,9, cu Atelierul
-  115,2 / 120; totalul 831,8 / 900). **O probă care dă clic, în cadrul extensiei, pe ceva
-  ce îi reface cadrul pe loc (`host.reporneste()`) folosește `clicCareRefaceCadrul` (`test/e2e/ajutor-extensii.ts`),
-  cum cea care îl închide folosește `clicCareInchideCadrul`:** clicul nu se mai întoarce când cadrul dispare sub el
-  (completul feliei, căzut la `extensii.lucru.spec.ts:222`; reprodus 16 din 150 pe zece lucrători). Reparația e cea din
-  `main` (`29ef7e44`, făcută de sesiunea principală în aceeași oră): ajutorul primește și urmarea de așteptat.
+  liniei (la „ok, porneste cautarea si categoriile” al owner-ului), unită în `main` pe 24.11 (`049c5dda`). **ADR 0233,
+  acceptat de owner cu „da, 1a–5a”** (cele cinci întrebări: rafturile, unde stă Easy 3Draw, la vedere și cu o singură
+  extensie, cel mult trei rafturi pe extensie, cât de îngăduitoare e căutarea): rămâne ce e implementat. Sub capul
+  ferestrei bibliotecii, o bară cu câmpul „Caută o extensie” (oriunde în nume, la început de cuvânt în descrieri, autor
+  și numele rafturilor; fără diacritice; toate cuvintele; regula, pură, în `src/extensii/cautare.ts`) și cu pastilele
+  rafturilor prezente în listă, cu numărul lor; starea „nimic găsit”; „/” duce în câmp; pagina extensiei își spune
+  rafturile. **Rafturile sunt ale aplicației (`CATEGORII_BIBLIOTECA`, `shared/biblioteca.ts`: Desen și forme, CNC și
+  trasee, Imprimare 3D, Mașina, Jucării și modele): unul nou intră acolo, cu numele lui în ambele limbi
+  (`extensii.categorie.<id>`). Pe ce rafturi stă o extensie o spune lista bibliotecii (`"categorii"` în
+  `extensii/biblioteca.json`, 1–3, primul fiind cel principal), nu pachetul: o schimbare a lor nu cere o versiune nouă
+  (Easy 3Draw rămâne 18.23.0), iar o probă cere fiecărei extensii din listă cel puțin un raft.** Catalogul le poartă ca
+  dată de prezentare, citită cu îngăduință. Căutarea și raftul ales țin de fereastra deschisă: nu se țin minte și nu
+  pleacă nicăieri. Felia: pornirea +0, totalul +1,3 kB (în `main`: pornirea 110,2 / 120 kB, totalul 831,8 / 900).
+  **O probă care dă clic, în cadrul extensiei, pe ceva ce îi reface cadrul pe loc (`host.reporneste()`) folosește
+  `clicCareRefaceCadrul` (`test/e2e/ajutor-extensii.ts`), cum cea care îl închide folosește `clicCareInchideCadrul`:**
+  clicul nu se mai întoarce când cadrul dispare sub el. **O probă care judecă o regulă de timp a gazdei (rărirea
+  repornirilor, un termen) ține ea ceasul paginii** (`page.clock`: `install` înaintea lui `goto`, `pauseAt`, `runFor` cu
+  granița exactă; felia 3.Xk, doar probe).
   **Cotele pe desen: modelul și proba G-code-ului (ADR 0330, felia 10.4↑a-1, adusă din etapa 10)** gata pe 24.11, în
   sesiunea cloud a liniei (ramura `wip/10.4-cote`), unită în `main` pe 24.11 (`f25249cf`), fără interfață încă. ADR
   0330, acceptat de owner cu 1a–6a și cu nota lui: toate setările cotelor stau într-o fereastră nouă, „Setări”, nu în
@@ -1543,6 +1557,36 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 24.11.2026, seara (a douăzeci și doua unire din cloud): **fereastra „Exportă G-code”, refăcută (28.8↑a–g), și proba
+  repornirii extensiei (3.Xk) unite în `main`**, în lot (sesiunea principală, ramura `unire-2411y`, peste lotul 23), la
+  „da, uneste fereastra exportului cand e verde si sa imi spui cand pot sa o arhivez” al owner-ului (în sesiunea
+  principală) și la „ok, cand e verde fa unirea”, spus de el în sesiunile celor două linii. **28.8↑a–g** (linia
+  exportului, ramura `wip/28.8-export`, `4ee623d3`, cu nota liniei din `ef8a6dd6`; PR-ul `AndreiBesliu/cvs2#11`; ADR
+  0290, acceptat de owner cu „1a, 2a, 3a, 4a”), unite în `c4ca5ec2`: lista operațiilor și fișa celei alese, cu
+  câmpurile pe grupuri, după întrebarea la care răspund; explicația câmpului activ la vedere și greșeala în grupul
+  ei; desenul fiecărei întrebări, din valorile omului, cu cota câmpului activ aprinsă; alegerile ca cartonașe cu poze;
+  Rezultatul pe grupuri; Esc și un clic în afară închid fereastra (28.8↑g, cerută de owner după ce a încercat-o pe
+  canal: „e ok”). **Nu schimbă ce face fereastra:** aceleași câmpuri, aceleași valori, același program, octet cu octet.
+  Otrăvurile, pe felii, toate prinse, afară de una echivalentă (28.8↑g, E03). **3.Xk** (linia bibliotecii, ramura
+  `wip/3.Xh-biblioteca-ui`, `23d9a1b1`, PR-ul `AndreiBesliu/cvs2#24`), unită în `373699e6`: doar probe (proba
+  repornirii cerute de extensie ține ea ceasul paginii; otrăvurile 8 / 8). **ADR 0233 (rafturile bibliotecii),
+  acceptat de owner cu „da, 1a–5a”:** rămâne ce e implementat. Documentul rămâne v27; nimic pe server. Ciocnirile:
+  DEVLOG, traducerile roadmap-ului (ambele părți, după cheie) și catalogul controalelor (scris din nou). Porțile
+  lotului, în CI, pe `8b218d47` (completul, verde la prima trecere, 60 min): unit 10 297 / 0 (12 sărite, pe Linux), e2e
+  781 / 781, funcțiile pe emulatoare 136 / 136, paginile 57 / 57; rapidul, verde pe `8b218d47`; completele liniilor,
+  verzi (`4ee623d3`; `23d9a1b1`); pornirea 110,4 kB (plafonul 120; cu ușa 115,1, cu Atelierul 115,4), **totalul
+  856,8 / 900 kB (mai sunt 43,2 kB)**, `/admin` 138,2 / 200, contul 30,3 / 32. Lotul 23 a intrat în `main` cu câteva
+  minute înainte (`9bbb1d58`); pe test e tot `29ef7e44`, iar completul lotului 22 pe `main` rula la unire. Urmează
+  lotul 25: reparația probei extensiilor de la `extensii.spec.ts:135` și 11.1↑d (rândul comenzilor foii nu trece de
+  foaia lui, cerută de owner cu trei capturi: „si trebuie sa reparam si asta”); completul lui rula la unire. Apoi, o
+  singură publicare pentru loturile 23–25. La linii: frezele (16.A↑h-5; 16.A↑b-3, lista „Din frezele mele” pe
+  rândurile exportului, făcută peste fereastra nouă, la „Pe #11, acum” al owner-ului, `AndreiBesliu/cvs2#26`), cotele
+  (10.4↑a-4), relieful (18.1↑a, v28, singur în lotul lui), elicele (3.Tu, la răspunsurile owner-ului).
+  **La owner:** sesiunea liniei exportului se poate arhiva (din ADR 0290 nu rămâne nimic; ramura ei de pe `origin` intră
+  în lista de șters); cele trei întrebări ale liniei elicelor despre vederea „Modelul” din Easy 3Draw (unde stă axul
+  pieselor rotunde: owner-ul a văzut că o carcasă și un rotor de același diametru nu se pot așeza centrat); plafonul
+  total (mai sunt 43 kB; relieful cere ~13); verificarea juridică (GDPR) a utilizării aplicației înaintea live-ului;
+  „cine unește în `main`”; meniul de sus la 320 px la atingere.
 - 24.11.2026, seara (a douăzeci și una unire din cloud): **fereastra Setări a cotelor (10.4↑a-3), catalogul de freze
   și felurile noi (16.A↑h-3, 16.A↑h-4) și împărțirea celor două teste grele din rapid, unite în `main`**, în lot
   (sesiunea principală, ramura `unire-2411x`, din `62569bb2`). **Împărțirea testelor** (`49ce2793`, scrisă de sesiunea

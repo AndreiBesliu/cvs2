@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs';
 import { masoaraPotrivirea, type PunctO } from '../oracles/incrustatie.ts';
 import type { SculaOracol } from '../oracles/simulare.ts';
 import { adauga } from './ajutor-panza.ts';
+import { alege } from './ajutor-export.ts';
 
 test.use({ locale: 'ro-RO' });
 
@@ -62,10 +63,10 @@ test('incrustația în V: rolul din panou, valorile pe hârtie, exportul cu fiș
 
   // Fereastra exportului: rândul incrustației, cu freza în V, fundul plat și valorile din panou.
   await page.locator('[data-actiune="export.gcode"]').click();
-  const rand = page.locator('tr[data-operatie]').first();
-  await expect(rand.locator('[data-camp="latura"]')).toHaveValue('incrustatie');
+  const rand = page.locator('[data-fisa="op"]').first();
+  await expect(rand.locator('input[data-camp="latura"]:checked')).toHaveValue('incrustatie');
   await expect(rand.locator('[data-camp="forma-scula"]')).toHaveValue('v');
-  const detalii = page.locator('tr[data-detalii]').first();
+  const detalii = page.locator('[data-fisa="op"]').first();
   await expect(detalii.locator('[data-camp="fund-plat"]')).toBeChecked();
   await expect(detalii.locator('[data-camp="inc-joc"]')).toHaveValue('0,5');
   await expect(detalii.locator('[data-camp="inc-acelasi"]')).not.toBeChecked();
@@ -128,9 +129,9 @@ test('incrustația din fereastra exportului: fundul plat bifat singur; „Acela�
   await page.goto('/');
   await adauga(page, 'cerc');
   await page.locator('[data-actiune="export.gcode"]').click();
-  const rand = page.locator('tr[data-operatie]').first();
-  await rand.locator('[data-camp="latura"]').selectOption('incrustatie');
-  const detalii = page.locator('tr[data-detalii]').first();
+  const rand = page.locator('[data-fisa="op"]').first();
+  await rand.locator('input[data-camp="latura"][value="incrustatie"]').check();
+  const detalii = page.locator('[data-fisa="op"]').first();
   await expect(detalii.locator('[data-camp="fund-plat"]')).toBeChecked();
   await expect(detalii.locator('[data-camp="inc-joc"]')).toHaveValue('0,5');
   await expect(detalii.locator('[data-camp="inc-fierastrau"]')).toHaveValue('2');
@@ -171,7 +172,7 @@ test('fundul doar cu freza V: fără bifa Fund plat, nota, decuparea benzii cu f
   await expect(hartie).toContainText('Semifabricatul dopului');
   await expect(hartie).not.toContainText('doar cu freza V');
   await page.locator('[data-actiune="export.gcode"]').click();
-  const detalii = page.locator('tr[data-detalii]').first();
+  const detalii = page.locator('[data-fisa="op"]').first();
   const nota = detalii.locator('.nota-incrustatie');
   await expect(nota).toHaveAttribute('data-fund', 'plat');
   await detalii.locator('[data-camp="fund-plat"]').uncheck();
@@ -179,7 +180,7 @@ test('fundul doar cu freza V: fără bifa Fund plat, nota, decuparea benzii cu f
   await expect(nota).toContainText('Fără freză dreaptă, freza în V face tot');
   // Cu banda: decuparea cere freza ei; bifată, Exportă pornește.
   const exporta = page.locator('[data-buton="exporta"]');
-  await detalii.locator('[data-camp="inc-jur"]').selectOption('banda');
+  await alege(detalii, 'inc-jur', 'banda');
   await expect(nota).toContainText('decuparea din placă cere „Altă freză pentru decupare”');
   await expect(detalii.locator('[data-camp="banda-freza"]')).toHaveAttribute('aria-invalid', 'true');
   await expect(detalii.locator('[data-camp="banda-minima"]')).toHaveCount(0);
@@ -192,7 +193,7 @@ test('fundul doar cu freza V: fără bifa Fund plat, nota, decuparea benzii cu f
   await detalii.locator('[data-camp="banda-decupare"]').uncheck();
   await expect(detalii.locator('[data-camp="banda-minima"]')).toHaveText('cea mai mică: 3,31 mm');
   await detalii.locator('[data-camp="banda-decupare"]').check();
-  await detalii.locator('[data-camp="inc-jur"]').selectOption('fata');
+  await alege(detalii, 'inc-jur', 'fata');
 
   const descarcari: Download[] = [];
   page.on('download', (d) => { descarcari.push(d); });

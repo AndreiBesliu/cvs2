@@ -11964,6 +11964,54 @@ trasării, elicelor și adminului (PR-urile `AndreiBesliu/cvs2#6`, `AndreiBesliu
   (biblioteca, extensiile, pluginul, manualul, carcasa) 105 / 105. Pornirea 108,6 kB (cu ușa 113,1 / 115), totalul
   773,8 / 800 kB, `/admin` 125,6 / 200; manualul, 40 de capitole.
 
+## 2026-11-23 — Linia exportului: fereastra „Exportă G-code” desenată din nou, propunerea (ADR 0290 propus)
+
+**Prompt:** brief-ul liniei, de la sesiunea principală, cu cererea owner-ului, exactă: „in primul rand, nu imi place deloc
+fereastra asta, nici nu este clar ce anume imi ceri sa fac, vreau sa facem un design pentru fereastra export, si vreau ca
+ficare setare sa fie insotita de o ilustratie sugestiva, ca sa ajute userul sa inteleaga ce reprezinta”.
+**Started:** 23.11, seara.
+
+- **Ramura:** `wip/28.8-export`, din `origin/main` `d6fd5d68`; ADR-urile 0290–0299, canalul `export`. Nota liniei:
+  `docs/linii/export.md`.
+- **Capturile de azi:** 32 (8 cazuri × 1280 / 1024 × ro / en) plus una derulată, în Edge, pe `dist/` servit de `vite preview`.
+  Tabelul are 1 270 px într-o cutie de 894 (1 414 la V-carve); listele se taie; 61 de explicații doar în `title`; 69 din 88 de
+  câmpuri apar după o alegere, fără să spună de ce; greșeala apare sub tabel, departe de câmp.
+- **ADR 0290 propus:** inventarul setărilor pe întrebări (când apar, explicația de azi, desenul propus), trei direcții (B
+  recomandată: lista și fișa), desenele (pozele alegerilor de mână, desenele întrebărilor din valori, cu cota activă aprinsă),
+  costul măsurat (11 desene 5,5 kB gzip, 50 de poze 1,8 kB), legătura cu canvas-ul aranjamentelor, patru întrebări, feliile
+  28.8↑a–f. Indexul ADR, cu traducerea rândului în roadmap.
+- **Schița:** <https://claude.ai/artifact/FX4y5HfSixLXthAcnrzUQP> (fereastra propusă de încercat, ambele teme, 1280 / 1024;
+  capturile; formularul întrebărilor).
+- **Fără cod de produs.** Codul pornește după răspunsurile owner-ului.
+- **`main` adus în ramură** (`c8b235ab`, cu 11.3↑f; ciocnirea doar în DEVLOG, rezolvată cu `rezolva-devlog.py`): urechile au
+  încă trei locuri (pe laturile lungi, pe cele scurte, la mijloc), puse în inventar și în schiță; cifrele refăcute: 91 de câmpuri
+  (72 după o alegere), 53 de poze (1,9 kB), desenele 5,8 kB; totalul 770,9 / 800.
+- **Răspunsul owner-ului:** „1a, 2a, 3a, 4a” (toate recomandările); ADR 0290 acceptat, cu feliile precizate (28.8↑a mută
+  toate câmpurile în fișă; desenele pe familii, în b–e).
+
+**Completed:** 23.11, seara (propunerea, acceptată). Urmează tabla de pe canvas, apoi 28.8↑a.
+
+
+## 2026-11-23 — Linia exportului: felia 28.8↑a, fereastra pe listă și fișă (ADR 0290)
+
+**Prompt:** răspunsul owner-ului la ADR 0290, exact: „1a, 2a, 3a, 4a”.
+**Started:** 23.11, 19:46.
+
+- **Tabla „Exportul G-code”** pe canvas-ul aranjamentelor (<https://claude.ai/artifact/VuzcaEYQsLoTvRBxpnSak2>), înaintea codului.
+- **Fereastra:** lista în stânga (foaia, mașina, operațiile în ordinea tăierii, Rezultatul), fișele una sub alta în dreapta, cu
+  toate câmpurile de azi pe grupuri (`src/ui/exportGrupuri.ts`), explicația câmpului activ, trecerile egale sub pas, greșelile în
+  grupul câmpului cu punctul din listă și „Du-mă la …”. Ce nu se aplică nu apare. Câmpurile, valorile și programul, aceleași.
+- **Găsit pe drum:** simularea sosește după descărcare și schimbă starea din nou; fereastra aducea iar Rezultatul sub mausul omului
+  (`supracursa.spec.ts`, sub încărcare). Acum îl aduce o singură dată, cu o probă.
+- **Probele:** `export.grupuri.test.ts`, `export.fisa.spec.ts`; 19 spec-uri mutate pe fișe (și `incrustatie3d.spec.ts`, venit cu
+  `main`). Unit 9 881 / 0; e2e întreg local, fără `masina-wifi-pod.spec.ts:44`, care cade și pe `main` curat în container.
+- **Otrăvurile:** `test/otravuri/28.8a.py`, 18 / 18 prinse (8 pe hârtie, 10 e2e).
+- **Manualul** (ro, en), ADR 0290 („Tabla”, „Implementarea 28.8↑a”), rândul din fișa etapei 3, registrul otrăvurilor.
+- **`main` adus** (`f73f3f37`, cu A.6, 3.Xh, 12.1↑e-3, 12.1↑e-4), fără ciocniri de cod.
+- **Mărimea:** totalul +2,3 kB (cu `main`, 780,8 / 800), pornirea neschimbată.
+
+**Completed:** 23.11, 23:05.
+
 ## 2026-11-23 — ADR 0273 propus: fereastra trasării, refăcută (felia 25.9↑), cu schița (Model: Claude Opus 5.5)
 
 **Prompt:** „cum se mai poate imbunatati trasarea din imagine? si ca functionalitate si ca UI/UX” (owner-ul, în sesiunea
@@ -12586,6 +12634,44 @@ plafonul („ok, ridica plafonul total la 900 kB”).
   owner-ului spusă într-o sesiune de linie).
 - **La owner:** fereastra exportului (28.8↑a: acum sau după desene), verificarea juridică a utilizării aplicației
   înaintea live-ului, „cine unește în `main`”.
+
+## 2026-11-24 — Linia exportului: felia 28.8↑b-1, desenele întrebărilor (ADR 0290)
+
+**Prompt:** răspunsul owner-ului la ADR 0290, exact: „1a, 2a, 3a, 4a” (feliile acceptate; după 28.8↑a, următoarea din tabel).
+**Started:** 23.11, 23:20.
+
+- **Felia 28.8↑b împărțită** în b-1 (desenele generate din valori) și b-2 (alegerile ca cartonașe cu poze, cu ~60 de folosiri
+  ale câmpurilor mutate în 21 de spec-uri).
+- **Desenele** (`src/ui/exportDesene.tsx`): colțul XY0 (un clic pe un colț din desen îl alege), Z0 cu supracursa, freza,
+  adâncimea cu trecerile, sensul, rampa, intrările, urechile; deasupra explicației, cu cota câmpului activ aprinsă, în ambele teme.
+  Trecerile și locurile urechilor, socotite ca în lucrare (`src/ui/exportDeseneCalcul.ts`), probate față de ea.
+- **Găsit pe drum:** cu desenul, la clic, focusul schimba explicația la apăsare, grupul își schimba înălțimea și bifa fugea de
+  sub cursor (proba nu mai putea bifa Urechi). Caseta explicației își ține acum înălțimea celui mai lung text al grupului.
+- **Probele:** `export.desene.test.ts`, `export.desene.spec.ts` (7). Unit 10 023 / 0; e2e-ul ferestrei 133 / 133.
+- **Otrăvurile:** `test/otravuri/28.8b.py`, 16 / 16 prinse; E03 și E07 din `28.8a.py`, mutate cu codul lor, prinse.
+- **Manualul** (ro, en), ADR 0290 („Implementarea 28.8↑b-1”), rândul din fișa etapei 3, registrul otrăvurilor, nota liniei.
+- **Mărimea:** totalul +4,9 kB (800,8 / 900), peste estimarea de ~3 kB pentru tot 28.8↑b; pornirea neschimbată (109,4 / 115).
+
+**Completed:** 24.11, 00:15.
+
+## 2026-11-24 — Linia exportului: felia 28.8↑b-2, alegerile ca cartonașe cu poze (ADR 0290)
+
+**Prompt:** răspunsul owner-ului la ADR 0290, exact: „1a, 2a, 3a, 4a” (feliile acceptate; după 28.8↑b-1).
+**Started:** 24.11, 00:58.
+
+- **Cartonașele** (`src/ui/exportPoze.tsx`): colțurile, locurile urechilor, direcția pe linie, unitățile, schimbarea frezei și
+  foile, fiecare variantă cu poza ei; despărțirea foii, cu poza lângă bifă. Un grup radio cu inputul peste cartonaș; o
+  variantă oprită spune de ce. Tăietura rămâne listă până la 28.8↑b-3.
+- **Găsit pe drum:** pozele ieșeau negre (tokenurile lemnului stăteau doar pe desenele întrebărilor); mutate pe `.dx-ilu`, cu o
+  probă a culorii în ambele teme.
+- **Probele:** `export.cartonase.spec.ts`, `test/e2e/ajutor-export.ts`, patru spec-uri mutate; e2e-ul ferestrei 146 / 146.
+- **Otrăvurile:** `test/otravuri/28.8b2.py`, 11 / 11 prinse (prima rulare oprită de o repornire, cu o otravă rămasă în clonă:
+  scoasă, apoi reluate câte două).
+- **Manualul** (ro, en), ADR 0290 („Implementarea 28.8↑b-2”), fișa etapei 3, registrul otrăvurilor, nota liniei.
+- **Mărimea:** totalul +1,3 kB (802,1 / 900), pornirea neschimbată.
+
+**Completed:** 24.11, 01:40.
+
 - **Publicarea (`b1797933`):** rapidul și completul pe `main` verzi (completul, 49 min 15 s), `publica.yml` verde în
   3 minute (doar hosting); adresa de test spune `b1797933c0e6` (24.11, 02:07).
 
@@ -12612,6 +12698,26 @@ PR-ul `AndreiBesliu/cvs2#13` („De unit acum (A.8c, A.8d): `fbbc8934`”).
   felii se unește la commit-ul raportat).
 - **La owner:** fereastra exportului (28.8↑a–b-2: acum sau după desene), verificarea juridică a utilizării aplicației
   înaintea live-ului, „cine unește în `main`”.
+
+## 2026-11-24 — Linia exportului: felia 28.8↑b-3, tăietura ca cartonașe (ADR 0290)
+
+**Prompt:** răspunsul owner-ului la ADR 0290, exact: „1a, 2a, 3a, 4a” (feliile acceptate; după 28.8↑b-2).
+**Started:** 24.11, 03:00.
+
+- **`main` adus** (A.8c și A.8d, utilizarea aplicației): ciocnirea doar în DEVLOG; catalogul controalelor citește doar numele
+  scrise în sursă, deci cartonașele din 28.8↑b-2 le scriu acum pe `<Cartonase data-camp="…">` și pe fiecare `<Card>`
+  (`c10f2f37`); catalogul își păstrează numele și primește trei (regulile urechilor). Completul verde pe el.
+- **Tăietura ca cartonașe,** cu poza fiecărei variante; găurirea oprită pe un rând fără cercuri, cu motivul; poza tăieturii
+  în listă, pe rândul de sub nume.
+- **Găsite pe drum:** rândurile listei de ~156 px (poza pe o coloană a ei) opreau tragerea din ordinea de mână; inputul unui
+  cartonaș oprit rămânea la vedere ca un cerc (și pe colțurile de pe linie, din 28.8↑b-2). Ambele reparate, cu probe.
+- **Probele:** 23 de spec-uri mutate de pe listă pe cartonaș; e2e-ul ferestrei 174 / 174.
+- **Otrăvurile:** `test/otravuri/28.8b3.py`, 7 / 7.
+- **Manualul** (ro, en), ADR 0290 („Implementarea 28.8↑b-3”), fișa etapei 3, registrul otrăvurilor, nota liniei.
+- **Mărimea:** totalul 808,8 / 900 (bucata ferestrei +0,7 kB), pornirea neschimbată.
+
+**Completed:** 24.11, 03:40.
+
 - **Publicarea (`89962b4d`):** rapidul și completul pe `main` verzi (completul, 50 min 44 s), `publica.yml` verde în
   3 minute, cu serverul (funcția `utilizare`, cu felurile noi); adresa de test spune `89962b4d0fa5` (24.11, 04:59).
 
@@ -12639,6 +12745,59 @@ PR-ul `AndreiBesliu/cvs2#13` („De unit acum (A.9a, A.9b): `dbb0306a`”).
   completul); indexul liniilor; starea din `docs/linii/principala.md`.
 - **La owner:** fereastra exportului (28.8↑a–b-3: acum sau după desene), verificarea juridică a utilizării aplicației
   înaintea live-ului, „cine unește în `main`”.
+
+## 2026-11-24 — Linia exportului: completul de pe b-3 reparat; felia 28.8↑c, buzunarul și găurirea (ADR 0290)
+
+**Prompt:** răspunsul owner-ului la ADR 0290, exact: „1a, 2a, 3a, 4a” (feliile acceptate; după 28.8↑b-3).
+**Started:** 24.11, 04:10.
+
+- **Completul de pe `a0613840` a picat** în două probe ale lui b-3: `incrustatieBanda.spec.ts:205` încă alegea tăietura din
+  listă (scăpată la mutare), iar tragerea din ordinea de mână (`export.spec.ts:653`) apăsa sub marginea listei derulate: cu
+  poza tăieturii, rândurile au ~117 px, iar mânerul celui de-al doilea stătea local la 5 px de margine, pe runner dincolo.
+  Reprodus la 700 px înălțime; ajutorul aduce ținta în vedere, ca omul (`6fc38abf`). Completul vechi de pe `10c0700e`, oprit.
+- **28.8↑c:** traseul și coborârea buzunarului ca cartonașe cu poze; desenele golirii (urmele la pasul lateral, ca inelele),
+  coborârii (pe trecerea egală), frezelor de rest (raza din colț) și găuririi (ciocănirea pas cu pas).
+- **Găsit pe drum:** nota „N rampe pe trecere” se socotea pe pasul scris, nu pe trecerea egală a lucrării; acum e a programului.
+- **Probele:** formulele față de lucrare, măsurate pe mișcările ei; e2e-ul desenelor; două spec-uri mutate pe cartonașe.
+  Rapidul local 10 053 / 0.
+- **Otrăvurile:** `test/otravuri/28.8c.py`, 20 / 20 (E07 după proba pantei).
+- **Manualul** (ro, en), ADR 0290 („Implementarea 28.8↑c”), fișa etapei 3, registrul otrăvurilor, nota liniei.
+- **Mărimea:** totalul 811,4 / 900 (+2,6 kB), pornirea neschimbată.
+
+**Completed:** 24.11, 05:20.
+
+## 2026-11-24 — Linia exportului: felia 28.8↑d-1, fundul plat și incrustația în V (ADR 0290)
+
+**Prompt:** răspunsul owner-ului la ADR 0290, exact: „1a, 2a, 3a, 4a” (feliile acceptate; după 28.8↑c).
+**Started:** 24.11, 06:10.
+
+- **Completul de pe `83f44f9e` verde** (reparația lui b-3 și 28.8↑c): unit 10 053 / 0, e2e 664 / 664, emulatoarele 120 / 120
+  și 50 / 50.
+- **28.8↑d împărțită:** d-1 (fundul plat, incrustația în V, lemnul din jurul dopului), d-2 (banda, cu câmpurile ei mutate în
+  grupul lor).
+- **d-1:** secțiunea V-carve-ului (pereții la D·tan(θ/2), fundul plat, inelele V sau lemnul rămas) și a incrustației (dopul
+  oprit la S, jocul, spațiul, contactul, marginea); lemnul din jurul dopului pe cartonașe.
+- **Găsit pe drum:** frezele la sutime în desene (Ø 3,18 pentru 3,175); acum la miime.
+- **Probele:** peretele față de `traseuVcarve`, valorile față de `valoriIncrustatie`; e2e-ul; rapidul local 10 055 / 0.
+- **Otrăvurile:** `test/otravuri/28.8d1.py`, 15 / 15.
+- **Manualul** (ro, en), ADR 0290 („Implementarea 28.8↑d-1”), fișa etapei 3, registrul otrăvurilor, nota liniei.
+- **Mărimea:** totalul 812,7 / 900 (+1,3 kB), pornirea neschimbată.
+
+**Completed:** 24.11, 06:50.
+
+## 2026-11-24 — Linia exportului: felia 28.8↑d-2, banda dopului (ADR 0290)
+
+**Prompt:** răspunsul owner-ului la ADR 0290, exact: „1a, 2a, 3a, 4a” (feliile acceptate; după 28.8↑d-1).
+**Started:** 24.11, 06:50.
+
+- **Câmpurile benzii în grupul lor** (din 28.8↑a, grupul „banda” nu se arăta) și **desenul benzii**: semifabricatul dopului în
+  secțiune, pereții V, fundul benzii, decuparea prin placă și puntea; lățimea ca în câmp.
+- **Probele:** față de `valoriBanda`; e2e-ul; rapidul local 10 056 / 0.
+- **Otrăvurile:** `test/otravuri/28.8d2.py`, 11 / 11.
+- **Manualul** (ro, en), ADR 0290 („Implementarea 28.8↑d-2”), fișa etapei 3, registrul otrăvurilor, nota liniei.
+- **Mărimea:** totalul 813,4 / 900 (+0,7 kB), pornirea neschimbată. 28.8↑d e încheiată; urmează 28.8↑e.
+
+**Completed:** 24.11, 07:25.
 
 ## 2026-11-24 — Felia 25.8↑b: „Calibrează” și „Trasează…” din imaginea de pe foaie, numele imaginilor în raportul foii (ADR 0272 §6, §7, §10) (Model: Claude Opus 5.5)
 
@@ -12834,6 +12993,39 @@ PR-ul `AndreiBesliu/cvs2#14` („De unit de sesiunea principală”).
   lotul al paisprezecelea și a construit sha-ul dat, cum trebuie. Proba de fum din container: versiunea publicată,
   nicio eroare în consolă, toate fișierele de date răspund.
 
+## 2026-11-24 — Linia exportului: `main` adus de două ori; felia 28.8↑e-1, incrustația cu pereți drepți (ADR 0290)
+
+**Prompt:** răspunsul owner-ului la ADR 0290, exact: „1a, 2a, 3a, 4a” (feliile acceptate; după 28.8↑d-2).
+**Started:** 24.11, 07:35.
+
+- **`main` adus de două ori** (A.10 și A.11a, apoi 25.8↑b): ciocnirile, în DEVLOG (ambele părți) și în catalogul controalelor
+  (scris din nou cu `scripts/catalog-controale.ts --scrie`); completul de pe unirea a doua pornit.
+- **28.8↑e împărțită:** e-1 (grupurile și cartonașele), e-2 (desenele).
+- **e-1:** câmpurile incrustației cu pereți drepți în grupurile lor (Locașul, Treapta, Dopul: până acum toate în Locașul);
+  locașul, treapta, dopul și sprijinul pe cartonașe cu poze; sprijinul doar cu variantele care se pot, cu titlul rândului.
+- **Probele:** 1 e2e nouă, 4 spec-uri mutate pe cartonașe; rapidul local 10 077 / 0.
+- **Otrăvurile:** `test/otravuri/28.8e1.py`, 6 / 6.
+- **Manualul** (ro, en), ADR 0290 („Implementarea 28.8↑e-1”), fișa etapei 3, registrul otrăvurilor, nota liniei.
+
+**Completed:** 24.11, 09:00.
+
+
+## 2026-11-24 — Linia exportului: felia 28.8↑e-2, desenele incrustației cu pereți drepți (ADR 0290)
+
+**Prompt:** răspunsul owner-ului la ADR 0290, exact: „1a, 2a, 3a, 4a” (feliile acceptate; după 28.8↑e-1).
+**Started:** 24.11, 09:00.
+
+- **Locașul** (cu fund sau prin foaie, jocul lateral mărit), **Treapta** (spre interior sau exterior, desenul la nivelul lui)
+  și **Dopul** (așezat pe sprijinul ales, cu jocul de sub el, înălțimea, tija și flanșa, semifabricatul sau placa), din
+  `dopDreptDesen`, probat față de `valoriIncrustatieDreapta`.
+- **Probele:** 1 unitară, 1 e2e (cu nivelul desenului la treaptă, adăugat după lista otrăvurilor); rapidul local 10 078 / 0.
+- **Otrăvurile:** `test/otravuri/28.8e2.py`, 19 / 19. Sub trei otrăvuri (două aici, una la 28.8↑c), proba veche „adâncimea”
+  a căzut în clonă, fără să se reproducă după aceea (66 în paralel, 24 sub încărcare, 44 în serie, 33 în clonă): notată.
+- **Mărimea:** totalul 820,4 / 900 (+1,5 kB); pornirea neschimbată de felie.
+- **Manualul** (ro, en), ADR 0290 („Implementarea 28.8↑e-2”), fișa etapei 3, registrul otrăvurilor, nota liniei.
+
+**Completed:** 24.11, 09:50.
+
 ## 2026-11-24 — Sesiunea principală în cloud: a paisprezecea unire (3.Ts, ventilatorul cu carcasă; A.11b–A.11e, utilizarea aplicației; 16.A↑b-1, documentul v27) (Model: Claude Fable 5.2)
 
 **Prompt:** același brief de predare al sesiunii principale („unește ce se poate”), la rapoartele liniilor: elicele
@@ -12863,6 +13055,51 @@ PR-ul `AndreiBesliu/cvs2#14` („De unit de sesiunea principală”).
   publicarea lui vine înaintea acestui lot (`publica.yml` construiește sha-ul dat).
 - **La owner:** plafonul pornirii (mai sunt 0,3 kB), fereastra exportului, verificarea juridică a utilizării
   aplicației, „cine unește în `main`”, ADR 0232 (biblioteca), lista „ce pot face între timp”.
+
+## 2026-11-24 — Linia exportului: `main` adus; felia 28.8↑f-1, privirea cu fontul lat (ADR 0290)
+
+**Prompt:** răspunsul owner-ului la ADR 0290, exact: „1a, 2a, 3a, 4a” (feliile acceptate; după 28.8↑e-2).
+**Started:** 24.11, 10:20.
+
+- **`main` adus** (lotul al paisprezecelea: 3.Ts, A.11b–A.11e, 16.A↑b-1 cu documentul v27): ciocnirile în DEVLOG, în indexul
+  ADR (rândul 0282 din `main`, 0290 din ramură) și în catalogul controalelor (scris din nou); rapidul local 10 123 / 0,
+  spec-urile e2e ale exportului 59 / 59; completul pornit pe `5018c3c8`; canalul `export` publicat.
+- **28.8↑f împărțită:** f-1 (privirea), f-2 (Rezultatul), f-3 (fișa operației de sine stătătoare).
+- **f-1:** proba privirii (fontul lat, 1280 / 1024 / 390 px, ro și en, Atelier cu densitatea mare). A găsit pe telefon rândul
+  operației strâns (îi lua atingerea celui următor) și banda listei cât jumătate de ecran; în densitatea mare, câmpurile de
+  32 px și bifele de 24. Reparate în CSS.
+- **Otrăvurile:** `test/otravuri/28.8f1.py`, 9 / 9 (două scăpate întâi au întărit proba).
+- **Manualul** (ro, en), ADR 0290 („Implementarea 28.8↑f-1”), fișa etapei 3, registrul otrăvurilor, nota liniei.
+
+**Completed:** 24.11, 11:05.
+
+## 2026-11-24 — Linia exportului: felia 28.8↑f-2, Rezultatul pe grupuri (ADR 0290)
+
+**Prompt:** răspunsul owner-ului la ADR 0290, exact: „1a, 2a, 3a, 4a” (feliile acceptate; după 28.8↑f-1).
+**Started:** 24.11, 11:05.
+
+- **Rezultatul** are grupurile „De văzut înainte de tăiere” (doar cu avertismente), „Fișierele”, „Rezumatul jobului” și
+  „Simularea”, fiecare cu titlul lui; în listă, rândul lui spune timpul estimat și câte avertismente are, cu un punct.
+- **Probele:** 1 e2e nouă (cu unul și apoi două avertismente), proba rezumatului în engleză pe h4; rapidul local 10 123 / 0;
+  spec-urile e2e care citesc rezultatul (35 de fișiere), 192 + 6 / 198.
+- **Otrăvurile:** `test/otravuri/28.8f2.py`, 7 / 7.
+- **Manualul** (ro, en), ADR 0290 („Implementarea 28.8↑f-2”), fișa etapei 3, registrul otrăvurilor, nota liniei.
+
+**Completed:** 24.11, 11:40.
+
+## 2026-11-24 — Linia exportului: felia 28.8↑f-3, fișa operației ca componentă; linia are toate feliile (ADR 0290)
+
+**Prompt:** răspunsul owner-ului la ADR 0290, exact: „1a, 2a, 3a, 4a” (feliile acceptate; după 28.8↑f-2).
+**Started:** 24.11, 11:40.
+
+- **`FisaOperatie`** (`src/ui/FisaOperatie.tsx`) randează fișa unei operații din `ContextFisa`; tipurile și ajutoarele pure ale
+  rândului trec în `src/ui/exportRand.ts` (fără ciclu); importatorii tipurilor exportului s-au mutat pe el. Nimic schimbat pe
+  ecran: spec-urile e2e care deschid exportul, 296 / 296; rapidul local 10 123 / 0; totalul 822,1 / 900 kB.
+- **Probele noi:** locul fișei, câmpul frezei la conflict, adâncimea în masă (ultimele două, din otrăvurile scăpate).
+- **Otrăvurile:** `test/otravuri/28.8f3.py`, 7 / 7.
+- **ADR 0290** („Implementarea 28.8↑f-3”: feliile a–f gata), fișa etapei 3, registrul otrăvurilor, nota liniei.
+
+**Completed:** 24.11, 12:40.
 
 ## 2026-11-24 — 16.A↑c: biblioteca de freze în cont (Model: Claude Opus 5.5)
 
@@ -13080,6 +13317,19 @@ owner-ului din sesiunea ei: „ok, cand e verde fa unirea”
   11.1↑c și 14.C↑d (comenzile foii pe pânză; butonul Admin), în lucru pe `wip/11.1c-controale-foi`, cu canalul `foi`.
 - **La owner:** fereastra exportului (`#11`), verificarea juridică a utilizării aplicației înaintea live-ului, „cine
   unește în `main`”.
+
+## 2026-11-24 — Linia exportului: felia 28.8↑g, închiderea la Esc și la clic în afară (ADR 0290)
+
+**Prompt:** „ok, am testat pe canal. e ok, ce mai vreau este ca fereastra sa se inchida la 'esc' si la click in afara ei,”
+**Started:** 24.11, 14:45.
+
+- **Esc** închide fereastra exportului ca Închide, oriunde ar fi focusul; nu și cât stă ascunsă (urechile alese pe desen).
+- **Clicul pe fundal** o închide doar cu apăsarea și ridicarea afară (o tragere între fereastră și fundal, în orice sens, nu).
+- **Probele:** 1 e2e nouă în `export.fisa.spec.ts`; spec-urile e2e ale exportului, 297 / 297.
+- **Otrăvurile:** `test/otravuri/28.8g.py`, 6 / 7 (E03 echivalentă azi).
+- **Manualul** (ro, en), ADR 0290 („Implementarea 28.8↑g”), fișa etapei 3, registrul otrăvurilor, nota liniei.
+
+**Completed:** 24.11, 15:05.
 
 ## 2026-11-24 — ADR 0330 propus: cotele pe desen și măsurarea (Model: Claude Opus 5.5)
 
@@ -13468,6 +13718,23 @@ la ordinul în vigoare „unește ce se poate”
   reparată (`29ef7e44`): completul pe `main` (45417561144) rula la unire; cel dinainte, pe `647cebb1`, căzuse la proba
   instabilă a extensiilor.
 
+## 2026-11-24 — Felia 3.Xk: proba repornirii cerute de extensie, fără ceasul adevărat (doar probe) (sesiune cloud)
+
+**Prompt:** hotărâtă cu sesiunea principală („Rândul 235: da, fă-o ca felie mică, doar probe, după unirea lui 3.Xj, pe PR
+separat […] Ține de menținerea CI-ului verde, nu cere cuvântul owner-ului”). **Started:** 24.11, 17:40. **Completed:**
+24.11, 18:10.
+
+- **Ce cădea:** „două cereri imediat după” (`extensii.lucru.spec.ts:222`): sub încărcare, clicurile probei ajungeau la
+  cadrul refăcut și după cele 2 s ale răririi, iar prima repornea pe loc (2 din 120 pe zece lucrători, la sesiunea
+  principală; în containerul liniei, 0 din 450).
+- **Reparația (doar probe):** ceasul paginii e al probei (`page.clock`), oprit înaintea primei cereri și mutat cu
+  `runFor`: la 1 999 ms nimic, la 2 000 o singură repornire; fără așteptările de 2,5 s (proba ține ~7 s, nu ~10).
+- **Dovada:** cu o întârziere de 2,1 s pusă anume înaintea celor două clicuri, proba veche cade 5 din 5 („Deschideri: 4”
+  în loc de 2), cea nouă trece 5 din 5. Repetată de 300 de ori pe doisprezece lucrători: 300 trecute.
+- **Otrăvurile** 8 / 8, în clonă (`test/otravuri/3.Xk.py`): 7 prin e2e; a opta (cererile dese neadunate) nu se vede din
+  browser (două reporniri în aceeași clipă sunt o singură refacere a cadrului) și e prinsă de proba unitară.
+- Aplicația nu se schimbă: nimic în `src/`.
+
 ## 2026-11-24 — Sesiunea principală în cloud: a douăzecea unire (3.Xj, căutarea și categoriile din bibliotecă; oracolul rampelor împărțit) (Model: Claude Fable 5.2)
 
 **Prompt:** raportul liniei bibliotecii („3.Xj e gata de unit”, PR-ul #24), la ordinul în vigoare „unește ce se poate”;
@@ -13563,4 +13830,42 @@ poate”; „ok, imparte si cele doua teste grele ramase”
 - **Loturile dinainte:** pe test e tot `29ef7e44` (loturile până la 18). Publicarea loturilor 19–21 (`7312d685`) a căzut la o probă
   instabilă a extensiilor (completul pe `main` 45436221341: `extensii.spec.ts:135`, clicul pe „Închide” din cadru,
   pierdut; reparată pe `unire-2411z`, intră cu lotul următor). Lotul 22 (`62569bb2`) le cuprinde: completul lui pe
+  `main` (45445300697) rula la unire.
+
+## 2026-11-24 — ADR 0233 acceptat („da, 1a–5a”); 3.Xk cu `main` adus (lotul 22), pe PR-ul ei (sesiune cloud)
+
+**Prompt:** „da, 1a–5a” (la cele cinci întrebări din ADR 0233); mesajul sesiunii principale din 24.11, 18:30 („Lotul 22
+e în `main` […] Acum poți aduce `main` în ramură și deschide PR-ul lui 3.Xk”)
+**Started:** 24.11, 18:30. **Completed:** documentele și PR-ul, 24.11, 18:45; rapidul și completul, în CI.
+
+- **ADR 0233, acceptat:** rămâne ce e implementat la toate cinci (rafturile, unde stă Easy 3Draw, la vedere și cu o
+  singură extensie, cel mult trei rafturi, cât de îngăduitoare e căutarea). Scris în ADR („Starea”, „Întrebările”), în
+  indexul ADR, în coada owner-ului din fișa etapei 3, în nota liniei și în `CLAUDE.md` (unde cele două paragrafe ale lui
+  3.Xj, al sesiunii principale și al liniei, au rămas unul singur).
+- **`main` (`62569bb`, lotul 22) adus în ramură** (`abd0dfe`): ciocnirea, doar în DEVLOG. Față de `main`, ramura are
+  acum doar 3.Xk: proba din `test/e2e/extensii.lucru.spec.ts`, lista de otrăvuri `test/otravuri/3.Xk.py` și documente.
+- **PR-ul `AndreiBesliu/cvs2#24`**, refolosit pentru 3.Xk (titlul și descrierea, schimbate); o unește sesiunea
+  principală, la raport.
+
+## 2026-11-24 — Sesiunea principală în cloud: a douăzeci și doua unire (28.8↑a–g, fereastra „Exportă G-code”, refăcută; 3.Xk) (Model: Claude Fable 5.2)
+
+**Prompt:** „da, uneste fereastra exportului cand e verde si sa imi spui cand pot sa o arhivez”; raportul liniei
+bibliotecii („3.Xk e gata de unit”), la ordinul în vigoare „unește ce se poate”
+**Started:** 24.11, 19:00. **Completed:** unirea în `main`, 24.11, 20:01; publicarea pe test, cu lotul 25.
+
+- **Lotul, pe `unire-2411y`** (peste lotul 23): fereastra exportului (`4ee623d3`, în `c4ca5ec2`; nota liniei,
+  `ef8a6dd6`, adusă după) și 3.Xk (`23d9a1b1`, în `373699e6`). Ciocnirile: DEVLOG, traducerile roadmap-ului (ambele
+  părți, după cheie), catalogul controalelor (scris din nou). Local, pe arborele unit: tipurile, regulile de import,
+  traducerile, catalogul, biblioteca extensiilor la zi.
+- **Porțile, în CI:** completul lotului pe `8b218d47` (45443271357, verde la prima trecere, 60 min): unit 10 297 / 0
+  (12 sărite, pe Linux), e2e 781 / 781, funcțiile pe emulatoare 136 / 136, paginile 57 / 57; rapidul, verde pe
+  `8b218d47` (45443272195, feliile între 2:21 și 7:07); completele liniilor, verzi: `4ee623d3` (45437037510),
+  `23d9a1b1` (45438616103). Pornirea 110,4 kB (plafonul 120; cu ușa 115,1, cu Atelierul 115,4), totalul 856,8 / 900 kB
+  (lotul 23: 840,5; fereastra exportului, +16,3), `/admin` 138,2 / 200, contul 30,3 / 32. Nimic pe server.
+- **Documentele:** decizia în `CLAUDE.md`, cu paragraful de stare al ferestrei exportului (fișa, `GRUP_CAMP`,
+  selectorii noi ai probelor); indexul liniilor (exportul: încheiată, cu nota în `main`); starea din
+  `docs/linii/principala.md`.
+- **Pentru owner:** sesiunea liniei exportului se poate arhiva (din ADR 0290 nu rămâne nimic; nicio întrebare
+  deschisă); ramura `wip/28.8-export` de pe `origin` intră în lista de șters; canalul `export` expiră singur.
+- **Loturile dinainte:** lotul 23, în `main` din 20:00 (`9bbb1d58`). Pe test e tot `29ef7e44`; completul lotului 22 pe
   `main` (45445300697) rula la unire.

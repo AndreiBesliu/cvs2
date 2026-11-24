@@ -1436,7 +1436,7 @@ bit, with “(2)”).
 Each shape has an operation: a **profile** (the cutter runs along the outline, in passes, down to the depth), a **pocket**
 (the cutter clears all the material inside a closed outline, down to the depth), on circles a **drilling** (a hole the
 size of the circle, see below) or a **V-carve** (the V bit carves the shape along its middle, see below). Operations are changed in the **Export
-G-code** window, one row per shape; on export, the window does **Apply the operations**: it writes them into the project.
+G-code** window, one card per operation (see [Exporting G-code](#export)); on export, the window does **Apply the operations**: it writes them into the project.
 
 The **Cutting role** can also be chosen in the properties panel, in the **Cutting** section, for any number of chosen shapes:
 **outside**, **inside**, **on the line**, **left** or **right** (on an open path), **pocket**, **drilling** (circles only),
@@ -1472,7 +1472,7 @@ all projects: another computer, another browser, or the test address versus the 
 
 | Field | What it means |
 |---|---|
-| Cut | **outside** (the part stays inside), **inside** (a hole), **on the line** (the cutter on the outline), **pocket** (clears the outline, see below), **drilling** (only on a row with nothing but circles), **V-carve** (carves the shape with the V bit, see below), **V inlay** (the pocket and its plug, see [The V inlay](#incrustatie)), **straight-walled inlay** (a pocket with its plug, see [The straight-walled inlay](#incrustatie-drept)); on an open path: on the line, **left** or **right** (the side the cutter runs on, looking along the arrow on the drawing) |
+| Cut | **outside** (the part stays inside), **inside** (a hole), **on the line** (the cutter on the outline), **pocket** (clears the outline, see below), **drilling** (only on an operation with nothing but circles), **V-carve** (carves the shape with the V bit, see below), **V inlay** (the pocket and its plug, see [The V inlay](#incrustatie)), **straight-walled inlay** (a pocket with its plug, see [The straight-walled inlay](#incrustatie-drept)); on an open path: on the line, **left** or **right** (the side the cutter runs on, looking along the arrow on the drawing) |
 | Direction | **climb**: the material that stays is on the right of the travel (M3 spindle); **conventional**: the opposite. It does not matter on the line; there, next to it, **Line direction**: **as drawn**, **reversed** or **shortest path** (an open path starts from the end nearer to where the bit was left; a closed loop stays as drawn) |
 | Depth, Step down | how deep it cuts and how far one pass goes down (mm) |
 | Tabs | bridges that hold the part in the sheet on the last passes: how many per loop, the length and the bridge thickness (from the bottom face); **Placement**: evenly spaced, picked on the drawing, where it holds or on the sides (see [Tabs picked on the drawing](#export)) |
@@ -1491,14 +1491,14 @@ clean everywhere; only the corners no round cutter can reach are left (with the 
 narrower than the cutter, the cutter does not go in. A pocket has no tabs, leads or corner relief, and the profile's ramp
 is replaced by the descent.
 
-**Pocket path.** Under a pocket row, **Path** chooses between **rings (offset)**, the default, and **parallel lines**, at the
+**Pocket path.** On a pocket's card, under **How it clears**, **Path** chooses between **rings (offset)**, the default, and **parallel lines**, at the
 given **Angle** to X (from 0 up to below 180°), with the stepover between them. On each pass, the bit first runs the lines,
 linked at depth only to the next line and only when the way stays inside the pocket (otherwise it lifts), then a **profile pass**
 along the edge, so the wall comes out exactly on the vector, not in steps. Lines plunge straight (the ramp, zigzag and helix
 belong to the rings); on the lines the bit cuts back and forth, so alternately climb and conventional, and the profile pass
-follows the row's direction. Islands and rest bits work as with rings.
+follows the operation's direction. Islands and rest bits work as with rings.
 
-**Rest bits.** Under a pocket row, **Add a rest bit** puts a smaller bit after the row's bit (by default half the diameter,
+**Rest bits.** On a pocket's card, **Add a rest bit** puts a smaller bit after the operation's bit (by default half the diameter,
 with the next free T and a 40 % stepover); you can add several, each smaller than the one before, and remove them with ×. Each
 one cuts only where the one before could not reach: the corners and the strips narrower than it, on the same passes; it does
 not run again along the walls the big one has already cut. The corners keep the radius of the smallest one. For example, an
@@ -1531,8 +1531,8 @@ outline; the island's own do not matter. With a different depth, each pocket is 
 makes a step. Two outlines with the same depth that touch or cross are refused (join them first with the boolean, or give
 them different depths). Between an island and the wall, a place narrower than the cutter stays uncut.
 
-**Drilling.** On a row with nothing but circles, Cut also offers **drilling**: the hole comes out the size of the circle in the
-drawing, with the row's flat cutter, written with plain moves only (G0, G1, G2, G3), without the G81–G83 drilling cycles GRBL
+**Drilling.** On an operation with nothing but circles, Cut also offers **drilling**: the hole comes out the size of the circle in the
+drawing, with the operation's flat cutter, written with plain moves only (G0, G1, G2, G3), without the G81–G83 drilling cycles GRBL
 does not have.
 - A **circle the size of the cutter** (its diameter, ± 0.02 mm) is drilled at its centre, **by pecking**: the cutter goes down
   by the step per pass, at the plunge feed; after each step it lifts 1 mm (breaks the chip), and every Nth step, the number
@@ -1548,12 +1548,12 @@ does not have.
 and goes down at each point as far as fits between the walls: the depth is the distance to the nearest wall divided by
 tan(θ/2), where θ is the bit's angle (at 90°, the distance itself; at 60°, 1.73 times more). The walls come out sloped, right
 on the outline, and sharp corners stay sharp: lettering, ornaments, the outline of a logo.
-- The row's outlines are read together, even-odd: an "O" is the ring between its two outlines, not two shapes. So are the
-  V-carve rows of the same shape with the same values (the cutter, the depth, the step, the flat bottom): a text set to
-  V-carve row by row is carved with its holes. With different values, each row is a separate region.
+- The operation's outlines are read together, even-odd: an "O" is the ring between its two outlines, not two shapes. So are the
+  V-carve operations of the same shape with the same values (the cutter, the depth, the step, the flat bottom): a text set to
+  V-carve operation by operation is carved with its holes. With different values, each operation is a separate region.
 - **Depth** is the maximum. Where the shape is wider than the bit at that depth, the bit runs at it along the middle and along
   an outline parallel to the wall, and a **flat floor** remains between them.
-- **Flat floor with a straight bit**: the box under the V-carve row, with the straight bit (its own number, a different T from
+- **Flat floor with a straight bit**: the box on the V-carve's card (the **Flat bottom** group), with the straight bit (its own number, a different T from
   the V bit; the V bit's T + 1 and Ø3.175 by default) and its stepover (at most half the diameter, 40 % by default). The
   straight bit clears the floor first, level by level, without touching the walls; then the V bit cuts the walls and the
   corners the straight bit cannot reach (the floor's sharp corners and channels narrower than it), with close rings: a ridge
@@ -1562,7 +1562,7 @@ on the outline, and sharp corners stay sharp: lettering, ornaments, the outline 
   **Add a rest bit** adds more straight bits after it, each smaller, that clear the floor only where the one before could not
   reach (as in a pocket); the V bit comes after all of them, only where the smallest one could not reach.
 - **Step**: on each pass, the bit goes at most one step deeper than the pass before.
-- The row's bit must be a **V** bit (see [Exporting G-code](#export)), and its cone, ((diameter − tip) / 2) / tan(θ/2), must
+- The operation's bit must be a **V** bit (see [Exporting G-code](#export)), and its cone, ((diameter − tip) / 2) / tan(θ/2), must
   reach the depth asked for; otherwise the export is refused, with the reason. A V-carve has no tabs, ramp, leads, corner
   relief or split, and an open path is refused.
 
@@ -1572,7 +1572,7 @@ account: on the line, the bottom of the groove is as wide as the tip; in a V-car
 wider than the tip, and sharp corners stay rounded by half the tip (a region narrower than the tip everywhere is refused, with
 the reason). Two bits with the same T, the same angle and a different tip are two bits: the export asks for different numbers.
 
-**Engraving on the line.** On the line, the bit can also be a V bit: its centre runs exactly on the vector, at the row's depth,
+**Engraving on the line.** On the line, the bit can also be a V bit: its centre runs exactly on the vector, at the operation's depth,
 and the groove comes out tip + 2 · depth · tan(θ/2) wide (with V90 at 1 mm: 2 mm), with sloped walls. The bit's cone must reach
 the depth, as in a V-carve. **On a side** (outside, inside, left, right), **in a pocket** or **for drilling**, a V bit is
 refused, with the reason: there the job would offset it like a flat bit, and the wall would not come out where it is drawn
@@ -1584,7 +1584,7 @@ corners to sharpen them. For example, a 20 mm square at 2 mm, with a Ø2 straigh
 tip: the walls come out at 15°, and the corners at the surface have a 0.13 mm radius (with Ø2 alone it would be 1 mm). For now
 a single straight bit clears the bottom; several, from the largest to the smallest, come with the pocket with several bits.
 
-Each row has its own cutter (see [Exporting G-code](#export)). The feeds and speeds are fixed for now: the spindle at 18,000 rpm (with a 3 s wait), feed 1,000 mm/min, plunge
+Each operation has its own cutter (see [Exporting G-code](#export)). The feeds and speeds are fixed for now: the spindle at 18,000 rpm (with a 3 s wait), feed 1,000 mm/min, plunge
 300 mm/min, safe Z 5 mm; insides are cut first.
 
 ## The V inlay
@@ -1593,17 +1593,17 @@ Each row has its own cutter (see [Exporting G-code](#export)). The feeds and spe
 A **V inlay** sets a plug of one wood into a pocket carved in another: the pocket is a V-carve of the drawing, and the plug is
 the same drawing, mirrored, V-carved on its own blank so that it goes into the pocket and stops before the bottom. Choose it as
 a role: **V inlay**, in the **Cutting** section of the properties panel or in the Cut list of the **Export G-code** window.
-The row's bit is a sharp V bit (no flat tip), and the flat floor with the straight bit is on: it clears the bottom of the
+The operation's bit is a sharp V bit (no flat tip), and the flat floor with the straight bit is on: it clears the bottom of the
 pocket and the wood around the plug.
 
-**Without a straight bit**, untick **Flat floor with a straight bit** on the inlay row: the V bit then does it all. It clears
+**Without a straight bit**, untick **Flat floor with a straight bit** on the inlay's card: the V bit then does it all. It clears
 the pocket floor with dense rings, glue gap · tan(θ/2) apart (a crest of at most half the gap, so at least half of it stays
 under the plug for glue), and the lowered face of the plug or the band floor with rings saw gap · tan(θ/2) apart (a crest of
 at most half of it, between the boards). It is slower than with a straight bit: the warning says how many rings it cuts;
 above 400 in one region, the export is refused, with the advice. With the band, cutting the plug out of the board then needs
 **Another bit for the cut-out** (a straight bit); without one, untick the cut-out.
 
-The inlay's values, under Depth and Step down in the panel and on its row in the export window:
+The inlay's values, under Depth and Step down in the panel and on its card in the export window:
 
 - **Glue gap** (g; default 0.5 mm, at least 0.1): what stays under the plug. The plug is carved from the pocket depth minus
   the gap (S = D − g), so it stops on the walls, with g above the bottom.
@@ -1612,7 +1612,7 @@ The inlay's values, under Depth and Step down in the panel and on its row in the
 - **Plug margin** (default 5 mm): how much wood stays around the drawing on the plug blank (with the band, beyond the band
   and its groove).
 
-**Wood around the plug**, chosen in the panel's **Cutting** section (for all the selected shapes) or on the inlay's row
+**Wood around the plug**, chosen in the panel's **Cutting** section (for all the selected shapes) or on the inlay's card
 in the export window; the band values are chosen in the window:
 
 - **whole face lowered** (default): the straight bit lowers the whole face of the plug blank, past its edges, so the blank is
@@ -1666,7 +1666,7 @@ inlay](#incrustatie-drept)).
 A **straight-walled inlay** sets a plug with vertical walls into a pocket cut in another board: the pocket is a pocket of the
 drawing, and the plug is the same outline, cut with the flat bit on its own blank, smaller by a side gap all around. Choose it
 as a role: **straight-walled inlay**, in the **Cutting** section of the properties panel or in the Cut list of the **Export
-G-code** window. The row's bit is flat; the pocket keeps its rest bits, strategy and ramping.
+G-code** window. The operation's bit is flat; the pocket keeps its rest bits, strategy and ramping.
 
 **The app matches the corners.** The bit is round: in the pocket, the tips of the drawing come out rounded with its radius (R),
 and on the plug, which the bit goes around from outside, the inside corners get rounded (with the plug bit radius, r). So the
@@ -1675,13 +1675,13 @@ paired arcs are concentric, and the gap is the same all along the outline, corne
 back from the drawing appears as a warning after export. A part of the drawing narrower than the bit does not fit in the
 pocket: the export refuses it.
 
-The inlay's values, in the panel (under Depth and Step down) and on its row in the export window:
+The inlay's values, in the panel (under Depth and Step down) and on its card in the export window:
 
 - **Side gap** (c; default 0.1 mm): what stays between the plug walls and the pocket walls, on each side. The pocket keeps the
   drawing size, the plug shrinks by c. It must be under the radius of the pocket's smallest bit.
-- **Recess** (in the export window only): a **pocket**, with a floor, at the row depth; or a **hole through the sheet**: the
+- **Recess** (in the export window only): a **pocket**, with a floor, at the operation's depth; or a **hole through the sheet**: the
   recess goes through the board, as a pocket the whole thickness deep, and the depth is the sheet thickness (plus the
-  overtravel), kept up to date with the sheet (the row and the panel show “through the sheet”). A hole has no floor: a cut-out
+  overtravel), kept up to date with the sheet (the card and the panel show “through the sheet”). A hole has no floor: a cut-out
   plug sits flush with the bottom face (press it onto a flat surface while gluing; the part above, H, is planed off), and a
   raised plug rests with its face on the board, as tall as the board.
 - **Step** (in the export window only): **none**; **inward**: the recess gets a shoulder, with the upper level as big as the
@@ -1690,7 +1690,7 @@ The inlay's values, in the panel (under Depth and Step down) and on its row in t
   sheet); or **outward**: the drawing is the opening, and the upper level is wider by s on each side (like a window rebate).
   Both levels get their corners matched like the plain recess, with the same side gap. The plug gets a **flange** on the
   upper level and a **stem** in the opening, and is always cut mirrored, stem up; then you flip it into the recess. Without a
-  step, the shoulder fields are hidden (the values stay in the row).
+  step, the shoulder fields are hidden (the values stay on the card).
 - **Plug** (in the export window only): **raised on a blank**: the plug stands on its own blank (drawing mirrored, face
   lowered around it); you flip it into the pocket and cut off the back; or **cut out of a board**: the plug is cut through its
   whole board, with tabs (drawing not mirrored), and goes into the pocket without flipping.
@@ -1769,7 +1769,50 @@ drawing, it closes by itself.
 %% acopera: export.gcode
 
 **Export G-code** opens the export window, for the active sheet (with several [sheets](#foile), the window's title says
-which). Besides the [operations](#operatii), you choose:
+which). The window has three parts:
+- the **list**, on the left: **Sheet and origin**, **Machine and file**, then the [operations](#operatii), in the order they
+  are cut, each with what it cuts, the bit and the depth; after the export, also the **Result**, with the estimated time and how
+  many warnings it has (a coloured dot, if any). Its card holds, in order: **Check before cutting** (the warnings, only when
+  there are some), **Files** (with **Open in Machine**), **Job summary** and **Simulation**. A click brings the chosen card
+  to the top; as you scroll, the list marks the card you have reached. On a narrow screen, the list sits at the top, on a row
+  that scrolls, with the cutting order at the end; with **Big buttons** (see [Appearance](#aspect)), the window's fields and
+  checkboxes get the large target too;
+- the **cards**, on the right, one under the other. Each has its fields grouped by question (What cut, Bit, How deep, Cut
+  direction, Ramp, Lead-ins, Corners, Tabs; on a pocket, How it clears, How it goes down, Rest bits; on a V-carve, Flat bottom;
+  on an inlay, its own). On the left of each group, its explanation; when you hover over a field or go into it, the field's
+  explanation. Above the explanation, for the XY0 corner, Z0 and overtravel, the bit, depth, direction, ramp, lead-ins and
+  tabs, the question's drawing, made from your values: the sheet with the chosen corner (a click on another corner in the
+  drawing chooses it), the section of the sheet on the table with Z0 and the cuts that go into the table, the bit profile, the
+  section of the cut with its passes, the bit path around the part or the hole (in climb, what stays is to the right of the
+  path), the ramp from the side, the lead-ins from above, the tabs where the chosen rule puts them and their section. On a
+  pocket: the passes seen from above, with the bit's swath, at the stepover (the first one a bit radius from the wall, and two
+  neighbours overlap by what is written below; on parallel lines, turned to their angle), the descent from the side, on one
+  pass (the ramp, the zigzag with its ramps, the helix with its turns; a wrong value is not drawn) and the corner where the
+  bit leaves its radius, and the smallest rest bit, its own. On a drilling: the peck cycle step by step (how far it goes
+  down, the 1 mm lift, leaving the hole every so many steps). On a V-carve: the section with the walls cut by the V bit down to
+  the maximum depth and, between them, the straight bit's flat bottom (from what width it starts), the V rings of an inlay
+  without it, or the wood that stays without a flat bottom. On a V inlay: the pocket and the turned plug, with how far the plug
+  goes in, the gap under it, the space between the boards, where the walls touch and the plug's margin; with the narrow band, its
+  group shows the plug blank in section, with the band, the cut-out through the board (how far from the design) and the bridge.
+  For a straight-walled inlay: the pocket, with a floor or through the board, with the side gap (enlarged in the drawing); the
+  step, towards the inside (the design stays on the face) or the outside (the design drops to the shoulder); the plug seated on
+  the chosen support (floor, face, shoulder), with the gap under it, how tall it comes out (with the stem and the flange, on a
+  step) and how thick the blank or the board must be. The values sit on dimension lines, and the one of the field you
+  are on is coloured. How many ramps the zigzag makes on a pass is counted on the equal pass, as in the program. Under the
+  step down, how many passes come out and
+  how much each removes: the passes are equal (10 mm with a step of 4 gives 3 passes of 3.33 mm), in the drawing too. The cut
+  and the choices with few options (the corners, the tab places, the direction on line, the pocket's path and descent, the
+  wood around the plug, the straight-wall inlay's pocket, step, plug and support, the units, the bit change, the sheets) are cards with a picture of each option; drilling sits among the cuts on a row without circles too, disabled, with
+  “circles only”, and in the list, under the operation's name, is the picture of its cut. On the cards: click anywhere on a card, or use the arrow keys once you are in the group; the chosen
+  one has a coloured border, and one that cannot be chosen now says why (for example “not on line”). The sheet separation has
+  its picture too, next to the box. What does not apply to the operation is not shown: on a pocket, a drilling or a
+  V-carve, the profile's ramp, lead-ins, corners and tabs are missing, and a note under Cut says why;
+- the **bottom**, always in view: **Export**, **Close**, **Sheets report…**, the confirmations and, while a value is wrong,
+  the reason, with **Take me to …**, which brings its card and goes into the field to fix. The wrong value is also told in the
+  field's group, and its card has a red dot in the list. The window closes with **Close**, with Esc or with a click outside
+  it; the operation values changed in it go into the project only on **Export**.
+
+On the sheet and machine cards you choose:
 - the sheet's **origin corner** (bottom left, bottom right, top right, top left): where X/Y zero is on the machine;
 - **Z0**: the top of the material or the bottom of the material (the spoilboard);
 - the **Overtravel** (mm, from 0 to 2, 0 by default): how far through cuts go below the bottom of the board, into the
@@ -1786,7 +1829,7 @@ which). Besides the [operations](#operatii), you choose:
   the first program run in the air;
 - the **Units**: mm (the default) or inch (with 5 decimals and the feed in inch/min); the header stays in mm. RichAuto reads mm
   only;
-- the **Tool change**, only when the rows have different bits: **stop in this app's sender** (the default for the GRBL family:
+- the **Tool change**, only when the operations have different bits: **stop in this app's sender** (the default for the GRBL family:
   the job stops at `T… M6`, you take the bit out, put in the next one, probe Z and **Continue**), **M6 at the controller**
   (grblHAL, FluidNC, with the change set up there; the default for Syntec, Mach3 and Mach4), **M0, with the bit in a comment**
   or **one file per bit** (all of them are downloaded; the default for NcStudio and RichAuto, which have no M06).
@@ -1809,26 +1852,28 @@ and in the program's header: check them on the controller before you start.
 On these five posts, a rapid move that changes both XY and Z is written as two lines (going up first, going down last):
 there, `G0` may move each axis at its own speed.
 
-Each row has its own **bit**: the tool number (T), the diameter (mm) and the shape: **flat** or **V**, with the included angle
-of the tip (from 1° to 179°, 60° by default; for a V bit, the diameter is that of the cutting part). Rows with different bits
+Each operation has its own **bit** (the card's **Bit** group): the tool number (T), the diameter (mm) and the shape: **flat** or **V**, with the included angle
+of the tip (from 1° to 179°, 60° by default; for a V bit, the diameter is that of the cutting part). Operations with different bits
 are cut with a change between them: in the automatic order, in each class (insides, then on the line, then outsides), the bit
 already mounted first, so there are as few changes as possible. The same number with two diameters or two shapes is refused:
 each bit needs its own number.
 
-The **Cutting order** sits above the table. The rows appear in the order they are cut, with their place in the **#** column:
+The **Cutting order** sits in the list, above the operations. The operations appear in the order they are cut, with their place
+on the left (the card says “N of M in cutting order”):
 - **Automatic** (the default): insides first, then lines, outsides and sheet separations last; in each, grouped by bit. A side
   or a bit changed in the window redoes the order on export;
-- **Mine**: cut from top to bottom. You move a row by dragging its handle (the six dots) or with the **↑** / **↓** arrows. The
+- **Mine**: cut from top to bottom. You move an operation by dragging its handle (the six dots) or with the **↑** / **↓** arrows. The
   list starts from the automatic order, and **Back to the automatic order** brings it back. The order is written in the project
   on **Export**: the window shows it when reopened, and the toolpath, the time, the animation and the 3D view follow it. A new
   operation (a drawn shape, an import, a text) comes at the end. The bit changes follow your order, so there may be more than in
   the automatic one.
 
 The V-carves of the same piece, with the same values (the bit, the depth, the step, the direction, the flat bottom), are
-carved as a single region: the rows after the first show **with N**, meaning they are carved together with row N. Pockets are
+carved as a single region: in the list, the operations after the first show **with N**, meaning they are carved together with
+place N. Pockets are
 not merged: each one is cut at its own place. If in your order the outside of a piece comes before another operation of the
 same piece or of a shape inside it (a circle drawn in a rectangle), or a sheet separation before another operation, the piece
-may come loose before it is done: the window names the rows, and **Export** asks for the **Cut in my order** tick (any move
+may come loose before it is done: the window names the operations, and **Export** asks for the **Cut in my order** tick (any move
 clears it).
 
 The **Export** button downloads the file and shows how many lines it has and its SHA-256 fingerprint (with it you check that
@@ -1845,7 +1890,7 @@ the plate's values or the part's name and its place on the sheet (“near X 70, 
 The program is downloaded anyway: it is a warning, not a refusal. The check is on the program, so it catches any layout,
 including one moved by hand.
 
-**Tabs picked on the drawing.** Under a row's tabs, **Placement: evenly spaced / picked on the drawing**. With
+**Tabs picked on the drawing.** In an operation's tabs, **Placement: evenly spaced / picked on the drawing**. With
 **picked on the drawing**, the “Count, per loop” field is switched off (the count is how many you placed), and **Pick on the
 drawing…** hides the window and puts the canvas into the operation's tab mode: its outline shows on every copy of the part on
 the sheet, with the picked tabs as small dots. A click on the outline adds a tab at the nearest point on it; a click on a tab
@@ -1886,7 +1931,7 @@ sheets** makes one program per sheet, each exactly the one you would export from
 `.zip` archive (`cncvs2-stanga-jos-foile.zip`), with the sheet in each file's name (`cncvs2-stanga-jos-foaia-2.nc`); on
 RichAuto, `CNCVS2.ZIP`, with each sheet in its own folder (`F2/CNCVS2.NC`). Identical sheets (the same parts in the same
 places, with the same operations, as after “Duplicate the sheet with the same parts”) come out once, with ×N in the name
-(`…-foaia-1-x3.nc`: cut it three times), and a sheet with nothing to cut is left out. The window's rows stay those of the
+(`…-foaia-1-x3.nc`: cut it three times), and a sheet with nothing to cut is left out. The window's cards stay those of the
 active sheet: the other sheets keep their own operations. After the export, the window shows the sheets, the files and the
 time of each, then the time of all. A sheet the cutter leaves (other than the active one, whose confirmation you give here)
 is exported alone, with its own confirmation. **Open in Machine** loads the active sheet's program. The plates the text comes

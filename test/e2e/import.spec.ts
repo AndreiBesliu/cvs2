@@ -201,12 +201,14 @@ test('CNC-referinta.svg (ADR 0037 §11, §12): valul vine ca o cale deschisă, c
   await page.locator('[data-actiune="export.gcode"]').click();
   const val = page.locator('[data-operatie="e1/deschise"]');
   await expect(val).toContainText('cale deschisă 150.00 × 34.64, 1 segment, la X 160.00, Y 42.68');
-  await expect(val.locator('select[data-camp="latura"]')).toHaveValue('pe-linie');
+  await expect(val.locator('input[data-camp="latura"]:checked')).toHaveValue('pe-linie');
   // Un rând cu o singură cale deschisă: pe linie, stânga, dreapta (ADR 0037 §12).
-  await expect(val.locator('select[data-camp="latura"] option')).toHaveText(['pe linie', 'stânga', 'dreapta']);
-  await expect(val.locator('[data-camp="urechi"]')).toBeDisabled();
-  await page.locator('[data-operatie="e1/exterior"] select[data-camp="latura"]').selectOption('pe-linie');
-  await page.locator('[data-operatie="e1/interior"] select[data-camp="latura"]').selectOption('pe-linie');
+  await expect(val.locator('[data-alegere="latura"] .dx-card > span')).toHaveText(['pe linie', 'stânga', 'dreapta']);
+  // Pe o cale deschisă, urechile vin într-o versiune următoare: nu apar pe fișă, cu nota de ce (ADR 0290).
+  await expect(val.locator('[data-camp="urechi"]')).toHaveCount(0);
+  await expect(val.locator('[data-nota="nu-se-aplica"]')).toBeVisible();
+  await page.locator('[data-operatie="e1/exterior"] input[data-camp="latura"][value="pe-linie"]').check();
+  await page.locator('[data-operatie="e1/interior"] input[data-camp="latura"][value="pe-linie"]').check();
   // Desenul (400 × 300 pe pagină) iese din foaia de 300 × 200: confirmarea de la 1.10.
   await page.locator('[data-buton="exporta"]').click();
   await expect(page.getByTestId('iesire-foaie')).toContainText('Freza iese din foaie:');
@@ -241,7 +243,7 @@ test('linia tăiată pe stânga (2.3c-5): dialogul o oferă, G-code-ul pe hârti
   await expect(page.getByTestId('panza')).toHaveAttribute('data-sageti', '0');
   await page.locator('[data-actiune="export.gcode"]').click();
   const rand = page.locator('[data-operatie="e1/deschise"]');
-  await rand.locator('select[data-camp="latura"]').selectOption('stanga');
+  await rand.locator('input[data-camp="latura"][value="stanga"]').check();
   // Pe o parte, sensul contează: câmpul lui e activ.
   await expect(rand.locator('select[data-camp="sens"]')).toBeEnabled();
   const d = page.waitForEvent('download');
