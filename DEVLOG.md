@@ -12287,6 +12287,22 @@ admin cat mai multe setari”).
 - **Documentele:** ADR 0262 (implementarea, A.9b), fișa etapei 3 (`3.Ak`), registrul otrăvurilor, traducerile, nota liniei.
   **Completed:** 24.11 00:55.
 
+## 2026-11-24 — Felia A.9b: fila Utilizare din admin (ADR 0262)
+
+**Prompt:** același „am raspuns” (7a: A.8–A.11 acum), după A.9a.
+**Started:** 24.11 00:55.
+
+- **Codul (`c549a600`, `c85a44c8`, `c70c52df`):** catalogul acțiunilor generat la build (`scripts/catalogActiuni.ts`,
+  `documentatie/actiuni.json`), partea pură a filei (`src/admin/utilizare/date.ts`), fila (`FilaUtilizare.tsx`, bucata ei
+  doar online, cu plafonul în poarta mărimii), legăturile (bara, adresa, permisiunea), textele în ambele limbi.
+- **După capturi:** pluralele („1 om”, „30 de zile”), motivele refuzurilor în cuvinte (cheile mesajelor de bază), mărimea
+  textului din liste, numărul pe rândul numelui pe telefon.
+- **Probele:** 7 unitare noi, 2 e2e noi pe emulatoare; probele barei (Azi, Utilizatori) numără fila. **Otrăvurile:** 26 / 26.
+  **Porțile locale:** rapidul 10 045 / 0, emulatoarele întregi 50 / 50 după filele numărate. **Mărimea:** pornirea și
+  totalul neschimbate; `/admin` 133,2 / 200; fila 3,8 / 25.
+- **Documentele:** ADR 0262 (implementarea), fișa etapei 3 (`3.Al`), registrul otrăvurilor, traducerile, nota liniei.
+  **Completed:** 24.11 05:05.
+
 ## 2026-11-23 — Sesiunea principală în cloud: a șasea unire (A.6, Roadmap, Documentație și Setări); linia frezelor, pornită (Model: Claude Fable 5.2)
 
 **Prompt:** același brief de predare al sesiunii principale („unește ce se poate”), la raportul liniei adminului (PR-ul
