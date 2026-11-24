@@ -15,8 +15,12 @@ import { Semn } from './Semn.tsx';
 /** Adresa absolută a catalogului: pachetele și imaginile bibliotecii stau lângă el. */
 export const adresaCatalog = (): string => new URL(ADRESA_CATALOG, location.href).href;
 export const textSursa = (s: SursaExtensie): string => (s.fel === 'fisier' ? s.nume : s.fel === 'adresa' ? s.adresa : t('extensii.biblioteca'));
+/**
+ * Motivul unui refuz, pe înțeles (ADR 0232 §A.4): propoziția lui și, în paranteză, detaliul (fișierul, răspunsul serverului).
+ * La lipsa rețelei, detaliul e textul browserului („Failed to fetch”): rămâne doar în jurnal.
+ */
 export const motivText = (m: RefuzBiblioteca['motiv'], detaliu?: string): string =>
-  `${t(`extensii.motiv.${m}` as CheieSimpla)}${detaliu ? ` (${detaliu})` : ''}`;
+  `${t(`extensii.motiv.${m}` as CheieSimpla)}${detaliu && m !== 'retea' ? ` (${detaliu})` : ''}`;
 /** Numele unei permisiuni, cu literă mare (capul unui rând din „Ce poate face”). */
 const numePermisiune = (p: string, limba: Limba): string => {
   const s = t(`extensii.permisiune-scurt.${p}` as CheieSimpla);

@@ -1,18 +1,20 @@
 import { test, expect, type Locator, type Page } from '@playwright/test';
 import { impacheteaza, scrieZip } from '../../scripts/impacheteaza-extensie.ts';
 import { citesteZip } from '../../src/extensii/zip.ts';
-import { biblioteca, deschideMeniul, pachetVechi, pagina } from './ajutor-biblioteca.ts';
+import { biblioteca, bibliotecaDeProba, deschideMeniul, inchideBiblioteca, pachetVechi, pagina, paginaDinCatalog } from './ajutor-biblioteca.ts';
 
 /**
  * Stările de lângă drumul bun al extensiilor (ADR 0232 §A, felia 3.Xi-1), în Edge:
  * - o extensie care aruncă la pornire are starea ei („… n-a pornit”), cu trei ieșiri și detaliile pliate; „Încearcă din nou”
  *   o repornește, „Vezi în bibliotecă” îi deschide pagina, „Închide” o închide; o pornire care trece de 10 s arată aceleași
  *   ieșiri, fără s-o oprească;
- * - o versiune nouă peste extensia deschisă o redeschide: din meniu („Actualizează”) și dintr-un fișier; cu lucru nesalvat,
- *   întrebarea vine înaintea instalării, iar „Rămân” o oprește;
+ * - o versiune nouă peste extensia deschisă o redeschide: din meniu („Actualizează”), din pagina bibliotecii și dintr-un
+ *   fișier; cu lucru nesalvat, întrebarea vine înaintea instalării, iar „Rămân” o oprește; cât vine pachetul, fila extensiei
+ *   spune „se actualizează…”;
  * - extensia deschisă se ține minte la reîncărcarea paginii; una închisă sau una care n-a pornit, nu; un link al bibliotecii
  *   are întâietate;
- * - un fișier care nu e pachet are fereastra refuzului, cu numele lui, motivul pe înțeles și „Alege alt fișier…”;
+ * - un fișier care nu e pachet are fereastra refuzului, cu numele lui, motivul pe înțeles și „Alege alt fișier…”; un pachet
+ *   din bibliotecă a cărui descărcare a căzut, „Încearcă din nou”;
  * - la „Închizi …?”, „Rămân” e primul și are focusul, iar „Închide oricum” e roșu.
  *
  * Extensiile de probă sunt în `test/fixtures/extensii/` (`cade`, `sovaie`, `incet`) și `extensii/salut`.
@@ -22,13 +24,13 @@ test.use({ locale: 'ro-RO' });
 const SALUT = impacheteaza('extensii/salut').octeti;
 const pachet = (dosar: string): Buffer => Buffer.from(impacheteaza(`test/fixtures/extensii/${dosar}`).octeti);
 
-/** Pachetul „Salut”, cu altă versiune în manifest. */
-async function salut(versiune: string): Promise<Buffer> {
+/** Pachetul „Salut”, cu altă versiune în manifest (și, la cerere, cu alte permisiuni). */
+async function salut(versiune: string, permisiuni?: readonly string[]): Promise<Buffer> {
   const z = await citesteZip(SALUT, { fisiere: 16, octetiFisier: 1 << 20, octetiTotal: 1 << 22 });
   if (!z.ok) throw new Error('pachetul de probă nu se citește');
   return Buffer.from(scrieZip(z.intrari.map((i) => {
     if (i.nume !== 'extensie.json') return i;
-    const m = { ...JSON.parse(new TextDecoder().decode(i.octeti)) as Record<string, unknown>, versiune };
+    const m = { ...JSON.parse(new TextDecoder().decode(i.octeti)) as Record<string, unknown>, versiune, ...(permisiuni ? { permisiuni } : {}) };
     return { nume: i.nume, octeti: new TextEncoder().encode(JSON.stringify(m)) };
   })));
 }
@@ -63,7 +65,8 @@ async function instalate(page: Page): Promise<string[]> {
 }
 const IESIRI = ['Încearcă din nou', 'Vezi în bibliotecă', 'Închide'];
 
-test('o extensie care aruncă la pornire: starea ei, cu trei ieșiri și detaliile pliate; „Închide” o închide', async ({ page }) => {
+test('o extensie care aruncă la pornire: starea ei, cu trei ieșiri și detaliile pliate; „Închide” o închide', async ({ page, context }) => {
+  await context.grantPermissions(['clipboard-read', 'clipboard-write']);
   await page.goto('/');
   await instaleaza(page, 'cade-0.3.0.zip', pachet('cade'));
   await deschide(page, 'cade');
@@ -86,13 +89,21 @@ test('o extensie care aruncă la pornire: starea ei, cu trei ieșiri și detalii
   await expect(s.getByTestId('stare-mesaj')).toHaveText('pornirea cade anume');
   await expect(s.getByTestId('stare-pachet')).toHaveText('Versiunea 0.3.0, din fișierul cade-0.3.0.zip');
   await expect(s.locator('[data-extensii="copiaza-detalii"]')).toHaveText('Copiază');
-  // Starea încape în fereastră, peste cadru.
+  // „Copiază” pune în clipboard numele, pachetul și eroarea, de trimis autorului.
+  await s.locator('[data-extensii="copiaza-detalii"]').click();
+  await expect(s.locator('[data-extensii="copiaza-detalii"]')).toHaveText('Copiat');
+  expect(await page.evaluate(() => navigator.clipboard.readText())).toBe('Cade la pornire\nVersiunea 0.3.0, din fișierul cade-0.3.0.zip\npornirea cade anume');
+  // Starea stă la mijlocul ferestrei extensiei, peste cadru, și încape în ea.
   const cutii = await page.evaluate(() => {
     const a = document.querySelector('[data-testid="stare-pornire"]')?.getBoundingClientRect();
     const b = document.querySelector('[data-testid="spatiu-extensie"]')?.getBoundingClientRect();
-    return a && b ? { sus: a.top >= b.top, jos: a.bottom <= b.bottom, st: a.left >= b.left, dr: a.right <= b.right } : null;
+    if (!a || !b) return null;
+    return {
+      inauntru: a.top >= b.top && a.bottom <= b.bottom && a.left >= b.left && a.right <= b.right,
+      laMijloc: Math.abs((a.left + a.right) / 2 - (b.left + b.right) / 2) <= 2 && Math.abs((a.top + a.bottom) / 2 - (b.top + b.bottom) / 2) <= 2,
+    };
   });
-  expect(cutii).toEqual({ sus: true, jos: true, st: true, dr: true });
+  expect(cutii).toEqual({ inauntru: true, laMijloc: true });
 
   await s.locator('[data-extensii="inchide-extensia"]').click();
   await expect(fila(page)).toHaveCount(0);
@@ -214,6 +225,107 @@ test('o versiune nouă peste extensia deschisă, fără lucru nesalvat: se insta
   expect(await instalate(page)).toEqual(['Salut1.0.1']);
 });
 
+test('„Actualizează” din meniu, cu lucru nesalvat: întrebarea vine întâi, iar „Rămân” nu instalează; cât vine pachetul, fila spune „se actualizează…”', async ({ page }) => {
+  const descarcarea = await bibliotecaDeProba(page, { id: 'salut', nume: 'Salut', versiune: '1.0.1', permisiuni: ['stocare'], octeti: await salut('1.0.1') });
+  await page.goto('/');
+  await instaleaza(page, 'salut-1.0.0.zip', Buffer.from(SALUT));
+  await deschide(page, 'salut');
+  await expect(spatiu(page)).toHaveAttribute('data-stare', 'pornit');
+  await cadru(page).locator('[data-salut="modifica"]').click();
+
+  let m = await deschideMeniul(page);
+  const rand = m.locator('[data-extensii="deschide"][data-id="salut"] small');
+  await expect(rand).toHaveText('1.0.0 → 1.0.1');
+  await m.locator('[data-extensii="biblioteca-actualizeaza"]').click();
+  await expect(intrebare(page)).toBeVisible();
+  await page.locator('[data-extensii="inchidere-ramai"]').click();
+  await expect(intrebare(page)).toHaveCount(0);
+  // Nimic instalat: rândul oferă tot actualizarea, iar extensia e cum era.
+  m = await deschideMeniul(page);
+  await expect(rand).toHaveText('1.0.0 → 1.0.1');
+  await expect(m.locator('[data-extensii="biblioteca-actualizeaza"]')).toBeVisible();
+  // După „Rămân”, focusul e în meniul din care a pornit actualizarea: Escape îl închide.
+  await page.keyboard.press('Escape');
+  await expect(m).toHaveCount(0);
+  await expect(cadru(page).locator('[data-salut="lucru"]')).toHaveText('Lucrul: nesalvat');
+  await expect(cadru(page).locator('[data-salut="deschideri"]')).toHaveText('Deschideri: 1');
+
+  // Cu salvarea făcută la cerere, fără întrebare: cât vine pachetul, fila extensiei o spune; apoi extensia se redeschide.
+  await cadru(page).locator('[data-salut="la-inchidere"]').click();
+  let lasa = (): void => {};
+  descarcarea(new Promise<void>((gata) => { lasa = gata; }));
+  m = await deschideMeniul(page);
+  await m.locator('[data-extensii="biblioteca-actualizeaza"]').click();
+  await expect(page.getByTestId('fila-actualizare')).toHaveText('se actualizează…');
+  await expect(intrebare(page)).toHaveCount(0);
+  lasa();
+  await expect(rand).toHaveText('1.0.1 · actualizată');
+  await expect(page.getByTestId('fila-actualizare')).toHaveCount(0);
+  // Butonul „Actualizează” a plecat din rând: focusul a rămas în meniu, deci Escape îl închide.
+  await expect(m.locator('[data-extensii="deschide"][data-id="salut"]')).toBeFocused();
+  await page.keyboard.press('Escape');
+  await expect(m).toHaveCount(0);
+  await expect(cadru(page).locator('[data-salut="deschideri"]')).toHaveText('Deschideri: 2');
+  await expect(intrebare(page)).toHaveCount(0);
+  // Până la următoarea încărcare a paginii, rândul din meniu spune ce s-a întâmplat.
+  expect(await instalate(page)).toEqual(['Salut1.0.1 · actualizată']);
+});
+
+test('„Actualizează la …” din pagina bibliotecii, cu extensia deschisă: cu lucru nesalvat întreabă întâi; altfel o redeschide la versiunea nouă', async ({ page }) => {
+  await bibliotecaDeProba(page, { id: 'salut', nume: 'Salut', versiune: '1.0.1', permisiuni: ['stocare'], octeti: await salut('1.0.1') });
+  await page.goto('/');
+  await instaleaza(page, 'salut-1.0.0.zip', Buffer.from(SALUT));
+  await deschide(page, 'salut');
+  await expect(spatiu(page)).toHaveAttribute('data-stare', 'pornit');
+  await cadru(page).locator('[data-salut="modifica"]').click();
+
+  const p = await paginaDinCatalog(page, 'salut');
+  await expect(p).toHaveAttribute('data-stare', 'actualizeaza');
+  await p.locator('[data-extensii="pagina-actualizeaza"]').click();
+  // Întrebarea stă peste bibliotecă, iar biblioteca de sub ea e inertă.
+  await expect(intrebare(page)).toBeVisible();
+  await expect(biblioteca(page)).toHaveAttribute('inert', '');
+  await page.locator('[data-extensii="inchidere-ramai"]').click();
+  await expect(intrebare(page)).toHaveCount(0);
+  await expect(p).toHaveAttribute('data-stare', 'actualizeaza');
+  await expect(p.locator('[data-extensii="pagina-actualizeaza"]')).toBeEnabled();
+
+  await p.locator('[data-extensii="pagina-actualizeaza"]').click();
+  await page.locator('[data-extensii="inchidere-inchide"]').click();
+  await expect(p).toHaveAttribute('data-stare', 'instalata');
+  await expect(intrebare(page)).toHaveCount(0);
+  await inchideBiblioteca(page);
+  await expect(cadru(page).locator('[data-salut="deschideri"]')).toHaveText('Deschideri: 2');
+  await expect(cadru(page).locator('[data-salut="lucru"]')).toHaveText('Lucrul: salvat');
+  expect(await instalate(page)).toEqual(['Salut1.0.1']);
+});
+
+test('un pachet din bibliotecă a cărui descărcare a căzut: fereastra refuzului, cu „Încearcă din nou”', async ({ page }) => {
+  const descarcarea = await bibliotecaDeProba(page, {
+    id: 'salut', nume: 'Salut', versiune: '1.0.1', permisiuni: ['stocare', 'cont'], octeti: await salut('1.0.1', ['stocare', 'cont']),
+  });
+  await page.goto('/');
+  await instaleaza(page, 'salut-1.0.0.zip', Buffer.from(SALUT));
+  // Versiunea nouă cere ceva în plus: confirmarea; descărcarea cade.
+  descarcarea('cade');
+  await (await deschideMeniul(page)).locator('[data-extensii="biblioteca-actualizeaza"]').click();
+  const f = confirmare(page);
+  await f.locator('[data-extensii="actualizeaza"]').click();
+  await expect(f.locator('h2')).toHaveText('Pachetul nu se poate instala');
+  await expect(f.getByTestId('extensii-refuz-sursa')).toHaveText('Salut 1.0.1');
+  await expect(f.getByTestId('extensii-refuz')).toHaveAttribute('data-motiv', 'retea');
+  await expect(f.getByTestId('extensii-refuz')).toHaveText('Nu e legătură la internet.');
+  await expect(f.locator('.butoane button')).toHaveText(['Încearcă din nou', 'Închide']);
+
+  // Cu legătura la loc, „Încearcă din nou” o aduce.
+  descarcarea('ok');
+  await f.locator('[data-extensii="instaleaza-din-nou"]').click();
+  await expect(page.getByTestId('extensii-gata')).toBeVisible();
+  await page.locator('[data-extensii="inchide-instalata"]').click();
+  await expect(confirmare(page)).toHaveCount(0);
+  expect(await instalate(page)).toEqual(['Salut1.0.1']);
+});
+
 test('reîncărcarea paginii: extensia deschisă se redeschide; una închisă sau una care n-a pornit, nu; un link al bibliotecii are întâietate', async ({ page }) => {
   await page.goto('/');
   await instaleaza(page, 'salut-1.0.0.zip', Buffer.from(SALUT));
@@ -247,7 +359,10 @@ test('reîncărcarea paginii: extensia deschisă se redeschide; una închisă sa
   expect(await instalate(page)).toEqual(['Cade la pornire0.3.0', 'Salut1.0.0']);
   await expect(fila(page)).toHaveCount(0);
 
-  // Una care n-a pornit nu se ține minte.
+  // Una care n-a pornit nu se ține minte, nici cea de dinaintea ei: omul nu mai era în „Salut”.
+  await deschide(page, 'salut');
+  await expect(spatiu(page)).toHaveAttribute('data-stare', 'pornit');
+  expect(await page.evaluate(() => localStorage.getItem('cncvs2.extensie-deschisa'))).toBe('salut');
   await deschide(page, 'cade');
   await expect(stare(page)).toBeVisible();
   expect(await page.evaluate(() => localStorage.getItem('cncvs2.extensie-deschisa'))).toBeNull();
