@@ -241,6 +241,12 @@ Estimarea: ~8 felii (A.8c s-a despărțit în A.8c și A.8d pe 23.11, A.9 în A.
   cel mai vechi primul, cu numele acțiunilor și ale uneltelor din catalog și cu rezultatul doar când nu e „ok”. Verificarea
   stă în modulul ei, ca bucata raportorului să nu aducă tot contractul utilizării (18,5 / 25 kB la prima eroare). Fraza în
   nota de confidențialitate. Pornirea crește cu ~0,2 kB (copia inelului, captura).
+- **A.11b** (24.11, `3.Ao`): **pașii atașați la o raportare**. Fereastra raportării (`Raportari.tsx`) ia pașii la deschidere
+  (`pasiAcum`, apoi `pasDin`: ce spune bifa e ce pleacă) și îi trimite doar cu bifa **Atașează ultimii pași din aplicație**
+  (nebifată implicit; fără pași, oprită), numărați în „Ce mai pleacă”. Callable-ul `tichete` îi verifică pas cu pas
+  (`pasiDin`), ca la raportul unei erori, îi scrie în tichet (`pasi`, doar când sunt) și pune în audit doar câți. Fila Tichete
+  îi arată în raportare, cu numele din catalog; lista pașilor e o componentă comună cu fila Erori (`src/admin/pasi/Pasi.tsx`).
+  Manualul spune bifa, în ambele limbi.
 
 ## Probele
 

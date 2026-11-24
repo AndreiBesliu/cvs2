@@ -12340,6 +12340,23 @@ admin cat mai multe setari”).
 - **Documentele:** ADR 0262 (implementarea, despărțirea), fișa etapei 3 (`3.An`), registrul otrăvurilor, traducerile, nota
   liniei. **Completed:** 24.11 06:50.
 
+## 2026-11-24 — Felia A.11b: pașii atașați la o raportare (ADR 0262)
+
+**Prompt:** același „am raspuns” (7a: A.8–A.11 acum), după A.11a; pe drum, owner-ul: „continua cu A.8c” (A.8c era deja în
+`main`, din `fbbc8934`; linia a continuat cu A.11b).
+**Started:** 24.11 06:55.
+
+- **Codul (`60025fb7`, `26a18b7b`):** bifa în `Raportari.tsx` (pașii luați la deschidere), contractul `tichete`, serverul
+  (`raporteaza`: verificarea, scrierea, auditul), fila Tichete, lista pașilor comună cu Erori (`src/admin/pasi/Pasi.tsx`),
+  manualul, catalogul controalelor scris din nou (atributul nou `data-camp="raport-pasi"`).
+- **Probele:** cazurile din citire și din server, proba cap-coadă (cu o a doua raportare, fără bifă, după otrava E06).
+  **Otrăvurile:** 10 / 10. **Porțile locale:** rapidul 10 054 / 0, emulatoarele 123 / 123 și 51 / 51. **Mărimea:** totalul
+  800,2 / 900, contul 30,1 / 32, `/admin` 135,2 / 200.
+- **Între timp:** completul pe `82ec5424` (A.10, A.11a) verde: unitare 10 054 / 0, e2e 646 / 646, funcțiile 122 / 122,
+  paginile 51 / 51.
+- **Documentele:** ADR 0262 (implementarea), fișa etapei 3 (`3.Ao`), registrul otrăvurilor, traducerile, nota liniei.
+  **Completed:** 24.11 07:55.
+
 ## 2026-11-23 — Sesiunea principală în cloud: a șasea unire (A.6, Roadmap, Documentație și Setări); linia frezelor, pornită (Model: Claude Fable 5.2)
 
 **Prompt:** același brief de predare al sesiunii principale („unește ce se poate”), la raportul liniei adminului (PR-ul

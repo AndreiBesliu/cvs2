@@ -2,7 +2,7 @@
 
 <!-- Adusă din memoria sesiunii principale pe 23.11.2026 (mutarea în cloud). De aici înainte o ține la zi linia, pe ramura ei, odată cu feliile. -->
 
-_CNCVS2, ADR 0260: pagina /admin reproiectată; A.1–A.6 unite în main (A.6: 4497d639); ADR 0262 (utilizarea aplicației) acceptat pe 23.11; A.8a și A.8b unite în main pe 23.11 (PR-ul AndreiBesliu/cvs2#8, din 55d26b81); A.8c și A.8d în PR-ul AndreiBesliu/cvs2#13 (completul pe ba1b4b0c); A.9a (sumele zilei, jobul agregaUtilizarea), A.9b (fila Utilizare), A.10 (fluxurile) și A.11a (pașii dinaintea unei erori) gata pe aceeași ramură, în același PR (la unire se publică funcțiile agregaUtilizarea și logClientError, regulile, indexurile); apoi A.11b–A.11d, apoi A.7_
+_CNCVS2, ADR 0260: pagina /admin reproiectată; A.1–A.6 unite în main (A.6: 4497d639); ADR 0262 (utilizarea aplicației) acceptat pe 23.11; A.8a și A.8b unite în main pe 23.11 (PR-ul AndreiBesliu/cvs2#8, din 55d26b81); A.8c și A.8d în PR-ul AndreiBesliu/cvs2#13 (completul pe ba1b4b0c); A.9a (sumele zilei, jobul agregaUtilizarea), A.9b (fila Utilizare), A.10 (fluxurile), A.11a (pașii dinaintea unei erori) și A.11b (pașii la raportare) gata pe aceeași ramură, în același PR (la unire se publică funcțiile agregaUtilizarea, logClientError și tichete, regulile, indexurile); apoi A.11c, A.11d, apoi A.7_
 
 Linia adminului din [sesiunea principală](principala.md): ADR 0260 (intervalul 0260–0269), acceptat pe 13.11.2026 cu ideile 51–62 de pe
 tabla „Harta schițelor”. Owner-ul a cerut „vreau sa faci design si pentru admin”, iar la idei a răspuns „Da la toate”
@@ -78,6 +78,10 @@ tabla „Harta schițelor”. Owner-ul a cerut „vreau sa faci design si pentru
   `shared/pasiEroareVerificare.ts`**, nu în `pasiEroare.ts`: altfel bucata raportorului aduce tot contractul utilizării. Un
   set „server” de otrăvuri cu un callable în probe cere și emulatorul de funcții (`--only auth,firestore,functions,storage`),
   altfel linia de bază cade. Otrăvurile 29 / 29.
+- **A.11b (pașii la raportare) GATA pe ramură din 24.11** (`60025fb7`, `be22afe8`, `26a18b7b`; `3.Ao`): pașii se iau la
+  deschiderea ferestrei raportării și pleacă doar cu bifa; **un atribut `data-camp` nou într-o fereastră a contului cere și
+  el catalogul controalelor scris din nou**. Lista pașilor e comună Erori și Tichete (`src/admin/pasi/Pasi.tsx`). Otrăvurile
+  10 / 10 (E06 după o a doua raportare, fără bifă, în proba cap-coadă).
 - **După unirea PR-ului** (A.8a–A.8b, de owner, pe 23.11, cât lucram la A.8c): `main` adus în ramură printr-o unire obișnuită
   (**un push forțat al unei ramuri refăcute e refuzat de permisiuni**; ciocnirile doar în tabele), apoi catalogul controalelor
   scris din nou și **funcțiile compilate din nou** (`npm --prefix functions run compileaza`: probele pe emulatoare folosesc `functions/lib`, iar un contract nou în
