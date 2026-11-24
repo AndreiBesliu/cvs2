@@ -119,6 +119,15 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
   făcut din commit-urile anunțate, cu completul pornit pe ea cât încă rulau completele a două linii; în `main` a intrat
   abia după ce au fost verzi și porțile lotului, și cele ale liniilor, iar vârfurile nu aduseseră cod (unirea de probă
   a vârfului: zero fișiere schimbate în afara `.md`). Câștigul: o jumătate de oră.
+- **Intervalele ADR, la 24.11:** 0145–0149 sesiunea principală (lângă plafoanele 0143, 0144; 0145 e plafonul pornirii),
+  0230–0239 biblioteca, 0240–0249 ancorele, 0250–0259 aranjamentele, 0260–0269 adminul, 0270–0279 trasarea, 0280–0289
+  pluginul, 0290–0299 exportul, 0300–0309 frezele, 0310–0329 relieful, 0330–0339 cotele. Următoarea linie nouă ia de
+  la 0340.
+- **Un PR rămas deschis după unire** (ramura a mers mai departe peste commit-ul unit, deci GitHub nu-l închide) se
+  închide doar la cuvântul owner-ului, cu un comentariu care trimite la commit-ul de unire; înainte, se uită ce mai e
+  pe ramură: pe 24.11, la `#16`, frezele aveau deja două felii noi, neunite, pentru care linia deschide alt PR.
+- **O linie nouă:** nota ei (`docs/linii/<linie>.md`) intră în `main` înaintea ramurii, ramura se face din acel `main`
+  (`git push origin <sha>:refs/heads/wip/<felia>-<nume>`), iar brief-ul de lipit trimite la notă, nu o repetă.
 - **PR-ul liniei** e deschis de sesiunea ei ca ciornă (regula mediului cloud): starea „ciornă” nu spune că felia nu e gata.
   Gata înseamnă raportul liniei (nota ei spune „gata”) și rapidul cu completul verzi pe commit-ul raportat.
 
@@ -143,9 +152,9 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
 
 ## Starea pe 24.11.2026, la prânz (după a paisprezecea unire din cloud)
 
-- **Pe test:** `fafb95e7` (tot până la lotul al treisprezecelea: 25.8↑b; publicat pe 24.11 la 11:33). Lotul al
-  paisprezecelea (`356db9bd`: 3.Ts, A.11b–A.11e, 16.A↑b-1) e în `main` din 11:28, cu CI-ul și publicarea în lucru
-  (cu serverul: `utilizare`, `tichete`, regulile, două indexuri compuse pe `utilizare`).
+- **Pe test:** `356db9bd` (tot până la lotul al paisprezecelea: 3.Ts, A.11b–A.11e, 16.A↑b-1; publicat pe 24.11 la
+  12:26, cu serverul: `utilizare`, `tichete`, regulile, indexurile). `main` e mai departe cu plafonul pornirii
+  (`f536a4cc`, ADR 0145) și cu documente: ajung pe test cu lotul următor.
 - **`main`, din cloud:** pe 23.11: 3.Tq (`0ae9c6c1`); 11.3↑e și A.4 (`ddaa7ead`); 3.Tr, unită de linia elicelor
   (`d262e57a`); 25.8↑a și A.5 (`1b46c955`), cu reparația probei extensiilor (`8287d66e`); 11.3↑f, unită de linia
   planșelor (`f4601938`); A.6 (`4497d639`); 3.Xh (`2d1e482c`) și 12.1↑e-3 cu 12.1↑e-4 (`03460cab`); A.8a cu A.8b
@@ -158,6 +167,9 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
   - **în lucru, pe ramuri:** adminul (A.7, adminul pe telefon, peste commit-ul unit; `AndreiBesliu/cvs2#13`), frezele
     (16.A↑b-2: lista „Freza” pe rândurile exportului și în Tăierea), exportul (28.8↑, `#11`: unirea la cuvântul
     owner-ului); se unesc la raportul liniei;
+  - **pornite pe 24.11, la cuvântul owner-ului (brief-urile, date ca fișiere):** relieful (18.1↑, `wip/18.1-relief`,
+    ADR 0310–0329, canalul `relief`) și cotele (10.4↑, `wip/10.4-cote`, ADR 0330–0339, canalul `cote`); amândouă
+    încep cu ADR-ul propus și întrebările. Schema: v28 rezervat cotelor, v29 reliefului;
   - **propus, la owner:** biblioteca (ADR 0232, auditul UI/UX al extensiilor, cinci întrebări; `#17`);
   - **la cuvântul owner-ului:** restul bibliotecii extensiilor (căutarea, captura mărită), următoarea felie a
     incrustațiilor, a trasării și a elicelor, 11.5↑b (după etapa 13);
@@ -167,8 +179,6 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
     owner-ului, cu un brief scris de sesiunea principală și lipit de owner într-o sesiune cloud nouă;
   - **încheiate:** ancorele (6.V↑), raportările (15.B↑b), galeria (3.Tp, ADR 0281), probele instabile.
 - **La owner:**
-  - PR-urile rămase deschise după unire (`#15` elicele, `#16` frezele: ramurile și-au adus `main` peste commit-ul
-    unit, deci GitHub nu le-a închis): le închide owner-ul sau, la cuvântul lui, sesiunea principală;
   - „cine unește în `main`” (recomandarea: doar sesiunea principală; pe 23–24.11, biblioteca și frezele au scris întâi
     aici, iar felia era deja în lot: unirea a rămas aici);
   - fereastra exportului: unirea lui 28.8↑a acum sau după desene;
