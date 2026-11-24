@@ -128,12 +128,12 @@ test('fără `?test`, testul nu se deschide, iar bara n-are buton Test; pe live,
   await expect(panou(page)).toHaveCount(0);
 });
 
-test('sugestia (ADR 0111) stă în meniul contului, după manual și aspect, și fără `?test`, în afara live; pe live lipsește', async ({ page }) => {
+test('sugestia (ADR 0111) stă în meniul contului, după manual, aspect și setări, și fără `?test`, în afara live; pe live lipsește', async ({ page }) => {
   await page.goto('/');
   // Din 02.11 (ADR 0120), manualul și sugestia stau în meniul contului, nu în extensia barei; sugestia își păstrează condiția.
   await expect(page.locator('#loc-extensie [data-editare="manual"], #loc-extensie [data-editare="sugestie"]')).toHaveCount(0);
   const meniu = await deschideMeniulContului(page);
-  await expect(meniu.locator('[data-meniu-cont="manual"] + [data-meniu-cont="aspect"] + [data-meniu-cont="sugestie"]')).toBeVisible();
+  await expect(meniu.locator('[data-meniu-cont="manual"] + [data-meniu-cont="aspect"] + [data-meniu-cont="setari"] + [data-meniu-cont="sugestie"]')).toBeVisible();
   await page.route('**/config.json', (r) => r.fulfill({ contentType: 'application/json', body: JSON.stringify({ instanta: 'live' }) }));
   await page.goto('/');
   const live = await deschideMeniulContului(page);

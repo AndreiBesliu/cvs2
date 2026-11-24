@@ -43,7 +43,7 @@ test('JSON-ul: refuzurile (gol, stricat, alt format, versiune nouă, prea multe)
   assert.deepEqual(citesteFisierFreze(enc(`{"format":"${FORMAT_FREZE}","v":1,"freze":{}}`)), { ok: false, motiv: 'format' });
   const multe = Array.from({ length: MARGINI_FREZA.freze + 1 }, (_, i) => ({ ...PLATA6, nume: `F${i}` }));
   assert.deepEqual(citesteFisierFreze(enc(JSON.stringify({ format: FORMAT_FREZE, v: 1, freze: multe }))), { ok: false, motiv: 'prea-multe' });
-  const r = citesteFisierFreze(enc(JSON.stringify({ format: FORMAT_FREZE, v: 1, freze: [PLATA6, { ...PLATA6, diametru: 0 }, 3, { ...PLATA6, fel: 'bila' }] })));
+  const r = citesteFisierFreze(enc(JSON.stringify({ format: FORMAT_FREZE, v: 1, freze: [PLATA6, { ...PLATA6, diametru: 0 }, 3, { ...PLATA6, fel: 'necunoscut' }] })));
   assert.ok(r.ok);
   assert.deepEqual(r.freze, [PLATA6]);
   assert.equal(r.sarite, 3);
@@ -76,7 +76,7 @@ test('CSV-ul cu `,` și punctul zecimal; coloanele în altă ordine, cu majuscul
 test('CSV-ul: o coloană necesară lipsă (nume, fel, diametru) e refuzul; un rând greșit se sare; Windows-1250', () => {
   assert.deepEqual(citesteFisierFreze(enc('nume;diametru\nA;6\n')), { ok: false, motiv: 'coloane' });
   assert.deepEqual(citesteFisierFreze(enc('nume;fel;diametru\n')), { ok: true, fel: 'csv', freze: [], sarite: 0 });
-  const r = citesteFisierFreze(enc('nume;fel;diametru\nA;plata;6\nB;bila;6\nC;plata;abc\nD;plata;6;extra\n'));
+  const r = citesteFisierFreze(enc('nume;fel;diametru\nA;plata;6\nB;necunoscut;6\nC;plata;abc\nD;plata;6;extra\n'));
   assert.ok(r.ok);
   assert.deepEqual(r.freze.map((f) => f.nume), ['A', 'D']);
   assert.equal(r.sarite, 2);
@@ -97,8 +97,18 @@ test('CSV-ul cu grupul (ADR 0302 §4): coloana `grup`, curățată; goală, frez
   assert.equal(j.freze[0]?.grup, 'Lemn');
 });
 
+test('CSV-ul cu felurile noi (ADR 0302, 16.A↑h-4): bila, toroidala cu raza, conica, burghiul; numele lor și în engleză', () => {
+  const r = citesteFisierFreze(enc('nume;fel;diametru;unghi;raza\nA;bilă;6;;\nB;toroidală;8;;1\nC;conică;6,35;15;0,5\nD;burghiu;5;118;\nE;ball;3;;\nF;bullnose;6;;0,5\nG;tapered;6;10;0,25\nH;drill;4;118;\n'));
+  assert.ok(r.ok);
+  assert.deepEqual(r.freze.map((f) => [f.nume, f.fel, f.unghi, f.raza]), [
+    ['A', 'bila', undefined, undefined], ['B', 'toroidala', undefined, 1], ['C', 'conica', 15, 0.5], ['D', 'burghiu', 118, undefined],
+    ['E', 'bila', undefined, undefined], ['F', 'toroidala', undefined, 0.5], ['G', 'conica', 10, 0.25], ['H', 'burghiu', 118, undefined],
+  ]);
+  assert.equal(r.sarite, 0);
+});
+
 test('coloanele CSV, în ordinea din manual', () => {
-  assert.deepEqual(COLOANE_CSV, ['nume', 'fel', 'diametru', 'unghi', 'varf', 'numar', 'turatie', 'avans', 'plonjare', 'pas', 'pas_lateral', 'tais', 'taisuri', 'nota', 'grup']);
+  assert.deepEqual(COLOANE_CSV, ['nume', 'fel', 'diametru', 'unghi', 'varf', 'numar', 'turatie', 'avans', 'plonjare', 'pas', 'pas_lateral', 'tais', 'taisuri', 'nota', 'grup', 'raza']);
 });
 
 function farăNedefinite(f: Freza): Freza {

@@ -511,3 +511,49 @@
   max-width: 28rem;
 }
 
+
+/* Catalogul (ADR 0302 §1, felia 16.A↑h-3): sub bibliotecă, strâns la început; grupurile lui, cu „Pune toate”. */
+.freze-catalog {
+  border-top: 1px solid var(--l-margine);
+  margin-top: var(--sp-1);
+  padding-top: var(--sp-1);
+}
+
+.freze-catalog-cap {
+  padding: var(--sp-1) var(--sp-2);
+  justify-content: space-between;
+}
+
+.dialog-freze .freze-catalog-arata {
+  border-color: transparent;
+  background: transparent;
+  font-weight: 650;
+  padding-inline: var(--sp-1);
+}
+
+.dialog-freze .freze-catalog-arata::before {
+  content: '▸ ';
+}
+
+.dialog-freze .freze-catalog-arata[aria-expanded='true']::before {
+  content: '▾ ';
+}
+
+.freze-catalog-nota {
+  padding: 0 var(--sp-3) var(--sp-1);
+}
+
+.dialog-freze .freze-catalog-grup {
+  min-height: 0;
+  padding: 0 var(--sp-2);
+  margin-inline-end: var(--sp-2);
+  font-size: var(--fs-1);
+}
+
+/* Felurile fără CAM încă (ADR 0302 §2, felia 16.A↑h-4): „în curând în proiect”, discret. */
+.freze-curand {
+  color: var(--t-slab);
+  font-style: italic;
+  font-size: var(--fs-1);
+}
+

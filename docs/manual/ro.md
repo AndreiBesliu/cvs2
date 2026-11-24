@@ -1189,6 +1189,33 @@ Cu unealta Cote, un clic pe linia unei cote o alege: capetele ei se trag pe alt 
 trage sau se mută cu săgețile (1 mm; Shift: 10 mm, Alt: 0,1 mm), **Delete** o șterge. Cu Selecția și cu celelalte unelte,
 cotele nu se aleg: clicul trece la forma de sub ele. Un dublu clic pe o cotă, cu orice unealtă, trece la Cote, cu ea aleasă.
 
+Cum arată cotele (cifrele, unitatea, capetele, liniile de extensie, culoarea) și cum se comportă unealta se alege în
+fereastra **Setări**, secțiunea **Cotele**: din ⚙ al barei uneltei, din meniul contului sau cu `Ctrl+,`.
+
+## Setările
+%% capitol: setari
+%% acopera: vedere.setari
+
+Fereastra **Setări** (`Ctrl+,`; și din meniul contului, „Setări…”, din **Caută o comandă** și din ⚙ al uneltei Cote) ține
+setările aplicației, nu ale unui proiect: fiecare schimbare se aplică pe loc și se ține în acest browser. Secțiunile stau în
+stânga; acum una singură, **Cotele**. Sus stă **cota de probă**, desenată cu setările de acum; fiecare grup are **Înapoi la
+implicit**. Un număr se scrie cu virgulă sau cu punct; unul în afara marginilor rămâne în câmp, spus în roșu, și nu se ține.
+**Închide** (sau Esc) închide fereastra.
+
+- **Cifrele:** unitatea (mm, cm, inch; desenul rămâne în mm), zecimalele (automat: 2, în inch 3; sau 0–6), zerourile de la
+  coadă (tăiate sau păstrate), rotunjirea (la zecimale sau la un pas, de exemplu 0,5), separatorul zecimal (după limba
+  aplicației, virgula sau punctul), unitatea scrisă după cifră, înălțimea cifrelor pe foaie (1–20 mm) și locul cifrei
+  (deasupra liniei, în linie, cu linia întreruptă, sau mereu orizontală).
+- **Liniile și capetele:** capetele (săgeată plină, săgeată deschisă, bară oblică, punct sau fără) și mărimea lor, liniile de
+  extensie (arătate sau ascunse), golul lor față de formă, depășirea liniei de cotă și distanța liniei de cotă la
+  **Păstrează** din Măsoară.
+- **Comportamentul:** dacă cotele noi sunt legate de forme, cu ce fel pornește unealta (Automată sau ultimul folosit), ce
+  urmează după o cotă (rămâne unealta Cote sau înapoi la Selecție), dacă se văd cotele pe pânză (ascunse, se văd doar cu
+  unealta Cote), sub câți pixeli pe ecran se ascund cifrele și culoarea cotelor (a temei sau aleasă).
+- **Lipirea:** punctele de care se lipesc capetele (vârfurile, mijloacele, centrele, cadranele, cutia, foaia, grila),
+  toleranța în pixeli și punctul cel mai apropiat de pe contur (cu Ctrl, mereu sau niciodată).
+- **Măsurarea:** ce arată Măsoară (distanța, Δx și Δy, unghiul) și unde (lângă cursor, în bara de jos).
+
 ## Conversia vectorilor
 %% capitol: conversie
 %% acopera: editare.conversie, document.converteste
@@ -1287,11 +1314,23 @@ fișă o mută: în alt grup, înapoi **Fără grup (pe fel)** sau, cu **Grup no
 frezele lui (un nume care e deja al altui grup le unește, iar un nume gol le întoarce pe felurile lor). Grupul merge cu
 freza în fișier și în cont.
 
+**Catalogul**, sub frezele tale (**Catalogul (119)**, strâns la început), are frezele obișnuite: plate de la Ø1 la Ø19,05,
+de planare de la Ø19,05 la Ø50,8, în V (30°–150°), de gravare (10°–60°, cu vârful de 0,1–0,5), bile, toroidale, conice cu
+vârf rotund și burghie, cu mărimile în milimetri și în țoli (nota „1/4"”). Valorile lor de lucru sunt de pornire, din diametru, de verificat pe materialul tău. O freză din
+catalog își arată fișa; **Pune în frezele mele** o copiază în bibliotecă, cu primul T liber, iar **Pune toate**, lângă un
+grup, și **Pune tot ce vezi**, lângă titlu (după căutare și filtru), pun mai multe deodată. O freză care e deja la tine
+(același fel, diametru, unghi și vârf) nu se pune a doua oară: fișa spune **E deja în frezele mele.**
+
+**Bila, toroidala, conica și burghiul** stau în biblioteca ta și în catalog, cu **în curând în proiect**: în secțiunea
+Tăierea se aleg abia când aplicația le va putea tăia. Până atunci, le ții la un loc cu celelalte.
+
 **Freză nouă** deschide editorul, cu câmpurile:
 - **Numele**: gol, freza primește numele propus din fel și diametru („Plată Ø6”, „V60 Ø6”, „Gravare 30° vârf 0,2 Ø3,175”).
   Două freze nu pot avea același nume (fără deosebire de majuscule);
-- **Felul**: **Plată**, **În V** (cu **Unghiul inclus**, între 1° și 179°) sau **Gravare** (o freză în V cu **Vârful plat**,
-  mai mic decât diametrul);
+- **Felul**: **Plată**, **În V** (cu **Unghiul inclus**, între 1° și 179°), **Gravare** (o freză în V cu **Vârful plat**,
+  mai mic decât diametrul), **Bilă**, **Toroidală** (cu **Raza colțului**), **Conică** (cu vârful rotund: **Unghiul inclus**
+  și **Raza vârfului**) sau **Burghiu** (cu **Unghiul vârfului**, 118° de obicei); o rază e peste 0 și sub jumătatea
+  diametrului;
 - **Diametrul** (cel mult 100 mm), **Lungimea tăișului** (dacă o știi; la V și la gravare, cel puțin cât conul),
   **Tăișuri** (dacă le știi) și **T preferat** (1–999, numărul de pe portscule);
 - **Valorile de lucru**: **Turația** (rot/min), **Avansul** și **Plonjarea** (mm/min), **Pasul pe trecere** (mm) și
@@ -1311,8 +1350,8 @@ dată: una ștearsă nu revine singură. Cu biblioteca goală, **Adaugă frezele
 
 **Exportă…** salvează biblioteca în fișierul `frezele-mele.cvs2freze.json`, pe care îl aduci cu **Importă…** pe alt
 calculator. **Importă…** citește și un CSV (salvat, de exemplu, din Excel), cu un rând de antet și coloanele `nume`, `fel`
-(`plata`, `v` sau `gravare`), `diametru`, `unghi`, `varf`, `numar` (T-ul), `turatie`, `avans`, `plonjare`, `pas`,
-`pas_lateral`, `tais`, `taisuri`, `nota` și `grup`, în orice ordine. Doar `nume`, `fel` și `diametru` sunt necesare; fără celelalte,
+(`plata`, `v`, `gravare`, `bila`, `toroidala`, `conica` sau `burghiu`), `diametru`, `unghi`, `varf`, `raza`, `numar` (T-ul), `turatie`, `avans`, `plonjare`, `pas`,
+`pas_lateral`, `tais`, `taisuri`, `nota` și `grup`, în orice ordine (`raza` doar la toroidală și conică). Doar `nume`, `fel` și `diametru` sunt necesare; fără celelalte,
 T-ul e 1, turația 18 000, avansul 1 000, plonjarea 300, pasul cât raza (la freza plată) sau 1 mm, iar pasul lateral 40 %.
 Separatorul (`;`, `,` sau tab) se găsește singur; cu `;`, numerele pot avea virgula zecimală. Înainte de import alegi ce se
 întâmplă cu un nume care există deja: **Păstrează-le pe amândouă** (implicit; cea nouă primește „(2)”), **Înlocuiește** sau
@@ -2374,6 +2413,7 @@ tu, iar interfața aplicației rămâne aceeași.
 | `Ctrl+J` | Leagă căile |
 | `Delete` | Șterge selecția |
 | `Ctrl+K` | Caută o comandă |
+| `Ctrl+,` | Setări |
 | `Home` | Arată toată foaia |
 | `PageUp`, `PageDown` | Foaia de dinainte, Foaia următoare (foaia activă, după lista foilor) |
 | `T` | Arată traseul |

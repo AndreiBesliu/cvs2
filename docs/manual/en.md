@@ -1230,6 +1230,34 @@ drag the line or move it with the arrow keys (1 mm; Shift: 10 mm, Alt: 0.1 mm), 
 other tools, dimensions are not selected: the click goes to the shape under them. A double click on a dimension, with any
 tool, switches to Dimensions with it selected.
 
+How dimensions look (the numbers, the unit, the ends, the extension lines, the colour) and how the tool behaves is chosen in
+the **Settings** window, **Dimensions** section: from the ⚙ in the tool's bar, from the account menu or with `Ctrl+,`.
+
+## Settings
+%% capitol: setari
+%% acopera: vedere.setari
+
+The **Settings** window (`Ctrl+,`; also from the account menu, “Settings…”, from **Search commands** and from the ⚙ of the
+Dimensions tool) holds the app's settings, not a project's: every change applies at once and is kept in this browser. The
+sections are on the left; for now just one, **Dimensions**. At the top is the **sample dimension**, drawn with the current
+settings; each group has **Back to defaults**. A number is typed with a comma or a point; one outside the limits stays in the
+field, said in red, and is not kept. **Close** (or Esc) closes the window.
+
+- **Numbers:** the unit (mm, cm, inch; the drawing stays in mm), the decimals (automatic: 2, in inch 3; or 0–6), trailing
+  zeros (dropped or kept), rounding (to the decimals or to a step, for instance 0.5), the decimal separator (by the app
+  language, comma or point), the unit written after the number, the text height on the sheet (1–20 mm) and the text position
+  (above the line, in the line, with the line broken, or always horizontal).
+- **Lines and ends:** the ends (filled arrow, open arrow, oblique tick, dot or none) and their size, the extension lines
+  (shown or hidden), their gap from the shape, the overshoot past the dimension line and the dimension line distance for
+  **Keep** in Measure.
+- **Behaviour:** whether new dimensions are linked to shapes, which type the tool starts with (Automatic or the last used),
+  what comes after a dimension (the Dimensions tool stays or back to Select), whether dimensions show on the canvas (hidden,
+  they show only with the Dimensions tool), below how many screen pixels the numbers hide and the dimensions' colour (the
+  theme's or chosen).
+- **Snapping:** the points the ends snap to (vertices, midpoints, centres, quadrants, the box, the sheet, the grid), the
+  tolerance in pixels and the nearest point on the outline (with Ctrl, always or never).
+- **Measuring:** what Measure shows (the distance, Δx and Δy, the angle) and where (next to the pointer, in the bottom bar).
+
 ## Converting vectors
 %% capitol: conversie
 %% acopera: editare.conversie, document.converteste
@@ -1331,11 +1359,23 @@ you type (at most 40 characters). Your groups come first in the list, by name; *
 all its bits (a name that already belongs to another group merges them, and an empty name puts them back under their kinds).
 The group travels with the bit in the file and in the account.
 
+**The catalogue**, below your bits (**Catalogue (119)**, folded at first), holds the common bits: flat from Ø1 to Ø19.05,
+surfacing from Ø19.05 to Ø50.8, V (30°–150°), engraving (10°–60°, with a 0.1–0.5 tip), ball, bull nose, tapered ball nose and
+drills, with their sizes in millimetres and in inches (the note “1/4"”). Their working values are starting values, from the diameter, to check on your material. A
+catalogue bit shows its details; **Add to my bits** copies it to the library, with the first free T, while **Add all**, next to
+a group, and **Add everything shown**, next to the title (after the search and the filter), add several at once. A bit you
+already have (same kind, diameter, angle and tip) is not added twice: the details say **Already in my bits.**
+
+**Ball, bull nose, tapered and drill bits** sit in your library and in the catalogue, marked **coming to projects**: in the
+Cutting section you can pick them once the app can cut them. Until then, you keep them together with the others.
+
 **New bit** opens the editor, with the fields:
 - **Name**: left empty, the bit gets the name proposed from its kind and diameter (“Flat Ø6”, “V60 Ø6”, “Engraving 30° tip
   0.2 Ø3.175”). Two bits cannot share a name (case does not matter);
-- **Kind**: **Flat**, **V** (with the **Included angle**, between 1° and 179°) or **Engraving** (a V bit with a **Flat tip**,
-  smaller than the diameter);
+- **Kind**: **Flat**, **V** (with the **Included angle**, between 1° and 179°), **Engraving** (a V bit with a **Flat tip**,
+  smaller than the diameter), **Ball**, **Bull nose** (with the **Corner radius**), **Tapered** (with a round tip: the
+  **Included angle** and the **Tip radius**) or **Drill** (with the **Point angle**, usually 118°); a radius is above 0 and
+  below half the diameter;
 - **Diameter** (at most 100 mm), **Cutting length** (if you know it; for V and engraving bits, at least the cone),
   **Flutes** (if you know them) and **Preferred T** (1–999, the number on the tool holder);
 - **Working values**: **Spindle speed** (rpm), **Feed** and **Plunge** (mm/min), **Step-down** (mm) and **Stepover** (% of
@@ -1356,8 +1396,8 @@ missing ones.
 
 **Export…** saves the library to the file `frezele-mele.cvs2freze.json`, which you bring in with **Import…** on another
 computer. **Import…** also reads a CSV (saved from Excel, for example) with a header row and the columns `nume`, `fel`
-(`plata`, `v` or `gravare`), `diametru`, `unghi`, `varf`, `numar` (the T), `turatie`, `avans`, `plonjare`, `pas`,
-`pas_lateral`, `tais`, `taisuri`, `nota` and `grup`, in any order. Only `nume`, `fel` and `diametru` are required; without the others,
+(`plata`, `v`, `gravare`, `bila`, `toroidala`, `conica` or `burghiu`), `diametru`, `unghi`, `varf`, `raza`, `numar` (the T), `turatie`, `avans`, `plonjare`, `pas`,
+`pas_lateral`, `tais`, `taisuri`, `nota` and `grup`, in any order (`raza` only for bull nose and tapered bits). Only `nume`, `fel` and `diametru` are required; without the others,
 the T is 1, the spindle speed 18,000, the feed 1,000, the plunge 300, the step-down half the diameter (for a flat bit) or
 1 mm, and the stepover 40 %. The separator (`;`, `,` or tab) is found on its own; with `;`, numbers may use a decimal comma.
 Before importing, you choose what happens to a name that already exists: **Keep both** (the default; the new one gets
@@ -2450,6 +2490,7 @@ it, and the app’s interface stays the same.
 | `Ctrl+J` | Join paths |
 | `Delete` | Delete selection |
 | `Ctrl+K` | Search commands |
+| `Ctrl+,` | Settings |
 | `Home` | Show the whole sheet |
 | `PageUp`, `PageDown` | Previous sheet, Next sheet (the active sheet, along the list of sheets) |
 | `T` | Show toolpath |

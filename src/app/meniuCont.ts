@@ -10,9 +10,9 @@ import type { ContTinut } from './dreptCont.ts';
 
 /**
  * Un rând al meniului: panoul contului (logat) sau logarea (nelogat), raportările omului, frezele omului (ADR 0300 §3, oricui,
- * și fără cont), manualul, aspectul interfeței (ADR 0250 §3), o raportare nouă, sugestia, ieșirea.
+ * și fără cont), manualul, aspectul interfeței (ADR 0250 §3), setările (ADR 0330 §6), o raportare nouă, sugestia, ieșirea.
  */
-export type IdMeniuCont = 'cont' | 'intra' | 'raportari' | 'freze' | 'manual' | 'aspect' | 'raporteaza' | 'sugestie' | 'iesi';
+export type IdMeniuCont = 'cont' | 'intra' | 'raportari' | 'freze' | 'manual' | 'aspect' | 'setari' | 'raporteaza' | 'sugestie' | 'iesi';
 
 /**
  * Rândurile, de sus în jos; `null` e linia dinaintea ieșirii. Raportările (ADR 0116 §C) cer contul deschis, cu adresa
@@ -27,6 +27,7 @@ export function randuriMeniuCont(cont: ContTinut | null, sugestie: boolean): rea
     'freze',
     'manual',
     'aspect',
+    'setari',
     ...(deschis ? (['raporteaza'] as const) : []),
     ...(sugestie ? (['sugestie'] as const) : []),
     ...(cont ? ([null, 'iesi'] as const) : []),

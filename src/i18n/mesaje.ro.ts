@@ -145,6 +145,7 @@ export const ro = {
   'vedere.toate-foile': 'Toate foile pe pânză',
   'vedere.aspect': 'Aspectul interfeței',
   'vedere.freze': 'Frezele mele',
+  'vedere.setari': 'Setări',
   'tema.auto': 'după sistem',
   'tema.luminoasa': 'luminoasă',
   'tema.intunecata': 'întunecată',
