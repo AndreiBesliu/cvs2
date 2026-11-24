@@ -13059,3 +13059,27 @@ owner-ului din sesiunea ei: „ok, cand e verde fa unirea”
   11.1↑c și 14.C↑d (comenzile foii pe pânză; butonul Admin), în lucru pe `wip/11.1c-controale-foi`, cu canalul `foi`.
 - **La owner:** fereastra exportului (`#11`), verificarea juridică a utilizării aplicației înaintea live-ului, „cine
   unește în `main`”.
+
+## 2026-11-24 — 16.A↑a-2: frezele standard, puse singure în bibliotecă (Model: Claude Opus 5.5)
+
+**Prompt:** „sa ai in vedere ca biblioteca de freze trebuie sa fie populata cu freze default standard.” (owner-ul, după
+16.A↑b-2). **Started:** 24.11, 12:20.
+
+- **Codul** (`81c59e2c`): setul de pornire cu id-uri fixe (`ID_PORNIRE`, `cuStandard` în `src/model/freza.ts`); depozitul
+  (`puneStandard`, steagul `standard` în înregistrare); biblioteca fără cont îl primește o dată, la prima citire, din fereastră
+  sau din panou (`src/app/frezeStandard.ts`, numele din mesajele ferestrei, cerute doar atunci); un cont îl primește la prima
+  sincronizare doar dacă n-a avut niciodată freze (versiunea 0), fără dubluri pe două calculatoare și fără să învie frezele
+  șterse; întrebarea „Adaugi … din acest browser” vine după prima trecere; panoul folosește biblioteca contului după ce are
+  freze sau setul; butonul unei biblioteci goale, „Adaugă frezele standard”. Probele întâi: unitare (modelul, depozitul,
+  sincronizarea, cu două calculatoare deodată).
+- **Atelierul** (`4d92690c`): cu setul pus de la prima pornire, lista „Freza” apărea și în Atelier, unde Tăierea n-are liste
+  (a căzut `atelier.taiere.spec.ts:92` în rularea completă locală): acolo freza rămâne pe cartela ei.
+- **Probele în Edge:** fereastra și panoul 16 / 16, plus Atelierul, panoul, foile, incrustația, încărcarea la cerere, lucrul
+  fără rețea: 69 / 69; pe emulatoare 2 / 2. Rularea completă locală a fost oprită la 136 / 701 (prea lentă aici): completul
+  din CI o face.
+- **Otrăvurile** (`test/otravuri/16.A-a2.py`, `16.A-a2-emu.py`): 15 / 16 (E05, întrebarea înaintea primei treceri, practic
+  echivalentă).
+- **Mărimea:** pornirea neschimbată (cu ușa 114,5 / 120), totalul 816,6 / 900 pe ramură (`main` `fdce5f1b`: 814,4; 16.A↑b-2
+  +1,7, 16.A↑a-2 +0,5). Nimic pe server.
+- **Documentele:** ADR 0300 („Implementarea (16.A↑a-2)”, §3 schimbat), manualul (ro, en), fișa etapei 3, pragul, registrul
+  otrăvurilor, traducerile, nota liniei. **Completed:** 24.11, 13:10.

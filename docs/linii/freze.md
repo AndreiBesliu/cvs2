@@ -75,6 +75,13 @@ gravare, profil, formă desenată)” și „Freze de profil desenate de utiliza
   „16.A↑b-2a” (`RE_ID` din `scripts/documentatie.ts`: după `-N` nu vine literă). Identitatea frezei montate ține acum și
   turația (`aceeasiFreza`, și la roluri). Biblioteca (`frezeMele.ts`) stă acum într-o bucată comună panoului și ferestrei.
   Otrăvuri 22 / 22. Totalul 810,5 → 812,2 / 900, pornirea neschimbată (cu Atelierul 114,8 / 120). Nimic pe server.
+- **24.11, 12:20–13:10: 16.A↑a-2 gata pe ramură** (la „sa ai in vedere ca biblioteca de freze trebuie sa fie populata cu freze
+  default standard”): setul de pornire cu id-uri fixe (`ID_PORNIRE`), pus singur o dată în biblioteca fără cont (fereastra
+  sau panoul) și în cont la prima sincronizare a unui cont care n-a avut niciodată freze; steagul `standard` în înregistrare
+  (șterse, nu revin); întrebarea „Adaugi … din acest browser” nu mai numără frezele standard; în Atelier, rândul „Freza” nu
+  apare (Tăierea n-are liste acolo). Otrăvuri 15 / 16 (E05, echivalentă). **Capcană:** cu setul pus de la prima pornire, orice
+  probă e2e care deschide Tăierea vede acum rândul „Freza” (o probă care cere o bibliotecă goală folosește `bibliotecaGoala`
+  din `test/e2e/ajutor-freze.ts`). PR-ul #22 are acum 16.A↑b-2 și 16.A↑a-2.
 - **Feliile**, în ordine: 16.A↑a (biblioteca în browser, fereastra, fișierul), apoi b (alegerea în proiect, v27), c
   (contul), d (calibrarea), e (bila și toroidala), f (profilul desenat), g (valorile pe material).
 

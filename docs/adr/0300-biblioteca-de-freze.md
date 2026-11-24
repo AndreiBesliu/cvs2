@@ -449,7 +449,12 @@ cu valorile implicite ale aplicației); nimic pe server, documentul rămâne v27
   bibliotecă cu freze, versiunea mai nouă, fără depozit; sincronizarea: un cont gol, al doilea calculator, deodată, șterse,
   doar citire); în Edge, fereastra (puse singure, în limba de la prima pornire; goală, cu butonul) și panoul (de la prima
   pornire, fără fereastră) 16 / 16; pe emulatoare 2 / 2 (contul gol le primește, întrebarea numără doar freza omului; doar
-  citirea nu le primește). Otrăvurile: `test/otravuri/16.A-a2.py`.
+  citirea nu le primește). Otrăvurile: `test/otravuri/16.A-a2.py` și `16.A-a2-emu.py`, 15 / 16 (E05, întrebarea înaintea
+  primei treceri, practic echivalentă: un „Da” grăbit duce aceleași freze, cu aceleași id-uri).
+- **Atelierul** (butoanele mari, fără liste) n-are rândul „Freza”: cu setul pus de la prima pornire, lista ar fi apărut acolo;
+  freza rămâne pe cartela ei.
+- **Mărimea:** pornirea neschimbată (109,9 kB; cu ușa 114,5 / 120), totalul +0,5 kB: 816,6 / 900 pe ramură, cu 16.A↑b-2, față
+  de 814,4 în `main` (`fdce5f1b`).
 
 ## Se redeschide dacă
 
