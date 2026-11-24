@@ -12545,3 +12545,22 @@ PR-ul `AndreiBesliu/cvs2#13` („De unit acum (A.8c, A.8d): `fbbc8934`”).
   felii se unește la commit-ul raportat).
 - **La owner:** fereastra exportului (28.8↑a–b-2: acum sau după desene), verificarea juridică a utilizării aplicației
   înaintea live-ului, „cine unește în `main`”.
+
+## 2026-11-24 — Linia exportului: felia 28.8↑b-3, tăietura ca cartonașe (ADR 0290)
+
+**Prompt:** răspunsul owner-ului la ADR 0290, exact: „1a, 2a, 3a, 4a” (feliile acceptate; după 28.8↑b-2).
+**Started:** 24.11, 03:00.
+
+- **`main` adus** (A.8c și A.8d, utilizarea aplicației): ciocnirea doar în DEVLOG; catalogul controalelor citește doar numele
+  scrise în sursă, deci cartonașele din 28.8↑b-2 le scriu acum pe `<Cartonase data-camp="…">` și pe fiecare `<Card>`
+  (`c10f2f37`); catalogul își păstrează numele și primește trei (regulile urechilor). Completul verde pe el.
+- **Tăietura ca cartonașe,** cu poza fiecărei variante; găurirea oprită pe un rând fără cercuri, cu motivul; poza tăieturii
+  în listă, pe rândul de sub nume.
+- **Găsite pe drum:** rândurile listei de ~156 px (poza pe o coloană a ei) opreau tragerea din ordinea de mână; inputul unui
+  cartonaș oprit rămânea la vedere ca un cerc (și pe colțurile de pe linie, din 28.8↑b-2). Ambele reparate, cu probe.
+- **Probele:** 23 de spec-uri mutate de pe listă pe cartonaș; e2e-ul ferestrei 174 / 174.
+- **Otrăvurile:** `test/otravuri/28.8b3.py`, 7 / 7.
+- **Manualul** (ro, en), ADR 0290 („Implementarea 28.8↑b-3”), fișa etapei 3, registrul otrăvurilor, nota liniei.
+- **Mărimea:** totalul 808,8 / 900 (bucata ferestrei +0,7 kB), pornirea neschimbată.
+
+**Completed:** 24.11, 03:40.

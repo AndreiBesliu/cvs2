@@ -352,3 +352,20 @@ cele patru aranjamente, cu harta schițelor schimbată ca la „Cu canvas-ul ara
 - **Tokenurile lemnului, ale mesei și ale frezei** stau pe `.dx-ilu` (desenele și pozele): pe `.dx-desen`, pozele ieșeau negre.
 - **Mărimea:** bucata ferestrei 26,2 → 27,5 kB gzip, totalul 800,8 → 802,1 / 900 (+1,3 kB), pornirea neschimbată.
 
+## Implementarea 28.8↑b-3 (24.11)
+
+- **Tăietura e cartonașe** (`<Cartonase data-camp="latura">`), ca alegerile din 28.8↑b-2: exteriorul, interiorul, pe linie
+  (stânga și dreapta, pe o cale deschisă, după `laturiOferite`), apoi, pe contururi închise, buzunarul, găurirea, V-carve-ul și
+  cele două incrustații. Găurirea stă și pe un rând fără cercuri, oprită, cu „doar pe cercuri” (inventarul: „cu motivul sub
+  cele oprite”); pe o cale deschisă, tăieturile contururilor închise nu apar (nota de sub Tăietura spune de ce).
+- **În listă,** sub numele operației, poza tăieturii ei (1,6 rem), pe rândul textului. Pe o coloană a ei, numele se rupea pe
+  patru rânduri, iar rândurile de ~156 px făceau ca tragerea din ordinea de mână să nu mai pornească în probă.
+- **Inputul unui cartonaș oprit rămâne ascuns:** regula câmpurilor oprite (`.dialog input:disabled`, 0,55) îl arăta ca un
+  cerc peste cartonaș, și pe colțurile de pe linie din 28.8↑b-2.
+- **Probele** aleg cartonașul (`input[data-camp="latura"][value="…"]`), iar valoarea se citește pe cel bifat (`:checked`);
+  o probă care numără tăieturile posibile le numără pe cele de ales (`:enabled`).
+- **Mărimea:** bucata ferestrei +0,7 kB; totalul 808,8 / 900 (cu `main` din 24.11), pornirea neschimbată.
+- **28.8↑b e încheiată.** Rămân liste: colțul XY0, Z0, sensul și forma frezei (desenul lor le arată deja), postul și traseul
+  buzunarului (28.8↑c). Urmează 28.8↑c: desenele și pozele buzunarului (traseul, pasul lateral, coborârea, frezele de rest) și
+  ale găuririi.
+

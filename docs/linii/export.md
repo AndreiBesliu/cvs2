@@ -31,7 +31,11 @@ vreau ca ficare setare sa fie insotita de o ilustratie sugestiva, ca sa ajute us
   `5e1f7d64`.
 - **24.11: 28.8↑b-2 gata** (alegerile ca cartonașe cu poze: colțurile, locurile urechilor, direcția, unitățile, schimbarea
   frezei, foile; despărțirea cu poza ei), pe ramură și pe canalul `export`; neunită. Otrăvurile 11 / 11. Totalul +1,3 kB
-  (802,1 / 900). Detaliile: ADR 0290, „Implementarea 28.8↑b-2”. Urmează 28.8↑b-3 (tăietura ca cartonașe).
+  (802,1 / 900). Detaliile: ADR 0290, „Implementarea 28.8↑b-2”. După `main` adus (A.8c, A.8d: catalogul controalelor),
+  numele cartonașelor scrise în sursă (`c10f2f37`); completul CI verde pe el.
+- **24.11: 28.8↑b-3 gata** (tăietura ca cartonașe, poza tăieturii în listă; inputul cartonașelor oprite ascuns), pe ramură și
+  pe canalul `export`; neunită. Otrăvurile 7 / 7. Totalul 808,8 / 900. 28.8↑b e încheiată; urmează 28.8↑c (buzunarul și
+  găurirea).
 
 ## Ce s-a găsit (23.11)
 
@@ -67,6 +71,10 @@ vreau ca ficare setare sa fie insotita de o ilustratie sugestiva, ca sa ajute us
   Ce spune un desen nou (o formulă) se socotește în `exportDeseneCalcul.ts` și se compară cu lucrarea în `export.desene.test.ts`.
 - **Cartonașele (din 28.8↑b-2):** o alegere e `input[data-camp="…"][value="…"]` (grupul, `[data-alegere="…"]`); în probe,
   `alege(loc, camp, v)` și `aleasa(loc, camp)` din `test/e2e/ajutor-export.ts`.
+- **Tăietura (din 28.8↑b-3):** `input[data-camp="latura"][value="…"]` (`alege(loc, 'latura', v)`); valoarea, pe cel bifat. Găurirea
+  e pe cartonaș și oprită pe un rând fără cercuri: o probă care caută „se poate găuri” numără `:enabled`.
+- **Lista operațiilor:** rândurile trebuie să rămână scunde: un rând înalt (~156 px) oprește tragerea din ordinea de mână în
+  proba din `export.spec.ts` (ordinea de mână).
 - **Catalogul controalelor** (ADR 0262, din `main`, 24.11): se scoate din `data-camp="…"` (și celelalte atribute de nume)
   scrise în sursă pe un control sau pe o componentă; un nume dat prin proprietate (`camp={…}`) sau din șablon nu intră, iar
   un `id="…"` pe o componentă intră. După o schimbare a câmpurilor, `node scripts/catalog-controale.ts --scrie`
