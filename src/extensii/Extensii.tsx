@@ -37,14 +37,15 @@ import { aboneazaCont, contTinut } from '../app/dreptCont.ts';
 import type { Jurnal } from '../app/jurnalErori.ts';
 import '../i18n/carcasa.ts';
 import { mesajeGata } from '../i18n/laCerere.ts';
-import { cuMesaje, t, type CheieSimpla } from '../i18n/t.ts';
+import { cuMesaje, t } from '../i18n/t.ts';
 import { useLimba } from '../ui/useLimba.ts';
 import type { FormeCvs2 } from '../../extensii/api.ts';
 import { ADRESA_CATALOG, type CatalogBiblioteca, type RandBiblioteca } from '../../shared/biblioteca.ts';
-import { cereCatalogul, instaleazaDinBiblioteca, stareRand, type RefuzBiblioteca } from './biblioteca.ts';
+import { cereCatalogul, instaleazaDinBiblioteca, stareRand } from './biblioteca.ts';
 import type { CadruPornit, GazdaForme, GazdaMasina } from './cadru.ts';
 import { contextPentruExtensie } from './cont.ts';
 import { FaraStocare, listaExtensii, scrieExtensia, type ExtensieInstalata } from './depozit.ts';
+import { motivText } from './motivText.ts';
 import { repornireRara } from './repornire.ts';
 import { Semn, SemnInstalat, useSemnInstalat } from './Semn.tsx';
 import { StarePornire, TIMP_PORNIRE_GREA_MS } from './StarePornire.tsx';
@@ -73,9 +74,6 @@ type ProgresActualizare = { readonly fel: 'lucreaza' } | { readonly fel: 'gata';
 
 /** Adresa absolută a catalogului: pachetele bibliotecii stau lângă el. */
 const adresaCatalog = (): string => new URL(ADRESA_CATALOG, location.href).href;
-/** Ca `motivText` din `parti.tsx` (adus la cerere, cu ferestrele): la lipsa rețelei, textul browserului rămâne în jurnal. */
-const motivText = (m: RefuzBiblioteca['motiv'], detaliu?: string): string =>
-  `${t(`extensii.motiv.${m}` as CheieSimpla)}${detaliu && m !== 'retea' ? ` (${detaliu})` : ''}`;
 
 /** Săgețile mută focusul între rândurile meniului; Escape și Tab îl închid (ca meniul contului). */
 function tastaInMeniu(e: KeyboardEvent<HTMLDivElement>, inchide: () => void): void {
@@ -263,6 +261,13 @@ export function Extensii({ jurnal, fereastra, onFereastra, onDeschisa, onModal, 
     return () => { document.removeEventListener('pointerdown', afara, true); };
   }, [meniu]);
   const alege = (f: () => void): void => { setMeniu(null); f(); };
+  // Cu meniul deschis, focusul rămâne în el și când butonul apăsat pleacă din rând (o actualizare) ori când întrebarea de
+  // deasupra lui se închide: altfel Escape n-ar mai închide meniul.
+  useEffect(() => {
+    const m = refMeniu.current;
+    if (!m || intrebare || m.contains(document.activeElement)) return;
+    m.querySelector<HTMLButtonElement>('[role="menuitem"]:not(:disabled)')?.focus();
+  }, [progres, intrebare]);
 
   /**
    * Închiderea extensiei deschise, fără pierderi (ADR 0164 §C): întâi salvările ei (`host.laInchidere`), cel mult 5 s; apoi,
@@ -326,7 +331,8 @@ export function Extensii({ jurnal, fereastra, onFereastra, onDeschisa, onModal, 
     f();
     setIntrebare(false);
     onModal(cerere !== null || bib !== null);
-    setTimeout(() => { (refMeniu.current?.querySelector<HTMLButtonElement>('[role="menuitem"]:not(:disabled)') ?? butonInchide.current)?.focus(); }, 0);
+    // Cu meniul deschis (o actualizare cerută de acolo), focusul se întoarce în el (mai jos), nu la ×.
+    setTimeout(() => { if (!refMeniu.current) butonInchide.current?.focus(); }, 0);
   };
   // O extensie din meniu: cea deschisă doar se arată; alta o înlocuiește, după închiderea fără pierderi a celei de acum.
   const deschideExtensia = (x: ExtensieInstalata): void => {
@@ -344,19 +350,9 @@ export function Extensii({ jurnal, fereastra, onFereastra, onDeschisa, onModal, 
    * nouă (ADR 0232 §A.2).
    */
   const actualizeazaDinMeniu = async (rand: RandBiblioteca): Promise<void> => {
-    // Butonul apăsat pleacă din rând cât durează actualizarea (și după ea): focusul rămâne în meniu, pe rândul extensiei, ca
-    // Escape să-l poată închide.
-    const focusPeRand = (): void => {
-      setTimeout(() => {
-        const m = refMeniu.current;
-        if (m && !m.contains(document.activeElement)) m.querySelector<HTMLButtonElement>(`[data-extensii="deschide"][data-id="${rand.id}"]`)?.focus();
-      }, 0);
-    };
     setProgres((p) => ({ ...p, [rand.id]: { fel: 'lucreaza' } }));
-    focusPeRand();
     if (!await inainteDeInlocuire(rand.id)) {
       setProgres((p) => Object.fromEntries(Object.entries(p).filter(([k]) => k !== rand.id)));
-      focusPeRand();
       return;
     }
     let r: Awaited<ReturnType<typeof instaleazaDinBiblioteca>>;
@@ -374,7 +370,6 @@ export function Extensii({ jurnal, fereastra, onFereastra, onDeschisa, onModal, 
       return;
     }
     setProgres((p) => ({ ...p, [rand.id]: { fel: 'gata', versiune: rand.versiune } }));
-    focusPeRand();
     dupaInlocuire(rand.id);
   };
 

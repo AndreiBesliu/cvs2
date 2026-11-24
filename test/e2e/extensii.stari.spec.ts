@@ -300,6 +300,26 @@ test('„Actualizează la …” din pagina bibliotecii, cu extensia deschisă: 
   expect(await instalate(page)).toEqual(['Salut1.0.1']);
 });
 
+test('o versiune care cere ceva în plus, peste extensia deschisă cu lucru nesalvat: după confirmare, întrebarea; „Rămân” nu instalează nimic', async ({ page }) => {
+  await bibliotecaDeProba(page, {
+    id: 'salut', nume: 'Salut', versiune: '1.0.1', permisiuni: ['stocare', 'cont'], octeti: await salut('1.0.1', ['stocare', 'cont']),
+  });
+  await page.goto('/');
+  await instaleaza(page, 'salut-1.0.0.zip', Buffer.from(SALUT));
+  await deschide(page, 'salut');
+  await expect(spatiu(page)).toHaveAttribute('data-stare', 'pornit');
+  await cadru(page).locator('[data-salut="modifica"]').click();
+
+  await (await deschideMeniul(page)).locator('[data-extensii="biblioteca-actualizeaza"]').click();
+  await confirmare(page).locator('[data-extensii="actualizeaza"]').click();
+  await expect(intrebare(page)).toBeVisible();
+  await page.locator('[data-extensii="inchidere-ramai"]').click();
+  await expect(intrebare(page)).toHaveCount(0);
+  await expect(confirmare(page)).toHaveCount(0);
+  expect(await instalate(page)).toEqual(['Salut1.0.0 → 1.0.1']);
+  await expect(cadru(page).locator('[data-salut="lucru"]')).toHaveText('Lucrul: nesalvat');
+});
+
 test('un pachet din bibliotecă a cărui descărcare a căzut: fereastra refuzului, cu „Încearcă din nou”', async ({ page }) => {
   const descarcarea = await bibliotecaDeProba(page, {
     id: 'salut', nume: 'Salut', versiune: '1.0.1', permisiuni: ['stocare', 'cont'], octeti: await salut('1.0.1', ['stocare', 'cont']),
