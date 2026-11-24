@@ -1,14 +1,13 @@
 # Biblioteca extensiilor (3.Xg, 3.Xh, 3.Xi, 3.Xj)
 
-## 3.Xj: căutarea și categoriile (unită în `main`); 3.Xk: proba repornirii (gata, de unit, în cloud)
+## 3.Xj: căutarea și categoriile; 3.Xk: proba repornirii (amândouă unite în `main`)
 
-_Aceeași linie și aceeași ramură (`wip/3.Xh-biblioteca-ui`, cu `main` adus de cinci ori pe 24.11; ultima, `62569bb`,
-lotul 22, cu ciocnirea doar în DEVLOG).
+_Aceeași linie și aceeași ramură (`wip/3.Xh-biblioteca-ui`; pe 24.11 seara are exact arborele lui `main` `878ee5d`).
 Starea:
-**3.Xj e în `main` din 24.11 (`049c5dda`, lotul 22; completul lotului, verde). ADR 0233, acceptat de owner pe 24.11
-(„da, 1a–5a”, la cele cinci întrebări): rămâne ce e implementat. 3.Xk (doar probe) e pe ramură, cu PR-ul
-`AndreiBesliu/cvs2#24` refolosit pentru ea; o unește sesiunea principală, la raport, după rapidul și completul verzi.
-Pachetele nu s-au schimbat (Easy 3Draw e 18.23.0, din 3.Tt; următoarea versiune, 18.24.0).**_
+**Linia n-are felie în lucru. 3.Xj e în `main` din 24.11 (`049c5dda`, lotul 22). ADR 0233, acceptat de owner pe 24.11
+(„da, 1a–5a”, la cele cinci întrebări): rămâne ce e implementat. 3.Xk (doar probe) e în `main` din 24.11 (`373699e6`,
+lotul 24, din `23d9a1b`, la „ok, cand e verde fa unirea” al owner-ului). Ce urmează în bibliotecă pornește la cuvântul
+lui. Pachetele nu s-au schimbat (Easy 3Draw e 18.23.0, din 3.Tt; următoarea versiune, 18.24.0).**_
 
 - **Ce s-a făcut** (amănuntele, în ADR 0233, „Implementat”): rafturile bibliotecii (`CATEGORII_BIBLIOTECA`,
   `shared/biblioteca.ts`) și `categorii` în lista bibliotecii și în catalog; căutarea pură (`src/extensii/cautare.ts`);
@@ -23,8 +22,8 @@ Pachetele nu s-au schimbat (Easy 3Draw e 18.23.0, din 3.Tt; următoarea versiune
 - **CI:** rapidul verde pe `1c21640`; primul complet, căzut la o probă mai veche a extensiilor (regula de mai jos);
   **completul verde pe `51ca1a5`** (codul feliei cu `main` `a96881a`; 69 min 27 s); completul de pe capătul cu `main`
   `7312d68` adus (`e46d70e`) hotărăște unirea.
-- **3.Xk, felia mică de după, doar probe (hotărâtă cu sesiunea principală pe 24.11; gata pe 24.11, `1772f95`, cu
-  `main` `62569bb` adus în `abd0dfe`; PR-ul `AndreiBesliu/cvs2#24`, rămas doar cu ea):** „două cereri imediat după”, din proba repornirii, depindea de cât
+- **3.Xk, felia mică de după, doar probe (hotărâtă cu sesiunea principală pe 24.11; gata pe 24.11, `1772f95`;
+  completul verde pe `23d9a1b`, 45438616103; unită în `main` în `373699e6`):** „două cereri imediat după”, din proba repornirii, depindea de cât
   de repede ajungeau clicurile la cadrul refăcut (2 din 120 sub zece lucrători, la sesiunea principală; la mine, 0 din
   450). În loc de trei cereri dintr-un `evaluate` (ordinea mesajelor față de randarea lui React ar fi fost altă cursă),
   **ceasul paginii e al probei** (`page.clock.install()`, `pauseAt` înaintea primei cereri, `runFor`): la 1 999 ms nimic,
@@ -54,6 +53,12 @@ Pachetele nu s-au schimbat (Easy 3Draw e 18.23.0, din 3.Tt; următoarea versiune
   înaintea lui `goto`, `pauseAt` înaintea primului gest, `runFor` cu granița exactă). Cadrul extensiei pornește și cu
   ceasul oprit (pornirea lui folosește temporizatoare doar ca termene). Două `setPornire` în același pas sunt o singură
   refacere a cadrului: ce se adună acolo se probează unitar, nu din browser (otrava R04 din 3.Xk).
+- **După raportul „gata de unit”, ramura nu se mai mișcă pentru unire:** sesiunea principală unește commit-ul
+  raportat, cu completul verde, și rezolvă ea ciocnirile cu `main`. Pe 24.11, la vestea „PR-ul e în conflict” (un lot
+  intrat între timp în `main`), am adus `main` și am pornit alt complet pe vârful nou; n-a fost nevoie de el (oprit).
+  `main` se aduce din nou abia după unire, ca ramura să pornească felia următoare de la zi.
+- **`clicCareInchideCadrul` repetă clicul cât cadrul e încă acolo** (reparația sesiunii principale din 24.11, lotul 25,
+  după `extensii.spec.ts:135`: primul clic pe „Închide”, dat imediat după ce cadrul apare, se putea pierde).
 - **La 320 px, la atingere, rândul de sus al aplicației își suprapune butoanele** (în engleză, Extensii e sub butonul de
   căutare): problemă a carcasei, raportată sesiunii principale pe 24.11. Până e reparată, o probă de telefon la 320 px
   deschide meniul Extensii de la tastatură (`cuRaftul(page, true)`).
