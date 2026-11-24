@@ -12560,7 +12560,7 @@ PR-ul `AndreiBesliu/cvs2#13` („De unit acum (A.9a, A.9b): `dbb0306a`”).
 ## 2026-11-24 — Felia 3.Ts: ventilatorul cu carcasă în atelierul Easy 3Draw (ADR 0282) (Model: Claude Opus 5.5)
 
 **Prompt:** „continua” (în sesiunea cloud a liniei elicelor, după unirea lui 3.Tr în `main` și publicarea pe test).
-**Started:** 24.11, 07:38. **Completed:** 24.11, 09:00 (provizoriu) (în container; CI-ul, pe commit-ul împins).
+**Started:** 24.11, 07:38. **Completed:** 24.11, 09:14 (în container; CI-ul, pe commit-ul împins).
 
 - **Reperul LEGO:** din LDraw, 50899 (rotor cu inel în jurul paletelor, pe o gaură care nu e de ax Technic) și 41530
   (palete curbe, fără pas). Niciuna nu e un ventilator în tub pe un ax LEGO: de la 50899 vine ideea inelului, nu cotele.
@@ -12577,7 +12577,7 @@ PR-ul `AndreiBesliu/cvs2#13` („De unit acum (A.9a, A.9b): `dbb0306a`”).
   scrisă întâi (căzută), apoi codul.
 - **Hotărâte la implementare** (în ADR, „Implementarea (3.Ts)”): „jocul din calibrare” citit în două; găurile urechilor pe
   grila axului; inelul ca la 50899, fără „Ca LEGO”; carcasa din paletele fără inel.
-- **Otrăvurile, în clonă:** în lucru: primul lot, 99 / 108 (cele 9 scăpate, prinse după probele lor țintite); restul și `3.Ts-en.py`, în clonă.
+- **Otrăvurile, în clonă:** `3.Ts.py` 134 / 134: 125 din prima; nouă scăpate pe probele unitare, prinse după probele lor țintite (cazurile la care rotunjirea, inelul sau rezoluția cercurilor contează); E49, echivalentă, scoasă cu motivul. `3.Ts-en.py` 9 / 9 (N08, după proba numelui în engleză cu gaura și inelul). Listele lui 3.Tq (3) și 3.Tr (8), mutate pe codul nou și rulate din nou: toate prinse.
 - **Porțile, în container:** tipurile, regulile de import (0 încălcări), traducerile, unitarele pluginului, ale bibliotecii
   și ale extensiilor 241 / 241, build-ul determinist, e2e-ul atelierului și al bibliotecii. Pornirea 109,4 / 115 (cu ușa
   113,9), totalul 799,6 / 900, `/admin` 133,2 / 200 (neschimbate: pluginul e în afara pachetului); Easy 3Draw 18.22.0,

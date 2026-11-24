@@ -253,7 +253,7 @@ pas. De la 50899 vine ideea inelului, nu cotele: ventilatorul n-are „Ca LEGO�
   muchia de jos pe masă, pasul măsurat pe coardă, coarda pe hârtie, paletele care nu se ating, oglinda, carcasa cu urechile,
   găurile, canalul și cercurile fine, carcasa față de rotor, marginile); valorile pe hârtie sunt calculate separat de motor.
   E2e 6 (`test/e2e/trenulet.ventilator.spec.ts`), plus filele, pictogramele, elicea de barcă și proba în engleză din cvs2.
-- **Otrăvurile:** în lucru: primul lot, 99 / 108 (cele 9 scăpate, prinse după probele lor țintite); restul și `3.Ts-en.py`, în clonă.
+- **Otrăvurile:** `test/otravuri/3.Ts.py`, 134 (82 pe motor, 49 pe atelier prin e2e, pictograma și traducerea): 125 prinse din prima. Nouă au scăpat pe probele unitare și sunt prinse după probele lor țintite: butucul nerotunjit la zecime, inelul de cel puțin 1 mm, carcasa după rotorul cu inel, carcasa de cel puțin 6, locul găurilor după gaură (nu după lamaj), inelul cât paletele fără inel, cercurile cu laturi lungi (de două ori: carcasa și inelul) și urechea desprinsă de tub. A zecea (E49, ordinea cheilor în `defVentilator`) e echivalentă: ambele căi spre listă trec prin aceeași funcție, deci a ieșit din listă, cu motivul. `3.Ts-en.py`, 9 / 9 (gaura și inelul schimbate în numele în engleză, după proba lor în cvs2). Trei echivalente, lăsate afară cu motivul în listă. Listele lui 3.Tq (3) și 3.Tr (8), mutate pe codul nou și rulate din nou: toate prinse.
 - **De încercat pe imprimantă:** jocul de 0,8 pe carcasa tipărită în picioare; rotorul pe un ax LEGO, în carcasa prinsă cu
   știfturi de o grindă; dacă rotorul freacă, jocul se mărește din editor. Pe masă stau butucul și muchia de jos a paletelor,
   deci o margine de aderență (brim) ajută și aici.

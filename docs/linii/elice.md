@@ -80,7 +80,7 @@ La „continua” al owner-ului, pe ramura liniei, din `main` `883a8caa` (biblio
 - **Ce are:** a treia piesă a filei „Elice”, „Ventilator cu carcasă”, cu două piese: rotorul (3–12 palete răsucite, vârful
   drept, inelul la alegere) și carcasa (tubul cu peretele de 2, înalt cât paletele + 4, 2 sau 4 urechi cu găurile din
   calibrare pe grila axului); „Repede” Ø24 / 32 / 40 / 48, „Fă ventilatorul”. Probele: unitare 11
-  (`trenulet.ventilator.test.ts`), e2e 6 (`trenulet.ventilator.spec.ts`). Otrăvurile: în lucru: primul lot, 99 / 108 (cele 9 scăpate, prinse după probele lor țintite); restul și `3.Ts-en.py`, în clonă. Documentele: ADR 0282
+  (`trenulet.ventilator.test.ts`), e2e 6 (`trenulet.ventilator.spec.ts`). Otrăvurile: `3.Ts.py` 134 / 134 (125 din prima; nouă după probele lor țintite; E49, echivalentă, scoasă), `3.Ts-en.py` 9 / 9; 3 din `3.Tq.py` și 8 din `3.Tr.py`, mutate și prinse. Documentele: ADR 0282
   („Implementarea (3.Ts)”), fișa etapei 3, `docs/otravuri.md`, DEVLOG.
 - **Hotărâte la implementare** (decizia spunea doar „inelul din jurul elicei, cu jocul din calibrare și cu găuri de știft
   pentru grinzi”; motivele, în ADR): „jocul din calibrare” citit în două (găurile, calibrate; jocul la vârf, parametru);
