@@ -364,6 +364,17 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   (`FELURI_CU_CAM`: plata, V-ul, gravarea), restul sunt „în curând în proiect”. Frezele stau în cont ca text JSON,
   fără judecata felului: un client vechi ține un fel necunoscut neatins. Urmează 16.A↑h-5 (profilurile parametrice,
   ADR 0302 §7). Feliile: totalul +2,8 kB.
+  **Profilurile parametrice (ADR 0302 §1, §7, felia 16.A↑h-5) și freza din bibliotecă pe rândurile exportului (ADR
+  0300 §4, felia 16.A↑b-3)** gata pe 24.11, unite în `main` pe 24.11 (`4aee5405`, `fdde5947`). **h-5:** rotunjirea,
+  ogee-ul, ogee-ul roman (câmpul nou `treapta`) și panoul ridicat, în „Frezele mele” și în catalog (149 de freze), cu
+  marginile lor, capătul pe hârtie și silueta; canelura e o bilă, nu un fel separat; toate „în curând în proiect”.
+  **b-3** (peste fereastra exportului refăcută, la „Pe #11, acum” al owner-ului): lista „Din frezele mele”, prima în
+  grupul Freza al fișei unei operații, cu frezele care merg pe tăietura rândului; aleasă, rândul primește T-ul (regula
+  rolurilor, printre frezele ferestrei, `numarPentruRand`), Ø-ul, forma, pasul și, la buzunar, pasul lateral; Exportă
+  scrie numele, originea, valorile de lucru și tăișul, iar „Scrisă de mână” (un Ø sau o formă schimbate de mână) le
+  scoate. Biblioteca proiectului e comună cu Tăierea (`src/app/bibliotecaProiect.ts`). Fundul plat, frezele de rest,
+  dopul și banda vin în 16.A↑b-5; apoi 16.A↑b-4 (nota schimbării din bibliotecă). Documentul rămâne v27; nimic pe
+  server. Feliile: pornirea +0, totalul +2,6 kB (860,1 / 900).
   **Plafonul pornirii 120 kB (ADR 0145, decizia owner-ului din 24.11, „ok, ridica plafonul pornirii la 120 kB”):** după
   lotul al paisprezecelea, pornirea era 109,9 kB, cu ușa 114,4 și cu Atelierul 114,7 / 115, iar feliile următoare ale
   frezelor, exportului și aranjamentelor nu mai încăpeau în 0,3 kB. Poarta judecă tot trei măsuri sub același plafon
@@ -1571,6 +1582,27 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 24.11.2026, seara (a douăzeci și patra unire din cloud): **frezele: profilurile parametrice (16.A↑h-5) și freza din
+  bibliotecă pe rândurile exportului (16.A↑b-3), unite în `main`**, în lot (sesiunea principală, ramura `unire-2411ab`,
+  peste lotul 25, cu care a intrat în aceeași împingere). **16.A↑h-5** (linia frezelor, ramura `wip/16.A-freze`,
+  `2fe701d3`, PR-ul `AndreiBesliu/cvs2#22`; ADR 0302 §1, §7; la „continua cu 16.A↑h-5” al owner-ului), unită în
+  `4aee5405`: rotunjirea, ogee-ul, ogee-ul roman și panoul ridicat, în „Frezele mele” și în catalog (149 de freze),
+  „în curând în proiect”; otrăvurile 29 / 29. **16.A↑b-3** (ramura `wip/16.A-freze-b3`, `6041109d`, PR-ul
+  `AndreiBesliu/cvs2#26`; ADR 0300 §4; la „continua cu 16.A↑b-3” și „Pe #11, acum” ale owner-ului, în sesiunea
+  liniei), unită în `fdde5947`: lista „Din frezele mele” în grupul Freza al fișei unei operații din fereastra
+  exportului, cu T-ul, Ø-ul, forma și pașii frezei alese și cu originea ei scrisă de Exportă; otrăvurile 16 / 16.
+  Documentul rămâne v27; nimic pe server. Ciocnirile: registrul otrăvurilor și catalogul controalelor (scris din nou,
+  640 de nume). Porțile, în CI, pe `fdde5947` (completul 45466400696, verde la prima trecere, 50 min; cuprinde și
+  codul lotului 25): unit 10 307 / 0 (12 sărite, pe Linux), e2e 788 / 788, funcțiile pe emulatoare 136 / 136, paginile
+  59 / 59; rapidul, verde pe `fdde5947`, cu feliile sub 10 minute; completele liniei, verzi (`2fe701d3`: 45455123768;
+  `6041109d`: 45455611401); pornirea 110,4 kB (plafonul 120; cu ușa 115,1, cu Atelierul 115,4), **totalul
+  860,1 / 900 kB (mai sunt 39,9 kB)**, `/admin` 138,3 / 200, contul 30,3 / 32. Urmează lotul 27, relieful singur
+  (18.1↑a, `feb7bee1`, cu documentul v28; unit pe `unire-2411ac`, completul în lucru): cu el, totalul ajunge la
+  ~873 / 900. Apoi, o singură publicare pentru loturile 23–27. La linii: frezele (16.A↑b-5: fundul plat, frezele de
+  rest, dopul și banda; 16.A↑b-4), cotele (10.4↑a-4), atelierul Easy 3Draw (ADR 0340 propus, cu 3.Tu). **La owner:**
+  plafonul total (după relief rămân ~27 kB), cele trei întrebări ale lui 3.Tu, arhivarea sesiunilor exportului și
+  elicelor, verificarea juridică (GDPR) a utilizării aplicației înaintea live-ului, „cine unește în `main`”, meniul
+  de sus la 320 px la atingere.
 - 24.11.2026, seara: **o linie nouă, atelierul Easy 3Draw: piese și configuratoare, care ia și lucrul elicelor**. Două
   cereri ale owner-ului, scrise în sesiunile liniilor. În sesiunea liniei bibliotecii („sesiunea extensiilor”): „ok,
   vreau sa adaugi mai multe tipuri de piese pentru fiecare categoire, sau sa imbunatatesti piesele si configuratoarele
@@ -1608,7 +1640,12 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   trei formulare ale filei Setări țin mesajul până la citire (`useMesajDupaCitire`, `src/admin/setari/dupaCitire.ts`);
   două probe noi (citirea întârziată anume, care cădea înaintea reparației; citirea căzută); otrăvurile 5 / 5 din prima, pe emulatoare.
   Documentul rămâne v27; nimic pe server. Ciocnirile, doar în DEVLOG și în lecțiile din `docs/linii/principala.md`.
-  Porțile lotului, în CI, @@P25@@
+  Porțile lotului, în CI: primul complet (pe `001b6325`), roșu doar la proba de mai sus (unit 10 300 / 0, e2e
+  785 / 785, funcțiile 136 / 136, paginile 56 din 57); cu 3.At, codul lotului a trecut în completul lotului 26, care
+  îl cuprinde (45466400696, pe `fdde5947`: cifrele, în decizia unirii a douăzeci și patra); rapidul, verde pe
+  `e533068a`. Completul propriu al lotului, pe `cadac6c3`, a stat 40 de minute la coadă și rula încă la unire. Felia
+  rândului foii: totalul +0,7 kB (857,5 / 900), pornirea neschimbată. Loturile 19–22 sunt pe test din 20:32
+  (`62569bb2`; proba de fum, bună).
 - 24.11.2026, seara (a douăzeci și doua unire din cloud): **fereastra „Exportă G-code”, refăcută (28.8↑a–g), și proba
   repornirii extensiei (3.Xk) unite în `main`**, în lot (sesiunea principală, ramura `unire-2411y`, peste lotul 23), la
   „da, uneste fereastra exportului cand e verde si sa imi spui cand pot sa o arhivez” al owner-ului (în sesiunea

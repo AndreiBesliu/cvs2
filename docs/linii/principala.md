@@ -151,12 +151,13 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
   printr-o schiță.
 - **Observabilitatea:** erorile ajung în jurnalul aplicației; joburile își lasă marcajul.
 
-## Starea pe 24.11.2026, seara (după a douăzeci și treia unire din cloud)
+## Starea pe 24.11.2026, seara (după a douăzeci și patra unire din cloud)
 
 - **Pe test:** `62569bb2` (tot până la lotul 22: frezele din Tăierea și setul de pornire, „Frezele mele” ca listă, cu
   grupuri, unealta Cote, căutarea și rafturile din biblioteca extensiilor, oracolul rampelor împărțit; publicat pe
   24.11 la 20:32, fără server; proba de fum, bună). Publicarea loturilor 19–21 singure căzuse la o probă instabilă a
-  extensiilor (`extensii.spec.ts:135`), reparată în lotul 25. În drum: loturile 23–25, într-o singură publicare.
+  extensiilor (`extensii.spec.ts:135`), reparată în lotul 25. În drum: loturile 23–27, într-o singură publicare,
+  după ce intră și relieful (lotul 27).
 - **`main`, din cloud:** pe 23.11: 3.Tq (`0ae9c6c1`); 11.3↑e și A.4 (`ddaa7ead`); 3.Tr, unită de linia elicelor
   (`d262e57a`); 25.8↑a și A.5 (`1b46c955`), cu reparația probei extensiilor (`8287d66e`); 11.3↑f, unită de linia
   planșelor (`f4601938`); A.6 (`4497d639`); 3.Xh (`2d1e482c`) și 12.1↑e-3 cu 12.1↑e-4 (`03460cab`); A.8a cu A.8b
@@ -168,12 +169,11 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
   (`33fadb06`), 10.4↑a-2 (`f3283b33`), 16.A↑h-1 și 16.A↑h-2 (`db43ed08`); oracolul rampelor împărțit (`b2a56e23`) și
   3.Xj (`049c5dda`); cele două teste grele împărțite (`49ce2793`), 10.4↑a-3 (`08e2e50d`), 16.A↑h-3 și h-4
   (`9fd71053`); fereastra exportului, 28.8↑a–g (`c4ca5ec2`), și 3.Xk (`373699e6`); proba extensiilor, reparată
-  (`13d9bcad`), și 11.1↑d, scrisă în sesiunea principală (`001b6325`).
+  (`13d9bcad`), 11.1↑d (`001b6325`) și 3.At (`cadac6c3`), scrise în sesiunea principală; 16.A↑h-5 (`4aee5405`) și
+  16.A↑b-3 (`fdde5947`).
 - **Liniile** (vezi [indexul](README.md)):
-  - **în lucru, pe ramuri:** frezele (16.A↑h-5, profilurile parametrice, ADR 0302 §7, pe `wip/16.A-freze`; 16.A↑b-3,
-    lista „Din frezele mele” pe rândurile exportului, peste fereastra nouă, pe `wip/16.A-freze-b3`,
-    `AndreiBesliu/cvs2#26`; se unesc în ordinea h-5, apoi b-3), relieful (18.1↑a, `wip/18.1-relief`,
-    `AndreiBesliu/cvs2#25`, cu v28: își aduce `main` și își reface porțile; intră singur în lotul lui), cotele
+  - **în porți:** relieful (18.1↑a, `feb7bee1`, cu v28), singur în lotul 27, pe `unire-2411ac`;
+  - **în lucru, pe ramuri:** frezele (16.A↑b-5: fundul plat, frezele de rest, dopul și banda; apoi b-4), cotele
     (10.4↑a-4, panoul cotei); se unesc la raportul liniei;
   - **la owner:** 3.Tu (unde stă axul pieselor rotunde în vederea „Modelul” din Easy 3Draw; trei întrebări, cu
     recomandările 1a, 2a, 3a, în `docs/linii/elice.md`; ADR 0283): din 24.11 seara, a liniei atelierului;
@@ -195,7 +195,7 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
     aici, iar felia era deja în lot: unirea a rămas aici);
   - arhivarea sesiunii exportului (se poate, din 24.11) și ștergerea ramurii ei de pe `origin`;
   - cele trei întrebări ale lui 3.Tu (axul pieselor rotunde în „Modelul”), acum la linia atelierului;
-  - plafonul total: 856,8 / 900 kB, mai sunt 43,2 kB (relieful cere ~13, b-3 ~1,2);
+  - plafonul total: 860,1 / 900 kB după lotul 26; cu relieful (+12,7), ~873, deci rămân ~27 kB;
   - verificarea juridică (GDPR) a utilizării aplicației, înaintea live-ului (ADR 0262 §3); pe test, colectarea merge
     din 24.11;
   - fondul semnului lui Easy 3Draw (gri-albăstrui, nu crem) și rândul de „ce e nou” al lui 18.20.0;
@@ -203,8 +203,8 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
     mai scurtă (fără al doilea complet pe `main` când codul e identic cu cel verificat; schimbă o regulă a porților),
     lista „ce e nou pe test, de încercat”, rezumatul pentru verificarea juridică, lista ramurilor unite de șters.
     Fără răspuns, niciuna nu pornește.
-- **Plafoanele:** totalul e 856,8 / 900 kB după lotul 24 (ADR 0301, decizia owner-ului din noaptea de 23 spre 24.11;
-  fereastra exportului a adus 16,3 kB). **Pornirea e 120 kB din 24.11** (ADR 0145, „ok, ridica plafonul pornirii la
+- **Plafoanele:** totalul e 860,1 / 900 kB după lotul 26 (ADR 0301, decizia owner-ului din noaptea de 23 spre 24.11;
+  fereastra exportului a adus 16,3 kB, relieful aduce 12,7). **Pornirea e 120 kB din 24.11** (ADR 0145, „ok, ridica plafonul pornirii la
   120 kB”, spus în sesiunea principală): 110,4, cu ușa 115,1, cu Atelierul 115,4, deci mai sunt ~4,6 kB. Regula feliilor rămâne: ce nu trebuie înaintea primei randări stă la
   cerere, iar felia își spune în raport cât adaugă în pornire.
 - **Documentul e v27** (frezele, 16.A↑b-1). **v28 e dat reliefului** (forma `relief`, 18.1↑a); cotele nu cer schemă;
