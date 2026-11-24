@@ -989,7 +989,8 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   115,1 / 120; totalul 818,1 / 900). **O probă care dă clic, în cadrul extensiei, pe ceva
   ce îi reface cadrul pe loc (`host.reporneste()`) folosește `clicCareRefaceCadrul` (`test/e2e/ajutor-extensii.ts`),
   cum cea care îl închide folosește `clicCareInchideCadrul`:** clicul nu se mai întoarce când cadrul dispare sub el
-  (completul feliei, căzut la `extensii.lucru.spec.ts:222`; reprodus 16 din 150, reparat 150 din 150).
+  (completul feliei, căzut la `extensii.lucru.spec.ts:222`; reprodus 16 din 150 pe zece lucrători). Reparația e cea din
+  `main` (`29ef7e44`, făcută de sesiunea principală în aceeași oră): ajutorul primește și urmarea de așteptat.
   **Cotele pe desen: modelul și proba G-code-ului (ADR 0330, felia 10.4↑a-1, adusă din etapa 10)** gata pe 24.11, în
   sesiunea cloud a liniei (ramura `wip/10.4-cote`), unită în `main` pe 24.11 (`f25249cf`), fără interfață încă. ADR
   0330, acceptat de owner cu 1a–6a și cu nota lui: toate setările cotelor stau într-o fereastră nouă, „Setări”, nu în

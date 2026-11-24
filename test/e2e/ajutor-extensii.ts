@@ -46,24 +46,22 @@ export async function clicCareInchideCadrul(page: Page, selector: string): Promi
 }
 
 /**
- * Un clic adevărat pe un buton din cadrul extensiei care îi reface cadrul pe loc (`host.reporneste()`, când ultima repornire
- * e mai veche de 2 s). Ca la `clicCareInchideCadrul`, se așteaptă urmarea clicului, cadrul cel nou, nu întoarcerea lui: cadrul
- * vechi e scos din pagină înainte să-și confirme evenimentul, iar `click()` nu se mai întoarce, deși extensia a repornit.
- * Văzut în CI pe 24.11 (`extensii.lucru.spec.ts`, „repornirea cerută de extensie”, rularea 45401201523); reprodus în aceeași zi
- * cu proba repetată de 150 de ori pe zece lucrători: 16 clicuri neîntoarse.
+ * Un clic adevărat pe un buton din cadrul extensiei care își reface cadrul pe loc (`host.reporneste()`): aceeași cursă ca la
+ * `clicCareInchideCadrul`. Cadrul vechi dispare înainte să-și confirme evenimentul, iar `click()` nu se mai întoarce, deși
+ * repornirea s-a făcut (30 s, apoi proba cade). Văzut în CI pe 24.11 (`extensii.lucru.spec.ts:228`, rularea 45404468217) și
+ * reprodus în aceeași zi cu proba repetată de 120 de ori pe zece lucrători: 6 clicuri neîntoarse, la cele două clicuri care
+ * repornesc pe loc. Se așteaptă urmarea clicului (`urmare`: ce se vede în cadrul nou), nu întoarcerea lui.
  *
- * Cadrul de dinaintea clicului primește un semn; cel nou e alt element, fără el. Un clic care cade cu adevărat (butonul
- * lipsește, e acoperit) își spune eroarea: cadrul nou nu a apărut. O repornire care nu are loc pică la așteptarea lui.
+ * Un clic care cade cu adevărat (butonul lipsește, e acoperit) își spune eroarea dacă urmarea nu vine; o repornire care nu
+ * are loc pică la așteptarea urmării.
  */
-export async function clicCareRefaceCadrul(page: Page, selector: string): Promise<void> {
-  await page.locator('iframe.cadru-extensie').evaluate((e) => { e.setAttribute('data-cadru-vechi', ''); });
-  const nou = page.locator('iframe.cadru-extensie:not([data-cadru-vechi])');
-  const refacut = expect(nou).toHaveCount(1, { timeout: 15_000 });
-  const clic = page.frameLocator('iframe.cadru-extensie[data-cadru-vechi]').locator(selector).click()
-    .catch(async (e: unknown) => { if (await nou.count() === 0) throw e; });
+export async function clicCareRefaceCadrul(page: Page, selector: string, urmare: () => Promise<void>): Promise<void> {
+  const venita = urmare();
   // cea care pierde întrecerea poate cădea mai târziu (pagina închisă la capătul probei): fără respingeri neprinse
-  refacut.catch(() => { /* judecată mai jos, la `await refacut` */ });
+  venita.catch(() => { /* judecată mai jos, la `await venita` */ });
+  const clic = page.frameLocator('iframe.cadru-extensie').locator(selector).click()
+    .catch(async (e: unknown) => { try { await venita; } catch { throw e; } });
   clic.catch(() => { /* judecată în întrecere */ });
-  await Promise.race([clic, refacut]);
-  await refacut;
+  await Promise.race([clic, venita]);
+  await venita;
 }

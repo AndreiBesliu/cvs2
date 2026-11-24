@@ -2,8 +2,9 @@
 
 ## 3.Xj: căutarea și categoriile (gata, de unit, în cloud)
 
-_Aceeași linie și aceeași ramură (`wip/3.Xh-biblioteca-ui`, cu `main` adus de două ori pe 24.11: `64a63b4`, fără
-ciocniri, și `a96881a`, cu cele trei obișnuite: DEVLOG-ul, traducerile, catalogul controalelor). Starea:
+_Aceeași linie și aceeași ramură (`wip/3.Xh-biblioteca-ui`, cu `main` adus de trei ori pe 24.11: `64a63b4`, fără
+ciocniri; `a96881a`, cu cele trei obișnuite (DEVLOG-ul, traducerile, catalogul controalelor); `29ef7e4`, cu proba
+repornirii, luată din `main`). Starea:
 **ADR 0233 scris și implementat pe 24.11, la „ok, porneste cautarea si categoriile” al owner-ului, cu alegerile
 recomandate; cinci întrebări pentru el stau în ADR („Întrebările”). PR-ul `AndreiBesliu/cvs2#24`, de unit de sesiunea
 principală după completul verde. Pachetele nu s-au schimbat (Easy 3Draw e 18.23.0, din 3.Tt, venit cu `main`;
@@ -19,7 +20,7 @@ următoarea versiune, 18.24.0).**_
 - **Mărimea:** pornirea neschimbată; totalul +1,3 kB (814,3 → 815,6; cu `main` `a96881a` adus, 816,8 → 818,1 / 900 kB,
   pornirea 110,1 kB, cu ușa 114,8, cu Atelierul 115,1 / 120).
 - **CI:** rapidul verde pe `1c21640`; primul complet, căzut la o probă mai veche a extensiilor (regula de mai jos);
-  completul de pe `51ca1a5` (cu reparația ei și cu `main` adus) hotărăște unirea.
+  completul de pe capătul cu `main` `29ef7e4` adus hotărăște unirea.
 - **Canalul `biblioteca`:** <https://cncvectorstudio-test--biblioteca-gw7dr9bc.web.app> (până pe 24.12.2026).
 
 **Reguli rămase de la 3.Xj:**
@@ -36,7 +37,10 @@ următoarea versiune, 18.24.0).**_
 - **Un clic din cadrul extensiei care îi reface cadrul pe loc** (`host.reporneste()`) nu-și așteaptă întoarcerea, ci
   urmarea: `clicCareRefaceCadrul` (`test/e2e/ajutor-extensii.ts`), fratele lui `clicCareInchideCadrul`. Completul liniei a
   căzut pe 24.11 la `extensii.lucru.spec.ts:222` exact așa (clicul neîntors, 30 s); reprodus cu 16 din 150 pe zece
-  lucrători, apoi 150 din 150 cu ajutorul; otrava „gazda ignoră repornirea” e prinsă.
+  lucrători, apoi 150 din 150 cu ajutorul; otrava „gazda ignoră repornirea” e prinsă. Sesiunea principală a reparat-o
+  în aceeași oră în `main` (`29ef7e44`); ramura folosește varianta din `main` (cu urmarea de așteptat ca al treilea
+  parametru). **Înaintea unei reparații de probă care nu ține de felie, întreabă sesiunea principală dacă n-o are deja:**
+  aici am reparat-o amândouă, fiecare cu ajutorul ei.
 - **La 320 px, la atingere, rândul de sus al aplicației își suprapune butoanele** (în engleză, Extensii e sub butonul de
   căutare): problemă a carcasei, raportată sesiunii principale pe 24.11. Până e reparată, o probă de telefon la 320 px
   deschide meniul Extensii de la tastatură (`cuRaftul(page, true)`).

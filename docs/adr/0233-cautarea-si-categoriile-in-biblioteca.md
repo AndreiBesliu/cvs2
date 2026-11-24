@@ -154,3 +154,5 @@ Nimic nu spune ce fel de extensie e una (pentru desen, pentru mașină, pentru i
   `extensii.lucru.spec.ts:222`, „repornirea cerută de extensie”: clicul pe „Repornește” din cadrul extensiei nu s-a mai
   întors (cadrul refăcut îl lasă fără răspuns), ca la „Închide” pe 23.11. Reprodus (16 din 150, pe zece lucrători) și
   reparat cu `clicCareRefaceCadrul` (`test/e2e/ajutor-extensii.ts`): 150 din 150; otrava „gazda ignoră repornirea”, prinsă.
+  Sesiunea principală o reparase în aceeași oră în `main` (`29ef7e44`), cu un ajutor cu același nume, care primește și
+  urmarea de așteptat: la aducerea lui `main`, ramura a trecut pe varianta lui, ca să rămână una singură.

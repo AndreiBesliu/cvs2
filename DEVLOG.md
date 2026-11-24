@@ -13171,6 +13171,8 @@ din sesiunea elicelor: „cand e verde fa unirea”
 - **O probă instabilă a extensiilor, reparată** (doar probe): completul ramurii a căzut la `extensii.lucru.spec.ts:222`
   (clicul pe „Repornește” din cadrul extensiei nu s-a mai întors); reprodus 16 din 150 pe zece lucrători, reparat cu
   `clicCareRefaceCadrul` (150 din 150; otrava „gazda ignoră repornirea”, prinsă).
+  Sesiunea principală o reparase în aceeași oră în `main` (`29ef7e44`): la aducerea lui `main`, ramura a trecut pe
+  varianta lui.
 - **Porțile:** tipurile, regulile de import, build-ul determinist; rapidul din CI, verde pe `1c21640`; probele
   bibliotecii și ale extensiilor, verzi local, cu `main` (`64a63b4`) adus. Otrăvurile 78 / 78, în clonă (la prima
   rulare, 76: două probe întărite). Pornirea neschimbată (109,9 kB), totalul 814,3 → 815,6 / 900 kB.
@@ -13240,3 +13242,22 @@ admin, care apare daca esti logat ca admin”
 - **Loturile dinainte:** al șaisprezecelea, pe test din 15:35 (`fdce5f1b`; funcția `freze` creată, indexurile și
   regulile publicate; proba de fum, bună; scriptul de publicare, reluat o dată după timpul lui de așteptare); al
   șaptesprezecelea, cu limita rapidului (`647cebb1`): completul pe `main` (45407064678) rula la unire.
+
+## 2026-11-24 — Sesiunea principală în cloud: clicul pe „Repornește” din cadrul unei extensii, neîntors (probă instabilă, reparată) (Model: Claude Fable 5.2)
+
+**Prompt:** (fără prompt nou: completul lotului 19 a căzut la o probă din afara lui)
+**Started:** 24.11, 16:25. **Completed:** 24.11, 16:35 (doar probe; împins în `main`).
+
+- **Ce s-a văzut:** completul lotului 19 (45404468217, pe `33fadb06`) a căzut la o singură probă din 715,
+  `extensii.lucru.spec.ts:222` (repornirea cerută de extensie, ADR 0165): `click()` pe „Repornește”, în cadrul
+  extensiei, nu s-a mai întors (30 s), cu jurnalul oprit la „performing click action”. Nu ține de freze.
+- **Cauza:** aceeași cursă ca la „Închide” (23.11, `clicCareInchideCadrul`): clicul reface cadrul pe loc, iar cadrul
+  vechi dispare înainte să-și confirme evenimentul. Reprodusă în container, cu proba repetată de 120 de ori pe zece
+  lucrători: 8 căderi, din care 6 clicuri neîntoarse, doar la cele două clicuri care repornesc pe loc (rândurile 228
+  și 240).
+- **Reparația (doar probe):** `clicCareRefaceCadrul` în `test/e2e/ajutor-extensii.ts` așteaptă urmarea clicului
+  („Deschideri: N” din cadrul nou), nu întoarcerea lui; folosit la cele două clicuri. Cu ea, 118 / 120, fără niciun
+  clic neîntors. Otrava (gazda ignoră `host.reporneste()`) e prinsă, cu mesajul „Deschideri: 2” așteptat, „1” primit.
+- **Rămas, de urmărit:** celelalte 2 căderi din 120, la rândul 235 („două cereri imediat după” repornire: sub
+  încărcarea a zece lucrători, clicurile ajung după cele 2 s ale răririi și repornirea se face pe loc). Nevăzută în
+  CI; proba depinde acolo de timp.

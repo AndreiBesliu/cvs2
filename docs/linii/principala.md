@@ -202,6 +202,8 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
   curentă (`placute.spec.ts` a căzut cu `schema: 26` în completul liniei frezelor).
 - **De urmărit:** în panoul foii, la 1400 px, etichetele „Numele” și „Materialul” apar tăiate la o literă (văzut de
   linia trasării, și pe `220bd48e`: nu vine dintr-o felie de azi).
+- **De urmărit:** `extensii.lucru.spec.ts`, „două cereri imediat după” repornire (rândul 235): sub încărcare mare
+  (zece lucrători), clicurile ajung după cele 2 s ale răririi și proba cade (2 din 120, local); nevăzută în CI.
 - **De urmărit, la owner (design):** la 320 px, la atingere (`pointer: coarse`, `--tinta` 44 px), rândul de sus al
   meniului își suprapune butoanele (marca, Extensii, căutarea): o atingere pe Extensii deschide paleta. La 360 și
   390 px e bine; cu mausul, probele trec (ținta de 36 px). Șapte controale de 44 px nu încap pe 320: ce pleacă de pe
@@ -218,6 +220,8 @@ folosite la unire și publicare:
 - proba se face în mediul bugului (fusul, limba, platforma: CI-ul pe Linux nu e Windows-ul local);
 - otrăvurile se rulează într-o clonă; un VOID nou se mută pe codul nou sau se scoate cu codul echivalent;
 - un rezultat geometric se privește pe cazul REAL, mărit și întreg, înaintea raportului.
+- un clic în cadrul unei extensii care îi închide sau îi reface cadrul nu se așteaptă cu `click()`: se așteaptă
+  urmarea lui (`clicCareInchideCadrul`, `clicCareRefaceCadrul` din `test/e2e/ajutor-extensii.ts`);
 - înaintea unirii se citesc și rapidul, și completul ramurii de unire: completul poate fi verde cu rapidul oprit de
   limita unei felii (24.11, lotul 17: felia 5 din 6, peste 10 minute; limita e acum 15, `rapid.yml`);
 - nu se comite în timpul unei rulări locale e2e sau pe emulatoare: trei probe compară versiunea construită cu
