@@ -12592,3 +12592,25 @@ continue, tu ce poti sa faci intre timp?”.
   container).
 - **La owner:** fereastra exportului, verificarea juridică a utilizării aplicației înaintea live-ului, „cine unește în
   `main`”, plafonul pornirii (mai sunt 0,6 kB), răspunsul la lista de mai sus.
+
+## 2026-11-24 — 3.Xi: auditul extensiilor și ADR 0232 propus (stările de lângă drumul bun), cu schița (sesiune cloud)
+
+**Prompt:** „vreau sa faci un audit si sa imi spui ce ai imbunatatie la UI/UX-ul functiei de extensii” (23.11, seara);
+apoi, la auditul cu 14 constatări și la oferta „fac din ele ADR 0232 propus, cu schița, împărțit pe felii”: „ok” (24.11).
+**Started:** 23.11, 22:30 (auditul); 24.11, 08:50 (propunerea). **Completed:** 24.11, 09:45.
+
+- **Auditul (fără cod de produs):** aplicația construită, parcursă cu Playwright (Chrome), aproape 40 de capturi: drumul
+  întreg la 1440 px, actualizările, catalogul oprit și stricat, telefonul, tema întunecată, engleza; plus măsurători
+  (mărimi, ținte, contrast prin pânză, tastatura). Stări provocate anume: o extensie care aruncă la pornire, o versiune
+  veche deschisă și actualizată din meniu, un fișier care nu e pachet, un `.zip` lăsat pe planșă, pagina reîncărcată.
+- **Ce a ieșit:** drumul bun e solid; 14 goluri în stările de lângă el (pagina albă a extensiei care nu pornește,
+  „Actualizează” care închide extensia deschisă, reîncărcarea care o pierde, fraza izolării care contrazice permisiunile,
+  refuzul sub titlul „Instalezi o extensie?”, filele „Toate · 1” / „Instalate · 3”, lipsa internetului, capturile de
+  197 × 123 px, `.zip`-ul refuzat de Import, × de 24 px pe fila extensiei și altele).
+- **ADR 0232 propus:** trei felii (3.Xi-1 stările rupte, 3.Xi-2 claritate, 3.Xi-3 descoperire), marginile păstrate,
+  pornirea +0, totalul estimat +5 kB; cinci întrebări, cu recomandarea „a”.
+- **Schița:** <https://claude.ai/artifact/31cWBjVheUbymkfErCmcSy>, cu captura de azi și macheta propusă la fiecare
+  constatare și cu formularul întrebărilor (colecția `raspunsuri`, documentul `owner`); privită o dată înaintea
+  publicării (1320 și 400 px, ambele teme: nimic ieșit din pagină, nicio eroare).
+- **Ramura:** adusă la `main` (`df9ae53`), fără ciocniri (era toată în `main`). Indexul ADR, nota liniei, titlul tradus.
+- **Urmează:** codul lui 3.Xi-1, la răspunsurile owner-ului.

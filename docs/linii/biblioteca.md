@@ -1,4 +1,44 @@
-# Biblioteca extensiilor (3.Xg, 3.Xh)
+# Biblioteca extensiilor (3.Xg, 3.Xh, 3.Xi)
+
+## 3.Xi: stările de lângă drumul bun (propusă, în cloud)
+
+_Aceeași linie și aceeași ramură (`wip/3.Xh-biblioteca-ui`, adusă la `main` `df9ae53` pe 24.11, fără ciocniri: ramura era
+toată în `main`). Starea: **ADR 0232 PROPUS pe 24.11, cu schița și cinci întrebări; cod de produs nu s-a scris. Codul
+pornește la răspunsurile owner-ului.**_
+
+Cererea owner-ului (23.11, după unirea lui 3.Xh): „vreau sa faci un audit si sa imi spui ce ai imbunatatie la UI/UX-ul
+functiei de extensii”. La auditul cu 14 constatări și la oferta „fac din ele ADR 0232 propus, cu schița, împărțit pe
+felii”: „ok” (24.11).
+
+- **Auditul (23.11, fără cod de produs):** aplicația construită, parcursă cu Playwright: aproape 40 de capturi (birou,
+  telefon, tema întunecată, engleză) și măsurători. Cele 14 constatări și ce merge bine sunt în ADR 0232, „Ce e azi”.
+- **ADR 0232 propus (24.11):** trei felii: 3.Xi-1 stările rupte (starea „n-a pornit” cu trei ieșiri, actualizarea cu
+  redeschidere, extensia ținută minte la reîncărcare, fereastra refuzului, „Rămân” principal); 3.Xi-2 claritate (fraza
+  izolării și ordinea permisiunilor, filele, lipsa internetului, extensia deschisă în meniu, fila ei, măruntele); 3.Xi-3
+  descoperire (captura mărită, `.zip`-ul pe planșă, paleta, „ce e nou” la actualizare cu data, punctul versiunii noi).
+  Pornirea +0 (mai sunt 0,6 kB până la plafon), totalul estimat +5 kB din 900.
+- **Schița:** <https://claude.ai/artifact/31cWBjVheUbymkfErCmcSy> (privată, a owner-ului): fiecare constatare cu
+  captura de azi și macheta propusă; formularul în baza ei, colecția `raspunsuri`, documentul `owner` (`q1`–`q5`, notele
+  `q1n`–`q5n`, `text`, `la`). La publicare, colecția era goală.
+- **Întrebările** (recomandarea e „a” la toate): 1 vestea despre o versiune nouă (punctul din ce se știe deja, fără
+  cerere la pornire); 2 câte extensii stau deschise deodată (una); 3 reîncărcarea paginii (redeschide extensia); 4 un
+  `.zip` de extensie lăsat pe planșă (confirmarea instalării); 5 cât facem (toate trei feliile).
+- **Uneltele auditului** stau în `.tmp/audit-extensii/` (ignorat): `audit.mjs` (grupele A–D: drumul întreg, actualizările,
+  catalogul oprit sau stricat, telefonul, tema, engleza; `AUDIT_OUT`, `AUDIT_DOAR`, `AUDIT_SCARA`), `audit2.mjs`
+  (contrastul prin pânză, tastatura, pornirea eșuată, țintele pe telefon), `audit3.mjs` (reîncărcarea, `.zip`-ul lăsat pe
+  planșă, paleta). Rulează pe `vite preview` (4173), cu Chrome.
+
+**Capcane găsite la audit:**
+- **O extensie „stricată” se face împachetând un dosar al ei** (`impacheteaza(<dosar>)`, cu o intrare care aruncă în
+  `deschide`): un pachet bun cu un fișier schimbat de mână e refuzat la instalare de amprenta SHA-256 a fișierului, deci
+  nu ajunge niciodată la pornire.
+- **Contrastul se măsoară pictând culoarea pe o pânză** (`fillStyle`, apoi `getImageData`), cu alfa amestecat peste
+  fondul adevărat: jetoanele sunt `oklab(...)`. Măsurat așa: subtextele 6,1 : 1, linkurile 5,4 : 1, butonul principal
+  5,7 : 1 (tema luminoasă); 6,1, 7,2 și 8,9 (cea întunecată).
+- **Un traseu ținut cu `page.route` trebuie eliberat înaintea lui `unroute`** (`route.continue().catch(() => {})`),
+  altfel scriptul cade cu „Route is already handled”.
+- **Scheletul bibliotecii și „Pornesc extensia…” nu se prind pe captură** fără întârziere pusă anume: catalogul vine pe
+  loc, iar Easy 3Draw pornește în 0,2 s.
 
 ## 3.Xh: interfața nouă a bibliotecii (în lucru, în cloud)
 

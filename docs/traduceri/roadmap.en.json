@@ -3681,6 +3681,10 @@
       "ro": "Gazda extensiilor",
       "en": "The extension host"
     },
+    "f173f93fbaa5e4d8": {
+      "ro": "Extensiile, stările de lângă drumul bun",
+      "en": "Extensions, the states beside the happy path"
+    },
     "f20ea85a30832b0a": {
       "ro": "Normalizarea `nonzero` la ușă",
       "en": "`nonzero` normalisation at the door"
