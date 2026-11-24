@@ -12440,7 +12440,7 @@ plafonul („ok, ridica plafonul total la 900 kB”).
 
 **Prompt:** același brief de predare al sesiunii principale („unește ce se poate”), la raportul liniei adminului din
 PR-ul `AndreiBesliu/cvs2#13` („De unit acum (A.8c, A.8d): `fbbc8934`”).
-**Started:** 24.11, 03:55. **Completed:** unirea în `main`, 24.11, 04:05; publicarea pe test, în rândul de la capăt.
+**Started:** 24.11, 03:55. **Completed:** unirea în `main`, 24.11, 03:58; publicarea pe test, 24.11, 04:59.
 
 - **Înainte:** lotul al nouălea pe test (`b1797933c0e6`, 02:07); rândul publicării lui stătea pe `unire-2411a`
   (`d321e587`, doar documente) și intră în `main` cu lotul acesta.
@@ -12459,3 +12459,5 @@ PR-ul `AndreiBesliu/cvs2#13` („De unit acum (A.8c, A.8d): `fbbc8934`”).
   felii se unește la commit-ul raportat).
 - **La owner:** fereastra exportului (28.8↑a–b-2: acum sau după desene), verificarea juridică a utilizării aplicației
   înaintea live-ului, „cine unește în `main`”.
+- **Publicarea (`89962b4d`):** rapidul și completul pe `main` verzi (completul, 50 min 44 s), `publica.yml` verde în
+  3 minute, cu serverul (funcția `utilizare`, cu felurile noi); adresa de test spune `89962b4d0fa5` (24.11, 04:59).

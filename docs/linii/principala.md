@@ -123,8 +123,8 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
 
 ## Starea pe 24.11.2026, spre dimineață (după a zecea unire din cloud)
 
-- **Pe test:** `b1797933` (tot până la lotul al nouălea: frezele și plafonul de 900 kB; publicat pe 24.11 la 02:07,
-  doar hosting). Lotul al zecelea (`80d3eb70`: A.8c și A.8d), în curs de publicare, cu serverul (funcția `utilizare`).
+- **Pe test:** `89962b4d` (tot până la lotul al zecelea: A.8c și A.8d; publicat pe 24.11 la 04:59, cu serverul: funcția
+  `utilizare`, cu felurile noi).
 - **`main`, din cloud:** pe 23.11: 3.Tq (`0ae9c6c1`); 11.3↑e și A.4 (`ddaa7ead`); 3.Tr, unită de linia elicelor
   (`d262e57a`); 25.8↑a și A.5 (`1b46c955`), cu reparația probei extensiilor (`8287d66e`); 11.3↑f, unită de linia
   planșelor (`f4601938`); A.6 (`4497d639`); 3.Xh (`2d1e482c`) și 12.1↑e-3 cu 12.1↑e-4 (`03460cab`); A.8a cu A.8b
