@@ -34,7 +34,7 @@ test('registrul păstrează cele cinci acțiuni la cerere, cu id-ul și eticheta
   assert.deepEqual(ACTIUNI_DOCUMENT.map((a) => a.id), [
     'selectie.la-punct', 'selectie.din-lista', 'document.adauga-dreptunghi', 'document.adauga-cerc', 'document.importa',
     'document.muta-selectia', 'document.duplica-selectia', 'document.sterge-selectia', 'document.aplica-operatii', 'document.rol',
-    'document.pozitioneaza', 'document.roteste', 'foaie.stoc', 'foaie.ghidaje', 'foaie.imagini', 'foaie.adauga', 'foaie.duplica', 'foaie.sterge',
+    'document.pozitioneaza', 'document.roteste', 'foaie.stoc', 'foaie.ghidaje', 'foaie.imagini', 'foaie.cote', 'foaie.adauga', 'foaie.duplica', 'foaie.sterge',
     'foaie.muta-sus', 'foaie.muta-jos', 'foaie.eticheta', 'selectie.muta-pe-foaie', 'piesa.inca', 'piesa.plus-unu', 'piesa.desprinde',
     'foaie.duplica-legat', 'foaie.aseaza', 'selectie.muta-si-aseaza', 'document.muta-instantele',
     'document.deseneaza', 'document.transforma', 'document.copiaza-in-retea', 'document.forma', 'document.degrupeaza', 'document.grupeaza',

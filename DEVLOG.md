@@ -13279,3 +13279,31 @@ admin, care apare daca esti logat ca admin”
 - **Documentele:** decizia în `CLAUDE.md`, cu rândul de stare al celor două felii și ADR 0302 acceptat; indexul
   liniilor; starea din `docs/linii/principala.md`.
 - **Loturile dinainte:** @@INAINTE@@
+
+## 2026-11-24 — Felia 10.4↑a-2: unealta Cote pe pânză (ADR 0330 §3, §5, §6) (Model: Claude Opus 5.5)
+
+**Prompt:** „continuă” (owner-ul, 24.11, după 10.4↑a-1). **Started:** 24.11, 14:34, în sesiunea cloud a liniei cotelor.
+**Completed:** 24.11, 15:25 (în container; CI-ul, pe commit-ul împins).
+
+- **Întâi probele pure, apoi codul:** lipirea pe puncte (`cote.lipire.test.ts`, 11: fiecare fel, pe documentul rotit din
+  a-1, citit înapoi de cotă; ordinea la egalitate, toleranța, felurile oprite, Ctrl, grila, foaia, indexul cutiilor, o formă
+  cu 20 000 de vârfuri), desenul cotei (`cote.desen.test.ts`, 11, pe hârtie), setările (`cote.setari.test.ts`, 4),
+  dezlegarea (`cote.dezlegare.test.ts`, 7: ștearsă, alte noduri, altă foaie, pasul unic cu anularea, foaia copiată).
+- **Codul:** `src/geom/lipirePuncte.ts`, `src/model/puncteCote.ts` (prin `punctLoc`, cu conturul dat o dată),
+  `src/model/desenCota.ts`, `src/app/setariCote.ts`, `src/model/jurnalCote.ts` și cârligul din `executa`, `coteCopiate`
+  în cele două „Duplică foaia”; unealta (`src/app/Cote.tsx`, `cote.css`, la cerere), tastele D și M, rândul tastelor,
+  acțiunea `foaie.cote`, tokenul `--cota`, manualul „Cotele și măsurarea” (ro, en), catalogul controalelor.
+- **E2e** (`test/e2e/cote.spec.ts`, 7): D cu lipirea pe vârfuri, cota legată care urmează lățimea scrisă în panou, ștearsă
+  forma (dezlegată) și o singură anulare; Automată pe o latură; Orizontală, Verticală, Aliniată, un vârf de pe extensia
+  altei cote; M cu Enter; alegerea, săgețile, Delete, reîncărcarea, Selecția care trece prin cote, dublu clic; bara de sus
+  la 1280 px cu fontul lat, în ambele limbi.
+- **Bara de sus:** cu butonul Cote printre unelte, proba ancorelor a găsit bara cu Transformarea la 1 296 / 1 280 px (fontul
+  lat, română): butonul stă în extensia barei, după Convertește (ADR 0330 §5).
+- **Porțile, în container:** tipurile; regulile de import (21 / 21); unitarele cotelor, manualului, catalogului, registrului
+  și calculului; e2e-urile cotelor, ancorelor, tastelor, carcasei, aranjamentelor, Atelierului, manualului și Cuțitului
+  (72 / 72). Pornirea 110,0 → 110,1 kB (cu ușa 114,8, cu Atelierul 115,1 / 120), totalul 815,9 → 825,5 / 900.
+- **Otrăvurile** (`test/otravuri/10.4a2.py`, într-o clonă): 35 / 35 prinse (29 unitare, 6 e2e); patru au scăpat întâi (toleranța, Automată
+  la egalitate, cutia cifrei, capătul deja dezlegat), prinse după probele întărite. `verifica` pe toate listele: un VOID nou,
+  A06 din `11.1.py` (copia foii), mutat pe codul nou.
+- **Capcane:** jos, la 1280 × 720, bara de jos acoperă marginea foii (un clic acolo nimerește un buton); o tastă a
+  editorului cere focusul în bara uneltelor; liniile de extensie pleacă de lângă vârfuri, deci nu aleg cota.

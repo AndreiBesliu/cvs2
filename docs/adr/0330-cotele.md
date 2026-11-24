@@ -330,6 +330,41 @@ Ordinea feliilor e cea din §10; dacă vrei exportul înaintea razei și unghiul
 - **De ținut minte pentru a-2:** „Duplică foaia” copiază și cotele, cu legăturile spre instanțele foii vechi, deci pe foaia
   nouă ies dezlegate; la fel o cotă a cărei piesă se mută pe altă foaie. A-2 hotărăște dacă le leagă din nou.
 
+## Implementarea (10.4↑a-2)
+
+24.11, pe ramura `wip/10.4-cote`, la „continuă” al owner-ului:
+- **Lipirea pe puncte** (`src/geom/lipirePuncte.ts`, pură, fără document): punctele numite (centrul, cadranul, vârful,
+  mijlocul, cutia, foaia: la aceeași distanță, în ordinea asta), apoi punctul cel mai apropiat de pe contur (Ctrl, după
+  setare), apoi grila. Doar formele cu cutia lângă cursor își fac punctele, o singură dată (`src/model/puncteCote.ts`, prin
+  `punctLoc` din `cote.ts`, deci un capăt lipit e exact punctul citit de cotă după aceea; conturul se face o dată pe formă).
+  Cadranele unui arc, doar cele de pe arc. Un punct de pe contur (Ctrl) e liber: `LocCota` n-are un loc „pe contur”.
+- **Desenul cotei liniare** (`src/model/desenCota.ts`, pur, pentru pânză acum și pentru export în felia c): linia de cotă
+  la `d` mm pe normală față de **mijlocul** celor două puncte (nu față de primul: schimbate între ele, cu `d` invers, dau
+  același desen), extensiile cu golul de 1 mm și depășirea de 2 mm (niciuna pentru un punct chiar pe linie), capetele de
+  2,5 mm (în afară sub două capete), cifra de 3,5 mm deasupra liniei, citibilă. Valorile din tabelul §6, ca implicite, până
+  la fereastra Setări (a-3). Cifrele se scriu deocamdată cu fontul aplicației; trăsăturile lui Relief vin cu exportul (c).
+- **Setările citite** (`src/app/setariCote.ts`, `cncvs2.cote`, câmp cu câmp, cu marginile aduse la implicit):
+  comportamentul (legate, felul de pornire, după o cotă), lipirea (felurile, toleranța în px, conturul), măsurarea (ce și
+  unde). Fereastra care le scrie vine în a-3.
+- **Dezlegarea în același pas** (§3): `executa` din `jurnal.ts` cheamă funcția înregistrată de `src/model/jurnalCote.ts`
+  (care vine cu judecata cotelor, deci cu orice document care are cote, și cu unealta); un capăt legat înainte și dezlegat
+  după își scrie ultimul punct văzut, iar comanda și scrierea sunt un singur `lot`. O foaie cu aceleași instanțe și aceleași
+  piese nu se mai judecă. **„Duplică foaia”** (cu piese noi sau legate) **leagă cotele copiei de instanțele ei**
+  (`coteCopiate`); întrebarea rămasă de la a-1 e închisă așa.
+- **Unealta** (`src/app/Cote.tsx`, cu `cote.css`, o bucată la cerere): desenul cotelor foii active (dezlegate punctate, în
+  roșu; sub 6 px, cifrele se ascund), felurile în bara de sus, pusul în trei clicuri, Automată pe o latură (o latură dreaptă
+  sub cursor, fără punct numit), Măsoară cu „Păstrează” / Enter (o cotă aliniată la 10 mm), alegerea cu clicul pe linia de
+  cotă sau pe cifră (nu pe extensii: ele pleacă chiar de lângă vârfuri), capetele trase (legate din nou), linia trasă sau
+  mutată cu săgețile, Delete, dublu clic din orice unealtă (afară de Pen și Cuțit). **Un punct numit al unei forme bate cota
+  de sub el:** un clic pe un vârf începe o cotă nouă, chiar dacă vârful e pe linia altei cote. Mânerul cifrei e linia: un
+  loc al cifrei pe linie (`linie.t`) nu e încă în model.
+- **Bara de sus la 1280 px:** cu butonul Cote printre unelte, bara cu Transformarea ieșea din fereastră cu 16 px (fontul lat,
+  română); butonul stă deci **în extensia barei, după Convertește** (§5), cu tasta D în colț. Felurile uneltei stau în bara
+  de sus, doar cu ea aleasă, și încap (proba, în ambele limbi).
+- **Acțiunea** `foaie.cote` (la cerere, ca ghidajele): lista nouă, judecată ca la ușă (`problemaCote`), un pas de anulare.
+- **Manualul:** capitolul „Cotele și măsurarea” (ro, en) și tastele D și M în capitolul scurtăturilor.
+- **Cifrele:** unitare noi 33 (lipirea 11, desenul 11, setările 4, dezlegarea 7); e2e noi 7 (`cote.spec.ts`), plus probele vechi potrivite (registrul și paritatea calculului cu `foaie.cote`, manualul cu 116 uși și 42 de capitole); otrăvuri 35 / 35 (`test/otravuri/10.4a2.py`: 29 unitare, 6 e2e; șapte au scăpat întâi și sunt prinse după probele întărite). Pornirea 110,0 → 110,1 kB (cu ușa 114,6 → 114,8, cu Atelierul 115,0 → 115,1 / 120: în pornire stau doar tastele, acțiunea `foaie.cote` și textul ei), totalul 815,9 → 825,5 / 900 kB (bucata cotelor 8,0 kB, cu stilurile ei 0,4).
+
 ## Răspunsurile owner-ului (24.11.2026)
 
 Salvate în schiță (`raspunsuri/owner`, 12:52), apoi „am raspuns” în chat: **1a, 2a, 3a, 4a, 5a, 6a**, cu nota, exactă:

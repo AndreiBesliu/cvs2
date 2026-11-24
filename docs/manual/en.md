@@ -1199,6 +1199,37 @@ is faded, with a red tint, over the shapes the knife splits right through; with 
 both sides of the trace, dotted more sparsely; with a joint, the teeth show instead of the strip, on the shapes the trace
 goes right through.
 
+## Dimensions and measuring
+%% capitol: cote
+%% acopera: unealta.cote, foaie.cote
+
+The **Dimensions** tool (`D`; its button sits in the bar's extension, after Convert) puts dimensions on the drawing that show a size: the length of a side, the
+distance between two points along X, along Y or straight. A dimension is **never cut**: the exported G-code is the same with
+or without dimensions. Dimensions belong to the sheet they were put on (**Sheet dimensions**), are saved with the project and
+have their own colour on the canvas. Pick the type in the bar:
+- **Automatic** (at first): a click on a straight side takes its length; otherwise two points, and the dimension is horizontal
+  if you take the line above or below them, vertical if you take it to the left or right, aligned if you take it between them
+  (**Shift**: aligned anyway);
+- **Horizontal**, **Vertical**, **Aligned**: two points, then the place of the dimension line;
+- **Measure** (`M`): two points, no trace. The distance, Δx, Δy and the angle from the horizontal show next to the cursor and
+  in the bottom bar; **Enter** (or **Keep**) makes it an aligned dimension, **Esc** clears it.
+
+Putting one: click the first point, click the second, then take the dimension line where you want it and click a third time;
+**Esc** cancels the dimension you started. Points snap to vertices (a square next to the cursor), to the midpoints of sides
+(a triangle), to the centres of circles and arcs (a circle), to the quadrants of circles (a diamond), to the corners and
+midpoints of a shape's box, to the sheet's corners, midpoints and centre, and to the grid when it is on. With **Ctrl**, the
+nearest point on the contour; **Alt** reverses snapping, as everywhere.
+
+A dimension put on a shape's points is **linked** to it: move, rotate, scale, flip or skew the shape (also from the panel)
+and the dimension follows and changes its figure. If the shape is deleted, moved to another sheet or gets other nodes (a node
+added or removed), the dimension **unlinks**: it stays where it was last seen, dashed, in red, in the same undo step
+(Ctrl+Z brings both back). “Duplicate sheet” copies the dimensions too, linked to the copy's shapes.
+
+With the Dimensions tool, a click on a dimension line selects it: drag its ends onto another point (it links to it again),
+drag the line or move it with the arrow keys (1 mm; Shift: 10 mm, Alt: 0.1 mm), **Delete** removes it. With Select and the
+other tools, dimensions are not selected: the click goes to the shape under them. A double click on a dimension, with any
+tool, switches to Dimensions with it selected.
+
 ## Converting vectors
 %% capitol: conversie
 %% acopera: editare.conversie, document.converteste
@@ -2397,7 +2428,8 @@ it, and the app’s interface stays the same.
 | `Home` | Show the whole sheet |
 | `PageUp`, `PageDown` | Previous sheet, Next sheet (the active sheet, along the list of sheets) |
 | `T` | Show toolpath |
-| `V` `S` `N` `K` `B` `R` `O` `E` `L` `P` `X` | the tools: Select, Transform, Nodes, Knife, Pen, Rectangle, Circle, Ellipse, Line, Polygon, Text (the key is also written in the button's corner) |
+| `V` `S` `N` `K` `B` `R` `O` `E` `L` `P` `X` `D` | the tools: Select, Transform, Nodes, Knife, Pen, Rectangle, Circle, Ellipse, Line, Polygon, Text, Dimensions (the key is also written in the button's corner; Dimensions sits in the bar's extension) |
+| `M` | the Dimensions tool, on Measure |
 | `Shift+H`, `Shift+V` | Flip horizontally, Flip vertically |
 | the arrow keys | move the selection 1 mm (Shift: 10 mm, Alt: 0.1 mm); in the 3D view, rotate the sheet |
 | `Alt+←`, `Alt+→` (in the Text tool's text) | the space between selected letters, 0.1 mm tighter / looser |
@@ -2408,6 +2440,8 @@ it, and the app’s interface stays the same.
 | double-click on the anchor target (Transform tool) | the anchor back to the point chosen in the picker |
 | `Shift` / `Ctrl` / `Alt`, while drawing | square, circle, 15° steps / no proportion (the circle becomes an ellipse) / from the centre (the line, from the middle) |
 | `Delete`, `Backspace` (with the Nodes tool and a node chosen) | removes the chosen node |
+| `Delete`, the arrow keys, `Esc` (with the Dimensions tool and a dimension selected) | delete the dimension / move its line / let it go |
+| `Enter` (with the Dimensions tool, on Measure) | keep the measurement as an aligned dimension |
 | `Enter` (with the Pen tool) | finishes the path you started |
 | `Ctrl+Z`, `Ctrl+Y` (with the Pen tool and a path started) | undoes / redoes the last step of the path |
 | `Ctrl+Shift+Z` (right after a path finished with the Pen) | reopens the path, with its steps |

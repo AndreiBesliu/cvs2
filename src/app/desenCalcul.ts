@@ -11,22 +11,28 @@ export { LATURI_MAX, LATURI_MIN };
 
 /**
  * Uneltele barei: Selecția, Transformarea (mânerele de scalare și rotire, ADR 0053), Nodurile, Cuțitul (ADR 0181 §1, după
- * Noduri: schimbă forme deja desenate) și cele de desen.
+ * Noduri: schimbă forme deja desenate), cele de desen și Cotele (ADR 0330 §5, după Text: nu fac forme).
  */
-export const UNELTE = ['selectie', 'transformare', 'noduri', 'cutit', 'pen', 'dreptunghi', 'cerc', 'elipsa', 'linie', 'poligon', 'text'] as const;
+export const UNELTE = ['selectie', 'transformare', 'noduri', 'cutit', 'pen', 'dreptunghi', 'cerc', 'elipsa', 'linie', 'poligon', 'text', 'cote'] as const;
 export type Unealta = (typeof UNELTE)[number];
-export type UnealtaDesen = Exclude<Unealta, 'selectie' | 'transformare' | 'noduri' | 'cutit' | 'pen' | 'text'>;
+/**
+ * Uneltele din bara de sus: toate, afară de Cote, care stau în extensia barei, lângă Taie și Convertește, cu aceeași tastă (ADR
+ * 0330 §5: la 1280 px, cu fontul lat, bara de sus cu Transformarea n-avea loc de încă un buton).
+ */
+export const UNELTE_BARA: readonly Unealta[] = UNELTE.filter((u) => u !== 'cote');
+export type UnealtaDesen = Exclude<Unealta, 'selectie' | 'transformare' | 'noduri' | 'cutit' | 'pen' | 'text' | 'cote'>;
 
 /**
  * Pură: unealta desenează dintr-o tragere (pânza îi dă gestul), sau alege și editează (Selecția, Transformarea, Nodurile);
  * Pen-ul desenează nod cu nod, cu gestul lui (ADR 0063); Textul pune ancora cu un clic și se scrie în panoul lui (ADR 0105);
- * Cuțitul taie, cu gestul felului ales (ADR 0181).
+ * Cuțitul taie, cu gestul felului ales (ADR 0181); Cotele pun cote și măsoară, cu ascultătorii lor (ADR 0330 §5).
  */
-export const deseneaza = (u: Unealta): u is UnealtaDesen => u !== 'selectie' && u !== 'transformare' && u !== 'noduri' && u !== 'cutit' && u !== 'pen' && u !== 'text';
+export const deseneaza = (u: Unealta): u is UnealtaDesen => u !== 'selectie' && u !== 'transformare' && u !== 'noduri' && u !== 'cutit' && u !== 'pen' && u !== 'text' && u !== 'cote';
 
 /** Tasta fiecărei unelte (fără modificatori). */
-// T e „Arată traseul” (ADR 0038): Textul are X. K e Cuțitul (Ctrl+K rămâne paleta).
-export const TASTE_UNELTE: Readonly<Record<string, Unealta>> = { v: 'selectie', s: 'transformare', n: 'noduri', k: 'cutit', b: 'pen', r: 'dreptunghi', o: 'cerc', e: 'elipsa', l: 'linie', p: 'poligon', x: 'text' };
+// T e „Arată traseul” (ADR 0038): Textul are X. K e Cuțitul (Ctrl+K rămâne paleta). D e Cotele; M le deschide pe Măsoară
+// (ADR 0330 §5), în afara hărții: o unealtă are o singură tastă pe buton.
+export const TASTE_UNELTE: Readonly<Record<string, Unealta>> = { v: 'selectie', s: 'transformare', n: 'noduri', k: 'cutit', b: 'pen', r: 'dreptunghi', o: 'cerc', e: 'elipsa', l: 'linie', p: 'poligon', x: 'text', d: 'cote' };
 /** Eticheta tastei pe butonul uneltei (cererea owner-ului din 25.10), din aceeași hartă: nu poate arăta altă tastă. */
 export const TASTA_UNELTEI = Object.fromEntries(Object.entries(TASTE_UNELTE).map(([k, u]) => [u, k.toUpperCase()])) as Readonly<Record<Unealta, string>>;
 
@@ -93,6 +99,8 @@ export function tasteUneltei(u: Unealta, o: { readonly altFix: 'ancora' | 'centr
       return [r('shift', 'editare.desen.pas15'), r('alt', 'editare.desen.din-mijloc')];
     case 'poligon':
       return [r('shift', 'editare.desen.pas15'), r('ctrl', 'editare.desen.intins')];
+    case 'cote':
+      return [r('shift', 'editare.cote.tasta.shift'), r('ctrl', 'editare.cote.tasta.ctrl'), r('alt', 'editare.cote.tasta.alt')];
     default:
       return [];
   }

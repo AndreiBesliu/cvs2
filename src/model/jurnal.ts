@@ -292,9 +292,33 @@ function inversa(c: Comanda): Comanda {
   }
 }
 
-/** O comandă nouă: se aplică, intră în trecut, iar viitorul (refacerile posibile) se golește. */
+/**
+ * Cotele (ADR 0330 §3): după o comandă, capetele legate care se dezleagă (forma ștearsă, mutată pe altă foaie, cu alte noduri)
+ * își scriu ultimul punct văzut, în același pas de anulare. Funcția vine cu modulul lor (`jurnalCote.ts`, adus cu judecata
+ * cotelor, deci cu orice document care le are, și cu unealta Cote): un document fără cote n-o cere.
+ */
+let dupaCote: ((inainte: Document, dupa: Document) => readonly Comanda[]) | null = null;
+
+/** Înregistrarea dezlegării cotelor, de modulul lor. */
+export function inregistreazaCotele(f: (inainte: Document, dupa: Document) => readonly Comanda[]): void {
+  dupaCote = f;
+}
+
+/**
+ * O comandă nouă: se aplică, intră în trecut, iar viitorul (refacerile posibile) se golește. Dacă dezleagă capetele unor cote,
+ * scrierea lor intră în același pas (un `lot` cu comanda și cu ea), deci anularea le întoarce pe amândouă.
+ */
 export function executa(h: Istoric, c: Comanda): Istoric {
-  return { doc: aplica(h.doc, c), trecut: [...h.trecut, c].slice(-PLAFON_ISTORIC), viitor: [] };
+  let doc = aplicaPas(h.doc, c);
+  let pas = c;
+  if (dupaCote && c.tip !== 'inlocuieste-cote') {
+    const extra = dupaCote(h.doc, doc);
+    if (extra.length > 0) {
+      doc = extra.reduce(aplicaPas, doc);
+      pas = { tip: 'lot', comenzi: [c, ...extra] };
+    }
+  }
+  return { doc: { ...doc, rev: h.doc.rev + 1 }, trecut: [...h.trecut, pas].slice(-PLAFON_ISTORIC), viitor: [] };
 }
 
 export function anuleaza(h: Istoric): Istoric {
