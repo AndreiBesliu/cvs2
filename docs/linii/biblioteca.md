@@ -23,11 +23,13 @@ următoarea versiune, 18.24.0).**_
 - **CI:** rapidul verde pe `1c21640`; primul complet, căzut la o probă mai veche a extensiilor (regula de mai jos);
   **completul verde pe `51ca1a5`** (codul feliei cu `main` `a96881a`; 69 min 27 s); completul de pe capătul cu `main`
   `7312d68` adus (`e46d70e`) hotărăște unirea.
-- **Felia următoare, hotărâtă cu sesiunea principală (24.11), după unirea lui 3.Xj, pe PR separat, doar probe:** rândul
-  235 al probei repornirii („două cereri imediat după”) cade 2 din 120 sub zece lucrători, când clicurile ajung după
-  cele 2 s. De făcut: cele trei cereri dintr-un singur `evaluate` din cadru, în întrecere cu urmarea; proba judecă doar
-  numărul final de deschideri; cu repetările dinainte și de după (120–150 pe zece lucrători) și cu otrava răririi
-  (intervalul 0 sau cererea a doua neamânată). Nu cere cuvântul owner-ului (ține CI-ul verde).
+- **3.Xk, felia mică de după, doar probe (hotărâtă cu sesiunea principală pe 24.11; gata local pe 24.11, `1772f95`,
+  de împins după ce 3.Xj e în `main`, pe PR separat):** „două cereri imediat după”, din proba repornirii, depindea de cât
+  de repede ajungeau clicurile la cadrul refăcut (2 din 120 sub zece lucrători, la sesiunea principală; la mine, 0 din
+  450). În loc de trei cereri dintr-un `evaluate` (ordinea mesajelor față de randarea lui React ar fi fost altă cursă),
+  **ceasul paginii e al probei** (`page.clock.install()`, `pauseAt` înaintea primei cereri, `runFor`): la 1 999 ms nimic,
+  la 2 000 o singură repornire. Cu o întârziere de 2,1 s pusă anume, proba veche cade 5 din 5, cea nouă trece 5 din 5;
+  300 din 300 pe doisprezece lucrători; otrăvurile 8 / 8. Nu cere cuvântul owner-ului (ține CI-ul verde).
 - **Canalul `biblioteca`:** <https://cncvectorstudio-test--biblioteca-gw7dr9bc.web.app> (până pe 24.12.2026).
 
 **Reguli rămase de la 3.Xj:**
@@ -48,6 +50,10 @@ următoarea versiune, 18.24.0).**_
   în aceeași oră în `main` (`29ef7e44`); ramura folosește varianta din `main` (cu urmarea de așteptat ca al treilea
   parametru). **Înaintea unei reparații de probă care nu ține de felie, întreabă sesiunea principală dacă n-o are deja:**
   aici am reparat-o amândouă, fiecare cu ajutorul ei.
+- **O probă care judecă o regulă de timp a gazdei (rărirea, un termen) ține ea ceasul paginii** (`page.clock`: `install`
+  înaintea lui `goto`, `pauseAt` înaintea primului gest, `runFor` cu granița exactă). Cadrul extensiei pornește și cu
+  ceasul oprit (pornirea lui folosește temporizatoare doar ca termene). Două `setPornire` în același pas sunt o singură
+  refacere a cadrului: ce se adună acolo se probează unitar, nu din browser (otrava R04 din 3.Xk).
 - **La 320 px, la atingere, rândul de sus al aplicației își suprapune butoanele** (în engleză, Extensii e sub butonul de
   căutare): problemă a carcasei, raportată sesiunii principale pe 24.11. Până e reparată, o probă de telefon la 320 px
   deschide meniul Extensii de la tastatură (`cuRaftul(page, true)`).

@@ -577,6 +577,10 @@
       "ro": "După unirea lui 12.1↑b–c: viteza benzii, rândurile legate, arborele, lemnul din jurul…",
       "en": "After merging 12.1↑b–c: the band’s speed, the linked rows, the tree, the wood around…"
     },
+    "20fa40e76ff185ae": {
+      "ro": "**Proba repornirii cerute de extensie, fără ceasul adevărat** (fără mașină; doar probe; ADR 0165; hotărâtă cu sesiunea principală, ca să țină CI-ul verde, după ce `extensii.lucru.spec.ts:222` a oprit două complete pe 24.11). Clicul care nu se mai întorcea e reparat din `main` (`29ef7e44`, `clicCareRefaceCadrul`). Rămăsese „două cereri imediat după”: sub încărcare, clicurile probei ajungeau la cadrul refăcut și după cele 2 s ale răririi, iar prima repornea pe loc (2 din 120, pe zece lucrători, la sesiunea principală). Acum cele 2 s sunt ale ceasului paginii (`page.clock`), oprit înaintea primei cereri și mutat de probă: la 1 999 ms nimic, la 2 000 o singură repornire; fără așteptările de 2,5 s. Dovada: cu o întârziere de 2,1 s pusă anume înaintea celor două clicuri, proba veche cade 5 din 5 („Deschideri: 4”), cea nouă trece 5 din 5; repetată de 300 de ori pe doisprezece lucrători, 300 trecute. Otrăvurile 8 / 8 (una, cererile dese neadunate, nu se vede din browser și e a probei unitare). Aplicația nu se schimbă.",
+      "en": "**The extension-requested restart test, without the real clock** (no machine; tests only; ADR 0165; agreed with the main session, to keep CI green, after `extensii.lucru.spec.ts:222` stopped two full runs on 24.11). The click that never returned is repaired from `main` (`29ef7e44`, `clicCareRefaceCadrul`). What remained was “two requests right after”: under load, the test’s clicks reached the rebuilt frame even after the 2 s of the throttle, and the first one restarted at once (2 of 120, on ten workers, in the main session). Now the 2 s belong to the page’s clock (`page.clock`), paused before the first request and moved by the test: nothing at 1,999 ms, a single restart at 2,000; without the 2.5 s waits. The evidence: with a 2.1 s delay inserted on purpose before the two clicks, the old test fails 5 of 5 (“Deschideri: 4”), the new one passes 5 of 5; repeated 300 times on twelve workers, 300 passed. Mutations 8 / 8 (one, frequent requests not merged, cannot be seen from the browser and belongs to the unit test). The app does not change."
+    },
     "2110580dc0e85e37": {
       "ro": "Utilizarea aplicației: înregistratorul din editor și trimiterea în loturi",
       "en": "App usage: the recorder in the editor and sending in batches"
@@ -2672,6 +2676,10 @@
     "a316b45e2a5823a3": {
       "ro": "Backup-ul și marcajele (ADR 0041): `backupZilnic` și `verificaBackup` programate pe test (cu `BUCKET_BACKUP` din `functions/.env.cncvectorstudio-test`), marcajul în jurul fiecărui job (pornire, final, succes, eșecuri la rând, eroare, rând în fila Erori), judecata pură în `shared/joburi.ts` și câte o verificare pe job în Diagnoză; regula `marcaje`. 23 de teste pe emulator, 3 e2e, 7 unitare noi; 10 sabotaje prinse, cu martorii. Emulatorul a prins un import care trecea de tipuri și cădea la rulare (`{ v1 }` din pachetul CommonJS). Prima rulare reală: 17.10, 03:00 / 05:00.",
       "en": "The backup and the markers (ADR 0041): `backupZilnic` and `verificaBackup` scheduled on test (with `BUCKET_BACKUP` from `functions/.env.cncvectorstudio-test`), a marker around each job (start, end, success, failures in a row, error, a row in the Errors tab), the pure judgement in `shared/joburi.ts` and one check per job in Diagnostics; the `marcaje` rule. 23 tests on the emulator, 3 e2e, 7 new unit tests; 10 sabotages caught, with the controls. The emulator caught an import that passed the types and failed at runtime (`{ v1 }` from the CommonJS package). The first real run: 17.10, 03:00 / 05:00."
+    },
+    "a328b7fe720aaeea": {
+      "ro": "Proba repornirii cerute de extensie, fără ceasul adevărat",
+      "en": "The extension-requested restart test, without the real clock"
     },
     "a374b647cf50278f": {
       "ro": "Camera MJPEG (ADR 0195), pentru K1 fără WebRTC: fluxul de pe 8080, citit cadru cu cadru în același card; proba pe imprimanta falsă",
