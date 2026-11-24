@@ -25,7 +25,8 @@ import { PanouRoluri } from './PanouRoluri.tsx';
 import { ImaginiFoii } from './ImaginiFoii.tsx';
 import { useRoluriMele } from './roluriMele.ts';
 import { useContTinut } from './dreptCont.ts';
-import { cheieBibliotecii, frezeMele, useFrezeMele } from './frezeMele.ts';
+import { CHEIE_LOCALA, cheieBibliotecii, frezeMele, useFrezeMele } from './frezeMele.ts';
+import { cuFrezeleStandard } from './frezeStandard.ts';
 import { cuMajuscula, frezaComuna, plusMinus } from './taiereButoane.ts';
 import type { Taierea } from '../ui/aranjament.ts';
 import { CampNumeric } from '../ui/CampNumeric.tsx';
@@ -211,15 +212,19 @@ export function PanouProprietati({
   const [refuzJur, setRefuzJur] = useState<{ readonly cheie: string; readonly motiv: string } | null>(null);
   // Refuzul ultimului − / + (felia 28.1↑d), pentru selecția de atunci.
   const [refuzPlus, setRefuzPlus] = useState<{ readonly cheie: string; readonly motiv: string } | null>(null);
-  // Biblioteca de freze (ADR 0300 §4, felia 16.A↑b-2), pentru rândul „Freza” din Tăierea: a contului deschis sau cea fără
-  // cont, citită din browser la prima deschidere a panoului (fără sincronizare: aceea e a ferestrei „Frezele mele”); și
-  // refuzul ultimei freze alese, pentru selecția de atunci.
-  const cheieFreze = cheieBibliotecii(useContTinut());
-  const biblioteca = useFrezeMele(cheieFreze);
+  // Biblioteca de freze (ADR 0300 §4, felia 16.A↑b-2), pentru rândul „Freza” din Tăierea: a contului deschis, citită din
+  // browser (fără sincronizare: aceea e a ferestrei „Frezele mele”), dacă are freze sau a primit setul standard; altfel cea
+  // fără cont, care primește frezele standard o dată (ADR 0300 §3, precizarea din 24.11). Și refuzul ultimei freze alese,
+  // pentru selecția de atunci.
+  const cheieCont = cheieBibliotecii(useContTinut());
+  const dinCont = useFrezeMele(cheieCont);
+  const faraCont = useFrezeMele(CHEIE_LOCALA);
+  const biblioteca = cheieCont !== CHEIE_LOCALA && (dinCont.standard || dinCont.freze.length > 0) ? dinCont : faraCont;
   useEffect(() => {
-    const b = frezeMele(cheieFreze);
+    const b = frezeMele(cheieCont);
     if (!b.stare().incarcata) void b.incarca();
-  }, [cheieFreze]);
+    void cuFrezeleStandard();
+  }, [cheieCont]);
   const [refuzFreza, setRefuzFreza] = useState<{ readonly cheie: string; readonly motiv: string } | null>(null);
   // Literele plăcuței în lucru (fontul se aduce) sau refuzul lor, pentru selecția de atunci (ADR 0210 §4); «Din CSV…»
   // deschisă (pentru selecția de atunci) și ce a făcut ultima ei rulare.

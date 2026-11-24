@@ -1,6 +1,6 @@
 /**
  * Fereastra „Frezele mele” (ADR 0300 §3, felia 16.A↑a), în Edge: rândul din meniul contului și acțiunea din paletă (și peste
- * fereastra Mașina), biblioteca goală cu frezele de pornire, editorul (numele propus, refuzurile pe câmp, salvarea, plecarea
+ * fereastra Mașina), frezele standard puse singure (16.A↑a-2), biblioteca goală cu „Adaugă frezele standard”, editorul (numele propus, refuzurile pe câmp, salvarea, plecarea
  * cu schimbări), păstrarea la reîncărcare (IndexedDB), ștergerea cu întrebarea, fișierul (exportul și importul JSON / CSV cu
  * numele care se repetă), două file la zi una cu alta, telefonul (390, 360, 320 px) cu fontul lat, F1 și engleza.
  */
@@ -9,6 +9,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test, expect, type Locator, type Page } from '@playwright/test';
 import { deschideMeniulContului } from './ajutor-panza.ts';
+import { bibliotecaGoala } from './ajutor-freze.ts';
 
 test.use({ locale: 'ro-RO' });
 
@@ -27,6 +28,12 @@ async function deschideFrezele(page: Page, titlu = TITLU): Promise<Locator> {
 const nume = (f: Locator): Locator => f.locator('.freze-rand-nume');
 const camp = (f: Locator, c: string): Locator => f.locator(`[data-freze-camp="${c}"]`);
 
+/** Frezele standard, puse singure la prima citire a bibliotecii (ADR 0300 §3, precizarea din 24.11). */
+async function standard(f: Locator): Promise<void> {
+  await expect(nume(f)).toHaveCount(6);
+}
+
+/** „Adaugă frezele standard”, într-o bibliotecă goală. */
 async function pornire(f: Locator): Promise<void> {
   await f.locator('[data-freze="pornire"]').click();
   await expect(nume(f)).toHaveCount(6);
@@ -42,7 +49,7 @@ async function faraDepasire(page: Page): Promise<void> {
   expect(cutie).toBe(0);
 }
 
-test('meniul contului: „Frezele mele…” înaintea manualului; goală, frezele de pornire; grupele, starea, F1', async ({ page }) => {
+test('meniul contului: „Frezele mele…” înaintea manualului; frezele standard, puse singure; grupele, starea, F1', async ({ page }) => {
   await page.goto('/');
   const meniu = await deschideMeniulContului(page);
   const rand = meniu.locator('[data-meniu-cont="freze"] + [data-meniu-cont="manual"]');
@@ -52,16 +59,14 @@ test('meniul contului: „Frezele mele…” înaintea manualului; goală, freze
   const f = page.getByRole('dialog', { name: TITLU });
   await expect(f).toBeVisible();
   await expect(f.locator('[data-freze="cauta"]')).toBeFocused();
-  await expect(f).toContainText('Biblioteca e goală.');
-  await expect(f.locator('[data-freze="exporta"]')).toBeDisabled();
-  await pornire(f);
+  // Biblioteca vine cu frezele standard, fără niciun clic.
   await expect(nume(f)).toHaveText(['Plată Ø3,175', 'Plată Ø6', 'Plată Ø12', 'V60 Ø6', 'V90 Ø12', 'Gravare 30° vârf 0,2 Ø3,175']);
+  await expect(f.locator('[data-freze="pornire"]')).toHaveCount(0);
   await expect(f.getByRole('heading', { name: 'Plate (3)' })).toBeVisible();
   await expect(f.getByRole('heading', { name: 'În V (2)' })).toBeVisible();
   await expect(f.getByRole('heading', { name: 'Gravare (1)' })).toBeVisible();
   await expect(f.locator('[data-freze="stare"]')).toContainText('Doar în acest browser');
   await expect(f.locator('[data-freze="stare"]')).toContainText('6 freze');
-  await expect(f.locator('[data-freze="mesaj"]')).toHaveText('Adăugate: 6 · înlocuite: 0 · sărite: 0');
   await expect(f.locator('[data-freza]').first()).toContainText('T1 · 18000 rot/min · 1000 mm/min');
   // Filtrul și căutarea.
   await f.locator('[data-freze-filtru="v"]').click();
@@ -85,8 +90,30 @@ test('meniul contului: „Frezele mele…” înaintea manualului; goală, freze
   await expect(page.getByTestId('jurnal')).toHaveText('0 erori în jurnalul local');
 });
 
+test('frezele standard, puse la prima pornire în limba ei: în engleză, cu numele englezești', async ({ page }) => {
+  await page.addInitScript(() => { localStorage.setItem('cncvs2.limba', 'en'); });
+  await page.goto('/');
+  const f = await deschideFrezele(page, 'My bits');
+  await expect(nume(f)).toHaveText(['Flat Ø3.175', 'Flat Ø6', 'Flat Ø12', 'V60 Ø6', 'V90 Ø12', 'Engraving 30° tip 0.2 Ø3.175']);
+});
+
+test('goală (frezele standard șterse): nu revin singure, nici după reîncărcare; „Adaugă frezele standard” le pune la loc', async ({ page }) => {
+  await page.goto('/');
+  await bibliotecaGoala(page);
+  const f = await deschideFrezele(page);
+  await expect(f).toContainText('Biblioteca e goală.');
+  await expect(f.locator('[data-freze="exporta"]')).toBeDisabled();
+  await page.reload();
+  const g = await deschideFrezele(page);
+  await expect(g).toContainText('Biblioteca e goală.');
+  await pornire(g);
+  await expect(nume(g)).toHaveText(['Plată Ø3,175', 'Plată Ø6', 'Plată Ø12', 'V60 Ø6', 'V90 Ø12', 'Gravare 30° vârf 0,2 Ø3,175']);
+  await expect(g.locator('[data-freze="mesaj"]')).toHaveText('Adăugate: 6 · înlocuite: 0 · sărite: 0');
+});
+
 test('freză nouă: numele propus, refuzurile pe câmp, salvarea; rămâne după reîncărcare; schimbarea și plecarea cu schimbări', async ({ page }) => {
   await page.goto('/');
+  await bibliotecaGoala(page);
   const f = await deschideFrezele(page);
   await f.locator('[data-freze="noua"]').click();
   await expect(f.getByRole('heading', { name: 'Freză nouă', level: 3 })).toBeVisible();
@@ -145,7 +172,7 @@ test('freză nouă: numele propus, refuzurile pe câmp, salvarea; rămâne după
 test('duplicarea, ștergerea cu întrebarea (Escape renunță la întrebare); exportul și importul (JSON, CSV, numele care se repetă)', async ({ page }) => {
   await page.goto('/');
   const f = await deschideFrezele(page);
-  await pornire(f);
+  await standard(f);
   await f.locator('[data-freza]').filter({ hasText: 'Plată Ø6' }).click();
   await f.locator('[data-freze="duplica"]').click();
   await expect(nume(f)).toContainText(['Plată Ø6 copie']);
@@ -199,6 +226,7 @@ test('duplicarea, ștergerea cu întrebarea (Escape renunță la întrebare); ex
 
 test('două file: o freză salvată într-una apare în cealaltă, fără reîncărcare', async ({ page, context }) => {
   await page.goto('/');
+  await bibliotecaGoala(page);
   const a = await deschideFrezele(page);
   const alta = await context.newPage();
   await alta.goto('/');
@@ -216,7 +244,7 @@ for (const latime of [390, 360, 320]) {
     await page.goto('/');
     await page.evaluate(() => { document.documentElement.style.setProperty('--font', "Verdana, 'DejaVu Sans', sans-serif"); });
     const f = await deschideFrezele(page);
-    await pornire(f);
+    await standard(f);
     await faraDepasire(page);
     await expect(f.locator('.freze-editor')).toBeHidden();
     await f.locator('[data-freza]').filter({ hasText: 'Gravare' }).click();
@@ -234,7 +262,7 @@ test('la 1280 px, cu fontul lat: fereastra încape, fără derulare pe orizontal
   await page.goto('/');
   await page.evaluate(() => { document.documentElement.style.setProperty('--font', "Verdana, 'DejaVu Sans', sans-serif"); });
   const f = await deschideFrezele(page);
-  await pornire(f);
+  await standard(f);
   await f.locator('[data-freza]').filter({ hasText: 'Gravare' }).click();
   await expect(f.locator('.freze-lista')).toBeVisible();
   await expect(camp(f, 'varf')).toBeVisible();
@@ -243,6 +271,8 @@ test('la 1280 px, cu fontul lat: fereastra încape, fără derulare pe orizontal
 
 test('din paletă, peste fereastra Mașina: fereastra se deschide, iar Mașina rămâne dedesubt; în engleză', async ({ page }) => {
   await page.goto('/');
+  // Goală, ca frezele standard să se pună în engleză, cu butonul.
+  await bibliotecaGoala(page);
   const masina = page.locator('[data-actiune="vedere.masina"]');
   await masina.click();
   await expect(masina).toHaveAttribute('aria-current', 'page');

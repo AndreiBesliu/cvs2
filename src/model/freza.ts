@@ -203,6 +203,32 @@ export const FREZE_PORNIRE: readonly FrezaFaraNume[] = [
   { fel: 'plata', diametru: 12, tais: 30, taisuri: 2, numar: 6, pas: 4, ...LUCRU },
 ];
 
+/**
+ * Id-urile fixe ale frezelor standard (ADR 0300 §3, precizarea owner-ului din 24.11: biblioteca vine populată cu ele), în
+ * ordinea lui `FREZE_PORNIRE`: aceeași freză pe orice calculator și în orice cont, deci două seturi puse în același cont
+ * (de pe două calculatoare) nu se dublează, iar o freză standard ștearsă și pusă la loc e tot ea.
+ */
+export const ID_PORNIRE: readonly string[] = ['std-plata-3175', 'std-plata-6', 'std-v60-6', 'std-v90-12', 'std-gravare-30-3175', 'std-plata-12'];
+
+/** O freză standard gata de pus în bibliotecă: câmpurile, numele (în limba omului) și id-ul ei fix. */
+export type FrezaStandard = Freza & { readonly id: string };
+
+/**
+ * Lista cu frezele standard care lipsesc (după id), fiecare cu un nume liber (unul luat de altă freză primește „(2)”),
+ * versiunea 1 și data `acum`; peste plafonul bibliotecii, câte încap. Una care nu e o freză bună se sare.
+ */
+export function cuStandard(
+  lista: readonly FrezaSalvata[], standard: readonly FrezaStandard[], acum: number, rezervate: readonly string[] = [],
+): { readonly lista: readonly FrezaSalvata[]; readonly adaugate: number } {
+  let rez = lista;
+  for (const s of standard) {
+    if (rez.some((f) => f.id === s.id)) continue;
+    const r = cuFreza(rez, null, { ...s, nume: numeLiber(s.nume, rez, rezervate) }, () => s.id, acum, rezervate);
+    if (r.ok) rez = r.lista;
+  }
+  return { lista: rez, adaugate: rez.length - lista.length };
+}
+
 export type RezultatLista =
   | { readonly ok: true; readonly lista: readonly FrezaSalvata[]; readonly id: string }
   | { readonly ok: false; readonly probleme: ProblemeFreza | { readonly id: 'lipsa' } | { readonly lista: 'plina' } };

@@ -1,11 +1,12 @@
 /**
  * Freza din bibliotecă în secțiunea Tăierea (ADR 0300 §4, felia 16.A↑b-2), în Edge: rândul „Freza” apare cât biblioteca are
- * freze și arată doar frezele care merg pe toate formele alese (plate pe un profil, în V la V-carve, niciuna la un amestec);
+ * freze (de la prima pornire, frezele standard, puse singure: 16.A↑a-2) și arată doar frezele care merg pe toate formele alese (plate pe un profil, în V la V-carve, niciuna la un amestec);
  * aleasă, freza trece pe operație într-un pas de anulare, cu pasul ei, iar fereastra exportului o arată; numărul T ocupat de
  * altă freză se spune într-o notă; Atelierul (butoanele mari) are același rând, în panou, și cu fontul lat; în engleză.
  */
 import { test, expect, type Locator, type Page } from '@playwright/test';
-import { adauga, deschideMeniulContului, ecran, vedere } from './ajutor-panza.ts';
+import { adauga, ecran, vedere } from './ajutor-panza.ts';
+import { bibliotecaGoala } from './ajutor-freze.ts';
 
 test.use({ locale: 'ro-RO' });
 
@@ -13,18 +14,6 @@ const taierea = (page: Page): Locator => page.getByTestId('prop-taierea');
 const freza = (page: Page): Locator => taierea(page).locator('[data-camp="freza"]');
 const aleasa = (page: Page): Locator => freza(page).locator('option:checked');
 const oferite = (page: Page): Locator => freza(page).locator('option:not([disabled])');
-
-/** Frezele de pornire în bibliotecă, din fereastra „Frezele mele”, apoi fereastra închisă. */
-async function frezeDePornire(page: Page): Promise<void> {
-  const meniu = await deschideMeniulContului(page);
-  await meniu.locator('[data-meniu-cont="freze"]').click();
-  const f = page.getByTestId('dialog-freze');
-  await expect(f).toBeVisible();
-  await f.locator('[data-freze="pornire"]').click();
-  await expect(f.locator('.freze-rand-nume')).toHaveCount(6);
-  await f.locator('[data-freze="inchide"]').click();
-  await expect(f).toHaveCount(0);
-}
 
 /** Trage o fereastră de selecție între două puncte ale foii (mm): alege formele cuprinse în întregime. */
 async function fereastra(page: Page, a: { x: number; y: number }, b: { x: number; y: number }): Promise<void> {
@@ -37,13 +26,20 @@ async function fereastra(page: Page, a: { x: number; y: number }, b: { x: number
   await page.mouse.up();
 }
 
-test('fără freze în bibliotecă, rândul nu apare; cu ele, doar cele plate pe un profil; aleasă, freza și pasul ei, într-un pas', async ({ page }) => {
+test('cu biblioteca goală, rândul nu apare', async ({ page }) => {
   await page.goto('/');
+  await bibliotecaGoala(page);
   await adauga(page, 'dreptunghi');
   await expect(taierea(page).locator('[data-camp="rol"]')).toHaveValue('exterior');
   await expect(freza(page)).toHaveCount(0);
-  await frezeDePornire(page);
-  // Forma e încă aleasă: rândul apare, cu freza scrisă de mână a operației și frezele plate, în ordinea bibliotecii.
+});
+
+test('de la prima pornire, frezele standard: doar cele plate pe un profil; aleasă, freza și pasul ei, într-un pas', async ({ page }) => {
+  await page.goto('/');
+  await adauga(page, 'dreptunghi');
+  await expect(taierea(page).locator('[data-camp="rol"]')).toHaveValue('exterior');
+  // Fără nicio deschidere a ferestrei „Frezele mele”: rândul are freza scrisă de mână a operației și frezele plate standard,
+  // în ordinea bibliotecii.
   await expect(aleasa(page)).toHaveText('Scrisă de mână');
   await expect(oferite(page)).toHaveText(['Plată Ø3,175', 'Plată Ø6', 'Plată Ø12']);
   await freza(page).selectOption({ label: 'Plată Ø3,175' });
@@ -68,7 +64,6 @@ test('fără freze în bibliotecă, rândul nu apare; cu ele, doar cele plate pe
 
 test('V-carve: doar frezele în V, iar fereastra exportului arată unghiul frezei alese', async ({ page }) => {
   await page.goto('/');
-  await frezeDePornire(page);
   await adauga(page, 'dreptunghi');
   await taierea(page).locator('[data-camp="rol"]').selectOption('vcarve');
   await expect(oferite(page)).toHaveText(['V60 Ø6', 'V90 Ø12', 'Gravare 30° vârf 0,2 Ø3,175']);
@@ -81,7 +76,6 @@ test('V-carve: doar frezele în V, iar fereastra exportului arată unghiul freze
 
 test('un profil și un V-carve împreună: nicio freză; T-ul bibliotecii ocupat de altă freză: altul, cu nota', async ({ page }) => {
   await page.goto('/');
-  await frezeDePornire(page);
   // Dreptunghiul (T1 Ø6, plată) și cercul nou, ales singur (o gaură, tot cu T1 Ø6).
   await adauga(page, 'dreptunghi');
   await adauga(page, 'cerc');
@@ -112,7 +106,7 @@ test('Atelierul (butoanele mari): același rând, în panou, și cu fontul lat; 
   await page.goto('/');
   await expect(page.locator('.aplicatie')).toHaveAttribute('data-aranjament', 'atelier');
   await page.evaluate(() => { document.documentElement.style.setProperty('--font', "Verdana, 'DejaVu Sans', sans-serif"); });
-  await frezeDePornire(page);
+  // Frezele standard, puse la prima pornire în limba ei: în engleză.
   await adauga(page, 'dreptunghi');
   await expect(aleasa(page)).toHaveText('Entered by hand');
   await expect(oferite(page)).toHaveText(['Flat Ø3.175', 'Flat Ø6', 'Flat Ø12']);
