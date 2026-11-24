@@ -14187,3 +14187,26 @@ se poate”
   `docs/linii/principala.md`.
 - **În drum:** publicarea loturilor 23–27 (`893e45bb`): completul pe `main` (45484077948) rula. Lotul 28 (atelierul
   Easy 3Draw: 3.Ca și 3.Cb, `7157ecc5`, pe `unire-2411ad`) își reface porțile peste `main`-ul cu cotele.
+
+## 2026-11-25 — Sesiunea principală în cloud: a douăzeci și șaptea unire (atelierul Easy 3Draw: 3.Ca, conectorul perpendicular; 3.Cb, conectorul în unghi, axul cu opritor, știftul cu bucșă); loturile 23–27 pe test (Model: Claude Fable 5.2)
+
+**Prompt:** rapoartele liniei atelierului („3.Ca e gata de unit”, `44dbb97a`; „3.Cb e și ea gata”, `7157ecc5`;
+„completul meu de pe `7157ecc5` e verde”), la ordinul în vigoare „unește ce se poate”
+**Started:** 24.11, 23:25. **Completed:** unirea în `main`, 25.11, 00:30; publicarea pe test, pornită după ea.
+
+- **Lotul, pe `unire-2411ad`** (din `893e45bb`): `7157ecc5` (3.Ca și 3.Cb), în `11877a3e`. Ciocnirea: rândul liniei
+  din `docs/linii/README.md` (păstrat al liniei). Unirea atinge doar `docs/`, `extensii/` și `test/`. După ce cotele
+  au intrat în `main` (`393a59f5`), `main` a fost adus în ramură (`f08a47af`, fără ciocniri) și completul, repornit.
+  Local: tipurile (și ale surselor planificatorului), regulile de import (22), traducerile (1 091), catalogul,
+  biblioteca („Easy 3Draw 18.25.0, la zi”), 239 de unitare ale extensiei, bibliotecii, documentației și manualului.
+- **Porțile, în CI:** completul lotului pe `f08a47af` (45492795451, verde la prima trecere, 53 min): unit 10 412 / 0
+  (12 sărite, pe Linux), e2e 810 / 810, funcțiile pe emulatoare 136 / 136, paginile 59 / 59; rapidul, verde pe
+  `f08a47af` (45492797940, feliile între 1:36 și 7:31); completul liniei, verde pe `7157ecc5` (45490190749);
+  completul dinaintea cotelor, pe `11877a3e` (45490603665), verde și el (noua pornire nu l-a oprit). Pornirea
+  111,1 kB (plafonul 120; cu ușa 116,1, cu Atelierul 116,4), totalul 880,9 / 900 kB, `/admin` 138,3 / 200, contul
+  30,3 / 32. Nimic pe server.
+- **Loturile 23–27, pe test:** `893e45bb`, publicat pe 24.11 la 23:42 (rapidul pe `main` 45482727290, completul
+  45484077948: unit 10 369 / 0, e2e 791 / 791, funcțiile 136 / 136, paginile 59 / 59; publicarea 45492977033; adresa
+  spune `893e45bb97e1`; proba de fum, bună: nicio eroare, 70 de butoane, workerul PWA la locul lui).
+- **Documentele:** decizia în `CLAUDE.md` (paragraful de stare al construcțiilor e al liniei; versiunea extensiei,
+  18.25.0); starea din `docs/linii/principala.md`.
