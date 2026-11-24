@@ -365,7 +365,7 @@ function CarcasaAdmin({ con, instanta, build, p }: { readonly con: Conexiune; re
             {aratata === 'tichete' ? <FilaTichete key={tintaTichete?.id ?? ''} con={con} owner={p.owner} permisiuni={p.permisiuni} tinta={tintaTichete} aducator={aducator} /> : null}
             {aratata === 'utilizatori' ? (
               <FilaUtilizatori key={tintaConturi?.id ?? ''} con={con} eu={p.user.uid} poateAdministra={p.permisiuni.has('conturi.administreaza')}
-                poateIstoric={p.permisiuni.has('audit.citeste')} tinta={tintaConturi} />
+                poateIstoric={p.permisiuni.has('audit.citeste')} poateActivitate={p.permisiuni.has('utilizare.sesiuni')} aducator={aducator} tinta={tintaConturi} />
             ) : null}
             {aratata === 'personal' ? <FilaPersonal con={con} eu={p.user.uid} emailEu={p.user.email ?? null} /> : null}
             {aratata === 'setari' ? <FilaSetari con={con} eu={p.user.uid} /> : null}

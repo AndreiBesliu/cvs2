@@ -164,3 +164,19 @@
   display: grid;
   gap: var(--sp-1);
 }
+
+/* Activitatea contului ales (ADR 0262, A.11c): sesiunile, fiecare deschisă la cerere, cu pașii ei. */
+.util-sesiuni {
+  list-style: none;
+  margin: 0 0 var(--sp-2);
+  padding: 0;
+  display: grid;
+  gap: var(--sp-1);
+  font-size: var(--fs-2);
+}
+.util-sesiuni summary {
+  cursor: pointer;
+}
+.util-sesiuni .admin-pasi {
+  margin: var(--sp-1) 0 var(--sp-2);
+}

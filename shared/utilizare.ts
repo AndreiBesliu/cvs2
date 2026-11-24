@@ -184,6 +184,33 @@ export interface RaspunsSetariUtilizare {
   readonly versiune: number;
 }
 
+/** Cronologia unui om (ADR 0262 §6, felia A.11c): câte loturi pe pagină, cele mai noi întâi. */
+export const PAGINA_CRONOLOGIE = 20;
+export interface CerereCronologie {
+  readonly actiune: 'cronologie';
+  /** Contul al cărui lucru se citește. */
+  readonly uid: string;
+  /** Doar loturile primite înainte de clipa asta (ms): pagina următoare, mai veche. */
+  readonly pana?: number;
+}
+/** Un lot în cronologie: sesiunea, numărul, clipele (ms), contextul și evenimentele, așa cum le-a scris serverul. */
+export interface LotCronologie {
+  readonly id: string;
+  readonly sesiune: string;
+  readonly nr: number;
+  readonly primit: number;
+  readonly inceput: number;
+  readonly context: ContextLot | null;
+  readonly evenimente: readonly Eveniment[];
+  readonly aruncate: number;
+}
+export interface RaspunsCronologie {
+  readonly ok: true;
+  readonly loturi: readonly LotCronologie[];
+  /** Mai sunt loturi, mai vechi decât ultimul din pagină. */
+  readonly maiVechi: boolean;
+}
+
 const obiect = (x: unknown): Record<string, unknown> | null => (typeof x === 'object' && x !== null && !Array.isArray(x) ? x as Record<string, unknown> : null);
 const intreg = (x: unknown, min: number, max: number): x is number => typeof x === 'number' && Number.isSafeInteger(x) && x >= min && x <= max;
 const din = <T extends string>(lista: readonly T[], x: unknown): x is T => typeof x === 'string' && (lista as readonly string[]).includes(x);

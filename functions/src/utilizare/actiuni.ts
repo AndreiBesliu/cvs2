@@ -5,9 +5,9 @@ import { oraFerestrei } from '../../../shared/erori.ts';
 import { COLECTII_PERSONAL } from '../../../shared/personal.ts';
 import { esteVersiuneVazuta } from '../../../shared/raspunsuriRapide.ts';
 import {
-  aceleasiSetariUtilizare, CALE_SETARI_UTILIZARE, COLECTIE_LIMITE_UTILIZARE, COLECTIE_UTILIZARE, expiraUtilizareLa, idLot, lotDin,
-  LOTURI_PE_ORA, MARGINI_UTILIZARE, setariPublice, setariUtilizareCerute, setariUtilizareDin, type RaspunsLot,
-  type RaspunsSetariUtilizare,
+  aceleasiSetariUtilizare, CALE_SETARI_UTILIZARE, COLECTIE_LIMITE_UTILIZARE, COLECTIE_UTILIZARE, contextDin, evenimentDin, expiraUtilizareLa, idLot,
+  lotDin, LOTURI_PE_ORA, MARGINI_UTILIZARE, PAGINA_CRONOLOGIE, setariPublice, setariUtilizareCerute, setariUtilizareDin, type Eveniment,
+  type LotCronologie, type RaspunsCronologie, type RaspunsLot, type RaspunsSetariUtilizare,
 } from '../../../shared/utilizare.ts';
 import { scrieAudit } from '../audit.ts';
 import { logServerError } from '../erori/jurnal.ts';
@@ -90,8 +90,51 @@ async function setari(db: Firestore, uid: string, d: Record<string, unknown>, ac
   });
 }
 
-/** Callable-ul `utilizare`: `{ actiune: 'lot' | 'setari', … }`; refuzurile sunt `HttpsError`-uri cu motivul. */
-export async function trateazaUtilizarea(db: Firestore, uid: string | null, data: unknown, acum: Date = new Date()): Promise<RaspunsLot | RaspunsSetariUtilizare> {
+/** Forma unui uid de Firebase Auth (cel mult 128 de caractere, fără separatori de cale). */
+const RE_UID = /^[A-Za-z0-9_-]{1,128}$/;
+const clipa = (x: unknown): number => (x instanceof Timestamp ? x.toMillis() : 0);
+
+/** Un lot citit, pentru cronologie: evenimentele trec încă o dată prin lista albă de azi (o schemă veche le sare). */
+function lotCronologieDin(id: string, d: Record<string, unknown>): LotCronologie | null {
+  const sesiune = d['sesiune'];
+  const nr = d['nr'];
+  if (typeof sesiune !== 'string' || typeof nr !== 'number') return null;
+  const ev = Array.isArray(d['evenimente']) ? d['evenimente'] : [];
+  const evenimente = ev.map((e) => evenimentDin(e, Number.MAX_SAFE_INTEGER)).filter((e): e is Eveniment => e !== null);
+  return {
+    id, sesiune, nr, primit: clipa(d['primit']), inceput: clipa(d['inceput']), context: contextDin(d['context']), evenimente,
+    aruncate: numar(d['aruncate']) + (ev.length - evenimente.length),
+  };
+}
+
+/**
+ * Cronologia unui om (ADR 0262 §6, felia A.11c): loturile contului, cele mai noi întâi, câte o pagină; doar cu „Utilizare:
+ * sesiuni” (date despre o persoană). Fiecare citire intră în audit, cu cine a citit și câte loturi.
+ */
+async function cronologie(db: Firestore, uid: string, d: Record<string, unknown>, acum: Date): Promise<RaspunsCronologie> {
+  const tinta = d['uid'];
+  if (typeof tinta !== 'string' || !RE_UID.test(tinta)) throw argument('contul');
+  const pana = d['pana'];
+  if (pana !== undefined && (typeof pana !== 'number' || !Number.isSafeInteger(pana) || pana <= 0)) throw argument('clipa paginii');
+  return db.runTransaction(async (tx): Promise<RaspunsCronologie> => {
+    const drepturi = await drepturiIn(tx, db, uid);
+    if (!drepturi.permisiuni.has('utilizare.sesiuni')) throw new HttpsError('permission-denied', 'cronologia cere „Utilizare: sesiuni”');
+    let q = db.collection(COLECTIE_UTILIZARE).where('uid', '==', tinta);
+    if (pana !== undefined) q = q.where('primit', '<', Timestamp.fromMillis(pana));
+    const s = await tx.get(q.orderBy('primit', 'desc').limit(PAGINA_CRONOLOGIE + 1));
+    const loturi = s.docs.slice(0, PAGINA_CRONOLOGIE).map((x) => lotCronologieDin(x.id, x.data())).filter((l): l is LotCronologie => l !== null);
+    scrieAudit(tx, db, {
+      cand: Timestamp.fromDate(acum), cine: uid, rol: drepturi.rol, actiune: 'utilizare.cronologie', tinta: `${COLECTIE_UTILIZARE}/${tinta}`,
+      inainte: null, dupa: { loturi: loturi.length, ...(pana === undefined ? {} : { pana }) },
+    });
+    return { ok: true, loturi, maiVechi: s.size > PAGINA_CRONOLOGIE };
+  });
+}
+
+/** Callable-ul `utilizare`: `{ actiune: 'lot' | 'setari' | 'cronologie', … }`; refuzurile sunt `HttpsError`-uri cu motivul. */
+export async function trateazaUtilizarea(
+  db: Firestore, uid: string | null, data: unknown, acum: Date = new Date(),
+): Promise<RaspunsLot | RaspunsSetariUtilizare | RaspunsCronologie> {
   if (!uid) throw new HttpsError('unauthenticated', 'intră în cont');
   const d = obiect(data);
   const actiune = d['actiune'];
@@ -99,6 +142,7 @@ export async function trateazaUtilizarea(db: Firestore, uid: string | null, data
     switch (actiune) {
       case 'lot': return await lot(db, uid, d, acum);
       case 'setari': return await setari(db, uid, d, acum);
+      case 'cronologie': return await cronologie(db, uid, d, acum);
       default: throw argument('acțiunea');
     }
   } catch (e) {

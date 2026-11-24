@@ -5,7 +5,8 @@ import { getFirestore, type Timestamp } from 'firebase-admin/firestore';
 import { HttpsError } from 'firebase-functions/v2/https';
 import { oraFerestrei } from '../../shared/erori.ts';
 import {
-  LOTURI_PE_ORA, SETARI_UTILIZARE_IMPLICITE, setariPublice, type RaspunsLot, type RaspunsSetariUtilizare, type SetariUtilizare,
+  LOTURI_PE_ORA, PAGINA_CRONOLOGIE, SETARI_UTILIZARE_IMPLICITE, setariPublice, type RaspunsCronologie, type RaspunsLot, type RaspunsSetariUtilizare,
+  type SetariUtilizare,
 } from '../../shared/utilizare.ts';
 import { COLECTIE_AUDIT } from '../src/audit.ts';
 import { trateazaUtilizarea } from '../src/utilizare/actiuni.ts';
@@ -184,4 +185,42 @@ test('setările: în afara marginilor, incomplete sau cu altceva, refuzate făr�
   for (const v of [-1, 1.5, '0', null]) assert.equal(await cod(setari('own', SETARI_UTILIZARE_IMPLICITE, v)), 'invalid-argument', String(v));
   assert.equal((await db.doc('setari/utilizare').get()).exists, false);
   assert.equal((await audit()).length, 0);
+});
+
+test('cronologia unui om (A.11c): doar cu „Utilizare: sesiuni”; cele mai noi întâi, pe pagini; doar contul cerut; fiecare citire în audit', async () => {
+  const SES = 'RSesiuni00000000000a';
+  await db.doc(`roluri/${SES}`).set({ nume: 'Sesiuni', permisiuni: ['utilizare.sesiuni'] });
+  await db.doc('staff/ses').set({ rol: SES });
+  // Ana: 23 de loturi în două sesiuni, la câte un minut; Ion: unul.
+  for (let i = 0; i < 23; i++) {
+    const sesiune = i < 10 ? 'anaaaaaaaaaaaaa1' : 'anaaaaaaaaaaaaa2';
+    assert.equal((await trimite('ana', lot({ sesiune, nr: i < 10 ? i + 1 : i - 9 }), T0 + i * 60_000)).scris, true);
+  }
+  assert.equal((await trimite('ion', lot({ sesiune: 'ionnnnnnnnnnnnn1' }), T0)).scris, true);
+  let clipa = T0 + ZI;
+  const cron = (cine: string, cerere: Record<string, unknown>) => fa(cine, { actiune: 'cronologie', ...cerere }, clipa += 1_000) as Promise<RaspunsCronologie>;
+
+  // Fără permisiune (nici „Tot”, care are alte patru), refuzat; owner-ul o are.
+  assert.equal(await cod(cron('tot', { uid: 'ana' })), 'permission-denied');
+  assert.equal(await cod(cron('ana', { uid: 'ana' })), 'permission-denied');
+  assert.equal(await cod(cron('ses', { uid: '../ana' })), 'invalid-argument');
+  assert.equal(await cod(cron('ses', { uid: 'ana', pana: -5 })), 'invalid-argument');
+  const p1 = await cron('ses', { uid: 'ana' });
+  assert.equal(p1.loturi.length, PAGINA_CRONOLOGIE);
+  assert.equal(p1.maiVechi, true);
+  assert.deepEqual([p1.loturi[0]?.sesiune, p1.loturi[0]?.nr], ['anaaaaaaaaaaaaa2', 13]);
+  assert.ok(p1.loturi.every((l, i, a) => i === 0 || (a[i - 1]?.primit ?? 0) > l.primit), 'cele mai noi întâi');
+  assert.deepEqual(p1.loturi[0]?.evenimente, [ACTIUNE, DIALOG]);
+  assert.deepEqual(p1.loturi[0]?.context, CONTEXT);
+  assert.equal(p1.loturi[0]?.inceput, (p1.loturi[0]?.primit ?? 0) - 60_000);
+  const p2 = await cron('ses', { uid: 'ana', pana: p1.loturi.at(-1)?.primit });
+  assert.deepEqual(p2.loturi.map((l) => l.nr), [3, 2, 1]);
+  assert.equal(p2.maiVechi, false);
+  assert.equal((await cron('own', { uid: 'ion' })).loturi.length, 1);
+  assert.deepEqual((await cron('own', { uid: 'nimeni' })).loturi, []);
+  // Auditul: cine, al cui, câte loturi (refuzurile nu scriu).
+  const a = (await audit()).filter((x) => x['actiune'] === 'utilizare.cronologie');
+  assert.deepEqual(a.map((x) => [x['cine'], x['tinta'], (x['dupa'] as Record<string, unknown>)['loturi']]), [
+    ['ses', 'utilizare/ana', 20], ['ses', 'utilizare/ana', 3], ['own', 'utilizare/ion', 1], ['own', 'utilizare/nimeni', 0],
+  ]);
 });
