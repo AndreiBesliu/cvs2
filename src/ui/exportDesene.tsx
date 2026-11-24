@@ -8,9 +8,10 @@
  */
 import type { ReactNode } from 'react';
 import '../i18n/export.ts';
+import { susLaMicron } from './actiuniExportTipuri.ts';
 import { t } from '../i18n/t.ts';
 import {
-  centreUrechiDesen, ciocanire, coborareDesen, incrustatieDesen, RIDICARE_CIOCANIRE, treceriEgale, treceriLaterale, vcarveDesen, type FelCoborare,
+  bandaDesen, centreUrechiDesen, ciocanire, coborareDesen, incrustatieDesen, RIDICARE_CIOCANIRE, treceriEgale, treceriLaterale, vcarveDesen, type FelCoborare,
   type LocuriUrechiDesen,
 } from './exportDeseneCalcul.ts';
 
@@ -572,6 +573,44 @@ export function DesenIncrustatie({ c, adancime, unghi, joc, fierastrau, margine 
       {v.H > 0 && <Cota pentru="inc-fierastrau" c={c} x1={238} y1={yF} x2={238} y2={ys} text={`H ${c.f(v.H)}`} tx={234} ty={r((yF + ys) / 2 + 4)} anc="end" />}
       <Cota pentru="inc-margine" c={c} x1={xbl} y1={yT - 6} x2={xbl + m} y2={yT - 6} text={c.f(margine ?? 0)} tx={xbl + m + 4} ty={yT - 2} anc="start" />
       <Jos>{t('export.desen.incrustatie.intra', { s: c.f(v.S), c: c.f(v.contact) })}</Jos>
+    </Desen>
+  );
+}
+
+/**
+ * Banda din jurul dopului în V (ADR 0172), pe semifabricatul dopului, în secțiune (jumătatea dreaptă): pereții V ai dopului de
+ * la față până la S + H, fundul plat al benzii pe lățimea ei, peretele ei înapoi la față; cu decuparea, tăietura prin placă la e
+ * de desen, cu puntea de la fundul plăcii. Valorile, ca `valoriBanda`.
+ */
+export function DesenBanda({ c, adancime, unghi, joc, fierastrau, latime, decupare, placa, puntiGrosime, fund, frezaDecupare }: {
+  c: DesenComun; adancime: number | null; unghi: number | null; joc: number | null; fierastrau: number | null; latime: number | null; decupare: boolean;
+  placa: number | null; puntiGrosime: number | null; fund: number | null; frezaDecupare: number | null;
+}): ReactNode {
+  const v = bandaDesen(adancime, unghi, joc, fierastrau, { latime, decupare, placa, puntiGrosime: puntiGrosime ?? 0, fund: fund ?? 0, frezaDecupare });
+  if (!v) {
+    return <Desen eticheta={t('export.desen.banda')} data-banda="lipsa"><rect className="l" data-lemn x={6} y={30} width={248} height={84} /><Jos tare>{t('export.desen.incrustatie.lipsa')}</Jos></Desen>;
+  }
+  const t2 = Math.min(v.t, 2.5), M = v.latime, P = Math.max(v.placa, v.S + v.H);
+  const k = Math.min(150 / (M + v.S * t2), 84 / P), y0 = 30, xC = 70;
+  const X = (x: number): number => r(xC + x * k), Y = (y: number): number => r(y0 + y * k);
+  const sant = `M${X(-v.S * t2)} ${y0}L${xC} ${Y(v.S)}L${X(v.H * t2)} ${Y(v.S + v.H)}H${X(M - v.H * t2)}L${X(M)} ${Y(v.S)}L${X(M + v.S * t2)} ${y0}Z`;
+  const dz = decupare ? Math.max(frezaDecupare ?? fund ?? 0, 0) : 0, xe = v.e, pg = Math.min(puntiGrosime ?? 0, P - v.S - v.H);
+  return (
+    <Desen eticheta={t('export.desen.banda')} data-banda={decupare ? 'decupat' : 'banda'}>
+      <rect className="l" data-lemn x={6} y={y0} width={248} height={r(P * k)} />
+      <path className="g" d={sant} /><path className="d" d={sant.replace(/Z$/, '')} />
+      <text x={12} y={y0 + 18} className="tare">{t('export.desen.incrustatie.dop')}</text>
+      {decupare && dz > 0 && (<>
+        <rect className="g" data-decupare x={X(xe)} y={Y(v.S + v.H)} width={r(dz * k)} height={r((P - v.S - v.H) * k)} />
+        {pg > 0 && <rect className="cs" data-punte x={X(xe)} y={Y(P - pg)} width={r(dz * k)} height={r(pg * k)} />}
+        <Cota pentru="banda-punti-grosime" c={c} x1={X(xe) - 6} y1={Y(P - pg)} x2={X(xe) - 6} y2={Y(P)} text={`${t('export.desen.banda.punte')} ${c.f(pg)}`}
+          tx={X(xe) - 10} ty={Y(P) - 2} anc="end" />
+        {frezaDecupare !== null && <Cota pentru="banda-diametru" c={c} text={`Ø ${c.fz(frezaDecupare)}`} tx={X(xe + dz / 2)} ty={Y(v.S + v.H) - 4} />}
+      </>)}
+      {/* Lățimea ca în câmp: scrisă, sau cea mai mică rotunjită în sus la micron (nota „cea mai mică: … mm”). */}
+      <Cota pentru="banda-latime" c={c} x1={xC} y1={y0 - 8} x2={X(M)} y2={y0 - 8} text={`${c.fz(latime ?? susLaMicron(M))} mm`} tx={(xC + X(M)) / 2} ty={y0 - 12} />
+      <Cota pentru="banda-placa" c={c} x1={246} y1={y0} x2={246} y2={Y(P)} text={c.f(P)} tx={242} ty={Y(P) - 4} anc="end" />
+      <Jos>{decupare ? t('export.desen.banda.decupat', { e: c.f(v.e), p: c.f(P) }) : t('export.desen.banda.fara')}</Jos>
     </Desen>
   );
 }

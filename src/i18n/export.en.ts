@@ -554,4 +554,8 @@ export const enExport = {
   'export.desen.incrustatie.dop': 'plug',
   'export.desen.incrustatie.intra': 'plug goes in {s} mm, contact over {c} mm',
   'export.desen.incrustatie.lipsa': 'the gap must be under the depth',
+  'export.desen.banda': 'The plug blank in section: the band and the cut-out',
+  'export.desen.banda.decupat': 'cut out {e} mm from the design, through {p} mm',
+  'export.desen.banda.fara': 'no cut-out: saw the plug in the groove',
+  'export.desen.banda.punte': 'bridge',
 } as const satisfies Readonly<Record<string, Mesaj>>;

@@ -321,7 +321,40 @@ test('V-carve-ul și incrustația în V: fundul și secțiunea dopului, desenate
   // Lemnul din jurul dopului: fața coborâtă implicit, banda pe cartonașul ei.
   await expect(aleasa(e1, 'inc-jur')).toHaveValue('fata');
   await expect(e1.locator('[data-alegere="inc-jur"] .dx-poza')).toHaveCount(2);
-  await expect(e1.locator('[data-camp="banda-latime"]')).toHaveCount(0);
+  await expect(e1.locator('[data-grup="banda"]')).toHaveCount(0);
   await alege(e1, 'inc-jur', 'banda');
-  await expect(e1.locator('[data-camp="banda-latime"]')).toHaveCount(1);
+  await expect(e1.locator('[data-grup="banda"]')).toHaveCount(1);
+});
+
+test('banda dopului: câmpurile în grupul ei, cu desenul semifabricatului (lățimea, decuparea prin placă, puntea)', async ({ page }) => {
+  await deschideCu(page, 'dreptunghi');
+  const e1 = fisa(page, 'e1/e1');
+  await alege(e1, 'latura', 'incrustatie');
+  await e1.locator('[data-camp="forma-scula"]').selectOption('v');
+  await e1.locator('[data-camp="adancime"]').fill('3');
+  await alege(e1, 'inc-jur', 'banda');
+  const g = e1.locator('[data-grup="banda"]');
+  // Câmpurile benzii stau în grupul ei, nu în al incrustației.
+  await expect(g.locator('[data-camp="banda-latime"]')).toHaveCount(1);
+  await expect(e1.locator('[data-grup="incrustatie"] [data-camp="banda-latime"]')).toHaveCount(0);
+  // V60, H = 2, fundul Ø3,175: cea mai îngustă bandă 2·2·tan 30° + 3,175 + 1 = 6,4844, scrisă ca în câmp, în sus la micron: 6,485;
+  // tăietura la 2·tan 30° + 0,5 = 1,65 mm de
+  // desen, prin placa implicită S + H + 1 = 5,5 mm, cu puntea de la fundul plăcii.
+  const d = desen(page, 'e1/e1', 'banda');
+  await expect(d).toHaveAttribute('data-banda', 'decupat');
+  await expect(d.locator('[data-cota="banda-latime"]')).toContainText('6,485 mm');
+  await expect(g.locator('[data-camp="banda-minima"]')).toHaveText('cea mai mică: 6,485 mm');
+  await expect(d).toContainText('decupat la 1,65 mm de desen, prin 5,5 mm');
+  await expect(d.locator('[data-punte]')).toHaveCount(1);
+  await g.locator('[data-camp="banda-latime"]').fill('10');
+  await expect(d.locator('[data-cota="banda-latime"]')).toContainText('10 mm');
+  await g.locator('[data-camp="banda-placa"]').fill('8');
+  await expect(d).toContainText('prin 8 mm');
+  await g.locator('[data-camp="banda-placa"]').click();
+  await expect(d.locator('[data-cota="banda-placa"]')).toHaveAttribute('data-aprinsa', '');
+  // Fără decupare, rămâne doar banda: dopul se taie de mână, în șanț.
+  await g.locator('[data-camp="banda-decupare"]').uncheck();
+  await expect(d).toHaveAttribute('data-banda', 'banda');
+  await expect(d).toContainText('fără decupare');
+  await expect(d.locator('[data-decupare]')).toHaveCount(0);
 });

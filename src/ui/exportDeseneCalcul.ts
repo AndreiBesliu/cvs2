@@ -4,9 +4,9 @@
  * `interfata-prin-actiuni`), deci socotit aici cu aceleași formule; o probă îl compară cu lucrarea (`adancimiTreceri`,
  * `geometrieUrechi`, `urechiPeLaturi`, `ineleBuzunar`, `intrareRampa`, `intrareZigzag`, `intrareElice`, `traseuGaurire`), ca
  * desenul să spună ce face programul. Din 28.8↑d, și V-carve-ul (`traseuVcarve`) și incrustația în V (`valoriIncrustatie`); singura
- * valoare luată de la model e grosimea de sub fața dopului (`SUB_FATA_DOPULUI`), prin tipurile acțiunilor.
+ * valori luate de la model, prin tipurile acțiunilor: grosimea de sub fața dopului, rezerva benzii și lățimea ei cea mai mică.
  */
-import { SUB_FATA_DOPULUI } from './actiuniExportTipuri.ts';
+import { latimeMinimaBanda, REZERVA_BANDA, SUB_FATA_DOPULUI } from './actiuniExportTipuri.ts';
 
 /** Trecerile pe adâncime, egale (ca `adancimiTreceri`): n = ⌈A / p⌉, fiecare de A / n; fără valori bune sau peste 1 000, nimic. */
 export function treceriEgale(adancime: number | null, pas: number | null): { readonly n: number; readonly d: number } | null {
@@ -120,4 +120,26 @@ export function incrustatieDesen(adancime: number | null, unghi: number | null, 
   if (!v || adancime === null || !pozitiv(joc) || joc >= adancime || fierastrau === null || !Number.isFinite(fierastrau) || fierastrau < 0) return null;
   const S = adancime - joc, H = fierastrau;
   return { S, H, t: v.t, fata: S + H, contact: S * v.t, grosimeMinima: S + H + SUB_FATA_DOPULUI, perete: v.perete };
+}
+
+/**
+ * Banda din jurul dopului în V (ADR 0172), ca `valoriBanda`: lățimea cea mai mică M (pereții, fundul plat cu freza lui și, cu
+ * decuparea, freza ei, plus rezervele), cea folosită (scrisă sau M), tăietura decupării la e = H·t + c de desen, placa (scrisă sau
+ * S + H + 1) și cea mai mică cu decuparea (S + H + grosimea punților). `fund`: Ø frezei drepte (0 fără ea); `frezaDecupare`: Ø
+ * frezei decupării, dacă e alta decât a fundului. Fără incrustație bună, nimic.
+ */
+export function bandaDesen(adancime: number | null, unghi: number | null, joc: number | null, fierastrau: number | null, b: {
+  readonly latime: number | null; readonly decupare: boolean; readonly placa: number | null; readonly puntiGrosime: number; readonly fund: number;
+  readonly frezaDecupare: number | null;
+}): {
+  readonly S: number; readonly H: number; readonly t: number; readonly minima: number; readonly latime: number; readonly e: number;
+  readonly placa: number; readonly placaMinima: number;
+} | null {
+  const v = incrustatieDesen(adancime, unghi, joc, fierastrau);
+  if (!v) return null;
+  const minima = latimeMinimaBanda(v.H, v.t, b.fund, b.decupare ? (b.frezaDecupare ?? b.fund) : b.fund);
+  return {
+    S: v.S, H: v.H, t: v.t, minima, latime: b.latime ?? minima, e: v.H * v.t + REZERVA_BANDA,
+    placa: b.placa ?? v.S + v.H + SUB_FATA_DOPULUI, placaMinima: v.fata + b.puntiGrosime,
+  };
 }

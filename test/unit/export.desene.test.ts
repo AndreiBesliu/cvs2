@@ -17,11 +17,11 @@ import { intrareElice, intrareRampa, intrareZigzag, rampeZigzag } from '../../sr
 import { traseuGaurire } from '../../src/cam/gaurire.ts';
 import { traseuVcarve } from '../../src/cam/vcarve.ts';
 import type { Operatie } from '../../src/model/document.ts';
-import { valoriIncrustatie } from '../../src/model/incrustatie.ts';
+import { valoriBanda, valoriIncrustatie } from '../../src/model/incrustatie.ts';
 import { conturDreptunghi } from '../../src/geom/contur.ts';
 import type { Miscare } from '../../src/ir/ir.ts';
 import {
-  centreUrechiDesen, ciocanire, coborareDesen, incrustatieDesen, treceriEgale, treceriLaterale, vcarveDesen,
+  bandaDesen, centreUrechiDesen, ciocanire, coborareDesen, incrustatieDesen, treceriEgale, treceriLaterale, vcarveDesen,
 } from '../../src/ui/exportDeseneCalcul.ts';
 
 const aproape = (a: number, b: number, eps = 1e-9): boolean => Math.abs(a - b) <= eps * Math.max(1, Math.abs(a), Math.abs(b));
@@ -201,4 +201,38 @@ test('incrustația în V desenată are valorile pe hârtie ale panoului și ale 
   for (const x of [incrustatieDesen(3, 60, 3, 2), incrustatieDesen(3, 60, 0, 2), incrustatieDesen(3, 60, 0.5, -1), incrustatieDesen(null, 60, 0.5, 2)]) {
     assert.equal(x, null);
   }
+});
+
+test('banda dopului desenată are valorile pe hârtie ale panoului și ale dopului (lățimea, tăietura decupării, placa)', () => {
+  const sc = (diametru: number) => ({ numar: 2, nume: 'D', diametru });
+  type Caz = { D: number; u: number; g: number; H: number; latime?: number; decupare: boolean; placa?: number; pg: number; fund: number; freza?: number };
+  const cazuri: Caz[] = [
+    { D: 3, u: 60, g: 0.5, H: 2, decupare: true, pg: 1, fund: 3.175 },
+    { D: 3, u: 60, g: 0.5, H: 2, latime: 12, decupare: true, placa: 6, pg: 1.5, fund: 3.175, freza: 6 },
+    { D: 4, u: 90, g: 1, H: 1, decupare: false, pg: 1, fund: 6 },
+    { D: 2, u: 60, g: 0.5, H: 2, decupare: true, pg: 1, fund: 0, freza: 6 },
+    { D: 2, u: 30, g: 0.3, H: 0.8, decupare: false, pg: 1, fund: 0 },
+    // Fără decupare, freza ei (scrisă) nu lărgește banda.
+    { D: 3, u: 60, g: 0.5, H: 2, decupare: false, pg: 1, fund: 3.175, freza: 6 },
+  ];
+  for (const k of cazuri) {
+    const banda = k.latime === undefined && k.placa === undefined && k.freza === undefined && k.pg === 1 ? undefined : {
+      ...(k.latime !== undefined ? { latime: k.latime } : {}), decupare: k.decupare, grosimePlaca: k.placa ?? k.D - k.g + k.H + 1,
+      ...(k.freza !== undefined ? { freza: sc(k.freza) } : {}), punti: { numar: 4, latime: 4, grosime: k.pg },
+    };
+    const op = { adancime: k.D, scula: { numar: 1, nume: 'V', diametru: 12, forma: { tip: 'v', unghi: k.u } },
+      incrustatie: { fel: 'v', joc: k.g, fierastrau: k.H, margine: 5, jurDop: 'banda', ...(banda ? { banda } : {}) },
+      ...(k.fund > 0 ? { fundPlat: { scula: sc(k.fund), pasLateral: 1 } } : {}) } as unknown as Parameters<typeof valoriBanda>[0];
+    const v = valoriBanda(op);
+    // Fără câmpul benzii, lucrarea ia banda implicită: cu decuparea, freza fundului plat.
+    const decupare = banda ? k.decupare : true;
+    const d = bandaDesen(k.D, k.u, k.g, k.H, { latime: k.latime ?? null, decupare, placa: k.placa ?? null, puntiGrosime: k.pg, fund: k.fund,
+      frezaDecupare: k.freza ?? null });
+    assert.ok(v && d, JSON.stringify(k));
+    for (const c of ['minima', 'latime', 'e', 'placa', 'placaMinima'] as const) assert.ok(aproape(d[c], v[c]), `${JSON.stringify(k)}: ${c} ${d[c]}, pe hârtie ${v[c]}`);
+  }
+  // Pe hârtie (ADR 0172): V60, H = 2, fundul Ø3,175: M = 2·2·tan 30° + 3,175 + 1 = 6,484; tăietura la 2·tan 30° + 0,5 = 1,655.
+  const h = bandaDesen(3, 60, 0.5, 2, { latime: null, decupare: true, placa: null, puntiGrosime: 1, fund: 3.175, frezaDecupare: null });
+  assert.ok(h && Math.abs(h.minima - 6.4844) < 1e-4 && Math.abs(h.e - 1.6547) < 1e-4 && h.placa === 5.5);
+  assert.equal(bandaDesen(3, 60, 3, 2, { latime: null, decupare: true, placa: null, puntiGrosime: 1, fund: 3.175, frezaDecupare: null }), null);
 });

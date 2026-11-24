@@ -570,4 +570,8 @@ export const roExport = {
   'export.desen.incrustatie.dop': 'dopul',
   'export.desen.incrustatie.intra': 'dopul intră {s} mm, cu contact pe {c} mm',
   'export.desen.incrustatie.lipsa': 'jocul trebuie să fie sub adâncime',
+  'export.desen.banda': 'Semifabricatul dopului în secțiune: banda și decuparea',
+  'export.desen.banda.decupat': 'decupat la {e} mm de desen, prin {p} mm',
+  'export.desen.banda.fara': 'fără decupare: tai dopul în șanț',
+  'export.desen.banda.punte': 'puntea',
 } as const satisfies DictionarRoPentru<typeof enExport>;

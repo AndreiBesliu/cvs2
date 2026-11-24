@@ -19,7 +19,7 @@ import { useLimba } from './useLimba.ts';
 import { grupuriOperatie, verdicteGresite, type GrupExport, type VerdictRand } from './exportGrupuri.ts';
 import { coborareDesen, treceriEgale } from './exportDeseneCalcul.ts';
 import {
-  DesenAdancime, DesenColt, DesenCoborare, DesenFreza, DesenFund, DesenGaurire, DesenGolire, DesenIncrustatie, DesenIntrari, DesenRampa, DesenRest,
+  DesenAdancime, DesenBanda, DesenColt, DesenCoborare, DesenFreza, DesenFund, DesenGaurire, DesenGolire, DesenIncrustatie, DesenIntrari, DesenRampa, DesenRest,
   DesenSens, DesenUrechi, DesenZ0, type DesenComun,
 } from './exportDesene.tsx';
 import { Card, Cartonase, GrupCartonase, Poza } from './exportPoze.tsx';
@@ -1548,6 +1548,10 @@ export function DialogExport(
                     diametruFund={citesteNumar(p.diametruSculaFund)} incrustatie={p.incrustatie} joc={citesteNumar(p.jocInc)} />;
                   case 'incrustatie': return (c) => <DesenIncrustatie c={c} adancime={citesteNumar(p.adancime)} unghi={citesteNumar(p.unghiV)}
                     joc={citesteNumar(p.jocInc)} fierastrau={citesteNumar(p.acelasiSpatiu ? p.jocInc : p.fierastrauInc)} margine={citesteNumar(p.margineInc)} />;
+                  case 'banda': return (c) => <DesenBanda c={c} adancime={citesteNumar(p.adancime)} unghi={citesteNumar(p.unghiV)} joc={citesteNumar(p.jocInc)}
+                    fierastrau={citesteNumar(p.acelasiSpatiu ? p.jocInc : p.fierastrauInc)} latime={p.latimeBanda.trim() === '' ? null : citesteNumar(p.latimeBanda)}
+                    decupare={p.decupareBanda} placa={p.placaBanda.trim() === '' ? null : citesteNumar(p.placaBanda)} puntiGrosime={citesteNumar(p.grosimePunti)}
+                    fund={p.fundPlat ? citesteNumar(p.diametruSculaFund) : 0} frezaDecupare={p.frezaBanda ? citesteNumar(p.diametruSculaBanda) : null} />;
                   case 'urechi': return (c) => <DesenUrechi c={c} urechi={p.urechi && !nuProfil} mod={p.modUrechi} numar={citesteNumar(p.numarUrechi)}
                     alese={o.valori.urechi?.alese ?? 0} latime={citesteNumar(p.latimeUreche)} grosime={citesteNumar(p.grosimeUreche)} grosimeFoaie={grosimeFoaie} />;
                   default: return undefined;
@@ -1912,7 +1916,17 @@ export function DialogExport(
                         oprit={doarCitire} titlu={t('export.banda.jur.titlu')} onAlege={(v) => { schimba(o.cheie, { jurDop: v }); }}
                         variante={[{ v: 'fata', text: t('export.banda.jur.fata'), nota: t('export.card.jur.fata') },
                           { v: 'banda', text: t('export.banda.jur.banda'), nota: t('export.card.jur.banda') }]} />
-                      {p.jurDop === 'banda' && ((v, ok) => (<>
+                      {/* Fără freză dreaptă (ADR 0173), nota spune că fundul îl fac inelele frezei V. */}
+                      <p className="nota-incrustatie" data-fund={p.fundPlat ? 'plat' : 'v'}>
+                        {t(p.jurDop === 'banda' ? (p.fundPlat ? 'export.banda.nota' : 'export.banda.nota-v') : (p.fundPlat ? 'export.incrustatie.nota' : 'export.incrustatie.nota-v'))}
+                      </p>
+                      </div>
+                      )}
+                  </div>) : (<div className="dx-rand">
+                      {/* Banda (ADR 0172, felia 28.8↑d-2): lățimea, decuparea, placa, punțile și freza ei, în grupul lor. */}
+                      {vc && p.incrustatie && p.jurDop === 'banda' && (
+                      <div className="campuri-incrustatie" data-banda={o.cheie}>
+                      {((v, ok) => (<>
                       <label title={t('export.banda.latime.titlu')}>
                         {t('export.banda.latime')}
                         <input type="text" inputMode="decimal" value={p.latimeBanda} data-camp="banda-latime" disabled={doarCitire}
@@ -1965,13 +1979,9 @@ export function DialogExport(
                       </label>
                       </>)}
                       </>))(bandaRand(p), bandaBuna(p))}
-                      {/* Fără freză dreaptă (ADR 0173), nota spune că fundul îl fac inelele frezei V. */}
-                      <p className="nota-incrustatie" data-fund={p.fundPlat ? 'plat' : 'v'}>
-                        {t(p.jurDop === 'banda' ? (p.fundPlat ? 'export.banda.nota' : 'export.banda.nota-v') : (p.fundPlat ? 'export.incrustatie.nota' : 'export.incrustatie.nota-v'))}
-                      </p>
                       </div>
                       )}
-                  </div>) : null;
+                  </div>);
                   case 'locas': case 'treapta': case 'dop': return g === 'locas' ? (<div className="dx-rand">
                       {/* Incrustația cu pereți drepți (ADR 0171 §5, răspunsurile 1, 2 și 4): jocul lateral, dopul ridicat sau decupat,
                           sprijinul celui ridicat, spațiul folosit (H sau g), marginea și, la cerere, frezele dopului. */}
