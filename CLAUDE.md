@@ -730,6 +730,14 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   colțul din stânga-jos al foii: un gest nu poate începe pe ea** (o probă e2e care trage de sub foaie, la stânga,
   pornește din altă parte: `cutit.spec.ts:421` a căzut așa în primul complet). Nu se arată într-un proiect doar de
   citit, sub fereastra Mașina sau Imprimanta și cât ține un mod al pânzei.
+  **Rândul nu trece de foaia lui (ADR 0210 §1, felia 11.1↑d)** gata pe 24.11, în sesiunea principală, la „si trebuie
+  sa reparam si asta” al owner-ului (trei capturi: cu pânza micșorată, rândul era mai lat decât foaia și două rânduri
+  se suprapuneau), unită în `main` pe 24.11 (`001b6325`): rândul e întreg doar cât încape sub foaia lui; mai îngust,
+  se strânge într-un buton, **⋯** („Arată comenzile foii”), care îl desface peste ce e alături (mausul plecat, Escape
+  sau o comandă îl strâng la loc); sub lățimea unui buton nu se mai arată. Regulile, pure, sunt `latimeRand`,
+  `felRand` și `stangaInPanza` (`src/ui/controaleFoiCalcul.ts`); mărimea butonului se măsoară (la densitatea mare are
+  48 px, deci rândul întreg are 354 px, nu 214). **Rândul e frate al pânzei, nu copil: îi dă el pânzei rotița, cu locul
+  cursorului** (altfel zoom-ul se oprea cu cursorul pe rând); orice strat nou pus peste pânză face la fel.
   **Piesele puse de mai multe ori (ADR 0210 §2, felia 11.2↑)** gata pe 08.11: «Încă…» și «+1» adaugă instanțe ale aceleiași
   piese (`planCopii` în `src/model/pieseLegate.ts`: rândurile după ea, distanța din freză, foaia următoare goală, foile noi),
   «Desprinde» îi dă instanței o copie a piesei (ultima păstrează piesa), „Duplică foaia cu aceleași piese” face instanțe noi
@@ -1557,6 +1565,21 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 24.11.2026, seara (a douăzeci și treia unire din cloud): **11.1↑d (rândul comenzilor foii nu trece de foaia lui) și
+  reparația unei probe instabile a extensiilor, unite în `main`**, în lot (sesiunea principală, ramura `unire-2411aa`,
+  peste lotul 24). **11.1↑d** (scrisă de sesiunea principală, pe `wip/11.1d-rand-foaie`, `bff5fbcc`, la cererea
+  owner-ului din 24.11, cu trei capturi: „si trebuie sa reparam si asta”; ADR 0210, „Felia 11.1↑d”), unită în
+  `001b6325`: cu pânza micșorată, rândul de șapte butoane era mai lat decât foaia lui, ieșea peste foaia vecină, iar
+  două rânduri se suprapuneau; acum rândul e întreg doar cât încape, se strânge în „⋯” când foaia e mai îngustă pe
+  ecran și nu se mai arată sub lățimea unui buton; găsit de probă și reparat: cu cursorul pe rând, rotița nu micșora
+  pânza. Otrăvurile 22 / 22 (18 la prima rulare; patru prinse după întărirea probei). **Proba instabilă**
+  (`b08898b1`, în `13d9bcad`; doar probe): completul de pe `main` al loturilor 19–21 a căzut la
+  `extensii.spec.ts:135`, unde clicul pe „Închide” din cadrul extensiei, dat imediat după ce cadrul apare, nu a ajuns
+  la buton. Local nu s-a reprodus (150 din 150), deci a fost provocată: o probă nouă înghite primul clic, o dată;
+  ajutorul vechi cade, cel nou (`clicCareInchideCadrul`, care repetă clicul cât cadrul e încă acolo) trece; 168 / 168
+  pe fișierele extensiilor, iar otrava (gazda ignoră `host.inchide()`) e prinsă de toate cele trei probe care îl
+  folosesc. Documentul rămâne v27; nimic pe server. Ciocnirile, doar în DEVLOG și în lecțiile din
+  `docs/linii/principala.md`. Porțile lotului, în CI, pe `001b6325` @@P25@@
 - 24.11.2026, seara (a douăzeci și doua unire din cloud): **fereastra „Exportă G-code”, refăcută (28.8↑a–g), și proba
   repornirii extensiei (3.Xk) unite în `main`**, în lot (sesiunea principală, ramura `unire-2411y`, peste lotul 23), la
   „da, uneste fereastra exportului cand e verde si sa imi spui cand pot sa o arhivez” al owner-ului (în sesiunea
