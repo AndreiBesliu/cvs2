@@ -13032,6 +13032,27 @@ scrie brief-ul pentru relief si pentru cote”
 - **La owner:** fereastra exportului, verificarea juridică a utilizării aplicației înaintea live-ului, „cine unește
   în `main`”, ADR 0232 (biblioteca); brief-urile reliefului și cotelor, de lipit în sesiuni noi.
 
+## 2026-11-24 — 16.A↑b-2: freza din bibliotecă în secțiunea Tăierea (Model: Claude Opus 5.5)
+
+**Prompt:** „continua cu 16.A↑b-2” (owner-ul, după raportul lui 16.A↑c). **Started:** 24.11, 11:20. Fereastra exportului
+refăcută (PR-ul `AndreiBesliu/cvs2#11`) nu e unită, deci feliile s-au renumerotat: b-2 (secțiunea Tăierea) acum, b-3
+(rândurile exportului) pe fereastra refăcută, după unirea ei, b-4 (nota schimbării din bibliotecă, fostă b-3).
+
+- **Modelul** (`f02eb0e4`): `motivFormaPeOperatie` (`src/model/formaFrezei.ts`, aceeași funcție pe care o folosește linia
+  reliefului, ADR 0310 §13), alegerea pură (`src/model/alegereFreza.ts`: frezele oferite, copia cu originea, valorile și
+  tăișul, pașii, numărul T după ADR 0114 §5). Identitatea frezei montate ține acum și turația (`aceeasiFreza`), și la roluri:
+  același T cu altă turație ar fi refuzat la export. Probele întâi: 9 pe hârtie.
+- **Panoul** (`7771b346`): rândul „Freza” din Tăierea, cât biblioteca are freze; biblioteca contului sau cea fără cont
+  (`cheieBibliotecii`), citită din browser; aplicat prin `document.aplica-operatii`, un pas de anulare; nota T-ului ocupat;
+  manualul (ro, en); catalogul controalelor scris din nou. În Edge: 4 / 4 (cu reîncărcarea și Atelierul cu fontul lat, în
+  engleză); rolul, Atelierul, panoul, frezele, rolurile mele și manualul: 39 / 39.
+- **Otrăvurile** (`test/otravuri/16.A-b2.py`), într-o clonă, pe `f0895a1b`: 22 / 22 (18 pe hârtie, 4 în Edge). R02 (aceeași
+  freză pe două numere) scăpase: proba a primit cazul (`aa1b418d`).
+- **Porțile, în container:** tipurile, importurile (20 / 20), build-ul determinist; pornirea neschimbată (cu ușa 114,5, cu
+  Atelierul 114,8 / 120), totalul 810,5 → 812,2 / 900 (biblioteca stă acum într-o bucată comună panoului și ferestrei).
+- **Documentele:** ADR 0300 („Implementarea (16.A↑b-2)”), fișa etapei 3 (rândul `16.A↑b-2`), pragul, registrul
+  otrăvurilor, traducerile, nota liniei. **Completed:** 24.11, 11:55.
+
 ## 2026-11-24 — Sesiunea principală în cloud: a șaisprezecea unire (16.A↑c, frezele în cont; 3.Xi, extensiile) (Model: Claude Fable 5.2)
 
 **Prompt:** „ok, cand sunt verzi frezele fa unirea, pana atunci vreau sa faci ceva simplu. vreau ca plansele sa aiba
@@ -13214,3 +13235,27 @@ admin, care apare daca esti logat ca admin”
 - **Documentele:** decizia în `CLAUDE.md`, cu rândurile de stare ale celor două felii; starea din
   `docs/linii/principala.md`.
 - **Loturile dinainte:** @@INAINTE@@
+
+## 2026-11-24 — 16.A↑a-2: frezele standard, puse singure în bibliotecă (Model: Claude Opus 5.5)
+
+**Prompt:** „sa ai in vedere ca biblioteca de freze trebuie sa fie populata cu freze default standard.” (owner-ul, după
+16.A↑b-2). **Started:** 24.11, 12:20.
+
+- **Codul** (`81c59e2c`): setul de pornire cu id-uri fixe (`ID_PORNIRE`, `cuStandard` în `src/model/freza.ts`); depozitul
+  (`puneStandard`, steagul `standard` în înregistrare); biblioteca fără cont îl primește o dată, la prima citire, din fereastră
+  sau din panou (`src/app/frezeStandard.ts`, numele din mesajele ferestrei, cerute doar atunci); un cont îl primește la prima
+  sincronizare doar dacă n-a avut niciodată freze (versiunea 0), fără dubluri pe două calculatoare și fără să învie frezele
+  șterse; întrebarea „Adaugi … din acest browser” vine după prima trecere; panoul folosește biblioteca contului după ce are
+  freze sau setul; butonul unei biblioteci goale, „Adaugă frezele standard”. Probele întâi: unitare (modelul, depozitul,
+  sincronizarea, cu două calculatoare deodată).
+- **Atelierul** (`4d92690c`): cu setul pus de la prima pornire, lista „Freza” apărea și în Atelier, unde Tăierea n-are liste
+  (a căzut `atelier.taiere.spec.ts:92` în rularea completă locală): acolo freza rămâne pe cartela ei.
+- **Probele în Edge:** fereastra și panoul 16 / 16, plus Atelierul, panoul, foile, incrustația, încărcarea la cerere, lucrul
+  fără rețea: 69 / 69; pe emulatoare 2 / 2. Rularea completă locală a fost oprită la 136 / 701 (prea lentă aici): completul
+  din CI o face.
+- **Otrăvurile** (`test/otravuri/16.A-a2.py`, `16.A-a2-emu.py`): 15 / 16 (E05, întrebarea înaintea primei treceri, practic
+  echivalentă).
+- **Mărimea:** pornirea neschimbată (cu ușa 114,5 / 120), totalul 816,6 / 900 pe ramură (`main` `fdce5f1b`: 814,4; 16.A↑b-2
+  +1,7, 16.A↑a-2 +0,5). Nimic pe server.
+- **Documentele:** ADR 0300 („Implementarea (16.A↑a-2)”, §3 schimbat), manualul (ro, en), fișa etapei 3, pragul, registrul
+  otrăvurilor, traducerile, nota liniei. **Completed:** 24.11, 13:10.

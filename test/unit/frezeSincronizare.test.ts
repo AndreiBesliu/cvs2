@@ -5,7 +5,7 @@ import {
 } from '../../shared/freze.ts';
 import { creeazaFrezeMele, type DepozitFreze, type FrezeMele } from '../../src/app/frezeMele.ts';
 import { sincronizeaza, rezolvaConflictul } from '../../src/app/frezeSincronizare.ts';
-import type { Freza } from '../../src/model/freza.ts';
+import { FREZE_PORNIRE, ID_PORNIRE, type Freza } from '../../src/model/freza.ts';
 
 /**
  * Sincronizarea cap-coadă, fără rețea (ADR 0300 §7, felia 16.A↑c): două calculatoare ale aceluiași cont, fiecare cu
@@ -190,4 +190,42 @@ test('rămas în urma semnelor ștergerii plecate din cont: lista întreagă; o 
   await sincronizeaza(a, s.cheama);
   assert.deepEqual(nume(a), ['Plată Ø3', 'Plată Ø6']);
   assert.deepEqual([...a.stare().sincron.conflicte.values()].map((c) => c.campuri), [['*']]);
+});
+
+test('frezele standard în cont: un cont fără freze le primește o dată, cu id-urile fixe; deodată, nu se dublează; șterse, nu revin', async () => {
+  const STANDARD = (): Array<Freza & { id: string }> => FREZE_PORNIRE.map((f, k) => ({ ...f, id: ID_PORNIRE[k]!, nume: `S${k}` }));
+  const s = new Server(), a = calculator('a'), b = calculator('b');
+  await a.incarca(); await b.incarca();
+  assert.equal(await sincronizeaza(a, s.cheama, STANDARD), 'la-zi');
+  assert.deepEqual([...s.freze.keys()].sort(), [...ID_PORNIRE].sort());
+  assert.equal(a.stare().standard, true);
+  // Al doilea calculator: contul are freze, deci le primește din cont, fără să pună altele.
+  assert.equal(await sincronizeaza(b, s.cheama, STANDARD), 'la-zi');
+  assert.deepEqual([b.stare().freze.length, s.freze.size, b.stare().standard], [6, 6, true]);
+  // Șterse pe unul, nu revin pe un calculator nou (contul a avut freze: versiunea lui nu e 0).
+  for (const x of ID_PORNIRE) assert.ok((await b.sterge(x)).ok);
+  await sincronizeaza(b, s.cheama, STANDARD);
+  const e = calculator('e');
+  await e.incarca();
+  assert.equal(await sincronizeaza(e, s.cheama, STANDARD), 'la-zi');
+  assert.deepEqual([e.stare().freze.length, e.stare().standard, s.nume().length], [0, true, 0]);
+  // Două calculatoare noi, deodată, pe un cont gol: amândouă le pun, cu aceleași id-uri; fără dublură și fără conflict.
+  const s2 = new Server(), c = calculator('c'), d = calculator('d');
+  await c.incarca(); await d.incarca();
+  const [fc, fd] = await Promise.all([sincronizeaza(c, s2.cheama, STANDARD), sincronizeaza(d, s2.cheama, STANDARD)]);
+  assert.deepEqual([fc, fd], ['la-zi', 'la-zi']);
+  await sincronizeaza(c, s2.cheama, STANDARD);
+  assert.equal(s2.freze.size, 6);
+  for (const x of [c, d]) assert.deepEqual([x.stare().freze.length, x.stare().sincron.conflicte.size], [6, 0]);
+  // Doar citire (planul fără `cloud`): nimic pus, nici hotărât (se pune când contul se poate scrie).
+  const s3 = new Server(), f = calculator('f');
+  s3.poateScrie = false;
+  await f.incarca();
+  assert.equal(await sincronizeaza(f, s3.cheama, STANDARD), 'citire');
+  assert.deepEqual([f.stare().freze.length, f.stare().standard], [0, false]);
+  // Fără `standard` (sincronizarea de până acum): nimic.
+  const s4 = new Server(), g = calculator('g');
+  await g.incarca();
+  await sincronizeaza(g, s4.cheama);
+  assert.deepEqual([g.stare().freze.length, s4.freze.size], [0, 0]);
 });

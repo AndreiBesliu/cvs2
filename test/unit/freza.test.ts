@@ -7,11 +7,12 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  cheieNume, cuFreza, cuFreze, cuImport, faraFreza, FREZE_PORNIRE, frezaDinDate, frezaImportata, inaltimeCon, MARGINI_FREZA, numeLiber,
+  cheieNume, cuFreza, cuFreze, cuImport, cuStandard, faraFreza, FREZE_PORNIRE, ID_PORNIRE, frezaDinDate, frezaImportata, inaltimeCon, MARGINI_FREZA, numeLiber,
   problemeFreza, sculaDinFreza, type Freza, type FrezaSalvata,
 } from '../../src/model/freza.ts';
 import { operatieImplicita, PLAFON, UNGHI_V_MAXIM, UNGHI_V_MINIM, type FormaDoc } from '../../src/model/document.ts';
 import { operatieInMargini } from '../../src/model/schemaDocument.ts';
+import { esteIdFreza } from '../../shared/freze.ts';
 
 const PLATA6: Freza = {
   nume: 'Plată Ø6', fel: 'plata', diametru: 6, tais: 22, taisuri: 2, numar: 2,
@@ -123,6 +124,26 @@ test('frezele de pornire: șase, cu T 1–6, felurile cerute de ADR, fiecare bun
     // Valorile de lucru de azi ale aplicației (`REGIM_IMPLICIT`), nu dintr-un catalog.
     assert.deepEqual([f.turatie, f.avans, f.plonjare], [18000, 1000, 300]);
   }
+});
+
+test('frezele standard: id-uri fixe, unice, bune pentru cont; puse doar cele care lipsesc, cu nume libere, cât încap', () => {
+  assert.equal(ID_PORNIRE.length, FREZE_PORNIRE.length);
+  assert.equal(new Set(ID_PORNIRE).size, ID_PORNIRE.length);
+  for (const id of ID_PORNIRE) assert.ok(esteIdFreza(id), id);
+  const standard = FREZE_PORNIRE.map((f, k) => ({ ...f, id: ID_PORNIRE[k]!, nume: `S${k}` }));
+  const tot = cuStandard([], standard, 77);
+  assert.equal(tot.adaugate, 6);
+  assert.deepEqual(tot.lista.map((f) => [f.id, f.nume, f.rev, f.schimbatLa]), ID_PORNIRE.map((id, k) => [id, `S${k}`, 1, 77]));
+  // Una e deja (aceeași id, chiar schimbată): rămâne cum e; numele „S2” e al altei freze: cea standard primește „S2 (2)”.
+  const schimbata = { ...tot.lista[0]!, avans: 1500, rev: 4 };
+  const alta = { ...salvata(PLATA6, 'x'), nume: 'S2' };
+  const r = cuStandard([schimbata, alta], standard, 88);
+  assert.equal(r.adaugate, 5);
+  assert.deepEqual(r.lista[0], schimbata);
+  assert.equal(r.lista.find((f) => f.id === ID_PORNIRE[2])?.nume, 'S2 (2)');
+  // Peste plafon: câte încap.
+  const plina = Array.from({ length: MARGINI_FREZA.freze - 2 }, (_, k) => ({ ...salvata(PLATA6, `p${k}`), nume: `P${k}` }));
+  assert.equal(cuStandard(plina, standard, 1).adaugate, 2);
 });
 
 test('datele ținute: o freză salvată se citește înapoi, cu câmpurile necunoscute păstrate; una stricată, deloc', () => {

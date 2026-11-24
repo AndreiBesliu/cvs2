@@ -29,6 +29,7 @@ import type { Config } from './config.ts';
 import { useContTinut } from './dreptCont.ts';
 import { CHEIE_LOCALA, cheieCont, frezeMele, useFrezeMele, type ProblemeLista } from './frezeMele.ts';
 import { useSincronizare } from './frezeSincronizare.ts';
+import { cuFrezeleStandard, frezeleStandard, numePropus } from './frezeStandard.ts';
 import './freze.css';
 
 /** Mesajele modulului, ca date (ADR 0086): cine îl încarcă le așteaptă (`cuMesaje`). */
@@ -50,13 +51,6 @@ const MAXIM: Readonly<Partial<Record<CampFreza, number>>> = {
 
 const fara = (x: number | undefined, ro: boolean): string => (x === undefined || !Number.isFinite(x) ? '' : textNumar(x, ro));
 
-/** Numele propus din fel și diametru (ADR 0300 §2), în limba de acum; „?” unde valoarea încă nu e un număr. */
-export function numePropus(f: Pick<Freza, 'fel' | 'diametru' | 'unghi' | 'varf'>, ro: boolean): string {
-  const n = (x: number | undefined): string => (x !== undefined && Number.isFinite(x) ? textNumar(x, ro) : '?');
-  if (f.fel === 'plata') return t('freze.propus.plata', { d: n(f.diametru) });
-  if (f.fel === 'v') return t('freze.propus.v', { u: n(f.unghi), d: n(f.diametru) });
-  return t('freze.propus.gravare', { u: n(f.unghi), varf: n(f.varf), d: n(f.diametru) });
-}
 
 /** Cel mai mic T pe care nicio freză a bibliotecii nu-l are (o freză nouă îl primește). */
 function tLiber(lista: readonly FrezaSalvata[]): number {
@@ -173,7 +167,8 @@ export function FrezeleMele({ onInchide, focusInapoi, config }: {
   const biblioteca = frezeMele(cheie);
   const stare = useFrezeMele(cheie);
   const locala = useFrezeMele(CHEIE_LOCALA);
-  const sincronizare = useSincronizare(cheie, uid, config);
+  // Un cont fără freze primește frezele standard la prima sincronizare (ADR 0300 §3, precizarea din 24.11).
+  const sincronizare = useSincronizare(cheie, uid, config, () => frezeleStandard(ro));
   const [amanat, setAmanat] = useState(() => uid !== null && amanate.has(uid));
   const [cauta, setCauta] = useState('');
   const [filtru, setFiltru] = useState<FelFreza | 'toate'>('toate');
@@ -197,7 +192,8 @@ export function FrezeleMele({ onInchide, focusInapoi, config }: {
   // Altă bibliotecă (intrarea în cont sau ieșirea, cât fereastra e deschisă): editorul se închide.
   useEffect(() => {
     void frezeMele(cheie).incarca();
-    if (cheie !== CHEIE_LOCALA) void frezeMele(CHEIE_LOCALA).incarca();
+    // Biblioteca fără cont primește frezele standard o dată (și când fereastra lucrează pe a contului: o ai după ieșire).
+    void cuFrezeleStandard();
     setAleasa(null);
     setCiorna(null);
     setInitiala(null);
@@ -302,8 +298,7 @@ export function FrezeleMele({ onInchide, focusInapoi, config }: {
     });
   };
   const pornire = (): void => {
-    const freze = FREZE_PORNIRE.map((f) => ({ ...f, nume: numePropus(f, ro) }));
-    void biblioteca.adaugaToate(freze).then((r) => {
+    void biblioteca.puneStandard(frezeleStandard(ro), false).then((r) => {
       setMesaj(r.ok ? t('freze.import.rezultat', { adaugate: r.adaugate, inlocuite: r.inlocuite, sarite: r.sarite }) : motivLista(r.probleme));
       if (r.ok) sincronizare.programeaza();
     });
@@ -424,7 +419,9 @@ export function FrezeleMele({ onInchide, focusInapoi, config }: {
     if (stare.sincron.plina.length > 0) return [t('freze.loc.plina', { n: stare.sincron.plina.length, max: MARGINI_FREZA.freze }), 'atentie'];
     return [t('freze.loc.la-zi'), 'browser'];
   })();
-  const deAdus = uid !== null && locala.incarcata && stare.incarcata && !amanat
+  // Întrebarea vine după prima trecere a sincronizării (sau după eșecul ei): un cont fără freze primește întâi frezele
+  // standard, cu aceleași id-uri ca ale browserului, deci ele nu se mai numără.
+  const deAdus = uid !== null && locala.incarcata && stare.incarcata && !amanat && sincronizare.stare.ultima !== null
     ? deAdusDinBrowser({ freze: stare.freze, brute: [], sincron: stare.sincron }, locala.freze).length : 0;
   const conflict = conflicte[0];
   const numeConflict = ((): string => {

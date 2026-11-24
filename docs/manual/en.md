@@ -1279,9 +1279,9 @@ would change all of them: the row says how many times it is placed.
 
 The **My bits** window keeps your bits. It opens from the **Account** menu (the **My bits…** row) or from the command
 palette. It works without an account and offline: without an account, the library lives in this browser; with your account
-open, it lives in your account and you have it on any computer where you sign in (see below). Soon you will pick a bit from
-the library on the export rows and in the Cutting section; until then, the bit is typed on the row, as before (see
-[Exporting G-code](#export)).
+open, it lives in your account and you have it on any computer where you sign in (see below). You pick a bit from the
+library for the chosen shapes in the Cutting section of the properties panel (see [The cutting operations](#operatii)); on the
+export rows it comes soon, and until then the bit is typed there on the row, as before (see [Exporting G-code](#export)).
 
 The **list**, on the left, groups the bits by kind (Flat, V, Engraving), each with a small profile, the preferred T, the
 spindle speed and the feed. **Search for a bit** filters by name, and the **All**, **Flat**, **V** and **Engraving** buttons
@@ -1303,9 +1303,11 @@ back what was there. If you pick another bit or close the window with unsaved ch
 are valid; otherwise the window stays and shows the fields to fix. **Duplicate** makes a copy of the bit, and **Delete…** asks
 first; projects that use it keep their copy.
 
-**Add the starter bits** shows while the library is empty: six common bits (flat Ø3.175, Ø6 and Ø12, V60 Ø6, V90 Ø12 and an
-engraving bit of 30° with a 0.2 tip and Ø3.175), with the app’s default values (18,000 rpm, a feed of 1,000 mm/min, a plunge
-of 300 mm/min). Change them afterwards to match your bits.
+**The standard bits** come by themselves: the first time the window or the properties panel opens, the library gets six common
+bits (flat Ø3.175, Ø6 and Ø12, V60 Ø6, V90 Ø12 and an engraving bit of 30° with a 0.2 tip and Ø3.175), with the app’s
+default values (18,000 rpm, a feed of 1,000 mm/min, a plunge of 300 mm/min). Change them afterwards to match your bits. They
+come only once: a deleted one does not come back by itself. With an empty library, **Add the standard bits** puts back the
+missing ones.
 
 **Export…** saves the library to the file `frezele-mele.cvs2freze.json`, which you bring in with **Import…** on another
 computer. **Import…** also reads a CSV (saved from Excel, for example) with a header row and the columns `nume`, `fel`
@@ -1327,8 +1329,9 @@ account…** or **Offline: sent when the connection is back**. The account holds
 in this browser, and the window counts them. With the trial over or the account disabled, the library in the account is
 read-only: changes stay here.
 
-The first time you open it with your account, if this browser has bits the account does not have, the window asks **Add the
-N bits from this browser to the account?**: **Yes, add them** copies them into the account (a bit with a taken name gets
+An account that never had any bits gets the standard bits at its first sync; an account whose bits were deleted does not get
+them again. The first time you open it with your account, if this browser has bits the account does not have (other than the
+standard ones), the window asks **Add the N bits from this browser to the account?**: **Yes, add them** copies them into the account (a bit with a taken name gets
 “(2)”), and **Not now** asks again another time. The library without an account stays untouched: you see it again after
 signing out.
 
@@ -1357,6 +1360,15 @@ becomes a V60 of the same diameter, and for another role a V bit becomes flat. F
 cone (5.196 mm for a V60 Ø6). Under the role, **Depth** and **Step down** are
 written on all the operations of the chosen shapes (with different values, the field is empty). A part with several copies
 changes its role for all of them. A shown toolpath updates by itself.
+
+**Cutter**, under the step (while the [My bits](#freze) library has bits), lists the library bits that work on all the chosen
+shapes: a V bit and an engraving bit only on the line and in a V-carve, a flat bit everywhere else (but not in a V-carve).
+Chosen, the bit goes onto all the operations of the chosen shapes, in one undo step, with its working values (spindle speed,
+feed, plunge), its cutting length, its step down and, for a pocket, its stepover (from its percentage); the depth, the flat
+bottom and the rest bits stay. The T number is the library's, if it is free in the project; otherwise that of an identical
+bit (same diameter, same shape, same spindle speed), otherwise the smallest free one, and a note under the list says so. The
+list shows the chosen shapes' library bit, **Entered by hand** when they share a bit typed in the export window, or “—” when
+they have different bits.
 
 **My roles.** A role with all its values (the cutter, the direction, the depth, the step down, the tabs, the ramp, the leads,
 the corners, the descent, the pocket toolpath, the rest cutters, the flat bottom) is kept with **Save as role…**, under
