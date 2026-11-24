@@ -104,7 +104,7 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   `test/oracles/document.ts` (peste partea v1–v10), cazurile pe hârtie la finalul lui `test/oracles/document.cazuri.ts`, proba
   cu ușa aplicației în `test/unit/document.v22.oracol.test.ts` (din 08.11, cu incrustațiile din v20–v22) și, pentru v23 (literele
   plăcuțelor, 11.4↑, în `main` din 13.11), în `test/unit/document.v23.oracol.test.ts`. **Un câmp nou al documentului
-  (v26; v25, cu gaura și câmpurile treptei incrustațiilor, ADR 0175, e în `main` din 17.11) intră acolo, ca rangul și incrustația:** rândul
+  (v28; v27, cu `biblioteca`, `regim` și `tais` pe frezele operațiilor, ADR 0300, e în `main` din 24.11) intră acolo, ca rangul și incrustația:** rândul
   lui în `CAMPURI_NOI_O` (ciocnirea migrării), judecata în `problemeOperatieO`, frontierele pe hârtie, iar probele care țin
   versiunea curentă se mută pe ea (`schema: 23` în probe; oracolele CAM primesc versiunea nouă cum le primesc pe v21 și v22,
   de exemplu `test/oracles/regiune.ts`). **Și în corpusul de aur
@@ -313,6 +313,16 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   totalul era 793,6 / 800, iar feliile următoare (frezele, fereastra exportului, utilizarea, aranjamentele) nu mai
   încăpeau în 6,4 kB. **Pornirea rămâne 115 kB:** cu ușa și cu Atelierul e la 114,2, deci o felie care atinge pornirea
   cere întâi loc (o bucată mutată la cerere) sau decizia owner-ului pe plafonul ei (ADR 0252).
+  **Documentul v27 și valorile frezei în program (ADR 0300 §5, felia 16.A↑b-1)** gata pe 24.11, unită în `main` pe
+  24.11 (`32b33a42`): pe orice freză a unei operații (scula, frezele de rest, fundul plat și frezele lui de rest,
+  frezele dopului, freza benzii), trei câmpuri opționale: `biblioteca` (`{ id, rev }`), `regim` (`{ turatie, avans,
+  plonjare }`) și `tais`; migrarea v26 → v27 schimbă doar numărul, iar un v26 care are deja câmpurile pe o freză e o
+  ciocnire. În program (`src/cam/regimFreza.ts`): turația, avansul și plonjarea frezei pe fiecare loc (profilul,
+  buzunarul, liniile paralele, frezele de rest, găurirea, V-ul, fundul plat, dopurile), turația primei freze montate
+  și a celei noi la schimbare. **Fără valori, programul de azi, octet cu octet;** același T cu două turații și o
+  adâncime peste tăiș se refuză. Fără interfață încă: urmează 16.A↑b-2 (lista „Freza” pe rândurile exportului și în
+  Tăierea) și 16.A↑b-3 (nota schimbării din bibliotecă). **Un câmp nou al documentului ia v28. O probă e2e care citește
+  documentul salvat cere versiunea curentă:** `placute.spec.ts` a căzut în completul liniei cu `schema: 26`.
   **Conturile clienților: contul în aplicație (ADR 0116, felia 14.C↑, adusă din etapa 14)** gata pe 01.11, din sugestia
   owner-ului acceptată pe 31.10 și răspunsurile lui: butonul **Cont** (din 01.11 lângă butonul temei, sus în dreapta: controlul
   `cont` al aranjamentului), panoul contului (doar online,
@@ -916,7 +926,8 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   fereastră de confirmare, tastatura. **O schimbare a unei extensii din bibliotecă cere acum și rândul ei de „ce e nou”,
   primul din `noutati`, în `extensii/biblioteca.json`** (`{ "versiune", "ro", "en" }`, cel mult 240 de caractere), apoi
   `node scripts/biblioteca.ts --scrie` (refuză fără rând). **Două linii care schimbă aceeași extensie iau, fiecare,
-  versiunea următoare:** cea unită a doua își ia alta la aducerea lui `main` (Easy 3Draw e 18.21.0; următoarea, 18.22.0).
+  versiunea următoare:** cea unită a doua își ia alta la aducerea lui `main` (Easy 3Draw e 18.22.0, cu ventilatorul cu carcasă din 3.Ts;
+  următoarea, 18.23.0).
   Capturile unei extensii se refac cu `node scripts/capturi-biblioteca.ts [dosar]` și se comit. **Un prefix nou de acțiuni
   cere grupul lui în `src/ui/Paleta.tsx`** (paleta nu arăta deloc acțiunile `extensii`). Pornirea 108,6 kB (cu ușa
   113,1 / 115), totalul 778,6 / 800.
@@ -1262,9 +1273,18 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   erorii** (`pasiAcum`, din `src/app/utilizare.ts`, dat raportorului în `main.tsx`), nu la trimitere. **Verificarea lor stă în
   `shared/pasiEroareVerificare.ts`** (serverul și adminul), nu în `shared/pasiEroare.ts`: altfel bucata raportorului
   aduce tot contractul utilizării. **Un fel nou de eveniment cere rândul lui și în `FELURI_PAS`** (compilatorul o
-  spune). Urmează A.11b (bifa „Atașează ultimii pași” la raportare), A.11c (cronologia unui om), A.11d (disocierea),
-  apoi A.7. **Pornirea 109,6 kB (cu ușa 114,1 / 115; cu Atelierul 114,4: mai sunt 0,6 kB), totalul 800,1 / 900,
+  spune). **Pornirea 109,6 kB (cu ușa 114,1 / 115; cu Atelierul 114,4: mai sunt 0,6 kB), totalul 800,1 / 900,
   `/admin` 135,0 / 200.**
+  **A.11b–A.11e (pașii la raportare, cronologia unui om, sesiunea raportării, disocierea)** gata pe 24.11, unite în
+  `main` pe 24.11 (`8ccb66e8`): în „Raportează o problemă…”, bifa **Atașează ultimii pași din aplicație** (nebifată
+  implicit; pașii se iau la deschiderea ferestrei), arătați în fila Tichete; permisiunea nouă **„Utilizare: sesiuni”**
+  dă **Activitatea** unui cont (fila Utilizatori, doar la „Arată activitatea”) și **Sesiunea raportării** (fila
+  Tichete): citirea trece prin server (funcția `utilizare`), care cere permisiunea, trece evenimentele încă o dată prin
+  lista albă și scrie fiecare citire în audit; **Desparte utilizarea de cont…** (cine administrează conturile, la
+  cererea omului, printr-un tichet) pune un pseudonim aleator pe tot ce s-a strâns și pe ce vine, iar legătura cont →
+  pseudonim stă doar pe server (`utilizareDisociate`, fără regulă, deci închisă oricui; nu se desface din aplicație).
+  A.11 e încheiată; urmează A.7 (adminul pe telefon). **Catalogul are 13 permisiuni** (proba matricei rolurilor le
+  numără). **`/admin` 137,9 / 200, contul 30,1 / 32; pornirea, neschimbată de aceste felii.**
   **Riglele, ghidajele, lipirea și alinierea (ADR 0050, aduse din etapa 6)** gata pe 20.10: ghidajele pe foaie
   (`foaie.ghidaje`, fără schemă nouă), lipirea pură (`src/geom/lipire.ts`), alinierea (`src/geom/aliniere.ts`), totul la
   cerere după prima randare (`src/app/Editare.tsx`); pornirea 99,4 / 100 kB cu ușa (foarte strâmt). **Uneltele de desen
