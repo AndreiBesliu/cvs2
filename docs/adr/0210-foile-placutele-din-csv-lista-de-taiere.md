@@ -379,6 +379,31 @@ fiecare foaie, pe pânză).
   fâșie, dublarea din rândul vecinei, ștergerea cu întrebare și anularea ei, panoul foii, așezarea, mutarea, „Toate foile”
   oprit, engleza, fereastra Mașina), manualul. Otrăvurile: `test/otravuri/11.1c.py`.
 
+## Felia 11.1↑d (rândul nu trece de foaia lui, gata pe 24.11)
+
+Cererea owner-ului din 24.11, în sesiunea principală, după ce a încercat 11.1↑c pe adresa de test: „si trebuie sa reparam si
+asta”, cu trei capturi: la mărimea obișnuită rândurile stau bine; cu pânza micșorată, rândul de șapte butoane e mai lat decât
+foaia lui și iese peste foaia vecină; cu mausul pe foaia vecină, cele două rânduri se suprapun.
+
+- **Rândul nu trece de lățimea foii lui** (`felRand`, în `src/ui/controaleFoiCalcul.ts`): cât foaia e pe ecran cel puțin cât
+  rândul întreg (șapte butoane, cu golurile și marginile lor), rândul e întreg; mai îngustă, rândul se **strânge într-un
+  singur buton, „⋯”** („Arată comenzile foii”); sub lățimea unui buton, rândul **nu se mai arată**. Foile nu se ating (stau
+  la 100 mm), deci rândurile lor nu se mai pot suprapune.
+- **„⋯” desface rândul** peste ce e alături (deasupra rândurilor vecine), cu focusul pe prima comandă. Îl strâng la loc mausul
+  plecat de pe rând, Escape (cu focusul întors pe „⋯”) și orice comandă aleasă. Un rând desfăcut, ca și întrebarea ștergerii,
+  nu iese din pânză: se trage spre stânga cât trebuie (`stangaInPanza`).
+- **Mărimea butonului se măsoară**, nu se presupune: un buton nevăzut, cu aceleași reguli de mărime, e citit la montare și la
+  fiecare schimbare a lui (densitatea mare și ecranele cu atingere au butoane cât ținta: 48 px, deci rândul întreg are
+  354 px, nu 214).
+- **Rotița de pe rând e a pânzei.** Găsit de proba feliei: cu cursorul pe rând, rotița nu mai micșora pânza (rândul e frate
+  al pânzei, nu copil, iar pânza își ascultă rotița pe elementul ei); la micșorare, rândul ajungea sub cursor și zoom-ul se
+  oprea. Rândul îi dă pânzei evenimentul, cu același loc al cursorului.
+- **Probele:** `controaleFoi.test.ts` (lățimea rândului pe hârtie, cele trei feluri cu granițele lor, locul ținut în pânză),
+  e2e `controale-foi.spec.ts` (rândul strâns sub foaie și în lățimea ei, două rânduri care nu se ating, „⋯”, focusul, Escape,
+  mausul plecat, comanda din rândul desfăcut; densitatea mare; rândul ascuns sub o foaie minusculă; rotița de pe rând),
+  manualul în ambele limbi. Otrăvurile: `test/otravuri/11.1d.py`; patru din `11.1c.py`, mutate pe codul nou.
+- **Documentul** nu se schimbă; nimic pe server.
+
 ## Felia 11.2↑ (gata pe 08.11)
 
 - **«Încă…»** (panoul Proprietăți, la „Piesa”, cu o singură piesă aleasă) cere „Câte în total” (mai multe decât acum, cel
