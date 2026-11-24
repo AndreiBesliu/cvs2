@@ -156,6 +156,14 @@ delete other sheets.
 - **Move the sheet up** and **Move the sheet down** change the order of the sheets in the list.
 - **Delete the sheet** removes it, with its parts; if it has parts, the menu asks first. The project's last sheet stays.
 
+**The sheet commands, on the canvas.** The same commands also sit under every sheet on the canvas, as a row of icons, at the
+left, under its bottom edge: **Name, size and material…**, **Arrange on sheets…**, **Duplicate the sheet**, **Duplicate the
+sheet with the same parts**, **Move the sheet up** (the left arrow: on the canvas, the sheet goes before its neighbour), **Move
+the sheet down** (the right arrow) and **Delete the sheet**. Each one's name shows when you hold the mouse over the icon; one
+that cannot be used is dimmed, with the reason next to the name. The active sheet's row is always visible; a dimmed sheet's
+row shows while you hold the mouse over the sheet or over the row. When deleting a sheet with parts, the row asks first:
+**Delete the sheet** or **Cancel**. On a touch screen only the active sheet's row is visible.
+
 **Move to another sheet.** The chosen parts go to another sheet from the canvas [right-click menu](#meniu): **Move to** and the
 sheet's name, or **Move to a new sheet**. Or drag a part's row from the list onto another sheet (if it is in the selection, the
 whole selection goes). Each part keeps its place and rotation; if it goes past the new sheet, the usual warning shows. The
@@ -2194,7 +2202,7 @@ Also on the test instance, a suggestion for the owner, with a picture of the she
 
 ## The account
 %% capitol: cont
-%% acopera: editare.cont, editare.sugestie
+%% acopera: editare.cont, editare.sugestie, editare.admin
 
 The **Account** button in the top-right corner, next to the theme button (its title: “Account: sign in, the plan, reports and
 the manual”), opens the account menu. Signed in, the button shows the initials and the first name. At the top of the menu are
@@ -2213,6 +2221,10 @@ the name and today's plan, with the trial days left; without an account, “Not 
 
 The menu works from the keyboard too: the arrow keys move between rows, Enter picks, Escape closes it. The account panel and
 the reports need internet: without a network they do not open, but the app goes on with the last rights it received.
+
+**Admin.** With a staff account, the **Admin** button appears in the top menu, between the window tabs and the search (its
+title: “Administration, in a new tab (staff only)”). It opens the administration page in a new tab, and the project stays open
+in the current tab. With a customer account or without an account, the button does not appear; nor on a phone.
 
 - **Report a problem…:** you choose what you are sending (a problem, an idea or a question), write what happened and, if you
   want, tick **Attach a picture of the sheet**. With **Attach the project (so the team can open it)** the open project goes
