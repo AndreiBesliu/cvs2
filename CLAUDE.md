@@ -323,6 +323,11 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   adâncime peste tăiș se refuză. Fără interfață încă: urmează 16.A↑b-2 (lista „Freza” pe rândurile exportului și în
   Tăierea) și 16.A↑b-3 (nota schimbării din bibliotecă). **Un câmp nou al documentului ia v28. O probă e2e care citește
   documentul salvat cere versiunea curentă:** `placute.spec.ts` a căzut în completul liniei cu `schema: 26`.
+  **Plafonul pornirii 120 kB (ADR 0145, decizia owner-ului din 24.11, „ok, ridica plafonul pornirii la 120 kB”):** după
+  lotul al paisprezecelea, pornirea era 109,9 kB, cu ușa 114,4 și cu Atelierul 114,7 / 115, iar feliile următoare ale
+  frezelor, exportului și aranjamentelor nu mai încăpeau în 0,3 kB. Poarta judecă tot trei măsuri sub același plafon
+  (pornirea, cu ușa, cu ușa și cu aranjamentul ales); acum rămân ~5,3 kB. **Ce nu trebuie înaintea primei randări stă
+  tot la cerere, iar o felie își spune în raport cât adaugă în pornire.** Totalul rămâne 900 kB.
   **Conturile clienților: contul în aplicație (ADR 0116, felia 14.C↑, adusă din etapa 14)** gata pe 01.11, din sugestia
   owner-ului acceptată pe 31.10 și răspunsurile lui: butonul **Cont** (din 01.11 lângă butonul temei, sus în dreapta: controlul
   `cont` al aranjamentului), panoul contului (doar online,
@@ -1405,6 +1410,13 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 24.11.2026, la prânz: **plafonul pornirii 120 kB** („ok, ridica plafonul pornirii la 120 kB”, în sesiunea principală,
+  după raportul unirii a paisprezecea: pornirea cu ușa și cu Atelierul era la 114,7 / 115 kB, cu 0,3 kB rămași). ADR
+  0145 (scris de sesiunea principală, pe `unire-2411f`); constanta porții din `scripts/build-determinist.ts`. Sub
+  plafon stau, ca până acum, toate trei măsurile: pornirea, pornirea cu ușa și pornirea cu ușa și bucata aranjamentului
+  ales; acum rămân ~5,3 kB. **Regula feliilor nu se schimbă:** ce nu trebuie înaintea primei randări stă într-o bucată
+  la cerere, iar felia își spune în raport cât adaugă în pornire. Totalul (900 kB, ADR 0301), ușa (8 kB), `/admin` și
+  contul rămân. O creștere următoare cere iar decizia scrisă.
 - 24.11.2026, la prânz (a paisprezecea unire din cloud): **3.Ts (ventilatorul cu carcasă), A.11b–A.11e (utilizarea
   aplicației: pașii la raportare, cronologia unui om, sesiunea raportării, disocierea) și 16.A↑b-1 (documentul v27 și
   valorile frezei în program) unite în `main`**, în lot (sesiunea principală, ramura `unire-2411e`, din `fafb95e7`).

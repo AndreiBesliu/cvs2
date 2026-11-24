@@ -12823,3 +12823,19 @@ PR-ul `AndreiBesliu/cvs2#14` („De unit de sesiunea principală”).
   publicarea lui vine înaintea acestui lot (`publica.yml` construiește sha-ul dat).
 - **La owner:** plafonul pornirii (mai sunt 0,3 kB), fereastra exportului, verificarea juridică a utilizării
   aplicației, „cine unește în `main`”, ADR 0232 (biblioteca), lista „ce pot face între timp”.
+
+## 2026-11-24 — Sesiunea principală în cloud: plafonul pornirii 120 kB (ADR 0145) (Model: Claude Fable 5.2)
+
+**Prompt:** „ok, ridica plafonul pornirii la 120 kB”
+**Started:** 24.11, 11:45.
+
+- **De ce:** după lotul al paisprezecelea, pornirea e 109,9 kB, cu ușa 114,4 și cu Atelierul 114,7 / 115: 0,3 kB
+  rămași, cu felii ale frezelor, exportului și aranjamentelor la rând.
+- **Ce s-a schimbat:** `PLAFON_PORNIRE_KB = 120` în `scripts/build-determinist.ts` (cele trei măsuri ale porții stau
+  sub el: pornirea, cu ușa, cu ușa și cu aranjamentul ales); ADR 0145, rândul lui în indexul ADR, titlul tradus în
+  roadmap; decizia și rândul de stare în `CLAUDE.md`; plafoanele în `docs/linii/principala.md`.
+- **Numărul ADR-ului:** 0145, din golul 0145–0149 de lângă celelalte plafoane ale liniei principale (0143, 0144); liber
+  pe toate ramurile `origin/wip/*`.
+- **Verificat:** build-ul determinist spune „plafon 120” și „114.7 / 120”; traducerile, 990 de texte, 0 lipsă.
+- **Pe aceeași ramură (`unire-2411f`):** rândul publicării lotului al treisprezecelea și nota liniei trasării
+  (`e104204f`, PR-ul `AndreiBesliu/cvs2#18`), amândouă doar documente.
