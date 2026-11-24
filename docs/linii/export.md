@@ -39,7 +39,8 @@ vreau ca ficare setare sa fie insotita de o ilustratie sugestiva, ca sa ajute us
 - **24.11: 28.8↑c gata** (traseul și coborârea buzunarului ca cartonașe; desenele golirii, coborârii, frezelor de rest și
   găuririi; nota rampelor zigzagului pe trecerea egală), pe ramură și pe canalul `export`; neunită. Otrăvurile 20 / 20.
   Totalul 811,4 / 900 (+2,6 kB). Detaliile: ADR 0290, „Implementarea 28.8↑c”. Înainte, completul de pe b-3 reparat
-  (`6fc38abf`). Urmează 28.8↑d (V-carve-ul, fundul plat, incrustația în V, banda).
+  (`6fc38abf`). Completul CI verde pe `83f44f9e` (unit 10 053 / 0, e2e 664 / 664, emulatoarele 120 / 120 și 50 / 50).
+  Urmează 28.8↑d (V-carve-ul, fundul plat, incrustația în V, banda).
 
 ## Ce s-a găsit (23.11)
 
