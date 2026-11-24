@@ -12290,7 +12290,7 @@ admin cat mai multe setari”).
 ## 2026-11-24 — Felia A.9b: fila Utilizare din admin (ADR 0262)
 
 **Prompt:** același „am raspuns” (7a: A.8–A.11 acum), după A.9a.
-**Started:** 24.11 00:55.
+**Started:** 24.11 02:50.
 
 - **Codul (`c549a600`, `c85a44c8`, `c70c52df`):** catalogul acțiunilor generat la build (`scripts/catalogActiuni.ts`,
   `documentatie/actiuni.json`), partea pură a filei (`src/admin/utilizare/date.ts`), fila (`FilaUtilizare.tsx`, bucata ei
@@ -12302,6 +12302,23 @@ admin cat mai multe setari”).
   totalul neschimbate; `/admin` 133,2 / 200; fila 3,8 / 25.
 - **Documentele:** ADR 0262 (implementarea), fișa etapei 3 (`3.Al`), registrul otrăvurilor, traducerile, nota liniei.
   **Completed:** 24.11 05:05.
+- **După:** `main` (cu A.8c și A.8d unite, `80d3eb70`) adus în ramură (`dbb0306a`, doar documente); PR-ul
+  `AndreiBesliu/cvs2#13` poartă acum A.9a și A.9b.
+
+## 2026-11-24 — Felia A.10: fluxurile (ADR 0262)
+
+**Prompt:** același „am raspuns” (7a: A.8–A.11 acum), după A.9b.
+**Started:** 24.11 05:10.
+
+- **Codul (`94fede7d`):** secvențele (3 și 4 acțiuni reușite la rând, pe sesiune, cele mai dese 150 pe zi) și pâlnia (pasul
+  cel mai departe al fiecărei sesiuni, cu oamenii pe pas) în sumele zilei (`fluxuri` din `shared/utilizareZi.ts`), adunate
+  pe perioadă (`secventeleDese`, `palnie`), secțiunea Fluxurile din filă; durata unei sesiuni în cifre (lipsea din A.9b).
+- **După captură:** fiecare rând avea grila lui, deci barele rândurilor cu text lung ieșeau mai scurte; acum o grilă comună
+  (subgrid).
+- **Probele:** 4 unitare noi, 1 a jobului pe emulator, proba filei cu fluxurile. **Otrăvurile:** 23 / 23. **Porțile
+  locale:** rapidul 10 049 / 0, emulatoarele 121 / 121 și 50 / 50. **Mărimea:** `/admin` 133,7 / 200, fila 4,4 / 25.
+- **Documentele:** ADR 0262 (implementarea), fișa etapei 3 (`3.Am`), registrul otrăvurilor, traducerile, nota liniei.
+  **Completed:** 24.11 05:50.
 
 ## 2026-11-23 — Sesiunea principală în cloud: a șasea unire (A.6, Roadmap, Documentație și Setări); linia frezelor, pornită (Model: Claude Fable 5.2)
 

@@ -211,6 +211,23 @@ Estimarea: ~8 felii (A.8c s-a despărțit în A.8c și A.8d pe 23.11, A.9 în A.
   editorului rămân chei (mesajele lui nu vin în `/admin`), ca și numele dialogurilor. Fila vine într-o bucată a ei, la
   deschidere, doar online (`FilaUtilizare`, plafonul ei de 25 kB în poarta mărimii, exact o bucată). Fără bibliotecă de
   grafice: barele sunt CSS. Fără reguli, permisiuni, indexuri sau funcții noi.
+- **A.10** (24.11, `3.Am`): **fluxurile**, scrise de același job în sumele zilei (`fluxuri` din `shared/utilizareZi.ts`), pe
+  fiecare segment:
+  - **secvențele**: acțiunile reușite ale unei sesiuni, în ordinea timpului (și peste loturi), cu repetările la rând lipite;
+    selecția și navigarea (`selectie.*`, `vedere.*`, afară de traseu, mașină, imprimantă și freze) nu sunt pași ai lucrului.
+    Ferestrele de 3 și 4 acțiuni se numără de câte ori apar și în câte sesiuni (o buclă numără sesiunea o dată); pe zi se
+    păstrează cele 150 din cele mai multe sesiuni, pe fiecare lungime (documentul zilei rămâne mic). Fila le arată pe cele
+    din cele mai multe sesiuni ale perioadei, cu numele din catalog;
+  - **pâlnia drumului principal**: deschiderea, desenul sau importul (`document.adauga-*`, `deseneaza`, `importa`, `text`),
+    rolul (`document.rol`, `aplica-operatii`), exportul (calculul `export` reușit, nu butonul, care doar deschide
+    fereastra), lucrarea pornită pe mașină. **Abaterea față de o pâlnie în ordine:** o sesiune ajunge până la pasul cel mai
+    departe pe care l-a făcut, oricare ar fi ordinea, deci una care deschide un proiect salvat și exportă trece și de desen
+    și de rol (făcute în altă zi); altfel, cine lucrează pe proiecte vechi ar părea oprit la deschidere. Pe pas: sesiunile și
+    oamenii (schița, ca oamenii zilei). Fila arată pâlnia ca bare și, la fiecare pas, câte sesiuni se opresc acolo.
+
+  Tot aici, cifra care lipsea din A.9b: **durata unei sesiuni** (mediana, ca treaptă). Barele filei stau pe o grilă comună
+  (subgrid), ca lungimile să se poată compara între rânduri. Fără reguli, permisiuni, indexuri sau funcții noi (jobul își
+  schimbă doar sumele; la unire se publică odată cu A.9a).
 
 ## Probele
 
