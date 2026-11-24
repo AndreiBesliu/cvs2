@@ -105,8 +105,10 @@ export async function salveazaSetarileUtilizarii(c: Conexiune, setari: SetariUti
 }
 
 /** Cronologia unui cont (ADR 0262 §6, felia A.11c): o pagină, prin callable-ul `utilizare`; cere „Utilizare: sesiuni”. */
-export async function cronologiaContului(c: Conexiune, uid: string, pana?: number): Promise<unknown> {
-  return (await httpsCallable<CerereCronologie, unknown>(c.functii, 'utilizare')({ actiune: 'cronologie', uid, ...(pana === undefined ? {} : { pana }) })).data;
+export async function cronologiaContului(c: Conexiune, uid: string, pana?: number, sesiune?: string): Promise<unknown> {
+  return (await httpsCallable<CerereCronologie, unknown>(c.functii, 'utilizare')({
+    actiune: 'cronologie', uid, ...(pana === undefined ? {} : { pana }), ...(sesiune === undefined ? {} : { sesiune }),
+  })).data;
 }
 
 export async function marcheazaEroarea(c: Conexiune, amprenta: string, rezolvat: boolean): Promise<{ ok: true; schimbat: boolean }> {

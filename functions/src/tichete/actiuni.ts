@@ -18,6 +18,7 @@ import { logServerError } from '../erori/jurnal.ts';
 import type { Fisiere } from '../fisiere.ts';
 import { drepturiIn } from '../personal/drepturi.ts';
 import { pasiDin } from '../../../shared/pasiEroareVerificare.ts';
+import { esteSesiune } from '../../../shared/utilizare.ts';
 import { pozaDin } from '../poza.ts';
 import { proiectDin } from './proiect.ts';
 
@@ -85,6 +86,8 @@ async function raporteaza(
   const proiect = proiectDin(d['proiect']);
   // Pașii dinaintea raportării (ADR 0262, felia A.11b), doar cu bifa: verificați pas cu pas, ca la raportul unei erori.
   const pasi = pasiDin(d['pasi']);
+  // Sesiunea de utilizare din care s-a raportat (felia A.11d): doar id-ul, cu forma lui; altceva se lasă deoparte.
+  const sesiune = esteSesiune(d['sesiune']) ? d['sesiune'] : null;
   const zi = ziUtc(acum);
   const refCont = db.collection(COLECTIE_CONTURI).doc(uid);
   const refStaff = db.collection(COLECTII_PERSONAL.staff).doc(uid);
@@ -113,6 +116,7 @@ async function raporteaza(
       tx.create(ref, {
         schema: 1, autor: uid, autorEmail, fel, text, aplicatia, amprente, poza: meta, proiect: proiect?.meta ?? null, stare: 'nou',
         ...(pasi.length > 0 ? { pasi } : {}),
+        ...(sesiune === null ? {} : { sesiune }),
         creatLa: cand, modificatLa: cand, rezolvatLa: null, raspunsuri: [], ultimulRaspunsLa: null, necititeAutor: 0, versiune: 1,
       });
       if (poza && meta) tx.create(ref.collection(COLECTIE_POZE).doc(ID_POZA), { schema: 1, ...meta, octeti: poza.octeti, creataLa: cand });

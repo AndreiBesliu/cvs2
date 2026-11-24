@@ -110,6 +110,7 @@ export const roCarcasa = {
   'raport.date.amprente-calcul': 'Amprentele erorilor din sesiune: se calculează…',
   'raport.date.fara-erori': 'Nicio eroare în sesiunea asta',
   'raport.date.proiect': 'Proiectul deschis ({marime}), comprimat',
+  'raport.date.sesiune': 'Numărul sesiunii de lucru, ca echipa să găsească ce s-a făcut în ea',
   'raport.date.pasi': {
     one: 'Ultimul pas din aplicație (doar ce ai făcut, fără conținut)', few: 'Ultimii {n} pași din aplicație (doar ce ai făcut, fără conținut)',
     other: 'Ultimii {n} de pași din aplicație (doar ce ai făcut, fără conținut)',

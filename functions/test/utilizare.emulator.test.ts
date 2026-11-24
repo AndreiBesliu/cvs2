@@ -225,9 +225,15 @@ test('cronologia unui om (A.11c): doar cu „Utilizare: sesiuni”; cele mai noi
   assert.deepEqual(ion.loturi.map((l) => [l.nr, l.evenimente.length, l.aruncate]), [[2, 1, 1], [1, 2, 0]]);
   assert.ok(!JSON.stringify(ion).includes('geometrie'));
   assert.deepEqual((await cron('own', { uid: 'nimeni' })).loturi, []);
+  // Doar o sesiune (cea a unei raportări, A.11d): loturile ei, ale contului cerut; o sesiune cu altă formă, refuzată.
+  const doar = await cron('ses', { uid: 'ana', sesiune: 'anaaaaaaaaaaaaa1' });
+  assert.deepEqual(doar.loturi.map((l) => l.nr), [10, 9, 8, 7, 6, 5, 4, 3, 2, 1]);
+  assert.deepEqual((await cron('ses', { uid: 'ion', sesiune: 'anaaaaaaaaaaaaa1' })).loturi, []);
+  assert.equal(await cod(cron('ses', { uid: 'ana', sesiune: 'x' })), 'invalid-argument');
   // Auditul: cine, al cui, câte loturi (refuzurile nu scriu).
   const a = (await audit()).filter((x) => x['actiune'] === 'utilizare.cronologie');
   assert.deepEqual(a.map((x) => [x['cine'], x['tinta'], (x['dupa'] as Record<string, unknown>)['loturi']]), [
     ['ses', 'utilizare/ana', 20], ['ses', 'utilizare/ana', 3], ['own', 'utilizare/ion', 2], ['own', 'utilizare/nimeni', 0],
+    ['ses', 'utilizare/ana', 10], ['ses', 'utilizare/ion', 0],
   ]);
 });

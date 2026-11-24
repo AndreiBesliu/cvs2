@@ -63,6 +63,8 @@ export const enAdmin = {
   'admin.erori.pasi': { one: 'The step before it', other: 'The {n} steps before it' },
   'admin.erori.pasi.nota': 'oldest first; the last one is right before the error',
   'admin.tic.pasi': { one: 'The step before the report', other: 'The {n} steps before the report' },
+  'admin.tic.sesiune': 'The report\'s session',
+  'admin.tic.sesiune.nota': 'What the person did in the session they reported from. Reading it goes into the audit.',
   'admin.tic.pasi.nota': 'attached by the person; oldest first, the last one right before the report window',
   'admin.erori.pas.actiune': 'action',
   'admin.erori.pas.fereastra': 'window',

@@ -5,7 +5,7 @@ import { oraFerestrei } from '../../../shared/erori.ts';
 import { COLECTII_PERSONAL } from '../../../shared/personal.ts';
 import { esteVersiuneVazuta } from '../../../shared/raspunsuriRapide.ts';
 import {
-  aceleasiSetariUtilizare, CALE_SETARI_UTILIZARE, COLECTIE_LIMITE_UTILIZARE, COLECTIE_UTILIZARE, contextDin, evenimentDin, expiraUtilizareLa, idLot,
+  aceleasiSetariUtilizare, CALE_SETARI_UTILIZARE, COLECTIE_LIMITE_UTILIZARE, COLECTIE_UTILIZARE, contextDin, esteSesiune, evenimentDin, expiraUtilizareLa, idLot,
   lotDin, LOTURI_PE_ORA, MARGINI_UTILIZARE, PAGINA_CRONOLOGIE, setariPublice, setariUtilizareCerute, setariUtilizareDin, type Eveniment,
   type LotCronologie, type RaspunsCronologie, type RaspunsLot, type RaspunsSetariUtilizare,
 } from '../../../shared/utilizare.ts';
@@ -116,16 +116,19 @@ async function cronologie(db: Firestore, uid: string, d: Record<string, unknown>
   if (typeof tinta !== 'string' || !RE_UID.test(tinta)) throw argument('contul');
   const pana = d['pana'];
   if (pana !== undefined && (typeof pana !== 'number' || !Number.isSafeInteger(pana) || pana <= 0)) throw argument('clipa paginii');
+  const sesiune = d['sesiune'];
+  if (sesiune !== undefined && !esteSesiune(sesiune)) throw argument('sesiunea');
   return db.runTransaction(async (tx): Promise<RaspunsCronologie> => {
     const drepturi = await drepturiIn(tx, db, uid);
     if (!drepturi.permisiuni.has('utilizare.sesiuni')) throw new HttpsError('permission-denied', 'cronologia cere „Utilizare: sesiuni”');
     let q = db.collection(COLECTIE_UTILIZARE).where('uid', '==', tinta);
+    if (sesiune !== undefined) q = q.where('sesiune', '==', sesiune);
     if (pana !== undefined) q = q.where('primit', '<', Timestamp.fromMillis(pana));
     const s = await tx.get(q.orderBy('primit', 'desc').limit(PAGINA_CRONOLOGIE + 1));
     const loturi = s.docs.slice(0, PAGINA_CRONOLOGIE).map((x) => lotCronologieDin(x.id, x.data())).filter((l): l is LotCronologie => l !== null);
     scrieAudit(tx, db, {
       cand: Timestamp.fromDate(acum), cine: uid, rol: drepturi.rol, actiune: 'utilizare.cronologie', tinta: `${COLECTIE_UTILIZARE}/${tinta}`,
-      inainte: null, dupa: { loturi: loturi.length, ...(pana === undefined ? {} : { pana }) },
+      inainte: null, dupa: { loturi: loturi.length, ...(pana === undefined ? {} : { pana }), ...(sesiune === undefined ? {} : { sesiune }) },
     });
     return { ok: true, loturi, maiVechi: s.size > PAGINA_CRONOLOGIE };
   });

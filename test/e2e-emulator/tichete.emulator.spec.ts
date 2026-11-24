@@ -154,6 +154,8 @@ test('raportarea din editor, cu poza și amprenta erorii din sesiune; răspunsul
   await expect(r.locator('label:has([data-camp="raport-pasi"])')).toContainText('pași din aplicație');
   await bifaPasi.check();
   await expect(r.locator('[data-raport-date-pasi]')).toContainText('pași din aplicație (doar ce ai făcut, fără conținut)');
+  // Sesiunea de lucru (A.11d) pleacă mereu, doar ca număr, și e spusă în ce mai pleacă.
+  await expect(r.locator('[data-raport-date-sesiune]')).toHaveText('Numărul sesiunii de lucru, ca echipa să găsească ce s-a făcut în ea');
   // Proiectul deschis, doar cu bifa: mărimea lui (JSON-ul canonic, cât salvează editorul) sub bifă și în ce mai pleacă.
   await expect(r.locator('[data-raport="proiect"]')).toHaveCount(0);
   await r.locator('[data-camp="raport-proiect"]').check();
@@ -189,6 +191,14 @@ test('raportarea din editor, cu poza și amprenta erorii din sesiune; răspunsul
   const pasi = (f['pasi']?.arrayValue?.values ?? []).map((v) => v.mapValue?.fields ?? {});
   expect(pasi.some((p) => text(p['fel']) === 'actiune' && text(p['id']) === 'document.adauga-dreptunghi' && text(p['rez']) === 'ok')).toBe(true);
   for (const p of pasi) expect(Object.keys(p).every((k) => ['fel', 'id', 'rez', 'ms'].includes(k))).toBe(true);
+  const sesiune = text(f['sesiune']);
+  expect(sesiune).toMatch(/^[a-z0-9]{16}$/);
+  // Lotul sesiunii pleacă la ascunderea paginii (ca la închiderea filei): cronologia îl găsește după numărul ei.
+  await page.evaluate(() => {
+    Object.defineProperty(document, 'visibilityState', { configurable: true, get: () => 'hidden' });
+    document.dispatchEvent(new Event('visibilitychange'));
+  });
+  await expect.poll(async () => (await documente('utilizare')).some((l) => text(l.f['sesiune']) === sesiune), LENT).toBe(true);
   // Proiectul: în tichet doar meta lui (fișierul e în Storage), cu mărimea și amprenta versiunii salvate.
   const proiect = f['proiect']?.mapValue?.fields ?? {};
   expect([numar(proiect['marime']), text(proiect['sha256']), numar(proiect['schema'])]).toEqual([
@@ -210,6 +220,16 @@ test('raportarea din editor, cu poza și amprenta erorii din sesiune; răspunsul
   // Pașii atașați, cu numele acțiunii din catalog.
   await expect(detaliu.locator('[data-admin="pasi"] summary')).toContainText('dinaintea raportării');
   await expect(detaliu.locator('[data-admin="pasi"] [data-pas-id="document.adauga-dreptunghi"]')).toContainText('Adaugă dreptunghi · acțiune');
+  // Sesiunea raportării (A.11d), cu „Utilizare: sesiuni” (owner-ul o are): citită la cerere, doar sesiunea aceea.
+  const ses = detaliu.locator('[data-util="activitate"]');
+  await expect(ses.locator('h4')).toHaveText('Sesiunea raportării');
+  await ses.locator('[data-util="arata-activitatea"]').click();
+  await expect(ses.locator('[data-sesiune]')).toHaveCount(1, LENT);
+  await expect(ses.locator('[data-sesiune]')).toHaveAttribute('data-sesiune', sesiune);
+  await ses.locator('summary').click();
+  // Loturile se strâng doar cu contul deschis: dreptunghiul de dinaintea intrării nu e în ele, trimiterea raportării da.
+  await expect(ses.locator('[data-pas-id="buton.raport-trimite"]')).toContainText('buton.raport-trimite · clic');
+  await expect(ses.locator('[data-pas-id="document.adauga-dreptunghi"]')).toHaveCount(0);
   // Proiectul, descărcat prin callable (din Storage, pe server), despachetat și verificat: versiunea salvată, octet cu octet.
   const descarcaProiect = detaliu.locator('[data-tic="descarca-proiect"]');
   await expect(descarcaProiect).toHaveText(`Descarcă proiectul (${kb} kB, schema ${(JSON.parse(salvat) as { schema: number }).schema})`);

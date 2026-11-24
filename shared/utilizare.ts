@@ -82,6 +82,8 @@ const RE_ID = /^[a-z][a-z0-9-]{0,39}(?:\.[a-z0-9-]{1,40}){0,3}$/;
 /** Rezultatul unei acțiuni: `ok`, sau cheia motivului refuzului (`motiv.nimic-ales`). */
 const RE_REZULTAT = /^(?:ok|motiv\.[a-z0-9-]{1,60}(?:\.[a-z0-9-]{1,40}){0,2})$/;
 const RE_SESIUNE = /^[a-z0-9]{16}$/;
+/** Forma id-ului unei sesiuni de utilizare (raportarea îl ține, cronologia filtrează după el; felia A.11d). */
+export const esteSesiune = (x: unknown): x is string => typeof x === 'string' && RE_SESIUNE.test(x);
 /** Id-ul unei acțiuni, unelte sau al unui dialog e din lista albă (clientul nu trimite altceva). */
 export const idBun = (x: string): boolean => RE_ID.test(x);
 /** Rezultatul unei acțiuni e din lista albă: `ok` sau cheia unui motiv. */
@@ -192,6 +194,8 @@ export interface CerereCronologie {
   readonly uid: string;
   /** Doar loturile primite înainte de clipa asta (ms): pagina următoare, mai veche. */
   readonly pana?: number;
+  /** Doar loturile unei sesiuni (sesiunea unei raportări, felia A.11d). */
+  readonly sesiune?: string;
 }
 /** Un lot în cronologie: sesiunea, numărul, clipele (ms), contextul și evenimentele, așa cum le-a scris serverul. */
 export interface LotCronologie {

@@ -65,6 +65,8 @@ export const roAdmin = {
   'admin.erori.pasi': { one: 'Pasul dinaintea ei', few: 'Cei {n} pași dinaintea ei', other: 'Cei {n} de pași dinaintea ei' },
   'admin.erori.pasi.nota': 'cel mai vechi primul; ultimul e chiar înaintea erorii',
   'admin.tic.pasi': { one: 'Pasul dinaintea raportării', few: 'Cei {n} pași dinaintea raportării', other: 'Cei {n} de pași dinaintea raportării' },
+  'admin.tic.sesiune': 'Sesiunea raportării',
+  'admin.tic.sesiune.nota': 'Ce a făcut omul în sesiunea din care a raportat. Citirea intră în audit.',
   'admin.tic.pasi.nota': 'atașați de om; cel mai vechi primul, ultimul chiar înaintea ferestrei raportării',
   'admin.erori.pas.actiune': 'acțiune',
   'admin.erori.pas.fereastra': 'fereastră',

@@ -1,4 +1,4 @@
-import { useState, type ReactElement } from 'react';
+import { useId, useState, type ReactElement } from 'react';
 import { pasDin } from '../../../shared/pasiEroare.ts';
 import type { LotCronologie } from '../../../shared/utilizare.ts';
 import { cronologiaContului, type Conexiune } from '../../cloud/conexiune.ts';
@@ -19,13 +19,16 @@ type Stare =
   | { readonly faza: 'gata'; readonly loturi: readonly LotCronologie[]; readonly maiVechi: boolean }
   | { readonly faza: 'eroare'; readonly loturi: readonly LotCronologie[]; readonly motiv: string };
 
-export function Activitatea({ con, uid, nume, limba }: {
+export function Activitatea({ con, uid, nume, limba, sesiune, titlu = t('admin.util.act'), nota = t('admin.util.act.nota') }: {
   readonly con: Conexiune; readonly uid: string; readonly nume: ReadonlyMap<string, string>; readonly limba: string;
+  /** Doar o sesiune (cea a unei raportări, în Tichete; felia A.11d). */
+  readonly sesiune?: string; readonly titlu?: string; readonly nota?: string;
 }): ReactElement {
   const [stare, setStare] = useState<Stare>({ faza: 'inchis' });
+  const idTitlu = useId();
   const citeste = (inainte: readonly LotCronologie[]): void => {
     setStare({ faza: 'citeste', loturi: inainte });
-    cronologiaContului(con, uid, inainte.at(-1)?.primit).then(
+    cronologiaContului(con, uid, inainte.at(-1)?.primit, sesiune).then(
       (r) => {
         const p = paginaDin(r);
         setStare({ faza: 'gata', loturi: [...inainte, ...p.loturi], maiVechi: p.maiVechi });
@@ -36,11 +39,11 @@ export function Activitatea({ con, uid, nume, limba }: {
   const loturi = stare.faza === 'inchis' ? [] : stare.loturi;
   const sesiuni = sesiuniDin(loturi);
   return (
-    <section className="util-activitate" data-util="activitate" aria-labelledby="util-act">
-      <h4 id="util-act">{t('admin.util.act')}</h4>
+    <section className="util-activitate" data-util="activitate" aria-labelledby={idTitlu}>
+      <h4 id={idTitlu}>{titlu}</h4>
       {stare.faza === 'inchis' ? (
         <>
-          <p className="admin-slab">{t('admin.util.act.nota')}</p>
+          <p className="admin-slab">{nota}</p>
           <button type="button" data-util="arata-activitatea" onClick={() => { citeste([]); }}>{t('admin.util.act.arata')}</button>
         </>
       ) : null}

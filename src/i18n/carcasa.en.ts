@@ -101,6 +101,7 @@ export const enCarcasa = {
   'raport.date.amprente-calcul': 'Fingerprints of the errors in this session: computing…',
   'raport.date.fara-erori': 'No errors in this session',
   'raport.date.proiect': 'The open project ({marime}), compressed',
+  'raport.date.sesiune': 'The number of the work session, so the team can find what was done in it',
   'raport.date.pasi': { one: 'The last step in the app (only what you did, no content)', other: 'The last {n} steps in the app (only what you did, no content)' },
   'raport.date.amprente': {
     one: 'The fingerprint of {n} error from this session, without its content',

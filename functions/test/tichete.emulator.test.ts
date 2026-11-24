@@ -120,6 +120,11 @@ test('pașii dinaintea raportării (A.11a–b), cu bifa: verificați pas cu pas,
   // Pași care nu sunt o listă: tichetul pleacă, fără pași.
   const g = await raporteaza('ana', { pasi: 'nu' });
   assert.equal('pasi' in (await tichetul(g.id)), false);
+  // Sesiunea de utilizare (A.11d): ținută doar cu forma ei.
+  const s = await raporteaza('ana', { sesiune: 'k3j9x0a1b2c3d4e5' });
+  assert.equal((await tichetul(s.id))['sesiune'], 'k3j9x0a1b2c3d4e5');
+  const s2 = await raporteaza('ana', { sesiune: 'nu/e/o/sesiune' });
+  assert.equal('sesiune' in (await tichetul(s2.id)), false);
 });
 
 test('raportarea: fără cont deschis, fără logare, câmpuri greșite sau peste plafoane = refuz, fără nicio scriere; exact la plafoane trece', async () => {

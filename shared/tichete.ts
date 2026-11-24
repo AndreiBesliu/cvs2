@@ -177,6 +177,8 @@ export type CerereTichet =
     readonly amprente: readonly string[]; readonly poza?: string; readonly proiect?: string;
     /** Pașii dinaintea raportării, doar cu bifa (ADR 0262, felia A.11b); serverul îi verifică pas cu pas. */
     readonly pasi?: readonly PasEroare[];
+    /** Sesiunea de utilizare din care s-a raportat (felia A.11d): fila Tichete o deschide în cronologie. */
+    readonly sesiune?: string;
   }
   | { readonly actiune: 'mele' }
   | { readonly actiune: 'citit'; readonly id: string }

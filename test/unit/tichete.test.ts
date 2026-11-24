@@ -123,15 +123,18 @@ test('rândul din fila Tichete: ce lipsește e necunoscut (null, gol), nu invent
   });
   assert.deepEqual(plin, {
     id: 't1', fel: 'idee', text: 'Grila\nmai groasă', autorEmail: 'ana@exemplu.ro', creatLa: new Date('2026-11-02T09:00:00Z'), stare: 'deschis',
-    aplicatia: { ...APP, plan: null }, amprente: [A, B], pasi: [], poza: { tip: 'image/jpeg', marime: 1200 }, proiect: null,
+    aplicatia: { ...APP, plan: null }, amprente: [A, B], pasi: [], autor: null, sesiune: null, poza: { tip: 'image/jpeg', marime: 1200 }, proiect: null,
     raspunsuri: [{ deEmail: 'echipa@exemplu.ro', text: 'Vine.', la: new Date('2026-11-02T10:00:00Z') }, { deEmail: null, text: '', la: null }],
     versiune: 3, rezolvatLa: new Date('2026-11-02T11:00:00Z'),
   });
   const gol = tichetDin('t2', { fel: 'altceva', stare: 'inchis', aplicatia: 'nu', amprente: 'nu', poza: { tip: 'image/gif', marime: 3 }, versiune: 0, rezolvatLa: '2026-11-02' });
   assert.deepEqual(gol, {
-    id: 't2', fel: null, text: '', autorEmail: null, creatLa: null, stare: null, aplicatia: null, amprente: [], pasi: [], poza: null, proiect: null,
+    id: 't2', fel: null, text: '', autorEmail: null, creatLa: null, stare: null, aplicatia: null, amprente: [], pasi: [], autor: null, sesiune: null, poza: null, proiect: null,
     raspunsuri: [], versiune: null, rezolvatLa: null,
   });
+  // Autorul și sesiunea raportării (A.11d): doar cu forma lor.
+  assert.deepEqual([tichetDin('t7', { autor: 'uidAna', sesiune: 'k3j9x0a1b2c3d4e5' }).autor, tichetDin('t7', { sesiune: 'k3j9x0a1b2c3d4e5' }).sesiune], ['uidAna', 'k3j9x0a1b2c3d4e5']);
+  assert.deepEqual([tichetDin('t8', { autor: '', sesiune: 'Sesiunea/../x' }).autor, tichetDin('t8', { sesiune: 7 }).sesiune], [null, null]);
   // Pașii dinaintea raportării (ADR 0262, A.11b): cei buni rămân, ceilalți cad.
   assert.deepEqual(tichetDin('t6', { pasi: [{ fel: 'unealta', id: 'cerc', ms: 5 }, { fel: 'unealta', id: 'Cerc!', ms: 5 }] }).pasi, [{ fel: 'unealta', id: 'cerc', ms: 5 }]);
   // Proiectul atașat (felia 15.B↑b): meta din tichet, cu marginile ei; o formă greșită = fără proiect, nu un buton stricat.

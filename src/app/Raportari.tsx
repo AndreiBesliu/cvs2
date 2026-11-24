@@ -15,7 +15,7 @@ import { textEroareCont, useFereastraCont } from './ferestreCont.ts';
 import type { IntrareEroare } from './jurnalErori.ts';
 import { aplicatiaTichet, amprenteleSesiunii, marimeCitita, octetiProiect, proiectPentruRaportare, proiectPreaMare } from './raportare.ts';
 import { pasDin } from '../../shared/pasiEroare.ts';
-import { pasiAcum } from './utilizare.ts';
+import { pasiAcum, sesiuneaAcum } from './utilizare.ts';
 import { puneRaportariNecitite, raportariNecitite } from './raportariNecitite.ts';
 import './raportari.css';
 
@@ -112,6 +112,8 @@ export function RaportareNoua({ config, intrari = () => [], proiect = () => null
   const [cuProiect, setCuProiect] = useState(false);
   // Pașii dinaintea raportării (ADR 0262 §4, felia A.11b), luați la deschidere: ce spune bifa e ce pleacă. Doar cu bifa.
   const [cuPasi, setCuPasi] = useState(false);
+  // Sesiunea de lucru (ADR 0262, felia A.11d): doar id-ul ei, ca echipa să vadă ce s-a făcut în ea; spusă în ce mai pleacă.
+  const [sesiune] = useState(() => sesiuneaAcum());
   const [pasi] = useState(() => {
     const c = pasiAcum();
     return c.pasi.map((e) => pasDin(e, c.t));
@@ -172,6 +174,7 @@ export function RaportareNoua({ config, intrari = () => [], proiect = () => null
         await trimiteRaportarea(ce, {
           actiune: 'raporteaza', fel, text, aplicatia: app, amprente: a, ...(p === undefined ? {} : { poza: p }), ...(pr === undefined ? {} : { proiect: pr }),
           ...(cuPasi && pasi.length > 0 ? { pasi } : {}),
+          ...(sesiune === null ? {} : { sesiune }),
         });
         setTrimis(true);
       } catch (e) {
@@ -239,6 +242,7 @@ export function RaportareNoua({ config, intrari = () => [], proiect = () => null
             <li data-raport-amprente={amprente?.length ?? ''}>
               {amprente === null ? t('raport.date.amprente-calcul') : amprente.length === 0 ? t('raport.date.fara-erori') : t('raport.date.amprente', { n: amprente.length })}
             </li>
+            {sesiune === null ? null : <li data-raport-date-sesiune="">{t('raport.date.sesiune')}</li>}
             {cuPasi && pasi.length > 0 ? <li data-raport-date-pasi={pasi.length}>{t('raport.date.pasi', { n: pasi.length })}</li> : null}
             {cuProiect && marime !== null ? <li data-raport-date-proiect="">{t('raport.date.proiect', { marime: marimea(marime) })}</li> : null}
           </ul>

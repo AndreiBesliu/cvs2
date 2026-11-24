@@ -16,6 +16,7 @@ import { dataScurta, motivDin, randDin, type Masura, type RandGrup } from '../er
 import type { AducatorDocumentatie } from '../documentatie/aducere.ts';
 import { alesDupaLista } from '../erori/vedere.ts';
 import { PasiDinainte, useNumeActiuni } from '../pasi/Pasi.tsx';
+import { Activitatea } from '../utilizatori/Activitatea.tsx';
 import { useAdresaImaginii } from '../sugestii/Formular.tsx';
 import { despacheteazaProiect, eRosu, filtreaza, numeFisierProiect, ordoneaza, proiectVerificat, tichetDin, type Filtru, type Tichet } from './date.ts';
 import { eroriSesiune, incapeRapid, insereazaLaCursor, numereFiltru, stareDupaRaspuns, titluTichet } from './vedere.ts';
@@ -190,7 +191,7 @@ export function FilaTichete({ con, owner, permisiuni, tinta = null, aducator }: 
                     ))}
                   </ul>
                   {tichet ? (
-                    <DetaliuTichet key={tichet.id} con={con} x={tichet} nume={nume} poateRaspunde={poateRaspunde} ocupat={ocupat} limba={limba} acum={acum}
+                    <DetaliuTichet key={tichet.id} con={con} x={tichet} nume={nume} poateActivitate={permisiuni.has('utilizare.sesiuni')} poateRaspunde={poateRaspunde} ocupat={ocupat} limba={limba} acum={acum}
                       lucru={lucru.faza !== 'liber' && lucru.loc === tichet.id ? lucru : null}
                       compune={poateRaspunde ? (
                         <Raspuns x={tichet} text={ciorne.get(tichet.id) ?? ''} scrie={(s) => { scrie(tichet.id, s); }} ocupat={ocupat}
@@ -234,8 +235,8 @@ function CipStare({ stare }: { readonly stare: StareTichet | null }): ReactEleme
  * Tichetul ales, ca o conversație: capul (titlul, starea, felul, schimbarea stării), raportarea clientului, răspunsurile
  * echipei, apoi câmpul răspunsului (doar cu `tichete.raspunde`). Lipit sus la derulare, cu conversația derulată în el.
  */
-function DetaliuTichet({ con, x, poateRaspunde, ocupat, limba, acum, lucru, compune, schimbaStarea, nume }: {
-  readonly con: Conexiune; readonly x: Tichet; readonly nume: ReadonlyMap<string, string>; readonly poateRaspunde: boolean; readonly ocupat: boolean; readonly limba: string; readonly acum: number;
+function DetaliuTichet({ con, x, poateRaspunde, ocupat, limba, acum, lucru, compune, schimbaStarea, nume, poateActivitate }: {
+  readonly con: Conexiune; readonly x: Tichet; readonly nume: ReadonlyMap<string, string>; readonly poateActivitate: boolean; readonly poateRaspunde: boolean; readonly ocupat: boolean; readonly limba: string; readonly acum: number;
   readonly lucru: Exclude<Lucru, { faza: 'liber' }> | null; readonly compune: ReactNode; readonly schimbaStarea: (x: Tichet, s: StareTichet) => void;
 }): ReactElement {
   const ore = x.creatLa ? Math.floor((acum - x.creatLa.getTime()) / 3_600_000) : 0;
@@ -271,6 +272,9 @@ function DetaliuTichet({ con, x, poateRaspunde, ocupat, limba, acum, lucru, comp
           {x.poza ? <PozaTichetului con={con} x={x} /> : null}
           {x.proiect ? <ProiectulTichetului con={con} id={x.id} meta={x.proiect} /> : null}
           <ErorileSesiunii con={con} amprente={x.amprente} />
+          {poateActivitate && x.autor !== null && x.sesiune !== null ? (
+            <Activitatea con={con} uid={x.autor} sesiune={x.sesiune} nume={nume} limba={limba} titlu={t('admin.tic.sesiune')} nota={t('admin.tic.sesiune.nota')} />
+          ) : null}
           {x.pasi.length > 0 ? <PasiDinainte pasi={x.pasi} nume={nume} titlu={t('admin.tic.pasi', { n: x.pasi.length })} nota={t('admin.tic.pasi.nota')} /> : null}
           {a ? (
             <p className="admin-slab tic-aplicatia" data-tic="aplicatia">
