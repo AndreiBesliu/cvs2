@@ -333,3 +333,19 @@ cele patru aranjamente, cu harta schițelor schimbată ca la „Cu canvas-ul ara
   textele lor stau în mesaje (date, în afara totalului). Pentru feliile c–e, estimarea se reface din cifra asta (~0,6 kB pe
   desen).
 
+## Implementarea 28.8↑b-2 (24.11)
+
+- **Cartonașele** (`src/ui/exportPoze.tsx`): colțurile, locurile urechilor, direcția pe linie, unitățile, schimbarea frezei și
+  foile. Fiecare variantă are poza ei, desenată de mână (64 × 44, aceleași clase ca desenele), numele și o notă scurtă. Un
+  cartonaș e un `<label>` cu un input radio transparent peste el: clicul oriunde îl alege, săgețile trec între variante, iar
+  probele lucrează pe input (`test/e2e/ajutor-export.ts`: `alege`, `aleasa`). `data-camp` stă pe grup, sau pe fiecare variantă
+  unde fiecare are numele ei (locurile urechilor); proba scanării câmpurilor găsește și `<Cartonase camp="…">` și
+  `camp: '…'`. Foile rămân butoane (`data-foi`, `aria-pressed`), cu poza și aspectul de cartonaș.
+- **O variantă oprită spune de ce,** pe cartonaș („nu pe linie” la „unde ține”); colțurile pe linie sunt toate oprite, cu nota
+  de sub ele. Inch lipsește unde postul nu-l scrie, ca înainte.
+- **Rămân liste:** tăietura (28.8↑b-3: ~55 de folosiri în 21 de spec-uri), colțul XY0, Z0, sensul și forma frezei (desenul
+  întrebării le arată deja, iar colțul se alege și din desen), postul (are opt intrări, pe două familii) și traseul
+  buzunarului (în 28.8↑c, cu desenele lui).
+- **Tokenurile lemnului, ale mesei și ale frezei** stau pe `.dx-ilu` (desenele și pozele): pe `.dx-desen`, pozele ieșeau negre.
+- **Mărimea:** bucata ferestrei 26,2 → 27,5 kB gzip, totalul 800,8 → 802,1 / 900 (+1,3 kB), pornirea neschimbată.
+

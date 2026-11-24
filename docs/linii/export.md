@@ -27,8 +27,11 @@ vreau ca ficare setare sa fie insotita de o ilustratie sugestiva, ca sa ajute us
   Detaliile: ADR 0290, „Implementarea 28.8↑a”.
 - **24.11: 28.8↑b-1 gata** (desenele întrebărilor: colțul XY0, Z0 cu supracursa, freza, adâncimea, sensul, rampa, intrările,
   urechile, din valori, cu cota activă; caseta explicației își ține înălțimea), pe ramură și pe canalul `export`; neunită.
-  Otrăvurile 16 / 16. Totalul +4,9 kB (800,8 / 900). Detaliile: ADR 0290, „Implementarea 28.8↑b-1”. Urmează 28.8↑b-2 (alegerile
-  ca cartonașe cu poze).
+  Otrăvurile 16 / 16. Totalul +4,9 kB (800,8 / 900). Detaliile: ADR 0290, „Implementarea 28.8↑b-1”. Completul CI verde pe
+  `5e1f7d64`.
+- **24.11: 28.8↑b-2 gata** (alegerile ca cartonașe cu poze: colțurile, locurile urechilor, direcția, unitățile, schimbarea
+  frezei, foile; despărțirea cu poza ei), pe ramură și pe canalul `export`; neunită. Otrăvurile 11 / 11. Totalul +1,3 kB
+  (802,1 / 900). Detaliile: ADR 0290, „Implementarea 28.8↑b-2”. Urmează 28.8↑b-3 (tăietura ca cartonașe).
 
 ## Ce s-a găsit (23.11)
 
@@ -62,6 +65,11 @@ vreau ca ficare setare sa fie insotita de o ilustratie sugestiva, ca sa ajute us
 - **Desenele (din 28.8↑b-1):** `[data-grup="…"] [data-desen] svg`; cotele `[data-cota="<data-camp>"]`, aprinse cu `data-aprinsa`;
   colțurile `[data-colt]` (cel ales, `data-ales`), urechile `[data-ureche]` (cu `data-latura` `o` / `v`), trecerile `[data-trecere]`.
   Ce spune un desen nou (o formulă) se socotește în `exportDeseneCalcul.ts` și se compară cu lucrarea în `export.desene.test.ts`.
+- **Cartonașele (din 28.8↑b-2):** o alegere e `[data-camp="…"] input[value="…"]`; în probe, `alege(loc, camp, v)` și
+  `aleasa(loc, camp)` din `test/e2e/ajutor-export.ts`. Clicul pe un cartonaș se dă pe cartonaș (`.dx-card`), nu pe textul
+  lui: inputul transparent îl acoperă. Tokenurile pozelor stau pe `.dx-ilu`.
+- **Otrăvurile cu multe spec-uri e2e** (~2–3 min fiecare) se rulează câte două: o repornire a procesului oprește rularea, iar
+  otrava în lucru rămâne aplicată în clonă (`git status` acolo, înainte de reluare).
 - **Caseta explicației își ține înălțimea** (`rezervaExplicatii`): un text nou mai lung (un `title` nou în grup) e măsurat singur.
   O probă care compară poziții după un focus le măsoară în conținutul panoului (`[data-fise]`, cu `scrollTop`): focusul poate
   derula panoul.

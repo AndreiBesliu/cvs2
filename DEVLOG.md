@@ -12458,3 +12458,21 @@ plafonul („ok, ridica plafonul total la 900 kB”).
 - **Mărimea:** totalul +4,9 kB (800,8 / 900), peste estimarea de ~3 kB pentru tot 28.8↑b; pornirea neschimbată (109,4 / 115).
 
 **Completed:** 24.11, 00:15.
+
+## 2026-11-24 — Linia exportului: felia 28.8↑b-2, alegerile ca cartonașe cu poze (ADR 0290)
+
+**Prompt:** răspunsul owner-ului la ADR 0290, exact: „1a, 2a, 3a, 4a” (feliile acceptate; după 28.8↑b-1).
+**Started:** 24.11, 00:58.
+
+- **Cartonașele** (`src/ui/exportPoze.tsx`): colțurile, locurile urechilor, direcția pe linie, unitățile, schimbarea frezei și
+  foile, fiecare variantă cu poza ei; despărțirea foii, cu poza lângă bifă. Un grup radio cu inputul peste cartonaș; o
+  variantă oprită spune de ce. Tăietura rămâne listă până la 28.8↑b-3.
+- **Găsit pe drum:** pozele ieșeau negre (tokenurile lemnului stăteau doar pe desenele întrebărilor); mutate pe `.dx-ilu`, cu o
+  probă a culorii în ambele teme.
+- **Probele:** `export.cartonase.spec.ts`, `test/e2e/ajutor-export.ts`, patru spec-uri mutate; e2e-ul ferestrei 146 / 146.
+- **Otrăvurile:** `test/otravuri/28.8b2.py`, 11 / 11 prinse (prima rulare oprită de o repornire, cu o otravă rămasă în clonă:
+  scoasă, apoi reluate câte două).
+- **Manualul** (ro, en), ADR 0290 („Implementarea 28.8↑b-2”), fișa etapei 3, registrul otrăvurilor, nota liniei.
+- **Mărimea:** totalul +1,3 kB (802,1 / 900), pornirea neschimbată.
+
+**Completed:** 24.11, 01:40.
