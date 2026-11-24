@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 // Calculul acțiunilor pe care le dă fereastra asta (`actiuniDocument.ts`, `laCerere`) vine cu ea, nu în pachetul de pornire.
 import '../ui/actiuniDocumentCalcul.ts';
 import { ruleaza, type Registru, type RezultatActiune } from '../ui/actiuni.ts';
@@ -12,7 +12,8 @@ import { DialogImport } from '../ui/DialogImport.tsx';
 import { mesajeGata } from '../i18n/laCerere.ts';
 import type { CheieSimpla } from '../i18n/t.ts';
 import type { ImagineFoaie } from '../model/document.ts';
-import { OPACITATE_IMAGINE, pastreaza } from './imaginiFoaie.ts';
+import { citeste as citesteImaginea, OPACITATE_IMAGINE, pastreaza } from './imaginiFoaie.ts';
+import { asezarePeImagine, numeFisierImagine, zonaInPixeli, type ZonaRelativa } from './modImagineCalcul.ts';
 import { utilizarea } from './utilizare.ts';
 
 /** Mesajele modulului, ca date (ADR 0086): cine îl încarcă le așteaptă (`cuMesaje`); un refuz îl vede tot el. */
@@ -66,6 +67,11 @@ type Props = {
   readonly de?: string;
   /** Diametrul frezei foii, dacă are una singură (liniile mediane îl compară cu trăsătura, ADR 0222 §5). */
   readonly freza?: number;
+  /**
+   * Trasarea din imaginea de pe foaie (ADR 0272 §7; felia 25.8↑b), în locul fișierelor: octeții ei din baza imaginilor, cu
+   * scara ei și zona trasă pe ea; „Importă” pune vectorii exact peste ea.
+   */
+  readonly dinFoaie?: { readonly imagine: ImagineFoaie; readonly zona: ZonaRelativa | null };
 };
 
 /**
@@ -83,7 +89,7 @@ function stareInitiala(f: File): StareDialog {
  * Dialogul importului legat de coadă: citirea fișierelor, recitirea Illustrator la 72 px și locul fiecărei piese. Vine la
  * cerere, cu dialogul (`App.tsx`); aplicația ține doar coada (fișierele și punctul), garda „doar citire” și inerția.
  */
-export function ImportConectat({ fisiere, punct, registruImport, contextImport, stareImporta, importa, puneImaginea, onInchide, de, freza }: Props) {
+export function ImportConectat({ fisiere, punct, registruImport, contextImport, stareImporta, importa, puneImaginea, onInchide, de, freza, dinFoaie }: Props) {
   const [k, setK] = useState(0);
   const [dialog, setDialog] = useState<StareDialog>(() => stareInitiala(fisiere[0] ?? new File([], '')));
   const [pastreazaBifat, setPastreazaBifat] = useState(pastreazaImaginea);
@@ -159,11 +165,35 @@ export function ImportConectat({ fisiere, punct, registruImport, contextImport, 
       if (c === cerere.current) setDialog({ fisier: null, nume: f.name, ...ALEGERI, pxAutomat: false, stare: { ok: false, cod: 'parsare', detaliu: String(e) } });
     });
   };
-  // Primul fișier, la montare (o coadă nouă e o montare nouă: aplicația scoate dialogul la închidere). La demontare, un
-  // rezultat întârziat nu mai are unde ajunge.
+  /**
+   * Imaginea de pe foaie (ADR 0272 §7): octeții ei din baza imaginilor, cu numele tipului lor (ușa o citește drept imagine),
+   * scara ei (lățimea întreagă pe foaie) și zona trasă, în pixelii ei. Lipsă din browser: refuzul citirii.
+   */
+  const incepeDinFoaie = (d: NonNullable<Props['dinFoaie']>): void => {
+    const c = ++cerere.current;
+    const nume = d.imagine.nume ?? d.imagine.id;
+    const baza = { fisier: null, nume, ...ALEGERI, pxAutomat: false } as const;
+    setDialog({ ...baza, stare: 'citire' });
+    citesteImaginea(d.imagine.sursa).then(async (im) => {
+      if (c !== cerere.current) return;
+      if (!im) {
+        setDialog({ ...baza, stare: { ok: false, cod: 'imagine-citire', format: 'imagine', detaliu: d.imagine.sursa.slice(0, 12) } });
+        return;
+      }
+      const octeti = new Uint8Array(await im.octeti.arrayBuffer());
+      if (c !== cerere.current) return;
+      const zona = d.zona ? zonaInPixeli(d.zona, im.latimePx, im.inaltimePx) : null;
+      citeste({ nume: numeFisierImagine(nume, im.tip), octeti }, { ...ALEGERI, trasare: { ...TRASARE_IMPLICITA, zona, latimeIntreaga: d.imagine.latime } }, false);
+    }).catch((e: unknown) => {
+      if (c === cerere.current) setDialog({ ...baza, stare: { ok: false, cod: 'imagine-citire', format: 'imagine', detaliu: String(e) } });
+    });
+  };
+  // Primul fișier (ori imaginea de pe foaie), la montare (o coadă nouă e o montare nouă: aplicația scoate dialogul la
+  // închidere). La demontare, un rezultat întârziat nu mai are unde ajunge.
   useEffect(() => {
     const f = fisiere[0];
-    if (f) incepe(f);
+    if (dinFoaie) incepeDinFoaie(dinFoaie);
+    else if (f) incepe(f);
     return () => { cerere.current++; opresteCitirea(); };
   }, []);
   /** Fișierul următor din coadă (după „Importă” sau „Sari peste”), sau închiderea dialogului. */
@@ -180,7 +210,14 @@ export function ImportConectat({ fisiere, punct, registruImport, contextImport, 
   // Locul piesei din coadă: punctul lăsat, apoi fiecare fișier următor cu 10 mm la dreapta și în jos (nu cad unul peste altul).
   const loc: Loc = punct ? { x: punct.x + 10 * k, y: punct.y - 10 * k } : null;
   const ok = dialog.stare !== 'citire' && dialog.stare.ok ? dialog.stare : null;
-  const stareOk = ok ? stareImporta(ok.pregatit, loc) : null;
+  // Din imaginea de pe foaie (ADR 0272 §7): importul pregătit cu locul lui exact peste ea (centrul imaginii în pagină, rotit
+  // cu ea), din raportul trasării: imaginea întreagă, scara și zona.
+  const pregatit = useMemo(() => {
+    if (!ok || !dinFoaie || ok.format !== 'imagine') return ok?.pregatit ?? null;
+    const r = ok.trasare;
+    return { ...ok.pregatit, peImagine: asezarePeImagine(dinFoaie.imagine, r.intreg.latimePx, r.intreg.inaltimePx, r.mmPePx, r.zona) };
+  }, [ok, dinFoaie]);
+  const stareOk = pregatit ? stareImporta(pregatit, loc) : null;
   /**
    * Imaginea pentru foaie (ADR 0272): pregătită în workerul trasării, cu alegerile de pe ecran, păstrată în baza imaginilor,
    * apoi pusă: cu desenul, într-un singur pas de anulare („Importă” cu bifa), ori singură („Doar imaginea”; lăsată pe planșă,
@@ -246,20 +283,22 @@ export function ImportConectat({ fisiere, punct, registruImport, contextImport, 
       onImporta={() => {
         // Un dublu-clic nu importă de două ori: clicul e un eveniment discret, deci React închide dialogul înaintea
         // celui de-al doilea (otrava care scotea o gardă de aici a scăpat: garda era cod mort; e2e-ul o arată).
-        if (!ok || dialog.seRecitesc || imagineInLucru) return;
-        if (pastreazaBifat && ok.format === 'imagine') {
+        if (!ok || !pregatit || dialog.seRecitesc || imagineInLucru) return;
+        if (pastreazaBifat && ok.format === 'imagine' && !dinFoaie) {
           puneImagineaFoii(true);
           return;
         }
-        if (importa(ok.pregatit, loc).ok) urmatorul();
+        if (importa(pregatit, loc).ok) urmatorul();
       }}
-      imagineFoaie={{
-        pastreaza: pastreazaBifat,
-        onPastreaza: (b) => { pastreazaImaginea = b; setPastreazaBifat(b); },
-        onDoarImaginea: () => { puneImagineaFoii(false); },
-        lucru: imagineInLucru,
-        motiv: motivImagine,
-      }}
+      {...(dinFoaie ? { dinFoaie: true } : {
+        imagineFoaie: {
+          pastreaza: pastreazaBifat,
+          onPastreaza: (b: boolean) => { pastreazaImaginea = b; setPastreazaBifat(b); },
+          onDoarImaginea: () => { puneImagineaFoii(false); },
+          lucru: imagineInLucru,
+          motiv: motivImagine,
+        },
+      })}
       onInchide={inchide}
       {...(fisiere.length > 1 ? { coada: { k: k + 1, n: fisiere.length }, onSari: urmatorul } : {})}
       {...(de === undefined ? {} : { de })}

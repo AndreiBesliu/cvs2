@@ -87,6 +87,13 @@ function comandaImport(doc: Document, pregatit: ImportPregatit, la: Loc, idFoaie
   let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
   for (const { pus } of puse) { x0 = Math.min(x0, pus.x); y0 = Math.min(y0, pus.y); x1 = Math.max(x1, pus.x + pus.latime); y1 = Math.max(y1, pus.y + pus.inaltime); }
   const dx = la ? la.x - (x0 + x1) / 2 : 0, dy = la ? la.y - (y0 + y1) / 2 : 0;
+  // Trasat din imaginea de pe foaie (ADR 0272 §7): pagina, rotită și pusă peste imagine; punctul lăsat nu contează.
+  const pe = pregatit.peImagine;
+  const loc = (x: number, y: number): { readonly x: number; readonly y: number; readonly rotire: number } => {
+    if (!pe) return { x: x + dx, y: y + dy, rotire: 0 };
+    const q = aplica(rotatie(pe.rotire), { x: x - pe.cx, y: y - pe.cy });
+    return { x: pe.x + q.x, y: pe.y + q.y, rotire: pe.rotire };
+  };
   let varfuri = 0, elemente = 0, operatii = 0;
   for (const { p, pus } of puse) { varfuri += p.cai.reduce((s, c) => s + c.varfuri.length, 0); elemente += p.cai.length; operatii += pus.piesa.operatii.length; }
   let rez: ComandaImport;
@@ -94,7 +101,7 @@ function comandaImport(doc: Document, pregatit: ImportPregatit, la: Loc, idFoaie
     rez = { ok: false, motiv: 'motiv.plafon' };
   } else {
     const comenzi = puse.map(({ id, pus }, i): Comanda => ({
-      tip: 'adauga', foaie: foaie.id, instanta: { id, piesa: id, x: pus.x + dx, y: pus.y + dy, rotire: 0 }, pozitie: foaie.instante.length + i,
+      tip: 'adauga', foaie: foaie.id, instanta: { id, piesa: id, ...loc(pus.x, pus.y) }, pozitie: foaie.instante.length + i,
       piesa: { piesa: pus.piesa, pozitie: doc.piese.length + i },
     }));
     if (imagine) {

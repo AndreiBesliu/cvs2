@@ -293,6 +293,7 @@ export const enExport = {
   'export.raport.goala': 'Nothing on the sheet.',
   'export.raport.previzualizare': 'Preview of {foaie}',
   'export.raport.operatii': 'Operations: {lista}',
+  'export.raport.imagini': 'Sheet images (drawing aids, not cut): {lista}',
   'export.raport.op.profil.exterior': 'outside profile',
   'export.raport.op.profil.interior': 'inside profile',
   'export.raport.op.profil.pe-linie': 'on the line',

@@ -307,6 +307,7 @@ export const roExport = {
   'export.raport.goala': 'Nimic pe foaie.',
   'export.raport.previzualizare': 'Previzualizarea foii {foaie}',
   'export.raport.operatii': 'Operațiile: {lista}',
+  'export.raport.imagini': 'Imaginile foii (ajutoare de desen, nu se taie): {lista}',
   'export.raport.op.profil.exterior': 'profil exterior',
   'export.raport.op.profil.interior': 'profil interior',
   'export.raport.op.profil.pe-linie': 'pe linie',

@@ -3,7 +3,8 @@
 **Starea:** acceptat pe 21.11.2026, la „Da, 1a–3a” (owner-ul, în sesiunea liniei trasării): toate recomandările de la
 capăt. Propus în aceeași zi, la „Da, propunerea” (la întrebarea „Pregătesc propunerea pentru straturile bitmap (ADR 0272,
 cu schiță)?”). Feliile 25.8↑a și 25.8↑b, fără mașină, în linia trasării (ramura `wip/25.1-trasare`). **25.8↑a
-implementată** pe 23.11 (mai jos, „Implementarea”); 25.8↑b („Calibrează”, „Trasează…”), la cuvântul owner-ului.
+implementată** pe 23.11 (mai jos, „Implementarea”); **25.8↑b implementată** pe 24.11, la „pornește 25.8↑b” („Implementarea
+(25.8↑b)”).
 **Completează:** ADR 0220 (trasarea din imagine; întrebarea 1c, „imaginea pusă întâi pe foaie, ca strat … mai târziu”),
 ADR 0210 §1 (foile), ADR 0050 (ghidajele). Rândul „Straturi bitmap ca suprafață de desen” din
 `ACOPERIRE-ARTCAM-DESKPROTO.md` (v1, decis pe 06.10).
@@ -154,6 +155,59 @@ obișnuite la o mașină CNC nu se pot face:
   căzută), iar e2e-urile vecine feliei 132 / 132 (19 fișiere: trasarea, importul, imaginile foii, panoul, editarea,
   selecția, proiectul, pânza, foile, rigla, bucățile la cerere, CSP-ul, pornirea, manualul).
 - **Nerulat:** curățarea fără documentul de acum (cere IndexedDB și ceasul: o zi).
+
+## Implementarea (25.8↑b, 24.11)
+
+- **Rândul imaginii** (`src/app/ImaginiFoii.tsx`): sub opacitate, butoanele **Calibrează** și **Trasează…** (ca în schiță;
+  coșul a rămas iconița lui, de la 25.8↑a). Merg doar pe o imagine vizibilă, cu octeții citiți; ascunsă, sfatul spune de ce.
+- **Modul pânzei** (`src/app/ModImagine.tsx`, la cerere; partea pură în `src/app/modImagineCalcul.ts`), pornit din rând: o
+  bandă sus, pe mijlocul zonei libere, ca la urechile alese, iar clicul stâng e al modului (spațiul și rotița rămân ale
+  pânzei). *Precizarea la §6 și la schiță:* câmpul distanței stă în bandă, lângă linia măsurată, nu în panou (ochii sunt pe
+  pânză, iar Enter aplică din câmp).
+  - **Calibrează:** primul clic pe imagine, apoi al doilea (Shift: pe orizontala sau verticala imaginii prin primul);
+    capetele se trag apoi unde trebuie; lângă linie și în bandă, distanța de acum. Câmpul **Distanța adevărată (mm)** vine
+    cu ea, ales; **Aplică** (ori Enter) scalează imaginea uniform în jurul primului capăt (`calibrata`), într-un pas de
+    anulare, prin `foaie.imagini` (ușa judecă plafonul laturii). Refuzurile: un clic în afara imaginii, capetele unul peste
+    altul, o distanță care nu e un număr pozitiv, o latură sub 1 mm (ca la mânere).
+  - **Trasează…:** o zonă trasă peste imagine (`zonaDinTragere`: dreptunghiul din cadrul imaginii, deci rotit cu ea, tăiat la
+    ea, în fracțiuni) sau **Toată imaginea** (ori Enter). Un clic fără tragere nu e o zonă.
+  - Escape și **Renunță** ies fără nimic schimbat; modul se închide singur dacă imaginea nu mai e pe foaia activă ori se
+    ascunde.
+  - **Editorul oprit cât ține un mod al pânzei** (`Editare.activ`): cadrul selecției, textul, Pen-ul (desenul în lucru
+    rămâne) și mânerele, ale formelor și ale imaginilor, nu mai iau clicurile. Ascultau pe `window`, la captură, deci înaintea
+    modului; tot de asta beneficiază și modul urechilor alese.
+- **Fereastra trasării din imaginea de pe foaie** (`ImportConectat` cu `dinFoaie`): octeții din baza imaginilor, cu numele
+  tipului lor (`numeFisierImagine`: „scan.pdf” devine „scan.jpg”, ca ușa s-o citească drept imagine), zona în pixelii ei
+  (`zonaInPixeli`: fără un pixel în plus la o margine întreagă, cel puțin unul pe latură). Zona se poate schimba și în
+  fereastră.
+  - **Scara e a imaginii de pe foaie:** `AlegeriTrasare.latimeIntreaga` și `CerereTrasare.latimeIntreaga`, lățimea imaginii
+    întregi pe foaie; workerul ia `mmPePx` din ea, pe imaginea întreagă (înaintea zonei), peste lățimea scrisă și DPI, iar
+    raportul spune scara „din imaginea de pe foaie”.
+  - **Fără Mărime și fără îndreptări:** grupul Mărimea, „Îndreaptă foaia”, „Îndreaptă scanarea” și sugestiile lor lipsesc, iar
+    cererea nu le mai poartă (vectorii n-ar mai cădea peste imagine); nota de sus spune de ce și ce faci pentru o imagine
+    îndreptată. Nici „Păstrează imaginea pe foaie” și „Doar imaginea”: imaginea e deja acolo.
+  - **„Importă” pune vectorii exact peste imagine:** `ImportPregatit.peImagine` (`asezarePeImagine`: centrul imaginii în
+    pagina importului, din raportul trasării, cade în centrul ei de pe foaie, rotit cu ea); comanda importului dă instanței
+    rotirea imaginii și locul rotit (`rotatie`, exactă la multiplii de 90°), pentru toate piesele aduse împreună (culorile).
+- **Raportul foilor** (`raportFoi`, `DialogRaportFoi`): sub operațiile fiecărei foi, „Imaginile foii (ajutoare de desen, nu se
+  taie): …”, numele fiecăreia o dată, din toate foile identice (imaginile nu despart foile). *Precizarea la §10:* CSV-ul e
+  lista de tăiere, deci rămâne fără ele.
+- **Probele:**
+  - **Unitare:** `imagini.calibrare` (calibrarea, Shift, zona dreaptă și rotită, colțurile ei, pixelii, centrul în pagină ca
+    `asezareInPagina`, numele; importul peste o imagine rotită cu 30°, scalată, cu zonă: fiecare vârf trasat cade pe pixelul
+    lui), scara fixă în worker și cererea fără îndreptări (`import.imagine`), raportul (`raport.foi`).
+  - **3 e2e** (`imagini-foaie.spec.ts`): calibrarea (Escape, clicul în afara imaginii, Shift, câmpul cu focus și Enter, 400 mm
+    din 158,75, primul punct pe loc, Ctrl+Z; ascunsă cât ține modul, îl închide; desfăcută, mânerele nu-i iau clicurile);
+    trasarea din imaginea micșorată și rotită cu 90° (fereastra fără Mărime și îndreptări, chenarul trasat peste chenarul
+    imaginii, la 0,5 mm); zona trasă pe foaie, cu Pen-ul ales (doar discul, fiecare vârf pe cercul lui) și raportul foii.
+- **Mărimea:** totalul 804,3 / 900 kB (`main` `883a8caa`: 799,6; felia +4,7: modul pânzei și partea lui pură, la cerere, plus
+  ce poartă fereastra și raportul), pornirea 109,7 / 115 (+0,3: starea modului și legăturile lui din `App.tsx`), cu ușa
+  114,2, cu Atelierul 114,5 / 115. Cu 25.8↑a, ADR-ul a costat ~11,7 kB în total, peste estimarea de 6–9.
+- **Catalogul controalelor** (ADR 0262): numele butoanelor noi stau scrise ca atribute, ca scriptul să le găsească
+  (`node scripts/catalog-controale.ts --scrie`, 602 nume).
+- **Otrăvurile** (`test/otravuri/25.8b.py`): 46 / 46 (24 unitare, 22 prin e2e). La prima rulare, C08 și C09 (pixelii zonei)
+  au scăpat: 0,3 · 800 e exact 240 în virgulă mobilă, iar zona îngustă de probă nu atingea toleranța; probele au acum 0,57 ·
+  100 și o zonă de 1e-12.
 
 ## Întrebările (răspunsurile: „Da, 1a–3a”)
 

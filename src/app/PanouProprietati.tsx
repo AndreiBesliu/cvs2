@@ -73,6 +73,8 @@ type Props = {
    */
   readonly onImagini?: (lista: readonly ImagineFoaie[]) => RezultatActiune;
   readonly octetiImagini?: ReadonlyMap<string, Blob | null>;
+  /** „Calibrează” și „Trasează…” pe o imagine a foii (ADR 0272 §6, §7; felia 25.8↑b): modul pânzei. */
+  readonly onModImagine?: (fel: 'calibrare' | 'zona', id: string) => void;
   /** Rolul de tăiere al pieselor alese (ADR 0112), de bază sau personalizat (ADR 0114): le înlocuiește operațiile cu ale rolului. */
   readonly onRol: (r: Rol | RolPersonal) => RezultatActiune;
   /** Operațiile noi ale pieselor (după id-ul piesei): adâncimea sau pasul, scrise pe toate operațiile lor (ADR 0112 §6). */
@@ -191,7 +193,7 @@ function operatie(o: Operatie, n: number, grosimeFoaie?: number): ReactNode {
  */
 export function PanouProprietati({
   doc, indexFoaie = 0, alese, elemente, cutie, doarCitire, onPozitie, onRotire, onForma, onStoc, onEticheta, onRol, onOperatii, onEditeazaOperatii,
-  onPlusUnu, onInca, onDesprinde, onPlacuta, taierea = 'lista', trimite, onTrimite, onImagini, octetiImagini,
+  onPlusUnu, onInca, onDesprinde, onPlacuta, taierea = 'lista', trimite, onTrimite, onImagini, octetiImagini, onModImagine,
 }: Props): ReactNode {
   const limba = useLimba();
   const butoane = taierea === 'butoane';
@@ -572,7 +574,7 @@ export function PanouProprietati({
         </section>
       )}
       {alese.length === 0 && foaie && onImagini && octetiImagini && (foaie.imagini?.length ?? 0) > 0 && (
-        <ImaginiFoii imagini={foaie.imagini ?? []} octeti={octetiImagini} doarCitire={doarCitire} oprit={oprit} onImagini={onImagini} />
+        <ImaginiFoii imagini={foaie.imagini ?? []} octeti={octetiImagini} doarCitire={doarCitire} oprit={oprit} onImagini={onImagini} onMod={onModImagine} />
       )}
       {alese.length > 1 && <p className="prop-multi">{t('prop.selectate', { n: alese.length })}</p>}
       {alese.length > 0 && (

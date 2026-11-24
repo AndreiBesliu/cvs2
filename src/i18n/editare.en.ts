@@ -899,4 +899,22 @@ export const enEditare = {
   // The sheets report (ADR 0210 §6, slice 11.6↑): its label in the palette, the only place that shows it.
   'actiune.raport-foi': 'Sheets report and cut list',
   'actiune.trimite-masina': 'Send to machine',
+  // "Calibrate" and "Trace…" from the image on the sheet (ADR 0272 §6, §7; slice 25.8↑b): the band of the canvas mode.
+  'editare.imagine.calibreaza.titlu': 'Calibrate: {nume}',
+  'editare.imagine.calibreaza.ajutor1': 'Click on the image, on the first end of a known length (a ruler, a dimension).',
+  'editare.imagine.calibreaza.ajutor2': 'Click on the second end (Shift: along the image axis).',
+  'editare.imagine.calibreaza.ajutor3': 'Drag the ends where they belong, then type the true distance between them.',
+  'editare.imagine.calibreaza.acum': 'Now: {mm} mm',
+  'editare.imagine.calibreaza.distanta': 'True distance (mm)',
+  'editare.imagine.calibreaza.aplica': 'Apply',
+  'editare.imagine.zona.titlu': 'Trace: {nume}',
+  'editare.imagine.zona.ajutor': 'Drag the area to trace over the image, or trace the whole image.',
+  'editare.imagine.zona.toata': 'Whole image',
+  'editare.imagine.renunta': 'Cancel',
+  'editare.imagine.motiv.afara': 'Click on the image: the ends sit on it.',
+  'editare.imagine.motiv.puncte': 'The ends are on top of each other: drag the second one further away.',
+  'editare.imagine.motiv.distanta': 'Type the distance in mm, a number above 0.',
+  'editare.imagine.motiv.mica': 'That would make the image smaller than 1 mm on a side.',
+  'editare.imagine.motiv.trage': 'Drag a rectangle over the image (or "Whole image").',
+  'editare.imagine.motiv.zona-afara': 'The dragged area catches nothing of the image.',
 } as const satisfies Readonly<Record<string, Mesaj>>;
