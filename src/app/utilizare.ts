@@ -44,6 +44,7 @@ export function urmaresteGesturile(w: Window): void {
 
 let tinta: ((e: Eveniment) => void) | null = null;
 let inel: (() => readonly Eveniment[]) | null = null;
+let sesiunea: string | null = null;
 const tampon: Eveniment[] = [];
 const primeste = (e: Eveniment): void => {
   if (tinta) tinta(e);
@@ -64,10 +65,14 @@ export const utilizarea = {
 /** Pașii dinaintea unei erori, în clipa ei (felia A.11a): o copie a inelului înregistratorului (fără el, niciunul). */
 export const pasiAcum = (): PasiCapturati => ({ t: acum(), pasi: inel ? inel().map((e) => ({ ...e })) : [] });
 
-/** Înregistratorul preia evenimentele (întâi cele din tampon, apoi fiecare, cum vine) și dă inelul pașilor. */
-export function preiaUtilizarea(f: (e: Eveniment) => void, pasi?: () => readonly Eveniment[]): void {
+/** Sesiunea de utilizare a paginii (felia A.11d): o raportare o ține; fără înregistrator, niciuna. */
+export const sesiuneaAcum = (): string | null => sesiunea;
+
+/** Înregistratorul preia evenimentele (întâi cele din tampon, apoi fiecare, cum vine) și dă inelul pașilor și sesiunea. */
+export function preiaUtilizarea(f: (e: Eveniment) => void, pasi?: () => readonly Eveniment[], sesiune?: string): void {
   tinta = f;
   inel = pasi ?? null;
+  sesiunea = sesiune ?? null;
   for (const e of tampon.splice(0)) f(e);
 }
 

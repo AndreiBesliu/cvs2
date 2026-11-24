@@ -1,14 +1,13 @@
-import { useCallback, useEffect, useMemo, useState, type ReactElement } from 'react';
+import { useCallback, useEffect, useState, type ReactElement } from 'react';
 import { collection, doc, getCount, getDoc, getDocs, limit, orderBy, query, where, type Query } from 'firebase/firestore/lite';
-import type { CatalogActiuni } from '../../../shared/documentatie.ts';
-import type { PasEroare } from '../../../shared/pasiEroare.ts';
 import { marcheazaEroarea, type Conexiune } from '../../cloud/conexiune.ts';
 import { t } from '../../i18n/t.ts';
 import { useLimba } from '../../ui/useLimba.ts';
 import { rezolvareDin } from '../carcasa/date.ts';
 import { EroareCitire, ListaGoala, SeIncarca, useCatSpatiulDeJos, usePublica, type Tinta } from '../carcasa/stari.tsx';
 import type { AducatorDocumentatie } from '../documentatie/aducere.ts';
-import { aparitieDin, dataScurta, laPlafonOameni, motivDin, randDin, textInainte, type Aparitie, type Masura, type RandGrup } from './date.ts';
+import { PasiDinainte, useNumeActiuni } from '../pasi/Pasi.tsx';
+import { aparitieDin, dataScurta, laPlafonOameni, motivDin, randDin, type Aparitie, type Masura, type RandGrup } from './date.ts';
 import { alesDupaLista, aparitiiPeZile, baraGrafic, cuTinta, filtreazaSursa, SURSE, type FiltruSursa } from './vedere.ts';
 
 /** Câte grupuri arată fila; peste, ADR 0040 („Se redeschide dacă”) cere paginarea. */
@@ -149,41 +148,6 @@ export function FilaErori({ con, poateMarca, tinta = null, aducator }: {
   );
 }
 
-/**
- * Numele acțiunilor și ale uneltelor, din catalogul generat la build (ca în fila Utilizare), pentru pașii dinaintea unei
- * erori; până vine (sau fără el), pașii arată id-ul.
- */
-function useNumeActiuni(aducator: AducatorDocumentatie | undefined, l: string): ReadonlyMap<string, string> {
-  const [catalog, setCatalog] = useState<CatalogActiuni | null>(null);
-  useEffect(() => {
-    if (!aducator) return undefined;
-    let viu = true;
-    aducator.actiuni().then((c) => { if (viu) setCatalog(c); }, () => undefined);
-    return () => { viu = false; };
-  }, [aducator]);
-  return useMemo(() => new Map((catalog ? [...catalog.actiuni, ...catalog.unelte] : []).map((a) => [a.id, l === 'en' ? a.en : a.ro])), [catalog, l]);
-}
-
-/** Pașii dinaintea erorii (ADR 0262 §4, felia A.11a): cât înainte, ce (cu numele, unde îl știm), felul, rezultatul altul decât „ok”. */
-function PasiDinainte({ pasi, nume }: { readonly pasi: readonly PasEroare[]; readonly nume: ReadonlyMap<string, string> }): ReactElement {
-  const l = useLimba();
-  return (
-    <details open data-admin="pasi">
-      <summary>{t('admin.erori.pasi', { n: pasi.length })} <span className="admin-slab">{t('admin.erori.pasi.nota')}</span></summary>
-      <ol className="admin-pasi">
-        {pasi.map((p, i) => (
-          <li key={i} data-pas={p.fel} data-pas-id={p.id}>
-            <span className="admin-slab">{textInainte(p.ms, l)}</span>{' '}
-            {(p.fel === 'actiune' || p.fel === 'unealta') && nume.has(p.id) ? <span title={p.id}>{nume.get(p.id)}</span> : <code>{p.id}</code>}
-            <span className="admin-slab"> · {t(`admin.erori.pas.${p.fel}`)}</span>
-            {p.rez !== undefined && p.rez !== 'ok' ? <> · <code>{p.rez}</code></> : null}
-          </li>
-        ))}
-      </ol>
-    </details>
-  );
-}
-
 function DetaliiAparitie({ a, nume }: { readonly a: Aparitie; readonly nume: ReadonlyMap<string, string> }): ReactElement {
   return (
     <div className="admin-aparitie">
@@ -192,7 +156,7 @@ function DetaliiAparitie({ a, nume }: { readonly a: Aparitie; readonly nume: Rea
       {a.browser ? <p>{t('admin.erori.browser', { browser: a.browser })}</p> : null}
       <p>{a.uid ? t('admin.erori.uid', { uid: a.uid }) : t('admin.erori.fara-cont')}</p>
       {a.context ? <p>{t('admin.erori.context', { context: a.context })}</p> : null}
-      {a.pasi.length > 0 ? <PasiDinainte pasi={a.pasi} nume={nume} /> : null}
+      {a.pasi.length > 0 ? <PasiDinainte pasi={a.pasi} nume={nume} titlu={t('admin.erori.pasi', { n: a.pasi.length })} nota={t('admin.erori.pasi.nota')} /> : null}
       {a.stiva ? <details><summary>{t('admin.erori.stiva')}</summary><pre>{a.stiva}</pre></details> : null}
     </div>
   );

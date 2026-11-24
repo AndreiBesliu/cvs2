@@ -1,11 +1,12 @@
 import { beforeEach, test } from 'node:test';
 import assert from 'node:assert/strict';
 import { getApps, initializeApp } from 'firebase-admin/app';
-import { getFirestore, type Timestamp } from 'firebase-admin/firestore';
+import { getFirestore, Timestamp } from 'firebase-admin/firestore';
 import { HttpsError } from 'firebase-functions/v2/https';
 import { oraFerestrei } from '../../shared/erori.ts';
 import {
-  LOTURI_PE_ORA, SETARI_UTILIZARE_IMPLICITE, setariPublice, type RaspunsLot, type RaspunsSetariUtilizare, type SetariUtilizare,
+  LOTURI_PE_ORA, PAGINA_CRONOLOGIE, SETARI_UTILIZARE_IMPLICITE, setariPublice, type RaspunsCronologie, type RaspunsDisociere, type RaspunsLot, type RaspunsSetariUtilizare,
+  type SetariUtilizare,
 } from '../../shared/utilizare.ts';
 import { COLECTIE_AUDIT } from '../src/audit.ts';
 import { trateazaUtilizarea } from '../src/utilizare/actiuni.ts';
@@ -184,4 +185,92 @@ test('setările: în afara marginilor, incomplete sau cu altceva, refuzate făr�
   for (const v of [-1, 1.5, '0', null]) assert.equal(await cod(setari('own', SETARI_UTILIZARE_IMPLICITE, v)), 'invalid-argument', String(v));
   assert.equal((await db.doc('setari/utilizare').get()).exists, false);
   assert.equal((await audit()).length, 0);
+});
+
+test('cronologia unui om (A.11c): doar cu „Utilizare: sesiuni”; cele mai noi întâi, pe pagini; doar contul cerut; fiecare citire în audit', async () => {
+  const SES = 'RSesiuni00000000000a';
+  await db.doc(`roluri/${SES}`).set({ nume: 'Sesiuni', permisiuni: ['utilizare.sesiuni'] });
+  await db.doc('staff/ses').set({ rol: SES });
+  // Ana: 23 de loturi în două sesiuni, la câte un minut; Ion: unul.
+  for (let i = 0; i < 23; i++) {
+    const sesiune = i < 10 ? 'anaaaaaaaaaaaaa1' : 'anaaaaaaaaaaaaa2';
+    assert.equal((await trimite('ana', lot({ sesiune, nr: i < 10 ? i + 1 : i - 9 }), T0 + i * 60_000)).scris, true);
+  }
+  assert.equal((await trimite('ion', lot({ sesiune: 'ionnnnnnnnnnnnn1' }), T0)).scris, true);
+  let clipa = T0 + ZI;
+  const cron = (cine: string, cerere: Record<string, unknown>) => fa(cine, { actiune: 'cronologie', ...cerere }, clipa += 1_000) as Promise<RaspunsCronologie>;
+
+  // Fără permisiune (nici „Tot”, care are alte patru), refuzat; owner-ul o are.
+  assert.equal(await cod(cron('tot', { uid: 'ana' })), 'permission-denied');
+  assert.equal(await cod(cron('ana', { uid: 'ana' })), 'permission-denied');
+  assert.equal(await cod(cron('ses', { uid: '../ana' })), 'invalid-argument');
+  assert.equal(await cod(cron('ses', { uid: 'ana', pana: -5 })), 'invalid-argument');
+  const p1 = await cron('ses', { uid: 'ana' });
+  assert.equal(p1.loturi.length, PAGINA_CRONOLOGIE);
+  assert.equal(p1.maiVechi, true);
+  assert.deepEqual([p1.loturi[0]?.sesiune, p1.loturi[0]?.nr], ['anaaaaaaaaaaaaa2', 13]);
+  assert.ok(p1.loturi.every((l, i, a) => i === 0 || (a[i - 1]?.primit ?? 0) > l.primit), 'cele mai noi întâi');
+  assert.deepEqual(p1.loturi[0]?.evenimente, [ACTIUNE, DIALOG]);
+  assert.deepEqual(p1.loturi[0]?.context, CONTEXT);
+  assert.equal(p1.loturi[0]?.inceput, (p1.loturi[0]?.primit ?? 0) - 60_000);
+  const p2 = await cron('ses', { uid: 'ana', pana: p1.loturi.at(-1)?.primit });
+  assert.deepEqual(p2.loturi.map((l) => l.nr), [3, 2, 1]);
+  assert.equal(p2.maiVechi, false);
+  // Un lot scris altfel (o schemă veche, un eveniment stricat): evenimentul din afara listei de azi nu pleacă, numărat la aruncate.
+  await db.doc('utilizare/ionnnnnnnnnnnnn1-2').set({
+    schema: 1, uid: 'ion', sesiune: 'ionnnnnnnnnnnnn1', nr: 2, primit: Timestamp.fromMillis(T0 + 60_000), inceput: Timestamp.fromMillis(T0),
+    context: CONTEXT, evenimente: [ACTIUNE, { fel: 'actiune', t: 2, id: 'document.roteste', de: 'bara', rez: 'ok', geometrie: [1, 2] }], aruncate: 0,
+  });
+  const ion = await cron('own', { uid: 'ion' });
+  assert.deepEqual(ion.loturi.map((l) => [l.nr, l.evenimente.length, l.aruncate]), [[2, 1, 1], [1, 2, 0]]);
+  assert.ok(!JSON.stringify(ion).includes('geometrie'));
+  assert.deepEqual((await cron('own', { uid: 'nimeni' })).loturi, []);
+  // Doar o sesiune (cea a unei raportări, A.11d): loturile ei, ale contului cerut; o sesiune cu altă formă, refuzată.
+  const doar = await cron('ses', { uid: 'ana', sesiune: 'anaaaaaaaaaaaaa1' });
+  assert.deepEqual(doar.loturi.map((l) => l.nr), [10, 9, 8, 7, 6, 5, 4, 3, 2, 1]);
+  assert.deepEqual((await cron('ses', { uid: 'ion', sesiune: 'anaaaaaaaaaaaaa1' })).loturi, []);
+  assert.equal(await cod(cron('ses', { uid: 'ana', sesiune: 'x' })), 'invalid-argument');
+  // Auditul: cine, al cui, câte loturi (refuzurile nu scriu).
+  const a = (await audit()).filter((x) => x['actiune'] === 'utilizare.cronologie');
+  assert.deepEqual(a.map((x) => [x['cine'], x['tinta'], (x['dupa'] as Record<string, unknown>)['loturi']]), [
+    ['ses', 'utilizare/ana', 20], ['ses', 'utilizare/ana', 3], ['own', 'utilizare/ion', 2], ['own', 'utilizare/nimeni', 0],
+    ['ses', 'utilizare/ana', 10], ['ses', 'utilizare/ion', 0],
+  ]);
+});
+
+test('disocierea unui cont (A.11e): cine administrează conturile; un pseudonim pentru loturile de până acum și pentru cele care vin; contul doar cu data; a doua oară, nimic', async () => {
+  for (let i = 1; i <= 3; i++) assert.equal((await trimite('ana', lot({ nr: i }), T0 + i * 60_000)).scris, true);
+  assert.equal((await trimite('ion', lot({ sesiune: 'ionnnnnnnnnnnnn1' }))).scris, true);
+  const dis = (cine: string, uid: unknown) => fa(cine, { actiune: 'disociaza', uid }, T0 + ZI) as Promise<RaspunsDisociere>;
+  await db.doc('roluri/RSesiuni00000000000a').set({ nume: 'Sesiuni', permisiuni: ['utilizare.sesiuni'] });
+  await db.doc('staff/ses').set({ rol: 'RSesiuni00000000000a' });
+  assert.equal(await cod(dis('ses', 'ana')), 'permission-denied');
+  assert.equal(await cod(dis('ana', 'ana')), 'permission-denied');
+  assert.equal(await cod(dis('tot', 'nimeni')), 'not-found');
+  assert.equal(await cod(dis('tot', 'a/b')), 'invalid-argument');
+  // „Tot” are „Conturi: administrează”.
+  assert.deepEqual(await dis('tot', 'ana'), { ok: true, schimbat: true, loturi: 3 });
+  const toate = await loturi();
+  const aleAnei = toate.filter((l) => l['sesiune'] === 'k3j9x0a1b2c3d4e5');
+  const pseudonim = aleAnei[0]?.['uid'];
+  assert.match(String(pseudonim), /^p[0-9a-f]{32}$/);
+  assert.ok(aleAnei.every((l) => l['uid'] === pseudonim), 'același pseudonim pe toate');
+  assert.equal(toate.filter((l) => l['uid'] === 'ana').length, 0);
+  assert.equal(toate.filter((l) => l['uid'] === 'ion').length, 1, 'alt cont, neatins');
+  // Contul: doar data; legătura stă doar în colecția serverului.
+  const cont = (await db.doc('conturi/ana').get()).data() ?? {};
+  assert.equal(ms(cont['disociatLa']), T0 + ZI);
+  assert.ok(!JSON.stringify(cont).includes(String(pseudonim)));
+  assert.equal((await db.doc('utilizareDisociate/ana').get()).get('pseudonim'), pseudonim);
+  // Lotul care vine după: sub pseudonim.
+  assert.equal((await trimite('ana', lot({ nr: 4 }), T0 + 2 * ZI)).scris, true);
+  assert.equal((await db.doc('utilizare/k3j9x0a1b2c3d4e5-4').get()).get('uid'), pseudonim);
+  // Cronologia contului nu mai găsește nimic.
+  assert.deepEqual((await fa('own', { actiune: 'cronologie', uid: 'ana' }, T0 + 3 * ZI) as RaspunsCronologie).loturi, []);
+  // A doua oară: nimic schimbat, același pseudonim.
+  assert.deepEqual(await dis('own', 'ana'), { ok: true, schimbat: false, loturi: 0 });
+  assert.equal((await db.doc('utilizareDisociate/ana').get()).get('pseudonim'), pseudonim);
+  const a = (await audit()).filter((x) => x['actiune'] === 'utilizare.disociaza');
+  assert.deepEqual(a.map((x) => [x['cine'], x['tinta'], x['dupa']]), [['tot', 'conturi/ana', { disociat: true }]]);
+  assert.ok(!JSON.stringify(a).includes(String(pseudonim)), 'pseudonimul nu e în audit');
 });

@@ -52,7 +52,7 @@ function citesteStl(stl: Buffer): { triunghiuri: number; rele: number; raza: num
 
 test('elicea implicită, în fila Elice: 3 palete, Ø72, pasul 0,7, răsucită; textul cu pasul, unghiurile și consola', async ({ page }) => {
   await atelierElice(page);
-  await expect(page.locator('#at-tipuri [data-fila="propulsie"]')).toHaveText('Elice 2');
+  await expect(page.locator('#at-tipuri [data-fila="propulsie"]')).toHaveText('Elice 3');
   // pe hârtie: P = 0,7 · 72 = 50,4; atan(50,4 / 8π) = 63,498° la butuc (63, la grad); atan(0,7 / π) = 12,56° la vârf;
   // 0,2 / tan 12,56° = 0,898
   await expect(page.locator('#at-el-info')).toHaveText('Pasul 50 mm (0,7 × diametrul). Paleta răsucită: 63° lângă butuc, 13° la vârf. Se tipărește fără suport: la vârf, un strat iese cu 0,9 mm peste cel de dedesubt.');

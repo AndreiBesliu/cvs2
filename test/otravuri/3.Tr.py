@@ -100,8 +100,8 @@ o('P12', E, CC, CC.replace('cmax * g)', 'cmax)'), 'barca', 'coarda fără contur
 o('P13', E, K, K.replace('umplere: 0.85,', 'umplere: 1,'), 'barca', 'paletele umplu tot pasul (se ating)')
 U = 'const U = BARCA.umplere * 2 * Math.PI * r / z;'
 o('P14', E, U, U.replace('/ z;', '/ (z - 1);'), 'barca', 'pasul dintre palete, ca la o paletă mai puțin')
-o('P15', E, 'for (let k = 0; k < 40 && latime(sec) > U; k++)', 'for (let k = 0; k < 0 && latime(sec) > U; k++)', 'barca', 'coarda nu se mai strânge la limită')
-o('P16', E, 'for (let k = 0; k < 40 && latime(sec) > U; k++)', 'for (let k = 0; k < 1 && latime(sec) > U; k++)', 'barca', 'coarda se strânge o singură dată (rămâne peste limită)')
+o('P15', E, 'for (let k = 0; k < 40 && latime(sec) > U; k++) { c = Math.max(t, c * U / latime(sec) * 0.995); sec = roteste(c); }\n      const zmin', 'for (let k = 0; k < 0 && latime(sec) > U; k++) { c = Math.max(t, c * U / latime(sec) * 0.995); sec = roteste(c); }\n      const zmin', 'barca', 'coarda nu se mai strânge la limită')
+o('P16', E, 'for (let k = 0; k < 40 && latime(sec) > U; k++) { c = Math.max(t, c * U / latime(sec) * 0.995); sec = roteste(c); }\n      const zmin', 'for (let k = 0; k < 1 && latime(sec) > U; k++) { c = Math.max(t, c * U / latime(sec) * 0.995); sec = roteste(c); }\n      const zmin', 'barca', 'coarda se strânge o singură dată (rămâne peste limită)')
 ZM = 'const zmin = Math.min(...sec.map(p => p[1]));\n      return { r, sec: sec.map(([s, h]): P2 => [s, h - zmin]), rot:'
 o('P17', E, ZM, ZM.replace('const zmin = Math.min(...sec.map(p => p[1]));', 'const zmin = Math.min(...sec.map(p => p[1])) - 0.3;'), 'barca', 'paleta la 0,3 mm deasupra mesei (în aer)')
 RO = 'rot: inc * Math.PI / 180 * x * x, lat: latime(sec),'
@@ -141,7 +141,7 @@ o('K06', E, 'const varf: P3 = [0, 0, z0 + hc];', 'const varf: P3 = [0, 0, z0 + h
 o('K07', E, 'const a = (2 * Math.PI * (i % n)) / n, f = (Math.PI / 2) * k / K;', 'const a = (2 * Math.PI * (i % n)) / n, f = (Math.PI / 3) * k / K;', 'barca', 'capacul, doar până la 60° (vârf ascuțit, alt profil)')
 
 # Plasa, sensul, avertismentele, tipul (unitare).
-PA = 'const tri = paleteElice(q.statii, q.z, d.sens === "stanga" ? -1 : 1, true);'
+PA = 'const tri = paleteElice(q.statii, q.z, d.sens === "stanga" ? -1 : 1, true);\n    tri.push(...butucElice(rh, Hh, d.gaura));'
 o('M01', E, PA, PA.replace(', true);', ', false);'), 'barca', 'capetele paletei, cu tăierea urechilor (fața plată le strică)')
 o('M02', E, PA, PA.replace('? -1 : 1', '? 1 : -1'), 'barca', 'sensul, pe dos')
 o('M03', E, PA, PA.replace('q.z,', 'q.z - 1,'), 'barca', 'o paletă lipsă (neechilibrată)')
@@ -155,12 +155,12 @@ o('V02', E, 'if (Number.isFinite(+(d.diametru as number)) && q.D !== +(d.diametr
   'if (false) avert.push(tr`Diametrul unei elice de barcă', 'barca', 'diametrul în afara plajei, nespus')
 o('V03', E, 'avert.push(tr`O elice de barcă are între 3 și 5 palete: am făcut-o cu ${q.z}.`);', 'avert.push(tr`O elice de barcă are între 3 și 5 palete: am făcut-o cu ${d.palete}.`);', 'barca',
   'avertismentul spune paletele cerute, nu cele făcute')
-o('V04', E, 'conicaDubla, senila, elice, eliceBarca, dinCvs2 };', 'conicaDubla, senila, elice, dinCvs2 };', 'barca', 'elicea de barcă scoasă din tipurile motorului')
+o('V04', E, 'conicaDubla, senila, elice, eliceBarca, ventilator, dinCvs2 };', 'conicaDubla, senila, elice, ventilator, dinCvs2 };', 'barca', 'elicea de barcă scoasă din tipurile motorului')
 
 # Atelierul (e2e).
-F = '    ["propulsie", "Elice", [["elice", "Elice"], ["eliceBarca", "Elice de barcă"]]]'
+F = '    ["propulsie", "Elice", [["elice", "Elice"], ["eliceBarca", "Elice de barcă"], ["ventilator", "Ventilator cu carcasă"]]]'
 o('E01', A, F, F.replace(', ["eliceBarca", "Elice de barcă"]', ''), 'e2e', 'elicea de barcă lipsește din galeria filei Elice')
-o('E02', A, F, F.replace('[["elice", "Elice"], ["eliceBarca", "Elice de barcă"]]', '[["eliceBarca", "Elice de barcă"], ["elice", "Elice"]]'), 'e2e', 'elicea de barcă, prima în galerie')
+o('E02', A, F, F.replace('[["elice", "Elice"], ["eliceBarca", "Elice de barcă"],', '[["eliceBarca", "Elice de barcă"], ["elice", "Elice"],'), 'e2e', 'elicea de barcă, prima în galerie')
 ST = '    eliceBarca: { palete: 3, diametru: 40, pas: 1, latime: 100, inclinare: 20, sens: "dreapta", gaura: "x", capac: "nu" },'
 o('E03', A, ST, ST.replace('palete: 3,', 'palete: 4,'), 'e2e', 'editorul pornește cu 4 palete')
 o('E04', A, ST, ST.replace('diametru: 40,', 'diametru: 48,'), 'e2e', 'editorul pornește cu Ø48')

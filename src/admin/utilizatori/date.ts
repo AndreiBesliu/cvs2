@@ -22,6 +22,8 @@ export interface ContClient {
   readonly personal: boolean;
   /** Planul ținut și sfârșitul probei, cum le-a văzut pagina (serverul refuză o schimbare pe un plan vechi). */
   readonly vazut: PlanVazut;
+  /** Când a fost despărțită utilizarea lui de cont (ADR 0262, felia A.11e); null: nedespărțită. */
+  readonly disociatLa: Date | null;
 }
 
 type Date_ = Readonly<Record<string, unknown>>;
@@ -36,6 +38,7 @@ export function contDin(uid: string, d: Date_): ContClient {
     uid, email: text(d['email']), nume: text(d['nume']), creatLa: dataDin(d['creatLa']), ultimaLogare: dataDin(d['ultimaLogare']),
     plan: estePlanTinut(plan) ? plan : null, probaPana, personal: dreptBun(drept) && drept.plan === 'personal',
     vazut: { plan: typeof plan === 'string' ? plan : null, probaPana: probaPana?.getTime() ?? null },
+    disociatLa: dataDin(d['disociatLa']),
   };
 }
 
