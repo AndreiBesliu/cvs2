@@ -36,6 +36,8 @@ export type FrezaFaraNume = {
   readonly pas: number;
   readonly pasLateral: number;
   readonly nota?: string | undefined;
+  /** Grupul omului (ADR 0302 §4); lipsă, freza stă pe felul ei. */
+  readonly grup?: string | undefined;
 };
 
 /** O freză: câmpurile, numele și ce mai ține o versiune mai nouă a aplicației (câmpurile necunoscute rămân). */
@@ -47,6 +49,8 @@ export type FrezaSalvata = Freza & { readonly id: string; readonly rev: number; 
 export const MARGINI_FREZA = {
   nume: 40,
   nota: 200,
+  /** Lungimea numelui unui grup (ADR 0302 §4). */
+  grup: 40,
   numar: PLAFON.numarScula,
   diametru: PLAFON.diametruScula,
   unghiMinim: UNGHI_V_MINIM,
@@ -64,9 +68,9 @@ export const MARGINI_FREZA = {
 } as const;
 
 export type CampFreza = 'nume' | 'diametru' | 'unghi' | 'varf' | 'tais' | 'taisuri' | 'numar' | 'turatie' | 'avans' | 'plonjare'
-  | 'pas' | 'pasLateral' | 'nota';
+  | 'pas' | 'pasLateral' | 'nota' | 'grup';
 export type MotivFreza = 'lipsa' | 'margini' | 'intreg' | 'varf' | 'con' | 'nume-gol' | 'nume-lung' | 'nume-caractere'
-  | 'nume-folosit' | 'nota-lunga';
+  | 'nume-folosit' | 'nota-lunga' | 'grup-lung' | 'grup-caractere';
 export type ProblemeFreza = Readonly<Partial<Record<CampFreza, MotivFreza>>>;
 
 const finit = (x: unknown): x is number => typeof x === 'number' && Number.isFinite(x);
@@ -135,7 +139,16 @@ export function problemeFreza(f: Freza, alte: readonly FrezaSalvata[] = [], id: 
   pune('pas', interval(f.pas, MARGINI_FREZA.pas));
   pune('pasLateral', interval(f.pasLateral, MARGINI_FREZA.pasLateral));
   if (f.nota !== undefined && (typeof f.nota !== 'string' || [...f.nota].length > MARGINI_FREZA.nota)) p.nota = 'nota-lunga';
+  if (f.grup !== undefined) pune('grup', problemaGrup(f.grup));
   return p;
+}
+
+/** Ce nu e bine la numele unui grup (gol e bine: freza stă pe felul ei). */
+function problemaGrup(g: unknown): MotivFreza | null {
+  if (typeof g !== 'string') return 'grup-caractere';
+  // eslint-disable-next-line no-control-regex
+  if (/[\u0000-\u001f\u007f-\u009f]/u.test(g)) return 'grup-caractere';
+  return [...g.normalize('NFC').trim()].length > MARGINI_FREZA.grup ? 'grup-lung' : null;
 }
 
 /** Freza cu doar câmpurile felului ei (plata fără unghi și vârf, V-ul fără vârf), cu numele curățat la capete. */
@@ -145,6 +158,7 @@ function curata<F extends Freza>(f: F): F {
   const c: Record<string, unknown> = {
     ...rest,
     nume: f.nume.normalize('NFC').trim(),
+    grup: typeof f.grup === 'string' && f.grup.trim() !== '' ? f.grup.normalize('NFC').trim() : undefined,
     ...(areUnghi(f.fel) ? { unghi: f.unghi } : {}),
     ...(f.fel === 'gravare' ? { varf: f.varf } : {}),
   };
@@ -171,7 +185,8 @@ function formaFreza(x: Record<string, unknown>): boolean {
   return typeof x['nume'] === 'string' && (FELURI_FREZA as readonly unknown[]).includes(x['fel'])
     && ['diametru', 'numar', 'turatie', 'avans', 'plonjare', 'pas', 'pasLateral'].every((k) => finit(x[k]))
     && ['unghi', 'varf', 'tais', 'taisuri'].every((k) => opt(x[k]))
-    && (x['nota'] === undefined || typeof x['nota'] === 'string');
+    && (x['nota'] === undefined || typeof x['nota'] === 'string')
+    && (x['grup'] === undefined || typeof x['grup'] === 'string');
 }
 
 /** O freză ținută (cu id, versiune și dată), din datele bibliotecii; null dacă nu are forma sau marginile ei. */
@@ -203,6 +218,32 @@ export const FREZE_PORNIRE: readonly FrezaFaraNume[] = [
   { fel: 'plata', diametru: 12, tais: 30, taisuri: 2, numar: 6, pas: 4, ...LUCRU },
 ];
 
+/**
+ * Id-urile fixe ale frezelor standard (ADR 0300 §3, precizarea owner-ului din 24.11: biblioteca vine populată cu ele), în
+ * ordinea lui `FREZE_PORNIRE`: aceeași freză pe orice calculator și în orice cont, deci două seturi puse în același cont
+ * (de pe două calculatoare) nu se dublează, iar o freză standard ștearsă și pusă la loc e tot ea.
+ */
+export const ID_PORNIRE: readonly string[] = ['std-plata-3175', 'std-plata-6', 'std-v60-6', 'std-v90-12', 'std-gravare-30-3175', 'std-plata-12'];
+
+/** O freză standard gata de pus în bibliotecă: câmpurile, numele (în limba omului) și id-ul ei fix. */
+export type FrezaStandard = Freza & { readonly id: string };
+
+/**
+ * Lista cu frezele standard care lipsesc (după id), fiecare cu un nume liber (unul luat de altă freză primește „(2)”),
+ * versiunea 1 și data `acum`; peste plafonul bibliotecii, câte încap. Una care nu e o freză bună se sare.
+ */
+export function cuStandard(
+  lista: readonly FrezaSalvata[], standard: readonly FrezaStandard[], acum: number, rezervate: readonly string[] = [],
+): { readonly lista: readonly FrezaSalvata[]; readonly adaugate: number } {
+  let rez = lista;
+  for (const s of standard) {
+    if (rez.some((f) => f.id === s.id)) continue;
+    const r = cuFreza(rez, null, { ...s, nume: numeLiber(s.nume, rez, rezervate) }, () => s.id, acum, rezervate);
+    if (r.ok) rez = r.lista;
+  }
+  return { lista: rez, adaugate: rez.length - lista.length };
+}
+
 export type RezultatLista =
   | { readonly ok: true; readonly lista: readonly FrezaSalvata[]; readonly id: string }
   | { readonly ok: false; readonly probleme: ProblemeFreza | { readonly id: 'lipsa' } | { readonly lista: 'plina' } };
@@ -229,6 +270,52 @@ export function cuFreza(
 
 export function faraFreza(lista: readonly FrezaSalvata[], id: string): { readonly ok: true; readonly lista: readonly FrezaSalvata[] } | { readonly ok: false } {
   return lista.some((f) => f.id === id) ? { ok: true, lista: lista.filter((f) => f.id !== id) } : { ok: false };
+}
+
+/** Un grup al listei (ADR 0302 §4): al omului (`grup`) sau, pentru frezele fără grup, felul lor (`fel`). */
+export type GrupFreze = { readonly grup: string | null; readonly fel: FelFreza | null; readonly freze: readonly FrezaSalvata[] };
+
+/**
+ * Grupurile listei: întâi ale omului, după nume (fără deosebire de majuscule; numele unui grup e al primei lui freze din
+ * listă), apoi felurile, în ordinea lor, pentru frezele fără grup. Frezele rămân în ordinea listei.
+ */
+export function grupurileListei(lista: readonly FrezaSalvata[]): readonly GrupFreze[] {
+  const ale = new Map<string, { nume: string; freze: FrezaSalvata[] }>();
+  const pe = new Map<FelFreza, FrezaSalvata[]>();
+  for (const f of lista) {
+    if (typeof f.grup === 'string' && f.grup.trim() !== '') {
+      const k = cheieNume(f.grup);
+      const g = ale.get(k) ?? { nume: f.grup.normalize('NFC').trim(), freze: [] };
+      g.freze.push(f);
+      ale.set(k, g);
+    } else {
+      const l = pe.get(f.fel) ?? [];
+      l.push(f);
+      pe.set(f.fel, l);
+    }
+  }
+  const omului = [...ale.values()].sort((a, b) => a.nume.localeCompare(b.nume, 'ro', { sensitivity: 'base' }))
+    .map((g): GrupFreze => ({ grup: g.nume, fel: null, freze: g.freze }));
+  const felurile = FELURI_FREZA.filter((x) => pe.has(x)).map((x): GrupFreze => ({ grup: null, fel: x, freze: pe.get(x)! }));
+  return [...omului, ...felurile];
+}
+
+/**
+ * Redenumirea unui grup al omului (`vechi`, fără deosebire de majuscule): toate frezele lui primesc `nou`, cu versiunea
+ * crescută. Un nume care e deja al altui grup le unește, cu numele acelui grup; gol, frezele se întorc pe felurile lor.
+ */
+export function cuGrupRedenumit(lista: readonly FrezaSalvata[], vechi: string, nou: string, acum: number):
+  { readonly ok: true; readonly lista: readonly FrezaSalvata[] } | { readonly ok: false; readonly motiv: MotivFreza | 'lipsa' } {
+  const motiv = problemaGrup(nou);
+  if (motiv) return { ok: false, motiv };
+  const kv = cheieNume(vechi);
+  const ale = (f: FrezaSalvata): boolean => typeof f.grup === 'string' && f.grup.trim() !== '' && cheieNume(f.grup) === kv;
+  if (!lista.some(ale)) return { ok: false, motiv: 'lipsa' };
+  const curat = nou.normalize('NFC').trim();
+  const kn = cheieNume(curat);
+  const existent = kn === kv ? undefined : lista.find((f) => !ale(f) && typeof f.grup === 'string' && cheieNume(f.grup) === kn)?.grup;
+  const grup = curat === '' ? undefined : (existent ?? curat);
+  return { ok: true, lista: lista.map((f) => (ale(f) ? curata({ ...f, grup, rev: f.rev + 1, schimbatLa: acum }) : f)) };
 }
 
 /** Un nume liber în listă: el însuși, sau cu „(2)”, „(3)”…, scurtat ca sufixul să încapă în 40 de caractere. */

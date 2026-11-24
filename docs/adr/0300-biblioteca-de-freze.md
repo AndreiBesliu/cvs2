@@ -63,7 +63,8 @@ Se fac amândouă; diferă doar ordinea feliilor.
 | Nota | producătorul, codul, orice (≤ 200 de caractere) | a |
 
 Intern, fiecare freză are un id, versiunea (`rev`) și data schimbării. Felurile apar în listă doar când CAM-ul le poate
-tăia: plata, V-ul și gravarea acum; bila, toroidala și profilul desenat cu feliile lor.
+tăia: plata, V-ul și gravarea acum; bila, toroidala și profilul desenat cu feliile lor. **Schimbat de ADR 0302 §2** (24.11): felurile fără CAM apar
+în catalog și în bibliotecă, cu „în curând”; lista „Freza” din proiect le oferă abia cu CAM-ul lor.
 
 ### 3. Fereastra „Frezele mele”
 
@@ -72,13 +73,16 @@ tăia: plata, V-ul și gravarea acum; bila, toroidala și profilul desenat cu fe
   densitatea lui (ADR 0250).
 - **Pe birou:** lista în stânga (căutarea, filtrul pe fel, grupată pe fel, fiecare cu silueta mică, diametrul, T-ul și starea
   sincronizării), editorul frezei alese în dreapta (câmpurile felului ei, silueta desenată la scară cu cotele, valorile de
-  lucru). **Pe telefon** (sub 48 rem): lista, apoi editorul pe tot ecranul, cu „Înapoi”.
+  lucru). **Pe telefon** (sub 48 rem): lista, apoi editorul pe tot ecranul, cu „Înapoi”. **Schimbat de ADR 0302 §3** (24.11): în dreapta stă întâi fișa
+  frezei alese, doar de citit; editorul („configuratorul”) se deschide la „Editează” și la „Freză nouă”, iar comutatorul
+  „Listă / Configurator” îl poate ține mereu deschis.
 - **Butoanele:** Freză nouă, Duplică, Șterge (cu întrebarea; proiectele își păstrează copia, §5), Importă…, Exportă….
 - **Bara de jos a ferestrei** spune unde stă biblioteca: „În cont, la zi”, „Doar în acest browser”, „Fără rețea: se trimite
   la reconectare” sau „O freză în conflict”.
 - **Goală la început,** cu „Adaugă frezele de pornire” (șase freze obișnuite: plate Ø3,175 și Ø6, V60 Ø6, V90 Ø12, gravare
   30° cu vârful 0,2 și plată Ø12 pentru fund, toate cu valorile implicite de azi) și „Importă…”. Valorile sunt ale
-  aplicației, nu dintr-un catalog.
+  aplicației, nu dintr-un catalog. **Schimbat pe 24.11** (precizarea owner-ului: „biblioteca de freze trebuie să fie
+  populată cu freze default standard”): biblioteca vine cu ele, singură; vezi „Implementarea (16.A↑a-2)”.
 - **Marginile** sunt cele ale documentului (`PLAFON`, unghiul V, vârful sub diametru): o freză care s-ar salva aici trece
   și de ușa documentului.
 
@@ -181,8 +185,8 @@ cu măsurătoarea.
 | 16.A↑b | Alegerea în proiect: lista pe rândurile exportului (și fundul plat, restul, dopul, banda), rândul „Freza” în Tăierea, numerele T, documentul v27, valorile de lucru în program (turația la schimbare, avansul, plonjarea; estimarea timpului cu ele), refuzul adâncimii peste tăiș, nota „s-a schimbat în bibliotecă” | canalul `freze` |
 | 16.A↑c | Contul: callable-ul `freze`, colecția, regulile, capabilitatea `cloud`, sincronizarea, conflictul, prima logare cu o bibliotecă fără cont; probele pe emulatoare | adresa de test, după unire și publicarea serverului |
 | 16.A↑d | Calibrarea: valorile măsurate în editor, folosite de CAM (după răspunsul 3), legate de fișa plăcii 4 | canalul `freze` |
-| 16.A↑e | Bila și toroidala (ADR 0301): simularea, oracolul, CAM-ul | canalul `freze` |
-| 16.A↑f | Profilul desenat (ADR 0302): editorul siluetei, simularea, oracolul, canelura și roundover-ul | canalul `freze` |
+| 16.A↑e | Bila și toroidala (ADR-ul ei; 0301 și 0302 au luat plafonul și catalogul): simularea, oracolul, CAM-ul | canalul `freze` |
+| 16.A↑f | Profilul desenat (ADR-ul lui): editorul siluetei, simularea, oracolul, canelura și roundover-ul | canalul `freze` |
 | 16.A↑g | Valorile pe material (seturi pe eticheta materialului foii, ADR 0210 §1) și calculatorul avansului | canalul `freze` |
 
 Mai târziu, la cuvântul owner-ului: Rolurile mele în cont (aceeași sincronizare), burghiul cu vârf la găurire, biblioteca
@@ -381,6 +385,79 @@ fereastra exportului refăcută, PR-ul `AndreiBesliu/cvs2#11`). Documentul răm�
   contul 30,1 → 30,3 / 32 (doar online).
 - **Nimic pe server până la unire;** la publicare merg funcția `freze`, regulile (neschimbate) și indexurile (scutirea câmpului
   `json`). Sincronizarea se încearcă pe adresa principală de test, după publicare (App Check).
+
+## Implementarea (16.A↑b-2)
+
+Pe 24.11.2026, în sesiunea cloud a liniei, pe ramura `wip/16.A-freze`, la „continua cu 16.A↑b-2” al owner-ului. Fereastra
+exportului refăcută (ADR 0290, PR-ul `AndreiBesliu/cvs2#11`) nu era unită, deci feliile lui 16.A↑b s-au renumerotat: **b-2**
+e secțiunea Tăierea (fără fereastra exportului, care se schimbă acolo), **b-3** rândurile exportului (lista „Freza” pe freza
+operației, pe fundul plat, pe frezele de rest, ale dopului și ale benzii; pe fereastra refăcută, după unirea ei), iar **b-4**
+nota „s-a schimbat în bibliotecă” (fostă b-3). Documentul rămâne v27; nimic pe server.
+
+- **Ce formă primește fiecare operație** (`src/model/formaFrezei.ts`, `motivFormaPeOperatie(tip, latura, forma)`): freza în
+  V (și cea de gravare) doar pe linie și în V-carve, V-carve-ul doar cu freza în V, freza plată în rest; aceeași regulă ca
+  lucrarea (ADR 0090, ADR 0092 §3). E o singură funcție, stabilită cu linia reliefului (ADR 0310 §13): bila își adaugă rândul
+  acolo (18.1↑c), toroidala și profilul desenat la fel (16.A↑e–f).
+- **Alegerea, pură** (`src/model/alegereFreza.ts`): frezele oferite sunt cele care merg pe toate operațiile alese, în ordinea
+  bibliotecii; copia din document (`sculaDinBiblioteca`) are T-ul, numele, diametrul, forma, originea (`biblioteca: { id,
+  rev }`), valorile de lucru (`regim`) și tăișul, dacă freza îl are; operațiile pieselor alese primesc copia ca freză
+  principală, pasul pe trecere al frezei și, la buzunar, pasul lateral din procentul ei (în jos la 0,001 mm, deci cel mult raza
+  la 50 %); adâncimea, frezele de rest, fundul plat, dopurile și restul câmpurilor rămân.
+- **Numărul T** (§4, regula ADR 0114 §5): al bibliotecii, cât nicio altă freză a proiectului nu-l are; altfel al unei freze
+  identice; altfel cel mai mic liber. Frezele principale ale operațiilor alese nu se numără (le înlocuiește alegerea), frezele
+  lor de rest, fundul plat și dopurile da. **Identitatea unei freze montate ține acum și turația** (`aceeasiFreza` în
+  `src/model/rol.ts`: diametrul, forma, turația din `regim` sau lipsa ei): același T cu două turații e refuzat la export (16.A↑b-1),
+  deci o turație diferită cere alt număr. Regula trece și la roluri (`numarFreza`, `numereFreze`): un rol personalizat cu
+  valori de lucru (copiat după 16.A↑b-1) nu mai poate primi T-ul unei freze cu altă turație.
+- **Rândul „Freza” din Tăierea** (`src/app/PanouProprietati.tsx`): cât biblioteca are freze, sub pas; nu în Atelier (butoanele
+  mari, fără liste: acolo freza rămâne pe cartela ei, schimbată din fereastra exportului; precizat la 16.A↑a-2); biblioteca e a contului deschis pe server sau cea fără cont (`cheieBibliotecii` din `frezeMele.ts`, aceeași
+  ca a ferestrei), citită din browser la prima deschidere a panoului, fără sincronizare (aceea rămâne a ferestrei, §7). Arată
+  freza din bibliotecă a tuturor operațiilor alese; altfel „Scrisă de mână” (aceeași freză pe toate) sau „— (diferite)”; fără
+  nicio freză potrivită, lista e oprită, cu „Nicio freză din bibliotecă nu se potrivește”. Aleasă, trece prin acțiunea
+  `document.aplica-operatii` (un pas de anulare, aceeași judecată a ușii). Un T altul decât al bibliotecii are nota lui („Aici e
+  T2: T1 e deja al altei freze din proiect.”). Exportă păstrează copia: `sculaScrisa` (`src/app/valoriOperatii.ts`) suprascrie
+  doar numărul, diametrul și forma.
+- **Probele:** unitare noi 9 (`test/unit/alegereFreza.test.ts`: forma pe operație, frezele oferite, copia, freza comună,
+  operațiile, pasul lateral, V-carve-ul cu fundul plat, numărul T cu frezele de rest, cu turația și cu aceeași freză pe două
+  numere, rolurile cu turația); în Edge 4 (`test/e2e/frezeTaiere.spec.ts`: rândul ascuns fără bibliotecă, plata pe profil,
+  alegerea într-un pas, exportul, anularea, reîncărcarea; V-carve-ul; amestecul și nota; Atelierul cu fontul lat, în engleză).
+  Otrăvurile: `test/otravuri/16.A-b2.py`, 22 / 22 (R02 scăpase: aceeași freză pe două numere; proba a primit cazul).
+- **Mărimea:** pornirea neschimbată (109,9 kB; cu ușa 114,5, cu Atelierul 114,8 / 120: harta importurilor are o bucată în
+  plus), totalul 810,5 → 812,2 / 900 kB. Biblioteca (`frezeMele.ts`, cu îmbinarea și modelul frezei) stă acum într-o bucată a ei,
+  comună panoului și ferestrei „Frezele mele”.
+
+## Implementarea (16.A↑a-2)
+
+Pe 24.11.2026, în sesiunea cloud a liniei, pe ramura `wip/16.A-freze`, după precizarea owner-ului: „să ai în vedere că
+biblioteca de freze trebuie să fie populată cu freze default standard”. Setul rămâne cel de pornire (cele șase freze din §3,
+cu valorile implicite ale aplicației); nimic pe server, documentul rămâne v27.
+
+- **Id-uri fixe** (`ID_PORNIRE` în `src/model/freza.ts`: `std-plata-3175`, `std-plata-6`, `std-v60-6`, `std-v90-12`,
+  `std-gravare-30-3175`, `std-plata-12`): aceeași freză standard pe orice calculator și în orice cont. `cuStandard` pune doar
+  cele care lipsesc (după id), cu nume libere, cât încap.
+- **Biblioteca fără cont** le primește singură, o dată, la prima citire (fereastra sau panoul de proprietăți,
+  `cuFrezeleStandard` din `src/app/frezeStandard.ts`; numele propuse vin din mesajele ferestrei, cerute doar atunci). Steagul
+  `standard` din înregistrarea depozitului ține minte că s-a hotărât: o bibliotecă cu freze (de dinainte) doar îl primește,
+  iar una golită nu se mai umple singură. Butonul unei biblioteci goale e „Adaugă frezele standard” (le pune pe cele care
+  lipsesc, cu aceleași id-uri).
+- **Contul** le primește la prima sincronizare a acestui browser doar dacă n-a avut niciodată freze (versiunea contului e 0),
+  apoi pleacă la el în aceeași trecere: două calculatoare care le pun deodată trimit aceleași id-uri, deci al doilea primește
+  conflictul cu același conținut, îmbinat fără întrebare; un cont cu freze, sau cu frezele șterse, doar ține minte că s-a
+  hotărât (o freză standard ștearsă nu reînvie pe un calculator nou). Un cont care doar se citește (fără `cloud`) nu le
+  primește. Întrebarea „Adaugi … din acest browser în cont?” vine după prima trecere și nu mai numără frezele standard (au
+  aceleași id-uri).
+- **Panoul** folosește biblioteca contului după ce ea are freze sau a primit setul; până atunci, pe cea fără cont (aceleași
+  id-uri pentru frezele standard, deci originea copiată în proiect rămâne valabilă și după sincronizare).
+- **Probele:** unitare noi 3 (`cuStandard` și id-urile; depozitul: o dată, ștearsă nu revine, butonul, altă filă, o
+  bibliotecă cu freze, versiunea mai nouă, fără depozit; sincronizarea: un cont gol, al doilea calculator, deodată, șterse,
+  doar citire); în Edge, fereastra (puse singure, în limba de la prima pornire; goală, cu butonul) și panoul (de la prima
+  pornire, fără fereastră) 16 / 16; pe emulatoare 2 / 2 (contul gol le primește, întrebarea numără doar freza omului; doar
+  citirea nu le primește). Otrăvurile: `test/otravuri/16.A-a2.py` și `16.A-a2-emu.py`, 15 / 16 (E05, întrebarea înaintea
+  primei treceri, practic echivalentă: un „Da” grăbit duce aceleași freze, cu aceleași id-uri).
+- **Atelierul** (butoanele mari, fără liste) n-are rândul „Freza”: cu setul pus de la prima pornire, lista ar fi apărut acolo;
+  freza rămâne pe cartela ei.
+- **Mărimea:** pornirea neschimbată (109,9 kB; cu ușa 114,5 / 120), totalul +0,5 kB: 816,6 / 900 pe ramură, cu 16.A↑b-2, față
+  de 814,4 în `main` (`fdce5f1b`).
 
 ## Se redeschide dacă
 

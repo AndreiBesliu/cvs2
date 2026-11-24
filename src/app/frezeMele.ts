@@ -11,7 +11,8 @@
  */
 import { useSyncExternalStore } from 'react';
 import {
-  cuFreza, cuImport, faraFreza, frezaDinDate, type Freza, type FrezaSalvata, type PoliticaImport, type ProblemeFreza,
+  cuFreza, cuGrupRedenumit, cuImport, cuStandard, faraFreza, frezaDinDate, type Freza, type FrezaSalvata, type FrezaStandard, type PoliticaImport,
+  type ProblemeFreza,
 } from '../model/freza.ts';
 import { sincronDate, sincronDin, type BibliotecaCont, type StareSincron } from '../model/frezeSincron.ts';
 
@@ -21,6 +22,8 @@ const BIBLIOTECI = 'biblioteci';
 export const CHEIE_LOCALA = 'local';
 /** Cheia bibliotecii unui cont (ADR 0300 §7): copia lui din browser, sincronizată cu contul. */
 export const cheieCont = (uid: string): string => `cont:${uid}`;
+/** Cheia bibliotecii folosite acum (ADR 0300 §7): a contului cu dreptul primit (adresa confirmată), altfel cea fără cont. */
+export const cheieBibliotecii = (cont: { readonly uid: string; readonly drept: unknown } | null): string => (cont?.drept ? cheieCont(cont.uid) : CHEIE_LOCALA);
 export const VERSIUNE_FREZE = 1;
 
 /** Ce citește și scrie stocarea: în browser IndexedDB, în teste un fals. */
@@ -41,6 +44,11 @@ export type StareFreze = {
   readonly necitite: number;
   /** Starea sincronizării cu contul (la biblioteca fără cont, goală). */
   readonly sincron: StareSincron;
+  /**
+   * Biblioteca a primit (sau a refuzat, fiind deja plină) frezele standard (ADR 0300 §3, precizarea din 24.11): ele se pun o
+   * singură dată, deci una ștearsă nu revine singură.
+   */
+  readonly standard: boolean;
 };
 
 export type ProblemeLista = ProblemeFreza | { readonly id: 'lipsa' } | { readonly lista: 'plina' | 'versiune' };
@@ -67,6 +75,13 @@ export type FrezeMele = {
    * schimbă nimic. Fals: n-a schimbat (nimic de schimbat, sau lista e a unei versiuni mai noi).
    */
   readonly schimbaCont: (f: (b: BibliotecaCont) => BibliotecaCont | null) => Promise<boolean>;
+  /**
+   * Frezele standard (ADR 0300 §3): cu `primaData`, doar dacă biblioteca nu le-a primit încă și e goală (una cu freze doar ține
+   * minte că s-a hotărât); fără (butonul „Adaugă frezele standard”), cele care lipsesc. Le pune pe ce e în depozit acum.
+   */
+  readonly puneStandard: (standard: readonly FrezaStandard[], primaData: boolean) => Promise<RezultatMaiMulte>;
+  /** Redenumirea unui grup al omului (ADR 0302 §4): toate frezele lui, într-o singură scriere; gol, înapoi pe feluri. */
+  readonly redenumesteGrup: (vechi: string, nou: string) => Promise<RezultatStergere>;
 };
 
 type Citita = {
@@ -100,6 +115,9 @@ const deScris = (c: Citita): Record<string, unknown> => ({ ...c.extra, v: VERSIU
 const numeBrute = (brute: readonly unknown[]): string[] =>
   brute.flatMap((b) => (obiect(b) && typeof b['nume'] === 'string' ? [b['nume']] : []));
 
+/** Nimic de scris (frezele standard au fost deja hotărâte): tranzacția se oprește fără scriere. */
+class Nimic extends Error {}
+
 class RefuzLista extends Error {
   readonly probleme: ProblemeLista;
   constructor(probleme: ProblemeLista) {
@@ -113,7 +131,9 @@ class RefuzLista extends Error {
  * aplicată pe ce e în depozit în clipa scrierii.
  */
 export function creeazaFrezeMele(depozit: DepozitFreze | null, idNou: () => string, acum: () => number, cheie: string = CHEIE_LOCALA): FrezeMele {
-  let stare: StareFreze = { incarcata: false, freze: [], pastrate: depozit !== null, scriere: true, necitite: 0, sincron: sincronDin(undefined) };
+  let stare: StareFreze = {
+    incarcata: false, freze: [], pastrate: depozit !== null, scriere: true, necitite: 0, sincron: sincronDin(undefined), standard: false,
+  };
   let brute: readonly unknown[] = [];
   let extra: Readonly<Record<string, unknown>> = {};
   const ascultatori = new Set<() => void>();
@@ -124,7 +144,10 @@ export function creeazaFrezeMele(depozit: DepozitFreze | null, idNou: () => stri
   const puneCitita = (c: Citita, pastrate: boolean): void => {
     brute = c.brute;
     extra = c.extra;
-    pune({ incarcata: true, freze: c.freze, pastrate, scriere: c.scriere, necitite: c.brute.length, sincron: sincronDin(c.extra['sincron']) });
+    pune({
+      incarcata: true, freze: c.freze, pastrate, scriere: c.scriere, necitite: c.brute.length, sincron: sincronDin(c.extra['sincron']),
+      standard: c.extra['standard'] === true,
+    });
   };
   const citeste = async (): Promise<void> => {
     if (!depozit) { pune({ ...stare, incarcata: true, pastrate: false }); return; }
@@ -219,6 +242,11 @@ export function creeazaFrezeMele(depozit: DepozitFreze | null, idNou: () => stri
       const r = faraFreza(lista, id);
       return r.ok ? { ok: true, lista: r.lista, rez: {} } : { ok: false, probleme: { id: 'lipsa' } };
     }),
+    redenumesteGrup: (vechi, nou) => schimba((lista) => {
+      const r = cuGrupRedenumit(lista, vechi, nou, acum());
+      if (r.ok) return { ok: true, lista: r.lista, rez: {} };
+      return { ok: false, probleme: r.motiv === 'lipsa' ? { id: 'lipsa' } : { grup: r.motiv } };
+    }),
     adaugaToate: (freze) => schimba((lista, rezervate) => {
       const r = cuImport(lista, freze, 'amandoua', idNou, acum(), rezervate);
       return r.ok ? { ok: true, lista: r.lista, rez: { adaugate: r.adaugate, inlocuite: r.inlocuite, sarite: r.sarite } } : r;
@@ -227,6 +255,42 @@ export function creeazaFrezeMele(depozit: DepozitFreze | null, idNou: () => stri
       const r = cuImport(lista, freze, politica, idNou, acum(), rezervate);
       return r.ok ? { ok: true, lista: r.lista, rez: { adaugate: r.adaugate, inlocuite: r.inlocuite, sarite: r.sarite } } : r;
     }),
+    puneStandard: async (standard, primaData) => {
+      // Biblioteca cu setul pus: doar cele care lipsesc, cu numele libere; null dacă a fost deja hotărât (prima dată).
+      const cu = (c: Citita): { readonly citita: Citita; readonly adaugate: number } | null => {
+        if (primaData && c.extra['standard'] === true) return null;
+        const pune = !primaData || (c.freze.length === 0 && c.brute.length === 0);
+        const r = pune ? cuStandard(c.freze, standard, acum(), numeBrute(c.brute)) : { lista: c.freze, adaugate: 0 };
+        return { citita: { ...c, freze: r.lista, extra: { ...c.extra, standard: true } }, adaugate: r.adaugate };
+      };
+      const gata = (adaugate: number): RezultatMaiMulte => ({ ok: true, adaugate, inlocuite: 0, sarite: 0 });
+      if (stare.pastrate && depozit) {
+        let rez: { readonly citita: Citita; readonly adaugate: number } | null = null;
+        try {
+          await depozit.actualizeaza(cheie, (acum_) => {
+            const c = citesteDate(acum_);
+            if (!c.scriere) throw new RefuzLista({ lista: 'versiune' });
+            rez = cu(c);
+            if (rez === null) throw new Nimic();
+            return deScris(rez.citita);
+          });
+          const r = rez as { readonly citita: Citita; readonly adaugate: number } | null;
+          if (r) puneCitita(r.citita, true);
+          return gata(r?.adaugate ?? 0);
+        } catch (e) {
+          if (e instanceof Nimic) return gata(0);
+          if (e instanceof RefuzLista) {
+            pune({ ...stare, scriere: false });
+            return { ok: false, probleme: e.probleme };
+          }
+          // Stocarea a căzut: de acum, biblioteca ține cât fila.
+        }
+      }
+      if (!stare.scriere) return { ok: false, probleme: { lista: 'versiune' } };
+      const r = cu({ freze: stare.freze, brute, scriere: true, extra });
+      if (r) puneCitita(r.citita, false);
+      return gata(r?.adaugate ?? 0);
+    },
   };
 }
 
@@ -323,6 +387,7 @@ export function frezeMele(cheie: string = CHEIE_LOCALA): FrezeMele {
     ...b,
     salveaza: (id, f) => anunta(b.salveaza(id, f)),
     sterge: (id) => anunta(b.sterge(id)),
+    redenumesteGrup: (vechi, nou) => anunta(b.redenumesteGrup(vechi, nou)),
     adaugaToate: (freze) => anunta(b.adaugaToate(freze)),
     importa: (freze, politica) => anunta(b.importa(freze, politica)),
     schimbaCont: (f) => anunta(b.schimbaCont(f)),

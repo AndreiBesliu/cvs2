@@ -1338,13 +1338,26 @@ would change all of them: the row says how many times it is placed.
 
 The **My bits** window keeps your bits. It opens from the **Account** menu (the **My bits…** row) or from the command
 palette. It works without an account and offline: without an account, the library lives in this browser; with your account
-open, it lives in your account and you have it on any computer where you sign in (see below). Soon you will pick a bit from
-the library on the export rows and in the Cutting section; until then, the bit is typed on the row, as before (see
-[Exporting G-code](#export)).
+open, it lives in your account and you have it on any computer where you sign in (see below). You pick a bit from the
+library for the chosen shapes in the Cutting section of the properties panel (see [The cutting operations](#operatii)); on the
+export rows it comes soon, and until then the bit is typed there on the row, as before (see [Exporting G-code](#export)).
 
 The **list**, on the left, groups the bits by kind (Flat, V, Engraving), each with a small profile, the preferred T, the
 spindle speed and the feed. **Search for a bit** filters by name, and the **All**, **Flat**, **V** and **Engraving** buttons
-show a single kind. On a phone, the list comes first; a bit you pick opens full screen, and **Bits** takes you back.
+show a single kind. A bit you pick shows its **details** on the right, read-only: the kind, the profile to scale, the geometry,
+the working values and the note, with the **Edit**, **Duplicate** and **Delete…** buttons. On a phone, the list comes first;
+a bit's details open full screen, and **Bits** takes you back.
+
+**List** and **Configurator**, next to the filters, choose how the window works: in **List** (how it starts), the editor
+opens only with **Edit** and **New bit**, and after **Save** or **Discard changes** you are back at the details (on a phone,
+**Details** does the same); in **Configurator**, a bit you pick opens straight in the editor, with **Duplicate** and
+**Delete…** there. The choice is kept in this browser.
+
+**Groups** are yours. A bit without a group sits under its kind (Flat, V, Engraving), as at the start. The **Group** list in
+the details moves it: to another group, back to **No group (by kind)** or, with **New group…**, to a new group with the name
+you type (at most 40 characters). Your groups come first in the list, by name; **✎** next to a group's title renames it, with
+all its bits (a name that already belongs to another group merges them, and an empty name puts them back under their kinds).
+The group travels with the bit in the file and in the account.
 
 **New bit** opens the editor, with the fields:
 - **Name**: left empty, the bit gets the name proposed from its kind and diameter (“Flat Ø6”, “V60 Ø6”, “Engraving 30° tip
@@ -1355,21 +1368,24 @@ show a single kind. On a phone, the list comes first; a bit you pick opens full 
   **Flutes** (if you know them) and **Preferred T** (1–999, the number on the tool holder);
 - **Working values**: **Spindle speed** (rpm), **Feed** and **Plunge** (mm/min), **Step-down** (mm) and **Stepover** (% of
   the diameter, at most 50);
-- **Note**: the maker, the code, where it came from.
+- **Note**: the maker, the code, where it came from;
+- **Group**: left empty, the bit sits under its kind; the list under the field has your groups.
 
 The profile on the right is to scale. Numbers take a comma or a point. **Save** keeps the bit, and **Discard changes** puts
-back what was there. If you pick another bit or close the window with unsaved changes, they are saved on their own when they
+back what was there (in **List**, it also closes the editor). If you pick another bit or close the window with unsaved changes, they are saved on their own when they
 are valid; otherwise the window stays and shows the fields to fix. **Duplicate** makes a copy of the bit, and **Delete…** asks
 first; projects that use it keep their copy.
 
-**Add the starter bits** shows while the library is empty: six common bits (flat Ø3.175, Ø6 and Ø12, V60 Ø6, V90 Ø12 and an
-engraving bit of 30° with a 0.2 tip and Ø3.175), with the app’s default values (18,000 rpm, a feed of 1,000 mm/min, a plunge
-of 300 mm/min). Change them afterwards to match your bits.
+**The standard bits** come by themselves: the first time the window or the properties panel opens, the library gets six common
+bits (flat Ø3.175, Ø6 and Ø12, V60 Ø6, V90 Ø12 and an engraving bit of 30° with a 0.2 tip and Ø3.175), with the app’s
+default values (18,000 rpm, a feed of 1,000 mm/min, a plunge of 300 mm/min). Change them afterwards to match your bits. They
+come only once: a deleted one does not come back by itself. With an empty library, **Add the standard bits** puts back the
+missing ones.
 
 **Export…** saves the library to the file `frezele-mele.cvs2freze.json`, which you bring in with **Import…** on another
 computer. **Import…** also reads a CSV (saved from Excel, for example) with a header row and the columns `nume`, `fel`
 (`plata`, `v` or `gravare`), `diametru`, `unghi`, `varf`, `numar` (the T), `turatie`, `avans`, `plonjare`, `pas`,
-`pas_lateral`, `tais`, `taisuri` and `nota`, in any order. Only `nume`, `fel` and `diametru` are required; without the others,
+`pas_lateral`, `tais`, `taisuri`, `nota` and `grup`, in any order. Only `nume`, `fel` and `diametru` are required; without the others,
 the T is 1, the spindle speed 18,000, the feed 1,000, the plunge 300, the step-down half the diameter (for a flat bit) or
 1 mm, and the stepover 40 %. The separator (`;`, `,` or tab) is found on its own; with `;`, numbers may use a decimal comma.
 Before importing, you choose what happens to a name that already exists: **Keep both** (the default; the new one gets
@@ -1386,8 +1402,9 @@ account…** or **Offline: sent when the connection is back**. The account holds
 in this browser, and the window counts them. With the trial over or the account disabled, the library in the account is
 read-only: changes stay here.
 
-The first time you open it with your account, if this browser has bits the account does not have, the window asks **Add the
-N bits from this browser to the account?**: **Yes, add them** copies them into the account (a bit with a taken name gets
+An account that never had any bits gets the standard bits at its first sync; an account whose bits were deleted does not get
+them again. The first time you open it with your account, if this browser has bits the account does not have (other than the
+standard ones), the window asks **Add the N bits from this browser to the account?**: **Yes, add them** copies them into the account (a bit with a taken name gets
 “(2)”), and **Not now** asks again another time. The library without an account stays untouched: you see it again after
 signing out.
 
@@ -1416,6 +1433,15 @@ becomes a V60 of the same diameter, and for another role a V bit becomes flat. F
 cone (5.196 mm for a V60 Ø6). Under the role, **Depth** and **Step down** are
 written on all the operations of the chosen shapes (with different values, the field is empty). A part with several copies
 changes its role for all of them. A shown toolpath updates by itself.
+
+**Cutter**, under the step (while the [My bits](#freze) library has bits), lists the library bits that work on all the chosen
+shapes: a V bit and an engraving bit only on the line and in a V-carve, a flat bit everywhere else (but not in a V-carve).
+Chosen, the bit goes onto all the operations of the chosen shapes, in one undo step, with its working values (spindle speed,
+feed, plunge), its cutting length, its step down and, for a pocket, its stepover (from its percentage); the depth, the flat
+bottom and the rest bits stay. The T number is the library's, if it is free in the project; otherwise that of an identical
+bit (same diameter, same shape, same spindle speed), otherwise the smallest free one, and a note under the list says so. The
+list shows the chosen shapes' library bit, **Entered by hand** when they share a bit typed in the export window, or “—” when
+they have different bits.
 
 **My roles.** A role with all its values (the cutter, the direction, the depth, the step down, the tabs, the ramp, the leads,
 the corners, the descent, the pocket toolpath, the rest cutters, the flat bottom) is kept with **Save as role…**, under

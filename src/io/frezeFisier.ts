@@ -13,7 +13,7 @@ export const FORMAT_FREZE = 'cncvs2-freze';
 export const VERSIUNE_FISIER_FREZE = 1;
 
 /** Coloanele CSV, în ordinea din manual. */
-export const COLOANE_CSV = ['nume', 'fel', 'diametru', 'unghi', 'varf', 'numar', 'turatie', 'avans', 'plonjare', 'pas', 'pas_lateral', 'tais', 'taisuri', 'nota'] as const;
+export const COLOANE_CSV = ['nume', 'fel', 'diametru', 'unghi', 'varf', 'numar', 'turatie', 'avans', 'plonjare', 'pas', 'pas_lateral', 'tais', 'taisuri', 'nota', 'grup'] as const;
 type ColoanaCsv = (typeof COLOANE_CSV)[number];
 
 export type MotivFisierFreze = 'gol' | 'json' | 'format' | 'versiune' | 'coloane' | 'prea-mare' | 'prea-multe';
@@ -93,6 +93,7 @@ function dinCsv(text: string): CitireFreze {
     const diametru = nr('diametru');
     if (!fel || diametru === undefined) { sarite++; continue; }
     const nota = (cel('nota') ?? '').trim();
+    const grup = (cel('grup') ?? '').trim();
     const f: Record<string, unknown> = {
       nume: (cel('nume') ?? '').trim(), fel, diametru,
       unghi: nr('unghi'), varf: nr('varf'),
@@ -102,6 +103,7 @@ function dinCsv(text: string): CitireFreze {
       pasLateral: nr('pas_lateral') ?? 40,
       tais: nr('tais'), taisuri: nr('taisuri'),
       ...(nota === '' ? {} : { nota }),
+      ...(grup === '' ? {} : { grup }),
     };
     for (const k of Object.keys(f)) if (f[k] === undefined) delete f[k];
     const b = frezaImportata(f);
