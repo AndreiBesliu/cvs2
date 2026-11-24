@@ -1011,6 +1011,20 @@ from the sheet) and **Opacity**, in per cent (1–100). Every change is one undo
 
 On a line of the drawing, the click stays with the shape; inside shapes, it goes to the image. Escape cancels a drag.
 
+**Calibrate** (under the opacity) brings the image to its true size from a known length in it (a photographed ruler, a
+dimension): click on the image on the first end, then on the second (with Shift, along the image's horizontal or vertical).
+The ends can then be dragged where they belong, and the band at the top shows the distance now. Type the **True distance
+(mm)** and press **Apply** (or Enter): the image is scaled the same on both sides, around the first end, which stays in
+place, in one undo step. Escape or **Cancel** leave without changing anything.
+
+**Trace…** traces from the image on the sheet: drag the area to trace over it (on a rotated image, the rectangle turns
+with it), or choose **Whole image** (or Enter). The tracing window opens with the image and the chosen area (the area can be
+changed there too), and **Import** places the vectors exactly over the image: at its scale, place and rotation, in one undo
+step. Here the window has no Size (the scale is the image's) and does not straighten the sheet or the scan: for that, place
+the image again, straightened, from “Import…”. Both buttons work only on a visible image, read in the browser.
+
+The sheets report (from the export window) names, for each sheet, its images.
+
 Images are kept in the browser, next to the project, not in the document: on another computer or in another browser, the
 sheet shows only their place, dashed, and the list says they are missing. An image that no kept version of the project uses
 any more is deleted at a start-up, after at least a day. On a phone, images show but are not placed or changed.

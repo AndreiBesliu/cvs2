@@ -75,7 +75,7 @@ export type RaportImagine = {
    * De unde vine scara: lățimea scrisă, formatul foii îndreptate (ADR 0225), DPI-ul fișierului sau 96 px / țol (presupus);
    * `dpi` e cel folosit.
    */
-  readonly scara: 'latime' | 'foaie' | 'fisier' | 'presupus'; readonly dpi: number;
+  readonly scara: 'latime' | 'foaie' | 'fisier' | 'presupus' | 'imagine'; readonly dpi: number;
   /**
    * Foaia din poză (ADR 0225): îndreptată (pagina e ea; colțurile, proporțiile, formatul, previzualizarea), sau doar găsită
    * (sugestia); null: niciuna.

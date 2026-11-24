@@ -392,6 +392,28 @@ test('zona (ADR 0224, răspunsul 2a) e un decupaj: se trasează doar ea, colțul
   assert.equal(m.raport.margine, 1);
 });
 
+test('trasată din imaginea de pe foaie (ADR 0272 §7): scara e a imaginii întregi, cu zonă și fără, peste lățimea scrisă și DPI', async () => {
+  // `imagine` are 100 px; pe foaie, 40 mm: 0,4 mm pe pixel, oricare ar fi zona, lățimea scrisă ori DPI-ul fișierului.
+  for (const zona of [undefined, { x: 50, y: 0, w: 50, h: 50 }, { x: 90.4, y: 39.6, w: 50, h: 50 }]) {
+    const r = (await raspundeTrasare(cerere({ latimeIntreaga: 40, latimeMm: 25, dpi: 300, ...(zona ? { zona } : {}) }))).raspuns;
+    assert.ok(r.ok);
+    assert.equal(r.scara, 'imagine');
+    aproape(r.mmPePx, 0.4);
+    aproape(r.dpi, 63.5, '100 px pe 40 mm');
+  }
+  // Cererea din alegeri: scara imaginii, fără foaie și scanare de îndreptat (vectorii vin peste ea), chiar bifate.
+  const a = { ...TRASARE_IMPLICITA, latimeIntreaga: 40, foaie: { ...TRASARE_IMPLICITA.foaie, indreapta: true }, rotire: { indreapta: true, unghi: 3 } };
+  const c = cerereTrasare({ nume: 'poza.png', octeti: new Uint8Array() }, a);
+  assert.equal(c.latimeIntreaga, 40);
+  assert.equal(c.foaie, undefined);
+  assert.equal(c.rotire, undefined);
+  const { latimeIntreaga: _scara, ...b } = a;
+  void _scara;
+  const fara = cerereTrasare({ nume: 'poza.png', octeti: new Uint8Array() }, b);
+  assert.equal('latimeIntreaga' in fara, false);
+  assert.ok(fara.foaie && fara.rotire, 'fără imaginea de pe foaie, îndreptările rămân');
+});
+
 test('zona: scara din DPI nu se schimbă (pixelul are aceeași mărime); zona se taie la imagine, iar una din afara ei nu e zonă', async () => {
   const r = (await raspundeTrasare(cerere({ dpi: 254, zona: { x: 50, y: 0, w: 50, h: 50 } }))).raspuns;
   assert.ok(r.ok);

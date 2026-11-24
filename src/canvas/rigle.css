@@ -1076,3 +1076,34 @@
 .banda-urechi .motiv-urechi {
   color: var(--rosu, var(--t));
 }
+
+/*
+ * „Calibrează” și „Trasează…” din imaginea de pe foaie (ADR 0272 §6, §7; felia 25.8↑b): modul folosește aceeași bandă și
+ * același strat ca urechile; peste ei, zona trasă și linia măsurată, cu capetele ei.
+ */
+.zona-imagine {
+  fill: color-mix(in srgb, var(--a) 12%, transparent);
+  stroke: var(--a);
+  stroke-width: 1.5;
+  stroke-dasharray: 6 3;
+}
+
+.calibrare-linie {
+  stroke: var(--a);
+  stroke-width: 2;
+  stroke-dasharray: 6 3;
+}
+
+.calibrare-capat {
+  fill: var(--s-panou);
+  stroke: var(--a);
+  stroke-width: 2;
+}
+
+.calibrare-text {
+  fill: var(--a);
+  paint-order: stroke;
+  stroke: var(--s-panou);
+  stroke-width: 3;
+  font: 600 12px var(--mono);
+}

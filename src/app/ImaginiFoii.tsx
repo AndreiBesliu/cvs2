@@ -21,18 +21,24 @@ function Miniatura({ octeti }: { readonly octeti: Blob | null | undefined }): Re
 
 /**
  * Imaginile foii active (ADR 0272 §5), în panoul foii, sub câmpurile ei: fiecare cu miniatura, numele, ochiul (vizibilă),
- * lacătul (fixată; desfăcută, se mută, se scalează și se rotește cu mânerele ei), opacitatea și ștergerea. Fiecare schimbare
+ * lacătul (fixată; desfăcută, se mută, se scalează și se rotește cu mânerele ei), opacitatea, ștergerea, „Calibrează” și
+ * „Trasează…” (felia 25.8↑b, modul pânzei, `ModImagine`). Fiecare schimbare
  * e un pas de anulare (`foaie.imagini`), cu motivul unui refuz sub rândul ei. O imagine ai cărei octeți lipsesc din browser
  * (un proiect adus din altul, ori una ștearsă) o spune; locul ei rămâne pe foaie, punctat. Pe telefon (sub 40 rem), lista
  * nu se arată (ADR 0272 §9: imaginile se văd, dar nu se schimbă).
  */
-export function ImaginiFoii({ imagini, octeti, doarCitire, oprit, onImagini }: {
+export function ImaginiFoii({ imagini, octeti, doarCitire, oprit, onImagini, onMod }: {
   readonly imagini: readonly ImagineFoaie[];
   readonly octeti: ReadonlyMap<string, Blob | null>;
   readonly doarCitire: boolean;
   /** Motivul câmpurilor oprite (fila doar citește), ca sfat. */
   readonly oprit?: string | undefined;
   readonly onImagini: (lista: readonly ImagineFoaie[]) => RezultatActiune;
+  /**
+   * „Calibrează” și „Trasează…” (ADR 0272 §6, §7; felia 25.8↑b): modul pânzei pe imaginea `id`. Doar pe o imagine vizibilă,
+   * cu octeții citiți (trasarea are nevoie de ei; calibrarea, de imaginea văzută).
+   */
+  readonly onMod?: ((fel: 'calibrare' | 'zona', id: string) => void) | undefined;
 }): ReactElement {
   const [motiv, setMotiv] = useState<{ readonly id: string; readonly text: string } | null>(null);
   /** Lista cu imaginea `id` schimbată (null: scoasă), prin acțiune; refuzul rămâne sub rândul ei. */
@@ -83,6 +89,16 @@ export function ImaginiFoii({ imagini, octeti, doarCitire, oprit, onImagini }: {
                   </dd>
                 </div>
               </dl>
+              {onMod && (
+                <span className="prop-imagine-meniu">
+                  {([['calibrare', 'imagine-calibreaza', 'prop.imagine.calibreaza'], ['zona', 'imagine-traseaza', 'prop.imagine.traseaza']] as const).map(([fel, buton, cheie]) => (
+                    <button key={fel} type="button" data-buton={buton} disabled={doarCitire || !im.vizibila || !o}
+                      title={oprit ?? (im.vizibila ? t(`${cheie}.sfat`) : t('prop.imagine.ascunsa'))} onClick={() => { onMod(fel, im.id); }}>
+                      {t(cheie)}
+                    </button>
+                  ))}
+                </span>
+              )}
               {o === null && <p className="prop-nota" data-motiv="imagine-lipsa">{t('prop.imagine.lipsa')}</p>}
               {motiv?.id === im.id && <p className="camp-motiv" role="alert" data-motiv="imagine">{motiv.text}</p>}
             </li>
