@@ -198,6 +198,28 @@ test('coada dinaintea configurației: intrările așteaptă, nimic nu se descarc
   assert.equal(b.adus, 1);
 });
 
+test('pașii dinaintea erorii (A.11a): luați în clipa ei, nu la trimitere; în raport, doar felul, id-ul, rezultatul și cât înainte', async () => {
+  let inel: Array<{ fel: 'actiune'; t: number; id: string; de: 'bara'; rez: string }> = [{ fel: 'actiune', t: 1_000, id: 'document.importa', de: 'bara', rez: 'ok' }];
+  let ceas = 1_500;
+  const b = banc({ pasi: () => ({ t: ceas, pasi: inel.map((e) => ({ ...e })) }) });
+  const r = creeazaRaportor(b.deps);
+  b.jurnal.adauga('fereastra', new TypeError('prima'));
+  // Între eroare și trimitere (configurația vine mai târziu), omul mai face ceva: nu intră în raportul primei erori.
+  inel = [...inel, { fel: 'actiune', t: 2_000, id: 'document.roteste', de: 'bara', rez: 'motiv.nimic-ales' }];
+  ceas = 2_400;
+  b.jurnal.adauga('fereastra', new TypeError('a doua'));
+  r.porneste(CONFIG);
+  await asteapta();
+  assert.deepEqual(b.trimise.map((x) => x.pasi), [
+    [{ fel: 'actiune', id: 'document.importa', rez: 'ok', ms: 500 }],
+    [{ fel: 'actiune', id: 'document.importa', rez: 'ok', ms: 1_400 }, { fel: 'actiune', id: 'document.roteste', rez: 'motiv.nimic-ales', ms: 400 }],
+  ]);
+  // Fără pași (inelul gol, setarea pe 0, înregistratorul încă neadus): raportul n-are câmpul deloc.
+  const fara = raportDin({ tip: 'fereastra', mesaj: 'x', stiva: '', adresa: '' }, 'b', 'e', 'ro', { t: 5, pasi: [] });
+  assert.equal('pasi' in fara, false);
+  assert.equal('pasi' in raportDin({ tip: 'fereastra', mesaj: 'x', stiva: '', adresa: '' }, 'b', 'e', 'ro'), false);
+});
+
 test('doar intrările acestei sesiuni pleacă: cele din depozitul de dinainte nu se retrimit', async () => {
   const date = new Map<string, string>();
   const depozit = { getItem: (k: string) => date.get(k) ?? null, setItem: (k: string, v: string) => { date.set(k, v); }, removeItem: (k: string) => { date.delete(k); } };

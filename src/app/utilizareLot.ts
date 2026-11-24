@@ -320,7 +320,7 @@ export function pornesteColectarea(o: { readonly config: Config | null; readonly
     sursa: () => 'alt',
     laLotPlin: () => { pompa?.impinge(); },
   });
-  preiaUtilizarea(ins.primeste);
+  preiaUtilizarea(ins.primeste, ins.pasi);
   urmaresteControalele({ doc: document, win: window, ceas: () => Math.round(performance.now()), primeste: ins.primeste, reusite: ins.reusite });
   const config = o.config;
   if (!config?.firebase) return;

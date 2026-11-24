@@ -1,3 +1,4 @@
+import type { PasEroare } from './pasiEroare.ts';
 /**
  * Contractul jurnalului de erori (ADR 0039), comun clientului și serverului: tipurile, plafoanele, validarea raportului
  * trimis de client și descrierea valorilor aruncate. Pur: nu importă nimic, deci intră și în funcții (`functions/src`), și
@@ -34,6 +35,8 @@ export interface RaportClient {
   readonly build: string;
   readonly browser: string;
   readonly limba: string;
+  /** Pașii dinaintea erorii (ADR 0262 §4, felia A.11a); serverul îi verifică separat (`pasiDin`), nu aici. */
+  readonly pasi?: readonly PasEroare[];
 }
 
 export type RezultatValidare = { readonly ok: true; readonly raport: RaportClient } | { readonly ok: false; readonly motiv: string };

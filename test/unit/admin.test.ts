@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { proiectAsteptat, verificari, type DateDiagnoza } from '../../src/admin/diagnoza/verificari.ts';
-import { aparitieDin, dataDin, laPlafonOameni, motivDin, randDin } from '../../src/admin/erori/date.ts';
+import { aparitieDin, dataDin, laPlafonOameni, motivDin, randDin, textInainte } from '../../src/admin/erori/date.ts';
 import { citesteConfig, esteRutaAdmin } from '../../src/app/config.ts';
 import { gazdaLocala } from '../../src/cloud/conexiune.ts';
 
@@ -30,6 +30,14 @@ test('rândul unui grup: câmpurile citite, iar ce lipsește e necunoscut (null)
   assert.equal(gol.primaData, null);
   assert.equal(gol.ultima.uid, null);
   assert.equal(aparitieDin({ uid: 42 }).uid, null);
+});
+
+test('pașii dinaintea unei erori (A.11a): citiți din apariție, cei stricați săriți; cât înainte, scurt', () => {
+  const a = aparitieDin({ pasi: [{ fel: 'actiune', id: 'document.roteste', rez: 'ok', ms: 1_200 }, { fel: 'clic', id: 'Foaia mea', ms: 3 }, 'x'] });
+  assert.deepEqual(a.pasi, [{ fel: 'actiune', id: 'document.roteste', rez: 'ok', ms: 1_200 }]);
+  assert.deepEqual(aparitieDin({}).pasi, []);
+  assert.deepEqual([textInainte(400, 'ro'), textInainte(1_250, 'ro'), textInainte(12_400, 'ro'), textInainte(185_000, 'ro'), textInainte(1_250, 'en')],
+    ['−0,4 s', '−1,3 s', '−12 s', '−3 min', '−1.3 s']);
 });
 
 test('data: doar ce are toDate() și dă o dată validă', () => {

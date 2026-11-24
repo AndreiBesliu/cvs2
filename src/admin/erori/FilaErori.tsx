@@ -1,11 +1,14 @@
-import { useCallback, useEffect, useState, type ReactElement } from 'react';
+import { useCallback, useEffect, useMemo, useState, type ReactElement } from 'react';
 import { collection, doc, getCount, getDoc, getDocs, limit, orderBy, query, where, type Query } from 'firebase/firestore/lite';
+import type { CatalogActiuni } from '../../../shared/documentatie.ts';
+import type { PasEroare } from '../../../shared/pasiEroare.ts';
 import { marcheazaEroarea, type Conexiune } from '../../cloud/conexiune.ts';
 import { t } from '../../i18n/t.ts';
 import { useLimba } from '../../ui/useLimba.ts';
 import { rezolvareDin } from '../carcasa/date.ts';
 import { EroareCitire, ListaGoala, SeIncarca, useCatSpatiulDeJos, usePublica, type Tinta } from '../carcasa/stari.tsx';
-import { aparitieDin, dataScurta, laPlafonOameni, motivDin, randDin, type Aparitie, type Masura, type RandGrup } from './date.ts';
+import type { AducatorDocumentatie } from '../documentatie/aducere.ts';
+import { aparitieDin, dataScurta, laPlafonOameni, motivDin, randDin, textInainte, type Aparitie, type Masura, type RandGrup } from './date.ts';
 import { alesDupaLista, aparitiiPeZile, baraGrafic, cuTinta, filtreazaSursa, SURSE, type FiltruSursa } from './vedere.ts';
 
 /** Câte grupuri arată fila; peste, ADR 0040 („Se redeschide dacă”) cere paginarea. */
@@ -24,8 +27,11 @@ const numara = (q: Query): Promise<number | null> => getCount(q).then((s) => s.d
  * vine ales, cu filtrul „Toate” dacă e rezolvat (ADR 0260 §1). Unul cerut dintr-un tichet (amprenta unei erori din sesiune,
  * felia A.3) poate fi mai vechi decât cele mai recente 100: atunci se aduce singur și stă primul în listă.
  */
-export function FilaErori({ con, poateMarca, tinta = null }: { readonly con: Conexiune; readonly poateMarca: boolean; readonly tinta?: Tinta | null }): ReactElement {
+export function FilaErori({ con, poateMarca, tinta = null, aducator }: {
+  readonly con: Conexiune; readonly poateMarca: boolean; readonly tinta?: Tinta | null; readonly aducator?: AducatorDocumentatie;
+}): ReactElement {
   const l = useLimba();
+  const nume = useNumeActiuni(aducator, l);
   const publica = usePublica();
   const [filtru, setFiltru] = useState<Stare>(tinta?.rezolvat === true ? 'toate' : 'nerezolvate');
   const [sursa, setSursa] = useState<FiltruSursa>('toate');
@@ -136,14 +142,49 @@ export function FilaErori({ con, poateMarca, tinta = null }: { readonly con: Con
                       </li>
                     ))}
                   </ul>
-                  {grup ? <DetaliuGrup key={grup.id} con={con} grup={grup} poateMarca={poateMarca} marcat={() => { setRev((r) => r + 1); }} /> : null}
+                  {grup ? <DetaliuGrup key={grup.id} con={con} grup={grup} poateMarca={poateMarca} nume={nume} marcat={() => { setRev((r) => r + 1); }} /> : null}
                 </div>
               )}
     </div>
   );
 }
 
-function DetaliiAparitie({ a }: { readonly a: Aparitie }): ReactElement {
+/**
+ * Numele acțiunilor și ale uneltelor, din catalogul generat la build (ca în fila Utilizare), pentru pașii dinaintea unei
+ * erori; până vine (sau fără el), pașii arată id-ul.
+ */
+function useNumeActiuni(aducator: AducatorDocumentatie | undefined, l: string): ReadonlyMap<string, string> {
+  const [catalog, setCatalog] = useState<CatalogActiuni | null>(null);
+  useEffect(() => {
+    if (!aducator) return undefined;
+    let viu = true;
+    aducator.actiuni().then((c) => { if (viu) setCatalog(c); }, () => undefined);
+    return () => { viu = false; };
+  }, [aducator]);
+  return useMemo(() => new Map((catalog ? [...catalog.actiuni, ...catalog.unelte] : []).map((a) => [a.id, l === 'en' ? a.en : a.ro])), [catalog, l]);
+}
+
+/** Pașii dinaintea erorii (ADR 0262 §4, felia A.11a): cât înainte, ce (cu numele, unde îl știm), felul, rezultatul altul decât „ok”. */
+function PasiDinainte({ pasi, nume }: { readonly pasi: readonly PasEroare[]; readonly nume: ReadonlyMap<string, string> }): ReactElement {
+  const l = useLimba();
+  return (
+    <details open data-admin="pasi">
+      <summary>{t('admin.erori.pasi', { n: pasi.length })} <span className="admin-slab">{t('admin.erori.pasi.nota')}</span></summary>
+      <ol className="admin-pasi">
+        {pasi.map((p, i) => (
+          <li key={i} data-pas={p.fel} data-pas-id={p.id}>
+            <span className="admin-slab">{textInainte(p.ms, l)}</span>{' '}
+            {(p.fel === 'actiune' || p.fel === 'unealta') && nume.has(p.id) ? <span title={p.id}>{nume.get(p.id)}</span> : <code>{p.id}</code>}
+            <span className="admin-slab"> · {t(`admin.erori.pas.${p.fel}`)}</span>
+            {p.rez !== undefined && p.rez !== 'ok' ? <> · <code>{p.rez}</code></> : null}
+          </li>
+        ))}
+      </ol>
+    </details>
+  );
+}
+
+function DetaliiAparitie({ a, nume }: { readonly a: Aparitie; readonly nume: ReadonlyMap<string, string> }): ReactElement {
   return (
     <div className="admin-aparitie">
       <p>{t('admin.erori.build', { build: a.build || '—', instanta: a.instanta || '—' })}</p>
@@ -151,6 +192,7 @@ function DetaliiAparitie({ a }: { readonly a: Aparitie }): ReactElement {
       {a.browser ? <p>{t('admin.erori.browser', { browser: a.browser })}</p> : null}
       <p>{a.uid ? t('admin.erori.uid', { uid: a.uid }) : t('admin.erori.fara-cont')}</p>
       {a.context ? <p>{t('admin.erori.context', { context: a.context })}</p> : null}
+      {a.pasi.length > 0 ? <PasiDinainte pasi={a.pasi} nume={nume} /> : null}
       {a.stiva ? <details><summary>{t('admin.erori.stiva')}</summary><pre>{a.stiva}</pre></details> : null}
     </div>
   );
@@ -200,7 +242,9 @@ function GraficAparitii({ aparitii }: { readonly aparitii: readonly Aparitie[] }
   );
 }
 
-function DetaliuGrup({ con, grup, poateMarca, marcat }: { readonly con: Conexiune; readonly grup: RandGrup; readonly poateMarca: boolean; readonly marcat: () => void }): ReactElement {
+function DetaliuGrup({ con, grup, poateMarca, nume, marcat }: {
+  readonly con: Conexiune; readonly grup: RandGrup; readonly poateMarca: boolean; readonly nume: ReadonlyMap<string, string>; readonly marcat: () => void;
+}): ReactElement {
   const l = useLimba();
   const [aparitii, setAparitii] = useState<Masura<readonly Aparitie[]> | null>(null);
   const [marcare, setMarcare] = useState<{ readonly faza: 'liber' } | { readonly faza: 'se-marcheaza' } | { readonly faza: 'esec'; readonly motiv: string }>({ faza: 'liber' });
@@ -243,7 +287,7 @@ function DetaliuGrup({ con, grup, poateMarca, marcat }: { readonly con: Conexiun
         {' · '}
         {t('admin.erori.ultima', { data: dataScurta(grup.ultimaData, l) })}
       </p>
-      <DetaliiAparitie a={grup.ultima} />
+      <DetaliiAparitie a={grup.ultima} nume={nume} />
       {aparitii === null ? <SeIncarca text={t('admin.erori.se-incarca')} />
         : !aparitii.ok ? <p className="admin-eroare" role="alert">{t('admin.erori.aparitii-citire', { motiv: aparitii.motiv })}</p>
           : aparitii.valoare.length === 0 ? <p className="admin-slab" data-admin="fara-aparitii">{t('admin.erori.fara-aparitii')}</p>

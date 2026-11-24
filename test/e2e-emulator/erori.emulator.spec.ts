@@ -45,22 +45,29 @@ async function scrie(cale: string, d: Record<string, unknown>): Promise<void> {
 }
 
 /** Un grup de erori cu aparițiile lui; `cand` = momentele aparițiilor, cea mai nouă întâi. */
-async function grup(id: string, sursa: 'client' | 'server', mesaj: string, rezolvat: boolean, cand: readonly Date[]): Promise<void> {
+async function grup(id: string, sursa: 'client' | 'server', mesaj: string, rezolvat: boolean, cand: readonly Date[], pasi?: readonly unknown[]): Promise<void> {
   const ap = (c: Date) => ({ cand: c, tip: 'randare', mesaj, stiva: `at f (${id.slice(0, 4)}.ts:1:2)`, build: `b-${id.slice(0, 4)}`, instanta: 'local', adresa: '/', browser: 'Edge', uid: 'om1', context: '' });
   await scrie(`errorLogs/${id}`, {
     schema: 1, amprenta: id, sursa, tip: 'randare', mesaj, numar: cand.length, oameni: ['om1'], primaData: cand[cand.length - 1] ?? new Date(),
-    ultimaData: cand[0] ?? new Date(), rezolvat, ultima: ap(cand[0] ?? new Date()),
+    ultimaData: cand[0] ?? new Date(), rezolvat, ultima: { ...ap(cand[0] ?? new Date()), ...(pasi ? { pasi } : {}) },
   });
   for (const [k, c] of cand.entries()) await scrie(`errorLogs/${id}/aparitii/a${k}`, ap(c));
 }
 
 const ACUM = Date.now();
+/** Pașii dinaintea ultimei apariții a lui G1 (A.11a), ca de la server; ultimul, stricat, nu se arată. */
+const PASI_G1 = [
+  { fel: 'actiune', id: 'document.importa', rez: 'ok', ms: 4_000 },
+  { fel: 'actiune', id: 'document.roteste', rez: 'motiv.nimic-ales', ms: 1_200 },
+  { fel: 'dialog', id: 'eticheta.export-titlu', rez: 'renuntat', ms: 400 },
+  { fel: 'clic', id: 'Numele foii', ms: 10 },
+];
 const CAND_G1 = [new Date(ACUM - 60_000), new Date(ACUM - 120_000), new Date(ACUM - 2 * ZI)];
 
 test.beforeEach(async () => {
   await fetch(`http://127.0.0.1:8085/emulator/v1/projects/${PROIECT}/databases/(default)/documents`, { method: 'DELETE' });
   await fetch(`http://127.0.0.1:9095/emulator/v1/projects/${PROIECT}/accounts`, { method: 'DELETE' });
-  await grup(G1, 'client', 'TypeError: c.puncte is undefined', false, CAND_G1);
+  await grup(G1, 'client', 'TypeError: c.puncte is undefined', false, CAND_G1, PASI_G1);
   await grup(G2, 'server', 'FirebaseError: permission-denied', false, [new Date(ACUM - ZI)]);
   await grup(G3, 'client', 'RangeError: vechi', true, [new Date(ACUM - 20 * ZI)]);
 });
@@ -97,6 +104,11 @@ test('Erori: lista în stânga, eroarea aleasă în dreapta fără să împingă
   await expect(detaliu).toContainText('TypeError: c.puncte is undefined');
   await expect(detaliu).toContainText('b-aaaa');
   await expect(detaliu.locator('.admin-aparitii li')).toHaveCount(3);
+  // Pașii dinaintea ei (A.11a), cel mai vechi primul, cu numele acțiunilor din catalog și rezultatul altul decât „ok”.
+  await expect(detaliu.locator('[data-admin="pasi"] summary')).toContainText('Cei 3 pași dinaintea ei');
+  await expect(detaliu.locator('[data-admin="pasi"] li')).toHaveText([
+    '−4 s Importă · acțiune', '−1,2 s Rotește · acțiune · motiv.nimic-ales', '−0,4 s eticheta.export-titlu · dialog · renuntat',
+  ], LENT);
   const lista = await page.locator('[data-admin="lista-erori"]').boundingBox();
   const cutie = await detaliu.boundingBox();
   expect(lista && cutie && cutie.x >= lista.x + lista.width).toBe(true);
@@ -125,6 +137,7 @@ test('Erori: lista în stânga, eroarea aleasă în dreapta fără să împingă
   await r2.click();
   await expect(r2).toHaveAttribute('data-ales', 'true');
   await expect(detaliu).toContainText('FirebaseError: permission-denied');
+  await expect(detaliu.locator('[data-admin="pasi"]')).toHaveCount(0);
   await expect.poll(() => tinute, { message: 'citirea aparițiilor lui G2 e ținută' }).toBe(1);
   await expect(detaliu.locator('[data-schita]')).toBeVisible();
   await expect(detaliu.locator('.admin-aparitii li')).toHaveCount(0);

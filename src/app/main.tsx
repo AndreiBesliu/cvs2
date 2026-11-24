@@ -17,7 +17,7 @@ import { deschideProiect } from './proiectLocal.ts';
 import { creeazaJurnal, type Context, type Depozit } from './jurnalErori.ts';
 import { creeazaRaportor, descrieStare } from './raportorPornire.ts';
 import { observaCalculele } from '../jobs/observatorCalcul.ts';
-import { urmaresteGesturile, utilizarea } from './utilizare.ts';
+import { pasiAcum, urmaresteGesturile, utilizarea } from './utilizare.ts';
 import './stil.css';
 
 const CHEIE_LIMBA = 'cncvs2.limba';
@@ -52,6 +52,7 @@ const raportor = creeazaRaportor({
   adu: () => import('../cloud/raportor.ts'),
   build: VERSIUNE,
   limba,
+  pasi: pasiAcum,
 });
 window.addEventListener('error', (e) => { jurnal.adauga('fereastra', e.error ?? e.message); });
 window.addEventListener('unhandledrejection', (e) => { jurnal.adauga('promisiune', e.reason); });

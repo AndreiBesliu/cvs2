@@ -21,6 +21,25 @@ export const TREPTE_SESIUNE_MIN = [1, 5, 15, 30, 60, 120, 240, 480, 1_440] as co
 export const P_OAMENI = 10;
 export const P_ACTIUNE = 6;
 
+/**
+ * Fluxurile (ADR 0262 §6, felia A.10). Secvențele: 3 și 4 acțiuni reușite la rând ale unei sesiuni, păstrate pe zi cele mai
+ * dese (din cele mai multe sesiuni), câte `SECVENTE_PE_LUNGIME` pe fiecare lungime; cheia e lanțul id-urilor, cu `>`.
+ */
+export const LUNGIMI_SECVENTA = [3, 4] as const;
+export const SECVENTE_PE_LUNGIME = 150;
+/** Ce nu e un pas al lucrului, ci selecția sau navigarea (panourile, tema, paleta, foaia arătată): nu intră în secvențe. */
+const NAVIGARE = /^(?:selectie\.|vedere\.(?!traseu$|masina$|imprimanta$|freze$))/;
+export const intraInSecventa = (id: string): boolean => !NAVIGARE.test(id);
+/**
+ * Pâlnia drumului principal: deschiderea, desenul sau importul, rolul de tăiere, exportul G-code, lucrarea pornită pe mașină.
+ * O sesiune ajunge până la pasul cel mai departe pe care l-a făcut (deci una care exportă un proiect salvat trece și de
+ * desen și de rol, făcute în altă zi).
+ */
+export const PASI_PALNIE = ['deschidere', 'continut', 'rol', 'export', 'masina'] as const;
+export type PasPalnie = (typeof PASI_PALNIE)[number];
+const CONTINUT: ReadonlySet<string> = new Set(['document.adauga-cerc', 'document.adauga-dreptunghi', 'document.deseneaza', 'document.importa', 'document.text']);
+const ROL: ReadonlySet<string> = new Set(['document.rol', 'document.aplica-operatii']);
+
 // HyperLogLog ------------------------------------------------------------------------------------------------------------
 
 /** Pură: un hash de 32 de biți al unui șir (FNV-1a, apoi amestecul final al lui MurmurHash3, ca biții să fie uniformi). */
@@ -125,6 +144,10 @@ export interface SumaActiune { n: number; ok: number; de: Numere; motive: Numere
 export interface SumaUnealta { n: number; de: Numere; oameni: string }
 export interface SumaDialog { deschis: number; gata: number; renuntat: number }
 export interface SumaCalcul { ok: number; eroare: number; anulat: number; ms: Numere }
+/** O secvență: de câte ori a apărut și în câte sesiuni. */
+export interface SumaSecventa { n: number; s: number }
+/** Un pas al pâlniei: câte sesiuni au ajuns la el și schița oamenilor lor (`P_OAMENI`). */
+export interface SumaPas { sesiuni: number; oameni: string }
 
 export interface SumeSegment {
   loturi: number;
@@ -148,6 +171,9 @@ export interface SumeSegment {
   coduriMasina: Numere;
   imprimanta: Numere;
   coduriImprimanta: Numere;
+  /** Secvențele cele mai dese (A.10), cheia `a>b>c`. */
+  secvente: Record<string, SumaSecventa>;
+  palnie: Record<PasPalnie, SumaPas>;
 }
 
 export interface SumeZi {
@@ -167,6 +193,14 @@ export interface LotZi {
 
 const creste = (x: Numere, k: string, n = 1): void => { x[k] = (x[k] ?? 0) + n; };
 
+/** Pură: pasul pâlniei pe care îl dovedește un eveniment (0: niciunul în afara deschiderii). */
+export function pasPalnie(e: Eveniment): number {
+  if (e.fel === 'actiune') return e.rez !== 'ok' ? 0 : CONTINUT.has(e.id) ? 1 : ROL.has(e.id) ? 2 : 0;
+  if (e.fel === 'calcul') return e.id === 'export' && e.rez === 'ok' ? 3 : 0;
+  if (e.fel === 'masina') return e.id === 'pornita' ? 4 : 0;
+  return 0;
+}
+
 /** Pură: treapta duratei unei sesiuni (ms). */
 export function treaptaSesiune(ms: number): number {
   const min = ms / 60_000;
@@ -177,18 +211,64 @@ export function treaptaSesiune(ms: number): number {
  * Sumele unei zile, adunate lot cu lot (jobul citește loturile pe pagini, fără să le țină pe toate). Un eveniment care nu
  * mai trece de lista albă de azi (o schemă veche) se numără la aruncate.
  */
+/** O sesiune în lucru: timpul primului și ultimului eveniment, contul (doar hash-ul), pașii secvențelor, pasul pâlniei. */
+interface InSesiune { min: number; max: number; h: number; pasi: [number, number, string][]; pas: number }
+
 interface InLucru {
   loturi: number; evenimente: number; aruncate: number; oameni: Schita;
-  sesiuni: Map<string, { min: number; max: number }>;
+  sesiuni: Map<string, InSesiune>;
   actiuni: Map<string, { n: number; ok: number; de: Numere; motive: Numere; oameni: Schita }>;
   unelte: Map<string, { n: number; de: Numere; oameni: Schita }>;
   ferestre: Numere; dialoguri: Record<string, SumaDialog>; clicuri: Numere; derulare: Numere; zoom: Numere;
   calcule: Record<string, SumaCalcul>; masina: Numere; coduriMasina: Numere; imprimanta: Numere; coduriImprimanta: Numere;
 }
 
+/** Pură: secvențele (cele mai dese, pe fiecare lungime) și pâlnia, din sesiunile zilei. */
+function fluxuri(sesiuni: Iterable<InSesiune>): { secvente: Record<string, SumaSecventa>; palnie: Record<PasPalnie, SumaPas> } {
+  const toate = new Map<string, SumaSecventa>();
+  const pasi = PASI_PALNIE.map(() => ({ sesiuni: 0, oameni: schitaNoua(P_OAMENI) }));
+  for (const ses of sesiuni) {
+    for (let k = 0; k <= ses.pas; k++) {
+      const p = pasi[k];
+      if (!p) continue;
+      p.sesiuni++;
+      adaugaInSchita(p.oameni, P_OAMENI, ses.h);
+    }
+    // În ordinea timpului (loturile pot sosi în altă ordine), cu repetările la rând lipite.
+    const ordonati = [...ses.pasi].sort((a, b) => a[0] - b[0] || a[1] - b[1]);
+    const ids = ordonati.map((p) => p[2]).filter((id, i, a) => i === 0 || id !== a[i - 1]);
+    const vazute = new Set<string>();
+    for (const L of LUNGIMI_SECVENTA) {
+      for (let i = 0; i + L <= ids.length; i++) {
+        const k = ids.slice(i, i + L).join('>');
+        const v = toate.get(k) ?? { n: 0, s: 0 };
+        v.n++;
+        if (!vazute.has(k)) {
+          vazute.add(k);
+          v.s++;
+        }
+        toate.set(k, v);
+      }
+    }
+  }
+  const secvente: Record<string, SumaSecventa> = {};
+  for (const L of LUNGIMI_SECVENTA) {
+    const pastrate = [...toate].filter(([k]) => k.split('>').length === L)
+      .sort(([ka, a], [kb, b]) => b.s - a.s || b.n - a.n || (ka < kb ? -1 : ka > kb ? 1 : 0)).slice(0, SECVENTE_PE_LUNGIME);
+    for (const [k, v] of pastrate) secvente[k] = v;
+  }
+  const palnie = Object.fromEntries(PASI_PALNIE.map((p, i) => {
+    const x = pasi[i] ?? { sesiuni: 0, oameni: schitaNoua(P_OAMENI) };
+    return [p, { sesiuni: x.sesiuni, oameni: textSchita(x.oameni) }];
+  })) as Record<PasPalnie, SumaPas>;
+  return { secvente, palnie };
+}
+
 export class SumatorZi {
   private readonly s: Record<Segment, InLucru>;
   private readonly zi: string;
+  /** Ordinea sosirii, ca pașii cu același timp să rămână în ordinea lor. */
+  private ord = 0;
 
   constructor(zi: string) {
     this.zi = zi;
@@ -206,7 +286,7 @@ export class SumatorZi {
     s.loturi++;
     s.aruncate += l.aruncate;
     adaugaInSchita(s.oameni, P_OAMENI, h);
-    const ses = s.sesiuni.get(l.sesiune) ?? { min: Infinity, max: -Infinity };
+    const ses = s.sesiuni.get(l.sesiune) ?? { min: Infinity, max: -Infinity, h, pasi: [], pas: 0 };
     s.sesiuni.set(l.sesiune, ses);
     for (const x of l.evenimente) {
       const e: Eveniment | null = evenimentDin(x, Number.MAX_SAFE_INTEGER);
@@ -217,6 +297,8 @@ export class SumatorZi {
       s.evenimente++;
       ses.min = Math.min(ses.min, e.t);
       ses.max = Math.max(ses.max, e.t);
+      ses.pas = Math.max(ses.pas, pasPalnie(e));
+      if (e.fel === 'actiune' && e.rez === 'ok' && intraInSecventa(e.id)) ses.pasi.push([e.t, this.ord++, e.id]);
       switch (e.fel) {
         case 'actiune': {
           const a = s.actiuni.get(e.id) ?? { n: 0, ok: 0, de: {}, motive: {}, oameni: schitaNoua(P_ACTIUNE) };
@@ -270,12 +352,14 @@ export class SumatorZi {
     const segment = (x: InLucru): SumeSegment => {
       const durataSesiune: Numere = {};
       for (const { min, max } of x.sesiuni.values()) creste(durataSesiune, String(treaptaSesiune(max >= min ? max - min : 0)));
+      const { secvente, palnie } = fluxuri(x.sesiuni.values());
       return {
         loturi: x.loturi, evenimente: x.evenimente, aruncate: x.aruncate, sesiuni: x.sesiuni.size, oameni: textSchita(x.oameni), durataSesiune,
         actiuni: Object.fromEntries([...x.actiuni].map(([k, a]) => [k, { n: a.n, ok: a.ok, de: a.de, motive: a.motive, oameni: textSchita(a.oameni) }])),
         unelte: Object.fromEntries([...x.unelte].map(([k, u]) => [k, { n: u.n, de: u.de, oameni: textSchita(u.oameni) }])),
         ferestre: x.ferestre, dialoguri: x.dialoguri, clicuri: x.clicuri, derulare: x.derulare, zoom: x.zoom, calcule: x.calcule,
         masina: x.masina, coduriMasina: x.coduriMasina, imprimanta: x.imprimanta, coduriImprimanta: x.coduriImprimanta,
+        secvente, palnie,
       };
     };
     return { schema: SCHEMA_ZI, zi: this.zi, segmente: { clienti: segment(this.s.clienti), personal: segment(this.s.personal) } };
