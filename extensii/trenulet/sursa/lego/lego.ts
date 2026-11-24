@@ -988,6 +988,42 @@ var Lego = (function (glob: typeof globalThis) {
     }
     return tri;
   }
+  function conector({ gauri = null }: { gauri?: readonly string[] | null }): Corp {
+    // conectorul perpendicular (ADR 0284): un bloc culcat, de 1 pana la 5 pasi, cu sectiunea patrata cat grinda groasa.
+    // Fiecare pas are gaura lui: de stift ("r", cu lamaj pe fetele prin care iese), de ax ("x") sau niciuna ("p"), pe axa
+    // lui: in sus ("v"), de-a latul ("o") sau, doar la capete, in lung ("l"). Codul unui pas e felul si axa ("xv", "ro").
+    // Gaurile stau in pasi diferiti, deci nu se taie; cea in lung intra din capat cat un pas si se opreste in vecin.
+    const lista: readonly unknown[] = Array.isArray(gauri) && gauri.length ? gauri.slice(0, 5) : ["xv", "ro"];
+    const e = ef(), s = P.pas, g = P.grinda_groasa, h = P.lamaj_h, n = lista.length, m = g / 2, tri: Tri[] = [], avert: string[] = [];
+    let lungLaMijloc = false, cuGaura = false;
+    lista.forEach((cod, k) => {
+      const c = typeof cod === "string" ? cod : "", capat0 = k === 0, capat1 = k === n - 1;
+      let tip = c[0] === "x" || c[0] === "p" ? c[0] : "r";
+      const axa = c[1] === "o" || c[1] === "l" ? c[1] : "v";
+      if (axa === "l" && !capat0 && !capat1 && tip !== "p") { lungLaMijloc = true; tip = "p"; }
+      if (tip !== "p") cuGaura = true;
+      // capetele blocului sunt trase cu 0,1 (ca axul); pasii vecini se suprapun cu 0,02
+      const cx = s * k + s / 2, x0 = capat0 ? 0.1 : s * k - 0.01, x1 = capat1 ? s * n - 0.1 : s * (k + 1) + 0.01;
+      // sectiunea si gaura, in planul perpendicular pe axa gaurii, intinse apoi pe ea (intre w0 si w1)
+      const peLung = axa === "l", ext = peLung ? dreptunghi(0, 0, g, g) : dreptunghi(x0, 0, x1, g), ct: P2 = peLung ? [m, m] : [cx, m];
+      const w0 = peLung ? x0 : 0, w1 = peLung ? x1 : g;
+      let corp: Tri[];
+      if (tip === "p") corp = prisma(ext, w0, w1);
+      else if (tip === "x") corp = inel(ext, cruce(ct[0], ct[1], e.axGauraD, e.axGauraLat), ct, w0, w1);
+      else {
+        // lamajul, pe fetele prin care iese gaura: amandoua, sau doar capatul blocului la gaura in lung
+        const jos = !peLung || capat0, sus = !peLung || capat1, a = jos ? w0 + h : w0, b = sus ? w1 - h : w1;
+        corp = inel(ext, cerc(ct[0], ct[1], e.gauraD / 2), ct, jos ? a - 0.01 : a, sus ? b + 0.01 : b);
+        if (jos) corp.push(...inel(ext, cerc(ct[0], ct[1], e.lamajD / 2), ct, w0, a));
+        if (sus) corp.push(...inel(ext, cerc(ct[0], ct[1], e.lamajD / 2), ct, b, w1));
+      }
+      // (u, v, w) -> (u, w, v) intoarce orientarea (ca la caramida Technic); (w, u, v) o pastreaza (ca la ax)
+      tri.push(...(axa === "v" ? corp : axa === "o" ? axe(corp, ([u, v, w]) => [u, w, v], true) : axe(corp, ([u, v, w]) => [w, u, v], false)));
+    });
+    if (lungLaMijloc) avert.push(tr("O gaură în lung merge doar la capetele blocului: pasul din mijloc rămâne plin."));
+    else if (!cuGaura) avert.push(tr("Blocul n-are nicio gaură: alege una, de știft sau de ax."));
+    return { tri, avert };
+  }
   function suport({ lung = 2, adanc = 1, inalt = 1, invers = false }: { lung?: number; adanc?: number; inalt?: number; invers?: boolean }): Corp {
     // suportul (bracket): o placa culcata si una in picioare, in fata ei, cu stifturi spre inainte. Normal: placa culcata
     // jos; intors: sus (atunci cere suport la printare). Stifturile din fata sunt la 4 mm (+ 8 mm pe rand) de jos.
@@ -2241,7 +2277,7 @@ var Lego = (function (glob: typeof globalThis) {
   }
 
   // ---------------------------------------------------------------------------------------------- piesa dupa definitie
-  const TIPURI = { caramida, lateral, panta, pantaInversa, pana, rotund, grinda, caramidaTechnic, ax, stiftTechnic, bucsa, suport, clema, maner, bara, bila, cupa, rotita, roata, fulie, conica, coroana, conicaDubla, senila, elice, eliceBarca, ventilator, dinCvs2 };
+  const TIPURI = { caramida, lateral, panta, pantaInversa, pana, rotund, grinda, caramidaTechnic, ax, stiftTechnic, bucsa, conector, suport, clema, maner, bara, bila, cupa, rotita, roata, fulie, conica, coroana, conicaDubla, senila, elice, eliceBarca, ventilator, dinCvs2 };
   function construieste(def: DefPiesa) {
     const f = TIPURI[def.tip];
     if (!f) throw new Error("tip necunoscut: " + def.tip);

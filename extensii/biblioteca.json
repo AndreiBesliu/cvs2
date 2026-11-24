@@ -18,6 +18,12 @@
       ],
       "noutati": [
         {
+          "versiune": "18.24.0",
+          "data": "2026-11-24",
+          "ro": "Conectorul perpendicular, în fila „Legături”: un bloc de 1–5 pași, cu găuri de știft sau de ax pe trei axe, ca să legi grinzi și axe care nu stau în același plan.",
+          "en": "The perpendicular connector, in the “Joints” tab: a block of 1–5 steps with pin or axle holes on three axes, to join beams and axles that are not in the same plane."
+        },
+        {
           "versiune": "18.23.0",
           "ro": "Elicea de barcă se poate înclina și spre pupa, 0–15°: paletele se ridică spre vârf, ca la elicele bărcilor rapide, și se tipăresc cu suport sub ele.",
           "en": "The boat propeller can now be raked aft, 0–15°: the blades rise toward the tip, as on fast boat propellers, and print with supports under them."
@@ -88,8 +94,8 @@
           }
         }
       ],
-      "versiune": "18.23.0",
-      "continut": "ae3af10b6b7ca97eb48d914ba3b1e5ceb661312f4c205d43475b4504c894ec08"
+      "versiune": "18.24.0",
+      "continut": "2d5bc146005ca446445eff36eff3a1d644f82169be79b70a794a9ed975af8bdc"
     }
   ]
 }
