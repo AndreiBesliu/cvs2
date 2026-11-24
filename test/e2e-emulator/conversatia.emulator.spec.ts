@@ -320,13 +320,13 @@ test('pe telefon (ADR 0260 §10, A.7): bara de jos cu Azi, Erori, Tichete și Ma
   await expect(detaliu.locator('[data-tic="descarca-proiect"]')).toBeHidden();
   await expect(detaliu.locator('[data-tic="proiect-calculator"]')).toHaveText('Proiectul atașat (2 kB) se descarcă de pe calculator.');
   await detaliu.locator('[data-tic="raspuns-text"]').fill('Îl deschidem pe calculator și revenim.');
-  await detaliu.locator('[data-tic="trimite"]').click();
-  await expect(detaliu.locator('[data-tic="raspuns"]')).toContainText('Îl deschidem pe calculator și revenim.', LENT);
-  // Bara de jos nu acoperă butonul trimiterii (conținutul are loc dedesubt).
-  await detaliu.locator('[data-tic="trimite"]').scrollIntoViewIfNeeded();
+  // Bara de jos nu acoperă butonul trimiterii (conținutul are loc dedesubt): pagina derulată până la capăt.
+  await page.evaluate(() => { window.scrollTo(0, document.documentElement.scrollHeight); });
   const b = await detaliu.locator('[data-tic="trimite"]').boundingBox();
   const j = await jos.boundingBox();
   expect(b && j && b.y + b.height <= j.y).toBe(true);
+  await detaliu.locator('[data-tic="trimite"]').click();
+  await expect(detaliu.locator('[data-tic="raspuns"]')).toContainText('Îl deschidem pe calculator și revenim.', LENT);
   await expect.poll(iese).toEqual([0]);
   // Pe calculator: fără bara de jos și fără ☰; bara laterală la locul ei, iar proiectul se descarcă.
   await page.setViewportSize({ width: 1280, height: 800 });
