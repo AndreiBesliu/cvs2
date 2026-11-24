@@ -1406,7 +1406,10 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   - Comenzile: `gh run list --workflow rapid.yml --branch main --limit 1` și
     `gh run list --workflow complet.yml --limit 1`.
   - **O felie a rapidului are 15 minute** (din 24.11; înainte 10): împărțirea fișierelor pe felii se mută la fiecare
-    fișier de test nou, iar oracolul `intrari-rampa.corpus.oracol.test.ts` ține singur peste 6 minute. Un rapid
+    fișier de test nou. Oracolul rampelor, care ținea singur peste 6 minute, e împărțit din 24.11 în șase fișiere
+    (`intrari-rampa.corpus.<n>.oracol.test.ts`, prin `test/unit/ajutor-intrari-rampa-corpus.ts`): **un oracol pe corpus
+    care trece de un minut se împarte la fel, pe părți ale corpusului, cu pragurile pe părți și cu proba care păzește
+    împărțirea.** Un rapid
     „cancelled” pe o singură felie, la limită, e împărțirea, nu un test agățat: se citește jurnalul feliei (ultimul
     fișier tipărit e cel dinaintea celui lent). Înaintea unirii se citesc și rapidul, și completul ramurii de unire.
   - Local, tot nivelul rapid: `npm run rapid`. E2e-ul în Edge: `npm run build && npm run e2e`.
@@ -1473,6 +1476,16 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 24.11.2026, seara: **oracolul rampelor, împărțit în șase fișiere** („ok, imparte oracolul rampelor in mai multe
+  fisiere”, în sesiunea principală, la întrebarea de după incidentul rapidului: împărțit sau mutat în nivelul complet).
+  `intrari-rampa.corpus.oracol.test.ts` (un singur test, 6 min 19 s) a devenit `intrari-rampa.corpus.<1…6>.oracol.test.ts`,
+  câte unul pe parte a corpusului (cazul k merge în partea (k mod 6) + 1), cu judecata fiecărui caz neschimbată, mutată
+  în `test/unit/ajutor-intrari-rampa-corpus.ts`. Măsurat: 338 de cazuri, 30–63 s pe parte, 2 min 11 s toate, în
+  paralel, în container; nicio încălcare, aceleași numărători (199 de programe, 1 554 de treceri cu rampa pe intrare,
+  1 513 punți judecate). Pragurile testului întreg se cer acum pe părți, fiecare cu partea ei din prag (rotunjită în
+  sus), deci suma nu coboară sub cele de dinainte; partea 1 cere și exact șase fișiere și acoperirea corpusului întreg,
+  fiecare caz o dată (patru otrăvuri, toate prinse: o parte fără fișier, împărțirea greșită, minimele slăbite, numărul
+  părților greșit). Rămâne în nivelul rapid. Limita unei felii a rapidului rămâne 15 minute, ca pază.
 - 24.11.2026, după-amiaza (a optsprezecea unire din cloud): **11.1↑c (comenzile foii pe pânză) și 14.C↑d (butonul
   Admin, doar pentru personal) unite în `main`** (sesiunea principală, ramura `unire-2411n`, din `64a63b48`). Amândouă,
   cerute de owner în sesiunea principală, pe 24.11 („ok, cand sunt verzi frezele fa unirea, pana atunci vreau sa faci
