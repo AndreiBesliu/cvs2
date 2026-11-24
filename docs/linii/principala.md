@@ -143,8 +143,9 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
 
 ## Starea pe 24.11.2026, la prânz (după a paisprezecea unire din cloud)
 
-- **Pe test:** `df9ae539` (tot până la lotul al doisprezecelea: A.10 și A.11a; publicat pe 24.11 la 09:41, cu
-  serverul: `logClientError` și `agregaUtilizarea` la zi).
+- **Pe test:** `fafb95e7` (tot până la lotul al treisprezecelea: 25.8↑b; publicat pe 24.11 la 11:33). Lotul al
+  paisprezecelea (`356db9bd`: 3.Ts, A.11b–A.11e, 16.A↑b-1) e în `main` din 11:28, cu CI-ul și publicarea în lucru
+  (cu serverul: `utilizare`, `tichete`, regulile, două indexuri compuse pe `utilizare`).
 - **`main`, din cloud:** pe 23.11: 3.Tq (`0ae9c6c1`); 11.3↑e și A.4 (`ddaa7ead`); 3.Tr, unită de linia elicelor
   (`d262e57a`); 25.8↑a și A.5 (`1b46c955`), cu reparația probei extensiilor (`8287d66e`); 11.3↑f, unită de linia
   planșelor (`f4601938`); A.6 (`4497d639`); 3.Xh (`2d1e482c`) și 12.1↑e-3 cu 12.1↑e-4 (`03460cab`); A.8a cu A.8b
