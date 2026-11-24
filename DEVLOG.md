@@ -13920,7 +13920,7 @@ incidentul numărul unu” (completul loturilor 19–21, roșu la o probă a ext
   sosește citirea (`useMesajDupaCitire`, `src/admin/setari/dupaCitire.ts`), bună sau căzută; până atunci formularul e
   ocupat. Probele, pe emulatoare: citirea întârziată anume cu 1,5 s (roșie înaintea reparației: la mesaj, citirea nu
   sosise; verde după) și citirea căzută (mesajul apare, iar după „Reîncarcă” formularul nu rămâne ocupat); cele 11
-  probe ale fișierelor `utilizatori` și `rapide`, verzi. Otrăvurile (`test/otravuri/3.At.py`): @@O25@@.
+  probe ale fișierelor `utilizatori` și `rapide`, verzi. Otrăvurile (`test/otravuri/3.At.py`): 5 / 5 din prima, pe emulatoare (mesajul dat la răspunsul salvării, în fiecare din cele trei formulare; mesajul care nu mai vine; citirea căzută care lasă formularul ocupat).
 - **Porțile, în CI:** @@D25@@
 - **Loturile dinainte:** loturile 19–22 sunt pe test din 20:32 (`62569bb2`; completul pe `main` 45445300697, verde;
   publicarea 45457898832; adresa spune `62569bb25907`, proba de fum, bună). Lanțul de publicare pornit în fundal s-a

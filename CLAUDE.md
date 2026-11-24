@@ -1590,7 +1590,7 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   („lot = 61”: butonul Salvează, activ în loc de oprit). Cauza, o cursă adevărată: după „Salvează”, mesajul apărea la
   răspunsul salvării, iar formularul se umplea din nou la citirea de după, peste ce se scrisese între ele. Acum cele
   trei formulare ale filei Setări țin mesajul până la citire (`useMesajDupaCitire`, `src/admin/setari/dupaCitire.ts`);
-  două probe noi (citirea întârziată anume, care cădea înaintea reparației; citirea căzută); otrăvurile @@O25@@.
+  două probe noi (citirea întârziată anume, care cădea înaintea reparației; citirea căzută); otrăvurile 5 / 5 din prima, pe emulatoare.
   Documentul rămâne v27; nimic pe server. Ciocnirile, doar în DEVLOG și în lecțiile din `docs/linii/principala.md`.
   Porțile lotului, în CI, @@P25@@
 - 24.11.2026, seara (a douăzeci și doua unire din cloud): **fereastra „Exportă G-code”, refăcută (28.8↑a–g), și proba
