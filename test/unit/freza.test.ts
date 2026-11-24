@@ -410,8 +410,9 @@ test('profilurile parametrice (ADR 0302 §1, felia 16.A↑h-5): rotunjirea, ogee
   const p = cuFreza([], null, { ...PAN, treapta: 1 }, () => 'a', 5);
   assert.ok(p.ok);
   assert.deepEqual([p.lista[0]!.unghi, p.lista[0]!.varf, 'treapta' in p.lista[0]!, 'raza' in p.lista[0]!], [12, 6.35, false, false]);
-  // Citită: o treaptă care nu e număr strică freza.
+  // Citită: o treaptă care nu e număr strică freza, și pe un fel care n-o judecă (forma, nu marginile).
   assert.equal(frezaDinDate({ ...salvata(OGR, 'a'), treapta: 'x' }), null);
+  assert.equal(frezaDinDate({ ...salvata(ROT, 'a'), treapta: 'x' }), null);
   assert.equal(frezaDinDate(salvata(OGR, 'a'))?.treapta, 1.5);
   // Copia pentru document: niciun profil, până la CAM-ul lor (16.A↑f).
   for (const f of [ROT, OG, OGR, PAN]) assert.throws(() => sculaDinFreza(f), /CAM/u);

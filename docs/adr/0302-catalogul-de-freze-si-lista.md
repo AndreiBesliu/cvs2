@@ -104,7 +104,7 @@ materiale, dacă așa vrea.
 | 16.A↑h-2 | Grupurile omului (`grup` pe freză, în fișier și în cont): arborele, „Mută în”, grupul nou, redenumirea |
 | 16.A↑h-3 | Catalogul: felurile de azi (plată, planare, V, gravare) cu mărimile lor; „Pune în frezele mele” (una, un grup, tot) |
 | 16.A↑h-4 | Felurile noi în bibliotecă și în catalog, cu siluetele și editorul lor (bila, toroidala, conica cu vârf rotund, burghiul), „în curând” până la CAM-ul lor (16.A↑e) |
-| 16.A↑h-5 | Profilurile parametrice (roundover, ogee, roman ogee, panou ridicat, canelură), în bibliotecă și în catalog, „în curând” până la CAM-ul lor (16.A↑f) |
+| 16.A↑h-5 | Profilurile parametrice (roundover, ogee, roman ogee, panou ridicat; canelura e o bilă), în bibliotecă și în catalog, „în curând” până la CAM-ul lor (16.A↑f) |
 
 Fereastra ca listă (§3) și grupurile (§4) erau o singură felie la propunere; s-au despărțit la acceptare, ca fiecare să încapă
 în jumătatea de zi a unei felii (`PLAN.md` §4), în ordinea din răspunsul 5. Profilurile parametrice au ieșit din 16.A↑h-4
@@ -243,3 +243,34 @@ Pe 24.11.2026, în aceeași sesiune, după 16.A↑h-3, la „continua cu 16.A↑
 
 Probele (întâi): modelul, capătul, profilul, CSV-ul, catalogul și alegerea, pe hârtie (unitare); fereastra și Tăierea în
 Edge. Otrăvurile: `test/otravuri/16.A-h4.py`.
+
+## Implementarea (16.A↑h-5)
+
+Pe 24.11.2026, în aceeași sesiune, după 16.A↑h-4, la „continua cu 16.A↑h-5”. Geometria fiecărui profil e a noastră, din
+câțiva parametri, aleasă ca în 16.A↑f (profilul desenat) să devină un generator de siluetă; owner-ul o poate potrivi pe
+frezele lui.
+
+- **Felurile noi** (`src/model/freza.ts`), toate „în curând” (fără CAM până la 16.A↑f):
+  - **rotunjirea** (roundover): diametrul și raza r (peste 0, sub Ø / 2): fundul până la R − r, apoi sfertul de cerc cu
+    centrul în (R, 0), vertical la vârf și orizontal sus; capătul r;
+  - **ogee-ul**: două arce de rază r (sub Ø / 4), unul după altul (S-ul), de la R − 2r; capătul 2r;
+  - **ogee-ul roman**: ogee-ul cu o **treaptă** t (câmpul nou `treapta`): în sus la fund, în afară sus; 2r + t sub Ø / 2,
+    capătul 2r + t;
+  - **panoul ridicat**: fundul plat (`varf`, ca la gravare), teșitura β față de fața plăcii (`unghi`, 1°–89°) și, opțional,
+    scobitura de rază r (`raza`), tangentă la fund și la teșitură, care încape: a + r·sin β < R; capătul (R − a)·tan β, cu
+    scobitura r(1 − cos β) + (R − a − r·sin β)·tan β. Panoul cu ogee rămâne pentru profilul desenat (16.A↑f).
+  - **Canelura** (veining, core box) are silueta bilei: nu e un fel separat; bilele catalogului o acoperă.
+- **Silueta** (`src/model/profilFreza.ts`): arcele la pași egali, cu capetele scrise exact; treptele, drepte.
+- **Fișierul:** CSV-ul citește `rotunjire` / `roundover`, `ogee`, `ogee-roman` / `ogee roman` / `roman ogee`, `panou` /
+  `panou ridicat` / `raised panel` și coloana `treapta`, la capătul tabelului. Serverul nu se schimbă.
+- **Catalogul**, 149 de freze: 11 rotunjiri (R2–R12,7, cu vârful de Ø6: D = 2r + 6), 7 ogee (R2–R6,35, D = 4r + 6),
+  4 ogee roman (R3–R6, treapta 1,5, D = 4r + 2t + 6), 8 panouri (1 1/2" și 2", fundul plat de 1/4", drepte la 10°, 12°,
+  15° și cu scobitura R1/4" la 12°); valorile de pornire, ca la plata de același diametru, cu pasul 2. Punerea în
+  bibliotecă socotește și fundul plat și treapta în geometrie.
+- **Fereastra:** felurile noi în lista felului; la trecerea pe un profil, raza, treapta, unghiul și fundul plat primesc
+  valorile obișnuite, iar diametrul se schimbă **doar dacă cel scris nu cuprinde profilul** (pe Ø6, o rotunjire R3 n-ar avea
+  vârf: devine Ø12); scobitura panoului pornește goală. Etichetele: „Raza rotunjirii”, „Raza arcelor”, „Treapta”,
+  „Teșitura (față de fața plăcii)”, „Fundul plat”, „Raza scobiturii (opțională)”; motivele razei și ale treptei, pe fel.
+
+Probele (întâi): modelul, capătul, silueta, CSV-ul, catalogul și punerea, pe hârtie (unitare); fereastra și Tăierea în
+Edge. Otrăvurile: `test/otravuri/16.A-h5.py`.
