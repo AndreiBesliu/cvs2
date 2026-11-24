@@ -26,16 +26,16 @@ const cu = (d: Drept | null, nume = 'Andrei Besliu'): ContTinut => ({ uid: 'u1',
 
 test('rândurile: logarea sau panoul contului, raportările cu contul deschis, frezele (ADR 0300 §3), manualul, aspectul (ADR 0250 §3), sugestia doar unde e voie, ieșirea doar cu un cont ținut', () => {
   const ana = cu(drept('proba', ACUM + 5 * ZI_MS));
-  assert.deepEqual(randuriMeniuCont(null, false), ['intra', 'freze', 'manual', 'aspect']);
-  assert.deepEqual(randuriMeniuCont(null, true), ['intra', 'freze', 'manual', 'aspect', 'sugestie']);
-  assert.deepEqual(randuriMeniuCont(ana, false), ['cont', 'raportari', 'freze', 'manual', 'aspect', 'raporteaza', null, 'iesi']);
-  assert.deepEqual(randuriMeniuCont(ana, true), ['cont', 'raportari', 'freze', 'manual', 'aspect', 'raporteaza', 'sugestie', null, 'iesi']);
+  assert.deepEqual(randuriMeniuCont(null, false), ['intra', 'freze', 'manual', 'aspect', 'setari']);
+  assert.deepEqual(randuriMeniuCont(null, true), ['intra', 'freze', 'manual', 'aspect', 'setari', 'sugestie']);
+  assert.deepEqual(randuriMeniuCont(ana, false), ['cont', 'raportari', 'freze', 'manual', 'aspect', 'setari', 'raporteaza', null, 'iesi']);
+  assert.deepEqual(randuriMeniuCont(ana, true), ['cont', 'raportari', 'freze', 'manual', 'aspect', 'setari', 'raporteaza', 'sugestie', null, 'iesi']);
   // Și cu proba încheiată sau contul dezactivat, raportarea rămâne: serverul o cere doar contul deschis.
   for (const d of [drept('proba', ACUM - 1), drept('dezactivat', null)]) {
-    assert.deepEqual(randuriMeniuCont(cu(d), false), ['cont', 'raportari', 'freze', 'manual', 'aspect', 'raporteaza', null, 'iesi']);
+    assert.deepEqual(randuriMeniuCont(cu(d), false), ['cont', 'raportari', 'freze', 'manual', 'aspect', 'setari', 'raporteaza', null, 'iesi']);
   }
   // Cu adresa neconfirmată (încă fără drept) contul e ținut, deci se poate ieși din el, dar nu se raportează.
-  assert.deepEqual(randuriMeniuCont(cu(null, 'andrei@exemplu.ro'), false), ['cont', 'freze', 'manual', 'aspect', null, 'iesi']);
+  assert.deepEqual(randuriMeniuCont(cu(null, 'andrei@exemplu.ro'), false), ['cont', 'freze', 'manual', 'aspect', 'setari', null, 'iesi']);
 });
 
 test('capul fără cont: nimeni logat, cu proba unui cont nou', () => {

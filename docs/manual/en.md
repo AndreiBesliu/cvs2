@@ -1230,6 +1230,34 @@ drag the line or move it with the arrow keys (1 mm; Shift: 10 mm, Alt: 0.1 mm), 
 other tools, dimensions are not selected: the click goes to the shape under them. A double click on a dimension, with any
 tool, switches to Dimensions with it selected.
 
+How dimensions look (the numbers, the unit, the ends, the extension lines, the colour) and how the tool behaves is chosen in
+the **Settings** window, **Dimensions** section: from the ⚙ in the tool's bar, from the account menu or with `Ctrl+,`.
+
+## Settings
+%% capitol: setari
+%% acopera: vedere.setari
+
+The **Settings** window (`Ctrl+,`; also from the account menu, “Settings…”, from **Search commands** and from the ⚙ of the
+Dimensions tool) holds the app's settings, not a project's: every change applies at once and is kept in this browser. The
+sections are on the left; for now just one, **Dimensions**. At the top is the **sample dimension**, drawn with the current
+settings; each group has **Back to defaults**. A number is typed with a comma or a point; one outside the limits stays in the
+field, said in red, and is not kept. **Close** (or Esc) closes the window.
+
+- **Numbers:** the unit (mm, cm, inch; the drawing stays in mm), the decimals (automatic: 2, in inch 3; or 0–6), trailing
+  zeros (dropped or kept), rounding (to the decimals or to a step, for instance 0.5), the decimal separator (by the app
+  language, comma or point), the unit written after the number, the text height on the sheet (1–20 mm) and the text position
+  (above the line, in the line, with the line broken, or always horizontal).
+- **Lines and ends:** the ends (filled arrow, open arrow, oblique tick, dot or none) and their size, the extension lines
+  (shown or hidden), their gap from the shape, the overshoot past the dimension line and the dimension line distance for
+  **Keep** in Measure.
+- **Behaviour:** whether new dimensions are linked to shapes, which type the tool starts with (Automatic or the last used),
+  what comes after a dimension (the Dimensions tool stays or back to Select), whether dimensions show on the canvas (hidden,
+  they show only with the Dimensions tool), below how many screen pixels the numbers hide and the dimensions' colour (the
+  theme's or chosen).
+- **Snapping:** the points the ends snap to (vertices, midpoints, centres, quadrants, the box, the sheet, the grid), the
+  tolerance in pixels and the nearest point on the outline (with Ctrl, always or never).
+- **Measuring:** what Measure shows (the distance, Δx and Δy, the angle) and where (next to the pointer, in the bottom bar).
+
 ## Converting vectors
 %% capitol: conversie
 %% acopera: editare.conversie, document.converteste
@@ -2450,6 +2478,7 @@ it, and the app’s interface stays the same.
 | `Ctrl+J` | Join paths |
 | `Delete` | Delete selection |
 | `Ctrl+K` | Search commands |
+| `Ctrl+,` | Settings |
 | `Home` | Show the whole sheet |
 | `PageUp`, `PageDown` | Previous sheet, Next sheet (the active sheet, along the list of sheets) |
 | `T` | Show toolpath |
