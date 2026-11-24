@@ -69,7 +69,7 @@ test('plăcuțele: câmpul din textul piesei, valorile pe plăcuță, copiile, e
   await camp(page).fill('7');
   await camp(page).press('Enter');
   const d1 = await salvat(page, (d) => texteSalvate(d)[0] === 'Masa 7');
-  expect(d1.schema).toBe(27);
+  expect(d1.schema).toBe(28);
   expect(instante(d1)[0]!.campuri).toEqual({ nr: '7' });
   const t1 = Object.values(instante(d1)[0]!.texte!)[0]!;
   expect(t1.copii.map((g) => g.id)).toEqual(['t1-l1', 't1-l2', 't1-l3', 't1-l4', 't1-l5']);
