@@ -340,6 +340,30 @@ export function DialogExport(
   const cerereVizibila = useRef<HTMLDivElement>(null);
   // La deschidere, focusul intră în dialog (butonul care l-a deschis rămâne sub el, inert).
   useEffect(() => { cutie.current?.focus(); }, []);
+  // Esc închide fereastra (ADR 0290, felia 28.8↑g), ca Închide, oriunde ar fi focusul (și când a căzut pe pagină). Nu și cât
+  // stă ascunsă (urechile alese pe desen: Esc e al modului, care îl oprește) sau când Esc e al altui dialog ori al unui câmp
+  // care și-l ia (`defaultPrevented`), nici în mijlocul unei compuneri (IME).
+  const radacina = useRef<HTMLDivElement>(null);
+  const inchide = useRef(onInchide);
+  inchide.current = onInchide;
+  useEffect(() => {
+    const tasta = (e: KeyboardEvent): void => {
+      if (e.key !== 'Escape' || e.defaultPrevented || e.isComposing) return;
+      const r = radacina.current;
+      if (!r || !r.checkVisibility()) return;
+      const alt = e.target instanceof Element ? e.target.closest('[role="dialog"]') : null;
+      if (alt !== null && alt !== r) return;
+      e.preventDefault();
+      inchide.current();
+    };
+    document.addEventListener('keydown', tasta);
+    return () => { document.removeEventListener('keydown', tasta); };
+  }, []);
+  // Un clic în afara ferestrei o închide, doar dacă și apăsarea, și ridicarea au fost afară: o tragere începută în ea (o
+  // selecție de text dusă prea departe) și lăsată afară nu o închide, nici una începută afară și lăsată în ea (clicul cade
+  // atunci pe fundal, strămoșul lor comun).
+  const apasatAfara = useRef(false);
+  const ridicatAfara = useRef(false);
   // Când apare cererea, focusul trece pe textul ei, nu pe bifă: butonul Exportă devine inactiv și focusul ar cădea pe
   // pagină, iar pe bifă un al doilea Space ar bifa-o fără ca omul s-o fi citit. Bifa e la un Tab distanță.
   useEffect(() => { if (cere) cerereVizibila.current?.focus(); }, [cere]);
@@ -910,7 +934,15 @@ export function DialogExport(
     grosimeFoaie, supracursaCitita, cuSupracursa, onAlegeUrechi, frezeRest, grup,
   };
   return (
-    <div className="dialog" role="dialog" aria-modal="true" aria-labelledby="export-titlu">
+    <div className="dialog" role="dialog" aria-modal="true" aria-labelledby="export-titlu" ref={radacina}
+      onPointerDown={(e) => { apasatAfara.current = e.target === e.currentTarget; }}
+      onPointerUp={(e) => { ridicatAfara.current = e.target === e.currentTarget; }}
+      onClick={(e) => {
+        const afara = apasatAfara.current && ridicatAfara.current && e.target === e.currentTarget;
+        apasatAfara.current = false;
+        ridicatAfara.current = false;
+        if (afara) onInchide();
+      }}>
       <div className="dialog-cutie dialog-export" ref={cutie} tabIndex={-1}>
         <h2 id="export-titlu">{foaie === undefined ? t('export.titlu', { post: postAles?.nume ?? '' })
           : t('export.titlu.foaie', { post: postAles?.nume ?? '', foaie: toate ? t('export.foi.toate', { n: foi ?? 0 }) : foaie })}</h2>

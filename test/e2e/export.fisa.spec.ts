@@ -169,3 +169,55 @@ test('Rezultatul pe grupuri: întâi ce e de văzut, apoi fișierele, timpul și
   await expect(rez.locator('[data-testid="export-avertismente"] li')).toHaveCount(2);
   await expect(meta).toContainText('2 avertismente');
 });
+
+test('fereastra se închide la Esc și la un clic în afara ei; o tragere din ea, nu; cât pui urechile pe desen, Esc e al modului (28.8↑g)', async ({ page }) => {
+  await deschide(page);
+  const fereastra = page.locator('[aria-labelledby="export-titlu"]');
+  const deschideIar = async (): Promise<void> => {
+    await page.locator('[data-actiune="export.gcode"]').click();
+    await expect(fereastra).toBeVisible();
+  };
+  // Esc dintr-un câmp, apoi cu focusul căzut pe pagină.
+  await fisa(page, 'e1/e1').locator('[data-camp="adancime"]').click();
+  await page.keyboard.press('Escape');
+  await expect(fereastra).toHaveCount(0);
+  await deschideIar();
+  await page.evaluate(() => { (document.activeElement as HTMLElement | null)?.blur(); });
+  await page.keyboard.press('Escape');
+  await expect(fereastra).toHaveCount(0);
+  // Un clic înăuntru o lasă; unul în afară (lângă colțul ecranului, în marginea din jurul ei) o închide.
+  await deschideIar();
+  const c = await page.locator('.dialog-export').boundingBox();
+  expect(c !== null && c.x > 6 && c.y > 6).toBe(true);
+  await page.locator('#export-titlu').click();
+  await expect(fereastra).toBeVisible();
+  await page.mouse.click(3, 3);
+  await expect(fereastra).toHaveCount(0);
+  // O tragere începută în ea și lăsată afară (o selecție de text dusă prea departe) nu o închide; nici una începută afară
+  // și lăsată în ea.
+  await deschideIar();
+  const t = await page.locator('#export-titlu').boundingBox();
+  if (!t) throw new Error('titlul nu se vede');
+  await page.mouse.move(t.x + 4, t.y + t.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(3, 3, { steps: 4 });
+  await page.mouse.up();
+  await expect(fereastra).toBeVisible();
+  await page.mouse.move(3, 3);
+  await page.mouse.down();
+  await page.mouse.move(t.x + 4, t.y + t.height / 2, { steps: 4 });
+  await page.mouse.up();
+  await expect(fereastra).toBeVisible();
+  // Cât pui urechile pe desen, fereastra stă ascunsă: Esc lasă modul și o aduce înapoi, nu o închide.
+  const e1 = fisa(page, 'e1/e1');
+  await e1.locator('[data-camp="urechi"]').check();
+  await e1.locator('[data-camp="urechi-alese"]').check();
+  await e1.locator('[data-buton="urechi-alege"]').click();
+  const mod = page.getByTestId('mod-urechi');
+  await expect(mod.getByRole('toolbar')).toBeVisible();
+  await expect(fereastra).toBeHidden();
+  await page.keyboard.press('Escape');
+  await expect(mod).toHaveCount(0);
+  await expect(fereastra).toBeVisible();
+  await expect(e1.locator('[data-camp="urechi"]')).toBeChecked();
+});
