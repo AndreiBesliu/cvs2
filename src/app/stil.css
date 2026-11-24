@@ -2009,6 +2009,18 @@ nav button[aria-pressed='true'] {
   background: var(--rosu);
 }
 
+/* Rezultatul cu ceva de văzut înaintea tăierii: punctul în culoarea avertismentelor (ADR 0290, felia 28.8↑f-2). */
+.dialog .dx-nav[data-avertisment]::after {
+  content: '';
+  position: absolute;
+  top: 12px;
+  right: var(--sp-2);
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--a);
+}
+
 /* O operație din listă: locul, „cu N” și mânerul (ordinea mea) în stânga, numele și ce taie în dreapta. */
 .dx-nav-op {
   display: grid;
@@ -2061,6 +2073,39 @@ nav button[aria-pressed='true'] {
   margin: 0;
   font-size: 1rem;
   font-weight: 650;
+}
+
+/*
+ * Rezultatul pe grupuri (ADR 0290, felia 28.8↑f-2): ce e de văzut, fișierele, timpul, simularea, fiecare cu titlul lui; ce e de
+ * văzut stă primul, pe fondul avertismentelor.
+ */
+.dx-rez {
+  margin-top: var(--sp-3);
+  padding-top: var(--sp-3);
+  border-top: 1px solid var(--l-margine);
+}
+
+.dx-rez:first-of-type {
+  border-top: 0;
+}
+
+.dx-rez h4 {
+  margin: 0 0 var(--sp-2);
+  font-size: var(--fs-3);
+  font-weight: 650;
+}
+
+.dx-rez[data-rezultat='avertismente'] {
+  padding: var(--sp-3);
+  border: 0;
+  border-left: 3px solid var(--a);
+  border-radius: var(--r-1);
+  background: color-mix(in oklab, var(--a) 8%, var(--s-panou));
+}
+
+.dx-rez[data-rezultat='avertismente'] ul {
+  margin: 0;
+  padding-left: 1.2em;
 }
 
 .dx-loc {

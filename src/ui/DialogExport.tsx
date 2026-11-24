@@ -535,7 +535,7 @@ function Rezumat({ r, operatii, limba }: { readonly r: RezumatJob; readonly oper
   );
   return (
     <section className="rezumat" data-testid="export-rezumat" aria-labelledby="rezumat-titlu">
-      <h3 id="rezumat-titlu">{t('export.rezumat.titlu')}</h3>
+      <h4 id="rezumat-titlu">{t('export.rezumat.titlu')}</h4>
       <p data-rezumat="timp" role="status"><strong>{t('export.rezumat.timp', { timp: durata(r.total.secunde, limba) })}</strong></p>
       {r.opriri > 0 && <p className="nota" data-rezumat="opriri">{t('export.rezumat.opriri', { n: r.opriri })}</p>}
       <p className="nota" data-rezumat="masina" data-sursa={m.sursa}>
@@ -1404,8 +1404,15 @@ export function DialogExport(
               );
             })}
             {cuRezultat && (
-              <button type="button" className="dx-nav" data-nav="rezultatul" aria-current={curent === 'rezultatul'} onClick={() => { du('rezultatul'); }}>
+              <button type="button" className="dx-nav" data-nav="rezultatul" aria-current={curent === 'rezultatul'}
+                data-avertisment={stare?.ok && stare.avertismente.length > 0 ? '' : undefined} onClick={() => { du('rezultatul'); }}>
                 <span className="dx-nume">{t('export.fisa.rezultatul')}</span>
+                {stare?.ok && (
+                  <span className="dx-meta">{[
+                    ...(stare.rezumat.ok ? [durata(stare.rezumat.total.secunde, limba)] : []),
+                    ...(stare.avertismente.length > 0 ? [t('export.rezultat.meta.avertismente', { n: stare.avertismente.length })] : []),
+                  ].join(' · ')}</span>
+                )}
               </button>
             )}
           </nav>
@@ -2135,43 +2142,52 @@ export function DialogExport(
             {cuRezultat && (
               <section className="dx-fisa" data-fisa="rezultatul">
                 <h3>{t('export.fisa.rezultatul')}</h3>
-        {stare?.ok && stare.foi && <ListaFoi foi={stare.foi} sha256={stare.sha256} limba={limba} />}
-        {stare?.ok && !stare.foi && (stare.fisiere && stare.fisiere.length > 1
-          ? (
-            <ul role="status" data-testid="export-stare">
-              {stare.fisiere.map((f) => <li key={f.nume} data-fisier={f.nume}>{t('export.gata.fisier', { nume: f.nume, n: f.linii, sha: f.sha256 })}</li>)}
-            </ul>
-          )
-          : <p role="status" data-testid="export-stare">{t('export.gata', { n: stare.linii, sha: stare.sha256 })}</p>)}
-        {stare?.ok && stare.dopuri && stare.dopuri.length > 0 && (
-          <ul className="dopuri" data-testid="export-dopuri" aria-live="polite">
-            {stare.dopuri.map((d) => (
-              <li key={d.nume} data-fisier={d.nume}>
-                {t(d.exacta ? 'export.gata.dop-decupat' : 'export.gata.dop', {
-                  nume: d.nume, latime: fmtFreza.format(d.latime), inaltime: fmtFreza.format(d.inaltime), grosime: fmtFreza.format(d.grosimeMinima),
-                  n: d.linii, sha: d.sha256,
-                })}
-              </li>
-            ))}
-          </ul>
-        )}
-        {stare?.ok && onDeschideInMasina && (
-          <div className="butoane">
-            <button type="button" data-buton="in-masina" title={t('export.in-masina.titlu')} onClick={onDeschideInMasina}>{t('export.in-masina')}</button>
-          </div>
-        )}
-        {stare?.ok && stare.avertismente.length > 0 && (
-          <ul className="avertisment" data-testid="export-avertismente">
-            {stare.avertismente.map((a) => <li key={a}>{t('export.avertisment', { text: a })}</li>)}
-          </ul>
-        )}
-        {stare?.ok && undeTine.length > 0 && !doarCitire && (
-          <div className="butoane">
-            <button type="button" data-buton="unde-tine" title={t('export.urechi.undeTine.titlu')} onClick={puneUndeTine}>{t('export.urechi.undeTine')}</button>
-          </div>
-        )}
-        {stare?.ok && <Rezumat r={stare.rezumat} operatii={operatii} limba={limba} />}
-        {stare?.ok && <PrevizualizareSimulare s={stare.simulare} limba={limba} />}
+                {/* Întâi ce e de văzut înaintea tăierii, apoi fișierele, timpul și simularea (ADR 0290, felia 28.8↑f-2). */}
+                {stare?.ok && (stare.avertismente.length > 0 || (undeTine.length > 0 && !doarCitire)) && (
+                  <div className="dx-rez" data-rezultat="avertismente">
+                    <h4>{t('export.rezultat.avertismente')}</h4>
+                    {stare.avertismente.length > 0 && (
+                      <ul className="avertisment" data-testid="export-avertismente">
+                        {stare.avertismente.map((a) => <li key={a}>{t('export.avertisment', { text: a })}</li>)}
+                      </ul>
+                    )}
+                    {undeTine.length > 0 && !doarCitire && (
+                      <div className="butoane">
+                        <button type="button" data-buton="unde-tine" title={t('export.urechi.undeTine.titlu')} onClick={puneUndeTine}>{t('export.urechi.undeTine')}</button>
+                      </div>
+                    )}
+                  </div>
+                )}
+                <div className="dx-rez" data-rezultat="fisiere">
+                  <h4>{t('export.rezultat.fisiere')}</h4>
+                  {stare?.ok && stare.foi && <ListaFoi foi={stare.foi} sha256={stare.sha256} limba={limba} />}
+                  {stare?.ok && !stare.foi && (stare.fisiere && stare.fisiere.length > 1
+                    ? (
+                      <ul role="status" data-testid="export-stare">
+                        {stare.fisiere.map((f) => <li key={f.nume} data-fisier={f.nume}>{t('export.gata.fisier', { nume: f.nume, n: f.linii, sha: f.sha256 })}</li>)}
+                      </ul>
+                    )
+                    : <p role="status" data-testid="export-stare">{t('export.gata', { n: stare.linii, sha: stare.sha256 })}</p>)}
+                  {stare?.ok && stare.dopuri && stare.dopuri.length > 0 && (
+                    <ul className="dopuri" data-testid="export-dopuri" aria-live="polite">
+                      {stare.dopuri.map((d) => (
+                        <li key={d.nume} data-fisier={d.nume}>
+                          {t(d.exacta ? 'export.gata.dop-decupat' : 'export.gata.dop', {
+                            nume: d.nume, latime: fmtFreza.format(d.latime), inaltime: fmtFreza.format(d.inaltime), grosime: fmtFreza.format(d.grosimeMinima),
+                            n: d.linii, sha: d.sha256,
+                          })}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                  {stare?.ok && onDeschideInMasina && (
+                    <div className="butoane">
+                      <button type="button" data-buton="in-masina" title={t('export.in-masina.titlu')} onClick={onDeschideInMasina}>{t('export.in-masina')}</button>
+                    </div>
+                  )}
+                </div>
+                {stare?.ok && <div className="dx-rez" data-rezultat="timp"><Rezumat r={stare.rezumat} operatii={operatii} limba={limba} /></div>}
+                {stare?.ok && <div className="dx-rez" data-rezultat="simulare"><PrevizualizareSimulare s={stare.simulare} limba={limba} /></div>}
               </section>
             )}
             {/* Loc sub ultima fișă, ca un clic în listă s-o aducă și pe ea sus. */}

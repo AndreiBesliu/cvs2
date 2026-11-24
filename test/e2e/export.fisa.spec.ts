@@ -125,3 +125,33 @@ test('după export, Rezultatul e în listă, cu fișierul', async ({ page }) => 
   await expect(page.locator('[data-nav="foaia"]')).toHaveAttribute('aria-current', 'true');
   await expect(page.locator('[data-fisa="foaia"]')).toBeInViewport();
 });
+
+test('Rezultatul pe grupuri: întâi ce e de văzut, apoi fișierele, timpul și simularea; în listă, timpul și avertismentele (28.8↑f-2)', async ({ page }) => {
+  await deschide(page);
+  const rez = page.locator('[data-fisa="rezultatul"]');
+  const grupuri = (): Promise<Array<string | null>> => rez.locator('[data-rezultat]').evaluateAll((x) => x.map((e) => e.getAttribute('data-rezultat')));
+  // Fără nimic de văzut: fișierele, timpul, simularea; fiecare cu titlul lui, sub titlul fișei.
+  let desc = page.waitForEvent('download');
+  await page.locator('[data-buton="exporta"]').click();
+  await desc;
+  await expect(rez.locator('[data-simulare="volum"]')).toBeAttached();
+  expect(await grupuri()).toEqual(['fisiere', 'timp', 'simulare']);
+  await expect(rez.locator('[data-rezultat="fisiere"] [data-testid="export-stare"]')).toContainText('Descărcat');
+  await expect(rez.locator('[data-rezultat="timp"] [data-rezumat="timp"]')).toBeVisible();
+  await expect(rez.locator('[data-rezultat="simulare"] [data-testid="export-simulare"]')).toBeVisible();
+  await expect(rez.locator('h3')).toHaveCount(1);
+  await expect(rez.locator('[data-rezultat] > h4, [data-rezultat] > section > h4')).toHaveCount(3);
+  const timp = /: (.+)$/.exec(await rez.locator('[data-rezumat="timp"]').innerText())?.[1] ?? '?';
+  const meta = page.locator('[data-nav="rezultatul"] .dx-meta');
+  await expect(meta).toHaveText(timp);
+  // Cu o intrare care nu încape (R30 pe gaura de R15): avertismentul vine primul, iar lista îl numără.
+  await fisa(page, 'e2/e2').locator('[data-camp="intrari"]').check();
+  await fisa(page, 'e2/e2').locator('[data-camp="intrari-raza"]').fill('30');
+  desc = page.waitForEvent('download');
+  await page.locator('[data-buton="exporta"]').click();
+  await desc;
+  await expect(rez.locator('[data-rezultat="avertismente"]')).toContainText('intrarea omisă');
+  expect(await grupuri()).toEqual(['avertismente', 'fisiere', 'timp', 'simulare']);
+  await expect(meta).toContainText('1 avertisment');
+  await expect(page.locator('[data-nav="rezultatul"]')).toHaveAttribute('data-avertisment', '');
+});
