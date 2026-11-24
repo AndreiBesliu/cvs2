@@ -35,6 +35,8 @@ const z2 = zi('2026-11-23', [
   lot('ion', 'iiiiiiiiiiiiiii1', false, [
     ROTESTE(1_000, 'tasta', 'motiv.nimic-ales'), { fel: 'actiune', t: 2_000, id: 'export.gcode', de: 'bara', rez: 'motiv.fara-forme' },
     { fel: 'unealta', t: 3_000, id: 'noduri', de: 'tasta' },
+    // Un dialog dus până la capăt nu e o frecare.
+    { fel: 'dialog', t: 4_000, id: 'testid.raport', rez: 'deschis' }, { fel: 'dialog', t: 5_000, id: 'testid.raport', rez: 'gata' },
   ]),
 ]);
 
@@ -70,7 +72,7 @@ test('ce nu se folosește: tot catalogul, cei mai puțini oameni întâi, și ce
   ]);
 });
 
-test('frecările: refuzurile pe acțiune și motiv, dialogurile părăsite', () => {
+test('frecările: refuzurile pe acțiune și motiv, dialogurile părăsite (nu și cele duse până la capăt)', () => {
   const c = sumePerioada([z1, z2], 'clienti');
   assert.deepEqual(refuzuri(c), [
     { id: 'document.roteste', motiv: 'motiv.nimic-ales', n: 2 }, { id: 'export.gcode', motiv: 'motiv.fara-forme', n: 1 },
