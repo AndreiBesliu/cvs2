@@ -380,6 +380,86 @@ test('setările utilizării (ADR 0262 §8): implicitele până la prima salvare;
   await expect(camp('colectare')).toBeChecked();
 });
 
+test('mesajul de după „Salvează” vine abia cu citirea de după: când apare, formularul e deja cel umplut din nou din ea, deci ce scrie owner-ul imediat după nu se pierde (conturile, utilizarea, răspunsurile rapide)', async ({ page }) => {
+  await deschide(page);
+  await puneRolul(page, await intraCuGoogle(page), 'owner');
+  await page.locator('[data-fila="setari"]').click();
+  const util = page.locator('[data-set="utilizare"]');
+  await expect(page.locator('[data-set="sursa"]')).toHaveText('Nesalvate încă: merg implicitele.', LENT);
+  await expect(util.locator('[data-set="util-sursa"]')).toHaveText('Nesalvate încă: merg implicitele.', LENT);
+  // De aici, citirea unui document de setări întârzie 1,5 s. În CI a întârziat singură (24.11, completul 45449914076):
+  // mesajul apărea la răspunsul salvării, iar formularul se umplea din nou la citirea de după, peste ce scrisese proba.
+  const sosite: string[] = [];
+  await page.route((u) => u.port === '8085' && u.pathname.endsWith(':batchGet'), async (ruta) => {
+    const corp = ruta.request().postData() ?? '';
+    const care = ['setari/conturi', 'setari/utilizare', 'setari/raspunsuriRapide'].find((c) => corp.includes(c));
+    if (care === undefined) {
+      await ruta.continue();
+      return;
+    }
+    await new Promise((gata) => { setTimeout(gata, 1500); });
+    const raspuns = await ruta.fetch();
+    sosite.push(care);
+    await ruta.fulfill({ response: raspuns });
+  });
+  for (const f of [
+    { doc: 'setari/conturi', camp: page.locator('[data-set="zile-offline"]'), salveaza: page.locator('[data-set="salveaza"]'), gata: page.locator('[data-set="gata"]'), mesaj: 'Setările sunt salvate.', scris: '9' },
+    { doc: 'setari/utilizare', camp: util.locator('[data-set-util="lot"]'), salveaza: util.locator('[data-set="util-salveaza"]'), gata: util.locator('[data-set="util-gata"]'), mesaj: 'Nimic schimbat.', scris: '7' },
+  ]) {
+    // Câmpul de dinaintea salvării poartă un semn: formularul umplut din nou e altul, fără semn.
+    await f.camp.evaluate((e) => { e.setAttribute('data-de-dinainte', ''); });
+    await f.salveaza.click();
+    // Prima salvare a setărilor conturilor le scrie (documentul nu există încă); a utilizării, cu implicitele, nu scrie nimic.
+    await expect(f.gata).toHaveText(f.mesaj, LENT);
+    // Mesajul la vedere: citirea de după a sosit deja, iar formularul e cel nou.
+    expect(sosite, f.doc).toContain(f.doc);
+    expect(await f.camp.getAttribute('data-de-dinainte'), f.doc).toBeNull();
+    await expect(f.salveaza).toBeEnabled();
+    // Ce se scrie acum rămâne: nicio altă citire nu mai vine peste formular.
+    await f.camp.fill(f.scris);
+    await page.waitForTimeout(2000);
+    await expect(f.camp).toHaveValue(f.scris);
+  }
+  // Răspunsurile rapide: exemplele puse în listă, salvate; la mesaj, editorul e cel umplut din lista citită.
+  const rapide = page.locator('[data-set="rapide"]');
+  await rapide.locator('[data-set="rapide-exemple"]').click();
+  const eticheta = rapide.locator('[data-rapid-rand="0"] [data-set="rapid-eticheta"]');
+  await eticheta.evaluate((e) => { e.setAttribute('data-de-dinainte', ''); });
+  await rapide.locator('[data-set="rapide-salveaza"]').click();
+  await expect(rapide.locator('[data-set="rapide-gata"]')).toHaveText('Răspunsurile rapide sunt salvate.', LENT);
+  expect(sosite).toContain('setari/raspunsuriRapide');
+  expect(await eticheta.getAttribute('data-de-dinainte')).toBeNull();
+  await eticheta.fill('Scris după salvare');
+  await page.waitForTimeout(2000);
+  await expect(eticheta).toHaveValue('Scris după salvare');
+});
+
+test('citirea de după „Salvează”, căzută: mesajul salvării apare oricum, lângă eroarea citirii, iar după „Reîncarcă” formularul nu rămâne ocupat', async ({ page }) => {
+  await deschide(page);
+  await puneRolul(page, await intraCuGoogle(page), 'owner');
+  await page.locator('[data-fila="setari"]').click();
+  const util = page.locator('[data-set="utilizare"]');
+  await expect(util.locator('[data-set="util-sursa"]')).toHaveText('Nesalvate încă: merg implicitele.', LENT);
+  // De aici, citirea setărilor utilizării cade (rețeaua), până la „Reîncarcă”.
+  let cade = true;
+  await page.route((u) => u.port === '8085' && u.pathname.endsWith(':batchGet'), async (ruta) => {
+    if (cade && (ruta.request().postData() ?? '').includes('setari/utilizare')) await ruta.abort('connectionfailed');
+    else await ruta.continue();
+  });
+  await util.locator('[data-set-util="lot"]').fill('10');
+  await util.locator('[data-set="util-salveaza"]').click();
+  // Salvarea s-a făcut: mesajul ei apare, deși citirea de după a căzut.
+  await expect(util.locator('[data-set="util-gata"]')).toHaveText('Setările utilizării sunt salvate.', LENT);
+  const eroare = util.locator('[data-set="util-eroare-citire"]');
+  await expect(eroare).toBeVisible();
+  expect((await citeste('setari/utilizare'))['lotMinute']?.integerValue).toBe('10');
+  // „Reîncarcă”, cu rețeaua la loc: formularul vine cu valoarea salvată și cu butonul liber, nu „ocupat”.
+  cade = false;
+  await eroare.getByRole('button', { name: 'Reîncarcă' }).click();
+  await expect(util.locator('[data-set-util="lot"]')).toHaveValue('10', LENT);
+  await expect(util.locator('[data-set="util-salveaza"]')).toBeEnabled();
+});
+
 test('un rol care doar citește conturile vede fila Utilizatori, fără schimbarea planului și fără istoric (nicio citire din audit), și nu vede Setările', async ({ page }) => {
   await puneCont('ana', new Date(Date.now() - ZI), new Date(Date.now() + 9 * ZI));
   await scrie('audit/Creare00000000000Ana', {

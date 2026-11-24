@@ -10,6 +10,7 @@ import { useLimba } from '../../ui/useLimba.ts';
 import { EroareCitire, SeIncarca } from '../carcasa/stari.tsx';
 import { dataDin, dataScurta, motivDin, type Masura } from '../erori/date.ts';
 import { EXEMPLE_RAPIDE } from './exemple.ts';
+import { useMesajDupaCitire } from './dupaCitire.ts';
 import { IstoricSetari } from './IstoricSetari.tsx';
 import './setari.css';
 
@@ -32,6 +33,8 @@ export function RaspunsuriRapide({ con, eu }: { readonly con: Conexiune; readonl
   // Editorul pornește din nou la fiecare citire sosită (nu la cererea ei): după „Salvează”, din lista salvată.
   const [citiri, setCitiri] = useState(0);
   const [lucru, setLucru] = useState<Lucru>({ faza: 'liber' });
+  // Mesajul salvării apare abia cu citirea de după, când formularul e deja cel umplut din nou din ea.
+  const dupa = useMesajDupaCitire((mesaj) => { setLucru({ faza: 'gata', mesaj }); });
   useEffect(() => {
     let viu = true;
     getDoc(doc(con.db, CALE_RASPUNSURI_RAPIDE.colectie, CALE_RASPUNSURI_RAPIDE.id)).then(
@@ -39,8 +42,13 @@ export function RaspunsuriRapide({ con, eu }: { readonly con: Conexiune; readonl
         if (!viu) return;
         setCitite({ ok: true, valoare: { ...rapideDin(s.data()), modificatLa: dataDin(s.get('modificatLa')) } });
         setCitiri((n) => n + 1);
+        dupa.citit();
       },
-      (e: unknown) => { if (viu) setCitite({ ok: false, motiv: motivDin(e) }); },
+      (e: unknown) => {
+        if (!viu) return;
+        setCitite({ ok: false, motiv: motivDin(e) });
+        dupa.citit();
+      },
     );
     return () => { viu = false; };
   }, [con, rev]);
@@ -48,7 +56,7 @@ export function RaspunsuriRapide({ con, eu }: { readonly con: Conexiune; readonl
   const salveaza = (lista: readonly Rand[], versiune: number): void => {
     setLucru({ faza: 'lucreaza' });
     salveazaRaspunsurileRapide(con, lista, versiune).then((r) => {
-      setLucru({ faza: 'gata', mesaj: t(r.schimbat ? 'admin.set.rapide.salvate' : 'admin.set.neschimbate') });
+      dupa.tine(t(r.schimbat ? 'admin.set.rapide.salvate' : 'admin.set.neschimbate'));
       setRev((n) => n + 1);
     }, (e: unknown) => { setLucru({ faza: 'eroare', motiv: motivDin(e) }); });
   };

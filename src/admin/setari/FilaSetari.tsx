@@ -9,6 +9,7 @@ import { EroareCitire, SeIncarca } from '../carcasa/stari.tsx';
 import { dataDin, dataScurta, motivDin, type Masura } from '../erori/date.ts';
 import '../personal/personal.css';
 import '../utilizatori/utilizatori.css';
+import { useMesajDupaCitire } from './dupaCitire.ts';
 import { IstoricSetari } from './IstoricSetari.tsx';
 import { RaspunsuriRapide } from './RaspunsuriRapide.tsx';
 import { SetariUtilizarii } from './SetariUtilizarii.tsx';
@@ -33,6 +34,8 @@ export function FilaSetari({ con, eu }: { readonly con: Conexiune; readonly eu: 
   // remonta din valorile de dinainte, citite încă, și le ținea și după ce sosea citirea nouă).
   const [citiri, setCitiri] = useState(0);
   const [lucru, setLucru] = useState<Lucru>({ faza: 'liber' });
+  // Mesajul salvării apare abia cu citirea de după, când formularul e deja cel umplut din nou din ea.
+  const dupa = useMesajDupaCitire((mesaj) => { setLucru({ faza: 'gata', mesaj }); });
 
   useEffect(() => {
     let viu = true;
@@ -41,8 +44,13 @@ export function FilaSetari({ con, eu }: { readonly con: Conexiune; readonly eu: 
         if (!viu) return;
         setCitite({ ok: true, valoare: { setari: setariDin(s.data()), modificatLa: dataDin(s.get('modificatLa')), salvate: s.exists() } });
         setCitiri((n) => n + 1);
+        dupa.citit();
       },
-      (e: unknown) => { if (viu) setCitite({ ok: false, motiv: motivDin(e) }); },
+      (e: unknown) => {
+        if (!viu) return;
+        setCitite({ ok: false, motiv: motivDin(e) });
+        dupa.citit();
+      },
     );
     return () => { viu = false; };
   }, [con, rev]);
@@ -50,7 +58,7 @@ export function FilaSetari({ con, eu }: { readonly con: Conexiune; readonly eu: 
   const salveaza = (setari: SetariConturi): void => {
     setLucru({ faza: 'lucreaza' });
     setarileConturilor(con, { actiune: 'setari', setari }).then((r) => {
-      setLucru({ faza: 'gata', mesaj: t(r.schimbat ? 'admin.set.salvate' : 'admin.set.neschimbate') });
+      dupa.tine(t(r.schimbat ? 'admin.set.salvate' : 'admin.set.neschimbate'));
       setRev((n) => n + 1);
     }, (e: unknown) => { setLucru({ faza: 'eroare', motiv: motivDin(e) }); });
   };
