@@ -81,7 +81,7 @@ gravare, profil, formă desenată)” și „Freze de profil desenate de utiliza
   apare (Tăierea n-are liste acolo). Otrăvuri 15 / 16 (E05, echivalentă). **Capcană:** cu setul pus de la prima pornire, orice
   probă e2e care deschide Tăierea vede acum rândul „Freza” (o probă care cere o bibliotecă goală folosește `bibliotecaGoala`
   din `test/e2e/ajutor-freze.ts`). PR-ul #22 are acum 16.A↑b-2 și 16.A↑a-2.
-- **24.11, ~13:40: ADR 0302 propus, apoi acceptat** („Da, 1a–5a”), la cererea owner-ului cu fișierul ArtCAM `FREZE.tdb`
+- **24.11, ~12:45: ADR 0302 propus, apoi acceptat** („Da, 1a–5a”), la cererea owner-ului cu fișierul ArtCAM `FREZE.tdb`
   („vreau ca frezele să fie o listă ca în ArtCAM … și doar dacă vrea userul … să comute pe configuratorul actual”). Fișierul
   e baza de scule ArtCAM, binară, nedocumentată, cu conținutul ArtCAM și al producătorilor: nu se citește și nu se copiază
   (`CLAUDE.md`); din el s-au luat doar felurile și ideea grupurilor. Feliile, despărțite la acceptare: **h-1** fereastra ca
