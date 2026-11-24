@@ -1028,8 +1028,8 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   fereastră de confirmare, tastatura. **O schimbare a unei extensii din bibliotecă cere acum și rândul ei de „ce e nou”,
   primul din `noutati`, în `extensii/biblioteca.json`** (`{ "versiune", "ro", "en" }`, cel mult 240 de caractere), apoi
   `node scripts/biblioteca.ts --scrie` (refuză fără rând). **Două linii care schimbă aceeași extensie iau, fiecare,
-  versiunea următoare:** cea unită a doua își ia alta la aducerea lui `main` (Easy 3Draw e 18.23.0, cu înclinarea spre pupa a elicei de barcă din
-  3.Tt; următoarea, 18.24.0).
+  versiunea următoare:** cea unită a doua își ia alta la aducerea lui `main` (Easy 3Draw e 18.25.0, din 3.Cb, linia atelierului; următoarea,
+  18.26.0).
   Capturile unei extensii se refac cu `node scripts/capturi-biblioteca.ts [dosar]` și se comit. **Un prefix nou de acțiuni
   cere grupul lui în `src/ui/Paleta.tsx`** (paleta nu arăta deloc acțiunile `extensii`). Pornirea 108,6 kB (cu ușa
   113,1 / 115), totalul 778,6 / 800.
@@ -1068,9 +1068,9 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   întâi piesele care leagă în 3D și mecanismele (conectorii, cremaliera, melcul), apoi punctele de prindere („Se prinde
   cu”), Modelul ca asamblare (orientarea pe trei axe, alipirea, verificarea ca avertisment), construcțiile cu nume și
   cele gata făcute; cărămizile de clădit și roata cu palete, pe parcurs. **3.Ca (conectorul perpendicular)** gata pe
-  24.11, neunită: tipul `conector`, în fila Legături: un bloc de 1–5 pași, cu găuri de știft sau de ax pe trei axe
+  24.11, unită în `main` pe @@DATA28@@ (`11877a3e`): tipul `conector`, în fila Legături: un bloc de 1–5 pași, cu găuri de știft sau de ax pe trei axe
   (în sus, de-a latul și, la capete, în lung); Easy 3Draw 18.24.0. **3.Cb (conectorul în unghi, axul cu opritor,
-  știftul cu bucșă)** gata pe 24.11, neunită: tipul `conectorUnghi`, un butuc cu 1–4 brațe, fiecare cu manșonul lui de
+  știftul cu bucșă)** gata pe 24.11, unită în `main` odată cu ea: tipul `conectorUnghi`, un butuc cu 1–4 brațe, fiecare cu manșonul lui de
   ax sau de știft, la cel puțin 90° unul de altul (formele gata au unghiurile conectorilor LEGO numerotați); axul are
   bifa „Cu opritor la un capăt”, iar știftul, capătul scurt „Bucșă”; Easy 3Draw 18.25.0 (următoarea, 18.26.0). **Motorul
   face o piesă din corpuri închise care se suprapun puțin: două dintre ele nu-și împart nicio muchie** (altfel STL-ul
@@ -1630,6 +1630,18 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- @@DATA28@@.2026@@CAND28@@ (a douăzeci și șaptea unire din cloud): **atelierul Easy 3Draw: conectorul perpendicular (3.Ca) și
+  conectorul în unghi, axul cu opritor, știftul cu bucșă (3.Cb), unite în `main`**, în lot (sesiunea principală,
+  ramura `unire-2411ad`). Linia atelierului (sesiunea extensiilor), ramura `wip/3.Xh-biblioteca-ui`, `7157ecc5`,
+  PR-ul `AndreiBesliu/cvs2#24` (ADR 0284, acceptat de owner cu 1a–4a, în sesiunea liniei), unite în `11877a3e`:
+  în fila Legături, tipul `conector` (un bloc de 1–5 pași, cu găuri de știft sau de ax pe trei axe) și tipul
+  `conectorUnghi` (un butuc cu 1–4 brațe, la cel puțin 90° unul de altul); axul cu opritor la un capăt; știftul cu
+  capătul „Bucșă”; toate se tipăresc culcate, fără suport. **Easy 3Draw 18.25.0** (3.Ca fusese 18.24.0), cu
+  rândurile de „ce e nou”; otrăvurile 47 / 47 și 76 / 76. Doar pachetul extensiei se schimbă: pornirea și totalul
+  aplicației, neatinse; nimic pe server; documentul rămâne v28. Ciocnirea, doar rândul liniei din indexul liniilor
+  (păstrat al ei). Lotul fusese pregătit peste `893e45bb`; după ce cotele au intrat în `main` (`393a59f5`), `main` a
+  fost adus în ramura lotului (fără ciocniri), iar completul, repornit. Porțile lotului, în CI, pe `f08a47af`
+  @@P28@@
 - 24.11.2026, noaptea (a douăzeci și șasea unire din cloud): **cotele: panoul cotei cu lista (10.4↑a-4) și raza,
   diametrul, unghiul, inch în fracții (10.4↑b), unite în `main`** (sesiunea principală, ramura `unire-2411ae`, din
   `893e45bb`). Linia cotelor, ramura `wip/10.4-cote`, `98575aff`, PR-ul `AndreiBesliu/cvs2#21` (ADR 0330 §4–§6; la

@@ -154,11 +154,11 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
 
 ## Starea pe 24.11.2026, noaptea (după a douăzeci și șasea unire din cloud)
 
-- **Pe test:** `62569bb2` (tot până la lotul 22: frezele din Tăierea și setul de pornire, „Frezele mele” ca listă, cu
-  grupuri, unealta Cote, căutarea și rafturile din biblioteca extensiilor, oracolul rampelor împărțit; publicat pe
-  24.11 la 20:32, fără server; proba de fum, bună). Publicarea loturilor 19–21 singure căzuse la o probă instabilă a
-  extensiilor (`extensii.spec.ts:135`), reparată în lotul 25. În drum: loturile 23–27, într-o singură publicare,
-  pornită după unirea reliefului (lotul 27).
+- **Pe test:** `893e45bb` (tot până la lotul 27: Setările cotelor, catalogul de freze cu felurile și profilurile
+  noi, fereastra exportului refăcută, freza din bibliotecă pe rândurile ei, rândul comenzilor foii strâns în „⋯”,
+  cursa din fila Setări a adminului, relieful din imagine; publicat pe 24.11 la 23:42, cu serverul neschimbat;
+  completul pe `main` 45484077948, verde; proba de fum, bună). În drum: cotele a-4 și b (`393a59f5`) și lotul 28
+  (atelierul Easy 3Draw), într-o singură publicare.
 - **`main`, din cloud:** pe 23.11: 3.Tq (`0ae9c6c1`); 11.3↑e și A.4 (`ddaa7ead`); 3.Tr, unită de linia elicelor
   (`d262e57a`); 25.8↑a și A.5 (`1b46c955`), cu reparația probei extensiilor (`8287d66e`); 11.3↑f, unită de linia
   planșelor (`f4601938`); A.6 (`4497d639`); 3.Xh (`2d1e482c`) și 12.1↑e-3 cu 12.1↑e-4 (`03460cab`); A.8a cu A.8b
