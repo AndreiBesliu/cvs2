@@ -63,6 +63,24 @@ test('de la prima pornire, frezele standard: doar cele plate pe un profil; aleas
   await expect(page.getByTestId('jurnal')).toHaveText('0 erori în jurnalul local');
 });
 
+test('felurile fără CAM încă (bila, toroidala, conica, burghiul) nu se oferă în Tăierea', async ({ page }) => {
+  await page.goto('/');
+  // Din catalogul ferestrei „Frezele mele”: bilele și burghiele, în bibliotecă.
+  await page.locator('[data-editare="cont"]').click();
+  await page.locator('[data-meniu-cont="freze"]').click();
+  const f = page.getByRole('dialog', { name: 'Frezele mele' });
+  await expect(f.locator('[data-freza]')).toHaveCount(6);
+  await f.locator('[data-freze="catalog-arata"]').click();
+  await f.locator('[data-catalog-grup="bila"] [data-freze="catalog-pune-grup"]').click();
+  await f.locator('[data-catalog-grup="burghiu"] [data-freze="catalog-pune-grup"]').click();
+  await expect(f.locator('[data-freze="mesaj"]')).toHaveText('Puse: 23 · erau deja: 0');
+  await f.locator('[data-freze="inchide"]').click();
+  await adauga(page, 'dreptunghi');
+  await expect(oferite(page)).toHaveText(['Plată Ø3,175', 'Plată Ø6', 'Plată Ø12']);
+  await taierea(page).locator('[data-camp="rol"]').selectOption('pe-linie');
+  await expect(oferite(page)).toHaveText(['Plată Ø3,175', 'Plată Ø6', 'V60 Ø6', 'V90 Ø12', 'Gravare 30° vârf 0,2 Ø3,175', 'Plată Ø12']);
+});
+
 test('V-carve: doar frezele în V, iar fereastra exportului arată unghiul frezei alese', async ({ page }) => {
   await page.goto('/');
   await adauga(page, 'dreptunghi');

@@ -68,7 +68,7 @@ test('dus-întors: adăugarea, schimbarea, ștergerea ajung în depozit; altă b
 
 test('frezele pe care versiunea de azi nu le citește rămân neatinse în depozit; lista unei versiuni mai noi doar se citește', async () => {
   const d = new Depozit();
-  const bila = { id: 'x', rev: 1, schimbatLa: 5, nume: 'Bilă Ø6', fel: 'bila', diametru: 6 };
+  const bila = { id: 'x', rev: 1, schimbatLa: 5, nume: 'Bilă Ø6', fel: 'necunoscut', diametru: 6 };
   d.date.set(CHEIE_LOCALA, { v: 1, freze: [{ ...PLATA6, id: 'a', rev: 1, schimbatLa: 5 }, bila] });
   const b = creeazaFrezeMele(d, ids(), () => 9);
   await b.incarca();

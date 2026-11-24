@@ -9,7 +9,7 @@ import assert from 'node:assert/strict';
 import {
   CATALOG_FREZE, cuDinCatalog, GRUPURI_CATALOG, tolFreza, type FrezaCatalog,
 } from '../../src/model/catalogFreze.ts';
-import { MARGINI_FREZA, problemeFreza, sculaDinFreza, type Freza, type FrezaSalvata } from '../../src/model/freza.ts';
+import { FELURI_CU_CAM, MARGINI_FREZA, problemeFreza, sculaDinFreza, type Freza, type FrezaSalvata } from '../../src/model/freza.ts';
 import { operatieImplicita, type FormaDoc } from '../../src/model/document.ts';
 import { operatieInMargini } from '../../src/model/schemaDocument.ts';
 
@@ -18,7 +18,7 @@ const cu = (f: FrezaCatalog, nume: string = f.id): Freza => ({ ...f, nume });
 const salvata = (f: Freza, id: string): FrezaSalvata => ({ ...f, id, rev: 1, schimbatLa: 1_000 });
 
 test('grupurile și mărimile, ca în ADR 0302 §1', () => {
-  assert.deepEqual(GRUPURI_CATALOG, ['plata', 'planare', 'v', 'gravare']);
+  assert.deepEqual(GRUPURI_CATALOG, ['plata', 'planare', 'v', 'gravare', 'bila', 'toroidala', 'conica', 'burghiu']);
   assert.deepEqual(din('plata').map((f) => f.diametru), [1, 1.5, 2, 2.5, 3, 3.175, 4, 5, 6, 6.35, 8, 9.525, 10, 12, 12.7, 16, 19.05]);
   assert.deepEqual(din('planare').map((f) => f.diametru), [19.05, 25.4, 31.75, 38.1, 50.8]);
   assert.deepEqual(din('v').map((f) => `${f.unghi}/${f.diametru}`), [
@@ -30,7 +30,15 @@ test('grupurile și mărimile, ca în ADR 0302 §1', () => {
   assert.deepEqual([...new Set(g.map((f) => f.unghi))], [10, 15, 20, 30, 45, 60]);
   assert.deepEqual([...new Set(g.filter((f) => f.diametru === 3.175).map((f) => f.varf))], [0.1, 0.2, 0.3, 0.5]);
   assert.deepEqual(g.filter((f) => f.diametru === 6).map((f) => `${f.unghi}/${f.varf}`), ['30/0.2', '30/0.5', '45/0.2', '45/0.5', '60/0.2', '60/0.5']);
-  assert.equal(CATALOG_FREZE.length, 17 + 5 + 17 + 30);
+  // Felurile noi (16.A↑h-4): bila, toroidala, conica cu vârf rotund pe 1/4", burghiul din 0,5 în 0,5.
+  assert.deepEqual(din('bila').map((f) => f.diametru), [1, 1.5, 2, 3, 3.175, 4, 6, 6.35, 8, 10, 12, 12.7]);
+  assert.deepEqual(din('toroidala').map((f) => `${f.diametru}/${f.raza}`), ['6/0.5', '6/1', '8/1', '10/1', '10/2', '12/2']);
+  assert.deepEqual(din('conica').map((f) => `${f.unghi}/${f.raza}/${f.diametru}`), [
+    '10/0.25/6.35', '10/0.5/6.35', '10/1/6.35', '15/0.25/6.35', '15/0.5/6.35', '15/1/6.35', '20/0.25/6.35', '20/0.5/6.35', '20/1/6.35',
+  ]);
+  assert.deepEqual(din('burghiu').map((f) => f.diametru), Array.from({ length: 23 }, (_, i) => 1 + i / 2));
+  assert.ok(din('burghiu').every((f) => f.unghi === 118));
+  assert.equal(CATALOG_FREZE.length, 17 + 5 + 17 + 30 + 12 + 6 + 9 + 23);
   // Felurile: planarea e o freză plată mare; V-ul și gravarea au unghiul; doar gravarea are vârful.
   assert.ok(din('planare').every((f) => f.fel === 'plata'));
   assert.ok(din('v').every((f) => f.fel === 'v' && f.varf === undefined));
@@ -44,7 +52,10 @@ test('fiecare freză a catalogului e bună și trece de schema operației (ușa 
   const forma: FormaDoc = { tip: 'dreptunghi', latime: 30, inaltime: 20, razaColt: 0 };
   for (const f of CATALOG_FREZE) {
     assert.deepEqual(problemeFreza(cu(f)), {}, f.id);
-    assert.ok(operatieInMargini({ ...operatieImplicita('e', forma), scula: sculaDinFreza(cu(f)) }), f.id);
+    // Felurile fără CAM încă (bila, toroidala, conica, burghiul) n-au copie pentru document.
+    if ((FELURI_CU_CAM as readonly string[]).includes(f.fel)) {
+      assert.ok(operatieInMargini({ ...operatieImplicita('e', forma), scula: sculaDinFreza(cu(f)) }), f.id);
+    }
     assert.ok(f.pasLateral <= MARGINI_FREZA.pasLateral, f.id);
   }
 });
