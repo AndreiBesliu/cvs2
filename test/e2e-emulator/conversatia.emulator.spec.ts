@@ -297,6 +297,7 @@ test('pe telefon (ADR 0260 §10, A.7): bara de jos cu Azi, Erori, Tichete și Ma
   await expect(sertar).toBeHidden();
   await expect.poll(iese).toEqual([0]);
   // ☰ deschide sertarul cu toate filele; o filă aleasă îl închide.
+  await expect(meniu).toBeVisible();
   await meniu.click();
   await expect(meniu).toHaveAttribute('aria-expanded', 'true');
   await expect(sertar).toBeVisible();
@@ -334,4 +335,13 @@ test('pe telefon (ADR 0260 §10, A.7): bara de jos cu Azi, Erori, Tichete și Ma
   await expect(sertar).toBeVisible();
   await expect(detaliu.locator('[data-tic="descarca-proiect"]')).toBeVisible();
   await expect(detaliu.locator('[data-tic="proiect-calculator"]')).toBeHidden();
+});
+
+test('pe telefon (A.7), un rol doar cu tichetele: jos doar filele pe care le vede (Azi, Tichete) și „Mai mult”', async ({ page }) => {
+  await scrie(`roluri/${ROL}`, { nume: 'Suport', permisiuni: ['tichete.raspunde'] });
+  await page.setViewportSize({ width: 390, height: 844 });
+  await intraCuRolul(page, ROL);
+  const jos = page.locator('[data-admin="jos"]');
+  await expect(jos.locator('[data-jos]')).toHaveText(['Azi', /^Tichete/, 'Mai mult'], LENT);
+  await expect(jos.locator('[data-jos="erori"]')).toHaveCount(0);
 });
