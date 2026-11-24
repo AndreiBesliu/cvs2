@@ -3,7 +3,8 @@
 _cncvs2, biblioteca de freze („Frezele mele”), felia 16.A↑ adusă din etapa 16: ramura `wip/16.A-freze` (din `main`
 `c8b235ab`), ADR-urile 0300–0309, canalul `freze`; ADR 0300 ACCEPTAT pe 23.11 („Da, 1a–6a”);
 16.A↑a și ADR 0301 (plafonul total 900 kB) UNITE în `main` (`b1797933`); 16.A↑b-1 (documentul v27, valorile frezei în
-program) UNITĂ în `main` (`32b33a42`); urmează 16.A↑b-2 sau 16.A↑c, la cuvântul owner-ului_
+program) UNITĂ în `main` (`32b33a42`); 16.A↑c (biblioteca în cont) GATA pe ramură; urmează 16.A↑b-2 (după unirea ferestrei
+exportului, PR-ul #11) sau 16.A↑d, la cuvântul owner-ului_
 
 Pornită pe 23.11.2026, în sesiunea cloud a liniei, la cererea owner-ului: „Vreau sa pot crea freze l sau profiluri de freze in
 aplicatie si sa le salvez in cont”. Rândurile din prag: „Bibliotecă de freze cu geometrie reală (dreaptă, bilă, toroidală, V,
@@ -49,6 +50,11 @@ gravare, profil, formă desenată)” și „Freze de profil desenate de utiliza
   doar în bucățile la cerere (fereastra exportului, panoul Tăierea); dacă atinge pornirea, stop și cifra, la owner.
   Controalele cu nume cer `node scripts/catalog-controale.ts --scrie`. Întrebarea la owner: 16.A↑b-2 pe fereastra
   exportului de azi, sau întâi 16.A↑c (contul) cât PR-ul #11 (fereastra refăcută) așteaptă unirea.
+- **24.11, 09:30–10:30: 16.A↑c gata pe ramură** (la „b, pornește 16.A↑c” al owner-ului; `95e1fe1a` serverul, `a4032473`
+  clientul, `2c54281a` proba cap-coadă, `623d4d01` probele întărite și otrăvurile, plus documentele). Callable-ul `freze`,
+  capabilitatea `cloud`, biblioteca contului în browser (`cont:<uid>`), îmbinarea pe câmpuri, conflictul, aducerea din
+  browser la prima logare. Otrăvuri 47 / 47. Totalul 806,1 → 810,5 / 900, pornirea neschimbată, contul 30,3 / 32. **La
+  publicare merge și serverul** (funcția `freze`, indexurile); sincronizarea se încearcă pe adresa principală de test.
 - **Feliile**, în ordine: 16.A↑a (biblioteca în browser, fereastra, fișierul), apoi b (alegerea în proiect, v27), c
   (contul), d (calibrarea), e (bila și toroidala), f (profilul desenat), g (valorile pe material).
 
@@ -68,6 +74,12 @@ gravare, profil, formă desenată)” și „Freze de profil desenate de utiliza
   textele, ca date (ADR 0086). Bucata contului e la 29,6 / 32 kB: sincronizarea trebuie să rămână mică (~2 kB).
 
 ## Capcane
+
+- **Proba de server a frezelor rulează doar cu emulatorul Firestore:** `firebase emulators:exec --only firestore --project
+  demo-cncvs2 "node --test functions/test/freze.emulator.test.ts"`. Un emulator rămas pornit (după un `| head` care a
+  tăiat ieșirea) ține portul 8085: `pkill -f cloud-firestore-emulator`. O eroare `internal` a callable-ului pe emulator se
+  citește din `errorLogs` (jurnalul serverului), cu o sondă mică.
+- **Un `set` fără `merge` nu primește `FieldValue.delete()`:** documentul se scrie întreg, deci câmpul lipsă pleacă singur.
 
 - **Edge-ul din container pornește în engleză** (`navigator.languages` e `en-US`): fiecare spec își pune româna cu
   `test.use({ locale: 'ro-RO' })`, altfel textele românești nu se găsesc.

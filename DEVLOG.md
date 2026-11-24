@@ -12819,3 +12819,28 @@ PR-ul `AndreiBesliu/cvs2#14` („De unit de sesiunea principală”).
   publicarea lui vine înaintea acestui lot (`publica.yml` construiește sha-ul dat).
 - **La owner:** plafonul pornirii (mai sunt 0,3 kB), fereastra exportului, verificarea juridică a utilizării
   aplicației, „cine unește în `main`”, ADR 0232 (biblioteca), lista „ce pot face între timp”.
+
+## 2026-11-24 — 16.A↑c: biblioteca de freze în cont (Model: Claude Opus 5.5)
+
+**Prompt:** „b, pornește 16.A↑c” (owner-ul, la întrebarea: 16.A↑b-2 pe fereastra exportului de azi, sau întâi contul cât
+PR-ul `AndreiBesliu/cvs2#11` așteaptă unirea). **Started:** 24.11, 09:31 (după aducerea lui `main` `356db9bd`, cu 16.A↑b-1
+unită în `32b33a42`).
+
+- **Serverul** (`95e1fe1a`): callable-ul `freze` (`functions/src/freze/actiuni.ts`, contractul în `shared/freze.ts`): frezele
+  în `conturi/{uid}/freze/{id}`, ca text JSON neatins, versiunea lor din contorul contului; lista pe pagini, scrierea și
+  ștergerea cu versiunea văzută, plafoanele, semnele ștergerii și lista întreagă; capabilitatea `cloud`. Probele pe emulator
+  întâi (9), plus regulile. Prima rulare a căzut pe `FieldValue.delete()` într-un `set` fără `merge` (eroarea, din jurnalul
+  erorilor de pe emulator): documentul se scrie acum întreg.
+- **Clientul** (`a4032473`): îmbinarea pe câmpuri, pură (`src/model/frezeSincron.ts`, 14 probe pe hârtie), biblioteca pe cont
+  în depozit (`cont:<uid>`, starea lângă freze, restul înregistrării păstrat), trecerea (`src/app/frezeSincronizare.ts`, 5
+  probe peste un server fals cu două calculatoare), apelul prin bucata contului, fereastra (bara de jos, conflictul, aducerea
+  din browser, editorul la zi), manualul (ro, en).
+- **Cap-coadă** (`2c54281a`): două browsere ale aceluiași cont pe emulatoare, 2 / 2 din prima.
+- **Otrăvurile** (`test/otravuri/16.A-c.py`), într-o clonă, pe `623d4d01`: 47 / 47 (25 pe hârtie, 15 pe emulatorul
+  Firestore, 7 pe fereastră, pe emulatoare). Trei probe întărite înaintea rulării (numărătoarea semnelor după readucere,
+  lista întreagă în client, contul plin încercat o dată pe trecere).
+- **Porțile, în container:** tipurile (și ale funcțiilor), importurile (20 / 20), build-ul determinist; pornirea neschimbată
+  (cu ușa 114,4, cu Atelierul 114,7 / 115), totalul 806,1 → 810,5 / 900, contul 30,1 → 30,3 / 32; traducerile (991, 0
+  lipsă); e2e-ul ferestrei, al contului și al manualului 19 / 19.
+- **Documentele:** ADR 0300 („Implementarea (16.A↑c)”), fișa etapei 3 (rândul `16.A↑c`), pragul, registrul otrăvurilor,
+  traducerile, nota liniei. **Completed:** 24.11, 10:30.

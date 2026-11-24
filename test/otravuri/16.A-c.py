@@ -1,4 +1,4 @@
-# Lista de otrăvuri a feliei 16.A↑c (biblioteca de freze în cont; ADR 0300 §3, §7), 24.11.2026, alese de autor: serverul
+# Lista de otrăvuri a feliei 16.A↑c (biblioteca de freze în cont; ADR 0300 §3, §7), 24.11.2026, 47, alese de autor: serverul
 # (versiunea văzută, plafoanele, numărătorile, semnele ștergerii și plecarea lor, lista întreagă, paginile, dreptul `cloud`,
 # id-urile), îmbinarea pe câmpuri și sincronizarea pură (ce vine, ce pleacă, răspunsurile, lista întreagă, conflictul,
 # numele, starea ținută, aducerea din browser), depozitul pe cont, trecerea (paginile, loturile, contul plin, lista întreagă,
