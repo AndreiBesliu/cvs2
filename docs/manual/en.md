@@ -1342,8 +1342,8 @@ would change all of them: the row says how many times it is placed.
 The **My bits** window keeps your bits. It opens from the **Account** menu (the **My bits…** row) or from the command
 palette. It works without an account and offline: without an account, the library lives in this browser; with your account
 open, it lives in your account and you have it on any computer where you sign in (see below). You pick a bit from the
-library for the chosen shapes in the Cutting section of the properties panel (see [The cutting operations](#operatii)); on the
-export rows it comes soon, and until then the bit is typed there on the row, as before (see [Exporting G-code](#export)).
+library for the chosen shapes in the Cutting section of the properties panel (see [The cutting operations](#operatii)) and,
+for each operation, in the export window (the **From my bits** list, see [Exporting G-code](#export)).
 
 The **list**, on the left, groups the bits by kind (Flat, V, Engraving), each with a small profile, the preferred T, the
 spindle speed and the feed. **Search for a bit** filters by name, and the **All**, **Flat**, **V** and **Engraving** buttons
@@ -1860,6 +1860,13 @@ of the tip (from 1° to 179°, 60° by default; for a V bit, the diameter is tha
 are cut with a change between them: in the automatic order, in each class (insides, then on the line, then outsides), the bit
 already mounted first, so there are as few changes as possible. The same number with two diameters or two shapes is refused:
 each bit needs its own number.
+
+The **From my bits** list, in the Bit group, has the bits from your library (see [My bits](#freze)) that suit the operation's
+cut: flat ones on a profile, a pocket or drilling, V bits on a V-carve. Once picked, the bit puts on the operation its T number
+(its own, if no other bit in the window has it; otherwise that of the same bit, if there is one; otherwise the lowest free one),
+the diameter, the shape, the step-down and, for a pocket, the stepover; **Export** writes it to the project with its working
+values (spindle speed, feed, plunge) and its cutting length. A diameter or shape changed by hand makes it **Entered by hand**:
+the project no longer records that it came from the library. You can change the T number without losing it.
 
 The **Cutting order** sits in the list, above the operations. The operations appear in the order they are cut, with their place
 on the left (the card says “N of M in cutting order”):

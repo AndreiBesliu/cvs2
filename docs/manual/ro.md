@@ -1297,8 +1297,8 @@ schimba pe toate: rândul spune de câte ori e pusă.
 Fereastra **Frezele mele** ține frezele tale. Se deschide din meniul **Cont** (rândul **Frezele mele…**) sau din paleta de
 comenzi. Merge și fără cont și fără rețea: fără cont, biblioteca stă în acest browser; cu contul deschis, stă în contul tău
 și o ai pe orice calculator pe care intri în cont (vezi mai jos). O freză din bibliotecă o alegi pentru formele alese în
-secțiunea Tăierea a panoului de proprietăți (vezi [Operațiile de tăiere](#operatii)); pe rândurile exportului vine în curând,
-iar până atunci freza se scrie acolo pe rând, ca înainte (vezi [Exportul G-code](#export)).
+secțiunea Tăierea a panoului de proprietăți (vezi [Operațiile de tăiere](#operatii)) și, pe fiecare operație, în fereastra
+exportului (lista **Din frezele mele**, vezi [Exportul G-code](#export)).
 
 **Lista**, în stânga, are frezele pe feluri (Plate, În V, Gravare), fiecare cu silueta mică, T-ul preferat, turația și
 avansul. **Caută o freză** filtrează după nume, iar butoanele **Toate**, **Plate**, **În V** și **Gravare** arată un singur
@@ -1793,6 +1793,13 @@ vârfului (între 1° și 179°, implicit 60°; la V, diametrul e cel al părți
 schimbare între ele: în ordinea automată, în fiecare clasă (interioarele, apoi pe linie, apoi exterioarele), întâi freza deja
 montată, ca schimbările să fie cât mai puține. Același număr cu două diametre sau două forme e refuzat: fiecare freză cere
 numărul ei.
+
+Lista **Din frezele mele**, în grupul Freza, are frezele din biblioteca ta (vezi [Frezele mele](#freze)) care merg pe tăietura
+operației: plate pe un profil, un buzunar sau o găurire, în V la V-carve. Aleasă, freza își pune pe operație numărul T (al ei,
+dacă nicio altă freză a ferestrei nu-l are; altfel al aceleiași freze, dacă e; altfel cel mai mic liber), diametrul, forma,
+pasul pe trecere și, la buzunar, pasul lateral; **Exportă** o scrie în proiect cu valorile ei de lucru (turația, avansul,
+plonjarea) și cu tăișul. Un diametru sau o formă schimbate de mână o fac **Scrisă de mână**: proiectul nu mai ține că e din
+bibliotecă. Numărul T îl poți schimba fără să o pierzi.
 
 **Ordinea tăierii** stă în listă, deasupra operațiilor. Operațiile apar în ordinea în care se taie, cu locul lor în stânga (fișa
 spune „locul N din M”):
