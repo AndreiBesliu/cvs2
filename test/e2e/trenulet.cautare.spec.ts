@@ -3,7 +3,7 @@
  * planificatorului (din aceleași surse ca pachetul), servită de pe o origine a probei și cu three.js din pachet:
  * - „Caută o piesă”, lângă file (pe același rând, la capăt): la fiecare literă, galeria arată piesele găsite din toate
  *   familiile, în ordinea filelor; fiecare cuvânt căutat începe un cuvânt din numele de pe ecran, fără diacritice și fără
- *   majuscule („con”: Rotund / con, Bucșă / conector, Roată conică, Conică dublă; „nic” nu găsește Technic);
+ *   majuscule („con”: Rotund / con, Bucșă / conector, Conector perpendicular, Roată conică, Conică dublă; „nic” nu găsește Technic);
  * - o piesă aleasă din rezultate se deschide cu fila ei, iar rezultatele rămân (se încearcă pe rând, cu focusul pe buton);
  *   Enter alege prima; Escape, golirea câmpului sau o filă întorc galeria familiei; fila își ține minte piesa aleasă așa;
  * - nicio potrivire: mesajul, cu textul căutat; peste model și peste „Calibrare”, căutarea arată rezultatele, iar alegerea
@@ -41,7 +41,7 @@ test('„con” găsește piesele din toate filele, în ordinea lor; alegerea le
   expect(c.x).toBeGreaterThan(cal.x + cal.width);
   await expect(camp(page)).toHaveAttribute('placeholder', 'Caută o piesă');
   await camp(page).fill('con');
-  await expect(gasite(page)).toHaveText(['Rotund / con', 'Bucșă / conector', 'Roată conică', 'Conică dublă']);
+  await expect(gasite(page)).toHaveText(['Rotund / con', 'Bucșă / conector', 'Conector perpendicular', 'Roată conică', 'Conică dublă']);
   await expect(page.locator('#at-galerie')).toHaveAttribute('aria-label', 'Piesele găsite');
   // la început, cărămida: fila ei apăsată, nicio piesă găsită apăsată
   await expect(filaApasata(page)).toHaveAttribute('data-fila', 'caramizi');
@@ -52,7 +52,7 @@ test('„con” găsește piesele din toate filele, în ordinea lor; alegerea le
     await expect(filaApasata(page)).toHaveAttribute('data-fila', f);
     await expect(piesaApasata(page)).toHaveAttribute('data-piesa', k);
     await expect(titlu(page)).toHaveText(h2);
-    await expect(gasite(page)).toHaveCount(4);
+    await expect(gasite(page)).toHaveCount(5);
     await expect(page.locator(`#at-galerie [data-piesa="${k}"]`)).toBeFocused();
   }
   await expect(camp(page)).toHaveValue('con');
