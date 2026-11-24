@@ -154,7 +154,9 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
 
 - **Pe test:** `29ef7e44` (tot până la lotul al optsprezecelea: cotele 10.4↑a-1, 3.Tt, reparația utilizării mașinii,
   comenzile foii pe pânză, butonul Admin, proba repornirii extensiei; publicat pe 24.11 la 17:50, fără server; proba de
-  fum, bună). În drum: loturile 19–21 (`7312d685`; completul pe `main` rula la 18:27), apoi lotul 22.
+  fum, bună). În drum: loturile 19–22 (`62569bb2`): publicarea loturilor 19–21 a căzut la o probă instabilă a
+  extensiilor (`extensii.spec.ts:135`; reparată pe `unire-2411z`, intră cu lotul următor), iar completul lotului 22
+  pe `main` rula la 20:00; apoi lotul 23.
 - **`main`, din cloud:** pe 23.11: 3.Tq (`0ae9c6c1`); 11.3↑e și A.4 (`ddaa7ead`); 3.Tr, unită de linia elicelor
   (`d262e57a`); 25.8↑a și A.5 (`1b46c955`), cu reparația probei extensiilor (`8287d66e`); 11.3↑f, unită de linia
   planșelor (`f4601938`); A.6 (`4497d639`); 3.Xh (`2d1e482c`) și 12.1↑e-3 cu 12.1↑e-4 (`03460cab`); A.8a cu A.8b
