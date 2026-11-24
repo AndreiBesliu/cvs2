@@ -1571,6 +1571,22 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 24.11.2026, seara: **o linie nouă, atelierul Easy 3Draw: piese și configuratoare, care ia și lucrul elicelor**. Două
+  cereri ale owner-ului, scrise în sesiunile liniilor. În sesiunea liniei bibliotecii („sesiunea extensiilor”): „ok,
+  vreau sa adaugi mai multe tipuri de piese pentru fiecare categoire, sau sa imbunatatesti piesele si configuratoarele
+  care exista deja. vreau ca userii sa poata crea cat mai multe piese, care sa fie si compatibile intre ele nu doar una
+  cate una ci si ca constructii complexe”. În sesiunea liniei elicelor: „vreau sa predai ce mai ai in lucru si tot ce
+  este nevoie pentru asta sesiunii principale, ca aceasta sa mute si lucrul eliciilor in sesiunea extensiilor”. Deci:
+  - linia atelierului o lucrează sesiunea extensiilor, pe ramura ei (`wip/3.Xh-biblioteca-ui`, canalul `biblioteca`),
+    cu ADR-urile 0340–0349 și feliile de la 3.Tv; nota liniei, `docs/linii/atelier.md`. Întâi inventarul, ADR 0340
+    propus și schița cu întrebările, apoi codul, la răspunsuri;
+  - **linia elicelor e predată** (`05bdc8ec`, doar documente: `docs/linii/elice.md`, „Predarea”): n-are nimic în
+    lucru; cele patru elice sunt în `main` (3.Tq–3.Tt, Easy 3Draw 18.23.0). **3.Tu (piesele rotunde pe același ax în
+    vederea „Modelul”; ADR 0283, rezervat) trece la linia atelierului**, cu analiza, cifrele și schița din notă. Cele
+    trei întrebări ale ei rămân la owner (axul pieselor rotunde în mijlocul unui știft; „Pune în model” pe același ax;
+    rotorul în carcasa lui; recomandările: 1a, 2a, 3a);
+  - sesiunea liniei elicelor se poate arhiva după ce nota ei e în `main` (cu lotul 25); în coada owner-ului rămâne
+    tipărirea celor patru elice.
 - 24.11.2026, seara (a douăzeci și treia unire din cloud): **11.1↑d (rândul comenzilor foii nu trece de foaia lui),
   reparația unei probe instabile a extensiilor și o cursă reparată în fila Setări din `/admin` (3.At), unite în
   `main`**, în lot (sesiunea principală, ramura `unire-2411aa`,
@@ -1590,7 +1606,7 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   („lot = 61”: butonul Salvează, activ în loc de oprit). Cauza, o cursă adevărată: după „Salvează”, mesajul apărea la
   răspunsul salvării, iar formularul se umplea din nou la citirea de după, peste ce se scrisese între ele. Acum cele
   trei formulare ale filei Setări țin mesajul până la citire (`useMesajDupaCitire`, `src/admin/setari/dupaCitire.ts`);
-  două probe noi (citirea întârziată anume, care cădea înaintea reparației; citirea căzută); otrăvurile @@O25@@.
+  două probe noi (citirea întârziată anume, care cădea înaintea reparației; citirea căzută); otrăvurile 5 / 5 din prima, pe emulatoare.
   Documentul rămâne v27; nimic pe server. Ciocnirile, doar în DEVLOG și în lecțiile din `docs/linii/principala.md`.
   Porțile lotului, în CI, @@P25@@
 - 24.11.2026, seara (a douăzeci și doua unire din cloud): **fereastra „Exportă G-code”, refăcută (28.8↑a–g), și proba
