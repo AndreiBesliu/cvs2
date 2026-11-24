@@ -479,7 +479,10 @@
   .fila-inchide,
   .meniu-extensii [role='menuitem'],
   .meniu-extensii .biblioteca-buton[role='menuitem'],
-  .dialog-biblioteca .bib-file [role='tab'] {
+  .dialog-biblioteca .bib-file [role='tab'],
+  .dialog-biblioteca .bib-categorii button,
+  .dialog-biblioteca .bib-eticheta,
+  .dialog-biblioteca .bib-alte {
     min-height: var(--tinta);
   }
 }
@@ -491,7 +494,10 @@
 :root[data-densitate='mare'] .fila-inchide,
 :root[data-densitate='mare'] .meniu-extensii [role='menuitem'],
 :root[data-densitate='mare'] .meniu-extensii .biblioteca-buton[role='menuitem'],
-:root[data-densitate='mare'] .dialog-biblioteca .bib-file [role='tab'] {
+:root[data-densitate='mare'] .dialog-biblioteca .bib-file [role='tab'],
+:root[data-densitate='mare'] .dialog-biblioteca .bib-categorii button,
+:root[data-densitate='mare'] .dialog-biblioteca .bib-eticheta,
+:root[data-densitate='mare'] .dialog-biblioteca .bib-alte {
   min-height: var(--tinta);
 }
 
@@ -763,6 +769,118 @@
   }
 }
 
+/*
+ * Căutarea și categoriile (ADR 0233): o bară sub capul ferestrei, pe toată lățimea ei. Câmpul stă deasupra listei (cât
+ * coloana ei), cu „N din M” lângă el cât lista e filtrată; rafturile, ca pastile, în dreapta lui, pe rândul următor când
+ * nu mai încap. Cu mausul sunt strânse; la atingere și la densitatea mare, cât `--tinta` (regulile țintelor, mai sus).
+ */
+.bib-filtre {
+  flex: none;
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-3);
+  padding: var(--sp-2) var(--sp-3);
+  border-bottom: 1px solid var(--l-margine);
+}
+
+.bib-cautare {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  /* Cât coloana listei, fără marginile ei: câmpul stă exact deasupra rândurilor. */
+  width: calc(18rem - 2 * var(--sp-3));
+}
+
+.dialog .bib-camp {
+  flex: 1;
+  min-width: 0;
+  min-height: var(--tinta);
+  padding: 0 var(--sp-2);
+  font: inherit;
+  font-size: var(--fs-3);
+  color: var(--t);
+  background: var(--s-panou);
+  border: 1px solid var(--l-camp);
+  border-radius: var(--r-2);
+}
+
+.bib-gasite {
+  flex: none;
+  font-size: var(--fs-2);
+  font-variant-numeric: tabular-nums;
+  color: var(--t-slab);
+  white-space: nowrap;
+}
+
+.bib-categorii {
+  flex: 1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  /* Pastilele strânse, la mijlocul înălțimii câmpului. */
+  min-height: var(--tinta);
+}
+
+.bib-categorii button {
+  min-height: calc(var(--tinta) - 8px);
+  padding: 0 8px;
+  font-size: var(--fs-2);
+  white-space: nowrap;
+  background: var(--s-panou);
+  border: 1px solid var(--l-margine);
+  border-radius: 99px;
+}
+
+.bib-categorii button[aria-pressed='true'] {
+  font-weight: 650;
+  background: var(--s-ales);
+  border-color: var(--a);
+}
+
+.bib-cate {
+  font-variant-numeric: tabular-nums;
+  color: var(--t-slab);
+}
+
+.bib-categorii button[aria-pressed='true'] .bib-cate {
+  color: inherit;
+}
+
+/* Ce a mai găsit căutarea pe celelalte rafturi: sub rânduri, discret. */
+.bib-alte {
+  flex: none;
+  align-self: flex-start;
+  padding: 0 var(--sp-1);
+  font-size: var(--fs-2);
+  color: var(--a);
+  text-align: left;
+}
+
+/* Rafturile extensiei, pe pagina ei, sub nume: un clic pe unul îl alege în listă. */
+.pagina-categorii {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: var(--sp-1) 0 0;
+}
+
+.bib-eticheta {
+  min-height: calc(var(--tinta) - 12px);
+  padding: 0 8px;
+  font-size: var(--fs-2);
+  color: var(--t-slab);
+  white-space: nowrap;
+  background: var(--s-peste);
+  border-radius: 99px;
+}
+
+.bib-eticheta:hover {
+  color: var(--t);
+}
+
 /* Pachetele din afara bibliotecii: la capătul listei, discret. */
 .bib-afara {
   display: flex;
@@ -941,8 +1059,20 @@
   }
 
   .dialog-biblioteca[data-ales] .bib-lista,
-  .dialog-biblioteca[data-ales] .bib-file {
+  .dialog-biblioteca[data-ales] .bib-file,
+  .dialog-biblioteca[data-ales] .bib-filtre {
     display: none;
+  }
+
+  /* Bara căutării, pe un ecran îngust: câmpul cât ecranul, rafturile dedesubt. */
+  .bib-filtre {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--sp-2);
+  }
+
+  .bib-cautare {
+    width: auto;
   }
 
   .dialog-biblioteca[data-ales] .bib-detaliu {

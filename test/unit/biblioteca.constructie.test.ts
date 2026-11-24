@@ -14,7 +14,8 @@ import {
   amprentaContinut, citesteLista, construiesteBiblioteca, judecaInregistrarea, marimeWebp, pachetDinDosar, stareNoutati,
 } from '../../scripts/biblioteca.ts';
 import {
-  citesteCatalog, FISIER_CATALOG_BIBLIOTECA, MAX_NOUTATI, MAX_OCTETI_CAPTURA, numeFisierBiblioteca, numePachet, type ImagineBiblioteca,
+  CATEGORII_BIBLIOTECA, citesteCatalog, FISIER_CATALOG_BIBLIOTECA, MAX_CATEGORII, MAX_NOUTATI, MAX_OCTETI_CAPTURA, numeFisierBiblioteca, numePachet,
+  type ImagineBiblioteca,
 } from '../../shared/biblioteca.ts';
 import { motivPrecache } from '../../shared/precache.ts';
 import { judecaDinBiblioteca, stareRand } from '../../src/extensii/biblioteca.ts';
@@ -255,4 +256,32 @@ test('catalogul ține doar ultimele rânduri de „ce e nou”: lista poate păs
   assert.ok(c.ok);
   assert.deepEqual(c.sarite, [], 'aplicația citește „ce e nou” din catalog');
   assert.deepEqual(c.catalog.extensii[0]?.noutati, noutati.slice(0, MAX_NOUTATI));
+});
+
+test('categoriile (ADR 0233): lista le judecă strict, iar catalogul le poartă, în ordinea scrisă', () => {
+  const baza = { dosar: 'salut', descriere: { ro: 'Proba.', en: 'The test.' }, versiune: '1.0.0', continut: 'a'.repeat(64) };
+  const dir = mkdtempSync(join(tmpdir(), 'cncvs2-categorii-'));
+  const cu = (extra: Record<string, unknown>) => {
+    const cale = join(dir, 'lista.json');
+    writeFileSync(cale, JSON.stringify({ extensii: [{ ...baza, ...extra }] }));
+    return () => citesteLista(cale);
+  };
+  assert.deepEqual(cu({ categorii: ['modele', 'imprimare'] })()[0]?.categorii, ['modele', 'imprimare']);
+  assert.equal(cu({})()[0]?.categorii, undefined, 'fără ele, lista rămâne bună (proba listei adevărate le cere)');
+  const gresite: ReadonlyArray<readonly [string, unknown]> = [
+    ['o categorie care nu există', ['holograme']],
+    ['una bună și una care nu există', ['cnc', 'holograme']],
+    ['un text, nu o listă', 'cnc'],
+    ['lista goală', []],
+    ['prea multe', CATEGORII_BIBLIOTECA.slice(0, MAX_CATEGORII + 1)],
+    ['aceeași de două ori', ['cnc', 'cnc']],
+  ];
+  // Mesajul spune câmpul și înșiră categoriile care există: cine scrie lista nu le caută în cod.
+  for (const [ce, v] of gresite) assert.throws(cu({ categorii: v }), new RegExp(`categorii.*${CATEGORII_BIBLIOTECA.join(', ')}`), ce);
+});
+
+test('fiecare extensie din bibliotecă stă pe cel puțin un raft; Easy 3Draw: jucării și modele, imprimare 3D, CNC', () => {
+  for (const x of citesteLista()) assert.ok((x.categorii?.length ?? 0) >= 1, `${x.dosar}: fără nicio categorie în extensii/biblioteca.json`);
+  for (const r of catalogConstruit().extensii) assert.ok((r.categorii?.length ?? 0) >= 1, `${r.id}: fără categorii în catalog`);
+  assert.deepEqual(catalogConstruit().extensii.find((x) => x.id === 'trenulet')?.categorii, ['modele', 'imprimare', 'cnc']);
 });

@@ -2311,6 +2311,16 @@ tu, iar interfața aplicației rămâne aceeași.
   până acum), iar **Reîncearcă** cere biblioteca din nou. Fără nicio extensie instalată, pagina îți arată cele două
   drumuri din afara bibliotecii. Un link de forma `…/#biblioteca=trenulet` deschide biblioteca pe pagina lui Easy
   3Draw; nimic nu se descarcă fără clicul tău.
+- Sub capul ferestrei, **Caută o extensie** filtrează lista la fiecare literă: caută în numele extensiei (oriunde în el),
+  apoi în descriere, în autor și în categorii (la început de cuvânt), fără diacritice și fără majuscule; cu mai multe
+  cuvinte, trebuie găsite toate. Lângă câmp vezi câte au rămas („2 din 5”). „/” duce în câmp, ↓ trece în listă, Enter
+  deschide prima extensie găsită, iar Escape golește întâi câmpul. Alături, **Categorii**: rafturile pe care stau extensiile
+  listei, fiecare cu numărul ei (Desen și forme, CNC și trasee, Imprimare 3D, Mașina, Jucării și modele); un clic pe una
+  arată doar extensiile ei, iar **Toate** le arată din nou. O extensie poate sta pe cel mult trei rafturi: pagina ei le
+  spune sub nume, iar un clic pe unul îl alege. Când căutarea nu găsește nimic pe raftul ales, dar ar găsi pe altele,
+  **Caută în toate categoriile** o spune, cu numărul lor; **Arată toate extensiile** șterge și căutarea, și raftul. Amândouă
+  țin cât e deschisă fereastra, iar textul căutat nu pleacă din browser. O extensie din afara bibliotecii nu stă pe niciun
+  raft; fără internet, categoriile lipsesc (vin odată cu biblioteca), dar căutarea merge pe numele extensiilor instalate.
 - La capătul listei, „Din afara bibliotecii”: **Instalează din fișier (.zip)…** primește un pachet `.zip`, iar **Instalează
   din adresă…** cere **Adresa pachetului** (HTTPS), apoi **Descarcă**; gazda trebuie să permită descărcarea din alte pagini,
   altfel descarci tu fișierul și îl instalezi din fișier. Un link de forma `…/#instaleaza=<adresa>` deschide aceeași

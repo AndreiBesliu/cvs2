@@ -9,6 +9,8 @@
 # felia 5 `intrari-rampa.corpus.oracol.test.ts` (un singur test, 6 min 19 s de unul singur) a ajuns să pornească după alte
 # oracole grele și a trecut de 10 minute, de două ori la rând (rulările 45391347194 și 45400028790), deși completul era
 # verde. Alt număr de felii doar ar fi mutat din nou zarul; limita rămâne o pază împotriva unui test agățat.
+# Tot pe 24.11, la cuvântul owner-ului, oracolul acela a fost împărțit în șase fișiere, pe părți ale corpusului
+# (`intrari-rampa.corpus.<n>.oracol.test.ts`, 30–63 s fiecare); limita de 15 minute rămâne, ca pază.
 # `--test-shard` trebuie să stea ÎNAINTEA fișierelor: după ele, Node îl ignoră pe tăcute (măsurat pe 10.10).
 name: rapid
 

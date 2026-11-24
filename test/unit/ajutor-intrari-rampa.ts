@@ -1,6 +1,7 @@
 /**
- * Ajutoarele oracolului intrărilor cu rampă (ADR 0031), comune celor trei fișiere de teste
- * (`intrari-rampa.oracol.test.ts`, `intrari-rampa.corpus.oracol.test.ts`, `intrari-rampa.octeti.oracol.test.ts`).
+ * Ajutoarele oracolului intrărilor cu rampă (ADR 0031), comune fișierelor lui de teste
+ * (`intrari-rampa.oracol.test.ts`, `intrari-rampa.octeti.oracol.test.ts` și părțile corpusului,
+ * `intrari-rampa.corpus.<n>.oracol.test.ts`, prin `ajutor-intrari-rampa-corpus.ts`).
  * Mutate neschimbate din fișierul scris de sesiunea oracolului; împărțirea e doar ca fișierele să ruleze în paralel.
  */
 import { readFileSync } from 'node:fs';
