@@ -1,6 +1,8 @@
 import { felCunoscut, PUNCTE_COTA } from './cote.ts';
 import { PLAFON, type Document } from './document.ts';
 import { inregistreazaJudecataCote } from './schemaDocument.ts';
+// Dezlegarea cotelor în jurnal (ADR 0330 §3) vine odată cu judecata: orice document cu cote trece întâi pe aici.
+import './jurnalCote.ts';
 
 /**
  * Judecata cotelor foilor (ADR 0330 §2), partea ușii adusă la cerere: doar pentru un document cu cote la pornire

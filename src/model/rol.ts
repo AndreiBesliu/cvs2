@@ -162,15 +162,25 @@ function aceeasiForma(a: FormaSculaDoc | undefined, b: FormaSculaDoc | undefined
 }
 
 /**
- * Toate frezele proiectului: ale operațiilor, ale fundului plat, frezele de rest și ale dopurilor cu pereți drepți (ADR 0171:
- * același T e aceeași freză și în fișierul dopului); fără piesele din `fara`.
+ * Aceeași freză montată (ADR 0084, ADR 0300 §5): același diametru, aceeași formă și aceeași turație (a valorilor ei, sau
+ * niciuna: turația lucrării). Același T cu altă turație ar fi refuzat la export, deci o turație diferită cere alt număr.
  */
-function sculeProiect(doc: Document, fara: ReadonlySet<string> = new Set()): Scula[] {
+export function aceeasiFreza(a: Pick<Scula, 'diametru' | 'forma' | 'regim'>, b: Pick<Scula, 'diametru' | 'forma' | 'regim'>): boolean {
+  return a.diametru === b.diametru && aceeasiForma(a.forma, b.forma) && a.regim?.turatie === b.regim?.turatie;
+}
+
+/**
+ * Toate frezele proiectului: ale operațiilor, ale fundului plat, frezele de rest și ale dopurilor cu pereți drepți (ADR 0171:
+ * același T e aceeași freză și în fișierul dopului); fără piesele din `fara` și fără freza principală a operațiilor pentru
+ * care `faraScula` spune da (ADR 0300 §4: freza pe care o înlocuiește alegerea din bibliotecă).
+ */
+export function sculeProiect(doc: Document, fara: ReadonlySet<string> = new Set(), faraScula: (p: Piesa, o: Operatie) => boolean = () => false): Scula[] {
   const rez: Scula[] = [];
   for (const p of doc.piese) {
     if (fara.has(p.id)) continue;
     for (const o of p.operatii) {
-      rez.push(o.scula, ...(o.rest ?? []).map((r) => r.scula));
+      if (!faraScula(p, o)) rez.push(o.scula);
+      rez.push(...(o.rest ?? []).map((r) => r.scula));
       if (o.fundPlat) rez.push(o.fundPlat.scula, ...(o.fundPlat.rest ?? []).map((r) => r.scula));
       if (o.incrustatie?.fel === 'drept') rez.push(...(o.incrustatie.frezeDop ?? []).map((r) => r.scula));
     }
@@ -187,26 +197,33 @@ function primulLiber(scule: readonly Scula[]): number {
 }
 
 /**
- * Numărul (T) unei freze care intră în proiect: al unei freze identice (diametrul și forma), altfel cel mai mic liber, ca
- * două freze diferite să nu aibă același număr (ADR 0084).
+ * Numărul unei freze care intră printre `luate` (ADR 0114 §5, ADR 0300 §4): al ei, cât nicio freză diferită nu-l are; altfel
+ * al unei freze identice (`aceeasiFreza`); altfel cel mai mic liber.
+ */
+export function numarPrintre(luate: readonly Scula[], s: Scula): number {
+  if (luate.every((x) => x.numar !== s.numar || aceeasiFreza(x, s))) return s.numar;
+  return luate.find((x) => aceeasiFreza(x, s))?.numar ?? primulLiber(luate);
+}
+
+/**
+ * Numărul (T) unei freze care intră în proiect: al unei freze identice (diametrul, forma, fără valori de lucru), altfel cel mai
+ * mic liber, ca două freze diferite să nu aibă același număr (ADR 0084).
  */
 export function numarFreza(doc: Document, diametru: number, forma: FormaSculaDoc | undefined): number {
   const scule = sculeProiect(doc);
-  const identica = scule.find((s) => s.diametru === diametru && aceeasiForma(s.forma, forma));
+  const identica = scule.find((s) => aceeasiFreza(s, { diametru, ...(forma ? { forma } : {}) }));
   if (identica) return identica.numar;
   return primulLiber(scule);
 }
 
 /**
- * Numerele frezelor unui rol personalizat (ADR 0114 §5), în ordinea dată: fiecare își păstrează numărul cât nicio altă freză
- * din proiect (alt diametru sau altă formă) nu-l are; altfel ia numărul unei freze identice, altfel cel mai mic liber. Frezele
- * pieselor din `inlocuite` nu se numără (își pierd operațiile), iar cele numerotate deja intră în socoteala următoarelor.
+ * Numerele frezelor unui rol personalizat (ADR 0114 §5), în ordinea dată (`numarPrintre`). Frezele pieselor din `inlocuite`
+ * nu se numără (își pierd operațiile), iar cele numerotate deja intră în socoteala următoarelor.
  */
 export function numereFreze(doc: Document, scule: readonly Scula[], inlocuite: ReadonlySet<string>): number[] {
   const luate = sculeProiect(doc, inlocuite);
   return scule.map((s) => {
-    const aceeasi = (x: Scula): boolean => x.diametru === s.diametru && aceeasiForma(x.forma, s.forma);
-    const n = luate.every((x) => x.numar !== s.numar || aceeasi(x)) ? s.numar : luate.find(aceeasi)?.numar ?? primulLiber(luate);
+    const n = numarPrintre(luate, s);
     luate.push({ ...s, numar: n });
     return n;
   });

@@ -152,8 +152,10 @@ test('ușile: fiecare are o etichetă cu nume scurt, fără id-uri repetate (sun
   // încă una: `vedere.aspect`. „Trimite la mașină” (ADR 0250, felia 28.1↑d), încă una: `export.trimite`. Imaginile foii
   // (ADR 0272, felia 25.8↑a), încă una: `foaie.imagini`. Legarea căilor (ADR 0182, felia 10.3↑o), încă două: acțiunea
   // `document.leaga-caile` și opțiunile legării. Biblioteca extensiilor (ADR 0231, felia 3.Xh-3), încă una:
-  // `extensii.biblioteca`. Fereastra „Frezele mele” (ADR 0300 §3, felia 16.A↑a), încă una: `vedere.freze`.
-  assert.equal(USI.length, 115);
+  // `extensii.biblioteca`. Fereastra „Frezele mele” (ADR 0300 §3, felia 16.A↑a), încă una: `vedere.freze`. Butonul Admin
+  // (ADR 0132 §11, felia 14.C↑d), încă una: `editare.admin`. Cotele (ADR 0330, felia 10.4↑a-2), încă două: unealta Cote și
+  // acțiunea `foaie.cote`.
+  assert.equal(USI.length, 117);
 });
 
 test('fiecare ușă e acoperită, în ambele limbi, de un capitol care o numește cu eticheta din interfață', () => {
@@ -348,6 +350,10 @@ const CONTROALE_EXTENSII: Readonly<Record<string, string | null>> = {
   'din-fisier': 'extensii.din-fisier', 'din-adresa': 'extensii.din-adresa',
   // pagina fără nicio extensie de arătat: aceleași două drumuri (ADR 0232 §B.8)
   'pagina-din-fisier': 'extensii.din-fisier', 'pagina-din-adresa': 'extensii.din-adresa',
+  // căutarea și categoriile (ADR 0233): câmpul, pastilele rafturilor (și cele de pe pagină), drumurile unei căutări goale;
+  // „Caută în toate categoriile (N)” poartă numărul în paranteză, deci nu se poate căuta ca nume: manualul o spune oricum
+  'cauta-extensie': 'extensii.biblioteca.cauta', categorie: 'extensii.biblioteca.categorii', 'categorie-pagina': null,
+  'arata-toate': 'extensii.biblioteca.arata-toate', 'in-toate-categoriile': null,
   // captura mărită (ADR 0232 §C.12): imaginea din pagină și cele trei butoane-semn ale ei
   captura: null, 'captura-inapoi': null, 'captura-inainte': null, 'captura-inchide': null,
   // ferestrele de confirmare: un pachet din fișier sau de la o adresă, o versiune care cere ceva în plus

@@ -327,7 +327,7 @@ export function programDinDocument(
       if (f.varf !== undefined && !(f.varf < t.scula.diametru)) {
         return { ok: false, motiv: `${t.idLume}: vârful frezei în V (T${t.scula.numar}), de ${f.varf} mm, trebuie să fie sub diametrul ei (Ø${t.scula.diametru})` };
       }
-      if (motivForma === 'v-pe-parte') {
+      if (motivForma === 'v-pe-linie') {
         const unde = t.tip === 'buzunar' ? 'într-un buzunar' : t.tip === 'gaurire' ? 'la o găurire' : 'pe o parte';
         return { ok: false, motiv: `${t.idLume}: freza în V (T${t.scula.numar}) taie pe linie sau într-un V-carve; ${unde}, peretele n-ar ieși unde e desenat` };
       }

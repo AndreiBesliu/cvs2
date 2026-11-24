@@ -1232,6 +1232,37 @@ is faded, with a red tint, over the shapes the knife splits right through; with 
 both sides of the trace, dotted more sparsely; with a joint, the teeth show instead of the strip, on the shapes the trace
 goes right through.
 
+## Dimensions and measuring
+%% capitol: cote
+%% acopera: unealta.cote, foaie.cote
+
+The **Dimensions** tool (`D`; its button sits in the bar's extension, after Convert) puts dimensions on the drawing that show a size: the length of a side, the
+distance between two points along X, along Y or straight. A dimension is **never cut**: the exported G-code is the same with
+or without dimensions. Dimensions belong to the sheet they were put on (**Sheet dimensions**), are saved with the project and
+have their own colour on the canvas. Pick the type in the bar:
+- **Automatic** (at first): a click on a straight side takes its length; otherwise two points, and the dimension is horizontal
+  if you take the line above or below them, vertical if you take it to the left or right, aligned if you take it between them
+  (**Shift**: aligned anyway);
+- **Horizontal**, **Vertical**, **Aligned**: two points, then the place of the dimension line;
+- **Measure** (`M`): two points, no trace. The distance, Δx, Δy and the angle from the horizontal show next to the cursor and
+  in the bottom bar; **Enter** (or **Keep**) makes it an aligned dimension, **Esc** clears it.
+
+Putting one: click the first point, click the second, then take the dimension line where you want it and click a third time;
+**Esc** cancels the dimension you started. Points snap to vertices (a square next to the cursor), to the midpoints of sides
+(a triangle), to the centres of circles and arcs (a circle), to the quadrants of circles (a diamond), to the corners and
+midpoints of a shape's box, to the sheet's corners, midpoints and centre, and to the grid when it is on. With **Ctrl**, the
+nearest point on the contour; **Alt** reverses snapping, as everywhere.
+
+A dimension put on a shape's points is **linked** to it: move, rotate, scale, flip or skew the shape (also from the panel)
+and the dimension follows and changes its figure. If the shape is deleted, moved to another sheet or gets other nodes (a node
+added or removed), the dimension **unlinks**: it stays where it was last seen, dashed, in red, in the same undo step
+(Ctrl+Z brings both back). “Duplicate sheet” copies the dimensions too, linked to the copy's shapes.
+
+With the Dimensions tool, a click on a dimension line selects it: drag its ends onto another point (it links to it again),
+drag the line or move it with the arrow keys (1 mm; Shift: 10 mm, Alt: 0.1 mm), **Delete** removes it. With Select and the
+other tools, dimensions are not selected: the click goes to the shape under them. A double click on a dimension, with any
+tool, switches to Dimensions with it selected.
+
 ## Converting vectors
 %% capitol: conversie
 %% acopera: editare.conversie, document.converteste
@@ -1312,13 +1343,26 @@ would change all of them: the row says how many times it is placed.
 
 The **My bits** window keeps your bits. It opens from the **Account** menu (the **My bits…** row) or from the command
 palette. It works without an account and offline: without an account, the library lives in this browser; with your account
-open, it lives in your account and you have it on any computer where you sign in (see below). Soon you will pick a bit from
-the library on the export rows and in the Cutting section; until then, the bit is typed on the row, as before (see
-[Exporting G-code](#export)).
+open, it lives in your account and you have it on any computer where you sign in (see below). You pick a bit from the
+library for the chosen shapes in the Cutting section of the properties panel (see [The cutting operations](#operatii)); on the
+export rows it comes soon, and until then the bit is typed there on the row, as before (see [Exporting G-code](#export)).
 
 The **list**, on the left, groups the bits by kind (Flat, V, Engraving), each with a small profile, the preferred T, the
 spindle speed and the feed. **Search for a bit** filters by name, and the **All**, **Flat**, **V** and **Engraving** buttons
-show a single kind. On a phone, the list comes first; a bit you pick opens full screen, and **Bits** takes you back.
+show a single kind. A bit you pick shows its **details** on the right, read-only: the kind, the profile to scale, the geometry,
+the working values and the note, with the **Edit**, **Duplicate** and **Delete…** buttons. On a phone, the list comes first;
+a bit's details open full screen, and **Bits** takes you back.
+
+**List** and **Configurator**, next to the filters, choose how the window works: in **List** (how it starts), the editor
+opens only with **Edit** and **New bit**, and after **Save** or **Discard changes** you are back at the details (on a phone,
+**Details** does the same); in **Configurator**, a bit you pick opens straight in the editor, with **Duplicate** and
+**Delete…** there. The choice is kept in this browser.
+
+**Groups** are yours. A bit without a group sits under its kind (Flat, V, Engraving), as at the start. The **Group** list in
+the details moves it: to another group, back to **No group (by kind)** or, with **New group…**, to a new group with the name
+you type (at most 40 characters). Your groups come first in the list, by name; **✎** next to a group's title renames it, with
+all its bits (a name that already belongs to another group merges them, and an empty name puts them back under their kinds).
+The group travels with the bit in the file and in the account.
 
 **New bit** opens the editor, with the fields:
 - **Name**: left empty, the bit gets the name proposed from its kind and diameter (“Flat Ø6”, “V60 Ø6”, “Engraving 30° tip
@@ -1329,21 +1373,24 @@ show a single kind. On a phone, the list comes first; a bit you pick opens full 
   **Flutes** (if you know them) and **Preferred T** (1–999, the number on the tool holder);
 - **Working values**: **Spindle speed** (rpm), **Feed** and **Plunge** (mm/min), **Step-down** (mm) and **Stepover** (% of
   the diameter, at most 50);
-- **Note**: the maker, the code, where it came from.
+- **Note**: the maker, the code, where it came from;
+- **Group**: left empty, the bit sits under its kind; the list under the field has your groups.
 
 The profile on the right is to scale. Numbers take a comma or a point. **Save** keeps the bit, and **Discard changes** puts
-back what was there. If you pick another bit or close the window with unsaved changes, they are saved on their own when they
+back what was there (in **List**, it also closes the editor). If you pick another bit or close the window with unsaved changes, they are saved on their own when they
 are valid; otherwise the window stays and shows the fields to fix. **Duplicate** makes a copy of the bit, and **Delete…** asks
 first; projects that use it keep their copy.
 
-**Add the starter bits** shows while the library is empty: six common bits (flat Ø3.175, Ø6 and Ø12, V60 Ø6, V90 Ø12 and an
-engraving bit of 30° with a 0.2 tip and Ø3.175), with the app’s default values (18,000 rpm, a feed of 1,000 mm/min, a plunge
-of 300 mm/min). Change them afterwards to match your bits.
+**The standard bits** come by themselves: the first time the window or the properties panel opens, the library gets six common
+bits (flat Ø3.175, Ø6 and Ø12, V60 Ø6, V90 Ø12 and an engraving bit of 30° with a 0.2 tip and Ø3.175), with the app’s
+default values (18,000 rpm, a feed of 1,000 mm/min, a plunge of 300 mm/min). Change them afterwards to match your bits. They
+come only once: a deleted one does not come back by itself. With an empty library, **Add the standard bits** puts back the
+missing ones.
 
 **Export…** saves the library to the file `frezele-mele.cvs2freze.json`, which you bring in with **Import…** on another
 computer. **Import…** also reads a CSV (saved from Excel, for example) with a header row and the columns `nume`, `fel`
 (`plata`, `v` or `gravare`), `diametru`, `unghi`, `varf`, `numar` (the T), `turatie`, `avans`, `plonjare`, `pas`,
-`pas_lateral`, `tais`, `taisuri` and `nota`, in any order. Only `nume`, `fel` and `diametru` are required; without the others,
+`pas_lateral`, `tais`, `taisuri`, `nota` and `grup`, in any order. Only `nume`, `fel` and `diametru` are required; without the others,
 the T is 1, the spindle speed 18,000, the feed 1,000, the plunge 300, the step-down half the diameter (for a flat bit) or
 1 mm, and the stepover 40 %. The separator (`;`, `,` or tab) is found on its own; with `;`, numbers may use a decimal comma.
 Before importing, you choose what happens to a name that already exists: **Keep both** (the default; the new one gets
@@ -1360,8 +1407,9 @@ account…** or **Offline: sent when the connection is back**. The account holds
 in this browser, and the window counts them. With the trial over or the account disabled, the library in the account is
 read-only: changes stay here.
 
-The first time you open it with your account, if this browser has bits the account does not have, the window asks **Add the
-N bits from this browser to the account?**: **Yes, add them** copies them into the account (a bit with a taken name gets
+An account that never had any bits gets the standard bits at its first sync; an account whose bits were deleted does not get
+them again. The first time you open it with your account, if this browser has bits the account does not have (other than the
+standard ones), the window asks **Add the N bits from this browser to the account?**: **Yes, add them** copies them into the account (a bit with a taken name gets
 “(2)”), and **Not now** asks again another time. The library without an account stays untouched: you see it again after
 signing out.
 
@@ -1390,6 +1438,15 @@ becomes a V60 of the same diameter, and for another role a V bit becomes flat. F
 cone (5.196 mm for a V60 Ø6). Under the role, **Depth** and **Step down** are
 written on all the operations of the chosen shapes (with different values, the field is empty). A part with several copies
 changes its role for all of them. A shown toolpath updates by itself.
+
+**Cutter**, under the step (while the [My bits](#freze) library has bits), lists the library bits that work on all the chosen
+shapes: a V bit and an engraving bit only on the line and in a V-carve, a flat bit everywhere else (but not in a V-carve).
+Chosen, the bit goes onto all the operations of the chosen shapes, in one undo step, with its working values (spindle speed,
+feed, plunge), its cutting length, its step down and, for a pocket, its stepover (from its percentage); the depth, the flat
+bottom and the rest bits stay. The T number is the library's, if it is free in the project; otherwise that of an identical
+bit (same diameter, same shape, same spindle speed), otherwise the smallest free one, and a note under the list says so. The
+list shows the chosen shapes' library bit, **Entered by hand** when they share a bit typed in the export window, or “—” when
+they have different bits.
 
 **My roles.** A role with all its values (the cutter, the direction, the depth, the step down, the tabs, the ramp, the leads,
 the corners, the descent, the pocket toolpath, the rest cutters, the flat bottom) is kept with **Save as role…**, under
@@ -2336,6 +2393,17 @@ it, and the app’s interface stays the same.
   the window switches to **Installed** by itself (installed extensions work as before), and **Try again** asks for the
   library again. With no extension installed, the page shows the two ways from outside the library. A link like
   `…/#biblioteca=trenulet` opens the library on Easy 3Draw’s page; nothing downloads without your click.
+- Under the window’s header, **Search extensions** filters the list as you type: it looks in the extension’s name
+  (anywhere in it), then in the description, the author and the categories (at the start of a word), ignoring accents and
+  capitals; with several words, all of them must be found. Next to the field you see how many are left (“2 of 5”). “/”
+  moves to the field, ↓ moves into the list, Enter opens the first extension found, and Escape clears the field first.
+  Beside it, **Categories**: the shelves the listed extensions sit on, each with its count (Drawing and shapes, CNC and
+  toolpaths, 3D printing, Machine, Toys and models); a click on one shows only its extensions, and **All** shows them
+  again. An extension can sit on up to three shelves: its page lists them under the name, and a click on one selects it.
+  When the search finds nothing on the chosen shelf but would on others, **Search all categories** says so, with their
+  number; **Show all extensions** clears both the search and the shelf. Both last while the window is open, and the text
+  you search never leaves the browser. An extension from outside the library sits on no shelf; without internet the
+  categories are missing (they come with the library), but the search still works on the names of installed extensions.
 - At the end of the list, “From outside the library”: **Install from file (.zip)…** takes a `.zip` package, and **Install
   from address…** asks for the **Package address** (HTTPS), then **Download**; the host must allow downloads from other
   pages, otherwise you download the file yourself and install it from the file. A link like `…/#instaleaza=<address>` opens
@@ -2418,7 +2486,8 @@ it, and the app’s interface stays the same.
 | `Home` | Show the whole sheet |
 | `PageUp`, `PageDown` | Previous sheet, Next sheet (the active sheet, along the list of sheets) |
 | `T` | Show toolpath |
-| `V` `S` `N` `K` `B` `R` `O` `E` `L` `P` `X` | the tools: Select, Transform, Nodes, Knife, Pen, Rectangle, Circle, Ellipse, Line, Polygon, Text (the key is also written in the button's corner) |
+| `V` `S` `N` `K` `B` `R` `O` `E` `L` `P` `X` `D` | the tools: Select, Transform, Nodes, Knife, Pen, Rectangle, Circle, Ellipse, Line, Polygon, Text, Dimensions (the key is also written in the button's corner; Dimensions sits in the bar's extension) |
+| `M` | the Dimensions tool, on Measure |
 | `Shift+H`, `Shift+V` | Flip horizontally, Flip vertically |
 | the arrow keys | move the selection 1 mm (Shift: 10 mm, Alt: 0.1 mm); in the 3D view, rotate the sheet |
 | `Alt+←`, `Alt+→` (in the Text tool's text) | the space between selected letters, 0.1 mm tighter / looser |
@@ -2429,6 +2498,8 @@ it, and the app’s interface stays the same.
 | double-click on the anchor target (Transform tool) | the anchor back to the point chosen in the picker |
 | `Shift` / `Ctrl` / `Alt`, while drawing | square, circle, 15° steps / no proportion (the circle becomes an ellipse) / from the centre (the line, from the middle) |
 | `Delete`, `Backspace` (with the Nodes tool and a node chosen) | removes the chosen node |
+| `Delete`, the arrow keys, `Esc` (with the Dimensions tool and a dimension selected) | delete the dimension / move its line / let it go |
+| `Enter` (with the Dimensions tool, on Measure) | keep the measurement as an aligned dimension |
 | `Enter` (with the Pen tool) | finishes the path you started |
 | `Ctrl+Z`, `Ctrl+Y` (with the Pen tool and a path started) | undoes / redoes the last step of the path |
 | `Ctrl+Shift+Z` (right after a path finished with the Pen) | reopens the path, with its steps |

@@ -1,5 +1,6 @@
 import { CUTIE_GOALA, uneste, type Cutie } from '../geom/cutie.ts';
 import { idNou } from './copii.ts';
+import { coteCopiate } from './cote.ts';
 import { cuUrechi, distantaCuUrechi, frezaExterioara } from './distantaPiese.ts';
 import type { Document, Foaie, Instanta, Piesa } from './document.ts';
 import { materialFoaie } from './foi.ts';
@@ -213,7 +214,8 @@ export function comenziDesprinde(doc: Document, ids: ReadonlySet<string>, idFoai
 
 /**
  * „Duplică foaia cu aceleași piese” (ADR 0210 §2, opțiunea owner-ului): o foaie nouă după foaia `id`, cu instanțe noi ale
- * acelorași piese (legate), la aceleași locuri; mărimea, materialul și ghidajele vin, numele nu. Null fără foaie.
+ * acelorași piese (legate), la aceleași locuri; mărimea, materialul, ghidajele și cotele (legate de instanțele noi) vin, numele
+ * nu. Null fără foaie.
  */
 export function comandaDuplicareLegata(doc: Document, id: string): { readonly comanda: Comanda; readonly id: string } | null {
   const k = doc.foi.findIndex((f) => f.id === id);
@@ -225,7 +227,10 @@ export function comandaDuplicareLegata(doc: Document, id: string): { readonly co
     ocupate.add(nid);
     return { ...structuredClone(i), id: nid };
   });
-  const { instante: _instante, nume: _nume, ...rest } = sursa;
+  const { instante: _instante, nume: _nume, cote, ...rest } = sursa;
   const idCopie = idFoaieNoua(doc);
-  return { comanda: { tip: 'adauga-foaie', foaie: { ...structuredClone(rest), id: idCopie, instante }, pozitie: k + 1, piese: [] }, id: idCopie };
+  // Cotele foii (ADR 0330 §3) trec pe instanțele copiei, legate de aceleași locuri.
+  const harta = new Map(sursa.instante.map((i, k) => [i.id, instante[k]?.id ?? i.id]));
+  const foaie = { ...structuredClone(rest), id: idCopie, instante, ...(cote ? { cote: coteCopiate(cote, harta) } : {}) };
+  return { comanda: { tip: 'adauga-foaie', foaie, pozitie: k + 1, piese: [] }, id: idCopie };
 }

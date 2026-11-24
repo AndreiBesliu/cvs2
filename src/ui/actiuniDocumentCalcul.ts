@@ -2,10 +2,10 @@ import { CUTIE_GOALA, uneste, type Cutie } from '../geom/cutie.ts';
 import { IDENTITATE, rotatie } from '../geom/matrice.ts';
 // Doar tipul: piesa importului o face modulul previzualizării, adus la cerere (`ImportPregatit.piesa`, felia 2.3c-3).
 import type { ImportPregatit } from '../io/piesa.ts';
-import { instantaPreaDeparte, noduriPiesa, numara, operatieImplicita, PLAFON, plafonDepasit, type Document, type Foaie, type FormaDoc, type Ghidaj, type ImagineFoaie, type Instanta, type Nod, type Operatie, type Piesa, type Stoc, type TextePlacuta } from '../model/document.ts';
+import { instantaPreaDeparte, noduriPiesa, numara, operatieImplicita, PLAFON, plafonDepasit, type Cota, type Document, type Foaie, type FormaDoc, type Ghidaj, type ImagineFoaie, type Instanta, type Nod, type Operatie, type Piesa, type Stoc, type TextePlacuta } from '../model/document.ts';
 import type { Actiune } from './actiuni.ts';
 import { is } from 'valibot';
-import { operatieInMargini, SchemaDocument } from '../model/schemaDocument.ts';
+import { operatieInMargini, problemaCote, SchemaDocument } from '../model/schemaDocument.ts';
 import { adancimeDeschise } from '../io/adancime.ts';
 import { operatiiPlacutei } from '../io/placuteOperatii.ts';
 import type { RezultatPlacuta } from '../text/placute.ts';
@@ -39,6 +39,7 @@ import {
 } from '../model/pieseLegate.ts';
 import { aplica } from '../geom/matrice.ts';
 import { comenziAsezare, distantaPropusa, planAsezare, type OptiuniAsezare } from '../model/asezare.ts';
+import { coteCopiate } from '../model/cote.ts';
 import { optiuniTinute } from '../app/asezareTinuta.ts';
 import { alegereTinuta, type AlegereGrupare } from './grupareSurori.ts';
 import {
@@ -532,6 +533,24 @@ export const CALCUL_DOCUMENT: CalculDocument = {
       ctx.scrie(executa(h, { tip: 'inlocuieste-ghidaje', foaie: foaie.id, vechi, nou: nou.map((g) => ({ ...g })) }));
     },
   },
+  // Cotele foii (ADR 0330): lista întreagă, judecată ca la ușă (judecata vine cu unealta Cote); aceeași listă nu e o comandă.
+  'foaie.cote': {
+    activa: (ctx) => {
+      const c = ctx.coteNoi?.();
+      if (!c) return 'motiv.nimic-ales';
+      const s = scrie(ctx);
+      if (s !== true) return s;
+      return coteBune(ctx.istoric().doc, foaieCtx(ctx, ctx.istoric().doc).id, c) ? true : 'motiv.plafon';
+    },
+    ruleaza: (ctx) => {
+      const nou = ctx.coteNoi?.();
+      const h = ctx.istoric();
+      const foaie = foaieCtx(ctx, h.doc);
+      const vechi = foaie.cote ?? [];
+      if (!nou || !coteBune(h.doc, foaie.id, nou) || jsonCanonic(nou) === jsonCanonic(vechi)) return;
+      ctx.scrie(executa(h, { tip: 'inlocuieste-cote', foaie: foaie.id, vechi, nou: nou.map((c) => structuredClone(c)) }));
+    },
+  },
   // Imaginile foii (ADR 0272): lista întreagă, judecată ca la ușă; aceeași listă nu e o comandă.
   'foaie.imagini': {
     activa: (ctx) => {
@@ -1000,6 +1019,15 @@ function mutaFoaia(directie: -1 | 1): Pick<Actiune<ContextDocument>, 'activa' | 
 }
 
 /**
+ * Lista de cote a foii `idFoaie` trece de ușă (ADR 0330 §2): judecata cotelor, pe documentul cu ea (fără judecata adusă,
+ * `problemaCote` refuză, deci nimic nu se scrie pe nejudecate).
+ */
+function coteBune(doc: Document, idFoaie: string, cote: readonly Cota[]): boolean {
+  const foi = doc.foi.map((f) => (f.id === idFoaie ? { ...f, cote: [...cote] } : f));
+  return problemaCote({ ...doc, foi }) === null;
+}
+
+/**
  * Copia foii `id` („Duplică foaia”, ADR 0210 §1): o foaie nouă după ea, cu aceeași mărime, același material și aceleași
  * ghidaje, fără numele ei (copia se numește după id-ul ei); pe ea, copii separate ale instanțelor, ca la Ctrl+D (o piesă nouă cu
  * copia arborelui și a operațiilor, la același loc, cu aceleași câmpuri), în ordinea foii, cu piesele noi la capătul listei.
@@ -1014,18 +1042,22 @@ function comandaDuplicare(doc: Document, id: string): { readonly ok: true; reado
   const ocupate = new Set<string>();
   const noi: Array<{ readonly piesa: Piesa; readonly pozitie: number }> = [];
   const instante: Instanta[] = [];
+  const perechi: Array<[string, string]> = [];
   for (const original of sursa.instante) {
     const vechi = piese.get(original.piesa);
     if (!vechi) continue;
     const nid = idNou(doc, ocupate);
     ocupate.add(nid);
+    perechi.push([original.id, nid]);
     const { radacina, ...rest } = vechi;
     noi.push({ piesa: { ...structuredClone(rest), radacina: copieArbore(radacina), id: nid }, pozitie: doc.piese.length + noi.length });
     instante.push({ ...structuredClone(original), id: nid, piesa: nid });
   }
-  const { instante: _instante, nume: _nume, ...restFoaie } = sursa;
+  const { instante: _instante, nume: _nume, cote, ...restFoaie } = sursa;
   const idCopie = idFoaieNoua(doc);
-  const foaie: Foaie = { ...structuredClone(restFoaie), id: idCopie, instante };
+  // Cotele foii (ADR 0330 §3) trec pe instanțele copiei (o instanță fără piesă nu se copiază: capetele ei rămân dezlegate).
+  const harta = new Map(perechi);
+  const foaie: Foaie = { ...structuredClone(restFoaie), id: idCopie, instante, ...(cote ? { cote: coteCopiate(cote, harta) } : {}) };
   const comanda: Comanda = { tip: 'adauga-foaie', foaie, pozitie: k + 1, piese: noi };
   const dupa = executa(istoricDin(doc), comanda).doc;
   return is(SchemaDocument, JSON.parse(JSON.stringify(dupa))) ? { ok: true, comanda, id: idCopie } : { ok: false, motiv: 'motiv.plafon' };

@@ -27,9 +27,10 @@ import { ManereImagine } from './ManereImagine.tsx';
 import { manerImagineLovit } from './manereImagine.ts';
 import { textLovit, texteGrupate } from './texteGrupate.ts';
 import {
-  capatConstrans, cerculElipsa, deseneaza, formaDesenata, LATURI_MAX, LATURI_MIN, TASTA_UNELTEI, TASTE_UNELTE, tasteUneltei, UNELTE, type FormaDesenata, type ModCerc,
+  capatConstrans, cerculElipsa, deseneaza, formaDesenata, LATURI_MAX, LATURI_MIN, TASTA_UNELTEI, TASTE_UNELTE, tasteUneltei, UNELTE_BARA, type FormaDesenata, type ModCerc,
   type Unealta, type UnealtaDesen,
 } from './desenCalcul.ts';
+import type { CerereCote } from './Cote.tsx';
 import { ancoraPanou } from './ancoraPanou.ts';
 // Calculul acțiunilor `foaie.ghidaje` și `document.muta-instantele` se înregistrează odată cu modulul ăsta.
 import { motivCopiereRetea, motivDesen } from '../ui/actiuniDocumentCalcul.ts';
@@ -248,6 +249,14 @@ const PanouConversie = lazy(() => import('./PanouTaiere.tsx').then(cuMesaje).the
 const UnealtaCutit = lazy(() => import('./PanouTaiere.tsx').then(cuMesaje).then((m) => ({ default: m.UnealtaCutit }), () => ({
   default: () => <span className="cip cip-rosu noduri-sfat" role="status" data-testid="cutit-neincarcat">{t('editare.cutit.neincarcat')}</span>,
 })));
+/**
+ * Cotele (ADR 0330 §5, felia 10.4↑a-2): desenul lor pe pânză și unealta Cote vin într-o bucată a lor, la prima apăsare pe D
+ * sau M, sau cu prima foaie care are cote. Dacă nu vine, un cip o spune (doar cu unealta aleasă); editarea merge mai departe.
+ */
+const StratCote = lazy(() => import('./Cote.tsx').then((m) => ({ default: m.StratCote }), () => ({
+  default: (q: { readonly unealta: boolean }) => (q.unealta
+    ? <span className="cip cip-rosu noduri-sfat" role="status" data-testid="cote-neincarcate">{t('editare.cote.neincarcate')}</span> : null),
+})));
 
 /**
  * Ușa interfeței de acum, pentru ajutorul după context (F1): o fereastră a aplicației deschisă (exportul, importul,
@@ -284,7 +293,7 @@ function scrieLocal(cheie: string, valoare: string): void {
   }
 }
 
-type Extra = Partial<Pick<ContextDocument, 'ghidajeNoi' | 'imaginiNoi' | 'deplasari' | 'deplasare' | 'formaNoua' | 'transformare' | 'alese' | 'retea' | 'formaEditata' | 'sterge' | 'nodEditat' | 'textNou' | 'reparatie' | 'taiere' | 'conversie' | 'foaieTinta' | 'grupareSurori'>>;
+type Extra = Partial<Pick<ContextDocument, 'ghidajeNoi' | 'imaginiNoi' | 'coteNoi' | 'deplasari' | 'deplasare' | 'formaNoua' | 'transformare' | 'alese' | 'retea' | 'formaEditata' | 'sterge' | 'nodEditat' | 'textNou' | 'reparatie' | 'taiere' | 'conversie' | 'foaieTinta' | 'grupareSurori'>>;
 
 /** Ca la pânză: cât de departe de contur prinde un clic (px) și de la cât începe o tragere (px). */
 const TOLERANTA_CLIC_PX = 4;
@@ -731,6 +740,16 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
   });
   const [puneGestCutit] = useState(() => (g: GestDesen | null) => { gestCutit.current = g; });
   const [locCutit, setLocCutit] = useState<HTMLElement | null>(null);
+  // Cotele (ADR 0330 §5): locul felurilor în bara de sus și cererea de pornire (D: felul din setări, M: Măsoară), numărată ca
+  // o apăsare nouă să schimbe felul și cu unealta deja aleasă.
+  const [locCote, setLocCote] = useState<HTMLElement | null>(null);
+  const [cerereCote, setCerereCote] = useState<CerereCote>({ mod: 'd', n: 0 });
+  const pornesteCote = (mod: 'd' | 'm'): void => {
+    setUnealta('cote');
+    setCerereCote((c) => ({ mod, n: c.n + 1 }));
+  };
+  const pornesteCoteRef = useRef(pornesteCote);
+  pornesteCoteRef.current = pornesteCote;
   useEffect(() => {
     onDesen(p.doarCitire ? null : deseneaza(unealta) ? gestDesen : unealta === 'cutit' ? intermediarCutit : null);
   }, [unealta, p.doarCitire, onDesen, gestDesen, intermediarCutit]);
@@ -1002,7 +1021,14 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
       const u = e.altKey || e.shiftKey ? undefined : TASTE_UNELTE[e.key.toLowerCase()];
       if (u) {
         e.preventDefault();
-        setUnealta(u);
+        if (u === 'cote') pornesteCoteRef.current('d');
+        else setUnealta(u);
+        return;
+      }
+      // M: unealta Cote, pe Măsoară (ADR 0330 §5).
+      if (!e.altKey && !e.shiftKey && e.key.toLowerCase() === 'm') {
+        e.preventDefault();
+        pornesteCoteRef.current('m');
         return;
       }
       // Oglindirea (ADR 0054): Shift+H orizontal, Shift+V vertical.
@@ -1572,6 +1598,16 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
             )} />
         </Suspense>
       ) : null}
+      {foaie && !vedere3d && (unealta === 'cote' || (foaie.cote?.length ?? 0) > 0) ? (
+        <Suspense fallback={null}>
+          <StratCote doc={doc} indexFoaie={indexFoaie} vedere={vedere} marime={marime} zona={zona}
+            unealta={unealta === 'cote' && activ && !p.doarCitire} activ={activ && !p.doarCitire} loc={locCote} locJos={locTaste} cerere={cerereCote}
+            lipire={lipire} grila={pasGrila} virgula={virgula}
+            onScrie={(c) => ruleaza('foaie.cote', { coteNoi: () => c })}
+            onUnealta={(u) => { if (u === 'cote') pornesteCote('d'); else setUnealta('selectie'); }}
+            poateDublu={() => unealtaRef.current !== 'pen' && unealtaRef.current !== 'cutit'} />
+        </Suspense>
+      ) : null}
       {traseu && deseneaza(unealta) && !vedere3d ? (
         <>
           <svg className="rigle-desen" width={marime.latime} height={marime.inaltime} aria-hidden="true" data-testid="desen-previzualizare">
@@ -1745,6 +1781,17 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
             ) : null}
           </span>
         );
+        // Unealta Cote (ADR 0330 §5): în extensie, după Taie și Convertește (bara de sus n-avea loc), cu tasta ei în colț.
+        const titluCote = t('editare.unealta.cote');
+        const coteSectiune = (
+          <span className="sectiune-extensie sectiune-retea" role="toolbar" aria-label={numeScurt(titluCote)} data-testid="extensie-cote">
+            <button type="button" className="aliniaza unealta" aria-pressed={unealta === 'cote'} title={titluCote} aria-label={titluCote} data-unealta="cote"
+              disabled={p.doarCitire} onClick={() => { pornesteCote('d'); setVedere3d(false); }}>
+              <IconaUnealta u="cote" />
+              <span className="tasta-unealta" aria-hidden="true">{TASTA_UNELTEI.cote}</span>
+            </button>
+          </span>
+        );
         // Conversia vectorilor (ADR 0180 §8, §10): arce în locul curbelor, în cerc, în dreptunghi; panoul și calculul vin la cerere.
         const conversieSectiune = (
           <span className="sectiune-extensie sectiune-retea" role="toolbar" aria-label={t('editare.conversie.sectiune')} data-testid="extensie-conversie">
@@ -1855,6 +1902,7 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
             <span className="separator" aria-hidden="true" />
             {taiereSectiune}
             {conversieSectiune}
+            {coteSectiune}
             <span className="separator" aria-hidden="true" />
             {verificareSectiune}
             <span className="separator" aria-hidden="true" />
@@ -1876,7 +1924,7 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
         const bara = (
           <div className={loc ? 'bara-editare bara-sus' : 'bara-editare'} role="toolbar" aria-label={t('editare.bara')} data-testid="bara-editare"
             style={loc ? undefined : { left: zona.x + GROSIME_RIGLA + 8, top: zona.y + zona.h - 52 }}>
-            {UNELTE.map((u) => {
+            {UNELTE_BARA.map((u) => {
               const titlu = t(`editare.unealta.${u}`);
               return (
                 <button key={u} type="button" className="unealta aliniaza" aria-pressed={unealta === u} title={titlu} aria-label={titlu} data-unealta={u}
@@ -1889,6 +1937,7 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
             })}
             {unealta === 'noduri' ? <span className="loc-noduri" ref={setLocNoduri} /> : null}
             {unealta === 'cutit' ? <span className="loc-noduri" ref={setLocCutit} /> : null}
+            {unealta === 'cote' ? <span className="loc-noduri" ref={setLocCote} /> : null}
             {unealta === 'poligon' ? (
               <input className="laturi" value={laturi} inputMode="numeric" aria-label={t('editare.laturi')} title={t('editare.laturi')} data-editare="laturi"
                 onChange={(e) => {
@@ -2219,6 +2268,7 @@ function IconaUnealta({ u }: { readonly u: Unealta | 'lipire' | 'grila' }): Reac
     poligon: <polygon points="8,2 13.2,5 13.2,11 8,14 2.8,11 2.8,5" className="contur" />,
     text: <path className="contur" d="M3 4.5 V3 H13 V4.5 M8 3 V13.5 M5.5 13.5 H10.5" />,
     cutit: <path className="contur" d="M2 14 L6.2 9.8 M6.2 9.8 L13 3 C14.4 4.4 14.2 6.8 12 9 L8.6 12.2 Z" />,
+    cote: <path className="contur" d="M2 4 V12 M14 4 V12 M2 8 H14 M2 8 L4.5 6.5 M2 8 L4.5 9.5 M14 8 L11.5 6.5 M14 8 L11.5 9.5" />,
     pen: (
       <>
         <path className="contur" d="M8 1.5 L12.5 8.5 L8 14.5 L3.5 8.5 Z M8 1.5 V7.2" />

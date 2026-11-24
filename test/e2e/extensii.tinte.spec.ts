@@ -34,7 +34,8 @@ async function drumul(page: Page, minim: number): Promise<void> {
   await celPutin(meniu.locator('[role="menuitem"]'), minim, 'rândurile meniului');
   const b = await deschideBiblioteca(page);
   await expect(randLista(page, 'trenulet')).toBeVisible();
-  await celPutin(b.locator('.bib-cap button:visible, .bib-lista button:visible'), minim, 'filele, × și rândurile listei');
+  await celPutin(b.locator('.bib-cap button:visible, .bib-filtre button:visible, .bib-lista button:visible'), minim, 'filele, ×, categoriile și rândurile listei');
+  await celPutin(b.locator('.bib-filtre input:visible'), minim, 'câmpul căutării');
   await randLista(page, 'trenulet').click();
   await celPutin(pagina(page).locator('button:visible'), minim, 'butoanele paginii');
   await inchideBiblioteca(page);

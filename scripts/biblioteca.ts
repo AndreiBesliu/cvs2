@@ -15,6 +15,8 @@
  * Datele de prezentare (ADR 0231 §B.1), lângă pachet, cu amprenta în nume: semnul extensiei (fișierul `pictograma` al
  * manifestului, luat din dosarul ei), capturile (`extensii/<dosar>/biblioteca/<nume>.<limba>.webp`, comise; le face
  * `scripts/capturi-biblioteca.ts`), descrierea lungă, autorul și ultimele `MAX_NOUTATI` rânduri de „ce e nou”.
+ * Rafturile pe care stă extensia (ADR 0233): `"categorii": ["modele", "imprimare"]`, 1–3 din `CATEGORII_BIBLIOTECA`
+ * (`shared/biblioteca.ts`), primul fiind cel principal. Nu țin de pachet: o schimbare a lor nu cere o versiune nouă.
  *
  *   node scripts/biblioteca.ts            # catalogul de acum și starea fiecărei înregistrări
  *   node scripts/biblioteca.ts --scrie    # înregistrează versiunea nouă (refuză un conținut nou cu versiunea veche)
@@ -23,10 +25,10 @@ import { createHash } from 'node:crypto';
 import { readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import {
-  comparaVersiuni, DIR_BIBLIOTECA, esteData, FISIER_CATALOG_BIBLIOTECA, FORMAT_CATALOG, MAX_ALT, MAX_AUTOR, MAX_CAPTURI, MAX_DESCRIERE, MAX_DESPRE,
-  MAX_NOUTATE, MAX_NOUTATI, MAX_OCTETI_CAPTURA, MAX_OCTETI_PICTOGRAMA, numeFisierBiblioteca, numePachet, RE_VERSIUNE_BIBLIOTECA,
-  SCHEMA_CATALOG, type CapturaBiblioteca, type CatalogBiblioteca, type DescriereRand, type NoutateBiblioteca, type PrezentareRand,
-  type RandBiblioteca,
+  CATEGORII_BIBLIOTECA, comparaVersiuni, DIR_BIBLIOTECA, esteCategorie, esteData, FISIER_CATALOG_BIBLIOTECA, FORMAT_CATALOG, MAX_ALT, MAX_AUTOR,
+  MAX_CAPTURI, MAX_CATEGORII, MAX_DESCRIERE, MAX_DESPRE, MAX_NOUTATE, MAX_NOUTATI, MAX_OCTETI_CAPTURA, MAX_OCTETI_PICTOGRAMA, numeFisierBiblioteca,
+  numePachet, RE_VERSIUNE_BIBLIOTECA, SCHEMA_CATALOG, type CapturaBiblioteca, type CatalogBiblioteca, type CategorieBiblioteca, type DescriereRand,
+  type NoutateBiblioteca, type PrezentareRand, type RandBiblioteca,
 } from '../shared/biblioteca.ts';
 import { pachetTrenulet } from './construieste-trenulet.ts';
 import { impacheteaza } from './impacheteaza-extensie.ts';
@@ -47,6 +49,8 @@ export type InregistrareBiblioteca = {
   readonly noutati?: readonly NoutateBiblioteca[];
   /** Capturile: `extensii/<dosar>/biblioteca/<nume>.ro.webp` și `.en.webp`, cu textul lor alternativ. */
   readonly capturi?: ReadonlyArray<{ readonly nume: string; readonly alt: DescriereRand }>;
+  /** Rafturile bibliotecii pe care stă extensia (ADR 0233): 1–`MAX_CATEGORII` din `CATEGORII_BIBLIOTECA`; primul e cel principal. */
+  readonly categorii?: readonly CategorieBiblioteca[];
 };
 export type StareInregistrare = 'la-zi' | 'versiune-nescrisa' | 'continut-fara-versiune' | 'versiune-mai-mica';
 
@@ -98,9 +102,18 @@ export function citesteLista(cale = LISTA_BIBLIOTECA): InregistrareBiblioteca[] 
       });
       if (new Set(capturi.map((c) => c.nume)).size !== capturi.length) gresit('capturi', 'un nume de două ori');
     }
+    let categorii: CategorieBiblioteca[] | undefined;
+    if (r.categorii !== undefined) {
+      const c: unknown = r.categorii;
+      if (!Array.isArray(c) || c.length < 1 || c.length > MAX_CATEGORII || !c.every(esteCategorie) || new Set(c).size !== c.length) {
+        gresit('categorii', `1–${MAX_CATEGORII}, fiecare o dată, dintre: ${CATEGORII_BIBLIOTECA.join(', ')}`);
+      }
+      categorii = c as CategorieBiblioteca[];
+    }
     return {
       dosar: r.dosar, descriere: { ro: r.descriere!.ro, en: r.descriere!.en }, versiune: r.versiune, continut: r.continut,
       ...(despre ? { despre } : {}), ...(r.autor !== undefined ? { autor: r.autor } : {}), ...(noutati ? { noutati } : {}), ...(capturi ? { capturi } : {}),
+      ...(categorii ? { categorii } : {}),
     };
   });
 }
@@ -169,6 +182,7 @@ function prezentarea(x: InregistrareBiblioteca, manifest: Readonly<Record<string
     prezentare: {
       ...(pictograma ? { pictograma } : {}), ...(capturi ? { capturi } : {}), ...(x.despre ? { despre: x.despre } : {}),
       ...(x.noutati && x.noutati.length > 0 ? { noutati: x.noutati.slice(0, MAX_NOUTATI) } : {}), ...(x.autor !== undefined ? { autor: x.autor } : {}),
+      ...(x.categorii ? { categorii: x.categorii } : {}),
     },
     fisiere,
   };
