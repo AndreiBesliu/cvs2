@@ -2,7 +2,7 @@
 
 _cncvs2, relieful 2.5D / 3D, felia 18.1↑ adusă din etapa 18 („Relieful 1: nucleul, relieful din imagine, prelucrarea 3D
 din relief”): ramura `wip/18.1-relief` (din `main`, 24.11), ADR-urile 0310–0329, canalul `relief`; PORNITĂ pe 24.11, la
-cuvântul owner-ului; întâi ADR 0310 propus, cu schița și întrebările, apoi codul_
+cuvântul owner-ului; ADR 0310 PROPUS pe 24.11, cu schița și șase întrebări; codul, după răspunsuri_
 
 Pornită pe 24.11.2026, la „ce urmeaza in roadmap si nu a fost atins deloc si putem incepe” și „ok, scrie brief-ul pentru
 relief si pentru cote” ale owner-ului (în sesiunea principală). E primul lucru din blocul relief + 3D (etapele 18–24),
@@ -66,3 +66,23 @@ degroșarea și finisarea pe relief), unde stă relieful în document și unde s
 ## Starea
 
 - **24.11:** linia pornită; ramura făcută din `main`; nicio felie începută.
+- **24.11, după-amiaza: ADR 0310 propus** (`docs/adr/0310-relieful-nucleul-imaginea-3d.md`), cu rândul în indexul ADR și
+  titlul tradus, plus verdictele portării pentru etapa 18 (`docs/PORTARE.md` §4.1). Schița:
+  <https://claude.ai/artifact/Kbh5T2HAi3aMuYTQ59qz6h> (fereastra „Relief din imagine” și litofania, care se pot încerca
+  pe imagini generate în pagină; planșa cu panoul și straturile; vederea 3D „Modelul / Tăiat”, cu crestele bilei;
+  alinierea pixelilor; rândurile exportului; feliile; formularul). Răspunsurile se salvează în pagină, în
+  `raspunsuri/owner`, doar de owner (un vizitator obișnuit e refuzat, verificat). Fără cod de produs.
+- **Ce propune ADR 0310, pe scurt:** relieful e un element al piesei (forma `relief`, v29), cu straturi în șase moduri;
+  dalele de 256² în Uint16 cu scară pe dală, după amprentă, în IndexedDB `cncvs2-relief`, iar documentul ține doar
+  amprenta hărții dalelor fiecărui strat; o operație se încheie cu cuantizarea (ce vezi = ce se salvează = ce se taie);
+  workerul reliefului și CAM-ul 3D în workerul CAM, fără stare, doar + − × ÷ √ min max; modelul exact = triunghiurile
+  prin centrele celulelor; câmpul conservativ pe 9 puncte pe celulă, aliniat la pixeli; finisarea pe capsula segmentului;
+  degroșarea în trepte; invarianta 4 cu primul relief tăiat; feliile 18.1↑a–i.
+- **Întrebările** (recomandarea întâi, toate „a”): 1 unde stă relieful (element al piesei), 2 ordinea feliilor (întâi ce
+  se taie), 3 freza bilă în document (o aduce relieful, în v29), 4 plafonul (8192²), 5 oracolul (scris de linie
+  înaintea nucleului, fără agent), 6 materialul litofaniei de pe placă (o placă albă translucidă de 6 mm).
+- **De vorbit cu sesiunea principală, înaintea feliei a:** numărul v29 al schemei; bila în document (întrebarea 3, cu
+  linia frezelor); rândurile reliefului în fereastra exportului (linia exportului o reface).
+- **De ținut minte:** în codul vederii 3D, „relieful” (`ReliefSimulat`, `reliefPentru`) e câmpul simulării, nu modelul
+  de aici; numele noi din `src/relief/` trebuie să nu se încurce cu ele. Codul vechi (ediția întâi) nu e în container:
+  verdictele portării se sprijină pe `LECTII.md` §3.2 și pe s5.
