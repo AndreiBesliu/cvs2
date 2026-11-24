@@ -610,8 +610,10 @@ export const enCarcasa = {
   'prop.cota.dezlegata.noduri': 'Unlinked: the shape has other nodes',
   'prop.cota.dezleaga': 'Unlink',
   'prop.cota.textul': 'Text',
-  'prop.cota.textul.exemplu': '4× Ø<>',
-  'prop.cota.textul.nota': 'In the text, <> is the value; empty, only the value shows. The style is in Settings.',
+  'prop.cota.textul.exemplu': '4× <>',
+  'prop.cota.textul.nota': 'In the text, <> is the value (with its prefix: R, Ø); empty, only the value shows. The style is in Settings.',
   'prop.cota.distanta': 'Line distance',
+  'prop.cota.distanta.raza': 'Figure position (from the circle)',
+  'prop.cota.distanta.unghi': 'Arc radius',
   'prop.cota.sterge': 'Delete',
 } as const satisfies Readonly<Record<string, Mesaj>>;

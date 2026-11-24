@@ -635,8 +635,10 @@ export const roCarcasa = {
   'prop.cota.dezlegata.noduri': 'Dezlegată: forma are alte noduri',
   'prop.cota.dezleaga': 'Dezleagă',
   'prop.cota.textul': 'Textul',
-  'prop.cota.textul.exemplu': '4× Ø<>',
-  'prop.cota.textul.nota': 'În text, <> e valoarea; gol, se vede doar valoarea. Stilul e în Setări.',
+  'prop.cota.textul.exemplu': '4× <>',
+  'prop.cota.textul.nota': 'În text, <> e valoarea (cu prefixul ei: R, Ø); gol, se vede doar valoarea. Stilul e în Setări.',
   'prop.cota.distanta': 'Distanța liniei',
+  'prop.cota.distanta.raza': 'Locul cifrei (de la cerc)',
+  'prop.cota.distanta.unghi': 'Raza arcului',
   'prop.cota.sterge': 'Șterge',
 } as const satisfies DictionarRoPentru<typeof enCarcasa>;

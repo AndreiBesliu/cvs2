@@ -1204,13 +1204,21 @@ goes right through.
 %% acopera: unealta.cote, foaie.cote, vedere.cote
 
 The **Dimensions** tool (`D`; its button sits in the bar's extension, after Convert) puts dimensions on the drawing that show a size: the length of a side, the
-distance between two points along X, along Y or straight. A dimension is **never cut**: the exported G-code is the same with
+distance between two points along X, along Y or straight, the radius or diameter of a circle or an arc, the angle between two
+sides. A dimension is **never cut**: the exported G-code is the same with
 or without dimensions. Dimensions belong to the sheet they were put on (**Sheet dimensions**), are saved with the project and
 have their own colour on the canvas. Pick the type in the bar:
-- **Automatic** (at first): a click on a straight side takes its length; otherwise two points, and the dimension is horizontal
-  if you take the line above or below them, vertical if you take it to the left or right, aligned if you take it between them
-  (**Shift**: aligned anyway);
+- **Automatic** (at first): a click on a straight side takes its length, and a click on another side, before placing the line,
+  makes the angle between them (or, for two parallel sides, the distance between them); a click on a circle takes its
+  diameter, on an arc its radius; otherwise two points, and the dimension is horizontal if you take the line above or below
+  them, vertical if you take it to the left or right, aligned if you take it between them (**Shift**: aligned anyway). A click
+  right on a vertex or on a side's midpoint starts a two-point dimension;
 - **Horizontal**, **Vertical**, **Aligned**: two points, then the place of the dimension line;
+- **Radius**, **Diameter**: a click on a circle or an arc, then where the figure goes, inside or outside; the line goes through
+  the circle's named point (vertex, midpoint, quadrant) nearest the cursor, linked. On a line, an ellipse or a curve, refused,
+  with the reason;
+- **Angle**: a click on a side, then on the second; or three points: the vertex, then one on each side. Then take the arc into
+  the angle you want (one of the four between the two lines) and click;
 - **Measure** (`M`): two points, no trace. The distance, Δx, Δy and the angle from the horizontal show next to the cursor and
   in the bottom bar; **Enter** (or **Keep**) makes it an aligned dimension, **Esc** clears it.
 
@@ -1226,14 +1234,19 @@ added or removed), the dimension **unlinks**: it stays where it was last seen, d
 (Ctrl+Z brings both back). “Duplicate sheet” copies the dimensions too, linked to the copy's shapes.
 
 With the Dimensions tool, a click on a dimension line selects it: drag its ends onto another point (it links to it again),
-drag the line or move it with the arrow keys (1 mm; Shift: 10 mm, Alt: 0.1 mm), **Delete** removes it. With Select and the
+drag the line or move it with the arrow keys (1 mm; Shift: 10 mm, Alt: 0.1 mm; for radius, diameter and angle, up and right
+take the figure or the arc further out, down and left closer in), **Delete** removes it. Dragged, an angle's arc can also move
+into another angle between the sides. With Select and the
 other tools, dimensions are not selected: the click goes to the shape under them. A double click on a dimension, with any
 tool, switches to Dimensions with it selected.
 
 With a dimension selected, the **properties panel** shows only what is its own: the type; the **exact value**, with all its
 digits, and **Copy** (puts it in the clipboard); the link (linked to the shape, free or unlinked, with the reason) and
 **Unlink** (the ends stay where they are and the dimension no longer follows the shape); the **text**, in which `<>` is the
-value (for instance “4× Ø<>”; empty, only the value shows); the dimension **line distance**, in mm; **Delete**.
+value with its prefix (for instance “4× <>” gives “4× Ø10”; empty, only the value shows); the dimension **line distance**, in
+mm (for radius and diameter, the **figure position** from the circle, positive outside; for an angle, the **arc radius**);
+**Delete**. The distance between two oblique parallel sides is a free dimension: a fixed drawing, since its foot on the second
+side is not a point of the shape.
 
 In the **list**, under the active sheet's pieces, the **Dimensions (N)** row: open, it shows the sheet's dimensions (the value,
 the type, “unlinked”), and a click on one switches to the Dimensions tool with it selected. The **eye** on the row hides the
@@ -1254,13 +1267,18 @@ sections are on the left; for now just one, **Dimensions**. At the top is the **
 settings; each group has **Back to defaults**. A number is typed with a comma or a point; one outside the limits stays in the
 field, said in red, and is not kept. **Close** (or Esc) closes the window.
 
-- **Numbers:** the unit (mm, cm, inch; the drawing stays in mm), the decimals (automatic: 2, in inch 3; or 0–6), trailing
-  zeros (dropped or kept), rounding (to the decimals or to a step, for instance 0.5), the decimal separator (by the app
+- **Numbers:** the unit (mm, cm, inch, fractional inch; the drawing stays in mm), the decimals (automatic: 2, in inch 3; or
+  0–6), for fractions the smallest fraction (1/2 … 1/64; the number is written reduced: 1 1/2, 3/8), trailing zeros (dropped
+  or kept), rounding (to the decimals or to a step, for instance 0.5), the decimal separator (by the app
   language, comma or point), the unit written after the number, the text height on the sheet (1–20 mm) and the text position
   (above the line, in the line, with the line broken, or always horizontal).
 - **Lines and ends:** the ends (filled arrow, open arrow, oblique tick, dot or none) and their size, the extension lines
   (shown or hidden), their gap from the shape, the overshoot past the dimension line and the dimension line distance for
   **Keep** in Measure.
+- **Radius, diameter, angle:** the radius and diameter prefixes (by default “R” and “Ø”; at most 8 characters, empty: none),
+  angles in decimal degrees (30.5°) or in degrees, minutes and seconds (30°30′0″), the angle decimals (0–4; in degrees,
+  minutes and seconds, those of the seconds) and the radius line (from the centre, from outside, or by the figure's position:
+  from the centre with the figure inside, from outside with the figure outside).
 - **Behaviour:** whether new dimensions are linked to shapes, which type the tool starts with (Automatic or the last used),
   what comes after a dimension (the Dimensions tool stays or back to Select), whether dimensions show on the canvas (hidden,
   they show only with the Dimensions tool), the neighbouring sheets' dimensions (faded or hidden), below how many screen

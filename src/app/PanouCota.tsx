@@ -1,7 +1,7 @@
 /**
  * Panoul de proprietăți cu o cotă aleasă (ADR 0330 §5, felia 10.4↑a-4): doar ce e al ei. Felul; valoarea exactă, cu toate
  * cifrele, și „Copiază”; legătura (legată, liberă sau dezlegată, cu motivul) și „Dezleagă”; textul, cu `<>` pentru valoare;
- * distanța liniei de cotă; „Șterge”. Stilul stă în Setări (§6). Datele și schimbările vin de la unealta Cote, prin depozitul
+ * distanța liniei de cotă (la rază și diametru, locul cifrei; la unghi, raza arcului); „Șterge”. Stilul stă în Setări (§6). Datele și schimbările vin de la unealta Cote, prin depozitul
  * cotelor (`coteVedere.ts`): panoul nu citește modelul cotelor.
  */
 import { useState, type ReactNode } from 'react';
@@ -40,6 +40,8 @@ export function PanouCota({ cota, doarCitire, virgula }: { readonly cota: CotaPa
     <div className="prop-rand" key={eticheta}><dt>{eticheta}</dt><dd>{valoare}</dd></div>
   );
   const mesaj = stare?.id === cota.id ? stare : null;
+  // Distanța liniei: la rază și diametru, locul cifrei față de cerc (afară pozitiv); la unghi, raza arcului (pozitivă).
+  const eDistanta = t(cota.fel === 'unghi' ? 'prop.cota.distanta.unghi' : cota.fel === 'raza' || cota.fel === 'diametru' ? 'prop.cota.distanta.raza' : 'prop.cota.distanta');
   return (
     <section className="prop-cota" data-testid="panou-cota" data-cota={cota.id}>
       <h3>{t('prop.cota')}</h3>
@@ -62,8 +64,8 @@ export function PanouCota({ cota, doarCitire, virgula }: { readonly cota: CotaPa
         {rand(t('prop.cota.textul'), <CampText key={`${cota.id}/text`} eticheta={t('prop.cota.textul')} camp="cota-text" valoare={cota.text}
           exemplu={t('prop.cota.textul.exemplu')} lungime={PLAFON.numeLungime} dezactivat={doarCitire} {...(oprit ? { titlu: oprit } : {})}
           onAplica={(x) => spune(cota.actiuni.text(x))} />)}
-        {rand(t('prop.cota.distanta'), <CampNumeric key={`${cota.id}/d`} eticheta={t('prop.cota.distanta')} camp="cota-distanta" valoare={cota.d}
-          unitate="mm" semn dezactivat={doarCitire} {...(oprit ? { titlu: oprit } : {})} onAplica={(x) => spune(cota.actiuni.distanta(x))} />)}
+        {rand(eDistanta, <CampNumeric key={`${cota.id}/d`} eticheta={eDistanta} camp="cota-distanta" valoare={cota.d}
+          unitate="mm" semn={cota.fel !== 'unghi'} dezactivat={doarCitire} {...(oprit ? { titlu: oprit } : {})} onAplica={(x) => spune(cota.actiuni.distanta(x))} />)}
       </dl>
       <p className="prop-nota">{t('prop.cota.textul.nota')}</p>
       <div className="prop-cota-butoane">
