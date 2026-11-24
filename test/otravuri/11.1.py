@@ -71,7 +71,7 @@ o('A03', CA, '      if (!c) return;\n      ctx.scrie(executa(h, c));\n      ctx.
 o('A04', CA, '  return ctx.foaieAleasa?.() ?? foaieCtx(ctx).id;', '  return foaieCtx(ctx).id;', 'calcul', 'meniul altei foi lucrează pe cea activă')
 o('A05', CA, "return ctx.etichetaNoua().valoare.trim().length > PLAFON.numeLungime ? 'motiv.eticheta-lunga' : true;", 'return true;', 'calcul',
   'o etichetă peste 200 de caractere nu e refuzată din timp')
-o('A06', CA, 'const { instante: _instante, nume: _nume, ...restFoaie } = sursa;', 'const { instante: _instante, ...restFoaie } = sursa;', 'calcul',
+o('A06', CA, 'const { instante: _instante, nume: _nume, cote, ...restFoaie } = sursa;', 'const { instante: _instante, cote, ...restFoaie } = sursa;', 'calcul',
   'copia foii ia și numele')
 o('A07', CA, "return tinta === foaieCtx(ctx, doc).id || !doc.foi.some((f) => f.id === tinta) ? 'motiv.aceeasi-foaie' : true;", 'return true;', 'calcul',
   'mutarea pe aceeași foaie (sau una necunoscută) nu e refuzată')
