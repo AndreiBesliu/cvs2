@@ -90,6 +90,7 @@ service cloud.firestore {
 
     // Loturile utilizării (ADR 0262) și contoarele lor pe oră (`limiteUtilizare`) n-au regulă: le scrie doar callable-ul
     // `utilizare`, iar adminul citește doar sumele zilei (felia A.9), nu loturile.
+    // Pseudonimele disocierii (`utilizareDisociate`, felia A.11e): doar ale serverului; nicio regulă, deci refuzate oricui.
     // Sumele zilei (`utilizareZi`, scrise doar de jobul de noapte, fără conturi): „Utilizare: citește” (și owner-ul).
     match /utilizareZi/{zi} {
       allow read: if are('utilizare.citeste');

@@ -307,9 +307,10 @@ export function pornesteColectarea(o: { readonly config: Config | null; readonly
   const html = document.documentElement;
   const cont = (): string | null => contTinut()?.uid ?? null;
   let pompa: { impinge(): void } | null = null;
+  const sesiune = idSesiune();
   const ins = creeazaInregistrator({
     ceas: () => Math.round(performance.now()),
-    sesiune: idSesiune(),
+    sesiune,
     depozit: o.depozit,
     context: () => contextDinMediu({
       versiune: o.versiune, limba: o.limba(), aranjament: html.dataset['aranjament'], tema: html.dataset['tema'],
@@ -320,7 +321,7 @@ export function pornesteColectarea(o: { readonly config: Config | null; readonly
     sursa: () => 'alt',
     laLotPlin: () => { pompa?.impinge(); },
   });
-  preiaUtilizarea(ins.primeste, ins.pasi);
+  preiaUtilizarea(ins.primeste, ins.pasi, sesiune);
   urmaresteControalele({ doc: document, win: window, ceas: () => Math.round(performance.now()), primeste: ins.primeste, reusite: ins.reusite });
   const config = o.config;
   if (!config?.firebase) return;

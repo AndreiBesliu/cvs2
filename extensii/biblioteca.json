@@ -7,11 +7,17 @@
         "en": "Plan wooden train tracks with their CNC files, and make 3D-printable parts: LEGO bricks, gears, wheels with tyres, pulleys and shapes from your cvs2 drawing."
       },
       "despre": {
-        "ro": "Easy 3Draw are două părți. În 2D planifici un circuit de trenuleț din lemn: tragi piesele dintr-un capăt în altul, vezi trenul mergând și exporți fișierele CNC ale plăcilor, cu lista de piese. În 3D faci piese compatibile LEGO pentru imprimantă: cărămizi și plăci, legături, roți dințate, conice și cu anvelopă, fulii, șenile și elice, plus forme trimise din desenul cvs2. Primești STL-ul gata așezat pe pat. Circuitele și listele rămân în browserul tău.",
-        "en": "Easy 3Draw has two parts. In 2D you plan a wooden train track: you drag pieces from one end to the next, watch the train run and export the CNC files of the boards, with the parts list. In 3D you make LEGO-compatible parts for a 3D printer: bricks and plates, joints, gears, bevel gears and wheels with tyres, pulleys, tracks and propellers, plus shapes sent from your cvs2 drawing. You get the STL already laid out on the bed. Your layouts and lists stay in your browser."
+        "ro": "Easy 3Draw are două părți. În 2D planifici un circuit de trenuleț din lemn: tragi piesele dintr-un capăt în altul, vezi trenul mergând și exporți fișierele CNC ale plăcilor, cu lista de piese. În 3D faci piese compatibile LEGO pentru imprimantă: cărămizi și plăci, legături, roți dințate, conice și cu anvelopă, fulii, șenile, elice și ventilatoare, plus forme trimise din desenul cvs2. Primești STL-ul gata așezat pe pat. Circuitele și listele rămân în browserul tău.",
+        "en": "Easy 3Draw has two parts. In 2D you plan a wooden train track: you drag pieces from one end to the next, watch the train run and export the CNC files of the boards, with the parts list. In 3D you make LEGO-compatible parts for a 3D printer: bricks and plates, joints, gears, bevel gears and wheels with tyres, pulleys, tracks, propellers and ducted fans, plus shapes sent from your cvs2 drawing. You get the STL already laid out on the bed. Your layouts and lists stay in your browser."
       },
       "autor": "CNC Vector Studio",
       "noutati": [
+        {
+          "versiune": "18.22.0",
+          "data": "2026-11-24",
+          "ro": "Ventilatorul cu carcasă, a treia piesă a filei „Elice”: rotorul (3–12 palete, cu inel la alegere) și carcasa cu urechi pentru grinzi, cu „Fă ventilatorul”.",
+          "en": "The ducted fan, the third piece of the “Propeller” tab: the rotor (3–12 blades, with an optional ring) and the duct with lugs for beams, with “Make the fan”."
+        },
         {
           "versiune": "18.21.0",
           "data": "2026-11-23",
@@ -72,8 +78,8 @@
           }
         }
       ],
-      "versiune": "18.21.0",
-      "continut": "b15bf852b8a57878663b4b0bba2209879005f6281a67796e05afde68884ec696"
+      "versiune": "18.22.0",
+      "continut": "a63d1cbeb51a0f536f45d62f13a4f4b44e8d935acb18e3d17f7fc8b5aae6bba1"
     }
   ]
 }

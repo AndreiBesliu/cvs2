@@ -3,7 +3,8 @@
 **Starea:** acceptat pe 22.11.2026 (1a, 2a, 3a); **felia 3.Tq implementată pe ramura `wip/3.Tq-elice`, Easy 3Draw 18.19.0**
 (23.11, în sesiunea cloud a liniei; cifrele, la „Implementarea”); **felia 3.Tr (elicea de barcă) implementată pe aceeași
 ramură, Easy 3Draw 18.20.0** (23.11, la „pornește 3.Tr” al owner-ului; „Implementarea (3.Tr)”; unită în `main` în `d262e57a`);
-3.Ts, la cuvântul owner-ului.
+**felia 3.Ts (ventilatorul cu carcasă) implementată pe aceeași ramură, Easy 3Draw 18.22.0** (24.11, la „continua” al
+owner-ului; „Implementarea (3.Ts)”).
 Propus pe 22.11, la
 cererea owner-ului: „Vreau ca pluginul sa faca si elice, pentru imprimanta, si sa fie
 si configurabile elicele si compatibile cu lego”. **Completează:** ADR 0280 (roțile, fulia, roțile la 90° și șenila),
@@ -203,11 +204,65 @@ diametrele pe grila de știfturi.
   (consola de 0,6 mm pe strat, mai bună decât la elicea de aer); pe masă stau butucul și muchia de jos a fiecărei palete,
   deci o margine de aderență (brim) ajută și aici.
 
+## Implementarea (3.Ts): ventilatorul cu carcasă
+
+Pe ramura `wip/3.Tq-elice`, Easy 3Draw 18.22.0 (24.11, în sesiunea cloud a liniei), la „continua” al owner-ului, după unirea
+lui 3.Tr (versiunea 18.21.0 era deja a bibliotecii). Decizia spunea doar „ventilatorul cu carcasă (inelul din jurul elicei,
+cu jocul din calibrare și cu găuri de știft pentru grinzi)”; restul s-a hotărât la implementare și e scris aici, cu motivul.
+
+**Reperul LEGO** (din LDraw, ca la 3.Tq și 3.Tr, în afara repo-ului): două piese apropiate, niciuna un ventilator în tub pe
+un ax LEGO. 50899 e un rotor cu inel în jurul paletelor, pe o gaură care nu e de ax Technic; 41530 are palete curbe, fără
+pas. De la 50899 vine ideea inelului, nu cotele: ventilatorul n-are „Ca LEGO”, ci diametrele pe grila de știfturi.
+
+- **Ce face:** a treia piesă a filei „Elice”, „Ventilator cu carcasă”, cu două piese: rotorul și carcasa. Parametrii lor
+  comuni: paletele 3–12 (implicit 7), diametrul din carcasă 24–120 mm (implicit Ø40, 5 știfturi), jocul la vârf 0,3–2 mm
+  (implicit 0,8, două linii de duză), pasul 0,3–1,5 × diametrul (implicit 0,8), lățimea 15–60 % din raza vârfului
+  (implicit 45 %). Ai rotorului: sensul, gaura din calibrare (ax, știft, bară sau fără), inelul. Ai carcasei: 2 sau 4 urechi.
+  „Fă ventilatorul” pune în listă rotorul și carcasa lui.
+- **„Jocul din calibrare”, citit în două:** găurile de știft ale urechilor sunt cele calibrate (gaura și lamajul, ca la
+  grinzi); jocul dintre vârful paletelor și carcasă e un parametru al ventilatorului, fiindcă nicio calibrare de azi nu
+  măsoară un joc pe rază la o piesă care se rotește.
+- **Rotorul:** paletele ca la elicea răsucită (3.Tq): pas constant (β(r) = atan(P / 2πr)), placa curbată, groasă de la 1,2
+  la 0,8, fiecare secțiune cu punctul de jos pe masă, deci tipărit fără suport. Coarda crește de la 60 % la rădăcină la
+  toată lățimea după primul sfert al paletei și rămâne așa până la vârf: vârful e drept, de-a lungul carcasei (la un
+  ventilator în tub, aerul care scapă pe la vârf e pierderea cea mai mare). Pe fiecare rază, paleta ocupă cel mult 85 % din
+  pasul dintre palete. Butucul: Ø8 sau un sfert din raza vârfului (la zecime), înalt cât paletele, cel puțin 8.
+- **Inelul, la alegere** (ca la 50899): un tub gros de 1,2, cu exteriorul la vârful paletelor (Ø / 2 − jocul, deci jocul față
+  de carcasă rămâne), cu paletele intrate în el 0,4, înalt cât ele (cel puțin 2). Ține rigide paletele lungi.
+- **Carcasa:** tubul cu golul cât diametrul cerut și peretele de 2, înalt cât paletele + 4 (la milimetru în sus, cel puțin
+  8), tipărit în picioare. Înălțimea vine din paletele fără inel, deci aceeași carcasă merge cu rotorul cu inel sau fără.
+  Urechile: jos, groase cât o grindă (7,8) și late cât ea (7,2), cu capătul rotund, gaura de știft din calibrare și lamajul
+  jos și sus, în trei straturi, ca la grinzi.
+- **Găurile, pe grila axului:** la k · 8 mm de ax, cu cel mai mic k la care lamajul lasă 0,8 mm din peretele carcasei (Ø40:
+  24 mm, 3 știfturi; Ø41: 32 mm). O grindă prinsă de urechi cu știfturi, pe sub carcasă, are o gaură chiar pe ax: axul
+  motorului trece prin ea, iar rotorul stă în mijlocul tubului.
+- **Canalul de deasupra urechii** (găsit la privirea pe randare, înaintea probelor e2e): lamajul intră în peretele carcasei,
+  iar deasupra urechii (de la 7,8 până sus) peretele ar fi acoperit o margine a găurii: un știft băgat de sus ar fi lovit
+  carcasa. Lamajul taie deci un canal și prin peretele de deasupra, cu 0,8 mm rămași spre interior, doar unde ajunge la tub.
+- **Cercurile fine:** tubul, golul și inelul au laturile cât să lase cel mult 0,02 mm de săgeată (cel puțin 48, multiplu de
+  8, ca urechile să cadă pe vârfuri): la Ø40, 80 de laturi; la Ø120, 128.
+- **Motorul** (`lego.ts`): `ventilator`, `ventilatorCote` (cotele, cu secțiunile paletelor cu inel și fără),
+  `carcasaVentilator` și `laturiCerc`; paletele ies din `paleteElice` (capetele ca fâșie), butucul din `butucElice`. Elicea
+  și elicea de barcă au rămas neschimbate.
+- **Atelierul** (`atelier.ts`): piesa `ventilator` în familia `propulsie`, editorul (`at-ve-*`): piesa (rotorul sau carcasa),
+  „Repede” (Ø24, Ø32, Ø40, Ø48: 3, 4, 5 și 6 știfturi), câmpurile comune, alegerile fiecărei piese și textul (vârful,
+  butucul, pasul, unghiurile, consola, inelul, diametrele și înălțimea carcasei, unde stau găurile). Jocul și lățimea intră
+  în numele rotorului doar când nu sunt cele obișnuite; numele carcasei are înălțimea și urechile. Rotorul și carcasa au
+  aceleași chei oricum s-ar face (`defVentilator`), deci lista le adună pe aceeași linie. Pictograma; 22 de texte în engleză.
+- **Probele:** unitare 11 (`test/unit/trenulet.ventilator.test.ts`: corpul închis pe plajă, vârful, butucul, gaura, inelul,
+  muchia de jos pe masă, pasul măsurat pe coardă, coarda pe hârtie, paletele care nu se ating, oglinda, carcasa cu urechile,
+  găurile, canalul și cercurile fine, carcasa față de rotor, marginile); valorile pe hârtie sunt calculate separat de motor.
+  E2e 6 (`test/e2e/trenulet.ventilator.spec.ts`), plus filele, pictogramele, elicea de barcă și proba în engleză din cvs2.
+- **Otrăvurile:** `test/otravuri/3.Ts.py`, 134 (82 pe motor, 49 pe atelier prin e2e, pictograma și traducerea): 125 prinse din prima. Nouă au scăpat pe probele unitare și sunt prinse după probele lor țintite: butucul nerotunjit la zecime, inelul de cel puțin 1 mm, carcasa după rotorul cu inel, carcasa de cel puțin 6, locul găurilor după gaură (nu după lamaj), inelul cât paletele fără inel, cercurile cu laturi lungi (de două ori: carcasa și inelul) și urechea desprinsă de tub. A zecea (E49, ordinea cheilor în `defVentilator`) e echivalentă: ambele căi spre listă trec prin aceeași funcție, deci a ieșit din listă, cu motivul. `3.Ts-en.py`, 9 / 9 (gaura și inelul schimbate în numele în engleză, după proba lor în cvs2). Trei echivalente, lăsate afară cu motivul în listă. Listele lui 3.Tq (3) și 3.Tr (8), mutate pe codul nou și rulate din nou: toate prinse.
+- **De încercat pe imprimantă:** jocul de 0,8 pe carcasa tipărită în picioare; rotorul pe un ax LEGO, în carcasa prinsă cu
+  știfturi de o grindă; dacă rotorul freacă, jocul se mărește din editor. Pe masă stau butucul și muchia de jos a paletelor,
+  deci o margine de aderență (brim) ajută și aici.
+
 ## Feliile
 
 - **3.Tq:** elicea (tot ce e la punctul 1), cu fila după răspunsul 1 și „Ca LEGO” după răspunsul 3.
 - **3.Tr:** elicea de barcă.
-- **3.Ts:** ventilatorul cu carcasă.
+- **3.Ts:** ventilatorul cu carcasă (implementat).
 
 Ordinea, după întrebarea 2. Fiecare felie are motorul (`lego.ts`), editorul (`atelier.ts`), probele pe plase (corpul
 închis, cotele, consola la vârf, paletele care nu se ating, pe toată plaja parametrilor) și otrăvurile, ca la roți; pachetul

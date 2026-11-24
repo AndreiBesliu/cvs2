@@ -81,11 +81,13 @@ export type ParametriVcarve = {
 
 /**
  * `rest` (ADR 0093): frezele drepte de după ea, fiecare mai mică decât cea dinainte, doar unde aceea n-a ajuns (colțurile și
- * fâșiile fundului mai înguste decât ea).
+ * fâșiile fundului mai înguste decât ea). `avans` și `avansPlonjare` (ADR 0300 §5): ale frezei, dacă le are; lipsă, ale
+ * V-carve-ului.
  */
 export type FundPlatVcarve = {
   readonly diametru: number; readonly pasLateral: number; readonly sens: Sens;
-  readonly rest?: ReadonlyArray<{ readonly diametru: number; readonly pasLateral: number }>;
+  readonly avans?: number; readonly avansPlonjare?: number;
+  readonly rest?: ReadonlyArray<{ readonly diametru: number; readonly pasLateral: number; readonly avans?: number; readonly avansPlonjare?: number }>;
 };
 
 /**
@@ -451,7 +453,7 @@ export function traseuVcarve(p: ParametriVcarve): RezultatVcarve {
             return { ok: false, motiv: `fundul plat la ${w.toFixed(3)} mm de contur: ${ib.motiv}` };
           }
           const t = traseuBuzunar(r.exterior, ordineInele(ib.radacini), {
-            zSigur: p.zSigur, avans: p.avans, avansPlonjare: p.avansPlonjare, sens: f.sens, raza: Rf, adancimi: [nivel],
+            zSigur: p.zSigur, avans: f.avans ?? p.avans, avansPlonjare: f.avansPlonjare ?? p.avansPlonjare, sens: f.sens, raza: Rf, adancimi: [nivel],
           }, r.gauri);
           if (!t.ok) return { ok: false, motiv: `fundul plat la ${w.toFixed(3)} mm de contur: ${t.motiv}` };
           for (const x of t.miscari) fund.push(x);
@@ -548,8 +550,11 @@ export function traseuVcarve(p: ParametriVcarve): RezultatVcarve {
   });
   if (!toate) return { ok: false, motiv: 'un inel al peretelui nu se poate parcurge' };
   m.push({ tip: 'rapida', la: { Z: p.zSigur } });
-  const regim = { zSigur: p.zSigur, avans: p.avans, avansPlonjare: p.avansPlonjare };
-  const resturi = restPeNivel.map((niv) => taieBucati(niv, regim));
+  // Fiecare freză de rest cu avansurile ei (ADR 0300 §5), lipsă, ale V-carve-ului.
+  const resturi = restPeNivel.map((niv, k) => {
+    const r = p.fundPlat?.rest?.[k];
+    return taieBucati(niv, { zSigur: p.zSigur, avans: r?.avans ?? p.avans, avansPlonjare: r?.avansPlonjare ?? p.avansPlonjare });
+  });
   return {
     ok: true, fund, fundRest: resturi.map((x) => x.miscari), miscari: m, avertismente,
     statistici: {

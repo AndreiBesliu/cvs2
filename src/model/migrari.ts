@@ -644,6 +644,54 @@ function v25v26(doc: Brut): ReturnType<Migrare> {
 }
 
 /**
+ * Frezele unei operații, cu calea lor (ADR 0300 §5): a operației, ale frezelor de rest, a fundului plat și ale frezelor lui de
+ * rest, ale dopului drept și freza benzii. Doar obiectele; o formă greșită o judecă schema.
+ */
+function frezeOperatie(op: Brut): Array<readonly [string, Brut]> {
+  const rez: Array<readonly [string, Brut]> = [];
+  const ob = (x: unknown): x is Brut => typeof x === 'object' && x !== null && !Array.isArray(x);
+  const scula = (cale: string, x: unknown): void => { if (ob(x)) rez.push([cale, x]); };
+  const lista = (cale: string, x: unknown): void => {
+    if (Array.isArray(x)) x.forEach((f, k) => { if (ob(f)) scula(`${cale}[${k}].scula`, f['scula']); });
+  };
+  scula('scula', op['scula']);
+  lista('rest', op['rest']);
+  const fp = op['fundPlat'];
+  if (ob(fp)) { scula('fundPlat.scula', fp['scula']); lista('fundPlat.rest', fp['rest']); }
+  const inc = op['incrustatie'];
+  if (ob(inc)) {
+    lista('incrustatie.frezeDop', inc['frezeDop']);
+    const b = inc['banda'];
+    if (ob(b)) scula('incrustatie.banda.freza', b['freza']);
+  }
+  return rez;
+}
+
+/**
+ * v26 → v27 (ADR 0300 §5): originea, valorile de lucru și tăișul frezei schimbă doar numărul. Un v26 poate avea, ca
+ * necunoscute, câmpurile `biblioteca`, `regim` sau `tais` pe una din frezele unei operații, pe care v27 le folosește: un astfel
+ * de document nu e un v26 valid.
+ */
+function v26v27(doc: Brut): ReturnType<Migrare> {
+  const piese = doc['piese'];
+  for (const p of Array.isArray(piese) ? piese : []) {
+    if (typeof p !== 'object' || p === null) continue;
+    const piesa = p as Brut;
+    for (const o of Array.isArray(piesa['operatii']) ? piesa['operatii'] as unknown[] : []) {
+      if (typeof o !== 'object' || o === null) continue;
+      for (const [cale, s] of frezeOperatie(o as Brut)) {
+        for (const camp of ['biblioteca', 'regim', 'tais']) {
+          if (Object.hasOwn(s, camp)) {
+            return { ok: false, motiv: `operația v26 ${String((o as Brut)['id'])} din piesa ${String(piesa['id'])} are în ${cale} câmpul „${camp}”, pe care v27 îl folosește: nu e un document v26 valid` };
+          }
+        }
+      }
+    }
+  }
+  return { ok: true, doc: { ...doc, schema: 27 } };
+}
+
+/**
  * Migrările pure, vN → vN+1. Cheia e versiunea de PLECARE. Lista crește; o migrare scrisă nu se mai schimbă. Fiecare
  * lucrează doar pe forma pe care o promite: v1 → v2 își validează intrarea cu schema v1 înghețată; v2 → v3 … v19 → v20
  * lucrează defensiv, iar schema curentă (care conține toate regulile de dinainte) judecă rezultatul.
@@ -685,5 +733,6 @@ export const MIGRARI: Readonly<Record<number, Migrare>> = {
   23: v23v24,
   24: v24v25,
   25: v25v26,
+  26: v26v27,
 };
 

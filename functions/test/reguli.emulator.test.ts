@@ -92,6 +92,8 @@ before(async () => {
     await setDoc(doc(db, 'setari/utilizare'), { schema: 1, colectare: true, versiune: 1 });
     await setDoc(doc(db, 'utilizare/k3j9x0a1b2c3d4e5-1'), { schema: 1, uid: 'om', sesiune: 'k3j9x0a1b2c3d4e5', nr: 1, evenimente: [] });
     await setDoc(doc(db, 'limiteUtilizare/om_1'), { numar: 1, ora: 1 });
+    // Disocierea (felia A.11e): legătura cont → pseudonim, doar a serverului.
+    await setDoc(doc(db, 'utilizareDisociate/om'), { schema: 1, pseudonim: 'p0123456789abcdef0123456789abcdef' });
     // Sumele zilei (felia A.9a) și cine le citește.
     await setDoc(doc(db, 'utilizareZi/2026-11-22'), { schema: 1, zi: '2026-11-22', segmente: {} });
     await setDoc(doc(db, `roluri/${UTIL_CIT}`), { nume: 'Utilizare: citește', permisiuni: ['utilizare.citeste'] });
@@ -394,6 +396,14 @@ test('setările utilizării (ADR 0262 §8) le citește doar owner-ul; nu le scri
   await assertFails(setDoc(doc(ca('own'), 'setari/utilizare'), { schema: 1, colectare: false, versiune: 2 }));
   await assertFails(updateDoc(doc(ca('own'), 'setari/utilizare'), { colectare: false }));
   await assertFails(deleteDoc(doc(ca('own'), 'setari/utilizare')));
+});
+
+test('pseudonimele disocierii (felia A.11e): nimeni din client nu le citește sau scrie, nici owner-ul, nici omul lor', async () => {
+  for (const uid of [null, 'om', 'own', 'tot', 'ucit', 'cadm']) {
+    await assertFails(getDoc(doc(ca(uid), 'utilizareDisociate/om')));
+    await assertFails(getDocs(collection(ca(uid), 'utilizareDisociate')));
+    await assertFails(setDoc(doc(ca(uid), 'utilizareDisociate/om'), { pseudonim: 'x' }));
+  }
 });
 
 test('sumele zilei ale utilizării (felia A.9a): le citește „Utilizare: citește” (și owner-ul); nu le scrie nimeni din client', async () => {
