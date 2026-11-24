@@ -7,7 +7,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  cheieNume, cuFreza, cuFreze, cuImport, cuStandard, faraFreza, FREZE_PORNIRE, ID_PORNIRE, frezaDinDate, frezaImportata, inaltimeCon, MARGINI_FREZA, numeLiber,
+  cheieNume, cuFreza, cuFreze, cuGrupRedenumit, cuImport, cuStandard, faraFreza, FREZE_PORNIRE, ID_PORNIRE, frezaDinDate, frezaImportata, grupurileListei,
+  inaltimeCon, MARGINI_FREZA, numeLiber,
   problemeFreza, sculaDinFreza, type Freza, type FrezaSalvata,
 } from '../../src/model/freza.ts';
 import { operatieImplicita, PLAFON, UNGHI_V_MAXIM, UNGHI_V_MINIM, type FormaDoc } from '../../src/model/document.ts';
@@ -253,3 +254,62 @@ test('importul peste numele unei freze necitite (a unei versiuni mai noi): „sa
   // Și o freză nouă, salvată de mână, nu poate lua numele.
   assert.deepEqual(cuFreza([], null, bila, idNou, 1, rezervate), { ok: false, probleme: { nume: 'nume-folosit' } });
 });
+
+test('grupul (ADR 0302 §4): opțional, cel mult 40 de caractere, fără caractere de control; gol pleacă la salvare; ținut la citire', () => {
+  assert.deepEqual(problemeFreza({ ...PLATA6, grup: 'Lemn' }), {});
+  assert.deepEqual(problemeFreza({ ...PLATA6, grup: '   ' }), {});
+  assert.deepEqual(problemeFreza({ ...PLATA6, grup: 'ă'.repeat(MARGINI_FREZA.grup) }), {});
+  assert.deepEqual(problemeFreza({ ...PLATA6, grup: 'ă'.repeat(MARGINI_FREZA.grup + 1) }), { grup: 'grup-lung' });
+  assert.deepEqual(problemeFreza({ ...PLATA6, grup: 'Le\u0007mn' }), { grup: 'grup-caractere' });
+  // Salvat: curățat la capete; gol, câmpul pleacă (freza stă pe felul ei).
+  const r = cuFreza([], null, { ...PLATA6, grup: '  Lemn moale ' }, () => 'a', 5);
+  assert.ok(r.ok);
+  assert.equal(r.lista[0]!.grup, 'Lemn moale');
+  const g = cuFreza([], null, { ...PLATA6, grup: '   ' }, () => 'a', 5);
+  assert.ok(g.ok);
+  assert.equal('grup' in g.lista[0]!, false);
+  // Schimbată fără grup: grupul de dinainte pleacă.
+  const fara = cuFreza(r.lista, 'a', { ...PLATA6, grup: undefined }, () => 'x', 6);
+  assert.ok(fara.ok);
+  assert.equal('grup' in fara.lista[0]!, false);
+  // Citit: un grup care nu e text strică freza; unul bun rămâne.
+  assert.equal(frezaDinDate({ ...salvata(PLATA6, 'a'), grup: 3 }), null);
+  assert.equal(frezaDinDate({ ...salvata(PLATA6, 'a'), grup: 'Lemn' })?.grup, 'Lemn');
+  assert.equal(frezaImportata({ ...PLATA6, grup: 'Lemn' })?.grup, 'Lemn');
+});
+
+test('grupurile listei: întâi ale omului (după nume, fără deosebire de majuscule), apoi felurile, pentru frezele fără grup', () => {
+  const l = [
+    salvata(PLATA6, 'a'), salvata({ ...V60, grup: 'Lemn' }, 'b'), salvata({ ...GRAVARE, grup: 'aluminiu' }, 'c'),
+    salvata({ ...PLATA6, nume: 'Plată Ø3', grup: 'LEMN' }, 'd'), salvata({ ...V60, nume: 'V90' }, 'e'),
+  ];
+  assert.deepEqual(grupurileListei(l).map((x) => [x.grup, x.fel, x.freze.map((f) => f.id)]), [
+    ['aluminiu', null, ['c']],
+    ['Lemn', null, ['b', 'd']],
+    [null, 'plata', ['a']],
+    [null, 'v', ['e']],
+  ]);
+  // Fără grupuri ale omului, ca înainte: doar felurile, în ordinea lor.
+  assert.deepEqual(grupurileListei([salvata(GRAVARE, 'g'), salvata(PLATA6, 'p')]).map((x) => x.fel), ['plata', 'gravare']);
+  assert.deepEqual(grupurileListei([]), []);
+});
+
+test('redenumirea unui grup: toate frezele lui, cu versiunea crescută; spre un grup existent, se unesc; gol, înapoi pe feluri', () => {
+  const l = [salvata({ ...V60, grup: 'Lemn' }, 'b'), salvata({ ...PLATA6, grup: 'LEMN' }, 'd'), salvata({ ...GRAVARE, grup: 'Alu' }, 'c')];
+  const r = cuGrupRedenumit(l, 'lemn', '  Esență tare ', 9);
+  assert.ok(r.ok);
+  assert.deepEqual(r.lista.map((f) => [f.id, f.grup, f.rev, f.schimbatLa]), [['b', 'Esență tare', 2, 9], ['d', 'Esență tare', 2, 9], ['c', 'Alu', 1, 1_000]]);
+  // Spre un grup care există: frezele intră în el, cu numele lui de acum.
+  const u = cuGrupRedenumit(l, 'Lemn', 'alu', 9);
+  assert.ok(u.ok);
+  assert.deepEqual(u.lista.map((f) => f.grup), ['Alu', 'Alu', 'Alu']);
+  // Gol: frezele lui se întorc pe felurile lor.
+  const f = cuGrupRedenumit(l, 'lemn', '  ', 9);
+  assert.ok(f.ok);
+  assert.deepEqual(f.lista.map((x) => 'grup' in x), [false, false, true]);
+  // Refuzurile: numele greșit, grupul care nu e.
+  assert.deepEqual(cuGrupRedenumit(l, 'lemn', 'x'.repeat(MARGINI_FREZA.grup + 1), 9), { ok: false, motiv: 'grup-lung' });
+  assert.deepEqual(cuGrupRedenumit(l, 'lemn', 'a\u0001', 9), { ok: false, motiv: 'grup-caractere' });
+  assert.deepEqual(cuGrupRedenumit(l, 'nimic', 'X', 9), { ok: false, motiv: 'lipsa' });
+});
+

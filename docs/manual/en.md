@@ -1286,6 +1286,12 @@ opens only with **Edit** and **New bit**, and after **Save** or **Discard change
 **Details** does the same); in **Configurator**, a bit you pick opens straight in the editor, with **Duplicate** and
 **Delete…** there. The choice is kept in this browser.
 
+**Groups** are yours. A bit without a group sits under its kind (Flat, V, Engraving), as at the start. The **Group** list in
+the details moves it: to another group, back to **No group (by kind)** or, with **New group…**, to a new group with the name
+you type (at most 40 characters). Your groups come first in the list, by name; **✎** next to a group's title renames it, with
+all its bits (a name that already belongs to another group merges them, and an empty name puts them back under their kinds).
+The group travels with the bit in the file and in the account.
+
 **New bit** opens the editor, with the fields:
 - **Name**: left empty, the bit gets the name proposed from its kind and diameter (“Flat Ø6”, “V60 Ø6”, “Engraving 30° tip
   0.2 Ø3.175”). Two bits cannot share a name (case does not matter);
@@ -1295,7 +1301,8 @@ opens only with **Edit** and **New bit**, and after **Save** or **Discard change
   **Flutes** (if you know them) and **Preferred T** (1–999, the number on the tool holder);
 - **Working values**: **Spindle speed** (rpm), **Feed** and **Plunge** (mm/min), **Step-down** (mm) and **Stepover** (% of
   the diameter, at most 50);
-- **Note**: the maker, the code, where it came from.
+- **Note**: the maker, the code, where it came from;
+- **Group**: left empty, the bit sits under its kind; the list under the field has your groups.
 
 The profile on the right is to scale. Numbers take a comma or a point. **Save** keeps the bit, and **Discard changes** puts
 back what was there (in **List**, it also closes the editor). If you pick another bit or close the window with unsaved changes, they are saved on their own when they
@@ -1311,7 +1318,7 @@ missing ones.
 **Export…** saves the library to the file `frezele-mele.cvs2freze.json`, which you bring in with **Import…** on another
 computer. **Import…** also reads a CSV (saved from Excel, for example) with a header row and the columns `nume`, `fel`
 (`plata`, `v` or `gravare`), `diametru`, `unghi`, `varf`, `numar` (the T), `turatie`, `avans`, `plonjare`, `pas`,
-`pas_lateral`, `tais`, `taisuri` and `nota`, in any order. Only `nume`, `fel` and `diametru` are required; without the others,
+`pas_lateral`, `tais`, `taisuri`, `nota` and `grup`, in any order. Only `nume`, `fel` and `diametru` are required; without the others,
 the T is 1, the spindle speed 18,000, the feed 1,000, the plunge 300, the step-down half the diameter (for a flat bit) or
 1 mm, and the stepover 40 %. The separator (`;`, `,` or tab) is found on its own; with `;`, numbers may use a decimal comma.
 Before importing, you choose what happens to a name that already exists: **Keep both** (the default; the new one gets

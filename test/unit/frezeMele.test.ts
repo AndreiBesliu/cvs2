@@ -225,3 +225,23 @@ test('frezele standard: o singură dată, într-o bibliotecă goală; ștearsă,
   await m.incarca();
   assert.equal((await m.puneStandard(STANDARD, true)).ok && m.stare().freze.length, 6);
 });
+
+test('redenumirea unui grup (ADR 0302 §4): în depozit, toate frezele lui deodată; refuzurile nu scriu nimic', async () => {
+  const d = new Depozit();
+  const b = creeazaFrezeMele(d, (() => { let i = 0; return () => `f${++i}`; })(), () => 7);
+  await b.incarca();
+  await b.salveaza(null, { ...PLATA6, grup: 'Lemn' });
+  await b.salveaza(null, { ...V60, grup: 'lemn' });
+  const inainte = d.scrieri;
+  const r = await b.redenumesteGrup('LEMN', 'Esență tare');
+  assert.deepEqual(r, { ok: true });
+  assert.equal(d.scrieri, inainte + 1);
+  assert.deepEqual(b.stare().freze.map((f) => f.grup), ['Esență tare', 'Esență tare']);
+  const alta = creeazaFrezeMele(d, () => 'x', () => 8);
+  await alta.incarca();
+  assert.deepEqual(alta.stare().freze.map((f) => [f.grup, f.rev]), [['Esență tare', 2], ['Esență tare', 2]]);
+  assert.deepEqual(await b.redenumesteGrup('nimic', 'X'), { ok: false, probleme: { id: 'lipsa' } });
+  assert.deepEqual(await b.redenumesteGrup('esență tare', 'x'.repeat(41)), { ok: false, probleme: { grup: 'grup-lung' } });
+  assert.equal(d.scrieri, inainte + 1);
+});
+

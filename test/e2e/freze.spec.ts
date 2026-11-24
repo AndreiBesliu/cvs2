@@ -31,6 +31,8 @@ const nume = (f: Locator): Locator => f.locator('.freze-rand-nume');
 const camp = (f: Locator, c: string): Locator => f.locator(`[data-freze-camp="${c}"]`);
 const fisa = (f: Locator): Locator => f.locator('[data-freze="fisa"]');
 const valoare = (f: Locator, c: string): Locator => fisa(f).locator(`[data-freze-valoare="${c}"]`);
+/** Grupul frezei din fișă: opțiunea aleasă a lui „Grupul” (alegerea altei opțiuni o mută). */
+const grupul = (f: Locator): Locator => fisa(f).locator('[data-freze="muta"] option:checked');
 
 /** Alege freza cu numele dat și îi deschide editorul din fișă (vederea „Listă”). */
 async function editeaza(f: Locator, n: string): Promise<void> {
@@ -193,6 +195,62 @@ test('comutatorul „Configurator”: alegerea deschide direct editorul; ținut 
   await expect(valoare(g, 'unghi')).toHaveText('60°');
   await expect(valoare(g, 'avans')).toHaveText('1300 mm/min');
   await expect(g.locator('[data-freze-camp]')).toHaveCount(0);
+});
+
+test('grupurile omului: „Grupul” din fișă (un grup nou, unul existent) și unul existent, redenumirea din titlu, înapoi pe fel; ținute după reîncărcare', async ({ page }) => {
+  await page.goto('/');
+  const f = await deschideFrezele(page);
+  await standard(f);
+  const titluri = (x: Locator): Locator => x.locator('.freze-grupa h3');
+  // Implicit, pe feluri.
+  await expect(titluri(f)).toHaveText(['Plate (3)', 'În V (2)', 'Gravare (1)']);
+  await expect(f.locator('[data-freze="grup-redenumeste"]')).toHaveCount(0);
+  // „Grupul” → „Grup nou…”: Plată Ø6 în „Lemn”, care vine primul.
+  await f.locator('[data-freza]').filter({ hasText: 'Plată Ø6' }).click();
+  await expect(grupul(f)).toHaveText('Fără grup (pe fel)');
+  await fisa(f).locator('[data-freze="muta"]').selectOption({ label: 'Grup nou…' });
+  await expect(fisa(f).locator('[data-freze="grup-nou"]')).toBeFocused();
+  await fisa(f).locator('[data-freze="grup-nou"]').fill('Lemn');
+  await fisa(f).locator('[data-freze="grup-nou-da"]').click();
+  await expect(grupul(f)).toHaveText('Lemn');
+  await expect(titluri(f)).toHaveText(['Lemn (1)', 'Plate (2)', 'În V (2)', 'Gravare (1)']);
+  // Încă una, în grupul care există (din listă).
+  await f.locator('[data-freza]').filter({ hasText: 'V90 Ø12' }).click();
+  await fisa(f).locator('[data-freze="muta"]').selectOption({ label: 'Lemn' });
+  await expect(grupul(f)).toHaveText('Lemn');
+  await expect(titluri(f)).toHaveText(['Lemn (2)', 'Plate (2)', 'În V (1)', 'Gravare (1)']);
+  // Redenumirea, din titlul grupului: Escape renunță (fereastra rămâne), un nume prea lung se refuză, Enter îl aplică.
+  await f.locator('[data-freze="grup-redenumeste"]').click();
+  const nou = f.locator('[data-freze="grup-nume-nou"]');
+  await expect(nou).toHaveValue('Lemn');
+  await expect(nou).toBeFocused();
+  await page.keyboard.press('Escape');
+  await expect(nou).toHaveCount(0);
+  await expect(f).toBeVisible();
+  await f.locator('[data-freze="grup-redenumeste"]').click();
+  await nou.fill('x'.repeat(41));
+  await nou.press('Enter');
+  await expect(f.locator('[data-freze="mesaj"]')).toHaveText('Cel mult 40 de caractere.');
+  await nou.fill('Esență tare');
+  await nou.press('Enter');
+  await expect(titluri(f)).toHaveText(['Esență tare (2)', 'Plate (2)', 'În V (1)', 'Gravare (1)']);
+  // După reîncărcare, grupul e tot acolo.
+  await page.reload();
+  const g = await deschideFrezele(page);
+  await expect(titluri(g)).toHaveText(['Esență tare (2)', 'Plate (2)', 'În V (1)', 'Gravare (1)']);
+  // În editor, câmpul „Grupul”: golit, freza se întoarce pe felul ei.
+  await editeaza(g, 'V90 Ø12');
+  await expect(camp(g, 'grup')).toHaveValue('Esență tare');
+  await camp(g, 'grup').fill('');
+  await g.locator('[data-freze="salveaza"]').click();
+  await expect(grupul(g)).toHaveText('Fără grup (pe fel)');
+  await expect(titluri(g)).toHaveText(['Esență tare (1)', 'Plate (2)', 'În V (2)', 'Gravare (1)']);
+  // Redenumit gol: grupul se desface, iar frezele lui se întorc pe felurile lor.
+  await g.locator('[data-freze="grup-redenumeste"]').click();
+  await g.locator('[data-freze="grup-nume-nou"]').fill('');
+  await g.locator('[data-freze="grup-redenumeste-da"]').click();
+  await expect(titluri(g)).toHaveText(['Plate (3)', 'În V (2)', 'Gravare (1)']);
+  await expect(page.getByTestId('jurnal')).toHaveText('0 erori în jurnalul local');
 });
 
 test('goală (frezele standard șterse): nu revin singure, nici după reîncărcare; „Adaugă frezele standard” le pune la loc', async ({ page }) => {
