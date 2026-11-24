@@ -13354,6 +13354,26 @@ admin, care apare daca esti logat ca admin”
   încărcarea a zece lucrători, clicurile ajung după cele 2 s ale răririi și repornirea se face pe loc). Nevăzută în
   CI; proba depinde acolo de timp.
 
+## 2026-11-24 — Sesiunea principală în cloud: oracolul rampelor, împărțit în șase fișiere (Model: Claude Fable 5.2)
+
+**Prompt:** „ok, imparte oracolul rampelor in mai multe fisiere”
+**Started:** 24.11, 17:15. **Completed:** 24.11, 17:23 (pe ramură; în `main` după rapid).
+
+- **Ce era:** `test/unit/intrari-rampa.corpus.oracol.test.ts`, un singur test de 6 min 19 s (lipirea ADR 0031 pe
+  corpusul 2.5b cu rampe la întâmplare), care scosese o felie a rapidului peste limita ei după lotul 17.
+- **Ce e acum:** judecata fiecărui caz, mutată neschimbată în `test/unit/ajutor-intrari-rampa-corpus.ts`
+  (`lipesteParte`); șase fișiere, `intrari-rampa.corpus.<n>.oracol.test.ts`, fiecare cu partea ei de corpus (cazul k
+  în partea (k mod 6) + 1).
+- **Măsurat, în container:** 338 de cazuri; părțile țin 55, 60, 30, 63, 61 și 55 s; toate șase, în paralel, 2 min 11 s.
+  Numărătorile, pe tot corpusul: 199 de programe, 183 cu rampă și intrări pe aceeași operație, 1 554 de treceri cu
+  rampa pe intrare, 84 de bucle omise, 12 refuzuri prezise, 1 513 punți judecate; nicio încălcare.
+- **Pragurile:** cele ale testului întreg (60, 40, 200, 5, 5, 100) se cer pe părți, fiecare parte cu partea ei din
+  prag, pe măsura a ce numără (rotunjită în sus): sumele sunt 62, 42, 204, 9, 8, 104. Ambele laturi, în fiecare parte.
+- **Paza împărțirii** (în partea 1): exact șase fișiere; părțile acoperă corpusul întreg, fiecare caz o dată; suma
+  minimelor nu coboară sub pragurile vechi. Otrăvuri, de mână, 4 / 4: o parte fără fișier, toate părțile cu cazurile
+  primei, un minim slăbit, cinci părți cu șase fișiere.
+- **Probele:** 7 / 7 (șase părți și paza). Nicio listă de otrăvuri nu numea fișierul vechi.
+
 ## 2026-11-24 — Sesiunea principală în cloud: a nouăsprezecea unire (frezele: b-2, a-2, h-1, h-2; unealta Cote, 10.4↑a-2) (Model: Claude Fable 5.2)
 
 **Prompt:** rapoartele liniilor frezelor („gata de unit”, PR-ul #22: `d0fa2dde`, apoi `ea2b8111`) și cotelor (`1500e4b3`),
