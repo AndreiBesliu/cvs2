@@ -379,6 +379,12 @@ test('incrustația cu pereți drepți: locașul, treapta și dopul așezat, dese
   await expect(tr.locator('[data-cota="inc-treapta-adancime"]')).toContainText('1,5');
   await expect(tr.locator('[data-cota="inc-treapta-latime"]')).toContainText('3');
   await expect(tr).toContainText('desenul e sus');
+  // Linia desenului, față de fața piesei: sus la interior (pe față), la nivelul umărului la exterior.
+  const nivelDesen = async (): Promise<number> => {
+    const dm = await tr.locator('[data-desen-marcat]').getAttribute('d'), sus = Number(await tr.locator('[data-lemn]').getAttribute('y'));
+    return Number(/^M\S+ (\S+)H/.exec(dm ?? '')?.[1]) - sus;
+  };
+  expect(await nivelDesen()).toBe(0);
   // Dopul pe umăr (D = 6, umărul la 1,5, g = 0,5, H = 2): tija 6 − 1,5 − 0,5 = 4, flanșa 1,5 + 2 = 3,5, semifabricatul 8,5.
   const d = desen(page, 'e1/e1', 'dop');
   await expect(d).toHaveAttribute('data-dop', 'ridicat-umar');
@@ -393,6 +399,7 @@ test('incrustația cu pereți drepți: locașul, treapta și dopul așezat, dese
   await expect(d).toContainText('dopul 8 mm: tija 5, flanșa 3');
   await alege(e1, 'inc-treapta', 'exterior');
   await expect(tr).toContainText('desenul e jos');
+  expect(await nivelDesen()).toBeGreaterThan(5);
   // Fără treaptă, pe față: dopul D − g = 5,5; decupat, placa D + H = 8.
   await alege(e1, 'inc-treapta', 'fara');
   await alege(e1, 'inc-sprijin', 'fata');
