@@ -1,4 +1,4 @@
-# Lista de otrăvuri a feliei 10.4↑a-3a (fereastra Setări, secțiunea Cotele; ADR 0330 §6), 24.11.2026, alese de autor: scrierea
+# Lista de otrăvuri a feliei 10.4↑a-3 (fereastra Setări, secțiunea Cotele; ADR 0330 §6), 24.11.2026, alese de autor: scrierea
 # cifrei (unitatea, pasul și zecimalele lui, separatorul, unitatea scrisă), desenul după setări (bara oblică, punctul, săgeata
 # deschisă, extensiile ascunse, cifra în linie și mereu orizontală), setările (zecimalele automate, separatorul după limbă,
 # întregul, culoarea, marginile, „Înapoi la implicit”) și fereastra pe pânză (prinsă de e2e: ⚙, Escape, F1, garda tastelor,

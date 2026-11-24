@@ -211,3 +211,14 @@ test('liniile de extensie ascunse; cifra în linie (linia întreruptă) și mere
   const h = desenLiniar('orizontala', P(0, 0), P(100, 20), 15, { ...S, loc: 'orizontala' }, '100') as DesenCota;
   egal(h.text.p, 50, 25 + 1.05, 'ca deasupra');
 });
+
+test('mereu orizontală, pe o aliniată trasă spre stânga sau în jos: cifra tot deasupra liniei, ori la stânga ei', () => {
+  // De la (100, 0) la (0, 0): normala aliniatei e în jos, iar d = −10 pune linia la y = 10. Cifra („100”), deasupra ei.
+  const s = desenLiniar('aliniata', P(100, 0), P(0, 0), -10, { ...S, loc: 'orizontala' }, '100') as DesenCota;
+  egal(s.linie[0], 100, 10, 'linia, deasupra');
+  egal(s.text.p, 50, 10 + 1.05, 'cifra deasupra liniei, nu sub ea');
+  // De la (0, 50) la (0, 0): normala e spre dreapta, d = −2 pune linia la x = −2. Cifra („50”, 4,2 mm), la stânga ei.
+  const v = desenLiniar('aliniata', P(0, 50), P(0, 0), -2, { ...S, loc: 'orizontala' }, '50') as DesenCota;
+  egal(v.linie[0], -2, 50, 'linia, la stânga');
+  egal(v.text.p, -2 - 1.05 - 2.1, 25 - 1.75, 'cifra la stânga liniei');
+});

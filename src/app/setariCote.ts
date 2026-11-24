@@ -1,7 +1,7 @@
 /**
  * Setările cotelor (ADR 0330 §6), ale aplicației, nu ale unei cote: ținute în browser (`cncvs2.cote`, JSON cu versiune),
- * aplicate pe loc tuturor cotelor. Grupurile: cifrele și liniile (a-3a), comportamentul, lipirea, măsurarea (a-2, plus
- * pânza în a-3a); fereastra Setări le scrie. Orice valoare lipsă, de alt tip sau în afara marginilor ia implicitul ei, câmp
+ * aplicate pe loc tuturor cotelor. Grupurile: cifrele și liniile (a-3), comportamentul, lipirea, măsurarea (a-2, plus
+ * pânza în a-3); fereastra Setări le scrie. Orice valoare lipsă, de alt tip sau în afara marginilor ia implicitul ei, câmp
  * cu câmp: o setare stricată nu le strică pe celelalte.
  */
 import { useSyncExternalStore } from 'react';

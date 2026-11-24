@@ -145,7 +145,7 @@ const incarcaPaleta = () => import('../ui/Paleta.tsx').then(cuMesaje);
 const Aspectul = lazy(() => import('./Aspectul.tsx').then(cuMesaje).then((m) => ({ default: m.Aspectul }), () => ({ default: DialogNeincarcat })));
 /** Fereastra „Frezele mele” (ADR 0300 §3, felia 16.A↑a): biblioteca de freze din browser, din paletă și din meniul contului. */
 const FrezeleMele = lazy(() => import('./FrezeleMele.tsx').then(cuMesaje).then((m) => ({ default: m.FrezeleMele }), () => ({ default: DialogNeincarcat })));
-/** Fereastra Setări (ADR 0330 §6, felia 10.4↑a-3a): setările cotelor, din meniul contului, din paletă, cu Ctrl+, și din ⚙ al uneltei Cote. */
+/** Fereastra Setări (ADR 0330 §6, felia 10.4↑a-3): setările cotelor, din meniul contului, din paletă, cu Ctrl+, și din ⚙ al uneltei Cote. */
 const Setari = lazy(() => import('./Setari.tsx').then(cuMesaje).then((m) => ({ default: m.Setari }), () => ({ default: DialogNeincarcat })));
 const incarcaProprietati = () => import('./PanouProprietati.tsx').then(cuMesaje);
 const Paleta = lazy(() => incarcaPaleta().then((m) => ({ default: m.Paleta }), () => ({ default: DialogNeincarcat })));

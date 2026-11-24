@@ -2,7 +2,7 @@ import { test, expect, type Page } from '@playwright/test';
 import { adauga, deschideMeniulContului, ecran, vedere } from './ajutor-panza.ts';
 
 /**
- * Fereastra Setări (ADR 0330 §6, felia 10.4↑a-3a), în browser: deschisă din meniul contului, cu Ctrl+, și din ⚙ al uneltei
+ * Fereastra Setări (ADR 0330 §6, felia 10.4↑a-3), în browser: deschisă din meniul contului, cu Ctrl+, și din ⚙ al uneltei
  * Cote; Escape o închide și întoarce focusul. Fiecare setare se aplică pe loc cotelor de pe pânză și cotei de probă, se ține
  * după reîncărcare; un număr în afara marginilor e spus și nu se ține; „Înapoi la implicit” pune grupul la loc; ascunse,
  * cotele se văd doar cu unealta Cote. Cota de probă de pe pânză: orizontala de 100 mm, pusă pe vârfurile de sus ale

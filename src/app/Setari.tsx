@@ -1,5 +1,5 @@
 /**
- * Fereastra Setări (ADR 0330 §6, felia 10.4↑a-3a): setările generale ale aplicației, pe secțiuni; acum una singură, Cotele.
+ * Fereastra Setări (ADR 0330 §6, felia 10.4↑a-3): setările generale ale aplicației, pe secțiuni; acum una singură, Cotele.
  * Se deschide din meniul contului („Setări…”), din paletă (`vedere.setari`), cu Ctrl+, și din ⚙ al uneltei Cote. Fiecare
  * schimbare se aplică pe loc, tuturor cotelor, și se ține în browser (`setariCote.ts`); nu e nimic de păstrat sau de anulat,
  * deci fereastra are doar Închide (și Escape). Fiecare grup are „Înapoi la implicit”, fiecare setare o frază scurtă, iar sus

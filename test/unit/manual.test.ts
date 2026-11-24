@@ -154,7 +154,7 @@ test('ușile: fiecare are o etichetă cu nume scurt, fără id-uri repetate (sun
   // `document.leaga-caile` și opțiunile legării. Biblioteca extensiilor (ADR 0231, felia 3.Xh-3), încă una:
   // `extensii.biblioteca`. Fereastra „Frezele mele” (ADR 0300 §3, felia 16.A↑a), încă una: `vedere.freze`. Butonul Admin din
   // meniul global (felia 14.C↑d), încă una: `editare.admin`. Cotele (ADR 0330, felia 10.4↑a-2), încă două: unealta Cote și
-  // acțiunea `foaie.cote`. Fereastra Setări (ADR 0330 §6, felia 10.4↑a-3a), încă una: `vedere.setari`.
+  // acțiunea `foaie.cote`. Fereastra Setări (ADR 0330 §6, felia 10.4↑a-3), încă una: `vedere.setari`.
   assert.equal(USI.length, 118);
 });
 

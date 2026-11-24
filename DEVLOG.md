@@ -13264,3 +13264,32 @@ admin, care apare daca esti logat ca admin”
 - **Rămas, de urmărit:** celelalte 2 căderi din 120, la rândul 235 („două cereri imediat după” repornire: sub
   încărcarea a zece lucrători, clicurile ajung după cele 2 s ale răririi și repornirea se face pe loc). Nevăzută în
   CI; proba depinde acolo de timp.
+
+## 2026-11-24 — Felia 10.4↑a-3: fereastra Setări, cu secțiunea Cotele (ADR 0330 §6) (Model: Claude Opus 5.5)
+
+**Prompt:** „continua” (owner-ul, 24.11, după 10.4↑a-2). **Started:** 24.11, 16:42, în sesiunea cloud a liniei cotelor, după
+aducerea lui `main` (`29ef7e44`). **Completed:** 24.11, 17:30 (în container; CI-ul, pe commit-ul împins).
+
+- **Împărțirea:** a-3 = fereastra Setări, cu toate setările de până aici și efectul lor pe desen; a-4 = panoul cotei,
+  lista, „Arată cotele”, cotele foilor vecine, cu setarea lor (numite întâi a-3a și a-3b: id-urile fișelor au doar cifre
+  după cratimă).
+- **Întâi probele pure:** scrierea cifrei (`scrieCifra`: unitatea, zecimalele, zerourile, pasul cu zecimalele lui,
+  separatorul, unitatea scrisă, fără „-0”), capetele (săgeata deschisă, bara oblică la 45°, punctul, fără), extensiile
+  ascunse, cifra în linie (linia întreruptă) și mereu orizontală, pe hârtie; setările (marginile din tabel, câmp cu câmp,
+  stilul și formatul din setări, „după limbă”, „Înapoi la implicit” pe fiecare grup).
+- **Codul:** `src/model/desenCota.ts` (stilul, `bucati`, felurile capetelor, `FormatCifre`), `src/app/setariCote.ts`
+  (grupurile cifre, linii și pânza), `src/app/Cote.tsx` (desenul după setări, ascunse, culoarea, pragul, distanța la
+  punere, ⚙), fereastra `src/app/Setari.tsx` cu `setari.css` (la cerere), rândul „Setări…” din meniul contului, acțiunea
+  `vedere.setari`, Ctrl+, ușa F1, textele (ro, en), manualul „Setările”, catalogul controalelor.
+- **E2e** (`test/e2e/setari.spec.ts`, 7): cele trei deschideri, Escape cu focusul înapoi, F1, garda tastelor; cifrele și
+  capetele pe pânză și pe probă, ținute după reîncărcare, „Înapoi la implicit”; marginile câmpului și pragul cifrelor;
+  ascunse, doar cu unealta Cote; culoarea aleasă; telefonul; engleza. Plus ⚙ în proba barei la 1280 px și rândul nou în
+  probele meniului contului (și pe emulatoare).
+- **Porțile, în container:** tipurile; unitarele cotelor, manualului, meniului, registrului, tastelor, catalogului și
+  traducerilor; e2e-urile cotelor, setărilor, contului, manualului, testului, aranjamentelor, frezelor, Atelierului și
+  paletei (55 / 55); build-ul determinist. Pornirea 110,1 → 110,4 kB (cu ușa 115,1, cu Atelierul 115,4 / 120), totalul
+  825,4 → 832,3 / 900.
+- **Otrăvurile** (`test/otravuri/10.4a3.py`, într-o clonă): 23 unitare, 14 e2e; A12 (cifra orizontală de partea normalei)
+  a scăpat întâi, prinsă după proba nouă (o aliniată trasă spre stânga și în jos). Trei din `10.4a2.py` (D05, D09, S01),
+  rămase VOID pe codul nou, mutate și prinse.
+- **Capcană:** pragul cifrelor se probează la înălțimea implicită (după „Înălțimea cifrelor” 7 mm, cifra are 16 px pe ecran).

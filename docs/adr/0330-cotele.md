@@ -169,7 +169,7 @@ de un cititor independent, fără să-i citim textul.
 | | Unealta pornește cu | Automată, ultimul fel folosit | Automată | a-2 |
 | | După o cotă | rămâne unealta Cote, înapoi la Selecție | rămâne | a-2 |
 | | Cotele pe pânză | arătate, ascunse (ca „Arată cotele”) | arătate | a-3 |
-| | Cotele foilor vecine | estompate, ascunse | estompate | a-3 |
+| | Cotele foilor vecine | estompate, ascunse | estompate | a-4 |
 | | Cifrele se ascund sub | 0–12 px pe ecran | 6 px | a-3 |
 | | Culoarea pe pânză | a temei, aleasă | a temei | a-3 |
 | Lipirea | Punctele | vârfurile, mijloacele, centrele, cadranele, cutia, foaia, grila (fiecare bifat) | toate | a-2 |
@@ -231,7 +231,8 @@ Fiecare felie spune în raport cifrele măsurate.
 |---|---|---|
 | 10.4↑a-1 | Proba G-code-ului (prima); modelul (cota, ancora, punctele și valorile pe hârtie, ușa cu judecata la cerere, comanda jurnalului); regula de import; fără interfață | unitarele |
 | 10.4↑a-2 | Lipirea pe puncte; unealta Cote (D) cu Automată (latura, două puncte), Orizontală, Verticală, Aliniată și Măsoară (M), pe pânză; legată, dezlegarea în același pas de anulare; alegerea, mânerele, Delete; setările comportamentului, ale lipirii și ale măsurării (citite, încă fără fereastră) | canalul `cote` |
-| 10.4↑a-3 | Fereastra Setări, cu secțiunea Cotele (setările de până aici); panoul cotei; lista; „Arată cotele”; manualul (ro, en): „Cotele și măsurarea”, „Setările”, tastele D, M, Ctrl+, | canalul `cote` |
+| 10.4↑a-3 | Fereastra Setări, cu secțiunea Cotele: cifrele, liniile și capetele, comportamentul (și pânza: arătate, pragul cifrelor, culoarea), lipirea, măsurarea, cu efectul lor pe desen; cota de probă; deschiderile (meniul contului, paleta, Ctrl+, și ⚙); manualul „Setările” și Ctrl+, | canalul `cote` |
+| 10.4↑a-4 | Panoul cotei; rândul „Cote (N)” în listă, cu ochiul; „Arată cotele”; cotele foilor vecine, estompate sau ascunse (cu setarea lor) | canalul `cote` |
 | 10.4↑b | Raza, diametrul, unghiul (și în Automată), cu setările lor; inch în fracții | canalul `cote` |
 | 10.4↑c | Exportul: „Cu cotele”, stratul COTE, DXF ca DIMENSION sau ca linii și cifre, SVG, PDF, EPS, cifrele ca trăsături sau ca text, cu setările lor; oracolul pe corpus | canalul `cote` |
 | 10.4↑d | Lanțul, linia de bază, „Cotează selecția”, „Fă desen din cotă”, cotele în raportul foilor, cu setarea lui | canalul `cote` |
@@ -364,6 +365,45 @@ Ordinea feliilor e cea din §10; dacă vrei exportul înaintea razei și unghiul
 - **Acțiunea** `foaie.cote` (la cerere, ca ghidajele): lista nouă, judecată ca la ușă (`problemaCote`), un pas de anulare.
 - **Manualul:** capitolul „Cotele și măsurarea” (ro, en) și tastele D și M în capitolul scurtăturilor.
 - **Cifrele:** unitare noi 33 (lipirea 11, desenul 11, setările 4, dezlegarea 7); e2e noi 7 (`cote.spec.ts`), plus probele vechi potrivite (registrul și paritatea calculului cu `foaie.cote`, manualul cu 116 uși și 42 de capitole); otrăvuri 35 / 35 (`test/otravuri/10.4a2.py`: 29 unitare, 6 e2e; șapte au scăpat întâi și sunt prinse după probele întărite). Pornirea 110,0 → 110,1 kB (cu ușa 114,6 → 114,8, cu Atelierul 115,0 → 115,1 / 120: în pornire stau doar tastele, acțiunea `foaie.cote` și textul ei), totalul 815,9 → 825,5 / 900 kB (bucata cotelor 8,0 kB, cu stilurile ei 0,4).
+
+## Implementarea (10.4↑a-3)
+
+24.11, pe ramura `wip/10.4-cote`, la „continua” al owner-ului. Felia a-3 a păstrat fereastra Setări, cu toate setările
+de până aici și efectul lor; panoul cotei, lista, „Arată cotele” și cotele foilor vecine (cu setarea lor, care n-are ce
+arăta fără foile vecine desenate) trec în felia nouă **a-4**. (Id-urile feliilor din fișe au doar cifre după cratimă, deci
+nu „a-3a” și „a-3b”, cum le-a numit întâi sesiunea.)
+- **Setările** (`src/app/setariCote.ts`): grupurile din tabelul §6 pentru a-3, fiecare câmp citit cu marginile lui (un
+  câmp greșit ia implicitul, celelalte rămân): **cifrele** (unitatea mm / cm / inch, zecimalele 0–6 sau automat — 2, în
+  inch 3 —, zerourile, rotunjirea la un pas 0,001–100 în unitatea aleasă, separatorul după limbă / virgula / punctul,
+  unitatea scrisă, înălțimea 1–20 mm, locul cifrei), **liniile** (capetele, mărimea 1–10 mm, extensiile, golul și depășirea
+  0–5 mm, distanța la punere 2–100 mm) și, în **comportament**, pânza (arătate, pragul cifrelor 0–12 px, culoarea, `#rrggbb`
+  sau a temei). Implicitele setărilor sunt chiar stilul implicit al desenului (proba). `grupImplicit` și `eImplicit`, pe
+  fiecare din cele cinci grupuri.
+- **Desenul** (`src/model/desenCota.ts`): stilul are felul capetelor (săgeata plină sau deschisă, bara oblică la 45° în sens
+  trigonometric față de linie, centrată pe picior, punctul cu raza cât un sfert din mărime, fără), extensiile arătate sau
+  nu și locul cifrei: deasupra; **în linie** (cifra centrată pe linie, linia întreruptă cât cifra și 0,3·h de fiecare
+  parte, deci `bucati` are două bucăți); **mereu orizontală** (cutia cifrei lângă mijlocul liniei, de partea normalei care
+  urcă sau, la o linie verticală, la stânga). `scrieCifra` scrie cifra după format (unitatea, zecimalele, pasul cu
+  zecimalele lui, zerourile, separatorul, unitatea scrisă, fără „-0”). Lățimea cifrei e aproximată (0,6·h pe semn) până la
+  trăsăturile lui Relief (felia c).
+- **Pe pânză** (`src/app/Cote.tsx`): desenul și cifrele după setări, pe loc (React le citește din aceeași stare);
+  ascunse, cotele nu se desenează și nu se aleg, afară de unealta Cote aleasă; culoarea aleasă înlocuiește tokenul
+  `--cota` pe stratul cotelor; „Păstrează” din Măsoară pune cota la distanța din setări; distanța din Măsoară își scrie
+  mereu unitatea (măsura nu e o cotă).
+- **Fereastra** (`src/app/Setari.tsx`, `setari.css`, la cerere, cu mesajele editării): secțiunile în stânga (acum
+  Cotele; pe telefon, deasupra), cota de probă (120,5 × 40 mm, cu o orizontală și o verticală, desenate cu aceeași geometrie)
+  ținută la vedere la derulare, grupurile cu „Înapoi la implicit” (oprit cât grupul are implicitele). Fiecare schimbare se
+  aplică pe loc și se ține; un număr se scrie cu virgulă sau punct, iar unul în afara marginilor rămâne în câmp, spus în
+  roșu, și nu se ține. Doar Închide și Escape: nu e nimic de anulat. Se deschide din meniul contului („Setări…”, după
+  „Aspectul…”, cu `Ctrl+,` scris pe rând), din paletă (`vedere.setari`, și din fereastra Mașina), cu `Ctrl+,` și din ⚙ al
+  uneltei Cote; F1 în ea duce la capitolul ei. Cât e deschisă, tastele desenului nu ating Proiectarea.
+- **Manualul:** capitolul „Setările” (ro, en), o frază spre el în „Cotele și măsurarea”, `Ctrl+,` în scurtături.
+- **Cifrele:** unitare noi 7 (desenul 4, setările 3) și potrivite cele vechi (desenul, setările, manualul cu 118 uși,
+  meniul contului); e2e noi 7 (`setari.spec.ts`, cu telefonul și engleza) și ⚙ în proba barei la 1280 px; rândul nou al
+  meniului în `cont.spec.ts`, `tutorial.spec.ts` și proba tichetelor de pe emulatoare. Pornirea 110,1 → 110,4 kB (cu ușa
+  115,1, cu Atelierul 115,4 / 120: în pornire stau acțiunea `vedere.setari`, tasta și încărcarea ferestrei), totalul
+  825,4 → 832,3 / 900 kB (fereastra 3,6 kB și stilurile ei 0,8; setările și desenul cotelor, o bucată comună a uneltei
+  și a ferestrei, 3,2 kB, din care 1,0 au plecat din bucata uneltei).
 
 ## Răspunsurile owner-ului (24.11.2026)
 
