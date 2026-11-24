@@ -49,6 +49,9 @@ vreau ca ficare setare sa fie insotita de o ilustratie sugestiva, ca sa ajute us
   pereți drepți).
 - **24.11: 28.8↑e-1 gata** (câmpurile incrustației cu pereți drepți în grupurile lor: Locașul, Treapta, Dopul; locașul, treapta,
   dopul și sprijinul pe cartonașe), pe ramură; neunită. Otrăvurile 6 / 6. Urmează 28.8↑e-2 (desenele).
+- **24.11: 28.8↑e-2 gata** (desenele locașului, treptei și dopului așezat, din `dopDreptDesen`), pe ramură; neunită.
+  Otrăvurile 19 / 19. Totalul 820,4 / 900 (+1,5 kB). 28.8↑e e încheiată; urmează 28.8↑f (rezultatul în fereastră,
+  Atelierul și densitatea mare, fișa de sine stătătoare, privirea cu fontul lat).
 
 ## Ce s-a găsit (23.11)
 
@@ -107,6 +110,10 @@ vreau ca ficare setare sa fie insotita de o ilustratie sugestiva, ca sa ajute us
   lui: inputul transparent îl acoperă. Tokenurile pozelor stau pe `.dx-ilu`.
 - **Otrăvurile cu multe spec-uri e2e** (~2–3 min fiecare) se rulează câte două: o repornire a procesului oprește rularea, iar
   otrava în lucru rămâne aplicată în clonă (`git status` acolo, înainte de reluare).
+- **Proba „adâncimea” (`export.desene.spec.ts:48`) a căzut de trei ori în clonă, sub otrăvuri fără legătură cu ea** (28.8c E01,
+  28.8e2 E03 și E08, la ~6,2 s: o așteptare de 5 s), și niciodată altfel: 66 de rulări în paralel, 24 cu procesorul plin, 44 în
+  serie, 33 în clona refăcută. Eroarea n-a fost prinsă (unealta păstrează doar numele probei). Dacă mai cade, se rulează
+  spec-ul direct în clonă, cu `--workers=1`, ca să se vadă așteptarea care expiră.
 - **Caseta explicației își ține înălțimea** (`rezervaExplicatii`): un text nou mai lung (un `title` nou în grup) e măsurat singur.
   O probă care compară poziții după un focus le măsoară în conținutul panoului (`[data-fise]`, cu `scrollTop`): focusul poate
   derula panoul.

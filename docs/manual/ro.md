@@ -1609,7 +1609,7 @@ care). Fereastra are trei părți:
   până la adâncimea maximă și, între ei, fundul plat al frezei drepte (de la ce lățime începe), inelele V ale unei incrustații
   fără ea sau lemnul care rămâne fără fund plat. La o incrustație în V: locașul și dopul întors, cu cât intră dopul, jocul de
   sub el, spațiul dintre plăci, unde se ating pereții și marginea dopului; cu banda îngustă, grupul ei arată semifabricatul dopului
-  în secțiune, cu banda, decuparea prin placă (la ce distanță de desen) și puntea. Valorile stau pe cote, iar cota câmpului pe care
+  în secțiune, cu banda, decuparea prin placă (la ce distanță de desen) și puntea. La o incrustație cu pereți drepți: locașul cu fund sau prin foaie, cu jocul lateral (mărit în desen); treapta, spre interior (desenul rămâne pe față) sau spre exterior (desenul coboară la umăr); dopul așezat pe sprijinul ales (fund, față, umăr), cu jocul de sub el, cât de înalt iese (cu tija și flanșa, la treaptă) și cât de gros trebuie să fie semifabricatul sau placa. Valorile stau pe cote, iar cota câmpului pe care
   stai e colorată. Câte rampe face zigzagul pe o trecere se socotește pe trecerea egală, ca în program. Sub
   pas, câte treceri ies și cât scoate fiecare: trecerile sunt egale (10 mm cu pasul 4 dau 3 treceri de 3,33 mm), la fel și în
   desen. Tăietura și alegerile cu puține variante (colțurile, locurile urechilor, direcția pe linie, traseul și coborârea

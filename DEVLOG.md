@@ -12846,3 +12846,19 @@ PR-ul `AndreiBesliu/cvs2#14` („De unit de sesiunea principală”).
 
 **Completed:** 24.11, 09:00.
 
+
+## 2026-11-24 — Linia exportului: felia 28.8↑e-2, desenele incrustației cu pereți drepți (ADR 0290)
+
+**Prompt:** răspunsul owner-ului la ADR 0290, exact: „1a, 2a, 3a, 4a” (feliile acceptate; după 28.8↑e-1).
+**Started:** 24.11, 09:00.
+
+- **Locașul** (cu fund sau prin foaie, jocul lateral mărit), **Treapta** (spre interior sau exterior, desenul la nivelul lui)
+  și **Dopul** (așezat pe sprijinul ales, cu jocul de sub el, înălțimea, tija și flanșa, semifabricatul sau placa), din
+  `dopDreptDesen`, probat față de `valoriIncrustatieDreapta`.
+- **Probele:** 1 unitară, 1 e2e (cu nivelul desenului la treaptă, adăugat după lista otrăvurilor); rapidul local 10 078 / 0.
+- **Otrăvurile:** `test/otravuri/28.8e2.py`, 19 / 19. Sub trei otrăvuri (două aici, una la 28.8↑c), proba veche „adâncimea”
+  a căzut în clonă, fără să se reproducă după aceea (66 în paralel, 24 sub încărcare, 44 în serie, 33 în clonă): notată.
+- **Mărimea:** totalul 820,4 / 900 (+1,5 kB); pornirea neschimbată de felie.
+- **Manualul** (ro, en), ADR 0290 („Implementarea 28.8↑e-2”), fișa etapei 3, registrul otrăvurilor, nota liniei.
+
+**Completed:** 24.11, 09:50.

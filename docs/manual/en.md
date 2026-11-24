@@ -1663,7 +1663,10 @@ which). The window has three parts:
   without it, or the wood that stays without a flat bottom. On a V inlay: the pocket and the turned plug, with how far the plug
   goes in, the gap under it, the space between the boards, where the walls touch and the plug's margin; with the narrow band, its
   group shows the plug blank in section, with the band, the cut-out through the board (how far from the design) and the bridge.
-  The values sit on dimension lines, and the one of the field you
+  For a straight-walled inlay: the pocket, with a floor or through the board, with the side gap (enlarged in the drawing); the
+  step, towards the inside (the design stays on the face) or the outside (the design drops to the shoulder); the plug seated on
+  the chosen support (floor, face, shoulder), with the gap under it, how tall it comes out (with the stem and the flange, on a
+  step) and how thick the blank or the board must be. The values sit on dimension lines, and the one of the field you
   are on is coloured. How many ramps the zigzag makes on a pass is counted on the equal pass, as in the program. Under the
   step down, how many passes come out and
   how much each removes: the passes are equal (10 mm with a step of 4 gives 3 passes of 3.33 mm), in the drawing too. The cut

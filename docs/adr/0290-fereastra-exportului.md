@@ -445,3 +445,19 @@ cele patru aranjamente, cu harta schițelor schimbată ca la „Cu canvas-ul ara
 - Urmează 28.8↑e-2: desenele locașului, treptei și dopului (secțiunea cu umărul, tija și flanșa, jocurile), din
   `valoriIncrustatieDreapta`.
 
+## Implementarea 28.8↑e-2 (24.11)
+
+- **Grupul Locașul** desenează, în secțiune, buzunarul cu fund sau gaura prin foaie, cu dopul în el și jocul lateral pe cotă
+  (mărit în desen: e de zecimi). **Treapta** desenează umărul la d de față, lat de s, spre interior (desenul rămâne pe față)
+  sau spre exterior (desenul coboară la nivelul umărului), cu cotele lor; un umăr care nu e în (0, D) nu se desenează.
+- **Dopul** e desenat așezat în locaș, după sprijin: pe fund (atinge fundul, H între plăci), pe față (fața semifabricatului
+  pe piesă, g sub dop), pe umăr (flanșa pe treaptă, g sub tijă); locul sprijinului e marcat, iar semifabricatul de deasupra
+  lipsește la dopul decupat. Sub desen: înălțimea dopului (cu tija și flanșa la treaptă) și semifabricatul sau placa.
+- **Valorile** vin din `dopDreptDesen` (`src/ui/exportDeseneCalcul.ts`), probat pe toate sprijinurile pe care fereastra le
+  oferă, cu și fără treaptă și gaură, față de `valoriIncrustatieDreapta`: tija și flanșa pe umăr D − d − g și d + H, pe fund
+  D − d + g și d − g + H, la gaură D − d și d + H; fără treaptă, D − g pe față (D la gaură), altfel D + H; semifabricatul,
+  dopul și 1 mm sub față (placa, cât dopul, la cel decupat).
+- **Otrăvurile:** 19 / 19 (`test/otravuri/28.8e2.py`); proba nivelului desenului la treaptă a fost adăugată ca s-o prindă pe
+  E05.
+- **Mărimea:** totalul 820,4 / 900 kB (+1,5); pornirea neschimbată de felie.
+- Urmează 28.8↑f: rezultatul în fereastră, Atelierul și densitatea mare, fișa de sine stătătoare, privirea cu fontul lat.
