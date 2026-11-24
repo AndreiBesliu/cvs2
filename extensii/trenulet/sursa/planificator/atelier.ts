@@ -16,7 +16,8 @@ var Atelier3D = (function () {
     mod?: string; unealta?: string; brate?: number[]; unghiuri?: number[]; gauriInd?: string[]; contururi?: [number, number][][]; grosime?: number;
     dinti?: number; unghi?: number; sens?: string; modul?: number; janta?: number; banda?: string; spite?: string; nrSpite?: number; canal?: string;
     latCanal?: number; pereche?: number; butuc?: string; pinion?: number; piesa?: string; gauriStift?: string;
-    palete?: number; diametru?: number; pas?: number; latime?: number; paleta?: string; con?: string; inclinare?: number; capac?: string };
+    palete?: number; diametru?: number; pas?: number; latime?: number; paleta?: string; con?: string; inclinare?: number; capac?: string;
+    joc?: number; inel?: string; urechi?: number };
   /** O gaură pe grilă: colțul de celulă și tipul. */
   type Gaura = [number, number, string];
   /** O piesă gata de printat: corpul, mărimea și ce a spus motorul despre ea. */
@@ -82,6 +83,9 @@ var Atelier3D = (function () {
     elice: { palete: 3, diametru: 72, pas: 0.7, latime: 30, forma: "rot", paleta: "rasucita", profil: "placa", sens: "dreapta", gaura: "x", con: "nu" },
     // elicea de barcă (ADR 0282): 3 palete late, Ø40 (5 știfturi), pasul cât diametrul, înclinate înapoi cu 20°, gaura de ax
     eliceBarca: { palete: 3, diametru: 40, pas: 1, latime: 100, inclinare: 20, sens: "dreapta", gaura: "x", capac: "nu" },
+    // ventilatorul cu carcasă (ADR 0282): rotorul sau carcasa, Ø40 în carcasă (5 știfturi), 7 palete, jocul 0,8 la vârf, pasul
+    // 0,8 × diametrul, lățimea 45 % din rază, gaura de ax, fără inel, carcasa cu 2 urechi
+    ventilator: { piesa: "rotor", palete: 7, diametru: 40, joc: 0.8, pas: 0.8, latime: 45, sens: "dreapta", gaura: "x", inel: "nu", urechi: 2 },
     // forma trimisă din desenul cvs2 (ADR 0166): doar contururile închise; câte erau deschise și refuzul, pentru om
     dinCvs2: { contururi: [] as [number, number][][], grosime: 3.2, deschise: 0, refuz: "" },
   };
@@ -95,7 +99,7 @@ var Atelier3D = (function () {
       ["lateral", "Știfturi pe lateral"], ["suport", "Suport (bracket)"], ["grinda", "Grindă"], ["caramidaTechnic", "Cărămidă Technic"], ["placaTechnic", "Placă cu găuri"]]],
     ["legaturi", "Legături", [["stiftTechnic", "Știft"], ["ax", "Ax"], ["bucsa", "Bucșă / conector"], ["clema", "Clemă"], ["bara", "Bară"], ["maner", "Mâner"], ["bila", "Bilă"], ["cupa", "Cupă"]]],
     ["roti", "Roți", [["rotita", "Roată dințată"], ["conica", "Roată conică"], ["coroana", "Roată coroană"], ["conicaDubla", "Conică dublă"], ["fulie", "Fulie"], ["roata", "Roată cu anvelopă"], ["senila", "Șenilă"]]],
-    ["propulsie", "Elice", [["elice", "Elice"], ["eliceBarca", "Elice de barcă"]]]
+    ["propulsie", "Elice", [["elice", "Elice"], ["eliceBarca", "Elice de barcă"], ["ventilator", "Ventilator cu carcasă"]]]
   ];
   /** Familia fiecărei piese din galerii. */
   const FAMILIA = new Map(FAMILII.flatMap(([f, , piese]) => piese.map(([k]): [string, string] => [k, f])));
@@ -135,6 +139,7 @@ var Atelier3D = (function () {
     senila: `<path d="M8 6.5h8a5.5 5.5 0 0 1 0 11H8a5.5 5.5 0 0 1 0-11z" pathLength="48" stroke-dasharray="2.4 1.6"/><circle cx="8" cy="12" r="2.6"/><circle cx="16" cy="12" r="2.6"/>`,
     elice: `<circle cx="12" cy="12" r="2.2"/><path d="M10.7 10.2C7.8 7.7 7.6 2.7 10.8 1.9C13 1.4 14.6 6 13.3 10.2M14.2 11.7C17.8 10.5 22.3 12.8 21.3 16C20.7 18.2 15.9 17.3 12.9 14M11.1 14C10.4 17.8 6.1 20.5 3.9 18.1C2.3 16.4 5.5 12.7 9.8 11.7"/>`,
     eliceBarca: `<circle cx="12" cy="12" r="2.2"/><path d="M10.4 10.3C6 9 5.8 3.4 10.3 2.7C14.4 2 16.7 6.2 13.5 10.2M14.3 11.5C17.6 8.3 22.5 10.9 20.9 15.2C19.5 19.1 14.7 19 12.8 14.2M11.3 14.2C12.4 18.7 7.7 21.7 4.8 18.1C2.1 14.9 4.6 10.8 9.7 11.6"/>`,
+    ventilator: `<circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="2.2"/><path d="M12 9.4Q12.4 5.8 18 6.2M9.5 11.2Q6.3 9.7 8.3 4.5M10.5 14.1Q8 16.7 3.7 13.2M13.5 14.1Q15.3 17.3 10.5 20.3M14.5 11.2Q18 10.5 19.4 15.9"/>`,
   };
   const PICTOGRAMA_GENERICA = `<path d="M12 3l8 4.5v9L12 21l-8-4.5v-9zM4 7.5l8 4.5 8-4.5M12 12v9"/>`;
   /** Butonul unei piese din galerie: pictograma ei, apoi numele (pictograma e ascunsă cititoarelor de ecran: butonul se
@@ -277,6 +282,15 @@ var Atelier3D = (function () {
       const s = d.sens === "stanga" ? tr(", stânga") : "", c = d.capac === "da" ? tr(", cu capac") : "";
       return tr`Elice de barcă Ø${fmt(d.diametru ?? 40, 1)} cu ${d.palete ?? 3} palete, pasul ${fmt(d.pas ?? 1, 2)}${l}${i}${s}${g}${c}`;
     }
+    if (d.tip === "ventilator") {
+      // carcasa: diametrul din interior, înălțimea (crește cu paletele) și urechile; rotorul: jocul și lățimea, doar când nu
+      // sunt cele obișnuite (0,8 mm, 45 %), ca la elicea de barcă
+      if (d.piesa === "carcasa") return tr`Carcasă de ventilator Ø${fmt(d.diametru ?? 40, 1)} × ${fmt(Lego.ventilatorCote(d).Hc, 1)}, cu ${+(d.urechi ?? 2) === 4 ? 4 : 2} urechi`;
+      const g = d.gaura === "r" ? tr(", gaură rotundă") : d.gaura === "b" ? tr(", pentru bară") : d.gaura === "nu" ? tr(", fără gaură") : "";
+      const j = (d.joc ?? 0.8) !== 0.8 ? tr`, jocul ${fmt(d.joc ?? 0.8, 1)} mm` : "", l = (d.latime ?? 45) !== 45 ? tr`, lățimea ${d.latime} %` : "";
+      const s = d.sens === "stanga" ? tr(", stânga") : "", i = d.inel === "da" ? tr(", cu inel") : "";
+      return tr`Rotor de ventilator Ø${fmt(d.diametru ?? 40, 1)} cu ${d.palete ?? 7} palete, pasul ${fmt(d.pas ?? 0.8, 2)}${j}${l}${s}${g}${i}`;
+    }
     if (d.tip === "calibrare") return tr("Set de calibrare");
     return d.tip;
   }
@@ -342,6 +356,8 @@ var Atelier3D = (function () {
     if ((t === "conica" || t === "coroana") && +p.modul === 1) delete p.modul;
     if (t === "conicaDubla") { delete p.pereche; if (+p.modul === 1) delete p.modul; }
     if (t === "senila") { delete p.pereche; delete p.distanta; if (p.piesa === "pinion") delete p.gauriStift; else { delete p.dinti; delete p.gaura; } }
+    // carcasa nu are sens, gaură sau inel; rotorul, urechi
+    if (t === "ventilator") { if (p.piesa === "carcasa") { delete p.sens; delete p.gaura; delete p.inel; } else delete p.urechi; }
     return { tip: t, ...p };
   }
   function gauriCaramida(p: { celule: readonly (readonly [number, number, ...unknown[]])[]; gauri?: readonly Gaura[]; stifturi?: boolean | string }): Gaura[] {
@@ -428,6 +444,13 @@ var Atelier3D = (function () {
     // diametrul și cu paletele) și consola la vârf, pe strat
     const c = Lego.eliceBarcaCote(p), g = (x: number) => fmt(x * 180 / Math.PI, 0);
     return tr`Pasul ${fmt(c.P, 0)} mm (${fmt(c.pd, 2)} × diametrul): paleta stă la ${g(c.bRad)}° lângă butuc și la ${g(c.bVarf)}° la vârf. Paletele acoperă ${fmt(c.acoperire * 100, 0)} % din disc; butucul e de Ø${fmt(2 * c.rh, 1)} × ${fmt(c.Hh, 1)} mm. Se tipărește fără suport, cu partea dinspre barcă pe masă: la vârf, un strat iese cu ${fmt(c.consola, 1)} mm peste cel de dedesubt.`;
+  }
+  function textVentilator(p: { palete?: number; diametru?: number; joc?: number; pas?: number; latime?: number; inel?: string }): string {
+    // ventilatorul din editor: rotorul (vârful, butucul, inelul, unghiurile, consola) și carcasa (diametrele, înălțimea, unde
+    // stau găurile urechilor față de ax)
+    const c = Lego.ventilatorCote(p), g = (x: number) => fmt(x * 180 / Math.PI, 0), stf = cuDe(c.k) ? tr`${c.k} de știfturi` : tr`${c.k} știfturi`;
+    const inel = p.inel === "da" ? tr` Inelul, gros de 1,2 mm, e înalt de ${fmt(c.Hinel, 1)} mm.` : "";
+    return tr`Rotorul: paletele până la Ø${fmt(2 * c.Rt, 1)} (${fmt(c.joc, 1)} mm de carcasă), pe un butuc de Ø${fmt(2 * c.rh, 1)} × ${fmt(c.Hh, 1)} mm. Pasul ${fmt(c.P, 0)} mm (${fmt(c.pd, 2)} × diametrul): paleta stă la ${g(c.bRad)}° lângă butuc și la ${g(c.bVarf)}° la vârf; la vârf, un strat iese cu ${fmt(c.consola, 1)} mm peste cel de dedesubt.${inel} Carcasa: Ø${fmt(c.D, 1)} în interior, Ø${fmt(c.D + 4, 1)} în afară, înaltă de ${fmt(c.Hc, 1)} mm; găurile urechilor, la ${8 * c.k} mm de ax (${stf}).`;
   }
   // „Ca LEGO” (ADR 0282, cotele din LDraw, măsurate față de axa găurii, nu față de centrul cutiei): diametrul (vârfurile la
   // 13,69, 21,56 și 36,96 mm de axă: cât spun numele pieselor, 3½, 5½ și 9 știfturi), paleta plată cu unghiul de la 70 % din
@@ -978,6 +1001,45 @@ var Atelier3D = (function () {
       camp("#at-eb-lat", 0, 40, 150, v => { p.latime = v; });
       camp("#at-eb-inc", 0, 0, 40, v => { p.inclinare = v; });
       $("#at-eb-pereche").onclick = adaugaPerecheElice;
+    } else if (t === "ventilator") {
+      // ventilatorul cu carcasă (ADR 0282, 3.Ts): rotorul sau carcasa; paletele, diametrul (și repede, pe grila de știfturi),
+      // jocul, pasul și lățimea sunt ale amândurora (carcasa crește cu paletele); sensul, gaura și inelul, ale rotorului;
+      // urechile, ale carcasei; „Fă ventilatorul” pune în listă rotorul și carcasa
+      const p = stare.ventilator, rotor = p.piesa !== "carcasa";
+      e.innerHTML = `<h2>Ventilator cu carcasă</h2>
+        <p class="mic">Un ventilator în tub, pentru motoarele LEGO: rotorul, cu paletele răsucite, pe un butuc cu gaura din calibrare, și carcasa din jurul lui, cu urechi pentru grinzi. Găurile urechilor sunt pe grila axului: pe o grindă prinsă de urechi cu știfturi, axul trece prin gaura din mijloc, iar rotorul stă în mijlocul carcasei. Amândouă se tipăresc fără suport: rotorul cu muchia de jos a paletelor pe masă, carcasa în picioare.</p>
+        <div class="at-rand"><span class="mic">Piesa:</span>${seg("at-ve-piesa", [["rotor", "Rotorul"], ["carcasa", "Carcasa"]], rotor ? "rotor" : "carcasa")}</div>
+        <div class="at-rand"><span class="mic">Repede:</span>${seg("at-ve-repede", [["24", "Ø24"], ["32", "Ø32"], ["40", "Ø40"], ["48", "Ø48"]], String(p.diametru))}<span class="mic">${tr("3, 4, 5 și 6 știfturi")}</span></div>
+        <div class="at-campuri">
+          <label for="at-ve-palete">Paletele<input id="at-ve-palete" type="number" min="3" max="12" step="1" value="${p.palete}"></label>
+          <label for="at-ve-diam">Diametrul în carcasă (mm)<input id="at-ve-diam" type="number" min="24" max="120" step="0.1" value="${p.diametru}"></label>
+          <label for="at-ve-joc">Jocul la vârf (mm)<input id="at-ve-joc" type="number" min="0.3" max="2" step="0.1" value="${p.joc}"></label>
+          <label for="at-ve-pas">Pasul (× diametrul)<input id="at-ve-pas" type="number" min="0.3" max="1.5" step="0.05" value="${p.pas}"></label>
+          <label for="at-ve-lat">Lățimea (% din rază)<input id="at-ve-lat" type="number" min="15" max="60" step="1" value="${p.latime}"></label>
+        </div>
+        ${rotor ? `<div class="at-rand"><span class="mic">Sensul:</span>${seg("at-ve-sens", [["dreapta", "Dreapta"], ["stanga", "Stânga"]], p.sens)}</div>
+        <div class="at-rand"><span class="mic">Gaura:</span>${seg("at-ve-gaura", [["x", "Pentru ax"], ["r", "Rotundă"], ["b", "Pentru bară"], ["nu", "Fără"]], p.gaura)}</div>
+        <div class="at-rand"><span class="mic">Inelul:</span>${seg("at-ve-inel", [["nu", "Fără"], ["da", "Cu inel"]], p.inel)}</div>`
+          : `<div class="at-rand"><span class="mic">Urechile:</span>${seg("at-ve-urechi", [["2", "Două"], ["4", "Patru"]], String(p.urechi))}</div>`}
+        <p class="mic" id="at-ve-info">${textVentilator(p)}</p>
+        <div class="at-rand"><button class="btn" type="button" id="at-ve-fa">Fă ventilatorul</button><span class="mic">${tr("pune în listă rotorul și carcasa")}</span></div>`;
+      const alege = (id: string, f2: (v: string) => void) => { if (!$(id)) return; $(id).onclick = ev => { const b = (ev.target as Element).closest<HTMLElement>("[data-v]"); if (!b) return; f2(b.dataset.v!); editor(); schimbat(); }; };
+      alege("#at-ve-piesa", v => { p.piesa = v; });
+      alege("#at-ve-repede", v => { p.diametru = +v; });
+      alege("#at-ve-sens", v => { p.sens = v; });
+      alege("#at-ve-gaura", v => { p.gaura = v; });
+      alege("#at-ve-inel", v => { p.inel = v; });
+      alege("#at-ve-urechi", v => { p.urechi = +v; });
+      // câmpurile: doar valorile din plajă (altfel, ca la celelalte piese, rămâne ce era)
+      const camp = (id: string, zec: number, a: number, b: number, f2: (v: number) => void) => {
+        $(id).onchange = ev => { const v = Math.round(+(ev.target as HTMLInputElement).value * 10 ** zec) / 10 ** zec; if (v >= a && v <= b) { f2(v); editor(); schimbat(); } };
+      };
+      camp("#at-ve-palete", 0, 3, 12, v => { p.palete = v; });
+      camp("#at-ve-diam", 1, 24, 120, v => { p.diametru = v; });
+      camp("#at-ve-joc", 1, 0.3, 2, v => { p.joc = v; });
+      camp("#at-ve-pas", 2, 0.3, 1.5, v => { p.pas = v; });
+      camp("#at-ve-lat", 0, 15, 60, v => { p.latime = v; });
+      $("#at-ve-fa").onclick = adaugaVentilator;
     } else if (t === "suport") {
       const p = stare.suport;
       e.innerHTML = `<h2>Suport (bracket)</h2>
@@ -1747,6 +1809,15 @@ var Atelier3D = (function () {
     pune({ tip: "senila", piesa: "pinion", dinti: m.z2, gaura: p.gaura }, n);
     salveaza(); randeazaLista();
     toast(tr`${n} × șenila (${zaleText(m.zale)}) și pinioanele de ${m.z1} și ${m.z2} în listă (axele la ${fmt(m.d, 2)} mm; întinsă, la ${fmt(m.intins, 2)}).`);
+  }
+  function adaugaVentilator() {
+    // rotorul și carcasa lui (aceleași palete, diametru, joc, pas și lățime), câte bucăți sunt cerute
+    laZi();
+    const n = bucatiCerute(), p = stare.ventilator, comun = { tip: "ventilator", palete: p.palete, diametru: p.diametru, joc: p.joc, pas: p.pas, latime: p.latime };
+    pune({ ...comun, piesa: "rotor", sens: p.sens, gaura: p.gaura, inel: p.inel }, n);
+    pune({ ...comun, piesa: "carcasa", urechi: p.urechi }, n);
+    salveaza(); randeazaLista();
+    toast(tr`${n} × ventilatorul (rotorul și carcasa) în listă.`);
   }
   function adaugaPerecheElice() {
     // aceeași elice, o dată pe dreapta și o dată pe stânga (pentru două motoare care se rotesc invers), câte bucăți sunt cerute

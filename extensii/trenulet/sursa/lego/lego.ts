@@ -2042,6 +2042,105 @@ var Lego = (function (glob: typeof globalThis) {
     return { tri, avert };
   }
 
+  // ------------------------------------------------------------------------------------ ventilatorul cu carcasă (ADR 0282, 3.Ts)
+  // Ventilatorul cu carcasă, din parametri: rotorul și carcasa (tubul din jurul lui, cu urechile pentru grinzi), două piese.
+  // Diametrul e cel din interiorul carcasei (24–120 mm); vârful paletelor stă la Ø / 2 − jocul (0,3–2 mm, implicit 0,8: două
+  // linii de duză). Rotorul: 3–12 palete, ca la elice: pas constant (β(r) = atan(P / 2πr), P = pasul · Ø, pasul 0,3–1,5),
+  // secțiunea placă curbată, groasă de la 1,2 la 0,8, tipărit fără suport (fiecare secțiune cu punctul cel mai de jos pe masă).
+  // Coarda: lățimea cerută (15–60 % din raza vârfului), de la 60 % la rădăcină la toată după primul sfert din paletă, apoi la fel
+  // până la vârf (vârful drept, lângă carcasă); pe fiecare rază, paleta ocupă cel mult 85 % din pasul dintre palete. Butucul: Ø8,
+  // sau un sfert din raza vârfului la ventilatoarele mari, înalt cât paletele (cel puțin 8), cu gaura din calibrare. Inelul, la
+  // alegere (ca LEGO 50899): un tub gros de 1,2 în jurul paletelor, în același contur (exteriorul la Ø / 2 − jocul), cu paletele
+  // intrate în el 0,4, înalt cât ele. Carcasa: tubul (peretele de 2), înaltă cât paletele + 4 (cel puțin 8), cu 2 sau 4 urechi jos,
+  // groase și late cât o grindă, cu gaura de știft din calibrare (cu lamajul, jos și sus) pe grila axului: la k · 8 mm de ax, cu
+  // cel mai mic k la care lamajul lasă 0,8 din peretele carcasei. Pe un ax LEGO trecut prin gaura din mijlocul unei grinzi prinse
+  // cu știfturi de urechi, rotorul stă în mijlocul carcasei.
+  const VENT = { butucMin: 4, butucRap: 0.25, butucH: 8, tRad: 1.2, tVarf: 0.8, radacina: 0.6, plin: 0.25, umplere: 0.85, statii: 28, perete: 2, inelGros: 1.2, inelIn: 0.4, inelH: 2, peste: 4, rest: 0.8, sageata: 0.02 };
+  type VentDef = { piesa?: string; palete?: unknown; diametru?: unknown; joc?: unknown; pas?: unknown; latime?: unknown; sens?: string; gaura?: string; inel?: string; urechi?: unknown };
+  /** Câte laturi are cercul de rază R: săgeata cel mult 0,02 mm, cel puțin 48, multiplu de 8 (urechile cad pe vârfuri). */
+  const laturiCerc = (R: number) => Math.max(N_CERC, 8 * Math.ceil(Math.PI / Math.acos(1 - VENT.sageata / R) / 8));
+  function ventilatorCote(d: VentDef) {
+    const nr = (v: unknown, implicit: number) => (v !== null && v !== undefined && v !== "" && Number.isFinite(+(v as number)) ? +(v as number) : implicit);
+    const z = Math.round(Math.min(12, Math.max(3, nr(d.palete, 7))));
+    const D = Math.min(120, Math.max(24, nr(d.diametru, 40))), Ri = D / 2;
+    const joc = Math.min(2, Math.max(0.3, nr(d.joc, 0.8))), Rt = Ri - joc;
+    const pd = Math.min(1.5, Math.max(0.3, nr(d.pas, 0.8))), pasM = pd * D;
+    const lat = Math.min(60, Math.max(15, nr(d.latime, 45))), urechi = +(d.urechi as number) === 4 ? 4 : 2;
+    const rh = Math.max(VENT.butucMin, Math.round(VENT.butucRap * Rt * 10) / 10), cmax = lat / 100 * Rt;
+    const beta = (r: number) => Math.atan(pasM / (2 * Math.PI * r));
+    // secțiunile, de la 0,4 mm în butuc la vârful paletei (Rb): (s, h) după rotirea cu β în jurul mijlocului corzii, cu punctul de
+    // jos pe masă; hb, cea mai înaltă
+    const sectiuni = (Rb: number) => {
+      const N = VENT.statii, r0 = rh - 0.4;
+      let hb = 0;
+      const statii = Array.from({ length: N + 1 }, (_, i) => {
+        const r = r0 + (Rb - r0) * i / N, x = Math.max(0, (r - rh) / (Rb - rh)), b = beta(r);
+        const g = VENT.radacina + (1 - VENT.radacina) * Math.min(1, x / VENT.plin), t = VENT.tRad - (VENT.tRad - VENT.tVarf) * x;
+        const roteste = (cc: number) => sectiuneElice(cc, t, "placa").map(([u, v]): P2 => [(u - cc / 2) * Math.cos(b) - v * Math.sin(b), (u - cc / 2) * Math.sin(b) + v * Math.cos(b)]);
+        const latime = (sec: P2[]) => Math.max(...sec.map(p => p[0])) - Math.min(...sec.map(p => p[0]));
+        // coarda: cea cerută, dar secțiunea reală (cu grosimea și săgeata ei, rotită cu β) încape în 85 % din pasul dintre palete
+        const U = VENT.umplere * 2 * Math.PI * r / z;
+        let c = Math.max(t, cmax * g), sec = roteste(c);
+        for (let k = 0; k < 40 && latime(sec) > U; k++) { c = Math.max(t, c * U / latime(sec) * 0.995); sec = roteste(c); }
+        const zmin = Math.min(...sec.map(p => p[1]));
+        hb = Math.max(hb, Math.max(...sec.map(p => p[1])) - zmin);
+        return { r, sec: sec.map(([s, h]): P2 => [s, h - zmin]) };
+      });
+      return { statii, hb };
+    };
+    const inel = d.inel === "da", fara = sectiuni(Rt), cu = inel ? sectiuni(Rt - VENT.inelGros + VENT.inelIn) : fara;
+    const zecime = (h: number) => Math.ceil(h * 10 - 1e-9) / 10;
+    // carcasa, din paletele fără inel (aceeași, oricum ar fi rotorul): cât ele + 4, la milimetru în sus, cel puțin 8
+    const Hc = Math.max(VENT.butucH, Math.ceil(fara.hb - 1e-9) + VENT.peste);
+    const k = Math.ceil((Ri + VENT.rest + ef().lamajD / 2) / P.pas - 1e-9);
+    return { z, D, Ri, joc, Rt, pd, P: pasM, lat, urechi, rh, inel, statii: cu.statii, Hh: Math.max(VENT.butucH, zecime(cu.hb)), Hinel: Math.max(VENT.inelH, zecime(cu.hb)), Hc, k,
+      bRad: beta(rh), bVarf: beta(Rt), consola: 0.2 / Math.tan(beta(Rt)) };
+  }
+  function carcasaVentilator(q: ReturnType<typeof ventilatorCote>): Tri[] {
+    // conturul de jos: tubul și urechile, unite (în sens trigonometric), cu golul tubului și găurile urechilor; în trei straturi
+    // (lamajul, gaura, lamajul), ca grinzile. Deasupra urechilor, doar tubul, cu canalul lamajului tăiat în el (un știft intră și
+    // de sus, iar gulerul lui are loc): lamajul trece de peretele de afară și lasă 0,8 mm spre interior
+    const e = ef(), R2 = q.Ri + VENT.perete, n = laturiCerc(R2), w = P.grinda_lat / 2, g = P.grinda_groasa, h = P.lamaj_h, rl = e.lamajD / 2;
+    const xh = P.pas * q.k, xc = Math.sqrt(R2 * R2 - w * w), a0 = Math.asin(w / R2), u = q.urechi;
+    // unde taie cercul lamajului peretele de afară: (xi, ±yi), la unghiul ai față de ureche (doar dacă lamajul ajunge la tub;
+    // altfel, ca la Ø41, cu gaura la 32 mm, tubul de deasupra rămâne întreg)
+    const taie = xh - rl < R2 - 1e-6, xi = (R2 * R2 - rl * rl + xh * xh) / (2 * xh), yi = taie ? Math.sqrt(R2 * R2 - xi * xi) : 0, ai = Math.atan2(yi, xi);
+    const rot = (f: number, [x, y]: P2): P2 => [x * Math.cos(f) - y * Math.sin(f), x * Math.sin(f) + y * Math.cos(f)];
+    const arc = (de: number, pana: number): P2[] => {
+      // vârfurile cercului de afară cu unghiul strict între cele două (în [0, 2π), crescător)
+      const o: P2[] = [];
+      for (let i = 0; i < n; i++) { const a = 2 * Math.PI * i / n; if (a > de + 1e-9 && a < pana - 1e-9) o.push([R2 * Math.cos(a), R2 * Math.sin(a)]); }
+      return o;
+    };
+    const ext: P2[] = [], tub: P2[] = [], centre: P2[] = [];
+    for (let j = 0; j < u; j++) {
+      const f = 2 * Math.PI * j / u, c = rot(f, [xh, 0]), lam = cerc(c[0], c[1], rl);
+      ext.push(rot(f, [xc, -w]), rot(f, [xh, -w]));
+      for (let s = 1; s < 12; s++) { const a = -Math.PI / 2 + Math.PI * s / 12; ext.push(rot(f, [xh + w * Math.cos(a), w * Math.sin(a)])); }
+      ext.push(rot(f, [xh, w]), rot(f, [xc, w]), ...arc(f + a0, f + 2 * Math.PI / u - a0));
+      // canalul: vârfurile lamajului din tub, de jos în sus (unghiul față de centrul lui, descrescător, în jurul lui π)
+      const rel = (i: number) => { const r = 2 * Math.PI * i / lam.length - f; return r - 2 * Math.PI * Math.floor(r / (2 * Math.PI)); };
+      const inTub = lam.map((p, i) => [p, rel(i)] as const).filter(([p]) => Math.hypot(p[0], p[1]) < R2 - 1e-9).sort((x, y) => y[1] - x[1]);
+      if (taie) tub.push(rot(f, [xi, -yi]), ...inTub.map(([p]) => p as P2), rot(f, [xi, yi]));
+      tub.push(...arc(f + (taie ? ai : -1e-6), f + 2 * Math.PI / u - (taie ? ai : 1e-6)));
+      centre.push(c);
+    }
+    const gol = cerc(0, 0, q.Ri, n), gauri = (diam: number) => [gol, ...centre.map(([x, y]) => cerc(x, y, diam / 2))];
+    return [...prismaGauri(ext, gauri(e.lamajD), 0, h), ...prismaGauri(ext, gauri(e.gauraD), h - 0.01, g - h + 0.01),
+      ...prismaGauri(ext, gauri(e.lamajD), g - h, g), ...prismaGauri(tub, [gol], g - 0.01, q.Hc)];
+  }
+  function ventilator(d: VentDef): Corp {
+    const avert: string[] = [], q = ventilatorCote(d);
+    const dat = (v: unknown) => v !== null && v !== undefined && v !== "" && Number.isFinite(+(v as number));
+    if (dat(d.palete) && q.z !== +(d.palete as number)) avert.push(tr`Un ventilator are între 3 și 12 palete: l-am făcut cu ${q.z}.`);
+    if (dat(d.diametru) && q.D !== +(d.diametru as number)) avert.push(tr`Carcasa unui ventilator are între 24 și 120 mm în interior: am făcut-o de ${q.D} mm.`);
+    if (d.piesa === "carcasa") return { tri: carcasaVentilator(q), avert };
+    const tri = paleteElice(q.statii, q.z, d.sens === "stanga" ? -1 : 1, true);
+    tri.push(...butucElice(q.rh, q.Hh, d.gaura));
+    if (q.inel) { const n = laturiCerc(q.Rt); tri.push(...prismaGauri(cerc(0, 0, q.Rt, n), [cerc(0, 0, q.Rt - VENT.inelGros, n)], 0, q.Hinel)); }
+    return { tri, avert };
+  }
+
   function semne(n: number, x0: number, y0: number, z0: number, pas = 2.4) {
     // n cuburi mici de 1,2 mm, ca sa recunosti varianta
     const tri: Tri[] = [];
@@ -2136,7 +2235,7 @@ var Lego = (function (glob: typeof globalThis) {
   }
 
   // ---------------------------------------------------------------------------------------------- piesa dupa definitie
-  const TIPURI = { caramida, lateral, panta, pantaInversa, pana, rotund, grinda, caramidaTechnic, ax, stiftTechnic, bucsa, suport, clema, maner, bara, bila, cupa, rotita, roata, fulie, conica, coroana, conicaDubla, senila, elice, eliceBarca, dinCvs2 };
+  const TIPURI = { caramida, lateral, panta, pantaInversa, pana, rotund, grinda, caramidaTechnic, ax, stiftTechnic, bucsa, suport, clema, maner, bara, bila, cupa, rotita, roata, fulie, conica, coroana, conicaDubla, senila, elice, eliceBarca, ventilator, dinCvs2 };
   function construieste(def: DefPiesa) {
     const f = TIPURI[def.tip];
     if (!f) throw new Error("tip necunoscut: " + def.tip);
@@ -2270,6 +2369,8 @@ var Lego = (function (glob: typeof globalThis) {
     eliceCote: (d: EliceDef) => { const q = eliceCote(d); return { z: q.z, D: q.D, P: q.P, pd: q.pd, lat: q.lat, plata: q.plata, bRad: q.bRad, bVarf: q.bVarf, consola: q.consola }; },
     // elicea de barcă (ADR 0282): cotele din parametri (și butucul, unghiurile, consola la vârf, cât din disc acoperă paletele)
     eliceBarcaCote: (d: BarcaDef) => { const q = eliceBarcaCote(d); return { z: q.z, D: q.D, P: q.P, pd: q.pd, lat: q.lat, inc: q.inc, rh: q.rh, Hh: q.Hh, bRad: q.bRad, bVarf: q.bVarf, consola: q.consola, acoperire: q.acoperire }; },
+    // ventilatorul cu carcasă (ADR 0282): cotele din parametri (vârful paletelor, butucul, inelul, carcasa și urechile ei)
+    ventilatorCote: (d: VentDef) => { const q = ventilatorCote(d); return { z: q.z, D: q.D, joc: q.joc, Rt: q.Rt, pd: q.pd, P: q.P, lat: q.lat, rh: q.rh, Hh: q.Hh, Hinel: q.Hinel, Hc: q.Hc, k: q.k, urechi: q.urechi, bRad: q.bRad, bVarf: q.bVarf, consola: q.consola }; },
     cureaua: (a: FulieDef, b: FulieDef, C: unknown) => {
       const p = fulieCote(a), q = fulieCote(b), c = +(C as number), minim = Math.ceil((p.R + q.R + 0.5) * 10 - 1e-6) / 10;
       return { lungime: lungimeCurea(p.fund, q.fund, c), minim, atinge: !(c >= minim - 1e-9) };
