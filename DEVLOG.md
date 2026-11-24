@@ -13900,17 +13900,28 @@ două rânduri suprapuse)
   sub cursor rămâne pe loc). Patru otrăvuri din `11.1c.py`, mutate pe codul nou, prinse.
 - **Mărimea:** în porțile lotului.
 
-## 2026-11-24 — Sesiunea principală în cloud: a douăzeci și treia unire (11.1↑d, rândul comenzilor foii; proba extensiilor reparată) (Model: Claude Fable 5.2)
+## 2026-11-24 — Sesiunea principală în cloud: a douăzeci și treia unire (11.1↑d, rândul comenzilor foii; proba extensiilor reparată; 3.At, cursa din fila Setări) (Model: Claude Fable 5.2)
 
 **Prompt:** „si trebuie sa reparam si asta” (trei capturi ale rândului comenzilor foii); regula „un CI roșu pe `main` e
 incidentul numărul unu” (completul loturilor 19–21, roșu la o probă a extensiilor)
 **Started:** 24.11, 19:35. **Completed:** unirea în `main`, 24.11, @@ORA25@@; publicarea pe test, la rândul ei.
 
-- **Lotul, pe `unire-2411aa`** (peste lotul 24): reparația probei extensiilor (`b08898b1`, în `13d9bcad`) și 11.1↑d
-  (`bff5fbcc`, în `001b6325`); nota liniei bibliotecii (`945a9320`, doar documente). Ciocnirile: DEVLOG și lecțiile
+- **Lotul, pe `unire-2411aa`** (peste lotul 24): reparația probei extensiilor (`b08898b1`, în `13d9bcad`), 11.1↑d
+  (`bff5fbcc`, în `001b6325`) și 3.At (`cadac6c3`); nota liniei bibliotecii (`945a9320`, doar documente). Ciocnirile: DEVLOG și lecțiile
   din `docs/linii/principala.md`. Local, pe arborele unit: tipurile, regulile de import (21), traducerile, catalogul
   controalelor și biblioteca extensiilor, la zi.
-- **Porțile, în CI:** completul lotului pe `001b6325` @@D25@@
+- **Primul complet al lotului** (45449914076, pe `001b6325`), roșu la o singură probă, pe emulatoare:
+  `utilizatori.emulator.spec.ts:325`, „setările utilizării”, la „lot = 61” (butonul Salvează, activ în loc de oprit);
+  restul verde (unit 10 300 / 0, e2e 785 / 785, funcțiile 136 / 136, paginile 56 din 57). Fără legătură cu lotul.
+- **Cauza, la rădăcină (3.At, `cadac6c3`):** în fila Setări, mesajul salvării apărea la răspunsul callable-ului, iar
+  formularul se remonta la citirea de după (`key={citiri}`), cu valorile citite, peste ce se scrisese între ele. În
+  CI, citirea a întârziat: proba a scris „61” după „Nimic schimbat.”, apoi formularul s-a umplut din nou cu 5. Aceeași
+  cursă era în toate cele trei formulare (conturile, utilizarea, răspunsurile rapide). Reparația: mesajul e ținut până
+  sosește citirea (`useMesajDupaCitire`, `src/admin/setari/dupaCitire.ts`), bună sau căzută; până atunci formularul e
+  ocupat. Probele, pe emulatoare: citirea întârziată anume cu 1,5 s (roșie înaintea reparației: la mesaj, citirea nu
+  sosise; verde după) și citirea căzută (mesajul apare, iar după „Reîncarcă” formularul nu rămâne ocupat); cele 11
+  probe ale fișierelor `utilizatori` și `rapide`, verzi. Otrăvurile (`test/otravuri/3.At.py`): @@O25@@.
+- **Porțile, în CI:** @@D25@@
 - **Loturile dinainte:** loturile 19–22 sunt pe test din 20:32 (`62569bb2`; completul pe `main` 45445300697, verde;
   publicarea 45457898832; adresa spune `62569bb25907`, proba de fum, bună). Lanțul de publicare pornit în fundal s-a
   oprit la limita lui de timp după ce pornise publicarea; a mers mai departe în GitHub. Loturile 23 (`9bbb1d58`) și 24

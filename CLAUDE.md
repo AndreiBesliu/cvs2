@@ -1434,6 +1434,12 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   filelor stau într-un sertar (☰ din antet sau „Mai mult”; îl închide o filă aleasă sau Escape); un tichet se citește
   și primește răspuns pe telefon, iar proiectul atașat se descarcă doar de pe calculator. Nimic pe server. **Cu ea,
   linia adminului e încheiată** (ADR 0260: A.1–A.7; ADR 0262: A.8–A.11); o felie nouă pornește la cuvântul owner-ului.
+  **3.At (fila Setări din `/admin`: mesajul salvării după citirea de după)** gata pe 24.11, scrisă de sesiunea
+  principală (linia adminului fiind încheiată), unită în `main` pe 24.11 (`cadac6c3`): după „Salvează”, cele trei
+  formulare ale Setărilor (conturile, utilizarea aplicației, răspunsurile rapide) arată mesajul abia când sosește
+  citirea de după, din care formularul se umple din nou; până atunci rămân ocupate. **Un formular al adminului care se
+  umple din nou din citirea de după salvare își ține mesajul până la ea (`useMesajDupaCitire`,
+  `src/admin/setari/dupaCitire.ts`), iar o probă care scrie într-un formular după o salvare așteaptă întâi mesajul.**
   **`/admin` 138,2 / 200.**
   **Riglele, ghidajele, lipirea și alinierea (ADR 0050, aduse din etapa 6)** gata pe 20.10: ghidajele pe foaie
   (`foaie.ghidaje`, fără schemă nouă), lipirea pură (`src/geom/lipire.ts`), alinierea (`src/geom/aliniere.ts`), totul la
@@ -1565,8 +1571,9 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
-- 24.11.2026, seara (a douăzeci și treia unire din cloud): **11.1↑d (rândul comenzilor foii nu trece de foaia lui) și
-  reparația unei probe instabile a extensiilor, unite în `main`**, în lot (sesiunea principală, ramura `unire-2411aa`,
+- 24.11.2026, seara (a douăzeci și treia unire din cloud): **11.1↑d (rândul comenzilor foii nu trece de foaia lui),
+  reparația unei probe instabile a extensiilor și o cursă reparată în fila Setări din `/admin` (3.At), unite în
+  `main`**, în lot (sesiunea principală, ramura `unire-2411aa`,
   peste lotul 24). **11.1↑d** (scrisă de sesiunea principală, pe `wip/11.1d-rand-foaie`, `bff5fbcc`, la cererea
   owner-ului din 24.11, cu trei capturi: „si trebuie sa reparam si asta”; ADR 0210, „Felia 11.1↑d”), unită în
   `001b6325`: cu pânza micșorată, rândul de șapte butoane era mai lat decât foaia lui, ieșea peste foaia vecină, iar
@@ -1578,8 +1585,14 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   la buton. Local nu s-a reprodus (150 din 150), deci a fost provocată: o probă nouă înghite primul clic, o dată;
   ajutorul vechi cade, cel nou (`clicCareInchideCadrul`, care repetă clicul cât cadrul e încă acolo) trece; 168 / 168
   pe fișierele extensiilor, iar otrava (gazda ignoră `host.inchide()`) e prinsă de toate cele trei probe care îl
-  folosesc. Documentul rămâne v27; nimic pe server. Ciocnirile, doar în DEVLOG și în lecțiile din
-  `docs/linii/principala.md`. Porțile lotului, în CI, pe `001b6325` @@P25@@
+  folosesc. **3.At** (`cadac6c3`, scrisă de sesiunea principală, linia adminului fiind încheiată): primul complet al
+  lotului (pe `001b6325`) a căzut la o singură probă de pe emulatoare, fără legătură cu lotul, „setările utilizării”
+  („lot = 61”: butonul Salvează, activ în loc de oprit). Cauza, o cursă adevărată: după „Salvează”, mesajul apărea la
+  răspunsul salvării, iar formularul se umplea din nou la citirea de după, peste ce se scrisese între ele. Acum cele
+  trei formulare ale filei Setări țin mesajul până la citire (`useMesajDupaCitire`, `src/admin/setari/dupaCitire.ts`);
+  două probe noi (citirea întârziată anume, care cădea înaintea reparației; citirea căzută); otrăvurile @@O25@@.
+  Documentul rămâne v27; nimic pe server. Ciocnirile, doar în DEVLOG și în lecțiile din `docs/linii/principala.md`.
+  Porțile lotului, în CI, @@P25@@
 - 24.11.2026, seara (a douăzeci și doua unire din cloud): **fereastra „Exportă G-code”, refăcută (28.8↑a–g), și proba
   repornirii extensiei (3.Xk) unite în `main`**, în lot (sesiunea principală, ramura `unire-2411y`, peste lotul 23), la
   „da, uneste fereastra exportului cand e verde si sa imi spui cand pot sa o arhivez” al owner-ului (în sesiunea
