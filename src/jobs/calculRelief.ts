@@ -78,11 +78,48 @@ async function decodeaza(b: Blob): Promise<PixeliRelief | RefuzRelief> {
     bmp.close();
     return { ok: false, cod: 'prea-mare', detaliu };
   }
+  const px = pixeliExacti(bmp) ?? pixeliPrinPanza(bmp);
+  bmp.close();
+  return px;
+}
+
+/**
+ * Pixelii exacți ai imaginii, printr-o textură WebGL2 încărcată fără premultiplicare și fără conversie de culoare, citită
+ * înapoi (`readPixels`): pânza 2D ține culorile premultiplicate cu alfa, deci un pixel semitransparent s-ar întoarce rotunjit.
+ * Nu e un calcul pe placa video (ADR 0011): doar despachetarea pixelilor. Null fără WebGL2 (ori peste textura maximă).
+ */
+function pixeliExacti(bmp: ImageBitmap): PixeliRelief | null {
+  const gl = new OffscreenCanvas(1, 1).getContext('webgl2', { premultipliedAlpha: false, antialias: false });
+  if (!gl) return null;
+  const w = bmp.width, h = bmp.height;
+  if (w > gl.getParameter(gl.MAX_TEXTURE_SIZE) || h > gl.getParameter(gl.MAX_TEXTURE_SIZE)) return null;
+  const tex = gl.createTexture(), fb = gl.createFramebuffer();
+  try {
+    gl.bindTexture(gl.TEXTURE_2D, tex);
+    gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false);
+    gl.pixelStorei(gl.UNPACK_COLORSPACE_CONVERSION_WEBGL, gl.NONE);
+    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, w, h, 0, gl.RGBA, gl.UNSIGNED_BYTE, bmp);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, fb);
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, tex, 0);
+    if (gl.checkFramebufferStatus(gl.FRAMEBUFFER) !== gl.FRAMEBUFFER_COMPLETE) return null;
+    const rgba = new Uint8Array(w * h * 4);
+    gl.readPixels(0, 0, w, h, gl.RGBA, gl.UNSIGNED_BYTE, rgba);
+    if (gl.getError() !== gl.NO_ERROR) return null;
+    return { latime: w, inaltime: h, rgba };
+  } finally {
+    gl.deleteFramebuffer(fb);
+    gl.deleteTexture(tex);
+    gl.getExtension('WEBGL_lose_context')?.loseContext();
+  }
+}
+
+/** Rezerva: pixelii prin pânza 2D (exacți pe pixelii opaci; un pixel semitransparent poate ieși rotunjit). */
+function pixeliPrinPanza(bmp: ImageBitmap): PixeliRelief {
   const c = new OffscreenCanvas(bmp.width, bmp.height).getContext('2d', { willReadFrequently: true });
   if (!c) throw new Error('fără context 2D');
   c.drawImage(bmp, 0, 0);
   const d = c.getImageData(0, 0, bmp.width, bmp.height);
-  bmp.close();
   return { latime: d.width, inaltime: d.height, rgba: d.data };
 }
 
