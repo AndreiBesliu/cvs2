@@ -13306,3 +13306,20 @@ admin, care apare daca esti logat ca admin”
 - **Loturile dinainte:** al șaisprezecelea, pe test din 15:35 (`fdce5f1b`; funcția `freze` creată, indexurile și
   regulile publicate; proba de fum, bună; scriptul de publicare, reluat o dată după timpul lui de așteptare); al
   șaptesprezecelea, cu limita rapidului (`647cebb1`): completul pe `main` (45407064678) rula la unire.
+
+## 2026-11-24 — 16.A↑h-3: catalogul de freze (Model: Claude Opus 5.5)
+
+**Prompt:** felia a treia din ADR 0302, în ordinea acceptată de owner („Da, 1a–5a”: fereastra ca listă, grupurile, apoi
+catalogul). **Started:** 24.11, 14:42.
+
+- **Modelul** (`ad5f11ab`): catalogul (`src/model/catalogFreze.ts`), 69 de freze din tabelul ADR 0302 §1, cu valorile de
+  pornire din diametru și nota țolilor; „Pune în frezele mele” (`cuDinCatalog`, în `src/model/dinCatalog.ts`, fără datele
+  catalogului): aceeași geometrie nu intră de două ori, numele și T-ul liber, plafonul; depozitul, într-o singură scriere.
+- **Fereastra** (`c8ef39f1`): „Catalogul (69)” sub bibliotecă, strâns la început; grupurile, „Pune toate”, „Pune tot ce
+  vezi”; fișa unei freze din catalog, cu „E deja în frezele mele.”; căutarea și filtrul aleg și din el; manualul (ro, en).
+- **Probele** (întâi): unitare noi 7, în Edge 1 (`freze.spec.ts` 15 / 15). **Otrăvurile** (`test/otravuri/16.A-h3.py`):
+  23 / 23.
+- **Mărimea:** pornirea neschimbată (110,2 kB; cu ușa 114,8, cu Atelierul 115,1 / 120), totalul 821,1 → 822,6 / 900. Nimic
+  pe server; documentul nu se schimbă. 16.A↑h-1 și 16.A↑h-2 sunt în lotul 21 al sesiunii principale. **Completed:** 24.11,
+  15:05.
+
