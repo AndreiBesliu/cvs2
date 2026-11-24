@@ -13718,6 +13718,23 @@ la ordinul în vigoare „unește ce se poate”
   reparată (`29ef7e44`): completul pe `main` (45417561144) rula la unire; cel dinainte, pe `647cebb1`, căzuse la proba
   instabilă a extensiilor.
 
+## 2026-11-24 — Felia 3.Xk: proba repornirii cerute de extensie, fără ceasul adevărat (doar probe) (sesiune cloud)
+
+**Prompt:** hotărâtă cu sesiunea principală („Rândul 235: da, fă-o ca felie mică, doar probe, după unirea lui 3.Xj, pe PR
+separat […] Ține de menținerea CI-ului verde, nu cere cuvântul owner-ului”). **Started:** 24.11, 17:40. **Completed:**
+24.11, 18:10.
+
+- **Ce cădea:** „două cereri imediat după” (`extensii.lucru.spec.ts:222`): sub încărcare, clicurile probei ajungeau la
+  cadrul refăcut și după cele 2 s ale răririi, iar prima repornea pe loc (2 din 120 pe zece lucrători, la sesiunea
+  principală; în containerul liniei, 0 din 450).
+- **Reparația (doar probe):** ceasul paginii e al probei (`page.clock`), oprit înaintea primei cereri și mutat cu
+  `runFor`: la 1 999 ms nimic, la 2 000 o singură repornire; fără așteptările de 2,5 s (proba ține ~7 s, nu ~10).
+- **Dovada:** cu o întârziere de 2,1 s pusă anume înaintea celor două clicuri, proba veche cade 5 din 5 („Deschideri: 4”
+  în loc de 2), cea nouă trece 5 din 5. Repetată de 300 de ori pe doisprezece lucrători: 300 trecute.
+- **Otrăvurile** 8 / 8, în clonă (`test/otravuri/3.Xk.py`): 7 prin e2e; a opta (cererile dese neadunate) nu se vede din
+  browser (două reporniri în aceeași clipă sunt o singură refacere a cadrului) și e prinsă de proba unitară.
+- Aplicația nu se schimbă: nimic în `src/`.
+
 ## 2026-11-24 — Sesiunea principală în cloud: a douăzecea unire (3.Xj, căutarea și categoriile din bibliotecă; oracolul rampelor împărțit) (Model: Claude Fable 5.2)
 
 **Prompt:** raportul liniei bibliotecii („3.Xj e gata de unit”, PR-ul #24), la ordinul în vigoare „unește ce se poate”;
@@ -13830,4 +13847,42 @@ poate”; „ok, imparte si cele doua teste grele ramase”
 - **Loturile dinainte:** pe test e tot `29ef7e44` (loturile până la 18). Publicarea loturilor 19–21 (`7312d685`) a căzut la o probă
   instabilă a extensiilor (completul pe `main` 45436221341: `extensii.spec.ts:135`, clicul pe „Închide” din cadru,
   pierdut; reparată pe `unire-2411z`, intră cu lotul următor). Lotul 22 (`62569bb2`) le cuprinde: completul lui pe
+  `main` (45445300697) rula la unire.
+
+## 2026-11-24 — ADR 0233 acceptat („da, 1a–5a”); 3.Xk cu `main` adus (lotul 22), pe PR-ul ei (sesiune cloud)
+
+**Prompt:** „da, 1a–5a” (la cele cinci întrebări din ADR 0233); mesajul sesiunii principale din 24.11, 18:30 („Lotul 22
+e în `main` […] Acum poți aduce `main` în ramură și deschide PR-ul lui 3.Xk”)
+**Started:** 24.11, 18:30. **Completed:** documentele și PR-ul, 24.11, 18:45; rapidul și completul, în CI.
+
+- **ADR 0233, acceptat:** rămâne ce e implementat la toate cinci (rafturile, unde stă Easy 3Draw, la vedere și cu o
+  singură extensie, cel mult trei rafturi, cât de îngăduitoare e căutarea). Scris în ADR („Starea”, „Întrebările”), în
+  indexul ADR, în coada owner-ului din fișa etapei 3, în nota liniei și în `CLAUDE.md` (unde cele două paragrafe ale lui
+  3.Xj, al sesiunii principale și al liniei, au rămas unul singur).
+- **`main` (`62569bb`, lotul 22) adus în ramură** (`abd0dfe`): ciocnirea, doar în DEVLOG. Față de `main`, ramura are
+  acum doar 3.Xk: proba din `test/e2e/extensii.lucru.spec.ts`, lista de otrăvuri `test/otravuri/3.Xk.py` și documente.
+- **PR-ul `AndreiBesliu/cvs2#24`**, refolosit pentru 3.Xk (titlul și descrierea, schimbate); o unește sesiunea
+  principală, la raport.
+
+## 2026-11-24 — Sesiunea principală în cloud: a douăzeci și doua unire (28.8↑a–g, fereastra „Exportă G-code”, refăcută; 3.Xk) (Model: Claude Fable 5.2)
+
+**Prompt:** „da, uneste fereastra exportului cand e verde si sa imi spui cand pot sa o arhivez”; raportul liniei
+bibliotecii („3.Xk e gata de unit”), la ordinul în vigoare „unește ce se poate”
+**Started:** 24.11, 19:00. **Completed:** unirea în `main`, 24.11, 20:01; publicarea pe test, cu lotul 25.
+
+- **Lotul, pe `unire-2411y`** (peste lotul 23): fereastra exportului (`4ee623d3`, în `c4ca5ec2`; nota liniei,
+  `ef8a6dd6`, adusă după) și 3.Xk (`23d9a1b1`, în `373699e6`). Ciocnirile: DEVLOG, traducerile roadmap-ului (ambele
+  părți, după cheie), catalogul controalelor (scris din nou). Local, pe arborele unit: tipurile, regulile de import,
+  traducerile, catalogul, biblioteca extensiilor la zi.
+- **Porțile, în CI:** completul lotului pe `8b218d47` (45443271357, verde la prima trecere, 60 min): unit 10 297 / 0
+  (12 sărite, pe Linux), e2e 781 / 781, funcțiile pe emulatoare 136 / 136, paginile 57 / 57; rapidul, verde pe
+  `8b218d47` (45443272195, feliile între 2:21 și 7:07); completele liniilor, verzi: `4ee623d3` (45437037510),
+  `23d9a1b1` (45438616103). Pornirea 110,4 kB (plafonul 120; cu ușa 115,1, cu Atelierul 115,4), totalul 856,8 / 900 kB
+  (lotul 23: 840,5; fereastra exportului, +16,3), `/admin` 138,2 / 200, contul 30,3 / 32. Nimic pe server.
+- **Documentele:** decizia în `CLAUDE.md`, cu paragraful de stare al ferestrei exportului (fișa, `GRUP_CAMP`,
+  selectorii noi ai probelor); indexul liniilor (exportul: încheiată, cu nota în `main`); starea din
+  `docs/linii/principala.md`.
+- **Pentru owner:** sesiunea liniei exportului se poate arhiva (din ADR 0290 nu rămâne nimic; nicio întrebare
+  deschisă); ramura `wip/28.8-export` de pe `origin` intră în lista de șters; canalul `export` expiră singur.
+- **Loturile dinainte:** lotul 23, în `main` din 20:00 (`9bbb1d58`). Pe test e tot `29ef7e44`; completul lotului 22 pe
   `main` (45445300697) rula la unire.

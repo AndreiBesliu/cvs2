@@ -4,7 +4,8 @@
   fereastra (aceleași câmpuri, aceleași valori, același program).
 - **Ramura:** `wip/28.8-export`, făcută din `origin/main` `d6fd5d68` pe 23.11.2026.
 - **ADR-urile:** 0290–0299 (libere pe 23.11). **Canalul:** `export` al instanței de test.
-- **Feliile:** 28.8↑a–f, în etapa 28, adusă în etapa 3, fără mașină.
+- **Feliile:** 28.8↑a–g, în etapa 28, adusă în etapa 3, fără mașină. **Linia e încheiată** (24.11): toate feliile ADR 0290,
+  plus 28.8↑g, cerută de owner după încercarea pe canal.
 
 ## Cererea
 
@@ -63,6 +64,14 @@ vreau ca ficare setare sa fie insotita de o ilustratie sugestiva, ca sa ajute us
 - **24.11: owner-ul a încercat fereastra pe canal** („e ok”) și a cerut închiderea la Esc și la clic în afară: **28.8↑g gata**
   (Esc ca Închide, nu și cât fereastra e ascunsă de modul urechilor; clicul pe fundal doar cu apăsarea și ridicarea afară),
   pe ramură; neunită. Otrăvurile 6 / 7 (E03 echivalentă azi).
+- **24.11: unirea.** Owner-ul, aici: „ok, cand e verde fa unirea”; în sesiunea principală: „da, uneste fereastra exportului
+  cand e verde si sa imi spui cand pot sa o arhivez”. Commit-ul de unit e `4ee623d3` (28.8↑a–g, cu `main` `7312d685` adus,
+  adică loturile 19–21). Completul CI, verde pe el: unit 10 240 / 0 (12 sărite), e2e 756 / 756, funcțiile pe emulatoare
+  136 / 136, paginile 57 / 57. Pornirea 110,2 kB (cu ușa 114,9, cu Atelierul 115,2 / 120), totalul 846,8 / 900 (linia, +16,3
+  kB față de `main`), `/admin` 138,2. **Unirea o face sesiunea principală,** în lotul 24 (`unire-2411y`, `c4ca5ec2`), peste
+  lotul 23; ciocnirile au fost doar în traducerile roadmap-ului (27 de chei noi ale liniei) și în catalogul controalelor
+  (scris din nou). După unire, sesiunea liniei se poate arhiva, iar ramura `wip/28.8-export` de pe `origin` intră în lista de
+  șters a owner-ului.
 
 ## Ce s-a găsit (23.11)
 
@@ -155,5 +164,17 @@ vreau ca ficare setare sa fie insotita de o ilustratie sugestiva, ca sa ajute us
 
 ## Ce rămâne
 
-- 28.8↑b–f, fiecare cu proba scrisă înainte, e2e, privirea pe fereastra reală, otrăvurile, documentele și canalul `export`.
-- Unirea în `main`, la cuvântul owner-ului (de sesiunea principală), după ce încearcă fereastra pe canal.
+Din ADR 0290, nimic: toate feliile (a–f) și 28.8↑g sunt gata. Nicio întrebare deschisă la owner. Pentru alte linii, mai târziu:
+
+- **Clasicul (28.2↑) și Pas cu pas (28.4↑)** iau fișa operației (`FisaOperatie`, cu `ContextFisa`) în panoul lor, cu starea
+  lor, fără s-o copieze (ADR 0290, „Cu canvas-ul aranjamentelor”): la Clasic, în locul panoului din dreapta, cu Simularea filă;
+  la Pas cu pas, ca panou al pasului 2, iar pasul 5 ia „Foaia și originea” și „Mașina și fișierul”.
+- **Ce desenează canvas-ul și nu există azi** (Z sigur editabil, începutul G-code-ului la vedere): felii ale lor, la cuvântul
+  owner-ului; linia nu le-a adus.
+- **Frezele din bibliotecă pe rândurile exportului (16.A↑b-3, linia frezelor)** vin peste fereastra nouă: câmpul nou stă în
+  fișă, cu grupul lui în `GRUP_CAMP`, explicația (`….titlu`, ambele limbi) și locul în proba privirii; ce îi trebuie fișei
+  intră în `ContextFisa`; catalogul controalelor se scrie din nou. Capcanele de mai sus sunt și ale ei.
+- **Inventarul din ADR 0290** (câmpurile și condițiile lor) e ținut de `export.grupuri.test.ts`, care citește `data-camp` din
+  `DialogExport.tsx` și `FisaOperatie.tsx`: un câmp nou fără grup cade acolo.
+- **Proba „adâncimea”** (`export.desene.spec.ts:48`): cauza celor câteva căderi nu e dovedită (vezi Capcanele); dacă mai cade,
+  se rulează singură, cu `--workers=1`, ca să se vadă așteptarea care expiră.
