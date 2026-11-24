@@ -1288,8 +1288,14 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   lista albă și scrie fiecare citire în audit; **Desparte utilizarea de cont…** (cine administrează conturile, la
   cererea omului, printr-un tichet) pune un pseudonim aleator pe tot ce s-a strâns și pe ce vine, iar legătura cont →
   pseudonim stă doar pe server (`utilizareDisociate`, fără regulă, deci închisă oricui; nu se desface din aplicație).
-  A.11 e încheiată; urmează A.7 (adminul pe telefon). **Catalogul are 13 permisiuni** (proba matricei rolurilor le
-  numără). **`/admin` 137,9 / 200, contul 30,1 / 32; pornirea, neschimbată de aceste felii.**
+  A.11 e încheiată. **Catalogul are 13 permisiuni** (proba matricei rolurilor le numără). **`/admin` 137,9 / 200,
+  contul 30,1 / 32; pornirea, neschimbată de aceste felii.**
+  **A.7 (adminul pe telefon, ADR 0260 §7)** gata pe 24.11, unită în `main` pe 24.11 (`458befb9`): sub 640 px, `/admin`
+  are jos o bară cu Azi, Erori și Tichete (doar cele pe care rolul le vede, cu numerele lor) și „Mai mult”, iar restul
+  filelor stau într-un sertar (☰ din antet sau „Mai mult”; îl închide o filă aleasă sau Escape); un tichet se citește
+  și primește răspuns pe telefon, iar proiectul atașat se descarcă doar de pe calculator. Nimic pe server. **Cu ea,
+  linia adminului e încheiată** (ADR 0260: A.1–A.7; ADR 0262: A.8–A.11); o felie nouă pornește la cuvântul owner-ului.
+  **`/admin` 138,2 / 200.**
   **Riglele, ghidajele, lipirea și alinierea (ADR 0050, aduse din etapa 6)** gata pe 20.10: ghidajele pe foaie
   (`foaie.ghidaje`, fără schemă nouă), lipirea pură (`src/geom/lipire.ts`), alinierea (`src/geom/aliniere.ts`), totul la
   cerere după prima randare (`src/app/Editare.tsx`); pornirea 99,4 / 100 kB cu ușa (foarte strâmt). **Uneltele de desen
