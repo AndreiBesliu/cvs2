@@ -13125,3 +13125,30 @@ sesiunea cloud a liniei cotelor. **Completed:** 24.11, 13:35 (în container; CI-
   aceleași VOID-uri ca pe `main`.
 - **Capcane:** am scris întâi orele în UTC; proiectul scrie ora României (corectate). „Duplică foaia” copiază și cotele, cu
   legăturile foii vechi (pe foaia nouă ies dezlegate): de hotărât la a-2.
+
+## 2026-11-24 — Sesiunea principală în cloud: a șaptesprezecea unire (reparația căderii de noapte; 10.4↑a-1, cotele; 3.Tt, elicele) (Model: Claude Fable 5.2)
+
+**Prompt:** (revenire programată: completul de noapte); rapoartele liniilor cotelor și elicelor, cu cuvântul owner-ului
+din sesiunea elicelor: „cand e verde fa unirea”
+**Started:** 24.11, 14:10. **Completed:** unirea în `main`, 24.11, 15:06; publicarea pe test, la rândul ei.
+
+- **Incidentul numărul unu:** completul de noapte programat, roșu pe `main` (`4ef990f5`, 45380945393), la o singură
+  probă de pe emulatoare (`utilizare.emulator.spec.ts:233`, 54 trecute): evenimentele mașinii erau „legata, terminata,
+  deconectata”, fără „pornita”. Cauza: `evenimenteMasina` compară două stări văzute la rând, iar un program de câteva
+  linii pe mașina simulată a trecut de la „pregătit” la „terminat” între două redesenări. Reprodusă într-o probă unitară
+  (`sir(legata, terminat)`), apoi reparată în `src/app/utilizareMasina.ts` (`bae574a8`): de la „legată” sau „gata”, o
+  pauză, o oprire, capătul sau întreruperea spun întâi pornirea. Patru otrăvuri noi în `test/otravuri/A.8d.py`
+  (M08–M11), prinse. Linia bibliotecii a găsit aceeași cauză și a scris aici.
+- **Lotul, pe `unire-2411m`** (din `fdce5f1b`): reparația; cotele, commit-ul raportat `47be5f42`, în `f25249cf`
+  (linia merge mai departe cu a-2); elicele, `ba09a10b`, în `d57ca962`; nota liniei bibliotecii (`e0922fc3`, doar
+  documente). Ciocnirile: DEVLOG și un rând din registrul otrăvurilor. Local: tipurile (și ale funcțiilor), regulile
+  de import (21, cu `cam-fara-cote`), traducerile, catalogul, biblioteca extensiilor la zi (Easy 3Draw 18.23.0).
+- **Porțile, în CI:** completul lotului pe `d57ca962` (45391345265, verde la prima trecere, 52 min cu așteptarea la coadă):
+  unit 10 186 / 0 (12 sărite, pe Linux), e2e 697 / 697, funcțiile pe emulatoare 136 / 136, paginile 57 / 57; completele liniilor,
+  verzi: cotele pe `47be5f42` (45382281125), elicele pe `ba09a10b` (45382892343). Pornirea 110,0 kB (plafonul 120; cu ușa 114,6, cu Atelierul 114,9, măsurate de linia cotelor), totalul 815,9 / 900 kB, `/admin` 138,2 / 200, contul 30,3 / 32. Nimic pe server.
+- **Lotul 16:** în drum spre test: completul lui pe `main` (45392060715) rula la unire; publicarea, după el, cu
+  serverul (funcția `freze`).
+- **Documentele:** decizia în `CLAUDE.md`, cu rândul de stare al cotelor, versiunea lui Easy 3Draw și regula
+  evenimentelor mașinii; indexul liniilor; starea și lecția din `docs/linii/principala.md`.
+- **La owner:** fereastra exportului (`#11`), verificarea juridică a utilizării aplicației înaintea live-ului, „cine
+  unește în `main`”; canalul `foi`, de încercat.
