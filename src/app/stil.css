@@ -4024,3 +4024,24 @@ main h1 {
 .trasare-pastila-legatura > label {
   flex-basis: 100%;
 }
+
+/* Panoul cotei alese (ADR 0330 §5, felia 10.4↑a-4): valoarea exactă și legătura, fiecare cu butonul ei alături. */
+.prop-cota-valoare,
+.prop-cota-legatura {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-1) var(--sp-2);
+}
+
+.prop-cota-valoare output {
+  font-variant-numeric: tabular-nums;
+}
+
+.prop-cota-legatura [data-stare='dezlegata'] {
+  color: var(--rosu);
+}
+
+.prop-cota-butoane {
+  margin-top: var(--sp-2);
+}

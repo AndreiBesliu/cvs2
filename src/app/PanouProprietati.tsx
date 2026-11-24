@@ -23,6 +23,8 @@ import { rolPersonalPiesei, type RolPersonal } from '../model/rolPersonal.ts';
 import type { RezultatActiune } from '../ui/actiuni.ts';
 import { PanouRoluri } from './PanouRoluri.tsx';
 import { ImaginiFoii } from './ImaginiFoii.tsx';
+import { PanouCota } from './PanouCota.tsx';
+import { useStareCote } from '../ui/coteVedere.ts';
 import { useRoluriMele } from './roluriMele.ts';
 import { useBibliotecaProiect } from './bibliotecaProiect.ts';
 import { cuMajuscula, frezaComuna, plusMinus } from './taiereButoane.ts';
@@ -214,6 +216,7 @@ export function PanouProprietati({
   const butoane = taierea === 'butoane';
   // Ancora transformării (ADR 0240 §A.7), cât unealta Transformare are o selecție: X / Y o mută, nu formele.
   const ancora = useSyncExternalStore(ancoraPanou.asculta, ancoraPanou.citeste);
+  const cotaPanou = useStareCote().panou;
   const roluriMele = useRoluriMele().roluri;
   // «Încă…» deschis: totul scris (text, ca omul să poată scrie liber), pentru instanța de atunci; și refuzul ultimului buton.
   const [inca, setInca] = useState<{ readonly cheie: string; readonly text: string } | null>(null);
@@ -602,6 +605,15 @@ export function PanouProprietati({
       {!trimite.ok && <p className="prop-nota" data-motiv="trimite">{t(trimite.motiv)}</p>}
     </div>
   );
+  // Cu o cotă aleasă (unealta Cote, ADR 0330 §5): doar ce e al ei.
+  if (cotaPanou && foaie && cotaPanou.foaie === foaie.id) {
+    return (
+      <div className="proprietati">
+        <h2>{t('prop.titlu')}</h2>
+        <PanouCota cota={cotaPanou} doarCitire={doarCitire} virgula={limba === 'ro'} />
+      </div>
+    );
+  }
   return (
     <div className="proprietati">
       <h2>{t('prop.titlu')}</h2>

@@ -1,18 +1,23 @@
 /**
  * Setările cotelor (ADR 0330 §6), ale aplicației, nu ale unei cote: ținute în browser (`cncvs2.cote`, JSON cu versiune),
- * aplicate pe loc tuturor cotelor. Grupurile: cifrele și liniile (a-3), comportamentul, lipirea, măsurarea (a-2, plus
- * pânza în a-3); fereastra Setări le scrie. Orice valoare lipsă, de alt tip sau în afara marginilor ia implicitul ei, câmp
+ * aplicate pe loc tuturor cotelor. Grupurile: cifrele și liniile (a-3), raza, diametrul și unghiul (b, cu inch în fracții),
+ * comportamentul, lipirea, măsurarea (a-2, plus pânza în a-3 și foile vecine în a-4); fereastra Setări le scrie. Orice valoare lipsă, de alt tip sau în afara marginilor ia implicitul ei, câmp
  * cu câmp: o setare stricată nu le strică pe celelalte.
  */
 import { useSyncExternalStore } from 'react';
 import type { FelPunct, OptiuniPuncte } from '../geom/lipirePuncte.ts';
-import { FELURI_CAPAT, LOCURI_CIFRA, type FelCapat, type FormatCifre, type LocCifra, type StilCota } from '../model/desenCota.ts';
+import { FELURI_CAPAT, LINII_RAZEI, LOCURI_CIFRA, type FelCapat, type FormatCifre, type LiniaRazei, type LocCifra, type StilCota } from '../model/desenCota.ts';
 
 export const FELURI_LIPIRE = ['varf', 'mijloc', 'centru', 'cadran', 'cutie', 'foaie', 'grila'] as const;
 export type FelLipire = (typeof FELURI_LIPIRE)[number];
 
-export const UNITATI_COTE = ['mm', 'cm', 'inch'] as const;
+/** Unitățile cifrelor: `fractii` e inch în fracții (1/2 … 1/64, felia 10.4↑b). */
+export const UNITATI_COTE = ['mm', 'cm', 'inch', 'fractii'] as const;
 export type UnitateCote = (typeof UNITATI_COTE)[number];
+/** Numitorii fracțiilor de inch: fracția cea mai mică arătată. */
+export const FRACTII_COTE = [2, 4, 8, 16, 32, 64] as const;
+/** Cât de lung poate fi prefixul razei sau al diametrului. */
+export const PREFIX_MAXIM = 8;
 
 export type SetariCote = {
   readonly cifre: {
@@ -28,6 +33,8 @@ export type SetariCote = {
     /** Înălțimea cifrelor pe foaie, 1–20 mm. */
     readonly inaltime: number;
     readonly loc: LocCifra;
+    /** Inch în fracții: fracția cea mai mică, 1/2 … 1/64 (numitorul). */
+    readonly fractie: number;
   };
   readonly linii: {
     readonly capete: FelCapat;
@@ -40,6 +47,17 @@ export type SetariCote = {
     /** Distanța liniei de cotă față de formă, la punere (Măsoară, „Păstrează”), 2–100 mm. */
     readonly distanta: number;
   };
+  /** Raza, diametrul, unghiul (felia 10.4↑b). */
+  readonly raza: {
+    /** Prefixele cifrei („R”, „Ø”), cel mult `PREFIX_MAXIM` semne; goale: fără. */
+    readonly prefixR: string;
+    readonly prefixD: string;
+    /** Unghiurile în grade zecimale, sau în grade-minute-secunde. */
+    readonly unghiuri: 'zecimale' | 'gms';
+    /** Zecimalele unghiului (ale secundelor, în grade-minute-secunde), 0–4. */
+    readonly zecimaleUnghi: number;
+    readonly linia: LiniaRazei;
+  };
   readonly comportament: {
     /** Cotele noi sunt legate de forme (da) sau libere. */
     readonly legate: boolean;
@@ -49,6 +67,8 @@ export type SetariCote = {
     readonly dupa: 'ramane' | 'selectie';
     /** Cotele pe pânză (ca „Arată cotele”); cu unealta Cote aleasă se văd oricum. */
     readonly pePanza: boolean;
+    /** Cotele foilor vecine, cu „Toate foile pe pânză”: estompate, ca foile lor, sau ascunse. */
+    readonly vecine: 'estompate' | 'ascunse';
     /** Sub atâția pixeli pe ecran, cifrele se ascund (0–12; 0: niciodată). */
     readonly pragCifre: number;
     /** Culoarea pe pânză („#rrggbb”), sau null: a temei. */
@@ -72,9 +92,10 @@ export type SetariCote = {
 };
 
 export const SETARI_IMPLICITE: SetariCote = {
-  cifre: { unitate: 'mm', zecimale: null, zerouri: 'taiate', pas: null, separator: 'limba', cuUnitate: false, inaltime: 3.5, loc: 'deasupra' },
+  cifre: { unitate: 'mm', zecimale: null, zerouri: 'taiate', pas: null, separator: 'limba', cuUnitate: false, inaltime: 3.5, loc: 'deasupra', fractie: 16 },
   linii: { capete: 'plina', marime: 2.5, extensii: true, gol: 1, depasire: 2, distanta: 10 },
-  comportament: { legate: true, pornire: 'automata', dupa: 'ramane', pePanza: true, pragCifre: 6, culoare: null },
+  raza: { prefixR: 'R', prefixD: 'Ø', unghiuri: 'zecimale', zecimaleUnghi: 2, linia: 'loc' },
+  comportament: { legate: true, pornire: 'automata', dupa: 'ramane', pePanza: true, vecine: 'estompate', pragCifre: 6, culoare: null },
   lipire: { felurile: { varf: true, mijloc: true, centru: true, cadran: true, cutie: true, foaie: true, grila: true }, toleranta: 8, contur: 'ctrl' },
   masurare: { distanta: true, delta: true, unghi: true, cursor: true, bara: true },
 };
@@ -91,6 +112,7 @@ export const MARGINI = {
   gol: [0, 5],
   depasire: [0, 5],
   distanta: [2, 100],
+  zecimaleUnghi: [0, 4],
   pragCifre: [0, 12],
   toleranta: [TOLERANTA_MINIMA, TOLERANTA_MAXIMA],
 } as const satisfies Record<string, readonly [number, number]>;
@@ -107,6 +129,7 @@ const numarSauNul = (x: unknown, margini: readonly [number, number], implicit: n
 const intreg = (x: unknown, margini: readonly [number, number], implicit: number | null): number | null =>
   x === null || (typeof x === 'number' && Number.isInteger(x)) ? numarSauNul(x, margini, implicit) : implicit;
 const CULOARE = /^#[0-9a-f]{6}$/;
+const prefix = (x: unknown, implicit: string): string => (typeof x === 'string' && [...x].length <= PREFIX_MAXIM ? x : implicit);
 
 /** Pură: setările din textul ținut în browser (sau null), cu implicitul fiecărui câmp lipsă ori greșit. */
 export function citesteSetariCote(text: string | null): SetariCote {
@@ -117,7 +140,7 @@ export function citesteSetariCote(text: string | null): SetariCote {
     // Un text stricat: implicitele.
   }
   const I = SETARI_IMPLICITE;
-  const ci = obiect(brut['cifre']), li = obiect(brut['linii']);
+  const ci = obiect(brut['cifre']), li = obiect(brut['linii']), ra = obiect(brut['raza']);
   const c = obiect(brut['comportament']), l = obiect(brut['lipire']), m = obiect(brut['masurare']), f = obiect(l['felurile']);
   const culoare = c['culoare'];
   return {
@@ -130,6 +153,7 @@ export function citesteSetariCote(text: string | null): SetariCote {
       cuUnitate: bif(ci['cuUnitate'], I.cifre.cuUnitate),
       inaltime: numar(ci['inaltime'], MARGINI.inaltime, I.cifre.inaltime),
       loc: unul(ci['loc'], LOCURI_CIFRA, I.cifre.loc),
+      fractie: (FRACTII_COTE as readonly unknown[]).includes(ci['fractie']) ? (ci['fractie'] as number) : I.cifre.fractie,
     },
     linii: {
       capete: unul(li['capete'], FELURI_CAPAT, I.linii.capete),
@@ -139,11 +163,19 @@ export function citesteSetariCote(text: string | null): SetariCote {
       depasire: numar(li['depasire'], MARGINI.depasire, I.linii.depasire),
       distanta: numar(li['distanta'], MARGINI.distanta, I.linii.distanta),
     },
+    raza: {
+      prefixR: prefix(ra['prefixR'], I.raza.prefixR),
+      prefixD: prefix(ra['prefixD'], I.raza.prefixD),
+      unghiuri: unul(ra['unghiuri'], ['zecimale', 'gms'], I.raza.unghiuri),
+      zecimaleUnghi: intreg(ra['zecimaleUnghi'], MARGINI.zecimaleUnghi, I.raza.zecimaleUnghi) ?? I.raza.zecimaleUnghi,
+      linia: unul(ra['linia'], LINII_RAZEI, I.raza.linia),
+    },
     comportament: {
       legate: bif(c['legate'], I.comportament.legate),
       pornire: unul(c['pornire'], ['automata', 'ultimul'], I.comportament.pornire),
       dupa: unul(c['dupa'], ['ramane', 'selectie'], I.comportament.dupa),
       pePanza: bif(c['pePanza'], I.comportament.pePanza),
+      vecine: unul(c['vecine'], ['estompate', 'ascunse'], I.comportament.vecine),
       pragCifre: numar(c['pragCifre'], MARGINI.pragCifre, I.comportament.pragCifre),
       culoare: culoare === null || (typeof culoare === 'string' && CULOARE.test(culoare)) ? culoare : I.comportament.culoare,
     },
@@ -174,6 +206,7 @@ export const stilCote = (s: SetariCote): StilCota => ({
   capete: s.linii.capete,
   extensii: s.linii.extensii,
   loc: s.cifre.loc,
+  raza: s.raza.linia,
 });
 
 /** Zecimalele de fapt: cele alese, sau cele automate (2; în inch, 3). */
@@ -187,10 +220,15 @@ export const formatCote = (s: SetariCote, virgulaLimbii: boolean): FormatCifre =
   pas: s.cifre.pas,
   virgula: s.cifre.separator === 'limba' ? virgulaLimbii : s.cifre.separator === 'virgula',
   cuUnitate: s.cifre.cuUnitate,
+  fractie: s.cifre.fractie,
+  prefixR: s.raza.prefixR,
+  prefixD: s.raza.prefixD,
+  unghi: s.raza.unghiuri,
+  zecimaleUnghi: s.raza.zecimaleUnghi,
 });
 
 /** Grupurile setărilor, în ordinea ferestrei Setări › Cotele. */
-export const GRUPURI_COTE = ['cifre', 'linii', 'comportament', 'lipire', 'masurare'] as const satisfies readonly (keyof SetariCote)[];
+export const GRUPURI_COTE = ['cifre', 'linii', 'raza', 'comportament', 'lipire', 'masurare'] as const satisfies readonly (keyof SetariCote)[];
 export type GrupCote = (typeof GRUPURI_COTE)[number];
 
 /** Pură: setările cu un grup adus la implicit („Înapoi la implicit”), celelalte neatinse. */
@@ -245,4 +283,10 @@ function asculta(f: () => void): () => void {
 /** Setările, ca stare React: o schimbare (din fereastra Setări, din altă parte a aplicației) redesenează pe loc. */
 export function useSetariCote(): SetariCote {
   return useSyncExternalStore(asculta, setariCote, setariCote);
+}
+
+/** „Arată cotele” (`vedere.cote`, ADR 0330 §5): comută cotele pe pânză, aceeași setare ca în fereastra Setări. */
+export function comutaPePanza(): void {
+  const s = setariCote();
+  schimbaSetariCote({ ...s, comportament: { ...s.comportament, pePanza: !s.comportament.pePanza } });
 }

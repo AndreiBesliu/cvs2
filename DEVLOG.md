@@ -14123,3 +14123,67 @@ vigoare „unește ce se poate”
   sesiunea liniei); indexul liniilor; starea din `docs/linii/principala.md`.
 - **Loturile dinainte:** 25 și 26, în `main` din 22:03 (`52a0aaa1`; rapidul pe `main`, la coadă la unire). Pe test,
   lotul 22 (`62569bb2`, 20:32).
+
+## 2026-11-24 — Felia 10.4↑a-4: panoul cotei, lista, ochiul, „Arată cotele”, cotele foilor vecine (ADR 0330 §5) (Model: Claude Opus 5.5)
+
+**Prompt:** „continuă cu 10.4↑a-4” (owner-ul, 24.11, după 10.4↑a-3). **Started:** 24.11, 18:55, în sesiunea cloud a liniei
+cotelor. **Completed:** 24.11, 19:14 (în container; CI-ul, pe commit-ul împins).
+
+- **Întâi partea pură:** `cotaDezlegata`, `cotaCuText`, `cotaCuDistanta`, `stareCota` (`src/model/cote.ts`), foile ascunse
+  citite din browser (`citesteAscunse`), setarea „Cotele foilor vecine” și comutarea „Cotele pe pânză”, cu probele pe hârtie
+  (`cote.panou.test.ts`, 5; `cote.setari.test.ts`, +1).
+- **Depozitul cotelor** (`src/ui/coteVedere.ts`, fără model): cota aleasă, panoul și rândurile publicate de unealtă, cererile
+  listei (ascultate de editor fără redesenare), foile ascunse. Așa, panoul și lista nu trag codul cotelor în bucata lor.
+- **Interfața:** panoul cotei (`src/app/PanouCota.tsx`), rândul „Cote (N)” din listă cu ochiul (`src/ui/ListaCote.tsx`, la
+  cerere), acțiunea `vedere.cote` („Arată cotele”), cotele foilor vecine estompate (desenul unei cote, scos în `CotaSvg`), rândul
+  nou din Setări, manualul (ro, en), catalogul controalelor.
+- **E2e** (`test/e2e/cote.panou.spec.ts`, 4): panoul (felul, valoarea, Copiază în clipboard, textul cu <>, distanța, Dezleagă,
+  apoi forma scalată fără ca cota să se schimbe, Șterge și anularea); lista (rândul, clicul care trece la unealtă, ochiul, ținut
+  după reîncărcare); „Arată cotele” din paletă; foile vecine (estompate, la stânga foii active, ascunse din Setări).
+- **Porțile, în container:** tipurile; unitarele cotelor, manualului, catalogului, registrului; e2e-urile cotelor, panoului,
+  setărilor, manualului, paletei și foilor (34 / 34); build-ul determinist. Pornirea 110,4 → 110,6 kB (cu ușa 115,3, cu
+  Atelierul 115,6 / 120), totalul 837,8 → 841,6 / 900.
+- **Otrăvurile** (`test/otravuri/10.4a4.py`, într-o clonă): 25 / 25 prinse din prima (10 unitare, 15 e2e); două din
+  `10.4a3.py` (E01, E03), rămase VOID pe codul nou, mutate și prinse.
+
+## 2026-11-24 — Felia 10.4↑b: raza, diametrul, unghiul (și în Automată), cu setările lor; inch în fracții (ADR 0330 §4, §6) (Model: Claude Opus 5.5)
+
+**Prompt:** „10.4↑b” (owner-ul, 24.11, după 10.4↑a-4). **Started:** 24.11, 20:10, în sesiunea cloud a liniei cotelor.
+**Completed:** 24.11, 22:20 (în container; CI-ul, pe commit-ul împins).
+
+- **Întâi `main` adus peste a-4** (lotul 24, fereastra exportului și 3.Xk: `91dd065c`; ciocnirile, DEVLOG și catalogul
+  controalelor), ca sesiunea principală să aibă commit-ul de unit al lui a-4; lucrul la b, pus deoparte cât timp.
+- **Desenul pur** (`src/model/desenCota.ts`): `desenRadial` (raza din centru, din afară sau după loc; diametrul prin centru),
+  `desenUnghi` și `laturiUnghi` (trei puncte sau două laturi; arcul în sectorul s1, s2; extensiile; săgețile pe coardă sau în
+  afară; cifra deasupra, în linie sau orizontală), locul din cursor, alegerea pe arc, calea SVG, `desenCota` după fel; cifrele:
+  inch în fracții, unghiul zecimal sau grade-minute-secunde, prefixele (`cifraCota`). Probele pe hârtie întâi
+  (`cote.cerc.test.ts`, 15).
+- **Setările:** grupul „Raza, diametrul, unghiul” și unitatea „inch în fracții”, cu fracția cea mai mică; fereastra Setări, cu
+  cota de probă lărgită (o rază, un unghi).
+- **Unealta:** Rază, Diametru, Unghi; Automată pe cerc, arc, două laturi (unghiul; la paralele, distanța); refuzul razei pe o
+  linie, elipsă sau curbă; tragerea și săgețile pe felurile noi; panoul (locul cifrei, raza arcului); manualul (ro, en).
+- **Găsit pe drum:** arcul unghiului se desena oglindit față de coardă (sweep-flag 1 pe un ecran cu Y în jos); prins de proba
+  nouă a mijlocului căii SVG, reparat (`caleArc`).
+- **Porțile, în container:** tipurile, regulile de import; unitarele cotelor, manualului și catalogului; e2e-urile cotelor,
+  panoului, setărilor și manualului (27 / 27); build-ul determinist. Pornirea 110,6 kB (neschimbată), totalul 860,6 → 864,8 /
+  900.
+- **Otrăvurile** (`test/otravuri/10.4b.py`, într-o clonă): 49 / 49 (31 unitare, 18 e2e); P04, P14, P18, P22 și E18 au scăpat
+  întâi și sunt prinse după probele noi (patru unitare, plus arcul cotei de probă din Setări).
+
+## 2026-11-24 — Sesiunea principală în cloud: a douăzeci și șasea unire (cotele: 10.4↑a-4, panoul cotei și lista; 10.4↑b, raza, diametrul, unghiul) (Model: Claude Fable 5.2)
+
+**Prompt:** raportul liniei cotelor („10.4↑a-4 și 10.4↑b, gata de unit”, `98575aff`), la ordinul în vigoare „unește ce
+se poate”
+**Started:** 24.11, 23:38. **Completed:** unirea în `main`, 24.11, 23:35; publicarea pe test, cu lotul următor.
+
+- **Unirea, pe `unire-2411ae`** (din `893e45bb`): `98575aff`, în `1eea83dd`. Linia avea `main` adus, deci nicio
+  ciocnire, iar arborele unirii e identic cu al commit-ului raportat (`git diff 98575aff` gol): a intrat singură, pe
+  porțile lui.
+- **Porțile, în CI, pe `98575aff`:** completul 45482827371, verde: unit 10 379 / 0 (12 sărite, pe Linux), e2e
+  800 / 800, funcțiile pe emulatoare 136 / 136, paginile 59 / 59; rapidul, verde. Mărimea (măsurată de linie, pe
+  `main` `893e45bb`): pornirea 110,9 → 111,2 kB (cu ușa 116,1, cu Atelierul 116,5 / 120), totalul 873,5 → 880,9 / 900.
+  Nimic pe server.
+- **Documentele:** decizia în `CLAUDE.md`, cu paragraful de stare al celor două felii; indexul liniilor; starea din
+  `docs/linii/principala.md`.
+- **În drum:** publicarea loturilor 23–27 (`893e45bb`): completul pe `main` (45484077948) rula. Lotul 28 (atelierul
+  Easy 3Draw: 3.Ca și 3.Cb, `7157ecc5`, pe `unire-2411ad`) își reface porțile peste `main`-ul cu cotele.

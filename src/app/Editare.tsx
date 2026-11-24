@@ -35,6 +35,7 @@ import { ancoraPanou } from './ancoraPanou.ts';
 // Calculul acțiunilor `foaie.ghidaje` și `document.muta-instantele` se înregistrează odată cu modulul ăsta.
 import { motivCopiereRetea, motivDesen } from '../ui/actiuniDocumentCalcul.ts';
 import type { FormaNoua } from '../ui/actiuniDocument.ts';
+import { laCerereaListei } from '../ui/coteVedere.ts';
 import type { RezultatActiune } from '../ui/actiuni.ts';
 import { copiiRetea, punctulCopiei, type Retea } from '../model/retea.ts';
 import { copiiPeCurba, parcurgere, pozitiePeCurba } from '../model/curba.ts';
@@ -323,6 +324,8 @@ export type ProprietatiEditare = {
   readonly onFreze?: () => void;
   /** Fereastra Setări (ADR 0330 §6): din meniul contului și din ⚙ al uneltei Cote. */
   readonly onSetari?: () => void;
+  /** „Toate foile pe pânză” (ADR 0210 §1): cotele foilor vecine se văd și ele, după setare (ADR 0330, felia a-4). */
+  readonly toateFoile?: boolean;
   /** Lipirea mutării, dată pânzei (null: lipirea oprită sau modulul plecat). */
   readonly onLipeste: (f: Lipeste | null) => void;
   /** Gestul uneltei de desen, dat pânzei (null: selecția, sau modulul plecat). */
@@ -756,6 +759,8 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
   };
   const pornesteCoteRef = useRef(pornesteCote);
   pornesteCoteRef.current = pornesteCote;
+  // Un rând de cotă din listă (felia 10.4↑a-4): unealta Cote, cu cota aleasă (depozitul o ține).
+  useEffect(() => laCerereaListei(() => { if (!p.doarCitire) pornesteCoteRef.current('d'); }), [p.doarCitire]);
   useEffect(() => {
     onDesen(p.doarCitire ? null : deseneaza(unealta) ? gestDesen : unealta === 'cutit' ? intermediarCutit : null);
   }, [unealta, p.doarCitire, onDesen, gestDesen, intermediarCutit]);
@@ -1604,11 +1609,11 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
             )} />
         </Suspense>
       ) : null}
-      {foaie && !vedere3d && (unealta === 'cote' || (foaie.cote?.length ?? 0) > 0) ? (
+      {foaie && !vedere3d && (unealta === 'cote' || (foaie.cote?.length ?? 0) > 0 || (p.toateFoile === true && doc.foi.some((f) => (f.cote?.length ?? 0) > 0))) ? (
         <Suspense fallback={null}>
           <StratCote doc={doc} indexFoaie={indexFoaie} vedere={vedere} marime={marime} zona={zona}
             unealta={unealta === 'cote' && activ && !p.doarCitire} activ={activ && !p.doarCitire} loc={locCote} locJos={locTaste} cerere={cerereCote}
-            lipire={lipire} grila={pasGrila} virgula={virgula}
+            lipire={lipire} grila={pasGrila} virgula={virgula} toateFoile={p.toateFoile === true}
             onScrie={(c) => ruleaza('foaie.cote', { coteNoi: () => c })}
             onUnealta={(u) => { if (u === 'cote') pornesteCote('d'); else setUnealta('selectie'); }}
             {...(p.onSetari ? { onSetari: p.onSetari } : {})}

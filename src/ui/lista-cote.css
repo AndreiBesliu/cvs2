@@ -1,0 +1,53 @@
+/* Rândul cotelor foii active din listă (ADR 0330 §5, felia 10.4↑a-4): ca rândurile pieselor, cu ochiul la capăt. */
+.lista-vectori .lista-cote {
+  margin: 2px 0 0 14px;
+  padding-left: var(--sp-1);
+  border-left: 1px solid var(--l-margine);
+}
+
+.lista-vectori .lista-cote-cap {
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr) auto;
+  align-items: center;
+}
+
+.lista-vectori .lista-cote-titlu {
+  padding: 4px var(--sp-2);
+  font-size: var(--fs-2);
+  color: var(--cota, var(--t));
+}
+
+.lista-vectori .lista-cote[data-ascunse] .lista-cote-titlu {
+  color: var(--t-slab);
+}
+
+.lista-vectori .lista-cote-ochi {
+  width: 32px;
+  min-width: 32px;
+  padding: 0;
+  justify-content: center;
+  color: var(--t-slab);
+}
+
+.lista-vectori .lista-cote-ochi svg path {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.3;
+}
+
+.lista-vectori .lista-cote ul {
+  margin-left: 24px;
+}
+
+.lista-vectori .lista-cote li {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.lista-vectori .lista-cote-fel,
+.lista-vectori .lista-cote-dezlegata {
+  color: var(--t-slab);
+}
+
+.lista-vectori .lista-cote .cu-avertisment .lista-cote-dezlegata {
+  color: var(--rosu);
+}
