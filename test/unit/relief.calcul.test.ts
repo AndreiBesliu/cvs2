@@ -52,7 +52,10 @@ test('relieful din pixeli: pixelii transparenți sunt planul zero în desen (com
 
 test('relieful din pixeli: refuzurile (prea mare, celula, totul transparent)', async () => {
   const lat = pixeli(8193, 1, () => [0, 0, 0, 255]);
-  assert.deepEqual(await reliefInBazin({ tip: 'din-imagine', imagine: lat, optiuni: O, scara: { latimeMm: 100 } }), { ok: false, cod: 'prea-mare', detaliu: '8193 × 1' });
+  // Pe câmpuri, nu pe tot rezultatul: un relief primit greșit ar face un diff cu toate dalele lui.
+  const mare = await reliefInBazin({ tip: 'din-imagine', imagine: lat, optiuni: O, scara: { latimeMm: 100 } });
+  assert.equal(mare.ok, false);
+  assert.deepEqual(mare.ok ? null : [mare.cod, mare.detaliu], ['prea-mare', '8193 × 1']);
   const px = pixeli(4, 4, () => [0, 0, 0, 255]);
   assert.equal((await reliefInBazin({ tip: 'din-imagine', imagine: px, optiuni: O, scara: { latimeMm: 0.002 } }) as { cod?: string }).cod, 'celula');
   assert.equal((await reliefInBazin({ tip: 'din-imagine', imagine: px, optiuni: O, scara: { latimeMm: 401 } }) as { cod?: string }).cod, 'celula');

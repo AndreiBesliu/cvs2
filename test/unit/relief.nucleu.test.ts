@@ -197,8 +197,11 @@ test('stratul: dalele citite din hartă și din octeții lor dau aceeași grilă
   assert.ok(r.ok);
   assert.deepEqual([...grilaDinDale(nx, ny, r.dale)], [...grilaDinDale(nx, ny, st.dale)]);
   const prima = st.harta.dale[0] as string;
+  // Aserțiunile pe câmpuri, nu pe tot rezultatul: un diff al dalelor (65 536 de coduri fiecare) umple memoria.
   const lipsa = daleDinHarta(st.harta, (h) => (h === prima ? undefined : st.octeti.get(h)));
-  assert.deepEqual(lipsa, { ok: false, lipsa: [prima] });
+  assert.equal(lipsa.ok, false);
+  assert.deepEqual(lipsa.ok ? null : lipsa.lipsa, [prima]);
   const stricat = daleDinHarta(st.harta, (h) => (h === prima ? new Uint8Array(10) : st.octeti.get(h)));
-  assert.deepEqual(stricat, { ok: false, lipsa: [prima] });
+  assert.equal(stricat.ok, false);
+  assert.deepEqual(stricat.ok ? null : stricat.lipsa, [prima]);
 });
