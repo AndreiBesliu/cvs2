@@ -25,7 +25,7 @@ import assert from 'node:assert/strict';
 import { is } from 'valibot';
 import { segment, type Contur, type Punct } from '../../src/geom/contur.ts';
 import { operatieImplicita, type Document, type FormaDoc, type Piesa, type VarfDoc } from '../../src/model/document.ts';
-import { conturElement } from '../../src/model/forme.ts';
+import { chenarElement } from '../../src/model/forme.ts';
 import { anuleaza, istoricNou, type Istoric } from '../../src/model/jurnal.ts';
 import { leagaCaile, OPTIUNI_LEGARE, type CerereLegare, type OptiuniLegare, type RezultatLegare } from '../../src/model/legareCai.ts';
 import { elementeFoaie } from '../../src/model/lume.ts';
@@ -92,7 +92,7 @@ test('un L: capătul căii a doua vine pe al primei; la mijloc; cu a doua cale p
   assert.equal(formaIn(r, 'a').inchis, false);
   assert.deepEqual(r.sterse, ['b']);
   assert.deepEqual([r.cai, r.rezultate, r.inchise], [2, 1, 0]);
-  assert.ok(Math.abs(lungime(conturElement({ forma: formaIn(r, 'a'), matrice: ID })) - 90) < 1e-6, 'lungimea 90');
+  assert.ok(Math.abs(lungime(chenarElement({ forma: formaIn(r, 'a'), matrice: ID })) - 90) < 1e-6, 'lungimea 90');
   const m = bun(leagaCaile(docDin(STOC, A, B), alese('a', 'b'), O({ capete: 'mijloc' })));
   aproape(puncte(formaIn(m, 'a')), [[0, 0], [50, 0.002], [50, 40]], 'la mijloc');
   const inv = bun(leagaCaile(docDin(STOC, B, A), alese('a', 'b'), O()));
@@ -115,7 +115,7 @@ test('un gol de 2 mm: cu linia (oricât), până la N mm, doar lipirea', () => {
   const d = docDin(STOC, f('a', deschisa([0, 0], [50, 0])), f('b', deschisa([52, 0], [100, 0])));
   const r = bun(leagaCaile(d, alese('a', 'b'), O()));
   aproape(puncte(formaIn(r, 'a')), [[0, 0], [50, 0], [52, 0], [100, 0]], 'cu linia');
-  assert.ok(Math.abs(lungime(conturElement({ forma: formaIn(r, 'a'), matrice: ID })) - 100) < 1e-6, 'lungimea 100');
+  assert.ok(Math.abs(lungime(chenarElement({ forma: formaIn(r, 'a'), matrice: ID })) - 100) < 1e-6, 'lungimea 100');
   assert.deepEqual(leagaCaile(d, alese('a', 'b'), O({ gol: 'prag', pragGol: 1 })), { ok: false, motiv: 'prea-departe', gol: 2 });
   assert.deepEqual(leagaCaile(d, alese('a', 'b'), O({ gol: 'lipire' })), { ok: false, motiv: 'prea-departe', gol: 2 });
   bun(leagaCaile(d, alese('a', 'b'), O({ gol: 'prag', pragGol: 3 })));
@@ -146,8 +146,8 @@ test('un arc întors: același arc, cu bulge-ul cu semn schimbat; o cubică înt
   const s = (fo.varfuri[1] as VarfDoc).s;
   assert.ok(s.tip === 'A' && Math.abs(s.bulge - b) < 1e-15, `bulge ${JSON.stringify(s)}`);
   // Mijlocul arcului, același în lume înainte și după.
-  const inainte = punctPe(segment(conturElement({ forma: deschisa(arc(90, 40, -b), [50, 0]), matrice: ID }), 0), 0.5);
-  const dupa = punctPe(segment(conturElement({ forma: fo, matrice: ID }), 1), 0.5);
+  const inainte = punctPe(segment(chenarElement({ forma: deschisa(arc(90, 40, -b), [50, 0]), matrice: ID }), 0), 0.5);
+  const dupa = punctPe(segment(chenarElement({ forma: fo, matrice: ID }), 1), 0.5);
   assert.ok(Math.hypot(inainte.x - dupa.x, inainte.y - dupa.y) < 1e-9, `mijlocul ${JSON.stringify([inainte, dupa])}`);
 
   const c = docDin(STOC, f('a', deschisa([0, 0], [50, 0])), f('b', deschisa(cub(100, 0, [90, 30], [60, 30]), [50, 0])));
@@ -263,8 +263,8 @@ test('aplicată prin acțiune: un pas de anulare, exact; documentul de după tre
     f('s4', deschisa([0, 50], [0, 0])));
   const r = bun(leagaCaile(d, alese('s1', 's2', 's3', 's4'), O()));
   // Oracolul, din eșantioane: fiecare punct al căii legate la cel mult 1e-6 de una din căile de dinainte, și invers.
-  const dupa = conturElement({ forma: formaIn(r, 's1'), matrice: ID });
-  const inainte = elementeFoaie(d, 0).map((e) => conturElement(e));
+  const dupa = chenarElement({ forma: formaIn(r, 's1'), matrice: ID });
+  const inainte = elementeFoaie(d, 0).map((e) => chenarElement(e));
   const esantioane = (c: Contur): Punct[] => {
     const rez: Punct[] = [];
     const n = c.inchis ? c.varfuri.length : c.varfuri.length - 1;

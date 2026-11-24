@@ -20,7 +20,7 @@ import { compune, determinant, rotatie, transformaContur } from '../../src/geom/
 import { traduce } from '../../src/i18n/t.ts';
 import { avertismente } from '../../src/model/avertismente.ts';
 import { PLAFON, type FormaDoc, type VarfDoc } from '../../src/model/document.ts';
-import { conturElement } from '../../src/model/forme.ts';
+import { chenarElement } from '../../src/model/forme.ts';
 import { incarca, jsonCanonic } from '../../src/model/incarcare.ts';
 import { istoricNou } from '../../src/model/jurnal.ts';
 import { ACTIUNI_DOCUMENT, type ContextDocument } from '../../src/ui/actiuniDocument.ts';
@@ -283,7 +283,7 @@ test('oglindirea la scară minusculă (otrava „semnul din determinantul brut�
   const s = 1.9e-162;
   const m = compune(rotatie(45), { a: -s, b: 0, c: 0, d: s, e: 0, f: 0 });
   assert.ok(!(determinant(m) < 0));
-  const c = conturElement({ forma: D, matrice: { ...ID } });
+  const c = chenarElement({ forma: D, matrice: { ...ID } });
   const t = transformaContur(c, m);
   const arc0 = c.varfuri.find((v) => v.s.tip === 'A');
   const arc1 = t.varfuri.find((v) => v.s.tip === 'A');

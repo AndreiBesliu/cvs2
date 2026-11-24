@@ -7,7 +7,7 @@ import {
   UNGHI_V_IMPLICIT, type Document, type FormaSculaDoc, type Incrustatie, type IncrustatieDreapta, type IncrustatieV, type Latura, type Operatie,
   type Piesa, type Scula, type TipOperatie,
 } from './document.ts';
-import { conturElement } from './forme.ts';
+import { conturElement, esteContur } from './forme.ts';
 import { elementeInstanta } from './lume.ts';
 import { cuNoduri } from './urechiLocuri.ts';
 
@@ -44,7 +44,8 @@ const ANALIZE = new WeakMap<Piesa, Analiza>();
 function analiza(p: Piesa): Analiza {
   const tinuta = ANALIZE.get(p);
   if (tinuta) return tinuta;
-  const forme = elementeInstanta(p.radacina, { id: '', piesa: p.id }, IDENTITATE).map((e): FormaPiesei => {
+  // Relieful (ADR 0310) n-are rolurile contururilor: rolurile lui vin cu operațiile de relief (18.1↑c, d).
+  const forme = elementeInstanta(p.radacina, { id: '', piesa: p.id }, IDENTITATE).filter(esteContur).map((e): FormaPiesei => {
     const contur = conturElement(e);
     return { id: e.nod, inchis: contur.inchis, cerc: e.forma.tip === 'cerc', contur };
   });

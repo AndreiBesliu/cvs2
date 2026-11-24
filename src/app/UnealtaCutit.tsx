@@ -14,7 +14,7 @@ import type { lipeste } from '../geom/lipire.ts';
 import { t } from '../i18n/t.ts';
 import { instantaLa } from '../model/alegere.ts';
 import type { Document } from '../model/document.ts';
-import { conturElement } from '../model/forme.ts';
+import { conturElement, esteContur } from '../model/forme.ts';
 import { elementeFoaie } from '../model/lume.ts';
 import type { Cutit } from '../model/taiere.ts';
 import { CUTIE_GOALA, uneste, type Cutie } from '../geom/cutie.ts';
@@ -275,7 +275,7 @@ export function UnealtaCutit({ doc, indexFoaie, selectie, vedere, marime, zona, 
     let cutie: Cutie = CUTIE_GOALA;
     let n = 0;
     for (const e of elementeFoaie(doc, indexFoaie)) {
-      if (!ids.has(e.instanta)) continue;
+      if (!ids.has(e.instanta) || !esteContur(e)) continue;
       const c = conturElement(e);
       const p = puncteContur(c, 0.05).map(([x, y]) => ({ x, y }));
       n += p.length;
@@ -323,7 +323,7 @@ export function UnealtaCutit({ doc, indexFoaie, selectie, vedere, marime, zona, 
   const adunate = useMemo(() => {
     if (forme.length === 0) return [];
     const ids = new Set(forme);
-    return elementeFoaie(doc, indexFoaie).filter((e) => ids.has(e.instanta)).map((e) => drumSvg(conturElement(e), vedere));
+    return elementeFoaie(doc, indexFoaie).filter((e) => ids.has(e.instanta)).filter(esteContur).map((e) => drumSvg(conturElement(e), vedere));
   }, [forme, doc, vedere, indexFoaie]);
 
   // Retează: contururile tuturor formelor foii (sub clic poate fi oricare, chiar nealeasă) și locurile lor comune cu partenerii
@@ -335,6 +335,7 @@ export function UnealtaCutit({ doc, indexFoaie, selectie, vedere, marime, zona, 
     const forme: ConturAproximat[] = [];
     let n = 0;
     for (const e of elementeFoaie(doc, indexFoaie)) {
+      if (!esteContur(e)) continue;
       const c = conturElement(e);
       const p = puncteContur(c, 0.05).map(([x, y]) => ({ x, y }));
       n += p.length;

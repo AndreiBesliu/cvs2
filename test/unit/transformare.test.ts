@@ -7,7 +7,7 @@ import { cuOperatie, docDin, ID } from './ajutor-document.ts';
 import { programDinDocument } from '../../src/cam/job.ts';
 import { elementeFoaie, matriceInstanta } from '../../src/model/lume.ts';
 import { aplica } from '../../src/geom/matrice.ts';
-import { conturElement, cutieElement } from '../../src/model/forme.ts';
+import { chenarElement, cutieElement } from '../../src/model/forme.ts';
 import { elipsa, parametri } from '../../src/model/formeParametrice.ts';
 
 /** Transformările (ADR 0052), pure: rotirea, scalarea exactă a geometriei și refuzurile, cu valori pe hârtie. */
@@ -403,8 +403,8 @@ test('oglindirea în lume, la 0°, 90° și 30°: fiecare vârf și punct de con
       const ea = elementeFoaie(d, 0)[0];
       const eb = elementeFoaie(o, 0)[0];
       if (!ea || !eb) throw new Error('fără element');
-      const a = conturElement(ea);
-      const b = conturElement(eb);
+      const a = chenarElement(ea);
+      const b = chenarElement(eb);
       assert.equal(b.varfuri.length, a.varfuri.length);
       a.varfuri.forEach((va, k) => {
         const vb = b.varfuri[k];

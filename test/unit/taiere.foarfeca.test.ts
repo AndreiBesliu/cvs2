@@ -15,7 +15,7 @@ import assert from 'node:assert/strict';
 import { is } from 'valibot';
 import type { Contur } from '../../src/geom/contur.ts';
 import type { Document, FormaDoc, Nod, Piesa, VarfDoc } from '../../src/model/document.ts';
-import { conturElement } from '../../src/model/forme.ts';
+import { chenarElement } from '../../src/model/forme.ts';
 import { executa, istoricNou } from '../../src/model/jurnal.ts';
 import { elementeFoaie } from '../../src/model/lume.ts';
 import { SchemaDocument } from '../../src/model/schemaDocument.ts';
@@ -43,7 +43,7 @@ function aplica(d: Document, r: RezultatTaiere): Document {
   assert.ok(is(SchemaDocument, JSON.parse(JSON.stringify(dupa))), 'documentul de după trece de ușă');
   return dupa;
 }
-const contururi = (d: Document, inst: string): Contur[] => elementeFoaie(d).filter((e) => e.instanta === inst).map((e) => conturElement(e));
+const contururi = (d: Document, inst: string): Contur[] => elementeFoaie(d).filter((e) => e.instanta === inst).map((e) => chenarElement(e));
 const varfuri = (c: Contur): Array<[number, number]> => c.varfuri.map((v) => [v.p.x, v.p.y]);
 const aproape = (a: number, b: number, eps: number, mesaj: string): void => { assert.ok(Math.abs(a - b) <= eps, `${mesaj}: ${a} ≠ ${b}`); };
 const refuz = (d: Document, r: RezultatTaiere): string => (r.ok ? 'tăiată' : r.motiv);
@@ -106,7 +106,7 @@ test('foarfeca pe o cubică, la mijloc: cele două jumătăți refac curba, cu t
   assert.ok(r.ok);
   assert.equal(r.ids.length, 2);
   const [a, b] = r.ids.map((id) => contururi(dupa, id)[0] as Contur) as [Contur, Contur];
-  aproape(lungime(a) + lungime(b), lungime(conturElement({ forma: cub, matrice: { ...ID } })), 1e-6, 'lungimea, din cele două jumătăți');
+  aproape(lungime(a) + lungime(b), lungime(chenarElement({ forma: cub, matrice: { ...ID } })), 1e-6, 'lungimea, din cele două jumătăți');
   const capA = a.varfuri[a.varfuri.length - 1]?.p, capB = b.varfuri[0]?.p;
   assert.ok(capA && capB && Math.hypot(capA.x - capB.x, capA.y - capB.y) < 1e-9, 'jumătățile se ating în tăietură');
   aproape(capA.x, 50, 1e-6, 'tăietura, la mijlocul curbei');

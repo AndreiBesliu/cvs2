@@ -11,7 +11,7 @@ import assert from 'node:assert/strict';
 import { is } from 'valibot';
 import { arieCuSemn, type Contur } from '../../src/geom/contur.ts';
 import type { Document, ElementNod, FormaDoc, Instanta, Nod, Operatie, Piesa, VarfDoc } from '../../src/model/document.ts';
-import { conturElement } from '../../src/model/forme.ts';
+import { chenarElement } from '../../src/model/forme.ts';
 import { executa, istoricNou, type Istoric } from '../../src/model/jurnal.ts';
 import { elementeFoaie } from '../../src/model/lume.ts';
 import { SchemaDocument } from '../../src/model/schemaDocument.ts';
@@ -48,7 +48,7 @@ const taiat = (d: Document, c: CerereTaiere): { readonly dupa: Document; readonl
   return { dupa: aplica(d, r), r };
 };
 /** Contururile în lume ale unei instanțe. */
-const contururi = (d: Document, inst: string): Contur[] => elementeFoaie(d).filter((e) => e.instanta === inst).map((e) => conturElement(e));
+const contururi = (d: Document, inst: string): Contur[] => elementeFoaie(d).filter((e) => e.instanta === inst).map((e) => chenarElement(e));
 const piesa = (d: Document, id: string): Piesa => d.piese.find((p) => p.id === id) ?? assert.fail(`piesa ${id}`);
 const puncte = (c: Contur): Array<[number, number]> => c.varfuri.map((v) => [v.p.x, v.p.y]);
 const sortate = (p: ReadonlyArray<readonly [number, number]>): Array<[number, number]> => [...p].map(([x, y]): [number, number] => [x, y]).sort((a, b) => a[0] - b[0] || a[1] - b[1]);
@@ -170,7 +170,7 @@ test('inelul tăiat fără închidere: semicercurile exterioare pe afară (dreap
     const elemente = p.radacina.tip === 'grup' ? p.radacina.copii : [];
     // În sistemul piesei, centrul inelului e în origine (locul îl dă instanța).
     const raze = new Map(elemente.map((e) => {
-      const c = conturElement(e as ElementNod);
+      const c = chenarElement(e as ElementNod);
       const v = c.varfuri[0]?.p;
       return [e.id, v ? Math.round(Math.hypot(v.x, v.y)) : 0] as const;
     }));

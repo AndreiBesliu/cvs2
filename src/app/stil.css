@@ -3713,6 +3713,26 @@ main h1 {
   display: inline-flex;
   gap: var(--sp-1);
 }
+/* Alegerea Vectori / Relief (ADR 0310 §7) și sensul reliefului, sus în setări: ca butoanele vederii. */
+.trasare-comenzi .segmentat {
+  display: inline-flex;
+  justify-self: start;
+  /* Cu `overflow: hidden`, un rând al grilei setărilor (plină peste înălțimea ei) ar scădea la 0: rămâne cât conținutul. */
+  min-height: min-content;
+  border: 1px solid var(--l-margine);
+  border-radius: var(--r-2);
+  overflow: hidden;
+}
+.trasare-comenzi .segmentat label {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px var(--sp-2);
+  cursor: pointer;
+}
+.trasare-comenzi .segmentat label:has(input:checked) {
+  background: var(--s-ales);
+}
 /* Glisorul estompării, îngust: bara previzualizării stă pe două rânduri și la 1024 px, cu fontul lat. */
 .trasare-bara input[type='range'] {
   width: 5rem;
@@ -3738,6 +3758,19 @@ main h1 {
     linear-gradient(45deg, var(--l-margine) 25%, transparent 25%, transparent 75%, var(--l-margine) 75%);
   background-size: 16px 16px;
   background-position: 0 0, 8px 8px;
+}
+/* Straturile reliefului în panou (ADR 0310 §7): o listă simplă, de sus în jos. */
+.prop-straturi {
+  margin: 0 0 var(--sp-2);
+  padding-left: var(--sp-4);
+}
+.prop-straturi li[data-vizibil='false'] {
+  opacity: 0.6;
+}
+/* Relieful umbrit (ADR 0310 §7): toată imaginea, cu proporțiile ei, fără tragere. */
+.trasare-panza.relief-previz {
+  object-fit: contain;
+  cursor: default;
 }
 /* Cu butonul Zona apăsat, tragerea desenează zona (ADR 0224). */
 .trasare-panza.zona {

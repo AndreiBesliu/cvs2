@@ -3,14 +3,14 @@
  * foaie (`Foaie.cote`), nu în piese, iar CAM-ul, postul, simularea și bazinul nu importă acest modul (regula `cam-fara-cote`).
  *
  * - O ancoră liberă e chiar punctul ei.
- * - O ancoră legată (ADR 0330 §3) își citește punctul din conturul elementului în lume (`conturElement`), deci urmează forma la
- *   mutare, rotire, scalare, oglindire, înclinare. Se dezleagă cinstit, la punctul văzut ultima oară (`x`, `y`): forma nu mai e
- *   pe foaie (`forma`), sau conturul ei are alt număr de segmente decât la legare ori locul nu mai e pe el (`noduri`: vârful k
- *   n-ar mai fi același). Cutia nu ține de noduri.
+ * - O ancoră legată (ADR 0330 §3) își citește punctul din conturul elementului în lume (`chenarElement`: la un relief,
+ *   dreptunghiul grilei), deci urmează forma la mutare, rotire, scalare, oglindire, înclinare. Se dezleagă cinstit, la
+ *   punctul văzut ultima oară (`x`, `y`): forma nu mai e pe foaie (`forma`), sau conturul ei are alt număr de segmente
+ *   decât la legare ori locul nu mai e pe el (`noduri`: vârful k n-ar mai fi același). Cutia nu ține de noduri.
  */
 import { cerculArcului, numarSegmente, segment, type Contur, type Punct } from '../geom/conturBaza.ts';
 import type { AncoraCota, Cota, Document, FelCota, LocCota } from './document.ts';
-import { conturElement, cutieElement } from './forme.ts';
+import { chenarElement, cutieElement } from './forme.ts';
 import { elementeFoaie, idLume, type ElementLume } from './lume.ts';
 
 /** Felurile cunoscute (ADR 0330 §4), ca valoare; tipul lor e în `document.ts`. */
@@ -59,7 +59,8 @@ export function punctLoc(e: ElementLume, loc: LocCota, n: number, contur?: Contu
     const col = loc.i % 3, rand = Math.floor(loc.i / 3);
     return { x: [b.minX, (b.minX + b.maxX) / 2, b.maxX][col] ?? b.minX, y: [b.minY, (b.minY + b.maxY) / 2, b.maxY][rand] ?? b.minY };
   }
-  const c = contur ?? conturElement(e);
+  // Chenarul (ADR 0310 §1): conturul exact al unei forme, ori dreptunghiul grilei unui relief, care n-are alt contur.
+  const c = contur ?? chenarElement(e);
   const m = numarSegmente(c);
   if (m !== n) return 'noduri';
   if (loc.fel === 'varf') return c.varfuri[loc.k]?.p ?? 'noduri';

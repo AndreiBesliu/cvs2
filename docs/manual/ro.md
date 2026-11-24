@@ -757,7 +757,8 @@ Pentru fiecare fișier se deschide o fereastră care arată mărimea desenului �
 - la un WMF fără antet placeable, **unitatea**: 1/96 țol (px, ca LibreOffice), 1/1440 țol (twip), 0,01 mm, 0,1 mm sau mm
   (vezi mai jos);
 - la un PDF cu mai multe pagini, **pagina** de importat (vezi mai jos);
-- la o imagine, **trasarea**: cum devine desenul din pixeli contururi (vezi mai jos);
+- la o imagine, **trasarea**: cum devine desenul din pixeli contururi (vezi mai jos); cu **Relief**, sus în fereastră, din
+  imagine se face un relief (vezi [Relieful din imagine](#relief));
 - ce nu se importă sau se citește altfel, cu numărul lor (la un SVG: textele, clonele `<use>`, imaginile, formele ascunse).
 
 **Importă** pune desenul pe foaie ca o singură formă, selectată; **Sari peste** trece la fișierul următor, **Renunță** și
@@ -1008,6 +1009,38 @@ Raportul foilor (din fereastra exportului) spune, la fiecare foaie, numele imagi
 Imaginile se țin în browser, lângă proiect, nu în document: pe alt calculator ori în alt browser, foaia arată doar locul
 lor, punctat, iar lista spune că lipsesc. O imagine pe care n-o mai folosește nicio versiune păstrată a proiectului se
 șterge la o pornire, după cel puțin o zi. Pe telefon, imaginile se văd, dar nu se pun și nu se schimbă.
+
+## Relieful din imagine
+%% capitol: relief
+
+Dintr-o imagine (o poză, un logo, o hartă a înălțimilor în gri) se poate face un **relief**: o formă 3D a piesei, cu câte o
+celulă pentru fiecare pixel, a cărei înălțime vine din griul pixelului. Pe planșă, relieful se vede umbrit (lumina din
+stânga-sus), sub vectori, cu chenarul lui; se alege, se mută, se rotește și se oglindește ca orice formă, iar piesa cu relief
+se pune de mai multe ori și pe alte foi. Prelucrarea lui 3D (degroșarea și finisarea) vine în feliile următoare: deocamdată
+relieful nu se taie.
+
+**Cum îl faci:** din „Importă…”, alege o imagine (PNG, JPEG, WebP, GIF sau BMP), apoi, sus în fereastră, **Relief** în loc
+de **Vectori**. Alegerea se ține minte până reîncarci pagina. Fereastra are, în stânga:
+- **Înălțimea din**: luminanța (implicit) sau un singur canal (roșu, verde, albastru);
+- sensul: **Alb = sus** (implicit) sau **Negru = sus**;
+- **Înălțimea** (mm): cât urcă albul (sau negrul) față de bază; **Baza (planul zero)**: înălțimea griului cel mai închis
+  (sau deschis);
+- **Lățimea** (mm): o celulă e un pixel, deci lățimea dă celula; nescrisă, vine din DPI-ul fișierului sau, fără el, din 96 px
+  pe țol;
+- **Netezirea** (σ, în celule): 0 = fără; pixelii transparenți rămân goi, iar netezirea îi sare.
+
+În dreapta, relieful umbrit, iar dedesubt grila (celulele, celula, mărimea în mm) și înălțimile, de la cea mai mică la cea
+mai mare. Ce vezi e calculat din relieful salvat, deci e exact ce se păstrează. **Importă** pune piesa pe foaie, selectată,
+într-un pas de anulare; lăsată pe planșă, cu centrul în punctul lăsat. Un pixel transparent nu are înălțime: acolo relieful e
+planul zero. O imagine toată transparentă, una mai mare de 8192 × 8192 pixeli sau o lățime care dă o celulă în afara
+marginilor (0,001 … 100 mm, cel mult 10 m pe latură) sunt refuzate, cu motivul.
+
+**În panou:** cu piesa aleasă, secțiunea **Relieful** arată mărimea, celula, celulele, înălțimile și straturile, de sus în
+jos, fiecare cu modul ei (în felia asta, relieful are un singur strat, „adună”).
+
+Relieful se ține în browser, lângă proiect, nu în document (documentul ține doar amprenta lui), ca imaginile foii: pe alt
+calculator ori în alt browser, panoul spune că straturile lipsesc. Ce nu mai folosește nicio versiune păstrată a proiectului
+se șterge la o pornire, după cel puțin o zi.
 
 ## Tăierea vectorilor
 %% capitol: taiere

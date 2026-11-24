@@ -12,7 +12,7 @@ import { laturiDinImbricare } from '../../src/io/imbricare.ts';
 import { caleInchisa, cutieCai, piesaDinImport } from '../../src/io/piesa.ts';
 import { PLAFON, VERSIUNE_SCHEMA, type Document, type FormaDoc, type VarfDoc } from '../../src/model/document.ts';
 import { SchemaDocument } from '../../src/model/schemaDocument.ts';
-import { conturElement } from '../../src/model/forme.ts';
+import { chenarElement } from '../../src/model/forme.ts';
 import { incarca } from '../../src/model/incarcare.ts';
 import { INIMA } from './ajutor-cale.ts';
 import { cuOperatie, docDin, ID } from './ajutor-document.ts';
@@ -39,7 +39,7 @@ function stricat(d: Document, f: (forma: Record<string, any>) => void): unknown 
 
 test('v10: o cale deschisă trece prin ușă neschimbată, cu câmpurile necunoscute, și pe segmentul ultimului vârf', () => {
   // Felia 5.1↑ (ADR 0069): aplicația e pe v11, iar căile deschise rămân cum erau.
-  assert.equal(VERSIUNE_SCHEMA, 27);
+  assert.equal(VERSIUNE_SCHEMA, 28);
   for (const forma of [LINIA, deschisa([0, 0], [50, 0], [50, 50], [0, 50], [0, 0])]) {
     const d = cu(forma);
     const r = prinUsa(d);
@@ -133,11 +133,11 @@ test('migrarea v9 → v10 schimbă doar numărul: același document, cu câmpuri
   // 0090) la v14, din 8.2↑ (ADR 0091) la v15, din 8.3↑ (ADR 0092) la v16, din 5.5↑ (ADR 0093) la v17, din 5.6↑ (ADR 0094) la v18,
   // din 5.9↑ (ADR 0133) la v19, din 12.1↑ (ADR 0170) la v20, din 12.1↑b (ADR 0171) la v21 și din 12.1↑c (ADR 0172) la v22, tot
   // doar cu numărul.
-  assert.equal(r.doc.schema, 27);
-  assert.deepEqual(r.doc, { ...v9, schema: 27 });
+  assert.equal(r.doc.schema, 28);
+  assert.deepEqual(r.doc, { ...v9, schema: 28 });
   // Fără piese: nimic de verificat, doar numărul.
   const gol = incarca({ schema: 9, rev: 2, piese: [], foi: [{ id: 'f1', stoc: F, instante: [] }] });
-  assert.ok(gol.ok && gol.doc.schema === 27);
+  assert.ok(gol.ok && gol.doc.schema === 28);
 });
 
 test('migrarea v9 → v10 refuză un v9 cu o cale deschisă, cu stânga / dreapta sau cu câmpul despartire: nu e un v9 valid', () => {
@@ -168,12 +168,12 @@ test('migrarea v9 → v10 refuză un v9 cu o cale deschisă, cu stânga / dreapt
   assert.match(motiv(incarca(v8)), /nu e un document v9 valid/);
 });
 
-test('`inchis` citit (1/4): conturElement păstrează calea deschisă, cu n − 1 segmente, fără coarda de închidere', () => {
-  const c = conturElement({ forma: deschisa([0, 0], [100, 0], [100, 100]), matrice: { ...ID, e: 10, f: 20 } });
+test('`inchis` citit (1/4): chenarElement păstrează calea deschisă, cu n − 1 segmente, fără coarda de închidere', () => {
+  const c = chenarElement({ forma: deschisa([0, 0], [100, 0], [100, 100]), matrice: { ...ID, e: 10, f: 20 } });
   assert.equal(c.inchis, false);
   assert.equal(numarSegmente(c), 2);
   assert.deepEqual(c.varfuri.map((x) => x.p), [P(10, 20), P(110, 20), P(110, 120)]);
-  assert.equal(conturElement({ forma: INIMA, matrice: { ...ID } }).inchis, true);
+  assert.equal(chenarElement({ forma: INIMA, matrice: { ...ID } }).inchis, true);
 });
 
 test('`inchis` citit (2/4): piesa importului păstrează calea deschisă; ea nu primește exterior / interior, ci `deschise` pe linie', () => {

@@ -27,7 +27,9 @@ function elementeLitere(copii: readonly Nod[]): Array<{ readonly id: string; rea
   const rez: Array<{ id: string; contur: Contur }> = [];
   const viziteaza = (n: Nod, m: Matrice): void => {
     const mn = compune(m, n.matrice);
-    if (n.tip === 'element') rez.push({ id: n.id, contur: conturElement({ forma: n.forma, matrice: mn }) });
+    if (n.tip === 'element') {
+      if (n.forma.tip !== 'relief') rez.push({ id: n.id, contur: conturElement({ forma: n.forma, matrice: mn }) });
+    }
     else for (const c of n.copii) viziteaza(c, mn);
   };
   for (const c of copii) viziteaza(c, IDENTITATE);

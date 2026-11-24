@@ -8,7 +8,7 @@ import { aplicaColturi, type Colturi } from '../geom/colturi.ts';
 import { inSensTrigonometric, type Contur } from '../geom/contur.ts';
 import { curataIntrare, offsetInchis, REZOLUTIE } from '../geom/offset.ts';
 import type { Document, VarfDoc } from '../model/document.ts';
-import { conturElement } from '../model/forme.ts';
+import { conturElement, esteContur } from '../model/forme.ts';
 import { elementeFoaie } from '../model/lume.ts';
 import type { FormaNoua } from '../ui/actiuniDocument.ts';
 
@@ -49,6 +49,8 @@ export function offsetSelectie(doc: Document, selectie: readonly string[], dista
   let sarite = 0;
   for (const e of elementeFoaie(doc, indexFoaie)) {
     if (!alese.has(e.instanta)) continue;
+    // Relieful (ADR 0310) nu e un contur: offsetul îl sare, numărat.
+    if (!esteContur(e)) { sarite++; continue; }
     const c = conturElement(e);
     if (!c.inchis) {
       sarite++;

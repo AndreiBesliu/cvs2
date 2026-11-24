@@ -12,7 +12,7 @@ import type { Contur, Punct } from '../geom/contur.ts';
 import { inversa } from '../geom/inversa.ts';
 import { aplica, type Matrice } from '../geom/matrice.ts';
 import { PLAFON, type Document, type LocUreche } from '../model/document.ts';
-import { conturElement } from '../model/forme.ts';
+import { conturElement, esteContur } from '../model/forme.ts';
 import { elementeFoaie } from '../model/lume.ts';
 
 /** Un element al operației, într-o instanță: conturul lui în lume (închis, fără cubice), lungimea, matricea și inversa ei. */
@@ -82,7 +82,7 @@ export function contururiUrechi(doc: Document, indexFoaie: number, piesa: string
   const noduri = new Set(o.noduri);
   const rez: ConturUrechi[] = [];
   for (const e of elementeFoaie(doc, indexFoaie)) {
-    if (e.piesa !== piesa || !noduri.has(e.nod)) continue;
+    if (e.piesa !== piesa || !noduri.has(e.nod) || !esteContur(e)) continue;
     const brut = conturElement(e);
     if (!brut.inchis) continue;
     const c = conturFaraCubice(brut, TOLERANTA_ARCE);

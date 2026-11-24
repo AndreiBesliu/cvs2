@@ -11,13 +11,14 @@ import type { Contur } from '../geom/conturBaza.ts';
 import { booleanContururi, type OperatieBoolean } from '../geom/offset.ts';
 import { TOLERANTA_PROIECT } from '../geom/toleranta.ts';
 import type { Document, FormaDoc, VarfDoc } from './document.ts';
-import { conturElement } from './forme.ts';
+import { conturElement, esteContur } from './forme.ts';
 import { elementeFoaie } from './lume.ts';
 
 export type { OperatieBoolean };
 
 /** De ce booleanul nu se poate face. */
-export type MotivBoolean = 'doua' | 'compusa' | 'deschisa' | 'disjuncte' | 'nimic-comun' | 'gol' | 'esuat';
+/** `relief`: o formă aleasă e un relief (ADR 0310), nu un contur. */
+export type MotivBoolean = 'doua' | 'compusa' | 'deschisa' | 'disjuncte' | 'nimic-comun' | 'gol' | 'esuat' | 'relief';
 
 /** O formă nouă a rezultatului: conturul exterior, găurile (în aceleași coordonate) și locul instanței (mm ai foii). */
 export type FormaBoolean = { readonly forma: FormaDoc; readonly gauri: readonly FormaDoc[]; readonly x: number; readonly y: number };
@@ -46,8 +47,10 @@ export function booleanSelectie(doc: Document, indexFoaie: number, selectie: rea
   const contururi: Contur[] = [];
   for (const id of ids) {
     const ale = elemente.filter((e) => e.instanta === id);
-    if (ale.length !== 1) return 'compusa';
-    const c = conturElement(ale[0]!);
+    if (ale.length !== 1) return ale.some((e) => !esteContur(e)) ? 'relief' : 'compusa';
+    const e0 = ale[0]!;
+    if (!esteContur(e0)) return 'relief';
+    const c = conturElement(e0);
     if (!c.inchis) return 'deschisa';
     const f = c.varfuri.some((v) => v.s.tip === 'C') ? conturFaraCubice(c, TOLERANTA_PROIECT) : { ok: true as const, contur: c };
     if (!f.ok) return 'esuat';

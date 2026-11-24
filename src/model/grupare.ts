@@ -12,7 +12,7 @@ import { distantaLaContur, inRegiune } from '../geom/distanta.ts';
 import { compune, IDENTITATE } from '../geom/matrice.ts';
 import { amprentaContururi, blocText } from './blocText.ts';
 import { PLAFON, type GrupNod, type Instanta, type Nod, type Operatie, type Piesa } from './document.ts';
-import { conturElement } from './forme.ts';
+import { conturElement, esteContur } from './forme.ts';
 import { elementeInstanta, matriceInstanta, valoriVcarve } from './lume.ts';
 import { cuNoduri } from './urechiLocuri.ts';
 
@@ -90,7 +90,7 @@ function vcarveSeAmesteca(parti: readonly ParteGrupata[]): boolean {
       const l = aici.get(v) ?? [];
       for (const n of o.noduri) {
         const e = elemente.get(n);
-        if (e) l.push(conturElement(e));
+        if (e && esteContur(e)) l.push(conturElement(e));
       }
       aici.set(v, l);
     }

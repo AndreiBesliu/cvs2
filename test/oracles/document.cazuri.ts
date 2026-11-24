@@ -6473,3 +6473,84 @@ export const REFUZATE_V27: readonly RefuzV18[] = [
   { nume: 'RF10 un v27 cu avansul ca text pe freza benzii', doc: docV(27, incrustatieBanda27({ incrustatie: incB(banda({ freza: freza27(5, 3, { regim: regim27({ avans: '900' }) }) })) })), categorie: 'incrustatie', camp: `${opC}.incrustatie.banda.freza.regim.avans`, motiv: 'ADR 0300 §5: un număr' },
   { nume: 'RF11 un v27 cu originea o listă', doc: docV(27, opV18({ scula: freza27(1, 6, { biblioteca: ['f1', 1] }) })), categorie: 'scula', camp: `${opC}.scula.biblioteca`, motiv: 'ADR 0300 §5: un obiect { id, rev }' },
 ];
+
+// ---------------------------------------------------------------------------------------------------------------
+// v28 (ADR 0310 §1, ADR 0311 §1): relieful, o formă nouă a elementului. Cazurile pe hârtie, scrise din ADR-uri.
+
+const laV28 = (d: Liber): Liber => cuSchema(d, 28);
+/** O amprentă SHA-256 de probă: 64 de cifre hexazecimale mici. */
+const AMPRENTA28 = 'ab'.repeat(32);
+/** Un strat de relief, cu valorile de pe hârtie (ADR 0310 §1). */
+const strat28 = (v: Liber = {}): Liber => ({ id: 's1', mod: 'aduna', vizibil: true, dale: AMPRENTA28, ...v });
+/** Un relief de 240 × 160 de celule de 0,5 mm (120 × 80 mm), cu un strat. */
+const relief28 = (v: Liber = {}): Liber => ({ tip: 'relief', nx: 240, ny: 160, celula: 0.5, straturi: [strat28()], ...v });
+/**
+ * Un document cu piesa `p`: rădăcina e grupul `g` (cu matricea `grup`), cu dreptunghiul `e` (al operației `o1`) și relieful `r`
+ * (cu matricea `matrice`); `operatii`, cele date (implicit, profilul pe `e`).
+ */
+function docRelief28(relief: Liber, o: { readonly matrice?: MatriceO; readonly grup?: MatriceO; readonly operatii?: readonly Liber[] } = {}, schema = 28): Liber {
+  return {
+    schema, rev: 0,
+    piese: [{
+      id: 'p',
+      radacina: {
+        tip: 'grup', id: 'g', matrice: o.grup ?? I(),
+        copii: [{ tip: 'element', id: 'e', forma: dreptunghi(), matrice: I() }, { tip: 'element', id: 'r', forma: relief, matrice: o.matrice ?? M(1, 0, 0, 1, 10, 10) }],
+      },
+      operatii: [...(o.operatii ?? [opV18()])],
+    }],
+    foi: [{ id: 'f1', stoc: { latime: 400, inaltime: 300, grosime: 18 }, instante: [{ id: 'i0', piesa: 'p', x: 50, y: 50, rotire: 0 }] }],
+  };
+}
+
+const c30 = Math.cos(Math.PI / 6), s30 = Math.sin(Math.PI / 6);
+const toateModurile = ['aduna', 'scade', 'inalt', 'jos', 'inlocuieste', 'inmulteste'];
+
+export const VALIDE_V28: readonly CazV18[] = [
+  ...VALIDE_V27.map((c) => ({ nume: `${c.nume} (v28)`, doc: laV28(c.doc) })),
+  { nume: 'X01 un relief cu un strat, lângă un dreptunghi cu profilul lui (ADR 0310 §1)', doc: docRelief28(relief28()) },
+  { nume: 'X02 relieful rotit cu 30°, oglindit și scalat uniform cu 2 de grup (o similitudine)', doc: docRelief28(relief28(), { matrice: M(c30, s30, s30, -c30, 5, 5), grup: M(2, 0, 0, 2, 0, 0) }) },
+  {
+    nume: 'X03 32 de straturi, toate modurile, unul ascuns, cu nume',
+    doc: docRelief28(relief28({ straturi: Array.from({ length: 32 }, (_, k) => strat28({ id: `s${k}`, mod: toateModurile[k % 6], vizibil: k !== 3, nume: `Stratul ${k}` })) })),
+  },
+  { nume: 'X04 marginile grilei: 8192 × 8192 de celule de 1,2207 mm (9 999,97 mm)', doc: docRelief28(relief28({ nx: 8192, ny: 8192, celula: 1.2207 })) },
+  { nume: 'X05 celula cea mai mică (0,001 mm) și cea mai mare (100 mm, 100 × 100 = 10 000 mm)', doc: docRelief28(relief28({ nx: 1, ny: 1, celula: 0.001 })) },
+  { nume: 'X06 celula de 100 mm pe 100 × 100 de celule: exact latura documentului', doc: docRelief28(relief28({ nx: 100, ny: 100, celula: 100 })) },
+  { nume: 'X07 câmpuri necunoscute în formă și în strat (rămân)', doc: docRelief28(relief28({ lumina: 315, straturi: [strat28({ culoare: '#fff' })] })) },
+  { nume: 'X08 o piesă doar cu relief, fără operații', doc: docRelief28(relief28(), { operatii: [] }) },
+  { nume: 'X09 id-ul stratului ca un UUID', doc: docRelief28(relief28({ straturi: [strat28({ id: '3f2b8c1e-9a4d-4e6f-b1c2-7d8e9f0a1b2c' })] })) },
+];
+
+/** Un v28 cu relieful dat, ca refuz: categoria `relief` și calea câmpului. */
+const rR = (nume: string, relief: Liber, camp: string, motiv: string, o: Parameters<typeof docRelief28>[1] = {}): RefuzV18 => (
+  { nume, doc: docRelief28(relief, o), categorie: 'relief', camp, motiv }
+);
+const formaR = 'piese.0.radacina.copii.1.forma';
+
+export const REFUZATE_V28: readonly RefuzV18[] = [
+  ...REFUZATE_V27.filter((r) => !r.nume.startsWith('R01 ')),
+  { nume: 'R01 scris de o versiune mai nouă (v29)', doc: docRelief28(relief28(), {}, 29), categorie: 'schema', camp: 'schema', motiv: 'ADR 0070 §2: o versiune mai veche refuză una mai nouă', text: 'versiune mai nouă' },
+  { nume: 'RX0 un v27 cu un relief (o formă necunoscută la v27)', doc: docRelief28(relief28(), {}, 27), categorie: 'schema', camp: `${formaR}.tip`, motiv: 'ADR 0310 §1: forma vine cu v28; ADR 0024 §7: nu se face v28 pe tăcute', text: 'nu e un document v27 valid' },
+  rR('RX1 nx = 0', relief28({ nx: 0 }), `${formaR}.nx`, 'ADR 0311 §1: întreg 1–8192'),
+  rR('RX2 nx = 8193', relief28({ nx: 8193 }), `${formaR}.nx`, 'ADR 0311 §1: cel mult 8192'),
+  rR('RX3 nx zecimal', relief28({ nx: 1.5 }), `${formaR}.nx`, 'ADR 0311 §1: un întreg'),
+  rR('RX4 ny lipsă', (() => { const f = relief28(); delete f['ny']; return f; })(), `${formaR}.ny`, 'ADR 0311 §1: cerut'),
+  rR('RX5 celula 0,0009 mm', relief28({ celula: 0.0009 }), `${formaR}.celula`, 'ADR 0311 §1: de la 0,001'),
+  rR('RX6 celula 101 mm', relief28({ celula: 101 }), `${formaR}.celula`, 'ADR 0311 §1: cel mult 100'),
+  rR('RX7 celula ca text', relief28({ celula: '0.5' }), `${formaR}.celula`, 'ADR 0311 §1: un număr'),
+  rR('RX8 8192 · 1,3 mm trece de 10 000 mm', relief28({ nx: 8192, celula: 1.3 }), `${formaR}`, 'ADR 0311 §1: latura documentului'),
+  rR('RX9 niciun strat', relief28({ straturi: [] }), `${formaR}.straturi`, 'ADR 0311 §1: 1–32'),
+  rR('RX10 33 de straturi', relief28({ straturi: Array.from({ length: 33 }, (_, k) => strat28({ id: `s${k}` })) }), `${formaR}.straturi`, 'ADR 0311 §1: cel mult 32'),
+  rR('RX11 straturile nu sunt o listă', relief28({ straturi: { s1: strat28() } }), `${formaR}.straturi`, 'ADR 0310 §1: o listă'),
+  rR('RX12 două straturi cu același id', relief28({ straturi: [strat28(), strat28({ mod: 'scade' })] }), `${formaR}`, 'ADR 0310 §1: id unic în relief'),
+  rR('RX13 id-ul stratului cu un spațiu', relief28({ straturi: [strat28({ id: 's 1' })] }), `${formaR}.straturi.0.id`, 'ADR 0310 §1: ca id-urile documentului'),
+  rR('RX14 un mod necunoscut', relief28({ straturi: [strat28({ mod: 'multiplica' })] }), `${formaR}.straturi.0.mod`, 'ADR 0311 §7: unul din șase'),
+  rR('RX15 vizibil ca text', relief28({ straturi: [strat28({ vizibil: 'da' })] }), `${formaR}.straturi.0.vizibil`, 'ADR 0310 §1: boolean'),
+  rR('RX16 amprenta cu majuscule', relief28({ straturi: [strat28({ dale: 'AB'.repeat(32) })] }), `${formaR}.straturi.0.dale`, 'ADR 0311 §6: hexazecimal mic'),
+  rR('RX17 amprenta scurtă', relief28({ straturi: [strat28({ dale: 'ab'.repeat(31) })] }), `${formaR}.straturi.0.dale`, 'ADR 0311 §6: 64 de cifre'),
+  rR('RX18 numele stratului de 201 caractere', relief28({ straturi: [strat28({ nume: 'n'.repeat(201) })] }), `${formaR}.straturi.0.nume`, 'ca numele documentului'),
+  rR('RX19 relieful sub o scalare neuniformă a grupului', relief28(), 'piese.0', 'ADR 0310 §1: celula rămâne pătrată', { grup: M(2, 0, 0, 1, 0, 0) }),
+  rR('RX20 relieful înclinat', relief28(), 'piese.0', 'ADR 0310 §1: celula rămâne pătrată', { matrice: M(1, 0, 0.5, 1, 0, 0) }),
+  rR('RX21 profilul referă relieful', relief28(), 'piese.0.operatii.0', 'ADR 0310 §1: operațiile 2D taie contururi', { operatii: [opV18({ noduri: ['r'] })] }),
+];

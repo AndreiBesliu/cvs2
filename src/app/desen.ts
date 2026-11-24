@@ -1,7 +1,7 @@
 import type { ComandaCale, FormaDesen } from '../canvas/protocol.ts';
 import { cerculArcului, numarSegmente, segment, type Contur } from '../geom/conturBaza.ts';
 import type { Document } from '../model/document.ts';
-import { conturElement } from '../model/forme.ts';
+import { chenarElement } from '../model/forme.ts';
 import { elementeFoaie, taieturiFoaie } from '../model/lume.ts';
 import { oglindeste, parteaLume } from '../model/parte.ts';
 
@@ -65,7 +65,8 @@ export function listaDesen(doc: Document, indexFoaie = 0): FormaDesen[] {
     }
   }
   return elementeFoaie(doc, indexFoaie).map((e) => {
-    const c = conturElement(e);
+    // Relieful (ADR 0310) se desenează ca vector doar prin chenarul lui; umbrirea o pune stratul reliefului, dedesubt.
+    const c = chenarElement(e);
     const p = c.varfuri[0]?.p;
     const parte = parti.get(e.idLume);
     const d = !c.inchis && p && parte ? directiaDeStart(c) : null;

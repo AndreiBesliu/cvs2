@@ -24,7 +24,7 @@ import { is } from 'valibot';
 import { arieCuSemn, type Contur } from '../../src/geom/contur.ts';
 import { distantaLaContur } from '../../src/geom/distanta.ts';
 import type { Document, FormaDoc, Nod, VarfDoc } from '../../src/model/document.ts';
-import { conturElement } from '../../src/model/forme.ts';
+import { chenarElement } from '../../src/model/forme.ts';
 import type { Imbinare } from '../../src/model/imbinare.ts';
 import { executa, istoricNou } from '../../src/model/jurnal.ts';
 import { elementeFoaie } from '../../src/model/lume.ts';
@@ -64,7 +64,7 @@ const refuz = (d: Document, c: CerereTaiere): string => {
   const r = taie(d, c);
   return r.ok ? `tăiată în ${r.ids.length}` : r.motiv;
 };
-const contururi = (d: Document, inst: string): Contur[] => elementeFoaie(d).filter((e) => e.instanta === inst).map((e) => conturElement(e));
+const contururi = (d: Document, inst: string): Contur[] => elementeFoaie(d).filter((e) => e.instanta === inst).map((e) => chenarElement(e));
 
 /** Conturul ca poligon des (arcele prin 256 de coarde). */
 function poligon(c: Contur): Array<{ x: number; y: number }> {

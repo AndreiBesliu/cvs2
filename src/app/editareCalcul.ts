@@ -4,7 +4,7 @@ import type { Cutie } from '../geom/cutie.ts';
 import { tinteCutie, tinteDin, tintePunct, type LinieLipire, type Tinte, type TintaLipire } from '../geom/lipire.ts';
 import { aplica } from '../geom/matrice.ts';
 import type { Document, Ghidaj } from '../model/document.ts';
-import { conturElement, cutieElement } from '../model/forme.ts';
+import { chenarElement, conturElement, cutieElement } from '../model/forme.ts';
 import { elementeFoaie } from '../model/lume.ts';
 import { motivRetea, type MotivRetea, type PozitieCurba, type Retea } from '../model/retea.ts';
 import type { Transformare } from '../model/transformare.ts';
@@ -283,7 +283,7 @@ export function aleseInCadru(doc: Document, r: Cutie, fel: FelCadru, indexFoaie 
       if (pana === true) continue;
       const k = cutieElement(e);
       const aproape = k.maxX >= r.minX && k.minX <= r.maxX && k.maxY >= r.minY && k.minY <= r.maxY;
-      stare.set(e.instanta, aproape && conturAtinge(conturElement(e), r));
+      stare.set(e.instanta, aproape && conturAtinge(chenarElement(e), r));
     }
   }
   return [...stare].filter(([, da]) => da).map(([id]) => id);

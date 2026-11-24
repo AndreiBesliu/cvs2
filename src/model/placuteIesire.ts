@@ -36,8 +36,11 @@ function contururi(radacina: Nod, litere: ReadonlySet<string> | null): { readonl
     if (!x) break;
     const m = compune(x.m, x.nod.matrice);
     if (x.nod.tip === 'element') {
-      if (x.text === 'nu') rez.placa.push(conturElement({ forma: x.nod.forma, matrice: m }));
-      else if (x.text === 'masurat') rez.litere.push(conturElement({ forma: x.nod.forma, matrice: m }));
+      const forma = x.nod.forma;
+      // Un relief (ADR 0310) nu e nici rama plăcuței, nici o literă.
+      if (forma.tip === 'relief') continue;
+      if (x.text === 'nu') rez.placa.push(conturElement({ forma, matrice: m }));
+      else if (x.text === 'masurat') rez.litere.push(conturElement({ forma, matrice: m }));
       continue;
     }
     const text = x.text !== 'nu' ? x.text : litere?.has(x.nod.id) ? 'masurat' : blocText(x.nod) ? 'altul' : 'nu';

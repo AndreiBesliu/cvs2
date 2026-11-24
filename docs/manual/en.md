@@ -783,7 +783,8 @@ For each file a window opens that shows the drawing's size and how it will be cu
 - for a WMF without a placeable header, **the unit**: 1/96 inch (px, as in LibreOffice), 1/1440 inch (twip), 0.01 mm, 0.1 mm
   or mm (see below);
 - for a PDF with several pages, **the page** to import (see below);
-- for an image, **the tracing**: how the drawing's pixels become outlines (see below);
+- for an image, **the tracing**: how the drawing's pixels become outlines (see below); with **Relief**, at the top of the
+  window, the image becomes a relief (see [Relief from an image](#relief));
 - what is not imported or is read differently, with their count (for an SVG: texts, `<use>` clones, images, hidden shapes).
 
 **Import** puts the drawing on the sheet as a single shape, selected; **Skip** moves on to the next file; **Cancel** and
@@ -1039,6 +1040,38 @@ The sheets report (from the export window) names, for each sheet, its images.
 Images are kept in the browser, next to the project, not in the document: on another computer or in another browser, the
 sheet shows only their place, dashed, and the list says they are missing. An image that no kept version of the project uses
 any more is deleted at a start-up, after at least a day. On a phone, images show but are not placed or changed.
+
+## Relief from an image
+%% capitol: relief
+
+From an image (a photo, a logo, a grey height map) you can make a **relief**: a 3D shape of the part, with one cell for each
+pixel, whose height comes from the pixel's grey. On the board, the relief shows shaded (light from the top left), under the
+vectors, with its frame; it is selected, moved, rotated and mirrored like any shape, and a part with a relief is placed
+several times and on other sheets. Its 3D machining (roughing and finishing) comes in the next slices: for now the relief is
+not cut.
+
+**How to make one:** from “Import…”, pick an image (PNG, JPEG, WebP, GIF or BMP), then, at the top of the window, **Relief**
+instead of **Vectors**. The choice is kept until you reload the page. On the left, the window has:
+- **Height from**: the luminance (the default) or a single channel (red, green, blue);
+- the direction: **White = high** (the default) or **Black = high**;
+- **Height** (mm): how far white (or black) rises above the base; **Base (zero plane)**: the height of the darkest (or
+  lightest) grey;
+- **Width** (mm): one cell is one pixel, so the width gives the cell; if you do not type it, it comes from the file's DPI or,
+  without one, from 96 px per inch;
+- **Smoothing** (σ, in cells): 0 = none; transparent pixels stay empty, and the smoothing skips them.
+
+On the right, the shaded relief, and under it the grid (the cells, the cell, the size in mm) and the heights, from the lowest
+to the highest. What you see is computed from the saved relief, so it is exactly what is kept. **Import** places the part on
+the sheet, selected, in one undo step; dropped on the board, with its centre at the drop point. A transparent pixel has no
+height: there the relief is the zero plane. A fully transparent image, one larger than 8192 × 8192 pixels, or a width that
+gives a cell outside its limits (0.001 to 100 mm, at most 10 m a side) is refused, with the reason.
+
+**In the panel:** with the part selected, the **Relief** section shows the size, the cell, the cells, the heights and the
+layers, top to bottom, each with its mode (in this slice, a relief has a single layer, “add”).
+
+The relief is kept in the browser, next to the project, not in the document (the document keeps only its fingerprint), like
+the sheet images: on another computer or in another browser, the panel says the layers are missing. Whatever no kept version
+of the project uses any more is deleted at a start-up, after at least a day.
 
 ## Cutting vectors
 %% capitol: taiere

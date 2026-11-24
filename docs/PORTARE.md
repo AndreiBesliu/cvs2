@@ -409,6 +409,18 @@ DGK și PIC, scoase din prag pe 07.10. **Recomandarea mea, ca implicit:**
 
 Întrebarea intră în coada ta înaintea etapei 5.
 
+### 4.1 Etapa 18 (relieful): verdictele propuse pe 24.11
+
+Propuse de linia reliefului, odată cu ADR 0310 (§11). **Decizi tu pe ele;** dacă nu obiectezi până la felia 18.1↑c (prima
+care taie), se aplică. Codul vechi nu e în containerul liniei (sesiune cloud), deci verdictele se sprijină pe `LECTII.md`
+§3.2 și pe sonda s5, nu pe o recitire a codului.
+
+| Candidatul | Verdictul | De ce |
+|---|---|---|
+| Dilatarea gri cu profilul frezei + lema coardei | **rescris, cu s5 ca martor** | s5 a refăcut ideea și a măsurat-o: câmpul conservativ (maximul pe celulă) cu distanța la segment dă 0 scobituri pe tot corpusul; varianta veche, cu CL-ul în noduri și maximul pe vecini, sapă 5 mm pe un perete de 0,01 mm (s5 §4.1, `LECTII.md` §3.2: „exactă în noduri; un singur raster”). Martorul e s5 (`cod/lib/hf.mjs`), nu codul vechi |
+| Maximul glisant cu deque monoton | **rescris** | e un algoritm cunoscut, scris din nou în CAM-ul 3D (CL-ul frezei plate la degroșare și oprirea timpurie a finisării); proba e oracolul reliefului, nu vechiul |
+| Transformata de distanță Danielsson | **de judecat înaintea etapei 19** | etapa 18 n-o folosește; o cer estomparea și editorul de forme (etapa 19) |
+
 ## 5. Ce schimbă asta în plan
 
 - **Fișa etapei 2:**

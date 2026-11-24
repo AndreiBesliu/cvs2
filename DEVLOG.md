@@ -13250,6 +13250,55 @@ scrie brief-ul pentru relief si pentru cote”
   cotelor, v29 reliefului. Brief-urile de lipit, date owner-ului ca fișiere.
 - **Pe aceeași ramură (`unire-2411g`):** rândul publicării lotului al paisprezecelea.
 
+## 2026-11-24 — Linia reliefului: ADR 0310 propus, cu schița și șase întrebări (sesiune cloud)
+
+**Prompt:** brief-ul liniei, lipit de owner în sesiunea cloud nouă, pe `wip/18.1-relief`; din el, exact: „Prima livrare,
+fără cod de produs: ADR 0310, propus (intervalul liniei: 0310–0329), cu rândul lui în indexul ADR și titlul tradus, plus
+o schiță publicată (o pagină cu machetele și cu întrebările pentru owner, recomandarea în față, ca la celelalte linii).”
+**Started:** 24.11, 12:30. **Completed:** 24.11, 12:55.
+
+- **Citit întâi:** `CLAUDE.md`, `docs/lucru-in-cloud.md`, `docs/linii/relief.md` și `lectii.md`, `PLAN.md` §3 și §5.4
+  (etapele 18–24), ADR 0010, 0011, 0012, 0015, 0047, 0057, 0272, 0300, sonda s5 (raportul și `cod/lib/hf.mjs`),
+  `docs/PORTARE.md` §4, secțiunile C și D din prag; în cod: schema documentului (v27), imaginile pe foaie, proiectul
+  local, vederea 3D, ușa imaginilor, poarta mărimii.
+- **ADR 0310, propus** (`docs/adr/0310-relieful-nucleul-imaginea-3d.md`): relieful e un element al piesei (forma
+  `relief`, documentul v29, numărul de confirmat cu sesiunea principală), cu straturi în șase moduri; dalele de 256²,
+  Uint16 cu scară pe dală, după amprentă, în IndexedDB `cncvs2-relief`, documentul ține doar amprenta hărții fiecărui
+  strat; o operație se încheie cu cuantizarea; workerul reliefului și CAM-ul 3D în workerul CAM, fără stare; modelul
+  exact = triunghiurile prin centrele celulelor; câmpul conservativ exact pe 9 puncte pe celulă, aliniat la pixeli;
+  finisarea pe capsula segmentului, degroșarea în trepte, invarianta 4; feliile 18.1↑a–i; mărimea (pornirea ≤ +0,6 kB,
+  totalul ~35–50 kB pe linie); opțiunile; șase întrebări, recomandarea „a” la toate.
+- **Indexul ADR:** rândul 0310; titlul tradus în roadmap (991 de texte, 0 lipsă).
+- **`docs/PORTARE.md` §4.1:** verdictele propuse pentru etapa 18 (dilatarea gri cu lema coardei și maximul glisant:
+  rescrise, cu s5 ca martor; Danielsson: înaintea etapei 19). Codul vechi nu e în container: verdictele se sprijină pe
+  `LECTII.md` §3.2 și pe s5.
+- **Schița:** <https://claude.ai/artifact/Kbh5T2HAi3aMuYTQ59qz6h>: fereastra „Relief din imagine” și litofania (se pot
+  încerca, pe imagini generate în pagină), planșa cu panoul și straturile, vederea 3D „Modelul / Tăiat” (drop-cutter-ul
+  bilei și crestele), alinierea, rândurile exportului, feliile, formularul. Răspunsurile, în `raspunsuri/owner`, doar de
+  owner: colecția goală la citire; scrierea unui vizitator obișnuit (`as_level: interact`) refuzată. Verificat o dată
+  în Chromium: fără erori, fără derulare laterală la 1200 și la 390 px.
+- **Nota liniei** la zi. Fără cod de produs; porțile CI pe commit (doar documente).
+
+## 2026-11-24 — Linia reliefului: felia 18.1↑a, relieful din imagine pe planșă (documentul v28) (sesiune cloud)
+
+**Prompt:** „am raspuns” (formularul schiței: 1a, 2a, 3a, 4a, 5a, 6a), apoi brief-ul liniei: „Corectitudinea se
+demonstrează: proba înaintea funcției, oracol independent, valori pe hârtie, otrăvuri.” **Started:** 24.11, 12:55.
+**Completed:** 24.11, 15:40.
+
+- **Oracolul întâi** (`test/oracles/relief.ts`, `relief.cazuri.ts`; 5a), din ADR 0311 (contractul exact al nucleului,
+  scris înaintea codului): imaginea → relief, dala, harta, compunerea, cu amprentele din Python și controalele negative.
+- **Nucleul** `src/relief/` (grila, imaginea, dala, harta, compunerea, stratul, umbrirea), plasa pe sursă a determinismului,
+  regula `relief-doar-model-geom` cu capcana ei.
+- **Documentul v28** (nu v29: cotele erau pe v27; anunțată sesiunea principală): forma `relief`, ușa, migrarea v27 → v28 cu
+  ciocnirea, `FormaContur` / `esteContur` / `chenarElement` în uneltele vectorilor; oracolul documentului și corpusul de aur
+  la v28; probele care țin versiunea, pe 28 („mai nouă” = 29).
+- **Workerul reliefului**, baza `cncvs2-relief`, alegerea Vectori / Relief, fereastra reliefului, desenul umbrit (stratul
+  imaginilor al pânzei, adus la cerere), panoul, manualul. Pixelii exacți printr-o textură WebGL2 (pânza 2D rotunjea pixelii
+  semitransparenți: amprenta logoului diferea de Node; otrava C05 o arată).
+- **Mărimea:** pornirea +0,5 kB (cu ușa +0,9, peste ținta de +0,6 a liniei cu 0,3), totalul +12,7 kB (818,9 / 900).
+- **Probele:** unitare (relieful, documentul v28, integrarea), e2e `relief.spec.ts` (amprenta Node = browser, pixelii pânzei),
+  manualul (42 de capitole); otrăvurile 43 / 43 (`test/otravuri/18.1a.py`).
+
 ## 2026-11-24 — Sesiunea principală în cloud: a cincisprezecea unire (A.7, adminul pe telefon) (Model: Claude Fable 5.2)
 
 **Prompt:** „pare ca e gata adminul” (cu o captură a sesiunii liniei); „ok, cand e verde fa unirea”

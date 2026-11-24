@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { documentNou, PLAFON } from '../../src/model/document.ts';
+import { documentNou, PLAFON, VERSIUNE_SCHEMA } from '../../src/model/document.ts';
 import { incarca, jsonCanonic } from '../../src/model/incarcare.ts';
 import { anuleaza, executa, istoricNou, reface } from '../../src/model/jurnal.ts';
 import { problemaCote } from '../../src/model/schemaDocument.ts';
@@ -32,12 +32,12 @@ const BUNE = [
   { id: 'c7', fel: 'unghi', puncte: [{ x: 0, y: 0 }, { x: 10, y: 0 }, { x: 0, y: 5 }, { x: 10, y: 15 }], linie: { d: 6 } },
 ];
 
-test('ușa: un document fără cote rămâne neatins (câmpul e opțional; schema rămâne v27)', () => {
+test('ușa: un document fără cote rămâne neatins (câmpul e opțional; schema rămâne cea curentă)', () => {
   const d = documentNou(STOC);
   const r = incarca(JSON.parse(JSON.stringify(d)));
   assert.ok(r.ok);
   assert.equal(jsonCanonic(r.doc), jsonCanonic(d));
-  assert.equal(r.doc.schema, 27);
+  assert.equal(r.doc.schema, VERSIUNE_SCHEMA);
   assert.equal(problemaCote(d), null);
 });
 
@@ -49,7 +49,7 @@ test('ușa: cotele bune trec, de fiecare fel, cu câmpurile necunoscute păstrat
   const r = incarca(cuCoteBrut(cote));
   assert.ok(r.ok, motiv(r));
   assert.deepEqual(r.doc.foi[0]?.cote, cote);
-  assert.equal(r.doc.schema, 27);
+  assert.equal(r.doc.schema, VERSIUNE_SCHEMA);
 });
 
 test('ușa: forma greșită, numerele în afara plafonului, id-urile duble și prea multe cote sunt refuzate, cu motivul', () => {

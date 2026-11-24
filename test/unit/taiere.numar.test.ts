@@ -27,7 +27,7 @@ import type { Contur, Punct } from '../../src/geom/contur.ts';
 import { conturCerc, conturDreptunghi } from '../../src/geom/conturBaza.ts';
 import { is } from 'valibot';
 import type { Document, FormaDoc, Piesa } from '../../src/model/document.ts';
-import { conturElement } from '../../src/model/forme.ts';
+import { chenarElement } from '../../src/model/forme.ts';
 import { anuleaza, istoricNou, type Istoric } from '../../src/model/jurnal.ts';
 import { elementeInstanta, matriceInstanta } from '../../src/model/lume.ts';
 import { inaltimeNumarBuna } from '../../src/model/inaltimeNumar.ts';
@@ -101,7 +101,7 @@ test('document.taie cu numere: fiecare număr în grupul panoului lui, cu id nou
   bucati.set('a', { instanta: a, piesa: d.piese.find((q) => q.id === 'a') as Piesa });
   const cifra: Piesa = { id: 'numar', radacina: { tip: 'element', id: 't', forma: dr(7, 10), matrice: { ...ID } }, operatii: [] };
   const numere: NumarPanouCalculat[] = (r.perPanou ?? []).map((ids, k) => {
-    const contururi = ids.flatMap((id) => { const b = bucati.get(id); return b ? elementeInstanta(b.piesa.radacina, b.instanta, matriceInstanta(b.instanta)).map(conturElement) : []; });
+    const contururi = ids.flatMap((id) => { const b = bucati.get(id); return b ? elementeInstanta(b.piesa.radacina, b.instanta, matriceInstanta(b.instanta)).map(chenarElement) : []; });
     const loc = locNumar(contururi, CIFRA, JOC);
     assert.ok(loc, `panoul ${k + 1} are loc`);
     return { nume: `Panoul ${k + 1}`, ids, piesa: cifra, x: loc.x, y: loc.y };

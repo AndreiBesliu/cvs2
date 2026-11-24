@@ -15,6 +15,8 @@ import type { ImagineFoaie } from '../model/document.ts';
 import { citeste as citesteImaginea, OPACITATE_IMAGINE, pastreaza } from './imaginiFoaie.ts';
 import { asezarePeImagine, numeFisierImagine, zonaInPixeli, type ZonaRelativa } from './modImagineCalcul.ts';
 import { utilizarea } from './utilizare.ts';
+import type { RezultatImagine } from '../ui/AlegereRezultat.tsx';
+import { FereastraRelief } from './FereastraRelief.tsx';
 
 /** Mesajele modulului, ca date (ADR 0086): cine îl încarcă le așteaptă (`cuMesaje`); un refuz îl vede tot el. */
 export const mesaje = mesajeGata();
@@ -49,6 +51,13 @@ const ALEGERI: AlegeriImport = { pxPeTol: 96, unitate: 'mm', unitateWmf: 'px', p
  * stă modulul încărcat, adică până la reîncărcarea paginii).
  */
 let pastreazaImaginea = false;
+
+/**
+ * Ce se face dintr-o imagine (ADR 0310 §7): vectori (trasarea, implicit, ca până acum) sau relief; ținut minte cât lucrezi,
+ * ca bifa de mai sus.
+ */
+let rezultatTinut: RezultatImagine = 'vectori';
+const esteImagine = (nume: string): boolean => formatImport(nume, '') === 'imagine';
 
 type Props = {
   /** Coada fișierelor alese sau lăsate pe planșă (felia 2.8b), cel puțin unul: dialogul le trece pe rând. */
@@ -94,6 +103,9 @@ export function ImportConectat({ fisiere, punct, registruImport, contextImport, 
   const [k, setK] = useState(0);
   const [dialog, setDialog] = useState<StareDialog>(() => stareInitiala(fisiere[0] ?? new File([], '')));
   const [pastreazaBifat, setPastreazaBifat] = useState(pastreazaImaginea);
+  /** Vectori sau relief (ADR 0310 §7); ref-ul îl citesc și citirile pornite din efecte. */
+  const [rezultat, setRezultat] = useState<RezultatImagine>(rezultatTinut);
+  const rezultatAcum = useRef(rezultat);
   /** Imaginea pentru foaie (ADR 0272): în lucru, și motivul ultimului eșec (până la citirea următoare). */
   const [imagineInLucru, setImagineInLucru] = useState(false);
   const [motivImagine, setMotivImagine] = useState<CheieSimpla | null>(null);
@@ -161,7 +173,11 @@ export function ImportConectat({ fisiere, punct, registruImport, contextImport, 
     setDialog(initiala);
     if (initiala.stare !== 'citire') return;
     f.arrayBuffer().then((b) => {
-      if (c === cerere.current) citeste({ nume: f.name, octeti: new Uint8Array(b) }, ALEGERI, false);
+      if (c !== cerere.current) return;
+      const fisier = { nume: f.name, octeti: new Uint8Array(b) };
+      // O imagine făcută relief (ADR 0310 §7): fără trasare; fereastra reliefului își face singură calculul.
+      if (rezultatAcum.current === 'relief' && esteImagine(f.name)) setDialog({ fisier, nume: f.name, ...ALEGERI, pxAutomat: false, stare: 'citire' });
+      else citeste(fisier, ALEGERI, false);
     }, (e: unknown) => {
       if (c === cerere.current) setDialog({ fisier: null, nume: f.name, ...ALEGERI, pxAutomat: false, stare: { ok: false, cod: 'parsare', detaliu: String(e) } });
     });
@@ -255,6 +271,21 @@ export function ImportConectat({ fisiere, punct, registruImport, contextImport, 
       setMotivImagine(motiv);
     }, () => undefined);
   };
+  /**
+   * Vectori sau relief (ADR 0310 §7). Spre relief, trasarea în curs se oprește (fereastra reliefului are workerul ei); înapoi
+   * la vectori, o trasare neterminată se reia cu alegerile de pe ecran.
+   */
+  const alegeRezultat = (r: RezultatImagine): void => {
+    rezultatTinut = r;
+    rezultatAcum.current = r;
+    setRezultat(r);
+    if (r === 'relief') {
+      cerere.current++;
+      opresteCitirea();
+    } else if (dialog.fisier && dialog.stare === 'citire') {
+      citeste(dialog.fisier, { pxPeTol: dialog.pxPeTol, unitate: dialog.unitate, unitateWmf: dialog.unitateWmf, pagina: dialog.pagina, trasare: dialog.trasare ?? TRASARE_IMPLICITA }, dialog.pxAutomat);
+    }
+  };
   /** Recitirea cu o alegere schimbată: ce e pe ecran (previzualizarea sau refuzul) rămâne acolo până sosește noul rezultat. */
   const recitesteCu = (schimbare: Partial<AlegeriImport>): void => {
     if (!dialog.fisier) return;
@@ -264,6 +295,17 @@ export function ImportConectat({ fisiere, punct, registruImport, contextImport, 
     };
     citeste(dialog.fisier, a, dialog.pxAutomat, dialog.stare === 'citire' ? undefined : dialog.stare);
   };
+  // Relieful din imagine (ADR 0310 §7): fereastra lui, cu fișierul citit; nu din imaginea de pe foaie (ADR 0272 §7).
+  if (rezultat === 'relief' && !dinFoaie && dialog.fisier && esteImagine(dialog.fisier.nume)) {
+    const f = dialog.fisier;
+    return (
+      <FereastraRelief key={`${k}:${f.nume}`} nume={f.nume} octeti={f.octeti} onAlege={alegeRezultat}
+        stareImporta={(p) => stareImporta(p, loc)} importa={(p) => importa(p, loc)} onImportat={urmatorul} onInchide={inchide}
+        jurnal={(e) => { contextImport(f, ALEGERI, () => undefined).jurnal?.(e); }}
+        {...(fisiere.length > 1 ? { coada: { k: k + 1, n: fisiere.length }, onSari: urmatorul } : {})}
+        {...(de === undefined ? {} : { de })} />
+    );
+  }
   return (
     <DialogImport
       nume={dialog.nume}
@@ -291,6 +333,7 @@ export function ImportConectat({ fisiere, punct, registruImport, contextImport, 
         }
         if (importa(pregatit, loc).ok) urmatorul();
       }}
+      {...(dinFoaie || !esteImagine(dialog.nume) ? {} : { rezultatImagine: { ales: rezultat, onAlege: alegeRezultat } })}
       {...(dinFoaie ? { dinFoaie: true } : {
         imagineFoaie: {
           pastreaza: pastreazaBifat,

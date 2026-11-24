@@ -8,7 +8,7 @@
  */
 import { arcEliptic } from '../geom/elipsa.ts';
 import { TOLERANTA_IMPORT } from '../geom/toleranta.ts';
-import type { FormaDoc, VarfDoc } from './document.ts';
+import type { FormaContur, FormaDoc, VarfDoc } from './document.ts';
 
 type P = { readonly x: number; readonly y: number };
 
@@ -25,7 +25,7 @@ export type Parametri =
 const L = (p: P): VarfDoc => ({ p: { x: p.x, y: p.y }, s: { tip: 'L' } });
 
 /** Pură: poligonul regulat cu `laturi` laturi, înscris în cercul (centru, raza), cu primul vârf la `unghi`. */
-export function poligonRegulat(centru: P, raza: number, laturi: number, unghi: number, sens: 1 | -1 = 1): FormaDoc {
+export function poligonRegulat(centru: P, raza: number, laturi: number, unghi: number, sens: 1 | -1 = 1): FormaContur {
   const n = Math.round(Math.min(LATURI_MAX, Math.max(LATURI_MIN, laturi)));
   const varfuri = Array.from({ length: n }, (_, k) => {
     const u = unghi + (sens * 2 * Math.PI * k) / n;
@@ -40,7 +40,7 @@ export function poligonRegulat(centru: P, raza: number, laturi: number, unghi: n
  * formei e exact centrul ± razele (panoul arată 120, nu 119,999999663). Cu razele egale, în origine, e un `cerc`, exact (un
  * cerc nu are centru propriu: îl dă locul instanței).
  */
-export function elipsa(centru: P, rx: number, ry: number): FormaDoc {
+export function elipsa(centru: P, rx: number, ry: number): FormaContur {
   if (centru.x === 0 && centru.y === 0 && Math.abs(rx - ry) <= 1e-12 * Math.max(rx, ry)) return { tip: 'cerc', raza: rx };
   const h = { a: rx, b: 0, c: 0, d: ry, e: centru.x, f: centru.y };
   const extreme: P[] = [
@@ -93,7 +93,7 @@ const unghiNormat = (u: number): number => {
 export function parametri(f: FormaDoc): Parametri | null {
   if (f.tip === 'dreptunghi') return { tip: 'dreptunghi', latime: f.latime, inaltime: f.inaltime, razaColt: f.razaColt };
   if (f.tip === 'cerc') return { tip: 'cerc', raza: f.raza };
-  if (!f.inchis) return null;
+  if (f.tip === 'relief' || !f.inchis) return null;
   const v = f.varfuri;
   const n = v.length;
   if (n < 2) return null;
