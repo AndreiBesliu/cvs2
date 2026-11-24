@@ -7,7 +7,7 @@ import type { Actiune } from './actiuni.ts';
  */
 export type ContextVedere = {
   readonly [K in 'paleta' | 'lista' | 'proprietati' | 'proiectare' | 'masina' | 'imprimanta' | 'potriveste' | 'tema' | 'traseu' | 'foaia-anterioara'
-    | 'foaia-urmatoare' | 'toate-foile' | 'aspect' | 'freze' | 'setari']: () => void
+    | 'foaia-urmatoare' | 'toate-foile' | 'aspect' | 'freze' | 'setari' | 'cote']: () => void
 };
 
 const vedere = (ce: keyof ContextVedere): Actiune<ContextVedere> => ({
@@ -27,8 +27,9 @@ const vedere = (ce: keyof ContextVedere): Actiune<ContextVedere> => ({
 // pânză” / doar foaia activă, ținut în browser; pornit, le încadrează pe toate. `aspect` (ADR 0250 §3, felia 28.1↑b): fereastra
 // Aspectul (aranjamentul, tema, butoanele mari), din paletă; tot ea, din meniul contului. `freze` (ADR 0300 §3, felia 16.A↑a):
 // fereastra „Frezele mele”, biblioteca de freze din browser; tot ea, din meniul contului. `setari` (ADR 0330 §6, felia
-// 10.4↑a-3): fereastra Setări (azi, secțiunea Cotele), cu Ctrl+,; tot ea, din meniul contului și din ⚙ al uneltei Cote.
+// 10.4↑a-3): fereastra Setări (azi, secțiunea Cotele), cu Ctrl+,; tot ea, din meniul contului și din ⚙ al uneltei Cote. `cote`
+// (ADR 0330 §5, felia 10.4↑a-4): „Arată cotele”, aceeași setare ca „Cotele pe pânză” din Setări.
 export const ACTIUNI_VEDERE: readonly Actiune<ContextVedere>[] = ([
   'paleta', 'lista', 'proprietati', 'proiectare', 'masina', 'imprimanta', 'potriveste', 'tema', 'traseu', 'foaia-anterioara', 'foaia-urmatoare',
-  'toate-foile', 'aspect', 'freze', 'setari',
+  'toate-foile', 'aspect', 'freze', 'setari', 'cote',
 ] as const).map(vedere);

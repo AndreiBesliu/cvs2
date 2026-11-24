@@ -116,3 +116,8 @@
 .panza-cutie:has(.strat-cote[data-fel]) .panza {
   cursor: crosshair;
 }
+
+/* Cotele foilor vecine (ADR 0210 §1, ADR 0330 felia a-4): estompate ca foile lor, doar de văzut. */
+.cote-vecine {
+  opacity: 0.45;
+}

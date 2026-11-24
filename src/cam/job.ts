@@ -3,6 +3,7 @@ import { oglindeste } from '../model/parte.ts';
 import { conturDeTaiat } from './contur.ts';
 import { judecaDeschisa, NEATINS_PESTE_D, refuzDeschise } from './deschise.ts';
 import { conturElement } from '../model/forme.ts';
+import { motivFormaPeOperatie } from '../model/formaFrezei.ts';
 import { ordineTaieturi, valoriVcarve, type Taietura } from '../model/lume.ts';
 import { AXE_XYZ, type Miscare, type Program, type Scula } from '../ir/ir.ts';
 import { ineleBuzunar, ordineInele, traseuBuzunar } from './buzunar.ts';
@@ -45,7 +46,7 @@ import { urechiLemnBucla, type FundLemn, type LaturaLemn } from './urechiLemn.ts
 // Forma frezei (ADR 0090) trece în IR: simularea și postul o citesc de acolo.
 const sculaIR = (s: Taietura['scula']): Scula => ({
   numar: s.numar, nume: s.nume, diametru: s.diametru,
-  ...(s.forma ? { forma: { tip: 'v' as const, unghi: s.forma.unghi, ...(s.forma.varf !== undefined ? { varf: s.forma.varf } : {}) } } : {}),
+  ...(s.forma?.tip === 'v' ? { forma: { tip: 'v' as const, unghi: s.forma.unghi, ...(s.forma.varf !== undefined ? { varf: s.forma.varf } : {}) } } : {}),
 });
 
 /** Ultima poziție în plan a frezei, din mișcările de până acum; null înainte de prima. */
@@ -321,11 +322,12 @@ export function programDinDocument(
   // Direcția (§4) e doar a tăieturii pe linie.
   for (const t of taieturi) {
     const f = t.scula.forma, peLinie = t.tip === 'profil' && t.latura === 'pe-linie';
-    if (f) {
+    const motivForma = motivFormaPeOperatie(t.tip, t.latura, f);
+    if (f?.tip === 'v') {
       if (f.varf !== undefined && !(f.varf < t.scula.diametru)) {
         return { ok: false, motiv: `${t.idLume}: vârful frezei în V (T${t.scula.numar}), de ${f.varf} mm, trebuie să fie sub diametrul ei (Ø${t.scula.diametru})` };
       }
-      if (t.tip !== 'vcarve' && !peLinie) {
+      if (motivForma === 'v-pe-linie') {
         const unde = t.tip === 'buzunar' ? 'într-un buzunar' : t.tip === 'gaurire' ? 'la o găurire' : 'pe o parte';
         return { ok: false, motiv: `${t.idLume}: freza în V (T${t.scula.numar}) taie pe linie sau într-un V-carve; ${unde}, peretele n-ar ieși unde e desenat` };
       }
@@ -337,7 +339,7 @@ export function programDinDocument(
   // Aceeași sculă = același număr, același diametru și aceeași formă (ADR 0025, precizarea 1; ADR 0090). Un număr cu două
   // diametre sau două forme ar fi două freze sub același T, iar omul de la mașină ar monta una singură (ADR 0084). Și freza
   // fundului plat (ADR 0091).
-  const forma = (s: Taietura['scula']): string => (s.forma ? `în V de ${s.forma.unghi}°${s.forma.varf ? ` cu vârful de ${s.forma.varf} mm` : ''}` : 'plată');
+  const forma = (s: Taietura['scula']): string => (s.forma?.tip === 'v' ? `în V de ${s.forma.unghi}°${s.forma.varf ? ` cu vârful de ${s.forma.varf} mm` : ''}` : 'plată');
   const freze = new Map<number, Taietura['scula']>();
   for (const t of taieturi) {
     const op = operatieDe(t);
@@ -677,7 +679,7 @@ export function programDinDocument(
     // Gravarea pe linie cu freza în V (ADR 0092 §3): conul ajunge la adâncime doar dacă ((Ø − t) / 2)·cot(θ/2) ≥ adâncimea;
     // mai adânc, ar tăia coada frezei.
     const fv = t.scula.forma;
-    if (fv) {
+    if (fv?.tip === 'v') {
       const con = (D - (fv.varf ?? 0)) / 2 / Math.tan((fv.unghi * Math.PI) / 360);
       if (t.adancime > con + 1e-9) {
         return { ok: false, motiv: `${t.idLume}: tăietura cere ${t.adancime} mm, iar conul frezei în V (Ø${D}, ${fv.unghi}°) are ${con.toFixed(3)} mm: ar tăia coada frezei` };
@@ -871,7 +873,8 @@ export function programDinDocument(
       if (latura !== 'exterior' && latura !== 'interior') return { ok: false, motiv: `${t.idLume}: degajările colțurilor pe o cale deschisă vin mai târziu` };
       // Arcele sub raza frezei se socotesc pe DESEN (recenzia 2.7b): arcele biarcelor unei cubice nu sunt colțuri, iar o
       // curbă strânsă se spune o dată, nu pe fiecare arc al ei.
-      const desen = conturElement(t);
+      if (t.forma.tip === 'relief') return { ok: false, motiv: `${t.idLume}: un relief nu se taie cu o operație 2D` };
+      const desen = conturElement({ forma: t.forma, matrice: t.matrice });
       const curat = curataIntrare(desen);
       for (const r of arceSubRaza(curat.ok ? curat.contur : desen, latura, t.sens, R)) {
         avertismente.push(`${t.idLume}: colțul rotunjit cu raza ${r.toFixed(3)} mm (sub raza frezei, ${R.toFixed(3)} mm) rămâne cu raza frezei; o degajare cere un colț ascuțit în desen`);

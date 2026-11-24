@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { citesteSetariCote, eImplicit, formatCote, grupImplicit, GRUPURI_COTE, optiuniLipireCote, SETARI_IMPLICITE, stilCote, textSetariCote, type SetariCote } from '../../src/app/setariCote.ts';
+import { citesteSetariCote, comutaPePanza, eImplicit, formatCote, grupImplicit, GRUPURI_COTE, setariCote, optiuniLipireCote, SETARI_IMPLICITE, stilCote, textSetariCote, type SetariCote } from '../../src/app/setariCote.ts';
 import { STIL_IMPLICIT } from '../../src/model/desenCota.ts';
 
 /**
@@ -10,9 +10,10 @@ import { STIL_IMPLICIT } from '../../src/model/desenCota.ts';
 
 test('implicitele, din tabelul ADR 0330 §6', () => {
   assert.deepEqual(SETARI_IMPLICITE, {
-    cifre: { unitate: 'mm', zecimale: null, zerouri: 'taiate', pas: null, separator: 'limba', cuUnitate: false, inaltime: 3.5, loc: 'deasupra' },
+    cifre: { unitate: 'mm', zecimale: null, zerouri: 'taiate', pas: null, separator: 'limba', cuUnitate: false, inaltime: 3.5, loc: 'deasupra', fractie: 16 },
     linii: { capete: 'plina', marime: 2.5, extensii: true, gol: 1, depasire: 2, distanta: 10 },
-    comportament: { legate: true, pornire: 'automata', dupa: 'ramane', pePanza: true, pragCifre: 6, culoare: null },
+    raza: { prefixR: 'R', prefixD: 'Ø', unghiuri: 'zecimale', zecimaleUnghi: 2, linia: 'loc' },
+    comportament: { legate: true, pornire: 'automata', dupa: 'ramane', pePanza: true, vecine: 'estompate', pragCifre: 6, culoare: null },
     lipire: { felurile: { varf: true, mijloc: true, centru: true, cadran: true, cutie: true, foaie: true, grila: true }, toleranta: 8, contur: 'ctrl' },
     masurare: { distanta: true, delta: true, unghi: true, cursor: true, bara: true },
   });
@@ -23,9 +24,10 @@ test('implicitele, din tabelul ADR 0330 §6', () => {
 
 test('citite înapoi exact, cu versiunea în text', () => {
   const s: SetariCote = {
-    cifre: { unitate: 'inch', zecimale: 4, zerouri: 'pastrate', pas: 0.25, separator: 'punct', cuUnitate: true, inaltime: 5, loc: 'in-linie' },
+    cifre: { unitate: 'inch', zecimale: 4, zerouri: 'pastrate', pas: 0.25, separator: 'punct', cuUnitate: true, inaltime: 5, loc: 'in-linie', fractie: 64 },
     linii: { capete: 'oblica', marime: 3, extensii: false, gol: 0, depasire: 5, distanta: 25 },
-    comportament: { legate: false, pornire: 'ultimul', dupa: 'selectie', pePanza: false, pragCifre: 0, culoare: '#ff8800' },
+    raza: { prefixR: 'r=', prefixD: '', unghiuri: 'gms', zecimaleUnghi: 0, linia: 'afara' },
+    comportament: { legate: false, pornire: 'ultimul', dupa: 'selectie', pePanza: false, vecine: 'ascunse', pragCifre: 0, culoare: '#ff8800' },
     lipire: { felurile: { varf: true, mijloc: false, centru: true, cadran: false, cutie: true, foaie: false, grila: true }, toleranta: 12.5, contur: 'mereu' },
     masurare: { distanta: true, delta: false, unghi: true, cursor: false, bara: true },
   };
@@ -41,7 +43,7 @@ test('un câmp greșit ia implicitul lui; celelalte rămân', () => {
     lipire: { felurile: { varf: false, mijloc: 1 }, toleranta: 3, contur: 'uneori' },
     masurare: { distanta: false, cursor: null },
   }));
-  assert.deepEqual(r.comportament, { legate: true, pornire: 'automata', dupa: 'selectie', pePanza: true, pragCifre: 6, culoare: null });
+  assert.deepEqual(r.comportament, { legate: true, pornire: 'automata', dupa: 'selectie', pePanza: true, vecine: 'estompate', pragCifre: 6, culoare: null });
   assert.equal(r.lipire.felurile.varf, false);
   assert.equal(r.lipire.felurile.mijloc, true);
   assert.equal(r.lipire.toleranta, 8, 'sub 4 px: implicitul');
@@ -98,13 +100,41 @@ test('cifrele, liniile și pânza: marginile din tabel, fiecare câmp greșit la
   assert.equal(r({ comportament: { culoare: '#FF8800' } }).comportament.culoare, null, 'doar litere mici, ca din alegătorul culorii');
   assert.equal(r({ comportament: { culoare: '#00aa33' } }).comportament.culoare, '#00aa33');
   assert.equal(r({ comportament: { pePanza: 0 } }).comportament.pePanza, true);
+  assert.equal(r({ comportament: { vecine: 'pe jumatate' } }).comportament.vecine, 'estompate');
+  assert.equal(r({ comportament: { vecine: 'ascunse' } }).comportament.vecine, 'ascunse');
+});
+
+test('raza, diametrul, unghiul și fracțiile: marginile, fiecare câmp greșit la implicitul lui', () => {
+  const r = (x: object): SetariCote => citesteSetariCote(JSON.stringify(x));
+  assert.equal(r({ cifre: { unitate: 'fractii' } }).cifre.unitate, 'fractii');
+  for (const f of [2, 4, 8, 16, 32, 64]) assert.equal(r({ cifre: { fractie: f } }).cifre.fractie, f);
+  for (const f of [3, 128, 1, 0, '16', null]) assert.equal(r({ cifre: { fractie: f } }).cifre.fractie, 16, `numitorul ${String(f)}`);
+  assert.equal(r({ raza: { prefixR: '' } }).raza.prefixR, '', 'golit: fără prefix');
+  assert.equal(r({ raza: { prefixR: 'RAZA=123' } }).raza.prefixR, 'RAZA=123', 'opt semne');
+  assert.equal(r({ raza: { prefixR: 'RAZA=1234' } }).raza.prefixR, 'R', 'nouă: prea lung');
+  assert.equal(r({ raza: { prefixD: 7 } }).raza.prefixD, 'Ø');
+  assert.equal(r({ raza: { prefixD: '𝜙𝜙𝜙𝜙𝜙𝜙𝜙𝜙' } }).raza.prefixD, '𝜙𝜙𝜙𝜙𝜙𝜙𝜙𝜙', 'opt semne în afara planului de bază: semnele, nu unitățile UTF-16');
+  assert.equal(r({ raza: { unghiuri: 'radiani' } }).raza.unghiuri, 'zecimale');
+  assert.equal(r({ raza: { unghiuri: 'gms' } }).raza.unghiuri, 'gms');
+  assert.equal(r({ raza: { zecimaleUnghi: 4 } }).raza.zecimaleUnghi, 4);
+  assert.equal(r({ raza: { zecimaleUnghi: 5 } }).raza.zecimaleUnghi, 2, 'peste 4');
+  assert.equal(r({ raza: { zecimaleUnghi: 1.5 } }).raza.zecimaleUnghi, 2, 'neîntreg');
+  assert.equal(r({ raza: { zecimaleUnghi: null } }).raza.zecimaleUnghi, 2, 'null nu e „automat” aici');
+  assert.equal(r({ raza: { linia: 'centru' } }).raza.linia, 'centru');
+  assert.equal(r({ raza: { linia: 'sus' } }).raza.linia, 'loc');
+  assert.deepEqual(r({ raza: 'R' }).raza, SETARI_IMPLICITE.raza, 'grupul stricat: implicitele lui');
 });
 
 test('stilul desenului și scrierea cifrelor, din setări; „după limbă” urmează limba aplicației', () => {
   assert.deepEqual(stilCote(SETARI_IMPLICITE), STIL_IMPLICIT, 'implicitele setărilor sunt chiar stilul implicit al desenului');
   const s: SetariCote = { ...SETARI_IMPLICITE, cifre: { ...SETARI_IMPLICITE.cifre, inaltime: 5, loc: 'orizontala' }, linii: { ...SETARI_IMPLICITE.linii, capete: 'punct', marime: 4, extensii: false, gol: 0.5, depasire: 3 } };
-  assert.deepEqual(stilCote(s), { gol: 0.5, depasire: 3, capat: 4, inaltime: 5, capete: 'punct', extensii: false, loc: 'orizontala' });
-  assert.deepEqual(formatCote(SETARI_IMPLICITE, true), { unitate: 'mm', zecimale: 2, zerouri: 'taiate', pas: null, virgula: true, cuUnitate: false });
+  assert.deepEqual(stilCote(s), { gol: 0.5, depasire: 3, capat: 4, inaltime: 5, capete: 'punct', extensii: false, loc: 'orizontala', raza: 'loc' });
+  assert.deepEqual(formatCote(SETARI_IMPLICITE, true), {
+    unitate: 'mm', zecimale: 2, zerouri: 'taiate', pas: null, virgula: true, cuUnitate: false, fractie: 16, prefixR: 'R', prefixD: 'Ø', unghi: 'zecimale', zecimaleUnghi: 2,
+  });
+  const raza = { ...SETARI_IMPLICITE, cifre: { ...SETARI_IMPLICITE.cifre, unitate: 'fractii' as const, fractie: 32 }, raza: { prefixR: 'r', prefixD: 'D', unghiuri: 'gms' as const, zecimaleUnghi: 3, linia: 'centru' as const } };
+  assert.equal(stilCote(raza).raza, 'centru', 'linia razei, în stil');
+  assert.deepEqual(formatCote(raza, true), { ...formatCote(SETARI_IMPLICITE, true), unitate: 'fractii', fractie: 32, prefixR: 'r', prefixD: 'D', unghi: 'gms', zecimaleUnghi: 3 });
   assert.equal(formatCote(SETARI_IMPLICITE, false).virgula, false, 'în engleză, punctul');
   const inch = { ...SETARI_IMPLICITE, cifre: { ...SETARI_IMPLICITE.cifre, unitate: 'inch' as const } };
   assert.equal(formatCote(inch, true).zecimale, 3, 'automat, în inch: 3');
@@ -117,10 +147,10 @@ test('stilul desenului și scrierea cifrelor, din setări; „după limbă” ur
 
 test('„Înapoi la implicit” pe un grup lasă celelalte neatinse', () => {
   const s = citesteSetariCote(JSON.stringify({
-    cifre: { unitate: 'cm' }, linii: { capete: 'fara' },
+    cifre: { unitate: 'cm' }, linii: { capete: 'fara' }, raza: { prefixD: 'D' },
     comportament: { legate: false }, lipire: { toleranta: 12 }, masurare: { unghi: false },
   }));
-  assert.deepEqual(GRUPURI_COTE, ['cifre', 'linii', 'comportament', 'lipire', 'masurare']);
+  assert.deepEqual(GRUPURI_COTE, ['cifre', 'linii', 'raza', 'comportament', 'lipire', 'masurare']);
   for (const g of GRUPURI_COTE) {
     assert.equal(eImplicit(s, g), false, g);
     const r = grupImplicit(s, g);
@@ -128,4 +158,13 @@ test('„Înapoi la implicit” pe un grup lasă celelalte neatinse', () => {
     assert.ok(eImplicit(r, g));
     for (const alt of GRUPURI_COTE) if (alt !== g) assert.deepEqual(r[alt], s[alt], `${g} lasă ${alt}`);
   }
+});
+
+test('„Arată cotele” comută „Cotele pe pânză” din setări, fără să atingă restul', () => {
+  const inainte = setariCote();
+  comutaPePanza();
+  assert.equal(setariCote().comportament.pePanza, !inainte.comportament.pePanza);
+  assert.deepEqual({ ...setariCote(), comportament: { ...setariCote().comportament, pePanza: inainte.comportament.pePanza } }, inainte);
+  comutaPePanza();
+  assert.deepEqual(setariCote(), inainte);
 });

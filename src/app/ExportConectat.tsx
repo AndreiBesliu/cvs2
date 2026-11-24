@@ -4,7 +4,7 @@ import '../ui/actiuniDocumentCalcul.ts';
 import type { ColtOrigine } from '../ir/montaj.ts';
 import { esteCaleDeschisa, type Document, type Operatie } from '../model/document.ts';
 import { grupeazaPeScula, taieturiFoaie, type ElementLume } from '../model/lume.ts';
-import { conturElement } from '../model/forme.ts';
+import { conturElement, esteContur } from '../model/forme.ts';
 import { DialogExport } from '../ui/DialogExport.tsx';
 import type { CerereExport, FrezaOferita, OperatieExport, OrigineFreza, Rand, StareExport } from '../ui/exportRand.ts';
 import { frezePotrivite, pasLateralDin, sculaDinBiblioteca } from '../model/alegereFreza.ts';
@@ -109,7 +109,7 @@ export function ExportConectat({
     const inauntru = cuprinse(lista.flatMap(({ piesa, instanta: inst }) => piesa.operatii.map((o) => {
       const contururi = o.noduri.flatMap((n) => {
         const e = dupaIdLume.get(`${inst}/${n}`);
-        return e ? [conturElement(e)] : [];
+        return e && esteContur(e) ? [conturElement(e)] : [];
       });
       return { cheie: `${piesa.id}/${o.id}`, piesa: piesa.id, contururi, punct: contururi[0]?.varfuri[0]?.p ?? null };
     })));

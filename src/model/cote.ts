@@ -3,14 +3,14 @@
  * foaie (`Foaie.cote`), nu în piese, iar CAM-ul, postul, simularea și bazinul nu importă acest modul (regula `cam-fara-cote`).
  *
  * - O ancoră liberă e chiar punctul ei.
- * - O ancoră legată (ADR 0330 §3) își citește punctul din conturul elementului în lume (`conturElement`), deci urmează forma la
- *   mutare, rotire, scalare, oglindire, înclinare. Se dezleagă cinstit, la punctul văzut ultima oară (`x`, `y`): forma nu mai e
- *   pe foaie (`forma`), sau conturul ei are alt număr de segmente decât la legare ori locul nu mai e pe el (`noduri`: vârful k
- *   n-ar mai fi același). Cutia nu ține de noduri.
+ * - O ancoră legată (ADR 0330 §3) își citește punctul din conturul elementului în lume (`chenarElement`: la un relief,
+ *   dreptunghiul grilei), deci urmează forma la mutare, rotire, scalare, oglindire, înclinare. Se dezleagă cinstit, la
+ *   punctul văzut ultima oară (`x`, `y`): forma nu mai e pe foaie (`forma`), sau conturul ei are alt număr de segmente
+ *   decât la legare ori locul nu mai e pe el (`noduri`: vârful k n-ar mai fi același). Cutia nu ține de noduri.
  */
 import { cerculArcului, numarSegmente, segment, type Contur, type Punct } from '../geom/conturBaza.ts';
 import type { AncoraCota, Cota, Document, FelCota, LocCota } from './document.ts';
-import { conturElement, cutieElement } from './forme.ts';
+import { chenarElement, cutieElement } from './forme.ts';
 import { elementeFoaie, idLume, type ElementLume } from './lume.ts';
 
 /** Felurile cunoscute (ADR 0330 §4), ca valoare; tipul lor e în `document.ts`. */
@@ -59,7 +59,8 @@ export function punctLoc(e: ElementLume, loc: LocCota, n: number, contur?: Contu
     const col = loc.i % 3, rand = Math.floor(loc.i / 3);
     return { x: [b.minX, (b.minX + b.maxX) / 2, b.maxX][col] ?? b.minX, y: [b.minY, (b.minY + b.maxY) / 2, b.maxY][rand] ?? b.minY };
   }
-  const c = contur ?? conturElement(e);
+  // Chenarul (ADR 0310 §1): conturul exact al unei forme, ori dreptunghiul grilei unui relief, care n-are alt contur.
+  const c = contur ?? chenarElement(e);
   const m = numarSegmente(c);
   if (m !== n) return 'noduri';
   if (loc.fel === 'varf') return c.varfuri[loc.k]?.p ?? 'noduri';
@@ -134,4 +135,44 @@ export function coteCopiate(cote: readonly Cota[], harta: ReadonlyMap<string, st
       }),
     };
   });
+}
+
+/**
+ * „Dezleagă” din panoul cotei (ADR 0330 §3, §5, felia 10.4↑a-4): fiecare capăt legat își scrie punctul citit acum (`puncte`,
+ * din `punctAncora`, în ordinea capetelor) și pierde legătura; cel deja dezlegat rămâne în ultimul loc văzut. Câmpurile
+ * necunoscute ale capetelor și ale cotei rămân.
+ */
+export function cotaDezlegata(c: Cota, puncte: readonly PunctCota[]): Cota {
+  if (!Array.isArray(c.puncte)) return structuredClone(c);
+  return {
+    ...structuredClone(c),
+    puncte: c.puncte.map((a, k) => {
+      if (!a.legatura) return structuredClone(a);
+      const { legatura: _, ...rest } = structuredClone(a);
+      const p = puncte[k]?.p ?? { x: a.x, y: a.y };
+      return { ...rest, x: p.x, y: p.y };
+    }),
+  };
+}
+
+/** Textul cotei din panou (ADR 0330 §5): `<>` e valoarea; gol, doar spații sau doar „<>” scoate câmpul (rămâne cifra). */
+export function cotaCuText(c: Cota, text: string): Cota {
+  const { text: _, ...fara } = structuredClone(c);
+  const t = text.trim();
+  return t === '' || t === '<>' ? fara : { ...fara, text };
+}
+
+/** Distanța liniei de cotă (ADR 0330 §5), în mm, pe normală, față de mijlocul punctelor; restul liniei rămâne. */
+export function cotaCuDistanta(c: Cota, d: number): Cota {
+  return { ...structuredClone(c), linie: { ...structuredClone(c.linie ?? { d: 0 }), d } };
+}
+
+/**
+ * Starea cotei, cum o spune panoul: dezlegată dacă un capăt e dezlegat (cu motivul primului), legată dacă vreun capăt e legat,
+ * altfel liberă.
+ */
+export function stareCota(puncte: readonly PunctCota[]): { readonly stare: PunctCota['stare']; readonly motiv: 'forma' | 'noduri' | null } {
+  const d = puncte.find((p) => p.stare === 'dezlegata');
+  if (d) return { stare: 'dezlegata', motiv: d.motiv ?? null };
+  return { stare: puncte.some((p) => p.stare === 'legata') ? 'legata' : 'libera', motiv: null };
 }

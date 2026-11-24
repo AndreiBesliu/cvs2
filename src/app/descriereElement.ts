@@ -17,6 +17,10 @@ export function descriere(e: Pick<ElementLume, 'forma' | 'matrice'>): string {
   }
   if (e.forma.tip === 'cerc') return t('forma.cerc', { raza: doua(e.forma.raza), x: doua(x), y: doua(y) });
   const c = cutieElement(e);
+  if (e.forma.tip === 'relief') {
+    const s = Math.hypot(e.matrice.a, e.matrice.b), f = e.forma;
+    return t('forma.relief', { latime: doua(f.nx * f.celula * s), inaltime: doua(f.ny * f.celula * s), celula: (f.celula * s).toFixed(3), x: doua(c.minX), y: doua(c.minY) });
+  }
   // O cale deschisă are n − 1 segmente și se spune „cale deschisă” (ADR 0037 §2, §12).
   const n = e.forma.varfuri.length - (e.forma.inchis ? 0 : 1);
   return t(e.forma.inchis ? 'forma.cale' : 'forma.cale-deschisa', { latime: doua(c.maxX - c.minX), inaltime: doua(c.maxY - c.minY), n, x: doua(c.minX), y: doua(c.minY) });

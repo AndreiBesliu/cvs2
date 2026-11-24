@@ -1,6 +1,6 @@
 import { Fragment, lazy, Suspense, useEffect, useMemo, useRef, useState, useSyncExternalStore, type ButtonHTMLAttributes, type ComponentProps, type ReactNode } from 'react';
 import { Panza } from '../canvas/Panza.tsx';
-import { treaptaZoom, type Bucata, type FoaieVecina, type GestDesen, type Lipeste, type Vedere } from '../canvas/protocol.ts';
+import { treaptaZoom, type Bucata, type FoaieVecina, type GestDesen, type ImaginePeFoaie, type Lipeste, type Vedere } from '../canvas/protocol.ts';
 import { imaginiPentruPanza, useOctetiImagini } from './octetiImagini.ts';
 import type { StareStrat } from '../canvas/StratTraseu.tsx';
 import type { Miscare, Program } from '../ir/ir.ts';
@@ -9,7 +9,7 @@ import { cuMesaje, incarcaLimba, t, type CheieSimpla } from '../i18n/t.ts';
 import { LIMBI, type Limba } from '../i18n/tipuri.ts';
 import { avertismente, type Avertisment } from '../model/avertismente.ts';
 import { documentNou, type Document, type ImagineFoaie, type LocUreche, type Operatie } from '../model/document.ts';
-import { cutieElement } from '../model/forme.ts';
+import { areRelief, cutieElement } from '../model/forme.ts';
 import { comandaInaltimi } from '../model/inaltimeImprimanta.ts';
 import { executa as executaComanda, istoricNou, type Istoric } from '../model/jurnal.ts';
 import { elementeFoaie, type ElementLume } from '../model/lume.ts';
@@ -125,6 +125,8 @@ const ModUrechi = lazy(() => incarcaUrechile().then((m) => ({ default: m.ModUrec
 const SemneUrechiFoaie = lazy(() => incarcaUrechile().then((m) => ({ default: m.SemneUrechiFoaie })));
 // „Calibrează” și „Trasează…” din imaginea de pe foaie (ADR 0272 §6, §7): modul pânzei, la cerere, din rândul imaginii.
 const ModImagine = lazy(() => import('./ModImagine.tsx').then(cuMesaje).then((m) => ({ default: m.ModImagine })));
+// Reliefurile foii (ADR 0310 §7): desenul lor, la cerere, doar cu un relief pe foaia activă.
+const ReliefuriFoii = lazy(() => import('./ReliefuriFoii.tsx'));
 // Cipul timpului de lângă traseu (ADR 0046 §8): la cerere, ca durata și textele lui să nu stea în pornire (ADR 0042).
 const CipTimpTraseu = lazy(() => import('../ui/CipTimpTraseu.tsx').then(cuMesaje).then((m) => ({ default: m.CipTimpTraseu })));
 const DialogImport = lazy(() => incarcaDialogImport().then((m) => ({ default: m.ImportConectat }), () => ({ default: DialogNeincarcat })));
@@ -645,6 +647,8 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
     aspect: () => { focusAspect.current = document.activeElement; setAspect(true); },
     freze: () => { focusFreze.current = document.activeElement; setFreze(true); },
     setari: () => { focusSetari.current = document.activeElement; setSetari(true); },
+    // „Arată cotele” (ADR 0330 §5): setarea „Cotele pe pânză”, adusă cu bucata setărilor cotelor (nu stă în pornire).
+    cote: () => { void import('./setariCote.ts').then((m) => { m.comutaPePanza(); }, () => undefined); },
   };
   /**
    * „Trimite la <extensie>” (ADR 0166 §B): formele instanțelor alese, calculate la cerere, spre extensia deschisă care le
@@ -756,7 +760,17 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
   }, [doc, indexActiva, toateFoile, limbaActiva]);
   // Imaginile foii active (ADR 0272): octeții citiți din baza lor la cerere; cele vizibile, pe pânză, sub vectori.
   const octetiImagini = useOctetiImagini(foaie?.imagini);
-  const imaginiPanza = useMemo(() => imaginiPentruPanza(foaie?.imagini, octetiImagini), [foaie?.imagini, octetiImagini]);
+  const imaginiFoii = useMemo(() => imaginiPentruPanza(foaie?.imagini, octetiImagini), [foaie?.imagini, octetiImagini]);
+  // Reliefurile foii active (ADR 0310 §7): umbrite, peste imagini, sub vectori. În pornire stă doar verificarea; desenul
+  // (`ReliefuriFoii`, cu baza și workerul) vine la cerere, doar cu un relief pe foaie.
+  const areReliefuri = useMemo(() => {
+    const puse = new Set((foaie?.instante ?? []).map((i) => i.piesa));
+    return doc.piese.some((p) => puse.has(p.id) && areRelief(p.radacina));
+  }, [doc.piese, foaie?.instante]);
+  const [imaginiRelief, setImaginiRelief] = useState<readonly ImaginePeFoaie[]>([]);
+  const [deseneRelief, setDeseneRelief] = useState<ReadonlyMap<string, { readonly z: { readonly min: number; readonly max: number } | null } | null>>(new Map());
+  const imaginiPanza = useMemo(
+    () => (areReliefuri && imaginiRelief.length > 0 ? [...imaginiFoii, ...imaginiRelief] : imaginiFoii), [imaginiFoii, imaginiRelief, areReliefuri]);
   // Piesele puse de mai multe ori (ADR 0210 §2): câte instanțe are fiecare piesă și a câta e fiecare instanță, în ordinea
   // proiectului (foile, apoi instanțele lor), pentru „(4 din 12)” din listă.
   const surori = useMemo(() => {
@@ -824,10 +838,13 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
     if (mod !== 'scriitor' || curatat.current) return undefined;
     const ceas = setTimeout(() => {
       curatat.current = true;
-      import('./imaginiFoaie.ts').then((m) => m.curataLaPornire(curenta.current.istoric.doc)).catch((e: unknown) => {
+      const cadere = (e: unknown): void => {
         if (eroareDeMediu(e)) jurnal.adaugaLocala('salvare', e);
         else jurnal.adauga('salvare', e);
-      });
+      };
+      import('./imaginiFoaie.ts').then((m) => m.curataLaPornire(curenta.current.istoric.doc)).catch(cadere);
+      // Dalele și hărțile reliefurilor nefolosite (ADR 0310 §2), la fel.
+      import('./reliefStocare.ts').then((m) => m.curataLaPornire(curenta.current.istoric.doc)).catch(cadere);
     }, 10_000);
     return () => { clearTimeout(ceas); };
   }, [mod, jurnal]);
@@ -1134,7 +1151,7 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
     const material = materialFoaie(f);
     const detalii = [t('arbore.foaia', { latime: f.stoc.latime, inaltime: f.stoc.inaltime, grosime: f.stoc.grosime }),
       ...(material === null ? [] : [material]), t('lista.foaie-piese', { n: f.instante.length })];
-    return { id: f.id, eticheta: numeFoaie(f, k, sablonFoaie), detalii, piese: f.instante.length, activa: k === indexActiva };
+    return { id: f.id, eticheta: numeFoaie(f, k, sablonFoaie), detalii, piese: f.instante.length, cote: f.cote?.length ?? 0, activa: k === indexActiva };
   });
   /** Ce face lista cu foile (ADR 0210 §1): totul prin registru, ca bara și paleta; meniul foii (la cerere) le cere pe foaia lui. */
   const actiuniFoi: ActiuniFoi = {
@@ -1499,6 +1516,7 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
               onEticheta={(camp, valoare) => aplicaDinPanou('foaie.eticheta', { etichetaNoua: () => ({ camp, valoare }) })}
               onImagini={(lista) => aplicaDinPanou('foaie.imagini', { imaginiNoi: () => lista })}
               octetiImagini={octetiImagini}
+              desenRelief={(k) => deseneRelief.get(k)}
               onModImagine={(fel, id) => { if (idActiva) setModImagine({ fel, id, foaie: idActiva }); }}
               onPlusUnu={() => aplicaDinPanou('piesa.plus-unu', {})}
               onInca={(total) => aplicaDinPanou('piesa.inca', { cateInTotal: () => total })}
@@ -1602,7 +1620,7 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
                 <Editare doc={doc} indexFoaie={indexActiva} idFoaie={idActiva} selectie={selectieValida} cutie={cutieSelectie} vedere={v} marime={m} linii={l} zona={zona} doarCitire={doarCiteste(mod)} activ={!acoperita && urechiAlese === null && modImagine === null}
                   usaAcoperita={fereastra === FEREASTRA_EXTENSIE ? 'extensii.buton' : fereastra === 'imprimanta' ? 'vedere.imprimanta' : 'vedere.masina'}
                   ruleaza={(id, extra) => ruleazaDocument(id, context(extra))} onLipeste={setLipesteStabil} onDesen={setDesenStabil}
-                  onRefuz={setRefuzEditare} onLegare={setLegareEditare} reface={stareActiune('istoric.reface').ok} onAseaza={() => { setDialogAsezare(true); }} onAspect={() => { contextVedere.aspect(); }} onFreze={() => { contextVedere.freze(); }} onSetari={() => { contextVedere.setari(); }}
+                  onRefuz={setRefuzEditare} onLegare={setLegareEditare} reface={stareActiune('istoric.reface').ok} onAseaza={() => { setDialogAsezare(true); }} onAspect={() => { contextVedere.aspect(); }} onFreze={() => { contextVedere.freze(); }} onSetari={() => { contextVedere.setari(); }} toateFoile={toateFoile}
                   sugestie={config.ok && config.config.instanta !== 'live'} config={config.ok ? config.config : null} jurnal={jurnal}
                   {...(config.ok && config.config.instanta !== 'live' && new URLSearchParams(location.search).has('test')
                     ? { test: { versiune: versiuneDin(document), instanta: config.config.instanta } } : {})} />
@@ -1616,6 +1634,12 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
                 ) : traseu?.arata && (cuUrechiAlese || (traseu.urechiLemn?.length ?? 0) > 0) ? (
                   <Suspense fallback={null}><SemneUrechiFoaie doc={doc} indexFoaie={indexActiva} vedere={v} marime={m} lemn={traseu.urechiLemn} /></Suspense>
                 ) : null}
+                {areReliefuri && (
+                  <Suspense fallback={null}>
+                    <ReliefuriFoii doc={doc} indexFoaie={indexActiva} onImagini={setImaginiRelief} onDesene={setDeseneRelief}
+                      jurnal={(e) => { jurnal.adauga('promisiune', e); }} />
+                  </Suspense>
+                )}
                 {/* Comenzile fiecărei foi, sub ea (felia 11.1↑c): doar unde se poate scrie și cât nu ține un mod al pânzei. */}
                 {!doarCiteste(mod) && !acoperita && !urechiAlese && !modImagine ? (
                   <Suspense fallback={null}><ControaleFoi foi={foiPePanza} vedere={v} cursor={cursor} actiuni={actiuniFoi} /></Suspense>

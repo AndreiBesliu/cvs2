@@ -86,6 +86,14 @@ module.exports = {
       to: { path: '^src/', pathNot: '^src/(text|io|model|geom)/' },
     },
     {
+      name: 'relief-doar-model-geom',
+      severity: 'error',
+      comment: 'Relieful (src/relief, ADR 0310, PLAN.md 3.3) importă doar geometria și modelul documentului (tipurile, JSON-ul '
+        + 'canonic): grila, dalele, harta și compunerea sunt pure; le cheamă workerul reliefului (src/jobs) și CAM-ul.',
+      from: { path: modul('relief') },
+      to: { path: '^src/', pathNot: '^src/(relief|model|geom)/' },
+    },
+    {
       name: 'cam-fara-post-sim-masina-interfata',
       severity: 'error',
       comment: 'CAM-ul produce IR; nu știe de post, de simulare, de mașină sau de interfață.',
@@ -113,7 +121,7 @@ module.exports = {
         + 'postul, estimarea) și trasarea din imagine (ADR 0220). Importă domeniul de sub el, nu interfața, pânza, adminul, '
         + 'mașina, ușile sau norul.',
       from: { path: modul('jobs') },
-      to: { path: '^src/', pathNot: '^src/(jobs|sim|cam|post|ir|model|trasare)/' },
+      to: { path: '^src/', pathNot: '^src/(jobs|sim|cam|post|ir|model|trasare|relief)/' },
     },
     {
       name: 'cam-fara-cote',
@@ -144,7 +152,7 @@ module.exports = {
       comment: 'Interfața, pânza și adminul ajung la domeniu doar prin registrul de acțiuni (src/ui/actiuni*) și prin '
         + 'protocolul workerelor (PLAN.md 3.3).',
       from: { path: '^(src|test/capcane)/(ui|canvas|admin)/', pathNot: '^src/ui/actiuni' },
-      to: { path: '^src/(model|geom|cam|ir|post|sim|machine)/' },
+      to: { path: '^src/(model|geom|cam|ir|post|sim|machine|relief)/' },
     },
     {
       name: 'functiile-doar-shared',

@@ -4,7 +4,7 @@
  * capăt în capăt; Shift face pătrat / cerc sau pași de 15°. Elipsa se face cu aceeași funcție și toleranță ca importul SVG.
  */
 import type { CheieSimpla } from '../i18n/t.ts';
-import type { FormaDoc, VarfDoc } from '../model/document.ts';
+import type { FormaContur, FormaDoc, VarfDoc } from '../model/document.ts';
 import { elipsa, LATURI_MAX, LATURI_MIN, poligonRegulat } from '../model/formeParametrice.ts';
 
 export { LATURI_MAX, LATURI_MIN };
@@ -37,7 +37,7 @@ export const TASTE_UNELTE: Readonly<Record<string, Unealta>> = { v: 'selectie', 
 export const TASTA_UNELTEI = Object.fromEntries(Object.entries(TASTE_UNELTE).map(([k, u]) => [u, k.toUpperCase()])) as Readonly<Record<Unealta, string>>;
 
 export interface FormaDesenata {
-  readonly forma: FormaDoc;
+  readonly forma: FormaContur;
   /** Locul instanței (originea locală a formei), în mm ai foii. */
   readonly x: number;
   readonly y: number;

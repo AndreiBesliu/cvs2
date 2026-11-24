@@ -783,7 +783,8 @@ For each file a window opens that shows the drawing's size and how it will be cu
 - for a WMF without a placeable header, **the unit**: 1/96 inch (px, as in LibreOffice), 1/1440 inch (twip), 0.01 mm, 0.1 mm
   or mm (see below);
 - for a PDF with several pages, **the page** to import (see below);
-- for an image, **the tracing**: how the drawing's pixels become outlines (see below);
+- for an image, **the tracing**: how the drawing's pixels become outlines (see below); with **Relief**, at the top of the
+  window, the image becomes a relief (see [Relief from an image](#relief));
 - what is not imported or is read differently, with their count (for an SVG: texts, `<use>` clones, images, hidden shapes).
 
 **Import** puts the drawing on the sheet as a single shape, selected; **Skip** moves on to the next file; **Cancel** and
@@ -1040,6 +1041,38 @@ Images are kept in the browser, next to the project, not in the document: on ano
 sheet shows only their place, dashed, and the list says they are missing. An image that no kept version of the project uses
 any more is deleted at a start-up, after at least a day. On a phone, images show but are not placed or changed.
 
+## Relief from an image
+%% capitol: relief
+
+From an image (a photo, a logo, a grey height map) you can make a **relief**: a 3D shape of the part, with one cell for each
+pixel, whose height comes from the pixel's grey. On the board, the relief shows shaded (light from the top left), under the
+vectors, with its frame; it is selected, moved, rotated and mirrored like any shape, and a part with a relief is placed
+several times and on other sheets. Its 3D machining (roughing and finishing) comes in the next slices: for now the relief is
+not cut.
+
+**How to make one:** from “Import…”, pick an image (PNG, JPEG, WebP, GIF or BMP), then, at the top of the window, **Relief**
+instead of **Vectors**. The choice is kept until you reload the page. On the left, the window has:
+- **Height from**: the luminance (the default) or a single channel (red, green, blue);
+- the direction: **White = high** (the default) or **Black = high**;
+- **Height** (mm): how far white (or black) rises above the base; **Base (zero plane)**: the height of the darkest (or
+  lightest) grey;
+- **Width** (mm): one cell is one pixel, so the width gives the cell; if you do not type it, it comes from the file's DPI or,
+  without one, from 96 px per inch;
+- **Smoothing** (σ, in cells): 0 = none; transparent pixels stay empty, and the smoothing skips them.
+
+On the right, the shaded relief, and under it the grid (the cells, the cell, the size in mm) and the heights, from the lowest
+to the highest. What you see is computed from the saved relief, so it is exactly what is kept. **Import** places the part on
+the sheet, selected, in one undo step; dropped on the board, with its centre at the drop point. A transparent pixel has no
+height: there the relief is the zero plane. A fully transparent image, one larger than 8192 × 8192 pixels, or a width that
+gives a cell outside its limits (0.001 to 100 mm, at most 10 m a side) is refused, with the reason.
+
+**In the panel:** with the part selected, the **Relief** section shows the size, the cell, the cells, the heights and the
+layers, top to bottom, each with its mode (in this slice, a relief has a single layer, “add”).
+
+The relief is kept in the browser, next to the project, not in the document (the document keeps only its fingerprint), like
+the sheet images: on another computer or in another browser, the panel says the layers are missing. Whatever no kept version
+of the project uses any more is deleted at a start-up, after at least a day.
+
 ## Cutting vectors
 %% capitol: taiere
 %% acopera: editare.taiere, document.taie
@@ -1204,16 +1237,24 @@ goes right through.
 
 ## Dimensions and measuring
 %% capitol: cote
-%% acopera: unealta.cote, foaie.cote
+%% acopera: unealta.cote, foaie.cote, vedere.cote
 
 The **Dimensions** tool (`D`; its button sits in the bar's extension, after Convert) puts dimensions on the drawing that show a size: the length of a side, the
-distance between two points along X, along Y or straight. A dimension is **never cut**: the exported G-code is the same with
+distance between two points along X, along Y or straight, the radius or diameter of a circle or an arc, the angle between two
+sides. A dimension is **never cut**: the exported G-code is the same with
 or without dimensions. Dimensions belong to the sheet they were put on (**Sheet dimensions**), are saved with the project and
 have their own colour on the canvas. Pick the type in the bar:
-- **Automatic** (at first): a click on a straight side takes its length; otherwise two points, and the dimension is horizontal
-  if you take the line above or below them, vertical if you take it to the left or right, aligned if you take it between them
-  (**Shift**: aligned anyway);
+- **Automatic** (at first): a click on a straight side takes its length, and a click on another side, before placing the line,
+  makes the angle between them (or, for two parallel sides, the distance between them); a click on a circle takes its
+  diameter, on an arc its radius; otherwise two points, and the dimension is horizontal if you take the line above or below
+  them, vertical if you take it to the left or right, aligned if you take it between them (**Shift**: aligned anyway). A click
+  right on a vertex or on a side's midpoint starts a two-point dimension;
 - **Horizontal**, **Vertical**, **Aligned**: two points, then the place of the dimension line;
+- **Radius**, **Diameter**: a click on a circle or an arc, then where the figure goes, inside or outside; the line goes through
+  the circle's named point (vertex, midpoint, quadrant) nearest the cursor, linked. On a line, an ellipse or a curve, refused,
+  with the reason;
+- **Angle**: a click on a side, then on the second; or three points: the vertex, then one on each side. Then take the arc into
+  the angle you want (one of the four between the two lines) and click;
 - **Measure** (`M`): two points, no trace. The distance, Δx, Δy and the angle from the horizontal show next to the cursor and
   in the bottom bar; **Enter** (or **Keep**) makes it an aligned dimension, **Esc** clears it.
 
@@ -1229,9 +1270,25 @@ added or removed), the dimension **unlinks**: it stays where it was last seen, d
 (Ctrl+Z brings both back). “Duplicate sheet” copies the dimensions too, linked to the copy's shapes.
 
 With the Dimensions tool, a click on a dimension line selects it: drag its ends onto another point (it links to it again),
-drag the line or move it with the arrow keys (1 mm; Shift: 10 mm, Alt: 0.1 mm), **Delete** removes it. With Select and the
+drag the line or move it with the arrow keys (1 mm; Shift: 10 mm, Alt: 0.1 mm; for radius, diameter and angle, up and right
+take the figure or the arc further out, down and left closer in), **Delete** removes it. Dragged, an angle's arc can also move
+into another angle between the sides. With Select and the
 other tools, dimensions are not selected: the click goes to the shape under them. A double click on a dimension, with any
 tool, switches to Dimensions with it selected.
+
+With a dimension selected, the **properties panel** shows only what is its own: the type; the **exact value**, with all its
+digits, and **Copy** (puts it in the clipboard); the link (linked to the shape, free or unlinked, with the reason) and
+**Unlink** (the ends stay where they are and the dimension no longer follows the shape); the **text**, in which `<>` is the
+value with its prefix (for instance “4× <>” gives “4× Ø10”; empty, only the value shows); the dimension **line distance**, in
+mm (for radius and diameter, the **figure position** from the circle, positive outside; for an angle, the **arc radius**);
+**Delete**. The distance between two oblique parallel sides is a free dimension: a fixed drawing, since its foot on the second
+side is not a point of the shape.
+
+In the **list**, under the active sheet's pieces, the **Dimensions (N)** row: open, it shows the sheet's dimensions (the value,
+the type, “unlinked”), and a click on one switches to the Dimensions tool with it selected. The **eye** on the row hides the
+sheet's dimensions on the canvas (it does not delete them; with the Dimensions tool they show anyway). **Show dimensions**
+(from **Search commands**) hides or shows them all, like the “Dimensions on the canvas” setting. With **All sheets on the
+canvas**, the neighbouring sheets' dimensions show faded next to their sheets (or hidden, from Settings).
 
 How dimensions look (the numbers, the unit, the ends, the extension lines, the colour) and how the tool behaves is chosen in
 the **Settings** window, **Dimensions** section: from the ⚙ in the tool's bar, from the account menu or with `Ctrl+,`.
@@ -1246,17 +1303,22 @@ sections are on the left; for now just one, **Dimensions**. At the top is the **
 settings; each group has **Back to defaults**. A number is typed with a comma or a point; one outside the limits stays in the
 field, said in red, and is not kept. **Close** (or Esc) closes the window.
 
-- **Numbers:** the unit (mm, cm, inch; the drawing stays in mm), the decimals (automatic: 2, in inch 3; or 0–6), trailing
-  zeros (dropped or kept), rounding (to the decimals or to a step, for instance 0.5), the decimal separator (by the app
+- **Numbers:** the unit (mm, cm, inch, fractional inch; the drawing stays in mm), the decimals (automatic: 2, in inch 3; or
+  0–6), for fractions the smallest fraction (1/2 … 1/64; the number is written reduced: 1 1/2, 3/8), trailing zeros (dropped
+  or kept), rounding (to the decimals or to a step, for instance 0.5), the decimal separator (by the app
   language, comma or point), the unit written after the number, the text height on the sheet (1–20 mm) and the text position
   (above the line, in the line, with the line broken, or always horizontal).
 - **Lines and ends:** the ends (filled arrow, open arrow, oblique tick, dot or none) and their size, the extension lines
   (shown or hidden), their gap from the shape, the overshoot past the dimension line and the dimension line distance for
   **Keep** in Measure.
+- **Radius, diameter, angle:** the radius and diameter prefixes (by default “R” and “Ø”; at most 8 characters, empty: none),
+  angles in decimal degrees (30.5°) or in degrees, minutes and seconds (30°30′0″), the angle decimals (0–4; in degrees,
+  minutes and seconds, those of the seconds) and the radius line (from the centre, from outside, or by the figure's position:
+  from the centre with the figure inside, from outside with the figure outside).
 - **Behaviour:** whether new dimensions are linked to shapes, which type the tool starts with (Automatic or the last used),
   what comes after a dimension (the Dimensions tool stays or back to Select), whether dimensions show on the canvas (hidden,
-  they show only with the Dimensions tool), below how many screen pixels the numbers hide and the dimensions' colour (the
-  theme's or chosen).
+  they show only with the Dimensions tool), the neighbouring sheets' dimensions (faded or hidden), below how many screen
+  pixels the numbers hide and the dimensions' colour (the theme's or chosen).
 - **Snapping:** the points the ends snap to (vertices, midpoints, centres, quadrants, the box, the sheet, the grid), the
   tolerance in pixels and the nearest point on the outline (with Ctrl, always or never).
 - **Measuring:** what Measure shows (the distance, Δx and Δy, the angle) and where (next to the pointer, in the bottom bar).

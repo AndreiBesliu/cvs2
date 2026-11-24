@@ -14,7 +14,7 @@ import { programDinDocument } from '../../src/cam/job.ts';
 import { distantaLaContur } from '../../src/geom/distanta.ts';
 import { TOLERANTA_PROIECT } from '../../src/geom/toleranta.ts';
 import type { Document, FormaDoc, Operatie, VarfDoc } from '../../src/model/document.ts';
-import { conturElement } from '../../src/model/forme.ts';
+import { chenarElement } from '../../src/model/forme.ts';
 import { cuOperatie, docDin, ID } from './ajutor-document.ts';
 import { cazurilePartii, cereImpartirea } from './ajutor-parti.ts';
 
@@ -101,7 +101,7 @@ export function cazurileCubicelor(): CazCubice[] {
 export function abatereaCubicelor(caz: CazCubice): number {
   const forma = bula(caz.n, 40, caz.samanta);
   const d = piesa(forma, { ...ID }, 600, 300, 0, { latura: caz.latura });
-  const exacta = conturElement({ forma, matrice: { a: 1, b: 0, c: 0, d: 1, e: 600, f: 300 } });
+  const exacta = chenarElement({ forma, matrice: { a: 1, b: 0, c: 0, d: 1, e: 600, f: 300 } });
   let abatere = 0;
   for (const p of puncte(d)) abatere = Math.max(abatere, Math.abs(distantaLaContur(p, exacta) - 3));
   return abatere;

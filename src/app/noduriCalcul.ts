@@ -7,12 +7,12 @@ import { cerculArcului, numarSegmente, segment, type Contur, type Punct } from '
 import { inversa } from '../geom/inversa.ts';
 import { aplica, type Matrice } from '../geom/matrice.ts';
 import { laturaLovita } from '../geom/apropiat.ts';
-import type { Document, FormaDoc } from '../model/document.ts';
-import { conturElement } from '../model/forme.ts';
+import type { Document, FormaContur, FormaDoc } from '../model/document.ts';
+import { conturElement, esteContur } from '../model/forme.ts';
 import { elementeFoaie } from '../model/lume.ts';
 
 /** Un contur de sub unealtă: id-ul elementului în piesă, forma lui și matricea lui în lume. */
-export type ElementNoduri = { readonly nod: string; readonly forma: FormaDoc; readonly matrice: Matrice };
+export type ElementNoduri = { readonly nod: string; readonly forma: FormaContur; readonly matrice: Matrice };
 /** Forma de sub unealtă: instanța și contururile piesei ei (unul la o formă desenată; mai multe la un import sau un boolean cu găuri). */
 export type FormaNoduri = { readonly instanta: string; readonly elemente: readonly ElementNoduri[] };
 export type MotivNoduri = 'nimic' | 'mai-multe';
@@ -29,7 +29,8 @@ export function formaNoduri(doc: Document, selectie: readonly string[], indexFoa
   const i = foaie?.instante.find((x) => x.id === selectie[0]);
   const piesa = i ? doc.piese.find((p) => p.id === i.piesa) : undefined;
   if (!i || !piesa) return 'nimic';
-  const elemente = elementeFoaie(doc, indexFoaie).filter((x) => x.instanta === i.id).map((x) => ({ nod: x.nod, forma: x.forma, matrice: x.matrice }));
+  // Relieful (ADR 0310) n-are noduri: unealta vede doar contururile piesei.
+  const elemente = elementeFoaie(doc, indexFoaie).filter((x) => x.instanta === i.id).filter(esteContur).map((x) => ({ nod: x.nod, forma: x.forma, matrice: x.matrice }));
   return elemente.length > 0 ? { instanta: i.id, elemente } : 'nimic';
 }
 
@@ -49,7 +50,7 @@ export function nodLovit(noduri: readonly Punct[], px: number, py: number, raza:
 }
 
 /** Conturul formei în lume (cu matricea ei), pentru desen și pentru latura lovită. */
-export function conturNoduri(forma: FormaDoc, matrice: Matrice): Contur {
+export function conturNoduri(forma: FormaContur, matrice: Matrice): Contur {
   return conturElement({ forma, matrice });
 }
 

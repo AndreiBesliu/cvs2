@@ -77,6 +77,7 @@ export const ro = {
   'stare.nimic-selectat': 'Nimic selectat. Clic pe o formă; trage ca s-o muți; rotița pentru zoom; butonul din mijloc sau Space + tragere pentru deplasare.',
   'forma.dreptunghi': 'dreptunghi {latime} × {inaltime} la X {x}, Y {y}',
   'forma.cerc': 'cerc R{raza} cu centrul la X {x}, Y {y}',
+  'forma.relief': 'relief {latime} × {inaltime}, celula {celula} mm, la X {x}, Y {y}',
   'forma.cale': {
     one: 'cale {latime} × {inaltime}, {n} segment, la X {x}, Y {y}',
     few: 'cale {latime} × {inaltime}, {n} segmente, la X {x}, Y {y}',
@@ -146,6 +147,7 @@ export const ro = {
   'vedere.aspect': 'Aspectul interfeței',
   'vedere.freze': 'Frezele mele',
   'vedere.setari': 'Setări',
+  'vedere.cote': 'Arată cotele',
   'tema.auto': 'după sistem',
   'tema.luminoasa': 'luminoasă',
   'tema.intunecata': 'întunecată',

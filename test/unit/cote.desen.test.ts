@@ -21,8 +21,8 @@ const sag = (c: CapatDesen | undefined): readonly [{ x: number; y: number }, { x
   return c.puncte;
 };
 
-test('stilul implicit, din ADR 0330 §6: golul 1, depășirea 2, capetele 2,5 (săgeți pline), cifrele 3,5 mm deasupra, extensiile arătate', () => {
-  assert.deepEqual(S, { gol: 1, depasire: 2, capat: 2.5, inaltime: 3.5, capete: 'plina', extensii: true, loc: 'deasupra' });
+test('stilul implicit, din ADR 0330 §6: golul 1, depășirea 2, capetele 2,5 (săgeți pline), cifrele 3,5 mm deasupra, extensiile arătate, linia razei după loc', () => {
+  assert.deepEqual(S, { gol: 1, depasire: 2, capat: 2.5, inaltime: 3.5, capete: 'plina', extensii: true, loc: 'deasupra', raza: 'loc' });
 });
 
 test('orizontala: linia la y = mijloc + d, picioarele, extensiile cu golul și depășirea, capetele înăuntru, cifra deasupra', () => {
@@ -144,7 +144,7 @@ test('distanța unui punct la desenul cotei: la linie, la extensii și la cifră
   assert.ok(distantaLaDesen(r, '120', P(50, 10)) > 5, 'între puncte, sub linie, departe de tot');
 });
 
-const F: FormatCifre = { unitate: 'mm', zecimale: 2, zerouri: 'taiate', pas: null, virgula: true, cuUnitate: false };
+const F: FormatCifre = { unitate: 'mm', zecimale: 2, zerouri: 'taiate', pas: null, virgula: true, cuUnitate: false, fractie: 16, prefixR: 'R', prefixD: 'Ø', unghi: 'zecimale', zecimaleUnghi: 2 };
 
 test('cifra, după setări: unitatea (mm, cm, inch), zecimalele, zerourile, separatorul, unitatea scrisă', () => {
   assert.equal(scrieCifra(120, F), '120');

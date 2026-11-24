@@ -279,6 +279,8 @@ test('(o) ciocnirile v23: rândul lui CAMPURI_NOI_O, pe orice instanță a oric�
       'fundPlat.rest[].scula.regim', 'fundPlat.rest[].scula.tais', 'incrustatie.frezeDop[].scula.biblioteca',
       'incrustatie.frezeDop[].scula.regim', 'incrustatie.frezeDop[].scula.tais', 'incrustatie.banda.freza.biblioteca',
       'incrustatie.banda.freza.regim', 'incrustatie.banda.freza.tais'],
+    // ADR 0310 §1 (v28): relieful e o formă a elementului, nu un câmp pe operație.
+    28: [],
   });
   assert.equal(PE_INSTANTA_O, 'instanta:');
   // Fiecare câmp nou, pe un document al versiunii dinainte, se ciocnește exact la pasul lui (cu `texte` pe instanță).

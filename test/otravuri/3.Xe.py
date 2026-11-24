@@ -55,7 +55,8 @@ o('E04', FOR, "  if (date.size > PLAFON_IMPORT.octeti) return refuz('prea-mare')
 o('E05', FOR, "  return r === null ? { ok: true, rezultat: 'deschis' } : refuz(r);", "  return { ok: true, rezultat: 'deschis' };", 'forme',
   'refuzul aplicației (alt import deschis, fila care doar citește) ajunge la extensie ca reușită')
 # trimiterea selecției
-o('E06', SEL, '    if (!alese.has(e.instanta)) continue;\n', '', 'forme',
+# E06 mutată pe 24.11 (felia 18.1↑a, ADR 0310: relieful nu pleacă spre extensie, în aceeași condiție): aceeași otravă.
+o('E06', SEL, '    if (!alese.has(e.instanta) || !esteContur(e)) continue;\n', '    if (!esteContur(e)) continue;\n', 'forme',
   'pleacă spre extensie toată foaia, nu doar instanțele alese')
 o('E07', SEL, '  const pas = raza <= tol ? Math.PI : 2 * Math.acos(1 - tol / raza);', '  const pas = raza <= tol ? Math.PI : 4 * Math.acos(1 - tol / raza);', 'forme',
   'arcele aproximate mai grosolan decât 0,02 mm')

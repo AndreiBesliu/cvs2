@@ -14,7 +14,7 @@
  * mai veche. Un câmp nou CU SENS (fața de jos, montajele, sculele) intră doar cu o schemă nouă și o migrare: o versiune
  * veche n-are voie să taie fără să înțeleagă un câmp.
  */
-export const VERSIUNE_SCHEMA = 27;
+export const VERSIUNE_SCHEMA = 28;
 
 /** Plafoanele stau pe artefact (T23): un document care le trece e refuzat la ușă, nu tăiat. */
 export const PLAFON = {
@@ -92,7 +92,29 @@ export type FormaDoc =
    * Calea (ADR 0034, ADR 0037 §2): închisă, cu n segmente, sau deschisă, cu n − 1 (ADR 0001): segmentul ultimului vârf al
    * unei căi deschise e `L` și nu se ia în seamă.
    */
-  | { tip: 'cale'; inchis: boolean; varfuri: VarfDoc[]; [cheie: string]: unknown };
+  | { tip: 'cale'; inchis: boolean; varfuri: VarfDoc[]; [cheie: string]: unknown }
+  | FormaRelief;
+/**
+ * Modul unui strat de relief (ADR 0310 §1, ADR 0311 §7): cum se pune peste compusul straturilor de sub el, pe celulele lui
+ * negoale.
+ */
+export const MODURI_RELIEF = ['aduna', 'scade', 'inalt', 'jos', 'inlocuieste', 'inmulteste'] as const;
+export type ModRelief = (typeof MODURI_RELIEF)[number];
+/** Un strat al unui relief (ADR 0310 §1): `dale` e amprenta hărții dalelor lui (ADR 0311 §6), cu octeții în afara documentului. */
+export type StratRelief = { id: string; nume?: string; mod: ModRelief; vizibil: boolean; dale: string; [cheie: string]: unknown };
+/**
+ * Relieful (ADR 0310 §1, ADR 0311 §1, documentul v28): o grilă de nx × ny celule pătrate de latura `celula` (mm), cu originea
+ * în colțul stânga-jos, și straturile ei, de jos în sus. Matricea compusă a elementului e o similitudine.
+ */
+export type FormaRelief = { tip: 'relief'; nx: number; ny: number; celula: number; straturi: StratRelief[]; [cheie: string]: unknown };
+/** O formă cu contur (toate, în afară de relief): ce primesc conturul, clicul pe linie, CAM-ul 2D și ușile de export. */
+export type FormaContur = Exclude<FormaDoc, FormaRelief>;
+/** Cel mult atâtea straturi într-un relief (ADR 0311 §1). */
+export const STRATURI_RELIEF_MAXIM = 32;
+/** Celulele pe o latură a unui relief (ADR 0311 §1, răspunsul 4a la ADR 0310) și marginile celulei, în mm. */
+export const LATURA_RELIEF_MAXIMA = 8192;
+export const CELULA_RELIEF_MINIMA = 0.001;
+export const CELULA_RELIEF_MAXIMA = 100;
 export type ElementNod = {
   tip: 'element'; id: string; nume?: string; forma: FormaDoc; matrice: Matrice; [cheie: string]: unknown;
 };
@@ -385,7 +407,7 @@ export type Foaie = {
   cote?: Cota[];
   [cheie: string]: unknown;
 };
-export type Document = { schema: 27; rev: number; piese: Piesa[]; foi: Foaie[]; [cheie: string]: unknown };
+export type Document = { schema: 28; rev: number; piese: Piesa[]; foi: Foaie[]; [cheie: string]: unknown };
 
 /** Nodurile unei piese, în preordine, cu adâncimea lor (rădăcina are 1). Iterativ: arborele poate fi adânc. */
 export function noduriPiesa(radacina: Nod): Array<{ readonly nod: Nod; readonly adancime: number }> {
@@ -411,6 +433,7 @@ export function esteCaleDeschisa(f: FormaDoc): boolean {
 }
 
 export function areArce(f: FormaDoc): boolean {
+  if (f.tip === 'relief') return false;
   if (f.tip === 'cale') return f.varfuri.some((x) => x.s.tip === 'A');
   return f.tip === 'cerc' || f.razaColt > 0;
 }

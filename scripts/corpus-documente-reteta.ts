@@ -5,7 +5,8 @@
  *
  * Proiectul trăiește prin versiuni, ca al unui om: versiunea N deschide salvarea versiunii N − 1 cu ușa ei (deci cu
  * migrarea ei), adaugă ce a adus versiunea N (v2 grupul și a doua instanță, v3 operațiile … v23 literele unei plăcuțe, v24
- * punțile dopului decupat, v25 gaura prin foaie, v26 urechile capacului la locuri alese, v27 frezele din bibliotecă), apoi
+ * punțile dopului decupat, v25 gaura prin foaie, v26 urechile capacului la locuri alese, v27 frezele din bibliotecă, v28 un
+ * medalion în relief), apoi
  * salvează, după ce ușa ei a primit documentul neschimbat. v1 îl desenează de la zero. `gol` e documentul nou al lui v1.
  *
  *   node scripts/corpus-documente-reteta.ts <salvarea N − 1 | -> <ieșirea> proiect|gol [<deschis>]
@@ -231,6 +232,27 @@ const ADAUGIRI: Readonly<Record<number, (d: Obj) => void>> = {
     op(d, 'buzunar')['rest'][0]['scula']['regim'] = { turatie: 24_000, avans: 600, plonjare: 200 };
     op(d, 'eticheta')['fundPlat']['scula']['tais'] = 12;
     op(d, 'eticheta')['incrustatie']['banda']['freza']['biblioteca'] = { id: 'e9b4f1d3-07a2-4c5e-8b6f-1a3d5c7e9f02', rev: 1 };
+    d['rev'] += 1;
+  },
+  // v28 (ADR 0310 §1, ADR 0311): o piesă nouă, „Medalion”, doar cu un relief de 240 × 160 de celule de 0,5 mm, rotit cu 15°, cu
+  // două straturi (al doilea ascuns); dalele lor stau în afara documentului, aici doar amprentele hărților. Fără operații: ale
+  // reliefului vin cu finisarea (18.1↑c).
+  28: (d) => {
+    const strat = (id: string, nume: string, mod: string, vizibil: boolean, dale: string): Obj => ({ id, nume, mod, vizibil, dale });
+    d['piese'].push({
+      id: 'medalion', nume: 'Medalion', operatii: [],
+      radacina: {
+        tip: 'element', id: 'medalion', matrice: rot(15),
+        forma: {
+          tip: 'relief', nx: 240, ny: 160, celula: 0.5,
+          straturi: [
+            strat('rozeta', 'Rozeta', 'aduna', true, '3c9a1e5b7d2f4a6c8e0b1d3f5a7c9e1b2d4f6a8c0e2b4d6f8a1c3e5b7d9f0a2c'),
+            strat('chenar', 'Chenarul', 'inalt', false, 'f0e1d2c3b4a5968778695a4b3c2d1e0ff0e1d2c3b4a5968778695a4b3c2d1e0f'),
+          ],
+        },
+      },
+    });
+    d['foi'][0]['instante'].push({ id: 'medalion', piesa: 'medalion', x: 200, y: 250, rotire: 0 });
     d['rev'] += 1;
   },
 };

@@ -26,7 +26,7 @@ import { inversa } from '../geom/inversa.ts';
 import { compune, esteSimilitudine, transformaContur, type Matrice } from '../geom/matrice.ts';
 import { RAZA_MAXIMA_ARC } from '../geom/toleranta.ts';
 import type { Document, ElementNod, FormaDoc, Nod, Piesa, VarfDoc } from './document.ts';
-import { conturElement } from './forme.ts';
+import { conturElement, esteContur } from './forme.ts';
 import { elementeInstanta, matriceInstanta, type ElementLume } from './lume.ts';
 import { abatere } from './abatereContur.ts';
 import { netezesteCale } from './netezire.ts';
@@ -369,6 +369,8 @@ function convertesteElement(e: ElementLume, nod: ElementNod, p: Piesa, c: Cerere
     const varfuri = netezesteCale(nod.forma, e.matrice, c.toleranta, c.pastreaza, st);
     return varfuri ? { ...nod, forma: { ...nod.forma, varfuri } } : null;
   }
+  // Relieful (ADR 0310) nu e un contur: conversia îl lasă cum e.
+  if (!esteContur(e)) return null;
   let w: Contur;
   try {
     w = conturElement(e);

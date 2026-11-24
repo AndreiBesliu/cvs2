@@ -13250,6 +13250,55 @@ scrie brief-ul pentru relief si pentru cote”
   cotelor, v29 reliefului. Brief-urile de lipit, date owner-ului ca fișiere.
 - **Pe aceeași ramură (`unire-2411g`):** rândul publicării lotului al paisprezecelea.
 
+## 2026-11-24 — Linia reliefului: ADR 0310 propus, cu schița și șase întrebări (sesiune cloud)
+
+**Prompt:** brief-ul liniei, lipit de owner în sesiunea cloud nouă, pe `wip/18.1-relief`; din el, exact: „Prima livrare,
+fără cod de produs: ADR 0310, propus (intervalul liniei: 0310–0329), cu rândul lui în indexul ADR și titlul tradus, plus
+o schiță publicată (o pagină cu machetele și cu întrebările pentru owner, recomandarea în față, ca la celelalte linii).”
+**Started:** 24.11, 12:30. **Completed:** 24.11, 12:55.
+
+- **Citit întâi:** `CLAUDE.md`, `docs/lucru-in-cloud.md`, `docs/linii/relief.md` și `lectii.md`, `PLAN.md` §3 și §5.4
+  (etapele 18–24), ADR 0010, 0011, 0012, 0015, 0047, 0057, 0272, 0300, sonda s5 (raportul și `cod/lib/hf.mjs`),
+  `docs/PORTARE.md` §4, secțiunile C și D din prag; în cod: schema documentului (v27), imaginile pe foaie, proiectul
+  local, vederea 3D, ușa imaginilor, poarta mărimii.
+- **ADR 0310, propus** (`docs/adr/0310-relieful-nucleul-imaginea-3d.md`): relieful e un element al piesei (forma
+  `relief`, documentul v29, numărul de confirmat cu sesiunea principală), cu straturi în șase moduri; dalele de 256²,
+  Uint16 cu scară pe dală, după amprentă, în IndexedDB `cncvs2-relief`, documentul ține doar amprenta hărții fiecărui
+  strat; o operație se încheie cu cuantizarea; workerul reliefului și CAM-ul 3D în workerul CAM, fără stare; modelul
+  exact = triunghiurile prin centrele celulelor; câmpul conservativ exact pe 9 puncte pe celulă, aliniat la pixeli;
+  finisarea pe capsula segmentului, degroșarea în trepte, invarianta 4; feliile 18.1↑a–i; mărimea (pornirea ≤ +0,6 kB,
+  totalul ~35–50 kB pe linie); opțiunile; șase întrebări, recomandarea „a” la toate.
+- **Indexul ADR:** rândul 0310; titlul tradus în roadmap (991 de texte, 0 lipsă).
+- **`docs/PORTARE.md` §4.1:** verdictele propuse pentru etapa 18 (dilatarea gri cu lema coardei și maximul glisant:
+  rescrise, cu s5 ca martor; Danielsson: înaintea etapei 19). Codul vechi nu e în container: verdictele se sprijină pe
+  `LECTII.md` §3.2 și pe s5.
+- **Schița:** <https://claude.ai/artifact/Kbh5T2HAi3aMuYTQ59qz6h>: fereastra „Relief din imagine” și litofania (se pot
+  încerca, pe imagini generate în pagină), planșa cu panoul și straturile, vederea 3D „Modelul / Tăiat” (drop-cutter-ul
+  bilei și crestele), alinierea, rândurile exportului, feliile, formularul. Răspunsurile, în `raspunsuri/owner`, doar de
+  owner: colecția goală la citire; scrierea unui vizitator obișnuit (`as_level: interact`) refuzată. Verificat o dată
+  în Chromium: fără erori, fără derulare laterală la 1200 și la 390 px.
+- **Nota liniei** la zi. Fără cod de produs; porțile CI pe commit (doar documente).
+
+## 2026-11-24 — Linia reliefului: felia 18.1↑a, relieful din imagine pe planșă (documentul v28) (sesiune cloud)
+
+**Prompt:** „am raspuns” (formularul schiței: 1a, 2a, 3a, 4a, 5a, 6a), apoi brief-ul liniei: „Corectitudinea se
+demonstrează: proba înaintea funcției, oracol independent, valori pe hârtie, otrăvuri.” **Started:** 24.11, 12:55.
+**Completed:** 24.11, 15:40.
+
+- **Oracolul întâi** (`test/oracles/relief.ts`, `relief.cazuri.ts`; 5a), din ADR 0311 (contractul exact al nucleului,
+  scris înaintea codului): imaginea → relief, dala, harta, compunerea, cu amprentele din Python și controalele negative.
+- **Nucleul** `src/relief/` (grila, imaginea, dala, harta, compunerea, stratul, umbrirea), plasa pe sursă a determinismului,
+  regula `relief-doar-model-geom` cu capcana ei.
+- **Documentul v28** (nu v29: cotele erau pe v27; anunțată sesiunea principală): forma `relief`, ușa, migrarea v27 → v28 cu
+  ciocnirea, `FormaContur` / `esteContur` / `chenarElement` în uneltele vectorilor; oracolul documentului și corpusul de aur
+  la v28; probele care țin versiunea, pe 28 („mai nouă” = 29).
+- **Workerul reliefului**, baza `cncvs2-relief`, alegerea Vectori / Relief, fereastra reliefului, desenul umbrit (stratul
+  imaginilor al pânzei, adus la cerere), panoul, manualul. Pixelii exacți printr-o textură WebGL2 (pânza 2D rotunjea pixelii
+  semitransparenți: amprenta logoului diferea de Node; otrava C05 o arată).
+- **Mărimea:** pornirea +0,5 kB (cu ușa +0,9, peste ținta de +0,6 a liniei cu 0,3), totalul +12,7 kB (818,9 / 900).
+- **Probele:** unitare (relieful, documentul v28, integrarea), e2e `relief.spec.ts` (amprenta Node = browser, pixelii pânzei),
+  manualul (42 de capitole); otrăvurile 43 / 43 (`test/otravuri/18.1a.py`).
+
 ## 2026-11-24 — Sesiunea principală în cloud: a cincisprezecea unire (A.7, adminul pe telefon) (Model: Claude Fable 5.2)
 
 **Prompt:** „pare ca e gata adminul” (cu o captură a sesiunii liniei); „ok, cand e verde fa unirea”
@@ -14057,8 +14106,9 @@ incidentul numărul unu” (completul loturilor 19–21, roșu la o probă a ext
   probe ale fișierelor `utilizatori` și `rapide`, verzi. Otrăvurile (`test/otravuri/3.At.py`): 5 / 5 din prima, pe emulatoare (mesajul dat la răspunsul salvării, în fiecare din cele trei formulare; mesajul care nu mai vine; citirea căzută care lasă formularul ocupat).
 - **Porțile, în CI:** cu 3.At, codul lotului a trecut în completul lotului 26, care îl cuprinde (45466400696, pe
   `fdde5947`: unit 10 307 / 0, e2e 788 / 788, funcțiile 136 / 136, paginile 59 / 59); rapidul, verde pe `e533068a`
-  (45466041605). Completul propriu al lotului, pe `cadac6c3` (45465767883), a stat 40 de minute la coadă și rula încă
-  la unire. Mărimea lotului singur (primul complet): pornirea 110,4 kB, totalul 857,5 / 900. Nimic pe server.
+  (45466041605). Completul propriu al lotului, pe `cadac6c3` (45465767883), a stat 40 de minute la coadă și a ieșit
+  și el verde, la 21:58, cu câteva minute înaintea unirii (aflat după ea: unit 10 300 / 0, e2e 785 / 785, funcțiile
+  136 / 136, paginile 59 / 59). Mărimea lotului singur (primul complet): pornirea 110,4 kB, totalul 857,5 / 900. Nimic pe server.
 - **Tot în lot, doar documente:** nota liniei bibliotecii (`945a9320`); predarea liniei elicelor către sesiunea
   extensiilor (`05bdc8ec`, la cererea owner-ului) și decizia liniei noi a atelierului Easy 3Draw (ADR 0340–0349,
   feliile de la 3.Tv, cu 3.Tu).
@@ -14089,3 +14139,90 @@ pe test, la rândul ei.
 - **Urmează:** lotul 27, relieful singur (18.1↑a, `feb7bee1`, v28), unit pe `unire-2411ac` (`c5b79526`; ciocnirile:
   jurnalul feliilor, registrul otrăvurilor, catalogul controalelor, 641 de nume; 208 unitare alese, verzi local);
   completul lui (45472363389) rula la unire.
+
+## 2026-11-24 — Sesiunea principală în cloud: a douăzeci și cincea unire (18.1↑a, relieful din imagine, pe planșă; documentul v28) (Model: Claude Fable 5.2)
+
+**Prompt:** raportul liniei reliefului („18.1↑a: de unit `feb7bee1`”, cu rapidul și completul verzi), la ordinul în
+vigoare „unește ce se poate”
+**Started:** 24.11, 21:45. **Completed:** unirea în `main`, 24.11, 22:36; publicarea pe test, pornită după ea.
+
+- **Lotul, pe `unire-2411ac`** (peste lotul 26), relieful singur: `feb7bee1`, în `c5b79526`. Linia își adusese `main`
+  de trei ori și rezolvase ciocnirile de cod; la unire au rămas jurnalul feliilor, registrul otrăvurilor (rândul lui
+  10.4a2, dublat de unire: a rămas cel din `main`) și catalogul controalelor (scris din nou: 641 de nume). Local, pe
+  arborele unit: tipurile (și ale funcțiilor), regulile de import (22), traducerile (1 077), catalogul, biblioteca
+  extensiilor; 208 unitare alese (manualul, documentația, oracolul v28, corpusul de aur, frezele, relieful, grupurile
+  și desenele exportului), verzi.
+- **Porțile, în CI:** completul lotului pe `c5b79526` (45472363389, verde la prima trecere, 56 min): unit 10 369 / 0
+  (12 sărite, pe Linux), e2e 791 / 791, funcțiile pe emulatoare 136 / 136, paginile 59 / 59; rapidul, verde pe
+  `c5b79526` (45472365786, feliile între 1:34 și 8:32); completul liniei, verde pe `feb7bee1` (45463407432). Pornirea
+  110,9 kB (plafonul 120; cu ușa 115,9, cu Atelierul 116,2), totalul 873,5 / 900 kB (lotul 26: 860,1; relieful,
+  +13,4), `/admin` 138,3 / 200, contul 30,3 / 32. Nimic pe server.
+- **Documentele:** decizia în `CLAUDE.md`, cu paragraful de stare al reliefului și cu versiunea documentului (v28; un
+  câmp nou ia v29); numerele liniei atelierului, îndreptate (ADR 0284, feliile 3.Ca–3.Cj, acceptate de owner în
+  sesiunea liniei); indexul liniilor; starea din `docs/linii/principala.md`.
+- **Loturile dinainte:** 25 și 26, în `main` din 22:03 (`52a0aaa1`; rapidul pe `main`, la coadă la unire). Pe test,
+  lotul 22 (`62569bb2`, 20:32).
+
+## 2026-11-24 — Felia 10.4↑a-4: panoul cotei, lista, ochiul, „Arată cotele”, cotele foilor vecine (ADR 0330 §5) (Model: Claude Opus 5.5)
+
+**Prompt:** „continuă cu 10.4↑a-4” (owner-ul, 24.11, după 10.4↑a-3). **Started:** 24.11, 18:55, în sesiunea cloud a liniei
+cotelor. **Completed:** 24.11, 19:14 (în container; CI-ul, pe commit-ul împins).
+
+- **Întâi partea pură:** `cotaDezlegata`, `cotaCuText`, `cotaCuDistanta`, `stareCota` (`src/model/cote.ts`), foile ascunse
+  citite din browser (`citesteAscunse`), setarea „Cotele foilor vecine” și comutarea „Cotele pe pânză”, cu probele pe hârtie
+  (`cote.panou.test.ts`, 5; `cote.setari.test.ts`, +1).
+- **Depozitul cotelor** (`src/ui/coteVedere.ts`, fără model): cota aleasă, panoul și rândurile publicate de unealtă, cererile
+  listei (ascultate de editor fără redesenare), foile ascunse. Așa, panoul și lista nu trag codul cotelor în bucata lor.
+- **Interfața:** panoul cotei (`src/app/PanouCota.tsx`), rândul „Cote (N)” din listă cu ochiul (`src/ui/ListaCote.tsx`, la
+  cerere), acțiunea `vedere.cote` („Arată cotele”), cotele foilor vecine estompate (desenul unei cote, scos în `CotaSvg`), rândul
+  nou din Setări, manualul (ro, en), catalogul controalelor.
+- **E2e** (`test/e2e/cote.panou.spec.ts`, 4): panoul (felul, valoarea, Copiază în clipboard, textul cu <>, distanța, Dezleagă,
+  apoi forma scalată fără ca cota să se schimbe, Șterge și anularea); lista (rândul, clicul care trece la unealtă, ochiul, ținut
+  după reîncărcare); „Arată cotele” din paletă; foile vecine (estompate, la stânga foii active, ascunse din Setări).
+- **Porțile, în container:** tipurile; unitarele cotelor, manualului, catalogului, registrului; e2e-urile cotelor, panoului,
+  setărilor, manualului, paletei și foilor (34 / 34); build-ul determinist. Pornirea 110,4 → 110,6 kB (cu ușa 115,3, cu
+  Atelierul 115,6 / 120), totalul 837,8 → 841,6 / 900.
+- **Otrăvurile** (`test/otravuri/10.4a4.py`, într-o clonă): 25 / 25 prinse din prima (10 unitare, 15 e2e); două din
+  `10.4a3.py` (E01, E03), rămase VOID pe codul nou, mutate și prinse.
+
+## 2026-11-24 — Felia 10.4↑b: raza, diametrul, unghiul (și în Automată), cu setările lor; inch în fracții (ADR 0330 §4, §6) (Model: Claude Opus 5.5)
+
+**Prompt:** „10.4↑b” (owner-ul, 24.11, după 10.4↑a-4). **Started:** 24.11, 20:10, în sesiunea cloud a liniei cotelor.
+**Completed:** 24.11, 22:20 (în container; CI-ul, pe commit-ul împins).
+
+- **Întâi `main` adus peste a-4** (lotul 24, fereastra exportului și 3.Xk: `91dd065c`; ciocnirile, DEVLOG și catalogul
+  controalelor), ca sesiunea principală să aibă commit-ul de unit al lui a-4; lucrul la b, pus deoparte cât timp.
+- **Desenul pur** (`src/model/desenCota.ts`): `desenRadial` (raza din centru, din afară sau după loc; diametrul prin centru),
+  `desenUnghi` și `laturiUnghi` (trei puncte sau două laturi; arcul în sectorul s1, s2; extensiile; săgețile pe coardă sau în
+  afară; cifra deasupra, în linie sau orizontală), locul din cursor, alegerea pe arc, calea SVG, `desenCota` după fel; cifrele:
+  inch în fracții, unghiul zecimal sau grade-minute-secunde, prefixele (`cifraCota`). Probele pe hârtie întâi
+  (`cote.cerc.test.ts`, 15).
+- **Setările:** grupul „Raza, diametrul, unghiul” și unitatea „inch în fracții”, cu fracția cea mai mică; fereastra Setări, cu
+  cota de probă lărgită (o rază, un unghi).
+- **Unealta:** Rază, Diametru, Unghi; Automată pe cerc, arc, două laturi (unghiul; la paralele, distanța); refuzul razei pe o
+  linie, elipsă sau curbă; tragerea și săgețile pe felurile noi; panoul (locul cifrei, raza arcului); manualul (ro, en).
+- **Găsit pe drum:** arcul unghiului se desena oglindit față de coardă (sweep-flag 1 pe un ecran cu Y în jos); prins de proba
+  nouă a mijlocului căii SVG, reparat (`caleArc`).
+- **Porțile, în container:** tipurile, regulile de import; unitarele cotelor, manualului și catalogului; e2e-urile cotelor,
+  panoului, setărilor și manualului (27 / 27); build-ul determinist. Pornirea 110,6 kB (neschimbată), totalul 860,6 → 864,8 /
+  900.
+- **Otrăvurile** (`test/otravuri/10.4b.py`, într-o clonă): 49 / 49 (31 unitare, 18 e2e); P04, P14, P18, P22 și E18 au scăpat
+  întâi și sunt prinse după probele noi (patru unitare, plus arcul cotei de probă din Setări).
+
+## 2026-11-24 — Sesiunea principală în cloud: a douăzeci și șasea unire (cotele: 10.4↑a-4, panoul cotei și lista; 10.4↑b, raza, diametrul, unghiul) (Model: Claude Fable 5.2)
+
+**Prompt:** raportul liniei cotelor („10.4↑a-4 și 10.4↑b, gata de unit”, `98575aff`), la ordinul în vigoare „unește ce
+se poate”
+**Started:** 24.11, 23:38. **Completed:** unirea în `main`, 24.11, 23:35; publicarea pe test, cu lotul următor.
+
+- **Unirea, pe `unire-2411ae`** (din `893e45bb`): `98575aff`, în `1eea83dd`. Linia avea `main` adus, deci nicio
+  ciocnire, iar arborele unirii e identic cu al commit-ului raportat (`git diff 98575aff` gol): a intrat singură, pe
+  porțile lui.
+- **Porțile, în CI, pe `98575aff`:** completul 45482827371, verde: unit 10 379 / 0 (12 sărite, pe Linux), e2e
+  800 / 800, funcțiile pe emulatoare 136 / 136, paginile 59 / 59; rapidul, verde. Mărimea (măsurată de linie, pe
+  `main` `893e45bb`): pornirea 110,9 → 111,2 kB (cu ușa 116,1, cu Atelierul 116,5 / 120), totalul 873,5 → 880,9 / 900.
+  Nimic pe server.
+- **Documentele:** decizia în `CLAUDE.md`, cu paragraful de stare al celor două felii; indexul liniilor; starea din
+  `docs/linii/principala.md`.
+- **În drum:** publicarea loturilor 23–27 (`893e45bb`): completul pe `main` (45484077948) rula. Lotul 28 (atelierul
+  Easy 3Draw: 3.Ca și 3.Cb, `7157ecc5`, pe `unire-2411ad`) își reface porțile peste `main`-ul cu cotele.

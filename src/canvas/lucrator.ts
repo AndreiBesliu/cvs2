@@ -34,9 +34,11 @@ let strat: { readonly panza: OffscreenCanvas; readonly g: OffscreenCanvasRenderi
 /** Ultima cerere desenată: o decodare terminată o desenează din nou, cu imaginea. */
 let desenata: CerereDesen | null = null;
 
-function decodeaza(sursa: string, octeti: Blob): void {
+function decodeaza(sursa: string, octeti: Blob | NonNullable<ImaginePeFoaie['pixeli']>): void {
   decodate.set(sursa, 'decodare');
-  createImageBitmap(octeti).then((bmp) => {
+  // Un relief (ADR 0310 §7) vine cu pixelii umbriți, nu cu un fișier.
+  const bitmap = octeti instanceof Blob ? createImageBitmap(octeti) : createImageBitmap(new ImageData(octeti.rgba, octeti.latime, octeti.inaltime));
+  bitmap.then((bmp) => {
     if (decodate.get(sursa) !== 'decodare') {
       bmp.close();
       return;
@@ -61,7 +63,10 @@ function primesteImagini(lista: readonly ImaginePeFoaie[]): void {
     if (typeof d === 'object') for (const t of d.trepte) if (t instanceof ImageBitmap) t.close();
     decodate.delete(s);
   }
-  for (const im of lista) if (im.octeti && !decodate.has(im.sursa)) decodeaza(im.sursa, im.octeti);
+  for (const im of lista) {
+    const date = im.octeti ?? im.pixeli;
+    if (date && !decodate.has(im.sursa)) decodeaza(im.sursa, date);
+  }
 }
 
 /**
@@ -87,7 +92,9 @@ function treapta(t: Trepte, latimeEcran: number): ImageBitmap | OffscreenCanvas 
 
 /** Stratul imaginilor pentru cererea `c`, pe pânza de `w` × `h` pixeli fizici, cu `s` pixeli fizici pe mm. */
 function stratImagini(c: CerereDesen, w: number, h: number, s: number): OffscreenCanvas | null {
-  const cheie = `${w}x${h}|${c.vedere.scara}|${c.vedere.tx}|${c.vedere.ty}|${c.dpr}|${c.culori.linie}|${versiune}`;
+  // Un relief ales se mută cu selecția cât e trasă (ADR 0310 §7): atunci deplasarea intră în cheie.
+  const trase = imagini.some((im) => im.cuSelectia === true && c.selectie.includes(im.id));
+  const cheie = `${w}x${h}|${c.vedere.scara}|${c.vedere.tx}|${c.vedere.ty}|${c.dpr}|${c.culori.linie}|${versiune}${trase ? `|${c.deplasare.dx},${c.deplasare.dy}|${c.selectie.join(',')}` : ''}`;
   if (strat?.cheie === cheie) return strat.panza;
   if (!strat) {
     const panza = new OffscreenCanvas(w, h);
@@ -108,8 +115,10 @@ function stratImagini(c: CerereDesen, w: number, h: number, s: number): Offscree
     const r = (Math.hypot(im.latime, im.inaltime) / 2) * s;
     if (cx + r < 0 || cx - r > w || cy + r < 0 || cy - r > h) continue;
     x.setTransform(s, 0, 0, -s, c.vedere.tx * c.dpr, c.vedere.ty * c.dpr);
+    if (im.cuSelectia === true && c.selectie.includes(im.id)) x.translate(c.deplasare.dx, c.deplasare.dy);
     x.translate(im.x, im.y);
     x.rotate((im.rotire * Math.PI) / 180);
+    if (im.oglindita === true) x.scale(-1, 1);
     const d = decodate.get(im.sursa);
     if (typeof d === 'object') {
       // Rândul de sus al imaginii, sus pe foaie: în sistemul foii (Y în sus), imaginea se întoarce.

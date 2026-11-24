@@ -5,7 +5,7 @@
  */
 import { cerculArcului, conturCerc, conturDreptunghi, type Contur, type Punct } from '../geom/conturBaza.ts';
 import { TOLERANTA_PROIECT } from '../geom/toleranta.ts';
-import type { FormaDoc, SegmentDoc, VarfDoc } from './document.ts';
+import type { FormaContur, FormaDoc, SegmentDoc, VarfDoc } from './document.ts';
 
 export type FormaCale = Extract<FormaDoc, { tip: 'cale' }>;
 
@@ -23,7 +23,7 @@ function dinContur(c: Contur): FormaCale {
 }
 
 /** Calea formei, în coordonatele elementului: calea ei, sau conturul exact al dreptunghiului (colțurile rotunjite ca arce) și al cercului. */
-export function caleDinForma(f: FormaDoc): FormaCale {
+export function caleDinForma(f: FormaContur): FormaCale {
   if (f.tip === 'cale') return f;
   return dinContur(f.tip === 'dreptunghi' ? conturDreptunghi(0, 0, f.latime, f.inaltime, f.razaColt) : conturCerc(0, 0, f.raza));
 }
