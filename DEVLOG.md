@@ -12640,3 +12640,33 @@ continue, tu ce poti sa faci intre timp?”.
 - **După publicare:** PR-uri noi, pornite de owner în sesiunile liniilor, cu completul în lucru: trasarea 25.8↑b
   (`AndreiBesliu/cvs2#14`), frezele 16.A↑b-1 (`#16`, documentul v27), elicele 3.Ts (`#15`), adminul A.11b și A.11c
   (`#13`); biblioteca, ADR 0232 propus (`#17`, doar documente). Se unesc la raport.
+
+## 2026-11-24 — Sesiunea principală în cloud: a treisprezecea unire (25.8↑b, „Calibrează” și „Trasează…” din imaginea de pe foaie) (Model: Claude Fable 5.2)
+
+**Prompt:** același brief de predare al sesiunii principale („unește ce se poate”), la raportul liniei trasării din
+PR-ul `AndreiBesliu/cvs2#14` („De unit de sesiunea principală”).
+**Started:** 24.11, 09:50. **Completed:** unirea în `main`, 24.11, 10:20; publicarea pe test, la rândul ei.
+
+- **Înainte:** lotul al doisprezecelea pe test (`df9ae5397d8e`, 09:41, cu serverul); rândul publicării lui stătea pe
+  `unire-2411d` (`791171d8`, doar documente) și intră în `main` cu lotul acesta.
+- **Patru linii cu PR și completul în lucru** (trasarea, frezele, elicele, adminul). Cât rulau: unirea lor de probă,
+  locală (`proba-2411d`, neîmpinsă): ciocniri în DEVLOG, în fișa etapei 3 și în catalogul controalelor (scris din
+  nou); tipurile, importurile, traducerile trec; pornirea 109,9 kB (cu ușa 114,4, cu Atelierul 114,7 / 115), totalul
+  806,1 / 900. Suita unitară întreagă, oprită după 25 de minute (9 943 de probe trecute, niciuna căzută).
+- **De ce doar trasarea acum:** la 10:20, trasarea și elicele erau verzi; completul frezelor căzuse
+  (`placute.spec.ts:46` cerea documentul salvat la v26; reparat de linie în `112c32f6`, reluat), al adminului rula.
+  Trasarea singură are exact codul verificat, deci intră fără porți noi; celelalte trei, într-un lot comun, cu porțile
+  pe ramura de unire.
+- **Verificate înaintea unirii:** ramura fără `.lucru/`, cu `main` `df9ae539`; `ed6014c5` adaugă peste `01474f96`
+  doar documente; completul liniei verde pe `01474f96` (45343575138), rapidul pe `ed6014c5`.
+- **Unirea:** pe `unire-2411d` (din `df9ae539`): 25.8↑b în `f7f4510f`, fără nicio ciocnire; `git diff` gol față de
+  `01474f96` în afara fișierelor `.md`. În container: catalogul controalelor la zi, tipurile, regulile de import
+  (0 încălcări), traducerile (975, 0 lipsă).
+- **Porțile, în CI, pe `01474f96`** (completul, 51 min 40 s): unit 10 066 / 0 (12 sărite), e2e 649 / 649, funcțiile pe
+  emulatoare 122 / 122, paginile 51 / 51; pornirea 109,8 / 115 (cu ușa 114,3; cu Atelierul 114,6), totalul
+  804,7 / 900, `/admin` 135,0 / 200. Nimic pe server.
+- **Documentele:** decizia în `CLAUDE.md` și rândul de stare al lui 25.8↑b (scris de linie, completat cu unirea și
+  mărimea); indexul liniilor; starea și două lecții în `docs/linii/principala.md` (unirea de probă; felia cu codul
+  verificat intră singură).
+- **La owner:** plafonul pornirii (după lotul următor rămân 0,3 kB), fereastra exportului, verificarea juridică a
+  utilizării aplicației, „cine unește în `main`”, ADR 0232 (biblioteca), lista „ce pot face între timp”.
