@@ -199,6 +199,18 @@ test('raportarea din editor, cu poza și amprenta erorii din sesiune; răspunsul
     document.dispatchEvent(new Event('visibilitychange'));
   });
   await expect.poll(async () => (await documente('utilizare')).some((l) => text(l.f['sesiune']) === sesiune), LENT).toBe(true);
+  // Un lot al Anei din altă sesiune (altă zi): „Sesiunea raportării” nu-l arată.
+  const alt = await fetch(`${FS}/utilizare/zzzzzzzzzzzzzzz1-1`, {
+    method: 'PATCH', headers: { Authorization: 'Bearer owner', 'Content-Type': 'application/json' },
+    body: JSON.stringify({ fields: {
+      schema: { integerValue: '1' }, uid: { stringValue: uid }, sesiune: { stringValue: 'zzzzzzzzzzzzzzz1' }, nr: { integerValue: '1' },
+      primit: { timestampValue: new Date(Date.now() - 86_400_000).toISOString() }, inceput: { timestampValue: new Date(Date.now() - 86_500_000).toISOString() },
+      evenimente: { arrayValue: { values: [{ mapValue: { fields: {
+        fel: { stringValue: 'actiune' }, t: { integerValue: '1000' }, id: { stringValue: 'document.roteste' }, de: { stringValue: 'bara' }, rez: { stringValue: 'ok' },
+      } } }] } }, aruncate: { integerValue: '0' },
+    } }),
+  });
+  expect(alt.status, await alt.clone().text()).toBe(200);
   // Proiectul: în tichet doar meta lui (fișierul e în Storage), cu mărimea și amprenta versiunii salvate.
   const proiect = f['proiect']?.mapValue?.fields ?? {};
   expect([numar(proiect['marime']), text(proiect['sha256']), numar(proiect['schema'])]).toEqual([
