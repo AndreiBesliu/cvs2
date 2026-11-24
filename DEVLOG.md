@@ -13855,3 +13855,19 @@ bibliotecii („3.Xk e gata de unit”), la ordinul în vigoare „unește ce se
   deschisă); ramura `wip/28.8-export` de pe `origin` intră în lista de șters; canalul `export` expiră singur.
 - **Loturile dinainte:** lotul 23, în `main` din 20:00 (`9bbb1d58`). Pe test e tot `29ef7e44`; completul lotului 22 pe
   `main` (45445300697) rula la unire.
+
+## 2026-11-24 — ADR 0284 propus: construcțiile din Easy 3Draw (piese noi, punctele de prindere, Modelul ca asamblare) (sesiune cloud)
+
+**Prompt:** „ok, vreau sa adaugi mai multe tipuri de piese pentru fiecare categoire, sau sa imbunatatesti piesele si
+configuratoarele care exista deja. vreau ca userii sa poata crea cat mai multe piese, care sa fie si compatibile intre
+ele nu doar una cate una ci si ca constructii complexe”
+**Started:** 24.11, 20:45. **Completed:** propunerea, 24.11, 21:35; codul, după răspunsurile owner-ului.
+
+- **Inventarul atelierului** (18.23.0): 27 de piese în patru familii; perechile au ajutorul lor („Fă perechea”, cureaua,
+  „Fă șenila”, „Fă ventilatorul”); vederea „Modelul” așază piesele doar culcate, pe grila de știfturi, și nu verifică
+  prinderea.
+- **ADR 0284, propus:** cinci părți (piesele care leagă în 3D; mecanismele și formele noi; punctele de prindere și „Se
+  prinde cu”; Modelul ca asamblare; construcțiile gata), zece felii (3.Ca–3.Cj), patru întrebări cu recomandarea „a”.
+  Doar pachetul extensiei s-ar schimba.
+- **Coordonarea:** sesiunea principală, întrebată (cine mai scrie în sursele pluginului, numerele, ramura); 3.Tu a liniei
+  elicelor (axul pieselor rotunde în Model, propusă ca ADR 0283) rămâne a ei, iar partea de Model de aici vine după ea.
