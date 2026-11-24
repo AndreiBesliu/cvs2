@@ -68,6 +68,15 @@ o('M05', MA, "else if (ib === 'pauza' || ib === 'suspendata')", "else if (ib ===
 o('M06', MA, "r.push(b.transport === null ? { id: 'legata' } : { id: 'legata', cale: b.transport });", "r.push({ id: 'legata' });", 'disp',
   'felul legăturii (USB, WiFi, simulată) se pierde')
 o('M07', MA, "  if (legataA && !legataB) r.push({ id: 'deconectata' });\n", '', 'disp', 'deconectarea nu se spune')
+# Lucrarea scurtă (reparația din 24.11, după completul de noapte căzut pe emulatoare: „pornita” lipsea).
+o('M08', MA, "    if (LIBERA.has(ia) && DUPA_PORNIRE.has(ib)) r.push({ id: 'pornita' });\n", '', 'disp',
+  'o lucrare terminată între două stări văzute nu e socotită pornită')
+o('M09', MA, "new Set<FelIndicator | null>(['conectata', 'gata']);", "new Set<FelIndicator | null>(['conectata']);", 'disp',
+  'a doua lucrare, scurtă, după una terminată nu e socotită pornită')
+o('M10', MA, "new Set<FelIndicator | null>(['pauza', 'suspendata', 'oprita', 'oprita-m6', 'gata', 'intrerupta']);",
+  "new Set<FelIndicator | null>(['gata']);", 'disp', 'pornirea se ghicește doar la capăt, nu și la pauză, oprire sau întrerupere')
+o('M11', MA, "    if (LIBERA.has(ia) && DUPA_PORNIRE.has(ib)) r.push({ id: 'pornita' });\n", "    if (DUPA_PORNIRE.has(ib)) r.push({ id: 'pornita' });\n", 'disp',
+  'pornirea se spune la fiecare pauză și la capăt, și când lucrarea era văzută')
 o('I01', IM, "(a === null || a.legatura === 'alta')", "(a === null || a.legatura !== 'vie')", 'disp', 'o legătură pierdută care revine e o legare nouă')
 o('I02', IM, "if (a !== null && a.legatura === 'vie' && a.lucrare !== 'necunoscuta' && lucrareNoua(a, b))", 'if (lucrareNoua(a, b))', 'disp',
   'o lucrare găsită în curs la legare e numărată ca pornită aici')

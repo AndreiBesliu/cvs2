@@ -12890,6 +12890,27 @@ unită în `32b33a42`).
 - **Documentele:** ADR 0300 („Implementarea (16.A↑c)”), fișa etapei 3 (rândul `16.A↑c`), pragul, registrul otrăvurilor,
   traducerile, nota liniei. **Completed:** 24.11, 10:30.
 
+## 2026-11-24 — Felia 3.Tt: înclinarea spre pupa a elicei de barcă, la alegere, în atelierul Easy 3Draw (ADR 0282) (Model: Claude Opus 5.5)
+
+**Prompt:** „pornește înclinarea spre pupa ca opțiune” (în sesiunea cloud a liniei elicelor, după unirea lui 3.Ts în `main`).
+**Started:** 24.11, 11:41. **Completed:** 24.11, 12:32 (în container; CI-ul, pe commit-ul împins).
+
+- **Proba întâi:** amprenta a 24 de elice de barcă, luată din motorul lui 18.22.0 înaintea schimbării, și 6 probe unitare cu
+  valorile pe hârtie (scriptul de hârtie al lui 3.Tr, cu ridicarea adăugată), roșii pe motorul vechi; apoi 3 probe e2e.
+- **Motorul:** `eliceBarcaCote` primește `pupa` (0–15°, implicit 0): fiecare secțiune urcă cu max(0, r − rh) · tan θ;
+  butucul, cât cel mai înalt vârf; `urca` spune cât urcă vârful. Fără înclinare, aceeași plasă, la octet.
+- **Atelierul:** câmpul „Înclinarea spre pupa (°)”, numele („spre pupa N°”, după înclinarea înapoi), textul (cât urcă vârful,
+  suportul de sub palete, pus de programul de feliere), piesa din listă fără `pupa` la 0 (o listă salvată cu 18.22.0 o adună
+  pe linia ei); 5 texte în engleză („Rake aft”). Pachetul 18.23.0, cu rândul lui de „ce e nou”.
+- **Pe drum:** proba STL-ului cerea un butuc „peste 11,5”; la 4 palete, fără înclinare e 8,9, iar la 15° exact 11,5: proba
+  cere acum valoarea de pe hârtie. Randarea: paletele urcă spre vârf, butucul și rădăcina stau pe masă.
+- **Otrăvurile, în clonă:** `3.Tt.py` 35 / 35 (17 pe motor, 18 prin e2e), `3.Tt-en.py` 5 / 5; câmpul nou a mutat 35 de ancore
+  din `3.Tr.py` și 2 din `3.Tr-en.py`, aduse pe codul nou și rulate din nou: toate prinse.
+- **Porțile, în container:** tipurile, regulile de import (0 încălcări), traducerile (993 / 0), unitarele pluginului, ale
+  bibliotecii și ale documentelor, e2e-ul elicei de barcă, al înclinării și al pluginului în cvs2 (13 / 13).
+- **Documentele:** ADR 0282 („Implementarea (3.Tt)”), indexul ADR, fișa etapei 3 (jurnalul și coada owner-ului), traducerile
+  roadmap-ului, registrul otrăvurilor, nota liniei.
+
 - **Publicarea (`356db9bd`):** rapidul și completul pe `main` verzi (completul, 47 de minute), `publica.yml` verde în
   4 minute, cu serverul: cele 14 funcții actualizate (între ele `utilizare`, `tichete`, `logClientError`), regulile și
   indexurile publicate; adresa de test spune `356db9bdd1ee` (24.11, 12:26); catalogul bibliotecii, Easy 3Draw 18.22.0.
@@ -13038,3 +13059,96 @@ owner-ului din sesiunea ei: „ok, cand e verde fa unirea”
   11.1↑c și 14.C↑d (comenzile foii pe pânză; butonul Admin), în lucru pe `wip/11.1c-controale-foi`, cu canalul `foi`.
 - **La owner:** fereastra exportului (`#11`), verificarea juridică a utilizării aplicației înaintea live-ului, „cine
   unește în `main`”.
+
+## 2026-11-24 — ADR 0330 propus: cotele pe desen și măsurarea (Model: Claude Opus 5.5)
+
+**Prompt:** brief-ul liniei cotelor (owner-ul, 24.11, într-o sesiune cloud nouă: „Ești sesiunea liniei cotelor…”; ramura
+`wip/10.4-cote`, ADR-urile 0330–0339, canalul `cote`; „Prima livrare, fără cod de produs: ADR 0330, propus […] plus o
+schiță publicată”). **Started:** 24.11, 12:32, în sesiunea cloud a liniei. **Completed:** 24.11, 12:51.
+
+- **Ce e azi**, citit în cod: riglele foii și linia de cotă a formelor ieșite (`cotePeste`, ADR 0060); lipirea doar pe
+  axe (`src/geom/lipire.ts`); foaia ține deja, fără schemă nouă, ghidajele, imaginile și materialul; exportul 2D fără
+  text, cu DIMSTYLE gol; Relief SingleLine inclus; tastele D și M libere.
+- **Cercetarea** (referință funcțională): Vectric (cotele: lungime, orizontală / verticală, unghi, arc; redimensionarea
+  piesei le schimbă), CorelDRAW (orizontală / verticală, paralelă, unghiulară, segmentul), Inkscape (Măsoară, M, cu
+  „Mark dimension”), Onshape (D). Sonda ezdxf 1.4.4: cinci cote DXF recitite cu 0 erori, iar `get_measurement()` dă
+  120, 50, 25, 50 și 90.
+- **Propunerea (ADR 0330):** unealta Cote (D) cu felurile în bara ei (Automată, orizontală, verticală, aliniată, rază,
+  diametru, unghi, lanț, linie de bază) și „Măsoară” (M); lipirea pe puncte; legată de formă, cu dezlegarea în același
+  pas de anulare; pe foaie, fără schemă nouă; cifrele din trăsăturile lui Relief; nu se taie niciodată (proba G-code-ului
+  scrisă prima); exportul pe stratul COTE, cu DXF ca DIMENSION sau ca linii și cifre; „Fă desen din cotă” pentru gravură.
+  Patru felii (10.4↑a–d); pornirea estimată +0,3 kB, totalul ~818 / 900.
+- **Schița**, cu machetele (pânza, legată / liberă de încercat, panoul, lista, opțiunile, exportul, gravura) și șase
+  întrebări, cu răspunsurile salvate în pagină (doar owner-ul scrie): <https://claude.ai/artifact/BvsaqPKoKWsypCi1tphDvu>.
+- **Documentele:** ADR 0330 (propus), rândul în indexul ADR, titlul tradus (`node scripts/traduceri.ts --verifica`: 993,
+  0 lipsă), nota liniei (`docs/linii/cote.md`). `main` adus în ramură (`e3a9e512`, A.7), fără ciocniri. Probele
+  documentației în container: 42 / 42.
+- **Codul:** la răspunsurile owner-ului, începând cu 10.4↑a.
+
+## 2026-11-24 — ADR 0330 acceptat (1a–6a), cu setările cotelor într-o fereastră „Setări” (Model: Claude Opus 5.5)
+
+**Prompt:** „am raspuns” (owner-ul, după răspunsurile salvate în schiță la 12:52: 1a–6a, cu nota „vreau cat mai multe
+optiuni si setari pe care un user le poate selecta si configura pentru sistemul de cote. dar nu le vreau in zona de
+design/proiectare. vreau o zona de settings generale si acolo sa se poata seta toate astea”). **Started:** 24.11, 12:53.
+**Completed:** 24.11, 12:57 (documentele; codul continuă cu 10.4↑a-1).
+
+- **ADR 0330, acceptat:** răspunsurile, cu nota exactă; §6 rescris: fereastra nouă „Setări” (meniul contului, paleta,
+  Ctrl+, și ⚙ din bara uneltei), secțiunea Cotele, cu ~35 de setări în opt grupuri (cifrele, liniile și capetele, raza,
+  diametrul și unghiul, comportamentul, lipirea, măsurarea, exportul, raportul), fiecare în felia care o folosește;
+  setările sunt ale aplicației, ținute în browser, aplicate tuturor cotelor; o cotă nu mai ține stil. Bara uneltei: doar
+  felurile și ⚙; panoul: doar ce e al cotei. Feliile: 10.4↑a-1 (modelul și proba), a-2 (unealta), a-3 (Setări, panoul,
+  lista, manualul), b, c, d.
+- **Schița, versiunea 2:** macheta „Setări › Cotele”, cu o cotă de probă care se redesenează după unitate (și inch în
+  fracții), zecimale, zerouri, rotunjire, separator, înălțime, locul cifrei, capete, liniile de extensie.
+- **Documentele:** rândul indexului ADR (acceptat), nota liniei (deciziile owner-ului), DEVLOG; traducerile: 993, 0 lipsă.
+
+## 2026-11-24 — Felia 10.4↑a-1: modelul cotelor și proba G-code-ului (ADR 0330 §2, §3, §8) (Model: Claude Opus 5.5)
+
+**Prompt:** „am raspuns” (owner-ul, 24.11; după ADR-ul acceptat, codul pornește cu 10.4↑a-1). **Started:** 24.11, 12:58, în
+sesiunea cloud a liniei cotelor. **Completed:** 24.11, 13:35 (în container; CI-ul, pe commit-ul împins).
+
+- **Întâi proba** (`test/unit/cote.neatinse.test.ts`), verde din prima (cotele erau încă un câmp necunoscut): pe tot corpusul
+  CAM și pe placa 11, nouă cote pe fiecare foaie (fiecare fel, legate de vârf, cutie, mijloc, centru, cadran; una dezlegată;
+  una dintr-o versiune mai nouă); exportul, traseul, verificarea vectorilor și raportul foilor ies ca fără cote.
+- **Apoi probele modelului și ale ușii**, roșii întâi (modulele lipseau), verzi după cod: `cote.model.test.ts` (7: punctele
+  pe hârtie, prin instanța rotită cu 90°; dezlegarea; valorile, cu unghiul din trei puncte și dintre două laturi),
+  `cote.usa.test.ts` (8: refuzurile, câmpurile necunoscute, cheile `__proto__`, privirea de la pornire, jurnalul, ușa fără
+  judecata adusă, într-un proces separat).
+- **Codul:** tipurile în `document.ts` (lista felurilor, ca valoare, în `cote.ts`, ca să nu intre în pornire);
+  `src/model/cote.ts`; `src/model/judecataCote.ts`; `problemaCote` și înregistrarea în `schemaDocument.ts`; `cuCote` și
+  apelul în `usaCurenta.ts`; importul în `incarcare.ts`; pornirea (`proiectLocal.ts`) aduce judecata doar pentru un document
+  cu cote; `inlocuieste-cote` în `jurnal.ts`; regula `cam-fara-cote` cu capcana ei.
+- **Porțile, în container:** tipurile; regulile de import (21 / 21 capcane, 0 încălcări); unitarele ușii, documentului
+  (oracolele v1–v27, corpusul de aur), foilor, jurnalului și cotelor 3 546 / 3 546; build-ul determinist; traducerile (995,
+  0 lipsă). Pornirea 110,0 kB (+0,1; cu ușa 114,6, cu Atelierul 114,9 / 120), totalul 807,6 / 900 (+1,5).
+- **Otrăvurile** (`test/otravuri/10.4a1.py`, într-o clonă, după commit): 30 / 30 prinse; `verifica` pe listele zonei:
+  aceleași VOID-uri ca pe `main`.
+- **Capcane:** am scris întâi orele în UTC; proiectul scrie ora României (corectate). „Duplică foaia” copiază și cotele, cu
+  legăturile foii vechi (pe foaia nouă ies dezlegate): de hotărât la a-2.
+
+## 2026-11-24 — Sesiunea principală în cloud: a șaptesprezecea unire (reparația căderii de noapte; 10.4↑a-1, cotele; 3.Tt, elicele) (Model: Claude Fable 5.2)
+
+**Prompt:** (revenire programată: completul de noapte); rapoartele liniilor cotelor și elicelor, cu cuvântul owner-ului
+din sesiunea elicelor: „cand e verde fa unirea”
+**Started:** 24.11, 14:10. **Completed:** unirea în `main`, 24.11, 15:06; publicarea pe test, la rândul ei.
+
+- **Incidentul numărul unu:** completul de noapte programat, roșu pe `main` (`4ef990f5`, 45380945393), la o singură
+  probă de pe emulatoare (`utilizare.emulator.spec.ts:233`, 54 trecute): evenimentele mașinii erau „legata, terminata,
+  deconectata”, fără „pornita”. Cauza: `evenimenteMasina` compară două stări văzute la rând, iar un program de câteva
+  linii pe mașina simulată a trecut de la „pregătit” la „terminat” între două redesenări. Reprodusă într-o probă unitară
+  (`sir(legata, terminat)`), apoi reparată în `src/app/utilizareMasina.ts` (`bae574a8`): de la „legată” sau „gata”, o
+  pauză, o oprire, capătul sau întreruperea spun întâi pornirea. Patru otrăvuri noi în `test/otravuri/A.8d.py`
+  (M08–M11), prinse. Linia bibliotecii a găsit aceeași cauză și a scris aici.
+- **Lotul, pe `unire-2411m`** (din `fdce5f1b`): reparația; cotele, commit-ul raportat `47be5f42`, în `f25249cf`
+  (linia merge mai departe cu a-2); elicele, `ba09a10b`, în `d57ca962`; nota liniei bibliotecii (`e0922fc3`, doar
+  documente). Ciocnirile: DEVLOG și un rând din registrul otrăvurilor. Local: tipurile (și ale funcțiilor), regulile
+  de import (21, cu `cam-fara-cote`), traducerile, catalogul, biblioteca extensiilor la zi (Easy 3Draw 18.23.0).
+- **Porțile, în CI:** completul lotului pe `d57ca962` (45391345265, verde la prima trecere, 52 min cu așteptarea la coadă):
+  unit 10 186 / 0 (12 sărite, pe Linux), e2e 697 / 697, funcțiile pe emulatoare 136 / 136, paginile 57 / 57; completele liniilor,
+  verzi: cotele pe `47be5f42` (45382281125), elicele pe `ba09a10b` (45382892343). Pornirea 110,0 kB (plafonul 120; cu ușa 114,6, cu Atelierul 114,9, măsurate de linia cotelor), totalul 815,9 / 900 kB, `/admin` 138,2 / 200, contul 30,3 / 32. Nimic pe server.
+- **Lotul 16:** în drum spre test: completul lui pe `main` (45392060715) rula la unire; publicarea, după el, cu
+  serverul (funcția `freze`).
+- **Documentele:** decizia în `CLAUDE.md`, cu rândul de stare al cotelor, versiunea lui Easy 3Draw și regula
+  evenimentelor mașinii; indexul liniilor; starea și lecția din `docs/linii/principala.md`.
+- **La owner:** fereastra exportului (`#11`), verificarea juridică a utilizării aplicației înaintea live-ului, „cine
+  unește în `main`”; canalul `foi`, de încercat.

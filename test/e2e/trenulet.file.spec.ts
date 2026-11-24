@@ -196,13 +196,14 @@ test('o listă salvată de 18.14.0 se deschide la fel: piesa din editor, acum pe
   await deschide(page, stocat);
   await laFelCa18140(page);
   // scrise înapoi la deschidere: aceeași stare, aceeași listă, același model (nimic mutat); singura cheie nouă e starea
-  // implicită a tipurilor venite după 18.14.0 (șenila, 3.To; elicea, 3.Tq; elicea de barcă, 3.Tr; ventilatorul, 3.Ts)
+  // implicită a tipurilor venite după 18.14.0 (șenila, 3.To; elicea, 3.Tq; elicea de barcă, 3.Tr, cu înclinarea spre pupa
+  // de la 3.Tt; ventilatorul, 3.Ts)
   const scris = JSON.parse(await page.evaluate((k) => localStorage.getItem(k) ?? 'null', CHEIE)) as typeof stocat;
   const { senila, elice, eliceBarca, ventilator, ...stare } = scris.stare as Record<string, unknown>;
   expect([stare, scris.lista, scris.model]).toEqual([stocat.stare, stocat.lista, stocat.model]);
   expect(senila).toEqual({ piesa: 'zala', gauriStift: 'da', dinti: 10, gaura: 'x', pereche: 10, distanta: 8 });
   expect(elice).toEqual({ palete: 3, diametru: 72, pas: 0.7, latime: 30, forma: 'rot', paleta: 'rasucita', profil: 'placa', sens: 'dreapta', gaura: 'x', con: 'nu' });
-  expect(eliceBarca).toEqual({ palete: 3, diametru: 40, pas: 1, latime: 100, inclinare: 20, sens: 'dreapta', gaura: 'x', capac: 'nu' });
+  expect(eliceBarca).toEqual({ palete: 3, diametru: 40, pas: 1, latime: 100, inclinare: 20, pupa: 0, sens: 'dreapta', gaura: 'x', capac: 'nu' });
   expect(ventilator).toEqual({ piesa: 'rotor', palete: 7, diametru: 40, joc: 0.8, pas: 0.8, latime: 45, sens: 'dreapta', gaura: 'x', inel: 'nu', urechi: 2 });
 });
 

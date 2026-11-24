@@ -1,7 +1,7 @@
 import * as v from 'valibot';
 import { esteSimilitudine, TOLERANTA_SIMILITUDINE_LUME } from '../geom/matrice.ts';
 import { areArce, noduriPiesa, PLAFON, VERSIUNE_SCHEMA, type Document } from './document.ts';
-import { problemaTexte, problemaUrechi, SchemaDocument } from './schemaDocument.ts';
+import { problemaCote, problemaTexte, problemaUrechi, SchemaDocument } from './schemaDocument.ts';
 import { elementeInstanta, matriceInstanta } from './lume.ts';
 
 /**
@@ -94,6 +94,8 @@ export function incarcaCu(brut: unknown, migrari: Readonly<Record<number, Migrar
   if (t) return { ok: false, motiv: `documentul nu respectă schema: ${t}` };
   const u = problemaUrechi(doc as Document);
   if (u) return { ok: false, motiv: `documentul nu respectă schema: ${u}` };
+  const c = problemaCote(doc as Document);
+  if (c) return { ok: false, motiv: `documentul nu respectă schema: ${c}` };
   const lume = arceNeuniformeInLume(doc as Document);
   if (lume) return { ok: false, motiv: `documentul nu respectă schema: ${lume}` };
   // Documentul întors e o copie a intrării validate, nu ieșirea valibot: aceea scoate tăcut cheile `__proto__`,
@@ -110,6 +112,19 @@ export function cuPlacute(brut: unknown): boolean {
   const foi = typeof brut === 'object' && brut !== null ? (brut as Brut)['foi'] : null;
   return Array.isArray(foi) && foi.some((f) => typeof f === 'object' && f !== null && Array.isArray((f as Brut)['instante'])
     && ((f as Brut)['instante'] as unknown[]).some((i) => typeof i === 'object' && i !== null && Object.hasOwn(i, 'texte')));
+}
+
+/**
+ * Documentul brut are cote pe o foaie (ADR 0330; orice valoare a câmpului, afară de o listă goală): ușa de la pornire aduce
+ * întâi judecata lor (`judecataCote.ts`), ca pe a plăcuțelor. O privire pe forma brută, fără să judece ceva.
+ */
+export function cuCote(brut: unknown): boolean {
+  const foi = typeof brut === 'object' && brut !== null ? (brut as Brut)['foi'] : null;
+  return Array.isArray(foi) && foi.some((f) => {
+    if (typeof f !== 'object' || f === null || !Object.hasOwn(f, 'cote')) return false;
+    const c: unknown = (f as Brut)['cote'];
+    return !(Array.isArray(c) && c.length === 0);
+  });
 }
 
 /**
