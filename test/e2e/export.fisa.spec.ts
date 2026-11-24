@@ -106,9 +106,12 @@ test('valoarea greșită se spune în grupul câmpului, cu punctul în listă ș
   await expect(e1.locator('[data-grup="freza"] [data-greseala]')).toContainText('T1 are două freze');
   await expect(fisa(page, 'e2/e2').locator('[data-grup="freza"] [data-greseala]')).toContainText('T1 are două freze');
   await expect(page.locator('[data-nav="e2/e2"][data-gresit]')).toHaveCount(1);
+  // Și câmpul frezei e marcat greșit pe ambele fișe (conflictul vine fișei prin context, 28.8↑f-3).
+  await expect(fisa(page, 'e2/e2').locator('[data-camp="scula"]')).toHaveAttribute('aria-invalid', 'true');
   // T2 e freza dreaptă a fundului plat: V-ul ia T3.
   await e1.locator('[data-camp="scula"]').fill('3');
   await expect(page.locator('[data-greseala]')).toHaveCount(0);
+  await expect(fisa(page, 'e2/e2').locator('[data-camp="scula"]')).toHaveAttribute('aria-invalid', 'false');
   await expect(page.locator('[data-nav][data-gresit]')).toHaveCount(0);
   await expect(page.locator('[data-buton="exporta"]')).toBeEnabled();
 });
