@@ -495,7 +495,8 @@ export function PanouProprietati({
           ? rand(t('prop.adancime'), t('prop.inc.gaura.adancime', { mm: mm(foaie.stoc.grosime) }))
           : rand(t('prop.adancime'), camp(t('prop.adancime'), 'adancime', comun((o) => o.adancime), 'mm', false, (x) => scrieValori({ adancime: x }))))}
         {!butoane && operatiiAlese.length > 0 && rand(t('prop.pas'), camp(t('prop.pas'), 'pas', comun((o) => o.pas), 'mm', false, (x) => scrieValori({ pas: x })))}
-        {operatiiAlese.length > 0 && biblioteca.freze.length > 0 && rand(t('prop.freza'), (
+        {/* În Atelier (butoanele mari, fără liste), freza rămâne pe cartela ei, schimbată din fereastra exportului. */}
+        {!butoane && operatiiAlese.length > 0 && biblioteca.freze.length > 0 && rand(t('prop.freza'), (
           <select key={`${cheie}/freza`} value={frezaAleasa?.id ?? ''} data-camp="freza" aria-label={t('prop.freza')}
             disabled={doarCitire || frezeOferite.length === 0} {...(oprit ? { title: oprit } : {})}
             onChange={(ev) => { alegeFreza(ev.target.value); }}>

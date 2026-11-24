@@ -2,7 +2,8 @@
  * Freza din bibliotecă în secțiunea Tăierea (ADR 0300 §4, felia 16.A↑b-2), în Edge: rândul „Freza” apare cât biblioteca are
  * freze (de la prima pornire, frezele standard, puse singure: 16.A↑a-2) și arată doar frezele care merg pe toate formele alese (plate pe un profil, în V la V-carve, niciuna la un amestec);
  * aleasă, freza trece pe operație într-un pas de anulare, cu pasul ei, iar fereastra exportului o arată; numărul T ocupat de
- * altă freză se spune într-o notă; Atelierul (butoanele mari) are același rând, în panou, și cu fontul lat; în engleză.
+ * altă freză se spune într-o notă; lista stă în panou și cu fontul lat, în engleză; Atelierul (butoanele mari, fără liste)
+ * n-are rândul: freza rămâne pe cartela ei.
  */
 import { test, expect, type Locator, type Page } from '@playwright/test';
 import { adauga, ecran, vedere } from './ajutor-panza.ts';
@@ -97,14 +98,10 @@ test('un profil și un V-carve împreună: nicio freză; T-ul bibliotecii ocupat
   await expect(aleasa(page)).toHaveText('Nicio freză din bibliotecă nu se potrivește');
 });
 
-test('Atelierul (butoanele mari): același rând, în panou, și cu fontul lat; în engleză', async ({ page }) => {
-  await page.addInitScript(() => {
-    localStorage.setItem('cncvs2.aranjament', '{"v":1,"aranjament":"atelier","densitate":"mare"}');
-    localStorage.setItem('cncvs2.limba', 'en');
-  });
+test('la 1280 px, cu fontul lat, în engleză: lista stă în panou, cu frezele standard puse în engleză', async ({ page }) => {
+  await page.addInitScript(() => { localStorage.setItem('cncvs2.limba', 'en'); });
   await page.setViewportSize({ width: 1280, height: 800 });
   await page.goto('/');
-  await expect(page.locator('.aplicatie')).toHaveAttribute('data-aranjament', 'atelier');
   await page.evaluate(() => { document.documentElement.style.setProperty('--font', "Verdana, 'DejaVu Sans', sans-serif"); });
   // Frezele standard, puse la prima pornire în limba ei: în engleză.
   await adauga(page, 'dreptunghi');
@@ -120,4 +117,14 @@ test('Atelierul (butoanele mari): același rând, în panou, și cu fontul lat; 
   });
   expect(lista).toBeLessThanOrEqual(panou);
   expect(derulare).toBe(0);
+});
+
+test('Atelierul (butoanele mari, fără liste): nici rândul „Freza”; freza rămâne pe cartela ei', async ({ page }) => {
+  await page.addInitScript(() => { localStorage.setItem('cncvs2.aranjament', '{"v":1,"aranjament":"atelier","densitate":"mare"}'); });
+  await page.goto('/');
+  await expect(page.locator('.aplicatie')).toHaveAttribute('data-aranjament', 'atelier');
+  await adauga(page, 'dreptunghi');
+  await expect(page.locator('[data-buton="freza"]')).toBeVisible();
+  await expect(freza(page)).toHaveCount(0);
+  await expect(taierea(page).locator('select')).toHaveCount(0);
 });

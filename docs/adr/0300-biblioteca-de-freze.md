@@ -406,8 +406,8 @@ nota „s-a schimbat în bibliotecă” (fostă b-3). Documentul rămâne v27; n
   `src/model/rol.ts`: diametrul, forma, turația din `regim` sau lipsa ei): același T cu două turații e refuzat la export (16.A↑b-1),
   deci o turație diferită cere alt număr. Regula trece și la roluri (`numarFreza`, `numereFreze`): un rol personalizat cu
   valori de lucru (copiat după 16.A↑b-1) nu mai poate primi T-ul unei freze cu altă turație.
-- **Rândul „Freza” din Tăierea** (`src/app/PanouProprietati.tsx`): cât biblioteca are freze, sub pas (și în Atelier, în aceeași
-  listă de valori); biblioteca e a contului deschis pe server sau cea fără cont (`cheieBibliotecii` din `frezeMele.ts`, aceeași
+- **Rândul „Freza” din Tăierea** (`src/app/PanouProprietati.tsx`): cât biblioteca are freze, sub pas; nu în Atelier (butoanele
+  mari, fără liste: acolo freza rămâne pe cartela ei, schimbată din fereastra exportului; precizat la 16.A↑a-2); biblioteca e a contului deschis pe server sau cea fără cont (`cheieBibliotecii` din `frezeMele.ts`, aceeași
   ca a ferestrei), citită din browser la prima deschidere a panoului, fără sincronizare (aceea rămâne a ferestrei, §7). Arată
   freza din bibliotecă a tuturor operațiilor alese; altfel „Scrisă de mână” (aceeași freză pe toate) sau „— (diferite)”; fără
   nicio freză potrivită, lista e oprită, cu „Nicio freză din bibliotecă nu se potrivește”. Aleasă, trece prin acțiunea
