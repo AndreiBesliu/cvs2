@@ -1368,6 +1368,26 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 24.11.2026, dimineața (a unsprezecea unire din cloud): **A.9a și A.9b (utilizarea aplicației: sumele zilei, jobul de
+  noapte și fila Utilizare) unite în `main`** (sesiunea principală, ramura `unire-2411b`, din `89962b4d`). Linia
+  adminului, ramura `wip/A.1-admin`, `dbb0306a`, PR-ul `AndreiBesliu/cvs2#13` (ADR 0262; `3.Ak` și `3.Al` în fișa etapei
+  3), unite în `95dddbe0`. **A.9a:** jobul `agregaUtilizarea` (02:30, ora României, cu marcajul lui) adună ieri și
+  alaltăieri în `utilizareZi/{zi}`: acțiunile, uneltele, ferestrele, dialogurile, clicurile, calculele, mașina și
+  imprimanta, sesiunile, cu clienții deosebit de personal; fără conturi în sume (oamenii distincți, într-o schiță
+  HyperLogLog, deci aproximativi), așa că sumele se pot ține 2 ani; permisiunea nouă „Utilizare: citește”; otrăvurile
+  27 / 27. **A.9b:** fila Utilizare din `/admin` (grupul Produs, după Sugestii): perioada (7, 30 sau 90 de zile) și cine
+  (clienții, personalul, toți); oamenii activi, sesiunile, programele exportate, refuzurile; cele mai folosite acțiuni;
+  ce nu se folosește; frecările; duratele calculelor; citește doar sumele zilelor, niciodată loturile; otrăvurile
+  26 / 26. Ramura avea `main` (`89962b4d`); nicio ciocnire, iar codul unirii e chiar al lui `6b79c317` (`git diff` gol în
+  afara fișierelor `.md`), pe care au trecut porțile liniei. **La publicare merge și serverul:** funcția nouă
+  `agregaUtilizarea`, regulile Firestore (`utilizareZi`, citite cu „Utilizare: citește”) și indexurile (TTL pe
+  `utilizareZi`); funcția `utilizare`, neschimbată. Porțile, în CI, verzi pe `6b79c317` (completul, 52 min 37 s): unit
+  10 045 / 0 (12 sărite, pe Linux), e2e 646 / 646, funcțiile pe emulatoare 120 / 120, paginile 50 / 50; pornirea
+  109,4 kB (plafonul 115; cu ușa 113,9, cu Atelierul 114,2), totalul 799,6 / 900 kB (neschimbat), `/admin` 133,2 / 200,
+  fila Utilizare 3,8 / 25 (doar online). Înainte, lotul al zecelea a ajuns pe test (`89962b4d`, 24.11, 04:59), cu
+  serverul. Pe ramura liniei, în lucru: A.10 (fluxurile în fila Utilizare), apoi A.11 și A.7. Neunită, la cuvântul
+  owner-ului: fereastra exportului (28.8↑a–b-3, `AndreiBesliu/cvs2#11`). **La owner:** fereastra exportului,
+  verificarea juridică (GDPR) a utilizării aplicației înaintea live-ului, „cine unește în `main`”.
 - 24.11.2026, spre dimineață (a zecea unire din cloud): **A.8c și A.8d (utilizarea aplicației: dialogurile, clicurile
   fine, calculele, mașina și imprimanta) unite în `main`** (sesiunea principală, ramura `unire-2411a`, din `b1797933`).
   Linia adminului, ramura `wip/A.1-admin`, `fbbc8934`, PR-ul `AndreiBesliu/cvs2#13` (ADR 0262; `3.Ai` și `3.Aj` în fișa
