@@ -362,6 +362,11 @@ fiecare foaie, pe pânză).
   foaia și piesele de pe ea?”, „Șterge foaia”, „Renunță”), iar întrebarea rămâne la vedere și cu mausul plecat.
 - **Unde nu se arată:** într-un proiect deschis doar pentru citire, sub fereastra Mașina sau Imprimanta (Proiectarea
   acoperită) și cât ține un mod al pânzei (urechile alese, imaginea de pe foaie).
+- **Ce acoperă rândul:** o fâșie de vreo 215 × 34 px sub colțul din stânga-jos al foii active. Un gest al unei unelte
+  (cadrul selecției, o tăietură, un desen) nu poate începe pe rând, ca pe orice bară; se poate termina peste el, fără
+  să apese nimic. Găsit de completul feliei: proba Cuțitului la Liber (`cutit.spec.ts:421`) își pornea urma la 10 mm
+  sub foaie, la 50 mm de colț, exact pe rând; acum pornește de deasupra plăcii. Dacă stă în drum la lucru, varianta
+  de rezervă e rândul foii active tot doar cu mausul pe ea (o schimbare de un rând, la cuvântul owner-ului).
 - **Codul:** partea pură în `src/ui/controaleFoiCalcul.ts` (`foaiaDeSub`, `loculRandului`, `RANDURI_FOAIE`, comune cu
   meniul); componenta `ControaleFoi` în bucata meniului foii (`src/ui/MeniuFoaie.tsx`, la cerere, preîncărcată după
   pornire); `App.tsx` îi dă foile de pe pânză (cea activă la x = 0, vecinele din `locuriFoi`), vederea și semnalul

@@ -12917,4 +12917,7 @@ un buton pentru admin, care apare daca esti logat ca admin” (cu o captură a m
 - **Mărimea:** pornirea 109,9 → 110,0 kB (plafonul 120), totalul 806,1 → 806,9 / 900 kB. Documentul și serverul,
   neschimbate.
 - **Canalul `foi`:** <https://cncvectorstudio-test--foi-027ryryb.web.app> (din `501751e0`, cu tot codul feliilor).
-- **Porțile, în CI:** rapidul verde pe `501751e0`; completul, pe ramură.
+- **Porțile, în CI:** rapidul verde pe `501751e0`. Primul complet (45384962428) a căzut la o probă, din 664:
+  `cutit.spec.ts:421`, a cărei urmă trasă cu mâna pornea la 10 mm sub foaie, exact pe rândul comenzilor foii active.
+  Reprodusă local; proba își pornește acum urma de deasupra plăcii și o termină peste rând (`124f2d74`). Completul,
+  repornit (45392375164).
