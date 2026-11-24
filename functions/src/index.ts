@@ -24,6 +24,7 @@ import { trateazaUtilizarea } from './utilizare/actiuni.ts';
 import { agregaUtilizarea as agregaUtilizareaZilnic } from './utilizare/agregare.ts';
 import { trateazaContul } from './conturi/actiuni.ts';
 import { administreazaConturile as administreazaConturi } from './conturi/admin.ts';
+import { trateazaFrezele } from './freze/actiuni.ts';
 import { memorieNoua, trateazaFonturiGoogle } from './fonturi/google.ts';
 import { REGIUNI } from './regiuni.ts';
 
@@ -119,6 +120,15 @@ export const administreazaConturile = onCall(
 export const utilizare = onCall(
   { region: REGIUNI.callable, enforceAppCheck: true, maxInstances: 5, memory: '256MiB', timeoutSeconds: 20 },
   async (cerere) => trateazaUtilizarea(getFirestore(), cerere.auth?.uid ?? null, cerere.data),
+);
+
+/**
+ * Biblioteca de freze în cont (ADR 0300 §7, felia 16.A↑c): lista schimbărilor de la versiunea știută (contul deschis),
+ * scrierea și ștergerea cu versiunea văzută (cu capabilitatea `cloud` a planului), sub plafoanele contului.
+ */
+export const freze = onCall(
+  { region: REGIUNI.callable, enforceAppCheck: true, maxInstances: 5, memory: '256MiB', timeoutSeconds: 30 },
+  async (cerere) => trateazaFrezele(getFirestore(), cerere.auth?.uid ?? null, cerere.data),
 );
 
 const memorieGoogle = memorieNoua();
