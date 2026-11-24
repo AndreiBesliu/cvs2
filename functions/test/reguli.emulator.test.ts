@@ -72,6 +72,9 @@ before(async () => {
     // Conturile clienților (ADR 0116) și setările lor.
     await setDoc(doc(db, 'conturi/om'), { email: 'om@exemplu.ro', plan: 'proba' });
     await setDoc(doc(db, 'conturi/sup'), { email: 'sup@exemplu.ro', plan: 'gratuit' });
+    // Biblioteca de freze a contului (ADR 0300 §7): o freză și contorul.
+    await setDoc(doc(db, 'conturi/om/freze/f1'), { versiune: 1, json: '{"id":"f1"}' });
+    await setDoc(doc(db, 'conturi/om/sincron/freze'), { versiune: 1, numar: 1, sterse: 0, purjatPana: 0 });
     await setDoc(doc(db, 'setari/conturi'), { zileOffline: 7 });
     await setDoc(doc(db, 'setari/raspunsuriRapide'), { schema: 1, lista: [{ eticheta: 'Am primit', ro: 'Ne uităm.', en: '' }], versiune: 1 });
     await setDoc(doc(db, `roluri/${CONT_CIT}`), { nume: 'Conturi: citește', permisiuni: ['conturi.citeste'] });
@@ -374,6 +377,18 @@ test('conturile și setările nu le scrie nimeni din client, nici omul contului,
   }
   await assertFails(setDoc(doc(ca('own'), 'setari/conturi'), { zileOffline: 60 }));
   await assertFails(updateDoc(doc(ca('own'), 'setari/conturi'), { zileOffline: 60 }));
+});
+
+test('biblioteca de freze din cont (ADR 0300 §7): nimeni din client n-o citește și n-o scrie, nici omul contului, nici owner-ul: doar callable-ul', async () => {
+  for (const uid of [null, 'om', 'sup', 'ccit', 'cadm', 'tot', 'own']) {
+    await assertFails(getDoc(doc(ca(uid), 'conturi/om/freze/f1')));
+    await assertFails(getDocs(collection(ca(uid), 'conturi/om/freze')));
+    await assertFails(getDoc(doc(ca(uid), 'conturi/om/sincron/freze')));
+    await assertFails(setDoc(doc(ca(uid), 'conturi/om/freze/f2'), { versiune: 2, json: '{"id":"f2"}' }));
+    await assertFails(updateDoc(doc(ca(uid), 'conturi/om/freze/f1'), { json: null }));
+    await assertFails(deleteDoc(doc(ca(uid), 'conturi/om/freze/f1')));
+    await assertFails(setDoc(doc(ca(uid), 'conturi/om/sincron/freze'), { versiune: 9 }));
+  }
 });
 
 test('răspunsurile rapide (ADR 0261) le citesc owner-ul și cei cu tichete.raspunde; un rol doar cu tichete.citeste, nu; nu le scrie nimeni din client', async () => {

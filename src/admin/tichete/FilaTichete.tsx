@@ -471,6 +471,10 @@ function ProiectulTichetului({ con, id, meta }: { readonly con: Conexiune; reado
       <button type="button" data-tic="descarca-proiect" disabled={stare.faza === 'lucreaza' || con.appCheck === 'oprit'} onClick={descarca}>
         {t('admin.tic.proiect-descarca', { marime: marimeCitita(meta.marime, limbaDeAcum()), schema: meta.schema })}
       </button>
+      {/* Pe telefon (ADR 0260 §10), proiectul nu se descarcă: textul ține locul butonului (CSS-ul alege). */}
+      <p className="admin-slab tic-proiect-calculator" data-tic="proiect-calculator">
+        {t('admin.tic.proiect-calculator', { marime: marimeCitita(meta.marime, limbaDeAcum()) })}
+      </p>
       {stare.faza === 'lucreaza' ? <p className="admin-mesaj" aria-busy="true">{t('admin.tic.proiect-se-descarca')}</p> : null}
       {stare.faza === 'gata' ? <p className="admin-slab" role="status" data-tic="proiect-descarcat">{t('admin.tic.proiect-descarcat', { nume: numeFisierProiect(id) })}</p> : null}
       {stare.faza === 'eroare' ? <p className="admin-eroare" role="alert" data-tic="proiect-eroare">{t('admin.tic.proiect-eroare', { motiv: stare.motiv })}</p> : null}

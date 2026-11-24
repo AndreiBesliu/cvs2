@@ -47,6 +47,24 @@ test('mașina: legarea cu felul legăturii, lucrarea pornită, pusă pe pauză, 
   assert.deepEqual(evenimenteMasina(ruleaza, ruleaza), []);
 });
 
+test('mașina: o lucrare scurtă, pornită și ajunsă la capăt (sau la o oprire) între două stări văzute, e tot pornită, întâi', () => {
+  // Starea sesiunii se citește la fiecare redesenare, nu la fiecare pas al fluxului: un program de două linii poate trece de
+  // la „pregătit” la „terminat” între două redesenări (completul de noapte din 24.11, pe emulatoare: „pornita” lipsea).
+  assert.deepEqual(sir(legata, terminat, deconectata), ['legata:retea', 'pornita', 'terminata', 'deconectata']);
+  // La fel o pauză, o oprire cerută de program și o întrerupere văzute direct din „legată”.
+  const m6 = sesiune({ faza: 'bariera', program: program(10), urm: 4, raport: raport('Idle'), bariera: { linie: 3, m6: true } as StareFlux['bariera'] });
+  const pierdut = sesiune({ faza: 'pierdut', program: program(10), urm: 4 }, { conexiune: 'deconectat', transport: null });
+  assert.deepEqual(sir(legata, hold, ruleaza), ['legata:retea', 'pornita', 'pauza', 'reluata']);
+  assert.deepEqual(sir(legata, m6), ['legata:retea', 'pornita', 'oprita']);
+  assert.deepEqual(sir(legata, pierdut), ['legata:retea', 'pornita', 'intrerupta', 'deconectata']);
+  // A doua lucrare, după una terminată: de la „gata” direct la „gata” nu se vede nimic (aceeași stare), dar la o pauză da.
+  assert.deepEqual(sir(legata, ruleaza, terminat, hold), ['legata:retea', 'pornita', 'terminata', 'pornita', 'pauza']);
+  // Văzută pas cu pas, pornirea nu se spune de două ori.
+  assert.deepEqual(sir(legata, ruleaza, terminat), ['legata:retea', 'pornita', 'terminata']);
+  // Prima stare văzută (fără una dinainte) nu ghicește o pornire.
+  assert.deepEqual(sir(terminat), ['legata:retea', 'terminata']);
+});
+
 test('mașina: oprirea cerută de program, anularea omului, întreruperea, codurile (eroare, alarmă, blocare), fiecare o dată', () => {
   const m6 = sesiune({ faza: 'bariera', program: program(10), urm: 4, raport: raport('Idle'), bariera: { linie: 3, m6: true } as StareFlux['bariera'] });
   assert.deepEqual(sir(legata, ruleaza, m6, ruleaza, legata), ['legata:retea', 'pornita', 'oprita', 'reluata', 'anulata']);

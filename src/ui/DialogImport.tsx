@@ -21,7 +21,7 @@ import { useLimba } from './useLimba.ts';
 const REFUZ: Readonly<Record<Exclude<CodRefuzImport, 'prea-multe'>, CheieSimpla>> = {
   octeti: 'import.refuz.octeti', svgz: 'import.refuz.svgz', entitati: 'import.refuz.entitati', parsare: 'import.refuz.parsare',
   radacina: 'import.refuz.radacina', gol: 'import.refuz.gol', departe: 'import.refuz.departe', plafon: 'import.refuz.plafon',
-  neincarcat: 'dialog.neincarcat', tip: 'import.refuz.tip', binar: 'import.refuz.binar', dxf: 'import.refuz.dxf',
+  neincarcat: 'dialog.neincarcat', tip: 'import.refuz.tip', zip: 'import.refuz.zip', binar: 'import.refuz.binar', dxf: 'import.refuz.dxf',
   'nu-e-pdf': 'import.pdf.nu-e-pdf', criptat: 'import.pdf.criptat', pdf: 'import.pdf.pdf', pagina: 'import.pdf.pagina-lipsa',
   'nu-e-ps': 'import.eps.nu-e-ps', 'ai-nou': 'import.eps.ai-nou', control: 'import.eps.control', operator: 'import.eps.operator',
   imagine: 'import.eps.imagine', ps: 'import.eps.ps', 'nu-e-wmf': 'import.wmf.nu-e-wmf', emf: 'import.wmf.emf', wmf: 'import.wmf.wmf',

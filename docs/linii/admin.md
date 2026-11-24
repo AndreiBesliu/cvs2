@@ -2,7 +2,7 @@
 
 <!-- Adusă din memoria sesiunii principale pe 23.11.2026 (mutarea în cloud). De aici înainte o ține la zi linia, pe ramura ei, odată cu feliile. -->
 
-_CNCVS2, ADR 0260: pagina /admin reproiectată; A.1–A.6 unite în main (A.6: 4497d639); ADR 0262 (utilizarea aplicației) acceptat pe 23.11; A.8a și A.8b unite în main pe 23.11 (PR-ul AndreiBesliu/cvs2#8, din 55d26b81); A.8c și A.8d în PR-ul AndreiBesliu/cvs2#13 (completul pe ba1b4b0c); A.9a (sumele zilei, jobul agregaUtilizarea), A.9b (fila Utilizare), A.10 (fluxurile), A.11a (pașii dinaintea unei erori), A.11b (pașii la raportare), A.11c (cronologia unui om), A.11d (sesiunea raportării) și A.11e (disocierea) gata pe aceeași ramură, în același PR (la unire se publică funcțiile agregaUtilizarea, logClientError, tichete și utilizare, regulile, indexurile); urmează A.7 (telefonul)_
+_CNCVS2, ADR 0260 și ADR 0262: linia ÎNCHEIATĂ pe 24.11. A.1–A.7 (ADR 0260) și A.8–A.11 (ADR 0262) unite în main; ultima, A.7 (telefonul), în 458befb9 (a cincisprezecea unire, din c08a24bc; PR-ul AndreiBesliu/cvs2#13, închis). O felie nouă pornește doar la cuvântul owner-ului. Înaintea live-ului: verificarea juridică (GDPR) a utilizării legate de cont (ADR 0262 §3)_
 
 Linia adminului din [sesiunea principală](principala.md): ADR 0260 (intervalul 0260–0269), acceptat pe 13.11.2026 cu ideile 51–62 de pe
 tabla „Harta schițelor”. Owner-ul a cerut „vreau sa faci design si pentru admin”, iar la idei a răspuns „Da la toate”
@@ -93,14 +93,24 @@ tabla „Harta schițelor”. Owner-ul a cerut „vreau sa faci design si pentru
 - **A.11e (disocierea) GATA pe ramură din 24.11** (`2e023ac1`, `a07c0a34`, `70617d54`; `3.Ar`): **legătura cont →
   pseudonim stă doar în `utilizareDisociate/{uid}`**, fără regulă (refuzată oricui din client); contul are doar
   `disociatLa`, auditul fără pseudonim. Cu ea, A.11 e încheiată (A.11a–A.11e). Otrăvurile 12 / 12.
+- **A.7 (telefonul) UNITĂ în main pe 24.11** (`ee526edf`, `2a71cc02`, `2f1347d7`; `3.As`): sub 640 px, bara de jos
+  (`FILE_JOS`, după drepturi) și ☰; bara laterală e un sertar (`data-deschis`). **Un element nou al carcasei care trebuie
+  să fie la vedere pe telefon se probează la 390 px și față de bara de jos** (`conversatia.emulator.spec.ts`, „pe telefon”).
+  Cu A.7, ADR 0260 are toate feliile. Otrăvurile 9 / 9.
 - **După unirea PR-ului** (A.8a–A.8b, de owner, pe 23.11, cât lucram la A.8c): `main` adus în ramură printr-o unire obișnuită
   (**un push forțat al unei ramuri refăcute e refuzat de permisiuni**; ciocnirile doar în tabele), apoi catalogul controalelor
   scris din nou și **funcțiile compilate din nou** (`npm --prefix functions run compileaza`: probele pe emulatoare folosesc `functions/lib`, iar un contract nou în
   `shared/` fără compilare face serverul să arunce felurile noi).
 - **Întrebarea la owner cu schiță** (ca linia planșelor): o pagină privată cu schițele de încercat și formularul, răspunsurile
   în baza ei (`raspunsuri`, scrise doar de owner); pentru 0261: <https://claude.ai/artifact/DhLTbJiBTWGdgjobiDcJb2>.
-- **Felia rămasă din ADR 0260:** A.7 telefonul (bara de jos, meniul ☰, tichetul cu răspunsul), doar la cuvântul
-  owner-ului; are ~4 kB din ținta de mărime a liniei.
+- **Unirile de pe 24.11:** A.8c–A.8d în `80d3eb70`, A.9a–A.9b în `95dddbe0`, A.10–A.11a în `7f6f4069`, A.11b–A.11e în
+  `8ccb66e8` (din `c3f80a74`), A.7 în `458befb9` (din `c08a24bc`). **Sesiunea principală unește din commit-ul raportat, nu
+  din vârf:** o felie împinsă după raport așteaptă lotul următor, iar completul ei pornește abia după ce lotul nu mai ține
+  runnerele. Când `main` aduce doar o constantă sau documente, completul de pe commit-ul de dinainte rămâne bun, cu rapidul
+  pe vârf (A.7: completul pe `b064e954`, rapidul pe `c08a24bc`, cu plafonul pornirii de 120 kB, ADR 0145).
+- **Linia e încheiată.** `/admin` 138,2 / 200 kB (linia a pornit de la 106,5). Rămân deschise, la owner: verificarea
+  juridică (GDPR) a colectării legate de cont, înaintea live-ului; cine poate disocia (azi „Conturi: administrează”) și dacă
+  legătura cont → pseudonim se rupe (azi rămâne pe server, ADR 0262 §3).
 - **ADR 0262 acceptat pe 23.11** (utilizarea aplicației), la cererea owner-ului de a vedea în admin ce unelte folosesc
   oamenii, fluxurile cele mai dese, ce nu se folosește și pașii dinaintea unei erori. Schița și formularul:
   <https://claude.ai/artifact/Y75BvkeR7kZmBpadwoFyya> (răspunsurile în baza ei, `raspunsuri`). Răspunsurile: colectarea
@@ -111,7 +121,7 @@ tabla „Harta schițelor”. Owner-ul a cerut „vreau sa faci design si pentru
   înaintea live-ului, spus owner-ului o dată, odată cu acceptarea. Feliile: A.8a (contractul, callable-ul, setările), A.8b
   (înregistratorul din client), A.8c (clicurile fine, dialogurile), A.8d (calculele lungi, mașina, imprimanta), A.9 (jobul și
   fila), A.10 (fluxurile), A.11 (troubleshooting).
-- **Alegeri față de schițe, de știut la A.7:** schimbarea planului a rămas un formular cu „Salvează planul” (nu butoane
+- **Alegeri față de schițe (rămase așa după A.7):** schimbarea planului a rămas un formular cu „Salvează planul” (nu butoane
   cu un clic); felul intrării unui om vine din `sursa` documentului (metodele legate mai târziu din fila Cont ar cere o
   citire din Auth, pe server, deci un ADR al liniei).
 

@@ -73,6 +73,8 @@ export const PLAFON = {
   ghidaje: 1_000,
   /** Imaginile unei foi (ADR 0272): ajutoare de desen, sub desen; octeții lor stau în afara documentului. */
   imagini: 100,
+  /** Cotele unei foi (ADR 0330). */
+  cote: 2_000,
 } as const;
 
 export type Matrice = { a: number; b: number; c: number; d: number; e: number; f: number };
@@ -364,12 +366,45 @@ export type ImagineFoaie = {
   opacitate: number; vizibila: boolean; fixata: boolean; [cheie: string]: unknown;
 };
 /**
+ * Locul unei ancore pe forma ei (ADR 0330 §2), în conturul elementului în lume (`conturElement`): vârful `k`, mijlocul
+ * segmentului `k`, centrul arcului `k`, cadranul `q` (0–3, axele elementului) al arcului `k`, sau punctul `i` (0–8, rândurile de
+ * jos în sus, coloanele de la stânga la dreapta) al cutiei elementului.
+ */
+export type LocCota =
+  | { fel: 'varf' | 'mijloc' | 'centru'; k: number; [cheie: string]: unknown }
+  | { fel: 'cadran'; k: number; q: number; [cheie: string]: unknown }
+  | { fel: 'cutie'; i: number; [cheie: string]: unknown };
+/** Legătura unei ancore de o formă (ADR 0330 §3): elementul (instanța și nodul), locul și câte segmente avea forma la legare. */
+export type LegaturaCota = { instanta: string; nod: string; loc: LocCota; n: number; [cheie: string]: unknown };
+/** O ancoră: punctul văzut ultima oară, în mm ai foii, și, la o cotă legată, legătura. */
+export type AncoraCota = { x: number; y: number; legatura?: LegaturaCota; [cheie: string]: unknown };
+/**
+ * Felurile cunoscute ale unei cote (ADR 0330 §4): lanțul și linia de bază sunt cote liniare puse una după alta. Lista lor, ca
+ * valoare, stă în `cote.ts` (în afara pachetului de pornire).
+ */
+export type FelCota = 'orizontala' | 'verticala' | 'aliniata' | 'raza' | 'diametru' | 'unghi';
+/**
+ * Unde stă linia cotei (ADR 0330 §2): la cotele liniare, `d` e distanța liniei de cotă de primul punct, pe normala din stânga
+ * direcției măsurate; la rază și diametru, cât iese linia dincolo de punctul de pe cerc; la unghi, raza arcului, iar `s1` și
+ * `s2` (±1) aleg semidreptele (unghiul din cele patru).
+ */
+export type LinieCota = { d: number; s1?: number; s2?: number; [cheie: string]: unknown };
+/**
+ * O cotă a foii (ADR 0330): nu se taie, deci a intrat fără schemă nouă, ca ghidajele. `puncte`: 2 la cotele liniare, la rază
+ * și la diametru (centrul, apoi punctul de pe cerc), 3 sau 4 la unghi (vârful și câte un punct pe fiecare latură, sau două
+ * laturi). `text`: textul cotei, cu `<>` pentru valoare. Stilul nu e al cotei, ci al setărilor (ADR 0330 §6). O cotă cu un fel
+ * necunoscut (a unei versiuni mai noi) se păstrează neatinsă.
+ */
+export type Cota = { id: string; fel: string; puncte?: AncoraCota[]; linie?: LinieCota; text?: string; [cheie: string]: unknown };
+/**
  * Foaia (ADR 0024). `material` (ADR 0210 §1) e o etichetă scrisă de om („MDF alb 18”), pentru lista de tăiere și numele
  * fișierelor: nu schimbă ce se taie, deci a intrat fără schemă nouă. Un document mai vechi îl poate avea ca un câmp
  * necunoscut, cu orice valoare: eticheta e doar textul (`materialFoaie`), restul rămâne neatins.
  */
 export type Foaie = {
   id: string; nume?: string; material?: unknown; stoc: Stoc; instante: Instanta[]; ghidaje?: Ghidaj[]; imagini?: ImagineFoaie[];
+  /** Cotele foii (ADR 0330), judecate de ușă pe documentul brut (`problemaCote`). */
+  cote?: Cota[];
   [cheie: string]: unknown;
 };
 export type Document = { schema: 28; rev: number; piese: Piesa[]; foi: Foaie[]; [cheie: string]: unknown };

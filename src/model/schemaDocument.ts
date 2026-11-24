@@ -354,6 +354,16 @@ export function inregistreazaJudecataTexte(judeca: (d: Document) => string | nul
   judecataTexte = judeca;
 }
 
+/**
+ * Judecata cotelor foilor (ADR 0330 §2) stă în `judecataCote.ts`, adusă la fel ca a plăcuțelor: doar pentru un document cu cote
+ * la pornire, mereu în ușa întreagă și cu modulul cotelor. Se înregistrează aici când vine; fără ea, un document cu cote nu trece.
+ */
+let judecataCote: ((d: Document) => string | null) | null = null;
+
+export function inregistreazaJudecataCote(judeca: (d: Document) => string | null): void {
+  judecataCote = judeca;
+}
+
 /** Ce cere contractul peste forma fiecărui câmp: unicitatea, referințele și plafoanele de ansamblu. */
 function problemaDeAnsamblu(d: Document): string | null {
   const piese = new Set<string>();
@@ -413,6 +423,15 @@ function problemaDeAnsamblu(d: Document): string | null {
 export function problemaTexte(d: Document): string | null {
   if (!d.foi.some((f) => f.instante.some((i) => i.texte !== undefined))) return null;
   return judecataTexte ? judecataTexte(d) : 'documentul are plăcuțe cu litere, iar judecata lor nu e încărcată';
+}
+
+/**
+ * Cotele foilor (ADR 0330), judecate de ușă după schemă, pe documentul BRUT (ca literele plăcuțelor): fără schemă nouă, o
+ * cotă nu schimbă ce se taie. Null: nicio foaie n-are cote (câmpul lipsă sau lista goală), sau trec.
+ */
+export function problemaCote(d: Document): string | null {
+  if (!d.foi.some((f) => Object.hasOwn(f, 'cote') && !(Array.isArray(f['cote']) && f['cote'].length === 0))) return null;
+  return judecataCote ? judecataCote(d) : 'documentul are cote, iar judecata lor nu e încărcată';
 }
 
 /**

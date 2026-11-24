@@ -115,8 +115,10 @@ type Usa = (brut: unknown) => RezultatIncarcare | Promise<RezultatIncarcare>;
  */
 const usaLaCerere = (): Promise<Usa> => import('../model/usaCurenta.ts').then((m) => (brut: unknown) => {
   const deschide = (): RezultatIncarcare | Promise<RezultatIncarcare> => m.incarcaCurent(brut) ?? import('../model/incarcare.ts').then((x) => x.incarca(brut));
-  // Un document cu plăcuțe (v23): întâi judecata literelor lor, adusă la cerere ca migrările (ADR 0070).
-  return m.cuPlacute(brut) ? import('../model/judecataTexte.ts').then(deschide) : deschide();
+  // Un document cu plăcuțe (v23) sau cu cote (ADR 0330): întâi judecata lor, adusă la cerere ca migrările (ADR 0070).
+  const judecati = [m.cuPlacute(brut) ? import('../model/judecataTexte.ts') : null, m.cuCote(brut) ? import('../model/judecataCote.ts') : null]
+    .filter((x) => x !== null);
+  return judecati.length > 0 ? Promise.all(judecati).then(deschide) : deschide();
 });
 
 /**

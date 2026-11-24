@@ -124,6 +124,14 @@ module.exports = {
       to: { path: '^src/', pathNot: '^src/(jobs|sim|cam|post|ir|model|trasare|relief)/' },
     },
     {
+      name: 'cam-fara-cote',
+      severity: 'error',
+      comment: 'Cotele nu se taie (ADR 0330 §8): stau pe foaie, nu în piese, iar CAM-ul, postul, simularea și bazinul nu le '
+        + 'citesc. G-code-ul e același, octet cu octet, cu și fără cote (test/unit/cote.neatinse.test.ts).',
+      from: { path: '^(src|test/capcane)/(cam|post|sim|jobs)/' },
+      to: { path: '^src/model/(cote|judecataCote)\\.ts$' },
+    },
+    {
       name: 'trasare-izolat',
       severity: 'error',
       comment: 'Trasarea din imagine (src/trasare, ADR 0220) e pură: pixelii intră, căile ies. Nu importă nimic din aplicație; '

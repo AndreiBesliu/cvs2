@@ -78,7 +78,8 @@ o('I10', CT, "  return { img, intreaga, sc, originala, jpeg: tip === 'image/jpeg
 # ── Pânza ───────────────────────────────────────────────────────────────────────────────────────────────────────────
 o('P01', LU, '      x.scale(1, -1);\n      x.globalAlpha = im.opacitate;', '      x.globalAlpha = im.opacitate;', 'e2e', 'imaginea, cu susul în jos')
 o('P02', LU, '      x.globalAlpha = im.opacitate;', '      x.globalAlpha = 1;', 'e2e', 'opacitatea, ignorată')
-o('P03', LU, '|${c.culori.linie}|${versiune}`;', '|${c.culori.linie}`;', 'e2e', 'stratul ținut și după decodare (doar locul punctat)')
+# P03 mutată pe 24.11 (felia 18.1↑a, ADR 0310: cheia stratului primește și deplasarea reliefurilor trase): aceeași otravă.
+o('P03', LU, '|${c.culori.linie}|${versiune}${trase', '|${c.culori.linie}${trase', 'e2e', 'stratul ținut și după decodare (doar locul punctat)')
 o('P04', PZ, '    if (imaginiTrimise.current !== imagini) {', '    if (imaginiTrimise.current === null) {', 'e2e',
   'imaginile trimise workerului doar o dată (lista goală de la pornire)')
 

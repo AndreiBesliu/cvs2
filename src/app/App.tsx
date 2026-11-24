@@ -1760,7 +1760,7 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
         <Aspectul tema={tema} onTema={schimbaTema} onAranjament={alegeAranjament} onInchide={() => { setAspect(false); }}
           focusInapoi={focusAspect.current} />
       )}
-      {freze && <FrezeleMele onInchide={() => { setFreze(false); }} focusInapoi={focusFreze.current} />}
+      {freze && <FrezeleMele onInchide={() => { setFreze(false); }} focusInapoi={focusFreze.current} config={config.ok ? config.config : null} />}
       {cerereLucrare && (
         <DialogLucrare
           key={cerereLucrare.lucrare.id}

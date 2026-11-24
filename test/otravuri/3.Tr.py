@@ -28,7 +28,7 @@ def o(id, fis, vechi, nou, set, ce):
 E = 'extensii/trenulet/sursa/lego/lego.ts'
 A = 'extensii/trenulet/sursa/planificator/atelier.ts'
 T = 'extensii/trenulet/sursa/planificator/texte.en.json'
-K = '  const BARCA = { butucMin: 4, butucRap: 0.09, butucH: 8, tRap: 0.04, tMin: 1.6, tMax: 3, tVarf: 0.8, muchie: 0.6, plin: 0.6, radacina: 0.6, umplere: 0.85, statii: 28, perSuprafata: 12, capac: 1.2, inele: 6 };'
+K = '  const BARCA = { butucMin: 4, butucRap: 0.09, butucH: 8, tRap: 0.04, tMin: 1.6, tMax: 3, tVarf: 0.8, muchie: 0.6, plin: 0.6, radacina: 0.6, umplere: 0.85, statii: 28, perSuprafata: 12, capac: 1.2, inele: 6, pupaMax: 15 };'
 
 # Cotele din parametri: `eliceBarcaCote` (unitare).
 Z = 'const z = Math.round(Math.min(5, Math.max(3, nr(d.palete, 3))));'
@@ -100,10 +100,10 @@ o('P12', E, CC, CC.replace('cmax * g)', 'cmax)'), 'barca', 'coarda fără contur
 o('P13', E, K, K.replace('umplere: 0.85,', 'umplere: 1,'), 'barca', 'paletele umplu tot pasul (se ating)')
 U = 'const U = BARCA.umplere * 2 * Math.PI * r / z;'
 o('P14', E, U, U.replace('/ z;', '/ (z - 1);'), 'barca', 'pasul dintre palete, ca la o paletă mai puțin')
-o('P15', E, 'for (let k = 0; k < 40 && latime(sec) > U; k++) { c = Math.max(t, c * U / latime(sec) * 0.995); sec = roteste(c); }\n      const zmin', 'for (let k = 0; k < 0 && latime(sec) > U; k++) { c = Math.max(t, c * U / latime(sec) * 0.995); sec = roteste(c); }\n      const zmin', 'barca', 'coarda nu se mai strânge la limită')
-o('P16', E, 'for (let k = 0; k < 40 && latime(sec) > U; k++) { c = Math.max(t, c * U / latime(sec) * 0.995); sec = roteste(c); }\n      const zmin', 'for (let k = 0; k < 1 && latime(sec) > U; k++) { c = Math.max(t, c * U / latime(sec) * 0.995); sec = roteste(c); }\n      const zmin', 'barca', 'coarda se strânge o singură dată (rămâne peste limită)')
-ZM = 'const zmin = Math.min(...sec.map(p => p[1]));\n      return { r, sec: sec.map(([s, h]): P2 => [s, h - zmin]), rot:'
-o('P17', E, ZM, ZM.replace('const zmin = Math.min(...sec.map(p => p[1]));', 'const zmin = Math.min(...sec.map(p => p[1])) - 0.3;'), 'barca', 'paleta la 0,3 mm deasupra mesei (în aer)')
+o('P15', E, 'for (let k = 0; k < 40 && latime(sec) > U; k++) { c = Math.max(t, c * U / latime(sec) * 0.995); sec = roteste(c); }\n      // punctul cel mai de jos', 'for (let k = 0; k < 0 && latime(sec) > U; k++) { c = Math.max(t, c * U / latime(sec) * 0.995); sec = roteste(c); }\n      // punctul cel mai de jos', 'barca', 'coarda nu se mai strânge la limită')
+o('P16', E, 'for (let k = 0; k < 40 && latime(sec) > U; k++) { c = Math.max(t, c * U / latime(sec) * 0.995); sec = roteste(c); }\n      // punctul cel mai de jos', 'for (let k = 0; k < 1 && latime(sec) > U; k++) { c = Math.max(t, c * U / latime(sec) * 0.995); sec = roteste(c); }\n      // punctul cel mai de jos', 'barca', 'coarda se strânge o singură dată (rămâne peste limită)')
+ZM = 'const zmin = Math.min(...sec.map(p => p[1])), u = urca(r);\n      return { r, sec: sec.map(([s, h]): P2 => [s, u > 0 ? h - zmin + u : h - zmin]), rot:'
+o('P17', E, ZM, ZM.replace('const zmin = Math.min(...sec.map(p => p[1])), u', 'const zmin = Math.min(...sec.map(p => p[1])) - 0.3, u'), 'barca', 'paleta la 0,3 mm deasupra mesei (în aer)')
 RO = 'rot: inc * Math.PI / 180 * x * x, lat: latime(sec),'
 o('P18', E, RO, RO.replace('* x * x,', '* x,'), 'barca', 'înclinarea, liniară pe paletă')
 o('P19', E, RO, RO.replace('rot: inc *', 'rot: -inc *'), 'barca', 'paletele înclinate înainte')
@@ -131,7 +131,7 @@ o('H05', E, BU, BU.replace('butucElice(rh, Hh, d.gaura)', 'butucElice(rh - 0.5, 
 o('H06', E, BU, BU.replace('d.capac === "da"', 'd.capac !== "da"'), 'barca', 'capacul, pe dos (elicea implicită are capac)')
 o('H07', E, BU, BU.replace('butucElice(rh, Hh, d.gaura)', 'butucElice(rh, Hh, "x")'), 'barca', 'gaura, mereu de ax')
 o('K01', E, K, K.replace('capac: 1.2,', 'capac: 1,'), 'barca', 'capacul, înalt cât raza butucului')
-o('K02', E, K, K.replace('inele: 6 }', 'inele: 4 }'), 'barca', 'capacul din 4 inele')
+o('K02', E, K, K.replace('inele: 6,', 'inele: 4,'), 'barca', 'capacul din 4 inele')
 ZC = 'z0 = Hh - 0.1, hc = Hh + BARCA.capac * rh - z0, cap: Tri[] = [];'
 o('K03', E, ZC, ZC.replace('z0 = Hh - 0.1,', 'z0 = Hh + 0.1,'), 'barca', 'capacul, la 0,1 mm deasupra butucului (desprins)')
 PT = 'return [rh * Math.cos(f) * Math.cos(a), rh * Math.cos(f) * Math.sin(a), z0 + hc * Math.sin(f)]; };'
@@ -161,7 +161,7 @@ o('V04', E, 'conicaDubla, senila, elice, eliceBarca, ventilator, dinCvs2 };', 'c
 F = '    ["propulsie", "Elice", [["elice", "Elice"], ["eliceBarca", "Elice de barcă"], ["ventilator", "Ventilator cu carcasă"]]]'
 o('E01', A, F, F.replace(', ["eliceBarca", "Elice de barcă"]', ''), 'e2e', 'elicea de barcă lipsește din galeria filei Elice')
 o('E02', A, F, F.replace('[["elice", "Elice"], ["eliceBarca", "Elice de barcă"],', '[["eliceBarca", "Elice de barcă"], ["elice", "Elice"],'), 'e2e', 'elicea de barcă, prima în galerie')
-ST = '    eliceBarca: { palete: 3, diametru: 40, pas: 1, latime: 100, inclinare: 20, sens: "dreapta", gaura: "x", capac: "nu" },'
+ST = '    eliceBarca: { palete: 3, diametru: 40, pas: 1, latime: 100, inclinare: 20, pupa: 0, sens: "dreapta", gaura: "x", capac: "nu" },'
 o('E03', A, ST, ST.replace('palete: 3,', 'palete: 4,'), 'e2e', 'editorul pornește cu 4 palete')
 o('E04', A, ST, ST.replace('diametru: 40,', 'diametru: 48,'), 'e2e', 'editorul pornește cu Ø48')
 o('E05', A, ST, ST.replace('pas: 1,', 'pas: 0.9,'), 'e2e', 'editorul pornește cu pasul 0,9')
@@ -177,12 +177,12 @@ o('E13', A, NL, NL.replace('tr`, lățimea ${d.latime} %`', 'tr`, lățimea ${d.
 NS = 'const s = d.sens === "stanga" ? tr(", stânga") : "", c = d.capac === "da" ? tr(", cu capac") : "";'
 o('E14', A, NS, NS.replace('d.sens === "stanga"', 'd.sens !== "stanga"'), 'e2e', 'numele spune „stânga” la elicea pe dreapta')
 o('E15', A, NS, NS.replace('d.capac === "da"', 'd.capac !== "da"'), 'e2e', 'numele spune „cu capac” la cea fără')
-NN = 'return tr`Elice de barcă Ø${fmt(d.diametru ?? 40, 1)} cu ${d.palete ?? 3} palete, pasul ${fmt(d.pas ?? 1, 2)}${l}${i}${s}${g}${c}`;'
+NN = 'return tr`Elice de barcă Ø${fmt(d.diametru ?? 40, 1)} cu ${d.palete ?? 3} palete, pasul ${fmt(d.pas ?? 1, 2)}${l}${i}${pu}${s}${g}${c}`;'
 o('E16', A, NN, NN.replace('fmt(d.diametru ?? 40, 1)', 'fmt(d.diametru ?? 40, 0)'), 'e2e', 'numele, cu diametrul la milimetru')
 o('E17', A, NN, NN.replace('fmt(d.pas ?? 1, 2)', 'fmt(d.pas ?? 1, 1)'), 'e2e', 'numele, cu pasul la zecime')
-o('E18', A, NN, NN.replace('${l}${i}${s}${g}${c}', '${l}${i}${s}${c}${g}'), 'e2e', 'numele, cu capacul înaintea găurii')
-o('E19', A, NN, NN.replace('${l}${i}${s}${g}${c}', '${i}${l}${s}${g}${c}'), 'e2e', 'numele, cu înclinarea înaintea lățimii')
-TX = 'return tr`Pasul ${fmt(c.P, 0)} mm (${fmt(c.pd, 2)} × diametrul): paleta stă la ${g(c.bRad)}° lângă butuc și la ${g(c.bVarf)}° la vârf. Paletele acoperă ${fmt(c.acoperire * 100, 0)} % din disc; butucul e de Ø${fmt(2 * c.rh, 1)} × ${fmt(c.Hh, 1)} mm.'
+o('E18', A, NN, NN.replace('${l}${i}${pu}${s}${g}${c}', '${l}${i}${pu}${s}${c}${g}'), 'e2e', 'numele, cu capacul înaintea găurii')
+o('E19', A, NN, NN.replace('${l}${i}${pu}${s}${g}${c}', '${i}${l}${pu}${s}${g}${c}'), 'e2e', 'numele, cu înclinarea înaintea lățimii')
+TX = '\n    return tr`Pasul ${fmt(c.P, 0)} mm (${fmt(c.pd, 2)} × diametrul): paleta stă la ${g(c.bRad)}° lângă butuc și la ${g(c.bVarf)}° la vârf. Paletele acoperă ${fmt(c.acoperire * 100, 0)} % din disc; butucul e de Ø${fmt(2 * c.rh, 1)} × ${fmt(c.Hh, 1)} mm.'
 o('E20', A, TX, TX.replace('${fmt(c.P, 0)} mm', '${fmt(c.P, 1)} mm'), 'e2e', 'textul: pasul cu zecimi')
 o('E21', A, TX, TX.replace('${g(c.bRad)}° lângă butuc și la ${g(c.bVarf)}°', '${g(c.bVarf)}° lângă butuc și la ${g(c.bRad)}°'), 'e2e', 'textul: unghiurile, pe dos')
 o('E22', A, TX, TX.replace('fmt(c.acoperire * 100, 0)', 'fmt(c.acoperire * 100, 1)'), 'e2e', 'textul: acoperirea cu zecimi')
