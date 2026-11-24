@@ -13,11 +13,17 @@ import { textNumar } from '../ui/numar.ts';
 import { CHEIE_LOCALA, frezeMele } from './frezeMele.ts';
 
 /** Numele propus din fel și diametru (ADR 0300 §2), în limba de acum; „?” unde valoarea încă nu e un număr. */
-export function numePropus(f: Pick<Freza, 'fel' | 'diametru' | 'unghi' | 'varf'>, ro: boolean): string {
+export function numePropus(f: Pick<Freza, 'fel' | 'diametru' | 'unghi' | 'varf' | 'raza'>, ro: boolean): string {
   const n = (x: number | undefined): string => (x !== undefined && Number.isFinite(x) ? textNumar(x, ro) : '?');
-  if (f.fel === 'plata') return t('freze.propus.plata', { d: n(f.diametru) });
-  if (f.fel === 'v') return t('freze.propus.v', { u: n(f.unghi), d: n(f.diametru) });
-  return t('freze.propus.gravare', { u: n(f.unghi), varf: n(f.varf), d: n(f.diametru) });
+  switch (f.fel) {
+    case 'plata': return t('freze.propus.plata', { d: n(f.diametru) });
+    case 'v': return t('freze.propus.v', { u: n(f.unghi), d: n(f.diametru) });
+    case 'gravare': return t('freze.propus.gravare', { u: n(f.unghi), varf: n(f.varf), d: n(f.diametru) });
+    case 'bila': return t('freze.propus.bila', { d: n(f.diametru) });
+    case 'toroidala': return t('freze.propus.toroidala', { d: n(f.diametru), r: n(f.raza) });
+    case 'conica': return t('freze.propus.conica', { u: n(f.unghi), r: n(f.raza), d: n(f.diametru) });
+    case 'burghiu': return t('freze.propus.burghiu', { d: n(f.diametru) });
+  }
 }
 
 /** Frezele standard, cu id-urile lor fixe și numele în limba dată. */

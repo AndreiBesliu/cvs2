@@ -13308,6 +13308,36 @@ admin, care apare daca esti logat ca admin”
   regulile publicate; proba de fum, bună; scriptul de publicare, reluat o dată după timpul lui de așteptare); al
   șaptesprezecelea, cu limita rapidului (`647cebb1`): completul pe `main` (45407064678) rula la unire.
 
+## 2026-11-24 — 16.A↑h-3: catalogul de freze (Model: Claude Opus 5.5)
+
+**Prompt:** felia a treia din ADR 0302, în ordinea acceptată de owner („Da, 1a–5a”: fereastra ca listă, grupurile, apoi
+catalogul). **Started:** 24.11, 14:42.
+
+- **Modelul** (`ad5f11ab`): catalogul (`src/model/catalogFreze.ts`), 69 de freze din tabelul ADR 0302 §1, cu valorile de
+  pornire din diametru și nota țolilor; „Pune în frezele mele” (`cuDinCatalog`, în `src/model/dinCatalog.ts`, fără datele
+  catalogului): aceeași geometrie nu intră de două ori, numele și T-ul liber, plafonul; depozitul, într-o singură scriere.
+- **Fereastra** (`c8ef39f1`): „Catalogul (69)” sub bibliotecă, strâns la început; grupurile, „Pune toate”, „Pune tot ce
+  vezi”; fișa unei freze din catalog, cu „E deja în frezele mele.”; căutarea și filtrul aleg și din el; manualul (ro, en).
+- **Probele** (întâi): unitare noi 7, în Edge 1 (`freze.spec.ts` 15 / 15). **Otrăvurile** (`test/otravuri/16.A-h3.py`):
+  23 / 23.
+- **Mărimea:** pornirea neschimbată (110,2 kB; cu ușa 114,8, cu Atelierul 115,1 / 120), totalul 821,1 → 822,6 / 900. Nimic
+  pe server; documentul nu se schimbă. 16.A↑h-1 și 16.A↑h-2 sunt în lotul 21 al sesiunii principale. **Completed:** 24.11,
+  15:05.
+
+## 2026-11-24 — 16.A↑h-4: felurile noi în bibliotecă și în catalog (Model: Claude Opus 5.5)
+
+**Prompt:** „continua cu 16.A↑h-4” (a patra felie din ADR 0302). **Started:** 24.11, 15:08.
+
+- **Felia** (`64bc5769`): bila, toroidala, conica cu vârf rotund și burghiul în „Frezele mele” și în catalog (119 freze),
+  cu câmpul nou `raza`, capătul pe hârtie (`inaltimeCon`) și silueta lor (`src/model/profilFreza.ts`); „în curând în proiect”
+  pe rând, în fișă și pe grupul catalogului; lista „Freza” din Tăierea și copia pentru document, doar pentru felurile cu CAM
+  (`FELURI_CU_CAM`); CSV-ul, cu felurile în engleză și coloana `raza`; manualul (ro, en). Profilurile parametrice au ieșit în
+  felia nouă 16.A↑h-5 (ADR 0302 §7).
+- **Probele** (întâi): unitare noi 4, în Edge 2. **Otrăvurile** (`test/otravuri/16.A-h4.py`): 23 / 24; P03 practic
+  echivalentă (cel mult 1e-15 mm); P02 (arcul conicei oprit mai devreme) scăpase: proba pașilor egali pe arc.
+- **Mărimea:** pornirea neschimbată (110,2 kB; cu ușa 114,8, cu Atelierul 115,1 / 120), totalul 822,6 → 823,8 / 900. Nimic
+  pe server (frezele stau în cont ca text JSON); documentul nu se schimbă. **Completed:** 24.11, 15:55.
+
 ## 2026-11-24 — 16.A↑a-2: frezele standard, puse singure în bibliotecă (Model: Claude Opus 5.5)
 
 **Prompt:** „sa ai in vedere ca biblioteca de freze trebuie sa fie populata cu freze default standard.” (owner-ul, după
