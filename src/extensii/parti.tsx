@@ -8,6 +8,7 @@ import { t, type CheieSimpla } from '../i18n/t.ts';
 import type { Limba } from '../i18n/tipuri.ts';
 import { ADRESA_CATALOG } from '../../shared/biblioteca.ts';
 import { scoateExtensia, type ExtensieInstalata, type SursaExtensie } from './depozit.ts';
+import { dupaSensibilitate, PERMISIUNI_SENSIBILE } from './pachet.ts';
 import { textMarime } from './marimeText.ts';
 import { Semn } from './Semn.tsx';
 
@@ -57,7 +58,8 @@ export function Fereastra({ titlu, test, onEscape, cap, children }: {
 
 /**
  * „Ce poate face” (ADR 0231 §B.3): câte un rând pe permisiune, cu numele ei și ce face extensia cu ea; fără permisiuni, o
- * propoziție. `nou`: ce cere în plus o versiune nouă, evidențiat.
+ * propoziție. `nou`: ce cere în plus o versiune nouă, evidențiat. Rândurile stau după cât de sensibile sunt (ADR 0232 §B.6),
+ * cu mașina prima, marcată.
  */
 export function Poate({ titlu, permisiuni, limba, test = 'extensii-permisiuni', nou = false }: {
   readonly titlu: string; readonly permisiuni: readonly string[]; readonly limba: Limba; readonly test?: string; readonly nou?: boolean;
@@ -67,8 +69,8 @@ export function Poate({ titlu, permisiuni, limba, test = 'extensii-permisiuni', 
       <h3>{titlu}</h3>
       {permisiuni.length === 0 ? <p data-testid={test}>{t('extensii.instalare.fara-permisiuni')}</p> : (
         <ul data-testid={test}>
-          {permisiuni.map((p) => (
-            <li key={p} data-permisiune={p}><strong>{numePermisiune(p, limba)}</strong> <span>{t(`extensii.poate.${p}` as CheieSimpla)}</span></li>
+          {dupaSensibilitate(permisiuni).map((p) => (
+            <li key={p} data-permisiune={p} {...(PERMISIUNI_SENSIBILE.has(p) ? { 'data-sensibila': '' } : {})}><strong>{numePermisiune(p, limba)}</strong> <span>{t(`extensii.poate.${p}` as CheieSimpla)}</span></li>
           ))}
         </ul>
       )}

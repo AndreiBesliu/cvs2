@@ -56,7 +56,7 @@ test('din fișier: confirmarea, meniul, fereastra izolată peste Proiectare, ×,
   await expect(page.getByTestId('extensii-din-afara')).toHaveText('Vine din afara bibliotecii cvs2: instaleaz-o doar dacă știi de unde e.');
   await expect(dialog.locator('h3')).toHaveText(['Ce poate face']);
   await expect(page.getByTestId('extensii-permisiuni').locator('li')).toHaveText(['Datele în browser își ține datele în browserul acesta (cel mult 16 MB)']);
-  await expect(page.getByTestId('extensii-izolare')).toHaveText('Extensia rulează izolată: nu vede proiectele, contul sau portul mașinii.');
+  await expect(page.getByTestId('extensii-izolare')).toHaveText('Rulează izolată: poate doar ce scrie mai sus. Nu-ți vede desenul, proiectele, adresa sau parola și nu ajunge singură la mașină.');
   // Fără semn în pachet, piesa de puzzle; întâi gestul, apoi Renunță.
   await expect(dialog.locator('.confirmare-cap [data-fara-semn]')).toBeVisible();
   await expect(dialog.locator('.butoane button')).toHaveText(['Instalează', 'Renunță']);

@@ -2185,17 +2185,19 @@ tu, iar interfața aplicației rămâne aceeași.
   fereastră spune întâi ce, iar acolo **Actualizează** o instalează; la capăt, **Deschide** îi deschide fereastra, iar
   **Închide** o lasă pentru mai târziu.
 - **Biblioteca extensiilor** e o fereastră, deschisă din meniu sau din **Caută o comandă** (Ctrl+K), de oriunde: în stânga
-  lista, în dreapta pagina extensiei alese. **Toate** arată extensiile
+  lista, în dreapta pagina extensiei alese. **Din bibliotecă** arată extensiile
   noastre, publicate odată cu aplicația, de exemplu Easy 3Draw; **Instalate**, pe cele din browserul acesta, și pe cele
   venite din afara bibliotecii. Pagina unei extensii are semnul și numele ei, cine o publică, versiunea și mărimea, câteva
-  capturi, descrierea, **Ce poate face** (câte un rând pentru fiecare lucru pe care îl cere extensia) și **Ce e nou**. Gestul
+  capturi, descrierea, **Ce poate face** (câte un rând pentru fiecare lucru pe care îl cere extensia, cu cel mai sensibil,
+  mașina, primul și marcat) și **Ce e nou**. Gestul
   stă sus, în pagină: **Instalează** descarcă pachetul, îl verifică după amprenta lui din bibliotecă și îl pune în browserul
   acesta (merge și offline); **Actualizează la …** aduce versiunea nouă, cu datele ei, iar „Ce e nou” arată atunci doar ce a
   apărut de la versiunea ta; **Deschide** îi deschide fereastra; **Scoate** o șterge, după o întrebare. Pe telefon, lista și
   pagina vin pe rând: un rând deschide pagina lui, iar **Înapoi la listă** (‹) te întoarce. De la tastatură: ← și →
   schimbă fila, ↑ și ↓ mută între rândurile listei, Enter deschide pagina rândului, iar Escape închide biblioteca. Biblioteca se citește la fiecare
-  deschidere și are nevoie de internet; fără el, **Reîncearcă** o cere din nou, iar extensiile instalate rămân la
-  **Instalate** și merg ca până acum. Un link de forma `…/#biblioteca=trenulet` deschide biblioteca pe pagina lui Easy
+  deschidere și are nevoie de internet; fără el, fereastra trece singură pe **Instalate** (extensiile instalate merg ca
+  până acum), iar **Reîncearcă** cere biblioteca din nou. Fără nicio extensie instalată, pagina îți arată cele două
+  drumuri din afara bibliotecii. Un link de forma `…/#biblioteca=trenulet` deschide biblioteca pe pagina lui Easy
   3Draw; nimic nu se descarcă fără clicul tău.
 - La capătul listei, „Din afara bibliotecii”: **Instalează din fișier (.zip)…** primește un pachet `.zip`, iar **Instalează
   din adresă…** cere **Adresa pachetului** (HTTPS), apoi **Descarcă**; gazda trebuie să permită descărcarea din alte pagini,
@@ -2226,8 +2228,9 @@ tu, iar interfața aplicației rămâne aceeași.
 - Extensia primește și limba aplicației. Easy 3Draw vorbește română sau engleză, după **Limba** din bara de sus;
   la o limbă schimbată, repornește singur, după ce își salvează lucrul (circuitul, setările, atelierul). Comentariile din
   G-code rămân în română, ca în exportul aplicației.
-- Un clic pe o extensie din meniu îi deschide fereastra: lângă **Proiectare** și **Mașina** apare o filă cu numele ei, iar
-  dedesubt, pe tot ecranul, stă extensia. Treci oricând la altă fereastră: extensia rămâne deschisă, cu ce ai lucrat în ea, iar
+- Un clic pe o extensie din meniu îi deschide fereastra: lângă **Proiectare** și **Mașina** apare o filă cu numele ei (un
+  nume lung e tăiat cu „…”), iar în meniu rândul ei e marcat cu un punct și „deschisă”. Dedesubt,
+  pe tot ecranul, stă extensia. Treci oricând la altă fereastră: extensia rămâne deschisă, cu ce ai lucrat în ea, iar
   o comandă a desenului aleasă din **Caută o comandă** te duce întâi la Proiectare. **×**, lângă numele ei, închide
   extensia: întâi îi lasă câteva secunde să salveze ce avea de salvat (Easy 3Draw își salvează atunci circuitul,
   setările și atelierul). Dacă tot rămân modificări nesalvate, te întreabă: **Rămân** (sau Escape) o lasă deschisă, **Închide

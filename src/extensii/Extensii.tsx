@@ -479,15 +479,19 @@ export function Extensii({ jurnal, fereastra, onFereastra, onDeschisa, onModal, 
           const s = r ? stareRand(r, x.manifest) : null;
           const pr = progres[x.id];
           const noua = r && s?.fel === 'actualizeaza' ? { rand: r, cere: s.permisiuniNoi.length > 0 } : null;
+          // Extensia deschisă e marcată (ADR 0232 §B.9): punctul mereu, cuvântul doar când rândul n-are altceva de spus.
+          const eDeschisa = deschisa?.id === x.id;
           const sub = pr?.fel === 'lucreaza' ? t('extensii.biblioteca.actualizez')
             : pr?.fel === 'gata' ? t('extensii.meniu.actualizata', { versiune: x.manifest.versiune })
-              : noua ? t('extensii.meniu.noua', { veche: x.manifest.versiune, noua: noua.rand.versiune }) : x.manifest.versiune;
+              : noua ? t('extensii.meniu.noua', { veche: x.manifest.versiune, noua: noua.rand.versiune })
+                : eDeschisa ? t('extensii.meniu.deschisa', { versiune: x.manifest.versiune }) : x.manifest.versiune;
           return (
-            <div key={x.id} className="rand-instalat">
+            <div key={x.id} className="rand-instalat" role="none">
               <button type="button" role="menuitem" className="rand-extensie" data-extensii="deschide" data-id={x.id}
-                onClick={() => { alege(() => { deschideExtensia(x); }); }}>
+                {...(eDeschisa ? { 'aria-current': 'true' as const } : {})} onClick={() => { alege(() => { deschideExtensia(x); }); }}>
                 <SemnInstalat extensie={x} marime={28} />
                 <span className="rand-text"><span>{x.manifest.nume}</span><small>{sub}</small></span>
+                {eDeschisa && <span className="rand-punct" aria-hidden="true" />}
               </button>
               {noua && pr?.fel !== 'lucreaza' && (
                 <button type="button" role="menuitem" className="biblioteca-buton" data-extensii="biblioteca-actualizeaza"
@@ -500,7 +504,6 @@ export function Extensii({ jurnal, fereastra, onFereastra, onDeschisa, onModal, 
                   {t('extensii.actualizare.actualizeaza')}
                 </button>
               )}
-              {pr?.fel === 'eroare' && <p className="avertisment" role="alert">{pr.text}</p>}
             </div>
           );
         })}
@@ -511,6 +514,13 @@ export function Extensii({ jurnal, fereastra, onFereastra, onDeschisa, onModal, 
           <span className="rand-sageata" aria-hidden="true">›</span>
         </button>
       </div>
+      {/* Ce n-a mers la o actualizare: sub listă, în afara meniului (un meniu are doar rânduri de meniu), cu numele extensiei. */}
+      {lista.map((x) => {
+        const pr = progres[x.id];
+        return pr?.fel === 'eroare'
+          ? <p key={x.id} className="avertisment" role="alert" data-testid="meniu-eroare">{t('extensii.meniu.eroare', { nume: x.manifest.nume, text: pr.text })}</p>
+          : null;
+      })}
     </div>
   );
   // Fila, după ale aranjamentului: semnul extensiei (sau piesa de puzzle), numele ei (apăsată cât e fereastra de acum) și ×
@@ -518,7 +528,7 @@ export function Extensii({ jurnal, fereastra, onFereastra, onDeschisa, onModal, 
   const cuSemn = semnFila !== null && semnFila !== semnFilaStricat;
   const fila = deschisa && (
     <span className="fila-extensie" data-testid="fila-extensie">
-      <button type="button" className="cu-eticheta fila" data-icona="extensii.fila" data-extensii="fila" {...(cuSemn ? { 'data-cu-semn': '' } : {})}
+      <button type="button" className="cu-eticheta fila" data-icona="extensii.fila" data-extensii="fila" title={deschisa.manifest.nume} {...(cuSemn ? { 'data-cu-semn': '' } : {})}
         {...(fereastra ? { 'aria-current': 'page' as const } : {})} onClick={onFereastra}>
         {cuSemn && (
           <img className="semn-extensie semn-20" data-semn="" src={semnFila} alt="" width={20} height={20} draggable={false}

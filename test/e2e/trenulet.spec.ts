@@ -84,11 +84,11 @@ test('instalat din fișier: pagina în cadru; circuitul, modul și culoarea păs
   await expect(page.getByTestId('extensii-instalare').locator('h2')).toHaveText('Instalezi „Easy 3Draw”?');
   await expect(page.getByTestId('extensii-despre')).toHaveText(/^18\.21\.0 · din fișierul trenulet-18\.21\.0\.zip · \d+ (de )?fișiere, [\d,]+ MB$/);
   await expect(page.getByTestId('extensii-permisiuni').locator('li')).toHaveText([
-    'Datele în browser își ține datele în browserul acesta (cel mult 16 MB)',
-    'Descărcări salvează fișiere ca descărcări (date și desene, nu programe)',
     'Mașina încarcă programe, le pornește sau le reia doar după confirmarea ta, pune pauză și oprește lucrarea',
-    'Contul (nume, plan) vede dacă ești conectat, cu ce nume și ce plan (nu adresa, nu parola)',
     'Formele din desen primește formele pe care i le trimiți din desen și îți propune forme pentru desen (le adaugi tu, din Importă)',
+    'Contul (nume, plan) vede dacă ești conectat, cu ce nume și ce plan (nu adresa, nu parola)',
+    'Descărcări salvează fișiere ca descărcări (date și desene, nu programe)',
+    'Datele în browser își ține datele în browserul acesta (cel mult 16 MB)',
   ]);
   await page.locator('[data-extensii="instaleaza"]').click();
   await deschide(page);

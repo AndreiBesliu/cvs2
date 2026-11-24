@@ -77,6 +77,17 @@ export function FereastraBiblioteca({ cerere, catalog, instalate, limba, acoperi
   readonly inainte: ((id: string) => Promise<boolean>) | undefined;
 }): ReactNode {
   const [fila, setFila] = useState<Fila>(cerere.fila ?? 'toate');
+  // Fără catalog (fără internet ori stricat), cu extensii instalate: fereastra trece singură pe „Instalate” (ADR 0232 §B.8),
+  // cât omul n-a ales el o filă; când catalogul vine (după „Reîncearcă”), se întoarce la bibliotecă.
+  const aAles = useRef(cerere.fila !== undefined || cerere.id !== null);
+  const mutata = useRef(false);
+  const faraCatalog = catalog.fel === 'retea' || catalog.fel === 'defect';
+  useEffect(() => {
+    if (aAles.current) return;
+    if (faraCatalog && instalate.length > 0) { mutata.current = true; setFila('instalate'); }
+    else if (catalog.fel === 'ok' && mutata.current) { mutata.current = false; setFila('toate'); }
+  }, [faraCatalog, catalog.fel, instalate.length]);
+  const alegeFila = (f: Fila): void => { aAles.current = true; setFila(f); };
   const [ales, setAles] = useState<string | null>(cerere.id);
   const [progres, setProgres] = useState<Readonly<Record<string, Progres>>>({});
   const [deScos, setDeScos] = useState<ExtensieInstalata | null>(null);
@@ -86,6 +97,34 @@ export function FereastraBiblioteca({ cerere, catalog, instalate, limba, acoperi
     const posibile = radacina.current?.querySelectorAll<HTMLButtonElement>('[data-extensii="inapoi-lista"], [role="tab"][aria-selected="true"], [data-extensii="inchide-biblioteca"]');
     [...(posibile ?? [])].find((x) => x.offsetParent !== null)?.focus();
   }, []);
+  // Butonul apăsat poate pleca de pe ecran („Instalează” devine „Deschide”, „Reîncearcă” dispare cât se cere catalogul), iar
+  // focusul cade atunci pe pagină: îl întoarcem în fereastră, pe gestul principal al paginii, altfel pe fila aleasă (pe un
+  // ecran îngust, pe ×). Cât butonul apăsat doar lucrează (dezactivat), focusul așteaptă.
+  const ultimul = useRef<HTMLElement | null>(null);
+  useEffect(() => {
+    const r = radacina.current;
+    const u = ultimul.current;
+    if (!r || !u || u.isConnected || acoperita || deScos || document.activeElement !== document.body) return;
+    ultimul.current = null;
+    for (const cine of ['.pagina-actiuni .principal:not(:disabled)', '[role="tab"][aria-selected="true"]', '[data-extensii="inchide-biblioteca"]']) {
+      const x = [...r.querySelectorAll<HTMLElement>(cine)].find((e) => e.offsetParent !== null);
+      if (x) { x.focus(); return; }
+    }
+  });
+  // Escape închide fereastra și cu focusul căzut pe pagină (butonul apăsat lucrează, dezactivat): în fereastră îl prinde
+  // `tasta`, aici doar ce pleacă de pe `body`, cât nimic nu stă deasupra.
+  const laInchidere = useRef(onInchide);
+  laInchidere.current = onInchide;
+  useEffect(() => {
+    if (acoperita || deScos) return undefined;
+    const pePagina = (e: globalThis.KeyboardEvent): void => {
+      if (e.key !== 'Escape' || e.target !== document.body || e.defaultPrevented) return;
+      e.preventDefault();
+      laInchidere.current();
+    };
+    document.addEventListener('keydown', pePagina);
+    return () => { document.removeEventListener('keydown', pePagina); };
+  }, [acoperita, deScos]);
   // După întrebarea de la „Scoate”, focusul se întoarce pe gestul paginii (sau, dacă extensia a plecat, pe ×).
   const intors = useRef(false);
   useEffect(() => {
@@ -125,7 +164,7 @@ export function FereastraBiblioteca({ cerere, catalog, instalate, limba, acoperi
     if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
     e.preventDefault();
     const f: Fila = fila === 'toate' ? 'instalate' : 'toate';
-    setFila(f);
+    alegeFila(f);
     radacina.current?.querySelector<HTMLButtonElement>(`[data-extensii="fila-${f}"]`)?.focus();
   };
   // ↑ și ↓ mută focusul între rândurile listei (și de la un capăt la celălalt); Enter, pe rând, îi deschide pagina.
@@ -193,6 +232,12 @@ export function FereastraBiblioteca({ cerere, catalog, instalate, limba, acoperi
         </div>
       )}
       {fila === 'toate' && catalog.fel === 'ok' && elemente.length === 0 && <p className="bib-nota">{t('extensii.biblioteca.goala')}</p>}
+      {fila === 'instalate' && faraCatalog && elemente.length > 0 && (
+        <div className="bib-nota bib-banda" data-testid="biblioteca-fara-catalog">
+          <p role="status">{catalog.fel === 'retea' ? t('extensii.biblioteca.fara-retea-instalate') : t('extensii.biblioteca.eroare-instalate')}</p>
+          <button type="button" data-extensii="biblioteca-reincearca" onClick={onReincearca}>{t('extensii.biblioteca.reincearca')}</button>
+        </div>
+      )}
       {fila === 'instalate' && elemente.length === 0 && <p className="bib-nota">{t('extensii.niciuna')}</p>}
       {elemente.map(cardul)}
       <div className="bib-afara">
@@ -206,7 +251,8 @@ export function FereastraBiblioteca({ cerere, catalog, instalate, limba, acoperi
   return (
     <>
       <div ref={radacina} className="dialog dialog-biblioteca" role="dialog" aria-modal="true" aria-labelledby="fereastra-biblioteca-titlu" data-testid="fereastra-biblioteca"
-        {...(ales !== null ? { 'data-ales': '' } : {})} {...(acoperita || deScos ? { inert: true } : {})} onKeyDown={tasta}>
+        {...(ales !== null ? { 'data-ales': '' } : {})} {...(acoperita || deScos ? { inert: true } : {})} onKeyDown={tasta}
+        onFocus={(e) => { ultimul.current = e.target as HTMLElement; }}>
         <div className="dialog-cutie">
           <div className="bib-cap">
             <button type="button" className="bib-inapoi" data-extensii="inapoi-lista" aria-label={t('extensii.biblioteca.inapoi')} title={t('extensii.biblioteca.inapoi')}
@@ -216,11 +262,11 @@ export function FereastraBiblioteca({ cerere, catalog, instalate, limba, acoperi
             <h2 id="fereastra-biblioteca-titlu">{t('extensii.biblioteca.titlu')}</h2>
             <div className="bib-file" role="tablist" aria-label={t('extensii.biblioteca.titlu')} onKeyDown={tastaFile}>
               <button type="button" role="tab" id="bib-fila-toate" aria-selected={fila === 'toate'} aria-controls="bib-lista" tabIndex={fila === 'toate' ? 0 : -1}
-                data-extensii="fila-toate" onClick={() => { setFila('toate'); }}>
+                data-extensii="fila-toate" onClick={() => { alegeFila('toate'); }}>
                 {t('extensii.biblioteca.fila-toate')}{catalog.fel === 'ok' ? ` · ${randuri.length}` : ''}
               </button>
               <button type="button" role="tab" id="bib-fila-instalate" aria-selected={fila === 'instalate'} aria-controls="bib-lista" tabIndex={fila === 'instalate' ? 0 : -1}
-                data-extensii="fila-instalate" onClick={() => { setFila('instalate'); }}>
+                data-extensii="fila-instalate" onClick={() => { alegeFila('instalate'); }}>
                 {t('extensii.biblioteca.fila-instalate')} · {instalate.length}
               </button>
             </div>
@@ -244,7 +290,14 @@ export function FereastraBiblioteca({ cerere, catalog, instalate, limba, acoperi
                   }}
                   onDeschide={onDeschide} onScoate={setDeScos} />
               )}
-              {!aratat && !lipsa && <p className="bib-nota">{t('extensii.biblioteca.alege')}</p>}
+              {/* O listă goală (nimic instalat, catalogul n-a venit): drumurile din afara bibliotecii, nu „alege din listă”. */}
+              {!aratat && !lipsa && catalog.fel !== 'incarca' && (
+                <div className="bib-nota pagina-goala" data-testid="pagina-goala">
+                  <p>{t('extensii.biblioteca.gol-afara')}</p>
+                  <button type="button" data-extensii="pagina-din-fisier" onClick={() => { onCere('fisier'); }}>{t('extensii.din-fisier')}</button>
+                  <button type="button" data-extensii="pagina-din-adresa" onClick={() => { onCere({ fel: 'adresa', adresa: '', dinLink: false }); }}>{t('extensii.din-adresa')}</button>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -288,7 +341,7 @@ function Pagina({ element, limba, progres, octeti, onInstaleaza, onActualizeaza,
   else if (s.fel === 'instalata') stare = t('extensii.biblioteca.la-zi');
   else if (s.fel === 'alta') stare = t('extensii.biblioteca.alta', { versiune: s.versiune });
   else if (s.fel === 'reincarca') stare = t('extensii.biblioteca.reincarca');
-  else stare = t('extensii.biblioteca.locala');
+  else stare = t(instalata?.sursa.fel === 'biblioteca' ? 'extensii.biblioteca.din-biblioteca' : 'extensii.biblioteca.locala');
 
   const noi = s.fel === 'actualizeaza' ? s.permisiuniNoi : [];
   const permisiuni = rand?.permisiuni ?? instalata?.manifest.permisiuni ?? [];

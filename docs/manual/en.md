@@ -2256,17 +2256,18 @@ it, and the app’s interface stays the same.
   asks for something more, a window says what first, and there **Update** installs it; at the end, **Open** opens its
   window and **Close** leaves it for later.
 - The **Extension library** is a window, opened from the menu or from **Search commands** (Ctrl+K), from anywhere: the
-  list on the left, the page of the chosen extension on the right. **All** shows
+  list on the left, the page of the chosen extension on the right. **Library** shows
   our extensions, published together with the app, for example Easy 3Draw; **Installed** shows the ones in this browser,
   including those that came from outside the library. An extension’s page has its icon and name, who publishes it, the
-  version and the size, a few captures, the description, **What it can do** (one row for each thing the extension asks for)
-  and **What’s new**. The action is at the top of the page: **Install** downloads the package, checks it against its
+  version and the size, a few captures, the description, **What it can do** (one row for each thing the extension asks for, with the
+  most sensitive one, the machine, first and marked) and **What’s new**. The action is at the top of the page: **Install** downloads the package, checks it against its
   fingerprint in the library and keeps it in this browser (it works offline too); **Update to …** brings the new version,
   with its data, and “What’s new” then shows only what appeared since your version; **Open** opens its window; **Remove**
   deletes it, after a question. On a phone, the list and the page come one at a time: a row opens its page, and **Back to
   the list** (‹) takes you back. From the keyboard: ← and → switch the tab, ↑ and ↓ move between the rows of the list,
   Enter opens the row’s page, and Escape closes the library. The library is read each time it opens and needs an internet connection; without one,
-  **Try again** asks for it again, and installed extensions stay under **Installed** and work as before. A link like
+  the window switches to **Installed** by itself (installed extensions work as before), and **Try again** asks for the
+  library again. With no extension installed, the page shows the two ways from outside the library. A link like
   `…/#biblioteca=trenulet` opens the library on Easy 3Draw’s page; nothing downloads without your click.
 - At the end of the list, “From outside the library”: **Install from file (.zip)…** takes a `.zip` package, and **Install
   from address…** asks for the **Package address** (HTTPS), then **Download**; the host must allow downloads from other
@@ -2296,8 +2297,8 @@ it, and the app’s interface stays the same.
 - The extension also gets the app’s language. Easy 3Draw speaks Romanian or English, following **Language** in the
   top bar; when you change the language, it restarts by itself, after saving its work (the layout, the settings, the
   workshop). The comments in the G-code stay in Romanian, as in the app’s own export.
-- A click on an extension in the menu opens its window: a tab with its name appears next to **Design** and **Machine**, and
-  below it, on the whole screen, sits the extension. Switch to another window any time: the extension stays open, with what
+- A click on an extension in the menu opens its window: a tab with its name appears next to **Design** and **Machine** (a
+  long name is cut with “…”), and in the menu its row is marked with a dot and “open”. Below it, on the whole screen, sits the extension. Switch to another window any time: the extension stays open, with what
   you did in it, and a drawing command picked from **Search commands** takes you to Design first. **×**, next to its name,
   closes the extension: first it gives it a few seconds to save what it had to save (Easy 3Draw then saves its
   circuit, its settings and its workshop). If unsaved changes are still left, it asks you: **Stay** (or Escape) keeps it

@@ -92,7 +92,7 @@ test('contul, cu permisiunea cont: conectat, numele și planul; ieșirea, venit�
   }, TOATE);
   await page.goto('/');
   await instaleaza(page, await varianta({ permisiuni: ['stocare', 'cont'] }),
-    [...STOCARE, 'Contul (nume, plan) vede dacă ești conectat, cu ce nume și ce plan (nu adresa, nu parola)']);
+    ['Contul (nume, plan) vede dacă ești conectat, cu ce nume și ce plan (nu adresa, nu parola)', ...STOCARE]);
   await deschide(page);
   const c = cadru(page);
   await expect(c.locator('[data-salut="cont"]')).toHaveText('Contul: Ana (personal)');
@@ -249,7 +249,7 @@ test('repornirea cerută de extensie (ADR 0165): cadrul se reface, cu contextul 
   expect(await eroriJurnal(page)).toEqual([]);
 });
 
-const FORME = [...STOCARE, 'Formele din desen primește formele pe care i le trimiți din desen și îți propune forme pentru desen (le adaugi tu, din Importă)'];
+const FORME = ['Formele din desen primește formele pe care i le trimiți din desen și îți propune forme pentru desen (le adaugi tu, din Importă)', ...STOCARE];
 /** Un dreptunghi de 40 × 20 mm cu o gaură rotundă, importat și ales: forma pe care o trimite omul. */
 async function formaAleasa(page: Page): Promise<void> {
   const svg = '<svg xmlns="http://www.w3.org/2000/svg" width="40mm" height="20mm" viewBox="0 0 40 20">'

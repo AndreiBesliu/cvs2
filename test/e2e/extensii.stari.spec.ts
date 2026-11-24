@@ -195,7 +195,7 @@ test('o versiune nouă peste extensia deschisă, cu lucru nesalvat: întrebarea 
   await page.locator('[data-extensii="inchidere-ramai"]').click();
   await expect(intrebare(page)).toHaveCount(0);
   await expect(confirmare(page)).toHaveCount(0);
-  expect(await instalate(page)).toEqual(['Salut1.0.0']);
+  expect(await instalate(page)).toEqual(['Salut1.0.0 · deschisă']);
   await expect(cadru(page).locator('[data-salut="lucru"]')).toHaveText('Lucrul: nesalvat');
   await expect(cadru(page).locator('[data-salut="deschideri"]')).toHaveText('Deschideri: 1');
 
@@ -210,7 +210,7 @@ test('o versiune nouă peste extensia deschisă, cu lucru nesalvat: întrebarea 
   await expect(cadru(page).locator('[data-salut="lucru"]')).toHaveText('Lucrul: salvat');
   await expect(intrebare(page)).toHaveCount(0);
   await expect(fila(page)).toBeVisible();
-  expect(await instalate(page)).toEqual(['Salut1.0.1']);
+  expect(await instalate(page)).toEqual(['Salut1.0.1 · deschisă']);
 });
 
 test('o versiune nouă peste extensia deschisă, fără lucru nesalvat: se instalează și se redeschide, fără întrebare', async ({ page }) => {
@@ -222,7 +222,7 @@ test('o versiune nouă peste extensia deschisă, fără lucru nesalvat: se insta
   await expect(cadru(page).locator('[data-salut="deschideri"]')).toHaveText('Deschideri: 2');
   await expect(intrebare(page)).toHaveCount(0);
   await expect(fila(page)).toBeVisible();
-  expect(await instalate(page)).toEqual(['Salut1.0.1']);
+  expect(await instalate(page)).toEqual(['Salut1.0.1 · deschisă']);
 });
 
 test('„Actualizează” din meniu, cu lucru nesalvat: întrebarea vine întâi, iar „Rămân” nu instalează; cât vine pachetul, fila spune „se actualizează…”', async ({ page }) => {
@@ -297,7 +297,7 @@ test('„Actualizează la …” din pagina bibliotecii, cu extensia deschisă: 
   await inchideBiblioteca(page);
   await expect(cadru(page).locator('[data-salut="deschideri"]')).toHaveText('Deschideri: 2');
   await expect(cadru(page).locator('[data-salut="lucru"]')).toHaveText('Lucrul: salvat');
-  expect(await instalate(page)).toEqual(['Salut1.0.1']);
+  expect(await instalate(page)).toEqual(['Salut1.0.1 · deschisă']);
 });
 
 test('o versiune care cere ceva în plus, peste extensia deschisă cu lucru nesalvat: după confirmare, întrebarea; „Rămân” nu instalează nimic', async ({ page }) => {

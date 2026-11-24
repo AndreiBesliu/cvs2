@@ -344,6 +344,8 @@ const CONTROALE_EXTENSII: Readonly<Record<string, string | null>> = {
   'pagina-instaleaza': 'extensii.biblioteca.instaleaza', 'pagina-actualizeaza': 'extensii.biblioteca.actualizeaza',
   'pagina-deschide': 'extensii.instalare.deschide', 'pagina-scoate': 'extensii.gestionare.scoate',
   'din-fisier': 'extensii.din-fisier', 'din-adresa': 'extensii.din-adresa',
+  // pagina fără nicio extensie de arătat: aceleași două drumuri (ADR 0232 §B.8)
+  'pagina-din-fisier': 'extensii.din-fisier', 'pagina-din-adresa': 'extensii.din-adresa',
   // ferestrele de confirmare: un pachet din fișier sau de la o adresă, o versiune care cere ceva în plus
   adresa: 'extensii.adresa.camp', descarca: 'extensii.adresa.descarca', renunta: 'extensii.instalare.renunta', instaleaza: 'extensii.instalare.instaleaza',
   actualizeaza: 'extensii.actualizare.actualizeaza', 'deschide-instalata': 'extensii.instalare.deschide', 'inchide-instalata': 'extensii.instalare.inchide',
