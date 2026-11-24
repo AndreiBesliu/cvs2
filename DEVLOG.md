@@ -12819,3 +12819,24 @@ PR-ul `AndreiBesliu/cvs2#14` („De unit de sesiunea principală”).
   publicarea lui vine înaintea acestui lot (`publica.yml` construiește sha-ul dat).
 - **La owner:** plafonul pornirii (mai sunt 0,3 kB), fereastra exportului, verificarea juridică a utilizării
   aplicației, „cine unește în `main`”, ADR 0232 (biblioteca), lista „ce pot face între timp”.
+
+## 2026-11-24 — Felia 3.Tt: înclinarea spre pupa a elicei de barcă, la alegere, în atelierul Easy 3Draw (ADR 0282) (Model: Claude Opus 5.5)
+
+**Prompt:** „pornește înclinarea spre pupa ca opțiune” (în sesiunea cloud a liniei elicelor, după unirea lui 3.Ts în `main`).
+**Started:** 24.11, 11:41. **Completed:** 24.11, 12:32 (în container; CI-ul, pe commit-ul împins).
+
+- **Proba întâi:** amprenta a 24 de elice de barcă, luată din motorul lui 18.22.0 înaintea schimbării, și 6 probe unitare cu
+  valorile pe hârtie (scriptul de hârtie al lui 3.Tr, cu ridicarea adăugată), roșii pe motorul vechi; apoi 3 probe e2e.
+- **Motorul:** `eliceBarcaCote` primește `pupa` (0–15°, implicit 0): fiecare secțiune urcă cu max(0, r − rh) · tan θ;
+  butucul, cât cel mai înalt vârf; `urca` spune cât urcă vârful. Fără înclinare, aceeași plasă, la octet.
+- **Atelierul:** câmpul „Înclinarea spre pupa (°)”, numele („spre pupa N°”, după înclinarea înapoi), textul (cât urcă vârful,
+  suportul de sub palete, pus de programul de feliere), piesa din listă fără `pupa` la 0 (o listă salvată cu 18.22.0 o adună
+  pe linia ei); 5 texte în engleză („Rake aft”). Pachetul 18.23.0, cu rândul lui de „ce e nou”.
+- **Pe drum:** proba STL-ului cerea un butuc „peste 11,5”; la 4 palete, fără înclinare e 8,9, iar la 15° exact 11,5: proba
+  cere acum valoarea de pe hârtie. Randarea: paletele urcă spre vârf, butucul și rădăcina stau pe masă.
+- **Otrăvurile, în clonă:** `3.Tt.py` 35 / 35 (17 pe motor, 18 prin e2e), `3.Tt-en.py` 5 / 5; câmpul nou a mutat 35 de ancore
+  din `3.Tr.py` și 2 din `3.Tr-en.py`, aduse pe codul nou și rulate din nou: toate prinse.
+- **Porțile, în container:** tipurile, regulile de import (0 încălcări), traducerile (993 / 0), unitarele pluginului, ale
+  bibliotecii și ale documentelor, e2e-ul elicei de barcă, al înclinării și al pluginului în cvs2 (13 / 13).
+- **Documentele:** ADR 0282 („Implementarea (3.Tt)”), indexul ADR, fișa etapei 3 (jurnalul și coada owner-ului), traducerile
+  roadmap-ului, registrul otrăvurilor, nota liniei.

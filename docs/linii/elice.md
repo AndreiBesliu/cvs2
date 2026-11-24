@@ -1,8 +1,9 @@
-# Elicele (3.Tq–3.Ts)
+# Elicele (3.Tq–3.Tt)
 
 <!-- Adusă din memoria sesiunii principale pe 23.11.2026 (mutarea în cloud). De aici înainte o ține la zi linia, pe ramura ei, odată cu feliile. -->
 
-_CNCVS2, elicele din Easy 3Draw (ADR 0282, ACCEPTAT 22.11 cu 1a, 2a, 3a): 3.Tq (elicea) unită în `main` pe 23.11 (`0ae9c6c1`, Easy 3Draw 18.19.0); reparația probelor atelierului (`baa00ad`) și 3.Tr (elicea de barcă, 18.20.0) unite în `main` pe 23.11 (`d262e57a`), din sesiunea cloud a liniei; 3.Ts (ventilatorul cu carcasă, 18.22.0) unită în `main` pe 24.11 (`3218781c` în `e14e553a`, lotul al paisprezecelea, de sesiunea principală); toate trei elicele ADR-ului sunt făcute, iar versiunea următoare a pachetului e 18.23.0; cotele LEGO măsurate din LDraw, față de axa piesei_
+_CNCVS2, elicele din Easy 3Draw (ADR 0282, ACCEPTAT 22.11 cu 1a, 2a, 3a): 3.Tq (elicea) unită în `main` pe 23.11 (`0ae9c6c1`, Easy 3Draw 18.19.0); reparația probelor atelierului (`baa00ad`) și 3.Tr (elicea de barcă, 18.20.0) unite în `main` pe 23.11 (`d262e57a`), din sesiunea cloud a liniei; 3.Ts (ventilatorul cu carcasă, 18.22.0) unită în `main` pe 24.11 (`3218781c` în `e14e553a`, lotul al paisprezecelea, de sesiunea principală); toate trei elicele ADR-ului sunt făcute; 3.Tt (înclinarea spre pupa a elicei de barcă, la alegere, 18.23.0) gata pe 24.11,
+pe ramură; cotele LEGO măsurate din LDraw, față de axa piesei_
 
 ## 3.Tq, gata (23.11, în cloud)
 
@@ -106,6 +107,33 @@ La „continua” al owner-ului, pe ramura liniei, din `main` `883a8caa` (biblio
 - **O piesă nouă mută otrăvurile vecinilor:** liniile `TIPURI` și `FAMILII`, coarda strânsă la limită, `paleteElice`
   apelat la fel și capătul secțiunilor apar acum de două ori: 3 otrăvuri din `3.Tq.py` și 8 din `3.Tr.py`, aduse pe codul
   nou (`verifica` pe toate listele `3.T*.py`; cele VOID ale lui 3.Ta–3.Tg erau așa și pe `main`).
+
+## 3.Tt, gata (24.11, în cloud): înclinarea spre pupa a elicei de barcă
+
+La „pornește înclinarea spre pupa ca opțiune” al owner-ului, pe ramura liniei, după unirea lui 3.Ts (`main` `356db9bd` adus
+în ramură). Pachetul 18.23.0.
+
+- **Ce are:** câmpul „Înclinarea spre pupa (°)”, 0–15 la întreg (implicit 0), în editorul elicei de barcă: fiecare secțiune
+  urcă cu max(0, r − rh) · tan θ, butucul crește cât cel mai înalt vârf al paletelor, textul spune cât urcă vârful și că se
+  tipărește cu suport sub palete (pus de programul de feliere). Fără ea, elicea e cea de dinainte, la octet, iar piesa din
+  listă are cheile lui 18.22.0. Probele: unitare 6 (`trenulet.pupa.test.ts`), e2e 3 (`trenulet.pupa.spec.ts`), plus proba
+  în engleză din cvs2. Otrăvurile: `3.Tt.py` 35 / 35, `3.Tt-en.py` 5 / 5; 35 din `3.Tr.py` și 2 din `3.Tr-en.py`, mutate și
+  prinse. Documentele: ADR 0282 („Implementarea (3.Tt)”), fișa etapei 3, `docs/otravuri.md`, DEVLOG.
+- **Hotărâte la implementare** (motivele, în ADR): plaja 0–15° (elicele de barcă obișnuite); reperul la butuc (o ridicare a
+  întregii palete nu schimbă înclinarea, iar piesa stă tot pe masă); suportul îl pune programul de feliere, nu pluginul;
+  elicea rămâne cu partea dinspre barcă pe masă.
+- **Rămase, la cuvântul owner-ului:** proba pe imprimantă (coada din fișa etapei 3).
+
+## Capcanele găsite la 3.Tt
+
+- **O opțiune nouă care nu schimbă piesa implicită:** amprenta pieselor de dinainte se ia din motorul vechi, înaintea
+  schimbării, și intră în probă; câmpul la 0 nu intră în piesă (`defCurenta`), altfel o listă veche nu se mai adună pe
+  linia ei (lista compară JSON-ul).
+- **Un câmp nou pe un rând vechi mută otrăvurile feliei de dinainte:** constantele `BARCA`, implicitele editorului, numele
+  și textul (acum de două ori, cu ramura nouă) erau ancorele a 35 de otrăvuri din `3.Tr.py`; aduse pe codul nou și rulate
+  din nou.
+- **Valoarea pe hârtie, nu „mai mult decât”:** proba STL-ului cerea întâi un butuc peste 11,5, dar la 4 palete butucul
+  fără înclinare e 8,9, iar la 15° ajunge exact la 11,5 (scriptul de hârtie); proba cere acum valoarea.
 
 ## Probele atelierului așteaptă pornirea părții 3D (23.11, după unirea lui 3.Tq)
 

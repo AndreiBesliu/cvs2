@@ -4,7 +4,9 @@
 (23.11, în sesiunea cloud a liniei; cifrele, la „Implementarea”); **felia 3.Tr (elicea de barcă) implementată pe aceeași
 ramură, Easy 3Draw 18.20.0** (23.11, la „pornește 3.Tr” al owner-ului; „Implementarea (3.Tr)”; unită în `main` în `d262e57a`);
 **felia 3.Ts (ventilatorul cu carcasă) implementată pe aceeași ramură, Easy 3Draw 18.22.0** (24.11, la „continua” al
-owner-ului; „Implementarea (3.Ts)”).
+owner-ului; „Implementarea (3.Ts)”; unită în `main` în `e14e553a`); **felia 3.Tt (înclinarea spre pupa a elicei de barcă, la
+alegere) implementată pe aceeași ramură, Easy 3Draw 18.23.0** (24.11, la „pornește înclinarea spre pupa ca opțiune” al
+owner-ului; „Implementarea (3.Tt)”).
 Propus pe 22.11, la
 cererea owner-ului: „Vreau ca pluginul sa faca si elice, pentru imprimanta, si sa fie
 si configurabile elicele si compatibile cu lego”. **Completează:** ADR 0280 (roțile, fulia, roțile la 90° și șenila),
@@ -172,7 +174,7 @@ diametrele pe grila de știfturi.
   rotației) și pe axă (rake: vârful e împins spre pupa). Cea pe axă ar ridica muchia de jos a paletei de pe masă, cu o
   pantă de 10–15° față de orizontală: nu se tipărește fără suport. Cea pe cerc doar mută fiecare secțiune pe cercul ei
   (cu unghiul · x², x fiind locul pe paletă), deci muchia de jos rămâne toată pe masă. S-a făcut cea pe cerc. Dacă owner-ul
-  vrea și înclinarea spre pupa, e o opțiune în plus, cu suport la tipărire.
+  vrea și înclinarea spre pupa, e o opțiune în plus, cu suport la tipărire (făcută la 3.Tt, la cererea lui).
 - **Secțiunea ogivală** (ca la elicele navale), nu placa curbată a elicei de aer: fața care împinge apa e plată, spatele
   e bombat; groasă la mijlocul corzii de la 4 % din diametru la rădăcină (între 1,6 și 3 mm) la 0,8 la vârf, cu muchiile
   de 0,6 (o linie de duză și jumătate).
@@ -258,11 +260,52 @@ pas. De la 50899 vine ideea inelului, nu cotele: ventilatorul n-are „Ca LEGO�
   știfturi de o grindă; dacă rotorul freacă, jocul se mărește din editor. Pe masă stau butucul și muchia de jos a paletelor,
   deci o margine de aderență (brim) ajută și aici.
 
+## Implementarea (3.Tt): înclinarea spre pupa, la alegere
+
+Pe ramura `wip/3.Tq-elice`, Easy 3Draw 18.23.0 (24.11, în sesiunea cloud a liniei), la „pornește înclinarea spre pupa ca
+opțiune” al owner-ului, după unirea lui 3.Ts. La 3.Tr se făcuse doar înclinarea pe cerc (skew), fiindcă cea spre pupa (rake)
+cere suport la tipărire; owner-ul a cerut-o ca opțiune. Restul s-a hotărât la implementare și e scris aici, cu motivul.
+
+- **Ce face:** în editorul elicei de barcă, câmpul „Înclinarea spre pupa (°)”, 0–15 la întreg (implicit 0). Fiecare
+  secțiune a paletei urcă (spre pupa, adică în sus, cum stă elicea pe masă) cu max(0, r − rh) · tan θ: la butuc paleta stă
+  pe masă, iar vârful urcă cu (R − rh) · tan θ (Ø40 la 10°: 2,8 mm; la 15°: 4,3 mm; Ø120 la 15°: 13,2 mm). Înclinarea
+  navală e unghiul dreptei paletei față de planul elicei; o ridicare a întregii palete cu aceeași cantitate nu o schimbă,
+  deci reperul e luat la butuc, ca piesa să stea tot pe masă.
+- **Plaja, 0–15°:** cât au elicele de barcă obișnuite (cele de 15–20° sunt ale bărcilor rapide, care ies la suprafață). La
+  15°, dedesubtul paletei stă la 15° față de orizontală.
+- **Tipărirea:** muchia de jos a paletei pleacă de pe masă de la butuc, deci elicea se tipărește cu suport sub palete, pus de
+  programul de feliere (pluginul nu-l desenează: fiecare program îl face pe al lui, cu setările imprimantei). Elicea stă tot
+  cu partea dinspre barcă pe masă: întoarsă, ar sta pe vârfurile paletelor, cu butucul în aer. Textul din editor spune cât
+  urcă vârful și că cere suport.
+- **Butucul** crește cât cel mai înalt vârf al paletelor (la zecime în sus, cel puțin 8): la elicea implicită, 11,5 → 12,2
+  la 10° și 12,6 la 15°; la Ø120 cu 5 palete, pasul 0,5 și lățimea 40 %, 10,2 → 15,2. Capacul stă tot peste butuc.
+- **Pe cerc nu se schimbă nimic:** fiecare secțiune doar urcă, la aceeași rază toate la fel, deci paletele nu se ating și
+  acoperă tot atât din disc; înclinarea înapoi (pe cerc) se adaugă peste ea.
+- **Fără ea, elicea e cea de dinainte, la octet** (amprenta a 24 de elice, luată din motorul lui 18.22.0), iar piesa din
+  listă are aceleași chei, în aceeași ordine: o listă salvată cu 18.22.0 adună elicea pe linia ei. În nume, „spre pupa N°”
+  vine după lățime și înclinarea înapoi, doar când nu e 0.
+- **Motorul** (`lego.ts`): `eliceBarcaCote` primește `pupa` și întoarce cât urcă vârful (`urca`); paletele și butucul ies tot
+  din `paleteElice` și `butucElice`. **Atelierul** (`atelier.ts`): câmpul, numele, textul, piesa fără `pupa` la 0
+  (`defCurenta`); 5 texte în engleză („Rake aft”).
+- **Probele:** unitare 6 (`test/unit/trenulet.pupa.test.ts`: amprenta fără înclinare; fiecare secțiune ridicată exact cu
+  max(0, r − rh) · tan θ față de aceeași elice fără ea; cât urcă vârful și butucul, pe hârtie; corpul închis și oglinda;
+  marginile); valorile pe hârtie sunt calculate separat de motor. E2e 3 (`test/e2e/trenulet.pupa.spec.ts`: câmpul, numele,
+  textul și butucul; lista cu o salvare de la 18.22.0 și „Fă perechea”; STL-ul închis, înalt cât butucul), plus proba în
+  engleză din cvs2.
+- **Otrăvurile:** `test/otravuri/3.Tt.py`, 35 (17 pe motor, 18 pe atelier prin e2e): toate prinse din prima (una, „sub 1° nu
+  se ridică nimic”, datorită probei pe hârtie la 0,5°, scrisă odată cu lista). `3.Tt-en.py`, 5 / 5. Trei echivalente, lăsate
+  afară cu motivul în listă. Lista lui 3.Tr, mutată pe codul nou (35 de ancore erau în aceleași rânduri) și rulată din nou:
+  toate prinse, ca și cele 2 din `3.Tr-en.py`.
+- **Ce se vede pe randare:** paletele urcă spre vârf, iar butucul și rădăcina lor stau pe masă. **De încercat pe
+  imprimantă:** elicea implicită la 10°, cu suportul programului de feliere sub palete; dacă suportul se desprinde greu de
+  fața de jos a paletei, o distanță Z mai mare între suport și piesă ajută.
+
 ## Feliile
 
 - **3.Tq:** elicea (tot ce e la punctul 1), cu fila după răspunsul 1 și „Ca LEGO” după răspunsul 3.
 - **3.Tr:** elicea de barcă.
 - **3.Ts:** ventilatorul cu carcasă (implementat).
+- **3.Tt:** înclinarea spre pupa a elicei de barcă, la alegere (implementată; cerută de owner după 3.Ts).
 
 Ordinea, după întrebarea 2. Fiecare felie are motorul (`lego.ts`), editorul (`atelier.ts`), probele pe plase (corpul
 închis, cotele, consola la vârf, paletele care nu se ating, pe toată plaja parametrilor) și otrăvurile, ca la roți; pachetul
