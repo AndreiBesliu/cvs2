@@ -62,7 +62,7 @@ const proaspat = (oreInUrma: number) => ({
 const bun: DateDiagnoza = {
   instanta: 'test', proiect: 'cncvectorstudio-test', build: 'abc123000000', appCheck: 'recaptcha', rol: 'owner',
   nerezolvate: { ok: true, valoare: 0 }, functii: { ok: true, valoare: 401 },
-  marcaje: { ok: true, valoare: { backupZilnic: proaspat(6), verificaBackup: proaspat(4), pastrareTichete: proaspat(5) } }, acum: ACUM,
+  marcaje: { ok: true, valoare: { backupZilnic: proaspat(6), verificaBackup: proaspat(4), pastrareTichete: proaspat(5), agregaUtilizarea: proaspat(7) } }, acum: ACUM,
   // Amprenta publicării (ADR 0044): pagina și serverul din commit-ul build-ului.
   amprenta: { ok: true, valoare: { schema: 1, app: 'cncvs2', projectId: 'cncvectorstudio-test', tinte: {
     hosting: { gitSha: `abc123${'0'.repeat(34)}`, gitRef: 'main', arboreCurat: true, deployedAt: '2026-10-17T08:00:00.000Z', deployedBy: 'local' },
@@ -74,9 +74,10 @@ test('Diagnoza pe o instanță sănătoasă: bine, cu informațiile', () => {
   const v = verificari(bun);
   assert.deepEqual(v.map((x) => x.id), [
     'instanta', 'build', 'amprenta', 'appcheck', 'rol', 'nerezolvate', 'functii', 'job:backupZilnic', 'job:verificaBackup', 'job:pastrareTichete',
+    'job:agregaUtilizarea',
   ]);
   // Amprenta: doar pagina publicată prin script (serverul nu), deci informație.
-  assert.deepEqual(v.map((x) => x.stare), ['bine', 'info', 'info', 'bine', 'info', 'bine', 'bine', 'bine', 'bine', 'bine']);
+  assert.deepEqual(v.map((x) => x.stare), ['bine', 'info', 'info', 'bine', 'info', 'bine', 'bine', 'bine', 'bine', 'bine', 'bine']);
   assert.deepEqual(v.find((x) => x.id === 'job:backupZilnic')?.masura, { cheie: 'admin.diag.job.bine', param: { ore: 6 } });
 });
 
@@ -145,7 +146,7 @@ test('Diagnoza joburilor: fiecare job din listă, și cel fără marcaj; marcaje
   const b = fara.find((x) => x.id === 'job:backupZilnic');
   assert.deepEqual([b?.stare, b?.masura.cheie, b?.indiciu], ['atentie', 'admin.diag.job.niciodata', 'admin.diag.job.niciodata-indiciu']);
   const necitit = verificari({ ...bun, marcaje: { ok: false, motiv: 'permission-denied' } });
-  assert.deepEqual(necitit.filter((x) => x.id.startsWith('job:')).map((x) => x.stare), ['esec', 'esec', 'esec']);
+  assert.deepEqual(necitit.filter((x) => x.id.startsWith('job:')).map((x) => x.stare), ['esec', 'esec', 'esec', 'esec']);
   // Jobul păstrării tichetelor (15.B↑b) e judecat și fără marcaj: un job care n-a pornit niciodată se vede.
   const p = fara.find((x) => x.id === 'job:pastrareTichete');
   assert.deepEqual([p?.stare, p?.titlu, p?.masura.cheie], ['atentie', 'admin.diag.job.pastrareTichete', 'admin.diag.job.niciodata']);

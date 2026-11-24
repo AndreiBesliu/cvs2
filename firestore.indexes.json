@@ -16,6 +16,8 @@
     { "collectionGroup": "utilizare", "fieldPath": "expiraLa", "ttl": true, "indexes": [] },
     { "collectionGroup": "utilizare", "fieldPath": "evenimente", "indexes": [] },
     { "collectionGroup": "utilizare", "fieldPath": "context", "indexes": [] },
-    { "collectionGroup": "limiteUtilizare", "fieldPath": "expiraLa", "ttl": true, "indexes": [] }
+    { "collectionGroup": "limiteUtilizare", "fieldPath": "expiraLa", "ttl": true, "indexes": [] },
+    { "collectionGroup": "utilizareZi", "fieldPath": "expiraLa", "ttl": true, "indexes": [] },
+    { "collectionGroup": "utilizareZi", "fieldPath": "segmente", "indexes": [] }
   ]
 }

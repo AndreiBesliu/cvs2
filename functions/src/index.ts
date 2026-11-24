@@ -21,6 +21,7 @@ import { acceptaInvitatia as accepta, administreazaPersonalul as administreaza }
 import { trateazaSugestia } from './sugestii/actiuni.ts';
 import { trateazaTichetul } from './tichete/actiuni.ts';
 import { trateazaUtilizarea } from './utilizare/actiuni.ts';
+import { agregaUtilizarea as agregaUtilizareaZilnic } from './utilizare/agregare.ts';
 import { trateazaContul } from './conturi/actiuni.ts';
 import { administreazaConturile as administreazaConturi } from './conturi/admin.ts';
 import { memorieNoua, trateazaFonturiGoogle } from './fonturi/google.ts';
@@ -176,6 +177,18 @@ export const pastrareTichete = onSchedule(
   { schedule: pastrare.programare, timeZone: pastrare.fus, region: REGIUNI.job, timeoutSeconds: pastrare.timeoutSecunde, retryCount: 0, memory: '256MiB' },
   async () => {
     await cuMarcaj(getFirestore(), pastrare.nume, () => pastreazaTichetele(getFirestore(), fisiere(), new Date()));
+  },
+);
+
+const agregare = definitie('agregaUtilizarea');
+/**
+ * Sumele zilei ale utilizării aplicației (ADR 0262 §5, felia A.9a), la 02:30: ieri și alaltăieri, din loturile primite atunci,
+ * în `utilizareZi/{zi}`. Pe contul implicit al funcțiilor (citește loturile, scrie sumele).
+ */
+export const agregaUtilizarea = onSchedule(
+  { schedule: agregare.programare, timeZone: agregare.fus, region: REGIUNI.job, timeoutSeconds: agregare.timeoutSecunde, retryCount: 0, memory: '512MiB' },
+  async () => {
+    await cuMarcaj(getFirestore(), agregare.nume, () => agregaUtilizareaZilnic(getFirestore(), new Date()));
   },
 );
 
