@@ -73,8 +73,10 @@ vreau ca ficare setare sa fie insotita de o ilustratie sugestiva, ca sa ajute us
   `alege(loc, camp, v)` și `aleasa(loc, camp)` din `test/e2e/ajutor-export.ts`.
 - **Tăietura (din 28.8↑b-3):** `input[data-camp="latura"][value="…"]` (`alege(loc, 'latura', v)`); valoarea, pe cel bifat. Găurirea
   e pe cartonaș și oprită pe un rând fără cercuri: o probă care caută „se poate găuri” numără `:enabled`.
-- **Lista operațiilor:** rândurile trebuie să rămână scunde: un rând înalt (~156 px) oprește tragerea din ordinea de mână în
-  proba din `export.spec.ts` (ordinea de mână).
+- **Lista operațiilor se derulează:** la 1280 × 720 are ~480 px văzuți, iar un rând ~117 px (cu poza tăieturii, b-3). O probă
+  care trage sau dă clic cu mausul pe un rând aduce întâi ținta în vedere (`tragePeRand` din `export.spec.ts`): mausul nu apasă
+  ce taie marginea listei. Pe 24.11, mânerul celui de-al doilea rând stătea local la 5 px de ea, iar pe runner, cu fonturile
+  lui, dincolo: completul a picat doar acolo (reprodus local la 700 px înălțime).
 - **Catalogul controalelor** (ADR 0262, din `main`, 24.11): se scoate din `data-camp="…"` (și celelalte atribute de nume)
   scrise în sursă pe un control sau pe o componentă; un nume dat prin proprietate (`camp={…}`) sau din șablon nu intră, iar
   un `id="…"` pe o componentă intră. După o schimbare a câmpurilor, `node scripts/catalog-controale.ts --scrie`
