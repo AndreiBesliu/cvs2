@@ -77,7 +77,7 @@ test('grupele matricei: catalogul, pe zone (ce stă înaintea punctului), în or
     { zona: 'sugestii', permisiuni: ['sugestii.scrie', 'sugestii.citeste'] },
     { zona: 'conturi', permisiuni: ['conturi.citeste', 'conturi.administreaza'] },
     { zona: 'tichete', permisiuni: ['tichete.citeste', 'tichete.raspunde'] },
-    { zona: 'utilizare', permisiuni: ['utilizare.citeste'] },
+    { zona: 'utilizare', permisiuni: ['utilizare.citeste', 'utilizare.sesiuni'] },
   ]);
   assert.deepEqual(grupePermisiuni().flatMap((g) => g.permisiuni), [...PERMISIUNI], 'ordinea catalogului, nimic pierdut');
   // O zonă care revine mai târziu în catalog intră în grupa ei, la locul primei apariții.

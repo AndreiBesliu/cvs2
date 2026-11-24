@@ -1,3 +1,6 @@
+import type { PasEroare } from '../../../shared/pasiEroare.ts';
+import { pasiDin } from '../../../shared/pasiEroareVerificare.ts';
+import { esteSesiune } from '../../../shared/utilizare.ts';
 /**
  * Fila Tichete (ADR 0116 §13), partea pură: documentele citite prin reguli devin rânduri (ce lipsește e necunoscut, nu
  * inventat), ordinea, filtrele pe stare cu numărul din fiecare și vârsta roșie a unui tichet fără răspuns.
@@ -35,6 +38,11 @@ export interface Tichet {
   readonly stare: StareTichet | null;
   readonly aplicatia: AplicatiaAdmin | null;
   readonly amprente: readonly string[];
+  /** Pașii dinaintea raportării, atașați cu bifa (ADR 0262, felia A.11b); fără bifă, niciunul. */
+  readonly pasi: readonly PasEroare[];
+  /** Contul care a raportat și sesiunea de utilizare din care a raportat (felia A.11d). */
+  readonly autor: string | null;
+  readonly sesiune: string | null;
   readonly poza: MetaPoza | null;
   /** Proiectul atașat (felia 15.B↑b), descărcat la cerere prin callable; null = fără proiect (sau o meta stricată). */
   readonly proiect: MetaProiectTichet | null;
@@ -65,6 +73,9 @@ export function tichetDin(id: string, d: Date_): Tichet {
     id, fel: esteFelTichet(d['fel']) ? d['fel'] : null, text: text(d['text']), autorEmail: textSauNull(d['autorEmail']),
     creatLa: dataDin(d['creatLa']), stare: esteStareTichet(d['stare']) ? d['stare'] : null, aplicatia: aplicatiaDin(d['aplicatia']),
     amprente: Array.isArray(amprente) ? amprente.filter((a): a is string => typeof a === 'string' && RE_AMPRENTA.test(a)) : [],
+    pasi: pasiDin(d['pasi']),
+    autor: typeof d['autor'] === 'string' && d['autor'] !== '' ? d['autor'] : null,
+    sesiune: esteSesiune(d['sesiune']) ? d['sesiune'] : null,
     poza: metaPozaDin(d['poza']), proiect: metaProiectDin(d['proiect']),
     raspunsuri: (Array.isArray(raspunsuri) ? raspunsuri : []).map((r: unknown) => {
       const o = obiect(r) ?? {};

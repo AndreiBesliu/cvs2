@@ -119,10 +119,11 @@ foile, extensiile) trec prin el, iar barele, tastele, paleta și meniurile ajung
 | A.10 | Fluxurile: secvențele cele mai dese și pâlnia drumului principal. |
 | A.11a | Pașii dinaintea unei erori: în raportul ei (clientul, serverul) și în fila Erori. |
 | A.11b | Bifa „Atașează pașii” la o raportare, cu pașii în fila Tichete. |
-| A.11c | Cronologia unui om, cu „Utilizare: sesiuni”: din Utilizatori („Activitatea”) și din Tichete (sesiunea raportării). |
-| A.11d | Disocierea unui cont (din Utilizatori, la cererea omului printr-un tichet), cu pseudonimul pus de server. |
+| A.11c | Cronologia unui om, cu „Utilizare: sesiuni”, din Utilizatori („Activitatea”). |
+| A.11d | Sesiunea raportării în Tichete: raportarea ține sesiunea de utilizare, iar fila o deschide în cronologie. |
+| A.11e | Disocierea unui cont (din Utilizatori, la cererea omului printr-un tichet), cu pseudonimul pus de server. |
 
-Estimarea: ~8 felii (A.8c s-a despărțit în A.8c și A.8d pe 23.11, A.9 în A.9a și A.9b pe 24.11, A.11 în A.11a–A.11d pe 24.11). A.7 (telefonul) vine după A.11 (întrebarea 7, a).
+Estimarea: ~8 felii (A.8c s-a despărțit în A.8c și A.8d pe 23.11, A.9 în A.9a și A.9b pe 24.11, A.11 în A.11a–A.11e pe 24.11). A.7 (telefonul) vine după A.11 (întrebarea 7, a).
 
 ## Implementarea
 
@@ -241,6 +242,36 @@ Estimarea: ~8 felii (A.8c s-a despărțit în A.8c și A.8d pe 23.11, A.9 în A.
   cel mai vechi primul, cu numele acțiunilor și ale uneltelor din catalog și cu rezultatul doar când nu e „ok”. Verificarea
   stă în modulul ei, ca bucata raportorului să nu aducă tot contractul utilizării (18,5 / 25 kB la prima eroare). Fraza în
   nota de confidențialitate. Pornirea crește cu ~0,2 kB (copia inelului, captura).
+- **A.11b** (24.11, `3.Ao`): **pașii atașați la o raportare**. Fereastra raportării (`Raportari.tsx`) ia pașii la deschidere
+  (`pasiAcum`, apoi `pasDin`: ce spune bifa e ce pleacă) și îi trimite doar cu bifa **Atașează ultimii pași din aplicație**
+  (nebifată implicit; fără pași, oprită), numărați în „Ce mai pleacă”. Callable-ul `tichete` îi verifică pas cu pas
+  (`pasiDin`), ca la raportul unei erori, îi scrie în tichet (`pasi`, doar când sunt) și pune în audit doar câți. Fila Tichete
+  îi arată în raportare, cu numele din catalog; lista pașilor e o componentă comună cu fila Erori (`src/admin/pasi/Pasi.tsx`).
+  Manualul spune bifa, în ambele limbi.
+- **A.11c** (24.11, `3.Ap`): **cronologia unui om**. Permisiunea nouă **„Utilizare: sesiuni”** (date despre o persoană, deci
+  separată de sume). Regulile rămân închise pe `utilizare`: cronologia trece prin callable-ul `utilizare` (acțiunea
+  `cronologie`), care cere permisiunea, aduce loturile contului cele mai noi întâi, câte `PAGINA_CRONOLOGIE` (20), cu clipa
+  ultimului lot drept cursor (indexul compus `uid` + `primit`), trece evenimentele încă o dată prin lista albă (un lot scris
+  altfel nu scapă ce nu e în ea) și scrie fiecare citire în audit (`utilizare.cronologie`, cine, al cui, câte loturi). În
+  Utilizatori, contul ales are **Activitatea**, doar cu permisiunea: nimic nu se citește până la clic (citirea costă și se
+  auditează), apoi sesiunile, cele mai noi întâi (`src/admin/utilizatori/activitate.ts`), fiecare deschisă la cerere, cu
+  pașii ei (clipa față de pornirea paginii, numele din catalog, felul, rezultatul) și „Mai vechi”. Descrierea unui pas e
+  comună Erori, Tichete și Activității (`DescrierePas`).
+- **A.11d** (24.11, `3.Aq`): **sesiunea raportării**. Înregistratorul își dă id-ul sesiunii odată cu inelul
+  (`preiaUtilizarea`, `sesiuneaAcum`), iar raportarea îl trimite mereu, doar ca număr, spus în „Ce mai pleacă”; serverul
+  tichetelor îl ține doar cu forma lui (`esteSesiune`). Cronologia primește un filtru pe sesiune (indexul compus `uid` +
+  `sesiune` + `primit`), cu sesiunea în audit. În fila Tichete, cine are „Utilizare: sesiuni” vede **Sesiunea raportării**:
+  aceeași Activitate, la cerere, doar cu sesiunea aceea a autorului. Loturile se strâng doar cu contul deschis, deci ce a
+  făcut omul înainte să intre în cont nu e acolo (e în pașii atașați, A.11b).
+- **A.11e** (24.11, `3.Ar`): **disocierea**, la cererea omului printr-un tichet, din Utilizatori, de cine are „Conturi:
+  administrează” (cei care schimbă și planul), după un pas de confirmare. Acțiunea `disociaza` a callable-ului `utilizare`
+  face un pseudonim aleator (`p` + 32 de cifre hexa), îl ține doar în `utilizareDisociate/{uid}` (nicio regulă: refuzată
+  oricui din client, și owner-ului), îl pune pe loturile de până acum (pe pagini de 400, până nu mai rămâne niciunul) și, prin
+  `lot`, pe cele care vin. Contul primește doar `disociatLa`; auditul, doar că s-a făcut (fără pseudonim). A doua oară nu
+  schimbă nimic. După ea, cronologia contului (și sesiunea unei raportări) nu mai găsește nimic; sumele zilei rămân (oamenii
+  se numără după pseudonim). Alegerea de aici: legătura cont → pseudonim rămâne pe server (pseudonimizare, nu anonimizare),
+  ca loturile de după să aibă același pseudonim cu cele de dinainte, cum cere §3; dacă juristul cere ruperea ei, se șterge
+  documentul și loturile noi primesc un pseudonim pe lot.
 
 ## Probele
 

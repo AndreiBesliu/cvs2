@@ -12340,6 +12340,72 @@ admin cat mai multe setari”).
 - **Documentele:** ADR 0262 (implementarea, despărțirea), fișa etapei 3 (`3.An`), registrul otrăvurilor, traducerile, nota
   liniei. **Completed:** 24.11 06:50.
 
+## 2026-11-24 — Felia A.11b: pașii atașați la o raportare (ADR 0262)
+
+**Prompt:** același „am raspuns” (7a: A.8–A.11 acum), după A.11a; pe drum, owner-ul: „continua cu A.8c” (A.8c era deja în
+`main`, din `fbbc8934`; linia a continuat cu A.11b).
+**Started:** 24.11 06:55.
+
+- **Codul (`60025fb7`, `26a18b7b`):** bifa în `Raportari.tsx` (pașii luați la deschidere), contractul `tichete`, serverul
+  (`raporteaza`: verificarea, scrierea, auditul), fila Tichete, lista pașilor comună cu Erori (`src/admin/pasi/Pasi.tsx`),
+  manualul, catalogul controalelor scris din nou (atributul nou `data-camp="raport-pasi"`).
+- **Probele:** cazurile din citire și din server, proba cap-coadă (cu o a doua raportare, fără bifă, după otrava E06).
+  **Otrăvurile:** 10 / 10. **Porțile locale:** rapidul 10 054 / 0, emulatoarele 123 / 123 și 51 / 51. **Mărimea:** totalul
+  800,2 / 900, contul 30,1 / 32, `/admin` 135,2 / 200.
+- **Între timp:** completul pe `82ec5424` (A.10, A.11a) verde: unitare 10 054 / 0, e2e 646 / 646, funcțiile 122 / 122,
+  paginile 51 / 51.
+- **Documentele:** ADR 0262 (implementarea), fișa etapei 3 (`3.Ao`), registrul otrăvurilor, traducerile, nota liniei.
+  **Completed:** 24.11 07:55.
+
+## 2026-11-24 — Felia A.11c: cronologia unui om (ADR 0262)
+
+**Prompt:** același „am raspuns” (7a: A.8–A.11 acum), după A.11b.
+**Started:** 24.11 07:55.
+
+- **Despărțirea:** restul lui A.11 în A.11d (sesiunea raportării în Tichete) și A.11e (disocierea), în tabelul din ADR.
+- **Codul (`40148488`, `36e8a3a5`):** permisiunea `utilizare.sesiuni`, acțiunea `cronologie` a callable-ului `utilizare` (cu
+  auditul), indexul compus pe loturi, „Activitatea” în Utilizatori (`activitate.ts`, `Activitatea.tsx`), `DescrierePas`
+  comună.
+- **Pe drum:** encoder-ul REST al probei Utilizatori nu știa valori booleene (contextul lotului ieșea hartă).
+- **Probele:** 3 unitare noi, 1 a serverului, 1 e2e pe emulatoare, matricea cu 13 permisiuni. **Otrăvurile:** 19 / 19.
+  **Porțile locale:** rapidul 10 057 / 0, emulatoarele 124 / 124 și 52 / 52. **Mărimea:** totalul 800,4 / 900, `/admin`
+  136,9 / 200.
+- **Documentele:** ADR 0262 (implementarea, despărțirea), fișa etapei 3 (`3.Ap`), registrul otrăvurilor, traducerile, nota
+  liniei. **Completed:** 24.11 08:35.
+
+## 2026-11-24 — Felia A.11d: sesiunea raportării (ADR 0262)
+
+**Prompt:** același „am raspuns” (7a: A.8–A.11 acum), după A.11c.
+**Started:** 24.11 08:40.
+
+- **Codul (`1ae86894`):** sesiunea dată de înregistrator (`sesiuneaAcum`), trimisă de raportare, ținută de serverul
+  tichetelor, filtrul pe sesiune al cronologiei (indexul al doilea), „Sesiunea raportării” în fila Tichete (`Activitatea`, cu
+  `sesiune`).
+- **Pe drum:** loturile se strâng doar cu contul deschis, deci proba cap-coadă caută în sesiune trimiterea raportării, nu
+  dreptunghiul de dinaintea intrării; build-ul din `dist/` trebuie refăcut după fiecare commit (proba compară versiunea).
+- **Probele:** cazurile noi din citire și din server, proba cap-coadă (cu un lot al altei sesiuni). **Otrăvurile:** 11 / 11
+  (T01 după proba îndreptată). **Porțile locale:** rapidul 10 057 / 0, emulatoarele 124 / 124 și 52 / 52. **Mărimea:** totalul
+  800,6 / 900, `/admin` 137,1 / 200.
+- **Între timp:** completul pe `cd00283b` (A.11b) verde.
+- **Documentele:** ADR 0262 (implementarea), fișa etapei 3 (`3.Aq`), registrul otrăvurilor, traducerile, nota liniei.
+  **Completed:** 24.11 09:15.
+
+## 2026-11-24 — Felia A.11e: disocierea (ADR 0262)
+
+**Prompt:** același „am raspuns” (7a: A.8–A.11 acum), după A.11d.
+**Started:** 24.11 09:20.
+
+- **Codul (`2e023ac1`, `70617d54`):** acțiunea `disociaza` a callable-ului `utilizare` (pseudonimul în
+  `utilizareDisociate/{uid}`, rescrierea loturilor pe pagini, `disociatLa` pe cont, auditul), `lot` cu pseudonimul, regula
+  (nicio potrivire: refuzată), „Utilizarea aplicației, despărțită de cont” în Utilizatori (`Disocierea.tsx`), cu confirmare.
+- **Alegerea:** legătura cont → pseudonim stă pe server, ca loturile de după să aibă același pseudonim cu cele de dinainte
+  (ADR §3); scrisă în ADR, cu ce se face dacă juristul cere ruperea ei.
+- **Probele:** modelul contului, serverul și regulile pe emulator, 1 e2e. **Otrăvurile:** 12 / 12. **Porțile locale:**
+  rapidul 10 057 / 0, emulatoarele 126 / 126 și 53 / 53. **Mărimea:** `/admin` 137,9 / 200.
+- **Între timp:** completul pe `d74b3b8f` (A.11c) verde. Cu A.11e, A.11 e încheiată; urmează A.7 (telefonul).
+- **Documentele:** ADR 0262 (implementarea), fișa etapei 3 (`3.Ar`), registrul otrăvurilor, traducerile, nota liniei.
+  **Completed:** 24.11 09:50.
+
 ## 2026-11-23 — Sesiunea principală în cloud: a șasea unire (A.6, Roadmap, Documentație și Setări); linia frezelor, pornită (Model: Claude Fable 5.2)
 
 **Prompt:** același brief de predare al sesiunii principale („unește ce se poate”), la raportul liniei adminului (PR-ul
