@@ -476,6 +476,12 @@ export const roExport = {
   'export.grup.dop': 'Dopul',
   'export.grup.dop.text': 'Cum iese dopul (ridicat pe semifabricat sau decupat prin placă), pe ce se sprijină și ce jocuri are.',
   // Desenele întrebărilor (ADR 0290, felia 28.8↑b): textele de pe ele și numele lor pentru cititorul de ecran.
+  'export.colturi.rotunde': 'rotunde',
+  'export.card.colturi.fara': 'cât raza frezei',
+  'export.card.colturi.dog-bone': 'pe diagonală',
+  'export.card.colturi.t-bone': 'în peretele lung',
+  'export.card.colturi.linie': 'Pe linie, freza taie ambii pereți: nu există deșeu în care să degajeze colțurile.',
+  'export.card.urechi.linie': 'nu pe linie',
   'export.desen.colt': 'Foaia văzută oblic, cu XY0 în colțul {colt}',
   'export.desen.colt.vedere': 'foaia, de sus și din față',
   'export.desen.colt.ales': 'XY0 în colțul {colt}',

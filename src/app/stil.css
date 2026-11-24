@@ -1514,12 +1514,9 @@ nav button[aria-pressed='true'] {
   max-width: 5rem;
 }
 
-/* Locurile urechilor (ADR 0211): comutatorul „la distanțe egale / alese pe desen”, pe rândul câmpurilor lor. */
+/* Locurile urechilor (ADR 0211): cartonașele lor (din 28.8↑b-2), pe tot rândul, sub câmpuri. */
 .dialog .locuri-urechi {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--sp-1) var(--sp-3);
+  flex-basis: 100%;
 }
 
 /* În tabel, câmpurile de număr sunt înguste: cu urechile, rampa și intrările, tabelul are opt coloane. */
@@ -2073,14 +2070,17 @@ nav button[aria-pressed='true'] {
 
 /*
  * Desenele întrebărilor (ADR 0290, felia 28.8↑b): linii de culoarea textului, lemnul bej, masa gri, freza oțel, traseul în
- * verdele traseului de pe pânză, cota câmpului activ în accent. Tokenurile lor au ambele teme, ca restul.
+ * verdele traseului de pe pânză, cota câmpului activ în accent. Tokenurile lor (pe `.dx-ilu`: desenele și pozele cartonașelor) au ambele teme, ca restul.
  */
-.dx-desen {
+.dx-ilu {
   --lemn: #ecdcbf;
   --lemn2: #d8bb8e;
   --lemn-c: #a8834f;
   --masa: #c3c7cd;
   --scula: #b7bec6;
+}
+
+.dx-desen {
   margin: 0;
   padding: var(--sp-2);
   border-radius: var(--r-2);
@@ -2088,7 +2088,7 @@ nav button[aria-pressed='true'] {
 }
 
 @media (prefers-color-scheme: dark) {
-  :root:not([data-tema='luminoasa']) .dx-desen {
+  :root:not([data-tema='luminoasa']) .dx-ilu {
     --lemn: #5b4831;
     --lemn2: #7a6043;
     --lemn-c: #a58660;
@@ -2097,7 +2097,7 @@ nav button[aria-pressed='true'] {
   }
 }
 
-:root[data-tema='intunecata'] .dx-desen {
+:root[data-tema='intunecata'] .dx-ilu {
   --lemn: #5b4831;
   --lemn2: #7a6043;
   --lemn-c: #a58660;
@@ -2141,6 +2141,123 @@ nav button[aria-pressed='true'] {
 .dx-ilu .colt .tinta { fill: transparent; stroke: none; }
 .dx-ilu .colt[data-ales] circle:not(.tinta) { fill: var(--a); stroke: var(--a); }
 .dx-ilu .colt:hover circle:not(.tinta) { stroke: var(--a); stroke-width: 2; }
+
+/*
+ * Cartonașele alegerilor (ADR 0290, felia 28.8↑b-2): poza variantei, numele și o notă. Inputul radio acoperă cartonașul
+ * (transparent), deci clicul oriunde pe el îl alege, iar săgețile trec între variante.
+ */
+.dx-carduri {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(7.25rem, 1fr));
+  gap: var(--sp-2);
+  width: 100%;
+}
+
+.dx-carduri.mari {
+  grid-template-columns: repeat(auto-fill, minmax(9rem, 1fr));
+}
+
+.dialog .dx-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: start;
+  gap: 2px;
+  min-width: 0;
+  padding: var(--sp-2) var(--sp-1);
+  border: 1px solid var(--l-margine);
+  border-radius: var(--r-2);
+  background: var(--s-panou);
+  color: inherit;
+  font: inherit;
+  text-align: center;
+  cursor: pointer;
+}
+
+.dx-card > input {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.dx-card .dx-poza {
+  width: 4rem;
+  height: 2.75rem;
+}
+
+.dx-card > span {
+  font-size: var(--fs-2);
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+.dx-card > small {
+  font-size: var(--fs-1, 0.72rem);
+  color: var(--t-slab);
+  line-height: 1.25;
+}
+
+.dx-card:hover:not(:has(input:disabled)) {
+  border-color: color-mix(in oklab, var(--a) 50%, var(--l-margine));
+}
+
+.dx-card:has(input:checked),
+.dialog .dx-card[aria-pressed='true'] {
+  border-color: var(--a);
+  box-shadow: inset 0 0 0 1px var(--a);
+  background: var(--s-ales);
+}
+
+.dx-card:has(input:checked) > span,
+.dx-card[aria-pressed='true'] > span {
+  color: var(--a);
+}
+
+.dx-card:has(input:disabled) {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.dx-card:has(input:disabled) > input {
+  cursor: not-allowed;
+}
+
+.dx-card:has(input:focus-visible),
+.dx-card:focus-visible {
+  outline: 2px solid var(--l-focus);
+  outline-offset: 2px;
+}
+
+.dx-eticheta {
+  display: block;
+  margin: 0 0 var(--sp-1);
+  font-size: var(--fs-2);
+  font-weight: 600;
+}
+
+.alegere.cu-poza .dx-poza {
+  width: 3rem;
+  height: 2.0625rem;
+}
+
+.dx-ilu text.mare {
+  font-size: 15px;
+}
+
+.dx-ilu .contur {
+  stroke: var(--t-slab);
+  stroke-width: 1;
+}
+
+.dx-ilu .gros {
+  stroke-width: 3;
+}
 
 .dx-explicatie {
   /* Înălțimea rezervată (`rezervaExplicatii`) se măsoară pe o copie cu aceeași lățime: cu paddingul înăuntru, rândurile ies la fel. */

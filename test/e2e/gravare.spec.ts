@@ -2,6 +2,7 @@ import { test, expect } from '@playwright/test';
 import { readFileSync } from 'node:fs';
 import { judeca } from '../oracles/simulare.ts';
 import { adauga } from './ajutor-panza.ts';
+import { alege, aleasa } from './ajutor-export.ts';
 
 test.use({ locale: 'ro-RO' });
 
@@ -25,9 +26,8 @@ test('gravarea pe linie cu freza de gravare: V pe exterior refuzat; pe linie, cu
   await expect(rand.locator('[data-camp="directie"]')).toHaveCount(0);
   // Pe linie: direcția apare, cu „ca desenul”.
   await rand.locator('[data-camp="latura"]').selectOption('pe-linie');
-  const directie = rand.locator('[data-camp="directie"]');
-  await expect(directie).toHaveValue('');
-  await directie.selectOption('invers');
+  await expect(aleasa(rand, 'directie')).toHaveValue('');
+  await alege(rand, 'directie', 'invers');
   // Vârful: cât diametrul nu trece.
   await rand.locator('[data-camp="diametru"]').fill('3,175');
   await rand.locator('[data-camp="unghi-v"]').fill('30');
@@ -65,5 +65,5 @@ test('gravarea pe linie cu freza de gravare: V pe exterior refuzat; pe linie, cu
   const din = page.locator('[data-fisa="op"]').first();
   await expect(din.locator('[data-camp="latura"]')).toHaveValue('pe-linie');
   await expect(din.locator('[data-camp="varf-v"]')).toHaveValue('0,25');
-  await expect(din.locator('[data-camp="directie"]')).toHaveValue('invers');
+  await expect(aleasa(din, 'directie')).toHaveValue('invers');
 });

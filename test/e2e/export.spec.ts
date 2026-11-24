@@ -4,6 +4,7 @@ import { createHash } from 'node:crypto';
 import { poarta, type ContextPoarta } from '../oracles/poarta.ts';
 import { regiuneDinDocument } from '../oracles/regiune.ts';
 import { ecran, vedere, adauga } from './ajutor-panza.ts';
+import { alege, aleasa } from './ajutor-export.ts';
 
 test.use({ locale: 'ro-RO' });
 
@@ -521,9 +522,8 @@ test('degajările (ADR 0032): dog-bone pe gaură, drumul din fiecare colț al tr
   await page.locator('[data-actiune="export.gcode"]').click();
   const rand = page.locator('[data-operatie="e1/e1"]');
   await rand.locator('select[data-camp="latura"]').selectOption('interior');
-  const colturi = rand.locator('select[data-camp="colturi"]');
-  await expect(colturi).toHaveValue('');
-  await colturi.selectOption('dog-bone');
+  await expect(aleasa(rand, 'colturi')).toHaveValue('');
+  await alege(rand, 'colturi', 'dog-bone');
   const d = page.waitForEvent('download');
   await page.locator('[data-buton="exporta"]').click();
   const text = readFileSync(await (await d).path(), 'ascii');
@@ -535,10 +535,10 @@ test('degajările (ADR 0032): dog-bone pe gaură, drumul din fiecare colț al tr
   // Redeschis, dialogul citește alegerea din document; pe linie, alegerea se oprește.
   await page.getByRole('button', { name: 'Închide' }).click();
   await page.locator('[data-actiune="export.gcode"]').click();
-  await expect(colturi).toHaveValue('dog-bone');
+  await expect(aleasa(rand, 'colturi')).toHaveValue('dog-bone');
   await rand.locator('select[data-camp="latura"]').selectOption('pe-linie');
-  await expect(colturi).toBeDisabled();
-  await expect(colturi).toHaveValue('');
+  await expect(rand.locator('[data-camp="colturi"] input:enabled')).toHaveCount(0);
+  await expect(aleasa(rand, 'colturi')).toHaveValue('');
 });
 
 test('postul grblHAL și unitățile inch (ADR 0083): antetul, 5 zecimale, aceleași mișcări ca placa 1 A împărțite la 25,4; nota postului neprobat', async ({ page }) => {
@@ -548,7 +548,7 @@ test('postul grblHAL și unitățile inch (ADR 0083): antetul, 5 zecimale, acele
   await page.locator('[data-actiune="export.gcode"]').click();
   await expect(page.getByTestId('post-documentat')).toContainText('Postul GRBL 1.1: scris după documentația controlerului');
   await page.locator('[data-camp="post"]').selectOption('grblhal');
-  await page.locator('[data-camp="unitati"]').selectOption('inch');
+  await alege(page.locator('[data-fisa="masina"]'), 'unitati', 'inch');
   await expect(page.getByTestId('post-documentat')).toContainText('Postul grblHAL');
   await expect(page.locator('#export-titlu')).toHaveText('Exportă G-code (grblHAL)');
   const descarcare = page.waitForEvent('download');
@@ -583,13 +583,13 @@ test('posturile atelierelor (ADR 0125): NcStudio cu apostrof și setările lui; 
   await expect(page.getByTestId('post-descarcat')).toHaveCount(0);
   await expect(page.getByTestId('post-setari')).toHaveCount(0);
   await page.locator('[data-camp="post"]').selectOption('ncstudio');
-  await page.locator('[data-camp="unitati"]').selectOption('inch');
+  await alege(page.locator('[data-fisa="masina"]'), 'unitati', 'inch');
   await expect(page.getByTestId('post-descarcat')).toHaveText('Programul pentru NcStudio doar se descarcă: îl rulezi de pe controlerul lui (senderul aplicației vorbește familia GRBL).');
   await expect(page.getByTestId('post-setari')).toHaveText('Verifică pe controler, înainte de pornire: N4063 = 1; N4034 = 0; N4035 = 0.');
   // RichAuto citește doar mm: inch dispare din listă, iar exportul iese în mm, fără comentarii, cu nume scurt.
   await page.locator('[data-camp="post"]').selectOption('richauto');
-  await expect(page.locator('[data-camp="unitati"] option[value="inch"]')).toHaveCount(0);
-  await expect(page.locator('[data-camp="unitati"]')).toHaveValue('mm');
+  await expect(page.locator('[data-camp="unitati"] input[value="inch"]')).toHaveCount(0);
+  await expect(aleasa(page.locator('[data-fisa="masina"]'), 'unitati')).toHaveValue('mm');
   await expect(page.getByTestId('post-setari')).toContainText('AbsCntr = Off');
   const d = page.waitForEvent('download');
   await page.locator('[data-buton="exporta"]').click();

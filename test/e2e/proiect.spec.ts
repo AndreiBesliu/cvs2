@@ -7,6 +7,7 @@ import { test, expect, type Page } from '@playwright/test';
 import { readFileSync } from 'node:fs';
 import { poarta } from '../oracles/poarta.ts';
 import { ecran, vedere, adauga } from './ajutor-panza.ts';
+import { aleasa } from './ajutor-export.ts';
 
 test.use({ locale: 'ro-RO' });
 
@@ -289,7 +290,8 @@ test('în fila care doar citește, urechile scrise de scriitor se văd, oprite, 
   await expect(a2.locator('[data-operatie="e1/e1"] [data-camp="urechi"]')).toBeDisabled();
   await expect(a2.locator('[data-operatie="e1/e1"] [data-camp="rampa"]')).toBeDisabled();
   await expect(a2.locator('[data-operatie="e1/e1"] [data-camp="intrari"]')).toBeDisabled();
-  await expect(a2.locator('[data-operatie="e1/e1"] [data-camp="colturi"]')).toBeDisabled();
+  await expect(a2.locator('[data-operatie="e1/e1"] [data-camp="colturi"] input')).toHaveCount(3);
+  await expect(a2.locator('[data-operatie="e1/e1"] [data-camp="colturi"] input:enabled')).toHaveCount(0);
   for (const c of ['urechi-numar', 'urechi-latime', 'urechi-grosime']) {
     await expect(a2.locator(`[data-urechi="e1/e1"] [data-camp="${c}"]`)).toBeDisabled();
   }
@@ -369,7 +371,7 @@ test('freze amestecate într-un proiect salvat (ADR 0084): fiecare rând își a
   await expect(page.getByTestId('export-invalid')).toContainText('T1 are două freze (Ø6 mm, Ø8 mm): fiecare freză cere numărul ei.');
   await scula('c').fill('3');
   await expect(page.locator('[data-buton="exporta"]')).toBeEnabled();
-  await expect(page.locator('[data-camp="strategie"]')).toHaveValue('bariera-sender');
+  await expect(aleasa(page.locator('[data-fisa="masina"]'), 'strategie')).toHaveValue('bariera-sender');
   const d = page.waitForEvent('download');
   await page.locator('[data-buton="exporta"]').click();
   const text = readFileSync(await (await d).path(), 'ascii');

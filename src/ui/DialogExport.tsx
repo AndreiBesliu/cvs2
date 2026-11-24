@@ -21,6 +21,7 @@ import { treceriEgale } from './exportDeseneCalcul.ts';
 import {
   DesenAdancime, DesenColt, DesenFreza, DesenIntrari, DesenRampa, DesenSens, DesenUrechi, DesenZ0, type DesenComun,
 } from './exportDesene.tsx';
+import { Cartonase, Poza } from './exportPoze.tsx';
 
 type Latura = LaturaExport;
 /** Sensul de tăiere (ADR 0027): urcare = materialul păstrat în dreapta sensului de mers, cu axul M3. */
@@ -1410,9 +1411,13 @@ export function DialogExport(
         {(foi ?? 0) > 1 && (
           <div className="ordine-taierii" data-testid="export-foi-alegere">
             <span className="eticheta">{t('export.foi')}</span>
-            <div role="group" aria-label={t('export.foi')}>
-              <button type="button" aria-pressed={!toate} data-foi="activa" onClick={() => { setToate(false); }}>{t('export.foi.activa')}</button>
-              <button type="button" aria-pressed={toate} data-foi="toate" onClick={() => { setToate(true); }}>{t('export.foi.toate', { n: foi ?? 0 })}</button>
+            <div className="dx-carduri mari" role="group" aria-label={t('export.foi')}>
+              <button type="button" className="dx-card" aria-pressed={!toate} data-foi="activa" onClick={() => { setToate(false); }}>
+                <Poza k="foi.activa" /><span>{t('export.foi.activa')}</span>
+              </button>
+              <button type="button" className="dx-card" aria-pressed={toate} data-foi="toate" onClick={() => { setToate(true); }}>
+                <Poza k="foi.toate" /><span>{t('export.foi.toate', { n: foi ?? 0 })}</span>
+              </button>
             </div>
             {toate && <span className="nota" data-testid="export-foi-nota">{t('export.foi.nota')}</span>}
           </div>
@@ -1472,25 +1477,15 @@ export function DialogExport(
         )}
               </div>)}
               {grup('unitati', 'masina', <div className="dx-rand">
-          <label>
-            {t('export.unitati')}
-            <select value={unitati} data-camp="unitati" onChange={(e) => { schimbat(); setUnitati(e.target.value === 'inch' ? 'inch' : 'mm'); }}>
-              <option value="mm">{t('export.unitati.mm')}</option>
-              {postAles?.inch !== false && <option value="inch">{t('export.unitati.inch')}</option>}
-            </select>
-          </label>
+          <Cartonase camp="unitati" poze="unitati" eticheta={t('export.unitati')} nume="unitati" valoare={unitati}
+            variante={[{ v: 'mm', text: t('export.unitati.mm') }, ...(postAles?.inch !== false ? [{ v: 'inch' as const, text: t('export.unitati.inch') }] : [])]}
+            onAlege={(v) => { schimbat(); setUnitati(v); }} />
               </div>)}
               {scule.size > 1 && grup('schimbare', 'masina', <div className="dx-rand">
           {scule.size > 1 && (
-            <label title={t('export.strategie.titlu')}>
-              {t('export.strategie')}
-              <select value={strategie} data-camp="strategie" onChange={(e) => {
-                const s = postAles?.strategii.find((x) => x === e.target.value);
-                if (s) { schimbat(); setStrategie(s); }
-              }}>
-                {(postAles?.strategii ?? []).map((x) => <option key={x} value={x}>{t(`export.strategie.${x}` as CheieSimpla)}</option>)}
-              </select>
-            </label>
+            <Cartonase<StrategieScula> camp="strategie" poze="strategie" eticheta={t('export.strategie')} nume="strategie-masina" valoare={strategie} mari
+              titlu={t('export.strategie.titlu')} variante={(postAles?.strategii ?? []).map((x) => ({ v: x, text: t(`export.strategie.${x}` as CheieSimpla) }))}
+              onAlege={(v) => { schimbat(); setStrategie(v); }} />
           )}
               </div>)}
               {grup('setari', 'masina', <div className="dx-coloana">
@@ -1571,21 +1566,16 @@ export function DialogExport(
                     </label>
                     {/* Pe linie, direcția (ADR 0092 §4): ca desenul, invers sau cel mai scurt drum. */}
                     {p.tip === 'profil' && p.latura === 'pe-linie' && (
-                    <label title={t('export.directie.titlu')}>
-                      {t('export.directie')}
-                      <select value={p.directie} data-camp="directie" disabled={doarCitire} aria-label={t('export.directie')}
-                        onChange={(ev) => { const v = ev.target.value; schimba(o.cheie, { directie: v === 'invers' || v === 'scurt' ? v : '' }); }}>
-                        <option value="">{t('export.directie.desen')}</option>
-                        <option value="invers">{t('export.directie.invers')}</option>
-                        <option value="scurt">{t('export.directie.scurt')}</option>
-                      </select>
-                    </label>
+                    <Cartonase camp="directie" poze="directie" eticheta={t('export.directie')} nume={`directie-${o.cheie}`} valoare={p.directie}
+                      oprit={doarCitire} titlu={t('export.directie.titlu')} onAlege={(v) => { schimba(o.cheie, { directie: v }); }}
+                      variante={[{ v: '', text: t('export.directie.desen') }, { v: 'invers', text: t('export.directie.invers') }, { v: 'scurt', text: t('export.directie.scurt') }]} />
                     )}
                     {/* Despărțirea foii (ADR 0037 §8): doar pe un rând cu căi deschise; o marchează omul, aplicația n-o ghicește. */}
                     {deschis && (
-                    <label className="alegere" title={t('export.despartire.titlu')}>
+                    <label className="alegere cu-poza" title={t('export.despartire.titlu')}>
                       <input type="checkbox" checked={p.despartire} data-camp="despartire" disabled={doarCitire} aria-label={t('export.despartire')}
                         onChange={(ev) => { schimba(o.cheie, { despartire: ev.target.checked }); }} />
+                      <Poza k="despartire" />
                       {t('export.despartire')}
                     </label>
                     )}
@@ -1694,16 +1684,13 @@ export function DialogExport(
                   </div>);
                   case 'colturi': return (<div className="dx-rand">
                     {/* Pe linie, nu există parte de deșeu pentru degajare (ADR 0032 §6). */}
-                    <label title={t('export.colturi.titlu')}>
-                      {t('export.colturi')}
-                      <select value={p.latura === 'pe-linie' || nuProfil ? '' : p.colturi} data-camp="colturi" disabled={doarCitire || deschis || nuProfil || p.latura === 'pe-linie'}
-                        aria-label={t('export.colturi')}
-                        onChange={(ev) => { schimba(o.cheie, { colturi: ev.target.value === 'dog-bone' || ev.target.value === 't-bone' ? ev.target.value : '' }); }}>
-                        <option value="">{t('export.colturi.fara')}</option>
-                        <option value="dog-bone">{t('export.colturi.dog-bone')}</option>
-                        <option value="t-bone">{t('export.colturi.t-bone')}</option>
-                      </select>
-                    </label>
+                    <Cartonase camp="colturi" poze="colturi" eticheta={t('export.colturi')} nume={`colturi-${o.cheie}`}
+                      valoare={p.latura === 'pe-linie' || nuProfil ? '' : p.colturi} titlu={t('export.colturi.titlu')}
+                      oprit={doarCitire || deschis || nuProfil || p.latura === 'pe-linie'} onAlege={(v) => { schimba(o.cheie, { colturi: v }); }}
+                      variante={[{ v: '', text: t('export.colturi.rotunde'), nota: t('export.card.colturi.fara') },
+                        { v: 'dog-bone', text: t('export.colturi.dog-bone'), nota: t('export.card.colturi.dog-bone') },
+                        { v: 't-bone', text: t('export.colturi.t-bone'), nota: t('export.card.colturi.t-bone') }]} />
+                    {p.latura === 'pe-linie' && <p className="nota" data-nota="colturi-linie">{t('export.card.colturi.linie')}</p>}
                   </div>);
                   case 'urechi': return (<div className="dx-rand">
                     <label className="alegere" title={t('export.urechi.titlu')}>
@@ -1729,32 +1716,20 @@ export function DialogExport(
                           aria-invalid={!b.grosime} onChange={(ev) => { schimba(o.cheie, { grosimeUreche: ev.target.value }); }} />
                       </label>
                       {/* Locurile (ADR 0211): la distanțe egale, sau alese pe desen, în modul pânzei („Gata” te aduce înapoi aici). */}
-                      <div className="locuri-urechi" role="radiogroup" aria-label={t('export.urechi.locuri')}>
-                        <span>{t('export.urechi.locuri')}</span>
-                        <label className="optiune">
-                          <input type="radio" name={`urechi-locuri-${o.cheie}`} checked={p.modUrechi === 'egale'} data-camp="urechi-egale" disabled={doarCitire}
-                            onChange={() => { schimba(o.cheie, { modUrechi: 'egale' }); }} />
-                          {t('export.urechi.locuri.egale')}
-                        </label>
-                        <label className="optiune">
-                          <input type="radio" name={`urechi-locuri-${o.cheie}`} checked={p.modUrechi === 'alese'} data-camp="urechi-alese" disabled={doarCitire}
-                            onChange={() => { schimba(o.cheie, { modUrechi: 'alese' }); }} />
-                          {t('export.urechi.locuri.alese')}
-                        </label>
-                        {/* „Unde ține” (ADR 0211, b): cere o parte de deșeu, deci nu pe linie. */}
-                        <label className="optiune" title={t('export.urechi.locuri.lemn.titlu')}>
-                          <input type="radio" name={`urechi-locuri-${o.cheie}`} checked={p.modUrechi === 'lemn'} data-camp="urechi-lemn"
-                            disabled={doarCitire || p.latura === 'pe-linie'} onChange={() => { schimba(o.cheie, { modUrechi: 'lemn' }); }} />
-                          {t('export.urechi.locuri.lemn')}
-                        </label>
-                        {/* Regulile pe laturi (ADR 0211, c): pe laturile drepte ale drumului frezei; fără ele, la distanțe egale. */}
-                        {(['lungi', 'scurte', 'mijloc'] as const).map((regula) => (
-                          <label className="optiune" key={regula} title={t('export.urechi.locuri.laturi.titlu')}>
-                            <input type="radio" name={`urechi-locuri-${o.cheie}`} checked={p.modUrechi === regula} data-camp={`urechi-${regula}`} disabled={doarCitire}
-                              onChange={() => { schimba(o.cheie, { modUrechi: regula }); }} />
-                            {t(`export.urechi.locuri.${regula}`)}
-                          </label>
-                        ))}
+                      {/* Locurile (ADR 0211): la distanțe egale, alese pe desen (în modul pânzei; „Gata” te aduce înapoi aici), unde ține
+                          de lemn (cere o parte de deșeu, deci nu pe linie) sau după reguli, pe laturile drepte ale drumului frezei. */}
+                      <div className="locuri-urechi">
+                        <span className="dx-eticheta">{t('export.urechi.locuri')}</span>
+                        <Cartonase poze="urechi" eticheta={t('export.urechi.locuri')} nume={`urechi-locuri-${o.cheie}`} valoare={p.modUrechi} oprit={doarCitire}
+                          onAlege={(v) => { schimba(o.cheie, { modUrechi: v }); }} variante={[
+                            { v: 'egale', camp: 'urechi-egale', text: t('export.urechi.locuri.egale') },
+                            { v: 'lungi', camp: 'urechi-lungi', text: t('export.urechi.locuri.lungi'), titlu: t('export.urechi.locuri.laturi.titlu') },
+                            { v: 'scurte', camp: 'urechi-scurte', text: t('export.urechi.locuri.scurte'), titlu: t('export.urechi.locuri.laturi.titlu') },
+                            { v: 'mijloc', camp: 'urechi-mijloc', text: t('export.urechi.locuri.mijloc'), titlu: t('export.urechi.locuri.laturi.titlu') },
+                            { v: 'alese', camp: 'urechi-alese', text: t('export.urechi.locuri.alese') },
+                            { v: 'lemn', camp: 'urechi-lemn', text: t('export.urechi.locuri.lemn'), titlu: t('export.urechi.locuri.lemn.titlu'),
+                              motiv: p.latura === 'pe-linie' ? t('export.card.urechi.linie') : undefined },
+                          ]} />
                       </div>
                       {p.modUrechi === 'lemn' && <span className="nota" data-nota="urechi-lemn">{t('export.urechi.lemn')}</span>}
                       {(p.modUrechi === 'lungi' || p.modUrechi === 'scurte') && <span className="nota" data-nota="urechi-laturi">{t('export.urechi.laturi')}</span>}

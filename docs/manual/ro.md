@@ -1589,7 +1589,10 @@ care). Fereastra are trei părți:
   frezei în jurul piesei sau al găurii (ce rămâne stă în dreapta drumului la urcare), rampa din lateral, intrările de sus,
   urechile la locurile regulii alese și secțiunea lor. Valorile stau pe cote, iar cota câmpului pe care stai e colorată. Sub
   pas, câte treceri ies și cât scoate fiecare: trecerile sunt egale (10 mm cu pasul 4 dau 3 treceri de 3,33 mm), la fel și în
-  desen. Ce nu se aplică operației nu apare: pe un buzunar, o găurire sau un V-carve, rampa, intrările, colțurile
+  desen. Alegerile cu puține variante (colțurile, locurile urechilor, direcția pe linie, unitățile, schimbarea frezei, foile)
+  sunt cartonașe cu poza fiecărei variante: clic oriunde pe cartonaș, sau săgețile, după ce ai intrat în grup; cel ales are
+  marginea colorată, iar unul care nu se poate alege acum spune de ce (de exemplu „nu pe linie”). Despărțirea foii are și ea
+  poza ei, lângă bifă. Ce nu se aplică operației nu apare: pe un buzunar, o găurire sau un V-carve, rampa, intrările, colțurile
   și urechile profilului lipsesc, iar o notă sub Tăietura spune de ce;
 - **jos**, mereu la vedere: **Exportă**, **Închide**, **Raportul foilor…**, confirmările și, cât o valoare e greșită, motivul,
   cu **Du-mă la …**, care aduce fișa ei și intră în câmpul de reparat. Valoarea greșită se spune și în grupul câmpului, iar

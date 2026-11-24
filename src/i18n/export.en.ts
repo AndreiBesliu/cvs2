@@ -460,6 +460,12 @@ export const enExport = {
   'export.grup.dop': 'Plug',
   'export.grup.dop.text': 'How the plug comes out (raised on its blank or cut through the board), what it rests on and which gaps it has.',
   // The question drawings (ADR 0290, slice 28.8↑b): the text on them and their names for screen readers.
+  'export.colturi.rotunde': 'round',
+  'export.card.colturi.fara': 'the bit radius',
+  'export.card.colturi.dog-bone': 'on the diagonal',
+  'export.card.colturi.t-bone': 'into the long wall',
+  'export.card.colturi.linie': 'On line, the bit cuts both walls: there is no waste to relieve the corners into.',
+  'export.card.urechi.linie': 'not on line',
   'export.desen.colt': 'The sheet seen at an angle, with XY0 in the {colt} corner',
   'export.desen.colt.vedere': 'the sheet, from above and the front',
   'export.desen.colt.ales': 'XY0 in the {colt} corner',
