@@ -456,10 +456,12 @@ test('Îmbinarea, din opțiunile Cuțitului: stinsă la Liber; la Linie, zigzagu
   await expect(page.locator('[data-taiere="imbinare-raza"]')).toHaveValue('0');
   await page.locator('[data-taiere="inchide-panoul"]').click();
   await expect(page.getByTestId('panou-taiere')).toHaveCount(0);
-  // La Liber, îmbinarea aleasă nu se aplică (e stinsă): urma verticală taie amândouă formele, fără dinți.
+  // La Liber, îmbinarea aleasă nu se aplică (e stinsă): urma verticală taie amândouă formele, fără dinți. Urma pornește de
+  // deasupra plăcii și se termină sub foaie: acolo, la stânga, stă rândul comenzilor foii (11.1↑c), pe care un gest nu poate
+  // începe (ca pe orice bară), dar peste care se poate termina fără să apese nimic.
   await nimicAles(page, la);
   await cutit(page, 'liber');
-  const c = la(50, -10), d = la(50, 110);
+  const c = la(50, 110), d = la(50, -10);
   await page.mouse.move(c.x, c.y);
   await page.mouse.down();
   await page.mouse.move(d.x, d.y, { steps: 8 });

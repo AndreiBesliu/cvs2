@@ -13152,3 +13152,28 @@ din sesiunea elicelor: „cand e verde fa unirea”
   evenimentelor mașinii; indexul liniilor; starea și lecția din `docs/linii/principala.md`.
 - **La owner:** fereastra exportului (`#11`), verificarea juridică a utilizării aplicației înaintea live-ului, „cine
   unește în `main`”; canalul `foi`, de încercat.
+
+## 2026-11-24 — Feliile 11.1↑c și 14.C↑d: comenzile foii pe pânză; butonul Admin, doar pentru personal (sesiunea principală în cloud) (Model: Claude Fable 5.2)
+
+**Prompt:** „ok, cand sunt verzi frezele fa unirea, pana atunci vreau sa faci ceva simplu. vreau ca plansele sa aiba
+controalele din meniu si sub ele, si sa apara doar la hover sau cand sunt selectate” (cu două capturi); „si vreau in meniu
+un buton pentru admin, care apare daca esti logat ca admin” (cu o captură a meniului)
+**Started:** 24.11, 13:17. **Completed:** 24.11, 14:25 (pe ramura `wip/11.1c-controale-foi`; unirea, după porți).
+
+- **11.1↑c (ADR 0210 §1):** sub fiecare foaie de pe pânză, rândul cu cele șapte comenzi ale meniului „⋯”, ca iconițe;
+  al foii active mereu, al unei vecine doar cu mausul pe ea, pe fâșia de sub ea sau pe rând. Același registru ca
+  meniul (refuzul stins, cu motivul); ștergerea unei foi cu piese întreabă în rând. Partea pură în
+  `src/ui/controaleFoiCalcul.ts`, componenta în bucata meniului foii, la cerere.
+- **14.C↑d (ADR 0132 §11):** butonul Admin în meniul global, la mijloc, doar cu planul `personal`; un link spre
+  `/admin`, în altă filă; nu se arată pe telefon; nu dă niciun drept.
+- **Probele:** unitare 4 (calculul) și grupurile meniului; e2e 10 (`controale-foi.spec.ts` 6, `admin-buton.spec.ts`
+  4), local 10 / 10; manualul în ambele limbi (115 uși); catalogul controalelor scris din nou (607 nume).
+- **Otrăvurile** (`test/otravuri/11.1c.py`, în clonă): 41 / 41; 39 la prima rulare, A09 (grupul gol ocupă loc) și A11
+  (butonul lipit de file) prinse după întărirea probei.
+- **Mărimea:** pornirea 109,9 → 110,0 kB (plafonul 120), totalul 806,1 → 806,9 / 900 kB. Documentul și serverul,
+  neschimbate.
+- **Canalul `foi`:** <https://cncvectorstudio-test--foi-027ryryb.web.app> (din `501751e0`, cu tot codul feliilor).
+- **Porțile, în CI:** rapidul verde pe `501751e0`. Primul complet (45384962428) a căzut la o probă, din 664:
+  `cutit.spec.ts:421`, a cărei urmă trasă cu mâna pornea la 10 mm sub foaie, exact pe rândul comenzilor foii active.
+  Reprodusă local; proba își pornește acum urma de deasupra plăcii și o termină peste rând (`124f2d74`). Completul,
+  repornit (45392375164).
