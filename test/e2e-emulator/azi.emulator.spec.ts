@@ -133,7 +133,7 @@ test('owner: Azi întâi, cu cifrele, joburile, ce așteaptă și întâmplăril
   await expect(page.locator('[data-insigna]')).toHaveText('LOCAL');
   // Grupurile, în ordinea din ADR, și Contul meu la capăt.
   await expect(page.locator('[data-admin="bara"] [data-grup-bara]')).toHaveText(['Probleme', 'Produs', 'Clienți', 'Echipa']);
-  await expect(page.locator('[data-admin="bara"] [data-fila]')).toHaveCount(11);
+  await expect(page.locator('[data-admin="bara"] [data-fila]')).toHaveCount(12);
   await expect(page.locator('[data-admin="bara"] [data-fila]').last()).toHaveAttribute('data-fila', 'cont');
 
   // Cifrele: aceleași în bară și pe cartele.
@@ -146,8 +146,8 @@ test('owner: Azi întâi, cu cifrele, joburile, ce așteaptă și întâmplăril
   await expect(page.locator('[data-azi="sugestii"] [data-cifra]')).toHaveText('3');
   await expect(page.locator('[data-azi="conturi"] [data-cifra]')).toHaveText('1');
 
-  // Joburile de noapte: toate trei, cu starea lor (doar verificarea are marcaj).
-  await expect(page.locator('[data-azi-job]')).toHaveCount(3, LENT);
+  // Joburile de noapte: toate patru (cu sumele utilizării, A.9a), cu starea lor (doar verificarea are marcaj).
+  await expect(page.locator('[data-azi-job]')).toHaveCount(4, LENT);
   await expect(page.locator('[data-azi-job="verificaBackup"]')).toHaveAttribute('data-stare', 'bine');
   await expect(page.locator('[data-azi-job="backupZilnic"]')).toHaveAttribute('data-stare', 'atentie');
   // „Ce așteaptă de la tine” (din roadmap-ul build-ului) și ultimele întâmplări (din audit), cea mai nouă întâi.

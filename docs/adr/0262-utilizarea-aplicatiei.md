@@ -114,11 +114,12 @@ foile, extensiile) trec prin el, iar barele, tastele, paleta și meniurile ajung
 | A.8b | Înregistratorul din client (registrul, ferestrele, unealta, sesiunea; inelul pașilor, coada), trimiterea în loturi, fraza din nota de confidențialitate. |
 | A.8c | Dialogurile, clicurile fine (catalogul numelor din sursă), derularea și zoom-ul. |
 | A.8d | Calculele lungi (durata, mărimile în trepte), mașina și imprimanta. |
-| A.9 | Jobul de noapte (sumele zilei) și fila Utilizare: perioada, cifrele, uneltele, ce nu se folosește, frecările, duratele. |
+| A.9a | Jobul de noapte și sumele zilei (`utilizareZi`), cu permisiunea „Utilizare: citește” și regula lor. |
+| A.9b | Fila Utilizare: perioada, cifrele, uneltele, ce nu se folosește, frecările, duratele. |
 | A.10 | Fluxurile: secvențele cele mai dese și pâlnia drumului principal. |
 | A.11 | Troubleshooting: pașii dinaintea unei erori (în raportul ei, în Erori), cronologia unui om (Utilizatori, Tichete) și disocierea unui cont. |
 
-Estimarea: ~7 felii (A.8c s-a despărțit în A.8c și A.8d pe 23.11). A.7 (telefonul) vine după A.11 (întrebarea 7, a).
+Estimarea: ~8 felii (A.8c s-a despărțit în A.8c și A.8d pe 23.11, A.9 în A.9a și A.9b pe 24.11). A.7 (telefonul) vine după A.11 (întrebarea 7, a).
 
 ## Implementarea
 
@@ -181,6 +182,35 @@ Estimarea: ~7 felii (A.8c s-a despărțit în A.8c și A.8d pe 23.11). A.7 (tele
   deoparte un cod din afara marginilor și trece evenimentul prin lista albă, ca serverul. Două alegeri: o lucrare a
   imprimantei găsită în curs la legare nu e „pornită” (a pornit-o altcineva, altundeva), iar o legătură pierdută care revine
   nu e o legare nouă.
+- **A.9a** (24.11, `3.Ak`): sumele unei zile sunt pure și comune jobului și filei (`shared/utilizareZi.ts`, `SumatorZi`), pe
+  două segmente, clienții și personalul (din `personal` al lotului): acțiunile (de câte ori, cu repetările, câte reușite, de
+  unde, motivele refuzurilor, câți oameni), uneltele, ferestrele, dialogurile (deschise, gata, renunțate), clicurile,
+  derularea și zoom-ul, calculele (cum s-au încheiat, câte pe fiecare treaptă a duratei), mașina și imprimanta (cu codurile),
+  sesiunile (câte, cu durata lor în zi în trepte, de la 1 minut la peste 8 ore). Jobul `agregaUtilizarea` (02:30, cu
+  marcajul, `functions/src/utilizare/agregare.ts`) adună ieri și alaltăieri (o noapte căzută se acoperă la următoarea), după
+  ora primirii lotului, în fusul României (zilele de 23 și 25 de ore incluse), pe pagini de 500, și scrie din nou întreg
+  `utilizareZi/{zi}` (o rulare repetată dă aceleași sume), cu ștergerea singură după `zileSume` (TTL) și cu `segmente`
+  neindexate. Regula: sumele le citește „Utilizare: citește” (permisiunea nouă din catalog), loturile tot nimeni. Două
+  abateri:
+  - **oamenii distincți se țin într-o schiță HyperLogLog**, nu ca listă de conturi: sumele se păstrează 2 ani fără cont
+    (§5), iar oamenii unei perioade se unesc pe zile (maximul pe registru). Numărul e aproape exact pe numerele mici
+    (numărarea liniară) și aproximativ pe cele mari: ~3 % pentru oamenii zilei (1 024 de registre), ~13 % pentru oamenii
+    unei acțiuni (64), deci fila îl arată cu „≈”;
+  - **„Utilizare: sesiuni”** (cronologia unui om) vine cu A.11, unde e folosită; aici, doar citirea sumelor.
+- **A.9b** (24.11, `3.Al`): fila **Utilizare** din `/admin`, în grupul Produs (după Sugestii), cu „Utilizare: citește”.
+  Citește doar sumele zilelor (`utilizareZi`, o singură cerere pe perioadă: `zi` în [prima zi, azi)), niciodată loturile:
+  perioada (7, 30 sau 90 de zile, ziua de azi neîncheiată lăsată afară) și cine (clienții, personalul, toți). Arată cifrele
+  (oamenii activi, aproximativ; sesiunile; programele G-code exportate, din calculele de export reușite; acțiunile
+  refuzate), cele mai folosite acțiuni (de câte ori, câți oameni, cu partea pornită din taste și din paletă), ce nu se
+  folosește (acțiunile registrului și uneltele, cei mai puțini oameni întâi, și cele pe care nu le-a folosit nimeni),
+  frecările (refuzurile pe acțiune și motiv; dialogurile închise fără rezultat) și duratele calculelor (mediana și cele mai
+  lente 5 %, ca trepte; erorile). Partea pură e `src/admin/utilizare/date.ts` (o zi fără formă se sare). Numele vin din
+  **catalogul acțiunilor, generat la build** (`scripts/catalogActiuni.ts`, în `documentatie/actiuni.json`, adus ca restul
+  documentației): acțiunile celor cinci registre și uneltele, cu numele scurt din manual în ambele limbi; o etichetă care nu
+  e un text simplu oprește build-ul. Motivul unui refuz se arată în cuvinte când e o cheie a mesajelor de bază; ale
+  editorului rămân chei (mesajele lui nu vin în `/admin`), ca și numele dialogurilor. Fila vine într-o bucată a ei, la
+  deschidere, doar online (`FilaUtilizare`, plafonul ei de 25 kB în poarta mărimii, exact o bucată). Fără bibliotecă de
+  grafice: barele sunt CSS. Fără reguli, permisiuni, indexuri sau funcții noi.
 
 ## Probele
 

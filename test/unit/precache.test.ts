@@ -117,8 +117,13 @@ test('documentația generată (`documentatie/`, ADR 0048) nu intră: e doar onli
   assert.equal(motivPrecache('sub/documentatie/roadmap.json'), 'necunoscut');
 });
 
-test('lista bucăților doar online: pagina /admin, testul pas cu pas, mașina simulată, sugestia din editor (raportorul și baza conexiunii sunt în precache)', () => {
-  assert.deepEqual([...DOAR_ONLINE], ['PaginaAdmin', 'TestPasCuPas', 'MasinaSimulata', 'SugestieDinEditor', 'pozaPlansei', 'pozaSugestiei', 'PanouCont', 'contEditor']);
+test('lista bucăților doar online: pagina /admin, testul pas cu pas, mașina simulată, sugestia din editor, contul, fila Utilizare (raportorul și baza conexiunii sunt în precache)', () => {
+  assert.deepEqual([...DOAR_ONLINE], [
+    'PaginaAdmin', 'TestPasCuPas', 'MasinaSimulata', 'SugestieDinEditor', 'pozaPlansei', 'pozaSugestiei', 'PanouCont', 'contEditor', 'FilaUtilizare',
+  ]);
+  // Fila Utilizare a adminului (ADR 0262 §7): bucata ei și stilul ei, doar online.
+  assert.equal(motivPrecache('assets/FilaUtilizare-B-TW5iH5.js'), 'doar-online');
+  assert.equal(motivPrecache('assets/FilaUtilizare-C3xYz0aB.css'), 'doar-online');
 });
 
 test('sugestia din editor (ADR 0111) nu intră: bucata ei și cele două împărțite, cu testul și cu /admin', () => {

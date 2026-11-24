@@ -254,6 +254,7 @@ test('matricea rol × permisiune: toate rolurile alături; un rol se editează p
   await expect(matrice.locator('thead th')).toHaveText(['Permisiunile', 'owner', /^Dezvoltator/, /^Suport/]);
   expect(await matrice.locator('tbody tr').evaluateAll((r) => r.map((x) => [...x.querySelectorAll('th')].map((h) => h.textContent).join(' ')))).toEqual([
     'Erori citește', 'rezolvă', 'Diagnoză', 'Audit citește', 'Documentație', 'Sugestii scrie', 'citește toate', 'Conturi citește', 'administrează', 'Tichete citește', 'răspunde',
+    'Utilizare citește',
   ]);
   await expect(matrice.locator('tbody tr').first().locator('td').first()).toHaveText('tot');
   const are = async (rol: string): Promise<string[]> => page.locator(`[data-celula^="${rol}/"][data-are="true"]`).evaluateAll((c) => c.map((x) => (x.getAttribute('data-celula') ?? '').split('/')[1] ?? ''));
@@ -284,7 +285,8 @@ test('matricea rol × permisiune: toate rolurile alături; un rol se editează p
   await expect(cap('Dezvoltator').locator('[data-personal="sterge-rol"]')).toBeDisabled();
   await cap('Suport').locator('[data-personal="editeaza"]').click();
   await expect(matrice.locator('[data-personal="nume-rol"]')).toHaveValue('Suport');
-  await expect(matrice.locator('input[type="checkbox"]')).toHaveCount(11);
+  // O bifă pe permisiune din catalog (12, cu „Utilizare: citește” din A.9a).
+  await expect(matrice.locator('input[type="checkbox"]')).toHaveCount(12);
   await expect(celula(page, 'Suport', 'tichete.raspunde').locator('input')).toBeChecked();
   await expect(celula(page, 'Dezvoltator', 'erori.citeste').locator('input')).toHaveCount(0);
   // Cât se editează un rol, celelalte nu se ating: nici alt „Editează”, nici „Rol nou”.

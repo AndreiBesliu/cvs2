@@ -12270,6 +12270,39 @@ admin cat mai multe setari”).
 - **Documentele:** ADR 0262 (implementarea), fișa etapei 3 (`3.Aj`), registrul otrăvurilor, traducerile, nota liniei.
   **Completed:** 23.11 23:55.
 
+## 2026-11-24 — Felia A.9a: sumele zilei ale utilizării și jobul de noapte (ADR 0262)
+
+**Prompt:** același „am raspuns” (7a: A.8–A.11 acum), după A.8d.
+**Started:** 24.11 00:00.
+
+- **Despărțirea:** A.9 în A.9a (jobul, sumele, permisiunea) și A.9b (fila Utilizare), scrisă în tabelul feliilor din ADR.
+- **Codul (`5668d6d6`, `4c9e191f`, `d25a0557`):** `shared/utilizareZi.ts` (sumele pure, schița HyperLogLog a oamenilor,
+  zilele în fusul României), jobul `agregaUtilizarea` (`functions/src/utilizare/agregare.ts`, 02:30, ieri și alaltăieri, pe
+  pagini, cu marcajul), catalogul joburilor, permisiunea `utilizare.citeste` cu eticheta ei, regula `utilizareZi`, indexurile
+  (TTL, sumele neindexate); probele paginilor Azi și Personal, cu un job și o permisiune în plus.
+- **Pe drum:** sesiunea worker-ului s-a repornit în mijlocul rapidului; lucrul necomis a rămas întreg, comis imediat după.
+- **Probele:** 6 unitare noi, 2 ale jobului și 1 a regulilor, pe emulator. **Otrăvurile:** 27 / 27, după un lot stricat în
+  plus în proba jobului (J05). **Porțile locale:** rapidul 10 036 / 0, emulatoarele 120 / 120 și 48 / 48. **Mărimea:**
+  pornirea și totalul neschimbate; `/admin` 131,5 / 200.
+- **Documentele:** ADR 0262 (implementarea, A.9b), fișa etapei 3 (`3.Ak`), registrul otrăvurilor, traducerile, nota liniei.
+  **Completed:** 24.11 00:55.
+
+## 2026-11-24 — Felia A.9b: fila Utilizare din admin (ADR 0262)
+
+**Prompt:** același „am raspuns” (7a: A.8–A.11 acum), după A.9a.
+**Started:** 24.11 00:55.
+
+- **Codul (`c549a600`, `c85a44c8`, `c70c52df`):** catalogul acțiunilor generat la build (`scripts/catalogActiuni.ts`,
+  `documentatie/actiuni.json`), partea pură a filei (`src/admin/utilizare/date.ts`), fila (`FilaUtilizare.tsx`, bucata ei
+  doar online, cu plafonul în poarta mărimii), legăturile (bara, adresa, permisiunea), textele în ambele limbi.
+- **După capturi:** pluralele („1 om”, „30 de zile”), motivele refuzurilor în cuvinte (cheile mesajelor de bază), mărimea
+  textului din liste, numărul pe rândul numelui pe telefon.
+- **Probele:** 7 unitare noi, 2 e2e noi pe emulatoare; probele barei (Azi, Utilizatori) numără fila. **Otrăvurile:** 26 / 26.
+  **Porțile locale:** rapidul 10 045 / 0, emulatoarele întregi 50 / 50 după filele numărate. **Mărimea:** pornirea și
+  totalul neschimbate; `/admin` 133,2 / 200; fila 3,8 / 25.
+- **Documentele:** ADR 0262 (implementarea), fișa etapei 3 (`3.Al`), registrul otrăvurilor, traducerile, nota liniei.
+  **Completed:** 24.11 05:05.
+
 ## 2026-11-23 — Sesiunea principală în cloud: a șasea unire (A.6, Roadmap, Documentație și Setări); linia frezelor, pornită (Model: Claude Fable 5.2)
 
 **Prompt:** același brief de predare al sesiunii principale („unește ce se poate”), la raportul liniei adminului (PR-ul
