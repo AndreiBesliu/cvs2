@@ -12843,7 +12843,8 @@ unită în `32b33a42`).
 - **Otrăvurile** (`test/otravuri/16.A-c.py`), într-o clonă, pe `623d4d01`: 47 / 47 (25 pe hârtie, 15 pe emulatorul
   Firestore, 7 pe fereastră, pe emulatoare). Trei probe întărite înaintea rulării (numărătoarea semnelor după readucere,
   lista întreagă în client, contul plin încercat o dată pe trecere).
-- **Porțile, în container:** tipurile (și ale funcțiilor), importurile (20 / 20), build-ul determinist; pornirea neschimbată
+- **Porțile, în container:** suita unitară 10 131 / 10 143 (12 sărite, 0 căzute), tipurile (și ale funcțiilor), importurile
+  (20 / 20), build-ul determinist; pornirea neschimbată
   (cu ușa 114,4, cu Atelierul 114,7 / 115), totalul 806,1 → 810,5 / 900, contul 30,1 → 30,3 / 32; traducerile (991, 0
   lipsă); e2e-ul ferestrei, al contului și al manualului 19 / 19.
 - **Documentele:** ADR 0300 („Implementarea (16.A↑c)”), fișa etapei 3 (rândul `16.A↑c`), pragul, registrul otrăvurilor,
