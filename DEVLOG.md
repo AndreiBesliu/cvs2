@@ -12690,6 +12690,31 @@ PR-ul `AndreiBesliu/cvs2#13` („De unit acum (A.9a, A.9b): `dbb0306a`”).
 - **Documentele:** ADR 0282, indexul ADR, fișa etapei 3 (jurnalul și coada owner-ului), traducerile roadmap-ului,
   registrul otrăvurilor, nota liniei.
 
+## 2026-11-24 — 16.A↑b-1: documentul v27 și valorile frezei în program (Model: Claude Opus 5.5)
+
+**Prompt:** „continua” (owner-ul, după unirea lui 16.A↑a și ADR 0301 în `main`). **Started:** 24.11, 07:35.
+
+- `main` adus (`883a8caa`: A.9a, A.9b) în `59d22614`. Felia 16.A↑b împărțită în trei: **b-1** (documentul v27, valorile
+  frezei în program; fără interfață), **b-2** (lista „Freza” pe rândurile exportului și în Tăierea), **b-3** (nota schimbării
+  din bibliotecă, „Ia valorile noi”, recunoașterea fără origine).
+- **Documentul v27** (`7fb16ec3`): `biblioteca`, `regim`, `tais` pe orice freză a unei operații (scula, frezele de rest,
+  fundul plat și frezele lui de rest, frezele dopului, freza benzii); migrarea v26 → v27 doar cu numărul, ciocnirea pe
+  fiecare loc. Oracolul documentului la v27 (`FREZE_OPERATIE_O`, pașii `[]` în ciocniri, `problemeFrezaV27O`), cazurile pe
+  hârtie, `document.v27.oracol.test.ts` 16 / 16; probele versiunii curente pe 27, după diff-ul lui `63a1eca0` (v26), cu un
+  script pentru lanțuri. Corpusul de aur la v27 (`f999c180`): clona era superficială, deci întâi `git fetch --unshallow`;
+  intrarea v26 din `59d2261`, aceiași octeți; în ieșirile vechi, doar numărul.
+- **Programul** (`c5be2f07`): `src/cam/regimFreza.ts` (`regimFrezei`, `refuzTais`), legat în `job.ts`, `vcarve.ts`
+  (avansurile frezelor fundului) și `dopV.ts`. Proba `freze.program.test.ts` 15 / 15, scrisă înainte (14 căzute pe codul
+  vechi). Capcana: mașina estimării are 500 mm/min pe axe, deci proba timpului folosește un avans de 250.
+- **Porțile, în container:** tipurile, importurile (20 / 20, 0 încălcări), suita unitară întreagă 10 076 / 10 088 (12 sărite,
+  0 căzute), build-ul determinist (379 de fișiere); pornirea 109,4 → 109,5 kB (cu ușa
+  114,0, cu Atelierul 114,3 / 115), totalul 799,6 → 800,5 / 900; traducerile (969, 0 lipsă).
+- **Otrăvurile** (`test/otravuri/16.A-b1.py`), într-o clonă: 34 / 34 prinse (11 pe document, 23 pe program); C23 (tăișul
+  pe dopul în V) cerea o aserțiune nouă în probă, pusă înaintea rulării. `verifica` pe toate listele: aceleași 242 de
+  VOID-uri ca pe `main` `883a8caa`.
+- **Documentele:** ADR 0300 („Implementarea (16.A↑b-1)”), fișa etapei 3 (rândul `16.A↑b-1`), pragul, registrul
+  otrăvurilor, traducerile, nota liniei. **Completed:** 24.11, 08:55.
+
 - **Publicarea (`883a8caa`):** rapidul și completul pe `main` verzi (completul, 63 min 54 s), `publica.yml` verde în
   3 minute, cu serverul: funcția `agregaUtilizarea` creată, regulile Firestore și indexurile publicate; adresa de test
   spune `883a8caa1f21` (24.11, 07:14).

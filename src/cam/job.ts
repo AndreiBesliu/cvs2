@@ -33,6 +33,7 @@ import { RAMPA_MINIMA } from './rampaMinima.ts';
 import { cuTaieturiPrinFoaie } from './prinFoaie.ts';
 import { SUPRACURSA_MAXIMA } from './supracursaMaxima.ts';
 import { traseuProfil } from './traseu.ts';
+import { refuzTais, regimFrezei } from './regimFreza.ts';
 import {
   centreDeLa, coloaneUrechi, EPS_VARF, geometrieUrechi, inZonaUrechii, pornireInGol, proiectiePeBucla, urecheCareNuIncape, urechiPeBucla, type GeometrieUrechi,
   type ParametriUrechi,
@@ -196,7 +197,9 @@ function buzunareSiInsule(
  * instanță, în ordinea de tăiere a contractului (întâi interioarele, apoi exterioarele, la urmă despărțirile foii marcate de
  * om, ADR 0037 §8), într-un singur program în IR.
  * Parametrii și scula vin din operații, nu din dialog. Fiecare tăietură se socotește cu diametrul sculei ei; între două
- * tăieturi cu scule diferite, programul are o schimbare (`schimba-scula`, ADR 0084), cu turația regimului.
+ * tăieturi cu scule diferite, programul are o schimbare (`schimba-scula`, ADR 0084), cu turația regimului. Din v27 (ADR 0300
+ * §5), o freză cu valorile ei (`scula.regim`) taie cu turația, avansul și plonjarea ei (`regimFrezei`); fără ele, cu regimul
+ * lucrării, octet cu octet ca până atunci.
  */
 export type Regim = {
   readonly turatie: number;
@@ -350,6 +353,12 @@ export function programDinDocument(
       if (forma(s) !== forma(u)) {
         return { ok: false, motiv: `${t.idLume}: T${u.numar} are două freze de Ø${s.diametru} (${forma(s)} și ${forma(u)}): fiecare freză cere numărul ei` };
       }
+      // Turația e a frezei montate (ADR 0300 §5): același T cu două turații e un conflict, ca două diametre. Avansul și
+      // plonjarea pot diferi de la o operație la alta.
+      const ts = regimFrezei(s, regim).turatie, tu = regimFrezei(u, regim).turatie;
+      if (ts !== tu) {
+        return { ok: false, motiv: `${t.idLume}: T${u.numar} are două turații (${ts} și ${tu} rot/min): o freză se montează cu o singură turație; fiecare turație cere numărul ei` };
+      }
     }
   }
   const scula: Scula = sculaIR(prima.scula);
@@ -466,11 +475,13 @@ export function programDinDocument(
    * Prima montată e scula programului (ADR 0091 §3: un V-carve cu fund plat începe cu freza dreaptă).
    */
   let initiala: Scula | null = null, curenta: Scula | null = null;
+  /** Freza montată prima, din document: turația ei pornește programul (ADR 0300 §5). */
+  let initialaDoc: Taietura['scula'] | null = null;
   const monteaza = (s: Taietura['scula']): void => {
-    if (curenta === null) { curenta = initiala = sculaIR(s); return; }
+    if (curenta === null) { curenta = initiala = sculaIR(s); initialaDoc = s; return; }
     if (s.numar === curenta.numar) return;
     curenta = sculaIR(s);
-    miscari.push({ tip: 'schimba-scula', scula: curenta, turatie: regim.turatie });
+    miscari.push({ tip: 'schimba-scula', scula: curenta, turatie: regimFrezei(s, regim).turatie });
   };
   const montata = (t: Taietura): void => { monteaza(t.scula); };
   // V-carve-urile făcute (ADR 0090): contururile unei regiuni se taie odată, la prima lor tăietură. O regiune = contururile
@@ -512,13 +523,19 @@ export function programDinDocument(
       const fp = op?.fundPlat;
       // Incrustația fără freză dreaptă (ADR 0173): fundul locașului îl fac inelele frezei V, cu creasta cel mult g/2.
       const inc = !fp && op ? valoriIncrustatie(op) : null;
+      // Fiecare freză cu avansurile ei (ADR 0300 §5): V-ul, freza fundului plat și frezele ei de rest.
+      const rv = regimFrezei(t.scula, regim);
+      const avansuri = (s: Taietura['scula']): { readonly avans: number; readonly avansPlonjare: number } => {
+        const r = regimFrezei(s, regim);
+        return { avans: r.avans, avansPlonjare: r.avansPlonjare };
+      };
       const v = traseuVcarve({
         contururi: ale.map(conturDe), unghi: forma.unghi, varf: forma.varf ?? 0, diametruScula: D, adancime: t.adancime, pas: t.pas,
-        avans: regim.avans, avansPlonjare: regim.avansPlonjare, zSigur: regim.zSigur,
+        avans: rv.avans, avansPlonjare: rv.avansPlonjare, zSigur: regim.zSigur,
         ...(fp ? {
           fundPlat: {
-            diametru: fp.scula.diametru, pasLateral: fp.pasLateral, sens: t.sens,
-            ...(fp.rest ? { rest: fp.rest.map((r) => ({ diametru: r.scula.diametru, pasLateral: r.pasLateral })) } : {}),
+            diametru: fp.scula.diametru, pasLateral: fp.pasLateral, sens: t.sens, ...avansuri(fp.scula),
+            ...(fp.rest ? { rest: fp.rest.map((r) => ({ diametru: r.scula.diametru, pasLateral: r.pasLateral, ...avansuri(r.scula) })) } : {}),
           },
         } : inc ? { fundV: { creasta: inc.creastaLocas } } : {}),
       });
@@ -558,7 +575,7 @@ export function programDinDocument(
       const op = doc.piese.find((p) => p.id === t.piesa)?.operatii.find((o) => o.id === t.operatie);
       const g = traseuGaurire({
         centru: cerc.centru, diametru: cerc.diametru, diametruScula: D, adancime: t.adancime, pas: t.pas,
-        retragereCompleta: op?.retragereCompleta ?? 1, trigonometric: t.sens === 'urcare', ...regim,
+        retragereCompleta: op?.retragereCompleta ?? 1, trigonometric: t.sens === 'urcare', ...regimFrezei(t.scula, regim),
       });
       if (!g.ok) return { ok: false, motiv: `${t.idLume}: ${g.motiv}` };
       montata(t);
@@ -586,13 +603,13 @@ export function programDinDocument(
         if (paralel && op?.coborare && op.coborare.fel !== 'plonjare') return 'strategia paralelă coboară prin plonjare; rampa, zigzagul și elicea sunt ale inelelor';
         let tb: { readonly ok: true; readonly miscari: readonly Miscare[]; readonly avertismente: readonly string[] } | { readonly ok: false; readonly motiv: string };
         if (paralel) {
-          const tp = traseuParalel(contur, { ...regim, sens: t.sens, raza: R, pasLateral, unghi: paralel.unghi, adancimi }, ci);
+          const tp = traseuParalel(contur, { ...regimFrezei(t.scula, regim), sens: t.sens, raza: R, pasLateral, unghi: paralel.unghi, adancimi }, ci);
           tb = tp.ok ? { ok: true, miscari: tp.miscari, avertismente: [] } : tp;
         } else {
           const inele = ineleBuzunar(contur, R, pasLateral, ci);
           if (!inele.ok) return inele.motiv;
           // Coborârea (ADR 0076): a operației; lipsă, plonjarea dreaptă.
-          tb = traseuBuzunar(contur, ordineInele(inele.radacini), { ...regim, sens: t.sens, raza: R, adancimi, ...(op?.coborare ? { coborare: op.coborare } : {}) }, ci);
+          tb = traseuBuzunar(contur, ordineInele(inele.radacini), { ...regimFrezei(t.scula, regim), sens: t.sens, raza: R, adancimi, ...(op?.coborare ? { coborare: op.coborare } : {}) }, ci);
         }
         if (!tb.ok) return tb.motiv;
         for (const a of tb.avertismente) avertismente.push(`${t.idLume}: ${a}`);
@@ -610,7 +627,7 @@ export function programDinDocument(
             avertismente.push(`${t.idLume}: freza de rest T${r.scula.numar} (Ø${r.scula.diametru}) n-are ce scoate: frezele dinainte au ajuns peste tot unde ajunge și ea`);
             continue;
           }
-          const tr = taieBucati(adancimi.map((adancime) => ({ adancime, bucati: b.bucati })), regim);
+          const tr = taieBucati(adancimi.map((adancime) => ({ adancime, bucati: b.bucati })), regimFrezei(r.scula, regim));
           monteaza(r.scula);
           miscari.push({ tip: 'eticheta', text: `${t.idLume}: buzunar, restul cu T${r.scula.numar} Ø${r.scula.diametru}`, element: t.idLume, operatie: `${t.piesa}/${t.operatie}` });
           for (const m of tr.miscari) miscari.push(m);
@@ -915,7 +932,7 @@ export function programDinDocument(
         if (urechi?.bucle) urechi = { ...urechi, bucle: urechi.bucle.map((cs, j) => { const P = lungimeBucla(bucle[j] as Contur); return cs.map((x) => P - x).sort((a, b) => a - b); }) };
       }
     }
-    const tr = traseuProfil(treceri, regim, urechi, t.rampa ? { lungime: t.rampa.lungime } : undefined, intrari, degajari);
+    const tr = traseuProfil(treceri, regimFrezei(t.scula, regim), urechi, t.rampa ? { lungime: t.rampa.lungime } : undefined, intrari, degajari);
     if (!tr.ok) return { ok: false, motiv: `${t.idLume}: ${tr.motiv}` };
     montata(t);
     miscari.push({
@@ -928,8 +945,11 @@ export function programDinDocument(
   for (const regula of ['lungi', 'scurte'] as const) {
     if (putineLaturi[regula].length > 0) avertismente.push(avertismentLaturi(regula, putineLaturi[regula]));
   }
-  return {
-    ok: true, program: { axe: AXE_XYZ, scula: initiala ?? scula, turatie: regim.turatie, zSigur: regim.zSigur, miscari }, avertismente,
-    ...(puncteLemn.length > 0 ? { urechiLemn: puncteLemn } : {}),
+  const program: Program = {
+    axe: AXE_XYZ, scula: initiala ?? scula, turatie: regimFrezei(initialaDoc ?? prima.scula, regim).turatie, zSigur: regim.zSigur, miscari,
   };
+  // Tăișul (ADR 0300 §5): nicio freză nu coboară mai adânc decât el, pe tot ce taie (treceri, rampe, elice, supracursă).
+  const peste = refuzTais(program, freze);
+  if (peste) return { ok: false, motiv: peste };
+  return { ok: true, program, avertismente, ...(puncteLemn.length > 0 ? { urechiLemn: puncteLemn } : {}) };
 }

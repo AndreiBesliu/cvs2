@@ -290,6 +290,43 @@ Pe 23.11.2026, în sesiunea cloud a liniei, pe ramura `wip/16.A-freze`. Document
   din paletă, importul la cerere, cheia din dicționarul de bază; cu ușa 113,2 / 115), totalul 770,9 → 779,9 / 800 kB
   (fereastra 8,8 kB, stilul 1,4, bucata comună a CSV-ului 0,65); mesajele `freze`, ca date, 3,0 kB gzip.
 
+## Implementarea (16.A↑b-1)
+
+Pe 24.11.2026, în sesiunea cloud a liniei, pe ramura `wip/16.A-freze`, la „continua” al owner-ului. Felia 16.A↑b s-a
+împărțit în trei: **b-1** (documentul v27 și valorile frezei în program, fără interfață), **b-2** (lista „Freza” pe rândurile
+exportului și în Tăierea, numerele T; după fereastra exportului refăcută, ADR 0290, dacă e unită) și **b-3** (nota „s-a
+schimbat în bibliotecă”, „Ia valorile noi”, recunoașterea fără origine). Serverul nu se atinge.
+
+- **Documentul v27** (`src/model/document.ts`, `schemaDocument.ts`, `migrari.ts`): pe orice freză a unei operații (scula,
+  frezele de rest, fundul plat și frezele lui de rest, frezele dopului drept, freza benzii), `biblioteca` ({ id ca id-urile
+  documentului, rev întreg de la 1 }), `regim` ({ turatie întreagă 1–100 000, avans și plonjare în (0, 100 000] }, toate
+  cerute; `PLAFON.regimFreza`, aceleași margini ca biblioteca) și `tais` (în (0, 1 000] mm). Migrarea v26 → v27 schimbă doar
+  numărul; un v26 care are deja unul din câmpuri pe o freză e refuzat, cu calea frezei și câmpul în motiv.
+- **Oracolul documentului** (`test/oracles/document.ts`): `FREZE_OPERATIE_O`, rândul 27 din `CAMPURI_NOI_O` (18 căi, cu pașii
+  `[]` pe liste, deci ciocnirea se caută pe fiecare element), `problemeFrezaV27O` pe fiecare loc (categoriile `scula`, `rest`,
+  `fund-plat`, `incrustatie`); cazurile pe hârtie la capătul lui `document.cazuri.ts` (13 documente valide noi, 2 migrări,
+  4 neciocniri, 16 frontiere, 12 refuzuri, câte o ciocnire pe fiecare loc); `document.v27.oracol.test.ts` 16 / 16; probele
+  versiunii curente trec pe 27 (cea mai nouă: 28). Corpusul de aur la v27: frezele capacului (originea, valorile, tăișul de
+  22 mm), freza de rest a buzunarului (valorile), fundul plat al etichetei (tăișul), freza benzii (originea); în ieșirile
+  celor 27 de dinainte se schimbă doar numărul.
+- **Programul** (`src/cam/regimFreza.ts`, pur): `regimFrezei` dă valorile frezei (Z-ul sigur rămâne al lucrării) sau, fără
+  ele, chiar regimul lucrării, deci programele de până la v27 rămân octet cu octet. Lucrarea (`job.ts`) le folosește pe
+  fiecare loc: profilul, inelele și liniile paralele ale buzunarului, frezele de rest, găurirea, V-ul, fundul plat și frezele
+  lui de rest (`traseuVcarve` primește avansurile fiecărei freze a fundului), turația la pornire (a primei freze montate) și
+  la fiecare schimbare; la fel dopul în V (`dopV.ts`), iar dopul drept și decuparea benzii trec prin lucrare. Estimarea
+  timpului citește F-urile scrise, deci le urmează singură.
+- **Turația pe T:** același număr cu două turații (ale frezelor, sau una cu valori și una fără, deci cu turația lucrării) e
+  refuzat, ca două diametre; avansul și plonjarea pot diferi de la o operație la alta.
+- **Tăișul** (`refuzTais`): pe programul gata, cea mai mare adâncime a fiecărei freze montate (față de fața de sus, deci cu
+  supracursa, rampele și elicele) se compară cu tăișul ei; peste, refuzul („freza T1 (…) are tăișul de 5,9 mm, iar tăietura
+  coboară la 6 mm: mai adânc, ar tăia cu coada”), cu elementul; egal trece. Pe lucrare și pe dopuri.
+- **Probele:** `freze.program.test.ts` 15 / 15 (fără valori, același program; valorile pe fiecare loc; schimbarea; turațiile pe
+  același T; estimarea; G-code-ul; tăișul pe profil, cu supracursa prin foaie, pe freza de rest, pe fundul plat, pe dopuri),
+  plus corpusul CAM, plăcile și dopurile, neschimbate. Suita unitară în container: 10 076 / 10 088 (12 sărite, 0 căzute).
+  Otrăvurile: `test/otravuri/16.A-b1.py`, 34 / 34.
+- **Mărimea:** pornirea 109,4 → 109,5 kB (constantele noi ale documentului; cu ușa 113,9 → 114,0, cu Atelierul 114,2 →
+  114,3 / 115), totalul 799,6 → 800,5 / 900 kB.
+
 ## Se redeschide dacă
 
 - owner-ul vrea o bibliotecă comună mai multor conturi ale aceluiași atelier, sau cataloagele publice ale producătorilor;

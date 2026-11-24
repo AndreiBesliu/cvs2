@@ -321,7 +321,7 @@ export const COLTURI_IMPLICITE_O = null;
 /** ADR 0032 §1: tipurile degajărilor, exact. */
 export const TIPURI_COLTURI_O: readonly TipColturiO[] = ['dog-bone', 't-bone'];
 /** Versiunea curentă a contractului documentului, după oracol. */
-export const SCHEMA_CURENTA_O = 26;
+export const SCHEMA_CURENTA_O = 27;
 
 export const PLAFOANE_O = {
   latura: 10_000,
@@ -2049,6 +2049,13 @@ export function diferenta(a: unknown, b: unknown, cale = '$'): string | undefine
  *   elementului; câmpurile necunoscute ale punctului se păstrează). Câte urechi, potrivirea lor pe buclă și pornirea sunt ale
  *   lucrării. O cheie `__proto__` e un id ca oricare (ADR 0024 §9). Pe un v25, `mod` sau `locuri` în `urechi` e o ciocnire
  *   la v25 → v26. Punțile dopului (v24) rămân urechi fără locuri: acolo `mod` și `locuri` sunt câmpuri necunoscute.
+ * - v27 (ADR 0300 §5): orice freză a unei operații (a ei, ale frezelor de rest, a fundului plat și ale frezelor lui de rest,
+ *   ale dopului drept, freza benzii) poate avea `biblioteca` (un obiect cu `id`, ca id-urile documentului, și `rev`, un întreg
+ *   sigur de la 1), `regim` (un obiect cu `turatie` întreagă în [1, 100 000], `avans` și `plonjare` în (0, 100 000], toate trei
+ *   cerute) și `tais` (în (0, 1 000], ca adâncimea unei operații). Câmpurile necunoscute ale obiectelor se păstrează. Ce face
+ *   lucrarea cu ele (turația, avansurile, refuzul adâncimii peste tăiș, două turații pe un T) nu e al ușii. Pe un v26,
+ *   `biblioteca`, `regim` sau `tais` pe oricare din frezele operației e o ciocnire la v26 → v27; în afara unei freze (pe
+ *   operație, pe fundul plat) sunt câmpuri necunoscute.
  * - Migrările v10 → … → v22 schimbă doar numărul. Un document marcat vN cu un câmp al lui vN+1 e refuzat („nu e un
  *   document vN valid”), cu câmpul PROPRIU: v10 cu `pasLateral` pe o operație (un buzunar e refuzat deja de schema v10);
  *   v11 cu `coborare`; v12 cu `retragereCompleta` (găurirea e refuzată de schema v12); v13 cu `forma` pe scula operației
@@ -2136,6 +2143,11 @@ export const FELURI_COBORARE_O = {
 /** ADR 0092 §1: direcțiile pe linie (lipsa = în sensul desenului). */
 export const DIRECTII_O = ['invers', 'scurt'] as const;
 
+/** ADR 0300 §5 (v27): căile frezelor unei operații, cu `[]` pentru fiecare element al unei liste. */
+export const FREZE_OPERATIE_O = [
+  'scula', 'rest[].scula', 'fundPlat.scula', 'fundPlat.rest[].scula', 'incrustatie.frezeDop[].scula', 'incrustatie.banda.freza',
+] as const;
+
 /**
  * Câmpurile pe care le aduce fiecare versiune pe operație (cele cu `.` sunt mai adânc). Tot de aici vin ciocnirile
  * migrării vN-1 → vN (vezi `ciocniriO`). v23 (ADR 0210 §7) aduce un câmp pe INSTANȚĂ, nu pe operație: el se scrie cu
@@ -2163,6 +2175,9 @@ export const CAMPURI_NOI_O: Readonly<Record<number, readonly string[]>> = {
   // ADR 0211: „un v25 poate avea, ca necunoscute, câmpurile `mod` sau `locuri` în urechile unei operații, pe care v26 le
   // folosește: un astfel de document nu e un v25 valid”.
   26: ['urechi.mod', 'urechi.locuri'],
+  // ADR 0300 §5: „un document marcat v26 care are deja câmpurile e refuzat”, pe oricare din frezele operației (`[]` = fiecare
+  // element al listei).
+  27: FREZE_OPERATIE_O.flatMap((f) => ['biblioteca', 'regim', 'tais'].map((c) => `${f}.${c}`)),
 };
 
 /** Prefixul unui câmp nou de pe instanță în `CAMPURI_NOI_O` (v23); restul sunt căi pe operație. */
@@ -2250,7 +2265,7 @@ export type DocV21O = Liber & { schema: 21; rev: number; piese: PiesaV21O[]; foi
 export type DocV22O = Liber & { schema: 22; rev: number; piese: PiesaV22O[]; foi: FoaieO[] };
 
 /** Un document v11 … v24, după numărul lui. */
-export type DocNouO = DocV11O | DocV12O | DocV13O | DocV14O | DocV15O | DocV16O | DocV17O | DocV18O | DocV19O | DocV20O | DocV21O | DocV22O | DocV23O | DocV24O | DocV25O | DocV26O;
+export type DocNouO = DocV11O | DocV12O | DocV13O | DocV14O | DocV15O | DocV16O | DocV17O | DocV18O | DocV19O | DocV20O | DocV21O | DocV22O | DocV23O | DocV24O | DocV25O | DocV26O | DocV27O;
 
 // ---------------------------------------------------------------------------------------------------------------
 // Ajutoarele.
@@ -2326,8 +2341,47 @@ export function problemeSculaO(scula: unknown, versiune: number): string[] {
     rez.push(`.diametru = ${are(scula, 'diametru') ? arata(scula['diametru']) : '(lipsă)'} nu e în (0, ${p.sculaDiametru}]`);
   }
   if (versiune >= 14 && are(scula, 'forma')) rez.push(...problemeFormaO(scula['forma'], versiune).map((m) => `.forma${m}`));
+  if (versiune >= 27) rez.push(...problemeFrezaV27O(scula));
   return rez;
 }
+
+/**
+ * ADR 0300 §5 (v27): originea, valorile de lucru și tăișul unei freze, ca listă de motive (goală = bune). Fiecare opțional;
+ * `biblioteca` = { id ca id-urile documentului, rev întreg sigur ≥ 1 }; `regim` = { turatie întreagă 1–100 000, avans și
+ * plonjare în (0, 100 000] }, toate cerute; `tais` în (0, 1 000].
+ */
+export function problemeFrezaV27O(s: Liber): string[] {
+  const rez: string[] = [];
+  const p = PLAFOANE_O;
+  if (are(s, 'biblioteca')) {
+    const b = s['biblioteca'];
+    if (!esteObiect(b)) rez.push(`.biblioteca = ${arata(b)} nu e un obiect { id, rev }`);
+    else {
+      const id = b['id'];
+      if (typeof id !== 'string' || id.length < 1 || id.length > p.idLungime || !ID_O.test(id)) {
+        rez.push(`.biblioteca.id = ${are(b, 'id') ? arata(id) : '(lipsă)'} nu e un id (1–${p.idLungime} caractere A–Z, a–z, 0–9, _ și -)`);
+      }
+      if (!intreg(b['rev'], 1, Number.MAX_SAFE_INTEGER)) rez.push(`.biblioteca.rev = ${are(b, 'rev') ? arata(b['rev']) : '(lipsă)'} nu e un întreg sigur de la 1`);
+    }
+  }
+  if (are(s, 'regim')) {
+    const r = s['regim'];
+    if (!esteObiect(r)) rez.push(`.regim = ${arata(r)} nu e un obiect { turatie, avans, plonjare }`);
+    else {
+      if (!intreg(r['turatie'], 1, REGIM_FREZA_MAXIM_O)) rez.push(`.regim.turatie = ${are(r, 'turatie') ? arata(r['turatie']) : '(lipsă)'} nu e un întreg 1–${REGIM_FREZA_MAXIM_O}`);
+      for (const c of ['avans', 'plonjare']) {
+        if (!pozitivPana(r[c], REGIM_FREZA_MAXIM_O)) rez.push(`.regim.${c} = ${are(r, c) ? arata(r[c]) : '(lipsă)'} nu e în (0, ${REGIM_FREZA_MAXIM_O}]`);
+      }
+    }
+  }
+  if (are(s, 'tais') && !pozitivPana(s['tais'], TAIS_MAXIM_O)) rez.push(`.tais = ${arata(s['tais'])} nu e în (0, ${TAIS_MAXIM_O}]`);
+  return rez;
+}
+
+/** ADR 0300 §5: turația, avansul și plonjarea unei freze, cel mult atât (rot/min, mm/min). */
+export const REGIM_FREZA_MAXIM_O = 100_000;
+/** ADR 0300 §5: tăișul, cel mult cât adâncimea unei operații (mm). */
+export const TAIS_MAXIM_O = 1_000;
 
 /** ADR 0076 §1, §7: coborârea (cu ALEGERILE din antet). */
 export function problemeCoborareO(c: unknown): string[] {
@@ -2483,6 +2537,7 @@ export function problemeOperatieO(op: Liber, versiune: number, unde: string): st
   }
   const scula = op['scula'];
   if (versiune >= 14 && esteObiect(scula) && are(scula, 'forma')) cu('scula', 'scula.forma', problemeFormaO(scula['forma'], versiune));
+  if (versiune >= 27 && esteObiect(scula)) cu('scula', 'scula', problemeFrezaV27O(scula));
   if (versiune >= 15 && are(op, 'fundPlat')) cu('fund-plat', 'fundPlat', problemeFundPlatO(op['fundPlat'], versiune));
   if (versiune >= 16 && are(op, 'directie') && !(DIRECTII_O as readonly unknown[]).includes(op['directie'])) {
     cu('directie', 'directie', [` = ${arata(op['directie'])} nu e ${DIRECTII_O.join(' / ')}`]);
@@ -2583,18 +2638,22 @@ export function ciocniriO(doc: Liber, de: number): string[] {
   const campuri = toate.filter((c) => !c.startsWith(PE_INSTANTA_O));
   for (const { op, unde } of operatiile(doc)) {
     for (const camp of campuri) {
-      // Calea câmpului pe operație: fiecare pas trebuie să fie un obiect cu cheia PROPRIE.
-      const pasi = camp.split('.');
-      let x: unknown = op;
-      let gasit = true;
-      for (const pas of pasi) {
-        if (!esteObiect(x) || !Object.hasOwn(x, pas)) {
-          gasit = false;
-          break;
+      // Calea câmpului pe operație: fiecare pas trebuie să fie un obiect cu cheia PROPRIE; `nume[]` (v27) e fiecare element
+      // al listei `nume`, cu indicele lui în calea spusă.
+      let locuri: Array<readonly [unknown, string]> = [[op, unde]];
+      for (const pas of camp.split('.')) {
+        const lista = pas.endsWith('[]');
+        const cheie = lista ? pas.slice(0, -2) : pas;
+        const urm: Array<readonly [unknown, string]> = [];
+        for (const [x, cale] of locuri) {
+          if (!esteObiect(x) || !Object.hasOwn(x, cheie)) continue;
+          const y = x[cheie];
+          if (!lista) urm.push([y, `${cale}.${cheie}`]);
+          else if (Array.isArray(y)) y.forEach((e: unknown, k) => urm.push([e, `${cale}.${cheie}[${k}]`]));
         }
-        x = x[pas];
+        locuri = urm;
       }
-      if (gasit) rez.push(`[ciocnire] ${unde}.${camp}: un document v${de} nu are câmpul (nu e un document v${de} valid)`);
+      for (const [, cale] of locuri) rez.push(`[ciocnire] ${cale}: un document v${de} nu are câmpul (nu e un document v${de} valid)`);
     }
   }
   // v23 (ADR 0210 §7): un câmp propriu al instanței, oricare i-ar fi valoarea (și `null`, și `{}`), pe orice foaie.
@@ -2647,9 +2706,9 @@ export function verificaO(doc: unknown): string[] {
   return verificaPanaLaO(doc, SCHEMA_CURENTA_O);
 }
 
-/** Un document primit de ușa curentă, cum iese din ea: v26 (o copie; un v26 valid rămâne neschimbat). */
-export function ridicaO(doc: unknown): DocV26O {
-  return ridicaPanaLaO(doc, SCHEMA_CURENTA_O) as DocV26O;
+/** Un document primit de ușa curentă, cum iese din ea: v27 (o copie; un v27 valid rămâne neschimbat). */
+export function ridicaO(doc: unknown): DocV27O {
+  return ridicaPanaLaO(doc, SCHEMA_CURENTA_O) as DocV27O;
 }
 
 /**
@@ -2908,6 +2967,8 @@ export type DocV24O = Liber & { schema: 24; rev: number; piese: PiesaV22O[]; foi
 export type DocV25O = Liber & { schema: 25; rev: number; piese: PiesaV22O[]; foi: FoaieO[] };
 /** v26 (ADR 0211): ca v25; urechile operațiilor pot avea `mod` și `locuri` (judecate de `problemeLocuriUrechiO`). */
 export type DocV26O = Liber & { schema: 26; rev: number; piese: PiesaV22O[]; foi: FoaieO[] };
+/** v27 (ADR 0300 §5): ca v26; frezele operațiilor pot avea `biblioteca`, `regim` și `tais` (judecate de `problemeFrezaV27O`). */
+export type DocV27O = Liber & { schema: 27; rev: number; piese: PiesaV22O[]; foi: FoaieO[] };
 
 /** v23: ce schimbă literele plăcuțelor în plafoanele de ansamblu (`verificaArboreO`, din `verificaVnO`). */
 export type AjustariLumeO = {
@@ -3451,3 +3512,12 @@ export function ridicaV26O(doc: unknown): DocV26O { return ridicaPanaLaO(doc, SC
 export function usaCurentaV26O(doc: unknown): 'migrari' | 'usa' { return usaCurentaPanaLaO(doc, SCHEMA_V26_O); }
 export function migreazaV1V26O(v1: DocV1O): DocV26O { return ridicaPanaLaO(v1, SCHEMA_V26_O) as DocV26O; }
 export function migreazaV25V26O(v25: DocV25O): DocV26O { return ridicaPanaLaO(v25, SCHEMA_V26_O) as DocV26O; }
+
+// Numele pe versiuni (v27, ADR 0300 §5: originea, valorile de lucru și tăișul frezelor).
+export const SCHEMA_V27_O = 27;
+export function verificaV27(doc: unknown): string[] { return verificaVnO(doc, SCHEMA_V27_O); }
+export function verificaPanaLaV27O(doc: unknown): string[] { return verificaPanaLaO(doc, SCHEMA_V27_O); }
+export function ridicaV27O(doc: unknown): DocV27O { return ridicaPanaLaO(doc, SCHEMA_V27_O) as DocV27O; }
+export function usaCurentaV27O(doc: unknown): 'migrari' | 'usa' { return usaCurentaPanaLaO(doc, SCHEMA_V27_O); }
+export function migreazaV1V27O(v1: DocV1O): DocV27O { return ridicaPanaLaO(v1, SCHEMA_V27_O) as DocV27O; }
+export function migreazaV26V27O(v26: DocV26O): DocV27O { return ridicaPanaLaO(v26, SCHEMA_V27_O) as DocV27O; }

@@ -6301,3 +6301,175 @@ export const REFUZATE_V26: readonly RefuzV18[] = [
   { nume: 'RU9 un v26 cu locurile o listă', doc: docV(26, exterior26(alese26({ locuri: [{ x: 0, y: 15 }] })), D26), categorie: 'urechi', camp: `${opC}.urechi.locuri`, motiv: 'ADR 0211: un obiect pe elemente' },
   { nume: 'RU10 un v26 cu modul „Alese”', doc: docV(26, exterior26(urechi26({ mod: 'Alese' })), D26), categorie: 'urechi', camp: `${opC}.urechi.mod`, motiv: 'ADR 0211: unul din cele șase moduri' },
 ];
+
+// ---------------------------------------------------------------------------------------------------------------
+// Documentul v27 (felia 16.A↑b, ADR 0300 §5): originea frezei, valorile ei de lucru și tăișul, pe hârtie, pe fiecare loc unde
+// stă o freză (scula operației, frezele de rest, fundul plat și frezele lui de rest, frezele dopului, freza benzii). Cazurile
+// v26 de mai sus rămân ale contractului v26; la ușa v27, un v26 valid urcă schimbând doar numărul. Refuzul adâncimii peste
+// tăiș și al aceluiași T cu două turații e al lucrării, nu al ușii.
+
+/** Un document al cazurilor v26, adus la v27: doar numărul (ADR 0300 §5). */
+const laV27 = (d: Liber): Liber => cuSchema(d, 27);
+/** Originea unei copii: freza `f1` a bibliotecii, la versiunea 1. */
+const origine27 = (v: Liber = {}): Liber => ({ id: 'f1', rev: 1, ...v });
+/** Valorile de lucru de azi (`REGIM_IMPLICIT`: 18 000 rot/min, 1 000 și 300 mm/min). */
+const regim27 = (v: Liber = {}): Liber => ({ turatie: 18_000, avans: 1_000, plonjare: 300, ...v });
+/** Freza plată T`numar` Ø`diametru`, din bibliotecă, cu valorile și tăișul de 22 mm (și `v` peste). */
+const freza27 = (numar: number, diametru: number, v: Liber = {}): Liber => ({ ...plata(numar, diametru), biblioteca: origine27(), regim: regim27(), tais: 22, ...v });
+/** Freza în V din bibliotecă, cu valorile ei. */
+const frezaV27 = (numar: number, diametru: number, unghi: number, v: Liber = {}): Liber => ({ ...inV(numar, diametru, unghi), biblioteca: origine27({ id: 'v90' }), regim: regim27({ avans: 1_500 }), ...v });
+/** Un buzunar cu frezele de rest, toate din bibliotecă. */
+const buzunarRest27 = (v: Liber = {}): Liber => buzunar({ scula: freza27(1, 12), rest: [{ scula: freza27(2, 3, { biblioteca: origine27({ id: 'f2' }) }), pasLateral: 1.2 }], ...v });
+/** Un V-carve cu fundul plat și freza lui de rest, toate din bibliotecă. */
+const vcarveFund27 = (v: Liber = {}): Liber => vcarve({
+  scula: frezaV27(2, 6, 90),
+  fundPlat: fund({ scula: freza27(3, 6, { biblioteca: origine27({ id: 'f3' }) }), rest: [{ scula: freza27(4, 3, { biblioteca: origine27({ id: 'f4' }) }), pasLateral: 1.2 }] }),
+  ...v,
+});
+/** Incrustația dreaptă cu frezele dopului din bibliotecă. */
+const incrustatieDreapta27 = (v: Liber = {}): Liber => buzunar({ scula: freza27(1, 6), incrustatie: incD({ frezeDop: [{ scula: freza27(5, 2, { biblioteca: origine27({ id: 'f5' }) }), pasLateral: 0.8 }] }), ...v });
+/** Incrustația în V cu banda tăiată de o freză din bibliotecă. */
+const incrustatieBanda27 = (v: Liber = {}): Liber => vcarve({ scula: frezaV27(2, 6, 90), incrustatie: incB(banda({ freza: freza27(5, 3, { biblioteca: origine27({ id: 'f6' }) }) })), ...v });
+
+/** Documente v27 valide: ușa le primește neschimbate (v26-urile valide, renumerotate, și câmpurile noi la frontieră). */
+export const VALIDE_V27: readonly CazV18[] = [
+  ...VALIDE_V26.map((c) => ({ nume: `${c.nume} (v27)`, doc: laV27(c.doc) })),
+  { nume: 'W01 freza profilului din bibliotecă, cu valorile și tăișul (ADR 0300 §5)', doc: docV18(D, [opV18({ scula: freza27(1, 6) })], 27) },
+  { nume: 'W02 doar valorile de lucru (o freză scrisă de mână, fără origine)', doc: docV18(D, [opV18({ scula: { ...plata(1, 6), regim: regim27({ turatie: 24_000, avans: 2_000, plonjare: 500 }) } })], 27) },
+  { nume: 'W03 doar originea (fără valori: programul de azi)', doc: docV18(D, [opV18({ scula: { ...plata(1, 6), biblioteca: origine27() } })], 27) },
+  { nume: 'W04 doar tăișul', doc: docV18(D, [opV18({ scula: { ...plata(1, 6), tais: 17 } })], 27) },
+  { nume: 'W05 frezele de rest din bibliotecă', doc: docV18(D, [buzunarRest27()], 27) },
+  { nume: 'W06 V-ul, fundul plat și freza lui de rest din bibliotecă', doc: docV18(D, [vcarveFund27()], 27) },
+  { nume: 'W07 frezele dopului drept din bibliotecă', doc: docV18(D, [incrustatieDreapta27()], 27) },
+  { nume: 'W08 freza benzii din bibliotecă', doc: docV18(D, [incrustatieBanda27()], 27) },
+  { nume: 'W09 tăișul mai scurt decât adâncimea (refuzul e al lucrării, nu al ușii)', doc: docV18(D, [opV18({ scula: freza27(1, 6, { tais: 4 }), adancime: 6 })], 27) },
+  {
+    nume: 'W10 același T cu două turații, pe două operații (conflictul e al lucrării, nu al ușii)',
+    doc: docV18(D, [opV18({ id: 'o1', scula: freza27(1, 6) }), opV18({ id: 'o2', latura: 'exterior', scula: freza27(1, 6, { regim: regim27({ turatie: 12_000 }) }) })], 27),
+  },
+  { nume: 'W11 câmpuri necunoscute în origine și în valori (rămân)', doc: docV18(D, [opV18({ scula: freza27(1, 6, { biblioteca: origine27({ nume: 'Plată Ø6' }), regim: regim27({ nota: 'x' }) }) })], 27) },
+  { nume: 'W12 valorile la margini (turația 1 și 100 000, versiunea cea mai mare, tăișul 1 000)', doc: docV18(D, [opV18({ scula: freza27(1, 6, { biblioteca: origine27({ rev: Number.MAX_SAFE_INTEGER }), regim: regim27({ turatie: 100_000, avans: 100_000, plonjare: 0.001 }), tais: 1_000 }) })], 27) },
+  { nume: 'W13 un id de bibliotecă ca un UUID (cum îl scrie biblioteca din browser)', doc: docV18(D, [opV18({ scula: freza27(1, 6, { biblioteca: origine27({ id: '3f2b8c1e-9a4d-4e6f-b1c2-7d8e9f0a1b2c' }) }) })], 27) },
+];
+
+/** Documentele vechi urcă la v27: ce dădea hârtia la v26, cu numărul 27; un v26 cu freze urcă doar cu numărul. */
+export const MIGRARI_V27_HARTIE: ReadonlyArray<{ readonly nume: string; readonly vechi: Liber; readonly v27: Liber }> = [
+  ...MIGRARI_V26_HARTIE.map((c) => ({ nume: c.nume, vechi: c.vechi, v27: laV27(c.v26) })),
+  {
+    nume: 'M27a un v26 cu frezele pe toate locurile urcă la v27 doar cu numărul (fără origine și fără valori: programul de azi)',
+    vechi: docV18(D, [buzunar({ scula: plata(1, 12), rest: [rest1(2, 3, 1.2)] }), vcarve({ id: 'v1', fundPlat: fund({ rest: [rest1(4, 2, 0.8)] }) })], 26),
+    v27: docV18(D, [buzunar({ scula: plata(1, 12), rest: [rest1(2, 3, 1.2)] }), vcarve({ id: 'v1', fundPlat: fund({ rest: [rest1(4, 2, 0.8)] }) })], 27),
+  },
+  {
+    nume: 'M27b un v20 cu un câmp necunoscut pe freză urcă la v27 doar cu numărul (prin v21 … v26)',
+    vechi: docV18(D, [opV18({ scula: { ...plata(1, 6), nota: 'x' } })], 20),
+    v27: docV18(D, [opV18({ scula: { ...plata(1, 6), nota: 'x' } })], 27),
+  },
+];
+
+/** `biblioteca`, `regim` și `tais` în afara unei freze sunt câmpuri necunoscute oarecare: primite și păstrate, fără ciocnire. */
+export const NECIOCNIRI_V27: ReadonlyArray<CazV18 & { readonly v27: Liber }> = [
+  ...NECIOCNIRI_V26.map((c) => ({ nume: c.nume, doc: c.doc, v27: laV27(c.v26) })),
+  (() => {
+    const d = docV18(D, [opV18({ biblioteca: origine27(), regim: regim27(), tais: 22 })], 26);
+    return { nume: 'N27a un v26 cu `biblioteca`, `regim` și `tais` pe operație, nu pe freză', doc: d, v27: laV27(d) };
+  })(),
+  (() => {
+    const d = docV18(D, [vcarve({ fundPlat: fund({ tais: 22, rest: [{ ...rest1(4, 2, 0.8), regim: regim27() }] }) })], 26);
+    return { nume: 'N27b un v26 cu `tais` pe fundul plat și `regim` pe freza lui de rest, nu pe freză', doc: d, v27: laV27(d) };
+  })(),
+  (() => {
+    const d = docV18(D, [vcarve({ incrustatie: incB(banda({ freza: plata(5, 3), biblioteca: origine27() })) })], 26);
+    return { nume: 'N27c un v26 cu `biblioteca` pe bandă, lângă freza ei', doc: d, v27: laV27(d) };
+  })(),
+  (() => {
+    const d = docV18(D, [opV18({ scula: { ...plata(1, 6), origine: { id: 'f1' }, viteze: {} } })], 26);
+    return { nume: 'N27d un v26 cu alte câmpuri necunoscute pe freză (`origine`, `viteze`)', doc: d, v27: laV27(d) };
+  })(),
+];
+
+/** Frontierele v27: originea, valorile și tăișul, pe fiecare loc unde stă o freză (ADR 0300 §5). */
+export const FRONTIERE_V27: readonly FrontieraV18[] = [
+  {
+    cale: 'scula.biblioteca', operatie: opV18({ scula: freza27(1, 6) }), forma: D, categorie: 'scula', adr: 'ADR 0300 §5: opțional, { id, rev }',
+    valori: [[LIPSA, true], [origine27(), true], [origine27({ x: 1 }), true], [null, false], [[], false], ['f1', false], [1, false], [{ id: 'f1' }, false], [{ rev: 1 }, false], [{}, false]],
+  },
+  {
+    cale: 'scula.biblioteca.id', operatie: opV18({ scula: freza27(1, 6) }), forma: D, categorie: 'scula', adr: 'ADR 0300 §5: un id ca al documentului (1–64, A–Z a–z 0–9 _ -)',
+    valori: [['f1', true], ['a'.repeat(64), true], ['_-9', true], ['a'.repeat(65), false], ['', false], ['f 1', false], ['frază', false], [1, false], [null, false], [LIPSA, false]],
+  },
+  {
+    cale: 'scula.biblioteca.rev', operatie: opV18({ scula: freza27(1, 6) }), forma: D, categorie: 'scula', adr: 'ADR 0300 §5: întreg sigur de la 1',
+    valori: [[1, true], [7, true], [Number.MAX_SAFE_INTEGER, true], [0, false], [-1, false], [1.5, false], [Number.MAX_SAFE_INTEGER + 1, false], ['1', false], [LIPSA, false], ...NUMERE_RELE],
+  },
+  {
+    cale: 'scula.regim', operatie: opV18({ scula: freza27(1, 6) }), forma: D, categorie: 'scula', adr: 'ADR 0300 §5: opțional, { turatie, avans, plonjare }, toate cerute',
+    valori: [[LIPSA, true], [regim27(), true], [regim27({ nota: 1 }), true], [null, false], [[], false], [{}, false], [{ turatie: 18_000, avans: 1_000 }, false], [18_000, false]],
+  },
+  {
+    cale: 'scula.regim.turatie', operatie: opV18({ scula: freza27(1, 6) }), forma: D, categorie: 'scula', adr: 'ADR 0300 §5: întreg, 1–100 000 rot/min',
+    valori: [[1, true], [18_000, true], [100_000, true], [0, false], [-1, false], [100_001, false], [18_000.5, false], ['18000', false], [LIPSA, false], ...NUMERE_RELE],
+  },
+  {
+    cale: 'scula.regim.avans', operatie: opV18({ scula: freza27(1, 6) }), forma: D, categorie: 'scula', adr: 'ADR 0300 §5: în (0, 100 000] mm/min',
+    valori: [[0.001, true], [1_000, true], [100_000, true], [0, false], [-1, false], [100_000.001, false], ['1000', false], [LIPSA, false], ...NUMERE_RELE],
+  },
+  {
+    cale: 'scula.regim.plonjare', operatie: opV18({ scula: freza27(1, 6) }), forma: D, categorie: 'scula', adr: 'ADR 0300 §5: în (0, 100 000] mm/min',
+    valori: [[0.001, true], [300, true], [100_000, true], [0, false], [-300, false], [100_001, false], ['300', false], [LIPSA, false], ...NUMERE_RELE],
+  },
+  {
+    cale: 'scula.tais', operatie: opV18({ scula: freza27(1, 6) }), forma: D, categorie: 'scula', adr: 'ADR 0300 §5: opțional, în (0, 1 000] mm',
+    valori: [[LIPSA, true], [0.001, true], [22, true], [1_000, true], [0, false], [-22, false], [1_000.001, false], ['22', false], ...NUMERE_RELE],
+  },
+  {
+    cale: 'rest.0.scula.regim.turatie', operatie: buzunarRest27(), forma: D, categorie: 'rest', adr: 'ADR 0300 §5: pe orice freză (și de rest)',
+    valori: [[24_000, true], [0, false], [100_001, false], [1.5, false], [LIPSA, false]],
+  },
+  {
+    cale: 'rest.0.scula.biblioteca.id', operatie: buzunarRest27(), forma: D, categorie: 'rest', adr: 'ADR 0300 §5: pe orice freză (și de rest)',
+    valori: [['f2', true], ['', false], ['f/2', false], [LIPSA, false]],
+  },
+  {
+    cale: 'fundPlat.scula.tais', operatie: vcarveFund27(), forma: D, categorie: 'fund-plat', adr: 'ADR 0300 §5: pe orice freză (și a fundului plat)',
+    valori: [[LIPSA, true], [12, true], [0, false], [1_001, false], [null, false]],
+  },
+  {
+    cale: 'fundPlat.rest.0.scula.biblioteca.rev', operatie: vcarveFund27(), forma: D, categorie: 'fund-plat', adr: 'ADR 0300 §5: pe orice freză (și de rest a fundului plat)',
+    valori: [[3, true], [0, false], [2.5, false], [LIPSA, false]],
+  },
+  {
+    cale: 'scula.regim.avans', operatie: vcarveFund27(), forma: D, categorie: 'scula', adr: 'ADR 0300 §5: și pe freza în V',
+    valori: [[1_500, true], [0, false], [LIPSA, false]],
+  },
+  {
+    cale: 'incrustatie.frezeDop.0.scula.regim.avans', operatie: incrustatieDreapta27(), forma: D, categorie: 'incrustatie', adr: 'ADR 0300 §5: pe orice freză (și a dopului)',
+    valori: [[800, true], [0, false], ['800', false], [LIPSA, false]],
+  },
+  {
+    cale: 'incrustatie.banda.freza.tais', operatie: incrustatieBanda27(), forma: D, categorie: 'incrustatie', adr: 'ADR 0300 §5: pe orice freză (și a benzii)',
+    valori: [[LIPSA, true], [10, true], [0, false], [-1, false], [true, false]],
+  },
+  {
+    cale: 'incrustatie.banda.freza.regim', operatie: incrustatieBanda27(), forma: D, categorie: 'incrustatie', adr: 'ADR 0300 §5: pe orice freză (și a benzii)',
+    valori: [[LIPSA, true], [regim27(), true], [{ turatie: 18_000 }, false], [null, false]],
+  },
+];
+
+/** Refuzurile v27: cele v26 (versiunea mai nouă e acum v28), plus originea, valorile și tăișul greșite și ciocnirile lor. */
+export const REFUZATE_V27: readonly RefuzV18[] = [
+  ...REFUZATE_V26.filter((r) => !r.nume.startsWith('R01 ')),
+  { nume: 'R01 scris de o versiune mai nouă (v28)', doc: docV(28, opV18({ scula: freza27(1, 6) })), categorie: 'schema', camp: 'schema', motiv: 'ADR 0070 §2: o versiune mai veche refuză una mai nouă', text: 'versiune mai nouă' },
+  { nume: 'RF0 un v26 cu `biblioteca` pe scula operației', doc: docV(26, opV18({ scula: { ...plata(1, 6), biblioteca: origine27() } })), categorie: 'ciocnire', camp: `${opC}.scula.biblioteca`, motiv: 'ADR 0300 §5: câmpul propriu', text: 'nu e un document v26 valid' },
+  { nume: 'RF1 un v26 cu `regim` pe o freză de rest', doc: docV(26, buzunar({ scula: plata(1, 12), rest: [{ ...rest1(2, 3, 1.2), scula: { ...plata(2, 3), regim: regim27() } }] })), categorie: 'ciocnire', camp: `${opC}.rest.0.scula.regim`, motiv: 'ADR 0300 §5: câmpul propriu, pe orice freză', text: 'nu e un document v26 valid' },
+  { nume: 'RF2 un v26 cu `tais` pe freza fundului plat', doc: docV(26, vcarve({ fundPlat: fund({ scula: { ...plata(3, 3.175), tais: 12 } }) })), categorie: 'ciocnire', camp: `${opC}.fundPlat.scula.tais`, motiv: 'ADR 0300 §5: câmpul propriu, pe orice freză', text: 'nu e un document v26 valid' },
+  { nume: 'RF3 un v26 cu `regim` pe freza de rest a fundului plat (chiar null)', doc: docV(26, vcarve({ fundPlat: fund({ rest: [{ scula: { ...plata(4, 2), regim: null }, pasLateral: 0.8 }] }) })), categorie: 'ciocnire', camp: `${opC}.fundPlat.rest.0.scula.regim`, motiv: 'ADR 0300 §5: câmpul propriu, oricare ar fi valoarea', text: 'nu e un document v26 valid' },
+  { nume: 'RF4 un v26 cu `biblioteca` pe o freză a dopului', doc: docV(26, buzunar({ incrustatie: incD({ frezeDop: [{ scula: { ...plata(5, 2), biblioteca: {} }, pasLateral: 0.8 }] }) })), categorie: 'ciocnire', camp: `${opC}.incrustatie.frezeDop.0.scula.biblioteca`, motiv: 'ADR 0300 §5: câmpul propriu, pe orice freză', text: 'nu e un document v26 valid' },
+  { nume: 'RF5 un v26 cu `tais` pe freza benzii', doc: docV(26, vcarve({ incrustatie: incB(banda({ freza: { ...plata(5, 3), tais: 10 } })) })), categorie: 'ciocnire', camp: `${opC}.incrustatie.banda.freza.tais`, motiv: 'ADR 0300 §5: câmpul propriu, pe orice freză', text: 'nu e un document v26 valid' },
+  { nume: 'RF6 un v27 cu valorile fără plonjare', doc: docV(27, opV18({ scula: freza27(1, 6, { regim: { turatie: 18_000, avans: 1_000 } }) })), categorie: 'scula', camp: `${opC}.scula.regim.plonjare`, motiv: 'ADR 0300 §5: toate trei cerute' },
+  { nume: 'RF7 un v27 cu turația zecimală', doc: docV(27, opV18({ scula: freza27(1, 6, { regim: regim27({ turatie: 18_000.5 }) }) })), categorie: 'scula', camp: `${opC}.scula.regim.turatie`, motiv: 'ADR 0300 §5: un întreg' },
+  { nume: 'RF8 un v27 cu originea la versiunea 0', doc: docV(27, opV18({ scula: freza27(1, 6, { biblioteca: origine27({ rev: 0 }) }) })), categorie: 'scula', camp: `${opC}.scula.biblioteca.rev`, motiv: 'ADR 0300 §5: de la 1' },
+  { nume: 'RF9 un v27 cu tăișul negativ pe o freză de rest', doc: docV(27, buzunarRest27({ rest: [{ scula: freza27(2, 3, { tais: -3 }), pasLateral: 1.2 }] })), categorie: 'rest', camp: `${opC}.rest.0.scula.tais`, motiv: 'ADR 0300 §5: în (0, 1 000]' },
+  { nume: 'RF10 un v27 cu avansul ca text pe freza benzii', doc: docV(27, incrustatieBanda27({ incrustatie: incB(banda({ freza: freza27(5, 3, { regim: regim27({ avans: '900' }) }) })) })), categorie: 'incrustatie', camp: `${opC}.incrustatie.banda.freza.regim.avans`, motiv: 'ADR 0300 §5: un număr' },
+  { nume: 'RF11 un v27 cu originea o listă', doc: docV(27, opV18({ scula: freza27(1, 6, { biblioteca: ['f1', 1] }) })), categorie: 'scula', camp: `${opC}.scula.biblioteca`, motiv: 'ADR 0300 §5: un obiect { id, rev }' },
+];
