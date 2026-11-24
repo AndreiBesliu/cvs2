@@ -2,8 +2,9 @@
 
 <!-- Adusă din memoria sesiunii principale pe 23.11.2026 (mutarea în cloud). De aici înainte o ține la zi linia, pe ramura ei, odată cu feliile. -->
 
-_CNCVS2, elicele din Easy 3Draw (ADR 0282, ACCEPTAT 22.11 cu 1a, 2a, 3a): 3.Tq (elicea) unită în `main` pe 23.11 (`0ae9c6c1`, Easy 3Draw 18.19.0); reparația probelor atelierului (`baa00ad`) și 3.Tr (elicea de barcă, 18.20.0) unite în `main` pe 23.11 (`d262e57a`), din sesiunea cloud a liniei; 3.Ts (ventilatorul cu carcasă, 18.22.0) unită în `main` pe 24.11 (`3218781c` în `e14e553a`, lotul al paisprezecelea, de sesiunea principală); toate trei elicele ADR-ului sunt făcute; 3.Tt (înclinarea spre pupa a elicei de barcă, la alegere, 18.23.0) gata pe 24.11,
-pe ramură; cotele LEGO măsurate din LDraw, față de axa piesei_
+_CNCVS2, elicele din Easy 3Draw (ADR 0282, ACCEPTAT 22.11 cu 1a, 2a, 3a): 3.Tq (elicea) unită în `main` pe 23.11 (`0ae9c6c1`, Easy 3Draw 18.19.0); reparația probelor atelierului (`baa00ad`) și 3.Tr (elicea de barcă, 18.20.0) unite în `main` pe 23.11 (`d262e57a`), din sesiunea cloud a liniei; 3.Ts (ventilatorul cu carcasă, 18.22.0) unită în `main` pe 24.11 (`3218781c` în `e14e553a`, lotul al paisprezecelea, de sesiunea principală); toate trei elicele ADR-ului sunt făcute; 3.Tt (înclinarea spre pupa a elicei de barcă, la alegere, 18.23.0)
+unită în `main` pe 24.11 (`ba09a10b` în `d57ca962`, lotul al șaptesprezecelea, de sesiunea principală); versiunea următoare
+a pachetului e 18.24.0; cotele LEGO măsurate din LDraw, față de axa piesei_
 
 ## 3.Tq, gata (23.11, în cloud)
 
@@ -109,6 +110,11 @@ La „continua” al owner-ului, pe ramura liniei, din `main` `883a8caa` (biblio
   nou (`verifica` pe toate listele `3.T*.py`; cele VOID ale lui 3.Ta–3.Tg erau așa și pe `main`).
 
 ## 3.Tt, gata (24.11, în cloud): înclinarea spre pupa a elicei de barcă
+
+_Unită în `main` pe 24.11 de sesiunea principală (`ba09a10b` în `d57ca962`, cu reparația căderii de noapte și cotele
+10.4↑a-1; `extensii/biblioteca.json` s-a unit fără ciocnire peste 3.Xi). Owner-ul a cerut unirea în sesiunea liniei („cand e
+verde fa unirea”); linia i-a scris întâi sesiunii principale, care a luat-o în lot. Completul pe `ba09a10b`: unit
+10 117 / 0, e2e 658 / 658, emulatoarele 126 / 126 și 53 / 53. O felie nouă a liniei pornește la cuvântul owner-ului._
 
 La „pornește înclinarea spre pupa ca opțiune” al owner-ului, pe ramura liniei, după unirea lui 3.Ts (`main` `356db9bd` adus
 în ramură). Pachetul 18.23.0.
