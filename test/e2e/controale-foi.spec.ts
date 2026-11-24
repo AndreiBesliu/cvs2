@@ -217,19 +217,30 @@ test('cu pânza micșorată, rândul nu trece de foaia lui: se strânge în „�
   expect(await r2.locator('[data-meniu-foaie-articol]').evaluateAll((b) => b.map((x) => x.getAttribute('data-meniu-foaie-articol')))).toEqual(ARTICOLE);
   await expect(articol(page, 'f2', 'proprietati')).toBeFocused();
   await expect(r2).toHaveCSS('z-index', '2');
-  // Escape îl strânge la loc, cu focusul înapoi pe „⋯”.
+  // Escape, de pe altă comandă decât prima, îl strânge la loc, cu focusul înapoi pe „⋯” (butonul care îl avea dispare).
+  await articol(page, 'f2', 'aseaza').focus();
   await page.keyboard.press('Escape');
   await expect(r2).toHaveAttribute('data-fel', 'strans');
   await expect(articol(page, 'f2', 'mai-mult')).toBeFocused();
+  // Un clic care nu-i dă focus butonului (ca în Safari): rândul desfăcut își ia tot el focusul pe prima comandă.
+  await page.evaluate(() => { (document.activeElement as HTMLElement | null)?.blur(); });
+  await articol(page, 'f2', 'mai-mult').evaluate((b: HTMLElement) => { b.click(); });
+  await expect(r2.locator('[data-meniu-foaie-articol]')).toHaveCount(7);
+  await expect(articol(page, 'f2', 'proprietati')).toBeFocused();
+  await page.keyboard.press('Escape');
+  await expect(r2).toHaveAttribute('data-fel', 'strans');
   // Desfăcut din nou, mausul plecat de pe rând îl strânge.
   await articol(page, 'f2', 'mai-mult').click();
   await expect(r2.locator('[data-meniu-foaie-articol]')).toHaveCount(7);
   const departe = (await ecran(page, await vedere(page)))(150, 150);
   await page.mouse.move(departe.x, departe.y);
   await expect(r2).toHaveAttribute('data-fel', 'strans');
-  // O comandă din rândul desfăcut merge și îl strânge: „Duplică foaia”.
-  await articol(page, 'f2', 'mai-mult').click();
-  await articol(page, 'f2', 'foaie.duplica').click();
+  // O comandă din rândul desfăcut merge și îl strânge, și de la tastatură, cu mausul departe de rând: „Duplică foaia”.
+  await articol(page, 'f2', 'mai-mult').focus();
+  await page.keyboard.press('Enter');
+  await expect(r2.locator('[data-meniu-foaie-articol]')).toHaveCount(7);
+  await articol(page, 'f2', 'foaie.duplica').focus();
+  await page.keyboard.press('Enter');
   await expect(lista(page).locator('[data-foaie]')).toHaveCount(3);
   await expect(page.locator('[data-controale-foaie][data-peste="da"]')).toHaveCount(0);
 });
@@ -240,10 +251,24 @@ test('rotița de pe rândul unei foi e a pânzei: cu cursorul pe rând, pânza s
   const r = rand(page, 'f1');
   await expect(r).toHaveAttribute('data-vizibil', 'da');
   const inainte = (await vedere(page)).scara;
-  await articol(page, 'f1', 'foaie.duplica').hover();
+  const cutie = await articol(page, 'f1', 'foaie.duplica').boundingBox();
+  if (!cutie) throw new Error('butonul n-are cutie');
+  const cursor = { x: cutie.x + cutie.width / 2, y: cutie.y + cutie.height / 2 };
+  /** Punctul foii (mm) de sub cursor, la vederea de acum. */
+  const subCursor = async (): Promise<{ x: number; y: number }> => {
+    const e = await ecran(page, await vedere(page));
+    const o = e(0, 0), a = e(100, 0), b = e(0, 100);
+    return { x: (cursor.x - o.x) / ((a.x - o.x) / 100), y: (cursor.y - o.y) / ((b.y - o.y) / 100) };
+  };
+  const loc = await subCursor();
+  await page.mouse.move(cursor.x, cursor.y);
   await page.mouse.wheel(0, 240);
   await expect.poll(async () => (await vedere(page)).scara).toBeLessThan(inainte * 0.8);
-  // Punctul de sub cursor rămâne pe loc: rândul e tot sub cursor (zoom-ul e centrat pe el), deci a doua rotiță merge și ea.
+  // Zoom-ul e centrat pe cursor, ca pe pânză: punctul foii de sub el rămâne pe loc (evenimentul dat mai departe își ține locul).
+  const dupaUnu = await subCursor();
+  expect(Math.abs(dupaUnu.x - loc.x)).toBeLessThan(0.5);
+  expect(Math.abs(dupaUnu.y - loc.y)).toBeLessThan(0.5);
+  // Rândul e tot sub cursor, deci a doua rotiță merge și ea.
   const dupa = (await vedere(page)).scara;
   await page.mouse.wheel(0, 240);
   await expect.poll(async () => (await vedere(page)).scara).toBeLessThan(dupa * 0.8);
