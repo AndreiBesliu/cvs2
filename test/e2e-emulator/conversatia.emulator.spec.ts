@@ -79,6 +79,7 @@ async function grupuri(lista: readonly { readonly id: string; readonly mesaj: st
 async function tichet(k: number, d: {
   readonly stare: 'nou' | 'deschis' | 'rezolvat'; readonly fel: 'problema' | 'idee' | 'intrebare'; readonly text: string; readonly ore: number;
   readonly amprente?: readonly string[]; readonly raspunsuri?: readonly { readonly deEmail: string; readonly text: string }[];
+  readonly proiect?: Record<string, unknown>;
 }): Promise<void> {
   const creatLa = new Date(ACUM - d.ore * 3_600_000);
   await scrie(`tichete/${T(k)}`, {
@@ -86,6 +87,7 @@ async function tichet(k: number, d: {
     raspunsuri: (d.raspunsuri ?? []).map((r) => ({ de: 'om0', deEmail: r.deEmail, text: r.text, la: new Date(creatLa.getTime() + 600_000) })),
     rezolvatLa: d.stare === 'rezolvat' ? new Date(ACUM - ZI) : null, versiune: 1, amprente: d.amprente ?? [], necititeAutor: 0,
     ultimulRaspunsLa: null, aplicatia: { versiune: 'b-proba', instanta: 'local', limba: 'ro', browser: 'Edge', plan: 'gratuit' },
+    ...(d.proiect ? { proiect: d.proiect } : {}),
   });
 }
 
@@ -269,4 +271,67 @@ test('un rol care doar citește tichetele: conversația, fără câmp și fără
   await expect(detaliu.locator('[data-tic="doar-citire"]')).toBeVisible();
   await expect(detaliu.locator('[data-tic="formular-raspuns"]')).toHaveCount(0);
   await expect(detaliu.locator('[data-tic="rezolva"]')).toHaveCount(0);
+});
+
+test('pe telefon (ADR 0260 §10, A.7): bara de jos cu Azi, Erori, Tichete și Mai mult; sertarul filelor; un tichet se citește și primește răspuns; proiectul, doar pe calculator', async ({ page }) => {
+  await tichet(5, {
+    stare: 'nou', fel: 'problema', text: 'Proiectul meu nu se deschide', ore: 1,
+    proiect: { marime: 2_000, comprimat: 900, sha256: 'a'.repeat(64), schema: 26 },
+  });
+  await page.setViewportSize({ width: 390, height: 844 });
+  await intraCuRolul(page, 'owner');
+  const jos = page.locator('[data-admin="jos"]');
+  const sertar = page.locator('[data-admin="bara"]');
+  const meniu = page.locator('[data-admin="meniu-file"]');
+  const iese = (): Promise<unknown[]> => page.evaluate(() => {
+    const afara = [...document.querySelectorAll('body *')].filter((el) => el.getBoundingClientRect().right > window.innerWidth + 0.5);
+    return [document.documentElement.scrollWidth - window.innerWidth, ...afara.slice(0, 5).map((el) => `${el.tagName}.${el.className}`)];
+  });
+  await expect(jos).toBeVisible(PORNIRE);
+  await expect(jos.locator('[data-jos]')).toHaveText(['Azi', /^Erori/, /^Tichete/, 'Mai mult']);
+  await expect(jos.locator('[data-jos="azi"]')).toHaveAttribute('aria-current', 'page');
+  // Numele stă la mijlocul locului lui (și fără număr, ca la Azi).
+  const azi = await jos.locator('[data-jos="azi"]').boundingBox();
+  const nume = await jos.locator('[data-jos="azi"] .admin-bara-nume').boundingBox();
+  expect(azi && nume && Math.abs(nume.x + nume.width / 2 - (azi.x + azi.width / 2)) < 2).toBe(true);
+  await expect(sertar).toBeHidden();
+  await expect.poll(iese).toEqual([0]);
+  // ☰ deschide sertarul cu toate filele; o filă aleasă îl închide.
+  await meniu.click();
+  await expect(meniu).toHaveAttribute('aria-expanded', 'true');
+  await expect(sertar).toBeVisible();
+  await expect.poll(iese).toEqual([0]);
+  await bara(page, 'diagnoza').click();
+  await expect(sertar).toBeHidden();
+  await expect(meniu).toHaveAttribute('aria-expanded', 'false');
+  await expect(page.locator('[data-admin="bara"] [data-fila="diagnoza"]')).toHaveAttribute('aria-current', 'page');
+  // „Mai mult” deschide același sertar; Escape îl închide.
+  await jos.locator('[data-jos="mai-mult"]').click();
+  await expect(sertar).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(sertar).toBeHidden();
+  // Tichetele din bara de jos: tichetul ales, citit și cu răspunsul trimis; proiectul se descarcă doar de pe calculator.
+  await jos.locator('[data-jos="tichete"]').click();
+  await expect(jos.locator('[data-jos="tichete"]')).toHaveAttribute('aria-current', 'page');
+  await page.locator(`[data-tichet="${T(5)}"] button`).click();
+  const detaliu = page.locator('[data-tic="detaliu"]');
+  await expect(detaliu.locator('[data-tic="text"]')).toHaveText('Proiectul meu nu se deschide', LENT);
+  await expect(detaliu.locator('[data-tic="descarca-proiect"]')).toBeHidden();
+  await expect(detaliu.locator('[data-tic="proiect-calculator"]')).toHaveText('Proiectul atașat (2 kB) se descarcă de pe calculator.');
+  await detaliu.locator('[data-tic="raspuns-text"]').fill('Îl deschidem pe calculator și revenim.');
+  await detaliu.locator('[data-tic="trimite"]').click();
+  await expect(detaliu.locator('[data-tic="raspuns"]')).toContainText('Îl deschidem pe calculator și revenim.', LENT);
+  // Bara de jos nu acoperă butonul trimiterii (conținutul are loc dedesubt).
+  await detaliu.locator('[data-tic="trimite"]').scrollIntoViewIfNeeded();
+  const b = await detaliu.locator('[data-tic="trimite"]').boundingBox();
+  const j = await jos.boundingBox();
+  expect(b && j && b.y + b.height <= j.y).toBe(true);
+  await expect.poll(iese).toEqual([0]);
+  // Pe calculator: fără bara de jos și fără ☰; bara laterală la locul ei, iar proiectul se descarcă.
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await expect(jos).toBeHidden();
+  await expect(meniu).toBeHidden();
+  await expect(sertar).toBeVisible();
+  await expect(detaliu.locator('[data-tic="descarca-proiect"]')).toBeVisible();
+  await expect(detaliu.locator('[data-tic="proiect-calculator"]')).toBeHidden();
 });
