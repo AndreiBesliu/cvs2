@@ -3929,6 +3929,10 @@
       "ro": "**Importul și exportul cu vectori reali**; reparațiile cavalier",
       "en": "**Import and export with real vectors**; the cavalier fixes"
     },
+    "fd02174d3029dfc6": {
+      "ro": "Plafonul pornirii, 115 → 120 kB",
+      "en": "The startup cap, 115 → 120 kB"
+    },
     "fd187f6e7097a463": {
       "ro": "Extensia e „pornită” abia după ce pagina ei e gata",
       "en": "The extension is “started” only once its page is ready"
