@@ -643,7 +643,7 @@
     },
     "272dfeeddd72dcfa": {
       "ro": "**Utilizarea aplicației: sesiunea raportării** (felia A.11d din ADR 0262; fără mașină; a șaptesprezecea felie a liniei adminului, `3.Aq` în fișă; aceeași ramură, `wip/A.1-admin`, peste A.11c, încă neunită; lucrată într-o sesiune cloud). O raportare ține acum numărul sesiunii de lucru din care a pornit (doar numărul, spus în „Ce mai pleacă odată cu raportarea”), iar în `/admin`, fila Tichete, cine are „Utilizare: sesiuni” vede **Sesiunea raportării**: ce a făcut omul în sesiunea aceea, la cerere, cu pașii ei, ca Activitatea din Utilizatori, doar pentru sesiunea aceea. Serverul ține numărul doar cu forma lui; cronologia pe o sesiune intră în audit, cu sesiunea. **La unire se publică și:** funcțiile `tichete` și `utilizare` și al doilea index compus pe loturi (contul, sesiunea, ora primirii). **Probele:** cazurile noi din citirea tichetului și din server (sesiunea ținută sau aruncată, cronologia pe o sesiune); proba cap-coadă pe emulatoare: raportarea pleacă cu sesiunea, iar fila Tichete o arată fără lotul altei sesiuni a aceluiași om. **Otrăvurile:** 11 / 11 (2 unitare, 4 ale serverului, 5 pe emulatoare); T01 (o sesiune cu altă formă citită ca bună) a scăpat întâi și e prinsă după proba îndreptată. **Mărimea:** pornirea neschimbată (109,6 / 115); totalul 800,4 → 800,6 / 900; `/admin` 136,9 → 137,1 / 200; contul 30,1 / 32.",
-      "en": ""
+      "en": "**App usage: the report's session** (slice A.11d of ADR 0262; no machine; the seventeenth slice of the admin line, `3.Aq` in the sheet; same branch, `wip/A.1-admin`, on top of A.11c, not merged yet; worked in a cloud session). A report now keeps the number of the work session it came from (only the number, stated in “What else goes with the report”), and in `/admin`, the Tickets tab, whoever has “Usage: sessions” sees **The report's session**: what the person did in that session, on demand, with its steps, like the Activity in Users, only for that session. The server keeps the number only in its form; the timeline of a session goes into the audit, with the session. **On merge, also published:** the `tichete` and `utilizare` functions and the second composite index on the batches (the account, the session, the time received). **Tests:** the new cases in reading the ticket and on the server (the session kept or dropped, the timeline of a session); the end-to-end test on the emulators: the report goes with the session, and the Tickets tab shows it without the batch of another session of the same person. **Poisons:** 11 / 11 (2 unit, 4 of the server, 5 on the emulators); T01 (a session of another form read as good) escaped at first and is caught after the corrected test. **Size:** startup unchanged (109.6 / 115); total 800.4 → 800.6 / 900; `/admin` 136.9 → 137.1 / 200; the account 30.1 / 32."
     },
     "27578d1a54a1df39": {
       "ro": "Fluxul senderului, ca mașină de stare pură",
@@ -3327,7 +3327,7 @@
     },
     "d7dab78151d6b1f9": {
       "ro": "Utilizarea aplicației: sesiunea raportării",
-      "en": ""
+      "en": "App usage: the report's session"
     },
     "d7f544591d209f6b": {
       "ro": "**Gata pe 09.11.** Placa și stratul viu (ADR 0193): în fereastra Imprimanta, cât imprimă, patul văzut de sus cu piesele, duza și stratul de acum (căile lui, pe fișierele trimise din cvs2, ținute în browser; stratul din filamentul folosit); imprimanta falsă „imprimă” fișierul primit",

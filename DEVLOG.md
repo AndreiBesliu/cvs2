@@ -12388,7 +12388,7 @@ admin cat mai multe setari”).
   800,6 / 900, `/admin` 137,1 / 200.
 - **Între timp:** completul pe `cd00283b` (A.11b) verde.
 - **Documentele:** ADR 0262 (implementarea), fișa etapei 3 (`3.Aq`), registrul otrăvurilor, traducerile, nota liniei.
-  **Completed:** 24.11 09:30.
+  **Completed:** 24.11 09:15.
 
 ## 2026-11-23 — Sesiunea principală în cloud: a șasea unire (A.6, Roadmap, Documentație și Setări); linia frezelor, pornită (Model: Claude Fable 5.2)
 
