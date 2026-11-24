@@ -211,13 +211,16 @@ test('două brațe la mai puțin de 90° nu se pot: al doilea e lăsat afară ș
   const q = unghi([[0, 'q'], [180, 'x']], 'q'), d = (RG - 0.15) / Math.SQRT2;
   assert.equal(plin(q, loc(q, 0, 8, AXL / 2 + 0.4, AXL / 2 + 0.4)), true, 'fel necunoscut: cruce');
   assert.equal(plin(q, dinMotor(q, [d, d, M])), false, 'butuc necunoscut: gaură rotundă');
-  // o listă goală sau stricată dă piesa implicită
-  for (const rea of [[], 'x', null, [[Number.NaN, 'x']]]) {
+  // o listă goală sau stricată (și un unghi care nu e număr) dă piesa implicită, întreagă
+  const implicita = amprentaPlasei(L.construieste({ tip: 'conectorUnghi' }));
+  for (const rea of [[], 'x', null, [[Number.NaN, 'x']], [['a', 'x']], [[Number.POSITIVE_INFINITY, 'r']], [7]]) {
     const pr = L.construieste({ tip: 'conectorUnghi', mansoane: rea });
-    assert.ok(pr.tri.length > 0);
     inchisa(pr, JSON.stringify(rea));
+    assert.deepEqual(cote(pr), cutie([0, 135]), JSON.stringify(rea));
+    assert.equal(amprentaPlasei(pr), implicita, JSON.stringify(rea));
   }
-  assert.deepEqual(cote(L.construieste({ tip: 'conectorUnghi', mansoane: [] })), cutie([0, 135]));
+  // un unghi stricat printre cele bune e sărit, restul rămân
+  assert.deepEqual(cote(unghi([[0, 'x'], [Number.NaN, 'x'], [180, 'x']])), cutie([0, 180]));
 });
 
 test('la exact 90°, manșoanele vecine rămân libere, iar brațele nu astupă gaura butucului', () => {

@@ -89,10 +89,13 @@ test('știftul cu bucșă: capătul scurt e o bucșă plină de un pas; partea d
     assert.equal(plin(p, dinMotor(p, [Lx - 1, 0, 0.1])), true, `${ce}: bucșa, deasupra mesei`);
     assert.equal(plin(p, dinMotor(p, [Lx - 1, 0, -0.1])), false, `${ce}: sub masă`);
     assert.equal(r3(p.baza[2]!), 0, `${ce}: nimic sub masă`);
-    // capătul de știft își ține fanta (golul de pe axă), doar dacă e cerută
-    assert.equal(la(1, 0, 0), !fanta, `${ce}: fanta de la capătul de știft`);
-    assert.equal(la(1, RS - 0.5, 0), true, `${ce}: lângă fantă`);
-    assert.equal(la(6, 0, 0), true, `${ce}: miezul știftului, după fantă`);
+    // capătul de știft își ține fanta (golul de pe axă, lung de 5 mm), doar dacă e cerută; lemnul de lângă ea e neîntrerupt
+    // până în corp
+    for (const x of [0.3, 1, 2.5, 4, 4.8]) {
+      assert.equal(la(x, 0, 0), !fanta, `${ce}: fanta de la capătul de știft, x ${x}`);
+      for (const g of [0, 180]) assert.equal(la(x, RS - 0.5, g), true, `${ce}: lângă fantă, x ${x}, ${g}°`);
+    }
+    for (const x of [5.2, 6, x0 - 0.5]) assert.equal(la(x, 0, 0), true, `${ce}: miezul știftului, după fantă, x ${x.toFixed(1)}`);
   }
 });
 
