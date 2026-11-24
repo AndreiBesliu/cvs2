@@ -12890,3 +12890,23 @@ o schiță publicată (o pagină cu machetele și cu întrebările pentru owner,
   owner: colecția goală la citire; scrierea unui vizitator obișnuit (`as_level: interact`) refuzată. Verificat o dată
   în Chromium: fără erori, fără derulare laterală la 1200 și la 390 px.
 - **Nota liniei** la zi. Fără cod de produs; porțile CI pe commit (doar documente).
+
+## 2026-11-24 — Linia reliefului: felia 18.1↑a, relieful din imagine pe planșă (documentul v28) (sesiune cloud)
+
+**Prompt:** „am raspuns” (formularul schiței: 1a, 2a, 3a, 4a, 5a, 6a), apoi brief-ul liniei: „Corectitudinea se
+demonstrează: proba înaintea funcției, oracol independent, valori pe hârtie, otrăvuri.” **Started:** 24.11, 12:55.
+**Completed:** 24.11, 15:40.
+
+- **Oracolul întâi** (`test/oracles/relief.ts`, `relief.cazuri.ts`; 5a), din ADR 0311 (contractul exact al nucleului,
+  scris înaintea codului): imaginea → relief, dala, harta, compunerea, cu amprentele din Python și controalele negative.
+- **Nucleul** `src/relief/` (grila, imaginea, dala, harta, compunerea, stratul, umbrirea), plasa pe sursă a determinismului,
+  regula `relief-doar-model-geom` cu capcana ei.
+- **Documentul v28** (nu v29: cotele erau pe v27; anunțată sesiunea principală): forma `relief`, ușa, migrarea v27 → v28 cu
+  ciocnirea, `FormaContur` / `esteContur` / `chenarElement` în uneltele vectorilor; oracolul documentului și corpusul de aur
+  la v28; probele care țin versiunea, pe 28 („mai nouă” = 29).
+- **Workerul reliefului**, baza `cncvs2-relief`, alegerea Vectori / Relief, fereastra reliefului, desenul umbrit (stratul
+  imaginilor al pânzei, adus la cerere), panoul, manualul. Pixelii exacți printr-o textură WebGL2 (pânza 2D rotunjea pixelii
+  semitransparenți: amprenta logoului diferea de Node; otrava C05 o arată).
+- **Mărimea:** pornirea +0,5 kB (cu ușa +0,9, peste ținta de +0,6 a liniei cu 0,3), totalul +12,7 kB (818,9 / 900).
+- **Probele:** unitare (relieful, documentul v28, integrarea), e2e `relief.spec.ts` (amprenta Node = browser, pixelii pânzei),
+  manualul (42 de capitole); otrăvurile 43 / 43 (`test/otravuri/18.1a.py`).

@@ -278,6 +278,58 @@ linia frezelor, a cărei e modelul frezei (`src/model/freza.ts`, `sculaDinFreza`
 - **Oracolul documentului și corpusul de aur:** bila acceptată de la v29 și refuzată înainte, în `problemeOperatieO`, cu
   frontiera pe hârtie; în `ADAUGIRI`, o bilă pe o operație de relief.
 
+## Implementarea (18.1↑a)
+
+Gata pe 24.11, pe ramura `wip/18.1-relief` (de la `41233474`), în sesiunea cloud a liniei, după răspunsurile 1a–6a.
+
+**Numărul schemei: v28, nu v29.** Sesiunea principală a fixat numărul la commit-ul migrării (§1): linia cotelor
+(`wip/10.4-cote`) era tot pe v27 și nu cerea un câmp nou, iar un v29 nu poate exista fără un v28. Relieful a luat v28
+(anunțată sesiunea principală); un câmp nou al cotelor ia v29. Unde scrie mai sus „v29”, e v28.
+
+Ce s-a făcut, în ordinea commit-urilor:
+- **Oracolul întâi** (5a), `test/oracles/relief.ts`, fără importuri din `src/`, cu valorile pe hârtie și amprentele din
+  Python, din contractul exact al nucleului (ADR 0311), plus controalele negative ale lui §8.
+- **Nucleul** (`src/relief/`: grila, imaginea → relief cu netezirea binomială, dala cu cuantizarea și octeții, harta,
+  compunerea, stratul, umbrirea pentru desen), doar cu + − × ÷ √ min max (plasa pe sursă), cu regula de import
+  `relief-doar-model-geom`.
+- **Documentul v28:** forma `relief` a elementului (§1), în tipuri, în ușă (grila, celula, straturile cu id-uri unice,
+  similitudinea matricei compuse, refuzul unei operații 2D pe relief) și în migrarea v27 → v28 (doar numărul; un v27 care
+  are deja o formă `relief` e refuzat, nu migrat). Oracolul documentului și corpusul de aur, la v28. **Conturul exact rămâne
+  doar al formelor cu contur** (`FormaContur`, `esteContur`): cutia, clicul, alinierea și mânerele folosesc `chenarElement`
+  (dreptunghiul grilei); uneltele vectorilor refuză relieful cu motivul lor (booleanul, tăierea, rețeaua pe curbă), iar
+  transformările păstrează celula pătrată (scalarea uniformă schimbă celula; neuniformă și înclinarea, `relief-neuniform`).
+- **Workerul reliefului** (`src/jobs/lucratorRelief.ts`, `bazinRelief.ts`, `calculRelief.ts`): imaginea → stratul și
+  desenul unui relief din dalele lui. **Pixelii se citesc printr-o textură WebGL2** încărcată fără premultiplicare și fără
+  conversie de culoare: pânza 2D ține alfa premultiplicat, deci un pixel semitransparent s-ar fi întors rotunjit. Nu e un
+  calcul pe placa video (ADR 0011), doar despachetarea pixelilor; fără WebGL2, pânza 2D (exactă pe pixelii opaci). Poarta:
+  harta făcută în browser din logoul cu margini semitransparente e cea făcută în Node, octet cu octet (e2e); pe pânza 2D,
+  alta (otrava C05).
+- **Baza `cncvs2-relief`** (`src/app/reliefStocare.ts`): dalele și hărțile după amprentă, curățarea la pornire ca la
+  imagini (indexul orei, ca dalele să nu se citească).
+- **Fereastra:** sus, alegerea **Vectori / Relief** (ținută cât stă pagina); fereastra reliefului (sursa, sensul, înălțimea
+  și baza, lățimea, netezirea; relieful umbrit și Z-ul, din dalele cuantizate). „Importă” păstrează întâi stratul, apoi pune
+  piesa prin `document.importa` (un element `relief`, un strat „adună”, fără operații).
+- **Desenul pe planșă trece prin stratul imaginilor al pânzei** (ADR 0272 §8), nu prin stratul WebGL2 (§7 spunea WebGL2):
+  imaginea umbrită (cel mult 2048 pe latură, media pe blocuri) ajunge workerului pânzei ca pixeli, cu oglindirea și mutarea
+  cu selecția, peste imaginile foii, sub vectori. E mai puțin cod și același loc în desen; WebGL2 vine cu vederea 3D (18.1↑b).
+  Desenul e adus la cerere (`ReliefuriFoii.tsx`) doar când foaia are un relief; în pornire stă doar verificarea (`areRelief`).
+- **Panoul:** secțiunea Relieful (mărimea, celula, celulele, înălțimile compusului, straturile), doar de citit.
+- **Manualul:** capitolul „Relieful din imagine” (ro, en), legat din capitolul importului.
+
+**Mărimea**, pe build-ul determinist, față de baza ramurii: pornirea 109,9 → 110,4 kB (+0,5), cu ușa 114,4 → 115,3 (+0,9;
+validatorul formei, +0,3), cu Atelierul 114,7 → 115,6 / 120; totalul 806,2 → 818,9 / 900 kB (+12,7: workerul reliefului
+9,2 kB nearhivat, fereastra, desenul, baza). Ținta din §9 era +0,6 kB în pornire pe toată linia: pornirea singură e sub ea,
+cu ușa o trece cu 0,3 kB.
+
+**Probele:** `relief.oracol` (11), `relief.nucleu` (13), `relief.determinism`, `relief.umbrire` (5), `relief.calcul` (8),
+`relief.import` (2), `relief.stocare` (4), `relief.desen` (5), `relief.integrare` (5), `document.v28.oracol` (8), corpusul de
+aur la v28; e2e `relief.spec.ts` (3), cu pixelii pânzei. Otrăvurile: `test/otravuri/18.1a.py`, 43 / 43.
+
+**Rămase pentru feliile următoare** (din §7): „Culorile înălțimii” în Vedere, „Relief din imagine…” din rândul unei imagini
+de pe foaie și din paletă (`relief.din-imagine`), imaginea păstrată pe foaie sub relief, „Ca strat al reliefului ales”
+(18.1↑e), straturile editabile în panou (18.1↑e), resamplarea la o celulă aleasă (cu alinierea, 18.1↑c), TIFF-ul și PNG-ul
+pe 16 biți (18.1↑g). Oglindirea desenului în pânză nu are o probă e2e (așezarea oglindită e judecată în `relief.desen`).
+
 ## Întrebările (recomandarea întâi; răspunsurile owner-ului: 1a, 2a, 3a, 4a, 5a, 6a)
 
 1. **Unde stă relieful.**

@@ -56,7 +56,7 @@ Sursa: **S** = ArtCAM · **D** = DeskProto · **S+D** = amândouă · **peste pr
 ## C. Modelare de relief 2.5D / 3D
 | Capabilitate | Sursă | Etapă | Stare | Commit |
 |---|---|---|---|---|
-| Relief din imagine (gri → înălțime) | S+D | v1 | de făcut | — |
+| Relief din imagine (gri → înălțime) | S+D | v1 | în lucru | — |
 | Alinierea pixelilor imaginii cu grila de calcul (fără „riduri” moiré) | D | v1 | de făcut | — |
 | Litofanie (relief din fotografie, pentru lumină) | D | v1 (decis 06.10; era v1.x) | de făcut | — |
 | Editor de forme: din vector → cupolă, rotunjit, unghi, plan; înălțime, unghi, limită; Zero / Zero Rest | S | v1 (decis 06.10; era v1.x) | de făcut | — |
