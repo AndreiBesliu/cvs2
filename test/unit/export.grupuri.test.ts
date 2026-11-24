@@ -9,7 +9,8 @@ import {
   GRUP_CAMP, GRUP_VERDICT, GRUPURI_FOAIE, GRUPURI_MASINA, grupuriGresite, grupuriOperatie, verdicteGresite, type FelFisa, type VerdictRand,
 } from '../../src/ui/exportGrupuri.ts';
 
-const SURSA = readFileSync(new URL('../../src/ui/DialogExport.tsx', import.meta.url), 'utf8');
+// Câmpurile stau în fereastră (foaia, mașina) și în fișa operației, scoasă într-o componentă a ei (28.8↑f-3).
+const SURSA = ['DialogExport.tsx', 'FisaOperatie.tsx'].map((f) => readFileSync(new URL(`../../src/ui/${f}`, import.meta.url), 'utf8')).join('\n');
 
 /**
  * Câmpurile ferestrei, din sursă: `data-camp="x"` (și pe cartonașe, din 28.8↑b-2, scris tot așa, pentru catalogul controalelor)
