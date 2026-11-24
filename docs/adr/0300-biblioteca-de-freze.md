@@ -459,6 +459,30 @@ cu valorile implicite ale aplicației); nimic pe server, documentul rămâne v27
 - **Mărimea:** pornirea neschimbată (109,9 kB; cu ușa 114,5 / 120), totalul +0,5 kB: 816,6 / 900 pe ramură, cu 16.A↑b-2, față
   de 814,4 în `main` (`fdce5f1b`).
 
+## Implementarea (16.A↑b-3)
+
+Pe 24.11.2026, în sesiunea cloud a liniei, la „continua cu 16.A↑b-3” al owner-ului și la răspunsul lui „Pe #11, acum”: pe
+fereastra exportului refăcută (ADR 0290, PR-ul `AndreiBesliu/cvs2#11`, neunită), pe o ramură nouă, `wip/16.A-freze-b3` (din
+`wip/16.A-freze` cu `wip/28.8-export` adusă), unită doar după #11 sau odată cu ea. Felia 16.A↑b-3 e freza
+operației; frezele în plus ale rândului (fundul plat, frezele de rest, dopul, banda) au ieșit în felia nouă **16.A↑b-5**.
+
+- **Lista „Din frezele mele”**, prima în grupul Freza al fișei, cât biblioteca proiectului are freze (aceeași cu a secțiunii
+  Tăierea, acum în `src/app/bibliotecaProiect.ts`): frezele care merg pe tăietura rândului (`frezePotrivite`, după felul și
+  latura lui), date ferestrei de aplicație (`src/ui` nu importă modelul), cu „Scrisă de mână” deasupra.
+- **Aleasă**, rândul primește T-ul, Ø-ul, forma (unghiul, vârful), pasul pe trecere și, la buzunar, pasul lateral (procentul
+  frezei, în jos la 0,001 mm, ca în Tăierea). **T-ul** urmează regula rolurilor (ADR 0114 §5), printre frezele ferestrei, fără
+  freza de până atunci a rândului (`numarPentruRand`): al bibliotecii, cât nicio altă freză nu-l are (sau doar freze identice);
+  altfel al unei freze identice (aceeași formă, același Ø, aceeași turație unde e știută); altfel cel mai mic liber.
+- **Originea pe rând** (`origineScula`): citită din document (numele, id-ul și versiunea, valorile de lucru, tăișul) sau aleasă
+  în listă. Un Ø, o formă, un unghi sau un vârf schimbate de mână o scot („Scrisă de mână”); T-ul schimbat de mână o păstrează.
+- **Exportă** (`sculaScrisa`, `src/app/valoriOperatii.ts`) primește pe freză câmpul `origine`: un obiect scrie numele, originea,
+  valorile de lucru și tăișul frezei (cele pe care ea nu le are pleacă); `null` scoate originea, valorile și tăișul, cu numele
+  după formă; lipsa câmpului (un apelant fără rând) lasă freza cum era. Un Exportă fără nicio schimbare scrie aceeași operație,
+  la octet.
+
+Documentul rămâne v27; nimic pe server. Probele (întâi): scrierea originii și regula T, pe hârtie (unitare); lista în Edge
+(`test/e2e/exportFreze.spec.ts`). Otrăvurile: `test/otravuri/16.A-b3a.py`.
+
 ## Se redeschide dacă
 
 - owner-ul vrea o bibliotecă comună mai multor conturi ale aceluiași atelier, sau cataloagele publice ale producătorilor;

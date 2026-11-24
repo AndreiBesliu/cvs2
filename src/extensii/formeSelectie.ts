@@ -7,7 +7,7 @@
 import type { ConturCvs2, FormeCvs2 } from '../../extensii/api.ts';
 import { cerculArcului, numarSegmente, segment, type Contur, type Punct } from '../geom/conturBaza.ts';
 import type { Document } from '../model/document.ts';
-import { conturElement } from '../model/forme.ts';
+import { conturElement, esteContur } from '../model/forme.ts';
 import { elementeFoaie } from '../model/lume.ts';
 
 /** Cât se poate depărta un segment al aproximării de forma exactă, în mm. */
@@ -67,7 +67,8 @@ export function formeSelectie(doc: Document, selectie: readonly string[], indexF
   const contururi: ConturCvs2[] = [];
   let puncte = 0, x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
   for (const e of elementeFoaie(doc, indexFoaie)) {
-    if (!alese.has(e.instanta)) continue;
+    // Relieful (ADR 0310) nu e un contur: nu pleacă spre extensie.
+    if (!alese.has(e.instanta) || !esteContur(e)) continue;
     const c = conturElement(e);
     const p = puncteContur(c);
     if (p.length < 2) continue;

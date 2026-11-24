@@ -41,7 +41,7 @@ import { copiiRetea, punctulCopiei, type Retea } from '../model/retea.ts';
 import { copiiPeCurba, parcurgere, pozitiePeCurba } from '../model/curba.ts';
 import { distantaLaContur } from '../geom/distanta.ts';
 import type { Contur } from '../geom/conturBaza.ts';
-import { conturElement } from '../model/forme.ts';
+import { conturElement, esteContur } from '../model/forme.ts';
 import { elementeFoaie } from '../model/lume.ts';
 import {
   adaugaNod, arceInCubice, caleDinForma, caleDinNoduri, manereAfisate, manereNod, mutaManer, mutaNod, schimbaTipNod, stergeNod, tipNod, type FormaCale, type NodCuManere, type ParteNod,
@@ -1289,7 +1289,7 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
       let curba: { contur: Contur; d: number } | null = null;
       for (const e of elementeFoaie(s.doc, s.indexFoaie)) {
         const pe = piese.get(e.piesa);
-        if (!pe || blocText(pe.radacina)) continue;
+        if (!pe || blocText(pe.radacina) || !esteContur(e)) continue;
         const c = conturElement(e);
         const d = distantaLaContur({ x, y }, c);
         if (d <= tol && (!curba || d < curba.d)) curba = { contur: c, d };

@@ -7,7 +7,7 @@
 import { cerculArcului, numarSegmente, segment, type Contur, type Punct } from '../geom/conturBaza.ts';
 import { CUTIE_GOALA, uneste, type Cutie } from '../geom/cutie.ts';
 import type { Document, Instanta } from './document.ts';
-import { conturElement, cutieElement } from './forme.ts';
+import { chenarElement, conturElement, cutieElement, esteContur } from './forme.ts';
 import { elementeFoaie } from './lume.ts';
 import type { CopieRetea, PozitieCurba } from './retea.ts';
 
@@ -15,7 +15,8 @@ import type { CopieRetea, PozitieCurba } from './retea.ts';
 export type LocPeCurba = { readonly p: Punct; readonly unghi: number };
 
 /** De ce copierea pe curbă nu se poate face: curba lipsă, compusă (mai multe contururi), prea scurtă, sau nimic de copiat. */
-export type MotivCurba = 'curba' | 'curba-compusa' | 'curba-scurta' | 'fara-forme';
+/** `curba-relief`: curba aleasă e un relief (ADR 0310), nu un contur. */
+export type MotivCurba = 'curba' | 'curba-compusa' | 'curba-relief' | 'curba-scurta' | 'fara-forme';
 
 /** Sub atâta (mm), curba nu are lungime. */
 const LUNGIME_MINIMA = 1e-6;
@@ -257,17 +258,20 @@ export function copiiPeCurba(
   if (!foaie || !selectie.includes(r.curba) || !foaie.instante.some((i) => i.id === r.curba)) return 'curba';
   const elemente = elementeFoaie(doc, indexFoaie);
   const deCurba = elemente.filter((e) => e.instanta === r.curba);
-  if (deCurba.length !== 1) return 'curba-compusa';
+  const curba = deCurba[0];
+  if (deCurba.length !== 1 || !curba) return 'curba-compusa';
+  if (!esteContur(curba)) return 'curba-relief';
   const forme = new Set(selectie.filter((id) => id !== r.curba));
   const instante = foaie.instante.filter((i) => forme.has(i.id));
   if (instante.length === 0) return 'fara-forme';
-  const locuri = locuriPeCurba(conturElement(deCurba[0]!), r.numar);
+  const locuri = locuriPeCurba(conturElement(curba), r.numar);
   if (locuri.length === 0) return 'curba-scurta';
   const alese = elemente.filter((e) => forme.has(e.instanta));
   const cutie = alese.map((e) => cutieElement(e)).reduce(uneste, CUTIE_GOALA);
   const b = { x: (cutie.minX + cutie.maxX) / 2, y: (cutie.minY + cutie.maxY) / 2 };
   const pozitie = r.pozitie ?? 'centru', distanta = r.distanta ?? 0;
-  const contururi = pozitie === 'centru' ? [] : alese.map((e) => conturElement(e));
+  // Un relief (ADR 0310) se ține departe de curbă după chenarul lui.
+  const contururi = pozitie === 'centru' ? [] : alese.map((e) => chenarElement(e));
   const copii = locuri.map((l) => {
     const unghi = r.roteste ? l.unghi : 0;
     const u = (l.unghi * Math.PI) / 180, n = { x: -Math.sin(u), y: Math.cos(u) };

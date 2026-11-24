@@ -1,7 +1,7 @@
 import { CUTIE_GOALA, uneste, type Cutie } from '../geom/cutie.ts';
 import type { Contur } from '../geom/contur.ts';
 import type { Document, Instanta, Piesa } from '../model/document.ts';
-import { conturElement, cutieElement } from '../model/forme.ts';
+import { conturElement, cutieElement, esteContur } from '../model/forme.ts';
 import { elementeInstanta, matriceInstanta } from '../model/lume.ts';
 import { jocNumar, locNumar } from '../model/numarPanou.ts';
 import type { RezultatTaiere } from '../model/taiere.ts';
@@ -24,7 +24,7 @@ type Ok = Extract<RezultatTaiere, { ok: true }>;
 /** Contururile unei bucăți, în lume (o formă care nu se poate citi nu dă nimic: locul se caută pe celelalte). */
 function contururi(b: Bucata): Contur[] {
   try {
-    return elementeInstanta(b.piesa.radacina, b.instanta, matriceInstanta(b.instanta)).map((e) => conturElement(e));
+    return elementeInstanta(b.piesa.radacina, b.instanta, matriceInstanta(b.instanta)).filter(esteContur).map((e) => conturElement(e));
   } catch {
     return [];
   }

@@ -13,7 +13,7 @@ import { calculeazaExportul, calculeazaTraseul } from '../../src/jobs/calculCam.
 import type { ParametriExport } from '../../src/jobs/protocolCam.ts';
 import type { Document } from '../../src/model/document.ts';
 import { doarFoaia } from '../../src/model/foi.ts';
-import { conturElement } from '../../src/model/forme.ts';
+import { chenarElement } from '../../src/model/forme.ts';
 import { incarca } from '../../src/model/incarcare.ts';
 import { elementeFoaie } from '../../src/model/lume.ts';
 import { raportFoi } from '../../src/model/raportFoi.ts';
@@ -29,7 +29,7 @@ function coteFoaie(doc: Document, k: number): Rec[] {
   const el = elementeFoaie(doc, k);
   const leg = (i: number, loc: Rec): Rec | undefined => {
     const e = el[i % Math.max(1, el.length)];
-    return e ? { instanta: e.instanta, nod: e.nod, loc, n: numarSegmente(conturElement(e)) } : undefined;
+    return e ? { instanta: e.instanta, nod: e.nod, loc, n: numarSegmente(chenarElement(e)) } : undefined;
   };
   const anc = (x: number, y: number, legatura?: Rec): Rec => (legatura ? { x, y, legatura } : { x, y });
   return [

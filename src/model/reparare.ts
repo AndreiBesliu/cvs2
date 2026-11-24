@@ -187,7 +187,7 @@ export function reparabile(doc: Document, probleme: readonly Problema[], tol: nu
     let ce: 'inchide' | 'bucla' | 'noduri' | null = null;
     if (p.fel === 'deschis') ce = !f.inchis && (f.varfuri.length >= 3 || (f.varfuri[0]?.s.tip !== 'L' && p.distanta > tol)) ? 'inchide' : null;
     else if (p.fel === 'autointersectie') ce = f.inchis && p.puncte.length === 1 && p.bucla !== null && p.bucla.procent !== null ? 'bucla' : null;
-    else if (p.fel === 'noduri') ce = siruriMici(conturElement(l.e), tol) === 'praf' ? null : 'noduri';
+    else if (p.fel === 'noduri') ce = siruriMici(conturElement({ forma: f, matrice: l.e.matrice }), tol) === 'praf' ? null : 'noduri';
     if (!ce) return nimic;
     return l.ori > 1 ? { cum: 'impartita', ori: l.ori, ce } : { cum: ce };
   });
@@ -552,7 +552,7 @@ export function repara(doc: Document, c: CerereReparare, o: OptiuniReparare, ind
     if (typeof x === 'string') return gresit(x);
     const { f, l } = x;
     if (f.inchis) return gresit('disparuta');
-    const lume = conturElement(l.e);
+    const lume = conturElement({ forma: f, matrice: l.e.matrice });
     const gol = dist((lume.varfuri[0] as { p: Punct }).p, (lume.varfuri[lume.varfuri.length - 1] as { p: Punct }).p);
     if (gol > o.pragInchidere) return gresit('prea-departe');
     const nou = inchide(f, gol <= tol);
@@ -565,7 +565,7 @@ export function repara(doc: Document, c: CerereReparare, o: OptiuniReparare, ind
     const x = caleDe(h.loc(c.element));
     if (typeof x === 'string') return gresit(x);
     const { f, l } = x;
-    const lume = conturElement(l.e);
+    const lume = conturElement({ forma: f, matrice: l.e.matrice });
     const siruri = siruriMici(lume, tol);
     if (siruri === 'praf') return gresit('degenerata');
     let ales: { readonly a: number; readonly b: number } | null = null;
@@ -619,7 +619,7 @@ export function repara(doc: Document, c: CerereReparare, o: OptiuniReparare, ind
     if (typeof x === 'string') { ramase += puncte.length; if (x === 'impartita') impartite += puncte.length; continue; }
     const { f, l } = x;
     if (c.fel === 'toate-nodurile') {
-      const siruri = siruriMici(conturElement(l.e), tol);
+      const siruri = siruriMici(conturElement({ forma: f, matrice: l.e.matrice }), tol);
       const nou = siruri === 'praf' || siruri.length === 0 ? null : unesteSiruri(f, siruri);
       if (!nou || (nou.inchis && !areArie(nou, l.e, tol))) { ramase += puncte.length; continue; }
       schimbarea(schimbari, l.piesa.id).forme.set(l.e.nod, nou);

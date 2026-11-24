@@ -18,7 +18,7 @@ const cu = (f: FrezaCatalog, nume: string = f.id): Freza => ({ ...f, nume });
 const salvata = (f: Freza, id: string): FrezaSalvata => ({ ...f, id, rev: 1, schimbatLa: 1_000 });
 
 test('grupurile și mărimile, ca în ADR 0302 §1', () => {
-  assert.deepEqual(GRUPURI_CATALOG, ['plata', 'planare', 'v', 'gravare', 'bila', 'toroidala', 'conica', 'burghiu']);
+  assert.deepEqual(GRUPURI_CATALOG, ['plata', 'planare', 'v', 'gravare', 'bila', 'toroidala', 'conica', 'burghiu', 'rotunjire', 'ogee', 'ogee-roman', 'panou']);
   assert.deepEqual(din('plata').map((f) => f.diametru), [1, 1.5, 2, 2.5, 3, 3.175, 4, 5, 6, 6.35, 8, 9.525, 10, 12, 12.7, 16, 19.05]);
   assert.deepEqual(din('planare').map((f) => f.diametru), [19.05, 25.4, 31.75, 38.1, 50.8]);
   assert.deepEqual(din('v').map((f) => `${f.unghi}/${f.diametru}`), [
@@ -38,7 +38,19 @@ test('grupurile și mărimile, ca în ADR 0302 §1', () => {
   ]);
   assert.deepEqual(din('burghiu').map((f) => f.diametru), Array.from({ length: 23 }, (_, i) => 1 + i / 2));
   assert.ok(din('burghiu').every((f) => f.unghi === 118));
-  assert.equal(CATALOG_FREZE.length, 17 + 5 + 17 + 30 + 12 + 6 + 9 + 23);
+  // Profilurile (16.A↑h-5): rotunjirile și ogee-urile cu vârful de Ø6 (D = 2r + 6, 4r + 6, 4r + 2t + 6), ogee-ul roman cu
+  // treapta 1,5; panourile de 1 1/2" și 2" cu fundul plat de 1/4", drepte la 10°, 12°, 15° și cu scobitura R1/4" la 12°.
+  const nr3 = (x: number): number => Math.round(x * 1000) / 1000;
+  assert.deepEqual(din('rotunjire').map((f) => `${f.raza}/${nr3(f.diametru)}`), [
+    '2/10', '3/12', '3.175/12.35', '4/14', '5/16', '6/18', '6.35/18.7', '8/22', '9.525/25.05', '10/26', '12.7/31.4',
+  ]);
+  assert.deepEqual(din('ogee').map((f) => `${f.raza}/${nr3(f.diametru)}`), ['2/14', '3/18', '3.175/18.7', '4/22', '5/26', '6/30', '6.35/31.4']);
+  assert.deepEqual(din('ogee-roman').map((f) => `${f.raza}/${f.treapta}/${nr3(f.diametru)}`), ['3/1.5/21', '4/1.5/25', '5/1.5/29', '6/1.5/33']);
+  assert.deepEqual(din('panou').map((f) => `${f.unghi}/${f.varf}/${f.raza ?? '-'}/${f.diametru}`), [
+    '10/6.35/-/38.1', '12/6.35/-/38.1', '15/6.35/-/38.1', '12/6.35/6.35/38.1',
+    '10/6.35/-/50.8', '12/6.35/-/50.8', '15/6.35/-/50.8', '12/6.35/6.35/50.8',
+  ]);
+  assert.equal(CATALOG_FREZE.length, 17 + 5 + 17 + 30 + 12 + 6 + 9 + 23 + 11 + 7 + 4 + 8);
   // Felurile: planarea e o freză plată mare; V-ul și gravarea au unghiul; doar gravarea are vârful.
   assert.ok(din('planare').every((f) => f.fel === 'plata'));
   assert.ok(din('v').every((f) => f.fel === 'v' && f.varf === undefined));
@@ -117,6 +129,18 @@ test('„Pune în frezele mele”: cele care sunt deja se sar, numele luat prime
   // Aceeași cerere încă o dată: toate sunt deja.
   const d = cuDinCatalog(r.lista, [cu(p6), cu(p8), cu(v90)], () => 'x', 8);
   assert.deepEqual([d.adaugate, d.existente, d.lista], [0, 3, r.lista]);
+});
+
+test('„Pune în frezele mele”, profilurile (16.A↑h-5): geometria ține și treapta ogee-ului roman, fundul plat și scobitura panoului', () => {
+  const ogr = CATALOG_FREZE.find((f) => f.id === 'cat-ogee-roman-3-1.5')!;
+  const pan = CATALOG_FREZE.find((f) => f.id === 'cat-panou-12-50.8')!;
+  const lista = [salvata({ ...cu(ogr, 'A'), treapta: 1 }, 'a'), salvata({ ...cu(pan, 'B'), varf: 8 }, 'b')];
+  let k = 0;
+  const r = cuDinCatalog(lista, [cu(ogr), cu(pan), cu(CATALOG_FREZE.find((f) => f.id === 'cat-panou-12-r6.35-50.8')!)], () => `n${++k}`, 7);
+  assert.deepEqual([r.adaugate, r.existente], [3, 0]);
+  // Aceleași, încă o dată: toate sunt deja.
+  const d = cuDinCatalog(r.lista, [cu(ogr), cu(pan)], () => 'x', 8);
+  assert.deepEqual([d.adaugate, d.existente], [0, 2]);
 });
 
 test('„Pune în frezele mele”: plafonul bibliotecii (500): cât încape, iar restul se spune', () => {

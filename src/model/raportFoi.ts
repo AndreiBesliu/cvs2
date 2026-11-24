@@ -12,7 +12,7 @@ import { CUTIE_GOALA, cutieContur, uneste, type Cutie } from '../geom/cutie.ts';
 import { IDENTITATE, type Matrice } from '../geom/matrice.ts';
 import { noduriPiesa, type Document, type Foaie, type FormaDoc, type Instanta, type Latura, type Operatie, type Piesa, type TipOperatie } from './document.ts';
 import { materialFoaie, numeFoaie } from './foi.ts';
-import { conturElement } from './forme.ts';
+import { chenarElement } from './forme.ts';
 import { jsonCanonic } from './jsonCanonic.ts';
 import { elementeInstanta, matriceInstanta, noduriInInstanta, type ElementLume } from './lume.ts';
 import { numarUrechiAlese } from './urechiLocuri.ts';
@@ -84,7 +84,7 @@ const r2 = (x: number): number => Math.round(x * 100) / 100;
 const m6 = (m: Matrice): number[] => [m.a, m.b, m.c, m.d, m.e, m.f].map(r6);
 
 function cutie(elemente: readonly ElementLume[]): Cutie {
-  return elemente.reduce((c, e) => uneste(c, cutieContur(conturElement(e))), CUTIE_GOALA);
+  return elemente.reduce((c, e) => uneste(c, cutieContur(chenarElement(e))), CUTIE_GOALA);
 }
 
 /** Mărimea unei instanțe, în axele piesei: cutia conturului tăiat prin toată grosimea (profilul exterior), sau a desenului. */

@@ -10,8 +10,12 @@
  */
 import { PLAFON, UNGHI_V_MAXIM, UNGHI_V_MINIM, type Scula } from './document.ts';
 
-/** Felurile de azi: plata (dreaptă), V-ul (ascuțit) și freza de gravare (V cu vârf plat). Bila, toroidala, profilul: feliile e, f. */
-export const FELURI_FREZA = ['plata', 'v', 'gravare', 'bila', 'toroidala', 'conica', 'burghiu'] as const;
+/**
+ * Felurile: plata (dreaptă), V-ul (ascuțit) și freza de gravare (V cu vârf plat), pe care CAM-ul le taie; apoi bila, toroidala,
+ * conica cu vârf rotund și burghiul (16.A↑h-4) și profilurile parametrice (16.A↑h-5): rotunjirea (roundover), ogee-ul,
+ * ogee-ul roman și panoul ridicat. Canelura (veining, core box) are silueta bilei: nu e un fel separat.
+ */
+export const FELURI_FREZA = ['plata', 'v', 'gravare', 'bila', 'toroidala', 'conica', 'burghiu', 'rotunjire', 'ogee', 'ogee-roman', 'panou'] as const;
 export type FelFreza = (typeof FELURI_FREZA)[number];
 /**
  * Felurile pe care CAM-ul le taie azi (ADR 0302 §2): celelalte (bila, toroidala, conica cu vârf rotund, burghiul) stau în
@@ -25,12 +29,14 @@ export type FrezaFaraNume = {
   readonly fel: FelFreza;
   /** Diametrul tăișului, în mm. */
   readonly diametru: number;
-  /** Unghiul inclus al vârfului, în grade (V și gravare). */
+  /** Unghiul inclus al vârfului, în grade (V și gravare); la panou, unghiul teșiturii față de fața plăcii (sub 90°). */
   readonly unghi?: number | undefined;
-  /** Diametrul vârfului plat, în mm (gravare). */
+  /** Diametrul vârfului plat, în mm (gravare; la panou, al fundului plat). */
   readonly varf?: number | undefined;
-  /** Raza colțului (toroidala) sau a vârfului rotund (conica), în mm: peste 0 și sub Ø / 2. */
+  /** Raza colțului (toroidala), a vârfului rotund (conica), a rotunjirii, a arcelor ogee-ului sau a scobiturii panoului, în mm. */
   readonly raza?: number | undefined;
+  /** Treapta ogee-ului roman, în mm: jos (dreaptă, în sus) și sus (dreaptă, în afară). */
+  readonly treapta?: number | undefined;
   /** Lungimea tăișului, în mm (la V și la gravare, cel puțin conul). */
   readonly tais?: number | undefined;
   /** Numărul de tăișuri (pentru calculatorul avansului, felia g). */
@@ -63,6 +69,8 @@ export const MARGINI_FREZA = {
   diametru: PLAFON.diametruScula,
   unghiMinim: UNGHI_V_MINIM,
   unghiMaxim: UNGHI_V_MAXIM,
+  /** Unghiul teșiturii panoului, față de fața plăcii: sub 90°. */
+  unghiPanou: 89,
   tais: PLAFON.adancimeOperatie,
   taisuri: 12,
   turatie: PLAFON.regimFreza,
@@ -76,16 +84,24 @@ export const MARGINI_FREZA = {
 } as const;
 
 export type CampFreza = 'nume' | 'diametru' | 'unghi' | 'varf' | 'tais' | 'taisuri' | 'numar' | 'turatie' | 'avans' | 'plonjare'
-  | 'pas' | 'pasLateral' | 'nota' | 'grup' | 'raza';
+  | 'pas' | 'pasLateral' | 'nota' | 'grup' | 'raza' | 'treapta';
 export type MotivFreza = 'lipsa' | 'margini' | 'intreg' | 'varf' | 'con' | 'nume-gol' | 'nume-lung' | 'nume-caractere'
   | 'nume-folosit' | 'nota-lunga' | 'grup-lung' | 'grup-caractere';
 export type ProblemeFreza = Readonly<Partial<Record<CampFreza, MotivFreza>>>;
 
 const finit = (x: unknown): x is number => typeof x === 'number' && Number.isFinite(x);
-/** Felurile cu unghi: V-ul și gravarea (unghiul inclus), conica (unghiul inclus al flancurilor), burghiul (al vârfului). */
-export const areUnghi = (fel: FelFreza): boolean => fel === 'v' || fel === 'gravare' || fel === 'conica' || fel === 'burghiu';
-/** Felurile cu rază: toroidala (a colțului) și conica (a vârfului). */
-export const areRaza = (fel: FelFreza): boolean => fel === 'toroidala' || fel === 'conica';
+/**
+ * Felurile cu unghi: V-ul și gravarea (unghiul inclus), conica (unghiul inclus al flancurilor), burghiul (al vârfului), panoul
+ * (al teșiturii, față de fața plăcii).
+ */
+export const areUnghi = (fel: FelFreza): boolean => fel === 'v' || fel === 'gravare' || fel === 'conica' || fel === 'burghiu' || fel === 'panou';
+/** Felurile cu vârf plat: gravarea și panoul (fundul plat). */
+export const areVarf = (fel: FelFreza): boolean => fel === 'gravare' || fel === 'panou';
+/** Felurile cu rază: toroidala, conica, rotunjirea, ogee-urile; la panou, raza scobiturii e opțională. */
+export const areRaza = (fel: FelFreza): boolean => fel === 'toroidala' || fel === 'conica' || fel === 'rotunjire' || fel === 'ogee'
+  || fel === 'ogee-roman' || fel === 'panou';
+/** Felurile cu treaptă: ogee-ul roman. */
+export const areTreapta = (fel: FelFreza): boolean => fel === 'ogee-roman';
 
 /** Numele, pentru unicitate: fără spațiile de la capete și dublate, cu literele compuse unite, fără deosebire de majuscule. */
 export function cheieNume(nume: string): string {
@@ -95,15 +111,25 @@ export function cheieNume(nume: string): string {
 /**
  * Înălțimea capătului, în mm (ADR 0302, felia 16.A↑h-4), măsurată de la vârf până unde freza ajunge la diametrul ei: plata
  * 0; V-ul și gravarea (R − a)·cot(θ/2), cu a raza vârfului plat; bila R; toroidala r (raza colțului); conica
- * r(1 − sin α) + (R − r cos α) / tan α, cu α = θ/2 și r raza vârfului rotund; burghiul R / tan(θ/2). Tăișul nu poate fi mai
- * scurt.
+ * r(1 − sin α) + (R − r cos α) / tan α, cu α = θ/2 și r raza vârfului rotund; burghiul R / tan(θ/2); profilurile (16.A↑h-5):
+ * rotunjirea r, ogee-ul 2r, ogee-ul roman 2r + t (treapta), panoul (R − a)·tan β (a raza fundului plat, β teșitura față de
+ * fața plăcii), iar cu scobitura de rază r, r(1 − cos β) + (R − a − r sin β)·tan β. Tăișul nu poate fi mai scurt.
  */
-export function inaltimeCon(f: Pick<Freza, 'fel' | 'diametru' | 'unghi' | 'varf' | 'raza'>): number {
+export function inaltimeCon(f: Pick<Freza, 'fel' | 'diametru' | 'unghi' | 'varf' | 'raza' | 'treapta'>): number {
   const R = f.diametru / 2;
   switch (f.fel) {
     case 'plata': return 0;
     case 'bila': return R;
-    case 'toroidala': return finit(f.raza) ? f.raza : 0;
+    case 'toroidala': case 'rotunjire': return finit(f.raza) ? f.raza : 0;
+    case 'ogee': return finit(f.raza) ? 2 * f.raza : 0;
+    case 'ogee-roman': return finit(f.raza) && finit(f.treapta) ? 2 * f.raza + f.treapta : 0;
+    case 'panou': {
+      if (!finit(f.unghi) || !finit(f.varf)) return 0;
+      const b = (f.unghi * Math.PI) / 180;
+      const a = f.varf / 2;
+      const r = finit(f.raza) ? f.raza : 0;
+      return r * (1 - Math.cos(b)) + (R - a - r * Math.sin(b)) * Math.tan(b);
+    }
     case 'conica': {
       if (!finit(f.unghi) || !finit(f.raza)) return 0;
       const a = (f.unghi * Math.PI) / 360;
@@ -145,22 +171,33 @@ export function problemeFreza(f: Freza, alte: readonly FrezaSalvata[] = [], id: 
   pune('diametru', interval(f.diametru, MARGINI_FREZA.diametru));
   pune('numar', interval(f.numar, MARGINI_FREZA.numar, true));
   if (areUnghi(f.fel)) {
+    const max = f.fel === 'panou' ? MARGINI_FREZA.unghiPanou : MARGINI_FREZA.unghiMaxim;
     if (!finit(f.unghi)) p.unghi = 'lipsa';
-    else if (f.unghi < MARGINI_FREZA.unghiMinim || f.unghi > MARGINI_FREZA.unghiMaxim) p.unghi = 'margini';
+    else if (f.unghi < MARGINI_FREZA.unghiMinim || f.unghi > max) p.unghi = 'margini';
   }
-  if (f.fel === 'gravare') {
+  if (areVarf(f.fel)) {
     if (!finit(f.varf)) p.varf = 'lipsa';
     else if (!(f.varf > 0)) p.varf = 'margini';
     else if (!p.diametru && f.varf >= f.diametru) p.varf = 'varf';
   }
   if (areRaza(f.fel)) {
-    if (!finit(f.raza)) p.raza = 'lipsa';
-    else if (!(f.raza > 0) || (!p.diametru && !(f.raza < f.diametru / 2))) p.raza = 'margini';
+    const R = f.diametru / 2;
+    if (f.fel === 'panou') {
+      // Scobitura, opțională: încape între fundul plat și diametru (a + r·sin β < R).
+      if (f.raza !== undefined && (!finit(f.raza) || !(f.raza > 0)
+        || (!p.diametru && !p.unghi && !p.varf && !(f.varf! / 2 + f.raza * Math.sin((f.unghi! * Math.PI) / 180) < R)))) p.raza = 'margini';
+    } else if (!finit(f.raza)) p.raza = 'lipsa';
+    // Rotunjirea, toroidala și conica lasă vârful (r < R); ogee-urile au două arce (r < R / 2).
+    else if (!(f.raza > 0) || (!p.diametru && !(f.raza < (f.fel === 'ogee' || f.fel === 'ogee-roman' ? R / 2 : R)))) p.raza = 'margini';
+  }
+  if (areTreapta(f.fel)) {
+    if (!finit(f.treapta)) p.treapta = 'lipsa';
+    else if (!(f.treapta > 0) || (!p.diametru && !p.raza && !(2 * f.raza! + f.treapta < f.diametru / 2))) p.treapta = 'margini';
   }
   if (f.tais !== undefined) {
     const m = interval(f.tais, MARGINI_FREZA.tais);
     if (m) p.tais = m;
-    else if (!p.diametru && !p.unghi && !p.varf && !p.raza && f.tais! < inaltimeCon(f) - 1e-9) p.tais = 'con';
+    else if (!p.diametru && !p.unghi && !p.varf && !p.raza && !p.treapta && f.tais! < inaltimeCon(f) - 1e-9) p.tais = 'con';
   }
   if (f.taisuri !== undefined) pune('taisuri', interval(f.taisuri, MARGINI_FREZA.taisuri, true));
   pune('turatie', interval(f.turatie, MARGINI_FREZA.turatie, true));
@@ -183,15 +220,16 @@ function problemaGrup(g: unknown): MotivFreza | null {
 
 /** Freza cu doar câmpurile felului ei (plata fără unghi și vârf, V-ul fără vârf), cu numele curățat la capete. */
 function curata<F extends Freza>(f: F): F {
-  const { unghi: _u, varf: _v, raza: _r, ...rest } = f;
-  void _u; void _v; void _r;
+  const { unghi: _u, varf: _v, raza: _r, treapta: _t, ...rest } = f;
+  void _u; void _v; void _r; void _t;
   const c: Record<string, unknown> = {
     ...rest,
     nume: f.nume.normalize('NFC').trim(),
     grup: typeof f.grup === 'string' && f.grup.trim() !== '' ? f.grup.normalize('NFC').trim() : undefined,
     ...(areUnghi(f.fel) ? { unghi: f.unghi } : {}),
-    ...(f.fel === 'gravare' ? { varf: f.varf } : {}),
+    ...(areVarf(f.fel) ? { varf: f.varf } : {}),
     ...(areRaza(f.fel) ? { raza: f.raza } : {}),
+    ...(areTreapta(f.fel) ? { treapta: f.treapta } : {}),
   };
   // Un câmp opțional golit (tăișul, nota) pleacă de tot, nu rămâne ca `undefined`.
   for (const k of Object.keys(c)) if (c[k] === undefined) delete c[k];
@@ -216,7 +254,7 @@ const opt = (x: unknown): boolean => x === undefined || finit(x);
 function formaFreza(x: Record<string, unknown>): boolean {
   return typeof x['nume'] === 'string' && (FELURI_FREZA as readonly unknown[]).includes(x['fel'])
     && ['diametru', 'numar', 'turatie', 'avans', 'plonjare', 'pas', 'pasLateral'].every((k) => finit(x[k]))
-    && ['unghi', 'varf', 'raza', 'tais', 'taisuri'].every((k) => opt(x[k]))
+    && ['unghi', 'varf', 'raza', 'treapta', 'tais', 'taisuri'].every((k) => opt(x[k]))
     && (x['nota'] === undefined || typeof x['nota'] === 'string')
     && (x['grup'] === undefined || typeof x['grup'] === 'string');
 }

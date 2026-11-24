@@ -282,7 +282,9 @@ export type CategorieO =
   | 'operatie' | 'unic-operatii' | 'referinta-op' | 'scula' | 'sens' | 'urechi' | 'rampa' | 'intrari' | 'colturi' | 'cale'
   | 'despartire' | 'pas-lateral' | 'coborare' | 'retragere' | 'fund-plat' | 'directie' | 'rest' | 'strategie'
   // v23 (ADR 0210 §7): literele plăcuțelor (`Instanta.texte`).
-  | 'texte';
+  | 'texte'
+  // v28 (ADR 0310 §1, ADR 0311 §1): relieful, o formă a elementului.
+  | 'relief';
 
 /** ADR 0037 §2: laturile documentului v10, exact (ASCII, ca `opozitie`). */
 export const LATURI_V10_O = ['interior', 'pe-linie', 'exterior', 'stanga', 'dreapta'] as const;
@@ -321,7 +323,7 @@ export const COLTURI_IMPLICITE_O = null;
 /** ADR 0032 §1: tipurile degajărilor, exact. */
 export const TIPURI_COLTURI_O: readonly TipColturiO[] = ['dog-bone', 't-bone'];
 /** Versiunea curentă a contractului documentului, după oracol. */
-export const SCHEMA_CURENTA_O = 27;
+export const SCHEMA_CURENTA_O = 28;
 
 export const PLAFOANE_O = {
   latura: 10_000,
@@ -2178,6 +2180,9 @@ export const CAMPURI_NOI_O: Readonly<Record<number, readonly string[]>> = {
   // ADR 0300 §5: „un document marcat v26 care are deja câmpurile e refuzat”, pe oricare din frezele operației (`[]` = fiecare
   // element al listei).
   27: FREZE_OPERATIE_O.flatMap((f) => ['biblioteca', 'regim', 'tais'].map((c) => `${f}.${c}`)),
+  // ADR 0310 §1 (v28): relieful e o formă nouă a elementului, nu un câmp; un v27 cu forma `relief` e refuzat de forma lui
+  // (o formă necunoscută), deci nu e nicio ciocnire pe operație.
+  28: [],
 };
 
 /** Prefixul unui câmp nou de pe instanță în `CAMPURI_NOI_O` (v23); restul sunt căi pe operație. */
@@ -2265,7 +2270,7 @@ export type DocV21O = Liber & { schema: 21; rev: number; piese: PiesaV21O[]; foi
 export type DocV22O = Liber & { schema: 22; rev: number; piese: PiesaV22O[]; foi: FoaieO[] };
 
 /** Un document v11 … v24, după numărul lui. */
-export type DocNouO = DocV11O | DocV12O | DocV13O | DocV14O | DocV15O | DocV16O | DocV17O | DocV18O | DocV19O | DocV20O | DocV21O | DocV22O | DocV23O | DocV24O | DocV25O | DocV26O | DocV27O;
+export type DocNouO = DocV11O | DocV12O | DocV13O | DocV14O | DocV15O | DocV16O | DocV17O | DocV18O | DocV19O | DocV20O | DocV21O | DocV22O | DocV23O | DocV24O | DocV25O | DocV26O | DocV27O | DocV28O;
 
 // ---------------------------------------------------------------------------------------------------------------
 // Ajutoarele.
@@ -2592,6 +2597,9 @@ export function problemeLocuriUrechiO(u: Liber, noduri: unknown): string[] {
 function laV10(doc: Liber, versiune: number): Liber {
   const c = structuredClone(doc);
   c['schema'] = 10;
+  // v28 (ADR 0310 §1): un relief intră în contractul v10 ca un dreptunghi neutru (ca să se judece arborele: id-urile,
+  // matricele, numărătoarea); regulile lui le judecă `problemeReliefO`.
+  if (versiune >= SCHEMA_V28_O) inlocuiesteReliefuri(c);
   for (const { op } of operatiile(c)) {
     op['tip'] = 'profil';
     for (let v = PRIMA_NOUA_O; v <= versiune; v++) {
@@ -2625,6 +2633,7 @@ export function verificaVnO(doc: unknown, versiune: number): string[] {
   const rez = versiune >= SCHEMA_V23_O ? verificaArboreO(laV10(doc, versiune), 10, ajustariLumeV23O(doc)) : [...verificaV10(laV10(doc, versiune))];
   for (const { op, unde } of operatiile(doc)) rez.push(...problemeOperatieO(op, versiune, unde));
   if (versiune >= SCHEMA_V23_O) rez.push(...problemeTexteO(doc));
+  if (versiune >= SCHEMA_V28_O) rez.push(...problemeReliefO(doc));
   return rez;
 }
 
@@ -2706,9 +2715,9 @@ export function verificaO(doc: unknown): string[] {
   return verificaPanaLaO(doc, SCHEMA_CURENTA_O);
 }
 
-/** Un document primit de ușa curentă, cum iese din ea: v27 (o copie; un v27 valid rămâne neschimbat). */
-export function ridicaO(doc: unknown): DocV27O {
-  return ridicaPanaLaO(doc, SCHEMA_CURENTA_O) as DocV27O;
+/** Un document primit de ușa curentă, cum iese din ea: v28 (o copie; un v28 valid rămâne neschimbat). */
+export function ridicaO(doc: unknown): DocV28O {
+  return ridicaPanaLaO(doc, SCHEMA_CURENTA_O) as DocV28O;
 }
 
 /**
@@ -3521,3 +3530,125 @@ export function ridicaV27O(doc: unknown): DocV27O { return ridicaPanaLaO(doc, SC
 export function usaCurentaV27O(doc: unknown): 'migrari' | 'usa' { return usaCurentaPanaLaO(doc, SCHEMA_V27_O); }
 export function migreazaV1V27O(v1: DocV1O): DocV27O { return ridicaPanaLaO(v1, SCHEMA_V27_O) as DocV27O; }
 export function migreazaV26V27O(v26: DocV26O): DocV27O { return ridicaPanaLaO(v26, SCHEMA_V27_O) as DocV27O; }
+
+// ---------------------------------------------------------------------------------------------------------------
+// v28 (ADR 0310 §1, ADR 0311 §1): relieful, o formă nouă a elementului. Scris din ADR-uri:
+// - `{ tip: 'relief', nx, ny, celula, straturi }`: nx, ny întregi în [1, 8192]; celula finită în [0,001, 100] mm;
+//   nx · celula și ny · celula cel mult 10 000 mm (latura documentului);
+// - straturile: o listă de 1 … 32, fiecare `{ id, nume?, mod, vizibil, dale }`: id ca id-urile documentului, unic în relief;
+//   nume un text de cel mult 200 de caractere; mod unul din `aduna`, `scade`, `inalt`, `jos`, `inlocuieste`, `inmulteste`;
+//   vizibil boolean; dale = amprenta hărții, 64 de cifre hexazecimale mici;
+// - matricea compusă a elementului față de rădăcina piesei e o similitudine (celula rămâne pătrată);
+// - nicio operație nu referă un relief (operațiile de azi taie contururi; ale reliefului vin cu felia 18.1↑c);
+// - câmpurile necunoscute ale formei și ale straturilor se păstrează (ca peste tot).
+
+export const SCHEMA_V28_O = 28;
+/** v28 (ADR 0310 §1): ca v27; un element poate avea forma `relief` (judecată de `problemeReliefO`). */
+export type DocV28O = Liber & { schema: 28; rev: number; piese: PiesaV22O[]; foi: FoaieO[] };
+export const MODURI_RELIEF_O = ['aduna', 'scade', 'inalt', 'jos', 'inlocuieste', 'inmulteste'] as const;
+export const PLAFOANE_RELIEF_O = { latura: 8192, celulaMin: 0.001, celulaMax: 100, latimeMm: 10_000, straturi: 32 } as const;
+const AMPRENTA_O = /^[0-9a-f]{64}$/;
+
+/** Elementele cu forma `relief` ale arborelui (în preordine), cu calea și matricea compusă față de rădăcina piesei. */
+function reliefuriArbore(radacina: unknown, cale: string): Array<{ readonly nod: Liber; readonly cale: string; readonly m: MatriceO | null }> {
+  const rez: Array<{ readonly nod: Liber; readonly cale: string; readonly m: MatriceO | null }> = [];
+  const stiva: Array<{ readonly n: unknown; readonly cale: string; readonly sus: MatriceO | null }> = [{ n: radacina, cale, sus: IDENTITATE_O }];
+  while (stiva.length > 0) {
+    const x = stiva.pop();
+    if (!x || !esteObiect(x.n)) continue;
+    const mm = x.n['matrice'];
+    const m = x.sus && esteObiect(mm) && ['a', 'b', 'c', 'd', 'e', 'f'].every((k) => typeof mm[k] === 'number')
+      ? compuneO(x.sus, mm as unknown as MatriceO) : null;
+    if (x.n['tip'] === 'element' && esteObiect(x.n['forma']) && x.n['forma']['tip'] === 'relief') rez.push({ nod: x.n, cale: x.cale, m });
+    const copii = x.n['copii'];
+    if (x.n['tip'] === 'grup' && Array.isArray(copii)) {
+      for (let k = copii.length - 1; k >= 0; k--) stiva.push({ n: copii[k], cale: `${x.cale}.copii[${k}]`, sus: m });
+    }
+  }
+  return rez;
+}
+
+/** Pune în locul fiecărui relief un dreptunghi neutru (1 × 1), pe copia dată (pentru contractul v10 al arborelui). */
+function inlocuiesteReliefuri(doc: Liber): void {
+  const piese = doc['piese'];
+  if (!Array.isArray(piese)) return;
+  piese.forEach((p: unknown, i) => {
+    if (!esteObiect(p)) return;
+    for (const { nod } of reliefuriArbore(p['radacina'], `piese[${i}].radacina`)) {
+      nod['forma'] = { tip: 'dreptunghi', latime: 1, inaltime: 1, razaColt: 0 };
+    }
+  });
+}
+
+/** Motivele unei forme `relief` (fără prefix: calea o pune cine cheamă); lista goală = bună. */
+export function problemeFormaReliefO(f: Liber): string[] {
+  const rez: string[] = [];
+  const p = PLAFOANE_RELIEF_O;
+  for (const k of ['nx', 'ny'] as const) {
+    if (!intreg(f[k], 1, p.latura)) rez.push(`.${k} = ${are(f, k) ? arata(f[k]) : '(lipsă)'} nu e un întreg 1–${p.latura}`);
+  }
+  if (!intre(f['celula'], p.celulaMin, p.celulaMax)) {
+    rez.push(`.celula = ${are(f, 'celula') ? arata(f['celula']) : '(lipsă)'} nu e în [${p.celulaMin}, ${p.celulaMax}] mm`);
+  } else {
+    const c = f['celula'] as number;
+    for (const k of ['nx', 'ny'] as const) {
+      const n = f[k];
+      if (intreg(n, 1, p.latura) && (n as number) * c > p.latimeMm) rez.push(`.${k} · celula = ${(n as number) * c} mm trece de ${p.latimeMm} mm`);
+    }
+  }
+  const st = f['straturi'];
+  if (!Array.isArray(st)) return [...rez, `.straturi = ${are(f, 'straturi') ? arata(st) : '(lipsă)'} nu e o listă`];
+  if (st.length < 1 || st.length > p.straturi) rez.push(`.straturi are ${st.length} straturi, nu 1–${p.straturi}`);
+  const ids = new Set<unknown>();
+  st.forEach((s: unknown, k) => {
+    const cs = `.straturi[${k}]`;
+    if (!esteObiect(s)) { rez.push(`${cs} = ${arata(s)} nu e un obiect`); return; }
+    const id = s['id'];
+    if (typeof id !== 'string' || id.length < 1 || id.length > PLAFOANE_O.idLungime || !ID_O.test(id)) {
+      rez.push(`${cs}.id = ${are(s, 'id') ? arata(id) : '(lipsă)'} nu e un id`);
+    } else if (ids.has(id)) rez.push(`${cs}.id = ${arata(id)}: două straturi ale reliefului au același id`);
+    ids.add(id);
+    if (are(s, 'nume') && !(typeof s['nume'] === 'string' && s['nume'].length <= PLAFOANE_O.numeLungime)) {
+      rez.push(`${cs}.nume = ${arata(s['nume'])} nu e un text de cel mult ${PLAFOANE_O.numeLungime} caractere`);
+    }
+    if (!(MODURI_RELIEF_O as readonly unknown[]).includes(s['mod'])) rez.push(`${cs}.mod = ${are(s, 'mod') ? arata(s['mod']) : '(lipsă)'} nu e ${MODURI_RELIEF_O.join(' / ')}`);
+    if (typeof s['vizibil'] !== 'boolean') rez.push(`${cs}.vizibil = ${are(s, 'vizibil') ? arata(s['vizibil']) : '(lipsă)'} nu e boolean`);
+    if (typeof s['dale'] !== 'string' || !AMPRENTA_O.test(s['dale'])) rez.push(`${cs}.dale = ${are(s, 'dale') ? arata(s['dale']) : '(lipsă)'} nu e o amprentă SHA-256 (64 de cifre hexazecimale mici)`);
+  });
+  return rez;
+}
+
+/** Încălcările v28 ale reliefurilor unui document (categoria `relief`); goală = bune. */
+export function problemeReliefO(doc: Liber): string[] {
+  const rez: string[] = [];
+  const piese = doc['piese'];
+  if (!Array.isArray(piese)) return rez;
+  piese.forEach((p: unknown, i) => {
+    if (!esteObiect(p)) return;
+    const reliefuri = reliefuriArbore(p['radacina'], `piese[${i}].radacina`);
+    const ids = new Set<unknown>();
+    for (const { nod, cale, m } of reliefuri) {
+      ids.add(nod['id']);
+      for (const x of problemeFormaReliefO(nod['forma'] as Liber)) rez.push(`[relief] ${cale}.forma${x}`);
+      if (m && inMarginiO(m) && !esteSimilitudineO(m)) rez.push(`[relief] ${cale}: matricea compusă nu e o similitudine (celula ar ieși dreptunghi): ${JSON.stringify(m)}`);
+    }
+    const ops = p['operatii'];
+    if (!Array.isArray(ops) || ids.size === 0) return;
+    ops.forEach((o: unknown, k) => {
+      if (!esteObiect(o) || !Array.isArray(o['noduri'])) return;
+      for (const n of o['noduri'] as unknown[]) {
+        if (ids.has(n)) rez.push(`[relief] piese[${i}].operatii[${k}].noduri: ${arata(n)} e un relief (operațiile 2D taie doar contururi)`);
+      }
+    });
+  });
+  return rez;
+}
+
+// Numele pe versiuni (v28, ADR 0310 §1: relieful).
+export function verificaV28(doc: unknown): string[] { return verificaVnO(doc, SCHEMA_V28_O); }
+export function verificaPanaLaV28O(doc: unknown): string[] { return verificaPanaLaO(doc, SCHEMA_V28_O); }
+export function ridicaV28O(doc: unknown): DocV28O { return ridicaPanaLaO(doc, SCHEMA_V28_O) as DocV28O; }
+export function usaCurentaV28O(doc: unknown): 'migrari' | 'usa' { return usaCurentaPanaLaO(doc, SCHEMA_V28_O); }
+export function migreazaV1V28O(v1: DocV1O): DocV28O { return ridicaPanaLaO(v1, SCHEMA_V28_O) as DocV28O; }
+export function migreazaV27V28O(v27: DocV27O): DocV28O { return ridicaPanaLaO(v27, SCHEMA_V28_O) as DocV28O; }
+

@@ -97,6 +97,15 @@ export type CerereFoi = { readonly tip: 'foi'; readonly foi: readonly FoaieVecin
 export type ImaginePeFoaie = {
   readonly id: string; readonly sursa: string; readonly x: number; readonly y: number; readonly latime: number;
   readonly inaltime: number; readonly rotire: number; readonly opacitate: number; readonly octeti: Blob | null;
+  /**
+   * Un relief (ADR 0310 §7): pixelii umbriți, RGBA, rând cu rând de sus în jos, în locul octeților unui fișier; `sursa` e
+   * cheia desenului (aceleași straturi, aceeași imagine, oricâte instanțe).
+   */
+  readonly pixeli?: { readonly latime: number; readonly inaltime: number; readonly rgba: Uint8ClampedArray<ArrayBuffer> };
+  /** Oglindită pe orizontala ei (un element cu matricea oglindită), înaintea rotirii. */
+  readonly oglindita?: boolean;
+  /** Se mută cu selecția cât e trasă (`id` e al formei din lista de desen): un relief, ca vectorii lui. */
+  readonly cuSelectia?: boolean;
 };
 
 /** Imaginile vizibile ale foii active, trimise workerului doar când se schimbă (ca foile vecine), înaintea cererii de desen. */

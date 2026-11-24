@@ -31,18 +31,27 @@ export async function clicDupaReaparitie(page: Page, selector: string): Promise<
  * repetată de 200 de ori pe zece lucrători: 3 clicuri neîntoarse.
  *
  * Un clic care cade cu adevărat (butonul lipsește, e acoperit) își spune eroarea: cadrul e încă acolo. Un cadru care nu se
- * închide pică la așteptarea lui.
+ * închide pică la așteptarea lui (25 s, cu clicul repetat).
  */
 export async function clicCareInchideCadrul(page: Page, selector: string): Promise<void> {
   const cadre = page.locator('iframe.cadru-extensie');
-  const inchis = expect(cadre).toHaveCount(0, { timeout: 15_000 });
-  const clic = page.frameLocator('iframe.cadru-extensie').locator(selector).click()
-    .catch(async (e: unknown) => { if (await cadre.count() > 0) throw e; });
-  // cea care pierde întrecerea poate cădea mai târziu (pagina închisă la capătul probei): fără respingeri neprinse
-  inchis.catch(() => { /* judecată mai jos, la `await inchis` */ });
-  clic.catch(() => { /* judecată în întrecere */ });
-  await Promise.race([clic, inchis]);
-  await inchis;
+  // Clicul se repetă cât cadrul e încă acolo: dat imediat după ce cadrul apare, poate să nu ajungă la buton (cursa din
+  // `clicDupaReaparitie`; văzut pe 24.11 în completul de pe `main`, `extensii.spec.ts:135`: cadrul a rămas deschis 15 s). Un
+  // clic ajuns închide cadrul o singură dată, deci al doilea nu mai are pe ce să cadă.
+  let eroare: unknown;
+  await expect(async () => {
+    if (await cadre.count() === 0) return;
+    const inchis = expect(cadre).toHaveCount(0, { timeout: 4000 });
+    const clic = page.frameLocator('iframe.cadru-extensie').locator(selector).click({ timeout: 4000 })
+      .catch((e: unknown) => { eroare = e; });
+    // cea care pierde întrecerea poate cădea mai târziu: fără respingeri neprinse
+    inchis.catch(() => { /* judecată mai jos */ });
+    await Promise.race([clic, inchis.catch(() => { /* idem */ })]);
+    await expect(cadre).toHaveCount(0, { timeout: 4000 });
+  }).toPass({ timeout: 25_000 }).catch((e: unknown) => {
+    // Un clic care cade cu adevărat (butonul lipsește, e acoperit) își spune eroarea, nu doar „cadrul e încă acolo”.
+    throw eroare instanceof Error ? new Error(`${eroare.message}\n(cadrul nu s-a închis: ${e instanceof Error ? e.message.split('\n')[0] : String(e)})`) : e;
+  });
 }
 
 /**

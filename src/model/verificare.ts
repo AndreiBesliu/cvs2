@@ -16,7 +16,7 @@ import { cutieContur, type Cutie } from '../geom/cutie.ts';
 import { autointersectii, EPS_ATINGERE, indexCutii, intersectiiIntre, parteDin, type Atingere } from '../geom/offset.ts';
 import { TOLERANTA_PROIECT } from '../geom/toleranta.ts';
 import type { Document } from './document.ts';
-import { conturElement } from './forme.ts';
+import { conturElement, esteContur } from './forme.ts';
 import { elementeFoaie } from './lume.ts';
 import { TOLERANTA_MAXIMA, TOLERANTA_MINIMA } from './verificareLimite.ts';
 
@@ -350,6 +350,8 @@ export function verificaVectorii(doc: Document, o: OptiuniVerificare, indexFoaie
   let neverificate = 0;
   for (const e of elementeFoaie(doc, indexFoaie)) {
     if (alese && !alese.has(e.instanta)) continue;
+    // Relieful (ADR 0310) nu e un vector: verificarea vectorilor nu-l vede.
+    if (!esteContur(e)) continue;
     let contur: Contur;
     try {
       contur = conturElement(e);

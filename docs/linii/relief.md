@@ -2,7 +2,7 @@
 
 _cncvs2, relieful 2.5D / 3D, felia 18.1↑ adusă din etapa 18 („Relieful 1: nucleul, relieful din imagine, prelucrarea 3D
 din relief”): ramura `wip/18.1-relief` (din `main`, 24.11), ADR-urile 0310–0329, canalul `relief`; PORNITĂ pe 24.11, la
-cuvântul owner-ului; întâi ADR 0310 propus, cu schița și întrebările, apoi codul_
+cuvântul owner-ului; ADR 0310 ACCEPTAT pe 24.11 (1a–6a); felia 18.1↑a GATA pe 24.11 (documentul v28), de unit_
 
 Pornită pe 24.11.2026, la „ce urmeaza in roadmap si nu a fost atins deloc si putem incepe” și „ok, scrie brief-ul pentru
 relief si pentru cote” ale owner-ului (în sesiunea principală). E primul lucru din blocul relief + 3D (etapele 18–24),
@@ -53,8 +53,8 @@ degroșarea și finisarea pe relief), unde stă relieful în document și unde s
 
 ## De ținut minte
 
-- **Schema documentului:** e v27. Dacă relieful cere un câmp nou, numărul îl dă sesiunea principală (rezervat: v28
-  pentru cote, v29 pentru relief; spune înainte să-l iei, ordinea se poate schimba).
+- **Schema documentului:** relieful a luat **v28** (forma `relief`, felia 18.1↑a); cotele erau tot pe v27, deci un câmp nou
+  al lor ia v29. Un câmp nou al reliefului (bila, în 18.1↑c) cere iar numărul de la sesiunea principală.
 - **Mărimea:** pornirea 114,7 / 120 kB (ADR 0145), totalul 806,1 / 900 kB (ADR 0301). Relieful vine la cerere, cu
   calculul în workere; în raportul fiecărei felii, cât adaugă în pornire și în total.
 - **Liniile vecine:** frezele (`wip/16.A-freze`: fereastra exportului, Tăierea), exportul (`wip/28.8-export`:
@@ -66,3 +66,42 @@ degroșarea și finisarea pe relief), unde stă relieful în document și unde s
 ## Starea
 
 - **24.11:** linia pornită; ramura făcută din `main`; nicio felie începută.
+- **24.11, după-amiaza: ADR 0310 propus** (`docs/adr/0310-relieful-nucleul-imaginea-3d.md`), cu rândul în indexul ADR și
+  titlul tradus, plus verdictele portării pentru etapa 18 (`docs/PORTARE.md` §4.1). Schița:
+  <https://claude.ai/artifact/Kbh5T2HAi3aMuYTQ59qz6h> (fereastra „Relief din imagine” și litofania, care se pot încerca
+  pe imagini generate în pagină; planșa cu panoul și straturile; vederea 3D „Modelul / Tăiat”, cu crestele bilei;
+  alinierea pixelilor; rândurile exportului; feliile; formularul). Răspunsurile se salvează în pagină, în
+  `raspunsuri/owner`, doar de owner (un vizitator obișnuit e refuzat, verificat). Fără cod de produs.
+- **Ce propune ADR 0310, pe scurt:** relieful e un element al piesei (forma `relief`, v29), cu straturi în șase moduri;
+  dalele de 256² în Uint16 cu scară pe dală, după amprentă, în IndexedDB `cncvs2-relief`, iar documentul ține doar
+  amprenta hărții dalelor fiecărui strat; o operație se încheie cu cuantizarea (ce vezi = ce se salvează = ce se taie);
+  workerul reliefului și CAM-ul 3D în workerul CAM, fără stare, doar + − × ÷ √ min max; modelul exact = triunghiurile
+  prin centrele celulelor; câmpul conservativ pe 9 puncte pe celulă, aliniat la pixeli; finisarea pe capsula segmentului;
+  degroșarea în trepte; invarianta 4 cu primul relief tăiat; feliile 18.1↑a–i.
+- **Întrebările** (recomandarea întâi, toate „a”): 1 unde stă relieful (element al piesei), 2 ordinea feliilor (întâi ce
+  se taie), 3 freza bilă în document (o aduce relieful, în v29), 4 plafonul (8192²), 5 oracolul (scris de linie
+  înaintea nucleului, fără agent), 6 materialul litofaniei de pe placă (o placă albă translucidă de 6 mm).
+- **Răspunsul sesiunii principale (24.11, 12:52):** (1) v29 rămâne rezervat, dar numărul se fixează la commit-ul
+  migrării: îi scriu chiar înainte; dacă cotele n-au luat v28 până atunci, relieful îl ia pe acela (fără versiuni lipsă;
+  unirile cu schemă intră în ordinea numerelor). (2) Bila o aduce relieful, dacă owner-ul răspunde „a” la întrebarea 3,
+  cu forma câmpului stabilită cu linia frezelor (sesiunea `session_01QcxiUZGaEoi6ADRcuJvDGp`): propunerea,
+  `scula.forma = { tip: 'bila' }`, e în ADR 0310 §13 și i-a fost trimisă. **Linia frezelor, de acord (24.11, 12:53)**,
+  cu precizările trecute în §13: toroidala `{ tip: 'toroidala', raza }` cu raza < Ø / 2 strict; locurile care presupun
+  azi că orice formă e V; funcția comună `motivFormaPeOperatie` în `src/model/formaFrezei.ts`, scrisă de cine ajunge
+  întâi în `main`; „Bilă” în bibliotecă după relief; bila în oracolul documentului și în corpusul de aur.
+  (3) Rândurile degroșării și finisării în fereastra exportului: după ce fereastra refăcută (28.8, PR-ul #11) e în
+  `main`; îi scriu întâi sesiunii principale. ADR-ul propus îl ia în `main` la cererea mea (doar documente) sau cu
+  prima felie.
+- **De ținut minte:** în codul vederii 3D, „relieful” (`ReliefSimulat`, `reliefPentru`) e câmpul simulării, nu modelul
+  de aici; numele noi din `src/relief/` trebuie să nu se încurce cu ele. Codul vechi (ediția întâi) nu e în container:
+  verdictele portării se sprijină pe `LECTII.md` §3.2 și pe s5.
+- **24.11, 12:55: ADR 0310 acceptat**, cu toate recomandările (formularul schiței: 1a, 2a, 3a, 4a, 5a, 6a; fără note):
+  relieful e element al piesei, pe planșa Proiectare; întâi ce se taie (a, b, c, d, apoi e–i); bila o aduce relieful, în
+  aceeași versiune cu forma `relief`; plafonul 8192 × 8192 celule; oracolul îl scrie linia, înaintea nucleului, fără
+  agent; litofania de pe placă pe o placă albă translucidă de 6 mm (grosimea 0,8–3,0 mm, bila Ø1,5–Ø3). Anunțate
+  sesiunea principală și linia frezelor. Pornită felia 18.1↑a.
+- **24.11, după-amiaza: felia 18.1↑a gata** (ADR 0310, „Implementarea (18.1↑a)”): oracolul întâi, nucleul `src/relief/`,
+  documentul **v28** (nu v29: cotele erau pe v27; anunțată sesiunea principală), workerul reliefului (pixelii exacți printr-o
+  textură WebGL2), baza `cncvs2-relief`, alegerea Vectori / Relief în fereastra unei imagini, fereastra reliefului, desenul
+  umbrit pe planșă (prin stratul imaginilor al pânzei, adus la cerere), secțiunea Relieful din panou, manualul. Pornirea
+  +0,5 kB (cu ușa +0,9), totalul +12,7 kB. Otrăvurile 43 / 43. Bila rămâne pentru 18.1↑c (§13, precizarea din 24.11).

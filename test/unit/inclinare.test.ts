@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { arieCuSemn } from '../../src/geom/contur.ts';
 import { aplica, determinant } from '../../src/geom/matrice.ts';
 import type { Document, Nod } from '../../src/model/document.ts';
-import { conturElement } from '../../src/model/forme.ts';
+import { chenarElement } from '../../src/model/forme.ts';
 import { istoricNou } from '../../src/model/jurnal.ts';
 import { elementeFoaie } from '../../src/model/lume.ts';
 import { areArce, matriceInclinare, transforma, type Transformare } from '../../src/model/transformare.ts';
@@ -36,7 +36,7 @@ function aplicat(doc: Document, ids: readonly string[], t: Transformare): Docume
 }
 /** Vârfurile (și punctele de control) ale fiecărui element, în lume. */
 function puncteLume(doc: Document, id: string): { x: number; y: number }[] {
-  return elementeFoaie(doc, 0).filter((e) => e.instanta === id).flatMap((e) => conturElement(e).varfuri.flatMap((v) => (v.s.tip === 'C' ? [v.p, v.s.c1, v.s.c2] : [v.p])));
+  return elementeFoaie(doc, 0).filter((e) => e.instanta === id).flatMap((e) => chenarElement(e).varfuri.flatMap((v) => (v.s.tip === 'C' ? [v.p, v.s.c1, v.s.c2] : [v.p])));
 }
 
 test('matricea înclinării: orizontal mută x cu tan(unghi) · dy, vertical mută y; determinantul 1', () => {
@@ -54,7 +54,7 @@ test('dreptunghiul 100 × 60, orizontal 45° față de centru: paralelogramul de
   for (const [k, q] of [P(-10, 20), P(90, 20), P(150, 80), P(50, 80)].entries()) aproape(pts[k]!, q, `vârful ${k}`);
   const e = elementeFoaie(d, 0)[0]!;
   assert.equal(e.forma.tip, 'cale');
-  assert.ok(Math.abs(Math.abs(arieCuSemn(conturElement(e))) - 6000) < 1e-9, 'aria rămâne 100 × 60');
+  assert.ok(Math.abs(Math.abs(arieCuSemn(chenarElement(e))) - 6000) < 1e-9, 'aria rămâne 100 × 60');
   assert.deepEqual(d.foi[0]!.instante, doc.foi[0]!.instante, 'locul și rotirea instanței rămân');
 });
 
@@ -114,7 +114,7 @@ test('prin `document.transforma`: un pas de anulare, iar anularea readuce dreptu
 
 type Q = { readonly x: number; readonly y: number };
 /** Conturul în lume, des: liniile la capete, arcele pe 20 000 de pași de unghi (curba exactă, înainte de înclinare). */
-function des(c: ReturnType<typeof conturElement>): Q[] {
+function des(c: ReturnType<typeof chenarElement>): Q[] {
   const out: Q[] = [];
   const n = c.varfuri.length;
   for (let k = 0; k < n; k++) {
@@ -129,7 +129,7 @@ function des(c: ReturnType<typeof conturElement>): Q[] {
   return out;
 }
 /** Punctele cubicelor (40 pe fiecare) și vârfurile conturului din lume. */
-function esantioane(c: ReturnType<typeof conturElement>): Q[] {
+function esantioane(c: ReturnType<typeof chenarElement>): Q[] {
   const out: Q[] = [];
   const n = c.varfuri.length;
   for (let k = 0; k < n; k++) {
@@ -169,15 +169,15 @@ test('cercul R50 cu arcele făcute curbe, orizontal 30°: doar cubice, la cel mu
   assert.deepEqual(transforma(doc, 0, ['o'], { ...t, arceInCurbe: false }), { ok: false, motiv: 'inclinare-arc' });
   const H = matriceInclinare(30, 0, P(120, 90));
   const d = aplicat(doc, ['o'], t);
-  const c = conturElement(elementul(d, 'o'));
+  const c = chenarElement(elementul(d, 'o'));
   assert.equal(elementul(d, 'o').forma.tip, 'cale');
   assert.ok(c.varfuri.every((v) => v.s.tip === 'C'), 'doar cubice');
-  const exact = des(conturElement(elementul(doc, 'o'))).map((q) => aplica(H, q));
+  const exact = des(chenarElement(elementul(doc, 'o'))).map((q) => aplica(H, q));
   const a = abatere(esantioane(c), exact);
   assert.ok(a <= 0.001, `abaterea ${a}`);
   // Vârfurile cubicelor sunt pe cerc, deci pe elipsă, exact.
   assert.ok(abatere(c.varfuri.map((v) => v.p), exact) < 1e-6);
-  assert.ok(Math.abs(Math.abs(arieCuSemn(conturElement(elementul(d, 'o')))) - Math.PI * 2500) < 0.5, 'aria πr²');
+  assert.ok(Math.abs(Math.abs(arieCuSemn(chenarElement(elementul(d, 'o')))) - Math.PI * 2500) < 0.5, 'aria πr²');
 });
 
 test('cazul cel mai întins (75° și 75°), pe o instanță rotită, în grupuri scalate de 2 și de 50: tot sub 0,001 mm în lume', () => {
@@ -190,8 +190,8 @@ test('cazul cel mai întins (75° și 75°), pe o instanță rotită, în grupur
     const t: Transformare = { fel: 'inclinare', unghiX: 75, unghiY: 75, centru: P(150, 100), arceInCurbe: true };
     const H = matriceInclinare(75, 75, P(150, 100));
     const d = aplicat(doc, ['g'], t);
-    const exact = des(conturElement(elementul(doc, 'g'))).map((q) => aplica(H, q));
-    const a = abatere(esantioane(conturElement(elementul(d, 'g'))), exact);
+    const exact = des(chenarElement(elementul(doc, 'g'))).map((q) => aplica(H, q));
+    const a = abatere(esantioane(chenarElement(elementul(d, 'g'))), exact);
     assert.ok(a <= 0.001, `scara ${scara}: abaterea ${a}`);
   }
 });
@@ -201,10 +201,10 @@ test('dreptunghiul cu colțuri rotunjite (100 × 60, raza 10), 45°: laturile r�
   const t: Transformare = { fel: 'inclinare', unghiX: 45, unghiY: 0, centru: P(70, 50), arceInCurbe: true };
   const H = matriceInclinare(45, 0, P(70, 50));
   const d = aplicat(doc, ['r'], t);
-  const c = conturElement(elementul(d, 'r'));
+  const c = chenarElement(elementul(d, 'r'));
   assert.equal(c.varfuri.filter((v) => v.s.tip === 'L').length, 4, 'cele patru laturi');
   assert.equal(c.varfuri.filter((v) => v.s.tip === 'A').length, 0);
-  const a = abatere(esantioane(c), des(conturElement(elementul(doc, 'r'))).map((q) => aplica(H, q)));
+  const a = abatere(esantioane(c), des(chenarElement(elementul(doc, 'r'))).map((q) => aplica(H, q)));
   assert.ok(a <= 0.001, `abaterea ${a}`);
 });
 
@@ -225,7 +225,7 @@ test('o cale deschisă: arcul din mijloc devine cubice, iar „arcul” ultimulu
   const deschisa = { tip: 'cale' as const, inchis: false, varfuri: [{ p: P(0, 0), s: L }, { p: P(20, 0), s: { tip: 'A' as const, bulge: 1 } }, { p: P(40, 0), s: { tip: 'A' as const, bulge: 1 } }] };
   const doc = docDin(stoc, { id: 'd', forma: deschisa, matrice: { ...ID, e: 50, f: 50 } });
   const d = aplicat(doc, ['d'], { fel: 'inclinare', unghiX: 20, unghiY: 0, centru: P(70, 50), arceInCurbe: true });
-  const c = conturElement(elementul(d, 'd'));
+  const c = chenarElement(elementul(d, 'd'));
   assert.equal(c.inchis, false);
   const H = matriceInclinare(20, 0, P(70, 50));
   // Primul și ultimul vârf rămân capetele căii (înclinate); între ele, linia și semicercul ca cubice.

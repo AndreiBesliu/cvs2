@@ -21,7 +21,7 @@ export const DREPTUNGHI: Radacina = { tip: 'element', id: 'e', forma: { tip: 'dr
 /** Documentul v26 cu o piesă (implicit, dreptunghiul 80 × 30) la (X0, Y0), tăiată pe dinafară cu Ø3,175, în trei treceri. */
 export function documentCu(op: Partial<Operatie>, forma: Radacina = DREPTUNGHI): Document {
   return {
-    schema: 27, rev: 0,
+    schema: 28, rev: 0,
     piese: [{
       id: 'p', radacina: forma,
       operatii: [{

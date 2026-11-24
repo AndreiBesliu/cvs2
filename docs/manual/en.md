@@ -162,7 +162,10 @@ sheet with the same parts**, **Move the sheet up** (the left arrow: on the canva
 the sheet down** (the right arrow) and **Delete the sheet**. Each one's name shows when you hold the mouse over the icon; one
 that cannot be used is dimmed, with the reason next to the name. The active sheet's row is always visible; a dimmed sheet's
 row shows while you hold the mouse over the sheet or over the row. When deleting a sheet with parts, the row asks first:
-**Delete the sheet** or **Cancel**. On a touch screen only the active sheet's row is visible.
+**Delete the sheet** or **Cancel**. On a touch screen only the active sheet's row is visible. The row never goes past its sheet's width: with the canvas zoomed out, when the seven icons no longer fit under the sheet,
+the row folds into a single button, **⋯** (“Show the sheet commands”), which opens it; moving the mouse off the row or pressing
+Escape folds it back, and under a sheet that is very small on screen the row is not shown. With the cursor on the row, the wheel
+zooms the canvas, as anywhere on it.
 
 **Move to another sheet.** The chosen parts go to another sheet from the canvas [right-click menu](#meniu): **Move to** and the
 sheet's name, or **Move to a new sheet**. Or drag a part's row from the list onto another sheet (if it is in the selection, the
@@ -780,7 +783,8 @@ For each file a window opens that shows the drawing's size and how it will be cu
 - for a WMF without a placeable header, **the unit**: 1/96 inch (px, as in LibreOffice), 1/1440 inch (twip), 0.01 mm, 0.1 mm
   or mm (see below);
 - for a PDF with several pages, **the page** to import (see below);
-- for an image, **the tracing**: how the drawing's pixels become outlines (see below);
+- for an image, **the tracing**: how the drawing's pixels become outlines (see below); with **Relief**, at the top of the
+  window, the image becomes a relief (see [Relief from an image](#relief));
 - what is not imported or is read differently, with their count (for an SVG: texts, `<use>` clones, images, hidden shapes).
 
 **Import** puts the drawing on the sheet as a single shape, selected; **Skip** moves on to the next file; **Cancel** and
@@ -1036,6 +1040,38 @@ The sheets report (from the export window) names, for each sheet, its images.
 Images are kept in the browser, next to the project, not in the document: on another computer or in another browser, the
 sheet shows only their place, dashed, and the list says they are missing. An image that no kept version of the project uses
 any more is deleted at a start-up, after at least a day. On a phone, images show but are not placed or changed.
+
+## Relief from an image
+%% capitol: relief
+
+From an image (a photo, a logo, a grey height map) you can make a **relief**: a 3D shape of the part, with one cell for each
+pixel, whose height comes from the pixel's grey. On the board, the relief shows shaded (light from the top left), under the
+vectors, with its frame; it is selected, moved, rotated and mirrored like any shape, and a part with a relief is placed
+several times and on other sheets. Its 3D machining (roughing and finishing) comes in the next slices: for now the relief is
+not cut.
+
+**How to make one:** from “Import…”, pick an image (PNG, JPEG, WebP, GIF or BMP), then, at the top of the window, **Relief**
+instead of **Vectors**. The choice is kept until you reload the page. On the left, the window has:
+- **Height from**: the luminance (the default) or a single channel (red, green, blue);
+- the direction: **White = high** (the default) or **Black = high**;
+- **Height** (mm): how far white (or black) rises above the base; **Base (zero plane)**: the height of the darkest (or
+  lightest) grey;
+- **Width** (mm): one cell is one pixel, so the width gives the cell; if you do not type it, it comes from the file's DPI or,
+  without one, from 96 px per inch;
+- **Smoothing** (σ, in cells): 0 = none; transparent pixels stay empty, and the smoothing skips them.
+
+On the right, the shaded relief, and under it the grid (the cells, the cell, the size in mm) and the heights, from the lowest
+to the highest. What you see is computed from the saved relief, so it is exactly what is kept. **Import** places the part on
+the sheet, selected, in one undo step; dropped on the board, with its centre at the drop point. A transparent pixel has no
+height: there the relief is the zero plane. A fully transparent image, one larger than 8192 × 8192 pixels, or a width that
+gives a cell outside its limits (0.001 to 100 mm, at most 10 m a side) is refused, with the reason.
+
+**In the panel:** with the part selected, the **Relief** section shows the size, the cell, the cells, the heights and the
+layers, top to bottom, each with its mode (in this slice, a relief has a single layer, “add”).
+
+The relief is kept in the browser, next to the project, not in the document (the document keeps only its fingerprint), like
+the sheet images: on another computer or in another browser, the panel says the layers are missing. Whatever no kept version
+of the project uses any more is deleted at a start-up, after at least a day.
 
 ## Cutting vectors
 %% capitol: taiere
@@ -1368,8 +1404,8 @@ would change all of them: the row says how many times it is placed.
 The **My bits** window keeps your bits. It opens from the **Account** menu (the **My bits…** row) or from the command
 palette. It works without an account and offline: without an account, the library lives in this browser; with your account
 open, it lives in your account and you have it on any computer where you sign in (see below). You pick a bit from the
-library for the chosen shapes in the Cutting section of the properties panel (see [The cutting operations](#operatii)); on the
-export rows it comes soon, and until then the bit is typed there on the row, as before (see [Exporting G-code](#export)).
+library for the chosen shapes in the Cutting section of the properties panel (see [The cutting operations](#operatii)) and,
+for each operation, in the export window (the **From my bits** list, see [Exporting G-code](#export)).
 
 The **list**, on the left, groups the bits by kind (Flat, V, Engraving), each with a small profile, the preferred T, the
 spindle speed and the feed. **Search for a bit** filters by name, and the **All**, **Flat**, **V** and **Engraving** buttons
@@ -1388,23 +1424,27 @@ you type (at most 40 characters). Your groups come first in the list, by name; *
 all its bits (a name that already belongs to another group merges them, and an empty name puts them back under their kinds).
 The group travels with the bit in the file and in the account.
 
-**The catalogue**, below your bits (**Catalogue (119)**, folded at first), holds the common bits: flat from Ø1 to Ø19.05,
-surfacing from Ø19.05 to Ø50.8, V (30°–150°), engraving (10°–60°, with a 0.1–0.5 tip), ball, bull nose, tapered ball nose and
-drills, with their sizes in millimetres and in inches (the note “1/4"”). Their working values are starting values, from the diameter, to check on your material. A
+**The catalogue**, below your bits (**Catalogue (149)**, folded at first), holds the common bits: flat from Ø1 to Ø19.05,
+surfacing from Ø19.05 to Ø50.8, V (30°–150°), engraving (10°–60°, with a 0.1–0.5 tip), ball, bull nose, tapered ball nose,
+drills, roundovers, ogees, Roman ogees and raised panels, with their sizes in millimetres and in inches (the note “1/4"”). Their working values are starting values, from the diameter, to check on your material. A
 catalogue bit shows its details; **Add to my bits** copies it to the library, with the first free T, while **Add all**, next to
 a group, and **Add everything shown**, next to the title (after the search and the filter), add several at once. A bit you
-already have (same kind, diameter, angle and tip) is not added twice: the details say **Already in my bits.**
+already have (same kind, diameter, angle, tip, radius and fillet) is not added twice: the details say **Already in my bits.**
 
-**Ball, bull nose, tapered and drill bits** sit in your library and in the catalogue, marked **coming to projects**: in the
-Cutting section you can pick them once the app can cut them. Until then, you keep them together with the others.
+**Ball, bull nose, tapered and drill bits and the profiles** (roundover, ogee, Roman ogee, raised panel) sit in your library
+and in the catalogue, marked **coming to projects**: in the Cutting section you can pick them once the app can cut them.
+Until then, you keep them together with the others. A veining (core box) bit is a **Ball**.
 
 **New bit** opens the editor, with the fields:
 - **Name**: left empty, the bit gets the name proposed from its kind and diameter (“Flat Ø6”, “V60 Ø6”, “Engraving 30° tip
   0.2 Ø3.175”). Two bits cannot share a name (case does not matter);
 - **Kind**: **Flat**, **V** (with the **Included angle**, between 1° and 179°), **Engraving** (a V bit with a **Flat tip**,
   smaller than the diameter), **Ball**, **Bull nose** (with the **Corner radius**), **Tapered** (with a round tip: the
-  **Included angle** and the **Tip radius**) or **Drill** (with the **Point angle**, usually 118°); a radius is above 0 and
-  below half the diameter;
+  **Included angle** and the **Tip radius**), **Drill** (with the **Point angle**, usually 118°), **Roundover** (with the
+  **Roundover radius**), **Ogee** (two arcs of the same radius, the **Arc radius**, below a quarter of the diameter),
+  **Roman ogee** (the ogee with a **Fillet** at the bottom and the top) or **Raised panel** (the **Flat bottom**, the
+  **Bevel**, from the panel face, below 90°, and, if it has one, the **Cove radius**); otherwise a radius is above 0 and
+  below half the diameter. For a profile, the diameter changes by itself only if the one you wrote cannot hold it;
 - **Diameter** (at most 100 mm), **Cutting length** (if you know it; for V and engraving bits, at least the cone),
   **Flutes** (if you know them) and **Preferred T** (1–999, the number on the tool holder);
 - **Working values**: **Spindle speed** (rpm), **Feed** and **Plunge** (mm/min), **Step-down** (mm) and **Stepover** (% of
@@ -1425,8 +1465,8 @@ missing ones.
 
 **Export…** saves the library to the file `frezele-mele.cvs2freze.json`, which you bring in with **Import…** on another
 computer. **Import…** also reads a CSV (saved from Excel, for example) with a header row and the columns `nume`, `fel`
-(`plata`, `v`, `gravare`, `bila`, `toroidala`, `conica` or `burghiu`), `diametru`, `unghi`, `varf`, `raza`, `numar` (the T), `turatie`, `avans`, `plonjare`, `pas`,
-`pas_lateral`, `tais`, `taisuri`, `nota` and `grup`, in any order (`raza` only for bull nose and tapered bits). Only `nume`, `fel` and `diametru` are required; without the others,
+(`plata`, `v`, `gravare`, `bila`, `toroidala`, `conica`, `burghiu`, `rotunjire`, `ogee`, `ogee-roman` or `panou`), `diametru`, `unghi`, `varf`, `raza`, `treapta`, `numar` (the T), `turatie`, `avans`, `plonjare`, `pas`,
+`pas_lateral`, `tais`, `taisuri`, `nota` and `grup`, in any order (`raza` for bull nose, tapered and profile bits, `treapta` for the Roman ogee, `varf` for engraving and raised panel bits). Only `nume`, `fel` and `diametru` are required; without the others,
 the T is 1, the spindle speed 18,000, the feed 1,000, the plunge 300, the step-down half the diameter (for a flat bit) or
 1 mm, and the stepover 40 %. The separator (`;`, `,` or tab) is found on its own; with `;`, numbers may use a decimal comma.
 Before importing, you choose what happens to a name that already exists: **Keep both** (the default; the new one gets
@@ -1882,6 +1922,13 @@ of the tip (from 1° to 179°, 60° by default; for a V bit, the diameter is tha
 are cut with a change between them: in the automatic order, in each class (insides, then on the line, then outsides), the bit
 already mounted first, so there are as few changes as possible. The same number with two diameters or two shapes is refused:
 each bit needs its own number.
+
+The **From my bits** list, in the Bit group, has the bits from your library (see [My bits](#freze)) that suit the operation's
+cut: flat ones on a profile, a pocket or drilling, V bits on a V-carve. Once picked, the bit puts on the operation its T number
+(its own, if no other bit in the window has it; otherwise that of the same bit, if there is one; otherwise the lowest free one),
+the diameter, the shape, the step-down and, for a pocket, the stepover; **Export** writes it to the project with its working
+values (spindle speed, feed, plunge) and its cutting length. A diameter or shape changed by hand makes it **Entered by hand**:
+the project no longer records that it came from the library. You can change the T number without losing it.
 
 The **Cutting order** sits in the list, above the operations. The operations appear in the order they are cut, with their place
 on the left (the card says “N of M in cutting order”):

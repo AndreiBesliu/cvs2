@@ -22,7 +22,7 @@ import { conturDreptunghi } from '../../src/geom/conturBaza.ts';
 import { cutieContur } from '../../src/geom/cutie.ts';
 import type { Contur } from '../../src/geom/contur.ts';
 import type { Document, ElementNod, FormaDoc, Operatie, Piesa, VarfDoc } from '../../src/model/document.ts';
-import { conturElement } from '../../src/model/forme.ts';
+import { chenarElement } from '../../src/model/forme.ts';
 import { elipsa, poligonRegulat } from '../../src/model/formeParametrice.ts';
 import { executa, istoricNou, type Istoric } from '../../src/model/jurnal.ts';
 import { elementeFoaie } from '../../src/model/lume.ts';
@@ -58,7 +58,7 @@ const elementLume = (d: Document, inst: string) => {
   assert.equal(e.length, 1, `instanța ${inst} are un singur element`);
   return e[0] as (typeof e)[number];
 };
-const conturLume = (d: Document, inst: string): Contur => conturElement(elementLume(d, inst));
+const conturLume = (d: Document, inst: string): Contur => chenarElement(elementLume(d, inst));
 const centruCutie = (c: Contur): { x: number; y: number } => {
   const k = cutieContur(c);
   return { x: (k.minX + k.maxX) / 2, y: (k.minY + k.maxY) / 2 };

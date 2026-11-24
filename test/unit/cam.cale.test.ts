@@ -12,7 +12,7 @@ import { distantaLaContur } from '../../src/geom/distanta.ts';
 import { RAZA_MAXIMA_ARC, TOLERANTA_PROIECT } from '../../src/geom/toleranta.ts';
 import type { Miscare } from '../../src/ir/ir.ts';
 import type { Document, FormaDoc } from '../../src/model/document.ts';
-import { conturElement } from '../../src/model/forme.ts';
+import { chenarElement } from '../../src/model/forme.ts';
 import { D, dreptunghiCaCale, INIMA } from './ajutor-cale.ts';
 import { cuOperatie, docDin, ID } from './ajutor-document.ts';
 
@@ -69,7 +69,7 @@ function puncteTraseu(m: readonly Miscare[]): Array<{ x: number; y: number }> {
 }
 
 test('inima (patru cubice): traseul stă la raza frezei de inima exactă, cu abaterea sub toleranța proiectului, pe exterior și pe interior', () => {
-  const exacta = conturElement({ forma: INIMA, matrice: { ...ID, e: 100, f: 50 } });
+  const exacta = chenarElement({ forma: INIMA, matrice: { ...ID, e: 100, f: 50 } });
   for (const latura of ['exterior', 'interior'] as const) {
     const m = program(cuOperatie(cu(INIMA, 100, 50), 'c', { latura, adancime: 3, pas: 3 }));
     const puncte = puncteTraseu(m);

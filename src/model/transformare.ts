@@ -14,7 +14,7 @@
 import { inversa } from '../geom/inversa.ts';
 import { aplica, compune, rotatie, translatie } from '../geom/matrice.ts';
 import { TOLERANTA_IMPORT, TOLERANTA_PROIECT } from '../geom/toleranta.ts';
-import { PLAFON, type Document, type FormaDoc, type Instanta, type Matrice, type Nod, type Piesa, type VarfDoc } from './document.ts';
+import { CELULA_RELIEF_MAXIMA, CELULA_RELIEF_MINIMA, PLAFON, type Document, type FormaDoc, type Instanta, type Matrice, type Nod, type Piesa, type VarfDoc } from './document.ts';
 import { blocScalat, blocText, textNeuniformPosibil } from './blocText.ts';
 import { elipsa, parametri } from './formeParametrice.ts';
 import { jsonCanonic } from './jsonCanonic.ts';
@@ -46,7 +46,11 @@ export type Transformare =
     readonly arceInCurbe?: boolean;
   };
 
-export type MotivTransformare = 'colturi-nu-incap' | 'piesa-impartita' | 'scara-invalida' | 'inclinare-arc' | 'unghi-invalid';
+/**
+ * `relief-neuniform` (ADR 0310 §1): un relief are celula pătrată, deci se scalează doar uniform (celula crește) și nu se
+ * înclină; mutarea, rotirea și oglindirea îi schimbă doar matricea.
+ */
+export type MotivTransformare = 'colturi-nu-incap' | 'piesa-impartita' | 'scara-invalida' | 'inclinare-arc' | 'unghi-invalid' | 'relief-neuniform';
 
 /** Cel mai mare unghi de înclinare acceptat, în grade (tan 75° ≈ 3,7). */
 export const UNGHI_MAXIM_INCLINARE = 75;
@@ -84,7 +88,7 @@ function pieseAlese(doc: Document, indexFoaie: number, ids: readonly string[]): 
 
 /** Pură: o formă a instanțelor `ids` ale foii are arce (un cerc, colțuri rotunjite, o cale cu arce): înclinarea le-ar refuza. */
 export function areArce(doc: Document, indexFoaie: number, ids: readonly string[]): boolean {
-  const inNod = (n: Nod): boolean => (n.tip === 'element' ? areArcCale(caleDinForma(n.forma)) : n.copii.some(inNod));
+  const inNod = (n: Nod): boolean => (n.tip === 'element' ? n.forma.tip !== 'relief' && areArcCale(caleDinForma(n.forma)) : n.copii.some(inNod));
   return pieseAlese(doc, indexFoaie, ids).some(({ p }) => inNod(p.radacina));
 }
 
@@ -112,6 +116,7 @@ export function formeScalate(doc: Document, indexFoaie: number, ids: readonly st
       return;
     }
     const f = n.forma;
+    if (f.tip === 'relief') return;
     if (f.tip === 'cerc') r.cerc = true;
     else if (f.tip === 'dreptunghi') r.colturi ||= f.razaColt > 0;
     else r.arce ||= areArcCale(f);
@@ -218,6 +223,15 @@ function scaleazaForma(f: FormaDoc, sx: number, sy: number, colturi: 'pastreaza'
   // Abaterea unei cubice față de arcul ei crește, la scalare, cel mult cu scara cea mai mare, apoi cu scara elementului.
   const tolArce = TOLERANTA_PROIECT / (sW * Math.max(Math.abs(sx), Math.abs(sy)));
   switch (f.tip) {
+    case 'relief': {
+      // Celula rămâne pătrată (ADR 0310 §1): doar scalarea uniformă, care o mărește; în plafoanele grilei (ADR 0311 §1).
+      if (!u) return 'relief-neuniform';
+      const celula = f.celula * Math.abs(sx);
+      if (!(celula >= CELULA_RELIEF_MINIMA && celula <= CELULA_RELIEF_MAXIMA) || f.nx * celula > PLAFON.latura || f.ny * celula > PLAFON.latura) {
+        return 'scara-invalida';
+      }
+      return { ...f, celula };
+    }
     case 'dreptunghi': {
       const latime = f.latime * Math.abs(sx), inaltime = f.inaltime * Math.abs(sy);
       if (f.razaColt === 0) return { ...f, latime, inaltime, razaColt: 0 };
@@ -415,6 +429,7 @@ function oglindeste(
  * transformă ca orice cubică: exact față de cubice, la cel mult `tolArce` · |A| de arcul înclinat.
  */
 function aplicaFormei(f: FormaDoc, A: Matrice, tolArce: number | null): FormaDoc | MotivTransformare {
+  if (f.tip === 'relief') return 'relief-neuniform';
   const c = caleDinForma(f);
   if (tolArce === null && areArcCale(c)) return 'inclinare-arc';
   const { varfuri } = tolArce === null ? c : arceInCubiceCale(c, tolArce);

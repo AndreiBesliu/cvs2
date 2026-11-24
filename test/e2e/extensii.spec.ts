@@ -187,6 +187,23 @@ test('din fișier: confirmarea, meniul, fereastra izolată peste Proiectare, ×,
   await expect(cadru(page).locator('[data-salut="deschideri"]')).toHaveText('Deschideri: 1');
 });
 
+test('un clic care nu ajunge la butonul de închidere din cadru (primul, înghițit, ca în completul de pe main din 24.11) nu lasă proba agățată: ajutorul îl repetă', async ({ page }) => {
+  await page.goto('/');
+  await page.locator('[data-extensii="fisier-ales"]').setInputFiles({ name: 'salut-1.0.0.zip', mimeType: 'application/zip', buffer: Buffer.from(SALUT) });
+  await page.locator('[data-extensii="instaleaza"]').click();
+  await expect(page.getByTestId('extensii-instalare')).toHaveCount(0);
+  await (await meniul(page)).locator('[data-extensii="deschide"][data-id="salut"]').click();
+  await expect(page.getByTestId('spatiu-extensie')).toHaveAttribute('data-stare', 'pornit');
+  // Primul clic pe „Închide” e oprit înainte să ajungă la extensie, o singură dată: ce s-a văzut în CI (cadrul rămas deschis).
+  await cadru(page).locator('[data-salut="inchide"]').evaluate((b) => {
+    b.addEventListener('click', (e) => { e.stopImmediatePropagation(); e.preventDefault(); b.setAttribute('data-clic-inghitit', ''); }, { capture: true, once: true });
+  });
+  await clicCareInchideCadrul(page, '[data-salut="inchide"]');
+  await expect(page.getByTestId('spatiu-extensie')).toHaveCount(0);
+  await expect(page.locator('iframe.cadru-extensie')).toHaveCount(0);
+  expect(await eroriJurnal(page)).toEqual([]);
+});
+
 test('fără permisiunea stocării, extensia nu-și poate ține datele; fereastra instalării spune că nu cere nimic', async ({ page }) => {
   const fara = await varianta((m) => { m.permisiuni = []; });
   await page.goto('/');

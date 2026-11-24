@@ -107,8 +107,21 @@ test('CSV-ul cu felurile noi (ADR 0302, 16.A↑h-4): bila, toroidala cu raza, co
   assert.equal(r.sarite, 0);
 });
 
+test('CSV-ul cu profilurile (ADR 0302, 16.A↑h-5): rotunjirea, ogee-ul, ogee-ul roman cu treapta, panoul; numele și în engleză', () => {
+  const r = citesteFisierFreze(enc('nume;fel;diametru;unghi;varf;raza;treapta\nA;rotunjire;12;;;3;\nB;ogee;18;;;3;\nC;ogee roman;21;;;3;1,5\nD;panou ridicat;50,8;12;6,35;;\n'
+    + 'E;roundover;10;;;2;\nF;Roman ogee;16;;;2;1\nG;raised panel;38,1;15;6,35;6,35;\nH;ogee-roman;21;;;3;1,5\n'));
+  assert.ok(r.ok);
+  assert.deepEqual(r.freze.map((f) => [f.nume, f.fel, f.unghi, f.varf, f.raza, f.treapta]), [
+    ['A', 'rotunjire', undefined, undefined, 3, undefined], ['B', 'ogee', undefined, undefined, 3, undefined],
+    ['C', 'ogee-roman', undefined, undefined, 3, 1.5], ['D', 'panou', 12, 6.35, undefined, undefined],
+    ['E', 'rotunjire', undefined, undefined, 2, undefined], ['F', 'ogee-roman', undefined, undefined, 2, 1],
+    ['G', 'panou', 15, 6.35, 6.35, undefined], ['H', 'ogee-roman', undefined, undefined, 3, 1.5],
+  ]);
+  assert.equal(r.sarite, 0);
+});
+
 test('coloanele CSV, în ordinea din manual', () => {
-  assert.deepEqual(COLOANE_CSV, ['nume', 'fel', 'diametru', 'unghi', 'varf', 'numar', 'turatie', 'avans', 'plonjare', 'pas', 'pas_lateral', 'tais', 'taisuri', 'nota', 'grup', 'raza']);
+  assert.deepEqual(COLOANE_CSV, ['nume', 'fel', 'diametru', 'unghi', 'varf', 'numar', 'turatie', 'avans', 'plonjare', 'pas', 'pas_lateral', 'tais', 'taisuri', 'nota', 'grup', 'raza', 'treapta']);
 });
 
 function farăNedefinite(f: Freza): Freza {

@@ -121,8 +121,10 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
   a vârfului: zero fișiere schimbate în afara `.md`). Câștigul: o jumătate de oră.
 - **Intervalele ADR, la 24.11:** 0145–0149 sesiunea principală (lângă plafoanele 0143, 0144; 0145 e plafonul pornirii),
   0230–0239 biblioteca, 0240–0249 ancorele, 0250–0259 aranjamentele, 0260–0269 adminul, 0270–0279 trasarea, 0280–0289
-  pluginul, 0290–0299 exportul, 0300–0309 frezele, 0310–0329 relieful, 0330–0339 cotele. Următoarea linie nouă ia de
-  la 0340.
+  pluginul (din 24.11 seara, întreg al liniei atelierului Easy 3Draw: 0283 pentru 3.Tu, 0284 construcțiile, cu
+  feliile 3.Ca–3.Cj), 0290–0299 exportul, 0300–0309 frezele, 0310–0329 relieful, 0330–0339 cotele, 0340–0349 tot
+  atelierul, după 0289. Următoarea linie nouă ia de la 0350. **Numerele unei linii noi se dau înainte ca linia să-i
+  ceară owner-ului acceptarea ADR-ului** (24.11: atelierul avea ADR-ul acceptat sub 0284 când a citit „0340”).
 - **Un PR rămas deschis după unire** (ramura a mers mai departe peste commit-ul unit, deci GitHub nu-l închide) se
   închide doar la cuvântul owner-ului, cu un comentariu care trimite la commit-ul de unire; înainte, se uită ce mai e
   pe ramură: pe 24.11, la `#16`, frezele aveau deja două felii noi, neunite, pentru care linia deschide alt PR.
@@ -150,14 +152,13 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
   printr-o schiță.
 - **Observabilitatea:** erorile ajung în jurnalul aplicației; joburile își lasă marcajul.
 
-## Starea pe 24.11.2026, seara (după a douăzeci și doua unire din cloud)
+## Starea pe 24.11.2026, noaptea (după a douăzeci și cincea unire din cloud)
 
-- **Pe test:** `29ef7e44` (tot până la lotul al optsprezecelea: cotele 10.4↑a-1, 3.Tt, reparația utilizării mașinii,
-  comenzile foii pe pânză, butonul Admin, proba repornirii extensiei; publicat pe 24.11 la 17:50, fără server; proba de
-  fum, bună). În drum: loturile 19–22 (`62569bb2`): publicarea loturilor 19–21 a căzut la o probă instabilă a
-  extensiilor (`extensii.spec.ts:135`; reparată pe `unire-2411z`, intră cu lotul 25), iar completul lotului 22
-  pe `main` rula la 20:10. Loturile 23 și 24 sunt în `main`; lotul 25 (reparația probei extensiilor și 11.1↑d) e în
-  porți pe `unire-2411aa`. După el, o singură publicare pentru loturile 23–25.
+- **Pe test:** `62569bb2` (tot până la lotul 22: frezele din Tăierea și setul de pornire, „Frezele mele” ca listă, cu
+  grupuri, unealta Cote, căutarea și rafturile din biblioteca extensiilor, oracolul rampelor împărțit; publicat pe
+  24.11 la 20:32, fără server; proba de fum, bună). Publicarea loturilor 19–21 singure căzuse la o probă instabilă a
+  extensiilor (`extensii.spec.ts:135`), reparată în lotul 25. În drum: loturile 23–27, într-o singură publicare,
+  pornită după unirea reliefului (lotul 27).
 - **`main`, din cloud:** pe 23.11: 3.Tq (`0ae9c6c1`); 11.3↑e și A.4 (`ddaa7ead`); 3.Tr, unită de linia elicelor
   (`d262e57a`); 25.8↑a și A.5 (`1b46c955`), cu reparația probei extensiilor (`8287d66e`); 11.3↑f, unită de linia
   planșelor (`f4601938`); A.6 (`4497d639`); 3.Xh (`2d1e482c`) și 12.1↑e-3 cu 12.1↑e-4 (`03460cab`); A.8a cu A.8b
@@ -168,15 +169,19 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
   scrise în sesiunea principală (`7584747a`); proba repornirii extensiei, reparată (`29ef7e44`); 16.A↑b-2 și 16.A↑a-2
   (`33fadb06`), 10.4↑a-2 (`f3283b33`), 16.A↑h-1 și 16.A↑h-2 (`db43ed08`); oracolul rampelor împărțit (`b2a56e23`) și
   3.Xj (`049c5dda`); cele două teste grele împărțite (`49ce2793`), 10.4↑a-3 (`08e2e50d`), 16.A↑h-3 și h-4
-  (`9fd71053`); fereastra exportului, 28.8↑a–g (`c4ca5ec2`), și 3.Xk (`373699e6`).
+  (`9fd71053`); fereastra exportului, 28.8↑a–g (`c4ca5ec2`), și 3.Xk (`373699e6`); proba extensiilor, reparată
+  (`13d9bcad`), 11.1↑d (`001b6325`) și 3.At (`cadac6c3`), scrise în sesiunea principală; 16.A↑h-5 (`4aee5405`) și
+  16.A↑b-3 (`fdde5947`); 18.1↑a, relieful, cu documentul v28 (`c5b79526`).
 - **Liniile** (vezi [indexul](README.md)):
-  - **în lucru, pe ramuri:** frezele (16.A↑h-5, profilurile parametrice, ADR 0302 §7, pe `wip/16.A-freze`; 16.A↑b-3,
-    lista „Din frezele mele” pe rândurile exportului, peste fereastra nouă, pe `wip/16.A-freze-b3`,
-    `AndreiBesliu/cvs2#26`; se unesc în ordinea h-5, apoi b-3), relieful (18.1↑a, `wip/18.1-relief`,
-    `AndreiBesliu/cvs2#25`, cu v28: își aduce `main` și își reface porțile; intră singur în lotul lui), cotele
-    (10.4↑a-4, panoul cotei); se unesc la raportul liniei;
-  - **la owner:** elicele (3.Tu: unde stă axul pieselor rotunde în vederea „Modelul” din Easy 3Draw; trei întrebări,
-    cu recomandările liniei: 1a, 2a, 3a; ar fi Easy 3Draw 18.24.0 și ADR 0283);
+  - **în lucru, pe ramuri:** frezele (16.A↑b-5: fundul plat, frezele de rest, dopul și banda; apoi b-4), cotele
+    (10.4↑a-4, panoul cotei, și 10.4↑b: raza, diametrul, unghiul, inch în fracții; un singur raport, după `main`
+    cu relieful), relieful (18.1↑b), atelierul (3.Ca, cu porțile în lucru); se unesc la raportul liniei;
+  - **la owner:** 3.Tu (unde stă axul pieselor rotunde în vederea „Modelul” din Easy 3Draw; trei întrebări, cu
+    recomandările 1a, 2a, 3a, în `docs/linii/elice.md`; ADR 0283): din 24.11 seara, a liniei atelierului;
+  - **pornită pe 24.11, cu ADR-ul propus întâi:** atelierul Easy 3Draw (piese și configuratoare noi, compatibile în
+    construcții; cererea owner-ului, în sesiunea liniei bibliotecii, pe ramura ei; ADR 0284, acceptat cu 1a–4a,
+    feliile 3.Ca–3.Cj; 3.Ca, conectorul perpendicular, gata pe ramură, cu porțile în lucru;
+    ia și lucrul liniei elicelor, predat pe 24.11 seara la cererea owner-ului: 3.Tu, la răspunsurile lui);
   - **la cuvântul owner-ului:** următoarea felie a bibliotecii extensiilor, a incrustațiilor și a trasării, 11.5↑b
     (după etapa 13);
   - **fără felie în lucru:** planșele (tăierea plăcii 11, la owner), incrustațiile, trasarea, tăierea (după
@@ -185,13 +190,15 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
     owner-ului, cu un brief scris de sesiunea principală și lipit de owner într-o sesiune cloud nouă;
   - **încheiate:** ancorele (6.V↑), raportările (15.B↑b), galeria (3.Tp, ADR 0281), probele instabile, adminul
     (ADR 0260 și 0262: A.1–A.11, cu A.7 unită pe 24.11), fereastra exportului (ADR 0290: 28.8↑a–g, unite pe 24.11;
-    sesiunea se poate arhiva), biblioteca extensiilor (3.Xh–3.Xk; ce urmează, la cuvântul owner-ului).
+    sesiunea se poate arhiva), biblioteca extensiilor (3.Xh–3.Xk; ce urmează, la cuvântul owner-ului), elicele
+    (3.Tq–3.Tt; linia predată atelierului, sesiunea ei se poate arhiva după lotul 25).
 - **La owner:**
   - „cine unește în `main`” (recomandarea: doar sesiunea principală; pe 23–24.11, biblioteca și frezele au scris întâi
     aici, iar felia era deja în lot: unirea a rămas aici);
   - arhivarea sesiunii exportului (se poate, din 24.11) și ștergerea ramurii ei de pe `origin`;
-  - cele trei întrebări ale liniei elicelor (axul pieselor rotunde în „Modelul”);
-  - plafonul total: 856,8 / 900 kB, mai sunt 43,2 kB (relieful cere ~13, b-3 ~1,2);
+  - cele trei întrebări ale lui 3.Tu (axul pieselor rotunde în „Modelul”), acum la linia atelierului;
+  - plafonul total: 873,5 / 900 kB după relief, deci rămân 26,5 kB (cotele a-4 și b cer ~4,2); pornirea cu ușa și
+    cu Atelierul, 116,2 / 120 (rămân 3,8 kB);
   - verificarea juridică (GDPR) a utilizării aplicației, înaintea live-ului (ADR 0262 §3); pe test, colectarea merge
     din 24.11;
   - fondul semnului lui Easy 3Draw (gri-albăstrui, nu crem) și rândul de „ce e nou” al lui 18.20.0;
@@ -199,12 +206,12 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
     mai scurtă (fără al doilea complet pe `main` când codul e identic cu cel verificat; schimbă o regulă a porților),
     lista „ce e nou pe test, de încercat”, rezumatul pentru verificarea juridică, lista ramurilor unite de șters.
     Fără răspuns, niciuna nu pornește.
-- **Plafoanele:** totalul e 856,8 / 900 kB după lotul 24 (ADR 0301, decizia owner-ului din noaptea de 23 spre 24.11;
-  fereastra exportului a adus 16,3 kB). **Pornirea e 120 kB din 24.11** (ADR 0145, „ok, ridica plafonul pornirii la
-  120 kB”, spus în sesiunea principală): 110,4, cu ușa 115,1, cu Atelierul 115,4, deci mai sunt ~4,6 kB. Regula feliilor rămâne: ce nu trebuie înaintea primei randări stă la
+- **Plafoanele:** totalul e 873,5 / 900 kB după lotul 27 (ADR 0301, decizia owner-ului din noaptea de 23 spre 24.11;
+  fereastra exportului a adus 16,3 kB, relieful 13,4). **Pornirea e 120 kB din 24.11** (ADR 0145, „ok, ridica plafonul pornirii la
+  120 kB”, spus în sesiunea principală): 110,9, cu ușa 115,9, cu Atelierul 116,2, deci mai sunt 3,8 kB. Regula feliilor rămâne: ce nu trebuie înaintea primei randări stă la
   cerere, iar felia își spune în raport cât adaugă în pornire.
-- **Documentul e v27** (frezele, 16.A↑b-1). **v28 e dat reliefului** (forma `relief`, 18.1↑a); cotele nu cer schemă;
-  următorul liber e v29 (operațiile pe relief cu freza bilă; toroidala și profilul desenat ale frezelor): numărul se
+- **Documentul e v28** (relieful: forma `relief`, 18.1↑a, în `main` din 24.11; v27, frezele, 16.A↑b-1). Cotele nu cer
+  schemă; următorul liber e v29 (operațiile pe relief cu freza bilă; toroidala și profilul desenat ale frezelor): numărul se
   dă când felia ajunge la migrare, iar unirile cu schemă intră în `main` în ordinea numerelor. O probă care citește documentul salvat cere versiunea
   curentă (`placute.spec.ts` a căzut cu `schema: 26` în completul liniei frezelor).
 - **De urmărit:** în panoul foii, la 1400 px, etichetele „Numele” și „Materialul” apar tăiate la o literă (văzut de
@@ -229,6 +236,8 @@ folosite la unire și publicare:
 - un rezultat geometric se privește pe cazul REAL, mărit și întreg, înaintea raportului.
 - un clic în cadrul unei extensii care îi închide sau îi reface cadrul nu se așteaptă cu `click()`: se așteaptă
   urmarea lui (`clicCareInchideCadrul`, `clicCareRefaceCadrul` din `test/e2e/ajutor-extensii.ts`);
+- o cădere din CI care nu se reproduce local se provoacă: se strică anume pasul bănuit (clicul înghițit o dată) și
+  se arată că ajutorul vechi cade, iar cel nou trece (24.11, `extensii.spec.ts:135`: 150 din 150 treceau local);
 - o probă pe corpus care trece de un minut se împarte pe părți ale corpusului, câte un fișier pe parte, cu pragurile
   pe părți și cu proba care păzește împărțirea (`test/unit/ajutor-parti.ts`; 24.11: oracolul rampelor, căile netede
   din multe cubice, echivalența porții); listele de otrăvuri care numeau fișierul întreg primesc și părțile;

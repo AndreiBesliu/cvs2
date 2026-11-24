@@ -8,7 +8,7 @@ import { numarSegmente, segment, type Contur } from '../geom/conturBaza.ts';
 import type { PunctTinta, SursaPuncte } from '../geom/lipirePuncte.ts';
 import { punctLoc } from './cote.ts';
 import type { Document, LegaturaCota, LocCota } from './document.ts';
-import { conturElement, cutieElement } from './forme.ts';
+import { chenarElement, cutieElement } from './forme.ts';
 import { elementeFoaie, type ElementLume } from './lume.ts';
 
 /**
@@ -60,7 +60,8 @@ export function surseCote(doc: Document, indexFoaie: number): SursaPuncte<Legatu
   return elementeFoaie(doc, indexFoaie).map((e) => {
     let puncte: PunctTinta<LegaturaCota>[] | null = null;
     let contur: Contur | null = null;
-    const c = (): Contur => (contur ??= conturElement(e));
+    // Chenarul (ADR 0310 §1): la un relief, dreptunghiul grilei; la celelalte forme, conturul exact.
+    const c = (): Contur => (contur ??= chenarElement(e));
     return { cutie: cutieElement(e), puncte: () => (puncte ??= puncteElement(e, c())), contur: c };
   });
 }

@@ -13,7 +13,7 @@ export const FORMAT_FREZE = 'cncvs2-freze';
 export const VERSIUNE_FISIER_FREZE = 1;
 
 /** Coloanele CSV, în ordinea din manual. */
-export const COLOANE_CSV = ['nume', 'fel', 'diametru', 'unghi', 'varf', 'numar', 'turatie', 'avans', 'plonjare', 'pas', 'pas_lateral', 'tais', 'taisuri', 'nota', 'grup', 'raza'] as const;
+export const COLOANE_CSV = ['nume', 'fel', 'diametru', 'unghi', 'varf', 'numar', 'turatie', 'avans', 'plonjare', 'pas', 'pas_lateral', 'tais', 'taisuri', 'nota', 'grup', 'raza', 'treapta'] as const;
 type ColoanaCsv = (typeof COLOANE_CSV)[number];
 
 export type MotivFisierFreze = 'gol' | 'json' | 'format' | 'versiune' | 'coloane' | 'prea-mare' | 'prea-multe';
@@ -63,6 +63,8 @@ const FELURI: Readonly<Record<string, FelFreza>> = {
   plata: 'plata', 'plată': 'plata', flat: 'plata', v: 'v', gravare: 'gravare', engraving: 'gravare',
   bila: 'bila', 'bilă': 'bila', ball: 'bila', toroidala: 'toroidala', 'toroidală': 'toroidala', bullnose: 'toroidala',
   conica: 'conica', 'conică': 'conica', tapered: 'conica', burghiu: 'burghiu', drill: 'burghiu',
+  rotunjire: 'rotunjire', roundover: 'rotunjire', ogee: 'ogee', 'ogee-roman': 'ogee-roman', 'ogee roman': 'ogee-roman',
+  'roman ogee': 'ogee-roman', panou: 'panou', 'panou ridicat': 'panou', 'raised panel': 'panou',
 };
 
 /** Un număr dintr-o celulă; cu `virgula`, și „3,175”. Gol: `undefined`; altceva decât un număr zecimal: NaN. */
@@ -98,7 +100,7 @@ function dinCsv(text: string): CitireFreze {
     const grup = (cel('grup') ?? '').trim();
     const f: Record<string, unknown> = {
       nume: (cel('nume') ?? '').trim(), fel, diametru,
-      unghi: nr('unghi'), varf: nr('varf'), raza: nr('raza'),
+      unghi: nr('unghi'), varf: nr('varf'), raza: nr('raza'), treapta: nr('treapta'),
       numar: nr('numar') ?? 1,
       turatie: nr('turatie') ?? 18000, avans: nr('avans') ?? 1000, plonjare: nr('plonjare') ?? 300,
       pas: nr('pas') ?? (fel === 'plata' ? diametru / 2 : 1),

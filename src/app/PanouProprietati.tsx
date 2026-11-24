@@ -6,7 +6,7 @@ import '../ui/actiuniDocumentCalcul.ts';
 import '../i18n/carcasa.ts';
 import '../i18n/export.ts';
 import { t } from '../i18n/t.ts';
-import { inaltimeConV, PLAFON, type Document, type FormaDoc, type ImagineFoaie, type Incrustatie, type Operatie, type Piesa } from '../model/document.ts';
+import { inaltimeConV, PLAFON, type Document, type FormaDoc, type FormaRelief, type ImagineFoaie, type Incrustatie, type Nod, type Operatie, type Piesa } from '../model/document.ts';
 import { esteGaura, PUNTI_DOP_DREPT, susLaMicron, valoriBanda, valoriIncrustatie, valoriIncrustatieDreapta } from '../model/incrustatie.ts';
 import { jsonCanonic } from '../model/jsonCanonic.ts';
 import { materialFoaie, numeFoaie } from '../model/foi.ts';
@@ -26,9 +26,7 @@ import { ImaginiFoii } from './ImaginiFoii.tsx';
 import { PanouCota } from './PanouCota.tsx';
 import { useStareCote } from '../ui/coteVedere.ts';
 import { useRoluriMele } from './roluriMele.ts';
-import { useContTinut } from './dreptCont.ts';
-import { CHEIE_LOCALA, cheieBibliotecii, frezeMele, useFrezeMele } from './frezeMele.ts';
-import { cuFrezeleStandard } from './frezeStandard.ts';
+import { useBibliotecaProiect } from './bibliotecaProiect.ts';
 import { cuMajuscula, frezaComuna, plusMinus } from './taiereButoane.ts';
 import type { Taierea } from '../ui/aranjament.ts';
 import { CampNumeric } from '../ui/CampNumeric.tsx';
@@ -37,6 +35,7 @@ import { valoareDerivata } from '../ui/numar.ts';
 import { useLimba } from '../ui/useLimba.ts';
 import { mesajeGata } from '../i18n/laCerere.ts';
 import { numarUrechiAlese } from '../model/urechiLocuri.ts';
+import { cheieDesen } from './reliefDesen.ts';
 
 /** «Din CSV…» (ADR 0210 §4), adusă la primul clic: fereastra și cititorul tabelului nu stau în panou. */
 const DialogCsv = lazy(() => import('./DialogCsv.tsx').then((m) => ({ default: m.DialogCsv })));
@@ -79,6 +78,11 @@ type Props = {
    */
   readonly onImagini?: (lista: readonly ImagineFoaie[]) => RezultatActiune;
   readonly octetiImagini?: ReadonlyMap<string, Blob | null>;
+  /**
+   * Desenul unui relief (ADR 0310 §7), după cheia lui (`cheieDesen`): Z-ul compusului; null: straturile lipsesc din browser;
+   * lipsă: încă se calculează.
+   */
+  readonly desenRelief?: (cheie: string) => { readonly z: { readonly min: number; readonly max: number } | null } | null | undefined;
   /** „Calibrează” și „Trasează…” pe o imagine a foii (ADR 0272 §6, §7; felia 25.8↑b): modul pânzei. */
   readonly onModImagine?: (fel: 'calibrare' | 'zona', id: string) => void;
   /** Rolul de tăiere al pieselor alese (ADR 0112), de bază sau personalizat (ADR 0114): le înlocuiește operațiile cu ale rolului. */
@@ -119,6 +123,13 @@ function motivPlacuta(r: Extract<RezultatPlacuta, { readonly ok: false }>): stri
 }
 
 /** Un rând „etichetă: valoare”, doar de citit. */
+/** Elementele `relief` ale unui arbore (ADR 0310 §1), în ordinea lui. */
+function reliefuriNod(n: Nod, r: Array<{ readonly id: string; readonly forma: FormaRelief }> = []): Array<{ readonly id: string; readonly forma: FormaRelief }> {
+  if (n.tip === 'grup') for (const c of n.copii) reliefuriNod(c, r);
+  else if (n.forma.tip === 'relief') r.push({ id: n.id, forma: n.forma });
+  return r;
+}
+
 const rand = (eticheta: string, valoare: ReactNode): ReactNode => (
   <div className="prop-rand" key={eticheta}><dt>{eticheta}</dt><dd>{valoare}</dd></div>
 );
@@ -199,7 +210,7 @@ function operatie(o: Operatie, n: number, grosimeFoaie?: number): ReactNode {
  */
 export function PanouProprietati({
   doc, indexFoaie = 0, alese, elemente, cutie, doarCitire, onPozitie, onRotire, onForma, onStoc, onEticheta, onRol, onOperatii, onEditeazaOperatii,
-  onPlusUnu, onInca, onDesprinde, onPlacuta, taierea = 'lista', trimite, onTrimite, onImagini, octetiImagini, onModImagine,
+  onPlusUnu, onInca, onDesprinde, onPlacuta, taierea = 'lista', trimite, onTrimite, onImagini, octetiImagini, onModImagine, desenRelief,
 }: Props): ReactNode {
   const limba = useLimba();
   const butoane = taierea === 'butoane';
@@ -219,15 +230,7 @@ export function PanouProprietati({
   // browser (fără sincronizare: aceea e a ferestrei „Frezele mele”), dacă are freze sau a primit setul standard; altfel cea
   // fără cont, care primește frezele standard o dată (ADR 0300 §3, precizarea din 24.11). Și refuzul ultimei freze alese,
   // pentru selecția de atunci.
-  const cheieCont = cheieBibliotecii(useContTinut());
-  const dinCont = useFrezeMele(cheieCont);
-  const faraCont = useFrezeMele(CHEIE_LOCALA);
-  const biblioteca = cheieCont !== CHEIE_LOCALA && (dinCont.standard || dinCont.freze.length > 0) ? dinCont : faraCont;
-  useEffect(() => {
-    const b = frezeMele(cheieCont);
-    if (!b.stare().incarcata) void b.incarca();
-    void cuFrezeleStandard();
-  }, [cheieCont]);
+  const biblioteca = useBibliotecaProiect();
   const [refuzFreza, setRefuzFreza] = useState<{ readonly cheie: string; readonly motiv: string } | null>(null);
   // Literele plăcuței în lucru (fontul se aduce) sau refuzul lor, pentru selecția de atunci (ADR 0210 §4); «Din CSV…»
   // deschisă (pentru selecția de atunci) și ce a făcut ultima ei rulare.
@@ -735,6 +738,31 @@ export function PanouProprietati({
           {piesa && instanta.texte && textIese(piesa, instanta.texte) && <p className="camp-motiv" data-testid="placuta-iese">{t('prop.placuta.iese')}</p>}
         </section>
       )}
+      {/* Relieful (ADR 0310 §7): mărimea, grila, Z-ul compusului și straturile, de sus în jos; în felia asta, doar de citit. */}
+      {piesa && reliefuriNod(piesa.radacina).map(({ id, forma: f }) => {
+        const d = desenRelief?.(cheieDesen(f));
+        return (
+          <section key={`${cheie}/relief/${id}`} data-testid="prop-relief" data-relief={id}>
+            <h3>{t('prop.relief')}</h3>
+            <dl>
+              {rand(t('prop.relief.marime'), t('prop.mm2', { latime: mm(f.nx * f.celula), inaltime: mm(f.ny * f.celula) }))}
+              {rand(t('prop.relief.celula'), t('prop.relief.celula.valoare', { mm: String(Number(f.celula.toFixed(4))) }))}
+              {rand(t('prop.relief.celule'), t('prop.relief.celule.valoare', { nx: f.nx, ny: f.ny }))}
+              {rand(t('prop.relief.z'), d === undefined ? t('prop.relief.z.calcul') : d === null ? t('prop.relief.z.lipsa')
+                : d.z === null ? '—' : t('prop.relief.z.valoare', { min: mm(d.z.min), max: mm(d.z.max) }))}
+            </dl>
+            <p className="prop-grup">{t('prop.relief.straturi')}</p>
+            <ul className="prop-straturi" data-testid="prop-relief-straturi">
+              {[...f.straturi].reverse().map((st) => (
+                <li key={st.id} data-strat={st.id} data-vizibil={st.vizibil}>
+                  {st.nume ?? st.id}{' · '}{t(`prop.relief.mod.${st.mod}`)}{st.vizibil ? '' : ` · ${t('prop.relief.ascuns')}`}
+                </li>
+              ))}
+            </ul>
+            {d === null && <p className="camp-motiv" data-testid="prop-relief-lipsa">{t('prop.relief.lipsa')}</p>}
+          </section>
+        );
+      })}
       {par && (
         <section data-testid="prop-forma" data-forma={par.tip}>
           <h3>{t(`prop.forma.${par.tip}`)}</h3>

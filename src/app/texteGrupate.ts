@@ -29,7 +29,7 @@ export function texteGrupate(
   const viziteaza = (n: Nod, sus: Matrice, text: { grup: string; cutie: Cutie } | null): void => {
     const m = compune(sus, n.matrice);
     if (n.tip === 'element') {
-      if (!text) return;
+      if (!text || n.forma.tip === 'relief') return;
       text.cutie = uneste(text.cutie, cutieContur(conturElement({ forma: n.forma, matrice: m })));
       return;
     }
