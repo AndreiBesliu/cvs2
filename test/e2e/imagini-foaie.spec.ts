@@ -323,3 +323,193 @@ test('o poză peste 16 Mpx se păstrează redusă, ca la trasare (nu fișierul �
   // Pixelul ține cât al fișierului: imaginea are lățimea lui întreagă.
   expect(Math.abs(im.latime - 4200 * MM)).toBeLessThan(1e-6);
 });
+
+/** Un punct al imaginii pusă cu „Doar imaginea” fără lăsare (800 × 560 px, colțul stânga-jos în originea foii), în mm. */
+const px = (x: number, y: number): { x: number; y: number } => ({ x: x * MM, y: (560 - y) * MM });
+
+type Nod = { tip: 'element' | 'grup'; matrice: { a: number; b: number; c: number; d: number; e: number; f: number }; copii?: Nod[];
+  forma?: { tip: string; varfuri?: Array<{ p: { x: number; y: number } }> } };
+type DocPiese = {
+  rev: number; piese: Array<{ id: string; radacina: Nod }>;
+  foi: Array<{ imagini?: Imagine[]; instante: Array<{ piesa: string; x: number; y: number; rotire: number }> }>;
+};
+
+/** Vârfurile tuturor căilor de pe foaia 1, în mm ai foii (prin matricile nodurilor și ale instanței), și cutia lor. */
+function cutieVarfuri(d: DocPiese): { minX: number; minY: number; maxX: number; maxY: number; varfuri: Array<{ x: number; y: number }> } {
+  const k = { minX: Infinity, minY: Infinity, maxX: -Infinity, maxY: -Infinity, varfuri: [] as Array<{ x: number; y: number }> };
+  type M = Nod['matrice'];
+  const ori = (m2: M, m1: M): M => ({
+    a: m2.a * m1.a + m2.c * m1.b, b: m2.b * m1.a + m2.d * m1.b, c: m2.a * m1.c + m2.c * m1.d, d: m2.b * m1.c + m2.d * m1.d,
+    e: m2.a * m1.e + m2.c * m1.f + m2.e, f: m2.b * m1.e + m2.d * m1.f + m2.f,
+  });
+  const merge = (n: Nod, m: M): void => {
+    const mm = ori(m, n.matrice);
+    for (const c of n.copii ?? []) merge(c, mm);
+    for (const v of n.forma?.varfuri ?? []) {
+      const x = mm.a * v.p.x + mm.c * v.p.y + mm.e, y = mm.b * v.p.x + mm.d * v.p.y + mm.f;
+      k.minX = Math.min(k.minX, x); k.maxX = Math.max(k.maxX, x); k.minY = Math.min(k.minY, y); k.maxY = Math.max(k.maxY, y);
+      k.varfuri.push({ x, y });
+    }
+  };
+  for (const i of d.foi[0]?.instante ?? []) {
+    const p = d.piese.find((x) => x.id === i.piesa);
+    const r = (i.rotire * Math.PI) / 180;
+    const exacte: Record<number, [number, number]> = { 0: [1, 0], 90: [0, 1], 180: [-1, 0], 270: [0, -1] };
+    const [cos, sin] = exacte[i.rotire] ?? [Math.cos(r), Math.sin(r)];
+    if (p) merge(p.radacina, { a: cos, b: sin, c: -sin, d: cos, e: i.x, f: i.y });
+  }
+  return k;
+}
+
+/** O imagine desenată, pusă cu „Doar imaginea” (fără vectori); rândul ei din panou. */
+async function doarImaginea(page: Page): Promise<void> {
+  await page.goto('/');
+  await alegeImaginea(page, 'schita.png', { fel: 'desen' });
+  await page.locator('[data-buton="doar-imaginea"]').click();
+  await expect(page.getByTestId('trasare-panou')).toHaveCount(0);
+  await expect(page.locator('[data-testid="prop-imagini"] [data-imagine="im1"] img.prop-imagine-mini')).toHaveAttribute('src', /^blob:/);
+}
+
+test('„Calibrează”: două clicuri pe imagine (Shift: pe axa ei) și distanța adevărată; scalată în jurul primului punct, un pas', async ({ page }) => {
+  await doarImaginea(page);
+  const im0 = (await doc(page, 1)).foi[0]?.imagini?.[0];
+  if (!im0) throw new Error('fără imagine');
+  const rand = page.locator('[data-testid="prop-imagini"] [data-imagine="im1"]');
+  // Ascunsă cât ține modul, imaginea îl închide; ascunsă, butoanele ei nu merg.
+  await rand.locator('[data-buton="imagine-calibreaza"]').click();
+  const banda = page.getByTestId('banda-imagine');
+  await expect(banda).toContainText('Calibrează: schita.png');
+  await rand.locator('[data-buton="imagine-vizibila"]').click();
+  await doc(page, 2);
+  await expect(page.getByTestId('mod-imagine')).toHaveCount(0);
+  await expect(rand.locator('[data-buton="imagine-calibreaza"]')).toBeDisabled();
+  await expect(rand.locator('[data-buton="imagine-traseaza"]')).toBeDisabled();
+  await rand.locator('[data-buton="imagine-vizibila"]').click();
+  await doc(page, 3);
+  // Desfăcută: clicurile modului nu sunt ale mânerelor ei. Escape iese fără nimic schimbat.
+  await rand.locator('[data-buton="imagine-fixata"]').click();
+  await doc(page, 4);
+  await rand.locator('[data-buton="imagine-calibreaza"]').click();
+  await expect(banda).toContainText('Calibrează: schita.png');
+  const e = await ecran(page, await vedere(page));
+  const p1 = e(px(100, 80).x, px(100, 80).y);
+  await page.mouse.click(p1.x, p1.y);
+  await page.keyboard.press('Escape');
+  await expect(page.getByTestId('mod-imagine')).toHaveCount(0);
+  // Din nou: un clic în afara imaginii nu pune nimic, apoi capetele laturii de sus a chenarului (px 100 și 700 pe rândul 80,
+  // 600 px = 158,75 mm). Al doilea, dat cu 60 mm mai jos, cu Shift: dus pe orizontala imaginii (fără Shift, 169,7 mm).
+  await rand.locator('[data-buton="imagine-calibreaza"]').click();
+  const afara = e(px(900, 80).x, px(900, 80).y);
+  expect(await pePanza(page, px(900, 80))).toBe(true);
+  await page.mouse.click(afara.x, afara.y);
+  await expect(page.getByTestId('imagine-motiv')).toHaveText('Clic pe imagine: capetele stau pe ea.');
+  await page.mouse.click(p1.x, p1.y);
+  await expect(page.getByTestId('imagine-ajutor')).toContainText('al doilea capăt');
+  const q2 = { x: px(700, 80).x, y: px(700, 80).y - 60 };
+  expect([await pePanza(page, px(100, 80)), await pePanza(page, q2)]).toEqual([true, true]);
+  const p2 = e(q2.x, q2.y);
+  await page.keyboard.down('Shift');
+  await page.mouse.click(p2.x, p2.y);
+  await page.keyboard.up('Shift');
+  const acum = Number((await page.getByTestId('calibrare-acum').innerText()).replace(/[^\d,]/g, '').replace(',', '.'));
+  expect(Math.abs(acum - 158.75)).toBeLessThan(0.6);
+  const camp = page.locator('[data-camp="calibrare-distanta"]');
+  await expect(camp).toBeFocused();
+  await camp.fill('300');
+  await camp.press('Enter');
+  await expect(page.getByTestId('mod-imagine')).toHaveCount(0);
+  const im1 = (await doc(page, 5)).foi[0]?.imagini?.[0];
+  if (!im1) throw new Error('fără imagine');
+  // 800 px × 300 / 600 = 400 mm; proporțiile, rotirea; punctul (100, 80) al imaginii a rămas pe loc.
+  expect(Math.abs(im1.latime - 400)).toBeLessThan(400 * 0.01);
+  expect(Math.abs(im1.latime / im1.inaltime - 800 / 560)).toBeLessThan(1e-9);
+  expect(im1.rotire).toBe(0);
+  const fix = { x: im1.x - im1.latime / 2 + (100 / 800) * im1.latime, y: im1.y + im1.inaltime / 2 - (80 / 560) * im1.inaltime };
+  expect(Math.hypot(fix.x - px(100, 80).x, fix.y - px(100, 80).y)).toBeLessThan(1);
+  // Un pas de anulare; editorul n-a ales și n-a desenat nimic, imaginea nu s-a mutat.
+  expect((await doc(page, 5)).foi[0]?.instante.length).toBe(0);
+  await page.locator('body').press('Control+z');
+  const im2 = (await doc(page, 6)).foi[0]?.imagini?.[0];
+  expect([im2?.latime, im2?.x, im2?.y]).toEqual([im0.latime, im0.x, im0.y]);
+});
+
+test('„Trasează…” din imaginea rotită de pe foaie: toată imaginea; vectorii vin exact peste ea, la scara și rotirea ei', async ({ page }) => {
+  await doarImaginea(page);
+  const rand = page.locator('[data-testid="prop-imagini"] [data-imagine="im1"]');
+  // Desfăcută, micșorată cu colțul ne (×0,75: scara nu mai e a fișierului), rotită cu 90° (Shift), apoi fixată la loc.
+  await rand.locator('[data-buton="imagine-fixata"]').click();
+  const im0 = (await doc(page, 2)).foi[0]?.imagini?.[0];
+  if (!im0) throw new Error('fără imagine');
+  const ne = { x: im0.x + im0.latime / 2, y: im0.y + im0.inaltime / 2 };
+  await trage(page, ne, { x: ne.x - im0.latime / 4, y: ne.y - im0.inaltime / 4 });
+  const im1 = (await doc(page, 3)).foi[0]?.imagini?.[0];
+  if (!im1) throw new Error('fără imagine');
+  expect(im1.latime / im0.latime).toBeLessThan(0.8);
+  const v = await vedere(page);
+  expect(await pePanza(page, { x: im1.x, y: im1.y + im1.inaltime / 2 + 24 / v.scara })).toBe(true);
+  await trage(page, { x: im1.x, y: im1.y + im1.inaltime / 2 + 24 / v.scara }, { x: im1.x - 40, y: im1.y + 1 }, true);
+  const im = (await doc(page, 4)).foi[0]?.imagini?.[0];
+  if (!im) throw new Error('fără imagine');
+  expect(im.rotire).toBe(90);
+  await rand.locator('[data-buton="imagine-fixata"]').click();
+  await doc(page, 5);
+  await rand.locator('[data-buton="imagine-traseaza"]').click();
+  await expect(page.getByTestId('banda-imagine')).toContainText('Trasează: schita.png');
+  await page.locator('[data-buton="imagine-toata"]').click();
+  // Fereastra trasării, din imaginea de pe foaie: nota, fără Mărime, fără îndreptări, fără „Păstrează” și „Doar imaginea”.
+  await expect(page.getByTestId('trasare-panou')).toBeVisible();
+  await expect(page.getByTestId('import-din-foaie')).toBeVisible();
+  await expect(page.getByTestId('trasare-scurt-cai')).toBeVisible();
+  for (const s of ['[data-grup="marime"]', '[data-camp="trasare-foaie"]', '[data-camp="trasare-rotire"]', '[data-camp="pastreaza-imaginea"]', '[data-buton="doar-imaginea"]']) {
+    await expect(page.locator(s)).toHaveCount(0);
+  }
+  await page.locator('[data-buton="importa"]').click();
+  await expect(page.getByTestId('trasare-panou')).toHaveCount(0);
+  const d = await doc(page, 6) as unknown as DocPiese;
+  expect(d.foi[0]?.instante.map((i) => i.rotire)).toEqual([90]);
+  expect(d.foi[0]?.imagini?.length).toBe(1);
+  // Chenarul gros (marginea lui de afară: px 97–703 × 77–483), la scara imaginii de pe foaie, rotit cu ea în jurul centrului
+  // ei: (u, w) → (−w, u).
+  const k = cutieVarfuri(d);
+  const m = im.latime / 800;
+  const u0 = (97 - 400) * m, u1 = (703 - 400) * m, w0 = (280 - 483) * m, w1 = (280 - 77) * m;
+  const asteptat = { minX: im.x - w1, maxX: im.x - w0, minY: im.y + u0, maxY: im.y + u1 };
+  for (const c of ['minX', 'maxX', 'minY', 'maxY'] as const) expect(Math.abs(k[c] - asteptat[c]), `${c}: ${k[c]} față de ${asteptat[c]}`).toBeLessThan(0.5);
+  // Un pas de anulare.
+  await page.locator('body').press('Control+z');
+  expect((await doc(page, 7)).foi[0]?.instante.length).toBe(0);
+});
+
+test('„Trasează…” cu o zonă trasă pe foaie peste imagine: doar discul din ea, la locul lui; raportul foii spune imaginea', async ({ page }) => {
+  await doarImaginea(page);
+  // Cu Pen-ul ales: clicurile și tragerea sunt ale modului, nu ale uneltei.
+  await page.getByRole('button', { name: /^Pen \(B\)/ }).click();
+  await page.locator('[data-testid="prop-imagini"] [data-imagine="im1"] [data-buton="imagine-traseaza"]').click();
+  await expect(page.getByTestId('banda-imagine')).toContainText('Trage peste imagine zona de trasat');
+  // Un clic (fără tragere) nu e o zonă.
+  const e = await ecran(page, await vedere(page));
+  const a = e(px(450, 120).x, px(450, 120).y), b = e(px(650, 340).x, px(650, 340).y);
+  await page.mouse.click(a.x, a.y);
+  await expect(page.getByTestId('imagine-motiv')).toHaveText('Trage un dreptunghi peste imagine (ori „Toată imaginea”).');
+  // Zona px 450–650 × 120–340 prinde doar discul plin (centrul (520, 230), raza 60): un contur, cu Ø 120 px.
+  await page.mouse.move(a.x, a.y);
+  await page.mouse.down();
+  await page.mouse.move((a.x + b.x) / 2, (a.y + b.y) / 2, { steps: 4 });
+  await expect(page.getByTestId('mod-imagine-zona')).toBeVisible();
+  await page.mouse.move(b.x, b.y, { steps: 4 });
+  await page.mouse.up();
+  await expect(page.getByTestId('trasare-panou')).toBeVisible();
+  await expect(page.getByTestId('trasare-scurt-cai')).toContainText('1 contur');
+  await page.locator('[data-buton="importa"]').click();
+  await expect(page.getByTestId('trasare-panou')).toHaveCount(0);
+  // Fiecare vârf trasat stă pe cercul discului din imagine (centrul px (520, 230), raza 60 px), la locul lui de pe foaie.
+  const { varfuri } = cutieVarfuri(await doc(page, 2) as unknown as DocPiese);
+  const c = px(520, 230);
+  expect(varfuri.length).toBeGreaterThan(3);
+  for (const q of varfuri) expect(Math.abs(Math.hypot(q.x - c.x, q.y - c.y) - 60 * MM), `${q.x}, ${q.y}`).toBeLessThan(0.3);
+  // Raportul foilor (din paletă) spune numele imaginii de pe foaie.
+  await page.locator('[data-actiune="import.svg"]').focus();
+  await page.keyboard.press('Control+k');
+  await page.locator('[id="paleta-export.raport"]').click();
+  await expect(page.getByTestId('dialog-raport').locator('[data-raport="imagini"]')).toHaveText('Imaginile foii (ajutoare de desen, nu se taie): schita.png');
+});

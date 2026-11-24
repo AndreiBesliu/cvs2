@@ -925,4 +925,22 @@ export const roEditare = {
   // Raportul foilor (ADR 0210 §6, felia 11.6↑): eticheta lui în paletă, singurul loc care o arată.
   'actiune.raport-foi': 'Raportul foilor și lista de tăiere',
   'actiune.trimite-masina': 'Trimite la mașină',
+  // „Calibrează” și „Trasează…” din imaginea de pe foaie (ADR 0272 §6, §7; felia 25.8↑b): banda modului de pe pânză.
+  'editare.imagine.calibreaza.titlu': 'Calibrează: {nume}',
+  'editare.imagine.calibreaza.ajutor1': 'Clic pe imagine, pe primul capăt al unei lungimi cunoscute (o riglă, o cotă).',
+  'editare.imagine.calibreaza.ajutor2': 'Clic pe al doilea capăt (Shift: pe axa imaginii).',
+  'editare.imagine.calibreaza.ajutor3': 'Trage capetele unde trebuie, apoi scrie distanța adevărată dintre ele.',
+  'editare.imagine.calibreaza.acum': 'Acum: {mm} mm',
+  'editare.imagine.calibreaza.distanta': 'Distanța adevărată (mm)',
+  'editare.imagine.calibreaza.aplica': 'Aplică',
+  'editare.imagine.zona.titlu': 'Trasează: {nume}',
+  'editare.imagine.zona.ajutor': 'Trage peste imagine zona de trasat, ori trasează toată imaginea.',
+  'editare.imagine.zona.toata': 'Toată imaginea',
+  'editare.imagine.renunta': 'Renunță',
+  'editare.imagine.motiv.afara': 'Clic pe imagine: capetele stau pe ea.',
+  'editare.imagine.motiv.puncte': 'Capetele sunt unul peste altul: trage-l pe al doilea mai departe.',
+  'editare.imagine.motiv.distanta': 'Scrie distanța în mm, un număr mai mare ca 0.',
+  'editare.imagine.motiv.mica': 'Așa, imaginea ar avea sub 1 mm pe o latură.',
+  'editare.imagine.motiv.trage': 'Trage un dreptunghi peste imagine (ori „Toată imaginea”).',
+  'editare.imagine.motiv.zona-afara': 'Zona trasă nu prinde nimic din imagine.',
 } as const satisfies DictionarRoPentru<typeof enEditare>;
