@@ -1340,6 +1340,61 @@ var Lego = (function (glob: typeof globalThis) {
     return { tri: prismaRasucita(ext, g, h, 2 * n, zh => (zh <= h / 2 ? zh : h - zh) * k), avert };
   }
 
+  // ---------------------------------------------------------------------------------------------- cremaliera
+  // Cremaliera (ADR 0284, felia 3.Cc), în picioare pe pat: o bară lată cât un știft, cu dinți drepți deasupra, pe lungime.
+  // Dinții au profilul cu care motorul taie roțile (`profilRoata`: 20°, capul m, piciorul 1,25·m), deci se prind cu roțile de
+  // aici: la linia de divizare, dintele are π·m / 2 − 2 · jocul (golul roții are π·m / 2 + 2 · jocul). Încap doar dinți
+  // întregi, așezați pe mijlocul piesei. Prinderea: pe știfturi (dedesubt e o placă 1 × n) sau cu găuri de știft de-a latul
+  // (ca o grindă în picioare). Linia de divizare stă la înălțimea la care axul roții pereche cade pe grilă: gaura unei
+  // cărămizi Technic ridicate cu k plăci, respectiv al k-lea rând de găuri de deasupra, cu cel mai mic k la care sub dinți
+  // rămâne lemn (0,5 mm peste placă; 0,8 mm peste lamajul găurii).
+  type CremalieraDef = { lung?: unknown; modul?: unknown; prindere?: unknown; roata?: unknown };
+  const numar = (v: unknown): number => (v === null || v === undefined || v === "" || typeof v === "boolean" ? NaN : +(v as number));
+  function cremalieraCote(d: CremalieraDef) {
+    const e = ef(), lungCerut = numar(d.lung), zCerut = numar(d.roata), mCerut = numar(d.modul);
+    const n = Math.round(Math.min(24, Math.max(2, Number.isFinite(lungCerut) ? lungCerut : 4)));
+    const z = Math.round(Math.min(80, Math.max(8, Number.isFinite(zCerut) ? zCerut : 8)));
+    const m = Math.min(3, Math.max(0.5, Math.round((Number.isFinite(mCerut) ? mCerut : 1) * 10) / 10));
+    const gauri = d.prindere === "gauri", tg = Math.tan(20 * Math.PI / 180);
+    // dintele: grosimea la linia de divizare, capul (scurtat cât vârful să rămână lat de 0,2 mm), lățimea la picior, pasul
+    const L = P.pas * n - 0.2, t = Math.PI * m / 2 - 2 * e.jocDinti, cap = Math.min(m, (t / 2 - 0.1) / tg), wr = t + 2.5 * m * tg, p = Math.PI * m;
+    const N = Math.floor((L - wr) / p + 1e-9) + 1;
+    const baza = gauri ? P.grinda_groasa / 2 : P.technic_h, treapta = gauri ? P.pas : P.placa;
+    const minim = (gauri ? P.grinda_groasa / 2 + e.lamajD / 2 + 0.8 : P.placa + 0.5) + 1.25 * m;
+    let k = 0;
+    while (baza + treapta * k - m * z / 2 < minim - 1e-9) k++;
+    const zp = baza + treapta * k - m * z / 2;
+    return { n, z, m, gauri, tg, L, t, cap, wr, p, N, k, zp, zr: zp - 1.25 * m, za: zp + cap, axa: zp + m * z / 2,
+      lungRea: Number.isFinite(lungCerut) && n !== lungCerut, roataRea: Number.isFinite(zCerut) && z !== zCerut };
+  }
+  function cremaliera(d: CremalieraDef): Corp {
+    const e = ef(), q = cremalieraCote(d), s = P.pas, g = P.grinda_groasa, h = P.lamaj_h, x0 = 0.1, x1 = s * q.n - 0.1, y0 = 0.1, y1 = s - 0.1, tri: Tri[] = [], avert: string[] = [];
+    if (q.lungRea) avert.push(tr`O cremalieră are între 2 și 24 de știfturi: am făcut-o de ${q.n}.`);
+    if (q.roataRea) avert.push(tr`Roata pereche are între 8 și 80 de dinți: am socotit-o cu ${q.z}.`);
+    // corpul de sub dinți: placa 1 × n (cu dedesubtul ei, care se prinde pe știfturi) sau bara cu găuri de știft de-a latul
+    let jos: number;
+    if (!q.gauri) { tri.push(...caramida({ celule: randCelule(q.n), placi: 1, stifturi: false }).tri); jos = P.placa - 0.01; }
+    else {
+      jos = q.zr - 0.2;
+      for (let k = 0; k < q.n; k++) {
+        const xa = k === 0 ? x0 : s * k - 0.01, xb = k === q.n - 1 ? x1 : s * (k + 1) + 0.01, ext = dreptunghi(xa, 0, xb, jos), c: P2 = [s * k + s / 2, g / 2];
+        const corp = [...inel(ext, cerc(c[0], c[1], e.gauraD / 2), c, y0 + h - 0.01, y1 - h + 0.01), ...inel(ext, cerc(c[0], c[1], e.lamajD / 2), c, y0, y0 + h), ...inel(ext, cerc(c[0], c[1], e.lamajD / 2), c, y1 - h, y1)];
+        tri.push(...axe(corp, ([u, v, w]) => [u, w, v], true));
+      }
+      jos -= 0.01;
+    }
+    // bara cu dinți, văzută din lateral (x, z): fundul, apoi, de la dreapta la stânga, dinții (picior, cap, cap, picior)
+    const bara: Poli = [[x0, jos], [x1, jos], [x1, q.zr]], mij = (x0 + x1) / 2;
+    for (let i = q.N - 1; i >= 0; i--) {
+      const xc = mij + (i - (q.N - 1) / 2) * q.p, jr = q.wr / 2, jc = q.t / 2 - q.cap * q.tg;
+      bara.push([xc + jr, q.zr], [xc + jc, q.za], [xc - jc, q.za], [xc - jr, q.zr]);
+    }
+    bara.push([x0, q.zr]);
+    // pieptenele are multe colțuri intrate: fețele lui se triunghiulează cu earcut (`prismaGauri`), nu cu `prisma`
+    tri.push(...axe(prismaGauri(bara, [], y0, y1), ([u, v, w]) => [u, w, v], true));
+    return { tri, avert };
+  }
+
   // ---------------------------------------------------------------------------------------------- roata cu anvelopa
   // Roata cu anvelopă (ADR 0280, felia 3.Tj), culcată pe pat: axa pe z, fața cu spițele jos. Janta: banda cu scaunul
   // anvelopei și canalul nervurii, butucul cu gaura Technic, discul sau spițele pe fața de jos; anvelopa: alezajul cu
@@ -2333,7 +2388,7 @@ var Lego = (function (glob: typeof globalThis) {
   }
 
   // ---------------------------------------------------------------------------------------------- piesa dupa definitie
-  const TIPURI = { caramida, lateral, panta, pantaInversa, pana, rotund, grinda, caramidaTechnic, ax, stiftTechnic, bucsa, conector, conectorUnghi, suport, clema, maner, bara, bila, cupa, rotita, roata, fulie, conica, coroana, conicaDubla, senila, elice, eliceBarca, ventilator, dinCvs2 };
+  const TIPURI = { caramida, lateral, panta, pantaInversa, pana, rotund, grinda, caramidaTechnic, ax, stiftTechnic, bucsa, conector, conectorUnghi, suport, clema, maner, bara, bila, cupa, rotita, cremaliera, roata, fulie, conica, coroana, conicaDubla, senila, elice, eliceBarca, ventilator, dinCvs2 };
   function construieste(def: DefPiesa) {
     const f = TIPURI[def.tip];
     if (!f) throw new Error("tip necunoscut: " + def.tip);
@@ -2421,6 +2476,10 @@ var Lego = (function (glob: typeof globalThis) {
     contururi, insetRectiliniu, conturPana, pozitiiGauriPana, centreIndoita,
     // rotitele (ADR 0169): distanta dintre axele a doua roti care se prind (modulul m), pentru atelier
     distantaRoti: (z1: number, z2: number, m = 1) => m * (z1 + z2) / 2,
+    // cremaliera (ADR 0284): cotele din parametri: câți dinți încap, cu câte trepte e ridicat axul roții pereche (plăci, la
+    // prinderea pe știfturi; rânduri de găuri, la cea cu găuri), înălțimea liniei de divizare și a axului roții deasupra feței
+    // de jos, cât înaintează cremaliera la o rotație a roții, înălțimea piesei
+    cremalieraMontaj: (d: CremalieraDef) => { const q = cremalieraCote(d); return { lung: q.n, m: q.m, z: q.z, prindere: q.gauri ? "gauri" : "stifturi", dinti: q.N, k: q.k, divizare: q.zp, axa: q.axa, cursa: Math.PI * q.m * q.z, inaltime: q.za }; },
     spiteIncap: (janta: number, gaura = "x") => jantaCote(Math.min(150, Math.max(12.6, +janta || 16.8)), gaura).spite,
     jantaMinimaSpite: (gaura = "x") => { let D = 12.6; while (D < 150 && !jantaCote(D, gaura).spite) D = Math.round((D + 0.1) * 10) / 10; return D; },
     // fulia (ADR 0280): mărimile după margini și ce fețe încap; de la ce diametru încape o față; cureaua dintre două fulii (pe

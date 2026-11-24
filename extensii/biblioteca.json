@@ -18,6 +18,12 @@
       ],
       "noutati": [
         {
+          "versiune": "18.26.0",
+          "data": "2026-11-24",
+          "ro": "Cremaliera, în fila „Roți”: o bară cu dinți care se prinde cu roțile dințate de aici, pe știfturi sau cu găuri de știft; îți spune unde stă axul roții și pune perechea în listă.",
+          "en": "The rack, in the “Wheels” tab: a toothed bar that meshes with the gears made here, on studs or with pin holes; it tells you where the gear’s axle sits and puts the pair in the list."
+        },
+        {
           "versiune": "18.25.0",
           "data": "2026-11-24",
           "ro": "Conectorul în unghi, în fila „Legături”: un butuc cu 1–4 brațe, la unghiurile conectorilor LEGO sau la unghiul tău. Axul are opritor, la alegere, iar știftul poate avea bucșă la un capăt.",
@@ -100,8 +106,8 @@
           }
         }
       ],
-      "versiune": "18.25.0",
-      "continut": "0db24e78c739dd6944d57f0e45a0e5606f59dfba311b2111e29ffa209b015a2c"
+      "versiune": "18.26.0",
+      "continut": "61f9cee1aa6a0be6197f7db05ee9af80879f837a2908b4aa48b2ee4af470a290"
     }
   ]
 }
