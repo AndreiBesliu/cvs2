@@ -150,7 +150,7 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
   printr-o schiță.
 - **Observabilitatea:** erorile ajung în jurnalul aplicației; joburile își lasă marcajul.
 
-## Starea pe 24.11.2026, după-amiaza (după a șaptesprezecea unire din cloud)
+## Starea pe 24.11.2026, după-amiaza (după a optsprezecea unire din cloud)
 
 - **Pe test:** `e3a9e512` (tot până la lotul al cincisprezecelea: A.7, cu plafonul pornirii, ADR 0145, și notele
   liniilor noi; publicat pe 24.11 la 13:54, fără server; proba de fum, bună). Lotul al șaisprezecelea (16.A↑c, 3.Xi)
@@ -162,7 +162,8 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
   (`5325b8fe`) și 25.9↑ (`4fe2d2ad`). Pe 24.11: 16.A↑a (`02a5864a`), cu ADR 0301 (`813fa675`); A.8c și A.8d (`80d3eb70`);
   A.9a și A.9b (`95dddbe0`); A.10 și A.11a (`7f6f4069`); 25.8↑b (`f7f4510f`); 3.Ts (`e14e553a`), A.11b–A.11e
   (`8ccb66e8`) și 16.A↑b-1, cu documentul v27 (`32b33a42`); A.7 (`458befb9`); 16.A↑c (`6b74074d`) și 3.Xi
-  (`f12308de`); reparația utilizării mașinii (`bae574a8`), 10.4↑a-1 (`f25249cf`) și 3.Tt (`d57ca962`).
+  (`f12308de`); reparația utilizării mașinii (`bae574a8`), 10.4↑a-1 (`f25249cf`) și 3.Tt (`d57ca962`); 11.1↑c și 14.C↑d,
+  scrise în sesiunea principală (`7584747a`).
 - **Liniile** (vezi [indexul](README.md)):
   - **gata pe ramură, la cuvântul owner-ului:** fereastra exportului (28.8↑a–b-3, ADR 0290; `AndreiBesliu/cvs2#11`),
     după ce o încearcă pe canalul `export`;
@@ -173,10 +174,6 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
     migrării; a luat v28 pe ramură), cotele (10.4↑a-2, unealta, la „continuă” al owner-ului; apoi a-3, fereastra
     Setări), biblioteca (3.Xj, căutarea și categoriile, ADR 0233, pornită de owner pe 24.11), exportul (28.8↑, `#11`: unirea la cuvântul
     owner-ului); se unesc la raportul liniei;
-  - **în sesiunea principală, la cererea owner-ului din 24.11:** comenzile foii pe pânză, sub fiecare foaie (11.1↑c),
-    și butonul Admin din meniu, doar pentru personal (14.C↑d), pe `wip/11.1c-controale-foi`, cu canalul `foi`;
-    otrăvurile 41 / 41 (două prinse după întărirea probei); canalul:
-    <https://cncvectorstudio-test--foi-027ryryb.web.app>; unirea după porți și după ce le încearcă owner-ul;
   - **la cuvântul owner-ului:** restul bibliotecii extensiilor (căutarea, captura mărită), următoarea felie a
     incrustațiilor, a trasării și a elicelor, 11.5↑b (după etapa 13);
   - **fără felie în lucru:** planșele (tăierea plăcii 11, la owner), incrustațiile, trasarea, elicele, tăierea (după

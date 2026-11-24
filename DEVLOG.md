@@ -13177,3 +13177,20 @@ un buton pentru admin, care apare daca esti logat ca admin” (cu o captură a m
   `cutit.spec.ts:421`, a cărei urmă trasă cu mâna pornea la 10 mm sub foaie, exact pe rândul comenzilor foii active.
   Reprodusă local; proba își pornește acum urma de deasupra plăcii și o termină peste rând (`124f2d74`). Completul,
   repornit (45392375164).
+
+## 2026-11-24 — Sesiunea principală în cloud: a optsprezecea unire (11.1↑c, comenzile foii pe pânză; 14.C↑d, butonul Admin) (Model: Claude Fable 5.2)
+
+**Prompt:** „ok, cand sunt verzi frezele fa unirea, pana atunci vreau sa faci ceva simplu. vreau ca plansele sa aiba
+controalele din meniu si sub ele, si sa apara doar la hover sau cand sunt selectate”; „si vreau in meniu un buton pentru
+admin, care apare daca esti logat ca admin”
+**Started:** 24.11, 15:10. **Completed:** unirea în `main`, 24.11, @@ORA@@; publicarea pe test, la rândul ei.
+
+- **Unirea, pe `unire-2411n`** (din `64a63b48`): ramura `wip/11.1c-controale-foi` (`9a8aa992`) în `7584747a`.
+  Ciocnirile: DEVLOG, fișa etapei 3 (rândurile de după `3.As`, toate păstrate) și catalogul controalelor (scris din
+  nou: 622 de nume). Local, pe arborele unit: tipurile, regulile de import (21), traducerile (1 015), catalogul; e2e
+  39 / 39 (comenzile foii, butonul Admin, Cuțitul, foile, contul).
+- **Porțile, în CI:** completul unirii pe `7584747a` (45400216151, @@COMPLET@@): @@PORTI@@. @@MARIMI@@. Completul
+  ramurii, pe baza veche (`124f2d74`, 45392375164): @@RAMURA@@.
+- **Documentele:** decizia în `CLAUDE.md`, cu rândurile de stare ale celor două felii; starea din
+  `docs/linii/principala.md`.
+- **Loturile dinainte:** @@INAINTE@@

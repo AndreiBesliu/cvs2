@@ -465,6 +465,12 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   pe rânduri care trebuie să încapă se probează și cu un font lat** (`--font` pe Verdana; pe Linux, `system-ui` e lat), la 390,
   360 și 320 px. În CI, o probă e2e căzută își lasă urma și captura (`trace` / `screenshot` doar cu `CI`), iar rularea de
   noapte pune contextul paginii în jurnal și păstrează `test-results/` o săptămână: o cădere doar pe Linux se citește de acolo.
+  **Butonul Admin, doar pentru personal (ADR 0132 §11, felia 14.C↑d)** gata pe 24.11, în sesiunea principală, la
+  cererea owner-ului („si vreau in meniu un buton pentru admin, care apare daca esti logat ca admin”), unită în `main`
+  pe 24.11 (`7584747a`): grupul `personal` al meniului (controlul `admin` al aranjamentului, locul `#loc-admin`, umplut
+  de modulul editării), între file și indicatorul lucrării, la mijloc; apare doar cu planul `personal` din dreptul
+  contului ținut și e un link spre `/admin`, în altă filă. **Nu dă niciun drept:** `/admin` cere tot logarea și rolul
+  ei. Sub 40 rem nu se arată (meniul rămâne pe două rânduri). Cu 11.1↑c: pornirea +0,1 kB, totalul +0,8 kB.
   **Alinierea ca bloc (ADR 0150, felia 6.U↑, adusă din etapa 6)** gata pe 02.11, în aceeași sesiune paralelă (ramura
   `wip/6.U-aliniere`), după „3, ok” al owner-ului: comutatorul **Ca bloc** din secțiunea Aliniere face ca cele șase alinieri
   să mute cutia comună a formelor alese față de foaie, cu aceeași deplasare (așezarea dintre ele rămâne, nu se suprapun);
@@ -666,6 +672,16 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   browser, `cncvs2.toate-foile`), pornit, le încadrează pe toate. **Originea rămâne a foii active** (riglele, ghidajele,
   uneltele, traseul neschimbate); foile vecine merg la workerul pânzei într-un mesaj al lor (`CerereFoi`), doar când se
   schimbă. **Pornirea 104,3 (cu ușa 107,8 / 110 kB), totalul 525,5 / 550.**
+  **Comenzile foii pe pânză (ADR 0210 §1, felia 11.1↑c)** gata pe 24.11, în sesiunea principală, la cererea owner-ului
+  („vreau ca plansele sa aiba controalele din meniu si sub ele, si sa apara doar la hover sau cand sunt selectate”),
+  unită în `main` pe 24.11 (`7584747a`): sub fiecare foaie de pe pânză, la stânga, rândul cu cele șapte comenzi ale
+  meniului „⋯”, ca iconițe, prin același registru (`ActiuniFoi`; un refuz e stins, cu motivul în sfat; ștergerea unei
+  foi cu piese întreabă în rând). Rândul foii active se vede mereu; al unei vecine, doar cu mausul pe ea, pe fâșia de
+  sub ea sau pe rând. Partea pură e `src/ui/controaleFoiCalcul.ts`, iar componenta `ControaleFoi` stă în bucata
+  meniului foii (`src/ui/MeniuFoaie.tsx`, la cerere). **Rândul foii active acoperă o fâșie de vreo 215 × 34 px sub
+  colțul din stânga-jos al foii: un gest nu poate începe pe ea** (o probă e2e care trage de sub foaie, la stânga,
+  pornește din altă parte: `cutit.spec.ts:421` a căzut așa în primul complet). Nu se arată într-un proiect doar de
+  citit, sub fereastra Mașina sau Imprimanta și cât ține un mod al pânzei.
   **Piesele puse de mai multe ori (ADR 0210 §2, felia 11.2↑)** gata pe 08.11: «Încă…» și «+1» adaugă instanțe ale aceleiași
   piese (`planCopii` în `src/model/pieseLegate.ts`: rândurile după ea, distanța din freză, foaia următoare goală, foile noi),
   «Desprinde» îi dă instanței o copie a piesei (ultima păstrează piesa), „Duplică foaia cu aceleași piese” face instanțe noi
@@ -1453,6 +1469,25 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 24.11.2026, după-amiaza (a optsprezecea unire din cloud): **11.1↑c (comenzile foii pe pânză) și 14.C↑d (butonul
+  Admin, doar pentru personal) unite în `main`** (sesiunea principală, ramura `unire-2411n`, din `64a63b48`). Amândouă,
+  cerute de owner în sesiunea principală, pe 24.11 („ok, cand sunt verzi frezele fa unirea, pana atunci vreau sa faci
+  ceva simplu. vreau ca plansele sa aiba controalele din meniu si sub ele, si sa apara doar la hover sau cand sunt
+  selectate”; „si vreau in meniu un buton pentru admin, care apare daca esti logat ca admin”), și scrise aici, pe
+  ramura `wip/11.1c-controale-foi` (`9a8aa992`), unită în `7584747a`. **11.1↑c** (ADR 0210 §1): sub fiecare foaie de pe
+  pânză, rândul cu cele șapte comenzi ale meniului ei, ca iconițe; al foii active mereu, al unei vecine doar cu mausul
+  pe ea; același registru ca meniul; ștergerea unei foi cu piese întreabă în rând. **14.C↑d** (ADR 0132 §11): butonul
+  Admin la mijlocul meniului global, doar cu planul `personal`, un link spre `/admin` în altă filă; nu se arată pe
+  telefon și nu dă niciun drept. Documentul și serverul, neschimbate. Otrăvurile 41 / 41 (39 la prima rulare; două
+  prinse după întărirea probei). **Găsit de primul complet al ramurii:** proba Cuțitului la Liber (`cutit.spec.ts:421`)
+  își pornea urma exact pe rândul foii active; un gest nu poate începe pe rând, deci proba pornește acum de deasupra
+  plăcii. Varianta de rezervă, la cuvântul owner-ului: și rândul foii active doar cu mausul pe ea. Ciocnirile unirii:
+  DEVLOG, fișa etapei 3 și catalogul controalelor (scris din nou, 622 de nume). Porțile, în CI, pe `7584747a`
+  (completul @@COMPLET@@): @@PORTI@@; @@MARIMI@@. @@INAINTE@@ Pe ramuri, în lucru: frezele (16.A↑b-2 și 16.A↑a-2,
+  `AndreiBesliu/cvs2#22`; ADR 0302 propus, la owner), biblioteca (3.Xj), relieful (18.1↑a), cotele (10.4↑a-2, la
+  „continuă” al owner-ului), exportul (`#11`, la cuvântul owner-ului). **La owner:** fereastra exportului, verificarea
+  juridică (GDPR) a utilizării aplicației înaintea live-ului, „cine unește în `main`”, meniul de sus la 320 px la
+  atingere (butoanele se suprapun: ce pleacă de pe rând).
 - 24.11.2026, după-amiaza (a șaptesprezecea unire din cloud): **reparația căderii de noapte, 10.4↑a-1 (cotele:
   modelul și proba G-code-ului) și 3.Tt (elicea de barcă înclinată spre pupa) unite în `main`**, în lot (sesiunea
   principală, ramura `unire-2411m`, din `fdce5f1b`). **Incidentul:** completul de noapte programat a ieșit roșu pe
