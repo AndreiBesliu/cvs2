@@ -1595,7 +1595,7 @@
     },
     "5eb4c4f584c8bb25": {
       "ro": "Catalogul de freze și biblioteca ca listă",
-      "en": "The bit catalogue (the standard kinds and sizes, in mm and inches, written by us) and the library as a list, with the user's groups and the configurator on request (slices 16.A↑h-1…3; proposed on 24.11, at the owner's request, with the ArtCAM file `FREZE.tdb`, which is neither read nor copied: an undocumented binary format, the content of ArtCAM and of the manufacturers)"
+      "en": "The bit catalogue and the library as a list"
     },
     "5eeb3f9c2208b108": {
       "ro": "Gravarea pe linie cu freza în V și gravarea inteligentă",
