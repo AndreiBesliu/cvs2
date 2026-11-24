@@ -13358,7 +13358,7 @@ admin, care apare daca esti logat ca admin”
 
 **Prompt:** rapoartele liniilor frezelor („gata de unit”, PR-ul #22: `d0fa2dde`, apoi `ea2b8111`) și cotelor (`1500e4b3`),
 la ordinul în vigoare „unește ce se poate”
-**Started:** 24.11, 15:40. **Completed:** unirea în `main`, 24.11, @@ORA@@; publicarea pe test, la rândul ei.
+**Started:** 24.11, 15:40. **Completed:** unirea în `main`, 24.11, 17:31; publicarea pe test, la rândul ei.
 
 - **Trei loturi, un complet:** lotul 19 (frezele b-2 și a-2, `33fadb06`) și-a avut completul lui (45404468217), căzut
   la o probă din afara lui (`extensii.lucru.spec.ts:222`, vezi intrarea de mai sus); între timp au raportat gata
@@ -13369,9 +13369,12 @@ la ordinul în vigoare „unește ce se poate”
   `test/unit/manual.test.ts` (ușile: 117). Local, pe arborele unit: tipurile (și ale funcțiilor), regulile de import
   (21), traducerile (1 026), biblioteca extensiilor la zi; e2e 61 / 61 (frezele, freza în Tăierea, cotele, comenzile
   foii, butonul Admin, extensiile, ancorele).
-- **Porțile, în CI:** completul pe `db43ed08` (45416114600, @@COMPLET@@): @@PORTI@@; rapidul, @@RAPID@@; completele
-  liniilor, verzi: `e46cc944` (45395676774), `46da7102` (45405547787), `1500e4b3` (45403378058). @@MARIMI@@. Nimic pe
+- **Porțile, în CI:** completul pe `db43ed08` (45416114600, verde la prima trecere, 53 min): unit 10 240 / 0 (12 sărite, pe Linux), e2e 725 / 725, funcțiile pe emulatoare 136 / 136, paginile 57 / 57;
+  rapidul, verde pe `db43ed08` (45416114008); completele
+  liniilor, verzi: `e46cc944` (45395676774), `46da7102` (45405547787), `1500e4b3` (45403378058). Pornirea 110,2 kB (plafonul 120), totalul 830,5 / 900 kB (mai sunt 69,5), `/admin` 138,2 / 200, contul 30,3 / 32. Nimic pe
   server.
 - **Documentele:** decizia în `CLAUDE.md`, cu rândurile de stare ale celor cinci felii și ADR 0302 acceptat; indexul
   liniilor; starea din `docs/linii/principala.md`.
-- **Loturile dinainte:** @@INAINTE@@
+- **Loturile dinainte:** pe test, al șaisprezecelea (`fdce5f1b`). Al șaptesprezecelea și al optsprezecelea, cu proba
+  reparată (`29ef7e44`): completul pe `main` (45417561144) rula la unire; cel dinainte, pe `647cebb1`, căzuse la proba
+  instabilă a extensiilor.

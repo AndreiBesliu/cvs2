@@ -1523,9 +1523,10 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   (`clicCareRefaceCadrul`, `test/e2e/ajutor-extensii.ts`): 118 / 120, fără niciun clic neîntors; otrava (gazda ignoră
   `host.reporneste()`) e prinsă. De aceea loturile 19, 20 și 21 au intrat împreună, cu un singur complet, peste
   reparație. Ciocnirile: DEVLOG, indexul ADR, registrul otrăvurilor, fișa etapei 3, catalogul controalelor (scris din
-  nou, 624 de nume) și numărul ușilor manualului (117). Porțile lotului, în CI, pe `db43ed08` (completul
-  @@COMPLET@@): @@PORTI@@; rapidul, @@RAPID@@; completele liniilor, verzi (`e46cc944`, `46da7102`, `1500e4b3`);
-  @@MARIMI@@. @@INAINTE@@ Pe ramuri, în lucru: frezele (16.A↑h-3, catalogul), biblioteca (3.Xj), relieful (18.1↑a),
+  nou, 624 de nume) și numărul ușilor manualului (117). Porțile lotului, în CI, pe `db43ed08` (completul, verde la
+  prima trecere, 53 min): unit 10 240 / 0 (12 sărite, pe Linux), e2e 725 / 725, funcțiile pe emulatoare 136 / 136, paginile 57 / 57; rapidul, verde pe `db43ed08`; completele liniilor, verzi (`e46cc944`, `46da7102`,
+  `1500e4b3`); pornirea 110,2 kB (plafonul 120), totalul 830,5 / 900 kB (mai sunt 69,5), `/admin` 138,2 / 200, contul 30,3 / 32. Pe test era lotul al șaisprezecelea (`fdce5f1b`); al șaptesprezecelea și al optsprezecelea, cu proba reparată
+  (`29ef7e44`), erau în drum: completul lor pe `main` rula la unire. Pe ramuri, în lucru: frezele (16.A↑h-3, catalogul), biblioteca (3.Xj), relieful (18.1↑a),
   cotele (10.4↑a-3, la cuvântul owner-ului). **Gata pe ramură, la cuvântul owner-ului:** fereastra exportului
   (`AndreiBesliu/cvs2#11`: toate feliile ADR 0290, canalul `export`; linia recomandă unirea înaintea lui 16.A↑b-3).
   **La owner:** fereastra exportului, verificarea juridică (GDPR) a utilizării aplicației înaintea live-ului, „cine
