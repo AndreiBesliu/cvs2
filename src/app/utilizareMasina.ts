@@ -12,6 +12,10 @@ export type PasMasina = { readonly id: EvenimentMasina; readonly cod?: number; r
 
 /** O lucrare pornită și neterminată: rulează sau stă (pauză, oprire cerută de program, suspendare). */
 const IN_LUCRARE: ReadonlySet<FelIndicator | null> = new Set<FelIndicator | null>(['ruleaza', 'pauza', 'oprita', 'oprita-m6', 'suspendata']);
+/** Legată și liberă: de aici se pornește o lucrare. */
+const LIBERA: ReadonlySet<FelIndicator | null> = new Set<FelIndicator | null>(['conectata', 'gata']);
+/** Unde ajunge doar o lucrare pornită: o pauză, o oprire cerută de program, capătul, întreruperea (faza cu punct de reluare). */
+const DUPA_PORNIRE: ReadonlySet<FelIndicator | null> = new Set<FelIndicator | null>(['pauza', 'suspendata', 'oprita', 'oprita-m6', 'gata', 'intrerupta']);
 
 export function evenimenteMasina(a: StareSesiune | null, b: StareSesiune): PasMasina[] {
   const r: PasMasina[] = [];
@@ -23,6 +27,9 @@ export function evenimenteMasina(a: StareSesiune | null, b: StareSesiune): PasMa
   const ia = a === null ? null : indicatorLucrare(a)?.fel ?? null;
   const ib = indicatorLucrare(b)?.fel ?? null;
   if (ia !== ib) {
+    // Stările se văd la fiecare redesenare, nu la fiecare pas al fluxului: o lucrare scurtă poate porni și ajunge la capăt
+    // (sau la o oprire) între două stări văzute. Pornirea se spune oricum, întâi: o lucrare terminată e una pornită.
+    if (LIBERA.has(ia) && DUPA_PORNIRE.has(ib)) r.push({ id: 'pornita' });
     if (ib === 'ruleaza') r.push({ id: IN_LUCRARE.has(ia) ? 'reluata' : 'pornita' });
     else if (ib === 'pauza' || ib === 'suspendata') r.push({ id: 'pauza' });
     else if (ib === 'oprita' || ib === 'oprita-m6') r.push({ id: 'oprita' });
