@@ -1,7 +1,7 @@
 import { arieCuSemn } from '../geom/contur.ts';
 import { distantaLaContur, inRegiune } from '../geom/distanta.ts';
 import type { Document } from './document.ts';
-import { conturElement, cutieElement } from './forme.ts';
+import { chenarElement, cutieElement } from './forme.ts';
 import { elementeFoaie } from './lume.ts';
 
 /**
@@ -29,7 +29,8 @@ export function instantaLa(doc: Document, x: number, y: number, toleranta: numbe
     // Cutia, lărgită cu toleranța, o margine de jos a distanței: elementele departe de clic nu se mai măsoară.
     const k = cutieElement(e);
     if (x < k.minX - toleranta || x > k.maxX + toleranta || y < k.minY - toleranta || y > k.maxY + toleranta) continue;
-    const c = conturElement(e);
+    // Relieful (ADR 0310) se alege ca o suprafață: chenarul grilei lui.
+    const c = chenarElement(e);
     const d = distantaLaContur({ x, y }, c);
     if (d <= toleranta) {
       if (!peContur || d < peContur.d) peContur = { id: e.instanta, d };

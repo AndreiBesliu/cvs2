@@ -20,7 +20,7 @@ import { TOLERANTA_PROIECT } from '../../src/geom/toleranta.ts';
 import { traduce } from '../../src/i18n/t.ts';
 import { avertismente } from '../../src/model/avertismente.ts';
 import { PLAFON, type Document, type FormaDoc, type Operatie, type VarfDoc } from '../../src/model/document.ts';
-import { conturElement } from '../../src/model/forme.ts';
+import { chenarElement } from '../../src/model/forme.ts';
 import { incarca, jsonCanonic } from '../../src/model/incarcare.ts';
 import { istoricNou } from '../../src/model/jurnal.ts';
 import { ACTIUNI_DOCUMENT, type ContextDocument } from '../../src/ui/actiuniDocument.ts';
@@ -201,7 +201,7 @@ test('căile netede din multe cubice se taie (buclele minuscule ale offsetului s
       for (let k = 0; k < 4; k++) {
         const forma = bula(n, 40, samanta + k);
         const d = piesa(forma, { ...ID }, 600, 300, 0, { latura });
-        const exacta = conturElement({ forma, matrice: { a: 1, b: 0, c: 0, d: 1, e: 600, f: 300 } });
+        const exacta = chenarElement({ forma, matrice: { a: 1, b: 0, c: 0, d: 1, e: 600, f: 300 } });
         let abatere = 0;
         for (const p of puncte(d)) abatere = Math.max(abatere, Math.abs(distantaLaContur(p, exacta) - 3));
         assert.ok(abatere <= TOLERANTA_PROIECT + 1e-6, `${n} cubice, ${latura}, ${samanta + k}: ${abatere}`);
@@ -358,7 +358,7 @@ test('oglindirea la scară minusculă (otrava „semnul din determinantul brut�
   const s = 1.9e-162;
   const m = compune(rotatie(45), { a: -s, b: 0, c: 0, d: s, e: 0, f: 0 });
   assert.ok(!(determinant(m) < 0));
-  const c = conturElement({ forma: D, matrice: { ...ID } });
+  const c = chenarElement({ forma: D, matrice: { ...ID } });
   const t = transformaContur(c, m);
   const arc0 = c.varfuri.find((v) => v.s.tip === 'A');
   const arc1 = t.varfuri.find((v) => v.s.tip === 'A');

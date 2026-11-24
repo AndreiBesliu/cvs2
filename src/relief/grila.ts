@@ -4,14 +4,16 @@
  * latura cel mult cât a documentului.
  */
 
+import { CELULA_RELIEF_MAXIMA, CELULA_RELIEF_MINIMA, LATURA_RELIEF_MAXIMA, PLAFON } from '../model/document.ts';
+
 export const LATURA_DALA = 256;
 export const CELULE_DALA = LATURA_DALA * LATURA_DALA;
 /** Cel mult atâtea celule pe o latură a unui relief (răspunsul 4a: 8192 × 8192, ~256 MB pe strat în memorie). */
-export const LATURA_MAXIMA = 8192;
-export const CELULA_MINIMA = 0.001;
-export const CELULA_MAXIMA = 100;
-/** Latura reliefului în mm, cel mult cât plafonul laturii documentului (`PLAFON.latura`). */
-export const LATURA_MM_MAXIMA = 10_000;
+export const LATURA_MAXIMA = LATURA_RELIEF_MAXIMA;
+export const CELULA_MINIMA = CELULA_RELIEF_MINIMA;
+export const CELULA_MAXIMA = CELULA_RELIEF_MAXIMA;
+/** Latura reliefului în mm, cel mult cât plafonul laturii documentului. */
+export const LATURA_MM_MAXIMA = PLAFON.latura;
 
 export type Grila = { readonly nx: number; readonly ny: number; readonly celula: number };
 

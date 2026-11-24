@@ -1,7 +1,7 @@
 import { conturCerc, conturDreptunghi, LINIE, type Contur, type Segment } from '../geom/conturBaza.ts';
 import { cutieContur, type Cutie } from '../geom/cutie.ts';
 import { transformaContur, type Matrice } from '../geom/matrice.ts';
-import type { FormaDoc, SegmentDoc } from './document.ts';
+import type { FormaContur, FormaDoc, SegmentDoc } from './document.ts';
 
 /** Segmentul căii, în forma geometriei: doar câmpurile cu sens (cele necunoscute rămân în document). */
 function segmentCale(s: SegmentDoc): Segment {
@@ -16,7 +16,7 @@ function segmentCale(s: SegmentDoc): Segment {
  * calea (ADR 0034) își are vârfurile chiar în coordonatele elementului. Calea își păstrează `inchis` (ADR 0037 §2): una
  * deschisă citită ca închisă ar primi coarda de închidere, iar freza ar tăia-o prin material.
  */
-export function conturElement(e: { readonly forma: FormaDoc; readonly matrice: Matrice }): Contur {
+export function conturElement(e: { readonly forma: FormaContur; readonly matrice: Matrice }): Contur {
   const f = e.forma;
   const local: Contur = f.tip === 'dreptunghi'
     ? conturDreptunghi(0, 0, f.latime, f.inaltime, f.razaColt)
@@ -24,6 +24,21 @@ export function conturElement(e: { readonly forma: FormaDoc; readonly matrice: M
       ? conturCerc(0, 0, f.raza)
       : { inchis: f.inchis, varfuri: f.varfuri.map((x) => ({ p: { x: x.p.x, y: x.p.y }, s: segmentCale(x.s) })) };
   return transformaContur(local, e.matrice);
+}
+
+/** Un element cu contur (nu relief, ADR 0310 §1): doar el intră în conturul exact, în CAM-ul 2D și în ușile vectorilor. */
+export function esteContur<T extends { readonly forma: FormaDoc }>(e: T): e is T & { readonly forma: FormaContur } {
+  return e.forma.tip !== 'relief';
+}
+
+/**
+ * Chenarul unui element: conturul lui sau, la un relief, dreptunghiul grilei (nx · celula × ny · celula, din colțul stânga-jos).
+ * Pentru ce privește elementul ca un obiect pe planșă (cutia, clicul pe suprafață, mânerele, alinierea), nu ca un contur de tăiat.
+ */
+export function chenarElement(e: { readonly forma: FormaDoc; readonly matrice: Matrice }): Contur {
+  const f = e.forma;
+  if (f.tip !== 'relief') return conturElement({ forma: f, matrice: e.matrice });
+  return transformaContur(conturDreptunghi(0, 0, f.nx * f.celula, f.ny * f.celula, 0), e.matrice);
 }
 
 /** Cutiile exacte, după formă (obiectul ei) și matrice: documentul nu se schimbă pe loc, deci o formă veche nu revine. */
@@ -39,6 +54,6 @@ export function cutieElement(e: { readonly forma: FormaDoc; readonly matrice: Ma
   const m = e.matrice;
   const cheie = `${m.a} ${m.b} ${m.c} ${m.d} ${m.e} ${m.f}`;
   let c = pe.get(cheie);
-  if (!c) { c = cutieContur(conturElement(e)); pe.set(cheie, c); }
+  if (!c) { c = cutieContur(chenarElement(e)); pe.set(cheie, c); }
   return c;
 }

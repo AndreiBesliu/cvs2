@@ -21,7 +21,7 @@ import assert from 'node:assert/strict';
 import { is } from 'valibot';
 import { arieCuSemn, type Contur } from '../../src/geom/contur.ts';
 import type { Document, FormaDoc, Nod, VarfDoc } from '../../src/model/document.ts';
-import { conturElement } from '../../src/model/forme.ts';
+import { chenarElement } from '../../src/model/forme.ts';
 import { executa, istoricNou } from '../../src/model/jurnal.ts';
 import { elementeFoaie } from '../../src/model/lume.ts';
 import type { FormaCale } from '../../src/model/noduri.ts';
@@ -56,7 +56,7 @@ const taiat = (d: Document, c: CerereTaiere): { readonly dupa: Document; readonl
   if (!r.ok) assert.fail(`refuzată: ${r.motiv}`);
   return { dupa: aplica(d, r), r };
 };
-const contururi = (d: Document, inst: string): Contur[] => elementeFoaie(d).filter((e) => e.instanta === inst).map((e) => conturElement(e));
+const contururi = (d: Document, inst: string): Contur[] => elementeFoaie(d).filter((e) => e.instanta === inst).map((e) => chenarElement(e));
 
 /** Conturul ca poligon des (arcele prin 256 de coarde). */
 function poligon(c: Contur): Array<{ x: number; y: number }> {

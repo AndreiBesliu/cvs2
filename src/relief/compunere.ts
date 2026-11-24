@@ -3,8 +3,10 @@
  * pe celulele lui negoale, cu modul lui; fiecare pas rotunjit la Float32 (scrierea în `Float32Array` o face).
  */
 
-export const MODURI = ['aduna', 'scade', 'inalt', 'jos', 'inlocuieste', 'inmulteste'] as const;
-export type Mod = (typeof MODURI)[number];
+import { MODURI_RELIEF, type ModRelief } from '../model/document.ts';
+
+export const MODURI = MODURI_RELIEF;
+export type Mod = ModRelief;
 export type StratValori = { readonly mod: Mod; readonly vizibil: boolean; readonly valori: ArrayLike<number> };
 
 /** Compusul a n celule (o dală sau o grilă întreagă), în `out` (sau unul nou). */

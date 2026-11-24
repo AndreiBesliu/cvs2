@@ -10,7 +10,7 @@ import { readFileSync } from 'node:fs';
 import { blocText } from '../../src/model/blocText.ts';
 import { cutieContur } from '../../src/geom/cutie.ts';
 import { documentNou, noduriPiesa, type Document, type GrupNod, type Instanta, type Nod, type Piesa } from '../../src/model/document.ts';
-import { conturElement } from '../../src/model/forme.ts';
+import { chenarElement } from '../../src/model/forme.ts';
 import { incarca } from '../../src/model/incarcare.ts';
 import { judecaTexte } from '../../src/model/judecataTexte.ts';
 import { anuleaza, executa, istoricNou } from '../../src/model/jurnal.ts';
@@ -70,7 +70,7 @@ test('sablonCuAsezat: textul grupat cu înălțimea 6 în loc de 10; rama, locul
   assert.ok(oText && oText.noduri.length > 0 && oText.noduri.every((n) => noi.has(n)), 'operația textului taie doar literele noi');
   // Literele noi au 6 / 10 din înălțimea celor vechi (aceeași majusculă a fontului, alt bloc).
   const inalt = (q: Piesa): number => {
-    const c = literele(q).map((n) => cutieContur(conturElement({ forma: (n as Extract<Nod, { tip: 'element' }>).forma, matrice: ID })));
+    const c = literele(q).map((n) => cutieContur(chenarElement({ forma: (n as Extract<Nod, { tip: 'element' }>).forma, matrice: ID })));
     return Math.max(...c.map((x) => x.maxY)) - Math.min(...c.map((x) => x.minY));
   };
   assert.ok(Math.abs(inalt(nou.piesa) / inalt(p) - 0.6) < 1e-9, String(inalt(nou.piesa) / inalt(p)));

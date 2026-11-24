@@ -195,7 +195,9 @@ export { CUTITE_PIESA } from './surori.ts';
  * `PLAFON_PANOURI` celule), `valoare` (mărimea sau numărul panourilor), `nimic-taiat` (formele încap într-un singur panou).
  */
 export type MotivTaiere = 'nimic-ales' | 'ghidaj' | 'valoare' | 'nimic-taiat' | 'impartita' | 'diferite' | 'placute' | 'renuntat' | 'pe-linie' | 'operatii' | 'nereusita' | 'nu-trece' | 'cutit' | 'prea-multe' | 'granita' | 'departe' | 'capat' | 'spatiu' | 'spatiu-cutit' | 'spatiu-inchide'
-  | 'imbinare' | 'imbinare-raza' | 'imbinare-margine' | 'imbinare-dreapta' | 'imbinare-inchide' | 'panouri';
+  | 'imbinare' | 'imbinare-raza' | 'imbinare-margine' | 'imbinare-dreapta' | 'imbinare-inchide' | 'panouri'
+  /** O formă aleasă (sau cuțitul) e un relief (ADR 0310): tăierea lucrează pe contururi. */
+  | 'relief';
 
 export type RezultatTaiere =
   | {
@@ -451,6 +453,7 @@ function bucatiCerc(raza: number, unghiuri: readonly number[]): FormaCale[] {
  */
 function bucatiElement(e: ElementLume, tr: readonly Trecere[]): FormaCale[] {
   const nod = e.forma;
+  if (nod.tip === 'relief') return [];
   return nod.tip === 'cerc' ? bucatiCerc(nod.raza, tr.map((x) => Math.PI * (x.k + x.t))) : bucatiCale(caleDinForma(nod), tr);
 }
 
@@ -492,7 +495,7 @@ function inDocument(c: Contur): VarfDoc[] {
 }
 
 /** Calea ca contur (pentru inversare și transformare), fără câmpurile necunoscute. */
-const caContur = (f: FormaCale): Contur => conturElement({ forma: f, matrice: IDENTITATE });
+const caContur = (f: FormaCale): Contur => conturTaiat({ forma: f, matrice: IDENTITATE });
 
 /** Un element nou al unei părți: forma, matricea față de rădăcina piesei, elementele din care vine și felul lui. */
 type ElementNou = {
@@ -654,9 +657,26 @@ type Stearsa = { readonly sterge: true };
  * înăuntrul lui și ce e în afară; cu unul deschis și la intersecții, fiecare bucată (sau față) e o parte, iar contururile
  * netăiate rămân împreună. Fiecare parte are piesa ei, la locul instanței vechi; o instanță netăiată rămâne cum e.
  */
+/** O instanță dintre `ids` are un relief (ADR 0310): tăierea îl refuză, cu motiv, înaintea oricărui contur. */
+function areRelief(doc: Document, indexFoaie: number, ids: readonly string[]): boolean {
+  const alese = new Set(ids);
+  return elementeFoaie(doc, indexFoaie).some((e) => alese.has(e.instanta) && e.forma.tip === 'relief');
+}
+
+/**
+ * Conturul unui element de tăiat. Relieful e refuzat la intrarea tăierii (`areRelief`, motivul `relief`), deci aici nu ajunge;
+ * dacă ajunge totuși, aruncă, iar locurile care prind un contur nereușit îl sar.
+ */
+function conturTaiat(e: { readonly forma: FormaDoc; readonly matrice: Matrice }): Contur {
+  const forma = e.forma;
+  if (forma.tip === 'relief') throw new Error('un relief nu se taie ca un contur');
+  return conturElement({ forma, matrice: e.matrice });
+}
+
 export function taie(doc: Document, cerere: CerereTaiere, indexFoaie = 0): RezultatTaiere {
   const foaie = doc.foi[indexFoaie];
   if (!foaie || cerere.alese.length === 0) return { ok: false, motiv: 'nimic-ales' };
+  if (areRelief(doc, indexFoaie, cerere.alese)) return { ok: false, motiv: 'relief' };
   const alese = new Set(cerere.alese);
   const c = cerere.cutit;
   const pastreaza = cerere.pastreaza ?? 'ambele';
@@ -899,7 +919,7 @@ function taieInstantaIntre(L: Linie, inst: Instanta, p: Piesa, pastreaza: Pastra
  * închise ale părții) poate pleca, odată cu fâșia.
  */
 function mancata(elemente: readonly ElementNou[], mi: Matrice, trece: (c: Contur, inchise: readonly Contur[]) => boolean): boolean {
-  const cs = elemente.map((e) => conturElement({ forma: e.forma, matrice: compune(mi, e.matrice) }));
+  const cs = elemente.map((e) => conturTaiat({ forma: e.forma, matrice: compune(mi, e.matrice) }));
   const inchise = cs.filter((c) => c.inchis);
   return cs.some((c) => {
     if (trece(c, inchise)) return false;
@@ -920,7 +940,7 @@ function partiLinie(L: Linie, inst: Instanta, p: Piesa, inchide: boolean): PePar
   for (let i = 0; i < lume.length; i++) {
     const e = lume[i] as ElementLume, er = rel[i] as ElementLume;
     const nod = e.forma;
-    const w = conturElement(e);
+    const w = conturTaiat(e);
     const tr = treceri(L, w);
     if (tr === 'pe-linie') return 'pe-linie';
     const v = vechi.get(e.nod);
@@ -936,7 +956,7 @@ function partiLinie(L: Linie, inst: Instanta, p: Piesa, inchide: boolean): PePar
     const baza = pozitii.length;
     for (let j = 0; j < bucati.length; j++) {
       const f = bucati[j] as FormaCale;
-      const bl = conturElement({ forma: f, matrice: e.matrice });
+      const bl = conturTaiat({ forma: f, matrice: e.matrice });
       const parte: -1 | 1 = parteContur(L, bl) < 0 ? -1 : 1;
       if (w.inchis) {
         const start = bl.varfuri[0]?.p;
@@ -1312,7 +1332,7 @@ function contururiForme(doc: Document, indexFoaie: number, ids: readonly string[
     if (!inst || !p) return 'nimic-ales';
     for (const e of elementeInstanta(p.radacina, inst, matriceInstanta(inst))) {
       try {
-        xs.push({ c: conturElement(e), e });
+        xs.push({ c: conturTaiat(e), e });
       } catch {
         return 'nereusita';
       }
@@ -1366,7 +1386,7 @@ function tinteDin(doc: Document, instante: readonly Instanta[], alese: ReadonlyS
     if (!p) continue;
     let cs: Contur[];
     try {
-      cs = elementeInstanta(p.radacina, inst, matriceInstanta(inst)).map((e) => conturElement(e));
+      cs = elementeInstanta(p.radacina, inst, matriceInstanta(inst)).map((e) => conturTaiat(e));
     } catch {
       return 'nereusita';
     }
@@ -1622,7 +1642,7 @@ function impartireCuForma(K: Cutitul, inst: Instanta, p: Piesa, inchide: boolean
   const vechi = elementeArbore(p.radacina);
   let w: Contur[];
   try {
-    w = lume.map((e) => conturElement(e));
+    w = lume.map((e) => conturTaiat(e));
   } catch {
     return 'nereusita';
   }
@@ -1751,7 +1771,7 @@ function impartireCuForma(K: Cutitul, inst: Instanta, p: Piesa, inchide: boolean
       const pana = c.inchis ? ls[(j + 1) % ls.length] : ls[j];
       noi.push({
         e: { forma: f, matrice: er.matrice, surse: [e], fel: 'deschis', exteriorDreapta: trig, ...camp },
-        proba: puncteProba(conturElement({ forma: f, matrice: e.matrice })), fata: null, latura: laturaBucatii(K, c, de, pana),
+        proba: puncteProba(conturTaiat({ forma: f, matrice: e.matrice })), fata: null, latura: laturaBucatii(K, c, de, pana),
       });
     });
   }
@@ -1779,7 +1799,7 @@ function impartireCuForma(K: Cutitul, inst: Instanta, p: Piesa, inchide: boolean
     const fs = fete(pieseFata, corzi, mi);
     if (!fs) return 'nereusita';
     for (const x of fs) {
-      const proba = x.piese.flatMap((b) => puncteProba(conturElement({ forma: b.f, matrice: b.e.matrice })));
+      const proba = x.piese.flatMap((b) => puncteProba(conturTaiat({ forma: b.f, matrice: b.e.matrice })));
       // O margine dinăuntru (aria negativă) merge, ca un contur netăiat, cu regiunea în care stă.
       if (x.arie < 0) intregi.push({ e: x.e, proba });
       else noi.push({ e: x.e, proba, fata: { c: transformaContur(caContur(x.e.forma as FormaCale), compune(mi, x.e.matrice)), arie: x.arie }, latura: x.latura });
@@ -1800,7 +1820,7 @@ function cuLibere(libere: readonly Libera[], parti: readonly ElementNou[][], mi:
   if (libere.length === 0) return;
   const bucle = libere.map((l) => l.c);
   for (const parte of parti) {
-    const inParte = parte.map((e) => conturElement({ forma: e.forma, matrice: compune(mi, e.matrice) })).filter((c) => c.inchis);
+    const inParte = parte.map((e) => conturTaiat({ forma: e.forma, matrice: compune(mi, e.matrice) })).filter((c) => c.inchis);
     for (const l of libere) {
       const adancime = [...inParte, ...bucle].filter((c) => c !== l.c && inRegiune(l.q, [c])).length;
       parte.push({ forma: l.forma, matrice: l.matrice, surse: [l.sursa], fel: 'inchis', exteriorDreapta: null, inversLatura: adancime % 2 !== l.adancime % 2 });
@@ -2149,7 +2169,7 @@ function taieCuImbinare(inst: Instanta, p: Piesa, dr: Dreapta, im: Imbinare, pas
   const mi = matriceInstanta(inst);
   let w: Contur[];
   try {
-    w = elementeInstanta(p.radacina, inst, mi).map((e) => conturElement(e));
+    w = elementeInstanta(p.radacina, inst, mi).map((e) => conturTaiat(e));
   } catch {
     return 'nereusita';
   }
@@ -2188,7 +2208,7 @@ function toateIntregi(inst: Instanta, p: Piesa): Intreaga[] | MotivTaiere {
     return lume.map((e, i): Intreaga => {
       const v = vechi.get(e.nod);
       const er = rel[i] as ElementLume;
-      return { e: { forma: e.forma, matrice: er.matrice, surse: [e], fel: 'intreg', exteriorDreapta: null, ...(v ? { vechi: v } : {}) }, proba: puncteProba(conturElement(e)) };
+      return { e: { forma: e.forma, matrice: er.matrice, surse: [e], fel: 'intreg', exteriorDreapta: null, ...(v ? { vechi: v } : {}) }, proba: puncteProba(conturTaiat(e)) };
     });
   } catch {
     return 'nereusita';
@@ -2223,7 +2243,7 @@ function locuriIntersectii(doc: Document, indexFoaie: number, alese: ReadonlySet
     if (!alese.has(e.instanta)) continue;
     let a: Cav | null | 'esuat';
     try {
-      a = laCavalier(conturElement(e));
+      a = laCavalier(conturTaiat(e));
     } catch {
       return 'nereusita';
     }
@@ -2270,7 +2290,7 @@ function taieLaLocuri(inst: Instanta, p: Piesa, loc: ReadonlyMap<string, readonl
     const e = lume[i] as ElementLume, er = rel[i] as ElementLume, v = vechi.get(e.nod);
     const camp = v ? { vechi: v } : {};
     const x = loc.get(e.idLume);
-    const w = x ? conturElement(e) : null;
+    const w = x ? conturTaiat(e) : null;
     const tr = w && x ? farDubluri(w, x, (y) => y) : [];
     if (!w || tr.length < (w.inchis && !deschide ? 2 : 1)) {
       rest.push({ forma: e.forma, matrice: er.matrice, surse: [e], fel: 'intreg', exteriorDreapta: null, ...camp });
@@ -2302,7 +2322,7 @@ function conturLovit(inst: Instanta, p: Piesa, q: Punct, tol: number): { readonl
     const e = lume[el] as ElementLume;
     let w: Contur;
     try {
-      w = conturElement(e);
+      w = conturTaiat(e);
     } catch {
       return 'nereusita';
     }
@@ -2349,7 +2369,7 @@ function locuriPeContur(doc: Document, indexFoaie: number, alese: ReadonlySet<st
     if (!alese.has(e.instanta) || e.idLume === idLume || !seAting(cutieElement(e), A.cutie)) continue;
     let B: Cav | null | 'esuat';
     try {
-      B = laCavalier(conturElement(e));
+      B = laCavalier(conturTaiat(e));
     } catch {
       return 'nereusita';
     }

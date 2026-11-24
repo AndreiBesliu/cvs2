@@ -12,7 +12,7 @@ import { laturiDinImbricare } from '../../src/io/imbricare.ts';
 import { caleInchisa, cutieCai, piesaDinImport } from '../../src/io/piesa.ts';
 import { PLAFON, VERSIUNE_SCHEMA, type Document, type FormaDoc, type VarfDoc } from '../../src/model/document.ts';
 import { SchemaDocument } from '../../src/model/schemaDocument.ts';
-import { conturElement } from '../../src/model/forme.ts';
+import { chenarElement } from '../../src/model/forme.ts';
 import { incarca } from '../../src/model/incarcare.ts';
 import { INIMA } from './ajutor-cale.ts';
 import { cuOperatie, docDin, ID } from './ajutor-document.ts';
@@ -168,12 +168,12 @@ test('migrarea v9 → v10 refuză un v9 cu o cale deschisă, cu stânga / dreapt
   assert.match(motiv(incarca(v8)), /nu e un document v9 valid/);
 });
 
-test('`inchis` citit (1/4): conturElement păstrează calea deschisă, cu n − 1 segmente, fără coarda de închidere', () => {
-  const c = conturElement({ forma: deschisa([0, 0], [100, 0], [100, 100]), matrice: { ...ID, e: 10, f: 20 } });
+test('`inchis` citit (1/4): chenarElement păstrează calea deschisă, cu n − 1 segmente, fără coarda de închidere', () => {
+  const c = chenarElement({ forma: deschisa([0, 0], [100, 0], [100, 100]), matrice: { ...ID, e: 10, f: 20 } });
   assert.equal(c.inchis, false);
   assert.equal(numarSegmente(c), 2);
   assert.deepEqual(c.varfuri.map((x) => x.p), [P(10, 20), P(110, 20), P(110, 120)]);
-  assert.equal(conturElement({ forma: INIMA, matrice: { ...ID } }).inchis, true);
+  assert.equal(chenarElement({ forma: INIMA, matrice: { ...ID } }).inchis, true);
 });
 
 test('`inchis` citit (2/4): piesa importului păstrează calea deschisă; ea nu primește exterior / interior, ci `deschise` pe linie', () => {

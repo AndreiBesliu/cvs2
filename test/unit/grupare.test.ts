@@ -18,7 +18,7 @@ import { piesaText } from '../../src/text/piesaText.ts';
 import { comandaDegrupare, comandaGrupare } from '../../src/ui/actiuniDocumentCalcul.ts';
 import { dimensiuni, judeca, type GrilaOracol } from '../oracles/simulare.ts';
 import { distantaLaContur, inRegiune } from '../../src/geom/distanta.ts';
-import { conturElement } from '../../src/model/forme.ts';
+import { chenarElement } from '../../src/model/forme.ts';
 
 /**
  * Gruparea (ADR 0130), inversul degrupării: formele alese devin o piesă, cu un grup nou pe rădăcină, într-un singur pas al
@@ -268,7 +268,7 @@ const abatere = (a: Float64Array, b: Float64Array): number => a.reduce((m, z, i)
  * cât e săpat în afară. Regiunile părților nu se ating, deci regiunea lor comună e chiar reuniunea lor.
  */
 function fataDeIdeala(d: Document, grila: GrilaOracol, z: Float64Array): { readonly peste: number; readonly sub: number; readonly afara: number } {
-  const contururi = elementeFoaie(d).map((e) => conturElement(e));
+  const contururi = elementeFoaie(d).map((e) => chenarElement(e));
   const { nx } = dimensiuni(grila);
   let peste = 0, sub = 0, afara = 0;
   z.forEach((zi, k) => {

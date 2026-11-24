@@ -6,7 +6,7 @@ import { t } from '../i18n/t.ts';
 import type { Document, Ghidaj } from '../model/document.ts';
 import { puncteContur } from '../extensii/formeSelectie.ts';
 import { CUTIE_GOALA, uneste } from '../geom/cutie.ts';
-import { conturElement } from '../model/forme.ts';
+import { conturElement, esteContur } from '../model/forme.ts';
 import { elementeFoaie } from '../model/lume.ts';
 import type { CerereTaiere, Cutit } from '../model/taiere.ts';
 import type { RezultatActiune } from '../ui/actiuni.ts';
@@ -66,7 +66,7 @@ function regiuniAlese(doc: Document, selectie: readonly string[], indexFoaie: nu
   const pe = new Map<string, Polilinie[]>();
   let n = 0;
   for (const e of elementeFoaie(doc, indexFoaie)) {
-    if (!ids.has(e.instanta)) continue;
+    if (!ids.has(e.instanta) || !esteContur(e)) continue;
     let c;
     try {
       c = conturElement(e);
@@ -132,7 +132,7 @@ export function PanouTaiere({ doc, indexFoaie = 0, selectie, ghidaje, centru, on
     if (!forma) return false;
     const es = elementeFoaie(doc, indexFoaie).filter((e) => e.instanta === forma);
     try {
-      return es.length > 0 && es.every((e) => conturElement(e).inchis);
+      return es.length > 0 && es.every((e) => esteContur(e) && conturElement(e).inchis);
     } catch {
       return false;
     }

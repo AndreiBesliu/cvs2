@@ -102,8 +102,9 @@ export function vectoriFoaie(doc: Document, indexFoaie: number, cuFoaia: boolean
       const raza = e.forma.raza * Math.hypot(m.a, m.b);
       entitati.push({ fel: 'cerc', strat, element: e.idLume, centru: { x: m.e, y: m.f }, raza });
       minX = Math.min(minX, m.e - raza); minY = Math.min(minY, m.f - raza); maxX = Math.max(maxX, m.e + raza); maxY = Math.max(maxY, m.f + raza);
-    } else {
-      for (const x of bucatiContur(conturElement(e), strat, e.idLume)) entitati.push(x);
+    } else if (e.forma.tip !== 'relief') {
+      // Relieful (ADR 0310) nu e un vector: exportul 2D îl sare (relieful pleacă prin imaginea gri pe 16 biți, felia 18.1↑g).
+      for (const x of bucatiContur(conturElement({ forma: e.forma, matrice: e.matrice }), strat, e.idLume)) entitati.push(x);
       const c = cutieElement(e);
       minX = Math.min(minX, c.minX); minY = Math.min(minY, c.minY); maxX = Math.max(maxX, c.maxX); maxY = Math.max(maxY, c.maxY);
     }

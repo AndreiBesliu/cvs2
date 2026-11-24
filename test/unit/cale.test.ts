@@ -7,7 +7,7 @@ import assert from 'node:assert/strict';
 import { listaDesen } from '../../src/app/desen.ts';
 import { distantaLaContur, inRegiune } from '../../src/geom/distanta.ts';
 import { PLAFON, VERSIUNE_SCHEMA, type Document, type FormaDoc, type VarfDoc } from '../../src/model/document.ts';
-import { conturElement } from '../../src/model/forme.ts';
+import { chenarElement } from '../../src/model/forme.ts';
 import { incarca } from '../../src/model/incarcare.ts';
 import { instantaLa } from '../../src/ui/actiuniAlegere.ts';
 import { D, INIMA, inimaEsantionata } from './ajutor-cale.ts';
@@ -77,7 +77,7 @@ test('sub o matrice neuniformă, o cale cu arce e refuzată (arcul ar fi elipsă
   const r = prinUsa(neuniform(INIMA));
   assert.ok(r.ok, motiv(r));
   // Conturul trece exact prin matrice: vârfurile și punctele de control, scalate pe x.
-  const c = conturElement({ forma: INIMA, matrice: { a: 2, b: 0, c: 0, d: 1, e: 0, f: 0 } });
+  const c = chenarElement({ forma: INIMA, matrice: { a: 2, b: 0, c: 0, d: 1, e: 0, f: 0 } });
   assert.deepEqual(c.varfuri[0], { p: P(100, 10), s: { tip: 'C', c1: P(160, 40), c2: P(190, 75) } });
 });
 
@@ -139,7 +139,7 @@ function inPoligon(p: { x: number; y: number }, poli: ReadonlyArray<{ x: number;
 }
 
 test('clicul pe cubice: includerea (evenodd) și distanța, față de inima eșantionată la 16 000 de puncte', () => {
-  const c = conturElement({ forma: INIMA, matrice: { ...ID, e: 100, f: 50 } });
+  const c = chenarElement({ forma: INIMA, matrice: { ...ID, e: 100, f: 50 } });
   const poli = inimaEsantionata(100, 50);
   let seed = 7;
   const rnd = (): number => { seed = (seed * 1103515245 + 12345) % 2147483648; return seed / 2147483648; };

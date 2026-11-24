@@ -1,6 +1,6 @@
 import { areDepasire, cutieContur, depasire, type Depasire } from '../geom/cutie.ts';
 import type { Document } from './document.ts';
-import { conturElement } from './forme.ts';
+import { chenarElement } from './forme.ts';
 import { elementeFoaie } from './lume.ts';
 
 /**
@@ -35,7 +35,7 @@ export function avertismente(doc: Document, indexFoaie = 0): Avertisment[] {
   if (!foaie) return [];
   const rez: Avertisment[] = [];
   for (const e of elementeFoaie(doc, indexFoaie)) {
-    const d = depasire(cutieContur(conturElement(e)), foaie.stoc.latime, foaie.stoc.inaltime);
+    const d = depasire(cutieContur(chenarElement(e)), foaie.stoc.latime, foaie.stoc.inaltime);
     if (areDepasire(d)) rez.push({ tip: 'iese-din-foaie', id: e.idLume, instanta: e.instanta, depasire: d });
   }
   return placute ? rez.concat(placute(doc, indexFoaie)) : rez;

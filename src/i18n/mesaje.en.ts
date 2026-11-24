@@ -72,6 +72,7 @@ export const en = {
   'stare.nimic-selectat': 'Nothing selected. Click a shape; drag it to move it; wheel to zoom; middle button or Space + drag to pan.',
   'forma.dreptunghi': 'rectangle {latime} × {inaltime} at X {x}, Y {y}',
   'forma.cerc': 'circle R{raza} centred at X {x}, Y {y}',
+  'forma.relief': 'relief {latime} × {inaltime}, {celula} mm cells, at X {x}, Y {y}',
   'forma.cale': { one: 'path {latime} × {inaltime}, {n} segment, at X {x}, Y {y}', other: 'path {latime} × {inaltime}, {n} segments, at X {x}, Y {y}' },
   'forma.cale-deschisa': { one: 'open path {latime} × {inaltime}, {n} segment, at X {x}, Y {y}', other: 'open path {latime} × {inaltime}, {n} segments, at X {x}, Y {y}' },
   'bara.actiuni': 'Actions',

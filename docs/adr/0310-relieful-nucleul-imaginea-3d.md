@@ -234,6 +234,12 @@ Variantele care pot sta împreună intră ca opțiuni, cu recomandarea ca implic
 
 ### 13. Freza bilă în document (răspunsul la întrebarea 3: „a”)
 
+**Precizarea din 24.11 (la începutul feliei 18.1↑a):** bila intră în document odată cu operațiile de relief (finisarea,
+18.1↑c), în versiunea lor, nu odată cu forma `relief`. Adusă în 18.1↑a, ar fi atins fereastra exportului (pe care o reface
+linia exportului), unde un Exportă ar fi făcut-o plată pe tăcute; fără operații de relief, n-ar fi folosit-o nimic. Forma de
+mai jos rămâne cea stabilită cu linia frezelor; `motivFormaPeOperatie` e deja în `src/model/formaFrezei.ts` (V-ul), iar
+rândul bilei intră în 18.1↑c. Anunțate sesiunea principală și linia frezelor.
+
 Sesiunea principală e de acord (24.11) ca bila să intre odată cu forma `relief`, cu forma câmpului stabilită împreună cu
 linia frezelor, a cărei e modelul frezei (`src/model/freza.ts`, `sculaDinFreza`). Propunerea trimisă liniei frezelor:
 

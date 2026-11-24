@@ -4,7 +4,7 @@ import { arieCuSemn, type Contur } from '../../src/geom/contur.ts';
 import { cerculArcului } from '../../src/geom/conturBaza.ts';
 import { booleanSelectie, type FormaBoolean } from '../../src/model/boolean.ts';
 import type { Document } from '../../src/model/document.ts';
-import { conturElement } from '../../src/model/forme.ts';
+import { chenarElement } from '../../src/model/forme.ts';
 import { incarca } from '../../src/model/incarcare.ts';
 import { istoricNou } from '../../src/model/jurnal.ts';
 import { elementeFoaie } from '../../src/model/lume.ts';
@@ -25,7 +25,7 @@ const patrat = (id: string, x: number, y: number) => ({ id, forma: { tip: 'drept
 const cerc = (id: string, x: number, y: number, r = 10) => ({ id, forma: { tip: 'cerc' as const, raza: r }, matrice: { ...ID, e: x, f: y } });
 const aproape = (a: number, b: number, mesaj: string, eps = 1e-9): void => { assert.ok(Math.abs(a - b) <= eps, `${mesaj}: ${a} ≠ ${b}`); };
 /** Conturul în lume al formei noi (cu matricea de loc). */
-const contur = (f: FormaBoolean, forma = f.forma): Contur => conturElement({ forma, matrice: { ...ID, e: f.x, f: f.y } });
+const contur = (f: FormaBoolean, forma = f.forma): Contur => chenarElement({ forma, matrice: { ...ID, e: f.x, f: f.y } });
 const reusit = (r: ReturnType<typeof booleanSelectie>) => { assert.notEqual(typeof r, 'string', String(r)); return r as Exclude<typeof r, string>; };
 
 test('două pătrate suprapuse pe un sfert: unirea 175, intersecția 25 (pătratul 5 × 5), scăderea 75; doar linii', () => {

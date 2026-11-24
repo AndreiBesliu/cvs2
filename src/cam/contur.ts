@@ -12,7 +12,9 @@ import { conturElement } from '../model/forme.ts';
  */
 export function conturDeTaiat(e: { readonly forma: FormaDoc; readonly matrice: Matrice }):
   { readonly ok: true; readonly contur: Contur } | { readonly ok: false; readonly motiv: string } {
-  const c = conturElement(e);
+  // Operațiile 2D referă doar contururi (ușa refuză una pe un relief, ADR 0310 §1).
+  if (e.forma.tip === 'relief') return { ok: false, motiv: 'un relief nu se taie ca un contur' };
+  const c = conturElement({ forma: e.forma, matrice: e.matrice });
   if (!c.varfuri.some((x) => x.s.tip === 'C')) return { ok: true, contur: c };
   const r = conturFaraCubice(c, TOLERANTA_PROIECT);
   return r.ok ? { ok: true, contur: r.contur } : r;

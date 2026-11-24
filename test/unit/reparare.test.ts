@@ -12,7 +12,7 @@ import assert from 'node:assert/strict';
 import { is } from 'valibot';
 import type { Document, FormaDoc, Matrice, Piesa, VarfDoc } from '../../src/model/document.ts';
 import { arieCuSemn } from '../../src/geom/contur.ts';
-import { conturElement } from '../../src/model/forme.ts';
+import { chenarElement } from '../../src/model/forme.ts';
 import { repara, reparabile, verificaPentruPanou, type CerereReparare, type OptiuniReparare, type RezultatReparare } from '../../src/model/reparare.ts';
 import { SchemaDocument } from '../../src/model/schemaDocument.ts';
 import { verificaVectorii, TOLERANTA_VERIFICARE, type Problema } from '../../src/model/verificare.ts';
@@ -248,7 +248,7 @@ test('„8”-ul (fundița) se desparte: triunghiurile (0,0)(10,10)(0,20) și (1
   assert.equal(nou.id, 'a-1');
   aproape(varfuri(e.forma), [[0, 0], [10, 10], [0, 20]], 1e-12, 'elementul');
   aproape(varfuri(nou.forma), [[10, 10], [20, 20], [20, 0]], 1e-12, 'bucla despărțită');
-  for (const x of [e, nou]) assert.ok(Math.abs(Math.abs(arieCuSemn(conturElement(x))) - 100) < 1e-9, 'aria 100');
+  for (const x of [e, nou]) assert.ok(Math.abs(Math.abs(arieCuSemn(chenarElement(x))) - 100) < 1e-9, 'aria 100');
   assert.deepEqual(p.operatii.map((o) => o.noduri), [['a', 'a-1']]);
   // Cele două triunghiuri se ating în (10, 10): rămâne o intersecție, nu o autointersecție.
   assert.deepEqual(felurile(dupa), ['intersectie']);
@@ -302,7 +302,7 @@ test('cubica închisă care se taie singură: tăiată în punctul ei dublu (0, 
   const pe = (a: number, b: number): Array<[number, number]> => Array.from({ length: 4001 }, (_, k) => B(a + ((b - a) * k) / 4000));
   const aBucla = arie(pe(s, t)), aMare = arie([...pe(0, s), ...pe(t, 1)]);
   for (const [x, asteptat, nume] of [[bucla, aBucla, 'bucla'], [mare, aMare, 'partea mare']] as const) {
-    const a = Math.abs(arieCuSemn(conturElement({ forma: x as FormaDoc, matrice: ID })));
+    const a = Math.abs(arieCuSemn(chenarElement({ forma: x as FormaDoc, matrice: ID })));
     assert.ok(Math.abs(a - asteptat) < 1e-5, `${nume}: ${a} ≠ ${asteptat}`);
   }
   assert.ok(!felurile(dupa).includes('autointersectie'));

@@ -84,7 +84,7 @@ function poligon(c: Contur): number[] {
 
 const sculaIR = (s: Operatie['scula']): Scula => ({
   numar: s.numar, nume: s.nume, diametru: s.diametru,
-  ...(s.forma ? { forma: { tip: 'v' as const, unghi: s.forma.unghi, ...(s.forma.varf !== undefined ? { varf: s.forma.varf } : {}) } } : {}),
+  ...(s.forma?.tip === 'v' ? { forma: { tip: 'v' as const, unghi: s.forma.unghi, ...(s.forma.varf !== undefined ? { varf: s.forma.varf } : {}) } } : {}),
 });
 
 /**
@@ -145,7 +145,8 @@ export function programeDopuri(doc: Document, regim: RegimDop, supracursa = 0): 
       const dincolo = e + Math.max(op.scula.diametru, fp?.scula.diametru ?? 0) / 2;
       avertismente.push(`dopul ${t.idLume}: freza trece cu până la ${Math.ceil(dincolo * 10) / 10} mm dincolo de marginile semifabricatului (fața coborâtă până la margine): fixează-l fără cleme pe margini, de exemplu cu bandă dublu adezivă`);
     }
-    const f = op.scula.forma!;
+    const f = op.scula.forma;
+    if (f?.tip !== 'v') return { ok: false, motiv: `${t.idLume}: dopul în V cere freza în V a locașului (T${op.scula.numar})` };
     // Fiecare freză cu valorile ei (ADR 0300 §5): V-ul, freza fundului și frezele ei de rest; lipsă, regimul lucrării.
     const rv = regimFrezei(op.scula, regim);
     const avansuri = (s: Operatie['scula']): { readonly avans: number; readonly avansPlonjare: number } => {
