@@ -336,6 +336,20 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   pornirea +0, totalul +4,4 kB, contul 30,1 → 30,3 / 32. **Feliile următoare, renumerotate:** 16.A↑b-2 (freza din
   bibliotecă în secțiunea Tăierea, în lucru), 16.A↑b-3 (rândurile exportului, după fereastra exportului refăcută,
   `AndreiBesliu/cvs2#11`), 16.A↑b-4 (nota „s-a schimbat în bibliotecă”).
+  **Freza din bibliotecă în secțiunea Tăierea (ADR 0300 §4, felia 16.A↑b-2) și frezele standard, puse singure (§3,
+  felia 16.A↑a-2)** gata pe 24.11, unite în `main` pe 24.11 (`33fadb06`). **b-2:** rândul „Freza” din Tăierea, cât
+  biblioteca are freze, doar cu cele care merg pe toate formele alese; aleasă, freza trece pe operațiile lor prin
+  `document.aplica-operatii`, într-un pas, cu originea ei (`biblioteca: { id, rev }`) și valorile de lucru; numărul T
+  e al bibliotecii cât e liber, altfel al unei freze identice, altfel cel mai mic liber, cu nota care o spune.
+  **Identitatea frezei montate ține și turația** (`aceeasiFreza`, `src/model/rol.ts`). Judecata formei pe operație
+  stă o singură dată, în `src/model/formaFrezei.ts` (`motivFormaPeOperatie`), comună cu linia reliefului. **a-2:**
+  setul de pornire are id-uri fixe; biblioteca fără cont îl primește o dată, la prima citire, iar golită nu se mai
+  umple singură; un cont îl primește la prima sincronizare doar dacă n-a avut niciodată freze. În Atelier, rândul
+  „Freza” nu apare. **De acum, orice probă e2e care deschide panoul vede rândul „Freza” în Tăierea; o probă care
+  cere biblioteca goală folosește `bibliotecaGoala` din `test/e2e/ajutor-freze.ts`.** **ADR 0302, acceptat de owner
+  cu „Da, 1a–5a”:** catalogul de freze al nostru și biblioteca arătată ca listă, cu configuratorul la cerere
+  (feliile 16.A↑h-1…4); fișierul ArtCAM `FREZE.tdb` nu se citește și nu se copiază. Documentul rămâne v27; nimic pe
+  server. Feliile: totalul +2,2 kB, pornirea neschimbată.
   **Plafonul pornirii 120 kB (ADR 0145, decizia owner-ului din 24.11, „ok, ridica plafonul pornirii la 120 kB”):** după
   lotul al paisprezecelea, pornirea era 109,9 kB, cu ușa 114,4 și cu Atelierul 114,7 / 115, iar feliile următoare ale
   frezelor, exportului și aranjamentelor nu mai încăpeau în 0,3 kB. Poarta judecă tot trei măsuri sub același plafon
@@ -1473,6 +1487,27 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 24.11.2026, după-amiaza (a nouăsprezecea unire din cloud): **16.A↑b-2 (freza din bibliotecă în secțiunea Tăierea)
+  și 16.A↑a-2 (frezele standard, puse singure) unite în `main`** (sesiunea principală, ramura `unire-2411p`, peste a
+  optsprezecea unire). Linia frezelor, ramura `wip/16.A-freze`, commit-ul raportat `d0fa2dde` (codul lui `e46cc944`),
+  PR-ul `AndreiBesliu/cvs2#22`; la „continua cu 16.A↑b-2” și la precizarea owner-ului din sesiunea liniei („sa ai in
+  vedere ca biblioteca de freze trebuie sa fie populata cu freze default standard”), unite în `33fadb06`. **b-2:**
+  rândul „Freza” din Tăierea, cu frezele bibliotecii care merg pe formele alese; freza aleasă trece pe operații
+  într-un pas, cu originea, valorile de lucru și numărul T; otrăvurile 22 / 22. **a-2:** setul de pornire, cu id-uri
+  fixe, pus o dată în biblioteca fără cont și, la prima sincronizare, într-un cont care n-a avut niciodată freze;
+  otrăvurile 15 / 16 (una, practic echivalentă). **ADR 0302, acceptat de owner cu „Da, 1a–5a”** (în sesiunea
+  liniei): catalogul de freze („lista completă, ca în ArtCAM”, cerută de owner) e unul al nostru, iar biblioteca se
+  arată ca listă; fișierul ArtCAM `FREZE.tdb`, atașat de owner, nu se citește și nu se copiază (format binar
+  nedocumentat, cu conținutul ArtCAM și al unor producători; regula din „Surse”). Linia merge mai departe cu 16.A↑h-1
+  și h-2: s-a unit commit-ul raportat. Documentul rămâne v27; nimic pe server. Ciocnirile: DEVLOG, indexul ADR (0302
+  înaintea lui 0330), registrul otrăvurilor și catalogul controalelor (scris din nou, 623 de nume). Porțile lotului,
+  în CI, pe `33fadb06` (completul @@COMPLET@@): @@PORTI@@; rapidul, verde pe `33fadb06`; completul liniei, verde
+  (`e46cc944`); @@MARIMI@@. @@INAINTE@@ Pe ramuri, în lucru: frezele (16.A↑h-1, fereastra ca listă; h-2,
+  grupurile), biblioteca (3.Xj), relieful (18.1↑a), cotele (10.4↑a-2, la „continuă” al owner-ului). **Gata pe
+  ramură, la cuvântul owner-ului:** fereastra exportului (`AndreiBesliu/cvs2#11`: toate feliile ADR 0290, canalul
+  `export`; linia recomandă unirea înaintea lui 16.A↑b-3, rândurile exportului). **La owner:** fereastra exportului,
+  verificarea juridică (GDPR) a utilizării aplicației înaintea live-ului, „cine unește în `main`”, meniul de sus la
+  320 px la atingere, oracolul rampelor de 6 minute (împărțit în mai multe fișiere sau mutat în complet).
 - 24.11.2026, după-amiaza (a optsprezecea unire din cloud): **11.1↑c (comenzile foii pe pânză) și 14.C↑d (butonul
   Admin, doar pentru personal) unite în `main`** (sesiunea principală, ramura `unire-2411n`, din `64a63b48`). Amândouă,
   cerute de owner în sesiunea principală, pe 24.11 („ok, cand sunt verzi frezele fa unirea, pana atunci vreau sa faci

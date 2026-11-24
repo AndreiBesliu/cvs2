@@ -13262,3 +13262,20 @@ admin, care apare daca esti logat ca admin”
   +1,7, 16.A↑a-2 +0,5). Nimic pe server.
 - **Documentele:** ADR 0300 („Implementarea (16.A↑a-2)”, §3 schimbat), manualul (ro, en), fișa etapei 3, pragul, registrul
   otrăvurilor, traducerile, nota liniei. **Completed:** 24.11, 13:10.
+
+## 2026-11-24 — Sesiunea principală în cloud: a nouăsprezecea unire (16.A↑b-2, freza în Tăierea; 16.A↑a-2, frezele standard) (Model: Claude Fable 5.2)
+
+**Prompt:** raportul liniei frezelor („gata de unit”, PR-ul #22, `d0fa2dde`), la ordinul în vigoare „unește ce se poate”
+**Started:** 24.11, 15:40. **Completed:** unirea în `main`, 24.11, @@ORA@@; publicarea pe test, la rândul ei.
+
+- **Unirea, pe `unire-2411p`** (peste lotul 18): `d0fa2dde` în `33fadb06` (linia merge mai departe cu h-1 și h-2: nu
+  intră). Ciocnirile: DEVLOG, indexul ADR (0302 înaintea lui 0330), registrul otrăvurilor (ambele părți), catalogul
+  controalelor (scris din nou: 623 de nume). Local: tipurile (și ale funcțiilor), regulile de import (21),
+  traducerile (1 020), biblioteca extensiilor la zi; e2e 39 / 39 (frezele, freza în Tăierea, Atelierul, comenzile
+  foii, butonul Admin).
+- **Porțile, în CI:** completul lotului pe `33fadb06` (45404468217, @@COMPLET@@): @@PORTI@@; rapidul, verde pe
+  `33fadb06` (45404468191; felia cea mai lungă, 10 min 12 s, sub limita nouă de 15); completul liniei, verde pe
+  `e46cc944` (45395676774). @@MARIMI@@. Nimic pe server.
+- **Documentele:** decizia în `CLAUDE.md`, cu rândul de stare al celor două felii și ADR 0302 acceptat; indexul
+  liniilor; starea din `docs/linii/principala.md`.
+- **Loturile dinainte:** @@INAINTE@@
