@@ -586,6 +586,10 @@ test('în engleză (ADR 0165): limba lui cvs2, schimbată pe loc printr-o reporn
   await c.locator('#at-ve-inel [data-v="da"]').click();
   await expect(c.locator('#at-nume-piesa')).toHaveText('Fan rotor Ø40 with 7 blades, pitch 0.8, with ring');
   await expect(c.locator('#at-ve-info')).toContainText(' The ring, 1.2 mm thick, is 4.6 mm tall. The duct:');
+  // gaura înaintea inelului, ca în română (locurile din traducere, în aceeași ordine)
+  await c.locator('#at-ve-gaura [data-v="r"]').click();
+  await expect(c.locator('#at-nume-piesa')).toHaveText('Fan rotor Ø40 with 7 blades, pitch 0.8, round hole, with ring');
+  await c.locator('#at-ve-gaura [data-v="x"]').click();
   expect(await romanaRamasa(page, 'Păstrat la repornire'), 'rotorul, cu inel').toEqual([]);
   await c.locator('#at-ve-piesa [data-v="carcasa"]').click();
   await expect(c.locator('#at-nume-piesa')).toHaveText('Fan duct Ø40 × 9, with 2 lugs');

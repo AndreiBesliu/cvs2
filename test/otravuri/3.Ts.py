@@ -13,7 +13,9 @@
 # - `c = Math.max(t, c * U / latime(sec) * 0.995)` fără `* 0.995` și `Math.ceil(… - 1e-9)` fără `- 1e-9`: aceleași motive ca la
 #   elicea de barcă (3.Tr);
 # - `arc(f + (taie ? ai : -1e-6), …)` cu `-1e-6` schimbat: orice prag sub o latură a cercului dă aceleași vârfuri;
-# - în editor, `rotor = p.piesa !== "carcasa"` față de `=== "rotor"`: piesa e doar una dintre cele două.
+# - în editor, `rotor = p.piesa !== "carcasa"` față de `=== "rotor"`: piesa e doar una dintre cele două;
+# - în `defVentilator`, `tip` după celelalte chei (rulată ca E49, scăpată): ambele căi spre listă („Fă ventilatorul” și
+#   editorul) trec prin aceeași funcție, deci cheile ies în aceeași ordine oricum ar fi ea.
 O = []
 
 
@@ -191,7 +193,6 @@ o('E45', A, 'value="${p.joc}"></label>', 'value="${p.pas}"></label>', 'e2e', 'c�
 o('E46', A, '$("#at-ve-fa").onclick = adaugaVentilator;', '$("#at-ve-fa").onclick = adaugaInLista;', 'e2e', '„Fă ventilatorul” pune doar piesa din editor')
 o('E47', A, 'pune(defVentilator("carcasa"), n);', 'pune({ ...defVentilator("carcasa"), urechi: 2 }, n);', 'e2e', '„Fă ventilatorul” pune carcasa cu 2 urechi')
 o('E48', A, 'pune(defVentilator("rotor"), n);', 'pune({ ...defVentilator("rotor"), inel: "nu" }, n);', 'e2e', '„Fă ventilatorul” pune rotorul fără inel')
-o('E49', A, 'return { tip: "ventilator", ...p };', 'return { ...p, tip: "ventilator" };', 'e2e', 'cheile în altă ordine: aceeași carcasă, pe două linii (echivalentă dacă lista n-ar compara JSON-ul)')
 GB = 'const g = d.gaura === "r" ? tr(", gaură rotundă") : d.gaura === "b" ? tr(", pentru bară") : d.gaura === "nu" ? tr(", fără gaură") : "";\n      const j = (d.joc'
 o('E50', A, GB, GB.replace('d.gaura === "b" ? tr(", pentru bară")', 'd.gaura === "b" ? tr(", gaură rotundă")'), 'e2e', 'numele spune „gaură rotundă” la cea pentru bară')
 
