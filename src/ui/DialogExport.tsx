@@ -341,8 +341,8 @@ export function DialogExport(
   // La deschidere, focusul intră în dialog (butonul care l-a deschis rămâne sub el, inert).
   useEffect(() => { cutie.current?.focus(); }, []);
   // Esc închide fereastra (ADR 0290, felia 28.8↑g), ca Închide, oriunde ar fi focusul (și când a căzut pe pagină). Nu și cât
-  // stă ascunsă (urechile alese pe desen: Esc e al modului, care îl oprește) sau când Esc e al altui dialog ori al unui câmp
-  // care și-l ia (`defaultPrevented`), nici în mijlocul unei compuneri (IME).
+  // stă ascunsă (urechile alese pe desen: Esc e al modului, care îl oprește) sau când Esc și l-a luat altcineva
+  // (`defaultPrevented`), nici în mijlocul unei compuneri (IME). Raportul foilor nu stă peste ea: o înlocuiește.
   const radacina = useRef<HTMLDivElement>(null);
   const inchide = useRef(onInchide);
   inchide.current = onInchide;
@@ -351,8 +351,6 @@ export function DialogExport(
       if (e.key !== 'Escape' || e.defaultPrevented || e.isComposing) return;
       const r = radacina.current;
       if (!r || !r.checkVisibility()) return;
-      const alt = e.target instanceof Element ? e.target.closest('[role="dialog"]') : null;
-      if (alt !== null && alt !== r) return;
       e.preventDefault();
       inchide.current();
     };
