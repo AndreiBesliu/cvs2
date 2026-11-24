@@ -95,8 +95,10 @@ o('C36', LG, 'ext = dreptunghi(xa, 0, xb, jos), c: P2 = [s * k + s / 2, g / 2];'
   'găurile nu sunt la înălțimea găurilor unei grinzi')
 o('C37', LG, 'ext = dreptunghi(xa, 0, xb, jos), c: P2 = [s * k + s / 2, g / 2];', 'ext = dreptunghi(xa, 0, xb, jos), c: P2 = [s * k + s / 2 + 1, g / 2];', 'cremaliera',
   'găurile nu sunt în mijlocul pasului')
-o('C38', LG, '      jos = q.zr - 0.2;\n', '      jos = q.zr - 2.5;\n', 'cremaliera',
-  'bara cu dinți coboară peste lamajul găurilor')
+# (prima formă a lui C38, `jos = q.zr - 2.5`, a scăpat și e practic echivalentă: cercul lamajului iese din dreptunghiul
+# corpului, partea lui de afară iese pe dos și se anulează cu bara, deci numărul de înfășurare e același în orice punct)
+o('C38', LG, '      jos = q.zr - 0.2;\n', '      jos = q.zr + 0.5;\n', 'cremaliera',
+  'corpul cu găuri urcă peste piciorul dinților: golurile dintre dinți sunt astupate')
 o('C39', LG, 'tri.push(...axe(prismaGauri(bara, [], y0, y1), ([u, v, w]) => [u, w, v], true));', 'tri.push(...axe(prismaGauri(bara, [], y0, y1), ([u, v, w]) => [u, w, v], false));', 'cremaliera',
   'bara cu dinți are plasa pe dos')
 o('C40', LG, 'x0 = 0.1, x1 = s * q.n - 0.1, y0 = 0.1, y1 = s - 0.1, tri: Tri[] = [], avert: string[] = [];\n    if (q.lungRea)', 'x0 = 0.1, x1 = s * q.n - 0.1, y0 = 0.1, y1 = s, tri: Tri[] = [], avert: string[] = [];\n    if (q.lungRea)', 'cremaliera',

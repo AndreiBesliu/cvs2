@@ -92,6 +92,12 @@ test('configuratorul: lungimea, roata pereche, modulul și prinderea, cu numele,
     await expect(nume(page), `${id} „${rau}”`).toHaveText('Cremalieră 1×8, roata de 8, cu găuri, modul 0,5');
     await expect(page.locator('#at-avert'), `${id} „${rau}”`).toBeHidden();
   }
+  // nimic refuzat n-a rămas în stare: o schimbare bună reface piesa fără niciun avertisment
+  await scrie(page, '#at-crm-lung', '9');
+  await expect(cote(page)).toContainText('71,8 × 7,8');
+  await expect(nume(page)).toHaveText('Cremalieră 1×9, roata de 8, cu găuri, modul 0,5');
+  await expect(page.locator('#at-avert')).toBeHidden();
+  await scrie(page, '#at-crm-lung', '8');
   // înapoi pe știfturi, cu modulul 1 și roata de 40: șase plăci
   await scrie(page, '#at-crm-modul', '1');
   await page.locator('#at-crm-prindere [data-v="stifturi"]').click();
