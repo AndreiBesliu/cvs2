@@ -74,7 +74,7 @@ test('corpul e închis și are cotele de pe hârtie, pe toată plaja de lungimi,
 });
 
 test('dinții: profilul de 20° pe hârtie, pe toată lățimea, cu golurile până la picior; capetele, plate', () => {
-  for (const [lung, m, prindere, z] of [[4, 1, 'stifturi', 8], [5, 1, 'gauri', 16], [3, 2, 'stifturi', 12], [6, 1.5, 'gauri', 20]] as const) {
+  for (const [lung, m, prindere, z] of [[4, 1, 'stifturi', 8], [7, 1, 'gauri', 16], [3, 2, 'stifturi', 12], [6, 1.5, 'gauri', 20]] as const) {
     const p = crem({ lung, modul: m, prindere, roata: z }), h = hartie(lung, m, prindere, z), ce = `1×${lung} m${m} ${prindere}`;
     for (let i = 0; i < h.N; i++) {
       const xc = h.centru(i);
@@ -239,7 +239,9 @@ test('montajul, pe hârtie: înălțimea liniei de divizare, nivelul, axul roți
   assert.deepEqual([q.m, q.k, r3(q.divizare), r3(q.axa), q.dinti], [1.5, h.k, r3(h.zp), r3(h.zp + 12), h.N]);
   assert.equal(r3(q.cursa), r3(Math.PI * 1.5 * 16));
   assert.equal(Lm.cremalieraMontaj({}).dinti, 10);
-  assert.deepEqual([Lm.cremalieraMontaj({ lung: 2 }).dinti, Lm.cremalieraMontaj({ lung: 8 }).dinti], [hartie(2, 1, 'stifturi', 8).N, hartie(8, 1, 'stifturi', 8).N]);
+  // câți dinți întregi încap (lățimea piciorului unui dinte e 2,18 mm, pasul π): pe hârtie
+  assert.deepEqual([2, 7, 8, 24].map((lung) => Lm.cremalieraMontaj({ lung }).dinti), [5, 18, 20, 61]);
+  assert.deepEqual([2, 7, 8, 24].map((lung) => hartie(lung, 1, 'stifturi', 8).N), [5, 18, 20, 61]);
 });
 
 test('ce nu se poate se îndreaptă și se spune: lungimea, modulul, roata; o prindere necunoscută e pe știfturi', () => {

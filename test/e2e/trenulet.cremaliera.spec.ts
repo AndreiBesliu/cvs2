@@ -90,6 +90,7 @@ test('configuratorul: lungimea, roata pereche, modulul și prinderea, cu numele,
     await scrie(page, id, rau);
     await expect(page.locator(id), `${id} „${rau}”`).toHaveValue(bun);
     await expect(nume(page), `${id} „${rau}”`).toHaveText('Cremalieră 1×8, roata de 8, cu găuri, modul 0,5');
+    await expect(page.locator('#at-avert'), `${id} „${rau}”`).toBeHidden();
   }
   // înapoi pe știfturi, cu modulul 1 și roata de 40: șase plăci
   await scrie(page, '#at-cr-modul', '1');
