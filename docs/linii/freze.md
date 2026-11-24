@@ -56,7 +56,7 @@ gravare, profil, formă desenată)” și „Freze de profil desenate de utiliza
   browser la prima logare. Otrăvuri 47 / 47. Totalul 806,1 → 810,5 / 900, pornirea neschimbată, contul 30,3 / 32. **La
   publicare merge și serverul** (funcția `freze`, indexurile); sincronizarea se încearcă pe adresa principală de test.
   PR-ul #16 închis de sesiunea principală; 16.A↑c e PR-ul #20. Ramura adusă la `e3a9e512` (A.7; vârful `8552db16`).
-- **24.11, ~12:55: forma bilei, stabilită cu linia reliefului** (18.1↑, `wip/18.1-relief`, ADR 0310 §13, `2f8a4b70`; doar
+- **24.11, ~12:55: forma bilei, stabilită cu linia reliefului** (18.1↑, `wip/18.1-relief`, ADR 0310 §13, `4f37762d`; doar
   dacă owner-ul răspunde „a” la întrebarea 3 din ADR 0310): `scula.forma = { tip: 'bila' }`, fără câmpuri, ca IR-ul; lipsa
   formei rămâne plata. Toroidala (16.A↑e, la noi): `{ tip: 'toroidala', raza }`, 0 < raza < Ø / 2 strict; raza = Ø / 2 se
   scrie doar ca bilă (o singură scriere pe freză). Ce formă primește fiecare operație stă într-o singură funcție,
