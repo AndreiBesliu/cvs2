@@ -121,22 +121,21 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
   printr-o schiță.
 - **Observabilitatea:** erorile ajung în jurnalul aplicației; joburile își lasă marcajul.
 
-## Starea pe 24.11.2026, spre dimineață (după a zecea unire din cloud)
+## Starea pe 24.11.2026, dimineața (după a unsprezecea unire din cloud)
 
-- **Pe test:** `b1797933` (tot până la lotul al nouălea: frezele și plafonul de 900 kB; publicat pe 24.11 la 02:07,
-  doar hosting). Lotul al zecelea (`80d3eb70`: A.8c și A.8d), în curs de publicare, cu serverul (funcția `utilizare`).
+- **Pe test:** `89962b4d` (tot până la lotul al zecelea: A.8c și A.8d; publicat pe 24.11 la 04:59, cu serverul: funcția
+  `utilizare`, cu felurile noi). Lotul al unsprezecelea (`95dddbe0`: A.9a și A.9b), în curs de publicare, cu serverul
+  (funcția nouă `agregaUtilizarea`, regulile Firestore, indexurile).
 - **`main`, din cloud:** pe 23.11: 3.Tq (`0ae9c6c1`); 11.3↑e și A.4 (`ddaa7ead`); 3.Tr, unită de linia elicelor
   (`d262e57a`); 25.8↑a și A.5 (`1b46c955`), cu reparația probei extensiilor (`8287d66e`); 11.3↑f, unită de linia
   planșelor (`f4601938`); A.6 (`4497d639`); 3.Xh (`2d1e482c`) și 12.1↑e-3 cu 12.1↑e-4 (`03460cab`); A.8a cu A.8b
-  (`5325b8fe`) și 25.9↑ (`4fe2d2ad`). Pe 24.11: 16.A↑a (`02a5864a`), cu ADR 0301 (`813fa675`); A.8c și A.8d (`80d3eb70`).
+  (`5325b8fe`) și 25.9↑ (`4fe2d2ad`). Pe 24.11: 16.A↑a (`02a5864a`), cu ADR 0301 (`813fa675`); A.8c și A.8d (`80d3eb70`);
+  A.9a și A.9b (`95dddbe0`).
 - **Liniile** (vezi [indexul](README.md)):
-  - **pe ramură, cu completul verde, neraportate încă:** A.9a (sumele zilei, jobul `agregaUtilizarea`, permisiunea
-    „Utilizare: citește”) și începutul lui A.9b, pe `c549a600` (`AndreiBesliu/cvs2#13`); la unire merg funcția nouă,
-    regulile Firestore (`utilizareZi`) și indexurile;
-  - **gata pe ramură, la cuvântul owner-ului:** fereastra exportului (28.8↑a–b-2, ADR 0290; `AndreiBesliu/cvs2#11`),
+  - **gata pe ramură, la cuvântul owner-ului:** fereastra exportului (28.8↑a–b-3, ADR 0290; `AndreiBesliu/cvs2#11`),
     după ce o încearcă pe canalul `export`;
-  - **în lucru:** frezele (16.A↑b: alegerea în proiect, documentul v27), adminul (A.9b, apoi A.10, A.11), exportul
-    (desenele, 28.8↑b–f);
+  - **în lucru:** frezele (16.A↑b: alegerea în proiect, documentul v27), adminul (A.10, fluxurile în fila Utilizare;
+    apoi A.11), exportul (desenele, 28.8↑b–f);
   - **la cuvântul owner-ului:** A.7 (adminul pe telefon), 25.8↑b, 3.Ts, restul bibliotecii extensiilor (căutarea,
     captura mărită), următoarea felie a incrustațiilor, 11.5↑b (după etapa 13);
   - **fără felie în lucru:** planșele (tăierea plăcii 11, la owner), elicele, trasarea, incrustațiile, biblioteca,

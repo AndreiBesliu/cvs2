@@ -43,9 +43,12 @@ import { DIR_BIBLIOTECA, esteNumeFisierBiblioteca, FISIER_CATALOG_BIBLIOTECA } f
 
 /**
  * Modulele doar online, după numele bucății lor (`assets/<nume>-<amprentă de 8>.js|css`): `/admin`, testul pas cu pas, mașina
- * simulată, sugestia din editor (cu bucățile ei împărțite), panoul contului (cu contul Firebase al editorului).
+ * simulată, sugestia din editor (cu bucățile ei împărțite), panoul contului (cu contul Firebase al editorului), fila Utilizare
+ * a adminului (ADR 0262 §7, adusă la deschidere).
  */
-export const DOAR_ONLINE = ['PaginaAdmin', 'TestPasCuPas', 'MasinaSimulata', 'SugestieDinEditor', 'pozaPlansei', 'pozaSugestiei', 'PanouCont', 'contEditor'] as const;
+export const DOAR_ONLINE = [
+  'PaginaAdmin', 'TestPasCuPas', 'MasinaSimulata', 'SugestieDinEditor', 'pozaPlansei', 'pozaSugestiei', 'PanouCont', 'contEditor', 'FilaUtilizare',
+] as const;
 
 export type MotivPrecache = 'precache' | 'doar-online' | 'configuratie' | 'worker' | 'banc' | 'documentatie' | 'biblioteca' | 'necunoscut';
 

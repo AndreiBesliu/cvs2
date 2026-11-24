@@ -12318,6 +12318,39 @@ admin cat mai multe setari”).
 - **Documentele:** ADR 0262 (implementarea), fișa etapei 3 (`3.Aj`), registrul otrăvurilor, traducerile, nota liniei.
   **Completed:** 23.11 23:55.
 
+## 2026-11-24 — Felia A.9a: sumele zilei ale utilizării și jobul de noapte (ADR 0262)
+
+**Prompt:** același „am raspuns” (7a: A.8–A.11 acum), după A.8d.
+**Started:** 24.11 00:00.
+
+- **Despărțirea:** A.9 în A.9a (jobul, sumele, permisiunea) și A.9b (fila Utilizare), scrisă în tabelul feliilor din ADR.
+- **Codul (`5668d6d6`, `4c9e191f`, `d25a0557`):** `shared/utilizareZi.ts` (sumele pure, schița HyperLogLog a oamenilor,
+  zilele în fusul României), jobul `agregaUtilizarea` (`functions/src/utilizare/agregare.ts`, 02:30, ieri și alaltăieri, pe
+  pagini, cu marcajul), catalogul joburilor, permisiunea `utilizare.citeste` cu eticheta ei, regula `utilizareZi`, indexurile
+  (TTL, sumele neindexate); probele paginilor Azi și Personal, cu un job și o permisiune în plus.
+- **Pe drum:** sesiunea worker-ului s-a repornit în mijlocul rapidului; lucrul necomis a rămas întreg, comis imediat după.
+- **Probele:** 6 unitare noi, 2 ale jobului și 1 a regulilor, pe emulator. **Otrăvurile:** 27 / 27, după un lot stricat în
+  plus în proba jobului (J05). **Porțile locale:** rapidul 10 036 / 0, emulatoarele 120 / 120 și 48 / 48. **Mărimea:**
+  pornirea și totalul neschimbate; `/admin` 131,5 / 200.
+- **Documentele:** ADR 0262 (implementarea, A.9b), fișa etapei 3 (`3.Ak`), registrul otrăvurilor, traducerile, nota liniei.
+  **Completed:** 24.11 00:55.
+
+## 2026-11-24 — Felia A.9b: fila Utilizare din admin (ADR 0262)
+
+**Prompt:** același „am raspuns” (7a: A.8–A.11 acum), după A.9a.
+**Started:** 24.11 00:55.
+
+- **Codul (`c549a600`, `c85a44c8`, `c70c52df`):** catalogul acțiunilor generat la build (`scripts/catalogActiuni.ts`,
+  `documentatie/actiuni.json`), partea pură a filei (`src/admin/utilizare/date.ts`), fila (`FilaUtilizare.tsx`, bucata ei
+  doar online, cu plafonul în poarta mărimii), legăturile (bara, adresa, permisiunea), textele în ambele limbi.
+- **După capturi:** pluralele („1 om”, „30 de zile”), motivele refuzurilor în cuvinte (cheile mesajelor de bază), mărimea
+  textului din liste, numărul pe rândul numelui pe telefon.
+- **Probele:** 7 unitare noi, 2 e2e noi pe emulatoare; probele barei (Azi, Utilizatori) numără fila. **Otrăvurile:** 26 / 26.
+  **Porțile locale:** rapidul 10 045 / 0, emulatoarele întregi 50 / 50 după filele numărate. **Mărimea:** pornirea și
+  totalul neschimbate; `/admin` 133,2 / 200; fila 3,8 / 25.
+- **Documentele:** ADR 0262 (implementarea), fișa etapei 3 (`3.Al`), registrul otrăvurilor, traducerile, nota liniei.
+  **Completed:** 24.11 05:05.
+
 ## 2026-11-23 — Sesiunea principală în cloud: a șasea unire (A.6, Roadmap, Documentație și Setări); linia frezelor, pornită (Model: Claude Fable 5.2)
 
 **Prompt:** același brief de predare al sesiunii principale („unește ce se poate”), la raportul liniei adminului (PR-ul
@@ -12526,7 +12559,7 @@ plafonul („ok, ridica plafonul total la 900 kB”).
 
 **Prompt:** același brief de predare al sesiunii principale („unește ce se poate”), la raportul liniei adminului din
 PR-ul `AndreiBesliu/cvs2#13` („De unit acum (A.8c, A.8d): `fbbc8934`”).
-**Started:** 24.11, 03:55. **Completed:** unirea în `main`, 24.11, 04:05; publicarea pe test, în rândul de la capăt.
+**Started:** 24.11, 03:55. **Completed:** unirea în `main`, 24.11, 03:58; publicarea pe test, 24.11, 04:59.
 
 - **Înainte:** lotul al nouălea pe test (`b1797933c0e6`, 02:07); rândul publicării lui stătea pe `unire-2411a`
   (`d321e587`, doar documente) și intră în `main` cu lotul acesta.
@@ -12564,3 +12597,31 @@ PR-ul `AndreiBesliu/cvs2#13` („De unit acum (A.8c, A.8d): `fbbc8934`”).
 - **Mărimea:** totalul 808,8 / 900 (bucata ferestrei +0,7 kB), pornirea neschimbată.
 
 **Completed:** 24.11, 03:40.
+
+- **Publicarea (`89962b4d`):** rapidul și completul pe `main` verzi (completul, 50 min 44 s), `publica.yml` verde în
+  3 minute, cu serverul (funcția `utilizare`, cu felurile noi); adresa de test spune `89962b4d0fa5` (24.11, 04:59).
+
+## 2026-11-24 — Sesiunea principală în cloud: a unsprezecea unire (A.9a și A.9b, utilizarea aplicației: sumele zilei, jobul de noapte, fila Utilizare) (Model: Claude Fable 5.2)
+
+**Prompt:** același brief de predare al sesiunii principale („unește ce se poate”), la raportul liniei adminului din
+PR-ul `AndreiBesliu/cvs2#13` („De unit acum (A.9a, A.9b): `dbb0306a`”).
+**Started:** 24.11, 05:00. **Completed:** unirea în `main`, 24.11, 05:59; publicarea pe test, în rândul de la capăt.
+
+- **Înainte:** lotul al zecelea pe test (`89962b4d0fa5`, 04:59, cu serverul); rândul publicării lui stătea pe
+  `unire-2411b` (`14eb0edb`, doar documente) și intră în `main` cu lotul acesta.
+- **Verificate înaintea unirii:** ramura fără `.lucru/`, cu `main` `89962b4d` adus; codul lui `dbb0306a` e chiar al lui
+  `6b79c317`, pe care completul liniei e verde (45316082377). Vârful ramurii a mers mai departe cu A.10 (fluxurile,
+  `50a427f2`), neraportată: nu intră în lot.
+- **Unirea:** `unire-2411b` din `origin/main` (`89962b4d`): A.9a și A.9b în `95dddbe0`, fără nicio ciocnire; `git diff`
+  gol față de `6b79c317` în afara fișierelor `.md`, deci porțile liniei sunt ale unirii. În container: catalogul
+  controalelor la zi, tipurile (și ale funcțiilor), regulile de import (0 încălcări), traducerile (967, 0 lipsă),
+  92 / 92 probe atinse, build-ul determinist.
+- **Porțile, în CI, pe `6b79c317`** (completul, 52 min 37 s): unit 10 045 / 0 (12 sărite), e2e 646 / 646, funcțiile pe
+  emulatoare 120 / 120, paginile 50 / 50; pornirea 109,4 / 115 (cu ușa 113,9; cu Atelierul 114,2), totalul
+  799,6 / 900, `/admin` 133,2 / 200.
+- **La publicare merge și serverul:** funcția nouă `agregaUtilizarea` (jobul de la 02:30), regulile Firestore
+  (`utilizareZi`), indexurile (TTL pe `utilizareZi`).
+- **Documentele:** decizia în `CLAUDE.md` și rândul de stare al lui A.9a și A.9b (pregătit pe ramură cât rula
+  completul); indexul liniilor; starea din `docs/linii/principala.md`.
+- **La owner:** fereastra exportului (28.8↑a–b-3: acum sau după desene), verificarea juridică a utilizării aplicației
+  înaintea live-ului, „cine unește în `main`”.

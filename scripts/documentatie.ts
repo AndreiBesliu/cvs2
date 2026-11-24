@@ -15,6 +15,7 @@
  * Determinist: fără ore, fișierele în ordinea căilor, textul cu LF (un checkout cu CRLF dă aceiași octeți).
  */
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
+import { catalogActiuni } from './catalogActiuni.ts';
 import { genereazaCodurile } from './coduri.ts';
 import { genereazaCoduriImprimanta } from './coduriImprimanta.ts';
 import { EroareManual, genereazaManualul } from './manual.ts';
@@ -24,7 +25,7 @@ import { CALE_DICTIONAR_EN, citesteDictionar, traduceRoadmap } from './traducere
 import { join } from 'node:path';
 import { ancora, citesteTabel, parseazaInline, parseazaMarkdown, textSimplu, type Bloc, type TabelBrut } from '../src/docs/markdown.ts';
 import {
-  FISIER_CATALOG, FISIER_ROADMAP, FISIER_ROADMAP_EN, fisierDocument,
+  FISIER_ACTIUNI, FISIER_CATALOG, FISIER_ROADMAP, FISIER_ROADMAP_EN, fisierDocument,
   type AdrPeScurt, type Catalog, type Categorie, type CerereOwner, type DocumentCatalog, type Etapa, type Felie, type Prag, type Punct,
   type Roadmap, type StareAdr, type StareFelie,
 } from '../shared/documentatie.ts';
@@ -745,6 +746,8 @@ export function genereazaDocumentatia(radacina: string): Map<string, string> {
     [FISIER_ROADMAP, JSON.stringify(roadmap)],
     [FISIER_ROADMAP_EN, JSON.stringify(roadmapEn)],
     [FISIER_CATALOG, JSON.stringify(catalog)],
+    // Catalogul acțiunilor pentru fila Utilizare (ADR 0262 §6, felia A.9b).
+    [FISIER_ACTIUNI, JSON.stringify(catalogActiuni())],
     ...[...texte].map(([cale, text]): [string, string] => [fisierDocument(cale), text]),
   ];
   return new Map(out.sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0)));

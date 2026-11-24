@@ -14,7 +14,12 @@ const ok = (ore: number) => m({ ultimaPornire: ACUM - ore * H - 5_000, ultimulFi
 
 test('limita de vechime: 1,1 × intervalul + 2 h', () => {
   assert.equal(limitaOre(BACKUP), 28.4);
-  assert.deepEqual(JOBURI.map((j) => j.nume), ['backupZilnic', 'verificaBackup', 'pastrareTichete']);
+  assert.deepEqual(JOBURI.map((j) => j.nume), ['backupZilnic', 'verificaBackup', 'pastrareTichete', 'agregaUtilizarea']);
+});
+
+test('sumele utilizării (ADR 0262 §5, felia A.9a): zilnic la 02:30, înaintea backup-ului, cu cel mult 9 minute', () => {
+  assert.deepEqual(JOBURI.find((j) => j.nume === 'agregaUtilizarea'),
+    { nume: 'agregaUtilizarea', programare: '30 2 * * *', fus: 'Europe/Bucharest', intervalOre: 24, timeoutSecunde: 540 });
 });
 
 test('păstrarea tichetelor (ADR 0116 §16, felia 15.B↑b): zilnic la 04:00, după backup și înaintea verificării lui', () => {
