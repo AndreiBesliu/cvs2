@@ -315,7 +315,7 @@ test('redenumirea unui grup: toate frezele lui, cu versiunea crescută; spre un 
 });
 
 test('felurile noi (ADR 0302 §2, felia 16.A↑h-4): bila, toroidala, conica cu vârf rotund, burghiul; în bibliotecă, fără CAM încă', () => {
-  assert.deepEqual(FELURI_FREZA, ['plata', 'v', 'gravare', 'bila', 'toroidala', 'conica', 'burghiu']);
+  assert.deepEqual(FELURI_FREZA.slice(0, 7), ['plata', 'v', 'gravare', 'bila', 'toroidala', 'conica', 'burghiu']);
   assert.deepEqual(FELURI_CU_CAM, ['plata', 'v', 'gravare']);
   const BILA: Freza = { ...PLATA6, nume: 'Bilă Ø6', fel: 'bila', tais: undefined };
   const TOR: Freza = { ...PLATA6, nume: 'Toroidală', fel: 'toroidala', raza: 1, tais: undefined };
@@ -358,3 +358,61 @@ test('felurile noi (ADR 0302 §2, felia 16.A↑h-4): bila, toroidala, conica cu 
   assert.throws(() => sculaDinFreza(BILA), /CAM/u);
 });
 
+test('profilurile parametrice (ADR 0302 §1, felia 16.A↑h-5): rotunjirea, ogee-ul, ogee-ul roman, panoul ridicat; fără CAM încă', () => {
+  assert.deepEqual(FELURI_FREZA, ['plata', 'v', 'gravare', 'bila', 'toroidala', 'conica', 'burghiu', 'rotunjire', 'ogee', 'ogee-roman', 'panou']);
+  assert.deepEqual(FELURI_CU_CAM, ['plata', 'v', 'gravare']);
+  const ROT: Freza = { ...PLATA6, nume: 'Rotunjire R3', fel: 'rotunjire', diametru: 12, raza: 3, tais: undefined };
+  const OG: Freza = { ...PLATA6, nume: 'Ogee R3', fel: 'ogee', diametru: 18, raza: 3, tais: undefined };
+  const OGR: Freza = { ...PLATA6, nume: 'Ogee roman R3', fel: 'ogee-roman', diametru: 21, raza: 3, treapta: 1.5, tais: undefined };
+  const PAN: Freza = { ...PLATA6, nume: 'Panou 12°', fel: 'panou', diametru: 50.8, unghi: 12, varf: 6.35, tais: undefined };
+  const PANR: Freza = { ...PAN, nume: 'Panou 12° R6,35', raza: 6.35 };
+  for (const f of [ROT, OG, OGR, PAN, PANR]) assert.deepEqual(problemeFreza(f), {}, f.nume);
+  // Raza: la rotunjire sub Ø / 2 (vârful rămâne); la ogee, două arce, deci sub Ø / 4.
+  assert.deepEqual(problemeFreza({ ...ROT, raza: undefined }), { raza: 'lipsa' });
+  assert.deepEqual(problemeFreza({ ...ROT, raza: 6 }), { raza: 'margini' });
+  assert.deepEqual(problemeFreza({ ...ROT, raza: 5.99 }), {});
+  assert.deepEqual(problemeFreza({ ...OG, raza: 4.5 }), { raza: 'margini' });
+  assert.deepEqual(problemeFreza({ ...OG, raza: 4.49 }), {});
+  // Ogee-ul roman: treapta (jos și sus) e obligatorie, peste 0, iar 2r + t sub raza frezei.
+  assert.deepEqual(problemeFreza({ ...OGR, treapta: undefined }), { treapta: 'lipsa' });
+  assert.deepEqual(problemeFreza({ ...OGR, treapta: 0 }), { treapta: 'margini' });
+  assert.deepEqual(problemeFreza({ ...OGR, treapta: 4.5 }), { treapta: 'margini' });
+  assert.deepEqual(problemeFreza({ ...OGR, treapta: 4.49 }), {});
+  // Panoul: fundul plat (vârful) sub diametru, unghiul teșiturii față de fața plăcii, sub 90°; scobitura opțională, care
+  // încape între fundul plat și diametru (a + r·sin β < R).
+  assert.deepEqual(problemeFreza({ ...PAN, varf: undefined }), { varf: 'lipsa' });
+  assert.deepEqual(problemeFreza({ ...PAN, varf: 50.8 }), { varf: 'varf' });
+  assert.deepEqual(problemeFreza({ ...PAN, unghi: 90 }), { unghi: 'margini' });
+  assert.deepEqual(problemeFreza({ ...PAN, unghi: 89 }), {});
+  assert.deepEqual(problemeFreza({ ...PANR, raza: 0 }), { raza: 'margini' });
+  const rMax = (25.4 - 3.175) / Math.sin((12 * Math.PI) / 180);
+  assert.deepEqual(problemeFreza({ ...PANR, raza: rMax + 0.01 }), { raza: 'margini' });
+  assert.deepEqual(problemeFreza({ ...PANR, raza: rMax - 0.01 }), {});
+  // Capătul, pe hârtie: rotunjirea r; ogee-ul 2r; ogee-ul roman 2r + t; panoul (R − a)·tan β, iar cu scobitura
+  // r(1 − cos β) + (R − a − r sin β)·tan β.
+  const aproape = (a: number, b: number): void => { assert.ok(Math.abs(a - b) < 1e-9, `${a} față de ${b}`); };
+  aproape(inaltimeCon(ROT), 3);
+  aproape(inaltimeCon(OG), 6);
+  aproape(inaltimeCon(OGR), 7.5);
+  const b = (12 * Math.PI) / 180;
+  aproape(inaltimeCon(PAN), (25.4 - 3.175) * Math.tan(b));
+  aproape(inaltimeCon(PANR), 6.35 * (1 - Math.cos(b)) + (25.4 - 3.175 - 6.35 * Math.sin(b)) * Math.tan(b));
+  assert.deepEqual(problemeFreza({ ...OG, tais: 5.9 }), { tais: 'con' });
+  assert.deepEqual(problemeFreza({ ...OG, tais: 6 }), {});
+  // Salvată: doar câmpurile felului (treapta doar la ogee-ul roman; vârful și unghiul la panou; raza la profiluri).
+  const r = cuFreza([], null, { ...ROT, unghi: 60, varf: 1, treapta: 1 }, () => 'a', 5);
+  assert.ok(r.ok);
+  assert.deepEqual(['unghi', 'varf', 'treapta'].map((k) => k in r.lista[0]!), [false, false, false]);
+  assert.equal(r.lista[0]!.raza, 3);
+  const o = cuFreza([], null, OGR, () => 'a', 5);
+  assert.ok(o.ok);
+  assert.deepEqual([o.lista[0]!.raza, o.lista[0]!.treapta], [3, 1.5]);
+  const p = cuFreza([], null, { ...PAN, treapta: 1 }, () => 'a', 5);
+  assert.ok(p.ok);
+  assert.deepEqual([p.lista[0]!.unghi, p.lista[0]!.varf, 'treapta' in p.lista[0]!, 'raza' in p.lista[0]!], [12, 6.35, false, false]);
+  // Citită: o treaptă care nu e număr strică freza.
+  assert.equal(frezaDinDate({ ...salvata(OGR, 'a'), treapta: 'x' }), null);
+  assert.equal(frezaDinDate(salvata(OGR, 'a'))?.treapta, 1.5);
+  // Copia pentru document: niciun profil, până la CAM-ul lor (16.A↑f).
+  for (const f of [ROT, OG, OGR, PAN]) assert.throws(() => sculaDinFreza(f), /CAM/u);
+});
