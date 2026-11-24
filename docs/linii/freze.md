@@ -79,7 +79,8 @@ gravare, profil, formă desenată)” și „Freze de profil desenate de utiliza
   --istorie` cade la commit-urile vechi din `ISTORIE` („Not a valid object name”). Întâi `git fetch --unshallow origin`.
 - **O versiune nouă a documentului mută probele versiunii curente** (lanțurile `PE_Vn ? ridicaPanaLaO(…, n)`, `migreazaVnVn+1O`,
   `SCHEMA_CURENTA_O`, „mai nouă” în cazurile v9 / v10, `schema: n }` în ieșirile migrate): pe 16.A↑b-1, după diff-ul lui
-  `63a1eca0` (v26), cu un script pentru lanțuri; rămase, le găsește suita unitară.
+  `63a1eca0` (v26), cu un script pentru lanțuri; rămase, le găsește suita unitară. **Și o probă e2e ține versiunea:**
+  `test/e2e/placute.spec.ts` (`expect(d1.schema).toBe(…)`); completul de pe `f5f1177b` a căzut doar acolo.
 - **Mașina estimării (GRBL 1.1h din fabrică) are 500 mm/min pe axe:** un avans peste el nu scurtează timpul. O probă a
   estimării cu avansul frezei folosește un avans sub 500.
 - **`node scripts/traduceri.ts --help` scrie fișierul** (nu cunoaște `--help`): adaugă textele noi cu `en` gol. Verificarea e
