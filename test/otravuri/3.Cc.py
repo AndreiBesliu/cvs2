@@ -163,6 +163,8 @@ o('E18', AT, '$("#at-crm-prindere").onclick = ev => { const b = (ev.target as El
   'prinderea rămâne cea cu găuri, orice s-ar alege')
 o('E19', AT, 'camp("#at-crm-roata", 8, 80, v => { p.roata = Math.round(v); });', 'camp("#at-crm-roata", 8, 80, v => { p.lung = Math.round(v); });', 'e2e',
   'roata pereche scrisă schimbă lungimea')
+o('E26', AT, 'camp("#at-crm-modul", 0.5, 3, v => { p.modul = Math.round(v * 10) / 10; });', 'camp("#at-crm-modul", 0.1, 3, v => { p.modul = Math.round(v * 10) / 10; });', 'e2e',
+  'modulul 0,2 e primit (și ridicat de motor la 0,5)')
 # --- atelierul: perechea
 PER = 'roata: Def = { tip: "rotita", dinti: q.z, fel: "drepti", grosime: 3.8, gaura: "x" };'
 o('E20', AT, PER, PER.replace('dinti: q.z', 'dinti: 24'), 'e2e',

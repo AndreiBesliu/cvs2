@@ -98,8 +98,16 @@ test('configuratorul: lungimea, roata pereche, modulul și prinderea, cu numele,
   await expect(nume(page)).toHaveText('Cremalieră 1×9, roata de 8, cu găuri, modul 0,5');
   await expect(page.locator('#at-avert')).toBeHidden();
   await scrie(page, '#at-crm-lung', '8');
-  // înapoi pe știfturi, cu modulul 1 și roata de 40: șase plăci
+  // marginile de jos, judecate de la alte valori decât cele la care motorul ar îndrepta oricum (8 dinți, modulul 0,5)
+  await scrie(page, '#at-crm-roata', '16');
   await scrie(page, '#at-crm-modul', '1');
+  await expect(nume(page)).toHaveText('Cremalieră 1×8, roata de 16, cu găuri');
+  for (const [id, rau, bun] of [['#at-crm-roata', '5', '16'], ['#at-crm-roata', '7', '16'], ['#at-crm-modul', '0.2', '1'], ['#at-crm-modul', '0.4', '1']] as const) {
+    await scrie(page, id, rau);
+    await expect(page.locator(id), `${id} „${rau}”`).toHaveValue(bun);
+    await expect(nume(page), `${id} „${rau}”`).toHaveText('Cremalieră 1×8, roata de 16, cu găuri');
+  }
+  // înapoi pe știfturi, cu modulul 1 și roata de 40: șase plăci
   await page.locator('#at-crm-prindere [data-v="stifturi"]').click();
   await scrie(page, '#at-crm-roata', '40');
   await expect(nume(page)).toHaveText('Cremalieră 1×8, roata de 40');
