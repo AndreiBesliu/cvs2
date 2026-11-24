@@ -286,6 +286,11 @@ test('catalogul: grupurile cu mărimile lor, fișa unei freze din catalog, „Pu
   await expect(fisa(f).locator('[data-freze="catalog-pune"]')).toBeDisabled();
   await expect(fisa(f)).toContainText('E deja în frezele mele.');
   await expect(f.locator('[data-freza]').filter({ hasText: 'Plată Ø6,35' })).toContainText('T7 ·');
+  // În bibliotecă, freza pusă e a omului: fișa ei se editează și ține nota țolilor.
+  await f.locator('[data-freza]').filter({ hasText: 'Plată Ø6,35' }).click();
+  await expect(fisa(f).locator('[data-freze="editeaza"]')).toBeVisible();
+  await expect(valoare(f, 'nota')).toHaveText('1/4"');
+  await expect(valoare(f, 'numar')).toHaveText('T7');
   // O freză a catalogului care e deja în bibliotecă (din setul standard): de la început, „E deja”.
   await cat.locator('[data-catalog="cat-v-90-12"]').click();
   await expect(fisa(f).locator('[data-freze="catalog-pune"]')).toBeDisabled();
