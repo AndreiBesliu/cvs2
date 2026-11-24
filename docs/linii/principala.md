@@ -152,9 +152,9 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
 
 ## Starea pe 24.11.2026, seara (după a douăzecea unire din cloud)
 
-- **Pe test:** `fdce5f1b` (tot până la lotul al șaisprezecelea: 16.A↑c, 3.Xi; publicat pe 24.11 la 15:35, cu
-  serverul: funcția `freze` creată, indexurile și regulile; proba de fum, bună). În drum: lotul al șaptesprezecelea cu
-  limita rapidului (`647cebb1`; completul pe `main` rula la 16:15), apoi loturile 18 și 19 împreună.
+- **Pe test:** `29ef7e44` (tot până la lotul al optsprezecelea: cotele 10.4↑a-1, 3.Tt, reparația utilizării mașinii,
+  comenzile foii pe pânză, butonul Admin, proba repornirii extensiei; publicat pe 24.11 la 17:50, fără server; proba de
+  fum, bună). În drum: loturile 19–21 (`7312d685`; completul pe `main` rula la 18:27), apoi lotul 22.
 - **`main`, din cloud:** pe 23.11: 3.Tq (`0ae9c6c1`); 11.3↑e și A.4 (`ddaa7ead`); 3.Tr, unită de linia elicelor
   (`d262e57a`); 25.8↑a și A.5 (`1b46c955`), cu reparația probei extensiilor (`8287d66e`); 11.3↑f, unită de linia
   planșelor (`f4601938`); A.6 (`4497d639`); 3.Xh (`2d1e482c`) și 12.1↑e-3 cu 12.1↑e-4 (`03460cab`); A.8a cu A.8b

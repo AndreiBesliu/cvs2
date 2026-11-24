@@ -13428,15 +13428,22 @@ la ordinul în vigoare „unește ce se poate”
 
 **Prompt:** raportul liniei bibliotecii („3.Xj e gata de unit”, PR-ul #24), la ordinul în vigoare „unește ce se poate”;
 „ok, imparte oracolul rampelor in mai multe fisiere”
-**Started:** 24.11, 17:40. **Completed:** unirea în `main`, 24.11, @@ORA@@; publicarea pe test, la rândul ei.
+**Started:** 24.11, 17:40. **Completed:** unirea în `main`, 24.11, 18:27; publicarea pe test, la rândul ei.
 
 - **Lotul, pe `unire-2411v`** (din `7312d685`): oracolul rampelor împărțit (`b491853b`, în `b2a56e23`) și 3.Xj
   (`c11a1c7f`, în `049c5dda`). Ciocnirile: `CLAUDE.md` și DEVLOG (două decizii adăugate în același loc), indexul
   liniilor (rândul bibliotecii), catalogul controalelor (scris din nou: 629 de nume). Local, pe arborele unit:
   tipurile, regulile de import (21), traducerile (1 031), biblioteca extensiilor la zi; e2e 42 / 42 (căutarea,
   extensiile, comenzile foii, butonul Admin, cotele).
-- **Porțile, în CI:** completul lotului pe `049c5dda` (45426956640, @@COMPLET@@): @@PORTI@@; rapidul, @@RAPID@@;
-  completul liniei, verde pe `51ca1a5` (45413236557). @@MARIMI@@. Nimic pe server.
+- **Porțile, în CI:** completul lotului pe `049c5dda` (45426956640, verde la prima trecere, 53 min): unit 10 258 / 0 (12 sărite, pe Linux), e2e 741 / 741, funcțiile pe emulatoare 136 / 136, paginile 57 / 57;
+  rapidul, verde pe `049c5dda` (45426960549); completul liniei, verde pe `51ca1a5` (45413236557). Pornirea 110,2 kB (plafonul 120), totalul 831,8 / 900 kB, `/admin` 138,2 / 200, contul 30,3 / 32.
+  Nimic pe server.
 - **Documentele:** decizia în `CLAUDE.md`, cu rândul de stare al lui 3.Xj; indexul liniilor; starea din
   `docs/linii/principala.md`.
-- **Loturile dinainte:** @@INAINTE@@
+- **Rapidul oracolului împărțit** (45425076024, pe `b491853b`): feliile 2:46, 4:34, 6:15, 6:44, 7:31 și 9:20. O
+  parte a oracolului rampelor ține cel mult 1 min 42 s în CI (runnerele sunt cam de două ori mai lente decât
+  containerul). Felia de 9:20 e ținută de alte teste dintr-un singur test: „căile netede din multe cubice…” (258 s) și
+  „poarta de acum și cea de dinainte de ADR 0032…” (195 s). Limita de 15 minute rămâne.
+- **Loturile dinainte:** al șaptesprezecelea și al optsprezecelea, pe test din 17:50 (`29ef7e44`; completul pe `main`
+  45417561144, verde: unit 10 190 / 0, e2e 707 / 707, funcțiile 136 / 136, paginile 57 / 57; proba de fum, bună).
+  Loturile 19–21 (`7312d685`): completul pe `main` (45436221341) rula la unire.

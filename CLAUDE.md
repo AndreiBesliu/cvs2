@@ -1536,8 +1536,13 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   `049c5dda`: rafturile bibliotecii (lista lor e a aplicației; pe ce rafturi stă o extensie o spune lista bibliotecii,
   nu pachetul), „Caută o extensie”, pastilele rafturilor, starea „nimic găsit”, tastatura; pachetele, neschimbate
   (Easy 3Draw 18.23.0); otrăvurile 78 / 78. Documentul rămâne v27; nimic pe server. Ciocnirile: DEVLOG, indexul
-  liniilor și catalogul controalelor (scris din nou, 629 de nume). Porțile lotului, în CI, pe `049c5dda` (completul
-  @@COMPLET@@): @@PORTI@@; rapidul, @@RAPID@@; completul liniei, verde pe `51ca1a5`; @@MARIMI@@. @@INAINTE@@ Urmează, de
+  liniilor și catalogul controalelor (scris din nou, 629 de nume). Porțile lotului, în CI, pe `049c5dda` (completul, verde la
+  prima trecere, 53 min): unit 10 258 / 0 (12 sărite, pe Linux), e2e 741 / 741, funcțiile pe emulatoare 136 / 136, paginile 57 / 57; rapidul, verde pe `049c5dda`, cu feliile între 3 și 9 minute; completul liniei,
+  verde pe `51ca1a5`; pornirea 110,2 kB (plafonul 120), totalul 831,8 / 900 kB, `/admin` 138,2 / 200, contul 30,3 / 32. Înainte, loturile al șaptesprezecelea și al optsprezecelea au ajuns pe test
+  (`29ef7e44`, 24.11, 17:50), cu proba de fum bună; loturile 19–21 (`7312d685`) erau în drum: completul lor pe `main`
+  rula la unire. **Rapidul după împărțirea oracolului:** felia cea mai lungă ține tot 9 min 20 s, din cauza altor
+  teste grele dintr-un singur test („căile netede din multe cubice…”, 4 min 18 s în CI; „poarta de acum și cea de
+  dinainte de ADR 0032…”, 3 min 15 s), deci limita de 15 minute rămâne; împărțirea lor, la cuvântul owner-ului. Urmează, de
   la linia bibliotecii, o felie doar de probe: „două cereri imediat după” repornirea unei extensii, fără timp (acordul
   sesiunii principale: ține de CI-ul verde). În lucru, pe ramuri: relieful (18.1↑a, v28: își aduce `main` și își
   reface porțile, apoi intră singur în lotul lui), frezele (16.A↑h-3), exportul (`AndreiBesliu/cvs2#11`, la cuvântul
