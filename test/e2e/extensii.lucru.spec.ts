@@ -204,7 +204,8 @@ test('altă extensie, sau o versiune nouă instalată, peste una nesalvată: în
   await expect(page.getByTestId('extensie-deschisa')).toHaveText('Salut 2');
   await expect(page.getByTestId('spatiu-extensie')).toHaveAttribute('data-stare', 'pornit');
 
-  // O versiune nouă a extensiei deschise, cu lucru nesalvat: după instalare, întrebarea; „Închide oricum” o închide.
+  // O versiune nouă a extensiei deschise, cu lucru nesalvat (ADR 0232 §A.2): întrebarea vine înaintea instalării, iar „Închide
+  // oricum” o instalează și redeschide extensia la versiunea nouă, fără altă întrebare.
   await c.locator('[data-salut="modifica"]').click();
   await page.locator('[data-extensii="fisier-ales"]').setInputFiles({
     name: 'salut2-1.0.1.zip', mimeType: 'application/zip', buffer: await varianta({ id: 'salut2', nume: 'Salut 2', versiune: '1.0.1' }),
@@ -212,7 +213,10 @@ test('altă extensie, sau o versiune nouă instalată, peste una nesalvată: în
   await page.locator('[data-extensii="instaleaza"]').click();
   await expect(intrebare).toContainText('Închizi „Salut 2”?');
   await page.locator('[data-extensii="inchidere-inchide"]').click();
-  await expect(page.locator('iframe.cadru-extensie')).toHaveCount(0);
+  await expect(c.locator('[data-salut="deschideri"]')).toHaveText('Deschideri: 2');
+  await expect(c.locator('[data-salut="lucru"]')).toHaveText('Lucrul: salvat');
+  await expect(intrebare).toHaveCount(0);
+  await expect(page.getByTestId('extensie-deschisa')).toHaveText('Salut 2');
 });
 
 test('repornirea cerută de extensie (ADR 0165): cadrul se reface, cu contextul de acum; cel mult o dată la 2 s, cererile dese adunate; închiderea o oprește', async ({ page }) => {

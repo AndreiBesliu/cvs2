@@ -351,10 +351,16 @@ const CONTROALE_EXTENSII: Readonly<Record<string, string | null>> = {
   'scoate-confirma': 'extensii.gestionare.scoate', 'scoate-pastreaza': 'extensii.scoatere.pastreaza',
   // întrebarea de la închidere, cu lucru nesalvat (ADR 0164 §C)
   'inchidere-ramai': 'extensii.inchidere.ramai', 'inchidere-inchide': 'extensii.inchidere.inchide',
+  // o extensie care n-a pornit sau pornește greu: cele trei ieșiri și detaliile (ADR 0232 §A.1)
+  'porneste-din-nou': 'extensii.stare.din-nou', 'vezi-in-biblioteca': 'extensii.stare.biblioteca', 'inchide-extensia': 'extensii.stare.inchide',
+  'copiaza-detalii': 'extensii.stare.copiaza',
+  // fereastra refuzului unui pachet (ADR 0232 §A.4)
+  'alt-fisier': 'extensii.refuz.alt-fisier', 'alta-adresa': 'extensii.refuz.alta-adresa', 'inchide-refuz': 'extensii.refuz.inchide',
+  'instaleaza-din-nou': 'extensii.refuz.din-nou',
 };
 
 test('fiecare control al extensiilor (data-extensii) e numit în capitolul „extensii”, în ambele limbi', () => {
-  const sursa = ['Extensii.tsx', 'Instalare.tsx', 'Biblioteca.tsx', 'parti.tsx'].map((f) => citeste(`src/extensii/${f}`)).join('\n');
+  const sursa = ['Extensii.tsx', 'Instalare.tsx', 'Biblioteca.tsx', 'parti.tsx', 'StarePornire.tsx'].map((f) => citeste(`src/extensii/${f}`)).join('\n');
   assert.doesNotMatch(sursa, /data-extensii=\{/);
   const controale = [...new Set([...sursa.matchAll(/data-extensii="([a-z0-9-]+)"/g)].map((x) => x[1]!))].sort();
   assert.deepEqual(controale, Object.keys(CONTROALE_EXTENSII).sort());

@@ -2250,7 +2250,9 @@ it, and the app’s interface stays the same.
 - The **Extensions** button (the puzzle piece next to the instance name) opens the menu: the installed extensions, each
   with its icon (one without an icon has the puzzle piece), then **Extension library…**. A click on an extension opens its
   window, and its icon is on its tab too. When the library has a newer version of an installed extension, its row shows the
-  versions (“18.6.0 → 18.20.0”) and **Update**: it brings the new version in one click, with its data. If the new version
+  versions (“18.6.0 → 18.20.0”) and **Update**: it brings the new version in one click, with its data. An open extension saves its
+  work first, then reopens by itself at the new version; if it has changes it cannot save, it asks you first, and **Stay**
+  stops the update. If the new version
   asks for something more, a window says what first, and there **Update** installs it; at the end, **Open** opens its
   window and **Close** leaves it for later.
 - The **Extension library** is a window, opened from the menu or from **Search commands** (Ctrl+K), from anywhere: the
@@ -2275,8 +2277,11 @@ it, and the app’s interface stays the same.
   icon, the version, where the package comes from, its files and their size and, if there is one, the version it replaces. Under
   **What it can do** there is one row for each thing the extension asks for (for example, **Data in this browser**: it
   keeps its data in this browser). For a new version that asks for something more, the list **The new version can also**
-  comes first, highlighted. **Install** keeps it in this browser (it works offline too); **Cancel** changes nothing. A
-  damaged or wrong package is refused, with the reason.
+  comes first, highlighted. **Install** keeps it in this browser (it works offline too); **Cancel** changes nothing.
+- A damaged or wrong package is refused in a window of its own, “The package can’t be installed”, with the file name (or
+  the address) and the reason, in plain words. **Choose another file…** opens the file picker again, **Another address…**
+  takes you back to the address, and **Close** changes nothing. When a package from the library could not be downloaded,
+  **Try again** asks for it once more.
 - An extension that asked for it keeps its data (for example, its circuits) in this browser, at most 16 MB. A new version of
   it keeps them.
 - An extension that asked for it can save files (for example, the G-code or the parts to print) as ordinary browser
@@ -2297,8 +2302,13 @@ it, and the app’s interface stays the same.
   closes the extension: first it gives it a few seconds to save what it had to save (Easy 3Draw then saves its
   circuit, its settings and its workshop). If unsaved changes are still left, it asks you: **Stay** (or Escape) keeps it
   open, **Close anyway** closes it, and the changes are lost. Likewise, while the extension has unsaved changes, reloading or
-  closing the tab asks you, through the browser’s window. After the page reloads, the app starts without the extension. F1
-  opens this chapter.
+  closing the tab asks you, through the browser’s window. After the page reloads, the app reopens the extension you were in;
+  one you closed, or one that didn’t start, is not reopened. F1 opens this chapter.
+- If an extension doesn’t start, its window says so (“… didn’t start”) and gives you three ways out: **Try again** starts
+  it once more, **See in the library** opens its page (where you can update or remove it), and **Close** closes it. Your
+  drawing and projects are untouched. Under **Details** are the error, the version and where the package came from, to
+  send to its author (**Copy**). The same ways out appear when starting takes over 10 seconds (“… is slow to start…”),
+  without stopping it.
 - An extension that asked for it can use the machine, through the **Machine** window: it sees its state (the connection, the
   job with its percentage, the loaded program), loads a G-code program, checked like one loaded with **File…** (the Machine
   window writes next to it where it came from), pauses and stops the job. To start or resume the job, it asks you first, in

@@ -1,8 +1,6 @@
 import { test, expect, type Locator, type Page, type Request } from '@playwright/test';
-import { pachetTrenulet } from '../../scripts/construieste-trenulet.ts';
-import { impacheteaza, scrieZip } from '../../scripts/impacheteaza-extensie.ts';
-import { citesteZip } from '../../src/extensii/zip.ts';
-import { biblioteca, deschideBiblioteca, deschideMeniul, incarcata, inchideBiblioteca, meniu, pagina, paginaDinCatalog, paginaInstalatei, randLista, semn } from './ajutor-biblioteca.ts';
+import { impacheteaza } from '../../scripts/impacheteaza-extensie.ts';
+import { biblioteca, deschideBiblioteca, deschideMeniul, incarcata, inchideBiblioteca, meniu, pachetVechi, pagina, paginaDinCatalog, paginaInstalatei, randLista, semn } from './ajutor-biblioteca.ts';
 import { eroriJurnal, faraEroriInJurnal } from './ajutor-jurnal.ts';
 
 /**
@@ -39,18 +37,6 @@ async function randul(page: Page): Promise<Rand> {
   const x = c.extensii.find((e) => e.id === 'trenulet');
   if (!x) throw new Error('trenulet lipsește din catalog');
   return x;
-}
-
-/** Pachetul de acum, cu alt manifest (aceleași fișiere): o versiune mai veche, eventual cu mai puține permisiuni. */
-async function pachetVechi(versiune: string, faraPermisiuni: readonly string[] = [], nume?: string): Promise<Buffer> {
-  const z = await citesteZip(pachetTrenulet().octeti, { fisiere: 256, octetiFisier: 8 * 1024 * 1024, octetiTotal: 16 * 1024 * 1024 });
-  if (!z.ok) throw new Error(z.motiv);
-  return Buffer.from(scrieZip(z.intrari.map((i) => {
-    if (i.nume !== 'extensie.json') return i;
-    const m = JSON.parse(new TextDecoder().decode(i.octeti)) as Record<string, unknown> & { permisiuni: string[] };
-    const nou = { ...m, versiune, permisiuni: m.permisiuni.filter((p) => !faraPermisiuni.includes(p)), ...(nume ? { nume } : {}) };
-    return { nume: i.nume, octeti: new TextEncoder().encode(JSON.stringify(nou)) };
-  })));
 }
 
 /** Datele extensiei (ADR 0128 §B), scrise direct în IndexedDB-ul lui cvs2, ca și cum le-ar fi salvat ea; sau citite înapoi. */
@@ -162,7 +148,7 @@ test('amprenta greșită: pachetul schimbat pe drum se refuză în pagină, nimi
   await p.locator('[data-extensii="pagina-instaleaza"]').click();
   const refuz = p.getByTestId('pagina-eroare');
   await expect(refuz).toHaveAttribute('data-motiv', 'amprenta-biblioteca');
-  await expect(refuz).toContainText('pachetul descărcat nu e cel din bibliotecă');
+  await expect(refuz).toContainText('Pachetul descărcat nu e cel din bibliotecă. Încearcă din nou mai târziu.');
   await expect(p).toHaveAttribute('data-stare', 'instaleaza');
   await expect(biblioteca(page).locator('[role="tab"]')).toHaveText(['Toate · 1', 'Instalate · 0']);
   await inchideBiblioteca(page);

@@ -2179,7 +2179,9 @@ tu, iar interfața aplicației rămâne aceeași.
 - Butonul **Extensii** (piesa de puzzle de lângă numele instanței) deschide meniul: extensiile instalate, fiecare cu semnul
   ei (una fără semn are piesa de puzzle), apoi **Biblioteca extensiilor…**. Un clic pe o extensie îi deschide fereastra, iar
   semnul ei stă și pe fila ei. Când biblioteca are o versiune mai nouă a unei extensii instalate, rândul ei arată versiunile
-  („18.6.0 → 18.20.0”) și **Actualizează**: o aduce dintr-un clic, cu datele ei. Dacă versiunea nouă cere ceva în plus, o
+  („18.6.0 → 18.20.0”) și **Actualizează**: o aduce dintr-un clic, cu datele ei. O extensie deschisă își salvează întâi
+  lucrul, apoi se redeschide singură la versiunea nouă; dacă are modificări pe care nu le poate salva, te întreabă înainte,
+  iar **Rămân** oprește actualizarea. Dacă versiunea nouă cere ceva în plus, o
   fereastră spune întâi ce, iar acolo **Actualizează** o instalează; la capăt, **Deschide** îi deschide fereastra, iar
   **Închide** o lasă pentru mai târziu.
 - **Biblioteca extensiilor** e o fereastră, deschisă din meniu sau din **Caută o comandă** (Ctrl+K), de oriunde: în stânga
@@ -2205,8 +2207,11 @@ tu, iar interfața aplicației rămâne aceeași.
   înlocuiește. Sub **Ce poate face**
   stă câte un rând pentru fiecare lucru pe care îl cere extensia (de exemplu, **Datele în browser**: își ține datele în
   browserul acesta). La o versiune nouă care cere ceva în plus, lista **Versiunea nouă poate și** stă prima, evidențiată.
-  **Instalează** o pune în browserul acesta (merge și offline); **Renunță** nu schimbă nimic. Un pachet stricat sau greșit
-  se refuză, cu motivul.
+  **Instalează** o pune în browserul acesta (merge și offline); **Renunță** nu schimbă nimic.
+- Un pachet stricat sau greșit se refuză într-o fereastră a lui, „Pachetul nu se poate instala”, cu numele fișierului (sau
+  adresa) și motivul, pe înțeles. **Alege alt fișier…** deschide din nou alegerea fișierului, **Altă adresă…** te întoarce
+  la adresă, iar **Închide** nu schimbă nimic. Când un pachet din bibliotecă nu s-a putut descărca, **Încearcă din nou** îl
+  cere iar.
 - O extensie care a cerut asta își ține datele (de exemplu, circuitele ei) în browserul acesta, cel mult 16 MB. O versiune
   nouă a ei le păstrează.
 - O extensie care a cerut asta poate salva fișiere (de exemplu, G-code-ul sau piesele de printat) ca descărcări obișnuite
@@ -2227,8 +2232,13 @@ tu, iar interfața aplicației rămâne aceeași.
   extensia: întâi îi lasă câteva secunde să salveze ce avea de salvat (Easy 3Draw își salvează atunci circuitul,
   setările și atelierul). Dacă tot rămân modificări nesalvate, te întreabă: **Rămân** (sau Escape) o lasă deschisă, **Închide
   oricum** o închide, iar modificările se pierd. La fel, cât extensia are modificări nesalvate, reîncărcarea sau închiderea
-  filei te întreabă, prin fereastra browserului. După o reîncărcare a paginii, aplicația pornește fără extensie. F1 deschide
-  capitolul acesta.
+  filei te întreabă, prin fereastra browserului. După o reîncărcare a paginii, aplicația redeschide extensia în care erai;
+  una pe care ai închis-o, sau care n-a pornit, nu se redeschide. F1 deschide capitolul acesta.
+- Dacă o extensie nu pornește, fereastra ei o spune („… n-a pornit”) și îți dă trei ieșiri: **Încearcă din nou** o pornește
+  iar, **Vezi în bibliotecă** îi deschide pagina (de unde o poți actualiza sau scoate), iar **Închide** o închide. Desenul și
+  proiectele tale nu sunt atinse. Sub **Detalii** stau eroarea, versiunea și de unde a venit pachetul, de trimis autorului
+  ei (**Copiază**). Aceleași ieșiri apar și când pornirea trece de 10 secunde („… pornește greu…”), fără ca pornirea să se
+  oprească.
 - O extensie care a cerut asta poate folosi mașina, prin fereastra **Mașina**: vede starea ei (legătura, lucrarea cu
   procentul, programul încărcat), încarcă un program G-code, verificat la fel ca unul adus cu **Fișier…** (fereastra Mașina
   scrie lângă el de la cine e), pune pauză și oprește lucrarea. Ca să pornească sau să reia lucrarea, te întreabă întâi,

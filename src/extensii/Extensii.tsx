@@ -25,6 +25,11 @@
  * fără clic.
  *
  * Semnul extensiei (ADR 0231 §B.2): lângă numele ei, în rândul instalat, în rândul din bibliotecă și pe fila ei (`Semn.tsx`).
+ *
+ * Stările de lângă drumul bun (ADR 0232 §A): o extensie care n-a pornit, sau care pornește de peste 10 s, are starea ei, cu
+ * trei ieșiri (`StarePornire.tsx`); o versiune nouă peste extensia deschisă îi cere întâi salvările (și întreabă, dacă rămâne
+ * ceva nesalvat: „Rămân” oprește instalarea), apoi o redeschide la versiunea nouă; extensia deschisă se ține minte la
+ * reîncărcarea paginii (`tinuta.ts`: scrisă când a pornit, ștearsă când omul o închide ori când n-a pornit).
  */
 import { lazy, Suspense, useCallback, useEffect, useLayoutEffect, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
@@ -42,6 +47,8 @@ import { contextPentruExtensie } from './cont.ts';
 import { FaraStocare, listaExtensii, scrieExtensia, type ExtensieInstalata } from './depozit.ts';
 import { repornireRara } from './repornire.ts';
 import { Semn, SemnInstalat, useSemnInstalat } from './Semn.tsx';
+import { StarePornire, TIMP_PORNIRE_GREA_MS } from './StarePornire.tsx';
+import { deRedeschis, extensiaTinuta, tineExtensia, uitaExtensia } from './tinuta.ts';
 import type { CerereInstalare } from './tipuri.ts';
 import './extensii.css';
 
@@ -133,6 +140,14 @@ export function Extensii({ jurnal, fereastra, onFereastra, onDeschisa, onModal, 
   const seInchide = useRef(false);
   const dupaInchidere = useRef<() => void>(() => {});
   const [intrebare, setIntrebare] = useState(false);
+  // „Rămân”, la întrebarea de dinaintea unei versiuni noi peste extensia deschisă: instalarea nu mai are loc (ADR 0232 §A.2).
+  const laRamas = useRef<() => void>(() => {});
+  // Versiunea nouă a extensiei deschise, îngăduită: `oricum` după „Închide oricum” (redeschiderea nu mai întreabă o dată).
+  const aprobata = useRef<{ readonly id: string; readonly oricum: boolean } | null>(null);
+  // Pornirea care trece de 10 s: omul primește ieșirile, fără ca pornirea să se oprească (ADR 0232 §A.1).
+  const [greu, setGreu] = useState(false);
+  // Adresa de la pornire, înainte ca ancorele să fie șterse: una care cere altceva are întâietate la redeschidere.
+  const [adresaLaPornire] = useState(() => ({ hash: location.hash, search: location.search }));
   const butonInchide = useRef<HTMLButtonElement | null>(null);
   // Repornirea cerută de extensie (ADR 0165): a câta pornire e (cadrul se reface la fiecare), cel mult una la 2 s.
   const [pornire, setPornire] = useState(0);
@@ -159,7 +174,14 @@ export function Extensii({ jurnal, fereastra, onFereastra, onDeschisa, onModal, 
       if (!(e instanceof FaraStocare)) jurnal.adauga('fereastra', e);
     });
   };
-  useEffect(reincarca, []);
+  // La pornire: lista, apoi extensia în care era omul la reîncărcare (ADR 0232 §A.3), fără nicio cerere de rețea.
+  useEffect(() => {
+    void listaExtensii().then((l) => {
+      setLista(l);
+      const x = deRedeschis(extensiaTinuta(), l, adresaLaPornire);
+      if (x) setDeschisa((d) => d ?? x);
+    }, (e: unknown) => { if (!(e instanceof FaraStocare)) jurnal.adauga('fereastra', e); });
+  }, []);
   // Un defect al publicării bibliotecii (catalogul, amprenta, potrivirea) ajunge în jurnal; lipsa rețelei nu.
   const raporteazaDefect = useCallback((e: Error): void => { jurnal.adauga('fereastra', e); }, [jurnal]);
   // Catalogul bibliotecii, cerut din nou la fiecare deschidere a meniului; cel de dinainte rămâne arătat cât vine cel nou.
@@ -175,9 +197,9 @@ export function Extensii({ jurnal, fereastra, onFereastra, onDeschisa, onModal, 
   };
   // Fereastra bibliotecii: catalogul se cere la deschidere; cel abia cerut de meniu (de unde se deschide de obicei) nu se
   // cere a doua oară.
-  const deschideBiblioteca = (id: string | null, dinLink: boolean): void => {
+  const deschideBiblioteca = (id: string | null, dinLink: boolean, fila?: 'instalate'): void => {
     if (Date.now() - ultimulCatalog.current > 5000) incarcaBiblioteca();
-    setBib({ fel: 'fereastra', id, dinLink });
+    setBib({ fel: 'fereastra', id, dinLink, ...(fila ? { fila } : {}) });
   };
   // Linkul de instalare: la pornire și când ancora se schimbă în fila deschisă (un link lipit în aceeași filă). Linkul
   // bibliotecii (ADR 0230) deschide fereastra bibliotecii pe pagina extensiei.
@@ -245,7 +267,9 @@ export function Extensii({ jurnal, fereastra, onFereastra, onDeschisa, onModal, 
    * Închiderea extensiei deschise, fără pierderi (ADR 0164 §C): întâi salvările ei (`host.laInchidere`), cel mult 5 s; apoi,
    * dacă nimic nu mai e nesalvat, `dupa` (implicit închiderea); altfel întrebarea, iar „Închide oricum” face `dupa`.
    */
-  const inchideCuGrija = (dupa: () => void = () => { setDeschisa(null); }): void => {
+  /** Închiderea cerută de om (×, „Închide”, `host.inchide()`, scoaterea): extensia nu se mai redeschide la reîncărcare. */
+  const inchide = (): void => { uitaExtensia(); setDeschisa(null); };
+  const inchideCuGrija = (dupa: () => void = inchide): void => {
     const h = pornit.current;
     if (!h) { dupa(); return; }
     if (seInchide.current) return;
@@ -255,11 +279,50 @@ export function Extensii({ jurnal, fereastra, onFereastra, onDeschisa, onModal, 
       seInchide.current = false;
       if (!h.nesalvat()) { dupa(); return; }
       dupaInchidere.current = dupa;
+      laRamas.current = () => {};
       setIntrebare(true);
     });
   };
+  /**
+   * Înaintea unei versiuni noi peste extensia deschisă (ADR 0232 §A.2): întâi salvările ei, cel mult 5 s; dacă tot rămâne
+   * ceva nesalvat, întrebarea, înaintea instalării. `false`: omul rămâne în extensie și nu se instalează nimic.
+   */
+  const inainteDeInlocuire = (id: string): Promise<boolean> => {
+    const h = pornit.current;
+    aprobata.current = null;
+    if (deschisaRef.current?.id !== id || !h) return Promise.resolve(true);
+    if (seInchide.current) return Promise.resolve(false);
+    seInchide.current = true;
+    return h.cereInchiderea().then(() => {
+      if (pornit.current !== h) return true;
+      seInchide.current = false;
+      if (!h.nesalvat()) { aprobata.current = { id, oricum: false }; return true; }
+      return new Promise<boolean>((gata) => {
+        dupaInchidere.current = () => { aprobata.current = { id, oricum: true }; gata(true); };
+        laRamas.current = () => { gata(false); };
+        setIntrebare(true);
+      });
+    });
+  };
+  /** După: lista celor instalate, iar extensia deschisă repornește la versiunea nouă, cu datele ei. */
+  const dupaInlocuire = (id: string): void => {
+    void listaExtensii().then((l) => {
+      setLista(l);
+      const noua = l.find((x) => x.id === id);
+      const acum = deschisaRef.current;
+      const a = aprobata.current;
+      aprobata.current = null;
+      if (!noua || acum?.id !== id || acum.instalat === noua.instalat) return;
+      // După „Închide oricum”, omul a hotărât deja; altfel, ce s-a mai schimbat cât a durat instalarea se salvează întâi.
+      if (a?.id === id && a.oricum) setDeschisa(noua);
+      else inchideCuGrija(() => { setDeschisa(noua); });
+    }, (e: unknown) => { if (!(e instanceof FaraStocare)) jurnal.adauga('fereastra', e); });
+  };
   // „Rămân”: întrebarea pleacă și aplicația nu mai e inertă în aceeași randare (a clicului), apoi focusul înapoi la ×.
   const ramai = (): void => {
+    const f = laRamas.current;
+    laRamas.current = () => {};
+    f();
     setIntrebare(false);
     onModal(cerere !== null || bib !== null);
     setTimeout(() => { butonInchide.current?.focus(); }, 0);
@@ -276,10 +339,15 @@ export function Extensii({ jurnal, fereastra, onFereastra, onDeschisa, onModal, 
   };
   /**
    * „Actualizează la …” dintr-un clic, în meniu (ADR 0230 §D): versiunea nouă nu cere nimic în plus, deci fără fereastră.
-   * Descărcarea verificată, scrierea, apoi lista; o versiune veche deschisă se închide fără pierderi.
+   * Descărcarea verificată, scrierea, apoi lista; o versiune veche deschisă își salvează întâi lucrul și se redeschide la cea
+   * nouă (ADR 0232 §A.2).
    */
   const actualizeazaDinMeniu = async (rand: RandBiblioteca): Promise<void> => {
     setProgres((p) => ({ ...p, [rand.id]: { fel: 'lucreaza' } }));
+    if (!await inainteDeInlocuire(rand.id)) {
+      setProgres((p) => Object.fromEntries(Object.entries(p).filter(([k]) => k !== rand.id)));
+      return;
+    }
     let r: Awaited<ReturnType<typeof instaleazaDinBiblioteca>>;
     try {
       r = await instaleazaDinBiblioteca(rand, { adresaCatalog: adresaCatalog(), scrie: scrieExtensia });
@@ -295,8 +363,7 @@ export function Extensii({ jurnal, fereastra, onFereastra, onDeschisa, onModal, 
       return;
     }
     setProgres((p) => ({ ...p, [rand.id]: { fel: 'gata', versiune: rand.versiune } }));
-    reincarca();
-    if (deschisaRef.current?.id === rand.id) inchideCuGrija();
+    dupaInlocuire(rand.id);
   };
 
   // Fereastra: cadrul pornește la deschidere și se oprește la închidere (× sau `host.inchide()`).
@@ -316,11 +383,11 @@ export function Extensii({ jurnal, fereastra, onFereastra, onDeschisa, onModal, 
       // Contextul de acum: limba, tema și, doar cu permisiunea `cont`, contul (ADR 0164 §B).
       const contextul = () => contextPentruExtensie(limbaRef.current, c.temaDeAcum(), deschisa.manifest.permisiuni, contTinut(), Date.now());
       const h = c.pornesteCadru(container, deschisa, contextul(), (e) => {
-        if (e.tip === 'pornit') setStare({ fel: 'pornit' });
-        else if (e.tip === 'inchide') setDeschisa(null);
+        if (e.tip === 'pornit') { setStare({ fel: 'pornit' }); tineExtensia(deschisa.id); }
+        else if (e.tip === 'inchide') inchide();
         // Salvările le face extensia întâi; cvs2 repornește cel mult o dată la 2 s, cu cererile dese adunate.
         else if (e.tip === 'reporneste') repornire.cere();
-        else if (e.tip === 'esuat') { setStare({ fel: 'esuat', mesaj: e.mesaj }); raporteaza(e.mesaj); }
+        else if (e.tip === 'esuat') { setStare({ fel: 'esuat', mesaj: e.mesaj }); uitaExtensia(); raporteaza(e.mesaj); }
         else raporteaza(e.mesaj, e.stiva);
       }, {
         activ: masinaRef.current.activ,
@@ -330,18 +397,29 @@ export function Extensii({ jurnal, fereastra, onFereastra, onDeschisa, onModal, 
       oprire = h.opreste;
       pornit.current = h;
       trimiteContext.current = () => { h.context(contextul()); };
-    }, (e: unknown) => { setStare({ fel: 'esuat', mesaj: String(e) }); });
+    }, (e: unknown) => { setStare({ fel: 'esuat', mesaj: String(e) }); uitaExtensia(); });
     return () => {
       oprit = true;
       repornire.opreste();
       trimiteContext.current = null;
       pornit.current = null;
       seInchide.current = false;
+      // O întrebare rămasă deschisă peste cadrul care pleacă: ca „Rămân” (o instalare care o aștepta nu mai are loc).
+      const f = laRamas.current;
+      laRamas.current = () => {};
+      f();
       setIntrebare(false);
       oprire?.();
     };
     // Doar la altă extensie: limba, tema și contul noi trec prin `trimiteContext`, fără repornire.
   }, [deschisa, pornire]);
+  // Pornirea grea: după 10 s de „Pornesc extensia…”, ieșirile; pornirea merge mai departe.
+  useEffect(() => {
+    setGreu(false);
+    if (!deschisa || stare.fel !== 'porneste') return;
+    const ceas = setTimeout(() => { setGreu(true); }, TIMP_PORNIRE_GREA_MS);
+    return () => { clearTimeout(ceas); };
+  }, [deschisa, pornire, stare.fel]);
   // Contul: intrarea, ieșirea (și din altă filă) sau alt plan ajung în cadru pe loc (ADR 0164 §B).
   useEffect(() => aboneazaCont(() => { trimiteContext.current?.(); }), []);
   // Reîncărcarea sau închiderea filei, cu lucru nesalvat în extensie: browserul întreabă (ADR 0164 §C).
@@ -440,6 +518,7 @@ export function Extensii({ jurnal, fereastra, onFereastra, onDeschisa, onModal, 
             onError={() => { setSemnFilaStricat(semnFila); }} />
         )}
         <span className="eticheta" data-testid="extensie-deschisa">{deschisa.manifest.nume}</span>
+        {progres[deschisa.id]?.fel === 'lucreaza' && <small className="fila-stare" data-testid="fila-actualizare">{t('extensii.fila.actualizare')}</small>}
       </button>
       <button ref={butonInchide} type="button" className="fila-inchide" data-extensii="inchide-fereastra"
         aria-label={t('extensii.inchide-fereastra', { nume: deschisa.manifest.nume })}
@@ -451,13 +530,16 @@ export function Extensii({ jurnal, fereastra, onFereastra, onDeschisa, onModal, 
   const spatiul = deschisa && (
     <div className="spatiu-cadru" data-testid="spatiu-extensie" data-stare={stare.fel}>
       {stare.fel === 'porneste' && <p className="spatiu-nota">{t('extensii.spatiu.porneste')}</p>}
-      {stare.fel === 'esuat' && <p className="spatiu-nota" role="alert">{t('extensii.spatiu.esuat', { mesaj: stare.mesaj })}</p>}
+      {(stare.fel === 'esuat' || (stare.fel === 'porneste' && greu)) && (
+        <StarePornire extensie={deschisa} stare={stare.fel === 'esuat' ? stare : { fel: 'greu' }}
+          onDinNou={() => { repornire.cere(); }} onBiblioteca={() => { deschideBiblioteca(deschisa.id, false, 'instalate'); }} onInchide={inchide} />
+      )}
       {/* Cadrul se pune aici din cod (`cadru.ts`), în afara arborelui React. */}
       <div className="spatiu-gazda" ref={cadru} />
     </div>
   );
-  // Ce a rămas nesalvat după salvările de la închidere: întrebarea, peste toată pagina (aplicația de sub ea e inertă). Primul
-  // buton e gestul dialogului (plin, ca în celelalte dialoguri); focusul stă pe „Rămân”, ca pe „Nu” în confirmarea mașinii.
+  // Ce a rămas nesalvat după salvările de la închidere: întrebarea, peste toată pagina (aplicația de sub ea e inertă). „Rămân”
+  // e gestul dialogului: primul, plin și cu focusul; „Închide oricum”, care pierde lucrul, e roșu, ca „Scoate” (ADR 0232 §A.5).
   const intrebarea = intrebare && deschisa && (
     <div className="dialog" role="dialog" aria-modal="true" aria-labelledby="extensii-inchidere-titlu" data-testid="extensii-inchidere"
       onKeyDown={(e) => {
@@ -470,10 +552,11 @@ export function Extensii({ jurnal, fereastra, onFereastra, onDeschisa, onModal, 
         <h2 id="extensii-inchidere-titlu">{t('extensii.inchidere.titlu', { nume: deschisa.manifest.nume })}</h2>
         <p>{t('extensii.inchidere.text', { nume: deschisa.manifest.nume })}</p>
         <div className="butoane">
-          <button type="button" data-extensii="inchidere-inchide" onClick={() => { setIntrebare(false); dupaInchidere.current(); }}>
+          <button type="button" data-extensii="inchidere-ramai" autoFocus onClick={ramai}>{t('extensii.inchidere.ramai')}</button>
+          <button type="button" className="pericol" data-extensii="inchidere-inchide"
+            onClick={() => { laRamas.current = () => {}; setIntrebare(false); dupaInchidere.current(); }}>
             {t('extensii.inchidere.inchide')}
           </button>
-          <button type="button" data-extensii="inchidere-ramai" autoFocus onClick={ramai}>{t('extensii.inchidere.ramai')}</button>
         </div>
       </div>
     </div>
@@ -487,7 +570,7 @@ export function Extensii({ jurnal, fereastra, onFereastra, onDeschisa, onModal, 
       {locSpatiu && spatiul ? createPortal(spatiul, locSpatiu) : null}
       <Suspense fallback={null}>
         {bib && (
-          <Instalare cerere={bib} instalate={lista} onDefect={raporteazaDefect}
+          <Instalare cerere={bib} instalate={lista} onDefect={raporteazaDefect} inainte={inainteDeInlocuire}
             onGata={(_id, deschide) => {
               setBib(null);
               // „Deschide”, din pagina extensiei: extensia, în fereastra ei.
@@ -498,23 +581,24 @@ export function Extensii({ jurnal, fereastra, onFereastra, onDeschisa, onModal, 
             }}
             biblioteca={{
               catalog: biblioteca ?? { fel: 'incarca' },
-              acoperita: cerere !== null,
+              acoperita: cerere !== null || intrebare,
               onReincearca: incarcaBiblioteca,
-              // O versiune nouă peste cea deschisă: cea veche se închide fără pierderi; datele trec la cea nouă.
-              onSchimbata: (id) => { reincarca(); if (deschisaRef.current?.id === id) inchideCuGrija(); },
-              onScoasa: (id) => { reincarca(); if (deschisaRef.current?.id === id) setDeschisa(null); },
+              // O versiune nouă peste cea deschisă: extensia se redeschide la ea, cu datele ei (ADR 0232 §A.2).
+              onSchimbata: dupaInlocuire,
+              onScoasa: (id) => { reincarca(); if (deschisaRef.current?.id === id) inchide(); },
               onCere: (c) => { if (c === 'fisier') fisier.current?.click(); else if (c.fel !== 'fereastra') setCerere(c); },
             }} />
         )}
         {cerere && (
-          <Instalare cerere={cerere} instalate={lista} onDefect={raporteazaDefect}
+          <Instalare cerere={cerere} instalate={lista} onDefect={raporteazaDefect} inainte={inainteDeInlocuire}
+            onAltFisier={() => { fisier.current?.click(); }}
             onGata={(id, deschide) => {
               setCerere(null);
               reincarca();
               // „Deschide” după o instalare din bibliotecă (ADR 0230): extensia, în fereastra ei.
               if (deschide) { setBib(null); deschideInstalata(deschide); return; }
-              // O versiune nouă peste cea deschisă: cea veche se închide fără pierderi; datele trec la cea nouă.
-              if (id !== null && deschisa?.id === id) inchideCuGrija();
+              // O versiune nouă peste cea deschisă: extensia se redeschide la ea, cu datele ei (ADR 0232 §A.2).
+              if (id !== null) dupaInlocuire(id);
             }} />
         )}
       </Suspense>

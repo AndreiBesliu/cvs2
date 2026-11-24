@@ -91,13 +91,20 @@ async function descarca(adresa: string): Promise<Descarcare> {
   return { ok: true, octeti: out };
 }
 
-export function Instalare({ cerere, instalate, onGata, onDefect, biblioteca }: {
+export function Instalare({ cerere, instalate, onGata, onDefect, biblioteca, inainte, onAltFisier }: {
   readonly cerere: CerereInstalare;
   readonly instalate: readonly ExtensieInstalata[];
   /** Fereastra s-a închis; id-ul extensiei instalate acum (sau null) și, după „Deschide”, extensia de deschis. */
   readonly onGata: (id: string | null, deschide?: ExtensieInstalata) => void;
   /** Un defect al publicării bibliotecii (amprenta, potrivirea): de pus în jurnal. */
   readonly onDefect: (e: Error) => void;
+  /**
+   * Înaintea scrierii unei extensii (ADR 0232 §A.2): dacă e chiar cea deschisă, gazda îi cere întâi salvările și, la nevoie,
+   * întreabă omul. `false`: omul rămâne în extensie și nu se instalează nimic.
+   */
+  readonly inainte?: (id: string) => Promise<boolean>;
+  /** „Alege alt fișier…”, din fereastra refuzului: gazda deschide alegerea fișierului. */
+  readonly onAltFisier?: () => void;
   /** Ce îi trebuie ferestrei „Biblioteca extensiilor” de la gazdă (doar pentru cererea `fereastra`). */
   readonly biblioteca?: {
     readonly catalog: CatalogVazut;
@@ -114,18 +121,22 @@ export function Instalare({ cerere, instalate, onGata, onDefect, biblioteca }: {
     return (
       <FereastraBiblioteca cerere={cerere} catalog={biblioteca.catalog} instalate={instalate} limba={limba} acoperita={biblioteca.acoperita}
         onReincearca={biblioteca.onReincearca} onInchide={() => { onGata(null); }} onDeschide={(e) => { onGata(e.id, e); }}
-        onSchimbata={biblioteca.onSchimbata} onScoasa={biblioteca.onScoasa} onCere={biblioteca.onCere} onDefect={onDefect} />
+        onSchimbata={biblioteca.onSchimbata} onScoasa={biblioteca.onScoasa} onCere={biblioteca.onCere} onDefect={onDefect} inainte={inainte} />
     );
   }
-  if (cerere.fel === 'biblioteca') return <InstalareBiblioteca cerere={cerere} instalate={instalate} limba={limba} onGata={onGata} onDefect={onDefect} />;
-  return <InstalarePachet cerere={cerere} instalate={instalate} limba={limba} onGata={onGata} />;
+  if (cerere.fel === 'biblioteca') {
+    return <InstalareBiblioteca cerere={cerere} instalate={instalate} limba={limba} onGata={onGata} onDefect={onDefect} inainte={inainte} />;
+  }
+  return <InstalarePachet cerere={cerere} instalate={instalate} limba={limba} onGata={onGata} inainte={inainte} onAltFisier={onAltFisier} />;
 }
 
-function InstalarePachet({ cerere, instalate, limba, onGata }: {
+function InstalarePachet({ cerere, instalate, limba, onGata, inainte, onAltFisier }: {
   readonly cerere: Extract<CerereInstalare, { readonly fel: 'fisier' | 'adresa' }>;
   readonly instalate: readonly ExtensieInstalata[];
   readonly limba: Limba;
   readonly onGata: (id: string | null) => void;
+  readonly inainte: ((id: string) => Promise<boolean>) | undefined;
+  readonly onAltFisier: (() => void) | undefined;
 }): ReactNode {
   const [pas, setPas] = useState<Pas>(cerere.fel === 'adresa' ? { fel: 'adresa' } : { fel: 'verific' });
   const [adresa, setAdresa] = useState(cerere.fel === 'adresa' ? cerere.adresa : '');
@@ -141,6 +152,8 @@ function InstalarePachet({ cerere, instalate, limba, onGata }: {
   useEffect(() => {
     if (cerere.fel !== 'fisier') return;
     let viu = true;
+    // Un alt fișier, ales din fereastra refuzului: judecata pornește de la capăt.
+    setPas({ fel: 'verific' });
     void cerere.fisier.arrayBuffer().then((b) => judeca(new Uint8Array(b), { fel: 'fisier', nume: cerere.fisier.name })).then((p) => { if (viu) setPas(p); });
     return () => { viu = false; };
   }, [cerere]);
@@ -168,6 +181,8 @@ function InstalarePachet({ cerere, instalate, limba, onGata }: {
   };
   const instaleaza = async (p: Pachet, sursa: SursaExtensie): Promise<void> => {
     setScriu(true);
+    // Peste extensia deschisă: întâi salvările ei; „Rămân” închide confirmarea, fără nicio scriere.
+    if (inainte && !await inainte(p.manifest.id)) { onGata(null); return; }
     try {
       await scrieExtensia({
         id: p.manifest.id, manifest: p.manifest, fisiere: Object.fromEntries(p.fisiere), octeti: p.octeti, sursa, instalat: new Date().toISOString(),
@@ -217,13 +232,17 @@ function InstalarePachet({ cerere, instalate, limba, onGata }: {
     );
   }
   if (pas.fel === 'refuz') {
+    // Refuzul are fereastra lui (ADR 0232 §A.4): ce s-a întâmplat, cu ce fișier, de ce, și drumul înapoi.
+    const deLaAdresa = cerere.fel === 'adresa';
     return (
-      <Fereastra titlu={t('extensii.instalare.titlu')} test="extensii-instalare" onEscape={renunta}>
-        <p className="avertisment" role="alert" data-testid="extensii-refuz" data-motiv={pas.motiv}>
-          {t('extensii.instalare.refuz', { motiv: motivText(pas.motiv, pas.detaliu) })}
-        </p>
+      <Fereastra titlu={t('extensii.refuz.titlu')} test="extensii-instalare" onEscape={renunta}>
+        <p className="confirmare-sursa" data-testid="extensii-refuz-sursa">{deLaAdresa ? adresa : cerere.fisier.name}</p>
+        <p className="avertisment" role="alert" data-testid="extensii-refuz" data-motiv={pas.motiv}>{motivText(pas.motiv, pas.detaliu)}</p>
         <div className="butoane">
-          <button type="button" data-extensii="renunta" autoFocus onClick={renunta}>{t('extensii.instalare.renunta')}</button>
+          {deLaAdresa
+            ? <button type="button" data-extensii="alta-adresa" autoFocus onClick={() => { setPas({ fel: 'adresa' }); }}>{t('extensii.refuz.alta-adresa')}</button>
+            : <button type="button" data-extensii="alt-fisier" autoFocus onClick={onAltFisier}>{t('extensii.refuz.alt-fisier')}</button>}
+          <button type="button" data-extensii="inchide-refuz" onClick={renunta}>{t('extensii.refuz.inchide')}</button>
         </div>
       </Fereastra>
     );
@@ -255,12 +274,13 @@ function InstalarePachet({ cerere, instalate, limba, onGata }: {
  * până acum și datele care rămân; apoi descărcarea verificată și capătul, cu „Deschide”. (Instalarea și actualizarea care nu
  * cere nimic în plus se fac în pagina extensiei, în fereastra bibliotecii, ori în meniu.)
  */
-function InstalareBiblioteca({ cerere, instalate, limba, onGata, onDefect }: {
+function InstalareBiblioteca({ cerere, instalate, limba, onGata, onDefect, inainte }: {
   readonly cerere: Extract<CerereInstalare, { readonly fel: 'biblioteca' }>;
   readonly instalate: readonly ExtensieInstalata[];
   readonly limba: Limba;
   readonly onGata: (id: string | null, deschide?: ExtensieInstalata) => void;
   readonly onDefect: (e: Error) => void;
+  readonly inainte: ((id: string) => Promise<boolean>) | undefined;
 }): ReactNode {
   const [pas, setPas] = useState<PasBiblioteca>({ fel: 'rand', rand: cerere.rand });
   // Semnul extensiei abia instalate, din pachetul ei (capătul ferestrei).
@@ -269,6 +289,7 @@ function InstalareBiblioteca({ cerere, instalate, limba, onGata, onDefect }: {
   const renunta = (): void => { if (pas.fel !== 'lucreaza') onGata(null); };
   const instaleaza = async (rand: RandBiblioteca): Promise<void> => {
     setPas({ fel: 'lucreaza', rand });
+    if (inainte && !await inainte(rand.id)) { onGata(null); return; }
     let r: Awaited<ReturnType<typeof instaleazaDinBiblioteca>>;
     try {
       r = await instaleazaDinBiblioteca(rand, { adresaCatalog: adresaCatalog(), scrie: scrieExtensia });
@@ -306,13 +327,17 @@ function InstalareBiblioteca({ cerere, instalate, limba, onGata, onDefect }: {
     );
   }
   if (pas.fel === 'refuz') {
+    // Refuzul unui pachet din bibliotecă (ADR 0232 §A.4): o descărcare căzută se poate încerca din nou, aici.
+    const descarcare = pas.motiv === 'retea' || pas.motiv === 'http';
     return (
-      <Fereastra titlu={titluInstalare} test="extensii-instalare" onEscape={renunta}>
-        <p className="avertisment" role="alert" data-testid="extensii-refuz" data-motiv={pas.motiv}>
-          {t('extensii.instalare.refuz', { motiv: motivText(pas.motiv, pas.detaliu) })}
-        </p>
+      <Fereastra titlu={t('extensii.refuz.titlu')} test="extensii-instalare" onEscape={renunta}>
+        <p className="confirmare-sursa" data-testid="extensii-refuz-sursa">{`${cerere.rand.nume} ${cerere.rand.versiune}`}</p>
+        <p className="avertisment" role="alert" data-testid="extensii-refuz" data-motiv={pas.motiv}>{motivText(pas.motiv, pas.detaliu)}</p>
         <div className="butoane">
-          <button type="button" data-extensii="renunta" autoFocus onClick={renunta}>{t('extensii.instalare.renunta')}</button>
+          {descarcare && (
+            <button type="button" data-extensii="instaleaza-din-nou" autoFocus onClick={() => { void instaleaza(cerere.rand); }}>{t('extensii.refuz.din-nou')}</button>
+          )}
+          <button type="button" data-extensii="inchide-refuz" autoFocus={!descarcare} onClick={renunta}>{t('extensii.refuz.inchide')}</button>
         </div>
       </Fereastra>
     );

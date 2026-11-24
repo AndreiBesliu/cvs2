@@ -172,6 +172,105 @@
   text-align: center;
 }
 
+/*
+ * Starea unei extensii care n-a pornit sau pornește greu (ADR 0232 §A.1): un panou la mijlocul ferestrei, peste cadru, cu
+ * semnul și numele extensiei, o frază și trei ieșiri; detaliile tehnice, pliate. Pe un ecran mic, panoul se derulează.
+ */
+.stare-pornire {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  z-index: 2;
+  display: grid;
+  justify-items: center;
+  gap: var(--sp-2);
+  width: min(30rem, calc(100% - 2 * var(--sp-4)));
+  max-height: calc(100% - 2 * var(--sp-4));
+  padding: var(--sp-5);
+  overflow-y: auto;
+  text-align: center;
+  background: var(--s-panou);
+  border: 1px solid var(--l-margine);
+  border-radius: var(--r-3);
+  box-shadow: var(--umbra-1);
+  transform: translate(-50%, -50%);
+}
+
+.stare-pornire h2,
+.stare-pornire p {
+  margin: 0;
+}
+
+.stare-pornire h2 {
+  font-size: var(--fs-4);
+  overflow-wrap: anywhere;
+}
+
+.stare-pornire .butoane {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--sp-2);
+  margin-top: var(--sp-2);
+}
+
+.stare-pornire .butoane button,
+.stare-pornire .stare-copiaza {
+  padding: 0 var(--sp-4);
+  border-color: var(--l-camp);
+}
+
+/* „Încearcă din nou” e gestul stării: plin, ca primul buton al unui dialog. */
+.stare-pornire .butoane button:first-child {
+  font-weight: 600;
+  color: var(--t-pe-a);
+  background: var(--a-plin);
+  border-color: var(--a-plin);
+}
+
+.stare-pornire .butoane button:first-child:hover:enabled {
+  background: color-mix(in oklab, var(--a-plin) 85%, var(--t));
+}
+
+.stare-pornire details {
+  justify-self: stretch;
+  margin-top: var(--sp-2);
+  font-size: var(--fs-1);
+  color: var(--t-slab);
+  text-align: left;
+}
+
+.stare-pornire summary {
+  width: fit-content;
+  margin: 0 auto;
+  cursor: pointer;
+}
+
+.stare-pornire .stare-mesaj {
+  margin: var(--sp-1) 0;
+  padding: var(--sp-2);
+  font-family: var(--mono);
+  color: var(--t);
+  overflow-wrap: anywhere;
+  background: var(--s-peste);
+  border-radius: var(--r-1);
+  user-select: text;
+}
+
+.stare-pornire .stare-pachet {
+  margin-top: var(--sp-2);
+  overflow-wrap: anywhere;
+  user-select: text;
+}
+
+/* Fila extensiei, cât i se instalează o versiune nouă. */
+.fila-stare {
+  margin-left: var(--sp-1);
+  font-weight: 400;
+  color: var(--t-slab);
+  white-space: nowrap;
+}
+
 .extensii-camp {
   display: grid;
   gap: var(--sp-1);
@@ -329,14 +428,17 @@
   background: var(--s-panou);
 }
 
-/* Gestul care șterge („Scoate”, în întrebarea lui): roșu, nu accentul. */
-.dialog .butoane button.pericol:first-child:not([data-buton='renunta']) {
+/*
+ * Gestul care șterge sau pierde lucrul („Scoate”, în întrebarea lui; „Închide oricum”, lângă „Rămân”): roșu, nu accentul,
+ * oriunde ar sta între butoane (ADR 0232 §A.5).
+ */
+.dialog .butoane button.pericol:not([data-buton='renunta']) {
   color: var(--s-panou);
   background: var(--rosu);
   border-color: var(--rosu);
 }
 
-.dialog .butoane button.pericol:first-child:not([data-buton='renunta']):hover:enabled {
+.dialog .butoane button.pericol:not([data-buton='renunta']):hover:enabled {
   background: color-mix(in oklab, var(--rosu) 85%, var(--t));
 }
 

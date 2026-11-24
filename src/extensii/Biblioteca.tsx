@@ -56,7 +56,7 @@ function SemnElement({ element, marime }: { readonly element: Element; readonly 
   return <Semn adresa={element.instalata ? dinPachet ?? dinCatalog : dinCatalog} marime={marime} />;
 }
 
-export function FereastraBiblioteca({ cerere, catalog, instalate, limba, acoperita, onReincearca, onInchide, onDeschide, onSchimbata, onScoasa, onCere, onDefect }: {
+export function FereastraBiblioteca({ cerere, catalog, instalate, limba, acoperita, onReincearca, onInchide, onDeschide, onSchimbata, onScoasa, onCere, onDefect, inainte }: {
   readonly cerere: Extract<CerereInstalare, { readonly fel: 'fereastra' }>;
   readonly catalog: CatalogVazut;
   readonly instalate: readonly ExtensieInstalata[];
@@ -73,8 +73,10 @@ export function FereastraBiblioteca({ cerere, catalog, instalate, limba, acoperi
   /** Ce deschide gazda deasupra: fișierul de ales, fereastra adresei, confirmarea unei versiuni care cere ceva în plus. */
   readonly onCere: (c: CerereInstalare | 'fisier') => void;
   readonly onDefect: (e: Error) => void;
+  /** Înaintea scrierii unei versiuni noi peste extensia deschisă (ADR 0232 §A.2); `false`: nu se instalează nimic. */
+  readonly inainte: ((id: string) => Promise<boolean>) | undefined;
 }): ReactNode {
-  const [fila, setFila] = useState<Fila>('toate');
+  const [fila, setFila] = useState<Fila>(cerere.fila ?? 'toate');
   const [ales, setAles] = useState<string | null>(cerere.id);
   const [progres, setProgres] = useState<Readonly<Record<string, Progres>>>({});
   const [deScos, setDeScos] = useState<ExtensieInstalata | null>(null);
@@ -139,6 +141,10 @@ export function FereastraBiblioteca({ cerere, catalog, instalate, limba, acoperi
   /** Instalarea sau actualizarea dintr-un clic, în pagină: descărcarea verificată, scrierea, apoi lista celor instalate. */
   const instaleaza = async (rand: RandBiblioteca, cum: 'instalata' | 'actualizata'): Promise<void> => {
     setProgres((p) => ({ ...p, [rand.id]: { fel: 'lucreaza' } }));
+    if (inainte && !await inainte(rand.id)) {
+      setProgres((p) => Object.fromEntries(Object.entries(p).filter(([k]) => k !== rand.id)));
+      return;
+    }
     let r: Awaited<ReturnType<typeof instaleazaDinBiblioteca>>;
     try {
       r = await instaleazaDinBiblioteca(rand, { adresaCatalog: adresaCatalog(), scrie: scrieExtensia });
@@ -149,7 +155,7 @@ export function FereastraBiblioteca({ cerere, catalog, instalate, limba, acoperi
     }
     if (!r.ok) {
       if (r.defect) onDefect(new Error(`biblioteca: ${rand.id} ${rand.versiune}: ${r.motiv}${r.detaliu ? ` (${r.detaliu})` : ''}`));
-      const text = t('extensii.instalare.refuz', { motiv: motivText(r.motiv, r.detaliu) });
+      const text = motivText(r.motiv, r.detaliu);
       setProgres((p) => ({ ...p, [rand.id]: { fel: 'eroare', text, motiv: r.motiv } }));
       return;
     }
