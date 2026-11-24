@@ -13423,3 +13423,20 @@ la ordinul în vigoare „unește ce se poate”
 - **Loturile dinainte:** pe test, al șaisprezecelea (`fdce5f1b`). Al șaptesprezecelea și al optsprezecelea, cu proba
   reparată (`29ef7e44`): completul pe `main` (45417561144) rula la unire; cel dinainte, pe `647cebb1`, căzuse la proba
   instabilă a extensiilor.
+
+## 2026-11-24 — Sesiunea principală în cloud: a douăzecea unire (3.Xj, căutarea și categoriile din bibliotecă; oracolul rampelor împărțit) (Model: Claude Fable 5.2)
+
+**Prompt:** raportul liniei bibliotecii („3.Xj e gata de unit”, PR-ul #24), la ordinul în vigoare „unește ce se poate”;
+„ok, imparte oracolul rampelor in mai multe fisiere”
+**Started:** 24.11, 17:40. **Completed:** unirea în `main`, 24.11, @@ORA@@; publicarea pe test, la rândul ei.
+
+- **Lotul, pe `unire-2411v`** (din `7312d685`): oracolul rampelor împărțit (`b491853b`, în `b2a56e23`) și 3.Xj
+  (`c11a1c7f`, în `049c5dda`). Ciocnirile: `CLAUDE.md` și DEVLOG (două decizii adăugate în același loc), indexul
+  liniilor (rândul bibliotecii), catalogul controalelor (scris din nou: 629 de nume). Local, pe arborele unit:
+  tipurile, regulile de import (21), traducerile (1 031), biblioteca extensiilor la zi; e2e 42 / 42 (căutarea,
+  extensiile, comenzile foii, butonul Admin, cotele).
+- **Porțile, în CI:** completul lotului pe `049c5dda` (45426956640, @@COMPLET@@): @@PORTI@@; rapidul, @@RAPID@@;
+  completul liniei, verde pe `51ca1a5` (45413236557). @@MARIMI@@. Nimic pe server.
+- **Documentele:** decizia în `CLAUDE.md`, cu rândul de stare al lui 3.Xj; indexul liniilor; starea din
+  `docs/linii/principala.md`.
+- **Loturile dinainte:** @@INAINTE@@

@@ -150,7 +150,7 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
   printr-o schiță.
 - **Observabilitatea:** erorile ajung în jurnalul aplicației; joburile își lasă marcajul.
 
-## Starea pe 24.11.2026, după-amiaza (după a nouăsprezecea unire din cloud)
+## Starea pe 24.11.2026, seara (după a douăzecea unire din cloud)
 
 - **Pe test:** `fdce5f1b` (tot până la lotul al șaisprezecelea: 16.A↑c, 3.Xi; publicat pe 24.11 la 15:35, cu
   serverul: funcția `freze` creată, indexurile și regulile; proba de fum, bună). În drum: lotul al șaptesprezecelea cu
@@ -163,7 +163,8 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
   (`8ccb66e8`) și 16.A↑b-1, cu documentul v27 (`32b33a42`); A.7 (`458befb9`); 16.A↑c (`6b74074d`) și 3.Xi
   (`f12308de`); reparația utilizării mașinii (`bae574a8`), 10.4↑a-1 (`f25249cf`) și 3.Tt (`d57ca962`); 11.1↑c și 14.C↑d,
   scrise în sesiunea principală (`7584747a`); proba repornirii extensiei, reparată (`29ef7e44`); 16.A↑b-2 și 16.A↑a-2
-  (`33fadb06`), 10.4↑a-2 (`f3283b33`), 16.A↑h-1 și 16.A↑h-2 (`db43ed08`).
+  (`33fadb06`), 10.4↑a-2 (`f3283b33`), 16.A↑h-1 și 16.A↑h-2 (`db43ed08`); oracolul rampelor împărțit (`b2a56e23`) și
+  3.Xj (`049c5dda`).
 - **Liniile** (vezi [indexul](README.md)):
   - **gata pe ramură, la cuvântul owner-ului:** fereastra exportului (toate feliile ADR 0290, a–f;
     `AndreiBesliu/cvs2#11`, vârful `5c7d8d1c`, completul în lucru), după ce o încearcă pe canalul `export`; linia
@@ -171,8 +172,9 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
     `src/ui/exportRand.ts`;
   - **în lucru, pe ramuri:** frezele (16.A↑h-3, catalogul, din ADR 0302, acceptat de owner cu 1a–5a; apoi h-4;
     după `#11`: b-3, rândurile exportului, după `#11`, și b-4, nota schimbării din bibliotecă), relieful
-    (18.1↑a, `wip/18.1-relief`, ADR 0310 acceptat cu 1a–6a; documentul v28 e al ei; aduce `main` cu cotele înaintea
-    migrării; a luat v28 pe ramură), cotele (10.4↑a-3, fereastra Setări, la cuvântul owner-ului), biblioteca (3.Xj, căutarea și categoriile, ADR 0233, pornită de owner pe 24.11), exportul (28.8↑, `#11`: unirea la cuvântul
+    (18.1↑a, `wip/18.1-relief`, `AndreiBesliu/cvs2#25`: gata pe `0350f299`, cu v28; își aduce `main` de după loturile
+    19–21, rezolvă trei ciocniri de cod (`App.tsx`, `src/model/cote.ts`, `src/model/formaFrezei.ts`) și își reface
+    porțile; intră singur în lotul lui), cotele (10.4↑a-3, fereastra Setări, la cuvântul owner-ului), biblioteca (o felie doar de probe: repornirea extensiei, fără timp), exportul (28.8↑, `#11`: unirea la cuvântul
     owner-ului); se unesc la raportul liniei;
   - **la cuvântul owner-ului:** restul bibliotecii extensiilor (căutarea, captura mărită), următoarea felie a
     incrustațiilor, a trasării și a elicelor, 11.5↑b (după etapa 13);

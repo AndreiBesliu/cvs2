@@ -996,6 +996,15 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   una pe alta** (ar lega bucățile și ar atinge pornirea). Un rând de „ce e nou” poate primi `"data": "an-lună-zi"`.
   Pachetele nu s-au schimbat de felie (Easy 3Draw era 18.22.0; din 3.Tt e 18.23.0; următoarea, 18.24.0). Cu `main` (`f536a4c`) adus: pornirea
   109,9 kB (plafonul 120; cu ușa 114,4, cu Atelierul 114,7), totalul 809,9 / 900; felia: pornirea +0, totalul +3,8 kB.
+  **Căutarea și categoriile în biblioteca extensiilor (ADR 0233, felia 3.Xj)** gata pe 24.11, în sesiunea cloud a
+  liniei (la „ok, porneste cautarea si categoriile” al owner-ului, cu alegerile recomandate), unită în `main` pe 24.11
+  (`049c5dda`): categoriile sunt rafturile bibliotecii, cu lista lor în aplicație (Desen și forme, CNC și trasee,
+  Imprimare 3D, Mașina, Jucării și modele); pe ce rafturi stă o extensie (cel mult trei) o spune lista bibliotecii
+  (`categorii`, în `extensii/biblioteca.json`), nu pachetul. „Caută o extensie” filtrează lista la fiecare literă
+  (`src/extensii/cautare.ts`), fără diacritice și majuscule; pastilele rafturilor, cu numărul lor; starea „nimic găsit”;
+  „/” duce în câmp. **Pachetele nu se schimbă pentru o categorie nouă** (Easy 3Draw rămâne 18.23.0). **La owner, cinci
+  întrebări în ADR 0233** (rafturile, unde stă Easy 3Draw, dacă rămân la vedere cu o singură extensie, câte rafturi pe
+  extensie, cât de îngăduitoare e căutarea). Felia: pornirea +0, totalul +1,3 kB.
   **Căutarea și categoriile în bibliotecă (ADR 0233, felia 3.Xj)** gata pe 24.11, în sesiunea cloud a liniei (aceeași
   ramură, PR-ul `AndreiBesliu/cvs2#24`), neunită, la „ok, porneste cautarea si categoriile” al owner-ului, cu alegerile
   recomandate (cinci întrebări pentru el, în ADR): sub capul ferestrei bibliotecii, o bară cu câmpul „Caută o extensie”
@@ -1518,6 +1527,22 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 24.11.2026, seara (a douăzecea unire din cloud): **3.Xj (căutarea și categoriile în biblioteca extensiilor) și
+  oracolul rampelor împărțit, unite în `main`**, în lot (sesiunea principală, ramura `unire-2411v`, din `7312d685`).
+  **Oracolul rampelor** (`b491853b`, scris de sesiunea principală la „ok, imparte oracolul rampelor in mai multe
+  fisiere”; decizia de mai jos), unit în `b2a56e23`: doar probe. **3.Xj** (linia bibliotecii, ramura
+  `wip/3.Xh-biblioteca-ui`, `c11a1c7f`, PR-ul `AndreiBesliu/cvs2#24`; ADR 0233; la „ok, porneste cautarea si
+  categoriile” al owner-ului, în sesiunea liniei; unirea, la ordinul în vigoare „unește ce se poate”), unită în
+  `049c5dda`: rafturile bibliotecii (lista lor e a aplicației; pe ce rafturi stă o extensie o spune lista bibliotecii,
+  nu pachetul), „Caută o extensie”, pastilele rafturilor, starea „nimic găsit”, tastatura; pachetele, neschimbate
+  (Easy 3Draw 18.23.0); otrăvurile 78 / 78. Documentul rămâne v27; nimic pe server. Ciocnirile: DEVLOG, indexul
+  liniilor și catalogul controalelor (scris din nou, 629 de nume). Porțile lotului, în CI, pe `049c5dda` (completul
+  @@COMPLET@@): @@PORTI@@; rapidul, @@RAPID@@; completul liniei, verde pe `51ca1a5`; @@MARIMI@@. @@INAINTE@@ Urmează, de
+  la linia bibliotecii, o felie doar de probe: „două cereri imediat după” repornirea unei extensii, fără timp (acordul
+  sesiunii principale: ține de CI-ul verde). În lucru, pe ramuri: relieful (18.1↑a, v28: își aduce `main` și își
+  reface porțile, apoi intră singur în lotul lui), frezele (16.A↑h-3), exportul (`AndreiBesliu/cvs2#11`, la cuvântul
+  owner-ului). **La owner:** cele cinci întrebări din ADR 0233, fereastra exportului, verificarea juridică (GDPR) a
+  utilizării aplicației înaintea live-ului, „cine unește în `main`”, meniul de sus la 320 px la atingere.
 - 24.11.2026, seara (a nouăsprezecea unire din cloud): **frezele (16.A↑b-2, 16.A↑a-2, 16.A↑h-1, 16.A↑h-2) și
   unealta Cote (10.4↑a-2) unite în `main`**, în lot, cu o probă instabilă reparată înainte (sesiunea principală,
   ramura `unire-2411s`, peste `29ef7e44`). **16.A↑b-2 și 16.A↑a-2** (linia frezelor, ramura `wip/16.A-freze`,
