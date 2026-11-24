@@ -70,6 +70,19 @@ export function cereCota(foaie: string, id: string): void {
   schimba({ ...stare, aleasa: { foaie, id }, cereri: stare.cereri + 1 });
 }
 
+/**
+ * Editorul ascultă cererile listei fără să se redeseneze la fiecare schimbare a depozitului: `f` se cheamă doar când lista
+ * cere unealta Cote.
+ */
+export function laCerereaListei(f: () => void): () => void {
+  let vazute = stare.cereri;
+  return asculta(() => {
+    if (stare.cereri === vazute) return;
+    vazute = stare.cereri;
+    f();
+  });
+}
+
 /** Unealta Cote își publică cota aleasă pentru panou (sau niciuna). */
 export function publicaPanou(p: CotaPanou | null): void {
   if (p === stare.panou) return;

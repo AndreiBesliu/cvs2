@@ -126,6 +126,7 @@ export const en = {
   'vedere.aspect': 'Interface appearance',
   'vedere.freze': 'My bits',
   'vedere.setari': 'Settings',
+  'vedere.cote': 'Show dimensions',
   'tema.auto': 'as the system',
   'tema.luminoasa': 'light',
   'tema.intunecata': 'dark',

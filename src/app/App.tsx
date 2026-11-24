@@ -645,6 +645,8 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
     aspect: () => { focusAspect.current = document.activeElement; setAspect(true); },
     freze: () => { focusFreze.current = document.activeElement; setFreze(true); },
     setari: () => { focusSetari.current = document.activeElement; setSetari(true); },
+    // „Arată cotele” (ADR 0330 §5): setarea „Cotele pe pânză”, adusă cu bucata setărilor cotelor (nu stă în pornire).
+    cote: () => { void import('./setariCote.ts').then((m) => { m.comutaPePanza(); }, () => undefined); },
   };
   /**
    * „Trimite la <extensie>” (ADR 0166 §B): formele instanțelor alese, calculate la cerere, spre extensia deschisă care le
@@ -1134,7 +1136,7 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
     const material = materialFoaie(f);
     const detalii = [t('arbore.foaia', { latime: f.stoc.latime, inaltime: f.stoc.inaltime, grosime: f.stoc.grosime }),
       ...(material === null ? [] : [material]), t('lista.foaie-piese', { n: f.instante.length })];
-    return { id: f.id, eticheta: numeFoaie(f, k, sablonFoaie), detalii, piese: f.instante.length, activa: k === indexActiva };
+    return { id: f.id, eticheta: numeFoaie(f, k, sablonFoaie), detalii, piese: f.instante.length, cote: f.cote?.length ?? 0, activa: k === indexActiva };
   });
   /** Ce face lista cu foile (ADR 0210 §1): totul prin registru, ca bara și paleta; meniul foii (la cerere) le cere pe foaia lui. */
   const actiuniFoi: ActiuniFoi = {
@@ -1602,7 +1604,7 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
                 <Editare doc={doc} indexFoaie={indexActiva} idFoaie={idActiva} selectie={selectieValida} cutie={cutieSelectie} vedere={v} marime={m} linii={l} zona={zona} doarCitire={doarCiteste(mod)} activ={!acoperita && urechiAlese === null && modImagine === null}
                   usaAcoperita={fereastra === FEREASTRA_EXTENSIE ? 'extensii.buton' : fereastra === 'imprimanta' ? 'vedere.imprimanta' : 'vedere.masina'}
                   ruleaza={(id, extra) => ruleazaDocument(id, context(extra))} onLipeste={setLipesteStabil} onDesen={setDesenStabil}
-                  onRefuz={setRefuzEditare} onLegare={setLegareEditare} reface={stareActiune('istoric.reface').ok} onAseaza={() => { setDialogAsezare(true); }} onAspect={() => { contextVedere.aspect(); }} onFreze={() => { contextVedere.freze(); }} onSetari={() => { contextVedere.setari(); }}
+                  onRefuz={setRefuzEditare} onLegare={setLegareEditare} reface={stareActiune('istoric.reface').ok} onAseaza={() => { setDialogAsezare(true); }} onAspect={() => { contextVedere.aspect(); }} onFreze={() => { contextVedere.freze(); }} onSetari={() => { contextVedere.setari(); }} toateFoile={toateFoile}
                   sugestie={config.ok && config.config.instanta !== 'live'} config={config.ok ? config.config : null} jurnal={jurnal}
                   {...(config.ok && config.config.instanta !== 'live' && new URLSearchParams(location.search).has('test')
                     ? { test: { versiune: versiuneDin(document), instanta: config.config.instanta } } : {})} />

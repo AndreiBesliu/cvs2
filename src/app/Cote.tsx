@@ -14,7 +14,7 @@
  *
  * Fiecare schimbare e o listă nouă a cotelor foii, scrisă prin acțiunea `foaie.cote` (un pas de anulare).
  */
-import { useEffect, useMemo, useRef, useState, type CSSProperties, type ReactElement } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type ReactElement } from 'react';
 import { createPortal } from 'react-dom';
 import type { Zona } from '../canvas/Rigle.tsx';
 import type { Vedere } from '../canvas/protocol.ts';
@@ -22,13 +22,15 @@ import { apropiat } from '../geom/apropiat.ts';
 import { numarSegmente, segment, type Punct } from '../geom/conturBaza.ts';
 import { lipestePunct, type FelPunct, type PunctTinta } from '../geom/lipirePuncte.ts';
 import { t } from '../i18n/t.ts';
-import { felCunoscut, indexLume, punctAncora, valoareCota, type PunctCota } from '../model/cote.ts';
+import { cotaCuDistanta, cotaCuText, cotaDezlegata, felCunoscut, indexLume, punctAncora, stareCota, valoareCota, type PunctCota } from '../model/cote.ts';
 import { desenLiniar, distantaDinCursor, distantaLaDesen, felAutomat, scrieCifra, textCota, textValoare, type CapatDesen, type DesenCota, type FelLiniar, type FormatCifre, type StilCota } from '../model/desenCota.ts';
 import type { AncoraCota, Cota, Document, LegaturaCota } from '../model/document.ts';
+import { locuriFoi } from '../model/foi.ts';
 // Judecata cotelor și dezlegarea lor în jurnal (ADR 0330 §2, §3): cu unealta, o cotă nouă trece de ușă și se dezleagă cinstit.
 import '../model/judecataCote.ts';
 import { puncteFoaie, surseCote } from '../model/puncteCote.ts';
 import type { RezultatActiune } from '../ui/actiuni.ts';
+import { alegeCota, publicaPanou, publicaRanduri, useAscunse, useStareCote } from '../ui/coteVedere.ts';
 import './cote.css';
 import { formatCote, optiuniLipireCote, setariCote, stilCote, useSetariCote, type SetariCote } from './setariCote.ts';
 
@@ -75,6 +77,9 @@ type Desenata = {
   readonly dezlegata: boolean;
 };
 
+/** Fără cote de desenat (ascunse): aceeași listă, ca alegerea să nu se refacă la fiecare randare. */
+const FARA_COTE: readonly Desenata[] = [];
+
 const esteLiniar = (f: string): f is FelLiniar => f === 'orizontala' || f === 'verticala' || f === 'aliniata';
 
 /**
@@ -95,6 +100,29 @@ function Capat({ c, sx, sy, scara }: { readonly c: CapatDesen; readonly sx: (x: 
   if (c.fel === 'bara') return <line className="cota-capat-bara" x1={sx(c.bucata[0].x)} y1={sy(c.bucata[0].y)} x2={sx(c.bucata[1].x)} y2={sy(c.bucata[1].y)} />;
   if (c.fel === 'punct') return <circle className="cota-capat" cx={sx(c.centru.x)} cy={sy(c.centru.y)} r={Math.max(c.raza * scara, 1)} />;
   return <polygon className={c.plina ? 'cota-capat' : 'cota-capat cota-capat-deschis'} points={c.puncte.map((q) => `${sx(q.x)},${sy(q.y)}`).join(' ')} />;
+}
+
+/** O cotă desenată pe ecran: extensiile, linia (sau bucățile ei), capetele, cifra (sub prag, doar ca titlu) și mânerele alesei. */
+function CotaSvg({ d, cls, sx, sy, scara, prag }: {
+  readonly d: Desenata; readonly cls: string; readonly sx: (x: number) => number; readonly sy: (y: number) => number; readonly scara: number; readonly prag: number;
+}): ReactElement | null {
+  if (!d.desen) return null;
+  const dc = d.desen, h = dc.text.inaltime * scara;
+  const tp = { x: sx(dc.text.p.x), y: sy(dc.text.p.y) };
+  return (
+    <g className={`cota${d.dezlegata ? ' cota-dezlegata' : ''}${cls ? ` cota-${cls}` : ''}`} data-cota={d.cota.id}
+      data-fel={d.cota.fel} data-stare={d.dezlegata ? 'dezlegata' : 'legata'} data-valoare={d.valoare ?? undefined} data-text={d.text}>
+      {dc.extensii.map((e, k) => <line key={k} x1={sx(e[0].x)} y1={sy(e[0].y)} x2={sx(e[1].x)} y2={sy(e[1].y)} />)}
+      {dc.bucati.map((b, k) => <line key={`l${k}`} className="cota-linie" x1={sx(b[0].x)} y1={sy(b[0].y)} x2={sx(b[1].x)} y2={sy(b[1].y)} />)}
+      {dc.capete.map((c, k) => <Capat key={`c${k}`} c={c} sx={sx} sy={sy} scara={scara} />)}
+      {h >= prag ? (
+        <text x={tp.x} y={tp.y} fontSize={h} textAnchor="middle" transform={`rotate(${-dc.text.unghi} ${tp.x} ${tp.y})`}>{d.text}</text>
+      ) : <title>{d.text}</title>}
+      {cls === 'aleasa' ? d.puncte.map((q, k) => (
+        <circle key={`m${k}`} className={`cota-maner${q.stare === 'dezlegata' ? ' cota-maner-dezlegat' : ''}`} data-maner={k} cx={sx(q.p.x)} cy={sy(q.p.y)} r={4} />
+      )) : null}
+    </g>
+  );
 }
 
 /** Un id nou pe foaie: `c` și primul număr după cele folosite. */
@@ -124,7 +152,7 @@ function textMasura(a: Punct, b: Punct, s: SetariCote, format: FormatCifre): str
 
 export type CerereCote = { readonly mod: 'd' | 'm'; readonly n: number };
 
-export function StratCote({ doc, indexFoaie, vedere, marime, zona, unealta, activ, loc, locJos, cerere, lipire, grila, virgula, onScrie, onUnealta, onSetari, poateDublu }: {
+export function StratCote({ doc, indexFoaie, vedere, marime, zona, unealta, activ, loc, locJos, cerere, lipire, grila, virgula, toateFoile, onScrie, onUnealta, onSetari, poateDublu }: {
   readonly doc: Document;
   readonly indexFoaie: number;
   readonly vedere: Vedere;
@@ -144,6 +172,8 @@ export function StratCote({ doc, indexFoaie, vedere, marime, zona, unealta, acti
   readonly lipire: boolean;
   readonly grila: number | null;
   readonly virgula: boolean;
+  /** „Toate foile pe pânză” (ADR 0210 §1): cotele foilor vecine se desenează lângă ale foii active, după setare (a-4). */
+  readonly toateFoile: boolean;
   /** Lista nouă a cotelor foii (acțiunea `foaie.cote`), cu verdictul ei. */
   readonly onScrie: (cote: readonly Cota[]) => RezultatActiune;
   readonly onUnealta: (u: 'cote' | 'selectie') => void;
@@ -156,12 +186,30 @@ export function StratCote({ doc, indexFoaie, vedere, marime, zona, unealta, acti
   const stil = useMemo(() => stilCote(setari), [setari]);
   const format = useMemo(() => formatCote(setari, virgula), [setari, virgula]);
   const foaie = doc.foi[indexFoaie];
+  const idFoaie = foaie?.id ?? '';
   const cote = useMemo(() => foaie?.cote ?? [], [foaie]);
   const lume = useMemo(() => indexLume(doc, indexFoaie), [doc, indexFoaie]);
-  // Ascunse din Setări („Cotele pe pânză”), cotele nu se desenează și nu se aleg; cu unealta Cote, se văd oricum.
-  const vizibile = unealta || setari.comportament.pePanza;
-  const desenate = useMemo(() => (vizibile ? cote : []).filter((c) => felCunoscut(c.fel) && Array.isArray(c.puncte))
-    .map((c) => deseneaza(c, (c.puncte ?? []).map((a) => punctAncora(a, lume)), stil, format)), [vizibile, cote, lume, stil, format]);
+  // Toate cotele foii, desenate (lista și panoul le citesc și când nu se văd pe pânză).
+  const toate = useMemo(() => cote.filter((c) => felCunoscut(c.fel) && Array.isArray(c.puncte))
+    .map((c) => deseneaza(c, (c.puncte ?? []).map((a) => punctAncora(a, lume)), stil, format)), [cote, lume, stil, format]);
+  // Ascunse din Setări („Cotele pe pânză”, „Arată cotele”) sau de ochiul listei, pe foaia lor, cotele nu se desenează și nu se
+  // aleg; cu unealta Cote, se văd oricum.
+  const ascunse = useAscunse();
+  const vizibile = unealta || (setari.comportament.pePanza && !ascunse.has(idFoaie));
+  const desenate = vizibile ? toate : FARA_COTE;
+  // Cotele foilor vecine (ADR 0210 §1, felia a-4): cu „Toate foile pe pânză”, estompate, lângă foile lor, doar de văzut.
+  const vecine = useMemo(() => {
+    if (!toateFoile || doc.foi.length < 2 || setari.comportament.vecine === 'ascunse' || !setari.comportament.pePanza) return [];
+    const locuri = locuriFoi(doc);
+    const x0 = locuri[indexFoaie] ?? 0;
+    return doc.foi.flatMap((f, k) => {
+      if (k === indexFoaie || ascunse.has(f.id) || !(f.cote?.length)) return [];
+      const lumeK = indexLume(doc, k);
+      const desene = f.cote.filter((c) => felCunoscut(c.fel) && Array.isArray(c.puncte))
+        .map((c) => deseneaza(c, (c.puncte ?? []).map((a) => punctAncora(a, lumeK)), stil, format));
+      return [{ foaie: f.id, dx: (locuri[k] ?? 0) - x0, desene }];
+    });
+  }, [toateFoile, doc, indexFoaie, setari, ascunse, stil, format]);
   // Lipirea și laturile, doar cu unealta aleasă (un import mare nu-și face indexul degeaba).
   const surse = useMemo(() => (unealta ? surseCote(doc, indexFoaie) : []), [unealta, doc, indexFoaie]);
   const fixe = useMemo(() => (foaie ? puncteFoaie(foaie.stoc.latime, foaie.stoc.inaltime) : []), [foaie]);
@@ -171,7 +219,12 @@ export function StratCote({ doc, indexFoaie, vedere, marime, zona, unealta, acti
   const [tinta, setTinta] = useState<PunctTinta<LegaturaCota> | null>(null);
   const [cursor, setCursor] = useState<{ readonly p: Punct; readonly shift: boolean } | null>(null);
   const [masura, setMasura] = useState<{ readonly a: Capat; readonly b: Capat | null } | null>(null);
-  const [aleasa, setAleasa] = useState<string | null>(null);
+  // Cota aleasă stă în depozitul cotelor (`coteVedere.ts`): panoul o descrie, iar lista o poate alege.
+  const stareCote = useStareCote();
+  const aleasa = stareCote.aleasa?.foaie === idFoaie ? stareCote.aleasa.id : null;
+  const idFoaieRef = useRef(idFoaie);
+  idFoaieRef.current = idFoaie;
+  const setAleasa = useCallback((id: string | null): void => { alegeCota(idFoaieRef.current, id); }, []);
   const [trage, setTrage] = useState<{ readonly fel: 'capat'; readonly k: number; readonly c: Capat } | { readonly fel: 'linie'; readonly d: number } | null>(null);
   const [motiv, setMotiv] = useState<string | null>(null);
   const radacina = useRef<HTMLDivElement | null>(null);
@@ -199,7 +252,44 @@ export function StratCote({ doc, indexFoaie, vedere, marime, zona, unealta, acti
   // O cotă aleasă care nu mai e pe foaie (ștearsă, anulată) nu mai e aleasă.
   useEffect(() => {
     if (aleasa && !cote.some((c) => c.id === aleasa)) setAleasa(null);
-  }, [cote, aleasa]);
+  }, [cote, aleasa, setAleasa]);
+  // Rândurile listei: toate cotele foii active, cu cifra lor (și ascunse pe pânză).
+  useEffect(() => {
+    publicaRanduri(idFoaie, toate.map((d) => ({ id: d.cota.id, fel: d.cota.fel, cifra: d.text, dezlegata: d.dezlegata })));
+  }, [idFoaie, toate]);
+  // Panoul cotei alese (ADR 0330 §5): felul, valoarea, cifra, textul, legătura, distanța și ce poate schimba.
+  useEffect(() => {
+    const d = aleasa ? toate.find((x) => x.cota.id === aleasa) : undefined;
+    if (!d) {
+      publicaPanou(null);
+      return;
+    }
+    const id = d.cota.id;
+    const scrie = (f: (c: Cota) => Cota | null): RezultatActiune => {
+      const s = acum.current;
+      const noi = s.cote.flatMap((c) => {
+        if (c.id !== id) return [c];
+        const n = f(c);
+        return n ? [n] : [];
+      });
+      return s.onScrie(noi);
+    };
+    publicaPanou({
+      foaie: idFoaie, id, fel: d.cota.fel, valoare: d.valoare, cifra: d.text, text: typeof d.cota.text === 'string' ? d.cota.text : '',
+      ...stareCota(d.puncte), d: d.cota.linie?.d ?? 0,
+      actiuni: {
+        dezleaga: () => scrie((c) => cotaDezlegata(c, d.puncte)),
+        text: (t) => scrie((c) => cotaCuText(c, t)),
+        distanta: (x) => scrie((c) => cotaCuDistanta(c, x)),
+        sterge: () => scrie(() => null),
+      },
+    });
+  }, [aleasa, toate, idFoaie]);
+  // Plecată (alt proiect, vederea 3D, nicio cotă), unealta nu mai publică nimic.
+  useEffect(() => () => {
+    publicaPanou(null);
+    publicaRanduri('', []);
+  }, []);
 
   const acum = useRef({ cote, desenate, surse, fixe, vedere, setari, lipire, grila, fel, puse, masura, aleasa, unealta, activ, onScrie, onUnealta, poateDublu });
   acum.current = { cote, desenate, surse, fixe, vedere, setari, lipire, grila, fel, puse, masura, aleasa, unealta, activ, onScrie, onUnealta, poateDublu };
@@ -493,25 +583,12 @@ export function StratCote({ doc, indexFoaie, vedere, marime, zona, unealta, acti
     <div className="strat-cote" ref={radacina} data-testid="strat-cote" data-fel={unealta ? fel : undefined} data-puse={puse.capete.length} data-aleasa={aleasa ?? undefined}
       data-ascunse={vizibile ? undefined : ''} style={setari.comportament.culoare ? ({ '--cota': setari.comportament.culoare } as CSSProperties) : undefined}>
       <svg className="rigle-desen" width={marime.latime} height={marime.inaltime} aria-hidden="true">
-        {desene.map((d) => {
-          if (!d.desen) return null;
-          const dc = d.desen, h = dc.text.inaltime * vedere.scara;
-          const tp = { x: sx(dc.text.p.x), y: sy(dc.text.p.y) };
-          return (
-            <g key={d.cota.id} className={`cota${d.dezlegata ? ' cota-dezlegata' : ''}${d.cls ? ` cota-${d.cls}` : ''}`} data-cota={d.cota.id}
-              data-fel={d.cota.fel} data-stare={d.dezlegata ? 'dezlegata' : 'legata'} data-valoare={d.valoare ?? undefined} data-text={d.text}>
-              {dc.extensii.map((e, k) => <line key={k} x1={sx(e[0].x)} y1={sy(e[0].y)} x2={sx(e[1].x)} y2={sy(e[1].y)} />)}
-              {dc.bucati.map((b, k) => <line key={`l${k}`} className="cota-linie" x1={sx(b[0].x)} y1={sy(b[0].y)} x2={sx(b[1].x)} y2={sy(b[1].y)} />)}
-              {dc.capete.map((c, k) => <Capat key={`c${k}`} c={c} sx={sx} sy={sy} scara={vedere.scara} />)}
-              {h >= setari.comportament.pragCifre ? (
-                <text x={tp.x} y={tp.y} fontSize={h} textAnchor="middle" transform={`rotate(${-dc.text.unghi} ${tp.x} ${tp.y})`}>{d.text}</text>
-              ) : <title>{d.text}</title>}
-              {d.cls === 'aleasa' ? d.puncte.map((q, k) => (
-                <circle key={`m${k}`} className={`cota-maner${q.stare === 'dezlegata' ? ' cota-maner-dezlegat' : ''}`} data-maner={k} cx={sx(q.p.x)} cy={sy(q.p.y)} r={4} />
-              )) : null}
-            </g>
-          );
-        })}
+        {vecine.map((v) => (
+          <g key={`v${v.foaie}`} className="cote-vecine" data-foaie={v.foaie}>
+            {v.desene.map((d) => <CotaSvg key={d.cota.id} d={d} cls="" sx={(x) => sx(x + v.dx)} sy={sy} scara={vedere.scara} prag={setari.comportament.pragCifre} />)}
+          </g>
+        ))}
+        {desene.map((d) => <CotaSvg key={d.cota.id} d={d} cls={d.cls} sx={sx} sy={sy} scara={vedere.scara} prag={setari.comportament.pragCifre} />)}
         {elastic}
         {unealta && puse.capete.map((c, k) => <circle key={`p${k}`} className="cota-pus" cx={sx(c.p.x)} cy={sy(c.p.y)} r={3} />)}
         {masura && capatMasura ? (

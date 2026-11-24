@@ -1201,7 +1201,7 @@ goes right through.
 
 ## Dimensions and measuring
 %% capitol: cote
-%% acopera: unealta.cote, foaie.cote
+%% acopera: unealta.cote, foaie.cote, vedere.cote
 
 The **Dimensions** tool (`D`; its button sits in the bar's extension, after Convert) puts dimensions on the drawing that show a size: the length of a side, the
 distance between two points along X, along Y or straight. A dimension is **never cut**: the exported G-code is the same with
@@ -1230,6 +1230,17 @@ drag the line or move it with the arrow keys (1 mm; Shift: 10 mm, Alt: 0.1 mm), 
 other tools, dimensions are not selected: the click goes to the shape under them. A double click on a dimension, with any
 tool, switches to Dimensions with it selected.
 
+With a dimension selected, the **properties panel** shows only what is its own: the type; the **exact value**, with all its
+digits, and **Copy** (puts it in the clipboard); the link (linked to the shape, free or unlinked, with the reason) and
+**Unlink** (the ends stay where they are and the dimension no longer follows the shape); the **text**, in which `<>` is the
+value (for instance “4× Ø<>”; empty, only the value shows); the dimension **line distance**, in mm; **Delete**.
+
+In the **list**, under the active sheet's pieces, the **Dimensions (N)** row: open, it shows the sheet's dimensions (the value,
+the type, “unlinked”), and a click on one switches to the Dimensions tool with it selected. The **eye** on the row hides the
+sheet's dimensions on the canvas (it does not delete them; with the Dimensions tool they show anyway). **Show dimensions**
+(from **Search commands**) hides or shows them all, like the “Dimensions on the canvas” setting. With **All sheets on the
+canvas**, the neighbouring sheets' dimensions show faded next to their sheets (or hidden, from Settings).
+
 How dimensions look (the numbers, the unit, the ends, the extension lines, the colour) and how the tool behaves is chosen in
 the **Settings** window, **Dimensions** section: from the ⚙ in the tool's bar, from the account menu or with `Ctrl+,`.
 
@@ -1252,8 +1263,8 @@ field, said in red, and is not kept. **Close** (or Esc) closes the window.
   **Keep** in Measure.
 - **Behaviour:** whether new dimensions are linked to shapes, which type the tool starts with (Automatic or the last used),
   what comes after a dimension (the Dimensions tool stays or back to Select), whether dimensions show on the canvas (hidden,
-  they show only with the Dimensions tool), below how many screen pixels the numbers hide and the dimensions' colour (the
-  theme's or chosen).
+  they show only with the Dimensions tool), the neighbouring sheets' dimensions (faded or hidden), below how many screen
+  pixels the numbers hide and the dimensions' colour (the theme's or chosen).
 - **Snapping:** the points the ends snap to (vertices, midpoints, centres, quadrants, the box, the sheet, the grid), the
   tolerance in pixels and the nearest point on the outline (with Ctrl, always or never).
 - **Measuring:** what Measure shows (the distance, Δx and Δy, the angle) and where (next to the pointer, in the bottom bar).

@@ -1162,7 +1162,7 @@ de alta a urmei, punctată mai rar; cu îmbinare, în locul fâșiei se văd din
 
 ## Cotele și măsurarea
 %% capitol: cote
-%% acopera: unealta.cote, foaie.cote
+%% acopera: unealta.cote, foaie.cote, vedere.cote
 
 Unealta **Cote** (`D`; butonul ei stă în extensia barei, după Convertește) pune pe desen cote care arată o mărime: lungimea unei laturi, distanța dintre două puncte
 pe X, pe Y sau dreaptă. O cotă **nu se taie niciodată**: G-code-ul exportat e același cu și fără cote. Cotele sunt ale foii
@@ -1189,6 +1189,16 @@ Cu unealta Cote, un clic pe linia unei cote o alege: capetele ei se trag pe alt 
 trage sau se mută cu săgețile (1 mm; Shift: 10 mm, Alt: 0,1 mm), **Delete** o șterge. Cu Selecția și cu celelalte unelte,
 cotele nu se aleg: clicul trece la forma de sub ele. Un dublu clic pe o cotă, cu orice unealtă, trece la Cote, cu ea aleasă.
 
+Cu o cotă aleasă, **panoul de proprietăți** arată doar ce e al ei: felul; **valoarea exactă**, cu toate cifrele, și
+**Copiază** (o pune în clipboard); legătura (legată de formă, liberă sau dezlegată, cu motivul) și **Dezleagă** (capetele
+rămân unde sunt, iar cota nu mai urmează forma); **textul**, în care `<>` e valoarea (de exemplu „4× Ø<>”; gol, se vede doar
+valoarea); **distanța liniei** de cotă, în mm; **Șterge**.
+
+În **listă**, sub piesele foii active, rândul **Cote (N)**: deschis, arată cotele foii (valoarea, felul, „dezlegată”), iar un
+clic pe una trece la unealta Cote, cu ea aleasă. **Ochiul** de pe rând ascunde cotele foii pe pânză (nu le șterge; cu
+unealta Cote se văd oricum). **Arată cotele** (din **Caută o comandă**) le ascunde sau le arată pe toate, ca setarea „Cotele
+pe pânză”. Cu **Toate foile pe pânză**, cotele foilor vecine se văd estompate, lângă foile lor (sau ascunse, din Setări).
+
 Cum arată cotele (cifrele, unitatea, capetele, liniile de extensie, culoarea) și cum se comportă unealta se alege în
 fereastra **Setări**, secțiunea **Cotele**: din ⚙ al barei uneltei, din meniul contului sau cu `Ctrl+,`.
 
@@ -1211,7 +1221,8 @@ implicit**. Un număr se scrie cu virgulă sau cu punct; unul în afara marginil
   **Păstrează** din Măsoară.
 - **Comportamentul:** dacă cotele noi sunt legate de forme, cu ce fel pornește unealta (Automată sau ultimul folosit), ce
   urmează după o cotă (rămâne unealta Cote sau înapoi la Selecție), dacă se văd cotele pe pânză (ascunse, se văd doar cu
-  unealta Cote), sub câți pixeli pe ecran se ascund cifrele și culoarea cotelor (a temei sau aleasă).
+  unealta Cote), cotele foilor vecine (estompate sau ascunse), sub câți pixeli pe ecran se ascund cifrele și culoarea cotelor
+  (a temei sau aleasă).
 - **Lipirea:** punctele de care se lipesc capetele (vârfurile, mijloacele, centrele, cadranele, cutia, foaia, grila),
   toleranța în pixeli și punctul cel mai apropiat de pe contur (cu Ctrl, mereu sau niciodată).
 - **Măsurarea:** ce arată Măsoară (distanța, Δx și Δy, unghiul) și unde (lângă cursor, în bara de jos).

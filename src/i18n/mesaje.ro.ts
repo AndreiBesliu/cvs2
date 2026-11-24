@@ -146,6 +146,7 @@ export const ro = {
   'vedere.aspect': 'Aspectul interfeței',
   'vedere.freze': 'Frezele mele',
   'vedere.setari': 'Setări',
+  'vedere.cote': 'Arată cotele',
   'tema.auto': 'după sistem',
   'tema.luminoasa': 'luminoasă',
   'tema.intunecata': 'întunecată',

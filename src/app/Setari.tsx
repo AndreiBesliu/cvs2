@@ -227,6 +227,8 @@ function SectiuneCote({ s, virgula }: { readonly s: SetariCote; readonly virgula
           valori={v('setari.cote.dupa', ['ramane', 'selectie'] as const)} la={(x) => { comp({ dupa: x }); }} />
         <Bifa id={`${id}-pe-panza`} setare="comportament.pePanza" eticheta={t('setari.cote.pe-panza')} nota={t('setari.cote.pe-panza.nota')}
           valoare={s.comportament.pePanza} la={(x) => { comp({ pePanza: x }); }} />
+        <Alegere id={`${id}-vecine`} setare="comportament.vecine" eticheta={t('setari.cote.vecine')} nota={t('setari.cote.vecine.nota')}
+          valoare={s.comportament.vecine} valori={v('setari.cote.vecine', ['estompate', 'ascunse'] as const)} la={(x) => { comp({ vecine: x }); }} />
         {nr('prag', 'comportament.pragCifre', 'setari.cote.prag', s.comportament.pragCifre, MARGINI.pragCifre, (x) => { comp({ pragCifre: x }); }, 'setari.cote.prag.nota')}
         <Alegere id={`${id}-culoare`} setare="comportament.culoare" eticheta={t('setari.cote.culoare')} valoare={s.comportament.culoare === null ? 'tema' : 'aleasa'}
           valori={v('setari.cote.culoare', ['tema', 'aleasa'] as const)} la={(x) => { comp({ culoare: x === 'tema' ? null : (s.comportament.culoare ?? '#0080a0') }); }} />
