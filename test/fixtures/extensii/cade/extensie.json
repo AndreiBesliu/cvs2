@@ -1,0 +1,9 @@
+{
+  "format": "cvs2-extensie",
+  "api": 1,
+  "id": "cade",
+  "nume": "Cade la pornire",
+  "versiune": "0.3.0",
+  "intrare": "index.js",
+  "permisiuni": []
+}

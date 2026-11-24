@@ -2278,34 +2278,43 @@ it, and the app’s interface stays the same.
 
 - The **Extensions** button (the puzzle piece next to the instance name) opens the menu: the installed extensions, each
   with its icon (one without an icon has the puzzle piece), then **Extension library…**. A click on an extension opens its
-  window, and its icon is on its tab too. When the library has a newer version of an installed extension, its row shows the
-  versions (“18.6.0 → 18.20.0”) and **Update**: it brings the new version in one click, with its data. If the new version
-  asks for something more, a window says what first, and there **Update** installs it; at the end, **Open** opens its
+  window, and its icon is on its tab too. An installed extension also opens from **Search commands** (Ctrl+K): “Open Easy
+  3Draw”. A dot on the button says an installed extension has a new version in the library: the app knows it from the last
+  time you opened the menu or the library (it asks for nothing at startup), and the dot goes away after you update or remove it. When the library has a newer version of an installed extension, its row shows the
+  versions (“18.6.0 → 18.20.0”) and **Update**: it brings the new version in one click, with its data. An open extension saves its
+  work first, then reopens by itself at the new version; if it has changes it cannot save, it asks you first, and **Stay**
+  stops the update. If the new version
+  asks for something more, a window first says what it asks for and what is new since your version, and there **Update** installs it; at the end, **Open** opens its
   window and **Close** leaves it for later.
 - The **Extension library** is a window, opened from the menu or from **Search commands** (Ctrl+K), from anywhere: the
-  list on the left, the page of the chosen extension on the right. **All** shows
+  list on the left, the page of the chosen extension on the right. **Library** shows
   our extensions, published together with the app, for example Easy 3Draw; **Installed** shows the ones in this browser,
   including those that came from outside the library. An extension’s page has its icon and name, who publishes it, the
-  version and the size, a few captures, the description, **What it can do** (one row for each thing the extension asks for)
-  and **What’s new**. The action is at the top of the page: **Install** downloads the package, checks it against its
+  version and the size, a few captures (on a desktop, a click on one enlarges it: ← and → go to the others, Escape closes it), the description, **What it can do** (one row for each thing the extension asks for, with the
+  most sensitive one, the machine, first and marked) and **What’s new** (with the date of each version, where it is written). The action is at the top of the page: **Install** downloads the package, checks it against its
   fingerprint in the library and keeps it in this browser (it works offline too); **Update to …** brings the new version,
   with its data, and “What’s new” then shows only what appeared since your version; **Open** opens its window; **Remove**
-  deletes it, after a question. On a phone, the list and the page come one at a time: a row opens its page, and **Back to
+  deletes it, after a question (also while the library has a new version). On a phone, the list and the page come one at a time: a row opens its page, and **Back to
   the list** (‹) takes you back. From the keyboard: ← and → switch the tab, ↑ and ↓ move between the rows of the list,
   Enter opens the row’s page, and Escape closes the library. The library is read each time it opens and needs an internet connection; without one,
-  **Try again** asks for it again, and installed extensions stay under **Installed** and work as before. A link like
+  the window switches to **Installed** by itself (installed extensions work as before), and **Try again** asks for the
+  library again. With no extension installed, the page shows the two ways from outside the library. A link like
   `…/#biblioteca=trenulet` opens the library on Easy 3Draw’s page; nothing downloads without your click.
 - At the end of the list, “From outside the library”: **Install from file (.zip)…** takes a `.zip` package, and **Install
   from address…** asks for the **Package address** (HTTPS), then **Download**; the host must allow downloads from other
   pages, otherwise you download the file yourself and install it from the file. A link like `…/#instaleaza=<address>` opens
   the same window with the address filled in; nothing downloads without your click. A package installed this way comes from
-  outside the library, and the window says so.
+  outside the library, and the window says so. An extension’s `.zip` package dropped on the sheet opens the same confirmation
+  window; any other `.zip` archive stays with Import, which says archives can’t be imported.
 - Before installing such a package, the window asks you with the extension’s name (“Install “Easy 3Draw”?”) and shows its
   icon, the version, where the package comes from, its files and their size and, if there is one, the version it replaces. Under
   **What it can do** there is one row for each thing the extension asks for (for example, **Data in this browser**: it
   keeps its data in this browser). For a new version that asks for something more, the list **The new version can also**
-  comes first, highlighted. **Install** keeps it in this browser (it works offline too); **Cancel** changes nothing. A
-  damaged or wrong package is refused, with the reason.
+  comes first, highlighted. **Install** keeps it in this browser (it works offline too); **Cancel** changes nothing.
+- A damaged or wrong package is refused in a window of its own, “The package can’t be installed”, with the file name (or
+  the address) and the reason, in plain words. **Choose another file…** opens the file picker again, **Another address…**
+  takes you back to the address, and **Close** changes nothing. When a package from the library could not be downloaded,
+  **Try again** asks for it once more.
 - An extension that asked for it keeps its data (for example, its circuits) in this browser, at most 16 MB. A new version of
   it keeps them.
 - An extension that asked for it can save files (for example, the G-code or the parts to print) as ordinary browser
@@ -2320,14 +2329,19 @@ it, and the app’s interface stays the same.
 - The extension also gets the app’s language. Easy 3Draw speaks Romanian or English, following **Language** in the
   top bar; when you change the language, it restarts by itself, after saving its work (the layout, the settings, the
   workshop). The comments in the G-code stay in Romanian, as in the app’s own export.
-- A click on an extension in the menu opens its window: a tab with its name appears next to **Design** and **Machine**, and
-  below it, on the whole screen, sits the extension. Switch to another window any time: the extension stays open, with what
+- A click on an extension in the menu opens its window: a tab with its name appears next to **Design** and **Machine** (a
+  long name is cut with “…”), and in the menu its row is marked with a dot and “open”. Below it, on the whole screen, sits the extension. Switch to another window any time: the extension stays open, with what
   you did in it, and a drawing command picked from **Search commands** takes you to Design first. **×**, next to its name,
   closes the extension: first it gives it a few seconds to save what it had to save (Easy 3Draw then saves its
   circuit, its settings and its workshop). If unsaved changes are still left, it asks you: **Stay** (or Escape) keeps it
   open, **Close anyway** closes it, and the changes are lost. Likewise, while the extension has unsaved changes, reloading or
-  closing the tab asks you, through the browser’s window. After the page reloads, the app starts without the extension. F1
-  opens this chapter.
+  closing the tab asks you, through the browser’s window. After the page reloads, the app reopens the extension you were in;
+  one you closed, or one that didn’t start, is not reopened. F1 opens this chapter.
+- If an extension doesn’t start, its window says so (“… didn’t start”) and gives you three ways out: **Try again** starts
+  it once more, **See in the library** opens its page (where you can update or remove it), and **Close** closes it. Your
+  drawing and projects are untouched. Under **Details** are the error, the version and where the package came from, to
+  send to its author (**Copy**). The same ways out appear when starting takes over 10 seconds (“… is slow to start…”),
+  without stopping it.
 - An extension that asked for it can use the machine, through the **Machine** window: it sees its state (the connection, the
   job with its percentage, the loaded program), loads a G-code program, checked like one loaded with **File…** (the Machine
   window writes next to it where it came from), pauses and stops the job. To start or resume the job, it asks you first, in

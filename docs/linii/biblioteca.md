@@ -1,4 +1,86 @@
-# Biblioteca extensiilor (3.Xg, 3.Xh)
+# Biblioteca extensiilor (3.Xg, 3.Xh, 3.Xi)
+
+## 3.Xi: stările de lângă drumul bun (gata, neunită, în cloud)
+
+_Aceeași linie și aceeași ramură (`wip/3.Xh-biblioteca-ui`, adusă la `main` `df9ae53` pe 24.11, fără ciocniri: ramura era
+toată în `main`). Starea: **ADR 0232 acceptat pe 24.11 („am raspuns”: 1a, 2a, 3a, 4a, 5a, fără note) și implementat în aceeași zi: 3.Xi-1 (stările
+rupte), 3.Xi-2 (claritatea), 3.Xi-3 (descoperirea). PR-ul `AndreiBesliu/cvs2#17`, de unit de sesiunea principală, după
+completul verde. Pachetele nu s-au schimbat: Easy 3Draw e 18.22.0 (din 3.Ts, venit cu `main`), deci următoarea versiune e 18.23.0.**_
+
+Cererea owner-ului (23.11, după unirea lui 3.Xh): „vreau sa faci un audit si sa imi spui ce ai imbunatatie la UI/UX-ul
+functiei de extensii”. La auditul cu 14 constatări și la oferta „fac din ele ADR 0232 propus, cu schița, împărțit pe
+felii”: „ok” (24.11).
+
+- **Auditul (23.11, fără cod de produs):** aplicația construită, parcursă cu Playwright: aproape 40 de capturi (birou,
+  telefon, tema întunecată, engleză) și măsurători. Cele 14 constatări și ce merge bine sunt în ADR 0232, „Ce e azi”.
+- **ADR 0232 propus (24.11):** trei felii: 3.Xi-1 stările rupte (starea „n-a pornit” cu trei ieșiri, actualizarea cu
+  redeschidere, extensia ținută minte la reîncărcare, fereastra refuzului, „Rămân” principal); 3.Xi-2 claritate (fraza
+  izolării și ordinea permisiunilor, filele, lipsa internetului, extensia deschisă în meniu, fila ei, măruntele); 3.Xi-3
+  descoperire (captura mărită, `.zip`-ul pe planșă, paleta, „ce e nou” la actualizare cu data, punctul versiunii noi).
+  Pornirea +0 (mai sunt 0,6 kB până la plafon), totalul estimat +5 kB din 900.
+- **Schița:** <https://claude.ai/artifact/31cWBjVheUbymkfErCmcSy> (privată, a owner-ului): fiecare constatare cu
+  captura de azi și macheta propusă; formularul în baza ei, colecția `raspunsuri`, documentul `owner` (`q1`–`q5`, notele
+  `q1n`–`q5n`, `text`, `la`). La publicare, colecția era goală.
+- **Întrebările** (recomandarea e „a” la toate): 1 vestea despre o versiune nouă (punctul din ce se știe deja, fără
+  cerere la pornire); 2 câte extensii stau deschise deodată (una); 3 reîncărcarea paginii (redeschide extensia); 4 un
+  `.zip` de extensie lăsat pe planșă (confirmarea instalării); 5 cât facem (toate trei feliile).
+- **24.11: rapidul verde pe propunere** (`bc9da1c`, PR-ul ciornă `AndreiBesliu/cvs2#17`); apoi `main` adus (`fafb95e`:
+  25.8↑b), la vestea de ciocnire de pe PR: doar DEVLOG-ul, rezolvat cu `scripts/rezolva-devlog.py`. Ramura n-are cod al ei:
+  codul e al lui `main`.
+- **24.11, răspunsurile owner-ului: „am raspuns”** (formularul: 1a, 2a, 3a, 4a, 5a, fără note): punctul versiunii noi din ce
+  se știe deja; o singură extensie deschisă; extensia redeschisă la reîncărcare; `.zip`-ul pe planșă deschide confirmarea;
+  toate cele trei felii, în ordine.
+- **Uneltele auditului** stau în `.tmp/audit-extensii/` (ignorat): `audit.mjs` (grupele A–D: drumul întreg, actualizările,
+  catalogul oprit sau stricat, telefonul, tema, engleza; `AUDIT_OUT`, `AUDIT_DOAR`, `AUDIT_SCARA`), `audit2.mjs`
+  (contrastul prin pânză, tastatura, pornirea eșuată, țintele pe telefon), `audit3.mjs` (reîncărcarea, `.zip`-ul lăsat pe
+  planșă, paleta). Rulează pe `vite preview` (4173), cu Chrome.
+
+**Ce s-a făcut (24.11), pe scurt** (amănuntele, în ADR 0232, „Implementat”):
+- **3.Xi-1** (`db4e087` … `b4a283d`): starea „n-a pornit” / „pornește greu” (`StarePornire.tsx`), versiunea nouă peste
+  extensia deschisă (`inainteDeInlocuire`, `dupaInlocuire`), extensia ținută minte (`tinuta.ts`), fereastra refuzului
+  (`motivText.ts`), „Rămân” principal. Otrăvurile 55 / 56.
+- **3.Xi-2** (`8ab8dfb`, `e7eac72`): ordinea permisiunilor (`dupaSensibilitate`), filele, biblioteca fără catalog, meniul
+  cu extensia deschisă, fila ei, focusul și Escape în fereastra bibliotecii. Otrăvurile 41 / 43.
+- **3.Xi-3** (`690f4da`): captura mărită (`CapturaMarita.tsx`), `.zip`-ul lăsat pe planșă, paleta și punctul
+  (`descoperire.ts`, `noi.ts`), `data` în „ce e nou”, „Scoate” lângă „Actualizează la …”. Otrăvurile 60 / 60 (`8b36ba8`; la prima rulare, 54 din 62).
+- **Mărimea:** pornirea neschimbată, totalul +3,8 kB (804,7 → 808,5). După aducerea lui `main` (`f536a4c`, cu plafonul
+  pornirii 120 kB, ADR 0145): pornirea 109,9 kB (cu ușa 114,4; cu Atelierul 114,7 / 120), totalul 809,9 / 900.
+- **`main` adus pe 24.11**, de trei ori: `f536a4c` (ciocnirea, doar în catalogul controalelor, scris din nou; rândul
+  18.22.0 al lui Easy 3Draw a primit `data`), `4123347` (doar documente; DEVLOG-ul) și `4ef990f` (A.7, adminul pe telefon:
+  cod doar în `src/admin`; ciocnirea, doar în dicționarul traducerilor, cu ambele părți păstrate).
+- **Porțile în CI:** rapidul și completul, verzi pe `cd40988` (completul, 48 min 30 s); după el, capătul are doar
+  documente și ce a venit din `main`. Local: suita unitară întreagă, 10 130 trecute (12 sărite), nicio cădere.
+- **Canalul `biblioteca`:** <https://cncvectorstudio-test--biblioteca-gw7dr9bc.web.app> (până pe 24.12.2026), publicat
+  din `5e096e3` cu `canal.yml`; verificat din container (versiunea, catalogul cu datele, textele noi).
+
+**Reguli rămase de la 3.Xi:**
+- **Un buton care dispare după clic lasă focusul pe pagină** (`body`): o fereastră cu astfel de
+  butoane („Instalează” devine „Deschide”, „Reîncearcă” dispare, „Actualizează” din rândul meniului) își întoarce singură
+  focusul și își închide Escape și de pe pagină. Proba: după clic, `toBeFocused()` pe ce urmează, apoi Escape.
+- **O permisiune nouă a catalogului își cere locul** în `ORDINE_SENSIBILITATE` (`src/extensii/pachet.ts`):
+  `extensii.permisiuni.test.ts` cade până atunci.
+- **Paleta și gazda extensiilor nu se importă una pe alta** (doar tipul cererii, `import type`): vorbesc prin evenimentul
+  `cncvs2-extensii` de pe `window`, cu numele scris în amândouă. Un import adevărat ar lega bucățile și ar atinge pornirea.
+- **O probă care așteaptă o stare după o cerere de rețea oprită numără cererile** (`expect.poll` pe contor), apoi se uită:
+  altfel judecă starea de dinaintea răspunsului (otrava B04).
+- **O probă veche care înșiră gesturile unei pagini le fixează:** `['Actualizează la …', 'Deschide']` ținea ascuns că
+  lipsea „Scoate”. Când o listă pare scurtă, întreabă de ce.
+- **În container, e2e-ul merge și pe al doilea port**, cât o rulare de otrăvuri ține 4173: `.tmp/pw2.config.ts` (copia lui
+  `pw.config.ts` cu 4174 și `npx vite preview --port 4174 --strictPort`). Cu patru procesoare, două rulări deodată țin.
+- **`data` din „ce e nou”** e la alegere; rândul nou al unei versiuni (regula din 3.Xh) o poate primi, ca `"data":
+  "2026-11-24"`.
+
+**Capcane găsite la audit:**
+- **O extensie „stricată” se face împachetând un dosar al ei** (`impacheteaza(<dosar>)`, cu o intrare care aruncă în
+  `deschide`): un pachet bun cu un fișier schimbat de mână e refuzat la instalare de amprenta SHA-256 a fișierului, deci
+  nu ajunge niciodată la pornire.
+- **Contrastul se măsoară pictând culoarea pe o pânză** (`fillStyle`, apoi `getImageData`), cu alfa amestecat peste
+  fondul adevărat: jetoanele sunt `oklab(...)`. Măsurat așa: subtextele 6,1 : 1, linkurile 5,4 : 1, butonul principal
+  5,7 : 1 (tema luminoasă); 6,1, 7,2 și 8,9 (cea întunecată).
+- **Un traseu ținut cu `page.route` trebuie eliberat înaintea lui `unroute`** (`route.continue().catch(() => {})`),
+  altfel scriptul cade cu „Route is already handled”.
+- **Scheletul bibliotecii și „Pornesc extensia…” nu se prind pe captură** fără întârziere pusă anume: catalogul vine pe
+  loc, iar Easy 3Draw pornește în 0,2 s.
 
 ## 3.Xh: interfața nouă a bibliotecii (în lucru, în cloud)
 

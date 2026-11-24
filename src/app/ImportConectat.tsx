@@ -80,7 +80,8 @@ type Props = {
  */
 function stareInitiala(f: File): StareDialog {
   const baza = { fisier: null, nume: f.name, ...ALEGERI, pxAutomat: false } as const;
-  if (formatImport(f.name, f.type) === null) return { ...baza, stare: { ok: false, cod: 'tip' } };
+  // O arhivă are fraza ei (ADR 0232 §C.13): o extensie lăsată aici se instalează din meniul Extensii.
+  if (formatImport(f.name, f.type) === null) return { ...baza, stare: { ok: false, cod: /\.zip$/i.test(f.name) ? 'zip' : 'tip' } };
   if (f.size > PLAFON_IMPORT.octeti) return { ...baza, stare: { ok: false, cod: 'octeti', detaliu: String(f.size) } };
   return { ...baza, stare: 'citire' };
 }

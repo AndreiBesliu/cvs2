@@ -92,7 +92,7 @@ test('contul, cu permisiunea cont: conectat, numele și planul; ieșirea, venit�
   }, TOATE);
   await page.goto('/');
   await instaleaza(page, await varianta({ permisiuni: ['stocare', 'cont'] }),
-    [...STOCARE, 'Contul (nume, plan) vede dacă ești conectat, cu ce nume și ce plan (nu adresa, nu parola)']);
+    ['Contul (nume, plan) vede dacă ești conectat, cu ce nume și ce plan (nu adresa, nu parola)', ...STOCARE]);
   await deschide(page);
   const c = cadru(page);
   await expect(c.locator('[data-salut="cont"]')).toHaveText('Contul: Ana (personal)');
@@ -204,7 +204,8 @@ test('altă extensie, sau o versiune nouă instalată, peste una nesalvată: în
   await expect(page.getByTestId('extensie-deschisa')).toHaveText('Salut 2');
   await expect(page.getByTestId('spatiu-extensie')).toHaveAttribute('data-stare', 'pornit');
 
-  // O versiune nouă a extensiei deschise, cu lucru nesalvat: după instalare, întrebarea; „Închide oricum” o închide.
+  // O versiune nouă a extensiei deschise, cu lucru nesalvat (ADR 0232 §A.2): întrebarea vine înaintea instalării, iar „Închide
+  // oricum” o instalează și redeschide extensia la versiunea nouă, fără altă întrebare.
   await c.locator('[data-salut="modifica"]').click();
   await page.locator('[data-extensii="fisier-ales"]').setInputFiles({
     name: 'salut2-1.0.1.zip', mimeType: 'application/zip', buffer: await varianta({ id: 'salut2', nume: 'Salut 2', versiune: '1.0.1' }),
@@ -212,7 +213,10 @@ test('altă extensie, sau o versiune nouă instalată, peste una nesalvată: în
   await page.locator('[data-extensii="instaleaza"]').click();
   await expect(intrebare).toContainText('Închizi „Salut 2”?');
   await page.locator('[data-extensii="inchidere-inchide"]').click();
-  await expect(page.locator('iframe.cadru-extensie')).toHaveCount(0);
+  await expect(c.locator('[data-salut="deschideri"]')).toHaveText('Deschideri: 2');
+  await expect(c.locator('[data-salut="lucru"]')).toHaveText('Lucrul: salvat');
+  await expect(intrebare).toHaveCount(0);
+  await expect(page.getByTestId('extensie-deschisa')).toHaveText('Salut 2');
 });
 
 test('repornirea cerută de extensie (ADR 0165): cadrul se reface, cu contextul de acum; cel mult o dată la 2 s, cererile dese adunate; închiderea o oprește', async ({ page }) => {
@@ -245,7 +249,7 @@ test('repornirea cerută de extensie (ADR 0165): cadrul se reface, cu contextul 
   expect(await eroriJurnal(page)).toEqual([]);
 });
 
-const FORME = [...STOCARE, 'Formele din desen primește formele pe care i le trimiți din desen și îți propune forme pentru desen (le adaugi tu, din Importă)'];
+const FORME = ['Formele din desen primește formele pe care i le trimiți din desen și îți propune forme pentru desen (le adaugi tu, din Importă)', ...STOCARE];
 /** Un dreptunghi de 40 × 20 mm cu o gaură rotundă, importat și ales: forma pe care o trimite omul. */
 async function formaAleasa(page: Page): Promise<void> {
   const svg = '<svg xmlns="http://www.w3.org/2000/svg" width="40mm" height="20mm" viewBox="0 0 40 20">'
