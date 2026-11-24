@@ -344,7 +344,7 @@ export function DesenGolire({ c, diametru, pas, paralel, unghi }: {
     <g transform={paralel ? `rotate(${r(90 - a)} 130 68)` : undefined}>
       {cx.map((x, i) => <rect key={`u${i}`} className="urma" data-trecere-laterala={i + 1} x={r(x - R * k)} y={y0} width={r(diametru * k)} height={y1 - y0} />)}
       {cx.map((x, i) => (<g key={`d${i}`}>
-        <path className="d" d={`M${r(x)} ${y0 + 4}V${y1 - 8}`} /><Sv x={x} y={y1 - 3} g={90} c="dv" />
+        <path className="d" data-linie-laterala d={`M${r(x)} ${y0 + 4}V${y1 - 8}`} /><Sv x={x} y={y1 - 3} g={90} c="dv" />
         <circle className="c slab" data-freza-laterala cx={r(x)} cy={68} r={r(R * k)} />
       </g>))}
       {!paralel && <Cota pentru="pas-lateral" c={c} x1={cx[0] ?? 0} y1={14} x2={cx[1] ?? 0} y2={14} text={c.f(pas)} tx={(cx[1] ?? 0) + 6} ty={18} anc="start" />}

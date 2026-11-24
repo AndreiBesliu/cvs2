@@ -201,6 +201,12 @@ test('buzunarul: traseul și coborârea pe cartonașe; trecerile laterale, cobor
   await expect(g.locator('[data-trecere-laterala]')).toHaveCount(3);
   await e1.locator('[data-camp="unghi-paralel"]').fill('30');
   await expect(g.locator('[data-cota="unghi-paralel"]')).toContainText('30°');
+  // Drumul unei treceri e înclinat cât unghiul liniilor: cutia lui are înălțimea / lățimea = tan 30°.
+  const panta = await g.locator('[data-linie-laterala]').first().evaluate((e) => {
+    const b = e.getBoundingClientRect();
+    return (Math.atan2(b.height, b.width) * 180) / Math.PI;
+  });
+  expect(Math.abs(panta - 30)).toBeLessThan(2);
   await expect(e1.locator('[data-grup="coborare"]')).toHaveCount(0);
   await alege(e1, 'strategie', 'inele');
 
