@@ -104,7 +104,8 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   `test/oracles/document.ts` (peste partea v1–v10), cazurile pe hârtie la finalul lui `test/oracles/document.cazuri.ts`, proba
   cu ușa aplicației în `test/unit/document.v22.oracol.test.ts` (din 08.11, cu incrustațiile din v20–v22) și, pentru v23 (literele
   plăcuțelor, 11.4↑, în `main` din 13.11), în `test/unit/document.v23.oracol.test.ts`. **Un câmp nou al documentului
-  (v28; v27, cu `biblioteca`, `regim` și `tais` pe frezele operațiilor, ADR 0300, e în `main` din 24.11) intră acolo, ca rangul și incrustația:** rândul
+  (v29; v28, cu forma `relief`, ADR 0310, e în `main` din 24.11; v27, cu `biblioteca`, `regim` și `tais` pe frezele
+  operațiilor, ADR 0300) intră acolo, ca rangul și incrustația:** rândul
   lui în `CAMPURI_NOI_O` (ciocnirea migrării), judecata în `problemeOperatieO`, frontierele pe hârtie, iar probele care țin
   versiunea curentă se mută pe ea (`schema: 23` în probe; oracolele CAM primesc versiunea nouă cum le primesc pe v21 și v22,
   de exemplu `test/oracles/regiune.ts`). **Și în corpusul de aur
@@ -321,8 +322,8 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   buzunarul, liniile paralele, frezele de rest, găurirea, V-ul, fundul plat, dopurile), turația primei freze montate
   și a celei noi la schimbare. **Fără valori, programul de azi, octet cu octet;** același T cu două turații și o
   adâncime peste tăiș se refuză. Fără interfață încă: urmează 16.A↑b-2 (lista „Freza” pe rândurile exportului și în
-  Tăierea) și 16.A↑b-3 (nota schimbării din bibliotecă). **Un câmp nou al documentului ia v28. O probă e2e care citește
-  documentul salvat cere versiunea curentă:** `placute.spec.ts` a căzut în completul liniei cu `schema: 26`.
+  Tăierea) și 16.A↑b-3 (nota schimbării din bibliotecă). **Un câmp nou al documentului ia v29 (v28 e relieful, ADR 0310). O probă e2e care
+  citește documentul salvat cere versiunea curentă:** `placute.spec.ts` a căzut în completul liniei cu `schema: 26`.
   **Biblioteca de freze în cont (ADR 0300 §3, §7, felia 16.A↑c)** gata pe 24.11, unită în `main` pe 24.11
   (`6b74074d`), la „b, pornește 16.A↑c” al owner-ului: callable-ul `freze` (`functions/src/freze/`, contractul în
   `shared/freze.ts`); frezele omului stau pe server în `conturi/{uid}/freze/{id}`, ca text JSON neatins, fiecare cu
@@ -1083,6 +1084,21 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   `tichete.emulator.spec.ts`. Id-urile feliilor primesc după cratimă doar cifre (`RE_ID` din `scripts/documentatie.ts`):
   „a-3”, nu „a-3a”. Urmează 10.4↑a-4 (panoul cotei, lista, „Arată cotele”), la cuvântul owner-ului. Felia: pornirea
   +0,2 kB, totalul +6,9 kB.
+  **Relieful din imagine, pe planșă (ADR 0310, ADR 0311, felia 18.1↑a, adusă din etapa 18; documentul v28)** gata pe
+  24.11, în sesiunea cloud a liniei (ramura `wip/18.1-relief`), unită în `main` pe 24.11 (`c5b79526`). ADR 0310,
+  acceptat de owner cu „1a–6a”. Din „Importă…”, o imagine (PNG, JPEG, WebP, GIF, BMP) se face **relief** cu alegerea
+  Vectori / Relief din capul ferestrei: sursa (luminanța sau un canal), sensul, înălțimea și baza, lățimea (o celulă =
+  un pixel), netezirea. „Importă” pune piesa, cu un element de forma `relief`; pe planșă relieful se vede umbrit, sub
+  vectori, iar panoul are secțiunea Relieful. **Nu se taie încă** (degroșarea și finisarea vin în 18.1↑c, cu freza
+  bilă în document, în v29, stabilită cu linia frezelor). Nucleul e `src/relief/` (grila, dalele de 256 × 256 în
+  Uint16 cu scară pe dală, harta, compunerea; doar + − × ÷ √ min max, deci amprenta Node = browser), calculat în
+  workerul reliefului (`src/jobs/lucratorRelief.ts`, `calculRelief.ts`); dalele stau în browser (IndexedDB
+  `cncvs2-relief`, după amprentă), iar documentul ține doar amprenta hărții fiecărui strat. Oracolul independent:
+  `test/oracles/relief.ts`, cu cazurile pe hârtie în `relief.cazuri.ts`. **`src/relief` importă doar geometria și
+  modelul** (regula `relief-doar-model-geom`). **Uneltele vectorilor refuză un element-relief cu motivul lor; cine
+  citește conturul unui element ia `chenarElement` pentru relief** (cotele, lipirea). **În codul vederii 3D,
+  „relieful” (`ReliefSimulat`, `reliefPentru`) e câmpul simulării, nu modelul de aici.** Felia: pornirea +0,5 kB (cu
+  ușa +0,9), totalul +12,7 kB.
   **Raportările (15.B↑b) și imprimanta (3.6g, 3.6h, 3.6i pașii 1–2; ADR 0191 acceptat, codul 3.6j încă pe ramură) unite în
   `main` pe 07.11**, peste biblioteca extensiilor (`b501571`, `6e61bee`, apoi `e9cf6ee` cu DEVLOG-ul bibliotecii): **pornirea
   101,7 (cu ușa 105,3 / 110 kB), totalul 535,0 / 550, /admin 106,5 / 200, contul 29,6 / 32.** **Pe test (și pe live), serverul
@@ -1582,6 +1598,18 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 24.11.2026, noaptea (a douăzeci și cincea unire din cloud): **relieful din imagine, pe planșă (18.1↑a), unit în
+  `main`, cu documentul v28**, singur în lotul lui (sesiunea principală, ramura `unire-2411ac`, peste lotul 26).
+  Linia reliefului, ramura `wip/18.1-relief`, `feb7bee1`, PR-ul `AndreiBesliu/cvs2#25` (ADR 0310, acceptat de owner
+  cu „1a–6a”, în schița liniei; ADR 0311, contractul nucleului), unită în `c5b79526`: din „Importă…”, o imagine se
+  face relief (sursa, sensul, înălțimea și baza, lățimea, netezirea); piesa are un element de forma `relief`, văzut
+  umbrit pe planșă, sub vectori, cu secțiunea Relieful în panou; dalele stau în browser, iar documentul ține doar
+  amprenta hărții lor. Nu se taie încă: degroșarea și finisarea vin în 18.1↑c. Oracolul a fost scris înaintea
+  nucleului; otrăvurile 43 / 43. **Documentul trece pe v28: un câmp nou ia de acum v29**, iar numărul îl dă sesiunea
+  principală, la cerere. Linia își adusese `main` de trei ori și rezolvase ea ciocnirile de cod (`App.tsx`,
+  `src/model/cote.ts`, `src/model/formaFrezei.ts`); la unire au rămas doar jurnalul feliilor, registrul otrăvurilor
+  și catalogul controalelor (scris din nou, 641 de nume). Nimic pe server. Porțile lotului, în CI, pe `c5b79526`
+  @@P27@@
 - 24.11.2026, seara (a douăzeci și patra unire din cloud): **frezele: profilurile parametrice (16.A↑h-5) și freza din
   bibliotecă pe rândurile exportului (16.A↑b-3), unite în `main`**, în lot (sesiunea principală, ramura `unire-2411ab`,
   peste lotul 25, cu care a intrat în aceeași împingere). **16.A↑h-5** (linia frezelor, ramura `wip/16.A-freze`,
