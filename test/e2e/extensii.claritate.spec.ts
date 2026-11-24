@@ -122,17 +122,24 @@ test('fără internet, o extensie instalată din bibliotecă nu e spusă „din 
 
 test('fără internet: omul care alege „Din bibliotecă” rămâne acolo; catalogul stricat are banda lui', async ({ page }) => {
   let raspuns: 'cade' | 'stricat' = 'cade';
-  await page.route('**/extensii/catalog.json', (r) => (raspuns === 'cade'
-    ? r.abort('failed') : r.fulfill({ status: 200, contentType: 'application/json', body: '{"format":"altceva"}' })));
+  let cereri = 0;
+  await page.route('**/extensii/catalog.json', (r) => {
+    cereri += 1;
+    return raspuns === 'cade' ? r.abort('failed') : r.fulfill({ status: 200, contentType: 'application/json', body: '{"format":"altceva"}' });
+  });
   await page.goto('/');
   await instaleaza(page, 'salut-1.0.0.zip', Buffer.from(SALUT));
   let b = await deschideBiblioteca(page);
   await expect(b.locator('[data-extensii="fila-instalate"]')).toHaveAttribute('aria-selected', 'true');
   await b.locator('[data-extensii="fila-toate"]').click();
   await expect(b.getByTestId('biblioteca-lista')).toContainText('Biblioteca are nevoie de internet.');
-  // „Reîncearcă”, tot fără internet: fila aleasă de om nu se schimbă.
+  // „Reîncearcă”, tot fără internet: după ce cererea a căzut din nou, fila aleasă de om e tot ea, cu mesajul ei.
+  const inainte = cereri;
   await b.locator('[data-extensii="biblioteca-reincearca"]').click();
+  await expect.poll(() => cereri).toBeGreaterThan(inainte);
+  await expect(b.getByTestId('biblioteca-lista').locator('[role="alert"]')).toHaveText('Biblioteca are nevoie de internet.');
   await expect(b.locator('[data-extensii="fila-toate"]')).toHaveAttribute('aria-selected', 'true');
+  await expect(b.getByTestId('biblioteca-fara-catalog')).toHaveCount(0);
   // „Reîncearcă” a plecat de pe ecran cât s-a cerut catalogul: focusul s-a întors în fereastră, pe fila aleasă.
   await expect(b.locator('[data-extensii="fila-toate"]')).toBeFocused();
   await page.keyboard.press('Escape');
@@ -172,7 +179,10 @@ test('fără internet și fără nicio extensie: pagina arată drumurile din afa
   const gol = b.getByTestId('pagina-goala');
   await expect(gol).toContainText('Poți instala o extensie și din afara bibliotecii');
   await expect(gol.locator('button')).toHaveText(['Instalează din fișier (.zip)…', 'Instalează din adresă…']);
-  // Butoanele paginii fac ce fac și cele de sub listă.
+  // Butoanele paginii fac ce fac și cele de sub listă: alegerea unui fișier, fereastra adresei.
+  const alegere = page.waitForEvent('filechooser');
+  await gol.locator('[data-extensii="pagina-din-fisier"]').click();
+  expect((await alegere).isMultiple()).toBe(false);
   await gol.locator('[data-extensii="pagina-din-adresa"]').click();
   await expect(page.getByTestId('extensii-adresa')).toBeVisible();
 });
