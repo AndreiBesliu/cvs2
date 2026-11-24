@@ -12588,6 +12588,11 @@ PR-ul `AndreiBesliu/cvs2#13` („De unit acum (A.9a, A.9b): `dbb0306a`”).
   scăpaseră întâi: 0,3 · 800 e exact 240 în virgulă mobilă, iar zona îngustă de probă nu atingea toleranța.
 - **Mărimea:** totalul 804,3 / 900 kB (+4,7), pornirea 109,7 / 115 (+0,3, în `App.tsx`), cu ușa 114,2, cu Atelierul
   114,5 / 115 (rămân 0,5 kB).
+- **Porțile, în CI, verzi la prima trecere:** pe `88cdefb4` (felia), rapidul și completul (51 min 34 s): unit 10 057 / 0
+  (12 sărite, pe Linux), e2e 649 / 649, funcțiile pe emulatoare 120 / 120, paginile 50 / 50. Cu `main` `df9ae539` adus (A.10
+  și A.11a; ciocnirea doar în DEVLOG), pe `01474f96`, rapidul și completul (51 min 40 s): unit 10 066 / 0 (12 sărite), e2e
+  649 / 649, funcțiile pe emulatoare 122 / 122, paginile 51 / 51; pornirea 109,8 / 115 (cu ușa 114,3, cu Atelierul 114,6:
+  rămân 0,4 kB), totalul 804,7 / 900, `/admin` 135,0 / 200.
 - **Documentele:** ADR 0272 („Implementarea (25.8↑b)”, precizările la §6, §10), indexul ADR, manualul (ro, en), fișa etapei 3
   (jurnalul, încercarea în coada owner-ului), traducerile roadmap-ului, `CLAUDE.md`, nota liniei.
 

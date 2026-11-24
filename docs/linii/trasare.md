@@ -182,7 +182,9 @@ Pornită pe 07.11.2026 de sesiunea principală, după ce owner-ul a întrebat ce
   (`src/app/ModImagine.tsx`, la cerere, cu banda urechilor; partea pură `src/app/modImagineCalcul.ts`): două capete pe
   imagine (Shift: pe axa ei), trase, distanța în bandă, scalarea în jurul primului; zona trasă (în cadrul imaginii) ori toată
   imaginea deschide fereastra cu `dinFoaie` (scara `latimeIntreaga`, fără Mărime și îndreptări), iar `ImportPregatit.peImagine`
-  pune vectorii peste ea. Raportul foilor: numele imaginilor (CSV-ul neschimbat). Otrăvurile 46 / 46. Lecții: (1) cadrul
+  pune vectorii peste ea. Raportul foilor: numele imaginilor (CSV-ul neschimbat). Otrăvurile 46 / 46. PR-ul
+  `AndreiBesliu/cvs2#14`, cu `main` `df9ae539` adus (`01474f96`); completul verde la prima trecere (unit 10 066 / 0, e2e
+  649 / 649, emulatoarele 122 / 122 și 51 / 51); pornirea cu Atelierul 114,6 / 115, totalul 804,7 / 900. Lecții: (1) cadrul
   selecției, textul, Pen-ul și mânerele ascultă pe `window` la captură, deci înaintea unui mod al pânzei pus pe cutia ei:
   modul trece prin `Editare.activ`, iar ele îl respectă (Pen-ul doar își oprește clicurile și tastele, desenul rămâne);
   (2) o probă e2e care pornește un mod la cerere așteaptă banda lui înainte de primul clic (altfel clicul ajunge la pânză);
