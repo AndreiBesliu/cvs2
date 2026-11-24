@@ -12663,5 +12663,19 @@ PR-ul `AndreiBesliu/cvs2#13` („De unit acum (A.9a, A.9b): `dbb0306a`”).
 - **Manualul** (ro, en), ADR 0290 („Implementarea 28.8↑d-1”), fișa etapei 3, registrul otrăvurilor, nota liniei.
 - **Mărimea:** totalul 812,7 / 900 (+1,3 kB), pornirea neschimbată.
 
-**Completed:** 24.11, 07:10.
+**Completed:** 24.11, 06:50.
+
+## 2026-11-24 — Linia exportului: felia 28.8↑d-2, banda dopului (ADR 0290)
+
+**Prompt:** răspunsul owner-ului la ADR 0290, exact: „1a, 2a, 3a, 4a” (feliile acceptate; după 28.8↑d-1).
+**Started:** 24.11, 06:50.
+
+- **Câmpurile benzii în grupul lor** (din 28.8↑a, grupul „banda” nu se arăta) și **desenul benzii**: semifabricatul dopului în
+  secțiune, pereții V, fundul benzii, decuparea prin placă și puntea; lățimea ca în câmp.
+- **Probele:** față de `valoriBanda`; e2e-ul; rapidul local 10 056 / 0.
+- **Otrăvurile:** `test/otravuri/28.8d2.py`, 11 / 11.
+- **Manualul** (ro, en), ADR 0290 („Implementarea 28.8↑d-2”), fișa etapei 3, registrul otrăvurilor, nota liniei.
+- **Mărimea:** totalul 813,4 / 900 (+0,7 kB), pornirea neschimbată. 28.8↑d e încheiată; urmează 28.8↑e.
+
+**Completed:** 24.11, 07:25.
 

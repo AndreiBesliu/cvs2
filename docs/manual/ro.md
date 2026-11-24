@@ -1594,7 +1594,8 @@ care). Fereastra are trei părți:
   pas (cât coboară, ridicarea de 1 mm, ieșirea din gaură la al câtelea pas). La un V-carve: secțiunea cu pereții tăiați de freza V
   până la adâncimea maximă și, între ei, fundul plat al frezei drepte (de la ce lățime începe), inelele V ale unei incrustații
   fără ea sau lemnul care rămâne fără fund plat. La o incrustație în V: locașul și dopul întors, cu cât intră dopul, jocul de
-  sub el, spațiul dintre plăci, unde se ating pereții și marginea dopului. Valorile stau pe cote, iar cota câmpului pe care
+  sub el, spațiul dintre plăci, unde se ating pereții și marginea dopului; cu banda îngustă, grupul ei arată semifabricatul dopului
+  în secțiune, cu banda, decuparea prin placă (la ce distanță de desen) și puntea. Valorile stau pe cote, iar cota câmpului pe care
   stai e colorată. Câte rampe face zigzagul pe o trecere se socotește pe trecerea egală, ca în program. Sub
   pas, câte treceri ies și cât scoate fiecare: trecerile sunt egale (10 mm cu pasul 4 dau 3 treceri de 3,33 mm), la fel și în
   desen. Tăietura și alegerile cu puține variante (colțurile, locurile urechilor, direcția pe linie, traseul și coborârea

@@ -415,3 +415,17 @@ cele patru aranjamente, cu harta schițelor schimbată ca la „Cu canvas-ul ara
   e2e-ul desenelor; probele incrustației aleg lemnul din jurul dopului din cartonașe.
 - **Mărimea:** totalul 811,4 → 812,7 / 900, pornirea neschimbată (109,4 / 115).
 
+## Implementarea 28.8↑d-2 (24.11)
+
+- **Câmpurile benzii trec în grupul lor.** Din 28.8↑a stăteau în grupul incrustației, iar grupul „banda” nu se randa (corpul
+  lui era gol), deși `GRUP_CAMP` le punea acolo: explicațiile lor și, acum, desenul ajungeau la incrustație.
+- **Desenul benzii:** semifabricatul dopului în secțiune (jumătatea dreaptă), cu pereții V ai dopului de la față până la S + H,
+  fundul plat al benzii pe lățimea ei (scrisă sau cea mai mică) și peretele ei înapoi la față; cu decuparea, tăietura prin
+  placă la e = H·tan(θ/2) + 0,5 mm de desen, cât freza ei, cu puntea de la fundul plăcii; fără decupare, doar banda. Valorile,
+  ca `valoriBanda`; lățimea se scrie ca în câmp (cea mai mică, rotunjită în sus la micron, `susLaMicron`).
+- **Probele:** valorile benzii față de `valoriBanda` (șase cazuri, între ele unul fără decupare, cu altă freză scrisă); e2e-ul
+  benzii în grupul ei.
+- **Mărimea:** totalul 812,7 → 813,4 / 900, pornirea neschimbată.
+- **28.8↑d e încheiată.** Urmează 28.8↑e: ale incrustației cu pereți drepți (locașul, treapta, dopul, sprijinul, jocurile,
+  punțile).
+

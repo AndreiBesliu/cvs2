@@ -1647,7 +1647,9 @@ which). The window has three parts:
   down, the 1 mm lift, leaving the hole every so many steps). On a V-carve: the section with the walls cut by the V bit down to
   the maximum depth and, between them, the straight bit's flat bottom (from what width it starts), the V rings of an inlay
   without it, or the wood that stays without a flat bottom. On a V inlay: the pocket and the turned plug, with how far the plug
-  goes in, the gap under it, the space between the boards, where the walls touch and the plug's margin. The values sit on dimension lines, and the one of the field you
+  goes in, the gap under it, the space between the boards, where the walls touch and the plug's margin; with the narrow band, its
+  group shows the plug blank in section, with the band, the cut-out through the board (how far from the design) and the bridge.
+  The values sit on dimension lines, and the one of the field you
   are on is coloured. How many ramps the zigzag makes on a pass is counted on the equal pass, as in the program. Under the
   step down, how many passes come out and
   how much each removes: the passes are equal (10 mm with a step of 4 gives 3 passes of 3.33 mm), in the drawing too. The cut
