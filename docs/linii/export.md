@@ -60,6 +60,9 @@ vreau ca ficare setare sa fie insotita de o ilustratie sugestiva, ca sa ajute us
 - **24.11: 28.8↑f-3 gata** (fișa operației ca componentă, `FisaOperatie` cu `ContextFisa`; tipurile și ajutoarele rândului în
   `exportRand.ts`), pe ramură; neunită. Otrăvurile 7 / 7. **Linia are toate feliile ADR 0290 (a–f)**; unirea, la cuvântul
   owner-ului.
+- **24.11: owner-ul a încercat fereastra pe canal** („e ok”) și a cerut închiderea la Esc și la clic în afară: **28.8↑g gata**
+  (Esc ca Închide, nu și cât fereastra e ascunsă de modul urechilor; clicul pe fundal doar cu apăsarea și ridicarea afară),
+  pe ramură; neunită. Otrăvurile 6 / 7 (E03 echivalentă azi).
 
 ## Ce s-a găsit (23.11)
 

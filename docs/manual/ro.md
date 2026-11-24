@@ -1638,7 +1638,8 @@ care). Fereastra are trei părți:
   și urechile profilului lipsesc, iar o notă sub Tăietura spune de ce;
 - **jos**, mereu la vedere: **Exportă**, **Închide**, **Raportul foilor…**, confirmările și, cât o valoare e greșită, motivul,
   cu **Du-mă la …**, care aduce fișa ei și intră în câmpul de reparat. Valoarea greșită se spune și în grupul câmpului, iar
-  fișa ei are un punct roșu în listă.
+  fișa ei are un punct roșu în listă. Fereastra se închide cu **Închide**, cu Esc sau cu un clic în afara ei; valorile
+  operațiilor schimbate în ea se scriu în proiect doar la **Exportă**.
 
 În fișele foii și mașinii alegi:
 - **colțul de origine** al foii (stânga-jos, dreapta-jos, dreapta-sus, stânga-sus): unde e zero-ul X/Y pe mașină;

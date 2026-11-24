@@ -1700,7 +1700,8 @@ which). The window has three parts:
   V-carve, the profile's ramp, lead-ins, corners and tabs are missing, and a note under Cut says why;
 - the **bottom**, always in view: **Export**, **Close**, **Sheets report…**, the confirmations and, while a value is wrong,
   the reason, with **Take me to …**, which brings its card and goes into the field to fix. The wrong value is also told in the
-  field's group, and its card has a red dot in the list.
+  field's group, and its card has a red dot in the list. The window closes with **Close**, with Esc or with a click outside
+  it; the operation values changed in it go into the project only on **Export**.
 
 On the sheet and machine cards you choose:
 - the sheet's **origin corner** (bottom left, bottom right, top right, top left): where X/Y zero is on the machine;

@@ -13275,3 +13275,16 @@ owner-ului din sesiunea ei: „ok, cand e verde fa unirea”
   11.1↑c și 14.C↑d (comenzile foii pe pânză; butonul Admin), în lucru pe `wip/11.1c-controale-foi`, cu canalul `foi`.
 - **La owner:** fereastra exportului (`#11`), verificarea juridică a utilizării aplicației înaintea live-ului, „cine
   unește în `main`”.
+
+## 2026-11-24 — Linia exportului: felia 28.8↑g, închiderea la Esc și la clic în afară (ADR 0290)
+
+**Prompt:** „ok, am testat pe canal. e ok, ce mai vreau este ca fereastra sa se inchida la 'esc' si la click in afara ei,”
+**Started:** 24.11, 14:45.
+
+- **Esc** închide fereastra exportului ca Închide, oriunde ar fi focusul; nu și cât stă ascunsă (urechile alese pe desen).
+- **Clicul pe fundal** o închide doar cu apăsarea și ridicarea afară (o tragere între fereastră și fundal, în orice sens, nu).
+- **Probele:** 1 e2e nouă în `export.fisa.spec.ts`; spec-urile e2e ale exportului, 297 / 297.
+- **Otrăvurile:** `test/otravuri/28.8g.py`, 6 / 7 (E03 echivalentă azi).
+- **Manualul** (ro, en), ADR 0290 („Implementarea 28.8↑g”), fișa etapei 3, registrul otrăvurilor, nota liniei.
+
+**Completed:** 24.11, 15:05.

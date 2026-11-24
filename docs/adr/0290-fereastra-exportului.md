@@ -527,3 +527,21 @@ cele patru aranjamente, cu harta schițelor schimbată ca la „Cu canvas-ul ara
 - **Otrăvurile:** 7 / 7 (`test/otravuri/28.8f3.py`), pe legătura dintre fereastră și fișă; două scăpate întâi au întărit probele.
 - **Mărimea:** totalul 821,9 → 822,1 / 900 kB (granița noului modul); pornirea neschimbată.
 - **Cu f-3, felia 28.8↑f e încheiată, iar ADR 0290 are toate feliile (a–f).**
+
+## Implementarea 28.8↑g (24.11)
+
+La cererea owner-ului, după încercarea pe canal, exact: „ok, am testat pe canal. e ok, ce mai vreau este ca fereastra sa se
+inchida la 'esc' si la click in afara ei”.
+
+- **Esc închide fereastra** ca **Închide**, oriunde ar fi focusul (și când a căzut pe pagină), ca la celelalte ferestre ale
+  aplicației (importul, raportul foilor, Aspectul, Așază pe foi, Frezele mele). Nu o închide cât stă ascunsă (urechile alese
+  pe desen: acolo Esc e al modului, care o aduce înapoi), nici când Esc și l-a luat altcineva (`defaultPrevented`) sau în
+  mijlocul unei compuneri (IME).
+- **Un clic pe fundalul din jurul ei o închide**, doar dacă și apăsarea, și ridicarea au fost pe fundal. O tragere începută în
+  fereastră (o selecție de text dusă prea departe) și lăsată afară nu o închide; nici una începută afară și lăsată în ea
+  (clicul cade atunci pe fundal, strămoșul lor comun, deci doar ținta clicului nu ajungea).
+- **Ce se pierde:** ca la **Închide**, valorile operațiilor schimbate în fereastră se scriu în proiect doar la **Exportă**;
+  supracursa, bifa tăieturilor cât foaia și setările mașinii rămân, fiind ale aplicației.
+- **Otrăvurile:** 6 / 7 (`test/otravuri/28.8g.py`); E03 (fără garda `defaultPrevented`) e echivalentă azi: în fereastră nimic
+  nu-și ia Esc-ul, iar modul urechilor e acoperit de garda ferestrei ascunse. Garda rămâne, ca regula comună a tastelor.
+- **Mărimea:** neglijabilă (sub 0,1 kB în bucata ferestrei).
