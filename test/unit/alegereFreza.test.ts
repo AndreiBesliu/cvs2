@@ -146,6 +146,9 @@ test('numărul T: al bibliotecii cât e liber; altfel al unei freze identice (cu
   assert.equal(numarPentruAlegere(doc(buzRest), ['a'], sculaDinBiblioteca(PLATA6, 2)), 1);
   // Același număr cu aceeași freză în altă piesă: rămâne.
   assert.equal(numarPentruAlegere(doc(simpla('a'), cuScula('b', sculaDinBiblioteca(PLATA6, 2))), ['a'], sculaDinBiblioteca(PLATA6, 2)), 2);
+  // Aceeași freză e și T5, și T2 (pusă de mână de două ori): numărul bibliotecii (T2) rămâne, nu primul găsit (T5).
+  const dubla = doc(simpla('a'), cuScula('b', sculaDinBiblioteca(PLATA6, 5)), cuScula('c', sculaDinBiblioteca(PLATA6, 2)));
+  assert.equal(numarPentruAlegere(dubla, ['a'], sculaDinBiblioteca(PLATA6, 2)), 2);
   // Prin alegere: toate operațiile pieselor alese primesc același număr.
   const d = doc(simpla('a'), cuOperatii(simpla('b'), (o) => o), cuScula('c', t2Alta));
   const noi = operatiiCuFreza(d, ['a', 'b'], PLATA6)!;
