@@ -919,37 +919,104 @@
   }
 }
 
-/* Sub 640 px rămâne o singură regulă până la felia telefonului (A.7): bara trece deasupra, cu filele pe rânduri (nimic nu
-   iese din ecran în dreapta). */
+/* Telefonul (ADR 0260 §10, felia A.7): butonul ☰ și bara de jos, ascunse pe ecranele mari; proiectul unui tichet se descarcă
+   de pe calculator, deci textul care spune asta apare doar pe telefon. */
+.admin-meniu-file,
+.admin-jos,
+.tic-proiect-calculator {
+  display: none;
+}
+
+/* Sub 640 px: bara laterală e un sertar (deschis de ☰ sau de „Mai mult”, peste conținut), jos stau Azi, Erori, Tichete și
+   „Mai mult”; antetul ține ☰ și insigna, fără textul instanței. Nimic nu iese din ecran în dreapta. */
 @media (max-width: 640px) {
   .admin-carcasa {
     flex-direction: column;
   }
 
+  .admin-meniu-file {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: var(--tinta);
+    min-height: var(--tinta);
+    font-size: 1.25rem;
+  }
+
+  .admin-instanta {
+    display: none;
+  }
+
   .admin-bara {
+    display: none;
     width: auto;
-    flex-direction: row;
-    flex-wrap: wrap;
-    gap: 2px var(--sp-1);
     border-right: 0;
     border-bottom: 1px solid var(--l-margine);
   }
 
-  .admin-bara-grup {
-    flex-direction: row;
-    flex-wrap: wrap;
-  }
-
-  .admin-bara-titlu {
-    display: none;
+  .admin-bara[data-deschis='true'] {
+    display: flex;
   }
 
   .admin-bara a {
     white-space: nowrap;
   }
 
+  .admin-jos {
+    display: flex;
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 20;
+    background: var(--s-panou);
+    border-top: 1px solid var(--l-margine);
+    padding-bottom: env(safe-area-inset-bottom, 0);
+  }
+
+  .admin-jos > a,
+  .admin-jos > button {
+    flex: 1 1 0;
+    min-width: 0;
+    min-height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--sp-1);
+    padding: 0 var(--sp-1);
+    border: 0;
+    border-radius: 0;
+    background: none;
+    color: inherit;
+    font: inherit;
+    text-decoration: none;
+  }
+
+  .admin-jos > a[aria-current='page'],
+  .admin-jos > button[aria-expanded='true'] {
+    color: var(--a);
+    font-weight: 600;
+    box-shadow: inset 0 2px 0 var(--a);
+  }
+
+  .admin-jos .admin-bara-nume {
+    flex: 0 1 auto;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .tic-proiect [data-tic='descarca-proiect'] {
+    display: none;
+  }
+
+  .tic-proiect-calculator {
+    display: block;
+    margin: 0;
+  }
+
   .admin-continut {
-    padding: var(--sp-4);
+    padding: var(--sp-4) var(--sp-4) calc(var(--sp-4) + 56px + env(safe-area-inset-bottom, 0px));
   }
 
   .admin-cauta input {

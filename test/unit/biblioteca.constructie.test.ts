@@ -193,11 +193,13 @@ test('lista bibliotecii judecă datele de prezentare: descrierea lungă, autorul
   };
   const buna = cu({
     despre: { ro: 'Pe larg.', en: 'At length.' }, autor: 'CNC Vector Studio',
-    noutati: [{ versiune: '1.0.0', ro: 'Prima.', en: 'First.' }, { versiune: '0.9.0', ro: 'Proba.', en: 'Trial.' }],
+    noutati: [{ versiune: '1.0.0', ro: 'Prima.', en: 'First.', data: '2026-11-23' }, { versiune: '0.9.0', ro: 'Proba.', en: 'Trial.' }],
     capturi: [{ nume: '1-fereastra', alt: { ro: 'Fereastra', en: 'The window' } }],
   })()[0];
   assert.equal(buna?.autor, 'CNC Vector Studio');
   assert.equal(buna?.noutati?.length, 2);
+  // Data versiunii, la alegere (ADR 0232 §C.15): rândul cu ea o păstrează, cel fără ea rămâne fără.
+  assert.deepEqual(buna?.noutati, [{ versiune: '1.0.0', ro: 'Prima.', en: 'First.', data: '2026-11-23' }, { versiune: '0.9.0', ro: 'Proba.', en: 'Trial.' }]);
   assert.deepEqual(buna?.capturi, [{ nume: '1-fereastra', alt: { ro: 'Fereastra', en: 'The window' } }]);
   assert.equal(cu({})()[0]?.noutati, undefined, 'fără ele, lista rămâne bună (proba lui „ce e nou” le cere)');
   const gresite: ReadonlyArray<readonly [string, Record<string, unknown>, RegExp]> = [
@@ -207,6 +209,8 @@ test('lista bibliotecii judecă datele de prezentare: descrierea lungă, autorul
     ['un rând de „ce e nou” peste 240', { noutati: [{ versiune: '1.0.0', ro: 'n'.repeat(241), en: 'n' }] }, /noutati/],
     ['un rând fără engleză', { noutati: [{ versiune: '1.0.0', ro: 'doar' }] }, /noutati/],
     ['o versiune care nu e din numere', { noutati: [{ versiune: 'ieri', ro: 'a', en: 'a' }] }, /noutati/],
+    ['o dată care nu e an-lună-zi', { noutati: [{ versiune: '1.0.0', ro: 'a', en: 'a', data: '23.11.2026' }] }, /noutati.*dat/],
+    ['o zi care nu există', { noutati: [{ versiune: '1.0.0', ro: 'a', en: 'a', data: '2026-02-30' }] }, /noutati.*dat/],
     ['versiunile în altă ordine', { noutati: [{ versiune: '0.9.0', ro: 'a', en: 'a' }, { versiune: '1.0.0', ro: 'b', en: 'b' }] }, /noutati/],
     ['aceeași versiune de două ori', { noutati: [{ versiune: '1.0.0', ro: 'a', en: 'a' }, { versiune: '1.0.0', ro: 'b', en: 'b' }] }, /noutati/],
     ['o captură cu un nume cu majuscule', { capturi: [{ nume: 'Fereastra', alt: { ro: 'a', en: 'a' } }] }, /capturi/],

@@ -22,8 +22,11 @@ export const MARGINI_SETARI = { zileOffline: { min: 1, max: 60 }, zilePastrareTi
 export const PLANURI = ['proba', 'gratuit', 'expirat', 'dezactivat', 'personal'] as const;
 export type Plan = (typeof PLANURI)[number];
 
-/** Ce se oprește fără drept, prin convenție în aplicație (ADR 0116 §9): exportul G-code și senderul. */
-const OPRITE: ReadonlySet<Capabilitate> = new Set<Capabilitate>(['export-gcode', 'masina']);
+/**
+ * Ce se oprește fără drept (ADR 0116 §9): exportul G-code și senderul, prin convenție în aplicație, și scrierea în cont
+ * (ADR 0300 §7), judecată pe server.
+ */
+const OPRITE: ReadonlySet<Capabilitate> = new Set<Capabilitate>(['export-gcode', 'masina', 'cloud']);
 
 export function capabilitatiPlan(plan: Plan): Capabilitate[] {
   return plan === 'expirat' || plan === 'dezactivat' ? CAPABILITATI.filter((c) => !OPRITE.has(c)) : [...CAPABILITATI];

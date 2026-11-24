@@ -370,3 +370,23 @@ ideile noi 63–76?”). Felia ei e **A.1**, cu carcasa:
     otrava pragului (E31). Pe `ecba6fa6`, E19 și E31 prinse. `verifica` pe toate listele: aceleași VOID-uri ca pe A.5.
   - **Mărimea:** `/admin` 125,6 → 127,5 / 200 kB (+1,9; linia ajunge la +21,0 din cei +25, deci pentru A.7 rămân ~4 kB).
     Pornirea (107,9, cu ușa 112,3 / 115) și totalul (763,1 / 800) sunt cele ale lui `main`.
+- **A.7, 24.11: telefonul** (aceeași ramură, `wip/A.1-admin`, peste A.11e a liniei utilizării, ADR 0262; `3.As` în fișă). Sub
+  640 px:
+  - **jos**, bara cu Azi, Erori și Tichete (doar cele pe care rolul le vede, cu numerele lor, ca în bara laterală) și „Mai
+    mult”; fila de acum, marcată (`aria-current`);
+  - **antetul** are ☰ (stânga), semnul, titlul și insigna; textul instanței se ascunde, restul (căutarea, limba, „Înapoi”,
+    contul) trece pe rânduri;
+  - **bara laterală e un sertar**: ascunsă, deschisă de ☰ sau de „Mai mult” (același sertar, `aria-expanded` pe amândouă),
+    închisă de o filă aleasă sau de Escape; în el, filele pe grupuri, cu titlurile lor;
+  - **un tichet** se citește și primește răspuns (lista și conversația, una sub alta, ca sub 800 px); **proiectul atașat se
+    descarcă doar de pe calculator**: pe telefon, un text cu mărimea lui ține locul butonului (CSS-ul alege, butonul rămâne
+    în pagină);
+  - conținutul are loc sub bara de jos (`padding-bottom` cât ea, plus zona sigură), deci nimic de la capătul paginii (butonul
+    trimiterii) nu stă sub ea.
+
+  Probele: 2 e2e noi pe emulatoare (`conversatia.emulator.spec.ts`: owner-ul la 390 px, cu bara de jos, sertarul prin ☰ și
+  prin „Mai mult”, Escape, o filă aleasă, tichetul cu răspunsul, proiectul doar pe calculator, nimic în afara ecranului,
+  butonul trimiterii deasupra barei, apoi la 1 280 px fără bară și fără ☰; un rol doar cu tichetele, cu bara de jos după
+  drepturi). Otrăvurile: 9 / 9 (`test/otravuri/A.7.py`, toate pe emulatoare); E08 (bara peste capătul conținutului) cădea
+  întâi pe termenul clicului, iar proba măsoară acum butonul față de bară înaintea clicului. Mărimea: `/admin` 137,9 → 138,2 /
+  200 kB (linia ADR 0260, cu A.7, rămâne sub ținta ei); pornirea și totalul, neschimbate.

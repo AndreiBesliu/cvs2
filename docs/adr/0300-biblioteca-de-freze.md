@@ -327,6 +327,61 @@ schimbat în bibliotecă”, „Ia valorile noi”, recunoașterea fără origin
 - **Mărimea:** pornirea 109,4 → 109,5 kB (constantele noi ale documentului; cu ușa 113,9 → 114,0, cu Atelierul 114,2 →
   114,3 / 115), totalul 799,6 → 800,5 / 900 kB.
 
+## Implementarea (16.A↑c)
+
+Pe 24.11.2026, în sesiunea cloud a liniei, pe ramura `wip/16.A-freze`, la „b, pornește 16.A↑c” al owner-ului (16.A↑b-2 așteaptă
+fereastra exportului refăcută, PR-ul `AndreiBesliu/cvs2#11`). Documentul rămâne v27.
+
+- **Serverul** (`functions/src/freze/actiuni.ts`, callable-ul `freze`, contractul în `shared/freze.ts`): fiecare freză e un
+  document `conturi/{uid}/freze/{id}`, cu JSON-ul ei ca text, neatins (o versiune mai nouă a aplicației poate avea câmpuri pe
+  care serverul nu le știe; serverul judecă doar forma: un obiect cu id-ul cererii, cel mult 8 KB UTF-8) și versiunea ei în
+  cont, dată de contorul contului (`conturi/{uid}/sincron/freze`: versiunea, frezele vii, semnele ștergerii, ultima versiune
+  plecată). `lista` dă schimbările de după versiunea știută, în ordinea versiunilor, câte 100, într-o tranzacție doar de
+  citire; `scrie` și `sterge` (cel mult 50) cer versiunea văzută, altfel dau conflictul cu ce e în cont, fără scriere; o freză
+  nouă peste 500 de vii e refuzată („plina”), nu tot lotul. O ștergere lasă un semn (`json: null`, `stearsaLa`); peste 500 de
+  semne, cele mai vechi pleacă (la ștergerea următoare, deci cel mult un lot în plus), iar un calculator rămas în urma lor
+  primește lista întreagă (`complet`). Id-urile `__…__` sunt refuzate (Firestore nu le primește). Regulile: nimic din client
+  (nicio regulă pe subcolecții, deci închise; proba în `reguli.emulator.test.ts`). Câmpul `json` nu se indexează.
+- **Capabilitatea `cloud`** (`shared/capabilitati.ts`): proba, planul gratuit și personalul o au; expiratul și dezactivatul,
+  nu (lângă exportul G-code și sender, `shared/conturi.ts`). Serverul o judecă din planul efectiv, ca la deschiderea
+  contului: fără ea, `lista` merge (cu `poateScrie: false`), `scrie` și `sterge` sunt refuzate (`permission-denied`).
+- **Îmbinarea, pură** (`src/model/frezeSincron.ts`): pentru fiecare freză știută din cont, baza (versiunea și JSON-ul canonic
+  de atunci, cu cheile în ordine). O freză de aici diferită de bază e de trimis; una venită cu altă versiune se ia, dacă aici
+  n-a fost schimbată, sau se îmbină pe câmpuri față de bază: un câmp schimbat pe o singură parte se ia de acolo, unul schimbat
+  pe ambele (sau o freză ștearsă pe o parte și schimbată pe cealaltă) e un conflict, ținut cu ce e în cont până alege omul.
+  Rezultatul îmbinat are versiunea peste amândouă și trebuie să fie o freză bună, altfel e conflict pe câmpurile care diferă.
+  Un nume luat de o freză venită: una nouă de aici, netrimisă, primește un nume liber; altfel, cea venită (și pleacă). Frezele
+  pe care versiunea de azi nu le citește stau brute: se iau din cont, nu se trimit și nu se șterg. „Păstrează-o pe a mea” pune
+  baza pe ce e în cont (deci a mea pleacă peste ea), „din cont” o înlocuiește, „amândouă” păstrează a mea ca o freză nouă, cu un
+  nume liber. La prima deschidere cu contul, frezele bibliotecii fără cont pe care contul nu le știe (nici în listă, nici în
+  baze) se pot aduce, cu id-ul lor, până la plafon.
+- **Depozitul** (`src/app/frezeMele.ts`): o bibliotecă pe cheie (`local`, `cont:<uid>`), cu starea sincronizării lângă freze
+  (`sincron`, ca date simple, judecate la citire: cheile periculoase și versiunile greșite pleacă); o schimbare a omului păstrează
+  restul înregistrării; `schimbaCont` schimbă frezele, cele brute și starea deodată, într-o tranzacție. Canalul filelor spune
+  cheia bibliotecii schimbate.
+- **Trecerea** (`src/app/frezeSincronizare.ts`): ia toate paginile, apoi lista întreagă dacă e cazul, apoi trimite în loturi
+  (de cel mult trei ori, cât conflictele îmbinate lasă ceva de trimis; o freză refuzată de contul plin, o dată pe trecere).
+  Se încheie „la zi”, „fără rețea” (inclusiv bucata contului neadusă), „citire”, „cont” (altul logat, ieșit, neconfirmat) sau
+  „eroare”. Cererile pleacă prin bucata contului (`cheamaFrezele` din `PanouCont.tsx`, `apeleazaFrezele` din
+  `contEditor.ts`), doar cu contul Firebase al bibliotecii deschis: modulul n-are Firebase.
+- **Fereastra:** cu contul deschis pe server (adresa confirmată), lucrează pe biblioteca contului; sincronizarea la
+  deschidere, la 2 s după o schimbare, la revenirea rețelei și cu „Sincronizează”. Bara de jos: „În cont, la zi”, „Se
+  sincronizează cu contul…”, „Fără rețea: se trimite la reconectare”, doar citirea, „Intră din nou în cont…”, conflictele,
+  frezele care n-au loc. Banda conflictului (freza, câmpurile, cele trei alegeri) și întrebarea „Adaugi cele N freze din acest
+  browser în cont?” (Da / Nu acum, „Nu acum” ținut cât fila) stau deasupra listei. Editorul arată o schimbare venită pe freza
+  deschisă, cât n-ai schimbat nimic; ștearsă, se închide. Manualul, în ambele limbi.
+- **Probele:** pe emulator, callable-ul (9: refuzurile, versiunile, conflictul, ștergerea și readucerea, octeții, plafonul de
+  500, paginile, semnele plecate și lista întreagă, dreptul) și regulile; unitare noi 20 (îmbinarea și sincronizarea pură 14,
+  depozitul pe cont 1, trecerea peste un server fals cu două calculatoare 5); cap-coadă pe emulatoare, două browsere ale
+  aceluiași cont (`test/e2e-emulator/freze.emulator.spec.ts`, 2). Otrăvurile: `test/otravuri/16.A-c.py`, 47 / 47 (15 pe
+  server, 25 pe hârtie, 7 pe fereastră, pe emulatoare).
+- **Nu e probat:** că `cheamaFrezele` refuză un alt cont Firebase deschis în același browser (de pildă din `/admin`) decât al
+  bibliotecii: garda e o singură comparație de uid, fără probă automată (ar cere două conturi în același browser).
+- **Mărimea:** pornirea neschimbată (109,9 kB; cu ușa 114,4, cu Atelierul 114,7 / 115), totalul 806,1 → 810,5 / 900 kB,
+  contul 30,1 → 30,3 / 32 (doar online).
+- **Nimic pe server până la unire;** la publicare merg funcția `freze`, regulile (neschimbate) și indexurile (scutirea câmpului
+  `json`). Sincronizarea se încearcă pe adresa principală de test, după publicare (App Check).
+
 ## Se redeschide dacă
 
 - owner-ul vrea o bibliotecă comună mai multor conturi ale aceluiași atelier, sau cataloagele publice ale producătorilor;

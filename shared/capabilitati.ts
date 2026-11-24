@@ -16,6 +16,8 @@ export const CAPABILITATI = [
   'export-vectori',
   /** Senderul: trimiterea programului la mașină. */
   'masina',
+  /** Scrierea datelor omului în cont (biblioteca de freze, ADR 0300 §7); citirea lor rămâne oricând. */
+  'cloud',
 ] as const;
 
 export type Capabilitate = (typeof CAPABILITATI)[number];

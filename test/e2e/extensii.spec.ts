@@ -56,7 +56,7 @@ test('din fișier: confirmarea, meniul, fereastra izolată peste Proiectare, ×,
   await expect(page.getByTestId('extensii-din-afara')).toHaveText('Vine din afara bibliotecii cvs2: instaleaz-o doar dacă știi de unde e.');
   await expect(dialog.locator('h3')).toHaveText(['Ce poate face']);
   await expect(page.getByTestId('extensii-permisiuni').locator('li')).toHaveText(['Datele în browser își ține datele în browserul acesta (cel mult 16 MB)']);
-  await expect(page.getByTestId('extensii-izolare')).toHaveText('Extensia rulează izolată: nu vede proiectele, contul sau portul mașinii.');
+  await expect(page.getByTestId('extensii-izolare')).toHaveText('Rulează izolată: poate doar ce scrie mai sus. Nu-ți vede desenul, proiectele, adresa sau parola și nu ajunge singură la mașină.');
   // Fără semn în pachet, piesa de puzzle; întâi gestul, apoi Renunță.
   await expect(dialog.locator('.confirmare-cap [data-fara-semn]')).toBeVisible();
   await expect(dialog.locator('.butoane button')).toHaveText(['Instalează', 'Renunță']);
@@ -231,9 +231,15 @@ test('de la adresă și prin link: descărcarea căzută spusă, pachet stricat 
   await page.locator('[data-extensii="adresa"]').fill('https://extensii.test/stricat.zip');
   await page.locator('[data-extensii="descarca"]').click();
   await expect(page.getByTestId('extensii-refuz')).toHaveAttribute('data-motiv', 'amprenta');
+  // Fereastra refuzului (ADR 0232 §A.4): ce s-a întâmplat, de la ce adresă, de ce, și drumul înapoi la adresă.
+  await expect(page.getByTestId('extensii-instalare').locator('h2')).toHaveText('Pachetul nu se poate instala');
+  await expect(page.getByTestId('extensii-refuz-sursa')).toHaveText('https://extensii.test/stricat.zip');
   await expect(page.getByTestId('extensii-refuz')).toHaveText(
-    'Pachetul nu se poate instala: un fișier nu se potrivește cu amprenta lui (SHA-256) (salut.txt)',
+    'Un fișier a fost schimbat după împachetare (SHA-256). Cere pachetul din nou. (salut.txt)',
   );
+  await expect(page.getByTestId('extensii-instalare').locator('.butoane button')).toHaveText(['Altă adresă…', 'Închide']);
+  await page.locator('[data-extensii="alta-adresa"]').click();
+  await expect(page.locator('[data-extensii="adresa"]')).toHaveValue('https://extensii.test/stricat.zip');
   await page.locator('[data-extensii="renunta"]').click();
 
   await adresa('https://extensii.test/salut.zip');
@@ -262,7 +268,7 @@ test('un fișier care nu e pachet se refuză cu motivul lui, fără nicio scrier
   await page.goto('/');
   await expect(page.locator('[data-extensii="buton"]')).toBeVisible();
   await page.locator('[data-extensii="fisier-ales"]').setInputFiles({ name: 'nu.zip', mimeType: 'application/zip', buffer: Buffer.from('nu e o arhivă') });
-  await expect(page.getByTestId('extensii-refuz')).toHaveText('Pachetul nu se poate instala: nu e un fișier .zip');
+  await expect(page.getByTestId('extensii-refuz')).toHaveText('Fișierul nu e o arhivă .zip.');
   await page.keyboard.press('Escape');
   await expect(page.getByTestId('extensii-instalare')).toHaveCount(0);
   await expect((await meniul(page)).locator('[data-extensii="deschide"]')).toHaveCount(0);

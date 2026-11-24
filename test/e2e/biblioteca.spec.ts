@@ -1,8 +1,6 @@
 import { test, expect, type Locator, type Page, type Request } from '@playwright/test';
-import { pachetTrenulet } from '../../scripts/construieste-trenulet.ts';
-import { impacheteaza, scrieZip } from '../../scripts/impacheteaza-extensie.ts';
-import { citesteZip } from '../../src/extensii/zip.ts';
-import { biblioteca, deschideBiblioteca, deschideMeniul, incarcata, inchideBiblioteca, meniu, pagina, paginaDinCatalog, paginaInstalatei, randLista, semn } from './ajutor-biblioteca.ts';
+import { impacheteaza } from '../../scripts/impacheteaza-extensie.ts';
+import { biblioteca, deschideBiblioteca, deschideMeniul, incarcata, inchideBiblioteca, meniu, pachetVechi, pagina, paginaDinCatalog, paginaInstalatei, randLista, semn } from './ajutor-biblioteca.ts';
 import { eroriJurnal, faraEroriInJurnal } from './ajutor-jurnal.ts';
 
 /**
@@ -27,9 +25,16 @@ test.use({ locale: 'ro-RO' });
 
 type Rand = {
   id: string; nume: string; versiune: string; pachet: string; descriere: { ro: string; en: string };
-  despre: { ro: string; en: string }; noutati: Array<{ versiune: string; ro: string; en: string }>;
+  despre: { ro: string; en: string }; noutati: Array<{ versiune: string; ro: string; en: string; data?: string }>;
   capturi: { ro: Array<{ fisier: string; alt: string }>; en: Array<{ fisier: string; alt: string }> };
 };
+
+/** Un rând de „ce e nou”, cum îl arată pagina: versiunea, data ei (unde e scrisă, ADR 0232 §C.15) și textul. */
+function randNou(n: { versiune: string; ro: string; en: string; data?: string } | undefined, limba: 'ro' | 'en'): string {
+  if (!n) return '?';
+  const zi = n.data?.split('-').reverse().join(limba === 'ro' ? '.' : '/');
+  return `${n.versiune}${zi ? ` · ${zi}` : ''} ${n[limba]}`;
+}
 const RE_PACHET = /\/extensii\/trenulet-[^/]+\.zip$/;
 
 async function randul(page: Page): Promise<Rand> {
@@ -39,18 +44,6 @@ async function randul(page: Page): Promise<Rand> {
   const x = c.extensii.find((e) => e.id === 'trenulet');
   if (!x) throw new Error('trenulet lipsește din catalog');
   return x;
-}
-
-/** Pachetul de acum, cu alt manifest (aceleași fișiere): o versiune mai veche, eventual cu mai puține permisiuni. */
-async function pachetVechi(versiune: string, faraPermisiuni: readonly string[] = [], nume?: string): Promise<Buffer> {
-  const z = await citesteZip(pachetTrenulet().octeti, { fisiere: 256, octetiFisier: 8 * 1024 * 1024, octetiTotal: 16 * 1024 * 1024 });
-  if (!z.ok) throw new Error(z.motiv);
-  return Buffer.from(scrieZip(z.intrari.map((i) => {
-    if (i.nume !== 'extensie.json') return i;
-    const m = JSON.parse(new TextDecoder().decode(i.octeti)) as Record<string, unknown> & { permisiuni: string[] };
-    const nou = { ...m, versiune, permisiuni: m.permisiuni.filter((p) => !faraPermisiuni.includes(p)), ...(nume ? { nume } : {}) };
-    return { nume: i.nume, octeti: new TextEncoder().encode(JSON.stringify(nou)) };
-  })));
 }
 
 /** Datele extensiei (ADR 0128 §B), scrise direct în IndexedDB-ul lui cvs2, ca și cum le-ar fi salvat ea; sau citite înapoi. */
@@ -97,7 +90,7 @@ test('din bibliotecă: fereastra, rândul și pagina lui Easy 3Draw (semnul, cap
   await expect(m.locator('[role="menuitem"]')).toHaveCount(1);
   const b = await deschideBiblioteca(page);
   await expect(b.locator('h2')).toHaveText('Biblioteca extensiilor');
-  await expect(b.locator('[role="tab"]')).toHaveText(['Toate · 1', 'Instalate · 0']);
+  await expect(b.locator('[role="tab"]')).toHaveText(['Din bibliotecă · 1', 'Instalate · 0']);
   await expect(page.locator('.aplicatie')).toHaveAttribute('inert', '');
 
   // Rândul din listă și pagina extensiei (singura din catalog e aleasă de la început).
@@ -121,9 +114,9 @@ test('din bibliotecă: fereastra, rândul și pagina lui Easy 3Draw (semnul, cap
   await expect(p.getByTestId('extensii-permisiuni').locator('li')).toHaveCount(5);
   const noutati = p.getByTestId('pagina-noutati').locator('li');
   await expect(noutati).toHaveCount(r.noutati.length);
-  await expect(noutati.first()).toHaveText(`${r.versiune} ${r.noutati[0]?.ro ?? '?'}`);
+  await expect(noutati.first()).toHaveText(randNou(r.noutati[0], 'ro'));
   await expect(p.getByTestId('extensii-izolare')).toBeVisible();
-  await expect(p.getByTestId('pagina-stare')).toHaveText('Amprenta se verifică la instalare.');
+  await expect(p.getByTestId('pagina-stare')).toHaveText('Verificată de cvs2 la instalare.');
 
   // Instalarea, în pagină: nimic descărcat înainte de clic; apoi pachetul, verificat.
   expect(cereri.filter((u) => RE_PACHET.test(u)), 'nimic descărcat înainte de „Instalează”').toEqual([]);
@@ -133,7 +126,7 @@ test('din bibliotecă: fereastra, rândul și pagina lui Easy 3Draw (semnul, cap
   expect(cereri.filter((u) => RE_PACHET.test(u)).map((u) => new URL(u).pathname)).toEqual([`/extensii/${r.pachet}`]);
   await expect(page.getByTestId('extensii-instalare')).toHaveCount(0);
   await expect(p.getByTestId('pagina-stare')).toHaveText('✓ Instalată. Merge și fără internet.');
-  await expect(b.locator('[role="tab"]')).toHaveText(['Toate · 1', 'Instalate · 1']);
+  await expect(b.locator('[role="tab"]')).toHaveText(['Din bibliotecă · 1', 'Instalate · 1']);
   await expect(rand).toHaveAttribute('data-stare', 'instalata');
   await expect(p.locator('.pagina-actiuni button')).toHaveText(['Deschide', 'Scoate']);
 
@@ -162,9 +155,9 @@ test('amprenta greșită: pachetul schimbat pe drum se refuză în pagină, nimi
   await p.locator('[data-extensii="pagina-instaleaza"]').click();
   const refuz = p.getByTestId('pagina-eroare');
   await expect(refuz).toHaveAttribute('data-motiv', 'amprenta-biblioteca');
-  await expect(refuz).toContainText('pachetul descărcat nu e cel din bibliotecă');
+  await expect(refuz).toContainText('Pachetul descărcat nu e cel din bibliotecă. Încearcă din nou mai târziu.');
   await expect(p).toHaveAttribute('data-stare', 'instaleaza');
-  await expect(biblioteca(page).locator('[role="tab"]')).toHaveText(['Toate · 1', 'Instalate · 0']);
+  await expect(biblioteca(page).locator('[role="tab"]')).toHaveText(['Din bibliotecă · 1', 'Instalate · 0']);
   await inchideBiblioteca(page);
   await expect((await deschideMeniul(page)).locator('.meniu-extensii-cap')).toContainText('Nicio extensie instalată încă');
   const erori = await eroriJurnal(page);
@@ -221,10 +214,10 @@ test('actualizarea din pagină: ce e nou de la versiunea ta, „Actualizează la
   await expect(randLista(page, 'trenulet')).toContainText(r.versiune);
   await expect(p).toHaveAttribute('data-stare', 'actualizeaza');
   await expect(p.getByTestId('pagina-stare')).toHaveText('Ai 18.17.0. Datele ei rămân.');
-  await expect(p.locator('.pagina-actiuni button')).toHaveText([`Actualizează la ${r.versiune}`, 'Deschide']);
+  await expect(p.locator('.pagina-actiuni button')).toHaveText([`Actualizează la ${r.versiune}`, 'Deschide', 'Scoate']);
   // „Ce e nou” arată doar versiunile de după a ta (ADR 0231, „actualizarea nu spune ce aduce”).
   const noi = r.noutati.filter((n) => n.versiune !== '18.17.0' && n.versiune !== '18.16.0');
-  await expect(p.getByTestId('pagina-noutati').locator('li')).toHaveText(noi.map((n) => `${n.versiune} ${n.ro}`));
+  await expect(p.getByTestId('pagina-noutati').locator('li')).toHaveText(noi.map((n) => randNou(n, 'ro')));
   await p.locator('[data-extensii="pagina-actualizeaza"]').click();
   await expect(p).toHaveAttribute('data-stare', 'instalata');
   await expect(page.getByTestId('extensii-instalare')).toHaveCount(0);
@@ -246,7 +239,9 @@ test('actualizarea care cere ceva nou: pagina arată ce cere în plus, iar ferea
   await expect(fereastra.locator('h2')).toHaveText('Actualizezi „Easy 3Draw”?');
   await expect(fereastra.getByTestId('extensii-despre')).toHaveText(`18.6.0 → ${r.versiune} · din biblioteca cvs2`);
   // Ce cere în plus stă primul, evidențiat; apoi ce putea și până acum (ADR 0231 §B.3).
-  await expect(fereastra.locator('h3')).toHaveText(['Versiunea nouă poate și', 'Ce putea și până acum']);
+  await expect(fereastra.locator('h3')).toHaveText(['Versiunea nouă poate și', 'Ce putea și până acum', 'Ce e nou']);
+  // „Ce e nou” (ADR 0232 §C.15): doar versiunile de după cea instalată.
+  await expect(fereastra.getByTestId('confirmare-noutati').locator('li').first()).toHaveText(randNou(r.noutati[0], 'ro'));
   await expect(fereastra.getByTestId('extensii-permisiuni-noi').locator('li')).toHaveText([FORME]);
   await expect(fereastra.getByTestId('extensii-permisiuni').locator('li')).toHaveCount(4);
   await expect(fereastra).toContainText('Datele ei rămân.');
@@ -275,7 +270,7 @@ test('scheletul cât vine catalogul: fereastra nu-și schimbă mărimea când so
   await page.goto('/');
   const b = await deschideBiblioteca(page);
   await expect(b.getByTestId('biblioteca-schelet')).toBeVisible();
-  await expect(b.locator('[role="tab"]').first()).toHaveText('Toate');
+  await expect(b.locator('[role="tab"]').first()).toHaveText('Din bibliotecă');
   const cutie = b.locator('.dialog-cutie');
   const inainte = await cutie.boundingBox();
   lasa();
@@ -285,20 +280,21 @@ test('scheletul cât vine catalogul: fereastra nu-și schimbă mărimea când so
   await faraEroriInJurnal(page);
 });
 
-test('fără rețea: biblioteca spune că are nevoie de internet, extensiile instalate rămân la vedere, iar „Reîncearcă” o aduce', async ({ page }) => {
+test('fără rețea: extensiile instalate rămân la vedere (fereastra trece singură pe „Instalate”), biblioteca spune că are nevoie de internet, iar „Reîncearcă” o aduce', async ({ page }) => {
   await page.goto('/');
   await instaleazaDinFisier(page, 'salut.zip', Buffer.from(impacheteaza('extensii/salut').octeti));
   await page.route('**/extensii/catalog.json', (route) => route.abort('internetdisconnected'));
   const b = await deschideBiblioteca(page);
   const lista = b.getByTestId('biblioteca-lista');
-  await expect(lista.locator('[role="alert"]')).toHaveText('Biblioteca are nevoie de internet.');
-  await expect(lista.locator('[data-extensii="rand-biblioteca"]')).toHaveCount(0);
-  // Cele instalate merg ca până acum.
+  // Cu ceva instalat, fereastra arată întâi ce merge (ADR 0232 §B.8); cele instalate merg ca până acum.
+  await expect(b.locator('[data-extensii="fila-instalate"]')).toHaveAttribute('aria-selected', 'true');
   const p = await paginaInstalatei(page, 'salut');
   await expect(p.locator('h3').first()).toHaveText('Salut');
   await expect(p.getByTestId('pagina-sursa')).toContainText('de la salut.zip');
   await expect(p.locator('.pagina-actiuni button')).toHaveText(['Deschide', 'Scoate']);
   await b.locator('[data-extensii="fila-toate"]').click();
+  await expect(lista.locator('[role="alert"]')).toHaveText('Biblioteca are nevoie de internet.');
+  await expect(lista.locator('[data-extensii="rand-biblioteca"]')).toHaveCount(0);
   await page.unroute('**/extensii/catalog.json');
   await lista.locator('[data-extensii="biblioteca-reincearca"]').click();
   await expect(randLista(page, 'trenulet')).toHaveAttribute('data-stare', 'instaleaza');
@@ -349,7 +345,7 @@ test('tastatura: focusul intră pe fila aleasă; săgețile schimbă fila și mu
   await expect(toate).toHaveAttribute('aria-selected', 'true');
   await expect(toate).toHaveAttribute('tabindex', '0');
   await expect(instalate).toHaveAttribute('tabindex', '-1');
-  await expect(page.getByRole('tabpanel', { name: 'Toate · 1' })).toBeVisible();
+  await expect(page.getByRole('tabpanel', { name: 'Din bibliotecă · 1' })).toBeVisible();
   // Săgețile schimbă fila, cu focusul după ele; de la capăt trec la celălalt.
   await page.keyboard.press('ArrowRight');
   await expect(instalate).toBeFocused();
@@ -420,17 +416,17 @@ test('în engleză: fereastra, pagina cu descrierea, capturile și „ce e nou�
   await expect(m.locator('[data-extensii="biblioteca"]')).toContainText('Extension library…');
   const b = await deschideBiblioteca(page);
   await expect(b.locator('h2')).toHaveText('Extension library');
-  await expect(b.locator('[role="tab"]')).toHaveText(['All · 1', 'Installed · 0']);
+  await expect(b.locator('[role="tab"]')).toHaveText(['Library · 1', 'Installed · 0']);
   await expect(randLista(page, 'trenulet')).toContainText(r.descriere.en);
   const p = pagina(page);
   await expect(p.getByTestId('pagina-despre')).toHaveText(new RegExp(`^by CNC Vector Studio · ${r.versiune.replaceAll('.', '\\.')} · \\d+ kB$`));
   await expect(p.getByTestId('pagina-descriere')).toHaveText(r.despre.en);
   await expect(p.getByTestId('pagina-capturi').locator('img').first()).toHaveAttribute('alt', r.capturi.en[0]?.alt ?? '?');
   await expect(p.getByTestId('pagina-capturi').locator('img').first()).toHaveAttribute('src', new RegExp(`${r.capturi.en[0]?.fisier ?? '?'}$`));
-  await expect(p.getByTestId('pagina-noutati').locator('li').first()).toHaveText(`${r.versiune} ${r.noutati[0]?.en ?? '?'}`);
+  await expect(p.getByTestId('pagina-noutati').locator('li').first()).toHaveText(randNou(r.noutati[0], 'en'));
   await expect(p.getByTestId('pagina-poate').locator('h3')).toHaveText(['What it can do']);
   await expect(p.locator('[data-extensii="pagina-instaleaza"]')).toHaveText('Install');
-  await expect(p.getByTestId('pagina-stare')).toHaveText('The fingerprint is checked when you install it.');
+  await expect(p.getByTestId('pagina-stare')).toHaveText('Checked by cvs2 when you install it.');
   await inchideBiblioteca(page);
   await faraEroriInJurnal(page);
 });

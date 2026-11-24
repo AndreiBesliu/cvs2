@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState, type ReactElement, type ReactNode } from 'react';
 import { dreptLaZi, NUME_MAX, ZILE_PROBA, zileRamase, type Drept, type RaspunsDeschide } from '../../shared/conturi.ts';
+import type { CerereFreze, RaspunsListaFreze, RaspunsScrieFreze } from '../../shared/freze.ts';
 import {
-  codEroare, conecteazaContul, creeazaCont, deschideContul, iesi, intraCuGoogle, intraCuParola, primaStare, reconfirma, retrimiteConfirmarea,
-  schimbaNumele, trimiteLotul, trimiteResetarea, type ContEditor,
+  apeleazaFrezele, codEroare, conecteazaContul, creeazaCont, deschideContul, iesi, intraCuGoogle, intraCuParola, primaStare, reconfirma,
+  retrimiteConfirmarea, schimbaNumele, trimiteLotul, trimiteResetarea, type ContEditor,
 } from '../cloud/contEditor.ts';
 import '../i18n/carcasa.ts';
 import { mesajeGata } from '../i18n/laCerere.ts';
@@ -67,6 +68,18 @@ export async function trimiteUtilizarea(c: Config, ins: Pick<Inregistrator, 'lot
     ]),
     cod: codEroare,
   });
+}
+
+/**
+ * O cerere a bibliotecii de freze în cont (ADR 0300 §7, felia 16.A↑c), cerută de sincronizarea din fereastra „Frezele mele”:
+ * doar cu contul Firebase al bibliotecii deschis în browser (altul, sau niciunul, e refuzat cu `cont/altul`).
+ */
+export async function cheamaFrezele(c: Config, uid: string, cerere: CerereFreze): Promise<RaspunsListaFreze | RaspunsScrieFreze> {
+  const x = conecteazaContul(c);
+  if (!x.ok) throw Object.assign(new Error('instanța n-are contul'), { code: 'cont/indisponibil' });
+  const u = await primaStare(x.cont);
+  if (u?.uid !== uid) throw Object.assign(new Error('alt cont'), { code: 'cont/altul' });
+  return apeleazaFrezele(x.cont, cerere);
 }
 
 /** Ieșirea din meniul contului (ADR 0120): contul Firebase se închide în browserul acesta, apoi pleacă și contul ținut. */

@@ -119,6 +119,15 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
   făcut din commit-urile anunțate, cu completul pornit pe ea cât încă rulau completele a două linii; în `main` a intrat
   abia după ce au fost verzi și porțile lotului, și cele ale liniilor, iar vârfurile nu aduseseră cod (unirea de probă
   a vârfului: zero fișiere schimbate în afara `.md`). Câștigul: o jumătate de oră.
+- **Intervalele ADR, la 24.11:** 0145–0149 sesiunea principală (lângă plafoanele 0143, 0144; 0145 e plafonul pornirii),
+  0230–0239 biblioteca, 0240–0249 ancorele, 0250–0259 aranjamentele, 0260–0269 adminul, 0270–0279 trasarea, 0280–0289
+  pluginul, 0290–0299 exportul, 0300–0309 frezele, 0310–0329 relieful, 0330–0339 cotele. Următoarea linie nouă ia de
+  la 0340.
+- **Un PR rămas deschis după unire** (ramura a mers mai departe peste commit-ul unit, deci GitHub nu-l închide) se
+  închide doar la cuvântul owner-ului, cu un comentariu care trimite la commit-ul de unire; înainte, se uită ce mai e
+  pe ramură: pe 24.11, la `#16`, frezele aveau deja două felii noi, neunite, pentru care linia deschide alt PR.
+- **O linie nouă:** nota ei (`docs/linii/<linie>.md`) intră în `main` înaintea ramurii, ramura se face din acel `main`
+  (`git push origin <sha>:refs/heads/wip/<felia>-<nume>`), iar brief-ul de lipit trimite la notă, nu o repetă.
 - **PR-ul liniei** e deschis de sesiunea ei ca ciornă (regula mediului cloud): starea „ciornă” nu spune că felia nu e gata.
   Gata înseamnă raportul liniei (nota ei spune „gata”) și rapidul cu completul verzi pe commit-ul raportat.
 
@@ -141,30 +150,40 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
   printr-o schiță.
 - **Observabilitatea:** erorile ajung în jurnalul aplicației; joburile își lasă marcajul.
 
-## Starea pe 24.11.2026, la prânz (după a paisprezecea unire din cloud)
+## Starea pe 24.11.2026, după-amiaza (după a șaisprezecea unire din cloud)
 
-- **Pe test:** `df9ae539` (tot până la lotul al doisprezecelea: A.10 și A.11a; publicat pe 24.11 la 09:41, cu
-  serverul: `logClientError` și `agregaUtilizarea` la zi).
+- **Pe test:** `e3a9e512` (tot până la lotul al cincisprezecelea: A.7, cu plafonul pornirii, ADR 0145, și notele
+  liniilor noi; publicat pe 24.11 la 13:54, fără server; proba de fum, bună). Lotul al șaisprezecelea (16.A↑c, 3.Xi)
+  e în drum, cu serverul: funcția nouă `freze`, indexurile, `cont` și `administreazaConturile` cu capabilitatea
+  `cloud`.
 - **`main`, din cloud:** pe 23.11: 3.Tq (`0ae9c6c1`); 11.3↑e și A.4 (`ddaa7ead`); 3.Tr, unită de linia elicelor
   (`d262e57a`); 25.8↑a și A.5 (`1b46c955`), cu reparația probei extensiilor (`8287d66e`); 11.3↑f, unită de linia
   planșelor (`f4601938`); A.6 (`4497d639`); 3.Xh (`2d1e482c`) și 12.1↑e-3 cu 12.1↑e-4 (`03460cab`); A.8a cu A.8b
   (`5325b8fe`) și 25.9↑ (`4fe2d2ad`). Pe 24.11: 16.A↑a (`02a5864a`), cu ADR 0301 (`813fa675`); A.8c și A.8d (`80d3eb70`);
   A.9a și A.9b (`95dddbe0`); A.10 și A.11a (`7f6f4069`); 25.8↑b (`f7f4510f`); 3.Ts (`e14e553a`), A.11b–A.11e
-  (`8ccb66e8`) și 16.A↑b-1, cu documentul v27 (`32b33a42`).
+  (`8ccb66e8`) și 16.A↑b-1, cu documentul v27 (`32b33a42`); A.7 (`458befb9`); 16.A↑c (`6b74074d`) și 3.Xi
+  (`f12308de`).
 - **Liniile** (vezi [indexul](README.md)):
   - **gata pe ramură, la cuvântul owner-ului:** fereastra exportului (28.8↑a–b-3, ADR 0290; `AndreiBesliu/cvs2#11`),
     după ce o încearcă pe canalul `export`;
-  - **în lucru, pe ramuri:** adminul (A.7, adminul pe telefon, peste commit-ul unit; `AndreiBesliu/cvs2#13`), frezele
-    (16.A↑b-2: lista „Freza” pe rândurile exportului și în Tăierea), exportul (28.8↑, `#11`: unirea la cuvântul
-    owner-ului); se unesc la raportul liniei;
-  - **propus, la owner:** biblioteca (ADR 0232, auditul UI/UX al extensiilor, cinci întrebări; `#17`);
+  - **gata, pe ramura de unire `unire-2411l` (peste lotul 16), cu porțile în lucru:** elicele, 3.Tt (înclinarea
+    spre pupa a elicei de barcă, la alegere; Easy 3Draw 18.23.0; `AndreiBesliu/cvs2#19`, `ba09a10b`);
+  - **în lucru, pe ramuri:** frezele (16.A↑b-2, freza din bibliotecă în secțiunea Tăierea, vârful `0ffb2599`; apoi
+    b-3, rândurile exportului, după `#11`, și b-4, nota schimbării din bibliotecă), relieful (18.1↑a, `wip/18.1-relief`,
+    ADR 0310 acceptat cu 1a–6a; documentul v28 e al ei), cotele (10.4↑a-1, `wip/10.4-cote`, ADR 0330 acceptat cu
+    1a–6a; fără schemă: `foaie.cote`; de unit devreme, ca relieful să aducă `main` înaintea migrării lui), exportul
+    (28.8↑, `#11`: unirea la cuvântul owner-ului); se unesc la raportul liniei;
+  - **în sesiunea principală, la cererea owner-ului din 24.11:** comenzile foii pe pânză, sub fiecare foaie (11.1↑c),
+    și butonul Admin din meniu, doar pentru personal (14.C↑d), pe `wip/11.1c-controale-foi`, cu canalul `foi`;
+    otrăvurile 41 / 41 (două prinse după întărirea probei); unirea după ce le încearcă owner-ul;
   - **la cuvântul owner-ului:** restul bibliotecii extensiilor (căutarea, captura mărită), următoarea felie a
     incrustațiilor, a trasării și a elicelor, 11.5↑b (după etapa 13);
   - **fără felie în lucru:** planșele (tăierea plăcii 11, la owner), incrustațiile, trasarea, elicele, tăierea (după
     10.3↑o: 10.3↑p–r),
     imprimanta (după 3.6v: 3.6w, camera), aranjamentele (28.1↑). Pornesc la cuvântul
     owner-ului, cu un brief scris de sesiunea principală și lipit de owner într-o sesiune cloud nouă;
-  - **încheiate:** ancorele (6.V↑), raportările (15.B↑b), galeria (3.Tp, ADR 0281), probele instabile.
+  - **încheiate:** ancorele (6.V↑), raportările (15.B↑b), galeria (3.Tp, ADR 0281), probele instabile, adminul
+    (ADR 0260 și 0262: A.1–A.11, cu A.7 unită pe 24.11).
 - **La owner:**
   - „cine unește în `main`” (recomandarea: doar sesiunea principală; pe 23–24.11, biblioteca și frezele au scris întâi
     aici, iar felia era deja în lot: unirea a rămas aici);
@@ -176,10 +195,13 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
     mai scurtă (fără al doilea complet pe `main` când codul e identic cu cel verificat; schimbă o regulă a porților),
     lista „ce e nou pe test, de încercat”, rezumatul pentru verificarea juridică, lista ramurilor unite de șters.
     Fără răspuns, niciuna nu pornește.
-- **Plafoanele:** totalul e 806,1 / 900 kB (ADR 0301, decizia owner-ului din noaptea de 23 spre 24.11). **Pornirea a
-  rămas 115 kB:** cu ușa 114,4, cu Atelierul 114,7 (după lotul al paisprezecelea), deci mai sunt 0,3 kB. O felie care
-  adaugă în pornire nu mai încape: cere întâi loc (o bucată mutată la cerere) sau decizia owner-ului.
-- **Documentul e v27** (frezele, 16.A↑b-1): un câmp nou ia v28. O probă care citește documentul salvat cere versiunea
+- **Plafoanele:** totalul e 814,3 / 900 kB (ADR 0301, decizia owner-ului din noaptea de 23 spre 24.11). **Pornirea e
+  120 kB din 24.11** (ADR 0145, „ok, ridica plafonul pornirii la 120 kB”, spus în sesiunea principală): cu ușa 114,4,
+  cu Atelierul 114,7, deci mai sunt ~5,3 kB. Regula feliilor rămâne: ce nu trebuie înaintea primei randări stă la
+  cerere, iar felia își spune în raport cât adaugă în pornire.
+- **Documentul e v27** (frezele, 16.A↑b-1). **v28 e dat reliefului** (forma `relief`, 18.1↑a); cotele nu cer schemă;
+  următorul liber e v29 (operațiile pe relief cu freza bilă; toroidala și profilul desenat ale frezelor): numărul se
+  dă când felia ajunge la migrare, iar unirile cu schemă intră în `main` în ordinea numerelor. O probă care citește documentul salvat cere versiunea
   curentă (`placute.spec.ts` a căzut cu `schema: 26` în completul liniei frezelor).
 - **De urmărit:** în panoul foii, la 1400 px, etichetele „Numele” și „Materialul” apar tăiate la o literă (văzut de
   linia trasării, și pe `220bd48e`: nu vine dintr-o felie de azi).
