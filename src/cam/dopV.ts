@@ -37,6 +37,7 @@ import { conturDeTaiat } from './contur.ts';
 import { element } from './dopDrept.ts';
 import { puntiPeBucle, refuzIncrustatie, type DopCalculat, type RegimDop, type SemifabricatDop } from './incrustatie.ts';
 import { lungimeBucla } from './parcurgere.ts';
+import { refuzTais, regimFrezei } from './regimFreza.ts';
 import { contururiRegiuni, regiuniDesen } from './incrustatieDreapta.ts';
 import { programDinDocument } from './job.ts';
 import { MARJA_FUND, traseuVcarve } from './vcarve.ts';
@@ -145,13 +146,19 @@ export function programeDopuri(doc: Document, regim: RegimDop, supracursa = 0): 
       avertismente.push(`dopul ${t.idLume}: freza trece cu până la ${Math.ceil(dincolo * 10) / 10} mm dincolo de marginile semifabricatului (fața coborâtă până la margine): fixează-l fără cleme pe margini, de exemplu cu bandă dublu adezivă`);
     }
     const f = op.scula.forma!;
+    // Fiecare freză cu valorile ei (ADR 0300 §5): V-ul, freza fundului și frezele ei de rest; lipsă, regimul lucrării.
+    const rv = regimFrezei(op.scula, regim);
+    const avansuri = (s: Operatie['scula']): { readonly avans: number; readonly avansPlonjare: number } => {
+      const r = regimFrezei(s, regim);
+      return { avans: r.avans, avansPlonjare: r.avansPlonjare };
+    };
     const v = traseuVcarve({
       contururi: regiune, unghi: f.unghi, varf: 0, diametruScula: op.scula.diametru, adancime: val.S + val.H, adancimeStart: val.S,
-      pas: op.pas, avans: regim.avans, avansPlonjare: regim.avansPlonjare, zSigur: regim.zSigur,
+      pas: op.pas, avans: rv.avans, avansPlonjare: rv.avansPlonjare, zSigur: regim.zSigur,
       ...(fp ? {
         fundPlat: {
-          diametru: fp.scula.diametru, pasLateral: fp.pasLateral, sens: op.sens,
-          ...(fp.rest ? { rest: fp.rest.map((r) => ({ diametru: r.scula.diametru, pasLateral: r.pasLateral })) } : {}),
+          diametru: fp.scula.diametru, pasLateral: fp.pasLateral, sens: op.sens, ...avansuri(fp.scula),
+          ...(fp.rest ? { rest: fp.rest.map((r) => ({ diametru: r.scula.diametru, pasLateral: r.pasLateral, ...avansuri(r.scula) })) } : {}),
         },
       } : { fundV: { creasta: val.creastaDop } }),
     });
@@ -159,11 +166,14 @@ export function programeDopuri(doc: Document, regim: RegimDop, supracursa = 0): 
     const miscari: Miscare[] = [];
     const eticheta = (text: string): void => { miscari.push({ tip: 'eticheta', text, element: t.idLume, operatie: `${t.piesa}/${t.operatie}` }); };
     let initiala: Scula | null = null, curenta: Scula | null = null;
+    /** Frezele montate, din document, după număr: turația primei pornește programul, tăișul fiecăreia se judecă la capăt. */
+    const montate = new Map<number, Operatie['scula']>();
     const monteaza = (s: Operatie['scula']): void => {
+      if (!montate.has(s.numar)) montate.set(s.numar, s);
       if (curenta === null) { curenta = initiala = sculaIR(s); return; }
       if (s.numar === curenta.numar) return;
       curenta = sculaIR(s);
-      miscari.push({ tip: 'schimba-scula', scula: curenta, turatie: regim.turatie });
+      miscari.push({ tip: 'schimba-scula', scula: curenta, turatie: regimFrezei(s, regim).turatie });
     };
     if (fp && v.fund.length > 0) {
       monteaza(fp.scula);
@@ -223,9 +233,13 @@ export function programeDopuri(doc: Document, regim: RegimDop, supracursa = 0): 
       avertismente.push(`dopul ${t.idLume}: banda lasă marginile întregi; decupează dopul tu, cu fierăstrăul, pe fundul benzii, la cel puțin ${fix(banda.e)} mm de desen (mai aproape ar tăia peretele dopului)`);
     }
     const scula = initiala ?? sculaIR(op.scula);
+    const program = { axe: AXE_XYZ, scula, turatie: regimFrezei(montate.values().next().value ?? op.scula, regim).turatie, zSigur: regim.zSigur, miscari };
+    // Tăișul (ADR 0300 §5), pe tot programul dopului (fundul, pereții, decuparea prin placă).
+    const peste = refuzTais(program, montate);
+    if (peste) return { ok: false, motiv: `${t.idLume}, dopul: ${peste}` };
     dopuri.push({
       element: t.idLume,
-      program: { axe: AXE_XYZ, scula, turatie: regim.turatie, zSigur: regim.zSigur, miscari },
+      program,
       semifabricat,
       avertismente: [...avertismente, ...v.avertismente.map((a) => `dopul ${t.idLume}: ${a}`)],
       // Potrivirea simulată (ADR 0179): oglinda de mai sus, hârtia panoului, iar lemnul dopului fără ce taie decuparea până la

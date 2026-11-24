@@ -2,7 +2,7 @@
 
 <!-- Adusă din memoria sesiunii principale pe 23.11.2026 (mutarea în cloud). De aici înainte o ține la zi linia, pe ramura ei, odată cu feliile. -->
 
-_CNCVS2, elicele din Easy 3Draw (ADR 0282, ACCEPTAT 22.11 cu 1a, 2a, 3a): 3.Tq (elicea) unită în `main` pe 23.11 (`0ae9c6c1`, Easy 3Draw 18.19.0); reparația probelor atelierului (`baa00ad`) și 3.Tr (elicea de barcă, 18.20.0) unite în `main` pe 23.11 (`d262e57a`), din sesiunea cloud a liniei; apoi 3.Ts (carcasa), la cuvântul owner-ului; cotele LEGO măsurate din LDraw, față de axa piesei_
+_CNCVS2, elicele din Easy 3Draw (ADR 0282, ACCEPTAT 22.11 cu 1a, 2a, 3a): 3.Tq (elicea) unită în `main` pe 23.11 (`0ae9c6c1`, Easy 3Draw 18.19.0); reparația probelor atelierului (`baa00ad`) și 3.Tr (elicea de barcă, 18.20.0) unite în `main` pe 23.11 (`d262e57a`), din sesiunea cloud a liniei; 3.Ts (ventilatorul cu carcasă, 18.22.0) gata pe 24.11, pe ramură; cotele LEGO măsurate din LDraw, față de axa piesei_
 
 ## 3.Tq, gata (23.11, în cloud)
 
@@ -71,6 +71,37 @@ La „pornește 3.Tr” al owner-ului, pe ramura liniei, peste reparația probel
   bisectoare” era o probă greșită. Golul dintre palete se măsoară pe cerc: cel mai mare gol dintre două unghiuri vecine.
 - **O otravă scăpată arată o probă cu un singur punct:** capacul era cerut doar la jumătatea înălțimii (un inel); numele,
   niciodată cu gaura și capacul împreună.
+
+## 3.Ts, gata (24.11, în cloud): ventilatorul cu carcasă
+
+La „continua” al owner-ului, pe ramura liniei, din `main` `883a8caa` (biblioteca refăcută luase 18.21.0, deci 3.Ts e
+18.22.0).
+
+- **Ce are:** a treia piesă a filei „Elice”, „Ventilator cu carcasă”, cu două piese: rotorul (3–12 palete răsucite, vârful
+  drept, inelul la alegere) și carcasa (tubul cu peretele de 2, înalt cât paletele + 4, 2 sau 4 urechi cu găurile din
+  calibrare pe grila axului); „Repede” Ø24 / 32 / 40 / 48, „Fă ventilatorul”. Probele: unitare 11
+  (`trenulet.ventilator.test.ts`), e2e 6 (`trenulet.ventilator.spec.ts`). Otrăvurile: `3.Ts.py` 134 / 134 (125 din prima; nouă după probele lor țintite; E49, echivalentă, scoasă), `3.Ts-en.py` 9 / 9; 3 din `3.Tq.py` și 8 din `3.Tr.py`, mutate și prinse. Documentele: ADR 0282
+  („Implementarea (3.Ts)”), fișa etapei 3, `docs/otravuri.md`, DEVLOG.
+- **Hotărâte la implementare** (decizia spunea doar „inelul din jurul elicei, cu jocul din calibrare și cu găuri de știft
+  pentru grinzi”; motivele, în ADR): „jocul din calibrare” citit în două (găurile, calibrate; jocul la vârf, parametru);
+  găurile urechilor la k · 8 mm de ax (o grindă prinsă de ele are o gaură pe ax); inelul ca la 50899, fără „Ca LEGO”;
+  carcasa din paletele fără inel (aceeași pentru ambele rotoare).
+- **Rămase, la cuvântul owner-ului:** proba pe imprimantă (coada din fișa etapei 3).
+
+## Capcanele găsite la 3.Ts
+
+- **Privirea de sus pe randare** a găsit ce nicio probă nu cerea: lamajul urechii intră în peretele carcasei, iar peretele
+  de deasupra urechii acoperea marginea găurii (un știft băgat de sus l-ar fi lovit). Proba cere acum canalul, iar
+  canalul se taie doar unde lamajul ajunge la tub (la Ø41, gaura e la 32 mm).
+- **`prismaGauri` mută vârfurile cu cel mult 0,0001 mm** (ca earcut să nu piardă vârfurile coliniare): o probă pe raza unui
+  tub, a unui inel sau a unei găuri se face la 1e-3, nu la 1e-6.
+- **Vârfurile plasei se iau o singură dată** (`polare` cu `Map`): o medie pe `tri.flat()` e trasă spre vârfurile care apar
+  în mai multe triunghiuri.
+- **Două căi spre aceeași piesă** („Fă ventilatorul” și editorul) dădeau aceleași chei în altă ordine, deci lista
+  (care compară JSON-ul) le-ar fi pus pe două linii: o singură funcție le face pe amândouă (`defVentilator`).
+- **O piesă nouă mută otrăvurile vecinilor:** liniile `TIPURI` și `FAMILII`, coarda strânsă la limită, `paleteElice`
+  apelat la fel și capătul secțiunilor apar acum de două ori: 3 otrăvuri din `3.Tq.py` și 8 din `3.Tr.py`, aduse pe codul
+  nou (`verifica` pe toate listele `3.T*.py`; cele VOID ale lui 3.Ta–3.Tg erau așa și pe `main`).
 
 ## Probele atelierului așteaptă pornirea părții 3D (23.11, după unirea lui 3.Tq)
 

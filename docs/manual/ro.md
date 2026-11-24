@@ -980,6 +980,20 @@ are miniatura și numele ei, ochiul (vizibilă sau ascunsă), lacătul (fixată 
 
 Pe o linie a desenului, clicul rămâne al formei; înăuntrul formelor, al imaginii. Escape renunță la o tragere.
 
+**Calibrează** (sub opacitate) aduce imaginea la mărimea adevărată, după o lungime cunoscută din ea (o riglă pozată, o
+cotă): clic pe imagine pe primul capăt, apoi pe al doilea (cu Shift, pe orizontala sau verticala imaginii). Capetele se
+pot trage apoi unde trebuie, iar banda de sus arată distanța de acum. Scrie **Distanța adevărată (mm)** și apasă
+**Aplică** (ori Enter): imaginea se scalează la fel pe ambele laturi, în jurul primului capăt, care rămâne pe loc, într-un
+pas de anulare. Escape ori **Renunță** ies fără nimic schimbat.
+
+**Trasează…** trasează din imaginea de pe foaie: trage peste ea zona de trasat (pe o imagine rotită, dreptunghiul se
+rotește cu ea), ori alege **Toată imaginea** (ori Enter). Se deschide fereastra trasării, cu imaginea și zona aleasă
+(zona se poate schimba și acolo), iar **Importă** pune vectorii exact peste imagine: la scara, locul și rotirea ei, într-un
+pas de anulare. Aici fereastra n-are Mărimea (scara e a imaginii) și nu îndreaptă foaia sau scanarea: pentru asta, pune
+imaginea din nou, îndreptată, din „Importă…”. Ambele butoane merg doar pe o imagine vizibilă, citită în browser.
+
+Raportul foilor (din fereastra exportului) spune, la fiecare foaie, numele imaginilor ei.
+
 Imaginile se țin în browser, lângă proiect, nu în document: pe alt calculator ori în alt browser, foaia arată doar locul
 lor, punctat, iar lista spune că lipsesc. O imagine pe care n-o mai folosește nicio versiune păstrată a proiectului se
 șterge la o pornire, după cel puțin o zi. Pe telefon, imaginile se văd, dar nu se pun și nu se schimbă.

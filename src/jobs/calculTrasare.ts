@@ -44,6 +44,11 @@ export type CerereTrasare = {
   readonly gauriMm: number;
   /** Lățimea imaginii pe foaie, în mm; null: din DPI. */
   readonly latimeMm: number | null;
+  /**
+   * Lățimea imaginii întregi (înaintea zonei) pe foaie, în mm: a imaginii de pe foaie, trasată de acolo (ADR 0272 §7). Bate
+   * `latimeMm` și DPI-ul, ca vectorii să vină exact peste ea; cererea n-are atunci foaie și scanare de îndreptat.
+   */
+  readonly latimeIntreaga?: number;
   /** DPI-ul citit din fișier (pe x), sau null. */
   readonly dpi: number | null;
   readonly maxPixeli?: number;
@@ -183,7 +188,7 @@ type Scara = {
    * De unde vine scara: lățimea aleasă, formatul foii îndreptate (ADR 0225), DPI-ul fișierului sau cel presupus; și DPI-ul
    * care rezultă (pe pixelii fișierului; pe foaia îndreptată, un pixel al ei ține cât unul al pozei).
    */
-  readonly scara: 'latime' | 'foaie' | 'fisier' | 'presupus';
+  readonly scara: 'latime' | 'foaie' | 'fisier' | 'presupus' | 'imagine';
   readonly dpi: number;
   /** Mărimea imaginii din fișier, dacă decodarea a redus-o. */
   readonly redusDin: { readonly latime: number; readonly inaltime: number } | null;
@@ -440,10 +445,13 @@ async function pregateste(c: CerereTrasare): Promise<Pregatita | { readonly refu
   // Imaginea pentru foaie (ADR 0272): întreagă, înaintea decupajului zonei.
   const intreaga = img;
   if (zona) img = decupeaza(img, zona);
-  // Scara: lățimea aleasă e a imaginii trasate (a zonei, dacă e una); fără ea, formatul foii îndreptate, apoi mărimea fizică
-  // din DPI (a fișierului, nu a imaginii reduse), deci pixelul are aceeași mărime cu sau fără zonă.
-  const mmPePx = c.latimeMm !== null ? c.latimeMm / img.latime : mmFoaie ?? (25.4 / (dpiFisier ?? DPI_PRESUPUS)) * pxFisier;
-  const scara = c.latimeMm !== null ? 'latime' : mmFoaie !== null ? 'foaie' : dpiFisier !== null ? 'fisier' : 'presupus';
+  // Scara: a imaginii de pe foaie (ADR 0272 §7), pe imaginea întreagă; altfel lățimea aleasă e a imaginii trasate (a zonei,
+  // dacă e una); fără ea, formatul foii îndreptate, apoi mărimea fizică din DPI (a fișierului, nu a imaginii reduse), deci
+  // pixelul are aceeași mărime cu sau fără zonă.
+  const peFoaie = c.latimeIntreaga !== undefined && c.latimeIntreaga > 0;
+  const mmPePx = peFoaie ? (c.latimeIntreaga ?? 0) / intreg.latime
+    : c.latimeMm !== null ? c.latimeMm / img.latime : mmFoaie ?? (25.4 / (dpiFisier ?? DPI_PRESUPUS)) * pxFisier;
+  const scara = peFoaie ? 'imagine' : c.latimeMm !== null ? 'latime' : mmFoaie !== null ? 'foaie' : dpiFisier !== null ? 'fisier' : 'presupus';
   const dpi = (25.4 * pxFisier) / mmPePx;
   const sc: Scara = { mmPePx, scara, dpi, redusDin, intreg, zona, foaie, rotire, ...(pagini !== null ? { pagini } : {}), ...(poza ? { poza } : {}) };
   // Imaginea pentru foaie (ADR 0272): fișierul însuși, dacă imaginea întreagă e chiar el (fiecare pas fără efect întoarce

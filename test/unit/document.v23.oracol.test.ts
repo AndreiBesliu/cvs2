@@ -273,6 +273,12 @@ test('(o) ciocnirile v23: rândul lui CAMPURI_NOI_O, pe orice instanță a oric�
     25: ['incrustatie.locas', 'incrustatie.treapta'],
     // ADR 0211 (v26): locurile urechilor; ciocnirea lor o judecă proba v26.
     26: ['urechi.mod', 'urechi.locuri'],
+    // ADR 0300 §5 (v27): originea, valorile de lucru și tăișul, pe fiecare freză a operației; ciocnirea lor o judecă proba v27.
+    27: ['scula.biblioteca', 'scula.regim', 'scula.tais', 'rest[].scula.biblioteca', 'rest[].scula.regim', 'rest[].scula.tais',
+      'fundPlat.scula.biblioteca', 'fundPlat.scula.regim', 'fundPlat.scula.tais', 'fundPlat.rest[].scula.biblioteca',
+      'fundPlat.rest[].scula.regim', 'fundPlat.rest[].scula.tais', 'incrustatie.frezeDop[].scula.biblioteca',
+      'incrustatie.frezeDop[].scula.regim', 'incrustatie.frezeDop[].scula.tais', 'incrustatie.banda.freza.biblioteca',
+      'incrustatie.banda.freza.regim', 'incrustatie.banda.freza.tais'],
   });
   assert.equal(PE_INSTANTA_O, 'instanta:');
   // Fiecare câmp nou, pe un document al versiunii dinainte, se ciocnește exact la pasul lui (cu `texte` pe instanță).

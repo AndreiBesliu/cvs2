@@ -12639,6 +12639,99 @@ PR-ul `AndreiBesliu/cvs2#13` („De unit acum (A.9a, A.9b): `dbb0306a`”).
   completul); indexul liniilor; starea din `docs/linii/principala.md`.
 - **La owner:** fereastra exportului (28.8↑a–b-3: acum sau după desene), verificarea juridică a utilizării aplicației
   înaintea live-ului, „cine unește în `main`”.
+
+## 2026-11-24 — Felia 25.8↑b: „Calibrează” și „Trasează…” din imaginea de pe foaie, numele imaginilor în raportul foii (ADR 0272 §6, §7, §10) (Model: Claude Opus 5.5)
+
+**Prompt:** „pornește 25.8↑b”. **Started:** 24.11, 05:00 (după aducerea lui `main` `883a8caa`, fără ciocniri). **Completed:**
+24.11, 09:30.
+
+- **Rândul imaginii** (`src/app/ImaginiFoii.tsx`): **Calibrează** și **Trasează…**, sub opacitate, doar pe o imagine
+  vizibilă cu octeții citiți.
+- **Modul pânzei** (`src/app/ModImagine.tsx`, la cerere; partea pură `src/app/modImagineCalcul.ts`), cu banda urechilor:
+  calibrarea din două capete pe imagine (Shift: pe axa ei), trase apoi, distanța de acum lângă linie, câmpul distanței
+  adevărate ales în bandă, Aplică / Enter: scalarea uniformă în jurul primului capăt, un pas (`foaie.imagini`); zona trasă
+  peste imagine (în cadrul ei, și rotită, tăiată la ea) ori „Toată imaginea”. Escape și Renunță ies; modul se închide
+  singur dacă imaginea pleacă ori se ascunde.
+- **Editorul oprit cât ține un mod al pânzei** (`src/app/Editare.tsx`): cadrul selecției, textul, Pen-ul (desenul rămâne) și
+  mânerele (ale formelor și ale imaginilor) ascultau pe `window` la captură și luau clicurile modului; acum trec prin
+  `activ` (și în modul urechilor alese).
+- **Fereastra din imaginea de pe foaie** (`ImportConectat` cu `dinFoaie`, `DialogImport`, `FereastraTrasare`): octeții din
+  baza imaginilor, numele tipului lor, zona în pixeli; scara imaginii (`AlegeriTrasare.latimeIntreaga` →
+  `CerereTrasare.latimeIntreaga`, workerul pe imaginea întreagă, scara „din imaginea de pe foaie”), fără Mărime, îndreptări,
+  „Păstrează” și „Doar imaginea”; „Importă” pune vectorii exact peste imagine (`ImportPregatit.peImagine`, comanda
+  importului rotește și mută instanța).
+- **Raportul foilor:** numele imaginilor fiecărei foi (din foile identice, o dată); CSV-ul neschimbat (lista de tăiere).
+- **Probele:** `test/unit/imagini.calibrare.test.ts` (10, pe hârtie, cu importul peste o imagine rotită cu 30°, scalată și
+  cu zonă), scara fixă în `import.imagine.test.ts`, raportul în `raport.foi.test.ts`; 3 e2e în `imagini-foaie.spec.ts`
+  (calibrarea cu imaginea desfăcută și ascunsă pe drum, trasarea din imaginea micșorată și rotită cu 90°, zona cu Pen-ul ales
+  și raportul). Vecinele, local: 149 / 149 (23 de fișiere: trasarea, importul, imaginile, panoul, editarea, selecția, Pen-ul,
+  cuțitul, textul, ancorele, urechile, raportul, manualul). Unitarele întregi, local: 10 056 trecute, 12 sărite, una căzută
+  (catalogul controalelor, ADR 0262: butoanele noi, scrise ca atribute, apoi `node scripts/catalog-controale.ts --scrie`).
+- **Otrăvurile:** `test/otravuri/25.8b.py`, 46 / 46 într-o clonă (24 unitare, 22 prin e2e); C08 și C09 (pixelii zonei)
+  scăpaseră întâi: 0,3 · 800 e exact 240 în virgulă mobilă, iar zona îngustă de probă nu atingea toleranța.
+- **Mărimea:** totalul 804,3 / 900 kB (+4,7), pornirea 109,7 / 115 (+0,3, în `App.tsx`), cu ușa 114,2, cu Atelierul
+  114,5 / 115 (rămân 0,5 kB).
+- **Porțile, în CI, verzi la prima trecere:** pe `88cdefb4` (felia), rapidul și completul (51 min 34 s): unit 10 057 / 0
+  (12 sărite, pe Linux), e2e 649 / 649, funcțiile pe emulatoare 120 / 120, paginile 50 / 50. Cu `main` `df9ae539` adus (A.10
+  și A.11a; ciocnirea doar în DEVLOG), pe `01474f96`, rapidul și completul (51 min 40 s): unit 10 066 / 0 (12 sărite), e2e
+  649 / 649, funcțiile pe emulatoare 122 / 122, paginile 51 / 51; pornirea 109,8 / 115 (cu ușa 114,3, cu Atelierul 114,6:
+  rămân 0,4 kB), totalul 804,7 / 900, `/admin` 135,0 / 200.
+- **Documentele:** ADR 0272 („Implementarea (25.8↑b)”, precizările la §6, §10), indexul ADR, manualul (ro, en), fișa etapei 3
+  (jurnalul, încercarea în coada owner-ului), traducerile roadmap-ului, `CLAUDE.md`, nota liniei.
+
+## 2026-11-24 — Felia 3.Ts: ventilatorul cu carcasă în atelierul Easy 3Draw (ADR 0282) (Model: Claude Opus 5.5)
+
+**Prompt:** „continua” (în sesiunea cloud a liniei elicelor, după unirea lui 3.Tr în `main` și publicarea pe test).
+**Started:** 24.11, 07:38. **Completed:** 24.11, 09:14 (în container; CI-ul, pe commit-ul împins).
+
+- **Reperul LEGO:** din LDraw, 50899 (rotor cu inel în jurul paletelor, pe o gaură care nu e de ax Technic) și 41530
+  (palete curbe, fără pas). Niciuna nu e un ventilator în tub pe un ax LEGO: de la 50899 vine ideea inelului, nu cotele.
+- **Proba întâi:** 11 probe unitare cu valorile pe hârtie (calculate separat, cu un script de o singură folosință), apoi
+  motorul. Două ajustări ale probelor la scriere: vârfurile luate o singură dată (o medie pe `tri.flat()` e trasă spre
+  vârfurile din mai multe triunghiuri) și toleranța de 1e-3 pe ce face `prismaGauri` (mută vârfurile cu 0,0001 mm).
+- **Motorul:** `ventilator`, `ventilatorCote`, `carcasaVentilator`, `laturiCerc`; paletele din `paleteElice`, butucul din
+  `butucElice`. Elicea și elicea de barcă, neschimbate.
+- **Atelierul:** a treia piesă a filei Elice, cu piesa (rotorul sau carcasa), „Repede”, câmpurile comune, alegerile
+  fiecărei piese, textul, „Fă ventilatorul”, pictograma, 22 de texte în engleză; rotorul și carcasa, cu aceleași chei oricum
+  s-ar adăuga (`defVentilator`). Capturile: desktop și 390 px (fără depășire).
+- **Privirea pe randare** a găsit peretele carcasei peste marginea găurii, deasupra urechii (un știft băgat de sus l-ar fi
+  lovit): lamajul taie acum un canal și prin peretele de deasupra, cu 0,8 mm spre interior, doar unde ajunge la tub; proba
+  scrisă întâi (căzută), apoi codul.
+- **Hotărâte la implementare** (în ADR, „Implementarea (3.Ts)”): „jocul din calibrare” citit în două; găurile urechilor pe
+  grila axului; inelul ca la 50899, fără „Ca LEGO”; carcasa din paletele fără inel.
+- **Otrăvurile, în clonă:** `3.Ts.py` 134 / 134: 125 din prima; nouă scăpate pe probele unitare, prinse după probele lor țintite (cazurile la care rotunjirea, inelul sau rezoluția cercurilor contează); E49, echivalentă, scoasă cu motivul. `3.Ts-en.py` 9 / 9 (N08, după proba numelui în engleză cu gaura și inelul). Listele lui 3.Tq (3) și 3.Tr (8), mutate pe codul nou și rulate din nou: toate prinse.
+- **Porțile, în container:** tipurile, regulile de import (0 încălcări), traducerile, unitarele pluginului, ale bibliotecii
+  și ale extensiilor 241 / 241, build-ul determinist, e2e-ul atelierului și al bibliotecii. Pornirea 109,4 / 115 (cu ușa
+  113,9), totalul 799,6 / 900, `/admin` 133,2 / 200 (neschimbate: pluginul e în afara pachetului); Easy 3Draw 18.22.0,
+  466,1 kB.
+- **Documentele:** ADR 0282, indexul ADR, fișa etapei 3 (jurnalul și coada owner-ului), traducerile roadmap-ului,
+  registrul otrăvurilor, nota liniei.
+
+## 2026-11-24 — 16.A↑b-1: documentul v27 și valorile frezei în program (Model: Claude Opus 5.5)
+
+**Prompt:** „continua” (owner-ul, după unirea lui 16.A↑a și ADR 0301 în `main`). **Started:** 24.11, 07:35.
+
+- `main` adus (`883a8caa`: A.9a, A.9b) în `59d22614`. Felia 16.A↑b împărțită în trei: **b-1** (documentul v27, valorile
+  frezei în program; fără interfață), **b-2** (lista „Freza” pe rândurile exportului și în Tăierea), **b-3** (nota schimbării
+  din bibliotecă, „Ia valorile noi”, recunoașterea fără origine).
+- **Documentul v27** (`7fb16ec3`): `biblioteca`, `regim`, `tais` pe orice freză a unei operații (scula, frezele de rest,
+  fundul plat și frezele lui de rest, frezele dopului, freza benzii); migrarea v26 → v27 doar cu numărul, ciocnirea pe
+  fiecare loc. Oracolul documentului la v27 (`FREZE_OPERATIE_O`, pașii `[]` în ciocniri, `problemeFrezaV27O`), cazurile pe
+  hârtie, `document.v27.oracol.test.ts` 16 / 16; probele versiunii curente pe 27, după diff-ul lui `63a1eca0` (v26), cu un
+  script pentru lanțuri. Corpusul de aur la v27 (`f999c180`): clona era superficială, deci întâi `git fetch --unshallow`;
+  intrarea v26 din `59d2261`, aceiași octeți; în ieșirile vechi, doar numărul.
+- **Programul** (`c5be2f07`): `src/cam/regimFreza.ts` (`regimFrezei`, `refuzTais`), legat în `job.ts`, `vcarve.ts`
+  (avansurile frezelor fundului) și `dopV.ts`. Proba `freze.program.test.ts` 15 / 15, scrisă înainte (14 căzute pe codul
+  vechi). Capcana: mașina estimării are 500 mm/min pe axe, deci proba timpului folosește un avans de 250.
+- **Porțile, în container:** tipurile, importurile (20 / 20, 0 încălcări), suita unitară întreagă 10 076 / 10 088 (12 sărite,
+  0 căzute), build-ul determinist (379 de fișiere); pornirea 109,4 → 109,5 kB (cu ușa
+  114,0, cu Atelierul 114,3 / 115), totalul 799,6 → 800,5 / 900; traducerile (969, 0 lipsă).
+- **Otrăvurile** (`test/otravuri/16.A-b1.py`), într-o clonă: 34 / 34 prinse (11 pe document, 23 pe program); C23 (tăișul
+  pe dopul în V) cerea o aserțiune nouă în probă, pusă înaintea rulării. `verifica` pe toate listele: aceleași 242 de
+  VOID-uri ca pe `main` `883a8caa`.
+- **Documentele:** ADR 0300 („Implementarea (16.A↑b-1)”), fișa etapei 3 (rândul `16.A↑b-1`), pragul, registrul
+  otrăvurilor, traducerile, nota liniei. **Completed:** 24.11, 08:55.
+
 - **Publicarea (`883a8caa`):** rapidul și completul pe `main` verzi (completul, 63 min 54 s), `publica.yml` verde în
   3 minute, cu serverul: funcția `agregaUtilizarea` creată, regulile Firestore și indexurile publicate; adresa de test
   spune `883a8caa1f21` (24.11, 07:14).
@@ -12648,7 +12741,7 @@ PR-ul `AndreiBesliu/cvs2#13` („De unit acum (A.9a, A.9b): `dbb0306a`”).
 **Prompt:** același brief de predare al sesiunii principale („unește ce se poate”), la raportul liniei adminului din
 PR-ul `AndreiBesliu/cvs2#13` („De unit acum (A.9a, A.9b, A.10, A.11a): `0580f504`”). Între timp, owner-ul: „i-am dat sa
 continue, tu ce poti sa faci intre timp?”.
-**Started:** 24.11, 07:35. **Completed:** unirea în `main`, 24.11, 08:31; publicarea pe test, la rândul ei.
+**Started:** 24.11, 07:35. **Completed:** unirea în `main`, 24.11, 08:31; publicarea pe test, 24.11, 09:41.
 
 - **Înainte:** lotul al unsprezecelea pe test (`883a8caa1f21`, 07:14, cu serverul); rândul publicării lui stătea pe
   `unire-2411c` (`c611346a`, doar documente) și intră în `main` cu lotul acesta.
@@ -12675,3 +12768,71 @@ continue, tu ce poti sa faci intre timp?”.
   container).
 - **La owner:** fereastra exportului, verificarea juridică a utilizării aplicației înaintea live-ului, „cine unește în
   `main`”, plafonul pornirii (mai sunt 0,6 kB), răspunsul la lista de mai sus.
+- **Publicarea (`df9ae539`):** rapidul și completul pe `main` verzi (completul, 51 min 41 s), `publica.yml` verde în
+  3 minute, cu serverul: cele 14 funcții actualizate (între ele `logClientError` și `agregaUtilizarea`), regulile și
+  indexurile publicate din nou; adresa de test spune `df9ae5397d8e` (24.11, 09:41). Proba de fum din container:
+  aplicația se deschide cu versiunea publicată, fără erori în consolă; CSP-ul, workerul PWA, catalogul extensiilor,
+  textele, manualul, dicționarul codurilor și documentația răspund; `/admin` arată pagina de intrare.
+- **După publicare:** PR-uri noi, pornite de owner în sesiunile liniilor, cu completul în lucru: trasarea 25.8↑b
+  (`AndreiBesliu/cvs2#14`), frezele 16.A↑b-1 (`#16`, documentul v27), elicele 3.Ts (`#15`), adminul A.11b și A.11c
+  (`#13`); biblioteca, ADR 0232 propus (`#17`, doar documente). Se unesc la raport.
+
+## 2026-11-24 — Sesiunea principală în cloud: a treisprezecea unire (25.8↑b, „Calibrează” și „Trasează…” din imaginea de pe foaie) (Model: Claude Fable 5.2)
+
+**Prompt:** același brief de predare al sesiunii principale („unește ce se poate”), la raportul liniei trasării din
+PR-ul `AndreiBesliu/cvs2#14` („De unit de sesiunea principală”).
+**Started:** 24.11, 09:50. **Completed:** unirea în `main`, 24.11, 10:20; publicarea pe test, la rândul ei.
+
+- **Înainte:** lotul al doisprezecelea pe test (`df9ae5397d8e`, 09:41, cu serverul); rândul publicării lui stătea pe
+  `unire-2411d` (`791171d8`, doar documente) și intră în `main` cu lotul acesta.
+- **Patru linii cu PR și completul în lucru** (trasarea, frezele, elicele, adminul). Cât rulau: unirea lor de probă,
+  locală (`proba-2411d`, neîmpinsă): ciocniri în DEVLOG, în fișa etapei 3 și în catalogul controalelor (scris din
+  nou); tipurile, importurile, traducerile trec; pornirea 109,9 kB (cu ușa 114,4, cu Atelierul 114,7 / 115), totalul
+  806,1 / 900. Suita unitară întreagă, oprită după 25 de minute (9 943 de probe trecute, niciuna căzută).
+- **De ce doar trasarea acum:** la 10:20, trasarea și elicele erau verzi; completul frezelor căzuse
+  (`placute.spec.ts:46` cerea documentul salvat la v26; reparat de linie în `112c32f6`, reluat), al adminului rula.
+  Trasarea singură are exact codul verificat, deci intră fără porți noi; celelalte trei, într-un lot comun, cu porțile
+  pe ramura de unire.
+- **Verificate înaintea unirii:** ramura fără `.lucru/`, cu `main` `df9ae539`; `ed6014c5` adaugă peste `01474f96`
+  doar documente; completul liniei verde pe `01474f96` (45343575138), rapidul pe `ed6014c5`.
+- **Unirea:** pe `unire-2411d` (din `df9ae539`): 25.8↑b în `f7f4510f`, fără nicio ciocnire; `git diff` gol față de
+  `01474f96` în afara fișierelor `.md`. În container: catalogul controalelor la zi, tipurile, regulile de import
+  (0 încălcări), traducerile (975, 0 lipsă).
+- **Porțile, în CI, pe `01474f96`** (completul, 51 min 40 s): unit 10 066 / 0 (12 sărite), e2e 649 / 649, funcțiile pe
+  emulatoare 122 / 122, paginile 51 / 51; pornirea 109,8 / 115 (cu ușa 114,3; cu Atelierul 114,6), totalul
+  804,7 / 900, `/admin` 135,0 / 200. Nimic pe server.
+- **Documentele:** decizia în `CLAUDE.md` și rândul de stare al lui 25.8↑b (scris de linie, completat cu unirea și
+  mărimea); indexul liniilor; starea și două lecții în `docs/linii/principala.md` (unirea de probă; felia cu codul
+  verificat intră singură).
+- **La owner:** plafonul pornirii (după lotul următor rămân 0,3 kB), fereastra exportului, verificarea juridică a
+  utilizării aplicației, „cine unește în `main`”, ADR 0232 (biblioteca), lista „ce pot face între timp”.
+
+## 2026-11-24 — Sesiunea principală în cloud: a paisprezecea unire (3.Ts, ventilatorul cu carcasă; A.11b–A.11e, utilizarea aplicației; 16.A↑b-1, documentul v27) (Model: Claude Fable 5.2)
+
+**Prompt:** același brief de predare al sesiunii principale („unește ce se poate”), la rapoartele liniilor: elicele
+(PR-ul `AndreiBesliu/cvs2#15`, „gata de unit”), adminul (mesajul liniei: „`c3f80a74` e gata de unit”), frezele
+(mesajul liniei: „16.A↑b-1 e gata de unit”).
+**Started:** 24.11, 10:21. **Completed:** unirea în `main`, 24.11, 11:28; publicarea pe test, la rândul ei.
+
+- **Ramura de unire, înaintea ultimelor rapoarte:** `unire-2411e` din `fafb95e7` (cu 25.8↑b), la 10:22: 3.Ts
+  (`3218781c`) în `e14e553a`, A.11b–A.11e (`c3f80a74`) în `8ccb66e8`, 16.A↑b-1 (`112c32f6`) în `32b33a42`.
+  Ciocnirile: DEVLOG (`rezolva-devlog.py`), un rând de tabel în fișa etapei 3 (ambele părți), catalogul controalelor
+  (scris din nou: 603 nume). Completul lotului, pornit atunci; elicele erau verzi, adminul și frezele încă rulau.
+- **Rapoartele:** adminul, verde pe `eaa0a356` (codul lui `c3f80a74`; 45350813422), 10:44; frezele, verzi pe
+  `112c32f6` (45351574708), 10:47. Adminul împinsese între timp A.7 peste commit-ul raportat: rămâne pentru lotul
+  următor. Vârfurile elicelor (`5e05b325`) și frezelor (`34b5fa1b`) aduceau doar `main`: unirea lor de probă peste
+  lot, zero fișiere schimbate în afara `.md`.
+- **În container:** tipurile (și ale funcțiilor), regulile de import (0 încălcări), traducerile (989, 0 lipsă),
+  biblioteca la zi (Easy 3Draw 18.22.0), build-ul determinist.
+- **Porțile lotului, în CI, pe `32b33a42`** (completul 45355480148, 48 min 55 s, verde la prima trecere): unit
+  10 111 / 0 (12 sărite), e2e 655 / 655, funcțiile pe emulatoare 126 / 126, paginile 53 / 53; pornirea 109,9 / 115
+  (în CI 109,8; cu ușa 114,4; cu Atelierul 114,7), totalul 806,1 / 900, `/admin` 137,9 / 200, contul 30,1 / 32.
+- **La publicare merge și serverul:** funcțiile `utilizare` și `tichete`, regulile Firestore, două indexuri compuse
+  pe `utilizare`.
+- **Documentele:** decizia în `CLAUDE.md`, rândurile de stare (documentul v27 și valorile frezei; A.11b–A.11e;
+  versiunea Easy 3Draw; următorul câmp al documentului ia v28); indexul liniilor; starea și o lecție în
+  `docs/linii/principala.md` (porțile unui lot pot porni înaintea ultimului raport).
+- **Lotul al treisprezecelea** (`fafb95e7`, 25.8↑b): la unire, completul lui pe `main` încă rula (pornit 10:30);
+  publicarea lui vine înaintea acestui lot (`publica.yml` construiește sha-ul dat).
+- **La owner:** plafonul pornirii (mai sunt 0,3 kB), fereastra exportului, verificarea juridică a utilizării
+  aplicației, „cine unește în `main`”, ADR 0232 (biblioteca), lista „ce pot face între timp”.

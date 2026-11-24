@@ -108,6 +108,17 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
   `<meta name="cncvs2-versiune">`, antetul CSP, workerul PWA, `/extensii/catalog.json`, `/mesaje/*.json`,
   `/manual/ro.json`, `/coduri/ro.json`, `/documentatie/*.json`, pagina de intrare a `/admin`. Logarea nu merge (gazdele
   Google sunt oprite de proxy), deci ce e după cont rămâne al probelor de pe emulatoare.
+- **Unirea de probă, locală, a liniilor care urmează** (24.11, cât le rulau completele): o ramură `proba-<data>`,
+  neîmpinsă, cu vârfurile lor unite; spune din timp ciocnirile, starea catalogului controalelor și, cu build-ul
+  determinist, dacă pornirea mai încape. Suita unitară întreagă ține peste 25 de minute în container (4 procesoare):
+  rămâne a CI-ului de pe ramura de unire.
+- **O felie cu exact codul verificat intră singură, fără să aștepte lotul:** pe 24.11, 25.8↑b era verde când celelalte
+  trei încă rulau; unită singură (cod identic cu al commit-ului cu porțile), a pornit spre test cu o oră și jumătate
+  înaintea lotului comun, care cere porți noi pe ramura de unire.
+- **Porțile unui lot comun pot porni înaintea ultimului raport** (24.11, lotul al paisprezecelea): ramura de unire s-a
+  făcut din commit-urile anunțate, cu completul pornit pe ea cât încă rulau completele a două linii; în `main` a intrat
+  abia după ce au fost verzi și porțile lotului, și cele ale liniilor, iar vârfurile nu aduseseră cod (unirea de probă
+  a vârfului: zero fișiere schimbate în afara `.md`). Câștigul: o jumătate de oră.
 - **PR-ul liniei** e deschis de sesiunea ei ca ciornă (regula mediului cloud): starea „ciornă” nu spune că felia nu e gata.
   Gata înseamnă raportul liniei (nota ei spune „gata”) și rapidul cu completul verzi pe commit-ul raportat.
 
@@ -130,24 +141,28 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
   printr-o schiță.
 - **Observabilitatea:** erorile ajung în jurnalul aplicației; joburile își lasă marcajul.
 
-## Starea pe 24.11.2026, dimineața (după a douăsprezecea unire din cloud)
+## Starea pe 24.11.2026, la prânz (după a paisprezecea unire din cloud)
 
-- **Pe test:** `883a8caa` (tot până la lotul al unsprezecelea: A.9a și A.9b; publicat pe 24.11 la 07:14, cu serverul:
-  funcția nouă `agregaUtilizarea`, regulile Firestore, indexurile).
+- **Pe test:** `df9ae539` (tot până la lotul al doisprezecelea: A.10 și A.11a; publicat pe 24.11 la 09:41, cu
+  serverul: `logClientError` și `agregaUtilizarea` la zi).
 - **`main`, din cloud:** pe 23.11: 3.Tq (`0ae9c6c1`); 11.3↑e și A.4 (`ddaa7ead`); 3.Tr, unită de linia elicelor
   (`d262e57a`); 25.8↑a și A.5 (`1b46c955`), cu reparația probei extensiilor (`8287d66e`); 11.3↑f, unită de linia
   planșelor (`f4601938`); A.6 (`4497d639`); 3.Xh (`2d1e482c`) și 12.1↑e-3 cu 12.1↑e-4 (`03460cab`); A.8a cu A.8b
   (`5325b8fe`) și 25.9↑ (`4fe2d2ad`). Pe 24.11: 16.A↑a (`02a5864a`), cu ADR 0301 (`813fa675`); A.8c și A.8d (`80d3eb70`);
-  A.9a și A.9b (`95dddbe0`); A.10 și A.11a (`7f6f4069`).
+  A.9a și A.9b (`95dddbe0`); A.10 și A.11a (`7f6f4069`); 25.8↑b (`f7f4510f`); 3.Ts (`e14e553a`), A.11b–A.11e
+  (`8ccb66e8`) și 16.A↑b-1, cu documentul v27 (`32b33a42`).
 - **Liniile** (vezi [indexul](README.md)):
   - **gata pe ramură, la cuvântul owner-ului:** fereastra exportului (28.8↑a–b-3, ADR 0290; `AndreiBesliu/cvs2#11`),
     după ce o încearcă pe canalul `export`;
-  - **în lucru:** frezele (16.A↑b: alegerea în proiect, documentul v27), adminul (A.11b, bifa pașilor la raportare,
-    cu completul pe `cd00283b`; A.11c, cronologia unui om; apoi A.11d), exportul (desenele, 28.8↑b–f);
-  - **la cuvântul owner-ului:** A.7 (adminul pe telefon), 25.8↑b, 3.Ts, restul bibliotecii extensiilor (căutarea,
-    captura mărită), următoarea felie a incrustațiilor, 11.5↑b (după etapa 13);
-  - **fără felie în lucru:** planșele (tăierea plăcii 11, la owner), elicele, trasarea, incrustațiile, biblioteca,
-    tăierea (după 10.3↑o: 10.3↑p–r), imprimanta (după 3.6v: 3.6w, camera), aranjamentele (28.1↑). Pornesc la cuvântul
+  - **în lucru, pe ramuri:** adminul (A.7, adminul pe telefon, peste commit-ul unit; `AndreiBesliu/cvs2#13`), frezele
+    (16.A↑b-2: lista „Freza” pe rândurile exportului și în Tăierea), exportul (28.8↑, `#11`: unirea la cuvântul
+    owner-ului); se unesc la raportul liniei;
+  - **propus, la owner:** biblioteca (ADR 0232, auditul UI/UX al extensiilor, cinci întrebări; `#17`);
+  - **la cuvântul owner-ului:** restul bibliotecii extensiilor (căutarea, captura mărită), următoarea felie a
+    incrustațiilor, a trasării și a elicelor, 11.5↑b (după etapa 13);
+  - **fără felie în lucru:** planșele (tăierea plăcii 11, la owner), incrustațiile, trasarea, elicele, tăierea (după
+    10.3↑o: 10.3↑p–r),
+    imprimanta (după 3.6v: 3.6w, camera), aranjamentele (28.1↑). Pornesc la cuvântul
     owner-ului, cu un brief scris de sesiunea principală și lipit de owner într-o sesiune cloud nouă;
   - **încheiate:** ancorele (6.V↑), raportările (15.B↑b), galeria (3.Tp, ADR 0281), probele instabile.
 - **La owner:**
@@ -161,9 +176,11 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
     mai scurtă (fără al doilea complet pe `main` când codul e identic cu cel verificat; schimbă o regulă a porților),
     lista „ce e nou pe test, de încercat”, rezumatul pentru verificarea juridică, lista ramurilor unite de șters.
     Fără răspuns, niciuna nu pornește.
-- **Plafoanele:** totalul e 800,1 / 900 kB (ADR 0301, decizia owner-ului din noaptea de 23 spre 24.11). **Pornirea a
-  rămas 115 kB:** cu ușa 114,1, cu Atelierul 114,4 (după A.11a), deci mai sunt 0,6 kB; o felie care adaugă în pornire
-  cere întâi loc (o bucată mutată la cerere) sau decizia owner-ului.
+- **Plafoanele:** totalul e 806,1 / 900 kB (ADR 0301, decizia owner-ului din noaptea de 23 spre 24.11). **Pornirea a
+  rămas 115 kB:** cu ușa 114,4, cu Atelierul 114,7 (după lotul al paisprezecelea), deci mai sunt 0,3 kB. O felie care
+  adaugă în pornire nu mai încape: cere întâi loc (o bucată mutată la cerere) sau decizia owner-ului.
+- **Documentul e v27** (frezele, 16.A↑b-1): un câmp nou ia v28. O probă care citește documentul salvat cere versiunea
+  curentă (`placute.spec.ts` a căzut cu `schema: 26` în completul liniei frezelor).
 - **De urmărit:** în panoul foii, la 1400 px, etichetele „Numele” și „Materialul” apar tăiate la o literă (văzut de
   linia trasării, și pe `220bd48e`: nu vine dintr-o felie de azi).
 - **Pe calculatorul owner-ului:** worktree-urile vechi (`C:\Users\besli\cncvs2-lucru\*`), toate curate și împinse, rămân

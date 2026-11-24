@@ -1,10 +1,11 @@
 /**
  * Fereastra „Raportul foilor și lista de tăiere” (ADR 0210 §6, răspunsul 7; felia 11.6↑; planșa 7 a schiței), deschisă din
  * fereastra exportului și din paletă. Pe fiecare foaie (foile identice o dată, ×N): previzualizarea (SVG-ul exportului de
- * vectori, cu straturile lui), materialul, mărimea, cât e folosită, operațiile și piesele (câte, mărimea, rotirile, valorile
- * din CSV); la capăt, totalurile pe piesă și foile pe material. Mărimea pieselor: tăiată (implicit) sau a desenului. CSV-ul
- * cu `;` (implicit, Excel în română) sau `,`, și tipărirea (PDF din browser): fereastra stă direct sub `body`, ca tipărirea
- * s-o ia singură, pe oricâte pagini. Vine la cerere, cu mesajele exportului.
+ * vectori, cu straturile lui), materialul, mărimea, cât e folosită, operațiile, numele imaginilor foii (ADR 0272 §10) și
+ * piesele (câte, mărimea, rotirile, valorile din CSV); la capăt, totalurile pe piesă și foile pe material. Mărimea pieselor:
+ * tăiată (implicit) sau a desenului. CSV-ul (lista de tăiere, deci fără imagini) cu `;` (implicit, Excel în română) sau `,`,
+ * și tipărirea (PDF din browser): fereastra stă direct sub `body`, ca tipărirea s-o ia singură, pe oricâte pagini. Vine la
+ * cerere, cu mesajele exportului.
  */
 import { useMemo, useState, type KeyboardEvent, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
@@ -111,6 +112,7 @@ export function DialogRaportFoi({ doc, origine, z0, onInchide }: {
                 grosime: n.format(f.grosime), procent: n.format(f.folosita),
               })}</p>
               {f.operatii.length > 0 && <p className="nota" data-raport="operatii">{t('export.raport.operatii', { lista: f.operatii.map((o) => textOperatie(o, n)).join(' · ') })}</p>}
+              {f.imagini.length > 0 && <p className="nota" data-raport="imagini">{t('export.raport.imagini', { lista: f.imagini.join(', ') })}</p>}
               {f.piese.length === 0 ? <p className="nota">{t('export.raport.goala')}</p> : (
                 <table>
                   <thead><tr><th>{t('export.raport.csv.piesa')}</th><th>{t('export.raport.csv.cate')}</th><th>{t('export.raport.col.marime')}</th><th>{t('export.raport.csv.rotirea')}</th><th>{t('export.raport.csv.valorile')}</th></tr></thead>

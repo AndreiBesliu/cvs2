@@ -104,7 +104,7 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   `test/oracles/document.ts` (peste partea v1–v10), cazurile pe hârtie la finalul lui `test/oracles/document.cazuri.ts`, proba
   cu ușa aplicației în `test/unit/document.v22.oracol.test.ts` (din 08.11, cu incrustațiile din v20–v22) și, pentru v23 (literele
   plăcuțelor, 11.4↑, în `main` din 13.11), în `test/unit/document.v23.oracol.test.ts`. **Un câmp nou al documentului
-  (v26; v25, cu gaura și câmpurile treptei incrustațiilor, ADR 0175, e în `main` din 17.11) intră acolo, ca rangul și incrustația:** rândul
+  (v28; v27, cu `biblioteca`, `regim` și `tais` pe frezele operațiilor, ADR 0300, e în `main` din 24.11) intră acolo, ca rangul și incrustația:** rândul
   lui în `CAMPURI_NOI_O` (ciocnirea migrării), judecata în `problemeOperatieO`, frontierele pe hârtie, iar probele care țin
   versiunea curentă se mută pe ea (`schema: 23` în probe; oracolele CAM primesc versiunea nouă cum le primesc pe v21 și v22,
   de exemplu `test/oracles/regiune.ts`). **Și în corpusul de aur
@@ -313,6 +313,16 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   totalul era 793,6 / 800, iar feliile următoare (frezele, fereastra exportului, utilizarea, aranjamentele) nu mai
   încăpeau în 6,4 kB. **Pornirea rămâne 115 kB:** cu ușa și cu Atelierul e la 114,2, deci o felie care atinge pornirea
   cere întâi loc (o bucată mutată la cerere) sau decizia owner-ului pe plafonul ei (ADR 0252).
+  **Documentul v27 și valorile frezei în program (ADR 0300 §5, felia 16.A↑b-1)** gata pe 24.11, unită în `main` pe
+  24.11 (`32b33a42`): pe orice freză a unei operații (scula, frezele de rest, fundul plat și frezele lui de rest,
+  frezele dopului, freza benzii), trei câmpuri opționale: `biblioteca` (`{ id, rev }`), `regim` (`{ turatie, avans,
+  plonjare }`) și `tais`; migrarea v26 → v27 schimbă doar numărul, iar un v26 care are deja câmpurile pe o freză e o
+  ciocnire. În program (`src/cam/regimFreza.ts`): turația, avansul și plonjarea frezei pe fiecare loc (profilul,
+  buzunarul, liniile paralele, frezele de rest, găurirea, V-ul, fundul plat, dopurile), turația primei freze montate
+  și a celei noi la schimbare. **Fără valori, programul de azi, octet cu octet;** același T cu două turații și o
+  adâncime peste tăiș se refuză. Fără interfață încă: urmează 16.A↑b-2 (lista „Freza” pe rândurile exportului și în
+  Tăierea) și 16.A↑b-3 (nota schimbării din bibliotecă). **Un câmp nou al documentului ia v28. O probă e2e care citește
+  documentul salvat cere versiunea curentă:** `placute.spec.ts` a căzut în completul liniei cu `schema: 26`.
   **Conturile clienților: contul în aplicație (ADR 0116, felia 14.C↑, adusă din etapa 14)** gata pe 01.11, din sugestia
   owner-ului acceptată pe 31.10 și răspunsurile lui: butonul **Cont** (din 01.11 lângă butonul temei, sus în dreapta: controlul
   `cont` al aranjamentului), panoul contului (doar online,
@@ -916,7 +926,8 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   fereastră de confirmare, tastatura. **O schimbare a unei extensii din bibliotecă cere acum și rândul ei de „ce e nou”,
   primul din `noutati`, în `extensii/biblioteca.json`** (`{ "versiune", "ro", "en" }`, cel mult 240 de caractere), apoi
   `node scripts/biblioteca.ts --scrie` (refuză fără rând). **Două linii care schimbă aceeași extensie iau, fiecare,
-  versiunea următoare:** cea unită a doua își ia alta la aducerea lui `main` (Easy 3Draw e 18.21.0; următoarea, 18.22.0).
+  versiunea următoare:** cea unită a doua își ia alta la aducerea lui `main` (Easy 3Draw e 18.22.0, cu ventilatorul cu carcasă din 3.Ts;
+  următoarea, 18.23.0).
   Capturile unei extensii se refac cu `node scripts/capturi-biblioteca.ts [dosar]` și se comit. **Un prefix nou de acțiuni
   cere grupul lui în `src/ui/Paleta.tsx`** (paleta nu arăta deloc acțiunile `extensii`). Pornirea 108,6 kB (cu ușa
   113,1 / 115), totalul 778,6 / 800.
@@ -1034,7 +1045,14 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   (`473f2e20`):** o imagine rămâne pe foaie, sub desen, estompată, nici tăiată, nici exportată („Păstrează imaginea pe
   foaie” și „Doar imaginea” în fereastra trasării; „Imaginile foii” în panoul Proprietăți, cu nimic selectat); octeții
   stau în browser (IndexedDB `cncvs2-imagini`, după amprentă), iar foaia ține doar așezarea (`Foaie.imagini`, fără schemă
-  nouă: documentul rămâne v26). Rămâne 25.8↑b („Calibrează”, „Trasează…” din imaginea de pe foaie), la cuvântul owner-ului.
+  nouă: documentul rămâne v26). **25.8↑b („Calibrează” și „Trasează…” din imaginea de pe foaie) gata pe 24.11, pe aceeași
+  ramură, la „pornește 25.8↑b”, unită în `main` pe 24.11 (`f7f4510f`):** butoanele din rândul imaginii pornesc un mod al pânzei (`src/app/ModImagine.tsx`, la
+  cerere; partea pură în `modImagineCalcul.ts`), cu banda lui: calibrarea din două puncte și distanța adevărată (scalarea în
+  jurul primului punct), ori zona de trasat (sau toată imaginea); fereastra trasării deschisă de acolo are scara imaginii
+  (`latimeIntreaga`), fără Mărime și fără îndreptări, iar „Importă” pune vectorii exact peste ea (`ImportPregatit.peImagine`);
+  raportul foilor spune numele imaginilor. **Cât ține un mod al pânzei, editorul e oprit (`Editare.activ`): cadrul
+  selecției, textul, Pen-ul și mânerele ascultă pe `window` la captură, deci un mod nou al pânzei trece și el prin `activ`,
+  altfel ele îi iau clicurile.** Pornirea 109,8 kB (cu ușa 114,3 / 115; cu Atelierul 114,6), totalul 804,7 / 900.
   **25.9↑ (fereastra trasării, refăcută, ADR 0273) gata pe 23.11, unită în `main` pe 23.11 (`4fe2d2ad`), cu răspunsurile
   1a–3a și, la nota owner-ului, celelalte variante ca opțiuni:** fereastra cât ecranul, fără derularea ei (setările se derulează singure,
   previzualizarea crește, piciorul fix); grupurile Imaginea, Trasarea, Curățarea, Mărimea, cu rezumatul pe titlu, ținute în
@@ -1255,9 +1273,18 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   erorii** (`pasiAcum`, din `src/app/utilizare.ts`, dat raportorului în `main.tsx`), nu la trimitere. **Verificarea lor stă în
   `shared/pasiEroareVerificare.ts`** (serverul și adminul), nu în `shared/pasiEroare.ts`: altfel bucata raportorului
   aduce tot contractul utilizării. **Un fel nou de eveniment cere rândul lui și în `FELURI_PAS`** (compilatorul o
-  spune). Urmează A.11b (bifa „Atașează ultimii pași” la raportare), A.11c (cronologia unui om), A.11d (disocierea),
-  apoi A.7. **Pornirea 109,6 kB (cu ușa 114,1 / 115; cu Atelierul 114,4: mai sunt 0,6 kB), totalul 800,1 / 900,
+  spune). **Pornirea 109,6 kB (cu ușa 114,1 / 115; cu Atelierul 114,4: mai sunt 0,6 kB), totalul 800,1 / 900,
   `/admin` 135,0 / 200.**
+  **A.11b–A.11e (pașii la raportare, cronologia unui om, sesiunea raportării, disocierea)** gata pe 24.11, unite în
+  `main` pe 24.11 (`8ccb66e8`): în „Raportează o problemă…”, bifa **Atașează ultimii pași din aplicație** (nebifată
+  implicit; pașii se iau la deschiderea ferestrei), arătați în fila Tichete; permisiunea nouă **„Utilizare: sesiuni”**
+  dă **Activitatea** unui cont (fila Utilizatori, doar la „Arată activitatea”) și **Sesiunea raportării** (fila
+  Tichete): citirea trece prin server (funcția `utilizare`), care cere permisiunea, trece evenimentele încă o dată prin
+  lista albă și scrie fiecare citire în audit; **Desparte utilizarea de cont…** (cine administrează conturile, la
+  cererea omului, printr-un tichet) pune un pseudonim aleator pe tot ce s-a strâns și pe ce vine, iar legătura cont →
+  pseudonim stă doar pe server (`utilizareDisociate`, fără regulă, deci închisă oricui; nu se desface din aplicație).
+  A.11 e încheiată; urmează A.7 (adminul pe telefon). **Catalogul are 13 permisiuni** (proba matricei rolurilor le
+  numără). **`/admin` 137,9 / 200, contul 30,1 / 32; pornirea, neschimbată de aceste felii.**
   **Riglele, ghidajele, lipirea și alinierea (ADR 0050, aduse din etapa 6)** gata pe 20.10: ghidajele pe foaie
   (`foaie.ghidaje`, fără schemă nouă), lipirea pură (`src/geom/lipire.ts`), alinierea (`src/geom/aliniere.ts`), totul la
   cerere după prima randare (`src/app/Editare.tsx`); pornirea 99,4 / 100 kB cu ușa (foarte strâmt). **Uneltele de desen
@@ -1378,6 +1405,61 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 24.11.2026, la prânz (a paisprezecea unire din cloud): **3.Ts (ventilatorul cu carcasă), A.11b–A.11e (utilizarea
+  aplicației: pașii la raportare, cronologia unui om, sesiunea raportării, disocierea) și 16.A↑b-1 (documentul v27 și
+  valorile frezei în program) unite în `main`**, în lot (sesiunea principală, ramura `unire-2411e`, din `fafb95e7`).
+  **3.Ts** (linia elicelor, ramura `wip/3.Tq-elice`, `3218781c`, PR-ul `AndreiBesliu/cvs2#15`; ADR 0282, „Implementarea
+  (3.Ts)”; la „continua” al owner-ului, în sesiunea liniei), unită în `e14e553a`: a treia piesă a filei „Elice” din
+  atelierul Easy 3Draw, cu două piese: rotorul (3–12 palete răsucite, cu pas constant, cu un inel la alegere) și carcasa
+  (tubul tipărit în picioare, cu 2 sau 4 urechi groase cât o grindă, cu găurile pe grila axului); „Repede” pe grila de
+  știfturi și „Fă ventilatorul”; privirea pe randare a găsit peretele carcasei peste marginea găurii de deasupra
+  urechii, reparat cu un canal prin perete; pachetul 18.22.0; otrăvurile 134 / 134 și 9 / 9. **A.11b–A.11e** (linia
+  adminului, ramura `wip/A.1-admin`, `c3f80a74`, PR-ul `AndreiBesliu/cvs2#13`; ADR 0262; `3.Ao`–`3.Ar` în fișa etapei
+  3), unite în `8ccb66e8`: bifa „Atașează ultimii pași din aplicație” la raportare, arătați în fila Tichete;
+  permisiunea nouă „Utilizare: sesiuni”, cu Activitatea unui cont (fila Utilizatori) și Sesiunea raportării (fila
+  Tichete), citite prin server, cu auditul fiecărei citiri; „Desparte utilizarea de cont…”, cu pseudonimul ținut doar
+  pe server; otrăvurile 10 / 10, 19 / 19, 11 / 11 și 12 / 12. A.11 e încheiată. **16.A↑b-1** (linia frezelor, ramura
+  `wip/16.A-freze`, `112c32f6`, PR-ul `AndreiBesliu/cvs2#16`; ADR 0300 §5; la „continua” al owner-ului), unită în
+  `32b33a42`: **documentul v27** (`biblioteca`, `regim` și `tais` pe orice freză a unei operații; migrarea doar cu
+  numărul), oracolul documentului și corpusul de aur la v27, iar în program turația, avansul și plonjarea fiecărei freze
+  (fără valori, programul de azi, octet cu octet); fără interfață încă (vine în 16.A↑b-2); otrăvurile 34 / 34. **Un
+  câmp nou al documentului ia de acum v28.** Completul liniei căzuse întâi la `placute.spec.ts` (cerea documentul salvat
+  la v26), reparat în `112c32f6`. Ciocnirile lotului: DEVLOG, un rând de tabel în fișa etapei 3 și catalogul
+  controalelor, scris din nou pe ramura de unire (trasarea și adminul îl atinseseră). Adminul împinsese A.7 peste
+  commit-ul raportat: s-a unit commit-ul, nu vârful; vârfurile elicelor și frezelor aduceau doar `main`. **La publicare
+  merge și serverul:** funcțiile `utilizare` și `tichete`, regulile Firestore (colecția pseudonimelor rămâne închisă) și
+  două indexuri compuse pe `utilizare`. Porțile lotului, în CI, verzi la prima trecere pe `32b33a42` (completul,
+  48 min 55 s): unit 10 111 / 0 (12 sărite, pe Linux), e2e 655 / 655, funcțiile pe emulatoare 126 / 126, paginile
+  53 / 53; completele liniilor, verzi (`3218781c`; `eaa0a356`, cu codul lui `c3f80a74`; `112c32f6`); **pornirea
+  109,9 kB (plafonul 115; cu ușa 114,4, cu Atelierul 114,7: mai sunt 0,3 kB)**, totalul 806,1 / 900 kB, `/admin`
+  137,9 / 200, contul 30,1 / 32. Lotul al treisprezecelea (`fafb95e7`, 25.8↑b) era încă în drum spre test: completul
+  lui pe `main` rula la unire. Urmează, la raport: A.7 (adminul pe telefon, pe ramură), 16.A↑b-2. Neunită, la cuvântul
+  owner-ului: fereastra exportului (`AndreiBesliu/cvs2#11`). Propus, la owner: ADR 0232 (auditul UI/UX al extensiilor,
+  `#17`). **La owner:** plafonul pornirii (mai sunt 0,3 kB: următoarea felie care adaugă în pornire nu mai încape),
+  fereastra exportului, verificarea juridică (GDPR) a utilizării aplicației înaintea live-ului, „cine unește în `main`”.
+- 24.11.2026, înainte de prânz (a treisprezecea unire din cloud): **25.8↑b („Calibrează” și „Trasează…” din imaginea
+  de pe foaie) unită în `main`** (sesiunea principală, ramura `unire-2411d`, din `df9ae539`). Linia trasării, ramura
+  `wip/25.1-trasare`, `ed6014c5`, PR-ul `AndreiBesliu/cvs2#14` (ADR 0272 §6, §7, §10; pornită de owner în sesiunea
+  liniei, la „pornește 25.8↑b”), unită în `f7f4510f`. În rândul imaginii din „Imaginile foii”: **Calibrează** (clic pe
+  cele două capete ale unei lungimi cunoscute, apoi distanța adevărată: imaginea se scalează uniform, în jurul primului
+  capăt, într-un pas de anulare) și **Trasează…** (zona trasă peste imagine sau toată imaginea; fereastra trasării se
+  deschide la scara imaginii, iar „Importă” pune vectorii exact peste ea, la locul și rotirea ei); raportul foilor spune
+  numele imaginilor fiecărei foi. Cât ține un mod al pânzei, editorul e oprit (`Editare.activ`), și în modul urechilor
+  alese. Documentul rămâne v26; nimic pe server; otrăvurile 46 / 46. Ramura avea `main` (`df9ae539`); nicio ciocnire,
+  iar codul unirii e chiar al lui `01474f96` (`git diff` gol în afara fișierelor `.md`), pe care au trecut porțile
+  liniei. Porțile, în CI, verzi pe `01474f96` (completul, 51 min 40 s): unit 10 066 / 0 (12 sărite, pe Linux), e2e
+  649 / 649, funcțiile pe emulatoare 122 / 122, paginile 51 / 51; **pornirea 109,8 kB (plafonul 115; cu ușa 114,3, cu
+  Atelierul 114,6: mai sunt 0,4 kB)**, totalul 804,7 / 900 kB, `/admin` 135,0 / 200. Înainte, lotul al doisprezecelea a
+  ajuns pe test (`df9ae539`, 24.11, 09:41), cu serverul. **Lotul următor, pregătit:** 3.Ts (elicele: ventilatorul cu
+  carcasă, Easy 3Draw 18.22.0; `AndreiBesliu/cvs2#15`, completul verde pe `3218781c`), A.11b–A.11e (adminul, `#13`,
+  completul în lucru) și 16.A↑b-1 (frezele: documentul v27, `#16`; completul pe `f5f1177b` a căzut pe o probă a
+  plăcuțelor care cerea documentul salvat la v26, reparată de linie în `112c32f6`, cu completul reluat). Unirea lor de
+  probă, locală, cu trasarea: ciocniri doar în DEVLOG, în fișa etapei 3 și în catalogul controalelor (scris din nou);
+  tipurile, importurile și traducerile trec; pornirea 109,9 kB (cu ușa 114,4, **cu Atelierul 114,7 / 115**), totalul
+  806,1 / 900, `/admin` 137,9 / 200. Neunită, la cuvântul owner-ului: fereastra exportului (`#11`). Propus, la owner:
+  ADR 0232 (auditul UI/UX al extensiilor, linia bibliotecii, `#17`). **La owner:** plafonul pornirii (după lotul
+  următor rămân 0,3 kB), fereastra exportului, verificarea juridică (GDPR) a utilizării aplicației înaintea live-ului,
+  „cine unește în `main`”.
 - 24.11.2026, dimineața (a douăsprezecea unire din cloud): **A.10 și A.11a (utilizarea aplicației: fluxurile și pașii
   dinaintea unei erori) unite în `main`** (sesiunea principală, ramura `unire-2411c`, din `883a8caa`). Linia adminului,
   ramura `wip/A.1-admin`, `0580f504`, PR-ul `AndreiBesliu/cvs2#13` (ADR 0262; `3.Am` și `3.An` în fișa etapei 3), unite

@@ -105,6 +105,17 @@ const SchemaScula = v.looseObject({
     tip: v.literal('v'), unghi: v.pipe(v.number(), v.finite(), v.minValue(UNGHI_V_MINIM), v.maxValue(UNGHI_V_MAXIM)),
     varf: v.optional(pozitiv(PLAFON.diametruScula)),
   })),
+  // ADR 0300 §5 (v27): originea copiei din bibliotecă, valorile de lucru și lungimea tăișului; adâncimea peste tăiș o refuză
+  // lucrarea.
+  biblioteca: v.optional(v.looseObject({
+    id: Id, rev: v.pipe(v.number(), v.integer(), v.minValue(1), v.maxValue(PLAFON.revFreza)),
+  })),
+  regim: v.optional(v.looseObject({
+    turatie: v.pipe(v.number(), v.integer(), v.minValue(1), v.maxValue(PLAFON.regimFreza)),
+    avans: pozitiv(PLAFON.regimFreza),
+    plonjare: pozitiv(PLAFON.regimFreza),
+  })),
+  tais: v.optional(pozitiv(PLAFON.adancimeOperatie)),
 });
 
 // ADR 0093: frezele de rest (v17), o listă nevidă; potrivirea (mai mică decât freza dinainte, plată, pasul cel mult raza ei) e
