@@ -41,6 +41,9 @@ vreau ca ficare setare sa fie insotita de o ilustratie sugestiva, ca sa ajute us
   Totalul 811,4 / 900 (+2,6 kB). Detaliile: ADR 0290, „Implementarea 28.8↑c”. Înainte, completul de pe b-3 reparat
   (`6fc38abf`). Completul CI verde pe `83f44f9e` (unit 10 053 / 0, e2e 664 / 664, emulatoarele 120 / 120 și 50 / 50).
   Urmează 28.8↑d (V-carve-ul, fundul plat, incrustația în V, banda).
+- **24.11: 28.8↑d-1 gata** (secțiunea V-carve-ului cu fundul plat, inelele V sau lemnul rămas; secțiunea incrustației în V;
+  lemnul din jurul dopului pe cartonașe; frezele la miime în desene), pe ramură; neunită. Otrăvurile 15 / 15. Totalul
+  812,7 / 900 (+1,3 kB). Urmează 28.8↑d-2: banda, cu câmpurile ei mutate din grupul incrustației în grupul lor.
 
 ## Ce s-a găsit (23.11)
 
@@ -86,6 +89,8 @@ vreau ca ficare setare sa fie insotita de o ilustratie sugestiva, ca sa ajute us
   un `fill` pune sub maus alt câmp, care ia explicația și cota. O probă care cere cota aprinsă după scriere dă întâi clic în
   câmp (ca omul). Traseul și coborârea buzunarului sunt cartonașe din 28.8↑c (`alege(fisa, 'strategie' | 'coborare', v)`;
   vizibilitatea, pe `[data-alegere="coborare"]`).
+- **Banda dopului** (până la 28.8↑d-2): câmpurile ei stau în grupul incrustației, iar grupul „banda” nu se randează (corpul lui
+  e gol), deși `GRUP_CAMP` le pune acolo; o probă care caută `[data-grup="banda"]` nu-l găsește încă.
 - **Catalogul controalelor** (ADR 0262, din `main`, 24.11): se scoate din `data-camp="…"` (și celelalte atribute de nume)
   scrise în sursă pe un control sau pe o componentă; un nume dat prin proprietate (`camp={…}`) sau din șablon nu intră, iar
   un `id="…"` pe o componentă intră. După o schimbare a câmpurilor, `node scripts/catalog-controale.ts --scrie`

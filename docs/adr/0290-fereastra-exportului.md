@@ -396,4 +396,22 @@ cele patru aranjamente, cu harta schițelor schimbată ca la „Cu canvas-ul ara
   cartonaș, derularea de la scrierea într-un câmp pune sub el alt câmp, care ia explicația. Pentru om e ce vede sub maus; proba
   dă clic în câmp, ca omul.
 - **Mărimea:** totalul 808,8 → 811,4 / 900 (desenele, ~2,6 kB, peste estimarea de ~1,5), pornirea neschimbată (109,4 / 115).
-- Urmează 28.8↑d: ale V-carve-ului, fundului plat, incrustației în V și benzii dopului.
+- Urmează 28.8↑d: ale V-carve-ului, fundului plat, incrustației în V și benzii dopului (despărțită în d-1 și d-2).
+
+## Implementarea 28.8↑d-1 (24.11)
+
+- **Desenul fundului** (secțiunea unei trăsături V-carve): pereții tăiați de freza V până la adâncimea maximă D, la D·tan(θ/2)
+  de contur (inelul regiunii decalate al lucrării, `traseuVcarve`); între ei, după bifă și felul operației: fundul plat al
+  frezei drepte (cu Ø pe cotă și pragul spus: plat de la 2·D·tan(θ/2) lățime), inelele V ale unei incrustații fără freză
+  dreaptă (ADR 0173, creasta g / 2), ori lemnul rămas, pe un V-carve fără fund plat (ADR 0090: „fundul plat dintre ei rămâne”).
+- **Desenul incrustației în V** (secțiunea): locașul cu fundul la D și dopul întors, coborât până la S = D − g; jocul g sub dop,
+  spațiul H dintre plăci (cu „Același spațiu”, cât jocul), contactul pereților pe S·tan(θ/2) de la contur (accentul) și marginea
+  semifabricatului dopului. Valorile, ca `valoriIncrustatie` (panoul și dopul). Un joc cât adâncimea nu se desenează.
+- **Lemnul din jurul dopului** (fața coborâtă / banda) e cartonașe cu poze (`<Cartonase data-camp="inc-jur">`).
+- **Frezele, la miime în desene** (`DesenComun.fz`): Ø3,175 apărea „Ø 3,18” și în desenul frezei din 28.8↑b-1.
+- **Banda rămâne pentru d-2:** câmpurile ei stau încă în grupul incrustației (din 28.8↑a), iar grupul „banda” nu se arată; în
+  d-2 trec în grupul lor, cu desenul benzii (lățimea, decuparea, placa, punțile).
+- **Probele:** peretele, față de mișcările lui `traseuVcarve` la −D; valorile incrustației, față de `valoriIncrustatie`;
+  e2e-ul desenelor; probele incrustației aleg lemnul din jurul dopului din cartonașe.
+- **Mărimea:** totalul 811,4 → 812,7 / 900, pornirea neschimbată (109,4 / 115).
+

@@ -12646,3 +12646,22 @@ PR-ul `AndreiBesliu/cvs2#13` („De unit acum (A.9a, A.9b): `dbb0306a`”).
 
 **Completed:** 24.11, 05:20.
 
+## 2026-11-24 — Linia exportului: felia 28.8↑d-1, fundul plat și incrustația în V (ADR 0290)
+
+**Prompt:** răspunsul owner-ului la ADR 0290, exact: „1a, 2a, 3a, 4a” (feliile acceptate; după 28.8↑c).
+**Started:** 24.11, 06:10.
+
+- **Completul de pe `83f44f9e` verde** (reparația lui b-3 și 28.8↑c): unit 10 053 / 0, e2e 664 / 664, emulatoarele 120 / 120
+  și 50 / 50.
+- **28.8↑d împărțită:** d-1 (fundul plat, incrustația în V, lemnul din jurul dopului), d-2 (banda, cu câmpurile ei mutate în
+  grupul lor).
+- **d-1:** secțiunea V-carve-ului (pereții la D·tan(θ/2), fundul plat, inelele V sau lemnul rămas) și a incrustației (dopul
+  oprit la S, jocul, spațiul, contactul, marginea); lemnul din jurul dopului pe cartonașe.
+- **Găsit pe drum:** frezele la sutime în desene (Ø 3,18 pentru 3,175); acum la miime.
+- **Probele:** peretele față de `traseuVcarve`, valorile față de `valoriIncrustatie`; e2e-ul; rapidul local 10 055 / 0.
+- **Otrăvurile:** `test/otravuri/28.8d1.py`, 15 / 15.
+- **Manualul** (ro, en), ADR 0290 („Implementarea 28.8↑d-1”), fișa etapei 3, registrul otrăvurilor, nota liniei.
+- **Mărimea:** totalul 812,7 / 900 (+1,3 kB), pornirea neschimbată.
+
+**Completed:** 24.11, 07:10.
+

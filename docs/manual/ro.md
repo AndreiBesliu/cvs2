@@ -1591,11 +1591,14 @@ care). Fereastra are trei părți:
   (prima la raza frezei de perete, iar două vecine se suprapun cât scrie dedesubt; pe linii paralele, rotite la unghiul lor),
   coborârea din lateral, pe o trecere (rampa, zigzagul cu rampele lui, elicea cu turele ei; o valoare greșită nu se
   desenează) și colțul în care freza lasă raza ei, iar freza de rest cea mai mică, pe a ei. La o găurire: ciocănirea pas cu
-  pas (cât coboară, ridicarea de 1 mm, ieșirea din gaură la al câtelea pas). Valorile stau pe cote, iar cota câmpului pe care
+  pas (cât coboară, ridicarea de 1 mm, ieșirea din gaură la al câtelea pas). La un V-carve: secțiunea cu pereții tăiați de freza V
+  până la adâncimea maximă și, între ei, fundul plat al frezei drepte (de la ce lățime începe), inelele V ale unei incrustații
+  fără ea sau lemnul care rămâne fără fund plat. La o incrustație în V: locașul și dopul întors, cu cât intră dopul, jocul de
+  sub el, spațiul dintre plăci, unde se ating pereții și marginea dopului. Valorile stau pe cote, iar cota câmpului pe care
   stai e colorată. Câte rampe face zigzagul pe o trecere se socotește pe trecerea egală, ca în program. Sub
   pas, câte treceri ies și cât scoate fiecare: trecerile sunt egale (10 mm cu pasul 4 dau 3 treceri de 3,33 mm), la fel și în
   desen. Tăietura și alegerile cu puține variante (colțurile, locurile urechilor, direcția pe linie, traseul și coborârea
-  buzunarului, unitățile, schimbarea frezei, foile) sunt cartonașe cu poza fiecărei variante; găurirea stă printre tăieturi și pe un rând fără cercuri, oprită,
+  buzunarului, lemnul din jurul dopului, unitățile, schimbarea frezei, foile) sunt cartonașe cu poza fiecărei variante; găurirea stă printre tăieturi și pe un rând fără cercuri, oprită,
   cu „doar pe cercuri”, iar în listă, sub numele operației, e poza tăieturii ei. Pe cartonașe: clic oriunde pe cartonaș, sau săgețile, după ce ai intrat în grup; cel ales are
   marginea colorată, iar unul care nu se poate alege acum spune de ce (de exemplu „nu pe linie”). Despărțirea foii are și ea
   poza ei, lângă bifă. Ce nu se aplică operației nu apare: pe un buzunar, o găurire sau un V-carve, rampa, intrările, colțurile

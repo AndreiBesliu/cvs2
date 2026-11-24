@@ -1644,12 +1644,15 @@ which). The window has three parts:
   neighbours overlap by what is written below; on parallel lines, turned to their angle), the descent from the side, on one
   pass (the ramp, the zigzag with its ramps, the helix with its turns; a wrong value is not drawn) and the corner where the
   bit leaves its radius, and the smallest rest bit, its own. On a drilling: the peck cycle step by step (how far it goes
-  down, the 1 mm lift, leaving the hole every so many steps). The values sit on dimension lines, and the one of the field you
+  down, the 1 mm lift, leaving the hole every so many steps). On a V-carve: the section with the walls cut by the V bit down to
+  the maximum depth and, between them, the straight bit's flat bottom (from what width it starts), the V rings of an inlay
+  without it, or the wood that stays without a flat bottom. On a V inlay: the pocket and the turned plug, with how far the plug
+  goes in, the gap under it, the space between the boards, where the walls touch and the plug's margin. The values sit on dimension lines, and the one of the field you
   are on is coloured. How many ramps the zigzag makes on a pass is counted on the equal pass, as in the program. Under the
   step down, how many passes come out and
   how much each removes: the passes are equal (10 mm with a step of 4 gives 3 passes of 3.33 mm), in the drawing too. The cut
   and the choices with few options (the corners, the tab places, the direction on line, the pocket's path and descent, the
-  units, the bit change, the sheets) are cards with a picture of each option; drilling sits among the cuts on a row without circles too, disabled, with
+  wood around the plug, the units, the bit change, the sheets) are cards with a picture of each option; drilling sits among the cuts on a row without circles too, disabled, with
   “circles only”, and in the list, under the operation's name, is the picture of its cut. On the cards: click anywhere on a card, or use the arrow keys once you are in the group; the chosen
   one has a coloured border, and one that cannot be chosen now says why (for example “not on line”). The sheet separation has
   its picture too, next to the box. What does not apply to the operation is not shown: on a pocket, a drilling or a

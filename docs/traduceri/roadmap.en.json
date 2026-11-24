@@ -1569,6 +1569,10 @@
       "ro": "Podul ESP3D pe mașină, după [ghidul montajului](https://github.com/AndreiBesliu/cvs2/blob/main/docs/masina/pod-esp3d.md) (ADR 0119): imaginea gata compilată, din artefactul workflow-ului `pod-esp3d`, scrisă din browser pe un ESP32 (WROOM-32); rețeaua atelierului, pusă din aplicație (Mașina → Conectează (WiFi) → Configurează un pod nou, ADR 0136); firele la D0 / D1 ale Arduino-ului, cu divizorul de tensiune (5 V față de 3,3 V)",
       "en": "The ESP3D bridge on the machine, following the [assembly guide](https://github.com/AndreiBesliu/cvs2/blob/main/docs/masina/pod-esp3d.md) (ADR 0119): the ready-built image, from the artifact of the `pod-esp3d` workflow, written from the browser to an ESP32 (WROOM-32); the workshop network, set from the app (Machine → Connect (WiFi) → Set up a new bridge, ADR 0136); the wires to the Arduino’s D0 / D1, with the voltage divider (5 V against 3.3 V)"
     },
+    "5f6daee3155a69da": {
+      "ro": "Desenele fundului plat și ale incrustației în V; lemnul din jurul dopului pe cartonașe",
+      "en": "The flat-bottom and V inlay drawings; the wood around the plug as cards"
+    },
     "5f8926acc8567c79": {
       "ro": "Pereții drepți în secțiune",
       "en": "Straight walls in the section"
@@ -2632,6 +2636,10 @@
     "a86b02eef03388b8": {
       "ro": "IR-ul v0 pe N axe, montajul (4 colțuri, Z0 sus sau jos, o singură matrice) și postul GRBL v0 (3 zecimale, I / J din startul rotunjit, gărzile, antetul, 70 de octeți, SHA-256)",
       "en": "IR v0 on N axes, the setup (4 corners, Z0 top or bottom, a single matrix) and the GRBL v0 post (3 decimals, I / J from the rounded start, guards, header, 70 bytes, SHA-256)"
+    },
+    "a8975ff227618439": {
+      "ro": "**Desenele fundului plat și ale incrustației în V; lemnul din jurul dopului pe cartonașe** (fără mașină; ADR 0290, „Implementarea 28.8↑d-1”; prima parte a lui 28.8↑d, banda în d-2). Secțiunea V-carve-ului: pereții la D·tan(θ/2) de contur, ca lucrarea, apoi fundul plat al frezei drepte (de la 2·D·tan(θ/2) lățime), inelele V ale unei incrustații fără ea, ori lemnul rămas. Secțiunea incrustației: dopul întors oprit la S = D − g, jocul g, spațiul H, contactul pereților și marginea, ca valorile pe hârtie. Fața coborâtă / banda, cartonașe cu poze. **Găsit pe drum:** frezele apăreau la sutime în desene (Ø 3,18 pentru 3,175), și în desenul frezei din 28.8↑b-1; acum la miime. **Probele:** 2 unitare noi (peretele față de `traseuVcarve`, valorile față de `valoriIncrustatie`), 1 e2e nouă, probele incrustației pe cartonașe; rapidul local 10 055 / 0. **Otrăvurile:** `28.8d1.py`, 15 / 15 (7 unitare, 8 e2e). **Mărimea:** totalul 812,7 / 900 (+1,3 kB), pornirea neschimbată.",
+      "en": "**The flat-bottom and V inlay drawings; the wood around the plug as cards** (no machine; ADR 0290, “Implementation of 28.8↑d-1”; the first part of 28.8↑d, the band in d-2). The V-carve section: the walls D·tan(θ/2) from the contour, as the program cuts them, then the straight bit's flat bottom (from 2·D·tan(θ/2) wide), the V rings of an inlay without it, or the wood that stays. The inlay section: the turned plug stopping at S = D − g, the gap g, the space H, the walls' contact and the margin, as the values on paper. Lowered face / band, picture cards. **Found along the way:** the bits showed at hundredths in the drawings (Ø 3.18 for 3.175), the bit drawing from 28.8↑b-1 too; now at thousandths. **Probes:** 2 new unit ones (the wall against `traseuVcarve`, the values against `valoriIncrustatie`), 1 new e2e one, the inlay probes on the cards; the local fast tier 10,055 / 0. **Poisons:** `28.8d1.py`, 15 / 15 (7 unit, 8 e2e). **Size:** total 812.7 / 900 (+1.3 kB), startup unchanged."
     },
     "a8c6fcf54296f16d": {
       "ro": "Loc în bugetul JavaScript",
