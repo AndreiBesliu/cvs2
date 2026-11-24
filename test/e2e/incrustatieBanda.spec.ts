@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs';
 import { masoaraPotrivirea, type PunctO } from '../oracles/incrustatie.ts';
 import type { SculaOracol } from '../oracles/simulare.ts';
 import { adauga, ecran, vedere } from './ajutor-panza.ts';
+import { alege } from './ajutor-export.ts';
 
 test.use({ locale: 'ro-RO' });
 
@@ -223,7 +224,7 @@ test('rândurile legate: două incrustații în V ale aceleiași piese, legate d
   const det = (k: string, c: string) => page.locator(`[data-fisa="op"][data-operatie="${k}"] [data-camp="${c}"]`);
   const legat = page.locator(`[data-nav-op="${a2}"] [data-legat]`);
   for (const k of [prima, a2]) {
-    await rand(k, 'latura').selectOption('incrustatie');
+    await alege(page.locator(`[data-fisa="op"][data-operatie="${k}"]`), 'latura', 'incrustatie');
     await rand(k, 'forma-scula').selectOption('v');
   }
   // Aceeași incrustație: al doilea locaș se sapă odată cu primul.

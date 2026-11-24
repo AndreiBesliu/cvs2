@@ -640,9 +640,16 @@ const rapide = (text: string): string[] => text.split('\n').filter((l) => /^G0 X
  * aplicație (pe o pagină goală, da); în pași, `dragstart` vine pe mâner, ca la om.
  */
 async function tragePeRand(page: Page, maner: string, rand: string): Promise<void> {
+  // Lista operațiilor se derulează: ca omul, întâi aduci mânerul în vedere. Mausul nu apasă ce taie marginea listei, iar fără
+  // derulare mânerul celui de-al doilea rând stă, la 1280 × 720, la câțiva pixeli de ea (cu fonturile runner-ului, dincolo).
+  await page.locator(maner).scrollIntoViewIfNeeded();
   const a = await page.locator(maner).boundingBox();
   const b = await page.locator(rand).boundingBox();
-  if (!a || !b) throw new Error('mânerul sau rândul n-are cutie');
+  const l = await page.locator('.dx-lista').boundingBox();
+  if (!a || !b || !l) throw new Error('mânerul, rândul sau lista n-are cutie');
+  for (const y of [a.y + a.height / 2, b.y + b.height / 2]) {
+    if (y < l.y || y > l.y + l.height) throw new Error(`punctul tragerii (y ${Math.round(y)}) iese din partea văzută a listei`);
+  }
   await page.mouse.move(a.x + a.width / 2, a.y + a.height / 2);
   await page.mouse.down();
   await page.mouse.move(a.x + a.width / 2, a.y + a.height / 2 - 10, { steps: 4 });
