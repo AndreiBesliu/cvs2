@@ -14210,3 +14210,16 @@ se poate”
   spune `893e45bb97e1`; proba de fum, bună: nicio eroare, 70 de butoane, workerul PWA la locul lui).
 - **Documentele:** decizia în `CLAUDE.md` (paragraful de stare al construcțiilor e al liniei; versiunea extensiei,
   18.25.0); starea din `docs/linii/principala.md`.
+
+## 2026-11-25 — Sesiunea principală în cloud: cotele (a-4, b) și lotul 28 (atelierul Easy 3Draw), pe test (Model: Claude Fable 5.2)
+
+**Prompt:** regula „pe test publici liber”, după a douăzeci și șaptea unire
+**Started:** 25.11, 00:35. **Completed:** 25.11, 01:37.
+
+- **Publicat:** `694f0ff1` (rapidul pe `main` 45501575694; completul 45503156817, verde: unit 10 412 / 0, 12 sărite pe
+  Linux; e2e 810 / 810; funcțiile pe emulatoare 136 / 136; paginile 59 / 59; publicarea 45510937747). Adresa de test
+  spune `694f0ff13b95`; proba de fum, bună (nicio eroare, 70 de butoane, catalogul extensiilor, mesajele, manualul,
+  codurile și documentația, toate cu 200). Nimic nou pe server.
+- **Pe test e acum tot ce e în `main`.** De la linii, în lucru: atelierul (3.Cc, cremaliera, și 3.Cd, arcul: primul
+  complet, roșu la o probă a bibliotecii care ținea scrisă o versiune veche în „Ce e nou”; proba, reparată de linie,
+  completul repornit).
