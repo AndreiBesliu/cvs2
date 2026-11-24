@@ -226,8 +226,10 @@ def u(*nume):
 SVG = u('svg', 'svg.oracol', 'svg.constatari.oracol', 'import.deschise', 'import.actiuni')
 SVG2 = sorted(set(SVG + u('svg.aleator.oracol', 'svg.buget.oracol', 'svg.mari.oracol', 'svg.reale.oracol', 'nonzero.oracol',
                           'geom.nonzero', 'document.v10', 'document.v10.oracol', 'deschise.aplicatie.oracol')))
+# Proba căilor netede din `cale.recenzie` stă din 24.11.2026 în patru fișiere (`cale.recenzie.cubice.<n>`): merg cu ea.
+CUBICE = ['cale.recenzie.cubice.%d' % k for k in range(1, 5)]
 DOC = u('document.v10', 'document.v10.oracol', 'document.v9.oracol', 'document.v9.actiuni.oracol', 'document.oracol', 'model',
-        'cale', 'cale.recenzie')
+        'cale', 'cale.recenzie', *CUBICE)
 DOC2 = sorted(set(DOC + glob.glob('test/unit/document.*.test.ts') + u('actiuni', 'svg', 'import.deschise', 'svg.oracol',
                   'svg.mari.oracol', 'deschise.aplicatie.oracol', 'parte.aplicatie.oracol', 'cale.cam.oracol', 'job', 'cam.deschise')))
 LUME = u('cam.deschise', 'job', 'otravuri.23c', 'document.v10', 'document.v10.oracol', 'cam.regiune', 'actiuni.export',
@@ -236,11 +238,11 @@ LUME2 = sorted(set(LUME + glob.glob('test/unit/document.*.test.ts') + u('actiuni
                    'deschise.aplicatie.oracol', 'deschise.oracol', 'parte.aplicatie.oracol', 'parte.oracol', 'poarta-cale.oracol',
                    'regiune.oracol', 'sens.oracol')))
 FORME = u('desen', 'import.deschise', 'cam.deschise', 'job', 'document.v10', 'cale', 'cam.cale', 'cam.parte')
-JSON_ = u('model', 'actiuni', 'document.oracol', 'document.v10.oracol', 'cale.recenzie', 'document.lipire.oracol')
+JSON_ = u('model', 'actiuni', 'document.oracol', 'document.v10.oracol', 'cale.recenzie', *CUBICE, 'document.lipire.oracol')
 JSON2 = sorted(set(JSON_ + glob.glob('test/unit/document.*.test.ts')))
 APP = u('actiuni', 'config', 'actiuni.export')
 APP2 = sorted(set(APP + u('import.actiuni', 'export.calcul', 'cam.deschise', 'mediu')))
-DESEN = u('desen', 'import.deschise', 'cale', 'cale.recenzie')
+DESEN = u('desen', 'import.deschise', 'cale', 'cale.recenzie', *CUBICE)
 SETURI = {'svg': SVG, 'svg2': SVG2, 'doc': DOC, 'doc2': DOC2, 'lume': LUME, 'lume2': LUME2, 'forme': FORME, 'forme2': LUME2,
           'json': JSON_, 'json2': JSON2, 'app': APP, 'app2': APP2, 'desen': DESEN, 'desen2': sorted(set(DESEN + SVG2))}
 E2E = ['test/e2e/recenzia-a.spec.ts', 'test/e2e/import.spec.ts', 'test/e2e/proiect.spec.ts', 'test/e2e/export.spec.ts',

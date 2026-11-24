@@ -154,8 +154,8 @@ test('ușile: fiecare are o etichetă cu nume scurt, fără id-uri repetate (sun
   // `document.leaga-caile` și opțiunile legării. Biblioteca extensiilor (ADR 0231, felia 3.Xh-3), încă una:
   // `extensii.biblioteca`. Fereastra „Frezele mele” (ADR 0300 §3, felia 16.A↑a), încă una: `vedere.freze`. Butonul Admin
   // (ADR 0132 §11, felia 14.C↑d), încă una: `editare.admin`. Cotele (ADR 0330, felia 10.4↑a-2), încă două: unealta Cote și
-  // acțiunea `foaie.cote`.
-  assert.equal(USI.length, 117);
+  // acțiunea `foaie.cote`. Fereastra Setări (ADR 0330 §6, felia 10.4↑a-3), încă una: `vedere.setari`.
+  assert.equal(USI.length, 118);
 });
 
 test('fiecare ușă e acoperită, în ambele limbi, de un capitol care o numește cu eticheta din interfață', () => {
@@ -400,7 +400,7 @@ test('fiecare control cu data-editare din bara editării are ușa lui (un contro
     assert.ok(USI.some((u) => u.id === usa), `${c} → ${usa}`);
   }
   // Și ușile ajutorului după context (F1, `usaDeAcum` din Editare) sunt acoperite.
-  for (const id of ['export.gcode', 'import.svg', 'vedere.paleta', 'vedere.aspect', 'vedere.freze', 'vedere.masina', 'editare.3d', ...UNELTE.map((u) => `unealta.${u}`)]) {
+  for (const id of ['export.gcode', 'import.svg', 'vedere.paleta', 'vedere.aspect', 'vedere.freze', 'vedere.setari', 'vedere.masina', 'editare.3d', ...UNELTE.map((u) => `unealta.${u}`)]) {
     assert.match(sursa, id.startsWith('unealta.') ? /`unealta\.\$\{unealta\}`/ : new RegExp(`'${id.replace('.', '\\.')}'`));
     for (const m of manuale()) assert.ok(capitolPentru(m, id), `${m.limba}: F1 pe „${id}” n-are capitol`);
   }
@@ -408,7 +408,7 @@ test('fiecare control cu data-editare din bara editării are ușa lui (un contro
 
 /**
  * Rândurile meniului contului (ADR 0120), cu ușa care le acoperă și cheia textului de pe rând: manualul și sugestia au
- * ușile lor de dinainte, aspectul (ADR 0250 §3) și frezele (ADR 0300 §3) pe a acțiunii lor din paletă, iar logarea, panoul, raportările (ADR 0116 §C)
+ * ușile lor de dinainte, aspectul (ADR 0250 §3), frezele (ADR 0300 §3) și setările (ADR 0330 §6) pe a acțiunii lor din paletă, iar logarea, panoul, raportările (ADR 0116 §C)
  * și ieșirea stau în capitolul contului. Un rând nou, lipsă de aici, face proba să cadă.
  */
 const RANDURI_MENIU_CONT: Readonly<Record<IdMeniuCont, { readonly usa: string; readonly cheie: string }>> = {
@@ -417,6 +417,7 @@ const RANDURI_MENIU_CONT: Readonly<Record<IdMeniuCont, { readonly usa: string; r
   raportari: { usa: 'editare.cont', cheie: 'editare.cont.raportari' },
   manual: { usa: 'editare.manual', cheie: 'editare.manual' },
   aspect: { usa: 'vedere.aspect', cheie: 'editare.cont.aspect' },
+  setari: { usa: 'vedere.setari', cheie: 'editare.cont.setari' },
   freze: { usa: 'vedere.freze', cheie: 'editare.cont.freze' },
   raporteaza: { usa: 'editare.cont', cheie: 'editare.cont.raporteaza' },
   sugestie: { usa: 'editare.sugestie', cheie: 'editare.sugestie' },

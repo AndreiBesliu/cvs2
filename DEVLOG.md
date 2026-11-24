@@ -13491,3 +13491,76 @@ la ordinul în vigoare „unește ce se poate”
 - **Loturile dinainte:** al șaptesprezecelea și al optsprezecelea, pe test din 17:50 (`29ef7e44`; completul pe `main`
   45417561144, verde: unit 10 190 / 0, e2e 707 / 707, funcțiile 136 / 136, paginile 57 / 57; proba de fum, bună).
   Loturile 19–21 (`7312d685`): completul pe `main` (45436221341) rula la unire.
+
+## 2026-11-24 — Sesiunea principală în cloud: cele două teste grele rămase în rapid, împărțite în câte patru fișiere (Model: Claude Fable 5.2)
+
+**Prompt:** „ok, imparte si cele doua teste grele ramase”
+**Started:** 24.11, 18:35. **Completed:** 24.11, 18:44 (pe ramură; în `main` după rapid).
+
+- **De ce:** cu oracolul rampelor împărțit, felia cea mai lungă a rapidului ținea tot 9 min 20 s (rularea 45425076024),
+  din două teste dintr-un singur test: „căile netede din multe cubice se taie…” (258 s în CI) și „poarta de acum și cea
+  de dinainte de ADR 0032…” (195 s în CI).
+- **Căile netede** (`cale.recenzie.test.ts`): cele 24 de cazuri (bule de 32 și de 128 de cubice, exterior și interior,
+  câte patru semințe), în `cale.recenzie.cubice.<1…4>.test.ts`, câte șase. Judecata unui caz, neschimbată, în
+  `ajutor-cale-recenzie.ts` (`abatereaCubicelor`), cu ajutoarele ei (`piesa`, `bula`, `puncte`), pe care fișierul de
+  bază le ia de acolo. Măsurat, în container: 184 s într-un test → 46, 47, 47 și 43 s.
+- **Echivalența porții** (`degajari.octeti.oracol.test.ts`): cele 461 de programe scrise de mână, în
+  `degajari.poarta.<1…4>.oracol.test.ts`. Programele și judecata, neschimbate, în `ajutor-degajari-poarta.ts`.
+  Măsurat: 125 s → 36, 32, 30 și 29 s; pe părți, 116 / 115 / 115 / 115 programe și 70 / 87 / 63 / 83 cu încălcări;
+  nicio diferență de verdict. Pragurile întregului (300, 100), pe părți: 76 / 75 / 75 / 75 și 24 / 29 / 21 / 28.
+- **Comun:** `test/unit/ajutor-parti.ts` (`cazurilePartii`, `cereImpartirea`, `cereMinimele`), folosit și de oracolul
+  rampelor (paza lui, rescrisă pe el, trece la fel).
+- **Probele:** 28 / 28 pe fișierele atinse (2 min 31 s, în paralel); tipurile. Mutații de control, de mână, 7 (9
+  rulări), toate prinse.
+- **Listele de otrăvuri:** `2.3c-b.py`, `2.8.py` și `3.V.py` numeau `cale.recenzie`; seturile lor au primit și cele
+  patru fișiere ale cubicelor. Niciuna nu numea `degajari.octeti`.
+
+## 2026-11-24 — Felia 10.4↑a-3: fereastra Setări, cu secțiunea Cotele (ADR 0330 §6) (Model: Claude Opus 5.5)
+
+**Prompt:** „continua” (owner-ul, 24.11, după 10.4↑a-2). **Started:** 24.11, 16:42, în sesiunea cloud a liniei cotelor, după
+aducerea lui `main` (`29ef7e44`). **Completed:** 24.11, 17:15 (în container; CI-ul, pe commit-ul împins).
+
+- **Împărțirea:** a-3 = fereastra Setări, cu toate setările de până aici și efectul lor pe desen; a-4 = panoul cotei,
+  lista, „Arată cotele”, cotele foilor vecine, cu setarea lor (numite întâi a-3a și a-3b: id-urile fișelor au doar cifre
+  după cratimă).
+- **Întâi probele pure:** scrierea cifrei (`scrieCifra`: unitatea, zecimalele, zerourile, pasul cu zecimalele lui,
+  separatorul, unitatea scrisă, fără „-0”), capetele (săgeata deschisă, bara oblică la 45°, punctul, fără), extensiile
+  ascunse, cifra în linie (linia întreruptă) și mereu orizontală, pe hârtie; setările (marginile din tabel, câmp cu câmp,
+  stilul și formatul din setări, „după limbă”, „Înapoi la implicit” pe fiecare grup).
+- **Codul:** `src/model/desenCota.ts` (stilul, `bucati`, felurile capetelor, `FormatCifre`), `src/app/setariCote.ts`
+  (grupurile cifre, linii și pânza), `src/app/Cote.tsx` (desenul după setări, ascunse, culoarea, pragul, distanța la
+  punere, ⚙), fereastra `src/app/Setari.tsx` cu `setari.css` (la cerere), rândul „Setări…” din meniul contului, acțiunea
+  `vedere.setari`, Ctrl+, ușa F1, textele (ro, en), manualul „Setările”, catalogul controalelor.
+- **E2e** (`test/e2e/setari.spec.ts`, 7): cele trei deschideri, Escape cu focusul înapoi, F1, garda tastelor; cifrele și
+  capetele pe pânză și pe probă, ținute după reîncărcare, „Înapoi la implicit”; marginile câmpului și pragul cifrelor;
+  ascunse, doar cu unealta Cote; culoarea aleasă; telefonul; engleza. Plus ⚙ în proba barei la 1280 px și rândul nou în
+  probele meniului contului (și pe emulatoare).
+- **Porțile, în container:** tipurile; unitarele cotelor, manualului, meniului, registrului, tastelor, catalogului și
+  traducerilor; e2e-urile cotelor, setărilor, contului, manualului, testului, aranjamentelor, frezelor, Atelierului și
+  paletei (55 / 55); build-ul determinist. Pornirea 110,1 → 110,4 kB (cu ușa 115,1, cu Atelierul 115,4 / 120), totalul
+  825,4 → 832,3 / 900.
+- **Otrăvurile** (`test/otravuri/10.4a3.py`, într-o clonă): 37 / 37 prinse (23 unitare, 14 e2e). Două au scăpat întâi:
+  A12 (cifra orizontală de partea normalei), prinsă după proba nouă (o aliniată trasă spre stânga și în jos), și E12
+  (fereastra scoasă din garda „dialog deschis”), prinsă după Ctrl+K în probă: tasta R ține de editor, nu de registru. Trei din `10.4a2.py` (D05, D09, S01),
+  rămase VOID pe codul nou, mutate și prinse.
+- **Capcană:** pragul cifrelor se probează la înălțimea implicită (după „Înălțimea cifrelor” 7 mm, cifra are 16 px pe ecran).
+
+## 2026-11-24 — Sesiunea principală în cloud: a douăzeci și una unire (10.4↑a-3, fereastra Setări; 16.A↑h-3 și h-4, catalogul de freze; testele grele împărțite) (Model: Claude Fable 5.2)
+
+**Prompt:** rapoartele liniilor cotelor (`9209756f`) și frezelor (`88b048aa`), la ordinul în vigoare „unește ce se
+poate”; „ok, imparte si cele doua teste grele ramase”
+**Started:** 24.11, 18:45. **Completed:** unirea în `main`, 24.11, 19:57; publicarea pe test, la rândul ei.
+
+- **Lotul, pe `unire-2411x`** (din `62569bb2`): împărțirea testelor (`49ce2793`), cotele a-3 (`9209756f`, în
+  `08e2e50d`), frezele h-3 și h-4 (`88b048aa`, în `9fd71053`). Ciocnirile: DEVLOG, registrul otrăvurilor (un rând
+  dublat de unire, scos: rămâne cel al liniei cotelor), catalogul controalelor (scris din nou: 634 de nume). Local, pe
+  arborele unit: tipurile (și ale funcțiilor), regulile de import (21), traducerile (1 037); e2e 51 / 51 (Setările,
+  cotele, contul, frezele, freza în Tăierea, comenzile foii, butonul Admin).
+- **Porțile, în CI:** completul lotului pe `9fd71053` (45440961385, verde la prima trecere, 70 min cu așteptarea la coadă): unit 10 285 / 0 (12 sărite, pe Linux), e2e 750 / 750, funcțiile pe emulatoare 136 / 136, paginile 57 / 57; rapidul, verde pe `9fd71053` (45440961836), cu feliile între 4:00 și 6:51 (înaintea împărțirilor, cea mai lungă ținea 9:20);
+  completele liniilor, verzi: `aa47863d` (45428218032), `5bdea116` (45428773807). pornirea 110,4 kB (plafonul 120), totalul 840,5 / 900 kB, `/admin` 138,2 / 200, contul 30,3 / 32. Nimic pe server.
+- **Documentele:** decizia în `CLAUDE.md`, cu rândurile de stare ale lui a-3, h-3 și h-4; indexul liniilor; starea din
+  `docs/linii/principala.md`.
+- **Loturile dinainte:** pe test e tot `29ef7e44` (loturile până la 18). Publicarea loturilor 19–21 (`7312d685`) a căzut la o probă
+  instabilă a extensiilor (completul pe `main` 45436221341: `extensii.spec.ts:135`, clicul pe „Închide” din cadru,
+  pierdut; reparată pe `unire-2411z`, intră cu lotul următor). Lotul 22 (`62569bb2`) le cuprinde: completul lui pe
+  `main` (45445300697) rula la unire.

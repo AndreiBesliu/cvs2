@@ -79,6 +79,11 @@ față. Fără cod de produs până la răspunsuri. De hotărât acolo, între a
 - **24.11, 10.4↑a-2 gata pe ramură** (codul la `ca5ab922`): lipirea pe puncte, desenul cotei liniare, setările citite, dezlegarea în
   același pas, cotele foilor copiate legate de instanțele noi, unealta Cote (D, M) pe pânză; butonul ei în extensia barei.
   **Urmează:** 10.4↑a-3 (fereastra Setări, panoul cotei, lista, „Arată cotele”), la cuvântul owner-ului.
+- **24.11, 10.4↑a-3 gata pe ramură** (la „continua”; codul la `bb8c0a8f`): fereastra Setări, cu secțiunea Cotele (cifrele,
+  liniile și capetele, comportamentul cu pânza, lipirea, măsurarea; cota de probă; deschiderile din meniul contului, paletă,
+  Ctrl+, și ⚙). Panoul cotei, lista, „Arată cotele” și cotele foilor vecine trec în a-4 (numite întâi a-3a și a-3b:
+  id-urile fișelor au doar cifre după cratimă).
+  **Urmează:** 10.4↑a-4, la cuvântul owner-ului.
 
 ## Deciziile owner-ului
 
@@ -96,6 +101,10 @@ față. Fără cod de produs până la răspunsuri. De hotărât acolo, între a
   trebuie să intre în același pas de anulare; `executa` din `src/model/jurnal.ts` e locul comun (ca `inregistreazaFoile`).
   Altfel, cota dezlegată sare înapoi la punctul de la desenare.
 - **Bara de sus:** un buton nou de unealtă se probează la 1280 px cu fontul lat, în ambele limbi (ADR 0181, 10.3↑j).
+- **Rândul nou al meniului contului** se numără în `cont.spec.ts`, `tutorial.spec.ts` (vecinii lui) și în proba tichetelor de
+  pe emulatoare; ușa lui intră în `RANDURI_MENIU_CONT` din `manual.test.ts`.
+- **Setările pe hârtie:** pragul cifrelor se probează la înălțimea implicită (după 7 mm, cifra are 16 px pe ecran), iar cifra
+  „mereu orizontală” cere și o aliniată trasă spre stânga sau în jos (la orizontală și verticală, normala e mereu aceeași).
 - **Lista felurilor ca valoare** (`FELURI_COTA`) stă în `cote.ts`, nu în `document.ts`: acela e în pornire, iar o valoare
   exportată de acolo ar intra în pachet.
 - **„Duplică foaia”** (`comandaDuplicareLegata`, `src/model/pieseLegate.ts`) copiază tot ce are foaia, deci și cotele, cu

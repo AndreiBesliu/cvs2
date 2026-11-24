@@ -7,6 +7,8 @@
  * - regiunea: două căi care se ating exact scăpau de refuz când biarcele le depărtau cu ~1e-4 mm;
  * - avertismentele: colțurile curbe fără degajare se spun; o curbă strânsă se spune o dată, nu pe fiecare arc al ei;
  * - timpul: verificările offsetului și apropierile erau O(n·m).
+ * Proba căilor netede din multe cubice (24 de cazuri, 3–4 minute într-un singur test) stă din 24.11.2026 în fișierele ei,
+ * `cale.recenzie.cubice.<n>.test.ts`, pe părți (`ajutor-cale-recenzie.ts`).
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -14,12 +16,10 @@ import assert from 'node:assert/strict';
 import './limbi.ts';
 import { listaDesen } from '../../src/app/desen.ts';
 import { programDinDocument } from '../../src/cam/job.ts';
-import { distantaLaContur } from '../../src/geom/distanta.ts';
 import { compune, determinant, rotatie, transformaContur } from '../../src/geom/matrice.ts';
-import { TOLERANTA_PROIECT } from '../../src/geom/toleranta.ts';
 import { traduce } from '../../src/i18n/t.ts';
 import { avertismente } from '../../src/model/avertismente.ts';
-import { PLAFON, type Document, type FormaDoc, type Operatie, type VarfDoc } from '../../src/model/document.ts';
+import { PLAFON, type FormaDoc, type VarfDoc } from '../../src/model/document.ts';
 import { conturElement } from '../../src/model/forme.ts';
 import { incarca, jsonCanonic } from '../../src/model/incarcare.ts';
 import { istoricNou } from '../../src/model/jurnal.ts';
@@ -27,23 +27,10 @@ import { ACTIUNI_DOCUMENT, type ContextDocument } from '../../src/ui/actiuniDocu
 import { instantaLa } from '../../src/ui/actiuniAlegere.ts';
 import { D } from './ajutor-cale.ts';
 import { cuOperatie, docDin, ID } from './ajutor-document.ts';
+import { F, P, piesa } from './ajutor-cale-recenzie.ts';
 
-const P = (x: number, y: number) => ({ x, y });
-const F = { latime: 2440, inaltime: 1220, grosime: 18 };
 const motiv = (r: ReturnType<typeof incarca>): string => (r.ok ? '' : r.motiv);
 const prinUsa = (d: unknown) => incarca(JSON.parse(jsonCanonic(d)));
-
-/** O piesă cu un singur element, pusă cu rotirea dată (matricea elementului dată). */
-function piesa(forma: FormaDoc, matrice: Document['piese'][number]['radacina']['matrice'], x: number, y: number, rotire: number, op?: Partial<Operatie>): Document {
-  const d = docDin(F, { id: 'c', forma, matrice: { ...ID } });
-  const p = d.piese[0];
-  if (!p || p.radacina.tip !== 'element') throw new Error('piesa');
-  p.radacina.matrice = matrice;
-  const foaie = d.foi[0];
-  if (!foaie) throw new Error('foaie');
-  foaie.instante = [{ id: 'c', piesa: 'c', x, y, rotire }];
-  return op ? cuOperatie(d, 'c', op) : d;
-}
 
 const kappa = 0.5522847498307936;
 /** Elipsa din patru cubice (κ), cu centrul în (cx, cy). */
@@ -71,24 +58,6 @@ function dreptunghiCubic(x: number, y: number, w: number, h: number, r: number):
     { p: P(x, y + r), s: { tip: 'C', c1: P(x, y + r - k), c2: P(x + r - k, y) } },
   ];
   return { tip: 'cale', inchis: true, varfuri: v };
-}
-
-/** Bulă netedă: Catmull-Rom închis, ca cubice, pe raze aleatoare (sămânța dată). */
-function bula(n: number, r0: number, samanta: number): FormaDoc {
-  let s = samanta;
-  const rnd = (): number => { s = (s * 1103515245 + 12345) % 2147483648; return s / 2147483648; };
-  const pts = Array.from({ length: n }, (_, i) => {
-    const u = (2 * Math.PI * i) / n, r = r0 * (0.75 + 0.5 * rnd());
-    return P(r * Math.cos(u), r * Math.sin(u));
-  });
-  return {
-    tip: 'cale',
-    inchis: true,
-    varfuri: pts.map((p, i): VarfDoc => {
-      const p0 = pts[(i - 1 + n) % n] as { x: number; y: number }, p2 = pts[(i + 1) % n] as { x: number; y: number }, p3 = pts[(i + 2) % n] as { x: number; y: number };
-      return { p, s: { tip: 'C', c1: P(p.x + (p2.x - p0.x) / 6, p.y + (p2.y - p0.y) / 6), c2: P(p2.x - (p3.x - p.x) / 6, p2.y - (p3.y - p.y) / 6) } };
-    }),
-  };
 }
 
 const PATRAT_CU_ARC = (bulge: number): FormaDoc => ({
@@ -164,50 +133,6 @@ test('offsetul: contactul fals dintre două arce mici tangente nu mai refuză o 
   assert.ok(elipsaMica.ok, elipsaMica.ok ? '' : elipsaMica.motiv);
   const colturi = programDinDocument(piesa(dreptunghiCubic(-10, -6, 20, 12, 3.5), { ...ID }, 600, 300, 10, { latura: 'interior' }));
   assert.ok(colturi.ok, colturi.ok ? '' : colturi.motiv);
-});
-
-/** Punctele în plan ale mișcărilor de tăiere din prima trecere, pe linii și arce. */
-function puncte(d: Document): Array<{ x: number; y: number }> {
-  const j = programDinDocument(d);
-  assert.ok(j.ok, j.ok ? '' : j.motiv);
-  if (!j.ok) return [];
-  const rez: Array<{ x: number; y: number }> = [];
-  let x = Number.NaN, y = Number.NaN, z = Number.NaN, z0: number | null = null;
-  for (const a of j.program.miscari) {
-    if (!('la' in a)) continue;
-    const nx = a.la.X ?? x, ny = a.la.Y ?? y, nz = a.la.Z ?? z;
-    if (a.tip !== 'rapida' && nz === z && nz < 0 && (z0 === null || nz === z0)) {
-      z0 = nz;
-      for (let k = 0; k <= 8; k++) {
-        const f = k / 8;
-        if (a.tip === 'arc') {
-          const c = a.centru, r = Math.hypot(x - c.x, y - c.y), u0 = Math.atan2(y - c.y, x - c.x);
-          let b = Math.atan2(ny - c.y, nx - c.x) - u0;
-          if (a.sens === 'trigonometric') { while (b <= 1e-12) b += 2 * Math.PI; } else { while (b >= -1e-12) b -= 2 * Math.PI; }
-          rez.push(P(c.x + r * Math.cos(u0 + b * f), c.y + r * Math.sin(u0 + b * f)));
-        } else {
-          rez.push(P(x + (nx - x) * f, y + (ny - y) * f));
-        }
-      }
-    }
-    x = nx; y = ny; z = nz;
-  }
-  return rez;
-}
-
-test('căile netede din multe cubice se taie (buclele minuscule ale offsetului scoase), la raza frezei de cubica exactă', () => {
-  for (const [n, samanta] of [[32, 5], [128, 5], [128, 77]] as const) {
-    for (const latura of ['exterior', 'interior'] as const) {
-      for (let k = 0; k < 4; k++) {
-        const forma = bula(n, 40, samanta + k);
-        const d = piesa(forma, { ...ID }, 600, 300, 0, { latura });
-        const exacta = conturElement({ forma, matrice: { a: 1, b: 0, c: 0, d: 1, e: 600, f: 300 } });
-        let abatere = 0;
-        for (const p of puncte(d)) abatere = Math.max(abatere, Math.abs(distantaLaContur(p, exacta) - 3));
-        assert.ok(abatere <= TOLERANTA_PROIECT + 1e-6, `${n} cubice, ${latura}, ${samanta + k}: ${abatere}`);
-      }
-    }
-  }
 });
 
 test('regiunea: o gaură-cale care atinge exact piesa-cale (omotetia printr-un punct al marginii) e refuzată', () => {

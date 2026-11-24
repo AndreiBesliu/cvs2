@@ -19,6 +19,17 @@
   stroke: none;
 }
 
+/* Capetele din Setări: săgeata deschisă (doar conturul) și bara oblică, mai groasă decât linia. */
+.cota .cota-capat-deschis {
+  fill: none;
+  stroke: var(--cota);
+  stroke-width: 1;
+}
+
+.cota line.cota-capat-bara {
+  stroke-width: 1.5;
+}
+
 .cota text {
   fill: var(--cota);
   font-family: var(--font, system-ui, sans-serif);
@@ -32,6 +43,11 @@
 .cota-dezlegata .cota-capat,
 .cota-dezlegata text {
   fill: var(--rosu);
+}
+
+.cota-dezlegata .cota-capat-deschis {
+  fill: none;
+  stroke: var(--rosu);
 }
 
 .cota-aleasa line {
