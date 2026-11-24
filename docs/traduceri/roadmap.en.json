@@ -137,6 +137,10 @@
       "ro": "Repararea, conversia, cotele, transformarea traseelor",
       "en": "Repair, conversion, dimensions, transforming toolpaths"
     },
+    "07fccf3ef56b5851": {
+      "ro": "**Grupurile omului în „Frezele mele”** (fără mașină; ADR 0302 §4, „Implementarea (16.A↑h-2)”; ramura `wip/16.A-freze`, în sesiunea cloud a liniei frezelor, a doua felie din ADR 0302, în ordinea acceptată). Câmpul `grup` al frezei (cel mult 40 de caractere, fără caractere de control; gol, freza stă pe felul ei), în fișierul JSON, în CSV (coloana `grup`) și în cont, fără schemă nouă; lista: grupurile omului întâi, după nume, apoi felurile; „Grupul” din fișă mută freza (și într-un grup nou), „✎” de pe titlu redenumește un grup cu toate frezele lui, într-o singură scriere (un nume existent le unește, gol le întoarce pe feluri), focusul revine pe „✎”; câmpul „Grupul” în editor; manualul. Probele (întâi): unitare noi 4 (modelul 3, depozitul 1) și CSV-ul, în Edge 1; otrăvuri 23 / 24 (G04, echivalentă: judecata grupului refuză oricum un grup care nu e text), E06 prinsă după reparația focusului. Pornirea neschimbată. Nimic pe server; documentul nu se schimbă.",
+      "en": "**The user’s groups in “My bits”** (no machine; ADR 0302 §4, “Implementation (16.A↑h-2)”; branch `wip/16.A-freze`, in the bits line’s cloud session, the second slice of ADR 0302, in the accepted order). The bit’s `grup` field (at most 40 characters, no control characters; empty, the bit sits under its kind), in the JSON file, in CSV (the `grup` column) and in the account, with no new schema; the list: the user’s groups first, by name, then the kinds; “Group” in the details moves the bit (also into a new group), “✎” on the title renames a group with all its bits, in a single write (an existing name merges them, an empty one puts them back under their kinds), and the focus returns to “✎”; the “Group” field in the editor; the manual. Tests (first): 4 new unit tests (3 for the model, 1 for the store) and the CSV, 1 in Edge; poisons 23 / 24 (G04, equivalent: the group check refuses a group that is not text anyway), E06 caught after the focus fix. Startup unchanged. Nothing on the server; the document does not change."
+    },
     "08f6ed425e61c9b3": {
       "ro": "3.Tl (roata conică)",
       "en": "3.Tl (the bevel gear)"
@@ -3676,6 +3680,10 @@
     "e6087eadf6b55447": {
       "ro": "**Formele între cvs2 și plugin** (fără mașină; ADR 0166; în worktree-ul `wip/trenulet`; „B, schimbul de forme”, apoi „Da, fă-o” la schiță). Permisiunea nouă `forme`. Din desen spre extensie, doar ce trimite omul: „Trimite la <extensie>”, în bara selecției și în paletă, cât e deschisă o extensie care primește forme; contururile instanțelor alese, în mm ai foii, cu arcele și curbele la cel mult 0,02 mm. Din extensie spre desen, prin fereastra Importă, „Propus de <extensie>”: nimic nu intră fără „Importă”. Planificatorul: fila „Din cvs2” a atelierului 3D (forma ridicată la o grosime, cu găurile ei) și „În desenul cvs2” la fiecare placă a exportului CNC. Pachetul 18.6.0.",
       "en": "**Shapes between cvs2 and the plugin** (no machine; ADR 0166; in the `wip/trenulet` worktree; “B, schimbul de forme”, then “Da, fă-o” at the sketch). The new `forme` permission. From the drawing to the extension, only what the person sends: “Send to <extension>”, in the selection bar and in the palette, while an extension that receives shapes is open; the outlines of the chosen instances, in sheet mm, with arcs and curves within 0.02 mm. From the extension to the drawing, through the Import window, “Proposed by <extension>”: nothing goes in without “Import”. The planner: the “From cvs2” tab of the 3D workshop (the shape raised to a thickness, with its holes) and “Into the cvs2 drawing” on every board of the CNC export. Package 18.6.0."
+    },
+    "e67c5f12ec27eec7": {
+      "ro": "Grupurile omului în „Frezele mele”",
+      "en": "The user’s groups in “My bits”"
     },
     "e692b6cf239eb86f": {
       "ro": "Biblioteca extensiilor, refăcută: fereastra ei, meniul scurtat, paleta",

@@ -13241,3 +13241,23 @@ custom” (owner-ul, cu `FREZE.tdb`), apoi, la cele cinci întrebări: „Da, 1a
 - **De hotărât de owner, fără grabă:** oracolul de 6 minute se poate împărți în mai multe fișiere (feliile s-ar
   echilibra și rapidul ar coborî iar spre 6–7 minute) sau muta în nivelul complet.
 - **Lecția:** înaintea unirii se citesc și rapidul, și completul ramurii de unire, nu doar completul.
+
+## 2026-11-24 — 16.A↑h-2: grupurile omului în „Frezele mele” (Model: Claude Opus 5.5)
+
+**Prompt:** felia a doua din ADR 0302, în ordinea acceptată de owner („Da, 1a–5a”: întâi fereastra ca listă, apoi grupurile).
+**Started:** 24.11, 13:22.
+
+- **Codul** (`6cfa2231`): câmpul `grup` al frezei (`src/model/freza.ts`: marginile, curățarea, `grupurileListei`,
+  `cuGrupRedenumit`), coloana CSV `grup` (`src/io/frezeFisier.ts`), redenumirea în depozit, într-o singură scriere
+  (`redenumesteGrup`); fereastra: lista pe grupuri (ale omului întâi, după nume, apoi felurile), „✎” pe titlul unui grup,
+  „Grupul” din fișă (alt grup, „Fără grup (pe fel)”, „Grup nou…”), câmpul „Grupul” din editor; manualul (ro, en). Contul și
+  sincronizarea, neschimbate: îmbinarea pe câmpuri ia și grupul.
+- **Focusul** (`60e7f68e`): otrava E06 (starea redenumirii lăsată după aplicare) a arătat că după redenumire focusul cădea în
+  afara ferestrei, iar Escape nu mai ajungea la ea; acum focusul revine pe „✎” al grupului (desfăcut, pe căutare), și după
+  renunțare.
+- **Probele** (întâi): unitare noi 4 și CSV-ul (77 / 77 pe frezele), în Edge 1 nouă (`freze.spec.ts` 14 / 14, cu
+  `frezeTaiere.spec.ts` 20 / 20). **Otrăvurile** (`test/otravuri/16.A-h2.py`): 23 / 24 (G04 echivalentă).
+- **`main` adus** din nou (`e5153528`, limita feliilor rapidului); 16.A↑b-2, 16.A↑a-2 și ADR 0302 (`d0fa2dde`) sunt în lotul
+  19 al sesiunii principale.
+- Nimic pe server; documentul nu se schimbă. **Completed:** 24.11, 13:45.
+
