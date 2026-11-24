@@ -13307,3 +13307,22 @@ admin, care apare daca esti logat ca admin”
   A06 din `11.1.py` (copia foii), mutat pe codul nou.
 - **Capcane:** jos, la 1280 × 720, bara de jos acoperă marginea foii (un clic acolo nimerește un buton); o tastă a
   editorului cere focusul în bara uneltelor; liniile de extensie pleacă de lângă vârfuri, deci nu aleg cota.
+
+## 2026-11-24 — Sesiunea principală în cloud: clicul pe „Repornește” din cadrul unei extensii, neîntors (probă instabilă, reparată) (Model: Claude Fable 5.2)
+
+**Prompt:** (fără prompt nou: completul lotului 19 a căzut la o probă din afara lui)
+**Started:** 24.11, 16:25. **Completed:** 24.11, 16:35 (doar probe; împins în `main`).
+
+- **Ce s-a văzut:** completul lotului 19 (45404468217, pe `33fadb06`) a căzut la o singură probă din 715,
+  `extensii.lucru.spec.ts:222` (repornirea cerută de extensie, ADR 0165): `click()` pe „Repornește”, în cadrul
+  extensiei, nu s-a mai întors (30 s), cu jurnalul oprit la „performing click action”. Nu ține de freze.
+- **Cauza:** aceeași cursă ca la „Închide” (23.11, `clicCareInchideCadrul`): clicul reface cadrul pe loc, iar cadrul
+  vechi dispare înainte să-și confirme evenimentul. Reprodusă în container, cu proba repetată de 120 de ori pe zece
+  lucrători: 8 căderi, din care 6 clicuri neîntoarse, doar la cele două clicuri care repornesc pe loc (rândurile 228
+  și 240).
+- **Reparația (doar probe):** `clicCareRefaceCadrul` în `test/e2e/ajutor-extensii.ts` așteaptă urmarea clicului
+  („Deschideri: N” din cadrul nou), nu întoarcerea lui; folosit la cele două clicuri. Cu ea, 118 / 120, fără niciun
+  clic neîntors. Otrava (gazda ignoră `host.reporneste()`) e prinsă, cu mesajul „Deschideri: 2” așteptat, „1” primit.
+- **Rămas, de urmărit:** celelalte 2 căderi din 120, la rândul 235 („două cereri imediat după” repornire: sub
+  încărcarea a zece lucrători, clicurile ajung după cele 2 s ale răririi și repornirea se face pe loc). Nevăzută în
+  CI; proba depinde acolo de timp.
