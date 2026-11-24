@@ -832,8 +832,9 @@ var Atelier3D = (function () {
         const c = ev.target as HTMLInputElement, g = /^at-cu-unghi-(\d)$/.exec(c.id);
         if (!g) return;
         const k = +g[1]!, v = Math.round(+c.value * 10) / 10, [a, b] = margini(k);
-        // în afara marginilor, câmpul se întoarce la ce era; un braț mutat îi împinge pe următorii la cel puțin 90° de el
-        if (!(c.value !== "" && v >= a && v <= b)) { editor(); return; }
+        // în afara marginilor (și golit: atunci e 0), câmpul se întoarce la ce era; un braț mutat îi împinge pe următorii
+        // la cel puțin 90° de el
+        if (!(v >= a && v <= b)) { editor(); return; }
         const nou = m.map((x): [number, string] => [x[0], x[1]]);
         nou[k]![0] = v;
         for (let i = k + 1; i < n; i++) nou[i]![0] = Math.max(nou[i]![0], nou[i - 1]![0] + 90);

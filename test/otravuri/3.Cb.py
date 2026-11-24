@@ -136,10 +136,10 @@ o('E08', AT, '[m[k - 1]![0] + 90, n === 2 ? 180 : 360 - 90 * (n - k)];', '[m[k -
   'cu două brațe, unghiul trece de 180°')
 o('E09', AT, '[m[k - 1]![0] + 90, n === 2 ? 180 : 360 - 90 * (n - k)];', '[m[k - 1]![0] + 45, n === 2 ? 180 : 360 - 90 * (n - k)];', 'e2e',
   'marginea de jos a unghiului e la 45° de vecin')
-o('E10', AT, 'if (!(c.value !== "" && v >= a && v <= b)) { editor(); return; }', 'if (c.value === "") { editor(); return; }', 'e2e',
-  'un unghi din afara marginilor e primit')
-o('E11', AT, 'if (!(c.value !== "" && v >= a && v <= b)) { editor(); return; }', 'if (!(v >= a && v <= b)) { editor(); return; }', 'e2e',
-  'câmpul golit e citit ca un unghi')
+o('E10', AT, 'if (!(v >= a && v <= b)) { editor(); return; }', 'if (!(v <= b)) { editor(); return; }', 'e2e',
+  'un unghi sub marginea de jos e primit (și câmpul golit, care e 0)')
+o('E11', AT, 'if (!(v >= a && v <= b)) { editor(); return; }', 'if (!(v >= a)) { editor(); return; }', 'e2e',
+  'un unghi peste marginea de sus e primit')
 o('E12', AT, 'for (let i = k + 1; i < n; i++) nou[i]![0] = Math.max(nou[i]![0], nou[i - 1]![0] + 90);', 'for (let i = k + 1; i < 0; i++) nou[i]![0] = Math.max(nou[i]![0], nou[i - 1]![0] + 90);', 'e2e',
   'un braț mutat nu-i mai împinge pe următorii (cel de după dispare)')
 o('E13', AT, '[0, m[1]![0], m[1]![0] + 90]', '[0, m[1]![0], m[1]![0] + 100]', 'e2e',
@@ -161,6 +161,15 @@ o('E20', AT, '${margini(k)[0] === margini(k)[1] ? " disabled" : ""}', '${""}', '
   'la cruce, unghiurile par că se pot schimba')
 o('E21', AT, 'for (const b of rotite) if (out.every(([v]) => Math.abs(((b[0] - v) % 360 + 540) % 360 - 180) >= 90 - 1e-6)) out.push(b);', 'for (const b of rotite) out.push(b);', 'e2e',
   'atelierul ține un braț pe care motorul îl lasă afară')
+o('E22', AT, 'const rotite = cerute.map(([u, f]): [number, string] => [Math.round((((u - u0) % 360) + 360) % 360 * 10) / 10 % 360, f === "r" ? "r" : "x"])',
+  'const rotite = cerute.map(([u, f]): [number, string] => [Math.round((((u - 0) % 360) + 360) % 360 * 10) / 10 % 360, f === "r" ? "r" : "x"])', 'e2e',
+  'primul braț al unei piese din stocare nu e adus la 0°')
+o('E23', AT, 'const rotite = cerute.map(([u, f]): [number, string] => [Math.round((((u - u0) % 360) + 360) % 360 * 10) / 10 % 360, f === "r" ? "r" : "x"])',
+  'const rotite = cerute.map(([u, f]): [number, string] => [Math.round((((u - u0) % 360) + 360) % 360 * 10) / 10 % 360, f])', 'e2e',
+  'un fel necunoscut din stocare rămâne în configurator (niciun manșon ales)')
+o('E24', AT, 'seg("at-cu-butuc", [["r", "Știft"], ["x", "Ax"], ["p", "Plin"]], p.butuc === "x" || p.butuc === "p" ? p.butuc : "r")',
+  'seg("at-cu-butuc", [["r", "Știft"], ["x", "Ax"], ["p", "Plin"]], p.butuc)', 'e2e',
+  'un butuc necunoscut din stocare rămâne în configurator (niciun butuc ales)')
 
 # --- atelierul: axul cu opritor și știftul cu bucșă
 o('E30', AT, '(d.opritor ? tr(" cu opritor") : "");', '(d.opritor ? "" : "");', 'e2e',

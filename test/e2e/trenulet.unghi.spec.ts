@@ -21,6 +21,16 @@ async function atelier(page: Page, piesa: string): Promise<void> {
   await page.locator('#at-tipuri [data-fila="legaturi"]').click();
   await page.locator(`#at-galerie [data-piesa="${piesa}"]`).click();
 }
+const PAGINA = 'http://easy3draw.test/', CHEIE = 'atelier.caramizi.v1';
+/** Pagina deschisă cu o stare salvată a atelierului (ca după o reîncărcare). */
+async function cuStare(page: Page, stare: unknown): Promise<void> {
+  await page.route(PAGINA, (r) => r.fulfill({ body: paginiPlanificator().preview, contentType: 'text/html; charset=utf-8' }));
+  await threeDinPachet(page);
+  await page.route(/fonts\.(googleapis|gstatic)\.com/, (r) => r.abort());
+  await page.addInitScript(([k, s]) => { localStorage.setItem(k, s); }, [CHEIE, JSON.stringify({ stare, lista: [], model: [] })] as const);
+  await page.goto(PAGINA);
+  await intraIn3D(page);
+}
 const nume = (page: Page) => page.locator('#at-nume-piesa');
 const cote = (page: Page) => page.locator('#at-cote');
 const alegeri = (page: Page, id: string) => page.locator(`#${id} button`);
@@ -181,6 +191,27 @@ test('STL-ul conectorului în Y e închis și are cutia de pe hârtie; piesa int
   await page.locator('#at-in-model').click();
   await expect(page.locator('#at-vedere-mod [data-v="model"]')).toHaveText('Modelul (1)');
   await expect(page.locator('#at-m-lista li')).toHaveText([/^Conector în unghi: ax, ax 120°, știft 240°, butuc de ax/]);
+});
+
+test('un conector stricat venit din stocare e îndreptat ca în motor: primul braț la 0°, cele sub 90° lăsate afară', async ({ page }) => {
+  // primul braț la 30°, al doilea la 60° de el (nu încape), al treilea la 200° (rămâne), al patrulea la 70° de al treilea
+  // (nu încape); un fel necunoscut e manșon de ax, un butuc necunoscut are gaură de știft
+  await cuStare(page, { tip: 'conectorUnghi', conectorUnghi: { mansoane: [[30, 'q'], [90, 'x'], [230, 'r'], [300, 'x']], butuc: 'q' } });
+  await expect(page.locator('#at-galerie [aria-pressed="true"]')).toHaveAttribute('data-piesa', 'conectorUnghi');
+  await expect(nume(page)).toHaveText('Conector în unghi: ax, știft 200°');
+  await expect(apasat(page, 'at-cu-nr')).toHaveText('2');
+  await expect(page.locator('#at-cu-brate .at-rand')).toHaveCount(2);
+  await expect(unghi(page, 1)).toHaveValue('200');
+  await expect(apasat(page, 'at-cu-fel-0')).toHaveText('Ax');
+  await expect(apasat(page, 'at-cu-fel-1')).toHaveText('Știft');
+  await expect(apasat(page, 'at-cu-butuc')).toHaveText('Știft');
+  await expect(apasat(page, 'at-cu-repede')).toHaveCount(0);
+  await expect(page.locator('#at-avert')).toBeHidden();
+  // cutia de pe hârtie a celor două brațe rămase (0° și 200°)
+  await expect(cote(page)).toContainText('24,4 × 11,6 × 7,8 mm');
+  // piesa din listă e cea îndreptată
+  await page.locator('#at-adauga').click();
+  await expect(page.locator('#at-lista tr td:first-child')).toHaveText(['Conector în unghi: ax, știft 200°']);
 });
 
 test('axul cu opritor: bifa, numele și cotele; fără bifă, axul de până acum', async ({ page }) => {
