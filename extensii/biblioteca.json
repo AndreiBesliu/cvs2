@@ -18,6 +18,12 @@
       ],
       "noutati": [
         {
+          "versiune": "18.25.0",
+          "data": "2026-11-24",
+          "ro": "Conectorul în unghi, în fila „Legături”: un butuc cu 1–4 brațe, la unghiurile conectorilor LEGO sau la unghiul tău. Axul are opritor, la alegere, iar știftul poate avea bucșă la un capăt.",
+          "en": "The angled connector, in the “Joints” tab: a hub with 1–4 arms, at the angles of the LEGO connectors or at your own. The axle can have a stop, and the pin can have a bush at one end."
+        },
+        {
           "versiune": "18.24.0",
           "data": "2026-11-24",
           "ro": "Conectorul perpendicular, în fila „Legături”: un bloc de 1–5 pași, cu găuri de știft sau de ax pe trei axe, ca să legi grinzi și axe care nu stau în același plan.",
@@ -94,8 +100,8 @@
           }
         }
       ],
-      "versiune": "18.24.0",
-      "continut": "988824c423a670e9c85f2648851287ab7e82402ab205ee92aa13f71269c83fdd"
+      "versiune": "18.25.0",
+      "continut": "7bda001230457132cda3d1e02f4fd7f6094a62aa00d2a64f7236a9245fea35d4"
     }
   ]
 }

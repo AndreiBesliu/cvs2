@@ -9,51 +9,11 @@
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { createRequire } from 'node:module';
+import { L, plasa, plin, cote, type P3 } from './ajutor-plasa-lego.ts';
 
-type P3 = [number, number, number];
-type Tri = [P3, P3, P3];
-type Piesa = { tri: Tri[]; dim: number[]; avert: string[]; baza: number[] };
-type Lego = {
-  efective(): Record<string, number>;
-  parametri(): Record<string, number>;
-  construieste(d: Record<string, unknown>): Piesa;
-  tipuri: readonly string[];
-};
-
-const cere = createRequire(import.meta.url);
-const { motoare, plasa } = cere('../../extensii/trenulet/sursa/teste/incarca.js') as {
-  motoare(): { L: Lego }; plasa(tri: readonly Tri[]): { deschise: number; corpuri: number; negative: number };
-};
-const { L } = motoare();
 const conector = (gauri: readonly string[]) => L.construieste({ tip: 'conector', gauri });
 const E = L.efective(), P = L.parametri();
 const S = P.pas!, G = P.grinda_groasa!, RG = E.gauraD! / 2, RL = E.lamajD! / 2, HL = P.lamaj_h!, AXD = E.axGauraD!, AXL = E.axGauraLat!;
-
-/** Numărul de înfășurare al plasei în jurul punctului: ≥ 1 înseamnă „în lemn” (corpurile se pot suprapune puțin). */
-function infasurare(tri: readonly Tri[], p: P3): number {
-  const d: P3 = [0.5399, 0.2931, 0.7889];
-  let n = 0;
-  for (const [a, b, c] of tri) {
-    const e1: P3 = [b[0] - a[0], b[1] - a[1], b[2] - a[2]], e2: P3 = [c[0] - a[0], c[1] - a[1], c[2] - a[2]];
-    const h: P3 = [d[1] * e2[2] - d[2] * e2[1], d[2] * e2[0] - d[0] * e2[2], d[0] * e2[1] - d[1] * e2[0]];
-    const det = e1[0] * h[0] + e1[1] * h[1] + e1[2] * h[2];
-    if (Math.abs(det) < 1e-12) continue;
-    const s: P3 = [p[0] - a[0], p[1] - a[1], p[2] - a[2]], u = (s[0] * h[0] + s[1] * h[1] + s[2] * h[2]) / det;
-    if (u < 0 || u > 1) continue;
-    const q: P3 = [s[1] * e1[2] - s[2] * e1[1], s[2] * e1[0] - s[0] * e1[2], s[0] * e1[1] - s[1] * e1[0]];
-    const v = (d[0] * q[0] + d[1] * q[1] + d[2] * q[2]) / det;
-    if (v < 0 || u + v > 1) continue;
-    const t = (e2[0] * q[0] + e2[1] * q[1] + e2[2] * q[2]) / det;
-    if (t <= 1e-9) continue;
-    // det = −d·n: negativ când raza iese prin triunghi (normala lui, spre afară, e în sensul razei), pozitiv când intră
-    n += det < 0 ? 1 : -1;
-  }
-  return n;
-}
-const plin = (p: Piesa, q: P3) => infasurare(p.tri, q) >= 1;
-/** Cotele piesei, rotunjite la miimi, în tărâmul probei (tablourile motorului vin din alt tărâm, `vm`). */
-const cote = (p: Piesa): number[] => Array.from(p.dim, (v) => Math.round(v * 1000) / 1000);
 
 /** Axele unui pas: `a` e axa găurii, `u` și `w` sunt cele două perpendiculare. */
 const AXE: Record<string, [P3, P3, P3]> = {

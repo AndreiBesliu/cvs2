@@ -19,7 +19,7 @@ const PAGINA = 'http://easy3draw.test/';
 const FAMILII: readonly (readonly [string, readonly (readonly [string, string])[]])[] = [
   ['caramizi', [['caramida', 'Cărămidă / placă'], ['panta', 'Pantă'], ['pantaInversa', 'Pantă inversă'], ['pana', 'Pană / aripă'], ['rotund', 'Rotund / con'],
     ['lateral', 'Știfturi pe lateral'], ['suport', 'Suport (bracket)'], ['grinda', 'Grindă'], ['caramidaTechnic', 'Cărămidă Technic'], ['placaTechnic', 'Placă cu găuri']]],
-  ['legaturi', [['stiftTechnic', 'Știft'], ['ax', 'Ax'], ['bucsa', 'Bucșă / conector'], ['conector', 'Conector perpendicular'], ['clema', 'Clemă'], ['bara', 'Bară'], ['maner', 'Mâner'], ['bila', 'Bilă'],
+  ['legaturi', [['stiftTechnic', 'Știft'], ['ax', 'Ax'], ['bucsa', 'Bucșă / conector'], ['conector', 'Conector perpendicular'], ['conectorUnghi', 'Conector în unghi'], ['clema', 'Clemă'], ['bara', 'Bară'], ['maner', 'Mâner'], ['bila', 'Bilă'],
     ['cupa', 'Cupă']]],
   ['roti', [['rotita', 'Roată dințată'], ['conica', 'Roată conică'], ['coroana', 'Roată coroană'], ['conicaDubla', 'Conică dublă'], ['fulie', 'Fulie'],
     ['roata', 'Roată cu anvelopă'], ['senila', 'Șenilă']]],
@@ -81,7 +81,7 @@ test('fiecare piesă, în fiecare galerie, are pictograma ei înaintea numelui, 
     // butonul se numește tot ca piesa: pictograma nu se citește
     for (const [k, n] of piese) await expect(page.locator('#at-galerie').getByRole('button', { name: n, exact: true }), k).toHaveAttribute('data-piesa', k);
   }
-  expect(desene.size).toBe(29);
+  expect(desene.size).toBe(30);
   const dupa = new Map<string, string>();
   for (const [k, d] of desene) {
     expect(dupa.get(d), `${k} are același desen ca ${dupa.get(d)}`).toBeUndefined();
