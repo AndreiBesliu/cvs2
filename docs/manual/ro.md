@@ -1253,9 +1253,10 @@ schimbări** pune la loc ce era. Dacă alegi altă freză sau închizi fereastra
 când sunt bune; altfel fereastra rămâne și arată câmpurile de reparat. **Duplică** face o copie a frezei, iar **Șterge…**
 cere confirmarea; proiectele care o folosesc își păstrează copia ei.
 
-**Adaugă frezele de pornire** apare cât biblioteca e goală: șase freze obișnuite (plate Ø3,175, Ø6 și Ø12, V60 Ø6, V90 Ø12
-și gravare 30° cu vârful 0,2 și Ø3,175), cu valorile implicite ale aplicației (18 000 rot/min, avansul 1 000 mm/min,
-plonjarea 300 mm/min). Le schimbi apoi după frezele tale.
+**Frezele standard** vin singure: la prima deschidere a ferestrei sau a panoului de proprietăți, biblioteca primește șase
+freze obișnuite (plate Ø3,175, Ø6 și Ø12, V60 Ø6, V90 Ø12 și gravare 30° cu vârful 0,2 și Ø3,175), cu valorile implicite ale
+aplicației (18 000 rot/min, avansul 1 000 mm/min, plonjarea 300 mm/min). Le schimbi apoi după frezele tale. Se pun o singură
+dată: una ștearsă nu revine singură. Cu biblioteca goală, **Adaugă frezele standard** le pune la loc pe cele care lipsesc.
 
 **Exportă…** salvează biblioteca în fișierul `frezele-mele.cvs2freze.json`, pe care îl aduci cu **Importă…** pe alt
 calculator. **Importă…** citește și un CSV (salvat, de exemplu, din Excel), cu un rând de antet și coloanele `nume`, `fel`
@@ -1276,8 +1277,9 @@ sincronizează cu contul când deschizi fereastra, la câteva secunde după fiec
 trimite la reconectare**. Contul ține cel mult 500 de freze; una care nu mai are loc rămâne în acest browser, iar fereastra
 le numără. Cu proba încheiată sau cu contul dezactivat, biblioteca din cont doar se citește: schimbările rămân aici.
 
-La prima deschidere cu contul, dacă în acest browser ai freze pe care contul nu le are, fereastra întreabă **Adaugi cele N
-freze din acest browser în cont?**: **Da, adaugă-le** le copiază în cont (o freză cu un nume luat primește „(2)”), iar **Nu
+Un cont care n-a avut niciodată freze primește frezele standard la prima sincronizare; un cont cu frezele șterse nu le mai
+primește. La prima deschidere cu contul, dacă în acest browser ai freze pe care contul nu le are (în afara celor standard),
+fereastra întreabă **Adaugi cele N freze din acest browser în cont?**: **Da, adaugă-le** le copiază în cont (o freză cu un nume luat primește „(2)”), iar **Nu
 acum** te mai întreabă la o deschidere următoare. Biblioteca fără cont rămâne neatinsă: o vezi din nou după ieșirea din cont.
 
 Dacă aceeași freză s-a schimbat pe două calculatoare între două sincronizări, câmpurile schimbate doar pe unul se adună

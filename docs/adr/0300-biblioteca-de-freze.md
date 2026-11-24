@@ -78,7 +78,8 @@ tăia: plata, V-ul și gravarea acum; bila, toroidala și profilul desenat cu fe
   la reconectare” sau „O freză în conflict”.
 - **Goală la început,** cu „Adaugă frezele de pornire” (șase freze obișnuite: plate Ø3,175 și Ø6, V60 Ø6, V90 Ø12, gravare
   30° cu vârful 0,2 și plată Ø12 pentru fund, toate cu valorile implicite de azi) și „Importă…”. Valorile sunt ale
-  aplicației, nu dintr-un catalog.
+  aplicației, nu dintr-un catalog. **Schimbat pe 24.11** (precizarea owner-ului: „biblioteca de freze trebuie să fie
+  populată cu freze default standard”): biblioteca vine cu ele, singură; vezi „Implementarea (16.A↑a-2)”.
 - **Marginile** sunt cele ale documentului (`PLAFON`, unghiul V, vârful sub diametru): o freză care s-ar salva aici trece
   și de ușa documentului.
 
@@ -421,6 +422,34 @@ nota „s-a schimbat în bibliotecă” (fostă b-3). Documentul rămâne v27; n
 - **Mărimea:** pornirea neschimbată (109,9 kB; cu ușa 114,5, cu Atelierul 114,8 / 120: harta importurilor are o bucată în
   plus), totalul 810,5 → 812,2 / 900 kB. Biblioteca (`frezeMele.ts`, cu îmbinarea și modelul frezei) stă acum într-o bucată a ei,
   comună panoului și ferestrei „Frezele mele”.
+
+## Implementarea (16.A↑a-2)
+
+Pe 24.11.2026, în sesiunea cloud a liniei, pe ramura `wip/16.A-freze`, după precizarea owner-ului: „să ai în vedere că
+biblioteca de freze trebuie să fie populată cu freze default standard”. Setul rămâne cel de pornire (cele șase freze din §3,
+cu valorile implicite ale aplicației); nimic pe server, documentul rămâne v27.
+
+- **Id-uri fixe** (`ID_PORNIRE` în `src/model/freza.ts`: `std-plata-3175`, `std-plata-6`, `std-v60-6`, `std-v90-12`,
+  `std-gravare-30-3175`, `std-plata-12`): aceeași freză standard pe orice calculator și în orice cont. `cuStandard` pune doar
+  cele care lipsesc (după id), cu nume libere, cât încap.
+- **Biblioteca fără cont** le primește singură, o dată, la prima citire (fereastra sau panoul de proprietăți,
+  `cuFrezeleStandard` din `src/app/frezeStandard.ts`; numele propuse vin din mesajele ferestrei, cerute doar atunci). Steagul
+  `standard` din înregistrarea depozitului ține minte că s-a hotărât: o bibliotecă cu freze (de dinainte) doar îl primește,
+  iar una golită nu se mai umple singură. Butonul unei biblioteci goale e „Adaugă frezele standard” (le pune pe cele care
+  lipsesc, cu aceleași id-uri).
+- **Contul** le primește la prima sincronizare a acestui browser doar dacă n-a avut niciodată freze (versiunea contului e 0),
+  apoi pleacă la el în aceeași trecere: două calculatoare care le pun deodată trimit aceleași id-uri, deci al doilea primește
+  conflictul cu același conținut, îmbinat fără întrebare; un cont cu freze, sau cu frezele șterse, doar ține minte că s-a
+  hotărât (o freză standard ștearsă nu reînvie pe un calculator nou). Un cont care doar se citește (fără `cloud`) nu le
+  primește. Întrebarea „Adaugi … din acest browser în cont?” vine după prima trecere și nu mai numără frezele standard (au
+  aceleași id-uri).
+- **Panoul** folosește biblioteca contului după ce ea are freze sau a primit setul; până atunci, pe cea fără cont (aceleași
+  id-uri pentru frezele standard, deci originea copiată în proiect rămâne valabilă și după sincronizare).
+- **Probele:** unitare noi 3 (`cuStandard` și id-urile; depozitul: o dată, ștearsă nu revine, butonul, altă filă, o
+  bibliotecă cu freze, versiunea mai nouă, fără depozit; sincronizarea: un cont gol, al doilea calculator, deodată, șterse,
+  doar citire); în Edge, fereastra (puse singure, în limba de la prima pornire; goală, cu butonul) și panoul (de la prima
+  pornire, fără fereastră) 16 / 16; pe emulatoare 2 / 2 (contul gol le primește, întrebarea numără doar freza omului; doar
+  citirea nu le primește). Otrăvurile: `test/otravuri/16.A-a2.py`.
 
 ## Se redeschide dacă
 
