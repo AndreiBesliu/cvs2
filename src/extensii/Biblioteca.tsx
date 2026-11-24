@@ -14,13 +14,19 @@
  * Tastatura (ADR 0231 §B.7): la deschidere, focusul stă pe fila aleasă; ← și → schimbă fila; în listă, ↑ și ↓ mută focusul
  * între rânduri, iar Enter deschide pagina rândului; Escape închide fereastra. Din file și din listă, doar fila aleasă și
  * rândul arătat sunt în ordinea lui Tab.
+ *
+ * Căutarea și categoriile (ADR 0233): într-o bară sub capul ferestrei, câmpul „Caută o extensie” filtrează lista la fiecare literă (regula, în
+ * `cautare.ts`), iar rândul categoriilor arată rafturile listei de acum, fiecare cu numărul ei; pagina extensiei își spune
+ * rafturile, iar un clic pe unul îl alege. Amândouă țin de fereastra deschisă: nu se țin minte și nu pleacă nicăieri. „/”
+ * duce în câmp, ↓ din câmp în listă, Enter deschide primul rezultat; Escape golește întâi câmpul, apoi închide fereastra.
  */
 import { useEffect, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
 import { t } from '../i18n/t.ts';
 import type { Limba } from '../i18n/tipuri.ts';
-import type { CatalogBiblioteca, RandBiblioteca } from '../../shared/biblioteca.ts';
+import type { CatalogBiblioteca, CategorieBiblioteca, RandBiblioteca } from '../../shared/biblioteca.ts';
 import { instaleazaDinBiblioteca, noutatiDupa, stareRand, type StareRand } from './biblioteca.ts';
 import { CapturaMarita } from './CapturaMarita.tsx';
+import { categoriiPrezente, cauta, cuvinteCautate } from './cautare.ts';
 import { FaraStocare, octetiDate, scrieExtensia, type ExtensieInstalata } from './depozit.ts';
 import { textMarime } from './marimeText.ts';
 import { adresaCatalog, IntrebareScoatere, motivText, Noutati, Poate, textSursa } from './parti.tsx';
@@ -48,6 +54,9 @@ type Stare = StareRand | { readonly fel: 'locala' };
 
 const stareaLui = (e: Element): Stare => (e.rand ? stareRand(e.rand, e.instalata?.manifest) : { fel: 'locala' });
 const numeleLui = (e: Element): string => e.rand?.nume ?? e.instalata?.manifest.nume ?? e.id;
+const numeCategorie = (c: CategorieBiblioteca): string => t(`extensii.categorie.${c}`);
+/** Pe un ecran îngust, lista și pagina sunt două vederi. */
+const ingust = (): boolean => matchMedia('(max-width: 40rem)').matches;
 
 /** Semnul unui rând: al rândului din catalog (de lângă el); altfel al extensiei instalate, din pachetul ei. */
 function SemnElement({ element, marime }: { readonly element: Element; readonly marime: 28 | 48 }): ReactNode {
@@ -90,6 +99,10 @@ export function FereastraBiblioteca({ cerere, catalog, instalate, limba, acoperi
   }, [faraCatalog, catalog.fel, instalate.length]);
   const alegeFila = (f: Fila): void => { aAles.current = true; setFila(f); };
   const [ales, setAles] = useState<string | null>(cerere.id);
+  // Căutarea și raftul ales (ADR 0233): ale ferestrei deschise, de la zero la fiecare deschidere.
+  const [cautat, setCautat] = useState('');
+  const [categorie, setCategorie] = useState<CategorieBiblioteca | null>(null);
+  const camp = useRef<HTMLInputElement | null>(null);
   const [progres, setProgres] = useState<Readonly<Record<string, Progres>>>({});
   const [deScos, setDeScos] = useState<ExtensieInstalata | null>(null);
   const radacina = useRef<HTMLDivElement | null>(null);
@@ -148,16 +161,57 @@ export function FereastraBiblioteca({ cerere, catalog, instalate, limba, acoperi
   const elemente: readonly Element[] = fila === 'toate'
     ? randuri.map((r) => ({ id: r.id, rand: r, instalata: instalate.find((x) => x.id === r.id) ?? null }))
     : instalate.map((x) => ({ id: x.id, rand: randuri.find((r) => r.id === x.id) ?? null, instalata: x }));
-  const alesul = ales === null ? undefined : elemente.find((e) => e.id === ales);
+  // Unde se caută (ADR 0233): numele și id-ul; apoi descrierea, descrierea lungă, autorul și numele rafturilor, în limba
+  // aplicației. O extensie din afara bibliotecii are doar numele și nu stă pe niciun raft.
+  const cautabile = elemente.map((e) => ({
+    ...e, nume: numeleLui(e), categorii: e.rand?.categorii ?? [],
+    texte: e.rand ? [e.rand.descriere[limba], e.rand.despre?.[limba] ?? '', e.rand.autor ?? '', ...(e.rand.categorii ?? []).map(numeCategorie)] : [],
+  }));
+  const rafturi = categoriiPrezente(cautabile);
+  // Raftul ales ține doar cât există în lista de acum (altă filă, o extensie scoasă): altfel, toate.
+  const raft = categorie !== null && rafturi.some((r) => r.id === categorie) ? categorie : null;
+  useEffect(() => { if (categorie !== raft) setCategorie(raft); }, [categorie, raft]);
+  const { vizibile, inAlteCategorii } = cauta(cautabile, cautat, raft);
+  const cuText = cuvinteCautate(cautat).length > 0;
+  const filtrat = cuText || raft !== null;
+  const alesul = ales === null ? undefined : vizibile.find((e) => e.id === ales);
   // Linkul spre o extensie care nu e în catalogul de acum: pagina o spune, nu arată alta în locul ei.
-  const lipsa = cerere.dinLink && ales !== null && ales === cerere.id && fila === 'toate' && catalog.fel === 'ok' && !alesul;
-  const aratat = alesul ?? (lipsa ? undefined : elemente[0]);
+  const lipsa = cerere.dinLink && ales !== null && ales === cerere.id && fila === 'toate' && catalog.fel === 'ok' && !elemente.some((e) => e.id === ales);
+  const aratat = alesul ?? (lipsa ? undefined : vizibile[0]);
 
   const inchide = (): void => { onInchide(); };
   const tasta = (e: KeyboardEvent): void => {
+    // „/” duce în câmpul căutării, de oriunde din fereastră în afară de un câmp de scris.
+    if (e.key === '/' && !e.ctrlKey && !e.metaKey && !e.altKey && !(e.target instanceof HTMLInputElement)) {
+      const c = camp.current;
+      if (c && !c.disabled && c.offsetParent !== null) { e.preventDefault(); c.focus(); c.select(); }
+      return;
+    }
     if (e.key !== 'Escape') return;
     e.preventDefault();
     inchide();
+  };
+  // În câmpul căutării: Escape îl golește întâi (fereastra rămâne); ↓ trece pe primul rând; Enter îi deschide pagina.
+  const tastaCautare = (e: KeyboardEvent<HTMLInputElement>): void => {
+    if (e.key === 'Escape' && cautat !== '') {
+      e.preventDefault();
+      e.stopPropagation();
+      setCautat('');
+    } else if (e.key === 'ArrowDown') {
+      const primul = radacina.current?.querySelector<HTMLButtonElement>('[data-extensii="rand-biblioteca"]');
+      if (!primul) return;
+      e.preventDefault();
+      e.stopPropagation();
+      primul.focus();
+    } else if (e.key === 'Enter' && vizibile[0]) {
+      e.preventDefault();
+      setAles(vizibile[0].id);
+    }
+  };
+  /** Un raft ales (sau toate, `null`); butonul apăsat poate pleca de pe ecran, deci focusul trece în câmp. */
+  const peRaft = (c: CategorieBiblioteca | null, inCamp: boolean): void => {
+    setCategorie(c);
+    if (inCamp) camp.current?.focus();
   };
 
   // ← și → schimbă fila, cu focusul după ele (și de la un capăt la celălalt).
@@ -219,6 +273,32 @@ export function FereastraBiblioteca({ cerere, catalog, instalate, limba, acoperi
     );
   };
 
+  // Căutarea și rafturile (ADR 0233): o bară pe toată lățimea ferestrei, deasupra listei și a paginii.
+  const filtre = (
+    <div className="bib-filtre">
+      <div className="bib-cautare">
+        <input ref={camp} type="search" className="bib-camp" data-extensii="cauta-extensie" value={cautat} disabled={elemente.length === 0}
+          aria-label={t('extensii.biblioteca.cauta')} placeholder={t('extensii.biblioteca.cauta')} autoComplete="off" spellCheck={false} enterKeyHint="search"
+          onChange={(e) => { setCautat(e.target.value); }} onKeyDown={tastaCautare} />
+        {filtrat && (
+          <span className="bib-gasite" role="status" data-testid="biblioteca-gasite">{t('extensii.biblioteca.gasite', { n: vizibile.length, m: elemente.length })}</span>
+        )}
+      </div>
+      {rafturi.length > 0 && (
+        <div className="bib-categorii" role="group" aria-label={t('extensii.biblioteca.categorii')} data-testid="biblioteca-categorii">
+          <button type="button" data-extensii="categorie" data-categorie="" aria-pressed={raft === null} onClick={() => { peRaft(null, false); }}>
+            {t('extensii.biblioteca.toate-categoriile')} <span className="bib-cate">{elemente.length}</span>
+          </button>
+          {rafturi.map((r) => (
+            <button key={r.id} type="button" data-extensii="categorie" data-categorie={r.id} aria-pressed={raft === r.id} onClick={() => { peRaft(r.id, false); }}>
+              {numeCategorie(r.id)} <span className="bib-cate">{r.cate}</span>
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+
   const lista = (
     <div className="bib-lista" id="bib-lista" role="tabpanel" aria-labelledby={`bib-fila-${fila}`} data-testid="biblioteca-lista" onKeyDown={tastaLista}>
       {fila === 'toate' && catalog.fel === 'incarca' && (
@@ -240,7 +320,27 @@ export function FereastraBiblioteca({ cerere, catalog, instalate, limba, acoperi
         </div>
       )}
       {fila === 'instalate' && elemente.length === 0 && <p className="bib-nota">{t('extensii.niciuna')}</p>}
-      {elemente.map(cardul)}
+      {filtrat && vizibile.length === 0 && elemente.length > 0 && (
+        <div className="bib-nota" data-testid="biblioteca-nimic">
+          <p role="status">
+            {raft !== null && cuText
+              ? t('extensii.biblioteca.nimic-categorie', { categorie: numeCategorie(raft), text: cautat.trim() })
+              : t('extensii.biblioteca.nimic', { text: cautat.trim() })}
+          </p>
+          {inAlteCategorii > 0 && (
+            <button type="button" data-extensii="in-toate-categoriile" onClick={() => { peRaft(null, true); }}>
+              {t('extensii.biblioteca.in-toate', { n: inAlteCategorii })}
+            </button>
+          )}
+          <button type="button" data-extensii="arata-toate" onClick={() => { setCautat(''); peRaft(null, true); }}>{t('extensii.biblioteca.arata-toate')}</button>
+        </div>
+      )}
+      {vizibile.map(cardul)}
+      {vizibile.length > 0 && inAlteCategorii > 0 && (
+        <button type="button" className="bib-alte" data-extensii="in-toate-categoriile" onClick={() => { peRaft(null, true); }}>
+          {t('extensii.biblioteca.in-toate', { n: inAlteCategorii })}
+        </button>
+      )}
       <div className="bib-afara">
         <span>{t('extensii.biblioteca.din-afara')}</span>
         <button type="button" data-extensii="din-fisier" onClick={() => { onCere('fisier'); }}>{t('extensii.din-fisier')}</button>
@@ -276,6 +376,7 @@ export function FereastraBiblioteca({ cerere, catalog, instalate, limba, acoperi
               <span aria-hidden="true">×</span>
             </button>
           </div>
+          {filtre}
           <div className="bib-corp">
             {lista}
             <div className="bib-detaliu">
@@ -289,10 +390,16 @@ export function FereastraBiblioteca({ cerere, catalog, instalate, limba, acoperi
                     if (noi) onCere({ fel: 'biblioteca', id: rand.id, rand, dinLink: false });
                     else void instaleaza(rand, 'actualizata');
                   }}
-                  onDeschide={onDeschide} onScoate={setDeScos} />
+                  onDeschide={onDeschide} onScoate={setDeScos}
+                  onCategorie={(c) => {
+                    setCategorie(c);
+                    // Pe un ecran îngust, raftul se vede în listă: pagina se închide.
+                    if (ingust()) setAles(null);
+                  }} />
               )}
+              {!aratat && !lipsa && filtrat && elemente.length > 0 && <p className="bib-nota" data-testid="pagina-nimic">{t('extensii.biblioteca.nimic-pagina')}</p>}
               {/* O listă goală (nimic instalat, catalogul n-a venit): drumurile din afara bibliotecii, nu „alege din listă”. */}
-              {!aratat && !lipsa && catalog.fel !== 'incarca' && (
+              {!aratat && !lipsa && catalog.fel !== 'incarca' && !(filtrat && elemente.length > 0) && (
                 <div className="bib-nota pagina-goala" data-testid="pagina-goala">
                   <p>{t('extensii.biblioteca.gol-afara')}</p>
                   <button type="button" data-extensii="pagina-din-fisier" onClick={() => { onCere('fisier'); }}>{t('extensii.din-fisier')}</button>
@@ -317,13 +424,15 @@ export function FereastraBiblioteca({ cerere, catalog, instalate, limba, acoperi
 }
 
 /** Pagina unei extensii: capul cu gestul ei, capturile, descrierea, „Ce poate face”, „Ce e nou”. */
-function Pagina({ element, limba, progres, octeti, onInstaleaza, onActualizeaza, onDeschide, onScoate }: {
+function Pagina({ element, limba, progres, octeti, onInstaleaza, onActualizeaza, onDeschide, onScoate, onCategorie }: {
   readonly element: Element; readonly limba: Limba; readonly progres: Progres | undefined; readonly octeti: number | null | undefined;
   readonly onInstaleaza: (rand: RandBiblioteca) => void;
   /** `noi`: versiunea nouă cere ceva în plus. */
   readonly onActualizeaza: (rand: RandBiblioteca, noi: boolean) => void;
   readonly onDeschide: (e: ExtensieInstalata) => void;
   readonly onScoate: (e: ExtensieInstalata) => void;
+  /** Un raft al extensiei, ales de pe pagina ei (ADR 0233). */
+  readonly onCategorie: (c: CategorieBiblioteca) => void;
 }): ReactNode {
   const { rand, instalata } = element;
   const s = stareaLui(element);
@@ -353,7 +462,7 @@ function Pagina({ element, limba, progres, octeti, onInstaleaza, onActualizeaza,
   // Captura mărită (ADR 0232 §C.12): a câta e, sau null; doar unde fereastra are loc (nu pe un ecran îngust).
   const [marita, setMarita] = useState<number | null>(null);
   const locCapturi = useRef<HTMLDivElement | null>(null);
-  const marire = !matchMedia('(max-width: 40rem)').matches;
+  const marire = !ingust();
 
   return (
     <article className="bib-pagina" data-testid="biblioteca-pagina" data-id={element.id} data-stare={s.fel}>
@@ -362,6 +471,15 @@ function Pagina({ element, limba, progres, octeti, onInstaleaza, onActualizeaza,
         <div className="pagina-nume">
           <h3>{numeleLui(element)}</h3>
           <p className="confirmare-sursa" data-testid="pagina-despre">{despre}</p>
+          {rand?.categorii && rand.categorii.length > 0 && (
+            <p className="pagina-categorii" data-testid="pagina-categorii">
+              {rand.categorii.map((c) => (
+                <button key={c} type="button" className="bib-eticheta" data-extensii="categorie-pagina" data-categorie={c} onClick={() => { onCategorie(c); }}>
+                  {numeCategorie(c)}
+                </button>
+              ))}
+            </p>
+          )}
         </div>
         <div className="pagina-gest">
           <div className="pagina-actiuni">

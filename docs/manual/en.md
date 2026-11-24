@@ -2291,6 +2291,17 @@ it, and the app’s interface stays the same.
   the window switches to **Installed** by itself (installed extensions work as before), and **Try again** asks for the
   library again. With no extension installed, the page shows the two ways from outside the library. A link like
   `…/#biblioteca=trenulet` opens the library on Easy 3Draw’s page; nothing downloads without your click.
+- Under the window’s header, **Search extensions** filters the list as you type: it looks in the extension’s name
+  (anywhere in it), then in the description, the author and the categories (at the start of a word), ignoring accents and
+  capitals; with several words, all of them must be found. Next to the field you see how many are left (“2 of 5”). “/”
+  moves to the field, ↓ moves into the list, Enter opens the first extension found, and Escape clears the field first.
+  Beside it, **Categories**: the shelves the listed extensions sit on, each with its count (Drawing and shapes, CNC and
+  toolpaths, 3D printing, Machine, Toys and models); a click on one shows only its extensions, and **All** shows them
+  again. An extension can sit on up to three shelves: its page lists them under the name, and a click on one selects it.
+  When the search finds nothing on the chosen shelf but would on others, **Search all categories** says so, with their
+  number; **Show all extensions** clears both the search and the shelf. Both last while the window is open, and the text
+  you search never leaves the browser. An extension from outside the library sits on no shelf; without internet the
+  categories are missing (they come with the library), but the search still works on the names of installed extensions.
 - At the end of the list, “From outside the library”: **Install from file (.zip)…** takes a `.zip` package, and **Install
   from address…** asks for the **Package address** (HTTPS), then **Download**; the host must allow downloads from other
   pages, otherwise you download the file yourself and install it from the file. A link like `…/#instaleaza=<address>` opens

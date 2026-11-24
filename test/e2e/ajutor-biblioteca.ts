@@ -100,3 +100,38 @@ export async function bibliotecaDeProba(page: Page, rand: {
   });
   return (nou) => { cum = nou; };
 }
+
+/** Un rând al raftului de probă: doar ce se vede în listă și pe pagină (nimic nu se instalează de pe el). */
+export type RandDeProba = {
+  readonly id: string; readonly nume: string;
+  readonly descriere?: { readonly ro: string; readonly en: string };
+  readonly despre?: { readonly ro: string; readonly en: string };
+  readonly categorii?: readonly string[];
+  readonly autor?: string;
+};
+
+/**
+ * O bibliotecă de probă cu mai multe rânduri (căutarea și categoriile, ADR 0233): doar catalogul. Pachetele nu există, deci
+ * probele ei caută și filtrează, nu instalează; numele pachetului și amprenta au forma cerută de cititorul catalogului.
+ */
+export async function raftDeProba(page: Page, randuri: readonly RandDeProba[]): Promise<void> {
+  const extensii = randuri.map((r) => {
+    const sha256 = createHash('sha256').update(r.id).digest('hex');
+    return {
+      id: r.id, nume: r.nume, versiune: '1.0.0', api: 1, permisiuni: [],
+      descriere: r.descriere ?? { ro: 'O extensie de probă.', en: 'A test extension.' },
+      pachet: `${r.id}-1.0.0-${sha256.slice(0, 8)}.zip`, octeti: 1000, sha256,
+      ...(r.despre ? { despre: r.despre } : {}), ...(r.categorii ? { categorii: r.categorii } : {}), ...(r.autor ? { autor: r.autor } : {}),
+    };
+  });
+  await page.route('**/extensii/catalog.json', (r) => r.fulfill({
+    status: 200, contentType: 'application/json', body: JSON.stringify({ format: 'cvs2-biblioteca', schema: 1, extensii }),
+  }));
+}
+
+/** Câmpul de căutare al bibliotecii, rândul categoriilor și id-urile rândurilor la vedere, în ordinea lor. */
+export const cautare = (page: Page): Locator => biblioteca(page).locator('[data-extensii="cauta-extensie"]');
+export const categorii = (page: Page): Locator => biblioteca(page).getByTestId('biblioteca-categorii');
+export const categoria = (page: Page, id: string): Locator => categorii(page).locator(`[data-extensii="categorie"][data-categorie="${id}"]`);
+export const randuriVazute = (page: Page): Promise<string[]> =>
+  page.getByTestId('biblioteca-lista').locator('[data-extensii="rand-biblioteca"]').evaluateAll((e) => e.map((x) => x.getAttribute('data-id') ?? ''));
