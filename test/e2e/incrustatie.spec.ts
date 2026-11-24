@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs';
 import { masoaraPotrivirea, type PunctO } from '../oracles/incrustatie.ts';
 import type { SculaOracol } from '../oracles/simulare.ts';
 import { adauga } from './ajutor-panza.ts';
+import { alege } from './ajutor-export.ts';
 
 test.use({ locale: 'ro-RO' });
 
@@ -179,7 +180,7 @@ test('fundul doar cu freza V: fără bifa Fund plat, nota, decuparea benzii cu f
   await expect(nota).toContainText('Fără freză dreaptă, freza în V face tot');
   // Cu banda: decuparea cere freza ei; bifată, Exportă pornește.
   const exporta = page.locator('[data-buton="exporta"]');
-  await detalii.locator('[data-camp="inc-jur"]').selectOption('banda');
+  await alege(detalii, 'inc-jur', 'banda');
   await expect(nota).toContainText('decuparea din placă cere „Altă freză pentru decupare”');
   await expect(detalii.locator('[data-camp="banda-freza"]')).toHaveAttribute('aria-invalid', 'true');
   await expect(detalii.locator('[data-camp="banda-minima"]')).toHaveCount(0);
@@ -192,7 +193,7 @@ test('fundul doar cu freza V: fără bifa Fund plat, nota, decuparea benzii cu f
   await detalii.locator('[data-camp="banda-decupare"]').uncheck();
   await expect(detalii.locator('[data-camp="banda-minima"]')).toHaveText('cea mai mică: 3,31 mm');
   await detalii.locator('[data-camp="banda-decupare"]').check();
-  await detalii.locator('[data-camp="inc-jur"]').selectOption('fata');
+  await alege(detalii, 'inc-jur', 'fata');
 
   const descarcari: Download[] = [];
   page.on('download', (d) => { descarcari.push(d); });

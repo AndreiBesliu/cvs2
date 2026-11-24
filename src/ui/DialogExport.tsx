@@ -19,8 +19,8 @@ import { useLimba } from './useLimba.ts';
 import { grupuriOperatie, verdicteGresite, type GrupExport, type VerdictRand } from './exportGrupuri.ts';
 import { coborareDesen, treceriEgale } from './exportDeseneCalcul.ts';
 import {
-  DesenAdancime, DesenColt, DesenCoborare, DesenFreza, DesenGaurire, DesenGolire, DesenIntrari, DesenRampa, DesenRest, DesenSens, DesenUrechi,
-  DesenZ0, type DesenComun,
+  DesenAdancime, DesenColt, DesenCoborare, DesenFreza, DesenFund, DesenGaurire, DesenGolire, DesenIncrustatie, DesenIntrari, DesenRampa, DesenRest,
+  DesenSens, DesenUrechi, DesenZ0, type DesenComun,
 } from './exportDesene.tsx';
 import { Card, Cartonase, GrupCartonase, Poza } from './exportPoze.tsx';
 
@@ -1308,7 +1308,7 @@ export function DialogExport(
     return (
       <div className="dx-grup" data-grup={id} key={id}>
         <div className="dx-stanga">
-          {desen && <figure className="dx-desen" data-desen>{desen({ f: (x) => fmtTrecere.format(x), aprins: aici && aici.camp !== '' ? [aici.camp] : [] })}</figure>}
+          {desen && <figure className="dx-desen" data-desen>{desen({ f: (x) => fmtTrecere.format(x), fz: (x) => fmtFreza.format(x), aprins: aici && aici.camp !== '' ? [aici.camp] : [] })}</figure>}
           <p className="dx-explicatie" data-explicatie data-implicit={t(`export.grup.${id}.text` as CheieSimpla)} aria-live="polite">
             {aici && aici.text !== '' ? aici.text : t(`export.grup.${id}.text` as CheieSimpla)}
           </p>
@@ -1544,6 +1544,10 @@ export function DialogExport(
                     unghi={citesteNumar(p.unghiCoborare)} lungime={citesteNumar(p.lungimeZigzag)} raza={citesteNumar(p.razaElice)} />;
                   case 'rest': return (c) => <DesenRest c={c} diametru={citesteNumar(p.diametruScula)} rest={p.rest.map((x) => citesteNumar(x.diametru))} />;
                   case 'gaurire': return (c) => <DesenGaurire c={c} adancime={adancimeRand} pas={citesteNumar(p.pas)} retragere={citesteNumar(p.retragereCompleta)} />;
+                  case 'fund': return (c) => <DesenFund c={c} adancime={citesteNumar(p.adancime)} unghi={citesteNumar(p.unghiV)} fundPlat={p.fundPlat}
+                    diametruFund={citesteNumar(p.diametruSculaFund)} incrustatie={p.incrustatie} joc={citesteNumar(p.jocInc)} />;
+                  case 'incrustatie': return (c) => <DesenIncrustatie c={c} adancime={citesteNumar(p.adancime)} unghi={citesteNumar(p.unghiV)}
+                    joc={citesteNumar(p.jocInc)} fierastrau={citesteNumar(p.acelasiSpatiu ? p.jocInc : p.fierastrauInc)} margine={citesteNumar(p.margineInc)} />;
                   case 'urechi': return (c) => <DesenUrechi c={c} urechi={p.urechi && !nuProfil} mod={p.modUrechi} numar={citesteNumar(p.numarUrechi)}
                     alese={o.valori.urechi?.alese ?? 0} latime={citesteNumar(p.latimeUreche)} grosime={citesteNumar(p.grosimeUreche)} grosimeFoaie={grosimeFoaie} />;
                   default: return undefined;
@@ -1904,14 +1908,10 @@ export function DialogExport(
                           aria-invalid={!b.incrustatie} onChange={(ev) => { schimba(o.cheie, { margineInc: ev.target.value }); }} />
                       </label>
                       {/* Lemnul din jurul dopului (ADR 0172): fața coborâtă sau banda îngustă, cu valorile ei, fiecare la alegerea omului. */}
-                      <label title={t('export.banda.jur.titlu')}>
-                        {t('export.banda.jur')}
-                        <select value={p.jurDop} data-camp="inc-jur" disabled={doarCitire}
-                          onChange={(ev) => { schimba(o.cheie, { jurDop: ev.target.value === 'banda' ? 'banda' : 'fata' }); }}>
-                          <option value="fata">{t('export.banda.jur.fata')}</option>
-                          <option value="banda">{t('export.banda.jur.banda')}</option>
-                        </select>
-                      </label>
+                      <Cartonase data-camp="inc-jur" poze="jur" eticheta={t('export.banda.jur')} nume={`jur-${o.cheie}`} valoare={p.jurDop}
+                        oprit={doarCitire} titlu={t('export.banda.jur.titlu')} onAlege={(v) => { schimba(o.cheie, { jurDop: v }); }}
+                        variante={[{ v: 'fata', text: t('export.banda.jur.fata'), nota: t('export.card.jur.fata') },
+                          { v: 'banda', text: t('export.banda.jur.banda'), nota: t('export.card.jur.banda') }]} />
                       {p.jurDop === 'banda' && ((v, ok) => (<>
                       <label title={t('export.banda.latime.titlu')}>
                         {t('export.banda.latime')}

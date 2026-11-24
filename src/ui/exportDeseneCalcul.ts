@@ -3,8 +3,10 @@
  * trecerile laterale ale buzunarului, coborârea în el și ciocănirea găuririi. Pur și fără importuri din lucrare (regula
  * `interfata-prin-actiuni`), deci socotit aici cu aceleași formule; o probă îl compară cu lucrarea (`adancimiTreceri`,
  * `geometrieUrechi`, `urechiPeLaturi`, `ineleBuzunar`, `intrareRampa`, `intrareZigzag`, `intrareElice`, `traseuGaurire`), ca
- * desenul să spună ce face programul.
+ * desenul să spună ce face programul. Din 28.8↑d, și V-carve-ul (`traseuVcarve`) și incrustația în V (`valoriIncrustatie`); singura
+ * valoare luată de la model e grosimea de sub fața dopului (`SUB_FATA_DOPULUI`), prin tipurile acțiunilor.
  */
+import { SUB_FATA_DOPULUI } from './actiuniExportTipuri.ts';
 
 /** Trecerile pe adâncime, egale (ca `adancimiTreceri`): n = ⌈A / p⌉, fiecare de A / n; fără valori bune sau peste 1 000, nimic. */
 export function treceriEgale(adancime: number | null, pas: number | null): { readonly n: number; readonly d: number } | null {
@@ -93,4 +95,29 @@ export function ciocanire(adancime: number | null, pas: number | null, retragere
     m.push({ z: z(k), taie: true });
   }
   return m;
+}
+
+/**
+ * V-carve-ul cu adâncimea maximă D (ADR 0090, ADR 0091): t = tan(θ/2); peretele de la −D stă la D·t de contur (inelul regiunii
+ * decalate), deci fundul e plat unde trăsătura e mai lată de 2·D·t. Fără valori bune (D > 0, θ în (0, 180)), nimic.
+ */
+export function vcarveDesen(adancime: number | null, unghi: number | null): { readonly t: number; readonly perete: number; readonly prag: number } | null {
+  if (!pozitiv(adancime) || !pozitiv(unghi) || unghi >= 180) return null;
+  const t = Math.tan((unghi * Math.PI) / 360);
+  return { t, perete: adancime * t, prag: 2 * adancime * t };
+}
+
+/**
+ * Incrustația în V (ADR 0170), ca `valoriIncrustatie`: S = D − g (cât intră dopul), fața coborâtă a dopului S + H, contactul S·t
+ * (pereții se ating pe atât de la contur), placa cel puțin S + H + 1; fundul plat al locașului de la D·t de contur. Fără valori
+ * bune (0 < g < D, H ≥ 0), nimic.
+ */
+export function incrustatieDesen(adancime: number | null, unghi: number | null, joc: number | null, fierastrau: number | null): {
+  readonly S: number; readonly H: number; readonly t: number; readonly fata: number; readonly contact: number; readonly grosimeMinima: number;
+  readonly perete: number;
+} | null {
+  const v = vcarveDesen(adancime, unghi);
+  if (!v || adancime === null || !pozitiv(joc) || joc >= adancime || fierastrau === null || !Number.isFinite(fierastrau) || fierastrau < 0) return null;
+  const S = adancime - joc, H = fierastrau;
+  return { S, H, t: v.t, fata: S + H, contact: S * v.t, grosimeMinima: S + H + SUB_FATA_DOPULUI, perete: v.perete };
 }

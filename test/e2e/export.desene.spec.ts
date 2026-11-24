@@ -266,3 +266,62 @@ test('găurirea: ciocănirea pas cu pas, ca lucrarea: coborârile, ridicarea de 
   await expect(d.locator('[data-coboara]')).toHaveCount(0);
   await expect(d).toContainText('scrie adâncimea, pasul și ieșirea');
 });
+
+test('V-carve-ul și incrustația în V: fundul și secțiunea dopului, desenate din valori; lemnul din jurul dopului pe cartonașe', async ({ page }) => {
+  await deschideCu(page, 'dreptunghi');
+  const e1 = fisa(page, 'e1/e1');
+  await alege(e1, 'latura', 'vcarve');
+  await e1.locator('[data-camp="forma-scula"]').selectOption('v');
+  await e1.locator('[data-camp="adancime"]').fill('3');
+  // Freza la miime în desen (Ø3,175, nu 3,18).
+  await e1.locator('[data-camp="diametru"]').fill('3,175');
+  await expect(desen(page, 'e1/e1', 'freza').locator('[data-cota="diametru"]')).toContainText('Ø 3,175 mm');
+  // Fără fund plat: pereții V la −3, lemnul dintre ei rămâne.
+  const f = desen(page, 'e1/e1', 'fund');
+  await expect(f).toHaveAttribute('data-fund', 'lemn');
+  await expect(f.locator('[data-ramas]')).toHaveCount(1);
+  await expect(f).toContainText('între pereți rămâne lemn');
+  // Cu fund plat (V60 la 3 mm: pereții la 1,732 de contur), de la 3,46 mm lățime îl scoate freza dreaptă.
+  await e1.locator('[data-camp="fund-plat"]').check();
+  await expect(f).toHaveAttribute('data-fund', 'plat');
+  await expect(f).toContainText('peste 3,46 mm lățime, fundul îl scoate Ø3,175');
+  await expect(f.locator('[data-cota="fund-diametru"]')).toContainText('Ø 3,175');
+  await e1.locator('[data-camp="fund-diametru"]').click();
+  await expect(f.locator('[data-cota="fund-diametru"]')).toHaveAttribute('data-aprinsa', '');
+
+  // Incrustația în V: D = 3, g = 0,5, H = 2: dopul intră S = 2,5 mm, pereții se ating pe S·tan 30° = 1,44 mm.
+  await alege(e1, 'latura', 'incrustatie');
+  await e1.locator('[data-camp="adancime"]').fill('3');
+  const i = desen(page, 'e1/e1', 'incrustatie');
+  await expect(i).toHaveAttribute('data-incrustatie', 'ok');
+  await expect(i).toContainText('dopul intră 2,5 mm, cu contact pe 1,44 mm');
+  await expect(i.locator('[data-cota="inc-joc"]')).toContainText('g 0,5');
+  await expect(i.locator('[data-cota="inc-fierastrau"]')).toContainText('H 2');
+  await expect(i.locator('[data-cota="inc-margine"]')).toContainText('5');
+  await expect(i.locator('[data-contact]')).toHaveCount(1);
+  // „Același spațiu”: între plăci rămâne cât jocul.
+  await e1.locator('[data-camp="inc-acelasi"]').check();
+  await expect(i.locator('[data-cota="inc-fierastrau"]')).toContainText('H 0,5');
+  await e1.locator('[data-camp="inc-acelasi"]').uncheck();
+  await expect(i.locator('[data-cota="inc-fierastrau"]')).toContainText('H 2');
+  await e1.locator('[data-camp="inc-joc"]').fill('1');
+  await expect(i).toContainText('dopul intră 2 mm, cu contact pe 1,15 mm');
+  await e1.locator('[data-camp="inc-joc"]').click();
+  await expect(i.locator('[data-cota="inc-joc"]')).toHaveAttribute('data-aprinsa', '');
+  // Un joc cât adâncimea: dopul n-ar intra deloc; desenul nu-l inventează.
+  await e1.locator('[data-camp="inc-joc"]').fill('3');
+  await expect(i).toHaveAttribute('data-incrustatie', 'lipsa');
+  await e1.locator('[data-camp="inc-joc"]').fill('0,5');
+  // Fără freză dreaptă, fundul îl fac inelele V, cu creasta cel mult g / 2.
+  await e1.locator('[data-camp="fund-plat"]').uncheck();
+  await expect(f).toHaveAttribute('data-fund', 'v');
+  await expect(f).toContainText('creasta 0,25 mm');
+  await e1.locator('[data-camp="fund-plat"]').check();
+
+  // Lemnul din jurul dopului: fața coborâtă implicit, banda pe cartonașul ei.
+  await expect(aleasa(e1, 'inc-jur')).toHaveValue('fata');
+  await expect(e1.locator('[data-alegere="inc-jur"] .dx-poza')).toHaveCount(2);
+  await expect(e1.locator('[data-camp="banda-latime"]')).toHaveCount(0);
+  await alege(e1, 'inc-jur', 'banda');
+  await expect(e1.locator('[data-camp="banda-latime"]')).toHaveCount(1);
+});

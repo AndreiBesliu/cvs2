@@ -10,11 +10,15 @@ import type { ReactNode } from 'react';
 import '../i18n/export.ts';
 import { t } from '../i18n/t.ts';
 import {
-  centreUrechiDesen, ciocanire, coborareDesen, RIDICARE_CIOCANIRE, treceriEgale, treceriLaterale, type FelCoborare, type LocuriUrechiDesen,
+  centreUrechiDesen, ciocanire, coborareDesen, incrustatieDesen, RIDICARE_CIOCANIRE, treceriEgale, treceriLaterale, vcarveDesen, type FelCoborare,
+  type LocuriUrechiDesen,
 } from './exportDeseneCalcul.ts';
 
-/** Formatul numerelor în desene (zecimalele limbii); `aprins` = câmpurile grupului cu focusul și de sub maus. */
-export type DesenComun = { readonly f: (x: number) => string; readonly aprins: readonly string[] };
+/**
+ * Formatul numerelor în desene (zecimalele limbii): `f` la sutime, ca o fișă de atelier; `fz` al frezelor, la miime (Ø3,175, nu
+ * 3,18); `aprins` = câmpurile grupului cu focusul și de sub maus.
+ */
+export type DesenComun = { readonly f: (x: number) => string; readonly fz: (x: number) => string; readonly aprins: readonly string[] };
 
 const r = (x: number): number => Math.round(x * 10) / 10;
 /** Vârful unei săgeți cu vârful în (x, y), îndreptat spre (−ux, −uy). */
@@ -104,7 +108,7 @@ export function DesenZ0({ c, z0, supracursa, prinFoaie }: { c: DesenComun; z0: '
 export function DesenFreza({ c, numar, diametru, v, unghi, varfPlat }: {
   c: DesenComun; numar: string; diametru: number | null; v: boolean; unghi: number | null; varfPlat: number | null;
 }): ReactNode {
-  const D = diametru === null ? '?' : c.f(diametru);
+  const D = diametru === null ? '?' : c.fz(diametru);
   let corp: ReactNode;
   if (v) {
     const a = unghi !== null && unghi > 0 && unghi < 180 ? unghi : 60, h = Math.min(60, 34 / Math.tan((a * Math.PI) / 360));
@@ -486,6 +490,88 @@ export function DesenGaurire({ c, adancime, pas, retragere }: { c: DesenComun; a
         </text>
         <Cota pentru="retragere" c={c} text={t('export.desen.gaurire.iese', { n: retragere ?? 1 })} tx={130} ty={145} />
       </>) : <Jos tare>{t('export.desen.gaurire.lipsa')}</Jos>}
+    </Desen>
+  );
+}
+
+/**
+ * Secțiunea unei trăsături V-carve (ADR 0090, ADR 0091, ADR 0173), schițată: pereții freza V îi taie până la adâncimea maximă,
+ * la D·tan(θ/2) de contur; între ei, fundul plat îl scoate freza dreaptă, ori (pe o incrustație fără ea) inelele frezei V; fără
+ * niciuna, între pereți rămâne lemn. Pragul spus: fundul e plat unde trăsătura e mai lată de 2·D·tan(θ/2).
+ */
+export function DesenFund({ c, adancime, unghi, fundPlat, diametruFund, incrustatie, joc }: {
+  c: DesenComun; adancime: number | null; unghi: number | null; fundPlat: boolean; diametruFund: number | null; incrustatie: boolean; joc: number | null;
+}): ReactNode {
+  const v = vcarveDesen(adancime, unghi);
+  if (!v || adancime === null) {
+    return <Desen eticheta={t('export.desen.fund')} data-fund="lipsa"><rect className="l" data-lemn x={6} y={36} width={248} height={80} /><Jos tare>{t('export.desen.fund.lipsa')}</Jos></Desen>;
+  }
+  const fel = fundPlat ? 'plat' : incrustatie ? 'v' : 'lemn';
+  const y0 = 36, xa = 40, xb = 220, k = Math.min(56 / adancime, 72 / (adancime * v.t)), h = adancime * k, w = adancime * v.t * k, yb = y0 + h;
+  const perete = (x: number, s: 1 | -1): string => `M${x} ${y0}L${r(x + s * w)} ${r(yb)}`;
+  let fund: ReactNode, jos: string;
+  if (fel === 'lemn') {
+    // Doar șanțurile pereților (inelul V la −D), lemnul dintre ele rămâne.
+    fund = (<>
+      <path className="g" d={`M${xa} ${y0}L${r(xa + w)} ${r(yb)}L${r(xa + 2 * w)} ${y0}ZM${xb} ${y0}L${r(xb - w)} ${r(yb)}L${r(xb - 2 * w)} ${y0}Z`} />
+      <path className="ua slab" data-ramas d={`M${r(xa + 2 * w + 3)} ${y0 + 2}H${r(xb - 2 * w - 3)}`} />
+    </>);
+    jos = t('export.desen.fund.ramane');
+  } else {
+    fund = <path className={fel === 'plat' ? 'g2' : 'g'} d={`M${xa} ${y0}L${r(xa + w)} ${r(yb)}H${r(xb - w)}L${xb} ${y0}Z`} />;
+    jos = fel === 'plat' ? t('export.desen.fund.plat', { w: c.f(v.prag), f: diametruFund === null ? '?' : c.fz(diametruFund) })
+      : t('export.desen.fund.v', { mm: joc === null ? '?' : c.f(joc / 2) });
+  }
+  const df = diametruFund !== null && diametruFund > 0 ? Math.min(diametruFund * k, xb - xa - 2 * w - 8) : 0, xm = (xa + xb) / 2;
+  const sv = Math.min(Math.tan((Math.min(unghi ?? 60, 170) * Math.PI) / 360), 3), xv = xa + w;
+  return (
+    <Desen eticheta={t('export.desen.fund')} data-fund={fel}>
+      <rect className="l" data-lemn x={6} y={y0} width={248} height={r(h + 24)} />
+      {fund}
+      <path className="d" d={perete(xa, 1) + perete(xb, -1)} />
+      {fel === 'v' && <path className="d slab" data-inele d={Array.from({ length: Math.max(1, Math.floor((xb - xa - 2 * w) / 8)) }, (_, i) => {
+        const x = xa + w + 4 + i * 8;
+        return `M${r(x - 4)} ${r(yb)}L${r(x)} ${r(yb - 3)}L${r(x + 4)} ${r(yb)}`;
+      }).join('')} />}
+      {/* Freza V la peretele din stânga, cu vârful la −D. */}
+      <path className="f" d={`M${r(xv)} ${r(yb)}L${r(xv - 22 * sv)} ${r(yb - 22)}V${r(y0 - 18)}H${r(xv + 22 * sv)}V${r(yb - 22)}Z`} />
+      {fel === 'plat' && df > 0 && (<>
+        <rect className="f" data-freza-fund x={r(xm - df / 2)} y={r(y0 - 20)} width={r(df)} height={r(h + 20)} />
+        <Cota pentru="fund-diametru" c={c} x1={xm - df / 2} y1={y0 - 26} x2={xm + df / 2} y2={y0 - 26} text={`Ø ${c.fz(diametruFund ?? 0)}`} tx={xm + df / 2 + 6} ty={y0 - 22} anc="start" />
+      </>)}
+      <Cota pentru="adancime" c={c} x1={xb + 14} y1={y0} x2={xb + 14} y2={yb} text={`${c.f(adancime)} mm`} tx={xb + 14} ty={yb + 16} />
+      <Jos tare={fel === 'lemn'}>{jos}</Jos>
+    </Desen>
+  );
+}
+
+/**
+ * Incrustația în V în secțiune (ADR 0170), schițată: jos piesa cu locașul (adâncimea D, fundul plat), sus dopul întors,
+ * coborât în locaș. Dopul se oprește la S = D − g: sub el rămâne jocul g, între plăci spațiul H, iar pereții se ating pe banda
+ * S·t de la contur (accentul). Semifabricatul dopului trece de desen cu marginea.
+ */
+export function DesenIncrustatie({ c, adancime, unghi, joc, fierastrau, margine }: {
+  c: DesenComun; adancime: number | null; unghi: number | null; joc: number | null; fierastrau: number | null; margine: number | null;
+}): ReactNode {
+  const v = incrustatieDesen(adancime, unghi, joc, fierastrau);
+  if (!v || adancime === null || joc === null) {
+    return <Desen eticheta={t('export.desen.incrustatie')} data-incrustatie="lipsa"><rect className="l" data-lemn x={6} y={88} width={248} height={44} /><Jos tare>{t('export.desen.incrustatie.lipsa')}</Jos></Desen>;
+  }
+  const ys = 88, k = Math.min(36 / adancime, 72 / (adancime + v.H)), xa = 74, xb = 186, tk = Math.min(v.t, 2.5) * k;
+  const yS = ys + v.S * k, yD = ys + adancime * k, yF = ys - v.H * k, yT = Math.max(yF - 22, 18);
+  const m = Math.min((margine ?? 0) * k, 40), xbl = xa - v.H * tk - m, xbr = xb + v.H * tk + m;
+  const loc = `M6 ${ys}H${xa}L${r(xa + adancime * tk)} ${r(yD)}H${r(xb - adancime * tk)}L${xb} ${ys}H254V${r(yD + 10)}H6Z`;
+  const dop = `M${r(xbl)} ${r(yT)}H${r(xbr)}V${r(yF)}H${r(xb + v.H * tk)}L${r(xb - v.S * tk)} ${r(yS)}H${r(xa + v.S * tk)}L${r(xa - v.H * tk)} ${r(yF)}H${r(xbl)}Z`;
+  return (
+    <Desen eticheta={t('export.desen.incrustatie')} data-incrustatie="ok">
+      <path className="l" data-lemn d={loc} /><text x={10} y={r(yD + 6)}>{t('export.desen.piesa')}</text>
+      <path className="l2" d={dop} /><text x={r(xbl + 4)} y={r(yT + 14)}>{t('export.desen.incrustatie.dop')}</text>
+      {/* Contactul: pereții se ating de la suprafață până la S. */}
+      <path className="ua" data-contact d={`M${xa} ${ys}L${r(xa + v.S * tk)} ${r(yS)}M${xb} ${ys}L${r(xb - v.S * tk)} ${r(yS)}`} />
+      <Cota pentru="inc-joc" c={c} x1={130} y1={yS} x2={130} y2={yD} text={`g ${c.f(joc)}`} tx={136} ty={r((yS + yD) / 2 + 4)} anc="start" />
+      {v.H > 0 && <Cota pentru="inc-fierastrau" c={c} x1={238} y1={yF} x2={238} y2={ys} text={`H ${c.f(v.H)}`} tx={234} ty={r((yF + ys) / 2 + 4)} anc="end" />}
+      <Cota pentru="inc-margine" c={c} x1={xbl} y1={yT - 6} x2={xbl + m} y2={yT - 6} text={c.f(margine ?? 0)} tx={xbl + m + 4} ty={yT - 2} anc="start" />
+      <Jos>{t('export.desen.incrustatie.intra', { s: c.f(v.S), c: c.f(v.contact) })}</Jos>
     </Desen>
   );
 }

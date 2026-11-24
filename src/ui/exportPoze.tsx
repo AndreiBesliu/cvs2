@@ -47,6 +47,8 @@ export const POZE: Readonly<Record<string, ReactNode>> = {
   'coborare.rampa': <><rect className="l" x={3} y={14} width={58} height={27} /><path className="d" d="M6 7L14 14L44 30H58" />{sag('M59 30l-6 3v-6z')}</>,
   'coborare.zigzag': <><rect className="l" x={3} y={14} width={58} height={27} /><path className="d" d="M6 7L12 14L32 19L12 24L32 29H58" />{sag('M59 29l-6 3v-6z')}</>,
   'coborare.elice': <><rect className="l" x={3} y={14} width={58} height={27} /><path className="d" d="M14 6V14Q34 16.5 14 19Q34 21.5 14 24Q34 26.5 14 29H58" />{sag('M59 29l-6 3v-6z')}</>,
+  'jur.fata': <><path className="l2" d="M3 41V31H19L25 15H39L45 31H61V41Z" /><path className="cs" d="M3 21H61" /></>,
+  'jur.banda': <><path className="l2" d="M3 41V12H13V31H19L25 15H39L45 31H51V12H61V41Z" /><path className="ua" d="M13 35H19M45 35H51" /></>,
   'foi.activa': <><rect className="g contur slab" x={6} y={10} width={26} height={20} /><rect className="l" x={30} y={6} width={28} height={22} /><path className="ua" d="M30 34H58" /></>,
   'foi.toate': <><rect className="l" x={6} y={12} width={26} height={20} /><rect className="l" x={30} y={6} width={28} height={22} /><path className="ua" d="M6 38H32M30 34H58" /></>,
 };

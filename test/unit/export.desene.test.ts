@@ -4,7 +4,8 @@
  * distanțe egale (`geometrieUrechi`) și după reguli (`urechiPeLaturi`, pe un dreptunghi cu laturile desenului); în buzunar,
  * trecerile laterale sunt inelele lucrării (`ineleBuzunar`), iar rampa, zigzagul și elicea coboară cât spune desenul
  * (`intrareRampa`, `intrareZigzag`, `intrareElice`, măsurate pe mișcări); ciocănirea găuririi e pas cu pas a lucrării
- * (`traseuGaurire`).
+ * (`traseuGaurire`). Din 28.8↑d: peretele V-carve-ului de la adâncimea maximă stă unde îl pune lucrarea (`traseuVcarve`), iar
+ * valorile incrustației în V sunt cele pe hârtie ale panoului și ale dopului (`valoriIncrustatie`).
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -14,9 +15,14 @@ import { urechiPeLaturi } from '../../src/cam/urechiLaturi.ts';
 import { ineleBuzunar, type InelBuzunar } from '../../src/cam/buzunar.ts';
 import { intrareElice, intrareRampa, intrareZigzag, rampeZigzag } from '../../src/cam/coborare.ts';
 import { traseuGaurire } from '../../src/cam/gaurire.ts';
+import { traseuVcarve } from '../../src/cam/vcarve.ts';
+import type { Operatie } from '../../src/model/document.ts';
+import { valoriIncrustatie } from '../../src/model/incrustatie.ts';
 import { conturDreptunghi } from '../../src/geom/contur.ts';
 import type { Miscare } from '../../src/ir/ir.ts';
-import { centreUrechiDesen, ciocanire, coborareDesen, treceriEgale, treceriLaterale } from '../../src/ui/exportDeseneCalcul.ts';
+import {
+  centreUrechiDesen, ciocanire, coborareDesen, incrustatieDesen, treceriEgale, treceriLaterale, vcarveDesen,
+} from '../../src/ui/exportDeseneCalcul.ts';
 
 const aproape = (a: number, b: number, eps = 1e-9): boolean => Math.abs(a - b) <= eps * Math.max(1, Math.abs(a), Math.abs(b));
 
@@ -152,4 +158,47 @@ test('ciocănirea desenată e a lucrării, pas cu pas: coborârile, ridicarea de
   assert.ok(h);
   assert.deepEqual(h.map((x) => (x.z === 'sus' ? 'sus' : +x.z.toFixed(4))), [-3.3333, -2.3333, -6.6667, 'sus', -6.1667, -10]);
   for (const x of [ciocanire(10, 4, 0), ciocanire(10, 4, 1.5), ciocanire(0, 4, 1), ciocanire(10, null, 1), ciocanire(10, 4, null)]) assert.equal(x, null);
+});
+
+test('V-carve-ul desenat: peretele de la adâncimea maximă stă la D·tan(θ/2) de contur, ca în lucrare; fundul plat, de la 2·D·tan(θ/2)', () => {
+  for (const [D, u] of [[2, 60], [3, 90], [1.5, 30], [4, 120], [2.5, 45]] as const) {
+    const desen = vcarveDesen(D, u);
+    assert.ok(desen, `D ${D}, ${u}°`);
+    const t = Math.tan((u * Math.PI) / 360);
+    // Un dreptunghi lat (fundul plat rămâne, fără freza dreaptă): inelul peretelui, la −D, cel mai aproape de latura x = 0.
+    const r = traseuVcarve({ contururi: [conturDreptunghi(0, 0, 60, 40)], unghi: u, diametruScula: 2 * D * t * 3 + 6, adancime: D, pas: D,
+      avans: 1000, avansPlonjare: 300, zSigur: 5 });
+    assert.ok(r.ok, `D ${D}, ${u}°: ${r.ok ? '' : r.motiv}`);
+    let z = 5, xMin = Number.POSITIVE_INFINITY;
+    for (const m of r.miscari) {
+      if (m.tip !== 'rapida' && m.tip !== 'taiere' && m.tip !== 'arc') continue;
+      z = m.la.Z ?? z;
+      if (Math.abs(z + D) < 1e-9 && m.la.X !== undefined) xMin = Math.min(xMin, m.la.X);
+    }
+    assert.ok(aproape(xMin, desen.perete, 1e-6), `D ${D}, ${u}°: peretele lucrării la ${xMin}, desenul la ${desen.perete}`);
+    assert.ok(aproape(desen.prag, 2 * D * t) && aproape(desen.t, t));
+  }
+  // Pe hârtie (ADR 0170): V60 la 3 mm, peretele la 1,732 de contur, fundul plat de la 3,464 mm lățime.
+  const p = vcarveDesen(3, 60);
+  assert.ok(p && Math.abs(p.perete - 1.7321) < 1e-4 && Math.abs(p.prag - 3.4641) < 1e-4);
+  for (const x of [vcarveDesen(0, 60), vcarveDesen(3, 0), vcarveDesen(3, 180), vcarveDesen(null, 60), vcarveDesen(3, null)]) assert.equal(x, null);
+});
+
+test('incrustația în V desenată are valorile pe hârtie ale panoului și ale dopului (S, H, t, fața, contactul, placa)', () => {
+  for (const [D, u, g, H] of [[3, 60, 0.5, 2], [4, 90, 1, 1], [2, 30, 0.2, 0.5], [5, 60, 1.5, 3], [3, 120, 0.5, 0]] as const) {
+    const op = { adancime: D, scula: { numar: 1, nume: 'V', diametru: 12, forma: { tip: 'v', unghi: u } },
+      incrustatie: { fel: 'v', joc: g, fierastrau: H, margine: 5, jurDop: 'fata' } } as unknown as Pick<Operatie, 'adancime' | 'scula' | 'incrustatie'>;
+    const v = valoriIncrustatie(op), d = incrustatieDesen(D, u, g, H);
+    assert.ok(v && d, `D ${D}, ${u}°, g ${g}, H ${H}`);
+    for (const k of ['S', 'H', 't', 'fata', 'contact', 'grosimeMinima'] as const) {
+      assert.ok(aproape(d[k], v[k]), `D ${D}, ${u}°, g ${g}, H ${H}: ${k} ${d[k]}, pe hârtie ${v[k]}`);
+    }
+    assert.ok(aproape(d.perete, D * v.t), 'fundul plat al locașului, de la D·t de contur');
+  }
+  // Exemplul de lucru din ADR 0170: V60, D = 3, g = 0,5, H = 2: S = 2,5, contactul 1,443, fața 4,5.
+  const e = incrustatieDesen(3, 60, 0.5, 2);
+  assert.ok(e && e.S === 2.5 && Math.abs(e.contact - 1.4434) < 1e-4 && e.fata === 4.5);
+  for (const x of [incrustatieDesen(3, 60, 3, 2), incrustatieDesen(3, 60, 0, 2), incrustatieDesen(3, 60, 0.5, -1), incrustatieDesen(null, 60, 0.5, 2)]) {
+    assert.equal(x, null);
+  }
 });

@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import { masoaraPotrivirea, type PunctO } from '../oracles/incrustatie.ts';
 import type { SculaOracol } from '../oracles/simulare.ts';
 import { adauga, ecran, vedere } from './ajutor-panza.ts';
-import { alege } from './ajutor-export.ts';
+import { alege, aleasa } from './ajutor-export.ts';
 
 test.use({ locale: 'ro-RO' });
 
@@ -54,9 +54,9 @@ test('banda dopului în V: alegerile din fereastră, exportul pe placa exactă, 
   test.setTimeout(120_000);
   await pregateste(page);
   const detalii = page.locator('[data-fisa="op"]').first();
-  await expect(detalii.locator('[data-camp="inc-jur"]')).toHaveValue('fata');
+  await expect(aleasa(detalii, 'inc-jur')).toHaveValue('fata');
   await expect(detalii.locator('[data-camp="banda-latime"]')).toHaveCount(0);
-  await detalii.locator('[data-camp="inc-jur"]').selectOption('banda');
+  await alege(detalii, 'inc-jur', 'banda');
   const latime = detalii.locator('[data-camp="banda-latime"]'), placa = detalii.locator('[data-camp="banda-placa"]');
   await expect(latime).toHaveValue('');
   await expect(latime).toHaveAttribute('placeholder', '9,31');
@@ -129,7 +129,7 @@ test('banda dopului în V: alegerile din fereastră, exportul pe placa exactă, 
   await expect(hartie).toContainText('Semifabricatul dopuluigros de 6.00 mm');
   // Redeschisă, fereastra arată valorile scrise.
   await page.locator('[data-actiune="export.gcode"]').click();
-  await expect(detalii.locator('[data-camp="inc-jur"]')).toHaveValue('banda');
+  await expect(aleasa(detalii, 'inc-jur')).toHaveValue('banda');
   await expect(latime).toHaveValue('');
   await expect(placa).toHaveValue('6');
 });
@@ -145,7 +145,7 @@ test('banda fără decupare: placa „cel puțin”, tăietura de mână; ce s-a
   test.setTimeout(90_000);
   await pregateste(page);
   const rand = page.locator('[data-fisa="op"]').first(), detalii = page.locator('[data-fisa="op"]').first();
-  await detalii.locator('[data-camp="inc-jur"]').selectOption('banda');
+  await alege(detalii, 'inc-jur', 'banda');
   await detalii.locator('[data-camp="banda-latime"]').fill('10');
   await detalii.locator('[data-camp="banda-punti-numar"]').fill('3');
   await detalii.locator('[data-camp="banda-freza"]').check();
@@ -172,7 +172,7 @@ test('banda fără decupare: placa „cel puțin”, tăietura de mână; ce s-a
   // Redeschisă: ce s-a scris în proiect.
   await page.getByRole('button', { name: 'Închide' }).click();
   await page.locator('[data-actiune="export.gcode"]').click();
-  await expect(detalii.locator('[data-camp="inc-jur"]')).toHaveValue('banda');
+  await expect(aleasa(detalii, 'inc-jur')).toHaveValue('banda');
   await expect(detalii.locator('[data-camp="banda-latime"]')).toHaveValue('10');
   await expect(detalii.locator('[data-camp="banda-decupare"]')).not.toBeChecked();
   await expect(detalii.locator('[data-camp="banda-punti-numar"]')).toHaveValue('3');
@@ -236,9 +236,9 @@ test('rândurile legate: două incrustații în V ale aceleiași piese, legate d
   await det(a2, 'inc-joc').fill(joc);
   await expect(legat).toHaveText('cu 1');
   // Banda doar pe al doilea: alt lemn din jurul dopului; pe amândouă, iar legate.
-  await det(a2, 'inc-jur').selectOption('banda');
+  await alege(page.locator(`[data-fisa=\"op\"][data-operatie=\"${a2}\"]`), 'inc-jur', 'banda');
   await expect(page.locator('[data-legat]')).toHaveCount(0);
-  await det(prima, 'inc-jur').selectOption('banda');
+  await alege(page.locator(`[data-fisa=\"op\"][data-operatie=\"${prima}\"]`), 'inc-jur', 'banda');
   await expect(legat).toHaveText('cu 1');
   // Altă lățime a benzii pe al doilea: fără legătură; lățimea goală (cea mai mică) pe amândouă, iar legate.
   await det(a2, 'banda-latime').fill('20');
@@ -276,7 +276,7 @@ test('lemnul din jurul dopului ales din panou: banda pe hârtie înainte de expo
   await expect(page.locator('[data-nod="operatie"]')).toContainText(', incrustație cu dop, cu banda îngustă (jocul 0.5 mm)');
   await page.locator('[data-actiune="export.gcode"]').click();
   const detalii = page.locator('[data-fisa="op"]').first();
-  await expect(detalii.locator('[data-camp="inc-jur"]')).toHaveValue('banda');
+  await expect(aleasa(detalii, 'inc-jur')).toHaveValue('banda');
   await expect(detalii.locator('[data-camp="banda-latime"]')).toHaveValue('');
   await page.getByRole('button', { name: 'Închide' }).click();
   // Înapoi pe fața coborâtă.
@@ -285,7 +285,7 @@ test('lemnul din jurul dopului ales din panou: banda pe hârtie înainte de expo
   await expect(hartie).toContainText('Semifabricatul dopuluigros de cel puțin 5.50 mm');
   await expect(page.locator('[data-nod="operatie"]')).toContainText(', incrustație cu dop (jocul 0.5 mm)');
   await page.locator('[data-actiune="export.gcode"]').click();
-  await expect(detalii.locator('[data-camp="inc-jur"]')).toHaveValue('fata');
+  await expect(aleasa(detalii, 'inc-jur')).toHaveValue('fata');
 });
 
 /** Trage o fereastră de selecție între două puncte ale foii (mm): alege formele cuprinse în întregime (ca în `rol.spec.ts`). */
