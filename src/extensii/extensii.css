@@ -27,6 +27,22 @@
   cursor: pointer;
 }
 
+/* O versiune nouă a unei extensii instalate (ADR 0232 §C.16): un punct în colțul butonului. */
+.extensii-buton {
+  position: relative;
+}
+
+.buton-punct {
+  position: absolute;
+  top: 1px;
+  right: 1px;
+  width: 7px;
+  height: 7px;
+  background: var(--a);
+  border: 1px solid var(--s-panou);
+  border-radius: 50%;
+}
+
 .extensii-buton:hover,
 .extensii-buton:focus-visible,
 .extensii-buton[aria-expanded='true'] {
@@ -141,12 +157,21 @@
   --ic: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.6' stroke-linejoin='round'%3E%3Cpath d='M10 3a2 2 0 0 1 4 0v2h4a1 1 0 0 1 1 1v4h-2a2 2 0 0 0 0 4h2v4a1 1 0 0 1-1 1h-4v-2a2 2 0 0 0-4 0v2H6a1 1 0 0 1-1-1v-4h2a2 2 0 0 0 0-4H5V6a1 1 0 0 1 1-1h4z'/%3E%3C/svg%3E");
 }
 
+/* × de pe fila extensiei: o țintă de 28 px cu mausul, cât `--tinta` la atingere și la densitatea mare (ADR 0232 §B.10). */
 .fila-inchide {
-  min-width: 24px;
-  min-height: 24px;
+  min-width: 28px;
+  min-height: 28px;
   padding: 0 4px;
-  font-size: var(--fs-1);
+  font-size: var(--fs-2);
   line-height: 1;
+}
+
+/* Un nume lung de extensie nu lungește fila: cel mult ~22 de caractere, apoi „…”; numele întreg e în `title`. */
+.fila-extensie .eticheta {
+  max-width: 22ch;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .spatiu-gazda {
@@ -170,6 +195,105 @@
   margin: 0;
   padding: var(--sp-3);
   text-align: center;
+}
+
+/*
+ * Starea unei extensii care n-a pornit sau pornește greu (ADR 0232 §A.1): un panou la mijlocul ferestrei, peste cadru, cu
+ * semnul și numele extensiei, o frază și trei ieșiri; detaliile tehnice, pliate. Pe un ecran mic, panoul se derulează.
+ */
+.stare-pornire {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  z-index: 2;
+  display: grid;
+  justify-items: center;
+  gap: var(--sp-2);
+  width: min(30rem, calc(100% - 2 * var(--sp-4)));
+  max-height: calc(100% - 2 * var(--sp-4));
+  padding: var(--sp-5);
+  overflow-y: auto;
+  text-align: center;
+  background: var(--s-panou);
+  border: 1px solid var(--l-margine);
+  border-radius: var(--r-3);
+  box-shadow: var(--umbra-1);
+  transform: translate(-50%, -50%);
+}
+
+.stare-pornire h2,
+.stare-pornire p {
+  margin: 0;
+}
+
+.stare-pornire h2 {
+  font-size: var(--fs-4);
+  overflow-wrap: anywhere;
+}
+
+.stare-pornire .butoane {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--sp-2);
+  margin-top: var(--sp-2);
+}
+
+.stare-pornire .butoane button,
+.stare-pornire .stare-copiaza {
+  padding: 0 var(--sp-4);
+  border-color: var(--l-camp);
+}
+
+/* „Încearcă din nou” e gestul stării: plin, ca primul buton al unui dialog. */
+.stare-pornire .butoane button:first-child {
+  font-weight: 600;
+  color: var(--t-pe-a);
+  background: var(--a-plin);
+  border-color: var(--a-plin);
+}
+
+.stare-pornire .butoane button:first-child:hover:enabled {
+  background: color-mix(in oklab, var(--a-plin) 85%, var(--t));
+}
+
+.stare-pornire details {
+  justify-self: stretch;
+  margin-top: var(--sp-2);
+  font-size: var(--fs-1);
+  color: var(--t-slab);
+  text-align: left;
+}
+
+.stare-pornire summary {
+  width: fit-content;
+  margin: 0 auto;
+  cursor: pointer;
+}
+
+.stare-pornire .stare-mesaj {
+  margin: var(--sp-1) 0;
+  padding: var(--sp-2);
+  font-family: var(--mono);
+  color: var(--t);
+  overflow-wrap: anywhere;
+  background: var(--s-peste);
+  border-radius: var(--r-1);
+  user-select: text;
+}
+
+.stare-pornire .stare-pachet {
+  margin-top: var(--sp-2);
+  overflow-wrap: anywhere;
+  user-select: text;
+}
+
+/* Fila extensiei, cât i se instalează o versiune nouă. */
+.fila-stare {
+  margin-left: var(--sp-1);
+  font-weight: 400;
+  color: var(--t-slab);
+  white-space: nowrap;
 }
 
 .extensii-camp {
@@ -329,14 +453,17 @@
   background: var(--s-panou);
 }
 
-/* Gestul care șterge („Scoate”, în întrebarea lui): roșu, nu accentul. */
-.dialog .butoane button.pericol:first-child:not([data-buton='renunta']) {
+/*
+ * Gestul care șterge sau pierde lucrul („Scoate”, în întrebarea lui; „Închide oricum”, lângă „Rămân”): roșu, nu accentul,
+ * oriunde ar sta între butoane (ADR 0232 §A.5).
+ */
+.dialog .butoane button.pericol:not([data-buton='renunta']) {
   color: var(--s-panou);
   background: var(--rosu);
   border-color: var(--rosu);
 }
 
-.dialog .butoane button.pericol:first-child:not([data-buton='renunta']):hover:enabled {
+.dialog .butoane button.pericol:not([data-buton='renunta']):hover:enabled {
   background: color-mix(in oklab, var(--rosu) 85%, var(--t));
 }
 
@@ -345,6 +472,11 @@
  * la atingere, 48 sau 56 la densitatea mare). Cu mausul, la densitatea obișnuită, meniul rămâne strâns.
  */
 @media (pointer: coarse) {
+  .fila-inchide {
+    min-width: var(--tinta);
+  }
+
+  .fila-inchide,
   .meniu-extensii [role='menuitem'],
   .meniu-extensii .biblioteca-buton[role='menuitem'],
   .dialog-biblioteca .bib-file [role='tab'] {
@@ -352,6 +484,11 @@
   }
 }
 
+:root[data-densitate='mare'] .fila-inchide {
+  min-width: var(--tinta);
+}
+
+:root[data-densitate='mare'] .fila-inchide,
 :root[data-densitate='mare'] .meniu-extensii [role='menuitem'],
 :root[data-densitate='mare'] .meniu-extensii .biblioteca-buton[role='menuitem'],
 :root[data-densitate='mare'] .dialog-biblioteca .bib-file [role='tab'] {
@@ -833,6 +970,11 @@
     flex: 1;
   }
 
+  /* Trei gesturi (biblioteca are o versiune nouă): „Actualizează la …” pe tot rândul, „Deschide” și „Scoate” dedesubt. */
+  .pagina-actiuni button:first-child:nth-last-child(3) {
+    flex-basis: 100%;
+  }
+
   .pagina-capturi {
     display: flex;
     overflow-x: auto;
@@ -853,4 +995,153 @@
 /* Fila unei extensii cu semn: semnul ține locul piesei de puzzle. */
 .fila[data-cu-semn]::before {
   display: none;
+}
+
+/*
+ * Claritatea (ADR 0232 §B): permisiunea care mișcă o mașină e marcată în „Ce poate face”; extensia deschisă are un punct în
+ * rândul ei din meniu; subtextele au cel puțin 12 px; banda bibliotecii fără catalog; pagina fără nicio extensie.
+ */
+.poate li[data-sensibila] {
+  border-left-color: var(--a);
+}
+
+.rand-punct {
+  flex: none;
+  width: 8px;
+  height: 8px;
+  margin-left: auto;
+  background: var(--a);
+  border-radius: 50%;
+}
+
+.rand-text small,
+.bib-card-text small {
+  font-size: var(--fs-1);
+}
+
+.meniu-extensii > .avertisment {
+  margin: var(--sp-1) var(--sp-2) var(--sp-2);
+}
+
+.bib-banda {
+  padding: var(--sp-2) var(--sp-3);
+  background: var(--s-atentie);
+  border-radius: var(--r-1);
+}
+
+.pagina-goala {
+  display: grid;
+  justify-items: start;
+  gap: var(--sp-2);
+}
+
+/* „Ce e nou”: versiunea și data ei pe un rând, data mai ștearsă. */
+.noutate-cap small {
+  font-size: var(--fs-1);
+  color: var(--t-slab);
+}
+
+/*
+ * Captura mărită (ADR 0232 §C.12): peste tot ecranul, deasupra ferestrei bibliotecii. Butonul unei capturi din pagină e doar
+ * imaginea ei, cu inelul focusului.
+ */
+.pagina-capturi figure > button {
+  display: block;
+  width: 100%;
+  padding: 0;
+  line-height: 0;
+  background: none;
+  border: 0;
+  border-radius: inherit;
+  cursor: zoom-in;
+}
+
+.pagina-capturi figure > button:focus-visible {
+  outline: 2px solid var(--a);
+  outline-offset: -2px;
+}
+
+.captura-marita {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  display: grid;
+  place-items: center;
+  padding: var(--sp-4) calc(var(--tinta) + var(--sp-4));
+  background: rgb(0 0 0 / 90%);
+  outline: none;
+}
+
+.captura-marita figure {
+  display: grid;
+  gap: var(--sp-2);
+  margin: 0;
+  min-width: 0;
+}
+
+.captura-marita img {
+  display: block;
+  max-width: 100%;
+  max-height: calc(100vh - 6rem);
+  width: auto;
+  height: auto;
+  margin: 0 auto;
+  background: #fff;
+  border-radius: var(--r-1);
+}
+
+.captura-marita figcaption {
+  display: flex;
+  gap: var(--sp-3);
+  justify-content: space-between;
+  font-size: var(--fs-2);
+  color: #fff;
+}
+
+.captura-loc {
+  flex: none;
+  font-variant-numeric: tabular-nums;
+}
+
+.captura-marita button {
+  position: absolute;
+  display: grid;
+  place-items: center;
+  width: var(--tinta);
+  height: var(--tinta);
+  padding: 0;
+  font-size: 1.5rem;
+  line-height: 1;
+  color: #fff;
+  background: rgb(255 255 255 / 12%);
+  border: 0;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.captura-marita button:hover,
+.captura-marita button:focus-visible {
+  background: rgb(255 255 255 / 28%);
+}
+
+.captura-marita button:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
+}
+
+.captura-sageata {
+  top: calc(50% - var(--tinta) / 2);
+}
+
+.captura-sageata.inapoi {
+  left: var(--sp-2);
+}
+
+.captura-sageata.inainte {
+  right: var(--sp-2);
+}
+
+.captura-inchide {
+  top: var(--sp-2);
+  right: var(--sp-2);
 }

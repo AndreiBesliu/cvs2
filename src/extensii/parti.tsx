@@ -6,17 +6,16 @@
 import { useState, type KeyboardEvent, type ReactNode } from 'react';
 import { t, type CheieSimpla } from '../i18n/t.ts';
 import type { Limba } from '../i18n/tipuri.ts';
-import { ADRESA_CATALOG } from '../../shared/biblioteca.ts';
-import type { RefuzBiblioteca } from './biblioteca.ts';
+import { ADRESA_CATALOG, type NoutateBiblioteca } from '../../shared/biblioteca.ts';
 import { scoateExtensia, type ExtensieInstalata, type SursaExtensie } from './depozit.ts';
+import { dupaSensibilitate, PERMISIUNI_SENSIBILE } from './pachet.ts';
 import { textMarime } from './marimeText.ts';
 import { Semn } from './Semn.tsx';
 
 /** Adresa absolută a catalogului: pachetele și imaginile bibliotecii stau lângă el. */
 export const adresaCatalog = (): string => new URL(ADRESA_CATALOG, location.href).href;
 export const textSursa = (s: SursaExtensie): string => (s.fel === 'fisier' ? s.nume : s.fel === 'adresa' ? s.adresa : t('extensii.biblioteca'));
-export const motivText = (m: RefuzBiblioteca['motiv'], detaliu?: string): string =>
-  `${t(`extensii.motiv.${m}` as CheieSimpla)}${detaliu ? ` (${detaliu})` : ''}`;
+export { motivText } from './motivText.ts';
 /** Numele unei permisiuni, cu literă mare (capul unui rând din „Ce poate face”). */
 const numePermisiune = (p: string, limba: Limba): string => {
   const s = t(`extensii.permisiune-scurt.${p}` as CheieSimpla);
@@ -59,7 +58,8 @@ export function Fereastra({ titlu, test, onEscape, cap, children }: {
 
 /**
  * „Ce poate face” (ADR 0231 §B.3): câte un rând pe permisiune, cu numele ei și ce face extensia cu ea; fără permisiuni, o
- * propoziție. `nou`: ce cere în plus o versiune nouă, evidențiat.
+ * propoziție. `nou`: ce cere în plus o versiune nouă, evidențiat. Rândurile stau după cât de sensibile sunt (ADR 0232 §B.6),
+ * cu mașina prima, marcată.
  */
 export function Poate({ titlu, permisiuni, limba, test = 'extensii-permisiuni', nou = false }: {
   readonly titlu: string; readonly permisiuni: readonly string[]; readonly limba: Limba; readonly test?: string; readonly nou?: boolean;
@@ -69,11 +69,37 @@ export function Poate({ titlu, permisiuni, limba, test = 'extensii-permisiuni', 
       <h3>{titlu}</h3>
       {permisiuni.length === 0 ? <p data-testid={test}>{t('extensii.instalare.fara-permisiuni')}</p> : (
         <ul data-testid={test}>
-          {permisiuni.map((p) => (
-            <li key={p} data-permisiune={p}><strong>{numePermisiune(p, limba)}</strong> <span>{t(`extensii.poate.${p}` as CheieSimpla)}</span></li>
+          {dupaSensibilitate(permisiuni).map((p) => (
+            <li key={p} data-permisiune={p} {...(PERMISIUNI_SENSIBILE.has(p) ? { 'data-sensibila': '' } : {})}><strong>{numePermisiune(p, limba)}</strong> <span>{t(`extensii.poate.${p}` as CheieSimpla)}</span></li>
           ))}
         </ul>
       )}
+    </section>
+  );
+}
+
+/** Data unei versiuni (`2026-11-23`), cum o scrie limba aplicației; miezul zilei locale, ca ziua să nu alunece. */
+const dataText = (iso: string, limba: Limba): string => new Date(`${iso}T12:00:00`).toLocaleDateString(limba === 'ro' ? 'ro-RO' : 'en-GB');
+
+/**
+ * „Ce e nou” (ADR 0231 §B.1; ADR 0232 §C.15): câte un rând pe versiune, de la cea mai nouă în jos, cu data ei, unde e
+ * scrisă. Fără rânduri, nimic. Pe pagina extensiei și în confirmarea unei actualizări.
+ */
+export function Noutati({ noutati, limba, test }: {
+  readonly noutati: readonly NoutateBiblioteca[]; readonly limba: Limba; readonly test: string;
+}): ReactNode {
+  if (noutati.length === 0) return null;
+  return (
+    <section className="poate">
+      <h3>{t('extensii.biblioteca.nou')}</h3>
+      <ul className="pagina-noutati" data-testid={test}>
+        {noutati.map((n) => (
+          <li key={n.versiune}>
+            <p className="noutate-cap"><strong>{n.versiune}</strong>{n.data !== undefined && <small> · <time dateTime={n.data}>{dataText(n.data, limba)}</time></small>}</p>
+            {' '}<span>{n[limba]}</span>
+          </li>
+        ))}
+      </ul>
     </section>
   );
 }

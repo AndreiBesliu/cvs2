@@ -17,6 +17,18 @@ export const LIMITE_PACHET = { fisiere: 256, octetiFisier: 8 * 1024 * 1024, octe
  * (`masina`, ADR 0160), contul văzut, doar citit (`cont`, ADR 0164), formele dintre desen și extensie (`forme`, ADR 0166).
  */
 export const CATALOG_PERMISIUNI: readonly string[] = ['stocare', 'descarcari', 'masina', 'cont', 'forme'];
+/**
+ * Ordinea din „Ce poate face” (ADR 0232 §B.6): după cât de sensibilă e fiecare, oricum le-ar înșira manifestul. O permisiune
+ * nouă în catalog își primește locul aici (proba o cere).
+ */
+const ORDINE_SENSIBILITATE: readonly string[] = ['masina', 'forme', 'cont', 'descarcari', 'stocare'];
+/** Cele marcate anume în listă: mișcă o mașină. */
+export const PERMISIUNI_SENSIBILE: ReadonlySet<string> = new Set(['masina']);
+/** Permisiunile, cele mai sensibile întâi; una pe care ordinea n-o știe rămâne la urmă, în ordinea ei. */
+export function dupaSensibilitate(permisiuni: readonly string[]): string[] {
+  const loc = (p: string): number => { const i = ORDINE_SENSIBILITATE.indexOf(p); return i < 0 ? ORDINE_SENSIBILITATE.length : i; };
+  return permisiuni.map((p, i) => ({ p, i })).sort((a, b) => loc(a.p) - loc(b.p) || a.i - b.i).map((x) => x.p);
+}
 
 export type Manifest = {
   readonly format: typeof FORMAT;

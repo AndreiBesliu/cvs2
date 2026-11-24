@@ -14,36 +14,43 @@
       "noutati": [
         {
           "versiune": "18.22.0",
+          "data": "2026-11-24",
           "ro": "Ventilatorul cu carcasă, a treia piesă a filei „Elice”: rotorul (3–12 palete, cu inel la alegere) și carcasa cu urechi pentru grinzi, cu „Fă ventilatorul”.",
           "en": "The ducted fan, the third piece of the “Propeller” tab: the rotor (3–12 blades, with an optional ring) and the duct with lugs for beams, with “Make the fan”."
         },
         {
           "versiune": "18.21.0",
+          "data": "2026-11-23",
           "ro": "Semnul extensiei: îl vezi în meniul Extensii, pe fila ei și în bibliotecă.",
           "en": "The extension’s icon: you see it in the Extensions menu, on its tab and in the library."
         },
         {
           "versiune": "18.20.0",
+          "data": "2026-11-23",
           "ro": "Elicea de barcă, a doua piesă a filei „Elice”: 3–5 palete late, cu capac rotunjit, tipărită fără suport, cu „Fă perechea”.",
           "en": "The boat propeller, the second piece of the “Propeller” tab: 3–5 wide blades, with a rounded cap, printed without supports, with “Make the pair”."
         },
         {
           "versiune": "18.19.0",
+          "data": "2026-11-23",
           "ro": "Elicele: fila nouă „Elice” din atelier, cu elicea din parametri, tipărită fără suport, cu prinderea LEGO și „Fă perechea”.",
           "en": "Propellers: the new “Propeller” tab of the workshop, with a propeller from parameters, printed without supports, with the LEGO mount and “Make the pair”."
         },
         {
           "versiune": "18.18.0",
+          "data": "2026-11-23",
           "ro": "Câte o pictogramă pe fiecare buton al galeriilor din atelier.",
           "en": "An icon on every button of the workshop galleries."
         },
         {
           "versiune": "18.17.0",
+          "data": "2026-11-21",
           "ro": "Căutarea pieselor: „Caută o piesă” găsește piesele din toate filele atelierului.",
           "en": "Piece search: “Find a piece” finds pieces from all the workshop tabs."
         },
         {
           "versiune": "18.16.0",
+          "data": "2026-11-21",
           "ro": "Șenila, în fila Roți: zalele și pinioanele ei, cu montajul pe două pinioane.",
           "en": "The track, in the Wheels tab: its links and sprockets, with the layout on two sprockets."
         }

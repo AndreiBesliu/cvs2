@@ -936,6 +936,16 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   Capturile unei extensii se refac cu `node scripts/capturi-biblioteca.ts [dosar]` și se comit. **Un prefix nou de acțiuni
   cere grupul lui în `src/ui/Paleta.tsx`** (paleta nu arăta deloc acțiunile `extensii`). Pornirea 108,6 kB (cu ușa
   113,1 / 115), totalul 778,6 / 800.
+  **Extensiile, stările de lângă drumul bun (ADR 0232, felia 3.Xi)** gata pe 24.11, în sesiunea cloud a liniei
+  (aceeași ramură, PR-ul `AndreiBesliu/cvs2#17`), după auditul cerut de owner și răspunsurile lui („am raspuns”: 1a–5a):
+  o extensie care nu pornește are starea ei, cu trei ieșiri; o versiune nouă redeschide extensia deschisă; reîncărcarea
+  o redeschide (`cncvs2.extensie-deschisa`); fără internet, biblioteca trece pe „Instalate”; captura mărită; un `.zip` de
+  extensie lăsat pe planșă; „Deschide <nume>” în paletă; punctul de pe butonul Extensii (`cncvs2.extensii-noi`, fără
+  nicio cerere la pornire). **O permisiune nouă a extensiilor își cere locul în `ORDINE_SENSIBILITATE`
+  (`src/extensii/pachet.ts`).** **Paleta și gazda extensiilor vorbesc prin evenimentul `cncvs2-extensii`; nu se importă
+  una pe alta** (ar lega bucățile și ar atinge pornirea). Un rând de „ce e nou” poate primi `"data": "an-lună-zi"`.
+  Pachetele nu s-au schimbat (Easy 3Draw e 18.22.0, din 3.Ts; următoarea, 18.23.0). Cu `main` (`f536a4c`) adus: pornirea
+  109,9 kB (plafonul 120; cu ușa 114,4, cu Atelierul 114,7), totalul 809,9 / 900; felia: pornirea +0, totalul +3,8 kB.
   **Raportările (15.B↑b) și imprimanta (3.6g, 3.6h, 3.6i pașii 1–2; ADR 0191 acceptat, codul 3.6j încă pe ramură) unite în
   `main` pe 07.11**, peste biblioteca extensiilor (`b501571`, `6e61bee`, apoi `e9cf6ee` cu DEVLOG-ul bibliotecii): **pornirea
   101,7 (cu ușa 105,3 / 110 kB), totalul 535,0 / 550, /admin 106,5 / 200, contul 29,6 / 32.** **Pe test (și pe live), serverul
