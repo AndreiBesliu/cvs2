@@ -115,6 +115,8 @@ test('cutia: centrul ei; un colț al cutiei care e și vârf rămâne vârf (la 
 test('toleranța și ținta cea mai apropiată', () => {
   assert.equal(lipeste(11.01, 120)?.fel, undefined, 'la 1,01 mm de vârf, cu toleranța 1 mm: nimic');
   assert.equal(lipeste(10.99, 120)?.fel, 'varf');
+  // În cutia lărgită a formei (deci judecat), dar la 1,13 mm de vârf: nimic.
+  assert.equal(lipeste(10.8, 120.8), null);
   // Între vârful (10, 120) și mijlocul (10, 70): la (10, 96) mijlocul e la 26, vârful la 24. Mijlocul laturii din stânga a
   // foii, (0, 100), e la 10,8: fără foaie, deci.
   assert.equal(lipeste(10, 96, { toleranta: 30 })?.fel, 'foaie');

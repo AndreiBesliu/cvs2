@@ -109,6 +109,7 @@ test('Automată: deasupra sau dedesubt e orizontala, la stânga sau la dreapta v
   // În colț, axa pe care cursorul a ieșit mai mult.
   assert.equal(felAutomat(a, b, P(105, 40)), 'orizontala');
   assert.equal(felAutomat(a, b, P(130, 25)), 'verticala');
+  assert.equal(felAutomat(a, b, P(110, 30)), 'orizontala', 'la egalitate (10 și 10), orizontala');
   // Două puncte pe orizontală: orice loc deasupra dă orizontala (aceeași lungime ca aliniata).
   assert.equal(felAutomat(P(0, 0), P(50, 0), P(10, 8)), 'orizontala');
 });
@@ -132,6 +133,7 @@ test('distanța unui punct la desenul cotei: la linie, la extensii și la cifră
   const r = desenLiniar('orizontala', P(0, 0), P(100, 20), 15, S) as DesenCota;
   assert.equal(distantaLaDesen(r, '120', P(50, 27)), 0, 'pe cifră (deasupra liniei: 6,3 × 3,5 mm, cu baza la 26,05)');
   assert.ok(Math.abs(distantaLaDesen(r, '120', P(10, 24)) - 1) < 1e-9, 'la 1 mm sub linie');
+  assert.ok(Math.abs(distantaLaDesen(r, '120', P(50, 24.5)) - 0.5) < 1e-9, 'sub linie, sub cifră: cutia cifrei e doar deasupra');
   assert.ok(Math.abs(distantaLaDesen(r, '120', P(-1, 10)) - 1) < 1e-9, 'la 1 mm de extensia lui a');
   assert.ok(distantaLaDesen(r, '120', P(50, 10)) > 5, 'între puncte, sub linie, departe de tot');
 });

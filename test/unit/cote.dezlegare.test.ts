@@ -121,6 +121,10 @@ test('un capăt deja dezlegat nu se mai scrie (punctul lui rămâne cel de la de
   assert.ok(i && piesa);
   const h = executa(istoricNou(d), { tip: 'sterge', foaie: f.id, instanta: i, pozitie: 0, piesa: { piesa, pozitie: 0 } });
   assert.deepEqual(ancora(h, 'c4', 0), dezlegata.puncte?.[0]);
+  // Doar cu el pe foaie, o mutare a formei nu face niciun pas în plus.
+  const doar: Document = { ...d0, foi: [{ ...f, cote: [dezlegata] }] };
+  const m = executa(istoricNou(doar), { tip: 'inlocuieste-instanta', foaie: f.id, vechi: i, nou: { ...i, x: 99 } });
+  assert.equal(m.trecut.at(-1)?.tip, 'inlocuieste-instanta');
 });
 
 test('copiile foilor: cotele copiate se leagă de instanțele noi (aceleași noduri), iar cele străine rămân neatinse', () => {
