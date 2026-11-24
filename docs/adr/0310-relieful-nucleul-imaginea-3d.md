@@ -42,8 +42,10 @@ redeschide.
 
 ### 1. Relieful e un element al piesei (întrebarea 1)
 
-- **Forma nouă `relief`**, pe un nod `element`, în documentul v29 (numărul rezervat reliefului; îl confirmă sesiunea
-  principală înaintea primei felii): grila (nx × ny celule, celula pătrată, în mm) și straturile, de jos în sus.
+- **Forma nouă `relief`**, pe un nod `element`, în documentul v29: grila (nx × ny celule, celula pătrată, în mm) și
+  straturile, de jos în sus. Numărul e rezervat reliefului, dar se fixează abia la commit-ul migrării, cu sesiunea
+  principală (răspunsul ei din 24.11): dacă linia cotelor n-a luat v28 până atunci, relieful îl ia pe acela, ca să nu
+  rămână o versiune lipsă; unirile cu schemă intră în `main` în ordinea numerelor.
 - **Matricea nodului:** mutare, rotire, oglindire și scalare uniformă (aceasta schimbă celula). Scalarea pe o singură axă
   și înclinarea se refuză, cu motivul spus: celula rămâne pătrată.
 - **Ca orice element:** stă în arborele piesei, lângă vectori (o ușă cu un panou sculptat și profilul ei), iar piesa se
@@ -228,6 +230,25 @@ Variantele care pot sta împreună intră ca opțiuni, cu recomandarea ca implic
 - finisarea: freza, unghiul, aliniat sau nealiniat;
 - litofania: lumina liniară sau după material, din față sau din spate, rama;
 - fișierul pe 16 biți: PNG sau TIFF.
+
+### 13. Freza bilă în document (dacă răspunsul la întrebarea 3 e „a”)
+
+Sesiunea principală e de acord (24.11) ca bila să intre odată cu forma `relief`, cu forma câmpului stabilită împreună cu
+linia frezelor, a cărei e modelul frezei (`src/model/freza.ts`, `sculaDinFreza`). Propunerea trimisă liniei frezelor:
+
+- **În document:** `scula.forma = { tip: 'bila' }`, fără alte câmpuri. Raza bilei e `diametru / 2`; restul frezei
+  (`numar`, `nume`, `diametru`, `biblioteca`, `regim`, `tais`) rămâne ca în v27. `forma` devine o variantă după `tip`:
+  lipsă = plată, `'v'` ca azi, `'bila'` nou. Mai târziu, toroidala, tot pe linia frezelor:
+  `{ tip: 'toroidala', raza }`, cu 0 < raza < diametru / 2 (raza = diametru / 2 ar fi bila).
+- **Migrarea:** schimbă doar numărul. Un document mai vechi nu poate avea `tip: 'bila'` (ușa lui îl refuză), deci nu
+  există ciocnire de căutat.
+- **În IR și în simulare:** aceeași formă (`FormaScula` are deja `{ tip: 'bila' }`); nucleul simulării și oracolul ei o
+  știu (ADR 0047), elicea cu bila rămâne refuzată (finisarea n-are elice).
+- **Unde e voie, în felia reliefului:** doar pe operațiile de relief (finisarea). Profilul, buzunarul, găurirea și V-carve-ul
+  o refuză cu motiv, ca pe V în locurile lui (ADR 0092 §3), până la felia bilei a liniei frezelor (16.A↑e), care o duce și
+  acolo, cu simularea și oracolul ei.
+- **În bibliotecă:** felul „bilă” (`FELURI_FREZA`, `sculaDinFreza` → `{ tip: 'bila' }`), al liniei frezelor; până atunci,
+  bila se alege pe rândul exportului, ca freza în V la început.
 
 ## Întrebările (recomandarea întâi)
 

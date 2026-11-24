@@ -81,8 +81,14 @@ degroșarea și finisarea pe relief), unde stă relieful în document și unde s
 - **Întrebările** (recomandarea întâi, toate „a”): 1 unde stă relieful (element al piesei), 2 ordinea feliilor (întâi ce
   se taie), 3 freza bilă în document (o aduce relieful, în v29), 4 plafonul (8192²), 5 oracolul (scris de linie
   înaintea nucleului, fără agent), 6 materialul litofaniei de pe placă (o placă albă translucidă de 6 mm).
-- **De vorbit cu sesiunea principală, înaintea feliei a:** numărul v29 al schemei; bila în document (întrebarea 3, cu
-  linia frezelor); rândurile reliefului în fereastra exportului (linia exportului o reface).
+- **Răspunsul sesiunii principale (24.11, 12:52):** (1) v29 rămâne rezervat, dar numărul se fixează la commit-ul
+  migrării: îi scriu chiar înainte; dacă cotele n-au luat v28 până atunci, relieful îl ia pe acela (fără versiuni lipsă;
+  unirile cu schemă intră în ordinea numerelor). (2) Bila o aduce relieful, dacă owner-ul răspunde „a” la întrebarea 3,
+  cu forma câmpului stabilită cu linia frezelor (sesiunea `session_01QcxiUZGaEoi6ADRcuJvDGp`): propunerea,
+  `scula.forma = { tip: 'bila' }`, e în ADR 0310 §13 și i-a fost trimisă; aștept răspunsul ei înaintea codului.
+  (3) Rândurile degroșării și finisării în fereastra exportului: după ce fereastra refăcută (28.8, PR-ul #11) e în
+  `main`; îi scriu întâi sesiunii principale. ADR-ul propus îl ia în `main` la cererea mea (doar documente) sau cu
+  prima felie.
 - **De ținut minte:** în codul vederii 3D, „relieful” (`ReliefSimulat`, `reliefPentru`) e câmpul simulării, nu modelul
   de aici; numele noi din `src/relief/` trebuie să nu se încurce cu ele. Codul vechi (ediția întâi) nu e în container:
   verdictele portării se sprijină pe `LECTII.md` §3.2 și pe s5.
