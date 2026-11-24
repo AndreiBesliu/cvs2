@@ -13922,6 +13922,10 @@ palete”
 - **Probele feliei:** unitare 8, e2e 4; probele pluginului și ale extensiilor, 170 / 170 în browser; otrăvurile 47 / 47
   (31 în unitare, 16 prin browser). Easy 3Draw 18.24.0, cu rândul de „ce e nou”; doar pachetul se schimbă.
 - **Găsit pe drum:** unealta probei (numărul de înfășurare) avea semnul întors; au arătat-o așteptările „în lemn”.
+- **După felie:** `main` (`52a0aaa1`) adus în ramură. Sesiunea principală a deschis între timp linia atelierului (nota
+  `docs/linii/atelier.md`, intervalul ADR 0340–0349, feliile „de la 3.Tv”) și i-a predat lucrul elicelor (3.Tu, ADR
+  0283), la cererea owner-ului. Nota liniei se numește acum `atelier.md`; ADR 0284 și feliile 3.Ca–3.Cj, acceptate de
+  owner înaintea numerotării ei, rămân de confirmat cu ea la unire.
 
 ## 2026-11-24 — Sesiunea principală în cloud: clicul pe „Închide” din cadrul unei extensii, pierdut (probă instabilă, reparată) (Model: Claude Fable 5.2)
 

@@ -7,8 +7,9 @@ deja. vreau ca userii sa poata crea cat mai multe piese, care sa fie si compatib
 ca constructii complexe”), în sesiunea cloud a liniei bibliotecii (ramura `wip/3.Xh-biblioteca-ui`). **Felia 3.Ca
 (conectorul perpendicular) implementată pe 24.11** („Implementat”, la capăt).
 **Continuă:** ADR 0169 (rotițele), 0280 (roțile, fuliile, conicele, șenila), 0281 (piesele pe file), 0282 (elicele),
-0168 (înălțimile din profilul imprimantei). **Se leagă de:** felia 3.Tu a liniei elicelor (unde stă axul pieselor rotunde
-în vederea „Modelul”; propusă ca ADR 0283, la răspunsurile owner-ului): partea D de aici pleacă de la ce hotărăște ea.
+0168 (înălțimile din profilul imprimantei). **Se leagă de:** felia 3.Tu (unde stă axul pieselor rotunde în vederea „Modelul”;
+propusă ca ADR 0283, la răspunsurile owner-ului): partea D de aici pleacă de la ce hotărăște ea. 3.Tu a fost a liniei
+elicelor; din 24.11 seara e a acestei linii (predarea, la cererea owner-ului, în `docs/linii/elice.md`).
 
 ## Ce e azi (inventarul din 24.11, Easy 3Draw 18.23.0)
 
@@ -106,7 +107,7 @@ elice. Fiecare e un șablon din parametri, nu un desen fix.
 | 3.Cc | Cremaliera și melcul | cu montajul față de roata dințată și „Fă perechea” |
 | 3.Cd | Arcul, balamaua, placa turnantă | trei piese în Cărămizi |
 | 3.Ce | Punctele de prindere și „Se prinde cu” | motorul și panoul din configurator, pentru toate piesele |
-| 3.Cf | Modelul: orientarea pe trei axe și alipirea la prinderi | după 3.Tu a liniei elicelor |
+| 3.Cf | Modelul: orientarea pe trei axe și alipirea la prinderi | după 3.Tu (ADR 0283; a acestei linii din 24.11 seara) |
 | 3.Cg | Modelul: verificarea (prins, plutește, se ciocnește) | avertismente pe piese și în listă |
 | 3.Ch | Construcțiile cu nume și lista lor de piese | mai multe construcții în atelier |
 | 3.Ci | Construcțiile gata | patru șabloane |

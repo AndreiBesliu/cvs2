@@ -1070,7 +1070,9 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   24.11, neunită: tipul `conector`, în fila Legături: un bloc de 1–5 pași, cu găuri de știft sau de ax pe trei axe
   (în sus, de-a latul și, la capete, în lung); Easy 3Draw 18.24.0. **O piesă nouă a atelierului atinge și probele
   vechi care numără** (filele, galeriile, căutarea, starea unei liste vechi, versiunea): lista lor e în
-  `docs/linii/constructii.md`. Doar pachetul extensiei se schimbă: pornirea și totalul aplicației, neatinse.
+  `docs/linii/atelier.md`. Doar pachetul extensiei se schimbă: pornirea și totalul aplicației, neatinse. **Din 24.11
+  seara, linia ține și lucrul elicelor** (predat la cererea owner-ului): 3.Tu (piesele rotunde pe același ax în
+  „Modelul”, ADR 0283), la răspunsurile lui la cele trei întrebări din `docs/linii/elice.md`.
   **Cotele pe desen: modelul și proba G-code-ului (ADR 0330, felia 10.4↑a-1, adusă din etapa 10)** gata pe 24.11, în
   sesiunea cloud a liniei (ramura `wip/10.4-cote`), unită în `main` pe 24.11 (`f25249cf`), fără interfață încă. ADR
   0330, acceptat de owner cu 1a–6a și cu nota lui: toate setările cotelor stau într-o fereastră nouă, „Setări”, nu în
