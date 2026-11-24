@@ -119,6 +119,15 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
   făcut din commit-urile anunțate, cu completul pornit pe ea cât încă rulau completele a două linii; în `main` a intrat
   abia după ce au fost verzi și porțile lotului, și cele ale liniilor, iar vârfurile nu aduseseră cod (unirea de probă
   a vârfului: zero fișiere schimbate în afara `.md`). Câștigul: o jumătate de oră.
+- **Intervalele ADR, la 24.11:** 0145–0149 sesiunea principală (lângă plafoanele 0143, 0144; 0145 e plafonul pornirii),
+  0230–0239 biblioteca, 0240–0249 ancorele, 0250–0259 aranjamentele, 0260–0269 adminul, 0270–0279 trasarea, 0280–0289
+  pluginul, 0290–0299 exportul, 0300–0309 frezele, 0310–0329 relieful, 0330–0339 cotele. Următoarea linie nouă ia de
+  la 0340.
+- **Un PR rămas deschis după unire** (ramura a mers mai departe peste commit-ul unit, deci GitHub nu-l închide) se
+  închide doar la cuvântul owner-ului, cu un comentariu care trimite la commit-ul de unire; înainte, se uită ce mai e
+  pe ramură: pe 24.11, la `#16`, frezele aveau deja două felii noi, neunite, pentru care linia deschide alt PR.
+- **O linie nouă:** nota ei (`docs/linii/<linie>.md`) intră în `main` înaintea ramurii, ramura se face din acel `main`
+  (`git push origin <sha>:refs/heads/wip/<felia>-<nume>`), iar brief-ul de lipit trimite la notă, nu o repetă.
 - **PR-ul liniei** e deschis de sesiunea ei ca ciornă (regula mediului cloud): starea „ciornă” nu spune că felia nu e gata.
   Gata înseamnă raportul liniei (nota ei spune „gata”) și rapidul cu completul verzi pe commit-ul raportat.
 
@@ -143,8 +152,9 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
 
 ## Starea pe 24.11.2026, la prânz (după a paisprezecea unire din cloud)
 
-- **Pe test:** `df9ae539` (tot până la lotul al doisprezecelea: A.10 și A.11a; publicat pe 24.11 la 09:41, cu
-  serverul: `logClientError` și `agregaUtilizarea` la zi).
+- **Pe test:** `356db9bd` (tot până la lotul al paisprezecelea: 3.Ts, A.11b–A.11e, 16.A↑b-1; publicat pe 24.11 la
+  12:26, cu serverul: `utilizare`, `tichete`, regulile, indexurile). `main` e mai departe cu plafonul pornirii
+  (`f536a4cc`, ADR 0145) și cu documente: ajung pe test cu lotul următor.
 - **`main`, din cloud:** pe 23.11: 3.Tq (`0ae9c6c1`); 11.3↑e și A.4 (`ddaa7ead`); 3.Tr, unită de linia elicelor
   (`d262e57a`); 25.8↑a și A.5 (`1b46c955`), cu reparația probei extensiilor (`8287d66e`); 11.3↑f, unită de linia
   planșelor (`f4601938`); A.6 (`4497d639`); 3.Xh (`2d1e482c`) și 12.1↑e-3 cu 12.1↑e-4 (`03460cab`); A.8a cu A.8b
@@ -157,6 +167,9 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
   - **în lucru, pe ramuri:** adminul (A.7, adminul pe telefon, peste commit-ul unit; `AndreiBesliu/cvs2#13`), frezele
     (16.A↑b-2: lista „Freza” pe rândurile exportului și în Tăierea), exportul (28.8↑, `#11`: unirea la cuvântul
     owner-ului); se unesc la raportul liniei;
+  - **pornite pe 24.11, la cuvântul owner-ului (brief-urile, date ca fișiere):** relieful (18.1↑, `wip/18.1-relief`,
+    ADR 0310–0329, canalul `relief`) și cotele (10.4↑, `wip/10.4-cote`, ADR 0330–0339, canalul `cote`); amândouă
+    încep cu ADR-ul propus și întrebările. Schema: v28 rezervat cotelor, v29 reliefului;
   - **propus, la owner:** biblioteca (ADR 0232, auditul UI/UX al extensiilor, cinci întrebări; `#17`);
   - **la cuvântul owner-ului:** restul bibliotecii extensiilor (căutarea, captura mărită), următoarea felie a
     incrustațiilor, a trasării și a elicelor, 11.5↑b (după etapa 13);
@@ -176,9 +189,10 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
     mai scurtă (fără al doilea complet pe `main` când codul e identic cu cel verificat; schimbă o regulă a porților),
     lista „ce e nou pe test, de încercat”, rezumatul pentru verificarea juridică, lista ramurilor unite de șters.
     Fără răspuns, niciuna nu pornește.
-- **Plafoanele:** totalul e 806,1 / 900 kB (ADR 0301, decizia owner-ului din noaptea de 23 spre 24.11). **Pornirea a
-  rămas 115 kB:** cu ușa 114,4, cu Atelierul 114,7 (după lotul al paisprezecelea), deci mai sunt 0,3 kB. O felie care
-  adaugă în pornire nu mai încape: cere întâi loc (o bucată mutată la cerere) sau decizia owner-ului.
+- **Plafoanele:** totalul e 806,1 / 900 kB (ADR 0301, decizia owner-ului din noaptea de 23 spre 24.11). **Pornirea e
+  120 kB din 24.11** (ADR 0145, „ok, ridica plafonul pornirii la 120 kB”, spus în sesiunea principală): cu ușa 114,4,
+  cu Atelierul 114,7, deci mai sunt ~5,3 kB. Regula feliilor rămâne: ce nu trebuie înaintea primei randări stă la
+  cerere, iar felia își spune în raport cât adaugă în pornire.
 - **Documentul e v27** (frezele, 16.A↑b-1): un câmp nou ia v28. O probă care citește documentul salvat cere versiunea
   curentă (`placute.spec.ts` a căzut cu `schema: 26` în completul liniei frezelor).
 - **De urmărit:** în panoul foii, la 1400 px, etichetele „Numele” și „Materialul” apar tăiate la o literă (văzut de
