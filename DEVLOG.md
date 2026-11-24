@@ -13197,3 +13197,28 @@ din sesiunea elicelor: „cand e verde fa unirea”
   evenimentelor mașinii; indexul liniilor; starea și lecția din `docs/linii/principala.md`.
 - **La owner:** fereastra exportului (`#11`), verificarea juridică a utilizării aplicației înaintea live-ului, „cine
   unește în `main`”; canalul `foi`, de încercat.
+
+## 2026-11-24 — ADR 0302 și 16.A↑h-1: fereastra „Frezele mele” ca listă (Model: Claude Opus 5.5)
+
+**Prompt:** „vreau sa adaugi lista completa cu toate configuratiile posibile, de exemplu, am un fisier exportat din artcam, cu
+toate frezele de acolo. vreau ca frezele sa fi o lista ca in artcam, si doar daca vrea userul si i se pare mai ok, atunci sa
+comute pe configuratorul actual, care sa poata confiigura orice tip de freza, inclusiv pe cele desenate de user sau adaugate
+custom” (owner-ul, cu `FREZE.tdb`), apoi, la cele cinci întrebări: „Da, 1a–5a”. **Started:** 24.11, 12:40.
+
+- **ADR 0302** (`ab36a68c` propus, `d0fa2dde` acceptat): `FREZE.tdb` e baza de scule ArtCAM, binară și nedocumentată, cu
+  conținutul ArtCAM și al producătorilor: nu se citește și nu se copiază (`CLAUDE.md`). În locul ei: un catalog propriu de
+  feluri și mărimi standard (mm și țoli), biblioteca ca listă cu fișa doar de citit și configuratorul la cerere, grupurile
+  omului, felurile fără CAM „în curând”. Schimbă ADR 0300 §2 și §3. Feliile, despărțite la acceptare: h-1 fereastra ca listă,
+  h-2 grupurile, h-3 catalogul, h-4 felurile noi.
+- **16.A↑h-1** (`d535f1cd`, probele întărite `0acfc75b`): fișa frezei alese, cu „Editează”, „Duplică”, „Șterge…”; editorul
+  la „Editează” și „Freză nouă”, întoarcerea la fișă după „Salvează”, „Renunță” și „←”; comutatorul „Listă / Configurator”
+  (`cncvs2.freze.vedere`); focusul; pe drum, textul de sus și nota valorilor la zi cu 16.A↑b-2 și cota siluetei cu virgula
+  în română; manualul (ro, en).
+- **Probele** (întâi, în Edge): `freze.spec.ts` 15 / 15 și `frezeTaiere.spec.ts`, `manual.spec.ts` (24 / 24); proba pe
+  emulatoare trece acum prin fișă. **Otrăvurile** (`test/otravuri/16.A-h1.py`): 16 / 16.
+- **`main` adus** (`8cb76d64`: cotele 10.4↑a-1, elicele 3.Tt, reparația de noapte); ciocnirile doar în DEVLOG, în indexul ADR
+  și în registrul otrăvurilor, cu ambele părți.
+- **Mărimea:** pornirea 110,0 kB (cu ușa 114,7, cu Atelierul 115,0 / 120), totalul 819,0 / 900 cu `main` adus (`main` `64a63b48`: 816,1; 16.A↑b-2, 16.A↑a-2 și
+  16.A↑h-1 împreună +2,9, din care h-1 ~+0,7). Nimic pe
+  server; documentul nu se schimbă. **Completed:** 24.11, 13:20.
+

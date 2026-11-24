@@ -3,7 +3,7 @@
 _cncvs2, biblioteca de freze („Frezele mele”), felia 16.A↑ adusă din etapa 16: ramura `wip/16.A-freze` (din `main`
 `c8b235ab`), ADR-urile 0300–0309 (liber: 0303), canalul `freze`; ADR 0300 ACCEPTAT pe 23.11 („Da, 1a–6a”), ADR 0302 ACCEPTAT pe
 24.11 („Da, 1a–5a”); 16.A↑a, ADR 0301, 16.A↑b-1 și 16.A↑c UNITE în `main`; 16.A↑b-2 și 16.A↑a-2 GATA pe ramură (PR-ul #22);
-în lucru 16.A↑h-1 (fereastra ca listă)_
+16.A↑h-1 GATA pe ramură; urmează 16.A↑h-2 (grupurile)_
 
 Pornită pe 23.11.2026, în sesiunea cloud a liniei, la cererea owner-ului: „Vreau sa pot crea freze l sau profiluri de freze in
 aplicatie si sa le salvez in cont”. Rândurile din prag: „Bibliotecă de freze cu geometrie reală (dreaptă, bilă, toroidală, V,
@@ -87,6 +87,11 @@ gravare, profil, formă desenată)” și „Freze de profil desenate de utiliza
   (`CLAUDE.md`); din el s-au luat doar felurile și ideea grupurilor. Feliile, despărțite la acceptare: **h-1** fereastra ca
   listă (fișa doar de citit, configuratorul la „Editează” / „Freză nouă”, comutatorul), **h-2** grupurile omului (`grup`),
   **h-3** catalogul propriu, **h-4** felurile noi „în curând”. Pornită 16.A↑h-1.
+- **24.11, 12:57–13:20: 16.A↑h-1 gata pe ramură** (`d535f1cd`, `0acfc75b`, documentele): fereastra pornește ca listă, cu fișa
+  frezei doar de citit (`data-freze="fisa"`, valorile cu `data-freze-valoare`), editorul la „Editează” / „Freză nouă” și
+  comutatorul „Listă / Configurator” (`cncvs2.freze.vedere`). **Capcană:** o probă e2e care schimbă o freză trece acum prin
+  fișă („Editează”), iar după „Salvează” editorul se închide (în „Listă”); valorile se citesc din fișă. Otrăvuri 16 / 16.
+  `main` adus (`8cb76d64`). Urmează 16.A↑h-2 (grupurile).
 - **Feliile**, în ordine: 16.A↑a (biblioteca în browser, fereastra, fișierul), apoi b (alegerea în proiect, v27), c
   (contul), d (calibrarea), e (bila și toroidala), f (profilul desenat), g (valorile pe material).
 
