@@ -1237,6 +1237,17 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   nu schimbă niciodată un calcul:** un document stricat sau un ascultător care aruncă îl lasă cum era. Urmează A.9
   (sumele zilei, jobul de noapte și fila Utilizare), A.10, A.11, apoi A.7. **Pornirea 109,4 kB (cu ușa 113,9 / 115; cu
   Atelierul 114,2), totalul 799,6 / 900, `/admin` 131,3 / 200, contul 30,0 / 32.**
+  **A.9a și A.9b (sumele zilei, jobul de noapte și fila Utilizare)** gata pe 24.11, unite în `main` pe 24.11 (`95dddbe0`):
+  jobul `agregaUtilizarea` (02:30, ora României, cu marcajul lui, judecat de Diagnoza și de Azi) adună ieri și
+  alaltăieri în `utilizareZi/{zi}`, fără conturi: oamenii distincți stau într-o schiță HyperLogLog, deci sunt
+  aproximativi („≈”). Permisiunea „Utilizare: citește” dă citirea sumelor; loturile nu le citește nimeni. Fila
+  **Utilizare** din `/admin` (grupul Produs, după Sugestii; bucata `FilaUtilizare`, doar online, cu plafonul ei de 25 kB)
+  arată, pe 7, 30 sau 90 de zile și pe clienți, personal sau toți: oamenii activi, sesiunile, programele exportate,
+  refuzurile; cele mai folosite acțiuni; ce nu se folosește (din catalogul acțiunilor generat la build,
+  `documentatie/actiuni.json`); frecările; duratele calculelor. **Probele filelor Azi și Personal numără joburile și
+  permisiunile (4 și 12), iar probele barei numără filele:** un job, o permisiune sau o filă nouă a adminului le
+  schimbă. Urmează A.10 (fluxurile), A.11 (troubleshooting și disocierea), apoi A.7. **`/admin` 133,2 / 200 kB; pornirea
+  și totalul, neschimbate (109,4; 799,6 / 900).**
   **Riglele, ghidajele, lipirea și alinierea (ADR 0050, aduse din etapa 6)** gata pe 20.10: ghidajele pe foaie
   (`foaie.ghidaje`, fără schemă nouă), lipirea pură (`src/geom/lipire.ts`), alinierea (`src/geom/aliniere.ts`), totul la
   cerere după prima randare (`src/app/Editare.tsx`); pornirea 99,4 / 100 kB cu ușa (foarte strâmt). **Uneltele de desen
