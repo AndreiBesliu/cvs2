@@ -21,7 +21,7 @@ const catalog = (extensii: unknown[]): unknown => ({ format: FORMAT_CATALOG, sch
 
 test('o dată e an-lună-zi, o zi care există', () => {
   for (const buna of ['2026-11-23', '2024-02-29', '2000-01-01']) assert.equal(esteData(buna), true, buna);
-  for (const rea of ['23.11.2026', '2026-13-01', '2026-02-30', '2025-02-29', '2026-1-5', '2026-11-23T10:00:00Z', '', ' 2026-11-23', 20261123, null, undefined]) {
+  for (const rea of ['23.11.2026', '2026-13-01', '2026-02-30', '2025-02-29', '2026-1-5', '2026-11-23T10:00:00Z', '', ' 2026-11-23', '2026-11-23 ', '+002026-11-23', 'azi', 20261123, null, undefined]) {
     assert.equal(esteData(rea), false, String(rea));
   }
 });
@@ -125,8 +125,43 @@ test('numele dintr-un .zip, din directorul lui, fără dezarhivare; ce nu e arhi
   assert.equal(numeZip(new TextEncoder().encode('nu e o arhivă')), null);
   assert.equal(numeZip(new Uint8Array(0)), null);
   // Un director tăiat (arhiva ruptă la mijloc) nu aruncă.
-  assert.doesNotThrow(() => numeZip(pachet.subarray(0, pachet.length - 30)));
-  assert.doesNotThrow(() => numeZip(pachet.subarray(pachet.length - 40)));
+  assert.equal(numeZip(pachet.subarray(0, pachet.length - 30)), null);
+  assert.equal(numeZip(pachet.subarray(pachet.length - 40)), null);
+});
+
+/** Doar directorul unei arhive (fără date), scris de mână: nume, câmp în plus și comentariu pe fiecare intrare. */
+function director(intrari: ReadonlyArray<{ nume: string; extra?: number; comentariu?: number; semnatura?: number }>, total = intrari.length): Uint8Array {
+  const parti: number[] = [];
+  for (const i of intrari) {
+    const n = [...new TextEncoder().encode(i.nume)];
+    const cap = new Uint8Array(46);
+    const v = new DataView(cap.buffer);
+    v.setUint32(0, i.semnatura ?? 0x02014b50, true);
+    v.setUint16(28, n.length, true);
+    v.setUint16(30, i.extra ?? 0, true);
+    v.setUint16(32, i.comentariu ?? 0, true);
+    parti.push(...cap, ...n, ...Array.from({ length: (i.extra ?? 0) + (i.comentariu ?? 0) }, () => 0x41));
+  }
+  const coada = new Uint8Array(22);
+  const e = new DataView(coada.buffer);
+  e.setUint32(0, 0x06054b50, true);
+  e.setUint16(10, total, true);
+  e.setUint32(12, parti.length, true);
+  return new Uint8Array([...parti, ...coada]);
+}
+
+test('numele din .zip: câmpul în plus și comentariul unei intrări se sar; o intrare ruptă sau una promisă în plus dă null', () => {
+  assert.deepEqual(numeZip(director([{ nume: 'a.txt', extra: 4, comentariu: 7 }, { nume: 'extensie.json', comentariu: 3 }, { nume: 'b/c.js', extra: 9 }])),
+    ['a.txt', 'extensie.json', 'b/c.js']);
+  assert.deepEqual(numeZip(director([])), []);
+  // A doua intrare n-are semnătura directorului.
+  assert.equal(numeZip(director([{ nume: 'a.txt' }, { nume: 'extensie.json', semnatura: 0 }])), null);
+  // Sfârșitul directorului promite trei intrări, dar sunt două: citirea nu trece de el.
+  assert.equal(numeZip(director([{ nume: 'a.txt' }, { nume: 'b.txt' }], 3)), null);
+  // Directorul „începe” dincolo de arhivă.
+  const departe = director([{ nume: 'a.txt' }]);
+  new DataView(departe.buffer).setUint32(departe.length - 22 + 16, 0x7fffffff, true);
+  assert.equal(numeZip(departe), null);
 });
 
 test('paleta și gazda extensiilor vorbesc prin același eveniment (numele stă în amândouă, ca bucățile lor să nu se lege)', async () => {

@@ -10,6 +10,7 @@
  *
  * **O versiune nouă își spune „ce e nou”** (ADR 0231, răspunsul 3a): primul rând din `noutati` e al versiunii pachetului de
  * acum, în română și în engleză. Aceeași probă îl cere, iar `--scrie` nu înregistrează versiunea fără el.
+ * Un rând poate spune și când a apărut versiunea (ADR 0232 §C.15): `"data": "2026-11-23"` (an-lună-zi), la alegere.
  *
  * Datele de prezentare (ADR 0231 §B.1), lângă pachet, cu amprenta în nume: semnul extensiei (fișierul `pictograma` al
  * manifestului, luat din dosarul ei), capturile (`extensii/<dosar>/biblioteca/<nume>.<limba>.webp`, comise; le face

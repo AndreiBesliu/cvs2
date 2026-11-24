@@ -76,9 +76,9 @@ export type CatalogBiblioteca = {
   readonly extensii: readonly RandBiblioteca[];
 };
 
-/** O dată de calendar, an-lună-zi (`2026-11-23`): o zi care există. */
+/** O dată de calendar, an-lună-zi (`2026-11-23`): o zi care există (scrisă înapoi, dă exact același text). */
 export function esteData(x: unknown): x is string {
-  if (typeof x !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(x)) return false;
+  if (typeof x !== 'string') return false;
   const d = new Date(`${x}T00:00:00Z`);
   return !Number.isNaN(d.getTime()) && d.toISOString().slice(0, 10) === x;
 }

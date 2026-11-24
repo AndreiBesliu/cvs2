@@ -970,6 +970,11 @@
     flex: 1;
   }
 
+  /* Trei gesturi (biblioteca are o versiune nouă): „Actualizează la …” pe tot rândul, „Deschide” și „Scoate” dedesubt. */
+  .pagina-actiuni button:first-child:nth-last-child(3) {
+    flex-basis: 100%;
+  }
+
   .pagina-capturi {
     display: flex;
     overflow-x: auto;

@@ -275,6 +275,31 @@ test.describe('pe telefon', () => {
     await expect(pagina(page).getByTestId('pagina-capturi').locator('img')).toHaveCount(3);
     await expect(pagina(page).locator('[data-extensii="captura"]')).toHaveCount(0);
   });
+
+  test('cu o versiune nouă, cele trei gesturi încap și cu fontul lat: „Actualizează la …” pe rândul lui, celelalte două dedesubt', async ({ page }) => {
+    await bibliotecaDeProba(page, { id: 'salut', nume: 'Salut', versiune: '18.22.0', permisiuni: ['stocare'], octeti: await salut({ versiune: '18.22.0' }) });
+    await page.goto('/');
+    await page.evaluate(() => { document.documentElement.style.setProperty('--font', 'Verdana, "DejaVu Sans", sans-serif'); });
+    await instaleaza(page, 'salut-18.6.0.zip', await salut({ versiune: '18.6.0' }));
+    const b = await deschideBiblioteca(page);
+    await b.locator('[data-extensii="rand-biblioteca"][data-id="salut"]').click();
+    const gesturi = pagina(page).locator('.pagina-actiuni button');
+    await expect(gesturi).toHaveText(['Actualizează la 18.22.0', 'Deschide', 'Scoate']);
+    const c = await gesturi.evaluateAll((e) => e.map((x) => {
+      const r = x.getBoundingClientRect();
+      return { x: r.x, y: r.y, dreapta: r.right, inalt: r.height, taiat: x.scrollWidth > x.clientWidth + 1 };
+    }));
+    // Primul, pe un rând (o singură linie de text, cât o țintă); celelalte două, alături, sub el; nimic tăiat, nimic afară.
+    expect(c[0]!.inalt).toBeLessThanOrEqual(48);
+    expect(c[1]!.y).toBeGreaterThan(c[0]!.y + c[0]!.inalt - 1);
+    expect(c[2]!.y).toBe(c[1]!.y);
+    for (const g of c) {
+      expect(g.taiat).toBe(false);
+      expect(g.x).toBeGreaterThanOrEqual(0);
+      expect(g.dreapta).toBeLessThanOrEqual(390);
+      expect(g.inalt).toBeGreaterThanOrEqual(44);
+    }
+  });
 });
 
 test.describe('în engleză', () => {

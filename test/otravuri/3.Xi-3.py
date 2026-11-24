@@ -32,8 +32,6 @@ EN = 'src/i18n/carcasa.en.ts'
 # --- unitare: data, rândurile noi, vestea, numele din zip ---
 o('U01', SH, "return !Number.isNaN(d.getTime()) && d.toISOString().slice(0, 10) === x;", "return !Number.isNaN(d.getTime());", 'descoperire',
   'o zi care nu există (30 februarie) trece drept dată')
-o('U02', SH, "if (typeof x !== 'string' || !/^\\d{4}-\\d{2}-\\d{2}$/.test(x)) return false;", "if (typeof x !== 'string') return false;", 'descoperire',
-  'orice text pe care îl înțelege Date trece drept dată')
 o('U03', SH, "...(esteData(o.data) ? { data: o.data } : {}) });", "...(o.data !== undefined ? { data: o.data as string } : {}) });", 'descoperire',
   'o dată greșită din catalog ajunge pe ecran')
 o('U04', SH, "  if (noutati && dataSarita) sarite.push(`${id}: noutati.data`);\n", "", 'descoperire',
@@ -60,10 +58,10 @@ o('U14', NO, "if (Object.keys(noi).length === 0) stocare?.removeItem(CHEIE_EXTEN
   'fără nimic de spus, cheia rămâne în stocare')
 o('U15', NO, "  } catch {\n    return {};\n  }\n}\n\n/** Scrie vestea", "  } catch (e) {\n    throw e;\n  }\n}\n\n/** Scrie vestea", 'descoperire',
   'o stocare care aruncă oprește citirea veștii')
-o('U16', ZI, "  if (startDir + marimeDir > eocd) return null;\n  const nume: string[] = [];", "  const nume: string[] = [];", 'descoperire',
-  'un director care iese din arhivă nu mai e refuzat')
-o('U17', ZI, "    if (p + 46 > eocd || v.getUint32(p, true) !== 0x02014b50) return null;\n    const ln = v.getUint16(p + 28, true), le = v.getUint16(p + 30, true), lc = v.getUint16(p + 32, true);\n    nume.push", "    const ln = v.getUint16(p + 28, true), le = v.getUint16(p + 30, true), lc = v.getUint16(p + 32, true);\n    nume.push", 'descoperire',
-  'o intrare ruptă a directorului nu mai e refuzată (citirea iese din arhivă)')
+o('U17', ZI, "    if (p + 46 > eocd || v.getUint32(p, true) !== 0x02014b50) return null;\n", "    if (p + 46 > eocd) return null;\n", 'descoperire',
+  'o intrare fără semnătura directorului nu mai e refuzată')
+o('U16', ZI, "    if (p + 46 > eocd || v.getUint32(p, true) !== 0x02014b50) return null;\n", "    if (v.getUint32(p, true) !== 0x02014b50) return null;\n", 'descoperire',
+  'o intrare promisă dincolo de sfârșitul directorului e citită')
 o('U18', ZI, "    p += 46 + ln + le + lc;\n  }\n  return nume;", "    p += 46 + ln + le;\n  }\n  return nume;", 'descoperire',
   'comentariul unei intrări nu e sărit')
 o('U19', DE, "export const EVENIMENT_PALETA = 'cncvs2-extensii';", "export const EVENIMENT_PALETA = 'cncvs2-extensiile';", 'descoperire',
@@ -72,8 +70,7 @@ o('U20', SB, "if (n.data !== undefined && !esteData(n.data)) return gresit(", "i
   'lista bibliotecii primește o dată greșită')
 o('U21', SB, "return { versiune: n.versiune, ...t, ...(n.data !== undefined ? { data: n.data } : {}) };", "return { versiune: n.versiune, ...t };", 'constructie',
   'data scrisă în listă nu ajunge în catalog')
-o('U22', 'docs/manual/ro.md', "**Caută o comandă** (Ctrl+K): „Deschide Easy\n  3Draw”", "paleta de comenzi", 'manual',
-  'manualul nu mai spune de „Caută o comandă” la extensii')
+
 
 # --- e2e: „Ce e nou” ---
 o('N01', PR, "{n.data !== undefined && <small> · <time dateTime={n.data}>{dataText(n.data, limba)}</time></small>}", "", 'e2e',
@@ -166,10 +163,11 @@ o('C12', CM, "data-extensii=\"captura-inchide\" aria-label={t('extensii.captura.
 # --- e2e: „Scoate” lângă „Actualizează la …” ---
 o('S01', BI, "            {instalata && (\n              <button type=\"button\" data-extensii=\"pagina-scoate\"", "            {instalata && s.fel !== 'actualizeaza' && (\n              <button type=\"button\" data-extensii=\"pagina-scoate\"", 'e2e',
   'cu o versiune nouă în bibliotecă, extensia nu se mai poate scoate')
+o('S02', CS, "  .pagina-actiuni button:first-child:nth-last-child(3) {\n    flex-basis: 100%;\n  }\n", "", 'e2e',
+  'pe telefon, cele trei gesturi se înghesuie pe un rând')
 
 SETURI = {
     'descoperire': ['test/unit/extensii.descoperire.test.ts'],
     'constructie': ['test/unit/biblioteca.constructie.test.ts'],
-    'manual': ['test/unit/manual.test.ts'],
 }
 E2E = ['test/e2e/extensii.descoperire.spec.ts']

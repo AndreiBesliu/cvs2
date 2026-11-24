@@ -50,9 +50,9 @@ export function numeZip(octeti: Uint8Array): string[] | null {
     if (v.getUint32(i, true) === 0x06054b50) { eocd = i; break; }
   }
   if (eocd < 0) return null;
-  const total = v.getUint16(eocd + 10, true), marimeDir = v.getUint32(eocd + 12, true), startDir = v.getUint32(eocd + 16, true);
-  if (startDir + marimeDir > eocd) return null;
+  const total = v.getUint16(eocd + 10, true), startDir = v.getUint32(eocd + 16, true);
   const nume: string[] = [];
+  // Fiecare intrare se judecă pe loc: una care iese din arhivă ori n-are semnătura ei oprește citirea.
   for (let k = 0, p = startDir; k < total; k++) {
     if (p + 46 > eocd || v.getUint32(p, true) !== 0x02014b50) return null;
     const ln = v.getUint16(p + 28, true), le = v.getUint16(p + 30, true), lc = v.getUint16(p + 32, true);
