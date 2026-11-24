@@ -150,14 +150,12 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
   printr-o schiță.
 - **Observabilitatea:** erorile ajung în jurnalul aplicației; joburile își lasă marcajul.
 
-## Starea pe 24.11.2026, seara (după a douăzeci și doua unire din cloud)
+## Starea pe 24.11.2026, seara (după a douăzeci și treia unire din cloud)
 
-- **Pe test:** `29ef7e44` (tot până la lotul al optsprezecelea: cotele 10.4↑a-1, 3.Tt, reparația utilizării mașinii,
-  comenzile foii pe pânză, butonul Admin, proba repornirii extensiei; publicat pe 24.11 la 17:50, fără server; proba de
-  fum, bună). În drum: loturile 19–22 (`62569bb2`): publicarea loturilor 19–21 a căzut la o probă instabilă a
-  extensiilor (`extensii.spec.ts:135`; reparată pe `unire-2411z`, intră cu lotul 25), iar completul lotului 22
-  pe `main` rula la 20:10. Loturile 23 și 24 sunt în `main`; lotul 25 (reparația probei extensiilor și 11.1↑d) e în
-  porți pe `unire-2411aa`. După el, o singură publicare pentru loturile 23–25.
+- **Pe test:** `62569bb2` (tot până la lotul 22: frezele din Tăierea și setul de pornire, „Frezele mele” ca listă, cu
+  grupuri, unealta Cote, căutarea și rafturile din biblioteca extensiilor, oracolul rampelor împărțit; publicat pe
+  24.11 la 20:32, fără server; proba de fum, bună). Publicarea loturilor 19–21 singure căzuse la o probă instabilă a
+  extensiilor (`extensii.spec.ts:135`), reparată în lotul 25. În drum: loturile 23–25, într-o singură publicare.
 - **`main`, din cloud:** pe 23.11: 3.Tq (`0ae9c6c1`); 11.3↑e și A.4 (`ddaa7ead`); 3.Tr, unită de linia elicelor
   (`d262e57a`); 25.8↑a și A.5 (`1b46c955`), cu reparația probei extensiilor (`8287d66e`); 11.3↑f, unită de linia
   planșelor (`f4601938`); A.6 (`4497d639`); 3.Xh (`2d1e482c`) și 12.1↑e-3 cu 12.1↑e-4 (`03460cab`); A.8a cu A.8b
@@ -168,7 +166,8 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
   scrise în sesiunea principală (`7584747a`); proba repornirii extensiei, reparată (`29ef7e44`); 16.A↑b-2 și 16.A↑a-2
   (`33fadb06`), 10.4↑a-2 (`f3283b33`), 16.A↑h-1 și 16.A↑h-2 (`db43ed08`); oracolul rampelor împărțit (`b2a56e23`) și
   3.Xj (`049c5dda`); cele două teste grele împărțite (`49ce2793`), 10.4↑a-3 (`08e2e50d`), 16.A↑h-3 și h-4
-  (`9fd71053`); fereastra exportului, 28.8↑a–g (`c4ca5ec2`), și 3.Xk (`373699e6`).
+  (`9fd71053`); fereastra exportului, 28.8↑a–g (`c4ca5ec2`), și 3.Xk (`373699e6`); proba extensiilor, reparată
+  (`13d9bcad`), și 11.1↑d, scrisă în sesiunea principală (`001b6325`).
 - **Liniile** (vezi [indexul](README.md)):
   - **în lucru, pe ramuri:** frezele (16.A↑h-5, profilurile parametrice, ADR 0302 §7, pe `wip/16.A-freze`; 16.A↑b-3,
     lista „Din frezele mele” pe rândurile exportului, peste fereastra nouă, pe `wip/16.A-freze-b3`,
