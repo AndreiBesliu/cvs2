@@ -1006,8 +1006,8 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   (`"categorii"` în `extensii/biblioteca.json`, 1–3, primul fiind cel principal), nu pachetul: o schimbare a lor nu cere
   o versiune nouă, iar o probă cere fiecărei extensii din listă cel puțin un raft.** Catalogul le poartă ca dată de
   prezentare, citită cu îngăduință. Căutarea și raftul ales țin de fereastra deschisă: nu se țin minte și nu pleacă
-  nicăieri. Pornirea +0, totalul +1,3 kB (cu `main` `a96881a` adus: pornirea 110,1 kB, cu ușa 114,8, cu Atelierul
-  115,1 / 120; totalul 818,1 / 900). **O probă care dă clic, în cadrul extensiei, pe ceva
+  nicăieri. Pornirea +0, totalul +1,3 kB (cu `main` `7312d68` adus: pornirea 110,2 kB, cu ușa 114,9, cu Atelierul
+  115,2 / 120; totalul 831,8 / 900). **O probă care dă clic, în cadrul extensiei, pe ceva
   ce îi reface cadrul pe loc (`host.reporneste()`) folosește `clicCareRefaceCadrul` (`test/e2e/ajutor-extensii.ts`),
   cum cea care îl închide folosește `clicCareInchideCadrul`:** clicul nu se mai întoarce când cadrul dispare sub el
   (completul feliei, căzut la `extensii.lucru.spec.ts:222`; reprodus 16 din 150 pe zece lucrători). Reparația e cea din

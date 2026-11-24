@@ -145,7 +145,8 @@ Nimic nu spune ce fel de extensie e una (pentru desen, pentru mașină, pentru i
   acolo meniul de la tastatură; problema e raportată sesiunii principale.
 - **Mărimea:** pornirea neschimbată (109,9 kB; cu ușa 114,4, cu Atelierul 114,7 / 120); totalul 814,3 → 815,6 / 900 kB
   (+1,3); catalogul bibliotecii, 5,3 kB. Cu `main` `a96881a` adus (lotul 18): pornirea 110,1 kB (cu ușa 114,8, cu
-  Atelierul 115,1 / 120), totalul 816,8 → 818,1 / 900 kB.
+  Atelierul 115,1 / 120), totalul 816,8 → 818,1 / 900 kB. Cu `main` `7312d68` (loturile 19–21): pornirea 110,2 kB (cu
+  ușa 114,9, cu Atelierul 115,2 / 120), totalul 830,5 → 831,8 / 900 kB.
 - **Otrăvurile**, în clonă (`test/otravuri/3.Xj.py`): 78 / 78. La prima rulare, 76: „id-ul extensiei nu se mai caută”
   trecea fiindcă „trenu” se găsea și în descriere, iar „în engleză se caută în descrierea românească” trecea pe
   biblioteca adevărată, unde cuvântul căutat era și în descrierea lungă. Amândouă probele caută acum pe biblioteca de
