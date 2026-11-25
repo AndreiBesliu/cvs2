@@ -15351,3 +15351,16 @@ codului: „Alipirea la prinderi (Recomandat)”, „Puncte în vederea 3D (Reco
 - **Completul pe `main`** (45684848118, verde, 56 min): unit 10 581 / 0 (12 sărite, pe Linux), e2e 883 / 883, funcțiile pe
   emulatoare 136 / 136, paginile 60 / 60; pornirea 111,4 kB, totalul 909,1 / 1 000 kB.
 - **Proba de fum** pe adresa de test: versiunea `5649067cdf8b`, potrivită; nicio eroare în consolă, nicio cerere căzută.
+
+## 2026-11-25 — Sesiunea principală în cloud: lotul 38 (atelierul Easy 3Draw: alipirea la prinderi), pe test (Model: Claude Fable 5.2)
+
+**Prompt:** publicarea de după unirea a patruzeci și una (pe test se publică liber)
+**Started:** 25.11, după unirea de la 22:15 (completul pe `main`, pornit la 22:24). **Completed:** 25.11, 23:28.
+
+- **Pe test: `c9911c14`** (3.Cf-1, Easy 3Draw 18.34.0). `publica.yml` 45704176310, verde (23:25–23:28), pornită din prima;
+  serverul, neschimbat.
+- **Completul pe `main`** (45694635576, verde, 61 min): unit 10 596 / 0 (12 sărite, pe Linux), e2e 890 / 890, funcțiile pe
+  emulatoare 136 / 136, paginile 60 / 60; pornirea 111,4 kB (cu ușa 116,5, cu Atelierul 116,9 / 125), totalul
+  909,1 / 1 000 kB, `/admin` 138,3 / 200, contul 30,2 / 32.
+- **Proba de fum** pe adresa de test: versiunea `c9911c141e13`, potrivită; nicio eroare în consolă, nicio cerere căzută.
+- **Pe test e tot ce e în `main`** (`42433c91` adaugă peste `c9911c14` doar documente).
