@@ -40,9 +40,11 @@ declare namespace Trei {
   interface Vector3 { x: number; y: number; z: number; set(x: number, y: number, z: number): this; copy(v: Vector3): this }
   interface Vector2 { x: number; y: number }
   interface Euler { x: number; y: number; z: number }
+  /** Matricea 4 × 4; `set` o primește pe rânduri. */
+  interface Matrix4 { set(...n: number[]): this }
   interface Object3D {
-    position: Vector3; rotation: Euler; up: Vector3; visible: boolean; userData: Record<string, unknown>; children: Object3D[];
-    add(...o: Object3D[]): this; remove(...o: Object3D[]): this; lookAt(v: Vector3): void;
+    position: Vector3; rotation: Euler; up: Vector3; visible: boolean; userData: Record<string, unknown>; children: Object3D[]; renderOrder: number;
+    add(...o: Object3D[]): this; remove(...o: Object3D[]): this; lookAt(v: Vector3): void; applyMatrix4(m: Matrix4): void;
   }
   interface Material { transparent: boolean; opacity: number; color: { set(c: string | number): void }; dispose(): void }
   interface Box3 { min: Vector3; max: Vector3; setFromObject(o: Object3D): this; set(min: Vector3, max: Vector3): this; getCenter(v: Vector3): Vector3 }
@@ -65,6 +67,9 @@ declare namespace Trei {
     HemisphereLight: new (cer: number, sol: number, intensitate: number) => Object3D;
     DirectionalLight: new (culoare: number, intensitate: number) => Object3D;
     MeshStandardMaterial: new (p: { color: string | number; roughness: number; metalness: number; emissive?: number }) => Material;
+    MeshBasicMaterial: new (p: { color: string | number; depthTest?: boolean; transparent?: boolean; opacity?: number }) => Material;
+    Matrix4: new () => Matrix4;
+    SphereGeometry: new (raza: number, segmenteLatime?: number, segmenteInaltime?: number) => BufferGeometry;
     BufferAttribute: new (date: Float32Array, marime: number) => BufferAttribute;
     BufferGeometry: new () => BufferGeometry;
     Box3: new () => Box3;

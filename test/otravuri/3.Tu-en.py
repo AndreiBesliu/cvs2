@@ -16,7 +16,7 @@ A = 'extensii/trenulet/sursa/planificator/atelier.ts'
 
 o('N01', T, ' "ax {0}, {1}, {2}": "axis {0}, {1}, {2}",', ' "ax {0}, {1}, {2}": "ax {0}, {1}, {2}",', 'e2e', 'rândul piesei rotunde, rămas în română (fără diacritice)')
 o('N02', T, ' "axul pe știftul {0}, {1}": "axis on stud {0}, {1}",', ' "axul pe știftul {0}, {1}": "axul pe stiftul {0}, {1}",', 'e2e', 'rândul piesei alese, rămas în română (fără diacritice)')
-o('N03', A, 'return a ? tr`ax ${a[0]}, ${a[1]}, ${x.z}`', 'return a ? `ax ${a[0]}, ${a[1]}, ${x.z}`', 'e2e', 'rândul piesei rotunde, netrecut prin traducere')
+o('N03', A, 'a ? tr`ax ${a[0]}, ${a[1]}, ${x.z}`', 'a ? `ax ${a[0]}, ${a[1]}, ${x.z}`', 'e2e', 'rândul piesei rotunde, netrecut prin traducere')
 o('N04', T, 'sit with their axis in the middle of a stud: a new one goes on the axis of the chosen one, and a fan rotor goes into its duct.',
   'sit with their axle in the middle of a stud: a new one goes on the axle of the chosen one, and a fan rotor goes into its duct.', 'e2e', 'textul vederii, cu „axle” (piesa) în loc de „axis”')
 o('N05', T, ' "ax {0}, {1}, {2}": "axis {0}, {1}, {2}",', ' "ax {0}, {1}, {2}": "axis {1}, {0}, {2}",', 'e2e', 'rândul piesei rotunde în engleză, cu x și y schimbate')
@@ -24,5 +24,7 @@ o('N06', T, ' "axul pe știftul {0}, {1}": "axis on stud {0}, {1}",', ' "axul pe
 
 SETURI = {}
 E2E = ['test/e2e/trenulet.spec.ts']
+# pagina și pachetul se fac din surse în spec: build-ul aplicației nu le schimbă (docs/otravuri.md)
+E2E_BUILD = False
 for x in O:
     assert x['vechi'] != x['nou'], x['id']

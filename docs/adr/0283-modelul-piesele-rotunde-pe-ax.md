@@ -103,4 +103,5 @@ Easy 3Draw 18.33.0, pe ramura `wip/3.Xh-biblioteca-ui`, în sesiunea cloud a lin
   pe hârtie. Proba în engleză din cvs2 (`trenulet.spec.ts`) pune o roată în model („axis on stud 1, 1”).
 - **Otrăvurile:** `test/otravuri/3.Tu.py`, 111 (motorul 64 / 64, atelierul 43 / 43 (40 la prima rulare; cele trei scăpate, prinse după întărirea probei), textele 4 / 4); `3.Tu-en.py`, 6 / 6 (5 la prima rulare).
 - **Mărimea:** pachetul Easy 3Draw, 516,3 kB (era 514,4); aplicația, neschimbată.
-- **Felia următoare:** 3.Cf (Modelul: orientarea pe trei axe și alipirea la prinderi; ADR 0284, partea D).
+- **Felia următoare:** 3.Cf (Modelul: orientarea pe trei axe și alipirea la prinderi; ADR 0284, partea D). Prima ei
+  parte, 3.Cf-1 (alipirea), făcută tot pe 25.11 (Easy 3Draw 18.34.0).

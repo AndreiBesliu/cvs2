@@ -2930,6 +2930,121 @@ var Lego = (function (glob: typeof globalThis) {
     const [w, d] = rot % 2 ? [a.gd, a.gw] : [a.gw, a.gd], aproape = (v: number) => Math.ceil(v - 0.5 - 1e-6) + 0;
     return [aproape(tinta[0]! / P.pas - w / 2), aproape(tinta[1]! / P.pas - d / 2)];
   }
+  // ---------------------------------------------------------------------------------------------- alipirea in model (ADR 0284, 3.Cf)
+  // Fiecare piesa din model are o transformare: matricea de rotatie `m` (3 × 3, pe randuri) si mutarea `t` (mm), care duc un
+  // punct al plasei ei (mutata in origine) in lume. Trei feluri de asezare:
+  // - pe grila (ADR 0283): rotita in jurul pivotului, cu pivotul in mijlocul amprentei;
+  // - prinsa: cu prinderea ei pe prinderea aleasa a altei piese (baza), deci o urmeaza oriunde ar fi mutata sau rotita baza;
+  // - libera: o transformare tinuta ca atare (o piesa desprinsa ramane unde era).
+  type Transf = { m: number[]; t: P3 };
+  const aplicaTransf = (T: Transf, p: readonly number[]): P3 => { const q = roteste(T.m, [p[0]!, p[1]!, p[2]!]); return [q[0] + T.t[0], q[1] + T.t[1], q[2] + T.t[2]]; };
+  /** A∘B: un punct e dus intai cu B, apoi cu A. */
+  const compuneTransf = (A: Transf, B: Transf): Transf => ({ m: inmulteste(A.m, B.m), t: aplicaTransf(A, B.t) });
+  // sferturile de tura, exacte (fara 6e-17 in matrice): rotirea in jurul lui z cu rot · 90°
+  const SFERT = [[1, 0], [0, 1], [-1, 0], [0, -1]] as const;
+  /** Transformarea piesei asezate pe grila la x, y (stifturi), z (placi), rotita cu rot sferturi de tura in jurul pivotului. */
+  function transfGrila(a: Asezare, x: number, y: number, z: number, rot: number): Transf {
+    const [c, s] = SFERT[((Math.round(rot) % 4) + 4) % 4]!, [px, py] = pivotModel(a, x, y, rot), [u, v] = a.pivot;
+    return { m: [c, -s, 0, s, c, 0, 0, 0, 1], t: [px - (c * u - s * v), py - (s * u + c * v), z * P.placa] };
+  }
+  /** Piesa prinsa, in coordonatele bazei: montajul prinderii ei b pe prinderea a a bazei, rotita cu `unghi` grade in jurul
+   *  prinderii si glisata cu `alunec` mm de-a lungul ei (in sensul prinderii bazei: spre afara). */
+  function transfPrins(a: Prindere, b: Prindere, unghi = 0, alunec = 0): Transf {
+    const u = Number.isFinite(+unghi) ? +unghi : 0, g = Number.isFinite(+alunec) ? +alunec : 0, M = montaj(a, b, u);
+    return { m: M.m, t: [M.t[0] + a.d[0] * g, M.t[1] + a.d[1] * g, M.t[2] + a.d[2] * g] };
+  }
+  /** Prinderile piesei noi care se potrivesc cu prinderea a, in ordinea incercarii: intai cele care intorc piesa cel mai
+   *  putin (unghiul montajului), apoi in ordinea piesei. */
+  function potriviriPrindere(a: Prindere, lista: readonly Prindere[]): number[] {
+    const out: [number, number][] = [];
+    lista.forEach((b, j) => {
+      if (!sePrind(a.fel, b.fel)) return;
+      // unghiul dintre directia prinderii si tinta ei (opusul directiei bazei)
+      const c = Math.max(-1, Math.min(1, -scalar(a.d, b.d)));
+      out.push([Math.round(Math.acos(c) * 1e6), j]);
+    });
+    return out.sort((x, y) => x[0] - y[0] || x[1] - y[1]).map(x => x[1]);
+  }
+  /** Se poate glisa de-a lungul prinderii: perechile pe o tija (axul, stiftul Technic, bara), nu stiftul in locas, nu bila in cupa. */
+  const seGliseaza = (a: string, b: string): boolean => sePrind(a, b) && ![a, b].some(f => f === "stift" || f === "bila");
+  type PrinsModel = { de: string; a: number; b: number; unghi?: number; alunec?: number };
+  type PiesaModel = { id: string; grila: Transf; prinderi: readonly Prindere[]; prins?: PrinsModel | null; liber?: Transf | null };
+  const transfBuna = (T: Transf | null | undefined): T is Transf => !!T && Array.isArray(T.m) && T.m.length === 9 && Array.isArray(T.t) && T.t.length === 3 && [...T.m, ...T.t].every(v => Number.isFinite(v));
+  /**
+   * Asezarile pieselor unui model, in ordinea listei: transformarea fiecareia si felul ei („grila”, „prins”, „liber”). O piesa
+   * prinsa isi ia locul de la baza ei (in lant, oricat de lung). Un model stricat nu arunca: fara baza, intr-un cerc, cu un
+   * indice gresit sau cu prinderi care nu se prind, piesa cade pe locul ei liber sau de pe grila.
+   */
+  function rezolvaModel(piese: readonly PiesaModel[]): { T: Transf; fel: "grila" | "prins" | "liber" }[] {
+    const dupaId = new Map(piese.map((p, i) => [p.id, i] as const)), gata: ({ T: Transf; fel: "grila" | "prins" | "liber" } | undefined)[] = [];
+    // lantul in lucru (de la piesa ceruta spre bazele ei) si piesele gasite intr-un cerc: toate cad pe locul lor
+    const lant: number[] = [], cerc = new Set<number>();
+    const peLoc = (p: PiesaModel) => (transfBuna(p.liber) ? { T: p.liber, fel: "liber" as const } : { T: p.grila, fel: "grila" as const });
+    const una = (i: number): { T: Transf; fel: "grila" | "prins" | "liber" } => {
+      if (gata[i]) return gata[i]!;
+      const p = piese[i]!, q = p.prins, j = q ? dupaId.get(q.de) : undefined;
+      let r: { T: Transf; fel: "grila" | "prins" | "liber" } = peLoc(p);
+      // (o piesa prinsa de ea insasi e un cerc de una: il opreste lantul de mai jos)
+      if (q && j !== undefined) {
+        const a = piese[j]!.prinderi[q.a], b = p.prinderi[q.b];
+        if (Number.isInteger(q.a) && Number.isInteger(q.b) && a && b && sePrind(a.fel, b.fel)) {
+          const k = lant.indexOf(j);
+          if (k >= 0) { for (const x of lant.slice(k)) cerc.add(x); cerc.add(i); } else {
+            lant.push(i);
+            const baza = una(j);
+            lant.pop();
+            if (!cerc.has(i)) r = { T: compuneTransf(baza.T, transfPrins(a, b, q.unghi, q.alunec)), fel: "prins" };
+          }
+        }
+      }
+      gata[i] = r;
+      return r;
+    };
+    return piese.map((_, i) => una(i));
+  }
+  /** Prinderea ramasa in acelasi loc dupa ce piesa s-a schimbat in editor: acelasi fel, aceeasi directie si acelasi loc in
+   *  planul perpendicular pe directie (de-a lungul ei se poate muta: caramida devenita placa, axul lungit). Dintre mai multe
+   *  pe aceeasi axa, cea mai apropiata; −1 cand nu mai e niciuna. */
+  function prindereaRamasa(veche: Prindere, noi: readonly Prindere[]): number {
+    let gasit = -1, cel = Infinity;
+    noi.forEach((n, j) => {
+      if (n.fel !== veche.fel || scalar(n.d, veche.d) < 1 - 1e-9) return;
+      const dp: P3 = [n.p[0] - veche.p[0], n.p[1] - veche.p[1], n.p[2] - veche.p[2]], lung = scalar(dp, veche.d);
+      const lat = Math.hypot(dp[0] - lung * veche.d[0], dp[1] - lung * veche.d[1], dp[2] - lung * veche.d[2]);
+      if (lat < 0.01 && Math.abs(lung) < cel) { cel = Math.abs(lung); gasit = j; }
+    });
+    return gasit;
+  }
+  /** Locul de pe grila al unei piese cu transformarea T (inversa lui `transfGrila`), sau null cand piesa nu sta drept pe
+   *  grila: intoarsa, rotita altfel decat cu sferturi de tura in jurul verticalei, intre stifturi sau intre placi. */
+  function grilaDinTransf(a: Asezare, T: Transf): { x: number; y: number; z: number; rot: number } | null {
+    if (!transfBuna(T)) return null;
+    const aproape = (u: number, v: number) => Math.abs(u - v) < 1e-6;
+    for (let rot = 0; rot < 4; rot++) {
+      const [c, s] = SFERT[rot]!;
+      if (![c, -s, 0, s, c, 0, 0, 0, 1].every((v, k) => aproape(T.m[k]!, v))) continue;
+      const [w, d] = rot % 2 ? [a.gd, a.gw] : [a.gw, a.gd], [u, v] = a.pivot;
+      const x = (T.t[0] + (c * u - s * v)) / P.pas - w / 2, y = (T.t[1] + (s * u + c * v)) / P.pas - d / 2, z = T.t[2] / P.placa;
+      const xi = Math.round(x), yi = Math.round(y), zi = Math.round(z);
+      return aproape(x * P.pas, xi * P.pas) && aproape(y * P.pas, yi * P.pas) && aproape(z * P.placa, zi * P.placa) ? { x: xi + 0, y: yi + 0, z: zi + 0, rot } : null;
+    }
+    return null;
+  }
+  /** Cutia in lume a unei piese: cutia ei (de la origine la `dim`), dusa cu transformarea. */
+  function cutieTransf(T: Transf, dim: readonly number[]): [P3, P3] {
+    const lo: P3 = [Infinity, Infinity, Infinity], hi: P3 = [-Infinity, -Infinity, -Infinity];
+    for (let k = 0; k < 8; k++) {
+      const q = aplicaTransf(T, [k & 1 ? dim[0]! : 0, k & 2 ? dim[1]! : 0, k & 4 ? dim[2]! : 0]);
+      for (let i = 0; i < 3; i++) { lo[i] = Math.min(lo[i]!, q[i]!); hi[i] = Math.max(hi[i]!, q[i]!); }
+    }
+    return [lo, hi];
+  }
+  /** Piesa libera, rotita un sfert de tura (trigonometric, privit de sus) in jurul verticalei prin mijlocul cutiei ei. */
+  function rotitLiber(T: Transf, dim: readonly number[]): Transf {
+    const [lo, hi] = cutieTransf(T, dim), cx = (lo[0] + hi[0]) / 2, cy = (lo[1] + hi[1]) / 2;
+    // R(p) = Rz(p − c) + c, deci mutarea e c − Rz·c
+    return compuneTransf({ m: [0, -1, 0, 1, 0, 0, 0, 0, 1], t: [cx + cy, cy - cx, 0] }, T);
+  }
   /** Rotorul unui ventilator si carcasa in care incape (varful paletelor sub raza golului ei): in model stau la acelasi Z. */
   function impreunaInModel(a: DefPiesa, b: DefPiesa): boolean {
     if (a.tip !== "ventilator" || b.tip !== "ventilator") return false;
@@ -3018,6 +3133,8 @@ var Lego = (function (glob: typeof globalThis) {
     prinderi: (def: DefPiesa) => construieste(def).prinderi, feluriPrinderi: FELURI_PRINDERI, sePrind, montaj,
     // așezarea în vederea „Modelul” (ADR 0283): amprenta și pivotul piesei, locul pivotului, locul de lângă o țintă, perechea
     asezareModel, pivotModel, langaPivot, impreunaInModel,
+    // alipirea la prinderi (ADR 0284, 3.Cf): transformarea unei piese (pe grilă, prinsă de alta, liberă) și rezolvarea modelului
+    transfGrila, transfPrins, compuneTransf, aplicaTransf, potriviriPrindere, seGliseaza, rezolvaModel, grilaDinTransf, cutieTransf, rotitLiber, prindereaRamasa,
     rezumatPrinderi, perechiFeluri, axPentru, stiftPentru,
     contururi, insetRectiliniu, conturPana, pozitiiGauriPana, centreIndoita,
     // rotitele (ADR 0169): distanta dintre axele a doua roti care se prind (modulul m), pentru atelier

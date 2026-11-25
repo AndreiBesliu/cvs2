@@ -99,19 +99,20 @@ CM = 'const a = Lego.asezareModel(def as DefMotor, { dim: p.dim, baza: p.baza ||
 o('A01', AT, CM, CM.replace('ax: p.ax || null', 'ax: null'), 'e2e', 'atelierul nu-i dă așezării axul piesei (rotundele stau după cutie)')
 o('A02', AT, CM, CM.replace('baza: p.baza || [0, 0, 0]', 'baza: [0, 0, 0]'), 'e2e', 'atelierul nu-i dă așezării baza piesei (piesele cu placă stau strâmb)')
 o('A03', AT, 'baza: r.baza, ax: r.ax, avert: r.avert,', 'baza: r.baza, avert: r.avert,', 'e2e', 'piesa gata nu mai poartă axul spus de motor')
-CC = 'c = { tri: p.tri, dim: p.dim, gw: a.gw, gd: a.gd, pivot: a.pivot, ax: a.ax, geom: null };'
+CC = 'c = { tri: p.tri, dim: p.dim, gw: a.gw, gd: a.gd, pivot: a.pivot, ax: a.ax, prinderi: p.prinderi ?? [], geom: null };'
 o('A04', AT, CC, CC.replace('ax: a.ax,', 'ax: false,'), 'e2e', 'corpul din model uită că piesa e rotundă (rândul, rotirea, înlocuirea)')
 o('A05', AT, CC, CC.replace('gw: a.gw, gd: a.gd,', 'gw: a.gd, gd: a.gw,'), 'e2e', 'amprenta corpului, cu lățimea și adâncimea schimbate')
-GT = 'c.geom.translate(-c.pivot[0], -c.pivot[1], 0);'
-o('A06', AT, GT, 'c.geom.translate(-c.dim[0]! / 2, -c.dim[1]! / 2, 0);', 'e2e', 'plasa e pusă cu mijlocul cutiei în pivot (ca până acum), nu cu axul')
-o('A07', AT, GT, GT.replace('-c.pivot[1]', '-c.pivot[0]'), 'e2e', 'plasa e mutată pe y cu x-ul pivotului')
-o('A08', AT, GT, 'c.geom.translate(0, 0, 0);', 'e2e', 'plasa nu e mutată în pivot')
-MP = '[px, py] = Lego.pivotModel(c, m.x, m.y, m.rot);\n      mesh.rotation.z = m.rot * Math.PI / 2;\n      mesh.position.set(px, py, m.z * 3.2);'
-o('A09', AT, MP, MP.replace('Lego.pivotModel(c, m.x, m.y, m.rot)', 'Lego.pivotModel(c, m.x, m.y, 0)'), 'e2e', 'locul din scenă nu ține seama de rotirea piesei')
-o('A10', AT, MP, MP.replace('mesh.rotation.z = m.rot * Math.PI / 2;', 'mesh.rotation.z = 0;'), 'e2e', 'piesa rotită nu se rotește în scenă')
-o('A11', AT, MP, MP.replace('mesh.position.set(px, py,', 'mesh.position.set(py, px,'), 'e2e', 'piesa e pusă în scenă cu x și y schimbate')
-o('A12', AT, MP, MP.replace('Lego.pivotModel(c, m.x, m.y, m.rot)', 'Lego.pivotModel(c, m.y, m.x, m.rot)'), 'e2e', 'locul din scenă, socotit cu x și y schimbate')
-o('A13', AT, MP, MP.replace('m.z * 3.2', 'm.z * 3'), 'e2e', 'o placă are 3 mm în scenă')
+# (din 3.Cf-1, scena pune plasa cu transformarea dată de motor, `Lego.transfGrila`, chemată din `asezari`: otrăvurile
+# A06–A13 s-au mutat pe apelul acela; rotirea și pivotul dinăuntrul transformării le judecă lista 3.Cf-1, pe motor)
+TG = 'grila: Lego.transfGrila(c, m.x, m.y, m.z, m.rot),'
+o('A06', AT, TG, TG.replace('transfGrila(c,', 'transfGrila({ ...c, pivot: [c.dim[0]! / 2, c.dim[1]! / 2] },'), 'e2e', 'plasa e pusă cu mijlocul cutiei în pivot (ca până acum), nu cu axul')
+o('A07', AT, TG, TG.replace('transfGrila(c,', 'transfGrila({ ...c, pivot: [c.pivot[0], c.pivot[0]] },'), 'e2e', 'plasa e mutată pe y cu x-ul pivotului')
+o('A08', AT, TG, TG.replace('transfGrila(c,', 'transfGrila({ ...c, pivot: [0, 0] },'), 'e2e', 'plasa nu e mutată în pivot')
+o('A09', AT, TG, TG.replace('m.z, m.rot)', 'm.z, m.rot + 1)'), 'e2e', 'piesa stă în scenă cu un sfert de tură în plus')
+o('A10', AT, TG, TG.replace('m.z, m.rot)', 'm.z, 0)'), 'e2e', 'piesa rotită nu se rotește în scenă')
+o('A11', AT, TG, TG.replace('m.x, m.y, m.z', 'm.y, m.x, m.z'), 'e2e', 'piesa e pusă în scenă cu x și y schimbate')
+o('A12', AT, TG, TG.replace('m.x, m.y, m.z', 'm.x * 2, m.y, m.z'), 'e2e', 'locul pe x din scenă e dublu')
+o('A13', AT, TG, TG.replace('m.x, m.y, m.z', 'm.x, m.y, m.z * 2'), 'e2e', 'înălțimea din scenă e dublă')
 
 # --- atelierul: știftul axului și rândul piesei
 SA = 'if (!c || !c.ax) return null;\n    const [px, py] = Lego.pivotModel(c, m.x, m.y, m.rot);\n    return [Math.round(px / 8 - 0.5), Math.round(py / 8 - 0.5)];'
@@ -120,19 +121,19 @@ o('A15', AT, SA, SA.replace('Math.round(py / 8 - 0.5)', 'Math.round(px / 8 - 0.5
 o('A16', AT, SA, SA.replace('!c.ax', 'c.ax'), 'e2e', 'știftul axului e spus la piesele care nu sunt rotunde')
 o('A17', AT, SA, SA.replace('Lego.pivotModel(c, m.x, m.y, m.rot)', 'Lego.pivotModel(c, m.x, m.y, 0)'), 'e2e', 'știftul axului nu ține seama de rotire')
 o('A18', AT, SA, SA.replace('Math.round(py / 8 - 0.5)', 'Math.round(py / 8 + 0.5)'), 'e2e', 'știftul axului, numărat cu unul mai mult pe y')
-LM = 'const loculM = (x: InModel) => { const a = stiftAx(x); return a ? tr`ax ${a[0]}, ${a[1]}, ${x.z}` : `${x.x}, ${x.y}, ${x.z}`; };'
+LM = 'a ? tr`ax ${a[0]}, ${a[1]}, ${x.z}` : `${x.x}, ${x.y}, ${x.z}`; };'
 o('A19', AT, LM, LM.replace('tr`ax ${a[0]}, ${a[1]}, ${x.z}`', 'tr`ax ${a[1]}, ${a[0]}, ${x.z}`'), 'e2e', 'rândul unei piese rotunde, cu x și y schimbate')
 o('A20', AT, LM, LM.replace('tr`ax ${a[0]}, ${a[1]}, ${x.z}`', 'tr`ax ${a[0]}, ${a[1]}, ${x.y}`'), 'e2e', 'rândul unei piese rotunde scrie y în locul lui z')
-o('A21', AT, LM, LM.replace('return a ? tr`ax ${a[0]}, ${a[1]}, ${x.z}` : ', 'return '), 'e2e', 'rândul unei piese rotunde spune colțul amprentei, nu axul')
+o('A21', AT, LM, LM.replace('a ? tr`ax ${a[0]}, ${a[1]}, ${x.z}` : ', ''), 'e2e', 'rândul unei piese rotunde spune colțul amprentei, nu axul')
 o('A22', AT, LM, LM.replace(': `${x.x}, ${x.y}, ${x.z}`', ': `${x.y}, ${x.x}, ${x.z}`'), 'e2e', 'rândul unei piese obișnuite, cu x și y schimbate')
-o('A23', AT, 'axM = m ? stiftAx(m) : null;', 'axM = null;', 'e2e', 'rândul piesei alese spune colțul și la piesele rotunde')
-AL = '· ${axM ? tr`axul pe știftul ${axM[0]}, ${axM[1]}` : `x ${m.x}, y ${m.y}`}, z ${m.z}'
+o('A23', AT, 'axM = m && felM === "grila" ? stiftAx(m) : null;', 'axM = null;', 'e2e', 'rândul piesei alese spune colțul și la piesele rotunde')
+AL = '${axM ? tr`axul pe știftul ${axM[0]}, ${axM[1]}` : `x ${m.x}, y ${m.y}`}, z ${m.z}'
 o('A24', AT, AL, AL.replace('tr`axul pe știftul ${axM[0]}, ${axM[1]}`', 'tr`axul pe știftul ${m.x}, ${m.y}`'), 'e2e', 'rândul piesei alese scrie colțul amprentei drept știftul axului')
 o('A25', AT, AL, AL.replace('tr`axul pe știftul ${axM[0]}, ${axM[1]}`', 'tr`axul pe știftul ${axM[1]}, ${axM[0]}`'), 'e2e', 'știftul axului piesei alese, cu x și y schimbate')
 o('A26', AT, AL, AL.replace('`x ${m.x}, y ${m.y}`', '`x ${m.y}, y ${m.x}`'), 'e2e', 'colțul piesei alese, cu x și y schimbate')
 
 # --- atelierul: rotirea în jurul axului
-RT = 'const c = corpSigur(m.def), ax = c && c.ax ? Lego.pivotModel(c, m.x, m.y, m.rot) : null;\n      m.rot = (m.rot + 1) % 4;\n      if (c && ax) [m.x, m.y] = Lego.langaPivot(c, m.rot, ax);'
+RT = 'const ax = c && c.ax ? Lego.pivotModel(c, m.x, m.y, m.rot) : null;\n      m.rot = (m.rot + 1) % 4;\n      if (c && ax) [m.x, m.y] = Lego.langaPivot(c, m.rot, ax);'
 o('A27', AT, RT, RT.replace('if (c && ax) [m.x, m.y] = Lego.langaPivot(c, m.rot, ax);', ''), 'e2e', 'la rotire, axul unei piese rotunde nu mai rămâne pe loc')
 o('A28', AT, RT, RT.replace('ax = c && c.ax ?', 'ax = c ?'), 'e2e', 'și o piesă obișnuită își mută colțul la rotire')
 o('A29', AT, RT, RT.replace('m.rot = (m.rot + 1) % 4;', 'm.rot = (m.rot + 1) % 2;'), 'e2e', 'a doua rotire aduce piesa înapoi (fără jumătatea de tură)')
@@ -140,7 +141,7 @@ o('A30', AT, RT, RT.replace('Lego.langaPivot(c, m.rot, ax)', 'Lego.langaPivot(c,
 o('A31', AT, RT, RT.replace('m.rot = (m.rot + 1) % 4;', 'm.rot = (m.rot + 3) % 4;'), 'e2e', 'piesa se rotește în sens invers')
 
 # --- atelierul: „Pune în model” lângă piesa aleasă și „Înlocuiește în model”
-IN = 'if (a && b && a.ax && b.ax) [vechi.x, vechi.y] = Lego.langaPivot(b, vechi.rot, Lego.pivotModel(a, vechi.x, vechi.y, vechi.rot));'
+IN = 'if (fel === "grila" && a && b && a.ax && b.ax) [vechi.x, vechi.y] = Lego.langaPivot(b, vechi.rot, Lego.pivotModel(a, vechi.x, vechi.y, vechi.rot));'
 o('A32', AT, IN, '', 'e2e', 'o roată înlocuită cu alta își ține colțul, nu axul')
 o('A33', AT, IN, IN.replace('a && b && a.ax && b.ax', 'a && b'), 'e2e', 'și o cărămidă înlocuită își mută colțul după mijloc')
 o('A34', AT, IN, IN.replace('Lego.langaPivot(b, vechi.rot,', 'Lego.langaPivot(a, vechi.rot,'), 'e2e', 'colțul de după înlocuire, socotit cu amprenta piesei vechi')
@@ -153,14 +154,14 @@ ZZ = 'm.z = Lego.impreunaInModel(sel.def as DefMotor, curent.def as DefMotor) ? 
 o('A39', AT, ZZ, 'm.z = sel.z + inaltimeM(sel);', 'e2e', 'rotorul intră deasupra carcasei lui, ca orice piesă')
 o('A40', AT, ZZ, 'm.z = sel.z;', 'e2e', 'orice piesă nouă intră la Z-ul celei alese, nu deasupra')
 o('A41', AT, ZZ, ZZ.replace('? sel.z : sel.z + inaltimeM(sel)', '? sel.z + inaltimeM(sel) : sel.z'), 'e2e', 'doar rotorul intră deasupra; restul, la același Z')
-o('A42', AT, 'm.rot = sel.rot;\n        [m.x, m.y] = a && b', 'm.rot = 0;\n        [m.x, m.y] = a && b', 'e2e', 'piesa nouă nu ia rotirea celei alese')
-NW = 'm = { id: idNou(), def: curent.def, x: 0, y: 0, z: 0, rot: 0, culoare: setari.culoare };'
+o('A42', AT, 'm.rot = sel.rot;\n          [m.x, m.y] = a && b', 'm.rot = 0;\n          [m.x, m.y] = a && b', 'e2e', 'piesa nouă nu ia rotirea celei alese')
+NW = 'm: InModel = { id: idNou(), def: curent.def, x: 0, y: 0, z: 0, rot: 0, culoare: setari.culoare };'
 o('A43', AT, NW, NW.replace('x: 0, y: 0, z: 0,', 'x: 1, y: 0, z: 0,'), 'e2e', 'prima piesă a modelului intră la x 1')
 
 # --- textele
 TX = 'O piesă nouă intră deasupra celei alese, la mijlocul ei. Piesele rotunde (roțile, elicele) stau cu axul în mijlocul unui știft:'
 o('T01', AT, TX, TX.replace('la mijlocul ei', 'la mijloc'), 'texte', 'textul vederii, schimbat fără traducerea lui')
-o('T02', AT, 'return a ? tr`ax ${a[0]}, ${a[1]}, ${x.z}`', 'return a ? tr`axa ${a[0]}, ${a[1]}, ${x.z}`', 'texte', 'rândul piesei rotunde, cu alt text decât cel tradus')
+o('T02', AT, 'a ? tr`ax ${a[0]}, ${a[1]}, ${x.z}`', 'a ? tr`axa ${a[0]}, ${a[1]}, ${x.z}`', 'texte', 'rândul piesei rotunde, cu alt text decât cel tradus')
 o('T03', EN, ' "ax {0}, {1}, {2}": "axis {0}, {1}, {2}",', ' "ax {0}, {1}, {2}": "",', 'texte', 'rândul piesei rotunde, fără traducere')
 o('T04', EN, ' "axul pe știftul {0}, {1}": "axis on stud {0}, {1}",', ' "axul pe știftul {0}, {1}": "axis on stud {0}",', 'texte', 'traducerea pierde o valoare')
 
@@ -169,5 +170,7 @@ SETURI = {
     'texte': ['test/unit/trenulet.engleza.test.ts'],
 }
 E2E = ['test/e2e/trenulet.model.spec.ts']
+# pagina se face din surse în spec: build-ul aplicației nu o schimbă (docs/otravuri.md)
+E2E_BUILD = False
 for x in O:
     assert x['vechi'] != x['nou'], x['id']
