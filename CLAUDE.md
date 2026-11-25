@@ -1163,6 +1163,15 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   citește conturul unui element ia `chenarElement` pentru relief** (cotele, lipirea). **În codul vederii 3D,
   „relieful” (`ReliefSimulat`, `reliefPentru`) e câmpul simulării, nu modelul de aici.** Felia: pornirea +0,5 kB (cu
   ușa +0,9), totalul +12,7 kB.
+  **Modelul reliefului în vederea 3D (ADR 0310 §4, §7, felia 18.1↑b)** gata pe 25.11, unită în `main` pe 25.11
+  (`ef883ac1`), la „vreau sa pornesti si celelalte sub-sesiuni” al owner-ului: pe o foaie cu reliefuri, vederea 3D are
+  comutatorul **Modelul / Tăiat** și pornește pe model, fără simulare; fiecare relief stă în golul lui din placă, cu
+  vârful la fața plăcii. Compusul se face dală cu dală în workerul reliefului (`src/relief/model.ts`, `dalaModel`,
+  cererea `model`), redus cu k ca desenul de pe planșă (cel mult 4096 pe latură: un relief de 8192² se desenează la
+  k = 4); cheile dalelor și încărcarea sunt în `src/app/modelRelief.ts`: o mutare, o rotire sau o oglindire nu
+  încarcă nimic, iar un relief schimbat urcă doar dalele cu altă cheie. „Tăiat” simulează placa abia când e ales.
+  **Nu se taie încă** (18.1↑c). Documentul rămâne v28; nimic pe server. Felia: pornirea +0, totalul +3,9 kB
+  (884,8 / 1 000); nicio bucată nouă.
   **Raportările (15.B↑b) și imprimanta (3.6g, 3.6h, 3.6i pașii 1–2; ADR 0191 acceptat, codul 3.6j încă pe ramură) unite în
   `main` pe 07.11**, peste biblioteca extensiilor (`b501571`, `6e61bee`, apoi `e9cf6ee` cu DEVLOG-ul bibliotecii): **pornirea
   101,7 (cu ușa 105,3 / 110 kB), totalul 535,0 / 550, /admin 106,5 / 200, contul 29,6 / 32.** **Pe test (și pe live), serverul
@@ -1662,6 +1671,63 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 25.11.2026, înainte de prânz: **fereastra exportului după audit, ADR 0291 acceptat** (owner-ul, în sesiunea liniei
+  exportului, la cele nouă întrebări ale auditului: „1a, 2a, 3a, 4a, 5a, 6a, 7a, 8a, 9a”). ADR-ul (scris de linie, `5966da75`,
+  PR-ul `AndreiBesliu/cvs2#36`, doar documente), unit în `b826abe9`. **Ce a hotărât:**
+  1. ordinea: 28.8↑h (desenele și notele ferestrei, socotite de stratul de acțiuni cu funcțiile lucrării: repară cele
+     două desene care nu spun ce taie programul), apoi 28.8↑i (viteza: doar fișa văzută randată), apoi j–l, **toate
+     după ce 16.A↑b-5 e în `main`** (linia frezelor lucrează în aceeași fișă);
+  2. conflictul T la o freză schimbată: butonul „Dă-i T{n}”, cu regula de azi (`numarPentruRand`);
+  3. avansul, turația și plonjarea pe „Scrisă de mână” (trei câmpuri în grupul Freza, scrise în `regim`, fără schemă
+     nouă); Z-ul sigur și parcarea, în „Mașina și fișierul” (28.8↑p, a liniei exportului, cu linia frezelor anunțată);
+  4. avertismentul vitezei maxime, doar față de `$$`-ul lipit; până atunci, o notă;
+  5. numele fișierului, în „Mașina și fișierul”, de schimbat înaintea exportului (28.8↑n);
+  6. centrul foii ca a cincea origine XY0 (28.8↑o: atinge montajul, antetul citit de sender și ghidul zeroului, deci
+     mișcă mașina și se probează pe oracole și pe emulator; colțurile de azi rămân octet cu octet);
+  7. „Toate foile” cu operațiile fiecărei foi (28.8↑q, după i);
+  8. „Trimite la mașină” în Atelier ca un pas scurt, cu „Arată tot” (a liniei aranjamentelor; fereastra îi dă
+     bucățile în 28.8↑m);
+  9. adaosul lateral, trecerea de finisare pe profil și punctul de start: o felie de CAM după placa 2, cu document
+     nou (v30 sau numărul liber de atunci; v29 e al reliefului), pe linia pe care o alege sesiunea principală.
+
+  28.8↑n și 28.8↑o nu ating fișa operației, deci linia le poate lucra cât frezele sunt în b-5 (întâi n). Programul de
+  azi rămâne octet cu octet la toate feliile. Constatarea 9 (frezele de rest fără etichete) e a liniei frezelor;
+  constatarea 14 (numele elementelor cu punct zecimal în română, `src/app/descriereElement.ts`) e a sesiunii
+  principale. **Sesiunea exportului nu se mai arhivează acum:** linia are din nou felii.
+- 25.11.2026, înainte de prânz (a treizeci și una unire din cloud): **relieful: modelul în vederea 3D (18.1↑b), unit
+  în `main`** (sesiunea principală, ramura `unire-2511l`, din `43cf59af`). Linia reliefului, ramura `wip/18.1-relief`,
+  `04e7cd2f` (codul lui `3214f4da`, plus documente), PR-ul `AndreiBesliu/cvs2#30` (ADR 0310 §4, §7; pornită la „vreau
+  sa pornesti si celelalte sub-sesiuni” al owner-ului), unită în `ef883ac1`: pe o foaie cu reliefuri, vederea 3D are
+  comutatorul „Modelul / Tăiat” și pornește pe model, fără simulare; fiecare relief stă în golul lui din placă, cu
+  vârful la fața plăcii; compusul se calculează dală cu dală în workerul reliefului, redus ca desenul de pe planșă;
+  vederea urmează documentul (o mutare nu încarcă nimic, un relief schimbat urcă doar dalele schimbate); stările:
+  se încarcă, gata, straturile lipsă din browser. În felie e și cazul reliefului în proba lipirii cotelor, cerut de
+  linia cotelor. Documentul rămâne v28; nimic pe server; otrăvurile 22 / 22. Unirea, fără nicio ciocnire; `main`
+  adusese peste ramură doar documente, deci **arborele unirii are exact codul lui `3214f4da`** (`git diff` gol în
+  afara fișierelor `.md`) și a intrat pe porțile lui, fără alt complet: completul 45572436393, verde (unit
+  10 452 / 0, 12 sărite pe Linux; e2e 833 / 833; funcțiile pe emulatoare 136 / 136; paginile 59 / 59); rapidul,
+  verde pe `3214f4da` și pe `04e7cd2f`; pornirea 111,1 kB (plafonul 125; cu ușa 116,1, cu Atelierul 116,4), **totalul
+  884,8 / 1 000 kB** (+3,9), `/admin` 138,3 / 200. Pe test e `d1a96fc4` (lotul 31, din 10:44); lotul acesta pleacă
+  acum, cu plafoanele noi. Auditurile cerute de owner sunt amândouă în `main` (`docs/linii/audit-elice.md`,
+  `docs/linii/audit-export.md`). La linii, în lucru: frezele (16.A↑b-5), cotele (10.4↑c), atelierul (restul lui 3.Cj),
+  relieful (18.1↑c, după ce stabilește cu frezele bila în document, v29). **La owner:** feliile din cele două audituri
+  (întrebările lor; reparația desenelor exportului, 28.8↑h, recomandată după 16.A↑b-5), cele trei întrebări ale lui
+  3.Tu, arhivarea sesiunii elicelor, verificarea juridică (GDPR) a utilizării aplicației înaintea live-ului, „cine
+  unește în `main`”, meniul de sus la 320 px la atingere.
+- 25.11.2026, dimineața: **auditul complet al ferestrei exportului și al elicelor, înaintea arhivării sesiunilor lor**
+  (owner-ul, în sesiunea principală, la „pot arhiva sesiunile exportului si elicelor?” și la răspunsul că da:
+  „vreau sa le intrebi ce pot imbunatati in zona in care au lucrat? dar, defapt, pune-le sa faca un audit complet in acest sens”). Sesiunea principală le-a scris celor două sesiuni (10:19): fiecare
+  își auditează zona pe `main` de acum (`caddd661`), cu aplicația construită parcursă cu Playwright, nu doar cu codul
+  citit: **exportul**, fereastra „Exportă G-code” (ADR 0290: claritatea, stările de lângă drumul bun, tastatura,
+  viteza, ce lipsește față de prag, sănătatea codului, cât e de gata fișa pentru Clasic și Pas cu pas); **elicele**,
+  fila „Elice” a atelierului Easy 3Draw (ADR 0282: dacă piesele ies bune de tipărit și se prind cum spun, claritatea
+  editorului, ce lipsește ca funcție, plasele, probele, cum stau în „Se prinde cu”). **Doar audit:** fără cod de
+  produs (linia frezelor lucrează în fișa operației, iar a atelierului în sursele extensiei), fără agenți sau
+  workflow-uri; o greșeală care atinge programul scris sau o piesă stricată se spune imediat, nu la raport. Predau
+  `docs/linii/audit-export.md` și `docs/linii/audit-elice.md` (constatările, cele mai importante întâi, cu dovada și
+  costul; feliile propuse; întrebările grupate, cu recomandarea în față), plus raportul scurt pentru owner, în
+  sesiunea lor; documentele le unește sesiunea principală. **Nicio felie nu pornește din audit fără cuvântul
+  owner-ului;** sesiunile se arhivează după ce rapoartele sunt în `main`.
 - 25.11.2026, dimineața: **plafoanele: totalul 1 000 kB, pornirea 125 kB** („ok, ridica plafonul total la 1000 kB si pornirea la 125 kB”, în sesiunea
   principală, după raportul unirii a treizecea, care recomanda aceste valori: frezele, relieful și cotele, repornite
   în aceeași dimineață, lucrau toate în același rest, 19,1 kB din total și 3,6 kB din pornire, iar felia trecută a

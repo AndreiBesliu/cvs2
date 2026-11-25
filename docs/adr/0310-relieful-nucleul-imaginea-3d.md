@@ -330,6 +330,44 @@ de pe foaie și din paletă (`relief.din-imagine`), imaginea păstrată pe foaie
 (18.1↑e), straturile editabile în panou (18.1↑e), resamplarea la o celulă aleasă (cu alinierea, 18.1↑c), TIFF-ul și PNG-ul
 pe 16 biți (18.1↑g). Oglindirea desenului în pânză nu are o probă e2e (așezarea oglindită e judecată în `relief.desen`).
 
+## Implementarea (18.1↑b)
+
+Gata pe 25.11, pe aceeași ramură, la cuvântul owner-ului transmis de sesiunea principală („vreau sa pornesti si celelalte
+sub-sesiuni”, după ce a resetat limita săptămânală), peste `main` `f2678300`.
+
+- **Proba întâi** (`test/unit/relief.model.test.ts`): compusul calculat dală cu dală în workerul reliefului e exact compusul
+  întreg, redus cu k ca desenul de pe planșă (media pe blocuri k × k, aceeași ordine a adunării); la k = 1, chiar celulele
+  care se taie. Z-ul fiecărei dale e pe celulele ei întregi, din grilă (nu din afara ei, nici din blocurile reduse).
+- **Nucleul** (`src/relief/model.ts`, `dalaModel`): compusul unei dale din dalele straturilor vizibile ale aceleiași poziții,
+  redus cu k. Cererea nouă a workerului, `model`, primește octeții doar ai dalelor cerute; o intrare goală a hărții nu atinge
+  compusul (ADR 0311 §7), o constantă e o dală constantă, octeții lipsă sunt un refuz numit.
+- **Cheile și încărcarea** (`src/app/modelRelief.ts`): cheia unei dale e ce o compune (modul și intrarea hărții fiecărui strat
+  vizibil care are date acolo). Încărcarea din nou cere din bază (`citesteHarta`, `citesteDale` în `reliefStocare.ts`) și
+  compune doar dalele cu altă cheie; un alt factor sau altă grilă reface textura. Factorul e cel mai mic k (putere a lui 2)
+  cu textura în latura plăcii video (cel mult 4096) și în 4 194 304 pixeli, ca relieful simulării (ADR 0057 §2): un relief de
+  8192² se desenează la k = 4.
+- **Vederea 3D** (`Vedere3D.tsx`): pe o foaie cu reliefuri, comutatorul „Modelul / Tăiat”; vederea pornește pe model, fără
+  simulare. Fiecare relief stă în golul lui din placă, cu vârful la fața plăcii (implicitul din §6): întâi chenarele
+  reliefurilor, doar în stencil, apoi fața plăcii doar în afara lor, pereții plăcii, apoi fiecare relief, cu pereții golului
+  de la față până la marginea lui. Suprafața e modelul exact din §4 (vârfurile în centrele celulelor, plus un rând pe fiecare
+  margine, cu valoarea celulei de margine), prin același shader ca simularea (modul `exact`, matricea elementului `u_m`,
+  `u_dz`, `u_baza`). Fiecare relief are textura lui (după piesă și nod: instanțele o împart), urcată pe dale
+  (`texSubImage2D`), cu valorile ținute pe procesor pentru o placă video pierdută. Vederea urmează documentul: o mutare, o
+  rotire sau o oglindire nu încarcă nimic, iar un relief schimbat urcă doar dalele cu altă cheie. „Tăiat” simulează placa ca
+  până acum, prima dată când e ales; camera rămâne.
+- **Stările:** se încarcă; gata (cât de adânc e cel mai adânc punct și, la k > 1, pasul desenului); straturile lipsă din
+  browser (fața plăcii rămâne întreagă acolo); eroarea, în jurnal.
+- **Lipirea cotelor pe relief:** cazul din `test/unit/cote.lipire.test.ts` (colțurile, mijloacele laturilor și centrul cutiei
+  chenarului, citite înapoi de cotă), cerut de linia cotelor.
+
+**Mărimea**, pe build-ul determinist, față de `main` `f2678300`: pornirea neschimbată (111,2 kB; cu ușa 116,1, cu Atelierul
+116,5 / 120); totalul 880,9 → 884,8 / 900 kB (+3,9: bucata vederii 3D +3,3, cu citirea hărții și încărcarea; workerul
+reliefului +0,5; baza +0,1). Nicio bucată nouă.
+
+**Probele:** `relief.model` (6), `cote.lipire` (cazul reliefului); e2e `relief3d.spec.ts` (3): modelul la pornire, golul și
+vârful la față, citite din pixeli; mutarea fără nicio dală urcată, „Tăiat” și înapoi; straturile lipsă. Otrăvurile:
+`test/otravuri/18.1b.py`, 22 / 22.
+
 ## Întrebările (recomandarea întâi; răspunsurile owner-ului: 1a, 2a, 3a, 4a, 5a, 6a)
 
 1. **Unde stă relieful.**

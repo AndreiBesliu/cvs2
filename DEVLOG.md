@@ -14462,6 +14462,27 @@ ce se poate”
 - **Documentele:** decizia în `CLAUDE.md` (paragraful de stare al construcțiilor e al liniei; versiunea extensiei,
   18.28.0, următoarea 18.29.0); indexul liniilor; starea din `docs/linii/principala.md`.
 
+## 2026-11-25 — Linia reliefului: felia 18.1↑b, modelul reliefului în vederea 3D („Modelul / Tăiat”) (sesiune cloud)
+
+**Prompt:** mesajul sesiunii principale, cu cuvântul owner-ului („am resetat limita saptamanale. azi este miercuri.” și
+„vreau sa pornesti si celelalte sub-sesiuni”): „Așteptai cuvântul lui pentru 18.1↑b […]: acesta e. Pornește 18.1↑b.”
+**Started:** 25.11, 09:35. **Completed:** 25.11, 10:55.
+
+- **`main` adus** (`f2678300`, fără ciocniri), apoi **proba întâi** (`test/unit/relief.model.test.ts`): compusul calculat
+  dală cu dală e exact compusul întreg redus cu k, ca desenul de pe planșă; o dală schimbată se cere, se citește din bază și
+  se compune singură; o dală goală a unui strat nu intră în cheie.
+- **Nucleul** `src/relief/model.ts` (`dalaModel`), cererea `model` a workerului reliefului, cheile și încărcarea
+  (`src/app/modelRelief.ts`), citirea hărților și a dalelor alese (`citesteHarta`, `citesteDale`).
+- **Vederea 3D:** comutatorul „Modelul / Tăiat”; modelul exact (ADR 0310 §4), în golul lui din placă (stencil), cu vârful la
+  fața plăcii; texturile pe dale (`texSubImage2D`), după piesă și nod; vederea urmează documentul. „Tăiat”, ca până acum.
+- **Cotele:** cazul reliefului în `cote.lipire.test.ts` (cerut de linia cotelor).
+- **Mărimea:** pornirea +0 (111,2; cu ușa și cu Atelierul 116,5 / 120), totalul 880,9 → 884,8 / 900 kB; nicio bucată nouă.
+- **Probele:** unitare (`relief.model`, `cote.lipire`), e2e `relief3d.spec.ts` (3) și cele vechi ale vederii 3D și ale
+  reliefului (16), manualul; otrăvurile 22 / 22 (`test/otravuri/18.1b.py`).
+- **`main` adus din nou** (`caddd661`, plafoanele 1 000 / 125 kB, ADR 0146; ciocnirea doar în DEVLOG). Porțile, în CI, pe
+  `3214f4da`: rapidul verde; completul 45572436393 verde (unit 10 452 / 0, 12 sărite; e2e 833 / 833; funcțiile pe emulatoare
+  136 / 136; paginile 59 / 59); pornirea 111,1 / 125 (cu ușa 116,1, cu Atelierul 116,4), totalul 884,8 / 1 000 kB.
+
 ## 2026-11-25 — Sesiunea principală în cloud: lotul 30 (atelierul Easy 3Draw: punctele de prindere), pe test; liniile, repornite (Model: Claude Fable 5.2)
 
 **Prompt:** regula „pe test publici liber”, după a douăzeci și noua unire; apoi „am resetat limita saptamanale. azi este miercuri.” și „vreau sa pornesti si celelalte sub-sesiuni”
@@ -14519,3 +14540,102 @@ vigoare „unește ce se poate”
 - **Liniile, anunțate:** frezele, relieful, cotele și atelierul primesc plafoanele noi odată cu `main`.
 - **Documentele:** decizia și paragraful de stare în `CLAUDE.md`; `docs/linii/principala.md` (plafoanele, intervalul
   ADR: următorul al sesiunii principale e 0147).
+
+## 2026-11-25 — Sesiunea principală în cloud: auditul ferestrei exportului și al elicelor, cerut sesiunilor lor (Model: Claude Fable 5.2)
+
+**Prompt:** „pot arhiva sesiunile exportului si elicelor?”, apoi „vreau sa le intrebi ce pot imbunatati in zona in care au lucrat? dar, defapt, pune-le sa faca un audit complet in acest sens”
+**Started:** 25.11, după 09:50 (ora nu s-a notat). **Completed:** 25.11, 10:22 (cererile trimise la 10:19; rapoartele vin de la linii).
+
+- **Verificat înaintea răspunsului:** `wip/28.8-export` (`ef8a6dd6`) și `wip/3.Tq-elice` (`05bdc8ec`) sunt întregi în
+  `main`; PR-urile lor, închise (deschise: `#30` relieful, `#31` frezele, `#32` cotele); nicio verificare programată
+  pe cele două sesiuni. Deci se pot arhiva.
+- **Cererea de audit, trimisă amândurora (10:19),** cu vorbele owner-ului: zona fiecăreia pe `main` `caddd661`,
+  aplicația parcursă cu Playwright, ce să judece, doar audit (fără cod de produs, fără agenți), ce predau
+  (`docs/linii/audit-export.md`, `docs/linii/audit-elice.md`, raportul scurt pentru owner în sesiunea lor).
+- **Documentele:** decizia în `CLAUDE.md`; rândurile exportului și elicelor din indexul liniilor; starea din
+  `docs/linii/principala.md`.
+
+## 2026-11-25 — Sesiunea principală în cloud: auditul elicelor, în `main`; o greșeală de afișare găsită de auditul exportului (Model: Claude Fable 5.2)
+
+**Prompt:** rapoartele sesiunilor exportului (10:26) și elicelor (10:33), la auditul cerut de owner
+**Started:** 25.11, 10:26. **Completed:** 25.11, 10:34.
+
+- **Auditul elicelor** (`2c7146b3` pe `wip/3.Tq-elice`, PR-ul `AndreiBesliu/cvs2#34`, doar documente, peste `a22547e5`),
+  unit în `173995a1`: `docs/linii/audit-elice.md` și un link în `docs/linii/elice.md`. Nimic stricat: 110 plase
+  măsurate, toate închise, cel mult 154 ms; nicio eroare în consolă. Opt constatări (întâi: „Se tipărește fără suport”
+  se spune și la pasul mic, unde vârful iese cu 2,1 mm pe strat; 22 de otrăvuri ale elicelor au ajuns fără țintă după
+  3.Ce și 3.Cj), șapte felii propuse pentru linia atelierului, patru întrebări la owner (recomandările: 1a, 2a, 3a,
+  4a). Fără complet: nicio linie de cod.
+- **Auditul exportului, din mers** (verificat în cod: `FisaOperatie.tsx:84–90`, `DialogExport.tsx:901`,
+  `src/cam/prinFoaie.ts`): cu supracursa și pe tăieturile cât foaia, fereastra arată „3 treceri de 6 mm” la 18 mm, iar
+  programul taie 4 treceri de 4,575 mm până la −18,3 (ADR 0177). Programul e corect și sigur; greșit e desenul. Spus
+  owner-ului, cu recomandarea reparației acum, de sesiunea exportului (~1 h, sub 0,2 kB, cu proba care compară desenul
+  cu programul); linia n-are felie în lucru, deci pornește la cuvântul lui. A doua constatare (găurirea cu elice
+  desenată ca ciocănire; refuzul cercului peste 2·D abia după clic, cu id-ul intern) rămâne în raport.
+- **Documentele:** indexul liniilor (rândul elicelor, nota nouă), starea din `docs/linii/principala.md`.
+
+## 2026-11-25 — Sesiunea principală în cloud: lotul 31 (atelierul Easy 3Draw: cama și roata cu palete), pe test (Model: Claude Fable 5.2)
+
+**Prompt:** regula „pe test publici liber”, după a treizecea unire
+**Started:** 25.11, 09:36. **Completed:** 25.11, 10:44.
+
+- **Publicat:** `d1a96fc4` (rapidul pe `main` 45569358584; completul 45570396384, verde, 58 min: unit 10 445 / 0,
+  12 sărite pe Linux; e2e 830 / 830; funcțiile pe emulatoare 136 / 136; paginile 59 / 59; publicarea 45578493611).
+  Adresa de test spune `d1a96fc4c1d1`; proba de fum, bună (nicio eroare, 70 de butoane, catalogul extensiilor,
+  mesajele, manualul, codurile și documentația, toate cu 200). Nimic nou pe server.
+- **În `main`, nepublicate încă:** plafoanele noi (`caddd661`: constantele porții, care nu ajung în aplicație, și
+  rândul ADR 0146 din roadmap-ul adminului) și documentele de după; pleacă cu lotul următor, fără un complet doar
+  pentru ele.
+
+## 2026-11-25 — Sesiunea principală în cloud: auditul ferestrei exportului, în `main` (Model: Claude Fable 5.2)
+
+**Prompt:** raportul sesiunii exportului („auditul e gata, doar documente”, `a0a3075d`), la auditul cerut de owner
+**Started:** 25.11, 10:49. **Completed:** 25.11, 10:49.
+
+- **Unit** `a0a3075d` (`wip/28.8-export`, PR-ul `AndreiBesliu/cvs2#35`, doar documente) în `ee492406`:
+  `docs/linii/audit-export.md` (464 de rânduri) și un rând în `docs/linii/export.md`. Fără complet: nicio linie de cod.
+- **Ce spune:** 21 de constatări. Două desene nu spun ce taie programul, care e corect și sigur (trecerile cu
+  supracursa prin foaie; găurirea cu elice desenată ca ciocănire); cauza comună: fereastra își rescrie formulele
+  lucrării, fiindcă interfața n-o poate importa. La 150 de piese, fereastra se deschide în 7,6–8,8 s (toate fișele
+  randate), cu o tastă la 54–98 ms. Feliile propuse 28.8↑h–m, de pornit după unirea lui 16.A↑b-5 (aceeași fișă);
+  nouă întrebări la owner, cu schița din sesiunea liniei.
+- **Recomandarea reparației, schimbată față de dimineață:** nu peticul de o oră acum, ci felia 28.8↑h (desenele
+  socotite de stratul de acțiuni, cu funcțiile lucrării), după 16.A↑b-5: repară amândouă desenele la cauză și nu se
+  ciocnește cu linia frezelor. La owner.
+- **Ale altor linii:** frezele de rest fără etichete (spus liniei frezelor, care lucrează acolo); numele elementelor cu
+  punct zecimal în română (`src/app/descriereElement.ts`, comun: al sesiunii principale); „Trimite la mașină” în Atelier
+  (aranjamentele).
+- **Documentele:** indexul liniilor (rândul exportului), starea din `docs/linii/principala.md`.
+
+## 2026-11-25 — Sesiunea principală în cloud: a treizeci și una unire (relieful: 18.1↑b, modelul în vederea 3D) (Model: Claude Fable 5.2)
+
+**Prompt:** raportul liniei reliefului („18.1↑b […] e gata de unit”, `04e7cd2f`), la ordinul în vigoare „unește ce se
+poate”
+**Started:** 25.11, 11:01. **Completed:** unirea în `main`, 25.11, 11:02; publicarea pe test, pornită după ea.
+
+- **Unirea, pe `unire-2511l`** (din `43cf59af`): `04e7cd2f`, în `ef883ac1`, fără nicio ciocnire (DEVLOG-ul, unit
+  singur). Ramura avea `main` `caddd661` (cu plafoanele noi); de atunci, `main` a primit doar documente (auditurile),
+  iar `04e7cd2f` adaugă peste `3214f4da` doar documente: arborele unirii are exact codul lui `3214f4da` (`git diff`
+  gol în afara fișierelor `.md`). Local: traducerile (1 115), catalogul controalelor (la zi), fără `.lucru/`.
+- **Porțile, în CI, pe `3214f4da`** (citite din jurnalul rulării): completul 45572436393, verde (53 min): unit
+  10 452 / 0 (12 sărite, pe Linux), e2e 833 / 833, funcțiile pe emulatoare 136 / 136, paginile 59 / 59; rapidul,
+  verde pe `3214f4da` (45572445456) și pe `04e7cd2f` (45580169660). Pornirea 111,1 kB (plafonul 125; cu ușa 116,1, cu
+  Atelierul 116,4), totalul 884,8 / 1 000 kB (+3,9), `/admin` 138,3 / 200. Nimic pe server.
+- **Documentele:** decizia și paragraful de stare în `CLAUDE.md`; indexul liniilor; starea din
+  `docs/linii/principala.md`.
+
+## 2026-11-25 — Sesiunea principală în cloud: ADR 0291 (fereastra exportului după audit), acceptat de owner, în `main` (Model: Claude Fable 5.2)
+
+**Prompt:** raportul sesiunii exportului: owner-ul a răspuns acolo la cele nouă întrebări ale auditului, „1a, 2a, 3a, 4a, 5a, 6a, 7a, 8a, 9a”
+**Started:** 25.11, 11:22. **Completed:** 25.11, 11:23.
+
+- **Unit** `5966da75` (`wip/28.8-export`, PR-ul `AndreiBesliu/cvs2#36`, doar documente) în `b826abe9`: ADR 0291, rândul
+  lui din index cu traducerea, raportul auditului și nota liniei, aduse la zi. Local: traducerile (1 116), probele
+  documentației 62 / 62.
+- **Decizia, în `CLAUDE.md`,** cu cele nouă răspunsuri și cu ce înseamnă pentru linii: 28.8↑n și o acum (nu ating fișa
+  operației); h, i, j–l după 16.A↑b-5; p la export, cu frezele anunțate; 8a la aranjamente; 9a, o felie de CAM după
+  placa 2, cu v30.
+- **O scăpare în ADR, spusă liniei:** „Documentul rămâne v27” (e v28, din relief).
+- **Înainte, în aceeași oră:** raportul atelierului pentru 3.Cj-3 (cadrul, `b7f04cb3`, porțile verzi). Neunită: `main`
+  are codul reliefului, pe care ramura nu-l are; linia aduce `main`, pune deasupra melcul (3.Cj-4) și raportează un
+  singur commit. Și `78ff30ec`: v29, dat liniei reliefului pentru 18.1↑c.

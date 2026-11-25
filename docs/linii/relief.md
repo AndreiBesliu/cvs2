@@ -2,7 +2,8 @@
 
 _cncvs2, relieful 2.5D / 3D, felia 18.1↑ adusă din etapa 18 („Relieful 1: nucleul, relieful din imagine, prelucrarea 3D
 din relief”): ramura `wip/18.1-relief` (din `main`, 24.11), ADR-urile 0310–0329, canalul `relief`; PORNITĂ pe 24.11, la
-cuvântul owner-ului; ADR 0310 ACCEPTAT pe 24.11 (1a–6a); felia 18.1↑a GATA pe 24.11 (documentul v28), de unit_
+cuvântul owner-ului; ADR 0310 ACCEPTAT pe 24.11 (1a–6a); felia 18.1↑a GATA și UNITĂ pe 24.11 (documentul v28); felia 18.1↑b
+GATA pe 25.11, de unit_
 
 Pornită pe 24.11.2026, la „ce urmeaza in roadmap si nu a fost atins deloc si putem incepe” și „ok, scrie brief-ul pentru
 relief si pentru cote” ale owner-ului (în sesiunea principală). E primul lucru din blocul relief + 3D (etapele 18–24),
@@ -105,3 +106,11 @@ degroșarea și finisarea pe relief), unde stă relieful în document și unde s
   textură WebGL2), baza `cncvs2-relief`, alegerea Vectori / Relief în fereastra unei imagini, fereastra reliefului, desenul
   umbrit pe planșă (prin stratul imaginilor al pânzei, adus la cerere), secțiunea Relieful din panou, manualul. Pornirea
   +0,5 kB (cu ușa +0,9), totalul +12,7 kB. Otrăvurile 43 / 43. Bila rămâne pentru 18.1↑c (§13, precizarea din 24.11).
+- **24.11, seara: 18.1↑a unită în `main`** (lotul 27, `893e45bb`, unirea în `c5b79526`, din `feb7bee1`).
+- **25.11, dimineața: felia 18.1↑b gata** (ADR 0310, „Implementarea (18.1↑b)”), pornită la cuvântul owner-ului transmis de
+  sesiunea principală (după resetarea limitei săptămânale): modelul reliefului în vederea 3D, comutatorul „Modelul / Tăiat”;
+  cererea `model` a workerului (dalele cerute, compuse și reduse), cheile dalelor și încărcarea doar a celor schimbate, texturile
+  pe dale, relieful în golul lui din placă (stencil), cu vârful la fața plăcii. Plus cazul reliefului în lipirea cotelor.
+  Pornirea +0, totalul +3,9 kB (884,8 / 900).
+- **De ținut minte:** o felie care schimbă ce arată vederea 3D trece și prin `vedere3d.spec.ts` și `incrustatie3d.spec.ts`
+  (shaderul e comun); `vedere` din `Vedere3D.tsx` e ținută și în `acum` (ascultătorii montați o dată o citesc de acolo).
