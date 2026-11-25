@@ -3,8 +3,8 @@
 # v28 → v29), bila în lucrare (`motivFormaPeOperatie`, frezele operației, poarta), nucleul finisării (câmpul pe 9 puncte și
 # pe celula de calcul, modelul exact, piramida, urcarea frezei, peretele, trecerile pe Z, punctele de capăt, legătura, liniile)
 # legarea în lucrare (Z-ul, scara, ordinea, scula în IR, „același T”, „prin foaie”, straturile ascunse) și rândul din fereastra
-# exportului (ordinea automată și cu ranguri, rangul scris de Exportă, creasta pe plan). Se rulează cu `scripts/otravuri.py`
-# (docs/otravuri.md), după commit.
+# exportului (ordinea automată și cu ranguri, rangul scris de Exportă, creasta pe plan, bila afară din lista bibliotecii). Se
+# rulează cu `scripts/otravuri.py` (docs/otravuri.md), după commit.
 # o(id, fis, vechi, nou, set, ce): `vechi` apare EXACT o dată în fișier; altfel VOID.
 O = []
 
