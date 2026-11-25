@@ -15378,3 +15378,27 @@ lui #49
 - **După:** prima deschidere ~0,45–0,5 s (cu bucata ferestrei), următoarele ~0,15 s; o tastă ~10 ms (cea mai bună ~6).
   Proba de viteză, 30 / 30 cu patru lucrători și cu opt.
 - **Documentele:** ADR 0291, fișa etapei 3, registrul otrăvurilor, nota liniei.
+
+## 2026-11-25 — Sesiunea principală în cloud: lotul 37 (Escape în „Frezele mele”, finisarea reliefului, exportul „pe hârtie”), pe test (Model: Claude Fable 5.2)
+
+**Prompt:** publicarea de după unirile a treizeci și opta, a treizeci și noua și a patruzecea (pe test se publică liber)
+**Started:** 25.11, după unirea de la 21:13 (completul pe `main`, pornit la 21:24). **Completed:** 25.11, 22:23.
+
+- **Pe test: `5649067c`** (16.A↑b-7, 18.1↑c cu documentul v29, 28.8↑h). `publica.yml` 45693946753, verde (22:20–22:23), pornită
+  din prima; serverul, neschimbat. Trei uniri, un singur complet pe `main`.
+- **Completul pe `main`** (45684848118, verde, 56 min): unit 10 581 / 0 (12 sărite, pe Linux), e2e 883 / 883, funcțiile pe
+  emulatoare 136 / 136, paginile 60 / 60; pornirea 111,4 kB, totalul 909,1 / 1 000 kB.
+- **Proba de fum** pe adresa de test: versiunea `5649067cdf8b`, potrivită; nicio eroare în consolă, nicio cerere căzută.
+
+## 2026-11-25 — Sesiunea principală în cloud: lotul 38 (atelierul Easy 3Draw: alipirea la prinderi), pe test (Model: Claude Fable 5.2)
+
+**Prompt:** publicarea de după unirea a patruzeci și una (pe test se publică liber)
+**Started:** 25.11, după unirea de la 22:15 (completul pe `main`, pornit la 22:24). **Completed:** 25.11, 23:28.
+
+- **Pe test: `c9911c14`** (3.Cf-1, Easy 3Draw 18.34.0). `publica.yml` 45704176310, verde (23:25–23:28), pornită din prima;
+  serverul, neschimbat.
+- **Completul pe `main`** (45694635576, verde, 61 min): unit 10 596 / 0 (12 sărite, pe Linux), e2e 890 / 890, funcțiile pe
+  emulatoare 136 / 136, paginile 60 / 60; pornirea 111,4 kB (cu ușa 116,5, cu Atelierul 116,9 / 125), totalul
+  909,1 / 1 000 kB, `/admin` 138,3 / 200, contul 30,2 / 32.
+- **Proba de fum** pe adresa de test: versiunea `c9911c141e13`, potrivită; nicio eroare în consolă, nicio cerere căzută.
+- **Pe test e tot ce e în `main`** (`42433c91` adaugă peste `c9911c14` doar documente).
