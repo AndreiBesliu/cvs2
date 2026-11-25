@@ -505,12 +505,16 @@ exportului, desprinse din 16.A↑b-3.
 - **Legarea rândurilor** (V-carve-urile aceleiași piese, incrustațiile cu pereți drepți) ține și originea frezelor în plus:
   lucrarea compară fundul plat, frezele de rest și ale dopului întregi (`valoriVcarve`, `valoriBuzunarDrept`), deci două
   regiuni cu aceeași freză, una din bibliotecă și una scrisă de mână, se sapă separat.
+- **Tabelul frezelor de rest** (constatarea 9 a auditului ferestrei exportului, `docs/linii/audit-export.md`, dată liniei
+  frezelor): rândurile stau pe o grilă, cu capul coloanelor („Din frezele mele”, doar dacă vreun rând are ce alege, T, Ø, pasul
+  lateral); „Adaugă o freză de rest” are aspect de buton; la buzunar, „Frezele de rest” rămâne doar titlul grupului, iar la
+  fundul plat și la dop lista își spune numele. Când fișa e îngustă (telefonul), lista trece pe un rând al ei.
 
 Documentul rămâne v27; nimic pe server. Probele (întâi): scrierea originii, frezele ferestrei, alegerea pe loc și filtrul, pe
 hârtie (`test/unit/exportFreze.rest.test.ts`); în Edge, frezele de rest ale buzunarului, fundul plat, dopul și banda, cu exportul
-și fereastra redeschisă, și legarea (`test/e2e/exportFrezeRest.spec.ts`), plus frezele în plus în proba privirii. Otrăvurile:
-`test/otravuri/16.A-b5.py`. Mărimea: pornirea neschimbată (111,2 kB; cu ușa și cu Atelierul 116,5 / 120), totalul
-881,0 → 881,8 / 900.
+și fereastra redeschisă, legarea și tabelul (`test/e2e/exportFrezeRest.spec.ts`), plus frezele în plus în proba privirii. Otrăvurile:
+`test/otravuri/16.A-b5.py`. Mărimea: pornirea neschimbată (111,2 kB; cu ușa și cu Atelierul 116,5 / 125), totalul
+881,0 → 882,0 / 1 000.
 
 ## Se redeschide dacă
 

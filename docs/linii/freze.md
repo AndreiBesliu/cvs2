@@ -126,8 +126,8 @@ gravare, profil, formă desenată)” și „Freze de profil desenate de utiliza
   T-ul printre toate frezele ferestrei, fără cea înlocuită (`frezeRanduri`). **Capcane:** proba grupurilor citește doar
   `data-camp="…"` scris în sursă, deci o componentă care primește numele câmpului îl ia ca `data-camp="…"` (ca `Cartonase`),
   nu ca alt nume de proprietate; legarea rândurilor e doar între operațiile aceleiași piese (proba ei pornește din Scade,
-  ca proba ordinii de mână). Mărimea: pornirea neschimbată, totalul +0,8 kB (881,8 / 900). Urmează 16.A↑b-4 (nota
-  „s-a schimbat în bibliotecă”).
+  ca proba ordinii de mână). Tot aici, tabelul frezelor de rest (constatarea 9 a auditului exportului, dată liniei).
+  Mărimea: pornirea neschimbată, totalul +1,0 kB (882,0 / 1 000). Urmează 16.A↑b-4 (nota „s-a schimbat în bibliotecă”).
 - **Feliile**, în ordine: 16.A↑a (biblioteca în browser, fereastra, fișierul), apoi b (alegerea în proiect, v27), c
   (contul), d (calibrarea), e (bila și toroidala), f (profilul desenat), g (valorile pe material).
 
