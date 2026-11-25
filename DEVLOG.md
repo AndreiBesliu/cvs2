@@ -14425,7 +14425,7 @@ miercuri.” și „vreau sa pornesti si celelalte sub-sesiuni”): „Deci porn
   codului (S01–S04, W03, W04) țin acum codul nou.
 - **Mărimea:** pornirea neschimbată (111,2 kB; cu ușa 116,1, cu Atelierul 116,5 / 125), totalul 881,0 → 882,0 / 1 000 (măsurat
   pe `main` `f2678300` și pe ramură). Nimic pe server; documentul rămâne v27. Apoi `main` adus (`caddd661`, plafoanele
-  1 000 / 125 kB, ADR 0146) și cu auditul exportului (`43cf59af`). **Completed:** 25.11, 11:35.
+  1 000 / 125 kB, ADR 0146) și cu auditul exportului (`43cf59af`). **Completed:** 25.11, 10:56.
 
 ## 2026-11-25 — Linia reliefului: felia 18.1↑b, modelul reliefului în vederea 3D („Modelul / Tăiat”) (sesiune cloud)
 
@@ -14588,3 +14588,21 @@ poate”
   Atelierul 116,4), totalul 884,8 / 1 000 kB (+3,9), `/admin` 138,3 / 200. Nimic pe server.
 - **Documentele:** decizia și paragraful de stare în `CLAUDE.md`; indexul liniilor; starea din
   `docs/linii/principala.md`.
+
+## 2026-11-25 — 16.A↑b-4: nota „s-a schimbat în bibliotecă” pe rândurile exportului (Model: Claude Opus 5.5)
+
+**Prompt:** „continua cu 16.A↑b-4”. **Started:** 25.11, 11:05.
+
+- **Ramura** `wip/16.A-freze-b4`, din vârful lui 16.A↑b-5 (`b7660e94`), ca `wip/16.A-freze` să rămână neschimbată până la
+  unire; PR-ul #37, cu baza `wip/16.A-freze` (după unirea lui #31, pe `main`).
+- **Felia** (`9c5dd114`): pe fiecare freză a unui rând (a operației și cele în plus), copia din proiect față de „Frezele
+  mele”: schimbată acolo, cu ce diferă, „Ia valorile noi” pe rând și „Pe toate (N)” (T-ul și pașii rămân); ștearsă, „nu mai e
+  în bibliotecă”; scrisă de mână, la fel cu una din bibliotecă, „Scrisă de mână (ca „…”)”, fără scriere. Modelul pur în
+  `src/ui/exportRand.ts`; biblioteca dată ferestrei doar după citire. Manualul (ro, en). „Pune-o înapoi în bibliotecă” a ieșit
+  în 16.A↑b-6 (scrierea în bibliotecă din fereastra exportului, cu contul).
+- **Probele** (întâi): unitare noi 4 (`exportFreze.nota.test.ts`), în Edge 3 (`exportFrezeNota.spec.ts`); probele lui b-3 și
+  b-5 așteaptă acum numele frezei recunoscute. **Otrăvurile** (`test/otravuri/16.A-b4.py`): 18 / 19 (W01 scăpase, proba „Pe
+  toate” e acum și pe fundul plat; A01, practic echivalentă).
+- **Mărimea** (față de `b7660e94`): pornirea +14 octeți gzip (111,2 kB; cu ușa 116,1, cu Atelierul 116,5 / 125), totalul
+  886,0 → 887,5 / 1 000. Nimic pe server; documentul rămâne v27. Tot aici, ora de încheiere a lui 16.A↑b-5 îndreptată (10:56).
+  **Completed:** 25.11, 11:40.
