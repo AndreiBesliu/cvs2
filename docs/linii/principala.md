@@ -119,7 +119,8 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
   făcut din commit-urile anunțate, cu completul pornit pe ea cât încă rulau completele a două linii; în `main` a intrat
   abia după ce au fost verzi și porțile lotului, și cele ale liniilor, iar vârfurile nu aduseseră cod (unirea de probă
   a vârfului: zero fișiere schimbate în afara `.md`). Câștigul: o jumătate de oră.
-- **Intervalele ADR, la 24.11:** 0145–0149 sesiunea principală (lângă plafoanele 0143, 0144; 0145 e plafonul pornirii),
+- **Intervalele ADR, la 25.11:** 0145–0149 sesiunea principală (lângă plafoanele 0143, 0144; 0145 e plafonul pornirii,
+  0146 plafoanele 1 000 / 125; următorul, 0147),
   0230–0239 biblioteca, 0240–0249 ancorele, 0250–0259 aranjamentele, 0260–0269 adminul, 0270–0279 trasarea, 0280–0289
   pluginul (din 24.11 seara, întreg al liniei atelierului Easy 3Draw: 0283 pentru 3.Tu, 0284 construcțiile, cu
   feliile 3.Ca–3.Cj), 0290–0299 exportul, 0300–0309 frezele, 0310–0329 relieful, 0330–0339 cotele, 0340–0349 tot
@@ -152,12 +153,12 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
   printr-o schiță.
 - **Observabilitatea:** erorile ajung în jurnalul aplicației; joburile își lasă marcajul.
 
-## Starea pe 25.11.2026, spre dimineață (după a douăzeci și noua unire din cloud)
+## Starea pe 25.11.2026, dimineața (după a treizecea unire din cloud; liniile, repornite)
 
-- **Pe test:** `a95af70e` (tot ce e în `main`, cu lotul 29: atelierul Easy 3Draw 18.27.0, cu cremaliera și arcul;
-  publicat pe 25.11 la 03:47, cu serverul neschimbat; completul pe `main` 45518951805, verde; proba de fum, bună).
-  Înainte: `694f0ff1` (cotele a-4 și b, lotul 28), pe 25.11 la 01:37; loturile 23–27 (`893e45bb`), pe 24.11 la 23:42.
-  În drum: lotul 30 (atelierul: punctele de prindere și „Se prinde cu”, Easy 3Draw 18.28.0).
+- **Pe test:** `f2678300` (tot ce e în `main`, cu lotul 30: atelierul Easy 3Draw 18.28.0, cu punctele de prindere
+  și „Se prinde cu”; publicat pe 25.11 la 06:03, cu serverul neschimbat; completul pe `main` 45536382490, verde;
+  proba de fum, bună). Înainte: `a95af70e` (lotul 29, cremaliera și arcul), pe 25.11 la 03:47; `694f0ff1` (cotele
+  a-4 și b, lotul 28), la 01:37. În drum: lotul 31 (atelierul: cama și roata cu palete, Easy 3Draw 18.30.0).
 - **`main`, din cloud:** pe 23.11: 3.Tq (`0ae9c6c1`); 11.3↑e și A.4 (`ddaa7ead`); 3.Tr, unită de linia elicelor
   (`d262e57a`); 25.8↑a și A.5 (`1b46c955`), cu reparația probei extensiilor (`8287d66e`); 11.3↑f, unită de linia
   planșelor (`f4601938`); A.6 (`4497d639`); 3.Xh (`2d1e482c`) și 12.1↑e-3 cu 12.1↑e-4 (`03460cab`); A.8a cu A.8b
@@ -171,12 +172,15 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
   (`9fd71053`); fereastra exportului, 28.8↑a–g (`c4ca5ec2`), și 3.Xk (`373699e6`); proba extensiilor, reparată
   (`13d9bcad`), 11.1↑d (`001b6325`) și 3.At (`cadac6c3`), scrise în sesiunea principală; 16.A↑h-5 (`4aee5405`) și
   16.A↑b-3 (`fdde5947`); 18.1↑a, relieful, cu documentul v28 (`c5b79526`); 10.4↑a-4 și 10.4↑b (`1eea83dd`). Pe
-  25.11: 3.Ca și 3.Cb, atelierul Easy 3Draw, 18.25.0 (`11877a3e`); 3.Cc și 3.Cd, 18.27.0 (`9815527f`); 3.Ce, 18.28.0 (`38ff9391`).
+  25.11: 3.Ca și 3.Cb, atelierul Easy 3Draw, 18.25.0 (`11877a3e`); 3.Cc și 3.Cd, 18.27.0 (`9815527f`); 3.Ce, 18.28.0 (`38ff9391`); 3.Cj-1 și 3.Cj-2, 18.30.0 (`e90edd2e`).
 - **Liniile** (vezi [indexul](README.md)):
-  - **în lucru, pe ramuri:** frezele (16.A↑b-5: fundul plat, frezele de rest, dopul și banda; apoi b-4), atelierul
-    (3.Cj-1, cama, 18.29.0, gata la linie, neîmpinsă la unirea lui 3.Ce; 3.Cj-2, roata cu palete, 18.30.0); se unesc
-    la raportul liniei;
-  - **la cuvântul owner-ului:** cotele (10.4↑c, exportul), relieful (18.1↑b);
+  - **în lucru, pe ramuri, repornite pe 25.11 la 09:32** (owner-ul, în sesiunea principală, după resetarea limitei
+    săptămânale: „vreau sa pornesti si celelalte sub-sesiuni”): atelierul (restul lui 3.Cj: cadrul, apoi melcul; cama și roata cu palete, unite la 09:35; ultima tură
+    a sesiunii se oprise cu eroare), frezele (16.A↑b-5: fundul plat, frezele de rest, dopul și banda; apoi b-4),
+    relieful (18.1↑b, modelul reliefului în vederea 3D), cotele (10.4↑c, exportul cotelor); se unesc la raportul
+    liniei, în ordinea rapoartelor. **Trei linii lucrează în același rest de mărime** (din 25.11, cu plafoanele
+    noi: 119,1 kB în total, 8,6 kB în pornire): fiecare își spune în raport cât adaugă, iar una care nu mai încape
+    se oprește și scrie aici (plafonul e decizia owner-ului);
   - **la owner:** 3.Tu (unde stă axul pieselor rotunde în vederea „Modelul” din Easy 3Draw; trei întrebări, cu
     recomandările 1a, 2a, 3a, în `docs/linii/elice.md`; ADR 0283): din 24.11 seara, a liniei atelierului;
   - **pornită pe 24.11, cu ADR-ul propus întâi:** atelierul Easy 3Draw (piese și configuratoare noi, compatibile în
@@ -207,10 +211,12 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
     mai scurtă (fără al doilea complet pe `main` când codul e identic cu cel verificat; schimbă o regulă a porților),
     lista „ce e nou pe test, de încercat”, rezumatul pentru verificarea juridică, lista ramurilor unite de șters.
     Fără răspuns, niciuna nu pornește.
-- **Plafoanele:** totalul e 880,9 / 900 kB după cote (ADR 0301, decizia owner-ului din noaptea de 23 spre 24.11;
-  pe 24.11: fereastra exportului a adus 16,3 kB, relieful 13,4, cotele a-4 și b 7,4). **Pornirea e 120 kB din 24.11** (ADR 0145, „ok, ridica plafonul pornirii la
-  120 kB”, spus în sesiunea principală): 111,1, cu ușa 116,1, cu Atelierul 116,4, deci mai sunt 3,6 kB. Regula feliilor rămâne: ce nu trebuie înaintea primei randări stă la
-  cerere, iar felia își spune în raport cât adaugă în pornire.
+- **Plafoanele, din 25.11: totalul 1 000 kB, pornirea 125 kB** (ADR 0146, „ok, ridica plafonul total la 1000 kB si pornirea la 125 kB”, spus în
+  sesiunea principală). Totalul e 880,9 kB (mai sunt 119,1); pornirea 111,1, cu ușa 116,1, cu Atelierul 116,4 (mai sunt
+  8,6). Înainte: totalul 900 (ADR 0301, din noaptea de 23 spre 24.11), pornirea 120 (ADR 0145, din 24.11). În două
+  zile, totalul a crescut cu 87 kB (cotele 25,3, fereastra exportului 16,3, frezele 13,9, relieful 12,7). Regulile
+  feliilor rămân: ce nu trebuie înaintea primei randări stă la cerere, calculul greu în worker, iar felia își spune
+  în raport cât adaugă la total și la pornire.
 - **Documentul e v28** (relieful: forma `relief`, 18.1↑a, în `main` din 24.11; v27, frezele, 16.A↑b-1). Cotele nu cer
   schemă; următorul liber e v29 (operațiile pe relief cu freza bilă; toroidala și profilul desenat ale frezelor): numărul se
   dă când felia ajunge la migrare, iar unirile cu schemă intră în `main` în ordinea numerelor. O probă care citește documentul salvat cere versiunea

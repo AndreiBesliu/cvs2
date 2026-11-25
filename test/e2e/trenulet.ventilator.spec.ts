@@ -55,8 +55,8 @@ function citesteStl(stl: Buffer): { triunghiuri: number; rele: number; raza: num
 
 test('ventilatorul implicit, a treia piesă a filei Elice: rotorul de 7 palete, Ø40 în carcasă; textul cu rotorul și carcasa', async ({ page }) => {
   await atelierVentilator(page);
-  await expect(page.locator('#at-tipuri [data-fila="propulsie"]')).toHaveText('Elice 3');
-  await expect(page.locator('#at-galerie [data-piesa]')).toHaveText(['Elice', 'Elice de barcă', 'Ventilator cu carcasă']);
+  await expect(page.locator('#at-tipuri [data-fila="propulsie"]')).toHaveText('Elice 4');
+  await expect(page.locator('#at-galerie [data-piesa]')).toHaveText(['Elice', 'Elice de barcă', 'Ventilator cu carcasă', 'Roată cu palete']);
   await expect(page.locator('#at-editor h2').first()).toHaveText('Ventilator cu carcasă');
   // pe hârtie: vârful la 20 − 0,8 = 19,2; butucul max(4; 0,25 · 19,2 = 4,8) → Ø9,6, înalt de 8 (paletele, 4,59); P = 0,8 · 40;
   // atan(32 / (2π · 4,8)) = 46,70° la butuc, atan(32 / (2π · 19,2)) = 14,86° la vârf; 0,2 / tan 14,86° = 0,754; carcasa:
