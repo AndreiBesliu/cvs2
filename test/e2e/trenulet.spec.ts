@@ -16,7 +16,7 @@ import { faraEroriInJurnal } from './ajutor-jurnal.ts';
  * - „Salvează fișierul .json” din exportul CNC ajunge descărcare a browserului, din pagina lui cvs2, cu numele dat de
  *   planificator;
  * - ștergerea circuitului, cu confirmarea lui, rămâne și după reîncărcare; jurnalul local, fără erori;
- * - numele (ADR 0167): „Easy 3Draw” 18.34.0, instalat peste „Planificator Trenuleț” 18.6.0, îi ia locul (același id), cu
+ * - numele (ADR 0167): „Easy 3Draw” 18.35.0, instalat peste „Planificator Trenuleț” 18.6.0, îi ia locul (același id), cu
  *   circuitul lui;
  * - „Trimite la cvs2” (ADR 0160 §D): G-code-ul ovalului de exemplu ajunge în dialogul primirii, cu originea extensiei, iar după
  *   „Primește”, în „Lucrarea primită” din fereastra Mașina; planificatorul spune că cvs2 l-a primit;
@@ -31,7 +31,7 @@ import { faraEroriInJurnal } from './ajutor-jurnal.ts';
 test.use({ locale: 'ro-RO' });
 
 const PACHET = Buffer.from(pachetTrenulet().octeti);
-const ZIP = { name: 'trenulet-18.34.0.zip', mimeType: 'application/zip', buffer: PACHET };
+const ZIP = { name: 'trenulet-18.35.0.zip', mimeType: 'application/zip', buffer: PACHET };
 const cadru = (page: Page) => page.frameLocator('iframe.cadru-extensie');
 /**
  * Cât așteaptă probele cadrul extensiei până la „pornit”: un document separat, în procesul lui, cu pachetul adus din
@@ -82,7 +82,7 @@ test('instalat din fișier: pagina în cadru; circuitul, modul și culoarea păs
   await page.locator('[data-extensii="buton"]').click();
   await page.locator('[data-extensii="fisier-ales"]').setInputFiles(ZIP);
   await expect(page.getByTestId('extensii-instalare').locator('h2')).toHaveText('Instalezi „Easy 3Draw”?');
-  await expect(page.getByTestId('extensii-despre')).toHaveText(/^18\.34\.0 · din fișierul trenulet-18\.34\.0\.zip · \d+ (de )?fișiere, [\d,]+ MB$/);
+  await expect(page.getByTestId('extensii-despre')).toHaveText(/^18\.35\.0 · din fișierul trenulet-18\.35\.0\.zip · \d+ (de )?fișiere, [\d,]+ MB$/);
   await expect(page.getByTestId('extensii-permisiuni').locator('li')).toHaveText([
     'Mașina încarcă programe, le pornește sau le reia doar după confirmarea ta, pune pauză și oprește lucrarea',
     'Formele din desen primește formele pe care i le trimiți din desen și îți propune forme pentru desen (le adaugi tu, din Importă)',
@@ -180,7 +180,7 @@ async function pachetVechi(): Promise<Buffer> {
   })));
 }
 
-test('numele nou (ADR 0167): „Easy 3Draw” 18.34.0, instalat peste „Planificator Trenuleț” 18.6.0, îi ia locul, cu circuitul lui', async ({ page }) => {
+test('numele nou (ADR 0167): „Easy 3Draw” 18.35.0, instalat peste „Planificator Trenuleț” 18.6.0, îi ia locul, cu circuitul lui', async ({ page }) => {
   await page.goto('/');
   await page.locator('[data-extensii="buton"]').click();
   await page.locator('[data-extensii="fisier-ales"]').setInputFiles({ name: 'trenulet-18.6.0.zip', mimeType: 'application/zip', buffer: await pachetVechi() });
@@ -197,7 +197,7 @@ test('numele nou (ADR 0167): „Easy 3Draw” 18.34.0, instalat peste „Planifi
   await page.locator('[data-extensii="buton"]').click();
   await page.locator('[data-extensii="fisier-ales"]').setInputFiles(ZIP);
   await expect(page.getByTestId('extensii-instalare').locator('h2')).toHaveText('Instalezi „Easy 3Draw”?');
-  await expect(page.getByTestId('extensii-despre')).toContainText('18.34.0 · din fișierul trenulet-18.34.0.zip · ');
+  await expect(page.getByTestId('extensii-despre')).toContainText('18.35.0 · din fișierul trenulet-18.35.0.zip · ');
   await page.locator('[data-extensii="instaleaza"]').click();
   // același id: un singur rând în meniu, cu numele nou; circuitul de dinainte, redeschis
   await page.locator('[data-extensii="buton"]').click();
@@ -564,8 +564,9 @@ test('în engleză (ADR 0165): limba lui cvs2, schimbată pe loc printr-o reporn
   await intraIn3D(c);
   // filele (ADR 0281): familiile, cu câte piese au, apoi cele proprii; numele lor, aici (cuvinte fără diacritice, pe care
   // proba de română nu le recunoaște); apoi fiecare piesă a fiecărei familii și fiecare filă proprie, fără română
-  await expect(c.locator('#at-tipuri button:not([hidden])')).toHaveText(['Bricks 12', 'Joints 10', 'Wheels 10', 'Propeller 4', 'From cvs2', 'Calibration']);
-  for (const fila of ['caramizi', 'legaturi', 'roti', 'propulsie']) {
+  await expect(c.locator('#at-tipuri button:not([hidden])')).toHaveText(['Bricks 12', 'Joints 10', 'Wheels 10', 'Propeller 4', 'Christmas 3', 'From cvs2', 'Calibration']);
+  // (fila „Crăciun” întâi, ca la capăt să rămână deschisă roata cu palete, ultima piesă a filei Elice)
+  for (const fila of ['craciun', 'caramizi', 'legaturi', 'roti', 'propulsie']) {
     await c.locator(`#at-tipuri [data-fila="${fila}"]`).click();
     await expect(c.locator(`#at-tipuri [data-fila="${fila}"]`)).toHaveAttribute('aria-pressed', 'true');
     for (const piesa of await c.locator('#at-galerie [data-piesa]').evaluateAll((b) => b.map((x) => (x as HTMLElement).dataset['piesa'] ?? ''))) {
@@ -573,6 +574,43 @@ test('în engleză (ADR 0165): limba lui cvs2, schimbată pe loc printr-o reporn
       // „Placă cu găuri” e o formă gata a cărămizii: se deschide în editorul ei
       await expect(c.locator('#at-galerie [aria-pressed="true"]')).toHaveAttribute('data-piesa', piesa === 'placaTechnic' ? 'caramida' : piesa);
       expect(await romanaRamasa(page, 'Păstrat la repornire'), `${fila} / ${piesa}`).toEqual([]);
+    }
+    if (fila === 'craciun') {
+      // decorațiunile (3.Cl-1), în engleză: brăduțul rămas deschis, apoi steaua și fulgul. Cuvintele fără diacritice („Etaje”,
+      // „Inel”, „Contur”, „Clasic”, „Simplu”, „Hexagon”, „Gol”, „Stea”), pe care proba de română nu le recunoaște, se cer aici;
+      // zecimalele, cu punct
+      await expect(c.locator('#at-editor h2')).toHaveText('Christmas tree');
+      await expect(c.locator('#at-nume-piesa')).toHaveText('Christmas tree, 80 mm, 3 tiers');
+      await expect(c.locator('#at-bd-fel [data-v]')).toHaveText(['Hanging', 'Standing']);
+      await expect(c.locator('label[for="at-bd-etaje"]')).toHaveText('Tiers');
+      await expect(c.locator('#at-bd-ag [data-v]')).toHaveText(['Ring', 'Hole', 'None']);
+      await expect(c.locator('#at-bd-info')).toHaveText('52 mm wide at the base.');
+      await c.locator('#at-bd-fel [data-v="picioare"]').click();
+      await expect(c.locator('#at-nume-piesa')).toHaveText('Christmas tree, 80 mm, 3 tiers, standing');
+      await expect(c.locator('#at-bd-info')).toHaveText('Two plates, 52 mm wide. The slots are 3.4 mm: the plate thickness plus the clearance from calibration. The second plate stops at 74.8 mm, where 1.2 mm is still left beside the slot.');
+      await c.locator('#at-bd-fel [data-v="agatat"]').click();
+      await c.locator('#at-galerie [data-piesa="stea"]').click();
+      await expect(c.locator('#at-editor h2')).toHaveText('Star');
+      await expect(c.locator('#at-nume-piesa')).toHaveText('5-point star Ø70');
+      await expect(c.locator('#at-st-repede [data-v]')).toHaveText(['Classic', 'Outline', 'Tree topper', '6 points', '8 points']);
+      await expect(c.locator('#at-st-fel [data-v]')).toHaveText(['Solid', 'Outline', 'Raised']);
+      await expect(c.locator('#at-st-info')).toHaveText('The points are 38° wide; the inner corners sit 14 mm from the centre.');
+      await c.locator('#at-st-repede [data-v="2"]').click();
+      await expect(c.locator('#at-nume-piesa')).toHaveText('5-point star Ø70, inner points at 45 %, raised, 8 mm');
+      await expect(c.locator('label[for="at-st-grosime"]')).toHaveText('Height (mm)');
+      await expect(c.locator('#at-st-info')).toHaveText('The points are 45° wide; the inner corners sit 15.8 mm from the centre. The edge is 1.2 mm high and the centre, 8 mm.');
+      await c.locator('#at-st-repede [data-v="0"]').click();
+      await c.locator('#at-galerie [data-piesa="fulg"]').click();
+      await expect(c.locator('#at-editor h2')).toHaveText('Snowflake');
+      await expect(c.locator('#at-nume-piesa')).toHaveText('Snowflake Ø70, branches 2 × 60°');
+      await expect(c.locator('#at-fg-repede [data-v]')).toHaveText(['Classic', 'Little star', 'Lace', 'Fir', 'Arrows', 'Plain']);
+      await expect(c.locator('#at-fg-miez [data-v]')).toHaveText(['Hexagon', 'Star', 'Hollow']);
+      await expect(c.locator('#at-fg-alt')).toHaveText('Another snowflake');
+      await expect(c.locator('#at-fg-info')).toHaveText('The line is 2 mm (the thinnest that prints well is 1.2); each arm has 4 branches.');
+      await c.locator('#at-fg-repede [data-v="5"]').click();
+      await expect(c.locator('#at-nume-piesa')).toHaveText('Snowflake Ø70, no branches, hollow core, line 3');
+      await c.locator('#at-fg-repede [data-v="0"]').click();
+      await expect(c.locator('#at-nume-piesa')).toHaveText('Snowflake Ø70, branches 2 × 60°');
     }
   }
   // roata cu palete (3.Cj), rămasă deschisă: editorul ei, în engleză (cuvinte fără diacritice, pe care proba de română nu le
