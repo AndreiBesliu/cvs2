@@ -15,6 +15,7 @@ import { textePlacutei, type RezultatPlacuta } from './placute.ts';
 import type { Font } from './font.ts';
 
 export { aseazaText, type ParametriText, type TextAsezat } from './asezare.ts';
+export { cifreDinFont, FONT_COTE } from './cifreCote.ts';
 export { piesaText, type RezultatPiesaText } from './piesaText.ts';
 export { aseazaPeCurba, type TextPeCurba } from './peCurba.ts';
 export { lungimeCurba } from '../model/curba.ts';

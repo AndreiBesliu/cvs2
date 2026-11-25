@@ -1824,6 +1824,12 @@ care). Fereastra are trei părți:
   ajunge). Un post scris doar după documentația controlerului, încă neprobat pe o mașină, poartă o notă: urmărește primul
   program în aer;
 - **Unitățile**: mm (implicit) sau inch (cu 5 zecimale și avansul în inch/min); antetul rămâne în mm. RichAuto citește doar mm;
+- **Numele fișierului**, fără extensie: implicit cel al foii, dacă i-ai scris unul în proprietățile ei (fără diacritice,
+  cu liniuțe: „Ușă Țarc 2” dă `usa-tarc-2`), altfel `cncvs2-` și colțul de origine. Îl poți schimba înainte de **Exportă**;
+  sub câmp scrie ce se descarcă, iar fișierele pe freză, ale dopurilor și arhiva foilor îl iau și ele în față. Nu merge gol,
+  mai lung de 80 de caractere, cu `< > : " / \ | ? *`, cu spațiu sau punct la capete, nici un nume rezervat de Windows
+  (CON, PRN, AUX, NUL, COM1…, LPT1…). Pe RichAuto, care citește de pe stick doar nume scurte, numele e al controlerului
+  (`CNCVS2.NC`), iar câmpul e oprit. Rezultatul spune numele fișierului descărcat;
 - **Schimbarea frezei**, doar când operațiile au freze diferite: **oprire în senderul aplicației** (implicit pe familia GRBL:
   lucrarea se oprește la `T… M6`, scoți freza, o pui pe următoarea, palpezi Z și **Continui**), **M6 la controler** (grblHAL,
   FluidNC, cu schimbarea configurată acolo; implicit pe Syntec, Mach3 și Mach4), **M0, cu freza în comentariu** sau **câte un
@@ -1989,10 +1995,15 @@ Inkscape, Illustrator / Corel, AutoCAD / LibreCAD) sau pentru laser:
 - **un strat pe rol**, după prima operație care taie forma: EXTERIOR, INTERIOR, PE_LINIE, PE_O_PARTE (o cale tăiată pe
   stânga sau pe dreapta), BUZUNAR, GAURIRE și FARA_OPERATIE, fiecare cu culoarea lui; scrise doar straturile folosite. În PDF
   sunt straturi PDF (le vezi și le ascunzi în cititor); EPS-ul n-are straturi, deci rolul rămâne doar în culoare;
-- **Cu conturul foii** adaugă dreptunghiul foii, pe stratul FOAIE.
+- **Cu conturul foii** adaugă dreptunghiul foii, pe stratul FOAIE;
+- **Cu cotele (N)**, pe o foaie cu cote, le adaugă pe un strat al lor (COTE, sau numele din **Setări** › Cotele › Exportul,
+  cu culoarea de acolo): liniile de cotă și de extensie, arcele unghiurilor (arce adevărate în DXF și SVG), capetele (săgețile
+  pline sunt triunghiuri umplute, punctele discuri) și cifrele, ca trăsăturile fontului cu o singură linie al aplicației, deci
+  arată la fel în orice program, fără fonturi. Bifa pornește cum spun Setările (implicit oprită: vectorii pentru laser sau
+  pentru alt CAM rămân doar formele); sub ea, legătura **Setările cotelor**. Cotele nu intră niciodată în G-code.
 
-**Exportă** descarcă fișierul și spune câte entități și câte straturi are. O formă cu și linii, și curbe iese în bucăți
-legate cap la cap (o polilinie, apoi o curbă).
+**Exportă** descarcă fișierul și spune câte entități și câte straturi are (cu cotele, și câte cote). O formă cu și linii, și
+curbe iese în bucăți legate cap la cap (o polilinie, apoi o curbă).
 
 ## Mașina
 %% capitol: masina

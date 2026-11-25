@@ -680,7 +680,7 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
       exportInCurs.current = false;
       exportCalcul.current = null;
       if (r.ok) {
-        // Un fișier, sau câte unul pe freză (ADR 0084), cu numele dat de export (`numeFisier`).
+        // Un fișier, sau câte unul pe freză (ADR 0084), cu numele dat de export (`numeFisier`, cu baza aleasă în fereastră).
         const fisiere = r.fisiere.map((f) => ({ octeti: f.octeti, sha256: f.sha256, linii: f.linii, nume: f.nume }));
         for (const f of fisiere) descarca(f.octeti, f.nume);
         // Dopurile incrustațiilor (ADR 0170 §3): fișierele lor, după ale foii; nu intră în panoul mașinii (alt semifabricat).
@@ -694,7 +694,7 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
         setStareExport({
           ok: true, linii: r.program.linii, sha256: r.program.sha256, avertismente: r.avertismente, rezumat: r.rezumat, simulare: 'calcul',
           ...(r.undeTine ? { undeTine: r.undeTine } : {}),
-          ...(fisiere.length > 1 ? { fisiere: fisiere.map(({ nume, linii, sha256 }) => ({ nume, linii, sha256 })) } : {}),
+          ...(fisiere.length > 1 ? { fisiere: fisiere.map(({ nume, linii, sha256 }) => ({ nume, linii, sha256 })) } : fisiere[0] ? { nume: fisiere[0].nume } : {}),
           ...(dopuri.length > 0 ? { dopuri: dopuri.map(({ octeti: _o, ...d }) => d) } : {}), ...(r.foi ? { foi: r.foi } : {}),
         });
         // „Trimite la mașină” (felia 28.1↑d): un program pe care senderul îl vorbește intră în Mașina, fără să pornească, și
@@ -1729,6 +1729,8 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
           toate={doc}
           // Titlul spune foaia (ADR 0210 §5), cu mai multe foi.
           {...(doc.foi.length > 1 && foaie ? { foaie: numeFoaie(foaie, indexActiva, sablonFoaie) } : {})}
+          // Numele scris al foii active: propunerea numelui fișierului pornește din el (ADR 0291 §5).
+          {...(typeof foaie?.nume === 'string' ? { numeFoaie: foaie.nume } : {})}
           dupaIdLume={harti.dupaIdLume}
           lume={lume}
           descriere={descriere}

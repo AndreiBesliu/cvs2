@@ -36,7 +36,7 @@ o('A15', LG, 'lungRea: Number.isFinite(lc) && n !== Math.round(lc),', 'lungRea: 
 o('A16', LG, 'if (q.lungRea) avert.push(tr`Un arc are', 'if (q.lungRea && q.n > 99) avert.push(tr`Un arc are', 'arc', 'lungimea îndreptată nu se mai spune')
 o('A17', LG, 'if (q.inaltRea) avert.push(', 'if (q.inaltRea && q.n > 99) avert.push(', 'arc', 'înălțimea îndreptată nu se mai spune')
 # --- motorul: corpul
-PIC = 'tri.push(...caramida({ celule: [[0, 0], [q.n - 1, 0]], placi: 3 * q.c }).tri);'
+PIC = 'const picioare = caramida({ celule: [[0, 0], [q.n - 1, 0]], placi: 3 * q.c });'
 o('A18', LG, PIC, PIC.replace('[q.n - 1, 0]', '[q.n - 2, 0]'), 'arc', 'piciorul din dreapta e cu un știft mai la stânga')
 o('A19', LG, PIC, PIC.replace('placi: 3 * q.c }', 'placi: 3 }'), 'arc', 'picioarele au mereu o cărămidă înălțime')
 o('A20', LG, PIC, PIC.replace('placi: 3 * q.c }', 'placi: 3 * q.c, stifturi: false }'), 'arc', 'picioarele n-au știfturi')
@@ -87,7 +87,8 @@ o('E12', AT, 'camp("#at-arc-lung", 3, 16, v => { p.lung = v; });', 'camp("#at-ar
 o('E13', AT, 'camp("#at-arc-inalt", 1, 4, v => { p.inalt = v; });', 'camp("#at-arc-inalt", 1, 6, v => { p.inalt = v; });', 'e2e', 'înălțimea 5 e primită')
 o('E14', AT, 'camp("#at-arc-inalt", 1, 4, v => { p.inalt = v; });', 'camp("#at-arc-inalt", 0, 4, v => { p.inalt = v; });', 'e2e', 'înălțimea 0 e primită (și ridicată de motor la 1)')
 o('E15', AT, 'camp("#at-arc-inalt", 1, 4, v => { p.inalt = v; });', 'camp("#at-arc-inalt", 1, 4, v => { p.lung = v; });', 'e2e', 'înălțimea scrisă schimbă lungimea')
-o('E16', AT, 'if (f) { p.lung = f[0]; p.inalt = f[1]; editor(); schimbat(); } };', 'if (f) { p.lung = f[0]; editor(); schimbat(); } };', 'e2e', 'o mărime uzuală nu-și pune înălțimea')
+o('E16', AT, 'f = b && ARCE.find(a => a.join("x") === b.dataset.v); if (f) { p.lung = f[0]; p.inalt = f[1]; editor(); schimbat(); } };',
+  'f = b && ARCE.find(a => a.join("x") === b.dataset.v); if (f) { p.lung = f[0]; editor(); schimbat(); } };', 'e2e', 'o mărime uzuală nu-și pune înălțimea')
 o('E17', AT, 'gata = ARCE.find(([n, c]) => n === q.lung && c === q.inalt);', 'gata = ARCE.find(([n]) => n === q.lung);', 'e2e', '„Repede” arată apăsată altă mărime cu aceeași lungime')
 o('E18', AT, '$("#at-arc-bolta").onclick = ev => { const b = (ev.target as Element).closest<HTMLElement>("[data-v]"); if (!b) return; p.bolta = b.dataset.v!; editor(); schimbat(); };',
   '$("#at-arc-bolta").onclick = ev => { const b = (ev.target as Element).closest<HTMLElement>("[data-v]"); if (!b) return; p.bolta = "joasa"; editor(); schimbat(); };', 'e2e', 'bolta rămâne joasă, orice s-ar alege')

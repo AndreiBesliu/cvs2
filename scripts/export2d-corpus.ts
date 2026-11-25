@@ -16,6 +16,16 @@
  *   cercul R3 în (20, 380), cu găurire;
  * - piesa C, instanța rotită 90° în (580, 20): cercul R5 în (10, 0) al piesei ajunge în (580, 30); profil exterior.
  * Cu conturul foii (stratul FOAIE).
+ *
+ * Al doilea document, al cotelor (ADR 0330 §7, felia 10.4↑c-1), exportat ca `cote.dxf`, `cote.svg`, `cote.pdf` și `cote.eps`
+ * prin intrarea aplicației (`exportaVectori`, cu „Cu cotele”): foaia 300 × 200 cu conturul ei, fără forme, cu patru cote
+ * dezlegate, desenate cu stilul și cifrele implicite (săgeți pline de 2,5 mm, cifrele de 3,5 mm deasupra, golul 1, depășirea
+ * 2; zecimalele tăiate, virgula), pe stratul `DIM_1`, portocaliu (#ff8800), cu liniile de 0,25 mm:
+ * - `h`: orizontala între (20, 20) și (120, 40), cu linia la d = 15;
+ * - `v`: verticala între (200, 20) și (210, 80), cu linia la d = 20;
+ * - `u`: unghiul cu vârful (40, 120), laturile spre (60, 120) și (40, 140), arcul de rază 25;
+ * - `d`: diametrul cercului cu centrul (240, 150) și punctul (260, 150), cifra în afară, la d = 8.
+ * Cifrele sunt trăsăturile fontului inclus cu o singură linie (Relief SingleLine), citit aici de cititorul aplicației.
  */
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -26,6 +36,11 @@ import { scrieDxf } from '../src/io/dxfExport.ts';
 import { scrieSvg } from '../src/io/svgExport.ts';
 import { scriePdf } from '../src/io/pdfExport.ts';
 import { scrieEps } from '../src/io/epsExport.ts';
+import { readFileSync } from 'node:fs';
+import { exportaVectori } from '../src/io/exportVectori.ts';
+import { formatImplicit, STIL_IMPLICIT } from '../src/model/desenCota.ts';
+import { cifreDinFont } from '../src/text/cifreCote.ts';
+import { citesteFont } from '../src/text/font.ts';
 
 const I = { a: 1, b: 0, c: 0, d: 1, e: 0, f: 0 };
 const SCULA = { numar: 1, nume: 'freza plata', diametru: 6 };
@@ -104,6 +119,20 @@ export const CORPUS = {
   }],
 };
 
+const Q = (x: number, y: number): { x: number; y: number } => ({ x, y });
+export const CORPUS_COTE = {
+  schema: 28, rev: 0, piese: [],
+  foi: [{
+    id: 'f1', stoc: { latime: 300, inaltime: 200, grosime: 18 }, instante: [], cote: [
+      { id: 'h', fel: 'orizontala', puncte: [Q(20, 20), Q(120, 40)], linie: { d: 15 } },
+      { id: 'v', fel: 'verticala', puncte: [Q(200, 20), Q(210, 80)], linie: { d: 20 } },
+      { id: 'u', fel: 'unghi', puncte: [Q(40, 120), Q(60, 120), Q(40, 140)], linie: { d: 25, s1: 1, s2: 1 } },
+      { id: 'd', fel: 'diametru', puncte: [Q(240, 150), Q(260, 150)], linie: { d: 8 } },
+    ],
+  }],
+};
+export const STRAT_COTE = { nume: 'DIM_1', culoare: '#ff8800', grosime: 0.25 };
+
 // Doar pornit direct (`node scripts/export2d-corpus.ts <dosar>`): testele îl importă pentru CORPUS, fără să scrie nimic.
 const dosar = process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href ? process.argv[2] : undefined;
 if (dosar) {
@@ -116,4 +145,15 @@ if (dosar) {
   writeFileSync(join(dosar, 'corpus.pdf'), scriePdf(vec));
   writeFileSync(join(dosar, 'corpus.eps'), scrieEps(vec, 'corpus'));
   console.log(`corpusul exportului 2D: ${vec.entitati.length} entități, în ${dosar}`);
+  const rc = incarca(structuredClone(CORPUS_COTE));
+  if (!rc.ok) throw new Error(`corpusul cotelor nu trece de ușă: ${rc.motiv}`);
+  const f = citesteFont(new Uint8Array(readFileSync(new URL('../public/fonturi/relief-singleline.ttf', import.meta.url))));
+  if (!f.ok) throw new Error('fontul cifrelor nu s-a citit');
+  const cerute = { stil: STIL_IMPLICIT, format: formatImplicit(true), cifre: cifreDinFont(f.font), strat: STRAT_COTE };
+  for (const fmt of ['dxf', 'svg', 'pdf', 'eps'] as const) {
+    const x = exportaVectori(rc.doc, 0, fmt, true, cerute);
+    if (x.cote !== 4 || x.lipsa.length > 0) throw new Error(`corpusul cotelor: ${x.cote} cote, lipsă: ${x.lipsa.join(' ')}`);
+    writeFileSync(join(dosar, `cote.${fmt}`), x.text);
+  }
+  console.log(`corpusul cotelor: 4 cote, în ${dosar}`);
 }

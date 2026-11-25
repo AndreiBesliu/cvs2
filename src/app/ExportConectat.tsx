@@ -71,6 +71,8 @@ type Props = {
   readonly trimite?: boolean;
   /** Numele foii exportate, pentru titlu (ADR 0210 §5), când proiectul are mai multe. */
   readonly foaie?: string;
+  /** Numele scris al foii active (ADR 0291 §5), pentru propunerea numelui fișierului. */
+  readonly numeFoaie?: string;
   /** Documentul cu toate foile (ADR 0210 §5): „Toate foile” și plăcuțele tuturor. */
   readonly toate: Document;
   /** „Raportul foilor…” (ADR 0210 §6): aplicația închide exportul și deschide raportul. */
@@ -91,7 +93,7 @@ function placuteIesite(d: Document, k?: number): { readonly nume: readonly strin
 
 export function ExportConectat({
   doc, dupaIdLume, lume, descriere, limba, baza, doarCitire, stare, onExporta, onInchide, onReseteaza, setariMasina, onSetariMasina,
-  supracursa, onSupracursa, prinFoaie, onPrinFoaie, onDeschideInMasina, trimite, foaie, toate, onRaport, onAlegeUrechi,
+  supracursa, onSupracursa, prinFoaie, onPrinFoaie, onDeschideInMasina, trimite, foaie, numeFoaie, toate, onRaport, onAlegeUrechi,
 }: Props) {
   /**
    * Dialogul de export arată operațiile pieselor de pe foaie (ADR 0025): câte un rând pe operație, cu descrierea primului
@@ -271,6 +273,7 @@ export function ExportConectat({
     <DialogExport
       baza={baza}
       {...(foaie === undefined ? {} : { foaie })}
+      {...(numeFoaie === undefined ? {} : { numeFoaie })}
       {...(doc.foi[0] ? { grosimeFoaie: doc.foi[0].stoc.grosime } : {})}
       operatii={exportFoaie.randuri}
       ordineAutomata={exportFoaie.automata}

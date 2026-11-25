@@ -18,6 +18,18 @@
       ],
       "noutati": [
         {
+          "versiune": "18.32.0",
+          "data": "2026-11-25",
+          "ro": "Șurubul melc, în fila „Roți”: un șurub pe ax care întoarce o roată dințată de aici cu un dinte la fiecare tură. Ø8 (ca LEGO) sau Ø16 (gros), lung de 1–4 știfturi; „Fă perechea” pune în listă și roata lui. Se tipărește în picioare.",
+          "en": "The worm screw, in the “Wheels” tab: a screw on an axle that turns a gear made here by one tooth per turn. Ø8 (like LEGO) or Ø16 (thick), 1–4 studs long; “Make the pair” also adds its gear to the list. Prints standing up."
+        },
+        {
+          "versiune": "18.31.0",
+          "data": "2026-11-25",
+          "ro": "Cadrul (fereastra), în fila „Cărămizi”: o cărămidă 1 × n cu un gol prin ea, cu prag, stâlpi subțiri și știfturi sus. Lungimea, înălțimea, rama și colțurile golului (drepte sau teșite), la alegere; se tipărește în picioare, fără suport.",
+          "en": "The frame (window), in the “Bricks” tab: a 1 × n brick with an opening through it, with a sill, thin posts and studs on top. Choose the length, height, frame thickness and square or chamfered corners; prints upright, without supports."
+        },
+        {
           "versiune": "18.30.0",
           "data": "2026-11-25",
           "ro": "Roata cu palete, în fila „Elice”: o roată de apă sau de vânt, pe ax. Diametrul, numărul paletelor, lățimea, palete drepte sau curbate, cu disc sau fără; se tipărește culcată, fără suport.",
@@ -130,8 +142,8 @@
           }
         }
       ],
-      "versiune": "18.30.0",
-      "continut": "d22fffb50bd623a9e65bcb122a3ccf81f3b1774f5ae6c6ef919ab46d6e8c9ee4"
+      "versiune": "18.32.0",
+      "continut": "cb030bd2701c6a06551be80d6304855fa0a688165b81238532ecdf496bfa1781"
     }
   ]
 }

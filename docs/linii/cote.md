@@ -48,7 +48,8 @@ față. Fără cod de produs până la răspunsuri. De hotărât acolo, între a
 - **Interfața:** un buton, o acțiune sau o etichetă nouă cere capitolul ei în manual, în ambele limbi; o tastă nouă,
   rândul ei în capitolul scurtăturilor; un control cu nume, `node scripts/catalog-controale.ts --scrie`; bara de sus se
   probează la 1280 px și cu fontul lat, în ambele limbi.
-- **Mărimea:** pornirea 114,7 / 120 kB (ADR 0145), totalul 806,1 / 900 kB. Unealta vine în bucata editării, la cerere;
+- **Mărimea:** din 25.11, plafoanele 125 kB (pornirea) și 1 000 kB (totalul), ADR 0146; cu c-1, pornirea 111,2 (cu ușa și
+  cu Atelierul 116,5), totalul 888,1 (cu relieful 18.1↑b). Unealta vine în bucata editării, la cerere;
   în raportul fiecărei felii, cât adaugă în pornire și în total.
 - **Liniile vecine:** exportul (`wip/28.8-export`) și frezele (`wip/16.A-freze`) lucrează în fereastra „Exportă G-code”;
   cotele n-ar trebui să o atingă. „Exportă vectori” e liber.
@@ -93,6 +94,14 @@ față. Fără cod de produs până la răspunsuri. De hotărât acolo, între a
   setările lor (prefixele, unghiurile, linia razei) și inch în fracții. Proba mijlocului căii SVG a prins arcul unghiului
   oglindit față de coardă (sweep-flag, reparat). **Urmează:** 10.4↑c (exportul), la cuvântul owner-ului.
 
+- **24.11, 10.4↑a-4 și 10.4↑b unite** de sesiunea principală în lotul 26 (`1eea83dd`, la `98575aff`).
+- **25.11, 10.4↑c-1 gata pe ramură** (la „Pornește 10.4↑c”, transmis de sesiunea principală; `main` adus, cu plafoanele
+  1 000 / 125 kB): cotele în „Exportă vectori” (bifa „Cu cotele”, stratul din Setări › Exportul, cifrele ca trăsături),
+  în DXF, SVG, PDF și EPS, cu oracolul Python nou (`export2d_cote.py`). Felia c s-a împărțit: c-2 aduce DIMENSION și
+  cifrele ca text.
+- **25.11, 10.4↑c-1 unită în `main`** de sesiunea principală (`f2f6fc57`, din `d8e69780`; `main` `f8be3b4d` adus în
+  ramură); pe test ajunge cu lotul următor. **Urmează:** 10.4↑c-2, la cuvântul owner-ului.
+
 ## Deciziile owner-ului
 
 - **24.11:** 1a (pe foaie, fără schemă nouă: v28 rămâne liber), 2a (legată implicit), 3a (doar cu unealta Cote), 4a
@@ -125,5 +134,13 @@ față. Fără cod de produs până la răspunsuri. De hotărât acolo, între a
 - **Probele e2e pe pânză:** jos, la 1280 × 720, bara de jos acoperă marginea foii (un clic acolo nimerește un buton); o
   tastă a editorului cere focusul în bara uneltelor (`[data-unealta="selectie"]`), nu pe pânză (canvasul nu ia focus);
   bucata uneltei vine la cerere, deci primul clic așteaptă stratul ei.
+- **`src/io` nu importă textul** (regula `io-doar-model-geom`): cifrele cotelor la export le așază apelantul (`cifreDinFont`, în
+  `src/text/cifreCote.ts`, reexportat de modulul textului adus la cerere) și le dă entităților (`OptiuniCote.cifre`).
+- **SVG-ul exportului e cât foaia** (ADR 0088): o cotă din afara foii iese din pagina lui; PDF-ul, EPS-ul și DXF-ul se lărgesc.
+- **Culoarea DXF a stratului:** cea mai apropiată ACI în RGB dădea gri albastrului închis implicit; se alege după nuanță.
+- **Probele e2e ale exportului cu cote** așteaptă stratul uneltei Cote înainte de clicuri (altfel două clicuri lasă o cotă
+  începută, numărată, apoi pierdută la Selecție) și lista „Cote (1)” după punere.
+- **Oracolul Python al cotelor** refolosește așezarea independentă a textului (`text_corpus.aseaza`, fontTools); el lasă
+  `__pycache__` în `test/oracles-py/` (de șters, nu de comis); local, Ghostscript se pune cu `apt-get install ghostscript`.
 - **Liniile de extensie pleacă de lângă vârfuri:** alese la clic, ar fura începutul unei cote noi; cota se alege doar de
   pe linie și de pe cifră, iar un punct numit al unei forme bate cota.
