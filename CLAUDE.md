@@ -1664,6 +1664,29 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 25.11.2026, înainte de prânz: **fereastra exportului după audit, ADR 0291 acceptat** (owner-ul, în sesiunea liniei
+  exportului, la cele nouă întrebări ale auditului: „1a, 2a, 3a, 4a, 5a, 6a, 7a, 8a, 9a”). ADR-ul (scris de linie, `5966da75`,
+  PR-ul `AndreiBesliu/cvs2#36`, doar documente), unit în `b826abe9`. **Ce a hotărât:**
+  1. ordinea: 28.8↑h (desenele și notele ferestrei, socotite de stratul de acțiuni cu funcțiile lucrării: repară cele
+     două desene care nu spun ce taie programul), apoi 28.8↑i (viteza: doar fișa văzută randată), apoi j–l, **toate
+     după ce 16.A↑b-5 e în `main`** (linia frezelor lucrează în aceeași fișă);
+  2. conflictul T la o freză schimbată: butonul „Dă-i T{n}”, cu regula de azi (`numarPentruRand`);
+  3. avansul, turația și plonjarea pe „Scrisă de mână” (trei câmpuri în grupul Freza, scrise în `regim`, fără schemă
+     nouă); Z-ul sigur și parcarea, în „Mașina și fișierul” (28.8↑p, a liniei exportului, cu linia frezelor anunțată);
+  4. avertismentul vitezei maxime, doar față de `$$`-ul lipit; până atunci, o notă;
+  5. numele fișierului, în „Mașina și fișierul”, de schimbat înaintea exportului (28.8↑n);
+  6. centrul foii ca a cincea origine XY0 (28.8↑o: atinge montajul, antetul citit de sender și ghidul zeroului, deci
+     mișcă mașina și se probează pe oracole și pe emulator; colțurile de azi rămân octet cu octet);
+  7. „Toate foile” cu operațiile fiecărei foi (28.8↑q, după i);
+  8. „Trimite la mașină” în Atelier ca un pas scurt, cu „Arată tot” (a liniei aranjamentelor; fereastra îi dă
+     bucățile în 28.8↑m);
+  9. adaosul lateral, trecerea de finisare pe profil și punctul de start: o felie de CAM după placa 2, cu document
+     nou (v30 sau numărul liber de atunci; v29 e al reliefului), pe linia pe care o alege sesiunea principală.
+
+  28.8↑n și 28.8↑o nu ating fișa operației, deci linia le poate lucra cât frezele sunt în b-5 (întâi n). Programul de
+  azi rămâne octet cu octet la toate feliile. Constatarea 9 (frezele de rest fără etichete) e a liniei frezelor;
+  constatarea 14 (numele elementelor cu punct zecimal în română, `src/app/descriereElement.ts`) e a sesiunii
+  principale. **Sesiunea exportului nu se mai arhivează acum:** linia are din nou felii.
 - 25.11.2026, înainte de prânz (a treizeci și una unire din cloud): **relieful: modelul în vederea 3D (18.1↑b), unit
   în `main`** (sesiunea principală, ramura `unire-2511l`, din `43cf59af`). Linia reliefului, ramura `wip/18.1-relief`,
   `04e7cd2f` (codul lui `3214f4da`, plus documente), PR-ul `AndreiBesliu/cvs2#30` (ADR 0310 §4, §7; pornită la „vreau
