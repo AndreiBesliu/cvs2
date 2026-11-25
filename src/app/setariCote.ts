@@ -1,7 +1,7 @@
 /**
  * Setările cotelor (ADR 0330 §6), ale aplicației, nu ale unei cote: ținute în browser (`cncvs2.cote`, JSON cu versiune),
  * aplicate pe loc tuturor cotelor. Grupurile: cifrele și liniile (a-3), raza, diametrul și unghiul (b, cu inch în fracții),
- * comportamentul, lipirea, măsurarea (a-2, plus pânza în a-3 și foile vecine în a-4); fereastra Setări le scrie. Orice valoare lipsă, de alt tip sau în afara marginilor ia implicitul ei, câmp
+ * comportamentul, lipirea, măsurarea (a-2, plus pânza în a-3 și foile vecine în a-4), exportul (c-1); fereastra Setări le scrie. Orice valoare lipsă, de alt tip sau în afara marginilor ia implicitul ei, câmp
  * cu câmp: o setare stricată nu le strică pe celelalte.
  */
 import { useSyncExternalStore } from 'react';
@@ -89,6 +89,16 @@ export type SetariCote = {
     readonly cursor: boolean;
     readonly bara: boolean;
   };
+  /** Exportul vectorilor (felia 10.4↑c-1). */
+  readonly export: {
+    /** Implicitul bifei „Cu cotele” din „Exportă vectori”. */
+    readonly cuCote: boolean;
+    /** Stratul cotelor: numele (`numeStratBun`) și culoarea („#rrggbb”). */
+    readonly strat: string;
+    readonly culoare: string;
+    /** Grosimea liniilor cotelor în PDF și SVG, 0,05–1 mm. */
+    readonly grosime: number;
+  };
 };
 
 export const SETARI_IMPLICITE: SetariCote = {
@@ -98,7 +108,19 @@ export const SETARI_IMPLICITE: SetariCote = {
   comportament: { legate: true, pornire: 'automata', dupa: 'ramane', pePanza: true, vecine: 'estompate', pragCifre: 6, culoare: null },
   lipire: { felurile: { varf: true, mijloc: true, centru: true, cadran: true, cutie: true, foaie: true, grila: true }, toleranta: 8, contur: 'ctrl' },
   masurare: { distanta: true, delta: true, unghi: true, cursor: true, bara: true },
+  export: { cuCote: false, strat: 'COTE', culoare: '#006d8f', grosime: 0.1 },
 };
+
+/**
+ * Numele straturilor exportului care nu pot fi ale cotelor: rolurile formelor și conturul foii (`STRATURI` din
+ * `src/io/vectori.ts`, fără COTE; o probă le ține la fel) și stratul 0 al DXF-ului. DXF-ul nu deosebește literele mari.
+ */
+export const STRATURI_REZERVATE = ['0', 'EXTERIOR', 'INTERIOR', 'PE_LINIE', 'PE_O_PARTE', 'BUZUNAR', 'GAURIRE', 'FARA_OPERATIE', 'FOAIE'] as const;
+/** Cât de lung poate fi numele stratului cotelor. */
+export const STRAT_MAXIM = 31;
+/** Pură: numele e bun pentru stratul cotelor: litere ASCII, cifre, „_” și „-”, cel mult `STRAT_MAXIM`, nu al altui strat. */
+export const numeStratBun = (n: string): boolean =>
+  new RegExp(`^[A-Za-z0-9_-]{1,${STRAT_MAXIM}}$`).test(n) && !(STRATURI_REZERVATE as readonly string[]).includes(n.toUpperCase());
 
 export const CHEIE_SETARI_COTE = 'cncvs2.cote';
 export const TOLERANTA_MINIMA = 4;
@@ -115,6 +137,7 @@ export const MARGINI = {
   zecimaleUnghi: [0, 4],
   pragCifre: [0, 12],
   toleranta: [TOLERANTA_MINIMA, TOLERANTA_MAXIMA],
+  grosime: [0.05, 1],
 } as const satisfies Record<string, readonly [number, number]>;
 
 type Brut = Record<string, unknown>;
@@ -142,6 +165,7 @@ export function citesteSetariCote(text: string | null): SetariCote {
   const I = SETARI_IMPLICITE;
   const ci = obiect(brut['cifre']), li = obiect(brut['linii']), ra = obiect(brut['raza']);
   const c = obiect(brut['comportament']), l = obiect(brut['lipire']), m = obiect(brut['masurare']), f = obiect(l['felurile']);
+  const ex = obiect(brut['export']);
   const culoare = c['culoare'];
   return {
     cifre: {
@@ -191,6 +215,12 @@ export function citesteSetariCote(text: string | null): SetariCote {
       cursor: bif(m['cursor'], I.masurare.cursor),
       bara: bif(m['bara'], I.masurare.bara),
     },
+    export: {
+      cuCote: bif(ex['cuCote'], I.export.cuCote),
+      strat: typeof ex['strat'] === 'string' && numeStratBun(ex['strat']) ? ex['strat'] : I.export.strat,
+      culoare: typeof ex['culoare'] === 'string' && CULOARE.test(ex['culoare']) ? ex['culoare'] : I.export.culoare,
+      grosime: numar(ex['grosime'], MARGINI.grosime, I.export.grosime),
+    },
   };
 }
 
@@ -228,7 +258,7 @@ export const formatCote = (s: SetariCote, virgulaLimbii: boolean): FormatCifre =
 });
 
 /** Grupurile setărilor, în ordinea ferestrei Setări › Cotele. */
-export const GRUPURI_COTE = ['cifre', 'linii', 'raza', 'comportament', 'lipire', 'masurare'] as const satisfies readonly (keyof SetariCote)[];
+export const GRUPURI_COTE = ['cifre', 'linii', 'raza', 'comportament', 'lipire', 'masurare', 'export'] as const satisfies readonly (keyof SetariCote)[];
 export type GrupCote = (typeof GRUPURI_COTE)[number];
 
 /** Pură: setările cu un grup adus la implicit („Înapoi la implicit”), celelalte neatinse. */

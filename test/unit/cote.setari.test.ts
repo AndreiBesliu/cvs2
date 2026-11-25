@@ -1,6 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { citesteSetariCote, comutaPePanza, eImplicit, formatCote, grupImplicit, GRUPURI_COTE, setariCote, optiuniLipireCote, SETARI_IMPLICITE, stilCote, textSetariCote, type SetariCote } from '../../src/app/setariCote.ts';
+import { citesteSetariCote, comutaPePanza, eImplicit, formatCote, grupImplicit, GRUPURI_COTE, numeStratBun, setariCote, optiuniLipireCote, SETARI_IMPLICITE, STRATURI_REZERVATE, stilCote, textSetariCote, type SetariCote } from '../../src/app/setariCote.ts';
+import { STRATURI } from '../../src/io/vectori.ts';
 import { STIL_IMPLICIT } from '../../src/model/desenCota.ts';
 
 /**
@@ -16,6 +17,7 @@ test('implicitele, din tabelul ADR 0330 §6', () => {
     comportament: { legate: true, pornire: 'automata', dupa: 'ramane', pePanza: true, vecine: 'estompate', pragCifre: 6, culoare: null },
     lipire: { felurile: { varf: true, mijloc: true, centru: true, cadran: true, cutie: true, foaie: true, grila: true }, toleranta: 8, contur: 'ctrl' },
     masurare: { distanta: true, delta: true, unghi: true, cursor: true, bara: true },
+    export: { cuCote: false, strat: 'COTE', culoare: '#006d8f', grosime: 0.1 },
   });
   assert.deepEqual(citesteSetariCote(null), SETARI_IMPLICITE);
   assert.deepEqual(citesteSetariCote('nu e JSON'), SETARI_IMPLICITE);
@@ -30,6 +32,7 @@ test('citite înapoi exact, cu versiunea în text', () => {
     comportament: { legate: false, pornire: 'ultimul', dupa: 'selectie', pePanza: false, vecine: 'ascunse', pragCifre: 0, culoare: '#ff8800' },
     lipire: { felurile: { varf: true, mijloc: false, centru: true, cadran: false, cutie: true, foaie: false, grila: true }, toleranta: 12.5, contur: 'mereu' },
     masurare: { distanta: true, delta: false, unghi: true, cursor: false, bara: true },
+    export: { cuCote: true, strat: 'Cote-2_A', culoare: '#123abc', grosime: 0.05 },
   };
   const text = textSetariCote(s);
   assert.equal((JSON.parse(text) as { v: number }).v, 1);
@@ -148,9 +151,9 @@ test('stilul desenului și scrierea cifrelor, din setări; „după limbă” ur
 test('„Înapoi la implicit” pe un grup lasă celelalte neatinse', () => {
   const s = citesteSetariCote(JSON.stringify({
     cifre: { unitate: 'cm' }, linii: { capete: 'fara' }, raza: { prefixD: 'D' },
-    comportament: { legate: false }, lipire: { toleranta: 12 }, masurare: { unghi: false },
+    comportament: { legate: false }, lipire: { toleranta: 12 }, masurare: { unghi: false }, export: { grosime: 0.2 },
   }));
-  assert.deepEqual(GRUPURI_COTE, ['cifre', 'linii', 'raza', 'comportament', 'lipire', 'masurare']);
+  assert.deepEqual(GRUPURI_COTE, ['cifre', 'linii', 'raza', 'comportament', 'lipire', 'masurare', 'export']);
   for (const g of GRUPURI_COTE) {
     assert.equal(eImplicit(s, g), false, g);
     const r = grupImplicit(s, g);
@@ -167,4 +170,22 @@ test('„Arată cotele” comută „Cotele pe pânză” din setări, fără s�
   assert.deepEqual({ ...setariCote(), comportament: { ...setariCote().comportament, pePanza: inainte.comportament.pePanza } }, inainte);
   comutaPePanza();
   assert.deepEqual(setariCote(), inainte);
+});
+
+test('exportul (c-1): numele stratului, culoarea, grosimea; fiecare greșeală la implicitul ei', () => {
+  const r = (x: object): SetariCote['export'] => citesteSetariCote(JSON.stringify({ export: x })).export;
+  assert.deepEqual(r({ cuCote: 'da', strat: 'EXTERIOR', culoare: 'red', grosime: 0.04 }), SETARI_IMPLICITE.export);
+  assert.equal(r({ grosime: 1 }).grosime, 1);
+  assert.equal(r({ grosime: 1.01 }).grosime, 0.1, 'peste 1 mm');
+  assert.equal(r({ grosime: 0.05 }).grosime, 0.05);
+  assert.equal(r({ culoare: '#ABCDEF' }).culoare, '#006d8f', 'culoarea se ține cu litere mici, ca din <input type="color">');
+  assert.equal(r({ strat: 'a'.repeat(31) }).strat, 'a'.repeat(31));
+  assert.equal(r({ strat: 'a'.repeat(32) }).strat, 'COTE', 'peste 31 de semne');
+  for (const n of ['', 'cu spațiu', 'Coté', 'A/B', '0', 'foaie', 'Pe_Linie', 'exterior']) assert.equal(numeStratBun(n), false, n);
+  for (const n of ['COTE', 'cote', 'Dim-1', 'X_2']) assert.equal(numeStratBun(n), true, n);
+});
+
+test('straturile rezervate sunt chiar ale exportului (fără COTE), plus stratul 0 al DXF-ului', () => {
+  assert.deepEqual([...STRATURI_REZERVATE].sort(), ['0', ...STRATURI.filter((s) => s !== 'COTE')].sort());
+  assert.ok(STRATURI.includes('COTE'));
 });

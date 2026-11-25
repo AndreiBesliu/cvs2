@@ -1,13 +1,17 @@
 /**
  * Exportul 2D (ADR 0088, ADR 0089), adus la cerere de panoul lui: foaia → vectori → textul fișierului (DXF R2007, SVG, PDF
  * sau EPS, toate numai ASCII), cu numele și ce conține (câte entități, pe câte straturi), ca panoul să spună ce a descărcat.
+ * Cu cotele (ADR 0330 §7, „Cu cotele”): și ele, pe stratul lor, cu cutia paginii lărgită cât ies din foaie; fără ele, sau pe
+ * o foaie fără cote, fișierul e octet cu octet cel de dinainte.
  */
+import { uneste } from '../geom/cutie.ts';
 import type { Document } from '../model/document.ts';
+import { entitatiCote, type OptiuniCote } from './coteExport.ts';
 import { scrieDxf } from './dxfExport.ts';
 import { scrieEps } from './epsExport.ts';
 import { scriePdf } from './pdfExport.ts';
 import { scrieSvg } from './svgExport.ts';
-import { vectoriFoaie } from './vectori.ts';
+import { vectoriFoaie, type StratCote, type VectoriFoaie } from './vectori.ts';
 
 export type FormatVectori = 'dxf' | 'svg' | 'pdf' | 'eps';
 
@@ -21,12 +25,20 @@ export type FisierVectori = {
   readonly text: string;
   readonly entitati: number;
   readonly straturi: number;
+  /** Câte cote s-au scris, și semnele cifrelor pe care fontul nu le are (nedesenate). */
+  readonly cote: number;
+  readonly lipsa: readonly string[];
 };
 
-export function exportaVectori(doc: Document, indexFoaie: number, format: FormatVectori, cuFoaia: boolean): FisierVectori {
-  const v = vectoriFoaie(doc, indexFoaie, cuFoaia);
+/** Cotele cerute la export: desenul și cifrele (din setări), fontul cifrelor, stratul lor. */
+export type CoteCerute = OptiuniCote & { readonly strat: StratCote };
+
+export function exportaVectori(doc: Document, indexFoaie: number, format: FormatVectori, cuFoaia: boolean, cote?: CoteCerute): FisierVectori {
+  let v: VectoriFoaie = vectoriFoaie(doc, indexFoaie, cuFoaia);
+  const ec = cote ? entitatiCote(doc, indexFoaie, cote) : null;
+  if (cote && ec?.cutie) v = { ...v, entitati: [...v.entitati, ...ec.entitati], cutie: uneste(v.cutie, ec.cutie), stratCote: cote.strat };
   const straturi = new Set(v.entitati.map((e) => e.strat)).size;
   const baza = `cncvs2-foaia-${indexFoaie + 1}`;
   const text = format === 'svg' ? scrieSvg(v) : format === 'pdf' ? scriePdf(v) : format === 'eps' ? scrieEps(v, baza) : scrieDxf(v);
-  return { nume: `${baza}.${format}`, tip: TIPURI[format], text, entitati: v.entitati.length, straturi };
+  return { nume: `${baza}.${format}`, tip: TIPURI[format], text, entitati: v.entitati.length, straturi, cote: ec?.cote ?? 0, lipsa: ec?.lipsa ?? [] };
 }

@@ -4,13 +4,15 @@
  * Inkscape (`inkscape:groupmode="layer"`), doar pentru straturile folosite. Fiecare entitate e exactă: cercul e
  * `<circle>`, arcul e `A` cu raza lui, cubica e `C`. Sensul arcului: după întoarcerea axei, un arc trigonometric al foii
  * (bulge > 0) se vede tot trigonometric, adică în sensul unghiurilor negative ale SVG-ului, deci steagul `sweep` e 0.
+ * Cotele (ADR 0330 §7) au grupul lor, cu numele, culoarea și grosimea din setări; capetele pline sunt căi umplute, iar
+ * punctele, discuri (calea cu lățimea lor).
  */
 import { STRATURI, type Entitate, type Strat, type VectoriFoaie } from './vectori.ts';
 
 /** Culoarea fiecărui strat (aceeași familie ca în DXF: exteriorul roșu, interiorul albastru…). */
 export const CULORI_SVG: Readonly<Record<Strat, string>> = {
   EXTERIOR: '#d62728', INTERIOR: '#1f77b4', PE_LINIE: '#2ca02c', PE_O_PARTE: '#ff7f0e', BUZUNAR: '#9467bd', GAURIRE: '#17becf',
-  FARA_OPERATIE: '#000000', FOAIE: '#7f7f7f',
+  FARA_OPERATIE: '#000000', FOAIE: '#7f7f7f', COTE: '#006d8f',
 };
 
 /** Un număr cu cel mult 6 zecimale (1 nm), fără zerourile de la coadă și fără „-0”. */
@@ -19,8 +21,9 @@ export function nr(x: number): string {
   return s === '-0' ? '0' : s;
 }
 
-function cale(e: Extract<Entitate, { fel: 'polilinie' | 'spline' }>, H: number): string {
+function cale(e: Extract<Entitate, { fel: 'polilinie' | 'spline' | 'plin' }>, H: number): string {
   const y = (v: number): number => H - v;
+  if (e.fel === 'plin') return `${e.puncte.map((p, k) => `${k === 0 ? 'M' : 'L'}${nr(p.x)} ${nr(y(p.y))}`).join('')}Z`;
   if (e.fel === 'spline') {
     const p = e.puncte;
     const d = [`M${nr(p[0]!.x)} ${nr(y(p[0]!.y))}`];
@@ -59,11 +62,15 @@ export function scrieSvg(v: VectoriFoaie, grosime = 0.1): string {
   for (const s of STRATURI) {
     const din = v.entitati.filter((e) => e.strat === s);
     if (din.length === 0) continue;
-    linii.push(`<g id="${s}" inkscape:groupmode="layer" inkscape:label="${s}" fill="none" stroke="${CULORI_SVG[s]}" stroke-width="${nr(grosime)}">`);
+    const cote = s === 'COTE' ? v.stratCote : undefined;
+    const nume = cote?.nume ?? s, culoare = cote?.culoare ?? CULORI_SVG[s];
+    linii.push(`<g id="${nume}" inkscape:groupmode="layer" inkscape:label="${nume}" fill="none" stroke="${culoare}" stroke-width="${nr(cote?.grosime ?? grosime)}">`);
     for (const e of din) {
       linii.push(e.fel === 'cerc'
         ? `<circle cx="${nr(e.centru.x)}" cy="${nr(H - e.centru.y)}" r="${nr(e.raza)}"/>`
-        : `<path d="${cale(e, H)}"/>`);
+        : e.fel === 'plin' ? `<path d="${cale(e, H)}" fill="${culoare}" stroke="none"/>`
+          : e.fel === 'polilinie' && e.latime ? `<path d="${cale(e, H)}" stroke-width="${nr(e.latime)}"/>`
+            : `<path d="${cale(e, H)}"/>`);
     }
     linii.push('</g>');
   }

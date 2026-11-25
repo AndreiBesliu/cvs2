@@ -3,6 +3,10 @@
  * vecine sunt o LWPOLYLINE cu bulge, cubicele vecine o SPLINE de grad 3 cu nodurile triple (exactă, fără puncte de
  * potrivire). Unitățile sunt mm ($INSUNITS = 4), straturile sunt rolurile (`vectori.ts`), fiecare cu culoarea lui.
  *
+ * Cotele (ADR 0330 §7, felia 10.4↑c-1), pe stratul lor (numele și culoarea din setări, culoarea exactă în codul 420 și cea
+ * mai apropiată ACI în 62): liniile și cifrele ca LWPOLYLINE și SPLINE, capetele pline ca SOLID, punctele ca polilinii cu
+ * lățime (discurile). Fără cote, fișierul e octet cu octet cel de dinainte.
+ *
  * Fișierul are ce cere formatul de la R2000 încoace, ca programele stricte să-l deschidă fără reparații: tabelele cu
  * handle-urile și proprietarii lor, blocurile *Model_Space și *Paper_Space, dicționarul rădăcină cu ACAD_GROUP și
  * ACAD_LAYOUT și cele două layout-uri. Numerele se scriu cu toate cifrele (rotunjirea la cel mai scurt text care se
@@ -12,8 +16,23 @@ import { STRATURI, type Entitate, type Strat, type VectoriFoaie } from './vector
 
 /** Culoarea AutoCAD (ACI) a fiecărui strat. */
 export const CULORI_DXF: Readonly<Record<Strat, number>> = {
-  EXTERIOR: 1, INTERIOR: 5, PE_LINIE: 3, PE_O_PARTE: 30, BUZUNAR: 6, GAURIRE: 4, FARA_OPERATIE: 7, FOAIE: 8,
+  EXTERIOR: 1, INTERIOR: 5, PE_LINIE: 3, PE_O_PARTE: 30, BUZUNAR: 6, GAURIRE: 4, FARA_OPERATIE: 7, FOAIE: 8, COTE: 4,
 };
+
+/**
+ * #rrggbb → [culoarea AutoCAD de bază (ACI 1–9) cea mai apropiată, culoarea exactă ca întreg 0xRRGGBB, pentru codul 420].
+ * O culoare cu nuanță ia una din cele șase (roșu 1, galben 2, verde 3, cyan 4, albastru 5, magenta 6), după nuanța ei cea
+ * mai apropiată; una aproape gri (max − min < 48) ia, după luminozitate, cerneala (7), griul închis (8) sau cel deschis (9).
+ * Distanța în RGB ar da gri unei culori închise, cu nuanță (albastrul închis implicit, #006d8f).
+ */
+export function culoareDxf(hex: string): readonly [number, number] {
+  const n = Number.parseInt(hex.slice(1, 7), 16);
+  const r = (n >> 16) & 255, g = (n >> 8) & 255, b = n & 255;
+  const max = Math.max(r, g, b), d = max - Math.min(r, g, b);
+  if (d < 48) return [max < 96 || max >= 232 ? 7 : max < 168 ? 8 : 9, n];
+  const h = max === r ? ((g - b) / d + 6) % 6 : max === g ? (b - r) / d + 2 : (r - g) / d + 4;
+  return [(Math.round(h) % 6) + 1, n];
+}
 
 /** Numărul, exact și fără exponent (1e-7 → 0.0000001). */
 export function nrDxf(x: number): string {
@@ -38,7 +57,8 @@ export function scrieDxf(v: VectoriFoaie): string {
     radacina: handle(), grupuri: handle(), layouturi: handle(), layoutModel: handle(), layoutPaper: handle(),
   };
   const folosite = STRATURI.filter((s) => v.entitati.some((e) => e.strat === s));
-  const straturi = new Map<string, string>([['0', handle()], ...folosite.map((s) => [s, handle()] as const)]);
+  const nume = (s: Strat): string => (s === 'COTE' ? v.stratCote?.nume ?? 'COTE' : s);
+  const straturi = new Map<string, { readonly h: string; readonly s: Strat | null }>([['0', { h: handle(), s: null }], ...folosite.map((s) => [nume(s), { h: handle(), s }] as const)]);
   const entitati = v.entitati.map((e) => ({ e, h: handle() }));
   const c = v.cutie;
 
@@ -86,9 +106,14 @@ export function scrieDxf(v: VectoriFoaie): string {
       }
     });
     tabel('LAYER', H.layer, straturi.size, () => {
-      for (const [nume, h] of straturi) {
+      for (const [n, { h, s }] of straturi) {
         inregistrare('LAYER', h, H.layer, 'AcDbLayerTableRecord');
-        g(2, nume); g(70, '0'); g(62, String(nume === '0' ? 7 : CULORI_DXF[nume as Strat])); g(6, 'Continuous'); g(370, '-3');
+        if (s === 'COTE') {
+          const [aci, exacta] = culoareDxf(v.stratCote?.culoare ?? '#006d8f');
+          g(2, n); g(70, '0'); g(62, String(aci)); g(420, String(exacta)); g(6, 'Continuous'); g(370, '-3');
+        } else {
+          g(2, n); g(70, '0'); g(62, String(s === null ? 7 : CULORI_DXF[s])); g(6, 'Continuous'); g(370, '-3');
+        }
       }
     });
     tabel('STYLE', H.style, 1, () => {
@@ -123,7 +148,7 @@ export function scrieDxf(v: VectoriFoaie): string {
     }
   });
   sectiune('ENTITIES', () => {
-    for (const { e, h } of entitati) scrieEntitate(g, e, h, H.brModel);
+    for (const { e, h } of entitati) scrieEntitate(g, e, h, H.brModel, nume(e.strat));
   });
   sectiune('OBJECTS', () => {
     g(0, 'DICTIONARY'); g(5, H.radacina); g(330, '0'); g(100, 'AcDbDictionary'); g(281, '1');
@@ -148,14 +173,19 @@ export function scrieDxf(v: VectoriFoaie): string {
   return `${out.join('\n')}\n`;
 }
 
-function scrieEntitate(g: (cod: number, val: string | number) => void, e: Entitate, h: string, proprietar: string): void {
-  const antet = (tip: string, subclasa: string): void => { g(0, tip); g(5, h); g(330, proprietar); g(100, 'AcDbEntity'); g(8, e.strat); g(100, subclasa); };
-  if (e.fel === 'cerc') {
+function scrieEntitate(g: (cod: number, val: string | number) => void, e: Entitate, h: string, proprietar: string, strat: string): void {
+  const antet = (tip: string, subclasa: string): void => { g(0, tip); g(5, h); g(330, proprietar); g(100, 'AcDbEntity'); g(8, strat); g(100, subclasa); };
+  if (e.fel === 'plin') {
+    // SOLID: trei colțuri (al patrulea, cât al treilea), un triunghi umplut.
+    const [a, b, c] = e.puncte;
+    antet('SOLID', 'AcDbTrace');
+    g(10, a!.x); g(20, a!.y); g(30, 0); g(11, b!.x); g(21, b!.y); g(31, 0); g(12, c!.x); g(22, c!.y); g(32, 0); g(13, c!.x); g(23, c!.y); g(33, 0);
+  } else if (e.fel === 'cerc') {
     antet('CIRCLE', 'AcDbCircle');
     g(10, e.centru.x); g(20, e.centru.y); g(30, 0); g(40, e.raza);
   } else if (e.fel === 'polilinie') {
     antet('LWPOLYLINE', 'AcDbPolyline');
-    g(90, String(e.varfuri.length)); g(70, e.inchis ? '1' : '0'); g(43, 0);
+    g(90, String(e.varfuri.length)); g(70, e.inchis ? '1' : '0'); g(43, e.latime ?? 0);
     for (const p of e.varfuri) {
       g(10, p.x); g(20, p.y);
       if (p.bulge !== 0) g(42, p.bulge);
