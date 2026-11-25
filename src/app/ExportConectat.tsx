@@ -17,6 +17,8 @@ import { iesireTextTinuta } from './iesireTextTinuta.ts';
 import { operatieDinDialog } from './valoriOperatii.ts';
 import { numarUrechiAlese } from '../model/urechiLocuri.ts';
 import { mesajeGata } from '../i18n/laCerere.ts';
+import { diametruCerc } from '../cam/gaurireFel.ts';
+import { hartieRand } from './hartieExport.ts';
 
 /** Originea frezei din „Frezele mele” a unei scule din document (ADR 0300 §5): numele, id-ul, valorile de lucru, tăișul. */
 function origineDin(s: Scula): OrigineFreza | null {
@@ -134,6 +136,11 @@ export function ExportConectat({
         noduri: o.noduri.length,
         // Găurirea (ADR 0087): doar pe un rând numai cu cercuri.
         cercuri: o.noduri.length > 0 && o.noduri.every((n) => dupaIdLume.get(`${inst}/${n}`)?.forma.tip === 'cerc'),
+        // Diametrele cercurilor, ca le citește găurirea (ADR 0291, felia 28.8↑h): fișa spune felul și cercul care nu se găurește.
+        ...((d) => (d.length > 0 ? { diametre: d } : {}))([...new Set(o.noduri.flatMap((n) => {
+          const e = dupaIdLume.get(`${inst}/${n}`);
+          return e && e.forma.tip === 'cerc' ? [diametruCerc(e.forma.raza, e.matrice)] : [];
+        }))].sort((a, b) => a - b)),
         // Locul în ordinea de mână (ADR 0133), dacă documentul îl are, și rândurile din interiorul formelor ei.
         ...(o.rang !== undefined ? { rang: o.rang } : {}),
         ...(cuprinseOp ? { inauntru: cuprinseOp } : {}),
@@ -275,6 +282,7 @@ export function ExportConectat({
       {...(foaie === undefined ? {} : { foaie })}
       {...(numeFoaie === undefined ? {} : { numeFoaie })}
       {...(doc.foi[0] ? { grosimeFoaie: doc.foi[0].stoc.grosime } : {})}
+      hartie={hartieRand}
       operatii={exportFoaie.randuri}
       ordineAutomata={exportFoaie.automata}
       descrieri={exportFoaie.descrieri}

@@ -46,7 +46,7 @@ o('E05', DLG, "  const primaGresita: string | null = !supracursaBuna ? 'foaia' :
   "  const primaGresita: string | null = null;", 'e2e', 'fără „du-mă acolo”')
 o('E06', DLG, "data-gresit={gresit ? '' : undefined}", 'data-gresit={undefined}', 'e2e', 'fără punctul roșu în listă')
 # Din 28.8↑b, trecerile se socotesc o dată, pentru fereastră și pentru desen (`exportDeseneCalcul.ts`).
-o('E07', 'src/ui/exportDeseneCalcul.ts', '  const n = Math.max(1, Math.ceil(adancime / pas - 1e-9));', '  const n = Math.max(1, Math.floor(adancime / pas));', 'e2e',
+o('E07', 'src/cam/treceri.ts', '  const n = Math.max(1, Math.ceil(adancime / pas - 1e-9));', '  const n = Math.max(1, Math.floor(adancime / pas));', 'e2e',
   'trecerile numărate în jos (10 cu pasul 4: două treceri de 5, mai adânci decât pasul)')
 o('E08', DLG, "    if (cuRezultat && !cuRezultatInainte.current) du('rezultatul');\n    cuRezultatInainte.current = cuRezultat;\n  }, [cuRezultat]);",
   "    if (stare?.ok) du('rezultatul');\n    cuRezultatInainte.current = cuRezultat;\n  }, [stare]);", 'e2e',

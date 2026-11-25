@@ -86,6 +86,11 @@ vreau ca ficare setare sa fie insotita de o ilustratie sugestiva, ca sa ajute us
 - **25.11: 28.8↑o gata** (centrul foii ca origine XY0, 6a), pe ramură; neunită. Montajul cu `centru`, antetul citit de
   sender, punctul din mijlocul desenului XY0; colțurile, octet cu octet. Otrăvurile 13 / 13. Pornirea +0, totalul +0,1 kB
   (885,9 / 1 000). Proba pe mașina owner-ului (zero-ul în mijlocul foii, o placă privită întâi în aer) rămâne a owner-ului.
+  Unită în `main` pe 25.11 (`3fd3bf49`), odată cu 28.8↑n (`1eda6f0b`).
+- **25.11: 28.8↑h gata** (rândul „pe hârtie”, 1a), pe ramură; neunită. Desenele și notele fișei din funcțiile lucrării
+  (`src/app/hartieExport.ts`): adâncimea tăiată cu supracursa prin foaie (constatarea 1), felul găuririi cu elicea desenată și
+  cercul care nu se găurește ca greșeală înainte de clic (constatarea 2). Programul, octet cu octet. Otrăvurile 21 / 21.
+  Pornirea +0, totalul +1,4 kB (891,7 / 1 000). Urmează 28.8↑i (viteza).
 
 ## Ce s-a găsit (23.11)
 
@@ -185,13 +190,22 @@ vreau ca ficare setare sa fie insotita de o ilustratie sugestiva, ca sa ajute us
   pentru centru (`….centru`): desenul XY0, panoul Mașina, raportul foilor. Oracolele porții și buzunarului citesc centrul pe
   hârtie; un tip de origine local al unei probe care primește corpusurile oracolului acceptă și `centru`. Cu centrul, I / J
   pot diferi cu o unitate a ultimei zecimale de cele ale unui colț (strategia B a postului).
+- **Rândul „pe hârtie” (28.8↑h):** ce spune fișa despre ce face lucrarea (adâncimea tăiată, trecerile, felul găuririi,
+  pașii ciocănirii) vine din `ContextFisa.hartie`, socotit în `src/app/hartieExport.ts` cu funcțiile lucrării, nu din formule
+  scrise în `src/ui`. Ce aduce acolo intră în bucata ferestrei: doar module mici ale lucrării, fără importuri grele
+  (`treceri.ts`, `gaurireFel.ts`, `prinFoaie.ts`); parcurgerea buclei, offsetul și degajările rămân în workerul CAM (de aceea
+  urechile schiței, pasul lateral și coborârea rămân în `exportDeseneCalcul.ts`, cu proba lor). O regulă nouă a lucrării pe
+  care o arată fișa se scoate într-un modul mic, folosit de amândouă, nu se copiază. Rândul primește supracursa și bifa ca
+  cererea de la Exportă (supracursa doar cât e pozitivă și bună). Un cerc care nu se găurește e greșeală în grupul Freza și
+  oprește Exportă (`gauriBune`), nu doar o notă.
 - **Intervalul diacriticelor** se scrie cu escape-uri (`\u0300-\u036f`), nu cu semnele combinatoare: scrise direct, nu se
   văd, iar o otravă pe ele iese VOID.
 
 ## Ce rămâne
 
-Din ADR 0290, nimic: toate feliile (a–f) și 28.8↑g sunt gata. Din ADR 0291 (după audit): 28.8↑n și 28.8↑o sunt gata pe
-ramură; 28.8↑h, i, j, k, l, în ordine, după ce 16.A↑b-5 e în `main`; p după j (cu linia frezelor), q după i. Nicio întrebare deschisă la owner. Pentru alte linii, mai târziu:
+Din ADR 0290, nimic: toate feliile (a–f) și 28.8↑g sunt gata. Din ADR 0291 (după audit): 28.8↑n și 28.8↑o sunt în `main`,
+28.8↑h e gata pe ramură; urmează i, j, k, l, în ordine; p după j (cu linia frezelor), q după i. Nicio întrebare deschisă la
+owner. Pentru alte linii, mai târziu:
 
 - **Clasicul (28.2↑) și Pas cu pas (28.4↑)** iau fișa operației (`FisaOperatie`, cu `ContextFisa`) în panoul lor, cu starea
   lor, fără s-o copieze (ADR 0290, „Cu canvas-ul aranjamentelor”): la Clasic, în locul panoului din dreapta, cu Simularea filă;

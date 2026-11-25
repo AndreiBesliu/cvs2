@@ -10,6 +10,7 @@ import { ineleBuzunar, ordineInele, traseuBuzunar } from './buzunar.ts';
 import { traseuParalel } from './paralel.ts';
 import { bucatiRestInLant, taieBucati } from './rest.ts';
 import { traseuGaurire } from './gaurire.ts';
+import { diametruCerc } from './gaurireFel.ts';
 import { refuzIncrustatie } from './incrustatie.ts';
 import { cuGauriPrinFoaie, valoriIncrustatie } from '../model/incrustatie.ts';
 import { figuraDreapta, valoriBuzunarDrept } from './incrustatieDreapta.ts';
@@ -130,7 +131,7 @@ function centrePeBucle(bucle: readonly Contur[], puncte: readonly Punct[], W: nu
 function cercInLume(t: Taietura): { readonly centru: { readonly x: number; readonly y: number }; readonly diametru: number } | string {
   if (t.forma.tip !== 'cerc') return `${t.idLume}: găurirea cere un cerc (forma e ${t.forma.tip})`;
   const m = t.matrice;
-  return { centru: { x: m.e, y: m.f }, diametru: 2 * t.forma.raza * Math.hypot(m.a, m.b) };
+  return { centru: { x: m.e, y: m.f }, diametru: diametruCerc(t.forma.raza, m) };
 }
 
 /**

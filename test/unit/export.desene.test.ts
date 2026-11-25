@@ -1,11 +1,12 @@
 /**
- * Desenele ferestrei exportului spun ce face programul (ADR 0290, „Probele”: „Desenele spun adevărul”; feliile 28.8↑b–c):
- * trecerile din desenul adâncimii sunt cele ale lucrării (`adancimiTreceri`), urechile desenate stau unde le pune lucrarea, la
- * distanțe egale (`geometrieUrechi`) și după reguli (`urechiPeLaturi`, pe un dreptunghi cu laturile desenului); în buzunar,
- * trecerile laterale sunt inelele lucrării (`ineleBuzunar`), iar rampa, zigzagul și elicea coboară cât spune desenul
- * (`intrareRampa`, `intrareZigzag`, `intrareElice`, măsurate pe mișcări); ciocănirea găuririi e pas cu pas a lucrării
- * (`traseuGaurire`). Din 28.8↑d: peretele V-carve-ului de la adâncimea maximă stă unde îl pune lucrarea (`traseuVcarve`), iar
- * valorile incrustației în V sunt cele pe hârtie ale panoului și ale dopului (`valoriIncrustatie`).
+ * Desenele ferestrei exportului spun ce face programul (ADR 0290, „Probele”: „Desenele spun adevărul”; feliile 28.8↑b–c).
+ * Din 28.8↑h (ADR 0291), trecerile și ciocănirea vin chiar din funcțiile lucrării, prin rândul „pe hârtie”
+ * (`src/app/hartieExport.ts`, proba lui în `export.hartie.test.ts`); aici rămân: urechile desenate stau unde le pune lucrarea,
+ * la distanțe egale (`geometrieUrechi`) și după reguli (`urechiPeLaturi`, pe un dreptunghi cu laturile desenului), iar
+ * ciocănirea pe hârtie; în buzunar, trecerile laterale sunt inelele lucrării (`ineleBuzunar`), iar rampa, zigzagul și elicea
+ * coboară cât spune desenul (`intrareRampa`, `intrareZigzag`, `intrareElice`, măsurate pe mișcări). Din 28.8↑d: peretele
+ * V-carve-ului de la adâncimea maximă stă unde îl pune lucrarea (`traseuVcarve`), iar valorile incrustației în V sunt cele pe
+ * hârtie ale panoului și ale dopului (`valoriIncrustatie`).
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -14,32 +15,17 @@ import { geometrieUrechi } from '../../src/cam/urechi.ts';
 import { urechiPeLaturi } from '../../src/cam/urechiLaturi.ts';
 import { ineleBuzunar, type InelBuzunar } from '../../src/cam/buzunar.ts';
 import { intrareElice, intrareRampa, intrareZigzag, rampeZigzag } from '../../src/cam/coborare.ts';
-import { traseuGaurire } from '../../src/cam/gaurire.ts';
 import { traseuVcarve } from '../../src/cam/vcarve.ts';
 import type { Operatie } from '../../src/model/document.ts';
 import { valoriBanda, valoriIncrustatie, valoriIncrustatieDreapta } from '../../src/model/incrustatie.ts';
 import { conturDreptunghi } from '../../src/geom/contur.ts';
 import type { Miscare } from '../../src/ir/ir.ts';
 import {
-  bandaDesen, centreUrechiDesen, ciocanire, coborareDesen, dopDreptDesen, incrustatieDesen, treceriEgale, treceriLaterale, vcarveDesen,
+  bandaDesen, centreUrechiDesen, coborareDesen, dopDreptDesen, incrustatieDesen, treceriLaterale, vcarveDesen,
 } from '../../src/ui/exportDeseneCalcul.ts';
+import { hartieRand } from '../../src/app/hartieExport.ts';
 
 const aproape = (a: number, b: number, eps = 1e-9): boolean => Math.abs(a - b) <= eps * Math.max(1, Math.abs(a), Math.abs(b));
-
-test('trecerile din desen sunt ale lucrării: același număr, fiecare de A / n, ultima la A', () => {
-  const cazuri: Array<readonly [number, number]> = [[10, 4], [18, 6], [18, 6.0000001], [6, 3], [3, 6], [1, 1], [0.3, 0.1], [12.5, 2.5], [25, 3.175],
-    [19.05, 1.5875], [5, 0.001]];
-  for (const [a, p] of cazuri) {
-    const lucrare = adancimiTreceri(a, p), desen = treceriEgale(a, p);
-    if (typeof lucrare === 'string') { assert.equal(desen, null, `${a} / ${p}: lucrarea refuză (${lucrare})`); continue; }
-    assert.ok(desen, `${a} / ${p}`);
-    assert.equal(desen.n, lucrare.length, `${a} / ${p}: numărul trecerilor`);
-    lucrare.forEach((z, i) => assert.ok(aproape(z, (i + 1) * desen.d), `${a} / ${p}: trecerea ${i + 1} la ${z}, desenul ${(i + 1) * desen.d}`));
-  }
-  // Pe hârtie: 10 mm cu pasul 4 = 3 treceri de 3,33 mm (nu două de 5, mai adânci decât pasul).
-  assert.deepEqual(treceriEgale(10, 4), { n: 3, d: 10 / 3 });
-  for (const [a, p] of [[0, 3], [5, 0], [-1, 1], [null, 3], [5, null], [Number.NaN, 1], [Number.POSITIVE_INFINITY, 1]] as const) assert.equal(treceriEgale(a, p), null);
-});
 
 test('urechile desenate stau unde le pune lucrarea, la distanțe egale și pe laturi', () => {
   // Laturile desenului (lată și înaltă) și ale unui pătrat, unde toate laturile sunt „cele mai lungi”.
@@ -107,9 +93,9 @@ test('coborârea desenată e a lucrării: lungimea rampei și a elicei, rampele 
   const b = conturDreptunghi(0, 0, 400, 300);
   // Trecerea fiecărui caz e cea egală a lucrării (adâncimea, pasul), nu pasul scris: 10 cu pasul 6 = două treceri de 5.
   for (const [A, pas, u, Lz, R] of [[10, 6, 3, 20, 3], [18, 3, 3, 20, 3], [6, 4, 10, 15, 2], [12, 5, 1, 40, 6], [3, 3, 45, 1, 0.5]] as const) {
-    const tr = treceriEgale(A, pas);
-    assert.ok(tr);
-    const d = tr.d, de = { x: 0, y: 0, z: 5 };
+    const tr = adancimiTreceri(A, pas);
+    assert.ok(typeof tr !== 'string');
+    const d = tr[0] ?? Number.NaN, de = { x: 0, y: 0, z: 5 };
     const rampa = coborareDesen('rampa', d, u, Lz, R), zig = coborareDesen('zigzag', d, u, Lz, R), el = coborareDesen('elice', d, u, Lz, R);
     assert.ok(rampa?.fel === 'rampa' && zig?.fel === 'zigzag' && el?.fel === 'elice');
     const ir = intrareRampa(b, 0, d, u, par);
@@ -137,27 +123,20 @@ test('coborârea desenată e a lucrării: lungimea rampei și a elicei, rampele 
     coborareDesen('elice', 3, 3, 20, 0), coborareDesen('rampa', 3, 90, 20, 3)]) assert.equal(x, null);
 });
 
-test('ciocănirea desenată e a lucrării, pas cu pas: coborârile, ridicarea de 1 mm, ieșirea la al N-lea și apropierea', () => {
-  for (const [A, pas, N] of [[10, 4, 1], [18, 4, 2], [18, 3, 3], [9, 3, 5], [5, 6, 1], [25, 2.5, 4]] as const) {
-    const r = traseuGaurire({ centru: { x: 10, y: 10 }, diametru: 6, diametruScula: 6, adancime: A, pas, retragereCompleta: N,
-      trigonometric: true, zSigur: 5, avans: 1000, avansPlonjare: 300 });
-    assert.ok(r.ok && r.fel === 'ciocanire');
-    // Z-urile lucrării, după rapida la Z-ul sigur și cea deasupra găurii, fără ieșirea de la capăt.
-    const z = r.miscari.flatMap((m) => ((m.tip === 'rapida' || m.tip === 'taiere') && m.la.Z !== undefined
-      ? [{ z: m.la.Z === 5 ? 'sus' : m.la.Z, taie: m.tip === 'taiere' }] : [])).slice(1, -1);
-    const desen = ciocanire(A, pas, N);
-    assert.ok(desen, `${A}/${pas}, ${N}`);
-    assert.equal(desen.length, z.length, `${A}/${pas}, ${N}: pașii`);
-    desen.forEach((x, i) => {
-      const l = z[i];
-      assert.ok(l && x.taie === l.taie && (x.z === 'sus' ? l.z === 'sus' : typeof l.z === 'number' && aproape(x.z, l.z)), `${A}/${pas}, ${N}: pasul ${i}`);
-    });
-  }
-  // Pe hârtie: 10 cu pasul 4, ieșirea după fiecare al doilea: 3 pași de 3,33; după primul se ridică 1 mm, după al doilea iese.
-  const h = ciocanire(10, 4, 2);
+test('ciocănirea pe hârtie, din rândul fișei: 10 cu pasul 4, ieșirea după fiecare al doilea pas', () => {
+  // 3 pași de 3,33; după primul se ridică 1 mm, după al doilea iese și coboară rapid la 0,5 mm deasupra fundului.
+  const h = hartieRand({
+    tip: 'gaurire', adancime: 10, incrustatie: 'fara', pas: 4, grosime: 18, supracursa: 0, prinFoaie: false, diametruScula: 6, retragere: 2,
+    diametre: [6],
+  }).gaurire?.ciocanire;
   assert.ok(h);
   assert.deepEqual(h.map((x) => (x.z === 'sus' ? 'sus' : +x.z.toFixed(4))), [-3.3333, -2.3333, -6.6667, 'sus', -6.1667, -10]);
-  for (const x of [ciocanire(10, 4, 0), ciocanire(10, 4, 1.5), ciocanire(0, 4, 1), ciocanire(10, null, 1), ciocanire(10, 4, null)]) assert.equal(x, null);
+  // Fără o ieșire bună (0, 1,5) sau fără valori, nimic.
+  for (const retragere of [0, 1.5, null]) {
+    assert.equal(hartieRand({
+      tip: 'gaurire', adancime: 10, incrustatie: 'fara', pas: 4, grosime: 18, supracursa: 0, prinFoaie: false, diametruScula: 6, retragere, diametre: [6],
+    }).gaurire?.ciocanire, null);
+  }
 });
 
 test('V-carve-ul desenat: peretele de la adâncimea maximă stă la D·tan(θ/2) de contur, ca în lucrare; fundul plat, de la 2·D·tan(θ/2)', () => {

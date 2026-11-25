@@ -349,10 +349,45 @@ export type OperatieExport = {
   readonly cheie: string; readonly descriere: string; readonly deschise: number; readonly noduri: number; readonly valori: ValoriOperatie;
   /** Toate nodurile operației sunt cercuri: rândul oferă și găurirea (ADR 0087). */
   readonly cercuri?: boolean;
+  /**
+   * Diametrele cercurilor rândului, în lume (ca le citește găurirea), distincte și crescătoare: fișa spune felul găuririi și
+   * cercul care nu se poate găuri cu freza scrisă, înainte de Exportă (ADR 0291, felia 28.8↑h). Doar cu `cercuri`.
+   */
+  readonly diametre?: readonly number[];
   /** Locul operației în ordinea de mână (ADR 0133), dacă documentul îl are. */
   readonly rang?: number;
   /** Rândurile altor piese din interiorul formelor ei (ADR 0133 §3, `cuprinse`): riscul unui exterior tăiat înaintea lor. */
   readonly inauntru?: readonly string[];
+};
+
+/**
+ * Un rând „pe hârtie” (ADR 0291, felia 28.8↑h): ce face lucrarea cu valorile scrise, socotit de fereastra conectată cu funcțiile
+ * lucrării (`src/app/hartieExport.ts`), nu din copii în interfață: desenele și notele fișei îl doar arată.
+ */
+export type IntrareHartie = {
+  readonly tip: 'profil' | 'buzunar' | 'gaurire' | 'vcarve';
+  /** Adâncimea scrisă (null: textul nu se citește) și felul incrustației rândului (gaura: locașul prin foaie, ADR 0175). */
+  readonly adancime: number | null; readonly incrustatie: 'fara' | 'alta' | 'gaura';
+  readonly pas: number | null;
+  /** Grosimea foii (lipsă: necunoscută), supracursa citită (0 fără ea) și bifa „și tăieturile cât foaia” (ADR 0177). */
+  readonly grosime: number | undefined; readonly supracursa: number; readonly prinFoaie: boolean;
+  /** Găurirea: freza scrisă, ieșirea la al câtelea pas și diametrele cercurilor rândului. */
+  readonly diametruScula: number | null; readonly retragere: number | null; readonly diametre: readonly number[];
+};
+/** Felul găuririi unui cerc (ADR 0087): ca `felGaurire` din lucrare. */
+export type FelGaurireRand = 'ciocanire' | 'elice' | 'mic' | 'mare' | 'gresit';
+/** O mișcare pe Z a ciocănirii: tăind în jos, rapid, sau sus (la Z-ul sigur). */
+export type PasCiocanireRand = { readonly z: number; readonly taie: true } | { readonly z: number | 'sus'; readonly taie: false };
+export type HartieRand = {
+  /** Adâncimea pe care o taie lucrarea (cu supracursa prin foaie și la gaura incrustației); null fără o adâncime bună. */
+  readonly adancime: number | null;
+  /** Adâncimile trecerilor (pozitive, ultima = `adancime`), ca `adancimiTreceri`; null fără valori bune. */
+  readonly treceri: readonly number[] | null;
+  /** Doar pe o găurire: felul pe fiecare diametru de cerc, pașii ciocănirii și ridicarea dintre doi pași (mm). */
+  readonly gaurire: {
+    readonly cercuri: readonly { readonly diametru: number; readonly fel: FelGaurireRand }[];
+    readonly ciocanire: readonly PasCiocanireRand[] | null; readonly ridicare: number;
+  } | null;
 };
 
 /**

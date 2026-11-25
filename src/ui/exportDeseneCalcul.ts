@@ -1,19 +1,16 @@
 /**
- * Ce desenează fereastra exportului din valorile omului (ADR 0290, feliile 28.8↑b–c): trecerile pe adâncime, locurile urechilor,
- * trecerile laterale ale buzunarului, coborârea în el și ciocănirea găuririi. Pur și fără importuri din lucrare (regula
- * `interfata-prin-actiuni`), deci socotit aici cu aceleași formule; o probă îl compară cu lucrarea (`adancimiTreceri`,
- * `geometrieUrechi`, `urechiPeLaturi`, `ineleBuzunar`, `intrareRampa`, `intrareZigzag`, `intrareElice`, `traseuGaurire`), ca
- * desenul să spună ce face programul. Din 28.8↑d, și V-carve-ul (`traseuVcarve`) și incrustația în V (`valoriIncrustatie`); singura
- * valori luate de la model, prin tipurile acțiunilor: grosimea de sub fața dopului, rezerva benzii și lățimea ei cea mai mică.
+ * Ce desenează fereastra exportului din valorile omului (ADR 0290, feliile 28.8↑b–c): locurile urechilor pe schiță, trecerile
+ * laterale ale buzunarului și coborârea în el. Pur și fără importuri din lucrare (regula `interfata-prin-actiuni`), deci socotit
+ * aici cu aceleași formule; o probă îl compară cu lucrarea (`geometrieUrechi`, `urechiPeLaturi`, `ineleBuzunar`, `intrareRampa`,
+ * `intrareZigzag`, `intrareElice`), ca desenul să spună ce face programul. Lucrarea lor cere parcurgerea buclei sau motorul de
+ * contururi, care stau doar în workerul CAM (urechile, aduse în fereastră, ar costa 1,3 kB pentru o schiță care nu e la scară;
+ * ADR 0291, felia 28.8↑h). Din 28.8↑d, și V-carve-ul (`traseuVcarve`) și incrustațiile (`valoriIncrustatie`, `valoriBanda`,
+ * `valoriIncrustatieDreapta`): ele cer o operație întreagă, pe care fereastra o face abia la Exportă (o vor primi când starea
+ * ferestrei devine un hook, în 28.8↑m). Singurele valori luate de la model, prin tipurile acțiunilor: grosimea de sub fața
+ * dopului, rezerva benzii și lățimea ei cea mai mică. Trecerile și ciocănirea nu mai stau aici: le dă rândul „pe hârtie”, din
+ * funcțiile lucrării (ADR 0291, felia 28.8↑h).
  */
 import { latimeMinimaBanda, REZERVA_BANDA, SUB_FATA_DOPULUI } from './actiuniExportTipuri.ts';
-
-/** Trecerile pe adâncime, egale (ca `adancimiTreceri`): n = ⌈A / p⌉, fiecare de A / n; fără valori bune sau peste 1 000, nimic. */
-export function treceriEgale(adancime: number | null, pas: number | null): { readonly n: number; readonly d: number } | null {
-  if (adancime === null || pas === null || !(adancime > 0) || !(pas > 0) || !Number.isFinite(adancime) || !Number.isFinite(pas)) return null;
-  const n = Math.max(1, Math.ceil(adancime / pas - 1e-9));
-  return n > 1000 ? null : { n, d: adancime / n };
-}
 
 /** Locurile urechilor pe care le desenează fereastra; „alese” și „unde ține” nu se pot ști fără desen, deci au locuri schițate. */
 export type LocuriUrechiDesen = 'egale' | 'lungi' | 'scurte' | 'mijloc';
@@ -69,32 +66,6 @@ export function coborareDesen(fel: FelCoborare, trecere: number | null, unghi: n
   if (fel === 'rampa') return { fel, lungime: L };
   if (fel === 'zigzag') return pozitiv(lungime) ? { fel, rampe: Math.max(1, Math.ceil(trecere / (lungime * tan) - 1e-9)), lungime } : null;
   return pozitiv(raza) ? { fel, lungime: L, ture: L / (2 * Math.PI * raza) } : null;
-}
-
-/** Cât se ridică freza între doi pași fără ieșire și cât deasupra fundului coboară rapid după o ieșire (`gaurire.ts`), mm. */
-export const RIDICARE_CIOCANIRE = 1, APROPIERE_CIOCANIRE = 0.5;
-/** O mișcare pe Z a ciocănirii: până la z (sau sus, la Z-ul sigur), tăind sau rapid. */
-export type PasCiocanire = { readonly z: number | 'sus'; readonly taie: boolean };
-
-/**
- * Ciocănirea găuririi (ADR 0087), ca `traseuGaurire` pe un cerc cât freza: trecerile egale, fiecare tăiată în jos; între ele,
- * freza se ridică 1 mm, iar după fiecare al N-lea pas iese sus și coboară rapid la 0,5 mm deasupra fundului. Fără ieșirea de la
- * capăt. Fără valori bune (N întreg, cel puțin 1), nimic.
- */
-export function ciocanire(adancime: number | null, pas: number | null, retragere: number | null): PasCiocanire[] | null {
-  const tr = treceriEgale(adancime, pas);
-  if (!tr || retragere === null || !Number.isInteger(retragere) || retragere < 1) return null;
-  const z = (i: number): number => (i + 1 === tr.n ? -(adancime ?? 0) : -((i + 1) * (adancime ?? 0)) / tr.n);
-  const m: PasCiocanire[] = [];
-  for (let k = 0; k < tr.n; k++) {
-    if (k > 0) {
-      const fund = z(k - 1);
-      if (k % retragere === 0) m.push({ z: 'sus', taie: false }, { z: fund + APROPIERE_CIOCANIRE, taie: false });
-      else m.push({ z: fund + RIDICARE_CIOCANIRE, taie: false });
-    }
-    m.push({ z: z(k), taie: true });
-  }
-  return m;
 }
 
 /**
