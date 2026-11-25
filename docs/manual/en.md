@@ -1324,7 +1324,10 @@ field, said in red, and is not kept. **Close** (or Esc) closes the window.
 - **Measuring:** what Measure shows (the distance, Δx and Δy, the angle) and where (next to the pointer, in the bottom bar).
 - **Export:** whether the “With dimensions” tick box in **Export vectors** starts ticked, the dimension layer's name
   (unaccented letters, digits, “_” and “-”, at most 31, not another layer's name; COTE by default), its colour (in DXF, also
-  the nearest basic AutoCAD colour) and the thickness of the dimension lines in PDF and SVG (0.05–1 mm, 0.1 by default).
+  the nearest basic AutoCAD colour), the thickness of the dimension lines in PDF and SVG (0.05–1 mm, 0.1 by default),
+  **Dimensions in DXF** (**Dimensions (DIMENSION)**, the default: in AutoCAD and LibreCAD they stay dimensions; or **Lines and
+  numbers**, for programs that don't know dimensions) and **Numbers** (**Strokes**, the default: the same in any program, with
+  no fonts; or **Text**, editable in another program, but drawn with its font).
 
 ## Converting vectors
 %% capitol: conversie
@@ -1953,9 +1956,13 @@ only.
 The project keeps a copy of each bit picked from the library. If the bit then changes in **My bits**, the row says what changed
 (for example “In the library, “Flat Ø6” now has the feed 1,400 (here 1,000).”), with **Take the new values** for that bit and, if
 other bits in the window come from it too, **On all (N)**; the T number and the steps stay, and **Export** writes the new values.
-A bit deleted from the library stays in the project, with the note “is no longer in the library”. A bit entered by hand that is
-the same as one in the library (same diameter, same shape) shows as **Entered by hand (as “…”)**, without changing anything in
-the project.
+A bit deleted from the library stays in the project, with the note “is no longer in the library” and **Put it back in the
+library**: the bit goes back into **My bits** from the project's copy (the name, the T number, the diameter, the shape, the
+working values, the cutting length and the operation's steps; it no longer knows the number of flutes, the note or the group),
+and with the account open it also goes to the account. If its name was taken by another bit in the meantime, it comes back with a
+free name (for example “Flat Ø12 (2)”), which the operations with the same copy take too; **Export** writes it. A bit entered by
+hand that is the same as one in the library (same diameter, same shape) shows as **Entered by hand (as “…”)**, without changing
+anything in the project.
 
 The **Cutting order** sits in the list, above the operations. The operations appear in the order they are cut, with their place
 on the left (the card says “N of M in cutting order”):
@@ -2088,8 +2095,19 @@ only, over as many pages as it needs.
   › Dimensions › Export, with the colour from there): the dimension and extension lines, the angle arcs (true arcs in DXF and
   SVG), the ends (filled arrows are filled triangles, dots are discs) and the numbers, as the strokes of the app's single-line
   font, so they look the same in any program, with no fonts. The tick box starts as the Settings say (off by default: vectors
-  for a laser or another CAM stay just the shapes); under it, the **Dimension settings** link. Dimensions never go into the
-  G-code.
+  for a laser or another CAM stay just the shapes); under it, a sentence gives the layer and how the dimensions are written,
+  with the **Dimension settings** link. Dimensions never go into the G-code.
+  - **In DXF**, as **Dimensions in DXF** in the Settings says: by default, each dimension is a **dimension** (the DIMENSION
+    entity, with the CNCVS2 style: the number height, the ends, the gaps, the decimals and the separator from the Settings),
+    and its drawing, as you see it in the app, sits in a block of its own: AutoCAD and LibreCAD read it as a dimension (they
+    move it, redraw it), a program that only knows blocks draws it. The number is written into the dimension, so it looks the
+    same, but it doesn't change by itself when you move the points in another program (write `<>` there instead, to have it
+    measured). With **Lines and numbers**, the drawing goes out directly, with no dimensions.
+  - **Numbers as text** (**Numbers: Text** in the Settings): in DXF as MTEXT, in SVG as text, in PDF and EPS in Helvetica (no
+    font in the file); editable in another program, but drawn with its font. The number sits where the strokes would, and
+    Helvetica is about 30% wider, so a number in the line gets closer to the line's ends. In PDF and EPS, a character
+    Helvetica doesn't have (ș, ț, ă) is written as “?” and reported after the export; the minute and second (′ ″) are written
+    ' and ".
 
 **Export** downloads the file and says how many entities and layers it has (with dimensions, also how many dimensions). A
 shape with both lines and curves comes out in pieces joined end to end (a polyline, then a curve).

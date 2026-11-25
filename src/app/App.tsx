@@ -1758,6 +1758,8 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
               setUrechiAlese(a);
             },
           })}
+          // „Pune-o înapoi în bibliotecă” trimite freza și în cont (ADR 0300 §5, felia 16.A↑b-6).
+          config={config.ok ? config.config : null}
         />
         </div>
       )}

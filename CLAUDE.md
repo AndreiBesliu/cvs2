@@ -393,8 +393,25 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   bibliotecă: „Scrisă de mână (ca „…”)”, fără scriere. Nota e `NotaBiblioteca` (`src/ui/FisaOperatie.tsx`), iar
   biblioteca întreagă ajunge în fereastră doar după citire (`bibliotecaToata`, în `src/app/ExportConectat.tsx`).
   **Un fel nou de freză cu CAM intră și în lista aceea: dacă fereastra nu-i poate purta forma, rămâne afară** (bila
-  reliefului, 18.1↑c). Urmează 16.A↑b-6 („Pune-o înapoi în bibliotecă”, din fereastra exportului, cu contul),
-  pornită pe 25.11. Documentul rămâne v28; nimic pe server. Felia: pornirea +0, totalul +1,6 kB.
+  reliefului, 18.1↑c). Documentul rămâne v28; nimic pe server. Felia: pornirea +0, totalul +1,6 kB.
+  **„Pune-o înapoi în bibliotecă” (ADR 0300 §5, felia 16.A↑b-6)** gata pe 25.11, unită în `main` pe 25.11
+  (`1d3882d9`), la „ok, porneste 10.4↑c-2 si 16.A↑b-6” al owner-ului: pe nota unei freze șterse din bibliotecă,
+  butonul o pune la loc din copia de pe rând, cu id-ul ei de dinainte și un nume liber (`frezaDinCopie`,
+  `cuFrezaReadusa`, în `src/model/freza.ts`; `puneInapoi`, în `src/app/frezeMele.ts`); în cont reînvie peste semnul
+  ștergerii, prin sincronizarea de azi (`trimiteSchimbarea`, prin bucata contului), iar fără `cloud` rămâne în
+  browser. Rândurile cu aceeași copie o iau (`cuFrezaPusaInapoi`, în `src/ui/exportRand.ts`). Cu id-ul deja în
+  bibliotecă (pusă la loc între timp, în altă filă), nimic nu se suprascrie: biblioteca se citește din nou, iar nota
+  se reface. Nimic nou pe server; documentul rămâne v28. Felia: pornirea +0, totalul +1,6 kB.
+  **Escape închide „Frezele mele” oriunde ar fi focusul (felia 16.A↑b-7)** gata pe 25.11, unită în `main` pe 25.11
+  (`581da353`), după două probe instabile ale frezelor: Escape se asculta doar pe fereastră și se pierdea când
+  butonul apăsat pleca din pagină sau se oprea sub focus, ori după un clic pe un text. Acum se ascultă pe
+  `document` cât fereastra e deschisă, pe urcare, cu `defaultPrevented` (un strat de deasupra, ca manualul, își ține
+  tasta), și închide stratul de sus care se vede, citit din pagină în clipa apăsării. **O fereastră nouă își ascultă
+  Escape pe `document`, nu pe ea însăși, iar proba ei apasă Escape după ce butonul apăsat a plecat sau s-a oprit**
+  (aceeași scăpare e încă în „Așază pe foi”, Setări, raportul foilor, lucrarea primită, Aspectul și fereastra
+  extensiilor: o felie comună, la cuvântul owner-ului). Cu ea, linia frezelor n-are felie pornită: urmează, la
+  cuvântul owner-ului, 16.A↑d (calibrarea, după placa 4), e (bila și toroidala, cu relieful), f (profilul desenat),
+  g (valorile pe material). Felia: pornirea +0, totalul +0,1 kB.
   **Plafonul pornirii 120 kB (ADR 0145, decizia owner-ului din 24.11, „ok, ridica plafonul pornirii la 120 kB”):** după
   lotul al paisprezecelea, pornirea era 109,9 kB, cu ușa 114,4 și cu Atelierul 114,7 / 115, iar feliile următoare ale
   frezelor, exportului și aranjamentelor nu mai încăpeau în 0,3 kB. Poarta judecă tot trei măsuri sub același plafon
@@ -1220,9 +1237,18 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   din pagină); PDF-ul, EPS-ul și DXF-ul se lărgesc. **Oracolul cotelor e Python**
   (`test/oracles-py/export2d_cote.py`, pas în jobul `oracol-export2d`; corpusul cotelor, tot din
   `scripts/export2d-corpus.ts`): valorile lui sunt scrise din descrierea corpusului și din regulile desenului (ADR
-  0330 §4–§6), nu din codul aplicației, deci o cotă nouă în corpus își cere valorile pe hârtie acolo. Urmează
-  10.4↑c-2 (DIMENSION în DXF, cifrele ca text), pornită pe 25.11. Documentul rămâne v28; nimic pe server.
-  Felia: pornirea +0,1 kB, totalul +3,3 kB (888,1 / 1 000).
+  0330 §4–§6), nu din codul aplicației, deci o cotă nouă în corpus își cere valorile pe hârtie acolo. Documentul
+  rămâne v28; nimic pe server. Felia: pornirea +0,1 kB, totalul +3,3 kB (888,1 / 1 000).
+  **Cotele ca DIMENSION în DXF și cifrele ca text (ADR 0330 §7, §10, felia 10.4↑c-2)** gata pe 25.11, unită în
+  `main` pe 25.11 (`66b6b335`), la „ok, porneste 10.4↑c-2 si 16.A↑b-6” al owner-ului: în Setări › Cotele ›
+  Exportul, **Cotele în DXF** (Cote (DIMENSION), implicit, sau Linii și cifre) și **Cifrele** (Trăsături, implicit,
+  sau Text). În DXF, fiecare cotă e o entitate DIMENSION (felul, punctele de definiție, măsura, textul scris, stilul
+  `CNCVS2`), cu desenul ei într-un bloc anonim `*Dn`; cifrele ca text sunt MTEXT în DXF, `<text>` în SVG și
+  Helvetica în PDF și EPS, fără font în fișier. Textul cotei e cifra noastră, scrisă în cotă (alegerea owner-ului,
+  cu recomandarea aplicată). Cu „Linii și cifre” și „Trăsături”, fișierele ies octet cu octet ca în c-1. Oracolul
+  Python are corpusul al doilea (toate felurile) și unul ASCII. Urmează, la cuvântul owner-ului, 10.4↑d (lanțul și
+  linia de bază, „Cotează selecția”, „Fă desen din cotă”, cotele în raportul foilor). Felia: pornirea +0, totalul
+  +3,0 kB.
   **Relieful din imagine, pe planșă (ADR 0310, ADR 0311, felia 18.1↑a, adusă din etapa 18; documentul v28)** gata pe
   24.11, în sesiunea cloud a liniei (ramura `wip/18.1-relief`), unită în `main` pe 24.11 (`c5b79526`). ADR 0310,
   acceptat de owner cu „1a–6a”. Din „Importă…”, o imagine (PNG, JPEG, WebP, GIF, BMP) se face **relief** cu alegerea
@@ -1746,6 +1772,78 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 25.11.2026, seara (a treizeci și opta unire din cloud): **Escape închide „Frezele mele” oriunde ar fi focusul
+  (16.A↑b-7), unită în `main`** (sesiunea principală, ramura `unire-2511z`, din `75bcf3fb`). Linia frezelor, ramura
+  `wip/16.A-freze-b7`, `0b015682` (codul lui `c95b1576`), PR-ul `AndreiBesliu/cvs2#47`, la cererea sesiunii
+  principale, după semnalarea liniei exportului: două probe ale frezelor (`exportFrezeNota.spec.ts`, în `main` din
+  17:00, și `exportFrezeInapoi.spec.ts`) cădeau din când în când (4 din 50 la linia exportului, 2 din 50 la linia
+  frezelor), deci un complet pe `main` putea cădea la întâmplare. Unită în `581da353`. **Cauza era în fereastră, nu
+  în probă:** Escape se asculta doar pe fereastră, iar butonul apăsat pleacă din pagină („Salvează” în „Listă”, „Da,
+  șterge”) sau se oprește sub focus („Salvează” în „Configurator”); la fel, un clic pe un text al ferestrei; tasta
+  cădea pe `body`. În plus, o stare rămasă în urmă (întrebarea unei freze deja șterse) o oprea și cu focusul
+  înăuntru. Acum Escape se ascultă pe `document` cât fereastra e deschisă, ca la fereastra exportului, și închide
+  stratul de sus care se vede; manualul și paleta de deasupra își păstrează tasta. Probele, scrise întâi, apasă
+  Escape exact în clipa plecării butonului; cele două spec-uri: 50 / 50 după. Otrăvurile 6 / 7 (una, practic
+  echivalentă azi). Nimic pe server; documentul rămâne v28. Ramura avea deja `main`: **arborele unirii are exact
+  codul lui `c95b1576`** (`git diff` gol în afara fișierelor `.md`) și a intrat pe porțile lui, fără alt complet:
+  completul 45662118218, verde (unit 10 529 / 0, 12 sărite pe Linux; e2e 865 / 865; funcțiile pe emulatoare
+  136 / 136; paginile 60 / 60); rapidul, verde pe `c95b1576`; pornirea 111,2 kB (plafonul 125; cu ușa 116,2, cu
+  Atelierul 116,5), **totalul 896,6 / 1 000 kB** (+0,1), `/admin` 138,3 / 200, contul 30,3 / 32. Pe test e `6741c0be`
+  (lotul 35); lotul 36 (`75bcf3fb`) e în drum, iar 16.A↑b-7 pleacă după el. **Același tipar (Escape ascultat doar pe
+  fereastră) e în alte șase ferestre** („Așază pe foi”, Setări, raportul foilor, lucrarea primită, Aspectul,
+  fereastra extensiilor): o reparație comună e o felie separată, la cuvântul owner-ului. Unirea reliefului
+  (`unire-2511x`, 18.1↑c) primește `main` cu 16.A↑b-7 și își reface completul; linia exportului își pune reparația
+  lui 28.8↑h peste ea. **La owner:** Escape în cele șase ferestre, 10.4↑d, feliile frezelor (16.A↑d–g), cele două
+  alegeri pe care liniile au mers cu recomandarea (freza pusă la loc între timp; textul cotei DIMENSION), de
+  încercat „Modelul” din Easy 3Draw, proba pe mașină a centrului foii, cele patru întrebări din auditul elicelor,
+  pachetul Easy 3Draw trecut de 0,5 MB, arhivarea sesiunii elicelor, verificarea juridică (GDPR) a utilizării
+  aplicației înaintea live-ului, „cine unește în `main`”, meniul de sus la 320 px la atingere.
+- 25.11.2026, seara (a treizeci și șaptea unire din cloud): **„Pune-o înapoi în bibliotecă”, din fereastra
+  exportului (16.A↑b-6), și cotele ca DIMENSION în DXF, cu cifrele ca text (10.4↑c-2), unite în `main`**, în lot
+  (sesiunea principală, ramura `unire-2511w`, din `6741c0be`); amândouă pornite la „ok, porneste 10.4↑c-2 si
+  16.A↑b-6” al owner-ului. **16.A↑b-6** (linia frezelor, ramura `wip/16.A-freze-b6`, `f53ad4ff`, PR-ul
+  `AndreiBesliu/cvs2#42`; ADR 0300 §5), unită în `1d3882d9`: pe nota unei freze șterse din „Frezele mele”, butonul o
+  pune la loc din copia de pe rând (numele, T-ul, diametrul, forma, valorile de lucru, tăișul, pașii rândului), cu
+  id-ul ei de dinainte; în cont reînvie prin sincronizarea de azi, iar fără capabilitatea `cloud` rămâne în browser.
+  Nimic nou pe server: callable-ul `freze` primea deja scrierea peste semnul ștergerii. Otrăvurile 17 / 17 și, pe
+  emulatoare, 3 / 3. **O alegere a owner-ului, cu recomandarea liniei aplicată:** dacă freza a fost pusă la loc
+  între timp, în altă filă, butonul nu suprascrie nimic; biblioteca se citește din nou, iar nota se reface;
+  alternativele: suprascrie freza din bibliotecă cu copia proiectului, sau pune una nouă, „(2)”. **10.4↑c-2** (linia
+  cotelor, ramura `wip/10.4-cote`, `fd21591f`, PR-ul `AndreiBesliu/cvs2#43`; ADR 0330 §7, §10), unită în `66b6b335`:
+  în Setări › Cotele › Exportul, „Cotele în DXF” (entități DIMENSION, implicit, sau linii și cifre, ca în c-1) și
+  „Cifrele” (trăsături, implicit, sau text: MTEXT în DXF, `<text>` în SVG, Helvetica în PDF și EPS, fără font în
+  fișier); cu felul de dinainte, fișierele ies octet cu octet ca în c-1; oracolul Python recitește fiecare DIMENSION
+  și blocul ei; otrăvurile 53 / 53. **A doua alegere a owner-ului, tot cu recomandarea aplicată:** textul unei cote
+  DIMENSION e cifra noastră, scrisă în cotă, deci arată la fel în orice program; alternativa: programul CAD măsoară
+  singur. Documentul rămâne v28; nimic pe server. Ramurile aveau `main` `65eecdc6`; de atunci `main` primise doar
+  3.Tu (pachetul extensiei), deci lotul și-a făcut completul lui. Ciocnirea, doar în DEVLOG. Porțile lotului, în CI,
+  pe `66b6b335` (completul 45653662494, verde la prima trecere, 75 min): unit 10 529 / 0 (12 sărite, pe Linux), e2e
+  863 / 863, funcțiile pe emulatoare 136 / 136, paginile 60 / 60; rapidul, verde pe `66b6b335`; completele
+  liniilor, verzi (`f53ad4ff`: 45640803121; `fd21591f`: 45640765994); pornirea 111,2 kB (plafonul 125; cu ușa
+  116,2, cu Atelierul 116,5), **totalul 896,5 / 1 000 kB**, `/admin` 138,3 / 200, contul 30,3 / 32. Pe test e
+  `6741c0be` (lotul 35, din 19:39): tot ce era în `main` până acum; lotul acesta pleacă după unire (lotul 36).
+  **Două probe ale frezelor sunt instabile**
+  (`exportFrezeNota.spec.ts`, în `main` din 17:00, și `exportFrezeInapoi.spec.ts`: 4 căderi din 50, măsurate de
+  linia exportului): în „Frezele mele”, Escape era ascultat doar pe fereastră și se pierdea când butonul apăsat se
+  oprea sau dispărea sub focus; linia frezelor a reparat-o la cauză (16.A↑b-7, la porți). **Linia frezelor și linia
+  cotelor n-au altă felie pornită.** La cuvântul owner-ului: 16.A↑d (calibrarea, după placa 4), e (bila și
+  toroidala, cu relieful), f (profilul desenat), g (valorile pe material); 10.4↑d (lanțul și linia de bază,
+  „Cotează selecția”, „Fă desen din cotă”, cotele în raportul foilor: ultima felie a cotelor). La linii, în lucru:
+  relieful (18.1↑c, pe `unire-2511x`, cu completul unirii pornit), exportul (28.8↑h, reparația lui „Du-mă la …”, la
+  porți), frezele (16.A↑b-7, la porți), atelierul (3.Cf, apoi decorațiunile de Crăciun). **La owner:** cele două
+  alegeri de mai sus, 10.4↑d, feliile frezelor, Escape în celelalte șase ferestre cu același tipar (o felie mică,
+  comună), de încercat „Modelul” din Easy 3Draw, proba pe mașină a centrului foii, cele patru întrebări din auditul
+  elicelor, pachetul Easy 3Draw trecut de 0,5 MB, arhivarea sesiunii elicelor, verificarea juridică (GDPR) a
+  utilizării aplicației înaintea live-ului, „cine unește în `main`”, meniul de sus la 320 px la atingere.
+- 25.11.2026, seara: **decorațiuni de Crăciun pentru imprimantă, pe lista liniei atelierului Easy 3Draw** („Vreau ca
+  sesiunea care lucreaza la plugin, sa faca si decoratiuni de craciun pentru imprimanta. Pune-i asra pe lista”, în
+  sesiunea principală). Sesiunea principală i-a scris liniei la 19:18: o felie nouă, după 3.Cf (în lucru), dacă
+  owner-ul nu-i spune altă ordine în sesiunea ei; Crăciunul e aproape, deci nu rămâne după 3.Cg–3.Ci fără să fie
+  întrebat. Linia pornește cu propunerea: un ADR scurt (0285, următorul liber din intervalul ei) și întrebările
+  grupate, cu recomandarea în față: ce piese vin întâi (glob, fulg, stea, brăduț, ornament cu nume), unde stau în
+  atelier, dacă se leagă de restul pieselor sau sunt de sine stătătoare, dacă textul intră din prima. Cerute din
+  prima: tipărirea fără suport, agățătoarea, mărimile spuse în editor, probele pe plase ca la celelalte piese. Doar
+  pachetul extensiei; nimic în aplicație, nimic pe server.
 - 25.11.2026, seara (a treizeci și șasea unire din cloud): **piesele rotunde pe același ax în vederea „Modelul” a
   atelierului Easy 3Draw (3.Tu), unite în `main`** (sesiunea principală, ramura `unire-2511v`, din `65eecdc6`). Linia
   atelierului, ramura `wip/3.Xh-biblioteca-ui`, `70942c03`, PR-ul `AndreiBesliu/cvs2#45` (ADR 0283, acceptat de owner

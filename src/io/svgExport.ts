@@ -5,8 +5,10 @@
  * `<circle>`, arcul e `A` cu raza lui, cubica e `C`. Sensul arcului: după întoarcerea axei, un arc trigonometric al foii
  * (bulge > 0) se vede tot trigonometric, adică în sensul unghiurilor negative ale SVG-ului, deci steagul `sweep` e 0.
  * Cotele (ADR 0330 §7) au grupul lor, cu numele, culoarea și grosimea din setări; capetele pline sunt căi umplute, iar
- * punctele, discuri (calea cu lățimea lor).
+ * punctele, discuri (calea cu lățimea lor). Cifrele scrise ca text (felia 10.4↑c-2) sunt `<text>` cu Helvetica (sau, fără ea,
+ * fontul fără serife al programului), centrate pe mijlocul bazei, cât majuscula / 0,718, rotite în jurul acelui punct.
  */
+import { marimeHelvetica } from './helvetica.ts';
 import { STRATURI, type Entitate, type Strat, type VectoriFoaie } from './vectori.ts';
 
 /** Culoarea fiecărui strat (aceeași familie ca în DXF: exteriorul roșu, interiorul albastru…). */
@@ -19,6 +21,16 @@ export const CULORI_SVG: Readonly<Record<Strat, string>> = {
 export function nr(x: number): string {
   const s = x.toFixed(6).replace(/\.?0+$/, '');
   return s === '-0' ? '0' : s;
+}
+
+/** Textul unui element SVG: `&`, `<`, `>` și orice semn din afara ASCII ca referință numerică (fișierul rămâne ASCII). */
+const textXml = (t: string): string => [...t].map((c) => (c === '&' ? '&amp;' : c === '<' ? '&lt;' : c === '>' ? '&gt;' : c.codePointAt(0)! > 126 ? `&#${c.codePointAt(0)};` : c)).join('');
+
+/** Cifra ca `<text>`: baza în (x, înălțimea − y), centrată, rotită cu −unghi (Y-ul SVG-ului e în jos). */
+function text(e: Extract<Entitate, { fel: 'text' }>, H: number, culoare: string): string {
+  const x = nr(e.p.x), y = nr(H - e.p.y);
+  const rot = e.unghi === 0 ? '' : ` transform="rotate(${nr(-e.unghi)} ${x} ${y})"`;
+  return `<text x="${x}" y="${y}" font-family="Helvetica, Arial, sans-serif" font-size="${nr(marimeHelvetica(e.inaltime))}" text-anchor="middle" fill="${culoare}" stroke="none"${rot}>${textXml(e.text)}</text>`;
 }
 
 function cale(e: Extract<Entitate, { fel: 'polilinie' | 'spline' | 'plin' }>, H: number): string {
@@ -68,6 +80,7 @@ export function scrieSvg(v: VectoriFoaie, grosime = 0.1): string {
     for (const e of din) {
       linii.push(e.fel === 'cerc'
         ? `<circle cx="${nr(e.centru.x)}" cy="${nr(H - e.centru.y)}" r="${nr(e.raza)}"/>`
+        : e.fel === 'text' ? text(e, H, culoare)
         : e.fel === 'plin' ? `<path d="${cale(e, H)}" fill="${culoare}" stroke="none"/>`
           : e.fel === 'polilinie' && e.latime ? `<path d="${cale(e, H)}" stroke-width="${nr(e.latime)}"/>`
             : `<path d="${cale(e, H)}"/>`);

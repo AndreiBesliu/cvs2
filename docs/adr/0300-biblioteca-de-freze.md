@@ -541,6 +541,62 @@ Documentul rămâne v28 (din relief); nimic pe server. Probele (întâi): difere
 (`test/unit/exportFreze.nota.test.ts`); în Edge, freza schimbată (pe rând și „Pe toate”, cu exportul și fereastra redeschisă),
 ștearsă și frezele în plus cu recunoașterea (`test/e2e/exportFrezeNota.spec.ts`). Otrăvurile: `test/otravuri/16.A-b4.py`.
 
+## Implementarea (16.A↑b-6)
+
+Pe 25.11.2026, în sesiunea cloud a liniei, la cuvântul owner-ului transmis de sesiunea principală („ok, porneste 10.4↑c-2 si
+16.A↑b-6”), pe `wip/16.A-freze-b6` (din vârful lui 16.A↑b-4, `48f27fcf`): **Pune-o înapoi în bibliotecă**, pe nota unei freze
+șterse din bibliotecă (§5), în fereastra exportului.
+
+- **Copia de pe rând** (`copieDeReadus`, `src/ui/exportRand.ts`): pe locul unei freze cu origine, id-ul și versiunea originii,
+  numele, T-ul, diametrul, forma, valorile de lucru, tăișul și pașii rândului (pasul pe trecere; pasul lateral al locului, în
+  mm). Pe un loc fără origine sau cu T-ul ori Ø de necitit, fără buton.
+- **Freza din copie** (`frezaDinCopie`, `src/model/freza.ts`): felul din formă (fără formă plată; cu vârful plat, de gravare;
+  altfel V), valorile de lucru ale copiei (fără ele, ale frezelor de pornire), pasul pe trecere al rândului (necunoscut, jumătate
+  din diametru) și pasul lateral din mm în procente din diametru, cel mult 50 %. Numărul de tăișuri, nota și grupul nu sunt în
+  proiect, deci nu se mai știu.
+- **Pusă la loc cu id-ul ei** (`cuFrezaReadusa`, prin `puneInapoi` din depozit): în biblioteca din care se aleg frezele
+  proiectului (`useBibliotecaProiectCuCheie`), cu versiunea copiei plus unu și un nume liber („(2)”, dacă altă freză l-a luat
+  între timp). **În cont, nimic nou pe server:** callable-ul `freze` primește scrierea peste semnul ștergerii, cu versiunea lui
+  văzută, și o reînvie (`functions/src/freze/actiuni.ts`), deci aceeași freză, standard sau nu, rămâne aceeași pe toate
+  calculatoarele. Pleacă prin sincronizarea de azi, la 2 s (`trimiteSchimbarea`, prin bucata contului); fără capabilitatea
+  `cloud`, rămâne în browser, ca orice schimbare din „Frezele mele”.
+- **Cu id-ul încă în bibliotecă** (pusă la loc între timp, în altă filă): **nimic suprascris**; biblioteca se citește din nou, iar
+  nota se reface singură (la zi sau cu diferențele și „Ia valorile noi”). Alegerea e a owner-ului (întrebarea din raport), cu
+  recomandarea aplicată.
+- **Rândurile după** (`cuFrezaPusaInapoi`): locul apăsat ia freza pusă la loc (numele ei, poate liber, și versiunea); celelalte
+  locuri ale ferestrei cu aceeași origine o iau doar dacă diferă de ea cel mult prin nume (aceeași copie), restul își păstrează
+  copia, cu nota lor. Exportă scrie originea nouă, cu regula din 16.A↑b-3. T-ul și pașii rămân ai rândurilor.
+- **Refuzurile**, sub notă: biblioteca plină, a unei versiuni mai noi, valorile copiei în afara marginilor bibliotecii, o
+  scriere căzută. Butonul e oprit cât scrie și într-un proiect doar de citit.
+
+Documentul rămâne v28 (din relief); nimic pe server. Probele (întâi): copia, freza din copie, lista și rândurile după, pe hârtie
+(`test/unit/exportFreze.inapoi.test.ts`); reînvierea în cont peste semnul ștergerii, cu serverul fals al sincronizării
+(`test/unit/frezeSincronizare.test.ts`) și pe emulatoare (`test/e2e-emulator/freze.emulator.spec.ts`); în Edge, freza pusă la loc
+cu valorile ei și cu numele luat între timp (`test/e2e/exportFrezeInapoi.spec.ts`). Otrăvurile: `test/otravuri/16.A-b6.py`.
+
+## Implementarea (16.A↑b-7)
+
+Pe 25.11.2026, la cererea sesiunii principale (două probe ale frezelor cădeau din când în când, una deja în `main`), pe
+`wip/16.A-freze-b7` (din `origin/unire-2511w`): **Escape închide fereastra „Frezele mele” oriunde ar fi focusul** (§3).
+
+- **Cauza.** Escape se asculta doar pe fereastră. Butonul apăsat pleacă însă din pagină („Salvează” în „Listă”: editorul lasă
+  locul fișei; „Da, șterge”: fișa pleacă la vestea bibliotecii, înaintea capătului ștergerii) sau se oprește sub focus
+  („Salvează” în „Configurator”, după care browserul lasă focusul pe pagină). Un clic pe un text al ferestrei lasă și el
+  focusul pe pagină. În toate aceste cazuri tasta cădea pe `body`, iar fereastra rămânea deschisă; probele lui `inBiblioteca`
+  cădeau când Escape ajungea în cele 1–2 ms dinaintea efectului care mută focusul. Și cu focusul în fereastră, o stare rămasă
+  în urmă oprea Escape: întrebarea unei freze deja șterse (`stergere`, închisă abia la capătul ștergerii), „Grup nou…” al unei
+  freze șterse în altă filă, redenumirea unui grup deja redenumit.
+- **Reparația** (`src/app/FrezeleMele.tsx`): Escape se ascultă pe `document` cât fereastra e deschisă, pe urcare, cu
+  `defaultPrevented` și fără `isComposing`, ca la fereastra exportului. Un strat deschis peste ea, care își oprește singur
+  tasta (manualul, cu F1; paleta), se închide primul, iar scurtăturile desenului de sub fereastră nu o mai primesc. Tasta
+  închide stratul de sus **care se vede** (redenumirea, „Grup nou…”, întrebarea ștergerii, importul), citit din pagină în
+  clipa apăsării; altfel, fereastra. Focusul și ce îl mută rămân cum erau.
+
+Probele (întâi, în `test/e2e/freze.spec.ts`): Escape apăsat exact în clipa în care pleacă „Salvează”, „Da, șterge” și câmpul
+redenumirii (observatorul mutațiilor îl trimite pe ce are atunci focusul: `body`); în „Configurator”, după „Salvează” oprit;
+după un clic pe titlu; cu freza ștearsă în altă filă, cât „Grup nou…” sau întrebarea sunt deschise aici; unealta de sub
+fereastră rămâne aleasă. Otrăvurile: `test/otravuri/16.A-b7.py`.
+
 ## Se redeschide dacă
 
 - owner-ul vrea o bibliotecă comună mai multor conturi ale aceluiași atelier, sau cataloagele publice ale producătorilor;

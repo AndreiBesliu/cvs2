@@ -101,6 +101,12 @@ față. Fără cod de produs până la răspunsuri. De hotărât acolo, între a
   cifrele ca text.
 - **25.11, 10.4↑c-1 unită în `main`** de sesiunea principală (`f2f6fc57`, din `d8e69780`; `main` `f8be3b4d` adus în
   ramură); pe test ajunge cu lotul următor. **Urmează:** 10.4↑c-2, la cuvântul owner-ului.
+- **25.11, 10.4↑c-2 gata pe ramură** (la „ok, porneste 10.4↑c-2 si 16.A↑b-6” al owner-ului, prin sesiunea principală; `main`
+  `2aaee0b4` adus): în DXF, cotele ca DIMENSION (implicit; blocul `*Dn` și stilul `CNCVS2`) sau ca linii și cifre; cifrele ca
+  trăsături (implicit) sau ca text (MTEXT, `<text>`, Helvetica în PDF și EPS); setările în Setări › Cotele › Exportul. Cu felul
+  de dinainte, fișierele c-1 sunt octet cu octet aceleași. Întrebarea 7 (textul cotei DIMENSION: al nostru, scris, sau lăsat
+  de măsurat), la owner, cu recomandarea implementată. **Urmează:** 10.4↑d (lanțul, linia de bază, „Cotează selecția”, „Fă
+  desen din cotă”, cotele în raportul foilor), la cuvântul owner-ului.
 
 ## Deciziile owner-ului
 
@@ -144,3 +150,9 @@ față. Fără cod de produs până la răspunsuri. De hotărât acolo, între a
   `__pycache__` în `test/oracles-py/` (de șters, nu de comis); local, Ghostscript se pune cu `apt-get install ghostscript`.
 - **Liniile de extensie pleacă de lângă vârfuri:** alese la clic, ar fura începutul unei cote noi; cota se alege doar de
   pe linie și de pe cifră, iar un punct numit al unei forme bate cota.
+- **ezdxf măsoară aliniata după unghiul 50** (`get_measurement`), pe care felul 1 al DIMENSION nu-l are: oracolul o măsoară
+  ca distanța 13–14. **`fitz.get_text_length` greșește un text care începe cu un semn din afara ASCII** („Ø40” cu Ø de 222 /
+  1000): lățimile se iau din `fitz.Font('helv').text_length`.
+- **ezdxf decodează `\U+XXXX` doar prin `recover.readfile`** (`ezdxf.read` le lasă scrise): oracolul citește așa.
+- **Lățimile Helvetica** (`src/io/helvetica.ts`) sunt probate pe toate semnele, prin `cote-ascii.pdf` (centrarea unui text
+  cu toate semnele ASCII și ° ± × Ø); un semn nou în tabel cere și locul lui în textul acela.

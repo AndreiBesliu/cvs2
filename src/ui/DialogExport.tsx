@@ -19,14 +19,14 @@ import { verdicteGresite, type GrupExport, type VerdictRand } from './exportGrup
 import { treceriEgale } from './exportDeseneCalcul.ts';
 import { DesenColt, DesenZ0, type DesenComun } from './exportDesene.tsx';
 import { Cartonase, Poza } from './exportPoze.tsx';
-import { cuAceeasiFreza, FisaOperatie, ListaBiblioteca, NotaBiblioteca, RAND_DREPT, type ContextFisa } from './FisaOperatie.tsx';
+import { cuAceeasiFreza, FisaOperatie, ListaBiblioteca, NotaBiblioteca, RAND_DREPT, type ContextFisa, type InapoiNota } from './FisaOperatie.tsx';
 import {
   bandaBuna, CHEI_COLT, CHEI_LATURA, citesteRest, ORIGINI, DIAMETRU_FUND_IMPLICIT, faraNumar, incrustatieVRand, inMargini,
   INTRARI_IMPLICITE, intregInMargini, jocFolosit, laturi, LUNGIME_ZIGZAG_IMPLICITA, margineBuna, MAXIM_REST, PLACUTE_NUMITE, puntiBune,
   RAMPA_IMPLICITA, razaEliceImplicita, restBun, rezervaExplicatii, spatiuFolosit, UNGHI_COBORARE_IMPLICIT, URECHI_IMPLICITE, type BunRand,
   type CerereExport, type FrezaRestOperatie, type IncrustatieDreaptaOperatie, type Latura, type OperatieExport, type Rand, type RandRest,
-  cuFrezaAleasa, cuValorileNoi, frezeRanduri, locuriFreze, numarPentruRand, oferitePentruRest, stareOrigine, type FrezaOferita, type OrigineFreza, type SculaOperatie, type StareExport,
-  type UndeFreza,
+  copieDeReadus, cuFrezaAleasa, cuFrezaPusaInapoi, cuValorileNoi, frezeRanduri, locuriFreze, numarPentruRand, oferitePentruRest, stareOrigine, type FrezaOferita, type OrigineFreza, type SculaOperatie, type StareExport,
+  type CopieRand, type RezultatInapoi, type UndeFreza,
   type ValoriOperatie,
 } from './exportRand.ts';
 
@@ -107,6 +107,11 @@ type Props = {
    * recunoașterea; null (sau lipsă) cât biblioteca nu e citită.
    */
   readonly bibliotecaToata?: readonly FrezaOferita[] | null;
+  /**
+   * „Pune-o înapoi în bibliotecă” (ADR 0300 §5, felia 16.A↑b-6): aplicația pune în biblioteca proiectului freza din copia de pe
+   * rând și o trimite în cont; lipsă = fără buton.
+   */
+  readonly onPuneInapoi?: (c: CopieRand) => Promise<RezultatInapoi>;
 };
 
 /** Rezumatul jobului (ADR 0046): timpul, apoi tabelul pe operații și cel pe scule, cu distanțele de tăiere și de rapide. */
@@ -208,7 +213,7 @@ export function DialogExport(
   {
     operatii, ordineAutomata: automataLucrarii, baza, descrieri, doarCitire, onExporta, onInchide, onReseteaza, stare, setariMasina,
     onSetariMasina, supracursa, onSupracursa, prinFoaie, onPrinFoaie, onDeschideInMasina, trimite = false, foaie, numeFoaie, placute, foi,
-    placuteToate, onRaport, grosimeFoaie, onAlegeUrechi, frezeOferite, bibliotecaToata = null,
+    placuteToate, onRaport, grosimeFoaie, onAlegeUrechi, frezeOferite, bibliotecaToata = null, onPuneInapoi,
   }: Props,
 ) {
   const limba = useLimba();
@@ -566,6 +571,44 @@ export function DialogExport(
       return nou;
     });
   };
+  /**
+   * „Pune-o înapoi în bibliotecă” (ADR 0300 §5, felia 16.A↑b-6), pe o freză ștearsă: aplicația o pune la loc din copia de pe
+   * rând; apoi locul ei (și cele cu aceeași copie) o iau, cu numele ei liber. Starea fiecărui loc: cât scrie, motivul unui refuz.
+   */
+  const [inapoiLoc, setInapoiLoc] = useState<ReadonlyMap<string, { readonly lucru: boolean; readonly motiv: string | null }>>(() => new Map());
+  const puneInapoiLoc = (k: string, v: { readonly lucru: boolean; readonly motiv: string | null } | null): void => {
+    setInapoiLoc((m) => {
+      const n = new Map(m);
+      if (v) n.set(k, v); else n.delete(k);
+      return n;
+    });
+  };
+  const MOTIV_INAPOI: Readonly<Record<Exclude<Extract<RezultatInapoi, { ok: false }>['motiv'], 'exista'>, CheieSimpla>> = {
+    plina: 'export.biblioteca.inapoi.plina', versiune: 'export.biblioteca.inapoi.versiune', valori: 'export.biblioteca.inapoi.valori',
+    eroare: 'export.biblioteca.inapoi.eroare',
+  };
+  const inapoiLa = (cheie: string, unde: UndeFreza): InapoiNota | undefined => {
+    const p = param[cheie];
+    const copie = onPuneInapoi && p ? copieDeReadus(p, unde) : null;
+    if (!onPuneInapoi || !copie) return undefined;
+    const k = `${cheie}|${typeof unde === 'string' ? unde : `${unde.rest}:${unde.k}`}`, st = inapoiLoc.get(k);
+    return {
+      lucru: st?.lucru ?? false, motiv: st?.motiv ?? null,
+      onPune: () => {
+        puneInapoiLoc(k, { lucru: true, motiv: null });
+        void onPuneInapoi(copie).then((r) => {
+          if (r.ok) {
+            schimbat();
+            setParam((v) => cuFrezaPusaInapoi(v, cheie, unde, r.freza, text));
+            puneInapoiLoc(k, null);
+          } else {
+            // Id-ul încă în bibliotecă (pusă la loc în altă filă): nota se reface singură, cu diferențele, dacă sunt.
+            puneInapoiLoc(k, r.motiv === 'exista' ? null : { lucru: false, motiv: t(MOTIV_INAPOI[r.motiv]) });
+          }
+        }, () => { puneInapoiLoc(k, { lucru: false, motiv: t(MOTIV_INAPOI.eroare) }); });
+      },
+    };
+  };
   // „Pune urechile unde țin” (ADR 0211, b): rândurile pieselor desprinse, cu urechi, care sunt în fereastră, trec pe „unde
   // ține”, într-o singură schimbare; nota spune câte, până la exportul următor.
   const [undeTinePuse, setUndeTinePuse] = useState<number | null>(null);
@@ -704,7 +747,8 @@ export function DialogExport(
               <div className="nota-rest">
                 <NotaBiblioteca stare={stari[k] ?? null} origine={r.origine ?? null} oprit={oprit} fmt={fmtFreza}
                   peToate={stari[k]?.fel === 'schimbata' ? cuAceeasiFreza(param, bibliotecaToata, stari[k].freza.id) : 0}
-                  onIa={(f) => { iaValorileNoi(cheie, { rest: fel, k }, f); }} onIaToate={iaValorileNoiPeToate} />
+                  onIa={(f) => { iaValorileNoi(cheie, { rest: fel, k }, f); }} onIaToate={iaValorileNoiPeToate}
+                  inapoi={stari[k]?.fel === 'stearsa' ? inapoiLa(cheie, { rest: fel, k }) : undefined} />
               </div>
             )}
           </div>
@@ -1030,7 +1074,7 @@ export function DialogExport(
   const contextFisa: ContextFisa = {
     dupaCheie, param, total: ordine.length, doarCitire, schimba, randBun, greseliRand, conflict, treceri, taieturaRand, text, fmtFreza, fmtTrecere,
     grosimeFoaie, supracursaCitita, cuSupracursa, onAlegeUrechi, frezeRest, grup, frezeOferite, alegeFreza, bibliotecaToata,
-    iaValorileNoi, iaValorileNoiPeToate,
+    iaValorileNoi, iaValorileNoiPeToate, inapoi: inapoiLa,
   };
   return (
     <div className="dialog" role="dialog" aria-modal="true" aria-labelledby="export-titlu" ref={radacina}

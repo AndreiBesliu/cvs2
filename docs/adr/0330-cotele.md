@@ -536,6 +536,66 @@ sub-sesiuni”). Felia c s-a împărțit în c-1 (exportul cotelor, desenate ca 
   111,2 kB (cu ușa 116,2, cu Atelierul 116,5 / 125), totalul 884,8 → 888,1 / 1 000 kB (după `main` adus, cu relieful
   18.1↑b și plafoanele noi, ADR 0146). Unită în `main` pe 25.11 (`f2f6fc57`).
 
+## Implementarea (10.4↑c-2)
+
+25.11, pe ramura `wip/10.4-cote`, la „ok, porneste 10.4↑c-2 si 16.A↑b-6” al owner-ului (transmis de sesiunea principală),
+peste c-1. Documentul rămâne v28: nimic nou în schemă.
+- **Setările** (Setări › Cotele › Exportul): **Cotele în DXF**, „Cote (DIMENSION)” (implicit, răspunsul 5a) sau „Linii și
+  cifre” (felul din c-1); **Cifrele**, „Trăsături” (implicit) sau „Text”. O setare ținută de c-1, fără ele, le ia implicite.
+  Fraza de sub „Cu cotele (N)” spune stratul, felul cifrelor și, la DXF, felul cotelor.
+- **Definiția fiecărei cote** (`definitieCota`, `src/io/coteExport.ts`, pură), din punctele citite și din desenul ei:
+  orizontala și verticala, rotite la 0° și 90° (felul 0, cu unghiul în 50); aliniata (1); punctele măsurate (13, 14) și piciorul
+  celui de-al doilea pe linia de cotă (10). Raza (4): centrul (10) și punctul de pe cerc (15); diametrul (3): punctul de pe cerc
+  (15) și cel opus (10); liderul (40), cât stă mijlocul cifrei, proiectat pe linie, dincolo de cerc; cifra spusă pusă de om
+  (128). Unghiul, în sensul arcului (de unde pleacă, unde ajunge, ca măsura să fie unghiul desenat, nu 360° minus el): din trei
+  puncte (5), vârful (15) și câte un punct pe semidreapta aleasă, la depărtarea punctului laturii (13, 14), plus mijlocul arcului
+  (10); din patru (2), laturile, fiecare în sensul semidreptei ei (13 → 14, 15 → 10), plus mijlocul arcului (16). Steagul 32
+  (blocul e doar al ei) pe toate; măsura în 42 (unghiul în radiani); mijlocul textului (11) la jumătate de majusculă deasupra
+  mijlocului bazei, agățat de mijloc (71 = 5). O cotă fără valoare sau fără text rămâne desenată ca linii.
+- **DXF-ul cu cotele ca cote:** stilul `CNCVS2` în tabelul DIMSTYLE, din setări: DIMTXT, DIMASZ, DIMEXO, DIMEXE, DIMGAP (0,3 ×
+  înălțimea), locul cifrei (DIMTAD, DIMTIH, DIMTOH), extensiile ascunse (DIMSE1 / DIMSE2), bara oblică (DIMTSZ), zecimalele
+  (DIMDEC; în fracții, puterea lui 2 a numitorului, cu DIMLUNIT 5 și DIMFRAC 2), separatorul (DIMDSEP), zerourile (DIMZIN 8),
+  unitatea (DIMLFAC, DIMPOST), unghiurile (DIMAUNIT, DIMADEC; în grade-minute-secunde, 4 + zecimalele secundelor), fontul
+  (DIMTXSTY, Standard). Fiecare cotă are blocul ei anonim `*Dn` (70 = 1, cu înregistrarea lui în BLOCK_RECORD), cu desenul ei
+  din c-1 (liniile, arcul, capetele, cifrele), iar în ENTITIES stă doar entitatea DIMENSION.
+- **Textul unei cote DIMENSION e cifra noastră, scrisă în ea** (decizia sesiunii, întrebarea 7, mai jos): arată la fel în orice
+  program, iar stilul `CNCVS2` contează doar când un program o desenează din nou. Capetele deschise, punctele și „fără” nu au
+  un echivalent fără blocuri de săgeți în fișier: un program care redesenează cota le face săgeți pline (desenul din bloc e
+  cel bun).
+- **Cifrele ca text:** o entitate nouă a exportului (`text`: mijlocul bazei, unghiul, majuscula), scrisă de fiecare format: în
+  DXF ca MTEXT (în blocul cotei sau, cu „Linii și cifre”, în ENTITIES), agățat de mijloc, cu direcția cifrei; în SVG ca
+  `<text>` cu Helvetica (sau fontul fără serife al programului), centrat (`text-anchor`), cât majuscula / 0,718, rotit în
+  jurul bazei; în PDF cu Helvetica, una din cele 14 fonturi standard (fără font în fișier, WinAnsi), centrată după lățimile ei
+  din AFM (`src/io/helvetica.ts`); în EPS cu Helvetica recodată în ISOLatin1, centrată de interpretor (`stringwidth`). Semnele
+  din afara ASCII: în DXF ca `\U+XXXX`, în SVG ca referințe numerice, deci fișierele rămân ASCII. Minutul și secunda se scriu
+  ' și " în PDF și EPS; un alt semn pe care Helvetica nu-l are (ș, ț, ă) se scrie „?” și se spune după export. Fontul nu se
+  mai încarcă la export cu cifrele ca text. Locul cifrei e cel al trăsăturilor (0,6 × înălțimea pe semn), iar Helvetica e cu
+  vreo 30 % mai lată: o cifră în linie atinge mai ușor capetele liniei. Cutia paginii ține lățimea Helvetica a textului.
+- **Felul de dinainte rămâne octet cu octet:** cu „Linii și cifre” și „Trăsături”, fișierele `cote.*` ale corpusului au
+  amprentele de la c-1 (proba unitară le ține); fără text, PDF-ul și EPS-ul nu primesc nici fontul, nici prologul.
+- **Oracolul** (`export2d_cote.py`, cu corpusul scris de `scripts/export2d-corpus.ts`): pe lângă `cote.*` din c-1, corpusul al
+  doilea, cu toate felurile (cele patru, plus o aliniată, o rază și un unghi din două laturi, cu textul „2x<>”), exportat ca
+  `cote-dim.dxf` (cotele ca DIMENSION) și `cote-text.dxf`, `.svg`, `.pdf`, `.eps` (și cifrele ca text). Recitit de ezdxf (0 erori,
+  0 reparații): fiecare DIMENSION are felul și steagurile, punctele de definiție, `get_measurement()` (la aliniată, distanța
+  13–14: ezdxf o măsoară după unghiul 50, pe care felul 1 nu-l are), măsura scrisă, textul, mijlocul lui și stilul `CNCVS2`
+  de pe hârtie, iar blocul ei are exact segmentele de pe hârtie (cu cifra ca trăsături sau ca MTEXT, cu locul, înălțimea și
+  direcția lui). Textul în PDF, prin PyMuPDF (fontul Helvetica, culoarea, mijlocul bazei cu lățimile lui `Font('helv')`;
+  `get_text_length` greșește un text care începe cu un semn din afara ASCII), în SVG (atributele), în EPS (direct și prin
+  Ghostscript, care pune Nimbus Sans, cu aceleași lățimi). Un al treilea document, `cote-ascii.pdf`, are un text cu toate
+  semnele ASCII și ° ± × Ø: centrarea lui probează fiecare lățime din tabel.
+- **Cifrele:** unitare noi 11 (`cote.export.test.ts`: octeții c-1, definițiile pe hârtie, blocurile și handle-urile, MTEXT-ul,
+  stilul după setări, Helvetica, textul în SVG / PDF / EPS), iar proba setărilor exportului (`cote.setari.test.ts`), întărită; e2e noi 2 (`cote.export.spec.ts`:
+  DIMENSION implicit, cifrele ca text în DXF și SVG, măsurate de browser; „Linii și cifre”). Pornirea 111,2 kB (neschimbată),
+  totalul 890,1 → 893,2 / 1 000 kB.
+
+### Întrebarea 7 (c-2), cu recomandarea pe care s-a mers
+
+Textul unei cote DIMENSION în DXF:
+- **a (recomandat, implementat):** cifra noastră, scrisă în cotă: aceeași în orice program, cum o arată aplicația; dacă muți
+  punctele în alt program, cifra nu se schimbă singură (acolo se poate scrie `<>`, ca s-o măsoare el);
+- b: lăsată de măsurat programului (text gol), după stilul `CNCVS2`: se schimbă cu punctele, dar fiecare program o scrie în
+  felul lui (zecimalele, fracțiile, prefixele razei și diametrului pot ieși altfel decât în aplicație).
+
 ## Răspunsurile owner-ului (24.11.2026)
 
 Salvate în schiță (`raspunsuri/owner`, 12:52), apoi „am raspuns” în chat: **1a, 2a, 3a, 4a, 5a, 6a**, cu nota, exactă:

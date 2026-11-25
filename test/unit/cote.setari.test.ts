@@ -17,7 +17,7 @@ test('implicitele, din tabelul ADR 0330 §6', () => {
     comportament: { legate: true, pornire: 'automata', dupa: 'ramane', pePanza: true, vecine: 'estompate', pragCifre: 6, culoare: null },
     lipire: { felurile: { varf: true, mijloc: true, centru: true, cadran: true, cutie: true, foaie: true, grila: true }, toleranta: 8, contur: 'ctrl' },
     masurare: { distanta: true, delta: true, unghi: true, cursor: true, bara: true },
-    export: { cuCote: false, strat: 'COTE', culoare: '#006d8f', grosime: 0.1 },
+    export: { cuCote: false, strat: 'COTE', culoare: '#006d8f', grosime: 0.1, dxf: 'dimension', cifre: 'trasaturi' },
   });
   assert.deepEqual(citesteSetariCote(null), SETARI_IMPLICITE);
   assert.deepEqual(citesteSetariCote('nu e JSON'), SETARI_IMPLICITE);
@@ -32,7 +32,7 @@ test('citite înapoi exact, cu versiunea în text', () => {
     comportament: { legate: false, pornire: 'ultimul', dupa: 'selectie', pePanza: false, vecine: 'ascunse', pragCifre: 0, culoare: '#ff8800' },
     lipire: { felurile: { varf: true, mijloc: false, centru: true, cadran: false, cutie: true, foaie: false, grila: true }, toleranta: 12.5, contur: 'mereu' },
     masurare: { distanta: true, delta: false, unghi: true, cursor: false, bara: true },
-    export: { cuCote: true, strat: 'Cote-2_A', culoare: '#123abc', grosime: 0.05 },
+    export: { cuCote: true, strat: 'Cote-2_A', culoare: '#123abc', grosime: 0.05, dxf: 'linii', cifre: 'text' },
   };
   const text = textSetariCote(s);
   assert.equal((JSON.parse(text) as { v: number }).v, 1);
@@ -174,7 +174,11 @@ test('„Arată cotele” comută „Cotele pe pânză” din setări, fără s�
 
 test('exportul (c-1): numele stratului, culoarea, grosimea; fiecare greșeală la implicitul ei', () => {
   const r = (x: object): SetariCote['export'] => citesteSetariCote(JSON.stringify({ export: x })).export;
-  assert.deepEqual(r({ cuCote: 'da', strat: 'EXTERIOR', culoare: 'red', grosime: 0.04 }), SETARI_IMPLICITE.export);
+  assert.deepEqual(r({ cuCote: 'da', strat: 'EXTERIOR', culoare: 'red', grosime: 0.04, dxf: 'DIMENSION', cifre: 'litere' }), SETARI_IMPLICITE.export);
+  // Felul cotelor în DXF și al cifrelor (c-2): implicit cotele ca DIMENSION, cifrele ca trăsături; o setare din c-1, fără ele, le ia.
+  assert.equal(SETARI_IMPLICITE.export.dxf, 'dimension');
+  assert.equal(SETARI_IMPLICITE.export.cifre, 'trasaturi');
+  assert.deepEqual(r({ cuCote: true, strat: 'X', culoare: '#000000', grosime: 0.2 }), { cuCote: true, strat: 'X', culoare: '#000000', grosime: 0.2, dxf: 'dimension', cifre: 'trasaturi' });
   assert.equal(r({ grosime: 1 }).grosime, 1);
   assert.equal(r({ grosime: 1.01 }).grosime, 0.1, 'peste 1 mm');
   assert.equal(r({ grosime: 0.05 }).grosime, 0.05);

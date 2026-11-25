@@ -1277,6 +1277,12 @@ implicit**. Un număr se scrie cu virgulă sau cu punct; unul în afara marginil
 - **Lipirea:** punctele de care se lipesc capetele (vârfurile, mijloacele, centrele, cadranele, cutia, foaia, grila),
   toleranța în pixeli și punctul cel mai apropiat de pe contur (cu Ctrl, mereu sau niciodată).
 - **Măsurarea:** ce arată Măsoară (distanța, Δx și Δy, unghiul) și unde (lângă cursor, în bara de jos).
+- **Exportul:** dacă bifa „Cu cotele” din **Exportă vectori** pornește pusă, numele stratului cotelor (litere fără diacritice,
+  cifre, „_” și „-”, cel mult 31, nu numele altui strat; implicit COTE), culoarea lui (în DXF, și cea mai apropiată dintre
+  culorile AutoCAD de bază), grosimea liniilor cotelor în PDF și SVG (0,05–1 mm, implicit 0,1), **Cotele în DXF** (**Cote
+  (DIMENSION)**, implicit: în AutoCAD și LibreCAD rămân cote; sau **Linii și cifre**, pentru programele care nu știu cotele) și
+  **Cifrele** (**Trăsături**, implicit: aceleași în orice program, fără fonturi; sau **Text**, de editat în alt program, dar
+  desenat cu fontul lui).
 
 ## Conversia vectorilor
 %% capitol: conversie
@@ -1879,8 +1885,12 @@ ferestrei), diametrul și pasul lateral; **Exportă** o scrie cu valorile ei de 
 Proiectul ține o copie a fiecărei freze alese din bibliotecă. Dacă freza se schimbă apoi în **Frezele mele**, rândul spune ce
 s-a schimbat (de pildă „În bibliotecă, „Plată Ø6” are acum avansul 1.400 (aici 1.000).”), cu **Ia valorile noi** pentru freza
 aceea și, dacă și alte freze ale ferestrei vin din ea, **Pe toate (N)**; numărul T și pașii rămân, iar **Exportă** scrie valorile
-noi. O freză ștearsă din bibliotecă rămâne în proiect, cu nota „nu mai e în bibliotecă”. O freză scrisă de mână, la fel cu una
-din bibliotecă (același diametru, aceeași formă), apare ca **Scrisă de mână (ca „…”)**, fără să schimbe nimic în proiect.
+noi. O freză ștearsă din bibliotecă rămâne în proiect, cu nota „nu mai e în bibliotecă” și cu **Pune-o înapoi în bibliotecă**:
+freza intră la loc în **Frezele mele** din copia proiectului (numele, numărul T, diametrul, forma, valorile de lucru, tăișul și
+pașii operației; numărul de tăișuri, nota și grupul nu le mai știe), iar cu contul deschis pleacă și în cont. Dacă numele ei e
+luat între timp de altă freză, intră cu un nume liber (de pildă „Plată Ø12 (2)”), pe care îl iau și operațiile cu aceeași copie;
+**Exportă** îl scrie. O freză scrisă de mână, la fel cu una din bibliotecă (același diametru, aceeași formă), apare ca **Scrisă
+de mână (ca „…”)**, fără să schimbe nimic în proiect.
 
 **Ordinea tăierii** stă în listă, deasupra operațiilor. Operațiile apar în ordinea în care se taie, cu locul lor în stânga (fișa
 spune „locul N din M”):
@@ -2004,7 +2014,17 @@ Inkscape, Illustrator / Corel, AutoCAD / LibreCAD) sau pentru laser:
   cu culoarea de acolo): liniile de cotă și de extensie, arcele unghiurilor (arce adevărate în DXF și SVG), capetele (săgețile
   pline sunt triunghiuri umplute, punctele discuri) și cifrele, ca trăsăturile fontului cu o singură linie al aplicației, deci
   arată la fel în orice program, fără fonturi. Bifa pornește cum spun Setările (implicit oprită: vectorii pentru laser sau
-  pentru alt CAM rămân doar formele); sub ea, legătura **Setările cotelor**. Cotele nu intră niciodată în G-code.
+  pentru alt CAM rămân doar formele); sub ea, fraza spune stratul și felul cotelor, cu legătura **Setările cotelor**. Cotele
+  nu intră niciodată în G-code.
+  - **În DXF**, după **Cotele în DXF** din Setări: implicit, fiecare cotă e o **cotă** (entitatea DIMENSION, cu stilul
+    CNCVS2: înălțimea cifrei, capetele, golurile, zecimalele și separatorul din Setări), iar desenul ei, cum îl vezi în
+    aplicație, stă într-un bloc al ei: AutoCAD și LibreCAD o citesc ca cotă (o mută, o redesenează), un program care știe doar
+    blocurile o desenează. Cifra e scrisă în cotă, deci arată la fel, dar nu se schimbă singură când muți punctele în alt
+    program (scrie acolo `<>` în locul ei, ca să fie măsurată). Cu **Linii și cifre**, desenul iese direct, fără cote.
+  - **Cifrele ca text** (**Cifrele: Text** în Setări): în DXF ca MTEXT, în SVG ca text, în PDF și EPS cu Helvetica (fără
+    font în fișier); se pot edita în alt program, dar se desenează cu fontul lui. Locul cifrei e cel al trăsăturilor, iar
+    Helvetica e cu vreo 30 % mai lată, deci o cifră în linie atinge mai ușor capetele liniei. În PDF și EPS, un semn pe care
+    Helvetica nu-l are (ș, ț, ă) se scrie „?” și se spune după export; minutul și secunda (′ ″) se scriu ' și ".
 
 **Exportă** descarcă fișierul și spune câte entități și câte straturi are (cu cotele, și câte cote). O formă cu și linii, și
 curbe iese în bucăți legate cap la cap (o polilinie, apoi o curbă).

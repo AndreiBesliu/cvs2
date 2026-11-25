@@ -14810,6 +14810,24 @@ gata de unit”, `b099c457`; 28.8↑n, `7996e77c`), la ordinul în vigoare „un
 - **Documentele:** decizia și paragrafele de stare în `CLAUDE.md` (frezele, exportul, atelierul); indexul liniilor;
   starea din `docs/linii/principala.md`.
 
+## 2026-11-25 — 16.A↑b-6: „Pune-o înapoi în bibliotecă” din fereastra exportului (Model: Claude Opus 5.5)
+
+**Prompt:** cuvântul owner-ului, transmis de sesiunea principală: „ok, porneste 10.4↑c-2 si 16.A↑b-6”. **Started:** 25.11, 14:16.
+
+- **Ramura** `wip/16.A-freze-b6`, din vârful lui 16.A↑b-4 (`48f27fcf`).
+- **Felia** (`3c01a6ad`): pe nota unei freze șterse din bibliotecă, **Pune-o înapoi în bibliotecă**. Freza intră la loc din
+  copia de pe rând (`copieDeReadus`, `frezaDinCopie`), cu id-ul ei de dinainte, o versiune nouă și un nume liber
+  (`cuFrezaReadusa`, prin `puneInapoi` din depozit), în biblioteca proiectului (`useBibliotecaProiectCuCheie`). În cont, nimic
+  nou pe server: callable-ul `freze` o reînvie peste semnul ștergerii; pleacă prin sincronizarea de azi
+  (`trimiteSchimbarea`, prin bucata contului), iar fără `cloud` rămâne în browser. Rândurile cu aceeași copie o iau
+  (`cuFrezaPusaInapoi`); cu id-ul încă acolo, nimic suprascris. Manualul (ro, en).
+- **Probele** (întâi): unitare noi 4 (`exportFreze.inapoi.test.ts`) și reînvierea cu serverul fals
+  (`frezeSincronizare.test.ts`); în Edge 2 (`exportFrezeInapoi.spec.ts`); pe emulatoare 1 (`freze.emulator.spec.ts`).
+  **Otrăvurile:** 17 / 17 (`test/otravuri/16.A-b6.py`) și 3 / 3 pe emulatoare (`test/otravuri/16.A-b6-emu.py`).
+- **Mărimea** (față de `48f27fcf`): pornirea neschimbată (111,2 kB; cu ușa 116,2, cu Atelierul 116,5 / 125), totalul
+  891,7 → 893,3 / 1 000, contul 30,3 / 32 (neschimbat). Nimic pe server; documentul rămâne v28 (din relief).
+  **Completed:** 25.11, 14:40.
+
 ## 2026-11-25 — Sesiunea principală în cloud: 10.4↑c-2 și 16.A↑b-6, pornite la cuvântul owner-ului (Model: Claude Fable 5.2)
 
 **Prompt:** „ok, porneste 10.4↑c-2 si 16.A↑b-6”
@@ -14958,6 +14976,148 @@ poate”
 - **Linia atelierului:** owner-ul a răspuns în sesiunea ei la întrebările lui 3.Cf (întâi alipirea la prinderi; prinderea se
   alege din puncte, în vederea 3D; piesa alipită urmează baza): consemnat în decizie și în index.
 - **Documentele:** decizia și paragraful de stare în `CLAUDE.md`; indexul liniilor; starea din `docs/linii/principala.md`.
+
+## 2026-11-25 — Felia 10.4↑c-2: cotele ca DIMENSION în DXF și cifrele ca text (ADR 0330 §7)
+
+**Prompt:** „pornește 10.4↑c-2” (sesiunea principală, 25.11, 14:16, cu cuvântul owner-ului: „ok, porneste 10.4↑c-2 si
+16.A↑b-6”). **Started:** 25.11, 14:20, în sesiunea cloud a liniei cotelor. **Completed:** 25.11, 15:10 (în container; CI-ul,
+pe commit-ul împins).
+
+- **`main` adus** (`2aaee0b4`), prin avans rapid; amprentele fișierelor `cote.*` din c-1 notate înaintea oricărei schimbări.
+- **Proba întâi:** oracolul Python (`export2d_cote.py`) primește corpusul al doilea (toate felurile: plus o aliniată, o rază
+  și un unghi din două laturi, cu textul „2x<>”), cu DIMENSION-ul pe hârtie (felul, steagurile, punctele, măsura, textul,
+  stilul `CNCVS2`, blocul exact) și textul cifrelor în DXF, SVG, PDF și EPS; a căzut pe codul de dinainte, apoi a trecut.
+  Hârtia celor trei cote noi s-a verificat întâi pe desenul de azi, ca linii (300 de segmente, exact).
+- **Pur:** `definitieCota` (`src/io/coteExport.ts`), entitatea `text` a exportului, `src/io/helvetica.ts` (lățimile AFM,
+  WinAnsi / ISOLatin1, „?” pentru ce lipsește). Scriitorii: DXF (stilul `CNCVS2`, blocurile `*Dn`, DIMENSION, MTEXT, `\U+`),
+  SVG (`<text>`), PDF (Helvetica, centrată după lățimi), EPS (Helvetica-L1, `stringwidth`). Cu felul de dinainte, `cote.*` au
+  amprentele de la c-1 (proba unitară le ține).
+- **Setări › Cotele › Exportul:** „Cotele în DXF” (DIMENSION implicit) și „Cifrele” (trăsături implicit); fraza din „Exportă
+  vectori” spune felul; cu cifrele ca text, fontul nu se mai încarcă. Manualul (ro, en), cu grupul Exportul din „Setările”,
+  lipsă în română din c-1.
+- **Găsit pe drum:** `fitz.get_text_length` greșește un text care începe cu un semn din afara ASCII („Ø40”); ezdxf măsoară
+  aliniata după un unghi pe care felul 1 nu-l are; ezdxf decodează `\U+` doar prin `recover`.
+- **Întrebarea 7** (textul cotei DIMENSION: al nostru, scris, sau lăsat de măsurat programului CAD), la owner, cu
+  recomandarea a implementată (ADR 0330).
+- **Porțile, în container:** tipurile, regulile de import, licențele; 296 de unitare ale cotelor, exportului 2D, manualului și
+  documentației; oracolul exportului 2D și al cotelor (cu Ghostscript); e2e-urile exportului cotelor și ale Setărilor (11 / 11);
+  build-ul determinist: pornirea 111,2 kB (neschimbată; cu ușa 116,2, cu Atelierul 116,5 / 125), totalul 890,1 → 893,2 / 1 000.
+- **Otrăvurile** (`test/otravuri/10.4c2.py`, într-o clonă): 53 / 53 (41 unitare, 8 pe oracolul Python prin
+  `test/otravuri/oracol-cote.ts`, cu corpusul scris din nou la fiecare, 4 e2e). Au scăpat întâi H02 (o lățime din tabel,
+  neatinsă de nicio probă) și V06 (codarea EPS, pusă pe setul unitar); P06 (două texte într-un MTEXT) era practic
+  echivalent și a fost înlocuit cu MTEXT-ul rotit invers. Corpusul ASCII (`cote-ascii.pdf`) și setul oracolului le prind.
+
+## 2026-11-25 — Sesiunea principală în cloud: lotul 34 (centrul foii ca origine, nota bibliotecii, starea imprimantei), pe test (Model: Claude Fable 5.2)
+
+**Prompt:** publicarea de după a treizeci și cincea unire (pe test se publică liber)
+**Started:** 25.11, după unirea de la 17:00 (completul pe `main`, pornit la 17:09). **Completed:** 25.11, 18:25.
+
+- **Pe test: `65eecdc6`** (28.8↑o, 16.A↑b-4, 3.Au). `publica.yml` 45652408353, verde (18:17–18:25); serverul, neschimbat.
+- **Completul pe `main`** (45641891693, verde, 60 min): unit 10 505 / 0 (12 sărite, pe Linux), e2e 854 / 854, funcțiile pe
+  emulatoare 136 / 136, paginile 59 / 59; pornirea 111,2 kB, totalul 891,8 / 1 000 kB.
+- **Pornirea publicării:** trei erori de server ale GitHub la `gh workflow run` (500, 502, 500); a patra cerere, cu `gh api`,
+  a trecut. De ținut minte: după o eroare la pornire, se verifică întâi că nu s-a creat nicio rulare (o rulare la coadă
+  are titlul „publica”, nu „publica test <sha>”, deci scriptul n-o recunoaște și ar porni a doua).
+- **Proba de fum** pe adresa de test: versiunea `65eecdc65928`, potrivită; nicio eroare în consolă, nicio cerere căzută.
+
+## 2026-11-25 — 16.A↑b-7: Escape închide „Frezele mele” oriunde ar fi focusul (Model: Claude Opus 5.5)
+
+**Prompt:** cererea sesiunii principale (18:44): două probe ale frezelor (`exportFrezeNota.spec.ts`, b-4, în `main`, și
+`exportFrezeInapoi.spec.ts`, b-6) cad din când în când pe Escape-ul lui `inBiblioteca`; reprodu, fă o probă care cade de
+fiecare dată, repară la cauză, uită-te și la celelalte ferestre cu același tipar. **Started:** 25.11, 18:44, pe
+`wip/16.A-freze-b7`, din `origin/unire-2511w` (`871c55c7`, cu b-6 și 10.4↑c-2). **Completed:** 25.11, 19:10 (în container;
+CI-ul, după push).
+
+- **Reprodus:** cele două spec-uri, de 10 ori: 2 căderi din 50, amândouă pe ramura „Salvează”. O urmă a focusului din pagină
+  (focusin, focusout, mutațiile) a arătat cauza: după „Salvează”, butonul iese din pagină, iar focusul stă ~2 ms pe `body`
+  până când efectul îl duce pe „Editează”. După „Da, șterge”, fișa pleacă la vestea bibliotecii, iar focusul ajunge în căutare
+  abia în `.then`. Escape se asculta doar pe fereastră (`onKeyDown`), deci în fereastra aceea se pierdea.
+- **A doua cauză, găsită de probă:** cu Escape ascultat pe pagină, „Da, șterge” tot cădea. În clipa aceea, `stergere` și
+  `aleasa` sunt încă ale frezei șterse (fișa nu se mai desenează doar fiindcă freza a plecat din bibliotecă), deci Escape
+  anula o întrebare care nu se mai vedea. La fel „Grup nou…” al unei freze șterse în altă filă și redenumirea unui grup deja
+  redenumit (grupul vechi pleacă la vestea bibliotecii, înaintea lui `.then`).
+- **Reparația** (`src/app/FrezeleMele.tsx`): Escape pe `document`, pe urcare, cu `defaultPrevented` și fără `isComposing`, ca la
+  fereastra exportului; tasta închide stratul de sus care se vede, citit din pagină în clipa apăsării. Manualul (F1) își
+  păstrează tasta; desenul de sub fereastră n-o mai primește. `inBiblioteca` nu s-a schimbat.
+- **Probele (întâi, în `test/e2e/freze.spec.ts`):** Escape apăsat exact în clipa în care pleacă butonul (un observator al
+  mutațiilor îl trimite pe ce are atunci focusul: `body`) după „Salvează”, „Da, șterge” și Enter la redenumire; în
+  „Configurator”, după „Salvează” oprit (Chrome ia focusul de pe butonul oprit la desenarea următoare: înainte, Escape cădea
+  pe `body` în 2 rulări din 3); după un clic pe titlu; cu freza ștearsă în altă filă, cât „Grup nou…” sau întrebarea sunt
+  deschise aici; unealta aleasă sub fereastră rămâne. Înaintea reparației, fiecare cădea singură. După: cele două spec-uri,
+  50 / 50; `freze.spec.ts`, 19 / 19.
+- **Otrăvurile** (`test/otravuri/16.A-b7.py`, într-o clonă): 6 / 7 prinse. K03 (fără `defaultPrevented`) e practic echivalentă
+  azi: manualul își oprește singur tasta, iar paleta nu se deschide peste fereastră. Prima K07 (doar fără `stopPropagation`)
+  era echivalentă, fiindcă desenul sare peste o tastă cu `defaultPrevented`; a fost înlocuită cu una care le scoate pe
+  amândouă, și e prinsă.
+- **Același tipar, în alte ferestre** (Escape doar pe `.dialog`, `onKeyDown`): Așază (`DialogAsezare.tsx`), Setări,
+  Raportul foilor, Lucrarea primită, Aspectul și ferestrele extensiilor (`src/extensii/parti.tsx`). Nu sunt ale liniei; le-am
+  spus sesiunii principale. În ferestrele mele, cea a exportului ascultă deja pe pagină.
+- **Porțile, în container:** tipurile, regulile de import, catalogul controalelor și manualul. Build-ul determinist: pornirea
+  111,2 kB (neschimbată; cu ușa 116,2, cu Atelierul 116,5 / 125); totalul 896,5 → 896,6 / 1 000; contul 30,3 / 32.
+
+## 2026-11-25 — Sesiunea principală în cloud: decorațiuni de Crăciun pentru imprimantă, pe lista liniei atelierului (Model: Claude Fable 5.2)
+
+**Prompt:** „Vreau ca sesiunea care lucreaza la plugin, sa faca si decoratiuni de craciun pentru imprimanta. Pune-i asra pe lista”
+**Started:** 25.11, 19:18. **Completed:** 25.11, 19:19 (linia, anunțată; decizia, scrisă).
+
+- **Liniei atelierului Easy 3Draw** (19:18): o felie nouă pe listă, după 3.Cf, cu propunerea întâi (ADR 0285 și întrebările
+  grupate: ce piese vin întâi, unde stau în atelier, dacă se leagă de restul, textul); tipărirea fără suport și
+  agățătoarea, din prima; doar pachetul extensiei.
+- **Documentele:** decizia în `CLAUDE.md`; indexul liniilor; starea din `docs/linii/principala.md`. Pe ramura lotului
+  (`unire-2511w`): intră în `main` cu el.
+
+## 2026-11-25 — Sesiunea principală în cloud: lotul 35 (atelierul Easy 3Draw 18.33.0: piesele rotunde pe același ax), pe test (Model: Claude Fable 5.2)
+
+**Prompt:** publicarea de după a treizeci și șasea unire (pe test se publică liber)
+**Started:** 25.11, după unirea de la 18:18 (completul pe `main`, pornit la 18:29). **Completed:** 25.11, 19:39.
+
+- **Pe test: `6741c0be`** (3.Tu). `publica.yml` 45666529106, verde (19:36–19:39), pornită din prima; serverul, neschimbat.
+- **Completul pe `main`** (45654433162, verde, 66 min: cinci complete în paralel): unit 10 513 / 0 (12 sărite, pe Linux), e2e
+  859 / 859, funcțiile pe emulatoare 136 / 136, paginile 59 / 59; pornirea 111,2 kB, totalul 891,8 / 1 000 kB.
+- **Proba de fum** pe adresa de test: versiunea `6741c0beffea`, potrivită; nicio eroare în consolă, nicio cerere căzută.
+
+## 2026-11-25 — Sesiunea principală în cloud: a treizeci și șaptea unire (frezele 16.A↑b-6, cotele 10.4↑c-2) (Model: Claude Fable 5.2)
+
+**Prompt:** rapoartele liniilor („16.A↑b-6 e gata de unit”, `f53ad4ff`; „10.4↑c-2 gata de unit”, `fd21591f`), la ordinul în
+vigoare „unește ce se poate”
+**Started:** 25.11, 18:19. **Completed:** unirea în `main`, 25.11, 19:42; publicarea pe test, pornită după ea.
+
+- **Verificat înaintea unirii:** completele liniilor (45640803121, 45640765994) și rapidele, verzi; PR-urile #42 și #43;
+  fără `.lucru/`; amândouă ramurile au `65eecdc6`.
+- **Unirea, pe `unire-2511w`** (din `6741c0be`): `f53ad4ff` în `1d3882d9`, fără nicio ciocnire; `fd21591f` în `66b6b335`, cu
+  ciocnirea doar în DEVLOG. Primul complet al ramurii (doar cu b-6), oprit când a venit raportul cotelor, la un minut
+  după; lotul a repornit cu amândouă.
+- **Local, pe lot:** tipurile, regulile de import, catalogul controalelor (la zi), traducerile (1 146), biblioteca, iar
+  `cote*`, `export*`, `eps`, `freze*`, `manual` și probele documentelor: 1 853 trecute, 0 căzute.
+- **Porțile, în CI, pe `66b6b335`** (citite din jurnalul rulării): completul 45653662494, verde la prima trecere (75 min, cu
+  cinci complete în paralel): unit 10 529 / 0 (12 sărite, pe Linux), e2e 863 / 863, funcțiile pe emulatoare 136 / 136,
+  paginile 60 / 60; rapidul 45653659544, verde. Pornirea 111,2 kB (plafonul 125; cu ușa 116,2, cu Atelierul 116,5), totalul
+  896,5 / 1 000 kB, `/admin` 138,3 / 200, contul 30,3 / 32. Nimic pe server.
+- **Probele instabile ale frezelor** (semnalate de linia exportului: 4 căderi din 50): cauza, în fereastra „Frezele mele”
+  (Escape ascultat doar pe fereastră); reparația, la linia frezelor (16.A↑b-7, la porți). Completul lotului a trecut de ele.
+- **Pe aceeași ramură, înaintea unirii:** publicările loturilor 34 și 35 și cuvântul owner-ului pentru decorațiunile de
+  Crăciun (intrările de mai sus).
+- **Documentele:** decizia și paragrafele de stare în `CLAUDE.md` (frezele, cotele); indexul liniilor; starea din
+  `docs/linii/principala.md`.
+
+## 2026-11-25 — Sesiunea principală în cloud: a treizeci și opta unire (frezele 16.A↑b-7: Escape în „Frezele mele”) (Model: Claude Fable 5.2)
+
+**Prompt:** raportul liniei frezelor („16.A↑b-7, gata de unit”, `c95b1576`, vârful `0b015682`), la ordinul în vigoare „unește
+ce se poate”; felia, cerută de sesiunea principală la 18:44, după semnalarea liniei exportului (două probe instabile)
+**Started:** 25.11, 20:10. **Completed:** unirea în `main`, 25.11, 20:11; publicarea pe test, după lotul 36.
+
+- **Verificat înaintea unirii:** completul (45662118218) și rapidele, verzi pe `c95b1576`; vârful `0b015682` adaugă peste el
+  doar documente (`main` adus); fără `.lucru/`.
+- **Unirea, pe `unire-2511z`** (din `75bcf3fb`): `0b015682`, în `581da353`, fără nicio ciocnire. Arborele unirii are exact
+  codul lui `c95b1576` (`git diff` gol în afara fișierelor `.md`): pe porțile lui, fără alt complet. Local: traducerile
+  (1 148), catalogul controalelor, tipurile, probele documentelor.
+- **Porțile, în CI, pe `c95b1576`** (citite din jurnalul rulării): completul, verde (54 min): unit 10 529 / 0 (12 sărite, pe
+  Linux), e2e 865 / 865, funcțiile pe emulatoare 136 / 136, paginile 60 / 60. Pornirea 111,2 kB (plafonul 125; cu ușa 116,2,
+  cu Atelierul 116,5), totalul 896,6 / 1 000 kB, `/admin` 138,3 / 200, contul 30,3 / 32. Nimic pe server.
+- **Urmarea pentru unirile care așteaptă:** `unire-2511x` (18.1↑c) primește `main` și își reface completul (codul lui 16.A↑b-7
+  nu era în rularea ei); linia exportului își pune reparația lui 28.8↑h peste ea.
+- **Documentele:** decizia și paragraful de stare în `CLAUDE.md` (cu regula Escape-ului pentru o fereastră nouă); indexul
+  liniilor; starea din `docs/linii/principala.md`.
 
 ## 2026-11-25 — Felia 3.Cf-1: alipirea la prinderi în vederea „Modelul” (ADR 0284, partea D) (sesiune cloud)
 
