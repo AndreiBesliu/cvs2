@@ -155,10 +155,11 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
 
 ## Starea pe 25.11.2026, dimineața (după a treizecea unire din cloud; liniile, repornite)
 
-- **Pe test:** `f2678300` (tot ce e în `main`, cu lotul 30: atelierul Easy 3Draw 18.28.0, cu punctele de prindere
-  și „Se prinde cu”; publicat pe 25.11 la 06:03, cu serverul neschimbat; completul pe `main` 45536382490, verde;
-  proba de fum, bună). Înainte: `a95af70e` (lotul 29, cremaliera și arcul), pe 25.11 la 03:47; `694f0ff1` (cotele
-  a-4 și b, lotul 28), la 01:37. În drum: lotul 31 (atelierul: cama și roata cu palete, Easy 3Draw 18.30.0).
+- **Pe test:** `d1a96fc4` (lotul 31: atelierul Easy 3Draw 18.30.0, cu cama și roata cu palete; publicat pe 25.11 la
+  10:44, cu serverul neschimbat; completul pe `main` 45570396384, verde; proba de fum, bună). Înainte: `f2678300`
+  (lotul 30, punctele de prindere), pe 25.11 la 06:03; `a95af70e` (lotul 29), la 03:47. **În `main`, nepublicate
+  încă:** plafoanele noi (`caddd661`: doar constantele porții și rândul ADR 0146 din roadmap) și documente; pleacă cu
+  lotul următor.
 - **`main`, din cloud:** pe 23.11: 3.Tq (`0ae9c6c1`); 11.3↑e și A.4 (`ddaa7ead`); 3.Tr, unită de linia elicelor
   (`d262e57a`); 25.8↑a și A.5 (`1b46c955`), cu reparația probei extensiilor (`8287d66e`); 11.3↑f, unită de linia
   planșelor (`f4601938`); A.6 (`4497d639`); 3.Xh (`2d1e482c`) și 12.1↑e-3 cu 12.1↑e-4 (`03460cab`); A.8a cu A.8b
@@ -189,6 +190,17 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
     ia și lucrul liniei elicelor, predat pe 24.11 seara la cererea owner-ului: 3.Tu, la răspunsurile lui);
   - **la cuvântul owner-ului:** următoarea felie a bibliotecii extensiilor, a incrustațiilor și a trasării, 11.5↑b
     (după etapa 13);
+  - **audituri, cerute de owner pe 25.11** (înaintea arhivării sesiunilor; doar documente, fără cod de produs):
+    **elicele, gata și în `main`** (`docs/linii/audit-elice.md`, `173995a1`: nimic stricat; șapte felii propuse
+    pentru linia atelierului; patru întrebări la owner, cu recomandările 1a, 2a, 3a, 4a; sesiunea se poate arhiva);
+    **fereastra exportului, gata și în `main`** (`docs/linii/audit-export.md`, `ee492406`): 21 de constatări;
+    două desene nu spun ce taie programul, care e corect și sigur (cu supracursa și pe tăieturile cât foaia, „3
+    treceri de 6 mm” în loc de 4 de 4,575 mm; găurirea cu elice desenată ca ciocănire); la 150 de piese, fereastra
+    se deschide în 7,6–8,8 s; feliile propuse 28.8↑h–m (h repară desenele la cauză: le socotește stratul de
+    acțiuni, cu funcțiile lucrării), de pornit după unirea lui 16.A↑b-5, care lucrează în aceeași fișă; nouă
+    întrebări la owner, cu schița din sesiunea liniei. Ale altor linii: frezele de rest fără etichete (frezele,
+    16.A↑b-5), numele elementelor cu punct zecimal în română (`src/app/descriereElement.ts`, comun: sesiunea
+    principală), „Trimite la mașină” în Atelier (aranjamentele). Feliile propuse pornesc doar la cuvântul lui;
   - **fără felie în lucru:** planșele (tăierea plăcii 11, la owner), incrustațiile, trasarea, tăierea (după
     10.3↑o: 10.3↑p–r),
     imprimanta (după 3.6v: 3.6w, camera), aranjamentele (28.1↑). Pornesc la cuvântul

@@ -1655,6 +1655,20 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 25.11.2026, dimineața: **auditul complet al ferestrei exportului și al elicelor, înaintea arhivării sesiunilor lor**
+  (owner-ul, în sesiunea principală, la „pot arhiva sesiunile exportului si elicelor?” și la răspunsul că da:
+  „vreau sa le intrebi ce pot imbunatati in zona in care au lucrat? dar, defapt, pune-le sa faca un audit complet in acest sens”). Sesiunea principală le-a scris celor două sesiuni (10:19): fiecare
+  își auditează zona pe `main` de acum (`caddd661`), cu aplicația construită parcursă cu Playwright, nu doar cu codul
+  citit: **exportul**, fereastra „Exportă G-code” (ADR 0290: claritatea, stările de lângă drumul bun, tastatura,
+  viteza, ce lipsește față de prag, sănătatea codului, cât e de gata fișa pentru Clasic și Pas cu pas); **elicele**,
+  fila „Elice” a atelierului Easy 3Draw (ADR 0282: dacă piesele ies bune de tipărit și se prind cum spun, claritatea
+  editorului, ce lipsește ca funcție, plasele, probele, cum stau în „Se prinde cu”). **Doar audit:** fără cod de
+  produs (linia frezelor lucrează în fișa operației, iar a atelierului în sursele extensiei), fără agenți sau
+  workflow-uri; o greșeală care atinge programul scris sau o piesă stricată se spune imediat, nu la raport. Predau
+  `docs/linii/audit-export.md` și `docs/linii/audit-elice.md` (constatările, cele mai importante întâi, cu dovada și
+  costul; feliile propuse; întrebările grupate, cu recomandarea în față), plus raportul scurt pentru owner, în
+  sesiunea lor; documentele le unește sesiunea principală. **Nicio felie nu pornește din audit fără cuvântul
+  owner-ului;** sesiunile se arhivează după ce rapoartele sunt în `main`.
 - 25.11.2026, dimineața: **plafoanele: totalul 1 000 kB, pornirea 125 kB** („ok, ridica plafonul total la 1000 kB si pornirea la 125 kB”, în sesiunea
   principală, după raportul unirii a treizecea, care recomanda aceste valori: frezele, relieful și cotele, repornite
   în aceeași dimineață, lucrau toate în același rest, 19,1 kB din total și 3,6 kB din pornire, iar felia trecută a
