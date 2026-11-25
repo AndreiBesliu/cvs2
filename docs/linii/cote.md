@@ -114,6 +114,9 @@ față. Fără cod de produs până la răspunsuri. De hotărât acolo, între a
   `src/model/serieCote.ts`, pasul bazei de două înălțimi de cifră), „Cotează selecția” din meniul de clic dreapta (pură în
   `src/model/coteSelectie.ts`; bara de sus și extensia ei n-au loc la 1280 px cu fontul lat). Întrebările 8 și 9, la owner,
   cu recomandările implementate. **Urmează:** d-2 („Fă desen din cotă”), apoi d-3 (cotele în raportul foilor).
+- **26.11, d-2 gata pe ramură:** „Fă desen din cotă” în panoul cotei (desenul ca piesă nouă, fără operații, exact unde era
+  cota; bifa „Șterge cota”, în același pas), acțiunea `foaie.desen-din-cota`; proba programului (cota și desenul fără rol nu
+  se taie, desenul cu rol pe linie da). **Urmează:** d-3 (cotele în raportul foilor).
 
 ## Deciziile owner-ului
 

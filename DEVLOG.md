@@ -15383,3 +15383,17 @@ foilor” (sesiunea principală, 26.11, 00:08, cu cuvântul owner-ului: „ok, p
 - **Manualul** (ro, en), catalogul controalelor (neschimbat), e2e noi 4 (`cote.serie.spec.ts`); otrăvurile 27 / 27, într-o
   clonă. Întrebările 8 și 9, la owner, cu recomandările implementate. Pornirea 111,4 kB (neschimbată), totalul
   909,1 → 910,4 / 1 000 kB (+1,3).
+
+## 2026-11-26 — Felia 10.4↑d-2: „Fă desen din cotă” (ADR 0330 §8)
+
+**Prompt:** același cu d-1 (sesiunea principală, 26.11, 00:08: „**10.4↑d pornește**”, cu „Fă desen din cotă”). **Started:**
+26.11, 01:40, în sesiunea cloud a liniei cotelor, după d-1. **Completed:** 26.11, 03:00 (în container; CI-ul, pe commit-ul
+împins).
+
+- **Proba întâi:** `cote.fadesen.test.ts`, pe placa 1 a corpusului CAM: desenul orizontalei pe hârtie (extensiile, linia,
+  săgețile, cifrele „100”), punctul și bara, comanda cu anularea, apoi programul: cota și desenul fără rol dau aceiași octeți,
+  desenul cu un rol pe linie taie linia cotei (Y = 10, X 20 → 120).
+- **Pur:** `geometrieCota` (`src/io/coteExport.ts`), lângă `entitatiCote`, neatinsă. **Comanda:** `comandaDesenCota` și
+  acțiunea `foaie.desen-din-cota` (piesa fără operații, instanța în colțul foii; cu „Șterge cota”, și `inlocuieste-cote`).
+- **Panoul cotei:** „Fă desen din cotă” și „Șterge cota”; fontul cifrelor, adus la cerere; după desen, Selecția cu piesa
+  aleasă. Manualul (ro, en; ușa a 120-a), e2e noi 2; otrăvurile 16 / 16, într-o clonă.
