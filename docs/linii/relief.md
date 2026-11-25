@@ -134,7 +134,8 @@ degroșarea și finisarea pe relief), unde stă relieful în document și unde s
   exteriorului piesei; în „A mea”, unde o pune omul, iar fără rang rămâne în față. Rândul editabil vine într-o felie a lui,
   după 16.A↑b-5 și 28.8↑h, la cuvântul sesiunii principale. La cererea liniei frezelor, bila are CAM în bibliotecă
   (`FELURI_CU_CAM`, `sculaDinFreza`). Pornirea +0,2 kB, totalul +10,9 kB (902,7 / 1 000, cu `main` adus). La cererea sesiunii principale, după 16.A↑b-4:
-  bila stă afară din lista bibliotecii a ferestrei (`frezePeRanduri`), iar finisarea e probată și cu XY0 în centrul foii (28.8↑o).
+  bila stă afară din lista bibliotecii a ferestrei (`frezePeRanduri`), iar finisarea e probată și cu XY0 în centrul foii (28.8↑o). Porțile pe
+  `ff146fe1` (cu `main` `65eecdc6`), verzi; raportat sesiunii principale pe 25.11, 18:20.
 - **De ținut minte, din 18.1↑c:**
   - verdictul „Exportă G-code” și „Toate foile” numără și o foaie doar cu finisare (`areFinisare`, `ordinePasi`): un cod nou
     care întreabă „are foaia ce tăia?” nu se uită doar la `taieturiFoaie`;

@@ -14816,7 +14816,7 @@ gata de unit”, `b099c457`; 28.8↑n, `7996e77c`), la ordinul în vigoare „un
 degroșarea și finisarea cer oracolul (suprafața rezultată față de model, în toleranță; creasta măsurată; niciodată mai adânc
 decât pasul pe trecere), scris înaintea funcției, și otrăvurile pe el. Raportul, ca până acum.”; pe drum, al doilea mesaj al
 ei, „nu fără rând” (rândul finisării în fereastra exportului, doar de citit).
-**Started:** 25.11, 11:03. **Completed:** 25.11, 15:12 (raportul întâi); a doua parte, la cererea din 15:14, în lucru.
+**Started:** 25.11, 11:03. **Completed:** 25.11, 15:12 (raportul întâi); a doua parte, la cererile din 15:14 și 17:01, 25.11, 18:20.
 
 - **Oracolul 3D întâi** (`test/oracles/relief3d.ts`, fără importuri din `src/`): modelul exact, drop-cutter-ul exact
   (vârfuri, muchii, fețe, muchia discului) cu bila, plata, V-ul și V-ul cu vârf plat, simulatorul crestei și al materialului;
@@ -14848,6 +14848,11 @@ ei, „nu fără rând” (rândul finisării în fereastra exportului, doar de 
 - **Porțile, în CI, pe `edf9f0aa`** (înaintea lui b-4): completul 45611988372, verde (55 min): unit 10 538 / 0 (12 sărite, pe Linux), e2e 857 / 857, funcțiile pe
   emulatoare 136 / 136, paginile 59 / 59; rapidul, verde (45611984002 la push, 45611993653 pe PR). Pornirea 111,4 / 125 kB
   (cu ușa 116,5, cu Atelierul 116,8), totalul 901,0 / 1 000 kB, `/admin` 138,3 / 200. Nimic pe server.
+- **Porțile, în CI, pe `ff146fe1`** (cu `main` `65eecdc6`, adică 16.A↑b-4 și 3.Au): completul 45640507141, verde (75 min):
+  unit 10 564 / 0 (12 sărite, pe Linux), e2e 862 / 862, funcțiile pe emulatoare 136 / 136, paginile 59 / 59; rapidul,
+  verde pe `821c9638` (doar documente peste `ff146fe1`: 45641197078 la push, 45641220999 pe PR; felia cea mai lungă,
+  7,7 minute; rulările lui pe `ff146fe1` au fost oprite de împingerea documentelor). Pornirea 111,4 / 125 kB (cu ușa
+  116,5, cu Atelierul 116,8), totalul 902,7 / 1 000 kB, `/admin` 138,3 / 200. Nimic pe server.
 
 ## 2026-11-25 — Sesiunea principală în cloud: 10.4↑c-2 și 16.A↑b-6, pornite la cuvântul owner-ului (Model: Claude Fable 5.2)
 
@@ -14941,4 +14946,3 @@ ei, „nu fără rând” (rândul finisării în fereastra exportului, doar de 
   dată; „Du-mă la …” nu aduce greșeala în vedere; unirea de probă `unire-2511u`, completul 45629718056).
 - **Documentele:** decizia și paragrafele de stare în `CLAUDE.md` (frezele, imprimanta, regula originii, cu adăugirea liniei
   exportului); indexul liniilor; starea din `docs/linii/principala.md`.
-- **Porțile, în CI, pe `ff146fe1`** (cu `main` `65eecdc6`): în lucru (rapidul 45640499397 și completul 45640507141).
