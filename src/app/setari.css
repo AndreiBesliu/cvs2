@@ -192,3 +192,10 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* Fraza de sub titlul unui grup (Exportul). */
+.setari-nota-grup {
+  margin: 0 0 var(--sp-2);
+  font-size: var(--fs-2);
+  color: var(--t-slab);
+}

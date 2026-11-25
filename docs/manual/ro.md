@@ -1987,10 +1987,15 @@ Inkscape, Illustrator / Corel, AutoCAD / LibreCAD) sau pentru laser:
 - **un strat pe rol**, după prima operație care taie forma: EXTERIOR, INTERIOR, PE_LINIE, PE_O_PARTE (o cale tăiată pe
   stânga sau pe dreapta), BUZUNAR, GAURIRE și FARA_OPERATIE, fiecare cu culoarea lui; scrise doar straturile folosite. În PDF
   sunt straturi PDF (le vezi și le ascunzi în cititor); EPS-ul n-are straturi, deci rolul rămâne doar în culoare;
-- **Cu conturul foii** adaugă dreptunghiul foii, pe stratul FOAIE.
+- **Cu conturul foii** adaugă dreptunghiul foii, pe stratul FOAIE;
+- **Cu cotele (N)**, pe o foaie cu cote, le adaugă pe un strat al lor (COTE, sau numele din **Setări** › Cotele › Exportul,
+  cu culoarea de acolo): liniile de cotă și de extensie, arcele unghiurilor (arce adevărate în DXF și SVG), capetele (săgețile
+  pline sunt triunghiuri umplute, punctele discuri) și cifrele, ca trăsăturile fontului cu o singură linie al aplicației, deci
+  arată la fel în orice program, fără fonturi. Bifa pornește cum spun Setările (implicit oprită: vectorii pentru laser sau
+  pentru alt CAM rămân doar formele); sub ea, legătura **Setările cotelor**. Cotele nu intră niciodată în G-code.
 
-**Exportă** descarcă fișierul și spune câte entități și câte straturi are. O formă cu și linii, și curbe iese în bucăți
-legate cap la cap (o polilinie, apoi o curbă).
+**Exportă** descarcă fișierul și spune câte entități și câte straturi are (cu cotele, și câte cote). O formă cu și linii, și
+curbe iese în bucăți legate cap la cap (o polilinie, apoi o curbă).
 
 ## Mașina
 %% capitol: masina

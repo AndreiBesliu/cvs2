@@ -20,6 +20,10 @@ export function drumEntitate(e: Entitate): Comanda[] {
       { op: 'h' },
     ];
   }
+  if (e.fel === 'plin') {
+    const [p0, ...rest] = e.puncte;
+    return [{ op: 'm', x: p0!.x, y: p0!.y }, ...rest.map((p) => ({ op: 'l' as const, x: p.x, y: p.y })), { op: 'h' }];
+  }
   if (e.fel === 'spline') {
     const p = e.puncte;
     const d: Comanda[] = [{ op: 'm', x: p[0]!.x, y: p[0]!.y }];
