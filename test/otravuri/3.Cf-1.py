@@ -53,7 +53,8 @@ o('M21', LG, SG, SG.replace('f === "stift" || f === "bila"', 'f === "bila"'), 'a
 o('M22', LG, SG, SG.replace('sePrind(a, b) && ', ''), 'alipire', 'glisează și perechile care nu se prind')
 
 # --- motorul: așezările modelului
-o('M23', LG, 'if (q && j !== undefined && j !== i) {', 'if (q && j !== undefined) {', 'alipire', 'o piesă prinsă de ea însăși nu mai e oprită')
+# (M23, „o piesă prinsă de ea însăși nu mai e oprită”, a ieșit echivalentă: un cerc de o piesă îl oprește lanțul; condiția
+# a plecat din cod, iar proba cere în continuare piesa pe locul ei)
 RA = 'if (Number.isInteger(q.a) && Number.isInteger(q.b) && a && b && sePrind(a.fel, b.fel)) {'
 o('M24', LG, RA, RA.replace(' && sePrind(a.fel, b.fel)', ''), 'alipire', 'legătura cu prinderi care nu se potrivesc e ținută')
 RC = 'if (!cerc.has(i)) r = { T: compuneTransf(baza.T, transfPrins(a, b, q.unghi, q.alunec)), fel: "prins" };'
@@ -82,7 +83,7 @@ o('M39', LG, GR, GR.replace('aproape(y * P.pas, yi * P.pas) && ', ''), 'alipire'
 o('M40', LG, GR, GR.replace(' && aproape(z * P.placa, zi * P.placa)', ''), 'alipire', 'o piesă între plăci e socotită pe grilă')
 o('M41', LG, GR, GR.replace('z: zi + 0, rot }', 'z: zi + 0, rot: 0 }'), 'alipire', 'rotirea regăsită e mereu zero')
 GS = '      if (![c, -s, 0, s, c, 0, 0, 0, 1].every((v, k) => aproape(T.m[k]!, v))) continue;\n'
-o('M42', LG, GS, GS.replace('.every((v, k) =>', '.slice(0, 5).every((v, k) =>'), 'alipire', 'o piesă culcată sau răsturnată e socotită dreaptă')
+o('M42', LG, GS, GS.replace('.every((v, k) =>', '.slice(0, 5).every((v, k) =>'), 'alipire', 'o transformare cu ultimul rând stricat (o oglindire) e socotită piesă dreaptă')
 
 # --- motorul: cutia în lume și rotirea unei piese libere
 CU = 'const q = aplicaTransf(T, [k & 1 ? dim[0]! : 0, k & 2 ? dim[1]! : 0, k & 4 ? dim[2]! : 0]);'

@@ -2984,7 +2984,8 @@ var Lego = (function (glob: typeof globalThis) {
       if (gata[i]) return gata[i]!;
       const p = piese[i]!, q = p.prins, j = q ? dupaId.get(q.de) : undefined;
       let r: { T: Transf; fel: "grila" | "prins" | "liber" } = peLoc(p);
-      if (q && j !== undefined && j !== i) {
+      // (o piesa prinsa de ea insasi e un cerc de una: il opreste lantul de mai jos)
+      if (q && j !== undefined) {
         const a = piese[j]!.prinderi[q.a], b = p.prinderi[q.b];
         if (Number.isInteger(q.a) && Number.isInteger(q.b) && a && b && sePrind(a.fel, b.fel)) {
           const k = lant.indexOf(j);

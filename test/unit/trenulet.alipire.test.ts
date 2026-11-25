@@ -135,6 +135,9 @@ test('piesa prinsă urmează baza: oricum e mutată și rotită baza, prinderile
   assert.deepEqual(la(B.T, a.p), [20, 20, 19.2]);
   assert.deepEqual(la(P.T, b.p), [20, 20, 19.2]);
   assert.deepEqual(cutie(P.T, PLACA), [[8.1, 16.1, 19.2], [23.9, 31.9, 24.3]]);
+  // legătura își duce unghiul până la așezare: cu baza la 0, 0, placa rotită un sfert în jurul știftului ține x 16,1…31,9
+  const [, P90] = rezolva([piesa('b', CARAMIDA, grila(CARAMIDA, 0, 0)), piesa('p', PLACA, grila(PLACA, 9, 9), { prins: { de: 'b', a: 15, b: 0, unghi: 90 } })]) as [Rezolvat, Rezolvat];
+  assert.deepEqual(cutie(P90.T, PLACA), [[16.1, 8.1, 9.6], [31.9, 23.9, 14.7]]);
   // pe toate locurile și rotirile: locașul plăcii e pe știftul bazei, iar placa nu se deformează (distanțele rămân)
   for (const x of [-3, 0, 4]) for (const y of [-2, 1]) for (const z of [0, 5]) for (let rot = 0; rot < 4; rot++) {
     const [b0, p0] = model(x, y, z, rot) as [Rezolvat, Rezolvat];
@@ -175,8 +178,10 @@ test('glisarea are sens doar pe o tijă: axul, știftul Technic și bara, nu șt
   for (const [a, b, da] of [['capatAx', 'gauraAx', true], ['gauraStift', 'capatAx', true], ['stiftTechnic', 'gauraStift', true], ['bara', 'clema', true],
     ['gauraBara', 'bara', true], ['stift', 'locas', false], ['locas', 'stift', false], ['bila', 'cupa', false], ['cupa', 'bila', false]] as const)
     assert.equal(Lm.seGliseaza(a, b), da, `${a} cu ${b}`);
-  // două prinderi care nu se prind nu se glisează
+  // două prinderi care nu se prind nu se glisează, nici când amândouă sunt de pe o tijă sau găuri
   assert.equal(Lm.seGliseaza('stift', 'gauraAx'), false);
+  assert.equal(Lm.seGliseaza('capatAx', 'capatAx'), false);
+  assert.equal(Lm.seGliseaza('gauraAx', 'gauraStift'), false);
   // glisarea mută piesa pe direcția prinderii bazei: placa urcă de pe știft cu 5 mm
   const a = pr(CARAMIDA)[15]!, b = pr(PLACA)[0]!;
   assert.deepEqual(p3(Lm.transfPrins(a, b, 0, 5).t), [24, 8, 14.6]);
@@ -262,6 +267,9 @@ test('o piesă întoarsă, între știfturi sau între plăci nu e pe grilă: r�
   assert.equal(Lm.grilaDinTransf(a, { m: [1, 0, 0, 0, 0, -1, 0, 1, 0], t: [24.1, 8.1, 9.6] }), null);
   // răsturnată (cu știfturile în jos)
   assert.equal(Lm.grilaDinTransf(a, { m: [1, 0, 0, 0, -1, 0, 0, 0, -1], t: [24.1, 8.1, 9.6] }), null);
+  // oglindită pe verticală (nu e o rotație: o transformare ținută stricată), cu primele două rânduri ca ale unei piese drepte
+  assert.equal(Lm.grilaDinTransf(a, { m: [1, 0, 0, 0, 1, 0, 0, 0, -1], t: [24.1, 8.1, 9.6] }), null);
+  assert.equal(Lm.grilaDinTransf(a, { m: [1, 0, 0, 0, 1, 0, 0.5, 0, 1], t: [24.1, 8.1, 9.6] }), null);
   // rotită cu 45° în jurul verticalei
   const c = Math.SQRT1_2;
   assert.equal(Lm.grilaDinTransf(a, { m: [c, -c, 0, c, c, 0, 0, 0, 1], t: [24.1, 8.1, 9.6] }), null);
@@ -321,6 +329,9 @@ test('piesa schimbată în editor: o prindere rămâne dacă are același fel, a
   const sus: Prindere = { fel: 'gauraStift', p: [3.6, 3.6, 7.8], d: [0, 0, 1], lung: 7.8 }, jos: Prindere = { fel: 'gauraStift', p: [3.6, 3.6, 0], d: [0, 0, -1], lung: 7.8 };
   assert.equal(Lm.prindereaRamasa(sus, [jos]), -1);
   assert.equal(Lm.prindereaRamasa(sus, [jos, sus]), 1);
+  // alt fel de prindere, în același loc și cu aceeași direcție (gaura de știft devenită gaură de ax): nu îi ține locul
+  assert.equal(Lm.prindereaRamasa(sus, [{ ...sus, fel: 'gauraAx' }]), -1);
+  assert.equal(Lm.prindereaRamasa(sus, [{ ...sus, fel: 'gauraAx' }, sus]), 1);
   // la 0,5 mm pe lângă: alt loc
   assert.equal(Lm.prindereaRamasa(sus, [{ ...sus, p: [4.1, 3.6, 7.8] }]), -1);
   // două pe aceeași axă: cea mai apropiată de-a lungul direcției
