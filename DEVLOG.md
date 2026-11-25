@@ -14747,3 +14747,30 @@ poate”
   reluat, a preluat aceeași rulare.
 - **Proba de fum** pe adresa de test: versiunea `dad1a711fb6e`, potrivită; nicio eroare în consolă, nicio cerere
   căzută.
+
+## 2026-11-25 — Sesiunea principală în cloud: a treizeci și treia unire (frezele 16.A↑b-5, atelierul 3.Cj-3 și 3.Cj-4, exportul 28.8↑n) (Model: Claude Fable 5.2)
+
+**Prompt:** rapoartele liniilor („16.A↑b-5 e gata de unit”, `b7660e94`; „3.Cj-3 (cadrul) și 3.Cj-4 (șurubul melc) sunt
+gata de unit”, `b099c457`; 28.8↑n, `7996e77c`), la ordinul în vigoare „unește ce se poate”
+**Started:** 25.11, 12:20. **Completed:** unirea în `main`, 25.11, 13:18; publicarea pe test, pornită după ea.
+
+- **De ce un lot nou:** lotul pregătit pe `unire-2511o` (atelierul și exportul) nu mai acoperea codul din `main` după
+  unirea cotelor (`f8be3b4d`), iar frezele raportaseră b-5, tot pe un `main` fără cote. Completul vechi (45591209284),
+  oprit.
+- **Unirea, pe `unire-2511q`** (din `f8be3b4d`): `b7660e94` în `03e64d33`, `b099c457` în `36559b49`, `7996e77c` în
+  `1eda6f0b`. Ciocnirea, la freze și la export, doar `src/app/catalogControale.ts`, scris din nou de fiecare dată
+  (651, apoi 652 de nume). `DialogExport.tsx`, `exportRand.ts`, `exportGrupuri.ts` și `ExportConectat.tsx` s-au unit
+  singure; linia exportului a citit împletirea în lot și n-a găsit nimic greșit. Atelierul, fără nicio ciocnire.
+- **Local, pe lot:** tipurile, regulile de import (22 / 22), traducerile (1 130), catalogul, biblioteca (Easy 3Draw
+  18.32.0, 514 370 octeți), probele documentelor (62 / 62), `export.*`, `freze*`, `manual`, `i18n` (139 / 139).
+- **Documentele liniei cotelor** (`5273cb0b`: totalul cu relieful, starea unirii), unite peste lot în `9ccded2b`;
+  schimbă, în afara fișierelor `.md`, doar `docs/traduceri/roadmap.en.json`.
+- **Porțile, în CI** (citite din jurnalul rulării): completul 45594256202 pe `1eda6f0b`, verde la prima trecere
+  (54 min): unit 10 494 / 0 (12 sărite, pe Linux), e2e 849 / 849, funcțiile pe emulatoare 136 / 136, paginile
+  59 / 59; rapidul 45594816342, verde pe `9ccded2b` (cel de pe `1eda6f0b` a fost oprit de push-ul următor, la coadă).
+  Completele liniilor, verificate verzi: 45581826591, 45588129048, 45588329433. Pornirea 111,2 kB (plafonul 125; cu
+  ușa 116,2, cu Atelierul 116,5), totalul 890,1 / 1 000 kB, `/admin` 138,3 / 200. Nimic pe server.
+- **Liniile, anunțate:** frezele (aduc `main`, raportează b-4), exportul (aduce `main`, raportează 28.8↑o separat,
+  apoi pornește 28.8↑h), atelierul (fără felie de pornit), cotele.
+- **Documentele:** decizia și paragrafele de stare în `CLAUDE.md` (frezele, exportul, atelierul); indexul liniilor;
+  starea din `docs/linii/principala.md`.
