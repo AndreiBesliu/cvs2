@@ -106,7 +106,7 @@ elice. Fiecare e un șablon din parametri, nu un desen fix.
 | 3.Cb | Conectorul în unghi; axul cu opritor, știftul lung cu bucșă | piesa și opțiunile noi |
 | 3.Cc | Cremaliera | cu montajul față de roata dințată și „Fă perechea” (gata pe 24.11); melcul a trecut în 3.Cj |
 | 3.Cd | Arcul | piesa și configuratorul (gata pe 25.11) |
-| 3.Ce | Punctele de prindere și „Se prinde cu” | motorul și panoul din configurator, pentru toate piesele |
+| 3.Ce | Punctele de prindere și „Se prinde cu” | motorul și panoul din configurator, pentru toate piesele (gata pe 25.11) |
 | 3.Cf | Modelul: orientarea pe trei axe și alipirea la prinderi | după 3.Tu (ADR 0283; a acestei linii din 24.11 seara) |
 | 3.Cg | Modelul: verificarea (prins, plutește, se ciocnește) | avertismente pe piese și în listă |
 | 3.Ch | Construcțiile cu nume și lista lor de piese | mai multe construcții în atelier |
@@ -276,3 +276,52 @@ ale axului și ale știftului); Easy 3Draw 18.25.0.
   galeriilor și pictogramelor, la zi.
 - **Mărimea:** doar pachetul extensiei (488,7 → 491,4 kB); aplicația, neschimbată.
 - **Felia următoare (3.Ce):** punctele de prindere și „Se prinde cu”.
+
+## Implementat (3.Ce, 25.11.2026)
+
+**Punctele de prindere și „Se prinde cu”** (Easy 3Draw 18.28.0).
+
+- **Fiecare piesă își spune prinderile**, odată cu plasa: `construieste(def).prinderi` (și `Lego.prinderi(def)`). O
+  prindere are felul, locul `p`, direcția `d` (unitară, spre afară) și lungimea, în milimetri, în sistemul plasei.
+  Felurile sunt unsprezece: știft, locaș, gaură de știft, gaură de ax, **gaură de bară** (știftul gol; adăugată față de
+  lista de mai sus), știft Technic, capăt de ax, bară, clemă, bilă, cupă.
+- **Convenția:** la tată (știft, știft Technic, capăt de ax, bară, bilă), `p` e rădăcina, unde ajunge fața piesei
+  pereche când prinderea e făcută până la capăt; la mamă (locaș, găuri, clemă, cupă), `p` e mijlocul gurii, pe fața
+  piesei. Două prinderi sunt făcute când `p` coincid și `d` sunt opuse. În plus: `orb` (gaura nu trece), `r` (un braț
+  al crucii, la ax și la gaura lui), `guler` și `lamaj` (gulerul unui știft Technic intră în lamajul găurii, cât
+  încap amândouă: într-o grindă subțire sau într-o placă, știftul rămâne cu gulerul afară).
+- **Compilatorul cere prinderile fiecărei piese:** `prinderi` e câmp obligatoriu al rezultatului unei piese (tipul
+  `Corp`), deci o piesă nouă nu se poate scrie fără el; proba îi cere și o mostră, cu numerele de pe hârtie.
+- **Montajul** (`Lego.montaj(a, b, unghi)`): mutarea rigidă care duce piesa prinderii `b` pe prinderea `a`. Două cruci
+  se potrivesc singure, braț pe braț; un tată mai lung decât o gaură oarbă se oprește în fundul ei; gulerul intră în
+  lamaj. E baza alipirii din Model (3.Cf).
+- **„Se prinde cu”, în configurator**, sub butoanele piesei: închis, un rând cu ce are piesa, numărat ca un om („8
+  știfturi · 8 locașuri”, „5 găuri de știft”, „1 ax”); deschis, câte un rând pe fel („Pe știfturi”, „În găurile de ax”,
+  „Pe ax”…), cu piesele atelierului care se potrivesc, fiecare cu pictograma ei. Celelalte piese se judecă așa cum sunt
+  acum în editoarele lor (o roată fără gaură nu mai stă pe ax). Un clic deschide piesa; **axul și știftul vin cu
+  lungimea potrivită** piesei de pe ecran (axul trece prin gaura cea mai adâncă și mai iese un pas; știftul de 3, doar
+  unde gaura trece de un pas) și o spun. De la piesa deschisă, drumul înapoi e în același panou.
+- **Roata dințată își spune și grinda perechii:** când axele cad pe grila de 8 mm (24 cu 24: o grindă de 4; 24 cu 8: de
+  3), cu „Pune grinda în listă”; altfel spune că nu cad pe grilă.
+- **Ce nu face încă:** celelalte piese se deschid cu mărimile din editorul lor (o cărămidă nu ia forma știfturilor de
+  sub ea: i-ar șterge omului forma desenată); alipirea în Model vine în 3.Cf.
+- **Găsit pe drum, pe plase:**
+  - **bila nu stă în centrul găurii cupei.** Gaura sferică a cupei are fundul plat, cu 0,3 mm peste polul ei, iar bila
+    (Ø 5,9 în gaura de Ø 6,1) ajunge cu 0,2 mm sub el. Bila se așază deci pe fundul plat, cu centrul la 0,2 mm deasupra
+    centrului găurii, și e ținută de buza gurii; prinderea cupei e dată acolo. Geometria cupei nu s-a schimbat
+    (referințele v18): dacă articulația tipărită iese prea strânsă sau prea moale, aici e locul de umblat;
+  - **știfturile plăcii 2 × 2 de sub bilă și de sub cupă nu sunt prinderi:** o piesă pusă pe ele ar intra în bilă sau
+    în cupă (motorul avertiza deja la cupă);
+  - **clema e mai îngustă în față decât raza ei:** marginea piesei e la capetele gurii, nu la raza inelului.
+- **Probele:** unitare 15 (`test/unit/trenulet.prinderi.test.ts`): 88 de mostre, cel puțin una pe fiecare tip al
+  motorului, cu numerele de pe hârtie; **fiecare prindere declarată e întrebată pe plasă**, punct cu punct (știftul e
+  plin și are loc în jur, locașul îl ține din două părți, gaura e rotundă sau în cruce, cu lamajul spus, bara e liberă,
+  clema are o singură gură, bila și cupa); o declarație mincinoasă (mutată cu 0,4 mm, întoarsă, de alt fel, prea
+  lungă) cade; 17 perechi montate pe plasele amândurora nu se pătrund, iar mutate cu 0,4 mm într-o parte se pătrund.
+  În browser 7 (`test/e2e/trenulet.prinderi.spec.ts`), plus engleza panoului în proba limbii.
+- **Proba pe plase, mai repede:** „în lemn / în gol” se socotește doar pe triunghiurile din dreptul punctului
+  (`infasurareRepede`, în `test/unit/ajutor-plasa-lego.ts`), cu aceeași aritmetică pe triunghi; o probă o compară cu
+  numărarea completă pe 13 500 de puncte. Proba prinderilor ține 8 s (50 s fără).
+- **Mărimea:** doar pachetul extensiei (491,4 → 501,6 kB: a trecut de pragul de 0,5 MB din „Se redeschide dacă”;
+  instalarea nu se simte, dar pragul e de hotărât din nou); aplicația, neschimbată.
+- **Felia următoare:** 3.Tu (piesele rotunde pe același ax în „Modelul”), la răspunsurile owner-ului, apoi 3.Cf.

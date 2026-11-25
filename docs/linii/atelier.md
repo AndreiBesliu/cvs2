@@ -8,9 +8,9 @@ doar una cate una ci si ca constructii complexe”), în sesiunea cloud a liniei
 [elice.md](elice.md), secțiunea „Predarea”): felia **3.Tu** (piesele rotunde pe același ax în „Modelul”, ADR 0283,
 rezervat), cu trei întrebări încă fără răspuns de la owner (recomandările: 1a, 2a, 3a).
 Starea: **3.Ca (conectorul perpendicular, Easy 3Draw 18.24.0) și 3.Cb (conectorul în unghi, axul cu opritor, știftul cu
-bucșă; 18.25.0), unite în `main` cu lotul 28 (de confirmat de sesiunea principală); 3.Cc (cremaliera; 18.26.0) și
-3.Cd (arcul; 18.27.0) gata pe 24–25.11, de unit; urmează 3.Ce (punctele de prindere și „Se prinde cu”).** Versiunea
-următoare a pachetului: 18.28.0._
+bucșă; 18.25.0), unite în `main` cu lotul 28 (`11877a3e`); 3.Cc (cremaliera; 18.26.0) și 3.Cd (arcul; 18.27.0),
+unite în `main` pe 25.11 (`9815527f`); 3.Ce (punctele de prindere și „Se prinde cu”; 18.28.0) gata pe 25.11, pe
+ramură, de unit; urmează 3.Tu, la răspunsurile owner-ului, apoi 3.Cf.** Versiunea următoare a pachetului: 18.29.0._
 
 ## Numerele liniei
 
@@ -28,7 +28,7 @@ următoare a pachetului: 18.28.0._
 | 3.Cb | Conectorul în unghi; axul cu opritor, știftul cu bucșă | gata (24.11) |
 | 3.Cc | Cremaliera | gata (24.11); melcul a trecut în 3.Cj |
 | 3.Cd | Arcul | gata (25.11) |
-| 3.Ce | Punctele de prindere și „Se prinde cu” | |
+| 3.Ce | Punctele de prindere și „Se prinde cu” | gata (25.11) |
 | 3.Tu | Modelul: piesele rotunde pe același ax (ADR 0283) | a acestei linii din 24.11 (predarea elicelor); la răspunsurile owner-ului la cele trei întrebări |
 | 3.Cf | Modelul: orientarea pe trei axe și alipirea la prinderi | după 3.Tu |
 | 3.Cg | Modelul: verificarea (prins, plutește, se ciocnește) | avertisment, nu refuz (răspunsul 2a) |
@@ -82,7 +82,52 @@ următoare a pachetului: 18.28.0._
 - **Datele piesei:** `lung` (3–16), `inalt` (1–4, în cărămizi), `bolta` (`joasa`; nescrisă când e cea înaltă).
 - **Probele:** `test/unit/trenulet.arc.test.ts`, `test/e2e/trenulet.arc.spec.ts`; otrăvurile, `test/otravuri/3.Cd.py`.
 
-## Reguli și capcane (de la 3.Ca–3.Cd)
+## 3.Ce, gata (25.11, în cloud): punctele de prindere și „Se prinde cu”
+
+- **Unde e, în motor (`lego.ts`):** tipul `Prindere` și `Corp` (sus); ajutoarele, în secțiunea „prinderile” (înaintea
+  corpurilor): `FELURI_PRINDERI`, `PERECHI` și `sePrind`, `prinGaura` (cele două guri ale unei găuri care trece),
+  `axePrinderi` și `mutaPrinderi` (prinderile, duse cu plasa), `bratCruce`, `prinderiButuc` (gaura din mijlocul unei
+  roți), `prinderiFata` (găurile de știft de pe fața unei roți), `montaj`, `rezumatPrinderi`, `perechiFeluri`,
+  `axPentru`, `stiftPentru`. Fiecare piesă își face lista lângă plasa ei și o întoarce în `prinderi`; `construieste` o
+  mută în origine, cu plasa.
+- **Unde e, în atelier (`atelier.ts`):** secțiunea „Se prinde cu” (înaintea lui `arataPrivita`): `NUME_PRINDERI`,
+  `prinderiCurente` (ale piesei de pe ecran, puse de `construiesteCurent`), `prinderiPiesa` (ale altei piese, ținute
+  minte până i se schimbă definiția sau calibrarea), `grindaPereche`, `randeazaPrinde`, `deschidePrinsa`,
+  `adaugaGrindaPereche`; `defCurenta(tip)` dă acum definiția oricărui tip, nu doar a celui de pe ecran. Marcajul:
+  `<details id="at-prinde">` în `body.html`; stilul, `.at-prinde…` în `head.html`.
+- **Convenția unei prinderi** e scrisă la tipul `Prindere` și în capul probei; pe scurt: tatăl își dă rădăcina, mama
+  gura; `d` iese din piesă; montate, `p` coincid și `d` sunt opuse.
+- **Probele:** `test/unit/trenulet.prinderi.test.ts` (mostrele `MOSTRE`, proba pe plasă `peMasa`, perechile montate
+  `patrund`), `test/unit/trenulet.plasa-ajutor.test.ts` (înfășurarea pe grilă față de cea completă),
+  `test/e2e/trenulet.prinderi.spec.ts`; engleza panoului, în proba limbii din `trenulet.spec.ts`; otrăvurile,
+  `test/otravuri/3.Ce.py`.
+- **Ce a rămas pentru feliile Modelului:** rotirea în jurul axei unei prinderi e liberă (`unghi`): clema pe un mâner
+  trebuie întoarsă cu 180°, altfel plăcile se pătrund; 3.Cf o alege din verificare, nu din convenție. Axele și barele
+  alunecă: montajul le pune „până la capăt” (rădăcina pe gură), iar Modelul va lăsa omul să le tragă.
+
+## Reguli și capcane (de la 3.Ca–3.Ce)
+
+- **O piesă nouă a motorului își spune prinderile.** `prinderi` e câmp obligatoriu al tipului `Corp`: compilatorul nu
+  lasă o piesă fără el. Apoi piesa își pune mostra în `MOSTRE` (proba cere una pe fiecare tip), cu numerele de pe
+  hârtie; restul îl judecă proba pe plasă. O piesă făcută din altele (arcul din cărămizi, clema din placă) ia prinderile
+  lor și le duce cu aceeași mutare ca plasa (`axePrinderi`, `mutaPrinderi`), scoțând ce nu mai e liber (știfturile de sub
+  bilă).
+- **Declarația unei prinderi se crede abia după ce o confirmă plasa.** Trei valori „de pe hârtie” scrise din cap au fost
+  greșite și le-a arătat proba: capătul de ax al știftului începea în guler, clema nu ajunge la raza ei în față (gura),
+  iar bila nu încape în centrul cupei (fundul plat). La fiecare, s-a judecat cine are dreptate, nu s-a potrivit numărul.
+- **O probă care judecă o declarație își are și martorii mincinoși:** aceeași prindere mutată cu 0,4 mm, întoarsă, de alt
+  fel sau prea lungă trebuie să cadă. Așa s-a văzut că o gaură care trece „prea lungă” nu era prinsă (lipsea întrebarea
+  de la capătul celălalt) și că, la știftul gol, lungimea găurii de bară nu se poate vedea pe plasă (o spune proba).
+- **Tablourile întoarse de motor sunt din alt tărâm și după `filter` / `map`:** o probă le copiază cu `Array.from`
+  înainte de `deepEqual` (proba prinderilor o face o dată, în `fa`).
+- **`-0` nu e `0` pentru `deepEqual`:** o direcție întoarsă se scrie `-x || 0`.
+- **Proba pe plase costă cât triunghiurile:** `plin` întreabă doar triunghiurile din dreptul punctului
+  (`infasurareRepede`); o piesă se face o singură dată pe probă (în proba prinderilor, `fa` le ține minte, afară de
+  cazurile cu altă calibrare).
+- **O probă din browser care citește catalogul cere aplicația construită din nou după o versiune nouă** (`npm run build`):
+  cu `dist` vechi, proba „Ce e nou” cade pe rândul care lipsește, fără nicio legătură cu felia.
+- **Starea din proba limbii e cea lăsată de drumul ei prin galerii:** cărămida e acolo „placa cu găuri”, deci primește și
+  un ax; așteptările se scriu pe starea reală, nu pe cea implicită.
 
 - **O piesă nouă a atelierului atinge, pe lângă motor și editor:** `FAMILII` și `PICTOGRAME` (probele unitare le cer),
   `texte.en.json` (`node scripts/texte-trenulet.ts`, apoi traducerile), versiunea din `extensie.json`, rândul de „ce e

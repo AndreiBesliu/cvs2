@@ -85,6 +85,11 @@
             <button class="btn" type="button" id="at-stl">Descarcă STL</button>
             <button class="btn" type="button" id="at-in-model">Pune în model</button>
           </div>
+          <!-- „Se prinde cu” (ADR 0284, felia 3.Ce): prinderile piesei de pe ecran și, la deschidere, piesele care se potrivesc -->
+          <details class="at-prinde" id="at-prinde" hidden>
+            <summary><b>Se prinde cu</b><span id="at-prinde-are"></span></summary>
+            <div id="at-prinde-lista"></div>
+          </details>
           <div class="at-rand" id="at-act-model" hidden>
             <button class="btn principal" type="button" id="at-model-lista">Pune modelul în lista de printat</button>
             <button class="btn" type="button" id="at-model-goleste">Golește modelul</button>
