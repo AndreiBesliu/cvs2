@@ -51,7 +51,6 @@ const muta = (page: Page, op: string) => page.locator(`#at-m-mutari [data-m="${o
 const butoane = (page: Page) => page.locator('#at-m-mutari [data-m]').evaluateAll((e) => e.map((b) => (b as HTMLElement).dataset['m']));
 const prinderea = (page: Page, k: number) => page.locator(`#at-m-prinderi [data-pk="${k}"]`);
 const tinut = (page: Page) => page.evaluate((k) => (JSON.parse(localStorage.getItem(k) ?? '{}') as { model?: Tinut[] }).model ?? [], CHEIE);
-const r2 = (v: number[]) => v.map((x) => Math.round(x * 100) / 100 + 0);
 
 test('știftul din colț: o cărămidă alipită pe știftul 8 al alteia urmează baza, se rotește în jurul prinderii, își schimbă prinderea și se desprinde pe grilă', async ({ page }) => {
   await deschide(page);
@@ -95,6 +94,9 @@ test('știftul din colț: o cărămidă alipită pe știftul 8 al alteia urmeaz�
   // baza mutată cu un știft: piesa prinsă o urmează (altfel modelul s-ar lungi cu 8 mm)
   await alege(page, 0);
   expect(await butoane(page)).toEqual(['x-', 'x+', 'y-', 'y+', 'z-', 'z+', 'r']);
+  // baza, aleasă din nou, nu mai are ținta de dinainte
+  await expect(page.locator('#at-m-prinderi [data-pk]')).toHaveCount(16);
+  await expect(page.locator('#at-m-prinderi [aria-pressed="true"]')).toHaveCount(0);
   await muta(page, 'x+');
   await expect(lista(page)).toHaveText([`${CARAMIDA} 1, 0, 0`, `${CARAMIDA} prinsă`]);
   await expect(marime(page)).toContainText('Mărime 55,8 × 23,8 × 21,1 mm');
@@ -245,9 +247,10 @@ test('știftul de pe lateral: cărămida alipită stă în picioare; baza scoas�
   await expect(aleasa(page)).toContainText('· rotită 90°');
   await expect(marime(page)).toContainText('Mărime 15,8 × 19,3 × 33,5 mm');
 
-  // baza scoasă: cărămida rămâne în picioare, liberă
+  // baza scoasă (cu tasta Delete, din vederea 3D): cărămida rămâne în picioare, liberă
   await alege(page, 0);
-  await page.locator('#at-m-scoate').click();
+  await page.locator('#at-vedere').focus();
+  await page.keyboard.press('Delete');
   await expect(lista(page)).toHaveText([`${CARAMIDA} liberă`]);
   await expect(marime(page)).toContainText('Mărime 15,8 × 11,5 × 31,8 mm');
   const una = (await tinut(page))[0]!;
@@ -271,15 +274,20 @@ test('știftul de pe lateral: cărămida alipită stă în picioare; baza scoas�
   await muta(page, 'r');
   await expect(marime(page)).toContainText('Mărime 11,5 × 15,8 × 31,8 mm');
   await expect(aleasa(page)).toContainText('colțul cutiei la -5,75, -5,55, 1,7 mm');
-  expect(r2((await tinut(page))[0]!.liber!.t)).toHaveLength(3);
+  // o piesă pusă cu cea liberă aleasă, fără țintă: pe grilă, deasupra cutiei ei (z până la 33,5, deci pe placa 11), cu
+  // mijlocul cât mai aproape de al cutiei ((0, 2,35)): cărămida 2 × 4 la −2, −1 ține x −16 … 16 și y −8 … 8
+  await piesa(page, 'caramizi', 'caramida');
+  await expect(butonul(page)).toHaveText('Pune în model');
+  await inModel(page);
+  await expect(lista(page).nth(1)).toHaveText(`${CARAMIDA} -2, -1, 11`);
 });
 
 test('punctele din vederea 3D: un clic pe punctul unei prinderi o alege ca țintă, fără să schimbe piesa aleasă', async ({ page }) => {
   // o placă 1 × 1 singură: mijlocul cutiei ei (ținta camerei) e la 0,65 mm sub rădăcina știftului, deci punctul știftului
-  // acoperă mijlocul pânzei
-  await deschide(page, { model: [{ id: 'p', def: DEF_PLACA1, x: 0, y: 0, z: 0, rot: 0, culoare: '#c8322b' }] });
+  // acoperă mijlocul pânzei; placa stă departe de origine (5, 3, pe a doua placă), ca punctele să fie ale locului ei din lume
+  await deschide(page, { model: [{ id: 'p', def: DEF_PLACA1, x: 5, y: 3, z: 2, rot: 0, culoare: '#c8322b' }] });
   await page.locator('#at-vedere-mod [data-v="model"]').click();
-  await expect(lista(page)).toHaveText(['Placă 1×1 0, 0, 0']);
+  await expect(lista(page)).toHaveText(['Placă 1×1 5, 3, 2']);
   const c = (await page.locator('#at-vedere canvas').boundingBox())!;
   const mijloc = [c.x + c.width / 2, c.y + c.height / 2] as const;
   // fără nicio piesă aleasă nu sunt puncte: clicul alege piesa
@@ -307,8 +315,8 @@ test('un model ținut de dinainte: legăturile bune se păstrează; cele stricat
   const c = (id: string, x: number, y: number, z: number, rest: object = {}) => ({ id, def: DEF_CARAMIDA, x, y, z, rot: 0, culoare: '#c8322b', ...rest });
   await deschide(page, { model: [
     c('a', 0, 0, 0),
-    // prinsă de «a», pe știftul 8: locul ei ținut (9, 9, 9) nu contează
-    c('b', 9, 9, 9, { prins: { de: 'a', a: 15, b: 0, unghi: 0, alunec: 0 } }),
+    // prinsă de «a», pe știftul 8, rotită cu 450° (adică 90°): locul ei ținut (9, 9, 9) nu contează
+    c('b', 9, 9, 9, { prins: { de: 'a', a: 15, b: 0, unghi: 450, alunec: 0 } }),
     // stricate: baza lipsește; indicele nu există; prinderile nu se potrivesc (știft pe știft); legătura nu e un obiect;
     // o piesă prinsă de ea însăși; o transformare liberă fără numere
     c('c', 0, 4, 0, { prins: { de: 'zz', a: 15, b: 0 } }),
@@ -322,9 +330,12 @@ test('un model ținut de dinainte: legăturile bune se păstrează; cele stricat
   await expect(lista(page)).toHaveText([
     `${CARAMIDA} 0, 0, 0`, `${CARAMIDA} prinsă`, `${CARAMIDA} 0, 4, 0`, `${CARAMIDA} 0, 6, 0`, `${CARAMIDA} 0, 8, 0`, `${CARAMIDA} 0, 10, 0`, `${CARAMIDA} 0, 12, 0`, `${CARAMIDA} 0, 14, 0`,
   ]);
-  // «b» pe știftul 8 al lui «a» (x până la 55,9); celelalte, pe grilă, până la y 14 · 8 + 15,9
+  // «b» pe știftul 8 al lui «a», rotită un sfert de tură (x 16,1 … 31,9, z până la 21,1); celelalte, pe grilă, până la
+  // y 14 · 8 + 15,9
   await expect(marime(page)).toContainText('Piese 8');
-  await expect(marime(page)).toContainText('Mărime 55,8 × 127,8 × 21,1 mm');
+  await expect(marime(page)).toContainText('Mărime 31,8 × 127,8 × 21,1 mm');
+  await alege(page, 1);
+  await expect(aleasa(page)).toContainText('(locaș 1 ↔ știft 8) · rotită 90°');
   // o piesă stricată se poartă ca una de pe grilă
   await alege(page, 3);
   await expect(aleasa(page)).toContainText('· x 0, y 6, z 0 plăci');

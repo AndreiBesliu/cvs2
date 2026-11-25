@@ -93,6 +93,10 @@ test('transformarea de pe grilă e așezarea din ADR 0283: știfturile cad pe ce
   assert.deepEqual([0, 2, 4].map((k) => la(grila(GRINDA, 0, 0), pr(GRINDA)[k]!.p)), [[4, 4, 7.8], [12, 4, 7.8], [20, 4, 7.8]]);
   // rotirile sunt exacte (fără 6e-17 în matrice), deci pozițiile de pe grilă n-au zgomot
   for (let rot = 0; rot < 8; rot++) for (const v of grila(CARAMIDA, 0, 0, 0, rot).m) assert.ok(v === 0 || v === 1 || v === -1, `rotirea ${rot}: ${v}`);
+  // rotirea se numără în sferturi de tură, în orice sens: cinci sferturi sunt unul, iar unul înapoi, trei
+  const egal = (A: Transf, B: Transf) => assert.deepEqual([p3(A.m), p3(A.t)], [p3(B.m), p3(B.t)]);
+  egal(grila(CARAMIDA, 1, 2, 3, 5), grila(CARAMIDA, 1, 2, 3, 1));
+  egal(grila(CARAMIDA, 1, 2, 3, -1), grila(CARAMIDA, 1, 2, 3, 3));
 });
 
 test('compunerea: A∘B duce un punct întâi cu B, apoi cu A', () => {

@@ -22,6 +22,11 @@ python scripts/otravuri.py LISTA e2e ID [ID ...]        # build + spec-urile E2E
 
 Comenzile rulează cu `PYTHONIOENCODING=utf-8`, iar jurnalul se adaugă la `.tmp/otravuri.log`.
 
+O listă cu `E2E_BUILD = False` sare build-ul aplicației dinaintea fiecărei otrăvi (din 3.Cf-1, 25.11). E doar pentru
+spec-uri care își fac singure, din surse, tot ce otrăvește lista: pagina de sine stătătoare și pachetul planificatorului
+(`paginiPlanificator()`, din `extensii/trenulet/`). Build-ul aplicației nu le schimbă, deci o otravă ține ~20 s, nu ~2 min.
+O listă care otrăvește și codul aplicației (`src/`, `shared/`) nu-l pune.
+
 Probele de pe emulatoare (`test/e2e-emulator/`) au bucla lor, `scripts/otravuri-emulatoare.py`, care refolosește unealta
 (aplicarea, restaurarea verificată, jurnalul). Lista își spune proba (`E2E`) și, pentru fiecare otravă a setului „e2e”,
 titlul probei care trebuie s-o prindă (`GREP`; titlul e o expresie regulată, deci fără paranteze). Rulează în
