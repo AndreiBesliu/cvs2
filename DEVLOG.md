@@ -14080,6 +14080,57 @@ dată în timpul feliei).
 - **Neîmpinsă până la unirea lotului 3.Cc + 3.Cd** (raportat pe `d0490719`, cu rapidul și completul verzi), la rugămintea
   sesiunii principale; împinsă doar dacă tura se încheie înainte.
 
+## 2026-11-25 — Felia 3.Cj-1: cama în atelierul Easy 3Draw (ADR 0284) (sesiune cloud)
+
+**Prompt:** (aceeași cerere a owner-ului și aceleași răspunsuri la ADR 0284 ca la 3.Ca; răspunsul lui „Mecanisme”, la
+lista pieselor noi; pornită fără altă întrebare, cât 3.Ce își aștepta rularea completă și cele trei întrebări ale
+Modelului își așteptau răspunsul)
+**Started:** 25.11, 01:57. **Completed:** 25.11, 02:22 (felia, cu otrăvurile; orele, după ceasul containerului).
+
+- **Cama** (tipul `cama`, fila Roți): un disc pe ax cu marginea la o distanță de ax care se schimbă în timpul rotației,
+  de la raza de bază la raza de bază plus cursa. Trei forme: excentricul, para, melcul.
+- **3.Cj se face pe bucăți:** cama întâi; roata cu palete, cadrul și melcul, pe rând. „Manivela” din plan nu e o piesă
+  nouă (grinda cu o gaură de ax la capăt și fața cu găuri de știft a fuliei o fac deja).
+- **Proba, scrisă întâi** (a căzut cu „tip necunoscut”): raza, judecată pe plasă din 5 în 5 grade, față de formula de pe
+  hârtie a fiecărei forme; para, ca înfășurătoare convexă a două cercuri, socotită altfel decât o desenează motorul.
+- **Ce a arătat proba din browser:** cutia STL-ului perei ieșea 29,97 în loc de 30: spatele cercului de bază cădea la
+  mijlocul unei laturi. Arcele perei au acum un număr par de laturi, iar capetele ei sunt vârfuri.
+- **Probele vechi, la zi:** „Roți 9”, galeriile și desenele, starea unei liste vechi, listele panoului „Se prinde cu”
+  (cama are gaură de ax, deci intră în rândul axului), versiunea 18.29.0.
+- **Otrăvurile:** 59 / 59: 57 la prima rulare (37 pe motor, 3 pe tabele, 19 prin browser). Cele două scăpate: butonul
+  apăsat al formei și al găurii nu era cerut de probă (acum e), iar rotunjirea la zecimi din câmp era de prisos (o face
+  motorul) și a ieșit din cod.
+- **Probele pluginului:** unitare 230 / 230 (cu biblioteca), în browser 162 / 162 (cu extensiile). Easy 3Draw 18.29.0 (504,7 kB), cu rândul
+  de „ce e nou”; doar pachetul se schimbă.
+- **Neîmpinsă până la unirea lui 3.Ce** (PR-ul `AndreiBesliu/cvs2#28`).
+
+## 2026-11-25 — Felia 3.Cj-2: roata cu palete în atelierul Easy 3Draw (ADR 0284) (sesiune cloud)
+
+**Prompt:** (aceeași cerere a owner-ului și aceleași răspunsuri la ADR 0284 ca la 3.Ca; răspunsul lui „Roata cu palete”,
+la lista pieselor noi; pornită fără altă întrebare, cât 3.Ce își aștepta rularea completă și unirea)
+**Started:** 25.11, 02:22. **Completed:** 25.11, 03:14 (felia, cu otrăvurile; orele, după ceasul containerului).
+
+- **Roata cu palete** (tipul `roataPalete`, fila Elice): o roată de apă sau de vânt, cu butucul roților, paletele
+  pornite din el, egal depărtate, până la diametrul cerut, și, la alegere, un disc pe fața de jos. Palete drepte (pe
+  rază) sau curbate (arce cu săgeata de o cincime din lungime).
+- **Proba, scrisă întâi** (a căzut cu „tip necunoscut”): paletele se numără pe plasă, pe cercuri din jurul axului.
+- **Ce a arătat proba:** la Ø24 cu 4 palete curbate ieșeau 8. Paleta pleacă din butuc pieziș, iar arcul, prelungit
+  înapoi „până intră în butuc”, doar îl atingea cu marginea de jos, îl ocolea și ieșea de partea cealaltă. Capătul
+  paletei coboară acum pe rază, de la marginea rămasă afară, până în butuc.
+- **Butucul crește cu paletele** (0,8 mm între ele lângă el), dar nu trece de jumătatea razei: pe o roată mică încap mai
+  puține palete (la Ø24, 15 drepte sau 12 curbate). Motorul o spune; editorul ține paletele în margine.
+- **Engleza:** „Drepte” și „Paletele” aveau deja traduceri cu alt sens (șinele drepte, paletele elicei); butoanele roții
+  spun „Palete drepte”, „Palete curbate”, „Câte palete”.
+- **Probele vechi, la zi:** „Elice 4” / „Propeller 4”, galeriile și desenele, căutarea („ro” găsește și roata cu
+  palete), starea unei liste vechi, rândul axului din „Se prinde cu”, proba limbii (editorul roții, în engleză),
+  versiunea 18.30.0.
+- **Otrăvurile:** 101 / 101: 97 la prima rulare (66 din 67 unitare, 31 din 34 prin browser). Scăpate: rotunjirea
+  numărului de palete (proba cerea o singură valoare), două margini de sus ale câmpurilor (proba scria peste valoarea de
+  la margine, deci motorul o aducea tot acolo; acum pornește de la valori din mijloc) și una echivalentă, înlocuită.
+- **Probele pluginului:** unitare 246 / 246 (cu biblioteca), în browser 175 / 175 (cu extensiile). Easy 3Draw 18.30.0
+  (508,4 kB), cu rândul de „ce e nou”; doar pachetul se schimbă.
+- **Neîmpinsă până la unirea lui 3.Ce** (PR-ul `AndreiBesliu/cvs2#28`).
+
 ## 2026-11-24 — Sesiunea principală în cloud: clicul pe „Închide” din cadrul unei extensii, pierdut (probă instabilă, reparată) (Model: Claude Fable 5.2)
 
 **Prompt:** completul de pe `main` pentru loturile 19–21 (`7312d685`, rularea 45436221341), roșu la o singură probă;

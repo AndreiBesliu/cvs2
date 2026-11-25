@@ -21,9 +21,9 @@ const FAMILII: readonly (readonly [string, readonly (readonly [string, string])[
     ['lateral', 'Știfturi pe lateral'], ['suport', 'Suport (bracket)'], ['grinda', 'Grindă'], ['caramidaTechnic', 'Cărămidă Technic'], ['placaTechnic', 'Placă cu găuri']]],
   ['legaturi', [['stiftTechnic', 'Știft'], ['ax', 'Ax'], ['bucsa', 'Bucșă / conector'], ['conector', 'Conector perpendicular'], ['conectorUnghi', 'Conector în unghi'], ['clema', 'Clemă'], ['bara', 'Bară'], ['maner', 'Mâner'], ['bila', 'Bilă'],
     ['cupa', 'Cupă']]],
-  ['roti', [['rotita', 'Roată dințată'], ['cremaliera', 'Cremalieră'], ['conica', 'Roată conică'], ['coroana', 'Roată coroană'], ['conicaDubla', 'Conică dublă'], ['fulie', 'Fulie'],
+  ['roti', [['rotita', 'Roată dințată'], ['cremaliera', 'Cremalieră'], ['cama', 'Camă'], ['conica', 'Roată conică'], ['coroana', 'Roată coroană'], ['conicaDubla', 'Conică dublă'], ['fulie', 'Fulie'],
     ['roata', 'Roată cu anvelopă'], ['senila', 'Șenilă']]],
-  ['propulsie', [['elice', 'Elice'], ['eliceBarca', 'Elice de barcă'], ['ventilator', 'Ventilator cu carcasă']]],
+  ['propulsie', [['elice', 'Elice'], ['eliceBarca', 'Elice de barcă'], ['ventilator', 'Ventilator cu carcasă'], ['roataPalete', 'Roată cu palete']]],
 ];
 
 async function deschide(page: Page): Promise<void> {
@@ -81,7 +81,7 @@ test('fiecare piesă, în fiecare galerie, are pictograma ei înaintea numelui, 
     // butonul se numește tot ca piesa: pictograma nu se citește
     for (const [k, n] of piese) await expect(page.locator('#at-galerie').getByRole('button', { name: n, exact: true }), k).toHaveAttribute('data-piesa', k);
   }
-  expect(desene.size).toBe(32);
+  expect(desene.size).toBe(34);
   const dupa = new Map<string, string>();
   for (const [k, d] of desene) {
     expect(dupa.get(d), `${k} are același desen ca ${dupa.get(d)}`).toBeUndefined();
@@ -112,7 +112,7 @@ test('la căutare, fiecare piesă găsită are pictograma și același desen ca 
     await fila(page, f).click();
     for (const x of await masoara(page)) desene.set(x.piesa, x.desen);
   }
-  for (const [text, gasite] of [['con', ['rotund', 'bucsa', 'conector', 'conectorUnghi', 'conica', 'conicaDubla']], ['ro', ['rotund', 'rotita', 'conica', 'coroana', 'roata']]] as const) {
+  for (const [text, gasite] of [['con', ['rotund', 'bucsa', 'conector', 'conectorUnghi', 'conica', 'conicaDubla']], ['ro', ['rotund', 'rotita', 'conica', 'coroana', 'roata', 'roataPalete']]] as const) {
     await page.locator('#at-cauta').fill(text);
     await expect(butoane(page)).toHaveCount(gasite.length);
     const m = await masoara(page);

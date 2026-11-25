@@ -53,8 +53,8 @@ function citesteStl(stl: Buffer): { triunghiuri: number; rele: number; raza: num
 
 test('elicea de barcă implicită, a doua piesă a filei Elice: 3 palete, Ø40, pasul 1; textul cu pasul, unghiurile, acoperirea, butucul și consola', async ({ page }) => {
   await atelierBarca(page);
-  await expect(page.locator('#at-tipuri [data-fila="propulsie"]')).toHaveText('Elice 3');
-  await expect(page.locator('#at-galerie [data-piesa]')).toHaveText(['Elice', 'Elice de barcă', 'Ventilator cu carcasă']);
+  await expect(page.locator('#at-tipuri [data-fila="propulsie"]')).toHaveText('Elice 4');
+  await expect(page.locator('#at-galerie [data-piesa]')).toHaveText(['Elice', 'Elice de barcă', 'Ventilator cu carcasă', 'Roată cu palete']);
   await expect(page.locator('#at-editor h2').first()).toHaveText('Elice de barcă');
   // pe hârtie: P = 1 · 40; atan(40 / 8π) = 57,86° la butuc; atan(1 / π) = 17,66° la vârf; 0,2 · π = 0,628; paletele acoperă
   // 55,14 % din disc; cea mai înaltă secțiune a paletei, 11,43 → butucul de 11,5

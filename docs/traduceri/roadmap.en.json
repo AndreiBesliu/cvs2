@@ -81,6 +81,10 @@
       "ro": "Camera imprimantei și codurile ei explicate",
       "en": "The printer camera and its error codes explained"
     },
+    "053c5db65cea559d": {
+      "ro": "Roata cu palete în atelierul Easy 3Draw",
+      "en": "The paddle wheel in the Easy 3Draw workshop"
+    },
     "056096cd570f033f": {
       "ro": "Imaginile pe foaie",
       "en": "Images on the sheet"
@@ -209,6 +213,10 @@
       "ro": "Frezele de rest",
       "en": "Rest bits"
     },
+    "0b0992f21acccb42": {
+      "ro": "**Roata cu palete în atelierul Easy 3Draw** (fără mașină; ADR 0284; a doua piesă din 3.Cj; în sesiunea cloud a liniei, pe `wip/3.Xh-biblioteca-ui`; Easy 3Draw 18.30.0). Tipul `roataPalete`, în fila Elice: o roată de apă sau de vânt, cu butucul roților, paletele pornite din el, egal depărtate, până la diametrul cerut, și, la alegere, un disc pe fața de jos. Diametrul 24–160 mm (repede: 32, 48, 64, 96), paletele 4–24, lățimea 4–40 mm, palete drepte sau curbate (arce cu săgeata de o cincime din lungime), gaura de ax sau rotundă. Paleta e groasă de 2 % din diametru (cel puțin 1,6 mm); butucul crește cât să rămână 0,8 mm între palete lângă el și nu trece de jumătatea razei, deci pe o roată mică încap mai puține palete (la Ø24, 15 drepte sau 12 curbate): motorul o spune, editorul le ține în margine. Găsit de proba scrisă întâi, care numără paletele pe plasă: paleta curbată, prelungită înapoi până intra în butuc, ocolea butucul roților mici și ieșea de partea cealaltă (8 în loc de 4); capătul ei coboară acum pe rază, de la marginea rămasă afară, până în butuc. Probele: unitare 8 (paletele numărate pe cercuri, arcul în puncte de pe hârtie, butucul pe hârtie, 64 de roți pe toată plaja), e2e 3; otrăvurile 101 / 101 (97 la prima rulare). Doar pachetul extensiei se schimbă (508,4 kB).",
+      "en": "**The paddle wheel in the Easy 3Draw workshop** (no machine; ADR 0284; the second piece of 3.Cj; in the line's cloud session, on `wip/3.Xh-biblioteca-ui`; Easy 3Draw 18.30.0). The `roataPalete` type, in the Propeller tab: a water or wind wheel, with the wheel hub, the paddles starting from it, evenly spaced, out to the requested diameter and, optionally, a disc on the bottom face. Diameter 24–160 mm (quick: 32, 48, 64, 96), 4–24 paddles, width 4–40 mm, straight or curved paddles (arcs with a sagitta of one fifth of the length), axle hole or round hole. A paddle is 2 % of the diameter thick (at least 1.6 mm); the hub grows so that 0.8 mm stays between the paddles next to it and never passes half the radius, so fewer paddles fit on a small wheel (at Ø24, 15 straight or 12 curved): the engine says so, the editor keeps them within the limit. Found by the test written first, which counts the paddles on the mesh: the curved paddle, extended backwards until it entered the hub, went around the hub of small wheels and came out on the other side (8 instead of 4); its end now drops along the radius, from the edge left outside, into the hub. Tests: 8 unit (paddles counted on circles, the arc at points worked out on paper, the hub on paper, 64 wheels across the whole range), 3 e2e; mutations 101 / 101 (97 on the first run). Only the extension package changes (508.4 kB)."
+    },
     "0b5300f0479817c7": {
       "ro": "Roata cu anvelopă în atelier",
       "en": "Wheels with tyres in the workshop"
@@ -260,6 +268,10 @@
     "0e87b3e3e07abcb1": {
       "ro": "Rolurile personalizate, aduse din etapa 15",
       "en": "Custom roles, brought forward from stage 15"
+    },
+    "0eb5b18929c779de": {
+      "ro": "Easy 3Draw 18.30.0 (din Bibliotecă, pe canalul `biblioteca` sau pe adresa principală de test, după publicare): fila Elice → **Roată cu palete**. Printează roata Ø64 cu 8 palete drepte și una Ø48 cu palete curbate, fără disc, culcate; pune-le pe un ax, între două grinzi. Spune dacă paletele subțiri (1,6 mm) ies întregi și țin, dacă cele curbate se desprind curat de pat și dacă gaura de ax ține roata fără joc",
+      "en": "Easy 3Draw 18.30.0 (from the Library, on the `biblioteca` channel or on the main test address, once published): Propeller tab → **Paddle wheel**. Print the Ø64 wheel with 8 straight paddles and a Ø48 one with curved paddles, without the disc, lying flat; put them on an axle, between two beams. Say whether the thin paddles (1.6 mm) come out whole and hold, whether the curved ones come off the bed cleanly and whether the axle hole holds the wheel without play"
     },
     "0ebe1a8fed00b751": {
       "ro": "Regiunea păstrată și invarianta 2",
@@ -680,6 +692,10 @@
     "249ae924a5467945": {
       "ro": "Contur L / A / C cu bulge; aria exactă pe toate trei primitivele (cercul = πr² exact, cubica prin Gauss pe 3 noduri); matricea cu rotiri exacte la 90°; offsetul peste cavalier, cu eșecul spus. Cavalier adus din `v0.1.1`: 118 `!` doar pentru tipuri, probat linie cu linie și cu martorul npm (100 de cazuri, bit cu bit). Profilul exterior / interior / pe linie, cu treceri egale. 50 de teste, valori pe hârtie. Treceri: `!` pus greșit în partea stângă de reparatorul automat; două importuri de efect cu `.js`; ciclurile interne cavalier → regula fațadei.",
       "en": "L / A / C contour with bulge; exact area on all three primitives (circle = πr² exactly, cubic via 3-point Gauss); matrix with exact 90° rotations; offset over cavalier, with failures reported. Cavalier vendored from `v0.1.1`: 118 `!` for types only, checked line by line and against the npm control (100 cases, bit for bit). Outside / inside / on-line profile, with equal passes. 50 tests, values on paper. Passes: a `!` misplaced on the left-hand side by the auto-fixer; two side-effect imports with `.js`; cavalier's internal cycles → the facade rule."
+    },
+    "249b10a24e2abe74": {
+      "ro": "3.Cj-2 (roata cu palete, ADR 0284)",
+      "en": "3.Cj-2 (the paddle wheel, ADR 0284)"
     },
     "24ad0ba64a840c42": {
       "ro": "Arcul în atelierul Easy 3Draw",
@@ -3517,6 +3533,10 @@
       "ro": "**Codurile imprimantei explicate** (fără imprimantă; ADR 0195 §A, acceptat cu recomandările, „Da, recomandările”: 1a, 2a; în worktree-ul `imprimanta`). Cardul „De la imprimantă” arată codul de pe ecran (CX2585), dacă e gravă sau obișnuită, ce s-a întâmplat și ce faci, cu pagina Creality unde există; banda și notificarea spun la fel. Dicționarul familiei K1 are 126 de chei (Creality Print 4, rezumatul codurilor K1 din wiki-ul Creality, CC5000 de pe K1C-ul owner-ului), cu textele noastre, în română și engleză; vine la prima eroare și merge și fără internet. Pana de curent (`repoPlrStatus`) e un eveniment nou, pornit implicit. La recenzia proprie, trei reparații: linkurile cardului cât textul lor, dicționarul cerut din nou după o cerere căzută, cheia 0. **Probe:** pe hârtie (cheile, linkurile, generatorul, forma, căutarea, pana, notificarea, setarea, precache-ul, cheia 0), manualul, două e2e noi și două actualizate; otrăvurile 46 / 46 (32 pe probele unitare, 14 prin e2e); din lista 3.6s, U02 adusă la codul nou și probată din nou. **Mărimea:** totalul 745,6 / 800 kB (+1,5 față de `main` `69fe779`, măsurat A/B), pornirea 107,2 (neschimbată). Proba pe imprimanta owner-ului: ghidul, pasul 12.",
       "en": "**Printer error codes explained** (no printer; ADR 0195 §A, accepted with the recommendations, \"Da, recomandările\": 1a, 2a; in the `imprimanta` worktree). The \"From the printer\" card shows the code on the screen (CX2585), whether it is serious or minor, what happened and what to do, with the Creality page where there is one; the banner and the notification say the same. The K1 family dictionary has 126 keys (Creality Print 4, the K1 code summary from the Creality wiki, CC5000 from the owner's K1C), with our own texts, in Romanian and English; it comes at the first error and works offline too. The power cut (`repoPlrStatus`) is a new event, on by default. At our own review, three fixes: the card links as wide as their text, the dictionary asked again after a failed request, key 0. **Tests:** on paper (the keys, the links, the generator, the shape, the lookup, the power cut, the notification, the setting, the precache, key 0), the manual, two new e2e and two updated; the poisons 46 / 46 (32 on the unit tests, 14 through e2e); from the 3.6s list, U02 brought to the new code and caught again. **Size:** total 745.6 / 800 kB (+1.5 against `main` `69fe779`, measured A/B), start-up 107.2 (unchanged). The test on the owner's printer: the guide, step 12."
     },
+    "c9ea8cf06db847e9": {
+      "ro": "3.Cj-1 (cama, ADR 0284)",
+      "en": "3.Cj-1 (the cam, ADR 0284)"
+    },
     "ca05b96eadd17573": {
       "ro": "**V-carve** și gravarea inteligentă",
       "en": "**V-carve** and smart engraving"
@@ -3664,6 +3684,10 @@
     "d30ff102a8448021": {
       "ro": "Imaginea podului ESP3D",
       "en": "The ESP3D bridge image"
+    },
+    "d340c57c95a78192": {
+      "ro": "**Cama în atelierul Easy 3Draw** (fără mașină; ADR 0284; prima piesă din 3.Cj, făcută pe bucăți; în sesiunea cloud a liniei, pe `wip/3.Xh-biblioteca-ui`; Easy 3Draw 18.29.0). Tipul `cama`, în fila Roți: un disc pe ax cu marginea la o distanță de ax care se schimbă în timpul rotației, de la raza de bază la raza de bază plus cursa; un tachet sprijinit pe ea urcă și coboară cu cursa, o dată pe tură. Trei forme: excentricul (un cerc cu axul mutat din mijloc), para (cercul de bază și un nas rotund, legate prin tangente) și melcul (raza crește liniar pe o tură, apoi cade). Diametrul de bază 10–64 mm, cursa 1–24 mm, grosimea 1–20 mm, gaura de ax sau rotundă. „Manivela” din plan nu e o piesă nouă: se face deja din grindă sau din fața cu găuri a fuliei. Probele: unitare 6 (raza, judecată pe plasă din 5 în 5 grade, față de formula de pe hârtie a fiecărei forme), e2e 3; otrăvurile 59 / 59 (57 la prima rulare). Doar pachetul extensiei se schimbă (504,7 kB).",
+      "en": "**The cam in the Easy 3Draw workshop** (no machine; ADR 0284; the first piece of 3.Cj, done in parts; in the line’s cloud session, on `wip/3.Xh-biblioteca-ui`; Easy 3Draw 18.29.0). The `cama` type, in the Wheels tab: a disc on an axle whose edge sits at a distance from the axle that changes during the rotation, from the base radius to the base radius plus the lift; a follower resting on it rises and falls by the lift, once per turn. Three shapes: the eccentric (a circle with the axle moved off-centre), the pear (the base circle and a round nose, joined by tangents) and the snail (the radius grows linearly over one turn, then drops). Base diameter 10–64 mm, lift 1–24 mm, thickness 1–20 mm, axle or round hole. The “crank” of the plan is not a new piece: the beam or the pulley’s face with pin holes already make it. Tests: 6 unit (the radius, judged on the mesh every 5 degrees against each shape’s paper formula), 3 e2e; mutations 59 / 59 (57 at the first run). Only the extension package changes (504.7 kB)."
     },
     "d359f742d3b7f722": {
       "ro": "**Găurirea, adusă din etapa 5** (fără mașină; ADR 0087; „1”, la „Ce urmeaza?”: găurirea, înaintea V-carve-ului și a exportului 2D). În fereastra exportului, pe un rând numai cu cercuri, Tăietura are și „găurire”: gaura iese cât cercul, cu freza rândului. Un cerc cât freza (± 0,02 mm) se găurește în centru, cu ciocănire (pașii pe trecere, retragerea de 1 mm între ei, ieșirea din gaură la fiecare al N-lea pas, „Iese la fiecare al … pas”, 1–100, implicit 1); unul mai mare, până la două diametre ale frezei, în elice pe perete, cu o tură la fund. Doar G0–G3, fără ciclurile G81–G83 (GRBL nu le are). Refuzate, cu motiv: cercul mai mic decât freza, peste două diametre (ar rămâne un miez), elipsa, ce e al profilului. Panoul de proprietăți arată găurirea. Documentul v13 (migrarea doar cu numărul). Manualul („Operațiile de tăiere”) e la zi. **Treceri:** (1) schema v13 și ușa, `src/cam/gaurire.ts`, lucrarea, dialogul și panoul; pe hârtie: pașii și retragerile, elicea pe cercul de rază 2; oracolul simulării: Ø6 în centru, Ø10 și Ø12 în elice, scoase cât cercul (± 0,02 mm); probele legate de numărul schemei mutate pe v13 (oracolul documentului v13, al aceleiași sesiuni); mutațiile: 36 / 44 prinse la prima rulare, apoi probe noi (cercul scalat și rotit, centrul și sensul celei de-a doua găuri în lucrare, viteza pe Z pe o elice strânsă, unde limita contează, rândul care mai poartă valori de profil): 43 / 43; verificarea elipsei din lucrare era cod mort (ușa și conturul o refuză înainte), scoasă; pe interfață, 9 / 9 prin e2e; în manual, fraza veche despre o singură freză pe foaie, la zi (ADR 0084). (2) la verificarea pe test: arborele proiectului descria orice operație ca „Profil {latura}”, deci și buzunarul (din 5.1↑) și găurirea apăreau „Profil interior”; acum le numește („Buzunar pe 1 contur…”, „Găurire pe 1 cerc…”), cu proba în e2e și 2 / 2 mutații.",
@@ -4041,6 +4065,10 @@
       "ro": "Printează o conică „Ca LEGO 20 (87407)” și prinde-o la 90° de o conică LEGO 20, cu axele întâlnite și fața din spate la 12 mm de cealaltă axă (o bucșă ½ între roată și grindă); apoi o pereche printată, de exemplu 12 + 36 cu „Fă perechea”",
       "en": "Print a “Like LEGO 20 (87407)” bevel gear and mesh it at 90° with a LEGO 20 bevel gear, with the axles meeting and the back face 12 mm from the other axle (a ½ bush between the gear and the beam); then a printed pair, for example 12 + 36 with “Make the pair”"
     },
+    "e84f8beef92163a9": {
+      "ro": "Easy 3Draw 18.29.0 (din Bibliotecă, pe canalul `biblioteca` sau pe adresa principală de test, după publicare): fila Roți → **Camă**. Printează excentricul Ø16 cu cursa de 8 și melcul Ø16, culcate; pune-le pe un ax și sprijină pe margine capătul unei grinzi prinse într-un știft. Spune dacă marginea iese netedă (tachetul alunecă) și dacă gaura de ax ține cama fără joc",
+      "en": "Easy 3Draw 18.29.0 (from the Library, on the `biblioteca` channel or on the main test address, once published): the Wheels tab → **Cam**. Print the Ø16 eccentric with an 8 mm lift and the Ø16 snail, lying flat; put them on an axle and rest on the edge the end of a beam held by a pin. Say whether the edge comes out smooth (the follower slides) and whether the axle hole holds the cam without play"
+    },
     "e8ad40ee8d5bfa63": {
       "ro": "Migrările pure vN → vN+1",
       "en": "Pure migrations vN → vN+1"
@@ -4228,6 +4256,10 @@
     "f3956330cdccb992": {
       "ro": "după publicarea pe test",
       "en": "after publishing on test"
+    },
+    "f3aa0138149f58a7": {
+      "ro": "Cama în atelierul Easy 3Draw",
+      "en": "The cam in the Easy 3Draw workshop"
     },
     "f3c947e953d5bc7b": {
       "ro": "Fișa plăcii 1 (`docs/etape/placa-01.md`) și programele A (stânga-jos) și B (dreapta-sus), ca fișiere de aur în `test/placi/placa-01/`, cu SHA-256. Testul cere bytes identici cu ce generează postul acum, hash-urile în fișă și poarta trecută pe ambele. Hosting-ul pe test (restul feliei 1.9) așteaptă exportul Firestore confirmat de owner.",
