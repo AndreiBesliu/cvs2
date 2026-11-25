@@ -34,6 +34,10 @@
  * - `w`: unghiul dintre laturile (245, 30)–(285, 30) și (250, 45)–(270, 65), cu arcul de rază 30 și textul „2x<>”.
  * Exportat ca `cote-dim.dxf` (cotele ca DIMENSION, cifrele ca trăsături) și `cote-text.dxf`, `.svg`, `.pdf`, `.eps` (cotele ca
  * DIMENSION, cifrele ca text).
+ *
+ * Al patrulea document (felia 10.4↑c-2), exportat ca `cote-ascii.pdf`, cu cifrele ca text: o orizontală între (20, 100) și
+ * (280, 100), cu linia la d = 20 și textul ei, `TEXT_ASCII`: toate semnele ASCII tipăribile (fără `<>` alăturate), apoi ° ± × Ø;
+ * centrarea lui în PDF cere lățimea lui Helvetica a fiecărui semn.
  */
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -140,6 +144,11 @@ export const CORPUS_COTE = {
   }],
 };
 export const STRAT_COTE = { nume: 'DIM_1', culoare: '#ff8800', grosime: 0.25 };
+export const TEXT_ASCII = `${Array.from({ length: 95 }, (_, k) => String.fromCharCode(32 + k)).join('')}°±×Ø`;
+export const CORPUS_COTE_ASCII = {
+  ...CORPUS_COTE,
+  foi: [{ ...CORPUS_COTE.foi[0]!, cote: [{ id: 'q', fel: 'orizontala', puncte: [Q(20, 100), Q(280, 100)], linie: { d: 20 }, text: TEXT_ASCII }] }],
+};
 export const CORPUS_COTE_2 = {
   ...CORPUS_COTE,
   foi: [{
@@ -183,5 +192,10 @@ if (dosar) {
   };
   scrie('cote-dim.dxf', 'dxf', 'trasaturi');
   for (const fmt of ['dxf', 'svg', 'pdf', 'eps'] as const) scrie(`cote-text.${fmt}`, fmt, 'text');
+  const r3 = incarca(structuredClone(CORPUS_COTE_ASCII));
+  if (!r3.ok) throw new Error(`corpusul ASCII al cotelor nu trece de ușă: ${r3.motiv}`);
+  const ascii = exportaVectori(r3.doc, 0, 'pdf', false, { ...cerute, dxf: 'dimension', ca: 'text' });
+  if (ascii.cote !== 1 || ascii.lipsa.length > 0) throw new Error(`corpusul ASCII al cotelor: ${ascii.cote} cote, lipsă: ${ascii.lipsa.join(' ')}`);
+  writeFileSync(join(dosar, 'cote-ascii.pdf'), ascii.text);
   console.log(`corpusul cotelor: 4 cote, apoi 7 (ca DIMENSION și cu cifrele ca text), în ${dosar}`);
 }

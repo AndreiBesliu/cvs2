@@ -444,6 +444,22 @@ def compara_texte(nume, citite, tol):
         verifica(abs(x['cap'] - H) <= 1e-3, f'{nume}: majuscula lui {text!r} {x["cap"]} mm, nu {H}')
 
 
+# Al patrulea document: textul cu toate semnele ASCII tipăribile, apoi ° ± × Ø, al unei orizontale (20, 100)–(280, 100) cu linia
+# la y = 120: mijlocul bazei lui în (150, 120 + 0,3 · 3,5). Centrarea lui cere lățimea fiecărui semn (din PyMuPDF, aici).
+TEXT_ASCII = ''.join(chr(32 + k) for k in range(95)) + '°±×Ø'
+
+
+def verifica_ascii(cale):
+    doc = fitz.open(cale)
+    pagina = doc[0]
+    t = texte_pdf(pagina, pagina.rect.height)
+    verifica(len(t) == 1 and t[0]['text'] == TEXT_ASCII, f'PDF ASCII: textele {[x["text"] for x in t]}')
+    for x in t[:1]:
+        d = math.hypot(x['p'][0] - 150, x['p'][1] - (120 + G))
+        verifica(d <= 1e-3, f'PDF ASCII: mijlocul bazei în {x["p"]} ({d:.6f} mm de hârtie)')
+        verifica(abs(x['unghi']) <= 1e-6 and abs(x['cap'] - H) <= 1e-3, f'PDF ASCII: unghiul {x["unghi"]}, majuscula {x["cap"]}')
+
+
 def hartie_fara_cifre(ids=COTE_2):
     c = hartie_cote()
     return [s for i in ids for s in c[i]['seg']]
@@ -738,6 +754,7 @@ def main(dosar):
     pline2 = sum(1 for x in h2 if x[0] == 'T')
     ab2 = [verifica_pdf(f'{dosar}/cote-text.pdf', h2, pline2, True), verifica_svg(f'{dosar}/cote-text.svg', h2, True),
            desene_eps_cote(f'{dosar}/cote-text.eps', h2, True)]
+    verifica_ascii(f'{dosar}/cote-ascii.pdf')
     if os.path.exists(f'{dosar}/cote-text-eps.pdf'):
         ab2.append(verifica_gs(f'{dosar}/cote-text-eps.pdf', h2, True))
     else:

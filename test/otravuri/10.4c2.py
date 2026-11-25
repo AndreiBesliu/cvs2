@@ -54,7 +54,7 @@ o('H01', HV, "const ALTELE: Readonly<Record<string, readonly [number, number]>> 
   "const ALTELE: Readonly<Record<string, readonly [number, number]>> = { '°': [0xb0, 400], '±': [0xb1, 584], '×': [0xd7, 584], 'Ø': [0xd8, 722] };",
   'export', 'Ø mai îngust (PDF-ul îl centrează greșit)')
 o('H02', HV, "  1015, 667, 667, 722, 722, 667, 611, 778, 722, 278, 500, 667, 556, 833, 722, 778,",
-  "  1015, 667, 667, 722, 722, 667, 611, 778, 722, 278, 500, 667, 556, 833, 722, 722,", 'export', 'lățimea lui O (oarecare din tabel) greșită')
+  "  1015, 667, 667, 722, 722, 667, 611, 778, 722, 278, 500, 667, 556, 833, 722, 722,", 'oracol', 'lățimea lui O (oarecare din tabel) greșită')
 o('H03', HV, "k > 126 ? `\\\\${k.toString(8)}`", "k > 126 ? `\\\\${k.toString(10)}`", 'export', 'codurile din afara ASCII în zecimal, nu octal')
 o('H04', HV, "export const MAJUSCULA_HELVETICA = 0.718;", "export const MAJUSCULA_HELVETICA = 0.75;", 'export', 'majuscula lui Helvetica greșită')
 o('H05', HV, "const INLOCUITE: Readonly<Record<string, string>> = { '′': \"'\", '″': '\"' };", "const INLOCUITE: Readonly<Record<string, string>> = { '′': \"'\" };",
@@ -89,7 +89,7 @@ o('V03', PD, "${nr(e.p.x - (c * w) / 2)} ${nr(e.p.y - (s * w) / 2)} Tm", "${nr(e
 o('V04', PD, "  const font = cuText ? ` /Font << /F1 ${5 + folosite.length} 0 R >>` : '';", "  const font = cuText ? ` /Font << /F1 ${4 + folosite.length} 0 R >>` : '';",
   'export', 'fontul PDF trimis la alt obiect')
 o('V05', EP, "    ...(cuText ? ['%%DocumentNeededResources: font Helvetica'] : []),\n", "", 'export', 'EPS-ul nu spune fontul cerut')
-o('V06', EP, "  '/Encoding ISOLatin1Encoding def',", "  '/Encoding StandardEncoding def',", 'export', 'EPS-ul fără codarea în care ° și Ø există')
+o('V06', EP, "  '/Encoding ISOLatin1Encoding def',", "  '/Encoding StandardEncoding def',", 'oracol', 'EPS-ul fără codarea în care ° și Ø există')
 o('V07', EV, "    if (format === 'dxf' && cote.dxf === 'dimension' && ec.definitii.length > 0)", "    if (format === 'dxf' && ec.definitii.length > 0)", 'export',
   '„Linii și cifre” ignorat: tot DIMENSION')
 o('V08', EV, "    if (format === 'pdf' || format === 'eps') for (const e of ec.entitati) if (e.fel === 'text') for (const x of inHelvetica(e.text).lipsa) lipsa.add(x);\n",
@@ -106,7 +106,7 @@ o('P03', X, "    return { ...baza, tip: 5, puncte: { 15: l.v, 13: x13, 14: x14, 
   "    return { ...baza, tip: 5, puncte: { 15: l.v, 13: x13, 14: x14, 10: l.v }, masura };", 'oracol', 'arcul unghiului din trei puncte, în vârf')
 o('P04', SV, ' font-size="${nr(marimeHelvetica(e.inaltime))}"', ' font-size="${nr(e.inaltime)}"', 'oracol', 'textul SVG cât majuscula, nu cât fontul')
 o('P05', EP, "show grestore`;", "show grestore`.replace('-2 div', '-1 div');", 'oracol', 'textul EPS mutat cu toată lățimea')
-o('P06', DX, "    antet('MTEXT', 'AcDbMText');", "    antet('MTEXT', 'AcDbMText'); g(1, '');", 'oracol', 'un MTEXT cu două texte')
+o('P06', DX, "g(7, 'Standard'); g(11, c); g(21, s); g(31, 0);", "g(7, 'Standard'); g(11, c); g(21, -s); g(31, 0);", 'oracol', 'MTEXT-ul rotit invers')
 # Panoul și fereastra Setări (e2e).
 o('E01', 'src/app/Editare.tsx', "        if (s.export.cifre === 'text') return baza;", "        if (s.export.cifre !== 'text') return baza;", 'e2e',
   'cifrele ca trăsături fără font, ca text cu el')
