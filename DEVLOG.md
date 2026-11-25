@@ -15006,3 +15006,16 @@ pe commit-ul împins).
   `test/otravuri/oracol-cote.ts`, cu corpusul scris din nou la fiecare, 4 e2e). Au scăpat întâi H02 (o lățime din tabel,
   neatinsă de nicio probă) și V06 (codarea EPS, pusă pe setul unitar); P06 (două texte într-un MTEXT) era practic
   echivalent și a fost înlocuit cu MTEXT-ul rotit invers. Corpusul ASCII (`cote-ascii.pdf`) și setul oracolului le prind.
+
+## 2026-11-25 — Sesiunea principală în cloud: lotul 34 (centrul foii ca origine, nota bibliotecii, starea imprimantei), pe test (Model: Claude Fable 5.2)
+
+**Prompt:** publicarea de după a treizeci și cincea unire (pe test se publică liber)
+**Started:** 25.11, după unirea de la 17:00 (completul pe `main`, pornit la 17:09). **Completed:** 25.11, 18:25.
+
+- **Pe test: `65eecdc6`** (28.8↑o, 16.A↑b-4, 3.Au). `publica.yml` 45652408353, verde (18:17–18:25); serverul, neschimbat.
+- **Completul pe `main`** (45641891693, verde, 60 min): unit 10 505 / 0 (12 sărite, pe Linux), e2e 854 / 854, funcțiile pe
+  emulatoare 136 / 136, paginile 59 / 59; pornirea 111,2 kB, totalul 891,8 / 1 000 kB.
+- **Pornirea publicării:** trei erori de server ale GitHub la `gh workflow run` (500, 502, 500); a patra cerere, cu `gh api`,
+  a trecut. De ținut minte: după o eroare la pornire, se verifică întâi că nu s-a creat nicio rulare (o rulare la coadă
+  are titlul „publica”, nu „publica test <sha>”, deci scriptul n-o recunoaște și ar porni a doua).
+- **Proba de fum** pe adresa de test: versiunea `65eecdc65928`, potrivită; nicio eroare în consolă, nicio cerere căzută.
