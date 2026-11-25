@@ -621,6 +621,10 @@
       "ro": "Scalarea unui arc peste latura documentului",
       "en": "Scaling an arc past the document side"
     },
+    "20365f98ad9f4111": {
+      "ro": "3.Cj-3 (cadrul, ADR 0284)",
+      "en": "3.Cj-3 (the frame, ADR 0284)"
+    },
     "20473faf0765f4e4": {
       "ro": "Supracursa în fereastra exportului",
       "en": "Overtravel in the export window"
@@ -1145,6 +1149,10 @@
       "ro": "**Unealta Transformare, extensia barei, editarea formelor după plasare, adusă din etapa 6** (fără mașină; ADR 0053; „NODURILE de control trebuie sa apara doar cand selectam unealta de transformare”, „bara de aliniere ar trebui sa fie o extensie, nu un popup […] colapsabil este meniul de aliniere, nu bara in sine”, „cercul, ar trebui sa aiba raza […] si vreau sa poata fi editat si post placement”). Unealta Transformare (S): mânerele doar cu ea; extensia barei de sus (`#loc-extensie`, al doilea rând, mereu acolo, locul rezervat de la pornire) cu secțiunea Aliniere strânsă spre stânga la cerere; panoul editează dreptunghiul (laturile, raza colțurilor), cercul (raza), poligonul regulat (laturile, raza) și elipsa (razele) prin `document.forma`, recunoscute din geometrie (`src/model/formeParametrice.ts`, generatorii comuni cu uneltele de desen; fără câmp nou în document). Pornirea 95,0 → 95,1 kB (cu ușa 99,8 / 100: ~0,2 kB rămași). **Treceri:** (1) generatorii și recunoașterea, acțiunea, panoul, unealta, extensia, probele; (2) captura: colțul Y al elipsei în panou, 119,999999663 (cutia din cubicele unei singure bucăți de 2π): elipsa e acum tăiată pe sferturi, cu extremele ca vârfuri exacte, iar cele vechi rămân recunoscute; o probă a poligonului cerea refacerea „identică” (zgomotul virgulei mobile, ~1e-15): acum sub 1e-9; (3) e2e-ul complet verde din prima.",
       "en": "**The Transform tool, the bar extension, editing shapes after placement, brought forward from stage 6** (without the machine; ADR 0053; “the control NODES should appear only when we select the transform tool”, “the align bar should be an extension, not a popup […] the align menu is collapsible, not the bar itself”, “the circle should have a radius […] and I want it editable after placement too”). The Transform tool (S): the handles only with it; the top bar extension (`#loc-extensie`, the second row, always there, its space reserved from startup) with the Align section collapsing to the left on request; the panel edits the rectangle (sides, corner radius), the circle (radius), the regular polygon (sides, radius) and the ellipse (radii) through `document.forma`, recognised from the geometry (`src/model/formeParametrice.ts`, generators shared with the drawing tools; no new field in the document). Startup 95.0 → 95.1 kB (99.8 / 100 with the door: ~0.2 kB left). **Passes:** (1) the generators and recognition, the action, the panel, the tool, the extension, the checks; (2) the screenshot: the ellipse's Y corner in the panel read 119.999999663 (the box from the cubics of a single 2π piece): the ellipse is now split into quarters, with the extremes as exact vertices, and old ones are still recognised; a polygon check demanded an “identical” rebuild (floating-point noise, ~1e-15): now within 1e-9; (3) the full e2e green at once."
     },
+    "3a7882ebefa9194d": {
+      "ro": "Cadrul (fereastra) în atelierul Easy 3Draw",
+      "en": "The frame (window) in the Easy 3Draw workshop"
+    },
     "3a8ca48872fe9ed5": {
       "ro": "Textura din freză; Ghilotină + drillbanks (găurirea multiplă pe simulare și pe octeți)",
       "en": "Texture from the bit; Guillotine + drillbanks (multiple drilling on simulation and on bytes)"
@@ -1356,6 +1364,10 @@
     "47f2cd95bc26544c": {
       "ro": "**Insulele buzunarului, aduse din etapa 5** (fără mașină; ADR 0073; „poti sa continui cu altceva intre timp”, cât owner-ul face testul; publicat pe canalul de previzualizare). Buzunarele de pe foaie cu aceeași adâncime sunt un singur buzunar, din orice piese: o formă cu buzunar aflată în întregime în alta e o insulă (rămâne în picioare, freza o ocolește și îi taie peretele), una aflată într-o insulă e iar buzunar (golurile literelor). Cu altă adâncime, fiecare se taie întreg (o treaptă). Două contururi de aceeași adâncime care se ating sunt refuzate, cu motivul și ce e de făcut. Manualul („Operațiile de tăiere”) e la zi. **Treceri:** (1) offsetul unei regiuni cu găuri (figura lui cavalier, cu aceleași gărzi ca offsetul unui contur), inelele pe bucăți, legăturile, lucrarea; o probă pe hârtie la 10 mm a căzut exact pe un prag (golul de 20 mm = 2d): acolo decide a doua încercare, deci proba de arie s-a mutat la 12 mm, iar pragul a primit proba lui; oracolul simulării: insula, golul mai îngust decât freza, „O”-ul din altă piesă, treapta; 18 / 18 mutații prinse.",
       "en": "**Pocket islands, brought forward from stage 5** (no machine; ADR 0073; \"poti sa continui cu altceva intre timp\", while the owner runs the test; published on the preview channel). Pockets on the sheet with the same depth are one pocket, from any parts: a shape with a pocket lying entirely inside another is an island (it stays standing, the cutter goes around it and cuts its wall), one lying inside an island is a pocket again (the counters of letters). With a different depth, each is cut whole (a step). Two outlines with the same depth that touch are refused, with the reason and what to do. The manual (\"Cutting operations\") is up to date. **Passes:** (1) the offset of a region with holes (the cavalier shape, with the same guards as the offset of one outline), the rings in pieces, the links, the job; a paper check at 10 mm fell exactly on a threshold (the 20 mm gap = 2d): there the second attempt decides, so the area check moved to 12 mm and the threshold got its own check; the simulation oracle: the island, the gap narrower than the cutter, the \"O\" from another part, the step; 18 / 18 mutations caught."
+    },
+    "481bfc92065c5b2f": {
+      "ro": "Easy 3Draw 18.32.0 (din Bibliotecă, pe canalul `biblioteca` sau pe adresa principală de test, după publicare): fila Roți → **Șurub melc**. Printează melcul Ø8 de 2 știfturi și pe cel Ø16, în picioare, și roata de 24 (cu „Fă perechea”). Spune dacă flancul de jos al spirei iese curat fără suport (și la ce grosime de strat), dacă melcul Ø8 rămâne întreg când intră pe ax (miezul lui e subțire) și dacă întoarce roata fără să se înțepenească, cu axele la 16 mm (2 știfturi)",
+      "en": "Easy 3Draw 18.32.0 (from the Library, on the `biblioteca` channel or on the main test address, after publishing): Wheels tab → **Worm screw**. Print the Ø8 worm, 2 studs long, and the Ø16 one, standing up, and the 24-tooth gear (with “Make the pair”). Say whether the lower flank of the thread comes out clean without supports (and at what layer height), whether the Ø8 worm stays in one piece when it goes on the axle (its core is thin) and whether it turns the gear without jamming, with the axes 16 mm apart (2 studs)"
     },
     "4844950e9c7c67e5": {
       "ro": "Mesajele modulelor la cerere",
@@ -1980,6 +1992,10 @@
     "713375a5bd682d3c": {
       "ro": "Fereastra „Exportă G-code” după audit",
       "en": "The “Export G-code” window after the audit"
+    },
+    "7213686355655294": {
+      "ro": "Șurubul melc în atelierul Easy 3Draw",
+      "en": "The worm screw in the Easy 3Draw workshop"
     },
     "722173dd11c9f709": {
       "ro": "**Loc în bugetul JavaScript** (ADR 0086; „Fă loc în bugetul JavaScript: mută la cerere ce se poate (de exemplu panoul mașinii sau textele lui), fără să ridici plafonul, și spune-mi cât s-a câștigat.”). Măsurat pe hărțile de surse: „la cerere” nu scade totalul (poarta numără toate bucățile, toate în precache), deci panoul mașinii, deja la cerere, n-avea ce câștiga; textele modulelor la cerere (editarea, exportul, mașina, importul, carcasa, traseul, simularea) erau ~24 kB, cu ambele limbi în fiecare bucată. Acum sunt date: `mesaje/<modul>.json`, ambele limbi, în precache, generate din dicționarele TypeScript; modulul își cere mesajele la evaluare, iar încărcarea lui le așteaptă (`cuMesaje`, verificat de compilator). **Totalul: 328,2 → 304,3 / 330 kB (−23,9)**; pornirea 95,9 → 96,0; precache-ul întreg +1,4 kB. Plafonul neschimbat. **Treceri:** (1) generatorul, aducerea, poarta; găsit pe drum: încărcătorul în pornire (+0,3 kB, scos: fiecare modul își exportă promisiunea), o cerere căzută uitată prea devreme (proba a prins-o: acum se reîncearcă la așteptare), un fișier pe limbă (29,4 kB, apoi unul pe modul: 25,6), booleanul (Shift + clic înainte ca editarea să se monteze: mesajele ei vin acum în paralel cu bucata, proba așteaptă bara).",
@@ -2981,6 +2997,10 @@
       "ro": "Unitatea implicită a unui WMF fără antet placeable (ADR 0117, întrebarea 1: implicit 1/96 țol, ca LibreOffice; sau mm, ca la un DXF fără unități) și un WMF real din programele tale (CorelDRAW, ArtCAM, AutoCAD), de încercat pe instanța de test",
       "en": "The default unit of a WMF without a placeable header (ADR 0117, question 1: 1/96 inch by default, as in LibreOffice; or mm, as for a DXF without units) and a real WMF from your programs (CorelDRAW, ArtCAM, AutoCAD), to try on the test instance"
     },
+    "aaeec45c0e46ef3c": {
+      "ro": "**Cadrul (fereastra) în atelierul Easy 3Draw** (fără mașină; ADR 0284; a treia piesă din 3.Cj; în sesiunea cloud a liniei, pe `wip/3.Xh-biblioteca-ui`; Easy 3Draw 18.31.0). Tipul `cadru`, în fila Cărămizi: o cărămidă 1 × n cu un gol prin ea (fereastră, ușă, portal). Jos, pragul, o placă obișnuită, deci piesa stă pe știfturi; pe margini, doi stâlpi groși cât rama; sus, buiandrugul, cu știfturi pe toată lungimea. Lungimea 2–8 știfturi, înălțimea 2–6 cărămizi, rama 1,2–4 mm, mărimile uzuale (1×2×2 … 1×4×6), colțurile de sus ale golului drepte sau teșite la 45°: teșitura scurtează puntea tipărită în aer până la un știft, cât îi lasă înălțimea golului. Editorul scrie golul și puntea, iar peste 40 mm spune că puntea se poate lăsa. Probele: unitare 6 (golul judecat pe plasă la 0,15 mm de marginile lui, teșitura în puncte de pe hârtie, știfturile până la margine, locașurile libere, 120 de cadre pe toată plaja), e2e 3; otrăvurile 84 / 84 (79 din 83 la prima rulare; una echivalentă a arătat o retragere de 0,01 mm de prisos, scoasă din cod). Doar pachetul extensiei se schimbă (510,8 kB).",
+      "en": "**The frame (window) in the Easy 3Draw workshop** (no machine; ADR 0284; the third piece of 3.Cj; in the line's cloud session, on `wip/3.Xh-biblioteca-ui`; Easy 3Draw 18.31.0). The `cadru` type, in the Bricks tab: a 1 × n brick with an opening through it (window, door, gateway). At the bottom, the sill, a regular plate, so the piece sits on studs; on the sides, two posts as thick as the frame; at the top, the lintel, with studs along its whole length. Length 2–8 studs, height 2–6 bricks, frame 1.2–4 mm, the usual sizes (1×2×2 … 1×4×6), the top corners of the opening square or chamfered at 45°: the chamfer shortens the bridge printed in mid-air down to one stud, as far as the height of the opening allows. The editor states the opening and the bridge, and over 40 mm it says the bridge may sag. Tests: 6 unit (the opening judged on the mesh 0.15 mm from its edges, the chamfer at points worked out on paper, the studs out to their edge, the sockets free, 120 frames across the whole range), 3 e2e; mutations 84 / 84 (79 of 83 on the first run; an equivalent one showed a needless 0.01 mm inset, removed from the code). Only the extension package changes (510.8 kB)."
+    },
     "aaefda24719e9446": {
       "ro": "Coliziunea cu mandrina; Zonele inaccesibile; Model înalt din felii; Extrudare; Two Rail / Spin / Turn",
       "en": "Collision with the chuck; Unreachable zones; A tall model from slices; Extrude; Two Rail / Spin / Turn"
@@ -3032,6 +3052,10 @@
     "ac0858ac19654dfe": {
       "ro": "Importul, partea 2: Corel, WMF (+ EMF peste prag), DWG ca mesaj",
       "en": "Import, part 2: Corel, WMF (+ EMF beyond the threshold), DWG as a message"
+    },
+    "ac63c2c95b326853": {
+      "ro": "**Șurubul melc în atelierul Easy 3Draw** (fără mașină; ADR 0284; ultima piesă din 3.Cj; în sesiunea cloud a liniei, pe `wip/3.Xh-biblioteca-ui`; Easy 3Draw 18.32.0). Tipul `melc`, în fila Roți: un șurub pe ax, cu o spiră cu profilul cremalierei de referință a roților de aici (20°, modulul 1, pasul π), deci se prinde cu orice roată dreaptă din atelier, cu axele în cruce, la jumătatea diametrului lui plus jumătate din dinții roții. Diametrul de divizare 8 mm (ca LEGO 4716, măsurat în LDraw: roțile de 8, 24 și 40 de dinți la 1, 2 și 3 știfturi) sau 16 mm (gros); lungimea 1–4 știfturi; gaură de ax. Spira e subțiată pe fiecare flanc (0,1 mm la Ø8, 0,05 mm la Ø16), cât îi mănâncă înclinarea din joc: măsurat pe plase, jocul angrenării e 0,30–0,32 mm pe o parte, ca între două roți, și urmează calibrarea. Editorul scrie cotele și montajul (pe grilă, la jumătatea ei sau în afara ei) și spune că la Ø8 miezul e subțire (0,06 mm între colțul crucii și fundul spirei: piesa o ține spira); „Fă perechea” pune în listă melcul și roata lui. Proba scrisă întâi a prins plasa tăiată pe diagonala lungă (miezul mâncat cu 0,06 mm): `prismaStraturi` are acum opțiunea `elice`. Probele: unitare 8 (profilul spirei pe plasă, angrenarea cu roata motorului pe plase, cu martori, marginile calibrării), e2e 3; otrăvurile 102 / 102 (101 la prima rulare; o probă de browser întărită: roata pereche nu ține de piesă). Doar pachetul extensiei se schimbă (514,4 kB). Cu ea, 3.Cj e încheiată.",
+      "en": "**The worm screw in the Easy 3Draw workshop** (no machine; ADR 0284; the last part of 3.Cj; in the line's cloud session, on `wip/3.Xh-biblioteca-ui`; Easy 3Draw 18.32.0). The `melc` type, in the Wheels tab: a screw on an axle, with a thread that has the profile of the reference rack of the gears made here (20°, module 1, pitch π), so it meshes with any spur gear from the workshop, with crossed axes, at half its diameter plus half the gear's teeth. Pitch diameter 8 mm (like LEGO 4716, measured in LDraw: the 8, 24 and 40-tooth gears at 1, 2 and 3 studs) or 16 mm (thick); length 1–4 studs; axle hole. The thread is thinned on each flank (0.1 mm at Ø8, 0.05 mm at Ø16), by as much as its lead angle eats from the backlash: measured on the meshes, the backlash is 0.30–0.32 mm per side, as between two gears, and follows the calibration. The editor writes the dimensions and the mounting (on the grid, on the half grid or off it) and says that at Ø8 the core is thin (0.06 mm between the corner of the cross hole and the thread root: the thread holds the part together); “Make the pair” adds the worm and its gear to the list. The test written first caught the mesh cut on the long diagonal (the core eaten by 0.06 mm): `prismaStraturi` now has the `elice` option. Tests: 8 unit (the thread profile on the mesh, meshing with the engine's gear on meshes, with controls, the calibration margins), 3 e2e; mutations 102 / 102 (101 on the first run; one browser test strengthened: the mating gear is not part of the piece). Only the extension package changes (514.4 kB). With it, 3.Cj is complete."
     },
     "ac777cee41886503": {
       "ro": "lista de lansare (`BRIEF.md` §8)",
@@ -3184,6 +3208,10 @@
     "b585e6ff16935d58": {
       "ro": "6.V↑–6.V↑c pe test",
       "en": "6.V↑–6.V↑c on test"
+    },
+    "b5fdb759869a8a8a": {
+      "ro": "3.Cj-4 (șurubul melc, ADR 0284)",
+      "en": "3.Cj-4 (the worm screw, ADR 0284)"
     },
     "b626a7057b287086": {
       "ro": "Tăierea și conversia vectorilor",
@@ -4036,6 +4064,10 @@
     "e6935746ddf63115": {
       "ro": "Orice nod își schimbă tipul",
       "en": "Any node changes its type"
+    },
+    "e6ca439f6f767a07": {
+      "ro": "Easy 3Draw 18.31.0 (din Bibliotecă, pe canalul `biblioteca` sau pe adresa principală de test, după publicare): fila Cărămizi → **Cadru / fereastră**. Printează fereastra 1×4×3 dreaptă și ușa 1×4×5 cu colțurile teșite, în picioare. Spune dacă buiandrugul (puntea de 28,6 mm) iese drept sau lăsat, dacă stâlpii de 1,6 mm țin și dacă pragul se prinde pe știfturi ca o placă",
+      "en": "Easy 3Draw 18.31.0 (from the Library, on the `biblioteca` channel or on the main test address, once published): Bricks tab → **Frame / window**. Print the square 1×4×3 window and the 1×4×5 door with chamfered corners, upright. Say whether the lintel (the 28.6 mm bridge) comes out straight or sagging, whether the 1.6 mm posts hold and whether the sill grips the studs like a plate"
     },
     "e6f1a2cda06b6fa9": {
       "ro": "Incrustația cu pereți drepți",

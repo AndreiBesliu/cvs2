@@ -23,20 +23,20 @@ const CHEIE = 'atelier.caramizi.v1';
 /** Familiile, cum le-a ales owner-ul (1b): id-ul filei, numele, piesele galeriei (tipul și numele), în ordine. */
 const FAMILII: readonly (readonly [string, string, readonly (readonly [string, string])[]])[] = [
   ['caramizi', 'Cărămizi', [['caramida', 'Cărămidă / placă'], ['panta', 'Pantă'], ['pantaInversa', 'Pantă inversă'], ['pana', 'Pană / aripă'],
-    ['rotund', 'Rotund / con'], ['arc', 'Arc'], ['lateral', 'Știfturi pe lateral'], ['suport', 'Suport (bracket)'], ['grinda', 'Grindă'], ['caramidaTechnic', 'Cărămidă Technic'],
+    ['rotund', 'Rotund / con'], ['arc', 'Arc'], ['cadru', 'Cadru / fereastră'], ['lateral', 'Știfturi pe lateral'], ['suport', 'Suport (bracket)'], ['grinda', 'Grindă'], ['caramidaTechnic', 'Cărămidă Technic'],
     ['placaTechnic', 'Placă cu găuri']]],
   ['legaturi', 'Legături', [['stiftTechnic', 'Știft'], ['ax', 'Ax'], ['bucsa', 'Bucșă / conector'], ['conector', 'Conector perpendicular'], ['conectorUnghi', 'Conector în unghi'], ['clema', 'Clemă'], ['bara', 'Bară'], ['maner', 'Mâner'],
     ['bila', 'Bilă'], ['cupa', 'Cupă']]],
-  ['roti', 'Roți', [['rotita', 'Roată dințată'], ['cremaliera', 'Cremalieră'], ['cama', 'Camă'], ['conica', 'Roată conică'], ['coroana', 'Roată coroană'], ['conicaDubla', 'Conică dublă'], ['fulie', 'Fulie'],
+  ['roti', 'Roți', [['rotita', 'Roată dințată'], ['cremaliera', 'Cremalieră'], ['melc', 'Șurub melc'], ['cama', 'Camă'], ['conica', 'Roată conică'], ['coroana', 'Roată coroană'], ['conicaDubla', 'Conică dublă'], ['fulie', 'Fulie'],
     ['roata', 'Roată cu anvelopă'], ['senila', 'Șenilă']]],
   ['propulsie', 'Elice', [['elice', 'Elice'], ['eliceBarca', 'Elice de barcă'], ['ventilator', 'Ventilator cu carcasă'], ['roataPalete', 'Roată cu palete']]],
 ];
 /** Titlul editorului fiecărui tip: piesa aleasă își deschide editorul ei („placaTechnic” e o formă gata a cărămizii). */
 const EDITOR: Readonly<Record<string, string>> = {
   caramida: 'Forma, pe grila de știfturi', panta: 'Pantă', pantaInversa: 'Pantă inversă', pana: 'Pană: aripi, colțuri tăiate, vârfuri',
-  rotund: 'Rotund și con', arc: 'Arc', lateral: 'Cărămidă cu știfturi pe lateral', suport: 'Suport (bracket)', grinda: 'Grindă Technic, de orice formă',
+  rotund: 'Rotund și con', arc: 'Arc', cadru: 'Cadru (fereastră)', lateral: 'Cărămidă cu știfturi pe lateral', suport: 'Suport (bracket)', grinda: 'Grindă Technic, de orice formă',
   caramidaTechnic: 'Cărămidă Technic', stiftTechnic: 'Știft Technic', ax: 'Ax Technic', bucsa: 'Bucșă și conector de ax', conector: 'Conector perpendicular', conectorUnghi: 'Conector în unghi', clema: 'Placă cu clemă',
-  bara: 'Bară', maner: 'Placă cu mâner', bila: 'Placă cu bilă', cupa: 'Placă cu cupă', rotita: 'Roată dințată', cremaliera: 'Cremalieră', cama: 'Camă', conica: 'Roată conică',
+  bara: 'Bară', maner: 'Placă cu mâner', bila: 'Placă cu bilă', cupa: 'Placă cu cupă', rotita: 'Roată dințată', cremaliera: 'Cremalieră', melc: 'Șurub melc', cama: 'Camă', conica: 'Roată conică',
   coroana: 'Roată coroană', conicaDubla: 'Conică dublă', fulie: 'Fulie', roata: 'Roată cu anvelopă', senila: 'Șenilă', elice: 'Elice',
   eliceBarca: 'Elice de barcă', ventilator: 'Ventilator cu carcasă', roataPalete: 'Roată cu palete',
 };
@@ -59,7 +59,7 @@ const piesaApasata = (page: Page) => page.locator('#at-galerie [aria-pressed="tr
 
 test('filele: Cărămizi, Legături, Roți (cu câte piese au), apoi Calibrare; sub fiecare, piesele familiei ei, cu editorul lor', async ({ page }) => {
   await deschide(page);
-  await expect(page.locator('#at-tipuri button:visible')).toHaveText(['Cărămizi 11', 'Legături 10', 'Roți 9', 'Elice 4', 'Calibrare']);
+  await expect(page.locator('#at-tipuri button:visible')).toHaveText(['Cărămizi 12', 'Legături 10', 'Roți 10', 'Elice 4', 'Calibrare']);
   // la început: Cărămizi, cu cărămida
   await expect(filaApasata(page)).toHaveAttribute('data-fila', 'caramizi');
   await expect(piesaApasata(page)).toHaveAttribute('data-piesa', 'caramida');
@@ -197,9 +197,9 @@ test('o listă salvată de 18.14.0 se deschide la fel: piesa din editor, acum pe
   await laFelCa18140(page);
   // scrise înapoi la deschidere: aceeași stare, aceeași listă, același model (nimic mutat); singura cheie nouă e starea
   // implicită a tipurilor venite după 18.14.0 (șenila, 3.To; elicea, 3.Tq; elicea de barcă, 3.Tr, cu înclinarea spre pupa
-  // de la 3.Tt; ventilatorul, 3.Ts; conectorul perpendicular, 3.Ca; conectorul în unghi, 3.Cb; cremaliera, 3.Cc; arcul, 3.Cd; cama și roata cu palete, 3.Cj)
+  // de la 3.Tt; ventilatorul, 3.Ts; conectorul perpendicular, 3.Ca; conectorul în unghi, 3.Cb; cremaliera, 3.Cc; arcul, 3.Cd; cama, roata cu palete, cadrul și șurubul melc, 3.Cj)
   const scris = JSON.parse(await page.evaluate((k) => localStorage.getItem(k) ?? 'null', CHEIE)) as typeof stocat;
-  const { senila, elice, eliceBarca, ventilator, conector, conectorUnghi, cremaliera, arc, cama, roataPalete, ...stare } = scris.stare as Record<string, unknown>;
+  const { senila, elice, eliceBarca, ventilator, conector, conectorUnghi, cremaliera, arc, cama, roataPalete, cadru, melc, ...stare } = scris.stare as Record<string, unknown>;
   expect([stare, scris.lista, scris.model]).toEqual([stocat.stare, stocat.lista, stocat.model]);
   expect(senila).toEqual({ piesa: 'zala', gauriStift: 'da', dinti: 10, gaura: 'x', pereche: 10, distanta: 8 });
   expect(elice).toEqual({ palete: 3, diametru: 72, pas: 0.7, latime: 30, forma: 'rot', paleta: 'rasucita', profil: 'placa', sens: 'dreapta', gaura: 'x', con: 'nu' });
@@ -211,6 +211,8 @@ test('o listă salvată de 18.14.0 se deschide la fel: piesa din editor, acum pe
   expect(arc).toEqual({ lung: 4, inalt: 1, bolta: 'inalta' });
   expect(cama).toEqual({ forma: 'excentric', diam: 16, cursa: 8, grosime: 7.8, gaura: 'x' });
   expect(roataPalete).toEqual({ diam: 64, palete: 8, lat: 15.8, forma: 'drepte', disc: 'unul', gaura: 'x' });
+  expect(cadru).toEqual({ lung: 4, inalt: 3, rama: 1.6, colturi: 'drepte' });
+  expect(melc).toEqual({ diam: 8, lung: 2, pereche: 24 });
 });
 
 test('pe claude.ai, lista salvată de 18.14.0 vine din baza artefactului după ce partea 3D a pornit: filele și galeria o urmează', async ({ page }) => {

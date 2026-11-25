@@ -10,8 +10,10 @@ rezervat), cu trei întrebări încă fără răspuns de la owner (recomandăril
 Starea: **3.Ca (conectorul perpendicular, Easy 3Draw 18.24.0) și 3.Cb (conectorul în unghi, axul cu opritor, știftul cu
 bucșă; 18.25.0), unite în `main` cu lotul 28 (`11877a3e`); 3.Cc (cremaliera; 18.26.0) și 3.Cd (arcul; 18.27.0),
 unite în `main` pe 25.11 (`9815527f`); 3.Ce (punctele de prindere și „Se prinde cu”; 18.28.0), unită în `main` pe
-25.11 (`38ff9391`, PR-ul `AndreiBesliu/cvs2#28`); 3.Cj-1 (cama; 18.29.0) și 3.Cj-2 (roata cu palete; 18.30.0) gata pe
-25.11, pe ramură, de unit; urmează restul lui 3.Cj (cadrul, melcul) și, la răspunsurile owner-ului, 3.Tu, apoi 3.Cf.** Versiunea următoare a pachetului: 18.31.0._
+25.11 (`38ff9391`, PR-ul `AndreiBesliu/cvs2#28`); 3.Cj-1 (cama; 18.29.0) și 3.Cj-2 (roata cu palete; 18.30.0), unite
+în `main` pe 25.11 (`e90edd2e`, PR-ul `AndreiBesliu/cvs2#29`); 3.Cj-3 (cadrul; 18.31.0) gata pe 25.11, pe ramură, de
+unit (PR-ul `AndreiBesliu/cvs2#33`); 3.Cj-4 (șurubul melc; 18.32.0) gata pe 25.11, de unit după ea. Cu melcul, 3.Cj e
+încheiată; urmează, la răspunsurile owner-ului, 3.Tu, apoi 3.Cf.** Versiunea următoare a pachetului: 18.33.0._
 
 ## Numerele liniei
 
@@ -35,7 +37,7 @@ unite în `main` pe 25.11 (`9815527f`); 3.Ce (punctele de prindere și „Se pri
 | 3.Cg | Modelul: verificarea (prins, plutește, se ciocnește) | avertisment, nu refuz (răspunsul 2a) |
 | 3.Ch | Construcțiile cu nume și lista lor de piese | |
 | 3.Ci | Construcțiile gata (șasiul, cutia de angrenaje, brațul de macara, barca cu elice) | după Model (răspunsul 3a) |
-| 3.Cj | Melcul, cama și manivela, cadrul, roata cu palete | pe bucăți: 3.Cj-1, cama, și 3.Cj-2, roata cu palete, gata (25.11); urmează cadrul, melcul |
+| 3.Cj | Melcul, cama și manivela, cadrul, roata cu palete | pe bucăți: 3.Cj-1, cama, 3.Cj-2, roata cu palete, 3.Cj-3, cadrul, și 3.Cj-4, șurubul melc: gata (25.11) |
 | 3.Ck | Balamaua și placa turnantă | despărțite de 3.Cd; după ce owner-ul încearcă primele piese pe imprimantă |
 
 ## 3.Ca, gata (24.11, în cloud): conectorul perpendicular
@@ -72,8 +74,8 @@ unite în `main` pe 25.11 (`9815527f`); 3.Ce (punctele de prindere și „Se pri
   roții pereche: de ea ține înălțimea piesei).
 - **Probele:** `test/unit/trenulet.cremaliera.test.ts` (cu angrenarea pe plase: `patrundere`), 
   `test/e2e/trenulet.cremaliera.spec.ts`; otrăvurile, `test/otravuri/3.Cc.py`.
-- **Melcul** vine în 3.Cj: de hotărât întâi diametrul de divizare (8 mm, pe grila LEGO, cu miezul subțire, sau 16 mm) și
-  cum se tipărește; proba lui de angrenare se scrie ca a cremalierei (roata motorului, pe plase).
+- **Melcul** a venit în 3.Cj-4 (mai jos), cu amândouă diametrele de divizare (8 mm, pe grila LEGO, cu miezul subțire, și
+  16 mm) și cu proba de angrenare pe plase, ca a cremalierei.
 
 ## 3.Cd, gata (25.11, în cloud): arcul
 
@@ -128,9 +130,64 @@ unite în `main` pe 25.11 (`9815527f`); 3.Ce (punctele de prindere și „Se pri
   `curbate`), `disc` (`unul`, `fara`), `gaura` (`x`, `r`).
 - **Probele:** `test/unit/trenulet.palete.test.ts` (`peCerc`: bucățile de lemn de pe un cerc din jurul axului, câte
   sunt și cât ține cea mai lată), `test/e2e/trenulet.palete.spec.ts`; otrăvurile, `test/otravuri/3.Cj-2.py`.
-- **Ce urmează în 3.Cj:** cadrul (cărămida cu gol), apoi melcul.
+- **Ce urmează în 3.Cj:** cadrul (gata, mai jos), apoi melcul.
+
+## 3.Cj-3, gata (25.11, în cloud): cadrul (fereastra)
+
+- **Unde e:** motorul, `cadruCote` și `cadru` (după `arc`), cu `Lego.cadruCote` pentru atelier; atelierul:
+  `stare.cadru`, `FAMILII` (Cărămizi), `PICTOGRAME`, `numeDef`, `defCurenta`, `CADRE` (mărimile uzuale), editorul
+  (`t === "cadru"`, câmpurile `at-cad-…`).
+- **Datele piesei:** `lung` (2–8), `inalt` (2–6 cărămizi), `rama` (1,2–4 mm), `colturi` (`drepte`, `tesite`; în piesă
+  doar când sunt teșite).
+- **Probele:** `test/unit/trenulet.cadru.test.ts` (`hartie`: golul, teșitura și puntea pe hârtie),
+  `test/e2e/trenulet.cadru.spec.ts`; otrăvurile, `test/otravuri/3.Cj-3.py`.
+- **Ce urmează în 3.Cj:** melcul (gata, mai jos).
+
+## 3.Cj-4, gata (25.11, în cloud): șurubul melc
+
+- **Unde e:** motorul, `melcCote` și `melc` (după `cama`), cu `Lego.melcCote` și `Lego.melcMontaj` pentru atelier;
+  `prismaStraturi` are opțiunea `elice` (fețele pe diagonala scurtă, pentru straturi rotite); atelierul: `stare.melc`
+  (cu `pereche`, roata editorului), `FAMILII` (Roți, după cremalieră), `PICTOGRAME`, `numeDef`, `defCurenta` (scoate
+  `pereche`), editorul (`t === "melc"`, câmpurile `at-mlc-…`), `adaugaPerecheMelc`.
+- **Datele piesei:** `diam` (8 sau 16, diametrul de divizare), `lung` (1–4 știfturi). Modulul e 1 (pasul π), fix.
+- **De ce subțierea:** spira e înclinată, dinții roții sunt drepți; fără ea, jocul pe o parte scade de la 0,30 la 0,21
+  (Ø8) și 0,26 (Ø16). Cu 0,1 și 0,05 mm pe flanc, măsurat pe plase: 0,30–0,32. Un diametru nou își măsoară subțierea
+  lui (studiul: `patrundere` din proba unitară, cu jocul căutat prin înjumătățire).
+- **Probele:** `test/unit/trenulet.melc.test.ts` (`hartie`: profilul spirei; `patrundere`: roata motorului față de
+  melc, pe plase, cu faza dată de locul de pe axul melcului), `test/e2e/trenulet.melc.spec.ts`; otrăvurile,
+  `test/otravuri/3.Cj-4.py`.
+- **LDraw 4716** (măsurat cu `scripts/ldraw/plat.py` și `sectiune.py`): Ø10,16 / Ø5,6, pasul 3,2 mm, spira pe dreapta.
+- **3.Cj e încheiată.** Rămân din ADR 0284: 3.Cf–3.Ci (Modelul ca asamblare, la răspunsurile lui 3.Tu) și 3.Ck
+  (balamaua, placa turnantă: după ce owner-ul tipărește bila și cupa).
 
 ## Reguli și capcane (de la 3.Ca–3.Cj)
+
+- **O felie care mută o ancoră a unei liste mai vechi de otrăvuri aduce lista la zi în aceeași felie** (cererea sesiunii
+  principale din 25.11, după auditul liniei elicelor). La capăt: `python3 -X utf8 scripts/otravuri.py <lista> verifica`
+  pe listele vecine (cele care otrăvesc `lego.ts` și `atelier.ts`), comparat cu `main`; o ancoră devenită dublă (o piesă
+  nouă a copiat rândul) se lungește cu rândul de dinainte, una schimbată se rescrie, iar otrava re-ancorată se rulează
+  din nou. Pe 25.11: 23 re-ancorate (6 mutate de cadru și de melc, 17 rămase de la 3.Cb–3.Cj-2), toate prinse; listele
+  3.Ca–3.Cj-4 n-au nicio otravă fără țintă. **Neatinse:** cele 22 ale elicelor (3.Tq, 3.Tr, 3.Ts; auditul din
+  `audit-elice.md`, la cuvântul owner-ului) și cele din listele mai vechi ale pluginului (3.Tb–3.Tp, 3.Xd).
+- **Straturi rotite unul față de altul (o elice) se leagă pe diagonala scurtă:** `prismaStraturi(…, true)`. Cu
+  diagonala cealaltă, fiecare triunghi se întinde pe două laturi, iar săgeata lui e de patru ori mai mare: melcul Ø16
+  ieșea cu miezul mâncat cu 0,06 mm, cu plasa închisă și cutia bună. A prins-o o probă care întreabă lemnul la 0,05 mm
+  sub fundul spirei, pe tot conturul.
+- **O piesă care se prinde cu alta, dar nu e tăiată din ea, își măsoară jocul pe plase înainte să fie scrisă:** melcul
+  are spira înclinată, roata are dinții drepți; pe hârtie (în planul de mijloc) jocul e cel al cremalierei, dar spre
+  marginile roții scade. Subțierea spirei vine din măsurătoare (`patrundere`, cu jocul căutat prin înjumătățire), nu
+  dintr-o formulă.
+- **Valorile unui `seg` sunt texte:** `seg(id, [["8", …], ["16", …]], String(q.diam))`. Cu numere, butonul ales nu se
+  vede apăsat (`String(cur) === v` compară un text cu un număr).
+- **Numele fișierului STL scoate semnele:** „Șurub melc Ø8, lung 2” dă `surub_melc_8_lung_2.stl` (fără „Ø”).
+- **O retragere „de siguranță” se probează, nu se presupune:** cadrul își retrăgea stâlpii cu 0,01 mm față de fețele
+  pragului, „ca două corpuri să nu-și împartă muchii”. Otrava care scotea retragerea n-a fost prinsă de nimic: muchiile
+  nu coincideau nici fără ea (au alte capete), iar două fețe suprapuse în același plan, cu aceeași normală, nu se văd.
+  Retragerea a ieșit din cod. Muchiile se împart doar când au aceleași două capete (cazul arcului, la piciorul bolții).
+- **Un câmp `sus` exista deja ca număr (rândurile de sus ale pantei):** opțiunea cadrului se numește `colturi`. Înainte de
+  un câmp nou al unei piese, se caută numele în `Def` (atelier): un nume cu alt tip acolo nu trece de tipuri.
+- **O probă de „stă la locul lui” întreabă marginile, nu centrul:** știfturile mutate cu 1 mm treceau, fiindcă proba
+  întreba doar centrul știftului; acum întreabă la 0,2 mm înăuntrul și în afara marginii, în cele patru părți.
 
 - **Numără pe plasă ce ai cerut:** proba roții cu palete numără paletele pe un cerc din jurul axului. Așa s-a văzut că
   paleta curbată, prelungită înapoi „până intră în butuc”, ocolea butucul roților mici și ieșea de partea cealaltă: 8
