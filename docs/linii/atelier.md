@@ -13,9 +13,10 @@ unite în `main` pe 25.11 (`9815527f`); 3.Ce (punctele de prindere și „Se pri
 25.11 (`38ff9391`, PR-ul `AndreiBesliu/cvs2#28`); 3.Cj-1 (cama; 18.29.0) și 3.Cj-2 (roata cu palete; 18.30.0), unite
 în `main` pe 25.11 (`e90edd2e`, PR-ul `AndreiBesliu/cvs2#29`); 3.Cj-3 (cadrul; 18.31.0) și 3.Cj-4 (șurubul melc;
 18.32.0), unite în `main` pe 25.11 (`36559b49`, PR-ul `AndreiBesliu/cvs2#33`). Cu melcul, 3.Cj e încheiată. 3.Tu
-(piesele rotunde pe același ax în „Modelul”; 18.33.0), gata pe ramură pe 25.11, neunită. Urmează 3.Cf (Modelul:
-orientarea pe trei axe și alipirea la prinderi); 3.Ck așteaptă tipărirea bilei și a cupei.** Versiunea următoare a
-pachetului: 18.34.0._
+(piesele rotunde pe același ax în „Modelul”; 18.33.0), unită în `main` pe 25.11 (`f5cf10c8`, PR-ul
+`AndreiBesliu/cvs2#45`). 3.Cf-1 (alipirea la prinderi, cu piesele legate; 18.34.0), gata pe ramură pe 25.11, neunită
+(PR-ul `AndreiBesliu/cvs2#46`). Urmează 3.Cf-2 (orientarea pe trei axe, pozițiile la jumătate de pas); 3.Ck așteaptă
+tipărirea bilei și a cupei.** Versiunea următoare a pachetului: 18.35.0._
 
 ## Numerele liniei
 
@@ -35,7 +36,7 @@ pachetului: 18.34.0._
 | 3.Cd | Arcul | gata (25.11) |
 | 3.Ce | Punctele de prindere și „Se prinde cu” | gata (25.11) |
 | 3.Tu | Modelul: piesele rotunde pe același ax (ADR 0283) | gata (25.11); acceptată de owner cu 1a, 2a, 3a |
-| 3.Cf | Modelul: orientarea pe trei axe și alipirea la prinderi | urmează |
+| 3.Cf | Modelul: orientarea pe trei axe și alipirea la prinderi | 3.Cf-1 (alipirea, cu piesele legate), gata (25.11); 3.Cf-2 (orientarea pe trei axe, jumătățile de pas), urmează |
 | 3.Cg | Modelul: verificarea (prins, plutește, se ciocnește) | avertisment, nu refuz (răspunsul 2a) |
 | 3.Ch | Construcțiile cu nume și lista lor de piese | |
 | 3.Ci | Construcțiile gata (șasiul, cutia de angrenaje, brațul de macara, barca cu elice) | după Model (răspunsul 3a) |
@@ -180,7 +181,45 @@ pachetului: 18.34.0._
 - **Ce n-a intrat:** „Fă ventilatorul” nu pune perechea și în model (propunerea din auditul elicelor); pașii de jumătate
   de știft (3.Cf); verificarea prinderii (3.Cg).
 
+## 3.Cf-1, gata (25.11, în cloud): alipirea la prinderi în „Modelul”
+
+- **Răspunsurile owner-ului** (25.11, la cele trei întrebări puse înaintea codului): întâi alipirea; prinderea se alege
+  din puncte în vederea 3D (cu lista alături); **piesa alipită urmează baza** (nu era recomandarea).
+- **Ce face:** piesa aleasă își arată prinderile (puncte și numere, pe feluri); una aleasă e ținta; „Alipește în model”
+  pune piesa următoare cu prinderea ei pe țintă și o leagă de bază. Piesa prinsă: „Altă prindere”, „Alt loc pe bază”,
+  „Rotește ↻”, „Glisează −/+” (doar pe o tijă), „Desprinde”. Desprinsă: pe grilă, dacă stă drept pe ea; altfel liberă.
+- **Datele:** `InModel.prins` (`de`, `a`, `b`, `unghi`, `alunec`) și `InModel.liber` (`m`, `t`); x, y, z, rot rămân, ca
+  loc de rezervă. Felul unei piese (pe grilă, prinsă, liberă) îl spune motorul (`Lego.rezolvaModel`), nu prezența
+  câmpurilor: o legătură stricată lasă piesa „pe grilă”. Atelierul întreabă `asezari()`.
+- **Unde e:** motorul, secțiunea „alipirea in model (ADR 0284, 3.Cf)”; atelierul, de la `asezari` la `puneInModel`
+  (`lasaPeLoc`, `scoateM`, `tintaBuna`, `alegeTinta`, `punctePrinderi`, `inlocuiesteM`).
+- **Scena:** fiecare plasă (mutată în origine, nemutată în pivot ca la 3.Tu) e pusă cu `applyMatrix4`; punctele stau în
+  `v3.puncte`, în afara lui `v3.grup`, deci mărimea modelului nu le vede. Tipurile three.js folosite se declară în
+  `globale.d.ts` (`Trei`).
+- **Probele:** `test/unit/trenulet.alipire.test.ts` (15) și `test/e2e/trenulet.alipire.spec.ts` (7); otrăvurile,
+  `test/otravuri/3.Cf-1.py` (132: motorul 53 / 53, cu 49 la prima rulare; atelierul 75 / 75; textele 4 / 4) și
+  `3.Cf-1-en.py` (13 / 13). Listele lui 3.Tu au fost aduse la zi (scena nu mai mută plasa în pivot: otrăvurile ei sunt
+  acum pe apelul `Lego.transfGrila` din `asezari`); cele 30 mutate, rulate din nou, toate prinse.
+- **Ce n-a intrat:** orientarea de mână și jumătățile de pas (3.Cf-2); verificarea (3.Cg); „Fă perechea” și construcțiile
+  gata nu pun încă piese legate în model.
+
 ## Reguli și capcane (de la 3.Ca–3.Cj)
+
+- **`addInitScript` rulează la fiecare încărcare:** o probă care pune stocarea așa și apoi reîncarcă pagina primește
+  iar stocarea de la început. Proba redeschiderii pornește fără stocare dată.
+- **O mărime la marginea rotunjirii nu se cere exact:** colțul unui ax de Ø4,75 cade la 1,625, iar la două zecimale
+  iese 1,62 sau 1,63 după ultimul bit. Proba cere una din două (`1,6[23]`) sau alege o piesă cu cote rotunde.
+- **Un punct din vederea 3D se atinge în mijlocul pânzei:** camera țintește mijlocul cutiei modelului, deci o piesă
+  singură al cărei punct e lângă mijlocul cutiei ei (placa 1 × 1: știftul, la 0,65 mm) îl are în mijlocul pânzei.
+- **Listele de otrăvuri ale pluginului pun `E2E_BUILD = False`** (docs/otravuri.md): spec-urile își fac pagina și
+  pachetul din surse, deci o otravă ține ~40 s, nu ~2 min.
+- **Proba unitară nu verifică tipurile** (motorul e încărcat cu tipurile șterse): `npm run typecheck` după fiecare
+  schimbare a motorului.
+- **Amprenta pachetului se înregistrează din nou după orice schimbare a surselor.** Pentru o versiune încă neunită,
+  `biblioteca.ts --scrie` cere o versiune nouă („conținutul s-a schimbat, versiunea nu”): se pun la loc `versiune` și
+  `continut` din `main` în `extensii/biblioteca.json`, apoi `--scrie` înregistrează aceeași versiune cu amprenta nouă.
+- **O felie care schimbă scena sau editorul modelului mută ancorele listelor mai vechi** (3.Cf-1 a mutat 30 din
+  `3.Tu.py` și `3.Tu-en.py`): `verifica` pe toate listele, comparat cu `main`, apoi ancorele aduse la zi și rulate din nou.
 
 - **O piesă rotundă nouă a motorului intră în `ROTUNDE` (`lego.ts`) și în tabelul `ROTUNDE` al probei
   `trenulet.model.test.ts`, cu amprenta și locul axului pe hârtie;** una care nu e rotundă, în `DREPTE` (proba cere

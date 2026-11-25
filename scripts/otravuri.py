@@ -4,7 +4,10 @@ O listă de otrăvuri e un fișier Python (de exemplu `test/otravuri/2.3c-b.py`)
   O        lista otrăvurilor: dict(id, fis, vechi, nou, set, ce); `vechi` apare EXACT o dată în `fis` (\\n se potrivește și
            pe CRLF), altfel otrava e VOID; `set` e numele setului de teste care trebuie s-o prindă;
   SETURI   dict nume -> fișiere de test (`node --test`); „NUME2” e a doua șansă, mai largă, a setului NUME;
-  E2E      (opțional) spec-urile Playwright pentru setul „e2e” (build înainte de fiecare otravă).
+  E2E      (opțional) spec-urile Playwright pentru setul „e2e” (build înainte de fiecare otravă);
+  E2E_BUILD (opțional) False: fără build înaintea fiecărei otrăvi. Doar pentru spec-uri care își fac singure, din surse,
+           tot ce otrăvește lista (pagina de sine stătătoare și pachetul planificatorului, din `extensii/trenulet/`):
+           build-ul aplicației nu le schimbă. `dist/` trebuie să existe (îl servește configul); lipsă, se face o dată.
 
 Folosire, din rădăcina unei CLONE în afara Drive-ului (Drive-ul a înviat mutații restaurate; `docs/otravuri.md`),
 cu PYTHONIOENCODING=utf-8:
@@ -87,10 +90,13 @@ def ruleaza_unitare(fisiere, termen):
     return dict(rc=rc, rez='fail=%s pass=%s' % (m_f.group(1) if m_f else None, m_p.group(1) if m_p else None), dt=dt, expirat=expirat, rosii=rosii)
 
 
-def ruleaza_e2e(specuri, termen):
+def ruleaza_e2e(specuri, termen, build=True):
     # Build-ul și Playwright pornesc direct cu node: npm e stricat pe mașina asta (Git Bash), iar cu el build-ul cădea la
     # încărcare, raportat „PRINSĂ” (4.6↑a, 02.11). Un build căzut sau un port ocupat nu prind nimic: otrava e NEVALIDĂ.
-    rcb, outb, dtb, _ = sh(['node', 'node_modules/vite/bin/vite.js', 'build'], 600)
+    # Fără build (`E2E_BUILD = False` în listă): doar când `dist/` există deja; altfel se face, ca să aibă configul ce servi.
+    rcb, outb, dtb = 0, '', 0.0
+    if build or not os.path.exists(os.path.join(RAD, 'dist', 'index.html')):
+        rcb, outb, dtb, _ = sh(['node', 'node_modules/vite/bin/vite.js', 'build'], 600)
     if rcb != 0:
         return dict(rc=rcb, rez='build eșuat', dt=dtb, expirat=False, nevalida=True, rosii=[outb[-300:].replace('\n', ' ')])
     # Configul local (`.tmp/pw.config.ts`) servește `dist/` cu node; cel din repo cheamă `npm run preview`.
@@ -154,7 +160,7 @@ def main():
     O, SETURI = lista.O, getattr(lista, 'SETURI', {})
     gaseste = lambda id: next(y for y in O if y['id'] == id)  # noqa: E731
     unitare = lambda fisiere, termen: (lambda: ruleaza_unitare(fisiere, termen))  # noqa: E731
-    e2e = lambda: ruleaza_e2e(getattr(lista, 'E2E', []), 1800)  # noqa: E731
+    e2e = lambda: ruleaza_e2e(getattr(lista, 'E2E', []), 1800, getattr(lista, 'E2E_BUILD', True))  # noqa: E731
     if cmd == 'verifica':
         for i, x in enumerate(O):
             _, ot = pregateste(x)
