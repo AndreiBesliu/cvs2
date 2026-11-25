@@ -72,6 +72,8 @@ var Atelier3D = (function () {
     // roata dințată (ADR 0169); `pereche` (dinții roții a doua) e doar a editorului, nu a piesei
     rotita: { dinti: 24, fel: "drepti", unghi: 20, sens: "dreapta", grosime: 3.8, gaura: "x", modul: 1, pereche: 24 },
     cremaliera: { lung: 4, modul: 1, prindere: "stifturi", roata: 8 },
+    // șurubul melc (ADR 0284, felia 3.Cj): Ø8 (ca LEGO), de 2 știfturi; `pereche` (dinții roții) e doar a editorului
+    melc: { diam: 8, lung: 2, pereche: 24 },
     // cama (ADR 0284, felia 3.Cj): excentricul Ø16 (diametrul de bază) cu cursa de 8 mm, gros cât o grindă, cu gaură de ax
     cama: { forma: "excentric", diam: 16, cursa: 8, grosime: 7.8, gaura: "x" },
     // roata cu anvelopă (ADR 0280): dintr-o bucată (implicit, fără TPU), doar janta sau doar anvelopa (din TPU)
@@ -113,7 +115,7 @@ var Atelier3D = (function () {
     ["caramizi", "Cărămizi", [["caramida", "Cărămidă / placă"], ["panta", "Pantă"], ["pantaInversa", "Pantă inversă"], ["pana", "Pană / aripă"], ["rotund", "Rotund / con"], ["arc", "Arc"], ["cadru", "Cadru / fereastră"],
       ["lateral", "Știfturi pe lateral"], ["suport", "Suport (bracket)"], ["grinda", "Grindă"], ["caramidaTechnic", "Cărămidă Technic"], ["placaTechnic", "Placă cu găuri"]]],
     ["legaturi", "Legături", [["stiftTechnic", "Știft"], ["ax", "Ax"], ["bucsa", "Bucșă / conector"], ["conector", "Conector perpendicular"], ["conectorUnghi", "Conector în unghi"], ["clema", "Clemă"], ["bara", "Bară"], ["maner", "Mâner"], ["bila", "Bilă"], ["cupa", "Cupă"]]],
-    ["roti", "Roți", [["rotita", "Roată dințată"], ["cremaliera", "Cremalieră"], ["cama", "Camă"], ["conica", "Roată conică"], ["coroana", "Roată coroană"], ["conicaDubla", "Conică dublă"], ["fulie", "Fulie"], ["roata", "Roată cu anvelopă"], ["senila", "Șenilă"]]],
+    ["roti", "Roți", [["rotita", "Roată dințată"], ["cremaliera", "Cremalieră"], ["melc", "Șurub melc"], ["cama", "Camă"], ["conica", "Roată conică"], ["coroana", "Roată coroană"], ["conicaDubla", "Conică dublă"], ["fulie", "Fulie"], ["roata", "Roată cu anvelopă"], ["senila", "Șenilă"]]],
     ["propulsie", "Elice", [["elice", "Elice"], ["eliceBarca", "Elice de barcă"], ["ventilator", "Ventilator cu carcasă"], ["roataPalete", "Roată cu palete"]]]
   ];
   /** Familia fiecărei piese din galerii. */
@@ -152,6 +154,7 @@ var Atelier3D = (function () {
     rotita: `<path d="M10.2 4.6L10.5 1.6L13.5 1.6L13.8 4.6L16 5.5L18.3 3.6L20.4 5.7L18.5 8L19.4 10.2L22.4 10.5L22.4 13.5L19.4 13.8L18.5 16L20.4 18.3L18.3 20.4L16 18.5L13.8 19.4L13.5 22.4L10.5 22.4L10.2 19.4L8 18.5L5.7 20.4L3.6 18.3L5.5 16L4.6 13.8L1.6 13.5L1.6 10.5L4.6 10.2L5.5 8L3.6 5.7L5.7 3.6L8 5.5z"/><path d="M12 9.6v4.8M9.6 12h4.8"/>`,
     cama: `<path d="M8 4.2a7.9 7.9 0 0 0 0 15.6l9.6-3.3a4.8 4.8 0 0 0 0-9z"/><path d="M8 10v4M6 12h4"/>`,
     cremaliera: `<path d="M2.5 18.5h19v-5.5h-1.6l-1.2-3.6h-1.6l-1.2 3.6h-1.4l-1.2-3.6h-1.6l-1.2 3.6h-1.4l-1.2-3.6H6.3l-1.2 3.6H2.5z"/><path d="M6 16h.01M12 16h.01M18 16h.01"/>`,
+    melc: `<path d="M4.5 8h15v8h-15z"/><path d="M6.4 16l2.4-8M10.2 16l2.4-8M14 16l2.4-8M17.8 16l1.7-5.6M4.5 13.6L6.2 8"/><path d="M1.5 12h3M19.5 12h3"/>`,
     conica: `<path d="M3.5 16.5h17L17 8.5H7zM9 16.5V20h6v-3.5"/><path d="M7 8.5l1-2 1.6 2 1.6-2 1.6 2 1.6-2 1.6 2 1-2 1 2"/>`,
     coroana: `<path d="M3 13.5V9.5h3v4h3v-4h3v4h3v-4h3v4h3v-4M3 13.5h18v5H3z"/>`,
     conicaDubla: `<path d="M7 4h10l3.5 6.5v3L17 20H7l-3.5-6.5v-3zM3.5 10.5h17M3.5 13.5h17M7 10.5v3M10 10.5v3M14 10.5v3M17 10.5v3"/>`,
@@ -274,6 +277,7 @@ var Atelier3D = (function () {
       const q = Lego.cremalieraMontaj(d);
       return tr`Cremalieră 1×${q.lung}, roata de ${q.z}` + (q.prindere === "gauri" ? tr(", cu găuri") : "") + (q.m === 1 ? "" : tr`, modul ${fmt(q.m)}`);
     }
+    if (d.tip === "melc") { const q = Lego.melcCote(d); return tr`Șurub melc Ø${q.diam}, lung ${q.lung}`; }
     if (d.tip === "cama") {
       // forma, diametrul de bază și cursa; apoi ce nu e obișnuit: grosimea, gaura rotundă
       const q = Lego.camaCote(d), f = q.forma === "para" ? tr("Camă pară") : q.forma === "melc" ? tr("Camă melc") : tr("Camă excentrică");
@@ -436,6 +440,7 @@ var Atelier3D = (function () {
     if (t === "dinCvs2") { delete p.deschise; delete p.refuz; }
     if (t === "arc") { const q = Lego.arcCote(p); p.lung = q.lung; p.inalt = q.inalt; if (q.bolta === "joasa") p.bolta = "joasa"; else delete p.bolta; }
     if (t === "cadru") { const q = Lego.cadruCote(p); p.lung = q.lung; p.inalt = q.inalt; p.rama = q.rama; if (q.colturi === "tesite") p.colturi = "tesite"; else delete p.colturi; }
+    if (t === "melc") { const q = Lego.melcCote(p); p.diam = q.diam; p.lung = q.lung; delete p.pereche; }
     if (t === "cama") { const q = Lego.camaCote(p); p.forma = q.forma; p.diam = q.diam; p.cursa = q.cursa; p.grosime = q.grosime; p.gaura = q.gaura; }
     if (t === "roataPalete") { const q = Lego.roataPaleteCote(p); p.diam = q.diam; p.palete = q.palete; p.lat = q.lat; p.forma = q.forma; p.disc = q.disc; p.gaura = q.gaura; }
     if (t === "cremaliera") { const q = Lego.cremalieraMontaj(p); p.lung = q.lung; p.roata = q.z; p.prindere = q.prindere; if (q.m === 1) delete p.modul; else p.modul = q.m; }
@@ -981,6 +986,29 @@ var Atelier3D = (function () {
       camp("#at-crm-modul", 0.5, 3, v => { p.modul = Math.round(v * 10) / 10; });
       $("#at-crm-prindere").onclick = ev => { const b = (ev.target as Element).closest<HTMLElement>("[data-v]"); if (!b) return; p.prindere = b.dataset.v!; editor(); schimbat(); };
       $("#at-crm-fa-pereche").onclick = adaugaPerecheCremaliera;
+    } else if (t === "melc") {
+      // șurubul melc (ADR 0284, felia 3.Cj): diametrul, lungimea și roata pereche (a editorului); cotele și montajul, în
+      // cuvinte; perechea în listă
+      const p = stare.melc, q = Lego.melcCote(p), m = Lego.melcMontaj(p, p.pereche), pasi = m.distanta / 8;
+      const unde = m.grila === "intreg" ? (pasi === 1 ? tr("pe grila de știfturi, la un știft") : tr`pe grila de știfturi, la ${pasi} știfturi`)
+        : m.grila === "jumatate" ? tr`la jumătatea grilei, la ${fmt(pasi)} știfturi` : tr("în afara grilei de știfturi (pe grilă cad roțile cu dinții din 8 în 8)");
+      const subtire = q.perete < 0.8 ? " " + tr`Între colțurile găurii de ax și fundul spirei rămân doar ${fmt(q.perete, 2)} mm: piesa o ține spira. Pentru sarcină, alege Ø16.` : "";
+      e.innerHTML = `<h2>Șurub melc</h2>
+        <p class="mic">Un șurub pe ax, care întoarce o roată dințată de aici cu un dinte la fiecare tură: o demultiplicare mare într-un loc mic, cu axele în cruce. Roata nu poate întoarce melcul, deci mecanismul rămâne unde l-ai lăsat. Spira are pasul și profilul dinților de aici (modulul 1, 20°), cu jocul din calibrare. Se tipărește în picioare; flancul de jos al spirei stă în consolă, la 70° de verticală: tipărește-l cu straturi subțiri sau cu suport.</p>
+        <div class="at-rand"><span class="mic">Diametrul:</span>${seg("at-mlc-diam", [["8", "Ø8 (ca LEGO)"], ["16", "Ø16 (gros)"]], String(q.diam))}</div>
+        <div class="at-campuri">
+          <label for="at-mlc-lung">Lungime (știfturi)<input id="at-mlc-lung" type="number" min="1" max="4" step="1" value="${q.lung}"></label>
+          <label for="at-mlc-pereche">Roata pereche (dinți)<input id="at-mlc-pereche" type="number" min="8" max="80" step="1" value="${m.dinti}"></label>
+        </div>
+        <div class="at-rand"><span class="mic" id="at-mlc-info">${tr`Are Ø${fmt(q.varf)} la vârf, Ø${fmt(q.fund)} la fundul spirei și ${fmt(q.lungime)} mm lungime: ${fmt(q.spire)} spire, cu pasul de ${fmt(q.pas, 2)} mm.`}${subtire}</span></div>
+        <div class="at-rand"><span class="mic" id="at-mlc-montaj">${tr`Axul roții de ${m.dinti} stă la ${fmt(m.distanta)} mm de axul melcului, în cruce cu el: ${unde}. La o tură a melcului, roata înaintează cu un dinte: raportul e ${m.dinti} : 1.`}</span></div>
+        <div class="at-rand"><button class="btn" type="button" id="at-mlc-fa-pereche">Fă perechea</button><span class="mic">${tr("pune în listă melcul și roata lui")}</span></div>`;
+      // un număr din afara marginilor nu e primit: câmpul se întoarce la valoarea de dinainte
+      $("#at-mlc-diam").onclick = ev => { const b = (ev.target as Element).closest<HTMLElement>("[data-v]"); if (!b) return; p.diam = +b.dataset.v!; editor(); schimbat(); };
+      $("#at-mlc-lung").onchange = ev => { const v = +(ev.target as HTMLInputElement).value; if (v >= 1 && v <= 4) { p.lung = Math.round(v); schimbat(); } editor(); };
+      // roata pereche nu schimbă piesa: doar montajul scris și ce pune „Fă perechea”
+      $("#at-mlc-pereche").onchange = ev => { const v = +(ev.target as HTMLInputElement).value; if (v >= 8 && v <= 80) p.pereche = Math.round(v); editor(); };
+      $("#at-mlc-fa-pereche").onclick = adaugaPerecheMelc;
     } else if (t === "cama") {
       // cama (ADR 0284, felia 3.Cj): forma, diametrul de bază, cursa, grosimea și gaura; razele, în cuvinte
       const p = stare.cama, q = Lego.camaCote(p);
@@ -2212,6 +2240,14 @@ var Atelier3D = (function () {
     pune(d, n); pune(roata, n);
     salveaza(); randeazaLista();
     toast(tr`${n} × cremaliera 1×${q.lung} și roata de ${q.z} în listă (axul roții la ${fmt(q.axa)} mm deasupra feței de jos).`);
+  }
+  function adaugaPerecheMelc() {
+    // melcul de acum și roata lui pereche: o roată dreaptă cu modulul 1, cum o face editorul roților (3,8 mm, gaură de ax)
+    laZi();
+    const d = defCurenta(), n = bucatiCerute(), m = Lego.melcMontaj(d, stare.melc.pereche), roata: Def = { tip: "rotita", dinti: m.dinti, fel: "drepti", grosime: 3.8, gaura: "x" };
+    pune(d, n); pune(roata, n);
+    salveaza(); randeazaLista();
+    toast(tr`${n} × melcul Ø${d.diam} și roata de ${m.dinti} în listă (axele la ${fmt(m.distanta)} mm, în cruce).`);
   }
   function adaugaPereche() {
     // aripile vin in perechi: aceeasi pana, taiata o data stanga si o data dreapta

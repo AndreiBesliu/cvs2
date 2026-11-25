@@ -1766,6 +1766,48 @@ var Lego = (function (glob: typeof globalThis) {
     return { tri: prismaGauri(conturCama(q.forma, q.R0, q.c), [g], 0, q.h), avert: q.avert, prinderi: prinderiButuc(q.gaura, q.h) };
   }
 
+  // ---------------------------------------------------------------------------------------------- șurubul melc (ADR 0284, 3.Cj)
+  // Șurubul melc, în picioare pe pat (axa pe z, prin origine): un miez pe ax, cu o spiră (un singur început, pe dreapta:
+  // urcă în sens trigonometric). Într-un plan care trece prin ax, spira are profilul cremalierei de referință a roților de
+  // aici (`profilRoata`: 20°, capul 1, piciorul 1,25, pasul π, adică modulul 1): în planul de mijloc al roții pereche,
+  // melcul e chiar cremaliera cu care motorul taie roțile, deci se prinde cu orice roată dreaptă de aici, cu axul roții la
+  // diam / 2 + z / 2 de axul lui; la o tură a melcului, roata înaintează cu un dinte.
+  // - diametrul de divizare: 8 mm (ca LEGO 4716: roțile de 8, 24 și 40 de dinți la 1, 2 și 3 știfturi) sau 16 mm (gros);
+  // - spira e înclinată (7,1° la Ø8, 3,6° la Ø16), iar dinții roții sunt drepți: spre marginile roții, spira ar mânca din
+  //   joc. De aceea e subțiată, pe fiecare flanc, cu 0,1 mm la Ø8 și cu 0,05 mm la Ø16 (măsurat pe plase: jocul rămâne cel
+  //   dintre două roți, 2 · jocul dinților);
+  // - gaura de ax, în cruce, prin toată lungimea. La Ø8, între colțul crucii și fundul spirei rămân 0,06 mm: miezul e
+  //   patru coloane, între brațele crucii, legate de spiră. La Ø16 rămân 4 mm.
+  type MelcDef = { diam?: unknown; lung?: unknown };
+  function melcCote(d: MelcDef) {
+    const e = ef(), avert: string[] = [];
+    const diam = numarCerut(d.diam) === 16 ? 16 : 8, c = numarCerut(d.lung), r = Math.round(Number.isFinite(c) ? c : 2), lung = Math.min(4, Math.max(1, r));
+    if (lung !== r) avert.push(tr`Un șurub melc are între 1 și 4 știfturi lungime: l-am făcut de ${lung}.`);
+    const rw = diam / 2, sub = diam === 16 ? 0.05 : 0.1, rf = rw - 1.25;
+    return { diam, lung, rw, ra: rw + 1, rf, Lz: zecime(P.pas * lung - 2 * P.joc_lateral), sub, t: Math.PI / 2 - 2 * (e.jocDinti + sub),
+      perete: rf - Math.hypot(e.axGauraD / 2, e.axGauraLat / 2), avert };
+  }
+  function melc(d: MelcDef): Corp {
+    const e = ef(), q = melcCote(d), pas = Math.PI, tg = Math.tan(20 * Math.PI / 180);
+    // secțiunea de-a latul axului, după unghiul u față de mijlocul spirei: vârful (raza ra) cât |u| ≤ a1, flancurile până la
+    // a2 (raza scade liniar cu unghiul, o spirală a lui Arhimede: liniile dintre puncte sunt exacte la capete), apoi fundul
+    const n = laturiFine(q.ra), pasU = 2 * Math.PI / n, a1 = 2 * Math.PI * (q.t / 2 - tg) / pas, a2 = 2 * Math.PI * (q.t / 2 + 1.25 * tg) / pas;
+    const sect: P2[] = [];
+    const bucata = (u0: number, u1: number, r0: number, r1: number, par = false) => {
+      let k = Math.max(1, Math.ceil((u1 - u0) / pasU - 1e-9));
+      if (par && k % 2) k++;
+      for (let i = 0; i < k; i++) sect.push([u0 + (u1 - u0) * i / k, r0 + (r1 - r0) * i / k]);
+    };
+    // vârful, cu un număr par de laturi: mijlocul lui e un punct, deci din sfert în sfert de tură cade chiar pe o axă
+    bucata(-a1, a1, q.ra, q.ra, true); bucata(a1, a2, q.ra, q.rf); bucata(a2, 2 * Math.PI - a2, q.rf, q.rf); bucata(2 * Math.PI - a2, 2 * Math.PI - a1, q.rf, q.ra);
+    // straturile: n pe o tură, fiecare rotit cu 2π / n față de cel de dedesubt (punctele urcă pe elice), plus capătul
+    const dz = pas / n, straturi: { z: number; p: P2[] }[] = [];
+    const strat = (z: number) => { const f = 2 * Math.PI * z / pas; straturi.push({ z, p: sect.map(([u, r]): P2 => [r * Math.cos(f + u), r * Math.sin(f + u)]) }); };
+    for (let k = 0; k * dz < q.Lz - 1e-6; k++) strat(k * dz);
+    strat(q.Lz);
+    return { tri: prismaStraturi(straturi, [cruce(0, 0, e.axGauraD, e.axGauraLat)], true), avert: q.avert, prinderi: prinderiButuc("x", q.Lz) };
+  }
+
   // ---------------------------------------------------------------------------------------------- roata cu palete (ADR 0284, 3.Cj)
   // Roata cu palete, culcată pe pat (axa pe z, prin origine; prima paletă pe +x): butucul roților, paletele pornite din
   // el, egal depărtate, până la diametrul cerut, și, la alegere, un disc pe fața de jos, care le ține. Paletele sunt pereți
@@ -2090,9 +2132,11 @@ var Lego = (function (glob: typeof globalThis) {
     const rh = razaGauraButuc("x") + CONICA.peretButuc, ctg = 1 / Math.tan(delta), zp = CONICA.spate * m;
     return { z, z2, m, delta, rp, rh, zp, zA: zp + rp * ctg, R: rp / Math.sin(delta) };
   }
-  function prismaStraturi(straturi: readonly { z: number; p: readonly P2[] }[], gauri: readonly Poli[]): Tri[] {
+  function prismaStraturi(straturi: readonly { z: number; p: readonly P2[] }[], gauri: readonly Poli[], elice = false): Tri[] {
     // ca prismaRasucita, cu fiecare strat dat (aceleași puncte, în aceeași ordine, trigonometric, la înălțimi crescătoare);
-    // găurile, drepte, de la primul strat la ultimul
+    // găurile, drepte, de la primul strat la ultimul. `elice`: fiecare strat e rotit în sens trigonometric față de cel de
+    // dedesubt, cu cam o latură (șurubul melc): fețele se taie pe cealaltă diagonală, cea aproape verticală, ca niciun
+    // triunghi să nu se întindă pe două laturi (săgeata lui ar fi de patru ori mai mare)
     const G = gauri.map(g => curataPoli(trig(g)).reverse()), p3 = (p: Pt, z: number): P3 => [p[0], p[1], z], tri: Tri[] = [];
     const capac = (S: readonly P2[], z: number, sus: boolean) => {
       const pts: P2[] = [...S], idx: number[] = [];
@@ -2110,7 +2154,8 @@ var Lego = (function (glob: typeof globalThis) {
       const A = straturi[i - 1]!, B = straturi[i]!;
       for (let k = 0; k < A.p.length; k++) {
         const k1 = (k + 1) % A.p.length;
-        tri.push([p3(A.p[k]!, A.z), p3(A.p[k1]!, A.z), p3(B.p[k1]!, B.z)], [p3(A.p[k]!, A.z), p3(B.p[k1]!, B.z), p3(B.p[k]!, B.z)]);
+        if (elice) tri.push([p3(A.p[k]!, A.z), p3(A.p[k1]!, A.z), p3(B.p[k]!, B.z)], [p3(A.p[k1]!, A.z), p3(B.p[k1]!, B.z), p3(B.p[k]!, B.z)]);
+        else tri.push([p3(A.p[k]!, A.z), p3(A.p[k1]!, A.z), p3(B.p[k1]!, B.z)], [p3(A.p[k]!, A.z), p3(B.p[k1]!, B.z), p3(B.p[k]!, B.z)]);
       }
     }
     capac(straturi[straturi.length - 1]!.p, z1, true);
@@ -2840,7 +2885,7 @@ var Lego = (function (glob: typeof globalThis) {
   }
 
   // ---------------------------------------------------------------------------------------------- piesa dupa definitie
-  const TIPURI = { caramida, lateral, panta, pantaInversa, pana, rotund, arc, cadru, grinda, caramidaTechnic, ax, stiftTechnic, bucsa, conector, conectorUnghi, suport, clema, maner, bara, bila, cupa, rotita, cremaliera, cama, roata, fulie, conica, coroana, conicaDubla, senila, elice, eliceBarca, ventilator, roataPalete, dinCvs2 };
+  const TIPURI = { caramida, lateral, panta, pantaInversa, pana, rotund, arc, cadru, grinda, caramidaTechnic, ax, stiftTechnic, bucsa, conector, conectorUnghi, suport, clema, maner, bara, bila, cupa, rotita, cremaliera, cama, melc, roata, fulie, conica, coroana, conicaDubla, senila, elice, eliceBarca, ventilator, roataPalete, dinCvs2 };
   function construieste(def: DefPiesa) {
     const f = TIPURI[def.tip];
     if (!f) throw new Error("tip necunoscut: " + def.tip);
@@ -2941,6 +2986,17 @@ var Lego = (function (glob: typeof globalThis) {
     roataPaleteCote: (d: PaleteDef) => { const q = roataPaleteCote(d); return { diam: q.D, palete: q.n, lat: q.W, forma: q.forma, disc: q.disc, gaura: q.gaura, butuc: q.rh, grosime: q.t, lungime: q.c, sageata: q.sageata, discGros: PALETE.disc, incap: q.incap }; },
     // cama (ADR 0284): cotele din parametri, după margini: forma, diametrul de bază, cursa, grosimea, raza cea mai mică și cea mai mare
     camaCote: (d: CamaDef) => { const q = camaCote(d); return { forma: q.forma, diam: q.D, cursa: q.c, grosime: q.h, gaura: q.gaura, razaMica: q.R0, razaMare: q.R0 + q.c }; },
+    // șurubul melc (ADR 0284): cotele din parametri, după margini: lungimea, pasul și numărul spirelor, unghiul spirei,
+    // diametrul la vârf și la fund, cât rămâne între colțul crucii și fundul spirei, cu cât e subțiată spira pe un flanc și
+    // cât e de groasă pe linia de divizare
+    melcCote: (d: MelcDef) => { const q = melcCote(d); return { diam: q.diam, lung: q.lung, lungime: q.Lz, pas: Math.PI, spire: q.Lz / Math.PI, unghi: Math.atan(1 / q.diam) * 180 / Math.PI, varf: 2 * q.ra, fund: 2 * q.rf, perete: q.perete, subtiere: q.sub, grosime: q.t }; },
+    // melcul cu o roată dreaptă de aici (8–80 de dinți, modulul 1): distanța dintre axe (axele sunt perpendiculare, în
+    // plane paralele), dacă distanța cade pe grila de știfturi (8 mm), la jumătate de știft (4 mm) sau în afara ei, și câte
+    // ture face melcul la o tură a roții
+    melcMontaj: (d: MelcDef, z: unknown) => {
+      const q = melcCote(d), c = numarCerut(z), dinti = Math.round(Math.min(80, Math.max(8, Number.isFinite(c) ? c : 24))), distanta = q.rw + dinti / 2;
+      return { dinti, distanta, grila: distanta % P.pas === 0 ? "intreg" : distanta % (P.pas / 2) === 0 ? "jumatate" : "nu", raport: dinti };
+    },
     // cremaliera (ADR 0284): cotele din parametri: câți dinți încap, cu câte trepte e ridicat axul roții pereche (plăci, la
     // prinderea pe știfturi; rânduri de găuri, la cea cu găuri), înălțimea liniei de divizare și a axului roții deasupra feței
     // de jos, cât înaintează cremaliera la o rotație a roții, înălțimea piesei
