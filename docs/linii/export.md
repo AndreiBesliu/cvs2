@@ -72,6 +72,9 @@ vreau ca ficare setare sa fie insotita de o ilustratie sugestiva, ca sa ajute us
   lotul 23; ciocnirile au fost doar în traducerile roadmap-ului (27 de chei noi ale liniei) și în catalogul controalelor
   (scris din nou). După unire, sesiunea liniei se poate arhiva, iar ramura `wip/28.8-export` de pe `origin` intră în lista de
   șters a owner-ului.
+- **25.11: auditul ferestrei,** la cererea owner-ului, prin sesiunea principală, înaintea arhivării: `audit-export.md` (21 de
+  constatări, cele mai importante întâi, feliile propuse 28.8↑h–m și nouă întrebări). Două nepotriviri între desen și
+  program, spuse imediat sesiunii principale: trecerile cu supracursa prin foaie și găurirea cu elice. Doar documente.
 
 ## Ce s-a găsit (23.11)
 
