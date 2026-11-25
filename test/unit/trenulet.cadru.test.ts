@@ -124,13 +124,19 @@ test('știfturile pe toată lungimea și locașurile pragului: prinderile, la lo
     assert.deepEqual(pr.filter((c) => c.fel === 'stift'), Array.from({ length: lung }, (_, k) => ({ fel: 'stift', p: [r3(S * k + S / 2 - 0.1), 3.9, r3(h.H)], d: [0, 0, 1], lung: STIFT, orb: false })), ce);
     assert.deepEqual(pr.filter((c) => c.fel === 'locas'), Array.from({ length: lung }, (_, k) => ({ fel: 'locas', p: [r3(S * k + S / 2 - 0.1), 3.9, 0], d: [0, 0, -1], lung: r3(PLACA - P.sus!), orb: true })), ce);
     assert.equal(pr.length, 2 * lung, ce);
-    // pe plasă: știftul e lemn, între știfturi e gol; sub prag, în dreptul unui știft, e gol până la capac
+    // pe plasă: știftul e lemn până la marginea lui (în cele patru părți), între știfturi e gol; sub prag, în dreptul
+    // unui știft, e gol până sub capac (stâlpii și buiandrugul nu coboară în locașuri)
+    const r = L.efective().stiftD! / 2;
     for (let k = 0; k < lung; k++) {
-      const x = S * k + S / 2 - 0.1;
+      const x = S * k + S / 2 - 0.1, zm = h.H + STIFT / 2;
       assert.equal(la(p, x, 3.9, h.H + STIFT - 0.3), true, `${ce}: știftul ${k}`);
       assert.equal(la(p, x, 3.9, h.H + STIFT + 0.2), false, `${ce}: peste știftul ${k}`);
+      for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]] as const) {
+        assert.equal(la(p, x + dx * (r - 0.2), 3.9 + dy * (r - 0.2), zm), true, `${ce}: marginea știftului ${k}, spre ${dx}, ${dy}`);
+        assert.equal(la(p, x + dx * (r + 0.2), 3.9 + dy * (r + 0.2), zm), false, `${ce}: lângă știftul ${k}, spre ${dx}, ${dy}`);
+      }
       if (k) assert.equal(la(p, x - S / 2, 3.9, h.H + 0.5), false, `${ce}: între știfturile ${k - 1} și ${k}`);
-      assert.equal(la(p, x, 3.9, 1), false, `${ce}: locașul ${k}`);
+      for (const z of [0.5, 1, 2]) assert.equal(la(p, x, 3.9, z), false, `${ce}: locașul ${k}, la z ${z}`);
     }
   }
 });
@@ -145,6 +151,9 @@ test('marginile: 2–8 știfturi, 2–6 cărămizi, rama 1,2–4 mm; ce iese din
   assert.equal(cadru({ lung: 2, inalt: 2, rama: 1.2 }).avert.length, 0);
   assert.equal(cadru({ lung: 8, inalt: 6, rama: 4 }).avert.length, 0);
   assert.equal(cadru({ lung: 4.4 }).avert.length, 0);
+  // rama cu sutimi, în margini: rotunjită la zecimi, fără mesaj
+  assert.equal(cadru({ rama: 2.06 }).avert.length, 0);
+  assert.equal(Lc.cadruCote({ rama: 2.06 }).rama, 2.1);
   assert.equal(cadru({ lung: 1 }).avert.length, 1);
   assert.match(cadru({ lung: 1 }).avert[0]!, /2 și 8/);
   assert.match(cadru({ inalt: 9 }).avert[0]!, /2 și 6/);

@@ -659,9 +659,9 @@ var Lego = (function (glob: typeof globalThis) {
   // Cadrul (fereastra; ADR 0284, felia 3.Cj): o cărămidă 1 × n, înaltă de 2–6 cărămizi, cu un gol prin ea. Jos, pragul: o
   // placă obișnuită (goală pe dedesubt, deci stă pe știfturi); pe margini, doi stâlpi groși cât rama; sus, buiandrugul: o
   // placă plină, cu știfturi pe toată lungimea. Stâlpii și buiandrugul sunt un singur corp (profilul (x, z) cu golul,
-  // întins pe adâncime), retras cu 0,01 mm față de fețele pragului (două corpuri nu-și împart muchii) și intrat 0,3 mm în
-  // capacul lui. Golul e drept sau cu colțurile de sus teșite la 45°: teșitura scurtează puntea (ce se tipărește în aer)
-  // până la un știft, cât îi lasă înălțimea golului fără 2 mm (cât rămâne stâlpul drept).
+  // întins pe adâncime), la fața pragului și intrat 0,3 mm în capacul lui (de 1 mm: locașurile de dedesubt rămân libere).
+  // Golul e drept sau cu colțurile de sus teșite la 45°: teșitura scurtează puntea (ce se tipărește în aer) până la un
+  // știft, cât îi lasă înălțimea golului fără 2 mm (cât rămâne stâlpul drept).
   type CadruDef = { lung?: unknown; inalt?: unknown; rama?: unknown; colturi?: unknown };
   function cadruCote(d: CadruDef) {
     const avert: string[] = [];
@@ -683,9 +683,9 @@ var Lego = (function (glob: typeof globalThis) {
     const prag = caramida({ celule: Array.from({ length: q.n }, (_, i): Celula => [i, 0]), placi: 1, stifturi: false });
     tri.push(...prag.tri);
     // stâlpii și buiandrugul: profilul (x, z) cu golul, întins pe adâncime
-    const x0 = j0 + 0.01, x1 = s * q.n - j0 - 0.01, zj = P.placa, zs = q.H - P.placa, xa = j0 + q.rama, xb = s * q.n - j0 - q.rama;
+    const x0 = j0, x1 = s * q.n - j0, zj = P.placa, zs = q.H - P.placa, xa = j0 + q.rama, xb = s * q.n - j0 - q.rama;
     const gol: Poli = q.k > 1e-9 ? [[xa, zj], [xb, zj], [xb, zs - q.k], [xb - q.k, zs], [xa + q.k, zs], [xa, zs - q.k]] : [[xa, zj], [xb, zj], [xb, zs], [xa, zs]];
-    tri.push(...axe(prismaGauri([[x0, zj - 0.3], [x1, zj - 0.3], [x1, q.H], [x0, q.H]], [gol], j0 + 0.01, s - j0 - 0.01), ([u, v, w]) => [u, w, v], true));
+    tri.push(...axe(prismaGauri([[x0, zj - 0.3], [x1, zj - 0.3], [x1, q.H], [x0, q.H]], [gol], j0, s - j0), ([u, v, w]) => [u, w, v], true));
     // știfturile, pe toată lungimea
     tri.push(...stifturi(Array.from({ length: q.n }, (_, k): P2 => [s * k + s / 2, s / 2]), q.H, e.stiftD));
     // prinderile: locașurile pragului și știfturile de pe buiandrug

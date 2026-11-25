@@ -52,23 +52,26 @@ o('B01', LG, PR, PR.replace('placi: 1,', 'placi: 2,'), 'cadru', 'pragul are dou�
 o('B02', LG, PR, PR.replace('stifturi: false', 'stifturi: true'), 'cadru', 'pragul are știfturi (în gol)')
 o('B03', LG, PR, PR.replace('length: q.n }', 'length: q.n - 1 }'), 'cadru', 'pragul e mai scurt cu un știft')
 o('B04', LG, PR, PR.replace("placi: 1, stifturi: false", "placi: 1, stifturi: false, fund: \"locasuri\""), 'cadru', 'pragul e plin, cu locașuri rotunde (nu o placă obișnuită)')
-XX = 'const x0 = j0 + 0.01, x1 = s * q.n - j0 - 0.01, zj = P.placa, zs = q.H - P.placa, xa = j0 + q.rama, xb = s * q.n - j0 - q.rama;'
+XX = 'const x0 = j0, x1 = s * q.n - j0, zj = P.placa, zs = q.H - P.placa, xa = j0 + q.rama, xb = s * q.n - j0 - q.rama;'
 o('B05', LG, XX, XX.replace('zj = P.placa,', 'zj = P.placa + 1,'), 'cadru', 'golul începe la 1 mm peste prag')
 o('B06', LG, XX, XX.replace('zs = q.H - P.placa,', 'zs = q.H - P.placa - 1,'), 'cadru', 'buiandrugul e mai gros cu 1 mm')
 o('B07', LG, XX, XX.replace('xa = j0 + q.rama,', 'xa = j0 + q.rama + 0.5,'), 'cadru', 'stâlpul din stânga e mai gros cu 0,5 mm')
 o('B08', LG, XX, XX.replace('xb = s * q.n - j0 - q.rama;', 'xb = s * q.n - j0 - q.rama + 0.5;'), 'cadru', 'stâlpul din dreapta e mai subțire cu 0,5 mm')
-o('B09', LG, XX, XX.replace('x0 = j0 + 0.01,', 'x0 = j0,'), 'cadru', 'stâlpul își împarte muchia cu pragul (STL-ul iese cu muchii fără pereche)')
-o('B10', LG, XX, XX.replace('x1 = s * q.n - j0 - 0.01,', 'x1 = s * q.n - j0 + 0.5,'), 'cadru', 'cadrul iese din lungimea lui')
+# (B09 de la prima rulare scotea o retragere de 0,01 mm a stâlpilor față de fețele pragului: echivalentă, fiindcă muchiile
+# celor două corpuri nu coincid nici fără ea; retragerea a ieșit din cod, iar otrava e acum alta)
+o('B09', LG, XX, XX.replace('x0 = j0,', 'x0 = j0 + 0.5,'), 'cadru', 'stâlpul din stânga nu ajunge la fața piesei')
+o('B10', LG, XX, XX.replace('x1 = s * q.n - j0,', 'x1 = s * q.n - j0 + 0.5,'), 'cadru', 'cadrul iese din lungimea lui')
 GO = 'const gol: Poli = q.k > 1e-9 ? [[xa, zj], [xb, zj], [xb, zs - q.k], [xb - q.k, zs], [xa + q.k, zs], [xa, zs - q.k]] : [[xa, zj], [xb, zj], [xb, zs], [xa, zs]];'
 o('B11', LG, GO, GO.replace('[xb - q.k, zs], [xa + q.k, zs],', '[xb - q.k, zs], [xa, zs],').replace(', [xa, zs - q.k]] :', ']] :'), 'cadru', 'doar colțul din dreapta e teșit')
 o('B12', LG, GO, GO.replace('q.k > 1e-9 ?', 'q.k > 1e9 ?'), 'cadru', 'golul e mereu dreptunghi')
 o('B13', LG, GO, GO.replace('[xb, zs - q.k], [xb - q.k, zs], [xa + q.k, zs], [xa, zs - q.k]]', '[xb, zs - q.k / 2], [xb - q.k, zs], [xa + q.k, zs], [xa, zs - q.k / 2]]'), 'cadru', 'teșitura coboară doar pe jumătate (nu e la 45°)')
-CO = 'tri.push(...axe(prismaGauri([[x0, zj - 0.3], [x1, zj - 0.3], [x1, q.H], [x0, q.H]], [gol], j0 + 0.01, s - j0 - 0.01), ([u, v, w]) => [u, w, v], true));'
+CO = 'tri.push(...axe(prismaGauri([[x0, zj - 0.3], [x1, zj - 0.3], [x1, q.H], [x0, q.H]], [gol], j0, s - j0), ([u, v, w]) => [u, w, v], true));'
 o('B14', LG, CO, CO.replace('[[x0, zj - 0.3], [x1, zj - 0.3],', '[[x0, zj + 0.3], [x1, zj + 0.3],'), 'cadru', 'stâlpii nu ajung la prag (plutesc)')
 o('B15', LG, CO, CO.replace('[x1, q.H], [x0, q.H]]', '[x1, q.H - 1], [x0, q.H - 1]]'), 'cadru', 'buiandrugul e mai jos cu 1 mm (știfturile plutesc)')
-o('B16', LG, CO, CO.replace('[gol], j0 + 0.01, s - j0 - 0.01)', '[gol], j0 + 0.01, s / 2)'), 'cadru', 'stâlpii și buiandrugul au doar jumătate din adâncime')
-o('B17', LG, CO, CO.replace('[gol], j0 + 0.01,', '[], j0 + 0.01,'), 'cadru', 'cadrul n-are gol')
-o('B18', LG, CO, CO.replace('s - j0 - 0.01)', 's - j0 + 0.5)'), 'cadru', 'cadrul iese din adâncimea lui')
+o('B16', LG, CO, CO.replace('[gol], j0, s - j0)', '[gol], j0, s / 2)'), 'cadru', 'stâlpii și buiandrugul au doar jumătate din adâncime')
+o('B17', LG, CO, CO.replace('[gol], j0,', '[], j0,'), 'cadru', 'cadrul n-are gol')
+o('B18', LG, CO, CO.replace('s - j0)', 's - j0 + 0.5)'), 'cadru', 'cadrul iese din adâncimea lui')
+o('B22', LG, CO, CO.replace('[[x0, zj - 0.3], [x1, zj - 0.3],', '[[x0, zj - 1.5], [x1, zj - 1.5],'), 'cadru', 'stâlpii coboară prin capacul pragului, în locașuri')
 SF = 'tri.push(...stifturi(Array.from({ length: q.n }, (_, k): P2 => [s * k + s / 2, s / 2]), q.H, e.stiftD));\n    // prinderile: locașurile pragului și știfturile de pe buiandrug'
 o('B19', LG, SF, SF.replace('length: q.n }', 'length: q.n - 1 }'), 'cadru', 'lipsește ultimul știft')
 o('B20', LG, SF, SF.replace('[s * k + s / 2, s / 2]', '[s * k + s / 2 + 1, s / 2]'), 'cadru', 'știfturile sunt mutate cu 1 mm')
