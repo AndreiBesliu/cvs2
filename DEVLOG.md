@@ -14411,7 +14411,7 @@ ce se poate”
 
 **Prompt:** mesajul sesiunii principale, cu cuvântul owner-ului („am resetat limita saptamanale. azi este miercuri.” și
 „vreau sa pornesti si celelalte sub-sesiuni”): „Așteptai cuvântul lui pentru 18.1↑b […]: acesta e. Pornește 18.1↑b.”
-**Started:** 25.11, 09:35. **Completed:** 25.11, 10:35.
+**Started:** 25.11, 09:35. **Completed:** 25.11, 10:55.
 
 - **`main` adus** (`f2678300`, fără ciocniri), apoi **proba întâi** (`test/unit/relief.model.test.ts`): compusul calculat
   dală cu dală e exact compusul întreg redus cu k, ca desenul de pe planșă; o dală schimbată se cere, se citește din bază și
@@ -14424,6 +14424,9 @@ ce se poate”
 - **Mărimea:** pornirea +0 (111,2; cu ușa și cu Atelierul 116,5 / 120), totalul 880,9 → 884,8 / 900 kB; nicio bucată nouă.
 - **Probele:** unitare (`relief.model`, `cote.lipire`), e2e `relief3d.spec.ts` (3) și cele vechi ale vederii 3D și ale
   reliefului (16), manualul; otrăvurile 22 / 22 (`test/otravuri/18.1b.py`).
+- **`main` adus din nou** (`caddd661`, plafoanele 1 000 / 125 kB, ADR 0146; ciocnirea doar în DEVLOG). Porțile, în CI, pe
+  `3214f4da`: rapidul verde; completul 45572436393 verde (unit 10 452 / 0, 12 sărite; e2e 833 / 833; funcțiile pe emulatoare
+  136 / 136; paginile 59 / 59); pornirea 111,1 / 125 (cu ușa 116,1, cu Atelierul 116,4), totalul 884,8 / 1 000 kB.
 
 ## 2026-11-25 — Sesiunea principală în cloud: lotul 30 (atelierul Easy 3Draw: punctele de prindere), pe test; liniile, repornite (Model: Claude Fable 5.2)
 
