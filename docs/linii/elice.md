@@ -31,6 +31,9 @@ bibliotecii (ramura `wip/3.Xh-biblioteca-ui`), care pornește și linia nouă a 
 
 ### 3.Tu, propusă: piesele rotunde pe același ax în „Modelul”
 
+**Făcută pe 25.11 de linia atelierului** (ADR 0283, acceptat de owner cu 1a, 2a, 3a; Easy 3Draw 18.33.0): vezi
+[atelier.md](atelier.md), „3.Tu, gata”. Ce urmează e analiza de la predare, păstrată ca istorie.
+
 Owner-ul, 24.11 (spus sesiunii principale, cu o captură a filei Elice, vederea „Modelul”): „vad ca nu se pot aseza centrat
 carcasa si elicea de acelasi diametru in model”. În captură: carcasa Ø48 cu 2 urechi la x 0, y 0, z 0, rotorul Ø48 cu 7
 palete la 2, 1, 3; rotorul stă vizibil pe lângă mijlocul inelului.

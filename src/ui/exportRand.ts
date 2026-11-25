@@ -257,6 +257,67 @@ export function cuValorileNoi(p: Rand, unde: UndeFreza, f: FrezaOferita, text: (
   return { [camp]: lista.map((r, i) => (i === unde.k ? { ...r, diametru: d, origine } : r)) };
 }
 
+/**
+ * Copia unei freze de pe rând, de pus înapoi în bibliotecă (ADR 0300 §5, felia 16.A↑b-6): id-ul și versiunea originii,
+ * numele, T-ul, diametrul, forma, valorile de lucru și tăișul, plus pasul pe trecere al rândului și pasul lateral al locului
+ * ei (mm; null: de necitit sau fără pas lateral). Aplicația face din ea freza bibliotecii.
+ */
+export type CopieRand = {
+  readonly id: string; readonly rev: number; readonly nume: string; readonly numar: number; readonly diametru: number;
+  readonly forma?: FormaRand;
+  readonly regim?: { readonly turatie: number; readonly avans: number; readonly plonjare: number };
+  readonly tais?: number;
+  readonly pas: number | null; readonly pasLateral: number | null;
+};
+
+/**
+ * Cum s-a încheiat „Pune-o înapoi în bibliotecă” (felia 16.A↑b-6): freza pusă înapoi, ca o oferă aplicația, sau motivul
+ * refuzului (biblioteca plină, a unei versiuni mai noi, valorile în afara marginilor ei, id-ul încă acolo, o scriere căzută).
+ */
+export type RezultatInapoi =
+  | { readonly ok: true; readonly freza: FrezaOferita }
+  | { readonly ok: false; readonly motiv: 'plina' | 'versiune' | 'valori' | 'exista' | 'eroare' };
+
+/** Copia frezei de pe locul `unde` al rândului; null fără origine, pe un loc care nu e pe rând sau cu T-ul ori Ø de necitit. */
+export function copieDeReadus(p: Rand, unde: UndeFreza): CopieRand | null {
+  const loc = locuriFreze(p).find((l) => acelasiLoc(l.unde, unde));
+  const o = loc?.origine;
+  if (!loc || !o) return null;
+  const numarText = unde === 'scula' ? p.numarScula : unde === 'fund' ? p.numarSculaFund : unde === 'dop' ? p.numarSculaDop
+    : unde === 'banda' ? p.numarSculaBanda : (unde.rest === 'fund' ? p.restFund : unde.rest === 'dop' ? p.restDop : p.rest)[unde.k]?.numar;
+  const pasLateralText = unde === 'scula' ? (p.tip === 'buzunar' ? p.pasLateral : null) : unde === 'fund' ? p.pasLateralFund
+    : unde === 'dop' ? p.pasLateralDop : unde === 'banda' ? null
+      : (unde.rest === 'fund' ? p.restFund : unde.rest === 'dop' ? p.restDop : p.rest)[unde.k]?.pas ?? null;
+  const numar = numarText === undefined ? null : citesteNumar(numarText), diametru = citesteNumar(loc.diametru);
+  if (numar === null || diametru === null) return null;
+  return {
+    id: o.biblioteca.id, rev: o.biblioteca.rev, nume: o.nume, numar, diametru, ...(loc.forma ? { forma: loc.forma } : {}),
+    ...(o.regim ? { regim: o.regim } : {}), ...(o.tais !== undefined ? { tais: o.tais } : {}),
+    pas: citesteNumar(p.pas), pasLateral: pasLateralText === null ? null : citesteNumar(pasLateralText),
+  };
+}
+
+/**
+ * Rândurile după ce freza ștearsă a locului `unde` de pe rândul `cheie` a fost pusă înapoi ca `f` (ADR 0300 §5, felia
+ * 16.A↑b-6): locul acela ia freza pusă înapoi (numele, poate liber, și versiunea ei); celelalte locuri ale ferestrei cu aceeași
+ * origine o iau doar dacă diferă de ea cel mult prin nume (aceeași copie). Restul își păstrează copia, cu nota lor.
+ */
+export function cuFrezaPusaInapoi(
+  param: Readonly<Record<string, Rand>>, cheie: string, unde: UndeFreza, f: FrezaOferita, text: (x: number) => string = String,
+): Record<string, Rand> {
+  const nou: Record<string, Rand> = { ...param };
+  for (const [k, p] of Object.entries(param)) {
+    let r = p;
+    for (const l of locuriFreze(p)) {
+      if (l.origine?.biblioteca.id !== f.id) continue;
+      const aici = k === cheie && acelasiLoc(l.unde, unde);
+      if (aici || diferenteFreza(l, f).every((d) => d.camp === 'nume')) r = { ...r, ...cuValorileNoi(r, l.unde, f, text) };
+    }
+    nou[k] = r;
+  }
+  return nou;
+}
+
 /** Frezele oferite unei freze de rest (ADR 0093): doar cele mai mici decât freza dinainte (`dinainte`, ca text); de necitit, toate. */
 export function oferitePentruRest(oferite: readonly FrezaOferita[], dinainte: string): readonly FrezaOferita[] {
   const d0 = citesteNumar(dinainte);

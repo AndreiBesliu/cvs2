@@ -6,11 +6,17 @@ import { esteCaleDeschisa, type Document, type Operatie } from '../model/documen
 import { grupeazaPeScula, taieturiFoaie, type ElementLume } from '../model/lume.ts';
 import { conturElement, esteContur } from '../model/forme.ts';
 import { DialogExport } from '../ui/DialogExport.tsx';
-import type { CerereExport, FrezaOferita, FrezaRestOperatie, OperatieExport, OrigineFreza, Rand, StareExport } from '../ui/exportRand.ts';
+import type {
+  CerereExport, CopieRand, FrezaOferita, FrezaRestOperatie, OperatieExport, OrigineFreza, Rand, RezultatInapoi, StareExport,
+} from '../ui/exportRand.ts';
 import { frezePotrivite, pasLateralDin, sculaDinBiblioteca } from '../model/alegereFreza.ts';
-import { areCam, type FrezaSalvata } from '../model/freza.ts';
+import { areCam, frezaDinCopie, type FrezaSalvata } from '../model/freza.ts';
 import type { FrezaRest, Scula } from '../model/document.ts';
-import { useBibliotecaProiect } from './bibliotecaProiect.ts';
+import { useBibliotecaProiectCuCheie } from './bibliotecaProiect.ts';
+import type { Config } from './config.ts';
+import { useContTinut } from './dreptCont.ts';
+import { CHEIE_LOCALA, frezeMele } from './frezeMele.ts';
+import { trimiteSchimbarea } from './frezeSincronizare.ts';
 import { cuprinse } from '../model/ordine.ts';
 import { numePlacutei, placuteCuTextIesit } from '../model/placuteIesire.ts';
 import { iesireTextTinuta } from './iesireTextTinuta.ts';
@@ -84,6 +90,8 @@ type Props = {
    * pune pânza în modul urechilor.
    */
   readonly onAlegeUrechi?: (a: { readonly piesa: string; readonly operatie: string; readonly numar: number; readonly latime: number; readonly grosime: number }) => void;
+  /** Configurația aplicației: „Pune-o înapoi în bibliotecă” trimite freza în cont (ADR 0300 §5, felia 16.A↑b-6); null = doar aici. */
+  readonly config?: Config | null;
 };
 
 /** Plăcuțele foii `k` (toate foile, fără el) cu textul ieșit, cu numele lor și confirmarea aleasă în fereastra CSV; altfel nimic. */
@@ -96,6 +104,7 @@ function placuteIesite(d: Document, k?: number): { readonly nume: readonly strin
 export function ExportConectat({
   doc, dupaIdLume, lume, descriere, limba, baza, doarCitire, stare, onExporta, onInchide, onReseteaza, setariMasina, onSetariMasina,
   supracursa, onSupracursa, prinFoaie, onPrinFoaie, onDeschideInMasina, trimite, foaie, numeFoaie, toate, onRaport, onAlegeUrechi,
+  config = null,
 }: Props) {
   /**
    * Dialogul de export arată operațiile pieselor de pe foaie (ADR 0025): câte un rând pe operație, cu descrierea primului
@@ -232,7 +241,8 @@ export function ExportConectat({
    * Frezele din „Frezele mele” care merg pe tăietura unui rând (ADR 0300 §4, felia 16.A↑b-3): copia fiecăreia cu T-ul ei
    * preferat (fereastra îl schimbă după celelalte freze), originea, pasul și pasul lateral.
    */
-  const biblioteca = useBibliotecaProiect();
+  const { stare: biblioteca, cheie: cheieBiblioteca } = useBibliotecaProiectCuCheie();
+  const uid = useContTinut()?.uid ?? null;
   /** O freză din bibliotecă, cum o primește fereastra (ADR 0300 §4): copia ei, cu originea, pasul și pasul lateral. */
   const oferita = (f: FrezaSalvata): FrezaOferita => {
     const s = sculaDinBiblioteca(f, f.numar);
@@ -259,6 +269,23 @@ export function ExportConectat({
   // Toată biblioteca cu CAM (ADR 0300 §5, felia 16.A↑b-4), pentru nota „s-a schimbat în bibliotecă” și recunoașterea; null cât
   // nu e citită (fereastra nu spune „nu mai e în bibliotecă” înainte să știe).
   const bibliotecaToata = useMemo(() => (biblioteca.incarcata ? biblioteca.freze.filter((f) => areCam(f.fel)).map(oferita) : null), [biblioteca]);
+  /**
+   * „Pune-o înapoi în bibliotecă” (ADR 0300 §5, felia 16.A↑b-6): freza din copia de pe rând, în biblioteca proiectului, cu
+   * id-ul ei de dinainte și o versiune nouă; în biblioteca unui cont pleacă și în cont (fără dreptul de scriere, rămâne aici,
+   * ca orice schimbare). Cu id-ul încă acolo (pusă la loc în altă filă), biblioteca se citește din nou și nota se reface.
+   */
+  const puneInapoi = async (c: CopieRand): Promise<RezultatInapoi> => {
+    const b = frezeMele(cheieBiblioteca);
+    const r = await b.puneInapoi(c.id, c.rev + 1, frezaDinCopie(c));
+    if (r.ok) {
+      if (cheieBiblioteca !== CHEIE_LOCALA && uid !== null && config !== null) trimiteSchimbarea(cheieBiblioteca, uid, config);
+      return { ok: true, freza: oferita(r.freza) };
+    }
+    const p = r.probleme;
+    if ('id' in p && p.id === 'exista') { void b.reincarca(); return { ok: false, motiv: 'exista' }; }
+    if ('lista' in p && (p.lista === 'plina' || p.lista === 'versiune')) return { ok: false, motiv: p.lista };
+    return { ok: false, motiv: 'valori' };
+  };
 
   const exporta = (c: CerereExport): void => {
     const loc = c.ordine ? new Map(c.ordine.map((k, i) => [k, i])) : null;
@@ -304,6 +331,7 @@ export function ExportConectat({
       foi={toate.foi.length}
       {...(biblioteca.freze.length > 0 ? { frezeOferite } : {})}
       bibliotecaToata={bibliotecaToata}
+      onPuneInapoi={puneInapoi}
       {...(onRaport ? { onRaport } : {})}
       {...(onAlegeUrechi ? {
         onAlegeUrechi: (cheie: string, u: { readonly numar: number; readonly latime: number; readonly grosime: number }) => {

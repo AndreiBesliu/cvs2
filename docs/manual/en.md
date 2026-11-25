@@ -1956,9 +1956,13 @@ only.
 The project keeps a copy of each bit picked from the library. If the bit then changes in **My bits**, the row says what changed
 (for example “In the library, “Flat Ø6” now has the feed 1,400 (here 1,000).”), with **Take the new values** for that bit and, if
 other bits in the window come from it too, **On all (N)**; the T number and the steps stay, and **Export** writes the new values.
-A bit deleted from the library stays in the project, with the note “is no longer in the library”. A bit entered by hand that is
-the same as one in the library (same diameter, same shape) shows as **Entered by hand (as “…”)**, without changing anything in
-the project.
+A bit deleted from the library stays in the project, with the note “is no longer in the library” and **Put it back in the
+library**: the bit goes back into **My bits** from the project's copy (the name, the T number, the diameter, the shape, the
+working values, the cutting length and the operation's steps; it no longer knows the number of flutes, the note or the group),
+and with the account open it also goes to the account. If its name was taken by another bit in the meantime, it comes back with a
+free name (for example “Flat Ø12 (2)”), which the operations with the same copy take too; **Export** writes it. A bit entered by
+hand that is the same as one in the library (same diameter, same shape) shows as **Entered by hand (as “…”)**, without changing
+anything in the project.
 
 The **Cutting order** sits in the list, above the operations. The operations appear in the order they are cut, with their place
 on the left (the card says “N of M in cutting order”):

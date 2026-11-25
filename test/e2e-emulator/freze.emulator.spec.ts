@@ -1,5 +1,5 @@
 import { expect, test, type Browser, type Locator, type Page } from '@playwright/test';
-import { deschideMeniulContului } from '../e2e/ajutor-panza.ts';
+import { adauga, deschideMeniulContului } from '../e2e/ajutor-panza.ts';
 
 /**
  * Biblioteca de freze în cont (ADR 0300 §7, felia 16.A↑c), cap-coadă, pe emulatoarele Auth, Firestore și Functions: două
@@ -7,7 +7,7 @@ import { deschideMeniulContului } from '../e2e/ajutor-panza.ts';
  * în primul browser fără cont se aduce în cont la prima deschidere cu el (cele standard nu se numără); al doilea browser le
  * primește; o schimbare pe unul ajunge pe celălalt; același câmp schimbat pe amândouă e un conflict, hotărât
  * de om; o ștergere ajunge și ea. Cu proba trecută, biblioteca din cont doar se citește (fără frezele standard), iar
- * schimbările rămân în browser.
+ * schimbările rămân în browser. O freză ștearsă, pusă înapoi din fereastra exportului (16.A↑b-6), reînvie în cont, cu id-ul ei.
  */
 
 const PROIECT = 'demo-cncvs2';
@@ -189,4 +189,37 @@ test('cu proba trecută: biblioteca din cont se citește, iar o schimbare rămâ
   await expect(g.locator('[data-freze="stare"]')).toContainText('Doar în acest browser');
   await expect(nume(g)).toHaveCount(6);
   await expect(nume(g).getByText('Plată Ø3', { exact: true })).toHaveCount(0);
+});
+
+test('pusă înapoi din fereastra exportului (16.A↑b-6): freza ștearsă din cont reînvie acolo, cu id-ul ei', async ({ page }) => {
+  const uid = await clientConfirmat('ana@exemplu.ro', 'parola-buna-1');
+  await deschide(page);
+  await intra(page);
+  // Contul, fără freze, primește frezele standard.
+  let f = await frezele(page);
+  await expect(stare(f)).toHaveText('În cont, la zi', LENT);
+  await expect.poll(async () => (await dinCont(uid)).size, LENT).toBe(6);
+  await f.locator('[data-freze="inchide"]').click();
+  // Plată Ø12 pe o operație, scrisă în proiect.
+  await adauga(page, 'dreptunghi');
+  await page.locator('[data-actiune="export.gcode"]').click();
+  const e1 = page.locator('[data-fisa="op"][data-operatie="e1/e1"]');
+  await e1.locator('[data-camp="freza-biblioteca"]').selectOption({ label: 'Plată Ø12' });
+  const d = page.waitForEvent('download');
+  await page.locator('[data-buton="exporta"]').click();
+  await d;
+  await page.getByRole('button', { name: 'Închide' }).click();
+  // Ștearsă din bibliotecă: semnul ștergerii ajunge în cont.
+  f = await frezele(page);
+  await nume(f).getByText('Plată Ø12', { exact: true }).click();
+  await f.locator('[data-freze="fisa"] [data-freze="sterge"]').click();
+  await f.locator('[data-freze="sterge-da"]').click();
+  await expect.poll(async () => (await dinCont(uid)).has('Plată Ø12'), LENT).toBe(false);
+  await f.locator('[data-freze="inchide"]').click();
+  // Din fereastra exportului: pusă înapoi, pleacă în cont cu același id.
+  await page.locator('[data-actiune="export.gcode"]').click();
+  await e1.locator('[data-nota="biblioteca-stearsa"] [data-buton="pune-inapoi"]').click();
+  await expect(e1.locator('[data-nota^="biblioteca-"]')).toHaveCount(0);
+  await expect.poll(async () => (await dinCont(uid)).get('Plată Ø12')?.['id'], LENT).toBe('std-plata-12');
+  expect((await dinCont(uid)).get('Plată Ø12')?.['diametru']).toBe(12);
 });

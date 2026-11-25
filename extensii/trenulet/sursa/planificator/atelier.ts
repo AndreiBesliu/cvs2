@@ -21,7 +21,7 @@ var Atelier3D = (function () {
   /** O gaură pe grilă: colțul de celulă și tipul. */
   type Gaura = [number, number, string];
   /** O piesă gata de printat: corpul, mărimea și ce a spus motorul despre ea. */
-  type PiesaGata = { nume: string; titlu: string; tri: Tri[]; dim: number[]; baza?: number[] | undefined; avert?: string[] | undefined; unghi?: number | undefined;
+  type PiesaGata = { nume: string; titlu: string; tri: Tri[]; dim: number[]; baza?: number[] | undefined; ax?: number[] | null | undefined; avert?: string[] | undefined; unghi?: number | undefined;
     stifturi?: number | undefined; locasuri?: number | undefined; deschise?: number | undefined; prinderi?: Prindere[] | undefined };
   /** O prindere a unei piese, cum o spune motorul (ADR 0284, felia 3.Ce). */
   type Prindere = ReturnType<typeof Lego.prinderi>[number];
@@ -34,7 +34,9 @@ var Atelier3D = (function () {
   /** Vederea 3D: câmpurile există de când `ok` e adevărat (din `porneste3D`). */
   type Vedere3D = { ok: boolean; T: Trei.Biblioteca; r: Trei.WebGLRenderer; scena: Trei.Object3D; cam: Trei.PerspectiveCamera; mat: Trei.Material;
     matTren: Trei.Material; mesh: Trei.Mesh | null; grila: Trei.GridHelper | null; grup?: Trei.Object3D; teta: number; fi: number; dist: number; tinta: Trei.Vector3 };
-  type CorpModel = { tri: Tri[]; dim: number[]; baza: number[]; gw: number; gd: number; geom: Trei.BufferGeometry | null };
+  /** Corpul unei piese din model: plasa, amprenta pe grilă (știfturi) și pivotul din mijlocul ei (axul, la piesele rotunde). */
+  type CorpModel = { tri: Tri[]; dim: number[]; gw: number; gd: number; pivot: [number, number]; ax: boolean; geom: Trei.BufferGeometry | null };
+  type DefMotor = Parameters<typeof Lego.construieste>[0];
   const fmt = (v: number, z = 1) => String(Math.round(v * 10 ** z) / 10 ** z).replace(".", Limba.zecimal);
   // culorile din date (mostrele, punctele modelului) se pun prin CSSOM, dupa desenare: in cvs2, CSP-ul refuza atributele style
   const fundaluri = (r: ParentNode) => { for (const e of r.querySelectorAll<HTMLElement>("[data-fundal]")) e.style.background = e.dataset.fundal!; };
@@ -500,7 +502,7 @@ var Atelier3D = (function () {
     Lego.seteaza(paramMotor());
     if (def.tip === "calibrare") return Lego.calibrare().map(c => ({ nume: c.nume, titlu: c.titlu, tri: c.tri, dim: dimTri(c.tri) }));
     const r = Lego.construieste(def as Parameters<typeof Lego.construieste>[0]);
-    return [{ nume: slug(numeDef(def)), titlu: numeDef(def), tri: r.tri, dim: r.dim, baza: r.baza, avert: r.avert, unghi: r.unghi, stifturi: r.stifturi, locasuri: r.locasuri, deschise: r.deschise, prinderi: r.prinderi }];
+    return [{ nume: slug(numeDef(def)), titlu: numeDef(def), tri: r.tri, dim: r.dim, baza: r.baza, ax: r.ax, avert: r.avert, unghi: r.unghi, stifturi: r.stifturi, locasuri: r.locasuri, deschise: r.deschise, prinderi: r.prinderi }];
   }
   const slug = (t: string) => t.normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/×/g, "x").replace(/°/g, "").replace(/[^a-zA-Z0-9]+/g, "_").replace(/^_|_$/g, "").toLowerCase();
 
@@ -1787,7 +1789,8 @@ var Atelier3D = (function () {
 
   // --------------------------------------------------------------------------- modelul (piesele asezate impreuna)
   // Fiecare piesa din model: { id, def, x, y (stifturi), z (placi), rot (sferturi de tura), culoare }. Corpul ei e cel
-  // din motor, mutat inapoi pe grila de stifturi (baza), rotit in jurul mijlocului amprentei lui.
+  // din motor, pus cu pivotul in mijlocul amprentei lui de pe grila de stifturi si rotit in jurul pivotului. Amprenta si
+  // pivotul le da motorul (`Lego.asezareModel`, ADR 0283): la piesele rotunde, pivotul e axul, pe centrul unui stift.
   let model: InModel[] = [], vedere = "piesa", alesM: string | null = null;
   const corpuri = new Map<string, CorpModel>();
   const geomDin = (tri: readonly Tri[]) => {
@@ -1803,21 +1806,24 @@ var Atelier3D = (function () {
     const k = JSON.stringify([def, paramMotor()]);
     let c = corpuri.get(k);
     if (!c) {
-      const p = pieseDin(def)[0];
-      // amprenta pe grila (in stifturi). Piesa sta centrata in ea; doar cea cu stifturi laterale se aseaza dupa corp
-      // (stifturile ies din amprenta), din baza data de motor
-      let gw = Math.max(1, Math.round((p!.dim[0]! + 0.2) / 8)), gd = Math.max(1, Math.round((p!.dim[1]! + 0.2) / 8)), b: number[];
-      // piesele cu o placa pe grila si ceva ce iese din ea (stifturi laterale, clema, manerul, suportul, bila) se aseaza
-      // dupa placa: amprenta e placa, iar corpul ramane unde l-a facut motorul
-      const pl = ({ lateral: [def.lung, 1], suport: [def.lung, def.adanc], clema: [def.lung, 1], maner: [def.lung, 1], bila: [def.baza, def.baza], cupa: [1, 1] } as Record<string, (number | undefined)[] | undefined>)[def.tip];
-      if (pl && p!.baza) { b = [p!.baza[0]!, p!.baza[1]!, 0]; [gw, gd] = pl.map(v => Math.max(1, Math.round(+v! || 1))) as [number, number]; }
-      else b = [gw * 4 - p!.dim[0]! / 2, gd * 4 - p!.dim[1]! / 2, 0];
-      c = { tri: p!.tri, dim: p!.dim, baza: b, gw, gd, geom: null };
+      const p = pieseDin(def)[0]!;
+      // amprenta pe grila (in stifturi) si pivotul: mijlocul cutiei; mijlocul placii, la piesele cu o placa pe grila si ceva
+      // ce iese din ea (stifturi laterale, clema, manerul, suportul, bila); axul, la piesele rotunde
+      const a = Lego.asezareModel(def as DefMotor, { dim: p.dim, baza: p.baza || [0, 0, 0], ax: p.ax || null });
+      c = { tri: p.tri, dim: p.dim, gw: a.gw, gd: a.gd, pivot: a.pivot, ax: a.ax, geom: null };
       corpuri.set(k, c);
       if (corpuri.size > 80) { const v = corpuri.keys().next().value; const x = corpuri.get(v!); if (x!.geom) x!.geom.dispose(); corpuri.delete(v!); }
     }
     return c;
   }
+  const corpSigur = (def: Def): CorpModel | null => { try { return corpModel(def); } catch (e) { return null; } };
+  /** Știftul pe care stă axul unei piese rotunde din model (același la rotire și la două piese pe un ax); altfel, null. */
+  const stiftAx = (m: InModel): [number, number] | null => {
+    const c = corpSigur(m.def);
+    if (!c || !c.ax) return null;
+    const [px, py] = Lego.pivotModel(c, m.x, m.y, m.rot);
+    return [Math.round(px / 8 - 0.5), Math.round(py / 8 - 0.5)];
+  };
   const inaltimeM = (m: InModel): number => m.def.placi || (m.def.tip === "lateral" || m.def.tip === "caramidaTechnic" ? 3 : ["clema", "maner", "bila", "cupa"].includes(m.def.tip) ? 1
     : m.def.tip === "suport" && !m.def.invers ? 1 : Math.max(1, Math.round(corpModel(m.def).dim[2]! / 3.2)));
   const materiale = new Map<string, Trei.Material>();
@@ -1836,10 +1842,10 @@ var Atelier3D = (function () {
     for (const m of model) {
       let c;
       try { c = corpModel(m.def); } catch (e) { continue; }
-      if (!c.geom) { c.geom = geomDin(c.tri); c.geom.translate(c.baza[0]! - c.gw * 4, c.baza[1]! - c.gd * 4, c.baza[2]!); }
-      const mesh = new T.Mesh(c.geom, material(m.culoare, m.id === alesM)!), [w, d] = m.rot % 2 ? [c.gd, c.gw] : [c.gw, c.gd];
+      if (!c.geom) { c.geom = geomDin(c.tri); c.geom.translate(-c.pivot[0], -c.pivot[1], 0); }
+      const mesh = new T.Mesh(c.geom, material(m.culoare, m.id === alesM)!), [px, py] = Lego.pivotModel(c, m.x, m.y, m.rot);
       mesh.rotation.z = m.rot * Math.PI / 2;
-      mesh.position.set(m.x * 8 + w * 4, m.y * 8 + d * 4, m.z * 3.2);
+      mesh.position.set(px, py, m.z * 3.2);
       mesh.userData.id = m.id;
       v3.grup.add(mesh);
     }
@@ -1872,12 +1878,14 @@ var Atelier3D = (function () {
   }
   const titluM = (m: InModel) => numeDef(m.def);
   function editorModel() {
-    const e = $("#at-editor"), m = model.find(x => x.id === alesM);
+    const e = $("#at-editor"), m = model.find(x => x.id === alesM), axM = m ? stiftAx(m) : null;
+    // locul unei piese, in lista: coltul amprentei; la o piesa rotunda, stiftul axului
+    const loculM = (x: InModel) => { const a = stiftAx(x); return a ? tr`ax ${a[0]}, ${a[1]}, ${x.z}` : `${x.x}, ${x.y}, ${x.z}`; };
     const cul = CULORI.map(([n, c]) => `<button type="button" data-fundal="${c}" data-mc="${c}" aria-label="${n}" aria-pressed="${!!m && m.culoare === c}"></button>`).join("");
     e.innerHTML = `<h2>Modelul</h2>
-      <p class="mic">Așezi piesele pe grila de știfturi, ca să vezi avionul întreg înainte să-l printezi. Alegi o piesă cu un clic în vedere sau din listă, apoi o muți: X și Y câte un știft, Z câte o placă. O piesă nouă intră deasupra celei alese. Nu verific dacă piesele se prind între ele: e doar privirea de ansamblu.</p>
+      <p class="mic">Așezi piesele pe grila de știfturi, ca să vezi avionul întreg înainte să-l printezi. Alegi o piesă cu un clic în vedere sau din listă, apoi o muți: X și Y câte un știft, Z câte o placă. O piesă nouă intră deasupra celei alese, la mijlocul ei. Piesele rotunde (roțile, elicele) stau cu axul în mijlocul unui știft: una nouă intră pe axul celei alese, iar rotorul unui ventilator, în carcasa lui. Nu verific dacă piesele se prind între ele: e doar privirea de ansamblu.</p>
       ${m ? `<div class="model-ales">
-        <div><b>${titluM(m)}</b> <span class="mic">· x ${m.x}, y ${m.y}, z ${m.z} ${m.z === 1 ? tr("placă", "LEGO") : tr("plăci", "LEGO")}${m.rot ? tr` · rotită ${m.rot * 90}°` : ""}</span></div>
+        <div><b>${titluM(m)}</b> <span class="mic">· ${axM ? tr`axul pe știftul ${axM[0]}, ${axM[1]}` : `x ${m.x}, y ${m.y}`}, z ${m.z} ${m.z === 1 ? tr("placă", "LEGO") : tr("plăci", "LEGO")}${m.rot ? tr` · rotită ${m.rot * 90}°` : ""}</span></div>
         <div class="mutari" id="at-m-mutari">
           <button class="btn" type="button" data-m="x-" aria-label="X minus">← X</button><button class="btn" type="button" data-m="x+" aria-label="X plus">X →</button>
           <button class="btn" type="button" data-m="y-" aria-label="Y minus">↓ Y</button><button class="btn" type="button" data-m="y+" aria-label="Y plus">Y ↑</button>
@@ -1887,7 +1895,7 @@ var Atelier3D = (function () {
         <div class="at-rand"><span class="mic">Culoare:</span><div class="culori" id="at-m-culori">${cul}</div></div>
         <div class="at-rand"><button class="btn" type="button" id="at-m-dubla">Dublează</button><button class="btn" type="button" id="at-m-scoate">Scoate din model</button><button class="btn" type="button" id="at-m-editeaza">Schimb-o în editor</button></div>
       </div>` : model.length ? `<p class="mic">Nicio piesă aleasă.</p>` : `<p class="mic">Modelul e gol. Alege o piesă (fila de sus), apoi „Pune în model”.</p>`}
-      ${model.length ? `<ol class="model-lista" id="at-m-lista">${model.map(x => `<li><button type="button" data-mid="${x.id}" aria-pressed="${x.id === alesM}"><span class="punct" data-fundal="${x.culoare}"></span>${titluM(x)} <span class="mic">${x.x}, ${x.y}, ${x.z}</span></button></li>`).join("")}</ol>` : ""}
+      ${model.length ? `<ol class="model-lista" id="at-m-lista">${model.map(x => `<li><button type="button" data-mid="${x.id}" aria-pressed="${x.id === alesM}"><span class="punct" data-fundal="${x.culoare}"></span>${titluM(x)} <span class="mic">${loculM(x)}</span></button></li>`).join("")}</ol>` : ""}
       <p class="mic">Cu vederea 3D aleasă (un clic pe ea): săgețile mută, PageUp / PageDown urcă și coboară, R rotește, Delete scoate.</p>`;
     fundaluri(e);
     if (m) {
@@ -1918,7 +1926,12 @@ var Atelier3D = (function () {
     if (!m) return;
     if (op === "x-") m.x--; if (op === "x+") m.x++; if (op === "y-") m.y--; if (op === "y+") m.y++;
     if (op === "z-") m.z = Math.max(-60, m.z - 1); if (op === "z+") m.z = Math.min(200, m.z + 1);
-    if (op === "r") m.rot = (m.rot + 1) % 4;
+    if (op === "r") {
+      // o piesa rotunda se roteste in jurul axului: axul ramane pe loc, iar coltul amprentei se muta cu el (ADR 0283)
+      const c = corpSigur(m.def), ax = c && c.ax ? Lego.pivotModel(c, m.x, m.y, m.rot) : null;
+      m.rot = (m.rot + 1) % 4;
+      if (c && ax) [m.x, m.y] = Lego.langaPivot(c, m.rot, ax);
+    }
     dupaModel();
   }
   function dupaModel() { salveaza(); editorModel(); arataModel(true); butonModel(); }
@@ -1927,10 +1940,21 @@ var Atelier3D = (function () {
     laZi();
     if (!curent || curent.def.tip === "calibrare") return;
     const vechi = inlocuieste && model.find(x => x.id === inlocuieste);
-    if (vechi) { vechi.def = curent.def; alesM = vechi.id; inlocuieste = null; }
-    else {
-      const sel = model.find(x => x.id === alesM);
-      const m = { id: idNou(), def: curent.def, x: sel ? sel.x : 0, y: sel ? sel.y : 0, z: sel ? sel.z + inaltimeM(sel) : 0, rot: sel ? sel.rot : 0, culoare: setari.culoare };
+    if (vechi) {
+      // o piesa rotunda inlocuita cu alta rotunda isi tine axul; restul isi tin coltul (ADR 0283)
+      const a = corpSigur(vechi.def), b = corpSigur(curent.def);
+      if (a && b && a.ax && b.ax) [vechi.x, vechi.y] = Lego.langaPivot(b, vechi.rot, Lego.pivotModel(a, vechi.x, vechi.y, vechi.rot));
+      vechi.def = curent.def; alesM = vechi.id; inlocuieste = null;
+    } else {
+      const sel = model.find(x => x.id === alesM), m = { id: idNou(), def: curent.def, x: 0, y: 0, z: 0, rot: 0, culoare: setari.culoare };
+      if (sel) {
+        // langa piesa aleasa (ADR 0283): cu pivotul cat mai aproape de al ei (doua piese rotunde, pe acelasi ax), deasupra ei;
+        // rotorul unui ventilator si carcasa in care incape, la acelasi Z
+        const a = corpSigur(sel.def), b = corpSigur(curent.def);
+        m.rot = sel.rot;
+        [m.x, m.y] = a && b ? Lego.langaPivot(b, m.rot, Lego.pivotModel(a, sel.x, sel.y, sel.rot)) : [sel.x, sel.y];
+        m.z = Lego.impreunaInModel(sel.def as DefMotor, curent.def as DefMotor) ? sel.z : sel.z + inaltimeM(sel);
+      }
       model.push(m); alesM = m.id;
     }
     salveaza(); butonModel();
