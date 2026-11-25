@@ -180,7 +180,7 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
     săptămânale: „vreau sa pornesti si celelalte sub-sesiuni”):
     - frezele: 16.A↑b-5, unită la 13:18; 16.A↑b-4 (nota „s-a schimbat în bibliotecă”) e gata pe ramura ei
       (`wip/16.A-freze-b4`, `AndreiBesliu/cvs2#37`): aduce `main` și raportează; 16.A↑b-6 („Pune-o înapoi în
-      bibliotecă”), la cuvântul owner-ului;
+      bibliotecă”), pornită pe 25.11 la 14:16, la „ok, porneste 10.4↑c-2 si 16.A↑b-6” al owner-ului, după b-4;
     - exportul: 28.8↑n, unită la 13:18; 28.8↑o (centrul foii ca origine XY0; mișcă mașina) e gata pe ramură
       (`ad41fd89`, completul 45598561359 în lucru): aduce `main` și o raportează separat; apoi 28.8↑h, care poate
       porni, cu 16.A↑b-5 în `main`;
@@ -188,7 +188,8 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
       `AndreiBesliu/cvs2#39`, ciornă), cu un rând doar de citit în fereastra exportului;
     - atelierul: cama și roata cu palete, unite la 09:35; cadrul și melcul, la 13:18 (3.Cj, încheiată); fără
       felie de pornit: 3.Tu și 3.Cf–3.Ci așteaptă răspunsurile owner-ului, 3.Ck tipărirea bilei și a cupei;
-    - cotele: 10.4↑c-1, unită la 12:20; fără felie: c-2 (DIMENSION și cifrele ca text), la cuvântul owner-ului.
+    - cotele: 10.4↑c-1, unită la 12:20; c-2 (DIMENSION în DXF și cifrele ca text), pornită pe 25.11 la 14:16, la
+      același cuvânt al owner-ului.
 
     Se unesc la raportul liniei, în ordinea rapoartelor. **Restul de mărime** (din 25.11, cu plafoanele noi; după
     lotul de la 13:18: 109,9 kB în total, 8,5 kB în pornire): fiecare linie își spune în raport cât adaugă, iar una

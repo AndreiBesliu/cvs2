@@ -383,8 +383,8 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   aceea. Exportă scrie originea cu regula frezei operației (`cuOrigine`, comună), iar legarea rândurilor ține și
   originea frezelor în plus. Frezele de rest stau într-un tabel cu capul coloanelor, cu „Adaugă” ca buton
   (constatarea 9 a auditului exportului). Lista e o componentă comună (`ListaBiblioteca`, în
-  `src/ui/FisaOperatie.tsx`). Urmează 16.A↑b-4 (nota „s-a schimbat în bibliotecă”) și, la cuvântul owner-ului,
-  16.A↑b-6 („Pune-o înapoi în bibliotecă”, din fereastra exportului, cu contul). Documentul nu se schimbă (e v28,
+  `src/ui/FisaOperatie.tsx`). Urmează 16.A↑b-4 (nota „s-a schimbat în bibliotecă”) și 16.A↑b-6 („Pune-o
+  înapoi în bibliotecă”, din fereastra exportului, cu contul), pornită pe 25.11. Documentul nu se schimbă (e v28,
   din relief); nimic pe server. Felia: pornirea +0, totalul +1,0 kB.
   **Plafonul pornirii 120 kB (ADR 0145, decizia owner-ului din 24.11, „ok, ridica plafonul pornirii la 120 kB”):** după
   lotul al paisprezecelea, pornirea era 109,9 kB, cu ușa 114,4 și cu Atelierul 114,7 / 115, iar feliile următoare ale
@@ -1178,7 +1178,7 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   (`test/oracles-py/export2d_cote.py`, pas în jobul `oracol-export2d`; corpusul cotelor, tot din
   `scripts/export2d-corpus.ts`): valorile lui sunt scrise din descrierea corpusului și din regulile desenului (ADR
   0330 §4–§6), nu din codul aplicației, deci o cotă nouă în corpus își cere valorile pe hârtie acolo. Urmează
-  10.4↑c-2 (DIMENSION în DXF, cifrele ca text), la cuvântul owner-ului. Documentul rămâne v28; nimic pe server.
+  10.4↑c-2 (DIMENSION în DXF, cifrele ca text), pornită pe 25.11. Documentul rămâne v28; nimic pe server.
   Felia: pornirea +0,1 kB, totalul +3,3 kB (888,1 / 1 000).
   **Relieful din imagine, pe planșă (ADR 0310, ADR 0311, felia 18.1↑a, adusă din etapa 18; documentul v28)** gata pe
   24.11, în sesiunea cloud a liniei (ramura `wip/18.1-relief`), unită în `main` pe 24.11 (`c5b79526`). ADR 0310,
@@ -1703,6 +1703,17 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 25.11.2026, după-amiaza: **10.4↑c-2 și 16.A↑b-6, pornite** („ok, porneste 10.4↑c-2 si 16.A↑b-6”, în sesiunea
+  principală, la raportul unirii a treizeci și treia, care le punea la cuvântul owner-ului). Sesiunea principală
+  le-a scris celor două linii la 14:16. **10.4↑c-2** (linia cotelor; ADR 0330 §10): cotele ca entități DIMENSION în
+  DXF și cifrele ca text, peste c-1; cu felul de azi ales (linii și trăsături), fișierele rămân octet cu octet;
+  oracolul Python al cotelor primește DIMENSION-ul pe hârtie. **16.A↑b-6** (linia frezelor; ADR 0300 §5): „Pune-o
+  înapoi în bibliotecă”, adică scrierea unei freze în bibliotecă din fereastra exportului, cu contul; vine după
+  16.A↑b-4 (nota „s-a schimbat în bibliotecă”, gata pe ramura ei, de raportat întâi) și, dacă se poate, fără nimic
+  nou pe server. Amândouă: documentul rămâne v28 (un câmp nou ar cere întâi numărul, de la sesiunea principală; v29
+  e al reliefului), proba întâi, creșterea de mărime spusă în raport, un singur commit raportat, cu porțile verzi;
+  unirea, la raport. O alegere care e a owner-ului se pune grupat, cu recomandarea în față, iar linia merge înainte
+  cu recomandarea.
 - 25.11.2026, după-amiaza (a treizeci și treia unire din cloud): **frezele în plus ale rândului din „Frezele mele”
   (16.A↑b-5), cadrul și șurubul melc din atelierul Easy 3Draw (3.Cj-3, 3.Cj-4) și numele fișierului în fereastra
   exportului (28.8↑n), unite în `main`**, în lot (sesiunea principală, ramura `unire-2511q`, din `f8be3b4d`).

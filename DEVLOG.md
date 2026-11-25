@@ -14774,3 +14774,16 @@ gata de unit”, `b099c457`; 28.8↑n, `7996e77c`), la ordinul în vigoare „un
   apoi pornește 28.8↑h), atelierul (fără felie de pornit), cotele.
 - **Documentele:** decizia și paragrafele de stare în `CLAUDE.md` (frezele, exportul, atelierul); indexul liniilor;
   starea din `docs/linii/principala.md`.
+
+## 2026-11-25 — Sesiunea principală în cloud: 10.4↑c-2 și 16.A↑b-6, pornite la cuvântul owner-ului (Model: Claude Fable 5.2)
+
+**Prompt:** „ok, porneste 10.4↑c-2 si 16.A↑b-6”
+**Started:** 25.11, 14:16. **Completed:** 25.11, 14:17 (liniile, anunțate; decizia, scrisă).
+
+- **Liniei cotelor** (14:16): 10.4↑c-2, DIMENSION în DXF și cifrele ca text (ADR 0330 §10), peste `main` `2aaee0b4`;
+  proba întâi, cu oracolul Python; felul de azi rămâne octet cu octet.
+- **Liniei frezelor** (14:16): 16.A↑b-6, „Pune-o înapoi în bibliotecă” (ADR 0300 §5), după 16.A↑b-4; fără nimic nou pe
+  server, dacă se poate; bucata contului e strâmtă (30,3 / 32 kB), deci creșterea ei se spune în raport.
+- **Amândouă:** documentul rămâne v28; un singur commit raportat, cu porțile verzi; unirea, la raport.
+- **Cu aceeași împingere:** nota liniei atelierului de după unirea lui 3.Cj (`253829b8`, doar `docs/linii/atelier.md`).
+- **Documentele:** decizia în `CLAUDE.md`; indexul liniilor; starea din `docs/linii/principala.md`.
