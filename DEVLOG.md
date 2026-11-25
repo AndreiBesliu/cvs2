@@ -14933,3 +14933,28 @@ diametru in model”)
 - **Documentele:** ADR 0283 (acceptat, „Implementat”), indexul ADR, fișa etapei 3 (jurnalul, coada owner-ului),
   `docs/linii/atelier.md` (cu regulile noi), `docs/linii/elice.md`, indexul liniilor, `docs/otravuri.md`, `CLAUDE.md`.
 - **Urmează:** 3.Cf (Modelul: orientarea pe trei axe și alipirea la prinderi; ADR 0284, partea D).
+
+## 2026-11-25 — Sesiunea principală în cloud: a treizeci și șasea unire (atelierul Easy 3Draw: 3.Tu, piesele rotunde pe același ax) (Model: Claude Fable 5.2)
+
+**Prompt:** raportul liniei atelierului („RAPORT: felia 3.Tu, gata de unit”, `70942c03`), la ordinul în vigoare „unește ce se
+poate”
+**Started:** 25.11, 17:06. **Completed:** unirea în `main`, 25.11, 18:18; publicarea pe test, cu lotul 35.
+
+- **Verificat înaintea unirii:** rapidul (45627876716) și completul (45627875691), verzi pe `70942c03`; fără `.lucru/`;
+  ramura are `1fbb8ad9`. PR-ul feliei e `AndreiBesliu/cvs2#45` (#41 se închisese singur, cu commit-ul de documente).
+- **De ce un complet al unirii:** de la `1fbb8ad9`, `main` primise 16.A↑b-4 și 3.Au (cod al aplicației). Felia atinge doar
+  pachetul extensiei și probele lui, dar arborele unit nu era cel verificat de linie (aceeași regulă ca dimineață, la 3.Cj-3).
+- **Unirea, pe `unire-2511v`** (din `65eecdc6`): `70942c03`, în `f5cf10c8`. Ciocnirile, în DEVLOG (`rezolva-devlog.py`) și în
+  indexul liniilor (rândul atelierului, al liniei; al frezelor, din `main`). Local: biblioteca (Easy 3Draw 18.33.0, 516 335
+  octeți), tipurile, regulile de import, traducerile (1 142), unitarele `trenulet*` și `biblioteca*` (fără referințe), cu
+  probele documentelor: 329 / 329.
+- **Porțile, în CI, pe `f5cf10c8`** (citite din jurnalul rulării): completul 45641768117, verde la prima trecere (68 min): unit
+  10 513 / 0 (12 sărite, pe Linux), e2e 859 / 859, funcțiile pe emulatoare 136 / 136, paginile 59 / 59; rapidul 45641768390,
+  verde. Pornirea 111,2 kB (plafonul 125; cu ușa 116,2, cu Atelierul 116,5), totalul 891,8 / 1 000 kB, `/admin` 138,3 / 200.
+  Nimic pe server.
+- **Publicarea lotului 34** (`65eecdc6`): completul pe `main`, verde (45641891693, 17:09–18:08); `publica.yml` a primit de trei
+  ori o eroare de server de la GitHub la pornire (500, 502, 500, prin scriptul de urmărire); a patra cerere, făcută de mână
+  cu `gh api`, a trecut (45652408353). Bucla de reluare, oprită înainte să pornească o a doua publicare.
+- **Linia atelierului:** owner-ul a răspuns în sesiunea ei la întrebările lui 3.Cf (întâi alipirea la prinderi; prinderea se
+  alege din puncte, în vederea 3D; piesa alipită urmează baza): consemnat în decizie și în index.
+- **Documentele:** decizia și paragraful de stare în `CLAUDE.md`; indexul liniilor; starea din `docs/linii/principala.md`.

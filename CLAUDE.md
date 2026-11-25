@@ -1157,7 +1157,8 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   vechi care numără** (filele, galeriile, căutarea, starea unei liste vechi, versiunea): lista lor e în
   `docs/linii/atelier.md`. Doar pachetul extensiei se schimbă: pornirea și totalul aplicației, neatinse. **Din 24.11
   seara, linia ține și lucrul elicelor** (predat la cererea owner-ului). **3.Tu (piesele rotunde pe același ax în
-  „Modelul”; ADR 0283, acceptat de owner pe 25.11 cu 1a, 2a, 3a)** gata pe 25.11, pe ramură: în vederea „Modelul”, o
+  „Modelul”; ADR 0283, acceptat de owner pe 25.11 cu 1a, 2a, 3a)** gata pe 25.11, unită în `main` pe 25.11
+  (`f5cf10c8`): în vederea „Modelul”, o
   piesă rotundă (roțile, elicele, rotorul și carcasa ventilatorului, cama, melcul, roata cu palete) stă cu axul în
   mijlocul unui știft și se rotește în jurul lui; o piesă nouă intră cu pivotul cât mai aproape de al celei alese (două
   rotunde, pe același ax); rotorul și carcasa în care încape stau la același Z; rândul unei piese rotunde spune știftul
@@ -1737,6 +1738,33 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 25.11.2026, seara (a treizeci și șasea unire din cloud): **piesele rotunde pe același ax în vederea „Modelul” a
+  atelierului Easy 3Draw (3.Tu), unite în `main`** (sesiunea principală, ramura `unire-2511v`, din `65eecdc6`). Linia
+  atelierului, ramura `wip/3.Xh-biblioteca-ui`, `70942c03`, PR-ul `AndreiBesliu/cvs2#45` (ADR 0283, acceptat de owner
+  pe 25.11, în sesiunea liniei: „1a, 2a, 3a la 3.Tu, pornește”; propus pe 24.11 de linia elicelor, după observația
+  lui că o carcasă și un rotor de același diametru nu se pot așeza centrat), unită în `f5cf10c8`: în „Modelul”, o
+  piesă rotundă (roțile, elicele, rotorul și carcasa ventilatorului, cama, șurubul melc, roata cu palete, pinionul
+  șenilei) stă cu axul în mijlocul unui știft și se rotește în jurul lui (1a); o piesă nouă, pusă cu alta aleasă,
+  intră cu pivotul cât mai aproape de al ei, deci două rotunde stau pe același ax (2a); rotorul și carcasa în care
+  încape stau la aceeași înălțime (3a). Așezarea e acum a motorului, ca funcții pure. **Easy 3Draw 18.33.0**
+  (516,3 kB); otrăvurile 111 / 111 și 6 / 6. Doar pachetul extensiei se schimbă; nimic pe server; documentul rămâne
+  v28. Ramura avea `main` `1fbb8ad9`; de atunci `main` primise 16.A↑b-4 și 3.Au (cod al aplicației, pe care ramura
+  nu-l avea), deci unirea și-a făcut completul ei. Ciocnirile, doar în DEVLOG și în indexul liniilor (rândul
+  atelierului, al liniei; al frezelor, din `main`). Porțile unirii, în CI, pe `f5cf10c8` (completul 45641768117,
+  verde la prima trecere, 68 min): unit 10 513 / 0 (12 sărite, pe Linux), e2e 859 / 859, funcțiile pe emulatoare
+  136 / 136, paginile 59 / 59; rapidul, verde pe `f5cf10c8`; completul liniei, verde pe `70942c03` (45627875691);
+  pornirea 111,2 kB (plafonul 125; cu ușa 116,2, cu Atelierul 116,5), **totalul 891,8 / 1 000 kB**, `/admin`
+  138,3 / 200. Pe test e `2aaee0b4` (lotul 33); lotul 34 (`65eecdc6`) e în drum: completul lui pe `main` e verde
+  (45641891693), iar publicarea a pornit abia la a patra cerere (GitHub a răspuns la primele trei cu erori de server,
+  500 și 502). 3.Tu pleacă cu lotul 35. La linii, în lucru: atelierul (3.Cf, pornită de owner în
+  sesiunea liniei, cu răspunsurile lui la întrebările de proiectare: întâi alipirea la prinderi; prinderea se alege
+  din puncte, în vederea 3D, cu lista alături; piesa alipită urmează baza, deci rămân legate; Easy 3Draw 18.34.0),
+  frezele
+  (16.A↑b-6), exportul (28.8↑h, reparația lui „Du-mă la …”), cotele (10.4↑c-2), relieful (18.1↑c, aducerea lui
+  `main`). **La owner:** de încercat „Modelul” (carcasa și rotorul, o roată peste alta), proba pe mașină a centrului
+  foii, cele patru întrebări din auditul elicelor, pachetul Easy 3Draw trecut de 0,5 MB, arhivarea sesiunii elicelor,
+  verificarea juridică (GDPR) a utilizării aplicației înaintea live-ului, „cine unește în `main`”, meniul de sus la
+  320 px la atingere.
 - 25.11.2026, după-amiaza (a treizeci și cincea unire din cloud): **nota „s-a schimbat în bibliotecă” pe rândurile
   exportului (16.A↑b-4) și starea lucrării imprimantei, necunoscută până vine codul stării (3.Au), unite în `main`**,
   în lot (sesiunea principală, ramura `unire-2511t`, din `1fbb8ad9`). **16.A↑b-4** (linia frezelor, ramura
