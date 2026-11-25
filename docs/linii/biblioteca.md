@@ -8,7 +8,7 @@ Starea:
 („da, 1a–5a”, la cele cinci întrebări): rămâne ce e implementat. 3.Xk (doar probe) e în `main` din 24.11 (`373699e6`,
 lotul 24, din `23d9a1b`, la „ok, cand e verde fa unirea” al owner-ului). Ce urmează în bibliotecă pornește la cuvântul
 lui. Din 24.11 seara, sesiunea liniei lucrează la construcțiile din Easy 3Draw (ADR 0284, nota
-[atelier.md](atelier.md)): 3.Ca a dus pachetul la 18.24.0, iar 3.Cb la 18.25.0; următoarea versiune, 18.26.0.**_
+[atelier.md](atelier.md)): 3.Ca a dus pachetul la 18.24.0, 3.Cb la 18.25.0, 3.Cc la 18.26.0, iar 3.Cd la 18.27.0; următoarea versiune, 18.28.0.**_
 
 - **Ce s-a făcut** (amănuntele, în ADR 0233, „Implementat”): rafturile bibliotecii (`CATEGORII_BIBLIOTECA`,
   `shared/biblioteca.ts`) și `categorii` în lista bibliotecii și în catalog; căutarea pură (`src/extensii/cautare.ts`);
@@ -336,3 +336,7 @@ dintr-o listă servită lângă aplicație.
 Legat: [sesiunea principală](principala.md), [Uneltele worktree-urilor locale (de dinainte de cloud)](unelte-worktree.md), [„Segmentează (plan mic)”](lectii.md#feedback-segmentare-plan-mic).
 
 **Worktree-ul scos (08.11)**, la „dupa ce verifici care worktree a terminat si a fost integrat in maine, vreau sa inchizi tu acel worktree si sa il arhivezi”: `cncvs2-lucru\biblioteca` (joncțiunile întâi), ramura locală ștearsă, sesiunea arhivată. Pe `origin` rămâne `wip/3.Xg-biblioteca`, în lista de șters a owner-ului. O felie nouă a liniei pornește dintr-un worktree nou, din `main`.
+
+_Din 25.11: proba „«Ce e nou» arată data versiunii” (`test/e2e/extensii.descoperire.spec.ts`) își ia versiunea din
+`extensii/biblioteca.json` (un rând cu dată dintre ultimele `MAX_NOUTATI`), nu o ține scrisă: rândul lui 18.21.0 a ieșit
+din catalog la 18.26.0 și a oprit un complet._

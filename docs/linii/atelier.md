@@ -8,8 +8,9 @@ doar una cate una ci si ca constructii complexe”), în sesiunea cloud a liniei
 [elice.md](elice.md), secțiunea „Predarea”): felia **3.Tu** (piesele rotunde pe același ax în „Modelul”, ADR 0283,
 rezervat), cu trei întrebări încă fără răspuns de la owner (recomandările: 1a, 2a, 3a).
 Starea: **3.Ca (conectorul perpendicular, Easy 3Draw 18.24.0) și 3.Cb (conectorul în unghi, axul cu opritor, știftul cu
-bucșă; 18.25.0) gata pe 24.11, de unit; urmează 3.Cc (cremaliera și melcul).** Versiunea următoare a pachetului:
-18.26.0._
+bucșă; 18.25.0), unite în `main` cu lotul 28 (de confirmat de sesiunea principală); 3.Cc (cremaliera; 18.26.0) și
+3.Cd (arcul; 18.27.0) gata pe 24–25.11, de unit; urmează 3.Ce (punctele de prindere și „Se prinde cu”).** Versiunea
+următoare a pachetului: 18.28.0._
 
 ## Numerele liniei
 
@@ -25,15 +26,16 @@ bucșă; 18.25.0) gata pe 24.11, de unit; urmează 3.Cc (cremaliera și melcul).
 |---|---|---|
 | 3.Ca | Conectorul perpendicular | gata (24.11) |
 | 3.Cb | Conectorul în unghi; axul cu opritor, știftul cu bucșă | gata (24.11) |
-| 3.Cc | Cremaliera și melcul | urmează |
-| 3.Cd | Arcul, balamaua, placa turnantă | |
+| 3.Cc | Cremaliera | gata (24.11); melcul a trecut în 3.Cj |
+| 3.Cd | Arcul | gata (25.11) |
 | 3.Ce | Punctele de prindere și „Se prinde cu” | |
 | 3.Tu | Modelul: piesele rotunde pe același ax (ADR 0283) | a acestei linii din 24.11 (predarea elicelor); la răspunsurile owner-ului la cele trei întrebări |
 | 3.Cf | Modelul: orientarea pe trei axe și alipirea la prinderi | după 3.Tu |
 | 3.Cg | Modelul: verificarea (prins, plutește, se ciocnește) | avertisment, nu refuz (răspunsul 2a) |
 | 3.Ch | Construcțiile cu nume și lista lor de piese | |
 | 3.Ci | Construcțiile gata (șasiul, cutia de angrenaje, brațul de macara, barca cu elice) | după Model (răspunsul 3a) |
-| 3.Cj | Cama și manivela, cadrul, roata cu palete | |
+| 3.Cj | Melcul, cama și manivela, cadrul, roata cu palete | |
+| 3.Ck | Balamaua și placa turnantă | despărțite de 3.Cd; după ce owner-ul încearcă primele piese pe imprimantă |
 
 ## 3.Ca, gata (24.11, în cloud): conectorul perpendicular
 
@@ -60,7 +62,27 @@ bucșă; 18.25.0) gata pe 24.11, de unit; urmează 3.Cc (cremaliera și melcul).
 - **Probele:** `test/unit/trenulet.unghi.test.ts`, `test/unit/trenulet.opritor.test.ts`, `test/e2e/trenulet.unghi.spec.ts`;
   otrăvurile, `test/otravuri/3.Cb.py`. Ajutoarele comune ale probelor pe plase: `test/unit/ajutor-plasa-lego.ts`.
 
-## Reguli și capcane (de la 3.Ca și 3.Cb)
+## 3.Cc, gata (24.11, în cloud): cremaliera
+
+- **Unde e:** motorul, `cremalieraCote` și `cremaliera` (după `rotita`), cu `Lego.cremalieraMontaj` pentru atelier;
+  atelierul: `stare.cremaliera`, `FAMILII` (Roți), `PICTOGRAME`, `numeDef`, `defCurenta`, editorul
+  (`t === "cremaliera"`, câmpurile `at-crm-…`), `adaugaPerecheCremaliera`.
+- **Datele piesei:** `lung` (2–24), `modul` (nescris când e 1), `prindere` (`stifturi` sau `gauri`), `roata` (dinții
+  roții pereche: de ea ține înălțimea piesei).
+- **Probele:** `test/unit/trenulet.cremaliera.test.ts` (cu angrenarea pe plase: `patrundere`), 
+  `test/e2e/trenulet.cremaliera.spec.ts`; otrăvurile, `test/otravuri/3.Cc.py`.
+- **Melcul** vine în 3.Cj: de hotărât întâi diametrul de divizare (8 mm, pe grila LEGO, cu miezul subțire, sau 16 mm) și
+  cum se tipărește; proba lui de angrenare se scrie ca a cremalierei (roata motorului, pe plase).
+
+## 3.Cd, gata (25.11, în cloud): arcul
+
+- **Unde e:** motorul, `arcCote` și `arc` (înaintea lui `lateral`), cu `Lego.arcCote` pentru atelier; atelierul:
+  `stare.arc`, `FAMILII` (Cărămizi), `PICTOGRAME`, `ARCE` (mărimile uzuale), `numeDef`, `defCurenta`, editorul
+  (`t === "arc"`, câmpurile `at-arc-…`).
+- **Datele piesei:** `lung` (3–16), `inalt` (1–4, în cărămizi), `bolta` (`joasa`; nescrisă când e cea înaltă).
+- **Probele:** `test/unit/trenulet.arc.test.ts`, `test/e2e/trenulet.arc.spec.ts`; otrăvurile, `test/otravuri/3.Cd.py`.
+
+## Reguli și capcane (de la 3.Ca–3.Cd)
 
 - **O piesă nouă a atelierului atinge, pe lângă motor și editor:** `FAMILII` și `PICTOGRAME` (probele unitare le cer),
   `texte.en.json` (`node scripts/texte-trenulet.ts`, apoi traducerile), versiunea din `extensie.json`, rândul de „ce e
@@ -105,3 +127,23 @@ bucșă; 18.25.0) gata pe 24.11, de unit; urmează 3.Cc (cremaliera și melcul).
   două plase întregi scrie sute de mii de caractere).
 - **După o schimbare a pachetului pe aceeași versiune**, amprenta se reînregistrează cu scriptul din `.tmp/` al sesiunii
   (pune o versiune de umplutură în înregistrare și rulează `biblioteca.ts --scrie`); pașii sunt cei din regula de mai sus.
+- **Un poligon cu multe colțuri intrate se extrudează cu `prismaGauri`, nu cu `prisma`:** triunghiularea din `prisma`
+  lasă fețe incomplete pe un pieptene (muchii deschise); `prismaGauri` (earcut) mișcă vârfurile cu cel mult 0,0001 mm.
+- **O piesă care se prinde cu alta își probează prinderea pe plasele amândurora**, cu martori care dovedesc că proba
+  vede pătrunderea (prea aproape, decalat, în sensul greșit), nu doar cu formule: așa s-au judecat roțile, coroana,
+  conicele și cremaliera.
+- **Prefixul câmpurilor unui editor nou se caută întâi printre cele folosite** (`grep -o 'at-[a-z]*-'`): `at-cr-` e al
+  coroanei, `at-cm-` al clemei, `at-co-` al conectorului, `at-cu-` al conectorului în unghi, `at-crm-` al cremalierei.
+- **O probă pe plase mari se scurtează prin plaja ei, nu prin judecată:** `plasa()` și `muchiiFaraPereche` costă cam 0,1 s
+  pe piesă; fișierul cremalierei ține 20 s cu 84 de forme și angrenarea pe patru perechi.
+- **O valoare de pe hârtie care cade pe „,05” nu se pune într-o probă din browser** (rotunjirea la o zecimală o duce în
+  oricare parte): proba arcului folosește bolta joasă a lui 1 × 8 × 2 (8,8 mm), nu pe a lui 1 × 5 × 2 (6,05).
+- **Marginile unui câmp se judecă de la altă valoare decât cea la care motorul ar îndrepta oricum:** „roata de 5 dinți”
+  refuzată nu se vede când roata de dinainte e chiar 8.
+- **Nu împinge pe ramură între raportul unei felii și unirea ei** (rugămintea sesiunii principale): felia următoare se
+  lucrează local și se împinge după unire, sau la sfârșitul turei, dacă trebuie.
+- **O probă nu ține scrisă de mână o versiune din „ce e nou”:** catalogul poartă doar ultimele cinci rânduri
+  (`MAX_NOUTATI`), deci un rând căutat pe nume dispare după cinci versiuni noi. Completul lui 3.Cc și 3.Cd a căzut așa
+  (`extensii.descoperire.spec.ts`, rândul lui 18.21.0, ieșit din catalog la 18.26.0); proba citește acum din lista
+  bibliotecii un rând cu dată dintre cele rămase. La fel, orice probă care privește catalogul adevărat își ia valorile
+  din `extensii/biblioteca.json`.

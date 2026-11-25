@@ -14000,6 +14000,49 @@ palete”
 - **Probele pluginului și ale extensiilor în browser:** 63 / 63 și 82 / 82. Easy 3Draw 18.25.0 (485,4 kB), cu rândul de
   „ce e nou”; doar pachetul se schimbă.
 
+## 2026-11-24 — Felia 3.Cc: cremaliera în atelierul Easy 3Draw (ADR 0284) (sesiune cloud)
+
+**Prompt:** (aceeași cerere a owner-ului și aceleași răspunsuri la ADR 0284 ca la 3.Ca; felia a treia din plan, pornită
+fără altă întrebare)
+**Started:** 24.11, 23:26. **Completed:** 25.11, 00:06 (felia, cu otrăvurile; orele, după ceasul containerului).
+
+- **Cremaliera** (tipul `cremaliera`, fila Roți): bara cu dinții roților de aici, pe știfturi sau cu găuri de știft;
+  înălțimea, după roata pereche, ca axul roții să cadă pe grilă; montajul scris în cuvinte; „Fă perechea”.
+- **Proba, scrisă întâi**, cu angrenarea judecată pe plase (roata motorului rostogolită pe cremalieră, cu martori): a
+  trecut din prima rulare a motorului; au căzut trei probe ale plasei, fiindcă `prisma` nu triunghiulează un pieptene
+  (muchii deschise): bara cu dinți se face cu `prismaGauri`.
+- **Melcul, despărțit de felie** (trece în 3.Cj): la diametrul cerut de grila LEGO, miezul lui rămâne de 0,25 mm în jurul
+  găurii de ax, iar spira stă în consolă la 70°; cere întâi dovada angrenării și o hotărâre despre tipărire.
+- **Probele vechi, la zi:** „Roți 8”, galeriile și desenele, starea unei liste vechi, versiunea 18.26.0.
+- **Otrăvurile:** 72 / 72 (46 în probele unitare, 26 prin browser). La prima rulare au scăpat două: una era practic
+  echivalentă (bara coborâtă peste lamaj: partea întoarsă a inelului se anulează cu bara, numărul de înfășurare e același
+  peste tot), înlocuită cu una care se vede; cealaltă (roata de 5 dinți, primită de câmp) nu se vedea fiindcă motorul o
+  îndrepta tot la 8, valoarea de dinainte: marginile de jos se judecă acum de la alte valori.
+- **Probele pluginului în browser:** 67 / 67. Easy 3Draw 18.26.0 (488,7 kB), cu rândul de „ce e nou”; doar pachetul se
+  schimbă.
+
+## 2026-11-25 — Felia 3.Cd: arcul în atelierul Easy 3Draw (ADR 0284) (sesiune cloud)
+
+**Prompt:** (aceeași cerere a owner-ului și aceleași răspunsuri la ADR 0284 ca la 3.Ca; felia a patra din plan, pornită
+fără altă întrebare; răspunsul lui „Cărămizi de clădit”, la lista pieselor noi)
+**Started:** 25.11, 00:12. **Completed:** 25.11, 00:29 (felia, cu otrăvurile; orele, după ceasul containerului).
+
+- **Arcul** (tipul `arc`, fila Cărămizi): cărămida 1 × n cu boltă dedesubt și știfturi pe toată lungimea; picioarele sunt
+  cărămizi 1 × 1 ale motorului; bolta, un arc de cerc (jumătate din deschidere, cel mult înălțimea fără 1,6 mm) sau joasă.
+- **Proba, scrisă întâi:** a căzut cu „tip necunoscut”, apoi a prins o muchie împărțită de punte și de peretele
+  piciorului (STL „deschis”): marginea de jos a punții stă la 0,01 mm de masă.
+- **Balamaua și placa turnantă, despărțite de felie** (trec în 3.Ck): jocurile lor de mișcare se potrivesc pe piese
+  tipărite, nu pe hârtie.
+- **Probele vechi, la zi:** „Cărămizi 11”, galeriile și desenele, căutarea, starea unei liste vechi, versiunea 18.27.0.
+- **Otrăvurile:** 58 / 58, la prima rulare (38 în probele unitare, 20 prin browser).
+- **Probele pluginului în browser:** 70 / 70. Easy 3Draw 18.27.0 (491,4 kB), cu rândul de „ce e nou”; doar pachetul se
+  schimbă.
+- **Neîmpinsă până la unirea lotului 28** (3.Ca și 3.Cb), la rugămintea sesiunii principale.
+- **După felie:** completul lui 3.Cc și 3.Cd (45501872646, pe `e8c9fd15`) a căzut la o singură probă, a bibliotecii, din
+  816: „Ce e nou” arată data versiunii (`extensii.descoperire.spec.ts`). Proba, scrisă la 3.Xi, căuta pe nume rândul lui
+  18.21.0, iar catalogul poartă doar ultimele cinci rânduri: de la 18.26.0, rândul nu mai e. Proba citește acum rândul
+  din lista bibliotecii (fără cod de produs schimbat); completul, pornit din nou.
+
 ## 2026-11-24 — Sesiunea principală în cloud: clicul pe „Închide” din cadrul unei extensii, pierdut (probă instabilă, reparată) (Model: Claude Fable 5.2)
 
 **Prompt:** completul de pe `main` pentru loturile 19–21 (`7312d685`, rularea 45436221341), roșu la o singură probă;
