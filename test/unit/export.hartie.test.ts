@@ -84,6 +84,51 @@ test('adâncimea tăiată a fiecărei operații e cea din documentul tăiat de l
   assert.ok(n > 100 && schimbate >= 20, `${n} operații, ${schimbate} schimbate`);
 });
 
+/**
+ * Foaia de 18 cu un profil și o finisare a reliefului (ADR 0312), amândouă cât foaia. Dalele nu contează aici: regula privește
+ * doar operațiile, deci amprenta e una oarecare, cu forma cerută de ușă.
+ */
+const CU_FINISARE = ((): Document => {
+  const d = incarca({
+    schema: 29, rev: 0,
+    piese: [{
+      id: 'p',
+      radacina: {
+        tip: 'grup', id: 'g', matrice: { ...I },
+        copii: [
+          { tip: 'element', id: 'e', forma: DR(30, 30), matrice: { ...I, e: -5, f: -5 } },
+          { tip: 'element', id: 'r', forma: { tip: 'relief', nx: 40, ny: 40, celula: 0.5, straturi: [{ id: 's1', mod: 'aduna', vizibil: true, dale: 'a'.repeat(64) }] }, matrice: { ...I } },
+        ],
+      },
+      operatii: [
+        { id: 'o', tip: 'profil', noduri: ['e'], scula: F6, latura: 'exterior', sens: 'urcare', adancime: 18, pas: 6, urechi: null, rampa: null, intrari: null, colturi: null },
+        {
+          id: 'f', tip: 'finisare', noduri: ['r'], scula: { numar: 2, nume: 'freza bila', diametru: 4, forma: { tip: 'bila' } }, latura: 'pe-linie', sens: 'urcare',
+          adancime: 18, pas: 2.5, pasLateral: 0.5, finisare: { unghi: 0 }, urechi: null, rampa: null, intrari: null, colturi: null,
+        },
+      ],
+    }],
+    foi: [{ id: 'f1', stoc: { latime: 200, inaltime: 150, grosime: 18 }, instante: [{ id: 'i', piesa: 'p', x: 40, y: 40, rotire: 0 }] }],
+  });
+  if (!d.ok) assert.fail(d.motiv);
+  return d.doc;
+})();
+
+test('cu 18.1↑c: o finisare cât foaia nu primește supracursa, nici în lucrare, nici pe hârtie; profilul cât foaia o primește', () => {
+  const [profil, finisare] = CU_FINISARE.piese[0]?.operatii ?? [];
+  assert.ok(profil?.tip === 'profil' && finisare?.tip === 'finisare');
+  for (const s of [0.3, 0.5, 2]) {
+    const [p, f] = cuTaieturiPrinFoaie(CU_FINISARE, s).piese[0]?.operatii ?? [];
+    assert.equal(p?.adancime, 18 + s, `lucrarea, profilul, supracursa ${s}`);
+    assert.equal(f?.adancime, 18, `lucrarea, finisarea, supracursa ${s}`);
+    assert.equal(adancimeTaiata(adancimeScrisa(profil), 18, s, true), 18 + s, `hârtia, profilul, supracursa ${s}`);
+    assert.equal(adancimeTaiata(adancimeScrisa(finisare), 18, s, true), 18, `hârtia, finisarea, supracursa ${s}`);
+    // Fără bifă, amândouă cum sunt scrise.
+    assert.equal(adancimeTaiata(adancimeScrisa(profil), 18, s, false), 18);
+    assert.equal(adancimeTaiata(adancimeScrisa(finisare), 18, s, false), 18);
+  }
+});
+
 const intrare = (x: Partial<IntrareHartie>): IntrareHartie => ({
   tip: 'profil', adancime: 18, incrustatie: 'fara', pas: 6, grosime: 18, supracursa: 0, prinFoaie: false, diametruScula: 6, retragere: 1,
   diametre: [], ...x,

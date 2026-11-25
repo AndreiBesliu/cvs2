@@ -14974,8 +14974,13 @@ ei, „nu fără rând” (rândul finisării în fereastra exportului, doar de 
   proprietăți ale ferestrei), plus proba cu nota bibliotecii desfăcută, 10 / 10. Găsit pe drum: probele frezelor
   (`exportFrezeNota`, `exportFrezeInapoi`) cad 4 / 50 și pe `unire-2511w` curat: după salvare sau ștergere focusul cade din
   „Frezele mele”, iar Escape nu mai ajunge la ea (spus sesiunii principale).
+- **Peste 18.1↑c** (la mesajele sesiunii principale, 19:44 și 19:52): `origin/unire-2511x` (`f7ca20b6`) adus. Trei ciocniri,
+  toate din 28.8↑h: finisarea reliefului intră în `catFoaia` (regula „cât foaia” comună lucrării și ferestrei), props-urile
+  ferestrei amândouă, F01 și F02 din `12.1f-4.py` mutate. Proba nouă (o finisare cât foaia rămâne la adâncimea scrisă, în
+  lucrare și pe hârtie; profilul cât foaia coboară), văzută căzând fără finisarea în `catFoaia`; otrăvurile U12 și J05 (a
+  reliefului, mutată), prinse. Aurul plăcilor, al documentelor și corpusul CAM: 1 853 / 1 853.
 
-**Completed:** 25.11, 17:47; peste b-6, 18:43.
+**Completed:** 25.11, 17:47; peste b-6, 18:43; peste 18.1↑c, 20:06.
 
 ## 2026-11-25 — Felia 3.Au: starea lucrării imprimantei e necunoscută până vine codul stării (Model: Claude Fable 5.2)
 

@@ -87,7 +87,8 @@ o('J02', JB, '      nx: r.forma.nx, ny: r.forma.ny, celula: r.forma.celula * s, 
 o('J03', JB, "  ...(s.forma?.tip === 'bila' ? { forma: { tip: 'bila' as const } } : {}),\n", '', 'program', 'bila pierdută în IR (simulată plată)')
 o('J04', JB, "    ...finisari.map((f) => ({ idLume: f.reliefuri[0]?.idLume ?? `${f.instanta}/${f.operatie.id}`, scule: [f.operatie.scula] })),\n", '', 'program',
   'frezele finisărilor lipsă din „același T”')
-o('J05', PF, "o.tip !== 'vcarve' && o.tip !== 'finisare' && !o.incrustatie", "o.tip !== 'vcarve' && !o.incrustatie", 'program',
+# Mutată pe `catFoaia` (28.8↑h, 25.11: regula „cât foaia” comună lucrării și ferestrei); aceeași greșeală.
+o('J05', PF, "o.tip !== 'vcarve' && o.tip !== 'finisare' && o.incrustatie === 'fara'", "o.tip !== 'vcarve' && o.incrustatie === 'fara'", 'program',
   '„prin foaie” mută podeaua finisării sub placă')
 o('J06', RS, '    if (!s.vizibil) continue;\n', '', 'program', 'un strat ascuns intră în compusul tăiat')
 

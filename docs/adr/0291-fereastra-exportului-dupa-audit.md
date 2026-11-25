@@ -235,6 +235,13 @@ panoul 71..596, greșeala 651..696.
     844 × 390: freza „Plată Ø12” intră în proiect pe un cerc de R10, e ștearsă din bibliotecă, apoi cercul crește la R15.
 - **Peste 16.A↑b-6:** ramura are `origin/unire-2511w` adus (b-6 și 3.Tu). Ciocnirile au fost doar în listele de proprietăți
   ale ferestrei (`hartie` și `inapoi`, amândouă păstrate).
+- **Peste 18.1↑c** (`origin/unire-2511x`, `f7ca20b6`): relieful scosese finisarea din tăieturile cât foaia pe vechiul `prin`
+  din `cuTaieturiPrinFoaie`, iar 28.8↑h mutase regula în `catFoaia`, comună lucrării și ferestrei. Finisarea intră în
+  `catFoaia`, deci o finisare cât foaia rămâne la adâncimea scrisă, cu bifa și cu supracursa, și în lucrare, și pe hârtie;
+  un profil cât foaia din același document coboară ca până acum. Proba: `export.hartie.test.ts` („cu 18.1↑c: …”), văzută
+  căzând fără finisarea în `catFoaia`; partea lucrării pe program o ține și proba reliefului din `finisare.program.test.ts`.
+  Rândul unei finisări nu ajunge la `hartie`: e doar de citit (`FisaFinisare.tsx`), iar `peRand` îl scoate din rândurile
+  fișei operației.
 - **Otrăvurile:** E11–E16 în `28.8h.py`, 6 / 6. E12 (capătul de sus scăpat când nu încape) scăpase întâi; proba de la
   844 × 300 o prinde. E01 din `28.8a.py` (derularea capului fișei) e tot prinsă.
 - **Mărimea:** pornirea +0 (111,2 kB), totalul +0,2 kB (893,5 / 1 000). Programul, documentul și serverul: neschimbate.

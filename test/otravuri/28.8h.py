@@ -2,7 +2,7 @@
 # regula adâncimii tăiate (gaura, bifa), trecerile și felul găuririi socotite de aplicație, pașii ciocănirii; în fereastră, ce
 # primește rândul (supracursa, bifa), desenul adâncimii și nota, desenul elicei, câmpul ieșirii, greșeala cercului care nu se
 # găurește și oprirea lui Exportă, diametrele cercurilor; „Du-mă la …” (28.8↑h-2): derularea până la greșeală, întinderile care
-# încap, focusul pe câmpul greșit, diametrul marcat greșit, grupul primei greșeli.
+# încap, focusul pe câmpul greșit, diametrul marcat greșit, grupul primei greșeli; peste 18.1↑c, finisarea scoasă din „cât foaia”.
 # Se rulează cu `scripts/otravuri.py` (docs/otravuri.md), dintr-o clonă a ramurii, după commit; cele „e2e” cer build-ul.
 # o(id, fis, vechi, nou, set, ce): `vechi` apare EXACT o dată în fișier; altfel VOID.
 O = []
@@ -40,6 +40,8 @@ o('U09', GF, "  return Dc - D <= TOLERANTA_GAURA ? 'ciocanire' : 'elice';", "  r
 o('U10', GF, "      if (k % retragere === 0) {", "      if (k % retragere === 1) {", 'hartie', 'iese din gaură la alt pas')
 o('U11', GF, "        m.push({ z: -fund + RETRAGERE_PARTIALA, taie: false });", "        m.push({ z: -fund - RETRAGERE_PARTIALA, taie: false });", 'hartie',
   'ridicarea dintre pași coboară')
+o('U12', PF, "  o.tip !== 'vcarve' && o.tip !== 'finisare' && o.incrustatie === 'fara' && Math.abs",
+  "  o.tip !== 'vcarve' && o.incrustatie === 'fara' && Math.abs", 'hartie', 'finisarea cât foaia (18.1↑c) primește supracursa, în lucrare și pe hârtie')
 
 # Fereastra (e2e).
 o('E01', DE, "prinFoaie: cuSupracursa && prinFoaie,", "prinFoaie: false,", 'e2e', 'rândul nu vede bifa „și tăieturile cât foaia”')
