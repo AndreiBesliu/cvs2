@@ -492,9 +492,12 @@ export function rezervaExplicatii(panou: HTMLElement | null): void {
 }
 
 export const COLTURI = ['stanga-jos', 'dreapta-jos', 'dreapta-sus', 'stanga-sus'] as const;
-export const CHEI_COLT: Readonly<Record<(typeof COLTURI)[number], CheieSimpla>> = {
+/** Unde poate sta XY0: în colțuri, apoi în centrul foii (ADR 0291 §6). */
+export const ORIGINI = [...COLTURI, 'centru'] as const;
+export type OrigineExport = (typeof ORIGINI)[number];
+export const CHEI_COLT: Readonly<Record<OrigineExport, CheieSimpla>> = {
   'stanga-jos': 'export.colt.stanga-jos', 'dreapta-jos': 'export.colt.dreapta-jos',
-  'dreapta-sus': 'export.colt.dreapta-sus', 'stanga-sus': 'export.colt.stanga-sus',
+  'dreapta-sus': 'export.colt.dreapta-sus', 'stanga-sus': 'export.colt.stanga-sus', centru: 'export.colt.centru',
 };
 export const CHEI_LATURA: Readonly<Record<Latura | 'buzunar', CheieSimpla>> = {
   exterior: 'export.latura.exterior', interior: 'export.latura.interior', 'pe-linie': 'export.latura.pe-linie',

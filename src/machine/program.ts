@@ -91,10 +91,10 @@ export async function incarcaProgram(
  * Montajul declarat în antetul unui program exportat de aici (comentariul postului: „origine stanga-jos, Z0 sus, foaia …”), ca
  * panoul să spună lângă zero unde e originea XY și Z0 (lecția ediției întâi). Null: programul nu-l declară (un fișier străin).
  */
-export type MontajDeclarat = { readonly origine: 'stanga-jos' | 'dreapta-jos' | 'dreapta-sus' | 'stanga-sus'; readonly z0: 'sus' | 'jos' };
+export type MontajDeclarat = { readonly origine: 'stanga-jos' | 'dreapta-jos' | 'dreapta-sus' | 'stanga-sus' | 'centru'; readonly z0: 'sus' | 'jos' };
 export function montajDeclarat(p: ProgramIncarcat): MontajDeclarat | null {
   for (const l of p.linii.slice(0, 20)) {
-    const m = /\(origine (stanga-jos|dreapta-jos|dreapta-sus|stanga-sus), Z0 (sus|jos),/.exec(l.text);
+    const m = /\(origine (stanga-jos|dreapta-jos|dreapta-sus|stanga-sus|centru), Z0 (sus|jos),/.exec(l.text);
     if (m) return { origine: m[1] as MontajDeclarat['origine'], z0: m[2] as MontajDeclarat['z0'] };
   }
   return null;

@@ -44,8 +44,8 @@ function aceeasiIesire(a: IesireFoaie | undefined, b: IesireFoaie): boolean {
  */
 export function numeFisierDop(nume: string, k: number, scurt: boolean): string {
   if (scurt) return nume.startsWith('CNCVS2.') ? `DOP${k + 1}${nume.slice('CNCVS2'.length)}` : `D${k + 1}${nume.slice(2)}`;
-  // `cncvs2-<origine>` (originea are și ea o liniuță: `stanga-jos`), apoi extensia sau `-<ordinea>-T<n>.<ext>`.
-  const m = /^(cncvs2-[a-z]+-[a-z]+)(.*)$/.exec(nume);
+  // `cncvs2-<origine>` (un colț are și el o liniuță, `stanga-jos`; centrul nu), apoi extensia sau `-<ordinea>-T<n>.<ext>`.
+  const m = /^(cncvs2-(?:[a-z]+-[a-z]+|centru))(.*)$/.exec(nume);
   return m ? `${m[1]}-dop-${k + 1}${m[2]}` : `dop-${k + 1}-${nume}`;
 }
 

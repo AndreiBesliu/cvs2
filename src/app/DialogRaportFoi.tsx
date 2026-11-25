@@ -14,7 +14,7 @@ import { mesajeGata } from '../i18n/laCerere.ts';
 import { t } from '../i18n/t.ts';
 import { scrieSvg } from '../io/svgExport.ts';
 import { vectoriFoaie } from '../io/vectori.ts';
-import type { ColtOrigine } from '../ir/montaj.ts';
+import type { OrigineXY } from '../ir/montaj.ts';
 import type { Document } from '../model/document.ts';
 import { numeFoaie } from '../model/foi.ts';
 import { raportFoi, type MarimeRaport, type OperatieRaport } from '../model/raportFoi.ts';
@@ -41,7 +41,7 @@ function textOperatie(o: OperatieRaport, n: Intl.NumberFormat): string {
 export function DialogRaportFoi({ doc, origine, z0, onInchide }: {
   readonly doc: Document;
   /** Colțul de origine și Z0 ale exportului (ale ferestrei lui, sau cele implicite): raportul le spune, nu le schimbă. */
-  readonly origine: ColtOrigine;
+  readonly origine: OrigineXY;
   readonly z0: 'sus' | 'jos';
   readonly onInchide: () => void;
 }): ReactNode {
@@ -91,7 +91,8 @@ export function DialogRaportFoi({ doc, origine, z0, onInchide }: {
     <div className="dialog raport-foi-tipar" role="dialog" aria-modal="true" aria-labelledby="raport-titlu" data-testid="dialog-raport" onKeyDown={tasta}>
       <div className="dialog-cutie raport-foi">
         <h2 id="raport-titlu">{t('export.raport.titlu')}</h2>
-        <p className="nota">{t('export.raport.parametri', { z0: t(`export.z0.${z0}`), colt: t(`export.colt.${origine}`) })}</p>
+        <p className="nota">{origine === 'centru' ? t('export.raport.parametri.centru', { z0: t(`export.z0.${z0}`) })
+          : t('export.raport.parametri', { z0: t(`export.z0.${z0}`), colt: t(`export.colt.${origine}`) })}</p>
         <div className="ordine-taierii fara-tipar">
           <span className="eticheta">{t('export.raport.marime')}</span>
           {comutator('data-raport-marime', [['taiata', numeMarime('taiata')], ['desen', numeMarime('desen')]], fel, (v) => { setFel(v === 'desen' ? 'desen' : 'taiata'); })}

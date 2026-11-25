@@ -86,7 +86,7 @@ export type IesireAplicatie =
  */
 export async function programulAplicatiei(
   doc: DocV4O | DocV5O | DocV6O | DocV7O | DocV8O | DocV9O,
-  montaj: { readonly origine: 'stanga-jos' | 'dreapta-jos' | 'dreapta-sus' | 'stanga-sus'; readonly z0: 'sus' | 'jos' },
+  montaj: { readonly origine: 'stanga-jos' | 'dreapta-jos' | 'dreapta-sus' | 'stanga-sus' | 'centru'; readonly z0: 'sus' | 'jos' },
   o: { readonly supracursa?: number } = {},
 ): Promise<IesireAplicatie> {
   const { calculeazaExport } = await import('../../src/ui/actiuniExportCalcul.ts');

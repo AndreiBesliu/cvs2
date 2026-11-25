@@ -329,7 +329,9 @@ export const esteCreality = (c: Cadru): boolean => c.inima || Object.keys(c.star
  * până la lucrarea următoare.
  */
 export function stareLucrare(i: Imprimanta): StareLucrare {
-  if (i.cod === null && i.fisier === null && i.progres === null) return 'necunoscuta';
+  // Fără codul stării nu se știe nimic despre lucrare: starea vine pe bucăți, iar una doar cu progresul, sosită la legare
+  // înaintea stării întregi, făcea imprimanta „liberă” și lucrarea ei, găsită în curs, „pornită” de aici (felia 3.Au).
+  if (i.cod === null) return 'necunoscuta';
   if (i.autotest !== null && i.autotest >= 1 && i.autotest <= 99) return 'autotest';
   if (i.fisier !== null) {
     if (i.cod === 2) return 'gata';
