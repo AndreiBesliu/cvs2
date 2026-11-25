@@ -138,7 +138,15 @@ degroșarea și finisarea pe relief), unde stă relieful în document și unde s
   `ff146fe1` (cu `main` `65eecdc6`), verzi. La mesajul din 18:22, adus și 16.A↑b-6 (`origin/unire-2511w`, `1d3882d9`): copia
   de readus în bibliotecă știe doar forma în V, iar rândurile n-au bile, deci bila nu se poate readuce ca plată (paza, a
   compilatorului, în `exportFreze.bila.test.ts`).
+- **25.11, seara: 18.1↑c unită în `main`** (`f7ca20b6`, din `40c745f5`; PR-ul `AndreiBesliu/cvs2#39`; `main` `e5c217b2`), peste
+  16.A↑b-6, 10.4↑c-2 și 16.A↑b-7; completul unirii 45672724822, verde. Documentul e v29 în `main`; un câmp nou ia v30, numărul
+  îl dă sesiunea principală. Linia n-are felie în lucru: **18.1↑d (degroșarea, apoi fișa plăcii reliefului) și rândul
+  editabil al finisării pornesc doar la cuvântul owner-ului.**
 - **De ținut minte, din 18.1↑c:**
+  - regula „cât foaia” (supracursa cu bifa „prin foaie”) stă într-un singur loc, `catFoaia` (`src/cam/prinFoaie.ts`, din
+    28.8↑h), citită și de lucrare, și de desenele ferestrei; finisarea e înăuntru (`o.tip !== 'finisare'`). Un fel nou de
+    operație pe relief care nu trebuie dus prin foaie se adaugă acolo, nu într-o condiție a lucrării. Proba:
+    `finisare.program.test.ts` („bifa „prin foaie” nu atinge finisarea…”), care prinde otrava J05;
   - verdictul „Exportă G-code” și „Toate foile” numără și o foaie doar cu finisare (`areFinisare`, `ordinePasi`): un cod nou
     care întreabă „are foaia ce tăia?” nu se uită doar la `taieturiFoaie`;
   - relieful importat stă în colțul foii, deci o freză mai lată decât o jumătate de celulă iese din foaie: exportul cere
