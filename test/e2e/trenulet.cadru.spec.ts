@@ -106,6 +106,11 @@ test('configuratorul: lungimea, înălțimea, rama, mărimile uzuale și colțur
   await scrie(page, '#at-cad-inalt', '2');
   await scrie(page, '#at-cad-rama', '1.2');
   await expect(nume(page)).toHaveText('Cadru 1×2×2, rama 1,2 mm');
+  // mărimea uzuală se vede apăsată doar când se potrivesc și lungimea, și înălțimea
+  await expect(apasat(page, 'at-cad-repede')).toHaveText('1×2×2');
+  await scrie(page, '#at-cad-inalt', '4');
+  await expect(nume(page)).toHaveText('Cadru 1×2×4, rama 1,2 mm');
+  await expect(apasat(page, 'at-cad-repede')).toHaveCount(0);
   await scrie(page, '#at-cad-lung', '8');
   await scrie(page, '#at-cad-inalt', '6');
   await scrie(page, '#at-cad-rama', '4');
