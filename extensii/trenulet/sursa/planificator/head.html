@@ -331,6 +331,13 @@ pre.json { background: var(--panou-2); border-radius: 8px; padding: 10px; font-f
 .model-ales { display: flex; flex-direction: column; gap: 10px; padding: 12px; border: 1px solid var(--linie); border-radius: 8px; background: var(--panou-2); }
 .mutari { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
 .mutari .btn { padding: 8px 6px; }
+.model-prinderi { display: flex; flex-direction: column; gap: 6px; }
+.model-prinderi .at-rand { align-items: flex-start; }
+.model-prinderi .fel { display: inline-block; min-width: 7.5em; padding-top: 6px; }
+.model-prinderi .fel::first-letter { text-transform: uppercase; }
+.model-prinderi .numere { display: flex; flex-wrap: wrap; gap: 4px; }
+.model-prinderi .numere button { min-width: 30px; height: 30px; padding: 0 6px; border: 1px solid var(--linie); border-radius: 6px; background: var(--panou); color: inherit; font: inherit; font-size: 13px; font-variant-numeric: tabular-nums; cursor: pointer; }
+.model-prinderi .numere button[aria-pressed="true"] { background: #ff8a00; border-color: #ff8a00; color: #1b1b1b; font-weight: 700; }
 .model-lista { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; max-height: 260px; overflow-y: auto; }
 .model-lista button { width: 100%; text-align: left; border: 1px solid transparent; background: transparent; border-radius: 8px; padding: 6px 8px; display: flex; align-items: center; gap: 8px; font-size: 14px; }
 .model-lista button[aria-pressed="true"] { border-color: var(--caramida); background: var(--panou-2); }

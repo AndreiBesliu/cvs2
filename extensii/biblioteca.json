@@ -18,6 +18,12 @@
       ],
       "noutati": [
         {
+          "versiune": "18.34.0",
+          "data": "2026-11-25",
+          "ro": "În „Modelul”, piesele se prind între ele: alegi una, apoi o prindere a ei (un punct din vedere sau un număr), iar piesa următoare se alipește acolo și o urmează când o muți. O poți roti, glisa pe ax și desprinde.",
+          "en": "In the Model view, pieces now join: choose one, then one of its connections (a dot in the view or a number), and the next piece attaches there and follows it when moved. You can turn it, slide it along an axle and detach it."
+        },
+        {
           "versiune": "18.33.0",
           "data": "2026-11-25",
           "ro": "În „Modelul”, piesele rotunde (roți, elice, rotorul și carcasa ventilatorului) stau cu axul în mijlocul unui știft, deci ajung pe același ax. O piesă nouă intră pe axul celei alese, iar rotorul, în carcasa lui.",
@@ -148,8 +154,8 @@
           }
         }
       ],
-      "versiune": "18.33.0",
-      "continut": "23179067565ed3f15ba28540419808b879172d6a9fa8bc88c314939942f6765d"
+      "versiune": "18.34.0",
+      "continut": "f400c520dc0df288ddad822ea88bdb760e906c7cd525d6605ec13fda50669adf"
     }
   ]
 }
