@@ -14610,3 +14610,25 @@ miercuri.” și „vreau sa pornesti si celelalte sub-sesiuni”). **Started:**
 - **Otrăvurile** (`test/otravuri/10.4c1.py`, într-o clonă): 41 / 44 (31 unitare: 28 prinse, X09, W11 și V02 practic
   echivalente; 6 e2e; 7 pe oracolul Python, cu corpusul regenerat la fiecare); X08, X10, X11, W01, W02, W05, V01 și E05 au
   scăpat întâi și sunt prinse după probele noi.
+
+## 2026-11-25 — Sesiunea principală în cloud: a treizeci și doua unire (cotele în exportul vectorilor, 10.4↑c-1) (Model: Claude Fable 5.2)
+
+**Prompt:** raportul liniei cotelor („10.4↑c-1 e gata de unit, la `d8e69780`”), la ordinul în vigoare „unește ce se
+poate”
+**Started:** 25.11, 12:16. **Completed:** unirea în `main`, 25.11, 12:20; publicarea pe test, cu lotul următor.
+
+- **Verificat înaintea unirii:** rapidul (45584195530, 45584184980) și completul (45584185001), verzi pe `d8e69780`;
+  PR-ul `AndreiBesliu/cvs2#32`, deschis; fără `.lucru/`; ramura are `dad1a711`.
+- **Unirea, pe `unire-2511p`** (din `19f0b386`): `d8e69780`, în `f2f6fc57`. Ciocnirea, doar în DEVLOG
+  (`rezolva-devlog.py`, ambele părți). Față de `d8e69780`, arborele unirii diferă, în afara fișierelor `.md`, doar în
+  `docs/traduceri/roadmap.en.json` (rândul lui ADR 0291, venit din `main`). Local, pe arborele unit: traducerile
+  (1 118, niciuna lipsă), catalogul controalelor (la zi), biblioteca (Easy 3Draw 18.30.0, la zi), regulile de import
+  (22 / 22), tipurile, probele documentelor (62 / 62).
+- **Porțile, în CI, pe `d8e69780`** (citite din jurnalul rulării): completul, verde (55 min): unit 10 469 / 0
+  (12 sărite, pe Linux), e2e 836 / 836, funcțiile pe emulatoare 136 / 136, paginile 59 / 59. Pornirea 111,2 kB
+  (plafonul 125; cu ușa 116,1, cu Atelierul 116,5), totalul 888,1 / 1 000 kB (+3,3), `/admin` 138,3 / 200. Nimic pe
+  server.
+- **Lotul pregătit pe `unire-2511o`** (atelierul, `b099c457`; exportul, `7996e77c`) își reface porțile peste
+  `main`-ul acesta: completul lui de pe `c0329020` (45591209284) nu mai acoperă codul cotelor.
+- **Documentele:** decizia și paragraful de stare în `CLAUDE.md`; indexul liniilor; starea din
+  `docs/linii/principala.md`.

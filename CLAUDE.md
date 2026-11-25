@@ -1138,9 +1138,22 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   diametrul, arcul raza, două laturi unghiul); desenul pur e `src/model/desenCota.ts`; inch în fracții, unghiul în
   grade zecimale sau în grade-minute-secunde, prefixele razei și diametrului; în Setări › Cotele, grupul „Raza,
   diametrul, unghiul”. Raza pe o linie, elipsă sau curbă e refuzată, cu motivul. Documentul rămâne v28 (cotele stau
-  pe foaie); nimic pe server. Urmează 10.4↑c (exportul cotelor: DIMENSION în DXF, liniile și cifrele în SVG / PDF /
-  EPS), la cuvântul owner-ului. Feliile: pornirea +0,3 kB (111,2; cu ușa 116,1, cu Atelierul 116,5 / 120), totalul
+  pe foaie); nimic pe server. Feliile: pornirea +0,3 kB (111,2; cu ușa 116,1, cu Atelierul 116,5 / 120), totalul
   +7,4 kB (880,9 / 900).
+  **Cotele în exportul vectorilor (ADR 0330 §6, §7, felia 10.4↑c-1)** gata pe 25.11, unită în `main` pe 25.11
+  (`f2f6fc57`), la „vreau sa pornesti si celelalte sub-sesiuni” al owner-ului: în „Exportă vectori”, pe o foaie cu
+  cote, bifa **„Cu cotele (N)”** (implicitul ei, numele stratului, culoarea și grosimea: Setări › Cotele ›
+  Exportul). Cu ea, cotele intră în DXF, SVG, PDF și EPS, pe stratul lor. Entitățile cotelor sunt pure
+  (`src/io/coteExport.ts`): liniile, arcul unghiului exact, săgeata plină ca triunghi umplut (SOLID în DXF), punctul
+  ca disc, cifrele ca trăsăturile lui Relief SingleLine. **`src/io` nu importă textul** (regula
+  `io-doar-model-geom`): cifrele le așază apelantul (`cifreDinFont`, `src/text/cifreCote.ts`) și le dă entităților.
+  Fără cote sau fără bifă, fișierele ies octet cu octet ca înainte. SVG-ul rămâne cât foaia (o cotă din afara ei iese
+  din pagină); PDF-ul, EPS-ul și DXF-ul se lărgesc. **Oracolul cotelor e Python**
+  (`test/oracles-py/export2d_cote.py`, pas în jobul `oracol-export2d`; corpusul cotelor, tot din
+  `scripts/export2d-corpus.ts`): valorile lui sunt scrise din descrierea corpusului și din regulile desenului (ADR
+  0330 §4–§6), nu din codul aplicației, deci o cotă nouă în corpus își cere valorile pe hârtie acolo. Urmează
+  10.4↑c-2 (DIMENSION în DXF, cifrele ca text), la cuvântul owner-ului. Documentul rămâne v28; nimic pe server.
+  Felia: pornirea +0,1 kB, totalul +3,3 kB (888,1 / 1 000).
   **Relieful din imagine, pe planșă (ADR 0310, ADR 0311, felia 18.1↑a, adusă din etapa 18; documentul v28)** gata pe
   24.11, în sesiunea cloud a liniei (ramura `wip/18.1-relief`), unită în `main` pe 24.11 (`c5b79526`). ADR 0310,
   acceptat de owner cu „1a–6a”. Din „Importă…”, o imagine (PNG, JPEG, WebP, GIF, BMP) se face **relief** cu alegerea
@@ -1664,6 +1677,31 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 25.11.2026, la prânz (a treizeci și doua unire din cloud): **cotele în exportul vectorilor (10.4↑c-1), unite în
+  `main`** (sesiunea principală, ramura `unire-2511p`, din `19f0b386`). Linia cotelor, ramura `wip/10.4-cote`,
+  `d8e69780`, PR-ul `AndreiBesliu/cvs2#32` (ADR 0330 §6, §7; pornită la „vreau sa pornesti si celelalte sub-sesiuni”
+  al owner-ului), unită în `f2f6fc57`: în „Exportă vectori”, pe o foaie cu cote, bifa „Cu cotele (N)” (oprită
+  implicit, după Setări › Cotele › Exportul); cu ea, cotele intră în DXF, SVG, PDF și EPS, pe stratul lor (numele,
+  culoarea și grosimea, din Setări): liniile, arcul unghiului exact, săgețile pline ca triunghiuri umplute (SOLID în
+  DXF), punctele ca discuri, cifrele ca trăsăturile lui Relief SingleLine. Fără cote sau fără bifă, fișierele ies
+  octet cu octet ca înainte. Felia c s-a împărțit: c-2 (DIMENSION în DXF și cifrele ca text) vine la cuvântul
+  owner-ului. Oracolul independent e Python (`test/oracles-py/export2d_cote.py`, pas nou în jobul `oracol-export2d`
+  al rapidului: în DXF, cele 181 de segmente de pe hârtie, exact; PDF, SVG și EPS, în toleranță); otrăvurile 41 / 44
+  (trei unitare, practic echivalente). Documentul rămâne v28; nimic pe server. Ciocnirea, doar în DEVLOG (ambele
+  părți păstrate). `main` adusese peste ramură doar documente și rândul lui ADR 0291 din traducerile roadmap-ului,
+  deci **arborele unirii are codul lui `d8e69780`** (`git diff` arată, în afara fișierelor `.md`, doar
+  `docs/traduceri/roadmap.en.json`, verificat local: 1 118 texte, niciunul fără traducere; tipurile, regulile de
+  import, catalogul controalelor și probele documentelor, verzi) și a intrat pe porțile lui, fără alt complet:
+  completul 45584185001, verde (unit 10 469 / 0, 12 sărite pe Linux; e2e 836 / 836; funcțiile pe emulatoare
+  136 / 136; paginile 59 / 59); rapidul, verde pe `d8e69780`; pornirea 111,2 kB (plafonul 125; cu ușa 116,1, cu
+  Atelierul 116,5), **totalul 888,1 / 1 000 kB** (+3,3), `/admin` 138,3 / 200. Pe test e `d1a96fc4` (lotul 31);
+  lotul 32 (`dad1a711`, relieful în vederea 3D) e în drum: completul lui pe `main` rula la unire. Cotele pleacă spre
+  test cu lotul următor, pregătit pe `unire-2511o`: atelierul Easy 3Draw (3.Cj-3, cadrul, și 3.Cj-4, șurubul melc,
+  18.32.0) și 28.8↑n (numele fișierului în fereastra exportului), care își refac porțile peste `main`-ul acesta. La
+  linii, în lucru: frezele (16.A↑b-5), relieful (18.1↑c, cu v29), exportul (28.8↑o), atelierul. **La owner:**
+  10.4↑c-2 (DIMENSION și cifrele ca text), cele patru întrebări din auditul elicelor și cele trei ale lui 3.Tu,
+  arhivarea sesiunii elicelor, verificarea juridică (GDPR) a utilizării aplicației înaintea live-ului, „cine unește
+  în `main`”, meniul de sus la 320 px la atingere.
 - 25.11.2026, înainte de prânz: **fereastra exportului după audit, ADR 0291 acceptat** (owner-ul, în sesiunea liniei
   exportului, la cele nouă întrebări ale auditului: „1a, 2a, 3a, 4a, 5a, 6a, 7a, 8a, 9a”). ADR-ul (scris de linie, `5966da75`,
   PR-ul `AndreiBesliu/cvs2#36`, doar documente), unit în `b826abe9`. **Ce a hotărât:**
