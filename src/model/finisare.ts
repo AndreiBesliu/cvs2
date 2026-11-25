@@ -3,7 +3,7 @@
  * reliefurile ei în lume) și hărțile straturilor lor vizibile, pe care firul principal le aduce workerului CAM. Pur.
  */
 import type { Document, FormaRelief, Matrice, Operatie, Scula } from './document.ts';
-import { elementeFoaie } from './lume.ts';
+import { elementeFoaie, grupeazaPeScula, taieturiFoaie, type Taietura } from './lume.ts';
 
 /** O finisare de pe foaie: operația, într-o instanță, cu reliefurile ei (în lume, în ordinea din operație). */
 export type FinisareFoaie = {
@@ -33,6 +33,52 @@ export function finisariFoaie(doc: Document, indexFoaie = 0): FinisareFoaie[] {
     }
   }
   return rez;
+}
+
+/** Un pas al programului foii: o finisare a reliefului sau o tăietură pe contur. */
+export type PasProgram = { readonly fel: 'finisare'; readonly f: FinisareFoaie } | { readonly fel: 'taietura'; readonly t: Taietura };
+
+/** Rangul unui pas în ordinea de mână (ADR 0133), dacă operația lui îl are. */
+const rangPas = (p: PasProgram): number | undefined => (p.fel === 'finisare' ? p.f.operatie.rang : p.t.rang);
+
+/**
+ * Ordinea programului foii, cu finisările (ADR 0312 §7). În ordinea automată, finisările vin întâi, cât placa e încă
+ * întreagă: nicio tăietură, nici exteriorul prin foaie al piesei, nu desprinde relieful înaintea lui. Urmează tăieturile în
+ * ordinea lucrării (`grupeazaPeScula`). Cu ranguri (ADR 0133), toți pașii se sortează stabil după rang. O tăietură fără rang
+ * vine la capăt, ca până acum. O finisare fără rang rămâne în față, la locul ei automat: nu ajunge pe tăcute după tăierea
+ * de contur. Tăieturile rămân în ordinea lui `ordineTaieturi`.
+ */
+export function ordinePasi(doc: Document, indexFoaie = 0): PasProgram[] {
+  const automata: PasProgram[] = [
+    ...finisariFoaie(doc, indexFoaie).map((f): PasProgram => ({ fel: 'finisare', f })),
+    ...grupeazaPeScula(taieturiFoaie(doc, indexFoaie)).map((t): PasProgram => ({ fel: 'taietura', t })),
+  ];
+  if (!automata.some((p) => rangPas(p) !== undefined)) return automata;
+  const loc = (p: PasProgram): number => rangPas(p) ?? (p.fel === 'finisare' ? Number.NEGATIVE_INFINITY : Number.POSITIVE_INFINITY);
+  return automata.map((p, i) => ({ p, i })).sort((a, b) => (loc(a.p) === loc(b.p) ? a.i - b.i : loc(a.p) < loc(b.p) ? -1 : 1)).map((x) => x.p);
+}
+
+/** Cheia rândului unui pas în fereastra exportului: `<piesă>/<operație>`. */
+export function cheiePas(p: PasProgram): string {
+  return p.fel === 'finisare' ? `${p.f.piesa}/${p.f.operatie.id}` : `${p.t.piesa}/${p.t.operatie}`;
+}
+
+/**
+ * Creasta lăsată pe un plan între două linii vecine (ADR 0310 §5), pe hârtie: bila de rază R, la pasul lateral s, lasă
+ * R − √(R² − (s/2)²); V-ul de unghi θ, cu vârful plat v, lasă (s − v) / 2 / tan(θ/2) când s trece de v; freza plată, nimic.
+ * Peste diametru, freza nu mai acoperă planul: `null`.
+ */
+export function creastaPePlan(s: Scula, pasLateral: number): number | null {
+  if (!(pasLateral > 0) || pasLateral > s.diametru) return null;
+  if (s.forma?.tip === 'bila') {
+    const R = s.diametru / 2, h = pasLateral / 2;
+    return R - Math.sqrt(Math.max(0, R * R - h * h));
+  }
+  if (s.forma?.tip === 'v') {
+    const v = s.forma.varf ?? 0;
+    return pasLateral <= v ? 0 : (pasLateral - v) / 2 / Math.tan((s.forma.unghi * Math.PI) / 360);
+  }
+  return 0;
 }
 
 /** Hărțile straturilor vizibile ale reliefurilor finisate pe foaie (fiecare o dată): ce trebuie adus workerului CAM. */

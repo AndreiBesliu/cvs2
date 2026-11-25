@@ -18,10 +18,11 @@ import { PLAFON, UNGHI_V_MAXIM, UNGHI_V_MINIM, type Scula } from './document.ts'
 export const FELURI_FREZA = ['plata', 'v', 'gravare', 'bila', 'toroidala', 'conica', 'burghiu', 'rotunjire', 'ogee', 'ogee-roman', 'panou'] as const;
 export type FelFreza = (typeof FELURI_FREZA)[number];
 /**
- * Felurile pe care CAM-ul le taie azi (ADR 0302 §2): celelalte (bila, toroidala, conica cu vârf rotund, burghiul) stau în
- * bibliotecă și în catalog, „în curând”, dar nu se aleg în proiect până la CAM-ul lor (16.A↑e, găurirea cu burghiu).
+ * Felurile pe care CAM-ul le taie azi (ADR 0302 §2): plata, V-ul, gravarea și, din documentul v29, bila (ADR 0312: doar pe
+ * finisarea reliefului; `motivFormaPeOperatie` o oprește în rest). Celelalte (toroidala, conica cu vârf rotund, burghiul,
+ * profilurile) stau în bibliotecă și în catalog, „în curând”, dar nu se aleg în proiect până la CAM-ul lor.
  */
-export const FELURI_CU_CAM = ['plata', 'v', 'gravare'] as const;
+export const FELURI_CU_CAM = ['plata', 'v', 'gravare', 'bila'] as const;
 export const areCam = (fel: FelFreza): boolean => (FELURI_CU_CAM as readonly FelFreza[]).includes(fel);
 
 /** Câmpurile unei freze, fără nume (frezele de pornire își primesc numele de la fereastră, în limba omului). */
@@ -243,6 +244,8 @@ function curata<F extends Freza>(f: F): F {
 export function sculaDinFreza(f: Freza, numar: number = f.numar): Scula {
   const baza = { numar, nume: f.nume, diametru: f.diametru };
   if (!areCam(f.fel)) throw new Error(`felul ${f.fel} n-are încă CAM: nu se copiază în proiect`);
+  // Bila (ADR 0312): în proiect doar forma ei; lucrarea o primește doar pe o finisare a reliefului.
+  if (f.fel === 'bila') return { ...baza, forma: { tip: 'bila' } };
   if (f.fel === 'plata' || !finit(f.unghi)) return baza;
   return { ...baza, forma: f.fel === 'gravare' && finit(f.varf) ? { tip: 'v', unghi: f.unghi, varf: f.varf } : { tip: 'v', unghi: f.unghi } };
 }

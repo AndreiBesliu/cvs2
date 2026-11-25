@@ -6,8 +6,7 @@ import type { Program } from '../ir/ir.ts';
 import type { Montaj } from '../ir/montaj.ts';
 import type { Document } from '../model/document.ts';
 import { doarFoaia, numeFoaie } from '../model/foi.ts';
-import { taieturiFoaie } from '../model/lume.ts';
-import { hartiFinisare } from '../model/finisare.ts';
+import { hartiFinisare, ordinePasi } from '../model/finisare.ts';
 import type { ResurseRelief } from '../relief/resurse.ts';
 import { cereMesaje } from '../i18n/laCerere.ts';
 import { t } from '../i18n/t.ts';
@@ -122,7 +121,8 @@ async function calculeazaToateFoile(doc: Document, activa: string, p: ParametriE
   const goale: string[] = [];
   for (const [k, f] of doc.foi.entries()) {
     const d = doarFoaia(doc, f.id), nume = numeFoaie(f, k, (n) => t('foaia.n', { n: String(n) }));
-    if (taieturiFoaie(d, 0).length === 0) {
+    // Nimic de tăiat: nicio tăietură și nicio finisare a reliefului (ADR 0312).
+    if (ordinePasi(d, 0).length === 0) {
       goale.push(nume);
       continue;
     }

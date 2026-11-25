@@ -3,8 +3,11 @@ import { useMemo } from 'react';
 import '../ui/actiuniDocumentCalcul.ts';
 import type { ColtOrigine } from '../ir/montaj.ts';
 import { esteCaleDeschisa, type Document, type Operatie } from '../model/document.ts';
-import { grupeazaPeScula, taieturiFoaie, type ElementLume } from '../model/lume.ts';
-import { conturElement, esteContur } from '../model/forme.ts';
+import type { ElementLume } from '../model/lume.ts';
+import { chenarElement, conturElement, esteContur } from '../model/forme.ts';
+import { cheiePas, creastaPePlan, ordinePasi } from '../model/finisare.ts';
+import { cutieContur } from '../geom/cutie.ts';
+import type { FinisareExport } from '../ui/FisaFinisare.tsx';
 import { DialogExport } from '../ui/DialogExport.tsx';
 import type { CerereExport, FrezaOferita, OperatieExport, OrigineFreza, Rand, SculaOperatie, StareExport } from '../ui/exportRand.ts';
 import { frezeleOperatiei } from '../model/formaFrezei.ts';
@@ -87,12 +90,18 @@ function placuteIesite(d: Document, k?: number): { readonly nume: readonly strin
 }
 
 /**
- * Operațiile cu un rând în fereastră: cele pe contur, cu frezele plate și în V. Finisarea reliefului și o freză bilă (ADR 0312,
- * documentul v29) nu au încă rând (fereastra le primește în felia 18.1↑c-3); Exportă le lasă neschimbate, iar lucrarea le judecă
- * (le refuză, cu motivul, cât n-au drumul lor), deci nimic nu se taie pe tăcute altfel.
+ * Operațiile cu un rând editabil în fereastră: cele pe contur, cu frezele plate și în V. Finisarea reliefului (ADR 0312 §7) are
+ * un rând doar de citit (`finisari`), iar Exportă îi scrie doar rangul. O freză bilă pe altă operație n-are rând: Exportă o lasă
+ * neschimbată, iar lucrarea o refuză, cu motivul, deci nimic nu se taie pe tăcute altfel.
  */
 function peRand(o: Operatie): boolean {
   return o.tip !== 'finisare' && frezeleOperatiei(o).every((f) => f.scula.forma?.tip !== 'bila');
+}
+
+/** Documentul fără rangurile operațiilor: ordinea automată a lucrării (ADR 0133 §3). */
+function faraRanguri(doc: Document): Document {
+  if (!doc.piese.some((p) => p.operatii.some((o) => o.rang !== undefined))) return doc;
+  return { ...doc, piese: doc.piese.map((p) => ({ ...p, operatii: p.operatii.map((o) => { const { rang: _r, ...fara } = o; void _r; return fara; }) })) };
 }
 
 /** Scula unui rând (fără bilă, `peRand`), cum o citește fereastra: numărul, diametrul și forma în V. */
@@ -124,7 +133,16 @@ export function ExportConectat({
     }
     // Ce stă în interiorul fiecărui rând (ADR 0133 §3), în prima instanță a piesei, ca rândurile: riscul îl judecă dialogul,
     // după latura aleasă acolo.
-    const inauntru = cuprinse(lista.flatMap(({ piesa, instanta: inst }) => piesa.operatii.filter(peRand).map((o) => {
+    // Finisarea reliefului (ADR 0312 §7) n-are contururi de cuprins, dar stă în interiorul plăcii decupate: punctul ei e
+    // centrul primului relief.
+    const centruRelief = (inst: string, o: Operatie): { readonly x: number; readonly y: number } | null => {
+      const e = dupaIdLume.get(`${inst}/${o.noduri[0] ?? ''}`);
+      if (!e || e.forma.tip !== 'relief') return null;
+      const k = cutieContur(chenarElement(e));
+      return { x: (k.minX + k.maxX) / 2, y: (k.minY + k.maxY) / 2 };
+    };
+    const inauntru = cuprinse(lista.flatMap(({ piesa, instanta: inst }) => piesa.operatii.filter((o) => peRand(o) || o.tip === 'finisare').map((o) => {
+      if (o.tip === 'finisare') return { cheie: `${piesa.id}/${o.id}`, piesa: piesa.id, contururi: [], punct: centruRelief(inst, o) };
       const contururi = o.noduri.flatMap((n) => {
         const e = dupaIdLume.get(`${inst}/${n}`);
         return e && esteContur(e) ? [conturElement(e)] : [];
@@ -209,11 +227,31 @@ export function ExportConectat({
         },
       };
     }));
+    // Finisările reliefului (ADR 0312 §7): rândurile doar de citit, cu valorile documentului.
+    const finisari: FinisareExport[] = lista.flatMap(({ piesa, instanta: inst }) => piesa.operatii.filter((o) => o.tip === 'finisare').map((o) => {
+      const e = dupaIdLume.get(`${inst}/${o.noduri[0] ?? ''}`);
+      const baza = e ? descriere(e) : (piesa.nume ?? piesa.id);
+      const s = o.scula, fin = o.finisare;
+      return {
+        cheie: `${piesa.id}/${o.id}`,
+        descriere: o.noduri.length > 1 ? `${baza} (+${o.noduri.length - 1})` : baza,
+        ...(o.rang !== undefined ? { rang: o.rang } : {}),
+        scula: {
+          numar: s.numar, diametru: s.diametru, forma: s.forma?.tip === 'bila' ? 'bila' : s.forma?.tip === 'v' ? 'v' : 'plata',
+          ...(s.forma?.tip === 'v' ? { unghi: s.forma.unghi, ...(s.forma.varf !== undefined ? { varf: s.forma.varf } : {}) } : {}),
+        },
+        pasLateral: o.pasLateral ?? 0, creasta: creastaPePlan(s, o.pasLateral ?? 0), unghi: fin?.unghi ?? 0, aliniat: fin?.nealiniat !== true,
+        margine: fin?.margine === 'trece' ? 'trece' : 'perete', ...(fin?.planZero !== undefined ? { planZero: fin.planZero } : {}),
+        adancime: o.adancime, pas: o.pas,
+      };
+    }));
     return {
       piese: lista,
       randuri: randuriOp,
-      // Ordinea automată a rândurilor (ADR 0133 §3): prima tăietură a fiecărei operații în ordinea lucrării fără ranguri.
-      automata: [...new Set(grupeazaPeScula(taieturiFoaie(doc, 0)).map((x) => `${x.piesa}/${x.operatie}`))],
+      finisari,
+      // Ordinea automată a rândurilor (ADR 0133 §3, ADR 0312 §7): primul pas al fiecărei operații în ordinea lucrării fără ranguri
+      // (finisările întâi).
+      automata: [...new Set(ordinePasi(faraRanguri(doc), 0).map(cheiePas))],
       descrieri: new Map(lume.map((e) => [e.idLume, descriere(e)])),
     };
     // `limba`: descrierile sunt texte traduse.
@@ -264,9 +302,16 @@ export function ExportConectat({
     const noi = new Map<string, Operatie[]>();
     for (const { piesa } of exportFoaie.piese) {
       noi.set(piesa.id, piesa.operatii.map((o) => {
-        // Fără rând în fereastră (finisarea, o freză bilă): rămâne cum e, iar lucrarea o judecă.
-        if (!peRand(o)) return o;
         const cheie = `${piesa.id}/${o.id}`;
+        // Finisarea (ADR 0312 §7): rândul ei e doar de citit, deci Exportă îi scrie doar rangul (sau îl scoate, în ordinea automată).
+        if (o.tip === 'finisare') {
+          const { rang: _r, ...fara } = o;
+          void _r;
+          const r = loc?.get(cheie);
+          return r !== undefined ? { ...fara, rang: r } : fara;
+        }
+        // Fără rând în fereastră (o freză bilă pe alt fel): rămâne cum e, iar lucrarea o refuză.
+        if (!peRand(o)) return o;
         const v = c.valori.get(cheie);
         const { rang: _rang, ...faraRang } = operatieDinDialog(o, v, v?.scula ?? sculaRand(o.scula));
         void _rang;
@@ -283,6 +328,7 @@ export function ExportConectat({
       {...(foaie === undefined ? {} : { foaie })}
       {...(doc.foi[0] ? { grosimeFoaie: doc.foi[0].stoc.grosime } : {})}
       operatii={exportFoaie.randuri}
+      finisari={exportFoaie.finisari}
       ordineAutomata={exportFoaie.automata}
       descrieri={exportFoaie.descrieri}
       doarCitire={doarCitire}

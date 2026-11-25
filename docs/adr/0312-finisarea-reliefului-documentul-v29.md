@@ -63,6 +63,35 @@ Oracolul documentului primește v29: rândurile câmpurilor noi în `CAMPURI_NOI
 pe hârtie; corpusul de aur primește pasul v29 (o finisare cu bila pe relieful „Medalion”). Probele care țin versiunea curentă
 trec pe 29.
 
+### 5–6. (în ADR 0310)
+
+Nucleul finisării (câmpul conservativ, liniile, trecerile pe Z, marginea) e hotărât în ADR 0310 §4–§6, cu implementarea în
+„Implementarea (18.1↑c)” de acolo; aici stă doar forma lui în document și în fereastră.
+
+### 7. Ordinea și rândul din fereastra exportului
+
+Cererea sesiunii principale din 25.11 („nu fără rând”, după auditul ferestrei, ADR 0291): o operație pe care programul o taie
+se vede în fereastră din prima zi, altfel omul numără N operații, iar mașina face N + 1.
+
+- **Ordinea programului** (`ordinePasi`, `src/model/finisare.ts`): în ordinea automată, finisările vin întâi, cât placa e
+  încă întreagă, deci înaintea exteriorului prin foaie al piesei (piesa nu se desprinde cu relieful neterminat). Degroșarea
+  (18.1↑d) va veni înaintea finisării. Cu ranguri (ADR 0133), toți pașii se sortează stabil după rang. O tăietură fără rang
+  merge la capăt, ca până acum, iar **o finisare fără rang rămâne în față, la locul ei automat**: nu ajunge pe tăcute după
+  tăierea de contur. Tăieturile rămân exact în ordinea lui `ordineTaieturi` (lucrarea le indexează), iar finisările se fac
+  între ele, la locul lor.
+- **Rândul**, doar de citit, la locul lui în listă: în „A mea” se mută ca oricare altul, cu regula bifei pentru exteriorul
+  tăiat înaintea unei operații dinăuntru (finisarea e un rând pe linie al piesei ei, iar punctul ei pentru `cuprinse` e
+  centrul primului relief). Exportă îi scrie rangul ca celorlalte (în „Automată” îl scoate) și nimic altceva.
+- **Fișa** (`src/ui/FisaFinisare.tsx`, o componentă a ei, ca fișa operațiilor să rămână a liniilor frezelor și exportului):
+  freza (T, Ø, forma), pasul lateral, creasta pe plan pe hârtie (`creastaPePlan`: bila R − √(R² − (s/2)²), V-ul
+  (s − v) / 2 / tan(θ/2), plata 0), liniile, marginea, înălțimea, adâncimea cea mai mare și pasul pe trecere, cu nota că se
+  schimbă din secțiunea Tăierea. Fără câmpuri: rândul editabil (freza din bibliotecă, pasul în celule și mm, unghiul, creasta,
+  timpul) vine într-o felie a lui, după 16.A↑b-5 și 28.8↑h.
+- **Rezultatul** o cuprinde: rândul ei în timpul pe operații (eticheta programului poartă cheia ei), freza ei între scule și în
+  judecata „același T” a ferestrei (bila de același diametru e altă freză), adâncimea și simularea.
+- **Biblioteca** (cererea liniei frezelor): bila are acum CAM (`FELURI_CU_CAM`), iar `sculaDinFreza` îi dă `{ tip: 'bila' }`;
+  `motivFormaPeOperatie` o lasă doar pe finisare.
+
 ## Implementarea (18.1↑c)
 
 - **Ușa** (`src/model/schemaDocument.ts`): `scula.forma` e o variantă după `tip` (`v`, `bila`); felul `finisare`; câmpul
@@ -80,8 +109,9 @@ trec pe 29.
 - **Bila în lucrare** (`src/model/formaFrezei.ts`): `motivFormaPeOperatie` dă `bila` în afara finisării; `frezeleOperatiei`
   numește toate frezele unei operații, cu calea lor, iar lucrarea refuză o bilă pe oricare dintre ele, cu forma și calea în
   motiv (`felFrezei`: „plată”, „în V”, „bilă”, și în motivele vechi care spuneau „plată” sau „în V” oricărei forme). Bila trece
-  în IR (simularea o taie cu capătul ei). Fereastra exportului nu are încă rând pentru o finisare sau o freză bilă: Exportă le
-  scrie înapoi neschimbate, iar lucrarea le judecă (felia rândului, după 16.A↑b-5 a liniei frezelor).
+  în IR (simularea o taie cu capătul ei).
+- **Fereastra exportului** (§7): rândul doar de citit al finisării, în listă și în fișă, cu ordinea și rangul; o freză bilă
+  pe alt fel n-are rând (Exportă o scrie înapoi neschimbată, iar lucrarea o refuză).
 
 ## Respinse
 

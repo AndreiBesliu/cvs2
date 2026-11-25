@@ -8,13 +8,15 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  clExact, clPlan, clRadial, creastaPlan, creastaSimulata, distantaPunctTriunghiO, IndexO, judecaTraseul, materialO, triunghiuriModel,
+  clExact, clPlan, clRadial, creastaPlan, creastaSimulata, distantaPunctTriunghiO, IndexO, judecaTraseul, materialO, triunghiuriModel, urcareO,
   type FrezaO, type LipsaO, type PasO, type PunctO,
 } from '../oracles/relief3d.ts';
 
 const GRAD = Math.PI / 180;
 const FREZE: readonly FrezaO[] = [
   { fel: 'bila', R: 3 }, { fel: 'plata', R: 3 }, { fel: 'v', R: 6, alfa: 45 * GRAD }, { fel: 'v', R: 6, alfa: 30 * GRAD },
+  // V-ul cu vârful plat (conul trunchiat; freza de gravare, ADR 0092): raza vârfului 0,5.
+  { fel: 'v', R: 6, alfa: 45 * GRAD, t: 0.5 },
 ];
 
 /** Grila unei funcții, în centrele celulelor (rândul j în sus). */
@@ -127,4 +129,43 @@ test('materialO: plonjarea măsoară toată adâncimea; tăierea în lemn nou, p
   assert.ok(Math.abs(bila.taiere - 3) < 1e-3, `bila: ${bila.taiere}`);
   // Controlul: fără mutări care coboară, nimic.
   assert.equal(materialO([P(5, 5, 5), P(9, 9, 5)], plata, zona, 0.1).taiere, 0);
+});
+
+/** Cota modelului în (x, y), din triunghiurile indexului (interpolarea pe triunghiul care conține punctul). */
+function zModel(ix: IndexO, x: number, y: number): number {
+  const T = ix.T;
+  for (const k of ix.aproape(x, y, 1e-9)) {
+    const o = 9 * k, ax = T[o]!, ay = T[o + 1]!, bx = T[o + 3]!, by = T[o + 4]!, cx = T[o + 6]!, cy = T[o + 7]!;
+    const d = (by - cy) * (ax - cx) + (cx - bx) * (ay - cy);
+    if (d === 0) continue;
+    const l1 = ((by - cy) * (x - cx) + (cx - bx) * (y - cy)) / d, l2 = ((cy - ay) * (x - cx) + (ax - cx) * (y - cy)) / d, l3 = 1 - l1 - l2;
+    if (l1 >= -1e-12 && l2 >= -1e-12 && l3 >= -1e-12) return l1 * T[o + 2]! + l2 * T[o + 5]! + l3 * T[o + 8]!;
+  }
+  return -Infinity;
+}
+
+test('vârful plat al V-ului (conul trunchiat): drop-cutter-ul exact stă peste orice punct eșantionat al modelului și aproape de cel mai înalt', () => {
+  // Un relief aspru (valori pseudoaleatoare, deterministe) cu celula de 0,25 mm; V90 cu vârful de raza 0,3, raza 1,5.
+  const n = 24, c = 0.25, v = new Float64Array(n * n);
+  let s = 7;
+  for (let k = 0; k < v.length; k++) { s = (s * 48271) % 2147483647; v[k] = (s / 2147483647) * 0.8; }
+  const ix = new IndexO(triunghiuriModel(v, n, n, c), 2);
+  for (const f of [{ fel: 'v', R: 1.5, alfa: 45 * GRAD, t: 0.3 }, { fel: 'v', R: 1.5, alfa: 30 * GRAD, t: 0.1 }] as const) {
+    for (const [x, y] of [[3, 3], [2.9, 3.37], [3.61, 2.44], [1.8, 4.1]] as const) {
+      const e = clExact(ix, f, x, y);
+      // Eșantionarea pe discul frezei (inele la 0,01 mm, 720 de unghiuri): o margine de jos a CL-ului.
+      let jos = -Infinity;
+      for (let r = 0; r <= f.R + 1e-12; r += 0.01) {
+        for (let q = 0; q < (r === 0 ? 1 : 720); q++) {
+          const u = (q / 720) * 2 * Math.PI, z = zModel(ix, x + r * Math.cos(u), y + r * Math.sin(u));
+          if (z > -Infinity) jos = Math.max(jos, z - urcareO(f, r));
+        }
+      }
+      assert.ok(e >= jos - 1e-9, `${f.alfa}, (${x}, ${y}): exactul ${e} sub eșantionat ${jos}`);
+      assert.ok(e <= jos + 0.02, `${f.alfa}, (${x}, ${y}): exactul ${e} prea departe de eșantionat ${jos}`);
+    }
+  }
+  // Fără vârful plat, CL-ul e mai jos (conul ascuțit urcă mai repede): vârful contează.
+  const ascutit = clExact(ix, { fel: 'v', R: 1.5, alfa: 45 * GRAD }, 3, 3), plat = clExact(ix, { fel: 'v', R: 1.5, alfa: 45 * GRAD, t: 0.3 }, 3, 3);
+  assert.ok(plat > ascutit + 0.01, `vârful plat ${plat} ≤ ascuțit ${ascutit}`);
 });

@@ -405,7 +405,11 @@ Documentul v29 (bila și operația `finisare`) e în ADR 0312.
   piesă doar cu reliefuri (una cu reliefuri și contururi păstrează deocamdată rolurile contururilor): bila de același diametru,
   pasul lateral 10 % din freză, liniile la 0°, podeaua cât placa; câmpurile freza (forma, diametrul), pasul lateral, unghiul,
   liniile, marginea, Z-ul (vârful la față sau planul zero). Arborele spune „Finisare pe N reliefuri”. Fereastra exportului:
-  fără rând (ADR 0312); „Tăiat” din vederea 3D simulează placa cu finisarea (bila în IR).
+  rândul finisării, doar de citit, la locul lui în ordinea tăierii (ADR 0312 §7); „Tăiat” din vederea 3D simulează placa cu
+  finisarea (bila în IR).
+- **Oracolul 3D, extins la otrăvuri:** V-ul cu vârf plat (conul trunchiat, exact: marginea vârfului pe muchii și pe fețe), cu
+  proba lui față de eșantionare; un relief aspru și o tablă de șah cu V-ul la celula fină (câmpul pe 9 puncte) și la diviziunea
+  2 (diagonala fixă).
 
 **Cât costă**, măsurat în container (un fir): o pantă lină de 20 × 20 mm, bila R3, pasul lateral 0,5 mm: ~1 s la celula
 reliefului de 0,5 mm (de calcul 1/16), ~1,5 s la 0,1 mm (de calcul 0,05); surplusul median 0,05–0,07 mm, cel mult ~0,1 mm

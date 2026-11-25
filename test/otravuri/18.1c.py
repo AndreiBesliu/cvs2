@@ -2,8 +2,9 @@
 # §4–§6, ADR 0312), 25.11.2026, alese de autor: ușa documentului (felul, câmpul `finisare`, bila, referințele, migrarea
 # v28 → v29), bila în lucrare (`motivFormaPeOperatie`, frezele operației, poarta), nucleul finisării (câmpul pe 9 puncte și
 # pe celula de calcul, modelul exact, piramida, urcarea frezei, peretele, trecerile pe Z, punctele de capăt, legătura, liniile)
-# și legarea în lucrare (Z-ul, scara, ordinea, scula în IR, „același T”, „prin foaie”, straturile ascunse). Se rulează cu
-# `scripts/otravuri.py` (docs/otravuri.md), după commit.
+# legarea în lucrare (Z-ul, scara, ordinea, scula în IR, „același T”, „prin foaie”, straturile ascunse) și rândul din fereastra
+# exportului (ordinea automată și cu ranguri, rangul scris de Exportă, creasta pe plan). Se rulează cu `scripts/otravuri.py`
+# (docs/otravuri.md), după commit.
 # o(id, fis, vechi, nou, set, ce): `vechi` apare EXACT o dată în fișier; altfel VOID.
 O = []
 
@@ -83,16 +84,44 @@ o('J01', JB, "    const dz = fin.planZero !== undefined ? -fin.planZero : -(Numb
   "    const dz = fin.planZero !== undefined ? -fin.planZero : (Number.isFinite(max) ? max : 0);", 'program', 'vârful compusului deasupra feței')
 o('J02', JB, '      nx: r.forma.nx, ny: r.forma.ny, celula: r.forma.celula * s, z,', '      nx: r.forma.nx, ny: r.forma.ny, celula: r.forma.celula, z,', 'program',
   'celula nescalată de matrice')
-o('J03', JB, "    ...(s.forma?.tip === 'bila' ? { forma: { tip: 'bila' as const } } : {}),\n", '', 'program', 'bila pierdută în IR (simulată plată)')
+o('J03', JB, "  ...(s.forma?.tip === 'bila' ? { forma: { tip: 'bila' as const } } : {}),\n", '', 'program', 'bila pierdută în IR (simulată plată)')
 o('J04', JB, "    ...finisari.map((f) => ({ idLume: f.reliefuri[0]?.idLume ?? `${f.instanta}/${f.operatie.id}`, scule: [f.operatie.scula] })),\n", '', 'program',
   'frezele finisărilor lipsă din „același T”')
 o('J05', PF, "o.tip !== 'vcarve' && o.tip !== 'finisare' && !o.incrustatie", "o.tip !== 'vcarve' && !o.incrustatie", 'program',
   '„prin foaie” mută podeaua finisării sub placă')
 o('J06', RS, '    if (!s.vizibil) continue;\n', '', 'program', 'un strat ascuns intră în compusul tăiat')
 
+# ── Ordinea și rândul din fereastra exportului (ADR 0312 §7), creasta pe plan ────────────────────────────────────────
+FN = 'src/model/finisare.ts'
+OE = 'src/ui/ordineExport.ts'
+EC = 'src/app/ExportConectat.tsx'
+DE = 'src/ui/DialogExport.tsx'
+o('O01', FN, "rangPas(p) ?? (p.fel === 'finisare' ? Number.NEGATIVE_INFINITY : Number.POSITIVE_INFINITY)", 'rangPas(p) ?? Number.POSITIVE_INFINITY',
+  'program', 'o finisare fără rang ajunge după tăierea de contur')
+o('O02', FN, """    ...finisariFoaie(doc, indexFoaie).map((f): PasProgram => ({ fel: 'finisare', f })),
+    ...grupeazaPeScula(taieturiFoaie(doc, indexFoaie)).map((t): PasProgram => ({ fel: 'taietura', t })),""", """    ...grupeazaPeScula(taieturiFoaie(doc, indexFoaie)).map((t): PasProgram => ({ fel: 'taietura', t })),
+    ...finisariFoaie(doc, indexFoaie).map((f): PasProgram => ({ fel: 'finisare', f })),""", 'program', 'finisarea după tăieturi în ordinea automată')
+o('O03', JB, "    if (p.fel === 'taietura') inainte++;\n    else finisariLa", "    inainte++;\n    if (p.fel === 'finisare') finisariLa", 'program',
+  'finisarea pusă cu un loc mai târziu în program')
+o('O04', JB, """  const refuzFinisare = faFinisari(taieturi.length);
+  if (refuzFinisare !== null) return { ok: false, motiv: refuzFinisare };
+""", '', 'program', 'finisarea pusă la capăt lipsește din program')
+o('O05', OE, '(inFata.has(c) ? Number.NEGATIVE_INFINITY : Number.POSITIVE_INFINITY)', 'Number.POSITIVE_INFINITY', 'ordine',
+  'fereastra pune finisarea fără rang la capăt (lucrarea, în față)')
+o('O06', FN, 'return pasLateral <= v ? 0 : (pasLateral - v) / 2 / Math.tan((s.forma.unghi * Math.PI) / 360);',
+  'return pasLateral <= v ? 0 : (pasLateral - v) / 2 / Math.tan((s.forma.unghi * Math.PI) / 180);', 'program', 'creasta V-ului cu unghiul întreg, nu cu jumătatea')
+o('O07', EC, """          const r = loc?.get(cheie);
+          return r !== undefined ? { ...fara, rang: r } : fara;
+        }""", """          return o;
+        }""", 'e2e', 'Exportă nu scrie rangul finisării în „A mea”')
+o('O08', DE, "    if (fin) return randFinisare(fin, loc);\n", '', 'e2e', 'rândul finisării lipsește din listă')
+
 SETURI = {
     'doc': ['test/unit/document.v29.oracol.test.ts'],
     'bila': ['test/unit/finisare.bila.test.ts'],
     'cam': ['test/unit/reliefFinisare.test.ts'],
     'program': ['test/unit/finisare.program.test.ts'],
+    'ordine': ['test/unit/ordineExport.test.ts'],
 }
+
+E2E = ['test/e2e/finisare.spec.ts']

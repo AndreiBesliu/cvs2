@@ -14,7 +14,7 @@ import assert from 'node:assert/strict';
 import { finisareRelief, type FrezaFinisare, type ParametriFinisare, type ReliefCam } from '../../src/cam/reliefFinisare.ts';
 import type { Miscare } from '../../src/ir/ir.ts';
 import {
-  clExact, clPlan, creastaPlan, creastaSimulata, IndexO, judecaTraseul, materialO, triunghiuriModel, type FrezaO, type PasO, type PunctO,
+  clExact, clPlan, creastaPlan, creastaSimulata, IndexO, judecaTraseul, materialO, suprafataBila, triunghiuriModel, type FrezaO, type PasO, type PunctO,
 } from '../oracles/relief3d.ts';
 
 const Z_SIGUR = 5;
@@ -79,7 +79,7 @@ function pasi(miscari: readonly Miscare[], x0: number, y0: number): PasO[] {
   return out;
 }
 
-const frezaO = (f: FrezaFinisare): FrezaO => (f.fel === 'v' ? { fel: 'v', R: f.raza, alfa: (f.unghi * Math.PI) / 360 } : { fel: f.fel, R: f.raza });
+const frezaO = (f: FrezaFinisare): FrezaO => (f.fel === 'v' ? { fel: 'v', R: f.raza, alfa: (f.unghi * Math.PI) / 360, t: f.varf / 2 } : { fel: f.fel, R: f.raza });
 
 type Caz = {
   readonly nume: string; readonly reliefuri: readonly ReliefCam[]; readonly freza: FrezaFinisare;
@@ -238,6 +238,26 @@ test('surplusul pe o pantă de 30°: cel mult (1,5–2) · celula de calcul · t
   }
   assert.ok(min >= -1e-9, `scobitură: ${min}`);
   assert.ok(max <= 2 * 0.0625 * g + 1e-6, `surplusul ${max} trece de 2 · h · tan 30° = ${2 * 0.0625 * g}`);
+  // Și ce rămâne după finisare: suprafața lăsată de bilă (simulatorul independent, peste mutările de tăiere), cu fața plăcii
+  // (Z = 0) acolo unde bila n-a trecut. Un traseu ridicat peste lemn n-ar mai tăia, iar măsura de mai sus nu l-ar vedea.
+  const treceri: PunctO[][] = [];
+  let cur: PunctO[] = [];
+  let px = 0, py = 0, pz = Z_SIGUR;
+  for (const m of o.miscari) {
+    if (m.tip !== 'rapida' && m.tip !== 'taiere') continue;
+    px = m.la.X ?? px; py = m.la.Y ?? py; pz = m.la.Z ?? pz;
+    if (m.tip === 'rapida') { if (cur.length > 1) treceri.push(cur); cur = [{ x: px, y: py, z: pz }]; continue; }
+    cur.push({ x: px, y: py, z: pz });
+  }
+  if (cur.length > 1) treceri.push(cur);
+  let ramas = 0;
+  for (let q = 0; q < 120; q++) {
+    const x = 4 + (q % 12) * 1.1, y = 4 + Math.floor(q / 12) * 1.3;
+    ramas = Math.max(ramas, Math.min(0, suprafataBila(treceri, 2, x, y, 0.02)) - (g * x - g * 20));
+  }
+  // Creasta dintre linii pe panta de-a lungul lor: (R − √(R² − (s/2)²)) / cos 30°; plus surplusul și eșantionarea.
+  const limita = creastaPlan(2, 0.5) / Math.cos(Math.PI / 6) + 2 * 0.0625 * g + 0.01;
+  assert.ok(ramas <= limita, `rămâne ${ramas} mm deasupra pantei (cel mult ${limita})`);
 });
 
 test('creasta la 30° (liniile la cel mult pasul cerut): cel mult cât formula cu pasul cerut', () => {
@@ -263,4 +283,37 @@ test('creasta la 30° (liniile la cel mult pasul cerut): cel mult cât formula c
   const m = creastaSimulata(treceri, R, puncte, () => -2, 0.02);
   assert.ok(m <= creastaPlan(R, s) + 2e-4, `creasta ${m}, pe hârtie cel mult ${creastaPlan(R, s)}`);
   assert.ok(m >= creastaPlan(R, o.pasLateral) - 2e-3, `creasta ${m}, sub cea a pasului folosit ${creastaPlan(R, o.pasLateral)}`);
+});
+
+/** Un relief aspru (valori pseudoaleatoare, deterministe, între 0 și `a`); `tabla`: o tablă de șah, cu șeile în fiecare pătrat. */
+function aspru(n: number, a: number, samanta: number, tabla = false): Float64Array {
+  const v = new Float64Array(n * n);
+  let s = samanta;
+  for (let k = 0; k < v.length; k++) {
+    s = (s * 48271) % 2147483647;
+    v[k] = tabla ? (((k % n) + Math.floor(k / n)) % 2) * a : (s / 2147483647) * a;
+  }
+  return v;
+}
+
+test('relieful aspru, cu V-ul ascuțit și cu vârf plat: câmpul pe 9 puncte (celula 0,05 mm) și diagonala fixă (0,125 mm, diviziunea 2)', () => {
+  // Pante sub cot(θ/2) / 2: aici maximul unei celule poate sta pe latura ei sau în colț, nu în centrul unei vecine.
+  for (const [c, n] of [[0.05, 40], [0.125, 20]] as const) {
+    for (const [nume, v] of [['aspru', aspru(n, 0.6 * c, 11)], ['tabla', aspru(n, 0.4 * c, 1, true)]] as const) {
+      let max = 0;
+      for (const x of v) max = Math.max(max, x);
+      for (const freza of [{ fel: 'v', raza: 0.4, unghi: 90, varf: 0 }, { fel: 'v', raza: 0.5, unghi: 60, varf: 0.1 }] as const) {
+        judeca({
+          nume: `${nume}, celula ${c}, V${freza.unghi}`, reliefuri: [relief(v, n, n, c, T(1, 1), -max)], freza, unghi: 0, margine: 'trece',
+          pasLateral: c, pas: 1, adancime: 2,
+        });
+      }
+      // Liniile nealiniate, la un unghi: segmentele nu mai trec prin centrele celulelor vecine, deci maximul fiecărei celule
+      // (pe latură, în colț) contează.
+      judeca({
+        nume: `${nume}, celula ${c}, V90 la 33°`, reliefuri: [relief(v, n, n, c, T(1, 1), -max)], freza: { fel: 'v', raza: 0.4, unghi: 90, varf: 0 },
+        unghi: 33, nealiniat: true, margine: 'trece', pasLateral: 0.7 * c, pas: 1, adancime: 2,
+      });
+    }
+  }
 });

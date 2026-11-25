@@ -19,14 +19,14 @@
 export type FrezaO =
   | { readonly fel: 'bila'; readonly R: number }
   | { readonly fel: 'plata'; readonly R: number }
-  /** `alfa`: jumătate din unghiul inclus al V-ului, în radiani. */
-  | { readonly fel: 'v'; readonly R: number; readonly alfa: number };
+  /** `alfa`: jumătate din unghiul inclus al V-ului, în radiani; `t`: raza vârfului plat (lipsă: 0, ascuțit). */
+  | { readonly fel: 'v'; readonly R: number; readonly alfa: number; readonly t?: number };
 
 /** Cât urcă fața frezei deasupra vârfului la raza r (r ≤ R). */
 export function urcareO(f: FrezaO, r: number): number {
   if (f.fel === 'bila') return f.R - Math.sqrt(Math.max(0, f.R * f.R - r * r));
   if (f.fel === 'plata') return 0;
-  return r / Math.tan(f.alfa);
+  return Math.max(0, r - (f.t ?? 0)) / Math.tan(f.alfa);
 }
 
 /**
@@ -125,7 +125,9 @@ export type LipsaO = 'muchii' | 'fete' | 'noduri' | null;
  */
 export function clExact(ix: IndexO, f: FrezaO, x: number, y: number, podea = -Infinity, lipsa: LipsaO = null): number {
   const R = f.R, R2 = R * R, kc = f.fel === 'v' ? 1 / Math.tan(f.alfa) : 0;
-  const urcaR = f.fel === 'bila' ? R : f.fel === 'plata' ? 0 : R * kc;
+  // Vârful plat al V-ului (conul trunchiat): raza lui; pe el, fața nu urcă.
+  const tv = f.fel === 'v' ? f.t ?? 0 : 0;
+  const urcaR = f.fel === 'bila' ? R : f.fel === 'plata' ? 0 : (R - tv) * kc;
   const urca = (r: number): number => urcareO(f, r);
   let best = podea;
   const varf = (vx: number, vy: number, vz: number): void => {
@@ -149,6 +151,11 @@ export function clExact(ix: IndexO, f: FrezaO, x: number, y: number, podea = -In
     if (f.fel === 'bila') ss = (m * rho) / Math.sqrt(1 + m * m);
     else if (f.fel === 'v' && Math.abs(m) < kc) ss = (d * m) / Math.sqrt(kc * kc - m * m);
     if (ss >= lo && ss <= hi) v = Math.max(v, fe(z0, m, ss, d, rho));
+    // Vârful plat: pe el funcția e liniară în s, deci maximul e și unde muchia iese de sub el (r = t).
+    if (tv > d) {
+      const st = Math.sqrt(tv * tv - d * d);
+      for (const x0 of [-st, st]) if (x0 >= lo && x0 <= hi) v = Math.max(v, fe(z0, m, x0, d, rho));
+    }
     best = Math.max(best, v);
   };
   const T = ix.T;
@@ -178,6 +185,11 @@ export function clExact(ix: IndexO, f: FrezaO, x: number, y: number, podea = -In
     if (gl > 1e-15) {
       const qx = x - (R * nx) / gl, qy = y - (R * ny) / gl;
       if (in3(qx, qy)) best = Math.max(best, zp(qx, qy) - urcaR);
+      // Marginea vârfului plat, spre urcușul planului.
+      if (tv > 0) {
+        const tx = x - (tv * nx) / gl, ty = y - (tv * ny) / gl;
+        if (in3(tx, ty)) best = Math.max(best, zp(tx, ty));
+      }
     }
   }
   return best;
@@ -188,7 +200,8 @@ export function clPlan(f: FrezaO, a: number, b: number, c: number, x: number, y:
   const z0 = a * x + b * y + c, g = Math.hypot(a, b);
   if (f.fel === 'bila') return z0 + f.R * (Math.sqrt(1 + g * g) - 1);
   if (f.fel === 'plata') return z0 + f.R * g;
-  return Math.max(z0, z0 + f.R * g - f.R / Math.tan(f.alfa));
+  const t = f.t ?? 0;
+  return Math.max(z0 + t * g, z0 + f.R * g - (f.R - t) / Math.tan(f.alfa));
 }
 
 /**

@@ -5,7 +5,7 @@ import { judecaDeschisa, NEATINS_PESTE_D, refuzDeschise } from './deschise.ts';
 import { conturElement } from '../model/forme.ts';
 import { felFrezei, frezeleOperatiei, motivFormaPeOperatie } from '../model/formaFrezei.ts';
 import { ordineTaieturi, valoriVcarve, type Taietura } from '../model/lume.ts';
-import { finisariFoaie, type FinisareFoaie } from '../model/finisare.ts';
+import { finisariFoaie, ordinePasi, type FinisareFoaie } from '../model/finisare.ts';
 import { compusDinResurse, type ResurseRelief } from '../relief/resurse.ts';
 import { finisareRelief, type FrezaFinisare, type ReliefCam } from './reliefFinisare.ts';
 import { AXE_XYZ, type Miscare, type Program, type Scula } from '../ir/ir.ts';
@@ -355,10 +355,18 @@ export function programDinDocument(
   if (prinFoaie) doc = cuTaieturiPrinFoaie(doc, supracursa);
   // Ordinea contractului, grupată pe sculă în fiecare clasă (ADR 0084), sau ordinea de mână a omului (ADR 0133).
   const taieturi = ordineTaieturi(doc, 0);
-  // Finisările reliefului (ADR 0312): înaintea tăieturilor pe contur, care pot scoate piesa din placă.
+  // Finisările reliefului (ADR 0312) și locul lor în ordinea foii (`ordinePasi`, §7): automat întâi, cât placa e întreagă;
+  // cu ranguri, unde le-a pus omul. `finisariLa[k]` se fac înaintea tăieturii k (la capăt, k = numărul tăieturilor).
   const finisari = finisariFoaie(doc, 0);
-  const prima = taieturi[0] ?? null;
-  const primaScula = prima?.scula ?? finisari[0]?.operatie.scula;
+  const pasi = ordinePasi(doc, 0);
+  const finisariLa = new Map<number, FinisareFoaie[]>();
+  let inainte = 0;
+  for (const p of pasi) {
+    if (p.fel === 'taietura') inainte++;
+    else finisariLa.set(inainte, [...(finisariLa.get(inainte) ?? []), p.f]);
+  }
+  const pas0 = pasi[0];
+  const primaScula = pas0 === undefined ? undefined : pas0.fel === 'finisare' ? pas0.f.operatie.scula : pas0.t.scula;
   if (!primaScula) return { ok: false, motiv: 'nicio formă n-are o operație de tăiere' };
   const operatieDe = (t: Taietura) => doc.piese.find((p) => p.id === t.piesa)?.operatii.find((o) => o.id === t.operatie);
   // Fundul plat (ADR 0091): doar pe un V-carve, cu o freză dreaptă (plată).
@@ -586,20 +594,26 @@ export function programDinDocument(
     return `${u.instanta}/${u.piesa}/${o ? valoriBuzunarDrept(o) : u.operatie}`;
   };
   const drepteFacute = new Set<string>();
-  // Finisările reliefului (ADR 0312), întâi: placa e încă întreagă.
-  for (const f of finisari) {
-    const r = programFinisare(f, reliefuri, regim);
-    if (!r.ok) return { ok: false, motiv: r.motiv };
-    monteaza(f.operatie.scula);
-    const id = f.reliefuri[0]?.idLume ?? `${f.instanta}/${f.operatie.id}`;
-    miscari.push({
-      tip: 'eticheta', text: `${id}: finisarea reliefului, ${f.operatie.adancime} mm, pasul lateral ${Math.round(r.pasLateral * 1e4) / 1e4} mm`,
-      element: id, operatie: `${f.piesa}/${f.operatie.id}`,
-    });
-    for (const m of r.miscari) miscari.push(m);
-    for (const a of r.avertismente) avertismente.push(`${id}: ${a}`);
-  }
+  /** Finisările reliefului de dinaintea tăieturii k (ADR 0312 §7); refuzul primei care nu iese. */
+  const faFinisari = (k: number): string | null => {
+    for (const f of finisariLa.get(k) ?? []) {
+      const r = programFinisare(f, reliefuri, regim);
+      if (!r.ok) return r.motiv;
+      monteaza(f.operatie.scula);
+      const id = f.reliefuri[0]?.idLume ?? `${f.instanta}/${f.operatie.id}`;
+      miscari.push({
+        tip: 'eticheta', text: `${id}: finisarea reliefului, ${f.operatie.adancime} mm, pasul lateral ${Math.round(r.pasLateral * 1e4) / 1e4} mm`,
+        element: id, operatie: `${f.piesa}/${f.operatie.id}`,
+      });
+      for (const m of r.miscari) miscari.push(m);
+      for (const a of r.avertismente) avertismente.push(`${id}: ${a}`);
+    }
+    return null;
+  };
   for (const [it, t] of taieturi.entries()) {
+    // Întâi finisările puse înaintea acestei tăieturi (înaintea oricărui `continue` de mai jos).
+    const refuzFinisare = faFinisari(it);
+    if (refuzFinisare !== null) return { ok: false, motiv: refuzFinisare };
     const latura = t.latura;
     // Diametrul și raza sculei acestei tăieturi.
     const D = t.scula.diametru, R = D / 2;
@@ -1045,6 +1059,9 @@ export function programDinDocument(
     // Fără `push(...listă)`: o listă foarte lungă depășește stiva de argumente.
     for (const m of tr.miscari) miscari.push(m);
   }
+  // Finisările de după ultima tăietură (o ordine de mână care le pune la capăt; fără tăieturi, toate).
+  const refuzFinisare = faFinisari(taieturi.length);
+  if (refuzFinisare !== null) return { ok: false, motiv: refuzFinisare };
   if (putine.length > 0) avertismente.push(avertismentLemn(putine));
   for (const regula of ['lungi', 'scurte'] as const) {
     if (putineLaturi[regula].length > 0) avertismente.push(avertismentLaturi(regula, putineLaturi[regula]));

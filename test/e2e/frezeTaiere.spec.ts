@@ -63,7 +63,7 @@ test('de la prima pornire, frezele standard: doar cele plate pe un profil; aleas
   await expect(page.getByTestId('jurnal')).toHaveText('0 erori în jurnalul local');
 });
 
-test('felurile fără CAM încă (bila, toroidala, conica, burghiul, profilurile) nu se oferă în Tăierea', async ({ page }) => {
+test('bila (doar pe finisarea reliefului, ADR 0312) și felurile fără CAM încă (toroidala, conica, burghiul, profilurile) nu se oferă pe un contur în Tăierea', async ({ page }) => {
   await page.goto('/');
   // Din catalogul ferestrei „Frezele mele”: bilele, burghiele și rotunjirile, în bibliotecă.
   await page.locator('[data-editare="cont"]').click();
