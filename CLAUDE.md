@@ -1028,8 +1028,8 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   fereastră de confirmare, tastatura. **O schimbare a unei extensii din bibliotecă cere acum și rândul ei de „ce e nou”,
   primul din `noutati`, în `extensii/biblioteca.json`** (`{ "versiune", "ro", "en" }`, cel mult 240 de caractere), apoi
   `node scripts/biblioteca.ts --scrie` (refuză fără rând). **Două linii care schimbă aceeași extensie iau, fiecare,
-  versiunea următoare:** cea unită a doua își ia alta la aducerea lui `main` (Easy 3Draw e 18.27.0, din 3.Cd, linia atelierului; următoarea,
-  18.28.0). **O probă nu ține scrisă o versiune a unei extensii din bibliotecă:** catalogul poartă doar ultimele cinci
+  versiunea următoare:** cea unită a doua își ia alta la aducerea lui `main` (Easy 3Draw e 18.28.0, din 3.Ce, linia atelierului; următoarea,
+  18.29.0). **O probă nu ține scrisă o versiune a unei extensii din bibliotecă:** catalogul poartă doar ultimele cinci
   rânduri de „ce e nou” (`MAX_NOUTATI`), deci proba își ia rândul din `extensii/biblioteca.json`.
   Capturile unei extensii se refac cu `node scripts/capturi-biblioteca.ts [dosar]` și se comit. **Un prefix nou de acțiuni
   cere grupul lui în `src/ui/Paleta.tsx`** (paleta nu arăta deloc acțiunile `extensii`). Pornirea 108,6 kB (cu ușa
@@ -1078,7 +1078,7 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   înaltă după roata pereche (axul roții cade pe grilă), cu „Fă perechea”; Easy 3Draw 18.26.0; melcul a trecut în
   3.Cj. **3.Cd (arcul)** gata pe 25.11, unită în `main` odată cu ea: tipul `arc`, în fila Cărămizi, o cărămidă 1 × n cu boltă dedesubt și
   știfturi pe toată lungimea; Easy 3Draw 18.27.0; balamaua și placa turnantă au trecut în 3.Ck. **3.Ce (punctele de
-  prindere și „Se prinde cu”)** gata pe 25.11, neunită: fiecare piesă își spune prinderile odată cu plasa
+  prindere și „Se prinde cu”)** gata pe 25.11, unită în `main` pe 25.11 (`38ff9391`): fiecare piesă își spune prinderile odată cu plasa
   (`construieste(def).prinderi`: felul, locul, direcția, lungimea; unsprezece feluri, de la știft și locaș la bilă și
   cupă), `Lego.montaj` duce o prindere peste perechea ei (baza alipirii din Model), iar configuratorul are, sub
   butoanele piesei, panoul „Se prinde cu”: ce are piesa și piesele atelierului care se potrivesc, cu axul și știftul
@@ -1643,6 +1643,25 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 25.11.2026, spre dimineață (a douăzeci și noua unire din cloud): **atelierul Easy 3Draw: punctele de prindere și
+  „Se prinde cu” (3.Ce), unite în `main`** (sesiunea principală, ramura `unire-2511d`, din `188c2bb6`). Linia
+  atelierului, ramura `wip/3.Xh-biblioteca-ui`, `980f239c`, PR-ul `AndreiBesliu/cvs2#28` (ADR 0284), unită în
+  `38ff9391`: fiecare piesă a motorului își spune prinderile odată cu plasa (unsprezece feluri, de la știft și locaș
+  la bilă și cupă; `prinderi` e câmp obligatoriu al tipului `Corp`), `Lego.montaj` duce o prindere peste perechea ei
+  (baza alipirii din Model, felia 3.Cg), iar configuratorul are, sub butoanele piesei, panoul „Se prinde cu”: ce are
+  piesa și piesele atelierului care se potrivesc, cu axul și știftul deschise de lungimea bună. **Easy 3Draw
+  18.28.0**; otrăvurile 144 / 144. Doar pachetul extensiei se schimbă; nimic pe server; documentul rămâne v28. Unirea
+  s-a făcut fără nicio ciocnire, iar **arborele ei are exact codul lui `980f239c`** (`git diff` gol în afara
+  fișierelor `.md`), deci lotul a intrat pe porțile lui, fără alt complet: completul 45528368086, verde (unit
+  10 431 / 0, 12 sărite pe Linux; e2e 824 / 824; funcțiile pe emulatoare 136 / 136; paginile 59 / 59), rapidul
+  45528368429, verde; aplicația, neschimbată: pornirea 111,1 kB (plafonul 120; cu ușa 116,1, cu Atelierul 116,4),
+  totalul 880,9 / 900 kB, `/admin` 138,3 / 200, contul 30,3 / 32; pachetul Easy 3Draw, 501,6 kB. **Lotul 29
+  (cremaliera și arcul) e pe test din 25.11, 03:47** (`a95af70e`; completul pe `main` 45518951805, verde; proba de
+  fum, bună); lotul acesta pleacă acum. La linii: atelierul (3.Cj-1, cama, și 3.Cj-2, roata cu palete, gata sau în
+  lucru la linie, neîmpinse; 3.Tu, la răspunsurile owner-ului), frezele (16.A↑b-5, apoi b-4); la cuvântul owner-ului:
+  cotele (10.4↑c, exportul), relieful (18.1↑b). **La owner:** plafoanele (totalul, 19,1 kB; pornirea, 3,6 kB), cele
+  trei întrebări ale lui 3.Tu, arhivarea sesiunilor exportului și elicelor, verificarea juridică (GDPR) a utilizării
+  aplicației înaintea live-ului, „cine unește în `main`”, meniul de sus la 320 px la atingere.
 - 25.11.2026, noaptea (a douăzeci și opta unire din cloud): **atelierul Easy 3Draw: cremaliera (3.Cc) și arcul (3.Cd),
   unite în `main`** (sesiunea principală, ramura `unire-2511b`, din `ac0d130e`). Linia atelierului, ramura
   `wip/3.Xh-biblioteca-ui`, `d0490719`, PR-ul `AndreiBesliu/cvs2#24` (ADR 0284), unite în `9815527f`: **3.Cc**, tipul
