@@ -14406,3 +14406,61 @@ ce se poate”
   880,9 / 900 kB, `/admin` 138,3 / 200. Pachetul Easy 3Draw, 501,6 kB. Nimic pe server.
 - **Documentele:** decizia în `CLAUDE.md` (paragraful de stare al construcțiilor e al liniei; versiunea extensiei,
   18.28.0, următoarea 18.29.0); indexul liniilor; starea din `docs/linii/principala.md`.
+
+## 2026-11-25 — Sesiunea principală în cloud: lotul 30 (atelierul Easy 3Draw: punctele de prindere), pe test; liniile, repornite (Model: Claude Fable 5.2)
+
+**Prompt:** regula „pe test publici liber”, după a douăzeci și noua unire; apoi „am resetat limita saptamanale. azi este miercuri.” și „vreau sa pornesti si celelalte sub-sesiuni”
+**Started:** 25.11, 04:55. **Completed:** publicarea, 25.11, 06:03; repornirea liniilor, 09:32.
+
+- **Publicat:** `f2678300` (rapidul pe `main` 45535348600; completul 45536382490, verde, 65 min cu așteptarea la
+  coadă: unit 10 431 / 0, 12 sărite pe Linux; e2e 824 / 824; funcțiile pe emulatoare 136 / 136; paginile 59 / 59;
+  publicarea 45543821746). Adresa de test spune `f267830004fa`; proba de fum, bună (nicio eroare, 70 de butoane,
+  catalogul extensiilor, mesajele, manualul, codurile și documentația, toate cu 200). Nimic nou pe server. Pornirea
+  111,1 kB (plafonul 120; cu ușa 116,1, cu Atelierul 116,4), totalul 880,9 / 900 kB.
+- **Între publicare și proba de fum, sesiunea a stat** până la 09:29, când owner-ul a scris că a resetat limita
+  săptămânală: lanțul de publicare se încheiase în GitHub (06:03), iar proba de fum și cifrele porților s-au luat la
+  09:30.
+- **Liniile, repornite** (mesaje către sesiunile lor, cu vorbele owner-ului): atelierul (3.Cj-1, 3.Cj-2; ultima lui
+  tură se oprise cu eroare), frezele (16.A↑b-5, apoi b-4), relieful (18.1↑b), cotele (10.4↑c). Fiecăreia: vârful lui
+  `main`, documentul v28 (v29 la cerere), restul de mărime comun (19,1 kB total, 3,6 kB pornire) și regula „dacă nu
+  mai încape, oprește-te și scrie-mi”.
+- **Documentele:** decizia în `CLAUDE.md`; indexul liniilor (relieful, cotele, frezele); starea din
+  `docs/linii/principala.md`.
+
+## 2026-11-25 — Sesiunea principală în cloud: a treizecea unire (atelierul Easy 3Draw: 3.Cj-1, cama; 3.Cj-2, roata cu palete) (Model: Claude Fable 5.2)
+
+**Prompt:** raportul liniei atelierului („3.Cj-1 și 3.Cj-2 sunt gata de unit, împreună”, `ae490539`), la ordinul în
+vigoare „unește ce se poate”
+**Started:** 25.11, 09:34. **Completed:** unirea în `main`, 25.11, 09:35; publicarea pe test, pornită după ea.
+
+- **Unirea, pe `unire-2511f`** (din `341b3472`): `ae490539`, în `e90edd2e`. Ciocnirea: rândurile din
+  `docs/linii/README.md` (al liniei, pentru atelier; ale lui `main`, pentru freze, relief și cote). Ramura avea `main`
+  `f2678300`; `341b3472` a adus doar documente, deci arborele unirii are exact codul commit-ului raportat (`git diff
+  ae490539` gol în afara fișierelor `.md`): a intrat pe porțile lui. Local: traducerile (1 112), biblioteca („Easy
+  3Draw 18.30.0, la zi”), fără `.lucru/`.
+- **Porțile, în CI, pe `ae490539`** (citite din jurnalul rulării): completul 45539424272, verde (53 min): unit
+  10 445 / 0 (12 sărite, pe Linux), e2e 830 / 830, funcțiile pe emulatoare 136 / 136, paginile 59 / 59; rapidul
+  45539418314, verde. Pornirea 111,1 kB (plafonul 120), totalul 880,9 / 900 kB, `/admin` 138,3 / 200. Pachetul Easy
+  3Draw, 508,4 kB. Nimic pe server.
+- **Linia împinsese commit-ul înaintea opririi de la limită** (completul lui a rulat pe 25.11, 05:21–06:14); raportul
+  a venit la două minute după repornire.
+- **Documentele:** decizia în `CLAUDE.md` (paragraful de stare al construcțiilor e al liniei; versiunea extensiei,
+  18.30.0, următoarea 18.31.0); indexul liniilor; starea din `docs/linii/principala.md`.
+
+## 2026-11-25 — Sesiunea principală în cloud: plafoanele 1 000 / 125 kB (ADR 0146) (Model: Claude Fable 5.2)
+
+**Prompt:** „ok, ridica plafonul total la 1000 kB si pornirea la 125 kB”
+**Started:** 25.11, 09:37. **Completed:** 25.11, 09:50 (în `main`, după rapidul verde al ramurii, 45569774571).
+
+- **ADR 0146** (`docs/adr/0146-plafoanele-1000-125.md`, cu rândul din index și traducerea titlului): totalul 900 →
+  1 000 kB, pornirea 120 → 125 kB; cifrele măsurate pe `d1a96fc4` (880,9 kB; 111,1, cu ușa 116,1, cu Atelierul
+  116,4), de unde vine creșterea de 87,3 kB din două zile, costul la 750 kbit/s, ce am respins, când se redeschide.
+- **Poarta:** `PLAFON_PORNIRE_KB = 125` și `PLAFON_TOTAL_KB = 1000` în `scripts/build-determinist.ts`, cu istoricul din
+  comentariu. Celelalte plafoane, neatinse.
+- **Porțile:** schimbă doar două constante ale porții mărimii și documente (ca la ADR 0145): rapidul ramurii
+  `unire-2511g`, verde, înaintea împingerii în `main`; fără alt complet. Local: tipurile, traducerile (1 113).
+- **Titlul unui ADR nu are două puncte în el:** roadmap-ul îl taie la primul („Plafoanele: totalul…” ieșea
+  „Plafoanele”); titlul e acum „Plafoanele, totalul 900 → 1 000 kB și pornirea 120 → 125 kB”.
+- **Liniile, anunțate:** frezele, relieful, cotele și atelierul primesc plafoanele noi odată cu `main`.
+- **Documentele:** decizia și paragraful de stare în `CLAUDE.md`; `docs/linii/principala.md` (plafoanele, intervalul
+  ADR: următorul al sesiunii principale e 0147).
