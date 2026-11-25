@@ -115,6 +115,17 @@ const aria = (v: readonly Vf[]): number => { // conturul din laturi drepte (prob
   return s / 2;
 };
 const drept = (x0: number, y0: number, x1: number, y1: number): Vf[] => [[x0, y0, 0], [x1, y0, 0], [x1, y1, 0], [x0, y1, 0]];
+/** Aria unui contur cu arce: poligonul vârfurilor, plus (la arcul spre dreapta mersului) sau minus segmentul de cerc. */
+const ariaArce = (v: readonly Vf[]): number => {
+  let s = aria(v);
+  for (let i = 0; i < v.length; i++) {
+    const a = v[i]!, b = v[(i + 1) % v.length]!, t = 4 * Math.atan(Math.abs(a[2]));
+    if (t < 1e-12) continue;
+    const raza = Math.hypot(b[0] - a[0], b[1] - a[1]) / (2 * Math.sin(t / 2));
+    s += Math.sign(a[2]) * raza * raza / 2 * (t - Math.sin(t));
+  }
+  return s;
+};
 
 // ---------------------------------------------------------------------------------------------- unirea formelor
 test('unirea formelor ține golurile rămase între ele: un „U” cu capac are un gol, iar o bară prin el îl desparte în două', () => {
@@ -139,6 +150,14 @@ test('unirea formelor ține golurile rămase între ele: un „U” cu capac are
   // un gol închis de forma nouă cu o bucată pierde ce acoperă altă bucată, unită după: bara stă în „U” fără să-l atingă,
   // iar capacul le leagă; din golul de 30 rămân 24, iar marginea crește cu cât iese bara peste capac (2 × 3)
   assert.deepEqual(sume([U, drept(4, 4, 6, 12), capac]), [[104, [24]]]);
+  // un contur cu arce, dat în sens orar (o tijă de 4 × 8 cu capătul rotund, raza 2): întors, își ține arcul pe aceeași
+  // latură, bombat tot în afară
+  const tijaOrar: Vf[] = [[0, 2, 0], [8, 2, -1], [8, -2, 0], [0, -2, 0]], intoarsa = Lc._.unesteForme([tijaOrar]);
+  assert.equal(intoarsa.length, 1);
+  assert.ok(Math.abs(ariaArce(intoarsa[0]!.ext) - (32 + 2 * Math.PI)) < 1e-9, `aria tijei întoarse: ${ariaArce(intoarsa[0]!.ext)}`);
+  // unită cu un dreptunghi care o taie: 16 în plus, fără cei 4 × 2 de peste tijă
+  const cuDrept = Lc._.unesteForme([tijaOrar, drept(3, -4, 5, 4)]);
+  assert.ok(Math.abs(ariaArce(cuDrept[0]!.ext) - (32 + 2 * Math.PI + 8)) < 1e-9, `aria tijei cu dreptunghiul: ${ariaArce(cuDrept[0]!.ext)}`);
 });
 
 // ---------------------------------------------------------------------------------------------- fulgul
@@ -292,12 +311,12 @@ test('marginile fulgului: ce iese din ele e adus înapoi, cu un mesaj; linia nu 
   assert.equal(fulg({ diam: 500 }).avert.length, 1);
   assert.match(fulg({ diam: 500 }).avert[0]!, /între 30 și 150 mm/);
   assert.equal(fulg({ linie: 0.4 }).avert.length, 1);
-  assert.match(fulg({ linie: 0.4 }).avert[0]!, /1,2/);
+  assert.match(fulg({ linie: 0.4 }).avert[0]!, /am făcut-o de 1,2 mm\.$/);
   // Ø30: raza 15, deci linia de cel mult 2,5
   const mic = Lc.fulgCote({ diam: 30, linie: 4 });
   assert.deepEqual([mic.linie, mic.linieMax], [2.5, 2.5]);
   assert.equal(Lc.fulgCote({ diam: 70 }).linieMax, 5);
-  assert.match(fulg({ diam: 30, linie: 4 }).avert[0]!, /2,5/);
+  assert.match(fulg({ diam: 30, linie: 4 }).avert[0]!, /între 1,2 și 2,5 mm: am făcut-o de 2,5 mm\.$/);
   // zecimile și întregii: 70,04 e 70; 2,5 perechi sunt 3 (rotunjit); numerele scrise ca text sunt primite
   const z = Lc.fulgCote({ diam: '70.04', ramuri: 2.5, linie: '2' });
   assert.deepEqual([z.diam, z.ramuri, z.linie], [70, 3, 2]);

@@ -105,6 +105,76 @@ subțire măsurată), mostra în tabelele atelierului, pictograma, engleza, rân
 3. **3a:** ornamentele sunt de sine stătătoare, de agățat; brăduțul LEGO e o felie a lui;
 4. **4a:** numele de pe ornament vine în felia a treia, cu un font propriu, dintr-o singură linie.
 
+## Implementat (3.Cl-1, 25.11.2026): fulgul, steaua și brăduțul
+
+Easy 3Draw 18.35.0. Fila „Crăciun”, după „Elice”, cu trei piese; fiecare e plată, cu pereții drepți, tipărită culcată,
+fără suport, și nu are prinderi (se agață).
+
+### Cum se face conturul
+
+Conturul unei piese e unirea unor forme simple (poligoane, tije cu capăt rotund, discuri), făcută cu Cavalier
+(`unesteForme`, în motor), cu golurile rămase între ele: piesa e un singur corp, iar greutatea scrisă e cea adevărată.
+Formele se taie sau se cuprind, fără laturi suprapuse: de aceea brațele și ramurile pleacă drept, din interiorul formei
+de care se leagă.
+
+### Agățătoarea
+
+- **Inelul:** golul de 3 mm, peretele de 1,6; centrul stă la 1,9 mm peste vârful piesei, deci vârful intră 0,4 mm în
+  perete. La propunere era la mijlocul peretelui (2,3 mm), dar gâtul dintre inel și brațul fulgului ieșea mai subțire
+  decât linia (1,16 mm la linia de 1,2); acum nu coboară sub linie (la liniile groase, sub 2,3 mm).
+- Pe un vârf ascuțit (steaua, bradul), inelul stă pe o **tijă de 2,4 mm**, coborâtă până unde forma e mai lată decât ea.
+- **Gaura:** 2,5 mm, pe axa vârfului, cât mai sus, cu cel puțin 1,6 mm de material în jur. Se caută doar aproape de vârf:
+  în colțul de sus al stelei (nu mai jos de o treime din rază) și în ultimul etaj al bradului. Mai jos ar încăpea
+  (deasupra trunchiului unui brad mic), dar piesa ar atârna strâmb sau cu vârful în jos. Dacă nu încape, piesa primește
+  inelul, cu un mesaj.
+
+### Fulgul (`fulg`)
+
+- Șase brațe (unul în sus, spre inel), un miez și perechi de ramuri. Câmpurile: `diam` (30–150 mm, de la vârf la vârf),
+  `grosime` (1,2–6), `linie` (1,2 până la o șesime din rază, cel mult 5), `ramuri` (0–4 perechi pe braț), `unghi`
+  (30°–75° față de braț), `inceput` (20–70 % din brațul liber: unde stă prima pereche), `lungime` (10–45 % din rază),
+  `miez` (hexagon, stea, gol), `agatatoare` (inel, fără).
+- Perechile stau de la `inceput` până la 86 % din brațul liber; spre vârf sunt tot mai scurte (ultima, 55 %). O ramură
+  nu trece de cercul fulgului; una care ar ieși sub o linie și jumătate nu se mai face, iar editorul o spune.
+- Ramurile brațelor vecine se pot încrucișa: golurile închise între ele rămân goluri.
+- „Repede”: șase fulgi gata făcuți (Clasic, Steluță, Dantelă, Cetină, Săgeți, Simplu). „Alt fulg”: ramurile și miezul,
+  la întâmplare, în margini; mărimea, grosimea, linia și agățătoarea rămân.
+
+### Steaua (`stea`)
+
+- 5–8 colțuri (`varfuri`: numele `colturi` era luat de cadru), `diam` (30–150), `interior` (30–75 % din rază: unde stau
+  vârfurile dinăuntru), `grosime` (1,2–12), `fel` (plină, contur, relief), `linie` (conturul: 1,2–6), `agatatoare`
+  (inel, gaură, fără).
+- **Conturul:** golul e steaua retrasă cu linia; un gol sub 3 mm² nu se mai face, iar steaua rămâne plină, cu un mesaj.
+- **În relief:** muchii de la mijloc (înălțimea `grosime`) la colțuri și văi la vârfurile dinăuntru; marginea are
+  1,2 mm (cel mult jumătate din înălțime). Nicio față nu privește în jos. Inelul e o bucată plată de cel mult 2,4 mm,
+  prinsă prin tijă; gaura nu se face în relief (nici pe contur).
+- Colțurile sub 25° sunt spuse („foarte ascuțite”), cu unghiul.
+
+### Brăduțul (`brad`)
+
+- `inaltime` (30–150 mm), `etaje` (2–6), `latime` (40–90 % din înălțime), `grosime` (1,2–6), `fel` (de agățat, în
+  picioare), `agatatoare` (inel, gaură, fără; doar la cel de agățat).
+- **În picioare:** două plăci alăturate pe pat (la 3 mm), cu talpa lată (60 % din lățime). Prima are fanta de jos până
+  la 0,2 mm peste mijloc; a doua, de sus până la 0,2 mm sub mijloc. Fanta e cât grosimea plus, de două ori, jocul
+  locașelor din calibrare și încă 0,1 mm (3,4 mm la placa de 3, cu calibrarea implicită).
+- A doua placă e tăiată drept sus, unde lângă fantă n-ar mai rămâne 1,2 mm: prima placă are vârful. Dacă tăietura cade
+  sub ultimul etaj, sau dacă lângă fanta de jos rămâne prea puțin, editorul o spune.
+
+### Ce a rămas din propunere
+
+- „Schimbă filamentul la stratul N” (relieful pe două înălțimi) vine cu globul, în 3.Cl-2.
+- Clopoțelul, omul de zăpadă, bastonul și ghirlanda: la cererea owner-ului.
+
+### Probele
+
+- `test/unit/trenulet.craciun.test.ts`: fiecare formă are modelul ei de pe hârtie, scris din regulile de mai sus, iar
+  plasa e întrebată în mii de puncte (lemn sau gol, ca pe hârtie); 60 de fulgi la întâmplare; nervura, inelul, gaura,
+  fantele și tăietura plăcii a doua, măsurate pe plasă; unirea formelor, pe cazuri cu ariile socotite de mână.
+- `test/e2e/trenulet.craciun.spec.ts`: fila, cele trei editoare, „Repede”, „Alt fulg” (cu zarul ținut pe loc și cu cel
+  adevărat), mesajele, STL-urile închise, lista.
+- Otrăvurile: `test/otravuri/3.Cl-1.py`, `test/otravuri/3.Cl-1-en.py`.
+
 ## Se redeschide dacă
 
 - o piesă tipărită iese prea fragilă la nervura de 1,2 mm (atunci pragul urcă);
