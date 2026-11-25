@@ -152,12 +152,12 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
   printr-o schiță.
 - **Observabilitatea:** erorile ajung în jurnalul aplicației; joburile își lasă marcajul.
 
-## Starea pe 25.11.2026, dimineața (după a douăzeci și noua unire din cloud; liniile, repornite)
+## Starea pe 25.11.2026, dimineața (după a treizecea unire din cloud; liniile, repornite)
 
 - **Pe test:** `f2678300` (tot ce e în `main`, cu lotul 30: atelierul Easy 3Draw 18.28.0, cu punctele de prindere
   și „Se prinde cu”; publicat pe 25.11 la 06:03, cu serverul neschimbat; completul pe `main` 45536382490, verde;
   proba de fum, bună). Înainte: `a95af70e` (lotul 29, cremaliera și arcul), pe 25.11 la 03:47; `694f0ff1` (cotele
-  a-4 și b, lotul 28), la 01:37. Nimic în drum.
+  a-4 și b, lotul 28), la 01:37. În drum: lotul 31 (atelierul: cama și roata cu palete, Easy 3Draw 18.30.0).
 - **`main`, din cloud:** pe 23.11: 3.Tq (`0ae9c6c1`); 11.3↑e și A.4 (`ddaa7ead`); 3.Tr, unită de linia elicelor
   (`d262e57a`); 25.8↑a și A.5 (`1b46c955`), cu reparația probei extensiilor (`8287d66e`); 11.3↑f, unită de linia
   planșelor (`f4601938`); A.6 (`4497d639`); 3.Xh (`2d1e482c`) și 12.1↑e-3 cu 12.1↑e-4 (`03460cab`); A.8a cu A.8b
@@ -171,10 +171,10 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
   (`9fd71053`); fereastra exportului, 28.8↑a–g (`c4ca5ec2`), și 3.Xk (`373699e6`); proba extensiilor, reparată
   (`13d9bcad`), 11.1↑d (`001b6325`) și 3.At (`cadac6c3`), scrise în sesiunea principală; 16.A↑h-5 (`4aee5405`) și
   16.A↑b-3 (`fdde5947`); 18.1↑a, relieful, cu documentul v28 (`c5b79526`); 10.4↑a-4 și 10.4↑b (`1eea83dd`). Pe
-  25.11: 3.Ca și 3.Cb, atelierul Easy 3Draw, 18.25.0 (`11877a3e`); 3.Cc și 3.Cd, 18.27.0 (`9815527f`); 3.Ce, 18.28.0 (`38ff9391`).
+  25.11: 3.Ca și 3.Cb, atelierul Easy 3Draw, 18.25.0 (`11877a3e`); 3.Cc și 3.Cd, 18.27.0 (`9815527f`); 3.Ce, 18.28.0 (`38ff9391`); 3.Cj-1 și 3.Cj-2, 18.30.0 (`e90edd2e`).
 - **Liniile** (vezi [indexul](README.md)):
-  - **în lucru, pe ramuri, repornite pe 25.11 la 09:35** (owner-ul, în sesiunea principală, după resetarea limitei
-    săptămânale: „vreau sa pornesti si celelalte sub-sesiuni”): atelierul (3.Cj-1, cama, 18.29.0; 3.Cj-2, roata cu palete, 18.30.0; ultima tură
+  - **în lucru, pe ramuri, repornite pe 25.11 la 09:32** (owner-ul, în sesiunea principală, după resetarea limitei
+    săptămânale: „vreau sa pornesti si celelalte sub-sesiuni”): atelierul (restul lui 3.Cj: cadrul, apoi melcul; cama și roata cu palete, unite la 09:35; ultima tură
     a sesiunii se oprise cu eroare), frezele (16.A↑b-5: fundul plat, frezele de rest, dopul și banda; apoi b-4),
     relieful (18.1↑b, modelul reliefului în vederea 3D), cotele (10.4↑c, exportul cotelor); se unesc la raportul
     liniei, în ordinea rapoartelor. **Trei linii lucrează în același rest de mărime** (totalul, 19,1 kB; pornirea,

@@ -14410,7 +14410,7 @@ ce se poate”
 ## 2026-11-25 — Sesiunea principală în cloud: lotul 30 (atelierul Easy 3Draw: punctele de prindere), pe test; liniile, repornite (Model: Claude Fable 5.2)
 
 **Prompt:** regula „pe test publici liber”, după a douăzeci și noua unire; apoi „am resetat limita saptamanale. azi este miercuri.” și „vreau sa pornesti si celelalte sub-sesiuni”
-**Started:** 25.11, 04:55. **Completed:** publicarea, 25.11, 06:03; repornirea liniilor, 09:35.
+**Started:** 25.11, 04:55. **Completed:** publicarea, 25.11, 06:03; repornirea liniilor, 09:32.
 
 - **Publicat:** `f2678300` (rapidul pe `main` 45535348600; completul 45536382490, verde, 65 min cu așteptarea la
   coadă: unit 10 431 / 0, 12 sărite pe Linux; e2e 824 / 824; funcțiile pe emulatoare 136 / 136; paginile 59 / 59;
@@ -14426,3 +14426,23 @@ ce se poate”
   mai încape, oprește-te și scrie-mi”.
 - **Documentele:** decizia în `CLAUDE.md`; indexul liniilor (relieful, cotele, frezele); starea din
   `docs/linii/principala.md`.
+
+## 2026-11-25 — Sesiunea principală în cloud: a treizecea unire (atelierul Easy 3Draw: 3.Cj-1, cama; 3.Cj-2, roata cu palete) (Model: Claude Fable 5.2)
+
+**Prompt:** raportul liniei atelierului („3.Cj-1 și 3.Cj-2 sunt gata de unit, împreună”, `ae490539`), la ordinul în
+vigoare „unește ce se poate”
+**Started:** 25.11, 09:34. **Completed:** unirea în `main`, 25.11, 09:35; publicarea pe test, pornită după ea.
+
+- **Unirea, pe `unire-2511f`** (din `341b3472`): `ae490539`, în `e90edd2e`. Ciocnirea: rândurile din
+  `docs/linii/README.md` (al liniei, pentru atelier; ale lui `main`, pentru freze, relief și cote). Ramura avea `main`
+  `f2678300`; `341b3472` a adus doar documente, deci arborele unirii are exact codul commit-ului raportat (`git diff
+  ae490539` gol în afara fișierelor `.md`): a intrat pe porțile lui. Local: traducerile (1 112), biblioteca („Easy
+  3Draw 18.30.0, la zi”), fără `.lucru/`.
+- **Porțile, în CI, pe `ae490539`** (citite din jurnalul rulării): completul 45539424272, verde (53 min): unit
+  10 445 / 0 (12 sărite, pe Linux), e2e 830 / 830, funcțiile pe emulatoare 136 / 136, paginile 59 / 59; rapidul
+  45539418314, verde. Pornirea 111,1 kB (plafonul 120), totalul 880,9 / 900 kB, `/admin` 138,3 / 200. Pachetul Easy
+  3Draw, 508,4 kB. Nimic pe server.
+- **Linia împinsese commit-ul înaintea opririi de la limită** (completul lui a rulat pe 25.11, 05:21–06:14); raportul
+  a venit la două minute după repornire.
+- **Documentele:** decizia în `CLAUDE.md` (paragraful de stare al construcțiilor e al liniei; versiunea extensiei,
+  18.30.0, următoarea 18.31.0); indexul liniilor; starea din `docs/linii/principala.md`.

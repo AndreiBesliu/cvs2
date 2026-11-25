@@ -1082,9 +1082,9 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   (`construieste(def).prinderi`: felul, locul, direcția, lungimea; unsprezece feluri, de la știft și locaș la bilă și
   cupă), `Lego.montaj` duce o prindere peste perechea ei (baza alipirii din Model), iar configuratorul are, sub
   butoanele piesei, panoul „Se prinde cu”: ce are piesa și piesele atelierului care se potrivesc, cu axul și știftul
-  deschise de lungimea bună; Easy 3Draw 18.28.0. **3.Cj-1 (cama)** gata pe 25.11, neunită: tipul `cama`, în fila Roți,
+  deschise de lungimea bună; Easy 3Draw 18.28.0. **3.Cj-1 (cama)** gata pe 25.11, unită în `main` pe 25.11 (`e90edd2e`): tipul `cama`, în fila Roți,
   un disc pe ax care face din rotire un du-te-vino, în trei forme (excentric, pară, melc), cu diametrul de bază, cursa,
-  grosimea și gaura la alegere; Easy 3Draw 18.29.0. **3.Cj-2 (roata cu palete)** gata pe 25.11, neunită: tipul
+  grosimea și gaura la alegere; Easy 3Draw 18.29.0. **3.Cj-2 (roata cu palete)** gata pe 25.11, unită în `main` odată cu ea: tipul
   `roataPalete`, în fila Elice, o roată de apă sau de vânt pe butucul roților, cu diametrul, numărul paletelor, lățimea,
   palete drepte sau curbate, cu disc sau fără; butucul crește cu paletele, iar pe o roată mică încap mai puține (motorul
   o spune, editorul le ține în margine); Easy 3Draw 18.30.0 (următoarea, 18.31.0); restul lui 3.Cj (cadrul, melcul)
@@ -1649,9 +1649,28 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 25.11.2026, dimineața (a treizecea unire din cloud): **atelierul Easy 3Draw: cama (3.Cj-1) și roata cu palete
+  (3.Cj-2), unite în `main`** (sesiunea principală, ramura `unire-2511f`, din `341b3472`). Linia atelierului, ramura
+  `wip/3.Xh-biblioteca-ui`, `ae490539`, PR-ul `AndreiBesliu/cvs2#29` (ADR 0284), unite în `e90edd2e`: **3.Cj-1**,
+  tipul `cama`, în fila Roți: un disc pe ax care face din rotire un du-te-vino, în trei forme (excentric, pară, melc)
+  (Easy 3Draw 18.29.0; otrăvurile 59 / 59); **3.Cj-2**, tipul `roataPalete`, în fila Elice: butucul roților, paletele
+  drepte sau curbate până la diametrul cerut, discul la alegere (**Easy 3Draw 18.30.0**; otrăvurile 101 / 101, 97 la
+  prima rulare). Proba roții, scrisă întâi, numără paletele pe plasă și a găsit paleta curbată ocolind butucul roților
+  mici (8 în loc de 4): reparat de linie. Doar pachetul extensiei se schimbă; nimic pe server; documentul rămâne v28.
+  Ciocnirea, doar rândul liniei din indexul liniilor (al ei, pentru atelier; ale lui `main`, pentru freze, relief și
+  cote). **Arborele unirii are exact codul lui `ae490539`** (`git diff` gol în afara fișierelor `.md`), deci lotul a
+  intrat pe porțile lui, fără alt complet: completul 45539424272, verde (unit 10 445 / 0, 12 sărite pe Linux; e2e
+  830 / 830; funcțiile pe emulatoare 136 / 136; paginile 59 / 59), rapidul 45539418314, verde; aplicația,
+  neschimbată: pornirea 111,1 kB (plafonul 120; cu ușa 116,1, cu Atelierul 116,4), totalul 880,9 / 900 kB, `/admin`
+  138,3 / 200; pachetul Easy 3Draw, 508,4 kB. Pe test e `f2678300` (lotul 30); lotul acesta pleacă acum. La linii, în
+  lucru: atelierul (restul lui 3.Cj: cadrul, apoi melcul; 3.Tu, la răspunsurile owner-ului), frezele (16.A↑b-5),
+  relieful (18.1↑b), cotele (10.4↑c). **La owner:** plafoanele (totalul, 19,1 kB; pornirea, 3,6 kB; trei linii
+  lucrează în același rest), cele trei întrebări ale lui 3.Tu, arhivarea sesiunilor exportului și elicelor,
+  verificarea juridică (GDPR) a utilizării aplicației înaintea live-ului, „cine unește în `main`”, meniul de sus la
+  320 px la atingere.
 - 25.11.2026, dimineața: **liniile, repornite după resetarea limitei săptămânale** (owner-ul, în sesiunea
   principală: „am resetat limita saptamanale. azi este miercuri.” și „vreau sa pornesti si celelalte sub-sesiuni”). Sesiunea principală le-a scris celor patru sesiuni de linie
-  care aveau de lucru (09:35): **atelierul** (ultima tură se oprise cu eroare: reia 3.Cj-1, cama, și 3.Cj-2, roata cu
+  care aveau de lucru (09:32): **atelierul** (ultima tură se oprise cu eroare: reia 3.Cj-1, cama, și 3.Cj-2, roata cu
   palete), **frezele** (16.A↑b-5, apoi b-4), **relieful** (18.1↑b, modelul reliefului în vederea 3D) și **cotele**
   (10.4↑c, exportul cotelor). Relieful și cotele își așteptau felia „la cuvântul owner-ului”: mesajul lui de azi e
   acel cuvânt. 3.Tu rămâne la răspunsurile lui la cele trei întrebări. Nepornite, fiindcă n-au sesiune în cloud sau
