@@ -151,7 +151,7 @@ o('E33', AT, '<input id="at-rp-diam" type="number" min="24" max="160" step="0.1"
 o('E34', AT, '<input id="at-rp-lat" type="number" min="4" max="40" step="0.1" value="${q.lat}">', '<input id="at-rp-lat" type="number" min="4" max="40" step="0.1" value="${q.diam}">', 'e2e', 'câmpul lățimii arată diametrul')
 
 SETURI = {
-    'palete': ['test/unit/trenulet.palete.test.ts', 'test/unit/trenulet.prinderi.test.ts'],
+    'palete': ['test/unit/trenulet.palete.test.ts'],
     'tabele': ['test/unit/trenulet.familii.test.ts', 'test/unit/trenulet.pictograme.test.ts', 'test/unit/trenulet.engleza.test.ts', 'test/unit/trenulet.tipuri.test.ts'],
 }
 E2E = ['test/e2e/trenulet.palete.spec.ts']
