@@ -189,6 +189,9 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
     ia și lucrul liniei elicelor, predat pe 24.11 seara la cererea owner-ului: 3.Tu, la răspunsurile lui);
   - **la cuvântul owner-ului:** următoarea felie a bibliotecii extensiilor, a incrustațiilor și a trasării, 11.5↑b
     (după etapa 13);
+  - **audituri, cerute de owner pe 25.11** (înaintea arhivării sesiunilor; doar documente, fără cod de produs):
+    fereastra exportului (`docs/linii/audit-export.md`) și elicele (`docs/linii/audit-elice.md`), fiecare în
+    sesiunea liniei ei; le unesc la raport, iar feliile propuse pornesc doar la cuvântul lui;
   - **fără felie în lucru:** planșele (tăierea plăcii 11, la owner), incrustațiile, trasarea, tăierea (după
     10.3↑o: 10.3↑p–r),
     imprimanta (după 3.6v: 3.6w, camera), aranjamentele (28.1↑). Pornesc la cuvântul
