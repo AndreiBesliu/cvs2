@@ -15481,4 +15481,6 @@ commit-ul împins).
   neschimbat). **Raportul:** bifa „Cu cotele (N)”, cu implicitul din Setări › Cotele › Raportul foilor; desenul cu cote pe tot
   rândul; setările, fontul și desenul cu cote, aduse la cerere. `raportFoi` și CSV-ul, neatinse.
 - Întrebarea 10 (cotele mărite sau la mărimea adevărată), la owner, cu recomandarea implementată. Manualul (ro, en), e2e noi
-  2, grupul al optulea numărat în `setari.spec.ts`; otrăvurile 20 / 20, într-o clonă (R06, culoarea, după proba întărită). Cu d-3, felia 10.4↑d e încheiată.
+  2, grupul al optulea numărat în `setari.spec.ts`; otrăvurile 20 / 20, într-o clonă (R06, culoarea, după proba întărită). Pornirea
+  111,5 → 111,6 kB, totalul 912,5 → 915,5 / 1 000 kB (+3,0); `main` `554b72cb` adus (ciocniri doar în DEVLOG și în
+  traducerile roadmap-ului). Cu d-3, felia 10.4↑d e încheiată.

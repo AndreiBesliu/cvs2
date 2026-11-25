@@ -695,7 +695,8 @@ nu s-au schimbat (`cote.neatinse.test.ts`, neatins, le cere tot aceleași cu și
   foile, cum nu le despart nici imaginile (ADR 0272 §10). **Tipărește** ia desenele cum le vezi.
 - **Cifrele:** unitare noi 5 (`cote.raport.test.ts` 4: desenul de dinainte pe tot corpusul CAM, stilul pe hârtie, stratul și
   cifrele, pagina lărgită; `cote.setari.test.ts` 1), e2e noi 2 (`cote.raport.spec.ts`), plus grupul nou numărat în
-  `setari.spec.ts`; otrăvurile 20 / 20 (19 din prima; culoarea, după ce proba a luat alta decât cea implicită).
+  `setari.spec.ts`; otrăvurile 20 / 20 (19 din prima; culoarea, după ce proba a luat alta decât cea implicită). Pornirea
+  111,5 → 111,6 kB (cu ușa 116,7, cu Atelierul 117,0 / 125), totalul 912,5 → 915,5 / 1 000 kB (+3,0).
 
 ### Întrebarea 10 (d-3), cu recomandarea pe care s-a mers
 
