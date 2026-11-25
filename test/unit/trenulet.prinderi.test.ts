@@ -313,6 +313,8 @@ const MOSTRE: readonly (readonly [string, Def, Record<string, number>, { slab?: 
   ['rotorul ventilatorului', { tip: 'ventilator' }, { gauraAx: 2 }],
   ['carcasa ventilatorului', { tip: 'ventilator', piesa: 'carcasa' }, { gauraStift: 4 }],
   ['carcasa cu patru urechi', { tip: 'ventilator', piesa: 'carcasa', urechi: 4, diametru: 56 }, { gauraStift: 8 }],
+  ['roata cu palete', { tip: 'roataPalete' }, { gauraAx: 2 }],
+  ['roata cu palete curbate, mică, pe știft, fără disc', { tip: 'roataPalete', diam: 32, palete: 12, forma: 'curbate', disc: 'fara', gaura: 'r', lat: 7.8 }, { gauraStift: 2 }],
   ['forma din cvs2', { tip: 'dinCvs2', contururi: [[[0, 0], [20, 0], [20, 12], [0, 12]]] }, {}],
 ];
 const numara = (l: readonly Prindere[]): Record<string, number> => { const n: Record<string, number> = {}; for (const c of l) n[c.fel] = (n[c.fel] ?? 0) + 1; return n; };

@@ -54,8 +54,8 @@ test('piesa nouă din fila Elice: roata Ø64 cu 8 palete drepte, lată de 15,8, 
   await expect(page.locator('#at-rp-palete')).toHaveValue('8');
   await expect(page.locator('#at-rp-palete')).toHaveAttribute('max', '24');
   await expect(page.locator('#at-rp-lat')).toHaveValue('15.8');
-  await expect(page.locator('#at-rp-forma button')).toHaveText(['Drepte', 'Curbate']);
-  await expect(apasat(page, 'at-rp-forma')).toHaveText('Drepte');
+  await expect(page.locator('#at-rp-forma button')).toHaveText(['Palete drepte', 'Palete curbate']);
+  await expect(apasat(page, 'at-rp-forma')).toHaveText('Palete drepte');
   await expect(apasat(page, 'at-rp-disc')).toHaveText('Cu disc');
   await expect(apasat(page, 'at-rp-gaura')).toHaveText('Pentru ax');
   // butucul roților (raza 4,8); paletele, de la el la vârf: 32 − 4,8
@@ -67,7 +67,7 @@ test('configuratorul: diametrul, paletele, lățimea, forma, discul și gaura, c
   // curbate, fără disc: aceeași cutie (vârfurile celor 8 palete cad pe axe)
   await page.locator('#at-rp-forma [data-v="curbate"]').click();
   await expect(nume(page)).toHaveText('Roată cu palete Ø64, 8 palete, curbate');
-  await expect(apasat(page, 'at-rp-forma')).toHaveText('Curbate');
+  await expect(apasat(page, 'at-rp-forma')).toHaveText('Palete curbate');
   await expect(info(page)).toHaveText('Butucul are Ø9,6 mm, iar paletele, 27,2 mm lungime și 1,6 mm grosime. Curbate, prind apa ca niște cupe: împing mai bine într-un sens.');
   await page.locator('#at-rp-disc [data-v="fara"]').click();
   await expect(apasat(page, 'at-rp-disc')).toHaveText('Fără');
@@ -102,7 +102,7 @@ test('configuratorul: diametrul, paletele, lățimea, forma, discul și gaura, c
   await page.locator('#at-rp-disc [data-v="unul"]').click();
   await expect(apasat(page, 'at-rp-gaura')).toHaveText('Rotundă');
   await expect(apasat(page, 'at-rp-disc')).toHaveText('Cu disc');
-  await expect(apasat(page, 'at-rp-forma')).toHaveText('Drepte');
+  await expect(apasat(page, 'at-rp-forma')).toHaveText('Palete drepte');
   await expect(nume(page)).toHaveText('Roată cu palete Ø160, 24 palete, lată 7,8 mm, gaură rotundă');
   await expect(cote(page)).toContainText('160 × 160 × 7,8 mm');
   // în afara marginilor, valoarea de dinainte rămâne

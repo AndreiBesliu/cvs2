@@ -18,6 +18,12 @@
       ],
       "noutati": [
         {
+          "versiune": "18.30.0",
+          "data": "2026-11-25",
+          "ro": "Roata cu palete, în fila „Elice”: o roată de apă sau de vânt, pe ax. Diametrul, numărul paletelor, lățimea, palete drepte sau curbate, cu disc sau fără; se tipărește culcată, fără suport.",
+          "en": "The paddle wheel, in the “Propeller” tab: a water or wind wheel, on an axle. Diameter, number of paddles, width, straight or curved paddles, with or without a disc; prints flat, without supports."
+        },
+        {
           "versiune": "18.29.0",
           "data": "2026-11-25",
           "ro": "Cama, în fila „Roți”: un disc pe ax care face din rotire un du-te-vino. Trei forme (excentric, pară, melc), cu diametrul de bază, cursa, grosimea și gaura la alegere; se tipărește culcată, fără suport.",
@@ -124,8 +130,8 @@
           }
         }
       ],
-      "versiune": "18.29.0",
-      "continut": "4823852380bbc615c7a9e05bf05981feb42d44733144873a7c301f1e8f8a765f"
+      "versiune": "18.30.0",
+      "continut": "277048bd70d0380e453d9943c88ee7827cbc6b0ac1c4a3af83c01469a73551d4"
     }
   ]
 }

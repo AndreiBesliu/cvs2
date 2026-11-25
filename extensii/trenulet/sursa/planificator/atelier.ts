@@ -980,10 +980,10 @@ var Atelier3D = (function () {
         <div class="at-rand"><span class="mic">Repede:</span>${seg("at-rp-repede", [["32", "Ø32"], ["48", "Ø48"], ["64", "Ø64"], ["96", "Ø96"]], String(q.diam))}<span class="mic">${tr("4, 6, 8 și 12 știfturi")}</span></div>
         <div class="at-campuri">
           <label for="at-rp-diam">Diametrul (mm)<input id="at-rp-diam" type="number" min="24" max="160" step="0.1" value="${q.diam}"></label>
-          <label for="at-rp-palete">Paletele<input id="at-rp-palete" type="number" min="4" max="${q.incap}" step="1" value="${q.palete}"></label>
+          <label for="at-rp-palete">Câte palete<input id="at-rp-palete" type="number" min="4" max="${q.incap}" step="1" value="${q.palete}"></label>
           <label for="at-rp-lat">Lățimea (mm)<input id="at-rp-lat" type="number" min="4" max="40" step="0.1" value="${q.lat}"></label>
         </div>
-        <div class="at-rand"><span class="mic">Paletele:</span>${seg("at-rp-forma", [["drepte", "Drepte"], ["curbate", "Curbate"]], q.forma)}</div>
+        <div class="at-rand"><span class="mic">Forma:</span>${seg("at-rp-forma", [["drepte", "Palete drepte"], ["curbate", "Palete curbate"]], q.forma)}</div>
         <div class="at-rand"><span class="mic">Discul:</span>${seg("at-rp-disc", [["unul", "Cu disc"], ["fara", "Fără"]], q.disc)}</div>
         <div class="at-rand"><span class="mic">Gaura:</span>${seg("at-rp-gaura", [["x", "Pentru ax"], ["r", "Rotundă"]], q.gaura)}</div>
         <div class="at-rand"><span class="mic" id="at-rp-info">${tr`Butucul are Ø${fmt(2 * q.butuc)} mm, iar paletele, ${fmt(q.lungime)} mm lungime și ${fmt(q.grosime)} mm grosime.`}${q.incap < 24 ? " " + tr`La diametrul ăsta încap cel mult ${q.incap} palete.` : ""}${q.forma === "curbate" ? " " + tr("Curbate, prind apa ca niște cupe: împing mai bine într-un sens.") : ""}</span></div>`;
