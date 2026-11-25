@@ -8,10 +8,9 @@ doar una cate una ci si ca constructii complexe”), în sesiunea cloud a liniei
 [elice.md](elice.md), secțiunea „Predarea”): felia **3.Tu** (piesele rotunde pe același ax în „Modelul”, ADR 0283,
 rezervat), cu trei întrebări încă fără răspuns de la owner (recomandările: 1a, 2a, 3a).
 Starea: **3.Ca (conectorul perpendicular, Easy 3Draw 18.24.0) și 3.Cb (conectorul în unghi, axul cu opritor, știftul cu
-bucșă; 18.25.0), unite în `main` cu lotul 28 (`694f0ff1`); 3.Cc (cremaliera; 18.26.0) și 3.Cd (arcul; 18.27.0),
-raportate pe `d0490719` (rapidul și completul, verzi), de unit; 3.Ce (punctele de prindere și „Se prinde cu”; 18.28.0)
-gata pe 25.11, pe ramură; urmează 3.Tu, la răspunsurile owner-ului, apoi 3.Cf.** Versiunea următoare a pachetului:
-18.29.0._
+bucșă; 18.25.0), unite în `main` cu lotul 28 (`11877a3e`); 3.Cc (cremaliera; 18.26.0) și 3.Cd (arcul; 18.27.0),
+unite în `main` pe 25.11 (`9815527f`); 3.Ce (punctele de prindere și „Se prinde cu”; 18.28.0) gata pe 25.11, pe
+ramură, de unit; urmează 3.Tu, la răspunsurile owner-ului, apoi 3.Cf.** Versiunea următoare a pachetului: 18.29.0._
 
 ## Numerele liniei
 
