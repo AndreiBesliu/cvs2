@@ -66,6 +66,20 @@ async function prinToate(page: Page): Promise<void> {
   expect(await ceIese(page), 'buzunarul cu elicea').toEqual([]);
   await alege(e1, 'strategie', 'paralel');
   expect(await ceIese(page), 'buzunarul paralel').toEqual([]);
+  // Frezele în plus, cu listele lor „Din frezele mele” (ADR 0300 §4, felia 16.A↑b-5): de rest, ale dopului, a fundului plat, a benzii.
+  await e1.locator('[data-camp="rest-adauga"]').click();
+  await expect(e1.locator('[data-camp="rest-biblioteca"]')).toHaveCount(1);
+  await e2.locator('[data-camp="inc-freza-dop"]').check();
+  await e2.locator('[data-camp="dop-rest-adauga"]').click();
+  await expect(e2.locator('[data-camp="dop-biblioteca"]')).toBeVisible();
+  expect(await ceIese(page), 'frezele de rest și ale dopului').toEqual([]);
+  await alege(e1, 'latura', 'incrustatie');
+  await e1.locator('[data-camp="fund-rest-adauga"]').click();
+  await alege(e1, 'inc-jur', 'banda');
+  await e1.locator('[data-camp="banda-freza"]').check();
+  await expect(e1.locator('[data-camp="fund-biblioteca"]')).toBeVisible();
+  await expect(e1.locator('[data-camp="banda-biblioteca"]')).toBeVisible();
+  expect(await ceIese(page), 'fundul plat și banda').toEqual([]);
 }
 
 for (const [locale, limba] of [['ro-RO', 'română'], ['en-GB', 'engleză']] as const) {

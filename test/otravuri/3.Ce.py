@@ -83,7 +83,8 @@ o('C05', LG, 'const felGaura = (t: string): "gauraAx" | "gauraStift" => (t === "
   'găurile de ax și de știft sunt încurcate')
 o('C06', LG, 'const pr = drept ? r.prinderi : axePrinderi(r.prinderi, ([x, y, z]) => [y, x, z]);', 'const pr = r.prinderi;', 'prinderi', 'cărămida cu găuri laterale pe y își ține prinderile pe x')
 o('C07', LG, 'prinderi: mutaPrinderi(pr, s * Math.min(...xs), s * Math.min(...ys), 0) };', 'prinderi: pr };', 'prinderi', 'cărămida cu găuri laterale mutată pe grilă își lasă prinderile în colț')
-o('C08', LG, 'for (let k = 0; k < q.n; k++) prinderi.push({ fel: "stift", p: [s * k + s / 2, s / 2, q.H], d: SUS, lung: P.stift_h });', 'for (let k = 1; k < q.n - 1; k++) prinderi.push({ fel: "stift", p: [s * k + s / 2, s / 2, q.H], d: SUS, lung: P.stift_h });',
+ARC_ST = 'const prinderi: Prindere[] = picioare.prinderi.filter(c => c.fel === "locas");\n    for (let k = 0; k < q.n; k++) prinderi.push({ fel: "stift", p: [s * k + s / 2, s / 2, q.H], d: SUS, lung: P.stift_h });'
+o('C08', LG, ARC_ST, ARC_ST.replace('for (let k = 0; k < q.n; k++)', 'for (let k = 1; k < q.n - 1; k++)'),
   'prinderi', 'arcul uită știfturile picioarelor')
 o('C09', LG, 'const prinderi: Prindere[] = picioare.prinderi.filter(c => c.fel === "locas");', 'const prinderi: Prindere[] = [];', 'prinderi', 'arcul n-are locașuri')
 o('C10', LG, 'prinderi.push({ fel: "stift", p: [s * i + s / 2, j0, zc], d: [0, -1, 0], lung: P.stift_h });', 'prinderi.push({ fel: "stift", p: [s * i + s / 2, j0, zc + 1], d: [0, -1, 0], lung: P.stift_h });', 'prinderi',

@@ -1870,6 +1870,12 @@ pasul pe trecere și, la buzunar, pasul lateral; **Exportă** o scrie în proiec
 plonjarea) și cu tăișul. Un diametru sau o formă schimbate de mână o fac **Scrisă de mână**: proiectul nu mai ține că e din
 bibliotecă. Numărul T îl poți schimba fără să o pierzi.
 
+Frezele în plus ale unei operații au și ele lista lor **Din frezele mele**, doar cu frezele plate: freza fundului plat (la
+V-carve și la incrustația în V), fiecare freză de rest (doar cele mai mici decât freza dinainte), prima freză a dopului cu
+pereți drepți și freza decupării benzii. Aleasă, freza își pune numărul T (după aceeași regulă, printre toate frezele
+ferestrei), diametrul și pasul lateral; **Exportă** o scrie cu valorile ei de lucru. Un diametru schimbat de mână o face
+**Scrisă de mână** doar pe freza aceea.
+
 **Ordinea tăierii** stă în listă, deasupra operațiilor. Operațiile apar în ordinea în care se taie, cu locul lor în stânga (fișa
 spune „locul N din M”):
 - **Automată** (implicit): interioarele întâi, apoi liniile, la urmă exterioarele și despărțirile foii; în fiecare, grupate pe

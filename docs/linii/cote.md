@@ -49,7 +49,7 @@ față. Fără cod de produs până la răspunsuri. De hotărât acolo, între a
   rândul ei în capitolul scurtăturilor; un control cu nume, `node scripts/catalog-controale.ts --scrie`; bara de sus se
   probează la 1280 px și cu fontul lat, în ambele limbi.
 - **Mărimea:** din 25.11, plafoanele 125 kB (pornirea) și 1 000 kB (totalul), ADR 0146; cu c-1, pornirea 111,2 (cu ușa și
-  cu Atelierul 116,5), totalul 884,2. Unealta vine în bucata editării, la cerere;
+  cu Atelierul 116,5), totalul 888,1 (cu relieful 18.1↑b). Unealta vine în bucata editării, la cerere;
   în raportul fiecărei felii, cât adaugă în pornire și în total.
 - **Liniile vecine:** exportul (`wip/28.8-export`) și frezele (`wip/16.A-freze`) lucrează în fereastra „Exportă G-code”;
   cotele n-ar trebui să o atingă. „Exportă vectori” e liber.
@@ -98,7 +98,9 @@ față. Fără cod de produs până la răspunsuri. De hotărât acolo, între a
 - **25.11, 10.4↑c-1 gata pe ramură** (la „Pornește 10.4↑c”, transmis de sesiunea principală; `main` adus, cu plafoanele
   1 000 / 125 kB): cotele în „Exportă vectori” (bifa „Cu cotele”, stratul din Setări › Exportul, cifrele ca trăsături),
   în DXF, SVG, PDF și EPS, cu oracolul Python nou (`export2d_cote.py`). Felia c s-a împărțit: c-2 aduce DIMENSION și
-  cifrele ca text. **Urmează:** 10.4↑c-2, la cuvântul owner-ului.
+  cifrele ca text.
+- **25.11, 10.4↑c-1 unită în `main`** de sesiunea principală (`f2f6fc57`, din `d8e69780`; `main` `f8be3b4d` adus în
+  ramură); pe test ajunge cu lotul următor. **Urmează:** 10.4↑c-2, la cuvântul owner-ului.
 
 ## Deciziile owner-ului
 
