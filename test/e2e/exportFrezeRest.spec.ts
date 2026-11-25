@@ -33,7 +33,8 @@ test('buzunarul: frezele de rest din bibliotecă, doar cele mai mici; Exportă l
   // Prima freză de rest: doar frezele plate mai mici decât Ø12, în ordinea bibliotecii.
   await e1.locator('[data-camp="rest-adauga"]').click();
   const r0 = e1.locator('[data-rest-rand="0"]'), l0 = r0.locator('[data-camp="rest-biblioteca"]');
-  await expect(aleasaIn(l0)).toHaveText('Scrisă de mână');
+  // Freza de rest pornește de la jumătate din Ø12, deci e la fel cu Plată Ø6 (recunoașterea, 16.A↑b-4).
+  await expect(aleasaIn(l0)).toHaveText('Scrisă de mână (ca „Plată Ø6”)');
   await expect(oferite(l0)).toHaveText(['Plată Ø3,175', 'Plată Ø6']);
   await l0.selectOption({ label: 'Plată Ø6' });
   // T2, al bibliotecii (liber: freza buzunarului e T6), Ø6, pasul lateral 40 %.

@@ -383,9 +383,18 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   aceea. Exportă scrie originea cu regula frezei operației (`cuOrigine`, comună), iar legarea rândurilor ține și
   originea frezelor în plus. Frezele de rest stau într-un tabel cu capul coloanelor, cu „Adaugă” ca buton
   (constatarea 9 a auditului exportului). Lista e o componentă comună (`ListaBiblioteca`, în
-  `src/ui/FisaOperatie.tsx`). Urmează 16.A↑b-4 (nota „s-a schimbat în bibliotecă”) și 16.A↑b-6 („Pune-o
-  înapoi în bibliotecă”, din fereastra exportului, cu contul), pornită pe 25.11. Documentul nu se schimbă (e v28,
-  din relief); nimic pe server. Felia: pornirea +0, totalul +1,0 kB.
+  `src/ui/FisaOperatie.tsx`). Documentul nu se schimbă (e v28, din relief); nimic pe server. Felia: pornirea +0,
+  totalul +1,0 kB.
+  **Nota „s-a schimbat în bibliotecă” pe rândurile exportului (ADR 0300 §5, felia 16.A↑b-4)** gata pe 25.11, unită
+  în `main` pe 25.11 (`9f18522e`): pe fiecare freză a unui rând, copia din proiect e comparată cu „Frezele mele”
+  (`stareOrigine`, `diferenteFreza`, în `src/ui/exportRand.ts`). Schimbată acolo: nota spune ce diferă (numele,
+  diametrul, forma, valorile de lucru, tăișul), cu „Ia valorile noi” pe rând și „Pe toate (N)” (`cuValorileNoi`);
+  T-ul și pașii rămân ai rândului. Ștearsă: „nu mai e în bibliotecă”. Scrisă de mână, dar la fel cu una din
+  bibliotecă: „Scrisă de mână (ca „…”)”, fără scriere. Nota e `NotaBiblioteca` (`src/ui/FisaOperatie.tsx`), iar
+  biblioteca întreagă ajunge în fereastră doar după citire (`bibliotecaToata`, în `src/app/ExportConectat.tsx`).
+  **Un fel nou de freză cu CAM intră și în lista aceea: dacă fereastra nu-i poate purta forma, rămâne afară** (bila
+  reliefului, 18.1↑c). Urmează 16.A↑b-6 („Pune-o înapoi în bibliotecă”, din fereastra exportului, cu contul),
+  pornită pe 25.11. Documentul rămâne v28; nimic pe server. Felia: pornirea +0, totalul +1,6 kB.
   **Plafonul pornirii 120 kB (ADR 0145, decizia owner-ului din 24.11, „ok, ridica plafonul pornirii la 120 kB”):** după
   lotul al paisprezecelea, pornirea era 109,9 kB, cu ușa 114,4 și cu Atelierul 114,7 / 115, iar feliile următoare ale
   frezelor, exportului și aranjamentelor nu mai încăpeau în 0,3 kB. Poarta judecă tot trei măsuri sub același plafon
@@ -578,7 +587,9 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   numele propus e `cncvs2-centru`, iar dopul își ia numele după el. **Mișcă mașina:** colțurile ies octet cu octet
   ca înainte, iar proba centrului e `test/unit/montaj.centru.oracol.test.ts` (pe hârtie; corpusul CAM, rând cu rând
   față de colț; poarta și oracolul buzunarului, care citesc acum și centrul; senderul; emulatorul GRBL). **O origine
-  nouă intră în `ORIGINI`, în antetul citit de sender și în proba aceea.** Proba pe mașină rămâne a owner-ului.
+  nouă intră în `ORIGINI` (în montaj, `src/ir/montaj.ts`, și în lista ferestrei, `src/ui/exportRand.ts`), în antetul
+  citit de sender, în oracolele porții și buzunarului (`test/oracles/poarta.ts`, `buzunar.ts`: citesc originea pe
+  hârtie) și în proba aceea.** Proba pe mașină rămâne a owner-ului.
   Urmează 28.8↑h (desenele ferestrei, socotite cu funcțiile lucrării). Felia: pornirea +0, totalul +0,2 kB
   (890,3 / 1 000).
   **Aldinul și cursivul sintetic (ADR 0123, felia 7.5↑, adusă din etapa 7)** gata pe 02.11, în worktree-ul `wip/7.5-text`:
@@ -1043,6 +1054,14 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   explicația; pana de curent (`repoPlrStatus`), eveniment nou; la recenzia proprie, trei reparații (linkurile cât textul,
   dicționarul cerut din nou după o cerere căzută, cheia 0). Totalul 745,6 / 800 (+1,5). Urmează 3.6w
   (camera WebRTC), la cuvântul owner-ului.
+  **Starea lucrării e necunoscută până vine codul stării (felia 3.Au)** gata pe 25.11, unită în `main` pe 25.11
+  (`307d4f9a`), scrisă de sesiunea principală după un complet căzut la proba utilizării imprimantei: starea vine pe
+  bucăți, iar una doar cu progresul, sosită la legare înaintea stării întregi, făcea imprimanta „liberă” și lucrarea
+  ei, găsită în curs, „pornită” de aici. Acum `stareLucrare` (`src/machine/imprimanta/creality.ts`) spune
+  „necunoscută” cât nu are codul stării; pornirea unui fișier, homing-ul și răcirea singură cer oricum o stare
+  știută. **Imprimanta falsă are `bucataIntaiMs`** (`test/e2e/imprimantaFalsa.ts`): întâi o bucată doar cu progresul,
+  apoi starea întreagă, la fiecare legare. **O probă care depinde de ordinea în care sosesc cadrele imprimantei
+  forțează ordinea rea, nu o așteaptă de la ceas.**
   **Biblioteca extensiilor (ADR 0230, felia 3.Xg)** gata pe 07.11, în worktree-ul `biblioteca`, cu recomandările („Da,
   1a–7a”), **unită în `main` pe 07.11** („Da, unește”): Easy 3Draw se instalează și se actualizează dintr-o listă servită
   lângă aplicație. **La fiecare build,
@@ -1138,7 +1157,8 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   vechi care numără** (filele, galeriile, căutarea, starea unei liste vechi, versiunea): lista lor e în
   `docs/linii/atelier.md`. Doar pachetul extensiei se schimbă: pornirea și totalul aplicației, neatinse. **Din 24.11
   seara, linia ține și lucrul elicelor** (predat la cererea owner-ului). **3.Tu (piesele rotunde pe același ax în
-  „Modelul”; ADR 0283, acceptat de owner pe 25.11 cu 1a, 2a, 3a)** gata pe 25.11, pe ramură: în vederea „Modelul”, o
+  „Modelul”; ADR 0283, acceptat de owner pe 25.11 cu 1a, 2a, 3a)** gata pe 25.11, unită în `main` pe 25.11
+  (`f5cf10c8`): în vederea „Modelul”, o
   piesă rotundă (roțile, elicele, rotorul și carcasa ventilatorului, cama, melcul, roata cu palete) stă cu axul în
   mijlocul unui știft și se rotește în jurul lui; o piesă nouă intră cu pivotul cât mai aproape de al celei alese (două
   rotunde, pe același ax); rotorul și carcasa în care încape stau la același Z; rândul unei piese rotunde spune știftul
@@ -1718,6 +1738,72 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 25.11.2026, seara (a treizeci și șasea unire din cloud): **piesele rotunde pe același ax în vederea „Modelul” a
+  atelierului Easy 3Draw (3.Tu), unite în `main`** (sesiunea principală, ramura `unire-2511v`, din `65eecdc6`). Linia
+  atelierului, ramura `wip/3.Xh-biblioteca-ui`, `70942c03`, PR-ul `AndreiBesliu/cvs2#45` (ADR 0283, acceptat de owner
+  pe 25.11, în sesiunea liniei: „1a, 2a, 3a la 3.Tu, pornește”; propus pe 24.11 de linia elicelor, după observația
+  lui că o carcasă și un rotor de același diametru nu se pot așeza centrat), unită în `f5cf10c8`: în „Modelul”, o
+  piesă rotundă (roțile, elicele, rotorul și carcasa ventilatorului, cama, șurubul melc, roata cu palete, pinionul
+  șenilei) stă cu axul în mijlocul unui știft și se rotește în jurul lui (1a); o piesă nouă, pusă cu alta aleasă,
+  intră cu pivotul cât mai aproape de al ei, deci două rotunde stau pe același ax (2a); rotorul și carcasa în care
+  încape stau la aceeași înălțime (3a). Așezarea e acum a motorului, ca funcții pure. **Easy 3Draw 18.33.0**
+  (516,3 kB); otrăvurile 111 / 111 și 6 / 6. Doar pachetul extensiei se schimbă; nimic pe server; documentul rămâne
+  v28. Ramura avea `main` `1fbb8ad9`; de atunci `main` primise 16.A↑b-4 și 3.Au (cod al aplicației, pe care ramura
+  nu-l avea), deci unirea și-a făcut completul ei. Ciocnirile, doar în DEVLOG și în indexul liniilor (rândul
+  atelierului, al liniei; al frezelor, din `main`). Porțile unirii, în CI, pe `f5cf10c8` (completul 45641768117,
+  verde la prima trecere, 68 min): unit 10 513 / 0 (12 sărite, pe Linux), e2e 859 / 859, funcțiile pe emulatoare
+  136 / 136, paginile 59 / 59; rapidul, verde pe `f5cf10c8`; completul liniei, verde pe `70942c03` (45627875691);
+  pornirea 111,2 kB (plafonul 125; cu ușa 116,2, cu Atelierul 116,5), **totalul 891,8 / 1 000 kB**, `/admin`
+  138,3 / 200. Pe test e `2aaee0b4` (lotul 33); lotul 34 (`65eecdc6`) e în drum: completul lui pe `main` e verde
+  (45641891693), iar publicarea a pornit abia la a patra cerere (GitHub a răspuns la primele trei cu erori de server,
+  500 și 502). 3.Tu pleacă cu lotul 35. La linii, în lucru: atelierul (3.Cf, pornită de owner în
+  sesiunea liniei, cu răspunsurile lui la întrebările de proiectare: întâi alipirea la prinderi; prinderea se alege
+  din puncte, în vederea 3D, cu lista alături; piesa alipită urmează baza, deci rămân legate; Easy 3Draw 18.34.0),
+  frezele
+  (16.A↑b-6), exportul (28.8↑h, reparația lui „Du-mă la …”), cotele (10.4↑c-2), relieful (18.1↑c, aducerea lui
+  `main`). **La owner:** de încercat „Modelul” (carcasa și rotorul, o roată peste alta), proba pe mașină a centrului
+  foii, cele patru întrebări din auditul elicelor, pachetul Easy 3Draw trecut de 0,5 MB, arhivarea sesiunii elicelor,
+  verificarea juridică (GDPR) a utilizării aplicației înaintea live-ului, „cine unește în `main`”, meniul de sus la
+  320 px la atingere.
+- 25.11.2026, după-amiaza (a treizeci și cincea unire din cloud): **nota „s-a schimbat în bibliotecă” pe rândurile
+  exportului (16.A↑b-4) și starea lucrării imprimantei, necunoscută până vine codul stării (3.Au), unite în `main`**,
+  în lot (sesiunea principală, ramura `unire-2511t`, din `1fbb8ad9`). **16.A↑b-4** (linia frezelor, ramura
+  `wip/16.A-freze-b4`, `48f27fcf`, PR-ul `AndreiBesliu/cvs2#37`; ADR 0300 §5; la „continua cu 16.A↑b-4” al
+  owner-ului, spus în sesiunea liniei), unită în `9f18522e`: pe fiecare freză a unui rând din fereastra exportului,
+  copia din proiect e comparată cu „Frezele mele”: schimbată acolo (cu ce diferă), cu „Ia valorile noi” pe rând și
+  „Pe toate (N)”, T-ul și pașii rămânând ai rândului; ștearsă, „nu mai e în bibliotecă”; scrisă de mână, dar la fel
+  cu una din bibliotecă, „Scrisă de mână (ca „…”)”. Otrăvurile 18 / 19 (una, practic echivalentă). Ramura avea `main`
+  `2aaee0b4`; între raport și unire intrase 28.8↑o (centrul foii ca origine), care atinsese aceleași fișiere ale
+  ferestrei: s-au unit singure, fără ciocnire, dar arborele nu mai era cel verificat de linie, deci unirea și-a făcut
+  completul ei. **Primul complet al unirii (45613398666, pe `9f18522e`) a căzut la o singură probă, fără legătură
+  cu felia:** utilizarea imprimantei de pe emulatoare (A.8d) a primit un „pornită” în plus, deși imprimanta era
+  găsită imprimând (restul, verde: unit 10 503 / 0, e2e 854 / 854, funcțiile 136 / 136, paginile 58 din 59). Cauza, la
+  rădăcină: starea imprimantei vine pe bucăți, iar la legare o bucată doar cu progresul putea ajunge înaintea stării
+  întregi; `stareLucrare` spunea atunci „liberă”, deși nu știa nimic despre lucrare, iar lucrarea găsită în curs
+  părea pornită de aici. Nu e doar proba: se poate întâmpla și pe K1C. **3.Au** (`307d4f9a`, scrisă de sesiunea
+  principală, linia imprimantei neavând felie în lucru): fără codul stării, starea lucrării e „necunoscută”, orice
+  altceva ar fi sosit; probele au fost scrise întâi (tabelul stării, cadrele driverului, lanțul până la evenimentele
+  utilizării, cu martor), iar proba de pe emulatoare forțează acum ordinea rea la fiecare rulare (`bucataIntaiMs` în
+  imprimanta falsă): fără reparație cade de 3 ori din 3, cu ea trece de 5 ori din 5; otrăvurile 7 / 7. Documentul
+  rămâne v28; nimic pe server. Porțile lotului, în CI, pe `307d4f9a` (completul 45626620796, verde, 73 min): unit
+  10 505 / 0 (12 sărite, pe Linux), e2e 854 / 854, funcțiile pe emulatoare 136 / 136, paginile 59 / 59; rapidul,
+  verde pe vârful ramurii; completul liniei frezelor, verde pe `6d270a5e` (45603736389: același cod ca `48f27fcf`);
+  pornirea 111,2 kB (plafonul 125; cu ușa 116,2, cu Atelierul 116,5), **totalul 891,8 / 1 000 kB**, `/admin`
+  138,3 / 200, contul 30,3 / 32. Pe test e `2aaee0b4` (lotul 33, din 14:24); centrul foii (28.8↑o) și lotul acesta
+  pleacă acum, într-o singură publicare (lotul 34). **Relieful (18.1↑c, finisarea, cu v29) a raportat, dar nu e
+  unit:** peste `main`-ul cu 16.A↑b-4, o bilă
+  din bibliotecă ar arăta în fereastra exportului ca o freză plată de același diametru (lista dată notei bibliotecii
+  îi pierde forma); linia aduce `main`, rezolvă cu proba întâi și raportează din nou, cu un caz al finisării din
+  centrul foii. **Și 28.8↑h (desenele ferestrei exportului, socotite cu funcțiile lucrării; `2ecd0054`) a raportat,
+  dar nu e unită:** peste 16.A↑b-4 (unirea de probă `unire-2511u`, completul 45629718056), proba ei nouă cade de
+  fiecare dată: „Du-mă la …” aduce doar capul fișei sus, iar cu „Scrisă de mână (ca „…”)” în listă rândul frezei se
+  rupe pe două și greșeala iese din panou (măsurat: panoul 71–596 px, greșeala 651–696); pe ramura liniei trecea la
+  limită, cu vreo 4 px. Linia repară la cauză, cu proba întâi, și raportează din nou. La linii, în lucru: frezele
+  (16.A↑b-6, „Pune-o înapoi în bibliotecă”, scrisă, cu porțile verzi pe ramura ei), exportul (28.8↑h, reparația),
+  cotele (10.4↑c-2), relieful (18.1↑c, aducerea lui `main`), atelierul (3.Tu). **La owner:** proba
+  pe mașină a centrului foii, cele patru întrebări din auditul elicelor, pachetul Easy 3Draw trecut de 0,5 MB,
+  arhivarea sesiunii elicelor, verificarea juridică (GDPR) a utilizării aplicației înaintea live-ului, „cine unește
+  în `main`”, meniul de sus la 320 px la atingere.
 - 25.11.2026, după-amiaza (a treizeci și patra unire din cloud): **centrul foii ca origine XY0 (28.8↑o), unit în
   `main`** (sesiunea principală, ramura `unire-2511s`, din `2a46e973`). Linia exportului, ramura `wip/28.8-export`,
   `cd1859f0`, PR-ul `AndreiBesliu/cvs2#38` (ADR 0291 §6, răspunsul 6a al owner-ului), unită în `3fd3bf49`: în
