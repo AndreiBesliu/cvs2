@@ -15188,3 +15188,28 @@ ce se poate”; felia, cerută de sesiunea principală la 18:44, după semnalare
 - **Proba de fum** pe adresa de test: versiunea `75bcf3fb09bc`, potrivită; nicio eroare în consolă, nicio cerere căzută.
 - **16.A↑b-7** (`88771f12`, în `main` din 20:11) nu primește un lanț al ei: pleacă odată cu 18.1↑c și 28.8↑h, cu un singur
   complet pe `main`.
+
+## 2026-11-25 — Sesiunea principală în cloud: a treizeci și noua unire (relieful: 18.1↑c, finisarea, documentul v29) (Model: Claude Fable 5.2)
+
+**Prompt:** raportul liniei reliefului („18.1↑c e gata de unit. Commit-ul raportat: `40c745f5`”), la ordinul în vigoare
+„unește ce se poate”
+**Started:** 25.11, 19:32 (al doilea raport; primul, la 15:11). **Completed:** unirea în `main`, 25.11, 21:11; publicarea pe
+test, după ea.
+
+- **Primul raport** (`ab0cbf5c`, peste `2aaee0b4`): neunit. Unirea de probă peste 16.A↑b-4 avea ciocniri în
+  `ExportConectat.tsx` și `DialogExport.tsx`, iar una nu era doar mecanică: `bibliotecaToata` (toate frezele cu CAM, pentru
+  nota bibliotecii) ar fi primit bilele, cu forma pierdută. Întoarsă liniei, cu proba întâi.
+- **Al doilea raport** (`40c745f5`, peste `1d3882d9`, cu 16.A↑b-6): completul liniei 45654203469, verde pe `dec06156`.
+- **Unirea, pe `unire-2511x`:** `40c745f5` peste lotul cu 10.4↑c-2, în `f7ca20b6`, fără nicio ciocnire; apoi `main` adus cu
+  16.A↑b-7 (`b35e2f75`), tot fără ciocniri, și completul repornit. Local: tipurile, regulile de import, traducerile,
+  catalogul, biblioteca, iar `relief*`, `finisare*`, `document*` (cu aurul documentelor), `export*`, `freze*`, `cote*`,
+  `montaj*`, plăcile și atelierele: 3 946 / 3 946.
+- **Porțile, în CI, pe `b35e2f75`** (citite din jurnalul rulării): completul 45672724822, verde (56 min): unit 10 577 / 0
+  (12 sărite, pe Linux), e2e 873 / 873, funcțiile pe emulatoare 136 / 136, paginile 60 / 60; rapidul 45672722607, verde.
+  Pornirea 111,4 kB (plafonul 125; cu ușa 116,5, cu Atelierul 116,8), totalul 907,4 / 1 000 kB (+10,8), `/admin` 138,3 / 200,
+  contul 30,2 / 32. Nimic pe server.
+- **Documentul e v29;** următorul număr liber, v30.
+- **28.8↑h, la rând:** peste unirea aceasta, ciocnirea din `src/cam/prinFoaie.ts` (regula „cât foaia”) e rezolvată de linia
+  exportului într-un singur loc, `catFoaia`, cu finisarea înăuntru și cu proba ei; porțile ei rulează pe `985261ca`.
+- **Documentele:** decizia și paragraful de stare în `CLAUDE.md` (cu v30 pentru un câmp nou); indexul liniilor; starea din
+  `docs/linii/principala.md`.
