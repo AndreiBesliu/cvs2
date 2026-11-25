@@ -1275,8 +1275,9 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   aliniate cu celulele sau la un unghi, trecerile pe Z cel mult cât pasul, ultima pe model; peretele rămâne, dacă
   marginea nu e „trece”), cu dalele din browser compuse în workerul CAM; valorile pe hârtie (creasta pe plan,
   ordinea pașilor), în `src/model/finisare.ts`. În Tăierea, rolul „finisarea reliefului”. În fereastra exportului,
-  rândul finisării e doar de citit (`src/ui/FisaFinisare.tsx`), la locul lui în ordinea tăierii: automat, înaintea
-  profilului exterior prin foaie al piesei; în „A mea” se mută, iar Exportă îi scrie rangul. **Oracolul 3D e
+  rândul finisării e doar de citit (`src/ui/FisaFinisare.tsx`), la locul lui în ordinea tăierii: automat, întâi,
+  înaintea oricărei tăieturi a foii (`ordinePasi`); în „A mea” se mută, iar fără rang rămâne în față; Exportă îi
+  scrie rangul. **Un fel nou de operație care nu trebuie dus prin foaie intră în `catFoaia`** (`src/cam/prinFoaie.ts`). **Oracolul 3D e
   independent** (`test/oracles/relief3d.ts`: freza coborâtă exact pe modelul exact, cu bila, plata și V-ul;
   simulatorul crestei și al materialului): o strategie nouă pe relief se judecă acolo, pe invariantele „nicio
   scobitură în model” și „niciodată mai adânc decât pasul pe trecere”. **Lista bibliotecii dată ferestrei exportului
@@ -1789,7 +1790,7 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   unită în `f7ca20b6`: o piesă-relief primește în Tăierea rolul „finisarea reliefului”; programul o taie cu freza
   bilă (sau cu plata, ori cu V-ul), pe linii paralele, în treceri pe Z cel mult cât pasul, ultima pe model, fără nicio
   scobitură în model (calculul pe câmpul conservativ, în workerul CAM). În fereastra exportului, finisarea are
-  rândul ei, doar de citit, la locul ei în ordinea tăierii (înaintea profilului exterior prin foaie al piesei), cu
+  rândul ei, doar de citit, la locul ei în ordinea tăierii (în ordinea automată, întâi, înaintea oricărei tăieturi a foii), cu
   creasta pe plan calculată; vederea 3D arată „Tăiat” după finisare. **Mișcă mașina**, deci oracolul a fost scris
   întâi (`test/oracles/relief3d.ts`: freza coborâtă exact pe modelul exact, creasta, materialul rămas); otrăvurile
   45 / 45. **Documentul trece pe v29** (operația `finisare`, cu câmpul ei, și freza `{ tip: 'bila' }`; migrarea
