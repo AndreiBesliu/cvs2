@@ -7,8 +7,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { frezePeRanduri, sculaDinBiblioteca } from '../../src/model/alegereFreza.ts';
-import type { Freza, FrezaSalvata } from '../../src/model/freza.ts';
-import { stareOrigine, type FrezaOferita } from '../../src/ui/exportRand.ts';
+import { frezaDinCopie, type CopieProiect, type Freza, type FrezaSalvata } from '../../src/model/freza.ts';
+import { stareOrigine, type CopieRand, type FrezaOferita } from '../../src/ui/exportRand.ts';
 
 const PLATA6: Freza = { nume: 'Plată Ø6', fel: 'plata', diametru: 6, tais: 22, taisuri: 2, numar: 2, turatie: 18000, avans: 1000, plonjare: 300, pas: 3, pasLateral: 40 };
 const salvata = (f: Freza, id: string): FrezaSalvata => ({ ...f, id, rev: 1, schimbatLa: 1_000 });
@@ -42,4 +42,25 @@ test('o plată Ø6 scrisă de mână nu e recunoscută ca bila Ø6 din bibliotec
   assert.equal(stareOrigine(loc, frezePeRanduri([BILA6, P3]).map(oferita)), null);
   // Martorul: o plată Ø6 din bibliotecă e recunoscută.
   assert.equal(stareOrigine(loc, frezePeRanduri([BILA6, salvata(PLATA6, 'p6')]).map(oferita))?.fel, 'recunoscuta');
+});
+
+/**
+ * „Pune-o înapoi în bibliotecă” (16.A↑b-6) și bila: copia de pe un rând (`CopieRand`) și copia proiectului (`CopieProiect`)
+ * știu doar forma în V, iar `frezaDinCopie` face din lipsa formei o plată. O bilă n-ajunge acolo: rândurile n-au bile (finisarea
+ * are rândul ei doar de citit, fără „Pune-o înapoi”), deci o bilă ștearsă din bibliotecă nu se poate readuce ca plată. Paza e a
+ * compilatorului: dacă una dintre copii primește vreodată bila, directivele de mai jos rămân nefolosite și `tsc` cade; atunci
+ * `frezaDinCopie` trebuie să dea felul `bila` (cu raza), nu o plată.
+ */
+test('copia de readus în bibliotecă nu poate ține o bilă (paza compilatorului)', () => {
+  const copie = (forma: unknown): unknown => forma;
+  // @ts-expect-error: rândurile n-au bile, deci copia de pe rând nu ține forma bilei.
+  const r: CopieRand = { id: 'b6', rev: 1, nume: 'Bilă Ø6', numar: 2, diametru: 6, forma: { tip: 'bila' }, pas: null, pasLateral: null };
+  // @ts-expect-error: nici copia proiectului.
+  const p: CopieProiect = { nume: 'Bilă Ø6', numar: 2, diametru: 6, forma: { tip: 'bila' }, pas: null, pasLateral: null };
+  assert.deepEqual(copie(r.forma), { tip: 'bila' });
+  assert.deepEqual(copie(p.forma), { tip: 'bila' });
+  // Martorul: forma în V trece și rămâne V la readucere.
+  const v: CopieProiect = { nume: 'V60 Ø6', numar: 3, diametru: 6, forma: { tip: 'v', unghi: 60 }, pas: 2, pasLateral: null };
+  assert.equal(frezaDinCopie(v).fel, 'v');
+  assert.equal(frezaDinCopie({ ...v, forma: { tip: 'v', unghi: 60, varf: 0.2 } }).fel, 'gravare');
 });
