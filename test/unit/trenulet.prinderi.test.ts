@@ -89,6 +89,11 @@ function peMasa(piesa: CuPrinderi, c: Prindere, ce: string, slab = false): void 
   const la = (t: number) => plus(p, d, t), toate = (pts: readonly P3[], lemn: boolean, mesaj: string) => assert.equal(pline(piesa, pts), lemn ? pts.length : 0, `${ce}: ${mesaj}`);
   assert.ok(Math.abs(lungime(d) - 1) < 1e-9, `${ce}: direcția e unitară`);
   assert.ok(lung > 0, `${ce}: lungimea e pozitivă`);
+  // gura unei găuri e pe fața piesei: în fața ei nu mai e perete (cel mult banda unei roți, într-o parte)
+  const inFataGurii = (raza: number) => {
+    const inFata = pline(piesa, inel(la(0.2), d, raza + 0.15, 8));
+    assert.ok(!plin(piesa, la(0.2)) && inFata <= 2, `${ce}: gura e pe fața piesei (în fața ei, ${inFata} din 8 în lemn)`);
+  };
   if (c.r) { assert.ok(Math.abs(lungime(c.r) - 1) < 1e-9, `${ce}: brațul e unitar`); assert.ok(Math.abs(punct(c.r, d)) < 1e-9, `${ce}: brațul e perpendicular pe direcție`); }
   if (c.fel === 'stift') {
     const r = E.stiftD! / 2;
@@ -109,6 +114,7 @@ function peMasa(piesa: CuPrinderi, c: Prindere, ce: string, slab = false): void 
   } else if (c.fel === 'gauraStift' || c.fel === 'gauraBara') {
     const r = (c.fel === 'gauraBara' ? E.baraGauraD! : E.gauraD!) / 2;
     toate([la(-0.4), la(-lung / 2), la(-(lung - 0.4)), ...inel(la(-lung / 2), d, r - 0.1, 8)], false, 'gaura e goală, cât raza ei');
+    inFataGurii(r);
     const perete = pline(piesa, inel(la(c.fel === 'gauraBara' ? -0.4 : -lung / 2), d, r + 0.15, 8));
     assert.ok(perete >= 6, `${ce}: gaura are perete de jur împrejur (${perete} din 8)`);
     // fundul unei găuri oarbe oprește știftul (poate fi și o cruce, la conectorul de ax și știft)
@@ -133,6 +139,7 @@ function peMasa(piesa: CuPrinderi, c: Prindere, ce: string, slab = false): void 
     const r = E.axGauraD! / 2;
     assert.ok(c.r, `${ce}: gaura de ax își spune brațul`);
     toate([la(-0.4), la(-lung / 2), la(-(lung - 0.4))], false, 'gaura e goală pe axă');
+    inFataGurii(r);
     for (const t of [-0.4, -lung / 2, -(lung - 0.4)]) {
       assert.equal(treceri(piesa, inel(la(t), d, r - 0.1, 72, c.r)), 8, `${ce}: crucea are patru brațe (la ${r3(t)})`);
       const cerc = inel(la(t), d, r - 0.1, 8, c.r);
@@ -290,6 +297,7 @@ const MOSTRE: readonly (readonly [string, Def, Record<string, number>, { slab?: 
   ['roata conică', { tip: 'conica' }, { gauraStift: 2 }],
   ['roata conică de 12, cu gaură de ax', { tip: 'conica', dinti: 12, pereche: 20, gaura: 'x', butuc: 'scurt' }, { gauraAx: 2 }],
   ['roata coroană', { tip: 'coroana' }, { gauraAx: 2 }],
+  ['roata coroană cu butuc scurt, pe știft', { tip: 'coroana', butuc: 'scurt', gaura: 'r' }, { gauraStift: 2 }],
   ['conica dublă', { tip: 'conicaDubla' }, { gauraAx: 2 }],
   ['zala de șenilă', { tip: 'senila' }, { gauraStift: 4, bara: 2, clema: 4 }],
   ['zala fără găuri', { tip: 'senila', gauriStift: 'nu' }, { bara: 2, clema: 4 }],
@@ -545,6 +553,14 @@ test('cât intră: un tată mai lung decât gaura oarbă se oprește în fundul 
   const ax = fa({ tip: 'ax', lung: 4 }).prinderi[0]!, M = Lp.montaj(g, ax);
   assert.deepEqual(p3(aplica(M, plus(ax.p, ax.d, ax.lung))), p3(plus(g.p, g.d, -g.lung)), 'vârful axului e în fundul manșonului');
   assert.ok(cu1.prinderi.length > 0);
+  // la fel, oricare ar fi prima: gaura pusă pe ax își duce fundul la vârful lui
+  const Mi = Lp.montaj(ax, g);
+  assert.deepEqual(p3(aplica(Mi, plus(g.p, g.d, -g.lung))), p3(plus(ax.p, ax.d, ax.lung)), 'fundul manșonului ajunge la vârful axului');
+  // bara în știftul gol al cărămizii Technic (gaura ține cât știftul, 1,9): intră doar atât, în amândouă ordinile
+  const gol = fa({ tip: 'caramidaTechnic', lung: 2, goale: true }).prinderi.find((c) => c.fel === 'gauraBara')!, bara = fa({ tip: 'bara', lung: 2 }).prinderi[0]!;
+  assert.deepEqual([gol.orb, gol.lung, bara.lung], [true, 1.9, 15.8]);
+  assert.deepEqual(p3(aplica(Lp.montaj(gol, bara), plus(bara.p, bara.d, bara.lung))), p3(plus(gol.p, gol.d, -gol.lung)), 'vârful barei e în fundul știftului gol');
+  assert.deepEqual(p3(aplica(Lp.montaj(bara, gol), plus(gol.p, gol.d, -gol.lung))), p3(plus(bara.p, bara.d, bara.lung)), 'fundul știftului gol ajunge la vârful barei');
   // știftul de 2,6 într-un locaș de 2,1: piesa de deasupra rămâne cu 0,5 mm mai sus
   try {
     calibrat = true;
@@ -605,8 +621,12 @@ test('axul și știftul potrivit: axul trece prin gaura cea mai adâncă și mai
   const ax = (def: Def) => Lp.axPentru(fa(def).prinderi), st = (def: Def) => Lp.stiftPentru(fa(def).prinderi);
   // roata de 3,8: axul de 2 (15,8); grinda de 7,8: tot 2 (iese 8); bucșa de 2 (15,8): axul de 3; butucul elicei (8): 3
   assert.deepEqual([ax({ tip: 'rotita' }), ax({ tip: 'grinda' }), ax({ tip: 'bucsa', lung: 2 }), ax({ tip: 'elice' }), ax({ tip: 'bucsa', lung: 3 })], [2, 2, 3, 3, 4]);
-  // manșonul orb de 7,9 al conectorului în unghi: axul intră 7,9 și mai iese un pas
+  // manșonul orb de 7,9 al conectorului în unghi: axul intră 7,9 și mai iese un pas; cu butucul găurit (7,8), tot după
+  // gaura cea mai adâncă
   assert.equal(ax({ tip: 'conectorUnghi', butuc: 'p' }), 3);
+  assert.equal(ax({ tip: 'conectorUnghi' }), 3);
+  // lățimea cărămizii Technic e 7,9 − 0,1 (în virgulă mobilă, cu un fir peste 7,8): tot axul de 2
+  assert.deepEqual([ax({ tip: 'caramidaTechnic' }), ax({ tip: 'cremaliera', prindere: 'gauri' }), ax({ tip: 'conector' })], [2, 2, 2]);
   // fără găuri pentru ax: nimic
   assert.deepEqual([ax({ tip: 'caramida', celule: rand(2, 2) }), ax({ tip: 'bara' }), ax({ tip: 'rotita', gaura: 'nu' })], [null, null, null]);
   // știftul: de 2 prin grindă, cărămida Technic sau roată; de 3 doar unde gaura trece de un pas (bucșa rotundă de 2)

@@ -204,11 +204,12 @@ var Lego = (function (glob: typeof globalThis) {
       if (!cate) continue;
       if (PE_O_TIJA.has(fel)) cate = new Set(c.map(cheieDreapta)).size;
       else if (CU_GURI.has(fel)) {
-        // două guri ale aceleiași găuri: față în față, la lungimea găurii una de alta
+        // două guri ale aceleiași găuri: față în față, la lungimea găurii una de alta (două găuri oarbe nu ajung una la
+        // gura celeilalte, deci rămân două)
         const luate = new Set<number>();
         for (let i = 0; i < c.length; i++) for (let j = i + 1; j < c.length; j++) {
           const a = c[i]!, b = c[j]!;
-          if (luate.has(i) || luate.has(j) || a.orb || b.orb || scalar(a.d, b.d) > -0.999) continue;
+          if (luate.has(i) || luate.has(j) || scalar(a.d, b.d) > -0.999) continue;
           if (Math.hypot(a.p[0] - a.d[0] * a.lung - b.p[0], a.p[1] - a.d[1] * a.lung - b.p[1], a.p[2] - a.d[2] * a.lung - b.p[2]) < 0.01) { luate.add(i); luate.add(j); cate--; }
         }
       }

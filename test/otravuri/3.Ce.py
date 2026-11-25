@@ -51,8 +51,10 @@ o('M10', LG, 'const tata = TATA.has(a.fel) ? a : b, mama = tata === a ? b : a;',
 o('M11', LG, 'R = inmulteste(rotatie(tinta, co, si), R);', 'R = inmulteste(rotatie(tinta, co, -si), R);', 'prinderi', 'crucile se rotesc în sensul greșit')
 # --- motorul: rezumatul, potrivirile, lungimile
 o('R01', LG, '{ luate.add(i); luate.add(j); cate--; }', '{ luate.add(i); luate.add(j); }', 'prinderi', 'cele două guri ale unei găuri se numără de două ori')
-o('R02', LG, 'if (luate.has(i) || luate.has(j) || a.orb || b.orb || scalar(a.d, b.d) > -0.999) continue;', 'if (luate.has(i) || luate.has(j) || scalar(a.d, b.d) > -0.999) continue;', 'prinderi',
-  'două găuri oarbe față în față... ar putea fi luate drept una')
+# (R02 de la prima rulare scotea verificarea „oarbă” din pereche: echivalentă, fiindcă două găuri oarbe nu ajung una la gura
+# celeilalte; verificarea a ieșit din cod, iar otrava e acum alta)
+o('R02', LG, '- b.p[2]) < 0.01) { luate.add(i); luate.add(j); cate--; }', '- b.p[2]) < 100) { luate.add(i); luate.add(j); cate--; }', 'prinderi',
+  'două găuri oarbe de pe aceeași dreaptă sunt luate drept o gaură care trece')
 o('R03', LG, 'if (PE_O_TIJA.has(fel)) cate = new Set(c.map(cheieDreapta)).size;', 'if (PE_O_TIJA.has(fel)) cate = c.length;', 'prinderi', 'axul se numără de două ori (câte un capăt)')
 o('R04', LG, 'const s = (c.d.find(x => Math.abs(x) > 1e-6) ?? 1) < 0 ? -1 : 1, d: P3', 'const s = 1, d: P3', 'prinderi', 'cele două capete ale unui ax nu mai sunt pe aceeași dreaptă')
 o('R05', LG, 'for (const x of are(a)) for (const y of are(b)) if (sePrind(x, y)) out.push([x, y]);', 'for (const x of are(a)) for (const y of are(b)) if (sePrind(x, y)) out.push([y, x]);', 'prinderi',
