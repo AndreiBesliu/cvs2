@@ -209,3 +209,36 @@ test('o formă cu 20 000 de vârfuri: punctele ei se fac într-o clipă, iar o m
   assert.ok(t1 - t0 < 1500, `prima: ${(t1 - t0).toFixed(0)} ms`);
   assert.ok(t2 - t1 < 500, `a doua, cu conturul: ${(t2 - t1).toFixed(0)} ms`);
 });
+
+test('un relief (ADR 0310 §1): lipirea pe chenarul grilei (colțurile, mijloacele laturilor, centrul cutiei), citită înapoi la fel', () => {
+  // 200 × 100 de celule de 0,5 mm (100 × 50 mm), puse la (20, 30) fără rotire: chenarul are colțurile (20, 30) și (120, 80).
+  const d0 = documentNou({ latime: 300, inaltime: 200, grosime: 18 }), f = d0.foi[0];
+  if (!f) throw new Error('fără foaie');
+  const d: Document = {
+    ...d0,
+    piese: [{
+      id: 'q', operatii: [], radacina: {
+        tip: 'grup', id: 'g', matrice: { ...ID }, copii: [{
+          tip: 'element', id: 'r1', matrice: { ...ID },
+          forma: { tip: 'relief', nx: 200, ny: 100, celula: 0.5, straturi: [{ id: 's1', mod: 'aduna', vizibil: true, dale: 'c'.repeat(64) }] },
+        }],
+      },
+    }],
+    foi: [{ ...f, instante: [{ id: 'j1', piesa: 'q', x: 20, y: 30, rotire: 0 }] }],
+  };
+  const s = surseCote(d, 0), idx = indexLume(d, 0);
+  const lipit = (x: number, y: number): PunctTinta<LegaturaCota> | null => lipestePunct(s, foaie, { x, y }, opt());
+  for (const [x, y, fel, px, py] of [
+    [119.6, 80.3, 'varf', 120, 80], [20.2, 29.7, 'varf', 20, 30], [70.3, 30.2, 'mijloc', 70, 30], [119.8, 55.4, 'mijloc', 120, 55], [70.4, 55.3, 'cutie', 70, 55],
+  ] as const) {
+    const r = lipit(x, y);
+    assert.equal(r?.fel, fel, `(${x}, ${y})`);
+    aproape(r?.p ?? { x: 0, y: 0 }, px, py, `${fel} la (${px}, ${py})`);
+    assert.equal(r?.date?.nod, 'r1');
+    const q = punctAncora({ x: -999, y: -999, legatura: r!.date! }, idx);
+    assert.equal(q.stare, 'legata');
+    aproape(q.p, px, py, 'citit înapoi');
+  }
+  // Înăuntrul reliefului, departe de chenar și de centru: nimic de lipit (relieful n-are alt contur).
+  assert.equal(lipit(45, 42), null);
+});
