@@ -8,6 +8,8 @@ test.use({ locale: 'ro-RO' });
  * Cotele în exportul vectorilor (ADR 0330 §7, felia 10.4↑c-1), în Edge: bifa „Cu cotele (N)” apare doar pe o foaie cu cote,
  * pornește după Setări (implicit oprită), iar cu ea fișierele au stratul cotelor (numele, culoarea și grosimea din Setări).
  * SVG-ul cotei e măsurat de motorul SVG al browserului: linia de cotă, extensiile, săgețile și cifrele „100”, cât pe hârtie.
+ * Felia 10.4↑c-2: în DXF, cotele sunt implicit DIMENSION (cu blocul lor); cu „Cifrele: Text”, cifra e MTEXT sau `<text>`; cu
+ * „Linii și cifre”, desenul iese direct.
  */
 type P = { readonly x: number; readonly y: number };
 const cote = (page: Page) => page.locator('[data-testid="strat-cote"] > svg > g[data-cota]');
@@ -144,4 +146,63 @@ test('Setări › Cotele › Exportul: bifa pornită, alt nume și altă grosime
   await page.reload();
   await page.locator('[data-editare="vectori"]').click();
   await expect(page.locator('[data-vectori="cote"]')).toBeChecked();
+});
+
+test('cotele ca DIMENSION, implicit; „Cifrele: Text”: MTEXT în DXF, <text> în SVG (măsurat de browser); „Linii și cifre”: fără DIMENSION', async ({ page }) => {
+  await cuCota(page);
+  await page.locator('[data-editare="vectori"]').click();
+  await page.locator('[data-vectori="cote"]').check();
+  const nota = page.getByTestId('nota-vectori-cote');
+  await expect(nota).toContainText('Pe stratul COTE, cu cifrele ca trăsături. În DXF, cotele rămân cote (DIMENSION).');
+  const dxf = await descarca(page);
+  // Cota e o DIMENSION rotită (70 = 32: felul 0, blocul doar al ei), cu măsura 100 și textul „100”, după stilul CNCVS2; desenul
+  // ei stă în blocul anonim *D1.
+  expect(dxf).toMatch(/\n0\nDIMENSION\n[\s\S]*\n2\n\*D1\n10\n120\n20\n100\n30\n0\n11\n70\n21\n102\.8\n31\n0\n70\n32\n71\n5\n42\n100\n1\n100\n3\nCNCVS2\n/);
+  expect(dxf).toMatch(/\n0\nBLOCK\n[\s\S]*\n2\n\*D1\n70\n1\n/);
+
+  await page.locator('[data-vectori="setari"]').click();
+  const grup = page.getByTestId('dialog-setari').locator('[data-grup="export"]');
+  await expect(grup.locator('[data-setare="export.dxf"]')).toHaveValue('dimension');
+  await grup.locator('[data-setare="export.cifre"]').selectOption('text');
+  await page.locator('[data-buton="setari-inchide"]').click();
+  await page.locator('[data-vectori="inchide"]').click();
+  await page.locator('[data-editare="vectori"]').click();
+  await page.locator('[data-vectori="cote"]').check();
+  await expect(nota).toContainText('cu cifrele ca text');
+  // Cifra, MTEXT în blocul cotei: la jumătate de majusculă deasupra bazei (100 + 1,05 + 1,75), înaltă de 3,5.
+  expect(await descarca(page)).toMatch(/\n0\nMTEXT\n[\s\S]*\n10\n70\n20\n102\.8\n30\n0\n40\n3\.5\n41\n0\n71\n5\n72\n1\n1\n100\n7\nStandard\n/);
+
+  await page.locator('[data-vectori-format="svg"]').click();
+  await expect(nota).not.toContainText('DIMENSION');
+  const svg = await descarca(page);
+  await page.setContent(`<!doctype html><body style="margin:0">${svg.replace(/^<\?xml[^>]*>\s*/, '')}</body>`);
+  const m = await page.evaluate(() => {
+    const t = document.querySelector('g#COTE text') as SVGTextElement;
+    const b = t.getBBox();
+    return { text: t.textContent, x: b.x + b.width / 2, sus: b.y, jos: b.y + b.height, cai: document.querySelectorAll('g#COTE path').length };
+  });
+  // „100” centrat pe x = 70, cu baza la 200 − 101,05 = 98,95 în SVG: cutia urcă peste 3,5 mm (majuscula) și coboară sub bază.
+  expect(m.text).toBe('100');
+  expect(Math.abs(m.x - 70)).toBeLessThan(0.3);
+  expect(m.sus).toBeLessThan(98.95 - 3.4);
+  expect(m.jos).toBeGreaterThan(98.95);
+  // Fără trăsăturile cifrelor: doar liniile, extensiile și săgețile (5 căi).
+  expect(m.cai).toBe(5);
+});
+
+test('„Cotele în DXF: Linii și cifre”: desenul cotei direct în ENTITIES, fără DIMENSION și fără bloc', async ({ page }) => {
+  await cuCota(page);
+  await page.locator('[data-editare="vectori"]').click();
+  await page.locator('[data-vectori="cote"]').check();
+  await page.locator('[data-vectori="setari"]').click();
+  await page.getByTestId('dialog-setari').locator('[data-setare="export.dxf"]').selectOption('linii');
+  await page.locator('[data-buton="setari-inchide"]').click();
+  await page.locator('[data-vectori="inchide"]').click();
+  await page.locator('[data-editare="vectori"]').click();
+  await page.locator('[data-vectori="cote"]').check();
+  await expect(page.getByTestId('nota-vectori-cote')).toContainText('În DXF, cotele ies ca linii și cifre.');
+  const dxf = await descarca(page);
+  expect(dxf).not.toContain('DIMENSION\n5');
+  expect(dxf).not.toContain('*D1');
+  expect(dxf).toContain('\n8\nCOTE\n100\nAcDbPolyline\n90\n2\n70\n0\n43\n0\n10\n20\n20\n100\n10\n120\n20\n100\n');
 });

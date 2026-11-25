@@ -28,7 +28,9 @@ CS = 'src/ui/atelier.css'
 o('U01', TB, '  return x > 0 ? x : null;\n', '  return x;\n', 'taiere', '− ajunge la zero')
 o('U02', TB, 'Math.round((valoare + semn * PAS_PLUS_MINUS) * 1000) / 1000', 'valoare + semn * PAS_PLUS_MINUS', 'taiere',
   'zecimalele lungi ale virgulei mobile ajung în document')
-o('U03', TB, 'u: x.forma?.unghi ?? null, ', '', 'taiere', 'două freze V cu unghiuri diferite par aceeași')
+# Mutată pe codul din 18.1↑c (25.11: argumentul `reliefuri`, ordinea cu finisările, bila); aceeași greșeală.
+o('U03', TB, "u: x.forma?.tip === 'v' ? x.forma.unghi : null, ", '', 'taiere',
+  'două freze V cu unghiuri diferite par aceeași')
 o('U04', TB, '  return text.charAt(0).toLocaleUpperCase(limba) + text.slice(1);\n', '  return text;\n', 'taiere',
   'numele rolului rămâne cu literă mică')
 o('U05', AE, "eticheta: 'actiune.trimite-masina', capabilitate: 'export-gcode', activa: deExportat,",

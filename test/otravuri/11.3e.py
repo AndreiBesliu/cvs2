@@ -71,17 +71,21 @@ o('J07', JB, '          const q = punctLa(bucle[j] as Contur, s)?.p;\n          
   'traseul fără semnele urechilor')
 # J08 („unde ține” refuzat ca o felie următoare) a ieșit în 11.3↑f: refuzul „felie următoare” a plecat, toate modurile se taie.
 # Cele două treceri (unitare).
-o('T01', CC, '  if (!cuUrechiLemn(doc)) return programDinDocument(doc, regim, supracursa, prinFoaie);', '  return programDinDocument(doc, regim, supracursa, prinFoaie);',
-  'lemn', 'o singură trecere (refuzul fără fund)')
-o('T02', CC, '  return programDinDocument(doc, regim, supracursa, prinFoaie, fund);', "  return programDinDocument(doc, regim, supracursa, prinFoaie, 'fara');",
-  'lemn', 'a doua trecere tot fără urechi')
-o('T03', CC, '    const job = programFoii(doc, REGIM_IMPLICIT, 0);', '    const job = programDinDocument(doc, REGIM_IMPLICIT, 0);', 'lemn',
+# Mutată pe codul din 18.1↑c (25.11: argumentul `reliefuri`, ordinea cu finisările, bila); aceeași greșeală.
+o('T01', CC, '  if (!cuUrechiLemn(doc)) return programDinDocument(doc, regim, supracursa, prinFoaie, undefined, reliefuri);', '  return programDinDocument(doc, regim, supracursa, prinFoaie, undefined, reliefuri);', 'lemn',
+  'o singură trecere (refuzul fără fund)')
+# Mutată pe codul din 18.1↑c (25.11: argumentul `reliefuri`, ordinea cu finisările, bila); aceeași greșeală.
+o('T02', CC, '  return programDinDocument(doc, regim, supracursa, prinFoaie, fund, reliefuri);', "  return programDinDocument(doc, regim, supracursa, prinFoaie, 'fara', reliefuri);", 'lemn',
+  'a doua trecere tot fără urechi')
+# Mutată pe codul din 18.1↑c (25.11: argumentul `reliefuri`, ordinea cu finisările, bila); aceeași greșeală.
+o('T03', CC, '    const job = programFoii(doc, REGIM_IMPLICIT, 0, false, reliefuri);', '    const job = programDinDocument(doc, REGIM_IMPLICIT, 0, false, undefined, reliefuri);', 'lemn',
   'vederea 3D fără cele două treceri')
-o('T04', CC, '  const r = programFoii(doc);\n  return r.ok ? { ok: true, program: impacheteaza(r.program)', '  const r = programDinDocument(doc);\n  return r.ok ? { ok: true, program: impacheteaza(r.program)',
-  'e2e', 'traseul fără cele două treceri')
+# Mutată pe codul din 18.1↑c (25.11: argumentul `reliefuri`, ordinea cu finisările, bila); aceeași greșeală.
+o('T04', CC, '  const r = programFoii(doc, REGIM_IMPLICIT, 0, false, reliefuri);\n  return r.ok ? { ok: true, program: impacheteaza(r.program)', '  const r = programDinDocument(doc, REGIM_IMPLICIT, 0, false, undefined, reliefuri);\n  return r.ok ? { ok: true, program: impacheteaza(r.program)', 'e2e',
+  'traseul fără cele două treceri')
 # Potrivirea dopului în V (ADR 0179, venită din main la unirea din 23.11) ia locașul din programul foii.
-o('T05', CC, '  const job = programFoii(doc, REGIM_IMPLICIT, 0);\n  if (!job.ok) return { ok: false, motiv: job.motiv };\n  const locas',
-  '  const job = programDinDocument(doc, REGIM_IMPLICIT, 0);\n  if (!job.ok) return { ok: false, motiv: job.motiv };\n  const locas', 'lemn',
+# Mutată pe codul din 18.1↑c (25.11: argumentul `reliefuri`, ordinea cu finisările, bila); aceeași greșeală.
+o('T05', CC, '  const job = programFoii(doc, REGIM_IMPLICIT, 0, false, reliefuri);\n  if (!job.ok) return { ok: false, motiv: job.motiv };\n  const locas', '  const job = programDinDocument(doc, REGIM_IMPLICIT, 0, false, undefined, reliefuri);\n  if (!job.ok) return { ok: false, motiv: job.motiv };\n  const locas', 'lemn',
   'potrivirea dopului fără cele două treceri')
 # Piesa desprinsă și butonul (unitare).
 o('B01', PU, 'operatie: `${t.piesa}/${t.operatie}`', 'operatie: t.operatie', 'lemn', 'operația fără piesă (rândul nu se găsește)')

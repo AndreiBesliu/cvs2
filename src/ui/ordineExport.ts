@@ -26,11 +26,12 @@ export function ordineAutomata(automata: readonly string[], chei: readonly strin
 
 /**
  * Ordinea omului scrisă în document (rangurile, ADR 0133 §1), sau null dacă niciun rând n-are rang (ordinea automată). Pe
- * ranguri egale și între rândurile fără rang (la capăt) rămâne ordinea automată.
+ * ranguri egale și între rândurile fără rang (la capăt) rămâne ordinea automată. Un rând din `inFata` fără rang (finisarea
+ * reliefului, ADR 0312 §7) rămâne în față, ca în lucrare (`ordinePasi`), nu la capăt.
  */
-export function ordineDinRanguri(automata: readonly string[], ranguri: ReadonlyMap<string, number>): string[] | null {
+export function ordineDinRanguri(automata: readonly string[], ranguri: ReadonlyMap<string, number>, inFata: ReadonlySet<string> = new Set()): string[] | null {
   if (ranguri.size === 0) return null;
-  const loc = (c: string): number => ranguri.get(c) ?? Number.POSITIVE_INFINITY;
+  const loc = (c: string): number => ranguri.get(c) ?? (inFata.has(c) ? Number.NEGATIVE_INFINITY : Number.POSITIVE_INFINITY);
   return automata.map((c, i) => ({ c, i })).sort((a, b) => (loc(a.c) === loc(b.c) ? a.i - b.i : loc(a.c) < loc(b.c) ? -1 : 1)).map((x) => x.c);
 }
 

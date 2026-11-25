@@ -155,13 +155,11 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
 
 ## Starea pe 25.11.2026, seara (după a treizeci și șasea unire din cloud)
 
-- **Pe test:** `2aaee0b4` (lotul 33: cotele în exportul vectorilor, 10.4↑c-1; frezele, 16.A↑b-5; atelierul, cadrul și
-  șurubul melc, Easy 3Draw 18.32.0; exportul, 28.8↑n, numele fișierului; publicat pe 25.11 la 14:24, cu serverul
-  neschimbat; completul pe `main` 45604669891, verde; proba de fum, bună). Înainte: `dad1a711` (lotul 32, relieful
-  în vederea 3D), pe 25.11 la 12:31; `d1a96fc4` (lotul 31), la 10:44. **În `main`, nepublicate încă:** 28.8↑o,
-  centrul foii ca origine XY0 (`3fd3bf49`), 16.A↑b-4 (`9f18522e`) și 3.Au (`307d4f9a`): în drum, lotul 34
-  (`65eecdc6`; completul pe `main` 45641891693, verde; publicarea, pornită la a patra cerere, după trei erori de
-  server ale GitHub). După el: 3.Tu, Easy 3Draw 18.33.0 (`f5cf10c8`), cu lotul 35.
+- **Pe test:** `65eecdc6` (lotul 34: 28.8↑o, centrul foii ca origine XY0; 16.A↑b-4, nota „s-a schimbat în
+  bibliotecă”; 3.Au, starea lucrării imprimantei; publicat pe 25.11 la 18:25, cu serverul neschimbat; completul pe
+  `main` 45641891693, verde; proba de fum, bună). Înainte: `2aaee0b4` (lotul 33), pe 25.11 la 14:24; `dad1a711`
+  (lotul 32), la 12:31. **În `main`, nepublicate încă:** 3.Tu, Easy 3Draw 18.33.0 (`f5cf10c8`): în drum, lotul 35
+  (`6741c0be`). După el: 16.A↑b-6 și 10.4↑c-2, pe `unire-2511w`, cu completul în lucru.
 - **`main`, din cloud:** pe 23.11: 3.Tq (`0ae9c6c1`); 11.3↑e și A.4 (`ddaa7ead`); 3.Tr, unită de linia elicelor
   (`d262e57a`); 25.8↑a și A.5 (`1b46c955`), cu reparația probei extensiilor (`8287d66e`); 11.3↑f, unită de linia
   planșelor (`f4601938`); A.6 (`4497d639`); 3.Xh (`2d1e482c`) și 12.1↑e-3 cu 12.1↑e-4 (`03460cab`); A.8a cu A.8b
@@ -193,8 +191,9 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
     - atelierul: cama și roata cu palete, unite la 09:35; cadrul și melcul, la 13:18 (3.Cj, încheiată); 3.Tu
       (piesele rotunde pe același ax în „Modelul”, ADR 0283; Easy 3Draw 18.33.0; pornită de owner în sesiunea liniei,
       „1a, 2a, 3a la 3.Tu, pornește”), unită la 18:18; în lucru, 3.Cf (alipirea la prinderi în
-      „Modelul”, cu răspunsurile owner-ului din sesiunea liniei: piesa alipită urmează baza; 18.34.0), apoi
-      3.Cg–3.Ci; 3.Ck, după tipărirea bilei și a cupei;
+      „Modelul”, cu răspunsurile owner-ului din sesiunea liniei: piesa alipită urmează baza; 18.34.0); **pe listă,
+      de la owner (25.11, 19:18): decorațiuni de Crăciun pentru imprimantă**, după 3.Cf, cu ADR 0285 propus întâi;
+      apoi 3.Cg–3.Ci; 3.Ck, după tipărirea bilei și a cupei;
     - cotele: 10.4↑c-1, unită la 12:20; c-2 (DIMENSION în DXF și cifrele ca text), pornită pe 25.11 la 14:16, la
       același cuvânt al owner-ului.
 

@@ -11,6 +11,7 @@ import { programeDopuriDrepte } from '../cam/dopDrept.ts';
 import type { DopCalculat } from '../cam/incrustatie.ts';
 import { programDinDocument, REGIM_IMPLICIT, type Regim, type RezultatJob } from '../cam/job.ts';
 import { PLAFON, type Document } from '../model/document.ts';
+import type { ResurseRelief } from '../relief/resurse.ts';
 import { repara, verificaPentruPanou, type RezultatReparare, type VerificarePanou } from '../model/reparare.ts';
 import { converteste, type RezultatConversie } from '../model/conversie.ts';
 import { leagaCaile, type RezultatLegare } from '../model/legareCai.ts';
@@ -61,16 +62,16 @@ function cuUrechiLemn(doc: Document): boolean {
  * acolo. Exportul, traseul și vederea 3D trec pe aici, deci arată aceleași urechi; supracursa și bifa „prin foaie” nu mută fundul
  * (o tăietură prin foaie rămâne prin foaie).
  */
-export function programFoii(doc: Document, regim: Regim = REGIM_IMPLICIT, supracursa = 0, prinFoaie = false): RezultatJob {
-  if (!cuUrechiLemn(doc)) return programDinDocument(doc, regim, supracursa, prinFoaie);
+export function programFoii(doc: Document, regim: Regim = REGIM_IMPLICIT, supracursa = 0, prinFoaie = false, reliefuri?: ResurseRelief): RezultatJob {
+  if (!cuUrechiLemn(doc)) return programDinDocument(doc, regim, supracursa, prinFoaie, undefined, reliefuri);
   const foaie = doc.foi[0];
   if (!foaie) return { ok: false, motiv: 'documentul n-are foaie' };
-  const fara = programDinDocument(doc, regim, supracursa, prinFoaie, 'fara');
+  const fara = programDinDocument(doc, regim, supracursa, prinFoaie, 'fara', reliefuri);
   if (!fara.ok) return fara;
   const s = pregatesteProgram(fara.program, 0);
   if (!s.ok) return { ok: false, motiv: `urechile „unde ține”: ${s.motiv}` };
   const fund = fundFoii(foaie.stoc, [{ scula: s.scula, mutari: s.mutari }, ...(s.apoi ?? [])]);
-  return programDinDocument(doc, regim, supracursa, prinFoaie, fund);
+  return programDinDocument(doc, regim, supracursa, prinFoaie, fund, reliefuri);
 }
 
 /**
@@ -106,10 +107,10 @@ export function dopurileFoii(doc: Document, supracursa: number): { readonly ok: 
 }
 
 /** Exportul propriu-zis: documentul → profilele → IR → postul ales (ADR 0083) → octeții cu SHA-256. */
-export async function calculeazaExportul(doc: Document, p: ParametriExport): Promise<RaspunsExport> {
+export async function calculeazaExportul(doc: Document, p: ParametriExport, reliefuri?: ResurseRelief): Promise<RaspunsExport> {
   const foaie = doc.foi[0];
   if (!foaie) return { ok: false, motiv: 'documentul n-are foaie' };
-  const job = programFoii(doc, REGIM_IMPLICIT, p.supracursa ?? 0, p.prinFoaie === true);
+  const job = programFoii(doc, REGIM_IMPLICIT, p.supracursa ?? 0, p.prinFoaie === true, reliefuri);
   if (!job.ok) return job;
   const iesire = iesireDinFoaie(job.program, foaie.stoc);
   if (iesire) {
@@ -163,8 +164,8 @@ export async function calculeazaExportul(doc: Document, p: ParametriExport): Pro
  * Programul documentului pentru traseu (ADR 0038 §2): CAM-ul cu regimul implicit și fără supracursă, împachetat pentru
  * firul principal. Timpul jobului de lângă traseu (ADR 0046 §8) e o cerere separată (`timp`): traseul nu-l așteaptă.
  */
-export function calculeazaTraseul(doc: Document): RaspunsTraseu {
-  const r = programFoii(doc);
+export function calculeazaTraseul(doc: Document, reliefuri?: ResurseRelief): RaspunsTraseu {
+  const r = programFoii(doc, REGIM_IMPLICIT, 0, false, reliefuri);
   return r.ok ? { ok: true, program: impacheteaza(r.program), ...(r.urechiLemn ? { urechiLemn: r.urechiLemn } : {}) } : { ok: false, motiv: r.motiv };
 }
 
@@ -174,7 +175,7 @@ export function calculeazaTraseul(doc: Document): RaspunsTraseu {
  * lui cea mai mică (ADR 0178). Oricum, lista dopurilor foii (elementul și semifabricatul fiecăruia), sau de ce nu se pot tăia:
  * un dop refuzat nu oprește foaia.
  */
-export function calculeazaSimularea(doc: Document, dop?: number): RaspunsSimulare {
+export function calculeazaSimularea(doc: Document, dop?: number, reliefuri?: ResurseRelief): RaspunsSimulare {
   const foaie = doc.foi[0];
   if (!foaie) return { ok: false, motiv: 'documentul n-are foaie' };
   const d = dopurileFoii(doc, 0);
@@ -182,7 +183,7 @@ export function calculeazaSimularea(doc: Document, dop?: number): RaspunsSimular
     ? { dopuri: d.dopuri.map((x) => ({ element: x.element, semifabricat: x.semifabricat })) }
     : { dopuri: [], motivDopuri: d.motiv };
   if (dop === undefined) {
-    const job = programFoii(doc, REGIM_IMPLICIT, 0);
+    const job = programFoii(doc, REGIM_IMPLICIT, 0, false, reliefuri);
     if (!job.ok) return { ok: false, motiv: job.motiv };
     const p = pregatesteProgram(job.program, 0);
     if (!p.ok) return { ok: false, motiv: p.motiv };
@@ -202,13 +203,13 @@ export function calculeazaSimularea(doc: Document, dop?: number): RaspunsSimular
  * supracursă, ca vederea 3D): locașul din programul foii, dopul din al lui. Dopul în V, cu `potrivireaV`; cel cu pereți drepți
  * (felia 12.1↑e-3), cu `potrivireaDreapta`; cel în trepte (felia 12.1↑e-4), cu `potrivireaTrepte`.
  */
-export function calculeazaPotrivirea(doc: Document, dop: number): RaspunsPotrivire {
+export function calculeazaPotrivirea(doc: Document, dop: number, reliefuri?: ResurseRelief): RaspunsPotrivire {
   const d = dopurileFoii(doc, 0);
   if (!d.ok) return { ok: false, motiv: d.motiv };
   const x = d.dopuri[dop];
   if (!x) return { ok: false, motiv: `dopul ${dop + 1} nu mai e în document` };
   // Programul foii, ca vederea 3D: cu urechi „unde ține” pe foaie (ADR 0211, b), în două treceri.
-  const job = programFoii(doc, REGIM_IMPLICIT, 0);
+  const job = programFoii(doc, REGIM_IMPLICIT, 0, false, reliefuri);
   if (!job.ok) return { ok: false, motiv: job.motiv };
   const locas = pregatesteProgram(job.program, 0);
   if (!locas.ok) return { ok: false, motiv: locas.motiv };
@@ -232,19 +233,19 @@ export type RaspunsCalcul = {
 export async function raspunde(c: CerereCam): Promise<RaspunsCalcul> {
   switch (c.fel) {
     case 'export': {
-      const r = await calculeazaExportul(c.document, c.parametri);
+      const r = await calculeazaExportul(c.document, c.parametri, c.reliefuri);
       return { raspuns: r, transfer: r.ok ? deTransferat([r.program.octeti, ...r.fisiere.map((f) => f.octeti), ...r.dopuri.flatMap((d) => [d.program.octeti, ...d.fisiere.map((f) => f.octeti)]), ...vederiSimulare(r.simulare)]) : [] };
     }
     case 'traseu': {
-      const r = calculeazaTraseul(c.document);
+      const r = calculeazaTraseul(c.document, c.reliefuri);
       return { raspuns: r, transfer: r.ok ? transferabileProgram(r.program) : [] };
     }
     case 'simulare': {
-      const r = calculeazaSimularea(c.document, c.dop);
+      const r = calculeazaSimularea(c.document, c.dop, c.reliefuri);
       return { raspuns: r, transfer: r.ok ? deTransferat(vederiSimulare(r.simulare)) : [] };
     }
     case 'potrivire': {
-      const r = calculeazaPotrivirea(c.document, c.dop);
+      const r = calculeazaPotrivirea(c.document, c.dop, c.reliefuri);
       return { raspuns: r, transfer: r.ok ? deTransferat([r.potrivire.sectiune.placa, r.potrivire.sectiune.dop]) : [] };
     }
     case 'timp':

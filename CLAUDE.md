@@ -1738,6 +1738,15 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 25.11.2026, seara: **decorațiuni de Crăciun pentru imprimantă, pe lista liniei atelierului Easy 3Draw** („Vreau ca
+  sesiunea care lucreaza la plugin, sa faca si decoratiuni de craciun pentru imprimanta. Pune-i asra pe lista”, în
+  sesiunea principală). Sesiunea principală i-a scris liniei la 19:18: o felie nouă, după 3.Cf (în lucru), dacă
+  owner-ul nu-i spune altă ordine în sesiunea ei; Crăciunul e aproape, deci nu rămâne după 3.Cg–3.Ci fără să fie
+  întrebat. Linia pornește cu propunerea: un ADR scurt (0285, următorul liber din intervalul ei) și întrebările
+  grupate, cu recomandarea în față: ce piese vin întâi (glob, fulg, stea, brăduț, ornament cu nume), unde stau în
+  atelier, dacă se leagă de restul pieselor sau sunt de sine stătătoare, dacă textul intră din prima. Cerute din
+  prima: tipărirea fără suport, agățătoarea, mărimile spuse în editor, probele pe plase ca la celelalte piese. Doar
+  pachetul extensiei; nimic în aplicație, nimic pe server.
 - 25.11.2026, seara (a treizeci și șasea unire din cloud): **piesele rotunde pe același ax în vederea „Modelul” a
   atelierului Easy 3Draw (3.Tu), unite în `main`** (sesiunea principală, ramura `unire-2511v`, din `65eecdc6`). Linia
   atelierului, ramura `wip/3.Xh-biblioteca-ui`, `70942c03`, PR-ul `AndreiBesliu/cvs2#45` (ADR 0283, acceptat de owner

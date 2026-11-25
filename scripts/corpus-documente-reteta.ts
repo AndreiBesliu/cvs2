@@ -6,7 +6,7 @@
  * Proiectul trăiește prin versiuni, ca al unui om: versiunea N deschide salvarea versiunii N − 1 cu ușa ei (deci cu
  * migrarea ei), adaugă ce a adus versiunea N (v2 grupul și a doua instanță, v3 operațiile … v23 literele unei plăcuțe, v24
  * punțile dopului decupat, v25 gaura prin foaie, v26 urechile capacului la locuri alese, v27 frezele din bibliotecă, v28 un
- * medalion în relief), apoi
+ * medalion în relief, v29 finisarea lui cu freza bilă), apoi
  * salvează, după ce ușa ei a primit documentul neschimbat. v1 îl desenează de la zero. `gol` e documentul nou al lui v1.
  *
  *   node scripts/corpus-documente-reteta.ts <salvarea N − 1 | -> <ieșirea> proiect|gol [<deschis>]
@@ -253,6 +253,17 @@ const ADAUGIRI: Readonly<Record<number, (d: Obj) => void>> = {
       },
     });
     d['foi'][0]['instante'].push({ id: 'medalion', piesa: 'medalion', x: 200, y: 250, rotire: 0 });
+    d['rev'] += 1;
+  },
+  // v29 (ADR 0312): medalionul se finisează cu o bilă de Ø6 (T9), liniile la 45° nealiniate, peste margine, cu planul zero la
+  // 1,5 mm sub față: 8 mm podeaua, 3 mm pe trecere, 0,5 mm între linii.
+  29: (d) => {
+    const medalion = d['piese'].find((p: Obj) => p['id'] === 'medalion');
+    medalion['operatii'].push({
+      id: 'finisare', tip: 'finisare', noduri: ['medalion'], scula: { numar: 9, nume: 'Bilă 6', diametru: 6, forma: { tip: 'bila' } },
+      latura: 'pe-linie', sens: 'urcare', adancime: 8, pas: 3, pasLateral: 0.5, urechi: null, rampa: null, intrari: null, colturi: null,
+      finisare: { unghi: 45, nealiniat: true, margine: 'trece', planZero: 1.5 },
+    });
     d['rev'] += 1;
   },
 };

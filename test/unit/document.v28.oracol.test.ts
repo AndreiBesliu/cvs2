@@ -37,10 +37,12 @@ function usa(brut: unknown): { readonly ok: true; readonly doc: unknown } | { re
 const laApp = (d: unknown): unknown => ridicaPanaLaO(d, VERSIUNE_SCHEMA as number);
 const usaV28 = (d: unknown): string[] => verificaPanaLaV28O(d);
 const esteRelief = (nume: string): boolean => /^(R01|RX\d+) /.test(nume);
+/** Un refuz „scris de o versiune mai nouă” al ușii v28 (R01, un v29) pe care o aplicație mai nouă l-ar primi. */
+const primitDeApp = (s: unknown): boolean => typeof s === 'number' && Number.isInteger(s) && s > 28 && s <= (VERSIUNE_SCHEMA as number);
 
-test('(o) versiunea: oracolul, aplicația și câmpurile noi (niciunul pe operație: relieful e o formă)', () => {
-  assert.equal(SCHEMA_CURENTA_O, 28);
-  assert.equal(VERSIUNE_SCHEMA, 28);
+test('(o) versiunea: oracolul și aplicația sunt pe v28 sau mai nou; câmpurile noi (niciunul pe operație: relieful e o formă)', () => {
+  assert.ok(SCHEMA_CURENTA_O >= 28);
+  assert.ok((VERSIUNE_SCHEMA as number) >= 28);
   assert.equal(SCHEMA_V28_O, 28);
   assert.deepEqual(CAMPURI_NOI_O[28], []);
 });
@@ -103,7 +105,7 @@ test('(a) ușa aplicației primește documentele v28 valide exact ca pe hârtie'
 
 test('(a) ușa aplicației refuză fiecare relief stricat, cu motiv: calea formei, sau relieful numit', () => {
   const rele: string[] = [];
-  for (const c of REFUZATE_V28.filter((x) => esteRelief(x.nume))) {
+  for (const c of REFUZATE_V28.filter((x) => esteRelief(x.nume) && !primitDeApp((x.doc as Liber)['schema']))) {
     const r = usa(c.doc);
     if (r.ok) { rele.push(`${c.nume}: primit (${c.motiv})`); continue; }
     if (c.text !== undefined) {

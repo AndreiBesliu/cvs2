@@ -1048,7 +1048,7 @@ From an image (a photo, a logo, a grey height map) you can make a **relief**: a 
 pixel, whose height comes from the pixel's grey. On the board, the relief shows shaded (light from the top left), under the
 vectors, with its frame; it is selected, moved, rotated and mirrored like any shape, and a part with a relief is placed
 several times and on other sheets. In the [3D view](#vedere-3d), the **Model** button shows it in three dimensions, in its
-pocket in the sheet. Its 3D machining (roughing and finishing) comes in the next slices: for now the relief is not cut.
+pocket in the sheet. The relief is cut with **finishing** (below); roughing comes in a later slice.
 
 **How to make one:** from “Import…”, pick an image (PNG, JPEG, WebP, GIF or BMP), then, at the top of the window, **Relief**
 instead of **Vectors**. The choice is kept until you reload the page. On the left, the window has:
@@ -1072,6 +1072,27 @@ layers, top to bottom, each with its mode (in this slice, a relief has a single 
 The relief is kept in the browser, next to the project, not in the document (the document keeps only its fingerprint), like
 the sheet images: on another computer or in another browser, the panel says the layers are missing. Whatever no kept version
 of the project uses any more is deleted at a start-up, after at least a day.
+
+**Finishing:** with the relief's part selected, the **Cutting** section offers the **relief finishing** role (on a part with
+reliefs only). The cutter follows the relief on parallel lines, one stepover apart, going down in passes of at most the
+**step**, the last one on the model; it never goes below the relief's surface, nor below the **depth** (the floor, by default
+the sheet's thickness). The fields:
+- **Cutter**: ball nose (the default), flat or V-bit, and its **diameter**; the ball nose is used only here;
+- **Stepover** (by default 10 % of the cutter): the distance between lines; through the cell centres, it is rounded to whole
+  cells;
+- **Line angle** (0° to 180°) and **Lines**: through the cell centres (at 0° and 90°) or not aligned, where ripples can show on
+  fine detail;
+- **Relief edge**: **the wall stays** (outside the relief is the stock face, so the cutter does not cut there) or **the cutter
+  goes past the edge** (it goes out by its radius, and outside it goes down to the floor);
+- **Relief on Z**: **top at the stock face** (the default) or **zero plane below the face**, at the depth you type; what would
+  stand above the face is cut at the face, and the export says so.
+
+Finishing comes before the contour cuts, with its own cutter. In the **Export G-code** window it has its own row, in its place
+in the cutting order, with a read-only sheet (the cutter, the stepover, the scallop on a flat, the depth); you change it in the
+Cutting section. With **Cutting order: Mine**, its row moves like any other. In the [3D view](#vedere-3d), **Cut** shows the
+sheet after the program. On slopes the cutter stays a little above the ideal surface (about 0.1 mm on a 45° slope): it is the safe side of the
+computation, which never digs into the relief. The export needs the relief's tiles from this browser; on another computer, it
+says they are missing.
 
 ## Cutting vectors
 %% capitol: taiere
@@ -1324,7 +1345,10 @@ field, said in red, and is not kept. **Close** (or Esc) closes the window.
 - **Measuring:** what Measure shows (the distance, Δx and Δy, the angle) and where (next to the pointer, in the bottom bar).
 - **Export:** whether the “With dimensions” tick box in **Export vectors** starts ticked, the dimension layer's name
   (unaccented letters, digits, “_” and “-”, at most 31, not another layer's name; COTE by default), its colour (in DXF, also
-  the nearest basic AutoCAD colour) and the thickness of the dimension lines in PDF and SVG (0.05–1 mm, 0.1 by default).
+  the nearest basic AutoCAD colour), the thickness of the dimension lines in PDF and SVG (0.05–1 mm, 0.1 by default),
+  **Dimensions in DXF** (**Dimensions (DIMENSION)**, the default: in AutoCAD and LibreCAD they stay dimensions; or **Lines and
+  numbers**, for programs that don't know dimensions) and **Numbers** (**Strokes**, the default: the same in any program, with
+  no fonts; or **Text**, editable in another program, but drawn with its font).
 
 ## Converting vectors
 %% capitol: conversie
@@ -2095,8 +2119,19 @@ only, over as many pages as it needs.
   › Dimensions › Export, with the colour from there): the dimension and extension lines, the angle arcs (true arcs in DXF and
   SVG), the ends (filled arrows are filled triangles, dots are discs) and the numbers, as the strokes of the app's single-line
   font, so they look the same in any program, with no fonts. The tick box starts as the Settings say (off by default: vectors
-  for a laser or another CAM stay just the shapes); under it, the **Dimension settings** link. Dimensions never go into the
-  G-code.
+  for a laser or another CAM stay just the shapes); under it, a sentence gives the layer and how the dimensions are written,
+  with the **Dimension settings** link. Dimensions never go into the G-code.
+  - **In DXF**, as **Dimensions in DXF** in the Settings says: by default, each dimension is a **dimension** (the DIMENSION
+    entity, with the CNCVS2 style: the number height, the ends, the gaps, the decimals and the separator from the Settings),
+    and its drawing, as you see it in the app, sits in a block of its own: AutoCAD and LibreCAD read it as a dimension (they
+    move it, redraw it), a program that only knows blocks draws it. The number is written into the dimension, so it looks the
+    same, but it doesn't change by itself when you move the points in another program (write `<>` there instead, to have it
+    measured). With **Lines and numbers**, the drawing goes out directly, with no dimensions.
+  - **Numbers as text** (**Numbers: Text** in the Settings): in DXF as MTEXT, in SVG as text, in PDF and EPS in Helvetica (no
+    font in the file); editable in another program, but drawn with its font. The number sits where the strokes would, and
+    Helvetica is about 30% wider, so a number in the line gets closer to the line's ends. In PDF and EPS, a character
+    Helvetica doesn't have (ș, ț, ă) is written as “?” and reported after the export; the minute and second (′ ″) are written
+    ' and ".
 
 **Export** downloads the file and says how many entities and layers it has (with dimensions, also how many dimensions). A
 shape with both lines and curves comes out in pieces joined end to end (a polyline, then a curve).
@@ -2453,7 +2488,7 @@ blocks (the deepest point of each), and the status in the corner says so.
   large for the graphics card is drawn more coarsely (one value per 2 × 2, 4 × 4 … cells), and the status says so. The model
   follows the document: moved, rotated or mirrored, the relief moves in place without loading again, and a changed relief
   loads only its changed tiles. If its layers are missing from the browser, the status says so, and the sheet's face stays
-  whole there. **Cut** simulates the sheet, as below (the relief itself is not cut yet).
+  whole there. **Cut** simulates the sheet, as below, with the relief's [finishing](#relief) if it has one.
 
 The colours: the sheet's face, the cuts (darker with depth) and, in blue-grey, the spoilboard where the cutter went through
 the sheet; in the model, the relief has the colours of the cuts. If you change the document while the view is open, the status says so; “Simulate again” simulates it, with the

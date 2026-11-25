@@ -103,6 +103,7 @@ jobs:
       - name: Cotele în exportul 2D, recitite și comparate cu hârtia
         run: |
           gs -q -dSAFER -dBATCH -dNOPAUSE -dEPSCrop -sDEVICE=pdfwrite -dCompressPages=false -sOutputFile=.tmp/export2d/cote-eps.pdf .tmp/export2d/cote.eps
+          gs -q -dSAFER -dBATCH -dNOPAUSE -dEPSCrop -sDEVICE=pdfwrite -dCompressPages=false -sOutputFile=.tmp/export2d/cote-text-eps.pdf .tmp/export2d/cote-text.eps
           python test/oracles-py/export2d_cote.py .tmp/export2d
       # Importul EPS și AI ≤ 8 (ADR 0115), pe aceleași unelte: generatorul trece fiecare fișier al corpusului prin Ghostscript
       # și îl recitește cu PyMuPDF față de hârtie; fișierele regenerate trebuie să fie chiar cele comise (`test/fixtures/eps`).

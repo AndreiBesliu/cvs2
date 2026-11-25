@@ -54,6 +54,9 @@ function felModel(baza: Rol): { readonly tip: TipOperatie; readonly latura: Latu
       return { tip: 'buzunar', latura: 'interior' };
     case 'incrustatie':
       return { tip: 'vcarve', latura: 'interior' };
+    // Finisarea reliefului (ADR 0312): pe linie, ca în document.
+    case 'finisare':
+      return { tip: 'finisare', latura: 'pe-linie' };
   }
 }
 

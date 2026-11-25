@@ -3,14 +3,18 @@ import { useMemo } from 'react';
 import '../ui/actiuniDocumentCalcul.ts';
 import type { OrigineXY } from '../ir/montaj.ts';
 import { esteCaleDeschisa, type Document, type Operatie } from '../model/document.ts';
-import { grupeazaPeScula, taieturiFoaie, type ElementLume } from '../model/lume.ts';
-import { conturElement, esteContur } from '../model/forme.ts';
+import type { ElementLume } from '../model/lume.ts';
+import { chenarElement, conturElement, esteContur } from '../model/forme.ts';
+import { cheiePas, creastaPePlan, ordinePasi } from '../model/finisare.ts';
+import { cutieContur } from '../geom/cutie.ts';
+import type { FinisareExport } from '../ui/FisaFinisare.tsx';
 import { DialogExport } from '../ui/DialogExport.tsx';
 import type {
-  CerereExport, CopieRand, FrezaOferita, FrezaRestOperatie, OperatieExport, OrigineFreza, Rand, RezultatInapoi, StareExport,
+  CerereExport, CopieRand, FrezaOferita, FrezaRestOperatie, OperatieExport, OrigineFreza, Rand, RezultatInapoi, SculaOperatie, StareExport,
 } from '../ui/exportRand.ts';
-import { frezePotrivite, pasLateralDin, sculaDinBiblioteca } from '../model/alegereFreza.ts';
-import { areCam, frezaDinCopie, type FrezaSalvata } from '../model/freza.ts';
+import { frezeleOperatiei } from '../model/formaFrezei.ts';
+import { frezePeRanduri, frezePotrivite, pasLateralDin, sculaDinBiblioteca } from '../model/alegereFreza.ts';
+import { frezaDinCopie, type FrezaSalvata } from '../model/freza.ts';
 import type { FrezaRest, Scula } from '../model/document.ts';
 import { useBibliotecaProiectCuCheie } from './bibliotecaProiect.ts';
 import type { Config } from './config.ts';
@@ -101,6 +105,29 @@ function placuteIesite(d: Document, k?: number): { readonly nume: readonly strin
   return nume.length > 0 ? { nume, confirmare: iesireTextTinuta() === 'confirmare' } : undefined;
 }
 
+/**
+ * Operațiile cu un rând editabil în fereastră: cele pe contur, cu frezele plate și în V. Finisarea reliefului (ADR 0312 §7) are
+ * un rând doar de citit (`finisari`), iar Exportă îi scrie doar rangul. O freză bilă pe altă operație n-are rând: Exportă o lasă
+ * neschimbată, iar lucrarea o refuză, cu motivul, deci nimic nu se taie pe tăcute altfel.
+ */
+function peRand(o: Operatie): boolean {
+  return o.tip !== 'finisare' && frezeleOperatiei(o).every((f) => f.scula.forma?.tip !== 'bila');
+}
+
+/** Documentul fără rangurile operațiilor: ordinea automată a lucrării (ADR 0133 §3). */
+function faraRanguri(doc: Document): Document {
+  if (!doc.piese.some((p) => p.operatii.some((o) => o.rang !== undefined))) return doc;
+  return { ...doc, piese: doc.piese.map((p) => ({ ...p, operatii: p.operatii.map((o) => { const { rang: _r, ...fara } = o; void _r; return fara; }) })) };
+}
+
+/** Scula unui rând (fără bilă, `peRand`), cum o citește fereastra: numărul, diametrul și forma în V. */
+function sculaRand(s: Operatie['scula']): SculaOperatie {
+  return {
+    numar: s.numar, diametru: s.diametru,
+    ...(s.forma?.tip === 'v' ? { forma: { tip: 'v' as const, unghi: s.forma.unghi, ...(s.forma.varf !== undefined ? { varf: s.forma.varf } : {}) } } : {}),
+  };
+}
+
 export function ExportConectat({
   doc, dupaIdLume, lume, descriere, limba, baza, doarCitire, stare, onExporta, onInchide, onReseteaza, setariMasina, onSetariMasina,
   supracursa, onSupracursa, prinFoaie, onPrinFoaie, onDeschideInMasina, trimite, foaie, numeFoaie, toate, onRaport, onAlegeUrechi,
@@ -123,14 +150,23 @@ export function ExportConectat({
     }
     // Ce stă în interiorul fiecărui rând (ADR 0133 §3), în prima instanță a piesei, ca rândurile: riscul îl judecă dialogul,
     // după latura aleasă acolo.
-    const inauntru = cuprinse(lista.flatMap(({ piesa, instanta: inst }) => piesa.operatii.map((o) => {
+    // Finisarea reliefului (ADR 0312 §7) n-are contururi de cuprins, dar stă în interiorul plăcii decupate: punctul ei e
+    // centrul primului relief.
+    const centruRelief = (inst: string, o: Operatie): { readonly x: number; readonly y: number } | null => {
+      const e = dupaIdLume.get(`${inst}/${o.noduri[0] ?? ''}`);
+      if (!e || e.forma.tip !== 'relief') return null;
+      const k = cutieContur(chenarElement(e));
+      return { x: (k.minX + k.maxX) / 2, y: (k.minY + k.maxY) / 2 };
+    };
+    const inauntru = cuprinse(lista.flatMap(({ piesa, instanta: inst }) => piesa.operatii.filter((o) => peRand(o) || o.tip === 'finisare').map((o) => {
+      if (o.tip === 'finisare') return { cheie: `${piesa.id}/${o.id}`, piesa: piesa.id, contururi: [], punct: centruRelief(inst, o) };
       const contururi = o.noduri.flatMap((n) => {
         const e = dupaIdLume.get(`${inst}/${n}`);
         return e && esteContur(e) ? [conturElement(e)] : [];
       });
       return { cheie: `${piesa.id}/${o.id}`, piesa: piesa.id, contururi, punct: contururi[0]?.varfuri[0]?.p ?? null };
     })));
-    const randuriOp: OperatieExport[] = lista.flatMap(({ piesa, instanta: inst }) => piesa.operatii.map((o) => {
+    const randuriOp: OperatieExport[] = lista.flatMap(({ piesa, instanta: inst }) => piesa.operatii.filter(peRand).map((o) => {
       const e = dupaIdLume.get(`${inst}/${o.noduri[0] ?? ''}`);
       const cuprinseOp = inauntru.get(`${piesa.id}/${o.id}`);
       const baza = e ? descriere(e) : (piesa.nume ?? piesa.id);
@@ -156,7 +192,7 @@ export function ExportConectat({
         valori: {
           scula: {
             numar: o.scula.numar, diametru: o.scula.diametru,
-            ...(o.scula.forma ? { forma: { tip: 'v' as const, unghi: o.scula.forma.unghi, ...(o.scula.forma.varf !== undefined ? { varf: o.scula.forma.varf } : {}) } } : {}),
+            ...(o.scula.forma?.tip === 'v' ? { forma: { tip: 'v' as const, unghi: o.scula.forma.unghi, ...(o.scula.forma.varf !== undefined ? { varf: o.scula.forma.varf } : {}) } } : {}),
             // Freza din „Frezele mele” (ADR 0300 §4, felia 16.A↑b-3): originea ei, dacă documentul o are; altfel scrisă de mână.
             origine: origineDin(o.scula),
           },
@@ -215,11 +251,31 @@ export function ExportConectat({
         },
       };
     }));
+    // Finisările reliefului (ADR 0312 §7): rândurile doar de citit, cu valorile documentului.
+    const finisari: FinisareExport[] = lista.flatMap(({ piesa, instanta: inst }) => piesa.operatii.filter((o) => o.tip === 'finisare').map((o) => {
+      const e = dupaIdLume.get(`${inst}/${o.noduri[0] ?? ''}`);
+      const baza = e ? descriere(e) : (piesa.nume ?? piesa.id);
+      const s = o.scula, fin = o.finisare;
+      return {
+        cheie: `${piesa.id}/${o.id}`,
+        descriere: o.noduri.length > 1 ? `${baza} (+${o.noduri.length - 1})` : baza,
+        ...(o.rang !== undefined ? { rang: o.rang } : {}),
+        scula: {
+          numar: s.numar, diametru: s.diametru, forma: s.forma?.tip === 'bila' ? 'bila' : s.forma?.tip === 'v' ? 'v' : 'plata',
+          ...(s.forma?.tip === 'v' ? { unghi: s.forma.unghi, ...(s.forma.varf !== undefined ? { varf: s.forma.varf } : {}) } : {}),
+        },
+        pasLateral: o.pasLateral ?? 0, creasta: creastaPePlan(s, o.pasLateral ?? 0), unghi: fin?.unghi ?? 0, aliniat: fin?.nealiniat !== true,
+        margine: fin?.margine === 'trece' ? 'trece' : 'perete', ...(fin?.planZero !== undefined ? { planZero: fin.planZero } : {}),
+        adancime: o.adancime, pas: o.pas,
+      };
+    }));
     return {
       piese: lista,
       randuri: randuriOp,
-      // Ordinea automată a rândurilor (ADR 0133 §3): prima tăietură a fiecărei operații în ordinea lucrării fără ranguri.
-      automata: [...new Set(grupeazaPeScula(taieturiFoaie(doc, 0)).map((x) => `${x.piesa}/${x.operatie}`))],
+      finisari,
+      // Ordinea automată a rândurilor (ADR 0133 §3, ADR 0312 §7): primul pas al fiecărei operații în ordinea lucrării fără ranguri
+      // (finisările întâi).
+      automata: [...new Set(ordinePasi(faraRanguri(doc), 0).map(cheiePas))],
       descrieri: new Map(lume.map((e) => [e.idLume, descriere(e)])),
     };
     // `limba`: descrierile sunt texte traduse.
@@ -250,7 +306,8 @@ export function ExportConectat({
       id: f.id, nume: f.nume, pas: f.pas, pasLateral: pasLateralDin(f),
       scula: {
         numar: s.numar, diametru: s.diametru,
-        ...(s.forma ? { forma: { tip: 'v' as const, unghi: s.forma.unghi, ...(s.forma.varf !== undefined ? { varf: s.forma.varf } : {}) } } : {}),
+        // Doar forma în V (rândurile n-au bile: `frezePeRanduri`, ADR 0312 §7).
+        ...(s.forma?.tip === 'v' ? { forma: { tip: 'v' as const, unghi: s.forma.unghi, ...(s.forma.varf !== undefined ? { varf: s.forma.varf } : {}) } } : {}),
         origine: origineDin(s)!,
       },
     };
@@ -268,7 +325,7 @@ export function ExportConectat({
   }, [biblioteca.freze]);
   // Toată biblioteca cu CAM (ADR 0300 §5, felia 16.A↑b-4), pentru nota „s-a schimbat în bibliotecă” și recunoașterea; null cât
   // nu e citită (fereastra nu spune „nu mai e în bibliotecă” înainte să știe).
-  const bibliotecaToata = useMemo(() => (biblioteca.incarcata ? biblioteca.freze.filter((f) => areCam(f.fel)).map(oferita) : null), [biblioteca]);
+  const bibliotecaToata = useMemo(() => (biblioteca.incarcata ? frezePeRanduri(biblioteca.freze).map(oferita) : null), [biblioteca]);
   /**
    * „Pune-o înapoi în bibliotecă” (ADR 0300 §5, felia 16.A↑b-6): freza din copia de pe rând, în biblioteca proiectului, cu
    * id-ul ei de dinainte și o versiune nouă; în biblioteca unui cont pleacă și în cont (fără dreptul de scriere, rămâne aici,
@@ -293,8 +350,17 @@ export function ExportConectat({
     for (const { piesa } of exportFoaie.piese) {
       noi.set(piesa.id, piesa.operatii.map((o) => {
         const cheie = `${piesa.id}/${o.id}`;
+        // Finisarea (ADR 0312 §7): rândul ei e doar de citit, deci Exportă îi scrie doar rangul (sau îl scoate, în ordinea automată).
+        if (o.tip === 'finisare') {
+          const { rang: _r, ...fara } = o;
+          void _r;
+          const r = loc?.get(cheie);
+          return r !== undefined ? { ...fara, rang: r } : fara;
+        }
+        // Fără rând în fereastră (o freză bilă pe alt fel): rămâne cum e, iar lucrarea o refuză.
+        if (!peRand(o)) return o;
         const v = c.valori.get(cheie);
-        const { rang: _rang, ...faraRang } = operatieDinDialog(o, v, v?.scula ?? o.scula);
+        const { rang: _rang, ...faraRang } = operatieDinDialog(o, v, v?.scula ?? sculaRand(o.scula));
         void _rang;
         const r = loc?.get(cheie);
         return r !== undefined ? { ...faraRang, rang: r } : faraRang;
@@ -311,6 +377,7 @@ export function ExportConectat({
       {...(doc.foi[0] ? { grosimeFoaie: doc.foi[0].stoc.grosime } : {})}
       hartie={hartieRand}
       operatii={exportFoaie.randuri}
+      finisari={exportFoaie.finisari}
       ordineAutomata={exportFoaie.automata}
       descrieri={exportFoaie.descrieri}
       doarCitire={doarCitire}

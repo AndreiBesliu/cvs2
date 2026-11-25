@@ -20,11 +20,9 @@ o('E04', DLG, "[t('export.rezultat.meta.avertismente', { n: stare.avertismente.l
   'e2e', 'rândul Rezultatului numără mereu un avertisment')
 o('E05', DLG, "...(stare.avertismente.length > 0 ? [t(", "...(stare.avertismente.length >= 0 ? [t(", 'e2e',
   'rândul Rezultatului spune avertismente și când nu sunt')
-o('E06', DLG, '                {stare?.ok && <div className="dx-rez" data-rezultat="timp"><Rezumat r={stare.rezumat} operatii={operatii} limba={limba} /></div>}\n'
-  '                {stare?.ok && <div className="dx-rez" data-rezultat="simulare"><PrevizualizareSimulare s={stare.simulare} limba={limba} /></div>}\n',
-  '                {stare?.ok && <div className="dx-rez" data-rezultat="simulare"><PrevizualizareSimulare s={stare.simulare} limba={limba} /></div>}\n'
-  '                {stare?.ok && <div className="dx-rez" data-rezultat="timp"><Rezumat r={stare.rezumat} operatii={operatii} limba={limba} /></div>}\n',
-  'e2e', 'simularea înaintea timpului')
+# Mutată pe codul din 18.1↑c (25.11: argumentul `reliefuri`, ordinea cu finisările, bila); aceeași greșeală.
+o('E06', DLG, '                {stare?.ok && <div className="dx-rez" data-rezultat="timp"><Rezumat r={stare.rezumat} operatii={operatii} limba={limba}\n                  alte={new Map(finisari.map((f) => [f.cheie, f.descriere]))} /></div>}\n                {stare?.ok && <div className="dx-rez" data-rezultat="simulare"><PrevizualizareSimulare s={stare.simulare} limba={limba} /></div>}\n', '                {stare?.ok && <div className="dx-rez" data-rezultat="simulare"><PrevizualizareSimulare s={stare.simulare} limba={limba} /></div>}\n                {stare?.ok && <div className="dx-rez" data-rezultat="timp"><Rezumat r={stare.rezumat} operatii={operatii} limba={limba}\n                  alte={new Map(finisari.map((f) => [f.cheie, f.descriere]))} /></div>}\n', 'e2e',
+  'simularea înaintea timpului')
 o('E07', DLG, "                  <h4>{t('export.rezultat.fisiere')}</h4>\n", '', 'e2e', 'fișierele fără titlul lor')
 
 SETURI = {}

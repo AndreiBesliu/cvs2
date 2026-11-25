@@ -19,6 +19,7 @@ import { verdicteGresite, type GrupExport, type VerdictRand } from './exportGrup
 import { DesenColt, DesenZ0, type DesenComun } from './exportDesene.tsx';
 import { Cartonase, Poza } from './exportPoze.tsx';
 import { cuAceeasiFreza, FisaOperatie, ListaBiblioteca, NotaBiblioteca, RAND_DREPT, type ContextFisa, type InapoiNota } from './FisaOperatie.tsx';
+import { FisaFinisare, RandListaFinisare, type FinisareExport } from './FisaFinisare.tsx';
 import {
   bandaBuna, CHEI_COLT, CHEI_LATURA, citesteRest, ORIGINI, DIAMETRU_FUND_IMPLICIT, faraNumar, incrustatieVRand, inMargini,
   INTRARI_IMPLICITE, intregInMargini, jocFolosit, laturi, LUNGIME_ZIGZAG_IMPLICITA, margineBuna, MAXIM_REST, PLACUTE_NUMITE, puntiBune,
@@ -107,10 +108,15 @@ type Props = {
    */
   readonly frezeOferite?: (r: Pick<Rand, 'tip' | 'latura'>) => readonly FrezaOferita[];
   /**
-   * Toate frezele din „Frezele mele” cu CAM (ADR 0300 §5, felia 16.A↑b-4), pentru nota „s-a schimbat în bibliotecă” și
-   * recunoașterea; null (sau lipsă) cât biblioteca nu e citită.
+   * Toate frezele din „Frezele mele” care pot sta pe un rând (ADR 0300 §5, felia 16.A↑b-4; fără bile, ADR 0312 §7), pentru nota
+   * „s-a schimbat în bibliotecă” și recunoaștere; null (sau lipsă) cât biblioteca nu e citită.
    */
   readonly bibliotecaToata?: readonly FrezaOferita[] | null;
+  /**
+   * Finisările reliefului de pe foaie (ADR 0312 §7): rânduri doar de citit, la locul lor în ordinea tăierii (se mută în „A mea”,
+   * iar Exportă le scrie rangul ca celorlalte); valorile lor se schimbă din secțiunea Tăierea a panoului.
+   */
+  readonly finisari?: readonly FinisareExport[];
   /**
    * „Pune-o înapoi în bibliotecă” (ADR 0300 §5, felia 16.A↑b-6): aplicația pune în biblioteca proiectului freza din copia de pe
    * rând și o trimite în cont; lipsă = fără buton.
@@ -119,7 +125,11 @@ type Props = {
 };
 
 /** Rezumatul jobului (ADR 0046): timpul, apoi tabelul pe operații și cel pe scule, cu distanțele de tăiere și de rapide. */
-function Rezumat({ r, operatii, limba }: { readonly r: RezumatJob; readonly operatii: readonly OperatieExport[]; readonly limba: Limba }) {
+function Rezumat({ r, operatii, limba, alte }: {
+  readonly r: RezumatJob; readonly operatii: readonly OperatieExport[]; readonly limba: Limba;
+  /** Numele altor rânduri (finisările reliefului, ADR 0312 §7), după cheie. */
+  readonly alte?: ReadonlyMap<string, string>;
+}) {
   if (!r.ok) {
     const cheie: CheieSimpla = r.sursa === 'setari'
       ? (r.linie > 0 ? 'export.rezumat.eroare.setari' : 'export.rezumat.eroare.setari-tot')
@@ -161,7 +171,7 @@ function Rezumat({ r, operatii, limba }: { readonly r: RezumatJob; readonly oper
         {antet('export.rezumat.operatia')}
         <tbody>
           {r.peOperatie.map((o) => (
-            <tr key={o.operatie} data-operatie={o.operatie}><th scope="row">{descriere.get(o.operatie) ?? o.operatie}</th>{celule(o)}</tr>
+            <tr key={o.operatie} data-operatie={o.operatie}><th scope="row">{descriere.get(o.operatie) ?? alte?.get(o.operatie) ?? o.operatie}</th>{celule(o)}</tr>
           ))}
           <tr data-rand="restul"><th scope="row">{t('export.rezumat.restul')}</th>{celule(r.restul)}</tr>
         </tbody>
@@ -217,7 +227,7 @@ export function DialogExport(
   {
     operatii, ordineAutomata: automataLucrarii, baza, descrieri, doarCitire, onExporta, onInchide, onReseteaza, stare, setariMasina,
     onSetariMasina, supracursa, onSupracursa, prinFoaie, onPrinFoaie, onDeschideInMasina, trimite = false, foaie, numeFoaie, placute, foi,
-    placuteToate, onRaport, grosimeFoaie, onAlegeUrechi, frezeOferite, bibliotecaToata = null, onPuneInapoi, hartie,
+    placuteToate, onRaport, grosimeFoaie, onAlegeUrechi, frezeOferite, bibliotecaToata = null, finisari = [], onPuneInapoi, hartie,
   }: Props,
 ) {
   const limba = useLimba();
@@ -323,8 +333,10 @@ export function DialogExport(
   const [param, setParam] = useState<Record<string, Rand>>(dinDocument);
   // Ordinea tăierii (ADR 0133 §3): null = automată; altfel cheile rândurilor, în ordinea omului, pornită din rangurile
   // documentului. Ordinea automată arătată e cea de la deschidere (o latură sau o freză schimbată o reface la export).
-  const automata = ordineAutomata(automataLucrarii, operatii.map((o) => o.cheie));
-  const dinRanguri = (): string[] | null => ordineDinRanguri(automata, new Map(operatii.flatMap((o) => (o.rang !== undefined ? [[o.cheie, o.rang] as const] : []))));
+  // Finisările reliefului (ADR 0312 §7) au și ele rândul lor în ordine: fără rang, în față, ca în lucrare.
+  const automata = ordineAutomata(automataLucrarii, [...operatii.map((o) => o.cheie), ...finisari.map((f) => f.cheie)]);
+  const dinRanguri = (): string[] | null => ordineDinRanguri(automata, new Map([...operatii, ...finisari].flatMap((o) => (o.rang !== undefined ? [[o.cheie, o.rang] as const] : []))),
+    new Set(finisari.map((f) => f.cheie)));
   const [ordineMea, setOrdineMea] = useState<string[] | null>(dinRanguri);
   // Bifa ordinii riscante: se șterge la orice mutare (ordinea nouă e alta decât cea văzută).
   const [riscAcceptat, setRiscAcceptat] = useState(false);
@@ -461,8 +473,14 @@ export function DialogExport(
   // Frezele rândurilor (ADR 0084): același număr cu două diametre (sau două forme, ADR 0090) ar fi două freze sub același T.
   // Freza se compară după valorile exacte; în motiv apare scrisă după limbă.
   const scule = new Map<number, Map<string, string>>();
-  const adaugaFreza = (n: number, d: number, u: number | null, v: number | null = null): void => {
+  const adaugaFreza = (n: number, d: number, u: number | null, v: number | null = null, bila = false): void => {
     const m = scule.get(n) ?? new Map<string, string>();
+    // Bila (ADR 0312): același diametru cu altă formă e altă freză.
+    if (bila) {
+      m.set(`${d} bila`, `Ø${fmtFreza.format(d)} mm ${t('export.finisare.forma.bila')}`);
+      scule.set(n, m);
+      return;
+    }
     // ADR 0092: același unghi cu alt vârf e altă freză.
     const varf = u !== null && v !== null && v > 0 ? v : null;
     m.set(u !== null ? `${d} V${u}${varf !== null ? ` t${varf}` : ''}` : `${d}`, u !== null
@@ -491,6 +509,11 @@ export function DialogExport(
       const nr = citesteNumar(r.numar), dr = citesteNumar(r.diametru);
       if (nr !== null && dr !== null) adaugaFreza(nr, dr, null);
     }
+  }
+  // Și freza fiecărei finisări a reliefului (ADR 0312 §7): același T e aceeași freză în tot programul.
+  for (const f of finisari) {
+    adaugaFreza(f.scula.numar, f.scula.diametru, f.scula.forma === 'v' ? f.scula.unghi ?? null : null, f.scula.forma === 'v' ? f.scula.varf ?? null : null,
+      f.scula.forma === 'bila');
   }
   const conflict = [...scule].find(([, ds]) => ds.size > 1);
   const operatiiBune = sculeBune && !conflict && randuri.every((b) => b.adancime && b.pas);
@@ -666,6 +689,7 @@ export function DialogExport(
   // ADR 0133 §2, ADR 0170) sau o incrustație cu pereți drepți (ADR 0171).
   const ordine = ordineMea ?? automata;
   const dupaCheie = new Map(operatii.map((o) => [o.cheie, o]));
+  const finisareDupaCheie = new Map(finisari.map((f) => [f.cheie, f]));
   const numar = (s: string): string => String(citesteNumar(s));
   // Originea unei freze în plus (ADR 0300 §4, felia 16.A↑b-5): lucrarea unește regiunile doar cu aceleași freze, cu tot cu ea.
   const org = (x: OrigineFreza | null | undefined): string => (x ? JSON.stringify(x) : '');
@@ -700,6 +724,9 @@ export function DialogExport(
       ...(o.inauntru ? { inauntru: o.inauntru } : {}),
     }]];
   }));
+  // Finisarea reliefului (ADR 0312 §7): un rând pe linie al piesei ei, deci exteriorul piesei (sau al plăcii care o cuprinde, prin
+  // `inauntru`) tăiat înaintea ei cere bifa riscului.
+  for (const f of finisari) randuriOrdine.set(f.cheie, { piesa: f.cheie.slice(0, f.cheie.indexOf('/')), latura: 'pe-linie', despartire: false, vcarve: null });
   const legate = legaturi(ordine, randuriOrdine);
   const riscuriOrdine = ordineMea === null ? [] : riscuri(ordineMea, randuriOrdine);
   /** Ordinea omului cu rândul de pe locul `de` mutat pe `la`; rezultatul vechi și bifa riscului nu mai sunt ale ei. */
@@ -1128,6 +1155,12 @@ export function DialogExport(
     );
   };
   // Ce îi trebuie fișei unei operații (ADR 0290, felia 28.8↑f-3): aceeași componentă o pot pune Clasicul și Pas cu pas.
+  /** Rândul unei finisări în listă (ADR 0312 §7): ca celelalte, mutat cu mânerul sau cu săgețile; tragerea lasă rândul tras aici. */
+  const randFinisare = (fin: FinisareExport, loc: number): ReactNode => (
+    <RandListaFinisare key={fin.cheie} fin={fin} loc={loc} total={ordine.length} mana={ordineMea !== null && !doarCitire} tras={tras}
+      curent={curent === fin.cheie} f={(x) => fmtFreza.format(x)}
+      onMuta={(de, la) => { mutaRand(de < 0 ? ordine.indexOf(tras ?? '') : de, la); }} onTrage={setTras} onDu={() => { du(fin.cheie); }} />
+  );
   const contextFisa: ContextFisa = {
     dupaCheie, param, total: ordine.length, doarCitire, schimba, randBun, greseliRand, conflict, hartie: hartieRandului, taieturaRand,
     text, fmtFreza, fmtTrecere, grosimeFoaie, supracursaCitita, cuSupracursa, onAlegeUrechi, frezeRest, grup, frezeOferite, alegeFreza,
@@ -1175,6 +1208,8 @@ export function DialogExport(
           )}
         </div>
             {ordine.map((cheie, loc) => {
+              const fin = finisareDupaCheie.get(cheie);
+              if (fin) return randFinisare(fin, loc);
               const o = dupaCheie.get(cheie);
               const p = o ? param[o.cheie] : undefined;
               if (!o || !p) return null;
@@ -1344,7 +1379,11 @@ export function DialogExport(
         </details>
               </div>)}
             </section>
-            {ordine.map((cheie, loc) => <FisaOperatie key={cheie} cheie={cheie} loc={loc} c={contextFisa} />)}
+            {ordine.map((cheie, loc) => {
+              const fin = finisareDupaCheie.get(cheie);
+              return fin ? <FisaFinisare key={cheie} fin={fin} loc={loc} total={ordine.length} f={(x) => fmtFreza.format(x)} />
+                : <FisaOperatie key={cheie} cheie={cheie} loc={loc} c={contextFisa} />;
+            })}
             {cuRezultat && (
               <section className="dx-fisa" data-fisa="rezultatul">
                 <h3>{t('export.fisa.rezultatul')}</h3>
@@ -1394,7 +1433,8 @@ export function DialogExport(
                     </div>
                   )}
                 </div>
-                {stare?.ok && <div className="dx-rez" data-rezultat="timp"><Rezumat r={stare.rezumat} operatii={operatii} limba={limba} /></div>}
+                {stare?.ok && <div className="dx-rez" data-rezultat="timp"><Rezumat r={stare.rezumat} operatii={operatii} limba={limba}
+                  alte={new Map(finisari.map((f) => [f.cheie, f.descriere]))} /></div>}
                 {stare?.ok && <div className="dx-rez" data-rezultat="simulare"><PrevizualizareSimulare s={stare.simulare} limba={limba} /></div>}
               </section>
             )}

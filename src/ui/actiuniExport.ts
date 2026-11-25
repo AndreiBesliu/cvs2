@@ -14,10 +14,19 @@ async function exportaDocument(doc: Document, p: ParametriExport, semnal: AbortS
   return calculeazaExport(doc, p, semnal, toate);
 }
 
-/** Ce cere un program: forme pe foaie și măcar o operație; altfel motivul. */
+/**
+ * O finisare a reliefului pe foaie (ADR 0312): e o operație de tăiere, deși nu e o tăietură pe contur. Fără `finisariFoaie`
+ * (`model/finisare.ts`), ca verdictul să nu aducă în pornire codul finisării.
+ */
+const areFinisare = (doc: Document): boolean => {
+  const piese = new Map(doc.piese.map((p) => [p.id, p]));
+  return (doc.foi[0]?.instante ?? []).some((i) => piese.get(i.piesa)?.operatii.some((o) => o.tip === 'finisare') === true);
+};
+
+/** Ce cere un program: forme pe foaie și măcar o operație (o tăietură sau o finisare); altfel motivul. */
 const deExportat = (ctx: ContextExport): true | 'motiv.nimic-de-exportat' | 'motiv.nicio-operatie' => (
   elementeFoaie(ctx.document(), 0).length === 0 ? 'motiv.nimic-de-exportat'
-    : taieturiFoaie(ctx.document(), 0).length === 0 ? 'motiv.nicio-operatie' : true);
+    : taieturiFoaie(ctx.document(), 0).length === 0 && !areFinisare(ctx.document()) ? 'motiv.nicio-operatie' : true);
 
 export const ACTIUNI_EXPORT: readonly Actiune<ContextExport>[] = [
   {

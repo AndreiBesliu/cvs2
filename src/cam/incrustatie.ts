@@ -5,6 +5,7 @@
  */
 import { inaltimeConV, JOC_INCRUSTATIE_MINIM, type Operatie } from '../model/document.ts';
 import { susLaMicron, valoriBanda } from '../model/incrustatie.ts';
+import { felFrezei } from '../model/formaFrezei.ts';
 import type { Program } from '../ir/ir.ts';
 import { refuzIncrustatieDreapta } from './incrustatieDreapta.ts';
 import { urechiCareIncap } from './urechi.ts';
@@ -121,7 +122,7 @@ export function refuzIncrustatie(op: Operatie, unde: string, grosimeFoaie?: numb
   if (i.fel === 'drept') return refuzIncrustatieDreapta(op, unde, grosimeFoaie);
   if (op.tip !== 'vcarve') return `${unde}: incrustația în V e a unui V-carve (pe un buzunar, alege incrustația cu pereți drepți)`;
   const f = op.scula.forma;
-  if (f?.tip !== 'v') return `${unde}: incrustația cere o freză în V (T${op.scula.numar} e plată)`;
+  if (f?.tip !== 'v') return `${unde}: incrustația cere o freză în V (T${op.scula.numar} e ${felFrezei(f)})`;
   if (f.varf !== undefined && f.varf > 0) {
     return `${unde}: freza în V cu vârf plat (T${op.scula.numar}, ${f.varf} mm) lasă fundul șanțurilor înguste mai sus, iar dopul s-ar opri pe el: alege o freză ascuțită`;
   }
@@ -142,7 +143,7 @@ export function refuzIncrustatie(op: Operatie, unde: string, grosimeFoaie?: numb
     if (!d) {
       return `${unde}: fără freză dreaptă, decuparea dopului cere freza ei: bifează „Altă freză pentru decupare” (o freză dreaptă care taie prin placă) sau scoate decuparea`;
     }
-    if (d.forma !== undefined) return `${unde}: freza decupării dopului trebuie să fie dreaptă (T${d.numar} e în V)`;
+    if (d.forma !== undefined) return `${unde}: freza decupării dopului trebuie să fie dreaptă (T${d.numar} e ${felFrezei(d.forma)})`;
     if (d.numar === op.scula.numar) return `${unde}: freza decupării (T${d.numar}) are numărul frezei în V a operației: fiecare freză cere numărul ei`;
     for (const s of op.fundPlat ? [op.fundPlat.scula, ...(op.fundPlat.rest ?? []).map((r) => r.scula)] : []) {
       if (s.numar === d.numar && s.diametru !== d.diametru) {

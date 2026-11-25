@@ -22,7 +22,7 @@ export const adancimeScrisa = (o: Operatie): AdancimeScrisa => ({
 
 /** O tăietură cât foaia, pe care bifa o duce prin foaie cu supracursa (ADR 0177). */
 export const catFoaia = (o: AdancimeScrisa, grosime: number): boolean =>
-  o.tip !== 'vcarve' && o.incrustatie === 'fara' && Math.abs(o.adancime - grosime) <= EPS_FOAIE;
+  o.tip !== 'vcarve' && o.tip !== 'finisare' && o.incrustatie === 'fara' && Math.abs(o.adancime - grosime) <= EPS_FOAIE;
 
 /**
  * Adâncimea pe care o taie lucrarea (ADR 0175 §1, ADR 0177): gaura incrustației, grosimea foii plus supracursa; cu bifa, o

@@ -1017,7 +1017,7 @@ Dintr-o imagine (o poză, un logo, o hartă a înălțimilor în gri) se poate f
 celulă pentru fiecare pixel, a cărei înălțime vine din griul pixelului. Pe planșă, relieful se vede umbrit (lumina din
 stânga-sus), sub vectori, cu chenarul lui; se alege, se mută, se rotește și se oglindește ca orice formă, iar piesa cu relief
 se pune de mai multe ori și pe alte foi. În [vederea 3D](#vedere-3d), butonul **Modelul** îl arată în trei dimensiuni, în
-golul lui din placă. Prelucrarea lui 3D (degroșarea și finisarea) vine în feliile următoare: deocamdată relieful nu se taie.
+golul lui din placă. Relieful se taie cu **finisarea** (mai jos); degroșarea vine într-o felie următoare.
 
 **Cum îl faci:** din „Importă…”, alege o imagine (PNG, JPEG, WebP, GIF sau BMP), apoi, sus în fereastră, **Relief** în loc
 de **Vectori**. Alegerea se ține minte până reîncarci pagina. Fereastra are, în stânga:
@@ -1041,6 +1041,24 @@ jos, fiecare cu modul ei (în felia asta, relieful are un singur strat, „adun�
 Relieful se ține în browser, lângă proiect, nu în document (documentul ține doar amprenta lui), ca imaginile foii: pe alt
 calculator ori în alt browser, panoul spune că straturile lipsesc. Ce nu mai folosește nicio versiune păstrată a proiectului
 se șterge la o pornire, după cel puțin o zi.
+
+**Finisarea:** cu piesa reliefului aleasă, secțiunea **Tăierea** oferă rolul **finisarea reliefului** (pe o piesă doar cu
+reliefuri). Freza urmează relieful pe linii paralele, la pasul lateral, coborând în treceri de cel mult **pasul**, ultima pe
+model; nu coboară niciodată sub suprafața reliefului și nici sub **adâncime** (podeaua, implicit cât placa). Câmpurile:
+- **Freza**: bilă (implicit), plată sau în V, și **diametrul ei**; bila merge doar aici;
+- **Pasul lateral** (implicit 10 % din freză): distanța dintre linii; prin centrele celulelor, se rotunjește la celule întregi;
+- **Unghiul liniilor** (0° … 180°) și **Liniile**: prin centrele celulelor (la 0° și 90°) sau nealiniate, unde pot apărea riduri
+  pe detaliile fine;
+- **Marginea reliefului**: **peretele rămâne** (în afara reliefului e fața plăcii, deci freza nu taie acolo) sau **freza
+  trece de margine** (iese cu raza ei, iar în afară coboară până la podea);
+- **Relieful pe Z**: **vârful la fața plăcii** (implicit) sau **planul zero sub față**, la adâncimea scrisă; ce ar ieși
+  deasupra feței se taie la față, iar exportul o spune.
+
+Finisarea se face înaintea tăieturilor pe contur, cu freza ei. În fereastra **Exportă G-code** are rândul ei, la locul ei
+în ordinea tăierii, cu o fișă doar de citit (freza, pasul lateral, creasta pe un plan, adâncimea); se schimbă din secțiunea
+Tăierea. Cu **Ordinea tăierii: A mea**, rândul ei se mută ca oricare altul. În [vederea 3D](#vedere-3d), **Tăiat** arată
+placa după program. Freza rămâne puțin deasupra suprafeței ideale pe pante (cam 0,1 mm pe o pantă de 45°): e partea sigură a calculului,
+care nu sapă niciodată în relief. Exportul cere dalele reliefului din acest browser; pe alt calculator, le spune lipsă.
 
 ## Tăierea vectorilor
 %% capitol: taiere
@@ -1277,6 +1295,12 @@ implicit**. Un număr se scrie cu virgulă sau cu punct; unul în afara marginil
 - **Lipirea:** punctele de care se lipesc capetele (vârfurile, mijloacele, centrele, cadranele, cutia, foaia, grila),
   toleranța în pixeli și punctul cel mai apropiat de pe contur (cu Ctrl, mereu sau niciodată).
 - **Măsurarea:** ce arată Măsoară (distanța, Δx și Δy, unghiul) și unde (lângă cursor, în bara de jos).
+- **Exportul:** dacă bifa „Cu cotele” din **Exportă vectori** pornește pusă, numele stratului cotelor (litere fără diacritice,
+  cifre, „_” și „-”, cel mult 31, nu numele altui strat; implicit COTE), culoarea lui (în DXF, și cea mai apropiată dintre
+  culorile AutoCAD de bază), grosimea liniilor cotelor în PDF și SVG (0,05–1 mm, implicit 0,1), **Cotele în DXF** (**Cote
+  (DIMENSION)**, implicit: în AutoCAD și LibreCAD rămân cote; sau **Linii și cifre**, pentru programele care nu știu cotele) și
+  **Cifrele** (**Trăsături**, implicit: aceleași în orice program, fără fonturi; sau **Text**, de editat în alt program, dar
+  desenat cu fontul lui).
 
 ## Conversia vectorilor
 %% capitol: conversie
@@ -2011,7 +2035,17 @@ Inkscape, Illustrator / Corel, AutoCAD / LibreCAD) sau pentru laser:
   cu culoarea de acolo): liniile de cotă și de extensie, arcele unghiurilor (arce adevărate în DXF și SVG), capetele (săgețile
   pline sunt triunghiuri umplute, punctele discuri) și cifrele, ca trăsăturile fontului cu o singură linie al aplicației, deci
   arată la fel în orice program, fără fonturi. Bifa pornește cum spun Setările (implicit oprită: vectorii pentru laser sau
-  pentru alt CAM rămân doar formele); sub ea, legătura **Setările cotelor**. Cotele nu intră niciodată în G-code.
+  pentru alt CAM rămân doar formele); sub ea, fraza spune stratul și felul cotelor, cu legătura **Setările cotelor**. Cotele
+  nu intră niciodată în G-code.
+  - **În DXF**, după **Cotele în DXF** din Setări: implicit, fiecare cotă e o **cotă** (entitatea DIMENSION, cu stilul
+    CNCVS2: înălțimea cifrei, capetele, golurile, zecimalele și separatorul din Setări), iar desenul ei, cum îl vezi în
+    aplicație, stă într-un bloc al ei: AutoCAD și LibreCAD o citesc ca cotă (o mută, o redesenează), un program care știe doar
+    blocurile o desenează. Cifra e scrisă în cotă, deci arată la fel, dar nu se schimbă singură când muți punctele în alt
+    program (scrie acolo `<>` în locul ei, ca să fie măsurată). Cu **Linii și cifre**, desenul iese direct, fără cote.
+  - **Cifrele ca text** (**Cifrele: Text** în Setări): în DXF ca MTEXT, în SVG ca text, în PDF și EPS cu Helvetica (fără
+    font în fișier); se pot edita în alt program, dar se desenează cu fontul lui. Locul cifrei e cel al trăsăturilor, iar
+    Helvetica e cu vreo 30 % mai lată, deci o cifră în linie atinge mai ușor capetele liniei. În PDF și EPS, un semn pe care
+    Helvetica nu-l are (ș, ț, ă) se scrie „?” și se spune după export; minutul și secunda (′ ″) se scriu ' și ".
 
 **Exportă** descarcă fișierul și spune câte entități și câte straturi are (cu cotele, și câte cote). O formă cu și linii, și
 curbe iese în bucăți legate cap la cap (o polilinie, apoi o curbă).
@@ -2360,7 +2394,7 @@ fiecăruia), iar starea din colț o spune.
   rar (o valoare pe 2 × 2, 4 × 4 … celule), iar starea o spune. Modelul urmează documentul: mutat, rotit ori oglindit,
   relieful se mută pe loc, fără să se încarce din nou, iar un relief schimbat își încarcă doar dalele schimbate. Dacă
   straturile lui lipsesc din browser, starea o spune, iar fața plăcii rămâne întreagă acolo. **Tăiat** simulează placa,
-  ca mai jos (relieful însuși nu se taie încă).
+  ca mai jos, cu [finisarea](#relief) reliefului, dacă o are.
 
 Culorile: fața plăcii, tăieturile (mai închise cu adâncimea) și, albastru-gri, masa de sacrificiu acolo unde freza a trecut
 prin foaie; în model, relieful are culorile tăieturilor. Dacă schimbi documentul cât vederea e deschisă, starea o spune; „Simulează din nou” îl simulează, cu placa
