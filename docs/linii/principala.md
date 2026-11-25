@@ -190,8 +190,12 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
   - **la cuvântul owner-ului:** următoarea felie a bibliotecii extensiilor, a incrustațiilor și a trasării, 11.5↑b
     (după etapa 13);
   - **audituri, cerute de owner pe 25.11** (înaintea arhivării sesiunilor; doar documente, fără cod de produs):
-    fereastra exportului (`docs/linii/audit-export.md`) și elicele (`docs/linii/audit-elice.md`), fiecare în
-    sesiunea liniei ei; le unesc la raport, iar feliile propuse pornesc doar la cuvântul lui;
+    **elicele, gata și în `main`** (`docs/linii/audit-elice.md`, `173995a1`: nimic stricat; șapte felii propuse
+    pentru linia atelierului; patru întrebări la owner, cu recomandările 1a, 2a, 3a, 4a; sesiunea se poate arhiva);
+    **fereastra exportului, în lucru** (`docs/linii/audit-export.md`), cu o greșeală de afișare spusă din mers:
+    cu supracursa și pe tăieturile cât foaia, desenul adâncimii și nota pasului împart adâncimea scrisă (3 treceri
+    de 6 mm), iar programul, corect și sigur, taie grosimea plus supracursa (4 de 4,575 mm); reparația, la cuvântul
+    owner-ului (recomandarea: acum, de sesiunea exportului). Feliile propuse pornesc doar la cuvântul lui;
   - **fără felie în lucru:** planșele (tăierea plăcii 11, la owner), incrustațiile, trasarea, tăierea (după
     10.3↑o: 10.3↑p–r),
     imprimanta (după 3.6v: 3.6w, camera), aranjamentele (28.1↑). Pornesc la cuvântul

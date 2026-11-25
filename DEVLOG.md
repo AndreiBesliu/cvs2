@@ -14468,7 +14468,7 @@ vigoare „unește ce se poate”
 ## 2026-11-25 — Sesiunea principală în cloud: auditul ferestrei exportului și al elicelor, cerut sesiunilor lor (Model: Claude Fable 5.2)
 
 **Prompt:** „pot arhiva sesiunile exportului si elicelor?”, apoi „vreau sa le intrebi ce pot imbunatati in zona in care au lucrat? dar, defapt, pune-le sa faca un audit complet in acest sens”
-**Started:** 25.11, 10:05. **Completed:** 25.11, 10:22 (cererile trimise; rapoartele vin de la linii).
+**Started:** 25.11, după 09:50 (ora nu s-a notat). **Completed:** 25.11, 10:22 (cererile trimise la 10:19; rapoartele vin de la linii).
 
 - **Verificat înaintea răspunsului:** `wip/28.8-export` (`ef8a6dd6`) și `wip/3.Tq-elice` (`05bdc8ec`) sunt întregi în
   `main`; PR-urile lor, închise (deschise: `#30` relieful, `#31` frezele, `#32` cotele); nicio verificare programată
@@ -14478,6 +14478,25 @@ vigoare „unește ce se poate”
   (`docs/linii/audit-export.md`, `docs/linii/audit-elice.md`, raportul scurt pentru owner în sesiunea lor).
 - **Documentele:** decizia în `CLAUDE.md`; rândurile exportului și elicelor din indexul liniilor; starea din
   `docs/linii/principala.md`.
+
+## 2026-11-25 — Sesiunea principală în cloud: auditul elicelor, în `main`; o greșeală de afișare găsită de auditul exportului (Model: Claude Fable 5.2)
+
+**Prompt:** rapoartele sesiunilor exportului (10:26) și elicelor (10:33), la auditul cerut de owner
+**Started:** 25.11, 10:26. **Completed:** 25.11, 10:34.
+
+- **Auditul elicelor** (`2c7146b3` pe `wip/3.Tq-elice`, PR-ul `AndreiBesliu/cvs2#34`, doar documente, peste `a22547e5`),
+  unit în `173995a1`: `docs/linii/audit-elice.md` și un link în `docs/linii/elice.md`. Nimic stricat: 110 plase
+  măsurate, toate închise, cel mult 154 ms; nicio eroare în consolă. Opt constatări (întâi: „Se tipărește fără suport”
+  se spune și la pasul mic, unde vârful iese cu 2,1 mm pe strat; 22 de otrăvuri ale elicelor au ajuns fără țintă după
+  3.Ce și 3.Cj), șapte felii propuse pentru linia atelierului, patru întrebări la owner (recomandările: 1a, 2a, 3a,
+  4a). Fără complet: nicio linie de cod.
+- **Auditul exportului, din mers** (verificat în cod: `FisaOperatie.tsx:84–90`, `DialogExport.tsx:901`,
+  `src/cam/prinFoaie.ts`): cu supracursa și pe tăieturile cât foaia, fereastra arată „3 treceri de 6 mm” la 18 mm, iar
+  programul taie 4 treceri de 4,575 mm până la −18,3 (ADR 0177). Programul e corect și sigur; greșit e desenul. Spus
+  owner-ului, cu recomandarea reparației acum, de sesiunea exportului (~1 h, sub 0,2 kB, cu proba care compară desenul
+  cu programul); linia n-are felie în lucru, deci pornește la cuvântul lui. A doua constatare (găurirea cu elice
+  desenată ca ciocănire; refuzul cercului peste 2·D abia după clic, cu id-ul intern) rămâne în raport.
+- **Documentele:** indexul liniilor (rândul elicelor, nota nouă), starea din `docs/linii/principala.md`.
 
 ## 2026-11-25 — Felia 10.4↑c-1: cotele în exportul vectorilor („Cu cotele”, stratul lor, cifrele ca trăsături; ADR 0330 §6, §7) (Model: Claude Opus 5.5)
 
