@@ -14464,3 +14464,29 @@ vigoare „unește ce se poate”
 - **Liniile, anunțate:** frezele, relieful, cotele și atelierul primesc plafoanele noi odată cu `main`.
 - **Documentele:** decizia și paragraful de stare în `CLAUDE.md`; `docs/linii/principala.md` (plafoanele, intervalul
   ADR: următorul al sesiunii principale e 0147).
+
+## 2026-11-25 — Felia 10.4↑c-1: cotele în exportul vectorilor („Cu cotele”, stratul lor, cifrele ca trăsături; ADR 0330 §6, §7) (Model: Claude Opus 5.5)
+
+**Prompt:** „Pornește 10.4↑c” (sesiunea principală, 25.11, cu mesajele owner-ului: „am resetat limita saptamanale. azi este
+miercuri.” și „vreau sa pornesti si celelalte sub-sesiuni”). **Started:** 25.11, 07:35, în sesiunea cloud a liniei cotelor.
+**Completed:** 25.11, 10:40 (în container; CI-ul, pe commit-ul împins).
+
+- **Felia c, împărțită:** c-1 (exportul cotelor ca vectori: linii, arce, capete, cifre ca trăsături) și c-2 (DIMENSION în
+  DXF, cifrele ca text), scris în ADR 0330 §10.
+- **Pur:** `src/io/coteExport.ts` (entitățile, pe stratul COTE: `plin` pentru săgeata plină, `latime` pentru disc), cifrele
+  așezate de apelant (`cifreDinFont`, `src/text/cifreCote.ts`): `src/io` nu importă textul (regula `io-doar-model-geom`,
+  căzută la prima încercare). Scriitorii DXF / SVG / PDF / EPS știu stratul cotelor (numele, culoarea, grosimea); fără cote,
+  fișierele, octet cu octet aceleași. ACI-ul stratului se alege după nuanță (în RGB, #006d8f ieșea gri).
+- **Setări › Cotele › Exportul** (implicitul bifei, numele stratului validat, culoarea, grosimea) și bifa **„Cu cotele (N)”**
+  din „Exportă vectori”, cu fontul și setările aduse la Exportă.
+- **Oracolul Python** (`test/oracles-py/export2d_cote.py`, pas nou în jobul `oracol-export2d`): corpusul cotelor (patru
+  cote, stratul `DIM_1`) din `scripts/export2d-corpus.ts`; DXF-ul exact (181 de segmente, cele de pe hârtie, cu cifrele
+  așezate de fontTools), PDF / SVG / EPS (direct și prin Ghostscript) în toleranță.
+- **`main` adus** (`caddd661`: 3.Cj și plafoanele 1 000 / 125 kB, ADR 0146), fără ciocniri; catalogul controalelor scris din
+  nou (648 de nume).
+- **Porțile, în container:** tipurile, regulile de import; unitarele cotelor și ale exportului 2D; oracolul exportului 2D și
+  al cotelor (cu Ghostscript pus local); e2e-urile cotelor, exportului vectorilor și setărilor; build-ul determinist. Pornirea
+  111,1 → 111,2 kB (cu ușa 116,2, cu Atelierul 116,5 / 125), totalul 880,9 → 884,2 / 1 000.
+- **Otrăvurile** (`test/otravuri/10.4c1.py`, într-o clonă): 41 / 44 (31 unitare: 28 prinse, X09, W11 și V02 practic
+  echivalente; 6 e2e; 7 pe oracolul Python, cu corpusul regenerat la fiecare); X08, X10, X11, W01, W02, W05, V01 și E05 au
+  scăpat întâi și sunt prinse după probele noi.

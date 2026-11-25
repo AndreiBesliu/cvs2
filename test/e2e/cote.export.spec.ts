@@ -118,13 +118,15 @@ test('Setări › Cotele › Exportul: bifa pornită, alt nume și altă grosime
   await expect(grup.locator('[data-setari-implicit="export"]')).toBeDisabled();
   await grup.locator('[data-setare="export.cuCote"]').check();
   const nume = grup.locator('[data-setare="export.strat"]');
-  await nume.fill('FOAIE');
-  await expect(grup.locator('.setari-gresit')).toHaveText('Numele nu se poate folosi; rămâne „COTE”.');
-  await expect(nume).toHaveAttribute('aria-invalid', 'true');
   await nume.fill('Dim-1');
   await expect(grup.locator('.setari-gresit')).toHaveCount(0);
+  // Un nume rezervat (DXF-ul nu deosebește literele: „foaie” e FOAIE) nu ajunge în setări: rămâne cel bun, de dinainte.
+  await nume.fill('foaie');
+  await expect(grup.locator('.setari-gresit')).toHaveText('Numele nu se poate folosi; rămâne „Dim-1”.');
+  await expect(nume).toHaveAttribute('aria-invalid', 'true');
   const grosime = grup.locator('[data-setare="export.grosime"]');
   await grosime.fill('0,3');
+  await expect(nume).toHaveValue('Dim-1');
   await grosime.press('Enter');
   await expect(grup.locator('[data-setari-implicit="export"]')).toBeEnabled();
   await page.locator('[data-buton="setari-inchide"]').click();

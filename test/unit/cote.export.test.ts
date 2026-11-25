@@ -2,6 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { entitatiCote, textPentruFont, type OptiuniCote } from '../../src/io/coteExport.ts';
+import { culoareDxf } from '../../src/io/dxfExport.ts';
 import { exportaVectori, type CoteCerute } from '../../src/io/exportVectori.ts';
 import type { Entitate } from '../../src/io/vectori.ts';
 import { formatImplicit, STIL_IMPLICIT, type StilCota } from '../../src/model/desenCota.ts';
@@ -190,4 +191,58 @@ test('stratul cotelor în fiecare format: numele, culoarea (în DXF și ACI-ul c
   assert.match(pdf, /0.25 w/);
   const eps = exportaVectori(doc, 0, 'eps', false, cerute(strat)).text;
   assert.match(eps, /% Stratul Dim-1\n1 0\.5333 0 setrgbcolor\ngsave\n0\.25 setlinewidth/);
+});
+
+test('o cotă legată se exportă de pe formă, nu din locul văzut ultima oară (ținut învechit aici)', () => {
+  const leg = (k: number, x: number, y: number) => ({ x, y, legatura: { instanta: 'i', nod: 'e', loc: { fel: 'varf' as const, k }, n: 4 } });
+  // Vârfurile 0 și 2 ale dreptunghiului 100 × 20 din (0, 0): (0, 0) și (100, 20); locurile ținute sunt altele.
+  const c: Cota = { id: 'l', fel: 'orizontala', puncte: [leg(0, 5, 5), leg(2, 95, 15)], linie: { d: 15 } };
+  const x = entitatiCote(document([c]), 0, optiuni());
+  assert.ok(areLinia(x.entitati, 0, 25, 100, 25), 'linia de cotă între vârfurile formei');
+  assert.ok(areLinia(x.entitati, 0, 1, 0, 27) && areLinia(x.entitati, 100, 21, 100, 27), 'extensiile, din vârfuri');
+});
+
+test('cifra în linie: linia de cotă se întrerupe cât cifra și golurile ei (nicio bucată nu trece prin x = 50)', () => {
+  const x = entitatiCote(document([ORIZONTALA]), 0, optiuni({ ...STIL_IMPLICIT, loc: 'in-linie' }));
+  const pe25 = linii(x.entitati).filter(([, b, , d]) => aproape(b, 25) && aproape(d, 25));
+  assert.equal(pe25.length, 2, 'două bucăți ale liniei');
+  for (const [a, , c] of pe25) assert.ok(Math.max(a, c) < 50 || Math.min(a, c) > 50, `bucata ${a}–${c} trece prin mijloc`);
+  // Golul: cel puțin lățimea estimată a lui „100” (3 · 0,6 · 3,5), plus câte 0,3 · 3,5 de fiecare parte.
+  const st = Math.max(...pe25.map(([a, , c]) => Math.min(a, c) < 50 ? Math.max(a, c) : -Infinity));
+  const dr = Math.min(...pe25.map(([a, , c]) => Math.min(a, c) > 50 ? Math.min(a, c) : Infinity));
+  assert.ok(aproape(dr - st, 3 * 0.6 * 3.5 + 2 * 0.3 * 3.5, 1e-9), `golul: ${dr - st}`);
+});
+
+test('un semn pe care fontul nu-l are se spune (o dată), fără să oprească exportul', () => {
+  const c: Cota = { ...ORIZONTALA, text: '<> ☃ ☃' };
+  const x = entitatiCote(document([c]), 0, optiuni());
+  assert.equal(x.cote, 1);
+  assert.deepEqual(x.lipsa, ['☃']);
+  assert.ok(x.entitati.some((e) => e.fel === 'spline' || (e.fel === 'polilinie' && puncte(e).every((p) => p.y > 25.5))), 'cifrele care există, desenate');
+});
+
+test('DXF: săgeata plină e un SOLID cu subclasa AcDbTrace; punctul, o LWPOLYLINE cu lățimea lui (43)', () => {
+  const doc = document([ORIZONTALA]);
+  const dxf = exportaVectori(doc, 0, 'dxf', false, cerute()).text;
+  assert.equal((dxf.match(/\n0\nSOLID\n5\n[0-9A-F]+\n330\n[0-9A-F]+\n100\nAcDbEntity\n8\nCOTE\n100\nAcDbTrace\n/g) ?? []).length, 2);
+  const punct = exportaVectori(doc, 0, 'dxf', false, { ...cerute(), stil: { ...STIL_IMPLICIT, capete: 'punct' } }).text;
+  const r = 2.5 / 4;
+  assert.equal((punct.match(new RegExp(`\\n8\\nCOTE\\n100\\nAcDbPolyline\\n90\\n2\\n70\\n1\\n43\\n${r}\\n`, 'g')) ?? []).length, 2, 'două discuri, cu lățimea r');
+});
+
+test('culoarea de bază (ACI) a stratului: după nuanță; griurile, după luminozitate', () => {
+  const cazuri: [string, number][] = [
+    ['#006d8f', 4], ['#ff0000', 1], ['#ff8800', 2], ['#ffff00', 2], ['#00ff00', 3], ['#00ffff', 4], ['#0000ff', 5], ['#123abc', 5],
+    ['#ff00ff', 6], ['#000000', 7], ['#ffffff', 7], ['#808080', 8], ['#c0c0c0', 9], ['#7a8070', 8],
+  ];
+  for (const [hex, aci] of cazuri) assert.deepEqual(culoareDxf(hex), [aci, Number.parseInt(hex.slice(1), 16)], hex);
+});
+
+test('PDF: pagina se lărgește cât ies cotele din foaie (o cotă sub foaie)', () => {
+  const jos: Cota = { ...ORIZONTALA, linie: { d: -40 } };
+  // Linia la y = 10 − 40 = −30; extensiile trec cu 2 mm de ea, până la −32.
+  const pdf = exportaVectori(document([jos]), 0, 'pdf', true, cerute()).text;
+  const box = /\/MediaBox \[([^\]]+)\]/.exec(pdf)?.[1]?.split(' ').map(Number) ?? [];
+  assert.ok(aproape(box[1]! / (72 / 25.4), -32, 1e-5), `jos: ${box[1]! / (72 / 25.4)} mm`);
+  assert.ok(aproape(box[3]! / (72 / 25.4), 200, 1e-5), 'sus, foaia');
 });

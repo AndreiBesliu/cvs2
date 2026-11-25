@@ -234,7 +234,8 @@ Fiecare felie spune în raport cifrele măsurate.
 | 10.4↑a-3 | Fereastra Setări, cu secțiunea Cotele: cifrele, liniile și capetele, comportamentul (și pânza: arătate, pragul cifrelor, culoarea), lipirea, măsurarea, cu efectul lor pe desen; cota de probă; deschiderile (meniul contului, paleta, Ctrl+, și ⚙); manualul „Setările” și Ctrl+, | canalul `cote` |
 | 10.4↑a-4 | Panoul cotei; rândul „Cote (N)” în listă, cu ochiul; „Arată cotele”; cotele foilor vecine, estompate sau ascunse (cu setarea lor) | canalul `cote` |
 | 10.4↑b | Raza, diametrul, unghiul (și în Automată), cu setările lor; inch în fracții | canalul `cote` |
-| 10.4↑c | Exportul: „Cu cotele”, stratul COTE, DXF ca DIMENSION sau ca linii și cifre, SVG, PDF, EPS, cifrele ca trăsături sau ca text, cu setările lor; oracolul pe corpus | canalul `cote` |
+| 10.4↑c-1 | Exportul: „Cu cotele”, stratul COTE (numele, culoarea și grosimea, din Setări), DXF ca linii și cifre, SVG, PDF, EPS, cifrele ca trăsături; oracolul pe corpus | canalul `cote` |
+| 10.4↑c-2 | DXF ca DIMENSION (implicit, cu blocul `*Dn` și stilul `CNCVS2`), cifrele ca text (MTEXT, `<text>`, Helvetica), cu setările lor („Cotele în DXF”, „Cifrele”) | canalul `cote` |
 | 10.4↑d | Lanțul, linia de bază, „Cotează selecția”, „Fă desen din cotă”, cotele în raportul foilor, cu setarea lui | canalul `cote` |
 
 Mai târziu, la cuvântul owner-ului: toleranțele scrise pe cotă (±0,1), lungimea unui arc sau a unui contur întreg, cota între
@@ -488,6 +489,52 @@ nu „a-3a” și „a-3b”, cum le-a numit întâi sesiunea.)
   minutele rotunjite, arcul cotei de probă din Setări în alt sector). Pornirea
   110,6 kB, neschimbată (cu ușa 115,3, cu Atelierul 115,6 / 120: felurile noi, setările și desenul stau în bucățile uneltei și
   ale ferestrei Setări, la cerere), totalul 860,6 → 864,8 / 900 kB (după lotul 24 adus).
+
+## Implementarea (10.4↑c-1)
+
+25.11, pe ramura `wip/10.4-cote`, la „Pornește 10.4↑c” (owner-ul, prin sesiunea principală: „vreau sa pornesti si celelalte
+sub-sesiuni”). Felia c s-a împărțit în c-1 (exportul cotelor, desenate ca vectori) și c-2 (DIMENSION și cifrele ca text).
+- **Entitățile cotelor** (`src/io/coteExport.ts`, pur): desenul fiecărei cote (`desenCota`, același cu al pânzei) ca entități
+  ale exportului, pe stratul **COTE** (al nouălea din `STRATURI`), cu id-ul cotei ca element: liniile de cotă și de extensie
+  (bucăți de polilinie), arcul unghiului (o polilinie cu bulge = tan(baleiaj / 4), deci exact în DXF și SVG), capetele
+  (săgeata plină, un triunghi umplut: entitatea nouă `plin`; cea deschisă, conturul lui; bara oblică, o bucată; punctul, un
+  disc: polilinia din două semicercuri de rază r / 2, cu lățimea r, câmpul nou `latime`) și cifrele. Ancorele se citesc din
+  lume ca pe pânză (o cotă legată e unde e forma); un fel necunoscut sau o cotă fără desen nu se exportă. Cutia cotelor
+  lărgește pagina PDF / EPS și întinderea DXF-ului cât ies din foaie; **SVG-ul rămâne cât foaia** (ca pentru forme, ADR
+  0088), deci o cotă din afara foii iese din pagina lui.
+- **Cifrele, ca trăsături.** Față de §6 (un tabel al trăsăturilor, scos la build): fontul inclus cu o singură linie (Relief
+  SingleLine) se citește la export, prin modulul textului, adus la cerere, ca la numerele panourilor (10.3↑n); așezarea e a
+  textului (`aseazaText`, centrat, cu baza în cifră), dată de apelant (`cifreDinFont`, `src/text/cifreCote.ts`): `src/io`
+  importă doar modelul și geometria (regula `io-doar-model-geom`). Semnele pe care fontul nu le are (minutul ′ și secunda ″)
+  se scriu cu apostroful și ghilimelele drepte; altele, nedesenate, se spun după export. Tabelul de la build rămâne de făcut
+  când pânza și „Fă desen din cotă” (d) au nevoie de cifrele fără font.
+- **Scriitorii:** DXF-ul scrie stratul cu numele din setări, culoarea exactă în codul 420 și, în 62, culoarea AutoCAD de bază
+  cea mai apropiată **după nuanță** (roșu, galben, verde, cyan, albastru, magenta), iar una aproape gri după luminozitate (7,
+  8, 9): distanța în RGB dădea gri albastrului închis implicit (#006d8f); capetele pline sunt SOLID (AcDbTrace, al patrulea
+  colț cât al treilea), discurile, LWPOLYLINE cu lățimea constantă (43). SVG: grupul stratului (strat Inkscape) cu numele,
+  culoarea și grosimea din setări, triunghiurile umplute, discurile cu `stroke-width` cât lățimea. PDF: stratul OCG cu numele
+  din setări, culoarea liniilor și a umpluturii, grosimea; EPS: comentariul cu numele, culoarea, grosimea, `fill`. **Fără cote,
+  sau fără bifă, fiecare fișier e octet cu octet cel de dinainte** (stratul COTE se scrie doar cu entități).
+- **Intrarea** (`exportaVectori`, `src/io/exportVectori.ts`): primește cotele cerute (stilul și cifrele din setări, așezarea
+  cifrelor, stratul) și spune câte cote au intrat și ce semne lipsesc.
+- **Setările** (Setări › Cotele, grupul nou **Exportul**): „Cu cotele, în «Exportă vectori»” (implicitul bifei, oprit),
+  numele stratului (litere ASCII, cifre, „_” și „-”, cel mult 31, nu numele altui strat al exportului sau 0, fără să țină
+  seama de literele mari: DXF-ul nu le deosebește; altfel spus lângă câmp și neținut), culoarea lui (implicit #006d8f) și
+  grosimea liniilor cotelor în PDF și SVG (0,05–1 mm, implicit 0,1). „Cotele în DXF” și „Cifrele” vin cu c-2.
+- **Panoul „Exportă vectori”:** pe o foaie cu cote, bifa **„Cu cotele (N)”**, pornită după Setări; bifată, fraza „Pe stratul
+  …” și legătura **Setările cotelor**. La Exportă vin, la cerere, setările și fontul; un font care nu se încarcă oprește
+  exportul, cu motivul. Starea spune și câte cote au intrat.
+- **Oracolul** (`test/oracles-py/export2d_cote.py`, în jobul `oracol-export2d`): corpusul cotelor (scris de
+  `scripts/export2d-corpus.ts` prin intrarea aplicației: patru cote, o orizontală, o verticală, un unghi și un diametru, pe
+  stratul `DIM_1`, portocaliu, cu liniile de 0,25 mm), recitit de ezdxf (0 erori, 0 reparații; fiecare segment, exact cel de
+  pe hârtie, 181, cu cifrele așezate de fontTools prin `text_corpus.aseaza`), PyMuPDF (PDF-ul și EPS-ul prin Ghostscript),
+  un cititor mic al SVG-ului și al EPS-ului; abaterile măsurate: PDF 0,0001 mm, SVG 0,000001 mm, EPS 0,0001 mm, prin
+  Ghostscript 0,0003 mm.
+- **Manualul:** „Exportul vectorilor” (bifa) și „Setările” (grupul Exportul), în ambele limbi.
+- **Cifrele:** unitare noi 15 (`cote.export.test.ts`) și 2 în `cote.setari.test.ts`; e2e noi 3 (`cote.export.spec.ts`, cu
+  SVG-ul cotei măsurat de browser), plus probele Setărilor potrivite (șapte grupuri); otrăvurile, în raport. Pornirea 111,1 →
+  111,2 kB (cu ușa 116,2, cu Atelierul 116,5 / 125), totalul 880,9 → 884,2 / 1 000 kB (după `main` adus, cu plafoanele noi,
+  ADR 0146).
 
 ## Răspunsurile owner-ului (24.11.2026)
 
