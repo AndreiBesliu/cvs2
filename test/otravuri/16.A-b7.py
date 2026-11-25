@@ -23,7 +23,10 @@ o('K05', F, "    else if (grupNou !== null && vede('[data-freze=\"grup-nou\"]'))
   'e2e', '„Grup nou…” al unei freze șterse între timp oprește Escape')
 o('K06', F, "    else if (stergere && vede('[data-freze=\"sterge-da\"]')) setStergere(false);", '    else if (stergere) setStergere(false);', 'e2e',
   'întrebarea unei freze șterse între timp oprește Escape')
-o('K07', F, '    e.stopPropagation();\n    // Escape închide stratul', '    // Escape închide stratul', 'e2e',
-  'Escape ajunge și la scurtăturile aplicației de sub fereastră')
+# K03 e practic echivalentă azi: niciun strat de deasupra nu oprește Escape fără să-l și țină (manualul îl ține, paleta nu se
+# deschide peste fereastră); verificarea rămâne, ca la fereastra exportului. Fără doar una dintre `preventDefault` și
+# `stopPropagation`, scurtăturile desenului tot nu văd tasta (desenul sare peste una oprită); K07 le scoate pe amândouă.
+o('K07', F, '    e.preventDefault();\n    e.stopPropagation();\n    // Escape închide stratul', '    // Escape închide stratul', 'e2e',
+  'Escape ajunge și la desenul de sub fereastră (unealta se întoarce la selecție)')
 
 E2E = ['test/e2e/freze.spec.ts']
