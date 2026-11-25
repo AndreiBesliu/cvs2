@@ -1028,8 +1028,9 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   fereastră de confirmare, tastatura. **O schimbare a unei extensii din bibliotecă cere acum și rândul ei de „ce e nou”,
   primul din `noutati`, în `extensii/biblioteca.json`** (`{ "versiune", "ro", "en" }`, cel mult 240 de caractere), apoi
   `node scripts/biblioteca.ts --scrie` (refuză fără rând). **Două linii care schimbă aceeași extensie iau, fiecare,
-  versiunea următoare:** cea unită a doua își ia alta la aducerea lui `main` (Easy 3Draw e 18.25.0, din 3.Cb, linia atelierului; următoarea,
-  18.26.0).
+  versiunea următoare:** cea unită a doua își ia alta la aducerea lui `main` (Easy 3Draw e 18.27.0, din 3.Cd, linia atelierului; următoarea,
+  18.28.0). **O probă nu ține scrisă o versiune a unei extensii din bibliotecă:** catalogul poartă doar ultimele cinci
+  rânduri de „ce e nou” (`MAX_NOUTATI`), deci proba își ia rândul din `extensii/biblioteca.json`.
   Capturile unei extensii se refac cu `node scripts/capturi-biblioteca.ts [dosar]` și se comit. **Un prefix nou de acțiuni
   cere grupul lui în `src/ui/Paleta.tsx`** (paleta nu arăta deloc acțiunile `extensii`). Pornirea 108,6 kB (cu ușa
   113,1 / 115), totalul 778,6 / 800.
@@ -1073,9 +1074,9 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   știftul cu bucșă)** gata pe 24.11, unită în `main` odată cu ea: tipul `conectorUnghi`, un butuc cu 1–4 brațe, fiecare cu manșonul lui de
   ax sau de știft, la cel puțin 90° unul de altul (formele gata au unghiurile conectorilor LEGO numerotați); axul are
   bifa „Cu opritor la un capăt”, iar știftul, capătul scurt „Bucșă”; Easy 3Draw 18.25.0. **3.Cc (cremaliera)** gata pe
-  24.11, neunită: tipul `cremaliera`, în fila Roți, cu dinții roților de aici, pe știfturi sau cu găuri de știft,
+  24.11, unită în `main` pe 25.11 (`9815527f`): tipul `cremaliera`, în fila Roți, cu dinții roților de aici, pe știfturi sau cu găuri de știft,
   înaltă după roata pereche (axul roții cade pe grilă), cu „Fă perechea”; Easy 3Draw 18.26.0; melcul a trecut în
-  3.Cj. **3.Cd (arcul)** gata pe 25.11, neunită: tipul `arc`, în fila Cărămizi, o cărămidă 1 × n cu boltă dedesubt și
+  3.Cj. **3.Cd (arcul)** gata pe 25.11, unită în `main` odată cu ea: tipul `arc`, în fila Cărămizi, o cărămidă 1 × n cu boltă dedesubt și
   știfturi pe toată lungimea; Easy 3Draw 18.27.0 (următoarea, 18.28.0); balamaua și placa turnantă au trecut în 3.Ck. **O piesă care se prinde cu alta își probează prinderea pe plasele amândurora, cu martori**
   (proba cremalierei: `patrundere`, în `test/unit/trenulet.cremaliera.test.ts`). **Motorul
   face o piesă din corpuri închise care se suprapun puțin: două dintre ele nu-și împart nicio muchie** (altfel STL-ul
@@ -1635,6 +1636,27 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 25.11.2026, noaptea (a douăzeci și opta unire din cloud): **atelierul Easy 3Draw: cremaliera (3.Cc) și arcul (3.Cd),
+  unite în `main`** (sesiunea principală, ramura `unire-2511b`, din `ac0d130e`). Linia atelierului, ramura
+  `wip/3.Xh-biblioteca-ui`, `d0490719`, PR-ul `AndreiBesliu/cvs2#24` (ADR 0284), unite în `9815527f`: **3.Cc**, tipul
+  `cremaliera`, în fila Roți, cu dinții roților de aici, pe știfturi sau cu găuri de știft, înaltă după roata
+  pereche, cu „Fă perechea” (Easy 3Draw 18.26.0; otrăvurile 72 / 72); **3.Cd**, tipul `arc`, în fila Cărămizi, o
+  cărămidă 1 × n cu boltă dedesubt și știfturi pe toată lungimea (**Easy 3Draw 18.27.0**; otrăvurile 58 / 58). Față
+  de ADR 0284, scris în el: melcul a trecut în 3.Cj, iar balamaua și placa turnantă într-o felie nouă, 3.Ck. Cu ele,
+  o probă a bibliotecii reparată (doar proba): `extensii.descoperire.spec.ts` căuta pe nume rândul de „ce e nou” al
+  lui 18.21.0, ieșit din catalog la a cincea versiune de după el; de aceea primul complet al liniei (pe `e8c9fd15`)
+  căzuse la o probă din 817. Doar pachetul extensiei se schimbă; nimic pe server; documentul rămâne v28. Ciocnirea,
+  doar rândul liniei din indexul liniilor. **Arborele unirii are exact codul lui `d0490719`** (`git diff` gol în
+  afara fișierelor `.md`), deci lotul a intrat pe porțile lui, fără alt complet: completul 45509529789, verde (unit
+  10 428 / 0, 12 sărite pe Linux; e2e 817 / 817; funcțiile pe emulatoare 136 / 136; paginile 59 / 59), rapidul,
+  verde; aplicația, neschimbată: pornirea 111,1 kB (plafonul 120; cu ușa 116,1, cu Atelierul 116,4), totalul
+  880,9 / 900 kB, `/admin` 138,3 / 200, contul 30,3 / 32; pachetul Easy 3Draw, 491,3 kB. **Tot ce era în `main`
+  înaintea lotului e pe test din 25.11, 01:37** (`694f0ff1`; proba de fum, bună); lotul acesta pleacă acum. La
+  linii: atelierul (3.Ce, punctele de prindere și „Se prinde cu”, în lucru; 3.Tu, la răspunsurile owner-ului),
+  frezele (16.A↑b-5, apoi b-4); la cuvântul owner-ului: cotele (10.4↑c, exportul), relieful (18.1↑b). **La owner:**
+  plafoanele (totalul, 19,1 kB; pornirea, 3,6 kB), cele trei întrebări ale lui 3.Tu, arhivarea sesiunilor exportului
+  și elicelor, verificarea juridică (GDPR) a utilizării aplicației înaintea live-ului, „cine unește în `main`”,
+  meniul de sus la 320 px la atingere.
 - 25.11.2026, după miezul nopții (a douăzeci și șaptea unire din cloud): **atelierul Easy 3Draw: conectorul perpendicular (3.Ca) și
   conectorul în unghi, axul cu opritor, știftul cu bucșă (3.Cb), unite în `main`**, în lot (sesiunea principală,
   ramura `unire-2411ad`). Linia atelierului (sesiunea extensiilor), ramura `wip/3.Xh-biblioteca-ui`, `7157ecc5`,

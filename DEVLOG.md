@@ -14266,3 +14266,22 @@ se poate”
 - **Pe test e acum tot ce e în `main`.** De la linii, în lucru: atelierul (3.Cc, cremaliera, și 3.Cd, arcul: primul
   complet, roșu la o probă a bibliotecii care ținea scrisă o versiune veche în „Ce e nou”; proba, reparată de linie,
   completul repornit).
+
+## 2026-11-25 — Sesiunea principală în cloud: a douăzeci și opta unire (atelierul Easy 3Draw: 3.Cc, cremaliera; 3.Cd, arcul) (Model: Claude Fable 5.2)
+
+**Prompt:** raportul liniei atelierului („lotul 3.Cc + 3.Cd e gata de unit”, `d0490719`), la ordinul în vigoare „unește
+ce se poate”
+**Started:** 25.11, 02:22. **Completed:** unirea în `main`, 25.11, 02:23; publicarea pe test, pornită după ea.
+
+- **Unirea, pe `unire-2511b`** (din `ac0d130e`): `d0490719`, în `9815527f`. Ciocnirea: rândul liniei din
+  `docs/linii/README.md`. `7157ecc5` era deja în `main` (lotul 28), deci arborele unirii are exact codul commit-ului
+  raportat (`git diff d0490719` gol în afara fișierelor `.md`): a intrat pe porțile lui. Local: traducerile (1 099),
+  biblioteca („Easy 3Draw 18.27.0, la zi”), fără `.lucru/`.
+- **Porțile, în CI, pe `d0490719`:** completul 45509529789, verde (54 min): unit 10 428 / 0 (12 sărite, pe Linux),
+  e2e 817 / 817, funcțiile pe emulatoare 136 / 136, paginile 59 / 59; rapidul 45509530097, verde. Pornirea 111,1 kB
+  (plafonul 120; cu ușa 116,1, cu Atelierul 116,4), totalul 880,9 / 900 kB, `/admin` 138,3 / 200. Nimic pe server.
+- **Primul complet al liniei** (45501872646, pe `e8c9fd15`), roșu la o probă din 817:
+  `extensii.descoperire.spec.ts:64` căuta pe nume rândul de „ce e nou” al lui 18.21.0, iar catalogul poartă doar
+  ultimele cinci (`MAX_NOUTATI`). Reparată de linie, doar în probă: rândul se ia din `extensii/biblioteca.json`.
+- **Documentele:** decizia în `CLAUDE.md` (paragraful de stare al construcțiilor e al liniei; versiunea extensiei,
+  18.27.0; regula probei fără versiune scrisă); indexul liniilor; starea din `docs/linii/principala.md`.

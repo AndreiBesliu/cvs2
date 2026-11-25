@@ -152,12 +152,12 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
   printr-o schiță.
 - **Observabilitatea:** erorile ajung în jurnalul aplicației; joburile își lasă marcajul.
 
-## Starea pe 25.11.2026, după miezul nopții (după a douăzeci și șaptea unire din cloud)
+## Starea pe 25.11.2026, noaptea (după a douăzeci și opta unire din cloud)
 
 - **Pe test:** `694f0ff1` (tot ce e în `main`, până la lotul 28: cotele cu panoul lor, raza, diametrul și unghiul;
   atelierul Easy 3Draw 18.25.0, cu conectorii, axul cu opritor și știftul cu bucșă; publicat pe 25.11 la 01:37, cu
   serverul neschimbat; completul pe `main` 45503156817, verde; proba de fum, bună). Înainte: loturile 23–27
-  (`893e45bb`), pe 24.11 la 23:42.
+  (`893e45bb`), pe 24.11 la 23:42. În drum: lotul 29 (atelierul: cremaliera și arcul, Easy 3Draw 18.27.0).
 - **`main`, din cloud:** pe 23.11: 3.Tq (`0ae9c6c1`); 11.3↑e și A.4 (`ddaa7ead`); 3.Tr, unită de linia elicelor
   (`d262e57a`); 25.8↑a și A.5 (`1b46c955`), cu reparația probei extensiilor (`8287d66e`); 11.3↑f, unită de linia
   planșelor (`f4601938`); A.6 (`4497d639`); 3.Xh (`2d1e482c`) și 12.1↑e-3 cu 12.1↑e-4 (`03460cab`); A.8a cu A.8b
@@ -171,10 +171,10 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
   (`9fd71053`); fereastra exportului, 28.8↑a–g (`c4ca5ec2`), și 3.Xk (`373699e6`); proba extensiilor, reparată
   (`13d9bcad`), 11.1↑d (`001b6325`) și 3.At (`cadac6c3`), scrise în sesiunea principală; 16.A↑h-5 (`4aee5405`) și
   16.A↑b-3 (`fdde5947`); 18.1↑a, relieful, cu documentul v28 (`c5b79526`); 10.4↑a-4 și 10.4↑b (`1eea83dd`). Pe
-  25.11: 3.Ca și 3.Cb, atelierul Easy 3Draw, 18.25.0 (`11877a3e`).
+  25.11: 3.Ca și 3.Cb, atelierul Easy 3Draw, 18.25.0 (`11877a3e`); 3.Cc și 3.Cd, 18.27.0 (`9815527f`).
 - **Liniile** (vezi [indexul](README.md)):
   - **în lucru, pe ramuri:** frezele (16.A↑b-5: fundul plat, frezele de rest, dopul și banda; apoi b-4), atelierul
-    (3.Cc, cremaliera, 18.26.0, gata pe ramură; 3.Cd, arcul); se unesc la raportul liniei;
+    (3.Ce, punctele de prindere și „Se prinde cu”); se unesc la raportul liniei;
   - **la cuvântul owner-ului:** cotele (10.4↑c, exportul), relieful (18.1↑b);
   - **la owner:** 3.Tu (unde stă axul pieselor rotunde în vederea „Modelul” din Easy 3Draw; trei întrebări, cu
     recomandările 1a, 2a, 3a, în `docs/linii/elice.md`; ADR 0283): din 24.11 seara, a liniei atelierului;
