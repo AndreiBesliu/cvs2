@@ -14185,6 +14185,12 @@ celelalte sub-sesiuni” al owner-ului)
   rămâne în piesă”: proba cere acum ca același melc, cu altă roată aleasă în editor, să se adune pe rândul lui.
 - **Probele pluginului:** unitare 358 / 358 (cu biblioteca și extensiile), în browser 181 / 181 (cu extensiile). Easy 3Draw
   18.32.0 (514,4 kB), cu rândul de „ce e nou”; doar pachetul se schimbă. Cu melcul, 3.Cj e încheiată.
+- **Listele vechi de otrăvuri, la zi** (cererea sesiunii principale, după auditul liniei elicelor): cadrul și melcul
+  mutaseră șase ancore ale listelor 3.Cc, 3.Cd, 3.Ce și 3.Cj-1 (rânduri devenite duble, tabelele); alte 17 rămăseseră
+  fără țintă de la feliile dinainte ale liniei. Toate 23, re-ancorate și rulate din nou: prinse. Listele 3.Ca–3.Cj-4
+  n-au nicio otravă fără țintă; cele 22 ale elicelor rămân pentru felia din audit, la cuvântul owner-ului.
+- **Unirea:** la cererea sesiunii principale, 3.Cj-3 și 3.Cj-4 merg împreună, peste `main` (`19f0b386`, cu 18.1↑b), cu
+  un singur complet.
 
 ## 2026-11-24 — Sesiunea principală în cloud: clicul pe „Închide” din cadrul unei extensii, pierdut (probă instabilă, reparată) (Model: Claude Fable 5.2)
 

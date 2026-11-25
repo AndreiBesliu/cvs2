@@ -162,6 +162,13 @@ unit (PR-ul `AndreiBesliu/cvs2#33`); 3.Cj-4 (șurubul melc; 18.32.0) gata pe 25.
 
 ## Reguli și capcane (de la 3.Ca–3.Cj)
 
+- **O felie care mută o ancoră a unei liste mai vechi de otrăvuri aduce lista la zi în aceeași felie** (cererea sesiunii
+  principale din 25.11, după auditul liniei elicelor). La capăt: `python3 -X utf8 scripts/otravuri.py <lista> verifica`
+  pe listele vecine (cele care otrăvesc `lego.ts` și `atelier.ts`), comparat cu `main`; o ancoră devenită dublă (o piesă
+  nouă a copiat rândul) se lungește cu rândul de dinainte, una schimbată se rescrie, iar otrava re-ancorată se rulează
+  din nou. Pe 25.11: 23 re-ancorate (6 mutate de cadru și de melc, 17 rămase de la 3.Cb–3.Cj-2), toate prinse; listele
+  3.Ca–3.Cj-4 n-au nicio otravă fără țintă. **Neatinse:** cele 22 ale elicelor (3.Tq, 3.Tr, 3.Ts; auditul din
+  `audit-elice.md`, la cuvântul owner-ului) și cele din listele mai vechi ale pluginului (3.Tb–3.Tp, 3.Xd).
 - **Straturi rotite unul față de altul (o elice) se leagă pe diagonala scurtă:** `prismaStraturi(…, true)`. Cu
   diagonala cealaltă, fiecare triunghi se întinde pe două laturi, iar săgeata lui e de patru ori mai mare: melcul Ø16
   ieșea cu miezul mâncat cu 0,06 mm, cu plasa închisă și cutia bună. A prins-o o probă care întreabă lemnul la 0,05 mm
