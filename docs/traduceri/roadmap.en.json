@@ -1421,6 +1421,10 @@
       "ro": "Afișarea simulării în WebGL2.",
       "en": "Simulation display in WebGL2."
     },
+    "4b26d01c119308aa": {
+      "ro": "Numele fișierului în fereastra exportului",
+      "en": "The file name in the export window"
+    },
     "4b49abb817b006ff": {
       "ro": "**Gata pe 14.11.** Istoricul imprimărilor (ADR 0194): al imprimantei (`historyList`) și al cvs2 (după răspunsul owner-ului), cu durata față de estimare, filamentul în metri și grame, costul (prețul pus de om) și exportul CSV; estimarea din „Din desen…” corectată după imprimările încheiate",
       "en": "**Done on 14.11.** The print history (ADR 0194): the printer's own (`historyList`) and cvs2's (per the owner's answer), with the duration against the estimate, the filament in metres and grams, the cost (the price set by the user) and a CSV export; the estimate in \"From drawing…\" corrected from the finished prints"
@@ -3444,6 +3448,10 @@
     "c2d4f4b332635180": {
       "ro": "Încercarea incrustației cu pereți drepți pe adresa principală de test (<https://cncvectorstudio-test.web.app/>; 12.1↑b unită în `main` și publicată pe 08.11): un desen, rolul „incrustație cu pereți drepți” din panou (valorile pe hârtie: colțurile, înălțimea dopului), apoi Exportă, cu dopul ridicat și cu cel decupat (câte două fișiere: foaia cu locașul și dopul, cu semifabricatul lui); pe placa 12, dopul lipit (să intre cu jocul de 0,1 pe tot conturul, și în colțuri)",
       "en": "Trying the straight-walled inlay on the main test address (<https://cncvectorstudio-test.web.app/>; 12.1↑b merged into `main` and published on 08.11): a drawing, the “straight-walled inlay” role from the panel (the values on paper: the corners, the plug height), then Export, with the raised plug and with the cut-out one (two files each: the sheet with the pocket, and the plug, with its blank); on plate 12, the plug glued in (it should go in with the 0.1 gap all around, corners included)"
+    },
+    "c318a126c051b40f": {
+      "ro": "**Numele fișierului în fereastra exportului** (fără mașină; ADR 0291, acceptat cu „1a, 2a, 3a, 4a, 5a, 6a, 7a, 8a, 9a”, „Implementarea 28.8↑n”; prima felie de după audit). În „Mașina și fișierul”, după Unități, câmpul „Numele fișierului”: propunerea din numele scris al foii (fără diacritice, cu liniuțe), altfel `cncvs2-` și colțul; omul îl schimbă înainte de Exportă, iar fișierele pe freză, ale dopurilor, arhiva foilor și numele din ea îl iau în față (`cuBaza`, după calcul, pe firul principal: aceiași octeți). Un nume gol, prea lung, cu caractere oprite, cu margini rele sau rezervat de Windows oprește exportul, cu „Du-mă la …”; pe RichAuto, numele scurt al controlerului, cu câmpul oprit. **Probele:** 5 unitare (4 noi, 1 în `export.foi`), 2 e2e; spec-urile e2e ale exportului, 289 / 289. **Otrăvurile:** `28.8n.py`, 16 / 16 (9 unitare, 7 e2e; U02, VOID întâi, după intervalul scris ca escape-uri). Pornirea +0,1 kB, totalul 885,8 / 1 000 (+1,0 kB). Urmează 28.8↑o (centrul foii ca origine).",
+      "en": "**The file name in the export window** (no machine; ADR 0291, accepted with “1a, 2a, 3a, 4a, 5a, 6a, 7a, 8a, 9a”, “Implementation 28.8↑n”; the first slice after the audit). In “Machine and file”, after Units, the “File name” field: the suggestion comes from the sheet's written name (without diacritics, with hyphens), otherwise `cncvs2-` and the corner; the user changes it before Export, and the per-bit files, the plug files, the sheets archive and the names inside it put it in front (`cuBaza`, after the calculation, on the main thread: the same bytes). An empty name, one too long, with forbidden characters, bad edges or reserved by Windows stops the export, with “Take me to …”; on RichAuto, the controller's short name, with the field off. **Tests:** 5 unit (4 new, 1 in `export.foi`), 2 e2e; the export e2e specs, 289 / 289. **Poisons:** `28.8n.py`, 16 / 16 (9 unit, 7 e2e; U02, VOID at first, after the range was written as escapes). Startup +0.1 kB, total 885.8 / 1,000 (+1.0 kB). Next: 28.8↑o (the sheet centre as origin)."
     },
     "c319e93753faa8e6": {
       "ro": "Contururile deschise",

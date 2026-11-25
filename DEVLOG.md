@@ -14568,3 +14568,21 @@ poate”
   Atelierul 116,4), totalul 884,8 / 1 000 kB (+3,9), `/admin` 138,3 / 200. Nimic pe server.
 - **Documentele:** decizia și paragraful de stare în `CLAUDE.md`; indexul liniilor; starea din
   `docs/linii/principala.md`.
+
+## 2026-11-25 — Linia exportului: felia 28.8↑n, numele fișierului (ADR 0291 §5)
+
+**Prompt:** „1a, 2a, 3a, 4a, 5a, 6a, 7a, 8a, 9a” (răspunsurile owner-ului la audit; n și o, propuse înaintea lui h–l, fiindcă
+nu ating fișa operației)
+**Started:** 25.11, 09:22.
+
+- **Câmpul „Numele fișierului”** în „Mașina și fișierul”, după Unități: propunerea din numele scris al foii, altfel
+  `cncvs2-<colț>`; scris de om, rămâne la schimbarea colțului; sub el, ce se descarcă.
+- **Regula** în `src/post/numeFisier.ts` (`bazaFisier`, `propunereNume`, `motivNume`, `cuBaza`), aplicată după calcul, pe
+  firul principal (`cuNumele`): fișierele, dopurile, Mașina, arhiva „Toate foile” și numele din ea. Octeții, neschimbați.
+- **Greșelile:** gol, peste 80 de caractere, caractere oprite, spațiu sau punct la capete, nume rezervate de Windows:
+  Exportă oprit, cu „Du-mă la …”. Pe RichAuto, numele scurt, cu câmpul oprit.
+- **Probele:** 5 unitare, 2 e2e; spec-urile e2e ale exportului, 289 / 289. **Otrăvurile:** `28.8n.py`, 16 / 16.
+- **Mărimea:** pornirea 111,2 kB (+0,1), totalul 885,8 / 1 000 (+1,0).
+- **Manualul** (ro, en), ADR 0291 („Implementarea 28.8↑n”), fișa etapei 3, registrul otrăvurilor, nota liniei.
+
+**Completed:** 25.11, 09:50.

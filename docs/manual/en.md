@@ -1894,6 +1894,13 @@ On the sheet and machine cards you choose:
   the first program run in the air;
 - the **Units**: mm (the default) or inch (with 5 decimals and the feed in inch/min); the header stays in mm. RichAuto reads mm
   only;
+- the **File name**, without the extension: by default the sheet's, if you gave it one in its properties (without
+  diacritics, with hyphens: “Ușă Țarc 2” gives `usa-tarc-2`), otherwise `cncvs2-` and the origin corner. You can change it
+  before **Export**; under the field it says what is downloaded, and the per-bit files, the plug files and the sheets archive
+  put it in front too. It cannot be empty, longer than 80 characters, contain `< > : " / \ | ? *`, start or end with a space
+  or a dot, or be a name reserved by Windows (CON, PRN, AUX, NUL, COM1…, LPT1…). On RichAuto, which reads only short names
+  from the stick, the name is the controller's (`CNCVS2.NC`) and the field is off. The result says the name of the file
+  downloaded;
 - the **Tool change**, only when the operations have different bits: **stop in this app's sender** (the default for the GRBL family:
   the job stops at `T… M6`, you take the bit out, put in the next one, probe Z and **Continue**), **M6 at the controller**
   (grblHAL, FluidNC, with the change set up there; the default for Syntec, Mach3 and Mach4), **M0, with the bit in a comment**

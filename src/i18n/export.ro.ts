@@ -26,7 +26,7 @@ export const roExport = {
   'export.nume-fisier.gol': 'Numele fișierului e gol: scrie un nume.',
   'export.nume-fisier.lung': 'Numele fișierului are peste {max} de caractere.',
   'export.nume-fisier.caractere': 'Numele fișierului are caractere pe care sistemele de fișiere nu le primesc: < > : " / \\ | ? * sau caractere de control.',
-  'export.nume-fisier.margini': 'Numele fișierului nu poate începe sau se termina cu spațiu și nu poate începe sau se termina cu punct.',
+  'export.nume-fisier.margini': 'Numele fișierului nu poate începe sau se termina cu un spațiu sau cu un punct.',
   'export.nume-fisier.rezervat': 'Numele fișierului e un nume rezervat de Windows (CON, PRN, AUX, NUL, COM1–COM9, LPT1–LPT9).',
   'export.post.documentat': 'Postul {nume}: scris după documentația controlerului, încă neprobat pe o mașină. Urmărește primul program în aer.',
   'export.post.descarcat': 'Programul pentru {nume} doar se descarcă: îl rulezi de pe controlerul lui (senderul aplicației vorbește familia GRBL).',

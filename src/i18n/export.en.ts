@@ -30,7 +30,7 @@ export const enExport = {
   'export.nume-fisier.gol': 'The file name is empty: type a name.',
   'export.nume-fisier.lung': 'The file name is longer than {max} characters.',
   'export.nume-fisier.caractere': 'The file name has characters file systems refuse: < > : " / \\ | ? * or control characters.',
-  'export.nume-fisier.margini': 'The file name cannot start or end with a space, nor start or end with a dot.',
+  'export.nume-fisier.margini': 'The file name cannot start or end with a space or a dot.',
   'export.nume-fisier.rezervat': 'The file name is a name Windows reserves (CON, PRN, AUX, NUL, COM1–COM9, LPT1–LPT9).',
   'export.post.documentat': 'Post {nume}: written from the controller’s documentation, not yet tested on a machine. Watch the first program run in the air.',
   'export.post.descarcat': 'The {nume} program is only downloaded: run it from its own controller (the app’s sender speaks the GRBL family).',
