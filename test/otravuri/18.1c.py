@@ -116,12 +116,18 @@ o('O07', EC, """          const r = loc?.get(cheie);
         }""", 'e2e', 'Exportă nu scrie rangul finisării în „A mea”')
 o('O08', DE, "    if (fin) return randFinisare(fin, loc);\n", '', 'e2e', 'rândul finisării lipsește din listă')
 
+# ── Bila în lista bibliotecii a ferestrei (cu 16.A↑b-4, la cererea sesiunii principale din 25.11) ───────────────────
+AF = 'src/model/alegereFreza.ts'
+o('O09', AF, "  return lista.filter((f) => areCam(f.fel) && randuri.some((o) => motivFormaPeOperatie(o.tip, o.latura, sculaDinFreza(f).forma) === null));",
+  "  return lista.filter((f) => areCam(f.fel));", 'biblioteca', 'bila în lista bibliotecii: o plată scrisă de mână „recunoscută” ca bila')
+
 SETURI = {
     'doc': ['test/unit/document.v29.oracol.test.ts'],
     'bila': ['test/unit/finisare.bila.test.ts'],
     'cam': ['test/unit/reliefFinisare.test.ts'],
     'program': ['test/unit/finisare.program.test.ts'],
     'ordine': ['test/unit/ordineExport.test.ts'],
+    'biblioteca': ['test/unit/exportFreze.bila.test.ts'],
 }
 
 E2E = ['test/e2e/finisare.spec.ts']

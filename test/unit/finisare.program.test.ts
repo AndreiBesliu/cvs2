@@ -9,7 +9,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { incarca } from '../../src/model/incarcare.ts';
 import { programDinDocument, REGIM_IMPLICIT } from '../../src/cam/job.ts';
-import { programFoii } from '../../src/jobs/calculCam.ts';
+import { calculeazaExportul, programFoii } from '../../src/jobs/calculCam.ts';
 import { cheiePas, creastaPePlan, ordinePasi } from '../../src/model/finisare.ts';
 import { ordineTaieturi } from '../../src/model/lume.ts';
 import { compusDinResurse, type ResurseRelief } from '../../src/relief/resurse.ts';
@@ -82,7 +82,7 @@ function pasiFinisare(p: Program): PasO[] {
 }
 
 /** Judecata oracolului pe finisarea programului: modelul din aceleași dale, cu fața plăcii în jur (marginea „perete”). */
-function judeca(p: Program, valori: ArrayLike<number>, m: { a: number; b: number; c: number; d: number; e: number; f: number }, celula: number, dz: number, f: FrezaO, pas: number, podea: number): void {
+function judeca(p: Program, valori: ArrayLike<number>, m: { a: number; b: number; c: number; d: number; e: number; f: number }, celula: number, dz: number, f: FrezaO, pas: number, podea: number, tol = 1e-6): void {
   const z = Float64Array.from(valori, (v) => v + dz);
   const T0 = triunghiuriModel(z, 40, 40, celula), T = new Float64Array(T0.length);
   for (let k = 0; k < T0.length; k += 3) {
@@ -100,7 +100,7 @@ function judeca(p: Program, valori: ArrayLike<number>, m: { a: number; b: number
   const ix = new IndexO(tot, 2);
   const pasi = pasiFinisare(p);
   assert.ok(pasi.length > 100, `finisarea are ${pasi.length} poziții`);
-  const pr = judecaTraseul(ix, f, pasi, { podea, tol: 1e-6, sub: 16 });
+  const pr = judecaTraseul(ix, f, pasi, { podea, tol, sub: 16 });
   assert.deepEqual(pr.slice(0, 3), [], `scobituri: ${pr.length}`);
   let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
   for (const q of pasi) { x0 = Math.min(x0, q.x); y0 = Math.min(y0, q.y); x1 = Math.max(x1, q.x); y1 = Math.max(y1, q.y); }
@@ -249,4 +249,46 @@ test('creasta pe plan, pe hârtie: bila, V-ul cu și fără vârf plat, plata, p
   assert.equal(creastaPePlan({ numar: 1, nume: '', diametru: 6 }, 2), 0);
   assert.equal(creastaPePlan({ numar: 1, nume: '', diametru: 6, forma: { tip: 'bila' } }, 7), null);
   assert.equal(creastaPePlan({ numar: 1, nume: '', diametru: 6, forma: { tip: 'bila' } }, 0), null);
+});
+
+/** Programul unui fișier G-code (GRBL, mm, absolut, fără arce), în coordonatele foii: XY0 mutat înapoi cu (dx, dy). */
+function dinGcode(text: string, dx: number, dy: number): Program {
+  const miscari: Miscare[] = [];
+  let g = 0;
+  for (const l of text.split('\n')) {
+    const com = /^\((.*)\)$/.exec(l.trim());
+    if (com) { miscari.push({ tip: 'eticheta', text: com[1]!, element: '', operatie: '' }); continue; }
+    const gm = /\bG([01])\b/.exec(l);
+    if (gm) g = Number(gm[1]);
+    const v = (ax: string): number | undefined => { const m = new RegExp(`\\b${ax}(-?\\d+(?:\\.\\d+)?)`).exec(l); return m ? Number(m[1]) : undefined; };
+    const X = v('X'), Y = v('Y'), Z = v('Z');
+    if (X === undefined && Y === undefined && Z === undefined) continue;
+    const la = { ...(X !== undefined ? { X: X + dx } : {}), ...(Y !== undefined ? { Y: Y + dy } : {}), ...(Z !== undefined ? { Z } : {}) };
+    miscari.push(g === 0 ? { tip: 'rapida', la } : { tip: 'taiere', la, avans: 1000 });
+  }
+  return { axe: ['X', 'Y', 'Z'], scula: { numar: 2, nume: '', diametru: 4 }, turatie: 0, zSigur: 5, miscari } as unknown as Program;
+}
+
+test('originea în centrul foii (28.8↑o): G-code-ul finisării, citit din centru, e cel din colț mutat cu jumătatea foii și trece oracolul', async () => {
+  const v = calota();
+  const { amprenta, resurse } = await strat(v, 40, 40);
+  const d = doc(amprenta, [finisare()]);
+  const p = { origine: 'stanga-jos', z0: 'sus' } as const;
+  const [ec, ej] = [await calculeazaExportul(d, { ...p, origine: 'centru' }, resurse), await calculeazaExportul(d, p, resurse)];
+  if (!ec.ok || !ej.ok) assert.fail(`${ec.ok ? '' : ec.motiv} ${ej.ok ? '' : ej.motiv}`);
+  const tc = ec.fisiere[0]!.text, tj = ej.fisiere[0]!.text;
+  assert.match(tc, /origine centru/);
+  // Foaia de 200 × 150: centrul e (100, 75); mutat înapoi, fiecare poziție e cea din colț (rotunjirea la 0,001 mm).
+  const c = dinGcode(tc, 100, 75), j = dinGcode(tj, 0, 0);
+  const poz = (q: Program): number[][] => q.miscari.flatMap((m) => (m.tip === 'rapida' || m.tip === 'taiere' ? [[m.la.X ?? NaN, m.la.Y ?? NaN, m.la.Z ?? NaN]] : []));
+  const pc = poz(c), pj = poz(j);
+  assert.equal(pc.length, pj.length);
+  pc.forEach((q, i) => q.forEach((x, k) => {
+    const y = pj[i]![k]!;
+    assert.ok((Number.isNaN(x) && Number.isNaN(y)) || Math.abs(x - y) < 1.5e-3, `poziția ${i}, axa ${k}: ${x} față de ${y}`);
+  }));
+  // Oracolul, pe programul din centru citit în coordonatele foii: nicio scobitură (cu rotunjirea G-code-ului), pasul, podeaua.
+  const comp = compusDinResurse({ tip: 'relief', nx: 40, ny: 40, celula: 0.5, straturi: [{ id: 's1', mod: 'aduna', vizibil: true, dale: amprenta }] }, resurse);
+  assert.ok(comp.ok);
+  judeca(c, comp.valori, { ...I, e: 40, f: 40 }, 0.5, -Math.max(...comp.valori), { fel: 'bila', R: 2 }, 2.5, -10, 6e-4);
 });
