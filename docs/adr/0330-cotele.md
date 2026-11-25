@@ -640,7 +640,7 @@ Documentul rămâne v29: cotele stau tot pe foaie, iar fiecare cotă nouă e o o
 - **Cifrele:** unitare noi 15 (`cote.serie.test.ts` 9, `cote.selectie.test.ts` 6, pe hârtie), e2e noi 4 (`cote.serie.spec.ts`:
   lanțul, cu refuzul de zero, Esc și anularea; linia de bază, cu pasul de 7 mm; lanțul pornit din cota aleasă; „Cotează
   selecția” din meniu, oprit fără selecție, cu un singur pas de anulare); bara de sus tot la 1280 px cu fontul lat, în ambele
-  limbi.
+  limbi; otrăvurile 27 / 27. Pornirea 111,4 kB (neschimbată), totalul 909,1 → 910,4 / 1 000 kB.
 
 ### Întrebările 8 și 9 (d-1), cu recomandările pe care s-a mers
 

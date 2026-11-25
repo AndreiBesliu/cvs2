@@ -15381,4 +15381,5 @@ foilor” (sesiunea principală, 26.11, 00:08, cu cuvântul owner-ului: „ok, p
   punct, Esc încheie; pornite și din cota liniară aleasă); „Cotează selecția” în meniul de clic dreapta: în bara uneltei, bara
   de sus ieșea cu 14 px din 1280 px cu fontul lat, iar în extensia barei butonul 3D ieșea din fereastră.
 - **Manualul** (ro, en), catalogul controalelor (neschimbat), e2e noi 4 (`cote.serie.spec.ts`); otrăvurile 27 / 27, într-o
-  clonă. Întrebările 8 și 9, la owner, cu recomandările implementate.
+  clonă. Întrebările 8 și 9, la owner, cu recomandările implementate. Pornirea 111,4 kB (neschimbată), totalul
+  909,1 → 910,4 / 1 000 kB (+1,3).
