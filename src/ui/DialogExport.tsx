@@ -629,15 +629,30 @@ export function DialogExport(
       const d0 = citesteNumar(lista.at(-1)?.diametru ?? prima) ?? 6, d = Math.round((d0 / 2) * 1000) / 1000;
       pune([...lista, { numar: text(Math.min(MARGINI_OPERATIE.numarScula, t0 + 1)), diametru: text(d), pas: text(pasLateralImplicit(d)), origine: null }]);
     };
+    // Frezele oferite fiecărui rând (ADR 0300 §4, felia 16.A↑b-5): plate, mai mici decât freza dinainte. Coloana listei apare
+    // doar dacă vreun rând are ce alege (sau o freză din bibliotecă).
+    const oferiteRand = lista.map((_, k) => oferitePentruRest(drepte, k === 0 ? prima : lista[k - 1]?.diametru ?? ''));
+    const cuBiblioteca = lista.some((r, k) => (oferiteRand[k]?.length ?? 0) > 0 || r.origine);
     return (
       <div className="campuri-rest" data-rest={fel === 'buzunar' ? cheie : `${fel}:${cheie}`}>
-        <span title={t('export.rest.titlu')}>{t('export.rest')}</span>
-        {lista.map((r, k) => (
-          <span className="freza-rest" data-rest-rand={k} key={k}>
-            {/* Din „Frezele mele” (ADR 0300 §4, felia 16.A↑b-5): frezele plate mai mici decât freza dinainte. */}
-            <ListaBiblioteca data-camp={`${pre}rest-biblioteca`} oferite={oferitePentruRest(drepte, k === 0 ? prima : lista[k - 1]?.diametru ?? '')}
-              origine={r.origine} oprit={oprit} eticheta={false} onAlege={(f) => { alegeFreza(cheie, f, { rest: fel, k }); }}
-              onMana={() => { pune(lista.map((x, i) => (i === k ? { ...x, origine: null } : x))); }} />
+        {/* La buzunar, „Frezele de rest” e titlul grupului; la fundul plat și la dop, lista își spune numele (auditul exportului, 9). */}
+        {fel !== 'buzunar' && <span className="titlu-rest" title={t('export.rest.titlu')}>{t('export.rest')}</span>}
+        {lista.length > 0 && (
+        <div className={cuBiblioteca ? 'tabel-rest cu-biblioteca' : 'tabel-rest'} role="table" aria-label={t('export.rest')}>
+          <div className="rand-rest" role="row">
+            {cuBiblioteca && <span role="columnheader" className="cap-biblioteca">{t('export.freza.biblioteca')}</span>}
+            <span role="columnheader">{t('export.rest.cap.t')}</span>
+            <span role="columnheader">{t('export.rest.cap.diametru')}</span>
+            <span role="columnheader" title={t('export.pas-lateral.titlu')}>{t('export.pas-lateral')}</span>
+            <span aria-hidden="true" />
+          </div>
+          {lista.map((r, k) => (
+          <div className="rand-rest freza-rest" role="row" data-rest-rand={k} key={k}>
+            {cuBiblioteca && ((oferiteRand[k]?.length ?? 0) > 0 || r.origine ? (
+              <ListaBiblioteca data-camp={`${pre}rest-biblioteca`} oferite={oferiteRand[k] ?? []} origine={r.origine} oprit={oprit} eticheta={false}
+                onAlege={(f) => { alegeFreza(cheie, f, { rest: fel, k }); }}
+                onMana={() => { pune(lista.map((x, i) => (i === k ? { ...x, origine: null } : x))); }} />
+            ) : <span className="gol-biblioteca" />)}
             <input type="text" inputMode="numeric" value={r.numar} data-camp={`${pre}rest-scula`} disabled={oprit} aria-label={t('export.freza.numar')}
               className="numar-scula" aria-invalid={!bune[k]} onChange={(ev) => { pune(lista.map((x, i) => (i === k ? { ...x, numar: ev.target.value } : x))); }} />
             <input type="text" inputMode="decimal" value={r.diametru} data-camp={`${pre}rest-diametru`} disabled={oprit} aria-label={t('export.freza.diametru')}
@@ -646,9 +661,12 @@ export function DialogExport(
               title={t('export.pas-lateral.titlu')} aria-invalid={!bune[k]} onChange={(ev) => { pune(lista.map((x, i) => (i === k ? { ...x, pas: ev.target.value } : x))); }} />
             <button type="button" data-camp={`${pre}rest-scoate`} disabled={oprit} aria-label={t('export.rest.scoate')} title={t('export.rest.scoate')}
               onClick={() => { pune(lista.filter((_, i) => i !== k)); }}>×</button>
-          </span>
-        ))}
-        <button type="button" data-camp={`${pre}rest-adauga`} disabled={oprit || lista.length >= MAXIM_REST} title={t('export.rest.titlu')} onClick={adauga}>
+          </div>
+          ))}
+        </div>
+        )}
+        <button type="button" className="adauga-rest" data-camp={`${pre}rest-adauga`} disabled={oprit || lista.length >= MAXIM_REST} title={t('export.rest.titlu')}
+          onClick={adauga}>
           {t('export.rest.adauga')}
         </button>
       </div>

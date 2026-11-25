@@ -67,6 +67,13 @@ o('W13', D, 'org(p.origineFund),', '', 'e2e', 'legarea V-carve-urilor nu ține o
 o('W14', F, '  const drepte = frezeOferite ? frezeOferite(RAND_DREPT) : [];', '  const drepte = oferite;', 'e2e',
   'frezele în plus primesc frezele tăieturii rândului (în V la V-carve)')
 
+# Tabelul frezelor de rest (auditul exportului, constatarea 9).
+o('W15', D, 'className="adauga-rest" ', '', 'e2e', '„Adaugă o freză de rest” arată iar ca text')
+o('W16', D, "{fel !== 'buzunar' && <span className=\"titlu-rest\"", '{true && <span className="titlu-rest"', 'e2e',
+  'titlul „Frezele de rest” se repetă în grupul lui')
+o('W17', D, "const cuBiblioteca = lista.some((r, k) => (oferiteRand[k]?.length ?? 0) > 0 || r.origine);", 'const cuBiblioteca = drepte.length > 0;',
+  'e2e', 'coloana listei apare și fără nimic de ales')
+
 # Aplicația.
 o('A01', A, 'pasLateral: o.fundPlat.pasLateral, origine: origineDin(o.fundPlat.scula),', 'pasLateral: o.fundPlat.pasLateral, origine: null,', 'e2e',
   'aplicația nu dă rândului originea fundului din document')

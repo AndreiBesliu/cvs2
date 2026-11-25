@@ -169,3 +169,30 @@ test('legarea V-carve-urilor aceleiași piese ține și originea frezei fundului
   await f2.locator('[data-camp="fund-biblioteca"]').selectOption({ label: 'Plată Ø3,175' });
   await expect(legat).toHaveText('cu 1');
 });
+
+test('frezele de rest stau într-un tabel cu capul coloanelor, cu „Adaugă” ca buton și titlul o singură dată (auditul exportului, 9)', async ({ page }) => {
+  await page.goto('/');
+  await adauga(page, 'dreptunghi');
+  await page.locator('[data-actiune="export.gcode"]').click();
+  const e1 = fisa(page, 'e1/e1');
+  await e1.locator('input[data-camp="latura"][value="buzunar"]').check();
+  const grup = e1.locator('[data-grup="rest"]');
+  // Fără freze de rest, fără cap de tabel; butonul se vede ca buton (cu margine), nu ca text.
+  await expect(grup.getByRole('columnheader')).toHaveCount(0);
+  const adaug = grup.locator('[data-camp="rest-adauga"]');
+  expect(await adaug.evaluate((b) => getComputedStyle(b).borderTopColor)).not.toBe('rgba(0, 0, 0, 0)');
+  await adaug.click();
+  await expect(grup.getByRole('columnheader')).toHaveText(['Din frezele mele', 'T', 'Ø (mm)', 'Pasul lateral (mm)']);
+  // „Frezele de rest” e titlul grupului; în rând nu se mai repetă.
+  await expect(grup.getByText('Frezele de rest', { exact: true })).toHaveCount(1);
+  // Pe fundul plat (alt grup), lista își păstrează numele, iar capul e același.
+  await e1.locator('input[data-camp="latura"][value="vcarve"]').check();
+  await e1.locator('[data-camp="fund-plat"]').check();
+  await e1.locator('[data-camp="fund-rest-adauga"]').click();
+  const fund = e1.locator('[data-rest="fund:e1/e1"]');
+  // Nicio freză mai mică decât cea a fundului (Ø3,175) în bibliotecă: fără coloana listei.
+  await expect(fund.getByRole('columnheader')).toHaveText(['T', 'Ø (mm)', 'Pasul lateral (mm)']);
+  await e1.locator('[data-camp="fund-biblioteca"]').selectOption({ label: 'Plată Ø6' });
+  await expect(fund.getByText('Frezele de rest', { exact: true })).toHaveCount(1);
+  await expect(fund.getByRole('columnheader')).toHaveText(['Din frezele mele', 'T', 'Ø (mm)', 'Pasul lateral (mm)']);
+});

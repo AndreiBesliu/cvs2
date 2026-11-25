@@ -50,6 +50,8 @@ export const roExport = {
   'export.rest.titlu': 'După freza rândului, fiecare mai mică decât cea dinainte, doar unde aceea n-a ajuns (colțuri, fâșii înguste), pe aceleași treceri. Fiecare freză cu T-ul ei.',
   'export.rest.adauga': 'Adaugă o freză de rest',
   'export.rest.scoate': 'Scoate freza de rest',
+  'export.rest.cap.t': 'T',
+  'export.rest.cap.diametru': 'Ø (mm)',
   'export.directie.titlu': 'Pe linie: ca desenul, invers sau pe cel mai scurt drum (o cale deschisă pornește din capătul mai apropiat de freză).',
   'export.directie.desen': 'ca desenul',
   'export.directie.invers': 'invers',

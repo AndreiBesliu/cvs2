@@ -54,6 +54,8 @@ export const enExport = {
   'export.rest.titlu': 'After the row’s bit, each one smaller than the one before, only where that one could not reach (corners, narrow strips), on the same passes. Each bit with its own T.',
   'export.rest.adauga': 'Add a rest bit',
   'export.rest.scoate': 'Remove this rest bit',
+  'export.rest.cap.t': 'T',
+  'export.rest.cap.diametru': 'Ø (mm)',
   'export.directie.titlu': 'On the line: as drawn, reversed, or the shortest path (an open path starts from the end nearer to where the bit is).',
   'export.directie.desen': 'as drawn',
   'export.directie.invers': 'reversed',
