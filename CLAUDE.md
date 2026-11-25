@@ -1053,8 +1053,8 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   fereastră de confirmare, tastatura. **O schimbare a unei extensii din bibliotecă cere acum și rândul ei de „ce e nou”,
   primul din `noutati`, în `extensii/biblioteca.json`** (`{ "versiune", "ro", "en" }`, cel mult 240 de caractere), apoi
   `node scripts/biblioteca.ts --scrie` (refuză fără rând). **Două linii care schimbă aceeași extensie iau, fiecare,
-  versiunea următoare:** cea unită a doua își ia alta la aducerea lui `main` (Easy 3Draw e 18.32.0, din 3.Cj-4, linia atelierului; următoarea,
-  18.33.0). **O probă nu ține scrisă o versiune a unei extensii din bibliotecă:** catalogul poartă doar ultimele cinci
+  versiunea următoare:** cea unită a doua își ia alta la aducerea lui `main` (Easy 3Draw e 18.33.0, din 3.Tu, linia atelierului; următoarea,
+  18.34.0). **O probă nu ține scrisă o versiune a unei extensii din bibliotecă:** catalogul poartă doar ultimele cinci
   rânduri de „ce e nou” (`MAX_NOUTATI`), deci proba își ia rândul din `extensii/biblioteca.json`.
   Capturile unei extensii se refac cu `node scripts/capturi-biblioteca.ts [dosar]` și se comit. **Un prefix nou de acțiuni
   cere grupul lui în `src/ui/Paleta.tsx`** (paleta nu arăta deloc acțiunile `extensii`). Pornirea 108,6 kB (cu ușa
@@ -1118,8 +1118,8 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   tipărită în aer); Easy 3Draw 18.31.0. **3.Cj-4 (șurubul melc)** gata pe 25.11, unită în `main` odată cu ea: tipul `melc`, în fila Roți,
   un șurub pe ax care întoarce orice roată dreaptă de aici cu un dinte la fiecare tură, cu axele în cruce; diametrul de
   divizare 8 mm (ca LEGO) sau 16 mm (gros), lungimea 1–4 știfturi; spira, subțiată cât îi mănâncă înclinarea din joc
-  (măsurat pe plase: jocul rămâne cel dintre două roți); „Fă perechea” pune și roata lui; Easy 3Draw 18.32.0
-  (următoarea, 18.33.0). Cu ea, 3.Cj e încheiată. **O piesă nouă a motorului
+  (măsurat pe plase: jocul rămâne cel dintre două roți); „Fă perechea” pune și roata lui; Easy 3Draw 18.32.0.
+  Cu ea, 3.Cj e încheiată. **O piesă nouă a motorului
   își spune prinderile
   (compilatorul o cere: `prinderi` e câmp obligatoriu al tipului `Corp`) și își pune mostra, cu numerele de pe hârtie, în
   `test/unit/trenulet.prinderi.test.ts`, unde fiecare prindere declarată e întrebată pe plasă.** **O piesă care se prinde cu alta își probează prinderea pe plasele amândurora, cu martori**
@@ -1129,8 +1129,15 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   (`test/unit/ajutor-plasa-lego.ts`, ajutoarele comune ale probelor pe plase). **O piesă nouă a atelierului atinge și probele
   vechi care numără** (filele, galeriile, căutarea, starea unei liste vechi, versiunea): lista lor e în
   `docs/linii/atelier.md`. Doar pachetul extensiei se schimbă: pornirea și totalul aplicației, neatinse. **Din 24.11
-  seara, linia ține și lucrul elicelor** (predat la cererea owner-ului): 3.Tu (piesele rotunde pe același ax în
-  „Modelul”, ADR 0283), la răspunsurile lui la cele trei întrebări din `docs/linii/elice.md`.
+  seara, linia ține și lucrul elicelor** (predat la cererea owner-ului). **3.Tu (piesele rotunde pe același ax în
+  „Modelul”; ADR 0283, acceptat de owner pe 25.11 cu 1a, 2a, 3a)** gata pe 25.11, pe ramură: în vederea „Modelul”, o
+  piesă rotundă (roțile, elicele, rotorul și carcasa ventilatorului, cama, melcul, roata cu palete) stă cu axul în
+  mijlocul unui știft și se rotește în jurul lui; o piesă nouă intră cu pivotul cât mai aproape de al celei alese (două
+  rotunde, pe același ax); rotorul și carcasa în care încape stau la același Z; rândul unei piese rotunde spune știftul
+  axului; Easy 3Draw 18.33.0 (următoarea, 18.34.0). **Așezarea în model e a motorului (`asezareModel`, `pivotModel`,
+  `langaPivot`): o piesă rotundă nouă intră în `ROTUNDE` (`lego.ts`) și, cu amprenta și locul axului pe hârtie, în
+  tabelul probei `test/unit/trenulet.model.test.ts`; una care nu e rotundă, în `DREPTE` (proba cere fiecărui tip o
+  mostră).** Urmează 3.Cf (Modelul: orientarea pe trei axe și alipirea la prinderi).
   **Cotele pe desen: modelul și proba G-code-ului (ADR 0330, felia 10.4↑a-1, adusă din etapa 10)** gata pe 24.11, în
   sesiunea cloud a liniei (ramura `wip/10.4-cote`), unită în `main` pe 24.11 (`f25249cf`), fără interfață încă. ADR
   0330, acceptat de owner cu 1a–6a și cu nota lui: toate setările cotelor stau într-o fereastră nouă, „Setări”, nu în

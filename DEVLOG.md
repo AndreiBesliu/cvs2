@@ -14774,3 +14774,34 @@ gata de unit”, `b099c457`; 28.8↑n, `7996e77c`), la ordinul în vigoare „un
   apoi pornește 28.8↑h), atelierul (fără felie de pornit), cotele.
 - **Documentele:** decizia și paragrafele de stare în `CLAUDE.md` (frezele, exportul, atelierul); indexul liniilor;
   starea din `docs/linii/principala.md`.
+
+## 2026-11-25 — Felia 3.Tu: piesele rotunde pe același ax în vederea „Modelul” (ADR 0283) (sesiune cloud)
+
+**Prompt:** „1a, 2a, 3a la 3.Tu, pornește” (owner-ul, în sesiunea liniei atelierului, la cele trei întrebări ale feliei,
+puse pe 24.11 de linia elicelor după observația lui: „vad ca nu se pot aseza centrat carcasa si elicea de acelasi
+diametru in model”)
+**Started:** 25.11, 12:10. **Completed:** 25.11, 13:50 (felia, cu otrăvurile; orele, după ceasul containerului).
+
+- **1a:** în vederea „Modelul” a atelierului Easy 3Draw, o piesă rotundă (roțile, elicele, rotorul și carcasa
+  ventilatorului, cama, șurubul melc, roata cu palete, pinionul șenilei) stă cu axul în mijlocul unui știft: amprenta ei
+  e impară, iar pivotul din mijlocul amprentei e axul. Rotirea se face în jurul axului.
+- **2a:** „Pune în model”, cu o piesă aleasă, pune piesa nouă cu pivotul cât mai aproape de al ei, deasupra: două piese
+  rotunde ajung exact pe același ax. **3a:** rotorul și carcasa în care încape stau la același Z, în orice ordine.
+- **Hotărâte la implementare** (în ADR): „Înlocuiește în model” ține axul unei roți; rândul unei piese rotunde spune
+  știftul axului („ax 4, 3, 0”); la egalitate, locul cu numărul mai mic; și piesele venite după propunere (cama, melcul,
+  roata cu palete, pinionul) sunt rotunde.
+- **Așezarea s-a mutat în motor**, ca funcții pure (`asezareModel`, `pivotModel`, `langaPivot`, `impreunaInModel`), iar
+  piesa își spune axul odată cu plasa. Celelalte piese stau exact ca până acum (proba le compară cu formula v18).
+- **Captura owner-ului, în probă:** carcasa Ø48 la 0, 0, 0 și rotorul la 2, 1, 3, dintr-un model ținut. Locurile rămân;
+  cu un știft la stânga, unul în jos și trei plăci mai jos, rotorul e în carcasă, iar modelul e cât ea
+  (71,2 × 52 × 10 mm).
+- **Probele:** unitară, scrisă întâi (8 teste; a căzut cu funcțiile lipsă); e2e (5 teste; au căzut toate pe atelierul
+  de dinainte), cu scena judecată prin mărimea modelului, pe hârtie; proba în engleză din cvs2. Pluginul: unitare
+  252 / 252, e2e 200 / 200 (cu extensiile).
+- **Otrăvurile:** `3.Tu.py`, 111 (motorul 64 / 64, atelierul 43 / 43 (40 la prima rulare; cele trei scăpate, prinse după întărirea probei), textele 4 / 4); `3.Tu-en.py`, 6 / 6 (5 la prima rulare). Listele mai vechi:
+  nicio ancoră mutată (comparat cu `main`).
+- **Easy 3Draw 18.33.0** (516,3 kB), cu rândul de „ce e nou”. Doar pachetul extensiei se schimbă: nimic în aplicație,
+  nimic pe server, documentul neatins.
+- **Documentele:** ADR 0283 (acceptat, „Implementat”), indexul ADR, fișa etapei 3 (jurnalul, coada owner-ului),
+  `docs/linii/atelier.md` (cu regulile noi), `docs/linii/elice.md`, indexul liniilor, `docs/otravuri.md`, `CLAUDE.md`.
+- **Urmează:** 3.Cf (Modelul: orientarea pe trei axe și alipirea la prinderi; ADR 0284, partea D).

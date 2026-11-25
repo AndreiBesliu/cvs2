@@ -1,7 +1,7 @@
 # ADR 0283: Piesele rotunde pe același ax în vederea „Modelul” (felia 3.Tu)
 
 **Starea:** acceptat pe 25.11.2026 cu 1a, 2a, 3a („1a, 2a, 3a la 3.Tu, pornește”, scris de owner în sesiunea liniei
-atelierului). Propus pe 24.11 de linia elicelor, după observația lui („vad ca nu se pot aseza centrat carcasa si elicea
+atelierului) și implementat în aceeași zi (Easy 3Draw 18.33.0; „Implementat”, la capăt). Propus pe 24.11 de linia elicelor, după observația lui („vad ca nu se pot aseza centrat carcasa si elicea
 de acelasi diametru in model”, cu o captură a vederii „Modelul”); analiza și cifrele, predate liniei atelierului
 (`docs/linii/elice.md`, „3.Tu, propusă”).
 **Continuă:** ADR 0282 (elicele, ventilatorul cu carcasă), ADR 0280 (roțile). **Se leagă de:** ADR 0284, partea D
@@ -72,3 +72,35 @@ paritate diferită, piesa nouă stă cu o jumătate de știft spre colțul celei
 - o piesă nouă a motorului e rotundă, dar nu-și are axul în origine (atunci își spune axul altfel);
 - owner-ul vrea pași de jumătate de știft pentru toate piesele (varianta 1b), odată cu 3.Cf;
 - mutarea de cel mult o jumătate de știft a unui model vechi strică o construcție ținută de cineva.
+
+## Implementat (3.Tu, 25.11.2026)
+
+Easy 3Draw 18.33.0, pe ramura `wip/3.Xh-biblioteca-ui`, în sesiunea cloud a liniei atelierului.
+
+- **Motorul** (`extensii/trenulet/sursa/lego/lego.ts`): `construieste(def)` întoarce și `ax` (locul axului în plasa mutată
+  în origine; `null` la piesele care nu sunt rotunde). Așezarea e pură și e a motorului: `asezareModel` (amprenta și
+  pivotul), `pivotModel` (locul pivotului pentru piesa pusă la x, y, rotită), `langaPivot` (locul la care pivotul ajunge
+  cel mai aproape de o țintă) și `impreunaInModel` (rotorul și carcasa în care încape). Tabelul pieselor așezate după
+  placa lor (știfturile pe lateral, suportul, clema, mânerul, bila, cupa) s-a mutat din atelier în `asezareModel`,
+  neschimbat.
+- **Atelierul** (`planificator/atelier.ts`): `corpModel` ia amprenta și pivotul de la motor; scena pune plasa cu pivotul
+  în locul lui (`arataModel`); rotirea unei piese rotunde îi mută colțul, ca axul să rămână pe loc (`mutaM`); „Pune în
+  model” și „Înlocuiește în model” folosesc `langaPivot`; rândul unei piese rotunde spune știftul axului.
+- **Cifrele, pe piesele din captura owner-ului:** carcasa Ø48 cu 2 urechi (amprenta 9 × 7) la 0, 0 are axul la (36, 28),
+  pe știftul 4, 3; rotorul Ø48 (amprenta 7 × 7, era 6 × 6), pus cu ea aleasă, intră la 1, 0, cu axul tot la (36, 28), la
+  același Z. Modelul celor două e cât carcasa: 71,2 × 52 × 10 mm. Din locurile capturii (rotorul la 2, 1, 3), rotorul
+  ajunge acolo cu un știft la stânga, unul în jos și trei plăci mai jos.
+- **Ce se mută într-un model ținut de dinainte:** piesele rotunde cu amprenta pară (roțile de 12 și 16 dinți, conica
+  dublă, roata cu anvelopă, roata cu palete, melcul Ø16, rotorul Ø48, carcasa Ø40) cu 4 mm pe axa aceea; cele
+  nesimetrice (elicea cu 3 palete, cama, elicea de barcă), cu cât era axul pe lângă mijlocul cutiei. Datele ținute
+  (x, y, z, rotirea) rămân aceleași.
+- **Probele.** Unitară, scrisă întâi (`test/unit/trenulet.model.test.ts`, 8 teste): axul spus e cel de pe plasă (gaura
+  din mijloc, golul carcasei); tabelul pe hârtie al celor 27 de piese rotunde (amprenta, locul axului); piesele care nu
+  sunt rotunde, față de formula v18 scrisă din nou în probă; locul de lângă o țintă, cu egalitățile și zgomotul de
+  virgulă mobilă; rotorul chiar încape în golul carcasei, pe plase (vârful la 23,2 mm, golul la 24). E2e
+  (`test/e2e/trenulet.model.spec.ts`, 5 teste): captura owner-ului dintr-un model ținut, cele trei răspunsuri,
+  înlocuirea, piesele așezate după placă; scena e judecată prin mărimea modelului (cutia tuturor pieselor), cu valorile
+  pe hârtie. Proba în engleză din cvs2 (`trenulet.spec.ts`) pune o roată în model („axis on stud 1, 1”).
+- **Otrăvurile:** `test/otravuri/3.Tu.py`, 111 (motorul 64 / 64, atelierul 43 / 43 (40 la prima rulare; cele trei scăpate, prinse după întărirea probei), textele 4 / 4); `3.Tu-en.py`, 6 / 6 (5 la prima rulare).
+- **Mărimea:** pachetul Easy 3Draw, 516,3 kB (era 514,4); aplicația, neschimbată.
+- **Felia următoare:** 3.Cf (Modelul: orientarea pe trei axe și alipirea la prinderi; ADR 0284, partea D).
