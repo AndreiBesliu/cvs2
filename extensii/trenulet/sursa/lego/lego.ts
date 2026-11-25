@@ -1751,10 +1751,10 @@ var Lego = (function (glob: typeof globalThis) {
     const t = Math.max(K.grosime, zecime(0.02 * D));
     // cât ține o paletă pe cercul butucului: grosimea ei, iar la cea curbată, grosimea tăiată pieziș (coarda face cu arcul,
     // la capete, unghiul θ cu sin θ = (c / 2) / ρ, unde ρ = c · (1 / 4 + s²) / (2 · s) e raza arcului cu săgeata s · c)
-    const s = K.sageata, piezis = forma === "curbate" ? 1 / Math.sqrt(1 - ((0.5 * 2 * s) / (0.25 + s * s)) ** 2) : 1, pas = t * piezis + K.intre;
+    const s = K.sageata, piezis = forma === "curbate" ? 1 / Math.sqrt(1 - (s / (0.25 + s * s)) ** 2) : 1, pas = t * piezis + K.intre;
     const incap = Math.floor(Math.PI * R / pas);
     const cerute = numarCerut(d.palete), n0 = Math.round(Number.isFinite(cerute) ? cerute : 8), n = Math.min(24, incap, Math.max(4, n0));
-    if (Number.isFinite(cerute) && n !== cerute) avert.push(n0 > n && n < 24
+    if (Number.isFinite(cerute) && n !== n0) avert.push(n0 > n && n < 24
       ? tr`La diametrul de ${zec(D)} mm încap cel mult ${n} palete: am făcut-o cu ${n}.`
       : tr`O roată cu palete are între 4 și 24 de palete: am făcut-o cu ${n}.`);
     const W = camp(d.lat, 4, 40, 15.8, x => tr`Lățimea unei roți cu palete e între 4 și 40 mm: am făcut-o de ${x} mm.`);

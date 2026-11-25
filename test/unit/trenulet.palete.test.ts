@@ -11,7 +11,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { L, plasa, plin, cote, amprentaPlasei, muchiiFaraPereche, dinMotor, type P3, type Piesa } from './ajutor-plasa-lego.ts';
 
-type Cote = { diam: number; palete: number; lat: number; forma: string; disc: string; gaura: string; butuc: number; grosime: number; lungime: number; sageata: number; discGros: number };
+type Cote = { diam: number; palete: number; lat: number; forma: string; disc: string; gaura: string; butuc: number; grosime: number; lungime: number; sageata: number; discGros: number; incap: number };
 const Lr = L as typeof L & { roataPaleteCote(d: Record<string, unknown>): Cote; prinderi(d: Record<string, unknown>): { fel: string; p: number[]; d: number[]; lung: number }[] };
 const roata = (d: Record<string, unknown> = {}) => L.construieste({ tip: 'roataPalete', ...d });
 const E = L.efective();
@@ -87,6 +87,22 @@ test('paleta dreaptă stă pe rază, până la vârf; cea curbată trece prin pu
   assert.equal(la(c, 5.2, 0, z), true, 'curbată: pornește din butuc, pe rază');
   // și paleta a treia (la 90°) se curbează în aceeași parte, rotită cu ea
   assert.equal(plin(c, dinMotor(c, [-q.sageata, mij, z] as P3)), true, 'curbată: paleta de la 90°');
+  // arcul, pe hârtie: prin (4,8; 0), (18,4; săgeata) și (32; 0), deci cu raza ρ = (c² / 4 + s²) / (2 · s) și centrul sub
+  // coardă; la sferturile lui, lemn pe arc și gol la 1,1 mm de el, de amândouă părțile (paleta are 0,8 de fiecare parte)
+  const cc = q.lungime, rho = (cc * cc / 4 + q.sageata ** 2) / (2 * q.sageata), th = Math.asin(cc / 2 / rho), uA = Math.PI / 2 + th, cy = q.sageata - rho;
+  assert.equal(r3(rho), 19.72);
+  for (const f of [0.25, 0.5, 0.75]) for (const [dr, lemn] of [[0, true], [0.6, true], [-0.6, true], [1.1, false], [-1.1, false]] as const) {
+    const u = uA - 2 * th * f;
+    assert.equal(plin(c, dinMotor(c, [mij + (rho + dr) * Math.cos(u), cy + (rho + dr) * Math.sin(u), z] as P3)), lemn, `curbată: la ${f} din arc, la ${dr} mm de el`);
+  }
+  // marginea de jos a paletei curbate pleacă din afara butucului; capătul paletei coboară de la ea pe rază, până în butuc:
+  // lângă butuc, sub ea, e lemn (nu rămâne o crăpătură), iar dincolo de capăt e gol
+  const jx = mij + (rho - 0.8) * Math.cos(uA), jy = cy + (rho - 0.8) * Math.sin(uA), uj = Math.atan2(jy, jx);
+  assert.ok(Math.hypot(jx, jy) > 4.8 + 0.3, 'colțul de jos al paletei e în afara butucului');
+  assert.equal(la(c, 4.9, uj + 0.02, z), true, 'curbată: sub marginea de jos, lângă butuc, e lemn');
+  assert.equal(la(c, 4.9, uj - 0.03, z), false, 'curbată: dincolo de capătul paletei, lângă butuc, e gol');
+  // fără disc, cutia e dată de vârfuri: la 8 palete cad pe axe, deci chiar diametrul (mijlocul vârfului e pe cercul roții)
+  for (const forma of ['drepte', 'curbate']) assert.deepEqual(cote(roata({ forma, disc: 'fara' })).map(r3), [64, 64, 15.8], `fără disc, ${forma}`);
 });
 
 test('discul: pe fața de jos, de la butuc la vârf, gros de 1,2 mm; fără el, paletele țin doar de butuc', () => {
@@ -99,6 +115,8 @@ test('discul: pe fața de jos, de la butuc la vârf, gros de 1,2 mm; fără el, 
     assert.equal(la(fara, r, u, 0.6), false, `fără disc: gol între palete (raza ${r}, ${g}°)`);
   }
   assert.equal(la(cu, R + 0.3, 0.3, 0.6), false, 'discul nu trece de vârful paletelor');
+  // discul pornește din butuc: nu rămâne un gol între ele
+  for (let g = 0; g < 360; g += 45) assert.equal(la(cu, 4.95, (g + 20) * Math.PI / 180, 0.6), true, `discul lângă butuc, la ${g}°`);
   // amândouă au aceeași cutie (paletele ajung la vârf oricum) la un număr de palete care cade pe axe
   assert.deepEqual(cote(fara).map((x) => Math.round(x * 10) / 10), [64, 64, 15.8]);
   // fără suport: orice punct de lemn are lemn sub el până la masă (pe o coloană de sub fiecare paletă și sub butuc)
@@ -155,6 +173,10 @@ test('butucul crește cu paletele, cât să rămână 0,8 mm între ele lângă 
   assert.deepEqual(q({ diam: 24, palete: 24, forma: 'curbate' }), [12, 5.8, 6.2]);
   assert.deepEqual(q({ diam: 36, palete: 24 }), [23, 8.8, 9.2]);
   assert.deepEqual(q({ diam: 38, palete: 24 }), [24, 9.2, 9.8]);
+  assert.deepEqual([{}, { diam: 24 }, { diam: 24, forma: 'curbate' }, { diam: 32, forma: 'curbate' }, { diam: 36 }, { diam: 38 }].map((d) => Lr.roataPaleteCote(d).incap), [24, 15, 12, 16, 23, 24]);
+  // un număr cu zecimale e rotunjit, fără mesaj (e în margini)
+  assert.equal(roata({ palete: 6.4 }).avert.length, 0);
+  assert.equal(Lr.roataPaleteCote({ palete: 6.4 }).palete, 6);
   const a = roata({ diam: 24, palete: 24 }).avert;
   assert.equal(a.length, 1);
   assert.match(a[0]!, /încap cel mult 15 palete/);

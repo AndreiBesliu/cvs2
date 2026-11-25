@@ -987,12 +987,13 @@ var Atelier3D = (function () {
         <div class="at-rand"><span class="mic">Discul:</span>${seg("at-rp-disc", [["unul", "Cu disc"], ["fara", "Fără"]], q.disc)}</div>
         <div class="at-rand"><span class="mic">Gaura:</span>${seg("at-rp-gaura", [["x", "Pentru ax"], ["r", "Rotundă"]], q.gaura)}</div>
         <div class="at-rand"><span class="mic" id="at-rp-info">${tr`Butucul are Ø${fmt(2 * q.butuc)} mm, iar paletele, ${fmt(q.lungime)} mm lungime și ${fmt(q.grosime)} mm grosime.`}${q.incap < 24 ? " " + tr`La diametrul ăsta încap cel mult ${q.incap} palete.` : ""}${q.forma === "curbate" ? " " + tr("Curbate, prind apa ca niște cupe: împing mai bine într-un sens.") : ""}</span></div>`;
-      // un număr din afara marginilor nu e primit: câmpul se întoarce la valoarea de dinainte; paletele rămân câte încap
+      // un număr din afara marginilor nu e primit: câmpul se întoarce la valoarea de dinainte (zecimile și întregii îi
+      // rotunjește motorul); paletele rămân câte încap
       const tine = () => { p.palete = Lego.roataPaleteCote(p).palete; };
       const camp = (id: string, a: number, b: number, f: (v: number) => void) => { $(id).onchange = ev => { const v = +(ev.target as HTMLInputElement).value; if (v >= a && v <= b) { f(v); tine(); schimbat(); } editor(); }; };
       const alege = (id: string, f: (v: string) => void) => { $(id).onclick = ev => { const b = (ev.target as Element).closest<HTMLElement>("[data-v]"); if (!b) return; f(b.dataset.v!); tine(); editor(); schimbat(); }; };
       camp("#at-rp-diam", 24, 160, v => { p.diam = v; });
-      camp("#at-rp-palete", 4, 24, v => { p.palete = Math.round(v); });
+      camp("#at-rp-palete", 4, 24, v => { p.palete = v; });
       camp("#at-rp-lat", 4, 40, v => { p.lat = v; });
       alege("#at-rp-repede", v => { p.diam = +v; });
       alege("#at-rp-forma", v => { p.forma = v; });
