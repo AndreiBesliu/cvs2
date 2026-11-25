@@ -570,9 +570,17 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   pe freză, ale dopurilor, arhiva foilor și numele din ea îl iau în față (`cuBaza`, după calcul, pe firul principal:
   programul, aceiași octeți). **Regula numelui stă în `src/post/numeFisier.ts`:** un nume gol, prea lung, cu
   caractere oprite, cu margini rele sau rezervat de Windows oprește exportul, cu „Du-mă la …”; pe RichAuto, numele
-  scurt al controlerului, cu câmpul oprit. Urmează 28.8↑o (centrul foii ca origine XY0; mișcă mașina) și, cu
-  16.A↑b-5 în `main`, 28.8↑h (desenele ferestrei, socotite cu funcțiile lucrării). Felia: pornirea +0,1 kB, totalul
-  +1,0 kB.
+  scurt al controlerului, cu câmpul oprit. Felia: pornirea +0,1 kB, totalul +1,0 kB.
+  **Centrul foii ca origine XY0 (ADR 0291 §6, felia 28.8↑o)** gata pe 25.11, unită în `main` pe 25.11 (`3fd3bf49`):
+  a cincea alegere a originii, lângă colțuri (`OrigineXY`, `ORIGINI`, în `src/ir/montaj.ts`): o translație cu
+  jumătatea foii pe fiecare axă, cu Z0 ca la colțuri. Antetul scrie „(origine centru, …)”, citit de sender
+  (`src/machine/program.ts`); panoul Mașina spune „Originea XY a programului: centrul foii.”, raportul foilor la fel;
+  numele propus e `cncvs2-centru`, iar dopul își ia numele după el. **Mișcă mașina:** colțurile ies octet cu octet
+  ca înainte, iar proba centrului e `test/unit/montaj.centru.oracol.test.ts` (pe hârtie; corpusul CAM, rând cu rând
+  față de colț; poarta și oracolul buzunarului, care citesc acum și centrul; senderul; emulatorul GRBL). **O origine
+  nouă intră în `ORIGINI`, în antetul citit de sender și în proba aceea.** Proba pe mașină rămâne a owner-ului.
+  Urmează 28.8↑h (desenele ferestrei, socotite cu funcțiile lucrării). Felia: pornirea +0, totalul +0,2 kB
+  (890,3 / 1 000).
   **Aldinul și cursivul sintetic (ADR 0123, felia 7.5↑, adusă din etapa 7)** gata pe 02.11, în worktree-ul `wip/7.5-text`:
   bifele **Aldin** și **Cursiv** din panoul textului, pentru orice font. Cursivul înclină fiecare literă față de linia ei de
   bază, exact; aldinul așază literele la înălțimea miezului (h − 2d), le îngroașă cu d prin fațada offsetului
@@ -1130,7 +1138,8 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   vechi care numără** (filele, galeriile, căutarea, starea unei liste vechi, versiunea): lista lor e în
   `docs/linii/atelier.md`. Doar pachetul extensiei se schimbă: pornirea și totalul aplicației, neatinse. **Din 24.11
   seara, linia ține și lucrul elicelor** (predat la cererea owner-ului): 3.Tu (piesele rotunde pe același ax în
-  „Modelul”, ADR 0283), la răspunsurile lui la cele trei întrebări din `docs/linii/elice.md`.
+  „Modelul”, ADR 0283), pornită de owner pe 25.11, în sesiunea liniei, cu răspunsurile la cele trei întrebări din
+  `docs/linii/elice.md`: „1a, 2a, 3a la 3.Tu, pornește” (Easy 3Draw 18.33.0).
   **Cotele pe desen: modelul și proba G-code-ului (ADR 0330, felia 10.4↑a-1, adusă din etapa 10)** gata pe 24.11, în
   sesiunea cloud a liniei (ramura `wip/10.4-cote`), unită în `main` pe 24.11 (`f25249cf`), fără interfață încă. ADR
   0330, acceptat de owner cu 1a–6a și cu nota lui: toate setările cotelor stau într-o fereastră nouă, „Setări”, nu în
@@ -1703,6 +1712,29 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 25.11.2026, după-amiaza (a treizeci și patra unire din cloud): **centrul foii ca origine XY0 (28.8↑o), unit în
+  `main`** (sesiunea principală, ramura `unire-2511s`, din `2a46e973`). Linia exportului, ramura `wip/28.8-export`,
+  `cd1859f0`, PR-ul `AndreiBesliu/cvs2#38` (ADR 0291 §6, răspunsul 6a al owner-ului), unită în `3fd3bf49`: în
+  fereastra exportului, „centrul foii” e a cincea origine XY0, aleasă din listă sau din punctul din mijlocul
+  desenului; montajul e o translație cu jumătatea foii pe fiecare axă (`src/ir/montaj.ts`), antetul scrie „origine
+  centru”, senderul îl citește, panoul Mașina și raportul foilor o spun, iar numele propus e `cncvs2-centru`.
+  **Mișcă mașina**, deci e probată pe oracole și pe emulator: colțurile ies octet cu octet ca înainte; pe corpusul
+  CAM, X / Y din centru = X / Y din colț + deplasarea, rând cu rând; poarta și oracolul buzunarului dau aceleași
+  verdicte, cu martori; programul trece prin emulatorul GRBL; otrăvurile 13 / 13. **Proba pe mașină rămâne a
+  owner-ului** (zero-ul în mijlocul foii, întâi în aer); pe live ajunge doar cu confirmarea lui, ca tot restul.
+  Documentul rămâne v28; nimic pe server. Unirea, fără nicio ciocnire; ramura avea `main` `2aaee0b4`, iar de atunci
+  `main` a primit doar documente, deci **arborele unirii are exact codul lui `cd1859f0`** (`git diff` gol în afara
+  fișierelor `.md`) și a intrat pe porțile lui, fără alt complet: completul 45603551874, verde (unit 10 499 / 0,
+  12 sărite pe Linux; e2e 851 / 851; funcțiile pe emulatoare 136 / 136; paginile 59 / 59); rapidul, verde pe
+  `cd1859f0`; pornirea 111,2 kB (plafonul 125; cu ușa 116,2, cu Atelierul 116,5), **totalul 890,3 / 1 000 kB**
+  (+0,2), `/admin` 138,3 / 200. Pe test e `dad1a711` (lotul 32); lotul 33 (`2aaee0b4`) e în drum, iar 28.8↑o pleacă
+  cu lotul 34. **Tot azi, în sesiunea liniei atelierului, owner-ul a răspuns la cele trei întrebări ale lui 3.Tu
+  și a pornit-o: „1a, 2a, 3a la 3.Tu, pornește”** (piesele rotunde pe același ax în vederea „Modelul”, ADR 0283;
+  Easy 3Draw 18.33.0). La linii, în lucru: exportul (28.8↑h, desenele ferestrei), frezele (16.A↑b-4 de raportat,
+  apoi 16.A↑b-6), cotele (10.4↑c-2), relieful (18.1↑c, cu v29), atelierul (3.Tu). **La owner:** proba pe mașină a
+  centrului foii, cele patru întrebări din auditul elicelor, pachetul Easy 3Draw trecut de 0,5 MB (pragul din ADR
+  0284), arhivarea sesiunii elicelor, verificarea juridică (GDPR) a utilizării aplicației înaintea live-ului, „cine
+  unește în `main`”, meniul de sus la 320 px la atingere.
 - 25.11.2026, după-amiaza: **10.4↑c-2 și 16.A↑b-6, pornite** („ok, porneste 10.4↑c-2 si 16.A↑b-6”, în sesiunea
   principală, la raportul unirii a treizeci și treia, care le punea la cuvântul owner-ului). Sesiunea principală
   le-a scris celor două linii la 14:16. **10.4↑c-2** (linia cotelor; ADR 0330 §10): cotele ca entități DIMENSION în
