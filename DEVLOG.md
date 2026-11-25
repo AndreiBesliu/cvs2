@@ -14510,3 +14510,23 @@ vigoare „unește ce se poate”
 - **În `main`, nepublicate încă:** plafoanele noi (`caddd661`: constantele porții, care nu ajung în aplicație, și
   rândul ADR 0146 din roadmap-ul adminului) și documentele de după; pleacă cu lotul următor, fără un complet doar
   pentru ele.
+
+## 2026-11-25 — Sesiunea principală în cloud: auditul ferestrei exportului, în `main` (Model: Claude Fable 5.2)
+
+**Prompt:** raportul sesiunii exportului („auditul e gata, doar documente”, `a0a3075d`), la auditul cerut de owner
+**Started:** 25.11, 10:49. **Completed:** 25.11, 10:49.
+
+- **Unit** `a0a3075d` (`wip/28.8-export`, PR-ul `AndreiBesliu/cvs2#35`, doar documente) în `ee492406`:
+  `docs/linii/audit-export.md` (464 de rânduri) și un rând în `docs/linii/export.md`. Fără complet: nicio linie de cod.
+- **Ce spune:** 21 de constatări. Două desene nu spun ce taie programul, care e corect și sigur (trecerile cu
+  supracursa prin foaie; găurirea cu elice desenată ca ciocănire); cauza comună: fereastra își rescrie formulele
+  lucrării, fiindcă interfața n-o poate importa. La 150 de piese, fereastra se deschide în 7,6–8,8 s (toate fișele
+  randate), cu o tastă la 54–98 ms. Feliile propuse 28.8↑h–m, de pornit după unirea lui 16.A↑b-5 (aceeași fișă);
+  nouă întrebări la owner, cu schița din sesiunea liniei.
+- **Recomandarea reparației, schimbată față de dimineață:** nu peticul de o oră acum, ci felia 28.8↑h (desenele
+  socotite de stratul de acțiuni, cu funcțiile lucrării), după 16.A↑b-5: repară amândouă desenele la cauză și nu se
+  ciocnește cu linia frezelor. La owner.
+- **Ale altor linii:** frezele de rest fără etichete (spus liniei frezelor, care lucrează acolo); numele elementelor cu
+  punct zecimal în română (`src/app/descriereElement.ts`, comun: al sesiunii principale); „Trimite la mașină” în Atelier
+  (aranjamentele).
+- **Documentele:** indexul liniilor (rândul exportului), starea din `docs/linii/principala.md`.

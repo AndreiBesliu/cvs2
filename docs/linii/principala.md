@@ -193,10 +193,14 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
   - **audituri, cerute de owner pe 25.11** (înaintea arhivării sesiunilor; doar documente, fără cod de produs):
     **elicele, gata și în `main`** (`docs/linii/audit-elice.md`, `173995a1`: nimic stricat; șapte felii propuse
     pentru linia atelierului; patru întrebări la owner, cu recomandările 1a, 2a, 3a, 4a; sesiunea se poate arhiva);
-    **fereastra exportului, în lucru** (`docs/linii/audit-export.md`), cu o greșeală de afișare spusă din mers:
-    cu supracursa și pe tăieturile cât foaia, desenul adâncimii și nota pasului împart adâncimea scrisă (3 treceri
-    de 6 mm), iar programul, corect și sigur, taie grosimea plus supracursa (4 de 4,575 mm); reparația, la cuvântul
-    owner-ului (recomandarea: acum, de sesiunea exportului). Feliile propuse pornesc doar la cuvântul lui;
+    **fereastra exportului, gata și în `main`** (`docs/linii/audit-export.md`, `ee492406`): 21 de constatări;
+    două desene nu spun ce taie programul, care e corect și sigur (cu supracursa și pe tăieturile cât foaia, „3
+    treceri de 6 mm” în loc de 4 de 4,575 mm; găurirea cu elice desenată ca ciocănire); la 150 de piese, fereastra
+    se deschide în 7,6–8,8 s; feliile propuse 28.8↑h–m (h repară desenele la cauză: le socotește stratul de
+    acțiuni, cu funcțiile lucrării), de pornit după unirea lui 16.A↑b-5, care lucrează în aceeași fișă; nouă
+    întrebări la owner, cu schița din sesiunea liniei. Ale altor linii: frezele de rest fără etichete (frezele,
+    16.A↑b-5), numele elementelor cu punct zecimal în română (`src/app/descriereElement.ts`, comun: sesiunea
+    principală), „Trimite la mașină” în Atelier (aranjamentele). Feliile propuse pornesc doar la cuvântul lui;
   - **fără felie în lucru:** planșele (tăierea plăcii 11, la owner), incrustațiile, trasarea, tăierea (după
     10.3↑o: 10.3↑p–r),
     imprimanta (după 3.6v: 3.6w, camera), aranjamentele (28.1↑). Pornesc la cuvântul
