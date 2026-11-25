@@ -14355,3 +14355,20 @@ ce se poate”
   880,9 / 900 kB, `/admin` 138,3 / 200. Pachetul Easy 3Draw, 501,6 kB. Nimic pe server.
 - **Documentele:** decizia în `CLAUDE.md` (paragraful de stare al construcțiilor e al liniei; versiunea extensiei,
   18.28.0, următoarea 18.29.0); indexul liniilor; starea din `docs/linii/principala.md`.
+
+## 2026-11-25 — 16.A↑b-5: frezele în plus ale rândului din „Frezele mele” (Model: Claude Opus 5.5)
+
+**Prompt:** mesajul sesiunii principale din 25.11, 09:35, cu cuvântul owner-ului („am resetat limita saptamanale. azi este
+miercuri.” și „vreau sa pornesti si celelalte sub-sesiuni”): „Deci pornește 16.A↑b-5 … apoi 16.A↑b-4”. **Started:** 25.11, 09:35.
+
+- **Ramura** `wip/16.A-freze`, adusă înainte la `main` (`f2678300`, cu relieful 18.1↑a, documentul v28).
+- **Felia** (`df4457e7`): lista „Din frezele mele” pe frezele în plus ale rândului (fundul plat, fiecare freză de rest, prima
+  freză a dopului drept, decuparea benzii), doar cu frezele plate, la frezele de rest doar cele mai mici decât freza dinainte;
+  aleasă, T-ul (regula rolurilor, printre toate frezele ferestrei, fără cea înlocuită), Ø-ul, pasul lateral și originea; un Ø
+  schimbat de mână o scoate doar pe freza aceea. Exportă scrie originea cu regula frezei operației (`cuOrigine`, comună), iar
+  legarea rândurilor ține și originea frezelor în plus, ca lucrarea. Manualul (ro, en), catalogul controalelor.
+- **Probele** (întâi): unitare noi 6 (`exportFreze.rest.test.ts`), în Edge 4 (`exportFrezeRest.spec.ts`) și frezele în plus în
+  proba privirii (7 / 7). **Otrăvurile** (`test/otravuri/16.A-b5.py`): pe hârtie 13 / 13 (T02 și C02 scăpaseră: probele frezelor de rest au acum două freze în listă); cele din Edge rulează. Otrăvurile lui 16.A↑b-3 atinse de mutarea
+  codului (S01–S04, W03, W04) țin acum codul nou.
+- **Mărimea:** pornirea neschimbată (111,2 kB; cu ușa 116,1, cu Atelierul 116,5 / 120), totalul 881,0 → 881,8 / 900 (măsurat
+  pe `main` `f2678300` și pe ramură). Nimic pe server; documentul rămâne v27.
