@@ -113,6 +113,7 @@ export const enMasina = {
   'masina.z0.jos': 'Program Z0: the bottom of the material (the spoil board). Probe with the plate on the table, next to the material.',
   'masina.z0.necunoscut': 'The program does not say where Z0 is: check it before zeroing.',
   'masina.origine': 'Program XY origin: the {colt} corner of the sheet.',
+  'masina.origine.centru': 'Program XY origin: the centre of the sheet.',
   'masina.colt.stanga-jos': 'bottom-left',
   'masina.colt.dreapta-jos': 'bottom-right',
   'masina.colt.dreapta-sus': 'top-right',

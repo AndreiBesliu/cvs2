@@ -383,8 +383,8 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   aceea. Exportă scrie originea cu regula frezei operației (`cuOrigine`, comună), iar legarea rândurilor ține și
   originea frezelor în plus. Frezele de rest stau într-un tabel cu capul coloanelor, cu „Adaugă” ca buton
   (constatarea 9 a auditului exportului). Lista e o componentă comună (`ListaBiblioteca`, în
-  `src/ui/FisaOperatie.tsx`). Urmează 16.A↑b-4 (nota „s-a schimbat în bibliotecă”) și, la cuvântul owner-ului,
-  16.A↑b-6 („Pune-o înapoi în bibliotecă”, din fereastra exportului, cu contul). Documentul nu se schimbă (e v28,
+  `src/ui/FisaOperatie.tsx`). Urmează 16.A↑b-4 (nota „s-a schimbat în bibliotecă”) și 16.A↑b-6 („Pune-o
+  înapoi în bibliotecă”, din fereastra exportului, cu contul), pornită pe 25.11. Documentul nu se schimbă (e v28,
   din relief); nimic pe server. Felia: pornirea +0, totalul +1,0 kB.
   **Plafonul pornirii 120 kB (ADR 0145, decizia owner-ului din 24.11, „ok, ridica plafonul pornirii la 120 kB”):** după
   lotul al paisprezecelea, pornirea era 109,9 kB, cu ușa 114,4 și cu Atelierul 114,7 / 115, iar feliile următoare ale
@@ -570,9 +570,17 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   pe freză, ale dopurilor, arhiva foilor și numele din ea îl iau în față (`cuBaza`, după calcul, pe firul principal:
   programul, aceiași octeți). **Regula numelui stă în `src/post/numeFisier.ts`:** un nume gol, prea lung, cu
   caractere oprite, cu margini rele sau rezervat de Windows oprește exportul, cu „Du-mă la …”; pe RichAuto, numele
-  scurt al controlerului, cu câmpul oprit. Urmează 28.8↑o (centrul foii ca origine XY0; mișcă mașina) și, cu
-  16.A↑b-5 în `main`, 28.8↑h (desenele ferestrei, socotite cu funcțiile lucrării). Felia: pornirea +0,1 kB, totalul
-  +1,0 kB.
+  scurt al controlerului, cu câmpul oprit. Felia: pornirea +0,1 kB, totalul +1,0 kB.
+  **Centrul foii ca origine XY0 (ADR 0291 §6, felia 28.8↑o)** gata pe 25.11, unită în `main` pe 25.11 (`3fd3bf49`):
+  a cincea alegere a originii, lângă colțuri (`OrigineXY`, `ORIGINI`, în `src/ir/montaj.ts`): o translație cu
+  jumătatea foii pe fiecare axă, cu Z0 ca la colțuri. Antetul scrie „(origine centru, …)”, citit de sender
+  (`src/machine/program.ts`); panoul Mașina spune „Originea XY a programului: centrul foii.”, raportul foilor la fel;
+  numele propus e `cncvs2-centru`, iar dopul își ia numele după el. **Mișcă mașina:** colțurile ies octet cu octet
+  ca înainte, iar proba centrului e `test/unit/montaj.centru.oracol.test.ts` (pe hârtie; corpusul CAM, rând cu rând
+  față de colț; poarta și oracolul buzunarului, care citesc acum și centrul; senderul; emulatorul GRBL). **O origine
+  nouă intră în `ORIGINI`, în antetul citit de sender și în proba aceea.** Proba pe mașină rămâne a owner-ului.
+  Urmează 28.8↑h (desenele ferestrei, socotite cu funcțiile lucrării). Felia: pornirea +0, totalul +0,2 kB
+  (890,3 / 1 000).
   **Aldinul și cursivul sintetic (ADR 0123, felia 7.5↑, adusă din etapa 7)** gata pe 02.11, în worktree-ul `wip/7.5-text`:
   bifele **Aldin** și **Cursiv** din panoul textului, pentru orice font. Cursivul înclină fiecare literă față de linia ei de
   bază, exact; aldinul așază literele la înălțimea miezului (h − 2d), le îngroașă cu d prin fațada offsetului
@@ -1185,7 +1193,7 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   (`test/oracles-py/export2d_cote.py`, pas în jobul `oracol-export2d`; corpusul cotelor, tot din
   `scripts/export2d-corpus.ts`): valorile lui sunt scrise din descrierea corpusului și din regulile desenului (ADR
   0330 §4–§6), nu din codul aplicației, deci o cotă nouă în corpus își cere valorile pe hârtie acolo. Urmează
-  10.4↑c-2 (DIMENSION în DXF, cifrele ca text), la cuvântul owner-ului. Documentul rămâne v28; nimic pe server.
+  10.4↑c-2 (DIMENSION în DXF, cifrele ca text), pornită pe 25.11. Documentul rămâne v28; nimic pe server.
   Felia: pornirea +0,1 kB, totalul +3,3 kB (888,1 / 1 000).
   **Relieful din imagine, pe planșă (ADR 0310, ADR 0311, felia 18.1↑a, adusă din etapa 18; documentul v28)** gata pe
   24.11, în sesiunea cloud a liniei (ramura `wip/18.1-relief`), unită în `main` pe 24.11 (`c5b79526`). ADR 0310,
@@ -1710,6 +1718,40 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 25.11.2026, după-amiaza (a treizeci și patra unire din cloud): **centrul foii ca origine XY0 (28.8↑o), unit în
+  `main`** (sesiunea principală, ramura `unire-2511s`, din `2a46e973`). Linia exportului, ramura `wip/28.8-export`,
+  `cd1859f0`, PR-ul `AndreiBesliu/cvs2#38` (ADR 0291 §6, răspunsul 6a al owner-ului), unită în `3fd3bf49`: în
+  fereastra exportului, „centrul foii” e a cincea origine XY0, aleasă din listă sau din punctul din mijlocul
+  desenului; montajul e o translație cu jumătatea foii pe fiecare axă (`src/ir/montaj.ts`), antetul scrie „origine
+  centru”, senderul îl citește, panoul Mașina și raportul foilor o spun, iar numele propus e `cncvs2-centru`.
+  **Mișcă mașina**, deci e probată pe oracole și pe emulator: colțurile ies octet cu octet ca înainte; pe corpusul
+  CAM, X / Y din centru = X / Y din colț + deplasarea, rând cu rând; poarta și oracolul buzunarului dau aceleași
+  verdicte, cu martori; programul trece prin emulatorul GRBL; otrăvurile 13 / 13. **Proba pe mașină rămâne a
+  owner-ului** (zero-ul în mijlocul foii, întâi în aer); pe live ajunge doar cu confirmarea lui, ca tot restul.
+  Documentul rămâne v28; nimic pe server. Unirea, fără nicio ciocnire; ramura avea `main` `2aaee0b4`, iar de atunci
+  `main` a primit doar documente, deci **arborele unirii are exact codul lui `cd1859f0`** (`git diff` gol în afara
+  fișierelor `.md`) și a intrat pe porțile lui, fără alt complet: completul 45603551874, verde (unit 10 499 / 0,
+  12 sărite pe Linux; e2e 851 / 851; funcțiile pe emulatoare 136 / 136; paginile 59 / 59); rapidul, verde pe
+  `cd1859f0`; pornirea 111,2 kB (plafonul 125; cu ușa 116,2, cu Atelierul 116,5), **totalul 890,3 / 1 000 kB**
+  (+0,2), `/admin` 138,3 / 200. Pe test e `dad1a711` (lotul 32); lotul 33 (`2aaee0b4`) e în drum, iar 28.8↑o pleacă
+  cu lotul 34. **Tot azi, în sesiunea liniei atelierului, owner-ul a răspuns la cele trei întrebări ale lui 3.Tu
+  și a pornit-o: „1a, 2a, 3a la 3.Tu, pornește”** (piesele rotunde pe același ax în vederea „Modelul”, ADR 0283;
+  Easy 3Draw 18.33.0). La linii, în lucru: exportul (28.8↑h, desenele ferestrei), frezele (16.A↑b-4 de raportat,
+  apoi 16.A↑b-6), cotele (10.4↑c-2), relieful (18.1↑c, cu v29), atelierul (3.Tu). **La owner:** proba pe mașină a
+  centrului foii, cele patru întrebări din auditul elicelor, pachetul Easy 3Draw trecut de 0,5 MB (pragul din ADR
+  0284), arhivarea sesiunii elicelor, verificarea juridică (GDPR) a utilizării aplicației înaintea live-ului, „cine
+  unește în `main`”, meniul de sus la 320 px la atingere.
+- 25.11.2026, după-amiaza: **10.4↑c-2 și 16.A↑b-6, pornite** („ok, porneste 10.4↑c-2 si 16.A↑b-6”, în sesiunea
+  principală, la raportul unirii a treizeci și treia, care le punea la cuvântul owner-ului). Sesiunea principală
+  le-a scris celor două linii la 14:16. **10.4↑c-2** (linia cotelor; ADR 0330 §10): cotele ca entități DIMENSION în
+  DXF și cifrele ca text, peste c-1; cu felul de azi ales (linii și trăsături), fișierele rămân octet cu octet;
+  oracolul Python al cotelor primește DIMENSION-ul pe hârtie. **16.A↑b-6** (linia frezelor; ADR 0300 §5): „Pune-o
+  înapoi în bibliotecă”, adică scrierea unei freze în bibliotecă din fereastra exportului, cu contul; vine după
+  16.A↑b-4 (nota „s-a schimbat în bibliotecă”, gata pe ramura ei, de raportat întâi) și, dacă se poate, fără nimic
+  nou pe server. Amândouă: documentul rămâne v28 (un câmp nou ar cere întâi numărul, de la sesiunea principală; v29
+  e al reliefului), proba întâi, creșterea de mărime spusă în raport, un singur commit raportat, cu porțile verzi;
+  unirea, la raport. O alegere care e a owner-ului se pune grupat, cu recomandarea în față, iar linia merge înainte
+  cu recomandarea.
 - 25.11.2026, după-amiaza (a treizeci și treia unire din cloud): **frezele în plus ale rândului din „Frezele mele”
   (16.A↑b-5), cadrul și șurubul melc din atelierul Easy 3Draw (3.Cj-3, 3.Cj-4) și numele fișierului în fereastra
   exportului (28.8↑n), unite în `main`**, în lot (sesiunea principală, ramura `unire-2511q`, din `f8be3b4d`).

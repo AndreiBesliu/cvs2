@@ -29,7 +29,8 @@ import { CAZURI_POARTA_CALE } from '../oracles/poarta-cale.cazuri.ts';
 import type { DocV8O } from '../oracles/document.ts';
 
 const ORIGINI = ['stanga-jos', 'dreapta-jos', 'dreapta-sus', 'stanga-sus'] as const;
-type Origine = (typeof ORIGINI)[number];
+// Corpusurile poartă tipul oracolului, care are și centrul (ADR 0291 §6); aici nu-l aleg, dar îl primesc.
+type Origine = (typeof ORIGINI)[number] | 'centru';
 type Prog = { readonly familie: string; readonly nume: string; readonly text: string; readonly ctx: ContextPoarta };
 
 let toate: Promise<{ readonly programe: Prog[]; readonly refuzuri: number }> | null = null;

@@ -52,11 +52,15 @@ const Desen = ({ eticheta, children, ...rest }: { eticheta: string; children: Re
 const Jos = ({ children, tare = false }: { children: string; tare?: boolean }): ReactNode =>
   <text x={130} y={146} textAnchor="middle" className={tare ? 'tare' : undefined}>{children}</text>;
 
-export type ColtDesen = 'stanga-jos' | 'dreapta-jos' | 'dreapta-sus' | 'stanga-sus';
+export type ColtDesen = 'stanga-jos' | 'dreapta-jos' | 'dreapta-sus' | 'stanga-sus' | 'centru';
 
-/** Foaia văzută oblic, cu colțul XY0 ales și axele din el; un clic pe un colț îl alege (lista rămâne câmpul pentru tastatură). */
+/**
+ * Foaia văzută oblic, cu XY0 ales (un colț sau centrul, ADR 0291 §6) și axele din el; un clic pe un punct îl alege (lista
+ * rămâne câmpul pentru tastatură).
+ */
 export function DesenColt({ colt, nume, onColt }: { colt: ColtDesen; nume: string; onColt: (c: ColtDesen) => void }): ReactNode {
-  const P: Record<ColtDesen, readonly [number, number]> = { 'stanga-jos': [40, 112], 'dreapta-jos': [178, 112], 'dreapta-sus': [226, 70], 'stanga-sus': [88, 70] };
+  // Centrul: mijlocul celor patru colțuri, adică al foii văzute oblic.
+  const P: Record<ColtDesen, readonly [number, number]> = { 'stanga-jos': [40, 112], 'dreapta-jos': [178, 112], 'dreapta-sus': [226, 70], 'stanga-sus': [88, 70], centru: [133, 91] };
   const [FL, FR, BR, BL] = [P['stanga-jos'], P['dreapta-jos'], P['dreapta-sus'], P['stanga-sus']];
   const O = P[colt], g = 14;
   const ax = (spre: readonly [number, number], de: readonly [number, number], L: number): [number, number] => {
@@ -69,7 +73,7 @@ export function DesenColt({ colt, nume, onColt }: { colt: ColtDesen; nume: strin
     return <><path className="ua" d={`M${r(O[0])} ${r(O[1])}L${r(q[0])} ${r(q[1])}`} /><path className="u" d={varf(q[0], q[1], (O[0] - q[0]) / L, (O[1] - q[1]) / L, 7, 3.5)} /></>;
   };
   return (
-    <Desen eticheta={t('export.desen.colt', { colt: nume })} data-colt-ales={colt}>
+    <Desen eticheta={colt === 'centru' ? t('export.desen.colt.centru') : t('export.desen.colt', { colt: nume })} data-colt-ales={colt}>
       <text x={8} y={20}>{t('export.desen.colt.vedere')}</text>
       <path className="l2" data-lemn d={`M${FR[0]} ${FR[1]}L${BR[0]} ${BR[1]}V${BR[1] + g}L${FR[0]} ${FR[1] + g}Z`} />
       <path className="l" d={`M${FL[0]} ${FL[1]}H${FR[0]}V${FR[1] + g}H${FL[0]}Z`} />
@@ -82,7 +86,7 @@ export function DesenColt({ colt, nume, onColt }: { colt: ColtDesen; nume: strin
           <circle cx={P[k][0]} cy={P[k][1]} r={13} className="tinta" /><circle cx={P[k][0]} cy={P[k][1]} r={7} />
         </g>
       ))}
-      <Jos tare>{t('export.desen.colt.ales', { colt: nume })}</Jos>
+      <Jos tare>{colt === 'centru' ? t('export.desen.colt.ales.centru') : t('export.desen.colt.ales', { colt: nume })}</Jos>
     </Desen>
   );
 }
