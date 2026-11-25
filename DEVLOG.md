@@ -14131,6 +14131,31 @@ la lista pieselor noi; pornită fără altă întrebare, cât 3.Ce își aștept
   (508,4 kB), cu rândul de „ce e nou”; doar pachetul se schimbă.
 - **Neîmpinsă până la unirea lui 3.Ce** (PR-ul `AndreiBesliu/cvs2#28`).
 
+
+## 2026-11-25 — Felia 3.Cj-3: cadrul (fereastra) în atelierul Easy 3Draw (ADR 0284) (sesiune cloud)
+
+**Prompt:** (aceeași cerere a owner-ului și aceleași răspunsuri la ADR 0284 ca la 3.Ca; răspunsul lui „Cărămizi de
+clădit”, la lista pieselor noi; pornită fără altă întrebare, după raportul lui 3.Cj-1 și 3.Cj-2; sesiunea principală a
+transmis „vreau sa pornesti si celelalte sub-sesiuni” al owner-ului)
+**Started:** 25.11, 07:35. **Completed:** 25.11, 08:25 (felia, cu otrăvurile; orele, după ceasul containerului).
+
+- **Cadrul** (tipul `cadru`, fila Cărămizi): o cărămidă 1 × n cu un gol prin ea, cu pragul (o placă obișnuită), doi
+  stâlpi groși cât rama și buiandrugul cu știfturi pe toată lungimea. Se tipărește în picioare, fără suport.
+- **Colțurile de sus ale golului, drepte sau teșite:** teșitura la 45° scurtează puntea tipărită în aer până la un
+  știft, cât îi lasă înălțimea golului. Editorul scrie golul și puntea; peste 40 mm spune că puntea se poate lăsa.
+- **Proba, scrisă întâi** (a căzut cu „tip necunoscut”): golul, judecat pe plasă la 0,15 mm de marginile lui; teșitura,
+  în puncte de pe hârtie; 120 de cadre pe toată plaja. A trecut de la prima scriere a piesei.
+- **Ce au arătat otrăvurile:** știfturile mutate cu 1 mm treceau (proba întreba doar centrul lor); o retragere de
+  0,01 mm a stâlpilor față de prag, pusă „ca două corpuri să nu-și împartă muchii”, era de prisos (muchiile nu coincid
+  nici fără ea) și a ieșit din cod.
+- **Numele câmpului:** `sus` exista deja ca număr (rândurile pantei), deci opțiunea se numește `colturi`.
+- **Probele vechi, la zi:** „Cărămizi 12” / „Bricks 12”, galeriile și desenele, starea unei liste vechi, rândurile
+  „Pe știfturi” și „În locașuri” din „Se prinde cu”, versiunea 18.31.0.
+- **Otrăvurile:** 84 / 84: 79 din 83 la prima rulare (54 din 57 unitare, 25 din 26 prin browser); trei probe întărite,
+  una echivalentă înlocuită, una adăugată.
+- **Probele pluginului:** unitare 252 / 252 (cu biblioteca), în browser 178 / 178 (cu extensiile). Easy 3Draw 18.31.0
+  (510,8 kB), cu rândul de „ce e nou”; doar pachetul se schimbă.
+
 ## 2026-11-24 — Sesiunea principală în cloud: clicul pe „Închide” din cadrul unei extensii, pierdut (probă instabilă, reparată) (Model: Claude Fable 5.2)
 
 **Prompt:** completul de pe `main` pentru loturile 19–21 (`7312d685`, rularea 45436221341), roșu la o singură probă;

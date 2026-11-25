@@ -1034,8 +1034,8 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   fereastră de confirmare, tastatura. **O schimbare a unei extensii din bibliotecă cere acum și rândul ei de „ce e nou”,
   primul din `noutati`, în `extensii/biblioteca.json`** (`{ "versiune", "ro", "en" }`, cel mult 240 de caractere), apoi
   `node scripts/biblioteca.ts --scrie` (refuză fără rând). **Două linii care schimbă aceeași extensie iau, fiecare,
-  versiunea următoare:** cea unită a doua își ia alta la aducerea lui `main` (Easy 3Draw e 18.30.0, din 3.Cj-2, linia atelierului; următoarea,
-  18.31.0). **O probă nu ține scrisă o versiune a unei extensii din bibliotecă:** catalogul poartă doar ultimele cinci
+  versiunea următoare:** cea unită a doua își ia alta la aducerea lui `main` (Easy 3Draw e 18.31.0, din 3.Cj-3, linia atelierului; următoarea,
+  18.32.0). **O probă nu ține scrisă o versiune a unei extensii din bibliotecă:** catalogul poartă doar ultimele cinci
   rânduri de „ce e nou” (`MAX_NOUTATI`), deci proba își ia rândul din `extensii/biblioteca.json`.
   Capturile unei extensii se refac cu `node scripts/capturi-biblioteca.ts [dosar]` și se comit. **Un prefix nou de acțiuni
   cere grupul lui în `src/ui/Paleta.tsx`** (paleta nu arăta deloc acțiunile `extensii`). Pornirea 108,6 kB (cu ușa
@@ -1093,8 +1093,11 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   grosimea și gaura la alegere; Easy 3Draw 18.29.0. **3.Cj-2 (roata cu palete)** gata pe 25.11, unită în `main` odată cu ea: tipul
   `roataPalete`, în fila Elice, o roată de apă sau de vânt pe butucul roților, cu diametrul, numărul paletelor, lățimea,
   palete drepte sau curbate, cu disc sau fără; butucul crește cu paletele, iar pe o roată mică încap mai puține (motorul
-  o spune, editorul le ține în margine); Easy 3Draw 18.30.0 (următoarea, 18.31.0); restul lui 3.Cj (cadrul, melcul)
-  vine pe bucăți. **O piesă nouă a motorului își spune prinderile
+  o spune, editorul le ține în margine); Easy 3Draw 18.30.0. **3.Cj-3 (cadrul)** gata pe 25.11, neunită: tipul `cadru`,
+  în fila Cărămizi, o cărămidă 1 × n cu un gol prin ea (fereastră, ușă, portal), cu prag, stâlpi groși cât rama și
+  știfturi sus; lungimea, înălțimea, rama și colțurile de sus ale golului (drepte sau teșite, care scurtează puntea
+  tipărită în aer); Easy 3Draw 18.31.0 (următoarea, 18.32.0); din 3.Cj mai rămâne melcul. **O piesă nouă a motorului
+  își spune prinderile
   (compilatorul o cere: `prinderi` e câmp obligatoriu al tipului `Corp`) și își pune mostra, cu numerele de pe hârtie, în
   `test/unit/trenulet.prinderi.test.ts`, unde fiecare prindere declarată e întrebată pe plasă.** **O piesă care se prinde cu alta își probează prinderea pe plasele amândurora, cu martori**
   (proba cremalierei: `patrundere`, în `test/unit/trenulet.cremaliera.test.ts`). **Motorul

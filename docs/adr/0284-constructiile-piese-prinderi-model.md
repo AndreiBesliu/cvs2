@@ -111,7 +111,7 @@ elice. Fiecare e un șablon din parametri, nu un desen fix.
 | 3.Cg | Modelul: verificarea (prins, plutește, se ciocnește) | avertismente pe piese și în listă |
 | 3.Ch | Construcțiile cu nume și lista lor de piese | mai multe construcții în atelier |
 | 3.Ci | Construcțiile gata | patru șabloane |
-| 3.Cj | Melcul, cama și manivela, cadrul, roata cu palete | restul pieselor din B, pe bucăți: 3.Cj-1, cama, și 3.Cj-2, roata cu palete (gata pe 25.11); apoi cadrul, melcul |
+| 3.Cj | Melcul, cama și manivela, cadrul, roata cu palete | restul pieselor din B, pe bucăți: 3.Cj-1, cama, 3.Cj-2, roata cu palete, și 3.Cj-3, cadrul (gata pe 25.11); apoi melcul |
 | 3.Ck | Balamaua și placa turnantă | despărțite de 3.Cd: au jocuri de mișcare care se potrivesc pe piese tipărite |
 
 ## Marginile
@@ -379,3 +379,29 @@ roata cu palete, cadrul și melcul.
   (`test/e2e/trenulet.palete.spec.ts`), plus engleza editorului în proba limbii. Probele filelor („Elice 4”),
   galeriilor, pictogramelor, căutării și ale panoului „Se prinde cu”, la zi.
 - **Mărimea:** doar pachetul extensiei (504,7 → 508,4 kB); aplicația, neschimbată.
+
+## Implementat (3.Cj-3, 25.11.2026)
+
+**Cadrul (fereastra)** (tipul `cadru`, fila Cărămizi; Easy 3Draw 18.31.0). A treia piesă din 3.Cj.
+
+- **Piesa:** o cărămidă 1 × n cu un gol prin ea: o fereastră, o ușă, un portal. Jos, pragul: o placă obișnuită, goală pe
+  dedesubt, deci piesa stă pe știfturi. Pe margini, doi stâlpi groși cât rama. Sus, buiandrugul: o placă plină, cu
+  știfturi pe toată lungimea, deci se clădește peste ea. Se tipărește în picioare, fără suport: buiandrugul trece peste
+  gol ca o punte.
+- **Parametrii:** lungimea 2–8 știfturi (implicit 4), înălțimea 2–6 cărămizi (implicit 3), rama 1,2–4 mm (implicit 1,6),
+  colțurile de sus ale golului, drepte sau teșite; mărimile uzuale („Repede”): 1×2×2, 1×2×3, 1×4×3, 1×4×5, 1×4×6.
+- **Golul:** lat cât piesa fără cele două rame, înalt cât piesa fără prag și fără buiandrug (câte o placă). Cu colțurile
+  teșite la 45°, puntea de sus (ce se tipărește în aer) se scurtează până la un știft, cât îi lasă înălțimea golului
+  fără 2 mm (cât rămâne stâlpul drept). Editorul scrie golul și puntea, iar peste 40 mm spune că puntea se poate lăsa.
+- **Hotărât la implementare:** stâlpii și buiandrugul sunt un singur corp (profilul cu golul, întins pe adâncime), la
+  fața pragului și intrat 0,3 mm în capacul lui. Prima formă îl retrăgea cu 0,01 mm față de fețele pragului, ca două
+  corpuri să nu-și împartă muchii; otrava care scotea retragerea a trecut toate probele (muchiile nu coincid nici fără
+  ea), deci retragerea a ieșit din cod.
+- **Prinderile:** locașurile pragului (câte unul pe știft) și știfturile de pe buiandrug; „Se prinde cu” îl leagă de
+  cărămizi în amândouă sensurile.
+- **Probele:** unitare 6 (`test/unit/trenulet.cadru.test.ts`): golul, judecat pe plasă la 0,15 mm de marginile lui, pe
+  toată adâncimea; teșitura, în puncte de pe hârtie de o parte și de alta a ei; știfturile, până la marginea lor;
+  locașurile, libere până sub capac; 120 de cadre pe toată plaja, cu plasa închisă și cotele de pe hârtie. În browser 3
+  (`test/e2e/trenulet.cadru.spec.ts`). Probele filelor („Cărămizi 12”), galeriilor, pictogramelor, căutării și ale
+  panoului „Se prinde cu”, la zi.
+- **Mărimea:** doar pachetul extensiei (508,4 → 510,8 kB); aplicația, neschimbată.

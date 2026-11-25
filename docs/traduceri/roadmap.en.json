@@ -621,6 +621,10 @@
       "ro": "Scalarea unui arc peste latura documentului",
       "en": "Scaling an arc past the document side"
     },
+    "20365f98ad9f4111": {
+      "ro": "3.Cj-3 (cadrul, ADR 0284)",
+      "en": "3.Cj-3 (the frame, ADR 0284)"
+    },
     "20473faf0765f4e4": {
       "ro": "Supracursa în fereastra exportului",
       "en": "Overtravel in the export window"
@@ -1144,6 +1148,10 @@
     "39ee1f82d2c1726f": {
       "ro": "**Unealta Transformare, extensia barei, editarea formelor după plasare, adusă din etapa 6** (fără mașină; ADR 0053; „NODURILE de control trebuie sa apara doar cand selectam unealta de transformare”, „bara de aliniere ar trebui sa fie o extensie, nu un popup […] colapsabil este meniul de aliniere, nu bara in sine”, „cercul, ar trebui sa aiba raza […] si vreau sa poata fi editat si post placement”). Unealta Transformare (S): mânerele doar cu ea; extensia barei de sus (`#loc-extensie`, al doilea rând, mereu acolo, locul rezervat de la pornire) cu secțiunea Aliniere strânsă spre stânga la cerere; panoul editează dreptunghiul (laturile, raza colțurilor), cercul (raza), poligonul regulat (laturile, raza) și elipsa (razele) prin `document.forma`, recunoscute din geometrie (`src/model/formeParametrice.ts`, generatorii comuni cu uneltele de desen; fără câmp nou în document). Pornirea 95,0 → 95,1 kB (cu ușa 99,8 / 100: ~0,2 kB rămași). **Treceri:** (1) generatorii și recunoașterea, acțiunea, panoul, unealta, extensia, probele; (2) captura: colțul Y al elipsei în panou, 119,999999663 (cutia din cubicele unei singure bucăți de 2π): elipsa e acum tăiată pe sferturi, cu extremele ca vârfuri exacte, iar cele vechi rămân recunoscute; o probă a poligonului cerea refacerea „identică” (zgomotul virgulei mobile, ~1e-15): acum sub 1e-9; (3) e2e-ul complet verde din prima.",
       "en": "**The Transform tool, the bar extension, editing shapes after placement, brought forward from stage 6** (without the machine; ADR 0053; “the control NODES should appear only when we select the transform tool”, “the align bar should be an extension, not a popup […] the align menu is collapsible, not the bar itself”, “the circle should have a radius […] and I want it editable after placement too”). The Transform tool (S): the handles only with it; the top bar extension (`#loc-extensie`, the second row, always there, its space reserved from startup) with the Align section collapsing to the left on request; the panel edits the rectangle (sides, corner radius), the circle (radius), the regular polygon (sides, radius) and the ellipse (radii) through `document.forma`, recognised from the geometry (`src/model/formeParametrice.ts`, generators shared with the drawing tools; no new field in the document). Startup 95.0 → 95.1 kB (99.8 / 100 with the door: ~0.2 kB left). **Passes:** (1) the generators and recognition, the action, the panel, the tool, the extension, the checks; (2) the screenshot: the ellipse's Y corner in the panel read 119.999999663 (the box from the cubics of a single 2π piece): the ellipse is now split into quarters, with the extremes as exact vertices, and old ones are still recognised; a polygon check demanded an “identical” rebuild (floating-point noise, ~1e-15): now within 1e-9; (3) the full e2e green at once."
+    },
+    "3a7882ebefa9194d": {
+      "ro": "Cadrul (fereastra) în atelierul Easy 3Draw",
+      "en": "The frame (window) in the Easy 3Draw workshop"
     },
     "3a8ca48872fe9ed5": {
       "ro": "Textura din freză; Ghilotină + drillbanks (găurirea multiplă pe simulare și pe octeți)",
@@ -2973,6 +2981,10 @@
       "ro": "Unitatea implicită a unui WMF fără antet placeable (ADR 0117, întrebarea 1: implicit 1/96 țol, ca LibreOffice; sau mm, ca la un DXF fără unități) și un WMF real din programele tale (CorelDRAW, ArtCAM, AutoCAD), de încercat pe instanța de test",
       "en": "The default unit of a WMF without a placeable header (ADR 0117, question 1: 1/96 inch by default, as in LibreOffice; or mm, as for a DXF without units) and a real WMF from your programs (CorelDRAW, ArtCAM, AutoCAD), to try on the test instance"
     },
+    "aaeec45c0e46ef3c": {
+      "ro": "**Cadrul (fereastra) în atelierul Easy 3Draw** (fără mașină; ADR 0284; a treia piesă din 3.Cj; în sesiunea cloud a liniei, pe `wip/3.Xh-biblioteca-ui`; Easy 3Draw 18.31.0). Tipul `cadru`, în fila Cărămizi: o cărămidă 1 × n cu un gol prin ea (fereastră, ușă, portal). Jos, pragul, o placă obișnuită, deci piesa stă pe știfturi; pe margini, doi stâlpi groși cât rama; sus, buiandrugul, cu știfturi pe toată lungimea. Lungimea 2–8 știfturi, înălțimea 2–6 cărămizi, rama 1,2–4 mm, mărimile uzuale (1×2×2 … 1×4×6), colțurile de sus ale golului drepte sau teșite la 45°: teșitura scurtează puntea tipărită în aer până la un știft, cât îi lasă înălțimea golului. Editorul scrie golul și puntea, iar peste 40 mm spune că puntea se poate lăsa. Probele: unitare 6 (golul judecat pe plasă la 0,15 mm de marginile lui, teșitura în puncte de pe hârtie, știfturile până la margine, locașurile libere, 120 de cadre pe toată plaja), e2e 3; otrăvurile 84 / 84 (79 din 83 la prima rulare; una echivalentă a arătat o retragere de 0,01 mm de prisos, scoasă din cod). Doar pachetul extensiei se schimbă (510,8 kB).",
+      "en": "**The frame (window) in the Easy 3Draw workshop** (no machine; ADR 0284; the third piece of 3.Cj; in the line's cloud session, on `wip/3.Xh-biblioteca-ui`; Easy 3Draw 18.31.0). The `cadru` type, in the Bricks tab: a 1 × n brick with an opening through it (window, door, gateway). At the bottom, the sill, a regular plate, so the piece sits on studs; on the sides, two posts as thick as the frame; at the top, the lintel, with studs along its whole length. Length 2–8 studs, height 2–6 bricks, frame 1.2–4 mm, the usual sizes (1×2×2 … 1×4×6), the top corners of the opening square or chamfered at 45°: the chamfer shortens the bridge printed in mid-air down to one stud, as far as the height of the opening allows. The editor states the opening and the bridge, and over 40 mm it says the bridge may sag. Tests: 6 unit (the opening judged on the mesh 0.15 mm from its edges, the chamfer at points worked out on paper, the studs out to their edge, the sockets free, 120 frames across the whole range), 3 e2e; mutations 84 / 84 (79 of 83 on the first run; an equivalent one showed a needless 0.01 mm inset, removed from the code). Only the extension package changes (510.8 kB)."
+    },
     "aaefda24719e9446": {
       "ro": "Coliziunea cu mandrina; Zonele inaccesibile; Model înalt din felii; Extrudare; Two Rail / Spin / Turn",
       "en": "Collision with the chuck; Unreachable zones; A tall model from slices; Extrude; Two Rail / Spin / Turn"
@@ -4024,6 +4036,10 @@
     "e6935746ddf63115": {
       "ro": "Orice nod își schimbă tipul",
       "en": "Any node changes its type"
+    },
+    "e6ca439f6f767a07": {
+      "ro": "Easy 3Draw 18.31.0 (din Bibliotecă, pe canalul `biblioteca` sau pe adresa principală de test, după publicare): fila Cărămizi → **Cadru / fereastră**. Printează fereastra 1×4×3 dreaptă și ușa 1×4×5 cu colțurile teșite, în picioare. Spune dacă buiandrugul (puntea de 28,6 mm) iese drept sau lăsat, dacă stâlpii de 1,6 mm țin și dacă pragul se prinde pe știfturi ca o placă",
+      "en": "Easy 3Draw 18.31.0 (from the Library, on the `biblioteca` channel or on the main test address, once published): Bricks tab → **Frame / window**. Print the square 1×4×3 window and the 1×4×5 door with chamfered corners, upright. Say whether the lintel (the 28.6 mm bridge) comes out straight or sagging, whether the 1.6 mm posts hold and whether the sill grips the studs like a plate"
     },
     "e6f1a2cda06b6fa9": {
       "ro": "Incrustația cu pereți drepți",
