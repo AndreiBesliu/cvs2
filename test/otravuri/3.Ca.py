@@ -83,11 +83,11 @@ o('U26', LG, 'ext = peLung ? dreptunghi(0, 0, g, g) : dreptunghi(x0, 0, x1, g)',
   'blocul e lat cât grinda (7,2), nu cât grosimea ei')
 o('U27', LG, 'const w0 = peLung ? x0 : 0, w1 = peLung ? x1 : g;', 'const w0 = peLung ? x0 : 0, w1 = peLung ? x1 : P.grinda_subtire;', 'conector',
   'blocul e gros cât grinda subțire')
-o('U28', LG, 'ax, stiftTechnic, bucsa, conector, suport,', 'ax, stiftTechnic, bucsa, suport,', 'conector',
+o('U28', LG, 'ax, stiftTechnic, bucsa, conector, conectorUnghi, suport,', 'ax, stiftTechnic, bucsa, conectorUnghi, suport,', 'conector',
   'motorul nu mai știe piesa')
 
 # --- atelierul: tabelele
-o('T01', AT, '["bucsa", "Bucșă / conector"], ["conector", "Conector perpendicular"], ["clema", "Clemă"]', '["bucsa", "Bucșă / conector"], ["clema", "Clemă"]', 'tabele',
+o('T01', AT, '["bucsa", "Bucșă / conector"], ["conector", "Conector perpendicular"], ["conectorUnghi", "Conector în unghi"]', '["bucsa", "Bucșă / conector"], ["conectorUnghi", "Conector în unghi"]', 'tabele',
   'piesa nu e în nicio familie')
 o('T02', AT, '    conector: `<rect x="2.5" y="7" width="19" height="10" rx="1"/>', '    conectorVechi: `<rect x="2.5" y="7" width="19" height="10" rx="1"/>', 'tabele',
   'piesa n-are desenul ei')

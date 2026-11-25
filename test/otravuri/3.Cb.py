@@ -76,13 +76,14 @@ o('U27', LG, 'const cerute = (Array.isArray(mansoane) ? mansoane : []).filter((b
   'un unghi care nu e număr nu mai e aruncat')
 
 # --- motorul: axul cu opritor
-o('P01', LG, 'if (!opritor) return { tri: axe(prisma(sec, 0, L), ([u, v, w]) => [w, u, v], false), avert: [] };', 'if (opritor) return { tri: axe(prisma(sec, 0, L), ([u, v, w]) => [w, u, v], false), avert: [] };', 'opritor',
+o('P01', LG, 'if (!opritor) return { tri: axe(prisma(sec, 0, L), ([u, v, w]) => [w, u, v], false), avert: [], prinderi: [capat(0, L), capat(L, 0)] };',
+  'if (opritor) return { tri: axe(prisma(sec, 0, L), ([u, v, w]) => [w, u, v], false), avert: [], prinderi: [capat(0, L), capat(L, 0)] };', 'opritor',
   'opritorul e pe dos: îl are axul simplu')
 o('P02', LG, 'const rg = P.guler_d / 2, lo = 1, x0 = Math.sqrt(', 'const rg = P.guler_d / 2, lo = 2, x0 = Math.sqrt(', 'opritor',
   'opritorul e gros de 2 mm')
 o('P03', LG, 'const rg = P.guler_d / 2, lo = 1, x0 = Math.sqrt(', 'const rg = P.guler_d / 2 + 0.5, lo = 1, x0 = Math.sqrt(', 'opritor',
   'opritorul e mai mare decât lamajul găurii')
-o('P04', LG, '...axe(prisma(disc, L - lo, L), f, false)], avert: [] };', '...axe(prisma(disc, L, L + lo), f, false)], avert: [] };', 'opritor',
+o('P04', LG, '...axe(prisma(disc, L - lo, L), f, false)], avert: [], prinderi: [capat(L - lo, 0)] };', '...axe(prisma(disc, L, L + lo), f, false)], avert: [], prinderi: [capat(L - lo, 0)] };', 'opritor',
   'opritorul lungește axul')
 o('P05', LG, 'if (w > 1e-9) disc.push([d / 2 + rg * Math.cos(t), w]); }', 'if (w > -9) disc.push([d / 2 + rg * Math.cos(t), w]); }', 'opritor',
   'discul nu mai e tăiat de masă')
