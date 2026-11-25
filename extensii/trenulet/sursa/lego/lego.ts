@@ -2892,7 +2892,50 @@ var Lego = (function (glob: typeof globalThis) {
     const r = (f as (d: DefPiesa) => Rezultat)(def);
     // baza: unde era coltul cutiei inainte de mutarea in origine (pentru asezarea pe grila de stifturi, in model)
     const [a] = cutia(r.tri), tri = muta(r.tri, -a[0], -a[1], -a[2]), [, b] = cutia(tri);
-    return { ...r, tri, dim: b, baza: a, prinderi: mutaPrinderi(r.prinderi, -a[0], -a[1], -a[2]) };
+    // ax: la piesele rotunde, unde e axul in plasa mutata (originea piesei din motor); la celelalte, null (ADR 0283)
+    const ax: [number, number] | null = eRotunda(def) ? [-a[0], -a[1]] : null;
+    return { ...r, tri, dim: b, baza: a, ax, prinderi: mutaPrinderi(r.prinderi, -a[0], -a[1], -a[2]) };
+  }
+
+  // ---------------------------------------------------------------------------------------------- asezarea in model (ADR 0283)
+  // Vederea „Modelul” a atelierului pune fiecare piesa pe grila de stifturi dupa amprenta ei (gw × gd stifturi) si dupa pivot:
+  // punctul piesei (in plasa mutata in origine) care sta in mijlocul amprentei si in jurul caruia se roteste piesa.
+  // - piesa obisnuita: amprenta e cutia ei, rotunjita la stifturi; pivotul, mijlocul cutiei;
+  // - piesa cu o placa pe grila si ceva ce iese din ea (stifturi laterale, suport, clema, maner, bila, cupa): amprenta e
+  //   placa, iar pivotul, mijlocul placii (corpul ramane unde l-a facut motorul);
+  // - piesa rotunda (axul ei e originea piesei din motor): amprenta e impara pe ambele axe (cu un stift in plus unde iesea
+  //   para), iar pivotul e axul. Deci axul sta mereu pe centrul unui stift, iar doua piese rotunde ajung pe acelasi ax.
+  const ROTUNDE: ReadonlySet<string> = new Set(["rotita", "cama", "melc", "roata", "fulie", "conica", "coroana", "conicaDubla", "elice", "eliceBarca", "ventilator", "roataPalete"]);
+  /** Piesa rotunda, cu axul in originea ei: tipurile de mai sus si, la senila, pinionul (zala nu). */
+  function eRotunda(def: DefPiesa): boolean { return def.tip === "senila" ? def.piesa === "pinion" : ROTUNDE.has(def.tip); }
+  type Asezare = { gw: number; gd: number; pivot: [number, number]; ax: boolean };
+  function asezareModel(def: DefPiesa, corp: { dim: readonly number[]; baza: readonly number[]; ax: readonly number[] | null } = construieste(def)): Asezare {
+    const st = (v: number) => Math.max(1, Math.round((v + 0.2) / P.pas)), d = def as { tip: string; lung?: unknown; adanc?: unknown; baza?: unknown };
+    const placa = ({ lateral: [d.lung, 1], suport: [d.lung, d.adanc], clema: [d.lung, 1], maner: [d.lung, 1], bila: [d.baza, d.baza], cupa: [1, 1] } as Record<string, unknown[] | undefined>)[d.tip];
+    if (placa) {
+      const [gw, gd] = placa.map(v => Math.max(1, Math.round(+(v as number) || 1))) as [number, number];
+      return { gw, gd, pivot: [gw * P.pas / 2 - corp.baza[0]!, gd * P.pas / 2 - corp.baza[1]!], ax: false };
+    }
+    const gw = st(corp.dim[0]!), gd = st(corp.dim[1]!);
+    if (corp.ax) return { gw: gw + 1 - gw % 2, gd: gd + 1 - gd % 2, pivot: [corp.ax[0]!, corp.ax[1]!], ax: true };
+    return { gw, gd, pivot: [corp.dim[0]! / 2, corp.dim[1]! / 2], ax: false };
+  }
+  /** Unde sta pivotul (mm) al piesei puse la x, y (stifturi), rotita cu rot sferturi de tura: mijlocul amprentei rotite. */
+  function pivotModel(a: Asezare, x: number, y: number, rot: number): [number, number] {
+    const [w, d] = rot % 2 ? [a.gd, a.gw] : [a.gw, a.gd];
+    return [(x + w / 2) * P.pas, (y + d / 2) * P.pas];
+  }
+  /** Locul (stifturi) la care pivotul piesei ajunge cel mai aproape de tinta (mm); la egalitate, cel cu numarul mai mic. */
+  function langaPivot(a: Asezare, rot: number, tinta: readonly number[]): [number, number] {
+    const [w, d] = rot % 2 ? [a.gd, a.gw] : [a.gw, a.gd], aproape = (v: number) => Math.ceil(v - 0.5 - 1e-6) + 0;
+    return [aproape(tinta[0]! / P.pas - w / 2), aproape(tinta[1]! / P.pas - d / 2)];
+  }
+  /** Rotorul unui ventilator si carcasa in care incape (varful paletelor sub raza golului ei): in model stau la acelasi Z. */
+  function impreunaInModel(a: DefPiesa, b: DefPiesa): boolean {
+    if (a.tip !== "ventilator" || b.tip !== "ventilator") return false;
+    const [rotor, carcasa] = a.piesa === "carcasa" ? [b, a] : [a, b];
+    if (rotor.piesa === "carcasa" || carcasa.piesa !== "carcasa") return false;
+    return ventilatorCote(rotor).Rt < ventilatorCote(carcasa).D / 2;
   }
 
   // ---------------------------------------------------------------------------------------------- STL, pat, zip
@@ -2973,6 +3016,8 @@ var Lego = (function (glob: typeof globalThis) {
     // prinderile (ADR 0284, felia 3.Ce): ale unei piese (aceleași ca în `construieste(def).prinderi`), felurile, ce se prinde
     // cu ce și montajul a două prinderi
     prinderi: (def: DefPiesa) => construieste(def).prinderi, feluriPrinderi: FELURI_PRINDERI, sePrind, montaj,
+    // așezarea în vederea „Modelul” (ADR 0283): amprenta și pivotul piesei, locul pivotului, locul de lângă o țintă, perechea
+    asezareModel, pivotModel, langaPivot, impreunaInModel,
     rezumatPrinderi, perechiFeluri, axPentru, stiftPentru,
     contururi, insetRectiliniu, conturPana, pozitiiGauriPana, centreIndoita,
     // rotitele (ADR 0169): distanta dintre axele a doua roti care se prind (modulul m), pentru atelier
