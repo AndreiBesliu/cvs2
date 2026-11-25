@@ -97,8 +97,11 @@ test('ștearsă din bibliotecă: „nu mai e în bibliotecă”, iar rândul î�
 test('frezele în plus: nota pe fundul plat și pe o freză de rest; recunoașterea celor scrise de mână', async ({ page }) => {
   await page.goto('/');
   await adauga(page, 'dreptunghi');
+  await adauga(page, 'cerc');
   await page.locator('[data-actiune="export.gcode"]').click();
-  const e1 = fisa(page, 'e1/e1');
+  const e1 = fisa(page, 'e1/e1'), e2 = fisa(page, 'e2/e2');
+  // Cercul taie cu Plată Ø6, aceeași freză ca fundul plat al dreptunghiului (mai jos): „Pe toate” le ia pe amândouă.
+  await e2.locator('[data-camp="freza-biblioteca"]').selectOption({ label: 'Plată Ø6' });
   await e1.locator('input[data-camp="latura"][value="vcarve"]').check();
   await e1.locator('[data-camp="freza-biblioteca"]').selectOption({ label: 'V90 Ø12' });
   await e1.locator('[data-camp="fund-plat"]').check();
@@ -120,6 +123,9 @@ test('frezele în plus: nota pe fundul plat și pe o freză de rest; recunoaște
   await r0.locator('[data-buton="ia-valorile-noi"]').click();
   await expect(r0.locator('[data-nota="biblioteca-schimbata"]')).toHaveCount(0);
   await expect(grupFund.locator('.campuri-fund > [data-nota="biblioteca-schimbata"]')).toBeVisible();
+  // „Pe toate (2)” din nota fundului: fundul și freza cercului, deodată.
+  await grupFund.locator('[data-buton="ia-valorile-noi-toate"]').click();
+  await expect(page.locator('[data-nota="biblioteca-schimbata"]')).toHaveCount(0);
   // Freza V-ului, scrisă de mână cu valorile lui V60 Ø6: recunoscută.
   await e1.locator('[data-camp="diametru"]').fill('6');
   await e1.locator('[data-camp="unghi-v"]').fill('60');

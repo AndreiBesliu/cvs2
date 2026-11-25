@@ -46,6 +46,7 @@ o('W04', F, "recunoscuta !== undefined && !origine ?", 'false ?', 'e2e', 'freza 
 o('W05', F, "        {nota('fund', p.origineFund)}\n", '', 'e2e', 'fundul plat n-are notă')
 o('W06', D, "{(stari[k]?.fel === 'schimbata' || stari[k]?.fel === 'stearsa') && (", '{false && (', 'e2e', 'frezele de rest n-au notă')
 o('W07', F, "  if (stare?.fel === 'stearsa' && origine) {", '  if (false) {', 'e2e', 'freza ștearsă nu se spune')
+# A01: practic echivalentă (fereastra exportului se montează din nou la fiecare deschidere, deci biblioteca e citită proaspăt).
 o('A01', A, '  const bibliotecaToata = useMemo(() => (biblioteca.incarcata ? biblioteca.freze.filter((f) => areCam(f.fel)).map(oferita) : null), [biblioteca]);',
   '  const bibliotecaToata = useMemo(() => (biblioteca.incarcata ? biblioteca.freze.filter((f) => areCam(f.fel)).map(oferita) : null), [biblioteca.incarcata]);',
   'e2e', 'biblioteca dată ferestrei nu urmează schimbările ei')
