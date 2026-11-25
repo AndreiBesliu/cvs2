@@ -14810,6 +14810,24 @@ gata de unit”, `b099c457`; 28.8↑n, `7996e77c`), la ordinul în vigoare „un
 - **Documentele:** decizia și paragrafele de stare în `CLAUDE.md` (frezele, exportul, atelierul); indexul liniilor;
   starea din `docs/linii/principala.md`.
 
+## 2026-11-25 — 16.A↑b-6: „Pune-o înapoi în bibliotecă” din fereastra exportului (Model: Claude Opus 5.5)
+
+**Prompt:** cuvântul owner-ului, transmis de sesiunea principală: „ok, porneste 10.4↑c-2 si 16.A↑b-6”. **Started:** 25.11, 14:16.
+
+- **Ramura** `wip/16.A-freze-b6`, din vârful lui 16.A↑b-4 (`48f27fcf`).
+- **Felia** (`3c01a6ad`): pe nota unei freze șterse din bibliotecă, **Pune-o înapoi în bibliotecă**. Freza intră la loc din
+  copia de pe rând (`copieDeReadus`, `frezaDinCopie`), cu id-ul ei de dinainte, o versiune nouă și un nume liber
+  (`cuFrezaReadusa`, prin `puneInapoi` din depozit), în biblioteca proiectului (`useBibliotecaProiectCuCheie`). În cont, nimic
+  nou pe server: callable-ul `freze` o reînvie peste semnul ștergerii; pleacă prin sincronizarea de azi
+  (`trimiteSchimbarea`, prin bucata contului), iar fără `cloud` rămâne în browser. Rândurile cu aceeași copie o iau
+  (`cuFrezaPusaInapoi`); cu id-ul încă acolo, nimic suprascris. Manualul (ro, en).
+- **Probele** (întâi): unitare noi 4 (`exportFreze.inapoi.test.ts`) și reînvierea cu serverul fals
+  (`frezeSincronizare.test.ts`); în Edge 2 (`exportFrezeInapoi.spec.ts`); pe emulatoare 1 (`freze.emulator.spec.ts`).
+  **Otrăvurile:** 17 / 17 (`test/otravuri/16.A-b6.py`) și 3 / 3 pe emulatoare (`test/otravuri/16.A-b6-emu.py`).
+- **Mărimea** (față de `48f27fcf`): pornirea neschimbată (111,2 kB; cu ușa 116,2, cu Atelierul 116,5 / 125), totalul
+  891,7 → 893,3 / 1 000, contul 30,3 / 32 (neschimbat). Nimic pe server; documentul rămâne v28 (din relief).
+  **Completed:** 25.11, 14:40.
+
 ## 2026-11-25 — Sesiunea principală în cloud: 10.4↑c-2 și 16.A↑b-6, pornite la cuvântul owner-ului (Model: Claude Fable 5.2)
 
 **Prompt:** „ok, porneste 10.4↑c-2 si 16.A↑b-6”

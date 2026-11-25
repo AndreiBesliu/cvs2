@@ -1879,8 +1879,12 @@ ferestrei), diametrul și pasul lateral; **Exportă** o scrie cu valorile ei de 
 Proiectul ține o copie a fiecărei freze alese din bibliotecă. Dacă freza se schimbă apoi în **Frezele mele**, rândul spune ce
 s-a schimbat (de pildă „În bibliotecă, „Plată Ø6” are acum avansul 1.400 (aici 1.000).”), cu **Ia valorile noi** pentru freza
 aceea și, dacă și alte freze ale ferestrei vin din ea, **Pe toate (N)**; numărul T și pașii rămân, iar **Exportă** scrie valorile
-noi. O freză ștearsă din bibliotecă rămâne în proiect, cu nota „nu mai e în bibliotecă”. O freză scrisă de mână, la fel cu una
-din bibliotecă (același diametru, aceeași formă), apare ca **Scrisă de mână (ca „…”)**, fără să schimbe nimic în proiect.
+noi. O freză ștearsă din bibliotecă rămâne în proiect, cu nota „nu mai e în bibliotecă” și cu **Pune-o înapoi în bibliotecă**:
+freza intră la loc în **Frezele mele** din copia proiectului (numele, numărul T, diametrul, forma, valorile de lucru, tăișul și
+pașii operației; numărul de tăișuri, nota și grupul nu le mai știe), iar cu contul deschis pleacă și în cont. Dacă numele ei e
+luat între timp de altă freză, intră cu un nume liber (de pildă „Plată Ø12 (2)”), pe care îl iau și operațiile cu aceeași copie;
+**Exportă** îl scrie. O freză scrisă de mână, la fel cu una din bibliotecă (același diametru, aceeași formă), apare ca **Scrisă
+de mână (ca „…”)**, fără să schimbe nimic în proiect.
 
 **Ordinea tăierii** stă în listă, deasupra operațiilor. Operațiile apar în ordinea în care se taie, cu locul lor în stânga (fișa
 spune „locul N din M”):

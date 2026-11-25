@@ -57,6 +57,12 @@ const CAMP_DIFERENTA: Readonly<Record<DiferentaFreza['camp'], CheieSimpla>> = {
 };
 
 /**
+ * „Pune-o înapoi în bibliotecă” pe o freză ștearsă (ADR 0300 §5, felia 16.A↑b-6): butonul (oprit cât scrie) și motivul unui
+ * refuz (biblioteca plină, a unei versiuni mai noi, valorile în afara marginilor ei).
+ */
+export type InapoiNota = { readonly lucru: boolean; readonly motiv: string | null; readonly onPune: () => void };
+
+/**
  * Nota unei freze față de bibliotecă (ADR 0300 §5, felia 16.A↑b-4): ce s-a schimbat acolo („În bibliotecă, «Plată Ø6» are acum
  * avansul 1 400 (aici 1 000)”), cu „Ia valorile noi” și, dacă și alte freze ale ferestrei o au, „Pe toate (N)”; ștearsă, „nu mai e
  * în bibliotecă”. Niciodată singură: proiectul se schimbă doar la clic.
@@ -64,10 +70,23 @@ const CAMP_DIFERENTA: Readonly<Record<DiferentaFreza['camp'], CheieSimpla>> = {
 export function NotaBiblioteca(props: {
   readonly stare: StareOrigine | null; readonly origine: OrigineFreza | null; readonly peToate: number; readonly oprit: boolean;
   readonly fmt: Intl.NumberFormat; readonly onIa: (f: FrezaOferita) => void; readonly onIaToate: (f: FrezaOferita) => void;
+  /** „Pune-o înapoi în bibliotecă”, pe o freză ștearsă (felia 16.A↑b-6); lipsă = fără buton. */
+  readonly inapoi?: InapoiNota | undefined;
 }): ReactNode {
-  const { stare, origine, peToate, oprit, fmt, onIa, onIaToate } = props;
+  const { stare, origine, peToate, oprit, fmt, onIa, onIaToate, inapoi } = props;
   if (stare?.fel === 'stearsa' && origine) {
-    return <p className="nota-biblioteca" data-nota="biblioteca-stearsa">{t('export.biblioteca.stearsa', { nume: origine.nume })}</p>;
+    return (
+      <p className="nota-biblioteca" data-nota="biblioteca-stearsa">
+        {t('export.biblioteca.stearsa', { nume: origine.nume })}
+        {inapoi && (
+          <button type="button" data-buton="pune-inapoi" disabled={oprit || inapoi.lucru} aria-busy={inapoi.lucru || undefined}
+            onClick={inapoi.onPune}>
+            {t('export.biblioteca.inapoi')}
+          </button>
+        )}
+        {inapoi?.motiv && <span className="nota-motiv" data-nota="inapoi-motiv" role="status">{inapoi.motiv}</span>}
+      </p>
+    );
   }
   if (stare?.fel !== 'schimbata') return null;
   const val = (x: number | string | null): string => (x === null ? '—' : typeof x === 'number' ? fmt.format(x) : `«${x}»`);
@@ -143,13 +162,15 @@ export interface ContextFisa {
   readonly iaValorileNoi: (cheie: string, unde: UndeFreza, f: FrezaOferita) => void;
   /** „Ia valorile noi” pe toate locurile ferestrei cu freza aceea din bibliotecă. */
   readonly iaValorileNoiPeToate: (f: FrezaOferita) => void;
+  /** „Pune-o înapoi în bibliotecă” pe un loc al rândului (ADR 0300 §5, felia 16.A↑b-6); lipsă = fără buton. */
+  readonly inapoi: (cheie: string, unde: UndeFreza) => InapoiNota | undefined;
 }
 
 export function FisaOperatie({ cheie, loc, c: ctx }: { readonly cheie: string; readonly loc: number; readonly c: ContextFisa }): ReactNode {
   const {
     dupaCheie, param, total, doarCitire, schimba, randBun, greseliRand, conflict, treceri, taieturaRand, text, fmtFreza, fmtTrecere, grosimeFoaie,
     supracursaCitita, cuSupracursa, onAlegeUrechi, frezeRest, grup, frezeOferite, alegeFreza, bibliotecaToata, iaValorileNoi,
-    iaValorileNoiPeToate,
+    iaValorileNoiPeToate, inapoi,
   } = ctx;
   const o = dupaCheie.get(cheie);
   const p = o ? param[o.cheie] : undefined;
@@ -181,7 +202,8 @@ export function FisaOperatie({ cheie, loc, c: ctx }: { readonly cheie: string; r
     const st = stareLa(unde);
     return (
       <NotaBiblioteca stare={st} origine={origine} peToate={st?.fel === 'schimbata' ? cuAceeasiFreza(param, bibliotecaToata, st.freza.id) : 0}
-        oprit={doarCitire} fmt={fmtFreza} onIa={(f) => { iaValorileNoi(o.cheie, unde, f); }} onIaToate={iaValorileNoiPeToate} />
+        oprit={doarCitire} fmt={fmtFreza} onIa={(f) => { iaValorileNoi(o.cheie, unde, f); }} onIaToate={iaValorileNoiPeToate}
+        inapoi={st?.fel === 'stearsa' ? inapoi(o.cheie, unde) : undefined} />
     );
   };
   const aici = (g: GrupExport): string[] => greseli.filter(([, x]) => x === g).map(([m]) => m);

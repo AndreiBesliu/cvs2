@@ -453,3 +453,55 @@ export function cuImport(
   }
   return { ok: true, lista: rez, adaugate, inlocuite, sarite };
 }
+
+/**
+ * Ce știe proiectul despre o freză din bibliotecă (ADR 0300 §5, felia 16.A↑b-6): copia de pe operație (numele, T-ul,
+ * diametrul, forma, valorile de lucru, tăișul) și pașii rândului ei (pasul pe trecere și pasul lateral, în mm; null =
+ * necunoscut). Nu ține numărul de tăișuri, nota sau grupul: acelea erau doar ale bibliotecii.
+ */
+export type CopieProiect = {
+  readonly nume: string; readonly numar: number; readonly diametru: number;
+  /** Forma în V a copiei (unghiul și vârful plat); lipsă = plată. */
+  readonly forma?: { readonly tip?: 'v'; readonly unghi: number; readonly varf?: number };
+  readonly regim?: { readonly turatie: number; readonly avans: number; readonly plonjare: number };
+  readonly tais?: number;
+  readonly pas: number | null; readonly pasLateral: number | null;
+};
+
+/**
+ * Freza bibliotecii din copia proiectului („Pune-o înapoi în bibliotecă”, ADR 0300 §5): felul din formă (fără formă plată; cu
+ * vârful plat, de gravare; altfel V), valorile de lucru ale copiei (fără ele, ale frezelor de pornire), pasul pe trecere al
+ * rândului (necunoscut, jumătate din diametru) și pasul lateral din mm în procente din diametru, cel mult 50 % (necunoscut,
+ * al frezelor de pornire).
+ */
+export function frezaDinCopie(c: CopieProiect): Freza {
+  const forma = c.forma;
+  const fel: FelFreza = !forma ? 'plata' : forma.varf !== undefined && forma.varf > 0 ? 'gravare' : 'v';
+  const regim = c.regim ?? { turatie: LUCRU.turatie, avans: LUCRU.avans, plonjare: LUCRU.plonjare };
+  const pas = c.pas !== null && c.pas > 0 ? c.pas : Math.min(MARGINI_FREZA.pas, c.diametru / 2);
+  const pasLateral = c.pasLateral !== null && c.pasLateral > 0 && c.diametru > 0
+    ? Math.min(MARGINI_FREZA.pasLateral, Math.round((c.pasLateral / c.diametru) * 1000) / 10) : LUCRU.pasLateral;
+  return {
+    nume: c.nume, fel, diametru: c.diametru,
+    ...(forma ? { unghi: forma.unghi } : {}), ...(fel === 'gravare' ? { varf: forma!.varf } : {}),
+    ...(c.tais !== undefined ? { tais: c.tais } : {}),
+    numar: c.numar, turatie: regim.turatie, avans: regim.avans, plonjare: regim.plonjare, pas, pasLateral,
+  };
+}
+
+/**
+ * Lista cu o freză ștearsă pusă înapoi (ADR 0300 §5, felia 16.A↑b-6): cu id-ul ei de dinainte (originea din proiect; în cont,
+ * semnul ștergerii o reînvie), versiunea `rev`, data `acum` și un nume liber („(2)” dacă altă freză îl are acum). Cu id-ul
+ * încă în listă (pusă înapoi între timp), nimic: freza de acolo nu se suprascrie.
+ */
+export function cuFrezaReadusa(
+  lista: readonly FrezaSalvata[], id: string, rev: number, f: Freza, acum: number, rezervate: readonly string[] = [],
+):
+  | { readonly ok: true; readonly lista: readonly FrezaSalvata[]; readonly freza: FrezaSalvata }
+  | { readonly ok: false; readonly probleme: ProblemeFreza | { readonly id: 'exista' } | { readonly lista: 'plina' } } {
+  if (lista.some((x) => x.id === id)) return { ok: false, probleme: { id: 'exista' } };
+  const r = cuFreza(lista, null, { ...f, nume: numeLiber(f.nume, lista, rezervate) }, () => id, acum, rezervate);
+  if (!r.ok) return 'id' in r.probleme ? { ok: false, probleme: { id: 'exista' } } : { ok: false, probleme: r.probleme };
+  const freza: FrezaSalvata = { ...r.lista[r.lista.length - 1]!, rev };
+  return { ok: true, lista: [...lista, freza], freza };
+}

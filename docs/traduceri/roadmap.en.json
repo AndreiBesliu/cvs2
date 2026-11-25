@@ -2725,6 +2725,10 @@
       "ro": "**Roata cu anvelopă în atelier** (fără mașină; ADR 0280, acceptat: „Da, fără TPU” (1a, 2b, 3a); worktree-ul `rotite`, ramura `wip/3.Tj-roti-senile`; „Uite alte tipuri de roti si un tip de sina pe care vreau ca pluginul sa le faca custom”). „Roată cu anvelopă” în galeria pieselor de legătură: dintr-o bucată (din PLA), doar janta (pentru o anvelopă LEGO) sau doar anvelopa (din TPU), cu cotele LEGO măsurate în LDraw (janta Ø16,8 × 13,6, anvelopa 30,4 × 13,6 cu nervura); banda cu nervuri, netedă sau cu blocuri; fața plină, cu spițe drepte, în Y sau cu găuri; cinci jante de probă la calibrare. Pachetul 18.10.0. Unitare 8, e2e 3, otrăvuri 34 / 34 (25 pe motor, 9 prin e2e), toate prinse. Urmează 3.Tk (fulia).",
       "en": "**Wheels with tyres in the workshop** (no machine; ADR 0280, accepted: “Da, fără TPU” (1a, 2b, 3a); the `rotite` worktree, branch `wip/3.Tj-roti-senile`; “Uite alte tipuri de roti si un tip de sina pe care vreau ca pluginul sa le faca custom”). “Wheel with tyre” in the gallery of connecting pieces: in one piece (in PLA), just the rim (for a LEGO tyre) or just the tyre (in TPU), with the LEGO dimensions measured in LDraw (rim Ø16.8 × 13.6, tyre 30.4 × 13.6 with its rib); a tread with grooves, smooth or with blocks; a solid face, straight or Y spokes, or holes; five test rims in calibration. Package 18.10.0. Unit 8, e2e 3, poisons 34 / 34 (25 on the engine, 9 through e2e), all caught. Next: 3.Tk (the pulley)."
     },
+    "978622bfda0dde78": {
+      "ro": "**„Pune-o înapoi în bibliotecă” din fereastra exportului** (fără mașină; ADR 0300 §5, „Implementarea (16.A↑b-6)”; la cuvântul owner-ului transmis de sesiunea principală, „ok, porneste 10.4↑c-2 si 16.A↑b-6”, pe `wip/16.A-freze-b6`, peste 16.A↑b-4). Pe nota unei freze șterse din bibliotecă, butonul o pune la loc din copia de pe rând (numele, T-ul, diametrul, forma, valorile de lucru, tăișul, pașii rândului), cu id-ul ei de dinainte și un nume liber, în biblioteca proiectului; în cont reînvie peste semnul ștergerii, prin sincronizarea de azi (fără `cloud`, rămâne în browser). Rândurile cu aceeași copie o iau; cu id-ul încă acolo, nimic suprascris. Probele (întâi): unitare noi 4 și reînvierea cu serverul fals, în Edge 2, pe emulatoare 1; otrăvuri 17 / 17 și 3 / 3 pe emulatoare. Pornirea +0 (111,2), totalul +1,6 kB (891,7 → 893,3 / 1 000), contul neschimbat (30,3 / 32). Nimic pe server; documentul rămâne v28 (din relief).",
+      "en": "**“Put it back in the library” from the export window** (no machine; ADR 0300 §5, “Implementation (16.A↑b-6)”; at the owner's word passed on by the main session, “ok, porneste 10.4↑c-2 si 16.A↑b-6”, on `wip/16.A-freze-b6`, on top of 16.A↑b-4). On the note of a bit deleted from the library, the button puts it back from the row's copy (the name, the T, the diameter, the shape, the working values, the cutting length, the row's steps), with its former id and a free name, in the project's library; in the account it comes back to life over the deletion mark, through today's sync (without `cloud`, it stays in the browser). The rows with the same copy take it; with the id still there, nothing is overwritten. The probes (first): 4 new unit ones and the revival with the fake server, 2 in Edge, 1 on the emulators; poisons 17 / 17 and 3 / 3 on the emulators. Startup +0 (111.2), total +1.6 kB (891.7 → 893.3 / 1,000), the account unchanged (30.3 / 32). Nothing on the server; the document stays v28 (from the relief)."
+    },
     "98068c1cdee265fa": {
       "ro": "Două interfețe; §10 Ghid la prima pornire; admin **P4**",
       "en": "Two interfaces; §10 First-run guide; admin **P4**"
@@ -4540,6 +4544,10 @@
     "fd6c4253627d2c9c": {
       "ro": "3.Tm (roata coroană)",
       "en": "3.Tm (the crown gear)"
+    },
+    "fdd55c8319a13191": {
+      "ro": "„Pune-o înapoi în bibliotecă” din fereastra exportului",
+      "en": "“Put it back in the library” from the export window"
     },
     "fde31cc14ead6f53": {
       "ro": "Fișa plăcii 11, pregătită fără mașină",

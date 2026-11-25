@@ -11,7 +11,7 @@
  */
 import { useSyncExternalStore } from 'react';
 import {
-  cuFreza, cuGrupRedenumit, cuImport, cuStandard, faraFreza, frezaDinDate, type Freza, type FrezaSalvata, type FrezaStandard, type PoliticaImport,
+  cuFreza, cuFrezaReadusa, cuGrupRedenumit, cuImport, cuStandard, faraFreza, frezaDinDate, type Freza, type FrezaSalvata, type FrezaStandard, type PoliticaImport,
   type ProblemeFreza,
 } from '../model/freza.ts';
 import { cuDinCatalog } from '../model/dinCatalog.ts';
@@ -52,9 +52,10 @@ export type StareFreze = {
   readonly standard: boolean;
 };
 
-export type ProblemeLista = ProblemeFreza | { readonly id: 'lipsa' } | { readonly lista: 'plina' | 'versiune' };
+export type ProblemeLista = ProblemeFreza | { readonly id: 'lipsa' | 'exista' } | { readonly lista: 'plina' | 'versiune' };
 export type RezultatSalvare = { readonly ok: true; readonly id: string } | { readonly ok: false; readonly probleme: ProblemeLista };
 export type RezultatStergere = { readonly ok: true } | { readonly ok: false; readonly probleme: ProblemeLista };
+export type RezultatPuneInapoi = { readonly ok: true; readonly freza: FrezaSalvata } | { readonly ok: false; readonly probleme: ProblemeLista };
 export type RezultatCatalog =
   | { readonly ok: true; readonly adaugate: number; readonly existente: number; readonly plina: boolean }
   | { readonly ok: false; readonly probleme: ProblemeLista };
@@ -88,6 +89,11 @@ export type FrezeMele = {
   readonly redenumesteGrup: (vechi: string, nou: string) => Promise<RezultatStergere>;
   /** „Pune în frezele mele” (ADR 0302 §1): frezele alese din catalog, cele care nu sunt deja, într-o singură scriere. */
   readonly puneDinCatalog: (freze: readonly Freza[]) => Promise<RezultatCatalog>;
+  /**
+   * „Pune-o înapoi în bibliotecă” (ADR 0300 §5, felia 16.A↑b-6): o freză ștearsă, din copia proiectului, cu id-ul ei de
+   * dinainte și versiunea `rev`, pe ce e în depozit acum; cu id-ul încă acolo, refuzată (`exista`).
+   */
+  readonly puneInapoi: (id: string, rev: number, f: Freza) => Promise<RezultatPuneInapoi>;
 };
 
 type Citita = {
@@ -247,6 +253,10 @@ export function creeazaFrezeMele(depozit: DepozitFreze | null, idNou: () => stri
     sterge: (id) => schimba((lista) => {
       const r = faraFreza(lista, id);
       return r.ok ? { ok: true, lista: r.lista, rez: {} } : { ok: false, probleme: { id: 'lipsa' } };
+    }),
+    puneInapoi: (id, rev, freza) => schimba((lista, rezervate) => {
+      const r = cuFrezaReadusa(lista, id, rev, freza, acum(), rezervate);
+      return r.ok ? { ok: true, lista: r.lista, rez: { freza: r.freza } } : r;
     }),
     puneDinCatalog: (freze) => schimba((lista, rezervate) => {
       const r = cuDinCatalog(lista, freze, idNou, acum(), rezervate);
