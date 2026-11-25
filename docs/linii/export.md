@@ -99,8 +99,10 @@ vreau ca ficare setare sa fie insotita de o ilustratie sugestiva, ca sa ajute us
   `origin/unire-2511x` (18.1↑c, relieful; apoi `b35e2f75`, cu 16.A↑b-7), cu finisarea în `catFoaia` și proba ei pe hârtie.
   Unită în `main` pe 25.11 (`7d74ade2`).
 - **25.11: 28.8↑i gata** (viteza ferestrei, constatarea 4 a auditului). Peste 12 fișe, doar cele din jurul panoului, cea
-  curentă cu vecinele și cea cu focusul se randează; rândurile listei sunt `memo` și cu `content-visibility`. Pe 150 de
-  operații: deschiderea 9,7 s → ~0,5 s, o tastă 96 → 7,7–9 ms. Otrăvurile 9 / 9. Totalul 909,4 / 1 000 (+0,3 kB). Urmează 28.8↑j
+  curentă cu vecinele și cea cu focusul se randează; rândurile listei sunt `memo`. Pe 150 de operații: deschiderea 9,7 s →
+  ~0,5 s (următoarele ~0,15 s), o tastă 96 → ~10 ms. Primul complet a căzut la proba de viteză: timpul citit pe treptele lui
+  `expect` și, găsit apoi sub suprasarcină, `content-visibility` pe rânduri (un rând departe de vedere avea înălțimea 0, deci
+  clicul cădea pe listă); amândouă reparate la cauză. Otrăvurile 10 / 10. Totalul 909,4 / 1 000 (+0,3 kB). Urmează 28.8↑j
   (greșelile pe înțeles).
 
 ## Ce s-a găsit (23.11)
@@ -220,6 +222,12 @@ vreau ca ficare setare sa fie insotita de o ilustratie sugestiva, ca sa ajute us
   panoului, cea curentă cu vecinele și cea cu focusul (28.8↑i). O probă care lucrează într-o fișă departe o aduce întâi (clic în
   listă, „Du-mă la …” sau derulând), iar una care numără fișele randate le caută după `:has([data-grup])` sau
   `:not([data-gol])`. Un câmp nou al fișei nu cere nimic; o regulă nouă a ferestrei își are proba în `export.viteza.spec.ts`.
+- **O probă de timp măsoară în pagină și ia cea mai bună încercare** (`export.viteza.spec.ts`): `expect` din Playwright
+  întreabă pagina la 0, 100, 350, 850 ms…, deci un timp citit așa sare pe treptele lui (1 159 ms pentru o deschidere de sub
+  850). Pe un runner ocupat, zgomotul doar adaugă timp; o tastă scrie de fiecare dată altă valoare (una la fel nu randează).
+- **Fără `content-visibility` pe rândurile listei:** în Edge, un rând departe de vedere ajungea la înălțimea 0, deși
+  `contain-intrinsic-block-size` cerea 3,5 rem, deci rândurile se mutau sub clic. Proba „un rând are înălțimea lui și departe
+  de vedere” îl prinde (V10). O listă lungă nouă se strânge altfel (o fereastră, ca a fișelor), nu cu proprietatea asta.
 - **Regula „cât foaia” stă o singură dată, în `catFoaia` (`src/cam/prinFoaie.ts`):** lucrarea (`cuTaieturiPrinFoaie`) și
   fereastra (`adancimeTaiata`) o citesc de acolo. Un fel nou de operație care nu trece prin foaie cu bifa intră acolo, nu
   într-o condiție a lucrării (la unirea cu 18.1↑c, finisarea reliefului sosise pe vechiul `prin` al lucrării).

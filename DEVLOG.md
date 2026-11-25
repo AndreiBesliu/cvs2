@@ -15357,3 +15357,24 @@ codului: „Alipirea la prinderi (Recomandat)”, „Puncte în vederea 3D (Reco
   verde. Pornirea 111,4 kB (plafonul 125; cu ușa 116,5, cu Atelierul 116,9), totalul 909,1 / 1 000 kB, `/admin` 138,3 / 200,
   contul 30,2 / 32. Nimic pe server.
 - **Documentele:** decizia și paragraful de stare în `CLAUDE.md`; indexul liniilor; starea din `docs/linii/principala.md`.
+
+## 2026-11-25 — Linia exportului: 28.8↑i, a doua trecere (completul căzut pe `da8ef7a5`)
+
+**Prompt:** evenimentul GitHub „Nivelul complet” căzut pe AndreiBesliu/cvs2#49 (`da8ef7a5`) și verificarea programată a porților
+lui #49
+**Started:** 25.11, 22:10.
+
+- **Căderea:** o singură probă din 894, `export.viteza.spec.ts:89`: deschiderea 1 159 ms, pragul 1 000. Timpul se citea cu
+  `expect` din Playwright, care întreabă pagina la 0, 100, 350, 850 ms…: o deschidere de sub 850 ieșea peste prag.
+- **Reparația probei:** timpii se măsoară în pagină (de la clic la cadrul desenat), cu cea mai bună din cel mult trei
+  deschideri și din 11 taste; fiecare tastă scrie altă valoare (una la fel nu randează nimic). Măsurat cu patru probe deodată
+  pe patru procesoare: mediana unei taste 9–31 ms, cea mai bună 6–17.
+- **Găsit sub suprasarcină** (opt lucrători pe patru procesoare): proba listei cădea în 4 din 64 de rulări, cu clicul pe un rând
+  de departe căzut pe listă. Cauza, `content-visibility: auto` pe rânduri, pus de felie: un rând departe de vedere avea
+  înălțimea 0 (lista de 150 măsura 1 969 px în loc de 12 491), iar adus în vedere, 79 px. Scos; fără el, 0 din 48. Câștigul lui
+  la o tastă era sub zgomotul măsurătorii.
+- **Proba nouă:** un rând al listei are, departe de vedere, înălțimea pe care o are adus în vedere; cade cu proprietatea pusă
+  la loc (otrava V10).
+- **După:** prima deschidere ~0,45–0,5 s (cu bucata ferestrei), următoarele ~0,15 s; o tastă ~10 ms (cea mai bună ~6).
+  Proba de viteză, 30 / 30 cu patru lucrători și cu opt.
+- **Documentele:** ADR 0291, fișa etapei 3, registrul otrăvurilor, nota liniei.

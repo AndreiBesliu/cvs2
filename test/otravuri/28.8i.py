@@ -1,7 +1,8 @@
 # Lista de otrăvuri a feliei 28.8↑i (viteza ferestrei exportului, ADR 0291 §1, constatarea 4 a auditului), 25.11.2026, alese
 # de autor: pragul sub care toate fișele rămân randate, fișele din jurul panoului (marginea de o înălțime de panou), vecinele
 # celei curente, fișa cu focusul și golirea ei când focusul pleacă din panou, randarea fișei la „Du-mă la …” înaintea derulării.
-# Rândurile listei cu `memo` și `content-visibility` schimbă doar timpul, nu ce se vede: le judecă măsurătoarea, nu o otravă.
+# Rândurile listei cu `memo` schimbă doar timpul, nu ce se vede: le judecă măsurătoarea, nu o otravă. `content-visibility` pe
+# rânduri, încercat în felie, a fost scos după primul complet (un rând departe de vedere avea înălțimea 0): V10 îl pune la loc.
 # Se rulează cu `scripts/otravuri.py` (docs/otravuri.md), dintr-o clonă a ramurii, după commit; toate cer build-ul („e2e”).
 # o(id, fis, vechi, nou, set, ce): `vechi` apare EXACT o dată în fișier; altfel VOID.
 O = []
@@ -28,6 +29,11 @@ o('V07', DE, '    if (!p || toateFisele) return;\n    const r = p.getBoundingCli
 o('V08', DE, "    if (p?.querySelector(`${sel}[data-gol]`)) flushSync(() => { setCurent(cheie); });\n", '', 'e2e',
   '„Du-mă la …” derulează la locul gol, fără fișa randată (nici greșeala, nici focusul)')
 o('V09', DE, ' setCuFocus(null); }}\n', ' void 0; }}\n', 'e2e', 'fișa cu focusul rămâne randată și după ce focusul a plecat din panou')
+
+# Rândurile listei.
+o('V10', CSS, '  align-items: start;\n  gap: 2px;\n}\n\n.dx-nav-op.tras {',
+  '  align-items: start;\n  gap: 2px;\n  content-visibility: auto;\n  contain-intrinsic-block-size: auto 3.5rem;\n}\n\n.dx-nav-op.tras {', 'e2e',
+  'rândurile listei departe de vedere fără înălțimea lor: se mută sub clic când intră în vedere')
 
 SETURI = {}
 E2E = ['test/e2e/export.viteza.spec.ts', 'test/e2e/export.hartie.spec.ts']
