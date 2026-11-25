@@ -2,6 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { entitatiCote, textPentruFont, type OptiuniCote } from '../../src/io/coteExport.ts';
+import { inHelvetica } from '../../src/io/helvetica.ts';
 import { culoareDxf } from '../../src/io/dxfExport.ts';
 import { exportaVectori, type CoteCerute } from '../../src/io/exportVectori.ts';
 import type { Entitate } from '../../src/io/vectori.ts';
@@ -22,7 +23,7 @@ import { cifreDinFont } from '../../src/text/cifreCote.ts';
 const r = citesteFont(new Uint8Array(readFileSync(new URL('../../public/fonturi/relief-singleline.ttf', import.meta.url))));
 if (!r.ok) throw new Error('fontul cifrelor nu s-a citit');
 const FONT: Font = r.font;
-const optiuni = (stil: StilCota = STIL_IMPLICIT): OptiuniCote => ({ stil, format: formatImplicit(true), cifre: cifreDinFont(FONT) });
+const optiuni = (stil: StilCota = STIL_IMPLICIT): OptiuniCote => ({ stil, format: formatImplicit(true), ca: 'trasaturi', cifre: cifreDinFont(FONT) });
 
 const ancora = (x: number, y: number): { x: number; y: number } => ({ x, y });
 function document(cote: Cota[]): Document {
@@ -48,6 +49,7 @@ const areLinia = (e: readonly Entitate[], x1: number, y1: number, x2: number, y2
 function puncte(e: Entitate): { x: number; y: number }[] {
   if (e.fel === 'polilinie') return e.varfuri.map((v) => ({ x: v.x, y: v.y }));
   if (e.fel === 'cerc') return [e.centru];
+  if (e.fel === 'text') return [e.p];
   return [...e.puncte];
 }
 
@@ -158,11 +160,11 @@ test('o cotă dezlegată se exportă unde a fost văzută ultima oară; un fel n
   assert.ok(areLinia(x.entitati, 0, 25, 100, 25));
   assert.ok(x.entitati.every((e) => e.element === 'd'));
   const fara = entitatiCote(document([]), 0, optiuni());
-  assert.deepEqual(fara, { entitati: [], cutie: null, cote: 0, lipsa: [] });
+  assert.deepEqual(fara, { entitati: [], cutie: null, cote: 0, lipsa: [], definitii: [] });
 });
 
 const STRAT = { nume: 'COTE', culoare: '#006d8f', grosime: 0.1 };
-const cerute = (strat = STRAT): CoteCerute => ({ ...optiuni(), strat });
+const cerute = (strat = STRAT): CoteCerute => ({ ...optiuni(), strat, dxf: 'linii' });
 
 test('fără cote, sau fără bifă, fișierele sunt octet cu octet cele de dinainte, în toate formatele', () => {
   const cu = document([ORIZONTALA]), fara = document([]);
@@ -245,4 +247,183 @@ test('PDF: pagina se lărgește cât ies cotele din foaie (o cotă sub foaie)', 
   const box = /\/MediaBox \[([^\]]+)\]/.exec(pdf)?.[1]?.split(' ').map(Number) ?? [];
   assert.ok(aproape(box[1]! / (72 / 25.4), -32, 1e-5), `jos: ${box[1]! / (72 / 25.4)} mm`);
   assert.ok(aproape(box[3]! / (72 / 25.4), 200, 1e-5), 'sus, foaia');
+});
+
+// --- Felia 10.4↑c-2: cotele ca DIMENSION, cifrele ca text -----------------------------------------------------------------
+
+test('cu felul de dinainte (în DXF linii și cifre, cifrele ca trăsături), corpusul cotelor iese octet cu octet ca în c-1', async () => {
+  const { CORPUS_COTE, STRAT_COTE } = await import('../../scripts/export2d-corpus.ts');
+  const r0 = incarca(structuredClone(CORPUS_COTE));
+  if (!r0.ok) assert.fail(r0.motiv);
+  // Amprentele fișierelor `cote.*` scrise de c-1 (`f2f6fc57`), înaintea feliei.
+  const C1 = {
+    dxf: 'c6da1639ac407170ea9e56542907ad647fb817fcaa26ffc7b221e98680eea188', svg: '330dcce9d99e8a2532dc727f69f8c4c263cd7491ec181202b80bca7d239c6e61',
+    pdf: 'f763b029837becfd41fbb747ca81bb31ed7cf5fa6f9ad91e7a4a79554e513fe6', eps: '48653c4ec26094cd63941f7dfae19e27ee033759b14e8cc2e6816c82549d93ee',
+  } as const;
+  const { createHash } = await import('node:crypto');
+  for (const f of ['dxf', 'svg', 'pdf', 'eps'] as const) {
+    const x = exportaVectori(r0.doc, 0, f, true, { ...optiuni(), format: formatImplicit(true), strat: STRAT_COTE, dxf: 'linii' });
+    assert.equal(createHash('sha256').update(x.text).digest('hex'), C1[f], f);
+  }
+});
+
+const inHelveticaLatime = (t: string): number => inHelvetica(t).latime;
+const definitii = (cote: Cota[]) => entitatiCote(document(cote), 0, optiuni()).definitii;
+const lang = (p: { x: number; y: number } | undefined, x: number, y: number): boolean => p !== undefined && aproape(p.x, x) && aproape(p.y, y);
+
+test('DIMENSION, pe hârtie: orizontala rotită la 0°, verticala la 90°, aliniata; punctele măsurate și piciorul lui b', () => {
+  const [h, v, a] = definitii([
+    ORIZONTALA,
+    { id: 'v', fel: 'verticala', puncte: [ancora(200, 20), ancora(210, 80)], linie: { d: 20 } },
+    { id: 'a', fel: 'aliniata', puncte: [ancora(130, 80), ancora(160, 120)], linie: { d: 10 } },
+  ]);
+  assert.ok(h && v && a);
+  assert.deepEqual([h.tip, h.steaguri, h.unghi, h.masura, h.text, h.element], [0, 32, 0, 100, '100', 'c1']);
+  assert.ok(lang(h.puncte[13], 0, 0) && lang(h.puncte[14], 100, 20) && lang(h.puncte[10], 100, 25));
+  // Mijlocul textului: la jumătate de majusculă (1,75) deasupra bazei (25 + 1,05).
+  assert.ok(lang(h.mijloc, 50, 25 + 1.05 + 1.75));
+  assert.deepEqual([v.tip, v.unghi, v.masura], [0, 90, 60]);
+  assert.ok(lang(v.puncte[10], 185, 80) && lang(v.mijloc, 185 - 1.05 - 1.75, 50));
+  assert.deepEqual([a.tip, a.unghi, a.masura], [1, undefined, 50]);
+  assert.ok(lang(a.puncte[13], 130, 80) && lang(a.puncte[14], 160, 120) && lang(a.puncte[10], 152, 126));
+});
+
+test('DIMENSION, pe hârtie: raza și diametrul (punctul de pe cerc, centrul sau opusul, liderul), cifra pusă de om', () => {
+  const [r, d] = definitii([
+    { id: 'r', fel: 'raza', puncte: [ancora(110, 175), ancora(125, 175)], linie: { d: 6 } },
+    { id: 'd', fel: 'diametru', puncte: [ancora(240, 150), ancora(260, 150)], linie: { d: 8 } },
+  ]);
+  assert.ok(r && d);
+  assert.deepEqual([r.tip, r.steaguri, r.masura, r.text], [4, 160, 15, 'R15']);
+  assert.ok(lang(r.puncte[10], 110, 175) && lang(r.puncte[15], 125, 175) && aproape(r.lider!, 6.7));
+  assert.deepEqual([d.tip, d.steaguri, d.masura, d.text], [3, 160, 40, 'Ø40']);
+  assert.ok(lang(d.puncte[15], 260, 150) && lang(d.puncte[10], 220, 150) && aproape(d.lider!, 8));
+});
+
+test('DIMENSION, pe hârtie: unghiul în sensul arcului, din trei puncte și din două laturi, cu semidreptele întoarse', () => {
+  // Din (0, 0), laturile spre (10, 0) și (0, 10), cu a doua semidreaptă întoarsă (s2 = −1): unghiul dintre (1, 0) și (0, −1)
+  // e 90°, iar arcul pleacă din (0, −1) (trigonometric, spre (1, 0)): 13 = (0, −10), 14 = (10, 0), 15 = vârful.
+  const [u, w] = definitii([
+    { id: 'u', fel: 'unghi', puncte: [ancora(0, 0), ancora(10, 0), ancora(0, 10)], linie: { d: 5, s1: 1, s2: -1 } },
+    // Laturile (245, 30)–(285, 30) și (270, 65)–(250, 45) (a doua de-a-ndoaselea, s2 = −1): semidreapta a doua e tot (1, 1),
+    // deci 45°, din prima latură (13 → 14) spre a doua, în sensul semidreptei: (250, 45) → (270, 65).
+    { id: 'w', fel: 'unghi', puncte: [ancora(245, 30), ancora(285, 30), ancora(270, 65), ancora(250, 45)], linie: { d: 30, s1: 1, s2: -1 } },
+  ]);
+  assert.ok(u && w);
+  assert.equal(u.tip, 5);
+  assert.ok(aproape(u.masura, Math.PI / 2));
+  assert.ok(lang(u.puncte[15], 0, 0) && lang(u.puncte[13], 0, -10) && lang(u.puncte[14], 10, 0));
+  assert.ok(lang(u.puncte[10], 5 * Math.SQRT1_2, -5 * Math.SQRT1_2), 'mijlocul arcului, la −45°');
+  assert.equal(w.tip, 2);
+  assert.ok(aproape(w.masura, Math.PI / 4));
+  assert.ok(lang(w.puncte[13], 245, 30) && lang(w.puncte[14], 285, 30) && lang(w.puncte[15], 250, 45) && lang(w.puncte[10], 270, 65));
+  assert.ok(lang(w.puncte[16], 235 + 30 * Math.cos(Math.PI / 8), 30 + 30 * Math.sin(Math.PI / 8)));
+});
+
+test('DIMENSION fără valoare (laturi paralele) sau fără text: nicio definiție; cota rămâne desenată', () => {
+  const x = entitatiCote(document([{ id: 'g', fel: 'orizontala', puncte: [ancora(0, 0), ancora(100, 0)], linie: { d: 10 }, text: '  ' }]), 0, optiuni());
+  assert.equal(x.cote, 1);
+  assert.deepEqual(x.definitii, []);
+});
+
+const blocuriDxf = (dxf: string): { nume: string; corp: string }[] =>
+  [...dxf.matchAll(/\n0\nBLOCK\n5\n[0-9A-F]+\n330\n[0-9A-F]+\n100\nAcDbEntity\n8\n0\n100\nAcDbBlockBegin\n2\n(\*D\d+)\n70\n1\n([\s\S]*?)\n0\nENDBLK\n/g)]
+    .map((m) => ({ nume: m[1]!, corp: m[2]! }));
+const sectiune = (dxf: string, nume: string): string => dxf.split(`\n2\n${nume}\n`)[1]!.split('\n0\nENDSEC\n')[0]!;
+
+test('DXF ca DIMENSION: blocul *D1 cu desenul cotei, entitatea în ENTITIES, stilul CNCVS2; handle-urile unice, sub $HANDSEED', () => {
+  const doc = document([ORIZONTALA, { id: 'd', fel: 'diametru', puncte: [ancora(240, 150), ancora(260, 150)], linie: { d: 8 } }]);
+  const f = exportaVectori(doc, 0, 'dxf', false, { ...cerute(), dxf: 'dimension' }).text;
+  const blocuri = blocuriDxf(f);
+  assert.deepEqual(blocuri.map((b) => b.nume), ['*D1', '*D2']);
+  assert.match(blocuri[0]!.corp, /\n0\nSOLID\n/);
+  assert.match(sectiune(f, 'BLOCK_RECORD'), /\n2\n\*D1\n[\s\S]*\n2\n\*D2\n/);
+  const ent = sectiune(f, 'ENTITIES');
+  assert.equal((ent.match(/\n0\nDIMENSION\n/g) ?? []).length, 2);
+  assert.doesNotMatch(ent, /\n8\nCOTE\n100\nAcDb(Polyline|Trace|Spline)\n/, 'desenul cotelor e doar în blocuri');
+  assert.match(ent, /\n2\n\*D1\n10\n100\n20\n25\n30\n0\n11\n50\n21\n27\.8\n31\n0\n70\n32\n71\n5\n42\n100\n1\n100\n3\nCNCVS2\n100\nAcDbAlignedDimension\n13\n0\n23\n0\n33\n0\n14\n100\n24\n20\n34\n0\n50\n0\n100\nAcDbRotatedDimension\n/);
+  assert.match(ent, /\n70\n163\n71\n5\n42\n40\n1\n\\U\+00D840\n3\nCNCVS2\n100\nAcDbDiametricDimension\n15\n260\n25\n150\n35\n0\n40\n8$/);
+  assert.match(sectiune(f, 'DIMSTYLE'), /\n105\n[0-9A-F]+\n330\n[0-9A-F]+\n100\nAcDbSymbolTableRecord\n100\nAcDbDimStyleTableRecord\n2\nCNCVS2\n70\n0\n40\n1\n41\n2\.5\n42\n1\n44\n2\n/);
+  assert.match(f, /\n0\nTABLE\n2\nDIMSTYLE\n5\n[0-9A-F]+\n330\n0\n100\nAcDbSymbolTable\n70\n2\n/);
+  const linii = f.split('\n');
+  const handles: number[] = [];
+  for (let i = 0; i + 1 < linii.length; i += 2) {
+    if ((linii[i] === '5' || linii[i] === '105') && linii[i - 1] !== '$HANDSEED') handles.push(Number.parseInt(linii[i + 1]!, 16));
+  }
+  assert.equal(new Set(handles).size, handles.length, 'fiecare handle o dată');
+  const seed = Number.parseInt(/\$HANDSEED\n5\n([0-9A-F]+)\n/.exec(f)![1]!, 16);
+  assert.ok(handles.every((h) => h < seed), '$HANDSEED peste toate');
+});
+
+test('DXF: cifrele ca text sunt MTEXT, în blocul cotei sau, cu „Linii și cifre”, în ENTITIES; semnele din afara ASCII ca \\U+', () => {
+  const doc = document([{ ...ORIZONTALA, text: 'Ø{<>}\\' }]);
+  const text = (dxf: 'dimension' | 'linii'): string => exportaVectori(doc, 0, 'dxf', false, { ...cerute(), dxf, ca: 'text' }).text;
+  const mtext = /\n0\nMTEXT\n5\n[0-9A-F]+\n330\n[0-9A-F]+\n100\nAcDbEntity\n8\nCOTE\n100\nAcDbMText\n10\n50\n20\n27\.8\n30\n0\n40\n3\.5\n41\n0\n71\n5\n72\n1\n1\n\\U\+00D8\\\{100\\\}\\\\\n7\nStandard\n11\n1\n21\n0\n31\n0\n73\n1\n44\n1(\n|$)/;
+  const cuDim = text('dimension');
+  assert.match(blocuriDxf(cuDim)[0]!.corp, mtext);
+  assert.doesNotMatch(sectiune(cuDim, 'ENTITIES'), /MTEXT/);
+  // Textul cotei, în DIMENSION, la fel scris.
+  assert.match(sectiune(cuDim, 'ENTITIES'), /\n1\n\\U\+00D8\\\{100\\\}\\\\\n3\nCNCVS2\n/);
+  const linii = text('linii');
+  assert.match(sectiune(linii, 'ENTITIES'), mtext);
+  assert.doesNotMatch(linii, /DIMENSION\n5\n|\*D1/);
+  assert.match(linii, /^[\x00-\x7f]*$/, 'fișierul rămâne ASCII');
+});
+
+test('stilul CNCVS2 urmează setările: oblica (DIMTSZ), în linie, fără extensii, inch în fracții, grade-minute-secunde, unitatea scrisă', () => {
+  const stil = { ...STIL_IMPLICIT, capete: 'oblica' as const, loc: 'orizontala' as const, extensii: false };
+  const format = { ...formatImplicit(false), unitate: 'fractii' as const, fractie: 16, cuUnitate: true, unghi: 'gms' as const, zecimaleUnghi: 1, zerouri: 'pastrate' as const };
+  const f = exportaVectori(document([ORIZONTALA]), 0, 'dxf', false, { ...cerute(), stil, format, dxf: 'dimension' }).text;
+  const st = sectiune(f, 'DIMSTYLE').split('\n2\nCNCVS2\n')[1]!;
+  const cod = (k: number): string | undefined => new RegExp(`\\n${k}\\n([^\\n]*)\\n`).exec(`\n${st}`)?.[1];
+  assert.deepEqual([cod(3), cod(142), cod(73), cod(74), cod(75), cod(76), cod(77), cod(78)], ['<> in', '2.5', '1', '1', '1', '1', '0', '0']);
+  assert.deepEqual([cod(179), cod(271), cod(275), cod(276), cod(277), cod(278)], ['5', '4', '1', '2', '5', '46']);
+  assert.ok(aproape(Number(cod(144)), 1 / 25.4));
+});
+
+test('Helvetica: lățimile AFM ale semnelor cotelor, codurile WinAnsi / ISOLatin1, „?” pentru ce lipsește; șirul literal', async () => {
+  const { inHelvetica, sirLiteral, marimeHelvetica } = await import('../../src/io/helvetica.ts');
+  assert.deepEqual(inHelvetica('Ø40'), { coduri: [0xd8, 0x34, 0x30], latime: 778 + 556 + 556, lipsa: [] });
+  assert.deepEqual(inHelvetica("R1,5°±×′″"), { coduri: [82, 49, 44, 53, 0xb0, 0xb1, 0xd7, 0x27, 0x22], latime: 722 + 556 + 278 + 556 + 400 + 584 + 584 + 191 + 355, lipsa: [] });
+  assert.deepEqual(inHelvetica('șș'), { coduri: [63, 63], latime: 1112, lipsa: ['ș'] });
+  assert.equal(sirLiteral(inHelvetica('(Ø)\\').coduri), '\\(\\330\\)\\\\');
+  assert.ok(aproape(marimeHelvetica(3.5) * 0.718, 3.5));
+});
+
+test('cifrele ca text: o entitate pe cotă (fără trăsături, fără font), cutia din lățimea Helvetica; în PDF și EPS, semnele lipsă', () => {
+  const doc = document([{ ...ORIZONTALA, text: 'ș=<>' }]);
+  const x = entitatiCote(doc, 0, { stil: STIL_IMPLICIT, format: formatImplicit(true), ca: 'text' });
+  const t = x.entitati.filter((e) => e.fel === 'text');
+  assert.equal(t.length, 1);
+  assert.deepEqual(t[0], { fel: 'text', strat: 'COTE', element: 'c1', text: 'ș=100', p: { x: 50, y: 26.05 }, unghi: 0, inaltime: 3.5 });
+  assert.deepEqual(x.lipsa, []);
+  // Lățimea: „?=100” în Helvetica = 556 + 584 + 3 · 556 = 2808 / 1000 din mărimea 3,5 / 0,718.
+  const w = (2808 / 1000) * (3.5 / 0.718);
+  assert.ok(w < 100 && aproape(x.cutie!.minX, 0) && aproape(x.cutie!.maxY, 26.05 + 3.5), 'cutia ține linia și cifra, până la majuscula ei');
+  const lata = entitatiCote(document([{ ...ORIZONTALA, text: '<> '.repeat(12) }]), 0, { stil: STIL_IMPLICIT, format: formatImplicit(true), ca: 'text' });
+  const wl = (inHelveticaLatime('100 '.repeat(12)) / 1000) * (3.5 / 0.718);
+  assert.ok(aproape(lata.cutie!.minX, 50 - wl / 2) && aproape(lata.cutie!.minY, 1) && aproape(lata.cutie!.maxX, 50 + wl / 2), 'un text mai lat decât linia lărgește cutia cât lățimea lui');
+  for (const f of ['pdf', 'eps'] as const) assert.deepEqual(exportaVectori(doc, 0, f, false, { ...cerute(), ca: 'text' }).lipsa, ['ș'], f);
+  for (const f of ['dxf', 'svg'] as const) assert.deepEqual(exportaVectori(doc, 0, f, false, { ...cerute(), ca: 'text' }).lipsa, [], f);
+  // Fără funcția cifrelor, cu trăsăturile: cifrele se spun lipsă, nedesenate.
+  assert.deepEqual(entitatiCote(doc, 0, { stil: STIL_IMPLICIT, format: formatImplicit(true), ca: 'trasaturi' }).lipsa, ['ș', '=', '1', '0']);
+});
+
+test('SVG, PDF, EPS cu cifrele ca text: <text> centrat și rotit, Helvetica WinAnsi doar cu text, prologul ISOLatin1 doar cu text', () => {
+  const doc = document([{ id: 'v', fel: 'verticala', puncte: [ancora(200, 20), ancora(210, 80)], linie: { d: 20 }, text: '<>°' }]);
+  const svg = exportaVectori(doc, 0, 'svg', false, { ...cerute(), ca: 'text' }).text;
+  assert.match(svg, /<text x="183\.95" y="150" font-family="Helvetica, Arial, sans-serif" font-size="4\.874652" text-anchor="middle" fill="#006d8f" stroke="none" transform="rotate\(-90 183\.95 150\)">60&#176;<\/text>/);
+  const pdf = exportaVectori(doc, 0, 'pdf', false, { ...cerute(), ca: 'text' }).text;
+  // După straturile FARA_OPERATIE și COTE (5, 6), fontul e obiectul 7.
+  assert.match(pdf, /\/Font << \/F1 7 0 R >>/);
+  assert.match(pdf, /7 0 obj\n<< \/Type \/Font \/Subtype \/Type1 \/BaseFont \/Helvetica \/Encoding \/WinAnsiEncoding >>/);
+  // „60°” are 556 + 556 + 400 = 1512 / 1000 din 4,874652: baza pleacă de la jumătate mai jos, pe verticală.
+  const w = (1512 / 1000) * (3.5 / 0.718);
+  assert.match(pdf, new RegExp(`BT /F1 4\\.874652 Tf 0 1 -1 0 183\\.95 ${(50 - w / 2).toFixed(6).replace(/\.?0+$/, '').replace('.', '\\.')} Tm \\(60\\\\260\\) Tj ET`));
+  const eps = exportaVectori(doc, 0, 'eps', false, { ...cerute(), ca: 'text' }).text;
+  assert.match(eps, /%%DocumentNeededResources: font Helvetica\n%%EndComments\n\/Helvetica findfont dup length dict begin\n/);
+  assert.match(eps, /\ngsave 183\.95 50 translate 90 rotate \/Helvetica-L1 findfont 4\.874652 scalefont setfont 0 0 moveto \(60\\260\) dup stringwidth pop -2 div 0 rmoveto show grestore\n/);
+  const fara = exportaVectori(doc, 0, 'eps', false, cerute()).text;
+  assert.doesNotMatch(fara, /findfont|Needed/);
+  assert.doesNotMatch(exportaVectori(doc, 0, 'pdf', false, cerute()).text, /Font/);
 });

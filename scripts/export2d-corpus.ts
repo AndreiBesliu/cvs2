@@ -26,6 +26,18 @@
  * - `u`: unghiul cu vârful (40, 120), laturile spre (60, 120) și (40, 140), arcul de rază 25;
  * - `d`: diametrul cercului cu centrul (240, 150) și punctul (260, 150), cifra în afară, la d = 8.
  * Cifrele sunt trăsăturile fontului inclus cu o singură linie (Relief SingleLine), citit aici de cititorul aplicației.
+ * Fișierele `cote.*` se scriu cu felul de dinainte (cotele DXF-ului ca linii și cifre, cifrele ca trăsături).
+ *
+ * Al treilea document (felia 10.4↑c-2): aceleași patru cote, plus încă trei, toate dezlegate, pe același strat:
+ * - `a`: aliniata între (130, 80) și (160, 120), lungă de 50, cu linia la d = 10;
+ * - `r`: raza cercului cu centrul (110, 175) prin (125, 175), R15, cifra în afară, la d = 6;
+ * - `w`: unghiul dintre laturile (245, 30)–(285, 30) și (250, 45)–(270, 65), cu arcul de rază 30 și textul „2x<>”.
+ * Exportat ca `cote-dim.dxf` (cotele ca DIMENSION, cifrele ca trăsături) și `cote-text.dxf`, `.svg`, `.pdf`, `.eps` (cotele ca
+ * DIMENSION, cifrele ca text).
+ *
+ * Al patrulea document (felia 10.4↑c-2), exportat ca `cote-ascii.pdf`, cu cifrele ca text: o orizontală între (20, 100) și
+ * (280, 100), cu linia la d = 20 și textul ei, `TEXT_ASCII`: toate semnele ASCII tipăribile (fără `<>` alăturate), apoi ° ± × Ø;
+ * centrarea lui în PDF cere lățimea lui Helvetica a fiecărui semn.
  */
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -132,6 +144,22 @@ export const CORPUS_COTE = {
   }],
 };
 export const STRAT_COTE = { nume: 'DIM_1', culoare: '#ff8800', grosime: 0.25 };
+export const TEXT_ASCII = `${Array.from({ length: 95 }, (_, k) => String.fromCharCode(32 + k)).join('')}°±×Ø`;
+export const CORPUS_COTE_ASCII = {
+  ...CORPUS_COTE,
+  foi: [{ ...CORPUS_COTE.foi[0]!, cote: [{ id: 'q', fel: 'orizontala', puncte: [Q(20, 100), Q(280, 100)], linie: { d: 20 }, text: TEXT_ASCII }] }],
+};
+export const CORPUS_COTE_2 = {
+  ...CORPUS_COTE,
+  foi: [{
+    ...CORPUS_COTE.foi[0]!, cote: [
+      ...CORPUS_COTE.foi[0]!.cote,
+      { id: 'a', fel: 'aliniata', puncte: [Q(130, 80), Q(160, 120)], linie: { d: 10 } },
+      { id: 'r', fel: 'raza', puncte: [Q(110, 175), Q(125, 175)], linie: { d: 6 } },
+      { id: 'w', fel: 'unghi', puncte: [Q(245, 30), Q(285, 30), Q(250, 45), Q(270, 65)], linie: { d: 30, s1: 1, s2: 1 }, text: '2x<>' },
+    ],
+  }],
+};
 
 // Doar pornit direct (`node scripts/export2d-corpus.ts <dosar>`): testele îl importă pentru CORPUS, fără să scrie nimic.
 const dosar = process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href ? process.argv[2] : undefined;
@@ -149,11 +177,25 @@ if (dosar) {
   if (!rc.ok) throw new Error(`corpusul cotelor nu trece de ușă: ${rc.motiv}`);
   const f = citesteFont(new Uint8Array(readFileSync(new URL('../public/fonturi/relief-singleline.ttf', import.meta.url))));
   if (!f.ok) throw new Error('fontul cifrelor nu s-a citit');
-  const cerute = { stil: STIL_IMPLICIT, format: formatImplicit(true), cifre: cifreDinFont(f.font), strat: STRAT_COTE };
+  const cerute = { stil: STIL_IMPLICIT, format: formatImplicit(true), cifre: cifreDinFont(f.font), strat: STRAT_COTE, dxf: 'linii', ca: 'trasaturi' } as const;
   for (const fmt of ['dxf', 'svg', 'pdf', 'eps'] as const) {
     const x = exportaVectori(rc.doc, 0, fmt, true, cerute);
     if (x.cote !== 4 || x.lipsa.length > 0) throw new Error(`corpusul cotelor: ${x.cote} cote, lipsă: ${x.lipsa.join(' ')}`);
     writeFileSync(join(dosar, `cote.${fmt}`), x.text);
   }
-  console.log(`corpusul cotelor: 4 cote, în ${dosar}`);
+  const r2 = incarca(structuredClone(CORPUS_COTE_2));
+  if (!r2.ok) throw new Error(`corpusul al doilea al cotelor nu trece de ușă: ${r2.motiv}`);
+  const scrie = (fisier: string, fmt: 'dxf' | 'svg' | 'pdf' | 'eps', ca: 'trasaturi' | 'text'): void => {
+    const x = exportaVectori(r2.doc, 0, fmt, true, { ...cerute, dxf: 'dimension', ca });
+    if (x.cote !== 7 || x.lipsa.length > 0) throw new Error(`corpusul al doilea al cotelor: ${x.cote} cote, lipsă: ${x.lipsa.join(' ')}`);
+    writeFileSync(join(dosar, fisier), x.text);
+  };
+  scrie('cote-dim.dxf', 'dxf', 'trasaturi');
+  for (const fmt of ['dxf', 'svg', 'pdf', 'eps'] as const) scrie(`cote-text.${fmt}`, fmt, 'text');
+  const r3 = incarca(structuredClone(CORPUS_COTE_ASCII));
+  if (!r3.ok) throw new Error(`corpusul ASCII al cotelor nu trece de ușă: ${r3.motiv}`);
+  const ascii = exportaVectori(r3.doc, 0, 'pdf', false, { ...cerute, dxf: 'dimension', ca: 'text' });
+  if (ascii.cote !== 1 || ascii.lipsa.length > 0) throw new Error(`corpusul ASCII al cotelor: ${ascii.cote} cote, lipsă: ${ascii.lipsa.join(' ')}`);
+  writeFileSync(join(dosar, 'cote-ascii.pdf'), ascii.text);
+  console.log(`corpusul cotelor: 4 cote, apoi 7 (ca DIMENSION și cu cifrele ca text), în ${dosar}`);
 }

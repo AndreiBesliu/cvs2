@@ -3307,9 +3307,9 @@ function PanouVectori({ doc, indexFoaie, onInchide, onSetari }: {
   const [cuFoaia, setCuFoaia] = useState(false);
   const [stare, setStare] = useState<string | null>(null);
   const nCote = doc.foi[indexFoaie]?.cote?.length ?? 0;
-  // Bifa cotelor: null până vin setările (implicitul ei); stratul, pentru fraza de sub ea.
+  // Bifa cotelor: null până vin setările (implicitul ei); stratul și felul cotelor (în DXF, al cifrelor), pentru fraza de sub ea.
   const [cuCote, setCuCote] = useState<boolean | null>(null);
-  const [strat, setStrat] = useState<string | null>(null);
+  const [felCote, setFelCote] = useState<{ readonly strat: string; readonly dxf: 'dimension' | 'linii'; readonly cifre: 'trasaturi' | 'text' } | null>(null);
   useEffect(() => {
     if (nCote === 0) return;
     let viu = true;
@@ -3317,7 +3317,7 @@ function PanouVectori({ doc, indexFoaie, onInchide, onSetari }: {
       if (!viu) return;
       const s = m.setariCote().export;
       setCuCote((x) => x ?? s.cuCote);
-      setStrat(s.strat);
+      setFelCote({ strat: s.strat, dxf: s.dxf, cifre: s.cifre });
     }, () => { /* Fără setări: bifa rămâne oprită. */ });
     return () => { viu = false; };
   }, [nCote]);
@@ -3326,12 +3326,19 @@ function PanouVectori({ doc, indexFoaie, onInchide, onSetari }: {
   const exporta = (): void => {
     const cote = nCote > 0 && cuCote === true;
     const vectori = import('../io/exportVectori.ts');
+    // Cifrele ca trăsături cer fontul cu o singură linie; ca text, nu.
     const cerute = cote
-      ? Promise.all([import('./setariCote.ts'), import('../text/calcul.ts')]).then(async ([sc, tx]) => {
+      ? import('./setariCote.ts').then(async (sc) => {
+        const s = sc.setariCote();
+        const baza = {
+          stil: sc.stilCote(s), format: sc.formatCote(s, limba() === 'ro'), strat: { nume: s.export.strat, culoare: s.export.culoare, grosime: s.export.grosime },
+          dxf: s.export.dxf, ca: s.export.cifre,
+        };
+        if (s.export.cifre === 'text') return baza;
+        const tx = await import('../text/calcul.ts');
         const f = await tx.incarcaFont(tx.FONT_COTE);
         if (!f.ok) return 'font' as const;
-        const s = sc.setariCote();
-        return { stil: sc.stilCote(s), format: sc.formatCote(s, limba() === 'ro'), cifre: tx.cifreDinFont(f.font), strat: { nume: s.export.strat, culoare: s.export.culoare, grosime: s.export.grosime } };
+        return { ...baza, cifre: tx.cifreDinFont(f.font) };
       })
       : Promise.resolve(undefined);
     Promise.all([vectori, cerute]).then(([m, c]: [ModulVectori, Awaited<typeof cerute>]) => {
@@ -3342,7 +3349,8 @@ function PanouVectori({ doc, indexFoaie, onInchide, onSetari }: {
       const gata = c
         ? t('editare.vectori.cote.gata', { nume: f.nume, n: String(f.entitati), s: String(f.straturi), c: String(f.cote) })
         : t('editare.vectori.gata', { nume: f.nume, n: String(f.entitati), s: String(f.straturi) });
-      setStare(f.lipsa.length > 0 ? `${gata} ${t('editare.vectori.cote.lipsa', { semne: f.lipsa.join(' ') })}` : gata);
+      const lipsa = c?.ca === 'text' ? 'editare.vectori.cote.lipsa.text' : 'editare.vectori.cote.lipsa';
+      setStare(f.lipsa.length > 0 ? `${gata} ${t(lipsa, { semne: f.lipsa.join(' ') })}` : gata);
     }, () => { setStare(t('editare.vectori.neincarcat')); });
   };
   return (
@@ -3374,9 +3382,10 @@ function PanouVectori({ doc, indexFoaie, onInchide, onSetari }: {
               onChange={(e) => { setCuCote(e.target.checked); setStare(null); }} />
             <span>{t('editare.vectori.cote', { n: String(nCote) })}</span>
           </label>
-          {cuCote === true && strat !== null ? (
+          {cuCote === true && felCote !== null ? (
             <p className="nota-retea" id="nota-vectori-cote" data-testid="nota-vectori-cote">
-              {t('editare.vectori.cote.nota', { strat })}
+              {t('editare.vectori.cote.nota', { strat: felCote.strat, cifre: t(`editare.vectori.cote.nota.${felCote.cifre}`) })}
+              {format === 'dxf' ? ` ${t(`editare.vectori.cote.nota.${felCote.dxf}`)}` : null}
               {onSetari ? <> <button type="button" className="legatura" data-vectori="setari" onClick={onSetari}>{t('editare.cote.setari')}</button></> : null}
             </p>
           ) : null}

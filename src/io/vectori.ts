@@ -11,6 +11,7 @@
  */
 import { numarSegmente, segment, type Contur, type Punct } from '../geom/conturBaza.ts';
 import type { Cutie } from '../geom/cutie.ts';
+import type { FormatCifre, StilCota } from '../model/desenCota.ts';
 import type { Document, Operatie } from '../model/document.ts';
 import { conturElement, cutieElement } from '../model/forme.ts';
 import { elementeFoaie } from '../model/lume.ts';
@@ -21,14 +22,37 @@ export type Strat = (typeof STRATURI)[number];
 
 export type VarfPolilinie = { readonly x: number; readonly y: number; readonly bulge: number };
 /**
- * O entitate a exportului. `plin` (un poligon umplut, capătul plin al unei cote) și `latime` (lățimea constantă a unei
- * polilinii: punctul unei cote, un disc) le au doar cotele (ADR 0330 §7); formele foii sunt doar contururi.
+ * O entitate a exportului. `plin` (un poligon umplut, capătul plin al unei cote), `latime` (lățimea constantă a unei
+ * polilinii: punctul unei cote, un disc) și `text` (cifra unei cote scrisă ca text, felia 10.4↑c-2: mijlocul bazei, unghiul în
+ * grade, majuscula în mm) le au doar cotele (ADR 0330 §7); formele foii sunt doar contururi.
  */
 export type Entitate =
   | { readonly fel: 'cerc'; readonly strat: Strat; readonly element: string; readonly centru: Punct; readonly raza: number }
   | { readonly fel: 'polilinie'; readonly strat: Strat; readonly element: string; readonly inchis: boolean; readonly varfuri: readonly VarfPolilinie[]; readonly latime?: number }
   | { readonly fel: 'spline'; readonly strat: Strat; readonly element: string; readonly puncte: readonly Punct[] }
-  | { readonly fel: 'plin'; readonly strat: Strat; readonly element: string; readonly puncte: readonly Punct[] };
+  | { readonly fel: 'plin'; readonly strat: Strat; readonly element: string; readonly puncte: readonly Punct[] }
+  | { readonly fel: 'text'; readonly strat: Strat; readonly element: string; readonly text: string; readonly p: Punct; readonly unghi: number; readonly inaltime: number };
+
+/** Codurile DXF ale punctelor de definiție ale unei cote DIMENSION. */
+export type CodPunctCota = 10 | 13 | 14 | 15 | 16;
+/**
+ * O cotă ca DIMENSION în DXF (ADR 0330 §7, felia 10.4↑c-2): entitățile ei (pe stratul COTE, cu `element` = id-ul cotei)
+ * intră în blocul ei anonim, iar entitatea DIMENSION o descrie: felul (0 rotită, 1 aliniată, 2 unghiul din două linii,
+ * 3 diametrul, 4 raza, 5 unghiul din trei puncte), steagurile (32: blocul e doar al ei; 128: cifra pusă de om), punctele de
+ * definiție după codul lor, unghiul liniei rotite (50, grade), lungimea liderului (40), măsura (42; unghiul în radiani),
+ * textul scris și mijlocul lui (11).
+ */
+export type DefinitieCota = {
+  readonly element: string;
+  readonly tip: 0 | 1 | 2 | 3 | 4 | 5;
+  readonly steaguri: number;
+  readonly puncte: Readonly<Partial<Record<CodPunctCota, Punct>>>;
+  readonly unghi?: number;
+  readonly lider?: number;
+  readonly masura: number;
+  readonly text: string;
+  readonly mijloc: Punct;
+};
 
 /** Stratul cotelor (ADR 0330 §6, §7): numele (ASCII), culoarea (#rrggbb) și grosimea liniilor în PDF și SVG, în mm. */
 export type StratCote = { readonly nume: string; readonly culoare: string; readonly grosime: number };
@@ -41,6 +65,11 @@ export type VectoriFoaie = {
   readonly cutie: Cutie;
   /** Stratul cotelor, cu entitățile lui pe stratul COTE; lipsă: fără cote. */
   readonly stratCote?: StratCote;
+  /**
+   * Cotele DXF-ului ca DIMENSION (felia 10.4↑c-2), cu desenul și scrierea cifrelor din setări (stilul CNCVS2); lipsă: în DXF,
+   * cotele ca linii și cifre. Celelalte formate nu-l citesc.
+   */
+  readonly dimensiuni?: { readonly definitii: readonly DefinitieCota[]; readonly stil: StilCota; readonly format: FormatCifre };
 };
 
 /** Rolul unei forme, după prima operație care o taie. */

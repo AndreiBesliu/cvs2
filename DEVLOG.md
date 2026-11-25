@@ -14976,3 +14976,33 @@ poate”
 - **Linia atelierului:** owner-ul a răspuns în sesiunea ei la întrebările lui 3.Cf (întâi alipirea la prinderi; prinderea se
   alege din puncte, în vederea 3D; piesa alipită urmează baza): consemnat în decizie și în index.
 - **Documentele:** decizia și paragraful de stare în `CLAUDE.md`; indexul liniilor; starea din `docs/linii/principala.md`.
+
+## 2026-11-25 — Felia 10.4↑c-2: cotele ca DIMENSION în DXF și cifrele ca text (ADR 0330 §7)
+
+**Prompt:** „pornește 10.4↑c-2” (sesiunea principală, 25.11, 14:16, cu cuvântul owner-ului: „ok, porneste 10.4↑c-2 si
+16.A↑b-6”). **Started:** 25.11, 14:20, în sesiunea cloud a liniei cotelor. **Completed:** 25.11, 15:10 (în container; CI-ul,
+pe commit-ul împins).
+
+- **`main` adus** (`2aaee0b4`), prin avans rapid; amprentele fișierelor `cote.*` din c-1 notate înaintea oricărei schimbări.
+- **Proba întâi:** oracolul Python (`export2d_cote.py`) primește corpusul al doilea (toate felurile: plus o aliniată, o rază
+  și un unghi din două laturi, cu textul „2x<>”), cu DIMENSION-ul pe hârtie (felul, steagurile, punctele, măsura, textul,
+  stilul `CNCVS2`, blocul exact) și textul cifrelor în DXF, SVG, PDF și EPS; a căzut pe codul de dinainte, apoi a trecut.
+  Hârtia celor trei cote noi s-a verificat întâi pe desenul de azi, ca linii (300 de segmente, exact).
+- **Pur:** `definitieCota` (`src/io/coteExport.ts`), entitatea `text` a exportului, `src/io/helvetica.ts` (lățimile AFM,
+  WinAnsi / ISOLatin1, „?” pentru ce lipsește). Scriitorii: DXF (stilul `CNCVS2`, blocurile `*Dn`, DIMENSION, MTEXT, `\U+`),
+  SVG (`<text>`), PDF (Helvetica, centrată după lățimi), EPS (Helvetica-L1, `stringwidth`). Cu felul de dinainte, `cote.*` au
+  amprentele de la c-1 (proba unitară le ține).
+- **Setări › Cotele › Exportul:** „Cotele în DXF” (DIMENSION implicit) și „Cifrele” (trăsături implicit); fraza din „Exportă
+  vectori” spune felul; cu cifrele ca text, fontul nu se mai încarcă. Manualul (ro, en), cu grupul Exportul din „Setările”,
+  lipsă în română din c-1.
+- **Găsit pe drum:** `fitz.get_text_length` greșește un text care începe cu un semn din afara ASCII („Ø40”); ezdxf măsoară
+  aliniata după un unghi pe care felul 1 nu-l are; ezdxf decodează `\U+` doar prin `recover`.
+- **Întrebarea 7** (textul cotei DIMENSION: al nostru, scris, sau lăsat de măsurat programului CAD), la owner, cu
+  recomandarea a implementată (ADR 0330).
+- **Porțile, în container:** tipurile, regulile de import, licențele; 296 de unitare ale cotelor, exportului 2D, manualului și
+  documentației; oracolul exportului 2D și al cotelor (cu Ghostscript); e2e-urile exportului cotelor și ale Setărilor (11 / 11);
+  build-ul determinist: pornirea 111,2 kB (neschimbată; cu ușa 116,2, cu Atelierul 116,5 / 125), totalul 890,1 → 893,2 / 1 000.
+- **Otrăvurile** (`test/otravuri/10.4c2.py`, într-o clonă): 53 / 53 (41 unitare, 8 pe oracolul Python prin
+  `test/otravuri/oracol-cote.ts`, cu corpusul scris din nou la fiecare, 4 e2e). Au scăpat întâi H02 (o lățime din tabel,
+  neatinsă de nicio probă) și V06 (codarea EPS, pusă pe setul unitar); P06 (două texte într-un MTEXT) era practic
+  echivalent și a fost înlocuit cu MTEXT-ul rotit invers. Corpusul ASCII (`cote-ascii.pdf`) și setul oracolului le prind.
