@@ -286,6 +286,8 @@ const MOSTRE: readonly (readonly [string, Def, Record<string, number>, { slab?: 
   ['roata dințată de 16, pe știft, oblică', { tip: 'rotita', dinti: 16, gaura: 'r', fel: 'oblici', grosime: 7.8 }, { gauraStift: 2 }],
   ['roata dințată fără gaură', { tip: 'rotita', gaura: 'nu' }, {}],
   ['roata dințată în care gaura nu încape', { tip: 'rotita', dinti: 8, modul: 0.5 }, {}],
+  ['cama', { tip: 'cama' }, { gauraAx: 2 }],
+  ['cama melc, subțire, pe știft', { tip: 'cama', forma: 'melc', gaura: 'r', grosime: 3.8 }, { gauraStift: 2 }],
   ['cremaliera pe știfturi', { tip: 'cremaliera' }, { locas: 4 }],
   ['cremaliera cu găuri', { tip: 'cremaliera', lung: 3, prindere: 'gauri' }, { gauraStift: 6 }],
   ['roata cu anvelopă', { tip: 'roata' }, { gauraAx: 2 }],

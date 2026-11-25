@@ -1680,6 +1680,53 @@ var Lego = (function (glob: typeof globalThis) {
     return { tri, avert, prinderi };
   }
 
+  // ---------------------------------------------------------------------------------------------- cama (ADR 0284, 3.Cj)
+  // Cama, culcată pe pat (axa pe z, prin origine; brațul cel mai lung pe +x): un disc pe ax a cărui margine stă la o
+  // distanță de ax care se schimbă în timpul rotației, de la raza de bază (jumătate din diametrul cerut) la raza de bază plus
+  // cursa. Un tachet sprijinit pe ea (capătul unei grinzi, un ax) urcă și coboară cu cursa, o dată pe tură. Trei forme:
+  // - excentricul: un cerc de rază R0 + c / 2, cu axul mutat din mijloc cu c / 2 (urcă și coboară lin, câte o jumătate de tură);
+  // - para: cercul de bază și un nas rotund (raza R0 / 2, cel puțin 2), cu vârful la R0 + c, legate prin tangente (stă jos
+  //   mai mult de jumătate de tură, apoi urcă și coboară scurt);
+  // - melcul: raza crește liniar de la R0 la R0 + c pe o tură întreagă, apoi cade (urcă lin, cade dintr-odată; într-un singur sens).
+  // Diametrul de bază, 10–64 mm (la 10, între colțul crucii și margine rămân 2,3 mm); cursa, 1–24 mm; grosimea, 1–20 mm.
+  type CamaDef = { forma?: unknown; diam?: unknown; cursa?: unknown; grosime?: unknown; gaura?: unknown };
+  function camaCote(d: CamaDef) {
+    const avert: string[] = [];
+    const camp = (v: unknown, a: number, b: number, implicit: number, ce: (x: string) => string): number => {
+      const n = numarCerut(v), x = zecime(Math.min(b, Math.max(a, Number.isFinite(n) ? n : implicit)));
+      if (Number.isFinite(n) && (n < a - 1e-9 || n > b + 1e-9)) avert.push(ce(String(x).replace(".", Limba.zecimal)));
+      return x;
+    };
+    const D = camp(d.diam, 10, 64, 16, x => tr`Diametrul de bază al unei came e între 10 și 64 mm: am făcut-o de ${x} mm.`);
+    const c = camp(d.cursa, 1, 24, 8, x => tr`Cursa unei came e între 1 și 24 mm: am făcut-o de ${x} mm.`);
+    const h = camp(d.grosime, 1, 20, 7.8, x => tr`Grosimea unei came e între 1 și 20 mm: am făcut-o de ${x} mm.`);
+    return { forma: d.forma === "para" || d.forma === "melc" ? d.forma : "excentric", D, R0: D / 2, c, h, gaura: d.gaura === "r" ? "r" : "x", avert };
+  }
+  /** Conturul camei (trigonometric), cu săgeata laturilor de cel mult 0,02 mm. */
+  function conturCama(forma: string, R0: number, c: number): Poli {
+    const laturi = (R: number) => Math.max(N_CERC, 8 * Math.ceil(Math.PI / Math.acos(1 - 0.02 / R) / 8));
+    if (forma === "excentric") return cerc(c / 2, 0, R0 + c / 2, laturi(R0 + c / 2));
+    if (forma === "melc") {
+      // de la raza de bază (la 0°) la raza de bază plus cursa (la 360°); treapta e latura care închide conturul, pe +x
+      const n = laturi(R0 + c), p: Poli = [];
+      for (let i = 0; i <= n; i++) { const u = 2 * Math.PI * i / n, r = R0 + c * i / n; p.push(i === n ? [r, 0] : [r * Math.cos(u), r * Math.sin(u)]); }
+      return p;
+    }
+    // para: arcul nasului (între tangente), apoi arcul cercului de bază; câte un număr par de laturi, ca vârful nasului și
+    // spatele cercului de bază (capetele camei) să fie chiar vârfuri
+    const rn = Math.max(2, R0 / 2), dn = R0 + c - rn, a = Math.acos((R0 - rn) / dn), p: Poli = [];
+    const m = 2 * Math.max(4, Math.ceil(laturi(rn) * a / Math.PI / 2)), M = 2 * Math.ceil(laturi(R0) * (Math.PI - a) / Math.PI / 2);
+    for (let k = 0; k <= m; k++) { const u = -a + 2 * a * k / m; p.push([dn + rn * Math.cos(u), rn * Math.sin(u)]); }
+    for (let k = 0; k <= M; k++) { const u = a + (2 * Math.PI - 2 * a) * k / M; p.push([R0 * Math.cos(u), R0 * Math.sin(u)]); }
+    return p;
+  }
+  function cama(d: CamaDef): Corp {
+    const e = ef(), q = camaCote(d);
+    const g = q.gaura === "r" ? cerc(0, 0, e.gauraD / 2) : cruce(0, 0, e.axGauraD, e.axGauraLat);
+    // prinderile: gaura de pe ax, prin grosimea camei
+    return { tri: prismaGauri(conturCama(q.forma, q.R0, q.c), [g], 0, q.h), avert: q.avert, prinderi: prinderiButuc(q.gaura, q.h) };
+  }
+
   // ---------------------------------------------------------------------------------------------- roata cu anvelopa
   // Roata cu anvelopă (ADR 0280, felia 3.Tj), culcată pe pat: axa pe z, fața cu spițele jos. Janta: banda cu scaunul
   // anvelopei și canalul nervurii, butucul cu gaura Technic, discul sau spițele pe fața de jos; anvelopa: alezajul cu
@@ -2690,7 +2737,7 @@ var Lego = (function (glob: typeof globalThis) {
   }
 
   // ---------------------------------------------------------------------------------------------- piesa dupa definitie
-  const TIPURI = { caramida, lateral, panta, pantaInversa, pana, rotund, arc, grinda, caramidaTechnic, ax, stiftTechnic, bucsa, conector, conectorUnghi, suport, clema, maner, bara, bila, cupa, rotita, cremaliera, roata, fulie, conica, coroana, conicaDubla, senila, elice, eliceBarca, ventilator, dinCvs2 };
+  const TIPURI = { caramida, lateral, panta, pantaInversa, pana, rotund, arc, grinda, caramidaTechnic, ax, stiftTechnic, bucsa, conector, conectorUnghi, suport, clema, maner, bara, bila, cupa, rotita, cremaliera, cama, roata, fulie, conica, coroana, conicaDubla, senila, elice, eliceBarca, ventilator, dinCvs2 };
   function construieste(def: DefPiesa) {
     const f = TIPURI[def.tip];
     if (!f) throw new Error("tip necunoscut: " + def.tip);
@@ -2784,6 +2831,8 @@ var Lego = (function (glob: typeof globalThis) {
     distantaRoti: (z1: number, z2: number, m = 1) => m * (z1 + z2) / 2,
     // arcul (ADR 0284): cotele din parametri: deschiderea dintre picioare, cât urcă bolta, raza ei, cât rămâne deasupra
     arcCote: (d: ArcDef) => { const q = arcCote(d); return { lung: q.n, inalt: q.c, bolta: q.joasa ? "joasa" : "inalta", deschidere: q.w, sageata: q.s, raza: q.R, deasupra: q.H - q.s, inaltime: q.H }; },
+    // cama (ADR 0284): cotele din parametri, după margini: forma, diametrul de bază, cursa, grosimea, raza cea mai mică și cea mai mare
+    camaCote: (d: CamaDef) => { const q = camaCote(d); return { forma: q.forma, diam: q.D, cursa: q.c, grosime: q.h, gaura: q.gaura, razaMica: q.R0, razaMare: q.R0 + q.c }; },
     // cremaliera (ADR 0284): cotele din parametri: câți dinți încap, cu câte trepte e ridicat axul roții pereche (plăci, la
     // prinderea pe știfturi; rânduri de găuri, la cea cu găuri), înălțimea liniei de divizare și a axului roții deasupra feței
     // de jos, cât înaintează cremaliera la o rotație a roții, înălțimea piesei
