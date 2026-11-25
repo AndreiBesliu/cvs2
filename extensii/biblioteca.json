@@ -7,8 +7,8 @@
         "en": "Plan wooden train tracks with their CNC files, and make 3D-printable parts: LEGO bricks, gears, wheels with tyres, pulleys and shapes from your cvs2 drawing."
       },
       "despre": {
-        "ro": "Easy 3Draw are două părți. În 2D planifici un circuit de trenuleț din lemn: tragi piesele dintr-un capăt în altul, vezi trenul mergând și exporți fișierele CNC ale plăcilor, cu lista de piese. În 3D faci piese compatibile LEGO pentru imprimantă: cărămizi și plăci, legături, roți dințate, conice și cu anvelopă, fulii, șenile, elice și ventilatoare, plus forme trimise din desenul cvs2. Primești STL-ul gata așezat pe pat. Circuitele și listele rămân în browserul tău.",
-        "en": "Easy 3Draw has two parts. In 2D you plan a wooden train track: you drag pieces from one end to the next, watch the train run and export the CNC files of the boards, with the parts list. In 3D you make LEGO-compatible parts for a 3D printer: bricks and plates, joints, gears, bevel gears and wheels with tyres, pulleys, tracks, propellers and ducted fans, plus shapes sent from your cvs2 drawing. You get the STL already laid out on the bed. Your layouts and lists stay in your browser."
+        "ro": "Easy 3Draw are două părți. În 2D planifici un circuit de trenuleț din lemn: tragi piesele dintr-un capăt în altul, vezi trenul mergând și exporți fișierele CNC ale plăcilor, cu lista de piese. În 3D faci piese compatibile LEGO pentru imprimantă: cărămizi și plăci, legături, roți dințate, conice și cu anvelopă, fulii, șenile, elice și ventilatoare, decorațiuni de Crăciun, plus forme trimise din desenul cvs2. Primești STL-ul gata așezat pe pat. Circuitele și listele rămân în browserul tău.",
+        "en": "Easy 3Draw has two parts. In 2D you plan a wooden train track: you drag pieces from one end to the next, watch the train run and export the CNC files of the boards, with the parts list. In 3D you make LEGO-compatible parts for a 3D printer: bricks and plates, joints, gears, bevel gears and wheels with tyres, pulleys, tracks, propellers and ducted fans, Christmas decorations, plus shapes sent from your cvs2 drawing. You get the STL already laid out on the bed. Your layouts and lists stay in your browser."
       },
       "autor": "CNC Vector Studio",
       "categorii": [
@@ -17,6 +17,12 @@
         "cnc"
       ],
       "noutati": [
+        {
+          "versiune": "18.35.0",
+          "data": "2026-11-25",
+          "ro": "O filă nouă, „Crăciun”: fulgul de zăpadă (șase gata făcuți și „Alt fulg”), steaua (plină, contur sau în relief) și brăduțul (de agățat sau în picioare, din două plăci îmbinate). Plate, cu inelul lor, tipărite fără suport.",
+          "en": "A new tab, Christmas: the snowflake (six ready-made ones and “Another snowflake”), the star (solid, outline or raised) and the tree (hanging, or standing, from two slotted plates). Flat, with their ring, printed without supports."
+        },
         {
           "versiune": "18.34.0",
           "data": "2026-11-25",
@@ -154,8 +160,8 @@
           }
         }
       ],
-      "versiune": "18.34.0",
-      "continut": "9705b416e19c8d5a6b41dcbe40156401a80fa80e075d3f0362a7ba761ec7d4c2"
+      "versiune": "18.35.0",
+      "continut": "7f4e9ca89462deae515aed93993934b65b1c8acfd4d9d0de446e31ccfa8ceaec"
     }
   ]
 }

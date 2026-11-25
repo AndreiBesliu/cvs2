@@ -15365,6 +15365,73 @@ codului: „Alipirea la prinderi (Recomandat)”, „Puncte în vederea 3D (Reco
 - **Proba de fum** pe adresa de test: versiunea `c9911c141e13`, potrivită; nicio eroare în consolă, nicio cerere căzută.
 - **Pe test e tot ce e în `main`** (`42433c91` adaugă peste `c9911c14` doar documente).
 
+## 2026-11-25 — Sesiunea principală în cloud: 10.4↑d și 18.1↑d, pornite (Model: Claude Fable 5.2)
+
+**Prompt:** „ok, porneste 10.4↑d si 18.1↑d”
+**Started:** 25.11, 23:37. **Completed:** 26.11, 00:08 (mesajele către linii), apoi decizia în `main`.
+
+- **Liniile, anunțate la 00:08** (o comandă de citire agățată a ținut sesiunea pe loc 30 de minute): cotele, 10.4↑d (lanțul și
+  linia de bază, „Cotează selecția”, „Fă desen din cotă”, cotele în raportul foilor; fără schemă nouă); relieful, 18.1↑d
+  (degroșarea, apoi fișa plăcii; oracolul întâi; `catFoaia`; ordinea tăierii; v30 ținut pentru ea).
+- **Nepornit:** rândul editabil al finisării din fereastra exportului (rămâne la owner).
+- **Documentele:** decizia și cele două paragrafe de stare în `CLAUDE.md`; indexul liniilor; starea din
+  `docs/linii/principala.md`.
+
+## 2026-11-25 — Felia 3.Cl-1: decorațiunile de Crăciun, fulgul, steaua și brăduțul (ADR 0285) (sesiune cloud)
+
+**Prompt:** cererea owner-ului, scrisă în sesiunea principală și trimisă liniei: „Vreau ca sesiunea care lucreaza la
+plugin, sa faca si decoratiuni de craciun pentru imprimanta. Pune-i asra pe lista”; apoi, în sesiunea liniei, la schița
+cu patru întrebări: „Mergem cu recomandarile”
+**Started:** 25.11, 19:10. **Completed:** 25.11, 20:55 (felia, cu otrăvurile; orele, după ceasul containerului).
+
+- **ADR 0285**, propus cu o schiță (șase piese, fila „Crăciun”, patru întrebări) și acceptat cu toate recomandările
+  (1a–4a): întâi fulgul, steaua și brăduțul (3.Cl-1), apoi globul (3.Cl-2), ornamentul cu nume (3.Cl-3) și brăduțul
+  LEGO (3.Cl-4).
+- **Ce face:** fila nouă „Crăciun” a atelierului Easy 3Draw, cu trei piese plate, tipărite culcate, fără suport.
+  Fulgul: șase brațe, perechi de ramuri, miezul hexagon, stea sau gol; șase gata făcuți și „Alt fulg”. Steaua: 5–8
+  colțuri; plină, contur sau în relief. Brăduțul: de agățat sau în picioare, din două plăci cu fante.
+- **Agățătoarea:** inelul (golul de 3 mm, peretele de 1,6; pe un vârf ascuțit, pe o tijă de 2,4 mm) sau gaura de
+  2,5 mm, doar aproape de vârf; unde nu încape, piesa primește inelul, cu un mesaj.
+- **Motorul:** conturul e unirea unor forme simple, cu golurile rămase între ele (`unesteForme`, cu Cavalier): un
+  singur corp, cu greutatea adevărată. Marginile câmpurilor, cu mesajul lor (`campMarginit`).
+- **Probele**, scrise întâi: unitară (21 de teste: fiecare formă are modelul ei de pe hârtie, întrebat pe plasă în mii
+  de puncte; 60 de fulgi la întâmplare; nervura, inelul, gaura, fantele și tăietura plăcii a doua, măsurate pe plasă;
+  a căzut cu funcțiile lipsă) și e2e (8 scenarii). Proba în engleză din cvs2 trece și prin fila nouă.
+- **Găsit pe drum:** gâtul dintre inel și brațul fulgului ieșea de 1,16 mm la linia de 1,2 (inelul a coborât, cu
+  centrul la 1,9 mm peste vârf); ramurile treceau de cercul fulgului (acum capătul lor rămâne în el); gaura de agățat
+  își găsea loc deasupra trunchiului unui brad mic, deci bradul ar fi atârnat cu vârful în jos (văzut la scrierea
+  otrăvurilor: gaura se caută acum doar în ultimul etaj, iar la stea, în colțul de sus).
+- **Probele vechi care numără**, aduse la zi: filele și starea scrisă înapoi (`trenulet.file.spec.ts`), pictogramele
+  (39 de desene), căutarea („fu” găsește și fulgul), proba în engleză, `MOSTRE`, `DREPTE`, versiunea.
+- **Otrăvurile:** `3.Cl-1.py`, 119 (motorul 72 / 72, cu 70 la prima rulare: două scăpate, prinse după întărirea
+  probei; atelierul 43 / 43; textele 4 / 4); `3.Cl-1-en.py`, 13 / 13.
+- **Listele vechi:** felia a mutat patru ancore (una în `3.Cj-1.py`, trei în `3.Cj-2.py`: motorul și editorul fulgului
+  au rânduri la fel cu ale camei și ale roții cu palete). Aduse la zi și rulate din nou: 4 / 4. Celelalte liste: nicio
+  ancoră mutată (comparat cu `main`).
+- **Easy 3Draw 18.35.0** (536,8 kB), cu rândul de „ce e nou”. Doar pachetul extensiei se schimbă: nimic în aplicație,
+  nimic pe server, documentul neatins.
+- **Documentele:** ADR 0285 (răspunsurile owner-ului, „Implementat (3.Cl-1)”), indexul ADR, fișa etapei 3 (jurnalul,
+  coada owner-ului), `docs/linii/atelier.md` (cu regulile noi), indexul liniilor, `docs/otravuri.md`, `CLAUDE.md`.
+- **Urmează:** 3.Cl-2 (globul, relieful pe două înălțimi, „schimbă filamentul la stratul N”).
+
+## 2026-11-26 — Sesiunea principală în cloud: a patruzeci și doua unire (atelierul Easy 3Draw: 3.Cl-1, decorațiunile de Crăciun) (Model: Claude Fable 5.2)
+
+**Prompt:** raportul liniei atelierului („3.Cl-1 […] e gata de unit”, `42775bb0`), la ordinul în vigoare „unește ce se poate”
+**Started:** 26.11, 00:13. **Completed:** unirea în `main`, 26.11, 00:15; publicarea pe test, lotul 39.
+
+- **Verificat înaintea unirii:** completul liniei (45700790804, pe `05e2dffb`) și rapidele (`05e2dffb`, `42775bb0`), verzi;
+  `git diff 05e2dffb 42775bb0`, gol în afara fișierelor `.md`; PR-ul #50; fără `.lucru/`; ramura are `a4d86d53`.
+- **Fără complet al unirii:** de la `a4d86d53`, `main` a primit doar documente (`ca38f215`); arborele unirii, în afara
+  fișierelor `.md`, e al lui `05e2dffb`.
+- **Unirea, pe `unire-2611a`** (din `ca38f215`): `42775bb0`, în `41b1fb6f`. Ciocnirea, în DEVLOG (`rezolva-devlog.py`).
+  Local: tipurile, regulile de import (22 / 22), traducerile (1 165), catalogul controalelor, biblioteca (Easy 3Draw 18.35.0,
+  536 769 octeți), probele documentelor 62 / 62; în schimbări, doar `extensii/`, `test/` și documente.
+- **Porțile, în CI, pe `05e2dffb`** (citite din jurnalul rulării): completul 45700790804, verde la prima trecere (57 min): unit
+  10 617 / 0 (12 sărite, pe Linux), e2e 898 / 898, funcțiile pe emulatoare 136 / 136, paginile 60 / 60. Pornirea 111,4 kB
+  (plafonul 125; cu ușa 116,5, cu Atelierul 116,9), totalul 909,1 / 1 000 kB, `/admin` 138,3 / 200, contul 30,2 / 32.
+  Nimic pe server.
+- **Documentele:** decizia și paragraful de stare în `CLAUDE.md`; indexul liniilor; starea din `docs/linii/principala.md`.
+
 ## 2026-11-26 — Felia 10.4↑d-1: lanțul, linia de bază, „Cotează selecția” (ADR 0330 §4)
 
 **Prompt:** „Deci **10.4↑d pornește**: lanțul și linia de bază, „Cotează selecția”, „Fă desen din cotă”, cotele în raportul
