@@ -21,7 +21,7 @@ import { DesenColt, DesenZ0, type DesenComun } from './exportDesene.tsx';
 import { Cartonase, Poza } from './exportPoze.tsx';
 import { FisaOperatie, type ContextFisa } from './FisaOperatie.tsx';
 import {
-  bandaBuna, CHEI_COLT, CHEI_LATURA, citesteRest, COLTURI, DIAMETRU_FUND_IMPLICIT, faraNumar, incrustatieVRand, inMargini,
+  bandaBuna, CHEI_COLT, CHEI_LATURA, citesteRest, ORIGINI, DIAMETRU_FUND_IMPLICIT, faraNumar, incrustatieVRand, inMargini,
   INTRARI_IMPLICITE, intregInMargini, jocFolosit, laturi, LUNGIME_ZIGZAG_IMPLICITA, margineBuna, MAXIM_REST, PLACUTE_NUMITE, puntiBune,
   RAMPA_IMPLICITA, razaEliceImplicita, restBun, rezervaExplicatii, spatiuFolosit, UNGHI_COBORARE_IMPLICIT, URECHI_IMPLICITE, type BunRand,
   type CerereExport, type FrezaRestOperatie, type IncrustatieDreaptaOperatie, type Latura, type OperatieExport, type Rand, type RandRest,
@@ -207,7 +207,7 @@ export function DialogExport(
   const limba = useLimba();
   // În română, numerele se arată cu virgulă; se citesc cu oricare separator.
   const text = (x: number): string => textNumar(x, limba === 'ro');
-  const [origine, setOrigine] = useState<(typeof COLTURI)[number]>('stanga-jos');
+  const [origine, setOrigine] = useState<(typeof ORIGINI)[number]>('stanga-jos');
   const [z0, setZ0] = useState<'sus' | 'jos'>('sus');
   const [post, setPost] = useState<IdContract>('grbl-11');
   const [unitatiCerute, setUnitati] = useState<Unitati>('mm');
@@ -1122,8 +1122,8 @@ export function DialogExport(
               {grup('origine', 'foaia', <div className="dx-rand">
           <label>
             {t('export.origine')}
-            <select value={origine} data-camp="origine" onChange={(e) => { schimbat(); setOrigine(e.target.value as (typeof COLTURI)[number]); }}>
-              {COLTURI.map((c) => <option key={c} value={c}>{t(CHEI_COLT[c])}</option>)}
+            <select value={origine} data-camp="origine" onChange={(e) => { schimbat(); setOrigine(e.target.value as (typeof ORIGINI)[number]); }}>
+              {ORIGINI.map((c) => <option key={c} value={c}>{t(CHEI_COLT[c])}</option>)}
             </select>
           </label>
               </div>, [], () => <DesenColt colt={origine} nume={t(CHEI_COLT[origine])} onColt={(c) => { schimbat(); setOrigine(c); }} />)}

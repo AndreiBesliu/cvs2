@@ -7,9 +7,14 @@ export type ColtOrigine = 'stanga-jos' | 'dreapta-jos' | 'dreapta-sus' | 'stanga
 
 export const COLTURI: readonly ColtOrigine[] = ['stanga-jos', 'dreapta-jos', 'dreapta-sus', 'stanga-sus'];
 
+/** Unde stă XY0: într-un colț al foii, sau în centrul ei (ADR 0291 §6, a cincea alegere). */
+export type OrigineXY = ColtOrigine | 'centru';
+
+export const ORIGINI: readonly OrigineXY[] = [...COLTURI, 'centru'];
+
 export type Montaj = {
   readonly foaie: { readonly latime: number; readonly inaltime: number; readonly grosime: number };
-  readonly origine: ColtOrigine;
+  readonly origine: OrigineXY;
   /** Z0 pe fața de sus a materialului, sau pe fața de jos (pe masa de sacrificiu). */
   readonly z0: 'sus' | 'jos';
 };
@@ -20,9 +25,13 @@ export type TransformareMontaj = {
   readonly e: number; readonly f: number; readonly dz: number;
 };
 
-/** Colțurile sunt translații pure: foaia stă pe mașină cum stă în document, doar zeroul se mută. */
+/**
+ * Colțurile și centrul sunt translații pure: foaia stă pe mașină cum stă în document, doar zeroul se mută (în centru, cu
+ * jumătatea foii pe fiecare axă).
+ */
 export function transformareMontaj(m: Montaj): TransformareMontaj {
   const { latime, inaltime, grosime } = m.foaie;
+  if (m.origine === 'centru') return { a: 1, b: 0, c: 0, d: 1, e: -latime / 2, f: -inaltime / 2, dz: m.z0 === 'jos' ? grosime : 0 };
   const e = m.origine === 'dreapta-jos' || m.origine === 'dreapta-sus' ? -latime : 0;
   const f = m.origine === 'dreapta-sus' || m.origine === 'stanga-sus' ? -inaltime : 0;
   return { a: 1, b: 0, c: 0, d: 1, e, f, dz: m.z0 === 'jos' ? grosime : 0 };
