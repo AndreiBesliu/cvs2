@@ -1196,8 +1196,8 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   `langaPivot`): o piesă rotundă nouă intră în `ROTUNDE` (`lego.ts`) și, cu amprenta și locul axului pe hârtie, în
   tabelul probei `test/unit/trenulet.model.test.ts`; una care nu e rotundă, în `DREPTE` (proba cere fiecărui tip o
   mostră).** **3.Cf-1 (alipirea la prinderi în „Modelul”; ADR 0284, partea D, cu răspunsurile owner-ului din 25.11:
-  întâi alipirea, prinderea aleasă din puncte în vederea 3D, „Da, piesa alipită urmează baza”)** gata pe 25.11, pe
-  ramură: piesa aleasă din model își arată prinderile (puncte în vedere, numere în editor); una aleasă e ținta, iar
+  întâi alipirea, prinderea aleasă din puncte în vederea 3D, „Da, piesa alipită urmează baza”)** gata pe 25.11,
+  unită în `main` pe 25.11 (`02ac0715`): piesa aleasă din model își arată prinderile (puncte în vedere, numere în editor); una aleasă e ținta, iar
   „Alipește în model” pune piesa următoare pe ea și o leagă de bază (o urmează când baza e mutată sau rotită, în
   lanț); piesa prinsă are „Altă prindere”, „Alt loc pe bază”, „Rotește ↻”, „Glisează” (pe o tijă) și „Desprinde”;
   desprinsă, e pe grilă dacă stă drept pe ea, altfel liberă; Easy 3Draw 18.34.0 (următoarea, 18.35.0). **Așezările
@@ -1804,6 +1804,31 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 25.11.2026, seara (a patruzeci și una unire din cloud): **alipirea la prinderi în vederea „Modelul” a atelierului
+  Easy 3Draw (3.Cf-1), unită în `main`** (sesiunea principală, ramura `unire-2511ac`, din `5649067c`). Linia
+  atelierului, ramura `wip/3.Xh-biblioteca-ui`, `6b093a98`, PR-ul `AndreiBesliu/cvs2#46` (ADR 0284, partea D, cu
+  răspunsurile owner-ului din sesiunea liniei: întâi alipirea la prinderi; prinderea aleasă din puncte, în vederea
+  3D, cu lista alături; piesa alipită urmează baza), unită în `02ac0715`: piesa aleasă din model își arată
+  prinderile; una aleasă e ținta, iar „Alipește în model” pune piesa următoare pe ea și o leagă de bază, pe care o
+  urmează la mutare și la rotire, în lanț; piesa prinsă are „Altă prindere”, „Alt loc pe bază”, „Rotește ↻”,
+  „Glisează” (pe o tijă) și „Desprinde”. **Easy 3Draw 18.34.0** (524,4 kB); otrăvurile 132 / 132 și 13 / 13. 3.Cf
+  s-a împărțit: 3.Cf-2 (orientarea de mână pe trei axe, pozițiile la jumătate de pas) rămâne, după decorațiunile de
+  Crăciun. Doar pachetul extensiei se schimbă (și o opțiune a uneltei de otrăvuri, `E2E_BUILD = False`, pentru
+  listele pluginului); nimic pe server; documentul rămâne v29. Ramura avea `main` `88771f12`; de atunci `main`
+  primise finisarea reliefului și 28.8↑h (cod al aplicației), deci unirea și-a făcut completul ei. Ciocnirile, doar
+  în DEVLOG și în indexul liniilor (rândul atelierului, al liniei). Porțile unirii, în CI, pe `02ac0715` (completul
+  45683411511, verde la prima trecere, 57 min): unit 10 596 / 0 (12 sărite, pe Linux), e2e 890 / 890, funcțiile pe
+  emulatoare 136 / 136, paginile 60 / 60; rapidul, verde pe `02ac0715`; completul liniei, verde pe `6b093a98`
+  (45673012503); aplicația, neschimbată de felie: pornirea 111,4 kB (plafonul 125; cu ușa 116,5, cu Atelierul
+  116,9), totalul 909,1 / 1 000 kB, `/admin` 138,3 / 200, contul 30,2 / 32. Pe test e `75bcf3fb` (lotul 36); lotul 37
+  (`5649067c`: Escape în „Frezele mele”, finisarea reliefului, fereastra exportului „pe hârtie”) e în drum, cu
+  completul pe `main` pornit la 21:24; 3.Cf-1 pleacă după el. La linii, în lucru: atelierul (3.Cl-1, fulgul, steaua
+  și brăduțul, în fila „Crăciun”; 18.35.0), exportul (28.8↑i, viteza ferestrei). **La owner:** 18.1↑d și rândul
+  editabil al finisării, 10.4↑d, Escape în cele șase ferestre, feliile frezelor (16.A↑d–g), cele două alegeri cu
+  recomandarea aplicată, de încercat „Modelul” din Easy 3Draw (acum și alipirea), proba pe mașină a centrului foii,
+  cele patru întrebări din auditul elicelor, pachetul Easy 3Draw trecut de 0,5 MB, arhivarea sesiunii elicelor,
+  verificarea juridică (GDPR) a utilizării aplicației înaintea live-ului, „cine unește în `main`”, meniul de sus la
+  320 px la atingere.
 - 25.11.2026, seara (a patruzecea unire din cloud): **fereastra exportului „pe hârtie” (28.8↑h, cu reparația
   28.8↑h-2), unită în `main`** (sesiunea principală, ramura `unire-2511ab`, din `e5c217b2`). Linia exportului, ramura
   `wip/28.8-export`, `985261ca`, PR-ul `AndreiBesliu/cvs2#44` (ADR 0291 §1, răspunsul 1a al owner-ului;

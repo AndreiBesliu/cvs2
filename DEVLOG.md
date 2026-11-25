@@ -15322,3 +15322,21 @@ codului: „Alipirea la prinderi (Recomandat)”, „Puncte în vederea 3D (Reco
 - **Documentele:** ADR 0284 (răspunsurile la 3.Cf, „Implementat (3.Cf-1)”), indexul ADR, fișa etapei 3 (jurnalul, coada
   owner-ului), `docs/linii/atelier.md` (cu regulile noi), indexul liniilor, `docs/otravuri.md`, `CLAUDE.md`.
 - **Urmează:** 3.Cf-2 (orientarea de mână pe trei axe, pozițiile la jumătate de pas), apoi 3.Cg (verificarea).
+
+## 2026-11-25 — Sesiunea principală în cloud: a patruzeci și una unire (atelierul Easy 3Draw: 3.Cf-1, alipirea la prinderi) (Model: Claude Fable 5.2)
+
+**Prompt:** raportul liniei atelierului („3.Cf-1 e gata de unit”, `6b093a98`), la ordinul în vigoare „unește ce se poate”
+**Started:** 25.11, 21:10. **Completed:** unirea în `main`, 25.11, 22:15; publicarea pe test, după lotul 37.
+
+- **Verificat înaintea unirii:** completul liniei (45673012503) și rapidele, verzi pe `6b093a98`; PR-ul #46; fără `.lucru/`;
+  ramura are `88771f12`.
+- **De ce un complet al unirii:** de la `88771f12`, `main` primise finisarea reliefului și 28.8↑h (cod al aplicației).
+- **Unirea, pe `unire-2511ac`** (din `5649067c`): `6b093a98`, în `02ac0715`. Ciocnirile, în DEVLOG (`rezolva-devlog.py`) și în
+  indexul liniilor (rândul atelierului, al liniei). Local: biblioteca (Easy 3Draw 18.34.0, 524 421 octeți), tipurile,
+  regulile de import, traducerile (1 159), unitarele `trenulet*`, `biblioteca*`, `otravuri*` (fără referințe), cu probele
+  documentelor: 373 / 373.
+- **Porțile, în CI, pe `02ac0715`** (citite din jurnalul rulării): completul 45683411511, verde la prima trecere (57 min): unit
+  10 596 / 0 (12 sărite, pe Linux), e2e 890 / 890, funcțiile pe emulatoare 136 / 136, paginile 60 / 60; rapidul 45683412138,
+  verde. Pornirea 111,4 kB (plafonul 125; cu ușa 116,5, cu Atelierul 116,9), totalul 909,1 / 1 000 kB, `/admin` 138,3 / 200,
+  contul 30,2 / 32. Nimic pe server.
+- **Documentele:** decizia și paragraful de stare în `CLAUDE.md`; indexul liniilor; starea din `docs/linii/principala.md`.
