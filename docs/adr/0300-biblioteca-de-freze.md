@@ -574,6 +574,29 @@ Documentul rămâne v28 (din relief); nimic pe server. Probele (întâi): copia,
 (`test/unit/frezeSincronizare.test.ts`) și pe emulatoare (`test/e2e-emulator/freze.emulator.spec.ts`); în Edge, freza pusă la loc
 cu valorile ei și cu numele luat între timp (`test/e2e/exportFrezeInapoi.spec.ts`). Otrăvurile: `test/otravuri/16.A-b6.py`.
 
+## Implementarea (16.A↑b-7)
+
+Pe 25.11.2026, la cererea sesiunii principale (două probe ale frezelor cădeau din când în când, una deja în `main`), pe
+`wip/16.A-freze-b7` (din `origin/unire-2511w`): **Escape închide fereastra „Frezele mele” oriunde ar fi focusul** (§3).
+
+- **Cauza.** Escape se asculta doar pe fereastră. Butonul apăsat pleacă însă din pagină („Salvează” în „Listă”: editorul lasă
+  locul fișei; „Da, șterge”: fișa pleacă la vestea bibliotecii, înaintea capătului ștergerii) sau se oprește sub focus
+  („Salvează” în „Configurator”, după care browserul lasă focusul pe pagină). Un clic pe un text al ferestrei lasă și el
+  focusul pe pagină. În toate aceste cazuri tasta cădea pe `body`, iar fereastra rămânea deschisă; probele lui `inBiblioteca`
+  cădeau când Escape ajungea în cele 1–2 ms dinaintea efectului care mută focusul. Și cu focusul în fereastră, o stare rămasă
+  în urmă oprea Escape: întrebarea unei freze deja șterse (`stergere`, închisă abia la capătul ștergerii), „Grup nou…” al unei
+  freze șterse în altă filă, redenumirea unui grup deja redenumit.
+- **Reparația** (`src/app/FrezeleMele.tsx`): Escape se ascultă pe `document` cât fereastra e deschisă, pe urcare, cu
+  `defaultPrevented` și fără `isComposing`, ca la fereastra exportului. Un strat deschis peste ea, care își oprește singur
+  tasta (manualul, cu F1; paleta), se închide primul, iar scurtăturile desenului de sub fereastră nu o mai primesc. Tasta
+  închide stratul de sus **care se vede** (redenumirea, „Grup nou…”, întrebarea ștergerii, importul), citit din pagină în
+  clipa apăsării; altfel, fereastra. Focusul și ce îl mută rămân cum erau.
+
+Probele (întâi, în `test/e2e/freze.spec.ts`): Escape apăsat exact în clipa în care pleacă „Salvează”, „Da, șterge” și câmpul
+redenumirii (observatorul mutațiilor îl trimite pe ce are atunci focusul: `body`); în „Configurator”, după „Salvează” oprit;
+după un clic pe titlu; cu freza ștearsă în altă filă, cât „Grup nou…” sau întrebarea sunt deschise aici; unealta de sub
+fereastră rămâne aleasă. Otrăvurile: `test/otravuri/16.A-b7.py`.
+
 ## Se redeschide dacă
 
 - owner-ul vrea o bibliotecă comună mai multor conturi ale aceluiași atelier, sau cataloagele publice ale producătorilor;

@@ -15020,6 +15020,41 @@ pe commit-ul împins).
   are titlul „publica”, nu „publica test <sha>”, deci scriptul n-o recunoaște și ar porni a doua).
 - **Proba de fum** pe adresa de test: versiunea `65eecdc65928`, potrivită; nicio eroare în consolă, nicio cerere căzută.
 
+## 2026-11-25 — 16.A↑b-7: Escape închide „Frezele mele” oriunde ar fi focusul (Model: Claude Opus 5.5)
+
+**Prompt:** cererea sesiunii principale (18:44): două probe ale frezelor (`exportFrezeNota.spec.ts`, b-4, în `main`, și
+`exportFrezeInapoi.spec.ts`, b-6) cad din când în când pe Escape-ul lui `inBiblioteca`; reprodu, fă o probă care cade de
+fiecare dată, repară la cauză, uită-te și la celelalte ferestre cu același tipar. **Started:** 25.11, 18:44, pe
+`wip/16.A-freze-b7`, din `origin/unire-2511w` (`871c55c7`, cu b-6 și 10.4↑c-2). **Completed:** 25.11, 19:10 (în container;
+CI-ul, după push).
+
+- **Reprodus:** cele două spec-uri, de 10 ori: 2 căderi din 50, amândouă pe ramura „Salvează”. O urmă a focusului din pagină
+  (focusin, focusout, mutațiile) a arătat cauza: după „Salvează”, butonul iese din pagină, iar focusul stă ~2 ms pe `body`
+  până când efectul îl duce pe „Editează”. După „Da, șterge”, fișa pleacă la vestea bibliotecii, iar focusul ajunge în căutare
+  abia în `.then`. Escape se asculta doar pe fereastră (`onKeyDown`), deci în fereastra aceea se pierdea.
+- **A doua cauză, găsită de probă:** cu Escape ascultat pe pagină, „Da, șterge” tot cădea. În clipa aceea, `stergere` și
+  `aleasa` sunt încă ale frezei șterse (fișa nu se mai desenează doar fiindcă freza a plecat din bibliotecă), deci Escape
+  anula o întrebare care nu se mai vedea. La fel „Grup nou…” al unei freze șterse în altă filă și redenumirea unui grup deja
+  redenumit (grupul vechi pleacă la vestea bibliotecii, înaintea lui `.then`).
+- **Reparația** (`src/app/FrezeleMele.tsx`): Escape pe `document`, pe urcare, cu `defaultPrevented` și fără `isComposing`, ca la
+  fereastra exportului; tasta închide stratul de sus care se vede, citit din pagină în clipa apăsării. Manualul (F1) își
+  păstrează tasta; desenul de sub fereastră n-o mai primește. `inBiblioteca` nu s-a schimbat.
+- **Probele (întâi, în `test/e2e/freze.spec.ts`):** Escape apăsat exact în clipa în care pleacă butonul (un observator al
+  mutațiilor îl trimite pe ce are atunci focusul: `body`) după „Salvează”, „Da, șterge” și Enter la redenumire; în
+  „Configurator”, după „Salvează” oprit (Chrome ia focusul de pe butonul oprit la desenarea următoare: înainte, Escape cădea
+  pe `body` în 2 rulări din 3); după un clic pe titlu; cu freza ștearsă în altă filă, cât „Grup nou…” sau întrebarea sunt
+  deschise aici; unealta aleasă sub fereastră rămâne. Înaintea reparației, fiecare cădea singură. După: cele două spec-uri,
+  50 / 50; `freze.spec.ts`, 19 / 19.
+- **Otrăvurile** (`test/otravuri/16.A-b7.py`, într-o clonă): 6 / 7 prinse. K03 (fără `defaultPrevented`) e practic echivalentă
+  azi: manualul își oprește singur tasta, iar paleta nu se deschide peste fereastră. Prima K07 (doar fără `stopPropagation`)
+  era echivalentă, fiindcă desenul sare peste o tastă cu `defaultPrevented`; a fost înlocuită cu una care le scoate pe
+  amândouă, și e prinsă.
+- **Același tipar, în alte ferestre** (Escape doar pe `.dialog`, `onKeyDown`): Așază (`DialogAsezare.tsx`), Setări,
+  Raportul foilor, Lucrarea primită, Aspectul și ferestrele extensiilor (`src/extensii/parti.tsx`). Nu sunt ale liniei; le-am
+  spus sesiunii principale. În ferestrele mele, cea a exportului ascultă deja pe pagină.
+- **Porțile, în container:** tipurile, regulile de import, catalogul controalelor și manualul. Build-ul determinist: pornirea
+  111,2 kB (neschimbată; cu ușa 116,2, cu Atelierul 116,5 / 125); totalul 896,5 → 896,6 / 1 000; contul 30,3 / 32.
+
 ## 2026-11-25 — Sesiunea principală în cloud: decorațiuni de Crăciun pentru imprimantă, pe lista liniei atelierului (Model: Claude Fable 5.2)
 
 **Prompt:** „Vreau ca sesiunea care lucreaza la plugin, sa faca si decoratiuni de craciun pentru imprimanta. Pune-i asra pe lista”
