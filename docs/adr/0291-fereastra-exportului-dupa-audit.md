@@ -132,3 +132,32 @@ lui 28.8↑a (3 h 20 min, carcasa).
   octeți); `export.nume.spec.ts` (2 e2e). Spec-urile e2e ale exportului, 289 / 289. **Otrăvurile:** `28.8n.py`, 16 / 16.
 - **Mărimea:** pornirea +0,1 kB (111,2; cu ușa 116,2, cu Atelierul 116,5 / 125), totalul +1,0 kB (885,8 / 1 000).
 
+## Implementarea 28.8↑o (25.11)
+
+- **Montajul** (`src/ir/montaj.ts`): `OrigineXY` = colțurile și `centru`, cu lista `ORIGINI` (colțurile, apoi centrul).
+  Centrul e tot o translație, cu jumătatea foii: e = −L/2, f = −H/2, iar Z0 jos ridică programul cu grosimea, ca la
+  colțuri. Transformarea rămâne una, aplicată doar de post (ADR 0008). Colțurile nu s-au schimbat: corpusurile de aur și
+  amprentele plăcilor trec neatinse.
+- **Antetul** spune `(origine centru, Z0 …)`. Senderul îl citește (`montajDeclarat`), iar panoul Mașina scrie lângă zero
+  „Originea XY a programului: centrul foii.”. Un dop exportat cu centrul se cheamă `cncvs2-centru-dop-N` (`numeFisierDop`
+  recunoaște și baza fără liniuță). Raportul foilor spune „originea în centrul foii”.
+- **Fereastra:** „Unde e XY0” (titlul grupului) are în listă și „centrul foii”. În desen, punctul din mijlocul foii se alege
+  la clic, cu eticheta și nota lui („XY0 în centrul foii”).
+- **I / J** vin din startul deja rotunjit (strategia B a postului). Cu centrul, pot diferi de cele ale unui colț cu o unitate
+  a ultimei zecimale; arcul văzut de GRBL îl judecă poarta.
+- **Probele** (`montaj.centru.oracol.test.ts`):
+  - transformarea, pe hârtie;
+  - corpusul CAM: rând cu rând, programul cu centrul e cel al colțului mutat cu jumătatea foii, cu Z, avansurile și
+    comentariile neatinse;
+  - poarta, pe căi: aceleași verdicte și aceeași abatere ca pe colțul cazului;
+  - oracolul buzunarului fără probleme. Martorii: programele cu centrul, citite ca din stânga-jos, sunt prinse de amândouă
+    oracolele;
+  - antetul citit de sender, numele și rejucarea pe emulatorul GRBL (coordonatele negative trec, 0 pierderi);
+  - `export.centru.spec.ts` (2 e2e).
+
+  Oracolele porții și buzunarului citesc centrul pe hârtie (L/2, H/2). Spec-urile e2e care deschid exportul, 313 / 313;
+  unitarele, 10 462 / 0. **Otrăvurile:** `28.8o.py`, 13 / 13.
+- **Mărimea:** pornirea +0 (111,2 kB), totalul +0,1 kB (885,9 / 1 000).
+- **Pe mașină:** zero-ul XY se pune în mijlocul foii. Proba pe mașina owner-ului (o placă cu centrul, privită în aer întâi)
+  rămâne a owner-ului.
+

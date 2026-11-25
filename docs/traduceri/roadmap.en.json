@@ -1809,6 +1809,10 @@
       "ro": "Gata pe 09.11",
       "en": "Done on 09.11"
     },
+    "636e9711866c4804": {
+      "ro": "Centrul foii ca origine XY0",
+      "en": "The sheet centre as the XY0 origin"
+    },
     "63760521aca66be1": {
       "ro": "V-carve-ul unei piese, o singură regiune",
       "en": "A part's V-carve, a single region"
@@ -2244,6 +2248,10 @@
     "8008ba4a1ee5ee8c": {
       "ro": "Proba de mediu trece de două ori de la `npm ci`: ci 8 s, `tsc` 2,8 s, unitățile 2,8 s, build 2,9 s, e2e în Edge 8 s. `dist/` identic între rulări, nimic readus de Drive, deci fără joncțiune. A doua trecere: un 404 pe `favicon.ico`, prins de e2e și reparat cu iconița.",
       "en": "The environment check passes twice from `npm ci`: ci 8 s, `tsc` 2.8 s, unit tests 2.8 s, build 2.9 s, e2e in Edge 8 s. `dist/` is identical between runs and Drive brought nothing back, so no junction is needed. Second pass: a 404 on `favicon.ico`, caught by e2e and fixed with the icon."
+    },
+    "801d5634a1e5c620": {
+      "ro": "**Centrul foii ca origine XY0** (mișcă mașina, probată pe oracole și pe emulator; ADR 0291, „Implementarea 28.8↑o”). A cincea alegere a ferestrei, lângă colțuri: o translație cu jumătatea foii, în montaj (ADR 0008), cu antetul „origine centru”, citit de sender, și nota din panoul Mașina; punctul din mijlocul desenului XY0 se alege la clic; raportul foilor și numele dopului îl poartă. Colțurile, octet cu octet. **Probele:** `montaj.centru.oracol.test.ts` (pe hârtie; corpusul CAM rând cu rând față de colț; poarta și oracolul buzunarului, cu martorii citiți din stânga-jos; senderul, numele, emulatorul GRBL), 2 e2e; unitarele 10 462 / 0, spec-urile e2e ale exportului 313 / 313. **Otrăvurile:** `28.8o.py`, 13 / 13 (7 unitare, 6 e2e). Pornirea +0, totalul 885,9 / 1 000 (+0,1 kB). Proba pe mașina owner-ului rămâne a owner-ului. Urmează 28.8↑h–l, după 16.A↑b-5.",
+      "en": "**The sheet centre as the XY0 origin** (moves the machine, tested on oracles and on the emulator; ADR 0291, “Implementation 28.8↑o”). The fifth choice in the window, next to the corners: a translation by half the sheet, in the montage (ADR 0008), with the “origine centru” header read by the sender and the note in the Machine panel; the point in the middle of the XY0 drawing is chosen with a click; the sheets report and the plug name carry it. The corners, byte for byte. **Tests:** `montaj.centru.oracol.test.ts` (on paper; the CAM corpus line by line against the corner; the gate and the pocket oracle, with the witnesses read from bottom left; the sender, the names, the GRBL emulator), 2 e2e; unit 10,462 / 0, the export e2e specs 313 / 313. **Poisons:** `28.8o.py`, 13 / 13 (7 unit, 6 e2e). Startup +0, total 885.9 / 1,000 (+0.1 kB). The test on the owner's machine stays with the owner. Next: 28.8↑h–l, after 16.A↑b-5."
     },
     "803a1fec56fb1dd3": {
       "ro": "Roțile și șenila în atelierul Easy 3Draw",
