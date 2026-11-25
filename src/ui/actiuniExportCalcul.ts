@@ -1,11 +1,12 @@
 import { conversieInBazin, exportInBazin, legareInBazin, panouriInBazin, potrivireInBazin, reparareInBazin, simulareInBazin, taiereInBazin, timpInBazin, traseuInBazin, verificareInBazin } from '../jobs/bazinCam.ts';
 import { fireImplicite, simuleazaInBazin, SimulareAnulata } from '../jobs/bazin.ts';
 import { despacheteaza, impacheteaza } from '../jobs/impachetare.ts';
-import type { ParteDesprinsa } from '../jobs/protocolCam.ts';
+import type { DopExportat, ParteDesprinsa } from '../jobs/protocolCam.ts';
 import type { Program } from '../ir/ir.ts';
 import type { Montaj } from '../ir/montaj.ts';
 import type { Document } from '../model/document.ts';
 import { doarFoaia, numeFoaie } from '../model/foi.ts';
+import { bazaFisier, cuBaza } from '../post/numeFisier.ts';
 import { taieturiFoaie } from '../model/lume.ts';
 import { cereMesaje } from '../i18n/laCerere.ts';
 import { t } from '../i18n/t.ts';
@@ -89,8 +90,23 @@ export async function calculeazaExport(doc: Document, p: ParametriExport, semnal
   const { simulare, foaie, desprinse, ...rest } = r;
   const undeTine = operatiiDesprinse(doc, desprinse);
   return {
-    ...rest, avertismente: await cuDesprinse(doc, rest.avertismente, desprinse), ...(undeTine.length > 0 ? { undeTine } : {}),
+    ...cuNumele(rest, p), avertismente: await cuDesprinse(doc, rest.avertismente, desprinse), ...(undeTine.length > 0 ? { undeTine } : {}),
     simulare: (s) => simuleazaExport(simulare, foaie, s),
+  };
+}
+
+/**
+ * Numele ales de om (ADR 0291 §5) în locul bazei `cncvs2-<colț>`: pe fișierele foii, pe ale dopurilor și pe cele pentru Mașina.
+ * Octeții rămân; fără nume ales, rezultatul e același obiect.
+ */
+function cuNumele<R extends { readonly fisiere: readonly FisierExportat[]; readonly dopuri: readonly DopExportat[]; readonly masina?: readonly FisierExportat[] }>(
+  r: R, p: ParametriExport,
+): R {
+  if (p.numeFisier === undefined) return r;
+  const numit = <F extends { readonly nume: string }>(f: F): F => ({ ...f, nume: cuBaza(f.nume, p.origine, p.numeFisier) });
+  return {
+    ...r, fisiere: r.fisiere.map(numit), dopuri: r.dopuri.map((d) => ({ ...d, fisiere: d.fisiere.map(numit) })),
+    ...(r.masina ? { masina: r.masina.map(numit) } : {}),
   };
 }
 
@@ -131,7 +147,7 @@ async function calculeazaToateFoile(doc: Document, activa: string, p: ParametriE
     if (!prim) return [];
     const fisiere = fisiereFoii(prim.r).map((x) => {
       linii += x.linii;
-      const intrare = { nume: numeInArhiva(x.nume, prim.k + 1, g.length, p.origine, contract.numeScurt), octeti: x.octeti };
+      const intrare = { nume: cuBaza(numeInArhiva(x.nume, prim.k + 1, g.length, p.origine, contract.numeScurt), p.origine, p.numeFisier), octeti: x.octeti };
       intrari.push(intrare);
       return intrare.nume;
     });
@@ -140,7 +156,7 @@ async function calculeazaToateFoile(doc: Document, activa: string, p: ParametriE
   });
   const z = scrieZip(intrari);
   if (!z.ok) return { ok: false, motiv: z.motiv };
-  const arhiva = contract.numeScurt ? 'CNCVS2.ZIP' : `cncvs2-${p.origine}-foile.zip`;
+  const arhiva = contract.numeScurt ? 'CNCVS2.ZIP' : cuBaza(`${bazaFisier(p.origine)}-foile.zip`, p.origine, p.numeFisier);
   const zip: FisierExportat = {
     text: '', octeti: z.octeti, sha256: await sha256Hex(z.octeti), linii, extensie: 'zip', aproximari: 0, sectiuni: [], scula: null, nume: arhiva,
   };
@@ -149,7 +165,7 @@ async function calculeazaToateFoile(doc: Document, activa: string, p: ParametriE
   const avertismente = (await Promise.all(facute.map(async ({ nume, d, r }) => (await cuDesprinse(d, r.avertismente, r.desprinse)).map((a) => `${nume}: ${a}`)))).flat();
   const undeTine = [...new Set(facute.flatMap(({ d, r }) => operatiiDesprinse(d, r.desprinse)))];
   return {
-    ok: true, program: zip, fisiere: [zip], dopuri: [], rezumat, sender, ...(sender ? { masina: fisiere } : {}),
+    ok: true, program: zip, fisiere: [zip], dopuri: [], rezumat, sender, ...(sender ? { masina: fisiere.map((f) => ({ ...f, nume: cuBaza(f.nume, p.origine, p.numeFisier) })) } : {}),
     avertismente, ...(undeTine.length > 0 ? { undeTine } : {}),
     foi: { arhiva, foi, goale, secunde },
     simulare: (s) => simuleazaExport(simulare, foaie, s),

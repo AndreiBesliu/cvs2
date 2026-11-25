@@ -2,6 +2,7 @@ import type { Program, Scula } from '../ir/ir.ts';
 import type { Montaj } from '../ir/montaj.ts';
 import type { Contract } from './contract.ts';
 import { posteaza, posteazaPeScule, type OptiuniPost, type Sectiune } from './post.ts';
+import { bazaFisier } from './numeFisier.ts';
 
 /**
  * Exportul: octeții exacți ai programului și amprenta lor SHA-256. Senderul trimite exact octeții ăștia și arată același
@@ -35,7 +36,7 @@ export function numeFisier(contract: Contract, origine: string, index: number, s
     const ext = contract.extensie.toUpperCase();
     return scula ? `CV${index + 1}T${scula.numar}.${ext}` : `CNCVS2.${ext}`;
   }
-  const baza = `cncvs2-${origine}`;
+  const baza = bazaFisier(origine);
   return scula ? `${baza}-${index + 1}-T${scula.numar}.${contract.extensie}` : `${baza}.${contract.extensie}`;
 }
 

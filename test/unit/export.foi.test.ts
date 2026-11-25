@@ -198,3 +198,28 @@ test('„Toate foile” cu o foaie din care iese freza: refuz cu numele ei (se e
   assert.equal(r.ok, false);
   assert.equal(!r.ok && r.motiv, 'Foaia 2: freza iese din foaie; exportă foaia singură, cu confirmarea ei');
 });
+
+test('numele ales (ADR 0291 §5): baza lui în arhivă, în numele din ea și în programul pentru Mașina; octeții, aceiași', async () => {
+  const d = patruFoi();
+  const p = { origine: 'stanga-jos', z0: 'sus' } as const;
+  const r = await calculeazaExport(doarFoaia(d, 'f2'), { ...p, toateFoile: true, numeFisier: 'Raft' }, undefined, d);
+  const azi = await calculeazaExport(doarFoaia(d, 'f2'), { ...p, toateFoile: true }, undefined, d);
+  assert.ok(r.ok && azi.ok);
+  if (!r.ok || !azi.ok) return;
+  assert.equal(r.fisiere[0]!.nume, 'Raft-foile.zip');
+  const citit = await citesteZip(r.fisiere[0]!.octeti, LIMITE);
+  assert.ok(citit.ok);
+  assert.deepEqual(citit.intrari.map((x) => x.nume), ['Raft-foaia-1-x2.nc', 'Raft-foaia-2.nc']);
+  assert.deepEqual(r.foi?.foi.map((f) => f.fisiere), [['Raft-foaia-1-x2.nc'], ['Raft-foaia-2.nc']]);
+  assert.deepEqual(r.masina?.map((x) => x.nume), ['Raft.nc']);
+  const aziZip = await citesteZip(azi.fisiere[0]!.octeti, LIMITE);
+  assert.ok(aziZip.ok);
+  citit.intrari.forEach((x, i) => { assert.ok(Buffer.from(x.octeti).equals(Buffer.from(aziZip.intrari[i]!.octeti)), x.nume); });
+  // O singură foaie: fișierul ei, cu numele ales și aceiași octeți.
+  const una = await calculeazaExport(doarFoaia(d, 'f2'), { ...p, numeFisier: 'Raft' });
+  const unaAzi = await calculeazaExport(doarFoaia(d, 'f2'), p);
+  assert.ok(una.ok && unaAzi.ok);
+  if (!una.ok || !unaAzi.ok) return;
+  assert.deepEqual(una.fisiere.map((x) => x.nume), ['Raft.nc']);
+  assert.ok(Buffer.from(una.fisiere[0]!.octeti).equals(Buffer.from(unaAzi.fisiere[0]!.octeti)));
+});

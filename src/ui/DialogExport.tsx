@@ -5,7 +5,8 @@ import '../i18n/traseu.ts';
 import { t, type CheieSimpla } from '../i18n/t.ts';
 import type { Limba } from '../i18n/tipuri.ts';
 import {
-  INCRUSTATIE_DREAPTA_IMPLICITA, INCRUSTATIE_IMPLICITA, LATIME_UMAR_IMPLICITA, MARGINI_OPERATIE, pasLateralImplicit, POSTURI_EXPORT,
+  bazaFisier, INCRUSTATIE_DREAPTA_IMPLICITA, INCRUSTATIE_IMPLICITA, LATIME_UMAR_IMPLICITA, LUNGIME_NUME, MARGINI_OPERATIE, motivNume,
+  pasLateralImplicit, POSTURI_EXPORT, propunereNume,
   PUNTI_DOP_DREPT, SUPRACURSA_MAXIMA, UNGHI_V_IMPLICIT, type Coborare, type IdContract, type IesireFoaie, type ParametriExport,
   type RezumatFoi, type RezumatJob, type StrategieScula, type TimpPortiune, type Unitati,
 } from './actiuniExportTipuri.ts';
@@ -77,6 +78,8 @@ type Props = {
   readonly trimite?: boolean;
   /** Foaia exportată (ADR 0210 §5), în titlu, când proiectul are mai multe. */
   readonly foaie?: string;
+  /** Numele scris de om al foii active (fără „Foaia N”): propunerea numelui fișierului pornește din el (ADR 0291 §5). */
+  readonly numeFoaie?: string;
   /** Grosimea foii exportate (mm): adâncimea unei găuri (ADR 0175), arătată pe rândul ei. */
   readonly grosimeFoaie?: number;
   /**
@@ -199,7 +202,7 @@ function ListaFoi({ foi: r, sha256, limba }: { readonly foi: RezumatFoi; readonl
 export function DialogExport(
   {
     operatii, ordineAutomata: automataLucrarii, baza, descrieri, doarCitire, onExporta, onInchide, onReseteaza, stare, setariMasina,
-    onSetariMasina, supracursa, onSupracursa, prinFoaie, onPrinFoaie, onDeschideInMasina, trimite = false, foaie, placute, foi,
+    onSetariMasina, supracursa, onSupracursa, prinFoaie, onPrinFoaie, onDeschideInMasina, trimite = false, foaie, numeFoaie, placute, foi,
     placuteToate, onRaport, grosimeFoaie, onAlegeUrechi, frezeOferite,
   }: Props,
 ) {
@@ -210,6 +213,8 @@ export function DialogExport(
   const [z0, setZ0] = useState<'sus' | 'jos'>('sus');
   const [post, setPost] = useState<IdContract>('grbl-11');
   const [unitatiCerute, setUnitati] = useState<Unitati>('mm');
+  /** Numele fișierului scris de om (ADR 0291 §5); `null`: propunerea din numele foii, care urmează colțul ales. */
+  const [numeAles, setNumeAles] = useState<string | null>(null);
   const postAles = POSTURI_EXPORT.find((x) => x.id === post);
   // „Trimite la mașină” (felia 28.1↑d) trimite doar ce vorbește senderul (familia GRBL); cu alt controler, butonul e iar
   // „Exportă”, iar nota postului spune de ce programul doar se descarcă.
@@ -497,9 +502,15 @@ export function DialogExport(
   const supracursaBuna = supracursaCitita !== null && Number.isFinite(supracursaCitita) && supracursaCitita >= 0 && supracursaCitita <= SUPRACURSA_MAXIMA;
   // Bifa tăieturilor cât foaia (ADR 0177) are ce schimba doar cu o supracursă bună, peste 0.
   const cuSupracursa = supracursaBuna && supracursaCitita !== null && supracursaCitita > 0;
+  // Numele fișierului (ADR 0291 §5): propunerea din numele foii (altfel baza de azi), până când omul scrie altul. Pe un
+  // controler cu nume scurte (stick FAT), numele e al lui (`CNCVS2.NC`): câmpul nu se aplică.
+  const numeScurt = postAles?.numeScurt === true;
+  const numeFisier = numeAles ?? propunereNume(numeFoaie, origine);
+  const motivNumeFisier = numeScurt ? null : motivNume(numeFisier);
+  const numeBun = motivNumeFisier === null;
   const valid = operatiiBune && urechiBune && rampeBune && intrariBune && pasiBuni && coborariBune && retrageriBune && vcarveBune && funduriBune
     && varfuriBune && vPeLinie && resturiBune && strategiiBune && incrustatiiBune && drepteBune && frezeDopBune && benziBune && puntiDopBune
-    && supracursaBuna;
+    && supracursaBuna && numeBun;
   /**
    * Orice parametru schimbat face vechi rezultatul. Bifa nu mai trebuie ștearsă aici: cererea următoare e alt obiect, deci
    * vine oricum nebifată.
@@ -826,6 +837,7 @@ export function DialogExport(
     ...(benziBune ? [] : [t('motiv.banda-invalida', { n: MARGINI_OPERATIE.numarScula })]),
     ...(puntiDopBune ? [] : [t('motiv.punti-dop-invalide', { n: MARGINI_OPERATIE.urechi })]),
     ...(supracursaBuna ? [] : [t('motiv.supracursa-invalida', { max: fmtFreza.format(SUPRACURSA_MAXIMA) })]),
+    ...(motivNumeFisier === null ? [] : [t(`export.nume-fisier.${motivNumeFisier}`, { max: LUNGIME_NUME })]),
     ...(intrariBune ? [] : [operatii.some((o, i) => !randuri[i]?.intrari && param[o.cheie]?.rampa)
       ? t('motiv.intrari-invalide-rampa', {
         minim: fmtFreza.format(MARGINI_OPERATIE.razaIntrareMinimaRampa), raza: fmtFreza.format(MARGINI_OPERATIE.razaIntrare),
@@ -895,7 +907,7 @@ export function DialogExport(
     return out;
   };
   // Prima fișă cu o greșeală, în ordinea listei: „du-mă acolo” de lângă Exportă.
-  const primaGresita: string | null = !supracursaBuna ? 'foaia' : ordine.find((k) => greseliRand(k).length > 0) ?? null;
+  const primaGresita: string | null = !supracursaBuna ? 'foaia' : !numeBun ? 'masina' : ordine.find((k) => greseliRand(k).length > 0) ?? null;
   /** Trecerile pe adâncime, egale (ca `adancimiTreceri` din lucrare): ⌈A / p⌉ treceri de A / n; fără valori bune, nimic. */
   const treceri = (p: Rand): readonly [number | null, number] => {
     const tr = treceriEgale(citesteNumar(p.adancime), citesteNumar(p.pas));
@@ -1005,7 +1017,7 @@ export function DialogExport(
               <span className="dx-nume">{t('export.fisa.foaia')}</span>
               <span className="dx-meta">{t(CHEI_COLT[origine])} · {t(z0 === 'sus' ? 'export.lista.z0.sus' : 'export.lista.z0.jos')}</span>
             </button>
-            <button type="button" className="dx-nav" data-nav="masina" aria-current={curent === 'masina'} onClick={() => { du('masina'); }}>
+            <button type="button" className="dx-nav" data-nav="masina" aria-current={curent === 'masina'} data-gresit={numeBun ? undefined : ''} onClick={() => { du('masina'); }}>
               <span className="dx-nume">{t('export.fisa.masina')}</span>
               <span className="dx-meta">{postAles?.nume ?? ''} · {unitati === 'inch' ? 'inch' : 'mm'}</span>
             </button>
@@ -1164,6 +1176,17 @@ export function DialogExport(
             variante={[{ v: 'mm', text: t('export.unitati.mm') }, ...(postAles?.inch !== false ? [{ v: 'inch' as const, text: t('export.unitati.inch') }] : [])]}
             onAlege={(v) => { schimbat(); setUnitati(v); }} />
               </div>)}
+              {grup('fisier', 'masina', <div className="dx-rand">
+          <label title={t('export.nume-fisier.titlu')}>
+            {t('export.nume-fisier')}
+            <input type="text" value={numeScurt ? '' : numeFisier} data-camp="nume-fisier" aria-invalid={!numeBun} disabled={numeScurt}
+              spellCheck={false} autoComplete="off" onChange={(e) => { schimbat(); setNumeAles(e.target.value); }} />
+          </label>
+          <span className="nota-camp" data-nume-rezultat>{numeScurt
+            ? t('export.nume-fisier.scurt', { post: postAles?.nume ?? '', nume: `CNCVS2.${(postAles?.extensie ?? 'nc').toUpperCase()}` })
+            : t('export.nume-fisier.rezultat', { nume: toate ? `${numeFisier}-foile.zip` : scule.size > 1 && strategie === 'fisiere-separate'
+              ? `${numeFisier}-1-T….${postAles?.extensie ?? 'nc'}` : `${numeFisier}.${postAles?.extensie ?? 'nc'}` })}</span>
+              </div>, motivNumeFisier === null ? [] : [t(`export.nume-fisier.${motivNumeFisier}`, { max: LUNGIME_NUME })])}
               {scule.size > 1 && grup('schimbare', 'masina', <div className="dx-rand">
           {scule.size > 1 && (
             <Cartonase<StrategieScula> data-camp="strategie" poze="strategie" eticheta={t('export.strategie')} nume="strategie-masina" valoare={strategie} mari
@@ -1213,7 +1236,9 @@ export function DialogExport(
                         {stare.fisiere.map((f) => <li key={f.nume} data-fisier={f.nume}>{t('export.gata.fisier', { nume: f.nume, n: f.linii, sha: f.sha256 })}</li>)}
                       </ul>
                     )
-                    : <p role="status" data-testid="export-stare">{t('export.gata', { n: stare.linii, sha: stare.sha256 })}</p>)}
+                    : <p role="status" data-testid="export-stare" {...(stare.nume ? { 'data-fisier': stare.nume } : {})}>
+                      {stare.nume ? t('export.gata.fisier', { nume: stare.nume, n: stare.linii, sha: stare.sha256 }) : t('export.gata', { n: stare.linii, sha: stare.sha256 })}
+                    </p>)}
                   {stare?.ok && stare.dopuri && stare.dopuri.length > 0 && (
                     <ul className="dopuri" data-testid="export-dopuri" aria-live="polite">
                       {stare.dopuri.map((d) => (
@@ -1246,7 +1271,7 @@ export function DialogExport(
               <p role="status" className="avertisment" data-testid="export-invalid">{motivInvalid}</p>
               {primaGresita !== null && (
                 <button type="button" className="dx-du" data-du={primaGresita} onClick={() => { du(primaGresita, true); }}>
-                  {t('export.du', { nume: primaGresita === 'foaia' ? t('export.fisa.foaia') : dupaCheie.get(primaGresita)?.descriere ?? primaGresita })}
+                  {t('export.du', { nume: primaGresita === 'foaia' ? t('export.fisa.foaia') : primaGresita === 'masina' ? t('export.fisa.masina') : dupaCheie.get(primaGresita)?.descriere ?? primaGresita })}
                 </button>
               )}
             </div>
@@ -1300,6 +1325,8 @@ export function DialogExport(
                 ...(cere && bifat ? { confirmareIesire: cere } : {}), ordine: ordineMea, ...(toate ? { toateFoile: true } : {}),
                 // Fără supracursă (0), cererea e cea de dinainte (ADR 0176); cu ea, și bifa tăieturilor cât foaia (ADR 0177).
                 ...(cuSupracursa && supracursaCitita !== null ? { supracursa: supracursaCitita, ...(prinFoaie ? { prinFoaie: true } : {}) } : {}),
+                // Numele ales (ADR 0291 §5) pleacă doar când nu e chiar baza de azi: altfel, cererea de dinainte.
+                ...(!numeScurt && numeFisier !== bazaFisier(origine) ? { numeFisier } : {}),
               });
             }}>
             {t(trimiteAcum ? 'export.trimite' : 'export.exporta')}

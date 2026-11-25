@@ -6,13 +6,13 @@
 
 /** Un grup al ferestrei: răspunde la o singură întrebare și are, din 28.8↑b, desenul lui. */
 export type GrupExport =
-  | 'foi' | 'origine' | 'z0' | 'post' | 'unitati' | 'schimbare' | 'setari'
+  | 'foi' | 'origine' | 'z0' | 'post' | 'unitati' | 'fisier' | 'schimbare' | 'setari'
   | 'taietura' | 'freza' | 'adancime' | 'sens' | 'rampa' | 'intrari' | 'colturi' | 'urechi'
   | 'golire' | 'coborare' | 'rest' | 'gaurire' | 'fund' | 'incrustatie' | 'banda' | 'locas' | 'treapta' | 'dop';
 
 /** Grupurile foii și ale mașinii, în ordinea din fereastră (cele două fișe de dinaintea operațiilor). */
 export const GRUPURI_FOAIE: readonly GrupExport[] = ['foi', 'origine', 'z0'];
-export const GRUPURI_MASINA: readonly GrupExport[] = ['post', 'unitati', 'schimbare', 'setari'];
+export const GRUPURI_MASINA: readonly GrupExport[] = ['post', 'unitati', 'fisier', 'schimbare', 'setari'];
 
 /** Ce știe fișa despre operație ca să-și aleagă grupurile: felul ei și alegerile care aduc grupuri noi. */
 export type FelFisa = {
@@ -48,7 +48,7 @@ export function grupuriOperatie(f: FelFisa): readonly GrupExport[] {
  */
 export const GRUP_CAMP: Readonly<Record<string, readonly GrupExport[]>> = {
   origine: ['origine'], z0: ['z0'], supracursa: ['z0'], 'supracursa-prin-foaie': ['z0'],
-  post: ['post'], unitati: ['unitati'], strategie: ['schimbare', 'golire'], 'setari-masina': ['setari'],
+  post: ['post'], unitati: ['unitati'], 'nume-fisier': ['fisier'], strategie: ['schimbare', 'golire'], 'setari-masina': ['setari'],
   latura: ['taietura'], directie: ['taietura'], despartire: ['taietura'],
   scula: ['freza'], diametru: ['freza'], 'freza-biblioteca': ['freza'], 'forma-scula': ['freza'], 'unghi-v': ['freza'], 'varf-v': ['freza'],
   adancime: ['adancime'], pas: ['adancime'],

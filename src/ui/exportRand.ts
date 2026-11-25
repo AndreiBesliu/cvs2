@@ -265,6 +265,8 @@ export type StareExport =
     readonly ok: true; readonly linii: number; readonly sha256: string; readonly avertismente: readonly string[];
     /** Cu fișiere separate pe sculă (ADR 0084): fiecare fișier descărcat, cu liniile și amprenta lui. */
     readonly fisiere?: readonly { readonly nume: string; readonly linii: number; readonly sha256: string }[];
+    /** Cu un singur fișier: numele lui, cum s-a descărcat (ADR 0291 §5: baza aleasă de om, sau cea de azi). */
+    readonly nume?: string;
     /**
      * Fișierele dopurilor incrustațiilor (ADR 0170 §3), descărcate după ale foii: fiecare cu semifabricatul lui (lățimea, înălțimea
      * și grosimea cea mai mică, mm).

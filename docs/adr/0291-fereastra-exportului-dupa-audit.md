@@ -106,3 +106,29 @@ lui 28.8↑a (3 h 20 min, carcasa).
 - **Regulile ferestrei** din ADR 0290 și din `docs/linii/export.md` rămân:
   - un câmp nou își cere grupul în `GRUP_CAMP`, explicația în ambele limbi și locul în proba privirii;
   - ce nu se aplică nu apare.
+
+## Implementarea 28.8↑n (25.11)
+
+- **Regula numelor** stă în `src/post/numeFisier.ts`, pură, fără importuri:
+  - `bazaFisier(origine)`: baza de azi, `cncvs2-<colț>`. `numeFisier`, `numeInArhiva` și numele arhivei o iau de aici, deci
+    nu mai sunt două scrieri ale ei.
+  - `propunereNume(numeFoaie, origine)`: numele scris al foii, fără diacritice, cu litere mici, cu liniuțe, cel mult 60 de
+    caractere; fără nume (sau din care nu rămâne nimic), baza de azi.
+  - `motivNume(nume)`: refuză numele gol, cel de peste 80 de caractere, caracterele oprite de sistemele de fișiere
+    (`< > : " / \ | ? *` și cele de control), spațiul sau punctul la capete și numele rezervate de Windows.
+  - `cuBaza(nume, origine, baza)`: înlocuiește doar baza întreagă din fața unui nume (urmată de `-`, `.` sau nimic).
+    Sufixele pe sculă, ale dopurilor și ale foilor rămân, iar numele scurte (`CNCVS2.NC`, `F2X3/CV1T2.NC`) n-au bază.
+- **Numele se aplică după calcul, pe firul principal** (`cuNumele` în `src/ui/actiuniExportCalcul.ts`, la cerere): fișierele,
+  dopurile, programul dus în Mașina, numele din arhiva „Toate foile” și arhiva. Workerul CAM nu-l vede (`numeFisier` din
+  cerere e ignorat acolo), deci octeții sunt aceiași. Nimic nou în pachetul de pornire: `App.tsx` trimite doar numele foii.
+- **Fereastra:** grupul nou `fisier` în „Mașina și fișierul”, după Unități (`GRUP_CAMP`: `nume-fisier`). Câmpul
+  `data-camp="nume-fisier"` urmează propunerea cât omul nu scrie în el. Sub el, `data-nume-rezultat` spune ce se descarcă.
+  Un nume greșit oprește Exportă, cu greșeala în grup, punctul pe „Mașina și fișierul” și „Du-mă la …”. Pe un contract cu
+  `numeScurt` (RichAuto), câmpul e oprit, iar nota spune numele controlerului. Rezultatul unui singur fișier poartă
+  `data-fisier`.
+- **Neschimbat:** cu foaia nenumită și câmpul neatins, cererea nu trimite nimic, deci numele de azi, octet cu octet; numele
+  ales nu intră în proiect (ca supracursa).
+- **Probele:** `export.numeFisier.test.ts` (4) și unul nou în `export.foi.test.ts` (arhiva, numele din ea, Mașina, aceiași
+  octeți); `export.nume.spec.ts` (2 e2e). Spec-urile e2e ale exportului, 289 / 289. **Otrăvurile:** `28.8n.py`, 16 / 16.
+- **Mărimea:** pornirea +0,1 kB (111,2; cu ușa 116,2, cu Atelierul 116,5 / 125), totalul +1,0 kB (885,8 / 1 000).
+
