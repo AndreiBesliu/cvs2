@@ -230,7 +230,11 @@ panoul 71..596, greșeala 651..696.
     cu un pixel), cu focusul pe diametru, la 1280 × 720;
   - aceeași probă la 1024 × 600 și 1280 × 560, cu fontul lat, și pe telefon, la 390 × 844 și 844 × 390. Pe fiecare, cu
     biblioteca de pornire („Scrisă de mână (ca „…”)” în listă) și cu panoul derulat întâi la capăt;
-  - la 844 × 300, unde greșeala e mai înaltă decât panoul, primul ei rând stă sus.
+  - la 844 × 300, unde greșeala e mai înaltă decât panoul, primul ei rând stă sus;
+  - cu nota bibliotecii desfăcută (16.A↑b-6: „nu mai e în bibliotecă”, cu „Pune-o înapoi în bibliotecă”), la 1280 × 720 și la
+    844 × 390: freza „Plată Ø12” intră în proiect pe un cerc de R10, e ștearsă din bibliotecă, apoi cercul crește la R15.
+- **Peste 16.A↑b-6:** ramura are `origin/unire-2511w` adus (b-6 și 3.Tu). Ciocnirile au fost doar în listele de proprietăți
+  ale ferestrei (`hartie` și `inapoi`, amândouă păstrate).
 - **Otrăvurile:** E11–E16 în `28.8h.py`, 6 / 6. E12 (capătul de sus scăpat când nu încape) scăpase întâi; proba de la
   844 × 300 o prinde. E01 din `28.8a.py` (derularea capului fișei) e tot prinsă.
 - **Mărimea:** pornirea +0 (111,2 kB), totalul +0,2 kB (893,5 / 1 000). Programul, documentul și serverul: neschimbate.

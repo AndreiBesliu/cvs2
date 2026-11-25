@@ -7,7 +7,7 @@
  *   focusul pe diametrul frezei; la fel la mai multe mărimi ale ferestrei și cu fontul lat (28.8↑h-2).
  */
 import { test, expect, type Locator, type Page } from '@playwright/test';
-import { adauga } from './ajutor-panza.ts';
+import { adauga, deschideMeniulContului } from './ajutor-panza.ts';
 import { alege } from './ajutor-export.ts';
 
 test.use({ locale: 'ro-RO' });
@@ -148,3 +148,64 @@ test('„Du-mă la …” pe o fereastră mai scundă decât greșeala: început
   expect(loc?.sus, 'primul rând al greșelii, sus în panou').toBeGreaterThanOrEqual(-0.5);
   expect(loc?.sus).toBeLessThanOrEqual(16);
 });
+
+/** Raza cercului ales, din panoul de proprietăți (cercul abia adăugat e cel ales). */
+async function razaCerc(page: Page, r: string): Promise<void> {
+  const raza = page.locator('[data-camp="forma-raza"]');
+  await raza.fill(r);
+  await raza.press('Enter');
+  await expect(raza).toHaveValue(r);
+}
+
+/** Freza cu numele dat, ștearsă din „Frezele mele”; apoi fereastra se închide. */
+async function stergeDinBiblioteca(page: Page, nume: string): Promise<void> {
+  const meniu = await deschideMeniulContului(page);
+  await meniu.locator('[data-meniu-cont="freze"]').click();
+  const f = page.getByRole('dialog', { name: 'Frezele mele' });
+  await expect(f.locator('[data-freze="stare"]')).not.toContainText(/Se citește/u);
+  await f.locator('.freze-rand-nume').getByText(nume, { exact: true }).click();
+  await f.locator('[data-freze="fisa"] [data-freze="sterge"]').click();
+  await f.locator('[data-freze="sterge-da"]').click();
+  await expect(f.locator('.freze-rand-nume').getByText(nume, { exact: true })).toHaveCount(0);
+  // Cu ✕, nu cu Escape: după ștergere, focusul cade din fereastră (butonul confirmării dispare), iar Escape se ascultă doar în ea.
+  await f.locator('[data-freze="inchide"]').click();
+  await expect(f).toHaveCount(0);
+}
+
+// Cu nota bibliotecii desfăcută (16.A↑b-6: „nu mai e în bibliotecă”, cu „Pune-o înapoi în bibliotecă”), grupul Freza e și
+// mai înalt: „Du-mă la …” aduce tot greșeala întreagă, cu focusul pe diametru. Freza (Plată Ø12) intră în proiect pe cercul de
+// R10, unde se găurește; ștearsă apoi din bibliotecă, cercul crește la R15 (Ø30 trece de două diametre).
+for (const [nume, latime, inaltime] of [['1280 × 720', 1280, 720], ['telefonul culcat, 844 × 390', 844, 390]] as const) {
+  test(`„Du-mă la …” cu nota bibliotecii desfăcută: greșeala întreagă în panou (${nume})`, async ({ page }) => {
+    // Proiectul se pregătește la 1280 × 720 (pe telefon, panoul de proprietăți nu e la vedere); exportul, la mărimea probei.
+    await page.setViewportSize({ width: 1280, height: 720 });
+    await page.goto('/');
+    await adauga(page, 'cerc');
+    await razaCerc(page, '10');
+    await page.locator('[data-actiune="export.gcode"]').click();
+    await expect(page.locator('[data-nav]').first()).toBeVisible();
+    const e1 = fisa(page, 'e1/e1');
+    await alege(e1, 'latura', 'gaurire');
+    await e1.locator('[data-camp="freza-biblioteca"]').selectOption({ label: 'Plată Ø12' });
+    await expect(e1.locator('[data-greseala]')).toHaveCount(0);
+    const d = page.waitForEvent('download');
+    await page.locator('[data-buton="exporta"]').click();
+    await d;
+    await page.getByRole('button', { name: 'Închide' }).click();
+    await stergeDinBiblioteca(page, 'Plată Ø12');
+    await razaCerc(page, '15');
+    await page.setViewportSize({ width: latime, height: inaltime });
+    await page.locator('[data-actiune="export.gcode"]').click();
+    await expect(page.locator('[data-nav]').first()).toBeVisible();
+    await page.mouse.move(2, 2);
+    const freza = e1.locator('[data-grup="freza"]');
+    await expect(freza.locator('[data-nota="biblioteca-stearsa"] [data-buton="pune-inapoi"]')).toBeVisible();
+    const greseala = freza.locator('[data-greseala]');
+    await expect(greseala).toHaveCount(1);
+    await page.locator('[data-fise]').evaluate((p) => { p.scrollTop = p.scrollHeight; });
+    await page.locator('[data-du="e1/e1"]').click();
+    await expect.poll(() => cumSeVede(greseala)).toBe('întreagă');
+    await expect(e1.locator('[data-camp="diametru"]')).toBeFocused();
+    await expect.poll(() => cumSeVede(e1.locator('[data-camp="diametru"]'))).toBe('întreagă');
+  });
+}

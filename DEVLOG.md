@@ -14913,8 +14913,12 @@ gata de unit”, `b099c457`; 28.8↑n, `7996e77c`), la ordinul în vigoare „un
 - **Otrăvurile:** E11–E16 în `28.8h.py`, 6 / 6. **Mărimea:** pornirea +0, totalul 893,5 / 1 000 (+0,2).
 - **Găsit:** la 640 × 360, banda listei lasă fișelor 9 px.
 - **Documentele:** manualul (ro, en), ADR 0291 („Implementarea 28.8↑h-2”), fișa etapei 3, registrul otrăvurilor, nota liniei.
+- **Peste 16.A↑b-6** (la mesajul sesiunii principale, 18:22): `origin/unire-2511w` adus (ciocnirile, doar în listele de
+  proprietăți ale ferestrei), plus proba cu nota bibliotecii desfăcută, 10 / 10. Găsit pe drum: probele frezelor
+  (`exportFrezeNota`, `exportFrezeInapoi`) cad 4 / 50 și pe `unire-2511w` curat: după salvare sau ștergere focusul cade din
+  „Frezele mele”, iar Escape nu mai ajunge la ea (spus sesiunii principale).
 
-**Completed:** 25.11, 17:47.
+**Completed:** 25.11, 17:47; peste b-6, 18:43.
 
 ## 2026-11-25 — Felia 3.Au: starea lucrării imprimantei e necunoscută până vine codul stării (Model: Claude Fable 5.2)
 
