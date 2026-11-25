@@ -226,5 +226,10 @@ owner. Pentru alte linii, mai târziu:
   intră în `ContextFisa`; catalogul controalelor se scrie din nou. Capcanele de mai sus sunt și ale ei.
 - **Inventarul din ADR 0290** (câmpurile și condițiile lor) e ținut de `export.grupuri.test.ts`, care citește `data-camp` din
   `DialogExport.tsx` și `FisaOperatie.tsx`: un câmp nou fără grup cade acolo.
+- **Rândul frezei, în 28.8↑k** (cu linia frezelor, 25.11): „Scrisă de mână (ca „Plată Ø6”)” din 16.A↑b-4 lărgește lista
+  „Din frezele mele” și rupe rândul (la 1280 px, 240 px față de 147). N-o tăiem cu „…”: `title` al listei e explicația
+  câmpului (`arata`), iar tăietura ar cădea pe numele frezei. Propunerea, cu acordul liniei frezelor: recunoașterea ca notă
+  sub listă (ca `NotaBiblioteca`), iar opțiunea goală doar „Scrisă de mână”. Probele lui b-4 (`exportFrezeNota.spec.ts`)
+  citesc azi eticheta opțiunii alese: se mută pe nota nouă. `ListaBiblioteca` rămâne a liniei exportului (16.A↑b-6 n-o atinge).
 - **Proba „adâncimea”** (`export.desene.spec.ts:48`): cauza celor câteva căderi nu e dovedită (vezi Capcanele); dacă mai cade,
   se rulează singură, cu `--workers=1`, ca să se vadă așteptarea care expiră.
