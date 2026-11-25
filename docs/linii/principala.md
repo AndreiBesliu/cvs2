@@ -230,8 +230,10 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
   feliilor rămân: ce nu trebuie înaintea primei randări stă la cerere, calculul greu în worker, iar felia își spune
   în raport cât adaugă la total și la pornire.
 - **Documentul e v28** (relieful: forma `relief`, 18.1↑a, în `main` din 24.11; v27, frezele, 16.A↑b-1). Cotele nu cer
-  schemă; următorul liber e v29 (operațiile pe relief cu freza bilă; toroidala și profilul desenat ale frezelor): numărul se
-  dă când felia ajunge la migrare, iar unirile cu schemă intră în `main` în ordinea numerelor. O probă care citește documentul salvat cere versiunea
+  schemă. **v29 e dat liniei reliefului (25.11, la unirea lui 18.1↑b), pentru 18.1↑c: operațiile pe relief cu freza bilă
+  în document, stabilită cu linia frezelor; nu se împarte în două.** Următorul liber e v30 (toroidala și profilul desenat
+  ale frezelor, dacă le cer): numărul se dă când felia ajunge la migrare, iar unirile cu schemă intră în `main` în ordinea
+  numerelor. O probă care citește documentul salvat cere versiunea
   curentă (`placute.spec.ts` a căzut cu `schema: 26` în completul liniei frezelor).
 - **De urmărit:** în panoul foii, la 1400 px, etichetele „Numele” și „Materialul” apar tăiate la o literă (văzut de
   linia trasării, și pe `220bd48e`: nu vine dintr-o felie de azi).
