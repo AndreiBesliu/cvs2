@@ -15175,3 +15175,16 @@ ce se poate”; felia, cerută de sesiunea principală la 18:44, după semnalare
   nu era în rularea ei); linia exportului își pune reparația lui 28.8↑h peste ea.
 - **Documentele:** decizia și paragraful de stare în `CLAUDE.md` (cu regula Escape-ului pentru o fereastră nouă); indexul
   liniilor; starea din `docs/linii/principala.md`.
+
+## 2026-11-25 — Sesiunea principală în cloud: lotul 36 („Pune-o înapoi în bibliotecă”, cotele ca DIMENSION), pe test (Model: Claude Fable 5.2)
+
+**Prompt:** publicarea de după a treizeci și șaptea unire (pe test se publică liber)
+**Started:** 25.11, după unirea de la 19:42 (completul pe `main`, pornit la 19:52). **Completed:** 25.11, 20:54.
+
+- **Pe test: `75bcf3fb`** (16.A↑b-6, 10.4↑c-2). `publica.yml` 45679275699, verde (20:50–20:54), pornită din prima; serverul,
+  neschimbat.
+- **Completul pe `main`** (45669314051, verde, 58 min): unit 10 529 / 0 (12 sărite, pe Linux), e2e 863 / 863, funcțiile pe
+  emulatoare 136 / 136, paginile 60 / 60; pornirea 111,2 kB, totalul 896,5 / 1 000 kB.
+- **Proba de fum** pe adresa de test: versiunea `75bcf3fb09bc`, potrivită; nicio eroare în consolă, nicio cerere căzută.
+- **16.A↑b-7** (`88771f12`, în `main` din 20:11) nu primește un lanț al ei: pleacă odată cu 18.1↑c și 28.8↑h, cu un singur
+  complet pe `main`.

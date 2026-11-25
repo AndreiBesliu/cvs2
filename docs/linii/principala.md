@@ -155,12 +155,12 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
 
 ## Starea pe 25.11.2026, seara (după a treizeci și opta unire din cloud)
 
-- **Pe test:** `6741c0be` (lotul 35: 3.Tu, piesele rotunde pe același ax în „Modelul”, Easy 3Draw 18.33.0; publicat
-  pe 25.11 la 19:39, cu serverul neschimbat; completul pe `main` 45654433162, verde; proba de fum, bună). Înainte:
-  `65eecdc6` (lotul 34: centrul foii, nota bibliotecii, starea imprimantei), pe 25.11 la 18:25; `2aaee0b4` (lotul
-  33), la 14:24. **În `main`, nepublicate încă:** 16.A↑b-6 (`1d3882d9`) și 10.4↑c-2 (`66b6b335`), unite
-  la 19:42: în drum, lotul 36 (`75bcf3fb`); apoi 16.A↑b-7 (`581da353`). Pe ramura de unire `unire-2511x`, cu
-  completul repornit după aducerea lui `main`: 18.1↑c, finisarea reliefului, cu v29.
+- **Pe test:** `75bcf3fb` (lotul 36: 16.A↑b-6, „Pune-o înapoi în bibliotecă”; 10.4↑c-2, cotele ca DIMENSION în DXF și
+  cifrele ca text; publicat pe 25.11 la 20:54, cu serverul neschimbat; completul pe `main` 45669314051, verde; proba de
+  fum, bună). Înainte: `6741c0be` (lotul 35, „Modelul” din Easy 3Draw 18.33.0), pe 25.11 la 19:39; `65eecdc6` (lotul
+  34), la 18:25. **În `main`, nepublicate încă:** 16.A↑b-7, Escape în „Frezele mele” (`581da353`). Pleacă împreună cu
+  18.1↑c (pe `unire-2511x`, completul repornit la 20:12) și cu 28.8↑h (la porți, peste ea), într-o singură publicare
+  (lotul 37).
 - **`main`, din cloud:** pe 23.11: 3.Tq (`0ae9c6c1`); 11.3↑e și A.4 (`ddaa7ead`); 3.Tr, unită de linia elicelor
   (`d262e57a`); 25.8↑a și A.5 (`1b46c955`), cu reparația probei extensiilor (`8287d66e`); 11.3↑f, unită de linia
   planșelor (`f4601938`); A.6 (`4497d639`); 3.Xh (`2d1e482c`) și 12.1↑e-3 cu 12.1↑e-4 (`03460cab`); A.8a cu A.8b
