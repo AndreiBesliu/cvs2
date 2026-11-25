@@ -381,6 +381,12 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   frezelor, exportului și aranjamentelor nu mai încăpeau în 0,3 kB. Poarta judecă tot trei măsuri sub același plafon
   (pornirea, cu ușa, cu ușa și cu aranjamentul ales); acum rămân ~5,3 kB. **Ce nu trebuie înaintea primei randări stă
   tot la cerere, iar o felie își spune în raport cât adaugă în pornire.** Totalul rămâne 900 kB.
+  **Plafoanele: totalul 1 000 kB, pornirea 125 kB (ADR 0146, decizia owner-ului din 25.11, „ok, ridica plafonul total la 1000 kB si pornirea la 125 kB”):**
+  după a treizecea unire, totalul era 880,9 / 900 kB și pornirea cu ușa și cu Atelierul 116,4 / 120, iar frezele,
+  relieful și cotele lucrau toate în același rest (19,1 kB și 3,6 kB). Acum rămân 119,1 kB în total și 8,6 kB în
+  pornire. **Regulile feliilor rămân:** ce nu trebuie înaintea primei randări stă la cerere, un calcul greu stă în
+  workerul lui, iar felia își spune în raport cât adaugă la total și la pornire. O creștere următoare cere iar decizia
+  scrisă; pârghiile mari (Preact, modulele în afara precache-ului) rămân ale owner-ului.
   **Conturile clienților: contul în aplicație (ADR 0116, felia 14.C↑, adusă din etapa 14)** gata pe 01.11, din sugestia
   owner-ului acceptată pe 31.10 și răspunsurile lui: butonul **Cont** (din 01.11 lângă butonul temei, sus în dreapta: controlul
   `cont` al aranjamentului), panoul contului (doar online,
@@ -1649,6 +1655,16 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 25.11.2026, dimineața: **plafoanele: totalul 1 000 kB, pornirea 125 kB** („ok, ridica plafonul total la 1000 kB si pornirea la 125 kB”, în sesiunea
+  principală, după raportul unirii a treizecea, care recomanda aceste valori: frezele, relieful și cotele, repornite
+  în aceeași dimineață, lucrau toate în același rest, 19,1 kB din total și 3,6 kB din pornire, iar felia trecută a
+  reliefului ceruse singură 12,7 kB). ADR 0146 (scris de sesiunea principală, pe `unire-2511g`, peste `d1a96fc4`);
+  constantele porții din `scripts/build-determinist.ts`. Sub plafonul pornirii stau, ca până acum, toate trei
+  măsurile (pornirea, cu ușa, cu ușa și cu aranjamentul ales): acum rămân 8,6 kB; în total, 119,1 kB. Costul, la
+  750 kbit/s: cel mult ~1,3 s în plus la prima instalare, în fundal, și ~92 ms înaintea primei randări, la prima
+  vizită. **Regulile feliilor nu se schimbă** (la cerere ce nu trebuie la prima randare, workerul pentru calculul greu,
+  creșterea spusă în raport). Ușa (8 kB), `/admin` (200 kB) și contul (32 kB) rămân. O creștere următoare cere iar
+  decizia scrisă. Liniile în lucru (frezele, relieful, cotele, atelierul) au fost anunțate.
 - 25.11.2026, dimineața (a treizecea unire din cloud): **atelierul Easy 3Draw: cama (3.Cj-1) și roata cu palete
   (3.Cj-2), unite în `main`** (sesiunea principală, ramura `unire-2511f`, din `341b3472`). Linia atelierului, ramura
   `wip/3.Xh-biblioteca-ui`, `ae490539`, PR-ul `AndreiBesliu/cvs2#29` (ADR 0284), unite în `e90edd2e`: **3.Cj-1**,

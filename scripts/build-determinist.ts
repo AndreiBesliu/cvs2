@@ -27,7 +27,9 @@ import { cspPentru, hashuriInline } from './cspHtml.ts';
  *   115 kB din 13.11 (ADR 0252: decizia owner-ului, „Da, 115 ／ 800”; după unirea planșelor, pornirea cu ușa era 109,7 kB,
  *   iar aranjamentele cer alegerea și densitatea înaintea primei randări, ~1–1,5 kB), 120 kB din 24.11 (ADR 0145: decizia
  *   owner-ului, „ok, ridica plafonul pornirii la 120 kB”; după lotul al paisprezecelea, pornirea cu ușa și cu Atelierul
- *   era 114,7 kB, iar feliile următoare ale frezelor, exportului și aranjamentelor nu mai încăpeau în cei 0,3 kB rămași);
+ *   era 114,7 kB, iar feliile următoare ale frezelor, exportului și aranjamentelor nu mai încăpeau în cei 0,3 kB rămași),
+ *   125 kB din 25.11 (ADR 0146: decizia owner-ului, „ok, ridica plafonul total la 1000 kB si pornirea la 125 kB”; după
+ *   a treizecea unire, pornirea cu ușa și cu Atelierul era 116,4 kB, cu frezele, relieful și cotele în lucru);
  * - totalul, cu bucățile încărcate la cerere și workerele; 330 kB din 25.10 (ADR 0075: totul rămâne în precache, ca
  *   aplicația să meargă întreagă offline), 400 kB din 28.10 (ADR 0096: decizia owner-ului; se descarcă în fundal, cu
  *   progresul în bara de jos, ADR 0097), 450 kB din 30.10 (ADR 0109: decizia owner-ului, „1”; workerul CAM are copia lui de
@@ -40,15 +42,17 @@ import { cspPentru, hashuriInline } from './cspHtml.ts';
  *   578,7 kB, iar tăierea, planșele și imprimanta, gata pe ramuri, aduceau împreună încă ~85 kB), 800 kB din 13.11 (ADR 0253:
  *   decizia owner-ului, „Da, 115 ／ 800”; după unirea planșelor, totalul era 690,1 kB, iar linia aranjamentelor aduce ~40 kB),
  *   900 kB din 23.11 (ADR 0301: decizia owner-ului, „ok, ridica plafonul total la 900 kB”; cu 16.A↑a, totalul era 793,6 kB,
- *   iar feliile următoare ale frezelor, exportului, utilizării și aranjamentelor nu mai încăpeau în cei 6,4 kB rămași);
+ *   iar feliile următoare ale frezelor, exportului, utilizării și aranjamentelor nu mai încăpeau în cei 6,4 kB rămași),
+ *   1 000 kB din 25.11 (ADR 0146: aceeași decizie a owner-ului; totalul era 880,9 kB, iar frezele, relieful și cotele
+ *   lucrau toate în cei 19,1 kB rămași);
  * - pagina `/admin` (ADR 0040, decizia din 16.10): bucata ei (`PaginaAdmin-*`, cu Firebase: contul, Firestore, funcțiile,
  *   App Check; 170 kB la felia 3.3) are plafonul ei și nu intră în totalul aplicației, fiindcă aplicația n-o descarcă
  *   niciodată. Firebase-ul pe care îl aduce raportorul de erori (3.2, ADR 0043) intră în total: îl descarcă oricine are o
  *   eroare. Din 3.2, Firebase-ul comun (aplicația, App Check, funcțiile: `conexiuneBaza-*`) e o bucată împărțită de admin
  *   și de raportor: adminul se măsoară cu tot ce aduce (închiderea lui), raportorul la fel, cu plafonul lui.
  */
-const PLAFON_PORNIRE_KB = 120;
-const PLAFON_TOTAL_KB = 900;
+const PLAFON_PORNIRE_KB = 125;
+const PLAFON_TOTAL_KB = 1000;
 const PLAFON_ADMIN_KB = 200;
 /**
  * Ușa de încărcare a proiectului vine înaintea primei randări pentru oricine are un proiect salvat (proiectLocal): are

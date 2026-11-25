@@ -3621,6 +3621,10 @@
       "ro": "IR-ul pe N axe (axa A refuzată explicit în v1), montajul cu 4 colțuri ca translații și Z0 sus / jos, traseul de profil în IR, postul condus de contractul GRBL 1.1 (sursa fiecărui câmp, din s8). Pe hârtie: cele 4 colțuri, Z0 sus / jos, I / J din startul rotunjit, împărțirea la 180°, garda de coardă. Exportul cu SHA-256 verificat de `node:crypto`. Defecte prinse de teste: `toFixed` scria „1e+60” (acum refuzat peste 10⁹); garda de rază punea o coardă în loc de arc (acum segmente sub 0,001 mm, declarate); G0-urile fără efect. 65 de teste.",
       "en": "IR on N axes (the A axis explicitly refused in v1), the setup with 4 corners as translations and Z0 top / bottom, the profile toolpath in the IR, the post driven by the GRBL 1.1 contract (the source of every field, from s8). On paper: the 4 corners, Z0 top / bottom, I / J from the rounded start, splitting at 180°, the chord guard. Export with SHA-256 checked by `node:crypto`. Defects caught by tests: `toFixed` wrote “1e+60” (now refused above 10⁹); the radius guard put a chord instead of an arc (now segments under 0.001 mm, declared); G0s with no effect. 65 tests."
     },
+    "cec5d09ba7499b65": {
+      "ro": "Plafoanele, totalul 900 → 1 000 kB și pornirea 120 → 125 kB",
+      "en": "The caps, total 900 → 1,000 kB and startup 120 → 125 kB"
+    },
     "cf4b50fa08877171": {
       "ro": "Tăierea din butoane mari, în Atelier",
       "en": "Cutting with big buttons, in the Workshop layout"

@@ -14446,3 +14446,21 @@ vigoare „unește ce se poate”
   a venit la două minute după repornire.
 - **Documentele:** decizia în `CLAUDE.md` (paragraful de stare al construcțiilor e al liniei; versiunea extensiei,
   18.30.0, următoarea 18.31.0); indexul liniilor; starea din `docs/linii/principala.md`.
+
+## 2026-11-25 — Sesiunea principală în cloud: plafoanele 1 000 / 125 kB (ADR 0146) (Model: Claude Fable 5.2)
+
+**Prompt:** „ok, ridica plafonul total la 1000 kB si pornirea la 125 kB”
+**Started:** 25.11, 09:37. **Completed:** @@ORA@@ (în `main`, după rapidul verde al ramurii).
+
+- **ADR 0146** (`docs/adr/0146-plafoanele-1000-125.md`, cu rândul din index și traducerea titlului): totalul 900 →
+  1 000 kB, pornirea 120 → 125 kB; cifrele măsurate pe `d1a96fc4` (880,9 kB; 111,1, cu ușa 116,1, cu Atelierul
+  116,4), de unde vine creșterea de 87,3 kB din două zile, costul la 750 kbit/s, ce am respins, când se redeschide.
+- **Poarta:** `PLAFON_PORNIRE_KB = 125` și `PLAFON_TOTAL_KB = 1000` în `scripts/build-determinist.ts`, cu istoricul din
+  comentariu. Celelalte plafoane, neatinse.
+- **Porțile:** schimbă doar două constante ale porții mărimii și documente (ca la ADR 0145): rapidul ramurii
+  `unire-2511g`, verde, înaintea împingerii în `main`; fără alt complet. Local: tipurile, traducerile (1 113).
+- **Titlul unui ADR nu are două puncte în el:** roadmap-ul îl taie la primul („Plafoanele: totalul…” ieșea
+  „Plafoanele”); titlul e acum „Plafoanele, totalul 900 → 1 000 kB și pornirea 120 → 125 kB”.
+- **Liniile, anunțate:** frezele, relieful, cotele și atelierul primesc plafoanele noi odată cu `main`.
+- **Documentele:** decizia și paragraful de stare în `CLAUDE.md`; `docs/linii/principala.md` (plafoanele, intervalul
+  ADR: următorul al sesiunii principale e 0147).
