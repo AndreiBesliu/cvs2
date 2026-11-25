@@ -4153,3 +4153,19 @@ main h1 {
 .prop-cota-butoane {
   margin-top: var(--sp-2);
 }
+
+/* „Fă desen din cotă” (felia 10.4↑d-2): butonul și bifa „Șterge cota”, pe un rând, care se rupe pe un panou îngust. */
+.prop-cota-desen {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-1) var(--sp-3);
+  margin-top: var(--sp-2);
+}
+
+.prop-cota-desen label {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+  min-height: var(--tinta);
+}

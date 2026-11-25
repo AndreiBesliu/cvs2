@@ -707,6 +707,7 @@ export const roEditare = {
   'editare.cote.motiv.arc': 'Raza și diametrul se pun pe un cerc sau pe un arc; o linie, o elipsă sau o curbă n-au o singură rază.',
   'editare.cote.sfat.lant': 'Alege punctul următor: cota pleacă din capătul celei dinainte · Esc încheie lanțul',
   'editare.cote.sfat.baza': 'Alege punctul următor: cota pleacă din primul punct, cu linia mai departe · Esc încheie',
+  'editare.cote.motiv.font': 'Fontul cifrelor nu s-a încărcat: verifică legătura, apoi încearcă din nou.',
   'editare.cote.motiv.zero': 'Cota ar măsura zero: alege un punct mai departe pe direcția ei.',
   'editare.cote.motiv.selectie': 'Nicio piesă aleasă pe foaia asta nu are lățime sau înălțime de cotat.',
   'editare.cote.coteaza-selectia': 'Cotează selecția: lățimea și înălțimea fiecărei piese alese, legate de colțurile cutiei ei',

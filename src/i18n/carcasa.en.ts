@@ -658,4 +658,7 @@ export const enCarcasa = {
   'prop.cota.distanta.raza': 'Figure position (from the circle)',
   'prop.cota.distanta.unghi': 'Arc radius',
   'prop.cota.sterge': 'Delete',
+  'prop.cota.desen': 'Make a drawing from the dimension',
+  'prop.cota.desen.sterge': 'Delete the dimension',
+  'prop.cota.desen.nota': 'The drawing is an ordinary piece, not cut: give it a role (on-line engraving, for example). A dimension is never cut.',
 } as const satisfies Readonly<Record<string, Mesaj>>;

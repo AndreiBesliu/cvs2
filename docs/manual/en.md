@@ -1258,7 +1258,7 @@ goes right through.
 
 ## Dimensions and measuring
 %% capitol: cote
-%% acopera: unealta.cote, foaie.cote, vedere.cote
+%% acopera: unealta.cote, foaie.cote, vedere.cote, foaie.desen-din-cota
 
 The **Dimensions** tool (`D`; its button sits in the bar's extension, after Convert) puts dimensions on the drawing that show a size: the length of a side, the
 distance between two points along X, along Y or straight, the radius or diameter of a circle or an arc, the angle between two
@@ -1315,6 +1315,12 @@ value with its prefix (for instance “4× <>” gives “4× Ø10”; empty, on
 mm (for radius and diameter, the **figure position** from the circle, positive outside; for an angle, the **arc radius**);
 **Delete**. The distance between two oblique parallel sides is a free dimension: a fixed drawing, since its foot on the second
 side is not a point of the shape.
+
+**Make a drawing from the dimension** (in the panel of the selected dimension): the dimension's drawing becomes an ordinary
+piece, exactly where the dimension was: lines and figures as strokes (the figures in the single-line font), the ends as small
+closed contours. The new piece has no cut: it is selected, with Select, and in the **Cutting** section you give it a role
+(on-line engraving, for example); from there it works like any shape. With **Delete the dimension** ticked, the dimension
+goes with the drawing, in the same undo step; without it, the dimension stays.
 
 In the **list**, under the active sheet's pieces, the **Dimensions (N)** row: open, it shows the sheet's dimensions (the value,
 the type, “unlinked”), and a click on one switches to the Dimensions tool with it selected. The **eye** on the row hides the

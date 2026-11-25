@@ -1216,7 +1216,7 @@ de alta a urmei, punctată mai rar; cu îmbinare, în locul fâșiei se văd din
 
 ## Cotele și măsurarea
 %% capitol: cote
-%% acopera: unealta.cote, foaie.cote, vedere.cote
+%% acopera: unealta.cote, foaie.cote, vedere.cote, foaie.desen-din-cota
 
 Unealta **Cote** (`D`; butonul ei stă în extensia barei, după Convertește) pune pe desen cote care arată o mărime: lungimea unei laturi, distanța dintre două puncte
 pe X, pe Y sau dreaptă, raza sau diametrul unui cerc ori al unui arc, unghiul dintre două laturi. O cotă **nu se taie niciodată**: G-code-ul exportat e același cu și fără cote. Cotele sunt ale foii
@@ -1269,6 +1269,11 @@ rămân unde sunt, iar cota nu mai urmează forma); **textul**, în care `<>` e 
 „4× Ø10”; gol, se vede doar valoarea); **distanța liniei** de cotă, în mm (la rază și diametru, **locul cifrei** față de cerc,
 pozitiv afară; la unghi, **raza arcului**); **Șterge**. Distanța dintre două laturi paralele oblice e o cotă liberă: un desen
 fix, fiindcă piciorul ei pe a doua latură nu e un punct al formei.
+
+**Fă desen din cotă** (în panoul cotei alese): desenul cotei devine o piesă obișnuită, exact unde era cota: liniile și cifrele
+ca trăsături (cifrele cu fontul cu o singură linie), capetele ca mici contururi închise. Piesa nouă n-are nicio tăiere: e
+aleasă, cu Selecția, iar în secțiunea **Tăierea** îi dai un rol (gravura pe linie, de exemplu); de acolo merge ca orice
+formă. Cu bifa **Șterge cota**, cota pleacă odată cu desenul, în același pas de anulare; fără ea, cota rămâne.
 
 În **listă**, sub piesele foii active, rândul **Cote (N)**: deschis, arată cotele foii (valoarea, felul, „dezlegată”), iar un
 clic pe una trece la unealta Cote, cu ea aleasă. **Ochiul** de pe rând ascunde cotele foii pe pânză (nu le șterge; cu

@@ -690,6 +690,7 @@ export const enEditare = {
   'editare.cote.motiv.arc': 'Radius and diameter go on a circle or an arc; a line, an ellipse or a curve has no single radius.',
   'editare.cote.sfat.lant': 'Pick the next point: the dimension starts at the end of the one before · Esc ends the chain',
   'editare.cote.sfat.baza': 'Pick the next point: the dimension starts at the first point, with its line further out · Esc ends',
+  'editare.cote.motiv.font': 'The dimension number font did not load: check the connection, then try again.',
   'editare.cote.motiv.zero': 'The dimension would measure zero: pick a point further along its direction.',
   'editare.cote.motiv.selectie': 'No selected piece on this sheet has a width or height to dimension.',
   'editare.cote.coteaza-selectia': 'Dimension selection: the width and height of each selected piece, attached to the corners of its box',

@@ -652,3 +652,24 @@ Documentul rămâne v29: cotele stau tot pe foaie, iar fiecare cotă nouă e o o
    - **a (recomandat, implementat):** în meniul de clic dreapta al pieselor alese (bara de sus și extensia ei nu mai au loc la
      1280 px cu fontul lat);
    - b: și în **Caută o comandă**, ca acțiune a registrului (aproximativ +0,1 kB în pornire).
+
+## Implementarea (10.4↑d-2)
+
+26.11, pe ramura `wip/10.4-cote`, după d-1. Documentul rămâne v29: desenul e o piesă obișnuită, iar cota rămâne pe foaie.
+- **Desenul cotei, ca forme** (`geometrieCota`, `src/io/coteExport.ts`, pur): același desen cu al pânzei și al exportului, în
+  mm ai foii, ca forme: liniile de extensie, linia de cotă (sau bucățile ei), arcul unghiului, ca trăsături deschise; capetele
+  (săgeata plină sau deschisă, un triunghi închis; punctul, un cerc închis din două semicercuri; bara oblică, o trăsătură); apoi
+  cifrele, ca trăsăturile lui Relief SingleLine (`cifreDinFont`, adus la cerere, ca la export). Exportul nu s-a schimbat
+  (`entitatiCote` e neatins; amprentele `cote.*` rămân).
+- **Comanda** (`comandaDesenCota`, acțiunea nouă `foaie.desen-din-cota`, `laCerere`): o piesă nouă, din forme (un element,
+  sau un grup cu câte un element pe formă), cu instanța în colțul foii, nerotită, deci formele stau exact unde era cota;
+  **fără operații**: nu se taie până nu primește un rol. Cu „Șterge cota”, `inlocuieste-cote` cu lista fără ea, în același pas.
+  Refuzată: nicio formă, plafoanele, documentul de după peste schemele documentului.
+- **Panoul cotei:** butonul **Fă desen din cotă** și bifa **Șterge cota** (nebifată), cu nota „Desenul e o piesă obișnuită, fără
+  tăiere”. După desen, unealta trece la Selecție, cu piesa nouă aleasă: panoul arată secțiunea Tăierea, de unde primește un rol.
+  Fără fontul cifrelor (rețeaua), nimic nu se face, cu motivul spus.
+- **Proba programului** (`cote.fadesen.test.ts`, pe placa 1 a corpusului CAM): cota nu ajunge în program; desenul ei fără rol
+  nici el (aceiași octeți); cu o operație pe linie pe toate formele desenului, programul se schimbă și taie linia cotei (Y = 10,
+  de la X = 20 la X = 120).
+- **Cifrele:** unitare noi 4 (desenul pe hârtie, punctul și bara, comanda cu anularea, programul), e2e noi 2
+  (`cote.fadesen.spec.ts`); acțiunea nouă e o ușă a manualului (120).
