@@ -22,7 +22,9 @@ var Atelier3D = (function () {
   type Gaura = [number, number, string];
   /** O piesă gata de printat: corpul, mărimea și ce a spus motorul despre ea. */
   type PiesaGata = { nume: string; titlu: string; tri: Tri[]; dim: number[]; baza?: number[] | undefined; avert?: string[] | undefined; unghi?: number | undefined;
-    stifturi?: number | undefined; locasuri?: number | undefined; deschise?: number | undefined };
+    stifturi?: number | undefined; locasuri?: number | undefined; deschise?: number | undefined; prinderi?: Prindere[] | undefined };
+  /** O prindere a unei piese, cum o spune motorul (ADR 0284, felia 3.Ce). */
+  type Prindere = ReturnType<typeof Lego.prinderi>[number];
   type InLista = { id: string; def: Def; nume: string; bucati: number };
   /** O piesă din model: unde stă pe grilă (în știfturi și plăci), cât e rotită (în sferturi de tură), ce culoare are. */
   type InModel = { id: string; def: Def; x: number; y: number; z: number; rot: number; culoare: string };
@@ -364,9 +366,10 @@ var Atelier3D = (function () {
     for (const b of rotite) if (out.every(([v]) => Math.abs(((b[0] - v) % 360 + 540) % 360 - 180) >= 90 - 1e-6)) out.push(b);
     return out;
   }
-  function defCurenta(): Def {
-    // copia JSON a câmpurilor editorului: netipizată (din JSON.parse), ca în stocare; ce iese din ea se verifică la motor
-    const t = stare.tip as Exclude<keyof typeof stare, "tip"> | "calibrare";
+  function defCurenta(tip: string = stare.tip): Def {
+    // copia JSON a câmpurilor editorului (al piesei de pe ecran sau al altui tip): netipizată (din JSON.parse), ca în stocare;
+    // ce iese din ea se verifică la motor
+    const t = tip as Exclude<keyof typeof stare, "tip"> | "calibrare";
     if (t === "calibrare") return { tip: "calibrare" };
     const p = JSON.parse(JSON.stringify(stare[t]));
     if (t === "caramida") {
@@ -462,7 +465,7 @@ var Atelier3D = (function () {
     Lego.seteaza(paramMotor());
     if (def.tip === "calibrare") return Lego.calibrare().map(c => ({ nume: c.nume, titlu: c.titlu, tri: c.tri, dim: dimTri(c.tri) }));
     const r = Lego.construieste(def as Parameters<typeof Lego.construieste>[0]);
-    return [{ nume: slug(numeDef(def)), titlu: numeDef(def), tri: r.tri, dim: r.dim, baza: r.baza, avert: r.avert, unghi: r.unghi, stifturi: r.stifturi, locasuri: r.locasuri, deschise: r.deschise }];
+    return [{ nume: slug(numeDef(def)), titlu: numeDef(def), tri: r.tri, dim: r.dim, baza: r.baza, avert: r.avert, unghi: r.unghi, stifturi: r.stifturi, locasuri: r.locasuri, deschise: r.deschise, prinderi: r.prinderi }];
   }
   const slug = (t: string) => t.normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/×/g, "x").replace(/°/g, "").replace(/[^a-zA-Z0-9]+/g, "_").replace(/^_|_$/g, "").toLowerCase();
 
@@ -903,7 +906,7 @@ var Atelier3D = (function () {
       if ($("#at-r-unghi")) $("#at-r-unghi").onchange = ev => { const v = Math.round(+(ev.target as HTMLInputElement).value); if (v >= 10 && v <= 35) { p.unghi = v; schimbat(); } };
       if ($("#at-r-sens")) alege("#at-r-sens", v => { p.sens = v; });
       alege("#at-r-gaura", v => { p.gaura = v; });
-      $("#at-r-pereche").onchange = ev => { const v = Math.round(+(ev.target as HTMLInputElement).value); if (v >= 8 && v <= 80) { p.pereche = v; editor(); } };
+      $("#at-r-pereche").onchange = ev => { const v = Math.round(+(ev.target as HTMLInputElement).value); if (v >= 8 && v <= 80) { p.pereche = v; editor(); randeazaPrinde(); } };
       $("#at-r-fa-pereche").onclick = adaugaPerecheRoti;
     } else if (t === "cremaliera") {
       // cremaliera (ADR 0284, felia 3.Cc): lungimea, modulul, prinderea și roata pereche; montajul; perechea în listă
@@ -1819,7 +1822,7 @@ var Atelier3D = (function () {
       privita = null;
       $("#at-nume-piesa").textContent = "Modelul";
       $("#at-avert").hidden = true;
-      editorModel(); arataModel();
+      editorModel(); arataModel(); randeazaPrinde();
     } else {
       privita = null; editor(); construiesteCurent();
     }
@@ -1854,22 +1857,105 @@ var Atelier3D = (function () {
     clearTimeout(cronPiesa);
     construiesteCurent(true);
   }
+  // --------------------------------------------------------------------------- „Se prinde cu” (ADR 0284, felia 3.Ce)
+  // Sub piesa de pe ecran: ce prinderi are (le spune motorul, odată cu plasa) și, la deschidere, piesele atelierului care se
+  // potrivesc cu ele, pe feluri. Celelalte piese se judecă așa cum sunt acum în editoarele lor; prinderile lor se țin minte
+  // până li se schimbă definiția sau calibrarea. Un clic deschide piesa; axul și știftul vin cu lungimea potrivită.
+  /** Numele unui fel de prindere: una, mai multe; unde se prinde perechea, la una și la mai multe. */
+  const NUME_PRINDERI: Readonly<Record<string, () => readonly [string, string, string, string]>> = {
+    stift: () => [tr("știft"), tr("știfturi"), tr("Pe știft"), tr("Pe știfturi")],
+    locas: () => [tr("locaș"), tr("locașuri"), tr("În locaș (dedesubt)"), tr("În locașuri (dedesubt)")],
+    gauraStift: () => [tr("gaură de știft"), tr("găuri de știft"), tr("În gaura de știft"), tr("În găurile de știft")],
+    gauraAx: () => [tr("gaură de ax"), tr("găuri de ax"), tr("În gaura de ax"), tr("În găurile de ax")],
+    gauraBara: () => [tr("gaură de bară"), tr("găuri de bară"), tr("În gaura de bară"), tr("În găurile de bară")],
+    stiftTechnic: () => [tr("știft Technic"), tr("știfturi Technic"), tr("Pe știftul Technic"), tr("Pe știfturile Technic")],
+    capatAx: () => [tr("ax"), tr("axe"), tr("Pe ax"), tr("Pe axe")],
+    bara: () => [tr("bară"), tr("bare"), tr("Pe bară"), tr("Pe bare")],
+    clema: () => [tr("clemă"), tr("cleme"), tr("În clemă"), tr("În cleme")],
+    bila: () => [tr("bilă"), tr("bile"), tr("Pe bilă"), tr("Pe bile")],
+    cupa: () => [tr("cupă"), tr("cupe"), tr("În cupă"), tr("În cupe")],
+  };
+  let prinderiCurente: Prindere[] = [];
+  const prinderiTinute = new Map<string, { cheie: string; pr: Prindere[] }>();
+  /** Prinderile altei piese a atelierului, așa cum e acum în editorul ei (ținute minte până i se schimbă definiția). */
+  function prinderiPiesa(tip: string): Prindere[] {
+    const def = defCurenta(tip), cheie = JSON.stringify([def, paramMotor()]), t = prinderiTinute.get(tip);
+    if (t && t.cheie === cheie) return t.pr;
+    let pr: Prindere[] = [];
+    // o piesă care nu se poate face acum (o coroană cu pinionul prea mare) nu se prinde cu nimic
+    try { Lego.seteaza(paramMotor()); pr = Lego.prinderi(def as Parameters<typeof Lego.prinderi>[0]); } catch { pr = []; }
+    prinderiTinute.set(tip, { cheie, pr });
+    return pr;
+  }
+  /** Grinda pe care stă perechea roții dințate de pe ecran: câte găuri are, sau 0 dacă axele nu cad pe grilă. */
+  function grindaPereche(): { z: number; a: number; gauri: number } {
+    const p = stare.rotita, a = Lego.distantaRoti(p.dinti, p.pereche, p.modul), pasi = a / 8;
+    return { z: p.pereche, a, gauri: Math.abs(pasi - Math.round(pasi)) < 1e-6 && pasi >= 1 && pasi <= 14 ? Math.round(pasi) + 1 : 0 };
+  }
+  function randeazaPrinde() {
+    const loc = $<HTMLDetailsElement>("#at-prinde"), pr = vedere === "piesa" && !privita ? prinderiCurente : [];
+    loc.hidden = !pr.length;
+    if (!pr.length) { $("#at-prinde-lista").innerHTML = ""; return; }
+    const rez = Lego.rezumatPrinderi(pr), tip = stare.tip;
+    $("#at-prinde-are").textContent = rez.map(({ fel, cate }) => `${cate} ${NUME_PRINDERI[fel]!()[cate === 1 ? 0 : 1]}`).join(" · ");
+    // închis, panoul nu socotește piesele celelalte
+    if (!loc.open) { $("#at-prinde-lista").innerHTML = ""; return; }
+    const randuri = new Map<string, (readonly [string, string])[]>();
+    for (const [, , piese] of FAMILII) for (const [k, n] of piese) {
+      if (k === tip || k === "placaTechnic") continue;
+      for (const [fel] of Lego.perechiFeluri(pr, prinderiPiesa(k))) {
+        const l = randuri.get(fel) ?? [];
+        if (!l.some(([x]) => x === k)) l.push([k, n]);
+        randuri.set(fel, l);
+      }
+    }
+    let html = rez.filter(({ fel }) => randuri.has(fel)).map(({ fel, cate }) => `<div data-rand="${fel}"><span class="at-prinde-unde">${NUME_PRINDERI[fel]!()[cate === 1 ? 2 : 3]}</span><div class="at-prinde-piese">${
+      randuri.get(fel)!.map(([k, n]) => `<button type="button" data-prinde="${k}"><svg class="at-pict" viewBox="0 0 24 24" aria-hidden="true">${PICTOGRAME[k] ?? PICTOGRAMA_GENERICA}</svg>${n}</button>`).join("")}</div></div>`).join("");
+    if (tip === "rotita") {
+      const g = grindaPereche();
+      html += `<div data-rand="pereche"><span>${g.gauri ? tr`Cu perechea de ${g.z} dinți, axele stau la ${fmt(g.a)} mm: pe o grindă de ${g.gauri}, în găurile de la capete.`
+        : tr`Cu perechea de ${g.z} dinți, axele stau la ${fmt(g.a)} mm: nu cad pe grila de 8 mm.`}</span>${g.gauri ? `<button class="btn" type="button" data-prinde-grinda>Pune grinda în listă</button>` : ""}</div>`;
+    }
+    $("#at-prinde-lista").innerHTML = html;
+  }
+  function deschidePrinsa(k: string) {
+    // axul și știftul vin cu lungimea potrivită piesei de pe ecran; celelalte, cum sunt în editorul lor
+    const ax = k === "ax" ? Lego.axPentru(prinderiCurente) : null, st = k === "stiftTechnic" ? Lego.stiftPentru(prinderiCurente) : null;
+    if (ax) stare.ax.lung = ax;
+    if (st) stare.stiftTechnic.lung = st;
+    inlocuieste = null; golesteCautarea();
+    alegePiesa(k);
+    if (ax) toast(tr`Ax de ${ax}: trece prin piesă și mai iese un pas.`);
+    if (st) toast(tr`Știft de ${st}, cât gaura piesei.`);
+  }
+  function adaugaGrindaPereche() {
+    // grinda dreaptă, groasă, cu găuri de știft (axele se rotesc în ele), cum ar face-o editorul grinzilor
+    const g = grindaPereche(), n = bucatiCerute();
+    if (!g.gauri) return;
+    const def: Def = { tip: "grinda", celule: Array.from({ length: g.gauri }, (_, i): [number, number, string] => [i, 0, "r"]), groasa: true };
+    pune(def, n);
+    salveaza(); randeazaLista();
+    toast(tr`${n} × ${numeDef(def)} în listă.`);
+  }
   function arataPrivita() {
     const p = privita;
     $("#at-nume-piesa").textContent = p!.titlu;
     $("#at-cote").innerHTML = `<span><b>Mărime</b> ${tr`${fmt(p!.dim[0]!)} × ${fmt(p!.dim[1]!)} × ${fmt(p!.dim[2]!)} mm`}</span><span><b>Filament</b> ≈ ${fmt(p!.g)} g</span><span><b>Din circuit</b> ${p!.bucati} ${p!.bucati === 1 ? tr("bucată") : tr("bucăți")}</span>`;
     $("#at-avert").hidden = false; $("#at-avert").textContent = "E o piesă din circuitul de tren: o vezi aici, cum se așază pe pat. Se schimbă din 2D, la Export CNC.";
     $("#at-adauga").hidden = true; $("#at-bucati-rand").hidden = true; $("#at-in-model").hidden = true;
+    randeazaPrinde();
     arata3D(p!.tri, false, true);
   }
   function construiesteCurent(pastreaza?: boolean) {
     clearTimeout(cronPiesa!); cronPiesa = null;
-    if (vedere === "model") return;
+    prinderiCurente = [];
+    if (vedere === "model") { randeazaPrinde(); return; }
     $("#at-adauga").hidden = false; $("#at-bucati-rand").hidden = false; $("#at-in-model").hidden = false;
     const def = defCurenta();
     if (def.tip === "dinCvs2" && !(def.contururi && def.contururi.length)) {
       // nicio formă primită încă: doar explicația din editor, fără piesă
       curent = null;
+      randeazaPrinde();
       $("#at-adauga").hidden = true; $("#at-bucati-rand").hidden = true; $("#at-in-model").hidden = true;
       $("#at-nume-piesa").textContent = tr("Formă din cvs2"); $("#at-cote").innerHTML = ""; $("#at-avert").hidden = true;
       if (v3.ok && v3.mesh) { v3.scena.remove(v3.mesh); v3.mesh.geometry.dispose(); v3.mesh = null; randeaza(); }
@@ -1881,6 +1967,8 @@ var Atelier3D = (function () {
       if (piese.length === 1) ({ tri, dim } = piese[0]!);
       else { Lego.seteaza(paramMotor()); const pl = Lego.aseaza(piese); tri = pl[0]!.tri; dim = dimTri(tri); }
       curent = { def, piese, tri, dim };
+      // prinderile, doar ale unei piese singure (setul de calibrare n-are)
+      if (piese.length === 1) prinderiCurente = piese[0]!.prinderi ?? [];
       $("#at-nume-piesa").textContent = numeDef(def);
       const g = piese.reduce((t, p) => t + Lego.grame(p.tri), 0);
       $("#at-cote").innerHTML = `<span><b>Mărime</b> ${tr`${fmt(dim[0]!)} × ${fmt(dim[1]!)} × ${fmt(dim[2]!)} mm`}</span><span><b>Filament</b> ≈ ${fmt(g)} g</span>` +
@@ -1892,7 +1980,8 @@ var Atelier3D = (function () {
         : def.profil === "curb" ? tr`Curba urcă de la buză (${fmt(def.buza!)} mm) la ${fmt(def.placi! * 3.2)} mm; în medie ${fmt(piese[0]!.unghi!)}°.` : tr`Panta iese de ${fmt(piese[0]!.unghi!)}° (înălțimea ${fmt(def.placi! * 3.2)} mm, buza ${fmt(def.buza!)} mm).`;
       if ($("#at-pana-info") && def.tip === "pana") $("#at-pana-info").textContent = tr`Tăietura e la ${fmt(piese[0]!.unghi!)}° față de latura lungă · ${piese[0]!.stifturi} ${piese[0]!.stifturi === 1 ? tr("știft") : tr("știfturi")} sus, ${piese[0]!.locasuri} ${piese[0]!.locasuri === 1 ? tr("locaș") : tr("locașuri")} dedesubt` + (piese[0]!.deschise ? tr`, plus ${piese[0]!.deschise} deschise lângă marginea oblică (acolo stă pe știfturi, fără să le prindă).` : ".");
       arata3D(tri, pastreaza!);
-    } catch (e) { $("#at-avert").hidden = false; $("#at-avert").textContent = tr`Nu am putut face piesa: ${(e as Error).message || e}`; }
+    } catch (e) { prinderiCurente = []; $("#at-avert").hidden = false; $("#at-avert").textContent = tr`Nu am putut face piesa: ${(e as Error).message || e}`; }
+    randeazaPrinde();
   }
 
   // --------------------------------------------------------------------------- lista de printat
@@ -2375,6 +2464,13 @@ var Atelier3D = (function () {
       operatieLista(ev);
     });
     $("#at-in-model").onclick = puneInModel;
+    // „Se prinde cu”: la deschidere se socotesc piesele; un clic pe una o deschide
+    $("#at-prinde").addEventListener("toggle", randeazaPrinde);
+    $("#at-prinde-lista").onclick = ev => {
+      const t = ev.target as Element, b = t.closest<HTMLElement>("[data-prinde]");
+      if (b) deschidePrinsa(b.dataset.prinde!);
+      else if (t.closest("[data-prinde-grinda]")) adaugaGrindaPereche();
+    };
     $("#at-unghi").onclick = ev => { const b = (ev.target as Element).closest<HTMLElement>("[data-u]"); if (b) alegeUnghi(b.dataset.u!); };
     $("#at-vedere-mod").onclick = ev => { const b = (ev.target as Element).closest<HTMLElement>("[data-v]"); if (b && b.dataset.v !== vedere) alegeVedere(b.dataset.v!); };
     $("#at-model-lista").onclick = modelInLista;

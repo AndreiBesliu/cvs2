@@ -30,6 +30,10 @@ const Lp = L as typeof L & {
   feluriPrinderi: readonly string[];
   sePrind(a: string, b: string): boolean;
   montaj(a: Prindere, b: Prindere, unghi?: number): Montaj;
+  rezumatPrinderi(l: readonly Prindere[]): { fel: string; cate: number }[];
+  perechiFeluri(a: readonly Prindere[], b: readonly Prindere[]): [string, string][];
+  axPentru(l: readonly Prindere[]): number | null;
+  stiftPentru(l: readonly Prindere[]): number | null;
 };
 /** Piesa motorului, cu prinderile copiate în tărâmul probei (tablourile motorului vin din alt tărâm, `vm`). */
 const fa = (d: Def): CuPrinderi => {
@@ -538,4 +542,61 @@ test('cât intră: un tată mai lung decât gaura oarbă se oprește în fundul 
     assert.equal(r3(aplica(M2, b.p)[2] - a.p[2]), 0.5);
     assert.equal(patrund(jos.tri, mutata(M2, sus.tri)), 0);
   } finally { Lp.seteaza(null); }
+});
+
+// ---------------------------------------------------------------------------------------------------- pentru panoul „Se prinde cu”
+test('rezumatul: gaura care trece se numără o dată, ca axul și bara; știfturile și locașurile, fiecare', () => {
+  const rez = (def: Def) => Object.fromEntries(Array.from(Lp.rezumatPrinderi(fa(def).prinderi), (x) => [x.fel, x.cate]));
+  assert.deepEqual(rez({ tip: 'caramida', celule: rand(4, 2) }), { stift: 8, locas: 8 });
+  assert.deepEqual(rez({ tip: 'grinda' }), { gauraStift: 3 });
+  assert.deepEqual(rez({ tip: 'caramida', celule: rand(4, 2), placi: 1, gauri: [[1, 1, 'r'], [2, 1, 'x'], [3, 1, 'r']] }), { stift: 8, locas: 8, gauraStift: 2, gauraAx: 1 });
+  assert.deepEqual(rez({ tip: 'ax', lung: 3 }), { capatAx: 1 });
+  assert.deepEqual(rez({ tip: 'stiftTechnic' }), { stiftTechnic: 1 });
+  assert.deepEqual(rez({ tip: 'stiftTechnic', capat: 'ax' }), { stiftTechnic: 1, capatAx: 1 });
+  assert.deepEqual(rez({ tip: 'bara' }), { bara: 1 });
+  // mânerul 1 × 3 are o singură bară, ținută în trei locuri
+  assert.deepEqual(rez({ tip: 'maner', lung: 3, axa: 'orizontala' }), { stift: 3, locas: 3, bara: 1 });
+  assert.deepEqual(rez({ tip: 'clema' }), { stift: 1, locas: 1, clema: 1 });
+  // două găuri oarbe pe aceeași dreaptă (capetele conectorului) rămân două; conectorul de ax și știft are câte una
+  assert.deepEqual(rez({ tip: 'conector', gauri: ['rl', 'pv', 'rl'] }), { gauraStift: 2 });
+  assert.deepEqual(rez({ tip: 'bucsa', lung: 2, gaura: 'xr' }), { gauraStift: 1, gauraAx: 1 });
+  assert.deepEqual(rez({ tip: 'conectorUnghi' }), { gauraStift: 1, gauraAx: 2 });
+  // știfturile laterale de pe două fețe stau pe aceeași dreaptă, dar sunt două
+  assert.deepEqual(rez({ tip: 'lateral', lung: 1, fete: 'doua' }), { stift: 3, locas: 1 });
+  assert.deepEqual(rez({ tip: 'caramida', celule: rand(2), placi: 1, goale: true }), { stift: 2, locas: 2, gauraBara: 2 });
+  assert.deepEqual(rez({ tip: 'senila' }), { gauraStift: 2, bara: 1, clema: 2 });
+  assert.deepEqual(rez({ tip: 'rotita', gaura: 'nu' }), {});
+  // ordinea e a felurilor, nu a piesei
+  assert.deepEqual(Array.from(Lp.rezumatPrinderi(fa({ tip: 'caramida', celule: rand(2, 2), placi: 1, gauri: [[1, 1, 'x']] }).prinderi), (x) => x.fel), ['stift', 'locas', 'gauraAx']);
+});
+
+test('ce feluri se potrivesc între două piese, și în ce sens', () => {
+  const intre = (a: Def, b: Def) => Array.from(Lp.perechiFeluri(fa(a).prinderi, fa(b).prinderi), ([x, y]) => `${x}>${y}`);
+  assert.deepEqual(intre({ tip: 'caramida', celule: rand(2, 2) }, { tip: 'panta' }), ['stift>locas', 'locas>stift']);
+  assert.deepEqual(intre({ tip: 'caramida', celule: rand(2, 2) }, { tip: 'bila' }), ['stift>locas']);
+  assert.deepEqual(intre({ tip: 'grinda' }, { tip: 'stiftTechnic' }), ['gauraStift>stiftTechnic']);
+  assert.deepEqual(intre({ tip: 'grinda' }, { tip: 'ax' }), ['gauraStift>capatAx']);
+  assert.deepEqual(intre({ tip: 'rotita' }, { tip: 'ax' }), ['gauraAx>capatAx']);
+  assert.deepEqual(intre({ tip: 'rotita' }, { tip: 'stiftTechnic' }), []);
+  assert.deepEqual(intre({ tip: 'rotita' }, { tip: 'stiftTechnic', capat: 'ax' }), ['gauraAx>capatAx']);
+  assert.deepEqual(intre({ tip: 'ax' }, { tip: 'conectorUnghi' }), ['capatAx>gauraStift', 'capatAx>gauraAx']);
+  assert.deepEqual(intre({ tip: 'bara' }, { tip: 'clema' }), ['bara>clema']);
+  assert.deepEqual(intre({ tip: 'clema' }, { tip: 'maner' }), ['stift>locas', 'locas>stift', 'clema>bara']);
+  assert.deepEqual(intre({ tip: 'bila' }, { tip: 'cupa' }), ['bila>cupa']);
+  assert.deepEqual(intre({ tip: 'bila' }, { tip: 'ax' }), []);
+  assert.deepEqual(intre({ tip: 'bara' }, { tip: 'caramida', celule: rand(2), placi: 1, goale: true }), ['bara>gauraBara']);
+  assert.deepEqual(intre({ tip: 'rotita', gaura: 'nu' }, { tip: 'ax' }), []);
+});
+
+test('axul și știftul potrivit: axul trece prin gaura cea mai adâncă și mai iese un pas; știftul de 3, doar prin două grosimi', () => {
+  const ax = (def: Def) => Lp.axPentru(fa(def).prinderi), st = (def: Def) => Lp.stiftPentru(fa(def).prinderi);
+  // roata de 3,8: axul de 2 (15,8); grinda de 7,8: tot 2 (iese 8); bucșa de 2 (15,8): axul de 3; butucul elicei (8): 3
+  assert.deepEqual([ax({ tip: 'rotita' }), ax({ tip: 'grinda' }), ax({ tip: 'bucsa', lung: 2 }), ax({ tip: 'elice' }), ax({ tip: 'bucsa', lung: 3 })], [2, 2, 3, 3, 4]);
+  // manșonul orb de 7,9 al conectorului în unghi: axul intră 7,9 și mai iese un pas
+  assert.equal(ax({ tip: 'conectorUnghi', butuc: 'p' }), 3);
+  // fără găuri pentru ax: nimic
+  assert.deepEqual([ax({ tip: 'caramida', celule: rand(2, 2) }), ax({ tip: 'bara' }), ax({ tip: 'rotita', gaura: 'nu' })], [null, null, null]);
+  // știftul: de 2 prin grindă, cărămida Technic sau roată; de 3 doar unde gaura trece de un pas (bucșa rotundă de 2)
+  assert.deepEqual([st({ tip: 'grinda' }), st({ tip: 'caramidaTechnic' }), st({ tip: 'rotita', gaura: 'r' }), st({ tip: 'bucsa', lung: 2, gaura: 'r' })], [2, 2, 2, 3]);
+  assert.deepEqual([st({ tip: 'rotita' }), st({ tip: 'caramida', celule: rand(2, 2) })], [null, null]);
 });

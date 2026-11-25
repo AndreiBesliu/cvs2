@@ -184,6 +184,54 @@ var Lego = (function (glob: typeof globalThis) {
     const rest = afara - Math.min(tata.guler ?? 0, mama.lamaj ?? 0), q = roteste(R, b.p);
     return { m: R, t: [a.p[0] + a.d[0] * rest - q[0], a.p[1] + a.d[1] * rest - q[1], a.p[2] + a.d[2] * rest - q[2]] };
   }
+  // --- pentru panoul „Se prinde cu” al atelierului
+  const CU_GURI: ReadonlySet<string> = new Set(["gauraStift", "gauraAx", "gauraBara", "clema"]), PE_O_TIJA: ReadonlySet<string> = new Set(["stiftTechnic", "capatAx", "bara"]);
+  /** Dreapta unei prinderi, ca text: direcția cu semnul îndreptat și punctul ei cel mai apropiat de origine, la sutimi. */
+  function cheieDreapta(c: Prindere): string {
+    const s = (c.d.find(x => Math.abs(x) > 1e-6) ?? 1) < 0 ? -1 : 1, d: P3 = [c.d[0] * s, c.d[1] * s, c.d[2] * s], k = scalar(c.p, d);
+    return [...d.map(x => Math.round(x * 1000)), ...c.p.map((x, i) => Math.round((x - k * d[i]!) * 100))].map(x => x || 0).join(",");
+  }
+  /**
+   * Câte prinderi are piesa, pe feluri (în ordinea felurilor), cum le-ar număra un om: cele două guri ale unei găuri care
+   * trece sunt o gaură; cele două capete ale unui ax, ale unui știft Technic sau bucățile aceleiași bare sunt una (stau pe
+   * aceeași dreaptă); știfturile, locașurile, bilele și cupele se numără fiecare.
+   */
+  function rezumatPrinderi(l: readonly Prindere[]): { fel: FelPrindere; cate: number }[] {
+    const out: { fel: FelPrindere; cate: number }[] = [];
+    for (const fel of FELURI_PRINDERI) {
+      const c = l.filter(x => x.fel === fel);
+      let cate = c.length;
+      if (!cate) continue;
+      if (PE_O_TIJA.has(fel)) cate = new Set(c.map(cheieDreapta)).size;
+      else if (CU_GURI.has(fel)) {
+        // două guri ale aceleiași găuri: față în față, la lungimea găurii una de alta
+        const luate = new Set<number>();
+        for (let i = 0; i < c.length; i++) for (let j = i + 1; j < c.length; j++) {
+          const a = c[i]!, b = c[j]!;
+          if (luate.has(i) || luate.has(j) || a.orb || b.orb || scalar(a.d, b.d) > -0.999) continue;
+          if (Math.hypot(a.p[0] - a.d[0] * a.lung - b.p[0], a.p[1] - a.d[1] * a.lung - b.p[1], a.p[2] - a.d[2] * a.lung - b.p[2]) < 0.01) { luate.add(i); luate.add(j); cate--; }
+        }
+      }
+      out.push({ fel, cate });
+    }
+    return out;
+  }
+  /** Felurile care se potrivesc între două piese: [felul primei, felul celei de-a doua], în ordinea felurilor. */
+  function perechiFeluri(a: readonly Prindere[], b: readonly Prindere[]): [FelPrindere, FelPrindere][] {
+    const are = (l: readonly Prindere[]) => FELURI_PRINDERI.filter(f => l.some(c => c.fel === f)), out: [FelPrindere, FelPrindere][] = [];
+    for (const x of are(a)) for (const y of are(b)) if (sePrind(x, y)) out.push([x, y]);
+    return out;
+  }
+  /** Axul potrivit piesei (în știfturi): trece prin gaura ei cea mai adâncă (de ax sau de știft) și mai iese un pas; între 2 și 12. */
+  function axPentru(l: readonly Prindere[]): number | null {
+    const g = l.filter(c => c.fel === "gauraAx" || c.fel === "gauraStift");
+    return g.length ? Math.min(12, Math.max(2, Math.ceil((Math.max(...g.map(c => c.lung)) + P.pas + 0.2) / P.pas - 1e-9))) : null;
+  }
+  /** Știftul Technic potrivit piesei: de 3 doar unde o gaură de știft trece de un pas (două grosimi); altfel de 2. */
+  function stiftPentru(l: readonly Prindere[]): number | null {
+    const g = l.filter(c => c.fel === "gauraStift");
+    return g.length ? (g.some(c => c.lung > P.pas + 0.5) ? 3 : 2) : null;
+  }
 
   // ---------------------------------------------------------------------------------------------- corpuri
   const N_CERC = 48;
@@ -2728,6 +2776,7 @@ var Lego = (function (glob: typeof globalThis) {
     // prinderile (ADR 0284, felia 3.Ce): ale unei piese (aceleași ca în `construieste(def).prinderi`), felurile, ce se prinde
     // cu ce și montajul a două prinderi
     prinderi: (def: DefPiesa) => construieste(def).prinderi, feluriPrinderi: FELURI_PRINDERI, sePrind, montaj,
+    rezumatPrinderi, perechiFeluri, axPentru, stiftPentru,
     contururi, insetRectiliniu, conturPana, pozitiiGauriPana, centreIndoita,
     // rotitele (ADR 0169): distanta dintre axele a doua roti care se prind (modulul m), pentru atelier
     distantaRoti: (z1: number, z2: number, m = 1) => m * (z1 + z2) / 2,

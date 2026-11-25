@@ -16,7 +16,7 @@ import { faraEroriInJurnal } from './ajutor-jurnal.ts';
  * - „Salvează fișierul .json” din exportul CNC ajunge descărcare a browserului, din pagina lui cvs2, cu numele dat de
  *   planificator;
  * - ștergerea circuitului, cu confirmarea lui, rămâne și după reîncărcare; jurnalul local, fără erori;
- * - numele (ADR 0167): „Easy 3Draw” 18.27.0, instalat peste „Planificator Trenuleț” 18.6.0, îi ia locul (același id), cu
+ * - numele (ADR 0167): „Easy 3Draw” 18.28.0, instalat peste „Planificator Trenuleț” 18.6.0, îi ia locul (același id), cu
  *   circuitul lui;
  * - „Trimite la cvs2” (ADR 0160 §D): G-code-ul ovalului de exemplu ajunge în dialogul primirii, cu originea extensiei, iar după
  *   „Primește”, în „Lucrarea primită” din fereastra Mașina; planificatorul spune că cvs2 l-a primit;
@@ -31,7 +31,7 @@ import { faraEroriInJurnal } from './ajutor-jurnal.ts';
 test.use({ locale: 'ro-RO' });
 
 const PACHET = Buffer.from(pachetTrenulet().octeti);
-const ZIP = { name: 'trenulet-18.27.0.zip', mimeType: 'application/zip', buffer: PACHET };
+const ZIP = { name: 'trenulet-18.28.0.zip', mimeType: 'application/zip', buffer: PACHET };
 const cadru = (page: Page) => page.frameLocator('iframe.cadru-extensie');
 /**
  * Cât așteaptă probele cadrul extensiei până la „pornit”: un document separat, în procesul lui, cu pachetul adus din
@@ -82,7 +82,7 @@ test('instalat din fișier: pagina în cadru; circuitul, modul și culoarea păs
   await page.locator('[data-extensii="buton"]').click();
   await page.locator('[data-extensii="fisier-ales"]').setInputFiles(ZIP);
   await expect(page.getByTestId('extensii-instalare').locator('h2')).toHaveText('Instalezi „Easy 3Draw”?');
-  await expect(page.getByTestId('extensii-despre')).toHaveText(/^18\.27\.0 · din fișierul trenulet-18\.27\.0\.zip · \d+ (de )?fișiere, [\d,]+ MB$/);
+  await expect(page.getByTestId('extensii-despre')).toHaveText(/^18\.28\.0 · din fișierul trenulet-18\.28\.0\.zip · \d+ (de )?fișiere, [\d,]+ MB$/);
   await expect(page.getByTestId('extensii-permisiuni').locator('li')).toHaveText([
     'Mașina încarcă programe, le pornește sau le reia doar după confirmarea ta, pune pauză și oprește lucrarea',
     'Formele din desen primește formele pe care i le trimiți din desen și îți propune forme pentru desen (le adaugi tu, din Importă)',
@@ -180,7 +180,7 @@ async function pachetVechi(): Promise<Buffer> {
   })));
 }
 
-test('numele nou (ADR 0167): „Easy 3Draw” 18.27.0, instalat peste „Planificator Trenuleț” 18.6.0, îi ia locul, cu circuitul lui', async ({ page }) => {
+test('numele nou (ADR 0167): „Easy 3Draw” 18.28.0, instalat peste „Planificator Trenuleț” 18.6.0, îi ia locul, cu circuitul lui', async ({ page }) => {
   await page.goto('/');
   await page.locator('[data-extensii="buton"]').click();
   await page.locator('[data-extensii="fisier-ales"]').setInputFiles({ name: 'trenulet-18.6.0.zip', mimeType: 'application/zip', buffer: await pachetVechi() });
@@ -197,7 +197,7 @@ test('numele nou (ADR 0167): „Easy 3Draw” 18.27.0, instalat peste „Planifi
   await page.locator('[data-extensii="buton"]').click();
   await page.locator('[data-extensii="fisier-ales"]').setInputFiles(ZIP);
   await expect(page.getByTestId('extensii-instalare').locator('h2')).toHaveText('Instalezi „Easy 3Draw”?');
-  await expect(page.getByTestId('extensii-despre')).toContainText('18.27.0 · din fișierul trenulet-18.27.0.zip · ');
+  await expect(page.getByTestId('extensii-despre')).toContainText('18.28.0 · din fișierul trenulet-18.28.0.zip · ');
   await page.locator('[data-extensii="instaleaza"]').click();
   // același id: un singur rând în meniu, cu numele nou; circuitul de dinainte, redeschis
   await page.locator('[data-extensii="buton"]').click();
@@ -644,6 +644,35 @@ test('în engleză (ADR 0165): limba lui cvs2, schimbată pe loc printr-o reporn
   await expect(c.locator('#at-galerie')).toHaveText('No piece matches “xyz”.');
   expect(await romanaRamasa(page, 'Păstrat la repornire'), 'căutarea fără potrivire').toEqual([]);
   await c.locator('#at-cauta').fill('');
+  // „Se prinde cu” (3.Ce), pe elicea rămasă deschisă: prinderile ei și piesele care intră în gaura de ax, în engleză; axul
+  // deschis de acolo vine de lungimea bună și o spune; de la el, drumul înapoi
+  await expect(c.locator('#at-prinde summary')).toContainText('Fits with');
+  await expect(c.locator('#at-prinde-are')).toHaveText('1 axle hole');
+  await c.locator('#at-prinde summary').click();
+  await expect(c.locator('#at-prinde-lista [data-rand="gauraAx"] .at-prinde-unde')).toHaveText('In the axle hole');
+  await expect(c.locator('#at-prinde-lista [data-rand="gauraAx"] button')).toHaveText(['Axle']);
+  expect(await romanaRamasa(page, 'Păstrat la repornire'), 'se prinde cu: elicea').toEqual([]);
+  await c.locator('#at-prinde-lista [data-prinde="ax"]').click();
+  await expect(c.locator('#at-toast')).toHaveText('Axle of 3: it passes through the piece and sticks out one more stud.');
+  await expect(c.locator('#at-nume-piesa')).toHaveText('Axle 3');
+  await expect(c.locator('#at-prinde-are')).toHaveText('1 axle');
+  await expect(c.locator('#at-prinde-lista [data-rand="capatAx"] .at-prinde-unde')).toHaveText('On the axle');
+  await expect(c.locator('#at-prinde-lista [data-rand="capatAx"] button').first()).toHaveText('Beam');
+  expect(await romanaRamasa(page, 'Păstrat la repornire'), 'se prinde cu: axul').toEqual([]);
+  // cărămida: știfturile și locașurile; roata dințată: grinda perechii
+  await c.locator('#at-tipuri [data-fila="caramizi"]').click();
+  await expect(c.locator('#at-prinde-are')).toHaveText('8 studs · 8 sockets');
+  await expect(c.locator('#at-prinde-lista [data-rand="stift"] .at-prinde-unde')).toHaveText('On studs');
+  await expect(c.locator('#at-prinde-lista [data-rand="locas"] .at-prinde-unde')).toHaveText('In the sockets (underneath)');
+  await c.locator('#at-prinde-lista [data-prinde="clema"]').first().click();
+  await expect(c.locator('#at-prinde-are')).toHaveText('1 stud · 1 socket · 1 clip');
+  await expect(c.locator('#at-prinde-lista [data-rand="clema"] .at-prinde-unde')).toHaveText('In the clip');
+  await expect(c.locator('#at-prinde-lista [data-rand="stift"] .at-prinde-unde')).toHaveText('On the stud');
+  await c.locator('#at-tipuri [data-fila="roti"]').click();
+  await c.locator('#at-galerie [data-piesa="rotita"]').click();
+  await expect(c.locator('#at-prinde-lista [data-rand="pereche"]')).toHaveText('With the 24-tooth mate, the axles sit 24 mm apart: on a beam of 4, in the end holes.Add the beam to the list');
+  expect(await romanaRamasa(page, 'Păstrat la repornire'), 'se prinde cu: roata').toEqual([]);
+  await c.locator('#at-prinde summary').click();
   for (const fila of ['calibrare', 'dinCvs2']) {
     await c.locator(`#at-tipuri [data-fila="${fila}"]`).click();
     await expect(c.locator(`#at-tipuri [data-fila="${fila}"]`)).toHaveAttribute('aria-pressed', 'true');

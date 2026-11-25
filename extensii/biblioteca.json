@@ -18,6 +18,12 @@
       ],
       "noutati": [
         {
+          "versiune": "18.28.0",
+          "data": "2026-11-25",
+          "ro": "„Se prinde cu”, sub fiecare piesă din atelier: ce prinderi are (știfturi, locașuri, găuri de știft și de ax) și piesele care se potrivesc cu ele; axul și știftul se deschid de lungimea bună.",
+          "en": "“Fits with”, under every piece in the workshop: its connections (studs, sockets, pin and axle holes) and the pieces that fit them; the axle and the pin open at the right length."
+        },
+        {
           "versiune": "18.27.0",
           "data": "2026-11-25",
           "ro": "Arcul, în fila „Cărămizi”: o cărămidă 1 × n cu o boltă dedesubt și știfturi pe toată lungimea, de la 1 × 3 la 1 × 16, înaltă de 1–4 cărămizi, cu bolta înaltă sau joasă.",
@@ -112,8 +118,8 @@
           }
         }
       ],
-      "versiune": "18.27.0",
-      "continut": "e354841b14844c02b79aa5f4aed2aeb215b19780478f1025fb81905fbf98217f"
+      "versiune": "18.28.0",
+      "continut": "9dd8b9377a9e240198cfe4cd4021908fb783d4da9f66cc96400de2b83385512a"
     }
   ]
 }
