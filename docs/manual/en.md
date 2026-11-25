@@ -1047,8 +1047,8 @@ any more is deleted at a start-up, after at least a day. On a phone, images show
 From an image (a photo, a logo, a grey height map) you can make a **relief**: a 3D shape of the part, with one cell for each
 pixel, whose height comes from the pixel's grey. On the board, the relief shows shaded (light from the top left), under the
 vectors, with its frame; it is selected, moved, rotated and mirrored like any shape, and a part with a relief is placed
-several times and on other sheets. Its 3D machining (roughing and finishing) comes in the next slices: for now the relief is
-not cut.
+several times and on other sheets. In the [3D view](#vedere-3d), the **Model** button shows it in three dimensions, in its
+pocket in the sheet. Its 3D machining (roughing and finishing) comes in the next slices: for now the relief is not cut.
 
 **How to make one:** from “Import…”, pick an image (PNG, JPEG, WebP, GIF or BMP), then, at the top of the window, **Relief**
 instead of **Vectors**. The choice is kept until you reload the page. On the left, the window has:
@@ -2406,8 +2406,17 @@ blocks (the deepest point of each), and the status in the corner says so.
   shoulder; in a hole through the sheet, the stem is level with the bottom face, so 0) or above the shoulder (on the bottom)
   and the space between the boards or how much the cut-out plug sticks out above the board.
 
+- **Model / Cut**: on a sheet with [reliefs](#relief), two buttons appear at the top. **Model** (the default) shows the reliefs
+  of the sheet from their tiles, without simulation: each relief sits in its pocket in the sheet, with its top at the sheet's
+  face (how it will be cut, unless the operation says otherwise), with its edge up to the sheet's face; the surface is the
+  saved relief itself, with one value at the centre of each cell. The status says how deep the deepest point is; a relief too
+  large for the graphics card is drawn more coarsely (one value per 2 × 2, 4 × 4 … cells), and the status says so. The model
+  follows the document: moved, rotated or mirrored, the relief moves in place without loading again, and a changed relief
+  loads only its changed tiles. If its layers are missing from the browser, the status says so, and the sheet's face stays
+  whole there. **Cut** simulates the sheet, as below (the relief itself is not cut yet).
+
 The colours: the sheet's face, the cuts (darker with depth) and, in blue-grey, the spoilboard where the cutter went through
-the sheet. If you change the document while the view is open, the status says so; “Simulate again” simulates it, with the
+the sheet; in the model, the relief has the colours of the cuts. If you change the document while the view is open, the status says so; “Simulate again” simulates it, with the
 sheet left as you rotated it. `Esc`, the 3D button or a drawing tool go back to the canvas. The 3D view needs WebGL2.
 
 ## The project and saving
