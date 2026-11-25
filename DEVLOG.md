@@ -15099,3 +15099,22 @@ vigoare „unește ce se poate”
   Crăciun (intrările de mai sus).
 - **Documentele:** decizia și paragrafele de stare în `CLAUDE.md` (frezele, cotele); indexul liniilor; starea din
   `docs/linii/principala.md`.
+
+## 2026-11-25 — Sesiunea principală în cloud: a treizeci și opta unire (frezele 16.A↑b-7: Escape în „Frezele mele”) (Model: Claude Fable 5.2)
+
+**Prompt:** raportul liniei frezelor („16.A↑b-7, gata de unit”, `c95b1576`, vârful `0b015682`), la ordinul în vigoare „unește
+ce se poate”; felia, cerută de sesiunea principală la 18:44, după semnalarea liniei exportului (două probe instabile)
+**Started:** 25.11, 20:10. **Completed:** unirea în `main`, 25.11, 20:11; publicarea pe test, după lotul 36.
+
+- **Verificat înaintea unirii:** completul (45662118218) și rapidele, verzi pe `c95b1576`; vârful `0b015682` adaugă peste el
+  doar documente (`main` adus); fără `.lucru/`.
+- **Unirea, pe `unire-2511z`** (din `75bcf3fb`): `0b015682`, în `581da353`, fără nicio ciocnire. Arborele unirii are exact
+  codul lui `c95b1576` (`git diff` gol în afara fișierelor `.md`): pe porțile lui, fără alt complet. Local: traducerile
+  (1 148), catalogul controalelor, tipurile, probele documentelor.
+- **Porțile, în CI, pe `c95b1576`** (citite din jurnalul rulării): completul, verde (54 min): unit 10 529 / 0 (12 sărite, pe
+  Linux), e2e 865 / 865, funcțiile pe emulatoare 136 / 136, paginile 60 / 60. Pornirea 111,2 kB (plafonul 125; cu ușa 116,2,
+  cu Atelierul 116,5), totalul 896,6 / 1 000 kB, `/admin` 138,3 / 200, contul 30,3 / 32. Nimic pe server.
+- **Urmarea pentru unirile care așteaptă:** `unire-2511x` (18.1↑c) primește `main` și își reface completul (codul lui 16.A↑b-7
+  nu era în rularea ei); linia exportului își pune reparația lui 28.8↑h peste ea.
+- **Documentele:** decizia și paragraful de stare în `CLAUDE.md` (cu regula Escape-ului pentru o fereastră nouă); indexul
+  liniilor; starea din `docs/linii/principala.md`.

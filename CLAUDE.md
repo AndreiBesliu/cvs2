@@ -401,9 +401,17 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   ștergerii, prin sincronizarea de azi (`trimiteSchimbarea`, prin bucata contului), iar fără `cloud` rămâne în
   browser. Rândurile cu aceeași copie o iau (`cuFrezaPusaInapoi`, în `src/ui/exportRand.ts`). Cu id-ul deja în
   bibliotecă (pusă la loc între timp, în altă filă), nimic nu se suprascrie: biblioteca se citește din nou, iar nota
-  se reface. Nimic nou pe server; documentul rămâne v28. Cu ea, linia frezelor n-are felie pornită: urmează, la
+  se reface. Nimic nou pe server; documentul rămâne v28. Felia: pornirea +0, totalul +1,6 kB.
+  **Escape închide „Frezele mele” oriunde ar fi focusul (felia 16.A↑b-7)** gata pe 25.11, unită în `main` pe 25.11
+  (`581da353`), după două probe instabile ale frezelor: Escape se asculta doar pe fereastră și se pierdea când
+  butonul apăsat pleca din pagină sau se oprea sub focus, ori după un clic pe un text. Acum se ascultă pe
+  `document` cât fereastra e deschisă, pe urcare, cu `defaultPrevented` (un strat de deasupra, ca manualul, își ține
+  tasta), și închide stratul de sus care se vede, citit din pagină în clipa apăsării. **O fereastră nouă își ascultă
+  Escape pe `document`, nu pe ea însăși, iar proba ei apasă Escape după ce butonul apăsat a plecat sau s-a oprit**
+  (aceeași scăpare e încă în „Așază pe foi”, Setări, raportul foilor, lucrarea primită, Aspectul și fereastra
+  extensiilor: o felie comună, la cuvântul owner-ului). Cu ea, linia frezelor n-are felie pornită: urmează, la
   cuvântul owner-ului, 16.A↑d (calibrarea, după placa 4), e (bila și toroidala, cu relieful), f (profilul desenat),
-  g (valorile pe material). Felia: pornirea +0, totalul +1,6 kB.
+  g (valorile pe material). Felia: pornirea +0, totalul +0,1 kB.
   **Plafonul pornirii 120 kB (ADR 0145, decizia owner-ului din 24.11, „ok, ridica plafonul pornirii la 120 kB”):** după
   lotul al paisprezecelea, pornirea era 109,9 kB, cu ușa 114,4 și cu Atelierul 114,7 / 115, iar feliile următoare ale
   frezelor, exportului și aranjamentelor nu mai încăpeau în 0,3 kB. Poarta judecă tot trei măsuri sub același plafon
@@ -1756,6 +1764,32 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 25.11.2026, seara (a treizeci și opta unire din cloud): **Escape închide „Frezele mele” oriunde ar fi focusul
+  (16.A↑b-7), unită în `main`** (sesiunea principală, ramura `unire-2511z`, din `75bcf3fb`). Linia frezelor, ramura
+  `wip/16.A-freze-b7`, `0b015682` (codul lui `c95b1576`), PR-ul `AndreiBesliu/cvs2#47`, la cererea sesiunii
+  principale, după semnalarea liniei exportului: două probe ale frezelor (`exportFrezeNota.spec.ts`, în `main` din
+  17:00, și `exportFrezeInapoi.spec.ts`) cădeau din când în când (4 din 50 la linia exportului, 2 din 50 la linia
+  frezelor), deci un complet pe `main` putea cădea la întâmplare. Unită în `581da353`. **Cauza era în fereastră, nu
+  în probă:** Escape se asculta doar pe fereastră, iar butonul apăsat pleacă din pagină („Salvează” în „Listă”, „Da,
+  șterge”) sau se oprește sub focus („Salvează” în „Configurator”); la fel, un clic pe un text al ferestrei; tasta
+  cădea pe `body`. În plus, o stare rămasă în urmă (întrebarea unei freze deja șterse) o oprea și cu focusul
+  înăuntru. Acum Escape se ascultă pe `document` cât fereastra e deschisă, ca la fereastra exportului, și închide
+  stratul de sus care se vede; manualul și paleta de deasupra își păstrează tasta. Probele, scrise întâi, apasă
+  Escape exact în clipa plecării butonului; cele două spec-uri: 50 / 50 după. Otrăvurile 6 / 7 (una, practic
+  echivalentă azi). Nimic pe server; documentul rămâne v28. Ramura avea deja `main`: **arborele unirii are exact
+  codul lui `c95b1576`** (`git diff` gol în afara fișierelor `.md`) și a intrat pe porțile lui, fără alt complet:
+  completul 45662118218, verde (unit 10 529 / 0, 12 sărite pe Linux; e2e 865 / 865; funcțiile pe emulatoare
+  136 / 136; paginile 60 / 60); rapidul, verde pe `c95b1576`; pornirea 111,2 kB (plafonul 125; cu ușa 116,2, cu
+  Atelierul 116,5), **totalul 896,6 / 1 000 kB** (+0,1), `/admin` 138,3 / 200, contul 30,3 / 32. Pe test e `6741c0be`
+  (lotul 35); lotul 36 (`75bcf3fb`) e în drum, iar 16.A↑b-7 pleacă după el. **Același tipar (Escape ascultat doar pe
+  fereastră) e în alte șase ferestre** („Așază pe foi”, Setări, raportul foilor, lucrarea primită, Aspectul,
+  fereastra extensiilor): o reparație comună e o felie separată, la cuvântul owner-ului. Unirea reliefului
+  (`unire-2511x`, 18.1↑c) primește `main` cu 16.A↑b-7 și își reface completul; linia exportului își pune reparația
+  lui 28.8↑h peste ea. **La owner:** Escape în cele șase ferestre, 10.4↑d, feliile frezelor (16.A↑d–g), cele două
+  alegeri pe care liniile au mers cu recomandarea (freza pusă la loc între timp; textul cotei DIMENSION), de
+  încercat „Modelul” din Easy 3Draw, proba pe mașină a centrului foii, cele patru întrebări din auditul elicelor,
+  pachetul Easy 3Draw trecut de 0,5 MB, arhivarea sesiunii elicelor, verificarea juridică (GDPR) a utilizării
+  aplicației înaintea live-ului, „cine unește în `main`”, meniul de sus la 320 px la atingere.
 - 25.11.2026, seara (a treizeci și șaptea unire din cloud): **„Pune-o înapoi în bibliotecă”, din fereastra
   exportului (16.A↑b-6), și cotele ca DIMENSION în DXF, cu cifrele ca text (10.4↑c-2), unite în `main`**, în lot
   (sesiunea principală, ramura `unire-2511w`, din `6741c0be`); amândouă pornite la „ok, porneste 10.4↑c-2 si
