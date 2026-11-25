@@ -11,6 +11,8 @@ export { INCRUSTATIE_DREAPTA_IMPLICITA, INCRUSTATIE_IMPLICITA, LATIME_UMAR_IMPLI
 export { latimeMinimaBanda, PUNTI_BANDA, PUNTI_DOP_DREPT, REZERVA_BANDA, SUB_FATA_DOPULUI, susLaMicron } from '../model/incrustatie.ts';
 // Supracursa (ADR 0028 §2, ADR 0176): marginea câmpului din fereastra exportului, aceeași cu a lucrării.
 export { SUPRACURSA_MAXIMA } from '../cam/supracursaMaxima.ts';
+// Numele fișierului ales de om (ADR 0291 §5): aceeași regulă ca a exportului, nu o copie în fereastră.
+export { bazaFisier, LUNGIME_NUME, motivNume, propunereNume, type MotivNume } from '../post/numeFisier.ts';
 import type { StrategieScula } from '../post/contract.ts';
 import { CONTRACTE, ID_CONTRACTE, type IdContract } from '../post/contracte/index.ts';
 import type { FisierExportat, ProgramExportat } from '../post/export.ts';
@@ -58,12 +60,15 @@ export const POSTURI_EXPORT: readonly {
   readonly sender: boolean;
   /** Setările controlerului de verificat înainte de pornire (s8 §5.10), cu numele lor de pe controler. */
   readonly setari: readonly string[];
+  /** Extensia fișierelor (`nc`, `tap`…) și, pe un stick FAT, numele scurte (`CNCVS2.NC`): fără bază aleasă (ADR 0291 §5). */
+  readonly extensie: string;
+  readonly numeScurt: boolean;
 }[] = ID_CONTRACTE.map((id) => {
   const k = CONTRACTE[id];
   return {
     id, nume: k.nume, probat: Object.values(k.surse).every((s) => s.stare === 'probat'),
     strategii: [k.scula.implicita, ...k.scula.acceptate.filter((x) => x !== k.scula.implicita)],
-    inch: k.unitati.inch !== null, sender: k.senderAplicatie, setari: k.setari,
+    inch: k.unitati.inch !== null, sender: k.senderAplicatie, setari: k.setari, extensie: k.extensie, numeScurt: k.numeScurt === true,
   };
 });
 

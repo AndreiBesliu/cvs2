@@ -1824,6 +1824,12 @@ care). Fereastra are trei părți:
   ajunge). Un post scris doar după documentația controlerului, încă neprobat pe o mașină, poartă o notă: urmărește primul
   program în aer;
 - **Unitățile**: mm (implicit) sau inch (cu 5 zecimale și avansul în inch/min); antetul rămâne în mm. RichAuto citește doar mm;
+- **Numele fișierului**, fără extensie: implicit cel al foii, dacă i-ai scris unul în proprietățile ei (fără diacritice,
+  cu liniuțe: „Ușă Țarc 2” dă `usa-tarc-2`), altfel `cncvs2-` și colțul de origine. Îl poți schimba înainte de **Exportă**;
+  sub câmp scrie ce se descarcă, iar fișierele pe freză, ale dopurilor și arhiva foilor îl iau și ele în față. Nu merge gol,
+  mai lung de 80 de caractere, cu `< > : " / \ | ? *`, cu spațiu sau punct la capete, nici un nume rezervat de Windows
+  (CON, PRN, AUX, NUL, COM1…, LPT1…). Pe RichAuto, care citește de pe stick doar nume scurte, numele e al controlerului
+  (`CNCVS2.NC`), iar câmpul e oprit. Rezultatul spune numele fișierului descărcat;
 - **Schimbarea frezei**, doar când operațiile au freze diferite: **oprire în senderul aplicației** (implicit pe familia GRBL:
   lucrarea se oprește la `T… M6`, scoți freza, o pui pe următoarea, palpezi Z și **Continui**), **M6 la controler** (grblHAL,
   FluidNC, cu schimbarea configurată acolo; implicit pe Syntec, Mach3 și Mach4), **M0, cu freza în comentariu** sau **câte un

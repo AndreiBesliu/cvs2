@@ -80,6 +80,9 @@ vreau ca ficare setare sa fie insotita de o ilustratie sugestiva, ca sa ajute us
   foii ca origine) înainte, fiindcă nu ating fișa; p (avansul și Z-ul sigur) și q („Toate foile” cu toate operațiile) după
   feliile de care depind. 8a (pasul scurt din Atelier) e al liniei aranjamentelor, 9a (adaosul și trecerea de finisare)
   o felie de CAM după placa 2, cu documentul nou.
+- **25.11: 28.8↑n gata** (numele fișierului, 5a), pe ramură; neunită. Câmpul în „Mașina și fișierul”, după Unități;
+  propunerea din numele foii; numele aplicat după calcul, deci aceiași octeți. Otrăvurile 16 / 16. Pornirea +0,1 kB,
+  totalul +1,0 kB (885,8 / 1 000). Urmează 28.8↑o (centrul foii ca origine).
 
 ## Ce s-a găsit (23.11)
 
@@ -169,10 +172,19 @@ vreau ca ficare setare sa fie insotita de o ilustratie sugestiva, ca sa ajute us
   `[data-actiune="foaie.adauga"]` în `lista-vectori`.
 - **Un server local de fișiere statice** nu trimite setul de caractere al paginii schiței (diacriticele ies stricate); la
   publicare, scheletul îl pune.
+- **Numele fișierului (28.8↑n):** regula stă în `src/post/numeFisier.ts`, iar baza `cncvs2-<colț>` se scrie doar de
+  `bazaFisier`. Un nume nou al exportului (alt sufix, alt fel de fișier) pornește de la ea, ca `cuBaza` să-l găsească.
+  Numele ales se aplică după calcul, pe firul principal (`cuNumele` din `actiuniExportCalcul.ts`), nu în worker și nu în
+  `App.tsx` (pornirea). Câmpul e `data-camp="nume-fisier"`, în grupul `fisier`; nota de sub el, `data-nume-rezultat`;
+  Rezultatul unui singur fișier poartă `data-fisier`. O probă care cere numele de azi nu dă foii un nume.
+- **Intervalul diacriticelor** se scrie cu escape-uri (`\u0300-\u036f`), nu cu semnele combinatoare: scrise direct, nu se
+  văd, iar o otravă pe ele iese VOID.
 
 ## Ce rămâne
 
-Din ADR 0290, nimic: toate feliile (a–f) și 28.8↑g sunt gata. Nicio întrebare deschisă la owner. Pentru alte linii, mai târziu:
+Din ADR 0290, nimic: toate feliile (a–f) și 28.8↑g sunt gata. Din ADR 0291 (după audit): 28.8↑o acum (centrul foii ca
+origine; mișcă mașina, deci oracolele și emulatorul); 28.8↑h, i, j, k, l, în ordine, după ce 16.A↑b-5 e în `main`; p după
+j (cu linia frezelor), q după i. Nicio întrebare deschisă la owner. Pentru alte linii, mai târziu:
 
 - **Clasicul (28.2↑) și Pas cu pas (28.4↑)** iau fișa operației (`FisaOperatie`, cu `ContextFisa`) în panoul lor, cu starea
   lor, fără s-o copieze (ADR 0290, „Cu canvas-ul aranjamentelor”): la Clasic, în locul panoului din dreapta, cu Simularea filă;

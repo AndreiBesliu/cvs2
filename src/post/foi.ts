@@ -2,6 +2,7 @@
  * „Toate foile” la export (ADR 0210 §5): numele fișierelor unei foi în arhivă și foile identice. Programul unei foi rămâne,
  * octet cu octet, cel exportat doar din ea: aici se schimbă numai numele.
  */
+import { bazaFisier } from './numeFisier.ts';
 
 /**
  * Numele fișierului `nume` al foii `k` (de la 1) în arhivă, cu `n` foi identice cu ea (ies o dată): după baza `cncvs2-<origine>`
@@ -10,7 +11,7 @@
  */
 export function numeInArhiva(nume: string, k: number, n: number, origine: string, scurt: boolean): string {
   if (scurt) return `F${k}${n > 1 ? `X${n}` : ''}/${nume}`;
-  const baza = `cncvs2-${origine}`, foaia = `foaia-${k}${n > 1 ? `-x${n}` : ''}`;
+  const baza = bazaFisier(origine), foaia = `foaia-${k}${n > 1 ? `-x${n}` : ''}`;
   return nume.startsWith(baza) ? `${baza}-${foaia}${nume.slice(baza.length)}` : `${foaia}-${nume}`;
 }
 
