@@ -14450,7 +14450,7 @@ vigoare „unește ce se poate”
 ## 2026-11-25 — Sesiunea principală în cloud: plafoanele 1 000 / 125 kB (ADR 0146) (Model: Claude Fable 5.2)
 
 **Prompt:** „ok, ridica plafonul total la 1000 kB si pornirea la 125 kB”
-**Started:** 25.11, 09:37. **Completed:** @@ORA@@ (în `main`, după rapidul verde al ramurii).
+**Started:** 25.11, 09:37. **Completed:** 25.11, 09:50 (în `main`, după rapidul verde al ramurii, 45569774571).
 
 - **ADR 0146** (`docs/adr/0146-plafoanele-1000-125.md`, cu rândul din index și traducerea titlului): totalul 900 →
   1 000 kB, pornirea 120 → 125 kB; cifrele măsurate pe `d1a96fc4` (880,9 kB; 111,1, cu ușa 116,1, cu Atelierul
