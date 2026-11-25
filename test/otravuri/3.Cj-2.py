@@ -144,8 +144,10 @@ o('E29', AT, '${q.incap < 24 ? " " + tr`La diametrul ăsta încap cel mult ${q.i
 o('E30', AT, '${q.forma === "curbate" ? " " + tr("Curbate, prind apa ca niște cupe: împing mai bine într-un sens.") : ""}', '', 'e2e', 'textul nu spune nimic despre paletele curbate')
 o('E31', AT, '<input id="at-rp-palete" type="number" min="4" max="${q.incap}" step="1" value="${q.palete}">', '<input id="at-rp-palete" type="number" min="4" max="24" step="1" value="${q.palete}">', 'e2e',
   'câmpul paletelor nu-și ține marginea de sus după diametru')
-o('E32', AT, '<input id="at-rp-palete" type="number" min="4" max="${q.incap}" step="1" value="${q.palete}">', '<input id="at-rp-palete" type="number" min="4" max="${q.incap}" step="1" value="${p.palete}">', 'e2e',
-  'câmpul paletelor arată ce s-a cerut, nu ce s-a făcut')
+# (E32 de la prima rulare punea în câmpul paletelor numărul ținut, nu cel făcut: echivalentă prin editor, fiindcă `tine` le
+# face egale după fiecare schimbare; diferă doar la o stare salvată din afara marginilor. Otrava e acum alta.)
+o('E32', AT, 'if (v >= a && v <= b) { f(v); tine(); schimbat(); } editor(); }; };', 'if (v >= a && v <= b) { f(v); tine(); schimbat(); editor(); } }; };', 'e2e',
+  'un număr refuzat rămâne scris în câmp')
 o('E33', AT, '<input id="at-rp-diam" type="number" min="24" max="160" step="0.1" value="${q.diam}">', '<input id="at-rp-diam" type="number" min="24" max="160" step="0.1" value="${p.diam}">', 'e2e',
   'câmpul diametrului arată zecimalele scrise, nu rotunjirea')
 o('E34', AT, '<input id="at-rp-lat" type="number" min="4" max="40" step="0.1" value="${q.lat}">', '<input id="at-rp-lat" type="number" min="4" max="40" step="0.1" value="${q.diam}">', 'e2e', 'câmpul lățimii arată diametrul')

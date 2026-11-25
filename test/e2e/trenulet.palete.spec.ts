@@ -105,16 +105,18 @@ test('configuratorul: diametrul, paletele, lățimea, forma, discul și gaura, c
   await expect(apasat(page, 'at-rp-forma')).toHaveText('Palete drepte');
   await expect(nume(page)).toHaveText('Roată cu palete Ø160, 24 palete, lată 7,8 mm, gaură rotundă');
   await expect(cote(page)).toContainText('160 × 160 × 7,8 mm');
-  // în afara marginilor, valoarea de dinainte rămâne
-  for (const [id, rau, bun] of [['#at-rp-diam', '23', '160'], ['#at-rp-diam', '161', '160'], ['#at-rp-palete', '3', '24'], ['#at-rp-palete', '25', '24'], ['#at-rp-lat', '3.9', '7.8'], ['#at-rp-lat', '41', '7.8']] as const) {
-    await scrie(page, id, rau);
-    await expect(page.locator(id), `${id} ${rau}`).toHaveValue(bun);
-  }
-  await expect(nume(page)).toHaveText('Roată cu palete Ø160, 24 palete, lată 7,8 mm, gaură rotundă');
   // diametrul cu zecimale, rotunjit la zecimi
   await scrie(page, '#at-rp-diam', '50.26');
   await expect(page.locator('#at-rp-diam')).toHaveValue('50.3');
   await expect(nume(page)).toHaveText('Roată cu palete Ø50,3, 24 palete, lată 7,8 mm, gaură rotundă');
+  // în afara marginilor, valoarea de dinainte rămâne (de la valori din mijlocul plajei: un număr adus la margine s-ar vedea)
+  await scrie(page, '#at-rp-palete', '10');
+  for (const [id, rau, bun] of [['#at-rp-diam', '23', '50.3'], ['#at-rp-diam', '161', '50.3'], ['#at-rp-palete', '3', '10'], ['#at-rp-palete', '25', '10'], ['#at-rp-lat', '3.9', '7.8'], ['#at-rp-lat', '41', '7.8']] as const) {
+    await scrie(page, id, rau);
+    await expect(page.locator(id), `${id} ${rau}`).toHaveValue(bun);
+  }
+  await expect(nume(page)).toHaveText('Roată cu palete Ø50,3, 10 palete, lată 7,8 mm, gaură rotundă');
+  await scrie(page, '#at-rp-palete', '24');
   // marginile înseși sunt primite; la Ø24 rămân cele 15 palete care încap
   await scrie(page, '#at-rp-diam', '24');
   await expect(nume(page)).toHaveText('Roată cu palete Ø24, 15 palete, lată 7,8 mm, gaură rotundă');
