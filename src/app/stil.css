@@ -1710,9 +1710,15 @@ nav button[aria-pressed='true'] {
 
 .dialog .campuri-rest .freza-rest {
   display: inline-flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: var(--sp-1);
   white-space: nowrap;
+}
+
+/* Lista „Din frezele mele” a unei freze de rest (ADR 0300 §4, felia 16.A↑b-5): îngustă, ca rândul să încapă pe telefon. */
+.dialog .campuri-rest .freza-rest select {
+  max-width: 9rem;
 }
 
 .dialog .campuri-rest input.numar-scula {

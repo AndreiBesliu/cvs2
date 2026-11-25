@@ -34,6 +34,7 @@ export const enExport = {
   'export.freza.numar': 'Tool number (T)',
   'export.freza.biblioteca': 'From my bits',
   'export.freza.de-mana': 'Entered by hand',
+  'export.freza.biblioteca.titlu': 'A bit from “My bits”: the T number, diameter, step and its cutting values come from it. A diameter changed by hand makes it “Entered by hand”.',
   'export.freza.diametru': 'Bit Ø (mm)',
   'export.freza.forma': 'Bit shape',
   'export.freza.plata': 'flat',

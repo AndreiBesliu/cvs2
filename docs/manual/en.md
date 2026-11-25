@@ -1930,6 +1930,12 @@ the diameter, the shape, the step-down and, for a pocket, the stepover; **Export
 values (spindle speed, feed, plunge) and its cutting length. A diameter or shape changed by hand makes it **Entered by hand**:
 the project no longer records that it came from the library. You can change the T number without losing it.
 
+An operation's extra bits have their own **From my bits** list too, with flat bits only: the flat-bottom bit (on a V-carve and
+a V inlay), each clean-up bit (only the ones smaller than the bit before), the first bit of a straight-walled plug and the bit
+that cuts out the band. Once picked, the bit puts its T number (by the same rule, among all the window's bits), the diameter and
+the stepover; **Export** writes it with its working values. A diameter changed by hand makes it **Entered by hand** on that bit
+only.
+
 The **Cutting order** sits in the list, above the operations. The operations appear in the order they are cut, with their place
 on the left (the card says “N of M in cutting order”):
 - **Automatic** (the default): insides first, then lines, outsides and sheet separations last; in each, grouped by bit. A side

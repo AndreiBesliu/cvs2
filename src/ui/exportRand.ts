@@ -88,6 +88,75 @@ export function numarPentruRand(alte: readonly FrezaRand[], f: FrezaRand): numbe
   while (luate.has(k) && k < MARGINI_OPERATIE.numarScula) k++;
   return k;
 }
+
+/**
+ * Locul unei freze pe rând (ADR 0300 §4, felia 16.A↑b-5): freza operației, a fundului plat, prima a dopului drept, a decupării
+ * benzii, ori a `k`-a freză de rest a buzunarului, a fundului plat sau a dopului.
+ */
+export type UndeFreza = 'scula' | 'fund' | 'dop' | 'banda' | { readonly rest: 'buzunar' | 'fund' | 'dop'; readonly k: number };
+/** O freză a unui rând al ferestrei: cheia rândului și locul ei. */
+export type LocFreza = { readonly cheie: string; readonly unde: UndeFreza };
+
+const acelasiLoc = (a: UndeFreza, b: UndeFreza): boolean =>
+  typeof a === 'string' || typeof b === 'string' ? a === b : a.rest === b.rest && a.k === b.k;
+
+/**
+ * Frezele ferestrei (ADR 0114 §5, pentru T-ul unei freze alese din bibliotecă), în ordinea rândurilor: pe fiecare, freza
+ * operației, apoi, cu bifele lor, a fundului plat, a dopului, a decupării benzii și frezele de rest; fiecare cu turația
+ * originii ei, dacă o are. Fără `fara` (freza pe care o înlocuim) și fără cele de necitit.
+ */
+export function frezeRanduri(randuri: Iterable<readonly [string, Rand]>, fara?: LocFreza): FrezaRand[] {
+  const rez: FrezaRand[] = [];
+  for (const [cheie, p] of randuri) {
+    const pune = (unde: UndeFreza, n: string, d: string, origine: OrigineFreza | null | undefined, forma?: FrezaRand['forma']): void => {
+      if (fara && fara.cheie === cheie && acelasiLoc(fara.unde, unde)) return;
+      const numar = citesteNumar(n), diametru = citesteNumar(d), turatie = origine?.regim?.turatie;
+      if (numar !== null && diametru !== null) rez.push({ numar, diametru, ...(forma ? { forma } : {}), ...(turatie !== undefined ? { turatie } : {}) });
+    };
+    const u = p.formaScula === 'v' ? citesteNumar(p.unghiV) : null, vf = p.formaScula === 'v' ? citesteNumar(p.varfV) : null;
+    pune('scula', p.numarScula, p.diametruScula, p.origineScula, u !== null ? { tip: 'v', unghi: u, ...(vf !== null && vf > 0 ? { varf: vf } : {}) } : undefined);
+    const fund = p.tip === 'vcarve' && p.fundPlat, dop = p.tip === 'buzunar' && p.incrustatieDreapta && p.frezaDop;
+    if (fund) pune('fund', p.numarSculaFund, p.diametruSculaFund, p.origineFund);
+    if (dop) pune('dop', p.numarSculaDop, p.diametruSculaDop, p.origineDop);
+    if (p.tip === 'vcarve' && p.incrustatie && p.jurDop === 'banda' && p.decupareBanda && p.frezaBanda) {
+      pune('banda', p.numarSculaBanda, p.diametruSculaBanda, p.origineBanda);
+    }
+    const liste: ReadonlyArray<readonly ['buzunar' | 'fund' | 'dop', readonly RandRest[]]> = [
+      ['buzunar', p.tip === 'buzunar' ? p.rest : []], ['fund', fund ? p.restFund : []], ['dop', dop ? p.restDop : []],
+    ];
+    for (const [rest, lista] of liste) lista.forEach((r, k) => { pune({ rest, k }, r.numar, r.diametru, r.origine); });
+  }
+  return rez;
+}
+
+/**
+ * Ce se schimbă pe rândul `p` când freza `f` din bibliotecă e aleasă pe locul `unde`, cu numărul T dat (regula rolurilor,
+ * `numarPentruRand`): T-ul, Ø-ul și originea; la freza operației și forma și pasul pe trecere, iar la buzunar pasul lateral;
+ * la fundul plat, la dop și la frezele de rest, pasul lateral (procentul frezei). Un loc care nu e pe rând nu schimbă nimic.
+ */
+export function cuFrezaAleasa(p: Rand, unde: UndeFreza, f: FrezaOferita, numar: number, text: (x: number) => string = String): Partial<Rand> {
+  const s = f.scula, n = text(numar), d = text(s.diametru), pl = text(f.pasLateral), origine = s.origine;
+  if (unde === 'scula') {
+    return {
+      numarScula: n, diametruScula: d, formaScula: s.forma ? 'v' : 'plata',
+      ...(s.forma ? { unghiV: text(s.forma.unghi), varfV: text(s.forma.varf ?? 0) } : {}),
+      pas: text(f.pas), ...(p.tip === 'buzunar' ? { pasLateral: pl } : {}), origineScula: origine,
+    };
+  }
+  if (unde === 'fund') return { numarSculaFund: n, diametruSculaFund: d, pasLateralFund: pl, origineFund: origine };
+  if (unde === 'dop') return { numarSculaDop: n, diametruSculaDop: d, pasLateralDop: pl, origineDop: origine };
+  if (unde === 'banda') return { numarSculaBanda: n, diametruSculaBanda: d, origineBanda: origine };
+  const camp = unde.rest === 'fund' ? 'restFund' : unde.rest === 'dop' ? 'restDop' : 'rest';
+  const lista = p[camp];
+  if (unde.k < 0 || unde.k >= lista.length) return {};
+  return { [camp]: lista.map((r, i) => (i === unde.k ? { numar: n, diametru: d, pas: pl, origine } : r)) };
+}
+
+/** Frezele oferite unei freze de rest (ADR 0093): doar cele mai mici decât freza dinainte (`dinainte`, ca text); de necitit, toate. */
+export function oferitePentruRest(oferite: readonly FrezaOferita[], dinainte: string): readonly FrezaOferita[] {
+  const d0 = citesteNumar(dinainte);
+  return d0 === null ? oferite : oferite.filter((f) => f.scula.diametru < d0);
+}
 /** Ce se schimbă dintr-o operație în dialog, cu freza ei (ADR 0084: fiecare rând are freza lui; lipsă = cea din document). */
 export type ValoriOperatie = {
   readonly scula?: SculaOperatie;
@@ -135,7 +204,8 @@ export type IncrustatieOperatie = {
  */
 export type BandaOperatie = {
   readonly latime?: number; readonly decupare: boolean; readonly grosimePlaca: number;
-  readonly freza?: { readonly numar: number; readonly diametru: number };
+  /** Freza decupării, cu originea ei din „Frezele mele” (ADR 0300 §4, felia 16.A↑b-5; ca `SculaOperatie.origine`). */
+  readonly freza?: { readonly numar: number; readonly diametru: number; readonly origine?: OrigineFreza | null };
   readonly punti: { readonly numar: number; readonly latime: number; readonly grosime: number };
 };
 /**
@@ -152,11 +222,18 @@ export type IncrustatieDreaptaOperatie = {
   /** Treapta (ADR 0175 §3): umărul la `adancime` de la față, lat de `latime`, spre interior (lipsă) sau spre exterior. */
   readonly treapta?: { readonly adancime: number; readonly latime: number; readonly spre?: 'interior' | 'exterior' };
 };
-/** O freză de rest (ADR 0093): numărul (T), diametrul și distanța dintre inele (mm). */
-export type FrezaRestOperatie = { readonly numar: number; readonly diametru: number; readonly pasLateral: number };
-/** Freza dreaptă a fundului plat (ADR 0091): numărul (T), diametrul și distanța dintre inele (mm), cu frezele ei de rest. */
+/**
+ * O freză de rest (ADR 0093): numărul (T), diametrul și distanța dintre inele (mm); originea ei din „Frezele mele” (ADR 0300
+ * §4, felia 16.A↑b-5), ca `SculaOperatie.origine`: `null` = scrisă de mână, lipsă = rămâne cea din document.
+ */
+export type FrezaRestOperatie = { readonly numar: number; readonly diametru: number; readonly pasLateral: number; readonly origine?: OrigineFreza | null };
+/**
+ * Freza dreaptă a fundului plat (ADR 0091): numărul (T), diametrul și distanța dintre inele (mm), cu frezele ei de rest și
+ * originea ei (ADR 0300 §4, felia 16.A↑b-5; ca `SculaOperatie.origine`).
+ */
 export type FundPlatOperatie = {
   readonly numar: number; readonly diametru: number; readonly pasLateral: number; readonly rest?: readonly FrezaRestOperatie[];
+  readonly origine?: OrigineFreza | null;
 };
 
 /**
@@ -322,6 +399,8 @@ export type Rand = {
   readonly unghiCoborare: string; readonly lungimeZigzag: string; readonly razaElice: string;
   /** Fundul plat al V-carve-ului (ADR 0091): bifa și freza dreaptă, ca text; câmpurile rămân scrise și cu bifa scoasă. */
   readonly fundPlat: boolean; readonly numarSculaFund: string; readonly diametruSculaFund: string; readonly pasLateralFund: string;
+  /** Originea frezei fundului plat (ADR 0300 §4, felia 16.A↑b-5), ca `origineScula`: un diametru schimbat de mână o scoate. */
+  readonly origineFund: OrigineFreza | null;
   /** Frezele de rest (ADR 0093), ca text: ale buzunarului și ale fundului plat. */
   readonly rest: readonly RandRest[]; readonly restFund: readonly RandRest[];
   /** Strategia buzunarului (ADR 0094) și unghiul liniilor, ca text; unghiul rămâne scris și pe inele. */
@@ -341,6 +420,8 @@ export type Rand = {
   readonly jurDop: 'fata' | 'banda';
   readonly latimeBanda: string; readonly decupareBanda: boolean; readonly placaBanda: string;
   readonly frezaBanda: boolean; readonly numarSculaBanda: string; readonly diametruSculaBanda: string;
+  /** Originea frezei decupării (ADR 0300 §4, felia 16.A↑b-5), ca `origineScula`. */
+  readonly origineBanda: OrigineFreza | null;
   /** Punțile, ca text: ale benzii (V) ori, pe pereții drepți, ale dopului decupat (ADR 0174); rămân scrise și pe dopul ridicat. */
   readonly numarPunti: string; readonly latimePunti: string; readonly grosimePunti: string;
   /**
@@ -354,9 +435,10 @@ export type Rand = {
   /** Treapta (ADR 0175 §5): fără, spre interior sau spre exterior; adâncimea și lățimea umărului, ca text (rămân și fără ea). */
   readonly treaptaInc: 'fara' | 'interior' | 'exterior'; readonly adancimeTreapta: string; readonly latimeTreapta: string;
   readonly frezaDop: boolean; readonly numarSculaDop: string; readonly diametruSculaDop: string; readonly pasLateralDop: string;
+  /** Originea primei freze a dopului (ADR 0300 §4, felia 16.A↑b-5), ca `origineScula`. */
+  readonly origineDop: OrigineFreza | null;
   readonly restDop: readonly RandRest[];
 };
-/** O freză de rest pe rândul ei, ca text: numărul, diametrul și pasul lateral. */
 /** Verdictul câmpurilor unui rând: fiecare grup de valori, bun sau nu (o valoare greșită oprește exportul și se spune în grupul ei). */
 export type BunRand = {
   readonly scula: boolean; readonly adancime: boolean; readonly pas: boolean; readonly numar: boolean; readonly latime: boolean; readonly grosime: boolean;
@@ -365,7 +447,11 @@ export type BunRand = {
   readonly incrustatie: boolean; readonly dreapta: boolean; readonly frezaDop: boolean; readonly banda: boolean; readonly puntiDop: boolean;
 };
 
-export type RandRest = { readonly numar: string; readonly diametru: string; readonly pas: string };
+/**
+ * O freză de rest pe rândul ei, ca text: numărul, diametrul și pasul lateral; originea ei din „Frezele mele” (ADR 0300 §4,
+ * felia 16.A↑b-5): lipsă sau `null` = scrisă de mână (un diametru schimbat de mână o scoate).
+ */
+export type RandRest = { readonly numar: string; readonly diametru: string; readonly pas: string; readonly origine?: OrigineFreza | null };
 
 /**
  * Banda dopului pe rând (ADR 0172), din câmpurile lui, ca în lucrare (`valoriBanda`): placa implicită S + H + 1 și cea mai mică
@@ -431,7 +517,7 @@ export function incrustatieVRand(p: Rand): IncrustatieOperatie | null | undefine
     if (latime === null || placa === null || pn === null || pl === null || pg === null) return undefined;
     banda = {
       ...(latime !== undefined ? { latime } : {}), decupare: p.decupareBanda, grosimePlaca: placa,
-      ...(fn !== null && fd !== null ? { freza: { numar: fn, diametru: fd } } : {}), punti: { numar: pn, latime: pl, grosime: pg },
+      ...(fn !== null && fd !== null ? { freza: { numar: fn, diametru: fd, origine: p.origineBanda } } : {}), punti: { numar: pn, latime: pl, grosime: pg },
     };
   }
   return { joc, fierastrau, margine, jurDop: p.jurDop, ...(banda ? { banda } : {}) };
@@ -457,7 +543,7 @@ export function citesteRest(lista: readonly RandRest[]): FrezaRestOperatie[] | n
   for (const r of lista) {
     const numar = citesteNumar(r.numar), diametru = citesteNumar(r.diametru), pasLateral = citesteNumar(r.pas);
     if (numar === null || diametru === null || pasLateral === null) return null;
-    rez.push({ numar, diametru, pasLateral });
+    rez.push({ numar, diametru, pasLateral, origine: r.origine ?? null });
   }
   return rez;
 }
