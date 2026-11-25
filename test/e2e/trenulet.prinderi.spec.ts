@@ -144,6 +144,32 @@ test('felurile se numără ca un om: mânerul are o bară, clema o clemă, conec
   await expect(rand(page, 'cupa').locator('button')).toHaveText(['Bilă']);
 });
 
+test('piesele celelalte se judecă așa cum sunt acum în editoarele lor: o roată fără butuc nu mai stă pe ax', async ({ page }) => {
+  await atelier(page);
+  await piesa(page, 'legaturi', 'ax');
+  await panou(page).locator('summary').click();
+  await expect(rand(page, 'capatAx').locator('button')).toHaveText(PE_AX);
+  // roata cu anvelopă devine doar anvelopă (fără gaură): iese din rândul axului; pusă la loc, se întoarce
+  await piesa(page, 'roti', 'roata');
+  await page.locator('#at-ro-fel [data-v="anvelopa"]').click();
+  await piesa(page, 'legaturi', 'ax');
+  await expect(rand(page, 'capatAx').locator('button')).toHaveText(PE_AX.filter((n) => n !== 'Roată cu anvelopă'));
+  await piesa(page, 'roti', 'roata');
+  await page.locator('#at-ro-fel [data-v="plina"]').click();
+  // roata dințată fără gaură iese și ea; cu gaură rotundă, rămâne (axul se rotește în ea)
+  await piesa(page, 'roti', 'rotita');
+  await page.locator('#at-r-gaura [data-v="nu"]').click();
+  await expect(panou(page)).toBeHidden();
+  await piesa(page, 'legaturi', 'ax');
+  await expect(rand(page, 'capatAx').locator('button')).toHaveText(PE_AX.filter((n) => n !== 'Roată dințată'));
+  await piesa(page, 'roti', 'rotita');
+  await page.locator('#at-r-gaura [data-v="r"]').click();
+  await expect(are(page)).toHaveText('1 gaură de știft');
+  await expect(rand(page, 'gauraStift').locator('button')).toHaveText(['Știft', 'Ax']);
+  await piesa(page, 'legaturi', 'ax');
+  await expect(rand(page, 'capatAx').locator('button')).toHaveText(PE_AX);
+});
+
 test('panoul nu apare unde n-are ce spune: anvelopa, setul de calibrare, vederea „Modelul”', async ({ page }) => {
   await atelier(page);
   await expect(panou(page)).toBeVisible();

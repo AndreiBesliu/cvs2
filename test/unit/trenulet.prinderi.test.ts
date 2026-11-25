@@ -35,11 +35,20 @@ const Lp = L as typeof L & {
   axPentru(l: readonly Prindere[]): number | null;
   stiftPentru(l: readonly Prindere[]): number | null;
 };
-/** Piesa motorului, cu prinderile copiate în tărâmul probei (tablourile motorului vin din alt tărâm, `vm`). */
+/**
+ * Piesa motorului, cu prinderile copiate în tărâmul probei (tablourile motorului vin din alt tărâm, `vm`). Aceeași definiție
+ * se face o singură dată (plasele mari costă); cât o probă schimbă calibrarea (`calibrat`), piesele se fac de fiecare dată.
+ */
+const facute = new Map<string, CuPrinderi>();
+let calibrat = false;
 const fa = (d: Def): CuPrinderi => {
+  const cheie = JSON.stringify(d), tinuta = calibrat ? undefined : facute.get(cheie);
+  if (tinuta) return tinuta;
   const p = L.construieste(d) as CuPrinderi;
   assert.ok(Array.isArray(p.prinderi), `${String(d.tip)}: piesa are lista prinderilor`);
-  return { ...p, prinderi: Array.from(p.prinderi, (c): Prindere => ({ ...c, p: [...c.p] as P3, d: [...c.d] as P3, ...(c.r ? { r: [...c.r] as P3 } : {}) })) };
+  const r = { ...p, prinderi: Array.from(p.prinderi, (c): Prindere => ({ ...c, p: [...c.p] as P3, d: [...c.d] as P3, ...(c.r ? { r: [...c.r] as P3 } : {}) })) };
+  if (!calibrat) facute.set(cheie, r);
+  return r;
 };
 const FELURI = ['stift', 'locas', 'gauraStift', 'gauraAx', 'gauraBara', 'stiftTechnic', 'capatAx', 'bara', 'clema', 'bila', 'cupa'];
 const TATA = new Set(['stift', 'stiftTechnic', 'capatAx', 'bara', 'bila']);
@@ -226,6 +235,8 @@ const MOSTRE: readonly (readonly [string, Def, Record<string, number>, { slab?: 
   ['rotundul 2 × 2', { tip: 'rotund', diam: 2 }, { stift: 4, locas: 4 }, { slab: true }],
   ['rotundul 1 × 1 cu gaură de bară', { tip: 'rotund', gaura: 'bara' }, { stift: 1, locas: 1, gauraBara: 1 }],
   ['conul 2 × 2', { tip: 'rotund', diam: 2, forma: 'con' }, { stift: 1, locas: 4 }, { slab: true }],
+  // vârful de 4 mm e prea îngust pentru gaură: ea se oprește sub con, deci se intră doar de jos
+  ['conul 2 × 2 cu gaura oprită sub vârf', { tip: 'rotund', diam: 2, forma: 'con', varf_d: 4, gaura: 'stift' }, { locas: 4, gauraStift: 1 }, { slab: true }],
   ['arcul 1 × 4', { tip: 'arc' }, { stift: 4, locas: 2 }],
   ['arcul 1 × 6 × 2', { tip: 'arc', lung: 6, inalt: 2 }, { stift: 6, locas: 2 }],
   ['grinda de 3', { tip: 'grinda' }, { gauraStift: 6 }],
@@ -410,6 +421,7 @@ test('locurile de pe hârtie: cărămida, grinda, cărămida Technic, axul, ști
 
 test('prinderile urmează calibrarea și înălțimile din profilul imprimantei', () => {
   try {
+    calibrat = true;
     Lp.seteaza({ varianta_stift: 1, varianta_locas: 5, varianta_gaura: 5, varianta_ax: 1, varianta_bara: 5, varianta_cupa: 1, stift_h: 2.6, locas_h: 2.8 });
     const st = fa({ tip: 'caramida', celule: rand(2, 2), fund: 'locasuri' }).prinderi;
     assert.deepEqual([...new Set(st.map((c) => `${c.fel} ${c.lung}`))], ['locas 2.8', 'stift 2.6']);
@@ -417,7 +429,7 @@ test('prinderile urmează calibrarea și înălțimile din profilul imprimantei'
       const [, def] = MOSTRE.find(([n]) => n === nume)!, p = fa(def);
       p.prinderi.forEach((c, k) => peMasa(p, c, `calibrat: ${nume}, ${c.fel} ${k}`));
     }
-  } finally { Lp.seteaza(null); }
+  } finally { Lp.seteaza(null); calibrat = false; }
 });
 
 test('ce se prinde cu ce: fiecare fel are perechea lui, iar tabela e simetrică', () => {
@@ -535,13 +547,14 @@ test('cât intră: un tată mai lung decât gaura oarbă se oprește în fundul 
   assert.ok(cu1.prinderi.length > 0);
   // știftul de 2,6 într-un locaș de 2,1: piesa de deasupra rămâne cu 0,5 mm mai sus
   try {
+    calibrat = true;
     Lp.seteaza({ stift_h: 2.6, locas_h: 2.1, locas_urmeaza: false });
     const jos = fa({ tip: 'caramida', celule: rand(2, 2) }), sus = fa({ tip: 'caramida', celule: rand(2, 2), placi: 1, fund: 'locasuri' });
     const a = jos.prinderi.find((c) => c.fel === 'stift')!, b = sus.prinderi.find((c) => c.fel === 'locas')!, M2 = Lp.montaj(a, b);
     assert.deepEqual([a.lung, b.lung], [2.6, 2.1]);
     assert.equal(r3(aplica(M2, b.p)[2] - a.p[2]), 0.5);
     assert.equal(patrund(jos.tri, mutata(M2, sus.tri)), 0);
-  } finally { Lp.seteaza(null); }
+  } finally { Lp.seteaza(null); calibrat = false; }
 });
 
 // ---------------------------------------------------------------------------------------------------- pentru panoul „Se prinde cu”

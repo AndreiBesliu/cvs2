@@ -657,11 +657,14 @@ test('în engleză (ADR 0165): limba lui cvs2, schimbată pe loc printr-o reporn
   await expect(c.locator('#at-nume-piesa')).toHaveText('Axle 3');
   await expect(c.locator('#at-prinde-are')).toHaveText('1 axle');
   await expect(c.locator('#at-prinde-lista [data-rand="capatAx"] .at-prinde-unde')).toHaveText('On the axle');
-  await expect(c.locator('#at-prinde-lista [data-rand="capatAx"] button').first()).toHaveText('Beam');
+  // cărămida a rămas „placa cu găuri” din drumul prin galerii, deci primește și ea un ax; apoi grinda și restul
+  await expect(c.locator('#at-prinde-lista [data-rand="capatAx"] button').first()).toHaveText('Brick / plate');
+  await expect(c.locator('#at-prinde-lista [data-rand="capatAx"] [data-prinde="grinda"]')).toHaveText('Beam');
   expect(await romanaRamasa(page, 'Păstrat la repornire'), 'se prinde cu: axul').toEqual([]);
-  // cărămida: știfturile și locașurile; roata dințată: grinda perechii
+  // cărămida (placa 2 × 6 cu cinci găuri): știfturile, locașurile și găurile; roata dințată: grinda perechii
   await c.locator('#at-tipuri [data-fila="caramizi"]').click();
-  await expect(c.locator('#at-prinde-are')).toHaveText('8 studs · 8 sockets');
+  await expect(c.locator('#at-prinde-are')).toHaveText('12 studs · 12 sockets · 5 pin holes');
+  await expect(c.locator('#at-prinde-lista [data-rand="gauraStift"] .at-prinde-unde')).toHaveText('In the pin holes');
   await expect(c.locator('#at-prinde-lista [data-rand="stift"] .at-prinde-unde')).toHaveText('On studs');
   await expect(c.locator('#at-prinde-lista [data-rand="locas"] .at-prinde-unde')).toHaveText('In the sockets (underneath)');
   await c.locator('#at-prinde-lista [data-prinde="clema"]').first().click();
