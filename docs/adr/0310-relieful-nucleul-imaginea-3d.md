@@ -408,8 +408,10 @@ Documentul v29 (bila și operația `finisare`) e în ADR 0312.
   rândul finisării, doar de citit, la locul lui în ordinea tăierii (ADR 0312 §7); „Tăiat” din vederea 3D simulează placa cu
   finisarea (bila în IR).
 - **Oracolul 3D, extins la otrăvuri:** V-ul cu vârf plat (conul trunchiat, exact: marginea vârfului pe muchii și pe fețe), cu
-  proba lui față de eșantionare; un relief aspru și o tablă de șah cu V-ul la celula fină (câmpul pe 9 puncte) și la diviziunea
-  2 (diagonala fixă).
+  proba lui față de eșantionare; un relief aspru cu V-ul la celula fină, cu liniile nealiniate (câmpul pe 9 puncte; pe liniile
+  aliniate, fiecare segment trece prin celulele vecine, iar câmpul lor ascunde un maxim uitat); ce rămâne pe pantă după
+  finisare, cu fața plăcii unde bila n-a trecut (un traseu ridicat nu mai taie); un con mai adânc decât placa („prin foaie”
+  nu coboară podeaua).
 
 **Cât costă**, măsurat în container (un fir): o pantă lină de 20 × 20 mm, bila R3, pasul lateral 0,5 mm: ~1 s la celula
 reliefului de 0,5 mm (de calcul 1/16), ~1,5 s la 0,1 mm (de calcul 0,05); surplusul median 0,05–0,07 mm, cel mult ~0,1 mm

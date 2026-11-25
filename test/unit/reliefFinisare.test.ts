@@ -285,35 +285,26 @@ test('creasta la 30° (liniile la cel mult pasul cerut): cel mult cât formula c
   assert.ok(m >= creastaPlan(R, o.pasLateral) - 2e-3, `creasta ${m}, sub cea a pasului folosit ${creastaPlan(R, o.pasLateral)}`);
 });
 
-/** Un relief aspru (valori pseudoaleatoare, deterministe, între 0 și `a`); `tabla`: o tablă de șah, cu șeile în fiecare pătrat. */
-function aspru(n: number, a: number, samanta: number, tabla = false): Float64Array {
+/** Un relief aspru: valori pseudoaleatoare, deterministe, între 0 și `a`. */
+function aspru(n: number, a: number, samanta: number): Float64Array {
   const v = new Float64Array(n * n);
   let s = samanta;
   for (let k = 0; k < v.length; k++) {
     s = (s * 48271) % 2147483647;
-    v[k] = tabla ? (((k % n) + Math.floor(k / n)) % 2) * a : (s / 2147483647) * a;
+    v[k] = (s / 2147483647) * a;
   }
   return v;
 }
 
-test('relieful aspru, cu V-ul ascuțit și cu vârf plat: câmpul pe 9 puncte (celula 0,05 mm) și diagonala fixă (0,125 mm, diviziunea 2)', () => {
-  // Pante sub cot(θ/2) / 2: aici maximul unei celule poate sta pe latura ei sau în colț, nu în centrul unei vecine.
-  for (const [c, n] of [[0.05, 40], [0.125, 20]] as const) {
-    for (const [nume, v] of [['aspru', aspru(n, 0.6 * c, 11)], ['tabla', aspru(n, 0.4 * c, 1, true)]] as const) {
-      let max = 0;
-      for (const x of v) max = Math.max(max, x);
-      for (const freza of [{ fel: 'v', raza: 0.4, unghi: 90, varf: 0 }, { fel: 'v', raza: 0.5, unghi: 60, varf: 0.1 }] as const) {
-        judeca({
-          nume: `${nume}, celula ${c}, V${freza.unghi}`, reliefuri: [relief(v, n, n, c, T(1, 1), -max)], freza, unghi: 0, margine: 'trece',
-          pasLateral: c, pas: 1, adancime: 2,
-        });
-      }
-      // Liniile nealiniate, la un unghi: segmentele nu mai trec prin centrele celulelor vecine, deci maximul fiecărei celule
-      // (pe latură, în colț) contează.
-      judeca({
-        nume: `${nume}, celula ${c}, V90 la 33°`, reliefuri: [relief(v, n, n, c, T(1, 1), -max)], freza: { fel: 'v', raza: 0.4, unghi: 90, varf: 0 },
-        unghi: 33, nealiniat: true, margine: 'trece', pasLateral: 0.7 * c, pas: 1, adancime: 2,
-      });
-    }
-  }
+test('relieful aspru, cu V-ul, la celula fină (câmpul pe 9 puncte), cu liniile nealiniate la 33°', () => {
+  // Pante sub cot(θ/2) / 2: aici maximul unei celule poate sta pe latura ei sau în colț, nu în centrul unei vecine. Liniile
+  // nealiniate: pe cele aliniate, fiecare segment trece prin celulele vecine, iar câmpul lor ascunde un maxim uitat (diagonala
+  // fixă și V-ul cu vârf plat le prind valurile de mai sus).
+  const c = 0.05, n = 40, v = aspru(n, 0.6 * c, 11);
+  let max = 0;
+  for (const x of v) max = Math.max(max, x);
+  judeca({
+    nume: 'aspru, V90 la 33°', reliefuri: [relief(v, n, n, c, T(1, 1), -max)], freza: { fel: 'v', raza: 0.4, unghi: 90, varf: 0 },
+    unghi: 33, nealiniat: true, margine: 'trece', pasLateral: 0.7 * c, pas: 1, adancime: 2,
+  });
 });

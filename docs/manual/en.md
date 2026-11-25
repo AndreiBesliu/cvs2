@@ -1087,8 +1087,10 @@ the sheet's thickness). The fields:
 - **Relief on Z**: **top at the stock face** (the default) or **zero plane below the face**, at the depth you type; what would
   stand above the face is cut at the face, and the export says so.
 
-Finishing comes before the contour cuts, with its own cutter; in the [3D view](#vedere-3d), **Cut** shows the sheet after the
-program. On slopes the cutter stays a little above the ideal surface (about 0.1 mm on a 45° slope): it is the safe side of the
+Finishing comes before the contour cuts, with its own cutter. In the **Export G-code** window it has its own row, in its place
+in the cutting order, with a read-only sheet (the cutter, the stepover, the scallop on a flat, the depth); you change it in the
+Cutting section. With **Cutting order: Mine**, its row moves like any other. In the [3D view](#vedere-3d), **Cut** shows the
+sheet after the program. On slopes the cutter stays a little above the ideal surface (about 0.1 mm on a 45° slope): it is the safe side of the
 computation, which never digs into the relief. The export needs the relief's tiles from this browser; on another computer, it
 says they are missing.
 

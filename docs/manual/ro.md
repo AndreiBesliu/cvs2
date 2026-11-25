@@ -1054,8 +1054,10 @@ model; nu coboară niciodată sub suprafața reliefului și nici sub **adâncime
 - **Relieful pe Z**: **vârful la fața plăcii** (implicit) sau **planul zero sub față**, la adâncimea scrisă; ce ar ieși
   deasupra feței se taie la față, iar exportul o spune.
 
-Finisarea se face înaintea tăieturilor pe contur, cu freza ei; în [vederea 3D](#vedere-3d), **Tăiat** arată placa după
-program. Freza rămâne puțin deasupra suprafeței ideale pe pante (cam 0,1 mm pe o pantă de 45°): e partea sigură a calculului,
+Finisarea se face înaintea tăieturilor pe contur, cu freza ei. În fereastra **Exportă G-code** are rândul ei, la locul ei
+în ordinea tăierii, cu o fișă doar de citit (freza, pasul lateral, creasta pe un plan, adâncimea); se schimbă din secțiunea
+Tăierea. Cu **Ordinea tăierii: A mea**, rândul ei se mută ca oricare altul. În [vederea 3D](#vedere-3d), **Tăiat** arată
+placa după program. Freza rămâne puțin deasupra suprafeței ideale pe pante (cam 0,1 mm pe o pantă de 45°): e partea sigură a calculului,
 care nu sapă niciodată în relief. Exportul cere dalele reliefului din acest browser; pe alt calculator, le spune lipsă.
 
 ## Tăierea vectorilor
