@@ -14845,3 +14845,15 @@ gata de unit”, `b099c457`; 28.8↑n, `7996e77c`), la ordinul în vigoare „un
   decizie, în paragraful de stare și în index.
 - **Documentele:** decizia și paragrafele de stare în `CLAUDE.md`; indexul liniilor; starea din
   `docs/linii/principala.md` (cu lista „La owner” adusă la zi).
+
+## 2026-11-25 — Sesiunea principală în cloud: lotul 33 (cotele în export, frezele b-5, cadrul și melcul, numele fișierului), pe test (Model: Claude Fable 5.2)
+
+**Prompt:** publicarea de după a treizeci și treia unire (pe test se publică liber)
+**Started:** 25.11, 13:19 (lanțul pornit după unire). **Completed:** 25.11, 14:24.
+
+- **Pe test: `2aaee0b4`** (10.4↑c-1, 16.A↑b-5, 3.Cj-3 și 3.Cj-4 cu Easy 3Draw 18.32.0, 28.8↑n). `publica.yml`
+  45612906027, verde (14:21–14:24); serverul, neschimbat.
+- **Completul pe `main`** (45604669891, verde, 53 min): unit 10 494 / 0 (12 sărite, pe Linux), e2e 849 / 849,
+  funcțiile pe emulatoare 136 / 136, paginile 59 / 59; pornirea 111,2 kB, totalul 890,1 / 1 000 kB.
+- **Proba de fum** pe adresa de test: versiunea `2aaee0b4f0a4`, potrivită; nicio eroare în consolă, nicio cerere
+  căzută.
