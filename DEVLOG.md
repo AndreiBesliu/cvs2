@@ -14080,6 +14080,57 @@ dată în timpul feliei).
 - **Neîmpinsă până la unirea lotului 3.Cc + 3.Cd** (raportat pe `d0490719`, cu rapidul și completul verzi), la rugămintea
   sesiunii principale; împinsă doar dacă tura se încheie înainte.
 
+## 2026-11-25 — Felia 3.Cj-1: cama în atelierul Easy 3Draw (ADR 0284) (sesiune cloud)
+
+**Prompt:** (aceeași cerere a owner-ului și aceleași răspunsuri la ADR 0284 ca la 3.Ca; răspunsul lui „Mecanisme”, la
+lista pieselor noi; pornită fără altă întrebare, cât 3.Ce își aștepta rularea completă și cele trei întrebări ale
+Modelului își așteptau răspunsul)
+**Started:** 25.11, 01:57. **Completed:** 25.11, 02:22 (felia, cu otrăvurile; orele, după ceasul containerului).
+
+- **Cama** (tipul `cama`, fila Roți): un disc pe ax cu marginea la o distanță de ax care se schimbă în timpul rotației,
+  de la raza de bază la raza de bază plus cursa. Trei forme: excentricul, para, melcul.
+- **3.Cj se face pe bucăți:** cama întâi; roata cu palete, cadrul și melcul, pe rând. „Manivela” din plan nu e o piesă
+  nouă (grinda cu o gaură de ax la capăt și fața cu găuri de știft a fuliei o fac deja).
+- **Proba, scrisă întâi** (a căzut cu „tip necunoscut”): raza, judecată pe plasă din 5 în 5 grade, față de formula de pe
+  hârtie a fiecărei forme; para, ca înfășurătoare convexă a două cercuri, socotită altfel decât o desenează motorul.
+- **Ce a arătat proba din browser:** cutia STL-ului perei ieșea 29,97 în loc de 30: spatele cercului de bază cădea la
+  mijlocul unei laturi. Arcele perei au acum un număr par de laturi, iar capetele ei sunt vârfuri.
+- **Probele vechi, la zi:** „Roți 9”, galeriile și desenele, starea unei liste vechi, listele panoului „Se prinde cu”
+  (cama are gaură de ax, deci intră în rândul axului), versiunea 18.29.0.
+- **Otrăvurile:** 59 / 59: 57 la prima rulare (37 pe motor, 3 pe tabele, 19 prin browser). Cele două scăpate: butonul
+  apăsat al formei și al găurii nu era cerut de probă (acum e), iar rotunjirea la zecimi din câmp era de prisos (o face
+  motorul) și a ieșit din cod.
+- **Probele pluginului:** unitare 230 / 230 (cu biblioteca), în browser 162 / 162 (cu extensiile). Easy 3Draw 18.29.0 (504,7 kB), cu rândul
+  de „ce e nou”; doar pachetul se schimbă.
+- **Neîmpinsă până la unirea lui 3.Ce** (PR-ul `AndreiBesliu/cvs2#28`).
+
+## 2026-11-25 — Felia 3.Cj-2: roata cu palete în atelierul Easy 3Draw (ADR 0284) (sesiune cloud)
+
+**Prompt:** (aceeași cerere a owner-ului și aceleași răspunsuri la ADR 0284 ca la 3.Ca; răspunsul lui „Roata cu palete”,
+la lista pieselor noi; pornită fără altă întrebare, cât 3.Ce își aștepta rularea completă și unirea)
+**Started:** 25.11, 02:22. **Completed:** 25.11, 03:14 (felia, cu otrăvurile; orele, după ceasul containerului).
+
+- **Roata cu palete** (tipul `roataPalete`, fila Elice): o roată de apă sau de vânt, cu butucul roților, paletele
+  pornite din el, egal depărtate, până la diametrul cerut, și, la alegere, un disc pe fața de jos. Palete drepte (pe
+  rază) sau curbate (arce cu săgeata de o cincime din lungime).
+- **Proba, scrisă întâi** (a căzut cu „tip necunoscut”): paletele se numără pe plasă, pe cercuri din jurul axului.
+- **Ce a arătat proba:** la Ø24 cu 4 palete curbate ieșeau 8. Paleta pleacă din butuc pieziș, iar arcul, prelungit
+  înapoi „până intră în butuc”, doar îl atingea cu marginea de jos, îl ocolea și ieșea de partea cealaltă. Capătul
+  paletei coboară acum pe rază, de la marginea rămasă afară, până în butuc.
+- **Butucul crește cu paletele** (0,8 mm între ele lângă el), dar nu trece de jumătatea razei: pe o roată mică încap mai
+  puține palete (la Ø24, 15 drepte sau 12 curbate). Motorul o spune; editorul ține paletele în margine.
+- **Engleza:** „Drepte” și „Paletele” aveau deja traduceri cu alt sens (șinele drepte, paletele elicei); butoanele roții
+  spun „Palete drepte”, „Palete curbate”, „Câte palete”.
+- **Probele vechi, la zi:** „Elice 4” / „Propeller 4”, galeriile și desenele, căutarea („ro” găsește și roata cu
+  palete), starea unei liste vechi, rândul axului din „Se prinde cu”, proba limbii (editorul roții, în engleză),
+  versiunea 18.30.0.
+- **Otrăvurile:** 101 / 101: 97 la prima rulare (66 din 67 unitare, 31 din 34 prin browser). Scăpate: rotunjirea
+  numărului de palete (proba cerea o singură valoare), două margini de sus ale câmpurilor (proba scria peste valoarea de
+  la margine, deci motorul o aducea tot acolo; acum pornește de la valori din mijloc) și una echivalentă, înlocuită.
+- **Probele pluginului:** unitare 246 / 246 (cu biblioteca), în browser 175 / 175 (cu extensiile). Easy 3Draw 18.30.0
+  (508,4 kB), cu rândul de „ce e nou”; doar pachetul se schimbă.
+- **Neîmpinsă până la unirea lui 3.Ce** (PR-ul `AndreiBesliu/cvs2#28`).
+
 ## 2026-11-24 — Sesiunea principală în cloud: clicul pe „Închide” din cadrul unei extensii, pierdut (probă instabilă, reparată) (Model: Claude Fable 5.2)
 
 **Prompt:** completul de pe `main` pentru loturile 19–21 (`7312d685`, rularea 45436221341), roșu la o singură probă;
@@ -14355,3 +14406,61 @@ ce se poate”
   880,9 / 900 kB, `/admin` 138,3 / 200. Pachetul Easy 3Draw, 501,6 kB. Nimic pe server.
 - **Documentele:** decizia în `CLAUDE.md` (paragraful de stare al construcțiilor e al liniei; versiunea extensiei,
   18.28.0, următoarea 18.29.0); indexul liniilor; starea din `docs/linii/principala.md`.
+
+## 2026-11-25 — Sesiunea principală în cloud: lotul 30 (atelierul Easy 3Draw: punctele de prindere), pe test; liniile, repornite (Model: Claude Fable 5.2)
+
+**Prompt:** regula „pe test publici liber”, după a douăzeci și noua unire; apoi „am resetat limita saptamanale. azi este miercuri.” și „vreau sa pornesti si celelalte sub-sesiuni”
+**Started:** 25.11, 04:55. **Completed:** publicarea, 25.11, 06:03; repornirea liniilor, 09:32.
+
+- **Publicat:** `f2678300` (rapidul pe `main` 45535348600; completul 45536382490, verde, 65 min cu așteptarea la
+  coadă: unit 10 431 / 0, 12 sărite pe Linux; e2e 824 / 824; funcțiile pe emulatoare 136 / 136; paginile 59 / 59;
+  publicarea 45543821746). Adresa de test spune `f267830004fa`; proba de fum, bună (nicio eroare, 70 de butoane,
+  catalogul extensiilor, mesajele, manualul, codurile și documentația, toate cu 200). Nimic nou pe server. Pornirea
+  111,1 kB (plafonul 120; cu ușa 116,1, cu Atelierul 116,4), totalul 880,9 / 900 kB.
+- **Între publicare și proba de fum, sesiunea a stat** până la 09:29, când owner-ul a scris că a resetat limita
+  săptămânală: lanțul de publicare se încheiase în GitHub (06:03), iar proba de fum și cifrele porților s-au luat la
+  09:30.
+- **Liniile, repornite** (mesaje către sesiunile lor, cu vorbele owner-ului): atelierul (3.Cj-1, 3.Cj-2; ultima lui
+  tură se oprise cu eroare), frezele (16.A↑b-5, apoi b-4), relieful (18.1↑b), cotele (10.4↑c). Fiecăreia: vârful lui
+  `main`, documentul v28 (v29 la cerere), restul de mărime comun (19,1 kB total, 3,6 kB pornire) și regula „dacă nu
+  mai încape, oprește-te și scrie-mi”.
+- **Documentele:** decizia în `CLAUDE.md`; indexul liniilor (relieful, cotele, frezele); starea din
+  `docs/linii/principala.md`.
+
+## 2026-11-25 — Sesiunea principală în cloud: a treizecea unire (atelierul Easy 3Draw: 3.Cj-1, cama; 3.Cj-2, roata cu palete) (Model: Claude Fable 5.2)
+
+**Prompt:** raportul liniei atelierului („3.Cj-1 și 3.Cj-2 sunt gata de unit, împreună”, `ae490539`), la ordinul în
+vigoare „unește ce se poate”
+**Started:** 25.11, 09:34. **Completed:** unirea în `main`, 25.11, 09:35; publicarea pe test, pornită după ea.
+
+- **Unirea, pe `unire-2511f`** (din `341b3472`): `ae490539`, în `e90edd2e`. Ciocnirea: rândurile din
+  `docs/linii/README.md` (al liniei, pentru atelier; ale lui `main`, pentru freze, relief și cote). Ramura avea `main`
+  `f2678300`; `341b3472` a adus doar documente, deci arborele unirii are exact codul commit-ului raportat (`git diff
+  ae490539` gol în afara fișierelor `.md`): a intrat pe porțile lui. Local: traducerile (1 112), biblioteca („Easy
+  3Draw 18.30.0, la zi”), fără `.lucru/`.
+- **Porțile, în CI, pe `ae490539`** (citite din jurnalul rulării): completul 45539424272, verde (53 min): unit
+  10 445 / 0 (12 sărite, pe Linux), e2e 830 / 830, funcțiile pe emulatoare 136 / 136, paginile 59 / 59; rapidul
+  45539418314, verde. Pornirea 111,1 kB (plafonul 120), totalul 880,9 / 900 kB, `/admin` 138,3 / 200. Pachetul Easy
+  3Draw, 508,4 kB. Nimic pe server.
+- **Linia împinsese commit-ul înaintea opririi de la limită** (completul lui a rulat pe 25.11, 05:21–06:14); raportul
+  a venit la două minute după repornire.
+- **Documentele:** decizia în `CLAUDE.md` (paragraful de stare al construcțiilor e al liniei; versiunea extensiei,
+  18.30.0, următoarea 18.31.0); indexul liniilor; starea din `docs/linii/principala.md`.
+
+## 2026-11-25 — Sesiunea principală în cloud: plafoanele 1 000 / 125 kB (ADR 0146) (Model: Claude Fable 5.2)
+
+**Prompt:** „ok, ridica plafonul total la 1000 kB si pornirea la 125 kB”
+**Started:** 25.11, 09:37. **Completed:** 25.11, 09:50 (în `main`, după rapidul verde al ramurii, 45569774571).
+
+- **ADR 0146** (`docs/adr/0146-plafoanele-1000-125.md`, cu rândul din index și traducerea titlului): totalul 900 →
+  1 000 kB, pornirea 120 → 125 kB; cifrele măsurate pe `d1a96fc4` (880,9 kB; 111,1, cu ușa 116,1, cu Atelierul
+  116,4), de unde vine creșterea de 87,3 kB din două zile, costul la 750 kbit/s, ce am respins, când se redeschide.
+- **Poarta:** `PLAFON_PORNIRE_KB = 125` și `PLAFON_TOTAL_KB = 1000` în `scripts/build-determinist.ts`, cu istoricul din
+  comentariu. Celelalte plafoane, neatinse.
+- **Porțile:** schimbă doar două constante ale porții mărimii și documente (ca la ADR 0145): rapidul ramurii
+  `unire-2511g`, verde, înaintea împingerii în `main`; fără alt complet. Local: tipurile, traducerile (1 113).
+- **Titlul unui ADR nu are două puncte în el:** roadmap-ul îl taie la primul („Plafoanele: totalul…” ieșea
+  „Plafoanele”); titlul e acum „Plafoanele, totalul 900 → 1 000 kB și pornirea 120 → 125 kB”.
+- **Liniile, anunțate:** frezele, relieful, cotele și atelierul primesc plafoanele noi odată cu `main`.
+- **Documentele:** decizia și paragraful de stare în `CLAUDE.md`; `docs/linii/principala.md` (plafoanele, intervalul
+  ADR: următorul al sesiunii principale e 0147).

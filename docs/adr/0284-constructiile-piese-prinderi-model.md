@@ -111,7 +111,7 @@ elice. Fiecare e un șablon din parametri, nu un desen fix.
 | 3.Cg | Modelul: verificarea (prins, plutește, se ciocnește) | avertismente pe piese și în listă |
 | 3.Ch | Construcțiile cu nume și lista lor de piese | mai multe construcții în atelier |
 | 3.Ci | Construcțiile gata | patru șabloane |
-| 3.Cj | Melcul, cama și manivela, cadrul, roata cu palete | restul pieselor din B |
+| 3.Cj | Melcul, cama și manivela, cadrul, roata cu palete | restul pieselor din B, pe bucăți: 3.Cj-1, cama, și 3.Cj-2, roata cu palete (gata pe 25.11); apoi cadrul, melcul |
 | 3.Ck | Balamaua și placa turnantă | despărțite de 3.Cd: au jocuri de mișcare care se potrivesc pe piese tipărite |
 
 ## Marginile
@@ -325,3 +325,57 @@ ale axului și ale știftului); Easy 3Draw 18.25.0.
 - **Mărimea:** doar pachetul extensiei (491,4 → 501,6 kB: a trecut de pragul de 0,5 MB din „Se redeschide dacă”;
   instalarea nu se simte, dar pragul e de hotărât din nou); aplicația, neschimbată.
 - **Felia următoare:** 3.Tu (piesele rotunde pe același ax în „Modelul”), la răspunsurile owner-ului, apoi 3.Cf.
+
+## Implementat (3.Cj-1, 25.11.2026)
+
+**Cama** (tipul `cama`, fila Roți; Easy 3Draw 18.29.0). Prima piesă din 3.Cj, care se face pe bucăți: 3.Cj-1 cama, apoi
+roata cu palete, cadrul și melcul.
+
+- **Piesa:** un disc pe ax, cu marginea la o distanță de ax care se schimbă în timpul rotației, de la raza de bază
+  (jumătate din diametrul cerut) la raza de bază plus cursa. Un tachet sprijinit pe ea (capătul unei grinzi, un ax într-un
+  ghidaj) urcă și coboară cu cursa, o dată pe tură. Se tipărește culcată, fără suport.
+- **Trei forme:** excentricul (un cerc cu axul mutat din mijloc cu jumătate din cursă: urcă și coboară lin), para
+  (cercul de bază și un nas rotund, legate prin tangente: stă jos mai mult de jumătate de tură, apoi urcă scurt) și
+  melcul (raza crește liniar pe o tură întreagă, apoi cade: într-un singur sens).
+- **Parametrii:** diametrul de bază 10–64 mm, cursa 1–24 mm, grosimea 1–20 mm (implicit 7,8, cât o grindă), gaura de ax
+  sau rotundă. La cea mai mică, între colțul crucii și margine rămân 2,3 mm.
+- **„Manivela” din planul de mai sus nu e o piesă nouă:** o grindă cu o gaură de ax la un capăt și găuri de știft în
+  rest se face deja din editorul grinzilor, iar discul cu găuri de știft pe cercul de 8 mm e fața „cu găuri de știft” a
+  fuliei.
+- **Prinderile:** gaura de pe ax; „Se prinde cu” îi propune axul de lungimea bună, iar axul o propune înapoi.
+- **Probele:** unitare 6 (`test/unit/trenulet.cama.test.ts`): **raza se judecă pe plasă**, din 5 în 5 grade, față de
+  formula de pe hârtie a fiecărei forme (para, ca înfășurătoare convexă a două cercuri, socotită altfel decât în motor);
+  e2e 3 (`test/e2e/trenulet.cama.spec.ts`). Probele filelor („Roți 9”), galeriilor, pictogramelor și ale panoului „Se
+  prinde cu”, la zi.
+- **Mărimea:** doar pachetul extensiei (501,6 → 504,7 kB); aplicația, neschimbată.
+
+## Implementat (3.Cj-2, 25.11.2026)
+
+**Roata cu palete** (tipul `roataPalete`, fila Elice; Easy 3Draw 18.30.0). A doua piesă din 3.Cj.
+
+- **Piesa:** butucul roților, paletele pornite din el, egal depărtate, până la diametrul cerut, și, la alegere, un disc
+  pe fața de jos, care le ține între ele. Pe un ax, între două grinzi, împinge o barcă sau e învârtită de un jet de apă
+  ori de aer. Paletele sunt pereți drepți, deci se tipărește culcată, fără suport.
+- **Parametrii:** diametrul 24–160 mm (implicit 64; „Repede”: 32, 48, 64, 96, adică 4, 6, 8 și 12 știfturi), paletele
+  4–24 (implicit 8), lățimea 4–40 mm (implicit 15,8, cât două grinzi), palete drepte sau curbate, cu disc sau fără,
+  gaura de ax sau rotundă.
+- **Paletele:** groase de 2 % din diametru, cel puțin 1,6 mm; discul, 1,2 mm. Drepte: pe rază. Curbate: arce de cerc cu
+  coarda pe rază și săgeata de o cincime din lungimea paletei, toate în aceeași parte, ca niște cupe. Vârful fiecărei
+  palete stă pe cercul roții (colțurile și mijlocul lui), deci roata are chiar diametrul cerut.
+- **Butucul crește cu paletele:** cel al roților (raza 4,8), dar cel puțin 2,5 grosimi de paletă și cât să rămână 0,8 mm
+  între palete lângă el; paleta curbată taie butucul pieziș, deci ține acolo de 1,38 ori grosimea ei. Butucul nu trece
+  de jumătatea razei: de aici, câte palete încap pe o roată mică (la Ø24, 15 drepte sau 12 curbate). Motorul aduce
+  numărul în margine și o spune; editorul ține paletele câte încap și scrie marginea lângă câmp.
+- **Hotărât la implementare, capătul de la butuc al paletei curbate:** paleta pleacă din butuc pieziș (la 43,6° de
+  rază), deci marginea ei de jos începe în afara butucului. Prima formă prelungea arcul înapoi până intrau amândouă
+  colțurile în butuc; la roțile mici, marginea de jos doar atingea butucul, iar arcul îl ocolea și ieșea de partea
+  cealaltă, ca o a doua paletă. A arătat-o proba, care numără paletele pe plasă (8 în loc de 4). Acum capătul coboară
+  de la marginea de jos pe rază, până în butuc, și nu rămâne nicio crăpătură între paletă și butuc.
+- **Prinderile:** gaura de pe ax; „Se prinde cu” îi propune axul de 3 (la lățimea implicită), iar axul o propune înapoi.
+- **Probele:** unitare 8 (`test/unit/trenulet.palete.test.ts`). **Paletele se numără pe plasă:** pe cercuri dintre
+  butuc și vârf, lemnul și golul alternează de atâtea ori câte palete sunt, iar fiecare e groasă cât pe hârtie; arcul
+  paletei curbate, în puncte de pe hârtie (pe arc, lemn; la 1,1 mm de el, gol); butucul, pe hârtie, la zece mărimi;
+  pe toată plaja (64 de roți), plasa închisă, gaura liberă, paletele câte s-au cerut și prinse de butuc. În browser 3
+  (`test/e2e/trenulet.palete.spec.ts`), plus engleza editorului în proba limbii. Probele filelor („Elice 4”),
+  galeriilor, pictogramelor, căutării și ale panoului „Se prinde cu”, la zi.
+- **Mărimea:** doar pachetul extensiei (504,7 → 508,4 kB); aplicația, neschimbată.

@@ -8,7 +8,7 @@ Starea:
 („da, 1a–5a”, la cele cinci întrebări): rămâne ce e implementat. 3.Xk (doar probe) e în `main` din 24.11 (`373699e6`,
 lotul 24, din `23d9a1b`, la „ok, cand e verde fa unirea” al owner-ului). Ce urmează în bibliotecă pornește la cuvântul
 lui. Din 24.11 seara, sesiunea liniei lucrează la construcțiile din Easy 3Draw (ADR 0284, nota
-[atelier.md](atelier.md)): 3.Ca a dus pachetul la 18.24.0, 3.Cb la 18.25.0, 3.Cc la 18.26.0, 3.Cd la 18.27.0, iar 3.Ce la 18.28.0; următoarea versiune, 18.29.0.**_
+[atelier.md](atelier.md)): 3.Ca a dus pachetul la 18.24.0, 3.Cb la 18.25.0, 3.Cc la 18.26.0, 3.Cd la 18.27.0, 3.Ce la 18.28.0, 3.Cj-1 la 18.29.0, iar 3.Cj-2 la 18.30.0; următoarea versiune, 18.31.0.**_
 
 - **Ce s-a făcut** (amănuntele, în ADR 0233, „Implementat”): rafturile bibliotecii (`CATEGORII_BIBLIOTECA`,
   `shared/biblioteca.ts`) și `categorii` în lista bibliotecii și în catalog; căutarea pură (`src/extensii/cautare.ts`);
