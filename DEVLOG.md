@@ -15286,3 +15286,20 @@ test, după ea.
   consemnat în decizie și în index. 3.Cf-1, raportată la 21:10: își face completul unirii, peste `main`-ul acesta.
 - **Documentele:** decizia și paragraful de stare în `CLAUDE.md` (cu regula `catFoaia` și a probei „greșeala se vede”);
   indexul liniilor; starea din `docs/linii/principala.md`.
+
+## 2026-11-25 — Linia exportului: 28.8↑i, viteza ferestrei exportului (ADR 0291)
+
+**Prompt:** mesajul sesiunii principale, 25.11, 21:14 („**28.8↑h (cu 28.8↑h-2) e în `main`** […] **Poți împinge din nou.** Adu `main` […] și **pornește 28.8↑i (viteza ferestrei)**, cum scrie ADR 0291.”), la ordinul în vigoare „unește ce se poate”
+**Started:** 25.11, 21:14.
+
+- **Înainte, pe 150 de operații** (1280 × 720): deschiderea 9,7 s, 37 800 de noduri, 150 de fișe randate, o tastă 96 ms.
+- **Fereastra fișelor:** peste 12 fișe, doar cele din jurul panoului, cea curentă cu vecinele ei și cea cu focusul; restul, locuri
+  cu titlul și înălțimea măsurată. „Du-mă la …” randează întâi fișa.
+- **Lista:** rândurile `memo`, cu acțiunile printr-un obiect stabil, și `content-visibility: auto`. Fișa operației nu e `memo`
+  (măsurat: ~0,5 ms pe fișă, 3–5 randate).
+- **După:** deschiderea ~0,5 s, 2 667 de noduri, 3 fișe, o tastă 7,7–9 ms.
+- **Probele:** `export.viteza.spec.ts`, 4 / 4, scrise întâi și văzute căzând; e2e-ul care deschide exportul, 345 / 345.
+- **Otrăvurile:** `28.8i.py`, 9 / 9. **Mărimea:** pornirea +0, totalul 909,4 / 1 000 (+0,3 kB).
+- **Documentele:** ADR 0291 („Implementarea 28.8↑i”), fișa etapei 3, registrul otrăvurilor, nota liniei.
+
+**Completed:** 25.11, 21:47.

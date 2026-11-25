@@ -247,3 +247,37 @@ panoul 71..596, greșeala 651..696.
 - **Mărimea:** pornirea +0 (111,2 kB), totalul +0,2 kB (893,5 / 1 000). Programul, documentul și serverul: neschimbate.
 - **Găsit pe drum, în afara reparației:** pe un telefon culcat îngust (640 × 360), banda listei lasă fișelor 9 px: fereastra
   nu se poate folosi acolo. E de judecat cu 28.8↑l (privirea) sau cu aranjamentele.
+
+## Implementarea 28.8↑i (25.11)
+
+Constatarea 4 a auditului: pe 150 de operații, toate fișele stăteau randate una sub alta. Măsurat aici înaintea feliei (1280 ×
+720, aceeași probă): deschiderea 9,7 s, 37 800 de noduri în fereastră, 150 de fișe randate, o tastă 96 ms (mediana).
+
+- **Doar fișele din jurul panoului se randează** (`DialogExport.tsx`, `PRAG_FISE`, `fereastra`, `randata`):
+  - peste 12 fișe de operații, se randează cele care ating panoul sau stau la cel mult o înălțime de panou de el, cea curentă cu
+    vecinele ei și cea cu focusul (golită când focusul pleacă din panou);
+  - restul își țin locul: o secțiune cu titlul și înălțimea măsurată a fișei (`data-gol`), deci lista, derularea și „Du-mă la …”
+    o găsesc;
+  - „Du-mă la …” randează întâi fișa (`flushSync`), apoi derulează și caută greșeala în fișa adevărată;
+  - până la 12 fișe, toate rămân randate, cum erau (căutarea în pagină, probele vechi). Pragul e 12, nu 20: cu 20 de fișe
+    randate, o tastă ținea ~17 ms, prea aproape de buget pe un runner mai lent.
+- **Rândurile listei** (`RandListaOp`, `memo`) primesc doar ce arată (datele rândului, locul, starea tragerii) și acțiunile
+  printr-un obiect stabil (`ActiuniLista`, cu funcțiile de acum puse după fiecare randare). Pe 150 de operații, lista randată la
+  fiecare tastă ținea cam jumătate din timpul ei (cu lista scoasă de probă: 6,3 ms în loc de 13). `memo` a câștigat ~2 ms;
+  restul a venit din **`content-visibility: auto` pe rânduri** (`stil.css`), care nu mai așază rândurile din afara vederii.
+- **Fișa operației nu e `memo`, iar `ContextFisa` rămâne cum e.** Măsurat: o fișă randată costă ~0,5 ms la o tastă, iar cu
+  fereastra rămân 3–5 randate. Un context stabil ar fi cerut refacerea tuturor funcțiilor lui, pentru cel mult ~2 ms. Se
+  redeschide dacă 28.8↑q („Toate foile”) sau o fișă mai grea mută iar costul în fișe.
+- **După felie**, aceeași probă: deschiderea ~0,5 s, 2 667 de noduri, 3 fișe randate, o tastă 7,7–9 ms. Pe 60 de operații,
+  ~7 ms; pe 10 (toate randate), ~9 ms.
+- **Probele** (`test/e2e/export.viteza.spec.ts`, scrise întâi; primele două au căzut la deschidere, cu fereastra neapărută în
+  5 s):
+  - 150 de operații: deschiderea sub 1 s, cel mult 6 fișe randate, sub 6 000 de noduri, o tastă sub 30 ms;
+  - derulată până jos, din listă, cu focusul ținut cât omul derulează departe, cu „Du-mă la …” la o greșeală departe
+    (focusul pe diametru); ce s-a scris rămâne după ce fișa iese din vedere;
+  - până la 12 operații toate randate, peste nu;
+  - la 1280 × 2400, fișele randate sunt exact cele cerute de regulă (din dreptunghiuri), iar marginea ajunge dincolo de vecine.
+- **Otrăvurile:** `28.8i.py`, 9 / 9 (pragul în ambele sensuri, fișele din jurul panoului, vecinele, focusul și golirea lui,
+  marginea, fereastra nesocotită, „Du-mă la …” fără randarea fișei). `memo` și `content-visibility` schimbă doar timpul: le
+  judecă măsurătoarea, nu o otravă.
+- **Mărimea:** pornirea +0 (111,4 kB), totalul +0,3 kB (909,4 / 1 000). Programul, documentul și serverul: neschimbate.

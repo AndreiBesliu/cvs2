@@ -2272,6 +2272,8 @@ nav button[aria-pressed='true'] {
   grid-template-columns: auto minmax(0, 1fr);
   align-items: start;
   gap: 2px;
+  content-visibility: auto;
+  contain-intrinsic-block-size: auto 3.5rem;
 }
 
 .dx-nav-op.tras {
