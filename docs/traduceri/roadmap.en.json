@@ -1817,6 +1817,10 @@
       "ro": "Alegerea aranjamentului și densitatea, citite înaintea primei randări",
       "en": "The layout choice and density, read before the first render"
     },
+    "5d482dae8e6e8874": {
+      "ro": "Viteza ferestrei exportului",
+      "en": "Speed of the export window"
+    },
     "5d642af2da946d6f": {
       "ro": "Stack-ul",
       "en": "The stack"
@@ -3848,6 +3852,10 @@
     "d2209e6152f6179f": {
       "ro": "Fișa plăcii 4 și placa de regresie definită.",
       "en": "The plate 4 file and the regression plate defined."
+    },
+    "d2332c92f85b237a": {
+      "ro": "**Viteza ferestrei exportului** (fără mașină; ADR 0291, „Implementarea 28.8↑i”; constatarea 4 a auditului). Peste 12 fișe de operații se randează doar cele din jurul panoului (o înălțime de panou deasupra și dedesubt), cea curentă cu vecinele ei și cea cu focusul; restul își țin locul, cu titlul și înălțimea măsurată, iar „Du-mă la …” randează întâi fișa. Rândurile listei sunt `memo`, cu acțiunile printr-un obiect stabil. Fișa operației nu e `memo`: o fișă randată costă ~0,5 ms, iar cu fereastra rămân 3–5. **Pe 150 de operații:** deschiderea 9,7 s → ~0,5 s (următoarele ~0,15 s), nodurile 37 800 → 2 667, o tastă 96 → ~10 ms. **Probele:** `export.viteza.spec.ts` (bugetul pe 150, derularea, lista, focusul, „Du-mă la …” departe, pragul, regula ferestrei la 1280 × 2400, înălțimea rândurilor listei), scrise întâi și văzute căzând; e2e-ul care deschide exportul, 345 / 345. **A doua trecere:** primul complet (`da8ef7a5`) a căzut la deschidere (1 159 ms, citit pe treptele lui `expect`): timpii se măsoară acum în pagină, cu cea mai bună încercare; sub suprasarcină a ieșit și `content-visibility` de pe rânduri (un rând departe de vedere avea înălțimea 0, deci clicul cădea pe listă), scos. **Otrăvurile:** `28.8i.py`, 10 / 10. Pornirea +0, totalul 909,4 / 1 000 (+0,3 kB).",
+      "en": "**Speed of the export window** (no machine; ADR 0291, “Implementation of 28.8↑i”; finding 4 of the audit). Above 12 operation cards, only those around the panel are rendered (one panel height above and below), plus the current one with its neighbours and the one with focus; the rest keep their place, with the title and the measured height, and “Take me to …” renders the card first. The list rows are `memo`, with the actions through a stable object. The operation card is not `memo`: a rendered card costs ~0.5 ms, and with the window 3–5 remain. **On 150 operations:** opening 9.7 s → ~0.5 s (the next ones ~0.15 s), nodes 37,800 → 2,667, a keystroke 96 → ~10 ms. **Tests:** `export.viteza.spec.ts` (the budget on 150, scrolling, the list, focus, “Take me to …” far away, the threshold, the window rule at 1280 × 2400, the height of the list rows), written first and seen failing; the e2e that opens the export, 345 / 345. **Second pass:** the first full run (`da8ef7a5`) failed on opening (1,159 ms, read on the steps of `expect`): the times are now measured in the page, with the best attempt; under overload, `content-visibility` on the rows also came up (a row far from view had height 0, so the click landed on the list), removed. **Poisons:** `28.8i.py`, 10 / 10. Startup +0, total 909.4 / 1,000 (+0.3 kB)."
     },
     "d2490a00e0e16aa2": {
       "ro": "Punctele pierdute de linia mediană",

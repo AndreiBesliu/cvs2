@@ -96,8 +96,14 @@ vreau ca ficare setare sa fie insotita de o ilustratie sugestiva, ca sa ajute us
   în `unire-2511u`. `du(cheie, true)` aduce în vedere grupul primei greșeli și pune focusul pe câmpul ei; diametrul frezei e
   marcat greșit cât un cerc nu se găurește. Otrăvurile 6 / 6. Totalul 893,5 / 1 000 (+0,2 kB). Apoi, la cererea sesiunii
   principale, `origin/unire-2511w` (16.A↑b-6, 3.Tu) adus în ramură, cu proba cu nota bibliotecii desfăcută; apoi
-  `origin/unire-2511x` (18.1↑c, relieful; apoi `b35e2f75`, cu 16.A↑b-7), cu finisarea în `catFoaia` și proba ei pe hârtie. Urmează 28.8↑i (viteza), după
-  ce h-2 e în `main`.
+  `origin/unire-2511x` (18.1↑c, relieful; apoi `b35e2f75`, cu 16.A↑b-7), cu finisarea în `catFoaia` și proba ei pe hârtie.
+  Unită în `main` pe 25.11 (`7d74ade2`).
+- **25.11: 28.8↑i gata** (viteza ferestrei, constatarea 4 a auditului). Peste 12 fișe, doar cele din jurul panoului, cea
+  curentă cu vecinele și cea cu focusul se randează; rândurile listei sunt `memo`. Pe 150 de operații: deschiderea 9,7 s →
+  ~0,5 s (următoarele ~0,15 s), o tastă 96 → ~10 ms. Primul complet a căzut la proba de viteză: timpul citit pe treptele lui
+  `expect` și, găsit apoi sub suprasarcină, `content-visibility` pe rânduri (un rând departe de vedere avea înălțimea 0, deci
+  clicul cădea pe listă); amândouă reparate la cauză. Otrăvurile 10 / 10. Totalul 909,4 / 1 000 (+0,3 kB). Urmează 28.8↑j
+  (greșelile pe înțeles).
 
 ## Ce s-a găsit (23.11)
 
@@ -212,6 +218,16 @@ vreau ca ficare setare sa fie insotita de o ilustratie sugestiva, ca sa ajute us
 - **Fereastra „Frezele mele” într-o probă se închide cu ✕ (`[data-freze="inchide"]`):** până la 16.A↑b-7, după salvare sau
   ștergere focusul cădea din ea, iar Escape nu mai ajungea la fereastră (căderile lui `exportFrezeNota` și
   `exportFrezeInapoi`, spuse liniei frezelor pe 25.11, reparate de ea în b-7). ✕ merge oricum.
+- **Peste 12 operații, o fișă poate fi doar locul ei (`[data-fisa="op"][data-gol]`, cu titlul):** se randează cele din jurul
+  panoului, cea curentă cu vecinele și cea cu focusul (28.8↑i). O probă care lucrează într-o fișă departe o aduce întâi (clic în
+  listă, „Du-mă la …” sau derulând), iar una care numără fișele randate le caută după `:has([data-grup])` sau
+  `:not([data-gol])`. Un câmp nou al fișei nu cere nimic; o regulă nouă a ferestrei își are proba în `export.viteza.spec.ts`.
+- **O probă de timp măsoară în pagină și ia cea mai bună încercare** (`export.viteza.spec.ts`): `expect` din Playwright
+  întreabă pagina la 0, 100, 350, 850 ms…, deci un timp citit așa sare pe treptele lui (1 159 ms pentru o deschidere de sub
+  850). Pe un runner ocupat, zgomotul doar adaugă timp; o tastă scrie de fiecare dată altă valoare (una la fel nu randează).
+- **Fără `content-visibility` pe rândurile listei:** în Edge, un rând departe de vedere ajungea la înălțimea 0, deși
+  `contain-intrinsic-block-size` cerea 3,5 rem, deci rândurile se mutau sub clic. Proba „un rând are înălțimea lui și departe
+  de vedere” îl prinde (V10). O listă lungă nouă se strânge altfel (o fereastră, ca a fișelor), nu cu proprietatea asta.
 - **Regula „cât foaia” stă o singură dată, în `catFoaia` (`src/cam/prinFoaie.ts`):** lucrarea (`cuTaieturiPrinFoaie`) și
   fereastra (`adancimeTaiata`) o citesc de acolo. Un fel nou de operație care nu trece prin foaie cu bifa intră acolo, nu
   într-o condiție a lucrării (la unirea cu 18.1↑c, finisarea reliefului sosise pe vechiul `prin` al lucrării).
@@ -221,8 +237,9 @@ vreau ca ficare setare sa fie insotita de o ilustratie sugestiva, ca sa ajute us
 ## Ce rămâne
 
 Din ADR 0290, nimic: toate feliile (a–f) și 28.8↑g sunt gata. Din ADR 0291 (după audit): 28.8↑n și 28.8↑o sunt în `main`,
-28.8↑h e unită, iar reparația ei, 28.8↑h-2, e gata pe ramură; urmează i, j, k, l, în ordine; p după j (cu linia frezelor), q după i. Nicio întrebare deschisă la
-owner. Pentru alte linii, mai târziu:
+28.8↑h și 28.8↑h-2 sunt în `main`, iar 28.8↑i (viteza) e gata pe ramură; urmează j, k, l, în ordine; p după j (cu linia
+frezelor), q după i. Nicio întrebare deschisă la owner. De luat într-o felie a liniei: la 640 × 360 (telefon culcat îngust), banda
+listei lasă fișelor 9 px (găsit la 28.8↑h-2; cu 28.8↑l, privirea). Pentru alte linii, mai târziu:
 
 - **Clasicul (28.2↑) și Pas cu pas (28.4↑)** iau fișa operației (`FisaOperatie`, cu `ContextFisa`) în panoul lor, cu starea
   lor, fără s-o copieze (ADR 0290, „Cu canvas-ul aranjamentelor”): la Clasic, în locul panoului din dreapta, cu Simularea filă;
