@@ -14854,6 +14854,24 @@ ei, „nu fără rând” (rândul finisării în fereastra exportului, doar de 
   7,7 minute; rulările lui pe `ff146fe1` au fost oprite de împingerea documentelor). Pornirea 111,4 / 125 kB (cu ușa
   116,5, cu Atelierul 116,8), totalul 902,7 / 1 000 kB, `/admin` 138,3 / 200. Nimic pe server.
 
+## 2026-11-25 — 16.A↑b-6: „Pune-o înapoi în bibliotecă” din fereastra exportului (Model: Claude Opus 5.5)
+
+**Prompt:** cuvântul owner-ului, transmis de sesiunea principală: „ok, porneste 10.4↑c-2 si 16.A↑b-6”. **Started:** 25.11, 14:16.
+
+- **Ramura** `wip/16.A-freze-b6`, din vârful lui 16.A↑b-4 (`48f27fcf`).
+- **Felia** (`3c01a6ad`): pe nota unei freze șterse din bibliotecă, **Pune-o înapoi în bibliotecă**. Freza intră la loc din
+  copia de pe rând (`copieDeReadus`, `frezaDinCopie`), cu id-ul ei de dinainte, o versiune nouă și un nume liber
+  (`cuFrezaReadusa`, prin `puneInapoi` din depozit), în biblioteca proiectului (`useBibliotecaProiectCuCheie`). În cont, nimic
+  nou pe server: callable-ul `freze` o reînvie peste semnul ștergerii; pleacă prin sincronizarea de azi
+  (`trimiteSchimbarea`, prin bucata contului), iar fără `cloud` rămâne în browser. Rândurile cu aceeași copie o iau
+  (`cuFrezaPusaInapoi`); cu id-ul încă acolo, nimic suprascris. Manualul (ro, en).
+- **Probele** (întâi): unitare noi 4 (`exportFreze.inapoi.test.ts`) și reînvierea cu serverul fals
+  (`frezeSincronizare.test.ts`); în Edge 2 (`exportFrezeInapoi.spec.ts`); pe emulatoare 1 (`freze.emulator.spec.ts`).
+  **Otrăvurile:** 17 / 17 (`test/otravuri/16.A-b6.py`) și 3 / 3 pe emulatoare (`test/otravuri/16.A-b6-emu.py`).
+- **Mărimea** (față de `48f27fcf`): pornirea neschimbată (111,2 kB; cu ușa 116,2, cu Atelierul 116,5 / 125), totalul
+  891,7 → 893,3 / 1 000, contul 30,3 / 32 (neschimbat). Nimic pe server; documentul rămâne v28 (din relief).
+  **Completed:** 25.11, 14:40.
+
 ## 2026-11-25 — Sesiunea principală în cloud: 10.4↑c-2 și 16.A↑b-6, pornite la cuvântul owner-ului (Model: Claude Fable 5.2)
 
 **Prompt:** „ok, porneste 10.4↑c-2 si 16.A↑b-6”
@@ -14946,3 +14964,59 @@ ei, „nu fără rând” (rândul finisării în fereastra exportului, doar de 
   dată; „Du-mă la …” nu aduce greșeala în vedere; unirea de probă `unire-2511u`, completul 45629718056).
 - **Documentele:** decizia și paragrafele de stare în `CLAUDE.md` (frezele, imprimanta, regula originii, cu adăugirea liniei
   exportului); indexul liniilor; starea din `docs/linii/principala.md`.
+
+## 2026-11-25 — Felia 3.Tu: piesele rotunde pe același ax în vederea „Modelul” (ADR 0283) (sesiune cloud)
+
+**Prompt:** „1a, 2a, 3a la 3.Tu, pornește” (owner-ul, în sesiunea liniei atelierului, la cele trei întrebări ale feliei,
+puse pe 24.11 de linia elicelor după observația lui: „vad ca nu se pot aseza centrat carcasa si elicea de acelasi
+diametru in model”)
+**Started:** 25.11, 12:10. **Completed:** 25.11, 13:50 (felia, cu otrăvurile; orele, după ceasul containerului).
+
+- **1a:** în vederea „Modelul” a atelierului Easy 3Draw, o piesă rotundă (roțile, elicele, rotorul și carcasa
+  ventilatorului, cama, șurubul melc, roata cu palete, pinionul șenilei) stă cu axul în mijlocul unui știft: amprenta ei
+  e impară, iar pivotul din mijlocul amprentei e axul. Rotirea se face în jurul axului.
+- **2a:** „Pune în model”, cu o piesă aleasă, pune piesa nouă cu pivotul cât mai aproape de al ei, deasupra: două piese
+  rotunde ajung exact pe același ax. **3a:** rotorul și carcasa în care încape stau la același Z, în orice ordine.
+- **Hotărâte la implementare** (în ADR): „Înlocuiește în model” ține axul unei roți; rândul unei piese rotunde spune
+  știftul axului („ax 4, 3, 0”); la egalitate, locul cu numărul mai mic; și piesele venite după propunere (cama, melcul,
+  roata cu palete, pinionul) sunt rotunde.
+- **Așezarea s-a mutat în motor**, ca funcții pure (`asezareModel`, `pivotModel`, `langaPivot`, `impreunaInModel`), iar
+  piesa își spune axul odată cu plasa. Celelalte piese stau exact ca până acum (proba le compară cu formula v18).
+- **Captura owner-ului, în probă:** carcasa Ø48 la 0, 0, 0 și rotorul la 2, 1, 3, dintr-un model ținut. Locurile rămân;
+  cu un știft la stânga, unul în jos și trei plăci mai jos, rotorul e în carcasă, iar modelul e cât ea
+  (71,2 × 52 × 10 mm).
+- **Probele:** unitară, scrisă întâi (8 teste; a căzut cu funcțiile lipsă); e2e (5 teste; au căzut toate pe atelierul
+  de dinainte), cu scena judecată prin mărimea modelului, pe hârtie; proba în engleză din cvs2. Pluginul: unitare
+  252 / 252, e2e 200 / 200 (cu extensiile).
+- **Otrăvurile:** `3.Tu.py`, 111 (motorul 64 / 64, atelierul 43 / 43 (40 la prima rulare; cele trei scăpate, prinse după întărirea probei), textele 4 / 4); `3.Tu-en.py`, 6 / 6 (5 la prima rulare). Listele mai vechi:
+  nicio ancoră mutată (comparat cu `main`).
+- **Easy 3Draw 18.33.0** (516,3 kB), cu rândul de „ce e nou”. Doar pachetul extensiei se schimbă: nimic în aplicație,
+  nimic pe server, documentul neatins.
+- **Documentele:** ADR 0283 (acceptat, „Implementat”), indexul ADR, fișa etapei 3 (jurnalul, coada owner-ului),
+  `docs/linii/atelier.md` (cu regulile noi), `docs/linii/elice.md`, indexul liniilor, `docs/otravuri.md`, `CLAUDE.md`.
+- **Urmează:** 3.Cf (Modelul: orientarea pe trei axe și alipirea la prinderi; ADR 0284, partea D).
+
+## 2026-11-25 — Sesiunea principală în cloud: a treizeci și șasea unire (atelierul Easy 3Draw: 3.Tu, piesele rotunde pe același ax) (Model: Claude Fable 5.2)
+
+**Prompt:** raportul liniei atelierului („RAPORT: felia 3.Tu, gata de unit”, `70942c03`), la ordinul în vigoare „unește ce se
+poate”
+**Started:** 25.11, 17:06. **Completed:** unirea în `main`, 25.11, 18:18; publicarea pe test, cu lotul 35.
+
+- **Verificat înaintea unirii:** rapidul (45627876716) și completul (45627875691), verzi pe `70942c03`; fără `.lucru/`;
+  ramura are `1fbb8ad9`. PR-ul feliei e `AndreiBesliu/cvs2#45` (#41 se închisese singur, cu commit-ul de documente).
+- **De ce un complet al unirii:** de la `1fbb8ad9`, `main` primise 16.A↑b-4 și 3.Au (cod al aplicației). Felia atinge doar
+  pachetul extensiei și probele lui, dar arborele unit nu era cel verificat de linie (aceeași regulă ca dimineață, la 3.Cj-3).
+- **Unirea, pe `unire-2511v`** (din `65eecdc6`): `70942c03`, în `f5cf10c8`. Ciocnirile, în DEVLOG (`rezolva-devlog.py`) și în
+  indexul liniilor (rândul atelierului, al liniei; al frezelor, din `main`). Local: biblioteca (Easy 3Draw 18.33.0, 516 335
+  octeți), tipurile, regulile de import, traducerile (1 142), unitarele `trenulet*` și `biblioteca*` (fără referințe), cu
+  probele documentelor: 329 / 329.
+- **Porțile, în CI, pe `f5cf10c8`** (citite din jurnalul rulării): completul 45641768117, verde la prima trecere (68 min): unit
+  10 513 / 0 (12 sărite, pe Linux), e2e 859 / 859, funcțiile pe emulatoare 136 / 136, paginile 59 / 59; rapidul 45641768390,
+  verde. Pornirea 111,2 kB (plafonul 125; cu ușa 116,2, cu Atelierul 116,5), totalul 891,8 / 1 000 kB, `/admin` 138,3 / 200.
+  Nimic pe server.
+- **Publicarea lotului 34** (`65eecdc6`): completul pe `main`, verde (45641891693, 17:09–18:08); `publica.yml` a primit de trei
+  ori o eroare de server de la GitHub la pornire (500, 502, 500, prin scriptul de urmărire); a patra cerere, făcută de mână
+  cu `gh api`, a trecut (45652408353). Bucla de reluare, oprită înainte să pornească o a doua publicare.
+- **Linia atelierului:** owner-ul a răspuns în sesiunea ei la întrebările lui 3.Cf (întâi alipirea la prinderi; prinderea se
+  alege din puncte, în vederea 3D; piesa alipită urmează baza): consemnat în decizie și în index.
+- **Documentele:** decizia și paragraful de stare în `CLAUDE.md`; indexul liniilor; starea din `docs/linii/principala.md`.

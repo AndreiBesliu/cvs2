@@ -89,7 +89,7 @@ test('ștearsă din bibliotecă: „nu mai e în bibliotecă”, iar rândul î�
   await exporta(page);
   await inBiblioteca(page, 'Plată Ø12', 'sterge');
   await page.locator('[data-actiune="export.gcode"]').click();
-  await expect(e1.locator('[data-nota="biblioteca-stearsa"]')).toHaveText('„Plată Ø12” nu mai e în bibliotecă: proiectul își păstrează copia.');
+  await expect(e1.locator('[data-nota="biblioteca-stearsa"]')).toContainText('„Plată Ø12” nu mai e în bibliotecă: proiectul își păstrează copia.');
   await expect(e1.locator('[data-camp="freza-biblioteca"] option:checked')).toHaveText('Plată Ø12');
   await expect(e1.locator('[data-camp="diametru"]')).toHaveValue('12');
 });

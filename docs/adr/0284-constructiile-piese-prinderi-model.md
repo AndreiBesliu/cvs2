@@ -325,6 +325,7 @@ ale axului și ale știftului); Easy 3Draw 18.25.0.
 - **Mărimea:** doar pachetul extensiei (491,4 → 501,6 kB: a trecut de pragul de 0,5 MB din „Se redeschide dacă”;
   instalarea nu se simte, dar pragul e de hotărât din nou); aplicația, neschimbată.
 - **Felia următoare:** 3.Tu (piesele rotunde pe același ax în „Modelul”), la răspunsurile owner-ului, apoi 3.Cf.
+  (3.Tu, făcută pe 25.11: ADR 0283, Easy 3Draw 18.33.0.)
 
 ## Implementat (3.Cj-1, 25.11.2026)
 

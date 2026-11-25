@@ -134,6 +134,12 @@ gravare, profil, formă desenată)” și „Freze de profil desenate de utiliza
   „Pune-o înapoi în bibliotecă” a ieșit în 16.A↑b-6 (scrierea în bibliotecă din fereastra exportului, cu contul). **Capcane:**
   Edge scrie 1400 ca „1.400” în română (gruparea de la patru cifre); o probă care șterge o freză în „Frezele mele” așteaptă
   întâi să dispară din listă (ștergerea e asincronă: un Escape grăbit închide doar întrebarea, nu fereastra).
+- **25.11, 14:16–14:40: 16.A↑b-6 pe `wip/16.A-freze-b6`** (din vârful lui b-4, `48f27fcf`), la „ok, porneste 10.4↑c-2 si
+  16.A↑b-6” al owner-ului, transmis de sesiunea principală: „Pune-o înapoi în bibliotecă” pe nota unei freze șterse, din copia
+  de pe rând, cu id-ul ei de dinainte (în cont reînvie peste semnul ștergerii: nimic nou pe server) și un nume liber.
+  **Capcane:** fișa „Frezele mele” scrie numerele fără gruparea miilor („18000 rot/min”), nu ca fereastra exportului; un
+  `pkill -f 'vite preview'` dat cât rulează suita emulatoarelor îi oprește și serverul ei (probele paginilor cad cu
+  `ERR_CONNECTION_REFUSED`, fără vină în cod); otrăvurile de pe emulatoare stau într-o listă a lor (`16.A-b6-emu.py`).
 - **Feliile**, în ordine: 16.A↑a (biblioteca în browser, fereastra, fișierul), apoi b (alegerea în proiect, v27), c
   (contul), d (calibrarea), e (bila și toroidala), f (profilul desenat), g (valorile pe material).
 

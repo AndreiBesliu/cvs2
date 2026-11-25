@@ -153,6 +153,16 @@ function programeaza(cheie: string): void {
   l.ceas = setTimeout(() => { l.ceas = null; porneste(cheie); }, 2000);
 }
 
+/**
+ * O schimbare a bibliotecii unui cont făcută în afara ferestrei „Frezele mele” („Pune-o înapoi în bibliotecă” din fereastra
+ * exportului, ADR 0300 §5, felia 16.A↑b-6): pleacă în cont ca una din fereastră, la 2 s fără alta, prin bucata contului.
+ */
+export function trimiteSchimbarea(cheie: string, uid: string, config: Config): void {
+  const l = legatura(cheie);
+  if (!l.cheama) l.cheama = (c) => import('./PanouCont.tsx').then((m) => m.cheamaFrezele(config, uid, c));
+  programeaza(cheie);
+}
+
 export type Sincronizare = {
   readonly stare: StareLegatura;
   /** După o schimbare a omului. */

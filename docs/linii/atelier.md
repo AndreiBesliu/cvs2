@@ -5,16 +5,17 @@ la cererea owner-ului („vreau sa adaugi mai multe tipuri de piese pentru fieca
 doar una cate una ci si ca constructii complexe”), în sesiunea cloud a liniei bibliotecii: aceeași ramură,
 `wip/3.Xh-biblioteca-ui`, același canal, `biblioteca`. ADR 0284, acceptat pe 24.11 cu toate recomandările (1a–4a).
 **Din 24.11 seara, linia ține și lucrul elicelor** (predat la cererea owner-ului; istoria și capcanele lor rămân în
-[elice.md](elice.md), secțiunea „Predarea”): felia **3.Tu** (piesele rotunde pe același ax în „Modelul”, ADR 0283,
-rezervat), cu trei întrebări încă fără răspuns de la owner (recomandările: 1a, 2a, 3a).
+[elice.md](elice.md), secțiunea „Predarea”): felia **3.Tu** (piesele rotunde pe același ax în „Modelul”, ADR 0283),
+acceptată de owner pe 25.11 cu 1a, 2a, 3a („1a, 2a, 3a la 3.Tu, pornește”) și făcută în aceeași zi.
 Starea: **3.Ca (conectorul perpendicular, Easy 3Draw 18.24.0) și 3.Cb (conectorul în unghi, axul cu opritor, știftul cu
 bucșă; 18.25.0), unite în `main` cu lotul 28 (`11877a3e`); 3.Cc (cremaliera; 18.26.0) și 3.Cd (arcul; 18.27.0),
 unite în `main` pe 25.11 (`9815527f`); 3.Ce (punctele de prindere și „Se prinde cu”; 18.28.0), unită în `main` pe
 25.11 (`38ff9391`, PR-ul `AndreiBesliu/cvs2#28`); 3.Cj-1 (cama; 18.29.0) și 3.Cj-2 (roata cu palete; 18.30.0), unite
 în `main` pe 25.11 (`e90edd2e`, PR-ul `AndreiBesliu/cvs2#29`); 3.Cj-3 (cadrul; 18.31.0) și 3.Cj-4 (șurubul melc;
-18.32.0), unite în `main` pe 25.11 (`36559b49`, PR-ul `AndreiBesliu/cvs2#33`). Cu melcul, 3.Cj e încheiată. Linia n-are
-felie în lucru: 3.Tu și 3.Cf–3.Ci așteaptă răspunsurile owner-ului la cele trei întrebări ale lui 3.Tu, iar 3.Ck,
-tipărirea bilei și a cupei.** Versiunea următoare a pachetului: 18.33.0._
+18.32.0), unite în `main` pe 25.11 (`36559b49`, PR-ul `AndreiBesliu/cvs2#33`). Cu melcul, 3.Cj e încheiată. 3.Tu
+(piesele rotunde pe același ax în „Modelul”; 18.33.0), gata pe ramură pe 25.11, neunită. Urmează 3.Cf (Modelul:
+orientarea pe trei axe și alipirea la prinderi); 3.Ck așteaptă tipărirea bilei și a cupei.** Versiunea următoare a
+pachetului: 18.34.0._
 
 ## Numerele liniei
 
@@ -33,8 +34,8 @@ tipărirea bilei și a cupei.** Versiunea următoare a pachetului: 18.33.0._
 | 3.Cc | Cremaliera | gata (24.11); melcul a trecut în 3.Cj |
 | 3.Cd | Arcul | gata (25.11) |
 | 3.Ce | Punctele de prindere și „Se prinde cu” | gata (25.11) |
-| 3.Tu | Modelul: piesele rotunde pe același ax (ADR 0283) | a acestei linii din 24.11 (predarea elicelor); la răspunsurile owner-ului la cele trei întrebări |
-| 3.Cf | Modelul: orientarea pe trei axe și alipirea la prinderi | după 3.Tu |
+| 3.Tu | Modelul: piesele rotunde pe același ax (ADR 0283) | gata (25.11); acceptată de owner cu 1a, 2a, 3a |
+| 3.Cf | Modelul: orientarea pe trei axe și alipirea la prinderi | urmează |
 | 3.Cg | Modelul: verificarea (prins, plutește, se ciocnește) | avertisment, nu refuz (răspunsul 2a) |
 | 3.Ch | Construcțiile cu nume și lista lor de piese | |
 | 3.Ci | Construcțiile gata (șasiul, cutia de angrenaje, brațul de macara, barca cu elice) | după Model (răspunsul 3a) |
@@ -161,7 +162,37 @@ tipărirea bilei și a cupei.** Versiunea următoare a pachetului: 18.33.0._
 - **3.Cj e încheiată.** Rămân din ADR 0284: 3.Cf–3.Ci (Modelul ca asamblare, la răspunsurile lui 3.Tu) și 3.Ck
   (balamaua, placa turnantă: după ce owner-ul tipărește bila și cupa).
 
+## 3.Tu, gata (25.11, în cloud): piesele rotunde pe același ax în „Modelul”
+
+- **Ce face:** în vederea „Modelul”, o piesă rotundă stă cu axul în mijlocul unui știft și se rotește în jurul lui; o
+  piesă nouă intră cu pivotul cât mai aproape de al celei alese (două rotunde, pe același ax); rotorul și carcasa în
+  care încape stau la același Z; „Înlocuiește în model” ține axul unei roți. Celelalte piese, ca până acum.
+- **Unde e:** motorul, secțiunea „asezarea in model (ADR 0283)”, după `construieste`: `ROTUNDE` și `eRotunda` (care
+  piese au ax), `asezareModel` (amprenta și pivotul; aici e și tabelul pieselor așezate după placa lor, mutat din
+  atelier), `pivotModel`, `langaPivot`, `impreunaInModel`; `construieste(def).ax`. Atelierul: `corpModel` (amprenta și
+  pivotul de la motor), `stiftAx` (știftul axului, pentru rânduri), `arataModel`, `mutaM` (rotirea în jurul axului),
+  `puneInModel`.
+- **Datele ținute nu s-au schimbat:** x, y sunt tot colțul amprentei (rotite), z plăcile, rot sferturile de tură. La o
+  piesă rotundă, colțul se mută la rotire (axul rămâne), iar rândul ei spune știftul axului, nu colțul.
+- **Probele:** `test/unit/trenulet.model.test.ts` (tabelul `ROTUNDE`: fiecare piesă rotundă, cu amprenta și axul pe
+  hârtie; `DREPTE`: celelalte, față de formula v18) și `test/e2e/trenulet.model.spec.ts` (mărimea modelului, pe hârtie);
+  otrăvurile, `test/otravuri/3.Tu.py` (111: motorul 64 / 64, atelierul 43 / 43 (40 la prima rulare; cele trei scăpate, prinse după întărirea probei), textele 4 / 4) și `3.Tu-en.py` (6 / 6 (5 la prima rulare)).
+- **Ce n-a intrat:** „Fă ventilatorul” nu pune perechea și în model (propunerea din auditul elicelor); pașii de jumătate
+  de știft (3.Cf); verificarea prinderii (3.Cg).
+
 ## Reguli și capcane (de la 3.Ca–3.Cj)
+
+- **O piesă rotundă nouă a motorului intră în `ROTUNDE` (`lego.ts`) și în tabelul `ROTUNDE` al probei
+  `trenulet.model.test.ts`, cu amprenta și locul axului pe hârtie;** una care nu e rotundă, în `DREPTE` (proba cere
+  fiecărui tip al motorului o mostră într-unul din ele). Rotundă înseamnă: axul ei e originea piesei din motor.
+- **Scena 3D se judecă prin mărimea modelului** (`#at-cote`, cutia tuturor pieselor din scenă), cu două piese alese
+  anume: una nesimetrică față de ax (elicea cu 3 palete: −19,3…36 mm) lângă una care îi dă cealaltă margine (roata de
+  40: ±21). Două piese simetrice, una în alta, dau aceeași mărime oriunde ar fi cea mică: nu judecă nimic.
+- **O probă care întreabă de multe ori aceeași piesă o construiește o singură dată:** prima formă a probei așezării
+  ținea 5 minute (elicea, construită de sute de ori); cu piesele ținute minte, 4,5 s.
+- **O versiune scrisă într-un regex (`18\.32\.0`) scapă de înlocuirea simplă a versiunii** (`trenulet.spec.ts`).
+- **Un ADR nou își pune rândul în index înaintea primului build:** build-ul cade pe documentație, iar probele e2e care
+  cer build-ul nu mai pornesc („Timed out waiting … from config.webServer”).
 
 - **O felie care mută o ancoră a unei liste mai vechi de otrăvuri aduce lista la zi în aceeași felie** (cererea sesiunii
   principale din 25.11, după auditul liniei elicelor). La capăt: `python3 -X utf8 scripts/otravuri.py <lista> verifica`
