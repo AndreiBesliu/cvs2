@@ -1156,6 +1156,15 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   citește conturul unui element ia `chenarElement` pentru relief** (cotele, lipirea). **În codul vederii 3D,
   „relieful” (`ReliefSimulat`, `reliefPentru`) e câmpul simulării, nu modelul de aici.** Felia: pornirea +0,5 kB (cu
   ușa +0,9), totalul +12,7 kB.
+  **Modelul reliefului în vederea 3D (ADR 0310 §4, §7, felia 18.1↑b)** gata pe 25.11, unită în `main` pe 25.11
+  (`ef883ac1`), la „vreau sa pornesti si celelalte sub-sesiuni” al owner-ului: pe o foaie cu reliefuri, vederea 3D are
+  comutatorul **Modelul / Tăiat** și pornește pe model, fără simulare; fiecare relief stă în golul lui din placă, cu
+  vârful la fața plăcii. Compusul se face dală cu dală în workerul reliefului (`src/relief/model.ts`, `dalaModel`,
+  cererea `model`), redus cu k ca desenul de pe planșă (cel mult 4096 pe latură: un relief de 8192² se desenează la
+  k = 4); cheile dalelor și încărcarea sunt în `src/app/modelRelief.ts`: o mutare, o rotire sau o oglindire nu
+  încarcă nimic, iar un relief schimbat urcă doar dalele cu altă cheie. „Tăiat” simulează placa abia când e ales.
+  **Nu se taie încă** (18.1↑c). Documentul rămâne v28; nimic pe server. Felia: pornirea +0, totalul +3,9 kB
+  (884,8 / 1 000); nicio bucată nouă.
   **Raportările (15.B↑b) și imprimanta (3.6g, 3.6h, 3.6i pașii 1–2; ADR 0191 acceptat, codul 3.6j încă pe ramură) unite în
   `main` pe 07.11**, peste biblioteca extensiilor (`b501571`, `6e61bee`, apoi `e9cf6ee` cu DEVLOG-ul bibliotecii): **pornirea
   101,7 (cu ușa 105,3 / 110 kB), totalul 535,0 / 550, /admin 106,5 / 200, contul 29,6 / 32.** **Pe test (și pe live), serverul
@@ -1655,6 +1664,26 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 25.11.2026, înainte de prânz (a treizeci și una unire din cloud): **relieful: modelul în vederea 3D (18.1↑b), unit
+  în `main`** (sesiunea principală, ramura `unire-2511l`, din `43cf59af`). Linia reliefului, ramura `wip/18.1-relief`,
+  `04e7cd2f` (codul lui `3214f4da`, plus documente), PR-ul `AndreiBesliu/cvs2#30` (ADR 0310 §4, §7; pornită la „vreau
+  sa pornesti si celelalte sub-sesiuni” al owner-ului), unită în `ef883ac1`: pe o foaie cu reliefuri, vederea 3D are
+  comutatorul „Modelul / Tăiat” și pornește pe model, fără simulare; fiecare relief stă în golul lui din placă, cu
+  vârful la fața plăcii; compusul se calculează dală cu dală în workerul reliefului, redus ca desenul de pe planșă;
+  vederea urmează documentul (o mutare nu încarcă nimic, un relief schimbat urcă doar dalele schimbate); stările:
+  se încarcă, gata, straturile lipsă din browser. În felie e și cazul reliefului în proba lipirii cotelor, cerut de
+  linia cotelor. Documentul rămâne v28; nimic pe server; otrăvurile 22 / 22. Unirea, fără nicio ciocnire; `main`
+  adusese peste ramură doar documente, deci **arborele unirii are exact codul lui `3214f4da`** (`git diff` gol în
+  afara fișierelor `.md`) și a intrat pe porțile lui, fără alt complet: completul 45572436393, verde (unit
+  10 452 / 0, 12 sărite pe Linux; e2e 833 / 833; funcțiile pe emulatoare 136 / 136; paginile 59 / 59); rapidul,
+  verde pe `3214f4da` și pe `04e7cd2f`; pornirea 111,1 kB (plafonul 125; cu ușa 116,1, cu Atelierul 116,4), **totalul
+  884,8 / 1 000 kB** (+3,9), `/admin` 138,3 / 200. Pe test e `d1a96fc4` (lotul 31, din 10:44); lotul acesta pleacă
+  acum, cu plafoanele noi. Auditurile cerute de owner sunt amândouă în `main` (`docs/linii/audit-elice.md`,
+  `docs/linii/audit-export.md`). La linii, în lucru: frezele (16.A↑b-5), cotele (10.4↑c), atelierul (restul lui 3.Cj),
+  relieful (18.1↑c, după ce stabilește cu frezele bila în document, v29). **La owner:** feliile din cele două audituri
+  (întrebările lor; reparația desenelor exportului, 28.8↑h, recomandată după 16.A↑b-5), cele trei întrebări ale lui
+  3.Tu, arhivarea sesiunii elicelor, verificarea juridică (GDPR) a utilizării aplicației înaintea live-ului, „cine
+  unește în `main`”, meniul de sus la 320 px la atingere.
 - 25.11.2026, dimineața: **auditul complet al ferestrei exportului și al elicelor, înaintea arhivării sesiunilor lor**
   (owner-ul, în sesiunea principală, la „pot arhiva sesiunile exportului si elicelor?” și la răspunsul că da:
   „vreau sa le intrebi ce pot imbunatati in zona in care au lucrat? dar, defapt, pune-le sa faca un audit complet in acest sens”). Sesiunea principală le-a scris celor două sesiuni (10:19): fiecare

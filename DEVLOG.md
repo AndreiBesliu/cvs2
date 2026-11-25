@@ -14427,6 +14427,27 @@ miercuri.” și „vreau sa pornesti si celelalte sub-sesiuni”): „Deci porn
   pe `main` `f2678300` și pe ramură). Nimic pe server; documentul rămâne v27. Apoi `main` adus (`caddd661`, plafoanele
   1 000 / 125 kB, ADR 0146) și cu auditul exportului (`43cf59af`). **Completed:** 25.11, 11:35.
 
+## 2026-11-25 — Linia reliefului: felia 18.1↑b, modelul reliefului în vederea 3D („Modelul / Tăiat”) (sesiune cloud)
+
+**Prompt:** mesajul sesiunii principale, cu cuvântul owner-ului („am resetat limita saptamanale. azi este miercuri.” și
+„vreau sa pornesti si celelalte sub-sesiuni”): „Așteptai cuvântul lui pentru 18.1↑b […]: acesta e. Pornește 18.1↑b.”
+**Started:** 25.11, 09:35. **Completed:** 25.11, 10:55.
+
+- **`main` adus** (`f2678300`, fără ciocniri), apoi **proba întâi** (`test/unit/relief.model.test.ts`): compusul calculat
+  dală cu dală e exact compusul întreg redus cu k, ca desenul de pe planșă; o dală schimbată se cere, se citește din bază și
+  se compune singură; o dală goală a unui strat nu intră în cheie.
+- **Nucleul** `src/relief/model.ts` (`dalaModel`), cererea `model` a workerului reliefului, cheile și încărcarea
+  (`src/app/modelRelief.ts`), citirea hărților și a dalelor alese (`citesteHarta`, `citesteDale`).
+- **Vederea 3D:** comutatorul „Modelul / Tăiat”; modelul exact (ADR 0310 §4), în golul lui din placă (stencil), cu vârful la
+  fața plăcii; texturile pe dale (`texSubImage2D`), după piesă și nod; vederea urmează documentul. „Tăiat”, ca până acum.
+- **Cotele:** cazul reliefului în `cote.lipire.test.ts` (cerut de linia cotelor).
+- **Mărimea:** pornirea +0 (111,2; cu ușa și cu Atelierul 116,5 / 120), totalul 880,9 → 884,8 / 900 kB; nicio bucată nouă.
+- **Probele:** unitare (`relief.model`, `cote.lipire`), e2e `relief3d.spec.ts` (3) și cele vechi ale vederii 3D și ale
+  reliefului (16), manualul; otrăvurile 22 / 22 (`test/otravuri/18.1b.py`).
+- **`main` adus din nou** (`caddd661`, plafoanele 1 000 / 125 kB, ADR 0146; ciocnirea doar în DEVLOG). Porțile, în CI, pe
+  `3214f4da`: rapidul verde; completul 45572436393 verde (unit 10 452 / 0, 12 sărite; e2e 833 / 833; funcțiile pe emulatoare
+  136 / 136; paginile 59 / 59); pornirea 111,1 / 125 (cu ușa 116,1, cu Atelierul 116,4), totalul 884,8 / 1 000 kB.
+
 ## 2026-11-25 — Sesiunea principală în cloud: lotul 30 (atelierul Easy 3Draw: punctele de prindere), pe test; liniile, repornite (Model: Claude Fable 5.2)
 
 **Prompt:** regula „pe test publici liber”, după a douăzeci și noua unire; apoi „am resetat limita saptamanale. azi este miercuri.” și „vreau sa pornesti si celelalte sub-sesiuni”
@@ -14550,3 +14571,20 @@ vigoare „unește ce se poate”
   punct zecimal în română (`src/app/descriereElement.ts`, comun: al sesiunii principale); „Trimite la mașină” în Atelier
   (aranjamentele).
 - **Documentele:** indexul liniilor (rândul exportului), starea din `docs/linii/principala.md`.
+
+## 2026-11-25 — Sesiunea principală în cloud: a treizeci și una unire (relieful: 18.1↑b, modelul în vederea 3D) (Model: Claude Fable 5.2)
+
+**Prompt:** raportul liniei reliefului („18.1↑b […] e gata de unit”, `04e7cd2f`), la ordinul în vigoare „unește ce se
+poate”
+**Started:** 25.11, 11:01. **Completed:** unirea în `main`, 25.11, 11:02; publicarea pe test, pornită după ea.
+
+- **Unirea, pe `unire-2511l`** (din `43cf59af`): `04e7cd2f`, în `ef883ac1`, fără nicio ciocnire (DEVLOG-ul, unit
+  singur). Ramura avea `main` `caddd661` (cu plafoanele noi); de atunci, `main` a primit doar documente (auditurile),
+  iar `04e7cd2f` adaugă peste `3214f4da` doar documente: arborele unirii are exact codul lui `3214f4da` (`git diff`
+  gol în afara fișierelor `.md`). Local: traducerile (1 115), catalogul controalelor (la zi), fără `.lucru/`.
+- **Porțile, în CI, pe `3214f4da`** (citite din jurnalul rulării): completul 45572436393, verde (53 min): unit
+  10 452 / 0 (12 sărite, pe Linux), e2e 833 / 833, funcțiile pe emulatoare 136 / 136, paginile 59 / 59; rapidul,
+  verde pe `3214f4da` (45572445456) și pe `04e7cd2f` (45580169660). Pornirea 111,1 kB (plafonul 125; cu ușa 116,1, cu
+  Atelierul 116,4), totalul 884,8 / 1 000 kB (+3,9), `/admin` 138,3 / 200. Nimic pe server.
+- **Documentele:** decizia și paragraful de stare în `CLAUDE.md`; indexul liniilor; starea din
+  `docs/linii/principala.md`.

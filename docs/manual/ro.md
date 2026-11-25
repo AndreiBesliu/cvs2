@@ -1016,8 +1016,8 @@ lor, punctat, iar lista spune că lipsesc. O imagine pe care n-o mai folosește 
 Dintr-o imagine (o poză, un logo, o hartă a înălțimilor în gri) se poate face un **relief**: o formă 3D a piesei, cu câte o
 celulă pentru fiecare pixel, a cărei înălțime vine din griul pixelului. Pe planșă, relieful se vede umbrit (lumina din
 stânga-sus), sub vectori, cu chenarul lui; se alege, se mută, se rotește și se oglindește ca orice formă, iar piesa cu relief
-se pune de mai multe ori și pe alte foi. Prelucrarea lui 3D (degroșarea și finisarea) vine în feliile următoare: deocamdată
-relieful nu se taie.
+se pune de mai multe ori și pe alte foi. În [vederea 3D](#vedere-3d), butonul **Modelul** îl arată în trei dimensiuni, în
+golul lui din placă. Prelucrarea lui 3D (degroșarea și finisarea) vine în feliile următoare: deocamdată relieful nu se taie.
 
 **Cum îl faci:** din „Importă…”, alege o imagine (PNG, JPEG, WebP, GIF sau BMP), apoi, sus în fereastră, **Relief** în loc
 de **Vectori**. Alegerea se ține minte până reîncarci pagina. Fereastra are, în stânga:
@@ -2325,8 +2325,17 @@ fiecăruia), iar starea din colț o spune.
   lungimea tijei, înălțimea dopului, cleiul de sub tijă (pe umăr; la gaura prin foaie, tija e la nivel cu fața de jos, deci 0)
   sau de deasupra umărului (pe fund) și spațiul dintre plăci sau cât iese dopul decupat peste placă.
 
+- **Modelul / Tăiat**: pe o foaie cu [reliefuri](#relief), sus apar două butoane. **Modelul** (implicit) arată reliefurile
+  foii din dalele lor, fără simulare: fiecare relief stă în golul lui din placă, cu vârful la fața plăcii (cum se va tăia,
+  dacă operația nu spune altfel), cu marginea până la fața plăcii; suprafața e chiar relieful salvat, cu o valoare în centrul
+  fiecărei celule. Starea spune cât de adânc e cel mai adânc punct; un relief prea mare pentru placa video se desenează mai
+  rar (o valoare pe 2 × 2, 4 × 4 … celule), iar starea o spune. Modelul urmează documentul: mutat, rotit ori oglindit,
+  relieful se mută pe loc, fără să se încarce din nou, iar un relief schimbat își încarcă doar dalele schimbate. Dacă
+  straturile lui lipsesc din browser, starea o spune, iar fața plăcii rămâne întreagă acolo. **Tăiat** simulează placa,
+  ca mai jos (relieful însuși nu se taie încă).
+
 Culorile: fața plăcii, tăieturile (mai închise cu adâncimea) și, albastru-gri, masa de sacrificiu acolo unde freza a trecut
-prin foaie. Dacă schimbi documentul cât vederea e deschisă, starea o spune; „Simulează din nou” îl simulează, cu placa
+prin foaie; în model, relieful are culorile tăieturilor. Dacă schimbi documentul cât vederea e deschisă, starea o spune; „Simulează din nou” îl simulează, cu placa
 rămasă cum ai rotit-o. `Esc`, butonul 3D sau o unealtă de desen întorc la pânză. Vederea 3D cere WebGL2.
 
 ## Proiectul și salvarea
