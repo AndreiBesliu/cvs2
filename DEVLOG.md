@@ -15413,3 +15413,21 @@ cu patru întrebări: „Mergem cu recomandarile”
 - **Documentele:** ADR 0285 (răspunsurile owner-ului, „Implementat (3.Cl-1)”), indexul ADR, fișa etapei 3 (jurnalul,
   coada owner-ului), `docs/linii/atelier.md` (cu regulile noi), indexul liniilor, `docs/otravuri.md`, `CLAUDE.md`.
 - **Urmează:** 3.Cl-2 (globul, relieful pe două înălțimi, „schimbă filamentul la stratul N”).
+
+## 2026-11-26 — Sesiunea principală în cloud: a patruzeci și doua unire (atelierul Easy 3Draw: 3.Cl-1, decorațiunile de Crăciun) (Model: Claude Fable 5.2)
+
+**Prompt:** raportul liniei atelierului („3.Cl-1 […] e gata de unit”, `42775bb0`), la ordinul în vigoare „unește ce se poate”
+**Started:** 26.11, 00:13. **Completed:** unirea în `main`, 26.11, 00:15; publicarea pe test, lotul 39.
+
+- **Verificat înaintea unirii:** completul liniei (45700790804, pe `05e2dffb`) și rapidele (`05e2dffb`, `42775bb0`), verzi;
+  `git diff 05e2dffb 42775bb0`, gol în afara fișierelor `.md`; PR-ul #50; fără `.lucru/`; ramura are `a4d86d53`.
+- **Fără complet al unirii:** de la `a4d86d53`, `main` a primit doar documente (`ca38f215`); arborele unirii, în afara
+  fișierelor `.md`, e al lui `05e2dffb`.
+- **Unirea, pe `unire-2611a`** (din `ca38f215`): `42775bb0`, în `41b1fb6f`. Ciocnirea, în DEVLOG (`rezolva-devlog.py`).
+  Local: tipurile, regulile de import (22 / 22), traducerile (1 165), catalogul controalelor, biblioteca (Easy 3Draw 18.35.0,
+  536 769 octeți), probele documentelor 62 / 62; în schimbări, doar `extensii/`, `test/` și documente.
+- **Porțile, în CI, pe `05e2dffb`** (citite din jurnalul rulării): completul 45700790804, verde la prima trecere (57 min): unit
+  10 617 / 0 (12 sărite, pe Linux), e2e 898 / 898, funcțiile pe emulatoare 136 / 136, paginile 60 / 60. Pornirea 111,4 kB
+  (plafonul 125; cu ușa 116,5, cu Atelierul 116,9), totalul 909,1 / 1 000 kB, `/admin` 138,3 / 200, contul 30,2 / 32.
+  Nimic pe server.
+- **Documentele:** decizia și paragraful de stare în `CLAUDE.md`; indexul liniilor; starea din `docs/linii/principala.md`.

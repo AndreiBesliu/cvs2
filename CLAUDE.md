@@ -1204,7 +1204,8 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   pieselor din model le socotește motorul (`rezolvaModel`): felul unei piese (pe grilă, prinsă, liberă) se întreabă
   acolo, nu după câmpurile ei; locul de pe grilă rămâne în date ca loc de rezervă. Listele de otrăvuri ale pluginului
   pun `E2E_BUILD = False`.** **3.Cl-1 (decorațiunile de Crăciun: fulgul, steaua și brăduțul; ADR 0285, acceptat de
-  owner pe 25.11 cu „Mergem cu recomandarile”)** gata pe 25.11, pe ramură: fila nouă „Crăciun” a atelierului, cu trei
+  owner pe 25.11 cu „Mergem cu recomandarile”)** gata pe 25.11, unită în `main` pe 26.11 (`41b1fb6f`): fila nouă
+  „Crăciun” a atelierului, cu trei
   piese plate, tipărite culcate, fără suport: fulgul de zăpadă (șase gata făcuți și „Alt fulg”), steaua (plină,
   contur sau în relief) și brăduțul (de agățat sau în picioare, din două plăci cu fante); agățătoarea e inelul (pe
   un vârf ascuțit, pe o tijă) sau gaura de lângă vârf; Easy 3Draw 18.35.0 (următoarea, 18.36.0). **O piesă plată nouă
@@ -1813,6 +1814,33 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 26.11.2026, noaptea (a patruzeci și doua unire din cloud): **decorațiunile de Crăciun din atelierul Easy 3Draw:
+  fulgul, steaua și brăduțul (3.Cl-1), unite în `main`** (sesiunea principală, ramura `unire-2611a`, din
+  `ca38f215`). Linia atelierului, ramura `wip/3.Xh-biblioteca-ui`, `42775bb0`, PR-ul `AndreiBesliu/cvs2#50` (ADR
+  0285, acceptat de owner pe 25.11, în sesiunea liniei: „Mergem cu recomandarile”, 1a–4a; la cererea lui din sesiunea
+  principală, „Vreau ca sesiunea care lucreaza la plugin, sa faca si decoratiuni de craciun pentru imprimanta”),
+  unită în `41b1fb6f`: fila nouă „Crăciun” a atelierului, cu trei piese plate, tipărite culcate, fără suport: fulgul
+  de zăpadă (șase brațe, cu perechi de ramuri; șase gata făcuți și „Alt fulg”), steaua (5–8 colțuri; plină, contur
+  sau în relief) și brăduțul (de agățat sau în picioare, din două plăci cu fante, tipărite alături); agățătoarea e
+  inelul sau gaura de 2,5 mm de lângă vârf, iar unde gaura nu încape, piesa primește inelul, cu un mesaj. **Easy
+  3Draw 18.35.0** (536,8 kB); otrăvurile 119 / 119 și 13 / 13. Găsite de probe și reparate în felie: gâtul dintre
+  inel și brațul fulgului ieșea sub linia de 1,2 mm; gaura de agățat a unui brad mic își găsea loc deasupra
+  trunchiului, deci bradul ar fi atârnat cu vârful în jos. Doar pachetul extensiei se schimbă; nimic pe server;
+  documentul rămâne v29. Ramura avea `main` `a4d86d53`, iar de atunci `main` a primit doar documente, deci
+  **arborele unirii are exact codul lui `05e2dffb`** (`git diff` gol în afara fișierelor `.md`), pe care a rulat
+  completul liniei, și a intrat pe porțile lui, fără alt complet: completul 45700790804, verde la prima trecere
+  (57 min): unit 10 617 / 0 (12 sărite, pe Linux), e2e 898 / 898, funcțiile pe emulatoare 136 / 136, paginile
+  60 / 60; rapidul, verde pe `05e2dffb` și pe `42775bb0`; aplicația, neschimbată de felie: pornirea 111,4 kB
+  (plafonul 125; cu ușa 116,5, cu Atelierul 116,9), totalul 909,1 / 1 000 kB, `/admin` 138,3 / 200, contul
+  30,2 / 32. Ciocnirea, doar în DEVLOG. Pe test e `c9911c14` (lotul 38, din 25.11, 23:28: tot ce era în `main`
+  până acum); 3.Cl-1 pleacă acum (lotul 39). La linii, în lucru: atelierul (3.Cl-2, globul și relieful pe două
+  înălțimi; apoi 3.Cl-3, 3.Cl-4), exportul (28.8↑i, viteza ferestrei: proba de viteză refăcută pe numărători, cu
+  două complete în lucru), relieful (18.1↑d, oracolul degroșării), cotele (10.4↑d). **La owner:** de tipărit
+  decorațiunile, rândul editabil al finisării, Escape în cele șase ferestre, feliile frezelor (16.A↑d–g), cele
+  două alegeri cu recomandarea aplicată, de încercat „Modelul” din Easy 3Draw, proba pe mașină a centrului foii,
+  cele patru întrebări din auditul elicelor, pachetul Easy 3Draw trecut de 0,5 MB, arhivarea sesiunii elicelor,
+  verificarea juridică (GDPR) a utilizării aplicației înaintea live-ului, „cine unește în `main`”, meniul de sus la
+  320 px la atingere.
 - 25.11.2026, noaptea: **10.4↑d și 18.1↑d, pornite** („ok, porneste 10.4↑d si 18.1↑d”, în sesiunea principală, la
   23:37, după publicarea lotului 38, la lista cu ce aștepta de la owner). Sesiunea principală le-a scris celor două
   linii pe 26.11, la 00:08. **10.4↑d** (linia cotelor; ADR 0330): lanțul și linia de bază, „Cotează selecția”, „Fă
