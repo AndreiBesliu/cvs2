@@ -152,6 +152,111 @@ export function cuFrezaAleasa(p: Rand, unde: UndeFreza, f: FrezaOferita, numar: 
   return { [camp]: lista.map((r, i) => (i === unde.k ? { numar: n, diametru: d, pas: pl, origine } : r)) };
 }
 
+/** Forma unei freze pe rând (ADR 0090, ADR 0092): în V, cu unghiul și vârful (lipsă = ascuțit); lipsă = plată. */
+export type FormaRand = { readonly tip: 'v'; readonly unghi: number; readonly varf?: number };
+/** O freză a unui rând, pentru nota bibliotecii (ADR 0300 §5, felia 16.A↑b-4): locul, originea, diametrul (ca text) și forma. */
+export type LocFrezaRand = { readonly unde: UndeFreza; readonly origine: OrigineFreza | null; readonly diametru: string; readonly forma?: FormaRand };
+
+/**
+ * Frezele unui rând, cu originea lor (ADR 0300 §5, felia 16.A↑b-4): freza operației și, cu bifele lor, a fundului plat, a
+ * dopului, a decupării benzii și frezele de rest, în ordinea frezelor ferestrei (`frezeRanduri`).
+ */
+export function locuriFreze(p: Rand): LocFrezaRand[] {
+  const u = p.formaScula === 'v' ? citesteNumar(p.unghiV) : null, vf = p.formaScula === 'v' ? citesteNumar(p.varfV) : null;
+  const rez: LocFrezaRand[] = [{
+    unde: 'scula', origine: p.origineScula, diametru: p.diametruScula,
+    ...(u !== null ? { forma: { tip: 'v' as const, unghi: u, ...(vf !== null && vf > 0 ? { varf: vf } : {}) } } : {}),
+  }];
+  const fund = p.tip === 'vcarve' && p.fundPlat, dop = p.tip === 'buzunar' && p.incrustatieDreapta && p.frezaDop;
+  if (fund) rez.push({ unde: 'fund', origine: p.origineFund, diametru: p.diametruSculaFund });
+  if (dop) rez.push({ unde: 'dop', origine: p.origineDop, diametru: p.diametruSculaDop });
+  if (p.tip === 'vcarve' && p.incrustatie && p.jurDop === 'banda' && p.decupareBanda && p.frezaBanda) {
+    rez.push({ unde: 'banda', origine: p.origineBanda, diametru: p.diametruSculaBanda });
+  }
+  const liste: ReadonlyArray<readonly ['buzunar' | 'fund' | 'dop', readonly RandRest[]]> = [
+    ['buzunar', p.tip === 'buzunar' ? p.rest : []], ['fund', fund ? p.restFund : []], ['dop', dop ? p.restDop : []],
+  ];
+  for (const [rest, lista] of liste) lista.forEach((r, k) => { rez.push({ unde: { rest, k }, origine: r.origine ?? null, diametru: r.diametru }); });
+  return rez;
+}
+
+/** O valoare a frezei care diferă între proiect și bibliotecă (ADR 0300 §5): câmpul, valoarea de aici și cea din bibliotecă. */
+export type DiferentaFreza = {
+  readonly camp: 'nume' | 'diametru' | 'unghi' | 'varf' | 'turatie' | 'avans' | 'plonjare' | 'tais';
+  readonly aici: number | string | null; readonly acolo: number | string | null;
+};
+
+/**
+ * Ce diferă între copia frezei de pe rând și freza din bibliotecă (ADR 0300 §5): numele, diametrul, unghiul și vârful formei,
+ * turația, avansul și plonjarea, tăișul. Numărul T și pașii sunt ai rândului, nu ai frezei: nu se compară.
+ */
+export function diferenteFreza(loc: LocFrezaRand, f: FrezaOferita): DiferentaFreza[] {
+  const o = loc.origine, s = f.scula, r = s.origine;
+  const egal = (a: number | string | null, b: number | string | null): boolean =>
+    typeof a === 'number' && typeof b === 'number' ? Math.abs(a - b) < 1e-9 : a === b;
+  const rez: DiferentaFreza[] = [];
+  const pune = (camp: DiferentaFreza['camp'], aici: number | string | null, acolo: number | string | null): void => {
+    if (!egal(aici, acolo)) rez.push({ camp, aici, acolo });
+  };
+  pune('nume', o?.nume ?? null, r.nume);
+  pune('diametru', citesteNumar(loc.diametru), s.diametru);
+  pune('unghi', loc.forma?.unghi ?? null, s.forma?.unghi ?? null);
+  pune('varf', loc.forma ? loc.forma.varf ?? 0 : null, s.forma ? s.forma.varf ?? 0 : null);
+  pune('turatie', o?.regim?.turatie ?? null, r.regim?.turatie ?? null);
+  pune('avans', o?.regim?.avans ?? null, r.regim?.avans ?? null);
+  pune('plonjare', o?.regim?.plonjare ?? null, r.regim?.plonjare ?? null);
+  pune('tais', o?.tais ?? null, r.tais ?? null);
+  return rez;
+}
+
+/**
+ * Ce spune rândul despre freza lui față de bibliotecă (ADR 0300 §5): cu originea, freza ștearsă din bibliotecă, schimbată (cu
+ * diferențele) sau la zi; fără origine, freza din bibliotecă cu același diametru și aceeași formă, dacă e (recunoașterea, ADR
+ * 0114 §6: doar arătată, nu scrisă). `biblioteca` null = necitită încă: nimic de spus.
+ */
+export type StareOrigine =
+  | { readonly fel: 'stearsa' } | { readonly fel: 'la-zi' }
+  | { readonly fel: 'schimbata'; readonly freza: FrezaOferita; readonly diferente: readonly DiferentaFreza[] }
+  | { readonly fel: 'recunoscuta'; readonly freza: FrezaOferita };
+
+export function stareOrigine(loc: LocFrezaRand, biblioteca: readonly FrezaOferita[] | null): StareOrigine | null {
+  if (biblioteca === null) return null;
+  if (loc.origine) {
+    const id = loc.origine.biblioteca.id, f = biblioteca.find((x) => x.id === id);
+    if (!f) return { fel: 'stearsa' };
+    const diferente = diferenteFreza(loc, f);
+    return diferente.length === 0 ? { fel: 'la-zi' } : { fel: 'schimbata', freza: f, diferente };
+  }
+  const d = citesteNumar(loc.diametru);
+  if (d === null) return null;
+  const aceeasiForma = (a: FormaRand | undefined, b: FormaRand | undefined): boolean =>
+    a === undefined || b === undefined ? a === b : Math.abs(a.unghi - b.unghi) < 1e-9 && Math.abs((a.varf ?? 0) - (b.varf ?? 0)) < 1e-9;
+  const f = biblioteca.find((x) => Math.abs(x.scula.diametru - d) < 1e-9 && aceeasiForma(loc.forma, x.scula.forma));
+  return f ? { fel: 'recunoscuta', freza: f } : null;
+}
+
+/**
+ * „Ia valorile noi” (ADR 0300 §5): pe locul `unde`, diametrul, forma (la freza operației) și originea frezei `f` din bibliotecă,
+ * cu numele, versiunea, valorile de lucru și tăișul ei. Numărul T și pașii sunt ai rândului: rămân. Un loc care nu e pe rând
+ * nu schimbă nimic.
+ */
+export function cuValorileNoi(p: Rand, unde: UndeFreza, f: FrezaOferita, text: (x: number) => string = String): Partial<Rand> {
+  const s = f.scula, d = text(s.diametru), origine = s.origine;
+  if (unde === 'scula') {
+    return {
+      diametruScula: d, formaScula: s.forma ? 'v' : 'plata', ...(s.forma ? { unghiV: text(s.forma.unghi), varfV: text(s.forma.varf ?? 0) } : {}),
+      origineScula: origine,
+    };
+  }
+  if (unde === 'fund') return { diametruSculaFund: d, origineFund: origine };
+  if (unde === 'dop') return { diametruSculaDop: d, origineDop: origine };
+  if (unde === 'banda') return { diametruSculaBanda: d, origineBanda: origine };
+  const camp = unde.rest === 'fund' ? 'restFund' : unde.rest === 'dop' ? 'restDop' : 'rest';
+  const lista = p[camp];
+  if (unde.k < 0 || unde.k >= lista.length) return {};
+  return { [camp]: lista.map((r, i) => (i === unde.k ? { ...r, diametru: d, origine } : r)) };
+}
+
 /** Frezele oferite unei freze de rest (ADR 0093): doar cele mai mici decât freza dinainte (`dinainte`, ca text); de necitit, toate. */
 export function oferitePentruRest(oferite: readonly FrezaOferita[], dinainte: string): readonly FrezaOferita[] {
   const d0 = citesteNumar(dinainte);

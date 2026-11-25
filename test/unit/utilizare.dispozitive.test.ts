@@ -7,6 +7,8 @@ import { evenimenteMasina } from '../../src/app/utilizareMasina.ts';
 import { CalculAnulat, exportInBazin, traseuInBazin } from '../../src/jobs/bazinCam.ts';
 import { observaCalculele, type CalculObservat } from '../../src/jobs/observatorCalcul.ts';
 import type { Clipa } from '../../src/machine/imprimanta/evenimente.ts';
+import { citesteCadru, stareLucrare } from '../../src/machine/imprimanta/creality.ts';
+import { aplica, IMPRIMANTA_NECUNOSCUTA } from '../../src/machine/imprimanta/driver.ts';
 import { fluxNou, type StareFlux } from '../../src/machine/flux.ts';
 import type { ProgramIncarcat } from '../../src/machine/program.ts';
 import type { Raport, StareMasina } from '../../src/machine/raspunsuri.ts';
@@ -108,6 +110,26 @@ test('imprimanta: legarea, lucrarea nouă (nu și una găsită în curs), evenim
   assert.deepEqual(idsImprimanta(clipa({ legatura: 'pierduta' }), clipa()), []);
   assert.deepEqual(idsImprimanta(libera, alta), ['deconectata']);
   for (const e of evenimenteImprimanta(clipa(), clipa({ lucrare: 'gata' }))) assert.deepEqual(Object.keys(e), ['id']);
+});
+
+test('imprimanta găsită imprimând, cu o bucată de progres sosită înaintea stării întregi: legarea, fără „pornită” (felia 3.Au)', () => {
+  // Clipele, cum le face fereastra: legătura și starea lucrării citite de driver din ce a sosit până atunci.
+  const dinCadre = (cadre: readonly string[]): Clipa => {
+    const i = cadre.reduce((x, c) => aplica(x, citesteCadru(c).stare), IMPRIMANTA_NECUNOSCUTA);
+    return clipa({ lucrare: stareLucrare(i), fisier: i.fisier, strat: null, trecut: i.trecut, filament: i.filament });
+  };
+  const alta = clipa({ legatura: 'alta', lucrare: 'necunoscuta', fisier: null });
+  const bucata = '{"printProgress":41,"printJobTime":467,"printLeftTime":673,"layer":21}';
+  const intreaga = '{"state":1,"printFileName":"/usr/data/printer_data/gcodes/output_11031835.gcode","printProgress":41,"printJobTime":467,"printLeftTime":673}';
+  const a = dinCadre([bucata]);
+  const b = dinCadre([bucata, intreaga]);
+  assert.equal(a.lucrare, 'necunoscuta');
+  assert.equal(b.lucrare, 'imprima');
+  assert.deepEqual([...idsImprimanta(alta, a), ...idsImprimanta(a, b)], ['legata']);
+  // Martor: aceeași imprimantă, liberă la legare (starea întreagă, cu codul 0), apoi pornită de aici, e „pornită”.
+  const libera = dinCadre(['{"state":0,"printFileName":"","printProgress":0}']);
+  assert.equal(libera.lucrare, 'libera');
+  assert.deepEqual([...idsImprimanta(alta, libera), ...idsImprimanta(libera, b)], ['legata', 'pornita']);
 });
 
 test('înregistratorul: treptele duratei și ale mărimilor, codul din afara marginilor lăsat deoparte, apoi lista albă', () => {

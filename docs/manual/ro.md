@@ -1882,6 +1882,12 @@ pereți drepți și freza decupării benzii. Aleasă, freza își pune numărul 
 ferestrei), diametrul și pasul lateral; **Exportă** o scrie cu valorile ei de lucru. Un diametru schimbat de mână o face
 **Scrisă de mână** doar pe freza aceea.
 
+Proiectul ține o copie a fiecărei freze alese din bibliotecă. Dacă freza se schimbă apoi în **Frezele mele**, rândul spune ce
+s-a schimbat (de pildă „În bibliotecă, „Plată Ø6” are acum avansul 1.400 (aici 1.000).”), cu **Ia valorile noi** pentru freza
+aceea și, dacă și alte freze ale ferestrei vin din ea, **Pe toate (N)**; numărul T și pașii rămân, iar **Exportă** scrie valorile
+noi. O freză ștearsă din bibliotecă rămâne în proiect, cu nota „nu mai e în bibliotecă”. O freză scrisă de mână, la fel cu una
+din bibliotecă (același diametru, aceeași formă), apare ca **Scrisă de mână (ca „…”)**, fără să schimbe nimic în proiect.
+
 **Ordinea tăierii** stă în listă, deasupra operațiilor. Operațiile apar în ordinea în care se taie, cu locul lor în stânga (fișa
 spune „locul N din M”):
 - **Automată** (implicit): interioarele întâi, apoi liniile, la urmă exterioarele și despărțirile foii; în fiecare, grupate pe

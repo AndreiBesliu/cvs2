@@ -510,11 +510,36 @@ exportului, desprinse din 16.A↑b-3.
   lateral); „Adaugă o freză de rest” are aspect de buton; la buzunar, „Frezele de rest” rămâne doar titlul grupului, iar la
   fundul plat și la dop lista își spune numele. Când fișa e îngustă (telefonul), lista trece pe un rând al ei.
 
-Documentul rămâne v27; nimic pe server. Probele (întâi): scrierea originii, frezele ferestrei, alegerea pe loc și filtrul, pe
+Documentul rămâne v28 (din relief); nimic pe server. Probele (întâi): scrierea originii, frezele ferestrei, alegerea pe loc și filtrul, pe
 hârtie (`test/unit/exportFreze.rest.test.ts`); în Edge, frezele de rest ale buzunarului, fundul plat, dopul și banda, cu exportul
 și fereastra redeschisă, legarea și tabelul (`test/e2e/exportFrezeRest.spec.ts`), plus frezele în plus în proba privirii. Otrăvurile:
 `test/otravuri/16.A-b5.py`. Mărimea: pornirea neschimbată (111,2 kB; cu ușa și cu Atelierul 116,5 / 125), totalul
 881,0 → 882,0 / 1 000.
+
+## Implementarea (16.A↑b-4)
+
+Pe 25.11.2026, în sesiunea cloud a liniei, la „continua cu 16.A↑b-4” al owner-ului, pe `wip/16.A-freze-b4` (din vârful lui
+16.A↑b-5, `b7660e94`): nota din §5, pe fiecare freză a unui rând al ferestrei exportului (a operației și cele în plus).
+„Pune-o înapoi în bibliotecă” (§5) cere scrierea în bibliotecă din fereastra exportului, cu sincronizarea contului, și a ieșit
+în felia nouă **16.A↑b-6**.
+
+- **Biblioteca toată** (frezele cu CAM, ca frezele oferite) o dă aplicația ferestrei (`ExportConectat.tsx`, `bibliotecaToata`),
+  doar după ce e citită: o bibliotecă încă necitită nu spune „nu mai e în bibliotecă”.
+- **Locurile frezelor** unui rând (`locuriFreze`, în ordinea frezelor ferestrei) și, pentru fiecare, starea față de bibliotecă
+  (`stareOrigine`): cu originea, ștearsă (id-ul nu mai e în bibliotecă), schimbată (`diferenteFreza`: numele, diametrul,
+  unghiul și vârful formei, turația, avansul, plonjarea, tăișul; nu T-ul și nici pașii, care sunt ai rândului) sau la zi (o
+  versiune nouă fără valori schimbate, de pildă o notă sau un grup, nu dă notă); fără origine, freza din bibliotecă cu același
+  diametru și aceeași formă (unghiul și vârful), dacă e: recunoașterea din ADR 0114 §6, doar arătată.
+- **Nota** (`NotaBiblioteca`, sub lista fiecărei freze; la frezele de rest, pe tot rândul tabelului): „În bibliotecă, „Plată
+  Ø6” are acum avansul 1.400 (aici 1.000).”, cu **Ia valorile noi** și, dacă și alte freze ale ferestrei vin din ea și diferă,
+  **Pe toate (N)**. Ștearsă: „„Plată Ø6” nu mai e în bibliotecă: proiectul își păstrează copia.” Niciodată singură.
+- **Valorile noi** (`cuValorileNoi`): diametrul, forma (la freza operației) și originea frezei din bibliotecă (numele,
+  versiunea, valorile de lucru, tăișul), pe locul ei; T-ul și pașii rămân ai rândului. Exportă le scrie cu regula din 16.A↑b-3.
+- **Recunoașterea:** prima opțiune a listei devine „Scrisă de mână (ca „Plată Ø6”)”; nimic nu se scrie în proiect.
+
+Documentul rămâne v28 (din relief); nimic pe server. Probele (întâi): diferențele, starea originii, recunoașterea și valorile noi, pe hârtie
+(`test/unit/exportFreze.nota.test.ts`); în Edge, freza schimbată (pe rând și „Pe toate”, cu exportul și fereastra redeschisă),
+ștearsă și frezele în plus cu recunoașterea (`test/e2e/exportFrezeNota.spec.ts`). Otrăvurile: `test/otravuri/16.A-b4.py`.
 
 ## Se redeschide dacă
 

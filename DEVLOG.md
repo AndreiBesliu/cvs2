@@ -14485,8 +14485,8 @@ miercuri.” și „vreau sa pornesti si celelalte sub-sesiuni”): „Deci porn
   proba privirii (7 / 7). **Otrăvurile** (`test/otravuri/16.A-b5.py`): 33 / 33 (13 pe hârtie, 20 în Edge; T02 și C02 scăpaseră: probele frezelor de rest au acum două freze în listă). Otrăvurile lui 16.A↑b-3 atinse de mutarea
   codului (S01–S04, W03, W04) țin acum codul nou.
 - **Mărimea:** pornirea neschimbată (111,2 kB; cu ușa 116,1, cu Atelierul 116,5 / 125), totalul 881,0 → 882,0 / 1 000 (măsurat
-  pe `main` `f2678300` și pe ramură). Nimic pe server; documentul rămâne v27. Apoi `main` adus (`caddd661`, plafoanele
-  1 000 / 125 kB, ADR 0146) și cu auditul exportului (`43cf59af`). **Completed:** 25.11, 11:35.
+  pe `main` `f2678300` și pe ramură). Nimic pe server; documentul rămâne v28 (din relief). Apoi `main` adus (`caddd661`, plafoanele
+  1 000 / 125 kB, ADR 0146) și cu auditul exportului (`43cf59af`). **Completed:** 25.11, 10:56.
 
 ## 2026-11-25 — Linia reliefului: felia 18.1↑b, modelul reliefului în vederea 3D („Modelul / Tăiat”) (sesiune cloud)
 
@@ -14649,6 +14649,24 @@ poate”
   Atelierul 116,4), totalul 884,8 / 1 000 kB (+3,9), `/admin` 138,3 / 200. Nimic pe server.
 - **Documentele:** decizia și paragraful de stare în `CLAUDE.md`; indexul liniilor; starea din
   `docs/linii/principala.md`.
+
+## 2026-11-25 — 16.A↑b-4: nota „s-a schimbat în bibliotecă” pe rândurile exportului (Model: Claude Opus 5.5)
+
+**Prompt:** „continua cu 16.A↑b-4”. **Started:** 25.11, 11:05.
+
+- **Ramura** `wip/16.A-freze-b4`, din vârful lui 16.A↑b-5 (`b7660e94`), ca `wip/16.A-freze` să rămână neschimbată până la
+  unire; PR-ul #37, cu baza `wip/16.A-freze` (după unirea lui #31, pe `main`).
+- **Felia** (`9c5dd114`): pe fiecare freză a unui rând (a operației și cele în plus), copia din proiect față de „Frezele
+  mele”: schimbată acolo, cu ce diferă, „Ia valorile noi” pe rând și „Pe toate (N)” (T-ul și pașii rămân); ștearsă, „nu mai e
+  în bibliotecă”; scrisă de mână, la fel cu una din bibliotecă, „Scrisă de mână (ca „…”)”, fără scriere. Modelul pur în
+  `src/ui/exportRand.ts`; biblioteca dată ferestrei doar după citire. Manualul (ro, en). „Pune-o înapoi în bibliotecă” a ieșit
+  în 16.A↑b-6 (scrierea în bibliotecă din fereastra exportului, cu contul).
+- **Probele** (întâi): unitare noi 4 (`exportFreze.nota.test.ts`), în Edge 3 (`exportFrezeNota.spec.ts`); probele lui b-3 și
+  b-5 așteaptă acum numele frezei recunoscute. **Otrăvurile** (`test/otravuri/16.A-b4.py`): 18 / 19 (W01 scăpase, proba „Pe
+  toate” e acum și pe fundul plat; A01, practic echivalentă).
+- **Mărimea** (față de `b7660e94`): pornirea +14 octeți gzip (111,2 kB; cu ușa 116,1, cu Atelierul 116,5 / 125), totalul
+  886,0 → 887,5 / 1 000. Nimic pe server; documentul rămâne v28 (din relief). Tot aici, ora de încheiere a lui 16.A↑b-5 îndreptată (10:56).
+  **Completed:** 25.11, 11:40.
 
 ## 2026-11-25 — Linia exportului: felia 28.8↑n, numele fișierului (ADR 0291 §5)
 
@@ -14827,6 +14845,63 @@ gata de unit”, `b099c457`; 28.8↑n, `7996e77c`), la ordinul în vigoare „un
   decizie, în paragraful de stare și în index.
 - **Documentele:** decizia și paragrafele de stare în `CLAUDE.md`; indexul liniilor; starea din
   `docs/linii/principala.md` (cu lista „La owner” adusă la zi).
+
+## 2026-11-25 — Sesiunea principală în cloud: lotul 33 (cotele în export, frezele b-5, cadrul și melcul, numele fișierului), pe test (Model: Claude Fable 5.2)
+
+**Prompt:** publicarea de după a treizeci și treia unire (pe test se publică liber)
+**Started:** 25.11, după unirea de la 13:18 (completul pe `main`, pornit la 13:27). **Completed:** 25.11, 14:24.
+
+- **Pe test: `2aaee0b4`** (10.4↑c-1, 16.A↑b-5, 3.Cj-3 și 3.Cj-4 cu Easy 3Draw 18.32.0, 28.8↑n). `publica.yml`
+  45612906027, verde (14:21–14:24); serverul, neschimbat.
+- **Completul pe `main`** (45604669891, verde, 53 min): unit 10 494 / 0 (12 sărite, pe Linux), e2e 849 / 849,
+  funcțiile pe emulatoare 136 / 136, paginile 59 / 59; pornirea 111,2 kB, totalul 890,1 / 1 000 kB.
+- **Proba de fum** pe adresa de test: versiunea `2aaee0b4f0a4`, potrivită; nicio eroare în consolă, nicio cerere
+  căzută.
+
+## 2026-11-25 — Felia 3.Au: starea lucrării imprimantei e necunoscută până vine codul stării (Model: Claude Fable 5.2)
+
+**Prompt:** completul unirii lui 16.A↑b-4 (45613398666), căzut la o singură probă; un CI roșu se repară la cauză
+**Started:** 25.11, 15:36. **Completed:** 25.11, 15:44 (în container; completul lotului, verde la 16:57).
+
+- **Ce a căzut:** `test/e2e-emulator/utilizare.emulator.spec.ts:286` (imprimanta, A.8d): evenimentele `legata, pornita,
+  pauza, deconectata`, cu un „pornită” în plus. Nu ține de 16.A↑b-4.
+- **Cauza, întâi** (citită în cod, apoi reprodusă cu funcțiile driverului): imprimanta falsă trimite la fiecare pas o bucată
+  doar cu progresul, tuturor celor legați; dacă bucata ajunge înaintea răspunsului la `ReqPrinterPara`, sesiunea e deja
+  „conectată”, iar `stareLucrare` vede progresul fără cod și fără fișier și spune „liberă”. Starea întreagă vine după:
+  `lucrareNoua(liberă → imprimă)` e adevărată, deci „pornită”. Cu bucata întâi: `["legata","pornita"]`; cu starea întâi:
+  `["legata"]`. O K1C adevărată trimite la fel, pe bucăți.
+- **Probele, întâi** (3 căzute, cu „liberă” în loc de „necunoscută”): cazurile fără cod din tabelul stării; bucata urmată de
+  starea întreagă, pe cadrele driverului; lanțul până la evenimentele utilizării, cu martor (o imprimantă liberă, pornită de
+  aici, e „pornită”).
+- **Reparația, un rând:** `if (i.cod === null) return 'necunoscuta';` în `src/machine/imprimanta/creality.ts`. Pornirea unui
+  fișier, homing-ul și răcirea singură cer oricum o stare știută, deci nimic nu pornește pe o stare ghicită.
+- **În browser:** imprimanta falsă are `bucataIntaiMs` (întâi bucata, apoi, după atâtea milisecunde, starea întreagă), iar
+  proba de la `:286` o folosește: fără reparație cade de 3 ori din 3, cu ea trece de 5 ori din 5 (pe emulatoare, în
+  container). `imprimanta.spec.ts`, 30 / 30.
+- **Otrăvurile** (`test/otravuri/3.Au.py`): 7 / 7 (6 unitare, într-o clonă; una pe emulatoare, rulată de mână).
+- **Confirmare din altă sesiune:** linia cotelor a dat peste aceeași probă pe completul lui 10.4↑c-2 și a ajuns singură la
+  aceeași cauză.
+- **Local:** tipurile; unitarele imprimantei și ale utilizării, 267 / 267.
+
+## 2026-11-25 — Sesiunea principală în cloud: a treizeci și cincea unire (frezele 16.A↑b-4, cu reparația 3.Au) (Model: Claude Fable 5.2)
+
+**Prompt:** raportul liniei frezelor („16.A↑b-4 e gata de unit”, `48f27fcf`), la ordinul în vigoare „unește ce se poate”
+**Started:** 25.11, 14:24. **Completed:** unirea în `main`, 25.11, 17:00; publicarea pe test, pornită după ea.
+
+- **Unirea, pe `unire-2511t`** (din `1fbb8ad9`): `48f27fcf`, în `9f18522e`, fără nicio ciocnire, peste 28.8↑o, care atinsese
+  aceleași fișiere ale ferestrei; linia frezelor a citit împletirea și a găsit-o bună. Arborele nu mai era cel verificat de
+  linie, deci unirea și-a făcut completul ei.
+- **Primul complet** (45613398666, pe `9f18522e`): roșu la o singură probă, a utilizării imprimantei (felia 3.Au, mai sus);
+  restul, verde.
+- **Al doilea complet** (45626620796, pe `307d4f9a`, cu reparația): verde (73 min): unit 10 505 / 0 (12 sărite, pe Linux),
+  e2e 854 / 854, funcțiile pe emulatoare 136 / 136, paginile 59 / 59; rapidul 45626691268, verde pe `52503712`. Pornirea
+  111,2 kB (plafonul 125; cu ușa 116,2, cu Atelierul 116,5), totalul 891,8 / 1 000 kB, `/admin` 138,3 / 200, contul
+  30,3 / 32. Nimic pe server.
+- **Neunite, înapoi la linii:** 18.1↑c (relieful: peste b-4, o bilă din bibliotecă ar arăta în fereastra exportului ca o
+  freză plată; linia aduce `main` și rezolvă cu proba întâi) și 28.8↑h (exportul: peste b-4, proba ei nouă cade de fiecare
+  dată; „Du-mă la …” nu aduce greșeala în vedere; unirea de probă `unire-2511u`, completul 45629718056).
+- **Documentele:** decizia și paragrafele de stare în `CLAUDE.md` (frezele, imprimanta, regula originii, cu adăugirea liniei
+  exportului); indexul liniilor; starea din `docs/linii/principala.md`.
 
 ## 2026-11-25 — Felia 10.4↑c-2: cotele ca DIMENSION în DXF și cifrele ca text (ADR 0330 §7)
 
