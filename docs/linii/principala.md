@@ -154,10 +154,10 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
 
 ## Starea pe 25.11.2026, noaptea (după a douăzeci și opta unire din cloud)
 
-- **Pe test:** `694f0ff1` (tot ce e în `main`, până la lotul 28: cotele cu panoul lor, raza, diametrul și unghiul;
-  atelierul Easy 3Draw 18.25.0, cu conectorii, axul cu opritor și știftul cu bucșă; publicat pe 25.11 la 01:37, cu
-  serverul neschimbat; completul pe `main` 45503156817, verde; proba de fum, bună). Înainte: loturile 23–27
-  (`893e45bb`), pe 24.11 la 23:42. În drum: lotul 29 (atelierul: cremaliera și arcul, Easy 3Draw 18.27.0).
+- **Pe test:** `a95af70e` (tot ce e în `main`, cu lotul 29: atelierul Easy 3Draw 18.27.0, cu cremaliera și arcul;
+  publicat pe 25.11 la 03:47, cu serverul neschimbat; completul pe `main` 45518951805, verde; proba de fum, bună).
+  Înainte: `694f0ff1` (cotele a-4 și b, lotul 28), pe 25.11 la 01:37; loturile 23–27 (`893e45bb`), pe 24.11 la 23:42.
+  Nimic în drum.
 - **`main`, din cloud:** pe 23.11: 3.Tq (`0ae9c6c1`); 11.3↑e și A.4 (`ddaa7ead`); 3.Tr, unită de linia elicelor
   (`d262e57a`); 25.8↑a și A.5 (`1b46c955`), cu reparația probei extensiilor (`8287d66e`); 11.3↑f, unită de linia
   planșelor (`f4601938`); A.6 (`4497d639`); 3.Xh (`2d1e482c`) și 12.1↑e-3 cu 12.1↑e-4 (`03460cab`); A.8a cu A.8b
