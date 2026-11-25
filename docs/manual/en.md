@@ -1366,6 +1366,8 @@ field, said in red, and is not kept. **Close** (or Esc) closes the window.
   **Dimensions in DXF** (**Dimensions (DIMENSION)**, the default: in AutoCAD and LibreCAD they stay dimensions; or **Lines and
   numbers**, for programs that don't know dimensions) and **Numbers** (**Strokes**, the default: the same in any program, with
   no fonts; or **Text**, editable in another program, but drawn with its font).
+- **Sheets report:** whether the “With dimensions” tick box in the [sheets report](#raport) starts ticked (unticked by
+  default).
 
 ## Converting vectors
 %% capitol: conversie
@@ -2109,6 +2111,13 @@ material: what you buy).
 through the whole sheet thickness), in the part's own axes: its rotation on the sheet does not change it. A part without
 such a profile gets the size of its drawing, marked “(drawing)”. With **drawing**, all get the box of their whole drawing.
 Z0 and the origin corner are the export's: those chosen in its window, when the report comes from there.
+
+**With dimensions (N)** appears when a sheet of the report has [dimensions](#cote). Ticked, each sheet with dimensions shows
+them on its drawing, with the colour and numbers from [Settings](#setari) › Dimensions › Export, and the drawing takes the whole row, above
+the sheet's data. The numbers, arrows and gaps grow until they can be read (at least a 60th of the sheet's long side); each
+dimension line stays where you put it. A dimension that goes outside the sheet widens the drawing, so it is not cut off.
+Identical sheets show the first one's dimensions. The tick box starts from Settings › Dimensions › Sheets report (unticked by
+default); the CSV has no dimensions (it is the cut list), and **Print** takes the drawings as you see them.
 
 **Download CSV** writes the list to `cncvs2-lista-de-taiere.csv`, in UTF-8, with three tables one under the other: the
 sheets (one row per part, with the sheet, how many times it is cut and how much of it is used), the totals per part and the

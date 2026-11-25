@@ -1318,6 +1318,7 @@ implicit**. Un număr se scrie cu virgulă sau cu punct; unul în afara marginil
   (DIMENSION)**, implicit: în AutoCAD și LibreCAD rămân cote; sau **Linii și cifre**, pentru programele care nu știu cotele) și
   **Cifrele** (**Trăsături**, implicit: aceleași în orice program, fără fonturi; sau **Text**, de editat în alt program, dar
   desenat cu fontul lui).
+- **Raportul foilor:** dacă bifa „Cu cotele” din [raportul foilor](#raport) pornește pusă (implicit, nu).
 
 ## Conversia vectorilor
 %% capitol: conversie
@@ -2027,6 +2028,13 @@ pe material** (câte foi de fiecare mărime și material: ce cumperi).
 grosimea foii), în axele piesei: rotirea ei pe foaie n-o schimbă. O piesă fără un astfel de profil primește mărimea
 desenului, marcată „(desen)”. Cu **desen**, toate primesc cutia întregului lor desen. Z0 și colțul de origine sunt ale
 exportului: cele alese în fereastra lui, când raportul vine de acolo.
+
+**Cu cotele (N)** apare când o foaie a raportului are [cote](#cote). Bifată, fiecare foaie cu cote le arată pe desenul ei,
+cu culoarea și cifrele din [Setări](#setari) › Cotele › Exportul, iar desenul ia tot rândul, deasupra datelor foii. Cifrele, săgețile și
+golurile se măresc cât să se citească (cel puțin a 60-a parte din latura mare a foii); linia fiecărei cote rămâne unde ai
+pus-o. O cotă care iese din foaie lărgește desenul, ca să nu se taie. Foile identice arată cotele primei. Bifa pornește după
+Setări › Cotele › Raportul foilor (implicit oprită); CSV-ul n-are cote (e lista de tăiere), iar **Tipărește** ia desenele
+așa cum le vezi.
 
 **Descarcă CSV** scrie lista în `cncvs2-lista-de-taiere.csv`, în UTF-8, cu trei tabele unul sub altul: foile (un rând pe
 piesă, cu foaia, de câte ori se taie și cât e folosită), totalurile pe piesă și foile pe material. **CSV cu `;`**

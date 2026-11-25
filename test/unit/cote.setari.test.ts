@@ -18,6 +18,7 @@ test('implicitele, din tabelul ADR 0330 §6', () => {
     lipire: { felurile: { varf: true, mijloc: true, centru: true, cadran: true, cutie: true, foaie: true, grila: true }, toleranta: 8, contur: 'ctrl' },
     masurare: { distanta: true, delta: true, unghi: true, cursor: true, bara: true },
     export: { cuCote: false, strat: 'COTE', culoare: '#006d8f', grosime: 0.1, dxf: 'dimension', cifre: 'trasaturi' },
+    raport: { cuCote: false },
   });
   assert.deepEqual(citesteSetariCote(null), SETARI_IMPLICITE);
   assert.deepEqual(citesteSetariCote('nu e JSON'), SETARI_IMPLICITE);
@@ -33,6 +34,7 @@ test('citite înapoi exact, cu versiunea în text', () => {
     lipire: { felurile: { varf: true, mijloc: false, centru: true, cadran: false, cutie: true, foaie: false, grila: true }, toleranta: 12.5, contur: 'mereu' },
     masurare: { distanta: true, delta: false, unghi: true, cursor: false, bara: true },
     export: { cuCote: true, strat: 'Cote-2_A', culoare: '#123abc', grosime: 0.05, dxf: 'linii', cifre: 'text' },
+    raport: { cuCote: true },
   };
   const text = textSetariCote(s);
   assert.equal((JSON.parse(text) as { v: number }).v, 1);
@@ -152,8 +154,9 @@ test('„Înapoi la implicit” pe un grup lasă celelalte neatinse', () => {
   const s = citesteSetariCote(JSON.stringify({
     cifre: { unitate: 'cm' }, linii: { capete: 'fara' }, raza: { prefixD: 'D' },
     comportament: { legate: false }, lipire: { toleranta: 12 }, masurare: { unghi: false }, export: { grosime: 0.2 },
+    raport: { cuCote: true },
   }));
-  assert.deepEqual(GRUPURI_COTE, ['cifre', 'linii', 'raza', 'comportament', 'lipire', 'masurare', 'export']);
+  assert.deepEqual(GRUPURI_COTE, ['cifre', 'linii', 'raza', 'comportament', 'lipire', 'masurare', 'export', 'raport']);
   for (const g of GRUPURI_COTE) {
     assert.equal(eImplicit(s, g), false, g);
     const r = grupImplicit(s, g);
@@ -187,6 +190,18 @@ test('exportul (c-1): numele stratului, culoarea, grosimea; fiecare greșeală l
   assert.equal(r({ strat: 'a'.repeat(32) }).strat, 'COTE', 'peste 31 de semne');
   for (const n of ['', 'cu spațiu', 'Coté', 'A/B', '0', 'foaie', 'Pe_Linie', 'exterior']) assert.equal(numeStratBun(n), false, n);
   for (const n of ['COTE', 'cote', 'Dim-1', 'X_2']) assert.equal(numeStratBun(n), true, n);
+});
+
+test('raportul foilor (d-3): implicitul bifei „Cu cotele”, oprit; o valoare greșită, la implicit; o setare de dinainte îl ia', () => {
+  const r = (x: unknown): SetariCote['raport'] => citesteSetariCote(JSON.stringify({ raport: x })).raport;
+  assert.deepEqual(SETARI_IMPLICITE.raport, { cuCote: false });
+  assert.deepEqual(r({ cuCote: true }), { cuCote: true });
+  assert.deepEqual(r({ cuCote: 'da' }), { cuCote: false });
+  assert.deepEqual(r(null), { cuCote: false });
+  // Setările ținute înainte de d-3 n-au grupul: raportul pornește fără cote, iar restul rămâne cum era.
+  const vechi = citesteSetariCote(JSON.stringify({ v: 1, export: { cuCote: true } }));
+  assert.deepEqual(vechi.raport, { cuCote: false });
+  assert.equal(vechi.export.cuCote, true);
 });
 
 test('straturile rezervate sunt chiar ale exportului (fără COTE), plus stratul 0 al DXF-ului', () => {

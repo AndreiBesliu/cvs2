@@ -323,6 +323,7 @@ export const enExport = {
   'export.raport.marime.nota': 'Cut: the box of the contour cut out through the whole thickness (the outside profile); without it, the box of the drawing, marked “drawing”.',
   'export.raport.separator': 'CSV with',
   'export.raport.csv': 'Download CSV',
+  'export.raport.cote': 'With dimensions ({n})',
   'export.raport.tipareste': 'Print',
   'export.raport.foaie': '{material} · {latime} × {inaltime} × {grosime} mm · {procent} % used',
   'export.raport.fara-material': 'no material',

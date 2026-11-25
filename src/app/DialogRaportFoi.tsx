@@ -6,12 +6,16 @@
  * tăiată (implicit) sau a desenului. CSV-ul (lista de tăiere, deci fără imagini) cu `;` (implicit, Excel în română) sau `,`,
  * și tipărirea (PDF din browser): fereastra stă direct sub `body`, ca tipărirea s-o ia singură, pe oricâte pagini. Vine la
  * cerere, cu mesajele exportului.
+ * Când o foaie are cote, bifa „Cu cotele” (ADR 0330 §7, felia 10.4↑d-3; implicitul din Setări › Cotele › Raportul foilor) le
+ * pune pe desenul ei, mărite cât să se citească, cu desenul pe tot rândul; desenul cu cote, setările și fontul cifrelor vin la
+ * cerere, doar cu bifa pusă. Oprită, desenul e cel de dinainte; CSV-ul nu le are niciodată (e lista de tăiere).
  */
-import { useMemo, useState, type KeyboardEvent, type ReactNode } from 'react';
+import { useEffect, useMemo, useState, type KeyboardEvent, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import '../i18n/export.ts';
 import { mesajeGata } from '../i18n/laCerere.ts';
 import { t } from '../i18n/t.ts';
+import type { CoteRaport } from '../io/raportCote.ts';
 import { scrieSvg } from '../io/svgExport.ts';
 import { vectoriFoaie } from '../io/vectori.ts';
 import type { OrigineXY } from '../ir/montaj.ts';
@@ -24,6 +28,9 @@ import { useLimba } from '../ui/useLimba.ts';
 /** Mesajele modulului, ca date (ADR 0086): cine îl încarcă le așteaptă (`cuMesaje`). */
 export const mesaje = mesajeGata();
 mesaje.catch(() => undefined);
+
+/** Adresa unei imagini SVG. */
+const adresaSvg = (svg: string): string => `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
 
 /** Cel mult atâtea valori ale plăcuțelor pe rând; restul, numărate. */
 const VALORI = 3;
@@ -54,8 +61,38 @@ export function DialogRaportFoi({ doc, origine, z0, onInchide }: {
   // 0,1 mm (fișierul tăiat); în cele ~160 px ale previzualizării, cam un pixel: a 150-a parte din latura mare a foii.
   const imagini = useMemo(() => new Map(r.foi.map((f) => {
     const svg = scrieSvg(vectoriFoaie(doc, f.k, true), Math.max(f.latime, f.inaltime) / 150);
-    return [f.k, `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`];
+    return [f.k, adresaSvg(svg)];
   })), [doc, r]);
+  // Cotele: câte au foile raportului (fiecare foaie spusă, cu cotele ei); bifa, null până vin setările (implicitul ei).
+  const nCote = useMemo(() => r.foi.reduce((n, f) => n + (doc.foi[f.k]?.cote?.length ?? 0), 0), [doc, r]);
+  const [cuCote, setCuCote] = useState<boolean | null>(null);
+  const [imaginiCote, setImaginiCote] = useState<ReadonlyMap<number, string> | null>(null);
+  useEffect(() => {
+    if (nCote === 0) return;
+    let viu = true;
+    import('./setariCote.ts').then((m) => { if (viu) setCuCote((x) => x ?? m.setariCote().raport.cuCote); }, () => { /* Fără setări: bifa rămâne oprită. */ });
+    return () => { viu = false; };
+  }, [nCote]);
+  useEffect(() => {
+    setImaginiCote(null);
+    if (nCote === 0 || cuCote !== true) return;
+    let viu = true;
+    void (async () => {
+      const [sc, rc] = await Promise.all([import('./setariCote.ts'), import('../io/raportCote.ts')]);
+      const s = sc.setariCote();
+      // Cifrele ca în export: trăsăturile fontului cu o singură linie, sau text; fără font, ca text, ca să nu lipsească.
+      let cifre: CoteRaport['cifre'];
+      if (s.export.cifre === 'trasaturi') {
+        const tx = await import('../text/calcul.ts');
+        const f = await tx.incarcaFont(tx.FONT_COTE);
+        if (f.ok) cifre = tx.cifreDinFont(f.font);
+      }
+      const o = { stil: sc.stilCote(s), format: sc.formatCote(s, limba === 'ro'), ca: cifre ? 'trasaturi' as const : 'text' as const, culoare: s.export.culoare, ...(cifre ? { cifre } : {}) };
+      const m = new Map(r.foi.filter((f) => (doc.foi[f.k]?.cote?.length ?? 0) > 0).map((f) => [f.k, adresaSvg(rc.svgFoaieRaport(doc, f.k, o))] as const));
+      if (viu) setImaginiCote(m);
+    })().catch(() => { /* Fără desenul cotelor: desenele rămân cele de dinainte. */ });
+    return () => { viu = false; };
+  }, [nCote, cuCote, doc, r, limba]);
   const n = useMemo(() => new Intl.NumberFormat(limba === 'ro' ? 'ro-RO' : 'en-GB', { maximumFractionDigits: 2, useGrouping: false }), [limba]);
   const marime = (x: { readonly latime: number; readonly inaltime: number; readonly din: MarimeRaport }): string => {
     const m = `${n.format(x.latime)} × ${n.format(x.inaltime)}`;
@@ -98,14 +135,22 @@ export function DialogRaportFoi({ doc, origine, z0, onInchide }: {
           {comutator('data-raport-marime', [['taiata', numeMarime('taiata')], ['desen', numeMarime('desen')]], fel, (v) => { setFel(v === 'desen' ? 'desen' : 'taiata'); })}
           <span className="eticheta">{t('export.raport.separator')}</span>
           {comutator('data-raport-separator', [[';', ';'], [',', ',']], sep, (v) => { setSep(v === ',' ? ',' : ';'); })}
+          {nCote > 0 ? (
+            <label className="raport-bifa">
+              <input type="checkbox" data-raport="cote" checked={cuCote === true} onChange={(e) => { setCuCote(e.currentTarget.checked); }} />
+              {t('export.raport.cote', { n: nCote })}
+            </label>
+          ) : null}
           <button type="button" data-raport="csv" onClick={descarcaCsv} autoFocus>{t('export.raport.csv')}</button>
           <button type="button" data-raport="tipareste" onClick={() => { window.print(); }}>{t('export.raport.tipareste')}</button>
           <button type="button" data-raport="inchide" onClick={onInchide}>{t('export.inchide')}</button>
         </div>
         <p className="nota fara-tipar">{t('export.raport.marime.nota')}</p>
-        {r.foi.map((f) => (
-          <section key={f.id} className="raport-foaie" data-raport-foaie={f.id}>
-            <img src={imagini.get(f.k)} alt={t('export.raport.previzualizare', { foaie: f.nume })} />
+        {r.foi.map((f) => {
+          const cuCoteF = imaginiCote?.get(f.k);
+          return (
+          <section key={f.id} className="raport-foaie" data-raport-foaie={f.id} {...(cuCoteF ? { 'data-cu-cote': '' } : {})}>
+            <img src={cuCoteF ?? imagini.get(f.k)} alt={t('export.raport.previzualizare', { foaie: f.nume })} />
             <div>
               <h3>{f.identice.length > 0 ? t('export.foi.identice', { foaie: f.nume, n: f.identice.length + 1, alte: f.identice.map(numeFoii).join(', ') }) : f.nume}</h3>
               <p data-raport="foaie">{t('export.raport.foaie', {
@@ -132,7 +177,8 @@ export function DialogRaportFoi({ doc, origine, z0, onInchide }: {
               )}
             </div>
           </section>
-        ))}
+          );
+        })}
         <h3>{t('export.raport.totaluri')}</h3>
         <table data-raport="totaluri">
           <thead><tr><th>{t('export.raport.csv.piesa')}</th><th>{t('export.raport.csv.cate')}</th><th>{t('export.raport.col.marime')}</th><th>{t('export.raport.csv.material')}</th><th>{t('export.raport.csv.pe-foile')}</th></tr></thead>

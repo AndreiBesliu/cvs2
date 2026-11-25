@@ -91,8 +91,8 @@ o('S03', S, '  new RegExp(`^[A-Za-z0-9_-]{1,${STRAT_MAXIM}}$`).test(n) && !(STRA
   '„foaie” cu litere mici trece (DXF-ul nu deosebește literele)')
 o('S04', S, "      culoare: typeof ex['culoare'] === 'string' && CULOARE.test(ex['culoare']) ? ex['culoare'] : I.export.culoare,",
   "      culoare: typeof ex['culoare'] === 'string' ? ex['culoare'] : I.export.culoare,", 'setari', 'orice text e culoare')
-o('S05', S, "export const GRUPURI_COTE = ['cifre', 'linii', 'raza', 'comportament', 'lipire', 'masurare', 'export'] as const",
-  "export const GRUPURI_COTE = ['cifre', 'linii', 'raza', 'comportament', 'lipire', 'masurare'] as const", 'setari',
+o('S05', S, "'lipire', 'masurare', 'export', 'raport'] as const",
+  "'lipire', 'masurare', 'raport'] as const", 'setari',
   'grupul Exportul lipsă din fereastră și din „Înapoi la implicit”')
 # Panoul și fereastra Setări (e2e).
 o('E01', 'src/app/Editare.tsx', '      setCuCote((x) => x ?? s.cuCote);', '      setCuCote((x) => x ?? false);', 'e2e', 'bifa nu pornește după Setări')
