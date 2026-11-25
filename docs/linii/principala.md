@@ -155,13 +155,12 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
 
 ## Starea pe 25.11.2026, după-amiaza (după a treizeci și patra unire din cloud)
 
-- **Pe test:** `dad1a711` (lotul 32: relieful, cu modelul în vederea 3D; plafoanele 1 000 / 125 kB; auditurile;
-  publicat pe 25.11 la 12:31, cu serverul neschimbat; completul pe `main` 45583202976, verde; proba de fum, bună).
-  Înainte: `d1a96fc4` (lotul 31, cama și roata cu palete), pe 25.11 la 10:44; `f2678300` (lotul 30, punctele de
-  prindere), la 06:03. **În `main`, nepublicate încă:** cotele în exportul vectorilor (10.4↑c-1, `f2f6fc57`) și
-  lotul unit la 13:18 (frezele, 16.A↑b-5; atelierul, 3.Cj-3 și 3.Cj-4, Easy 3Draw 18.32.0; exportul, 28.8↑n).
-  În drum: lotul 33 (`2aaee0b4`), cu toate, într-o singură publicare. După el: 28.8↑o, centrul foii ca origine
-  (`3fd3bf49`), cu lotul 34.
+- **Pe test:** `2aaee0b4` (lotul 33: cotele în exportul vectorilor, 10.4↑c-1; frezele, 16.A↑b-5; atelierul, cadrul și
+  șurubul melc, Easy 3Draw 18.32.0; exportul, 28.8↑n, numele fișierului; publicat pe 25.11 la 14:24, cu serverul
+  neschimbat; completul pe `main` 45604669891, verde; proba de fum, bună). Înainte: `dad1a711` (lotul 32, relieful
+  în vederea 3D), pe 25.11 la 12:31; `d1a96fc4` (lotul 31), la 10:44. **În `main`, nepublicate încă:** 28.8↑o,
+  centrul foii ca origine XY0 (`3fd3bf49`). Pleacă împreună cu 16.A↑b-4 (pe `unire-2511t`, cu completul în lucru),
+  în lotul 34.
 - **`main`, din cloud:** pe 23.11: 3.Tq (`0ae9c6c1`); 11.3↑e și A.4 (`ddaa7ead`); 3.Tr, unită de linia elicelor
   (`d262e57a`); 25.8↑a și A.5 (`1b46c955`), cu reparația probei extensiilor (`8287d66e`); 11.3↑f, unită de linia
   planșelor (`f4601938`); A.6 (`4497d639`); 3.Xh (`2d1e482c`) și 12.1↑e-3 cu 12.1↑e-4 (`03460cab`); A.8a cu A.8b

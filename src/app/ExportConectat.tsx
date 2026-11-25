@@ -8,6 +8,7 @@ import { conturElement, esteContur } from '../model/forme.ts';
 import { DialogExport } from '../ui/DialogExport.tsx';
 import type { CerereExport, FrezaOferita, FrezaRestOperatie, OperatieExport, OrigineFreza, Rand, StareExport } from '../ui/exportRand.ts';
 import { frezePotrivite, pasLateralDin, sculaDinBiblioteca } from '../model/alegereFreza.ts';
+import { areCam, type FrezaSalvata } from '../model/freza.ts';
 import type { FrezaRest, Scula } from '../model/document.ts';
 import { useBibliotecaProiect } from './bibliotecaProiect.ts';
 import { cuprinse } from '../model/ordine.ts';
@@ -232,28 +233,32 @@ export function ExportConectat({
    * preferat (fereastra îl schimbă după celelalte freze), originea, pasul și pasul lateral.
    */
   const biblioteca = useBibliotecaProiect();
+  /** O freză din bibliotecă, cum o primește fereastra (ADR 0300 §4): copia ei, cu originea, pasul și pasul lateral. */
+  const oferita = (f: FrezaSalvata): FrezaOferita => {
+    const s = sculaDinBiblioteca(f, f.numar);
+    return {
+      id: f.id, nume: f.nume, pas: f.pas, pasLateral: pasLateralDin(f),
+      scula: {
+        numar: s.numar, diametru: s.diametru,
+        ...(s.forma ? { forma: { tip: 'v' as const, unghi: s.forma.unghi, ...(s.forma.varf !== undefined ? { varf: s.forma.varf } : {}) } } : {}),
+        origine: origineDin(s)!,
+      },
+    };
+  };
   const frezeOferite = useMemo(() => {
     const dupaFel = new Map<string, readonly FrezaOferita[]>();
     return (r: Pick<Rand, 'tip' | 'latura'>): readonly FrezaOferita[] => {
       const k = `${r.tip}/${r.latura}`;
       const gata = dupaFel.get(k);
       if (gata) return gata;
-      const lista = frezePotrivite(biblioteca.freze, [{ tip: r.tip, latura: r.latura }]).map((f): FrezaOferita => {
-        const s = sculaDinBiblioteca(f, f.numar);
-        const origine = origineDin(s)!;
-        return {
-          id: f.id, nume: f.nume, pas: f.pas, pasLateral: pasLateralDin(f),
-          scula: {
-            numar: s.numar, diametru: s.diametru,
-            ...(s.forma ? { forma: { tip: 'v' as const, unghi: s.forma.unghi, ...(s.forma.varf !== undefined ? { varf: s.forma.varf } : {}) } } : {}),
-            origine,
-          },
-        };
-      });
+      const lista = frezePotrivite(biblioteca.freze, [{ tip: r.tip, latura: r.latura }]).map(oferita);
       dupaFel.set(k, lista);
       return lista;
     };
   }, [biblioteca.freze]);
+  // Toată biblioteca cu CAM (ADR 0300 §5, felia 16.A↑b-4), pentru nota „s-a schimbat în bibliotecă” și recunoașterea; null cât
+  // nu e citită (fereastra nu spune „nu mai e în bibliotecă” înainte să știe).
+  const bibliotecaToata = useMemo(() => (biblioteca.incarcata ? biblioteca.freze.filter((f) => areCam(f.fel)).map(oferita) : null), [biblioteca]);
 
   const exporta = (c: CerereExport): void => {
     const loc = c.ordine ? new Map(c.ordine.map((k, i) => [k, i])) : null;
@@ -298,6 +303,7 @@ export function ExportConectat({
       {...(placuteToate ? { placuteToate } : {})}
       foi={toate.foi.length}
       {...(biblioteca.freze.length > 0 ? { frezeOferite } : {})}
+      bibliotecaToata={bibliotecaToata}
       {...(onRaport ? { onRaport } : {})}
       {...(onAlegeUrechi ? {
         onAlegeUrechi: (cheie: string, u: { readonly numar: number; readonly latime: number; readonly grosime: number }) => {

@@ -2,7 +2,7 @@ import { type ReactNode } from 'react';
 import '../i18n/export.ts';
 // Durata în cuvinte (`durata.*`) stă în dicționarul traseului, comun cu cipul timpului de lângă traseu (ADR 0046 §8).
 import '../i18n/traseu.ts';
-import { t } from '../i18n/t.ts';
+import { t, type CheieSimpla } from '../i18n/t.ts';
 import { laturiOferite, MARGINI_OPERATIE, susLaMicron } from './actiuniExportTipuri.ts';
 import { citesteNumar } from './numar.ts';
 import { grupuriOperatie, type GrupExport } from './exportGrupuri.ts';
@@ -14,8 +14,8 @@ import {
 import { Card, Cartonase, GrupCartonase, Poza } from './exportPoze.tsx';
 import {
   bandaBuna, bandaRand, CHEI_LATURA, CHEI_SENS, faraNumar, FELURI_COBORARE, inMargini, jocFolosit, margineBuna, SENSURI,
-  spatiuFolosit, URECHI_IMPLICITE, type BunRand, type FrezaOferita, type HartieRand, type Latura, type OperatieExport,
-  type OrigineFreza, type Rand, type UndeFreza,
+  locuriFreze, spatiuFolosit, stareOrigine, URECHI_IMPLICITE, type BunRand, type DiferentaFreza, type FrezaOferita, type HartieRand,
+  type Latura, type OperatieExport, type OrigineFreza, type Rand, type StareOrigine, type UndeFreza,
 } from './exportRand.ts';
 
 /** Pseudo-rândul cu care se cer frezele drepte (fundul plat, frezele de rest, dopul, decuparea benzii): doar frezele plate. */
@@ -29,8 +29,10 @@ export const RAND_DREPT: Pick<Rand, 'tip' | 'latura'> = { tip: 'buzunar', latura
 export function ListaBiblioteca(props: {
   readonly 'data-camp': string; readonly oferite: readonly FrezaOferita[]; readonly origine: OrigineFreza | null | undefined;
   readonly oprit: boolean; readonly eticheta?: boolean; readonly onAlege: (f: FrezaOferita) => void; readonly onMana: () => void;
+  /** Freza scrisă de mână e la fel cu una din bibliotecă (ADR 0300 §5, recunoașterea): numele ei, doar arătat. */
+  readonly recunoscuta?: string | undefined;
 }): ReactNode {
-  const { oferite, origine, oprit, eticheta = true, onAlege, onMana } = props;
+  const { oferite, origine, oprit, eticheta = true, onAlege, onMana, recunoscuta } = props;
   if (oferite.length === 0 && !origine) return null;
   const lista = (
     <select value={origine?.biblioteca.id ?? ''} data-camp={props['data-camp']} disabled={oprit} aria-label={t('export.freza.biblioteca')}
@@ -39,12 +41,60 @@ export function ListaBiblioteca(props: {
         if (f) onAlege(f);
         else onMana();
       }}>
-      <option value="">{t('export.freza.de-mana')}</option>
+      <option value="">{recunoscuta !== undefined && !origine ? t('export.freza.de-mana-ca', { nume: recunoscuta }) : t('export.freza.de-mana')}</option>
       {oferite.map((f) => <option key={f.id} value={f.id}>{f.nume}</option>)}
       {origine && !oferite.some((f) => f.id === origine.biblioteca.id) ? <option value={origine.biblioteca.id}>{origine.nume}</option> : null}
     </select>
   );
   return eticheta ? <label className="freza-biblioteca" title={t('export.freza.biblioteca.titlu')}>{t('export.freza.biblioteca')}{lista}</label> : lista;
+}
+
+/** Numele câmpului unei diferențe, în propoziția notei (ADR 0300 §5). */
+const CAMP_DIFERENTA: Readonly<Record<DiferentaFreza['camp'], CheieSimpla>> = {
+  nume: 'export.biblioteca.camp.nume', diametru: 'export.biblioteca.camp.diametru', unghi: 'export.biblioteca.camp.unghi',
+  varf: 'export.biblioteca.camp.varf', turatie: 'export.biblioteca.camp.turatie', avans: 'export.biblioteca.camp.avans',
+  plonjare: 'export.biblioteca.camp.plonjare', tais: 'export.biblioteca.camp.tais',
+};
+
+/**
+ * Nota unei freze față de bibliotecă (ADR 0300 §5, felia 16.A↑b-4): ce s-a schimbat acolo („În bibliotecă, «Plată Ø6» are acum
+ * avansul 1 400 (aici 1 000)”), cu „Ia valorile noi” și, dacă și alte freze ale ferestrei o au, „Pe toate (N)”; ștearsă, „nu mai e
+ * în bibliotecă”. Niciodată singură: proiectul se schimbă doar la clic.
+ */
+export function NotaBiblioteca(props: {
+  readonly stare: StareOrigine | null; readonly origine: OrigineFreza | null; readonly peToate: number; readonly oprit: boolean;
+  readonly fmt: Intl.NumberFormat; readonly onIa: (f: FrezaOferita) => void; readonly onIaToate: (f: FrezaOferita) => void;
+}): ReactNode {
+  const { stare, origine, peToate, oprit, fmt, onIa, onIaToate } = props;
+  if (stare?.fel === 'stearsa' && origine) {
+    return <p className="nota-biblioteca" data-nota="biblioteca-stearsa">{t('export.biblioteca.stearsa', { nume: origine.nume })}</p>;
+  }
+  if (stare?.fel !== 'schimbata') return null;
+  const val = (x: number | string | null): string => (x === null ? '—' : typeof x === 'number' ? fmt.format(x) : `«${x}»`);
+  const ce = stare.diferente.map((d) => t('export.biblioteca.diferenta', { camp: t(CAMP_DIFERENTA[d.camp]), acolo: val(d.acolo), aici: val(d.aici) })).join(', ');
+  return (
+    <p className="nota-biblioteca" data-nota="biblioteca-schimbata">
+      {t('export.biblioteca.schimbata', { nume: stare.freza.nume, ce })}
+      <button type="button" data-buton="ia-valorile-noi" disabled={oprit} onClick={() => { onIa(stare.freza); }}>{t('export.biblioteca.ia')}</button>
+      {peToate > 1 && (
+        <button type="button" data-buton="ia-valorile-noi-toate" disabled={oprit} onClick={() => { onIaToate(stare.freza); }}>
+          {t('export.biblioteca.ia-toate', { n: peToate })}
+        </button>
+      )}
+    </p>
+  );
+}
+
+/**
+ * Câte freze ale ferestrei (pe toate rândurile) vin din freza `id` a bibliotecii și diferă de ea: „Pe toate (N)” le schimbă
+ * deodată.
+ */
+export function cuAceeasiFreza(param: Readonly<Record<string, Rand>>, biblioteca: readonly FrezaOferita[] | null, id: string): number {
+  let n = 0;
+  for (const p of Object.values(param)) {
+    for (const l of locuriFreze(p)) if (l.origine?.biblioteca.id === id && stareOrigine(l, biblioteca)?.fel === 'schimbata') n++;
+  }
+  return n;
 }
 
 /**
@@ -91,12 +141,19 @@ export interface ContextFisa {
    * forma (ADR 0300 §4, felia 16.A↑b-5).
    */
   readonly alegeFreza: (cheie: string, f: FrezaOferita, unde?: UndeFreza) => void;
+  /** Toată biblioteca cu CAM, pentru nota „s-a schimbat în bibliotecă” (ADR 0300 §5, felia 16.A↑b-4); null cât nu e citită. */
+  readonly bibliotecaToata: readonly FrezaOferita[] | null;
+  /** „Ia valorile noi” pe un loc al rândului. */
+  readonly iaValorileNoi: (cheie: string, unde: UndeFreza, f: FrezaOferita) => void;
+  /** „Ia valorile noi” pe toate locurile ferestrei cu freza aceea din bibliotecă. */
+  readonly iaValorileNoiPeToate: (f: FrezaOferita) => void;
 }
 
 export function FisaOperatie({ cheie, loc, c: ctx }: { readonly cheie: string; readonly loc: number; readonly c: ContextFisa }): ReactNode {
   const {
     dupaCheie, param, total, doarCitire, schimba, randBun, greseliRand, conflict, hartie, taieturaRand, text, fmtFreza, fmtTrecere,
-    grosimeFoaie, supracursaCitita, cuSupracursa, onAlegeUrechi, frezeRest, grup, frezeOferite, alegeFreza,
+    grosimeFoaie, supracursaCitita, cuSupracursa, onAlegeUrechi, frezeRest, grup, frezeOferite, alegeFreza, bibliotecaToata,
+    iaValorileNoi, iaValorileNoiPeToate,
   } = ctx;
   const o = dupaCheie.get(cheie);
   const p = o ? param[o.cheie] : undefined;
@@ -114,6 +171,23 @@ export function FisaOperatie({ cheie, loc, c: ctx }: { readonly cheie: string; r
   const oferite = frezeOferite ? frezeOferite(p) : [];
   // Frezele drepte, pentru frezele în plus ale rândului (ADR 0300 §4, felia 16.A↑b-5).
   const drepte = frezeOferite ? frezeOferite(RAND_DREPT) : [];
+  // Fiecare freză a rândului față de bibliotecă (ADR 0300 §5, felia 16.A↑b-4): nota ei și recunoașterea celei scrise de mână.
+  const locuri = locuriFreze(p);
+  const stareLa = (unde: UndeFreza): StareOrigine | null => {
+    const l = locuri.find((x) => x.unde === unde);
+    return l ? stareOrigine(l, bibliotecaToata) : null;
+  };
+  const recunoscuta = (unde: UndeFreza): string | undefined => {
+    const st = stareLa(unde);
+    return st?.fel === 'recunoscuta' ? st.freza.nume : undefined;
+  };
+  const nota = (unde: UndeFreza, origine: OrigineFreza | null): ReactNode => {
+    const st = stareLa(unde);
+    return (
+      <NotaBiblioteca stare={st} origine={origine} peToate={st?.fel === 'schimbata' ? cuAceeasiFreza(param, bibliotecaToata, st.freza.id) : 0}
+        oprit={doarCitire} fmt={fmtFreza} onIa={(f) => { iaValorileNoi(o.cheie, unde, f); }} onIaToate={iaValorileNoiPeToate} />
+    );
+  };
   const aici = (g: GrupExport): string[] => greseli.filter(([, x]) => x === g).map(([m]) => m);
   const grupuri = grupuriOperatie({
     tip: p.tip, deschis, inele: p.strategie === 'inele', incrustatie: vc && p.incrustatie, banda: vc && p.incrustatie && p.jurDop === 'banda',
@@ -206,8 +280,9 @@ export function FisaOperatie({ cheie, loc, c: ctx }: { readonly cheie: string; r
       </div>);
       case 'freza': return (<div className="dx-rand">
         {/* Freza din „Frezele mele” (ADR 0300 §4, felia 16.A↑b-3): doar cele care merg pe tăietura rândului. */}
-        <ListaBiblioteca data-camp="freza-biblioteca" oferite={oferite} origine={p.origineScula} oprit={doarCitire}
+        <ListaBiblioteca data-camp="freza-biblioteca" oferite={oferite} origine={p.origineScula} oprit={doarCitire} recunoscuta={recunoscuta('scula')}
           onAlege={(f) => { alegeFreza(o.cheie, f); }} onMana={() => { schimba(o.cheie, { origineScula: null }); }} />
+        {nota('scula', p.origineScula)}
         <label title={t('export.freza.titlu')}>
           {t('export.freza.numar')}
           <input type="text" inputMode="numeric" value={p.numarScula} data-camp="scula" disabled={doarCitire} aria-label={t('export.freza.numar')}
@@ -479,7 +554,9 @@ export function FisaOperatie({ cheie, loc, c: ctx }: { readonly cheie: string; r
           </label>
           {/* Freza dreaptă din „Frezele mele” (ADR 0300 §4, felia 16.A↑b-5): doar frezele plate. */}
           <ListaBiblioteca data-camp="fund-biblioteca" oferite={drepte} origine={p.origineFund} oprit={doarCitire || !p.fundPlat}
+            recunoscuta={recunoscuta('fund')}
             onAlege={(f) => { alegeFreza(o.cheie, f, 'fund'); }} onMana={() => { schimba(o.cheie, { origineFund: null }); }} />
+          {nota('fund', p.origineFund)}
           <label>
             {t('export.freza.numar')}
             <input type="text" inputMode="numeric" value={p.numarSculaFund} data-camp="fund-scula" disabled={doarCitire || !p.fundPlat}
@@ -582,7 +659,9 @@ export function FisaOperatie({ cheie, loc, c: ctx }: { readonly cheie: string; r
           </label>
           {p.frezaBanda && (<>
           <ListaBiblioteca data-camp="banda-biblioteca" oferite={drepte} origine={p.origineBanda} oprit={doarCitire || !p.decupareBanda}
+            recunoscuta={recunoscuta('banda')}
             onAlege={(f) => { alegeFreza(o.cheie, f, 'banda'); }} onMana={() => { schimba(o.cheie, { origineBanda: null }); }} />
+          {nota('banda', p.origineBanda)}
           <label>
             {t('export.freza.numar')}
             <input type="text" inputMode="numeric" value={p.numarSculaBanda} data-camp="banda-scula" className="numar-scula" disabled={doarCitire || !p.decupareBanda}
@@ -709,8 +788,9 @@ export function FisaOperatie({ cheie, loc, c: ctx }: { readonly cheie: string; r
             {t('export.incrustatie-drept.freza-dop')}
           </label>
           {p.frezaDop && (<>
-          <ListaBiblioteca data-camp="dop-biblioteca" oferite={drepte} origine={p.origineDop} oprit={doarCitire}
+          <ListaBiblioteca data-camp="dop-biblioteca" oferite={drepte} origine={p.origineDop} oprit={doarCitire} recunoscuta={recunoscuta('dop')}
             onAlege={(f) => { alegeFreza(o.cheie, f, 'dop'); }} onMana={() => { schimba(o.cheie, { origineDop: null }); }} />
+          {nota('dop', p.origineDop)}
           <label>
             {t('export.freza.numar')}
             <input type="text" inputMode="numeric" value={p.numarSculaDop} data-camp="dop-scula" disabled={doarCitire}
