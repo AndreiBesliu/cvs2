@@ -108,10 +108,10 @@ TG = 'grila: Lego.transfGrila(c, m.x, m.y, m.z, m.rot),'
 o('A06', AT, TG, TG.replace('transfGrila(c,', 'transfGrila({ ...c, pivot: [c.dim[0]! / 2, c.dim[1]! / 2] },'), 'e2e', 'plasa e pusă cu mijlocul cutiei în pivot (ca până acum), nu cu axul')
 o('A07', AT, TG, TG.replace('transfGrila(c,', 'transfGrila({ ...c, pivot: [c.pivot[0], c.pivot[0]] },'), 'e2e', 'plasa e mutată pe y cu x-ul pivotului')
 o('A08', AT, TG, TG.replace('transfGrila(c,', 'transfGrila({ ...c, pivot: [0, 0] },'), 'e2e', 'plasa nu e mutată în pivot')
-o('A09', AT, TG, TG.replace('m.z, m.rot)', 'm.z, m.rot + 2)'), 'e2e', 'piesa stă în scenă întoarsă cu o jumătate de tură')
+o('A09', AT, TG, TG.replace('m.z, m.rot)', 'm.z, m.rot + 1)'), 'e2e', 'piesa stă în scenă cu un sfert de tură în plus')
 o('A10', AT, TG, TG.replace('m.z, m.rot)', 'm.z, 0)'), 'e2e', 'piesa rotită nu se rotește în scenă')
 o('A11', AT, TG, TG.replace('m.x, m.y, m.z', 'm.y, m.x, m.z'), 'e2e', 'piesa e pusă în scenă cu x și y schimbate')
-o('A12', AT, TG, TG.replace('m.x, m.y, m.z', 'm.x + 1, m.y, m.z'), 'e2e', 'piesele stau în scenă cu un știft mai la dreapta decât spune rândul lor')
+o('A12', AT, TG, TG.replace('m.x, m.y, m.z', 'm.x * 2, m.y, m.z'), 'e2e', 'locul pe x din scenă e dublu')
 o('A13', AT, TG, TG.replace('m.x, m.y, m.z', 'm.x, m.y, m.z * 2'), 'e2e', 'înălțimea din scenă e dublă')
 
 # --- atelierul: știftul axului și rândul piesei
