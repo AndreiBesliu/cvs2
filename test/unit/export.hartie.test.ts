@@ -106,6 +106,9 @@ test('constatarea 1: 18 mm cu pasul 6, supracursa 0,3 și bifa: 4 treceri de 4,5
   assert.equal(hartieRand(intrare({ tip: 'vcarve', supracursa: 0.3, prinFoaie: true })).adancime, 18);
   assert.equal(hartieRand(intrare({ incrustatie: 'alta', supracursa: 0.3, prinFoaie: true })).adancime, 18);
   assert.equal(hartieRand(intrare({ pas: 0 })).treceri, null);
+  // Pe hârtie: 19,05 cu pasul 1,5875 (¾ țol în pași de 1/16) = 12 treceri: împărțirea iese 12,000000000000002, iar rotunjirea
+  // ei nu adaugă a treisprezecea.
+  assert.equal(hartieRand(intrare({ adancime: 19.05, pas: 1.5875, grosime: 19.05 })).treceri?.length, 12);
   assert.equal(hartieRand(intrare({ adancime: null })).adancime, null);
 });
 
