@@ -672,7 +672,9 @@ Documentul rămâne v29: cotele stau tot pe foaie, iar fiecare cotă nouă e o o
   nici el (aceiași octeți); cu o operație pe linie pe toate formele desenului, programul se schimbă și taie linia cotei (Y = 10,
   de la X = 20 la X = 120).
 - **Cifrele:** unitare noi 4 (desenul pe hârtie, punctul și bara, comanda cu anularea, programul), e2e noi 2
-  (`cote.fadesen.spec.ts`); acțiunea nouă e o ușă a manualului (120).
+  (`cote.fadesen.spec.ts`); acțiunea nouă e o ușă a manualului (120) și intră în cele două liste ale registrului
+  (`actiuni.calcul.test.ts`, `actiuni.calcul.paritate.test.ts`); otrăvurile 16 / 16. Pornirea 111,4 → 111,5 kB, totalul
+  910,4 → 912,5 / 1 000 kB (+2,1).
 
 ## Implementarea (10.4↑d-3)
 
