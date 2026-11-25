@@ -14156,6 +14156,36 @@ transmis „vreau sa pornesti si celelalte sub-sesiuni” al owner-ului)
 - **Probele pluginului:** unitare 252 / 252 (cu biblioteca), în browser 178 / 178 (cu extensiile). Easy 3Draw 18.31.0
   (510,8 kB), cu rândul de „ce e nou”; doar pachetul se schimbă.
 
+## 2026-11-25 — Felia 3.Cj-4: șurubul melc în atelierul Easy 3Draw (ADR 0284) (sesiune cloud)
+
+**Prompt:** (aceeași cerere a owner-ului și aceleași răspunsuri la ADR 0284 ca la 3.Ca; răspunsul lui „Mecanisme”, la
+lista pieselor noi; sesiunea principală a cerut „restul lui 3.Cj (cadrul, melcul)”, după „vreau sa pornesti si
+celelalte sub-sesiuni” al owner-ului)
+**Started:** 25.11, 08:21. **Completed:** 25.11, 09:31 (felia, cu otrăvurile; orele, după ceasul containerului).
+
+- **Șurubul melc** (tipul `melc`, fila Roți): un șurub pe ax, cu o spiră cu profilul cremalierei de referință a roților
+  de aici (20°, modulul 1, pasul π). Se prinde cu orice roată dreaptă din atelier, cu axele în cruce.
+- **Întâi măsurat, apoi scris:** LEGO 4716 din LDraw (Ø10,16 la vârf, Ø5,6 la fund, pasul 3,2 mm, spira pe dreapta) și
+  un studiu al angrenării (melcul pe hârtie, roata motorului pe plasă): fără nimic în plus, înclinarea spirei mănâncă
+  din joc (0,21 mm pe o parte la Ø8, 0,26 la Ø16, față de 0,30 între două roți).
+- **Două diametre de divizare:** 8 mm (ca LEGO: roțile de 8, 24 și 40 de dinți la 1, 2 și 3 știfturi) și 16 mm (gros).
+  Spira e subțiată pe fiecare flanc cu 0,1 și 0,05 mm; măsurat pe plasele motorului, jocul e 0,30–0,32 mm pe o parte,
+  fără nicio pătrundere, și urmează calibrarea.
+- **Proba, scrisă întâi** (a căzut cu „tip necunoscut”), a prins un defect al plasei: fețele dintre straturile rotite
+  erau tăiate pe diagonala lungă, iar miezul ieșea mâncat cu 0,06 mm la Ø16. `prismaStraturi` are acum opțiunea
+  `elice` (diagonala scurtă); roata conică și conica dublă, neschimbate.
+- **Miezul subțire la Ø8** (0,06 mm între colțul crucii și fundul spirei, ca la piesa LEGO): editorul o spune și trimite
+  la Ø16 pentru sarcină. Tipărirea în picioare, cu flancul de jos în consolă la 70°, e nedovedită: rând în coada
+  owner-ului.
+- **Editorul:** diametrul, lungimea, roata pereche (a editorului, nu a piesei), cotele și montajul în cuvinte (pe
+  grila de știfturi, la jumătatea ei sau în afara ei), „Fă perechea” (melcul și roata lui în listă).
+- **Probele vechi, la zi:** „Roți 10” / „Wheels 10”, galeriile și desenele, starea unei liste vechi, rândul „Pe ax”
+  din „Se prinde cu”, versiunea 18.32.0.
+- **Otrăvurile:** 102 / 102: 101 la prima rulare (62 din 62 unitare, 39 din 40 prin browser). Scăpase „roata pereche
+  rămâne în piesă”: proba cere acum ca același melc, cu altă roată aleasă în editor, să se adune pe rândul lui.
+- **Probele pluginului:** unitare 358 / 358 (cu biblioteca și extensiile), în browser 181 / 181 (cu extensiile). Easy 3Draw
+  18.32.0 (514,4 kB), cu rândul de „ce e nou”; doar pachetul se schimbă. Cu melcul, 3.Cj e încheiată.
+
 ## 2026-11-24 — Sesiunea principală în cloud: clicul pe „Închide” din cadrul unei extensii, pierdut (probă instabilă, reparată) (Model: Claude Fable 5.2)
 
 **Prompt:** completul de pe `main` pentru loturile 19–21 (`7312d685`, rularea 45436221341), roșu la o singură probă;

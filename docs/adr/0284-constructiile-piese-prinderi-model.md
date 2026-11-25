@@ -111,7 +111,7 @@ elice. Fiecare e un șablon din parametri, nu un desen fix.
 | 3.Cg | Modelul: verificarea (prins, plutește, se ciocnește) | avertismente pe piese și în listă |
 | 3.Ch | Construcțiile cu nume și lista lor de piese | mai multe construcții în atelier |
 | 3.Ci | Construcțiile gata | patru șabloane |
-| 3.Cj | Melcul, cama și manivela, cadrul, roata cu palete | restul pieselor din B, pe bucăți: 3.Cj-1, cama, 3.Cj-2, roata cu palete, și 3.Cj-3, cadrul (gata pe 25.11); apoi melcul |
+| 3.Cj | Melcul, cama și manivela, cadrul, roata cu palete | restul pieselor din B, pe bucăți: 3.Cj-1, cama, 3.Cj-2, roata cu palete, 3.Cj-3, cadrul, și 3.Cj-4, șurubul melc (toate gata pe 25.11) |
 | 3.Ck | Balamaua și placa turnantă | despărțite de 3.Cd: au jocuri de mișcare care se potrivesc pe piese tipărite |
 
 ## Marginile
@@ -405,3 +405,52 @@ roata cu palete, cadrul și melcul.
   (`test/e2e/trenulet.cadru.spec.ts`). Probele filelor („Cărămizi 12”), galeriilor, pictogramelor, căutării și ale
   panoului „Se prinde cu”, la zi.
 - **Mărimea:** doar pachetul extensiei (508,4 → 510,8 kB); aplicația, neschimbată.
+
+## Implementat (3.Cj-4, 25.11.2026)
+
+**Șurubul melc** (tipul `melc`, fila Roți; Easy 3Draw 18.32.0). Ultima piesă din 3.Cj.
+
+- **Piesa:** un șurub pe ax, cu o spiră (un singur început, pe dreapta, ca la LEGO 4716). Într-un plan care trece prin
+  ax, spira are profilul cremalierei de referință a roților de aici (20°, capul 1, piciorul 1,25, pasul π: modulul 1).
+  În planul de mijloc al roții pereche, melcul e deci chiar cremaliera cu care motorul taie roțile: se prinde cu orice
+  roată dreaptă de aici, cu axele în cruce, la `diam / 2 + z / 2`. La o tură a melcului, roata înaintează cu un dinte;
+  roata nu poate întoarce melcul.
+- **Parametrii:** diametrul de divizare, 8 mm („ca LEGO”) sau 16 mm („gros”); lungimea, 1–4 știfturi (8 · n − 0,2 mm);
+  gaura de ax, în cruce, prin toată lungimea. Roata pereche (8–80 de dinți) e a editorului, nu a piesei: din ea se
+  scrie montajul și pe ea o pune „Fă perechea” în listă (dreaptă, de 3,8 mm, cu gaură de ax: aceeași piesă cu cea din
+  editorul roților).
+- **Măsurat în LDraw, înaintea codului (4716):** Ø10,16 la vârf, Ø5,6 la fund, pasul 3,2 mm (8 LDU), 16 mm lungime,
+  flancuri de aproape 20°, spira pe dreapta. Al nostru are Ø10 la vârf, Ø5,5 la fund și pasul π, al roților de aici
+  (modelul LDraw rotunjește pasul la grilă).
+- **Montajul:** cu melcul Ø8, roțile de 8, 24 și 40 de dinți cad la 1, 2 și 3 știfturi (ca la LEGO), iar cea de 16, la
+  un știft și jumătate; cu melcul Ø16, roțile de 16 și 32 cad la 2 și 3 știfturi. Editorul spune unde cade axul roții:
+  pe grila de știfturi, la jumătatea ei sau în afara ei (pe grilă cad roțile cu dinții din 8 în 8).
+- **Subțierea spirei:** spira e înclinată (7,1° la Ø8, 3,6° la Ø16), iar dinții roții sunt drepți: spre marginile
+  roții, spira mănâncă din joc. În studiul dinaintea codului (melcul pe hârtie, roata motorului pe plasă), fără
+  subțiere, jocul pe o parte era 0,21 mm la Ø8 și 0,26 mm la Ø16, față de 2 · jocul dinților = 0,30 mm, cât e între
+  două roți. Spira e deci subțiată pe fiecare flanc cu 0,1 mm la Ø8 și cu 0,05 mm la Ø16. Măsurat apoi pe plasele
+  motorului: 0,30–0,32 mm pe o parte, cu roțile de 8, 16, 24, 40 și 80 de dinți, late de 3,8 și de 7,8 mm, fără nicio
+  pătrundere la nicio fază; jocul urmează calibrarea (0,10–0,12 mm la jocul de 0,05; 0,47–0,52 mm la 0,25).
+- **Miezul subțire la Ø8:** între colțul crucii (√(2,5² + 1²) = 2,69 mm de ax) și fundul spirei (2,75 mm) rămân
+  0,06 mm; la vârful brațului, 0,25 mm (cifra din secțiunea 3.Cc). Un program de feliere nu tipărește asemenea pereți:
+  miezul e, de fapt, patru coloane între brațele crucii, legate între ele de spiră. Editorul o spune și trimite la Ø16
+  pentru sarcină (acolo rămân 4,06 mm). Nu e un avertisment al piesei: tot așa e făcută și piesa LEGO.
+- **Tipărirea:** în picioare. Flancul de jos al spirei stă în consolă, la 70° de verticală; editorul recomandă straturi
+  subțiri sau suport. **Nedovedit pe imprimantă:** rândul din coada owner-ului (fișa etapei 3).
+- **Plasa:** secțiunea de-a latul axului (vârful, flancurile, care în secțiune sunt spirale ale lui Arhimede, fundul),
+  repetată pe straturi rotite, 48 pe tură (săgeata sub 0,02 mm), cu punctele urcând pe elice. Mijlocul vârfului e un
+  punct al secțiunii, deci din sfert în sfert de tură cade pe o axă, iar cutia piesei iese exactă.
+- **Găsit de proba scrisă întâi:** `prismaStraturi` tăia fețele dintre straturi pe diagonala care, la straturi rotite,
+  se întinde pe două laturi; triunghiurile mâncau din miez 0,06 mm la Ø16 („miezul e plin sub fundul spirei” cădea).
+  Funcția a primit opțiunea `elice`: fețele se taie pe diagonala aproape verticală. Roata conică și conica dublă, care
+  mai folosesc funcția, sunt neschimbate.
+- **Prinderile:** gaura de ax, la amândouă capetele; „Se prinde cu” îl leagă de ax (axul de 3 pentru melcul de 2).
+- **Probele:** unitare 8 (`test/unit/trenulet.melc.test.ts`): profilul spirei, judecat pe plasă la 0,07 mm de flancuri
+  (trei raze, opt unghiuri, trei înălțimi: deci și pasul, și sensul); **angrenarea, pe plase:** roata motorului, cu
+  axul unde spune montajul, nu intră în melc la nicio fază (opt faze, patru perechi), are jocul între 0,23 și 0,43 mm
+  și intră cu o jumătate de pas alături sau cu axele apropiate cu 0,45 mm (martorii); la fel la marginile calibrării.
+  În browser 3 (`test/e2e/trenulet.melc.spec.ts`). Probele filelor („Roți 10”), galeriilor, pictogramelor, ale stării
+  unei liste vechi și ale panoului „Se prinde cu”, la zi.
+- **Mărimea:** doar pachetul extensiei (510,8 → 514,4 kB); aplicația, neschimbată.
+- **Cu melcul, 3.Cj e încheiată:** cama, roata cu palete, cadrul și melcul; manivela nu e o piesă nouă (secțiunea
+  3.Cj-1).

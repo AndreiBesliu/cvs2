@@ -1096,7 +1096,11 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   o spune, editorul le ține în margine); Easy 3Draw 18.30.0. **3.Cj-3 (cadrul)** gata pe 25.11, neunită: tipul `cadru`,
   în fila Cărămizi, o cărămidă 1 × n cu un gol prin ea (fereastră, ușă, portal), cu prag, stâlpi groși cât rama și
   știfturi sus; lungimea, înălțimea, rama și colțurile de sus ale golului (drepte sau teșite, care scurtează puntea
-  tipărită în aer); Easy 3Draw 18.31.0 (următoarea, 18.32.0); din 3.Cj mai rămâne melcul. **O piesă nouă a motorului
+  tipărită în aer); Easy 3Draw 18.31.0. **3.Cj-4 (șurubul melc)** gata pe 25.11, neunită: tipul `melc`, în fila Roți,
+  un șurub pe ax care întoarce orice roată dreaptă de aici cu un dinte la fiecare tură, cu axele în cruce; diametrul de
+  divizare 8 mm (ca LEGO) sau 16 mm (gros), lungimea 1–4 știfturi; spira, subțiată cât îi mănâncă înclinarea din joc
+  (măsurat pe plase: jocul rămâne cel dintre două roți); „Fă perechea” pune și roata lui; Easy 3Draw 18.32.0
+  (următoarea, 18.33.0). Cu ea, 3.Cj e încheiată. **O piesă nouă a motorului
   își spune prinderile
   (compilatorul o cere: `prinderi` e câmp obligatoriu al tipului `Corp`) și își pune mostra, cu numerele de pe hârtie, în
   `test/unit/trenulet.prinderi.test.ts`, unde fiecare prindere declarată e întrebată pe plasă.** **O piesă care se prinde cu alta își probează prinderea pe plasele amândurora, cu martori**

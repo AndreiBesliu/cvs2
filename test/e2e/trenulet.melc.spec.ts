@@ -125,13 +125,18 @@ test('STL-ul melcului e închis și are cotele de pe hârtie; „Fă perechea”
   await page.locator('#at-mlc-fa-pereche').click();
   await expect(page.locator('#at-lista tr td:first-child')).toHaveText(['Șurub melc Ø8, lung 2', 'Roată dințată 40']);
   await expect(page.locator('#at-toast')).toHaveText('1 × melcul Ø8 și roata de 40 în listă (axele la 24 mm, în cruce).');
+  // roata pereche nu ține de piesă: același melc, cu altă roată aleasă în editor, se adună pe rândul lui
+  await scrie(page, '#at-mlc-pereche', '16');
+  await page.locator('#at-adauga').click();
+  await expect(page.locator('#at-lista tr[data-id]')).toHaveCount(2);
+  await expect(page.locator('#at-lista tr[data-id] .pas-n')).toHaveText(['2', '1']);
   // roata din listă e aceeași piesă cu cea din editorul roților: adăugată de acolo, se adună pe același rând
   await page.locator('#at-galerie [data-piesa="rotita"]').click();
   await scrie(page, '#at-r-dinti', '40');
   await expect(nume(page)).toHaveText('Roată dințată 40');
   await page.locator('#at-adauga').click();
   await expect(page.locator('#at-lista tr[data-id]')).toHaveCount(2);
-  await expect(page.locator('#at-lista tr[data-id] .pas-n')).toHaveText(['1', '2']);
+  await expect(page.locator('#at-lista tr[data-id] .pas-n')).toHaveText(['2', '2']);
   // prinderile: gaura de ax, prin toată lungimea; axul potrivit e cel de 3 (trece prin 15,8 mm și mai iese un pas)
   await page.locator('#at-galerie [data-piesa="melc"]').click();
   await expect(page.locator('#at-prinde-are')).toHaveText('1 gaură de ax');
