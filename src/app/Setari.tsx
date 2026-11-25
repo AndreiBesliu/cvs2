@@ -357,6 +357,10 @@ function SectiuneCote({ s, virgula }: { readonly s: SetariCote; readonly virgula
             onChange={(e) => { exp({ culoare: e.currentTarget.value.toLowerCase() }); }} />
         </Rand>
         {nr('grosime', 'export.grosime', 'setari.cote.export.grosime', s.export.grosime, MARGINI.grosime, (x) => { exp({ grosime: x }); }, 'setari.cote.export.grosime.nota')}
+        <Alegere id={`${id}-dxf`} setare="export.dxf" eticheta={t('setari.cote.export.dxf')} nota={t('setari.cote.export.dxf.nota')} valoare={s.export.dxf}
+          valori={v('setari.cote.export.dxf', ['dimension', 'linii'] as const)} la={(x) => { exp({ dxf: x }); }} />
+        <Alegere id={`${id}-cifre-export`} setare="export.cifre" eticheta={t('setari.cote.export.cifre')} nota={t('setari.cote.export.cifre.nota')} valoare={s.export.cifre}
+          valori={v('setari.cote.export.cifre', ['trasaturi', 'text'] as const)} la={(x) => { exp({ cifre: x }); }} />
       </Grup>
     </div>
   );

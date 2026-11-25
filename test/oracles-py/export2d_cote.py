@@ -88,36 +88,99 @@ def cifre(text, p, unghi):
     return [x for x in seg if not (x[0] == 'L' and math.hypot(x[2][0] - x[1][0], x[2][1] - x[1][1]) <= 1e-12)]
 
 
-def pe_hartie():
-    """Segmentele cotelor corpusului, pe hârtie (mm ai foii, Y în sus)."""
-    s = []
+def hartie_cote():
+    """Fiecare cotă a corpusurilor, pe hârtie (mm ai foii, Y în sus): segmentele fără cifră, cifra (textul, mijlocul bazei,
+    unghiul) și definiția ei ca DIMENSION (felul, steagurile, punctele de definiție după codul DXF, măsura, 50 și 40)."""
+    c = {}
+    s2 = math.sqrt(0.5)
     # h: orizontala (20, 20)–(120, 40), d = 15: linia la y = 30 + 15 = 45; extensiile de la golul de 1 mm până la 2 mm peste
-    # linie; săgețile spre înăuntru; „100” centrat pe x = 70, cu baza la 45 + 0,3 · 3,5.
-    s += [('L', (20, 21), (20, 47)), ('L', (120, 41), (120, 47)), ('L', (20, 45), (120, 45))]
-    s += [sageata((20, 45), (1, 0)), sageata((120, 45), (-1, 0))]
-    s += cifre('100', (70, 45 + G), 0)
+    # linie; săgețile spre înăuntru; „100” centrat pe x = 70, cu baza la 45 + 0,3 · 3,5. Ca DIMENSION, rotită la 0°: punctele
+    # măsurate (13, 14) și piciorul celui de-al doilea pe linia de cotă (10).
+    c['h'] = {
+        'seg': [('L', (20, 21), (20, 47)), ('L', (120, 41), (120, 47)), ('L', (20, 45), (120, 45)), sageata((20, 45), (1, 0)), sageata((120, 45), (-1, 0))],
+        'text': ('100', (70, 45 + G), 0),
+        'dim': {'tip': 0, 'steaguri': 32, 'p': {13: (20, 20), 14: (120, 40), 10: (120, 45)}, 50: 0, 'masura': 100},
+    }
     # v: verticala (200, 20)–(210, 80), d = 20: linia la x = 205 − 20 = 185 (spre stânga); „60” citit de jos în sus (90°),
-    # cu baza la 185 − 0,3 · 3,5, centrat pe y = 50.
-    s += [('L', (199, 20), (183, 20)), ('L', (209, 80), (183, 80)), ('L', (185, 20), (185, 80))]
-    s += [sageata((185, 20), (0, 1)), sageata((185, 80), (0, -1))]
-    s += cifre('60', (185 - G, 50), 90)
+    # cu baza la 185 − 0,3 · 3,5, centrat pe y = 50. Ca DIMENSION, rotită la 90°.
+    c['v'] = {
+        'seg': [('L', (199, 20), (183, 20)), ('L', (209, 80), (183, 80)), ('L', (185, 20), (185, 80)), sageata((185, 20), (0, 1)), sageata((185, 80), (0, -1))],
+        'text': ('60', (185 - G, 50), 90),
+        'dim': {'tip': 0, 'steaguri': 32, 'p': {13: (200, 20), 14: (210, 80), 10: (185, 80)}, 50: 90, 'masura': 60},
+    }
     # u: unghiul din (40, 120), laturile spre (60, 120) și (40, 140), arcul de rază 25 de la 0° la 90° (trigonometric);
     # extensiile de la 20 + 1 la 25 + 2 pe fiecare latură; săgețile din capetele arcului, cu baza pe coarda spre punctul de pe
     # arc aflat la 2,5 / 25 rad mai înăuntru; „90°” la mijlocul arcului (45°), tangent, citibil (−45°), cu baza la un gol în
-    # afara arcului.
+    # afara arcului. Ca DIMENSION din trei puncte: vârful (15), punctele laturilor în sensul arcului (13 de unde pleacă, 14 unde
+    # ajunge) și mijlocul arcului (10).
     v = (40, 120)
-    s += [('A', v, 25, 0.0, math.pi / 2), ('L', (61, 120), (67, 120)), ('L', (40, 141), (40, 147))]
     dt = CAP / 25
     pe = lambda t: (v[0] + 25 * math.cos(t), v[1] + 25 * math.sin(t))
     p0, p1 = pe(0), pe(math.pi / 2)
-    s += [sageata(p0, unit((pe(dt)[0] - p0[0], pe(dt)[1] - p0[1]))), sageata(p1, unit((pe(math.pi / 2 - dt)[0] - p1[0], pe(math.pi / 2 - dt)[1] - p1[1])))]
-    s += cifre('90°', plus(v, (math.sqrt(0.5), math.sqrt(0.5)), 25 + G), -45)
+    c['u'] = {
+        'seg': [('A', v, 25, 0.0, math.pi / 2), ('L', (61, 120), (67, 120)), ('L', (40, 141), (40, 147)),
+                sageata(p0, unit((pe(dt)[0] - p0[0], pe(dt)[1] - p0[1]))), sageata(p1, unit((pe(math.pi / 2 - dt)[0] - p1[0], pe(math.pi / 2 - dt)[1] - p1[1])))],
+        'text': ('90°', plus(v, (s2, s2), 25 + G), -45),
+        'dim': {'tip': 5, 'steaguri': 32, 'p': {15: v, 13: (60, 120), 14: (40, 140), 10: pe(math.pi / 4)}, 'masura': 90},
+    }
     # d: diametrul cercului (240, 150), R20, cifra în afară la d = 8: lățimea estimată a lui „Ø40” e 3 · 0,6 · 3,5 = 6,3, deci
     # mijlocul cifrei la 20 + max(8, 1,05 + 3,15) = 28 de centru, iar linia de la −20 la max(20, 28 + 3,15) = 31,15; săgețile
-    # în (260, 150) și (220, 150), spre centru.
-    s += [('L', (220, 150), (271.15, 150)), sageata((260, 150), (-1, 0)), sageata((220, 150), (1, 0))]
-    s += cifre('Ø40', (268, 150 + G), 0)
-    return s
+    # în (260, 150) și (220, 150), spre centru. Ca DIMENSION: punctul de pe cerc (15), cel opus (10), cifra pusă de om (128),
+    # iar lungimea liderului (40) e cât stă mijlocul cifrei dincolo de cerc: 8.
+    c['d'] = {
+        'seg': [('L', (220, 150), (271.15, 150)), sageata((260, 150), (-1, 0)), sageata((220, 150), (1, 0))],
+        'text': ('Ø40', (268, 150 + G), 0),
+        'dim': {'tip': 3, 'steaguri': 32 + 128, 'p': {15: (260, 150), 10: (220, 150)}, 40: 8, 'masura': 40},
+    }
+    # Corpusul al doilea (felia 10.4↑c-2) adaugă:
+    # a: aliniata (130, 80)–(160, 120), lungă de 50, d = 10: direcția u = (0,6; 0,8), normala n = (−0,8; 0,6); linia la 10 pe
+    # normală: (122, 86)–(152, 126); extensiile de la a + n (golul) la a + 12 n, la fel din b; „50” la mijlocul liniei
+    # (137, 106) plus 0,3 · 3,5 pe normală, rotit cu unghiul direcției (atan2(0,8; 0,6) ≈ 53,13°).
+    c['a'] = {
+        'seg': [('L', (129.2, 80.6), (120.4, 87.2)), ('L', (159.2, 120.6), (150.4, 127.2)), ('L', (122, 86), (152, 126)),
+                sageata((122, 86), (0.6, 0.8)), sageata((152, 126), (-0.6, -0.8))],
+        'text': ('50', (137 - 0.8 * G, 106 + 0.6 * G), math.degrees(math.atan2(0.8, 0.6))),
+        'dim': {'tip': 1, 'steaguri': 32, 'p': {13: (130, 80), 14: (160, 120), 10: (152, 126)}, 'masura': 50},
+    }
+    # r: raza cercului (110, 175) prin (125, 175), R15, cifra în afară la d = 6, linia „după loc”, deci din afară: „R15” e lată
+    # de 6,3, deci mijlocul ei la 15 + max(6, 2,5 + 1,05 + 3,15) = 21,7 de centru, iar linia de la cerc (15) la 21,7 + 3,15;
+    # săgeata cu vârful în (125, 175), cu baza spre afară. Ca DIMENSION: centrul (10), punctul de pe cerc (15), liderul 6,7.
+    c['r'] = {
+        'seg': [('L', (125, 175), (134.85, 175)), sageata((125, 175), (1, 0))],
+        'text': ('R15', (131.7, 175 + G), 0),
+        'dim': {'tip': 4, 'steaguri': 32 + 128, 'p': {10: (110, 175), 15: (125, 175)}, 40: 6.7, 'masura': 15},
+    }
+    # w: unghiul dintre două laturi, (245, 30)–(285, 30) și (250, 45)–(270, 65), cu textul „2x<>”: dreptele se întâlnesc în
+    # (235, 30), unghiul e 45°, arcul de rază 30 de la 0° la 45°; laturile acoperă raza 30 (10…50 și 21,2…49,5 de vârf), deci
+    # fără extensii; „2x45°” la mijlocul arcului (22,5°), citibil (−67,5°), în afara arcului. Ca DIMENSION din două linii:
+    # prima linie, cea de unde pleacă arcul (13 → 14), a doua (15 → 10), mijlocul arcului (16).
+    v = (235, 30)
+    dt = CAP / 30
+    pe = lambda t: (v[0] + 30 * math.cos(t), v[1] + 30 * math.sin(t))
+    p0, p1 = pe(0), pe(math.pi / 4)
+    dm = (math.cos(math.pi / 8), math.sin(math.pi / 8))
+    c['w'] = {
+        'seg': [('A', v, 30, 0.0, math.pi / 4), sageata(p0, unit((pe(dt)[0] - p0[0], pe(dt)[1] - p0[1]))), sageata(p1, unit((pe(math.pi / 4 - dt)[0] - p1[0], pe(math.pi / 4 - dt)[1] - p1[1])))],
+        'text': ('2x45°', plus(v, dm, 30 + G), -67.5),
+        'dim': {'tip': 2, 'steaguri': 32, 'p': {13: (245, 30), 14: (285, 30), 15: (250, 45), 10: (270, 65), 16: pe(math.pi / 8)}, 'masura': 45},
+    }
+    return c
+
+
+COTE_1 = ['h', 'v', 'u', 'd']
+COTE_2 = ['h', 'v', 'u', 'd', 'a', 'r', 'w']
+
+
+def segmente_cota(x):
+    """Segmentele cotei, cu cifra ca trăsături."""
+    text, p, unghi = x['text']
+    return x['seg'] + cifre(text, p, unghi)
+
+
+def pe_hartie(ids=COTE_1):
+    """Segmentele cotelor `ids`, pe hârtie, cu cifrele ca trăsături."""
+    c = hartie_cote()
+    return [s for i in ids for s in segmente_cota(c[i])]
 
 
 # --- distanțe și eșantioane ------------------------------------------------------------------------------------------------
@@ -197,10 +260,11 @@ def aproape_de(p, seg, tol):
     return False
 
 
-def compara_desen(nume, desenat, tol):
+def compara_desen(nume, desenat, tol, hartie=None):
     """`desenat`: segmentele citite din fișier (L, C, T), în mm. Fiecare punct desenat e pe hârtie, fiecare segment de pe
-    hârtie e desenat; triunghiurile pline, câte unul pe fiecare săgeată de pe hârtie. Întoarce abaterea maximă."""
-    hartie = pe_hartie()
+    hârtie e desenat; triunghiurile pline, câte unul pe fiecare săgeată de pe hârtie. Întoarce abaterea maximă. `hartie`:
+    segmentele de pe hârtie (implicit, ale corpusului întâi, cu cifrele ca trăsături)."""
+    hartie = pe_hartie() if hartie is None else hartie
     linii_h = [(s, cutie(s, tol)) for s in hartie if s[0] != 'T']
     linii_d = [(s, cutie(s, tol)) for s in desenat if s[0] != 'T']
     abatere = 0.0
@@ -249,6 +313,44 @@ def arc_din_bulge(p, q, b):
     return ('A', c, r, a0, a0 + abs(teta))
 
 
+def segmente_dxf(entitati):
+    """Segmentele entităților DXF ale cotelor (SOLID, LWPOLYLINE fără lățime, SPLINE Bézier), exact cum sunt scrise."""
+    citite = []
+    for e in entitati:
+        if e.dxftype() == 'SOLID':
+            v = [(e.dxf.vtx0.x, e.dxf.vtx0.y), (e.dxf.vtx1.x, e.dxf.vtx1.y), (e.dxf.vtx2.x, e.dxf.vtx2.y), (e.dxf.vtx3.x, e.dxf.vtx3.y)]
+            verifica(v[3] == v[2], 'SOLID: al patrulea colț e al treilea (triunghi)')
+            citite.append(('T', v[0], v[1], v[2]))
+        elif e.dxftype() == 'LWPOLYLINE':
+            v = [tuple(x) for x in e.get_points('xyb')]
+            verifica(e.dxf.const_width == 0, 'cotele fără discuri: lățimea 0')
+            perechi = list(zip(v, v[1:])) + ([(v[-1], v[0])] if e.closed else [])
+            for a, b in perechi:
+                if a[2] == 0:
+                    citite.append(('L', a[:2], b[:2]))
+                else:
+                    citite.append(arc_din_bulge(a[:2], b[:2], a[2]))
+        elif e.dxftype() == 'SPLINE':
+            cp = [(p[0], p[1]) for p in e.control_points]
+            verifica(e.dxf.degree == 3 and (len(cp) - 1) % 3 == 0, 'SPLINE: Bézier de grad 3 în lanț')
+            citite += [('C', *cp[i:i + 4]) for i in range(0, len(cp) - 1, 3)]
+        else:
+            verifica(False, f'o entitate neașteptată în desenul cotelor: {e.dxftype()}')
+    return citite
+
+
+def una_la_una(nume, citite, hartie):
+    """Fiecare segment de pe hârtie e citit exact o dată, și nimic în plus."""
+    ramase = list(citite)
+    for s in hartie:
+        k = next((i for i, x in enumerate(ramase) if egale(s, x)), None)
+        if k is None:
+            verifica(False, f'{nume}: segmentul de pe hârtie {s[0]} {s[1]}… lipsește')
+        else:
+            ramase.pop(k)
+    verifica(not ramase, f'{nume}: {len(ramase)} segmente în plus, primul {ramase[:1]}')
+
+
 def verifica_dxf(cale):
     doc, auditor = recover.readfile(cale)
     verifica(not auditor.has_errors and len(auditor.fixes) == 0, f'DXF recover: {len(auditor.errors)} erori, {len(auditor.fixes)} reparații')
@@ -265,36 +367,9 @@ def verifica_dxf(cale):
     msp = list(doc.modelspace())
     tipuri = Counter(e.dxftype() for e in msp if e.dxf.layer == STRAT)
     verifica(set(tipuri) <= {'LWPOLYLINE', 'SPLINE', 'SOLID'}, f'entitățile cotelor: {dict(tipuri)}')
-    citite = []
-    for e in msp:
-        if e.dxf.layer != STRAT:
-            continue
-        if e.dxftype() == 'SOLID':
-            v = [(e.dxf.vtx0.x, e.dxf.vtx0.y), (e.dxf.vtx1.x, e.dxf.vtx1.y), (e.dxf.vtx2.x, e.dxf.vtx2.y), (e.dxf.vtx3.x, e.dxf.vtx3.y)]
-            verifica(v[3] == v[2], 'SOLID: al patrulea colț e al treilea (triunghi)')
-            citite.append(('T', v[0], v[1], v[2]))
-        elif e.dxftype() == 'LWPOLYLINE':
-            v = [tuple(x) for x in e.get_points('xyb')]
-            verifica(e.dxf.const_width == 0, 'cotele fără discuri: lățimea 0')
-            perechi = list(zip(v, v[1:])) + ([(v[-1], v[0])] if e.closed else [])
-            for a, b in perechi:
-                if a[2] == 0:
-                    citite.append(('L', a[:2], b[:2]))
-                else:
-                    citite.append(arc_din_bulge(a[:2], b[:2], a[2]))
-        else:
-            cp = [(p[0], p[1]) for p in e.control_points]
-            verifica(e.dxf.degree == 3 and (len(cp) - 1) % 3 == 0, 'SPLINE: Bézier de grad 3 în lanț')
-            citite += [('C', *cp[i:i + 4]) for i in range(0, len(cp) - 1, 3)]
+    citite = segmente_dxf([e for e in msp if e.dxf.layer == STRAT])
     hartie = pe_hartie()
-    ramase = list(citite)
-    for s in hartie:
-        k = next((i for i, x in enumerate(ramase) if egale(s, x)), None)
-        if k is None:
-            verifica(False, f'DXF: segmentul de pe hârtie {s[0]} {s[1]}… lipsește')
-        else:
-            ramase.pop(k)
-    verifica(not ramase, f'DXF: {len(ramase)} segmente în plus, primul {ramase[:1]}')
+    una_la_una('DXF', citite, hartie)
     return len(citite), len(hartie)
 
 
@@ -326,7 +401,55 @@ def e_cota(c, tol=0.003):
     return all(abs(c[i] - CULOARE[i] / 255) <= tol for i in range(3))
 
 
-def verifica_pdf(cale):
+# Textele (felia 10.4↑c-2): cifrele scrise cu Helvetica, una din cele 14 fonturi standard ale PDF-ului (fără font în fișier).
+# Majuscula lui Helvetica e 718 / 1000 din mărimea fontului (AFM-ul lui Adobe, CapHeight), deci cifra de 3,5 mm se scrie la
+# 3,5 / 0,718 mm; mijlocul bazei ei e mijlocul cifrei de pe hârtie (măsurat aici cu lățimile lui PyMuPDF, nu ale aplicației).
+CAP_HELVETICA = 0.718
+HELV = fitz.Font('helv')
+
+
+def texte_pdf(pagina, Hpt):
+    """Textele paginii, din PyMuPDF: textul, mijlocul bazei (mm, Y în sus), unghiul (grade), majuscula (mm), fontul, culoarea."""
+    rez = []
+    for b in pagina.get_text('dict')['blocks']:
+        for l in b.get('lines', []):
+            dx, dy = l['dir']
+            for sp in l['spans']:
+                if not sp['text'].strip():
+                    continue
+                # Lățimea din metricile Helvetica ale lui PyMuPDF (`Font('helv')`; `get_text_length` greșește un text care
+                # începe cu un semn din afara ASCII, de exemplu „Ø40”: ia „Ø”-ul de 222 / 1000, nu 778).
+                lung = HELV.text_length(sp['text'], fontsize=sp['size'])
+                o = sp['origin']
+                cx, cy = o[0] + dx * lung / 2, o[1] + dy * lung / 2
+                rez.append({'text': sp['text'], 'p': (cx / K, (Hpt - cy) / K), 'unghi': math.degrees(math.atan2(-dy, dx)),
+                            'cap': sp['size'] * CAP_HELVETICA / K, 'font': sp['font'], 'culoare': sp['color']})
+    return rez
+
+
+def compara_texte(nume, citite, tol):
+    """Cifrele corpusului al doilea, scrise ca text: fiecare, o dată, cu mijlocul bazei, unghiul și majuscula de pe hârtie."""
+    c = hartie_cote()
+    asteptate = [c[i]['text'] for i in COTE_2]
+    verifica(len(citite) == len(asteptate), f'{nume}: {len(citite)} texte, nu {len(asteptate)}: {[t["text"] for t in citite]}')
+    for text, p, unghi in asteptate:
+        x = next((t for t in citite if t['text'] == text), None)
+        if x is None:
+            verifica(False, f'{nume}: textul {text!r} lipsește')
+            continue
+        d = math.hypot(x['p'][0] - p[0], x['p'][1] - p[1])
+        verifica(d <= tol, f'{nume}: {text!r} la {x["p"]}, nu la {p} ({d:.6f} mm)')
+        du = (x['unghi'] - unghi + 180) % 360 - 180
+        verifica(abs(du) <= 1e-3, f'{nume}: {text!r} rotit cu {x["unghi"]}°, nu {unghi}°')
+        verifica(abs(x['cap'] - H) <= 1e-3, f'{nume}: majuscula lui {text!r} {x["cap"]} mm, nu {H}')
+
+
+def hartie_fara_cifre(ids=COTE_2):
+    c = hartie_cote()
+    return [s for i in ids for s in c[i]['seg']]
+
+
+def verifica_pdf(cale, hartie=None, pline=8, texte=False):
     doc = fitz.open(cale)
     pagina = doc[0]
     Hpt = pagina.rect.height
@@ -338,24 +461,64 @@ def verifica_pdf(cale):
     verifica(all(e_cota(d.get('color') or d.get('fill')) for d in ale_cotelor), 'PDF: culoarea cotelor')
     linii = [d for d in ale_cotelor if d.get('color') is not None]
     verifica(linii and all(abs(d['width'] - GROSIME * K) <= 1e-3 for d in linii), f'PDF: grosimea liniilor {sorted({round(d["width"] / K, 4) for d in linii})} mm')
-    pline = [d for d in ale_cotelor if d.get('type') == 'f']
-    verifica(len(pline) == 8, f'PDF: {len(pline)} capete pline')
-    return compara_desen('PDF', din_desene(ale_cotelor, Hpt, e_cota), TOL_PDF)
+    pline_d = [d for d in ale_cotelor if d.get('type') == 'f']
+    verifica(len(pline_d) == pline, f'PDF: {len(pline_d)} capete pline, nu {pline}')
+    t = texte_pdf(pagina, Hpt)
+    if texte:
+        compara_texte('PDF', t, 1e-3)
+        verifica(all(x['font'] == 'Helvetica' and x['culoare'] == 0xff8800 for x in t), f'PDF: fontul și culoarea textelor {[(x["font"], hex(x["culoare"])) for x in t]}')
+        verifica('/BaseFont /Helvetica' in open(cale, encoding='ascii').read() and '/FontFile' not in open(cale, encoding='ascii').read(), 'PDF: Helvetica, fără font în fișier')
+    else:
+        verifica(not t, f'PDF: texte neașteptate {[x["text"] for x in t]}')
+    return compara_desen('PDF', din_desene(ale_cotelor, Hpt, e_cota), TOL_PDF, hartie)
 
 
-def verifica_gs(cale):
+def verifica_gs(cale, hartie=None, texte=False):
     doc = fitz.open(cale)
     pagina = doc[0]
     cai = pagina.get_drawings()
-    return compara_desen('EPS prin Ghostscript', din_desene(cai, pagina.rect.height, e_cota), TOL_GS)
+    t = texte_pdf(pagina, pagina.rect.height)
+    if texte:
+        # Ghostscript pune un font cu aceleași lățimi ca Helvetica (Nimbus Sans) și scrie pozițiile mai scurt: 0,01 mm.
+        compara_texte('EPS prin Ghostscript', t, 0.01)
+    else:
+        verifica(not t, f'EPS prin Ghostscript: texte neașteptate {[x["text"] for x in t]}')
+    return compara_desen('EPS prin Ghostscript', din_desene(cai, pagina.rect.height, e_cota), TOL_GS, hartie)
 
 
-def desene_eps_cote(cale):
-    """Căile EPS-ului nostru, citite direct din text (subsetul pe care îl scriem, cu `fill` și `setlinewidth`)."""
+# Textul în EPS (felia 10.4↑c-2): Helvetica recodată în ISOLatin1 (°, ±, ×, Ø), definită o dată în prolog, apoi fiecare cifră
+# pe un rând: mutarea la mijlocul bazei, rotirea, fontul cât majuscula / 0,718, apoi textul mutat înapoi cu jumătate din
+# lățimea lui, pe care o măsoară interpretorul (`stringwidth`), deci centrat fără lățimi scrise în fișier.
+PROLOG_EPS = re.compile(r'/Helvetica findfont dup length dict begin\n\{1 index /FID ne \{def\} \{pop pop\} ifelse\} forall\n'
+                        r'/Encoding ISOLatin1Encoding def\ncurrentdict end\n/Helvetica-L1 exch definefont pop\n')
+TEXT_EPS = re.compile(r'^gsave (\S+) (\S+) translate (\S+) rotate /Helvetica-L1 findfont (\S+) scalefont setfont 0 0 moveto '
+                      r'\(((?:[^()\\]|\\[()\\]|\\[0-7]{3})*)\) dup stringwidth pop -2 div 0 rmoveto show grestore\n', re.M)
+
+
+def sir_ps(s):
+    """Un șir PostScript (doar ASCII, cu \\ooo pentru octeții ISOLatin1), ca text."""
+    return re.sub(r'\\([0-7]{3})|\\([()\\])', lambda m: chr(int(m[1], 8)) if m[1] else m[2], s)
+
+
+def desene_eps_cote(cale, hartie=None, texte=False):
+    """Căile EPS-ului nostru, citite direct din text (subsetul pe care îl scriem, cu `fill` și `setlinewidth`); cu `texte`,
+    și cifrele scrise cu Helvetica (rândurile lor se scot înaintea căilor)."""
     text = open(cale, encoding='ascii').read()
     box = [float(x) for x in text.split('%%HiResBoundingBox:')[1].split('\n')[0].split()]
     Hpt = box[3] - box[1]
     verifica(f'% Stratul {STRAT}' in text, 'EPS: comentariul stratului cotelor')
+    citite = []
+    if texte:
+        verifica(len(PROLOG_EPS.findall(text)) == 1, 'EPS: Helvetica recodată ISOLatin1, o dată, în prolog')
+        verifica('%%DocumentNeededResources: font Helvetica' in text, 'EPS: fontul cerut în antet')
+        for m in TEXT_EPS.finditer(text):
+            x, y, a, marime = (float(m[k]) for k in range(1, 5))
+            # Lățimea, ca la PDF, din PyMuPDF (Helvetica): mijlocul bazei e chiar (x, y), cu `stringwidth` scăzut pe jumătate.
+            citite.append({'text': sir_ps(m[5]), 'p': (x, y), 'unghi': a, 'cap': marime * CAP_HELVETICA})
+        text = TEXT_EPS.sub('', PROLOG_EPS.sub('', text))
+        compara_texte('EPS', citite, 1e-6)
+    else:
+        verifica('findfont' not in text and not re.search(r'\bshow\b', text), 'EPS: text neașteptat')
     stiva, culoare, items, cai, scara, curent, start, latimi = [], None, [], [], 1.0, None, None, []
     pt = lambda x, y: fitz.Point(x * scara - box[0], Hpt - (y * scara - box[1]))
     for tok in ' '.join(l for l in text.split('\n') if not l.startswith('%')).split():
@@ -398,11 +561,12 @@ def desene_eps_cote(cale):
         else:
             raise ValueError(f'cuvânt PostScript neașteptat: {tok}')
     verifica(any(e_cota(c) and abs(w - GROSIME) <= 1e-9 for c, w in latimi if c), f'EPS: grosimea cotelor {latimi}')
-    return compara_desen('EPS', din_desene(cai, Hpt, e_cota), TOL_PDF)
+    return compara_desen('EPS', din_desene(cai, Hpt, e_cota), TOL_PDF, hartie)
 
 
-def verifica_svg(cale):
-    """Grupul stratului cotelor (strat Inkscape, culoarea, grosimea) și căile lui: M, L, C, A, Z absolute, cu Y în jos."""
+def verifica_svg(cale, hartie=None, texte=False):
+    """Grupul stratului cotelor (strat Inkscape, culoarea, grosimea) și căile lui: M, L, C, A, Z absolute, cu Y în jos; cu
+    `texte`, și cifrele ca `<text>` (Helvetica, centrate pe mijlocul bazei, rotite în jurul lui)."""
     rad = ET.parse(cale).getroot()
     ns = '{http://www.w3.org/2000/svg}'
     inalt = float(rad.get('viewBox').split()[3])
@@ -457,7 +621,103 @@ def verifica_svg(cale):
             seg.append(('T', *pts[:3]))
         else:
             seg += bucati
-    return compara_desen('SVG', seg, TOL_SVG)
+    citite = []
+    for t in grup.iter(f'{ns}text'):
+        x, y, marime = float(t.get('x')), float(t.get('y')), float(t.get('font-size'))
+        verifica(t.get('text-anchor') == 'middle' and t.get('fill') == '#ff8800' and t.get('stroke') == 'none', f'SVG: textul {t.attrib}')
+        verifica(t.get('font-family', '').startswith('Helvetica'), f'SVG: fontul {t.get("font-family")}')
+        unghi = 0.0
+        if t.get('transform'):
+            # Cu Y în jos, rotirea trigonometrică a foii e cea negativă a SVG-ului, în jurul mijlocului bazei.
+            m = re.fullmatch(r'rotate\((-?[\d.]+) (-?[\d.]+) (-?[\d.]+)\)', t.get('transform'))
+            verifica(m is not None and float(m[2]) == x and float(m[3]) == y, f'SVG: rotirea {t.get("transform")}')
+            unghi = -float(m[1]) if m else float('nan')
+        citite.append({'text': t.text, 'p': (x, inalt - y), 'unghi': unghi, 'cap': marime * CAP_HELVETICA})
+    if texte:
+        compara_texte('SVG', citite, TOL_SVG)
+    else:
+        verifica(not citite, f'SVG: texte neașteptate {[x["text"] for x in citite]}')
+    return compara_desen('SVG', seg, TOL_SVG, hartie)
+
+
+# --- DIMENSION (felia 10.4↑c-2) ---------------------------------------------------------------------------------------------
+
+# Codul DXF al fiecărui punct de definiție, cu numele lui la ezdxf.
+PUNCTE_DIM = {10: 'defpoint', 13: 'defpoint2', 14: 'defpoint3', 15: 'defpoint4', 16: 'defpoint5'}
+# Stilul CNCVS2, din setările corpusului (cele implicite, cu virgula): cifra de 3,5 mm deasupra liniei (DIMTAD 1), aliniată
+# cu ea (DIMTIH, DIMTOH 0), golul ei 0,3 · 3,5; săgețile de 2,5 mm, pline (fără bare, DIMTSZ 0); extensiile de la 1 mm, cu
+# 2 mm peste linie; zecimalele 2, virgula (44), zerourile de la coadă tăiate (DIMZIN 8); unghiurile în grade zecimale, cu 2
+# zecimale; mm, fără scară (DIMLUNIT 2, DIMLFAC 1).
+STIL_DIM = {'dimtxt': H, 'dimasz': CAP, 'dimexo': GOL, 'dimexe': DEP, 'dimgap': G, 'dimtad': 1, 'dimtih': 0, 'dimtoh': 0,
+            'dimtsz': 0, 'dimdec': 2, 'dimdsep': 44, 'dimzin': 8, 'dimaunit': 0, 'dimadec': 2, 'dimlunit': 2, 'dimlfac': 1}
+
+
+def verifica_dim(cale, ca_text):
+    """Corpusul al doilea cu cotele ca DIMENSION: fiecare cotă e o entitate DIMENSION pe stratul cotelor, cu felul, punctele
+    de definiție, măsura, textul și locul lui de pe hârtie, stilul CNCVS2, și blocul ei anonim cu desenul de pe hârtie
+    (exact); cifra, ca trăsături, sau (`ca_text`) ca MTEXT."""
+    nume = 'DIMENSION' + (' cu cifrele ca text' if ca_text else '')
+    doc, auditor = recover.readfile(cale)
+    verifica(not auditor.has_errors and len(auditor.fixes) == 0, f'{nume}: recover, {len(auditor.errors)} erori, {len(auditor.fixes)} reparații')
+    audit = doc.audit()
+    verifica(not audit.has_errors and len(audit.fixes) == 0, f'{nume}: audit, {len(audit.errors)} erori, {len(audit.fixes)} reparații {[str(f) for f in audit.fixes][:3]}')
+    verifica(sorted(l.dxf.name for l in doc.layers if l.dxf.name != 'Defpoints') == sorted(['0', 'FOAIE', STRAT]), f'{nume}: straturile {[l.dxf.name for l in doc.layers]}')
+    verifica(doc.dimstyles.has_entry('CNCVS2'), f'{nume}: stilul CNCVS2 lipsește')
+    if doc.dimstyles.has_entry('CNCVS2'):
+        st = doc.dimstyles.get('CNCVS2')
+        for k, v in STIL_DIM.items():
+            verifica(abs(st.dxf.get(k, float('nan')) - v) <= 1e-9, f'{nume}: {k} = {st.dxf.get(k)}, nu {v}')
+    msp = list(doc.modelspace())
+    dims = [e for e in msp if e.dxftype() == 'DIMENSION']
+    verifica(not [e for e in msp if e.dxf.layer == STRAT and e.dxftype() != 'DIMENSION'], f'{nume}: alte entități pe stratul cotelor')
+    verifica(len(dims) == len(COTE_2), f'{nume}: {len(dims)} DIMENSION, nu {len(COTE_2)}')
+    c = hartie_cote()
+    blocuri = set()
+    for i, e in zip(COTE_2, dims):
+        x = c[i]
+        d, (text, p, unghi) = x['dim'], x['text']
+        r = math.radians(unghi)
+        verifica(e.dxf.layer == STRAT and e.dxf.dimstyle == 'CNCVS2', f'{nume} {i}: stratul {e.dxf.layer}, stilul {e.dxf.dimstyle}')
+        verifica(e.dxf.dimtype == d['tip'] + d['steaguri'], f'{nume} {i}: felul {e.dxf.dimtype}, nu {d["tip"] + d["steaguri"]}')
+        for cod, q in d['p'].items():
+            v = e.dxf.get(PUNCTE_DIM[cod])
+            verifica(v is not None and math.hypot(v.x - q[0], v.y - q[1]) <= TOL and v.z == 0, f'{nume} {i}: punctul {cod} {v}, nu {q}')
+        for cod in set(PUNCTE_DIM) - set(d['p']):
+            verifica(not e.dxf.hasattr(PUNCTE_DIM[cod]) or e.dxf.get(PUNCTE_DIM[cod]).isclose((0, 0, 0)), f'{nume} {i}: punctul {cod} în plus')
+        verifica(abs(e.dxf.get('angle', 0) - d.get(50, 0)) <= TOL and e.dxf.hasattr('angle') == (50 in d), f'{nume} {i}: unghiul 50 {e.dxf.get("angle")}')
+        verifica(abs(e.dxf.get('leader_length', 0) - d.get(40, 0)) <= TOL and e.dxf.hasattr('leader_length') == (40 in d), f'{nume} {i}: liderul {e.dxf.get("leader_length")}')
+        # Măsura: ezdxf o calculează din punctele de definiție; aliniata (felul 1) o măsoară ezdxf după unghiul 50, pe care
+        # DXF-ul nu-l dă felului 1, deci aici e distanța dintre 13 și 14, ca în referința DXF.
+        m = math.hypot(e.dxf.defpoint3.x - e.dxf.defpoint2.x, e.dxf.defpoint3.y - e.dxf.defpoint2.y) if d['tip'] == 1 else e.get_measurement()
+        verifica(abs(m - d['masura']) <= 1e-9, f'{nume} {i}: măsura {m}, nu {d["masura"]}')
+        reala = math.radians(d['masura']) if d['tip'] in (2, 5) else d['masura']
+        verifica(abs(e.dxf.get('actual_measurement', float('nan')) - reala) <= 1e-9, f'{nume} {i}: măsura scrisă {e.dxf.get("actual_measurement")}')
+        verifica(e.dxf.text == text, f'{nume} {i}: textul {e.dxf.text!r}, nu {text!r}')
+        verifica(e.dxf.attachment_point == 5, f'{nume} {i}: textul agățat de {e.dxf.attachment_point}')
+        mijloc = plus(p, (-math.sin(r), math.cos(r)), H / 2)
+        tm = e.dxf.text_midpoint
+        verifica(math.hypot(tm.x - mijloc[0], tm.y - mijloc[1]) <= TOL, f'{nume} {i}: mijlocul textului {tm}, nu {mijloc}')
+        bloc = e.get_geometry_block()
+        verifica(bloc is not None and e.dxf.geometry.startswith('*D') and e.dxf.geometry not in blocuri, f'{nume} {i}: blocul {e.dxf.geometry}')
+        blocuri.add(e.dxf.geometry)
+        if bloc is None:
+            continue
+        verifica(bloc.block.dxf.flags & 1 == 1, f'{nume} {i}: blocul nu e anonim')
+        ent = list(bloc)
+        verifica(all(z.dxf.layer == STRAT for z in ent), f'{nume} {i}: desenul în afara stratului cotelor')
+        texte = [z for z in ent if z.dxftype() == 'MTEXT']
+        una_la_una(f'{nume} {i}', segmente_dxf([z for z in ent if z.dxftype() != 'MTEXT']), x['seg'] + ([] if ca_text else cifre(text, p, unghi)))
+        if not ca_text:
+            verifica(not texte, f'{nume} {i}: MTEXT cu cifrele ca trăsături')
+            continue
+        verifica(len(texte) == 1, f'{nume} {i}: {len(texte)} MTEXT')
+        for t in texte:
+            ins, dr = t.dxf.insert, t.dxf.text_direction
+            verifica(math.hypot(ins.x - mijloc[0], ins.y - mijloc[1]) <= TOL and t.dxf.attachment_point == 5, f'{nume} {i}: MTEXT în {ins}, agățat de {t.dxf.attachment_point}')
+            verifica(abs(t.dxf.char_height - H) <= TOL, f'{nume} {i}: MTEXT înalt de {t.dxf.char_height}')
+            verifica(math.hypot(dr.x - math.cos(r), dr.y - math.sin(r)) <= TOL, f'{nume} {i}: MTEXT pe direcția {dr}')
+            verifica(t.plain_text() == text, f'{nume} {i}: MTEXT {t.plain_text()!r}, nu {text!r}')
+    return len(dims)
 
 
 def main(dosar):
@@ -470,6 +730,18 @@ def main(dosar):
     else:
         verifica(False, 'cote-eps.pdf lipsește: EPS-ul cotelor n-a trecut prin Ghostscript')
         ab_gs = float('nan')
+    # Corpusul al doilea (felia 10.4↑c-2): toate felurile, ca DIMENSION (cu cifrele ca trăsături, apoi ca text), și cifrele ca
+    # text în SVG, PDF și EPS (direct și prin Ghostscript).
+    n_dim = verifica_dim(f'{dosar}/cote-dim.dxf', False)
+    verifica_dim(f'{dosar}/cote-text.dxf', True)
+    h2 = hartie_fara_cifre()
+    pline2 = sum(1 for x in h2 if x[0] == 'T')
+    ab2 = [verifica_pdf(f'{dosar}/cote-text.pdf', h2, pline2, True), verifica_svg(f'{dosar}/cote-text.svg', h2, True),
+           desene_eps_cote(f'{dosar}/cote-text.eps', h2, True)]
+    if os.path.exists(f'{dosar}/cote-text-eps.pdf'):
+        ab2.append(verifica_gs(f'{dosar}/cote-text-eps.pdf', h2, True))
+    else:
+        verifica(False, 'cote-text-eps.pdf lipsește: EPS-ul cu textul n-a trecut prin Ghostscript')
     if probleme:
         print('COTELE ÎN EXPORTUL 2D: abateri față de hârtie:')
         for x in probleme[:40]:
@@ -478,7 +750,9 @@ def main(dosar):
             print(f'  … și încă {len(probleme) - 40}')
         sys.exit(1)
     print(f'cotele în exportul 2D: DXF {n_dxf} segmente, exact cele {n_h} de pe hârtie (ezdxf {ezdxf.__version__}: 0 erori, 0 reparații); '
-          f'abaterea max: PDF {ab_pdf:.6f} mm, SVG {ab_svg:.6f} mm, EPS {ab_eps:.6f} mm, prin Ghostscript {ab_gs:.6f} mm')
+          f'abaterea max: PDF {ab_pdf:.6f} mm, SVG {ab_svg:.6f} mm, EPS {ab_eps:.6f} mm, prin Ghostscript {ab_gs:.6f} mm; '
+          f'{n_dim} cote ca DIMENSION (felul, punctele, măsura, textul, stilul CNCVS2, blocul exact), cu cifrele ca trăsături și ca '
+          f'MTEXT; cifrele ca text în PDF, SVG, EPS și prin Ghostscript, liniile la cel mult {max(ab2):.6f} mm')
 
 
 if __name__ == '__main__':

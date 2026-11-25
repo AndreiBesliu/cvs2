@@ -7,12 +7,19 @@
  * mai apropiată ACI în 62): liniile și cifrele ca LWPOLYLINE și SPLINE, capetele pline ca SOLID, punctele ca polilinii cu
  * lățime (discurile). Fără cote, fișierul e octet cu octet cel de dinainte.
  *
+ * Felia 10.4↑c-2: cotele, la alegere, ca DIMENSION (`VectoriFoaie.dimensiuni`): fiecare cotă e o entitate DIMENSION cu
+ * felul, punctele de definiție, măsura și textul ei, după stilul `CNCVS2` (din setări: înălțimea cifrei, capetele, golurile,
+ * locul cifrei, zecimalele, separatorul, zerourile, unitatea), iar desenul ei stă într-un bloc anonim `*Dn` (blocul doar al
+ * ei), cum îl desenează aplicația: un program care știe cotele o recalculează, unul care știe doar blocurile o desenează. Cifra
+ * scrisă ca text e MTEXT (agățat de mijloc, la jumătate de majusculă deasupra bazei); semnele din afara ASCII, ca \U+XXXX.
+ *
  * Fișierul are ce cere formatul de la R2000 încoace, ca programele stricte să-l deschidă fără reparații: tabelele cu
  * handle-urile și proprietarii lor, blocurile *Model_Space și *Paper_Space, dicționarul rădăcină cu ACAD_GROUP și
  * ACAD_LAYOUT și cele două layout-uri. Numerele se scriu cu toate cifrele (rotunjirea la cel mai scurt text care se
  * citește înapoi identic), fără exponent.
  */
-import { STRATURI, type Entitate, type Strat, type VectoriFoaie } from './vectori.ts';
+import type { FormatCifre, StilCota } from '../model/desenCota.ts';
+import { STRATURI, type DefinitieCota, type Entitate, type Strat, type VectoriFoaie } from './vectori.ts';
 
 /** Culoarea AutoCAD (ACI) a fiecărui strat. */
 export const CULORI_DXF: Readonly<Record<Strat, number>> = {
@@ -60,6 +67,12 @@ export function scrieDxf(v: VectoriFoaie): string {
   const nume = (s: Strat): string => (s === 'COTE' ? v.stratCote?.nume ?? 'COTE' : s);
   const straturi = new Map<string, { readonly h: string; readonly s: Strat | null }>([['0', { h: handle(), s: null }], ...folosite.map((s) => [nume(s), { h: handle(), s }] as const)]);
   const entitati = v.entitati.map((e) => ({ e, h: handle() }));
+  // Cotele ca DIMENSION: stilul, apoi, pe fiecare cotă, blocul ei (înregistrarea, începutul, sfârșitul) și entitatea.
+  const dim = v.dimensiuni;
+  const cote = dim?.definitii.map((d, k) => ({ d, nume: `*D${k + 1}`, br: handle(), bloc: handle(), sfarsit: handle(), h: handle() })) ?? [];
+  const stilCote = dim ? handle() : '';
+  const inBloc = new Map(cote.map((x) => [x.d.element, x.nume]));
+  const blocul = (e: Entitate): string | undefined => (e.strat === 'COTE' ? inBloc.get(e.element) : undefined);
   const c = v.cutie;
 
   const sectiune = (nume: string, corp: () => void): void => { g(0, 'SECTION'); g(2, nume); corp(); g(0, 'ENDSEC'); };
@@ -126,14 +139,22 @@ export function scrieDxf(v: VectoriFoaie): string {
       inregistrare('APPID', H.acad, H.appid, 'AcDbRegAppTableRecord');
       g(2, 'ACAD'); g(70, '0');
     });
-    tabel('DIMSTYLE', H.dimstyle, 1, () => {
+    tabel('DIMSTYLE', H.dimstyle, dim ? 2 : 1, () => {
       inregistrare('DIMSTYLE', H.dimStandard, H.dimstyle, 'AcDbDimStyleTableRecord', 105);
       g(2, 'Standard'); g(70, '0');
+      if (dim) {
+        inregistrare('DIMSTYLE', stilCote, H.dimstyle, 'AcDbDimStyleTableRecord', 105);
+        scrieStil(g, dim.stil, dim.format, H.standard);
+      }
     }, () => { g(100, 'AcDbDimStyleTable'); g(71, '0'); });
-    tabel('BLOCK_RECORD', H.blockRecord, 2, () => {
+    tabel('BLOCK_RECORD', H.blockRecord, 2 + cote.length, () => {
       for (const [h, nume, layout] of [[H.brModel, '*Model_Space', H.layoutModel], [H.brPaper, '*Paper_Space', H.layoutPaper]] as const) {
         inregistrare('BLOCK_RECORD', h, H.blockRecord, 'AcDbBlockTableRecord');
         g(2, nume); g(340, layout);
+      }
+      for (const x of cote) {
+        inregistrare('BLOCK_RECORD', x.br, H.blockRecord, 'AcDbBlockTableRecord');
+        g(2, x.nume);
       }
     });
   });
@@ -146,9 +167,18 @@ export function scrieDxf(v: VectoriFoaie): string {
       if (paper) g(67, '1');
       g(8, '0'); g(100, 'AcDbBlockEnd');
     }
+    // Blocul anonim al fiecărei cote DIMENSION (70 = 1), cu desenul ei.
+    for (const x of cote) {
+      g(0, 'BLOCK'); g(5, x.bloc); g(330, x.br); g(100, 'AcDbEntity');
+      g(8, '0'); g(100, 'AcDbBlockBegin'); g(2, x.nume); g(70, '1'); g(10, 0); g(20, 0); g(30, 0); g(3, x.nume); g(1, '');
+      for (const { e, h } of entitati) if (blocul(e) === x.nume) scrieEntitate(g, e, h, x.br, nume(e.strat));
+      g(0, 'ENDBLK'); g(5, x.sfarsit); g(330, x.br); g(100, 'AcDbEntity');
+      g(8, '0'); g(100, 'AcDbBlockEnd');
+    }
   });
   sectiune('ENTITIES', () => {
-    for (const { e, h } of entitati) scrieEntitate(g, e, h, H.brModel, nume(e.strat));
+    for (const { e, h } of entitati) if (blocul(e) === undefined) scrieEntitate(g, e, h, H.brModel, nume(e.strat));
+    for (const x of cote) scrieDimensiune(g, x.d, x.h, H.brModel, nume('COTE'), x.nume);
   });
   sectiune('OBJECTS', () => {
     g(0, 'DICTIONARY'); g(5, H.radacina); g(330, '0'); g(100, 'AcDbDictionary'); g(281, '1');
@@ -173,9 +203,74 @@ export function scrieDxf(v: VectoriFoaie): string {
   return `${out.join('\n')}\n`;
 }
 
-function scrieEntitate(g: (cod: number, val: string | number) => void, e: Entitate, h: string, proprietar: string, strat: string): void {
+type Scrie = (cod: number, val: string | number) => void;
+
+/** Un text DXF (MTEXT, textul unei cote): `\`, `{`, `}` cu bară, semnele din afara ASCII ca \U+XXXX (fișierul rămâne ASCII). */
+export function textDxf(t: string): string {
+  return [...t].map((c) => {
+    const k = c.codePointAt(0)!;
+    if (c === '\\' || c === '{' || c === '}') return `\\${c}`;
+    return k < 32 || k > 126 ? `\\U+${k.toString(16).toUpperCase().padStart(4, '0')}` : c;
+  }).join('');
+}
+
+const MM_PE_UNITATE = { mm: 1, cm: 10, inch: 25.4, fractii: 25.4 } as const;
+const UNITATE = { mm: 'mm', cm: 'cm', inch: 'in', fractii: 'in' } as const;
+
+/**
+ * Stilul cotelor, `CNCVS2`, din setări: înălțimea cifrei (DIMTXT), capetele (DIMASZ; bara oblică, DIMTSZ), golul și depășirea
+ * extensiilor (DIMEXO, DIMEXE; fără extensii, DIMSE1 / DIMSE2), golul cifrei (DIMGAP, 0,3 × înălțimea), locul ei (deasupra:
+ * DIMTAD 1; în linie: 0; mereu orizontală: DIMTIH și DIMTOH 1), zecimalele (DIMDEC; în fracții, puterea lui 2 a numitorului,
+ * cu DIMLUNIT 5 și DIMFRAC 2), separatorul (DIMDSEP), zerourile de la coadă (DIMZIN 8), unitatea (DIMLFAC, DIMPOST), unghiurile
+ * (DIMAUNIT, DIMADEC; în grade-minute-secunde, 4 + zecimalele secundelor) și fontul (DIMTXSTY, Standard). Textul fiecărei cote e
+ * scris în ea; stilul contează când un program o desenează din nou.
+ */
+function scrieStil(g: Scrie, s: StilCota, f: FormatCifre, stilText: string): void {
+  g(2, 'CNCVS2'); g(70, '0');
+  if (f.cuUnitate) g(3, `<> ${UNITATE[f.unitate]}`);
+  g(40, 1); g(41, s.capat); g(42, s.gol); g(44, s.depasire);
+  g(73, s.loc === 'orizontala' ? '1' : '0'); g(74, s.loc === 'orizontala' ? '1' : '0');
+  g(75, s.extensii ? '0' : '1'); g(76, s.extensii ? '0' : '1');
+  g(77, s.loc === 'deasupra' ? '1' : '0'); g(78, f.zerouri === 'taiate' ? '8' : '0');
+  g(140, s.inaltime); g(142, s.capete === 'oblica' ? s.capat : 0); g(144, 1 / MM_PE_UNITATE[f.unitate]); g(147, 0.3 * s.inaltime);
+  g(179, String(f.unghi === 'gms' ? 4 + f.zecimaleUnghi : f.zecimaleUnghi));
+  g(271, String(f.unitate === 'fractii' ? Math.round(Math.log2(f.fractie)) : f.zecimale));
+  g(275, f.unghi === 'gms' ? '1' : '0');
+  if (f.unitate === 'fractii') g(276, '2');
+  g(277, f.unitate === 'fractii' ? '5' : '2'); g(278, f.virgula ? '44' : '46');
+  g(340, stilText);
+}
+
+/** Subclasa fiecărui fel de DIMENSION și punctele ei, în ordinea codurilor. */
+const FELURI_DIM = {
+  0: ['AcDbAlignedDimension', [13, 14]], 1: ['AcDbAlignedDimension', [13, 14]], 2: ['AcDb2LineAngularDimension', [13, 14, 15, 16]],
+  3: ['AcDbDiametricDimension', [15]], 4: ['AcDbRadialDimension', [15]], 5: ['AcDb3PointAngularDimension', [13, 14, 15]],
+} as const;
+
+function scrieDimensiune(g: Scrie, d: DefinitieCota, h: string, proprietar: string, strat: string, bloc: string): void {
+  const pt = (cod: number, p: { readonly x: number; readonly y: number } | undefined): void => {
+    if (!p) throw new Error(`cota ${d.element}: punctul ${cod} lipsește`);
+    g(cod, p.x); g(cod + 10, p.y); g(cod + 20, 0);
+  };
+  g(0, 'DIMENSION'); g(5, h); g(330, proprietar); g(100, 'AcDbEntity'); g(8, strat); g(100, 'AcDbDimension');
+  g(2, bloc); pt(10, d.puncte[10]); pt(11, d.mijloc);
+  g(70, String(d.tip + d.steaguri)); g(71, '5'); g(42, d.masura); g(1, textDxf(d.text)); g(3, 'CNCVS2');
+  const [subclasa, puncte] = FELURI_DIM[d.tip];
+  g(100, subclasa);
+  for (const cod of puncte) pt(cod, d.puncte[cod]);
+  if (d.tip === 0) { g(50, d.unghi ?? 0); g(100, 'AcDbRotatedDimension'); }
+  if (d.tip === 3 || d.tip === 4) g(40, d.lider ?? 0);
+}
+
+function scrieEntitate(g: Scrie, e: Entitate, h: string, proprietar: string, strat: string): void {
   const antet = (tip: string, subclasa: string): void => { g(0, tip); g(5, h); g(330, proprietar); g(100, 'AcDbEntity'); g(8, strat); g(100, subclasa); };
-  if (e.fel === 'plin') {
+  if (e.fel === 'text') {
+    // MTEXT agățat de mijloc (71 = 5), la jumătate de majusculă deasupra mijlocului bazei, pe direcția cifrei (11).
+    const r = (e.unghi * Math.PI) / 180, c = Math.cos(r), s = Math.sin(r);
+    antet('MTEXT', 'AcDbMText');
+    g(10, e.p.x - (s * e.inaltime) / 2); g(20, e.p.y + (c * e.inaltime) / 2); g(30, 0); g(40, e.inaltime); g(41, 0);
+    g(71, '5'); g(72, '1'); g(1, textDxf(e.text)); g(7, 'Standard'); g(11, c); g(21, s); g(31, 0); g(73, '1'); g(44, 1);
+  } else if (e.fel === 'plin') {
     // SOLID: trei colțuri (al patrulea, cât al treilea), un triunghi umplut.
     const [a, b, c] = e.puncte;
     antet('SOLID', 'AcDbTrace');

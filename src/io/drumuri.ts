@@ -11,7 +11,8 @@ export type Comanda =
   | { readonly op: 'c'; readonly x1: number; readonly y1: number; readonly x2: number; readonly y2: number; readonly x: number; readonly y: number }
   | { readonly op: 'h' };
 
-export function drumEntitate(e: Entitate): Comanda[] {
+/** Drumul unei entități desenate (textul, felia 10.4↑c-2, îl scrie fiecare format în felul lui). */
+export function drumEntitate(e: Exclude<Entitate, { fel: 'text' }>): Comanda[] {
   if (e.fel === 'cerc') {
     const { x, y } = e.centru;
     return [

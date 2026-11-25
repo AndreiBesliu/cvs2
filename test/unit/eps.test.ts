@@ -280,6 +280,7 @@ test('exportul EPS al aplicației (ADR 0089), recitit: fiecare entitate e o cale
   assert.equal(r.cai.length, v.entitati.length);
   const lista = (c: CaleEps): number[][] => c.varfuri.flatMap((x: Varf) => (x.s.tip === 'C' ? [x.p, x.s.c1, x.s.c2] : [x.p]).map((q) => [q.x, q.y]));
   for (const e of v.entitati) {
+    if (e.fel === 'text') assert.fail('textul n-are drum');
     const d = drumEntitate(e);
     let pct = d.flatMap((c) => (c.op === 'c' ? [[c.x1, c.y1], [c.x2, c.y2], [c.x, c.y]] : c.op === 'h' ? [] : [[c.x, c.y]]));
     // Închisă: cu `closepath`, sau întoarsă exact în start (regula comună ușilor, ADR 0037 §11: ovalul buzunarului, o spline

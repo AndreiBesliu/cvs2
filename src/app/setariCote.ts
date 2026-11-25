@@ -1,7 +1,8 @@
 /**
  * Setările cotelor (ADR 0330 §6), ale aplicației, nu ale unei cote: ținute în browser (`cncvs2.cote`, JSON cu versiune),
  * aplicate pe loc tuturor cotelor. Grupurile: cifrele și liniile (a-3), raza, diametrul și unghiul (b, cu inch în fracții),
- * comportamentul, lipirea, măsurarea (a-2, plus pânza în a-3 și foile vecine în a-4), exportul (c-1); fereastra Setări le scrie. Orice valoare lipsă, de alt tip sau în afara marginilor ia implicitul ei, câmp
+ * comportamentul, lipirea, măsurarea (a-2, plus pânza în a-3 și foile vecine în a-4), exportul (c-1; felul cotelor în DXF și
+ * al cifrelor, c-2); fereastra Setări le scrie. Orice valoare lipsă, de alt tip sau în afara marginilor ia implicitul ei, câmp
  * cu câmp: o setare stricată nu le strică pe celelalte.
  */
 import { useSyncExternalStore } from 'react';
@@ -98,6 +99,10 @@ export type SetariCote = {
     readonly culoare: string;
     /** Grosimea liniilor cotelor în PDF și SVG, 0,05–1 mm. */
     readonly grosime: number;
+    /** Cotele în DXF: cote (DIMENSION, cu blocul lor) sau linii și cifre (felia 10.4↑c-2). */
+    readonly dxf: 'dimension' | 'linii';
+    /** Cifrele: trăsăturile fontului cu o singură linie, sau text (MTEXT, `<text>`, Helvetica), în toate formatele. */
+    readonly cifre: 'trasaturi' | 'text';
   };
 };
 
@@ -108,7 +113,7 @@ export const SETARI_IMPLICITE: SetariCote = {
   comportament: { legate: true, pornire: 'automata', dupa: 'ramane', pePanza: true, vecine: 'estompate', pragCifre: 6, culoare: null },
   lipire: { felurile: { varf: true, mijloc: true, centru: true, cadran: true, cutie: true, foaie: true, grila: true }, toleranta: 8, contur: 'ctrl' },
   masurare: { distanta: true, delta: true, unghi: true, cursor: true, bara: true },
-  export: { cuCote: false, strat: 'COTE', culoare: '#006d8f', grosime: 0.1 },
+  export: { cuCote: false, strat: 'COTE', culoare: '#006d8f', grosime: 0.1, dxf: 'dimension', cifre: 'trasaturi' },
 };
 
 /**
@@ -220,6 +225,8 @@ export function citesteSetariCote(text: string | null): SetariCote {
       strat: typeof ex['strat'] === 'string' && numeStratBun(ex['strat']) ? ex['strat'] : I.export.strat,
       culoare: typeof ex['culoare'] === 'string' && CULOARE.test(ex['culoare']) ? ex['culoare'] : I.export.culoare,
       grosime: numar(ex['grosime'], MARGINI.grosime, I.export.grosime),
+      dxf: unul(ex['dxf'], ['dimension', 'linii'], I.export.dxf),
+      cifre: unul(ex['cifre'], ['trasaturi', 'text'], I.export.cifre),
     },
   };
 }
