@@ -6554,3 +6554,73 @@ export const REFUZATE_V28: readonly RefuzV18[] = [
   rR('RX20 relieful înclinat', relief28(), 'piese.0', 'ADR 0310 §1: celula rămâne pătrată', { matrice: M(1, 0, 0.5, 1, 0, 0) }),
   rR('RX21 profilul referă relieful', relief28(), 'piese.0.operatii.0', 'ADR 0310 §1: operațiile 2D taie contururi', { operatii: [opV18({ noduri: ['r'] })] }),
 ];
+
+// ---------------------------------------------------------------------------------------------------------------
+// v29 (ADR 0312): finisarea reliefului (felul `finisare`, câmpul `finisare`) și freza bilă. Cazurile pe hârtie, scrise din ADR.
+
+const laV29 = (d: Liber): Liber => cuSchema(d, 29);
+/** O freză bilă (ADR 0312 §1: `{ tip: 'bila' }`, raza = diametrul / 2). */
+const bila29 = (numar: number, diametru: number, v: Liber = {}): Liber => ({ numar, nume: 'freza bila', diametru, forma: { tip: 'bila' }, ...v });
+/** O finisare a reliefului `r` cu bila Ø6, liniile la 0°, 0,5 mm între ele, 12 mm podeaua, 4 mm pe trecere (ADR 0312 §2). */
+const finisare29 = (v: Liber = {}): Liber => ({
+  id: 'o2', tip: 'finisare', noduri: ['r'], scula: bila29(4, 6), latura: 'pe-linie', sens: 'urcare', adancime: 12, pas: 4,
+  pasLateral: 0.5, urechi: null, rampa: null, intrari: null, colturi: null, finisare: { unghi: 0 }, ...v,
+});
+/** Documentul cu relieful `r` și dreptunghiul `e` (profilul `o1`), cu finisarea dată (și operațiile în plus). */
+const docFin29 = (fin: Liber | null = finisare29(), alte: readonly Liber[] = [], schema = 29, relief: Liber = relief28()): Liber => (
+  docRelief28(relief, { operatii: [opV18(), ...(fin ? [fin] : []), ...alte] }, schema)
+);
+/** Același document, cu un al doilea relief `r2` lângă `r`. */
+function docDouaReliefuri29(fin: Liber): Liber {
+  const d = docFin29(fin);
+  const g = ((d['piese'] as Liber[])[0]!['radacina'] as Liber)['copii'] as Liber[];
+  g.push({ tip: 'element', id: 'r2', forma: relief28({ nx: 100, ny: 100, celula: 0.4 }), matrice: M(1, 0, 0, 1, 150, 10) });
+  return d;
+}
+const fin29 = (f: Liber): Liber => finisare29({ finisare: f });
+
+export const VALIDE_V29: readonly CazV18[] = [
+  ...VALIDE_V28.map((c) => ({ nume: `${c.nume} (v29)`, doc: laV29(c.doc) })),
+  { nume: 'Y01 o finisare cu bila Ø6 pe relief, lângă profilul dreptunghiului (ADR 0312 §2)', doc: docFin29() },
+  { nume: 'Y02 cu V90, la 45°, nealiniată, peste margine, planul zero la 2,5 mm', doc: docFin29(finisare29({ scula: inV(2, 6, 90), finisare: { unghi: 45, nealiniat: true, margine: 'trece', planZero: 2.5 } })) },
+  { nume: 'Y03 cu freza plată, la 90°', doc: docFin29(finisare29({ scula: plata(1, 6), finisare: { unghi: 90 } })) },
+  { nume: 'Y04 marginile: unghiul 179,999°, planul zero 0', doc: docFin29(fin29({ unghi: 179.999, planZero: 0 })) },
+  { nume: 'Y05 planul zero 1 000 mm, pasul lateral 50 mm', doc: docFin29(finisare29({ pasLateral: 50, finisare: { unghi: 0, planZero: 1000 } })) },
+  { nume: 'Y06 o finisare pe două reliefuri ale piesei', doc: docDouaReliefuri29(finisare29({ noduri: ['r', 'r2'] })) },
+  { nume: 'Y07 bila pe profil, în fundul plat și ca freză de rest (ușa o primește; lucrarea judecă)', doc: docFin29(null, [opV18({ id: 'o3', scula: bila29(5, 3) }), vcarve({ fundPlat: fund({ scula: bila29(6, 3.175) }) }), buzunar({ rest: [{ scula: bila29(7, 2), pasLateral: 0.5 }] })]) },
+  { nume: 'Y08 câmpul `finisare` pe un profil (ușa îi judecă forma; lucrarea îl refuză)', doc: docFin29(null, [opV18({ id: 'o3', finisare: { unghi: 30 } })]) },
+  { nume: 'Y09 câmpuri necunoscute în `finisare` și în bilă (rămân)', doc: docFin29(finisare29({ scula: bila29(4, 6, { forma: { tip: 'bila', unghi: 60, nota: 'x' } }), finisare: { unghi: 10, viteza: 'mare' } })) },
+  { nume: 'Y10 latura, sensul, coborârea și urechile pe finisare (ușa nu le leagă de fel)', doc: docFin29(finisare29({ latura: 'exterior', sens: 'opozitie', coborare: { fel: 'plonjare' }, urechi: { numar: 2, latime: 6, grosime: 2 } })) },
+  { nume: 'Y11 bila cu valorile de lucru și originea din bibliotecă (v27)', doc: docFin29(finisare29({ scula: { ...freza27(4, 6), forma: { tip: 'bila' } } })) },
+  { nume: 'Y12 o piesă doar cu relief și finisarea lui', doc: docRelief28(relief28(), { operatii: [finisare29()] }, 29) },
+];
+
+/** Un v29 cu finisarea dată (sau doar cu operațiile în plus), ca refuz. */
+const rF = (nume: string, doc: Liber, categorie: string, camp: string, motiv: string): RefuzV18 => ({ nume, doc, categorie, camp, motiv });
+const opF = 'piese.0.operatii.1';
+
+export const REFUZATE_V29: readonly RefuzV18[] = [
+  ...REFUZATE_V28.filter((r) => !r.nume.startsWith('R01 ')),
+  { nume: 'R01 scris de o versiune mai nouă (v30)', doc: docFin29(finisare29(), [], 30), categorie: 'schema', camp: 'schema', motiv: 'ADR 0070 §2: o versiune mai veche refuză una mai nouă', text: 'versiune mai nouă' },
+  rF('RY0 un v28 cu o finisare (felul, necunoscut la v28)', docFin29(finisare29({ noduri: ['e'], scula: plata(4, 6) }), [], 28), 'operatie', `${opF}.tip`, 'ADR 0312 §3: felul vine cu v29'),
+  rF('RY1 un v28 cu bila pe profil (forma, necunoscută la v28)', docFin29(null, [opV18({ id: 'o3', scula: bila29(5, 3) })], 28), 'scula', `${opF}.scula.forma.tip`, 'ADR 0312 §3: bila vine cu v29'),
+  rF('RY2 un v28 cu câmpul `finisare` pe profil (ciocnirea migrării)', docFin29(null, [opV18({ id: 'o3', finisare: { unghi: 0 } })], 28), 'ciocnire', `${opF}.finisare`, 'ADR 0312 §3: nu e un v28 valid'),
+  rF('RY3 o finisare fără câmpul `finisare`', docFin29((() => { const f = finisare29(); delete f['finisare']; return f; })()), 'finisare', `${opF}.finisare`, 'ADR 0312 §2: cerut pe o finisare'),
+  rF('RY4 o finisare fără pasul lateral', docFin29((() => { const f = finisare29(); delete f['pasLateral']; return f; })()), 'pas-lateral', `${opF}.pasLateral`, 'ADR 0312 §2: cerut pe o finisare'),
+  rF('RY5 unghiul 180°', docFin29(fin29({ unghi: 180 })), 'finisare', `${opF}.finisare.unghi`, 'ADR 0312 §2: în [0, 180)'),
+  rF('RY6 unghiul −0,001°', docFin29(fin29({ unghi: -0.001 })), 'finisare', `${opF}.finisare.unghi`, 'ADR 0312 §2: în [0, 180)'),
+  rF('RY7 unghiul ca text', docFin29(fin29({ unghi: '45' })), 'finisare', `${opF}.finisare.unghi`, 'ADR 0312 §2: un număr'),
+  rF('RY8 unghiul lipsă', docFin29(fin29({ nealiniat: true })), 'finisare', `${opF}.finisare.unghi`, 'ADR 0312 §2: cerut'),
+  rF('RY9 nealiniat: false', docFin29(fin29({ unghi: 0, nealiniat: false })), 'finisare', `${opF}.finisare.nealiniat`, 'ADR 0312 §2: doar true (lipsă = aliniat)'),
+  rF('RY10 marginea „ramane”', docFin29(fin29({ unghi: 0, margine: 'ramane' })), 'finisare', `${opF}.finisare.margine`, "ADR 0312 §2: doar 'trece' (lipsă = peretele rămâne)"),
+  rF('RY11 planul zero −0,1 mm', docFin29(fin29({ unghi: 0, planZero: -0.1 })), 'finisare', `${opF}.finisare.planZero`, 'ADR 0312 §2: în [0, 1 000]'),
+  rF('RY12 planul zero 1 000,001 mm', docFin29(fin29({ unghi: 0, planZero: 1000.001 })), 'finisare', `${opF}.finisare.planZero`, 'ADR 0312 §2: în [0, 1 000]'),
+  rF('RY13 `finisare` nu e un obiect', docFin29(finisare29({ finisare: true })), 'finisare', `${opF}.finisare`, 'ADR 0312 §2: un obiect'),
+  rF('RY14 finisarea referă dreptunghiul', docFin29(finisare29({ noduri: ['e'] })), 'relief', opF, 'ADR 0312 §2: o finisare referă doar reliefuri'),
+  rF('RY15 finisarea referă relieful și dreptunghiul', docFin29(finisare29({ noduri: ['r', 'e'] })), 'relief', opF, 'ADR 0312 §2: o finisare referă doar reliefuri'),
+  rF('RY16 forma „bilă” cu diacritice', docFin29(finisare29({ scula: { ...bila29(4, 6), forma: { tip: 'bilă' } } })), 'scula', `${opF}.scula.forma.tip`, "ADR 0312 §1: 'v' sau 'bila'"),
+  rF('RY17 câmpul `finisare` stricat pe un profil (forma se judecă oriunde)', docFin29(null, [opV18({ id: 'o3', finisare: { unghi: 200 } })]), 'finisare', `${opF}.finisare.unghi`, 'ADR 0312 §2'),
+  rF('RY18 pasul lateral 0 pe finisare', docFin29(finisare29({ pasLateral: 0 })), 'pas-lateral', `${opF}.pasLateral`, 'ADR 0069 §1: în (0, 50]'),
+  rF('RY19 o finisare într-o piesă fără relief', docV18(dreptunghi(), [opV18(), finisare29({ noduri: ['e'] })], 29), 'relief', opF, 'ADR 0312 §2: o finisare referă doar reliefuri'),
+  rF('RY20 un v28 cu bila ca freză a fundului plat', docFin29(null, [vcarve({ fundPlat: fund({ scula: bila29(6, 3.175) }) })], 28), 'fund-plat', `${opF}.fundPlat.scula.forma.tip`, 'ADR 0312 §3: bila vine cu v29'),
+];

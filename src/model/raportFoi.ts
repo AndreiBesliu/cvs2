@@ -23,7 +23,7 @@ export type MarimeRaport = 'taiata' | 'desen';
 export type OperatieRaport = {
   readonly tip: TipOperatie;
   readonly latura: Latura;
-  readonly scula: { readonly numar: number; readonly diametru: number; readonly unghi: number | null };
+  readonly scula: { readonly numar: number; readonly diametru: number; readonly unghi: number | null; readonly bila?: true };
   readonly adancime: number;
   readonly treceri: number;
   readonly urechi: number;
@@ -105,7 +105,11 @@ function marime(p: Piesa, i: Instanta, grosime: number, fel: MarimeRaport): { re
 function operatieRaport(o: Operatie): OperatieRaport {
   return {
     tip: o.tip, latura: o.latura,
-    scula: { numar: o.scula.numar, diametru: o.scula.diametru, unghi: o.scula.forma?.tip === 'v' ? o.scula.forma.unghi : null },
+    scula: {
+      numar: o.scula.numar, diametru: o.scula.diametru, unghi: o.scula.forma?.tip === 'v' ? o.scula.forma.unghi : null,
+      // Freza bilă (ADR 0312 §1): numită, ca să nu pară plată.
+      ...(o.scula.forma?.tip === 'bila' ? { bila: true as const } : {}),
+    },
     adancime: o.adancime, treceri: o.pas > 0 ? Math.max(1, Math.ceil(o.adancime / o.pas - 1e-9)) : 1,
     urechi: o.urechi ? (o.urechi.mod === 'alese' ? numarUrechiAlese(o) : o.urechi.mod === 'mijloc' ? 0 : o.urechi.numar) : 0,
     ...(o.urechi?.mod === 'mijloc' ? { urechiLa: 'mijloc' as const } : {}),

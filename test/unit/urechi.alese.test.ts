@@ -139,7 +139,7 @@ const urechiAlese = (locuri: Record<string, { x: number; y: number }[]>, v: Part
 const SCURTE = [{ x: 0, y: 15 }, { x: 80, y: 15 }];
 function documentCu(op: Partial<Operatie>, forma: Document['piese'][number]['radacina'] = { tip: 'element', id: 'e', forma: { tip: 'dreptunghi', latime: 80, inaltime: 30, razaColt: 0 }, matrice: { ...I } }): Document {
   return {
-    schema: 28, rev: 0,
+    schema: 29, rev: 0,
     piese: [{
       id: 'p', radacina: forma,
       operatii: [{

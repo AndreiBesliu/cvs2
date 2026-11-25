@@ -284,7 +284,9 @@ export type CategorieO =
   // v23 (ADR 0210 §7): literele plăcuțelor (`Instanta.texte`).
   | 'texte'
   // v28 (ADR 0310 §1, ADR 0311 §1): relieful, o formă a elementului.
-  | 'relief';
+  | 'relief'
+  // v29 (ADR 0312 §2): câmpul `finisare` al operației.
+  | 'finisare';
 
 /** ADR 0037 §2: laturile documentului v10, exact (ASCII, ca `opozitie`). */
 export const LATURI_V10_O = ['interior', 'pe-linie', 'exterior', 'stanga', 'dreapta'] as const;
@@ -323,7 +325,7 @@ export const COLTURI_IMPLICITE_O = null;
 /** ADR 0032 §1: tipurile degajărilor, exact. */
 export const TIPURI_COLTURI_O: readonly TipColturiO[] = ['dog-bone', 't-bone'];
 /** Versiunea curentă a contractului documentului, după oracol. */
-export const SCHEMA_CURENTA_O = 28;
+export const SCHEMA_CURENTA_O = 29;
 
 export const PLAFOANE_O = {
   latura: 10_000,
@@ -2129,6 +2131,8 @@ export const INCRUSTATIE_O = {
 
 /** Felurile operației, pe versiune (ADR 0069 §1, ADR 0087 §6, ADR 0090 §5). */
 export function felurileO(versiune: number): readonly string[] {
+  // ADR 0312 §2 (v29): finisarea reliefului.
+  if (versiune >= 29) return ['profil', 'buzunar', 'gaurire', 'vcarve', 'finisare'];
   if (versiune >= 14) return ['profil', 'buzunar', 'gaurire', 'vcarve'];
   if (versiune >= 13) return ['profil', 'buzunar', 'gaurire'];
   if (versiune >= 11) return ['profil', 'buzunar'];
@@ -2183,6 +2187,9 @@ export const CAMPURI_NOI_O: Readonly<Record<number, readonly string[]>> = {
   // ADR 0310 §1 (v28): relieful e o formă nouă a elementului, nu un câmp; un v27 cu forma `relief` e refuzat de forma lui
   // (o formă necunoscută), deci nu e nicio ciocnire pe operație.
   28: [],
+  // ADR 0312 §3 (v29): câmpul `finisare`, necunoscut la v28, e ciocnirea; felul `finisare` și forma `bila` le refuză chiar
+  // contractul v28 (un fel necunoscut, o formă care nu e V).
+  29: ['finisare'],
 };
 
 /** Prefixul unui câmp nou de pe instanță în `CAMPURI_NOI_O` (v23); restul sunt căi pe operație. */
@@ -2270,7 +2277,7 @@ export type DocV21O = Liber & { schema: 21; rev: number; piese: PiesaV21O[]; foi
 export type DocV22O = Liber & { schema: 22; rev: number; piese: PiesaV22O[]; foi: FoaieO[] };
 
 /** Un document v11 … v24, după numărul lui. */
-export type DocNouO = DocV11O | DocV12O | DocV13O | DocV14O | DocV15O | DocV16O | DocV17O | DocV18O | DocV19O | DocV20O | DocV21O | DocV22O | DocV23O | DocV24O | DocV25O | DocV26O | DocV27O | DocV28O;
+export type DocNouO = DocV11O | DocV12O | DocV13O | DocV14O | DocV15O | DocV16O | DocV17O | DocV18O | DocV19O | DocV20O | DocV21O | DocV22O | DocV23O | DocV24O | DocV25O | DocV26O | DocV27O | DocV28O | DocV29O;
 
 // ---------------------------------------------------------------------------------------------------------------
 // Ajutoarele.
@@ -2316,11 +2323,15 @@ function instantele(doc: Liber): Array<{ readonly inst: Liber; readonly unde: st
 // ---------------------------------------------------------------------------------------------------------------
 // Câmpurile noi, fiecare cu motivele lui (o listă goală = bun).
 
-/** ADR 0090 §1, ADR 0092 §1: forma frezei (`{ tip: 'v', unghi }`, de la v16 și `varf`). */
+/**
+ * ADR 0090 §1, ADR 0092 §1: forma frezei (`{ tip: 'v', unghi }`, de la v16 și `varf`); ADR 0312 §1 (v29): și bila,
+ * `{ tip: 'bila' }`, fără alte câmpuri cerute (raza e diametrul / 2; câmpurile necunoscute rămân, nejudecate).
+ */
 export function problemeFormaO(forma: unknown, versiune: number): string[] {
   if (!esteObiect(forma)) return [` = ${arata(forma)} nu e un obiect { tip: 'v', unghi }`];
+  if (versiune >= 29 && forma['tip'] === 'bila') return [];
   const rez: string[] = [];
-  if (forma['tip'] !== 'v') rez.push(`.tip = ${are(forma, 'tip') ? arata(forma['tip']) : '(lipsă)'} nu e 'v'`);
+  if (forma['tip'] !== 'v') rez.push(`.tip = ${are(forma, 'tip') ? arata(forma['tip']) : '(lipsă)'} nu e ${versiune >= 29 ? "'v' / 'bila'" : "'v'"}`);
   if (!intre(forma['unghi'], PLAFOANE_V18_O.unghiVMin, PLAFOANE_V18_O.unghiVMax)) {
     rez.push(`.unghi = ${are(forma, 'unghi') ? arata(forma['unghi']) : '(lipsă)'} nu e în [${PLAFOANE_V18_O.unghiVMin}, ${PLAFOANE_V18_O.unghiVMax}]`);
   }
@@ -2554,6 +2565,34 @@ export function problemeOperatieO(op: Liber, versiune: number, unde: string): st
   }
   if (versiune >= 20 && are(op, 'incrustatie')) cu('incrustatie', 'incrustatie', problemeIncrustatieO(op['incrustatie'], versiune));
   if (versiune >= 26 && esteObiect(op['urechi'])) cu('urechi', 'urechi', problemeLocuriUrechiO(op['urechi'], op['noduri']));
+  if (versiune >= 29) {
+    // ADR 0312 §2: pe o finisare, `finisare` și `pasLateral` sunt cerute; forma lui `finisare` se judecă oriunde apare.
+    if (are(op, 'finisare')) cu('finisare', 'finisare', problemeFinisareO(op['finisare']));
+    else if (tip === 'finisare') cu('finisare', 'finisare', [' lipsește: e cerut pe o finisare']);
+    if (tip === 'finisare' && !are(op, 'pasLateral')) cu('pas-lateral', 'pasLateral', [' lipsește: e cerut pe o finisare']);
+  }
+  return rez;
+}
+
+/** ADR 0312 §2: marginea lui `finisare.planZero`, în mm (ca adâncimea unei operații). */
+export const PLAN_ZERO_MAXIM_O = 1_000;
+
+/**
+ * ADR 0312 §2 (v29): de ce câmpul `finisare` nu e bun, ca listă de motive (goală = bun): un obiect; `unghi` cerut, finit în
+ * [0, 180); `nealiniat` opțional, doar `true`; `margine` opțional, doar `'trece'`; `planZero` opțional, finit în [0, 1 000].
+ * Câmpurile necunoscute rămân, nejudecate.
+ */
+export function problemeFinisareO(f: unknown): string[] {
+  if (!esteObiect(f)) return [` = ${arata(f)} nu e un obiect { unghi }`];
+  const rez: string[] = [];
+  const u = f['unghi'];
+  if (!(typeof u === 'number' && Number.isFinite(u) && u >= 0 && u < 180)) rez.push(`.unghi = ${are(f, 'unghi') ? arata(u) : '(lipsă)'} nu e în [0, 180)`);
+  if (are(f, 'nealiniat') && f['nealiniat'] !== true) rez.push(`.nealiniat = ${arata(f['nealiniat'])} nu e true`);
+  if (are(f, 'margine') && f['margine'] !== 'trece') rez.push(`.margine = ${arata(f['margine'])} nu e 'trece'`);
+  if (are(f, 'planZero')) {
+    const z = f['planZero'];
+    if (!(typeof z === 'number' && Number.isFinite(z) && z >= 0 && z <= PLAN_ZERO_MAXIM_O)) rez.push(`.planZero = ${arata(z)} nu e în [0, ${PLAN_ZERO_MAXIM_O}]`);
+  }
   return rez;
 }
 
@@ -2633,7 +2672,7 @@ export function verificaVnO(doc: unknown, versiune: number): string[] {
   const rez = versiune >= SCHEMA_V23_O ? verificaArboreO(laV10(doc, versiune), 10, ajustariLumeV23O(doc)) : [...verificaV10(laV10(doc, versiune))];
   for (const { op, unde } of operatiile(doc)) rez.push(...problemeOperatieO(op, versiune, unde));
   if (versiune >= SCHEMA_V23_O) rez.push(...problemeTexteO(doc));
-  if (versiune >= SCHEMA_V28_O) rez.push(...problemeReliefO(doc));
+  if (versiune >= SCHEMA_V28_O) rez.push(...problemeReliefO(doc, versiune));
   return rez;
 }
 
@@ -2715,9 +2754,9 @@ export function verificaO(doc: unknown): string[] {
   return verificaPanaLaO(doc, SCHEMA_CURENTA_O);
 }
 
-/** Un document primit de ușa curentă, cum iese din ea: v28 (o copie; un v28 valid rămâne neschimbat). */
-export function ridicaO(doc: unknown): DocV28O {
-  return ridicaPanaLaO(doc, SCHEMA_CURENTA_O) as DocV28O;
+/** Un document primit de ușa curentă, cum iese din ea: v29 (o copie; un v29 valid rămâne neschimbat). */
+export function ridicaO(doc: unknown): DocV29O {
+  return ridicaPanaLaO(doc, SCHEMA_CURENTA_O) as DocV29O;
 }
 
 /**
@@ -3618,8 +3657,11 @@ export function problemeFormaReliefO(f: Liber): string[] {
   return rez;
 }
 
-/** Încălcările v28 ale reliefurilor unui document (categoria `relief`); goală = bune. */
-export function problemeReliefO(doc: Liber): string[] {
+/**
+ * Încălcările v28 ale reliefurilor unui document (categoria `relief`); goală = bune. ADR 0312 §2 (v29): o finisare referă
+ * doar reliefuri, iar o operație de alt fel niciun relief.
+ */
+export function problemeReliefO(doc: Liber, versiune: number = SCHEMA_V28_O): string[] {
   const rez: string[] = [];
   const piese = doc['piese'];
   if (!Array.isArray(piese)) return rez;
@@ -3633,11 +3675,13 @@ export function problemeReliefO(doc: Liber): string[] {
       if (m && inMarginiO(m) && !esteSimilitudineO(m)) rez.push(`[relief] ${cale}: matricea compusă nu e o similitudine (celula ar ieși dreptunghi): ${JSON.stringify(m)}`);
     }
     const ops = p['operatii'];
-    if (!Array.isArray(ops) || ids.size === 0) return;
+    if (!Array.isArray(ops)) return;
     ops.forEach((o: unknown, k) => {
       if (!esteObiect(o) || !Array.isArray(o['noduri'])) return;
+      const finisare = versiune >= 29 && o['tip'] === 'finisare';
       for (const n of o['noduri'] as unknown[]) {
-        if (ids.has(n)) rez.push(`[relief] piese[${i}].operatii[${k}].noduri: ${arata(n)} e un relief (operațiile 2D taie doar contururi)`);
+        if (finisare && !ids.has(n)) rez.push(`[relief] piese[${i}].operatii[${k}].noduri: ${arata(n)} nu e un relief (finisarea lucrează doar pe reliefuri)`);
+        if (!finisare && ids.has(n)) rez.push(`[relief] piese[${i}].operatii[${k}].noduri: ${arata(n)} e un relief (operațiile 2D taie doar contururi)`);
       }
     });
   });
@@ -3651,4 +3695,23 @@ export function ridicaV28O(doc: unknown): DocV28O { return ridicaPanaLaO(doc, SC
 export function usaCurentaV28O(doc: unknown): 'migrari' | 'usa' { return usaCurentaPanaLaO(doc, SCHEMA_V28_O); }
 export function migreazaV1V28O(v1: DocV1O): DocV28O { return ridicaPanaLaO(v1, SCHEMA_V28_O) as DocV28O; }
 export function migreazaV27V28O(v27: DocV27O): DocV28O { return ridicaPanaLaO(v27, SCHEMA_V28_O) as DocV28O; }
+
+// ---------------------------------------------------------------------------------------------------------------
+// v29 (ADR 0312): finisarea reliefului. Scris din ADR:
+// - forma frezei poate fi și `{ tip: 'bila' }` (pe orice freză; unde se folosește o judecă lucrarea);
+// - felul nou `finisare`, cu `finisare: { unghi, nealiniat?, margine?, planZero? }` și `pasLateral` cerute; o finisare referă
+//   doar reliefuri, o operație de alt fel niciun relief (`problemeReliefO`);
+// - forma lui `finisare` se judecă oriunde apare (`problemeFinisareO`, categoria `finisare`);
+// - migrarea v28 → v29 schimbă doar numărul; un v28 cu câmpul `finisare` e ciocnirea (`CAMPURI_NOI_O[29]`).
+
+export const SCHEMA_V29_O = 29;
+/** v29 (ADR 0312): ca v28; o operație poate fi `finisare`, o freză poate fi bila. */
+export type DocV29O = Liber & { schema: 29; rev: number; piese: PiesaV22O[]; foi: FoaieO[] };
+
+export function verificaV29(doc: unknown): string[] { return verificaVnO(doc, SCHEMA_V29_O); }
+export function verificaPanaLaV29O(doc: unknown): string[] { return verificaPanaLaO(doc, SCHEMA_V29_O); }
+export function ridicaV29O(doc: unknown): DocV29O { return ridicaPanaLaO(doc, SCHEMA_V29_O) as DocV29O; }
+export function usaCurentaV29O(doc: unknown): 'migrari' | 'usa' { return usaCurentaPanaLaO(doc, SCHEMA_V29_O); }
+export function migreazaV1V29O(v1: DocV1O): DocV29O { return ridicaPanaLaO(v1, SCHEMA_V29_O) as DocV29O; }
+export function migreazaV28V29O(v28: DocV28O): DocV29O { return ridicaPanaLaO(v28, SCHEMA_V29_O) as DocV29O; }
 

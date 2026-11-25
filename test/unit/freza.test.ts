@@ -314,9 +314,9 @@ test('redenumirea unui grup: toate frezele lui, cu versiunea crescută; spre un 
   assert.deepEqual(cuGrupRedenumit(l, 'nimic', 'X', 9), { ok: false, motiv: 'lipsa' });
 });
 
-test('felurile noi (ADR 0302 §2, felia 16.A↑h-4): bila, toroidala, conica cu vârf rotund, burghiul; în bibliotecă, fără CAM încă', () => {
+test('felurile noi (ADR 0302 §2, felia 16.A↑h-4): bila, toroidala, conica cu vârf rotund, burghiul; în bibliotecă; bila cu CAM din v29', () => {
   assert.deepEqual(FELURI_FREZA.slice(0, 7), ['plata', 'v', 'gravare', 'bila', 'toroidala', 'conica', 'burghiu']);
-  assert.deepEqual(FELURI_CU_CAM, ['plata', 'v', 'gravare']);
+  assert.deepEqual(FELURI_CU_CAM, ['plata', 'v', 'gravare', 'bila']);
   const BILA: Freza = { ...PLATA6, nume: 'Bilă Ø6', fel: 'bila', tais: undefined };
   const TOR: Freza = { ...PLATA6, nume: 'Toroidală', fel: 'toroidala', raza: 1, tais: undefined };
   const CON: Freza = { ...PLATA6, nume: 'Conică', fel: 'conica', unghi: 15, raza: 0.5, tais: undefined };
@@ -354,13 +354,14 @@ test('felurile noi (ADR 0302 §2, felia 16.A↑h-4): bila, toroidala, conica cu 
   // Citită: o rază care nu e număr strică freza.
   assert.equal(frezaDinDate({ ...salvata(TOR, 'a'), raza: 'x' }), null);
   assert.equal(frezaDinDate(salvata(TOR, 'a'))?.raza, 1);
-  // Copia pentru document: doar felurile pe care CAM-ul le taie.
-  assert.throws(() => sculaDinFreza(BILA), /CAM/u);
+  // Copia pentru document: doar felurile pe care CAM-ul le taie. Bila, din documentul v29 (ADR 0312): doar forma ei.
+  assert.deepEqual(sculaDinFreza(BILA, 4), { numar: 4, nume: 'Bilă Ø6', diametru: 6, forma: { tip: 'bila' } });
+  for (const f of [TOR, CON, BUR]) assert.throws(() => sculaDinFreza(f), /CAM/u, f.nume);
 });
 
 test('profilurile parametrice (ADR 0302 §1, felia 16.A↑h-5): rotunjirea, ogee-ul, ogee-ul roman, panoul ridicat; fără CAM încă', () => {
   assert.deepEqual(FELURI_FREZA, ['plata', 'v', 'gravare', 'bila', 'toroidala', 'conica', 'burghiu', 'rotunjire', 'ogee', 'ogee-roman', 'panou']);
-  assert.deepEqual(FELURI_CU_CAM, ['plata', 'v', 'gravare']);
+  assert.deepEqual(FELURI_CU_CAM, ['plata', 'v', 'gravare', 'bila']);
   const ROT: Freza = { ...PLATA6, nume: 'Rotunjire R3', fel: 'rotunjire', diametru: 12, raza: 3, tais: undefined };
   const OG: Freza = { ...PLATA6, nume: 'Ogee R3', fel: 'ogee', diametru: 18, raza: 3, tais: undefined };
   const OGR: Freza = { ...PLATA6, nume: 'Ogee roman R3', fel: 'ogee-roman', diametru: 21, raza: 3, treapta: 1.5, tais: undefined };

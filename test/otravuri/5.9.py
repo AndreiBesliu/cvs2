@@ -65,9 +65,11 @@ o('X13', OR, '        if (ramas < 0) return rez;\n', '', 'ordine', 'bugetul cupr
 o('E01', EC, '        return r !== undefined ? { ...faraRang, rang: r } : faraRang;', '        return faraRang;', 'e2e', 'Exportă nu scrie rangurile')
 o('E02', EC, 'const loc = c.ordine ? new Map(c.ordine.map((k, i) => [k, i])) : null;',
   'const loc = c.ordine ? new Map([...c.ordine].reverse().map((k, i) => [k, i])) : null;', 'e2e', 'rangurile scrise în ordinea inversă')
-o('E03', EC, '        const { rang: _rang, ...faraRang } = operatieDinDialog(o, v, v?.scula ?? o.scula);\n        void _rang;\n',
-  '        const faraRang = operatieDinDialog(o, v, v?.scula ?? o.scula);\n', 'e2e', 'Automată nu scoate rangurile vechi')
-o('E04', EC, 'automata: [...new Set(grupeazaPeScula(taieturiFoaie(doc, 0)).map((x) => `${x.piesa}/${x.operatie}`))],', 'automata: [],', 'e2e',
+# Mutată pe codul din 18.1↑c (25.11: argumentul `reliefuri`, ordinea cu finisările, bila); aceeași greșeală.
+o('E03', EC, '        const { rang: _rang, ...faraRang } = operatieDinDialog(o, v, v?.scula ?? sculaRand(o.scula));\n        void _rang;\n', '        const faraRang = operatieDinDialog(o, v, v?.scula ?? sculaRand(o.scula));\n', 'e2e',
+  'Automată nu scoate rangurile vechi')
+# Mutată pe codul din 18.1↑c (25.11: argumentul `reliefuri`, ordinea cu finisările, bila); aceeași greșeală.
+o('E04', EC, 'automata: [...new Set(ordinePasi(faraRanguri(doc), 0).map(cheiePas))],', 'automata: [],', 'e2e',
   'ordinea automată arătată e cea a listei, nu a lucrării')
 o('E05', EC, '        ...(cuprinseOp ? { inauntru: cuprinseOp } : {}),\n', '', 'e2e', 'cuprinderea nu ajunge în fereastră')
 o('E06', DE, '    setRiscAcceptat(false);\n    setOrdineMea(muta(ordineMea, de, la));', '    setOrdineMea(muta(ordineMea, de, la));', 'e2e',

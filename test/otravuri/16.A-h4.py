@@ -18,8 +18,10 @@ D = 'src/model/dinCatalog.ts'
 G = 'src/model/catalogFreze.ts'
 W = 'src/app/FrezeleMele.tsx'
 
-o('K01', F, "export const FELURI_CU_CAM = ['plata', 'v', 'gravare'] as const;", "export const FELURI_CU_CAM = ['plata', 'v', 'gravare', 'bila'] as const;",
-  'model', 'bila socotită cu CAM: se oferă în Tăierea')
+# K01, întoarsă la 18.1↑c (25.11): bila are acum CAM prin decizie (ADR 0312, finisarea reliefului); otrava o scoate din
+# felurile cu CAM, ca o regresie.
+o('K01', F, "export const FELURI_CU_CAM = ['plata', 'v', 'gravare', 'bila'] as const;", "export const FELURI_CU_CAM = ['plata', 'v', 'gravare'] as const;",
+  'model', 'bila fără CAM: „în curând” la bilă, scula refuzată în proiect')
 o('K02', F, "export const areRaza = (fel: FelFreza): boolean => fel === 'toroidala' || fel === 'conica';",
   "export const areRaza = (fel: FelFreza): boolean => fel === 'toroidala';", 'model', 'conica fără raza vârfului')
 o('K03', F, " || (!p.diametru && !(f.raza < f.diametru / 2))) p.raza = 'margini';", ") p.raza = 'margini';", 'model',

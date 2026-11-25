@@ -14810,6 +14810,63 @@ gata de unit”, `b099c457`; 28.8↑n, `7996e77c`), la ordinul în vigoare „un
 - **Documentele:** decizia și paragrafele de stare în `CLAUDE.md` (frezele, exportul, atelierul); indexul liniilor;
   starea din `docs/linii/principala.md`.
 
+## 2026-11-25 — Linia reliefului: felia 18.1↑c, finisarea reliefului (documentul v29, freza bilă) (sesiune cloud)
+
+**Prompt:** mesajul sesiunii principale, „Poți aduce `main` și porni 18.1↑c […] v29 e al tău” și „18.1↑c mișcă mașina:
+degroșarea și finisarea cer oracolul (suprafața rezultată față de model, în toleranță; creasta măsurată; niciodată mai adânc
+decât pasul pe trecere), scris înaintea funcției, și otrăvurile pe el. Raportul, ca până acum.”; pe drum, al doilea mesaj al
+ei, „nu fără rând” (rândul finisării în fereastra exportului, doar de citit).
+**Started:** 25.11, 11:03. **Completed:** 25.11, 15:12 (raportul întâi); a doua parte, la cererile din 15:14, 17:01 și 18:22, 25.11, 19:20.
+
+- **Oracolul 3D întâi** (`test/oracles/relief3d.ts`, fără importuri din `src/`): modelul exact, drop-cutter-ul exact
+  (vârfuri, muchii, fețe, muchia discului) cu bila, plata, V-ul și V-ul cu vârf plat, simulatorul crestei și al materialului;
+  controalele negative cad.
+- **Documentul v29** (ADR 0312): operația `finisare` și freza `{ tip: 'bila' }`; migrarea v28 → v29 (doar numărul, refuză
+  ciocnirile); oracolul documentului și cazurile pe hârtie la v29; corpusul de aur, pasul v29 (o finisare cu bila pe medalion).
+  Lucrarea refuză bila oriunde nu e o finisare, cu forma și calea în motiv.
+- **CAM-ul finisării** (`src/cam/reliefFinisare.ts`): câmpul conservativ (9 puncte, sau 4 colțuri pe celula de calcul),
+  cota segmentului pe capsulă, căutată într-o piramidă de maxime; liniile aliniate sau la un unghi; trecerile pe Z cel mult cât
+  pasul; peretele sau „trece”; legătura dintre linii. Lucrarea primește dalele din browser și le compune în workerul CAM.
+- **Interfața:** rolul „finisarea reliefului” în Tăierea, cu câmpurile lui; manualul; „Tăiat” din vederea 3D o simulează.
+  Rândul din fereastra exportului (ADR 0312 §7): doar de citit, la locul lui în ordinea tăierii (`ordinePasi`: automat întâi;
+  în „A mea”, unde îl pune omul; fără rang, în față), cu fișa (`src/ui/FisaFinisare.tsx`), în Rezultat și în „același T”;
+  Exportă îi scrie rangul. „Exportă G-code” și „Toate foile” numără o foaie doar cu finisare. Bila are CAM în bibliotecă.
+- **Otrăvurile** (`test/otravuri/18.1c.py`): primul tur a găsit probe slabe (C01, C02, C04, C07, C15, J05), întărite:
+  oracolul cu V-ul cu vârf plat, relieful aspru cu liniile nealiniate, ce rămâne pe pantă, conul mai adânc decât placa. Al doilea tur, pe `0713a3ff`: 44 / 44 prinse (O07 și O08 prin e2e; C01, C02, C04 și C07 verificate și pe proba micșorată din `6deb68d1`).
+- **Mărimea,** față de `main` (`65eecdc6`, adus în ramură): pornirea 111,2 → 111,4 kB (cu ușa 116,2 → 116,5, cu Atelierul 116,5 →
+  116,8 / 125), totalul 891,8 → 902,7 / 1 000 kB (+10,9).
+- **`main` adus** (`2aaee0b4`, cu 16.A↑b-5, 28.8↑n, 10.4↑c-1, 3.Cj-3–4): ciocnirile, în importuri și în lista de proprietăți a
+  ferestrei exportului și în catalogul controalelor (656 de nume). Apoi 20 de otrăvuri ale altor liste, rămase fără țintă pe
+  codul nou (`otravuri-void-noi.py`), mutate pe el, toate prinse din nou; K01 din 16.A-h4, întoarsă (bila are acum CAM).
+- **Rapidul pe `0713a3ff`:** felia 6 a ținut 14,0 minute din 15; proba reliefului aspru, micșorată la cazul care prinde
+  (`6deb68d1`), a dus-o la 10,3. Canalul `relief`: <https://cncvectorstudio-test--relief-i9yxfdsc.web.app>.
+- **Cererea sesiunii principale din 15:14** (16.A↑b-4 și 28.8↑o, venite în `main`): `main` adus (întâi peste `unire-2511t`,
+  apoi `65eecdc6`); în `ExportConectat.tsx`, maparea frezei dusă în `oferita` (doar forma în V), iar `bibliotecaToata` din
+  `frezePeRanduri` (fără bile: altfel o bilă Ø6 arăta ca o plată Ø6 și o plată scrisă de mână era „recunoscută”), cu proba
+  întâi (`exportFreze.bila.test.ts`) și otrava O09; A01 din 16.A-b4, mutată pe linia nouă. Proba finisării cu XY0 în centrul
+  foii: G-code-ul din centru, mutat înapoi, e cel din colț și trece oracolul. Linia frezelor, anunțată (de acord).
+- **Porțile, în CI, pe `edf9f0aa`** (înaintea lui b-4): completul 45611988372, verde (55 min): unit 10 538 / 0 (12 sărite, pe Linux), e2e 857 / 857, funcțiile pe
+  emulatoare 136 / 136, paginile 59 / 59; rapidul, verde (45611984002 la push, 45611993653 pe PR). Pornirea 111,4 / 125 kB
+  (cu ușa 116,5, cu Atelierul 116,8), totalul 901,0 / 1 000 kB, `/admin` 138,3 / 200. Nimic pe server.
+- **Porțile, în CI, pe `ff146fe1`** (cu `main` `65eecdc6`, adică 16.A↑b-4 și 3.Au): completul 45640507141, verde (75 min):
+  unit 10 564 / 0 (12 sărite, pe Linux), e2e 862 / 862, funcțiile pe emulatoare 136 / 136, paginile 59 / 59; rapidul,
+  verde pe `821c9638` (doar documente peste `ff146fe1`: 45641197078 la push, 45641220999 pe PR; felia cea mai lungă,
+  7,7 minute; rulările lui pe `ff146fe1` au fost oprite de împingerea documentelor). Pornirea 111,4 / 125 kB (cu ușa
+  116,5, cu Atelierul 116,8), totalul 902,7 / 1 000 kB, `/admin` 138,3 / 200. Nimic pe server.
+- **Mesajul sesiunii principale din 18:22** (16.A↑b-6, „Pune-o înapoi în bibliotecă”, pe `origin/unire-2511w`, `1d3882d9`, cu
+  `main` `6741c0be` și 3.Tu): adus în ramură (`f4eaeb6b`); ciocnirile, în importurile și lista bibliotecii din
+  `ExportConectat.tsx` (rămâne `frezePeRanduri`, lângă `puneInapoi`), în `DialogExport.tsx` (`finisari` și `onPuneInapoi`),
+  în catalogul controalelor (659 de nume) și în DEVLOG. `frezaDinCopie` și `cuFrezaReadusa`, citite cu bila în minte: copia de
+  pe rând (`CopieRand`) și a proiectului (`CopieProiect`) știu doar forma în V, iar rândurile n-au bile (finisarea are rândul
+  ei, fără „Pune-o înapoi”), deci o bilă nu se poate readuce ca plată. Paza, a compilatorului (`exportFreze.bila.test.ts`, două
+  `@ts-expect-error`), otrăvită de mână: cu `CopieProiect` lărgit cu bila, `tsc` cade pe directiva nefolosită.
+- **Mărimea,** față de `1d3882d9` (măsurat pe un build al lui): pornirea 111,2 → 111,4 kB (cu ușa 116,2 → 116,5, cu
+  Atelierul 116,5 → 116,9 / 125), totalul 893,5 → 904,3 / 1 000 kB (+10,8).
+- **Porțile, în CI, pe `dec06156`** (codul lui `20532b5a`, peste `1d3882d9`): completul 45654203469, verde (47 min): unit
+  10 566 / 0 (12 sărite, pe Linux), e2e 869 / 869, funcțiile pe emulatoare 136 / 136, paginile 60 / 60; rapidul, verde
+  (45654197782 la push, 45654203453 pe PR; felia cea mai lungă, 7,4 minute). Nimic pe server. Sesiunea principală a pus între
+  timp peste `1d3882d9` și 10.4↑c-2 (`66b6b335`); unirea cu el și completul pe ea rămân la ea (mesajul din 18:27).
+
 ## 2026-11-25 — 16.A↑b-6: „Pune-o înapoi în bibliotecă” din fereastra exportului (Model: Claude Opus 5.5)
 
 **Prompt:** cuvântul owner-ului, transmis de sesiunea principală: „ok, porneste 10.4↑c-2 si 16.A↑b-6”. **Started:** 25.11, 14:16.

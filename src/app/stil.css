@@ -2595,6 +2595,28 @@ nav button[aria-pressed='true'] {
   font-weight: 650;
 }
 
+/* Fișa doar de citit a finisării reliefului (ADR 0312 §7): eticheta și valoarea, pe rânduri; pe un ecran îngust, una sub alta. */
+.dx-citire {
+  display: grid;
+  grid-template-columns: minmax(7rem, max-content) minmax(0, 1fr);
+  gap: var(--sp-1) var(--sp-3);
+  margin: 0;
+}
+
+.dx-citire-rand {
+  display: contents;
+}
+
+.dx-citire dt {
+  color: var(--t-slab);
+}
+
+.dx-citire dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+  font-variant-numeric: tabular-nums;
+}
+
 .dx-rand {
   display: flex;
   flex-wrap: wrap;
@@ -2751,6 +2773,15 @@ nav button[aria-pressed='true'] {
   .dx-grup {
     grid-template-columns: minmax(0, 1fr);
     gap: var(--sp-2);
+  }
+
+  .dx-citire {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+  }
+
+  .dx-citire dd {
+    margin-bottom: var(--sp-1);
   }
 
   .dx-desen {
