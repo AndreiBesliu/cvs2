@@ -14551,3 +14551,20 @@ vigoare „unește ce se poate”
   punct zecimal în română (`src/app/descriereElement.ts`, comun: al sesiunii principale); „Trimite la mașină” în Atelier
   (aranjamentele).
 - **Documentele:** indexul liniilor (rândul exportului), starea din `docs/linii/principala.md`.
+
+## 2026-11-25 — Sesiunea principală în cloud: a treizeci și una unire (relieful: 18.1↑b, modelul în vederea 3D) (Model: Claude Fable 5.2)
+
+**Prompt:** raportul liniei reliefului („18.1↑b […] e gata de unit”, `04e7cd2f`), la ordinul în vigoare „unește ce se
+poate”
+**Started:** 25.11, 11:01. **Completed:** unirea în `main`, 25.11, 11:02; publicarea pe test, pornită după ea.
+
+- **Unirea, pe `unire-2511l`** (din `43cf59af`): `04e7cd2f`, în `ef883ac1`, fără nicio ciocnire (DEVLOG-ul, unit
+  singur). Ramura avea `main` `caddd661` (cu plafoanele noi); de atunci, `main` a primit doar documente (auditurile),
+  iar `04e7cd2f` adaugă peste `3214f4da` doar documente: arborele unirii are exact codul lui `3214f4da` (`git diff`
+  gol în afara fișierelor `.md`). Local: traducerile (1 115), catalogul controalelor (la zi), fără `.lucru/`.
+- **Porțile, în CI, pe `3214f4da`** (citite din jurnalul rulării): completul 45572436393, verde (53 min): unit
+  10 452 / 0 (12 sărite, pe Linux), e2e 833 / 833, funcțiile pe emulatoare 136 / 136, paginile 59 / 59; rapidul,
+  verde pe `3214f4da` (45572445456) și pe `04e7cd2f` (45580169660). Pornirea 111,1 kB (plafonul 125; cu ușa 116,1, cu
+  Atelierul 116,4), totalul 884,8 / 1 000 kB (+3,9), `/admin` 138,3 / 200. Nimic pe server.
+- **Documentele:** decizia și paragraful de stare în `CLAUDE.md`; indexul liniilor; starea din
+  `docs/linii/principala.md`.
