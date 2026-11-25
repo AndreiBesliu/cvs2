@@ -14732,3 +14732,18 @@ poate”
   `main`-ul acesta: completul lui de pe `c0329020` (45591209284) nu mai acoperă codul cotelor.
 - **Documentele:** decizia și paragraful de stare în `CLAUDE.md`; indexul liniilor; starea din
   `docs/linii/principala.md`.
+
+## 2026-11-25 — Sesiunea principală în cloud: lotul 32 (relieful: modelul în vederea 3D), pe test (Model: Claude Fable 5.2)
+
+**Prompt:** publicarea de după a treizeci și una unire (pe test se publică liber)
+**Started:** 25.11, 11:02 (lanțul pornit după unire). **Completed:** 25.11, 12:31.
+
+- **Pe test: `dad1a711`** (relieful 18.1↑b, plafoanele 1 000 / 125 kB, auditurile exportului și elicelor). `publica.yml`
+  45594705584, verde (12:24–12:31); serverul, neschimbat.
+- **Completul pe `main`** (45583202976, verde, 72 min: multe rulări în paralel): unit 10 452 / 0 (12 sărite, pe
+  Linux), e2e 833 / 833, funcțiile pe emulatoare 136 / 136, paginile 59 / 59; pornirea 111,1 kB, totalul 884,8 /
+  1 000 kB.
+- **Scriptul de urmărire** s-a oprit o dată la limita lui (85 de minute), cu publicarea deja pornită și la coadă;
+  reluat, a preluat aceeași rulare.
+- **Proba de fum** pe adresa de test: versiunea `dad1a711fb6e`, potrivită; nicio eroare în consolă, nicio cerere
+  căzută.

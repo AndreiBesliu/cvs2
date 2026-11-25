@@ -155,13 +155,12 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
 
 ## Starea pe 25.11.2026, la prânz (după a treizeci și doua unire din cloud)
 
-- **Pe test:** `d1a96fc4` (lotul 31: atelierul Easy 3Draw 18.30.0, cu cama și roata cu palete; publicat pe 25.11 la
-  10:44, cu serverul neschimbat; completul pe `main` 45570396384, verde; proba de fum, bună). Înainte: `f2678300`
-  (lotul 30, punctele de prindere), pe 25.11 la 06:03; `a95af70e` (lotul 29), la 03:47. **În `main`, nepublicate
-  încă:** plafoanele noi (`caddd661`: doar constantele porții și rândul ADR 0146 din roadmap), auditurile și documente.
-  În drum: lotul 32 (`dad1a711`, relieful: modelul în vederea 3D), cu ele. **După el:** cotele în exportul vectorilor
-  (10.4↑c-1, `f2f6fc57`), care pleacă împreună cu lotul pregătit pe `unire-2511o` (atelierul, 3.Cj-3 și 3.Cj-4,
-  Easy 3Draw 18.32.0; exportul, 28.8↑n), într-o singură publicare.
+- **Pe test:** `dad1a711` (lotul 32: relieful, cu modelul în vederea 3D; plafoanele 1 000 / 125 kB; auditurile;
+  publicat pe 25.11 la 12:31, cu serverul neschimbat; completul pe `main` 45583202976, verde; proba de fum, bună).
+  Înainte: `d1a96fc4` (lotul 31, cama și roata cu palete), pe 25.11 la 10:44; `f2678300` (lotul 30, punctele de
+  prindere), la 06:03. **În `main`, nepublicate încă:** cotele în exportul vectorilor (10.4↑c-1, `f2f6fc57`). Pleacă
+  împreună cu lotul pregătit pe `unire-2511q` (frezele, 16.A↑b-5; atelierul, 3.Cj-3 și 3.Cj-4, Easy 3Draw 18.32.0;
+  exportul, 28.8↑n), într-o singură publicare (lotul 33).
 - **`main`, din cloud:** pe 23.11: 3.Tq (`0ae9c6c1`); 11.3↑e și A.4 (`ddaa7ead`); 3.Tr, unită de linia elicelor
   (`d262e57a`); 25.8↑a și A.5 (`1b46c955`), cu reparația probei extensiilor (`8287d66e`); 11.3↑f, unită de linia
   planșelor (`f4601938`); A.6 (`4497d639`); 3.Xh (`2d1e482c`) și 12.1↑e-3 cu 12.1↑e-4 (`03460cab`); A.8a cu A.8b
