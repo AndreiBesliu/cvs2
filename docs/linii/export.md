@@ -96,7 +96,7 @@ vreau ca ficare setare sa fie insotita de o ilustratie sugestiva, ca sa ajute us
   în `unire-2511u`. `du(cheie, true)` aduce în vedere grupul primei greșeli și pune focusul pe câmpul ei; diametrul frezei e
   marcat greșit cât un cerc nu se găurește. Otrăvurile 6 / 6. Totalul 893,5 / 1 000 (+0,2 kB). Apoi, la cererea sesiunii
   principale, `origin/unire-2511w` (16.A↑b-6, 3.Tu) adus în ramură, cu proba cu nota bibliotecii desfăcută; apoi
-  `origin/unire-2511x` (18.1↑c, relieful), cu finisarea în `catFoaia` și proba ei pe hârtie. Urmează 28.8↑i (viteza), după
+  `origin/unire-2511x` (18.1↑c, relieful; apoi `b35e2f75`, cu 16.A↑b-7), cu finisarea în `catFoaia` și proba ei pe hârtie. Urmează 28.8↑i (viteza), după
   ce h-2 e în `main`.
 
 ## Ce s-a găsit (23.11)
@@ -209,9 +209,9 @@ vreau ca ficare setare sa fie insotita de o ilustratie sugestiva, ca sa ajute us
   focusul pe primul câmp cu `aria-invalid` din grup. O greșeală nouă stă în grupul câmpului de reparat, iar câmpul acela e
   marcat `aria-invalid` cât ține greșeala; altfel focusul rămâne pe buton. O probă care judecă „se vede” măsoară dreptunghiul
   față de panoul `[data-fise]` (ca `cumSeVede` din `export.hartie.spec.ts`), nu cu `toBeInViewport()`, care trece cu un pixel.
-- **Fereastra „Frezele mele” într-o probă se închide cu ✕ (`[data-freze="inchide"]`), nu cu Escape:** după salvare sau
-  ștergere, focusul cade din ea, iar Escape se ascultă doar pe fereastră (căderile lui `exportFrezeNota` și
-  `exportFrezeInapoi`, spuse liniei frezelor pe 25.11).
+- **Fereastra „Frezele mele” într-o probă se închide cu ✕ (`[data-freze="inchide"]`):** până la 16.A↑b-7, după salvare sau
+  ștergere focusul cădea din ea, iar Escape nu mai ajungea la fereastră (căderile lui `exportFrezeNota` și
+  `exportFrezeInapoi`, spuse liniei frezelor pe 25.11, reparate de ea în b-7). ✕ merge oricum.
 - **Regula „cât foaia” stă o singură dată, în `catFoaia` (`src/cam/prinFoaie.ts`):** lucrarea (`cuTaieturiPrinFoaie`) și
   fereastra (`adancimeTaiata`) o citesc de acolo. Un fel nou de operație care nu trece prin foaie cu bifa intră acolo, nu
   într-o condiție a lucrării (la unirea cu 18.1↑c, finisarea reliefului sosise pe vechiul `prin` al lucrării).
