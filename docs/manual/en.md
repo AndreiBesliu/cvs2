@@ -1608,9 +1608,11 @@ does not have.
 - A **larger circle**, up to two cutter diameters, is cut **as a helix** along the wall: turns of at most one step per pass,
   then a full circle at the floor, so the floor comes out clean. The direction: climb is counter-clockwise, conventional
   clockwise. The cutter never goes down faster than when plunging.
-- A circle smaller than the cutter, or over two cutter diameters, is refused, with the reason (over two diameters, a core
-  would stay in the middle: use a pocket). A drilling has no tabs, ramp, leads, corner relief or split; holes are cut with
-  the insides.
+- A circle smaller than the cutter, or over two cutter diameters, cannot be drilled (over two diameters, a core would stay in
+  the middle: use a pocket). The window says so next to the bit, with the smallest bit that works, and keeps **Export** off
+  until you change it. A drilling has no tabs, ramp, leads, corner relief or split; holes are cut with the insides.
+- The drilling drawing shows how the app drills with your circles and bit: pecking step by step, or the helix from the side,
+  with its turns and the circle the cutter follows. **Clear every … step** appears only where it pecks.
 
 **V-carve.** On closed outlines, Cut also offers **V-carve**: the V bit runs along the middle of the shape (its medial axis)
 and goes down at each point as far as fits between the walls: the depth is the distance to the nearest wall divided by
@@ -1891,8 +1893,9 @@ On the sheet and machine cards you choose:
   spoilboard, so that a board a little thicker than the one written leaves no skin. The inlay [hole](#incrustatie-drept)
   and the plug cut-outs go that much deeper by themselves. With the box **also cuts as deep as the sheet** (ticked by default),
   a profile, a pocket or a drilling written as deep as the sheet goes that much deeper too, as if you had written the thickness
-  plus the overtravel (in the project, the depth stays as written); V-carves and inlays do not change. Unticked, the cuts stay
-  as written. Either way, a depth you write may exceed the sheet thickness by at most the overtravel (for example 18.3 in an
+  plus the overtravel (in the project, the depth stays as written); V-carves and inlays do not change. The depth drawing and the
+  note next to the step then show the depth and the passes that are cut (for example, 18 mm with a 6 step and 0.3 overtravel:
+  4 passes of 4.58 mm, down to 18.3 mm). Unticked, the cuts stay as written. Either way, a depth you write may exceed the sheet thickness by at most the overtravel (for example 18.3 in an
   18 mm sheet, with 0.5 overtravel). Tabs keep their thickness, measured from the bottom of the board. The overtravel and the
   box stay while the app is open and do not go into the project; the toolpath and the 3D view leave them out;
 - the **Post**: the machine's controller. The GRBL family (GRBL 1.1, grblHAL, FluidNC) talks to this app's sender;

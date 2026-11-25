@@ -14827,3 +14827,23 @@ gata de unit”, `b099c457`; 28.8↑n, `7996e77c`), la ordinul în vigoare „un
   decizie, în paragraful de stare și în index.
 - **Documentele:** decizia și paragrafele de stare în `CLAUDE.md`; indexul liniilor; starea din
   `docs/linii/principala.md` (cu lista „La owner” adusă la zi).
+
+## 2026-11-25 — Linia exportului: felia 28.8↑h, fereastra exportului „pe hârtie” (ADR 0291 §1)
+
+**Prompt:** „1a, 2a, 3a, 4a, 5a, 6a, 7a, 8a, 9a” (1a: întâi 28.8↑h, după ce 16.A↑b-5 e în `main`; pornită după unirea lui 28.8↑o)
+**Started:** 25.11, 12:22.
+
+- **Rândul „pe hârtie”** (`src/app/hartieExport.ts`): adâncimea tăiată (`adancimeTaiata`, regula lui `cuTaieturiPrinFoaie`;
+  gaura incrustației, grosimea plus supracursa), trecerile (`adancimiTreceri`, în `treceri.ts`), felul găuririi și pașii
+  ciocănirii (`gaurireFel.ts`, folosit și de `traseuGaurire`). Fișa le primește prin `ContextFisa.hartie`.
+- **Constatarea 1:** cu supracursa prin foaie, 4 treceri de 4,58 până la 18,3, ca programul (desenul, cota, nota).
+- **Constatarea 2:** elicea desenată; câmpul ieșirii doar unde se ciocănește; cercul care nu se găurește, greșeală lângă
+  freză, cu Exportă oprit înainte de clic.
+- **Rămân în fereastră, cu proba lor:** urechile schiței (din lucrare, +1,3 kB), pasul lateral, coborârea, V-carve-ul,
+  incrustațiile.
+- **Probele:** `export.hartie.test.ts` (4), `export.hartie.spec.ts` (2 e2e); spec-urile e2e ale exportului, 321 / 321.
+- **Otrăvurile:** `28.8h.py`, 21 / 21; F01, F02 din `12.1f-4.py`, îndreptate. **Mărimea:** pornirea +0, totalul 891,7 / 1 000
+  (+1,4).
+- **Manualul** (ro, en), ADR 0291 („Implementarea 28.8↑h”), fișa etapei 3, registrul otrăvurilor, nota liniei.
+
+**Completed:** 25.11, 13:25.

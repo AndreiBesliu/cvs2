@@ -162,3 +162,44 @@ lui 28.8↑a (3 h 20 min, carcasa).
 - **Pe mașină:** zero-ul XY se pune în mijlocul foii. Proba pe mașina owner-ului (o placă cu centrul, privită în aer întâi)
   rămâne a owner-ului.
 
+
+## Implementarea 28.8↑h (25.11)
+
+- **Rândul „pe hârtie”** (`src/app/hartieExport.ts`, `hartieRand`): ce face lucrarea cu valorile scrise într-un rând, socotit de
+  fereastra conectată cu funcțiile lucrării. Fișa îl primește prin `ContextFisa.hartie` și doar îl desenează. Contractul
+  (`IntrareHartie`, `HartieRand`) stă în `src/ui/exportRand.ts`.
+  - **Adâncimea tăiată** (`adancimeTaiata`, în `src/cam/prinFoaie.ts`): cu bifa „și tăieturile cât foaia”, o tăietură cât foaia
+    trece cu supracursa (`catFoaia`, regula pe care o folosește și `cuTaieturiPrinFoaie`), iar gaura incrustației (ADR 0175) e
+    grosimea foii plus supracursa, ca `cuGauriPrinFoaie`. Rândul primește supracursa și bifa ca cererea de la Exportă: supracursa
+    doar cât e pozitivă și bună, bifa doar cu ea.
+  - **Trecerile** (`adancimiTreceri`, mutată din `profil.ts` în `src/cam/treceri.ts`, fără importuri) pe adâncimea tăiată:
+    desenul adâncimii, nota („4 treceri de 4,58 mm, până la 18,3 mm (prin foaie, cu supracursa)” când lucrarea taie mai adânc
+    decât câmpul), rampa și coborârea.
+  - **Găurirea** (`src/cam/gaurireFel.ts`, fără importuri, folosit și de `traseuGaurire`): felul fiecărui cerc
+    (`felGaurire`: ciocănire, elice, mic, mare) și pașii ciocănirii (`pasiCiocanire`). Diametrele cercurilor rândului
+    (`OperatieExport.diametre`) vin cu `diametruCerc`, formula lui `cercInLume` din lucrare.
+- **Constatarea 1:** cu supracursa 0,3 și bifa, 18 mm cu pasul 6 se arată 4 treceri de 4,575 până la 18,3, ca programul.
+- **Constatarea 2:** desenul găuririi are trei feluri (`data-gaurire`): ciocănirea, elicea (din lateral: o tură pe trecere, pe
+  cercul de rază (Dc − D) / 2, apoi una la fund) și „nu merge”. Câmpul ieșirii lipsește când toate cercurile sunt pe elice (cu
+  o valoare greșită rămâne la vedere). Un cerc pe care freza nu-l poate găuri e greșeală în grupul Freza, cu freza cea mai
+  mică bună (Dc / 2), și oprește Exportă înainte de clic, cu „Du-mă la …”.
+- **Ce rămâne în fereastră, cu proba lui față de lucrare** (`exportDeseneCalcul.ts`, `export.desene.test.ts`):
+  - **locurile urechilor pe schiță:** lucrarea lor (`urechiPeLaturi`, cu `laturiBucla` și `geometrieUrechi`) ar aduce în
+    bucata ferestrei 1,3 kB (măsurat), pentru un desen care nu e la scară și pe care nicio regulă a lucrării nu-l schimbă;
+  - **pasul lateral și coborârea:** cer motorul de contururi, care stă doar în workerul CAM;
+  - **V-carve-ul și incrustațiile:** cer o operație întreagă, pe care fereastra o face abia la Exportă; vin cu 28.8↑m, când
+    starea ferestrei devine un hook.
+- **Neschimbat:** programul, octet cu octet (aurul plăcilor 1, 2, 4, 11 și al atelierelor, corpusul CAM): mutările din lucrare
+  păstrează aceleași calcule, în aceeași ordine. Documentul rămâne v28; nimic pe server.
+- **Probele:**
+  - `export.hartie.test.ts` (4): adâncimea tăiată față de documentul tăiat de lucrare, pe corpusul CAM și pe foaia cu toate
+    felurile, cu supracursa 0 / 0,5 / 2 și bifa sau fără (martorul cere operații schimbate); constatarea 1 până la G-code;
+    felul găuririi față de `traseuGaurire` pe o grilă de cercuri și freze, cu pașii ciocănirii = mișcările lui pe Z;
+    constatarea 2 față de refuzul exportului;
+  - `export.hartie.spec.ts` (2 e2e): cele două constatări în fereastră;
+  - `export.desene.test.ts` și `gaurire.spec.ts`, aduse la zi (găurirea pe hârtie din rând; greșeala lângă freză în locul
+    refuzului după clic). Spec-urile e2e care deschid exportul, 321 / 321.
+- **Otrăvurile:** `28.8h.py`, 21 / 21 (11 unitare, 10 e2e). Două din `12.1f-4.py` (F01, F02), care mutau regula din
+  `cuTaieturiPrinFoaie`, țintesc acum `catFoaia`; prinse.
+- **Mărimea:** pornirea +0 (111,2 kB), totalul +1,4 kB (891,7 / 1 000); bucata ferestrei +1,1 kB gzip (elicea desenată,
+  greșeala găuririi, textele, modulele mici ale lucrării). Estimarea din tabel (kB ±0) nu socotise desenul elicei.
