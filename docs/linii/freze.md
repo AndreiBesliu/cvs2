@@ -128,6 +128,12 @@ gravare, profil, formă desenată)” și „Freze de profil desenate de utiliza
   nu ca alt nume de proprietate; legarea rândurilor e doar între operațiile aceleiași piese (proba ei pornește din Scade,
   ca proba ordinii de mână). Tot aici, tabelul frezelor de rest (constatarea 9 a auditului exportului, dată liniei).
   Mărimea: pornirea neschimbată, totalul +1,0 kB (882,0 / 1 000). Urmează 16.A↑b-4 (nota „s-a schimbat în bibliotecă”).
+- **25.11, 11:05–11:40: 16.A↑b-4 pe `wip/16.A-freze-b4`** (din vârful lui b-5, `b7660e94`, ca `wip/16.A-freze` să rămână neschimbată
+  până la unire), la „continua cu 16.A↑b-4” al owner-ului: nota pe fiecare freză a rândului (schimbată în bibliotecă, cu „Ia
+  valorile noi” pe rând și „Pe toate (N)”; ștearsă; recunoașterea celei scrise de mână ca „Scrisă de mână (ca „…”)”).
+  „Pune-o înapoi în bibliotecă” a ieșit în 16.A↑b-6 (scrierea în bibliotecă din fereastra exportului, cu contul). **Capcane:**
+  Edge scrie 1400 ca „1.400” în română (gruparea de la patru cifre); o probă care șterge o freză în „Frezele mele” așteaptă
+  întâi să dispară din listă (ștergerea e asincronă: un Escape grăbit închide doar întrebarea, nu fereastra).
 - **Feliile**, în ordine: 16.A↑a (biblioteca în browser, fereastra, fișierul), apoi b (alegerea în proiect, v27), c
   (contul), d (calibrarea), e (bila și toroidala), f (profilul desenat), g (valorile pe material).
 
