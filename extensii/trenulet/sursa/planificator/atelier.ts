@@ -17,7 +17,7 @@ var Atelier3D = (function () {
     dinti?: number; unghi?: number; sens?: string; modul?: number; janta?: number; banda?: string; spite?: string; nrSpite?: number; canal?: string;
     latCanal?: number; pereche?: number; butuc?: string; pinion?: number; piesa?: string; gauriStift?: string; cursa?: number;
     palete?: number; diametru?: number; pas?: number; latime?: number; paleta?: string; con?: string; inclinare?: number; pupa?: number; capac?: string;
-    joc?: number; inel?: string; urechi?: number; opritor?: boolean; mansoane?: [number, string][]; prindere?: string; roata?: number; bolta?: string };
+    joc?: number; inel?: string; urechi?: number; opritor?: boolean; mansoane?: [number, string][]; prindere?: string; roata?: number; bolta?: string; disc?: string };
   /** O gaură pe grilă: colțul de celulă și tipul. */
   type Gaura = [number, number, string];
   /** O piesă gata de printat: corpul, mărimea și ce a spus motorul despre ea. */
@@ -97,6 +97,8 @@ var Atelier3D = (function () {
     // ventilatorul cu carcasă (ADR 0282): rotorul sau carcasa, Ø40 în carcasă (5 știfturi), 7 palete, jocul 0,8 la vârf, pasul
     // 0,8 × diametrul, lățimea 45 % din rază, gaura de ax, fără inel, carcasa cu 2 urechi
     ventilator: { piesa: "rotor", palete: 7, diametru: 40, joc: 0.8, pas: 0.8, latime: 45, sens: "dreapta", gaura: "x", inel: "nu", urechi: 2 },
+    // roata cu palete (ADR 0284, felia 3.Cj): Ø64 (8 știfturi), 8 palete drepte, lată cât două grinzi, cu discul dedesubt
+    roataPalete: { diam: 64, palete: 8, lat: 15.8, forma: "drepte", disc: "unul", gaura: "x" },
     // forma trimisă din desenul cvs2 (ADR 0166): doar contururile închise; câte erau deschise și refuzul, pentru om
     dinCvs2: { contururi: [] as [number, number][][], grosime: 3.2, deschise: 0, refuz: "" },
   };
@@ -110,7 +112,7 @@ var Atelier3D = (function () {
       ["lateral", "Știfturi pe lateral"], ["suport", "Suport (bracket)"], ["grinda", "Grindă"], ["caramidaTechnic", "Cărămidă Technic"], ["placaTechnic", "Placă cu găuri"]]],
     ["legaturi", "Legături", [["stiftTechnic", "Știft"], ["ax", "Ax"], ["bucsa", "Bucșă / conector"], ["conector", "Conector perpendicular"], ["conectorUnghi", "Conector în unghi"], ["clema", "Clemă"], ["bara", "Bară"], ["maner", "Mâner"], ["bila", "Bilă"], ["cupa", "Cupă"]]],
     ["roti", "Roți", [["rotita", "Roată dințată"], ["cremaliera", "Cremalieră"], ["cama", "Camă"], ["conica", "Roată conică"], ["coroana", "Roată coroană"], ["conicaDubla", "Conică dublă"], ["fulie", "Fulie"], ["roata", "Roată cu anvelopă"], ["senila", "Șenilă"]]],
-    ["propulsie", "Elice", [["elice", "Elice"], ["eliceBarca", "Elice de barcă"], ["ventilator", "Ventilator cu carcasă"]]]
+    ["propulsie", "Elice", [["elice", "Elice"], ["eliceBarca", "Elice de barcă"], ["ventilator", "Ventilator cu carcasă"], ["roataPalete", "Roată cu palete"]]]
   ];
   /** Familia fiecărei piese din galerii. */
   const FAMILIA = new Map(FAMILII.flatMap(([f, , piese]) => piese.map(([k]): [string, string] => [k, f])));
@@ -156,6 +158,7 @@ var Atelier3D = (function () {
     elice: `<circle cx="12" cy="12" r="2.2"/><path d="M10.7 10.2C7.8 7.7 7.6 2.7 10.8 1.9C13 1.4 14.6 6 13.3 10.2M14.2 11.7C17.8 10.5 22.3 12.8 21.3 16C20.7 18.2 15.9 17.3 12.9 14M11.1 14C10.4 17.8 6.1 20.5 3.9 18.1C2.3 16.4 5.5 12.7 9.8 11.7"/>`,
     eliceBarca: `<circle cx="12" cy="12" r="2.2"/><path d="M10.4 10.3C6 9 5.8 3.4 10.3 2.7C14.4 2 16.7 6.2 13.5 10.2M14.3 11.5C17.6 8.3 22.5 10.9 20.9 15.2C19.5 19.1 14.7 19 12.8 14.2M11.3 14.2C12.4 18.7 7.7 21.7 4.8 18.1C2.1 14.9 4.6 10.8 9.7 11.6"/>`,
     ventilator: `<circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="2.2"/><path d="M12 9.4Q12.4 5.8 18 6.2M9.5 11.2Q6.3 9.7 8.3 4.5M10.5 14.1Q8 16.7 3.7 13.2M13.5 14.1Q15.3 17.3 10.5 20.3M14.5 11.2Q18 10.5 19.4 15.9"/>`,
+    roataPalete: `<circle cx="12" cy="12" r="2.4"/><path d="M14.4 12H22M13.7 13.7L19.1 19.1M12 14.4V22M10.3 13.7L4.9 19.1M9.6 12H2M10.3 10.3L4.9 4.9M12 9.6V2M13.7 10.3L19.1 4.9"/>`,
   };
   const PICTOGRAMA_GENERICA = `<path d="M12 3l8 4.5v9L12 21l-8-4.5v-9zM4 7.5l8 4.5 8-4.5M12 12v9"/>`;
   /** Butonul unei piese din galerie: pictograma ei, apoi numele (pictograma e ascunsă cititoarelor de ecran: butonul se
@@ -267,6 +270,12 @@ var Atelier3D = (function () {
       // forma, diametrul de bază și cursa; apoi ce nu e obișnuit: grosimea, gaura rotundă
       const q = Lego.camaCote(d), f = q.forma === "para" ? tr("Camă pară") : q.forma === "melc" ? tr("Camă melc") : tr("Camă excentrică");
       return tr`${f} Ø${fmt(q.diam)}, cursa ${fmt(q.cursa)}` + (q.grosime === 7.8 ? "" : tr`, ${fmt(q.grosime)} mm`) + (q.gaura === "r" ? tr(", gaură rotundă") : "");
+    }
+    if (d.tip === "roataPalete") {
+      // diametrul și paletele; apoi ce nu e obișnuit: paletele curbate, lățimea, lipsa discului, gaura rotundă
+      const q = Lego.roataPaleteCote(d);
+      return tr`Roată cu palete Ø${fmt(q.diam)}, ${q.palete} palete` + (q.forma === "curbate" ? tr(", curbate") : "") + (q.lat === 15.8 ? "" : tr`, lată ${fmt(q.lat)} mm`)
+        + (q.disc === "fara" ? tr(", fără disc") : "") + (q.gaura === "r" ? tr(", gaură rotundă") : "");
     }
     if (d.tip === "rotita") {
       const sens = d.sens === "stanga" ? tr("stânga") : tr("dreapta");
@@ -417,6 +426,7 @@ var Atelier3D = (function () {
     if (t === "dinCvs2") { delete p.deschise; delete p.refuz; }
     if (t === "arc") { const q = Lego.arcCote(p); p.lung = q.lung; p.inalt = q.inalt; if (q.bolta === "joasa") p.bolta = "joasa"; else delete p.bolta; }
     if (t === "cama") { const q = Lego.camaCote(p); p.forma = q.forma; p.diam = q.diam; p.cursa = q.cursa; p.grosime = q.grosime; p.gaura = q.gaura; }
+    if (t === "roataPalete") { const q = Lego.roataPaleteCote(p); p.diam = q.diam; p.palete = q.palete; p.lat = q.lat; p.forma = q.forma; p.disc = q.disc; p.gaura = q.gaura; }
     if (t === "cremaliera") { const q = Lego.cremalieraMontaj(p); p.lung = q.lung; p.roata = q.z; p.prindere = q.prindere; if (q.m === 1) delete p.modul; else p.modul = q.m; }
     if (t === "rotita") {
       // perechea e a editorului; la dinții drepți, unghiul și sensul nu contează (două roți drepte la fel sunt aceeași piesă)
@@ -961,6 +971,33 @@ var Atelier3D = (function () {
       camp("#at-cam-grosime", 1, 20, v => { p.grosime = v; });
       alege("#at-cam-forma", v => { p.forma = v; });
       alege("#at-cam-gaura", v => { p.gaura = v; });
+    } else if (t === "roataPalete") {
+      // roata cu palete (ADR 0284, felia 3.Cj): diametrul (și repede, pe grila de știfturi), paletele, lățimea, forma lor,
+      // discul și gaura; butucul și paletele, în cuvinte. Paletele se țin în marginea diametrului (câte încap la butuc).
+      const p = stare.roataPalete, q = Lego.roataPaleteCote(p);
+      e.innerHTML = `<h2>Roată cu palete</h2>
+        <p class="mic">O roată de apă sau de vânt: paletele pornesc din butucul roților și ajung la diametrul cerut. Pe un ax, între două grinzi, împinge o barcă sau e învârtită de un jet de apă ori de aer. Discul de dedesubt ține paletele între ele; fără el, apa trece printre palete. Se tipărește culcată, fără suport.</p>
+        <div class="at-rand"><span class="mic">Repede:</span>${seg("at-rp-repede", [["32", "Ø32"], ["48", "Ø48"], ["64", "Ø64"], ["96", "Ø96"]], String(q.diam))}<span class="mic">${tr("4, 6, 8 și 12 știfturi")}</span></div>
+        <div class="at-campuri">
+          <label for="at-rp-diam">Diametrul (mm)<input id="at-rp-diam" type="number" min="24" max="160" step="0.1" value="${q.diam}"></label>
+          <label for="at-rp-palete">Paletele<input id="at-rp-palete" type="number" min="4" max="${q.incap}" step="1" value="${q.palete}"></label>
+          <label for="at-rp-lat">Lățimea (mm)<input id="at-rp-lat" type="number" min="4" max="40" step="0.1" value="${q.lat}"></label>
+        </div>
+        <div class="at-rand"><span class="mic">Paletele:</span>${seg("at-rp-forma", [["drepte", "Drepte"], ["curbate", "Curbate"]], q.forma)}</div>
+        <div class="at-rand"><span class="mic">Discul:</span>${seg("at-rp-disc", [["unul", "Cu disc"], ["fara", "Fără"]], q.disc)}</div>
+        <div class="at-rand"><span class="mic">Gaura:</span>${seg("at-rp-gaura", [["x", "Pentru ax"], ["r", "Rotundă"]], q.gaura)}</div>
+        <div class="at-rand"><span class="mic" id="at-rp-info">${tr`Butucul are Ø${fmt(2 * q.butuc)} mm, iar paletele, ${fmt(q.lungime)} mm lungime și ${fmt(q.grosime)} mm grosime.`}${q.incap < 24 ? " " + tr`La diametrul ăsta încap cel mult ${q.incap} palete.` : ""}${q.forma === "curbate" ? " " + tr("Curbate, prind apa ca niște cupe: împing mai bine într-un sens.") : ""}</span></div>`;
+      // un număr din afara marginilor nu e primit: câmpul se întoarce la valoarea de dinainte; paletele rămân câte încap
+      const tine = () => { p.palete = Lego.roataPaleteCote(p).palete; };
+      const camp = (id: string, a: number, b: number, f: (v: number) => void) => { $(id).onchange = ev => { const v = +(ev.target as HTMLInputElement).value; if (v >= a && v <= b) { f(v); tine(); schimbat(); } editor(); }; };
+      const alege = (id: string, f: (v: string) => void) => { $(id).onclick = ev => { const b = (ev.target as Element).closest<HTMLElement>("[data-v]"); if (!b) return; f(b.dataset.v!); tine(); editor(); schimbat(); }; };
+      camp("#at-rp-diam", 24, 160, v => { p.diam = v; });
+      camp("#at-rp-palete", 4, 24, v => { p.palete = Math.round(v); });
+      camp("#at-rp-lat", 4, 40, v => { p.lat = v; });
+      alege("#at-rp-repede", v => { p.diam = +v; });
+      alege("#at-rp-forma", v => { p.forma = v; });
+      alege("#at-rp-disc", v => { p.disc = v; });
+      alege("#at-rp-gaura", v => { p.gaura = v; });
     } else if (t === "roata") {
       // roata cu anvelopă (ADR 0280): felul, mărimea, banda de rulare, fața, gaura; janta și anvelopa, împreună
       const p = stare.roata, faraJanta = p.fel === "anvelopa", faraAnvelopa = p.fel === "janta";

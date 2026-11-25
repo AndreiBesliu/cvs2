@@ -1702,9 +1702,11 @@ var Lego = (function (glob: typeof globalThis) {
     const h = camp(d.grosime, 1, 20, 7.8, x => tr`Grosimea unei came e între 1 și 20 mm: am făcut-o de ${x} mm.`);
     return { forma: d.forma === "para" || d.forma === "melc" ? d.forma : "excentric", D, R0: D / 2, c, h, gaura: d.gaura === "r" ? "r" : "x", avert };
   }
+  /** Câte laturi are un cerc de rază R ca săgeata lor să fie de cel mult 0,02 mm (multiplu de 8, cel puțin N_CERC). */
+  const laturiFine = (R: number): number => Math.max(N_CERC, 8 * Math.ceil(Math.PI / Math.acos(1 - 0.02 / R) / 8));
   /** Conturul camei (trigonometric), cu săgeata laturilor de cel mult 0,02 mm. */
   function conturCama(forma: string, R0: number, c: number): Poli {
-    const laturi = (R: number) => Math.max(N_CERC, 8 * Math.ceil(Math.PI / Math.acos(1 - 0.02 / R) / 8));
+    const laturi = laturiFine;
     if (forma === "excentric") return cerc(c / 2, 0, R0 + c / 2, laturi(R0 + c / 2));
     if (forma === "melc") {
       // de la raza de bază (la 0°) la raza de bază plus cursa (la 360°); treapta e latura care închide conturul, pe +x
@@ -1725,6 +1727,70 @@ var Lego = (function (glob: typeof globalThis) {
     const g = q.gaura === "r" ? cerc(0, 0, e.gauraD / 2) : cruce(0, 0, e.axGauraD, e.axGauraLat);
     // prinderile: gaura de pe ax, prin grosimea camei
     return { tri: prismaGauri(conturCama(q.forma, q.R0, q.c), [g], 0, q.h), avert: q.avert, prinderi: prinderiButuc(q.gaura, q.h) };
+  }
+
+  // ---------------------------------------------------------------------------------------------- roata cu palete (ADR 0284, 3.Cj)
+  // Roata cu palete, culcată pe pat (axa pe z, prin origine; prima paletă pe +x): butucul roților, paletele pornite din
+  // el, egal depărtate, până la diametrul cerut, și, la alegere, un disc pe fața de jos, care le ține. Paletele sunt pereți
+  // drepți, deci se tipărește fără suport. Drepte: pe rază. Curbate: arce de cerc cu coarda pe rază și săgeata de o
+  // cincime din ea, toate în aceeași parte (spre sensul trigonometric), ca niște cupe.
+  // - grosimea paletei: 2 % din diametru, cel puțin 1,6 mm; discul: 1,2 mm;
+  // - butucul: cel al roților (4,8 mm), dar cel puțin 2,5 grosimi și cât să rămână 0,8 mm între palete lângă el (paleta
+  //   curbată taie butucul pieziș, deci ține mai mult loc); crește cel mult până la jumătatea razei: de aici, câte palete încap.
+  type PaleteDef = { diam?: unknown; palete?: unknown; lat?: unknown; forma?: unknown; disc?: unknown; gaura?: unknown };
+  const PALETE = { grosime: 1.6, disc: 1.2, intre: 0.8, sageata: 0.2 };
+  function roataPaleteCote(d: PaleteDef) {
+    const avert: string[] = [], K = PALETE, zec = (x: number) => String(x).replace(".", Limba.zecimal);
+    const camp = (v: unknown, a: number, b: number, implicit: number, ce: (x: string) => string): number => {
+      const n = numarCerut(v), x = zecime(Math.min(b, Math.max(a, Number.isFinite(n) ? n : implicit)));
+      if (Number.isFinite(n) && (n < a - 1e-9 || n > b + 1e-9)) avert.push(ce(zec(x)));
+      return x;
+    };
+    const D = camp(d.diam, 24, 160, 64, x => tr`Diametrul unei roți cu palete e între 24 și 160 mm: am făcut-o de ${x} mm.`);
+    const forma = d.forma === "curbate" ? "curbate" : "drepte", gaura = d.gaura === "r" ? "r" : "x", R = D / 2;
+    const t = Math.max(K.grosime, zecime(0.02 * D));
+    // cât ține o paletă pe cercul butucului: grosimea ei, iar la cea curbată, grosimea tăiată pieziș (coarda face cu arcul,
+    // la capete, unghiul θ cu sin θ = (c / 2) / ρ, unde ρ = c · (1 / 4 + s²) / (2 · s) e raza arcului cu săgeata s · c)
+    const s = K.sageata, piezis = forma === "curbate" ? 1 / Math.sqrt(1 - ((0.5 * 2 * s) / (0.25 + s * s)) ** 2) : 1, pas = t * piezis + K.intre;
+    const incap = Math.floor(Math.PI * R / pas);
+    const cerute = numarCerut(d.palete), n0 = Math.round(Number.isFinite(cerute) ? cerute : 8), n = Math.min(24, incap, Math.max(4, n0));
+    if (Number.isFinite(cerute) && n !== cerute) avert.push(n0 > n && n < 24
+      ? tr`La diametrul de ${zec(D)} mm încap cel mult ${n} palete: am făcut-o cu ${n}.`
+      : tr`O roată cu palete are între 4 și 24 de palete: am făcut-o cu ${n}.`);
+    const W = camp(d.lat, 4, 40, 15.8, x => tr`Lățimea unei roți cu palete e între 4 și 40 mm: am făcut-o de ${x} mm.`);
+    const rh = Math.ceil(Math.max(ROATA.butuc, razaGauraButuc(gaura) + ROATA.peretButuc, 2.5 * t, n * pas / (2 * Math.PI)) * 10 - 1e-9) / 10;
+    return { D, R, n, W, forma, disc: d.disc === "fara" ? "fara" : "unul", gaura, rh, t, c: R - rh, sageata: forma === "curbate" ? s * (R - rh) : 0, incap: Math.min(24, incap), avert };
+  }
+  /** Conturul unei palete (trigonometric), cu coarda pe +x: de la butuc (intră 0,3 mm în el) până la cercul de rază R,
+   *  pe care îi stau colțurile și mijlocul vârfului. */
+  function conturPaleta(q: { R: number; rh: number; t: number; c: number; sageata: number }): Poli {
+    const { R, rh, t } = q, h = t / 2;
+    if (!q.sageata) { const xv = Math.sqrt(R * R - h * h); return [[rh - 0.3, -h], [xv, -h], [R, 0], [xv, h], [rh - 0.3, h]]; }
+    // arcul prin (rh, 0), (mijloc, săgeata), (R, 0): centrul sub coardă, raza rho; marginile paletei sunt arce cu același
+    // centru, de raze rho ± t / 2. Unghiul scade de la butuc (uA) la vârf (uB).
+    const c = q.c, sg = q.sageata, rho = (c * c / 4 + sg * sg) / (2 * sg), cx = rh + c / 2, cy = sg - rho, dc = Math.hypot(cx, cy), uc = Math.atan2(cy, cx);
+    const th = Math.asin(c / 2 / rho), uA = Math.PI / 2 + th, uB = Math.PI / 2 - th;
+    const pe = (r: number, u: number): P2 => [cx + r * Math.cos(u), cy + r * Math.sin(u)];
+    // unde taie arcul de rază r (cu centrul paletei) cercul de rază a din jurul axului, lângă unghiul u0
+    const taie = (r: number, a: number, u0: number): number => {
+      const da = Math.acos(Math.min(1, Math.max(-1, (a * a - dc * dc - r * r) / (2 * r * dc))));
+      return Math.abs(uc + da - u0) < Math.abs(uc - da - u0) ? uc + da : uc - da;
+    };
+    // la butuc, paleta pleacă pieziș: marginea dinspre săgeată (sus) e deja în butuc în dreptul capătului coardei, cea de
+    // jos e în afara lui; de la ea, capătul paletei coboară pe rază până în butuc (0,3 mm sub fața lui), ca marginea de jos
+    // să nu mai meargă pe lângă butuc
+    const u1s = taie(rho + h, R, uB), u1j = taie(rho - h, R, uB), m = Math.max(8, Math.ceil(laturiFine(rho) * (uA - uB) / (2 * Math.PI)));
+    const sus: Poli = [], jos: Poli = [];
+    for (let k = 0; k <= m; k++) { sus.push(pe(rho + h, uA + (u1s - uA) * k / m)); jos.push(pe(rho - h, uA + (u1j - uA) * k / m)); }
+    const j0 = jos[0]!, rj = Math.hypot(j0[0], j0[1]);
+    return trig([...sus, [R, 0], ...jos.reverse(), [j0[0] * (rh - 0.3) / rj, j0[1] * (rh - 0.3) / rj]]);
+  }
+  function roataPalete(d: PaleteDef): Corp {
+    const q = roataPaleteCote(d), K = PALETE, paleta = conturPaleta(q);
+    const tri = butucRoata(q.gaura, q.rh, q.W);
+    for (let k = 0; k < q.n; k++) { const u = 2 * Math.PI * k / q.n; tri.push(...prisma(paleta.map(p => rotP(p, u)), 0, q.W)); }
+    if (q.disc === "unul") tri.push(...inel(cerc(0, 0, q.R, laturiFine(q.R)), cerc(0, 0, q.rh - 0.3), [0, 0], 0, K.disc));
+    return { tri, avert: q.avert, prinderi: prinderiButuc(q.gaura, q.W) };
   }
 
   // ---------------------------------------------------------------------------------------------- roata cu anvelopa
@@ -2737,7 +2803,7 @@ var Lego = (function (glob: typeof globalThis) {
   }
 
   // ---------------------------------------------------------------------------------------------- piesa dupa definitie
-  const TIPURI = { caramida, lateral, panta, pantaInversa, pana, rotund, arc, grinda, caramidaTechnic, ax, stiftTechnic, bucsa, conector, conectorUnghi, suport, clema, maner, bara, bila, cupa, rotita, cremaliera, cama, roata, fulie, conica, coroana, conicaDubla, senila, elice, eliceBarca, ventilator, dinCvs2 };
+  const TIPURI = { caramida, lateral, panta, pantaInversa, pana, rotund, arc, grinda, caramidaTechnic, ax, stiftTechnic, bucsa, conector, conectorUnghi, suport, clema, maner, bara, bila, cupa, rotita, cremaliera, cama, roata, fulie, conica, coroana, conicaDubla, senila, elice, eliceBarca, ventilator, roataPalete, dinCvs2 };
   function construieste(def: DefPiesa) {
     const f = TIPURI[def.tip];
     if (!f) throw new Error("tip necunoscut: " + def.tip);
@@ -2831,6 +2897,9 @@ var Lego = (function (glob: typeof globalThis) {
     distantaRoti: (z1: number, z2: number, m = 1) => m * (z1 + z2) / 2,
     // arcul (ADR 0284): cotele din parametri: deschiderea dintre picioare, cât urcă bolta, raza ei, cât rămâne deasupra
     arcCote: (d: ArcDef) => { const q = arcCote(d); return { lung: q.n, inalt: q.c, bolta: q.joasa ? "joasa" : "inalta", deschidere: q.w, sageata: q.s, raza: q.R, deasupra: q.H - q.s, inaltime: q.H }; },
+    // roata cu palete (ADR 0284): cotele din parametri, după margini; butucul (raza), grosimea și lungimea unei palete
+    // (de la butuc la vârf), săgeata celor curbate, grosimea discului, câte palete încap la diametrul ăsta
+    roataPaleteCote: (d: PaleteDef) => { const q = roataPaleteCote(d); return { diam: q.D, palete: q.n, lat: q.W, forma: q.forma, disc: q.disc, gaura: q.gaura, butuc: q.rh, grosime: q.t, lungime: q.c, sageata: q.sageata, discGros: PALETE.disc, incap: q.incap }; },
     // cama (ADR 0284): cotele din parametri, după margini: forma, diametrul de bază, cursa, grosimea, raza cea mai mică și cea mai mare
     camaCote: (d: CamaDef) => { const q = camaCote(d); return { forma: q.forma, diam: q.D, cursa: q.c, grosime: q.h, gaura: q.gaura, razaMica: q.R0, razaMare: q.R0 + q.c }; },
     // cremaliera (ADR 0284): cotele din parametri: câți dinți încap, cu câte trepte e ridicat axul roții pereche (plăci, la
