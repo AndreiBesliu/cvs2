@@ -62,6 +62,12 @@ export type OptiuniImprimantaFalsa = {
   readonly firmware?: string;
   /** Pornește imprimând fișierul acesta, de la procentul dat. */
   readonly imprima?: { readonly fisier: string; readonly progres: number };
+  /**
+   * Din 3.Au: la legare, o imprimantă care lucrează trimite întâi o bucată doar cu progresul (fără `state`, fără numele
+   * fișierului), iar starea întreagă cerută pleacă abia după atâtea milisecunde. E ordinea rară, dar adevărată, în care o
+   * bucată de stare o ia înaintea răspunsului la `ReqPrinterPara`; aici, la fiecare legare.
+   */
+  readonly bucataIntaiMs?: number;
   /** `k1` (implicit): bătăile inimii și lista `retGcodeFileInfo2`; `k1c-2025`: ca imprimanta owner-ului (vezi antetul). */
   readonly fel?: 'k1' | 'k1c-2025';
   /** Cât durează fiecare pas al homing-ului (`deviceState` 7), în ms. */
@@ -386,6 +392,9 @@ export function pornesteImprimanta(opt: OptiuniImprimantaFalsa = {}): Promise<Im
     const json = (o: unknown): void => { trimite(JSON.stringify(o)); };
     const laSchimbare = (c: Readonly<Record<string, unknown>>): void => { json(c); };
     trimitatori.add(laSchimbare);
+    if (opt.bucataIntaiMs !== undefined && s['state'] === 1) {
+      json({ printProgress: s['printProgress'], printJobTime: s['printJobTime'], printLeftTime: s['printLeftTime'], layer: s['layer'] });
+    }
     /** Imprimanta închide legătura: cadrul de închidere, apoi socket-ul. */
     const inchide = (): void => {
       if (socket.destroyed || tacute.has(socket)) return;
@@ -415,7 +424,11 @@ export function pornesteImprimanta(opt: OptiuniImprimantaFalsa = {}): Promise<Im
         return;
       }
       const p = o.params ?? {};
-      if (o.method === 'get' && p['ReqPrinterPara'] === 1) { json(s); return; }
+      if (o.method === 'get' && p['ReqPrinterPara'] === 1) {
+        if (opt.bucataIntaiMs !== undefined) setTimeout(() => { json(s); }, opt.bucataIntaiMs);
+        else json(s);
+        return;
+      }
       if (o.method === 'get' && p['reqHistory'] === 1) { json({ historyList: istoric }); return; }
       if (o.method === 'get' && p['reqElapseVideoList'] === 1) { json({ elapseVideoList: filme }); return; }
       if (o.method === 'get' && p['reqGcodeFile'] === 1) {
