@@ -14419,10 +14419,11 @@ miercuri.” și „vreau sa pornesti si celelalte sub-sesiuni”): „Deci porn
   schimbat de mână o scoate doar pe freza aceea. Exportă scrie originea cu regula frezei operației (`cuOrigine`, comună), iar
   legarea rândurilor ține și originea frezelor în plus, ca lucrarea. Manualul (ro, en), catalogul controalelor.
 - **Probele** (întâi): unitare noi 6 (`exportFreze.rest.test.ts`), în Edge 4 (`exportFrezeRest.spec.ts`) și frezele în plus în
-  proba privirii (7 / 7). **Otrăvurile** (`test/otravuri/16.A-b5.py`): pe hârtie 13 / 13 (T02 și C02 scăpaseră: probele frezelor de rest au acum două freze în listă); cele din Edge rulează. Otrăvurile lui 16.A↑b-3 atinse de mutarea
+  proba privirii (7 / 7). **Otrăvurile** (`test/otravuri/16.A-b5.py`): 30 / 30 (13 pe hârtie, 17 în Edge; T02 și C02 scăpaseră: probele frezelor de rest au acum două freze în listă). Otrăvurile lui 16.A↑b-3 atinse de mutarea
   codului (S01–S04, W03, W04) țin acum codul nou.
 - **Mărimea:** pornirea neschimbată (111,2 kB; cu ușa 116,1, cu Atelierul 116,5 / 120), totalul 881,0 → 881,8 / 900 (măsurat
-  pe `main` `f2678300` și pe ramură). Nimic pe server; documentul rămâne v27.
+  pe `main` `f2678300` și pe ramură). Nimic pe server; documentul rămâne v27. Apoi `main` adus (`caddd661`, plafoanele
+  1 000 / 125 kB, ADR 0146). **Completed:** 25.11, 10:40.
 
 ## 2026-11-25 — Sesiunea principală în cloud: lotul 30 (atelierul Easy 3Draw: punctele de prindere), pe test; liniile, repornite (Model: Claude Fable 5.2)
 
