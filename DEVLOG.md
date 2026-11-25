@@ -15431,3 +15431,29 @@ cu patru întrebări: „Mergem cu recomandarile”
   (plafonul 125; cu ușa 116,5, cu Atelierul 116,9), totalul 909,1 / 1 000 kB, `/admin` 138,3 / 200, contul 30,2 / 32.
   Nimic pe server.
 - **Documentele:** decizia și paragraful de stare în `CLAUDE.md`; indexul liniilor; starea din `docs/linii/principala.md`.
+
+## 2026-11-25 — Felia 3.Cl-2: globul de Crăciun (ADR 0285) (sesiune cloud)
+
+**Prompt:** „Mergem cu recomandarile” (răspunsul owner-ului la ADR 0285, în sesiunea liniei: după fulg, stea și brăduț
+vine globul, cu relieful pe două înălțimi)
+**Started:** 25.11, 22:16 (după unirea lui 3.Cl-1 în `main`). **Completed:** 25.11, 23:05 (felia, cu otrăvurile;
+orele, după ceasul containerului).
+
+- **Ce face:** a patra piesă a filei „Crăciun”, globul: un disc cu căpăcel și inel, cu un model în cercul dinăuntru
+  (dungi, zigzag, stele sau fără), decupat ori în relief, sau din două discuri îmbinate în cruce.
+- **Două culori fără schimbător:** în relief, modelul stă peste discul întreg; editorul spune înălțimea la care se
+  schimbă filamentul și stratul ei (la straturi de 0,2 mm).
+- **Motorul:** `globCote`, `modelGlob`, `globCraciun` (tipul `glob`); arcele mari ale decorațiunilor, din laturi fine
+  (`aplatizeaza(…, laturiFine)`).
+- **Probele**, scrise întâi: unitară (6 teste, cu modelul de pe hârtie; a căzut cu funcțiile lipsă) și e2e (4
+  scenarii); proba în engleză din cvs2 trece și prin glob. Pluginul: unitare 310 / 310, e2e 219 / 219.
+- **Găsit de probă:** discul era din 48 de laturi (abatere de 0,06 mm la Ø60; la Ø120, laturi de aproape 8 mm, vizibile
+  pe un glob). Reparat pentru decorațiuni; piesele de dinainte ies la fel (au arce mici).
+- **Probele decorațiunilor** își împart uneltele „de pe hârtie” (`test/unit/ajutor-craciun.ts`).
+- **Otrăvurile:** `3.Cl-2.py`, 66 / 66, în clonă (62 la prima rulare: M25 era pe un cod mort al motorului, scos; A09, pe o aducere în margini de prisos din editor, scoasă: numărul scris rămâne ținut minte; A01 și A22, prinse după întărirea probei e2e); `3.Cl-2-en.py`, 10 / 10. Două ancore mutate din `3.Cl-1.py` (rândul familiei
+  și un text la fel în alt editor), aduse la zi și rulate din nou.
+- **Easy 3Draw 18.36.0** (540,9 kB), cu rândul de „ce e nou”. Doar pachetul extensiei se schimbă.
+- **Față de propunere:** globul din trei discuri n-a intrat (altă îmbinare); se face la cerere.
+- **Documentele:** ADR 0285 („Implementat (3.Cl-2)”), indexul ADR, fișa etapei 3 (jurnalul, coada owner-ului),
+  `docs/linii/atelier.md`, indexul liniilor, `docs/otravuri.md`, `CLAUDE.md`.
+- **Urmează:** 3.Cl-3 (ornamentul cu nume, cu un font propriu dintr-o singură linie).

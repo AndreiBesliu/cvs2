@@ -1211,9 +1211,14 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   un vârf ascuțit, pe o tijă) sau gaura de lângă vârf; Easy 3Draw 18.35.0 (următoarea, 18.36.0). **O piesă plată nouă
   se face din forme unite (`unesteForme`, în motor), nu din corpuri suprapuse, iar proba ei e modelul de pe hârtie,
   întrebat punct cu punct (`caPeHartie`, în `test/unit/trenulet.craciun.test.ts`). O filă nouă a atelierului atinge
-  probele vechi care numără filele, pictogramele și căutarea (lista, în `docs/linii/atelier.md`).** Urmează 3.Cl-2
-  (globul, relieful pe două înălțimi), 3.Cl-3 (ornamentul cu nume), 3.Cl-4 (brăduțul LEGO), apoi 3.Cf-2 (orientarea
-  de mână pe trei axe, pozițiile la jumătate de pas).
+  probele vechi care numără filele, pictogramele și căutarea (lista, în `docs/linii/atelier.md`).** **3.Cl-2
+  (globul; ADR 0285)** gata pe 25.11, pe ramură: a patra piesă a filei „Crăciun”, un disc cu căpăcel și inel, cu
+  dungi, zigzag sau stele, decupate ori în relief (pentru două culori: editorul spune la ce înălțime se schimbă
+  filamentul), sau din două discuri îmbinate în cruce; Easy 3Draw 18.36.0 (următoarea, 18.37.0). **Arcele mari ale
+  unei decorațiuni se fac din laturi fine (`aplatizeaza(…, laturiFine)`): cu cele 48 de laturi obișnuite, un disc
+  mare iese colțuros. Uneltele „de pe hârtie” ale probelor decorațiunilor stau în `test/unit/ajutor-craciun.ts`.**
+  Urmează 3.Cl-3 (ornamentul cu nume), 3.Cl-4 (brăduțul LEGO), apoi 3.Cf-2 (orientarea de mână pe trei axe,
+  pozițiile la jumătate de pas).
   **Cotele pe desen: modelul și proba G-code-ului (ADR 0330, felia 10.4↑a-1, adusă din etapa 10)** gata pe 24.11, în
   sesiunea cloud a liniei (ramura `wip/10.4-cote`), unită în `main` pe 24.11 (`f25249cf`), fără interfață încă. ADR
   0330, acceptat de owner cu 1a–6a și cu nota lui: toate setările cotelor stau într-o fereastră nouă, „Setări”, nu în
