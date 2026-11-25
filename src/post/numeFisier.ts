@@ -35,7 +35,7 @@ export function motivNume(nume: string): MotivNume | null {
  * azi. Documentul n-are încă nume de proiect (proiectele multiple sunt o linie a lor); când îl va avea, intră aici.
  */
 export function propunereNume(numeFoaie: string | undefined, origine: string): string {
-  const slug = (numeFoaie ?? '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase()
+  const slug = (numeFoaie ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
     .replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
   const scurt = slug.slice(0, LUNGIME_PROPUNERE).replace(/-+$/, '');
   return scurt === '' ? bazaFisier(origine) : scurt;
