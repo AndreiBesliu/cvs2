@@ -155,10 +155,11 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
 
 ## Starea pe 25.11.2026, dimineața (după a treizecea unire din cloud; liniile, repornite)
 
-- **Pe test:** `f2678300` (tot ce e în `main`, cu lotul 30: atelierul Easy 3Draw 18.28.0, cu punctele de prindere
-  și „Se prinde cu”; publicat pe 25.11 la 06:03, cu serverul neschimbat; completul pe `main` 45536382490, verde;
-  proba de fum, bună). Înainte: `a95af70e` (lotul 29, cremaliera și arcul), pe 25.11 la 03:47; `694f0ff1` (cotele
-  a-4 și b, lotul 28), la 01:37. În drum: lotul 31 (atelierul: cama și roata cu palete, Easy 3Draw 18.30.0).
+- **Pe test:** `d1a96fc4` (lotul 31: atelierul Easy 3Draw 18.30.0, cu cama și roata cu palete; publicat pe 25.11 la
+  10:44, cu serverul neschimbat; completul pe `main` 45570396384, verde; proba de fum, bună). Înainte: `f2678300`
+  (lotul 30, punctele de prindere), pe 25.11 la 06:03; `a95af70e` (lotul 29), la 03:47. **În `main`, nepublicate
+  încă:** plafoanele noi (`caddd661`: doar constantele porții și rândul ADR 0146 din roadmap) și documente; pleacă cu
+  lotul următor.
 - **`main`, din cloud:** pe 23.11: 3.Tq (`0ae9c6c1`); 11.3↑e și A.4 (`ddaa7ead`); 3.Tr, unită de linia elicelor
   (`d262e57a`); 25.8↑a și A.5 (`1b46c955`), cu reparația probei extensiilor (`8287d66e`); 11.3↑f, unită de linia
   planșelor (`f4601938`); A.6 (`4497d639`); 3.Xh (`2d1e482c`) și 12.1↑e-3 cu 12.1↑e-4 (`03460cab`); A.8a cu A.8b
