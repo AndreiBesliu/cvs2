@@ -18,6 +18,12 @@
       ],
       "noutati": [
         {
+          "versiune": "18.33.0",
+          "data": "2026-11-25",
+          "ro": "În „Modelul”, piesele rotunde (roți, elice, rotorul și carcasa ventilatorului) stau cu axul în mijlocul unui știft, deci ajung pe același ax. O piesă nouă intră pe axul celei alese, iar rotorul, în carcasa lui.",
+          "en": "In the Model view, round pieces (wheels, propellers, the fan rotor and its duct) sit with their axis in the middle of a stud, so they line up on one axis. A new piece goes on the axis of the chosen one; the rotor, into its duct."
+        },
+        {
           "versiune": "18.32.0",
           "data": "2026-11-25",
           "ro": "Șurubul melc, în fila „Roți”: un șurub pe ax care întoarce o roată dințată de aici cu un dinte la fiecare tură. Ø8 (ca LEGO) sau Ø16 (gros), lung de 1–4 știfturi; „Fă perechea” pune în listă și roata lui. Se tipărește în picioare.",
@@ -142,8 +148,8 @@
           }
         }
       ],
-      "versiune": "18.32.0",
-      "continut": "cb030bd2701c6a06551be80d6304855fa0a688165b81238532ecdf496bfa1781"
+      "versiune": "18.33.0",
+      "continut": "23179067565ed3f15ba28540419808b879172d6a9fa8bc88c314939942f6765d"
     }
   ]
 }
