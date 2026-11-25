@@ -17,7 +17,8 @@ var Atelier3D = (function () {
     dinti?: number; unghi?: number; sens?: string; modul?: number; janta?: number; banda?: string; spite?: string; nrSpite?: number; canal?: string;
     latCanal?: number; pereche?: number; butuc?: string; pinion?: number; piesa?: string; gauriStift?: string; cursa?: number;
     palete?: number; diametru?: number; pas?: number; latime?: number; paleta?: string; con?: string; inclinare?: number; pupa?: number; capac?: string;
-    joc?: number; inel?: string; urechi?: number; opritor?: boolean; mansoane?: [number, string][]; prindere?: string; roata?: number; bolta?: string; disc?: string; rama?: number; colturi?: string };
+    joc?: number; inel?: string; urechi?: number; opritor?: boolean; mansoane?: [number, string][]; prindere?: string; roata?: number; bolta?: string; disc?: string; rama?: number; colturi?: string;
+    linie?: number; ramuri?: number; lungime?: number; miez?: string; agatatoare?: string; varfuri?: number; interior?: number; inaltime?: number; etaje?: number };
   /** O gaură pe grilă: colțul de celulă și tipul. */
   type Gaura = [number, number, string];
   /** O piesă gata de printat: corpul, mărimea și ce a spus motorul despre ea. */
@@ -114,6 +115,11 @@ var Atelier3D = (function () {
     ventilator: { piesa: "rotor", palete: 7, diametru: 40, joc: 0.8, pas: 0.8, latime: 45, sens: "dreapta", gaura: "x", inel: "nu", urechi: 2 },
     // roata cu palete (ADR 0284, felia 3.Cj): Ø64 (8 știfturi), 8 palete drepte, lată cât două grinzi, cu discul dedesubt
     roataPalete: { diam: 64, palete: 8, lat: 15.8, forma: "drepte", disc: "unul", gaura: "x" },
+    // decorațiunile de Crăciun (ADR 0285, felia 3.Cl-1): fulgul (Ø70, linia de 2, două perechi de ramuri la 60°, miezul
+    // hexagon), steaua (5 colțuri, Ø70, plină) și brăduțul (80 mm, 3 etaje, de agățat), fiecare cu inelul ei
+    fulg: { diam: 70, grosime: 2.4, linie: 2, ramuri: 2, unghi: 60, inceput: 40, lungime: 28, miez: "hexagon", agatatoare: "inel" },
+    stea: { varfuri: 5, diam: 70, interior: 40, grosime: 3, fel: "plina", linie: 2.4, agatatoare: "inel" },
+    brad: { inaltime: 80, etaje: 3, latime: 65, grosime: 3, fel: "agatat", agatatoare: "inel" },
     // forma trimisă din desenul cvs2 (ADR 0166): doar contururile închise; câte erau deschise și refuzul, pentru om
     dinCvs2: { contururi: [] as [number, number][][], grosime: 3.2, deschise: 0, refuz: "" },
   };
@@ -127,8 +133,31 @@ var Atelier3D = (function () {
       ["lateral", "Știfturi pe lateral"], ["suport", "Suport (bracket)"], ["grinda", "Grindă"], ["caramidaTechnic", "Cărămidă Technic"], ["placaTechnic", "Placă cu găuri"]]],
     ["legaturi", "Legături", [["stiftTechnic", "Știft"], ["ax", "Ax"], ["bucsa", "Bucșă / conector"], ["conector", "Conector perpendicular"], ["conectorUnghi", "Conector în unghi"], ["clema", "Clemă"], ["bara", "Bară"], ["maner", "Mâner"], ["bila", "Bilă"], ["cupa", "Cupă"]]],
     ["roti", "Roți", [["rotita", "Roată dințată"], ["cremaliera", "Cremalieră"], ["melc", "Șurub melc"], ["cama", "Camă"], ["conica", "Roată conică"], ["coroana", "Roată coroană"], ["conicaDubla", "Conică dublă"], ["fulie", "Fulie"], ["roata", "Roată cu anvelopă"], ["senila", "Șenilă"]]],
-    ["propulsie", "Elice", [["elice", "Elice"], ["eliceBarca", "Elice de barcă"], ["ventilator", "Ventilator cu carcasă"], ["roataPalete", "Roată cu palete"]]]
+    ["propulsie", "Elice", [["elice", "Elice"], ["eliceBarca", "Elice de barcă"], ["ventilator", "Ventilator cu carcasă"], ["roataPalete", "Roată cu palete"]]],
+    ["craciun", "Crăciun", [["fulg", "Fulg de zăpadă"], ["stea", "Stea"], ["brad", "Brăduț"]]]
   ];
+  // Fulgii gata făcuți (ADR 0285): doar forma (ramurile, miezul, linia); mărimea, grosimea și agățătoarea rămân cum sunt.
+  const FULGI: readonly (readonly [string, { ramuri: number; unghi: number; inceput: number; lungime: number; miez: string; linie: number }])[] = [
+    ["Clasic", { ramuri: 2, unghi: 60, inceput: 40, lungime: 28, miez: "hexagon", linie: 2 }],
+    ["Steluță", { ramuri: 1, unghi: 45, inceput: 55, lungime: 30, miez: "stea", linie: 2.4 }],
+    ["Dantelă", { ramuri: 4, unghi: 60, inceput: 25, lungime: 40, miez: "gol", linie: 1.6 }],
+    ["Cetină", { ramuri: 3, unghi: 45, inceput: 30, lungime: 32, miez: "hexagon", linie: 2 }],
+    ["Săgeți", { ramuri: 2, unghi: 35, inceput: 60, lungime: 24, miez: "stea", linie: 2 }],
+    ["Simplu", { ramuri: 0, unghi: 60, inceput: 40, lungime: 28, miez: "gol", linie: 3 }],
+  ];
+  // Stelele gata făcute: forma și felul; diametrul și agățătoarea rămân cum sunt.
+  const STELE: readonly (readonly [string, { varfuri: number; interior: number; fel: string; grosime: number; linie: number }])[] = [
+    ["Clasică", { varfuri: 5, interior: 40, fel: "plina", grosime: 3, linie: 2.4 }],
+    ["Contur", { varfuri: 5, interior: 40, fel: "contur", grosime: 3, linie: 2.4 }],
+    ["De vârf", { varfuri: 5, interior: 45, fel: "relief", grosime: 8, linie: 2.4 }],
+    ["Cu 6 colțuri", { varfuri: 6, interior: 58, fel: "plina", grosime: 3, linie: 2.4 }],
+    ["Cu 8 colțuri", { varfuri: 8, interior: 55, fel: "plina", grosime: 3, linie: 2.4 }],
+  ];
+  /** Un fulg la întâmplare, mereu tipăribil: doar forma (ramurile și miezul), în marginile motorului. */
+  function fulgIntamplator(): { ramuri: number; unghi: number; inceput: number; lungime: number; miez: string } {
+    const intre = (a: number, b: number, pas = 1) => a + pas * Math.floor(Math.random() * ((b - a) / pas + 1));
+    return { ramuri: intre(1, 4), unghi: intre(35, 70, 5), inceput: intre(25, 60, 5), lungime: intre(18, 42, 2), miez: ["hexagon", "stea", "gol"][intre(0, 2)]! };
+  }
   /** Familia fiecărei piese din galerii. */
   const FAMILIA = new Map(FAMILII.flatMap(([f, , piese]) => piese.map(([k]): [string, string] => [k, f])));
   /** Fila de sus a unui tip: familia lui, sau chiar tipul, la filele proprii („calibrare”, „dinCvs2”). */
@@ -176,6 +205,9 @@ var Atelier3D = (function () {
     eliceBarca: `<circle cx="12" cy="12" r="2.2"/><path d="M10.4 10.3C6 9 5.8 3.4 10.3 2.7C14.4 2 16.7 6.2 13.5 10.2M14.3 11.5C17.6 8.3 22.5 10.9 20.9 15.2C19.5 19.1 14.7 19 12.8 14.2M11.3 14.2C12.4 18.7 7.7 21.7 4.8 18.1C2.1 14.9 4.6 10.8 9.7 11.6"/>`,
     ventilator: `<circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="2.2"/><path d="M12 9.4Q12.4 5.8 18 6.2M9.5 11.2Q6.3 9.7 8.3 4.5M10.5 14.1Q8 16.7 3.7 13.2M13.5 14.1Q15.3 17.3 10.5 20.3M14.5 11.2Q18 10.5 19.4 15.9"/>`,
     roataPalete: `<circle cx="12" cy="12" r="2.4"/><path d="M14.4 12H22M13.7 13.7L19.1 19.1M12 14.4V22M10.3 13.7L4.9 19.1M9.6 12H2M10.3 10.3L4.9 4.9M12 9.6V2M13.7 10.3L19.1 4.9"/>`,
+    fulg: `<path d="M12 2v20M3.3 7l17.4 10M3.3 17L20.7 7"/><path d="M9.8 4.2L12 6.4l2.2-2.2M9.8 19.8L12 17.6l2.2 2.2M3.4 10.2l3 .8.8-3M20.6 13.8l-3-.8-.8 3M3.4 13.8l3-.8.8 3M20.6 10.2l-3 .8-.8-3"/>`,
+    stea: `<path d="M12 3.1L14.2 9.5L21 9.7L15.6 13.8L17.6 20.3L12 16.4L6.4 20.3L8.4 13.8L3 9.7L9.8 9.5z"/>`,
+    brad: `<path d="M12 2.5l4.2 6h-2.4l4 5.5h-2.6l4.3 5.5H4.5l4.3-5.5H6.2l4-5.5H7.8z"/><path d="M12 19.5V22"/>`,
   };
   const PICTOGRAMA_GENERICA = `<path d="M12 3l8 4.5v9L12 21l-8-4.5v-9zM4 7.5l8 4.5 8-4.5M12 12v9"/>`;
   /** Butonul unei piese din galerie: pictograma ei, apoi numele (pictograma e ascunsă cititoarelor de ecran: butonul se
@@ -299,6 +331,27 @@ var Atelier3D = (function () {
       const q = Lego.roataPaleteCote(d);
       return tr`Roată cu palete Ø${fmt(q.diam)}, ${q.palete} palete` + (q.forma === "curbate" ? tr(", curbate") : "") + (q.lat === 15.8 ? "" : tr`, lată ${fmt(q.lat)} mm`)
         + (q.disc === "fara" ? tr(", fără disc") : "") + (q.gaura === "r" ? tr(", gaură rotundă") : "");
+    }
+    if (d.tip === "fulg") {
+      // diametrul și ramurile; apoi ce nu e obișnuit: unde încep și cât sunt de lungi, miezul, linia, grosimea, lipsa inelului
+      const q = Lego.fulgCote(d);
+      return (q.ramuri ? tr`Fulg Ø${fmt(q.diam)}, ramuri ${q.ramuri} × ${q.unghi}°` : tr`Fulg Ø${fmt(q.diam)}, fără ramuri`)
+        + (q.ramuri && (q.inceput !== 40 || q.lungime !== 28) ? tr`, de la ${q.inceput} %, lungi de ${q.lungime} %` : "")
+        + (q.miez === "stea" ? tr(", miez stea") : q.miez === "gol" ? tr(", miez gol") : "") + (q.linie === 2 ? "" : tr`, linia ${fmt(q.linie)}`)
+        + (q.grosime === 2.4 ? "" : tr`, ${fmt(q.grosime)} mm`) + (q.agatatoare === "fara" ? tr(", fără inel") : "");
+    }
+    if (d.tip === "stea") {
+      // colțurile și diametrul; apoi ce nu e obișnuit: interiorul, felul, grosimea, agățătoarea
+      const q = Lego.steaCote(d);
+      return tr`Stea cu ${q.varfuri} colțuri Ø${fmt(q.diam)}` + (q.interior === 40 ? "" : tr`, interiorul la ${q.interior} %`)
+        + (q.fel === "contur" ? tr`, contur de ${fmt(q.linie)}` : q.fel === "relief" ? tr(", în relief") : "") + (q.grosime === 3 ? "" : tr`, ${fmt(q.grosime)} mm`)
+        + (q.agatatoare === "gaura" ? tr(", cu gaură") : q.agatatoare === "fara" ? tr(", fără inel") : "");
+    }
+    if (d.tip === "brad") {
+      // înălțimea și etajele; apoi ce nu e obișnuit: lățimea, grosimea, felul, agățătoarea
+      const q = Lego.bradCote(d);
+      return tr`Brăduț de ${fmt(q.inaltime)} mm, ${q.etaje} etaje` + (q.latime === 65 ? "" : tr`, lat de ${q.latime} %`) + (q.grosime === 3 ? "" : tr`, ${fmt(q.grosime)} mm`)
+        + (q.fel === "picioare" ? tr(", în picioare") : q.agatatoare === "gaura" ? tr(", cu gaură") : q.agatatoare === "fara" ? tr(", fără inel") : "");
     }
     if (d.tip === "rotita") {
       const sens = d.sens === "stanga" ? tr("stânga") : tr("dreapta");
@@ -454,6 +507,11 @@ var Atelier3D = (function () {
     if (t === "melc") { const q = Lego.melcCote(p); p.diam = q.diam; p.lung = q.lung; delete p.pereche; }
     if (t === "cama") { const q = Lego.camaCote(p); p.forma = q.forma; p.diam = q.diam; p.cursa = q.cursa; p.grosime = q.grosime; p.gaura = q.gaura; }
     if (t === "roataPalete") { const q = Lego.roataPaleteCote(p); p.diam = q.diam; p.palete = q.palete; p.lat = q.lat; p.forma = q.forma; p.disc = q.disc; p.gaura = q.gaura; }
+    // decorațiunile (ADR 0285): câmpurile, în marginile motorului; ce nu ține de felul ales nu intră în piesă (doi fulgi fără
+    // ramuri sunt aceeași piesă, oricare le-ar fi fost unghiul)
+    if (t === "fulg") { const q = Lego.fulgCote(p); for (const k of ["diam", "grosime", "linie", "ramuri", "unghi", "inceput", "lungime", "miez", "agatatoare"] as const) p[k] = q[k]; if (!q.ramuri) { delete p.unghi; delete p.inceput; delete p.lungime; } }
+    if (t === "stea") { const q = Lego.steaCote(p); for (const k of ["varfuri", "diam", "interior", "grosime", "fel", "agatatoare"] as const) p[k] = q[k]; if (q.fel === "contur") p.linie = q.linie; else delete p.linie; }
+    if (t === "brad") { const q = Lego.bradCote(p); for (const k of ["inaltime", "etaje", "latime", "grosime", "fel", "agatatoare"] as const) p[k] = q[k]; }
     if (t === "cremaliera") { const q = Lego.cremalieraMontaj(p); p.lung = q.lung; p.roata = q.z; p.prindere = q.prindere; if (q.m === 1) delete p.modul; else p.modul = q.m; }
     if (t === "rotita") {
       // perechea e a editorului; la dinții drepți, unghiul și sensul nu contează (două roți drepte la fel sunt aceeași piesă)
@@ -1071,6 +1129,97 @@ var Atelier3D = (function () {
       alege("#at-rp-forma", v => { p.forma = v; });
       alege("#at-rp-disc", v => { p.disc = v; });
       alege("#at-rp-gaura", v => { p.gaura = v; });
+    } else if (t === "fulg") {
+      // fulgul de zăpadă (ADR 0285, felia 3.Cl-1): cei gata făcuți și „Alt fulg”, apoi diametrul, grosimea, linia, perechile
+      // de ramuri (câte, sub ce unghi, de unde încep, cât sunt de lungi), miezul și agățătoarea. Linia rămâne în marginea
+      // diametrului (cel mult o șesime din rază).
+      const p = stare.fulg, q = Lego.fulgCote(p), gata = FULGI.findIndex(([, f]) => Object.entries(f).every(([k, v]) => (q as Record<string, unknown>)[k] === v));
+      e.innerHTML = `<h2>Fulg de zăpadă</h2>
+        <p class="mic">Șase brațe cu ramuri, dintr-o singură bucată plată: se tipărește culcat, fără suport. Inelul de sus e pentru ață sau pentru un cârlig de brad.</p>
+        <div class="at-rand"><span class="mic">Repede:</span>${seg("at-fg-repede", FULGI.map(([n], i): [string, string] => [String(i), n]), String(gata))}<button class="btn" type="button" id="at-fg-alt">Alt fulg</button></div>
+        <div class="at-campuri">
+          <label for="at-fg-diam">Diametrul (mm)<input id="at-fg-diam" type="number" min="30" max="150" step="1" value="${q.diam}"></label>
+          <label for="at-fg-grosime">Grosimea (mm)<input id="at-fg-grosime" type="number" min="1.2" max="6" step="0.1" value="${q.grosime}"></label>
+          <label for="at-fg-linie">Linia (mm)<input id="at-fg-linie" type="number" min="1.2" max="${q.linieMax}" step="0.1" value="${q.linie}"></label>
+          <label for="at-fg-ramuri">Perechi de ramuri<input id="at-fg-ramuri" type="number" min="0" max="4" step="1" value="${q.ramuri}"></label>
+          <label for="at-fg-unghi">Unghiul ramurilor (°)<input id="at-fg-unghi" type="number" min="30" max="75" step="1" value="${q.unghi}"></label>
+          <label for="at-fg-inceput">Prima pereche, la (%)<input id="at-fg-inceput" type="number" min="20" max="70" step="1" value="${q.inceput}"></label>
+          <label for="at-fg-lungime">Lungimea ramurilor (%)<input id="at-fg-lungime" type="number" min="10" max="45" step="1" value="${q.lungime}"></label>
+        </div>
+        <div class="at-rand"><span class="mic">Miezul:</span>${seg("at-fg-miez", [["hexagon", "Hexagon"], ["stea", "Stea"], ["gol", tr("Gol", "miez")]], q.miez)}</div>
+        <div class="at-rand"><span class="mic">Agățătoarea:</span>${seg("at-fg-ag", [["inel", "Inel"], ["fara", "Fără"]], q.agatatoare)}</div>
+        <div class="at-rand"><span class="mic" id="at-fg-info">${tr`Linia are ${fmt(q.linie)} mm (cea mai subțire care se tipărește bine are 1,2); pe fiecare braț sunt ${2 * q.facute} ramuri.`}${q.facute < q.ramuri ? " " + tr`Încă ${2 * (q.ramuri - q.facute)} ar fi ieșit prea scurte ca să se vadă: fă-le mai lungi sau fulgul mai mare.` : ""}</span></div>`;
+      // un număr din afara marginilor nu e primit: câmpul se întoarce la valoarea de dinainte; linia rămâne în marginea
+      // diametrului ales
+      const tine = () => { p.linie = Lego.fulgCote(p).linie; };
+      const camp = (id: string, a: number, b: number, f: (v: number) => void) => { $(id).onchange = ev => { const v = +(ev.target as HTMLInputElement).value; if (v >= a && v <= b) { f(v); tine(); schimbat(); } editor(); }; };
+      const alege = (id: string, f: (v: string) => void) => { $(id).onclick = ev => { const b = (ev.target as Element).closest<HTMLElement>("[data-v]"); if (!b) return; f(b.dataset.v!); tine(); editor(); schimbat(); }; };
+      camp("#at-fg-diam", 30, 150, v => { p.diam = v; });
+      camp("#at-fg-grosime", 1.2, 6, v => { p.grosime = v; });
+      camp("#at-fg-linie", 1.2, q.linieMax, v => { p.linie = v; });
+      camp("#at-fg-ramuri", 0, 4, v => { p.ramuri = Math.round(v); });
+      camp("#at-fg-unghi", 30, 75, v => { p.unghi = Math.round(v); });
+      camp("#at-fg-inceput", 20, 70, v => { p.inceput = Math.round(v); });
+      camp("#at-fg-lungime", 10, 45, v => { p.lungime = Math.round(v); });
+      alege("#at-fg-repede", v => { Object.assign(p, FULGI[+v]![1]); });
+      alege("#at-fg-miez", v => { p.miez = v; });
+      alege("#at-fg-ag", v => { p.agatatoare = v; });
+      $("#at-fg-alt").onclick = () => { Object.assign(p, fulgIntamplator()); tine(); editor(); schimbat(); };
+    } else if (t === "stea") {
+      // steaua (ADR 0285, felia 3.Cl-1): colțurile, felul (plină, contur, în relief), diametrul, interiorul, grosimea (în
+      // relief, înălțimea din mijloc), linia conturului și agățătoarea (gaura, doar la steaua plină)
+      const p = stare.stea, q = Lego.steaCote(p), relief = q.fel === "relief";
+      const gata = STELE.findIndex(([, f]) => Object.entries(f).every(([k, v]) => (k === "linie" && q.fel !== "contur") || (q as Record<string, unknown>)[k] === v));
+      e.innerHTML = `<h2>Stea</h2>
+        <p class="mic">Plată, de agățat (plină sau doar conturul), ori în relief, cu muchii de la mijloc la colțuri, ca steaua din vârful bradului. Se tipărește culcată, fără suport.</p>
+        <div class="at-rand"><span class="mic">Repede:</span>${seg("at-st-repede", STELE.map(([n], i): [string, string] => [String(i), n]), String(gata))}</div>
+        <div class="at-rand"><span class="mic">Colțuri:</span>${seg("at-st-varfuri", [["5", "5"], ["6", "6"], ["7", "7"], ["8", "8"]], String(q.varfuri))}</div>
+        <div class="at-rand"><span class="mic">Felul:</span>${seg("at-st-fel", [["plina", "Plină"], ["contur", "Contur"], ["relief", "În relief"]], q.fel)}</div>
+        <div class="at-campuri">
+          <label for="at-st-diam">Diametrul (mm)<input id="at-st-diam" type="number" min="30" max="150" step="1" value="${q.diam}"></label>
+          <label for="at-st-interior">Interiorul (%)<input id="at-st-interior" type="number" min="30" max="75" step="1" value="${q.interior}"></label>
+          <label for="at-st-grosime">${relief ? tr("Înălțimea (mm)") : tr("Grosimea (mm)")}<input id="at-st-grosime" type="number" min="1.2" max="12" step="0.1" value="${q.grosime}"></label>
+          ${q.fel === "contur" ? `<label for="at-st-linie">Linia (mm)<input id="at-st-linie" type="number" min="1.2" max="6" step="0.1" value="${q.linie}"></label>` : ""}
+        </div>
+        <div class="at-rand"><span class="mic">Agățătoarea:</span>${seg("at-st-ag", q.fel === "plina" ? [["inel", "Inel"], ["gaura", "Gaură"], ["fara", "Fără"]] : [["inel", "Inel"], ["fara", "Fără"]], q.agatatoare)}</div>
+        <div class="at-rand"><span class="mic" id="at-st-info">${tr`Colțurile au ${q.varf}°; vârfurile dinăuntru stau la ${fmt(q.interior / 100 * q.diam / 2)} mm de mijloc.`}${relief ? " " + tr`Marginea are ${fmt(Math.min(1.2, q.grosime / 2))} mm, iar mijlocul, ${fmt(q.grosime)} mm.` : ""}</span></div>`;
+      const camp = (id: string, a: number, b: number, f: (v: number) => void) => { const c = document.querySelector<HTMLInputElement>(id); if (c) c.onchange = () => { const v = +c.value; if (v >= a && v <= b) { f(v); schimbat(); } editor(); }; };
+      const alege = (id: string, f: (v: string) => void) => { $(id).onclick = ev => { const b = (ev.target as Element).closest<HTMLElement>("[data-v]"); if (!b) return; f(b.dataset.v!); editor(); schimbat(); }; };
+      camp("#at-st-diam", 30, 150, v => { p.diam = v; });
+      camp("#at-st-interior", 30, 75, v => { p.interior = Math.round(v); });
+      camp("#at-st-grosime", 1.2, 12, v => { p.grosime = v; });
+      camp("#at-st-linie", 1.2, 6, v => { p.linie = v; });
+      alege("#at-st-repede", v => { Object.assign(p, STELE[+v]![1]); });
+      alege("#at-st-varfuri", v => { p.varfuri = +v; });
+      alege("#at-st-fel", v => { p.fel = v; });
+      alege("#at-st-ag", v => { p.agatatoare = v; });
+    } else if (t === "brad") {
+      // brăduțul (ADR 0285, felia 3.Cl-1): de agățat sau în picioare (două plăci cu fante), înălțimea, etajele, lățimea,
+      // grosimea și, la cel de agățat, agățătoarea
+      const p = stare.brad, q = Lego.bradCote(p), picioare = q.fel === "picioare";
+      e.innerHTML = `<h2>Brăduț</h2>
+        <p class="mic">De agățat, dintr-o bucată, sau în picioare: două plăci cu fante, tipărite alături, care intră una în alta, în cruce, și stau pe masă. Se tipărește culcat, fără suport.</p>
+        <div class="at-rand"><span class="mic">Repede:</span>${seg("at-bd-repede", [["50", "50 mm"], ["80", "80 mm"], ["120", "120 mm"]], String(q.inaltime))}</div>
+        <div class="at-rand"><span class="mic">Felul:</span>${seg("at-bd-fel", [["agatat", "De agățat"], ["picioare", "În picioare"]], q.fel)}</div>
+        <div class="at-campuri">
+          <label for="at-bd-inaltime">Înălțimea (mm)<input id="at-bd-inaltime" type="number" min="30" max="150" step="1" value="${q.inaltime}"></label>
+          <label for="at-bd-etaje">Etaje<input id="at-bd-etaje" type="number" min="2" max="6" step="1" value="${q.etaje}"></label>
+          <label for="at-bd-latime">Lățimea (% din înălțime)<input id="at-bd-latime" type="number" min="40" max="90" step="1" value="${q.latime}"></label>
+          <label for="at-bd-grosime">Grosimea (mm)<input id="at-bd-grosime" type="number" min="1.2" max="6" step="0.1" value="${q.grosime}"></label>
+        </div>
+        ${picioare ? "" : `<div class="at-rand"><span class="mic">Agățătoarea:</span>${seg("at-bd-ag", [["inel", "Inel"], ["gaura", "Gaură"], ["fara", "Fără"]], q.agatatoare)}</div>`}
+        <div class="at-rand"><span class="mic" id="at-bd-info">${picioare
+          ? tr`Două plăci late de ${fmt(q.lat)} mm. Fantele au ${fmt(q.fanta, 2)} mm: grosimea plăcii și jocul din calibrare. A doua placă se oprește la ${fmt(q.taiat)} mm, unde lângă fantă mai rămân 1,2 mm.`
+          : tr`Lat de ${fmt(q.lat)} mm la bază.`}</span></div>`;
+      const camp = (id: string, a: number, b: number, f: (v: number) => void) => { $(id).onchange = ev => { const v = +(ev.target as HTMLInputElement).value; if (v >= a && v <= b) { f(v); schimbat(); } editor(); }; };
+      const alege = (id: string, f: (v: string) => void) => { const c = document.querySelector<HTMLElement>(id); if (c) c.onclick = ev => { const b = (ev.target as Element).closest<HTMLElement>("[data-v]"); if (!b) return; f(b.dataset.v!); editor(); schimbat(); }; };
+      camp("#at-bd-inaltime", 30, 150, v => { p.inaltime = v; });
+      camp("#at-bd-etaje", 2, 6, v => { p.etaje = Math.round(v); });
+      camp("#at-bd-latime", 40, 90, v => { p.latime = Math.round(v); });
+      camp("#at-bd-grosime", 1.2, 6, v => { p.grosime = v; });
+      alege("#at-bd-repede", v => { p.inaltime = +v; });
+      alege("#at-bd-fel", v => { p.fel = v; });
+      alege("#at-bd-ag", v => { p.agatatoare = v; });
     } else if (t === "roata") {
       // roata cu anvelopă (ADR 0280): felul, mărimea, banda de rulare, fața, gaura; janta și anvelopa, împreună
       const p = stare.roata, faraJanta = p.fel === "anvelopa", faraAnvelopa = p.fel === "janta";

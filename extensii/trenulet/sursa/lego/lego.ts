@@ -2791,6 +2791,239 @@ var Lego = (function (glob: typeof globalThis) {
     return { tri, avert, prinderi: butuc.prinderi };
   }
 
+  // ---------------------------------------------------------------------------------------------- decorațiunile de Crăciun (ADR 0285)
+  // Piese plate, ridicate dintr-un contur și tipărite culcate, fără suport: fulgul, steaua și brăduțul (felia 3.Cl-1).
+  // - conturul se face din forme simple (poligoane, tije cu capăt rotund, discuri), unite cu Cavalier, cu golurile rămase
+  //   între ele (`unesteForme`): piesa e un singur corp, cu pereții drepți;
+  // - nervura cea mai subțire are 1,2 mm (trei treceri ale duzei de 0,4);
+  // - agățătoarea: inelul (golul de 3 mm, peretele de 1,6), cu centrul la 1,9 mm peste vârful piesei (vârful intră 0,4 mm
+  //   în perete); pe un vârf ascuțit, inelul stă pe o tijă de 2,4 mm, coborâtă până unde forma e mai lată decât ea. Sau
+  //   gaura de 2,5 mm, pe axa vârfului, cât mai sus, cu cel puțin 1,6 mm de material în jur; dacă nu încape aproape de vârf
+  //   (în colțul stelei, în ultimul etaj al bradului), piesa primește inelul, cu un mesaj.
+  const CRACIUN = { nervura: 1.2, inelGol: 1.5, inelAfara: 3.1, inelSus: 1.9, tija: 2.4, gaura: 1.25, gauraPerete: 1.6, intrePlaci: 3 };
+  /** Conturul Cavalier în sens trigonometric (întors, arcele își schimbă semnul și trec pe vârful dinainte). */
+  const spreStanga = (v: readonly (readonly number[])[]): Vf[] => (glob.Cavalier.plineClosed(v).area() < 0
+    ? v.slice().reverse().map((q, k: number, a): Vf => [q[0]!, q[1]!, -(a[(k + 1) % a.length]![2]!)]) : v.map((q): Vf => [q[0]!, q[1]!, q[2]!]));
+  const bucatiBune = (l: readonly { readonly pline: CavalierPline }[]): Vf[][] => l.filter(x => Math.abs(x.pline.area()) > 1e-4).map(x => spreStanga(dinPl(x.pline)));
+  /** Forma `v` fără forma `w`: bucățile rămase. */
+  const scadeForma = (v: readonly Vf[], w: readonly Vf[]): Vf[][] => { const r = glob.Cavalier.plineClosed(v).boolean(glob.Cavalier.plineClosed(w), "not"); return r.resultInfo === "disjoint" ? [spreStanga(v)] : bucatiBune(r.posPlines); };
+  type Unita = { ext: Vf[]; gauri: Vf[][] };
+  /**
+   * Unirea unor forme închise (contururi Cavalier, cu arce), cu golurile rămase între ele: fiecare bucată are marginea ei
+   * și golurile din ea. Formele se taie sau se cuprind (nu-și suprapun laturile); o formă pusă cu totul într-un gol
+   * rămâne o bucată a ei.
+   */
+  function unesteForme(forme: readonly (readonly Vf[])[]): Unita[] {
+    const CV = glob.Cavalier, pl = (v: readonly Vf[]) => CV.plineClosed(v), insule: Vf[][] = [];
+    let bucati: Vf[][] = [], goluri: Vf[][] = [];
+    for (const f0 of forme) {
+      const f = spreStanga(f0);
+      if (goluri.some(g => pl(g).boolean(pl(f), "not").resultInfo === "pline2InsidePline1")) { insule.push(f); continue; }
+      // golurile de până acum pierd ce acoperă forma nouă
+      goluri = goluri.flatMap(g => scadeForma(g, f));
+      let cur = f, noi: Vf[][] = [];
+      const rest: Vf[][] = [];
+      for (const b of bucati) {
+        const r = pl(b).boolean(pl(cur), "or"), poz = r.resultInfo === "disjoint" ? [] : bucatiBune(r.posPlines);
+        if (poz.length !== 1) { rest.push(b); continue; }
+        // golurile închise mai devreme, la forma asta, pierd ce acoperă bucata; apoi vin cele închise între ea și formă
+        noi = [...noi.flatMap(g => scadeForma(g, b)), ...bucatiBune(r.negPlines)];
+        cur = poz[0]!;
+      }
+      bucati = [...rest, cur]; goluri = [...goluri, ...noi];
+    }
+    const poli = (v: readonly Vf[]) => aplatizeaza(v);
+    return [...bucati.map(ext => { const e = poli(ext); return { ext, gauri: goluri.filter(g => inPoli(e, [g[0]![0], g[0]![1]])) }; }), ...insule.map(ext => ({ ext, gauri: [] }))];
+  }
+  /** Prisma bucăților unite, cu golurile lor și cu găurile date în plus (fiecare, în bucata care o cuprinde). */
+  function prismaUnite(unite: readonly Unita[], gauriInPlus: readonly Poli[], z0: number, z1: number): Tri[] {
+    return unite.flatMap(u => { const ext = curataPoli(trig(aplatizeaza(u.ext))); return prismaGauri(ext, [...u.gauri.map(g => curataPoli(aplatizeaza(g))), ...gauriInPlus.filter(g => inPoli(ext, g[0]!))], z0, z1); });
+  }
+  /** Tija cu capăt rotund: pleacă drept din A, pe direcția u, lungă de L (până la vârful capătului), lată de w. */
+  function tijaRotunda(A: Pt, u: number, L: number, w: number): Vf[] {
+    const dx = Math.cos(u), dy = Math.sin(u), nx = -dy * w / 2, ny = dx * w / 2, bx = A[0] + dx * (L - w / 2), by = A[1] + dy * (L - w / 2);
+    return [[A[0] - nx, A[1] - ny, 0], [bx - nx, by - ny, 1], [bx + nx, by + ny, 0], [A[0] + nx, A[1] + ny, 0]];
+  }
+  const dreptForma = (x0: number, y0: number, x1: number, y1: number): Vf[] => [[x0, y0, 0], [x1, y0, 0], [x1, y1, 0], [x0, y1, 0]];
+  /** Cât e de la un punct la marginea unui poligon (la cea mai apropiată latură). */
+  const distMargine = (poli: readonly Pt[], q: Pt): number => Math.min(...poli.map((a, i: number) => {
+    const b = poli[(i + 1) % poli.length]!, dx = b[0] - a[0], dy = b[1] - a[1], t = Math.max(0, Math.min(1, ((q[0] - a[0]) * dx + (q[1] - a[1]) * dy) / (dx * dx + dy * dy)));
+    return Math.hypot(q[0] - a[0] - t * dx, q[1] - a[1] - t * dy);
+  }));
+  /** Inelul de agățat de peste vârful (0, varf): discul lui (de unit cu piesa) și golul. */
+  const inelAgatat = (varf: number): { disc: Vf[]; gol: Poli } => { const c = varf + CRACIUN.inelSus; return { disc: [[CRACIUN.inelAfara, c, 1], [-CRACIUN.inelAfara, c, 1]], gol: cerc(0, c, CRACIUN.inelGol) }; };
+  /** Tija inelului pe un vârf ascuțit (pe x = 0): lată de 2,4, de la 0,2 peste vârf până unde forma e mai lată decât ea. */
+  function tijaInel(poli: readonly P2[], varf: number): Vf[] {
+    const t = CRACIUN.tija / 2;
+    let k = 1;
+    while (!inPoli(poli, [t + 0.2, varf - k / 10]) && k < 2000) k++;
+    return dreptForma(-t, varf - k / 10, t, varf + 0.2);
+  }
+  /** Gaura de agățat: pe axa vârfului (x = 0), cât mai sus, cu peretele întreg în jur; `null` dacă nu încape până la `pana`. */
+  function gauraAgatat(poli: readonly P2[], varf: number, pana: number): Poli | null {
+    for (let k = 1; varf - k / 10 > pana; k++) {
+      const c: P2 = [0, varf - k / 10];
+      if (inPoli(poli, c) && distMargine(poli, c) >= CRACIUN.gaura + CRACIUN.gauraPerete) return cerc(0, c[1], CRACIUN.gaura);
+    }
+    return null;
+  }
+  /** Un câmp numeric al unei decorațiuni: în margini, la zecimi (sau întreg), cu mesajul lui când a fost adus înapoi. */
+  function campMarginit(avert: string[], v: unknown, a: number, b: number, implicit: number, ce: (x: string) => string, intreg = false): number {
+    const n = numarCerut(v), x = Math.min(b, Math.max(a, Number.isFinite(n) ? (intreg ? Math.round(n) : zecime(n)) : implicit));
+    if (Number.isFinite(n) && (n < a - 1e-9 || n > b + 1e-9)) avert.push(ce(String(x).replace(".", Limba.zecimal)));
+    return x;
+  }
+
+  // Fulgul de zăpadă: șase brațe (unul în sus, spre inel), un miez (hexagon, stea sau hexagon gol) și, pe fiecare braț,
+  // perechi de ramuri. `diam` e de la vârf la vârf; ramurile nu trec de cercul lui.
+  // - miezul ține pe braț cât `m`: hexagonul, 18 % din rază (cel puțin două linii); steaua (colțurile ei, între brațe),
+  //   26 % (cel puțin 2,8 linii); hexagonul gol, 24 % (cel puțin 3,2 linii), cu peretele cât linia;
+  // - perechile stau pe brațul liber (de la miez la vârf), de la `inceput` % până la 86 % din el; prima e lungă de
+  //   `lungime` % din rază, iar următoarele, tot mai scurte (ultima, 55 %); una care ar ieși sub o linie și jumătate nu
+  //   se mai face;
+  // - linia: cel puțin 1,2 mm și cel mult o șesime din rază (5 mm).
+  type FulgDef = { diam?: unknown; grosime?: unknown; linie?: unknown; ramuri?: unknown; unghi?: unknown; inceput?: unknown; lungime?: unknown; miez?: unknown; agatatoare?: unknown };
+  function fulgCote(d: FulgDef) {
+    const avert: string[] = [], zec = (x: number) => String(x).replace(".", Limba.zecimal);
+    const diam = campMarginit(avert, d.diam, 30, 150, 70, x => tr`Diametrul unui fulg e între 30 și 150 mm: l-am făcut de ${x} mm.`), R = diam / 2;
+    const grosime = campMarginit(avert, d.grosime, 1.2, 6, 2.4, x => tr`Grosimea unui fulg e între 1,2 și 6 mm: l-am făcut de ${x} mm.`);
+    const linieMax = Math.min(5, Math.max(CRACIUN.nervura, zecime(R / 6)));
+    const linie = campMarginit(avert, d.linie, CRACIUN.nervura, linieMax, 2, x => tr`La diametrul ăsta, linia unui fulg are între 1,2 și ${zec(linieMax)} mm: am făcut-o de ${x} mm.`);
+    const ramuri = campMarginit(avert, d.ramuri, 0, 4, 2, x => tr`Un braț de fulg are cel mult 4 perechi de ramuri: am făcut ${x}.`, true);
+    const unghi = campMarginit(avert, d.unghi, 30, 75, 60, x => tr`Ramurile unui fulg stau la 30°–75° de braț: le-am pus la ${x}°.`, true);
+    const inceput = campMarginit(avert, d.inceput, 20, 70, 40, x => tr`Prima pereche de ramuri stă între 20 % și 70 % din braț: am pus-o la ${x} %.`, true);
+    const lungime = campMarginit(avert, d.lungime, 10, 45, 28, x => tr`Ramurile unui fulg au între 10 % și 45 % din rază: le-am făcut de ${x} %.`, true);
+    const miez = d.miez === "stea" || d.miez === "gol" ? d.miez : "hexagon", agatatoare = d.agatatoare === "fara" ? "fara" : "inel", w = linie;
+    const m = miez === "hexagon" ? Math.max(0.18 * R, 2 * w) : miez === "stea" ? Math.max(0.26 * R, 2.8 * w) : Math.max(0.24 * R, 3.2 * w);
+    const a = unghi * Math.PI / 180, perechi: { p: number; L: number }[] = [];
+    for (let j = 0; j < ramuri; j++) {
+      const f = ramuri === 1 ? inceput / 100 : inceput / 100 + (0.86 - inceput / 100) * j / (ramuri - 1), p = m + (R - m) * f;
+      // ramura nu trece de cercul fulgului: centrul capătului ei rotund rămâne la cel mult R − w / 2 de mijloc
+      const L = Math.min(lungime / 100 * R * (ramuri === 1 ? 1 : 1 - 0.45 * j / (ramuri - 1)), w / 2 - p * Math.cos(a) + Math.sqrt(p * p * Math.cos(a) ** 2 + (R - w / 2) ** 2 - p * p));
+      if (L >= 1.5 * w) perechi.push({ p, L });
+    }
+    return { diam, grosime, linie, linieMax, ramuri, unghi, inceput, lungime, miez, agatatoare, R, m, a, perechi, avert };
+  }
+  function fulg(d: FulgDef): Corp {
+    const q = fulgCote(d), { R, m } = q, w = q.linie, forme: Vf[][] = [], gauri: Poli[] = [];
+    const hex = (r: number): Vf[] => Array.from({ length: 6 }, (_, k): Vf => [r * Math.cos(Math.PI / 6 + k * Math.PI / 3), r * Math.sin(Math.PI / 6 + k * Math.PI / 3), 0]);
+    if (q.miez === "stea") forme.push(Array.from({ length: 12 }, (_, k): Vf => { const r = k % 2 ? 0.55 * m : m, u = k * Math.PI / 6; return [r * Math.cos(u), r * Math.sin(u), 0]; }));
+    else forme.push(hex(m));
+    if (q.miez === "gol") gauri.push(hex(m - w / Math.cos(Math.PI / 6)).map(([x, y]): P2 => [x, y]));
+    // brațele pleacă din miez (la cel gol, din peretele lui); ramurile, de pe axa brațului
+    const r0 = q.miez === "gol" ? m - 0.6 * w : 0.3 * w, ramuri: Vf[][] = [];
+    for (let k = 0; k < 6; k++) {
+      const u = Math.PI / 2 + k * Math.PI / 3, dx = Math.cos(u), dy = Math.sin(u);
+      forme.push(tijaRotunda([r0 * dx, r0 * dy], u, R - r0, w));
+      for (const { p, L } of q.perechi) for (const s of [1, -1]) ramuri.push(tijaRotunda([p * dx, p * dy], u + s * q.a, L, w));
+    }
+    forme.push(...ramuri);
+    if (q.agatatoare === "inel") { const c = inelAgatat(R); forme.push(c.disc); gauri.push(c.gol); }
+    return { tri: prismaUnite(unesteForme(forme), gauri, 0, q.grosime), avert: q.avert, prinderi: [] };
+  }
+
+  // Steaua: 5–8 colțuri (`varfuri`: `colturi` e deja al cadrului, în atelier) pe cercul `diam` (unul în sus), cu vârfurile
+  // dinăuntru la `interior` % din rază (30: ascuțită;
+  // 75: plină). Plină, doar conturul (cu linia cerută; golul e steaua retrasă cu ea) sau în relief: muchii de la mijloc
+  // (înălțimea `grosime`) la colțuri și văi la vârfurile dinăuntru, cu marginea înaltă de 1,2 mm (cel mult jumătate din
+  // înălțime); în relief, inelul e o bucată plată de cel mult 2,4 mm, prinsă prin tijă, iar gaura nu se face.
+  type SteaDef = { varfuri?: unknown; diam?: unknown; interior?: unknown; grosime?: unknown; fel?: unknown; linie?: unknown; agatatoare?: unknown };
+  function steaCote(d: SteaDef) {
+    const avert: string[] = [], mute: string[] = [];
+    const colturi = campMarginit(avert, d.varfuri, 5, 8, 5, x => tr`O stea are între 5 și 8 colțuri: am făcut-o cu ${x}.`, true);
+    const diam = campMarginit(avert, d.diam, 30, 150, 70, x => tr`Diametrul unei stele e între 30 și 150 mm: am făcut-o de ${x} mm.`), R = diam / 2;
+    const interior = campMarginit(avert, d.interior, 30, 75, 40, x => tr`Vârfurile dinăuntru ale unei stele stau între 30 % și 75 % din rază: le-am pus la ${x} %.`, true);
+    const grosime = campMarginit(avert, d.grosime, 1.2, 12, 3, x => tr`Grosimea unei stele e între 1,2 și 12 mm: am făcut-o de ${x} mm.`);
+    const fel = d.fel === "contur" || d.fel === "relief" ? d.fel : "plina";
+    // linia e a conturului: la celelalte feluri nu se spune nimic despre ea
+    const linie = campMarginit(fel === "contur" ? avert : mute, d.linie, CRACIUN.nervura, 6, 2.4, x => tr`Conturul unei stele are între 1,2 și 6 mm: l-am făcut de ${x} mm.`);
+    const agatatoare = d.agatatoare === "fara" ? "fara" : d.agatatoare === "gaura" && fel === "plina" ? "gaura" : "inel";
+    const ri = interior / 100 * R, varf = Math.round(2 * Math.atan(ri * Math.sin(Math.PI / colturi) / (R - ri * Math.cos(Math.PI / colturi))) * 180 / Math.PI);
+    if (varf < 25) avert.push(tr`Colțurile stelei sunt foarte ascuțite (${varf}°): la tipărit ies rotunjite și se rup ușor.`);
+    return { varfuri: colturi, diam, interior, grosime, fel, linie, agatatoare, R, ri, varf, avert };
+  }
+  function stea(d: SteaDef): Corp {
+    const q = steaCote(d), { R, ri } = q, n = q.varfuri, avert = q.avert.slice();
+    const poli: Poli = Array.from({ length: 2 * n }, (_, k): P2 => { const r = k % 2 ? ri : R, u = Math.PI / 2 + Math.PI * k / n; return [r * Math.cos(u), r * Math.sin(u)]; });
+    if (q.fel === "relief") {
+      const H = q.grosime, prag = Math.min(CRACIUN.nervura, H / 2), tri: Tri[] = [];
+      // fața de jos, marginea dreaptă până la prag, apoi fețele înclinate, de la margine la vârful din mijloc
+      poli.forEach((a, i) => {
+        const b = poli[(i + 1) % poli.length]!;
+        tri.push([[0, 0, 0], [b[0], b[1], 0], [a[0], a[1], 0]], [[a[0], a[1], 0], [b[0], b[1], 0], [b[0], b[1], prag]], [[a[0], a[1], 0], [b[0], b[1], prag], [a[0], a[1], prag]], [[0, 0, H], [a[0], a[1], prag], [b[0], b[1], prag]]);
+      });
+      if (q.agatatoare === "inel") { const c = inelAgatat(R); tri.push(...prismaUnite(unesteForme([tijaInel(poli, R), c.disc]), [c.gol], 0, Math.min(H, CRACIUN.tija))); }
+      return { tri, avert, prinderi: [] };
+    }
+    const contur = poli.map(([x, y]): Vf => [x, y, 0]), forme: Vf[][] = [contur], gauri: Poli[] = [];
+    if (q.fel === "contur") {
+      // un gol sub 3 mm² s-ar astupa la tipărit: nu se mai face
+      const gol = glob.Cavalier.plineClosed(contur).parallelOffset(q.linie).filter(p => p.area() > 3);
+      if (!gol.length) avert.push(tr`Conturul de ${String(q.linie).replace(".", Limba.zecimal)} mm e prea gros pentru steaua asta: am făcut-o plină.`);
+      for (const p of gol) gauri.push(curataPoli(aplatizeaza(dinPl(p))));
+    }
+    // gaura stă în colțul de sus, nu mai jos de o treime din rază (mai aproape de mijloc, steaua n-ar mai atârna dreaptă)
+    let ag = q.agatatoare;
+    if (ag === "gaura") { const g = gauraAgatat(poli, R, R / 3); if (g) gauri.push(g); else { ag = "inel"; avert.push(tr("Steaua e prea îngustă pentru gaura de agățat: i-am pus un inel.")); } }
+    if (ag === "inel") { const c = inelAgatat(R); forme.push(tijaInel(poli, R), c.disc); gauri.push(c.gol); }
+    return { tri: prismaUnite(unesteForme(forme), gauri, 0, q.grosime), avert, prinderi: [] };
+  }
+
+  // Brăduțul: trunchiul și 2–6 etaje, fiecare mai îngust (cu baza de la x = 0, pe y; vârful sus).
+  // - trunchiul: 12 % din înălțime (cel puțin 4 mm), lat de 12 % din lățime (cel puțin 4 mm);
+  // - etajul i (de jos): baza lată cât (n − 0,75 · i) / n din lățime; sus se strânge la 45 % din baza etajului următor
+  //   (ultimul, la vârf);
+  // - de agățat (cu inel, cu gaură sau fără) ori **în picioare**: două plăci alăturate pe pat, cu talpa lată (60 % din
+  //   lățime), îmbinate în cruce. Prima are fanta de jos până peste mijloc, a doua, de sus până sub mijloc; fanta e cât
+  //   grosimea plus jocul de două ori (jocul locașelor din calibrare + 0,1 mm). A doua placă e tăiată drept sus, unde
+  //   lângă fantă n-ar mai rămâne o nervură de 1,2 mm.
+  type BradDef = { inaltime?: unknown; etaje?: unknown; latime?: unknown; grosime?: unknown; fel?: unknown; agatatoare?: unknown };
+  function bradCote(d: BradDef) {
+    const avert: string[] = [];
+    const H = campMarginit(avert, d.inaltime, 30, 150, 80, x => tr`Înălțimea unui brad e între 30 și 150 mm: l-am făcut de ${x} mm.`);
+    const n = campMarginit(avert, d.etaje, 2, 6, 3, x => tr`Un brad are între 2 și 6 etaje: l-am făcut cu ${x}.`, true);
+    const latime = campMarginit(avert, d.latime, 40, 90, 65, x => tr`Lățimea unui brad e între 40 % și 90 % din înălțime: l-am făcut de ${x} %.`, true);
+    const grosime = campMarginit(avert, d.grosime, 1.2, 6, 3, x => tr`Grosimea unui brad e între 1,2 și 6 mm: l-am făcut de ${x} mm.`);
+    const fel = d.fel === "picioare" ? "picioare" : "agatat", agatatoare = fel === "picioare" || d.agatatoare === "fara" ? "fara" : d.agatatoare === "gaura" ? "gaura" : "inel";
+    const W = latime / 100 * H, ht = Math.max(0.12 * H, 4), e = (H - ht) / n, tw = fel === "picioare" ? 0.3 * W : Math.max(0.06 * W, 2);
+    const b = Array.from({ length: n }, (_, i) => W / 2 * (n - 0.75 * i) / n), a = b.map((_, i) => (i < n - 1 ? 0.45 * b[i + 1]! : 0));
+    const fanta = grosime + 2 * (ef().joc + 0.1), mij = H / 2, langa = fanta / 2 + CRACIUN.nervura;
+    let taiat = H;
+    if (fel === "picioare") {
+      for (let i = 0; i < n; i++) {
+        const y = ht + i * e;
+        if (y + e > mij && a[i]! < langa) {
+          taiat = b[i]! > langa ? y + e * (b[i]! - langa) / (b[i]! - a[i]!) : y - 0.2;
+          if (i < n - 1) avert.push(tr("La mărimea asta, a doua placă a bradului nu ajunge până în vârf: fă-l mai mare, mai lat sau mai subțire."));
+          break;
+        }
+      }
+      // prima placă: de o parte și de alta a fantei de jos rămâne lemn doar cât e bradul de lat acolo (talpa și gâturile)
+      const ingust = Math.min(tw, ...a.filter((_, i) => ht + (i + 1) * e < mij + 0.2));
+      if (ingust < langa) avert.push(tr("Plăcile sunt prea groase pentru un brad atât de mic: lângă fantă rămâne prea puțin material."));
+    }
+    return { inaltime: H, etaje: n, latime, grosime, fel, agatatoare, lat: zecime(W), H, W, ht, e, tw, b, a, fanta, mij, taiat, avert };
+  }
+  function brad(d: BradDef): Corp {
+    const q = bradCote(d), { H, W, ht, e, tw, b, a } = q, n = q.etaje, h = q.grosime, avert = q.avert.slice();
+    const dreapta: P2[] = [[tw, 0], [tw, ht]];
+    for (let i = 0; i < n; i++) { dreapta.push([b[i]!, ht + i * e]); if (i < n - 1) dreapta.push([a[i]!, ht + (i + 1) * e]); }
+    const poli: Poli = [...dreapta, [0, H], ...dreapta.slice().reverse().map(([x, y]): P2 => [-x, y])], contur = poli.map(([x, y]): Vf => [x, y, 0]);
+    if (q.fel === "picioare") {
+      const s = q.fanta / 2, A = scadeForma(contur, dreptForma(-s, -1, s, q.mij + 0.2));
+      let B = scadeForma(contur, dreptForma(-W, q.taiat, W, H + 1));
+      if (q.taiat > q.mij - 0.2) B = B.flatMap(v => scadeForma(v, dreptForma(-s, q.mij - 0.2, s, H + 1)));
+      const placa = (l: readonly Vf[][], x: number): Tri[] => l.flatMap(v => prismaGauri(curataPoli(trig(aplatizeaza(v))).map(([px, py]): P2 => [px + x, py]), [], 0, h));
+      return { tri: [...placa(A, 0), ...placa(B, W + CRACIUN.intrePlaci)], avert, prinderi: [] };
+    }
+    const forme: Vf[][] = [contur], gauri: Poli[] = [];
+    let ag = q.agatatoare;
+    // gaura stă în ultimul etaj (mai jos, bradul ar atârna strâmb)
+    if (ag === "gaura") { const g = gauraAgatat(poli, H, ht + (n - 1) * e); if (g) gauri.push(g); else { ag = "inel"; avert.push(tr("Vârful bradului e prea îngust pentru gaura de agățat: i-am pus un inel.")); } }
+    if (ag === "inel") { const c = inelAgatat(H); forme.push(tijaInel(poli, H), c.disc); gauri.push(c.gol); }
+    return { tri: prismaUnite(unesteForme(forme), gauri, 0, h), avert, prinderi: [] };
+  }
+
   function semne(n: number, x0: number, y0: number, z0: number, pas = 2.4) {
     // n cuburi mici de 1,2 mm, ca sa recunosti varianta
     const tri: Tri[] = [];
@@ -2885,7 +3118,7 @@ var Lego = (function (glob: typeof globalThis) {
   }
 
   // ---------------------------------------------------------------------------------------------- piesa dupa definitie
-  const TIPURI = { caramida, lateral, panta, pantaInversa, pana, rotund, arc, cadru, grinda, caramidaTechnic, ax, stiftTechnic, bucsa, conector, conectorUnghi, suport, clema, maner, bara, bila, cupa, rotita, cremaliera, cama, melc, roata, fulie, conica, coroana, conicaDubla, senila, elice, eliceBarca, ventilator, roataPalete, dinCvs2 };
+  const TIPURI = { caramida, lateral, panta, pantaInversa, pana, rotund, arc, cadru, grinda, caramidaTechnic, ax, stiftTechnic, bucsa, conector, conectorUnghi, suport, clema, maner, bara, bila, cupa, rotita, cremaliera, cama, melc, roata, fulie, conica, coroana, conicaDubla, senila, elice, eliceBarca, ventilator, roataPalete, fulg, stea, brad, dinCvs2 };
   function construieste(def: DefPiesa) {
     const f = TIPURI[def.tip];
     if (!f) throw new Error("tip necunoscut: " + def.tip);
@@ -3215,5 +3448,9 @@ var Lego = (function (glob: typeof globalThis) {
       const p = fulieCote(a), q = fulieCote(b), c = +(C as number), minim = Math.ceil((p.R + q.R + 0.5) * 10 - 1e-6) / 10;
       return { lungime: lungimeCurea(p.fund, q.fund, c), minim, atinge: !(c >= minim - 1e-9) };
     },
-    _: { inel, prisma, cruce, razaPoligon, insetConvex, taieSemiplan, trunchi, profilRoata, conturRoata, prismaRasucita } };
+    // decorațiunile de Crăciun (ADR 0285): cotele fulgului, ale stelei și ale bradului, din parametri
+    fulgCote: (d: FulgDef) => { const q = fulgCote(d); return { diam: q.diam, grosime: q.grosime, linie: q.linie, linieMax: q.linieMax, ramuri: q.ramuri, unghi: q.unghi, inceput: q.inceput, lungime: q.lungime, miez: q.miez, agatatoare: q.agatatoare, facute: q.perechi.length }; },
+    steaCote: (d: SteaDef) => { const q = steaCote(d); return { varfuri: q.varfuri, diam: q.diam, interior: q.interior, grosime: q.grosime, fel: q.fel, linie: q.linie, agatatoare: q.agatatoare, varf: q.varf }; },
+    bradCote: (d: BradDef) => { const q = bradCote(d); return { inaltime: q.inaltime, etaje: q.etaje, latime: q.latime, grosime: q.grosime, fel: q.fel, agatatoare: q.agatatoare, lat: q.lat, fanta: q.fanta, taiat: q.taiat }; },
+    _: { inel, prisma, cruce, razaPoligon, insetConvex, taieSemiplan, trunchi, profilRoata, conturRoata, prismaRasucita, unesteForme } };
 })(typeof globalThis !== "undefined" ? globalThis : window);

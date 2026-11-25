@@ -1,4 +1,4 @@
-# Atelierul Easy 3Draw: piese, prinderi, construcții (3.Ca–3.Cj și 3.Tu; ADR 0284, ADR 0283)
+# Atelierul Easy 3Draw: piese, prinderi, construcții, decorațiuni (3.Ca–3.Cl și 3.Tu; ADR 0284, ADR 0283, ADR 0285)
 
 _Linia pieselor noi, a punctelor de prindere și a Modelului ca asamblare, în atelierul Easy 3Draw. Pornită pe 24.11.2026,
 la cererea owner-ului („vreau sa adaugi mai multe tipuri de piese pentru fiecare categoire […] compatibile intre ele nu
@@ -15,13 +15,17 @@ unite în `main` pe 25.11 (`9815527f`); 3.Ce (punctele de prindere și „Se pri
 18.32.0), unite în `main` pe 25.11 (`36559b49`, PR-ul `AndreiBesliu/cvs2#33`). Cu melcul, 3.Cj e încheiată. 3.Tu
 (piesele rotunde pe același ax în „Modelul”; 18.33.0), unită în `main` pe 25.11 (`f5cf10c8`, PR-ul
 `AndreiBesliu/cvs2#45`). 3.Cf-1 (alipirea la prinderi, cu piesele legate; 18.34.0), gata pe ramură pe 25.11, neunită
-(PR-ul `AndreiBesliu/cvs2#46`). Urmează 3.Cf-2 (orientarea pe trei axe, pozițiile la jumătate de pas); 3.Ck așteaptă
-tipărirea bilei și a cupei.** Versiunea următoare a pachetului: 18.35.0._
+(PR-ul `AndreiBesliu/cvs2#46`). **Decorațiunile de Crăciun (ADR 0285, cerute de owner pe 25.11 și acceptate cu
+recomandările, 1a–4a): 3.Cl-1 (fulgul, steaua și brăduțul, în fila nouă „Crăciun”; 18.35.0), gata pe ramură pe 25.11.**
+Urmează 3.Cl-2 (globul, relieful pe două înălțimi), 3.Cl-3 (ornamentul cu nume), 3.Cl-4 (brăduțul LEGO); apoi 3.Cf-2
+(orientarea pe trei axe, pozițiile la jumătate de pas); 3.Ck așteaptă tipărirea bilei și a cupei.** Versiunea
+următoare a pachetului: 18.36.0._
 
 ## Numerele liniei
 
 - **ADR-urile:** 0280–0289 sunt ale pluginului (0280 roțile, 0281 filele, 0282 elicele, **0283 pentru 3.Tu**, **0284
-  construcțiile**); sesiunea principală a dat liniei și intervalul **0340–0349**, pentru ADR-urile de după.
+  construcțiile**, **0285 decorațiunile de Crăciun**); sesiunea principală a dat liniei și intervalul **0340–0349**,
+  pentru ADR-urile de după.
 - **Feliile:** 3.Ca–3.Cj (planul din ADR 0284, zece felii: literele rămase după 3.Tu, v–z, nu ajungeau) și 3.Tu.
   Sesiunea principală propusese „de la 3.Tv” înainte să afle că ADR-ul fusese deja acceptat de owner ca 0284, cu feliile
   3.C; numerotarea rămâne de confirmat cu ea la unirea lui 3.Ca (dacă cere 0340 și 3.Tv…, redenumirea e mecanică).
@@ -42,6 +46,7 @@ tipărirea bilei și a cupei.** Versiunea următoare a pachetului: 18.35.0._
 | 3.Ci | Construcțiile gata (șasiul, cutia de angrenaje, brațul de macara, barca cu elice) | după Model (răspunsul 3a) |
 | 3.Cj | Melcul, cama și manivela, cadrul, roata cu palete | pe bucăți: 3.Cj-1, cama, 3.Cj-2, roata cu palete, 3.Cj-3, cadrul, și 3.Cj-4, șurubul melc: gata (25.11) |
 | 3.Ck | Balamaua și placa turnantă | despărțite de 3.Cd; după ce owner-ul încearcă primele piese pe imprimantă |
+| 3.Cl | Decorațiunile de Crăciun (ADR 0285) | 3.Cl-1 (fulgul, steaua, brăduțul), gata (25.11); 3.Cl-2 (globul, relieful pe două înălțimi), 3.Cl-3 (ornamentul cu nume), 3.Cl-4 (brăduțul LEGO), urmează |
 
 ## 3.Ca, gata (24.11, în cloud): conectorul perpendicular
 
@@ -202,6 +207,52 @@ tipărirea bilei și a cupei.** Versiunea următoare a pachetului: 18.35.0._
   acum pe apelul `Lego.transfGrila` din `asezari`); cele 30 mutate, rulate din nou, toate prinse.
 - **Ce n-a intrat:** orientarea de mână și jumătățile de pas (3.Cf-2); verificarea (3.Cg); „Fă perechea” și construcțiile
   gata nu pun încă piese legate în model.
+
+## 3.Cl-1, gata (25.11, în cloud): fulgul, steaua și brăduțul (ADR 0285)
+
+- **Cererea:** owner-ul, în sesiunea principală, pe 25.11 („Vreau ca sesiunea care lucreaza la plugin, sa faca si
+  decoratiuni de craciun pentru imprimanta”); ADR 0285, propus cu o schiță și patru întrebări, acceptat în aceeași seară
+  („Mergem cu recomandarile”). Feliile: 3.Cl-1…4.
+- **Unde e:** motorul, secțiunea „decorațiunile de Crăciun”, înaintea calibrării (`semne`): `CRACIUN` (măsurile comune),
+  `unesteForme` și `prismaUnite` (unirea formelor, cu golurile lor), `tijaRotunda`, `inelAgatat`, `tijaInel`,
+  `gauraAgatat`, `campMarginit`, apoi `fulgCote` / `fulg`, `steaCote` / `stea`, `bradCote` / `brad`. Atelierul:
+  `stare.fulg`, `stare.stea`, `stare.brad`, familia `craciun` din `FAMILII`, `FULGI` și `STELE` (cei gata făcuți),
+  `fulgIntamplator`, `PICTOGRAME`, `numeDef`, `defCurenta`, editorul (`at-fg-…`, `at-st-…`, `at-bd-…`).
+- **Datele pieselor:** în ADR 0285, „Implementat”. Steaua își ține colțurile în `varfuri` (`colturi` e al cadrului).
+- **Probele:** `test/unit/trenulet.craciun.test.ts`, `test/e2e/trenulet.craciun.spec.ts`; otrăvurile,
+  `test/otravuri/3.Cl-1.py` și `3.Cl-1-en.py`.
+
+### Reguli și capcane (3.Cl-1)
+
+- **O piesă plată nouă se face din forme unite, nu din corpuri suprapuse:** `unesteForme` dă un singur contur, cu
+  golurile lui, deci greutatea scrisă e cea adevărată. Formele trebuie să se taie curat: un capăt drept pleacă din
+  interiorul formei de care se leagă, iar niciun vârf nu stă pe latura altei forme (Cavalier dă atunci bucăți fără arie).
+- **Ce întoarce Cavalier nu are sensul normalizat:** bucățile unui „not” vin și în sens orar; conturul se întoarce cu
+  `spreStanga` (arcele își schimbă semnul și trec pe vârful dinainte). Două forme care se ating pe o latură dau și o
+  bucată fără arie (se scot cu pragul de arie). `parallelOffset(+d)` strânge un contur trigonometric.
+- **O polilinie Cavalier e marginea de afară, plină:** golurile se țin separat. Un gol închis la unirea cu o bucată
+  pierde ce acoperă bucățile unite după ea, în același pas (proba „U”-ului cu bara dinăuntru).
+- **Proba unei forme e modelul ei de pe hârtie, întrebat punct cu punct:** `caPeHartie` compară plasa cu regula scrisă
+  în probă, în mii de puncte la întâmplare (mereu aceleași), sărind punctele de la mai puțin de 0,04 mm de o margine
+  (arcele plasei sunt din laturi). A prins dintr-odată locul, unghiul, lungimea și lățimea fiecărei tije.
+- **Măsurarea cu pasul de 0,01 mm dă ±0,01:** o lățime se compară cu 0,03 îngăduință, nu rotunjită la sutimi.
+- **Gâtul dintre inel și piesă se măsoară, nu se presupune:** cu vârful la mijlocul peretelui, gâtul ieșea de 1,16 mm
+  la linia de 1,2. Inelul a coborât (centrul la 1,9), iar pe vârfurile ascuțite stă pe o tijă.
+- **„Cât mai sus” are nevoie de o margine de jos:** gaura de agățat își găsea loc deasupra trunchiului unui brad mic
+  (bradul ar fi atârnat cu vârful în jos). Am văzut-o scriind otrăvurile, nu din probe: căutarea se oprește acum la
+  ultimul etaj (la stea, la o treime din rază), iar piesa primește inelul.
+- **Un nume care se schimbă după ce piesa e făcută din nou nu se citește imediat după clic:** proba „Alt fulg” își scrie
+  numele așteptat din câmpuri (care se schimbă pe loc) și îl așteaptă; cu zarul adevărat, o expresie regulată trecea pe
+  numele vechi.
+- **Zarul se ține pe loc doar cât ține clicul, cu o valoare constantă** (`Math.random` pus înapoi în același `evaluate`):
+  three.js îl folosește și el.
+- **O filă nouă atinge:** tabela și lista filelor din `trenulet.file.spec.ts` (și starea scrisă înapoi a unei liste
+  vechi), tabela și numărul desenelor din `trenulet.pictograme.spec.ts`, căutarea („fu” găsește și fulgul), lista filelor
+  și drumul prin galerii din proba în engleză (`trenulet.spec.ts`: fila nouă merge prima, ca la capăt să rămână deschisă
+  piesa de dinainte), `MOSTRE` (prinderile) și `DREPTE` (modelul).
+- **Un cuvânt cu alt sens în altă parte își ia contextul:** „Gol” era „Empty”; miezul gol e `tr("Gol", "miez")`,
+  „Hollow”.
+- **Rândul din indexul ADR are patru celule** (a patra: etapa și starea): cu trei, build-ul se oprește.
 
 ## Reguli și capcane (de la 3.Ca–3.Cj)
 

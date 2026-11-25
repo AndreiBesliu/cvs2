@@ -319,6 +319,10 @@ const MOSTRE: readonly (readonly [string, Def, Record<string, number>, { slab?: 
   ['șurubul melc gros, de 4 știfturi', { tip: 'melc', diam: 16, lung: 4 }, { gauraAx: 2 }],
   ['roata cu palete', { tip: 'roataPalete' }, { gauraAx: 2 }],
   ['roata cu palete curbate, mică, pe știft, fără disc', { tip: 'roataPalete', diam: 32, palete: 12, forma: 'curbate', disc: 'fara', gaura: 'r', lat: 7.8 }, { gauraStift: 2 }],
+  // decorațiunile de Crăciun (ADR 0285) se agață: nu au prinderi
+  ['fulgul', { tip: 'fulg' }, {}],
+  ['steaua în relief', { tip: 'stea', fel: 'relief', grosime: 8 }, {}],
+  ['bradul în picioare', { tip: 'brad', fel: 'picioare' }, {}],
   ['forma din cvs2', { tip: 'dinCvs2', contururi: [[[0, 0], [20, 0], [20, 12], [0, 12]]] }, {}],
 ];
 const numara = (l: readonly Prindere[]): Record<string, number> => { const n: Record<string, number> = {}; for (const c of l) n[c.fel] = (n[c.fel] ?? 0) + 1; return n; };
