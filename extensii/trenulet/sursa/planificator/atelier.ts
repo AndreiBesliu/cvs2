@@ -953,8 +953,8 @@ var Atelier3D = (function () {
         </div>
         <div class="at-rand"><span class="mic">Gaura:</span>${seg("at-cam-gaura", [["x", "Pentru ax"], ["r", "Rotundă"]], q.gaura)}</div>
         <div class="at-rand"><span class="mic" id="at-cam-info">${tr`Marginea stă între ${fmt(q.razaMica)} și ${fmt(q.razaMare)} mm de ax: un tachet sprijinit pe ea urcă și coboară ${fmt(q.cursa)} mm la fiecare tură.`} ${cum}</span></div>`;
-      // un număr din afara marginilor nu e primit: câmpul se întoarce la valoarea de dinainte
-      const camp = (id: string, a: number, b: number, f: (v: number) => void) => { $(id).onchange = ev => { const v = +(ev.target as HTMLInputElement).value; if (v >= a && v <= b) { f(Math.round(v * 10) / 10); schimbat(); } editor(); }; };
+      // un număr din afara marginilor nu e primit: câmpul se întoarce la valoarea de dinainte (zecimile le rotunjește motorul)
+      const camp = (id: string, a: number, b: number, f: (v: number) => void) => { $(id).onchange = ev => { const v = +(ev.target as HTMLInputElement).value; if (v >= a && v <= b) { f(v); schimbat(); } editor(); }; };
       const alege = (id: string, f: (v: string) => void) => { $(id).onclick = ev => { const b = (ev.target as Element).closest<HTMLElement>("[data-v]"); if (!b) return; f(b.dataset.v!); editor(); schimbat(); }; };
       camp("#at-cam-diam", 10, 64, v => { p.diam = v; });
       camp("#at-cam-cursa", 1, 24, v => { p.cursa = v; });

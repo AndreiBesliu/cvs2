@@ -61,6 +61,7 @@ test('configuratorul: forma, diametrul, cursa, grosimea și gaura, cu numele și
   // para: cercul de bază (16) și nasul până la 16 mm de ax: 8 + 16 = 24 pe lung, 16 pe lat
   await page.locator('#at-cam-forma [data-v="para"]').click();
   await expect(nume(page)).toHaveText('Camă pară Ø16, cursa 8');
+  await expect(apasat(page, 'at-cam-forma')).toHaveText('Pară');
   await expect(cote(page)).toContainText('24 × 16 × 7,8 mm');
   await expect(info(page)).toContainText('Stă pe cercul de bază mai mult de jumătate de tură, apoi urcă și coboară scurt.');
   // melcul: de la 8 la 16; pe x, de la −12 (la 180°) la 16; pe y, puțin sub ±11 și ±15 (vârfurile nu cad pe axe)
@@ -77,6 +78,8 @@ test('configuratorul: forma, diametrul, cursa, grosimea și gaura, cu numele și
   await expect(info(page)).toContainText('Marginea stă între 12 și 24 mm de ax: un tachet sprijinit pe ea urcă și coboară 12 mm la fiecare tură.');
   await scrie(page, '#at-cam-grosime', '3.8');
   await page.locator('#at-cam-gaura [data-v="r"]').click();
+  await expect(apasat(page, 'at-cam-gaura')).toHaveText('Rotundă');
+  await expect(apasat(page, 'at-cam-forma')).toHaveText('Excentric');
   await expect(nume(page)).toHaveText('Camă excentrică Ø24, cursa 12, 3,8 mm, gaură rotundă');
   await expect(cote(page)).toContainText('36 × 36 × 3,8 mm');
   // cursa cu zecimale, rotunjită la zecimi; în afara marginilor, valoarea de dinainte rămâne

@@ -86,9 +86,10 @@ o('E08', AT, 'camp("#at-cam-cursa", 1, 24, v => { p.cursa = v; });', 'camp("#at-
 o('E09', AT, 'camp("#at-cam-cursa", 1, 24, v => { p.cursa = v; });', 'camp("#at-cam-cursa", 1, 30, v => { p.cursa = v; });', 'e2e', 'câmpul primește cursa 25')
 o('E10', AT, 'camp("#at-cam-grosime", 1, 20, v => { p.grosime = v; });', 'camp("#at-cam-grosime", 0.1, 30, v => { p.grosime = v; });', 'e2e', 'câmpul primește orice grosime')
 o('E11', AT, 'camp("#at-cam-grosime", 1, 20, v => { p.grosime = v; });', 'camp("#at-cam-grosime", 1, 20, v => { p.diam = v; });', 'e2e', 'grosimea scrisă schimbă diametrul')
-o('E12', AT, 'if (v >= a && v <= b) { f(Math.round(v * 10) / 10); schimbat(); } editor(); }; };\n      const alege = (id: string, f: (v: string) => void) => { $(id).onclick = ev => { const b = (ev.target as Element).closest<HTMLElement>("[data-v]"); if (!b) return; f(b.dataset.v!); editor(); schimbat(); }; };\n      camp("#at-cam-diam"',
-  'if (v >= a && v <= b) { f(v); schimbat(); } editor(); }; };\n      const alege = (id: string, f: (v: string) => void) => { $(id).onclick = ev => { const b = (ev.target as Element).closest<HTMLElement>("[data-v]"); if (!b) return; f(b.dataset.v!); editor(); schimbat(); }; };\n      camp("#at-cam-diam"',
-  'e2e', 'câmpul ține sutimile scrise')
+# (E12 de la prima rulare scotea rotunjirea la zecimi din câmp: echivalentă, fiindcă motorul rotunjește oricum prin camaCote;
+# rotunjirea de prisos a ieșit din cod, iar otrava e acum alta)
+o('E12', AT, 'seg("at-cam-forma", [["excentric", "Excentric"], ["para", "Pară"], ["melc", "Melc"]], q.forma)', 'seg("at-cam-forma", [["excentric", "Excentric"], ["para", "Pară"], ["melc", "Melc"]], "excentric")', 'e2e',
+  'forma aleasă nu se vede apăsată')
 o('E13', AT, 'alege("#at-cam-forma", v => { p.forma = v; });', 'alege("#at-cam-forma", v => { p.forma = v === "melc" ? "para" : v; });', 'e2e', 'melcul ales face o pară')
 o('E14', AT, 'alege("#at-cam-gaura", v => { p.gaura = v; });', 'alege("#at-cam-gaura", () => { p.gaura = "x"; });', 'e2e', 'gaura rotundă nu se poate alege')
 IN = 'tr`Marginea stă între ${fmt(q.razaMica)} și ${fmt(q.razaMare)} mm de ax: un tachet sprijinit pe ea urcă și coboară ${fmt(q.cursa)} mm la fiecare tură.`'
