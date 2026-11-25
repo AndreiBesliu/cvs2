@@ -3,9 +3,12 @@
 <!-- Adusă din memoria sesiunii principale pe 23.11.2026 (mutarea în cloud). De aici înainte o ține la zi linia, pe ramura ei, odată cu feliile. -->
 
 _CNCVS2, elicele din Easy 3Draw (ADR 0282, ACCEPTAT 22.11 cu 1a, 2a, 3a): 3.Tq (elicea) unită în `main` pe 23.11 (`0ae9c6c1`, Easy 3Draw 18.19.0); reparația probelor atelierului (`baa00ad`) și 3.Tr (elicea de barcă, 18.20.0) unite în `main` pe 23.11 (`d262e57a`), din sesiunea cloud a liniei; 3.Ts (ventilatorul cu carcasă, 18.22.0) unită în `main` pe 24.11 (`3218781c` în `e14e553a`, lotul al paisprezecelea, de sesiunea principală); toate trei elicele ADR-ului sunt făcute; 3.Tt (înclinarea spre pupa a elicei de barcă, la alegere, 18.23.0)
-unită în `main` pe 24.11 (`ba09a10b` în `d57ca962`, lotul al șaptesprezecelea, de sesiunea principală); versiunea următoare
-a pachetului e 18.24.0; cotele LEGO măsurate din LDraw, față de axa piesei. **Din 24.11 seara, linia trece în sesiunea
+unită în `main` pe 24.11 (`ba09a10b` în `d57ca962`, lotul al șaptesprezecelea, de sesiunea principală); la predare, versiunea
+următoare a pachetului era 18.24.0 (pe 25.11, după feliile atelierului, Easy 3Draw e 18.30.0); cotele LEGO măsurate din LDraw, față de axa piesei. **Din 24.11 seara, linia trece în sesiunea
 extensiilor** (predarea, mai jos)._
+
+**Auditul complet al elicelor** (25.11, cerut de owner): [audit-elice.md](audit-elice.md), cu feliile propuse și
+întrebările, pentru linia atelierului.
 
 ## Predarea (24.11 seara): linia trece în sesiunea extensiilor
 
