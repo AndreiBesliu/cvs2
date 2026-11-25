@@ -39,7 +39,7 @@ nouă întrebări. Răspunsurile au venit în sesiunea liniei.
 3. **Avansul, turația, plonjarea, Z-ul sigur (3a):**
    - pe o freză din bibliotecă, valorile ei de lucru (v27, `regim`), ca azi;
    - pe „Scrisă de mână”, trei câmpuri în grupul Freza al fișei (turația, avansul, plonjarea), scrise în `regim` pe freza
-     operației. Fără schemă nouă: documentul v27 le are deja;
+     operației. Fără schemă nouă: documentul le are de la v27;
    - Z-ul sigur și locul de parcare de la final stau în „Mașina și fișierul”, ca setări ale aplicației, cum stă supracursa.
 
    Fără valori, programul de azi, octet cu octet.
@@ -102,7 +102,8 @@ lui 28.8↑a (3 h 20 min, carcasa).
   - n schimbă numele fișierului doar când omul îl schimbă sau foaia are un nume;
   - o adaugă o alegere, iar colțurile rămân;
   - p, fără valori scrise, lasă programul de azi.
-- **Documentul rămâne v27** până la felia de CAM din 9a.
+- **Schema documentului nu se schimbă** până la felia de CAM din 9a: rămâne cea de azi (v28, a reliefului; v29 e dat liniei
+  reliefului pentru 18.1↑c), iar 9a ia v30 sau numărul liber de atunci.
 - **Regulile ferestrei** din ADR 0290 și din `docs/linii/export.md` rămân:
   - un câmp nou își cere grupul în `GRUP_CAMP`, explicația în ambele limbi și locul în proba privirii;
   - ce nu se aplică nu apare.
