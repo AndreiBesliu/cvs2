@@ -14816,7 +14816,7 @@ gata de unit”, `b099c457`; 28.8↑n, `7996e77c`), la ordinul în vigoare „un
 degroșarea și finisarea cer oracolul (suprafața rezultată față de model, în toleranță; creasta măsurată; niciodată mai adânc
 decât pasul pe trecere), scris înaintea funcției, și otrăvurile pe el. Raportul, ca până acum.”; pe drum, al doilea mesaj al
 ei, „nu fără rând” (rândul finisării în fereastra exportului, doar de citit).
-**Started:** 25.11, 11:03. **Completed:** 25.11, 15:12 (raportul întâi); a doua parte, la cererile din 15:14, 17:01 și 18:22, în lucru.
+**Started:** 25.11, 11:03. **Completed:** 25.11, 15:12 (raportul întâi); a doua parte, la cererile din 15:14, 17:01 și 18:22, 25.11, 19:20.
 
 - **Oracolul 3D întâi** (`test/oracles/relief3d.ts`, fără importuri din `src/`): modelul exact, drop-cutter-ul exact
   (vârfuri, muchii, fețe, muchia discului) cu bila, plata, V-ul și V-ul cu vârf plat, simulatorul crestei și al materialului;
@@ -14862,7 +14862,10 @@ ei, „nu fără rând” (rândul finisării în fereastra exportului, doar de 
   `@ts-expect-error`), otrăvită de mână: cu `CopieProiect` lărgit cu bila, `tsc` cade pe directiva nefolosită.
 - **Mărimea,** față de `1d3882d9` (măsurat pe un build al lui): pornirea 111,2 → 111,4 kB (cu ușa 116,2 → 116,5, cu
   Atelierul 116,5 → 116,9 / 125), totalul 893,5 → 904,3 / 1 000 kB (+10,8).
-- **Porțile, în CI, pe `20532b5a`:** în lucru.
+- **Porțile, în CI, pe `dec06156`** (codul lui `20532b5a`, peste `1d3882d9`): completul 45654203469, verde (47 min): unit
+  10 566 / 0 (12 sărite, pe Linux), e2e 869 / 869, funcțiile pe emulatoare 136 / 136, paginile 60 / 60; rapidul, verde
+  (45654197782 la push, 45654203453 pe PR; felia cea mai lungă, 7,4 minute). Nimic pe server. Sesiunea principală a pus între
+  timp peste `1d3882d9` și 10.4↑c-2 (`66b6b335`); unirea cu el și completul pe ea rămân la ea (mesajul din 18:27).
 
 ## 2026-11-25 — 16.A↑b-6: „Pune-o înapoi în bibliotecă” din fereastra exportului (Model: Claude Opus 5.5)
 
