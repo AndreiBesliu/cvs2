@@ -14816,7 +14816,7 @@ gata de unit”, `b099c457`; 28.8↑n, `7996e77c`), la ordinul în vigoare „un
 degroșarea și finisarea cer oracolul (suprafața rezultată față de model, în toleranță; creasta măsurată; niciodată mai adânc
 decât pasul pe trecere), scris înaintea funcției, și otrăvurile pe el. Raportul, ca până acum.”; pe drum, al doilea mesaj al
 ei, „nu fără rând” (rândul finisării în fereastra exportului, doar de citit).
-**Started:** 25.11, 11:03. **Completed:** 25.11, 15:12.
+**Started:** 25.11, 11:03. **Completed:** 25.11, 15:12 (raportul întâi); a doua parte, la cererea din 15:14, în lucru.
 
 - **Oracolul 3D întâi** (`test/oracles/relief3d.ts`, fără importuri din `src/`): modelul exact, drop-cutter-ul exact
   (vârfuri, muchii, fețe, muchia discului) cu bila, plata, V-ul și V-ul cu vârf plat, simulatorul crestei și al materialului;
@@ -14833,14 +14833,19 @@ ei, „nu fără rând” (rândul finisării în fereastra exportului, doar de 
   Exportă îi scrie rangul. „Exportă G-code” și „Toate foile” numără o foaie doar cu finisare. Bila are CAM în bibliotecă.
 - **Otrăvurile** (`test/otravuri/18.1c.py`): primul tur a găsit probe slabe (C01, C02, C04, C07, C15, J05), întărite:
   oracolul cu V-ul cu vârf plat, relieful aspru cu liniile nealiniate, ce rămâne pe pantă, conul mai adânc decât placa. Al doilea tur, pe `0713a3ff`: 44 / 44 prinse (O07 și O08 prin e2e; C01, C02, C04 și C07 verificate și pe proba micșorată din `6deb68d1`).
-- **Mărimea,** față de `main` (`2aaee0b4`, adus în ramură): pornirea 111,2 → 111,4 kB (cu ușa 116,2 → 116,5, cu Atelierul 116,5 →
-  116,8 / 125), totalul 890,1 → 901,0 / 1 000 kB (+10,9).
+- **Mărimea,** față de `main` (`65eecdc6`, adus în ramură): pornirea 111,2 → 111,4 kB (cu ușa 116,2 → 116,5, cu Atelierul 116,5 →
+  116,8 / 125), totalul 891,8 → 902,7 / 1 000 kB (+10,9).
 - **`main` adus** (`2aaee0b4`, cu 16.A↑b-5, 28.8↑n, 10.4↑c-1, 3.Cj-3–4): ciocnirile, în importuri și în lista de proprietăți a
   ferestrei exportului și în catalogul controalelor (656 de nume). Apoi 20 de otrăvuri ale altor liste, rămase fără țintă pe
   codul nou (`otravuri-void-noi.py`), mutate pe el, toate prinse din nou; K01 din 16.A-h4, întoarsă (bila are acum CAM).
 - **Rapidul pe `0713a3ff`:** felia 6 a ținut 14,0 minute din 15; proba reliefului aspru, micșorată la cazul care prinde
   (`6deb68d1`), a dus-o la 10,3. Canalul `relief`: <https://cncvectorstudio-test--relief-i9yxfdsc.web.app>.
-- **Porțile, în CI, pe `edf9f0aa`:** completul 45611988372, verde (55 min): unit 10 538 / 0 (12 sărite, pe Linux), e2e 857 / 857, funcțiile pe
+- **Cererea sesiunii principale din 15:14** (16.A↑b-4 și 28.8↑o, venite în `main`): `main` adus (întâi peste `unire-2511t`,
+  apoi `65eecdc6`); în `ExportConectat.tsx`, maparea frezei dusă în `oferita` (doar forma în V), iar `bibliotecaToata` din
+  `frezePeRanduri` (fără bile: altfel o bilă Ø6 arăta ca o plată Ø6 și o plată scrisă de mână era „recunoscută”), cu proba
+  întâi (`exportFreze.bila.test.ts`) și otrava O09; A01 din 16.A-b4, mutată pe linia nouă. Proba finisării cu XY0 în centrul
+  foii: G-code-ul din centru, mutat înapoi, e cel din colț și trece oracolul. Linia frezelor, anunțată (de acord).
+- **Porțile, în CI, pe `edf9f0aa`** (înaintea lui b-4): completul 45611988372, verde (55 min): unit 10 538 / 0 (12 sărite, pe Linux), e2e 857 / 857, funcțiile pe
   emulatoare 136 / 136, paginile 59 / 59; rapidul, verde (45611984002 la push, 45611993653 pe PR). Pornirea 111,4 / 125 kB
   (cu ușa 116,5, cu Atelierul 116,8), totalul 901,0 / 1 000 kB, `/admin` 138,3 / 200. Nimic pe server.
 
@@ -14936,3 +14941,4 @@ ei, „nu fără rând” (rândul finisării în fereastra exportului, doar de 
   dată; „Du-mă la …” nu aduce greșeala în vedere; unirea de probă `unire-2511u`, completul 45629718056).
 - **Documentele:** decizia și paragrafele de stare în `CLAUDE.md` (frezele, imprimanta, regula originii, cu adăugirea liniei
   exportului); indexul liniilor; starea din `docs/linii/principala.md`.
+- **Porțile, în CI, pe `ff146fe1`** (cu `main` `65eecdc6`): în lucru (rapidul 45640499397 și completul 45640507141).
