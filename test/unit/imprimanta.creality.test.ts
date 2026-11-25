@@ -183,8 +183,25 @@ test('starea lucrării, ca integrarea Home Assistant (capturile K1C)', () => {
     [{ cod: 1, fisier: f, progres: 3, autotest: 40 }, 'autotest'],
     [{ cod: 1, fisier: f, progres: 3, autotest: 100 }, 'imprima'],
     [{ cod: 1, progres: 3 }, 'libera'],
+    // Fără codul stării nu se știe nimic despre lucrare, orice altceva ar fi venit (felia 3.Au): starea vine pe bucăți.
+    [{ progres: 41 }, 'necunoscuta'],
+    [{ fisier: f, progres: 40 }, 'necunoscuta'],
+    [{ fisier: f, progres: 100, ramas: 0 }, 'necunoscuta'],
+    [{ progres: 3, autotest: 40 }, 'necunoscuta'],
   ];
   for (const [s, asteptat] of cazuri) assert.equal(stareLucrare(cu(s)), asteptat, JSON.stringify(s));
+});
+
+test('la legare, o bucată de stare doar cu progresul, sosită înaintea stării întregi, nu face imprimanta „liberă” (felia 3.Au)', () => {
+  // Bucata pe care o trimite o imprimantă care lucrează, la fiecare pas (fără `state`, fără numele fișierului).
+  const f = `${DIR_GCODE}output_11031835.gcode`;
+  let i = aplica(IMPRIMANTA_NECUNOSCUTA, citesteCadru('{"printProgress":41,"printJobTime":467,"printLeftTime":673,"layer":21}').stare);
+  assert.equal(i.progres, 41);
+  assert.equal(i.cod, null);
+  assert.equal(stareLucrare(i), 'necunoscuta');
+  // Apoi starea întreagă: abia acum se știe că imprimă.
+  i = aplica(i, citesteCadru(JSON.stringify({ state: 1, printFileName: f, printProgress: 41, printLeftTime: 673 })).stare);
+  assert.equal(stareLucrare(i), 'imprima');
 });
 
 test('ce comenzi au rost: pauza doar cât imprimă, reluarea doar din pauză, pornirea doar pe o imprimantă liberă', () => {

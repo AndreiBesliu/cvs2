@@ -290,6 +290,9 @@ test('imprimanta (felia A.8d): legarea, pauza și reluarea, deconectarea; fără
   const imp = await pornesteImprimanta({
     port: 9999, gazda: ip, fisiere: [{ name: 'output_11031835.gcode', timeCost: 1140, material: 'PLA' }], inimaMs: 400, asteptareOkMs: 1200,
     pasMs: 300, imprima: { fisier: 'output_11031835.gcode', progres: 40 },
+    // Ordinea rea, la fiecare rulare (felia 3.Au): întâi o bucată doar cu progresul, apoi, după 400 ms, starea întreagă. Fără
+    // ea, proba cădea doar când bucata unui pas o lua înaintea stării (completul din 25.11, „pornită” în plus).
+    bucataIntaiMs: 400,
   });
   try {
     await clientConfirmat('ion@exemplu.ro', 'parola-lui-ion');
