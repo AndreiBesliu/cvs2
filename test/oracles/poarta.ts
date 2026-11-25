@@ -137,7 +137,8 @@ import { invarianta14 } from './pe-linie.ts';
 import { etichetaDeschisa, verificaDeschise } from './deschise.ts';
 import { verificaPeOParte, verificaPeretii } from './parte.ts';
 
-export type ColtOrigine = 'stanga-jos' | 'dreapta-jos' | 'dreapta-sus' | 'stanga-sus';
+/** Colțul foii în care stă XY0, sau centrul ei (ADR 0291 §6). */
+export type ColtOrigine = 'stanga-jos' | 'dreapta-jos' | 'dreapta-sus' | 'stanga-sus' | 'centru';
 
 export type ContextPoarta = {
   readonly foaie: { readonly latime: number; readonly inaltime: number; readonly grosime: number };
@@ -242,10 +243,13 @@ function citesteDeclaratia(comentarii: readonly Comentariu[]): { perechi: Perech
   return { perechi, razlete };
 }
 
-/** Mașină → document, pe hârtie: colțul de origine e o translație, Z0 jos ridică totul cu grosimea. */
+/**
+ * Mașină → document, pe hârtie: originea e o translație (în colțul ales; în centru, jumătatea foii pe fiecare axă), Z0 jos
+ * ridică totul cu grosimea.
+ */
 export function laDocument(p: Punct3, ctx: Pick<ContextPoarta, 'foaie' | 'origine' | 'z0'>): Punct3 {
-  const ox = ctx.origine === 'dreapta-jos' || ctx.origine === 'dreapta-sus' ? ctx.foaie.latime : 0;
-  const oy = ctx.origine === 'dreapta-sus' || ctx.origine === 'stanga-sus' ? ctx.foaie.inaltime : 0;
+  const ox = ctx.origine === 'centru' ? ctx.foaie.latime / 2 : ctx.origine === 'dreapta-jos' || ctx.origine === 'dreapta-sus' ? ctx.foaie.latime : 0;
+  const oy = ctx.origine === 'centru' ? ctx.foaie.inaltime / 2 : ctx.origine === 'dreapta-sus' || ctx.origine === 'stanga-sus' ? ctx.foaie.inaltime : 0;
   return [p[0] + ox, p[1] + oy, p[2] - (ctx.z0 === 'jos' ? ctx.foaie.grosime : 0)];
 }
 

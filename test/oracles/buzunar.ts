@@ -115,7 +115,7 @@ export type InstantaO = { readonly id: string; readonly piesa: string; readonly 
 export type FoaieO = { readonly stoc: { readonly latime: number; readonly inaltime: number; readonly grosime: number }; readonly instante: readonly InstantaO[] };
 export type DocumentOracol = { readonly piese: readonly PiesaO[]; readonly foi: readonly FoaieO[] };
 
-export type Montaj = { readonly origine: 'stanga-jos' | 'dreapta-jos' | 'dreapta-sus' | 'stanga-sus'; readonly z0: 'sus' | 'jos' };
+export type Montaj = { readonly origine: 'stanga-jos' | 'dreapta-jos' | 'dreapta-sus' | 'stanga-sus' | 'centru'; readonly z0: 'sus' | 'jos' };
 
 // ---------------------------------------------------------------------------------------------------------------
 // Geometria: primitivele marginii (linii și arce), distanța la ele, apartenența.
@@ -590,8 +590,9 @@ const RE_ETICHETA = /^([A-Za-z0-9_-]+\/[A-Za-z0-9_-]+)(?: \+\d+)?: (.*)$/;
 
 function deplasare(doc: DocumentOracol, montaj: Montaj): P3 {
   const s = doc.foi[0]?.stoc ?? { latime: 0, inaltime: 0, grosime: 0 };
-  const ox = montaj.origine === 'dreapta-jos' || montaj.origine === 'dreapta-sus' ? s.latime : 0;
-  const oy = montaj.origine === 'stanga-sus' || montaj.origine === 'dreapta-sus' ? s.inaltime : 0;
+  // Centrul (ADR 0291 §6): XY0 la jumătatea foii pe fiecare axă.
+  const ox = montaj.origine === 'centru' ? s.latime / 2 : montaj.origine === 'dreapta-jos' || montaj.origine === 'dreapta-sus' ? s.latime : 0;
+  const oy = montaj.origine === 'centru' ? s.inaltime / 2 : montaj.origine === 'stanga-sus' || montaj.origine === 'dreapta-sus' ? s.inaltime : 0;
   return [ox, oy, montaj.z0 === 'jos' ? -s.grosime : 0];
 }
 

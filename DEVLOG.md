@@ -14684,6 +14684,23 @@ nu ating fișa operației)
   are codul reliefului, pe care ramura nu-l are; linia aduce `main`, pune deasupra melcul (3.Cj-4) și raportează un
   singur commit. Și `78ff30ec`: v29, dat liniei reliefului pentru 18.1↑c.
 
+## 2026-11-25 — Linia exportului: felia 28.8↑o, centrul foii ca origine XY0 (ADR 0291 §6)
+
+**Prompt:** „1a, 2a, 3a, 4a, 5a, 6a, 7a, 8a, 9a” (6a; a doua felie de după audit, după 28.8↑n)
+**Started:** 25.11, 10:03.
+
+- **Montajul:** `centru`, a cincea alegere (`OrigineXY`, `ORIGINI`), o translație cu jumătatea foii (ADR 0008).
+  Colțurile, octet cu octet.
+- **Antetul** „origine centru”, citit de sender; nota din panoul Mașina, raportul foilor, numele dopului.
+- **Fereastra:** „centrul foii” în listă, punctul din mijlocul desenului XY0, cu eticheta lui.
+- **Probele:** `montaj.centru.oracol.test.ts`: pe hârtie; corpusul CAM, rând cu rând față de colț; poarta și oracolul
+  buzunarului, cu martori; senderul și emulatorul GRBL. Plus 2 e2e. Unitarele 10 462 / 0, spec-urile e2e ale exportului
+  313 / 313.
+- **Otrăvurile:** `28.8o.py`, 13 / 13. **Mărimea:** pornirea +0, totalul 885,9 / 1 000 (+0,1).
+- **Manualul** (ro, en), ADR 0291 („Implementarea 28.8↑o”), fișa etapei 3, registrul otrăvurilor, nota liniei.
+
+**Completed:** 25.11, 10:50.
+
 ## 2026-11-25 — Felia 10.4↑c-1: cotele în exportul vectorilor („Cu cotele”, stratul lor, cifrele ca trăsături; ADR 0330 §6, §7) (Model: Claude Opus 5.5)
 
 **Prompt:** „Pornește 10.4↑c” (sesiunea principală, 25.11, cu mesajele owner-ului: „am resetat limita saptamanale. azi este
@@ -14774,6 +14791,42 @@ gata de unit”, `b099c457`; 28.8↑n, `7996e77c`), la ordinul în vigoare „un
   apoi pornește 28.8↑h), atelierul (fără felie de pornit), cotele.
 - **Documentele:** decizia și paragrafele de stare în `CLAUDE.md` (frezele, exportul, atelierul); indexul liniilor;
   starea din `docs/linii/principala.md`.
+
+## 2026-11-25 — Sesiunea principală în cloud: 10.4↑c-2 și 16.A↑b-6, pornite la cuvântul owner-ului (Model: Claude Fable 5.2)
+
+**Prompt:** „ok, porneste 10.4↑c-2 si 16.A↑b-6”
+**Started:** 25.11, 14:16. **Completed:** 25.11, 14:17 (liniile, anunțate; decizia, scrisă).
+
+- **Liniei cotelor** (14:16): 10.4↑c-2, DIMENSION în DXF și cifrele ca text (ADR 0330 §10), peste `main` `2aaee0b4`;
+  proba întâi, cu oracolul Python; felul de azi rămâne octet cu octet.
+- **Liniei frezelor** (14:16): 16.A↑b-6, „Pune-o înapoi în bibliotecă” (ADR 0300 §5), după 16.A↑b-4; fără nimic nou pe
+  server, dacă se poate; bucata contului e strâmtă (30,3 / 32 kB), deci creșterea ei se spune în raport.
+- **Amândouă:** documentul rămâne v28; un singur commit raportat, cu porțile verzi; unirea, la raport.
+- **Cu aceeași împingere:** nota liniei atelierului de după unirea lui 3.Cj (`253829b8`, doar `docs/linii/atelier.md`).
+- **Documentele:** decizia în `CLAUDE.md`; indexul liniilor; starea din `docs/linii/principala.md`.
+
+## 2026-11-25 — Sesiunea principală în cloud: a treizeci și patra unire (centrul foii ca origine XY0, 28.8↑o) (Model: Claude Fable 5.2)
+
+**Prompt:** raportul liniei exportului („28.8↑o (centrul foii ca origine XY0, ADR 0291 §6) e gata de unit”,
+`cd1859f0`), la ordinul în vigoare „unește ce se poate”
+**Started:** 25.11, 14:18. **Completed:** unirea în `main`, 25.11, 14:21; publicarea pe test, cu lotul 34.
+
+- **Verificat înaintea unirii:** rapidul (45603548567, 45603558245) și completul (45603551874), verzi pe `cd1859f0`;
+  PR-ul `AndreiBesliu/cvs2#38`, deschis; fără `.lucru/`; ramura are `2aaee0b4`.
+- **Citit, fiindcă mișcă mașina:** `src/ir/montaj.ts` (centrul: a = d = 1, e = −L / 2, f = −H / 2, dz ca la colțuri) și
+  antetul citit de sender (`src/machine/program.ts`). Proba liniei, `montaj.centru.oracol.test.ts`, rulată și aici.
+- **Unirea, pe `unire-2511s`** (din `2a46e973`): `cd1859f0`, în `3fd3bf49`, fără nicio ciocnire. De la `2aaee0b4`,
+  `main` a primit doar documente: arborele unirii are exact codul lui `cd1859f0` (`git diff` gol în afara fișierelor
+  `.md`). Local: traducerile (1 132), catalogul, biblioteca, regulile de import (22 / 22), tipurile, probele
+  documentelor, manualul și proba centrului (81 / 81).
+- **Porțile, în CI, pe `cd1859f0`** (citite din jurnalul rulării): completul, verde (55 min): unit 10 499 / 0
+  (12 sărite, pe Linux), e2e 851 / 851, funcțiile pe emulatoare 136 / 136, paginile 59 / 59. Pornirea 111,2 kB
+  (plafonul 125; cu ușa 116,2, cu Atelierul 116,5), totalul 890,3 / 1 000 kB (+0,2), `/admin` 138,3 / 200. Nimic pe
+  server.
+- **Linia atelierului:** owner-ul a pornit 3.Tu în sesiunea ei („1a, 2a, 3a la 3.Tu, pornește”); consemnat în
+  decizie, în paragraful de stare și în index.
+- **Documentele:** decizia și paragrafele de stare în `CLAUDE.md`; indexul liniilor; starea din
+  `docs/linii/principala.md` (cu lista „La owner” adusă la zi).
 
 ## 2026-11-25 — Felia 10.4↑c-2: cotele ca DIMENSION în DXF și cifrele ca text (ADR 0330 §7)
 

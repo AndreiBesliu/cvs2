@@ -1851,7 +1851,7 @@ which). The window has three parts:
 - the **cards**, on the right, one under the other. Each has its fields grouped by question (What cut, Bit, How deep, Cut
   direction, Ramp, Lead-ins, Corners, Tabs; on a pocket, How it clears, How it goes down, Rest bits; on a V-carve, Flat bottom;
   on an inlay, its own). On the left of each group, its explanation; when you hover over a field or go into it, the field's
-  explanation. Above the explanation, for the XY0 corner, Z0 and overtravel, the bit, depth, direction, ramp, lead-ins and
+  explanation. Above the explanation, for the XY0 origin, Z0 and overtravel, the bit, depth, direction, ramp, lead-ins and
   tabs, the question's drawing, made from your values: the sheet with the chosen corner (a click on another corner in the
   drawing chooses it), the section of the sheet on the table with Z0 and the cuts that go into the table, the bit profile, the
   section of the cut with its passes, the bit path around the part or the hole (in climb, what stays is to the right of the
@@ -1884,7 +1884,11 @@ which). The window has three parts:
   it; the operation values changed in it go into the project only on **Export**.
 
 On the sheet and machine cards you choose:
-- the sheet's **origin corner** (bottom left, bottom right, top right, top left): where X/Y zero is on the machine;
+- the **XY0 origin**: where X/Y zero is on the machine, in a corner of the sheet (bottom left, bottom right, top right, top
+  left) or at the **sheet centre**. You choose it from the list or by clicking its point in the drawing. With the centre,
+  the program has negative coordinates in the left and bottom halves; on the machine, set X/Y zero in the middle of the
+  sheet (where the diagonals cross, or half way along each measured side). The program says in its header where the origin
+  is, and the Machine panel shows it next to zero;
 - **Z0**: the top of the material or the bottom of the material (the spoilboard);
 - the **Overtravel** (mm, from 0 to 2, 0 by default): how far through cuts go below the bottom of the board, into the
   spoilboard, so that a board a little thicker than the one written leaves no skin. The inlay [hole](#incrustatie-drept)
@@ -1901,7 +1905,7 @@ On the sheet and machine cards you choose:
 - the **Units**: mm (the default) or inch (with 5 decimals and the feed in inch/min); the header stays in mm. RichAuto reads mm
   only;
 - the **File name**, without the extension: by default the sheet's, if you gave it one in its properties (without
-  diacritics, with hyphens: “Ușă Țarc 2” gives `usa-tarc-2`), otherwise `cncvs2-` and the origin corner. You can change it
+  diacritics, with hyphens: “Ușă Țarc 2” gives `usa-tarc-2`), otherwise `cncvs2-` and the origin (the corner, for example `stanga-jos`, or `centru`). You can change it
   before **Export**; under the field it says what is downloaded, and the per-bit files, the plug files and the sheets archive
   put it in front too. It cannot be empty, longer than 80 characters, contain `< > : " / \ | ? *`, start or end with a space
   or a dot, or be a name reserved by Windows (CON, PRN, AUX, NUL, COM1…, LPT1…). On RichAuto, which reads only short names
@@ -2208,7 +2212,7 @@ hides the explanation until the next code; the error list and the log also show 
   single straight move; Z+ and Z− on the right. **Stop the jog** shows while the machine is in Jog.
 - **Zero XY** and **Zero Z** make the current position 0 in the loaded program’s system (otherwise the active one), named on
   the button. Below: where Z0 is for a program exported from here (the top of the material or the bottom, on the table) and
-  the corner of the XY origin.
+  the XY origin (the sheet corner or its centre).
 - **Z probe**: put the touch plate under the bit (on the material if Z0 is at the top; on the table if it is at the bottom),
   attach the clip and press **Probe Z**. The bit lowers until it touches the plate (at most the **Search distance**, at the
   **Search feed**), backs off 2 mm, touches again slowly, writes Z0 (the touch minus the **Plate thickness**) and lifts 5 mm.
