@@ -17,7 +17,7 @@
  * „Editează” și la „Freză nouă”, iar „Salvează” și „Renunță” întorc la fișă. Comutatorul „Listă / Configurator” (ținut în
  * browser, `cncvs2.freze.vedere`) ține editorul mereu deschis, ca înainte de listă.
  */
-import { useEffect, useMemo, useRef, useState, type ChangeEvent, type KeyboardEvent, type ReactNode } from 'react';
+import { useEffect, useMemo, useRef, useState, type ChangeEvent, type ReactNode } from 'react';
 import '../i18n/freze.ts';
 import { mesajeGata } from '../i18n/laCerere.ts';
 import { t } from '../i18n/t.ts';
@@ -568,15 +568,29 @@ export function FrezeleMele({ onInchide, focusInapoi, config }: {
     setAmanat(true);
   };
   const tasta = (e: KeyboardEvent): void => {
-    if (e.key !== 'Escape') return;
+    if (e.key !== 'Escape' || e.defaultPrevented || e.isComposing) return;
     e.preventDefault();
     e.stopPropagation();
-    if (redenumit) renuntaRedenumire();
-    else if (grupNou !== null) setGrupNou(null);
-    else if (stergere) setStergere(false);
+    // Escape închide stratul de sus care se vede (16.A↑b-7). O stare rămasă în urmă nu-l oprește: întrebarea unei freze șterse
+    // (fișa pleacă la vestea bibliotecii, `stergere` abia la capătul ștergerii) sau redenumirea unui grup deja redenumit.
+    const vede = (s: string): boolean => refCorp.current?.querySelector(s) != null;
+    if (redenumit && vede('[data-freze="grup-nume-nou"]')) renuntaRedenumire();
+    else if (grupNou !== null && vede('[data-freze="grup-nou"]')) setGrupNou(null);
+    else if (stergere && vede('[data-freze="sterge-da"]')) setStergere(false);
     else if (importat) setImportat(null);
     else inchide();
   };
+  // Escape se ascultă pe pagină cât fereastra e deschisă, oriunde ar fi focusul (16.A↑b-7): butonul apăsat pleacă („Da,
+  // șterge”, „Salvează” în „Listă”) sau se oprește sub focus („Salvează” în „Configurator”), iar un clic pe un text al ferestrei
+  // lasă focusul pe pagină; ascultată doar pe fereastră, tasta se pierdea acolo. Pe urcare și cu `defaultPrevented`, ca la
+  // fereastra exportului: manualul deschis peste ea (F1) își oprește singur tastele și se închide primul.
+  const refTasta = useRef(tasta);
+  refTasta.current = tasta;
+  useEffect(() => {
+    const asculta = (e: KeyboardEvent): void => { refTasta.current(e); };
+    document.addEventListener('keydown', asculta);
+    return () => { document.removeEventListener('keydown', asculta); };
+  }, []);
 
   const scrie = (k: Exclude<CampFreza, never>) => (e: ChangeEvent<HTMLInputElement>): void => {
     const v = e.currentTarget.value;
@@ -779,7 +793,7 @@ export function FrezeleMele({ onInchide, focusInapoi, config }: {
   };
 
   return (
-    <div className="dialog" role="dialog" aria-modal="true" aria-labelledby="freze-titlu" data-testid="dialog-freze" onKeyDown={tasta}>
+    <div className="dialog" role="dialog" aria-modal="true" aria-labelledby="freze-titlu" data-testid="dialog-freze">
       <div className="dialog-cutie dialog-freze">
         <div className="freze-cap">
           <h2 id="freze-titlu">{t('vedere.freze')}</h2>

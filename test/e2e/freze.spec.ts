@@ -4,7 +4,8 @@
  * cu schimbări), păstrarea la reîncărcare (IndexedDB), ștergerea cu întrebarea, fișierul (exportul și importul JSON / CSV cu
  * numele care se repetă), două file la zi una cu alta, telefonul (390, 360, 320 px) cu fontul lat, F1 și engleza. Din 16.A↑h-1
  * (ADR 0302 §3): fereastra pornește ca listă, cu fișa frezei alese doar de citit; editorul („configuratorul”) se deschide la
- * „Editează” și la „Freză nouă”, iar comutatorul „Listă / Configurator” (ținut în browser) îl poate ține mereu deschis.
+ * „Editează” și la „Freză nouă”, iar comutatorul „Listă / Configurator” (ținut în browser) îl poate ține mereu deschis. Din
+ * 16.A↑b-7: Escape închide fereastra oriunde ar fi focusul (pe pagină, după un buton care a plecat sau s-a oprit sub el).
  */
 import { readFile, writeFile, mkdtemp } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
@@ -555,6 +556,88 @@ test('duplicarea, ștergerea cu întrebarea (Escape renunță la întrebare); ex
   await expect(f.locator('[data-freze="import"]')).toHaveCount(0);
 });
 
+/**
+ * Escape, apăsat exact în clipa în care butonul dat pleacă din pagină: observatorul vede plecarea înaintea efectelor care mută
+ * focusul (în fișă, în căutare), deci tasta cade pe ce are atunci focusul, ca o tastă reală apăsată în clipa aceea. Întoarce
+ * pe ce a căzut.
+ */
+async function escapeLaPlecare(page: Page, selector: string): Promise<() => Promise<string | undefined>> {
+  await page.evaluate((s) => {
+    const w = window as unknown as { tintaEscape?: string };
+    delete w.tintaEscape;
+    const o = new MutationObserver(() => {
+      if (document.querySelector(s)) return;
+      o.disconnect();
+      const a = document.activeElement ?? document.body;
+      w.tintaEscape = a.tagName;
+      a.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', code: 'Escape', bubbles: true, cancelable: true }));
+    });
+    o.observe(document.body, { subtree: true, childList: true });
+  }, selector);
+  return () => page.evaluate(() => (window as unknown as { tintaEscape?: string }).tintaEscape);
+}
+
+test('Escape închide fereastra oriunde ar fi focusul: chiar după „Salvează” și „Da, șterge”, în Configurator, după un clic pe text (16.A↑b-7)', async ({ page }) => {
+  await page.goto('/');
+  // Unealta de sub fereastră rămâne: Escape e al ferestrei, nu ajunge la desen (acolo, pe pagină, ar întoarce la selecție).
+  await page.locator('[data-unealta="dreptunghi"]').click();
+  // După „Salvează” (vederea „Listă”): butonul pleacă, iar focusul ajunge pe „Editează” abia după redesenare.
+  let f = await deschideFrezele(page);
+  await standard(f);
+  await editeaza(f, 'Plată Ø6');
+  await camp(f, 'avans').fill('1234');
+  let tinta = await escapeLaPlecare(page, '[data-freze="salveaza"]');
+  await f.locator('[data-freze="salveaza"]').click();
+  await expect(f).toHaveCount(0);
+  expect(await tinta()).toBe('BODY');
+  await expect(page.locator('[data-editare="cont"]')).toBeFocused();
+  // Salvată, deși fereastra s-a închis în clipa aceea.
+  f = await deschideFrezele(page);
+  await nume(f).getByText('Plată Ø6', { exact: true }).click();
+  await expect(valoare(f, 'avans')).toHaveText('1234 mm/min');
+  // După „Da, șterge”: rândul pleacă la vestea bibliotecii, iar focusul ajunge în căutare abia după ștergere.
+  await fisa(f).locator('[data-freze="sterge"]').click();
+  tinta = await escapeLaPlecare(page, '[data-freze="sterge-da"]');
+  await f.locator('[data-freze="sterge-da"]').click();
+  await expect(f).toHaveCount(0);
+  expect(await tinta()).toBe('BODY');
+  f = await deschideFrezele(page);
+  await expect(nume(f)).toHaveCount(5);
+  // După Enter în redenumirea unui grup: grupul vechi pleacă la vestea bibliotecii, iar câmpul se închide abia după.
+  await f.locator('[data-freza]').filter({ hasText: 'Plată Ø12' }).click();
+  await fisa(f).locator('[data-freze="muta"]').selectOption({ label: 'Grup nou…' });
+  await fisa(f).locator('[data-freze="grup-nou"]').fill('Lemn');
+  await fisa(f).locator('[data-freze="grup-nou-da"]').click();
+  await expect(grupul(f)).toHaveText('Lemn');
+  await f.locator('[data-freze="grup-redenumeste"]').click();
+  await f.locator('[data-freze="grup-nume-nou"]').fill('Esență tare');
+  tinta = await escapeLaPlecare(page, '[data-freze="grup-nume-nou"]');
+  await f.locator('[data-freze="grup-nume-nou"]').press('Enter');
+  await expect(f).toHaveCount(0);
+  expect(await tinta()).toBe('BODY');
+  f = await deschideFrezele(page);
+  await expect(f.locator('.freze-grupa h3').first()).toHaveText('Esență tare (1)');
+  // Un clic pe un text al ferestrei (titlul) lasă focusul pe pagină: Escape o închide tot.
+  await f.locator('#freze-titlu').click();
+  await expect(f.locator(':focus')).toHaveCount(0);
+  await page.keyboard.press('Escape');
+  await expect(f).toHaveCount(0);
+  // În „Configurator”, „Salvează” rămâne pe loc, oprit, sub focus; la desenarea următoare, browserul îi ia focusul (pe pagină).
+  // Escape, apăsat după, o închide.
+  f = await deschideFrezele(page);
+  await f.locator('[data-freze-vedere="configurator"]').click();
+  await f.locator('[data-freza]').filter({ hasText: 'Plată Ø12' }).click();
+  await camp(f, 'turatie').fill('16000');
+  await f.locator('[data-freze="salveaza"]').click();
+  await expect(f.locator('[data-freze="mesaj"]')).toHaveText('Salvat');
+  await expect(f.locator('[data-freze="salveaza"]')).toBeDisabled();
+  await expect(f.locator(':focus')).toHaveCount(0);
+  await page.keyboard.press('Escape');
+  await expect(f).toHaveCount(0);
+  await expect(page.locator('[data-unealta="dreptunghi"]')).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.getByTestId('jurnal')).toHaveText('0 erori în jurnalul local');
+});
+
 test('două file: o freză salvată într-una apare în cealaltă, fără reîncărcare', async ({ page, context }) => {
   await page.goto('/');
   await bibliotecaGoala(page);
@@ -567,6 +650,42 @@ test('două file: o freză salvată într-una apare în cealaltă, fără reînc
   await camp(a, 'diametru').fill('4');
   await a.locator('[data-freze="salveaza"]').click();
   await expect(nume(b)).toHaveText(['Plată Ø4']);
+});
+
+test('două file: freza ștearsă în cealaltă, cu „Grup nou…” sau cu întrebarea deschise aici; Escape închide fereastra (16.A↑b-7)', async ({ page, context }) => {
+  await page.goto('/');
+  const a = await deschideFrezele(page);
+  await standard(a);
+  const alta = await context.newPage();
+  await alta.goto('/');
+  const b = await deschideFrezele(alta);
+  await standard(b);
+  // Aici, „Grup nou…” pe Plată Ø6; în cealaltă filă, ștearsă: fișa și câmpul pleacă, deci Escape nu mai are ce închide în ea.
+  await a.locator('[data-freza]').filter({ hasText: 'Plată Ø6' }).click();
+  await fisa(a).locator('[data-freze="muta"]').selectOption({ label: 'Grup nou…' });
+  await expect(fisa(a).locator('[data-freze="grup-nou"]')).toBeFocused();
+  await b.locator('[data-freza]').filter({ hasText: 'Plată Ø6' }).click();
+  await fisa(b).locator('[data-freze="sterge"]').click();
+  await b.locator('[data-freze="sterge-da"]').click();
+  await expect(nume(a)).toHaveCount(5);
+  await expect(a.locator('[data-freze="grup-nou"]')).toHaveCount(0);
+  await page.bringToFront();
+  await page.keyboard.press('Escape');
+  await expect(a).toHaveCount(0);
+  // La fel, cu întrebarea ștergerii deschisă aici.
+  const c = await deschideFrezele(page);
+  await c.locator('[data-freza]').filter({ hasText: 'V60 Ø6' }).click();
+  await fisa(c).locator('[data-freze="sterge"]').click();
+  await expect(c.locator('[data-freze="sterge-da"]')).toBeVisible();
+  await alta.bringToFront();
+  await b.locator('[data-freza]').filter({ hasText: 'V60 Ø6' }).click();
+  await fisa(b).locator('[data-freze="sterge"]').click();
+  await b.locator('[data-freze="sterge-da"]').click();
+  await expect(nume(c)).toHaveCount(4);
+  await expect(c.locator('[data-freze="sterge-da"]')).toHaveCount(0);
+  await page.bringToFront();
+  await page.keyboard.press('Escape');
+  await expect(c).toHaveCount(0);
 });
 
 for (const latime of [390, 360, 320]) {
