@@ -14407,6 +14407,26 @@ ce se poate”
 - **Documentele:** decizia în `CLAUDE.md` (paragraful de stare al construcțiilor e al liniei; versiunea extensiei,
   18.28.0, următoarea 18.29.0); indexul liniilor; starea din `docs/linii/principala.md`.
 
+## 2026-11-25 — 16.A↑b-5: frezele în plus ale rândului din „Frezele mele” (Model: Claude Opus 5.5)
+
+**Prompt:** mesajul sesiunii principale din 25.11, 09:35, cu cuvântul owner-ului („am resetat limita saptamanale. azi este
+miercuri.” și „vreau sa pornesti si celelalte sub-sesiuni”): „Deci pornește 16.A↑b-5 … apoi 16.A↑b-4”. **Started:** 25.11, 09:35.
+
+- **Ramura** `wip/16.A-freze`, adusă înainte la `main` (`f2678300`, cu relieful 18.1↑a, documentul v28).
+- **Felia** (`df4457e7`): lista „Din frezele mele” pe frezele în plus ale rândului (fundul plat, fiecare freză de rest, prima
+  freză a dopului drept, decuparea benzii), doar cu frezele plate, la frezele de rest doar cele mai mici decât freza dinainte;
+  aleasă, T-ul (regula rolurilor, printre toate frezele ferestrei, fără cea înlocuită), Ø-ul, pasul lateral și originea; un Ø
+  schimbat de mână o scoate doar pe freza aceea. Exportă scrie originea cu regula frezei operației (`cuOrigine`, comună), iar
+  legarea rândurilor ține și originea frezelor în plus, ca lucrarea. Manualul (ro, en), catalogul controalelor.
+- **Tabelul frezelor de rest** (`9a851320`), la mesajul sesiunii principale despre auditul ferestrei exportului (constatarea 9,
+  dată liniei frezelor): capul coloanelor, „Adaugă” ca buton, titlul o singură dată; pe telefon, lista pe rândul ei.
+- **Probele** (întâi): unitare noi 6 (`exportFreze.rest.test.ts`), în Edge 5 (`exportFrezeRest.spec.ts`) și frezele în plus în
+  proba privirii (7 / 7). **Otrăvurile** (`test/otravuri/16.A-b5.py`): 33 / 33 (13 pe hârtie, 20 în Edge; T02 și C02 scăpaseră: probele frezelor de rest au acum două freze în listă). Otrăvurile lui 16.A↑b-3 atinse de mutarea
+  codului (S01–S04, W03, W04) țin acum codul nou.
+- **Mărimea:** pornirea neschimbată (111,2 kB; cu ușa 116,1, cu Atelierul 116,5 / 125), totalul 881,0 → 882,0 / 1 000 (măsurat
+  pe `main` `f2678300` și pe ramură). Nimic pe server; documentul rămâne v27. Apoi `main` adus (`caddd661`, plafoanele
+  1 000 / 125 kB, ADR 0146) și cu auditul exportului (`43cf59af`). **Completed:** 25.11, 11:35.
+
 ## 2026-11-25 — Linia reliefului: felia 18.1↑b, modelul reliefului în vederea 3D („Modelul / Tăiat”) (sesiune cloud)
 
 **Prompt:** mesajul sesiunii principale, cu cuvântul owner-ului („am resetat limita saptamanale. azi este miercuri.” și

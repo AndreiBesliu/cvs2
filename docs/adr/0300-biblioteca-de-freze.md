@@ -483,6 +483,39 @@ operației; frezele în plus ale rândului (fundul plat, frezele de rest, dopul,
 Documentul rămâne v27; nimic pe server. Probele (întâi): scrierea originii și regula T, pe hârtie (unitare); lista în Edge
 (`test/e2e/exportFreze.spec.ts`). Otrăvurile: `test/otravuri/16.A-b3a.py`.
 
+## Implementarea (16.A↑b-5)
+
+Pe 25.11.2026, în sesiunea cloud a liniei, la cuvântul owner-ului transmis de sesiunea principală („vreau sa pornesti si
+celelalte sub-sesiuni”), pe `main` (`f2678300`, cu relieful, documentul v28): frezele în plus ale unui rând al ferestrei
+exportului, desprinse din 16.A↑b-3.
+
+- **Lista „Din frezele mele” pe fiecare freză în plus** (`ListaBiblioteca`, comună cu freza operației): freza fundului plat (la
+  V-carve și la incrustația în V), fiecare freză de rest (a buzunarului, a fundului plat, a dopului drept), prima freză a
+  dopului drept și freza decupării benzii. Doar frezele plate (aplicația le dă ca pentru un buzunar, `RAND_DREPT`); la o freză
+  de rest, doar cele mai mici decât freza dinainte (`oferitePentruRest`), ca regula din ADR 0093.
+- **Aleasă**, freza dă pe locul ei (`cuFrezaAleasa`, cu locul `UndeFreza`) T-ul, Ø-ul, pasul lateral (procentul frezei) și
+  originea. **T-ul** urmează regula rolurilor printre toate frezele ferestrei, fără cea înlocuită (`frezeRanduri`, pură, cu
+  turația originii fiecăreia: identitatea frezei montate o ține și pe ea, ca la freza operației).
+- **Originea pe fiecare freză în plus** (`origineFund`, `origineDop`, `origineBanda`, `RandRest.origine`), citită din document
+  sau aleasă; un Ø schimbat de mână o scoate doar pe freza aceea („Scrisă de mână”); T-ul și pasul o păstrează.
+- **Exportă** scrie originea cu aceeași regulă ca la freza operației (`cuOrigine`, `src/app/valoriOperatii.ts`): o origine
+  scrie numele, id-ul și versiunea, valorile de lucru și tăișul; `null` le scoate, iar numele, dacă era al frezei din bibliotecă,
+  devine al rolului („freza dreapta” la fund, la frezele lui de rest și la bandă, „freza plata” la buzunar și la dop); fără
+  câmp, freza rămâne. Un Exportă fără nicio schimbare scrie aceeași operație, la octet.
+- **Legarea rândurilor** (V-carve-urile aceleiași piese, incrustațiile cu pereți drepți) ține și originea frezelor în plus:
+  lucrarea compară fundul plat, frezele de rest și ale dopului întregi (`valoriVcarve`, `valoriBuzunarDrept`), deci două
+  regiuni cu aceeași freză, una din bibliotecă și una scrisă de mână, se sapă separat.
+- **Tabelul frezelor de rest** (constatarea 9 a auditului ferestrei exportului, `docs/linii/audit-export.md`, dată liniei
+  frezelor): rândurile stau pe o grilă, cu capul coloanelor („Din frezele mele”, doar dacă vreun rând are ce alege, T, Ø, pasul
+  lateral); „Adaugă o freză de rest” are aspect de buton; la buzunar, „Frezele de rest” rămâne doar titlul grupului, iar la
+  fundul plat și la dop lista își spune numele. Când fișa e îngustă (telefonul), lista trece pe un rând al ei.
+
+Documentul rămâne v27; nimic pe server. Probele (întâi): scrierea originii, frezele ferestrei, alegerea pe loc și filtrul, pe
+hârtie (`test/unit/exportFreze.rest.test.ts`); în Edge, frezele de rest ale buzunarului, fundul plat, dopul și banda, cu exportul
+și fereastra redeschisă, legarea și tabelul (`test/e2e/exportFrezeRest.spec.ts`), plus frezele în plus în proba privirii. Otrăvurile:
+`test/otravuri/16.A-b5.py`. Mărimea: pornirea neschimbată (111,2 kB; cu ușa și cu Atelierul 116,5 / 125), totalul
+881,0 → 882,0 / 1 000.
+
 ## Se redeschide dacă
 
 - owner-ul vrea o bibliotecă comună mai multor conturi ale aceluiași atelier, sau cataloagele publice ale producătorilor;

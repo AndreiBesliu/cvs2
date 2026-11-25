@@ -3,6 +3,8 @@
 # (numele, ștergerea la „scrisă de mână”, păstrarea fără câmp, tăișul și valorile care pleacă), fereastra (diametrul și unghiul
 # schimbate de mână, pasul, frezele ferestrei fără rândul ales, originea trimisă la Exportă și citită din document) și aplicația
 # (frezele potrivite tăieturii rândului).
+# Din 16.A↑b-5, scrierea originii (`cuOrigine`), pasul ales (`cuFrezaAleasa`) și frezele ferestrei (`frezeRanduri`) s-au mutat:
+# S01–S04, W03 și W04 țin codul nou.
 # Se rulează cu `scripts/otravuri.py` (docs/otravuri.md), dintr-o clonă, după commit. o(id, fis, vechi, nou, set, ce):
 # `vechi` apare EXACT o dată în fișier; altfel VOID.
 O = []
@@ -23,15 +25,15 @@ o('R01', R, '  if (peNumar.every((a) => aceeasiFrezaRand(a, f))) return f.numar;
 o('R02', R, '  if (identica) return identica.numar;\n', '', 'model', 'fără T-ul frezei identice')
 o('R03', R, '(a.turatie === undefined || b.turatie === undefined || a.turatie === b.turatie)', 'true', 'model', 'turația nu contează')
 o('R04', R, '  return formaEgala && egal(a.diametru, b.diametru)', '  return egal(a.diametru, b.diametru)', 'model', 'forma nu contează')
-o('S01', V, '      ...x, nume: r.nume, biblioteca:', '      ...x, biblioteca:', 'model', 'numele frezei din bibliotecă nu se scrie')
-o('S02', V, '      return { ...fara, nume: s.forma ?', '      return { ...x, nume: s.forma ?', 'model', '„scrisă de mână” lasă originea în document')
-o('S03', V, '    if (s.origine === undefined) return x;\n', '', 'model', 'un apelant fără câmpul `origine` nu mai păstrează scula')
-o('S04', V, "  if (s.origine.tais === undefined) delete c['tais'];\n", '', 'model', 'tăișul frezei de dinainte rămâne')
+o('S01', V, '    ...x, nume: origine.nume, biblioteca:', '    ...x, biblioteca:', 'model', 'numele frezei din bibliotecă nu se scrie')
+o('S02', V, '    return { ...fara, nume: numeMana };', '    return { ...x, nume: numeMana };', 'model', '„scrisă de mână” lasă originea în document')
+o('S03', V, '  if (origine === undefined) return x;\n', '', 'model', 'un apelant fără câmpul `origine` nu mai păstrează scula')
+o('S04', V, "  if (origine.tais === undefined) delete c['tais'];\n", '', 'model', 'tăișul frezei de dinainte rămâne')
 o('W01', F, '{ diametruScula: ev.target.value, origineScula: null }', '{ diametruScula: ev.target.value }', 'e2e',
   'diametrul schimbat de mână păstrează originea')
 o('W02', F, '{ unghiV: ev.target.value, origineScula: null }', '{ unghiV: ev.target.value }', 'e2e', 'unghiul schimbat de mână păstrează originea')
-o('W03', D, '      pas: text(f.pas), ', '      ', 'e2e', 'pasul frezei nu trece pe rând')
-o('W04', D, '      if (o.cheie !== fara) {', '      if (o.cheie !== fara || true) {', 'e2e', 'freza veche a rândului ocupă T-ul')
+o('W03', R, '      pas: text(f.pas), ', '      ', 'e2e', 'pasul frezei nu trece pe rând')
+o('W04', R, 'if (fara && fara.cheie === cheie && acelasiLoc(fara.unde, unde)) return;', 'if (false) return;', 'e2e', 'freza veche a rândului ocupă T-ul')
 o('W05', D, '      origine: p.origineScula,\n', '', 'e2e', 'Exportă nu primește originea rândului')
 o('W06', D, 'origineScula: o.valori.scula?.origine ?? null,', 'origineScula: null,', 'e2e', 'rândul nu citește originea din document')
 o('A01', A, '            origine: origineDin(o.scula),', '            origine: null,', 'e2e', 'aplicația nu dă rândului originea din document')

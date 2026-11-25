@@ -549,6 +549,10 @@
       "ro": "Contractele atelierelor, aduse din etapa 4",
       "en": "The workshop contracts, brought forward from stage 4"
     },
+    "1cff45890d6e0594": {
+      "ro": "**Frezele în plus ale rândului din „Frezele mele”** (fără mașină; ADR 0300 §4, „Implementarea (16.A↑b-5)”; la cuvântul owner-ului transmis de sesiunea principală, pe `wip/16.A-freze` adusă la `main`). Lista „Din frezele mele” pe freza fundului plat, pe fiecare freză de rest (doar cele mai mici decât freza dinainte), pe prima freză a dopului drept și pe freza decupării benzii, doar cu frezele plate; aleasă, T-ul (regula rolurilor, printre toate frezele ferestrei, fără cea înlocuită: `frezeRanduri`), Ø-ul, pasul lateral și originea (`cuFrezaAleasa`); un Ø schimbat de mână o scoate doar pe freza aceea. Exportă scrie originea cu regula frezei operației (`cuOrigine`, comună); legarea rândurilor ține și originea frezelor în plus, ca lucrarea. Frezele de rest stau acum într-un tabel cu capul coloanelor, cu „Adaugă” ca buton și titlul o singură dată (constatarea 9 a auditului exportului, dată liniei). Probele (întâi): unitare noi 6, în Edge 5, plus frezele în plus în proba privirii; otrăvuri 33 / 33 (T02 și C02 scăpaseră: probele frezelor de rest au acum două freze în listă), iar otrăvurile lui 16.A↑b-3 mutate pe codul nou, 10 / 10. Pornirea neschimbată (111,2 kB), totalul +1,0 kB (882,0). Nimic pe server; documentul rămâne v27.",
+      "en": "**The extra bits of a row from “My bits”** (no machine; ADR 0300 §4, “Implementation (16.A↑b-5)”; at the owner's word relayed by the main session, on `wip/16.A-freze` brought up to `main`). The “From my bits” list on the flat-bottom bit, on each clean-up bit (only the ones smaller than the bit before), on the first bit of the straight-walled plug and on the band cut-out bit, with flat bits only; once picked, the T number (the roles rule, among all the window's bits, without the one replaced: `frezeRanduri`), the diameter, the stepover and the origin (`cuFrezaAleasa`); a diameter changed by hand removes it from that bit only. Export writes the origin with the operation bit's rule (`cuOrigine`, shared); linking rows also keeps the origin of the extra bits, as the job does. The clean-up bits now sit in a table with column headings, with “Add” as a button and the title once (finding 9 of the export audit, given to this line). Tests (first): 6 new unit tests, 5 in Edge, plus the extra bits in the layout test; poisons 33 / 33 (T02 and C02 had escaped: the clean-up bit tests now have two bits in the list), and the 16.A↑b-3 poisons moved onto the new code, 10 / 10. Startup unchanged (111.2 kB), total +1.0 kB (882.0). Nothing on the server; the document stays v27."
+    },
     "1d03032e5c14df0b": {
       "ro": "Instanțele fonturilor variabile",
       "en": "Variable font instances"
@@ -776,6 +780,10 @@
     "28dc6b9a49ecea06": {
       "ro": "3.Tj (roata cu anvelopă)",
       "en": "3.Tj (the wheel with a tyre)"
+    },
+    "29232e933c234958": {
+      "ro": "Frezele în plus ale rândului din „Frezele mele”",
+      "en": "The extra bits of a row from “My bits”"
     },
     "2998b2828779115d": {
       "ro": "Rigla pe marginea foii, cu linia de cotă",
