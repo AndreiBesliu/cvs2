@@ -117,6 +117,13 @@ față. Fără cod de produs până la răspunsuri. De hotărât acolo, între a
 - **26.11, d-2 gata pe ramură:** „Fă desen din cotă” în panoul cotei (desenul ca piesă nouă, fără operații, exact unde era
   cota; bifa „Șterge cota”, în același pas), acțiunea `foaie.desen-din-cota`; proba programului (cota și desenul fără rol nu
   se taie, desenul cu rol pe linie da). **Urmează:** d-3 (cotele în raportul foilor).
+- **26.11, d-3 gata pe ramură:** bifa „Cu cotele (N)” în raportul foilor (doar când o foaie are cote), cu implicitul din
+  Setări › Cotele › Raportul foilor (oprită); desenul foii cu cote, pe tot rândul, cu cifrele mărite cât să se citească
+  (`src/io/raportCote.ts`, pur); oprită, desenul de dinainte, octet cu octet; raportul și CSV-ul neschimbate. Întrebarea 10
+  (mărite sau la mărimea adevărată), la owner, cu recomandarea implementată. Rapidul pe d-2 a căzut la două probe ale
+  registrului care numără acțiunile la cerere (reparat în `68979355`): **o acțiune nouă a registrului intră și în
+  `actiuni.calcul.test.ts` și `actiuni.calcul.paritate.test.ts`**. **Cu d-3, felia 10.4↑d e încheiată;** din ADR 0330 rămân
+  doar ce e „mai târziu” (toleranțele, lungimea unui arc sau contur, cota între foi, setările în cont).
 
 ## Deciziile owner-ului
 

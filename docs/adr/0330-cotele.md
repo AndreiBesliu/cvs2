@@ -673,3 +673,31 @@ Documentul rămâne v29: cotele stau tot pe foaie, iar fiecare cotă nouă e o o
   de la X = 20 la X = 120).
 - **Cifrele:** unitare noi 4 (desenul pe hârtie, punctul și bara, comanda cu anularea, programul), e2e noi 2
   (`cote.fadesen.spec.ts`); acțiunea nouă e o ușă a manualului (120).
+
+## Implementarea (10.4↑d-3)
+
+26.11, pe ramura `wip/10.4-cote`, după d-2: ultima parte a feliei d. Documentul rămâne v29; raportul (`raportFoi`) și CSV-ul
+nu s-au schimbat (`cote.neatinse.test.ts`, neatins, le cere tot aceleași cu și fără cote).
+- **Desenul foii cu cotele, pur** (`svgFoaieRaport`, `src/io/raportCote.ts`, adus la cerere): fără cote cerute (sau pe o foaie
+  fără cote), desenul de până acum, octet cu octet (SVG-ul exportului de vectori, cu foaia, liniile la a 150-a parte din latura
+  mare a foii). Cu ele, cotele pe stratul COTE, cu culoarea și cifrele din Setări › Cotele › Exportul (trăsăturile fontului cu o
+  singură linie, sau text; fără font, ca text), liniile lor la jumătate din ale pieselor.
+- **Cotele se citesc pe desen** (întrebarea 10): cifrele cresc până la cel puțin a 60-a parte din latura mare a foii, iar
+  capetele, golul și depășirea cresc la fel (`stilRaport`); linia fiecărei cote rămâne unde a pus-o omul. Pe o foaie de 210 mm
+  sau mai mică (la cifrele de 3,5), desenul e chiar cel al exportului. O cotă care iese din foaie lărgește pagina desenului
+  (`scrieSvg` primește pagina, opțional; exportul o lasă cât foaia, ca până acum).
+- **Raportul:** bifa **„Cu cotele (N)”** pe rândul comenzilor, doar când o foaie a raportului are cote; pornește după setarea
+  nouă **Setări › Cotele › Raportul foilor › „Cu cotele, în raportul foilor”** (oprită implicit; al optulea grup, cu
+  „Înapoi la implicit”). Bifată, desenul fiecărei foi cu cote ia tot rândul, deasupra datelor ei (cel mult 70 % din înălțimea
+  ecranului; la tipar, 180 mm). Foile identice (aceleași piese, aceleași operații) arată cotele primei: cotele nu despart
+  foile, cum nu le despart nici imaginile (ADR 0272 §10). **Tipărește** ia desenele cum le vezi.
+- **Cifrele:** unitare noi 5 (`cote.raport.test.ts` 4: desenul de dinainte pe tot corpusul CAM, stilul pe hârtie, stratul și
+  cifrele, pagina lărgită; `cote.setari.test.ts` 1), e2e noi 2 (`cote.raport.spec.ts`), plus grupul nou numărat în
+  `setari.spec.ts`; otrăvurile 20 / 20 (19 din prima; culoarea, după ce proba a luat alta decât cea implicită).
+
+### Întrebarea 10 (d-3), cu recomandarea pe care s-a mers
+
+10. Cotele pe desenul raportului:
+    - **a (recomandat, implementat):** mărite cât să se citească (cifrele cel puțin a 60-a parte din latura mare a foii), cu
+      desenul pe tot rândul: la mărimea adevărată, pe o foaie de 2 440 mm, cifrele de 3,5 mm ar avea sub un pixel;
+    - b: la mărimea adevărată, ca în fișierul exportat, în coloana îngustă de azi.
