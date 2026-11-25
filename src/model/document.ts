@@ -14,7 +14,7 @@
  * mai veche. Un câmp nou CU SENS (fața de jos, montajele, sculele) intră doar cu o schemă nouă și o migrare: o versiune
  * veche n-are voie să taie fără să înțeleagă un câmp.
  */
-export const VERSIUNE_SCHEMA = 29;
+export const VERSIUNE_SCHEMA = 30;
 
 /** Plafoanele stau pe artefact (T23): un document care le trece e refuzat la ușă, nu tăiat. */
 export const PLAFON = {
@@ -244,11 +244,19 @@ export type Operatie = {
    * reliefului; `planZero` = adâncimea planului zero sub fața plăcii, în mm (lipsă = vârful compusului la fața plăcii).
    */
   finisare?: Finisare;
+  /**
+   * Pe o degroșare a reliefului (ADR 0313 §2, documentul v30, cerut acolo): `adaos` = cât lemn rămâne deasupra modelului, în
+   * orice direcție, pentru finisare, în mm; `unghi`, `margine` și `planZero` ca la finisare.
+   */
+  degrosare?: Degrosare;
   [cheie: string]: unknown;
 };
 export type Finisare = { unghi: number; nealiniat?: true; margine?: 'trece'; planZero?: number; [cheie: string]: unknown };
+export type Degrosare = { adaos: number; unghi: number; margine?: 'trece'; planZero?: number; [cheie: string]: unknown };
 /** ADR 0312 §2: marginea lui `finisare.planZero`, în mm (ca adâncimea unei operații). */
 export const PLAN_ZERO_MAXIM = 1_000;
+/** ADR 0313 §2: cel mai mare adaos al unei degroșări, în mm. */
+export const ADAOS_MAXIM = 10;
 export type StrategieBuzunar = { fel: 'paralel'; unghi: number; [cheie: string]: unknown };
 /**
  * Incrustația în V (ADR 0170 §1, documentul v20), pe locaș (un V-carve de adâncime D): `joc` = jocul pentru clei de sub dop,
@@ -343,7 +351,7 @@ export const COBORARE_MINIME = { unghi: 0.5, lungime: 1, raza: 0.5 } as const;
  * `vcarve` (ADR 0090, documentul v14) sapă regiunea contururilor închise (par-impar) cu freza în V, pe axa ei medială, până
  * la adâncimea operației (cea maximă); latura e `interior`, ce e al profilului nu există, iar freza trebuie să fie în V.
  */
-export type TipOperatie = 'profil' | 'buzunar' | 'gaurire' | 'vcarve' | 'finisare';
+export type TipOperatie = 'profil' | 'buzunar' | 'gaurire' | 'vcarve' | 'finisare' | 'degrosare';
 /** Cel mai mare număr de pași dintre două ieșiri complete ale găuririi (ADR 0087). */
 export const RETRAGERE_COMPLETA_MAXIMA = 100;
 /**
@@ -422,7 +430,7 @@ export type Foaie = {
   cote?: Cota[];
   [cheie: string]: unknown;
 };
-export type Document = { schema: 29; rev: number; piese: Piesa[]; foi: Foaie[]; [cheie: string]: unknown };
+export type Document = { schema: 30; rev: number; piese: Piesa[]; foi: Foaie[]; [cheie: string]: unknown };
 
 /** Nodurile unei piese, în preordine, cu adâncimea lor (rădăcina are 1). Iterativ: arborele poate fi adânc. */
 export function noduriPiesa(radacina: Nod): Array<{ readonly nod: Nod; readonly adancime: number }> {

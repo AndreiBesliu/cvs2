@@ -353,6 +353,7 @@ export const roExport = {
   'export.raport.op.gaurire': 'găurire',
   'export.raport.op.vcarve': 'V-carve',
   'export.raport.op.finisare': 'finisarea reliefului',
+  'export.raport.op.degrosare': 'degroșarea reliefului',
   'export.raport.bila': 'bilă',
   'export.raport.op.despartire': 'despărțirea foii',
   'export.raport.op.adancime': { one: '{adancime} mm, {n} trecere', few: '{adancime} mm, {n} treceri', other: '{adancime} mm, {n} de treceri' },

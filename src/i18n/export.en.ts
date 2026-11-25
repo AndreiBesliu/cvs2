@@ -339,6 +339,7 @@ export const enExport = {
   'export.raport.op.gaurire': 'drilling',
   'export.raport.op.vcarve': 'V-carve',
   'export.raport.op.finisare': 'relief finishing',
+  'export.raport.op.degrosare': 'relief roughing',
   'export.raport.bila': 'ball nose',
   'export.raport.op.despartire': 'sheet separation',
   'export.raport.op.adancime': { one: '{adancime} mm, {n} pass', other: '{adancime} mm, {n} passes' },

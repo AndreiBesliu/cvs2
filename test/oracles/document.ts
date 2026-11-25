@@ -286,7 +286,9 @@ export type CategorieO =
   // v28 (ADR 0310 §1, ADR 0311 §1): relieful, o formă a elementului.
   | 'relief'
   // v29 (ADR 0312 §2): câmpul `finisare` al operației.
-  | 'finisare';
+  | 'finisare'
+  // v30 (ADR 0313 §2): câmpul `degrosare` al operației.
+  | 'degrosare';
 
 /** ADR 0037 §2: laturile documentului v10, exact (ASCII, ca `opozitie`). */
 export const LATURI_V10_O = ['interior', 'pe-linie', 'exterior', 'stanga', 'dreapta'] as const;
@@ -325,7 +327,7 @@ export const COLTURI_IMPLICITE_O = null;
 /** ADR 0032 §1: tipurile degajărilor, exact. */
 export const TIPURI_COLTURI_O: readonly TipColturiO[] = ['dog-bone', 't-bone'];
 /** Versiunea curentă a contractului documentului, după oracol. */
-export const SCHEMA_CURENTA_O = 29;
+export const SCHEMA_CURENTA_O = 30;
 
 export const PLAFOANE_O = {
   latura: 10_000,
@@ -2131,6 +2133,8 @@ export const INCRUSTATIE_O = {
 
 /** Felurile operației, pe versiune (ADR 0069 §1, ADR 0087 §6, ADR 0090 §5). */
 export function felurileO(versiune: number): readonly string[] {
+  // ADR 0313 §2 (v30): degroșarea reliefului.
+  if (versiune >= 30) return ['profil', 'buzunar', 'gaurire', 'vcarve', 'finisare', 'degrosare'];
   // ADR 0312 §2 (v29): finisarea reliefului.
   if (versiune >= 29) return ['profil', 'buzunar', 'gaurire', 'vcarve', 'finisare'];
   if (versiune >= 14) return ['profil', 'buzunar', 'gaurire', 'vcarve'];
@@ -2190,6 +2194,8 @@ export const CAMPURI_NOI_O: Readonly<Record<number, readonly string[]>> = {
   // ADR 0312 §3 (v29): câmpul `finisare`, necunoscut la v28, e ciocnirea; felul `finisare` și forma `bila` le refuză chiar
   // contractul v28 (un fel necunoscut, o formă care nu e V).
   29: ['finisare'],
+  // ADR 0313 §3 (v30): câmpul `degrosare`, necunoscut la v29, e ciocnirea; felul `degrosare` îl refuză chiar contractul v29.
+  30: ['degrosare'],
 };
 
 /** Prefixul unui câmp nou de pe instanță în `CAMPURI_NOI_O` (v23); restul sunt căi pe operație. */
@@ -2277,7 +2283,7 @@ export type DocV21O = Liber & { schema: 21; rev: number; piese: PiesaV21O[]; foi
 export type DocV22O = Liber & { schema: 22; rev: number; piese: PiesaV22O[]; foi: FoaieO[] };
 
 /** Un document v11 … v24, după numărul lui. */
-export type DocNouO = DocV11O | DocV12O | DocV13O | DocV14O | DocV15O | DocV16O | DocV17O | DocV18O | DocV19O | DocV20O | DocV21O | DocV22O | DocV23O | DocV24O | DocV25O | DocV26O | DocV27O | DocV28O | DocV29O;
+export type DocNouO = DocV11O | DocV12O | DocV13O | DocV14O | DocV15O | DocV16O | DocV17O | DocV18O | DocV19O | DocV20O | DocV21O | DocV22O | DocV23O | DocV24O | DocV25O | DocV26O | DocV27O | DocV28O | DocV29O | DocV30O;
 
 // ---------------------------------------------------------------------------------------------------------------
 // Ajutoarele.
@@ -2571,6 +2577,35 @@ export function problemeOperatieO(op: Liber, versiune: number, unde: string): st
     else if (tip === 'finisare') cu('finisare', 'finisare', [' lipsește: e cerut pe o finisare']);
     if (tip === 'finisare' && !are(op, 'pasLateral')) cu('pas-lateral', 'pasLateral', [' lipsește: e cerut pe o finisare']);
   }
+  if (versiune >= 30) {
+    // ADR 0313 §2: pe o degroșare, `degrosare` și `pasLateral` sunt cerute; forma lui `degrosare` se judecă oriunde apare.
+    if (are(op, 'degrosare')) cu('degrosare', 'degrosare', problemeDegrosareO(op['degrosare']));
+    else if (tip === 'degrosare') cu('degrosare', 'degrosare', [' lipsește: e cerut pe o degroșare']);
+    if (tip === 'degrosare' && !are(op, 'pasLateral')) cu('pas-lateral', 'pasLateral', [' lipsește: e cerut pe o degroșare']);
+  }
+  return rez;
+}
+
+/** ADR 0313 §2: marginea adaosului degroșării, în mm. */
+export const ADAOS_MAXIM_O = 10;
+
+/**
+ * ADR 0313 §2 (v30): de ce câmpul `degrosare` nu e bun, ca listă de motive (goală = bun): un obiect; `adaos` cerut, finit în
+ * [0, 10]; `unghi` cerut, finit în [0, 180); `margine` opțional, doar `'trece'`; `planZero` opțional, finit în [0, 1 000].
+ * Câmpurile necunoscute rămân, nejudecate.
+ */
+export function problemeDegrosareO(d: unknown): string[] {
+  if (!esteObiect(d)) return [` = ${arata(d)} nu e un obiect { adaos, unghi }`];
+  const rez: string[] = [];
+  const a = d['adaos'];
+  if (!(typeof a === 'number' && Number.isFinite(a) && a >= 0 && a <= ADAOS_MAXIM_O)) rez.push(`.adaos = ${are(d, 'adaos') ? arata(a) : '(lipsă)'} nu e în [0, ${ADAOS_MAXIM_O}]`);
+  const u = d['unghi'];
+  if (!(typeof u === 'number' && Number.isFinite(u) && u >= 0 && u < 180)) rez.push(`.unghi = ${are(d, 'unghi') ? arata(u) : '(lipsă)'} nu e în [0, 180)`);
+  if (are(d, 'margine') && d['margine'] !== 'trece') rez.push(`.margine = ${arata(d['margine'])} nu e 'trece'`);
+  if (are(d, 'planZero')) {
+    const z = d['planZero'];
+    if (!(typeof z === 'number' && Number.isFinite(z) && z >= 0 && z <= PLAN_ZERO_MAXIM_O)) rez.push(`.planZero = ${arata(z)} nu e în [0, ${PLAN_ZERO_MAXIM_O}]`);
+  }
   return rez;
 }
 
@@ -2754,9 +2789,9 @@ export function verificaO(doc: unknown): string[] {
   return verificaPanaLaO(doc, SCHEMA_CURENTA_O);
 }
 
-/** Un document primit de ușa curentă, cum iese din ea: v29 (o copie; un v29 valid rămâne neschimbat). */
-export function ridicaO(doc: unknown): DocV29O {
-  return ridicaPanaLaO(doc, SCHEMA_CURENTA_O) as DocV29O;
+/** Un document primit de ușa curentă, cum iese din ea: v30 (o copie; un v30 valid rămâne neschimbat). */
+export function ridicaO(doc: unknown): DocV30O {
+  return ridicaPanaLaO(doc, SCHEMA_CURENTA_O) as DocV30O;
 }
 
 /**
@@ -3659,7 +3694,7 @@ export function problemeFormaReliefO(f: Liber): string[] {
 
 /**
  * Încălcările v28 ale reliefurilor unui document (categoria `relief`); goală = bune. ADR 0312 §2 (v29): o finisare referă
- * doar reliefuri, iar o operație de alt fel niciun relief.
+ * doar reliefuri, iar o operație de alt fel niciun relief; ADR 0313 §2 (v30): la fel o degroșare.
  */
 export function problemeReliefO(doc: Liber, versiune: number = SCHEMA_V28_O): string[] {
   const rez: string[] = [];
@@ -3678,10 +3713,11 @@ export function problemeReliefO(doc: Liber, versiune: number = SCHEMA_V28_O): st
     if (!Array.isArray(ops)) return;
     ops.forEach((o: unknown, k) => {
       if (!esteObiect(o) || !Array.isArray(o['noduri'])) return;
-      const finisare = versiune >= 29 && o['tip'] === 'finisare';
+      const pe3d = (versiune >= 29 && o['tip'] === 'finisare') || (versiune >= 30 && o['tip'] === 'degrosare');
+      const felul = o['tip'] === 'degrosare' ? 'degroșarea' : 'finisarea';
       for (const n of o['noduri'] as unknown[]) {
-        if (finisare && !ids.has(n)) rez.push(`[relief] piese[${i}].operatii[${k}].noduri: ${arata(n)} nu e un relief (finisarea lucrează doar pe reliefuri)`);
-        if (!finisare && ids.has(n)) rez.push(`[relief] piese[${i}].operatii[${k}].noduri: ${arata(n)} e un relief (operațiile 2D taie doar contururi)`);
+        if (pe3d && !ids.has(n)) rez.push(`[relief] piese[${i}].operatii[${k}].noduri: ${arata(n)} nu e un relief (${felul} lucrează doar pe reliefuri)`);
+        if (!pe3d && ids.has(n)) rez.push(`[relief] piese[${i}].operatii[${k}].noduri: ${arata(n)} e un relief (operațiile 2D taie doar contururi)`);
       }
     });
   });
@@ -3715,3 +3751,22 @@ export function usaCurentaV29O(doc: unknown): 'migrari' | 'usa' { return usaCure
 export function migreazaV1V29O(v1: DocV1O): DocV29O { return ridicaPanaLaO(v1, SCHEMA_V29_O) as DocV29O; }
 export function migreazaV28V29O(v28: DocV28O): DocV29O { return ridicaPanaLaO(v28, SCHEMA_V29_O) as DocV29O; }
 
+
+// ---------------------------------------------------------------------------------------------------------------
+// v30 (ADR 0313): degroșarea reliefului. Scris din ADR:
+// - felul nou `degrosare`, cu `degrosare: { adaos, unghi, margine?, planZero? }` și `pasLateral` cerute; o degroșare referă
+//   doar reliefuri, o operație 2D niciun relief (`problemeReliefO`);
+// - forma lui `degrosare` se judecă oriunde apare (`problemeDegrosareO`, categoria `degrosare`);
+// - migrarea v29 → v30 schimbă doar numărul; un v29 cu câmpul `degrosare` e ciocnirea (`CAMPURI_NOI_O[30]`), iar felul îl
+//   refuză contractul v29.
+
+export const SCHEMA_V30_O = 30;
+/** v30 (ADR 0313): ca v29; o operație poate fi `degrosare`. */
+export type DocV30O = Liber & { schema: 30; rev: number; piese: PiesaV22O[]; foi: FoaieO[] };
+
+export function verificaV30(doc: unknown): string[] { return verificaVnO(doc, SCHEMA_V30_O); }
+export function verificaPanaLaV30O(doc: unknown): string[] { return verificaPanaLaO(doc, SCHEMA_V30_O); }
+export function ridicaV30O(doc: unknown): DocV30O { return ridicaPanaLaO(doc, SCHEMA_V30_O) as DocV30O; }
+export function usaCurentaV30O(doc: unknown): 'migrari' | 'usa' { return usaCurentaPanaLaO(doc, SCHEMA_V30_O); }
+export function migreazaV1V30O(v1: DocV1O): DocV30O { return ridicaPanaLaO(v1, SCHEMA_V30_O) as DocV30O; }
+export function migreazaV29V30O(v29: DocV29O): DocV30O { return ridicaPanaLaO(v29, SCHEMA_V30_O) as DocV30O; }

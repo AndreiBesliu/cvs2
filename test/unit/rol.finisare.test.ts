@@ -20,7 +20,7 @@ const dreptunghi = (id: string): unknown => ({ tip: 'element', id, forma: { tip:
 
 function doc(copii: readonly unknown[], operatii: readonly unknown[] = []): Document {
   const r = incarca({
-    schema: 29, rev: 0,
+    schema: 30, rev: 0,
     piese: [{ id: 'p', radacina: { tip: 'grup', id: 'g', matrice: { ...I }, copii: [...copii] }, operatii: [...operatii] }],
     foi: [{ id: 'f1', stoc: { latime: 200, inaltime: 150, grosime: 18 }, instante: [{ id: 'i', piesa: 'p', x: 0, y: 0, rotire: 0 }] }],
   });

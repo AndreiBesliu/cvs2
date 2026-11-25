@@ -40,7 +40,7 @@ const CERC = (id: string, raza: number, e = 50, f = 50): Forma => ({ id, forma: 
 function doc(forme: readonly Forma[], operatii: readonly Op[], grosime = 18): unknown {
   const noduri = forme.map((c) => ({ tip: 'element', id: c.id, matrice: { ...I, e: c.e ?? 0, f: c.f ?? 0 }, forma: c.forma }));
   return {
-    schema: 29, rev: 0, piese: [{ id: 'p', radacina: { tip: 'grup', id: 'r', matrice: { ...I }, copii: noduri }, operatii }],
+    schema: 30, rev: 0, piese: [{ id: 'p', radacina: { tip: 'grup', id: 'r', matrice: { ...I }, copii: noduri }, operatii }],
     foi: [{ id: 'f1', stoc: { latime: 200, inaltime: 150, grosime }, instante: [{ id: 'i', piesa: 'p', x: 0, y: 0, rotire: 0 }] }],
   };
 }

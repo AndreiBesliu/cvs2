@@ -445,6 +445,10 @@ export const enCarcasa = {
     one: 'Finishing on {n} relief: down to {adancime} mm, in passes of {pas} mm, T{t} Ø{d}',
     other: 'Finishing on {n} reliefs: down to {adancime} mm, in passes of {pas} mm, T{t} Ø{d}',
   },
+  'arbore.degrosare': {
+    one: 'Roughing on {n} relief: down to {adancime} mm, in passes of {pas} mm, T{t} Ø{d}',
+    other: 'Roughing on {n} reliefs: down to {adancime} mm, in passes of {pas} mm, T{t} Ø{d}',
+  },
   'arbore.vcarve.fund': ', flat floor with T{t} Ø{d}',
   'arbore.vcarve.incrustatie': ', inlay with a plug (glue gap {joc} mm)',
   'arbore.vcarve.incrustatie-banda': ', inlay with a plug, narrow band (glue gap {joc} mm)',

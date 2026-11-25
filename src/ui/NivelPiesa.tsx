@@ -17,7 +17,7 @@ mesaje.catch(() => undefined);
 export type OperatieArbore = {
   readonly id: string;
   /** Felul (ADR 0069, ADR 0087, ADR 0090): pe un buzunar, o găurire și un V-carve, rândul nu spune latura, ci felul. */
-  readonly tip?: 'profil' | 'buzunar' | 'gaurire' | 'vcarve' | 'finisare';
+  readonly tip?: 'profil' | 'buzunar' | 'gaurire' | 'vcarve' | 'finisare' | 'degrosare';
   readonly latura: 'exterior' | 'interior' | 'pe-linie' | 'stanga' | 'dreapta';
   readonly noduri: readonly string[];
   readonly adancime: number;
@@ -49,7 +49,7 @@ export function NivelPiesa({ elemente, operatii }: { readonly elemente: number; 
           ? <div className="nod" data-nod="fara-operatii">{t('arbore.fara-operatii')}</div>
           : operatii.map((o) => (
             <div key={o.id} className="nod" data-nod="operatie" data-icona="arbore.operatie">
-              {t(o.tip === 'buzunar' ? 'arbore.buzunar' : o.tip === 'gaurire' ? 'arbore.gaurire' : o.tip === 'vcarve' ? 'arbore.vcarve' : o.tip === 'finisare' ? 'arbore.finisare' : 'arbore.operatie', {
+              {t(o.tip === 'buzunar' ? 'arbore.buzunar' : o.tip === 'gaurire' ? 'arbore.gaurire' : o.tip === 'vcarve' ? 'arbore.vcarve' : o.tip === 'finisare' ? 'arbore.finisare' : o.tip === 'degrosare' ? 'arbore.degrosare' : 'arbore.operatie', {
                 n: o.noduri.length, latura: t(`export.latura.${o.latura}`), adancime: n(o.adancime), pas: n(o.pas),
                 t: o.scula.numar, d: n(o.scula.diametru),
               })}

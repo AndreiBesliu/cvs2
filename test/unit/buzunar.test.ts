@@ -192,7 +192,7 @@ test('migrarea v10 → v11 schimbă doar numărul; un v10 cu un buzunar sau cu p
   const v10 = { ...(doc([{ id: 'e', forma: DREPT }], [profil('o', 'e', 'exterior')]) as Record<string, unknown>), schema: 10, extra: 1 };
   const r = incarca(v10);
   assert.ok(r.ok);
-  if (r.ok) assert.deepEqual(r.doc, { ...v10, schema: 29 });
+  if (r.ok) assert.deepEqual(r.doc, { ...v10, schema: 30 });
   const cuBuzunar = { ...(doc([{ id: 'e', forma: DREPT }], [buzunar(['e'])]) as Record<string, unknown>), schema: 10 };
   const a = incarca(cuBuzunar);
   assert.ok(!a.ok && /operația v10 b din piesa p are tipul „buzunar”, pe care v10 nu-l cunoaște: nu e un document v10 valid/.test(a.motiv));

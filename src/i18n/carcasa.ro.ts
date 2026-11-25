@@ -471,6 +471,11 @@ export const roCarcasa = {
     few: 'Finisare pe {n} reliefuri: până la {adancime} mm, în treceri de {pas} mm, T{t} Ø{d}',
     other: 'Finisare pe {n} de reliefuri: până la {adancime} mm, în treceri de {pas} mm, T{t} Ø{d}',
   },
+  'arbore.degrosare': {
+    one: 'Degroșare pe {n} relief: până la {adancime} mm, în treceri de {pas} mm, T{t} Ø{d}',
+    few: 'Degroșare pe {n} reliefuri: până la {adancime} mm, în treceri de {pas} mm, T{t} Ø{d}',
+    other: 'Degroșare pe {n} de reliefuri: până la {adancime} mm, în treceri de {pas} mm, T{t} Ø{d}',
+  },
   'arbore.vcarve.fund': ', fundul plat cu T{t} Ø{d}',
   'arbore.vcarve.incrustatie': ', incrustație cu dop (jocul {joc} mm)',
   'arbore.vcarve.incrustatie-banda': ', incrustație cu dop, cu banda îngustă (jocul {joc} mm)',

@@ -90,7 +90,7 @@ test('adâncimea tăiată a fiecărei operații e cea din documentul tăiat de l
  */
 const CU_FINISARE = ((): Document => {
   const d = incarca({
-    schema: 29, rev: 0,
+    schema: 30, rev: 0,
     piese: [{
       id: 'p',
       radacina: {
