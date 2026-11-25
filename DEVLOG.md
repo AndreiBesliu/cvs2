@@ -14896,4 +14896,4 @@ gata de unit”, `b099c457`; 28.8↑n, `7996e77c`), la ordinul în vigoare „un
 - **Găsit:** la 640 × 360, banda listei lasă fișelor 9 px.
 - **Documentele:** manualul (ro, en), ADR 0291 („Implementarea 28.8↑h-2”), fișa etapei 3, registrul otrăvurilor, nota liniei.
 
-**Completed:** 25.11, 18:05.
+**Completed:** 25.11, 17:47.
