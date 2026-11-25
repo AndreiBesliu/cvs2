@@ -191,8 +191,9 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
     - atelierul: cama și roata cu palete, unite la 09:35; cadrul și melcul, la 13:18 (3.Cj, încheiată); 3.Tu
       (piesele rotunde pe același ax în „Modelul”, ADR 0283; Easy 3Draw 18.33.0; pornită de owner în sesiunea liniei,
       „1a, 2a, 3a la 3.Tu, pornește”), unită la 18:18; în lucru, 3.Cf (alipirea la prinderi în
-      „Modelul”, cu răspunsurile owner-ului din sesiunea liniei: piesa alipită urmează baza; 18.34.0), apoi
-      3.Cg–3.Ci; 3.Ck, după tipărirea bilei și a cupei;
+      „Modelul”, cu răspunsurile owner-ului din sesiunea liniei: piesa alipită urmează baza; 18.34.0); **pe listă,
+      de la owner (25.11, 19:18): decorațiuni de Crăciun pentru imprimantă**, după 3.Cf, cu ADR 0285 propus întâi;
+      apoi 3.Cg–3.Ci; 3.Ck, după tipărirea bilei și a cupei;
     - cotele: 10.4↑c-1, unită la 12:20; c-2 (DIMENSION în DXF și cifrele ca text), pornită pe 25.11 la 14:16, la
       același cuvânt al owner-ului.
 

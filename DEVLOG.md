@@ -15019,3 +15019,14 @@ pe commit-ul împins).
   a trecut. De ținut minte: după o eroare la pornire, se verifică întâi că nu s-a creat nicio rulare (o rulare la coadă
   are titlul „publica”, nu „publica test <sha>”, deci scriptul n-o recunoaște și ar porni a doua).
 - **Proba de fum** pe adresa de test: versiunea `65eecdc65928`, potrivită; nicio eroare în consolă, nicio cerere căzută.
+
+## 2026-11-25 — Sesiunea principală în cloud: decorațiuni de Crăciun pentru imprimantă, pe lista liniei atelierului (Model: Claude Fable 5.2)
+
+**Prompt:** „Vreau ca sesiunea care lucreaza la plugin, sa faca si decoratiuni de craciun pentru imprimanta. Pune-i asra pe lista”
+**Started:** 25.11, 19:18. **Completed:** 25.11, 19:19 (linia, anunțată; decizia, scrisă).
+
+- **Liniei atelierului Easy 3Draw** (19:18): o felie nouă pe listă, după 3.Cf, cu propunerea întâi (ADR 0285 și întrebările
+  grupate: ce piese vin întâi, unde stau în atelier, dacă se leagă de restul, textul); tipărirea fără suport și
+  agățătoarea, din prima; doar pachetul extensiei.
+- **Documentele:** decizia în `CLAUDE.md`; indexul liniilor; starea din `docs/linii/principala.md`. Pe ramura lotului
+  (`unire-2511w`): intră în `main` cu el.
