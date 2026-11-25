@@ -1276,8 +1276,19 @@ have their own colour on the canvas. Pick the type in the bar:
   with the reason;
 - **Angle**: a click on a side, then on the second; or three points: the vertex, then one on each side. Then take the arc into
   the angle you want (one of the four between the two lines) and click;
+- **Chain**: first a dimension from two points, as in Automatic (horizontal, vertical or aligned, depending on where you take
+  the line); then each click on a point puts a new dimension from the end of the one before, with its line on the same line
+  (for aligned, at the same distance from its path). **Esc** ends the chain;
+- **Baseline**: like Chain, but all dimensions start at the first point, and each new line sits further from the shape by two
+  text heights (7 mm with 3.5 mm figures), on the same side as the first. Chain and baseline also start from a horizontal,
+  vertical or aligned dimension already put down: select it, then pick the type. Each dimension is one undo step;
 - **Measure** (`M`): two points, no trace. The distance, Δx, Δy and the angle from the horizontal show next to the cursor and
   in the bottom bar; **Enter** (or **Keep**) makes it an aligned dimension, **Esc** clears it.
+
+**Dimension selection** (in the right-click menu): select the pieces with Select, right-click, **Dimension selection**; the
+Dimensions tool starts by itself. Each selected piece gets the width (below) and the height (on the right) of its box, attached to the box
+corners, so they follow it when it moves, rotates or scales; the lines sit at the dimension line distance from Settings. All
+the new dimensions go into a single undo step. A straight line gets only its width or only its height.
 
 Putting one: click the first point, click the second, then take the dimension line where you want it and click a third time;
 **Esc** cancels the dimension you started. Points snap to vertices (a square next to the cursor), to the midpoints of sides
@@ -1331,7 +1342,7 @@ field, said in red, and is not kept. **Close** (or Esc) closes the window.
   (above the line, in the line, with the line broken, or always horizontal).
 - **Lines and ends:** the ends (filled arrow, open arrow, oblique tick, dot or none) and their size, the extension lines
   (shown or hidden), their gap from the shape, the overshoot past the dimension line and the dimension line distance for
-  **Keep** in Measure.
+  **Keep** in Measure and for **Dimension selection**.
 - **Radius, diameter, angle:** the radius and diameter prefixes (by default “R” and “Ø”; at most 8 characters, empty: none),
   angles in decimal degrees (30.5°) or in degrees, minutes and seconds (30°30′0″), the angle decimals (0–4; in degrees,
   minutes and seconds, those of the seconds) and the radius line (from the centre, from outside, or by the figure's position:

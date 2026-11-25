@@ -1232,8 +1232,20 @@ pe care au fost puse (**Cotele foii**), se salvează cu proiectul și au culoare
   motivul;
 - **Unghi**: un clic pe o latură, apoi pe a doua; sau trei puncte: vârful, apoi câte unul pe fiecare latură. Apoi duci arcul în
   unghiul pe care îl vrei (dintre cele patru ale celor două drepte) și dai clic;
+- **Lanț**: întâi o cotă din două puncte, ca la Automată (orizontală, verticală sau aliniată, după unde duci linia); apoi
+  fiecare clic pe un punct pune o cotă nouă din capătul celei dinainte, cu linia pe aceeași dreaptă (la aliniată, la aceeași
+  distanță de drumul ei). **Esc** încheie lanțul;
+- **Linie de bază**: ca Lanțul, dar toate cotele pleacă din primul punct, iar fiecare linie nouă stă mai departe de formă cu
+  două înălțimi de cifră (7 mm la cifrele de 3,5 mm), de aceeași parte cu prima. Lanțul și linia de bază pornesc și dintr-o
+  cotă orizontală, verticală sau aliniată deja pusă: o alegi, apoi alegi felul. Fiecare cotă e un pas de anulare;
 - **Măsoară** (`M`): două puncte, fără urmă. Distanța, Δx, Δy și unghiul față de orizontală se văd lângă cursor și în bara de
   jos; **Enter** (sau **Păstrează**) o face cotă aliniată, **Esc** o șterge.
+
+**Cotează selecția** (în meniul de clic dreapta): alegi piesele cu Selecția, clic dreapta, **Cotează selecția**; unealta Cote
+pornește singură. Fiecare
+piesă aleasă primește lățimea (dedesubt) și înălțimea (la dreapta) cutiei ei, legate de colțurile cutiei, deci o urmează la
+mutare, rotire și scalare; liniile stau la distanța liniei de cotă din Setări. Toate cotele noi intră într-un singur pas de
+anulare. O linie dreaptă primește doar lățimea sau doar înălțimea.
 
 Pusul: clic pe primul punct, clic pe al doilea, apoi duci linia de cotă unde vrei și dai al treilea clic; **Esc** renunță la
 cota începută. Punctele se lipesc de vârfuri (un pătrat lângă cursor), de mijlocul laturilor (un triunghi), de centrele
@@ -1283,7 +1295,7 @@ implicit**. Un număr se scrie cu virgulă sau cu punct; unul în afara marginil
   (deasupra liniei, în linie, cu linia întreruptă, sau mereu orizontală).
 - **Liniile și capetele:** capetele (săgeată plină, săgeată deschisă, bară oblică, punct sau fără) și mărimea lor, liniile de
   extensie (arătate sau ascunse), golul lor față de formă, depășirea liniei de cotă și distanța liniei de cotă la
-  **Păstrează** din Măsoară.
+  **Păstrează** din Măsoară și la **Cotează selecția**.
 - **Raza, diametrul, unghiul:** prefixele razei și diametrului (implicit „R” și „Ø”; cel mult 8 semne, gol: fără), unghiurile
   în grade zecimale (30,5°) sau în grade, minute și secunde (30°30′0″), zecimalele unghiului (0–4; în grade-minute-secunde, ale
   secundelor) și linia razei (din centru, din afară, sau după locul cifrei: din centru cu cifra înăuntru, din afară cu cifra

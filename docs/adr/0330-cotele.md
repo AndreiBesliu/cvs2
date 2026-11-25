@@ -586,7 +586,7 @@ peste c-1. Documentul rămâne v28: nimic nou în schemă.
 - **Cifrele:** unitare noi 11 (`cote.export.test.ts`: octeții c-1, definițiile pe hârtie, blocurile și handle-urile, MTEXT-ul,
   stilul după setări, Helvetica, textul în SVG / PDF / EPS), iar proba setărilor exportului (`cote.setari.test.ts`), întărită; e2e noi 2 (`cote.export.spec.ts`:
   DIMENSION implicit, cifrele ca text în DXF și SVG, măsurate de browser; „Linii și cifre”). Pornirea 111,2 kB (neschimbată),
-  totalul 890,1 → 893,2 / 1 000 kB.
+  totalul +3,0 kB (pe unirea cu `main` `65eecdc6`: 891,8 → 894,8 / 1 000 kB; măsurat întâi pe baza de atunci, 890,1 → 893,2).
 
 ### Întrebarea 7 (c-2), cu recomandarea pe care s-a mers
 
@@ -611,3 +611,44 @@ Ce a schimbat nota față de propunere:
   împărțit în a-1 (modelul și proba), a-2 (unealta), a-3 (Setări, panoul, lista, manualul).
 - Ținute în browser, nu în proiect: asta e alegerea sesiunii, din „setări generale”; se redeschide dacă owner-ul vrea
   stilul ținut în proiect (atunci o setare „pentru proiectul acesta”) sau în cont.
+
+## Implementarea (10.4↑d-1)
+
+26.11, pe ramura `wip/10.4-cote`, la „ok, porneste 10.4↑d si 18.1↑d” al owner-ului (transmis de sesiunea principală). Felia d
+s-a împărțit: d-1 (lanțul, linia de bază, „Cotează selecția”), d-2 („Fă desen din cotă”), d-3 (cotele în raportul foilor).
+Documentul rămâne v29: cotele stau tot pe foaie, iar fiecare cotă nouă e o orizontală, o verticală sau o aliniată obișnuită.
+- **Seria, pură** (`src/model/serieCote.ts`): după o cotă liniară (felul, capetele, distanța liniei), **lanțul** pleacă din al
+  doilea capăt al ultimei cote, cu linia pe dreapta liniei celei dinainte (la orizontală și verticală; la aliniată, drumul se
+  schimbă, deci se păstrează distanța primei); **linia de bază** pleacă mereu din primul capăt al primei cote, iar linia
+  fiecărei cote noi stă mai departe de formă cu un pas, de partea primei linii (la d = 0, ca normala: în sus, spre stânga). O
+  cotă care ar măsura zero (același X la orizontală, același Y la verticală, același punct la aliniată) nu se pune.
+- **Pasul liniilor de bază:** două înălțimi de cifră (7 mm la cifrele implicite de 3,5 mm), fără o setare nouă (întrebarea 8).
+- **Unealta:** felurile **Lanț** și **Linie de bază** în bară, după Aliniată. Prima cotă se pune ca la Automată din două puncte
+  (orizontală, verticală sau aliniată, după unde duci linia; Shift: aliniată), fără alegerea unei laturi; apoi fiecare clic pe
+  un punct (lipit, legat după setare) pune cota următoare, un pas de anulare fiecare, cu cota următoare desenată sub maus.
+  **Esc** încheie seria (abia atunci se aplică „După o cotă: înapoi la Selecție”). Cu o cotă liniară aleasă, alegerea felului
+  pornește seria din ea (lanțul din al doilea capăt, baza din primul, cu legătura lor).
+- **„Cotează selecția”, pură** (`src/model/coteSelectie.ts`): pentru fiecare piesă aleasă de pe foaie, lățimea și înălțimea
+  cutiei ei în lume, ca o orizontală și o verticală noi, legate de colțurile cutiei elementelor de la margini (lățimea: colțul
+  stânga-jos al elementului cel mai din stânga și dreapta-jos al celui mai din dreapta; înălțimea: dreapta-jos al celui mai de
+  jos și dreapta-sus al celui mai de sus), cu liniile la distanța liniei de cotă din Setări, sub piesă și la dreapta ei. O
+  dimensiune zero (o linie dreaptă) nu se cotează. Toate cotele noi, un singur pas de anulare.
+- **Unde stă „Cotează selecția”:** în meniul de clic dreapta, după Șterge (întrebarea 9). Pus în bara uneltei, lângă ⚙, împingea
+  bara de sus cu 14 px afară la 1280 px cu fontul lat; pus în extensia barei, lângă Cote, împingea butonul 3D afară. Rândul
+  pornește unealta Cote (bucata ei vine la cerere), iar cererea se face o singură dată (`CERERI_FACUTE`), și după o montare din
+  nou a stratului.
+- **Cifrele:** unitare noi 15 (`cote.serie.test.ts` 9, `cote.selectie.test.ts` 6, pe hârtie), e2e noi 4 (`cote.serie.spec.ts`:
+  lanțul, cu refuzul de zero, Esc și anularea; linia de bază, cu pasul de 7 mm; lanțul pornit din cota aleasă; „Cotează
+  selecția” din meniu, oprit fără selecție, cu un singur pas de anulare); bara de sus tot la 1280 px cu fontul lat, în ambele
+  limbi.
+
+### Întrebările 8 și 9 (d-1), cu recomandările pe care s-a mers
+
+8. Pasul liniilor de bază:
+   - **a (recomandat, implementat):** două înălțimi de cifră (7 mm la 3,5 mm), fără setare: cifra încape între linii oricât de
+     mare o alegi;
+   - b: o setare nouă în Setări › Cotele („Pasul liniilor de bază”, 2–30 mm).
+9. „Cotează selecția”:
+   - **a (recomandat, implementat):** în meniul de clic dreapta al pieselor alese (bara de sus și extensia ei nu mai au loc la
+     1280 px cu fontul lat);
+   - b: și în **Caută o comandă**, ca acțiune a registrului (aproximativ +0,1 kB în pornire).

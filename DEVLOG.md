@@ -15364,3 +15364,21 @@ codului: „Alipirea la prinderi (Recomandat)”, „Puncte în vederea 3D (Reco
   909,1 / 1 000 kB, `/admin` 138,3 / 200, contul 30,2 / 32.
 - **Proba de fum** pe adresa de test: versiunea `c9911c141e13`, potrivită; nicio eroare în consolă, nicio cerere căzută.
 - **Pe test e tot ce e în `main`** (`42433c91` adaugă peste `c9911c14` doar documente).
+
+## 2026-11-26 — Felia 10.4↑d-1: lanțul, linia de bază, „Cotează selecția” (ADR 0330 §4)
+
+**Prompt:** „Deci **10.4↑d pornește**: lanțul și linia de bază, „Cotează selecția”, „Fă desen din cotă”, cotele în raportul
+foilor” (sesiunea principală, 26.11, 00:08, cu cuvântul owner-ului: „ok, porneste 10.4↑d si 18.1↑d”). **Started:** 26.11,
+00:10, în sesiunea cloud a liniei cotelor. **Completed:** 26.11, 01:30 (în container; CI-ul, pe commit-ul împins).
+
+- **`main` adus** (`a4d86d53`, documentul v29), prin avans rapid. Felia d s-a împărțit în d-1 (aici), d-2 („Fă desen din
+  cotă”) și d-3 (cotele în raportul foilor).
+- **Proba întâi, pe hârtie:** `cote.serie.test.ts` (lanțul orizontal, vertical, aliniat; baza, cu pasul, partea, d = 0; cota de
+  zero; id-ul) și `cote.selectie.test.ts` (o piesă, o piesă din două elemente, mai multe piese, o linie, legarea oprită,
+  distanța din setări).
+- **Pur:** `src/model/serieCote.ts` (`pornesteSerie`, `cotaUrmatoare`, `idCotaNou`) și `src/model/coteSelectie.ts`
+  (`coteSelectie`). **Unealta:** felurile Lanț și Linie de bază (prima cotă ca la Automată din două puncte, apoi un clic pe
+  punct, Esc încheie; pornite și din cota liniară aleasă); „Cotează selecția” în meniul de clic dreapta: în bara uneltei, bara
+  de sus ieșea cu 14 px din 1280 px cu fontul lat, iar în extensia barei butonul 3D ieșea din fereastră.
+- **Manualul** (ro, en), catalogul controalelor (neschimbat), e2e noi 4 (`cote.serie.spec.ts`); otrăvurile 27 / 27, într-o
+  clonă. Întrebările 8 și 9, la owner, cu recomandările implementate.

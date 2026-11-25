@@ -107,6 +107,13 @@ față. Fără cod de produs până la răspunsuri. De hotărât acolo, între a
   de dinainte, fișierele c-1 sunt octet cu octet aceleași. Întrebarea 7 (textul cotei DIMENSION: al nostru, scris, sau lăsat
   de măsurat), la owner, cu recomandarea implementată. **Urmează:** 10.4↑d (lanțul, linia de bază, „Cotează selecția”, „Fă
   desen din cotă”, cotele în raportul foilor), la cuvântul owner-ului.
+- **25.11, 10.4↑c-2 unită în `main`** de sesiunea principală (`66b6b335`, din `fd21591f`, în lot cu 16.A↑b-6; totalul +3,0 kB,
+  896,5 / 1 000 în lot).
+- **26.11, 10.4↑d pornită** (la „ok, porneste 10.4↑d si 18.1↑d” al owner-ului, prin sesiunea principală; `main` `a4d86d53`
+  adus, documentul v29), împărțită în d-1, d-2, d-3. **d-1 gata pe ramură:** felurile Lanț și Linie de bază (seria pură în
+  `src/model/serieCote.ts`, pasul bazei de două înălțimi de cifră), „Cotează selecția” din meniul de clic dreapta (pură în
+  `src/model/coteSelectie.ts`; bara de sus și extensia ei n-au loc la 1280 px cu fontul lat). Întrebările 8 și 9, la owner,
+  cu recomandările implementate. **Urmează:** d-2 („Fă desen din cotă”), apoi d-3 (cotele în raportul foilor).
 
 ## Deciziile owner-ului
 
