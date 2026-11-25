@@ -14849,7 +14849,7 @@ gata de unit”, `b099c457`; 28.8↑n, `7996e77c`), la ordinul în vigoare „un
 ## 2026-11-25 — Sesiunea principală în cloud: lotul 33 (cotele în export, frezele b-5, cadrul și melcul, numele fișierului), pe test (Model: Claude Fable 5.2)
 
 **Prompt:** publicarea de după a treizeci și treia unire (pe test se publică liber)
-**Started:** 25.11, 13:19 (lanțul pornit după unire). **Completed:** 25.11, 14:24.
+**Started:** 25.11, după unirea de la 13:18 (completul pe `main`, pornit la 13:27). **Completed:** 25.11, 14:24.
 
 - **Pe test: `2aaee0b4`** (10.4↑c-1, 16.A↑b-5, 3.Cj-3 și 3.Cj-4 cu Easy 3Draw 18.32.0, 28.8↑n). `publica.yml`
   45612906027, verde (14:21–14:24); serverul, neschimbat.
