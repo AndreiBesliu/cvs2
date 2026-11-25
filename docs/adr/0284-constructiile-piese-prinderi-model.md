@@ -111,7 +111,7 @@ elice. Fiecare e un șablon din parametri, nu un desen fix.
 | 3.Cg | Modelul: verificarea (prins, plutește, se ciocnește) | avertismente pe piese și în listă |
 | 3.Ch | Construcțiile cu nume și lista lor de piese | mai multe construcții în atelier |
 | 3.Ci | Construcțiile gata | patru șabloane |
-| 3.Cj | Melcul, cama și manivela, cadrul, roata cu palete | restul pieselor din B |
+| 3.Cj | Melcul, cama și manivela, cadrul, roata cu palete | restul pieselor din B, pe bucăți: 3.Cj-1, cama (gata pe 25.11); apoi roata cu palete, cadrul, melcul |
 | 3.Ck | Balamaua și placa turnantă | despărțite de 3.Cd: au jocuri de mișcare care se potrivesc pe piese tipărite |
 
 ## Marginile
@@ -325,3 +325,26 @@ ale axului și ale știftului); Easy 3Draw 18.25.0.
 - **Mărimea:** doar pachetul extensiei (491,4 → 501,6 kB: a trecut de pragul de 0,5 MB din „Se redeschide dacă”;
   instalarea nu se simte, dar pragul e de hotărât din nou); aplicația, neschimbată.
 - **Felia următoare:** 3.Tu (piesele rotunde pe același ax în „Modelul”), la răspunsurile owner-ului, apoi 3.Cf.
+
+## Implementat (3.Cj-1, 25.11.2026)
+
+**Cama** (tipul `cama`, fila Roți; Easy 3Draw 18.29.0). Prima piesă din 3.Cj, care se face pe bucăți: 3.Cj-1 cama, apoi
+roata cu palete, cadrul și melcul.
+
+- **Piesa:** un disc pe ax, cu marginea la o distanță de ax care se schimbă în timpul rotației, de la raza de bază
+  (jumătate din diametrul cerut) la raza de bază plus cursa. Un tachet sprijinit pe ea (capătul unei grinzi, un ax într-un
+  ghidaj) urcă și coboară cu cursa, o dată pe tură. Se tipărește culcată, fără suport.
+- **Trei forme:** excentricul (un cerc cu axul mutat din mijloc cu jumătate din cursă: urcă și coboară lin), para
+  (cercul de bază și un nas rotund, legate prin tangente: stă jos mai mult de jumătate de tură, apoi urcă scurt) și
+  melcul (raza crește liniar pe o tură întreagă, apoi cade: într-un singur sens).
+- **Parametrii:** diametrul de bază 10–64 mm, cursa 1–24 mm, grosimea 1–20 mm (implicit 7,8, cât o grindă), gaura de ax
+  sau rotundă. La cea mai mică, între colțul crucii și margine rămân 2,3 mm.
+- **„Manivela” din planul de mai sus nu e o piesă nouă:** o grindă cu o gaură de ax la un capăt și găuri de știft în
+  rest se face deja din editorul grinzilor, iar discul cu găuri de știft pe cercul de 8 mm e fața „cu găuri de știft” a
+  fuliei.
+- **Prinderile:** gaura de pe ax; „Se prinde cu” îi propune axul de lungimea bună, iar axul o propune înapoi.
+- **Probele:** unitare 6 (`test/unit/trenulet.cama.test.ts`): **raza se judecă pe plasă**, din 5 în 5 grade, față de
+  formula de pe hârtie a fiecărei forme (para, ca înfășurătoare convexă a două cercuri, socotită altfel decât în motor);
+  e2e 3 (`test/e2e/trenulet.cama.spec.ts`). Probele filelor („Roți 9”), galeriilor, pictogramelor și ale panoului „Se
+  prinde cu”, la zi.
+- **Mărimea:** doar pachetul extensiei (501,6 → 504,7 kB); aplicația, neschimbată.

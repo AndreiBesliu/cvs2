@@ -14080,6 +14080,30 @@ dată în timpul feliei).
 - **Neîmpinsă până la unirea lotului 3.Cc + 3.Cd** (raportat pe `d0490719`, cu rapidul și completul verzi), la rugămintea
   sesiunii principale; împinsă doar dacă tura se încheie înainte.
 
+## 2026-11-25 — Felia 3.Cj-1: cama în atelierul Easy 3Draw (ADR 0284) (sesiune cloud)
+
+**Prompt:** (aceeași cerere a owner-ului și aceleași răspunsuri la ADR 0284 ca la 3.Ca; răspunsul lui „Mecanisme”, la
+lista pieselor noi; pornită fără altă întrebare, cât 3.Ce își aștepta rularea completă și cele trei întrebări ale
+Modelului își așteptau răspunsul)
+**Started:** 25.11, 01:57. **Completed:** 25.11, 02:46 (felia, cu otrăvurile; orele, după ceasul containerului).
+
+- **Cama** (tipul `cama`, fila Roți): un disc pe ax cu marginea la o distanță de ax care se schimbă în timpul rotației,
+  de la raza de bază la raza de bază plus cursa. Trei forme: excentricul, para, melcul.
+- **3.Cj se face pe bucăți:** cama întâi; roata cu palete, cadrul și melcul, pe rând. „Manivela” din plan nu e o piesă
+  nouă (grinda cu o gaură de ax la capăt și fața cu găuri de știft a fuliei o fac deja).
+- **Proba, scrisă întâi** (a căzut cu „tip necunoscut”): raza, judecată pe plasă din 5 în 5 grade, față de formula de pe
+  hârtie a fiecărei forme; para, ca înfășurătoare convexă a două cercuri, socotită altfel decât o desenează motorul.
+- **Ce a arătat proba din browser:** cutia STL-ului perei ieșea 29,97 în loc de 30: spatele cercului de bază cădea la
+  mijlocul unei laturi. Arcele perei au acum un număr par de laturi, iar capetele ei sunt vârfuri.
+- **Probele vechi, la zi:** „Roți 9”, galeriile și desenele, starea unei liste vechi, listele panoului „Se prinde cu”
+  (cama are gaură de ax, deci intră în rândul axului), versiunea 18.29.0.
+- **Otrăvurile:** 59 / 59: 57 la prima rulare (37 pe motor, 3 pe tabele, 19 prin browser). Cele două scăpate: butonul
+  apăsat al formei și al găurii nu era cerut de probă (acum e), iar rotunjirea la zecimi din câmp era de prisos (o face
+  motorul) și a ieșit din cod.
+- **Probele pluginului:** unitare 230 / 230 (cu biblioteca), în browser 162 / 162 (cu extensiile). Easy 3Draw 18.29.0 (504,7 kB), cu rândul
+  de „ce e nou”; doar pachetul se schimbă.
+- **Neîmpinsă până la unirea lui 3.Ce** (PR-ul `AndreiBesliu/cvs2#28`).
+
 ## 2026-11-24 — Sesiunea principală în cloud: clicul pe „Închide” din cadrul unei extensii, pierdut (probă instabilă, reparată) (Model: Claude Fable 5.2)
 
 **Prompt:** completul de pe `main` pentru loturile 19–21 (`7312d685`, rularea 45436221341), roșu la o singură probă;

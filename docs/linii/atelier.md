@@ -10,7 +10,9 @@ rezervat), cu trei întrebări încă fără răspuns de la owner (recomandăril
 Starea: **3.Ca (conectorul perpendicular, Easy 3Draw 18.24.0) și 3.Cb (conectorul în unghi, axul cu opritor, știftul cu
 bucșă; 18.25.0), unite în `main` cu lotul 28 (`11877a3e`); 3.Cc (cremaliera; 18.26.0) și 3.Cd (arcul; 18.27.0),
 unite în `main` pe 25.11 (`9815527f`); 3.Ce (punctele de prindere și „Se prinde cu”; 18.28.0) gata pe 25.11, pe
-ramură, de unit; urmează 3.Tu, la răspunsurile owner-ului, apoi 3.Cf.** Versiunea următoare a pachetului: 18.29.0._
+ramură, de unit (PR-ul `AndreiBesliu/cvs2#28`); 3.Cj-1 (cama; 18.29.0) gata pe 25.11, local, de împins după unirea
+lui 3.Ce; urmează restul lui 3.Cj (roata cu palete, cadrul, melcul) și, la răspunsurile owner-ului, 3.Tu, apoi 3.Cf.**
+Versiunea următoare a pachetului: 18.30.0._
 
 ## Numerele liniei
 
@@ -34,7 +36,7 @@ ramură, de unit; urmează 3.Tu, la răspunsurile owner-ului, apoi 3.Cf.** Versi
 | 3.Cg | Modelul: verificarea (prins, plutește, se ciocnește) | avertisment, nu refuz (răspunsul 2a) |
 | 3.Ch | Construcțiile cu nume și lista lor de piese | |
 | 3.Ci | Construcțiile gata (șasiul, cutia de angrenaje, brațul de macara, barca cu elice) | după Model (răspunsul 3a) |
-| 3.Cj | Melcul, cama și manivela, cadrul, roata cu palete | |
+| 3.Cj | Melcul, cama și manivela, cadrul, roata cu palete | pe bucăți: 3.Cj-1, cama, gata (25.11); urmează roata cu palete, cadrul, melcul |
 | 3.Ck | Balamaua și placa turnantă | despărțite de 3.Cd; după ce owner-ul încearcă primele piese pe imprimantă |
 
 ## 3.Ca, gata (24.11, în cloud): conectorul perpendicular
@@ -105,7 +107,25 @@ ramură, de unit; urmează 3.Tu, la răspunsurile owner-ului, apoi 3.Cf.** Versi
   trebuie întoarsă cu 180°, altfel plăcile se pătrund; 3.Cf o alege din verificare, nu din convenție. Axele și barele
   alunecă: montajul le pune „până la capăt” (rădăcina pe gură), iar Modelul va lăsa omul să le tragă.
 
-## Reguli și capcane (de la 3.Ca–3.Ce)
+## 3.Cj-1, gata (25.11, în cloud): cama
+
+- **Unde e:** motorul, `camaCote`, `conturCama` și `cama` (după `cremaliera`), cu `Lego.camaCote` pentru atelier;
+  atelierul: `stare.cama`, `FAMILII` (Roți), `PICTOGRAME`, `numeDef`, `defCurenta`, editorul (`t === "cama"`, câmpurile
+  `at-cam-…`).
+- **Datele piesei:** `forma` (`excentric`, `para`, `melc`), `diam` (diametrul de bază, 10–64), `cursa` (1–24), `grosime`
+  (1–20), `gaura` (`x`, `r`).
+- **Probele:** `test/unit/trenulet.cama.test.ts` (raza pe plasă: `masurata`, față de `hartie`), 
+  `test/e2e/trenulet.cama.spec.ts`; otrăvurile, `test/otravuri/3.Cj-1.py`.
+- **Ce urmează în 3.Cj:** roata cu palete (pe butucul roților), cadrul (cărămida cu gol), melcul (cu proba de angrenare pe
+  plase, ca la cremalieră; de hotărât întâi diametrul de divizare).
+
+## Reguli și capcane (de la 3.Ca–3.Cj)
+
+- **Capetele unui contur din arce se pun pe vârfuri:** para ieșea cu 0,03 mm mai scurtă, fiindcă spatele cercului de
+  bază cădea la mijlocul unei laturi; arcele au acum un număr par de laturi. A arătat-o cutia STL-ului din proba din
+  browser, nu proba razei (care are 0,06 mm îngăduință).
+- **O piesă nouă cu gaură intră singură în listele panoului „Se prinde cu”:** proba panoului își ține listele pe nume
+  (`PE_AX` …), deci le schimbă.
 
 - **O piesă nouă a motorului își spune prinderile.** `prinderi` e câmp obligatoriu al tipului `Corp`: compilatorul nu
   lasă o piesă fără el. Apoi piesa își pune mostra în `MOSTRE` (proba cere una pe fiecare tip), cu numerele de pe
