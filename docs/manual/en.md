@@ -1322,6 +1322,9 @@ field, said in red, and is not kept. **Close** (or Esc) closes the window.
 - **Snapping:** the points the ends snap to (vertices, midpoints, centres, quadrants, the box, the sheet, the grid), the
   tolerance in pixels and the nearest point on the outline (with Ctrl, always or never).
 - **Measuring:** what Measure shows (the distance, Δx and Δy, the angle) and where (next to the pointer, in the bottom bar).
+- **Export:** whether the “With dimensions” tick box in **Export vectors** starts ticked, the dimension layer's name
+  (unaccented letters, digits, “_” and “-”, at most 31, not another layer's name; COTE by default), its colour (in DXF, also
+  the nearest basic AutoCAD colour) and the thickness of the dimension lines in PDF and SVG (0.05–1 mm, 0.1 by default).
 
 ## Converting vectors
 %% capitol: conversie
@@ -2056,10 +2059,16 @@ only, over as many pages as it needs.
   PE_O_PARTE (a path cut on its left or right), BUZUNAR (pocket), GAURIRE (drilling) and FARA_OPERATIE (no operation), each
   with its colour; only the layers in use are written. In PDF they are PDF layers (you can show and hide them in the viewer);
   EPS has no layers, so the role stays only in the colour;
-- **With the sheet outline** adds the sheet rectangle, on the FOAIE layer.
+- **With the sheet outline** adds the sheet rectangle, on the FOAIE layer;
+- **With dimensions (N)**, on a sheet with dimensions, adds them on a layer of their own (COTE, or the name from **Settings**
+  › Dimensions › Export, with the colour from there): the dimension and extension lines, the angle arcs (true arcs in DXF and
+  SVG), the ends (filled arrows are filled triangles, dots are discs) and the numbers, as the strokes of the app's single-line
+  font, so they look the same in any program, with no fonts. The tick box starts as the Settings say (off by default: vectors
+  for a laser or another CAM stay just the shapes); under it, the **Dimension settings** link. Dimensions never go into the
+  G-code.
 
-**Export** downloads the file and says how many entities and layers it has. A shape with both lines and curves comes out
-in pieces joined end to end (a polyline, then a curve).
+**Export** downloads the file and says how many entities and layers it has (with dimensions, also how many dimensions). A
+shape with both lines and curves comes out in pieces joined end to end (a polyline, then a curve).
 
 ## The machine
 %% capitol: masina
