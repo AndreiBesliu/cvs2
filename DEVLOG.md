@@ -14373,3 +14373,36 @@ ce se poate”
   ultimele cinci (`MAX_NOUTATI`). Reparată de linie, doar în probă: rândul se ia din `extensii/biblioteca.json`.
 - **Documentele:** decizia în `CLAUDE.md` (paragraful de stare al construcțiilor e al liniei; versiunea extensiei,
   18.27.0; regula probei fără versiune scrisă); indexul liniilor; starea din `docs/linii/principala.md`.
+
+## 2026-11-25 — Sesiunea principală în cloud: lotul 29 (atelierul Easy 3Draw: cremaliera și arcul), pe test (Model: Claude Fable 5.2)
+
+**Prompt:** regula „pe test publici liber”, după a douăzeci și opta unire
+**Started:** 25.11, 02:24. **Completed:** 25.11, 03:47.
+
+- **Publicat:** `a95af70e` (rapidul pe `main` 45517722840; completul 45518951805, verde: unit 10 428 / 0, 12 sărite pe
+  Linux; e2e 817 / 817; funcțiile pe emulatoare 136 / 136; paginile 59 / 59; publicarea 45527881768). Adresa de test
+  spune `a95af70ef9a5`; proba de fum, bună (nicio eroare, 70 de butoane, catalogul extensiilor, mesajele, manualul,
+  codurile și documentația, toate cu 200). Nimic nou pe server. Pornirea 111,1 kB (plafonul 120; cu ușa 116,1, cu
+  Atelierul 116,4), totalul 880,9 / 900 kB, `/admin` 138,3 / 200.
+- **Completul a ținut 70 de minute** (cu așteptarea la coadă), sub limita de 90.
+- **Containerul sesiunii a repornit cât aștepta completul** și a pierdut lanțul de publicare din fundal; completul rula
+  în GitHub, iar `scripts/cloud/ci-si-publica.sh`, repornit pe același sha, l-a așteptat pe cel existent (nu pornește al
+  doilea complet și nici a doua publicare pe același sha).
+- **Pe test e acum tot ce e în `main`.** De la linii, în lucru: atelierul (3.Ce, punctele de prindere și „Se prinde
+  cu”), frezele (16.A↑b-5).
+
+## 2026-11-25 — Sesiunea principală în cloud: a douăzeci și noua unire (atelierul Easy 3Draw: 3.Ce, punctele de prindere și „Se prinde cu”) (Model: Claude Fable 5.2)
+
+**Prompt:** raportul liniei atelierului („3.Ce e gata de unit”, `980f239c`), la ordinul în vigoare „unește ce se poate”
+**Started:** 25.11, 04:45. **Completed:** unirea în `main`, 25.11, 04:46; publicarea pe test, pornită după ea.
+
+- **Unirea, pe `unire-2511d`** (din `188c2bb6`): `980f239c`, în `38ff9391`, fără nicio ciocnire (DEVLOG-ul, unit
+  singur). Ramura avea `main`-ul de după lotul 29 (`a95af70e`); `188c2bb6` a adus doar documente, deci arborele
+  unirii are exact codul commit-ului raportat (`git diff 980f239c` gol în afara fișierelor `.md`): a intrat pe
+  porțile lui. Local: traducerile (1 104), biblioteca („Easy 3Draw 18.28.0, la zi”), fără `.lucru/`.
+- **Porțile, în CI, pe `980f239c`** (citite din jurnalul rulării, nu din raport): completul 45528368086, verde
+  (53 min): unit 10 431 / 0 (12 sărite, pe Linux), e2e 824 / 824, funcțiile pe emulatoare 136 / 136, paginile
+  59 / 59; rapidul 45528368429, verde. Pornirea 111,1 kB (plafonul 120; cu ușa 116,1, cu Atelierul 116,4), totalul
+  880,9 / 900 kB, `/admin` 138,3 / 200. Pachetul Easy 3Draw, 501,6 kB. Nimic pe server.
+- **Documentele:** decizia în `CLAUDE.md` (paragraful de stare al construcțiilor e al liniei; versiunea extensiei,
+  18.28.0, următoarea 18.29.0); indexul liniilor; starea din `docs/linii/principala.md`.
