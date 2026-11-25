@@ -14933,6 +14933,56 @@ ei, „nu fără rând” (rândul finisării în fereastra exportului, doar de 
 - **Proba de fum** pe adresa de test: versiunea `2aaee0b4f0a4`, potrivită; nicio eroare în consolă, nicio cerere
   căzută.
 
+## 2026-11-25 — Linia exportului: felia 28.8↑h, fereastra exportului „pe hârtie” (ADR 0291 §1)
+
+**Prompt:** „1a, 2a, 3a, 4a, 5a, 6a, 7a, 8a, 9a” (1a: întâi 28.8↑h, după ce 16.A↑b-5 e în `main`; pornită după unirea lui 28.8↑o)
+**Started:** 25.11, 12:22.
+
+- **Rândul „pe hârtie”** (`src/app/hartieExport.ts`): adâncimea tăiată (`adancimeTaiata`, regula lui `cuTaieturiPrinFoaie`;
+  gaura incrustației, grosimea plus supracursa), trecerile (`adancimiTreceri`, în `treceri.ts`), felul găuririi și pașii
+  ciocănirii (`gaurireFel.ts`, folosit și de `traseuGaurire`). Fișa le primește prin `ContextFisa.hartie`.
+- **Constatarea 1:** cu supracursa prin foaie, 4 treceri de 4,58 până la 18,3, ca programul (desenul, cota, nota).
+- **Constatarea 2:** elicea desenată; câmpul ieșirii doar unde se ciocănește; cercul care nu se găurește, greșeală lângă
+  freză, cu Exportă oprit înainte de clic.
+- **Rămân în fereastră, cu proba lor:** urechile schiței (din lucrare, +1,3 kB), pasul lateral, coborârea, V-carve-ul,
+  incrustațiile.
+- **Probele:** `export.hartie.test.ts` (4), `export.hartie.spec.ts` (2 e2e); spec-urile e2e ale exportului, 321 / 321.
+- **Otrăvurile:** `28.8h.py`, 21 / 21; patru vechi îndreptate și prinse (`12.1f-4` F01, F02; `28.8a` E07; `28.8b` D01).
+  **Mărimea:** pornirea +0, totalul 891,7 / 1 000 (+1,4).
+- **Manualul** (ro, en), ADR 0291 („Implementarea 28.8↑h”), fișa etapei 3, registrul otrăvurilor, nota liniei.
+
+**Completed:** 25.11, 13:25.
+
+## 2026-11-25 — Linia exportului: 28.8↑h-2, „Du-mă la …” aduce greșeala întreagă în vedere (ADR 0291)
+
+**Prompt:** mesajul sesiunii principale, 25.11, 16:58 („completul unirii lui 28.8↑h peste b-4 a căzut […] `test/e2e/export.hartie.spec.ts:51` […] Ce te rog […] Proba întâi […] Reparația la cauză […] Porțile, un singur commit raportat.”), la ordinul în vigoare „unește ce se poate”
+**Started:** 25.11, 16:56.
+
+- **Ramura:** `origin/unire-2511t` adus (16.A↑b-4, 3.Au), cu ciocnirile rezolvate ca în `unire-2511u` (același arbore).
+- **Cauza:** `du(cheie, true)` aducea doar capul fișei sus. Cu „Scrisă de mână (ca „…”)” din b-4, rândul frezei se rupe pe
+  două, iar greșeala găuririi rămânea sub panou (651..696 față de 71..596, la 1280 × 720). Pe un cerc care nu se găurește,
+  niciun câmp nu era marcat greșit.
+- **Reparația:** `du` aduce în vedere grupul primei greșeli (titlul, câmpul, textul; când nu încape, câmpul și textul, apoi
+  textul, cu primul rând sus) și pune focusul pe câmpul greșit. Diametrul frezei e marcat greșit cât un cerc nu se găurește.
+- **Probele:** `export.hartie.spec.ts`, 8 / 8: greșeala întreagă în panou, cu focusul pe diametru, la cinci mărimi, cu fontul
+  lat și pe telefon; la 844 × 300, primul rând sus. Spec-urile e2e care deschid exportul, 358 / 359 (căzută
+  `exportFrezeNota.spec.ts` sub încărcare; singură, 45 / 45). Nivelul rapid, local, verde (unit 10 508 / 0).
+- **Otrăvurile:** E11–E16 în `28.8h.py`, 6 / 6. **Mărimea:** pornirea +0, totalul 893,5 / 1 000 (+0,2).
+- **Găsit:** la 640 × 360, banda listei lasă fișelor 9 px.
+- **Documentele:** manualul (ro, en), ADR 0291 („Implementarea 28.8↑h-2”), fișa etapei 3, registrul otrăvurilor, nota liniei.
+- **Peste 16.A↑b-6** (la mesajul sesiunii principale, 18:22): `origin/unire-2511w` adus (ciocnirile, doar în listele de
+  proprietăți ale ferestrei), plus proba cu nota bibliotecii desfăcută, 10 / 10. Găsit pe drum: probele frezelor
+  (`exportFrezeNota`, `exportFrezeInapoi`) cad 4 / 50 și pe `unire-2511w` curat: după salvare sau ștergere focusul cade din
+  „Frezele mele”, iar Escape nu mai ajunge la ea (spus sesiunii principale).
+- **Peste 18.1↑c** (la mesajele sesiunii principale, 19:44 și 19:52): `origin/unire-2511x` (`f7ca20b6`) adus. Trei ciocniri,
+  toate din 28.8↑h: finisarea reliefului intră în `catFoaia` (regula „cât foaia” comună lucrării și ferestrei), props-urile
+  ferestrei amândouă, F01 și F02 din `12.1f-4.py` mutate. Proba nouă (o finisare cât foaia rămâne la adâncimea scrisă, în
+  lucrare și pe hârtie; profilul cât foaia coboară), văzută căzând fără finisarea în `catFoaia`; otrăvurile U12 și J05 (a
+  reliefului, mutată), prinse. Aurul plăcilor, al documentelor și corpusul CAM: 1 853 / 1 853. Apoi, la cererea sesiunii
+  principale (20:13), baza mutată pe `b35e2f75` (aceeași unire, cu 16.A↑b-7 din `main`), fără ciocniri.
+
+**Completed:** 25.11, 17:47; peste b-6, 18:43; peste 18.1↑c, 20:06.
+
 ## 2026-11-25 — Felia 3.Au: starea lucrării imprimantei e necunoscută până vine codul stării (Model: Claude Fable 5.2)
 
 **Prompt:** completul unirii lui 16.A↑b-4 (45613398666), căzut la o singură probă; un CI roșu se repară la cauză

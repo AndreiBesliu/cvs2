@@ -21,12 +21,11 @@ CON = 'src/app/ExportConectat.tsx'
 APP = 'src/app/App.tsx'
 
 # ---- Ce taie lucrarea ----
-# Mutată pe codul din 18.1↑c (25.11: argumentul `reliefuri`, ordinea cu finisările, bila); aceeași greșeală.
-o('F01', PRIN, "  const prin = (o: Operatie): boolean => o.tip !== 'vcarve' && o.tip !== 'finisare' && !o.incrustatie &&", "  const prin = (o: Operatie): boolean => o.tip !== 'finisare' && !o.incrustatie &&", 'prin',
-  'V-carve-ul cât foaia coboară și el')
-# Mutată pe codul din 18.1↑c (25.11: argumentul `reliefuri`, ordinea cu finisările, bila); aceeași greșeală.
-o('F02', PRIN, "o.tip !== 'vcarve' && o.tip !== 'finisare' && !o.incrustatie && Math.abs", "o.tip !== 'vcarve' && o.tip !== 'finisare' && Math.abs", 'prin',
-  'incrustația cât foaia coboară și ea')
+# Mutată pe `catFoaia` (28.8↑h) cu finisarea din 18.1↑c; aceeași greșeală.
+o('F01', PRIN, "  o.tip !== 'vcarve' && o.tip !== 'finisare' && o.incrustatie === 'fara' &&",
+  "  o.tip !== 'finisare' && o.incrustatie === 'fara' &&", 'prin', 'V-carve-ul cât foaia coboară și el')
+o('F02', PRIN, "o.tip !== 'vcarve' && o.tip !== 'finisare' && o.incrustatie === 'fara' && Math.abs",
+  "o.tip !== 'vcarve' && o.tip !== 'finisare' && Math.abs", 'prin', 'incrustația cât foaia coboară și ea')
 o('F03', PRIN, 'Math.abs(o.adancime - grosime) <= EPS_FOAIE;', 'o.adancime >= grosime - EPS_FOAIE;', 'prin',
   'și adâncimile deja peste foaie (voia) se schimbă')
 o('F04', PRIN, 'Math.abs(o.adancime - grosime) <= EPS_FOAIE;', 'Math.abs(o.adancime - grosime) <= 3;', 'prin',

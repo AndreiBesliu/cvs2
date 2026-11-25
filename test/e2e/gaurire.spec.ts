@@ -58,9 +58,9 @@ test('găurirea din fereastra exportului: refuzul cu motiv, ciocănirea în cent
   await retragere.fill('2');
   await rand.locator('[data-camp="adancime"]').fill('10');
   await rand.locator('[data-camp="pas"]').fill('3');
-  // Cu freza Ø6, cercul de Ø30 trece de două diametre: refuzat, cu motivul.
-  await page.locator('[data-buton="exporta"]').click();
-  await expect(page.getByTestId('export-stare')).toContainText('trece de două diametre ale frezei');
+  // Cu freza Ø6, cercul de Ø30 trece de două diametre: greșeala stă lângă freză, înainte de clic (ADR 0291, felia 28.8↑h).
+  await expect(rand.locator('[data-grup="freza"] [data-greseala]')).toContainText('trece de două diametre ale frezei');
+  await expect(page.locator('[data-buton="exporta"]')).toBeDisabled();
   // Cu freza Ø30: în centru, cu ciocănire.
   await rand.locator('[data-camp="diametru"]').fill('30');
   let descarcare = page.waitForEvent('download');
@@ -97,6 +97,9 @@ test('găurirea din fereastra exportului: refuzul cu motiv, ciocănirea în cent
   await expect(page.locator('[data-nod="operatie"]')).toHaveText(['Găurire pe 1 cerc: 10 mm în pași de 3 mm, T1 Ø16']);
   await page.locator('[data-actiune="export.gcode"]').click();
   await expect(page.locator('[data-fisa="op"]').first().locator('input[data-camp="latura"]:checked')).toHaveValue('gaurire');
+  // Pe elice (Ø16), ieșirea din gaură nu se aplică: câmpul lipsește; cu freza cât cercul, revine cu valoarea ținută.
+  await expect(page.locator('[data-camp="retragere"]')).toHaveCount(0);
+  await page.locator('[data-fisa="op"]').first().locator('[data-camp="diametru"]').fill('30');
   await expect(page.locator('[data-camp="retragere"]')).toHaveValue('2');
 });
 

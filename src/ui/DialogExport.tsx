@@ -16,7 +16,6 @@ import { legaturi, muta, ordineAutomata, ordineDinRanguri, riscuri, type RandOrd
 import { PrevizualizareSimulare } from './PrevizualizareSimulare.tsx';
 import { useLimba } from './useLimba.ts';
 import { verdicteGresite, type GrupExport, type VerdictRand } from './exportGrupuri.ts';
-import { treceriEgale } from './exportDeseneCalcul.ts';
 import { DesenColt, DesenZ0, type DesenComun } from './exportDesene.tsx';
 import { Cartonase, Poza } from './exportPoze.tsx';
 import { cuAceeasiFreza, FisaOperatie, ListaBiblioteca, NotaBiblioteca, RAND_DREPT, type ContextFisa, type InapoiNota } from './FisaOperatie.tsx';
@@ -28,7 +27,7 @@ import {
   type CerereExport, type FrezaRestOperatie, type IncrustatieDreaptaOperatie, type Latura, type OperatieExport, type Rand, type RandRest,
   copieDeReadus, cuFrezaAleasa, cuFrezaPusaInapoi, cuValorileNoi, frezeRanduri, locuriFreze, numarPentruRand, oferitePentruRest, stareOrigine, type FrezaOferita, type OrigineFreza, type SculaOperatie, type StareExport,
   type CopieRand, type RezultatInapoi, type UndeFreza,
-  type ValoriOperatie,
+  type ValoriOperatie, type HartieRand, type IntrareHartie,
 } from './exportRand.ts';
 
 type Props = {
@@ -83,6 +82,11 @@ type Props = {
   readonly numeFoaie?: string;
   /** Grosimea foii exportate (mm): adâncimea unei găuri (ADR 0175), arătată pe rândul ei. */
   readonly grosimeFoaie?: number;
+  /**
+   * Rândul „pe hârtie” (ADR 0291, felia 28.8↑h): adâncimea tăiată, trecerile, felul găuririi, socotite de aplicație cu funcțiile
+   * lucrării (`src/app/hartieExport.ts`); desenele, notele și greșelile găuririi le citesc de aici.
+   */
+  readonly hartie: (i: IntrareHartie) => HartieRand;
   /**
    * Plăcuțele foii din care iese textul (ADR 0210 §4, răspunsul 5; felia 11.4↑c), cu numele lor: o notă, sau, cu `confirmare`
    * (aleasă în fereastra CSV), o bifă fără de care Exportă rămâne oprit. Bifa ține chiar obiectul văzut: altul vine nebifat.
@@ -223,7 +227,7 @@ export function DialogExport(
   {
     operatii, ordineAutomata: automataLucrarii, baza, descrieri, doarCitire, onExporta, onInchide, onReseteaza, stare, setariMasina,
     onSetariMasina, supracursa, onSupracursa, prinFoaie, onPrinFoaie, onDeschideInMasina, trimite = false, foaie, numeFoaie, placute, foi,
-    placuteToate, onRaport, grosimeFoaie, onAlegeUrechi, frezeOferite, bibliotecaToata = null, finisari = [], onPuneInapoi,
+    placuteToate, onRaport, grosimeFoaie, onAlegeUrechi, frezeOferite, bibliotecaToata = null, finisari = [], onPuneInapoi, hartie,
   }: Props,
 ) {
   const limba = useLimba();
@@ -535,6 +539,35 @@ export function DialogExport(
   const supracursaBuna = supracursaCitita !== null && Number.isFinite(supracursaCitita) && supracursaCitita >= 0 && supracursaCitita <= SUPRACURSA_MAXIMA;
   // Bifa tăieturilor cât foaia (ADR 0177) are ce schimba doar cu o supracursă bună, peste 0.
   const cuSupracursa = supracursaBuna && supracursaCitita !== null && supracursaCitita > 0;
+  /**
+   * Rândul „pe hârtie” (ADR 0291, felia 28.8↑h), cu valorile pe care le primește lucrarea la Exportă: supracursa doar cât e
+   * pozitivă și bună, bifa doar cu ea (ca cererea de la Exportă), diametrele cercurilor rândului.
+   */
+  const diametreRand = new Map(operatii.map((o) => [o.cheie, o.diametre ?? []]));
+  const hartieRandului = (cheie: string, p: Rand): HartieRand => hartie({
+    tip: p.tip, adancime: citesteNumar(p.adancime), pas: citesteNumar(p.pas),
+    incrustatie: p.tip === 'buzunar' && p.incrustatieDreapta ? (p.locasInc === 'gaura' ? 'gaura' : 'alta') : p.tip === 'vcarve' && p.incrustatie ? 'alta' : 'fara',
+    grosime: grosimeFoaie, supracursa: cuSupracursa && supracursaCitita !== null ? supracursaCitita : 0, prinFoaie: cuSupracursa && prinFoaie,
+    diametruScula: citesteNumar(p.diametruScula), retragere: citesteNumar(p.retragereCompleta), diametre: diametreRand.get(cheie) ?? [],
+  });
+  /**
+   * Cercurile unei găuriri pe care freza scrisă nu le poate găuri (ADR 0087): cel mai mare peste două diametre, cel mai mic sub
+   * freză. Le spune fișa, lângă freză, și opresc Exportă înainte de clic (ADR 0291, felia 28.8↑h).
+   */
+  const cercuriRele = (cheie: string, p: Rand | undefined): { readonly mare: number | null; readonly mic: number | null } => {
+    if (!p || p.tip !== 'gaurire' || citesteNumar(p.diametruScula) === null) return { mare: null, mic: null };
+    const c = hartieRandului(cheie, p).gaurire?.cercuri ?? [];
+    return { mare: c.filter((x) => x.fel === 'mare').at(-1)?.diametru ?? null, mic: c.find((x) => x.fel === 'mic')?.diametru ?? null };
+  };
+  const motiveGaura = (cheie: string, p: Rand | undefined): string[] => {
+    const { mare, mic } = cercuriRele(cheie, p), D = p ? citesteNumar(p.diametruScula) : null;
+    if (D === null) return [];
+    return [
+      ...(mare !== null ? [t('motiv.gaurire.mare', { cerc: fmtFreza.format(mare), freza: fmtFreza.format(D), minim: fmtFreza.format(mare / 2) })] : []),
+      ...(mic !== null ? [t('motiv.gaurire.mic', { cerc: fmtFreza.format(mic), freza: fmtFreza.format(D) })] : []),
+    ];
+  };
+  const gauriBune = operatii.every((o) => motiveGaura(o.cheie, param[o.cheie]).length === 0);
   // Numele fișierului (ADR 0291 §5): propunerea din numele foii (altfel baza de azi), până când omul scrie altul. Pe un
   // controler cu nume scurte (stick FAT), numele e al lui (`CNCVS2.NC`): câmpul nu se aplică.
   const numeScurt = postAles?.numeScurt === true;
@@ -543,7 +576,7 @@ export function DialogExport(
   const numeBun = motivNumeFisier === null;
   const valid = operatiiBune && urechiBune && rampeBune && intrariBune && pasiBuni && coborariBune && retrageriBune && vcarveBune && funduriBune
     && varfuriBune && vPeLinie && resturiBune && strategiiBune && incrustatiiBune && drepteBune && frezeDopBune && benziBune && puntiDopBune
-    && supracursaBuna && numeBun;
+    && supracursaBuna && numeBun && gauriBune;
   /**
    * Orice parametru schimbat face vechi rezultatul. Bifa nu mai trebuie ștearsă aici: cererea următoare e alt obiect, deci
    * vine oricum nebifată.
@@ -931,6 +964,7 @@ export function DialogExport(
       lungime: fmtFreza.format(MARGINI_OPERATIE.lungimeZigzagMinima), raza: fmtFreza.format(MARGINI_OPERATIE.razaEliceMinima),
     })]),
     ...(retrageriBune ? [] : [t('motiv.retragere-invalida', { max: MARGINI_OPERATIE.retragereCompleta })]),
+    ...(gauriBune ? [] : operatii.flatMap((o) => motiveGaura(o.cheie, param[o.cheie])).slice(0, 1)),
     ...(vcarveBune ? [] : [t('motiv.vcarve-freza')]),
     ...(varfuriBune ? [] : [t('motiv.varf-invalid')]),
     ...(vPeLinie ? [] : [t('motiv.v-pe-linie')]),
@@ -1010,15 +1044,13 @@ export function DialogExport(
       if (dop && (e(p.numarSculaDop) || p.restDop.some((r) => e(r.numar)))) pune(m, 'dop');
       if (vc && p.incrustatie && p.jurDop === 'banda' && p.decupareBanda && p.frezaBanda && e(p.numarSculaBanda)) pune(m, 'banda');
     }
+    // Găurirea (ADR 0087): un cerc pe care freza scrisă nu-l poate găuri se spune lângă freză, înainte de clic (ADR 0291, felia
+    // 28.8↑h; până acum, exportul îl refuza abia după clic, cu id-ul intern).
+    for (const m of motiveGaura(cheie, p)) pune(m, 'freza');
     return out;
   };
   // Prima fișă cu o greșeală, în ordinea listei: „du-mă acolo” de lângă Exportă.
   const primaGresita: string | null = !supracursaBuna ? 'foaia' : !numeBun ? 'masina' : ordine.find((k) => greseliRand(k).length > 0) ?? null;
-  /** Trecerile pe adâncime, egale (ca `adancimiTreceri` din lucrare): ⌈A / p⌉ treceri de A / n; fără valori bune, nimic. */
-  const treceri = (p: Rand): readonly [number | null, number] => {
-    const tr = treceriEgale(citesteNumar(p.adancime), citesteNumar(p.pas));
-    return tr ? [tr.n, tr.d] : [null, 0];
-  };
   /** Tăietura unui rând, ca valoare a cartonașului ei (și poza ei, în listă). */
   const taieturaRand = (p: Rand): Latura | 'buzunar' | 'gaurire' | 'vcarve' | 'incrustatie' | 'incrustatie-drept' =>
     p.tip === 'vcarve' ? (p.incrustatie ? 'incrustatie' : 'vcarve') : p.tip === 'buzunar' ? (p.incrustatieDreapta ? 'incrustatie-drept' : 'buzunar')
@@ -1028,7 +1060,11 @@ export function DialogExport(
     : p.tip === 'gaurire' ? t('export.latura.gaurire') : p.tip === 'vcarve' ? t(p.incrustatie ? 'export.latura.incrustatie' : 'export.latura.vcarve')
       : t(CHEI_LATURA[p.latura]);
   const cuRezultat = stare?.ok === true;
-  /** Aduce fișa aleasă sus în panou; cu `repara`, pune focusul pe primul câmp greșit al ei. */
+  /**
+   * Aduce fișa aleasă sus în panou. Cu `repara` („Du-mă la …”), aduce apoi în vedere prima greșeală a fișei (28.8↑h-2): grupul ei,
+   * de la titlu până la textul greșelii, dacă încape; altfel câmpul greșit și textul; altfel textul, întreg. Focusul trece pe
+   * câmpul greșit, fără altă derulare. Capul fișei poate ieși sus: greșeala de sub prima înălțime a panoului nu mai rămâne ascunsă.
+   */
   const du = (cheie: string, repara = false): void => {
     const p = panou.current;
     const sel = cheie === 'foaia' || cheie === 'masina' || cheie === 'rezultatul' ? `[data-fisa="${cheie}"]` : `[data-fisa="op"][data-operatie="${CSS.escape(cheie)}"]`;
@@ -1036,7 +1072,28 @@ export function DialogExport(
     if (!p || !f) return;
     p.scrollTop += f.getBoundingClientRect().top - p.getBoundingClientRect().top;
     setCurent(cheie);
-    if (repara) f.querySelector<HTMLElement>('[aria-invalid="true"]:not(:disabled)')?.focus({ preventScroll: true });
+    if (!repara) return;
+    const RAU = '[aria-invalid="true"]:not(:disabled)';
+    const g = [...f.querySelectorAll<HTMLElement>('[data-grup]')].find((x) => x.querySelector(`[data-greseala], ${RAU}`) !== null);
+    const camp = (g ?? f).querySelector<HTMLElement>(RAU), text = (g ?? f).querySelector<HTMLElement>('[data-greseala]');
+    const v = p.getBoundingClientRect(), m = 8, loc = v.height - 2 * m;
+    const sus = (e: Element | null | undefined): number => e ? e.getBoundingClientRect().top : Infinity;
+    const jos = (e: Element | null | undefined): number => e ? e.getBoundingClientRect().bottom : -Infinity;
+    // Întinderile, de la cea mai largă: grupul (titlul, câmpul, textul), câmpul și textul, doar textul (sau doar câmpul).
+    const titlu = g?.querySelector('h4');
+    const intinderi: (readonly [number, number])[] = [
+      [Math.min(sus(titlu), sus(camp), sus(text)), Math.max(jos(camp), jos(text))],
+      [Math.min(sus(camp), sus(text)), Math.max(jos(camp), jos(text))],
+      text ? [sus(text), jos(text)] : [sus(camp), jos(camp)],
+    ];
+    const [a, b] = intinderi.find(([x, y]) => Number.isFinite(x) && Number.isFinite(y) && y - x <= loc) ?? intinderi[2] ?? [NaN, NaN];
+    if (Number.isFinite(a) && Number.isFinite(b)) {
+      // Cât mai puțin: doar dacă întinderea iese jos (sau sus), iar sus are întâietate când nu încape.
+      let d = b > v.bottom - m ? b - (v.bottom - m) : 0;
+      if (a - d < v.top + m) d = a - (v.top + m);
+      p.scrollTop += d;
+    }
+    camp?.focus({ preventScroll: true });
   };
   /** Fișa de sus a panoului, cât derulează omul: e cea marcată în listă. */
   const urmareste = (): void => {
@@ -1105,9 +1162,9 @@ export function DialogExport(
       onMuta={(de, la) => { mutaRand(de < 0 ? ordine.indexOf(tras ?? '') : de, la); }} onTrage={setTras} onDu={() => { du(fin.cheie); }} />
   );
   const contextFisa: ContextFisa = {
-    dupaCheie, param, total: ordine.length, doarCitire, schimba, randBun, greseliRand, conflict, treceri, taieturaRand, text, fmtFreza, fmtTrecere,
-    grosimeFoaie, supracursaCitita, cuSupracursa, onAlegeUrechi, frezeRest, grup, frezeOferite, alegeFreza, bibliotecaToata,
-    iaValorileNoi, iaValorileNoiPeToate, inapoi: inapoiLa,
+    dupaCheie, param, total: ordine.length, doarCitire, schimba, randBun, greseliRand, conflict, hartie: hartieRandului, taieturaRand,
+    text, fmtFreza, fmtTrecere, grosimeFoaie, supracursaCitita, cuSupracursa, onAlegeUrechi, frezeRest, grup, frezeOferite, alegeFreza,
+    bibliotecaToata, iaValorileNoi, iaValorileNoiPeToate, inapoi: inapoiLa,
   };
   return (
     <div className="dialog" role="dialog" aria-modal="true" aria-labelledby="export-titlu" ref={radacina}

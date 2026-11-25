@@ -1572,9 +1572,11 @@ operației, scrisă doar cu mișcări simple (G0, G1, G2, G3), fără ciclurile 
 - Un **cerc mai mare**, până la două diametre ale frezei, se face **în elice** pe perete: ture de cel mult un pas pe trecere,
   apoi un cerc plin la fund, ca fundul să iasă neted. Sensul: la urcare, trigonometric; la opoziție, orar. Freza nu coboară
   mai repede decât la plonjare.
-- Un cerc mai mic decât freza sau peste două diametre ale ei e refuzat, cu motivul (peste două diametre, în mijloc ar rămâne
-  un miez: folosește buzunarul). Pe o găurire nu există urechi, rampă, intrări, degajări sau despărțire; găurile se taie cu
-  interioarele.
+- Un cerc mai mic decât freza sau peste două diametre ale ei nu se poate găuri (peste două diametre, în mijloc ar rămâne un
+  miez: folosește buzunarul). Fereastra o spune lângă freză, cu cea mai mică freză bună, și oprește **Exportă** până o
+  schimbi. Pe o găurire nu există urechi, rampă, intrări, degajări sau despărțire; găurile se taie cu interioarele.
+- Desenul găuririi arată cum o face aplicația cu cercurile și freza ta: ciocănirea pas cu pas, sau elicea din lateral, cu
+  turele și cercul pe care merge freza. **Iese la fiecare al … pas** apare doar unde se ciocănește.
 
 **V-carve-ul.** Pe contururi închise, Tăietura are și **V-carve**: freza în V merge pe mijlocul formei (axa ei medială) și
 coboară în fiecare punct cât încape între pereți: adâncimea e distanța până la cel mai apropiat perete împărțită la
@@ -1828,7 +1830,7 @@ care). Fereastra are trei părți:
   poza ei, lângă bifă. Ce nu se aplică operației nu apare: pe un buzunar, o găurire sau un V-carve, rampa, intrările, colțurile
   și urechile profilului lipsesc, iar o notă sub Tăietura spune de ce;
 - **jos**, mereu la vedere: **Exportă**, **Închide**, **Raportul foilor…**, confirmările și, cât o valoare e greșită, motivul,
-  cu **Du-mă la …**, care aduce fișa ei și intră în câmpul de reparat. Valoarea greșită se spune și în grupul câmpului, iar
+  cu **Du-mă la …**, care aduce fișa ei, cu greșeala în vedere, și intră în câmpul de reparat. Valoarea greșită se spune și în grupul câmpului, iar
   fișa ei are un punct roșu în listă. Fereastra se închide cu **Închide**, cu Esc sau cu un clic în afara ei; valorile
   operațiilor schimbate în ea se scriu în proiect doar la **Exportă**.
 
@@ -1843,8 +1845,9 @@ care). Fereastra are trei părți:
   ca pe o placă puțin mai groasă decât cea scrisă să nu rămână o piele. [Gaura](#incrustatie-drept) incrustației și
   decupările dopurilor merg cu atât mai jos, singure. Cu bifa **și tăieturile cât foaia** (implicit pusă), un profil, un
   buzunar sau o găurire scrise cât grosimea foii merg și ele cu atât mai jos, ca și cum ai fi scris grosimea plus supracursa
-  (în proiect, adâncimea rămâne cum e scrisă); V-carve-urile și incrustațiile nu se schimbă. Debifată, tăieturile rămân cât
-  sunt scrise. Oricum, o adâncime scrisă de tine poate trece de grosimea foii cu cel mult supracursa (de exemplu 18,3 pe foaia
+  (în proiect, adâncimea rămâne cum e scrisă); V-carve-urile și incrustațiile nu se schimbă. Desenul adâncimii și nota de
+  lângă pas arată atunci adâncimea și trecerile tăiate (de exemplu, 18 mm cu pasul 6 și supracursa 0,3: 4 treceri de 4,58 mm,
+  până la 18,3 mm). Debifată, tăieturile rămân cât sunt scrise. Oricum, o adâncime scrisă de tine poate trece de grosimea foii cu cel mult supracursa (de exemplu 18,3 pe foaia
   de 18, cu supracursa 0,5). Punțile și urechile își păstrează grosimea, măsurată de la fața de jos a plăcii. Supracursa și bifa
   rămân cât e deschisă aplicația și nu intră în proiect; traseul și vederea 3D le lasă deoparte;
 - **Postul**: controlerul mașinii. Familia GRBL (GRBL 1.1, grblHAL, FluidNC) vorbește cu senderul aplicației; **NcStudio,

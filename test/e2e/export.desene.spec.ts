@@ -267,6 +267,8 @@ test('găurirea: ciocănirea pas cu pas, ca lucrarea: coborârile, ridicarea de 
   await deschideCu(page, 'cerc');
   const e1 = fisa(page, 'e1/e1');
   await alege(e1, 'latura', 'gaurire');
+  // Freza cât cercul (Ø30): ciocănirea în centru (ADR 0087); una mai mică l-ar găuri pe elice (ADR 0291, felia 28.8↑h).
+  await e1.locator('[data-camp="diametru"]').fill('30');
   await e1.locator('[data-camp="adancime"]').fill('10');
   await e1.locator('[data-camp="pas"]').fill('4');
   await e1.locator('[data-camp="retragere"]').fill('2');

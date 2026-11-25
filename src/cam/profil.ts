@@ -1,6 +1,7 @@
 import { inverseaza, type Contur } from '../geom/contur.ts';
 import { offsetDeschis, offsetInchis, type PortiuneNeatinsa } from '../geom/offset.ts';
 import { parteaLume } from '../model/parte.ts';
+import { adancimiTreceri } from './treceri.ts';
 
 /**
  * Profilul: conturul decalat cu raza sculei, pe exterior sau pe interior, sau chiar linia, pe treceri de adâncime, în
@@ -35,21 +36,7 @@ export type RezultatProfil =
 
 const pozitivFinit = (x: number): boolean => Number.isFinite(x) && x > 0;
 
-/**
- * Adâncimile trecerilor, egal împărțite: n = ⌈adâncime / pas⌉ treceri de adâncime / n fiecare, ultima exact la adâncime.
- * Nicio trecere nu scoate mai mult decât pasul (invarianta 1). 8 mm cu pasul 4 dau [4, 8]; 10 mm cu pasul 4, trei de 3,33.
- */
-/** Câte treceri pe adâncime poate avea un profil. */
-export const PLAFON_TRECERI = 1000;
-
-export function adancimiTreceri(adancime: number, pas: number): readonly number[] | string {
-  if (!pozitivFinit(adancime)) return `adâncimea trebuie să fie un număr pozitiv (${adancime})`;
-  if (!pozitivFinit(pas)) return `pasul trebuie să fie un număr pozitiv (${pas})`;
-  const n = Math.max(1, Math.ceil(adancime / pas - 1e-9));
-  // Plafonul pe artefact (T23): peste o mie de treceri pe o formă e un pas greșit (0,0002 mm), nu o lucrare.
-  if (n > PLAFON_TRECERI) return `${n} treceri: pasul ${pas} mm e prea mic pentru adâncimea ${adancime} mm (cel mult ${PLAFON_TRECERI})`;
-  return Array.from({ length: n }, (_, i) => (i + 1 === n ? adancime : ((i + 1) * adancime) / n));
-}
+export { adancimiTreceri, PLAFON_TRECERI } from './treceri.ts';
 
 export function profil(contur: Contur, p: ParametriProfil): RezultatProfil {
   if (!pozitivFinit(p.diametruScula)) return { ok: false, motiv: `diametrul sculei trebuie să fie pozitiv (${p.diametruScula})` };
