@@ -4,7 +4,8 @@
  * - cercul (forma `cerc`, sub o asemănare: ușa refuză arcele sub o matrice neuniformă) e un cerc, cu centrul și raza;
  * - liniile și arcele vecine ale unui contur sunt o polilinie cu `bulge` (ca LWPOLYLINE), închisă dacă tot conturul e așa;
  * - cubicele vecine sunt o curbă Bézier în lanț (3k + 1 puncte), adică o SPLINE de grad 3 cu nodurile triple, exactă.
- * Stratul e rolul formei: felul primei operații a piesei care o taie (în ordinea documentului), sau „fără operație”.
+ * Stratul e rolul formei: felul primei operații a piesei care o taie (în ordinea documentului), sau „fără operație”; cotele,
+ * la cerere, au stratul lor (COTE, `coteExport.ts`).
  * Conturul foii intră doar la cerere, pe stratul lui. Cutia e foaia, lărgită exact cât iese o formă din ea (cu extremele
  * arcelor și ale cubicelor): pagina PDF / EPS și întinderea DXF-ului.
  */
@@ -15,14 +16,22 @@ import { conturElement, cutieElement } from '../model/forme.ts';
 import { elementeFoaie } from '../model/lume.ts';
 
 /** Straturile, în ordinea în care se scriu; numele sunt ASCII, ca orice program să le citească la fel. */
-export const STRATURI = ['EXTERIOR', 'INTERIOR', 'PE_LINIE', 'PE_O_PARTE', 'BUZUNAR', 'GAURIRE', 'FARA_OPERATIE', 'FOAIE'] as const;
+export const STRATURI = ['EXTERIOR', 'INTERIOR', 'PE_LINIE', 'PE_O_PARTE', 'BUZUNAR', 'GAURIRE', 'FARA_OPERATIE', 'FOAIE', 'COTE'] as const;
 export type Strat = (typeof STRATURI)[number];
 
 export type VarfPolilinie = { readonly x: number; readonly y: number; readonly bulge: number };
+/**
+ * O entitate a exportului. `plin` (un poligon umplut, capătul plin al unei cote) și `latime` (lățimea constantă a unei
+ * polilinii: punctul unei cote, un disc) le au doar cotele (ADR 0330 §7); formele foii sunt doar contururi.
+ */
 export type Entitate =
   | { readonly fel: 'cerc'; readonly strat: Strat; readonly element: string; readonly centru: Punct; readonly raza: number }
-  | { readonly fel: 'polilinie'; readonly strat: Strat; readonly element: string; readonly inchis: boolean; readonly varfuri: readonly VarfPolilinie[] }
-  | { readonly fel: 'spline'; readonly strat: Strat; readonly element: string; readonly puncte: readonly Punct[] };
+  | { readonly fel: 'polilinie'; readonly strat: Strat; readonly element: string; readonly inchis: boolean; readonly varfuri: readonly VarfPolilinie[]; readonly latime?: number }
+  | { readonly fel: 'spline'; readonly strat: Strat; readonly element: string; readonly puncte: readonly Punct[] }
+  | { readonly fel: 'plin'; readonly strat: Strat; readonly element: string; readonly puncte: readonly Punct[] };
+
+/** Stratul cotelor (ADR 0330 §6, §7): numele (ASCII), culoarea (#rrggbb) și grosimea liniilor în PDF și SVG, în mm. */
+export type StratCote = { readonly nume: string; readonly culoare: string; readonly grosime: number };
 
 export type VectoriFoaie = {
   readonly latime: number;
@@ -30,6 +39,8 @@ export type VectoriFoaie = {
   readonly entitati: readonly Entitate[];
   /** Foaia, cu formele care ies din ea (exact). */
   readonly cutie: Cutie;
+  /** Stratul cotelor, cu entitățile lui pe stratul COTE; lipsă: fără cote. */
+  readonly stratCote?: StratCote;
 };
 
 /** Rolul unei forme, după prima operație care o taie. */

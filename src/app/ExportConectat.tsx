@@ -9,10 +9,10 @@ import { cheiePas, creastaPePlan, ordinePasi } from '../model/finisare.ts';
 import { cutieContur } from '../geom/cutie.ts';
 import type { FinisareExport } from '../ui/FisaFinisare.tsx';
 import { DialogExport } from '../ui/DialogExport.tsx';
-import type { CerereExport, FrezaOferita, OperatieExport, OrigineFreza, Rand, SculaOperatie, StareExport } from '../ui/exportRand.ts';
+import type { CerereExport, FrezaOferita, FrezaRestOperatie, OperatieExport, OrigineFreza, Rand, SculaOperatie, StareExport } from '../ui/exportRand.ts';
 import { frezeleOperatiei } from '../model/formaFrezei.ts';
 import { frezePotrivite, pasLateralDin, sculaDinBiblioteca } from '../model/alegereFreza.ts';
-import type { Scula } from '../model/document.ts';
+import type { FrezaRest, Scula } from '../model/document.ts';
 import { useBibliotecaProiect } from './bibliotecaProiect.ts';
 import { cuprinse } from '../model/ordine.ts';
 import { numePlacutei, placuteCuTextIesit } from '../model/placuteIesire.ts';
@@ -30,6 +30,9 @@ function origineDin(s: Scula): OrigineFreza | null {
     ...(s.tais !== undefined ? { tais: s.tais } : {}),
   };
 }
+
+/** O freză de rest din document pentru fereastră (ADR 0093), cu originea ei din „Frezele mele” (felia 16.A↑b-5). */
+const restDin = (r: FrezaRest): FrezaRestOperatie => ({ numar: r.scula.numar, diametru: r.scula.diametru, pasLateral: r.pasLateral, origine: origineDin(r.scula) });
 
 /** Mesajele modulului, ca date (ADR 0086): cine îl încarcă le așteaptă (`cuMesaje`); un refuz îl vede tot el. */
 export const mesaje = mesajeGata();
@@ -71,6 +74,8 @@ type Props = {
   readonly trimite?: boolean;
   /** Numele foii exportate, pentru titlu (ADR 0210 §5), când proiectul are mai multe. */
   readonly foaie?: string;
+  /** Numele scris al foii active (ADR 0291 §5), pentru propunerea numelui fișierului. */
+  readonly numeFoaie?: string;
   /** Documentul cu toate foile (ADR 0210 §5): „Toate foile” și plăcuțele tuturor. */
   readonly toate: Document;
   /** „Raportul foilor…” (ADR 0210 §6): aplicația închide exportul și deschide raportul. */
@@ -114,7 +119,7 @@ function sculaRand(s: Operatie['scula']): SculaOperatie {
 
 export function ExportConectat({
   doc, dupaIdLume, lume, descriere, limba, baza, doarCitire, stare, onExporta, onInchide, onReseteaza, setariMasina, onSetariMasina,
-  supracursa, onSupracursa, prinFoaie, onPrinFoaie, onDeschideInMasina, trimite, foaie, toate, onRaport, onAlegeUrechi,
+  supracursa, onSupracursa, prinFoaie, onPrinFoaie, onDeschideInMasina, trimite, foaie, numeFoaie, toate, onRaport, onAlegeUrechi,
 }: Props) {
   /**
    * Dialogul de export arată operațiile pieselor de pe foaie (ADR 0025): câte un rând pe operație, cu descrierea primului
@@ -187,14 +192,14 @@ export function ExportConectat({
           ...(o.tip === 'buzunar' && o.pasLateral !== undefined ? { tip: 'buzunar' as const, pasLateral: o.pasLateral } : {}),
           ...(o.tip === 'buzunar' && o.coborare ? { coborare: o.coborare } : {}),
           ...(o.tip === 'buzunar' && o.strategie ? { strategie: { fel: 'paralel' as const, unghi: o.strategie.unghi } } : {}),
-          ...(o.tip === 'buzunar' && o.rest ? { rest: o.rest.map((r) => ({ numar: r.scula.numar, diametru: r.scula.diametru, pasLateral: r.pasLateral })) } : {}),
+          ...(o.tip === 'buzunar' && o.rest ? { rest: o.rest.map(restDin) } : {}),
           // Incrustația cu pereți drepți (ADR 0171): rândul o arată ca rol, cu valorile ei și frezele dopului (lipsă = ale locașului);
           // punțile dopului decupat (ADR 0174), dacă le are.
           ...(o.tip === 'buzunar' ? {
             incrustatieDreapta: o.incrustatie?.fel === 'drept' ? {
               jocLateral: o.incrustatie.jocLateral, dop: o.incrustatie.dop, sprijin: o.incrustatie.sprijin, joc: o.incrustatie.joc,
               fierastrau: o.incrustatie.fierastrau, margine: o.incrustatie.margine,
-              ...(o.incrustatie.frezeDop ? { frezeDop: o.incrustatie.frezeDop.map((r) => ({ numar: r.scula.numar, diametru: r.scula.diametru, pasLateral: r.pasLateral })) } : {}),
+              ...(o.incrustatie.frezeDop ? { frezeDop: o.incrustatie.frezeDop.map(restDin) } : {}),
               ...(o.incrustatie.punti ? { punti: { numar: o.incrustatie.punti.numar, latime: o.incrustatie.punti.latime, grosime: o.incrustatie.punti.grosime } } : {}),
               ...(o.incrustatie.locas === 'gaura' ? { locas: 'gaura' as const } : {}),
               // Treapta (ADR 0175 §5): umărul, cu încotro (lipsă = spre interior).
@@ -209,8 +214,8 @@ export function ExportConectat({
           ...(o.tip === 'vcarve' ? {
             tip: 'vcarve' as const,
             fundPlat: o.fundPlat ? {
-              numar: o.fundPlat.scula.numar, diametru: o.fundPlat.scula.diametru, pasLateral: o.fundPlat.pasLateral,
-              ...(o.fundPlat.rest ? { rest: o.fundPlat.rest.map((r) => ({ numar: r.scula.numar, diametru: r.scula.diametru, pasLateral: r.pasLateral })) } : {}),
+              numar: o.fundPlat.scula.numar, diametru: o.fundPlat.scula.diametru, pasLateral: o.fundPlat.pasLateral, origine: origineDin(o.fundPlat.scula),
+              ...(o.fundPlat.rest ? { rest: o.fundPlat.rest.map(restDin) } : {}),
             } : null,
             // Incrustația (ADR 0170): rândul o arată ca rol, cu jocurile și marginea ei; banda (ADR 0172), cu valorile ei.
             incrustatie: o.incrustatie?.fel === 'v' ? {
@@ -218,7 +223,9 @@ export function ExportConectat({
               ...(o.incrustatie.banda ? { banda: {
                 ...(o.incrustatie.banda.latime !== undefined ? { latime: o.incrustatie.banda.latime } : {}), decupare: o.incrustatie.banda.decupare,
                 grosimePlaca: o.incrustatie.banda.grosimePlaca,
-                ...(o.incrustatie.banda.freza ? { freza: { numar: o.incrustatie.banda.freza.numar, diametru: o.incrustatie.banda.freza.diametru } } : {}),
+                ...(o.incrustatie.banda.freza ? {
+                  freza: { numar: o.incrustatie.banda.freza.numar, diametru: o.incrustatie.banda.freza.diametru, origine: origineDin(o.incrustatie.banda.freza) },
+                } : {}),
                 punti: { numar: o.incrustatie.banda.punti.numar, latime: o.incrustatie.banda.punti.latime, grosime: o.incrustatie.banda.punti.grosime },
               } } : {}),
             } : null,
@@ -326,6 +333,7 @@ export function ExportConectat({
     <DialogExport
       baza={baza}
       {...(foaie === undefined ? {} : { foaie })}
+      {...(numeFoaie === undefined ? {} : { numeFoaie })}
       {...(doc.foi[0] ? { grosimeFoaie: doc.foi[0].stoc.grosime } : {})}
       operatii={exportFoaie.randuri}
       finisari={exportFoaie.finisari}

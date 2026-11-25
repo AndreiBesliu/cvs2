@@ -20,7 +20,7 @@ o('C01', LG, DINTE, DINTE.replace('t = Math.PI * m / 2 - 2 * e.jocDinti', 't = M
   'dintele e mai gros decât golul roții: se pătrunde')
 o('C02', LG, DINTE, DINTE.replace('t = Math.PI * m / 2 - 2 * e.jocDinti', 't = Math.PI * m / 2'), 'cremaliera',
   'dintele n-are jocul din calibrare')
-o('C03', LG, 'tg = Math.tan(20 * Math.PI / 180);', 'tg = Math.tan(25 * Math.PI / 180);', 'cremaliera',
+o('C03', LG, 'const gauri = d.prindere === "gauri", tg = Math.tan(20 * Math.PI / 180);', 'const gauri = d.prindere === "gauri", tg = Math.tan(25 * Math.PI / 180);', 'cremaliera',
   'flancurile sunt la 25°, nu la 20°')
 o('C04', LG, DINTE, DINTE.replace('cap = Math.min(m, (t / 2 - 0.1) / tg)', 'cap = Math.min(1.25 * m, (t / 2 - 0.1) / tg)'), 'cremaliera',
   'capul dintelui e mai înalt: atinge fundul golului roții')
@@ -71,20 +71,21 @@ o('C25', LG, 'const m = Math.min(3, Math.max(0.5, Math.round((Number.isFinite(mC
   'modulul nu mai e rotunjit la zecimi')
 o('C26', LG, 'const m = Math.min(3, Math.max(0.5, Math.round((Number.isFinite(mCerut) ? mCerut : 1) * 10) / 10));', 'const m = Math.min(9, Math.max(0.5, Math.round((Number.isFinite(mCerut) ? mCerut : 1) * 10) / 10));', 'cremaliera',
   'modulul trece de 3')
-o('C27', LG, 'if (q.lungRea) avert.push(', 'if (q.lungRea && q.n > 99) avert.push(', 'cremaliera',
+o('C27', LG, 'if (q.lungRea) avert.push(tr`O cremalieră are', 'if (q.lungRea && q.n > 99) avert.push(tr`O cremalieră are', 'cremaliera',
   'lungimea îndreptată nu se mai spune')
 o('C28', LG, 'if (q.roataRea) avert.push(', 'if (q.roataRea && q.n > 99) avert.push(', 'cremaliera',
   'roata îndreptată nu se mai spune')
 o('C29', LG, 'const gauri = d.prindere === "gauri", tg', 'const gauri = d.prindere !== "stifturi", tg', 'cremaliera',
   'o prindere necunoscută e cea cu găuri')
-o('C30', LG, 'const numar = (v: unknown): number => (v === null || v === undefined || v === "" || typeof v === "boolean" ? NaN : +(v as number));', 'const numar = (v: unknown): number => +(v as number);', 'cremaliera',
+o('C30', LG, 'const numarCerut = (v: unknown): number => (v === null || v === undefined || v === "" || typeof v === "boolean" ? NaN : +(v as number));', 'const numarCerut = (v: unknown): number => +(v as number);', 'cremaliera',
   'o valoare lipsă e citită ca zero (și îndreptată cu avertisment)')
 # --- motorul: corpul
-o('C31', LG, 'tri.push(...caramida({ celule: randCelule(q.n), placi: 1, stifturi: false }).tri); jos = P.placa - 0.01; }', 'tri.push(...caramida({ celule: randCelule(q.n), placi: 1, stifturi: true }).tri); jos = P.placa - 0.01; }', 'cremaliera',
+PLACA = 'if (!q.gauri) { const placa = caramida({ celule: randCelule(q.n), placi: 1, stifturi: false }); tri.push(...placa.tri); prinderi = placa.prinderi; jos = P.placa - 0.01; }'
+o('C31', LG, PLACA, PLACA.replace('stifturi: false', 'stifturi: true'), 'cremaliera',
   'placa de dedesubt are știfturi, care ies printre dinți')
-o('C32', LG, 'tri.push(...caramida({ celule: randCelule(q.n), placi: 1, stifturi: false }).tri); jos = P.placa - 0.01; }', 'tri.push(...caramida({ celule: randCelule(q.n), placi: 1, stifturi: false }).tri); jos = P.placa + 0.3; }', 'cremaliera',
+o('C32', LG, PLACA, PLACA.replace('jos = P.placa - 0.01', 'jos = P.placa + 0.3'), 'cremaliera',
   'între placă și dinți rămâne un gol')
-o('C33', LG, 'tri.push(...caramida({ celule: randCelule(q.n), placi: 1, stifturi: false }).tri); jos = P.placa - 0.01; }', 'tri.push(...prisma(dreptunghi(x0, y0, x1, y1), 0, P.placa)); jos = P.placa - 0.01; }', 'cremaliera',
+o('C33', LG, PLACA, PLACA.replace('tri.push(...placa.tri);', 'tri.push(...prisma(dreptunghi(x0, y0, x1, y1), 0, P.placa));'), 'cremaliera',
   'dedesubt e un bloc plin: nu se mai prinde pe știfturi')
 GAURI = 'const corp = [...inel(ext, cerc(c[0], c[1], e.gauraD / 2), c, y0 + h - 0.01, y1 - h + 0.01), ...inel(ext, cerc(c[0], c[1], e.lamajD / 2), c, y0, y0 + h), ...inel(ext, cerc(c[0], c[1], e.lamajD / 2), c, y1 - h, y1)];'
 o('C34', LG, GAURI, GAURI.replace('cerc(c[0], c[1], e.gauraD / 2), c, y0 + h - 0.01', 'cerc(c[0], c[1], e.lamajD / 2), c, y0 + h - 0.01'), 'cremaliera',
@@ -113,7 +114,7 @@ o('C43', LG, 'prindere: q.gauri ? "gauri" : "stifturi", dinti: q.N,', 'prindere:
   'montajul spune prinderea pe dos')
 
 # --- tabelele atelierului
-o('T01', AT, '[["rotita", "Roată dințată"], ["cremaliera", "Cremalieră"], ["conica", "Roată conică"]', '[["rotita", "Roată dințată"], ["conica", "Roată conică"]', 'tabele',
+o('T01', AT, '[["rotita", "Roată dințată"], ["cremaliera", "Cremalieră"], ["melc", "Șurub melc"]', '[["rotita", "Roată dințată"], ["melc", "Șurub melc"]', 'tabele',
   'piesa nu e în nicio familie')
 o('T02', AT, '    cremaliera: `<path d="M2.5 18.5h19v-5.5', '    cremalieraVeche: `<path d="M2.5 18.5h19v-5.5', 'tabele',
   'piesa n-are desenul ei')
@@ -173,7 +174,7 @@ o('E21', AT, PER, PER.replace('grosime: 3.8', 'grosime: 4'), 'e2e',
   'roata din pereche nu e cea din editorul roților (nu se adună cu ea)')
 o('E22', AT, 'if (q.m !== 1) roata.modul = q.m;', 'if (q.m === 9) roata.modul = q.m;', 'e2e',
   'roata din pereche n-are modulul cremalierei: nu se prind')
-o('E23', AT, 'pune(d, n); pune(roata, n);', 'pune(d, n);', 'e2e',
+o('E23', AT, 'if (q.m !== 1) roata.modul = q.m;\n    pune(d, n); pune(roata, n);', 'if (q.m !== 1) roata.modul = q.m;\n    pune(d, n);', 'e2e',
   '„Fă perechea” pune doar cremaliera')
 o('E24', AT, 'în listă (axul roții la ${fmt(q.axa)} mm deasupra feței de jos).`);', 'în listă (axul roții la ${fmt(q.divizare)} mm deasupra feței de jos).`);', 'e2e',
   'mesajul perechii dă altă înălțime a axului')

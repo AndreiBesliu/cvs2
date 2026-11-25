@@ -1,7 +1,8 @@
 /**
  * Scriitorul EPS al exportului 2D (ADR 0089): PostScript încapsulat (EPSF-3.0, nivelul 2), cutia (BoundingBox în puncte
  * întregi, HiResBoundingBox exactă) cât cutia foii, conținutul în mm (`scale` cu 72 / 25,4). EPS-ul n-are straturi: fiecare
- * rol își păstrează culoarea și un comentariu cu numele lui. Căile, ca în PDF (`drumuri.ts`); numai ASCII.
+ * rol își păstrează culoarea și un comentariu cu numele lui. Căile, ca în PDF (`drumuri.ts`); numai ASCII. Cotele (ADR 0330
+ * §7) au culoarea și grosimea din setări; capetele pline se umplu, iar punctele sunt discuri (calea trasă cu lățimea lor).
  */
 import { CULORI_SVG, nr } from './svgExport.ts';
 import { drumEntitate, rgb, type Comanda } from './drumuri.ts';
@@ -33,8 +34,15 @@ export function scrieEps(v: VectoriFoaie, titlu: string): string {
   for (const s of STRATURI) {
     const din = v.entitati.filter((e) => e.strat === s);
     if (din.length === 0) continue;
-    linii.push(`% Stratul ${s}`, `${rgb(CULORI_SVG[s])} setrgbcolor`);
-    for (const e of din) linii.push('newpath', cale(drumEntitate(e)), 'stroke');
+    const cote = s === 'COTE' ? v.stratCote : undefined;
+    linii.push(`% Stratul ${cote?.nume ?? s}`, `${rgb(cote?.culoare ?? CULORI_SVG[s])} setrgbcolor`);
+    if (cote) linii.push('gsave', `${nr(cote.grosime)} setlinewidth`);
+    for (const e of din) {
+      if (e.fel === 'plin') linii.push('newpath', cale(drumEntitate(e)), 'fill');
+      else if (e.fel === 'polilinie' && e.latime) linii.push('gsave', `${nr(e.latime)} setlinewidth`, 'newpath', cale(drumEntitate(e)), 'stroke', 'grestore');
+      else linii.push('newpath', cale(drumEntitate(e)), 'stroke');
+    }
+    if (cote) linii.push('grestore');
   }
   linii.push('grestore', 'showpage', '%%EOF', '');
   return linii.join('\n');

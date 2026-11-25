@@ -46,11 +46,11 @@ test('din meniul contului, cu Ctrl+, și din ⚙: Cotele, cu cota de probă; Esc
   await expect(dialog(page).locator('#setari-titlu')).toHaveText('Setări');
   await expect(dialog(page).locator('[data-setari-sectiune="cote"]')).toHaveAttribute('aria-current', 'page');
   await expect(dialog(page).locator('[data-setari-sectiune="cote"]')).toBeFocused();
-  await expect(dialog(page).locator('.setari-grup')).toHaveCount(6);
+  await expect(dialog(page).locator('.setari-grup')).toHaveCount(7);
   await expect(dialog(page).getByTestId('setari-proba').locator('[data-text]')).toHaveCount(4);
   await expect(dialog(page).getByTestId('setari-proba').locator('[data-text="120,5"]')).toHaveCount(1);
   // Toate grupurile au implicitele: „Înapoi la implicit” nu are ce face.
-  await expect(dialog(page).locator('[data-setari-implicit]:disabled')).toHaveCount(6);
+  await expect(dialog(page).locator('[data-setari-implicit]:disabled')).toHaveCount(7);
   // Cât e deschisă, tastele desenului nu ating Proiectarea (R ar alege Dreptunghiul).
   await page.keyboard.press('r');
   await expect(page.locator('[data-unealta="selectie"]')).toHaveAttribute('aria-pressed', 'true');

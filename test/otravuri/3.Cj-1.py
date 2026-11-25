@@ -26,8 +26,9 @@ o('A06', LG, CU, 'const c = camp(d.cursa, 0.5, 24, 8, x =>', 'cama', 'cursa poat
 GR = 'const h = camp(d.grosime, 1, 20, 7.8, x =>'
 o('A07', LG, GR, 'const h = camp(d.grosime, 1, 20, 3.8, x =>', 'cama', 'cama implicită e subțire')
 o('A08', LG, GR, 'const h = camp(d.grosime, 1, 30, 7.8, x =>', 'cama', 'grosimea poate fi 30')
-o('A09', LG, 'if (Number.isFinite(n) && (n < a - 1e-9 || n > b + 1e-9)) avert.push(ce(', 'if (Number.isFinite(n) && n > 1e9) avert.push(ce(', 'cama', 'o valoare adusă înapoi în margini nu mai e spusă')
-o('A10', LG, 'const n = numarCerut(v), x = zecime(Math.min(b, Math.max(a, Number.isFinite(n) ? n : implicit)));', 'const n = numarCerut(v), x = Math.min(b, Math.max(a, Number.isFinite(n) ? n : implicit));', 'cama',
+o('A09', LG, 'if (Number.isFinite(n) && (n < a - 1e-9 || n > b + 1e-9)) avert.push(ce(String(x)', 'if (Number.isFinite(n) && n > 1e9) avert.push(ce(String(x)', 'cama', 'o valoare adusă înapoi în margini nu mai e spusă')
+o('A10', LG, 'const n = numarCerut(v), x = zecime(Math.min(b, Math.max(a, Number.isFinite(n) ? n : implicit)));\n      if (Number.isFinite(n) && (n < a - 1e-9 || n > b + 1e-9)) avert.push(ce(String(x)',
+  'const n = numarCerut(v), x = Math.min(b, Math.max(a, Number.isFinite(n) ? n : implicit));\n      if (Number.isFinite(n) && (n < a - 1e-9 || n > b + 1e-9)) avert.push(ce(String(x)', 'cama',
   'valorile nu se mai rotunjesc la zecimi')
 FO = 'return { forma: d.forma === "para" || d.forma === "melc" ? d.forma : "excentric", D, R0: D / 2, c, h, gaura: d.gaura === "r" ? "r" : "x", avert };'
 o('A11', LG, FO, FO.replace('d.forma === "para" || d.forma === "melc" ? d.forma', 'd.forma === "para" ? d.forma'), 'cama', 'melcul e făcut ca excentric')
@@ -52,8 +53,8 @@ o('A24', LG, 'for (let k = 0; k <= M; k++) { const u = a + (2 * Math.PI - 2 * a)
 EV = 'const m = 2 * Math.max(4, Math.ceil(laturi(rn) * a / Math.PI / 2)), M = 2 * Math.ceil(laturi(R0) * (Math.PI - a) / Math.PI / 2);'
 o('A25', LG, EV, EV.replace('M = 2 * Math.ceil(laturi(R0) * (Math.PI - a) / Math.PI / 2);', 'M = 2 * Math.ceil(laturi(R0) * (Math.PI - a) / Math.PI / 2) + 1;'), 'cama', 'spatele perei nu mai e un vârf (piesa iese mai scurtă)')
 o('A26', LG, EV, EV.replace('const m = 2 * Math.max(4, Math.ceil(laturi(rn) * a / Math.PI / 2)),', 'const m = 3,'), 'cama', 'nasul perei e din trei laturi')
-o('A27', LG, 'const laturi = (R: number) => Math.max(N_CERC, 8 * Math.ceil(Math.PI / Math.acos(1 - 0.02 / R) / 8));\n    if (forma === "excentric")',
-  'const laturi = (R: number) => N_CERC;\n    if (forma === "excentric")', 'cama', 'camele mari sunt din 48 de laturi (săgeata trece de 0,06 mm)')
+o('A27', LG, 'const laturi = laturiFine;\n    if (forma === "excentric")',
+  'const laturi = (_R: number) => N_CERC;\n    if (forma === "excentric")', 'cama', 'camele mari sunt din 48 de laturi (săgeata trece de 0,06 mm)')
 # --- motorul: piesa
 GA = 'const g = q.gaura === "r" ? cerc(0, 0, e.gauraD / 2) : cruce(0, 0, e.axGauraD, e.axGauraLat);\n    // prinderile: gaura de pe ax'
 o('A28', LG, GA, GA.replace('q.gaura === "r" ?', 'q.gaura !== "r" ?'), 'cama', 'gaura de ax și cea rotundă sunt încurcate')
@@ -67,10 +68,10 @@ o('A34', LG, CO, CO.replace('avert: q.avert', 'avert: []'), 'cama', 'avertisment
 CE = 'gaura: q.gaura, razaMica: q.R0, razaMare: q.R0 + q.c }; },'
 o('A35', LG, CE, CE.replace('razaMare: q.R0 + q.c', 'razaMare: q.R0 + q.c / 2'), 'cama', 'raza mare dată atelierului e cu jumătate de cursă mai mică')
 o('A36', LG, CE, CE.replace('razaMica: q.R0', 'razaMica: q.D'), 'cama', 'raza mică dată atelierului e diametrul')
-o('A37', LG, 'clema, maner, bara, bila, cupa, rotita, cremaliera, cama, roata,', 'clema, maner, bara, bila, cupa, rotita, cremaliera, roata,', 'cama', 'motorul nu știe piesa')
+o('A37', LG, 'clema, maner, bara, bila, cupa, rotita, cremaliera, cama, melc, roata,', 'clema, maner, bara, bila, cupa, rotita, cremaliera, melc, roata,', 'cama', 'motorul nu știe piesa')
 
 # --- atelierul: tabelele
-o('T01', AT, '["cremaliera", "Cremalieră"], ["cama", "Camă"], ', '["cremaliera", "Cremalieră"], ', 'tabele', 'cama nu e în nicio familie')
+o('T01', AT, '["melc", "Șurub melc"], ["cama", "Camă"], ', '["melc", "Șurub melc"], ', 'tabele', 'cama nu e în nicio familie')
 o('T02', AT, '    cama: `<path d="M8 4.2a7.9 7.9 0 0 0 0 15.6l9.6-3.3a4.8 4.8 0 0 0 0-9z"/><path d="M8 10v4M6 12h4"/>`,\n', '', 'tabele', 'cama n-are desen')
 o('T03', EN, ' "Camă pară": "Pear cam",\n', '', 'tabele', 'un nume al camei lipsește din dicționar')
 # --- atelierul: prin browser

@@ -14131,6 +14131,67 @@ la lista pieselor noi; pornită fără altă întrebare, cât 3.Ce își aștept
   (508,4 kB), cu rândul de „ce e nou”; doar pachetul se schimbă.
 - **Neîmpinsă până la unirea lui 3.Ce** (PR-ul `AndreiBesliu/cvs2#28`).
 
+
+## 2026-11-25 — Felia 3.Cj-3: cadrul (fereastra) în atelierul Easy 3Draw (ADR 0284) (sesiune cloud)
+
+**Prompt:** (aceeași cerere a owner-ului și aceleași răspunsuri la ADR 0284 ca la 3.Ca; răspunsul lui „Cărămizi de
+clădit”, la lista pieselor noi; pornită fără altă întrebare, după raportul lui 3.Cj-1 și 3.Cj-2; sesiunea principală a
+transmis „vreau sa pornesti si celelalte sub-sesiuni” al owner-ului)
+**Started:** 25.11, 07:35. **Completed:** 25.11, 08:21 (felia, cu otrăvurile; orele, după ceasul containerului).
+
+- **Cadrul** (tipul `cadru`, fila Cărămizi): o cărămidă 1 × n cu un gol prin ea, cu pragul (o placă obișnuită), doi
+  stâlpi groși cât rama și buiandrugul cu știfturi pe toată lungimea. Se tipărește în picioare, fără suport.
+- **Colțurile de sus ale golului, drepte sau teșite:** teșitura la 45° scurtează puntea tipărită în aer până la un
+  știft, cât îi lasă înălțimea golului. Editorul scrie golul și puntea; peste 40 mm spune că puntea se poate lăsa.
+- **Proba, scrisă întâi** (a căzut cu „tip necunoscut”): golul, judecat pe plasă la 0,15 mm de marginile lui; teșitura,
+  în puncte de pe hârtie; 120 de cadre pe toată plaja. A trecut de la prima scriere a piesei.
+- **Ce au arătat otrăvurile:** știfturile mutate cu 1 mm treceau (proba întreba doar centrul lor); o retragere de
+  0,01 mm a stâlpilor față de prag, pusă „ca două corpuri să nu-și împartă muchii”, era de prisos (muchiile nu coincid
+  nici fără ea) și a ieșit din cod.
+- **Numele câmpului:** `sus` exista deja ca număr (rândurile pantei), deci opțiunea se numește `colturi`.
+- **Probele vechi, la zi:** „Cărămizi 12” / „Bricks 12”, galeriile și desenele, starea unei liste vechi, rândurile
+  „Pe știfturi” și „În locașuri” din „Se prinde cu”, versiunea 18.31.0.
+- **Otrăvurile:** 84 / 84: 79 din 83 la prima rulare (54 din 57 unitare, 25 din 26 prin browser); trei probe întărite,
+  una echivalentă înlocuită, una adăugată.
+- **Probele pluginului:** unitare 252 / 252 (cu biblioteca), în browser 178 / 178 (cu extensiile). Easy 3Draw 18.31.0
+  (510,8 kB), cu rândul de „ce e nou”; doar pachetul se schimbă.
+
+## 2026-11-25 — Felia 3.Cj-4: șurubul melc în atelierul Easy 3Draw (ADR 0284) (sesiune cloud)
+
+**Prompt:** (aceeași cerere a owner-ului și aceleași răspunsuri la ADR 0284 ca la 3.Ca; răspunsul lui „Mecanisme”, la
+lista pieselor noi; sesiunea principală a cerut „restul lui 3.Cj (cadrul, melcul)”, după „vreau sa pornesti si
+celelalte sub-sesiuni” al owner-ului)
+**Started:** 25.11, 08:21. **Completed:** 25.11, 09:31 (felia, cu otrăvurile; orele, după ceasul containerului).
+
+- **Șurubul melc** (tipul `melc`, fila Roți): un șurub pe ax, cu o spiră cu profilul cremalierei de referință a roților
+  de aici (20°, modulul 1, pasul π). Se prinde cu orice roată dreaptă din atelier, cu axele în cruce.
+- **Întâi măsurat, apoi scris:** LEGO 4716 din LDraw (Ø10,16 la vârf, Ø5,6 la fund, pasul 3,2 mm, spira pe dreapta) și
+  un studiu al angrenării (melcul pe hârtie, roata motorului pe plasă): fără nimic în plus, înclinarea spirei mănâncă
+  din joc (0,21 mm pe o parte la Ø8, 0,26 la Ø16, față de 0,30 între două roți).
+- **Două diametre de divizare:** 8 mm (ca LEGO: roțile de 8, 24 și 40 de dinți la 1, 2 și 3 știfturi) și 16 mm (gros).
+  Spira e subțiată pe fiecare flanc cu 0,1 și 0,05 mm; măsurat pe plasele motorului, jocul e 0,30–0,32 mm pe o parte,
+  fără nicio pătrundere, și urmează calibrarea.
+- **Proba, scrisă întâi** (a căzut cu „tip necunoscut”), a prins un defect al plasei: fețele dintre straturile rotite
+  erau tăiate pe diagonala lungă, iar miezul ieșea mâncat cu 0,06 mm la Ø16. `prismaStraturi` are acum opțiunea
+  `elice` (diagonala scurtă); roata conică și conica dublă, neschimbate.
+- **Miezul subțire la Ø8** (0,06 mm între colțul crucii și fundul spirei, ca la piesa LEGO): editorul o spune și trimite
+  la Ø16 pentru sarcină. Tipărirea în picioare, cu flancul de jos în consolă la 70°, e nedovedită: rând în coada
+  owner-ului.
+- **Editorul:** diametrul, lungimea, roata pereche (a editorului, nu a piesei), cotele și montajul în cuvinte (pe
+  grila de știfturi, la jumătatea ei sau în afara ei), „Fă perechea” (melcul și roata lui în listă).
+- **Probele vechi, la zi:** „Roți 10” / „Wheels 10”, galeriile și desenele, starea unei liste vechi, rândul „Pe ax”
+  din „Se prinde cu”, versiunea 18.32.0.
+- **Otrăvurile:** 102 / 102: 101 la prima rulare (62 din 62 unitare, 39 din 40 prin browser). Scăpase „roata pereche
+  rămâne în piesă”: proba cere acum ca același melc, cu altă roată aleasă în editor, să se adune pe rândul lui.
+- **Probele pluginului:** unitare 358 / 358 (cu biblioteca și extensiile), în browser 181 / 181 (cu extensiile). Easy 3Draw
+  18.32.0 (514,4 kB), cu rândul de „ce e nou”; doar pachetul se schimbă. Cu melcul, 3.Cj e încheiată.
+- **Listele vechi de otrăvuri, la zi** (cererea sesiunii principale, după auditul liniei elicelor): cadrul și melcul
+  mutaseră șase ancore ale listelor 3.Cc, 3.Cd, 3.Ce și 3.Cj-1 (rânduri devenite duble, tabelele); alte 17 rămăseseră
+  fără țintă de la feliile dinainte ale liniei. Toate 23, re-ancorate și rulate din nou: prinse. Listele 3.Ca–3.Cj-4
+  n-au nicio otravă fără țintă; cele 22 ale elicelor rămân pentru felia din audit, la cuvântul owner-ului.
+- **Unirea:** la cererea sesiunii principale, 3.Cj-3 și 3.Cj-4 merg împreună, peste `main` (`19f0b386`, cu 18.1↑b), cu
+  un singur complet.
+
 ## 2026-11-24 — Sesiunea principală în cloud: clicul pe „Închide” din cadrul unei extensii, pierdut (probă instabilă, reparată) (Model: Claude Fable 5.2)
 
 **Prompt:** completul de pe `main` pentru loturile 19–21 (`7312d685`, rularea 45436221341), roșu la o singură probă;
@@ -14407,6 +14468,26 @@ ce se poate”
 - **Documentele:** decizia în `CLAUDE.md` (paragraful de stare al construcțiilor e al liniei; versiunea extensiei,
   18.28.0, următoarea 18.29.0); indexul liniilor; starea din `docs/linii/principala.md`.
 
+## 2026-11-25 — 16.A↑b-5: frezele în plus ale rândului din „Frezele mele” (Model: Claude Opus 5.5)
+
+**Prompt:** mesajul sesiunii principale din 25.11, 09:35, cu cuvântul owner-ului („am resetat limita saptamanale. azi este
+miercuri.” și „vreau sa pornesti si celelalte sub-sesiuni”): „Deci pornește 16.A↑b-5 … apoi 16.A↑b-4”. **Started:** 25.11, 09:35.
+
+- **Ramura** `wip/16.A-freze`, adusă înainte la `main` (`f2678300`, cu relieful 18.1↑a, documentul v28).
+- **Felia** (`df4457e7`): lista „Din frezele mele” pe frezele în plus ale rândului (fundul plat, fiecare freză de rest, prima
+  freză a dopului drept, decuparea benzii), doar cu frezele plate, la frezele de rest doar cele mai mici decât freza dinainte;
+  aleasă, T-ul (regula rolurilor, printre toate frezele ferestrei, fără cea înlocuită), Ø-ul, pasul lateral și originea; un Ø
+  schimbat de mână o scoate doar pe freza aceea. Exportă scrie originea cu regula frezei operației (`cuOrigine`, comună), iar
+  legarea rândurilor ține și originea frezelor în plus, ca lucrarea. Manualul (ro, en), catalogul controalelor.
+- **Tabelul frezelor de rest** (`9a851320`), la mesajul sesiunii principale despre auditul ferestrei exportului (constatarea 9,
+  dată liniei frezelor): capul coloanelor, „Adaugă” ca buton, titlul o singură dată; pe telefon, lista pe rândul ei.
+- **Probele** (întâi): unitare noi 6 (`exportFreze.rest.test.ts`), în Edge 5 (`exportFrezeRest.spec.ts`) și frezele în plus în
+  proba privirii (7 / 7). **Otrăvurile** (`test/otravuri/16.A-b5.py`): 33 / 33 (13 pe hârtie, 20 în Edge; T02 și C02 scăpaseră: probele frezelor de rest au acum două freze în listă). Otrăvurile lui 16.A↑b-3 atinse de mutarea
+  codului (S01–S04, W03, W04) țin acum codul nou.
+- **Mărimea:** pornirea neschimbată (111,2 kB; cu ușa 116,1, cu Atelierul 116,5 / 125), totalul 881,0 → 882,0 / 1 000 (măsurat
+  pe `main` `f2678300` și pe ramură). Nimic pe server; documentul rămâne v27. Apoi `main` adus (`caddd661`, plafoanele
+  1 000 / 125 kB, ADR 0146) și cu auditul exportului (`43cf59af`). **Completed:** 25.11, 11:35.
+
 ## 2026-11-25 — Linia reliefului: felia 18.1↑b, modelul reliefului în vederea 3D („Modelul / Tăiat”) (sesiune cloud)
 
 **Prompt:** mesajul sesiunii principale, cu cuvântul owner-ului („am resetat limita saptamanale. azi este miercuri.” și
@@ -14569,6 +14650,24 @@ poate”
 - **Documentele:** decizia și paragraful de stare în `CLAUDE.md`; indexul liniilor; starea din
   `docs/linii/principala.md`.
 
+## 2026-11-25 — Linia exportului: felia 28.8↑n, numele fișierului (ADR 0291 §5)
+
+**Prompt:** „1a, 2a, 3a, 4a, 5a, 6a, 7a, 8a, 9a” (răspunsurile owner-ului la audit; n și o, propuse înaintea lui h–l, fiindcă
+nu ating fișa operației)
+**Started:** 25.11, 09:22.
+
+- **Câmpul „Numele fișierului”** în „Mașina și fișierul”, după Unități: propunerea din numele scris al foii, altfel
+  `cncvs2-<colț>`; scris de om, rămâne la schimbarea colțului; sub el, ce se descarcă.
+- **Regula** în `src/post/numeFisier.ts` (`bazaFisier`, `propunereNume`, `motivNume`, `cuBaza`), aplicată după calcul, pe
+  firul principal (`cuNumele`): fișierele, dopurile, Mașina, arhiva „Toate foile” și numele din ea. Octeții, neschimbați.
+- **Greșelile:** gol, peste 80 de caractere, caractere oprite, spațiu sau punct la capete, nume rezervate de Windows:
+  Exportă oprit, cu „Du-mă la …”. Pe RichAuto, numele scurt, cu câmpul oprit.
+- **Probele:** 5 unitare, 2 e2e; spec-urile e2e ale exportului, 289 / 289. **Otrăvurile:** `28.8n.py`, 16 / 16.
+- **Mărimea:** pornirea 111,2 kB (+0,1), totalul 885,8 / 1 000 (+1,0).
+- **Manualul** (ro, en), ADR 0291 („Implementarea 28.8↑n”), fișa etapei 3, registrul otrăvurilor, nota liniei.
+
+**Completed:** 25.11, 09:50.
+
 ## 2026-11-25 — Sesiunea principală în cloud: ADR 0291 (fereastra exportului după audit), acceptat de owner, în `main` (Model: Claude Fable 5.2)
 
 **Prompt:** raportul sesiunii exportului: owner-ul a răspuns acolo la cele nouă întrebări ale auditului, „1a, 2a, 3a, 4a, 5a, 6a, 7a, 8a, 9a”
@@ -14584,3 +14683,94 @@ poate”
 - **Înainte, în aceeași oră:** raportul atelierului pentru 3.Cj-3 (cadrul, `b7f04cb3`, porțile verzi). Neunită: `main`
   are codul reliefului, pe care ramura nu-l are; linia aduce `main`, pune deasupra melcul (3.Cj-4) și raportează un
   singur commit. Și `78ff30ec`: v29, dat liniei reliefului pentru 18.1↑c.
+
+## 2026-11-25 — Felia 10.4↑c-1: cotele în exportul vectorilor („Cu cotele”, stratul lor, cifrele ca trăsături; ADR 0330 §6, §7) (Model: Claude Opus 5.5)
+
+**Prompt:** „Pornește 10.4↑c” (sesiunea principală, 25.11, cu mesajele owner-ului: „am resetat limita saptamanale. azi este
+miercuri.” și „vreau sa pornesti si celelalte sub-sesiuni”). **Started:** 25.11, 09:35, în sesiunea cloud a liniei cotelor.
+**Completed:** 25.11, 10:05 (în container; CI-ul, pe commit-ul împins).
+
+- **Felia c, împărțită:** c-1 (exportul cotelor ca vectori: linii, arce, capete, cifre ca trăsături) și c-2 (DIMENSION în
+  DXF, cifrele ca text), scris în ADR 0330 §10.
+- **Pur:** `src/io/coteExport.ts` (entitățile, pe stratul COTE: `plin` pentru săgeata plină, `latime` pentru disc), cifrele
+  așezate de apelant (`cifreDinFont`, `src/text/cifreCote.ts`): `src/io` nu importă textul (regula `io-doar-model-geom`,
+  căzută la prima încercare). Scriitorii DXF / SVG / PDF / EPS știu stratul cotelor (numele, culoarea, grosimea); fără cote,
+  fișierele, octet cu octet aceleași. ACI-ul stratului se alege după nuanță (în RGB, #006d8f ieșea gri).
+- **Setări › Cotele › Exportul** (implicitul bifei, numele stratului validat, culoarea, grosimea) și bifa **„Cu cotele (N)”**
+  din „Exportă vectori”, cu fontul și setările aduse la Exportă.
+- **Oracolul Python** (`test/oracles-py/export2d_cote.py`, pas nou în jobul `oracol-export2d`): corpusul cotelor (patru
+  cote, stratul `DIM_1`) din `scripts/export2d-corpus.ts`; DXF-ul exact (181 de segmente, cele de pe hârtie, cu cifrele
+  așezate de fontTools), PDF / SVG / EPS (direct și prin Ghostscript) în toleranță.
+- **`main` adus** (`caddd661`: 3.Cj și plafoanele 1 000 / 125 kB, ADR 0146), fără ciocniri; catalogul controalelor scris din
+  nou (648 de nume).
+- **Porțile, în container:** tipurile, regulile de import; unitarele cotelor și ale exportului 2D; oracolul exportului 2D și
+  al cotelor (cu Ghostscript pus local); e2e-urile cotelor, exportului vectorilor și setărilor; build-ul determinist. Pornirea
+  111,1 → 111,2 kB (cu ușa 116,2, cu Atelierul 116,5 / 125), totalul 884,8 → 888,1 / 1 000 (cu relieful 18.1↑b, adus
+  după; întâi scrisese 880,9 → 884,2, fără el). Unită în `main` de sesiunea principală (`f2f6fc57`, din `d8e69780`).
+- **Otrăvurile** (`test/otravuri/10.4c1.py`, într-o clonă): 41 / 44 (31 unitare: 28 prinse, X09, W11 și V02 practic
+  echivalente; 6 e2e; 7 pe oracolul Python, cu corpusul regenerat la fiecare); X08, X10, X11, W01, W02, W05, V01 și E05 au
+  scăpat întâi și sunt prinse după probele noi.
+
+## 2026-11-25 — Sesiunea principală în cloud: a treizeci și doua unire (cotele în exportul vectorilor, 10.4↑c-1) (Model: Claude Fable 5.2)
+
+**Prompt:** raportul liniei cotelor („10.4↑c-1 e gata de unit, la `d8e69780`”), la ordinul în vigoare „unește ce se
+poate”
+**Started:** 25.11, 12:16. **Completed:** unirea în `main`, 25.11, 12:20; publicarea pe test, cu lotul următor.
+
+- **Verificat înaintea unirii:** rapidul (45584195530, 45584184980) și completul (45584185001), verzi pe `d8e69780`;
+  PR-ul `AndreiBesliu/cvs2#32`, deschis; fără `.lucru/`; ramura are `dad1a711`.
+- **Unirea, pe `unire-2511p`** (din `19f0b386`): `d8e69780`, în `f2f6fc57`. Ciocnirea, doar în DEVLOG
+  (`rezolva-devlog.py`, ambele părți). Față de `d8e69780`, arborele unirii diferă, în afara fișierelor `.md`, doar în
+  `docs/traduceri/roadmap.en.json` (rândul lui ADR 0291, venit din `main`). Local, pe arborele unit: traducerile
+  (1 118, niciuna lipsă), catalogul controalelor (la zi), biblioteca (Easy 3Draw 18.30.0, la zi), regulile de import
+  (22 / 22), tipurile, probele documentelor (62 / 62).
+- **Porțile, în CI, pe `d8e69780`** (citite din jurnalul rulării): completul, verde (55 min): unit 10 469 / 0
+  (12 sărite, pe Linux), e2e 836 / 836, funcțiile pe emulatoare 136 / 136, paginile 59 / 59. Pornirea 111,2 kB
+  (plafonul 125; cu ușa 116,1, cu Atelierul 116,5), totalul 888,1 / 1 000 kB (+3,3), `/admin` 138,3 / 200. Nimic pe
+  server.
+- **Lotul pregătit pe `unire-2511o`** (atelierul, `b099c457`; exportul, `7996e77c`) își reface porțile peste
+  `main`-ul acesta: completul lui de pe `c0329020` (45591209284) nu mai acoperă codul cotelor.
+- **Documentele:** decizia și paragraful de stare în `CLAUDE.md`; indexul liniilor; starea din
+  `docs/linii/principala.md`.
+
+## 2026-11-25 — Sesiunea principală în cloud: lotul 32 (relieful: modelul în vederea 3D), pe test (Model: Claude Fable 5.2)
+
+**Prompt:** publicarea de după a treizeci și una unire (pe test se publică liber)
+**Started:** 25.11, după unirea de la 11:02 (completul pe `main`, pornit la 11:12). **Completed:** 25.11, 12:31.
+
+- **Pe test: `dad1a711`** (relieful 18.1↑b, plafoanele 1 000 / 125 kB, auditurile exportului și elicelor). `publica.yml`
+  45594705584, verde (12:24–12:31); serverul, neschimbat.
+- **Completul pe `main`** (45583202976, verde, 72 min: multe rulări în paralel): unit 10 452 / 0 (12 sărite, pe
+  Linux), e2e 833 / 833, funcțiile pe emulatoare 136 / 136, paginile 59 / 59; pornirea 111,1 kB, totalul 884,8 /
+  1 000 kB.
+- **Scriptul de urmărire** s-a oprit o dată la limita lui (85 de minute), cu publicarea deja pornită și la coadă;
+  reluat, a preluat aceeași rulare.
+- **Proba de fum** pe adresa de test: versiunea `dad1a711fb6e`, potrivită; nicio eroare în consolă, nicio cerere
+  căzută.
+
+## 2026-11-25 — Sesiunea principală în cloud: a treizeci și treia unire (frezele 16.A↑b-5, atelierul 3.Cj-3 și 3.Cj-4, exportul 28.8↑n) (Model: Claude Fable 5.2)
+
+**Prompt:** rapoartele liniilor („16.A↑b-5 e gata de unit”, `b7660e94`; „3.Cj-3 (cadrul) și 3.Cj-4 (șurubul melc) sunt
+gata de unit”, `b099c457`; 28.8↑n, `7996e77c`), la ordinul în vigoare „unește ce se poate”
+**Started:** 25.11, 12:20. **Completed:** unirea în `main`, 25.11, 13:18; publicarea pe test, pornită după ea.
+
+- **De ce un lot nou:** lotul pregătit pe `unire-2511o` (atelierul și exportul) nu mai acoperea codul din `main` după
+  unirea cotelor (`f8be3b4d`), iar frezele raportaseră b-5, tot pe un `main` fără cote. Completul vechi (45591209284),
+  oprit.
+- **Unirea, pe `unire-2511q`** (din `f8be3b4d`): `b7660e94` în `03e64d33`, `b099c457` în `36559b49`, `7996e77c` în
+  `1eda6f0b`. Ciocnirea, la freze și la export, doar `src/app/catalogControale.ts`, scris din nou de fiecare dată
+  (651, apoi 652 de nume). `DialogExport.tsx`, `exportRand.ts`, `exportGrupuri.ts` și `ExportConectat.tsx` s-au unit
+  singure; linia exportului a citit împletirea în lot și n-a găsit nimic greșit. Atelierul, fără nicio ciocnire.
+- **Local, pe lot:** tipurile, regulile de import (22 / 22), traducerile (1 130), catalogul, biblioteca (Easy 3Draw
+  18.32.0, 514 370 octeți), probele documentelor (62 / 62), `export.*`, `freze*`, `manual`, `i18n` (139 / 139).
+- **Documentele liniei cotelor** (`5273cb0b`: totalul cu relieful, starea unirii), unite peste lot în `9ccded2b`;
+  schimbă, în afara fișierelor `.md`, doar `docs/traduceri/roadmap.en.json`.
+- **Porțile, în CI** (citite din jurnalul rulării): completul 45594256202 pe `1eda6f0b`, verde la prima trecere
+  (54 min): unit 10 494 / 0 (12 sărite, pe Linux), e2e 849 / 849, funcțiile pe emulatoare 136 / 136, paginile
+  59 / 59; rapidul 45594816342, verde pe `9ccded2b` (cel de pe `1eda6f0b` a fost oprit de push-ul următor, la coadă).
+  Completele liniilor, verificate verzi: 45581826591, 45588129048, 45588329433. Pornirea 111,2 kB (plafonul 125; cu
+  ușa 116,2, cu Atelierul 116,5), totalul 890,1 / 1 000 kB, `/admin` 138,3 / 200. Nimic pe server.
+- **Liniile, anunțate:** frezele (aduc `main`, raportează b-4), exportul (aduce `main`, raportează 28.8↑o separat,
+  apoi pornește 28.8↑h), atelierul (fără felie de pornit), cotele.
+- **Documentele:** decizia și paragrafele de stare în `CLAUDE.md` (frezele, exportul, atelierul); indexul liniilor;
+  starea din `docs/linii/principala.md`.

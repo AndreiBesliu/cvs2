@@ -50,6 +50,11 @@ export type ParametriExport = {
    */
   readonly supracursa?: number;
   /**
+   * Baza numelor fișierelor aleasă de om (ADR 0291 §5): pusă în locul lui `cncvs2-<colț>` pe firul principal, după calcul
+   * (`cuBaza`, `src/post/numeFisier.ts`); workerul n-o folosește. Lipsă = numele de azi.
+   */
+  readonly numeFisier?: string;
+  /**
    * Bifa de lângă supracursă (ADR 0177): și tăieturile scrise cât grosimea foii (profil, buzunar, găurire, fără incrustație)
    * trec cu supracursa, ca scrise grosime plus supracursă. Lipsă: nu (exporturile de dinainte rămân aceleași).
    */

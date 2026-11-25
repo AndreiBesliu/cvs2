@@ -14,8 +14,38 @@ import {
 import { Card, Cartonase, GrupCartonase, Poza } from './exportPoze.tsx';
 import {
   bandaBuna, bandaRand, CHEI_LATURA, CHEI_SENS, faraNumar, FELURI_COBORARE, inMargini, jocFolosit, margineBuna, SENSURI,
-  spatiuFolosit, URECHI_IMPLICITE, type BunRand, type FrezaOferita, type Latura, type OperatieExport, type Rand,
+  spatiuFolosit, URECHI_IMPLICITE, type BunRand, type FrezaOferita, type Latura, type OperatieExport, type OrigineFreza, type Rand,
+  type UndeFreza,
 } from './exportRand.ts';
+
+/** Pseudo-rândul cu care se cer frezele drepte (fundul plat, frezele de rest, dopul, decuparea benzii): doar frezele plate. */
+export const RAND_DREPT: Pick<Rand, 'tip' | 'latura'> = { tip: 'buzunar', latura: 'interior' };
+
+/**
+ * Lista „Din frezele mele” a unei freze (ADR 0300 §4; a operației din 16.A↑b-3, cele în plus din 16.A↑b-5): „Scrisă de mână”,
+ * frezele oferite și, dacă freza din document nu mai e printre ele (alt fel, ștearsă), ea însăși. Fără freze oferite și fără
+ * origine, nimic. `eticheta`: cu numele listei în față (la frezele de rest, doar ca etichetă pentru cititorul de ecran).
+ */
+export function ListaBiblioteca(props: {
+  readonly 'data-camp': string; readonly oferite: readonly FrezaOferita[]; readonly origine: OrigineFreza | null | undefined;
+  readonly oprit: boolean; readonly eticheta?: boolean; readonly onAlege: (f: FrezaOferita) => void; readonly onMana: () => void;
+}): ReactNode {
+  const { oferite, origine, oprit, eticheta = true, onAlege, onMana } = props;
+  if (oferite.length === 0 && !origine) return null;
+  const lista = (
+    <select value={origine?.biblioteca.id ?? ''} data-camp={props['data-camp']} disabled={oprit} aria-label={t('export.freza.biblioteca')}
+      title={t('export.freza.biblioteca.titlu')} onChange={(ev) => {
+        const f = oferite.find((x) => x.id === ev.target.value);
+        if (f) onAlege(f);
+        else onMana();
+      }}>
+      <option value="">{t('export.freza.de-mana')}</option>
+      {oferite.map((f) => <option key={f.id} value={f.id}>{f.nume}</option>)}
+      {origine && !oferite.some((f) => f.id === origine.biblioteca.id) ? <option value={origine.biblioteca.id}>{origine.nume}</option> : null}
+    </select>
+  );
+  return eticheta ? <label className="freza-biblioteca" title={t('export.freza.biblioteca.titlu')}>{t('export.freza.biblioteca')}{lista}</label> : lista;
+}
 
 /**
  * Fișa unei operații în fereastra exportului (ADR 0290, felia 28.8↑f-3): titlul, locul în ordinea tăierii, grupurile felului ei
@@ -46,14 +76,17 @@ export interface ContextFisa {
   readonly supracursaCitita: number | null;
   readonly cuSupracursa: boolean;
   readonly onAlegeUrechi: ((cheie: string, urechi: { readonly numar: number; readonly latime: number; readonly grosime: number }) => void) | undefined;
-  /** Frezele de rest ale buzunarului, ale fundului plat sau ale dopului, ca listă de câmpuri. */
+  /** Frezele de rest ale buzunarului, ale fundului plat sau ale dopului, ca listă de câmpuri (cu listele lor „Din frezele mele”). */
   readonly frezeRest: (cheie: string, p: Rand, fel: 'buzunar' | 'fund' | 'dop', oprit: boolean) => ReactNode;
   /** Grupul unei întrebări: desenul și explicația în stânga, câmpurile și greșelile în dreapta (comun cu foaia și mașina). */
   readonly grup: (id: GrupExport, fisa: string, corp: ReactNode, greseli?: readonly string[], desen?: (c: DesenComun) => ReactNode) => ReactNode;
   /** Frezele din „Frezele mele” care merg pe tăietura rândului (ADR 0300 §4, felia 16.A↑b-3); lipsă = fără listă. */
   readonly frezeOferite: ((r: Pick<Rand, 'tip' | 'latura'>) => readonly FrezaOferita[]) | undefined;
-  /** Freza aleasă din listă pe rândul dat: T-ul, Ø-ul, forma, pașii și originea ei. */
-  readonly alegeFreza: (cheie: string, f: FrezaOferita) => void;
+  /**
+   * Freza aleasă din listă pe locul dat al rândului (lipsă: freza operației): T-ul, Ø-ul, pașii, originea și, la freza operației,
+   * forma (ADR 0300 §4, felia 16.A↑b-5).
+   */
+  readonly alegeFreza: (cheie: string, f: FrezaOferita, unde?: UndeFreza) => void;
 }
 
 export function FisaOperatie({ cheie, loc, c: ctx }: { readonly cheie: string; readonly loc: number; readonly c: ContextFisa }): ReactNode {
@@ -75,6 +108,8 @@ export function FisaOperatie({ cheie, loc, c: ctx }: { readonly cheie: string; r
   const greseli = greseliRand(o.cheie);
   // Frezele din „Frezele mele” care merg pe tăietura rândului (ADR 0300 §4, felia 16.A↑b-3).
   const oferite = frezeOferite ? frezeOferite(p) : [];
+  // Frezele drepte, pentru frezele în plus ale rândului (ADR 0300 §4, felia 16.A↑b-5).
+  const drepte = frezeOferite ? frezeOferite(RAND_DREPT) : [];
   const aici = (g: GrupExport): string[] => greseli.filter(([, x]) => x === g).map(([m]) => m);
   const grupuri = grupuriOperatie({
     tip: p.tip, deschis, inele: p.strategie === 'inele', incrustatie: vc && p.incrustatie, banda: vc && p.incrustatie && p.jurDop === 'banda',
@@ -162,23 +197,8 @@ export function FisaOperatie({ cheie, loc, c: ctx }: { readonly cheie: string; r
       </div>);
       case 'freza': return (<div className="dx-rand">
         {/* Freza din „Frezele mele” (ADR 0300 §4, felia 16.A↑b-3): doar cele care merg pe tăietura rândului. */}
-        {oferite.length > 0 || p.origineScula ? (
-        <label className="freza-biblioteca">
-          {t('export.freza.biblioteca')}
-          <select value={p.origineScula?.biblioteca.id ?? ''} data-camp="freza-biblioteca" disabled={doarCitire} aria-label={t('export.freza.biblioteca')}
-            onChange={(ev) => {
-              const f = oferite.find((x) => x.id === ev.target.value);
-              if (f) alegeFreza(o.cheie, f);
-              else schimba(o.cheie, { origineScula: null });
-            }}>
-            <option value="">{t('export.freza.de-mana')}</option>
-            {oferite.map((f) => <option key={f.id} value={f.id}>{f.nume}</option>)}
-            {p.origineScula && !oferite.some((f) => f.id === p.origineScula!.biblioteca.id) ? (
-              <option value={p.origineScula.biblioteca.id}>{p.origineScula.nume}</option>
-            ) : null}
-          </select>
-        </label>
-        ) : null}
+        <ListaBiblioteca data-camp="freza-biblioteca" oferite={oferite} origine={p.origineScula} oprit={doarCitire}
+          onAlege={(f) => { alegeFreza(o.cheie, f); }} onMana={() => { schimba(o.cheie, { origineScula: null }); }} />
         <label title={t('export.freza.titlu')}>
           {t('export.freza.numar')}
           <input type="text" inputMode="numeric" value={p.numarScula} data-camp="scula" disabled={doarCitire} aria-label={t('export.freza.numar')}
@@ -444,6 +464,9 @@ export function FisaOperatie({ cheie, loc, c: ctx }: { readonly cheie: string; r
               onChange={(ev) => { schimba(o.cheie, { fundPlat: ev.target.checked }); }} />
             {t('export.fund')}
           </label>
+          {/* Freza dreaptă din „Frezele mele” (ADR 0300 §4, felia 16.A↑b-5): doar frezele plate. */}
+          <ListaBiblioteca data-camp="fund-biblioteca" oferite={drepte} origine={p.origineFund} oprit={doarCitire || !p.fundPlat}
+            onAlege={(f) => { alegeFreza(o.cheie, f, 'fund'); }} onMana={() => { schimba(o.cheie, { origineFund: null }); }} />
           <label>
             {t('export.freza.numar')}
             <input type="text" inputMode="numeric" value={p.numarSculaFund} data-camp="fund-scula" disabled={doarCitire || !p.fundPlat}
@@ -452,7 +475,7 @@ export function FisaOperatie({ cheie, loc, c: ctx }: { readonly cheie: string; r
           <label>
             {t('export.freza.diametru')}
             <input type="text" inputMode="decimal" value={p.diametruSculaFund} data-camp="fund-diametru" disabled={doarCitire || !p.fundPlat}
-              aria-invalid={p.fundPlat && (!b.fund || conflict !== undefined)} onChange={(ev) => { schimba(o.cheie, { diametruSculaFund: ev.target.value }); }} />
+              aria-invalid={p.fundPlat && (!b.fund || conflict !== undefined)} onChange={(ev) => { schimba(o.cheie, { diametruSculaFund: ev.target.value, origineFund: null }); }} />
           </label>
           <label title={t('export.fund.pas.titlu')}>
             {t('export.pas-lateral')}
@@ -545,6 +568,8 @@ export function FisaOperatie({ cheie, loc, c: ctx }: { readonly cheie: string; r
             {t('export.banda.freza')}
           </label>
           {p.frezaBanda && (<>
+          <ListaBiblioteca data-camp="banda-biblioteca" oferite={drepte} origine={p.origineBanda} oprit={doarCitire || !p.decupareBanda}
+            onAlege={(f) => { alegeFreza(o.cheie, f, 'banda'); }} onMana={() => { schimba(o.cheie, { origineBanda: null }); }} />
           <label>
             {t('export.freza.numar')}
             <input type="text" inputMode="numeric" value={p.numarSculaBanda} data-camp="banda-scula" className="numar-scula" disabled={doarCitire || !p.decupareBanda}
@@ -553,7 +578,7 @@ export function FisaOperatie({ cheie, loc, c: ctx }: { readonly cheie: string; r
           <label>
             {t('export.freza.diametru')}
             <input type="text" inputMode="decimal" value={p.diametruSculaBanda} data-camp="banda-diametru" disabled={doarCitire || !p.decupareBanda}
-              aria-invalid={!ok.freza || conflict !== undefined} onChange={(ev) => { schimba(o.cheie, { diametruSculaBanda: ev.target.value }); }} />
+              aria-invalid={!ok.freza || conflict !== undefined} onChange={(ev) => { schimba(o.cheie, { diametruSculaBanda: ev.target.value, origineBanda: null }); }} />
           </label>
           </>)}
           </>))(bandaRand(p), bandaBuna(p))}
@@ -671,6 +696,8 @@ export function FisaOperatie({ cheie, loc, c: ctx }: { readonly cheie: string; r
             {t('export.incrustatie-drept.freza-dop')}
           </label>
           {p.frezaDop && (<>
+          <ListaBiblioteca data-camp="dop-biblioteca" oferite={drepte} origine={p.origineDop} oprit={doarCitire}
+            onAlege={(f) => { alegeFreza(o.cheie, f, 'dop'); }} onMana={() => { schimba(o.cheie, { origineDop: null }); }} />
           <label>
             {t('export.freza.numar')}
             <input type="text" inputMode="numeric" value={p.numarSculaDop} data-camp="dop-scula" disabled={doarCitire}
@@ -679,7 +706,7 @@ export function FisaOperatie({ cheie, loc, c: ctx }: { readonly cheie: string; r
           <label>
             {t('export.freza.diametru')}
             <input type="text" inputMode="decimal" value={p.diametruSculaDop} data-camp="dop-diametru" disabled={doarCitire}
-              aria-invalid={!b.frezaDop || conflict !== undefined} onChange={(ev) => { schimba(o.cheie, { diametruSculaDop: ev.target.value }); }} />
+              aria-invalid={!b.frezaDop || conflict !== undefined} onChange={(ev) => { schimba(o.cheie, { diametruSculaDop: ev.target.value, origineDop: null }); }} />
           </label>
           <label title={t('export.pas-lateral.titlu')}>
             {t('export.pas-lateral')}

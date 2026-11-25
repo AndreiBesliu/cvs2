@@ -27,9 +27,9 @@ const are = (page: Page) => page.locator('#at-prinde-are');
 const rand = (page: Page, fel: string) => page.locator(`#at-prinde-lista [data-rand="${fel}"]`);
 const nume = (page: Page) => page.locator('#at-nume-piesa');
 
-const PE_STIFTURI = ['Pantă', 'Pantă inversă', 'Pană / aripă', 'Rotund / con', 'Arc', 'Știfturi pe lateral', 'Suport (bracket)', 'Cărămidă Technic', 'Clemă', 'Mâner', 'Bilă', 'Cupă', 'Cremalieră'];
-const IN_LOCASURI = ['Pantă', 'Pantă inversă', 'Pană / aripă', 'Rotund / con', 'Arc', 'Știfturi pe lateral', 'Suport (bracket)', 'Cărămidă Technic', 'Clemă', 'Mâner'];
-const PE_AX = ['Grindă', 'Cărămidă Technic', 'Bucșă / conector', 'Conector perpendicular', 'Conector în unghi', 'Roată dințată', 'Camă', 'Roată conică', 'Roată coroană', 'Conică dublă', 'Fulie',
+const PE_STIFTURI = ['Pantă', 'Pantă inversă', 'Pană / aripă', 'Rotund / con', 'Arc', 'Cadru / fereastră', 'Știfturi pe lateral', 'Suport (bracket)', 'Cărămidă Technic', 'Clemă', 'Mâner', 'Bilă', 'Cupă', 'Cremalieră'];
+const IN_LOCASURI = ['Pantă', 'Pantă inversă', 'Pană / aripă', 'Rotund / con', 'Arc', 'Cadru / fereastră', 'Știfturi pe lateral', 'Suport (bracket)', 'Cărămidă Technic', 'Clemă', 'Mâner'];
+const PE_AX = ['Grindă', 'Cărămidă Technic', 'Bucșă / conector', 'Conector perpendicular', 'Conector în unghi', 'Roată dințată', 'Șurub melc', 'Camă', 'Roată conică', 'Roată coroană', 'Conică dublă', 'Fulie',
   'Roată cu anvelopă', 'Șenilă', 'Elice', 'Elice de barcă', 'Ventilator cu carcasă', 'Roată cu palete'];
 
 test('cărămida 2 × 4: opt știfturi și opt locașuri; la deschidere, piesele care stau pe ea și cele pe care stă', async ({ page }) => {

@@ -3,7 +3,7 @@
 _cncvs2, biblioteca de freze („Frezele mele”), felia 16.A↑ adusă din etapa 16: ramura `wip/16.A-freze` (din `main`
 `c8b235ab`), ADR-urile 0300–0309 (liber: 0303), canalul `freze`; ADR 0300 ACCEPTAT pe 23.11 („Da, 1a–6a”), ADR 0302 ACCEPTAT pe
 24.11 („Da, 1a–5a”); 16.A↑a, ADR 0301, 16.A↑b-1 și 16.A↑c UNITE în `main`; 16.A↑b-2 și 16.A↑a-2 GATA pe ramură (PR-ul #22);
-16.A↑h-1 și 16.A↑h-2 UNITE (lotul 21); 16.A↑h-3 și 16.A↑h-4 în lotul 23; 16.A↑h-5 GATA pe ramură; 16.A↑b-3 GATA pe `wip/16.A-freze-b3` (cu #11, unită doar după ea)_
+16.A↑h-1 și 16.A↑h-2 UNITE (lotul 21); 16.A↑h-3 și 16.A↑h-4 în lotul 23; 16.A↑h-5 și 16.A↑b-3 UNITE (lotul 26); 16.A↑b-5 în lucru pe `wip/16.A-freze`_
 
 Pornită pe 23.11.2026, în sesiunea cloud a liniei, la cererea owner-ului: „Vreau sa pot crea freze l sau profiluri de freze in
 aplicatie si sa le salvez in cont”. Rândurile din prag: „Bibliotecă de freze cu geometrie reală (dreaptă, bilă, toroidală, V,
@@ -118,6 +118,16 @@ gravare, profil, formă desenată)” și „Freze de profil desenate de utiliza
   funcție a felului și laturii rândului; un câmp nou al fișei își cere grupul în `exportGrupuri.ts` (altfel cade
   `export.grupuri.test.ts`). Otrăvuri 16 / 16. Ramura se unește doar după #11 (sau odată cu ea). Urmează 16.A↑b-5 (fundul
   plat, frezele de rest, dopul, banda).
+- **24.11, seara: 16.A↑h-5 și 16.A↑b-3 unite în `main`** (lotul 26, `52a0aaa1`; PR-urile #22 și #26 închise ca unite).
+- **25.11, 09:35–: 16.A↑b-5 pe `wip/16.A-freze`** (adusă la `main` `f2678300`, cu relieful v28), la cuvântul owner-ului
+  transmis de sesiunea principală („vreau sa pornesti si celelalte sub-sesiuni”): listele „Din frezele mele” pe frezele în
+  plus ale rândului (fundul plat, frezele de rest, dopul drept, decuparea benzii), doar cu frezele plate (la o freză de rest,
+  doar cele mai mici decât cea dinainte); originea pe fiecare, scrisă de Exportă cu regula frezei operației (`cuOrigine`);
+  T-ul printre toate frezele ferestrei, fără cea înlocuită (`frezeRanduri`). **Capcane:** proba grupurilor citește doar
+  `data-camp="…"` scris în sursă, deci o componentă care primește numele câmpului îl ia ca `data-camp="…"` (ca `Cartonase`),
+  nu ca alt nume de proprietate; legarea rândurilor e doar între operațiile aceleiași piese (proba ei pornește din Scade,
+  ca proba ordinii de mână). Tot aici, tabelul frezelor de rest (constatarea 9 a auditului exportului, dată liniei).
+  Mărimea: pornirea neschimbată, totalul +1,0 kB (882,0 / 1 000). Urmează 16.A↑b-4 (nota „s-a schimbat în bibliotecă”).
 - **Feliile**, în ordine: 16.A↑a (biblioteca în browser, fereastra, fișierul), apoi b (alegerea în proiect, v27), c
   (contul), d (calibrarea), e (bila și toroidala), f (profilul desenat), g (valorile pe material).
 

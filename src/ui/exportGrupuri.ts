@@ -6,13 +6,13 @@
 
 /** Un grup al ferestrei: răspunde la o singură întrebare și are, din 28.8↑b, desenul lui. */
 export type GrupExport =
-  | 'foi' | 'origine' | 'z0' | 'post' | 'unitati' | 'schimbare' | 'setari'
+  | 'foi' | 'origine' | 'z0' | 'post' | 'unitati' | 'fisier' | 'schimbare' | 'setari'
   | 'taietura' | 'freza' | 'adancime' | 'sens' | 'rampa' | 'intrari' | 'colturi' | 'urechi'
   | 'golire' | 'coborare' | 'rest' | 'gaurire' | 'fund' | 'incrustatie' | 'banda' | 'locas' | 'treapta' | 'dop';
 
 /** Grupurile foii și ale mașinii, în ordinea din fereastră (cele două fișe de dinaintea operațiilor). */
 export const GRUPURI_FOAIE: readonly GrupExport[] = ['foi', 'origine', 'z0'];
-export const GRUPURI_MASINA: readonly GrupExport[] = ['post', 'unitati', 'schimbare', 'setari'];
+export const GRUPURI_MASINA: readonly GrupExport[] = ['post', 'unitati', 'fisier', 'schimbare', 'setari'];
 
 /** Ce știe fișa despre operație ca să-și aleagă grupurile: felul ei și alegerile care aduc grupuri noi. */
 export type FelFisa = {
@@ -48,7 +48,7 @@ export function grupuriOperatie(f: FelFisa): readonly GrupExport[] {
  */
 export const GRUP_CAMP: Readonly<Record<string, readonly GrupExport[]>> = {
   origine: ['origine'], z0: ['z0'], supracursa: ['z0'], 'supracursa-prin-foaie': ['z0'],
-  post: ['post'], unitati: ['unitati'], strategie: ['schimbare', 'golire'], 'setari-masina': ['setari'],
+  post: ['post'], unitati: ['unitati'], 'nume-fisier': ['fisier'], strategie: ['schimbare', 'golire'], 'setari-masina': ['setari'],
   latura: ['taietura'], directie: ['taietura'], despartire: ['taietura'],
   scula: ['freza'], diametru: ['freza'], 'freza-biblioteca': ['freza'], 'forma-scula': ['freza'], 'unghi-v': ['freza'], 'varf-v': ['freza'],
   adancime: ['adancime'], pas: ['adancime'],
@@ -60,19 +60,19 @@ export const GRUP_CAMP: Readonly<Record<string, readonly GrupExport[]>> = {
   'urechi-alese': ['urechi'], 'urechi-lemn': ['urechi'], 'urechi-lungi': ['urechi'], 'urechi-scurte': ['urechi'], 'urechi-mijloc': ['urechi'],
   'pas-lateral': ['golire'], 'unghi-paralel': ['golire'],
   coborare: ['coborare'], 'unghi-coborare': ['coborare'], 'lungime-zigzag': ['coborare'], 'raza-elice': ['coborare'], 'rampe-zigzag': ['coborare'],
-  'rest-adauga': ['rest'], 'rest-scula': ['rest'], 'rest-diametru': ['rest'], 'rest-pas': ['rest'], 'rest-scoate': ['rest'],
+  'rest-adauga': ['rest'], 'rest-biblioteca': ['rest'], 'rest-scula': ['rest'], 'rest-diametru': ['rest'], 'rest-pas': ['rest'], 'rest-scoate': ['rest'],
   retragere: ['gaurire'],
-  'fund-plat': ['fund'], 'fund-scula': ['fund'], 'fund-diametru': ['fund'], 'fund-pas': ['fund'],
+  'fund-plat': ['fund'], 'fund-biblioteca': ['fund'], 'fund-rest-biblioteca': ['fund'], 'fund-scula': ['fund'], 'fund-diametru': ['fund'], 'fund-pas': ['fund'],
   'fund-rest-adauga': ['fund'], 'fund-rest-scula': ['fund'], 'fund-rest-diametru': ['fund'], 'fund-rest-pas': ['fund'], 'fund-rest-scoate': ['fund'],
   'inc-joc': ['incrustatie', 'dop'], 'inc-acelasi': ['incrustatie'], 'inc-fierastrau': ['incrustatie', 'dop'], 'inc-margine': ['incrustatie', 'dop'],
   'inc-jur': ['incrustatie'],
   'banda-latime': ['banda'], 'banda-minima': ['banda'], 'banda-decupare': ['banda'], 'banda-placa': ['banda'], 'banda-placa-minima': ['banda'],
   'banda-punti-numar': ['banda'], 'banda-punti-latime': ['banda'], 'banda-punti-grosime': ['banda'], 'banda-freza': ['banda'],
-  'banda-scula': ['banda'], 'banda-diametru': ['banda'],
+  'banda-scula': ['banda'], 'banda-biblioteca': ['banda'], 'banda-diametru': ['banda'],
   'inc-lateral': ['locas'], 'inc-locas': ['locas'],
   'inc-treapta': ['treapta'], 'inc-treapta-adancime': ['treapta'], 'inc-treapta-latime': ['treapta'],
   'inc-dop': ['dop'], 'inc-sprijin': ['dop'], 'dop-punti-numar': ['dop'], 'dop-punti-latime': ['dop'], 'dop-punti-grosime': ['dop'],
-  'inc-freza-dop': ['dop'], 'dop-scula': ['dop'], 'dop-diametru': ['dop'], 'dop-pas': ['dop'],
+  'inc-freza-dop': ['dop'], 'dop-biblioteca': ['dop'], 'dop-rest-biblioteca': ['dop'], 'dop-scula': ['dop'], 'dop-diametru': ['dop'], 'dop-pas': ['dop'],
   'dop-rest-adauga': ['dop'], 'dop-rest-scula': ['dop'], 'dop-rest-diametru': ['dop'], 'dop-rest-pas': ['dop'], 'dop-rest-scoate': ['dop'],
   'confirma-iesire': [], 'confirma-placute': [], 'confirma-ordine': [],
 };
