@@ -2013,6 +2013,10 @@
       "ro": "Fereastra „Exportă G-code” după audit",
       "en": "The “Export G-code” window after the audit"
     },
+    "721364fba08a6294": {
+      "ro": "Cotele ca DIMENSION în DXF și cifrele ca text",
+      "en": "Dimensions as DIMENSION in DXF and numbers as text"
+    },
     "7213686355655294": {
       "ro": "Șurubul melc în atelierul Easy 3Draw",
       "en": "The worm screw in the Easy 3Draw workshop"
@@ -2116,6 +2120,10 @@
     "7696fbb91ed073ed": {
       "ro": "3.Tk (fulia)",
       "en": "3.Tk (the pulley)"
+    },
+    "7715bfe2a197d4cd": {
+      "ro": "**Cotele ca DIMENSION în DXF și cifrele ca text** (fără mașină; ADR 0330 §7, „Implementarea (10.4↑c-2)”; ramura `wip/10.4-cote`, în sesiunea cloud a liniei cotelor, la „ok, porneste 10.4↑c-2 si 16.A↑b-6” al owner-ului, transmis de sesiunea principală). Setări › Cotele › Exportul: **Cotele în DXF** (Cote (DIMENSION), implicit, sau Linii și cifre) și **Cifrele** (Trăsături, implicit, sau Text). În DXF, fiecare cotă e o entitate DIMENSION (felul, punctele de definiție, măsura, textul scris, stilul `CNCVS2` din setări), cu desenul ei într-un bloc anonim `*Dn`; cifrele ca text sunt MTEXT, `<text>` în SVG și Helvetica în PDF și EPS (fără font în fișier). Cu felul de dinainte, fișierele c-1 sunt octet cu octet aceleași. Oracolul Python, cu corpusul al doilea (toate felurile) și unul ASCII: fiecare DIMENSION și blocul ei pe hârtie (ezdxf), textul în PDF, SVG și EPS (PyMuPDF, Ghostscript). Întrebarea 7 (textul cotei DIMENSION), la owner, cu recomandarea implementată. Manualul (ro, en; și grupul Exportul din „Setările”, lipsă în română din c-1). Unitare noi 11, e2e noi 2; otrăvuri 53 / 53 (49 unitare și pe oracol, 4 e2e; două prinse după probele noi, una înlocuită). Pornirea 111,2 kB (neschimbată), totalul 890,1 → 893,2 / 1 000.",
+      "en": "**Dimensions as DIMENSION in DXF and numbers as text** (no machine; ADR 0330 §7, “Implementation (10.4↑c-2)”; branch `wip/10.4-cote`, in the dimensions line's cloud session, at the owner's “ok, porneste 10.4↑c-2 si 16.A↑b-6”, passed on by the main session). Settings › Dimensions › Export: **Dimensions in DXF** (Dimensions (DIMENSION), the default, or Lines and numbers) and **Numbers** (Strokes, the default, or Text). In DXF, each dimension is a DIMENSION entity (the kind, the definition points, the measurement, the written text, the `CNCVS2` style from the settings), with its drawing in an anonymous `*Dn` block; numbers as text are MTEXT, `<text>` in SVG and Helvetica in PDF and EPS (no font in the file). With the previous kind, the c-1 files are byte for byte the same. The Python oracle, with the second corpus (all kinds) and an ASCII one: each DIMENSION and its block on paper (ezdxf), the text in PDF, SVG and EPS (PyMuPDF, Ghostscript). Question 7 (the DIMENSION's text), with the owner, the recommendation implemented. The manual (ro, en; and the Export group in “Settings”, missing in Romanian since c-1). 11 new unit tests, 2 new e2e; poisons 53 / 53 (49 unit and on the oracle, 4 e2e; two caught after the new probes, one replaced). Startup 111.2 kB (unchanged), total 890.1 → 893.2 / 1,000."
     },
     "77463cd87505b4ad": {
       "ro": "Utilizarea aplicației: fila Utilizare din admin",
