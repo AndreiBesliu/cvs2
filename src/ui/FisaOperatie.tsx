@@ -6,7 +6,7 @@ import { t } from '../i18n/t.ts';
 import { laturiOferite, MARGINI_OPERATIE, susLaMicron } from './actiuniExportTipuri.ts';
 import { citesteNumar } from './numar.ts';
 import { grupuriOperatie, type GrupExport } from './exportGrupuri.ts';
-import { coborareDesen, treceriEgale } from './exportDeseneCalcul.ts';
+import { coborareDesen } from './exportDeseneCalcul.ts';
 import {
   DesenAdancime, DesenBanda, DesenCoborare, DesenDopDrept, DesenFreza, DesenFund, DesenGaurire, DesenGolire, DesenIncrustatie,
   DesenIntrari, DesenLocasDrept, DesenRampa, DesenRest, DesenSens, DesenTreapta, DesenUrechi, type DesenComun,
@@ -14,8 +14,8 @@ import {
 import { Card, Cartonase, GrupCartonase, Poza } from './exportPoze.tsx';
 import {
   bandaBuna, bandaRand, CHEI_LATURA, CHEI_SENS, faraNumar, FELURI_COBORARE, inMargini, jocFolosit, margineBuna, SENSURI,
-  spatiuFolosit, URECHI_IMPLICITE, type BunRand, type FrezaOferita, type Latura, type OperatieExport, type OrigineFreza, type Rand,
-  type UndeFreza,
+  spatiuFolosit, URECHI_IMPLICITE, type BunRand, type FrezaOferita, type HartieRand, type Latura, type OperatieExport,
+  type OrigineFreza, type Rand, type UndeFreza,
 } from './exportRand.ts';
 
 /** Pseudo-rândul cu care se cer frezele drepte (fundul plat, frezele de rest, dopul, decuparea benzii): doar frezele plate. */
@@ -67,7 +67,11 @@ export interface ContextFisa {
   readonly greseliRand: (cheie: string) => ReadonlyArray<readonly [string, GrupExport]>;
   /** Un T cu două freze diferite (numărul și cele două diametre scrise), dacă e. */
   readonly conflict: readonly [number, ReadonlyMap<string, string>] | undefined;
-  readonly treceri: (p: Rand) => readonly [number | null, number];
+  /**
+   * Rândul „pe hârtie” (ADR 0291, felia 28.8↑h): adâncimea tăiată, trecerile și găurirea, cum le face lucrarea cu valorile
+   * scrise. Desenele, nota trecerilor și câmpul ieșirii le citesc de aici, nu din formule copiate.
+   */
+  readonly hartie: (cheie: string, p: Rand) => HartieRand;
   readonly taieturaRand: (p: Rand) => Latura | 'buzunar' | 'gaurire' | 'vcarve' | 'incrustatie' | 'incrustatie-drept';
   readonly text: (x: number) => string;
   readonly fmtFreza: Intl.NumberFormat;
@@ -91,8 +95,8 @@ export interface ContextFisa {
 
 export function FisaOperatie({ cheie, loc, c: ctx }: { readonly cheie: string; readonly loc: number; readonly c: ContextFisa }): ReactNode {
   const {
-    dupaCheie, param, total, doarCitire, schimba, randBun, greseliRand, conflict, treceri, taieturaRand, text, fmtFreza, fmtTrecere, grosimeFoaie,
-    supracursaCitita, cuSupracursa, onAlegeUrechi, frezeRest, grup, frezeOferite, alegeFreza,
+    dupaCheie, param, total, doarCitire, schimba, randBun, greseliRand, conflict, hartie, taieturaRand, text, fmtFreza, fmtTrecere,
+    grosimeFoaie, supracursaCitita, cuSupracursa, onAlegeUrechi, frezeRest, grup, frezeOferite, alegeFreza,
   } = ctx;
   const o = dupaCheie.get(cheie);
   const p = o ? param[o.cheie] : undefined;
@@ -117,22 +121,27 @@ export function FisaOperatie({ cheie, loc, c: ctx }: { readonly cheie: string; r
   });
   // Desenul fiecărei întrebări (ADR 0290, felia 28.8↑b), din valorile rândului; grupurile fără desen încă, doar explicația.
   const adancimeRand = buz && p.incrustatieDreapta && p.locasInc === 'gaura' && grosimeFoaie !== undefined ? grosimeFoaie : citesteNumar(p.adancime);
+  // Ce taie lucrarea cu valorile scrise (ADR 0291, felia 28.8↑h): adâncimea (cu supracursa prin foaie), trecerile, găurirea.
+  const h = hartie(o.cheie, p), trecere = h.treceri?.[0] ?? null;
+  // Câmpul ieșirii din gaură nu se aplică pe elice: lipsește când lucrarea găurește toate cercurile așa. Cu un cerc refuzat
+  // (freza încă de ales) sau cu o valoare greșită, rămâne la vedere.
+  const cuCiocanire = !h.gaurire || !h.gaurire.cercuri.every((c) => c.fel === 'elice') || h.gaurire.cercuri.length === 0 || !b.retragere;
   const desen = (g: GrupExport): ((c: DesenComun) => ReactNode) | undefined => {
     switch (g) {
       case 'freza': return (c) => <DesenFreza c={c} numar={p.numarScula} diametru={citesteNumar(p.diametruScula)} v={p.formaScula === 'v'}
         unghi={citesteNumar(p.unghiV)} varfPlat={citesteNumar(p.varfV)} />;
-      case 'adancime': return (c) => <DesenAdancime c={c} adancime={adancimeRand} pas={citesteNumar(p.pas)} grosime={grosimeFoaie}
+      case 'adancime': return (c) => <DesenAdancime c={c} adancime={h.adancime} treceri={h.treceri} grosime={grosimeFoaie}
         supracursa={cuSupracursa ? supracursaCitita ?? 0 : 0} />;
       case 'sens': return () => <DesenSens sens={p.sens}
         fel={p.tip !== 'profil' || p.latura === 'interior' ? 'gaura' : p.latura} />;
-      case 'rampa': return (c) => <DesenRampa c={c} rampa={p.rampa && !nuProfil} lungime={citesteNumar(p.lungimeRampa)} adancime={adancimeRand} pas={citesteNumar(p.pas)} />;
+      case 'rampa': return (c) => <DesenRampa c={c} rampa={p.rampa && !nuProfil} lungime={citesteNumar(p.lungimeRampa)} trecere={trecere} />;
       case 'intrari': return (c) => <DesenIntrari c={c} intrari={p.intrari && p.latura !== 'pe-linie' && !nuProfil} raza={citesteNumar(p.razaIntrare)} />;
       case 'golire': return (c) => <DesenGolire c={c} diametru={citesteNumar(p.diametruScula)} pas={citesteNumar(p.pasLateral)}
         paralel={p.strategie === 'paralel'} unghi={citesteNumar(p.unghiParalel)} />;
-      case 'coborare': return (c) => <DesenCoborare c={c} fel={p.coborare} bun={b.coborare} trecere={treceriEgale(adancimeRand, citesteNumar(p.pas))?.d ?? null}
+      case 'coborare': return (c) => <DesenCoborare c={c} fel={p.coborare} bun={b.coborare} trecere={trecere}
         unghi={citesteNumar(p.unghiCoborare)} lungime={citesteNumar(p.lungimeZigzag)} raza={citesteNumar(p.razaElice)} />;
       case 'rest': return (c) => <DesenRest c={c} diametru={citesteNumar(p.diametruScula)} rest={p.rest.map((x) => citesteNumar(x.diametru))} />;
-      case 'gaurire': return (c) => <DesenGaurire c={c} adancime={adancimeRand} pas={citesteNumar(p.pas)} retragere={citesteNumar(p.retragereCompleta)} />;
+      case 'gaurire': return (c) => <DesenGaurire c={c} hartie={h} diametru={citesteNumar(p.diametruScula)} retragere={citesteNumar(p.retragereCompleta)} />;
       case 'fund': return (c) => <DesenFund c={c} adancime={citesteNumar(p.adancime)} unghi={citesteNumar(p.unghiV)} fundPlat={p.fundPlat}
         diametruFund={citesteNumar(p.diametruSculaFund)} incrustatie={p.incrustatie} joc={citesteNumar(p.jocInc)} />;
       case 'incrustatie': return (c) => <DesenIncrustatie c={c} adancime={citesteNumar(p.adancime)} unghi={citesteNumar(p.unghiV)}
@@ -249,7 +258,11 @@ export function FisaOperatie({ cheie, loc, c: ctx }: { readonly cheie: string; r
           {t('export.pas')}
           <input type="text" inputMode="decimal" value={p.pas} data-camp="pas" disabled={doarCitire} aria-invalid={!b.pas} onChange={(ev) => { schimba(o.cheie, { pas: ev.target.value }); }} />
         </label>
-        {((n, d) => n !== null && <span className="nota-camp" data-treceri>{t('export.treceri', { n, mm: fmtTrecere.format(d) })}</span>)(...treceri(p))}
+        {h.treceri && h.adancime !== null && trecere !== null && (
+          <span className="nota-camp" data-treceri>{h.adancime === adancimeRand
+            ? t('export.treceri', { n: h.treceri.length, mm: fmtTrecere.format(trecere) })
+            : t('export.treceri.prin', { n: h.treceri.length, mm: fmtTrecere.format(trecere), a: fmtTrecere.format(h.adancime) })}</span>
+        )}
       </div>);
       case 'sens': return (<div className="dx-rand">
         {/* Pe linie, scula taie ambii pereți: sensul nu schimbă materialul (ADR 0027 §3). */}
@@ -423,7 +436,7 @@ export function FisaOperatie({ cheie, loc, c: ctx }: { readonly cheie: string; r
           {p.coborare === 'zigzag' && (() => {
             // Câte rampe face zigzagul pe o trecere, cum le va tăia lucrarea: pe trecerea egală (adâncimea / n), nu pe pasul
             // scris (10 mm cu pasul 6 = două treceri de 5).
-            const z = coborareDesen('zigzag', treceriEgale(adancimeRand, citesteNumar(p.pas))?.d ?? null, citesteNumar(p.unghiCoborare),
+            const z = coborareDesen('zigzag', trecere, citesteNumar(p.unghiCoborare),
               citesteNumar(p.lungimeZigzag), null);
             if (z?.fel !== 'zigzag') return null;
             return <span className="nota-coborare" data-camp="rampe-zigzag">{t('export.coborare.rampe', { n: z.rampe })}</span>;
@@ -446,7 +459,7 @@ export function FisaOperatie({ cheie, loc, c: ctx }: { readonly cheie: string; r
       </div>);
       case 'gaurire': return (<div className="dx-rand">
           {/* Găurirea (ADR 0087): pasul e cât coboară freza între două retrageri; aici, când iese din gaură. */}
-          {gaura && (
+          {gaura && cuCiocanire && (
           <div className="campuri-gaurire" data-gaurire={o.cheie}>
           <label title={t('export.gaurire.retragere.titlu')}>
             {t('export.gaurire.retragere')}

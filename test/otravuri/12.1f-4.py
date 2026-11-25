@@ -21,9 +21,9 @@ CON = 'src/app/ExportConectat.tsx'
 APP = 'src/app/App.tsx'
 
 # ---- Ce taie lucrarea ----
-o('F01', PRIN, "  const prin = (o: Operatie): boolean => o.tip !== 'vcarve' && !o.incrustatie &&",
-  "  const prin = (o: Operatie): boolean => !o.incrustatie &&", 'prin', 'V-carve-ul cât foaia coboară și el')
-o('F02', PRIN, "o.tip !== 'vcarve' && !o.incrustatie && Math.abs", "o.tip !== 'vcarve' && Math.abs", 'prin', 'incrustația cât foaia coboară și ea')
+o('F01', PRIN, "  o.tip !== 'vcarve' && o.incrustatie === 'fara' &&",
+  "  o.incrustatie === 'fara' &&", 'prin', 'V-carve-ul cât foaia coboară și el')
+o('F02', PRIN, "o.tip !== 'vcarve' && o.incrustatie === 'fara' && Math.abs", "o.tip !== 'vcarve' && Math.abs", 'prin', 'incrustația cât foaia coboară și ea')
 o('F03', PRIN, 'Math.abs(o.adancime - grosime) <= EPS_FOAIE;', 'o.adancime >= grosime - EPS_FOAIE;', 'prin',
   'și adâncimile deja peste foaie (voia) se schimbă')
 o('F04', PRIN, 'Math.abs(o.adancime - grosime) <= EPS_FOAIE;', 'Math.abs(o.adancime - grosime) <= 3;', 'prin',

@@ -15,14 +15,10 @@
 import { arc, type Contur, type Punct } from '../geom/contur.ts';
 import type { Miscare } from '../ir/ir.ts';
 import { parcurge } from './parcurgere.ts';
-import { adancimiTreceri } from './profil.ts';
+import { felGaurire, pasiCiocanire } from './gaurireFel.ts';
+import { adancimiTreceri } from './treceri.ts';
 
-/** Cât poate diferi cercul de freză ca să fie găurit în centru, în mm: gaura iese cât freza, deci cât cercul ± atât. */
-export const TOLERANTA_GAURA = 0.02;
-/** Cât se ridică freza între doi pași fără ieșire (rupe așchia), în mm. */
-export const RETRAGERE_PARTIALA = 1;
-/** Cât deasupra fundului de dinainte coboară rapid freza după o ieșire, în mm. */
-export const APROPIERE = 0.5;
+export { APROPIERE, RETRAGERE_PARTIALA, TOLERANTA_GAURA } from './gaurireFel.ts';
 
 export type ParametriGaurire = {
   readonly centru: Punct;
@@ -50,27 +46,19 @@ const mm = (x: number): string => String(Math.round(x * 1000) / 1000);
 export function traseuGaurire(p: ParametriGaurire): RezultatGaurire {
   const D = p.diametruScula, Dc = p.diametru;
   if (!(D > 0) || !(Dc > 0)) return { ok: false, motiv: `diametrele trebuie să fie pozitive (cercul Ø${Dc}, freza Ø${D})` };
-  if (Dc < D - TOLERANTA_GAURA) return { ok: false, motiv: `cercul de Ø${mm(Dc)} e mai mic decât freza (Ø${mm(D)}): găurirea cere o freză cel mult cât el` };
-  if (Dc > 2 * D) return { ok: false, motiv: `cercul de Ø${mm(Dc)} trece de două diametre ale frezei (Ø${mm(D)}): în centru ar rămâne un miez, deci e un buzunar` };
+  const fel = felGaurire(Dc, D);
+  if (fel === 'mic') return { ok: false, motiv: `cercul de Ø${mm(Dc)} e mai mic decât freza (Ø${mm(D)}): găurirea cere o freză cel mult cât el` };
+  if (fel === 'mare') return { ok: false, motiv: `cercul de Ø${mm(Dc)} trece de două diametre ale frezei (Ø${mm(D)}): în centru ar rămâne un miez, deci e un buzunar` };
   if (!(Number.isInteger(p.retragereCompleta) && p.retragereCompleta >= 1)) {
     return { ok: false, motiv: `retragerea completă se face la un număr întreg de pași, cel puțin 1 (${p.retragereCompleta})` };
   }
   const adancimi = adancimiTreceri(p.adancime, p.pas);
   if (typeof adancimi === 'string') return { ok: false, motiv: adancimi };
   const m: Miscare[] = [{ tip: 'rapida', la: { Z: p.zSigur } }];
-  if (Dc - D <= TOLERANTA_GAURA) {
+  if (fel === 'ciocanire') {
     m.push({ tip: 'rapida', la: { X: p.centru.x, Y: p.centru.y } });
-    for (const [k, d] of adancimi.entries()) {
-      if (k > 0) {
-        const fund = adancimi[k - 1] as number;
-        if (k % p.retragereCompleta === 0) {
-          m.push({ tip: 'rapida', la: { Z: p.zSigur } });
-          m.push({ tip: 'rapida', la: { Z: -fund + APROPIERE } });
-        } else {
-          m.push({ tip: 'rapida', la: { Z: -fund + RETRAGERE_PARTIALA } });
-        }
-      }
-      m.push({ tip: 'taiere', la: { Z: -d }, avans: p.avansPlonjare });
+    for (const x of pasiCiocanire(adancimi, p.retragereCompleta)) {
+      m.push(x.taie ? { tip: 'taiere', la: { Z: x.z }, avans: p.avansPlonjare } : { tip: 'rapida', la: { Z: x.z === 'sus' ? p.zSigur : x.z } });
     }
     m.push({ tip: 'rapida', la: { Z: p.zSigur } });
     return { ok: true, fel: 'ciocanire', miscari: m };
