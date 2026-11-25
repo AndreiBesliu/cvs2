@@ -14407,6 +14407,27 @@ ce se poate”
 - **Documentele:** decizia în `CLAUDE.md` (paragraful de stare al construcțiilor e al liniei; versiunea extensiei,
   18.28.0, următoarea 18.29.0); indexul liniilor; starea din `docs/linii/principala.md`.
 
+## 2026-11-25 — Linia reliefului: felia 18.1↑b, modelul reliefului în vederea 3D („Modelul / Tăiat”) (sesiune cloud)
+
+**Prompt:** mesajul sesiunii principale, cu cuvântul owner-ului („am resetat limita saptamanale. azi este miercuri.” și
+„vreau sa pornesti si celelalte sub-sesiuni”): „Așteptai cuvântul lui pentru 18.1↑b […]: acesta e. Pornește 18.1↑b.”
+**Started:** 25.11, 09:35. **Completed:** 25.11, 10:55.
+
+- **`main` adus** (`f2678300`, fără ciocniri), apoi **proba întâi** (`test/unit/relief.model.test.ts`): compusul calculat
+  dală cu dală e exact compusul întreg redus cu k, ca desenul de pe planșă; o dală schimbată se cere, se citește din bază și
+  se compune singură; o dală goală a unui strat nu intră în cheie.
+- **Nucleul** `src/relief/model.ts` (`dalaModel`), cererea `model` a workerului reliefului, cheile și încărcarea
+  (`src/app/modelRelief.ts`), citirea hărților și a dalelor alese (`citesteHarta`, `citesteDale`).
+- **Vederea 3D:** comutatorul „Modelul / Tăiat”; modelul exact (ADR 0310 §4), în golul lui din placă (stencil), cu vârful la
+  fața plăcii; texturile pe dale (`texSubImage2D`), după piesă și nod; vederea urmează documentul. „Tăiat”, ca până acum.
+- **Cotele:** cazul reliefului în `cote.lipire.test.ts` (cerut de linia cotelor).
+- **Mărimea:** pornirea +0 (111,2; cu ușa și cu Atelierul 116,5 / 120), totalul 880,9 → 884,8 / 900 kB; nicio bucată nouă.
+- **Probele:** unitare (`relief.model`, `cote.lipire`), e2e `relief3d.spec.ts` (3) și cele vechi ale vederii 3D și ale
+  reliefului (16), manualul; otrăvurile 22 / 22 (`test/otravuri/18.1b.py`).
+- **`main` adus din nou** (`caddd661`, plafoanele 1 000 / 125 kB, ADR 0146; ciocnirea doar în DEVLOG). Porțile, în CI, pe
+  `3214f4da`: rapidul verde; completul 45572436393 verde (unit 10 452 / 0, 12 sărite; e2e 833 / 833; funcțiile pe emulatoare
+  136 / 136; paginile 59 / 59); pornirea 111,1 / 125 (cu ușa 116,1, cu Atelierul 116,4), totalul 884,8 / 1 000 kB.
+
 ## 2026-11-25 — Sesiunea principală în cloud: lotul 30 (atelierul Easy 3Draw: punctele de prindere), pe test; liniile, repornite (Model: Claude Fable 5.2)
 
 **Prompt:** regula „pe test publici liber”, după a douăzeci și noua unire; apoi „am resetat limita saptamanale. azi este miercuri.” și „vreau sa pornesti si celelalte sub-sesiuni”

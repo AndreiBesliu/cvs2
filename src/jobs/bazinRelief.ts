@@ -23,7 +23,7 @@ export const TERMEN_RELIEF_MS = 60_000;
 type Raspuns = { readonly ok: true; readonly raspuns: RaspunsRelief } | { readonly ok: false; readonly motiv: string };
 
 function transferabile(c: CerereRelief): ArrayBuffer[] {
-  if (c.tip !== 'desen') return [];
+  if (c.tip === 'din-imagine') return [];
   const t = new Set<ArrayBuffer>();
   for (const s of c.straturi) for (const o of Object.values(s.octeti)) t.add(o.buffer);
   return [...t];

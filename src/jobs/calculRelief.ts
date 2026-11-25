@@ -6,13 +6,17 @@
  */
 import { compune, type Mod } from '../relief/compunere.ts';
 import { CELULA_MAXIMA, CELULA_MINIMA, LATURA_MAXIMA, LATURA_MM_MAXIMA } from '../relief/grila.ts';
-import { hartaDinText } from '../relief/harta.ts';
+import { dalaDinOcteti, type Dala } from '../relief/dala.ts';
+import { dale as numarDale, LATURA_DALA } from '../relief/grila.ts';
+import { hartaDinText, type Harta } from '../relief/harta.ts';
 import { reliefDinPixeli, type OptiuniImagine } from '../relief/imagine.ts';
+import { dalaModel, FACTORI_MODEL, type DalaModel, type TampoaneModel } from '../relief/model.ts';
 import { daleDinHarta, grilaDinDale, stratDinGrila } from '../relief/strat.ts';
 import { factorReducere, intervalZ, reduce, umbreste, type Umbrit } from '../relief/umbrire.ts';
 
 export type { Umbrit } from '../relief/umbrire.ts';
 export type { OptiuniImagine } from '../relief/imagine.ts';
+export type { DalaModel } from '../relief/model.ts';
 
 /** Pixelii unei imagini, rând cu rând de sus în jos, RGBA (testele și imaginile deja decodate). */
 export type PixeliRelief = { readonly latime: number; readonly inaltime: number; readonly rgba: Uint8ClampedArray<ArrayBuffer> | Uint8Array<ArrayBuffer> };
@@ -39,6 +43,16 @@ export type CerereRelief =
     readonly tip: 'desen';
     readonly nx: number; readonly ny: number; readonly celula: number;
     readonly straturi: readonly StratDeDesenat[];
+  }
+  | {
+    /**
+     * Modelul pentru vederea 3D (ADR 0310 §7, felia 18.1↑b): dalele cu indicii dați (din hartă), compuse și reduse cu `k`
+     * (din `FACTORI_MODEL`); straturile aduc octeții doar ai dalelor cerute.
+     */
+    readonly tip: 'model';
+    readonly nx: number; readonly ny: number; readonly k: number;
+    readonly straturi: readonly StratDeDesenat[];
+    readonly dale: readonly number[];
   };
 
 /** De ce nu se face relieful: imaginea nu se decodează, are prea mulți pixeli, celula iese din margini, totul e transparent. */
@@ -63,7 +77,10 @@ export type DesenRelief = {
   readonly umbrit: Umbrit; readonly k: number;
 };
 
-export type RaspunsRelief = ReliefDinImagine | DesenRelief | RefuzRelief;
+/** Modelul unui relief: dalele cerute, compuse și reduse cu `k`, fiecare cu Z-ul ei. */
+export type ModelRelief = { readonly ok: true; readonly tip: 'model'; readonly k: number; readonly dale: readonly DalaModel[] };
+
+export type RaspunsRelief = ReliefDinImagine | DesenRelief | ModelRelief | RefuzRelief;
 
 /** Imaginea decodată de browser exact (fără conversie de culoare și fără alfa premultiplicat, ADR 0310 §3). */
 async function decodeaza(b: Blob): Promise<PixeliRelief | RefuzRelief> {
@@ -167,12 +184,47 @@ function desen(c: Extract<CerereRelief, { tip: 'desen' }>): DesenRelief | RefuzR
   return { ok: true, tip: 'desen', z: intervalZ(compus), umbrit: umbreste(r.valori, r.nx, r.ny, c.celula * k), k };
 }
 
+/**
+ * Dalele modelului (felia 18.1↑b): fiecare dală cerută, compusă din dalele straturilor vizibile ale aceleiași poziții; o
+ * intrare goală a hărții nu atinge compusul, o constantă e o dală constantă. Un k sau un indice în afara grilei e o greșeală
+ * a celui care cere (excepție); octeții lipsă și o hartă a altei grile, un refuz.
+ */
+function model(c: Extract<CerereRelief, { tip: 'model' }>): ModelRelief | RefuzRelief {
+  if (!FACTORI_MODEL.includes(c.k)) throw new Error(`factorul modelului ${c.k} nu e o putere a lui 2 până la 256`);
+  const { tx, ty } = numarDale(c.nx, c.ny), harti: Array<{ readonly mod: Mod; readonly h: Harta; readonly octeti: StratDeDesenat['octeti'] }> = [];
+  for (const s of c.straturi) {
+    if (!s.vizibil) continue;
+    const h = hartaDinText(s.harta);
+    if (!h || h.nx !== c.nx || h.ny !== c.ny) return { ok: false, cod: 'harta' };
+    harti.push({ mod: s.mod, h, octeti: s.octeti });
+  }
+  const lipsa = new Set<string>(), dale: DalaModel[] = [], t: TampoaneModel = { straturi: [], compus: new Float32Array(LATURA_DALA * LATURA_DALA) };
+  for (const index of c.dale) {
+    if (!Number.isInteger(index) || index < 0 || index >= tx * ty) throw new Error(`dala ${index} nu e în grila de ${tx} × ${ty}`);
+    const ti = index % tx, tj = (index - ti) / tx, straturi: Array<{ readonly mod: Mod; readonly dala: Dala }> = [];
+    for (const s of harti) {
+      const e = s.h.dale[index] ?? null;
+      if (e === null) continue;
+      if (typeof e === 'number') { straturi.push({ mod: s.mod, dala: { fel: 'constanta', m: e } }); continue; }
+      const o = s.octeti[e], d = o ? dalaDinOcteti(o) : null;
+      if (d) straturi.push({ mod: s.mod, dala: d });
+      else lipsa.add(e);
+    }
+    if (lipsa.size === 0) {
+      dale.push(dalaModel(index, straturi, Math.min(LATURA_DALA, c.nx - ti * LATURA_DALA), Math.min(LATURA_DALA, c.ny - tj * LATURA_DALA), c.k, t));
+    }
+  }
+  if (lipsa.size > 0) return { ok: false, cod: 'dale-lipsa', detaliu: [...lipsa].join(',') };
+  return { ok: true, tip: 'model', k: c.k, dale };
+}
+
 /** Răspunsul unei cereri, cu tablourile de transferat (ADR 0014). */
 export async function raspundeRelief(c: CerereRelief): Promise<{ readonly raspuns: RaspunsRelief; readonly transfer: ArrayBuffer[] }> {
-  const raspuns = c.tip === 'din-imagine' ? await dinImagine(c) : desen(c);
+  const raspuns = c.tip === 'din-imagine' ? await dinImagine(c) : c.tip === 'desen' ? desen(c) : model(c);
   const transfer: ArrayBuffer[] = [];
   if (raspuns.ok) {
-    transfer.push(raspuns.umbrit.rgba.buffer);
+    if (raspuns.tip === 'model') for (const d of raspuns.dale) transfer.push(d.z.buffer);
+    else transfer.push(raspuns.umbrit.rgba.buffer);
     if (raspuns.tip === 'din-imagine') for (const o of Object.values(raspuns.octeti)) transfer.push(o.buffer);
   }
   return { raspuns, transfer };

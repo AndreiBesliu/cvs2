@@ -96,6 +96,32 @@ export async function citesteStrat(amprenta: string, idb: IDBFactory = indexedDB
   }
 }
 
+/** Textul unei hărți păstrate, sau null dacă lipsește (modelul 3D citește întâi hărțile, apoi doar dalele schimbate). */
+export async function citesteHarta(amprenta: string, idb: IDBFactory = indexedDB): Promise<string | null> {
+  const db = await deschide(idb);
+  try {
+    const h: unknown = await cerere(db.transaction(HARTI).objectStore(HARTI).get(amprenta));
+    return esteHarta(h) ? h.text : null;
+  } finally {
+    db.close();
+  }
+}
+
+/** Octeții dalelor date care sunt în bază, după amprentă (cele lipsă nu apar: cine le cere le numește). */
+export async function citesteDale(amprente: readonly string[], idb: IDBFactory = indexedDB): Promise<Record<string, Uint8Array<ArrayBuffer>>> {
+  const db = await deschide(idb);
+  try {
+    const st = db.transaction(DALE).objectStore(DALE), octeti: Record<string, Uint8Array<ArrayBuffer>> = {};
+    for (const a of new Set(amprente)) {
+      const d: unknown = await cerere(st.get(a));
+      if (esteDala(d)) octeti[a] = d.octeti;
+    }
+    return octeti;
+  } finally {
+    db.close();
+  }
+}
+
 /** Pură: amprentele hărților din arborele unui nod (straturile formelor `relief`). */
 function hartiNod(n: Nod, s: Set<string>): void {
   if (n.tip === 'grup') { for (const c of n.copii) hartiNod(c, s); return; }

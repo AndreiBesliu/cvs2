@@ -2,12 +2,16 @@ import { useEffect, useMemo, useRef, useState, type ReactElement } from 'react';
 import type { Zona } from '../canvas/Rigle.tsx';
 import '../i18n/editare.ts';
 import { t } from '../i18n/t.ts';
-import type { Document } from '../model/document.ts';
+import type { Matrice } from '../geom/matrice.ts';
+import { ReliefAnulat } from '../jobs/bazinRelief.ts';
+import type { Document, FormaRelief } from '../model/document.ts';
 import { elementeFoaie } from '../model/lume.ts';
 import type { DopSimulat, Potrivire, ProgramSimulare, ReliefSimulat } from '../ui/actiuniExportTipuri.ts';
 import { textNumar } from '../ui/numar.ts';
 import { useLimba } from '../ui/useLimba.ts';
 import { descriere } from './descriereElement.ts';
+import { incarcaModel, type DalaModel, type ModelIncarcat, type StocareModel } from './modelRelief.ts';
+import { citesteDale, citesteHarta } from './reliefStocare.ts';
 import { Sectiune3D } from './Sectiune3D.tsx';
 import { apropie, cuprinde, fereastraFina, incadreaza, matrici, panorameaza, rgb, roteste, subCursor, type Camera, type ZonaNdc } from './vedere3dCalcul.ts';
 import './vedere3d.css';
@@ -24,6 +28,12 @@ mesaje.catch(() => undefined);
  * mausul: tragerea rotește, butonul drept (sau Shift) mută, rotița apropie spre cursor. Apropiată destul, zona din jurul
  * centrului se simulează din nou la 0,1 mm și se desenează peste placă; restul rămâne la celula plăcii. Afișarea nu
  * recalculează nimic (ADR 0010): citește doar relieful.
+ *
+ * Pe o foaie cu reliefuri (ADR 0310 §7, felia 18.1↑b), comutatorul „Modelul / Tăiat”: modelul arată reliefurile din dalele
+ * lor, fără simulare, fiecare cu vârful la fața plăcii (implicitul din §6), în golul lui din placă. Suprafața e modelul exact
+ * (§4: triunghiurile prin centrele celulelor, cu un rând de margine), redusă cu k doar peste textura plăcii video. Fiecare
+ * relief are textura lui, urcată pe dale: o schimbare a documentului urcă doar dalele cu altă cheie (`modelRelief.ts`), iar o
+ * mutare sau o rotire nu urcă nimic. Vederea urmează documentul cât stă deschisă.
  */
 
 type Props = {
@@ -51,6 +61,26 @@ type StareGpu = 'ok' | 'fara-webgl' | 'context-pierdut' | 'prea-mare';
 type Relief = Extract<ReliefSimulat, { ok: true }>;
 type Calcul = typeof import('../ui/actiuniExportCalcul.ts');
 
+/** Un relief al foii, de desenat ca model: textura lui (după piesă și nod: instanțele o împart) și matricea instanței. */
+type ReliefModel = { readonly slot: string; readonly forma: FormaRelief; readonly matrice: Matrice };
+/**
+ * Textura modelului unui relief, cu valorile ei ținute pe procesor (o placă video pierdută le reface): factorul, cheile
+ * dalelor, mărimea, Z-ul fiecărei dale (vârful e cel mai mare); `lipsa`: straturile nu sunt în acest browser.
+ */
+type SlotModel = {
+  forma: FormaRelief; lipsa: boolean; k: number; chei: readonly string[]; w: number; h: number; tx: number;
+  z: Float32Array; min: Float32Array; max: Float32Array; varf: number; adanc: number; tex: WebGLTexture | null;
+};
+type StareModel = { readonly fel: 'calcul' | 'gata' | 'lipsa' } | { readonly fel: 'eroare'; readonly motiv: string };
+
+const STOCARE: StocareModel = { harta: (a) => citesteHarta(a), dale: (a) => citesteDale(a) };
+const IDENTITATE: Matrice = { a: 1, b: 0, c: 0, d: 1, e: 0, f: 0 };
+
+/** Reliefurile foii 0 a documentului (cel al foii active), în ordinea elementelor. */
+function reliefuriModel(doc: Document): ReliefModel[] {
+  return elementeFoaie(doc, 0).flatMap((e) => (e.forma.tip === 'relief' ? [{ slot: `${e.piesa}/${e.nod}`, forma: e.forma, matrice: e.matrice }] : []));
+}
+
 /** Cât așteaptă vederea refacerea unui context pierdut, până să spună că WebGL2 e indisponibil (ca stratul traseului). */
 const ASTEPTARE_REFACERE = 5000;
 /** Cât se odihnește camera înainte ca fereastra fină să fie judecată din nou (ms). */
@@ -65,26 +95,38 @@ uniform ivec2 u_n;
 uniform vec4 u_cutie;
 uniform vec2 u_pas;
 uniform float u_fund;
+uniform float u_baza;
+uniform float u_dz;
 uniform int u_mod;
+uniform int u_exact;
+uniform mat3 u_m;
 uniform mat4 u_pv;
 out vec3 v_p;
-float h(int i, int j) { return max(texelFetch(u_z, ivec2(i, j), 0).r, u_fund); }
-float coord(int k, int n, float a, float b, float pas) { return k <= 0 ? a : k >= n - 1 ? b : a + (float(k) + 0.5) * pas; }
+float h(int i, int j) { return max(texelFetch(u_z, ivec2(i, j), 0).r + u_dz, u_fund); }
+// Simularea: vârfurile în centrele pixelilor, cele de pe margine trase la marginea plăcii (ADR 0057 §3). Modelul (u_exact):
+// vârfurile în centrele celulelor plus un rând pe fiecare margine, cu valoarea celulei de margine (ADR 0310 §4).
+int cel(int k, int n) { return u_exact == 1 ? clamp(k - 1, 0, n - 1) : k; }
+float coord(int k, int n, float a, float b, float pas) {
+  if (u_exact == 1) return k <= 0 ? a : k >= n + 1 ? b : min(a + (float(k) - 0.5) * pas, b);
+  return k <= 0 ? a : k >= n - 1 ? b : a + (float(k) + 0.5) * pas;
+}
 void main() {
+  ivec2 nv = u_n + 2 * u_exact;
   int i; int j; float z;
   if (u_mod == 0) {
     i = gl_VertexID >> 1;
     j = gl_InstanceID + (gl_VertexID & 1);
-    z = h(i, j);
+    z = h(cel(i, u_n.x), cel(j, u_n.y));
   } else {
     int k = gl_VertexID >> 1;
     if (u_mod == 1) { i = k; j = 0; }
-    else if (u_mod == 2) { i = k; j = u_n.y - 1; }
+    else if (u_mod == 2) { i = k; j = nv.y - 1; }
     else if (u_mod == 3) { i = 0; j = k; }
-    else { i = u_n.x - 1; j = k; }
-    z = (gl_VertexID & 1) == 1 ? h(i, j) : u_fund;
+    else { i = nv.x - 1; j = k; }
+    z = (gl_VertexID & 1) == 1 ? h(cel(i, u_n.x), cel(j, u_n.y)) : u_baza;
   }
-  v_p = vec3(coord(i, u_n.x, u_cutie.x, u_cutie.z, u_pas.x), coord(j, u_n.y, u_cutie.y, u_cutie.w, u_pas.y), z);
+  vec2 xy = vec2(coord(i, u_n.x, u_cutie.x, u_cutie.z, u_pas.x), coord(j, u_n.y, u_cutie.y, u_cutie.w, u_pas.y));
+  v_p = vec3((u_m * vec3(xy, 1.0)).xy, z);
   gl_Position = u_pv * vec4(v_p, 1.0);
 }`;
 
@@ -115,7 +157,7 @@ void main() {
   o = vec4(baza * (0.4 + 0.6 * d), 1.0);
 }`;
 
-const UNIFORME = ['z', 'n', 'cutie', 'pas', 'fund', 'mod', 'pv', 'sus', 'gaura', 'ochi', 'lemn', 'taiat', 'prin', 'perete'] as const;
+const UNIFORME = ['z', 'n', 'cutie', 'pas', 'fund', 'baza', 'dz', 'mod', 'exact', 'm', 'pv', 'sus', 'gaura', 'ochi', 'lemn', 'taiat', 'prin', 'perete'] as const;
 
 type Gpu = {
   readonly gl: WebGL2RenderingContext;
@@ -125,6 +167,8 @@ type Gpu = {
   readonly maxim: number;
   placa: WebGLTexture | null;
   fin: WebGLTexture | null;
+  /** Un plan (1 × 1, zero): fața plăcii și chenarele reliefurilor, în vederea modelului. */
+  plan: WebGLTexture | null;
 };
 
 function compileaza(gl: WebGL2RenderingContext): Gpu | null {
@@ -142,10 +186,13 @@ function compileaza(gl: WebGL2RenderingContext): Gpu | null {
   gl.linkProgram(prog);
   if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) return null;
   const u = Object.fromEntries(UNIFORME.map((n) => [n, gl.getUniformLocation(prog, `u_${n}`)])) as Gpu['u'];
-  return { gl, prog, vao, u, maxim: Number(gl.getParameter(gl.MAX_TEXTURE_SIZE)) || 0, placa: null, fin: null };
+  const g: Gpu = { gl, prog, vao, u, maxim: Number(gl.getParameter(gl.MAX_TEXTURE_SIZE)) || 0, placa: null, fin: null, plan: null };
+  g.plan = textura(g, 1, 1, new Float32Array(1));
+  return g;
 }
 
-function textura(g: Gpu, r: Relief): WebGLTexture | null {
+/** O textură R32F de `latime` × `inaltime` (fără valori: doar locul, umplut apoi pe dale). */
+function textura(g: Gpu, latime: number, inaltime: number, z: Float32Array | null): WebGLTexture | null {
   const { gl } = g, tx = gl.createTexture();
   if (!tx) return null;
   gl.bindTexture(gl.TEXTURE_2D, tx);
@@ -154,9 +201,24 @@ function textura(g: Gpu, r: Relief): WebGLTexture | null {
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
   gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1);
-  gl.texImage2D(gl.TEXTURE_2D, 0, gl.R32F, r.latime, r.inaltime, 0, gl.RED, gl.FLOAT, r.z);
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.R32F, latime, inaltime, 0, gl.RED, gl.FLOAT, z);
   return tx;
 }
+
+/** Dala `d` a modelului, pusă în valorile ținute ale texturii și urcată (doar ea) pe placa video. */
+function punDala(g: Gpu | null, s: SlotModel, d: DalaModel): void {
+  const pe = 256 / s.k, ti = d.index % s.tx, x = ti * pe, y = ((d.index - ti) / s.tx) * pe;
+  for (let b = 0; b < d.inaltime; b++) s.z.set(d.z.subarray(b * d.latime, (b + 1) * d.latime), (y + b) * s.w + x);
+  s.min[d.index] = d.min;
+  s.max[d.index] = d.max;
+  if (!g || !s.tex) return;
+  g.gl.bindTexture(g.gl.TEXTURE_2D, s.tex);
+  g.gl.pixelStorei(g.gl.UNPACK_ALIGNMENT, 1);
+  g.gl.texSubImage2D(g.gl.TEXTURE_2D, 0, x, y, d.latime, d.inaltime, g.gl.RED, g.gl.FLOAT, d.z);
+}
+
+/** Matricea `m` (asemănarea elementului) pentru shader: 3 × 3, pe coloane. */
+const mat3 = (m: Matrice): Float32Array => Float32Array.of(m.a, m.b, 0, m.c, m.d, 0, m.e, m.f, 1);
 
 function culori(): Record<'fundal' | 'lemn' | 'taiat' | 'prin' | 'perete', readonly [number, number, number]> {
   const s = getComputedStyle(document.documentElement);
@@ -197,6 +259,14 @@ export function Vedere3D({ doc, marime, zona, onInchide }: Props): ReactElement 
   const odihna = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const ultim = useRef({ marime, zona, onInchide });
   ultim.current = { marime, zona, onInchide };
+  // Modelul reliefurilor (ADR 0310 §7): pe o foaie cu reliefuri, vederea pornește pe el; texturile, după piesă și nod.
+  const reliefuri = useMemo(() => reliefuriModel(doc), [doc]);
+  const [vedere, setVedere] = useState<'model' | 'taiat'>(() => (reliefuri.length > 0 ? 'model' : 'taiat'));
+  const [stareModel, setStareModel] = useState<StareModel>({ fel: 'calcul' });
+  const modele = useRef(new Map<string, SlotModel>());
+  const urcate = useRef(0);
+  const acum = useRef({ vedere, reliefuri, doc });
+  acum.current = { vedere, reliefuri, doc };
 
   const aspect = (): number => {
     const c = canvas.current;
@@ -213,9 +283,20 @@ export function Vedere3D({ doc, marime, zona, onInchide }: Props): ReactElement 
     return { x: (z.x0 + z.x1) / 2, y: (z.y0 + z.y1) / 2 };
   };
 
+  /** Placa de încadrat: a programului simulat (foaia sau dopul ales), iar în vederea modelului, foaia documentului. */
+  const placaVazuta = (): { readonly latime: number; readonly inaltime: number; readonly grosime: number } | null => {
+    if (acum.current.vedere === 'taiat') return sim.current.program?.foaie ?? null;
+    return acum.current.doc.foi[0]?.stoc ?? null;
+  };
+
   const deseneaza = (): void => {
-    const g = gpu.current, c = canvas.current, s = sim.current, k = cam.current;
-    if (!g || !c || !s.placa || !g.placa || !k || g.gl.isContextLost()) return;
+    const g = gpu.current, c = canvas.current, s = sim.current, model = acum.current.vedere === 'model';
+    if (!g || !c || g.gl.isContextLost()) return;
+    if (!model && (!s.placa || !g.placa)) return;
+    const foaie = placaVazuta();
+    if (model && foaie && !cam.current) cam.current = incadreaza(foaie, aspect(), zonaNdc());
+    const k = cam.current;
+    if (!k || !foaie) return;
     const { gl, u } = g;
     const dpr = Math.min(2, window.devicePixelRatio || 1);
     const w = Math.max(1, Math.round(c.clientWidth * dpr)), h = Math.max(1, Math.round(c.clientHeight * dpr));
@@ -224,39 +305,84 @@ export function Vedere3D({ doc, marime, zona, onInchide }: Props): ReactElement 
     gl.viewport(0, 0, w, h);
     gl.clearColor(col.fundal[0], col.fundal[1], col.fundal[2], 1);
     gl.enable(gl.DEPTH_TEST);
-    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+    gl.clearStencil(0);
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT | gl.STENCIL_BUFFER_BIT);
     gl.useProgram(g.prog);
     gl.bindVertexArray(g.vao);
     const m = matrici(k, w / h, centru());
+    const sus = model ? 0 : (s.placa?.sus ?? 0), fund = model ? -foaie.grosime : (s.placa?.fund ?? 0);
     gl.uniformMatrix4fv(u.pv, false, Float32Array.from(m.pv));
     gl.uniform3f(u.ochi, m.ochi.x, m.ochi.y, m.ochi.z);
-    gl.uniform1f(u.sus, s.placa.sus);
-    gl.uniform1f(u.fund, s.placa.fund);
+    gl.uniform1f(u.sus, sus);
+    gl.uniform1f(u.fund, fund);
     gl.uniform3fv(u.lemn, col.lemn);
     gl.uniform3fv(u.taiat, col.taiat);
     gl.uniform3fv(u.prin, col.prin);
     gl.uniform3fv(u.perete, col.perete);
+    gl.uniform4f(u.gaura, 1, 1, 0, 0);
     gl.activeTexture(gl.TEXTURE0);
     gl.uniform1i(u.z, 0);
-    const relief = (tx: WebGLTexture, r: Relief, gaura: Relief['fereastra'] | null, pereti: boolean): void => {
-      const f = r.fereastra, pas = r.bloc * f.celula;
+    /**
+     * O grilă de înălțimi: `n` celule (pixeli), în dreptunghiul `cutie` al sistemului `mt`, cu pasul `pas`; Z-ul e valoarea plus
+     * `dz` (cel puțin fundul), pereții coboară până la `baza`. `exact`: modelul reliefului (ADR 0310 §4); altfel simularea.
+     */
+    const grila = (tx: WebGLTexture, n: readonly [number, number], cutie: readonly [number, number, number, number], pas: number,
+      o: { readonly mt?: Matrice; readonly dz?: number; readonly baza?: number; readonly exact?: boolean; readonly suprafata?: boolean; readonly pereti?: boolean }): void => {
+      const e = o.exact === true ? 1 : 0, vx = n[0] + 2 * e, vy = n[1] + 2 * e;
       gl.bindTexture(gl.TEXTURE_2D, tx);
-      gl.uniform2i(u.n, r.latime, r.inaltime);
-      gl.uniform4f(u.cutie, f.x0, f.y0, f.x0 + f.latime, f.y0 + f.inaltime);
-      gl.uniform2f(u.pas, pas, pas);
-      if (gaura) gl.uniform4f(u.gaura, gaura.x0, gaura.y0, gaura.x0 + gaura.latime, gaura.y0 + gaura.inaltime);
-      else gl.uniform4f(u.gaura, 1, 1, 0, 0);
+      gl.uniform2i(u.n, n[0], n[1]);
+      gl.uniform4f(u.cutie, cutie[0], cutie[1], cutie[2], cutie[3]);
+      gl.uniform2f(u.pas, e === 1 && n[0] === 1 ? cutie[2] - cutie[0] : pas, e === 1 && n[1] === 1 ? cutie[3] - cutie[1] : pas);
+      gl.uniformMatrix3fv(u.m, false, mat3(o.mt ?? IDENTITATE));
+      gl.uniform1f(u.dz, o.dz ?? 0);
+      gl.uniform1f(u.baza, o.baza ?? fund);
+      gl.uniform1i(u.exact, e);
       gl.uniform1i(u.mod, 0);
-      if (r.latime >= 2 && r.inaltime >= 2) gl.drawArraysInstanced(gl.TRIANGLE_STRIP, 0, 2 * r.latime, r.inaltime - 1);
-      if (!pereti) return;
+      if (o.suprafata !== false && vx >= 2 && vy >= 2) gl.drawArraysInstanced(gl.TRIANGLE_STRIP, 0, 2 * vx, vy - 1);
+      if (o.pereti !== true) return;
       for (let p = 1; p <= 4; p++) {
         gl.uniform1i(u.mod, p);
-        gl.drawArrays(gl.TRIANGLE_STRIP, 0, 2 * (p <= 2 ? r.latime : r.inaltime));
+        gl.drawArrays(gl.TRIANGLE_STRIP, 0, 2 * (p <= 2 ? vx : vy));
       }
     };
-    const fine = s.fin && g.fin ? s.fin : null;
-    relief(g.placa, s.placa, fine?.fereastra ?? null, true);
-    if (fine && g.fin) relief(g.fin, fine, null, false);
+    if (model) {
+      // Modelul (ADR 0310 §7): întâi chenarele reliefurilor, doar în stencil; fața plăcii se desenează doar în afara lor, ca
+      // golul fiecărui relief să se vadă; apoi pereții plăcii și reliefurile, cu pereții golului de la față la margine.
+      const plan = g.plan, lista = acum.current.reliefuri.flatMap((r) => {
+        const sm = modele.current.get(r.slot);
+        return sm && !sm.lipsa && sm.tex ? [{ r, sm }] : [];
+      });
+      if (!plan) return;
+      gl.enable(gl.STENCIL_TEST);
+      gl.stencilFunc(gl.ALWAYS, 1, 0xff);
+      gl.stencilOp(gl.KEEP, gl.KEEP, gl.REPLACE);
+      gl.colorMask(false, false, false, false);
+      gl.depthMask(false);
+      for (const { r } of lista) grila(plan, [1, 1], [0, 0, r.forma.nx * r.forma.celula, r.forma.ny * r.forma.celula], 0, { mt: r.matrice, exact: true });
+      gl.colorMask(true, true, true, true);
+      gl.depthMask(true);
+      gl.stencilFunc(gl.EQUAL, 0, 0xff);
+      gl.stencilOp(gl.KEEP, gl.KEEP, gl.KEEP);
+      grila(plan, [1, 1], [0, 0, foaie.latime, foaie.inaltime], 0, { exact: true });
+      gl.disable(gl.STENCIL_TEST);
+      grila(plan, [1, 1], [0, 0, foaie.latime, foaie.inaltime], 0, { exact: true, suprafata: false, pereti: true });
+      for (const { r, sm } of lista) {
+        const f = r.forma;
+        grila(sm.tex!, [sm.w, sm.h], [0, 0, f.nx * f.celula, f.ny * f.celula], sm.k * f.celula, { mt: r.matrice, dz: sus - sm.varf, baza: sus, exact: true, pereti: true });
+      }
+      c.dataset.modelDale = String(urcate.current);
+      c.dataset.modelK = String(Math.max(0, ...lista.map((x) => x.sm.k)));
+    } else if (s.placa && g.placa) {
+      const relief = (tx: WebGLTexture, r: Relief, gaura: Relief['fereastra'] | null, pereti: boolean): void => {
+        const f = r.fereastra;
+        if (gaura) gl.uniform4f(u.gaura, gaura.x0, gaura.y0, gaura.x0 + gaura.latime, gaura.y0 + gaura.inaltime);
+        else gl.uniform4f(u.gaura, 1, 1, 0, 0);
+        grila(tx, [r.latime, r.inaltime], [f.x0, f.y0, f.x0 + f.latime, f.y0 + f.inaltime], r.bloc * f.celula, { pereti });
+      };
+      const fine = s.fin && g.fin ? s.fin : null;
+      relief(g.placa, s.placa, fine?.fereastra ?? null, true);
+      if (fine && g.fin) relief(g.fin, fine, null, false);
+    }
     gl.bindVertexArray(null);
     // Pentru probe: matricea cadrului (un punct al lumii → pixelul lui) și câte cadre s-au desenat.
     c.dataset.pv = Array.from(m.pv).join(',');
@@ -272,7 +398,7 @@ export function Vedere3D({ doc, marime, zona, onInchide }: Props): ReactElement 
   /** Fereastra fină (ADR 0057 §4): judecată după ce camera se odihnește; una singură, cea nouă o anulează pe cea veche. */
   const judecaFin = (): void => {
     const s = sim.current, k = cam.current;
-    if (!s.calc || !s.program || !s.placa || !k) return;
+    if (acum.current.vedere !== 'taiat' || !s.calc || !s.program || !s.placa || !k) return;
     const a = aspect(), foaie = s.program.foaie;
     const f = fereastraFina(k, a, foaie, s.placa.fereastra.celula);
     if (!f) return;
@@ -294,7 +420,7 @@ export function Vedere3D({ doc, marime, zona, onInchide }: Props): ReactElement 
       const g = gpu.current;
       if (g) {
         if (g.fin) g.gl.deleteTexture(g.fin);
-        g.fin = textura(g, r);
+        g.fin = textura(g, r.latime, r.inaltime, r.z);
       }
       s.fin = r;
       setFin({ fel: 'gata', latime: r.fereastra.latime, inaltime: r.fereastra.inaltime });
@@ -352,7 +478,7 @@ export function Vedere3D({ doc, marime, zona, onInchide }: Props): ReactElement 
           Object.assign(s, { calc, program: p, placa: r, fin: null });
           if (g) {
             for (const tx of [g.placa, g.fin]) if (tx) g.gl.deleteTexture(tx);
-            g.placa = textura(g, r);
+            g.placa = textura(g, r.latime, r.inaltime, r.z);
             g.fin = null;
           }
           // Camera rămâne cum a lăsat-o omul la o simulare din nou; prima oară, încadrează placa.
@@ -381,7 +507,8 @@ export function Vedere3D({ doc, marime, zona, onInchide }: Props): ReactElement 
     const c = canvas.current;
     if (!c) return;
     const porneste = (): boolean => {
-      const gl = c.getContext('webgl2', { alpha: false, antialias: true, depth: true, preserveDrawingBuffer: true });
+      // Stencilul: golurile reliefurilor din fața plăcii, în vederea modelului.
+      const gl = c.getContext('webgl2', { alpha: false, antialias: true, depth: true, stencil: true, preserveDrawingBuffer: true });
       const g = gl ? compileaza(gl) : null;
       gpu.current = g;
       if (!g) {
@@ -389,8 +516,9 @@ export function Vedere3D({ doc, marime, zona, onInchide }: Props): ReactElement 
         return false;
       }
       const s = sim.current;
-      if (s.placa) g.placa = textura(g, s.placa);
-      if (s.fin) g.fin = textura(g, s.fin);
+      if (s.placa) g.placa = textura(g, s.placa.latime, s.placa.inaltime, s.placa.z);
+      if (s.fin) g.fin = textura(g, s.fin.latime, s.fin.inaltime, s.fin.z);
+      for (const m of modele.current.values()) if (!m.lipsa) m.tex = textura(g, m.w, m.h, m.z);
       setStareGpu('ok');
       cere();
       return true;
@@ -409,8 +537,9 @@ export function Vedere3D({ doc, marime, zona, onInchide }: Props): ReactElement 
     };
     c.addEventListener('webglcontextlost', pierdut);
     c.addEventListener('webglcontextrestored', refacut);
-    // Fără WebGL2 nu se simulează nimic: n-ar avea unde să se vadă.
-    if (porneste()) simuleaza();
+    // Fără WebGL2 nu se simulează nimic: n-ar avea unde să se vadă. Pe o foaie cu reliefuri, vederea pornește pe model:
+    // simularea așteaptă „Tăiat”.
+    if (porneste() && acum.current.vedere === 'taiat') simuleaza();
     // Rotița: nepasivă, ca pagina să nu se deruleze; apropie spre punctul de sub cursor.
     const roata = (e: WheelEvent): void => {
       e.preventDefault();
@@ -438,13 +567,91 @@ export function Vedere3D({ doc, marime, zona, onInchide }: Props): ReactElement 
       c.removeEventListener('webglcontextrestored', refacut);
       c.removeEventListener('wheel', roata);
       const g = gpu.current;
-      if (g) for (const tx of [g.placa, g.fin]) if (tx) g.gl.deleteTexture(tx);
+      if (g) for (const tx of [g.placa, g.fin, g.plan, ...[...modele.current.values()].map((m) => m.tex)]) if (tx) g.gl.deleteTexture(tx);
       gpu.current = null;
     };
     // Vederea se montează o dată pe deschidere; documentul de după se simulează doar la cererea omului („din nou”).
   }, []);
 
   useEffect(cere, [marime.latime, marime.inaltime, zona.x, zona.y, zona.w, zona.h]);
+
+  /**
+   * Modelul reliefurilor foii (ADR 0310 §7), cât e arătat: un relief nou sau schimbat se încarcă, doar cu dalele lui cu altă
+   * cheie; unul plecat de pe foaie își lasă textura. O mutare sau o rotire nu încarcă nimic (aceeași formă): doar desenează.
+   */
+  useEffect(() => {
+    if (vedere !== 'model') return undefined;
+    const ms = modele.current, forme = new Map<string, FormaRelief>();
+    for (const r of reliefuri) if (!forme.has(r.slot)) forme.set(r.slot, r.forma);
+    for (const [k, m] of ms) {
+      if (forme.has(k)) continue;
+      if (m.tex) gpu.current?.gl.deleteTexture(m.tex);
+      ms.delete(k);
+    }
+    const deFacut = [...forme].filter(([k, f]) => ms.get(k)?.forma !== f);
+    const stareDin = (): StareModel => ({ fel: [...ms.values()].some((m) => m.lipsa) ? 'lipsa' : 'gata' });
+    if (deFacut.length === 0) {
+      setStareModel(stareDin());
+      cere();
+      return undefined;
+    }
+    const ctl = new AbortController();
+    setStareModel({ fel: 'calcul' });
+    void (async () => {
+      for (const [k, f] of deFacut) {
+        const v = ms.get(k), vechi = v && !v.lipsa && v.forma.nx === f.nx && v.forma.ny === f.ny ? v : null;
+        const r = await incarcaModel(f, vechi, gpu.current?.maxim || 4096, STOCARE, ctl.signal);
+        if (ctl.signal.aborted) return;
+        aplicaModel(k, f, r, vechi);
+      }
+      setStareModel(stareDin());
+      cere();
+    })().catch((e: unknown) => {
+      if (ctl.signal.aborted || e instanceof ReliefAnulat) return;
+      reportError(new Error(`vederea 3D, modelul: ${e instanceof Error ? e.message : String(e)}`));
+      setStareModel({ fel: 'eroare', motiv: e instanceof Error ? e.message : String(e) });
+    });
+    return () => { ctl.abort(); };
+  }, [vedere, reliefuri]);
+
+  /** Un model încărcat, pus în textura lui: refăcută întreagă (alt factor, altă grilă, prima dată) sau doar dalele lui noi. */
+  function aplicaModel(slot: string, f: FormaRelief, r: ModelIncarcat | 'lipsa', vechi: SlotModel | null): void {
+    const g = gpu.current, ms = modele.current, v = ms.get(slot);
+    if (r === 'lipsa') {
+      if (v?.tex) g?.gl.deleteTexture(v.tex);
+      const gol = new Float32Array(0);
+      ms.set(slot, { forma: f, lipsa: true, k: 1, chei: [], w: 0, h: 0, tx: 0, z: gol, min: gol, max: gol, varf: 0, adanc: 0, tex: null });
+      return;
+    }
+    let m = vechi;
+    if (r.tot || !m) {
+      if (v?.tex) g?.gl.deleteTexture(v.tex);
+      const w = Math.ceil(f.nx / r.k), h = Math.ceil(f.ny / r.k), tx = Math.ceil(f.nx / 256);
+      m = {
+        forma: f, lipsa: false, k: r.k, chei: r.chei, w, h, tx, z: new Float32Array(w * h), min: new Float32Array(r.chei.length),
+        max: new Float32Array(r.chei.length), varf: 0, adanc: 0, tex: null,
+      };
+      m.tex = g ? textura(g, w, h, null) : null;
+    }
+    for (const d of r.dale) punDala(g, m, d);
+    urcate.current += r.dale.length;
+    m.forma = f;
+    m.chei = r.chei;
+    m.varf = m.max.reduce((a, b) => Math.max(a, b), -Infinity);
+    m.adanc = m.varf - m.min.reduce((a, b) => Math.min(a, b), Infinity);
+    ms.set(slot, m);
+  }
+
+  /** „Modelul / Tăiat” (ADR 0310 §7): „Tăiat” simulează placa prima dată când e ales; camera rămâne. */
+  const alegeVedere = (v: 'model' | 'taiat'): void => {
+    if (v === vedere) return;
+    acum.current = { ...acum.current, vedere: v };
+    setVedere(v);
+    if (v === 'taiat' && sim.current.doc === null) simuleaza();
+    cere();
+  };
+  // Un relief scos de pe foaie cât e arătat modelul: vederea trece pe „Tăiat” (comutatorul nu mai are rost).
+  useEffect(() => { if (vedere === 'model' && reliefuri.length === 0) alegeVedere('taiat'); }, [reliefuri.length]);
 
   /** Punctul feței plăcii de sub cursor, pentru camera `k`. */
   function subCursorEv(e: { readonly clientX: number; readonly clientY: number }, k: Camera) {
@@ -458,8 +665,8 @@ export function Vedere3D({ doc, marime, zona, onInchide }: Props): ReactElement 
 
   const gest = useRef<{ readonly fel: 'roteste' | 'muta'; x: number; y: number } | null>(null);
   const reincadreaza = (): void => {
-    const p = sim.current.program;
-    if (p) schimbaCamera(incadreaza(p.foaie, aspect(), zonaNdc()));
+    const p = placaVazuta();
+    if (p) schimbaCamera(incadreaza(p, aspect(), zonaNdc()));
   };
   /**
    * Potrivirea dopului cu numărul `k` (ADR 0179), în workerul CAM. O alegere nouă, „Împreună” oprită sau vederea închisă o
@@ -543,8 +750,21 @@ export function Vedere3D({ doc, marime, zona, onInchide }: Props): ReactElement 
                 })
                   : s.placa && s.placa.bloc > 1 ? t('editare.3d.gata-blocuri', { celula: nr(s.placa.fereastra.celula), pas: nr(s.placa.bloc * s.placa.fereastra.celula) })
                     : t('editare.3d.gata', { celula: nr(s.placa?.fereastra.celula ?? 0) });
-  const clasaStare = stareGpu !== 'ok' || stare.fel === 'eroare' ? 'cip cip-rosu' : stare.fel === 'refuz' ? 'cip cip-rosu' : 'cip';
-  const textFin = stare.fel !== 'gata' || stareGpu !== 'ok' ? null
+  const taiat = vedere === 'taiat';
+  // Vederea modelului (ADR 0310 §7): cât de adânc e cel mai adânc relief sub fața plăcii și, dacă e redus, pasul desenului.
+  const incarcate = [...modele.current.values()].filter((m) => !m.lipsa && m.chei.length > 0);
+  const kModel = Math.max(1, ...incarcate.map((m) => m.k));
+  const pasModel = Math.max(0, ...incarcate.filter((m) => m.k === kModel).map((m) => m.k * m.forma.celula));
+  const textModel = stareModel.fel === 'calcul' ? t('editare.3d.model.calcul')
+    : stareModel.fel === 'lipsa' ? t('editare.3d.model.lipsa')
+      : stareModel.fel === 'eroare' ? t('editare.3d.model.eroare', { motiv: stareModel.motiv })
+        : t(kModel > 1 ? 'editare.3d.model.redus' : 'editare.3d.model.gata', {
+          adancime: nr(Math.max(0, ...incarcate.map((m) => m.adanc))), pas: nr(pasModel), k: kModel,
+        });
+  const textAcum = taiat || stareGpu !== 'ok' ? textStare : textModel;
+  const clasaStare = stareGpu !== 'ok' || (taiat ? stare.fel === 'eroare' || stare.fel === 'refuz' : stareModel.fel === 'eroare' || stareModel.fel === 'lipsa')
+    ? 'cip cip-rosu' : 'cip';
+  const textFin = !taiat || stare.fel !== 'gata' || stareGpu !== 'ok' ? null
     : fin.fel === 'calcul' ? t('editare.3d.fin.calcul')
       : fin.fel === 'gata' ? t('editare.3d.fin.gata', { latime: nr(fin.latime), inaltime: nr(fin.inaltime) })
         : fin.fel === 'refuz' ? t('editare.3d.fin.refuz', { motiv: fin.motiv })
@@ -557,15 +777,16 @@ export function Vedere3D({ doc, marime, zona, onInchide }: Props): ReactElement 
         tabIndex={0}
         aria-label={t('editare.3d.panza')}
         data-testid="panza-3d"
-        data-stare={stareGpu === 'ok' ? stare.fel : stareGpu}
+        data-stare={stareGpu !== 'ok' ? stareGpu : taiat ? stare.fel : stareModel.fel}
+        data-vedere={vedere}
         data-fin={fin.fel}
-        data-relief={s.placa && stare.fel === 'gata' ? `${s.placa.latime}x${s.placa.inaltime}` : undefined}
-        data-bloc={s.placa && stare.fel === 'gata' ? s.placa.bloc : undefined}
-        data-celula={s.placa && stare.fel === 'gata' ? s.placa.fereastra.celula : undefined}
+        data-relief={taiat && s.placa && stare.fel === 'gata' ? `${s.placa.latime}x${s.placa.inaltime}` : undefined}
+        data-bloc={taiat && s.placa && stare.fel === 'gata' ? s.placa.bloc : undefined}
+        data-celula={taiat && s.placa && stare.fel === 'gata' ? s.placa.fereastra.celula : undefined}
         data-fereastra={fin.fel === 'gata' && s.fin ? [s.fin.fereastra.x0, s.fin.fereastra.y0, s.fin.fereastra.latime, s.fin.fereastra.inaltime].map((v) => Math.round(v * 1000) / 1000).join(',') : undefined}
-        data-adancime={s.placa && stare.fel === 'gata' ? Math.round(s.placa.adancimeMax * 1000) / 1000 : undefined}
+        data-adancime={taiat && s.placa && stare.fel === 'gata' ? Math.round(s.placa.adancimeMax * 1000) / 1000 : undefined}
         data-alegere={dop === null ? 'foaie' : `dop-${dop}`}
-        data-vechi={vechi}
+        data-vechi={taiat && vechi}
         onPointerDown={(e) => {
           e.stopPropagation();
           const muta = e.button === 2 || e.button === 1 || (e.button === 0 && e.shiftKey);
@@ -622,8 +843,19 @@ export function Vedere3D({ doc, marime, zona, onInchide }: Props): ReactElement 
           ...(impreuna ? { maxHeight: Math.max(160, zona.h - 16) } : {}),
         }}
       >
+        {/* „Modelul / Tăiat” (ADR 0310 §7): doar pe o foaie cu reliefuri. */}
+        {reliefuri.length > 0 ? (
+          <span className="alegere-3d" role="group" aria-label={t('editare.3d.vedere')} data-testid="vedere-3d-alegere">
+            <button type="button" aria-pressed={!taiat} data-3d-vedere="model" title={t('editare.3d.model.titlu')} onClick={() => { alegeVedere('model'); }}>
+              {t('editare.3d.model')}
+            </button>
+            <button type="button" aria-pressed={taiat} data-3d-vedere="taiat" title={t('editare.3d.taiat.titlu')} onClick={() => { alegeVedere('taiat'); }}>
+              {t('editare.3d.taiat')}
+            </button>
+          </span>
+        ) : null}
         {/* Foaia sau un dop (ADR 0178): butoanele apar doar când foaia are dopuri (sau unul e încă ales). */}
-        {dopuri.lista.length > 0 || dop !== null ? (
+        {taiat && (dopuri.lista.length > 0 || dop !== null) ? (
           <span className="alegere-3d" role="group" aria-label={t('editare.3d.alegere')} data-testid="alegere-3d">
             <button type="button" aria-pressed={dop === null} data-3d-alege="foaie" onClick={() => { alege('foaie'); }}>{t('editare.3d.foaia')}</button>
             {dopuri.lista.map((d, k) => (
@@ -643,24 +875,24 @@ export function Vedere3D({ doc, marime, zona, onInchide }: Props): ReactElement 
             </button>
           </span>
         ) : null}
-        <span className={clasaStare} role="status" data-testid="stare-3d-text" title={textStare}>{textStare}</span>
-        {dopuri.motiv !== undefined ? (
+        <span className={clasaStare} role="status" data-testid="stare-3d-text" title={textAcum}>{textAcum}</span>
+        {taiat && dopuri.motiv !== undefined ? (
           <span className="cip cip-rosu" data-testid="stare-3d-dopuri">{t('editare.3d.dopuri-refuz', { motiv: dopuri.motiv })}</span>
         ) : null}
         {textFin ? <span className={fin.fel === 'refuz' ? 'cip cip-rosu' : 'cip'} data-testid="stare-3d-fin">{textFin}</span> : null}
-        {vechi ? (
+        {taiat && vechi ? (
           <span className="cip cip-atentie" data-testid="stare-3d-vechi">
             {t('editare.3d.vechi')}{' '}
             <button type="button" data-3d="din-nou" onClick={() => { simuleaza(); if (impreuna && alegere !== 'foaie') masoara(alegere); }}>{t('editare.3d.din-nou')}</button>
           </span>
         ) : null}
-        {stare.fel === 'gata' && stareGpu === 'ok' ? (
+        {(taiat ? stare.fel === 'gata' : stareModel.fel !== 'calcul') && stareGpu === 'ok' ? (
           <span className="randul-3d">
             <button type="button" data-3d="incadreaza" onClick={reincadreaza}>{t(dop === null ? 'editare.3d.incadreaza' : 'editare.3d.incadreaza-dop')}</button>
             <span className="sfat-3d">{t('editare.3d.sfat')}</span>
           </span>
         ) : null}
-        {impreuna && dop !== null ? (
+        {taiat && impreuna && dop !== null ? (
           <section className="sectiune-3d" data-testid="sectiune-3d" aria-label={t('editare.3d.sectiune.eticheta', { n: dop })}>
             {potrivire.fel === 'calcul' ? <span className="cip" role="status">{t('editare.3d.sectiune.calcul', { n: dop })}</span> : null}
             {potrivire.fel === 'refuz' ? (
