@@ -79,8 +79,9 @@ test('configuratorul: forma, diametrul, cursa, grosimea și gaura, cu numele și
   await page.locator('#at-cam-gaura [data-v="r"]').click();
   await expect(nume(page)).toHaveText('Camă excentrică Ø24, cursa 12, 3,8 mm, gaură rotundă');
   await expect(cote(page)).toContainText('36 × 36 × 3,8 mm');
-  // cursa cu zecimale; în afara marginilor, valoarea de dinainte rămâne
-  await scrie(page, '#at-cam-cursa', '2.5');
+  // cursa cu zecimale, rotunjită la zecimi; în afara marginilor, valoarea de dinainte rămâne
+  await scrie(page, '#at-cam-cursa', '2.54');
+  await expect(page.locator('#at-cam-cursa')).toHaveValue('2.5');
   await expect(nume(page)).toHaveText('Camă excentrică Ø24, cursa 2,5, 3,8 mm, gaură rotundă');
   for (const [id, rau, bun] of [['#at-cam-diam', '9', '24'], ['#at-cam-diam', '65', '24'], ['#at-cam-cursa', '0.5', '2.5'], ['#at-cam-cursa', '25', '2.5'], ['#at-cam-grosime', '0.5', '3.8'], ['#at-cam-grosime', '21', '3.8']] as const) {
     await scrie(page, id, rau);
