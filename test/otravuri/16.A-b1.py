@@ -48,8 +48,8 @@ o('C02', RF, 'avansPlonjare: r.plonjare, zSigur: baza.zSigur', 'avansPlonjare: r
   'plonjarea coboară cu avansul')
 o('C03', J, "    miscari.push({ tip: 'schimba-scula', scula: curenta, turatie: regimFrezei(s, regim).turatie });",
   "    miscari.push({ tip: 'schimba-scula', scula: curenta, turatie: regim.turatie });", 'cam', 'schimbarea pornește axul cu turația lucrării')
-o('C04', J, 'turatie: regimFrezei(initialaDoc ?? prima.scula, regim).turatie, zSigur: regim.zSigur, miscari,',
-  'turatie: regimFrezei(prima.scula, regim).turatie, zSigur: regim.zSigur, miscari,', 'cam',
+# Mutată pe codul din 18.1↑c (25.11: argumentul `reliefuri`, ordinea cu finisările, bila); aceeași greșeală.
+o('C04', J, 'turatie: regimFrezei(initialaDoc ?? primaScula, regim).turatie, zSigur: regim.zSigur, miscari,', 'turatie: regimFrezei(primaScula, regim).turatie, zSigur: regim.zSigur, miscari,', 'cam',
   'antetul ia turația primei tăieturi, nu a primei freze montate (fundul plat)')
 o('C05', J, "            diametru: fp.scula.diametru, pasLateral: fp.pasLateral, sens: t.sens, ...avansuri(fp.scula),",
   "            diametru: fp.scula.diametru, pasLateral: fp.pasLateral, sens: t.sens,", 'cam', 'fundul plat taie cu avansul V-ului')

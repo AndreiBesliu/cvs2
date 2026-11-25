@@ -127,3 +127,22 @@ degroșarea și finisarea pe relief), unde stă relieful în document și unde s
     judecată de oracol pe tot ce iese.
   - **c-3, interfața**: rândurile finisării în fereastra exportului (vorbit întâi cu sesiunea principală), alegerea din Tăierea;
     simularea arată rezultatul („Tăiat”), manualul.
+- **25.11, la prânz: felia 18.1↑c gata** (ADR 0310, „Implementarea (18.1↑c)”, și ADR 0312): oracolul 3D întâi, documentul
+  **v29** (operația `finisare`, bila), CAM-ul finisării pe câmpul conservativ, lucrarea cu dalele din browser, rolul
+  „finisarea reliefului” în Tăierea. La cererea sesiunii principale („nu fără rând”, după auditul ferestrei exportului),
+  finisarea are în fereastră un rând doar de citit, la locul ei în ordinea tăierii (ADR 0312 §7): automat întâi, înaintea
+  exteriorului piesei; în „A mea”, unde o pune omul, iar fără rang rămâne în față. Rândul editabil vine într-o felie a lui,
+  după 16.A↑b-5 și 28.8↑h, la cuvântul sesiunii principale. La cererea liniei frezelor, bila are CAM în bibliotecă
+  (`FELURI_CU_CAM`, `sculaDinFreza`). Pornirea +0,2 kB, totalul +10,9 kB (901,0 / 1 000, cu `main` adus).
+- **De ținut minte, din 18.1↑c:**
+  - verdictul „Exportă G-code” și „Toate foile” numără și o foaie doar cu finisare (`areFinisare`, `ordinePasi`): un cod nou
+    care întreabă „are foaia ce tăia?” nu se uită doar la `taieturiFoaie`;
+  - relieful importat stă în colțul foii, deci o freză mai lată decât o jumătate de celulă iese din foaie: exportul cere
+    confirmarea, iar o probă e2e o bifează;
+  - pe telefon panoul de proprietăți nu se arată (ADR 0250 §7): o probă care pune rolul o face la lățimea de calculator și
+    abia apoi trece la 390 px;
+  - otrăvurile au găsit patru feluri de probe slabe, întărite: oracolul n-avea V-ul cu vârf plat (un V cu vârf era judecat ca
+    unul ascuțit, deci prea îngăduitor); câmpul pe 9 puncte și diagonala se văd doar cu liniile nealiniate, la un unghi (pe
+    cele aliniate, fiecare segment trece prin celulele vecine); un traseu ridicat peste lemn nu mai taie, deci surplusul
+    măsurat doar pe mutările de tăiere nu-l vede (ce rămâne se măsoară cu fața plăcii unde bila n-a trecut); podeaua se
+    probează doar pe un relief mai adânc decât ea.

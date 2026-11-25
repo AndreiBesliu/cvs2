@@ -57,7 +57,9 @@ o('N05', PF, "*/g, '');", "*/, '');", 'foi', 'doar primul comentariu pleacă')
 o('N06', PF, '    if (s === null) return;', '    if (false) return;', 'foi', 'foile fără nimic de tăiat se grupează între ele')
 o('N07', PF, '    if (g) g.push(k);', '    if (false) g.push(k);', 'foi', 'nicio foaie nu intră în grupul alteia')
 # Calculul „Toate foile” (unitare).
-o('K01', EC, '    if (taieturiFoaie(d, 0).length === 0) {', '    if (false) {', 'foi', 'foaia goală cerută workerului (refuz)')
+# Mutată pe codul din 18.1↑c (25.11: argumentul `reliefuri`, ordinea cu finisările, bila); aceeași greșeală.
+o('K01', EC, '    if (ordinePasi(d, 0).length === 0) {', '    if (false) {', 'foi',
+  'foaia goală cerută workerului (refuz)')
 o('K02', EC, 'goale.push(nume);', 'void goale;', 'foi', 'foile goale nu se spun')
 o('K03', EC, "'cereConfirmare' in r ?", "'cereConfirmare' in {} ?", 'foi', 'refuzul ieșirii din foaie, fără sfatul exportului singur')
 o('K04', EC, 'const activ = facute.find((x) => doc.foi[x.k]?.id === activa) ?? facute[0];', 'const activ = facute[0];', 'foi',
