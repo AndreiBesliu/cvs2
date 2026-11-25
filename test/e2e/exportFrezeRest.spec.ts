@@ -6,7 +6,7 @@
  * o face „Scrisă de mână”, doar pe freza aceea.
  */
 import { test, expect, type Locator, type Page } from '@playwright/test';
-import { adauga } from './ajutor-panza.ts';
+import { adauga, ecran, vedere } from './ajutor-panza.ts';
 import { alege } from './ajutor-export.ts';
 
 test.use({ locale: 'ro-RO' });
@@ -117,8 +117,55 @@ test('dopul drept și decuparea benzii: T-ul urmează regula rolurilor, printre 
   await banda.selectOption({ label: 'Plată Ø3,175' });
   await expect(e2.locator('[data-camp="banda-scula"]')).toHaveValue('2');
   await expect(e2.locator('[data-camp="banda-diametru"]')).toHaveValue('3,175');
-  // Ø-ul decupării schimbat de mână o scoate doar pe ea.
+  // Exportă le scrie (V-carve-ul benzii cere o freză în V, iar dopul încape în conul ei la 3 mm): fereastra redeschisă le citește.
+  await e2.locator('[data-camp="freza-biblioteca"]').selectOption({ label: 'V60 Ø6' });
+  await e2.locator('[data-camp="adancime"]').fill('3');
+  await exporta(page);
+  await page.locator('[data-actiune="export.gcode"]').click();
+  await expect(aleasaIn(dop)).toHaveText('Plată Ø3,175');
+  await expect(aleasaIn(banda)).toHaveText('Plată Ø3,175');
+  // Ø-ul decupării schimbat de mână o scoate doar pe ea; la fel, al dopului.
   await e2.locator('[data-camp="banda-diametru"]').fill('3');
   await expect(aleasaIn(banda)).toHaveText('Scrisă de mână');
   await expect(aleasaIn(dop)).toHaveText('Plată Ø3,175');
+  await e1.locator('[data-camp="dop-diametru"]').fill('3');
+  await expect(aleasaIn(dop)).toHaveText('Scrisă de mână');
+});
+
+test('legarea V-carve-urilor aceleiași piese ține și originea frezei fundului plat, ca lucrarea', async ({ page }) => {
+  await page.goto('/');
+  await adauga(page, 'dreptunghi');
+  await adauga(page, 'cerc');
+  // Scade: o piesă cu două operații, exteriorul și gaura (ADR 0067), ca în proba ordinii de mână.
+  const randuri = page.getByTestId('lista-vectori').locator('button[data-instanta]');
+  await randuri.first().click();
+  await expect(page.locator('[data-editare="lipire"]')).toBeAttached();
+  const pe = (await ecran(page, await vedere(page)))(85, 50);
+  await page.keyboard.down('Shift');
+  await page.mouse.click(pe.x, pe.y);
+  await page.keyboard.up('Shift');
+  await page.locator('[data-editare="boolean-scade"]').click();
+  await expect(randuri).toHaveCount(1);
+  await page.locator('[data-actiune="export.gcode"]').click();
+  await expect(page.locator('[data-fisa="op"]')).toHaveCount(2);
+  const chei = await page.locator('[data-nav-op]').evaluateAll((r) => r.map((x) => x.getAttribute('data-nav-op') ?? ''));
+  const [prima, a2] = chei as [string, string];
+  const f1 = fisa(page, prima), f2 = fisa(page, a2);
+  for (const e of [f1, f2]) {
+    await e.locator('input[data-camp="latura"][value="vcarve"]').check();
+    await e.locator('[data-camp="freza-biblioteca"]').selectOption({ label: 'V60 Ø6' });
+    await e.locator('[data-camp="fund-plat"]').check();
+  }
+  // Același V, același fund scris de mână: al doilea rând se sapă odată cu primul.
+  const legat = page.locator(`[data-nav-op="${a2}"] [data-legat]`);
+  await expect(legat).toHaveText('cu 1');
+  // Fundul primului din bibliotecă, al celui de-al doilea scris de mână cu aceleași valori: lucrarea le desparte, deci și fereastra.
+  await f1.locator('[data-camp="fund-biblioteca"]').selectOption({ label: 'Plată Ø3,175' });
+  for (const [c, v] of [['fund-scula', '1'], ['fund-diametru', '3,175'], ['fund-pas', '1,27']] as const) await f2.locator(`[data-camp="${c}"]`).fill(v);
+  await expect(f1.locator('[data-camp="fund-scula"]')).toHaveValue('1');
+  await expect(f1.locator('[data-camp="fund-pas"]')).toHaveValue('1,27');
+  await expect(legat).toHaveCount(0);
+  // Și al celui de-al doilea din bibliotecă: aceeași freză, din nou legate.
+  await f2.locator('[data-camp="fund-biblioteca"]').selectOption({ label: 'Plată Ø3,175' });
+  await expect(legat).toHaveText('cu 1');
 });
