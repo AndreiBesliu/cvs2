@@ -72,7 +72,11 @@ test('roata dințată: axul vine de lungimea bună, iar de la ax drumul înapoi 
   await expect(are(page)).toHaveText('1 ax');
   await expect(rand(page, 'capatAx').locator('.at-prinde-unde')).toHaveText('Pe ax');
   await expect(rand(page, 'capatAx').locator('button')).toHaveText(PE_AX);
+  // axul are un singur rând; grinda perechii e doar a roții dințate
+  await expect(page.locator('#at-prinde-lista [data-rand]')).toHaveCount(1);
+  await expect(rand(page, 'pereche')).toHaveCount(0);
   await rand(page, 'capatAx').locator('[data-prinde="rotita"]').click();
+  await expect(rand(page, 'pereche')).toHaveCount(1);
   await expect(nume(page)).toHaveText('Roată dințată 24');
   await expect(page.locator('#at-tipuri [data-fila="roti"]')).toHaveAttribute('aria-pressed', 'true');
   await expect(are(page)).toHaveText('1 gaură de ax');
