@@ -14085,7 +14085,7 @@ dată în timpul feliei).
 **Prompt:** (aceeași cerere a owner-ului și aceleași răspunsuri la ADR 0284 ca la 3.Ca; răspunsul lui „Mecanisme”, la
 lista pieselor noi; pornită fără altă întrebare, cât 3.Ce își aștepta rularea completă și cele trei întrebări ale
 Modelului își așteptau răspunsul)
-**Started:** 25.11, 01:57. **Completed:** 25.11, 02:46 (felia, cu otrăvurile; orele, după ceasul containerului).
+**Started:** 25.11, 01:57. **Completed:** 25.11, 02:22 (felia, cu otrăvurile; orele, după ceasul containerului).
 
 - **Cama** (tipul `cama`, fila Roți): un disc pe ax cu marginea la o distanță de ax care se schimbă în timpul rotației,
   de la raza de bază la raza de bază plus cursa. Trei forme: excentricul, para, melcul.
