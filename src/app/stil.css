@@ -1892,7 +1892,8 @@ nav button[aria-pressed='true'] {
   max-width: 100%;
 }
 
-.dialog-csv .legatura {
+.dialog-csv .legatura,
+.panou-vectori .legatura {
   border: 0;
   background: none;
   padding: 0;

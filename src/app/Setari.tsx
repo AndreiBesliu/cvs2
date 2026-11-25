@@ -18,7 +18,7 @@ import type { Cota } from '../model/document.ts';
 import { citesteNumar, textNumar } from '../ui/numar.ts';
 import { useLimba } from '../ui/useLimba.ts';
 import {
-  eImplicit, FELURI_LIPIRE, formatCote, FRACTII_COTE, grupImplicit, GRUPURI_COTE, MARGINI, PREFIX_MAXIM, schimbaSetariCote, stilCote, UNITATI_COTE,
+  eImplicit, FELURI_LIPIRE, formatCote, FRACTII_COTE, grupImplicit, GRUPURI_COTE, MARGINI, numeStratBun, PREFIX_MAXIM, schimbaSetariCote, STRAT_MAXIM, stilCote, UNITATI_COTE,
   useSetariCote, type GrupCote, type SetariCote,
 } from './setariCote.ts';
 import './setari.css';
@@ -87,6 +87,27 @@ function CampText({ id, setare, eticheta, nota, valoare, maxim, la }: {
     <Rand id={id} eticheta={eticheta} {...(nota ? { nota } : {})}>
       <input id={id} type="text" autoComplete="off" spellCheck={false} data-setare={setare} value={valoare} maxLength={maxim}
         aria-describedby={nota ? `${id}-nota` : undefined} onChange={(e) => { const v = e.currentTarget.value; if ([...v].length <= maxim) la(v); }} />
+    </Rand>
+  );
+}
+
+/**
+ * Numele stratului cotelor: ținut la fiecare schimbare cât e bun (`numeStratBun`); altfel textul rămâne în câmp, cu fraza
+ * de lângă el, iar setarea își păstrează numele bun de dinainte. La ieșirea din câmp, un nume nebun se întoarce la cel ținut.
+ */
+function CampStrat({ id, eticheta, nota, valoare, la }: {
+  readonly id: string; readonly eticheta: string; readonly nota: string; readonly valoare: string; readonly la: (v: string) => void;
+}): ReactNode {
+  const [text, setText] = useState<string | null>(null);
+  const gresit = text !== null && !numeStratBun(text);
+  const descriere = [`${id}-nota`, gresit ? `${id}-gresit` : ''].filter(Boolean).join(' ');
+  return (
+    <Rand id={id} eticheta={eticheta} nota={nota}>
+      <input id={id} type="text" autoComplete="off" spellCheck={false} data-setare="export.strat" value={text ?? valoare} maxLength={STRAT_MAXIM}
+        aria-invalid={gresit} aria-describedby={descriere}
+        onChange={(e) => { const v = e.currentTarget.value; setText(v); if (numeStratBun(v) && v !== valoare) la(v); }}
+        onBlur={() => { setText(null); }} />
+      {gresit ? <small id={`${id}-gresit`} className="setari-gresit" role="alert">{t('setari.cote.export.strat.gresit', { nume: valoare })}</small> : null}
     </Rand>
   );
 }
@@ -213,6 +234,7 @@ function SectiuneCote({ s, virgula }: { readonly s: SetariCote; readonly virgula
   const comp = (c: Partial<SetariCote['comportament']>): void => { pune({ ...s, comportament: { ...s.comportament, ...c } }); };
   const lipire = (l: Partial<SetariCote['lipire']>): void => { pune({ ...s, lipire: { ...s.lipire, ...l } }); };
   const masurare = (m: Partial<SetariCote['masurare']>): void => { pune({ ...s, masurare: { ...s.masurare, ...m } }); };
+  const exp = (x: Partial<SetariCote['export']>): void => { pune({ ...s, export: { ...s.export, ...x } }); };
   const v = <T extends string>(prefix: string, valori: readonly T[]): readonly { readonly v: T; readonly text: string }[] =>
     valori.map((x) => ({ v: x, text: t(`${prefix}.${x}` as CheieSimpla) }));
   const nr = (k: string, setare: string, eticheta: CheieSimpla, valoare: number, margini: Margini, la: (x: number) => void, nota?: CheieSimpla): ReactNode => (
@@ -323,6 +345,18 @@ function SectiuneCote({ s, virgula }: { readonly s: SetariCote; readonly virgula
               la={(x) => { masurare({ [k]: x }); }} />
           ))}
         </fieldset>
+      </Grup>
+      <Grup grup="export" s={s}>
+        <p className="setari-nota-grup">{t('setari.cote.export.nota')}</p>
+        <Bifa id={`${id}-cu-cote`} setare="export.cuCote" eticheta={t('setari.cote.export.cu-cote')} nota={t('setari.cote.export.cu-cote.nota')}
+          valoare={s.export.cuCote} la={(x) => { exp({ cuCote: x }); }} />
+        <CampStrat id={`${id}-strat`} eticheta={t('setari.cote.export.strat')} nota={t('setari.cote.export.strat.nota')} valoare={s.export.strat}
+          la={(x) => { exp({ strat: x }); }} />
+        <Rand id={`${id}-culoare-strat`} eticheta={t('setari.cote.export.culoare')} nota={t('setari.cote.export.culoare.nota')}>
+          <input id={`${id}-culoare-strat`} type="color" data-setare="export.culoare" value={s.export.culoare} aria-describedby={`${id}-culoare-strat-nota`}
+            onChange={(e) => { exp({ culoare: e.currentTarget.value.toLowerCase() }); }} />
+        </Rand>
+        {nr('grosime', 'export.grosime', 'setari.cote.export.grosime', s.export.grosime, MARGINI.grosime, (x) => { exp({ grosime: x }); }, 'setari.cote.export.grosime.nota')}
       </Grup>
     </div>
   );

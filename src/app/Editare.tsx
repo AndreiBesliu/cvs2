@@ -7,7 +7,7 @@ import { aliniaza, FELURI_ALINIERE, minimAliniere, type FelAliniere } from '../g
 import { lipeste } from '../geom/lipire.ts';
 import '../i18n/editare.ts';
 import { mesajeGata } from '../i18n/laCerere.ts';
-import { cuMesaje, t, type CheieSimpla } from '../i18n/t.ts';
+import { cuMesaje, limba, t, type CheieSimpla } from '../i18n/t.ts';
 import type { Document, Ghidaj, Nod } from '../model/document.ts';
 import { areArce, formeScalate, matriceInclinare, transforma, UNGHI_MAXIM_INCLINARE, type Transformare } from '../model/transformare.ts';
 import type { ContextDocument } from '../ui/actiuniDocument.ts';
@@ -1855,7 +1855,7 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
                 <IconaVectori />
               </button>
             )}
-            {panouVectori ? <PanouVectori doc={doc} indexFoaie={indexFoaie} onInchide={() => { setPanou(null); }} /> : null}
+            {panouVectori ? <PanouVectori doc={doc} indexFoaie={indexFoaie} onInchide={() => { setPanou(null); }} {...(p.onSetari ? { onSetari: p.onSetari } : {})} /> : null}
           </span>
         );
         const vedereSectiune = (
@@ -3297,19 +3297,52 @@ type ModulVectori = typeof import('../io/exportVectori.ts');
  * Panoul exportului vectorilor (ADR 0088, ADR 0089): formatul (DXF R2007, implicit, SVG, PDF cu straturi sau EPS; la PDF și
  * EPS, nota despre arcele din curbe), conturul foii la cerere, Exportă și ce s-a descărcat (câte entități, pe câte
  * straturi). Scriitorii vin la primul Exportă: nu stau în pachetul de pornire. Esc îl închide.
+ * Pe o foaie cu cote, bifa „Cu cotele” (ADR 0330 §7, felia 10.4↑c-1), pornită după Setări, cu stratul lor și legătura spre
+ * setări; la Exportă vin setările cotelor și fontul cifrelor (cel cu o singură linie, inclus), tot la cerere.
  */
-function PanouVectori({ doc, indexFoaie, onInchide }: { readonly doc: Document; readonly indexFoaie: number; readonly onInchide: () => void }): ReactElement {
+function PanouVectori({ doc, indexFoaie, onInchide, onSetari }: {
+  readonly doc: Document; readonly indexFoaie: number; readonly onInchide: () => void; readonly onSetari?: () => void;
+}): ReactElement {
   const [format, setFormat] = useState<'dxf' | 'svg' | 'pdf' | 'eps'>('dxf');
   const [cuFoaia, setCuFoaia] = useState(false);
   const [stare, setStare] = useState<string | null>(null);
+  const nCote = doc.foi[indexFoaie]?.cote?.length ?? 0;
+  // Bifa cotelor: null până vin setările (implicitul ei); stratul, pentru fraza de sub ea.
+  const [cuCote, setCuCote] = useState<boolean | null>(null);
+  const [strat, setStrat] = useState<string | null>(null);
+  useEffect(() => {
+    if (nCote === 0) return;
+    let viu = true;
+    import('./setariCote.ts').then((m) => {
+      if (!viu) return;
+      const s = m.setariCote().export;
+      setCuCote((x) => x ?? s.cuCote);
+      setStrat(s.strat);
+    }, () => { /* Fără setări: bifa rămâne oprită. */ });
+    return () => { viu = false; };
+  }, [nCote]);
   const radacina = useRef<HTMLDivElement | null>(null);
   useInFereastra(radacina);
   const exporta = (): void => {
-    import('../io/exportVectori.ts').then((m: ModulVectori) => {
-      const f = m.exportaVectori(doc, indexFoaie, format, cuFoaia);
+    const cote = nCote > 0 && cuCote === true;
+    const vectori = import('../io/exportVectori.ts');
+    const cerute = cote
+      ? Promise.all([import('./setariCote.ts'), import('../text/calcul.ts')]).then(async ([sc, tx]) => {
+        const f = await tx.incarcaFont(tx.FONT_COTE);
+        if (!f.ok) return 'font' as const;
+        const s = sc.setariCote();
+        return { stil: sc.stilCote(s), format: sc.formatCote(s, limba() === 'ro'), cifre: tx.cifreDinFont(f.font), strat: { nume: s.export.strat, culoare: s.export.culoare, grosime: s.export.grosime } };
+      })
+      : Promise.resolve(undefined);
+    Promise.all([vectori, cerute]).then(([m, c]: [ModulVectori, Awaited<typeof cerute>]) => {
+      if (c === 'font') { setStare(t('editare.vectori.cote.font')); return; }
+      const f = m.exportaVectori(doc, indexFoaie, format, cuFoaia, c);
       if (f.entitati === 0) { setStare(t('editare.vectori.gol')); return; }
       descarcaText(f.text, f.nume, f.tip);
-      setStare(t('editare.vectori.gata', { nume: f.nume, n: String(f.entitati), s: String(f.straturi) }));
+      const gata = c
+        ? t('editare.vectori.cote.gata', { nume: f.nume, n: String(f.entitati), s: String(f.straturi), c: String(f.cote) })
+        : t('editare.vectori.gata', { nume: f.nume, n: String(f.entitati), s: String(f.straturi) });
+      setStare(f.lipsa.length > 0 ? `${gata} ${t('editare.vectori.cote.lipsa', { semne: f.lipsa.join(' ') })}` : gata);
     }, () => { setStare(t('editare.vectori.neincarcat')); });
   };
   return (
@@ -3334,6 +3367,21 @@ function PanouVectori({ doc, indexFoaie, onInchide }: { readonly doc: Document; 
         <input type="checkbox" checked={cuFoaia} data-vectori="foaia" onChange={(e) => { setCuFoaia(e.target.checked); setStare(null); }} />
         <span>{t('editare.vectori.foaia')}</span>
       </label>
+      {nCote > 0 ? (
+        <>
+          <label className="bifa-retea">
+            <input type="checkbox" checked={cuCote === true} data-vectori="cote" aria-describedby="nota-vectori-cote"
+              onChange={(e) => { setCuCote(e.target.checked); setStare(null); }} />
+            <span>{t('editare.vectori.cote', { n: String(nCote) })}</span>
+          </label>
+          {cuCote === true && strat !== null ? (
+            <p className="nota-retea" id="nota-vectori-cote" data-testid="nota-vectori-cote">
+              {t('editare.vectori.cote.nota', { strat })}
+              {onSetari ? <> <button type="button" className="legatura" data-vectori="setari" onClick={onSetari}>{t('editare.cote.setari')}</button></> : null}
+            </p>
+          ) : null}
+        </>
+      ) : null}
       {stare ? <p className="motiv-retea" role="status" data-testid="stare-vectori">{stare}</p> : null}
       <div className="butoane-retea">
         <button type="button" className="principal" data-vectori="exporta" onClick={exporta}>{t('editare.vectori.exporta')}</button>
