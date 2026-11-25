@@ -656,6 +656,43 @@ var Lego = (function (glob: typeof globalThis) {
     for (let k = 0; k < q.n; k++) prinderi.push({ fel: "stift", p: [s * k + s / 2, s / 2, q.H], d: SUS, lung: P.stift_h });
     return { tri, avert, prinderi };
   }
+  // Cadrul (fereastra; ADR 0284, felia 3.Cj): o cărămidă 1 × n, înaltă de 2–6 cărămizi, cu un gol prin ea. Jos, pragul: o
+  // placă obișnuită (goală pe dedesubt, deci stă pe știfturi); pe margini, doi stâlpi groși cât rama; sus, buiandrugul: o
+  // placă plină, cu știfturi pe toată lungimea. Stâlpii și buiandrugul sunt un singur corp (profilul (x, z) cu golul,
+  // întins pe adâncime), retras cu 0,01 mm față de fețele pragului (două corpuri nu-și împart muchii) și intrat 0,3 mm în
+  // capacul lui. Golul e drept sau cu colțurile de sus teșite la 45°: teșitura scurtează puntea (ce se tipărește în aer)
+  // până la un știft, cât îi lasă înălțimea golului fără 2 mm (cât rămâne stâlpul drept).
+  type CadruDef = { lung?: unknown; inalt?: unknown; rama?: unknown; colturi?: unknown };
+  function cadruCote(d: CadruDef) {
+    const avert: string[] = [];
+    const intreg = (v: unknown, a: number, b: number, implicit: number, ce: (x: number) => string): number => {
+      const c = numarCerut(v), r = Math.round(Number.isFinite(c) ? c : implicit), x = Math.min(b, Math.max(a, r));
+      if (x !== r) avert.push(ce(x));
+      return x;
+    };
+    const n = intreg(d.lung, 2, 8, 4, x => tr`Un cadru are între 2 și 8 știfturi: l-am făcut de ${x}.`);
+    const c = intreg(d.inalt, 2, 6, 3, x => tr`Un cadru are între 2 și 6 cărămizi înălțime: l-am făcut de ${x}.`);
+    const rc = numarCerut(d.rama), rama = zecime(Math.min(4, Math.max(1.2, Number.isFinite(rc) ? rc : 1.6)));
+    if (Number.isFinite(rc) && (rc < 1.2 - 1e-9 || rc > 4 + 1e-9)) avert.push(tr`Rama unui cadru are între 1,2 și 4 mm: am făcut-o de ${String(rama).replace(".", Limba.zecimal)} mm.`);
+    const tesit = d.colturi === "tesite", Lx = P.pas * n - 2 * P.joc_lateral, H = 3 * P.placa * c, w = Lx - 2 * rama, h = H - 2 * P.placa;
+    return { n, c, rama, tesit, Lx, H, w, h, k: tesit ? Math.max(0, Math.min((w - P.pas) / 2, h - 2)) : 0, avert };
+  }
+  function cadru(d: CadruDef): Corp {
+    const e = ef(), q = cadruCote(d), s = P.pas, j0 = P.joc_lateral, tri: Tri[] = [];
+    // pragul: placa 1 × n, fără știfturi
+    const prag = caramida({ celule: Array.from({ length: q.n }, (_, i): Celula => [i, 0]), placi: 1, stifturi: false });
+    tri.push(...prag.tri);
+    // stâlpii și buiandrugul: profilul (x, z) cu golul, întins pe adâncime
+    const x0 = j0 + 0.01, x1 = s * q.n - j0 - 0.01, zj = P.placa, zs = q.H - P.placa, xa = j0 + q.rama, xb = s * q.n - j0 - q.rama;
+    const gol: Poli = q.k > 1e-9 ? [[xa, zj], [xb, zj], [xb, zs - q.k], [xb - q.k, zs], [xa + q.k, zs], [xa, zs - q.k]] : [[xa, zj], [xb, zj], [xb, zs], [xa, zs]];
+    tri.push(...axe(prismaGauri([[x0, zj - 0.3], [x1, zj - 0.3], [x1, q.H], [x0, q.H]], [gol], j0 + 0.01, s - j0 - 0.01), ([u, v, w]) => [u, w, v], true));
+    // știfturile, pe toată lungimea
+    tri.push(...stifturi(Array.from({ length: q.n }, (_, k): P2 => [s * k + s / 2, s / 2]), q.H, e.stiftD));
+    // prinderile: locașurile pragului și știfturile de pe buiandrug
+    const prinderi: Prindere[] = prag.prinderi.filter(c => c.fel === "locas");
+    for (let k = 0; k < q.n; k++) prinderi.push({ fel: "stift", p: [s * k + s / 2, s / 2, q.H], d: SUS, lung: P.stift_h });
+    return { tri, avert: q.avert, prinderi };
+  }
   function lateral({ lung = 1, fete = "una" }: { lung?: number; fete?: string }): Corp {
     // caramida 1 x n cu stifturi si pe latura lunga (SNOT): stiftul lateral la 5,6 mm de jos, ca o piesa prinsa in el sa
     // iasa la nivel cu fata de sus. Plina, cu locasuri dedesubt; se printeaza in picioare (stifturile laterale sunt scurte).
@@ -2803,7 +2840,7 @@ var Lego = (function (glob: typeof globalThis) {
   }
 
   // ---------------------------------------------------------------------------------------------- piesa dupa definitie
-  const TIPURI = { caramida, lateral, panta, pantaInversa, pana, rotund, arc, grinda, caramidaTechnic, ax, stiftTechnic, bucsa, conector, conectorUnghi, suport, clema, maner, bara, bila, cupa, rotita, cremaliera, cama, roata, fulie, conica, coroana, conicaDubla, senila, elice, eliceBarca, ventilator, roataPalete, dinCvs2 };
+  const TIPURI = { caramida, lateral, panta, pantaInversa, pana, rotund, arc, cadru, grinda, caramidaTechnic, ax, stiftTechnic, bucsa, conector, conectorUnghi, suport, clema, maner, bara, bila, cupa, rotita, cremaliera, cama, roata, fulie, conica, coroana, conicaDubla, senila, elice, eliceBarca, ventilator, roataPalete, dinCvs2 };
   function construieste(def: DefPiesa) {
     const f = TIPURI[def.tip];
     if (!f) throw new Error("tip necunoscut: " + def.tip);
@@ -2897,6 +2934,8 @@ var Lego = (function (glob: typeof globalThis) {
     distantaRoti: (z1: number, z2: number, m = 1) => m * (z1 + z2) / 2,
     // arcul (ADR 0284): cotele din parametri: deschiderea dintre picioare, cât urcă bolta, raza ei, cât rămâne deasupra
     arcCote: (d: ArcDef) => { const q = arcCote(d); return { lung: q.n, inalt: q.c, bolta: q.joasa ? "joasa" : "inalta", deschidere: q.w, sageata: q.s, raza: q.R, deasupra: q.H - q.s, inaltime: q.H }; },
+    // cadrul (ADR 0284): cotele din parametri, după margini; golul (lat, înalt), teșitura colțurilor de sus și puntea rămasă
+    cadruCote: (d: CadruDef) => { const q = cadruCote(d); return { lung: q.n, inalt: q.c, rama: q.rama, colturi: q.tesit ? "tesite" : "drepte", golLat: q.w, golInalt: q.h, tesitura: q.k, punte: q.w - 2 * q.k, inaltime: q.H }; },
     // roata cu palete (ADR 0284): cotele din parametri, după margini; butucul (raza), grosimea și lungimea unei palete
     // (de la butuc la vârf), săgeata celor curbate, grosimea discului, câte palete încap la diametrul ăsta
     roataPaleteCote: (d: PaleteDef) => { const q = roataPaleteCote(d); return { diam: q.D, palete: q.n, lat: q.W, forma: q.forma, disc: q.disc, gaura: q.gaura, butuc: q.rh, grosime: q.t, lungime: q.c, sageata: q.sageata, discGros: PALETE.disc, incap: q.incap }; },
