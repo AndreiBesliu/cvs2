@@ -716,6 +716,53 @@ function v27v28(doc: Brut): ReturnType<Migrare> {
 }
 
 /**
+ * Frezele unei operații brute, cu calea lor (ADR 0300 §5: scula, frezele de rest, fundul plat și frezele lui de rest, frezele
+ * dopului, freza benzii), pentru ciocnirea formei `bila` (ADR 0312 §3).
+ */
+function frezeOperatieBrute(o: Brut): Array<readonly [string, unknown]> {
+  const ob = (x: unknown): x is Brut => typeof x === 'object' && x !== null && !Array.isArray(x);
+  const rez: Array<readonly [string, unknown]> = [['scula', o['scula']]];
+  const lista = (cale: string, l: unknown): void => {
+    if (Array.isArray(l)) l.forEach((r: unknown, k) => { if (ob(r)) rez.push([`${cale}[${k}].scula`, r['scula']]); });
+  };
+  lista('rest', o['rest']);
+  const fp = o['fundPlat'];
+  if (ob(fp)) { rez.push(['fundPlat.scula', fp['scula']]); lista('fundPlat.rest', fp['rest']); }
+  const inc = o['incrustatie'];
+  if (ob(inc)) {
+    lista('incrustatie.frezeDop', inc['frezeDop']);
+    const b = inc['banda'];
+    if (ob(b)) rez.push(['incrustatie.banda.freza', b['freza']]);
+  }
+  return rez;
+}
+
+/**
+ * v28 → v29 (ADR 0312): finisarea reliefului și freza bilă, schimbă doar numărul. Un v28 cu o operație `finisare`, cu câmpul
+ * `finisare` (necunoscut la v28) sau cu o freză `{ tip: 'bila' }` nu e un v28 valid: migrarea îl refuză, ca să nu-l facă v29
+ * pe tăcute (schema curentă l-ar primi).
+ */
+function v28v29(doc: Brut): ReturnType<Migrare> {
+  const ob = (x: unknown): x is Brut => typeof x === 'object' && x !== null && !Array.isArray(x);
+  const piese = doc['piese'];
+  for (const p of Array.isArray(piese) ? piese : []) {
+    if (!ob(p) || !Array.isArray(p['operatii'])) continue;
+    for (const o of p['operatii'] as unknown[]) {
+      if (!ob(o)) continue;
+      const unde = `operația v28 ${String(o['id'])} din piesa ${String(p['id'])}`;
+      if (o['tip'] === 'finisare') return { ok: false, motiv: `${unde} e o finisare, pe care v29 o aduce: nu e un document v28 valid` };
+      if (Object.hasOwn(o, 'finisare')) return { ok: false, motiv: `${unde} are câmpul „finisare”, pe care v29 îl folosește: nu e un document v28 valid` };
+      for (const [cale, s] of frezeOperatieBrute(o)) {
+        if (ob(s) && ob(s['forma']) && s['forma']['tip'] === 'bila') {
+          return { ok: false, motiv: `${unde} are o freză bilă (${cale}), pe care v29 o aduce: nu e un document v28 valid` };
+        }
+      }
+    }
+  }
+  return { ok: true, doc: { ...doc, schema: 29 } };
+}
+
+/**
  * Migrările pure, vN → vN+1. Cheia e versiunea de PLECARE. Lista crește; o migrare scrisă nu se mai schimbă. Fiecare
  * lucrează doar pe forma pe care o promite: v1 → v2 își validează intrarea cu schema v1 înghețată; v2 → v3 … v19 → v20
  * lucrează defensiv, iar schema curentă (care conține toate regulile de dinainte) judecă rezultatul.
@@ -759,5 +806,6 @@ export const MIGRARI: Readonly<Record<number, Migrare>> = {
   25: v25v26,
   26: v26v27,
   27: v27v28,
+  28: v28v29,
 };
 

@@ -17,6 +17,7 @@ import { DISTANTA_MINIMA, offsetFigura, type Regiune } from '../geom/offset.ts';
 import { JOC_INCRUSTATIE_MINIM, pasLateralImplicit, type Operatie, type Scula } from '../model/document.ts';
 import { valoriIncrustatieDreapta } from '../model/incrustatie.ts';
 import { jsonCanonic } from '../model/jsonCanonic.ts';
+import { felFrezei } from '../model/formaFrezei.ts';
 
 export type FrezaDreapta = { readonly scula: Scula; readonly pasLateral: number };
 
@@ -45,7 +46,7 @@ export function refuzIncrustatieDreapta(op: Operatie, unde: string, grosimeFoaie
   if (i?.fel !== 'drept') return null;
   if (op.tip !== 'buzunar') return `${unde}: incrustația cu pereți drepți e a unui buzunar (pe un V-carve, alege incrustația în V)`;
   const v = (i.frezeDop ?? []).find((f) => f.scula.forma !== undefined);
-  if (v) return `${unde}: frezele dopului sunt drepte (T${v.scula.numar} e în V)`;
+  if (v) return `${unde}: frezele dopului sunt drepte (T${v.scula.numar} e ${felFrezei(v.scula.forma)})`;
   const gaura = i.locas === 'gaura';
   const tr = i.treapta;
   if (tr) {

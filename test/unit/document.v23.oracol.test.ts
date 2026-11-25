@@ -281,6 +281,8 @@ test('(o) ciocnirile v23: rândul lui CAMPURI_NOI_O, pe orice instanță a oric�
       'incrustatie.banda.freza.regim', 'incrustatie.banda.freza.tais'],
     // ADR 0310 §1 (v28): relieful e o formă a elementului, nu un câmp pe operație.
     28: [],
+    // ADR 0312 §3 (v29): câmpul `finisare` al operației (felul și bila le refuză contractul v28).
+    29: ['finisare'],
   });
   assert.equal(PE_INSTANTA_O, 'instanta:');
   // Fiecare câmp nou, pe un document al versiunii dinainte, se ciocnește exact la pasul lui (cu `texte` pe instanță).

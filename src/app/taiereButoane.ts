@@ -24,7 +24,7 @@ export function frezaComuna(operatii: readonly Operatie[]): Operatie['scula'] | 
   const s = operatii[0]?.scula;
   if (!s) return null;
   const amprenta = (x: Operatie['scula']): string => jsonCanonic({
-    n: x.numar, d: x.diametru, u: x.forma?.unghi ?? null, v: x.forma?.varf ?? null,
+    n: x.numar, d: x.diametru, f: x.forma?.tip ?? null, u: x.forma?.tip === 'v' ? x.forma.unghi : null, v: x.forma?.tip === 'v' ? x.forma.varf ?? null : null,
   });
   const a = amprenta(s);
   return operatii.every((o) => amprenta(o.scula) === a) ? s : null;

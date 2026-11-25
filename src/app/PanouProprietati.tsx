@@ -22,6 +22,7 @@ import { frezaBibliotecii, frezePotrivite, operatiiCuFreza } from '../model/aleg
 import { rolPersonalPiesei, type RolPersonal } from '../model/rolPersonal.ts';
 import type { RezultatActiune } from '../ui/actiuni.ts';
 import { PanouRoluri } from './PanouRoluri.tsx';
+import { CampuriFinisare } from './CampuriFinisare.tsx';
 import { ImaginiFoii } from './ImaginiFoii.tsx';
 import { PanouCota } from './PanouCota.tsx';
 import { useStareCote } from '../ui/coteVedere.ts';
@@ -159,7 +160,9 @@ function operatie(o: Operatie, n: number, grosimeFoaie?: number): ReactNode {
         {rand(t('export.sens'), t(`export.sens.${o.sens}`))}
         {rand(t('export.adancime'), esteGaura(o) && grosimeFoaie !== undefined ? t('prop.inc.gaura.adancime', { mm: mm(grosimeFoaie) }) : mm(o.adancime))}
         {rand(t('export.pas'), mm(o.pas))}
-        {rand(t('prop.freza'), o.scula.forma
+        {rand(t('prop.freza'), o.scula.forma?.tip === 'bila'
+          ? t('prop.freza.valoare-bila', { numar: o.scula.numar, diametru: mmFreza(o.scula.diametru) })
+          : o.scula.forma?.tip === 'v'
           ? o.scula.forma.varf
             ? t('prop.freza.valoare-v-varf', { numar: o.scula.numar, unghi: o.scula.forma.unghi, diametru: mmFreza(o.scula.diametru), varf: mmFreza(o.scula.forma.varf) })
             : t('prop.freza.valoare-v', { numar: o.scula.numar, unghi: o.scula.forma.unghi, diametru: mmFreza(o.scula.diametru) })
@@ -514,6 +517,8 @@ export function PanouProprietati({
             {frezeOferite.map((f) => <option key={f.id} value={f.id}>{f.nume}</option>)}
           </select>
         ))}
+        {/* Finisarea reliefului (ADR 0312, felia 18.1↑c-3): freza, pasul lateral, liniile, marginea, Z-ul. */}
+        <CampuriFinisare doc={doc} piese={piese} cheie={cheie} doarCitire={doarCitire} {...(oprit ? { oprit } : {})} onOperatii={onOperatii} />
         {incrustatii && rand(t('prop.inc.joc'), camp(t('prop.inc.joc'), 'inc-joc', comunInc((i) => i.joc), 'mm', false, (x) => scrieIncrustatie({ joc: x })))}
         {incrustatii && rand(t('prop.inc.fierastrau'), camp(t('prop.inc.fierastrau'), 'inc-fierastrau', comunInc((i) => i.fierastrau), 'mm', false,
           (x) => scrieIncrustatie({ fierastrau: x })))}

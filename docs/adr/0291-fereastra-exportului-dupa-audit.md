@@ -162,3 +162,88 @@ lui 28.8↑a (3 h 20 min, carcasa).
 - **Pe mașină:** zero-ul XY se pune în mijlocul foii. Proba pe mașina owner-ului (o placă cu centrul, privită în aer întâi)
   rămâne a owner-ului.
 
+
+## Implementarea 28.8↑h (25.11)
+
+- **Rândul „pe hârtie”** (`src/app/hartieExport.ts`, `hartieRand`): ce face lucrarea cu valorile scrise într-un rând, socotit de
+  fereastra conectată cu funcțiile lucrării. Fișa îl primește prin `ContextFisa.hartie` și doar îl desenează. Contractul
+  (`IntrareHartie`, `HartieRand`) stă în `src/ui/exportRand.ts`.
+  - **Adâncimea tăiată** (`adancimeTaiata`, în `src/cam/prinFoaie.ts`): cu bifa „și tăieturile cât foaia”, o tăietură cât foaia
+    trece cu supracursa (`catFoaia`, regula pe care o folosește și `cuTaieturiPrinFoaie`), iar gaura incrustației (ADR 0175) e
+    grosimea foii plus supracursa, ca `cuGauriPrinFoaie`. Rândul primește supracursa și bifa ca cererea de la Exportă: supracursa
+    doar cât e pozitivă și bună, bifa doar cu ea.
+  - **Trecerile** (`adancimiTreceri`, mutată din `profil.ts` în `src/cam/treceri.ts`, fără importuri) pe adâncimea tăiată:
+    desenul adâncimii, nota („4 treceri de 4,58 mm, până la 18,3 mm (prin foaie, cu supracursa)” când lucrarea taie mai adânc
+    decât câmpul), rampa și coborârea.
+  - **Găurirea** (`src/cam/gaurireFel.ts`, fără importuri, folosit și de `traseuGaurire`): felul fiecărui cerc
+    (`felGaurire`: ciocănire, elice, mic, mare) și pașii ciocănirii (`pasiCiocanire`). Diametrele cercurilor rândului
+    (`OperatieExport.diametre`) vin cu `diametruCerc`, formula lui `cercInLume` din lucrare.
+- **Constatarea 1:** cu supracursa 0,3 și bifa, 18 mm cu pasul 6 se arată 4 treceri de 4,575 până la 18,3, ca programul.
+- **Constatarea 2:** desenul găuririi are trei feluri (`data-gaurire`): ciocănirea, elicea (din lateral: o tură pe trecere, pe
+  cercul de rază (Dc − D) / 2, apoi una la fund) și „nu merge”. Câmpul ieșirii lipsește când toate cercurile sunt pe elice (cu
+  o valoare greșită rămâne la vedere). Un cerc pe care freza nu-l poate găuri e greșeală în grupul Freza, cu freza cea mai
+  mică bună (Dc / 2), și oprește Exportă înainte de clic, cu „Du-mă la …”.
+- **Ce rămâne în fereastră, cu proba lui față de lucrare** (`exportDeseneCalcul.ts`, `export.desene.test.ts`):
+  - **locurile urechilor pe schiță:** lucrarea lor (`urechiPeLaturi`, cu `laturiBucla` și `geometrieUrechi`) ar aduce în
+    bucata ferestrei 1,3 kB (măsurat), pentru un desen care nu e la scară și pe care nicio regulă a lucrării nu-l schimbă;
+  - **pasul lateral și coborârea:** cer motorul de contururi, care stă doar în workerul CAM;
+  - **V-carve-ul și incrustațiile:** cer o operație întreagă, pe care fereastra o face abia la Exportă; vin cu 28.8↑m, când
+    starea ferestrei devine un hook.
+- **Neschimbat:** programul, octet cu octet (aurul plăcilor 1, 2, 4, 11 și al atelierelor, corpusul CAM): mutările din lucrare
+  păstrează aceleași calcule, în aceeași ordine. Documentul rămâne v28; nimic pe server.
+- **Probele:**
+  - `export.hartie.test.ts` (4): adâncimea tăiată față de documentul tăiat de lucrare, pe corpusul CAM și pe foaia cu toate
+    felurile, cu supracursa 0 / 0,5 / 2 și bifa sau fără (martorul cere operații schimbate); constatarea 1 până la G-code;
+    felul găuririi față de `traseuGaurire` pe o grilă de cercuri și freze, cu pașii ciocănirii = mișcările lui pe Z;
+    constatarea 2 față de refuzul exportului;
+  - `export.hartie.spec.ts` (2 e2e): cele două constatări în fereastră;
+  - `export.desene.test.ts` și `gaurire.spec.ts`, aduse la zi (găurirea pe hârtie din rând; greșeala lângă freză în locul
+    refuzului după clic). Spec-urile e2e care deschid exportul, 321 / 321.
+- **Otrăvurile:** `28.8h.py`, 21 / 21 (11 unitare, 10 e2e). Patru vechi, îndreptate, prinse: F01 și F02 din `12.1f-4.py`
+  (regula din `cuTaieturiPrinFoaie`) țintesc acum `catFoaia`; E07 din `28.8a.py` și D01 din `28.8b.py` (copia trecerilor)
+  țintesc `treceri.ts`, cu un caz nou pe hârtie pentru D01 (19,05 cu pasul 1,5875: 12 treceri, nu 13).
+- **Mărimea:** pornirea +0 (111,2 kB), totalul +1,4 kB (891,7 / 1 000); bucata ferestrei +1,1 kB gzip (elicea desenată,
+  greșeala găuririi, textele, modulele mici ale lucrării). Estimarea din tabel (kB ±0) nu socotise desenul elicei.
+
+## Implementarea 28.8↑h-2 (25.11)
+
+Reparația lui „Du-mă la …”, cerută de sesiunea principală după unirea lui 28.8↑h peste 16.A↑b-4: completul unirii a căzut la
+`export.hartie.spec.ts:51` (greșeala cercului, sub marginea panoului, după clic). Reprodusă la fiecare rulare: la 1280 × 720,
+panoul 71..596, greșeala 651..696.
+
+- **Cauza:** `du(cheie, true)` aducea doar capul fișei sus și punea focusul cu `preventScroll` pe primul câmp marcat greșit.
+  O greșeală de sub prima înălțime a panoului rămânea ascunsă. Pe 28.8↑h, proba trecea la limită: cu vreo 4 px ai greșelii în
+  panou. 16.A↑b-4 pune în lista frezei „Scrisă de mână (ca „…”)”, iar rândul se rupe pe două (118 px), deci greșeala iese de
+  tot. În plus, pe un cerc care nu se găurește niciun câmp nu era marcat greșit, deci focusul rămânea pe buton.
+- **Reparația** (`DialogExport.tsx`, `du`): după capul fișei, aduce în vedere prima greșeală a fișei, adică primul grup cu un
+  câmp greșit sau cu un text de greșeală. Încearcă, în ordine, trei întinderi și o ia pe cea mai largă care încape în panou (cu
+  8 px margine):
+  1. de la titlul grupului până la textul greșelii;
+  2. câmpul și textul;
+  3. doar textul.
+
+  Derulează cât mai puțin. Când nici textul nu încape, primul lui rând vine sus. Focusul trece pe câmpul greșit, fără altă
+  derulare. Diametrul frezei e marcat greșit (`aria-invalid`) cât un cerc al rândului e prea mic sau prea mare pentru ea
+  (`FisaOperatie.tsx`, `gauraRea`, din rândul pe hârtie, ca greșeala).
+- **Probele** (`export.hartie.spec.ts`, scrise întâi și văzute căzând):
+  - greșeala trebuie să fie întreagă în partea vizibilă a panoului, după dreptunghiuri (nu `toBeInViewport`, care se mulțumește
+    cu un pixel), cu focusul pe diametru, la 1280 × 720;
+  - aceeași probă la 1024 × 600 și 1280 × 560, cu fontul lat, și pe telefon, la 390 × 844 și 844 × 390. Pe fiecare, cu
+    biblioteca de pornire („Scrisă de mână (ca „…”)” în listă) și cu panoul derulat întâi la capăt;
+  - la 844 × 300, unde greșeala e mai înaltă decât panoul, primul ei rând stă sus;
+  - cu nota bibliotecii desfăcută (16.A↑b-6: „nu mai e în bibliotecă”, cu „Pune-o înapoi în bibliotecă”), la 1280 × 720 și la
+    844 × 390: freza „Plată Ø12” intră în proiect pe un cerc de R10, e ștearsă din bibliotecă, apoi cercul crește la R15.
+- **Peste 16.A↑b-6:** ramura are `origin/unire-2511w` adus (b-6 și 3.Tu). Ciocnirile au fost doar în listele de proprietăți
+  ale ferestrei (`hartie` și `inapoi`, amândouă păstrate).
+- **Peste 18.1↑c** (`origin/unire-2511x`, `f7ca20b6`): relieful scosese finisarea din tăieturile cât foaia pe vechiul `prin`
+  din `cuTaieturiPrinFoaie`, iar 28.8↑h mutase regula în `catFoaia`, comună lucrării și ferestrei. Finisarea intră în
+  `catFoaia`, deci o finisare cât foaia rămâne la adâncimea scrisă, cu bifa și cu supracursa, și în lucrare, și pe hârtie;
+  un profil cât foaia din același document coboară ca până acum. Proba: `export.hartie.test.ts` („cu 18.1↑c: …”), văzută
+  căzând fără finisarea în `catFoaia`; partea lucrării pe program o ține și proba reliefului din `finisare.program.test.ts`.
+  Rândul unei finisări nu ajunge la `hartie`: e doar de citit (`FisaFinisare.tsx`), iar `peRand` îl scoate din rândurile
+  fișei operației.
+- **Otrăvurile:** E11–E16 în `28.8h.py`, 6 / 6. E12 (capătul de sus scăpat când nu încape) scăpase întâi; proba de la
+  844 × 300 o prinde. E01 din `28.8a.py` (derularea capului fișei) e tot prinsă.
+- **Mărimea:** pornirea +0 (111,2 kB), totalul +0,2 kB (893,5 / 1 000). Programul, documentul și serverul: neschimbate.
+- **Găsit pe drum, în afara reparației:** pe un telefon culcat îngust (640 × 360), banda listei lasă fișelor 9 px: fereastra
+  nu se poate folosi acolo. E de judecat cu 28.8↑l (privirea) sau cu aranjamentele.

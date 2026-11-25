@@ -104,7 +104,8 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   `test/oracles/document.ts` (peste partea v1–v10), cazurile pe hârtie la finalul lui `test/oracles/document.cazuri.ts`, proba
   cu ușa aplicației în `test/unit/document.v22.oracol.test.ts` (din 08.11, cu incrustațiile din v20–v22) și, pentru v23 (literele
   plăcuțelor, 11.4↑, în `main` din 13.11), în `test/unit/document.v23.oracol.test.ts`. **Un câmp nou al documentului
-  (v29; v28, cu forma `relief`, ADR 0310, e în `main` din 24.11; v27, cu `biblioteca`, `regim` și `tais` pe frezele
+  (v30; v29, cu finisarea reliefului și freza bilă, ADR 0312, e în `main` din 25.11; v28, cu forma `relief`, ADR
+  0310, din 24.11; v27, cu `biblioteca`, `regim` și `tais` pe frezele
   operațiilor, ADR 0300) intră acolo, ca rangul și incrustația:** rândul
   lui în `CAMPURI_NOI_O` (ciocnirea migrării), judecata în `problemeOperatieO`, frontierele pe hârtie, iar probele care țin
   versiunea curentă se mută pe ea (`schema: 23` în probe; oracolele CAM primesc versiunea nouă cum le primesc pe v21 și v22,
@@ -322,7 +323,7 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   buzunarul, liniile paralele, frezele de rest, găurirea, V-ul, fundul plat, dopurile), turația primei freze montate
   și a celei noi la schimbare. **Fără valori, programul de azi, octet cu octet;** același T cu două turații și o
   adâncime peste tăiș se refuză. Fără interfață încă: urmează 16.A↑b-2 (lista „Freza” pe rândurile exportului și în
-  Tăierea) și 16.A↑b-3 (nota schimbării din bibliotecă). **Un câmp nou al documentului ia v29 (v28 e relieful, ADR 0310). O probă e2e care
+  Tăierea) și 16.A↑b-3 (nota schimbării din bibliotecă). **Un câmp nou al documentului ia v30 (v28 e relieful, ADR 0310; v29, finisarea lui, ADR 0312). O probă e2e care
   citește documentul salvat cere versiunea curentă:** `placute.spec.ts` a căzut în completul liniei cu `schema: 26`.
   **Biblioteca de freze în cont (ADR 0300 §3, §7, felia 16.A↑c)** gata pe 24.11, unită în `main` pe 24.11
   (`6b74074d`), la „b, pornește 16.A↑c” al owner-ului: callable-ul `freze` (`functions/src/freze/`, contractul în
@@ -607,8 +608,20 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   nouă intră în `ORIGINI` (în montaj, `src/ir/montaj.ts`, și în lista ferestrei, `src/ui/exportRand.ts`), în antetul
   citit de sender, în oracolele porții și buzunarului (`test/oracles/poarta.ts`, `buzunar.ts`: citesc originea pe
   hârtie) și în proba aceea.** Proba pe mașină rămâne a owner-ului.
-  Urmează 28.8↑h (desenele ferestrei, socotite cu funcțiile lucrării). Felia: pornirea +0, totalul +0,2 kB
-  (890,3 / 1 000).
+  Felia: pornirea +0, totalul +0,2 kB (890,3 / 1 000).
+  **Fereastra exportului „pe hârtie” (ADR 0291 §1, feliile 28.8↑h și 28.8↑h-2)** gata pe 25.11, unită în `main` pe
+  25.11 (`7d74ade2`): desenele și notele fișei unei operații vin din funcțiile lucrării, socotite de aplicație
+  (`hartieRand`, `src/app/hartieExport.ts`; fișa le primește prin `ContextFisa.hartie`): adâncimea tăiată
+  (`adancimeTaiata`, `src/cam/prinFoaie.ts`), trecerile (`adancimiTreceri`, `src/cam/treceri.ts`), felul găuririi și
+  pașii ciocănirii (`src/cam/gaurireFel.ts`). **Regula „cât foaia” stă o singură dată, în `catFoaia`** (V-carve-ul,
+  incrustațiile și finisarea reliefului rămân afară): lucrarea (`cuTaieturiPrinFoaie`) și desenele o citesc de
+  acolo, deci un fel nou de operație își spune locul în ea, cu proba în lucrare și pe hârtie. Găurirea pe elice are
+  desenul ei, fără câmpul ieșirii; un cerc pe care freza nu-l poate găuri e o greșeală în grupul Freza, iar Exportă
+  e oprit înainte de clic (`gauriBune`). „Du-mă la …” aduce în vedere grupul primei greșeli și pune focusul pe câmpul
+  greșit. **O probă care cere „greșeala se vede” o cere întreagă în panou, pe dreptunghiuri, nu `toBeInViewport()`**
+  (trecea cu 4 px). Programul, octet cu octet. Rămân în fereastră, cu proba lor: urechile de pe schiță, pasul
+  lateral și coborârea, V-carve-ul și incrustațiile (28.8↑m). Urmează 28.8↑i (viteza ferestrei), apoi j–l. Felia:
+  pornirea +0, totalul +1,7 kB (909,1 / 1 000).
   **Aldinul și cursivul sintetic (ADR 0123, felia 7.5↑, adusă din etapa 7)** gata pe 02.11, în worktree-ul `wip/7.5-text`:
   bifele **Aldin** și **Cursiv** din panoul textului, pentru orice font. Cursivul înclină fiecare literă față de linia ei de
   bază, exact; aldinul așază literele la înălțimea miezului (h − 2d), le îngroașă cu d prin fațada offsetului
@@ -1183,8 +1196,8 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   `langaPivot`): o piesă rotundă nouă intră în `ROTUNDE` (`lego.ts`) și, cu amprenta și locul axului pe hârtie, în
   tabelul probei `test/unit/trenulet.model.test.ts`; una care nu e rotundă, în `DREPTE` (proba cere fiecărui tip o
   mostră).** **3.Cf-1 (alipirea la prinderi în „Modelul”; ADR 0284, partea D, cu răspunsurile owner-ului din 25.11:
-  întâi alipirea, prinderea aleasă din puncte în vederea 3D, „Da, piesa alipită urmează baza”)** gata pe 25.11, pe
-  ramură: piesa aleasă din model își arată prinderile (puncte în vedere, numere în editor); una aleasă e ținta, iar
+  întâi alipirea, prinderea aleasă din puncte în vederea 3D, „Da, piesa alipită urmează baza”)** gata pe 25.11,
+  unită în `main` pe 25.11 (`02ac0715`): piesa aleasă din model își arată prinderile (puncte în vedere, numere în editor); una aleasă e ținta, iar
   „Alipește în model” pune piesa următoare pe ea și o leagă de bază (o urmează când baza e mutată sau rotită, în
   lanț); piesa prinsă are „Altă prindere”, „Alt loc pe bază”, „Rotește ↻”, „Glisează” (pe o tijă) și „Desprinde”;
   desprinsă, e pe grilă dacă stă drept pe ea, altfel liberă; Easy 3Draw 18.34.0 (următoarea, 18.35.0). **Așezările
@@ -1273,6 +1286,25 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   încarcă nimic, iar un relief schimbat urcă doar dalele cu altă cheie. „Tăiat” simulează placa abia când e ales.
   **Nu se taie încă** (18.1↑c). Documentul rămâne v28; nimic pe server. Felia: pornirea +0, totalul +3,9 kB
   (884,8 / 1 000); nicio bucată nouă.
+  **Finisarea reliefului (ADR 0310 §4–§6, §13, ADR 0312, felia 18.1↑c; documentul v29)** gata pe 25.11, unită în
+  `main` pe 25.11 (`f7ca20b6`). **Documentul v29:** operația `tip: 'finisare'`, doar pe elemente `relief` (cu
+  `pasLateral` și câmpul `finisare`: `unghi`, `nealiniat`, `margine`, `planZero`), și freza `{ tip: 'bila' }`;
+  migrarea v28 → v29 schimbă doar numărul și refuză un v28 care le are deja. **Bila taie deocamdată doar finisarea
+  reliefului** (`motivFormaPeOperatie`, `src/model/formaFrezei.ts`): profilul, buzunarul și celelalte o refuză, până
+  la felia bilei a liniei frezelor (16.A↑e). CAM-ul e `src/cam/reliefFinisare.ts` (câmpul conservativ, liniile
+  aliniate cu celulele sau la un unghi, trecerile pe Z cel mult cât pasul, ultima pe model; peretele rămâne, dacă
+  marginea nu e „trece”), cu dalele din browser compuse în workerul CAM; valorile pe hârtie (creasta pe plan,
+  ordinea pașilor), în `src/model/finisare.ts`. În Tăierea, rolul „finisarea reliefului”. În fereastra exportului,
+  rândul finisării e doar de citit (`src/ui/FisaFinisare.tsx`), la locul lui în ordinea tăierii: automat, întâi,
+  înaintea oricărei tăieturi a foii (`ordinePasi`); în „A mea” se mută, iar fără rang rămâne în față; Exportă îi
+  scrie rangul. **Un fel nou de operație care nu trebuie dus prin foaie intră în `catFoaia`** (`src/cam/prinFoaie.ts`). **Oracolul 3D e
+  independent** (`test/oracles/relief3d.ts`: freza coborâtă exact pe modelul exact, cu bila, plata și V-ul;
+  simulatorul crestei și al materialului): o strategie nouă pe relief se judecă acolo, pe invariantele „nicio
+  scobitură în model” și „niciodată mai adânc decât pasul pe trecere”. **Lista bibliotecii dată ferestrei exportului
+  ține doar frezele rândurilor (fără bile)**, cu o pază a compilatorului (`exportFreze.bila.test.ts`). Nedovedit
+  fără mașină: creasta reală, suprafața față de model, timpul. Urmează, la cuvântul owner-ului, 18.1↑d (degroșarea,
+  apoi fișa plăcii reliefului) și rândul editabil al finisării. Nimic pe server. Felia: pornirea +0,2 kB, totalul
+  +10,8 kB (907,4 / 1 000).
   **Raportările (15.B↑b) și imprimanta (3.6g, 3.6h, 3.6i pașii 1–2; ADR 0191 acceptat, codul 3.6j încă pe ramură) unite în
   `main` pe 07.11**, peste biblioteca extensiilor (`b501571`, `6e61bee`, apoi `e9cf6ee` cu DEVLOG-ul bibliotecii): **pornirea
   101,7 (cu ușa 105,3 / 110 kB), totalul 535,0 / 550, /admin 106,5 / 200, contul 29,6 / 32.** **Pe test (și pe live), serverul
@@ -1772,6 +1804,95 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 25.11.2026, seara (a patruzeci și una unire din cloud): **alipirea la prinderi în vederea „Modelul” a atelierului
+  Easy 3Draw (3.Cf-1), unită în `main`** (sesiunea principală, ramura `unire-2511ac`, din `5649067c`). Linia
+  atelierului, ramura `wip/3.Xh-biblioteca-ui`, `6b093a98`, PR-ul `AndreiBesliu/cvs2#46` (ADR 0284, partea D, cu
+  răspunsurile owner-ului din sesiunea liniei: întâi alipirea la prinderi; prinderea aleasă din puncte, în vederea
+  3D, cu lista alături; piesa alipită urmează baza), unită în `02ac0715`: piesa aleasă din model își arată
+  prinderile; una aleasă e ținta, iar „Alipește în model” pune piesa următoare pe ea și o leagă de bază, pe care o
+  urmează la mutare și la rotire, în lanț; piesa prinsă are „Altă prindere”, „Alt loc pe bază”, „Rotește ↻”,
+  „Glisează” (pe o tijă) și „Desprinde”. **Easy 3Draw 18.34.0** (524,4 kB); otrăvurile 132 / 132 și 13 / 13. 3.Cf
+  s-a împărțit: 3.Cf-2 (orientarea de mână pe trei axe, pozițiile la jumătate de pas) rămâne, după decorațiunile de
+  Crăciun. Doar pachetul extensiei se schimbă (și o opțiune a uneltei de otrăvuri, `E2E_BUILD = False`, pentru
+  listele pluginului); nimic pe server; documentul rămâne v29. Ramura avea `main` `88771f12`; de atunci `main`
+  primise finisarea reliefului și 28.8↑h (cod al aplicației), deci unirea și-a făcut completul ei. Ciocnirile, doar
+  în DEVLOG și în indexul liniilor (rândul atelierului, al liniei). Porțile unirii, în CI, pe `02ac0715` (completul
+  45683411511, verde la prima trecere, 57 min): unit 10 596 / 0 (12 sărite, pe Linux), e2e 890 / 890, funcțiile pe
+  emulatoare 136 / 136, paginile 60 / 60; rapidul, verde pe `02ac0715`; completul liniei, verde pe `6b093a98`
+  (45673012503); aplicația, neschimbată de felie: pornirea 111,4 kB (plafonul 125; cu ușa 116,5, cu Atelierul
+  116,9), totalul 909,1 / 1 000 kB, `/admin` 138,3 / 200, contul 30,2 / 32. Pe test e `75bcf3fb` (lotul 36); lotul 37
+  (`5649067c`: Escape în „Frezele mele”, finisarea reliefului, fereastra exportului „pe hârtie”) e în drum, cu
+  completul pe `main` pornit la 21:24; 3.Cf-1 pleacă după el. La linii, în lucru: atelierul (3.Cl-1, fulgul, steaua
+  și brăduțul, în fila „Crăciun”; 18.35.0), exportul (28.8↑i, viteza ferestrei). **La owner:** 18.1↑d și rândul
+  editabil al finisării, 10.4↑d, Escape în cele șase ferestre, feliile frezelor (16.A↑d–g), cele două alegeri cu
+  recomandarea aplicată, de încercat „Modelul” din Easy 3Draw (acum și alipirea), proba pe mașină a centrului foii,
+  cele patru întrebări din auditul elicelor, pachetul Easy 3Draw trecut de 0,5 MB, arhivarea sesiunii elicelor,
+  verificarea juridică (GDPR) a utilizării aplicației înaintea live-ului, „cine unește în `main`”, meniul de sus la
+  320 px la atingere.
+- 25.11.2026, seara (a patruzecea unire din cloud): **fereastra exportului „pe hârtie” (28.8↑h, cu reparația
+  28.8↑h-2), unită în `main`** (sesiunea principală, ramura `unire-2511ab`, din `e5c217b2`). Linia exportului, ramura
+  `wip/28.8-export`, `985261ca`, PR-ul `AndreiBesliu/cvs2#44` (ADR 0291 §1, răspunsul 1a al owner-ului;
+  constatările 1–3 ale auditului), unită în `7d74ade2`: desenele și notele fișei unei operații vin acum din
+  funcțiile lucrării, socotite de aplicație (`src/app/hartieExport.ts`), nu din valorile scrise: cu supracursa prin
+  foaie, 18 mm cu pasul 6 se desenează ca 4 treceri de 4,575 până la 18,3, ca în program; găurirea pe elice are
+  desenul ei, fără câmpul ieșirii; un cerc pe care freza nu-l poate găuri e o greșeală lângă freză, cu freza minimă
+  care merge, iar Exportă e oprit înainte de clic. **Programul rămâne octet cu octet** (aurul plăcilor și al
+  atelierelor, corpusul CAM): regulile s-au mutat, cu aceleași calcule (`adancimiTreceri` în `src/cam/treceri.ts`,
+  găurirea în `src/cam/gaurireFel.ts`, „cât foaia” în `catFoaia`). Otrăvurile 21 / 21, apoi 6 / 6 și una nouă pentru
+  regula unită. **Drumul până în `main`:** raportată la 16:00 (`2ecd0054`); unirea de probă peste 16.A↑b-4 a căzut la
+  proba ei nouă, de fiecare dată: „Du-mă la …” aducea doar capul fișei sus, iar cu „Scrisă de mână (ca „…”)” în
+  listă greșeala ieșea din panou (măsurat în browser). Linia a reparat la cauză (28.8↑h-2: butonul aduce în vedere
+  grupul primei greșeli și pune focusul pe câmpul greșit; proba, pe dreptunghiuri, la șase mărimi de fereastră).
+  Raportată din nou la 19:44; peste finisarea reliefului, o ciocnire în CAM: regula „cât foaia” din
+  `src/cam/prinFoaie.ts`, schimbată de amândouă liniile. Rezolvată de linia exportului într-un singur loc
+  (`catFoaia`, cu finisarea înăuntru), cu proba scrisă întâi, în lucrare și pe hârtie, citită și de linia
+  reliefului. Ramura avea unirea reliefului (`b35e2f75`), deci **arborele unirii are exact codul lui `985261ca`**
+  (`git diff` gol în afara fișierelor `.md`) și a intrat pe porțile lui, fără alt complet: completul 45672890113,
+  verde (unit 10 581 / 0, 12 sărite pe Linux; e2e 883 / 883; funcțiile pe emulatoare 136 / 136; paginile 60 / 60);
+  rapidul, verde pe `985261ca`; pornirea 111,4 kB (plafonul 125; cu ușa 116,5, cu Atelierul 116,9), **totalul
+  909,1 / 1 000 kB** (+1,7), `/admin` 138,3 / 200, contul 30,2 / 32. Documentul rămâne v29; nimic pe server. Pe test
+  e `75bcf3fb` (lotul 36); 16.A↑b-7, finisarea reliefului și felia aceasta pleacă acum, într-o singură publicare
+  (lotul 37). **Tot azi, în sesiunea liniei atelierului, owner-ul a acceptat ADR 0285 (decorațiunile de Crăciun din
+  Easy 3Draw): „Mergem cu recomandarile”** (1a–4a): întâi fulgul, steaua și brăduțul (3.Cl-1), apoi globul și
+  relieful pe două înălțimi (3.Cl-2), ornamentul cu nume, cu font dintr-o singură linie (3.Cl-3), brăduțul LEGO
+  (3.Cl-4); o filă nouă, „Crăciun”; ornamentele sunt de sine stătătoare, de agățat. La linii: exportul (28.8↑i,
+  viteza ferestrei), atelierul (3.Cf-1, alipirea la prinderi, raportată: își face completul unirii; apoi 3.Cl-1).
+  **La owner:** 18.1↑d și rândul editabil al finisării, Escape în cele șase ferestre, 10.4↑d, feliile frezelor
+  (16.A↑d–g), cele două alegeri cu recomandarea aplicată, de încercat „Modelul” din Easy 3Draw, proba pe mașină a
+  centrului foii, cele patru întrebări din auditul elicelor, pachetul Easy 3Draw trecut de 0,5 MB, arhivarea
+  sesiunii elicelor, verificarea juridică (GDPR) a utilizării aplicației înaintea live-ului, „cine unește în
+  `main`”, meniul de sus la 320 px la atingere.
+- 25.11.2026, seara (a treizeci și noua unire din cloud): **finisarea reliefului (18.1↑c), unită în `main`, cu
+  documentul v29** (sesiunea principală, ramura `unire-2511x`, peste `88771f12`). Linia reliefului, ramura
+  `wip/18.1-relief`, `40c745f5`, PR-ul `AndreiBesliu/cvs2#39` (ADR 0310 §4–§6, §13; ADR 0312, forma în document),
+  unită în `f7ca20b6`: o piesă-relief primește în Tăierea rolul „finisarea reliefului”; programul o taie cu freza
+  bilă (sau cu plata, ori cu V-ul), pe linii paralele, în treceri pe Z cel mult cât pasul, ultima pe model, fără nicio
+  scobitură în model (calculul pe câmpul conservativ, în workerul CAM). În fereastra exportului, finisarea are
+  rândul ei, doar de citit, la locul ei în ordinea tăierii (în ordinea automată, întâi, înaintea oricărei tăieturi a foii), cu
+  creasta pe plan calculată; vederea 3D arată „Tăiat” după finisare. **Mișcă mașina**, deci oracolul a fost scris
+  întâi (`test/oracles/relief3d.ts`: freza coborâtă exact pe modelul exact, creasta, materialul rămas); otrăvurile
+  45 / 45. **Documentul trece pe v29** (operația `finisare`, cu câmpul ei, și freza `{ tip: 'bila' }`; migrarea
+  schimbă doar numărul): **un câmp nou ia de acum v30**, iar numărul îl dă sesiunea principală, la cerere. Nimic pe
+  server. **Drumul până în `main`:** raportată întâi la 15:11, peste `2aaee0b4`; neunită atunci, fiindcă peste
+  16.A↑b-4 o bilă din bibliotecă ar fi arătat în fereastra exportului ca o freză plată (lista dată notei bibliotecii
+  îi pierdea forma). Linia a adus `main`, a ținut bilele afară din lista aceea (rândurile ferestrei n-au bile; o pază
+  a compilatorului o ține și la „Pune-o înapoi în bibliotecă”) și a probat finisarea cu originea în centrul foii.
+  Unirea, peste lotul cu 16.A↑b-6 și 10.4↑c-2, fără nicio ciocnire; apoi `main` adus cu 16.A↑b-7 (`b35e2f75`) și
+  completul repornit, ca rularea să acopere exact ce intră. Porțile unirii, în CI, pe `b35e2f75` (completul
+  45672724822, verde, 56 min): unit 10 577 / 0 (12 sărite, pe Linux), e2e 873 / 873, funcțiile pe emulatoare
+  136 / 136, paginile 60 / 60; rapidul, verde pe `b35e2f75`; completul liniei, verde pe `dec06156` (45654203469);
+  pornirea 111,4 kB (plafonul 125; cu ușa 116,5, cu Atelierul 116,8), **totalul 907,4 / 1 000 kB** (+10,8), `/admin`
+  138,3 / 200, contul 30,2 / 32. Pe test e `75bcf3fb` (lotul 36, din 20:54); 16.A↑b-7 și finisarea pleacă împreună
+  cu 28.8↑h, într-o singură publicare. **Nedovedit fără mașină:** creasta reală (raza adevărată a bilei, bătaia,
+  încovoierea), suprafața tăiată față de model, timpul; placa de probă a reliefului are fișa ei după degroșare.
+  La linii, în lucru: exportul (28.8↑h, la porți peste unirea aceasta: regula „cât foaia” din `src/cam/prinFoaie.ts`
+  devine una singură, `catFoaia`, cu finisarea înăuntru, citită și de linia reliefului), atelierul (3.Cf, apoi
+  decorațiunile de Crăciun). **La owner, pentru relief:** 18.1↑d (degroșarea) și rândul editabil al finisării în
+  fereastra exportului, la cuvântul lui. **Tot la owner:** Escape în cele șase ferestre, 10.4↑d, feliile frezelor
+  (16.A↑d–g), cele două alegeri cu recomandarea aplicată, de încercat „Modelul” din Easy 3Draw, proba pe mașină a
+  centrului foii, cele patru întrebări din auditul elicelor, pachetul Easy 3Draw trecut de 0,5 MB, arhivarea
+  sesiunii elicelor, verificarea juridică (GDPR) a utilizării aplicației înaintea live-ului, „cine unește în
+  `main`”, meniul de sus la 320 px la atingere.
 - 25.11.2026, seara (a treizeci și opta unire din cloud): **Escape închide „Frezele mele” oriunde ar fi focusul
   (16.A↑b-7), unită în `main`** (sesiunea principală, ramura `unire-2511z`, din `75bcf3fb`). Linia frezelor, ramura
   `wip/16.A-freze-b7`, `0b015682` (codul lui `c95b1576`), PR-ul `AndreiBesliu/cvs2#47`, la cererea sesiunii

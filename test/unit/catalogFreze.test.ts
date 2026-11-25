@@ -64,7 +64,7 @@ test('fiecare freză a catalogului e bună și trece de schema operației (ușa 
   const forma: FormaDoc = { tip: 'dreptunghi', latime: 30, inaltime: 20, razaColt: 0 };
   for (const f of CATALOG_FREZE) {
     assert.deepEqual(problemeFreza(cu(f)), {}, f.id);
-    // Felurile fără CAM încă (bila, toroidala, conica, burghiul) n-au copie pentru document.
+    // Felurile fără CAM încă (toroidala, conica, burghiul, profilurile) n-au copie pentru document; bila are, din v29.
     if ((FELURI_CU_CAM as readonly string[]).includes(f.fel)) {
       assert.ok(operatieInMargini({ ...operatieImplicita('e', forma), scula: sculaDinFreza(cu(f)) }), f.id);
     }

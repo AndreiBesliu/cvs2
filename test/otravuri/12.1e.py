@@ -40,12 +40,15 @@ o('D06', CALC, SIM_DOP, SIM_DOP.replace('motiv: `dopul ${dop + 1} nu mai e în d
 o('D07', CALC, '    ? { dopuri: d.dopuri.map((x) => ({ element: x.element, semifabricat: x.semifabricat })) }',
   '    ? { dopuri: d.dopuri.map((x) => ({ element: x.element, semifabricat: { ...x.semifabricat, latime: x.semifabricat.inaltime } })) }',
   'dop3d', 'lista dopurilor cu semifabricatul greșit')
-o('D08', CALC, '      const r = calculeazaSimularea(c.document, c.dop);', '      const r = calculeazaSimularea(c.document);', 'dop3d',
+# Mutată pe codul din 18.1↑c (25.11: argumentul `reliefuri`, ordinea cu finisările, bila); aceeași greșeală.
+o('D08', CALC, '      const r = calculeazaSimularea(c.document, c.dop, c.reliefuri);', '      const r = calculeazaSimularea(c.document, undefined, c.reliefuri);', 'dop3d',
   'lucrătorul ignoră dopul cerut')
-o('D09', BAZ, "  return calculeaza({ fel: 'simulare', document, ...(dop !== undefined ? { dop } : {}) }, [], o) as Promise<RaspunsSimulare>;",
-  "  return calculeaza({ fel: 'simulare', document }, [], o) as Promise<RaspunsSimulare>;", 'dop3d', 'bazinul pierde dopul cerut')
-o('D10', EXP, '  const r = await simulareInBazin(doc, semnal ? { semnal } : {}, dop);', '  const r = await simulareInBazin(doc, semnal ? { semnal } : {});',
-  'dop3d', 'calculul interfeței pierde dopul cerut')
+# Mutată pe codul din 18.1↑c (25.11: argumentul `reliefuri`, ordinea cu finisările, bila); aceeași greșeală.
+o('D09', BAZ, "  return calculeaza({ fel: 'simulare', document, ...(dop !== undefined ? { dop } : {}), ...(reliefuri ? { reliefuri } : {}) }, [], o) as Promise<RaspunsSimulare>;", "  return calculeaza({ fel: 'simulare', document, ...(reliefuri ? { reliefuri } : {}) }, [], o) as Promise<RaspunsSimulare>;", 'dop3d',
+  'bazinul pierde dopul cerut')
+# Mutată pe codul din 18.1↑c (25.11: argumentul `reliefuri`, ordinea cu finisările, bila); aceeași greșeală.
+o('D10', EXP, '  const r = await simulareInBazin(doc, semnal ? { semnal } : {}, dop, await resurse(doc));', '  const r = await simulareInBazin(doc, semnal ? { semnal } : {}, undefined, await resurse(doc));', 'dop3d',
+  'calculul interfeței pierde dopul cerut')
 o('D11', EXP, '  return { ok: true, foaie: r.foaie, date, dopuri: r.dopuri, ...(r.motivDopuri !== undefined ? { motivDopuri: r.motivDopuri } : {}) };',
   '  return { ok: true, foaie: r.foaie, date, dopuri: [], ...(r.motivDopuri !== undefined ? { motivDopuri: r.motivDopuri } : {}) };', 'dop3d',
   'interfața nu primește dopurile')

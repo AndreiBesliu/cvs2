@@ -88,7 +88,8 @@ o('M01', EXP, '  return r.ok ? { ...r, traseu: { program, foaie, setari } } : r;
   'timpul de lângă traseu fără programul lui (animația n-ar mai porni)')
 o('M02', EXP, '  return { ...rest, simulare: (s) => simuleazaExport(simulare, foaie, s) };',
   "  return { ...rest, simulare: (s) => simuleazaExport({ ok: false, motiv: 'x', miscare: -1 }, foaie, s) };", 'cam', 'exportul fără simulare')
-o('M03', EXP, '  const r = await exportInBazin(doc, p, semnal ? { semnal } : {});', '  const r = await exportInBazin(doc, p, {});', 'cam',
+# Mutată pe codul din 18.1↑c (25.11: argumentul `reliefuri`, ordinea cu finisările, bila); aceeași greșeală.
+o('M03', EXP, '  const r = await exportInBazin(doc, p, semnal ? { semnal } : {}, await resurse(doc));', '  const r = await exportInBazin(doc, p, {}, await resurse(doc));', 'cam',
   'exportul nu mai poate fi anulat')
 o('M04', APP, '    if (!c || c.rev === doc.rev) return;\n    c.ac.abort();', '    if (!c || c.rev === doc.rev) return;', 'e2e',
   'un document schimbat nu oprește workerul traseului')

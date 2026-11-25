@@ -114,3 +114,47 @@ degroșarea și finisarea pe relief), unde stă relieful în document și unde s
   Pornirea +0, totalul +3,9 kB (884,8 / 900).
 - **De ținut minte:** o felie care schimbă ce arată vederea 3D trece și prin `vedere3d.spec.ts` și `incrustatie3d.spec.ts`
   (shaderul e comun); `vedere` din `Vedere3D.tsx` e ținută și în `acum` (ascultătorii montați o dată o citesc de acolo).
+- **25.11: 18.1↑c pornită** (finisarea paralelă pe relief; ADR 0310 §4–§6, §13), la mesajul sesiunii principale („Poți aduce
+  `main` și porni 18.1↑c”; v29 e al reliefului, fără să-l împartă). Forma bilei, trimisă liniei frezelor: `{ tip: 'bila' }`.
+  Planul, pe bucăți (fiecare cu commit, proba înaintea funcției):
+  - **c-0, oracolul 3D** (`test/oracles/relief3d.ts`, zero importuri din `src/`): triunghiurile modelului exact (§4), drop-cutter-ul
+    exact pe ele (vârfuri, muchii, fețe, muchia discului; bila, plata, V-ul), CL-ul pe hârtie pe plan, sferă și cilindru,
+    simulatorul crestei; controalele negative (eșantionul în nod, fără muchii, fără fețe) trebuie să pice.
+  - **c-1, documentul v29**: `scula.forma = { tip: 'bila' }` și operația de relief (finisarea: freza, pasul lateral în celule,
+    unghiul, aliniată, pasul pe trecere, marginea); migrarea, ușa, oracolul documentului, corpusul de aur; `motivFormaPeOperatie`.
+  - **c-2, CAM-ul finisării** în workerul CAM (`src/cam/relief*.ts`): câmpul conservativ (maximul pe 9 puncte pe celulă), CL-ul
+    pe capsula segmentului, liniile la unghi, trecerile pe Z (niciodată mai adânc decât pasul), marginea; IR-ul; invarianta 4
+    judecată de oracol pe tot ce iese.
+  - **c-3, interfața**: rândurile finisării în fereastra exportului (vorbit întâi cu sesiunea principală), alegerea din Tăierea;
+    simularea arată rezultatul („Tăiat”), manualul.
+- **25.11, la prânz: felia 18.1↑c gata** (ADR 0310, „Implementarea (18.1↑c)”, și ADR 0312): oracolul 3D întâi, documentul
+  **v29** (operația `finisare`, bila), CAM-ul finisării pe câmpul conservativ, lucrarea cu dalele din browser, rolul
+  „finisarea reliefului” în Tăierea. La cererea sesiunii principale („nu fără rând”, după auditul ferestrei exportului),
+  finisarea are în fereastră un rând doar de citit, la locul ei în ordinea tăierii (ADR 0312 §7): automat întâi, înaintea
+  exteriorului piesei; în „A mea”, unde o pune omul, iar fără rang rămâne în față. Rândul editabil vine într-o felie a lui,
+  după 16.A↑b-5 și 28.8↑h, la cuvântul sesiunii principale. La cererea liniei frezelor, bila are CAM în bibliotecă
+  (`FELURI_CU_CAM`, `sculaDinFreza`). Pornirea +0,2 kB, totalul +10,9 kB (902,7 / 1 000, cu `main` adus). La cererea sesiunii principale, după 16.A↑b-4:
+  bila stă afară din lista bibliotecii a ferestrei (`frezePeRanduri`), iar finisarea e probată și cu XY0 în centrul foii (28.8↑o). Porțile pe
+  `ff146fe1` (cu `main` `65eecdc6`), verzi. La mesajul din 18:22, adus și 16.A↑b-6 (`origin/unire-2511w`, `1d3882d9`): copia
+  de readus în bibliotecă știe doar forma în V, iar rândurile n-au bile, deci bila nu se poate readuce ca plată (paza, a
+  compilatorului, în `exportFreze.bila.test.ts`).
+- **25.11, seara: 18.1↑c unită în `main`** (`f7ca20b6`, din `40c745f5`; PR-ul `AndreiBesliu/cvs2#39`; `main` `e5c217b2`), peste
+  16.A↑b-6, 10.4↑c-2 și 16.A↑b-7; completul unirii 45672724822, verde. Documentul e v29 în `main`; un câmp nou ia v30, numărul
+  îl dă sesiunea principală. Linia n-are felie în lucru: **18.1↑d (degroșarea, apoi fișa plăcii reliefului) și rândul
+  editabil al finisării pornesc doar la cuvântul owner-ului.**
+- **De ținut minte, din 18.1↑c:**
+  - regula „cât foaia” (supracursa cu bifa „prin foaie”) stă într-un singur loc, `catFoaia` (`src/cam/prinFoaie.ts`, din
+    28.8↑h), citită și de lucrare, și de desenele ferestrei; finisarea e înăuntru (`o.tip !== 'finisare'`). Un fel nou de
+    operație pe relief care nu trebuie dus prin foaie se adaugă acolo, nu într-o condiție a lucrării. Proba:
+    `finisare.program.test.ts` („bifa „prin foaie” nu atinge finisarea…”), care prinde otrava J05;
+  - verdictul „Exportă G-code” și „Toate foile” numără și o foaie doar cu finisare (`areFinisare`, `ordinePasi`): un cod nou
+    care întreabă „are foaia ce tăia?” nu se uită doar la `taieturiFoaie`;
+  - relieful importat stă în colțul foii, deci o freză mai lată decât o jumătate de celulă iese din foaie: exportul cere
+    confirmarea, iar o probă e2e o bifează;
+  - pe telefon panoul de proprietăți nu se arată (ADR 0250 §7): o probă care pune rolul o face la lățimea de calculator și
+    abia apoi trece la 390 px;
+  - otrăvurile au găsit patru feluri de probe slabe, întărite: oracolul n-avea V-ul cu vârf plat (un V cu vârf era judecat ca
+    unul ascuțit, deci prea îngăduitor); câmpul pe 9 puncte și diagonala se văd doar cu liniile nealiniate, la un unghi (pe
+    cele aliniate, fiecare segment trece prin celulele vecine); un traseu ridicat peste lemn nu mai taie, deci surplusul
+    măsurat doar pe mutările de tăiere nu-l vede (ce rămâne se măsoară cu fața plăcii unde bila n-a trecut); podeaua se
+    probează doar pe un relief mai adânc decât ea.

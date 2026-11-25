@@ -21,9 +21,11 @@ CON = 'src/app/ExportConectat.tsx'
 APP = 'src/app/App.tsx'
 
 # ---- Ce taie lucrarea ----
-o('F01', PRIN, "  const prin = (o: Operatie): boolean => o.tip !== 'vcarve' && !o.incrustatie &&",
-  "  const prin = (o: Operatie): boolean => !o.incrustatie &&", 'prin', 'V-carve-ul cât foaia coboară și el')
-o('F02', PRIN, "o.tip !== 'vcarve' && !o.incrustatie && Math.abs", "o.tip !== 'vcarve' && Math.abs", 'prin', 'incrustația cât foaia coboară și ea')
+# Mutată pe `catFoaia` (28.8↑h) cu finisarea din 18.1↑c; aceeași greșeală.
+o('F01', PRIN, "  o.tip !== 'vcarve' && o.tip !== 'finisare' && o.incrustatie === 'fara' &&",
+  "  o.tip !== 'finisare' && o.incrustatie === 'fara' &&", 'prin', 'V-carve-ul cât foaia coboară și el')
+o('F02', PRIN, "o.tip !== 'vcarve' && o.tip !== 'finisare' && o.incrustatie === 'fara' && Math.abs",
+  "o.tip !== 'vcarve' && o.tip !== 'finisare' && Math.abs", 'prin', 'incrustația cât foaia coboară și ea')
 o('F03', PRIN, 'Math.abs(o.adancime - grosime) <= EPS_FOAIE;', 'o.adancime >= grosime - EPS_FOAIE;', 'prin',
   'și adâncimile deja peste foaie (voia) se schimbă')
 o('F04', PRIN, 'Math.abs(o.adancime - grosime) <= EPS_FOAIE;', 'Math.abs(o.adancime - grosime) <= 3;', 'prin',
@@ -33,9 +35,12 @@ o('F06', JOB, '  if (prinFoaie) doc = cuTaieturiPrinFoaie(doc, supracursa);', ' 
   'bifa fără efect în lucrare')
 o('F07', JOB, '  if (prinFoaie) doc = cuTaieturiPrinFoaie(doc, supracursa);', '  if (true) doc = cuTaieturiPrinFoaie(doc, supracursa);', 'prin',
   'tăieturile cât foaia coboară și fără bifă')
-o('F08', CALC, 'p.supracursa ?? 0, p.prinFoaie === true);', 'p.supracursa ?? 0, false);', 'prin', 'calculul exportului pierde bifa')
-o('F09', CALC, 'p.supracursa ?? 0, p.prinFoaie === true);', 'p.supracursa ?? 0, true);', 'prin', 'calculul exportului pune bifa mereu')
-
+# Mutată pe codul din 18.1↑c (25.11: argumentul `reliefuri`, ordinea cu finisările, bila); aceeași greșeală.
+o('F08', CALC, 'p.supracursa ?? 0, p.prinFoaie === true, reliefuri);', 'p.supracursa ?? 0, false, reliefuri);', 'prin',
+  'calculul exportului pierde bifa')
+# Mutată pe codul din 18.1↑c (25.11: argumentul `reliefuri`, ordinea cu finisările, bila); aceeași greșeală.
+o('F09', CALC, 'p.supracursa ?? 0, p.prinFoaie === true, reliefuri);', 'p.supracursa ?? 0, true, reliefuri);', 'prin',
+  'calculul exportului pune bifa mereu')
 # ---- Fereastra și aplicația ----
 o('B01', APP, '  const [prinFoaie, setPrinFoaie] = useState(true);', '  const [prinFoaie, setPrinFoaie] = useState(false);', 'e2e',
   'bifa implicit scoasă')

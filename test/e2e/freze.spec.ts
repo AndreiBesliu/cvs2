@@ -345,13 +345,15 @@ test('felurile noi (16.A↑h-4): toroidala și burghiul în editor, cu câmpuril
   await f.locator('[data-freze-fel="v"]').click();
   await expect(camp(f, 'unghi')).toHaveValue('60');
   await f.locator('[data-freze="renunta"]').click();
-  // Catalogul: grupurile noi, cu „în curând”; fișa unei bile spune la fel.
+  // Catalogul: grupurile noi, cu „în curând” (toroidala); bila se alege în proiect din documentul v29 (ADR 0312: finisarea
+  // reliefului), deci grupul și fișa ei nu mai spun „în curând”.
   await f.locator('[data-freze="catalog-arata"]').click();
-  await expect(f.locator('[data-catalog-grup="bila"]')).toContainText('în curând în proiect');
+  await expect(f.locator('[data-catalog-grup="toroidala"]')).toContainText('în curând în proiect');
   await expect(f.locator('[data-catalog-grup="plata"] .freze-curand')).toHaveCount(0);
+  await expect(f.locator('[data-catalog-grup="bila"] .freze-curand')).toHaveCount(0);
   await f.locator('[data-catalog="cat-bila-6"]').click();
   await expect(fisa(f).getByRole('heading', { name: 'Bilă Ø6', level: 3 })).toBeVisible();
-  await expect(fisa(f).locator('[data-freze="curand"]')).toBeVisible();
+  await expect(fisa(f).locator('[data-freze="curand"]')).toHaveCount(0);
   await expect(page.getByTestId('jurnal')).toHaveText('0 erori în jurnalul local');
 });
 

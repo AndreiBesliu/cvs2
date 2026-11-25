@@ -14810,6 +14810,63 @@ gata de unit”, `b099c457`; 28.8↑n, `7996e77c`), la ordinul în vigoare „un
 - **Documentele:** decizia și paragrafele de stare în `CLAUDE.md` (frezele, exportul, atelierul); indexul liniilor;
   starea din `docs/linii/principala.md`.
 
+## 2026-11-25 — Linia reliefului: felia 18.1↑c, finisarea reliefului (documentul v29, freza bilă) (sesiune cloud)
+
+**Prompt:** mesajul sesiunii principale, „Poți aduce `main` și porni 18.1↑c […] v29 e al tău” și „18.1↑c mișcă mașina:
+degroșarea și finisarea cer oracolul (suprafața rezultată față de model, în toleranță; creasta măsurată; niciodată mai adânc
+decât pasul pe trecere), scris înaintea funcției, și otrăvurile pe el. Raportul, ca până acum.”; pe drum, al doilea mesaj al
+ei, „nu fără rând” (rândul finisării în fereastra exportului, doar de citit).
+**Started:** 25.11, 11:03. **Completed:** 25.11, 15:12 (raportul întâi); a doua parte, la cererile din 15:14, 17:01 și 18:22, 25.11, 19:20.
+
+- **Oracolul 3D întâi** (`test/oracles/relief3d.ts`, fără importuri din `src/`): modelul exact, drop-cutter-ul exact
+  (vârfuri, muchii, fețe, muchia discului) cu bila, plata, V-ul și V-ul cu vârf plat, simulatorul crestei și al materialului;
+  controalele negative cad.
+- **Documentul v29** (ADR 0312): operația `finisare` și freza `{ tip: 'bila' }`; migrarea v28 → v29 (doar numărul, refuză
+  ciocnirile); oracolul documentului și cazurile pe hârtie la v29; corpusul de aur, pasul v29 (o finisare cu bila pe medalion).
+  Lucrarea refuză bila oriunde nu e o finisare, cu forma și calea în motiv.
+- **CAM-ul finisării** (`src/cam/reliefFinisare.ts`): câmpul conservativ (9 puncte, sau 4 colțuri pe celula de calcul),
+  cota segmentului pe capsulă, căutată într-o piramidă de maxime; liniile aliniate sau la un unghi; trecerile pe Z cel mult cât
+  pasul; peretele sau „trece”; legătura dintre linii. Lucrarea primește dalele din browser și le compune în workerul CAM.
+- **Interfața:** rolul „finisarea reliefului” în Tăierea, cu câmpurile lui; manualul; „Tăiat” din vederea 3D o simulează.
+  Rândul din fereastra exportului (ADR 0312 §7): doar de citit, la locul lui în ordinea tăierii (`ordinePasi`: automat întâi;
+  în „A mea”, unde îl pune omul; fără rang, în față), cu fișa (`src/ui/FisaFinisare.tsx`), în Rezultat și în „același T”;
+  Exportă îi scrie rangul. „Exportă G-code” și „Toate foile” numără o foaie doar cu finisare. Bila are CAM în bibliotecă.
+- **Otrăvurile** (`test/otravuri/18.1c.py`): primul tur a găsit probe slabe (C01, C02, C04, C07, C15, J05), întărite:
+  oracolul cu V-ul cu vârf plat, relieful aspru cu liniile nealiniate, ce rămâne pe pantă, conul mai adânc decât placa. Al doilea tur, pe `0713a3ff`: 44 / 44 prinse (O07 și O08 prin e2e; C01, C02, C04 și C07 verificate și pe proba micșorată din `6deb68d1`).
+- **Mărimea,** față de `main` (`65eecdc6`, adus în ramură): pornirea 111,2 → 111,4 kB (cu ușa 116,2 → 116,5, cu Atelierul 116,5 →
+  116,8 / 125), totalul 891,8 → 902,7 / 1 000 kB (+10,9).
+- **`main` adus** (`2aaee0b4`, cu 16.A↑b-5, 28.8↑n, 10.4↑c-1, 3.Cj-3–4): ciocnirile, în importuri și în lista de proprietăți a
+  ferestrei exportului și în catalogul controalelor (656 de nume). Apoi 20 de otrăvuri ale altor liste, rămase fără țintă pe
+  codul nou (`otravuri-void-noi.py`), mutate pe el, toate prinse din nou; K01 din 16.A-h4, întoarsă (bila are acum CAM).
+- **Rapidul pe `0713a3ff`:** felia 6 a ținut 14,0 minute din 15; proba reliefului aspru, micșorată la cazul care prinde
+  (`6deb68d1`), a dus-o la 10,3. Canalul `relief`: <https://cncvectorstudio-test--relief-i9yxfdsc.web.app>.
+- **Cererea sesiunii principale din 15:14** (16.A↑b-4 și 28.8↑o, venite în `main`): `main` adus (întâi peste `unire-2511t`,
+  apoi `65eecdc6`); în `ExportConectat.tsx`, maparea frezei dusă în `oferita` (doar forma în V), iar `bibliotecaToata` din
+  `frezePeRanduri` (fără bile: altfel o bilă Ø6 arăta ca o plată Ø6 și o plată scrisă de mână era „recunoscută”), cu proba
+  întâi (`exportFreze.bila.test.ts`) și otrava O09; A01 din 16.A-b4, mutată pe linia nouă. Proba finisării cu XY0 în centrul
+  foii: G-code-ul din centru, mutat înapoi, e cel din colț și trece oracolul. Linia frezelor, anunțată (de acord).
+- **Porțile, în CI, pe `edf9f0aa`** (înaintea lui b-4): completul 45611988372, verde (55 min): unit 10 538 / 0 (12 sărite, pe Linux), e2e 857 / 857, funcțiile pe
+  emulatoare 136 / 136, paginile 59 / 59; rapidul, verde (45611984002 la push, 45611993653 pe PR). Pornirea 111,4 / 125 kB
+  (cu ușa 116,5, cu Atelierul 116,8), totalul 901,0 / 1 000 kB, `/admin` 138,3 / 200. Nimic pe server.
+- **Porțile, în CI, pe `ff146fe1`** (cu `main` `65eecdc6`, adică 16.A↑b-4 și 3.Au): completul 45640507141, verde (75 min):
+  unit 10 564 / 0 (12 sărite, pe Linux), e2e 862 / 862, funcțiile pe emulatoare 136 / 136, paginile 59 / 59; rapidul,
+  verde pe `821c9638` (doar documente peste `ff146fe1`: 45641197078 la push, 45641220999 pe PR; felia cea mai lungă,
+  7,7 minute; rulările lui pe `ff146fe1` au fost oprite de împingerea documentelor). Pornirea 111,4 / 125 kB (cu ușa
+  116,5, cu Atelierul 116,8), totalul 902,7 / 1 000 kB, `/admin` 138,3 / 200. Nimic pe server.
+- **Mesajul sesiunii principale din 18:22** (16.A↑b-6, „Pune-o înapoi în bibliotecă”, pe `origin/unire-2511w`, `1d3882d9`, cu
+  `main` `6741c0be` și 3.Tu): adus în ramură (`f4eaeb6b`); ciocnirile, în importurile și lista bibliotecii din
+  `ExportConectat.tsx` (rămâne `frezePeRanduri`, lângă `puneInapoi`), în `DialogExport.tsx` (`finisari` și `onPuneInapoi`),
+  în catalogul controalelor (659 de nume) și în DEVLOG. `frezaDinCopie` și `cuFrezaReadusa`, citite cu bila în minte: copia de
+  pe rând (`CopieRand`) și a proiectului (`CopieProiect`) știu doar forma în V, iar rândurile n-au bile (finisarea are rândul
+  ei, fără „Pune-o înapoi”), deci o bilă nu se poate readuce ca plată. Paza, a compilatorului (`exportFreze.bila.test.ts`, două
+  `@ts-expect-error`), otrăvită de mână: cu `CopieProiect` lărgit cu bila, `tsc` cade pe directiva nefolosită.
+- **Mărimea,** față de `1d3882d9` (măsurat pe un build al lui): pornirea 111,2 → 111,4 kB (cu ușa 116,2 → 116,5, cu
+  Atelierul 116,5 → 116,9 / 125), totalul 893,5 → 904,3 / 1 000 kB (+10,8).
+- **Porțile, în CI, pe `dec06156`** (codul lui `20532b5a`, peste `1d3882d9`): completul 45654203469, verde (47 min): unit
+  10 566 / 0 (12 sărite, pe Linux), e2e 869 / 869, funcțiile pe emulatoare 136 / 136, paginile 60 / 60; rapidul, verde
+  (45654197782 la push, 45654203453 pe PR; felia cea mai lungă, 7,4 minute). Nimic pe server. Sesiunea principală a pus între
+  timp peste `1d3882d9` și 10.4↑c-2 (`66b6b335`); unirea cu el și completul pe ea rămân la ea (mesajul din 18:27).
+
 ## 2026-11-25 — 16.A↑b-6: „Pune-o înapoi în bibliotecă” din fereastra exportului (Model: Claude Opus 5.5)
 
 **Prompt:** cuvântul owner-ului, transmis de sesiunea principală: „ok, porneste 10.4↑c-2 si 16.A↑b-6”. **Started:** 25.11, 14:16.
@@ -14875,6 +14932,56 @@ gata de unit”, `b099c457`; 28.8↑n, `7996e77c`), la ordinul în vigoare „un
   funcțiile pe emulatoare 136 / 136, paginile 59 / 59; pornirea 111,2 kB, totalul 890,1 / 1 000 kB.
 - **Proba de fum** pe adresa de test: versiunea `2aaee0b4f0a4`, potrivită; nicio eroare în consolă, nicio cerere
   căzută.
+
+## 2026-11-25 — Linia exportului: felia 28.8↑h, fereastra exportului „pe hârtie” (ADR 0291 §1)
+
+**Prompt:** „1a, 2a, 3a, 4a, 5a, 6a, 7a, 8a, 9a” (1a: întâi 28.8↑h, după ce 16.A↑b-5 e în `main`; pornită după unirea lui 28.8↑o)
+**Started:** 25.11, 12:22.
+
+- **Rândul „pe hârtie”** (`src/app/hartieExport.ts`): adâncimea tăiată (`adancimeTaiata`, regula lui `cuTaieturiPrinFoaie`;
+  gaura incrustației, grosimea plus supracursa), trecerile (`adancimiTreceri`, în `treceri.ts`), felul găuririi și pașii
+  ciocănirii (`gaurireFel.ts`, folosit și de `traseuGaurire`). Fișa le primește prin `ContextFisa.hartie`.
+- **Constatarea 1:** cu supracursa prin foaie, 4 treceri de 4,58 până la 18,3, ca programul (desenul, cota, nota).
+- **Constatarea 2:** elicea desenată; câmpul ieșirii doar unde se ciocănește; cercul care nu se găurește, greșeală lângă
+  freză, cu Exportă oprit înainte de clic.
+- **Rămân în fereastră, cu proba lor:** urechile schiței (din lucrare, +1,3 kB), pasul lateral, coborârea, V-carve-ul,
+  incrustațiile.
+- **Probele:** `export.hartie.test.ts` (4), `export.hartie.spec.ts` (2 e2e); spec-urile e2e ale exportului, 321 / 321.
+- **Otrăvurile:** `28.8h.py`, 21 / 21; patru vechi îndreptate și prinse (`12.1f-4` F01, F02; `28.8a` E07; `28.8b` D01).
+  **Mărimea:** pornirea +0, totalul 891,7 / 1 000 (+1,4).
+- **Manualul** (ro, en), ADR 0291 („Implementarea 28.8↑h”), fișa etapei 3, registrul otrăvurilor, nota liniei.
+
+**Completed:** 25.11, 13:25.
+
+## 2026-11-25 — Linia exportului: 28.8↑h-2, „Du-mă la …” aduce greșeala întreagă în vedere (ADR 0291)
+
+**Prompt:** mesajul sesiunii principale, 25.11, 16:58 („completul unirii lui 28.8↑h peste b-4 a căzut […] `test/e2e/export.hartie.spec.ts:51` […] Ce te rog […] Proba întâi […] Reparația la cauză […] Porțile, un singur commit raportat.”), la ordinul în vigoare „unește ce se poate”
+**Started:** 25.11, 16:56.
+
+- **Ramura:** `origin/unire-2511t` adus (16.A↑b-4, 3.Au), cu ciocnirile rezolvate ca în `unire-2511u` (același arbore).
+- **Cauza:** `du(cheie, true)` aducea doar capul fișei sus. Cu „Scrisă de mână (ca „…”)” din b-4, rândul frezei se rupe pe
+  două, iar greșeala găuririi rămânea sub panou (651..696 față de 71..596, la 1280 × 720). Pe un cerc care nu se găurește,
+  niciun câmp nu era marcat greșit.
+- **Reparația:** `du` aduce în vedere grupul primei greșeli (titlul, câmpul, textul; când nu încape, câmpul și textul, apoi
+  textul, cu primul rând sus) și pune focusul pe câmpul greșit. Diametrul frezei e marcat greșit cât un cerc nu se găurește.
+- **Probele:** `export.hartie.spec.ts`, 8 / 8: greșeala întreagă în panou, cu focusul pe diametru, la cinci mărimi, cu fontul
+  lat și pe telefon; la 844 × 300, primul rând sus. Spec-urile e2e care deschid exportul, 358 / 359 (căzută
+  `exportFrezeNota.spec.ts` sub încărcare; singură, 45 / 45). Nivelul rapid, local, verde (unit 10 508 / 0).
+- **Otrăvurile:** E11–E16 în `28.8h.py`, 6 / 6. **Mărimea:** pornirea +0, totalul 893,5 / 1 000 (+0,2).
+- **Găsit:** la 640 × 360, banda listei lasă fișelor 9 px.
+- **Documentele:** manualul (ro, en), ADR 0291 („Implementarea 28.8↑h-2”), fișa etapei 3, registrul otrăvurilor, nota liniei.
+- **Peste 16.A↑b-6** (la mesajul sesiunii principale, 18:22): `origin/unire-2511w` adus (ciocnirile, doar în listele de
+  proprietăți ale ferestrei), plus proba cu nota bibliotecii desfăcută, 10 / 10. Găsit pe drum: probele frezelor
+  (`exportFrezeNota`, `exportFrezeInapoi`) cad 4 / 50 și pe `unire-2511w` curat: după salvare sau ștergere focusul cade din
+  „Frezele mele”, iar Escape nu mai ajunge la ea (spus sesiunii principale).
+- **Peste 18.1↑c** (la mesajele sesiunii principale, 19:44 și 19:52): `origin/unire-2511x` (`f7ca20b6`) adus. Trei ciocniri,
+  toate din 28.8↑h: finisarea reliefului intră în `catFoaia` (regula „cât foaia” comună lucrării și ferestrei), props-urile
+  ferestrei amândouă, F01 și F02 din `12.1f-4.py` mutate. Proba nouă (o finisare cât foaia rămâne la adâncimea scrisă, în
+  lucrare și pe hârtie; profilul cât foaia coboară), văzută căzând fără finisarea în `catFoaia`; otrăvurile U12 și J05 (a
+  reliefului, mutată), prinse. Aurul plăcilor, al documentelor și corpusul CAM: 1 853 / 1 853. Apoi, la cererea sesiunii
+  principale (20:13), baza mutată pe `b35e2f75` (aceeași unire, cu 16.A↑b-7 din `main`), fără ciocniri.
+
+**Completed:** 25.11, 17:47; peste b-6, 18:43; peste 18.1↑c, 20:06.
 
 ## 2026-11-25 — Felia 3.Au: starea lucrării imprimantei e necunoscută până vine codul stării (Model: Claude Fable 5.2)
 
@@ -15119,6 +15226,67 @@ ce se poate”; felia, cerută de sesiunea principală la 18:44, după semnalare
 - **Documentele:** decizia și paragraful de stare în `CLAUDE.md` (cu regula Escape-ului pentru o fereastră nouă); indexul
   liniilor; starea din `docs/linii/principala.md`.
 
+## 2026-11-25 — Sesiunea principală în cloud: lotul 36 („Pune-o înapoi în bibliotecă”, cotele ca DIMENSION), pe test (Model: Claude Fable 5.2)
+
+**Prompt:** publicarea de după a treizeci și șaptea unire (pe test se publică liber)
+**Started:** 25.11, după unirea de la 19:42 (completul pe `main`, pornit la 19:52). **Completed:** 25.11, 20:54.
+
+- **Pe test: `75bcf3fb`** (16.A↑b-6, 10.4↑c-2). `publica.yml` 45679275699, verde (20:50–20:54), pornită din prima; serverul,
+  neschimbat.
+- **Completul pe `main`** (45669314051, verde, 58 min): unit 10 529 / 0 (12 sărite, pe Linux), e2e 863 / 863, funcțiile pe
+  emulatoare 136 / 136, paginile 60 / 60; pornirea 111,2 kB, totalul 896,5 / 1 000 kB.
+- **Proba de fum** pe adresa de test: versiunea `75bcf3fb09bc`, potrivită; nicio eroare în consolă, nicio cerere căzută.
+- **16.A↑b-7** (`88771f12`, în `main` din 20:11) nu primește un lanț al ei: pleacă odată cu 18.1↑c și 28.8↑h, cu un singur
+  complet pe `main`.
+
+## 2026-11-25 — Sesiunea principală în cloud: a treizeci și noua unire (relieful: 18.1↑c, finisarea, documentul v29) (Model: Claude Fable 5.2)
+
+**Prompt:** raportul liniei reliefului („18.1↑c e gata de unit. Commit-ul raportat: `40c745f5`”), la ordinul în vigoare
+„unește ce se poate”
+**Started:** 25.11, 19:32 (al doilea raport; primul, la 15:11). **Completed:** unirea în `main`, 25.11, 21:11; publicarea pe
+test, după ea.
+
+- **Primul raport** (`ab0cbf5c`, peste `2aaee0b4`): neunit. Unirea de probă peste 16.A↑b-4 avea ciocniri în
+  `ExportConectat.tsx` și `DialogExport.tsx`, iar una nu era doar mecanică: `bibliotecaToata` (toate frezele cu CAM, pentru
+  nota bibliotecii) ar fi primit bilele, cu forma pierdută. Întoarsă liniei, cu proba întâi.
+- **Al doilea raport** (`40c745f5`, peste `1d3882d9`, cu 16.A↑b-6): completul liniei 45654203469, verde pe `dec06156`.
+- **Unirea, pe `unire-2511x`:** `40c745f5` peste lotul cu 10.4↑c-2, în `f7ca20b6`, fără nicio ciocnire; apoi `main` adus cu
+  16.A↑b-7 (`b35e2f75`), tot fără ciocniri, și completul repornit. Local: tipurile, regulile de import, traducerile,
+  catalogul, biblioteca, iar `relief*`, `finisare*`, `document*` (cu aurul documentelor), `export*`, `freze*`, `cote*`,
+  `montaj*`, plăcile și atelierele: 3 946 / 3 946.
+- **Porțile, în CI, pe `b35e2f75`** (citite din jurnalul rulării): completul 45672724822, verde (56 min): unit 10 577 / 0
+  (12 sărite, pe Linux), e2e 873 / 873, funcțiile pe emulatoare 136 / 136, paginile 60 / 60; rapidul 45672722607, verde.
+  Pornirea 111,4 kB (plafonul 125; cu ușa 116,5, cu Atelierul 116,8), totalul 907,4 / 1 000 kB (+10,8), `/admin` 138,3 / 200,
+  contul 30,2 / 32. Nimic pe server.
+- **Documentul e v29;** următorul număr liber, v30.
+- **28.8↑h, la rând:** peste unirea aceasta, ciocnirea din `src/cam/prinFoaie.ts` (regula „cât foaia”) e rezolvată de linia
+  exportului într-un singur loc, `catFoaia`, cu finisarea înăuntru și cu proba ei; porțile ei rulează pe `985261ca`.
+- **Documentele:** decizia și paragraful de stare în `CLAUDE.md` (cu v30 pentru un câmp nou); indexul liniilor; starea din
+  `docs/linii/principala.md`.
+
+## 2026-11-25 — Sesiunea principală în cloud: a patruzecea unire (exportul: 28.8↑h, fereastra „pe hârtie”, cu 28.8↑h-2) (Model: Claude Fable 5.2)
+
+**Prompt:** raportul liniei exportului („28.8↑h e gata de unit”, `2ecd0054`; apoi „28.8↑h-2 gata”, `3456b134`; apoi vârful
+`985261ca`, cu porțile pornite), la ordinul în vigoare „unește ce se poate”
+**Started:** 25.11, 16:00 (primul raport). **Completed:** unirea în `main`, 25.11, 21:13; publicarea pe test, pornită după ea.
+
+- **Primul raport** (`2ecd0054`): unită de probă peste 16.A↑b-4 (`unire-2511u`); completul 45629718056 a căzut la
+  `export.hartie.spec.ts:51`, de fiecare dată și local. Măsurat în browser: panoul 71–596 px, greșeala 651–696; rândul
+  frezei, 118 px în loc de ~59, din cauza etichetei „Scrisă de mână (ca „…”)”. Întoarsă liniei, cu cifrele.
+- **Al doilea raport** (`3456b134`, 28.8↑h-2): „Du-mă la …” aduce în vedere grupul primei greșeli. Peste unirea reliefului,
+  trei ciocniri, una în CAM (`src/cam/prinFoaie.ts`): întoarsă liniei; rezolvată în `catFoaia`, cu proba întâi.
+- **Vârful `985261ca`** (peste `b35e2f75`): completul 45672890113, verde (58 min): unit 10 581 / 0 (12 sărite, pe Linux), e2e
+  883 / 883, funcțiile pe emulatoare 136 / 136, paginile 60 / 60; rapidele, verzi. Linia a spus commit-ul și a pornit
+  porțile; verdele l-am citit eu din rulare, înaintea mesajului ei.
+- **Unirea, pe `unire-2511ab`** (din `e5c217b2`): `985261ca`, în `7d74ade2`, fără nicio ciocnire; arborele are exact codul
+  lui `985261ca` (`git diff` gol în afara fișierelor `.md`). Local: traducerile (1 155), catalogul, tipurile, probele
+  documentelor. Pornirea 111,4 kB (plafonul 125; cu ușa 116,5, cu Atelierul 116,9), totalul 909,1 / 1 000 kB, `/admin`
+  138,3 / 200, contul 30,2 / 32. Nimic pe server.
+- **Linia atelierului:** ADR 0285 (decorațiunile de Crăciun), acceptat de owner în sesiunea ei („Mergem cu recomandarile”);
+  consemnat în decizie și în index. 3.Cf-1, raportată la 21:10: își face completul unirii, peste `main`-ul acesta.
+- **Documentele:** decizia și paragraful de stare în `CLAUDE.md` (cu regula `catFoaia` și a probei „greșeala se vede”);
+  indexul liniilor; starea din `docs/linii/principala.md`.
+
 ## 2026-11-25 — Felia 3.Cf-1: alipirea la prinderi în vederea „Modelul” (ADR 0284, partea D) (sesiune cloud)
 
 **Prompt:** răspunsurile owner-ului la cele trei întrebări ale lui 3.Cf, puse în sesiunea liniei atelierului înaintea
@@ -15154,3 +15322,21 @@ codului: „Alipirea la prinderi (Recomandat)”, „Puncte în vederea 3D (Reco
 - **Documentele:** ADR 0284 (răspunsurile la 3.Cf, „Implementat (3.Cf-1)”), indexul ADR, fișa etapei 3 (jurnalul, coada
   owner-ului), `docs/linii/atelier.md` (cu regulile noi), indexul liniilor, `docs/otravuri.md`, `CLAUDE.md`.
 - **Urmează:** 3.Cf-2 (orientarea de mână pe trei axe, pozițiile la jumătate de pas), apoi 3.Cg (verificarea).
+
+## 2026-11-25 — Sesiunea principală în cloud: a patruzeci și una unire (atelierul Easy 3Draw: 3.Cf-1, alipirea la prinderi) (Model: Claude Fable 5.2)
+
+**Prompt:** raportul liniei atelierului („3.Cf-1 e gata de unit”, `6b093a98`), la ordinul în vigoare „unește ce se poate”
+**Started:** 25.11, 21:10. **Completed:** unirea în `main`, 25.11, 22:15; publicarea pe test, după lotul 37.
+
+- **Verificat înaintea unirii:** completul liniei (45673012503) și rapidele, verzi pe `6b093a98`; PR-ul #46; fără `.lucru/`;
+  ramura are `88771f12`.
+- **De ce un complet al unirii:** de la `88771f12`, `main` primise finisarea reliefului și 28.8↑h (cod al aplicației).
+- **Unirea, pe `unire-2511ac`** (din `5649067c`): `6b093a98`, în `02ac0715`. Ciocnirile, în DEVLOG (`rezolva-devlog.py`) și în
+  indexul liniilor (rândul atelierului, al liniei). Local: biblioteca (Easy 3Draw 18.34.0, 524 421 octeți), tipurile,
+  regulile de import, traducerile (1 159), unitarele `trenulet*`, `biblioteca*`, `otravuri*` (fără referințe), cu probele
+  documentelor: 373 / 373.
+- **Porțile, în CI, pe `02ac0715`** (citite din jurnalul rulării): completul 45683411511, verde la prima trecere (57 min): unit
+  10 596 / 0 (12 sărite, pe Linux), e2e 890 / 890, funcțiile pe emulatoare 136 / 136, paginile 60 / 60; rapidul 45683412138,
+  verde. Pornirea 111,4 kB (plafonul 125; cu ușa 116,5, cu Atelierul 116,9), totalul 909,1 / 1 000 kB, `/admin` 138,3 / 200,
+  contul 30,2 / 32. Nimic pe server.
+- **Documentele:** decizia și paragraful de stare în `CLAUDE.md`; indexul liniilor; starea din `docs/linii/principala.md`.

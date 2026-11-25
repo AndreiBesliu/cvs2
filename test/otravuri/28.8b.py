@@ -12,13 +12,15 @@ def o(id, fis, vechi, nou, set, ce):
 
 
 CALC = 'src/ui/exportDeseneCalcul.ts'
+# Din 28.8↑h, trecerile nu mai au copie în fereastră: regula stă în lucrare, în treceri.ts (ADR 0291).
+TRE = 'src/cam/treceri.ts'
 DES = 'src/ui/exportDesene.tsx'
 DLG = 'src/ui/DialogExport.tsx'
 CSS = 'src/app/stil.css'
 
 # ---- Pe hârtie, față de lucrare ----
-o('D01', CALC, '  const n = Math.max(1, Math.ceil(adancime / pas - 1e-9));', '  const n = Math.max(1, Math.ceil(adancime / pas));', 'desene',
-  'trecerile fără toleranța de rotunjire (18 / 6,0000001 dă patru)')
+o('D01', TRE, '  const n = Math.max(1, Math.ceil(adancime / pas - 1e-9));', '  const n = Math.max(1, Math.ceil(adancime / pas));', 'desene',
+  'trecerile fără toleranța de rotunjire (19,05 / 1,5875 dă 13)')
 o('D02', CALC, "  if (mod === 'egale') return Array.from({ length: n }, (_, k) => ((k + 0.5) * P) / n);",
   "  if (mod === 'egale') return Array.from({ length: n }, (_, k) => (k * P) / n);", 'desene', 'urechile egale din vârful 0, nu din mijlocul golului')
 o('D03', CALC, 'for (let j = 0; j < rest; j++) { const i = Math.floor((j * k) / rest); cate[i] = (cate[i] ?? 0) + 1; }',
@@ -50,6 +52,6 @@ o('E10', DES, '  const locuri = !urechi ? [] :', '  const locuri = false ? [] :'
 o('E11', CSS, '.dx-ilu .l { fill: var(--lemn);', '.dx-ilu .l { fill: var(--s-panou);', 'e2e', 'lemnul de culoarea panoului (nu se vede)')
 
 SETURI = {
-    'desene': ['test/unit/export.desene.test.ts'],
+    'desene': ['test/unit/export.desene.test.ts', 'test/unit/export.hartie.test.ts'],
 }
 E2E = ['test/e2e/export.desene.spec.ts']

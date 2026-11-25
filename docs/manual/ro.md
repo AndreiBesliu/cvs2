@@ -1017,7 +1017,7 @@ Dintr-o imagine (o poză, un logo, o hartă a înălțimilor în gri) se poate f
 celulă pentru fiecare pixel, a cărei înălțime vine din griul pixelului. Pe planșă, relieful se vede umbrit (lumina din
 stânga-sus), sub vectori, cu chenarul lui; se alege, se mută, se rotește și se oglindește ca orice formă, iar piesa cu relief
 se pune de mai multe ori și pe alte foi. În [vederea 3D](#vedere-3d), butonul **Modelul** îl arată în trei dimensiuni, în
-golul lui din placă. Prelucrarea lui 3D (degroșarea și finisarea) vine în feliile următoare: deocamdată relieful nu se taie.
+golul lui din placă. Relieful se taie cu **finisarea** (mai jos); degroșarea vine într-o felie următoare.
 
 **Cum îl faci:** din „Importă…”, alege o imagine (PNG, JPEG, WebP, GIF sau BMP), apoi, sus în fereastră, **Relief** în loc
 de **Vectori**. Alegerea se ține minte până reîncarci pagina. Fereastra are, în stânga:
@@ -1041,6 +1041,24 @@ jos, fiecare cu modul ei (în felia asta, relieful are un singur strat, „adun�
 Relieful se ține în browser, lângă proiect, nu în document (documentul ține doar amprenta lui), ca imaginile foii: pe alt
 calculator ori în alt browser, panoul spune că straturile lipsesc. Ce nu mai folosește nicio versiune păstrată a proiectului
 se șterge la o pornire, după cel puțin o zi.
+
+**Finisarea:** cu piesa reliefului aleasă, secțiunea **Tăierea** oferă rolul **finisarea reliefului** (pe o piesă doar cu
+reliefuri). Freza urmează relieful pe linii paralele, la pasul lateral, coborând în treceri de cel mult **pasul**, ultima pe
+model; nu coboară niciodată sub suprafața reliefului și nici sub **adâncime** (podeaua, implicit cât placa). Câmpurile:
+- **Freza**: bilă (implicit), plată sau în V, și **diametrul ei**; bila merge doar aici;
+- **Pasul lateral** (implicit 10 % din freză): distanța dintre linii; prin centrele celulelor, se rotunjește la celule întregi;
+- **Unghiul liniilor** (0° … 180°) și **Liniile**: prin centrele celulelor (la 0° și 90°) sau nealiniate, unde pot apărea riduri
+  pe detaliile fine;
+- **Marginea reliefului**: **peretele rămâne** (în afara reliefului e fața plăcii, deci freza nu taie acolo) sau **freza
+  trece de margine** (iese cu raza ei, iar în afară coboară până la podea);
+- **Relieful pe Z**: **vârful la fața plăcii** (implicit) sau **planul zero sub față**, la adâncimea scrisă; ce ar ieși
+  deasupra feței se taie la față, iar exportul o spune.
+
+Finisarea se face înaintea tăieturilor pe contur, cu freza ei. În fereastra **Exportă G-code** are rândul ei, la locul ei
+în ordinea tăierii, cu o fișă doar de citit (freza, pasul lateral, creasta pe un plan, adâncimea); se schimbă din secțiunea
+Tăierea. Cu **Ordinea tăierii: A mea**, rândul ei se mută ca oricare altul. În [vederea 3D](#vedere-3d), **Tăiat** arată
+placa după program. Freza rămâne puțin deasupra suprafeței ideale pe pante (cam 0,1 mm pe o pantă de 45°): e partea sigură a calculului,
+care nu sapă niciodată în relief. Exportul cere dalele reliefului din acest browser; pe alt calculator, le spune lipsă.
 
 ## Tăierea vectorilor
 %% capitol: taiere
@@ -1554,9 +1572,11 @@ operației, scrisă doar cu mișcări simple (G0, G1, G2, G3), fără ciclurile 
 - Un **cerc mai mare**, până la două diametre ale frezei, se face **în elice** pe perete: ture de cel mult un pas pe trecere,
   apoi un cerc plin la fund, ca fundul să iasă neted. Sensul: la urcare, trigonometric; la opoziție, orar. Freza nu coboară
   mai repede decât la plonjare.
-- Un cerc mai mic decât freza sau peste două diametre ale ei e refuzat, cu motivul (peste două diametre, în mijloc ar rămâne
-  un miez: folosește buzunarul). Pe o găurire nu există urechi, rampă, intrări, degajări sau despărțire; găurile se taie cu
-  interioarele.
+- Un cerc mai mic decât freza sau peste două diametre ale ei nu se poate găuri (peste două diametre, în mijloc ar rămâne un
+  miez: folosește buzunarul). Fereastra o spune lângă freză, cu cea mai mică freză bună, și oprește **Exportă** până o
+  schimbi. Pe o găurire nu există urechi, rampă, intrări, degajări sau despărțire; găurile se taie cu interioarele.
+- Desenul găuririi arată cum o face aplicația cu cercurile și freza ta: ciocănirea pas cu pas, sau elicea din lateral, cu
+  turele și cercul pe care merge freza. **Iese la fiecare al … pas** apare doar unde se ciocănește.
 
 **V-carve-ul.** Pe contururi închise, Tăietura are și **V-carve**: freza în V merge pe mijlocul formei (axa ei medială) și
 coboară în fiecare punct cât încape între pereți: adâncimea e distanța până la cel mai apropiat perete împărțită la
@@ -1810,7 +1830,7 @@ care). Fereastra are trei părți:
   poza ei, lângă bifă. Ce nu se aplică operației nu apare: pe un buzunar, o găurire sau un V-carve, rampa, intrările, colțurile
   și urechile profilului lipsesc, iar o notă sub Tăietura spune de ce;
 - **jos**, mereu la vedere: **Exportă**, **Închide**, **Raportul foilor…**, confirmările și, cât o valoare e greșită, motivul,
-  cu **Du-mă la …**, care aduce fișa ei și intră în câmpul de reparat. Valoarea greșită se spune și în grupul câmpului, iar
+  cu **Du-mă la …**, care aduce fișa ei, cu greșeala în vedere, și intră în câmpul de reparat. Valoarea greșită se spune și în grupul câmpului, iar
   fișa ei are un punct roșu în listă. Fereastra se închide cu **Închide**, cu Esc sau cu un clic în afara ei; valorile
   operațiilor schimbate în ea se scriu în proiect doar la **Exportă**.
 
@@ -1825,8 +1845,9 @@ care). Fereastra are trei părți:
   ca pe o placă puțin mai groasă decât cea scrisă să nu rămână o piele. [Gaura](#incrustatie-drept) incrustației și
   decupările dopurilor merg cu atât mai jos, singure. Cu bifa **și tăieturile cât foaia** (implicit pusă), un profil, un
   buzunar sau o găurire scrise cât grosimea foii merg și ele cu atât mai jos, ca și cum ai fi scris grosimea plus supracursa
-  (în proiect, adâncimea rămâne cum e scrisă); V-carve-urile și incrustațiile nu se schimbă. Debifată, tăieturile rămân cât
-  sunt scrise. Oricum, o adâncime scrisă de tine poate trece de grosimea foii cu cel mult supracursa (de exemplu 18,3 pe foaia
+  (în proiect, adâncimea rămâne cum e scrisă); V-carve-urile și incrustațiile nu se schimbă. Desenul adâncimii și nota de
+  lângă pas arată atunci adâncimea și trecerile tăiate (de exemplu, 18 mm cu pasul 6 și supracursa 0,3: 4 treceri de 4,58 mm,
+  până la 18,3 mm). Debifată, tăieturile rămân cât sunt scrise. Oricum, o adâncime scrisă de tine poate trece de grosimea foii cu cel mult supracursa (de exemplu 18,3 pe foaia
   de 18, cu supracursa 0,5). Punțile și urechile își păstrează grosimea, măsurată de la fața de jos a plăcii. Supracursa și bifa
   rămân cât e deschisă aplicația și nu intră în proiect; traseul și vederea 3D le lasă deoparte;
 - **Postul**: controlerul mașinii. Familia GRBL (GRBL 1.1, grblHAL, FluidNC) vorbește cu senderul aplicației; **NcStudio,
@@ -2373,7 +2394,7 @@ fiecăruia), iar starea din colț o spune.
   rar (o valoare pe 2 × 2, 4 × 4 … celule), iar starea o spune. Modelul urmează documentul: mutat, rotit ori oglindit,
   relieful se mută pe loc, fără să se încarce din nou, iar un relief schimbat își încarcă doar dalele schimbate. Dacă
   straturile lui lipsesc din browser, starea o spune, iar fața plăcii rămâne întreagă acolo. **Tăiat** simulează placa,
-  ca mai jos (relieful însuși nu se taie încă).
+  ca mai jos, cu [finisarea](#relief) reliefului, dacă o are.
 
 Culorile: fața plăcii, tăieturile (mai închise cu adâncimea) și, albastru-gri, masa de sacrificiu acolo unde freza a trecut
 prin foaie; în model, relieful are culorile tăieturilor. Dacă schimbi documentul cât vederea e deschisă, starea o spune; „Simulează din nou” îl simulează, cu placa

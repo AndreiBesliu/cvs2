@@ -10,6 +10,7 @@
  */
 import type { Montaj } from '../ir/montaj.ts';
 import { numara, type Document } from '../model/document.ts';
+import type { ResurseRelief } from '../relief/resurse.ts';
 import type { CerereReparare, OptiuniReparare, RezultatReparare, VerificarePanou } from '../model/reparare.ts';
 import type { CerereLegare, OptiuniLegare, RezultatLegare } from '../model/legareCai.ts';
 import type { CerereConversie, RezultatConversie } from '../model/conversie.ts';
@@ -122,23 +123,23 @@ async function calculeaza(cerere: CerereCam, transfer: Transferable[], o: Optiun
 }
 
 /** Exportul (fereastra exportului): programul, fișierele, rezumatul și mutările simulării. */
-export function exportInBazin(document: Document, parametri: ParametriExport, o: OptiuniCam = {}): Promise<RaspunsExport> {
-  return calculeaza({ fel: 'export', document, parametri }, [], o) as Promise<RaspunsExport>;
+export function exportInBazin(document: Document, parametri: ParametriExport, o: OptiuniCam = {}, reliefuri?: ResurseRelief): Promise<RaspunsExport> {
+  return calculeaza({ fel: 'export', document, parametri, ...(reliefuri ? { reliefuri } : {}) }, [], o) as Promise<RaspunsExport>;
 }
 
 /** Programul traseului, împachetat. */
-export function traseuInBazin(document: Document, o: OptiuniCam = {}): Promise<RaspunsTraseu> {
-  return calculeaza({ fel: 'traseu', document }, [], o) as Promise<RaspunsTraseu>;
+export function traseuInBazin(document: Document, o: OptiuniCam = {}, reliefuri?: ResurseRelief): Promise<RaspunsTraseu> {
+  return calculeaza({ fel: 'traseu', document, ...(reliefuri ? { reliefuri } : {}) }, [], o) as Promise<RaspunsTraseu>;
 }
 
 /** Mutările simulării programului documentului, sau ale dopului cu numărul `dop` (ADR 0178), pentru vederea 3D. */
-export function simulareInBazin(document: Document, o: OptiuniCam = {}, dop?: number): Promise<RaspunsSimulare> {
-  return calculeaza({ fel: 'simulare', document, ...(dop !== undefined ? { dop } : {}) }, [], o) as Promise<RaspunsSimulare>;
+export function simulareInBazin(document: Document, o: OptiuniCam = {}, dop?: number, reliefuri?: ResurseRelief): Promise<RaspunsSimulare> {
+  return calculeaza({ fel: 'simulare', document, ...(dop !== undefined ? { dop } : {}), ...(reliefuri ? { reliefuri } : {}) }, [], o) as Promise<RaspunsSimulare>;
 }
 
 /** „Împreună (secțiunea)” (ADR 0179): potrivirea dopului cu numărul `dop` (de la 0), în V sau drept; secțiunea vine transferată. */
-export function potrivireInBazin(document: Document, dop: number, o: OptiuniCam = {}): Promise<RaspunsPotrivire> {
-  return calculeaza({ fel: 'potrivire', document, dop }, [], o) as Promise<RaspunsPotrivire>;
+export function potrivireInBazin(document: Document, dop: number, o: OptiuniCam = {}, reliefuri?: ResurseRelief): Promise<RaspunsPotrivire> {
+  return calculeaza({ fel: 'potrivire', document, dop, ...(reliefuri ? { reliefuri } : {}) }, [], o) as Promise<RaspunsPotrivire>;
 }
 
 /** Timpul unui program deja calculat; programul împachetat se transferă (cel dat nu mai e folosibil după apel). */

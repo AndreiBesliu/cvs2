@@ -1048,7 +1048,7 @@ From an image (a photo, a logo, a grey height map) you can make a **relief**: a 
 pixel, whose height comes from the pixel's grey. On the board, the relief shows shaded (light from the top left), under the
 vectors, with its frame; it is selected, moved, rotated and mirrored like any shape, and a part with a relief is placed
 several times and on other sheets. In the [3D view](#vedere-3d), the **Model** button shows it in three dimensions, in its
-pocket in the sheet. Its 3D machining (roughing and finishing) comes in the next slices: for now the relief is not cut.
+pocket in the sheet. The relief is cut with **finishing** (below); roughing comes in a later slice.
 
 **How to make one:** from “Import…”, pick an image (PNG, JPEG, WebP, GIF or BMP), then, at the top of the window, **Relief**
 instead of **Vectors**. The choice is kept until you reload the page. On the left, the window has:
@@ -1072,6 +1072,27 @@ layers, top to bottom, each with its mode (in this slice, a relief has a single 
 The relief is kept in the browser, next to the project, not in the document (the document keeps only its fingerprint), like
 the sheet images: on another computer or in another browser, the panel says the layers are missing. Whatever no kept version
 of the project uses any more is deleted at a start-up, after at least a day.
+
+**Finishing:** with the relief's part selected, the **Cutting** section offers the **relief finishing** role (on a part with
+reliefs only). The cutter follows the relief on parallel lines, one stepover apart, going down in passes of at most the
+**step**, the last one on the model; it never goes below the relief's surface, nor below the **depth** (the floor, by default
+the sheet's thickness). The fields:
+- **Cutter**: ball nose (the default), flat or V-bit, and its **diameter**; the ball nose is used only here;
+- **Stepover** (by default 10 % of the cutter): the distance between lines; through the cell centres, it is rounded to whole
+  cells;
+- **Line angle** (0° to 180°) and **Lines**: through the cell centres (at 0° and 90°) or not aligned, where ripples can show on
+  fine detail;
+- **Relief edge**: **the wall stays** (outside the relief is the stock face, so the cutter does not cut there) or **the cutter
+  goes past the edge** (it goes out by its radius, and outside it goes down to the floor);
+- **Relief on Z**: **top at the stock face** (the default) or **zero plane below the face**, at the depth you type; what would
+  stand above the face is cut at the face, and the export says so.
+
+Finishing comes before the contour cuts, with its own cutter. In the **Export G-code** window it has its own row, in its place
+in the cutting order, with a read-only sheet (the cutter, the stepover, the scallop on a flat, the depth); you change it in the
+Cutting section. With **Cutting order: Mine**, its row moves like any other. In the [3D view](#vedere-3d), **Cut** shows the
+sheet after the program. On slopes the cutter stays a little above the ideal surface (about 0.1 mm on a 45° slope): it is the safe side of the
+computation, which never digs into the relief. The export needs the relief's tiles from this browser; on another computer, it
+says they are missing.
 
 ## Cutting vectors
 %% capitol: taiere
@@ -1611,9 +1632,11 @@ does not have.
 - A **larger circle**, up to two cutter diameters, is cut **as a helix** along the wall: turns of at most one step per pass,
   then a full circle at the floor, so the floor comes out clean. The direction: climb is counter-clockwise, conventional
   clockwise. The cutter never goes down faster than when plunging.
-- A circle smaller than the cutter, or over two cutter diameters, is refused, with the reason (over two diameters, a core
-  would stay in the middle: use a pocket). A drilling has no tabs, ramp, leads, corner relief or split; holes are cut with
-  the insides.
+- A circle smaller than the cutter, or over two cutter diameters, cannot be drilled (over two diameters, a core would stay in
+  the middle: use a pocket). The window says so next to the bit, with the smallest bit that works, and keeps **Export** off
+  until you change it. A drilling has no tabs, ramp, leads, corner relief or split; holes are cut with the insides.
+- The drilling drawing shows how the app drills with your circles and bit: pecking step by step, or the helix from the side,
+  with its turns and the circle the cutter follows. **Clear every … step** appears only where it pecks.
 
 **V-carve.** On closed outlines, Cut also offers **V-carve**: the V bit runs along the middle of the shape (its medial axis)
 and goes down at each point as far as fits between the walls: the depth is the distance to the nearest wall divided by
@@ -1879,7 +1902,7 @@ which). The window has three parts:
   its picture too, next to the box. What does not apply to the operation is not shown: on a pocket, a drilling or a
   V-carve, the profile's ramp, lead-ins, corners and tabs are missing, and a note under Cut says why;
 - the **bottom**, always in view: **Export**, **Close**, **Sheets report…**, the confirmations and, while a value is wrong,
-  the reason, with **Take me to …**, which brings its card and goes into the field to fix. The wrong value is also told in the
+  the reason, with **Take me to …**, which brings its card, with the mistake in view, and goes into the field to fix. The wrong value is also told in the
   field's group, and its card has a red dot in the list. The window closes with **Close**, with Esc or with a click outside
   it; the operation values changed in it go into the project only on **Export**.
 
@@ -1894,8 +1917,9 @@ On the sheet and machine cards you choose:
   spoilboard, so that a board a little thicker than the one written leaves no skin. The inlay [hole](#incrustatie-drept)
   and the plug cut-outs go that much deeper by themselves. With the box **also cuts as deep as the sheet** (ticked by default),
   a profile, a pocket or a drilling written as deep as the sheet goes that much deeper too, as if you had written the thickness
-  plus the overtravel (in the project, the depth stays as written); V-carves and inlays do not change. Unticked, the cuts stay
-  as written. Either way, a depth you write may exceed the sheet thickness by at most the overtravel (for example 18.3 in an
+  plus the overtravel (in the project, the depth stays as written); V-carves and inlays do not change. The depth drawing and the
+  note next to the step then show the depth and the passes that are cut (for example, 18 mm with a 6 step and 0.3 overtravel:
+  4 passes of 4.58 mm, down to 18.3 mm). Unticked, the cuts stay as written. Either way, a depth you write may exceed the sheet thickness by at most the overtravel (for example 18.3 in an
   18 mm sheet, with 0.5 overtravel). Tabs keep their thickness, measured from the bottom of the board. The overtravel and the
   box stay while the app is open and do not go into the project; the toolpath and the 3D view leave them out;
 - the **Post**: the machine's controller. The GRBL family (GRBL 1.1, grblHAL, FluidNC) talks to this app's sender;
@@ -2464,7 +2488,7 @@ blocks (the deepest point of each), and the status in the corner says so.
   large for the graphics card is drawn more coarsely (one value per 2 × 2, 4 × 4 … cells), and the status says so. The model
   follows the document: moved, rotated or mirrored, the relief moves in place without loading again, and a changed relief
   loads only its changed tiles. If its layers are missing from the browser, the status says so, and the sheet's face stays
-  whole there. **Cut** simulates the sheet, as below (the relief itself is not cut yet).
+  whole there. **Cut** simulates the sheet, as below, with the relief's [finishing](#relief) if it has one.
 
 The colours: the sheet's face, the cuts (darker with depth) and, in blue-grey, the spoilboard where the cutter went through
 the sheet; in the model, the relief has the colours of the cuts. If you change the document while the view is open, the status says so; “Simulate again” simulates it, with the

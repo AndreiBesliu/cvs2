@@ -75,3 +75,21 @@ test('riscul pe alte piese: exteriorul tăiat înaintea unui rând din interioru
   // Rândul spus e exteriorul care cuprinde gaura (3), nu primul exterior al piesei (2).
   assert.deepEqual(riscuri(['D/ext1', 'D/ext2', 'C/gaura', 'R/ext'], randuri), [{ fel: 'exterior', a: 2, b: 3 }]);
 });
+
+test('finisarea reliefului (ADR 0312 §7): fără rang rămâne în față, ca în lucrare; cu rang, la locul ei; riscul exteriorului', () => {
+  const auto = ['p/f', 'p/o', 'q/1'];
+  const fata = new Set(['p/f']);
+  // Exteriorul și altă tăietură au rang, finisarea nu: rămâne prima.
+  assert.deepEqual(ordineDinRanguri(auto, new Map([['p/o', 0], ['q/1', 1]]), fata), ['p/f', 'p/o', 'q/1']);
+  // Fără mulțimea `inFata`, la capăt (regula tăieturilor).
+  assert.deepEqual(ordineDinRanguri(auto, new Map([['p/o', 0], ['q/1', 1]])), ['p/o', 'q/1', 'p/f']);
+  // Cu rang, unde l-a pus omul.
+  assert.deepEqual(ordineDinRanguri(auto, new Map([['p/o', 0], ['p/f', 1], ['q/1', 2]]), fata), ['p/o', 'p/f', 'q/1']);
+  // Riscul: exteriorul piesei tăiat înaintea finisării ei (rândul pe linie), sau al plăcii care o cuprinde.
+  const randuri = new Map<string, RandOrdine>([
+    ['p/f', r('p', 'pe-linie')], ['p/o', r('p', 'exterior')], ['q/1', r('q', 'exterior', { inauntru: ['p/f'] })],
+  ]);
+  assert.deepEqual(riscuri(['p/o', 'p/f', 'q/1'], randuri), [{ fel: 'exterior', a: 1, b: 2 }]);
+  assert.deepEqual(riscuri(['q/1', 'p/f', 'p/o'], randuri), [{ fel: 'exterior', a: 1, b: 2 }]);
+  assert.deepEqual(riscuri(['p/f', 'p/o', 'q/1'], randuri), []);
+});

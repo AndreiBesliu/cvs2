@@ -153,14 +153,14 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
   printr-o schiță.
 - **Observabilitatea:** erorile ajung în jurnalul aplicației; joburile își lasă marcajul.
 
-## Starea pe 25.11.2026, seara (după a treizeci și opta unire din cloud)
+## Starea pe 25.11.2026, seara (după a patruzeci și una unire din cloud)
 
-- **Pe test:** `6741c0be` (lotul 35: 3.Tu, piesele rotunde pe același ax în „Modelul”, Easy 3Draw 18.33.0; publicat
-  pe 25.11 la 19:39, cu serverul neschimbat; completul pe `main` 45654433162, verde; proba de fum, bună). Înainte:
-  `65eecdc6` (lotul 34: centrul foii, nota bibliotecii, starea imprimantei), pe 25.11 la 18:25; `2aaee0b4` (lotul
-  33), la 14:24. **În `main`, nepublicate încă:** 16.A↑b-6 (`1d3882d9`) și 10.4↑c-2 (`66b6b335`), unite
-  la 19:42: în drum, lotul 36 (`75bcf3fb`); apoi 16.A↑b-7 (`581da353`). Pe ramura de unire `unire-2511x`, cu
-  completul repornit după aducerea lui `main`: 18.1↑c, finisarea reliefului, cu v29.
+- **Pe test:** `75bcf3fb` (lotul 36: 16.A↑b-6, „Pune-o înapoi în bibliotecă”; 10.4↑c-2, cotele ca DIMENSION în DXF și
+  cifrele ca text; publicat pe 25.11 la 20:54, cu serverul neschimbat; completul pe `main` 45669314051, verde; proba de
+  fum, bună). Înainte: `6741c0be` (lotul 35, „Modelul” din Easy 3Draw 18.33.0), pe 25.11 la 19:39; `65eecdc6` (lotul
+  34), la 18:25. **În `main`, nepublicate încă:** 16.A↑b-7, Escape în „Frezele mele” (`581da353`), și 18.1↑c,
+  finisarea reliefului, cu documentul v29 (`f7ca20b6`), unită la 21:11, și 28.8↑h, fereastra exportului „pe
+  hârtie” (`7d74ade2`), unită la 21:13: în drum, lotul 37 (`5649067c`), cu toate trei; apoi 3.Cf-1 (`02ac0715`).
 - **`main`, din cloud:** pe 23.11: 3.Tq (`0ae9c6c1`); 11.3↑e și A.4 (`ddaa7ead`); 3.Tr, unită de linia elicelor
   (`d262e57a`); 25.8↑a și A.5 (`1b46c955`), cu reparația probei extensiilor (`8287d66e`); 11.3↑f, unită de linia
   planșelor (`f4601938`); A.6 (`4497d639`); 3.Xh (`2d1e482c`) și 12.1↑e-3 cu 12.1↑e-4 (`03460cab`); A.8a cu A.8b
@@ -174,7 +174,7 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
   (`9fd71053`); fereastra exportului, 28.8↑a–g (`c4ca5ec2`), și 3.Xk (`373699e6`); proba extensiilor, reparată
   (`13d9bcad`), 11.1↑d (`001b6325`) și 3.At (`cadac6c3`), scrise în sesiunea principală; 16.A↑h-5 (`4aee5405`) și
   16.A↑b-3 (`fdde5947`); 18.1↑a, relieful, cu documentul v28 (`c5b79526`); 10.4↑a-4 și 10.4↑b (`1eea83dd`). Pe
-  25.11: 3.Ca și 3.Cb, atelierul Easy 3Draw, 18.25.0 (`11877a3e`); 3.Cc și 3.Cd, 18.27.0 (`9815527f`); 3.Ce, 18.28.0 (`38ff9391`); 3.Cj-1 și 3.Cj-2, 18.30.0 (`e90edd2e`); plafoanele 1 000 / 125 (`caddd661`, ADR 0146); 18.1↑b, relieful în vederea 3D (`ef883ac1`); 10.4↑c-1, cotele în exportul vectorilor (`f2f6fc57`); 16.A↑b-5 (`03e64d33`), 3.Cj-3 și 3.Cj-4, 18.32.0 (`36559b49`), și 28.8↑n (`1eda6f0b`); 28.8↑o, centrul foii ca origine XY0 (`3fd3bf49`); 16.A↑b-4, nota „s-a schimbat în bibliotecă” (`9f18522e`), și 3.Au, starea lucrării imprimantei, scrisă în sesiunea principală (`307d4f9a`); 3.Tu, piesele rotunde pe același ax în „Modelul”, Easy 3Draw 18.33.0 (`f5cf10c8`); 16.A↑b-6, „Pune-o înapoi în bibliotecă” (`1d3882d9`), și 10.4↑c-2, cotele ca DIMENSION în DXF (`66b6b335`); 16.A↑b-7, Escape în „Frezele mele” (`581da353`).
+  25.11: 3.Ca și 3.Cb, atelierul Easy 3Draw, 18.25.0 (`11877a3e`); 3.Cc și 3.Cd, 18.27.0 (`9815527f`); 3.Ce, 18.28.0 (`38ff9391`); 3.Cj-1 și 3.Cj-2, 18.30.0 (`e90edd2e`); plafoanele 1 000 / 125 (`caddd661`, ADR 0146); 18.1↑b, relieful în vederea 3D (`ef883ac1`); 10.4↑c-1, cotele în exportul vectorilor (`f2f6fc57`); 16.A↑b-5 (`03e64d33`), 3.Cj-3 și 3.Cj-4, 18.32.0 (`36559b49`), și 28.8↑n (`1eda6f0b`); 28.8↑o, centrul foii ca origine XY0 (`3fd3bf49`); 16.A↑b-4, nota „s-a schimbat în bibliotecă” (`9f18522e`), și 3.Au, starea lucrării imprimantei, scrisă în sesiunea principală (`307d4f9a`); 3.Tu, piesele rotunde pe același ax în „Modelul”, Easy 3Draw 18.33.0 (`f5cf10c8`); 16.A↑b-6, „Pune-o înapoi în bibliotecă” (`1d3882d9`), și 10.4↑c-2, cotele ca DIMENSION în DXF (`66b6b335`); 16.A↑b-7, Escape în „Frezele mele” (`581da353`); 18.1↑c, finisarea reliefului, cu documentul v29 (`f7ca20b6`); 28.8↑h, fereastra exportului „pe hârtie” (`7d74ade2`); 3.Cf-1, alipirea la prinderi în „Modelul”, Easy 3Draw 18.34.0 (`02ac0715`).
 - **Liniile** (vezi [indexul](README.md)):
   - **în lucru, pe ramuri, repornite pe 25.11 la 09:32** (owner-ul, în sesiunea principală, după resetarea limitei
     săptămânale: „vreau sa pornesti si celelalte sub-sesiuni”):
@@ -183,18 +183,18 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
       owner-ului), unită la 19:42; 16.A↑b-7 (Escape în „Frezele mele”, reparația probelor instabile), unită la
       20:11; fără felie pornită: 16.A↑d, e, f, g, la cuvântul owner-ului;
     - exportul: 28.8↑n, unită la 13:18; 28.8↑o (centrul foii ca origine XY0; mișcă mașina), unită la 14:21; 28.8↑h
-      (desenele ferestrei) a raportat (`2ecd0054`), dar peste 16.A↑b-4 proba ei nouă cade de fiecare dată („Du-mă la
-      …” nu aduce greșeala în vedere; unirea de probă `unire-2511u`, lăsată deoparte): linia repară la cauză și
-      raportează din nou; apoi i și j–l;
-    - relieful: 18.1↑b, unită la 11:02; 18.1↑c (finisarea, cu bila în document, v29; `AndreiBesliu/cvs2#39`) a
-      raportat (`ab0cbf5c`), dar peste 16.A↑b-4 o bilă din bibliotecă ar arăta în fereastra exportului ca o freză
-      plată: linia aduce `main`, rezolvă cu proba întâi (și un caz al finisării din centrul foii) și raportează din
-      nou;
+      (desenele ferestrei, cu reparația 28.8↑h-2 a lui „Du-mă la …” și cu regula „cât foaia” unită cu relieful),
+      unită la 21:13; în lucru, 28.8↑i (viteza), apoi j–l;
+    - relieful: 18.1↑b, unită la 11:02; 18.1↑c (finisarea, cu bila în document, v29; `AndreiBesliu/cvs2#39`), unită
+      la 21:11, după ce linia a ținut bilele afară din lista bibliotecii a ferestrei exportului; fără felie pornită:
+      18.1↑d (degroșarea) și rândul editabil al finisării, la cuvântul owner-ului;
     - atelierul: cama și roata cu palete, unite la 09:35; cadrul și melcul, la 13:18 (3.Cj, încheiată); 3.Tu
       (piesele rotunde pe același ax în „Modelul”, ADR 0283; Easy 3Draw 18.33.0; pornită de owner în sesiunea liniei,
       „1a, 2a, 3a la 3.Tu, pornește”), unită la 18:18; în lucru, 3.Cf (alipirea la prinderi în
-      „Modelul”, cu răspunsurile owner-ului din sesiunea liniei: piesa alipită urmează baza; 18.34.0); **pe listă,
-      de la owner (25.11, 19:18): decorațiuni de Crăciun pentru imprimantă**, după 3.Cf, cu ADR 0285 propus întâi;
+      „Modelul”, cu răspunsurile owner-ului din sesiunea liniei: piesa alipită urmează baza; 18.34.0); 3.Cf-1 (alipirea; `6b093a98`, Easy 3Draw
+      18.34.0), unită la 22:15; **decorațiunile de Crăciun** (cererea
+      owner-ului din 25.11, 19:18): ADR 0285, acceptat de el în sesiunea liniei („Mergem cu recomandarile”), feliile
+      3.Cl-1…4, cu 3.Cl-1 (fulgul, steaua, brăduțul) în lucru; 3.Cf-2 după ele;
       apoi 3.Cg–3.Ci; 3.Ck, după tipărirea bilei și a cupei;
     - cotele: 10.4↑c-1, unită la 12:20; c-2 (DIMENSION în DXF și cifrele ca text), unită la 19:42; fără felie
       pornită: 10.4↑d, la cuvântul owner-ului.
@@ -248,10 +248,10 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
   zile, totalul a crescut cu 87 kB (cotele 25,3, fereastra exportului 16,3, frezele 13,9, relieful 12,7). Regulile
   feliilor rămân: ce nu trebuie înaintea primei randări stă la cerere, calculul greu în worker, iar felia își spune
   în raport cât adaugă la total și la pornire.
-- **Documentul e v28** (relieful: forma `relief`, 18.1↑a, în `main` din 24.11; v27, frezele, 16.A↑b-1). Cotele nu cer
-  schemă. **v29 e dat liniei reliefului (25.11, la unirea lui 18.1↑b), pentru 18.1↑c: operațiile pe relief cu freza bilă
-  în document, stabilită cu linia frezelor; nu se împarte în două.** Următorul liber e v30 (toroidala și profilul desenat
-  ale frezelor, dacă le cer): numărul se dă când felia ajunge la migrare, iar unirile cu schemă intră în `main` în ordinea
+- **Documentul e v29** (finisarea reliefului și freza bilă, 18.1↑c, în `main` din 25.11, ADR 0312; v28, forma
+  `relief`, 18.1↑a, din 24.11; v27, frezele, 16.A↑b-1). Cotele nu cer schemă. Următorul liber e v30 (degroșarea
+  reliefului, 18.1↑d, dacă cere un câmp al ei; toroidala și profilul desenat ale frezelor; adaosul și finisarea pe
+  profil, 9a din ADR 0291): numărul se dă când felia ajunge la migrare, iar unirile cu schemă intră în `main` în ordinea
   numerelor. O probă care citește documentul salvat cere versiunea
   curentă (`placute.spec.ts` a căzut cu `schema: 26` în completul liniei frezelor).
 - **De urmărit:** în panoul foii, la 1400 px, etichetele „Numele” și „Materialul” apar tăiate la o literă (văzut de
