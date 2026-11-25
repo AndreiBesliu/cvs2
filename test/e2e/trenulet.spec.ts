@@ -714,7 +714,7 @@ test('în engleză (ADR 0165): limba lui cvs2, schimbată pe loc printr-o reporn
   await c.locator('#at-in-model').click();
   await expect(c.locator('#at-m-lista li').nth(1)).toHaveText(/^Axle \d+ attached$/);
   await expect(c.locator('.model-ales')).toContainText(/· attached to Gear 24 \(axle end 1 ↔ axle hole 1\)/);
-  await expect(c.locator('#at-m-mutari [data-m]')).toHaveText(['Other connection', 'Rotate ↻', 'Slide −', 'Slide +', 'Detach']);
+  await expect(c.locator('#at-m-mutari [data-m]')).toHaveText(['Other connection', 'Other place on the base', 'Rotate ↻', 'Slide −', 'Slide +', 'Detach']);
   await c.locator('#at-m-mutari [data-m="pg+"]').click();
   await c.locator('#at-m-mutari [data-m="pr"]').click();
   await expect(c.locator('.model-ales')).toContainText('· rotated 90° · slid 4 mm');

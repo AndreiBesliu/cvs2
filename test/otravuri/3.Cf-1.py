@@ -192,6 +192,15 @@ o('A46', AT, GL, GL.replace('(op === "pg+" ? 4 : -4)', '(op === "pg+" ? 8 : -8)'
 o('A47', AT, 'else if (op === "pd") lasaPeLoc(m, a.T);', 'else if (op === "pd") lasaPeLoc(m, { m: a.T.m, t: [0, 0, 0] });', 'e2e', 'piesa desprinsă sare în origine')
 o('A48', AT, 'else if (op === "pd") lasaPeLoc(m, a.T);', 'else if (op === "pd") delete m.prins;', 'e2e', 'piesa desprinsă cade pe locul ținut')
 
+# --- atelierul: „Alt loc pe bază”
+LB = 'const locuriBaza = (baza: readonly Prindere[], b: Prindere) => baza.map((p, k) => (Lego.sePrind(p.fel, b.fel) ? k : -1)).filter(k => k >= 0);'
+o('A72', AT, LB, LB.replace('(Lego.sePrind(p.fel, b.fel) ? k : -1)', 'k'), 'e2e', 'locurile de pe bază cuprind și prinderile care nu se potrivesc')
+AA = 'q.a = l[(l.indexOf(q.a) + 1) % l.length]!;'
+o('A73', AT, AA, 'q.a = l[0]!;', 'e2e', '„Alt loc pe bază” duce mereu pe primul loc')
+o('A74', AT, AA, 'q.a = l[(l.indexOf(q.a) + l.length - 1) % l.length]!;', 'e2e', '„Alt loc pe bază” merge înapoi')
+MA = '(locuriBaza(cb.prinderi, pb).length > 1 ? `<button class="btn" type="button" data-m="pa">Alt loc pe bază</button>` : "")'
+o('A75', AT, MA, MA.replace('.length > 1 ?', '.length > 99 ?'), 'e2e', 'piesa prinsă nu se mai poate muta pe alt loc al bazei')
+
 # --- atelierul: mutările piesei libere
 PA = '({ "x-": [-8, 0, 0], "x+": [8, 0, 0], "y-": [0, -8, 0], "y+": [0, 8, 0], "z-": [0, 0, -3.2], "z+": [0, 0, 3.2] } as Record<string, number[]>)[op];'
 o('A49', AT, PA, PA.replace('"x+": [8, 0, 0]', '"x+": [4, 0, 0]'), 'e2e', 'piesa liberă se mută cu 4 mm pe x')

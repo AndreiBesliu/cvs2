@@ -5,7 +5,8 @@
  *   se alipește acolo („Alipește în model”), cu prinderea ei care o întoarce cel mai puțin;
  * - piesa alipită **rămâne legată** de bază (răspunsul owner-ului): o urmează când baza e mutată sau rotită, oricât de lung
  *   ar fi lanțul (grindă → ax → roată);
- * - piesa alipită: „Rotește ↻” în jurul prinderii, „Altă prindere”, „Glisează” pe o tijă, „Desprinde”;
+ * - piesa alipită: „Rotește ↻” în jurul prinderii, „Altă prindere” (a ei), „Alt loc pe bază”, „Glisează” pe o tijă,
+ *   „Desprinde”;
  * - desprinsă, o piesă care stă drept pe grilă e din nou o piesă de pe grilă; una întoarsă rămâne **liberă** (se mută în mm);
  * - baza scoasă lasă piesele ei pe loc; un model ținut cu legături stricate se deschide, cu piesele pe locul lor.
  * Ce se vede e judecat prin mărimea modelului (cutia tuturor pieselor din scenă), cu valorile pe hârtie, din cotele pieselor:
@@ -85,7 +86,7 @@ test('știftul din colț: o cărămidă alipită pe știftul 8 al alteia urmeaz�
   const [baza, prinsa] = await tinut(page);
   expect(prinsa!.prins).toEqual({ de: baza!.id, a: 15, b: 0, unghi: 0, alunec: 0 });
   // piesa alipită are butoanele ei: fără mutările pe grilă, fără glisare (știftul în locaș nu glisează)
-  expect(await butoane(page)).toEqual(['pb', 'pr', 'pd']);
+  expect(await butoane(page)).toEqual(['pb', 'pa', 'pr', 'pd']);
   // ținta s-a folosit: piesa următoare se pune ca până acum
   await page.locator('#at-vedere-mod [data-v="piesa"]').click();
   await expect(butonul(page)).toHaveText('Pune în model');
@@ -107,8 +108,21 @@ test('știftul din colț: o cărămidă alipită pe știftul 8 al alteia urmeaz�
   await muta(page, 'x-');
   await expect(marime(page)).toContainText('Mărime 55,8 × 23,8 × 21,1 mm');
 
-  // piesa prinsă, rotită în jurul știftului (28, 12) cu un sfert de tură: x 16,1 … 31,9, y 8,1 … 39,9
+  // alt loc pe bază: de pe știftul 8 (ultimul), piesa prinsă trece pe primul, cel de la (4, 4), și stă chiar peste bază
   await alege(page, 1);
+  await muta(page, 'pa');
+  await expect(aleasa(page)).toContainText('(locaș 1 ↔ știft 1)');
+  await expect(marime(page)).toContainText('Mărime 31,8 × 15,8 × 21,1 mm');
+  expect((await tinut(page))[1]!.prins).toEqual({ de: baza!.id, a: 8, b: 0, unghi: 0, alunec: 0 });
+  // apoi pe al doilea, cel de la (4, 12): cu un știft mai în spate (y 8,1 … 23,9)
+  await muta(page, 'pa');
+  await expect(aleasa(page)).toContainText('(locaș 1 ↔ știft 2)');
+  await expect(marime(page)).toContainText('Mărime 31,8 × 23,8 × 21,1 mm');
+  // încă șase locuri: înapoi pe știftul 8 (locașurile bazei nu sunt locuri pentru un locaș)
+  for (let k = 0; k < 6; k++) await muta(page, 'pa');
+  await expect(aleasa(page)).toContainText('(locaș 1 ↔ știft 8)');
+  await expect(marime(page)).toContainText('Mărime 55,8 × 23,8 × 21,1 mm');
+  // piesa prinsă, rotită în jurul știftului (28, 12) cu un sfert de tură: x 16,1 … 31,9, y 8,1 … 39,9
   await muta(page, 'pr');
   await expect(aleasa(page)).toContainText('(locaș 1 ↔ știft 8) · rotită 90°');
   await expect(marime(page)).toContainText('Mărime 31,8 × 39,8 × 21,1 mm');
@@ -160,7 +174,7 @@ test('lanțul: un ax prin gaura din mijloc a grinzii și o roată pe capătul lu
   await expect(aleasa(page)).toContainText('(capăt de ax 1 ↔ gaură de știft 5)');
   await expect(marime(page)).toContainText('Mărime 39,2 × 7,2 × 31,8 mm');
   // pe o tijă se glisează, câte 4 mm: în jos iese cu 4 mm mai mult (până la −28); în sus, rămâne în lungimea lui
-  expect(await butoane(page)).toEqual(['pb', 'pr', 'pg-', 'pg+', 'pd']);
+  expect(await butoane(page)).toEqual(['pb', 'pa', 'pr', 'pg-', 'pg+', 'pd']);
   await muta(page, 'pg-');
   await expect(aleasa(page)).toContainText('· glisată -4 mm');
   await expect(marime(page)).toContainText('Mărime 39,2 × 7,2 × 35,8 mm');

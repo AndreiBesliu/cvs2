@@ -20,8 +20,8 @@
         {
           "versiune": "18.34.0",
           "data": "2026-11-25",
-          "ro": "În „Modelul”, piesele se prind între ele: alegi una, apoi o prindere a ei (un punct din vedere sau un număr), iar piesa următoare se alipește acolo și o urmează când o muți. O poți roti, glisa pe ax și desprinde.",
-          "en": "In the Model view, pieces now join: choose one, then one of its connections (a dot in the view or a number), and the next piece attaches there and follows it when moved. You can turn it, slide it along an axle and detach it."
+          "ro": "În „Modelul”, piesele se prind între ele: alegi una, apoi o prindere a ei (un punct din vedere sau un număr), iar piesa următoare se alipește acolo și o urmează când o muți. O poți roti, muta pe alt loc, glisa pe ax și desprinde.",
+          "en": "In the Model view, pieces now join: choose one, then one of its connections (a dot in the view or a number), and the next piece attaches there and follows it when moved. You can turn it, move it to another spot, slide it and detach it."
         },
         {
           "versiune": "18.33.0",
@@ -155,7 +155,7 @@
         }
       ],
       "versiune": "18.34.0",
-      "continut": "b1ed78af40bed45d36c846a2148d6af649a65426c6994039b8134a7c27d03f74"
+      "continut": "9705b416e19c8d5a6b41dcbe40156401a80fa80e075d3f0362a7ba761ec7d4c2"
     }
   ]
 }

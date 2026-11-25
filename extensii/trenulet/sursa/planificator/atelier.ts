@@ -1864,6 +1864,8 @@ var Atelier3D = (function () {
   const numeFelM = (fel: string, cate = 1) => fel === "capatAx" ? (cate === 1 ? tr("capăt de ax") : tr("capete de ax")) : NUME_PRINDERI[fel]!()[cate === 1 ? 0 : 1];
   const nrPrindere = (pr: readonly Prindere[], k: number) => pr.slice(0, k + 1).filter(p => p.fel === pr[k]!.fel).length;
   const numePrindere = (pr: readonly Prindere[], k: number) => `${numeFelM(pr[k]!.fel)} ${nrPrindere(pr, k)}`;
+  /** Locurile de pe bază ale unei piese prinse: prinderile bazei pe care se potrivește prinderea ei, în ordinea bazei. */
+  const locuriBaza = (baza: readonly Prindere[], b: Prindere) => baza.map((p, k) => (Lego.sePrind(p.fel, b.fel) ? k : -1)).filter(k => k >= 0);
   /** Ținta de acum: prinderea aleasă a piesei alese, cât piesa și prinderea mai există. */
   function tintaBuna(): { m: InModel; c: CorpModel; k: number; p: Prindere } | null {
     const t = tintaM;
@@ -1982,6 +1984,7 @@ var Atelier3D = (function () {
       const q = m.prins!, baza = model.find(x => x.id === q.de)!, cb = corpSigur(baza.def)!, pa = cb.prinderi[q.a]!, pb = c.prinderi[q.b]!;
       unde = tr`prinsă de ${titluM(baza)} (${numePrindere(c.prinderi, q.b)} ↔ ${numePrindere(cb.prinderi, q.a)})` + (q.unghi ? tr` · rotită ${q.unghi}°` : "") + (q.alunec ? tr` · glisată ${fmt(q.alunec)} mm` : "");
       mutari = (Lego.potriviriPrindere(pa, c.prinderi).length > 1 ? `<button class="btn" type="button" data-m="pb">Altă prindere</button>` : "")
+        + (locuriBaza(cb.prinderi, pb).length > 1 ? `<button class="btn" type="button" data-m="pa">Alt loc pe bază</button>` : "")
         + `<button class="btn" type="button" data-m="pr">Rotește ↻</button>`
         + (Lego.seGliseaza(pa.fel, pb.fel) ? `<button class="btn" type="button" data-m="pg-">Glisează −</button><button class="btn" type="button" data-m="pg+">Glisează +</button>` : "")
         + `<button class="btn" type="button" data-m="pd">Desprinde</button>`;
@@ -2057,6 +2060,12 @@ var Atelier3D = (function () {
         if (l.length < 2) return;
         q.b = l[(l.indexOf(q.b) + 1) % l.length]!;
         if (!Lego.seGliseaza(pa.fel, c.prinderi[q.b]!.fel)) q.alunec = 0;
+      } else if (op === "pa") {
+        // urmatorul loc de pe baza: piesa se muta, cu aceeasi prindere a ei, pe urmatoarea prindere a bazei care i se potriveste
+        const l = locuriBaza(cb!.prinderi, pb);
+        if (l.length < 2) return;
+        q.a = l[(l.indexOf(q.a) + 1) % l.length]!;
+        if (!Lego.seGliseaza(cb!.prinderi[q.a]!.fel, pb.fel)) q.alunec = 0;
       } else if ((op === "pg-" || op === "pg+") && Lego.seGliseaza(pa.fel, pb.fel)) q.alunec = Math.max(-200, Math.min(200, q.alunec + (op === "pg+" ? 4 : -4)));
       else if (op === "pd") lasaPeLoc(m, a.T);
       else return;

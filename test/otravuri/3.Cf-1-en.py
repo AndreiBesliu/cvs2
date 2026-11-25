@@ -26,6 +26,7 @@ o('N09', A, '<p class="mic" id="at-m-tinta">${tr`Ținta: ${numePrindere(pr, tint
 o('N10', T, 'has no connection for “{1}”: the piece sits on top, not attached.', 'has no connection for “{1}”: the piece sits on top.', 'e2e', 'mesajul piesei fără prindere potrivită nu spune că nu e alipită')
 o('N11', T, ' "liberă, colțul cutiei la {0}, {1}, {2} mm": "free, box corner at {0}, {1}, {2} mm",', ' "liberă, colțul cutiei la {0}, {1}, {2} mm": "libera, coltul cutiei la {0}, {1}, {2} mm",', 'e2e', 'rândul piesei libere, rămas în română (fără diacritice)')
 o('N12', T, 'the next piece attaches there and stays linked to it, so it follows when you move it.', 'the next piece attaches there.', 'e2e', 'textul vederii nu spune că piesa rămâne legată')
+o('N13', T, ' "Alt loc pe bază": "Other place on the base",', ' "Alt loc pe bază": "Alt loc pe baza",', 'e2e', 'butonul „Alt loc pe bază”, rămas în română (fără diacritice)')
 
 SETURI = {}
 E2E = ['test/e2e/trenulet.spec.ts']
