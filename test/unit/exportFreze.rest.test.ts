@@ -151,6 +151,10 @@ test('frezele ferestrei: toate frezele rândurilor, cu turația originii, afară
   // Fără fundul plat al lui `a` (freza pe care o înlocuim) și fără freza de rest a lui `b`.
   assert.deepEqual(frezeRanduri([['a', a], ['b', b]], { cheie: 'a', unde: 'fund' }).map((f) => f.numar), [1, 3, 4, 5]);
   assert.deepEqual(frezeRanduri([['a', a], ['b', b]], { cheie: 'b', unde: { rest: 'buzunar', k: 0 } }).map((f) => f.numar), [1, 2, 3, 4]);
+  // Doar freza de rest înlocuită iese; celelalte din lista ei rămân.
+  const b2 = { ...b, rest: [...b.rest, { numar: '6', diametru: '2', pas: '0.8' }] };
+  assert.deepEqual(frezeRanduri([['b', b2]], { cheie: 'b', unde: { rest: 'buzunar', k: 0 } }).map((f) => f.numar), [4, 6]);
+  assert.deepEqual(frezeRanduri([['b', b2]], { cheie: 'b', unde: { rest: 'buzunar', k: 1 } }).map((f) => f.numar), [4, 5]);
   // Frezele dopului drept și a decupării benzii, doar cu bifele lor.
   const dop = rand({ tip: 'buzunar', formaScula: 'plata', incrustatieDreapta: true, frezaDop: true, origineDop: P3, restDop: [{ numar: '6', diametru: '2', pas: '0.8' }] });
   assert.deepEqual(frezeRanduri([['d', dop]]).map((f) => [f.numar, f.turatie]), [[1, undefined], [5, 20000], [6, undefined]]);
@@ -172,8 +176,11 @@ test('alegerea pe un loc al rândului: T-ul dat, Ø-ul, pasul lateral și origin
   assert.deepEqual(cuFrezaAleasa(p, 'dop', f, 7), { numarSculaDop: '7', diametruSculaDop: '3', pasLateralDop: '1.2', origineDop: P3 });
   assert.deepEqual(cuFrezaAleasa(p, 'banda', f, 7), { numarSculaBanda: '7', diametruSculaBanda: '3', origineBanda: P3 });
   // O freză de rest: doar rândul ei din lista ei se schimbă.
-  const r = cuFrezaAleasa(p, { rest: 'fund', k: 0 }, oferita('p1', 1, { nume: 'Ø1', biblioteca: { id: 'p1', rev: 1 } }), 4);
-  assert.deepEqual(r, { restFund: [{ numar: '4', diametru: '1', pas: '0.4', origine: { nume: 'Ø1', biblioteca: { id: 'p1', rev: 1 } } }] });
+  const doua = { ...p, restFund: [...p.restFund, { numar: '8', diametru: '0.8', pas: '0.3', origine: P2 }] };
+  const r = cuFrezaAleasa(doua, { rest: 'fund', k: 0 }, oferita('p1', 1, { nume: 'Ø1', biblioteca: { id: 'p1', rev: 1 } }), 4);
+  assert.deepEqual(r, {
+    restFund: [{ numar: '4', diametru: '1', pas: '0.4', origine: { nume: 'Ø1', biblioteca: { id: 'p1', rev: 1 } } }, { numar: '8', diametru: '0.8', pas: '0.3', origine: P2 }],
+  });
   // Un loc care nu e în listă nu schimbă nimic.
   assert.deepEqual(cuFrezaAleasa(p, { rest: 'dop', k: 0 }, f, 4), {});
   // T-ul vine din regula rolurilor, printre frezele ferestrei fără cea înlocuită: T7 e al unei alte freze, deci cel mai mic liber.
