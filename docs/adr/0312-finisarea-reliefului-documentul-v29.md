@@ -26,36 +26,62 @@ operație 2D pe un relief). Câmpurile comune rămân, cu sensul lor pe relief:
 
 - `noduri`: reliefurile piesei pe care le finisează (unul sau mai multe; unde se suprapun, „păstrează înalt”, ADR 0310 §1);
 - `scula`: plata, V-ul sau bila;
-- `pasLateral` (cerut pe finisare): distanța dintre liniile paralele, în mm; aliniată, lucrarea o rotunjește la celule întregi
-  (ADR 0310 §5) și spune valoarea rotunjită;
+- `pasLateral` (cerut de ușă pe o finisare): distanța dintre liniile paralele, în mm, în (0, 50] ca pe buzunar; aliniată,
+  lucrarea o rotunjește la celule întregi (ADR 0310 §5) și spune valoarea rotunjită;
 - `pas`: cât coboară cel mult o trecere (invarianta: niciodată mai adânc decât pasul pe trecere); finisarea se face în treceri
   pe Z, ultima pe model;
 - `adancime`: cel mai adânc loc sub fața plăcii la care ajunge freza (o podea: sub ea finisarea nu coboară);
-- `latura`, `sens`, `urechi`, `rampa`, `intrari`, `colturi`: cerute de schemă, fără efect pe finisare (`pe-linie`, `urcare`,
-  `null`); lucrarea refuză urechi, rampă, intrări sau degajări pe o finisare.
+- `latura`, `sens`, `urechi`, `rampa`, `intrari`, `colturi`: cerute de schemă, fără efect pe finisare (aplicația scrie
+  `pe-linie`, `urcare`, `null`); ușa nu le leagă de felul operației, iar lucrarea refuză urechi, rampă, intrări sau degajări
+  pe o finisare. La fel câmpurile celorlalte feluri (`coborare`, `fundPlat`, `rest`, `strategie`, `incrustatie`…): ușa le
+  judecă forma, lucrarea le refuză pe o finisare.
 
-Câmpul nou `finisare`, cerut pe o finisare și refuzat de lucrare pe alt fel:
+Câmpul nou `finisare`, cerut de ușă pe o finisare; ușa îi judecă forma oriunde apare, iar lucrarea îl refuză pe alt fel:
 
 - `unghi`: unghiul liniilor față de axa X a reliefului, în grade, în [0, 180);
 - `nealiniat?: true`: liniile nu urmează centrele celulelor (lipsă = aliniate; la un unghi care nu e 0 sau 90, lucrarea spune că
   pot apărea riduri, ADR 0310 §5);
 - `margine?: 'trece'`: freza trece de marginea reliefului (lipsă = „peretele rămâne”: dincolo de dreptunghi, modelul e fața
   plăcii, ADR 0310 §4);
-- `planZero?: number`: adâncimea planului zero al reliefului sub fața plăcii, în mm (lipsă = vârful compusului la fața plăcii,
-  ADR 0310 §6).
+- `planZero?: number`: adâncimea planului zero al reliefului sub fața plăcii, în mm, în [0, 1 000] (lipsă = vârful compusului
+  la fața plăcii, ADR 0310 §6).
+
+Câmpurile necunoscute ale lui `finisare` și ale bilei se păstrează, ca peste tot. Ușa refuză o finisare care referă un element
+care nu e relief și o operație de alt fel care referă un relief (categoria `relief`, ca în v28).
 
 Degroșarea (18.1↑d) va fi un al doilea fel, `degrosare`, cu un câmp al ei: nu intră aici.
 
 ### 3. Migrarea v28 → v29
 
 Schimbă doar numărul. Un v28 care are deja o operație `finisare`, un câmp `finisare` sau o freză cu `{ tip: 'bila' }` nu e un
-v28 valid: migrarea îl refuză (ciocnirea), ca să nu-l facă v29 pe tăcute.
+v28 valid: migrarea îl refuză, ca să nu-l facă v29 pe tăcute (schema curentă l-ar primi). Pe hârtie, felul și bila le
+refuză chiar contractul v28 (un fel necunoscut, o formă care nu e V), iar câmpul `finisare`, necunoscut la v28, e ciocnirea.
 
 ### 4. Probele
 
 Oracolul documentului primește v29: rândurile câmpurilor noi în `CAMPURI_NOI_O`, judecata în `problemeOperatieO`, frontierele
 pe hârtie; corpusul de aur primește pasul v29 (o finisare cu bila pe relieful „Medalion”). Probele care țin versiunea curentă
 trec pe 29.
+
+## Implementarea (18.1↑c)
+
+- **Ușa** (`src/model/schemaDocument.ts`): `scula.forma` e o variantă după `tip` (`v`, `bila`); felul `finisare`; câmpul
+  `finisare` (unghiul în [0, 180), `nealiniat` doar `true`, `margine` doar `'trece'`, `planZero` în [0, 1 000]); pe o finisare,
+  `finisare` și `pasLateral` cerute (cu calea câmpului în motiv); o finisare referă doar reliefuri, o operație de alt fel
+  niciun relief (`problemaOperatii`).
+- **Migrarea** v28 → v29 (`src/model/migrari.ts`): doar numărul; un v28 cu o operație `finisare`, cu câmpul `finisare` sau cu
+  o bilă pe oricare dintre frezele operației (scula, frezele de rest, fundul plat și frezele lui, frezele dopului, freza
+  benzii) e refuzat.
+- **Oracolul documentului** (partea v29 de la capătul lui `test/oracles/document.ts`, scrisă înaintea ușii): `CAMPURI_NOI_O[29]
+  = ['finisare']`, felul și bila acceptate de la v29, `problemeFinisareO` (categoria `finisare`), referințele în
+  `problemeReliefO`; cazurile pe hârtie la capătul lui `test/oracles/document.cazuri.ts` (12 valide, 21 refuzate); proba
+  `test/unit/document.v29.oracol.test.ts` (oracolul, ușa aplicației, ușa documentului curent). Corpusul de aur: pasul v29 (o
+  finisare cu bila T9 pe medalion).
+- **Bila în lucrare** (`src/model/formaFrezei.ts`): `motivFormaPeOperatie` dă `bila` în afara finisării; `frezeleOperatiei`
+  numește toate frezele unei operații, cu calea lor, iar lucrarea refuză o bilă pe oricare dintre ele, cu forma și calea în
+  motiv (`felFrezei`: „plată”, „în V”, „bilă”, și în motivele vechi care spuneau „plată” sau „în V” oricărei forme). Bila trece
+  în IR (simularea o taie cu capătul ei). Fereastra exportului nu are încă rând pentru o finisare sau o freză bilă: Exportă le
+  scrie înapoi neschimbate, iar lucrarea le judecă (felia rândului, după 16.A↑b-5 a liniei frezelor).
 
 ## Respinse
 

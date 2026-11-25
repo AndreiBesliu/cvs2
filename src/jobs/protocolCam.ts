@@ -6,6 +6,7 @@
 import type { IesireFoaie } from '../cam/iesire.ts';
 import type { ColtOrigine, Montaj } from '../ir/montaj.ts';
 import type { Document } from '../model/document.ts';
+import type { ResurseRelief } from '../relief/resurse.ts';
 import type { CerereReparare, OptiuniReparare } from '../model/reparare.ts';
 import type { CerereConversie } from '../model/conversie.ts';
 import type { CerereLegare, OptiuniLegare } from '../model/legareCai.ts';
@@ -89,15 +90,20 @@ export type DopSimulat = { readonly element: string; readonly semifabricat: Semi
 /** O piesă desprinsă (ADR 0210, 11.3↑c): instanța, elementul în lume, operația care o taie (`piesă/operație`) și locul spus omului. */
 export type ParteDesprinsa = { readonly instanta: string; readonly element: string; readonly operatie: string; readonly x: number; readonly y: number };
 
+/**
+ * Cererile cu un program (exportul, traseul, simularea) aduc și `reliefuri`: hărțile straturilor vizibile ale reliefurilor
+ * finisate pe foaie și octeții dalelor lor (ADR 0310 §3, ADR 0312), citite de firul principal din baza lor; workerul face
+ * compusul. Fără ele, o finisare se refuză cu motivul ei.
+ */
 export type CerereCam =
   /** Exportul (fereastra exportului): programul, fișierele, rezumatul, mutările simulării. */
-  | { readonly fel: 'export'; readonly document: Document; readonly parametri: ParametriExport }
+  | { readonly fel: 'export'; readonly document: Document; readonly parametri: ParametriExport; readonly reliefuri?: ResurseRelief }
   /** „Arată traseul” (ADR 0038 §2): programul, împachetat. */
-  | { readonly fel: 'traseu'; readonly document: Document }
+  | { readonly fel: 'traseu'; readonly document: Document; readonly reliefuri?: ResurseRelief }
   /** Vederea 3D (ADR 0057 §1): mutările simulării ale programului documentului, sau ale dopului cu numărul `dop` (ADR 0178). */
-  | { readonly fel: 'simulare'; readonly document: Document; readonly dop?: number }
+  | { readonly fel: 'simulare'; readonly document: Document; readonly dop?: number; readonly reliefuri?: ResurseRelief }
   /** „Împreună (secțiunea)” (ADR 0179): dopul cu numărul `dop` (în V, drept sau în trepte) în locașul lui, cu potrivirea măsurată. */
-  | { readonly fel: 'potrivire'; readonly document: Document; readonly dop: number }
+  | { readonly fel: 'potrivire'; readonly document: Document; readonly dop: number; readonly reliefuri?: ResurseRelief }
   /** Timpul jobului de lângă traseu (ADR 0046 §8) pentru un program deja calculat, fără CAM. */
   | { readonly fel: 'timp'; readonly program: ProgramImpachetat; readonly foaie: Montaj['foaie']; readonly setari: string | undefined }
   /** Verificarea vectorilor (ADR 0124): problemele contururilor foii, cu ce se poate repara din ele, fără să schimbe documentul. */

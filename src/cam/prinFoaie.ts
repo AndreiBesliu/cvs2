@@ -14,7 +14,7 @@ export function cuTaieturiPrinFoaie(doc: Document, supracursa: number): Document
   const foaie = doc.foi[0];
   if (!foaie || !(supracursa > 0)) return doc;
   const grosime = foaie.stoc.grosime;
-  const prin = (o: Operatie): boolean => o.tip !== 'vcarve' && !o.incrustatie && Math.abs(o.adancime - grosime) <= EPS_FOAIE;
+  const prin = (o: Operatie): boolean => o.tip !== 'vcarve' && o.tip !== 'finisare' && !o.incrustatie && Math.abs(o.adancime - grosime) <= EPS_FOAIE;
   if (!doc.piese.some((p) => p.operatii.some(prin))) return doc;
   const adancime = grosime + supracursa;
   return { ...doc, piese: doc.piese.map((p) => ({ ...p, operatii: p.operatii.map((o) => (prin(o) ? { ...o, adancime } : o)) })) };

@@ -96,6 +96,19 @@ export async function citesteStrat(amprenta: string, idb: IDBFactory = indexedDB
   }
 }
 
+/**
+ * Resursele finisării (ADR 0312, felia 18.1↑c-2): straturile păstrate ale hărților date (`hartiFinisare`), cu textul și dalele
+ * lor, pentru workerul CAM. Un strat lipsă nu intră: lucrarea spune ce lipsește.
+ */
+export async function resurseRelief(harti: readonly string[], idb: IDBFactory = indexedDB): Promise<Record<string, { readonly text: string; readonly octeti: Record<string, Uint8Array<ArrayBuffer>> }>> {
+  const rez: Record<string, { readonly text: string; readonly octeti: Record<string, Uint8Array<ArrayBuffer>> }> = {};
+  for (const h of harti) {
+    const s = await citesteStrat(h, idb);
+    if (s) rez[h] = s;
+  }
+  return rez;
+}
+
 /** Textul unei hărți păstrate, sau null dacă lipsește (modelul 3D citește întâi hărțile, apoi doar dalele schimbate). */
 export async function citesteHarta(amprenta: string, idb: IDBFactory = indexedDB): Promise<string | null> {
   const db = await deschide(idb);

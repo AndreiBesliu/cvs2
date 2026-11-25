@@ -2,7 +2,7 @@ import * as v from 'valibot';
 import { compune, esteSimilitudine, IDENTITATE } from '../geom/matrice.ts';
 import {
   areArce, CELULA_RELIEF_MAXIMA, CELULA_RELIEF_MINIMA, instantaPreaDeparte, LATURA_RELIEF_MAXIMA, MODURI_RELIEF, MODURI_URECHI, noduriPiesa, numara,
-  plafonDepasit, PLAFON, RETRAGERE_COMPLETA_MAXIMA, STRATURI_RELIEF_MAXIM, UNGHI_COBORARE_MAXIM, UNGHI_V_MAXIM, UNGHI_V_MINIM, VERSIUNE_SCHEMA,
+  plafonDepasit, PLAFON, PLAN_ZERO_MAXIM, RETRAGERE_COMPLETA_MAXIMA, STRATURI_RELIEF_MAXIM, UNGHI_COBORARE_MAXIM, UNGHI_V_MAXIM, UNGHI_V_MINIM, VERSIUNE_SCHEMA,
   type Document, type Nod, type Piesa,
 } from './document.ts';
 
@@ -127,11 +127,15 @@ const SchemaScula = v.looseObject({
   numar: v.pipe(v.number(), v.integer(), v.minValue(1), v.maxValue(PLAFON.numarScula)),
   nume: v.pipe(v.string(), v.maxLength(PLAFON.numeLungime)),
   diametru: pozitiv(PLAFON.diametruScula),
-  // ADR 0090: forma frezei (v14); lipsă = plată. ADR 0092: vârful plat (v16); sub diametru o judecă lucrarea.
-  forma: v.optional(v.looseObject({
-    tip: v.literal('v'), unghi: v.pipe(v.number(), v.finite(), v.minValue(UNGHI_V_MINIM), v.maxValue(UNGHI_V_MAXIM)),
-    varf: v.optional(pozitiv(PLAFON.diametruScula)),
-  })),
+  // ADR 0090: forma frezei (v14); lipsă = plată. ADR 0092: vârful plat (v16); sub diametru o judecă lucrarea. ADR 0312 §1
+  // (v29): și bila, pe orice freză la ușă; unde se poate folosi o judecă lucrarea (`motivFormaPeOperatie`).
+  forma: v.optional(v.variant('tip', [
+    v.looseObject({
+      tip: v.literal('v'), unghi: v.pipe(v.number(), v.finite(), v.minValue(UNGHI_V_MINIM), v.maxValue(UNGHI_V_MAXIM)),
+      varf: v.optional(pozitiv(PLAFON.diametruScula)),
+    }),
+    v.looseObject({ tip: v.literal('bila') }),
+  ])),
   // ADR 0300 §5 (v27): originea copiei din bibliotecă, valorile de lucru și lungimea tăișului; adâncimea peste tăiș o refuză
   // lucrarea.
   biblioteca: v.optional(v.looseObject({
@@ -168,9 +172,9 @@ const SchemaUrechiOperatie = v.looseObject({
   locuri: v.optional(v.looseObject({})),
 });
 
-const SchemaOperatie = v.looseObject({
+const SchemaOperatieCampuri = v.looseObject({
   id: Id,
-  tip: v.picklist(['profil', 'buzunar', 'gaurire', 'vcarve']),
+  tip: v.picklist(['profil', 'buzunar', 'gaurire', 'vcarve', 'finisare']),
   noduri: v.pipe(v.array(Id), v.minLength(1), v.maxLength(PLAFON.noduriOperatie)),
   scula: SchemaScula,
   latura: v.picklist(['exterior', 'interior', 'pe-linie', 'stanga', 'dreapta']),
@@ -243,7 +247,20 @@ const SchemaOperatie = v.looseObject({
       })),
     }),
   ])),
+  // ADR 0312 §2 (v29): finisarea reliefului; forma se judecă oriunde apare, pe alt fel îl refuză lucrarea.
+  finisare: v.optional(v.looseObject({
+    unghi: v.pipe(v.number(), v.finite(), v.minValue(0), v.ltValue(180)),
+    nealiniat: v.optional(v.literal(true)),
+    margine: v.optional(v.literal('trece')),
+    planZero: v.optional(v.pipe(v.number(), v.finite(), v.minValue(0), v.maxValue(PLAN_ZERO_MAXIM))),
+  })),
 });
+/** ADR 0312 §2: pe o finisare, `finisare` și `pasLateral` sunt cerute (restul felurilor nu le cer). */
+const SchemaOperatie = v.pipe(
+  SchemaOperatieCampuri,
+  v.forward(v.check((o) => o.tip !== 'finisare' || o.finisare !== undefined, 'e cerut pe o finisare'), ['finisare']),
+  v.forward(v.check((o) => o.tip !== 'finisare' || o.pasLateral !== undefined, 'e cerut pe o finisare'), ['pasLateral']),
+);
 /** `inaltimeImprimanta` (ADR 0191, 3.6l): opțională, fără schemă nouă (nu schimbă tăierea), ca ghidajele foii. */
 const SchemaPiesa = v.looseObject({
   id: Id, nume: Nume, radacina: SchemaNod, operatii: v.array(SchemaOperatie), inaltimeImprimanta: v.optional(pozitiv(PLAFON.grosime)),
@@ -326,8 +343,8 @@ export function matriciInMargini(p: Piesa): string | null {
 }
 
 /**
- * Problema operațiilor unei piese (ADR 0025), sau null: id-uri unice în piesă, noduri distincte, toate elemente ale ei, niciunul
- * un relief (ADR 0310 §1: operațiile de azi taie contururi; ale reliefului vin cu felia 18.1↑c).
+ * Problema operațiilor unei piese (ADR 0025), sau null: id-uri unice în piesă, noduri distincte, toate elemente ale ei; o
+ * finisare referă doar reliefuri (ADR 0312 §2), o operație de alt fel niciun relief (ADR 0310 §1: ea taie contururi).
  */
 function problemaOperatii(p: Piesa, elemente: ReadonlySet<string>, reliefuri: ReadonlySet<string> = new Set()): string | null {
   const ids = new Set<string>();
@@ -337,6 +354,11 @@ function problemaOperatii(p: Piesa, elemente: ReadonlySet<string>, reliefuri: Re
     if (new Set(o.noduri).size !== o.noduri.length) return `operația ${o.id} din piesa ${p.id} referă un nod de două ori`;
     const lipsa = o.noduri.find((n) => !elemente.has(n));
     if (lipsa !== undefined) return `operația ${o.id} din piesa ${p.id} referă ${lipsa}, care nu e un element al piesei`;
+    if (o.tip === 'finisare') {
+      const contur = o.noduri.find((n) => !reliefuri.has(n));
+      if (contur !== undefined) return `finisarea ${o.id} din piesa ${p.id} referă ${contur}, care nu e un relief: finisarea lucrează doar pe reliefuri`;
+      continue;
+    }
     const relief = o.noduri.find((n) => reliefuri.has(n));
     if (relief !== undefined) return `operația ${o.id} din piesa ${p.id} referă relieful ${relief}: operațiile 2D taie doar contururi`;
   }

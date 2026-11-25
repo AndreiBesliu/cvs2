@@ -6,7 +6,8 @@ import { esteCaleDeschisa, type Document, type Operatie } from '../model/documen
 import { grupeazaPeScula, taieturiFoaie, type ElementLume } from '../model/lume.ts';
 import { conturElement, esteContur } from '../model/forme.ts';
 import { DialogExport } from '../ui/DialogExport.tsx';
-import type { CerereExport, FrezaOferita, OperatieExport, OrigineFreza, Rand, StareExport } from '../ui/exportRand.ts';
+import type { CerereExport, FrezaOferita, OperatieExport, OrigineFreza, Rand, SculaOperatie, StareExport } from '../ui/exportRand.ts';
+import { frezeleOperatiei } from '../model/formaFrezei.ts';
 import { frezePotrivite, pasLateralDin, sculaDinBiblioteca } from '../model/alegereFreza.ts';
 import type { Scula } from '../model/document.ts';
 import { useBibliotecaProiect } from './bibliotecaProiect.ts';
@@ -85,6 +86,23 @@ function placuteIesite(d: Document, k?: number): { readonly nume: readonly strin
   return nume.length > 0 ? { nume, confirmare: iesireTextTinuta() === 'confirmare' } : undefined;
 }
 
+/**
+ * Operațiile cu un rând în fereastră: cele pe contur, cu frezele plate și în V. Finisarea reliefului și o freză bilă (ADR 0312,
+ * documentul v29) nu au încă rând (fereastra le primește în felia 18.1↑c-3); Exportă le lasă neschimbate, iar lucrarea le judecă
+ * (le refuză, cu motivul, cât n-au drumul lor), deci nimic nu se taie pe tăcute altfel.
+ */
+function peRand(o: Operatie): boolean {
+  return o.tip !== 'finisare' && frezeleOperatiei(o).every((f) => f.scula.forma?.tip !== 'bila');
+}
+
+/** Scula unui rând (fără bilă, `peRand`), cum o citește fereastra: numărul, diametrul și forma în V. */
+function sculaRand(s: Operatie['scula']): SculaOperatie {
+  return {
+    numar: s.numar, diametru: s.diametru,
+    ...(s.forma?.tip === 'v' ? { forma: { tip: 'v' as const, unghi: s.forma.unghi, ...(s.forma.varf !== undefined ? { varf: s.forma.varf } : {}) } } : {}),
+  };
+}
+
 export function ExportConectat({
   doc, dupaIdLume, lume, descriere, limba, baza, doarCitire, stare, onExporta, onInchide, onReseteaza, setariMasina, onSetariMasina,
   supracursa, onSupracursa, prinFoaie, onPrinFoaie, onDeschideInMasina, trimite, foaie, toate, onRaport, onAlegeUrechi,
@@ -106,14 +124,14 @@ export function ExportConectat({
     }
     // Ce stă în interiorul fiecărui rând (ADR 0133 §3), în prima instanță a piesei, ca rândurile: riscul îl judecă dialogul,
     // după latura aleasă acolo.
-    const inauntru = cuprinse(lista.flatMap(({ piesa, instanta: inst }) => piesa.operatii.map((o) => {
+    const inauntru = cuprinse(lista.flatMap(({ piesa, instanta: inst }) => piesa.operatii.filter(peRand).map((o) => {
       const contururi = o.noduri.flatMap((n) => {
         const e = dupaIdLume.get(`${inst}/${n}`);
         return e && esteContur(e) ? [conturElement(e)] : [];
       });
       return { cheie: `${piesa.id}/${o.id}`, piesa: piesa.id, contururi, punct: contururi[0]?.varfuri[0]?.p ?? null };
     })));
-    const randuriOp: OperatieExport[] = lista.flatMap(({ piesa, instanta: inst }) => piesa.operatii.map((o) => {
+    const randuriOp: OperatieExport[] = lista.flatMap(({ piesa, instanta: inst }) => piesa.operatii.filter(peRand).map((o) => {
       const e = dupaIdLume.get(`${inst}/${o.noduri[0] ?? ''}`);
       const cuprinseOp = inauntru.get(`${piesa.id}/${o.id}`);
       const baza = e ? descriere(e) : (piesa.nume ?? piesa.id);
@@ -134,7 +152,7 @@ export function ExportConectat({
         valori: {
           scula: {
             numar: o.scula.numar, diametru: o.scula.diametru,
-            ...(o.scula.forma ? { forma: { tip: 'v' as const, unghi: o.scula.forma.unghi, ...(o.scula.forma.varf !== undefined ? { varf: o.scula.forma.varf } : {}) } } : {}),
+            ...(o.scula.forma?.tip === 'v' ? { forma: { tip: 'v' as const, unghi: o.scula.forma.unghi, ...(o.scula.forma.varf !== undefined ? { varf: o.scula.forma.varf } : {}) } } : {}),
             // Freza din „Frezele mele” (ADR 0300 §4, felia 16.A↑b-3): originea ei, dacă documentul o are; altfel scrisă de mână.
             origine: origineDin(o.scula),
           },
@@ -231,7 +249,7 @@ export function ExportConectat({
           id: f.id, nume: f.nume, pas: f.pas, pasLateral: pasLateralDin(f),
           scula: {
             numar: s.numar, diametru: s.diametru,
-            ...(s.forma ? { forma: { tip: 'v' as const, unghi: s.forma.unghi, ...(s.forma.varf !== undefined ? { varf: s.forma.varf } : {}) } } : {}),
+            ...(s.forma?.tip === 'v' ? { forma: { tip: 'v' as const, unghi: s.forma.unghi, ...(s.forma.varf !== undefined ? { varf: s.forma.varf } : {}) } } : {}),
             origine,
           },
         };
@@ -246,9 +264,11 @@ export function ExportConectat({
     const noi = new Map<string, Operatie[]>();
     for (const { piesa } of exportFoaie.piese) {
       noi.set(piesa.id, piesa.operatii.map((o) => {
+        // Fără rând în fereastră (finisarea, o freză bilă): rămâne cum e, iar lucrarea o judecă.
+        if (!peRand(o)) return o;
         const cheie = `${piesa.id}/${o.id}`;
         const v = c.valori.get(cheie);
-        const { rang: _rang, ...faraRang } = operatieDinDialog(o, v, v?.scula ?? o.scula);
+        const { rang: _rang, ...faraRang } = operatieDinDialog(o, v, v?.scula ?? sculaRand(o.scula));
         void _rang;
         const r = loc?.get(cheie);
         return r !== undefined ? { ...faraRang, rang: r } : faraRang;

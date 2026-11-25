@@ -7,6 +7,8 @@ import type { Montaj } from '../ir/montaj.ts';
 import type { Document } from '../model/document.ts';
 import { doarFoaia, numeFoaie } from '../model/foi.ts';
 import { taieturiFoaie } from '../model/lume.ts';
+import { hartiFinisare } from '../model/finisare.ts';
+import type { ResurseRelief } from '../relief/resurse.ts';
 import { cereMesaje } from '../i18n/laCerere.ts';
 import { t } from '../i18n/t.ts';
 import { scrieZip, type IntrareArhiva } from '../io/scrieZip.ts';
@@ -69,6 +71,17 @@ export function operatiiDesprinse(doc: Document, desprinse: readonly ParteDespri
   return rez;
 }
 
+/**
+ * Resursele reliefurilor finisate pe foaia documentului (ADR 0312): straturile lor din baza `cncvs2-relief`, citite aici (pe
+ * firul principal) și trimise workerului CAM. Fără finisări, nimic (și nicio bucată adusă).
+ */
+async function resurse(doc: Document): Promise<ResurseRelief | undefined> {
+  const harti = hartiFinisare(doc, 0);
+  if (harti.length === 0) return undefined;
+  const m = await import('../app/reliefStocare.ts');
+  return m.resurseRelief(harti);
+}
+
 /** Avertismentele foii, cu al pieselor desprinse la capăt: mesajele exportului întâi (le are deja fereastra care exportă). */
 async function cuDesprinse(doc: Document, avertismente: readonly string[], desprinse: readonly ParteDesprinsa[]): Promise<string[]> {
   if (desprinse.length === 0) return [...avertismente];
@@ -84,7 +97,7 @@ async function cuDesprinse(doc: Document, avertismente: readonly string[], despr
  */
 export async function calculeazaExport(doc: Document, p: ParametriExport, semnal?: AbortSignal, toate?: Document): Promise<RezultatExport> {
   if (p.toateFoile && toate) return calculeazaToateFoile(toate, doc.foi[0]?.id ?? '', p, semnal);
-  const r = await exportInBazin(doc, p, semnal ? { semnal } : {});
+  const r = await exportInBazin(doc, p, semnal ? { semnal } : {}, await resurse(doc));
   if (!r.ok) return r;
   const { simulare, foaie, desprinse, ...rest } = r;
   const undeTine = operatiiDesprinse(doc, desprinse);
@@ -113,7 +126,7 @@ async function calculeazaToateFoile(doc: Document, activa: string, p: ParametriE
       goale.push(nume);
       continue;
     }
-    const r = await exportInBazin(d, baza, semnal ? { semnal } : {});
+    const r = await exportInBazin(d, baza, semnal ? { semnal } : {}, await resurse(d));
     if (!r.ok) return { ok: false, motiv: 'cereConfirmare' in r ? `${nume}: freza iese din foaie; exportă foaia singură, cu confirmarea ei` : `${nume}: ${r.motiv}` };
     facute.push({ k, nume, d, r });
   }
@@ -293,7 +306,7 @@ type DateSimulare = { readonly scula: DateScula; readonly mutari: Float64Array; 
  * schimbat, vederea închisă): promisiunea e respinsă cu `CalculAnulat`.
  */
 export async function programSimulare(doc: Document, semnal?: AbortSignal, dop?: number): Promise<ProgramSimulare> {
-  const r = await simulareInBazin(doc, semnal ? { semnal } : {}, dop);
+  const r = await simulareInBazin(doc, semnal ? { semnal } : {}, dop, await resurse(doc));
   if (!r.ok) return r;
   const { scula, mutari, apoi } = r.simulare;
   const date: DateSimulare = { scula, mutari, ...(apoi ? { apoi } : {}) };
@@ -304,8 +317,8 @@ export async function programSimulare(doc: Document, semnal?: AbortSignal, dop?:
  * „Împreună (secțiunea)” (ADR 0179): dopul în V cu numărul `dop` (de la 0) întors în locașul lui, cu potrivirea măsurată,
  * în workerul CAM. `semnal` o anulează (altă alegere, un document schimbat, vederea închisă).
  */
-export function potrivireSimulata(doc: Document, dop: number, semnal?: AbortSignal): Promise<RaspunsPotrivire> {
-  return potrivireInBazin(doc, dop, semnal ? { semnal } : {});
+export async function potrivireSimulata(doc: Document, dop: number, semnal?: AbortSignal): Promise<RaspunsPotrivire> {
+  return potrivireInBazin(doc, dop, semnal ? { semnal } : {}, await resurse(doc));
 }
 
 /** Fereastra plăcii întregi, la celula implicită (sau dublată, peste plafonul celulelor: ADR 0047 §1). */
@@ -348,7 +361,7 @@ export async function programTraseu(doc: Document, semnal?: AbortSignal): Promis
   | { readonly ok: true; readonly program: Program; readonly urechiLemn?: readonly { readonly x: number; readonly y: number }[] }
   | { readonly ok: false; readonly motiv: string }
 > {
-  const r = await traseuInBazin(doc, semnal ? { semnal } : {});
+  const r = await traseuInBazin(doc, semnal ? { semnal } : {}, await resurse(doc));
   return r.ok ? { ok: true, program: despacheteaza(r.program), ...(r.urechiLemn ? { urechiLemn: r.urechiLemn } : {}) } : r;
 }
 

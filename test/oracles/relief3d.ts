@@ -299,3 +299,54 @@ export function distantaPunctTriunghiO(
   const den = 1 / (va + vb + vc), v = vb * den, w = vc * den;
   return D([a[0] + ab[0] * v + ac[0] * w, a[1] + ab[1] * v + ac[1] * w, a[2] + ab[2] * v + ac[2] * w]);
 }
+
+/** O poziție a vârfului frezei pe traseu, cu felul mutării care ajunge în ea (`rapida`: G0, prin aer). */
+export type PasO = PunctO & { readonly rapida: boolean };
+
+/** Ce găsește simulatorul de material: cât a intrat freza cel mai adânc în lemn la o tăiere și la o rapidă, și unde. */
+export type MaterialO = {
+  readonly taiere: number; readonly unde: PunctO | null;
+  readonly rapida: number; readonly undeRapida: PunctO | null;
+};
+
+/**
+ * Pasul pe trecere, pe material (felia 18.1↑c-2, invarianta „niciodată mai adânc decât pasul pe trecere”): un simulator de
+ * material independent de lucrare. Placa e o grilă de coloane (pasul `pasGrila`, pe dreptunghiul `zona`), cu fața la `fata`.
+ * Adâncimea unei mutări e cât lemn stă, ÎNAINTEA ei, deasupra suprafeței frezei în oricare poziție a ei (eșantionată la
+ * `pasEs`): coloana minus (vârful plus urcarea la raza coloanei). Așa o plonjare de 2 mm măsoară 2 mm, nu pasul eșantionului.
+ * După măsurare, coloanele coboară la suprafața frezei. Prima poziție vine prin aer. Întoarce cel mai adânc, separat pentru
+ * tăieri și pentru rapide (o rapidă nu trebuie să atingă lemnul deloc).
+ */
+export function materialO(
+  pasi: readonly PasO[], f: FrezaO, zona: { readonly x0: number; readonly y0: number; readonly x1: number; readonly y1: number },
+  pasGrila: number, fata = 0, pasEs = pasGrila / 2,
+): MaterialO {
+  const nx = Math.max(1, Math.ceil((zona.x1 - zona.x0) / pasGrila)), ny = Math.max(1, Math.ceil((zona.y1 - zona.y0) / pasGrila));
+  const H = new Float64Array(nx * ny).fill(fata);
+  let taiere = 0, rapida = 0, unde: PunctO | null = null, undeRapida: PunctO | null = null;
+  const k = Math.ceil(f.R / pasGrila) + 1;
+  const jos = new Map<number, number>();
+  for (let q = 1; q < pasi.length; q++) {
+    const a = pasi[q - 1]!, b = pasi[q]!;
+    const L = Math.hypot(b.x - a.x, b.y - a.y, b.z - a.z), n = Math.max(1, Math.ceil(L / pasEs));
+    let adanc = 0, aici: PunctO | null = null;
+    jos.clear();
+    for (let s = 1; s <= n; s++) {
+      const u = s / n, x = a.x + u * (b.x - a.x), y = a.y + u * (b.y - a.y), z = a.z + u * (b.z - a.z);
+      const ci = Math.floor((x - zona.x0) / pasGrila), cj = Math.floor((y - zona.y0) / pasGrila);
+      for (let j = Math.max(0, cj - k); j <= Math.min(ny - 1, cj + k); j++) {
+        for (let i = Math.max(0, ci - k); i <= Math.min(nx - 1, ci + k); i++) {
+          const qx = zona.x0 + (i + 0.5) * pasGrila, qy = zona.y0 + (j + 0.5) * pasGrila, r = Math.hypot(qx - x, qy - y);
+          if (r > f.R) continue;
+          const sup = z + urcareO(f, r), c = j * nx + i;
+          if (H[c]! - sup > adanc) { adanc = H[c]! - sup; aici = { x, y, z }; }
+          const v = jos.get(c);
+          if (v === undefined || sup < v) jos.set(c, sup);
+        }
+      }
+    }
+    for (const [c, v] of jos) if (v < H[c]!) H[c] = v;
+    if (b.rapida) { if (adanc > rapida) { rapida = adanc; undeRapida = aici; } } else if (adanc > taiere) { taiere = adanc; unde = aici; }
+  }
+  return { taiere, unde, rapida, undeRapida };
+}

@@ -8,8 +8,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  clExact, clPlan, clRadial, creastaPlan, creastaSimulata, distantaPunctTriunghiO, IndexO, judecaTraseul, triunghiuriModel,
-  type FrezaO, type LipsaO, type PunctO,
+  clExact, clPlan, clRadial, creastaPlan, creastaSimulata, distantaPunctTriunghiO, IndexO, judecaTraseul, materialO, triunghiuriModel,
+  type FrezaO, type LipsaO, type PasO, type PunctO,
 } from '../oracles/relief3d.ts';
 
 const GRAD = Math.PI / 180;
@@ -103,4 +103,28 @@ test('creasta: simulatorul independent dă formula pe plan, și cu panta transve
     const h = creastaPlan(R, s, teta);
     assert.ok(Math.abs(m - h) < 2e-4 * Math.max(1, h * 10), `R ${R}, s ${s}, θ ${teta}: ${m} ≠ ${h}`);
   }
+});
+
+test('materialO: plonjarea măsoară toată adâncimea; tăierea în lemn nou, pasul; aceeași linie a doua oară, nimic; rapida prin lemn se vede', () => {
+  const zona = { x0: 0, y0: 0, x1: 20, y1: 20 };
+  const P = (x: number, y: number, z: number, rapida = false): PasO => ({ x, y, z, rapida });
+  const plata: FrezaO = { fel: 'plata', R: 1 };
+  // Plonjarea de la 5 la −2 (o tăiere): 2 mm; apoi linia la −2: 2 mm; înapoi pe ea: nimic.
+  assert.ok(Math.abs(materialO([P(5, 5, 5), P(5, 5, -2)], plata, zona, 0.1).taiere - 2) < 1e-9);
+  assert.ok(Math.abs(materialO([P(5, 5, 5), P(5, 5, -2), P(8, 5, -2)], plata, zona, 0.1).taiere - 2) < 1e-9);
+  const dus = materialO([P(5, 5, 5), P(5, 5, -2), P(8, 5, -2), P(5, 5, -2, false)], plata, zona, 0.1);
+  assert.ok(Math.abs(dus.taiere - 2) < 1e-9);
+  // Două treceri pe aceeași linie: −2, apoi −4: fiecare intră 2 mm.
+  const doua = materialO([P(5, 5, 5), P(5, 5, -2), P(8, 5, -2), P(8, 5, -4), P(5, 5, -4)], plata, zona, 0.1);
+  assert.ok(Math.abs(doua.taiere - 2) < 1e-9, `două treceri: ${doua.taiere}`);
+  // Rapida în sus, prin golul tăiat: nimic; rapida la −1 prin lemn nou: 1 mm, văzută ca rapidă.
+  const sus = materialO([P(5, 5, 5), P(5, 5, -2), P(5, 5, 5, true)], plata, zona, 0.1);
+  assert.equal(sus.rapida, 0);
+  const prin = materialO([P(5, 5, 5), P(5, 5, -2), P(5, 5, -1, true), P(5, 9, -1, true)], plata, zona, 0.1);
+  assert.ok(Math.abs(prin.rapida - 1) < 1e-9, `rapida prin lemn: ${prin.rapida}`);
+  // Bila R3 coborâtă la −3 în (10, 10): 3 mm pe axă (coloana cea mai apropiată, la 0,07 mm de axă).
+  const bila = materialO([P(10, 10, 5), P(10, 10, -3)], { fel: 'bila', R: 3 }, zona, 0.1);
+  assert.ok(Math.abs(bila.taiere - 3) < 1e-3, `bila: ${bila.taiere}`);
+  // Controlul: fără mutări care coboară, nimic.
+  assert.equal(materialO([P(5, 5, 5), P(9, 9, 5)], plata, zona, 0.1).taiere, 0);
 });

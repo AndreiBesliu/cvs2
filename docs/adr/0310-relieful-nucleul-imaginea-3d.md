@@ -368,6 +368,50 @@ reliefului +0,5; baza +0,1). Nicio bucată nouă.
 vârful la față, citite din pixeli; mutarea fără nicio dală urcată, „Tăiat” și înapoi; straturile lipsă. Otrăvurile:
 `test/otravuri/18.1b.py`, 22 / 22.
 
+## Implementarea (18.1↑c)
+
+Gata pe 25.11, pe aceeași ramură, la mesajul sesiunii principale („Poți aduce `main` și porni 18.1↑c”; v29 e al reliefului).
+Documentul v29 (bila și operația `finisare`) e în ADR 0312.
+
+- **Oracolul 3D întâi** (`test/oracles/relief3d.ts`, zero importuri din `src/`): triunghiurile modelului exact (§4), drop-cutter-ul
+  exact pe ele (vârfuri, muchii, fețe, muchia discului; bila, plata, V-ul), CL-ul pe hârtie pe plan și pe profil radial,
+  simulatorul crestei, `judecaTraseul` (16 sub-eșantioane pe segment, podeaua) și un **simulator de material** (`materialO`):
+  cât lemn stă, înaintea fiecărei mutări, deasupra suprafeței frezei (o plonjare de 2 mm măsoară 2 mm), separat pentru tăieri
+  și rapide. Controalele negative cad: eșantionul în nod, fără muchii, fără fețe.
+- **Nucleul** (`src/cam/reliefFinisare.ts`): **câmpul conservativ** pe celula de calcul, o diviziune a celulei reliefului
+  (½, ¼, … până la 1/16), cât s-o aducă sub 1/16 mm (`CELULA_CALCUL`; surplusul e ≈ (1,5–2) · h · tan(pantă), s5 §2). Pe o
+  diviziune pară, liniile prin centre și diagonalele pătratelor cad pe laturile și diagonalele celulelor mici, deci maximul
+  modelului pe celulă e în cele 4 colțuri; nedivizată, într-unul din cele 9 puncte. Câmpul e rotunjit în sus la Float32.
+  **Cota unui segment** e maximul, peste celule, al câmpului minus urcarea frezei la distanța de la segment la celulă (capsula),
+  căutat într-o **piramidă de maxime** (ramifică și taie: un bloc care nu poate trece de maximul găsit nu se desface), pornită
+  cu celulele de sub capete și cu celula maximului de la segmentul dinainte. Vârful unui punct e maximul celor două segmente ale
+  lui, deci traseul liniar nu coboară sub CL-ul exact. **Liniile**: aliniate (0°, 90°), prin centrele celulelor reliefului, cu
+  pasul lateral un număr întreg de celule; la un unghi oarecare sau „nealiniate”, uniform, la cel mult pasul cerut; punctele pe
+  linie la pasul celulei de calcul; zigzag. **Marginea**: „perete” (fața plăcii în afara dreptunghiului: cea mai mică distanță
+  de la segment la afară e la un capăt) sau „trece” (liniile ies cu raza frezei). Mai multe reliefuri: fiecare cu liniile lui,
+  cotele țin de toate (doar înăuntrul lor). **Trecerile pe Z**: trecerea k lucrează unde CL-ul e sub fundul celei de dinainte,
+  plus un punct de fiecare parte, la max(CL, −k · pas); ultima e pe model; podeaua (`adancime`) oprește tot. Legătura dintre
+  două linii vecine rămâne la adâncime (urcă întâi la cota ei, dacă trebuie); altfel, ridicare, rapidă, plonjare. Direcția
+  liniilor la un unghi oarecare: `Math.cos` / `Math.sin`, o dată pe operație (0° și 90° exacte), ca strategia paralelă a
+  buzunarului (CAM-ul nu importă din simulare).
+- **În lucrare** (`src/cam/job.ts`, `src/model/finisare.ts`): finisările foii (`finisariFoaie`), înaintea tăieturilor pe contur,
+  cu freza lor (și în „același T” și în proba tăișului); fiecare relief din resursele lui (`src/relief/resurse.ts`,
+  `compusDinResurse`: doar straturile vizibile), cu vârful la față sau planul zero sub ea, în lume (matricea e o similitudine:
+  celula se scalează, transformarea rămasă e rigidă). Fără dalele reliefului, refuzul o spune. „Prin foaie” nu atinge
+  finisarea. **Resursele** pleacă de pe firul principal (`actiuniExportCalcul.ts`: hărțile straturilor vizibile ale reliefurilor
+  finisate, citite din `cncvs2-relief` printr-un import dinamic al stocării, doar când foaia are o finisare) cu cererile
+  `export`, `traseu`, `simulare` și `potrivire` ale workerului CAM.
+- **Interfața** (`src/model/rol.ts`, `src/app/CampuriFinisare.tsx`): rolul „finisarea reliefului” în secțiunea Tăierea, pe o
+  piesă doar cu reliefuri (una cu reliefuri și contururi păstrează deocamdată rolurile contururilor): bila de același diametru,
+  pasul lateral 10 % din freză, liniile la 0°, podeaua cât placa; câmpurile freza (forma, diametrul), pasul lateral, unghiul,
+  liniile, marginea, Z-ul (vârful la față sau planul zero). Arborele spune „Finisare pe N reliefuri”. Fereastra exportului:
+  fără rând (ADR 0312); „Tăiat” din vederea 3D simulează placa cu finisarea (bila în IR).
+
+**Cât costă**, măsurat în container (un fir): o pantă lină de 20 × 20 mm, bila R3, pasul lateral 0,5 mm: ~1 s la celula
+reliefului de 0,5 mm (de calcul 1/16), ~1,5 s la 0,1 mm (de calcul 0,05); surplusul median 0,05–0,07 mm, cel mult ~0,1 mm
+pe panta de 45° (pe un plan orizontal, zero). Un relief de 150 × 100 mm la 0,1 mm: ~30 s. Fluiditatea la 4000² (bazinul,
+maximul glisant pe linii aliniate) e a feliei 18.1↑h.
+
 ## Întrebările (recomandarea întâi; răspunsurile owner-ului: 1a, 2a, 3a, 4a, 5a, 6a)
 
 1. **Unde stă relieful.**

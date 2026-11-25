@@ -3,8 +3,11 @@ import { oglindeste } from '../model/parte.ts';
 import { conturDeTaiat } from './contur.ts';
 import { judecaDeschisa, NEATINS_PESTE_D, refuzDeschise } from './deschise.ts';
 import { conturElement } from '../model/forme.ts';
-import { motivFormaPeOperatie } from '../model/formaFrezei.ts';
+import { felFrezei, frezeleOperatiei, motivFormaPeOperatie } from '../model/formaFrezei.ts';
 import { ordineTaieturi, valoriVcarve, type Taietura } from '../model/lume.ts';
+import { finisariFoaie, type FinisareFoaie } from '../model/finisare.ts';
+import { compusDinResurse, type ResurseRelief } from '../relief/resurse.ts';
+import { finisareRelief, type FrezaFinisare, type ReliefCam } from './reliefFinisare.ts';
 import { AXE_XYZ, type Miscare, type Program, type Scula } from '../ir/ir.ts';
 import { ineleBuzunar, ordineInele, traseuBuzunar } from './buzunar.ts';
 import { traseuParalel } from './paralel.ts';
@@ -44,10 +47,83 @@ import { urechiLemnBucla, type FundLemn, type LaturaLemn } from './urechiLemn.ts
 
 /** Scula din operație, în IR: numărul, numele și diametrul (câmpurile necunoscute ale documentului rămân acolo). */
 // Forma frezei (ADR 0090) trece în IR: simularea și postul o citesc de acolo.
+// Bila (ADR 0312 §1) trece și ea, ca simularea s-o taie cu capătul ei.
 const sculaIR = (s: Taietura['scula']): Scula => ({
   numar: s.numar, nume: s.nume, diametru: s.diametru,
   ...(s.forma?.tip === 'v' ? { forma: { tip: 'v' as const, unghi: s.forma.unghi, ...(s.forma.varf !== undefined ? { varf: s.forma.varf } : {}) } } : {}),
+  ...(s.forma?.tip === 'bila' ? { forma: { tip: 'bila' as const } } : {}),
 });
+
+/**
+ * ADR 0312: ce refuză lucrarea din documentul v29, pe piesele foii: freza bilă pe altceva decât finisarea reliefului
+ * (`motivFormaPeOperatie`; și pe frezele de rest, ale fundului plat și ale dopului), câmpul `finisare` pe alt fel de operație,
+ * iar pe o finisare ce e al altor operații (urechi, rampă, intrări, degajări, despărțire, câmpurile altor feluri) și o podea
+ * sub placă.
+ */
+function refuzFinisareSiBila(doc: Document): string | null {
+  const pePlaca = new Set((doc.foi[0]?.instante ?? []).map((i) => i.piesa));
+  for (const p of doc.piese) {
+    if (!pePlaca.has(p.id)) continue;
+    for (const o of p.operatii) {
+      const unde = `${p.id}/${o.id}`;
+      if (o.tip !== 'finisare') {
+        for (const { cale, scula } of frezeleOperatiei(o)) {
+          if (scula.forma?.tip === 'bila') return `${unde}: freza bilă (T${scula.numar}, ${cale}) merge doar la finisarea reliefului`;
+        }
+        if (o.finisare !== undefined) return `${unde}: valorile finisării sunt doar ale unei finisări a reliefului`;
+      } else {
+        if (o.urechi || o.rampa || o.intrari || o.colturi || o.despartire) {
+          return `${unde}: o finisare a reliefului nu are urechi, rampă, intrări, degajări sau despărțire`;
+        }
+        const straine = (['coborare', 'retragereCompleta', 'fundPlat', 'directie', 'rest', 'strategie', 'incrustatie'] as const).filter((k) => o[k] !== undefined);
+        if (straine.length > 0) return `${unde}: ${straine.join(', ')} ${straine.length === 1 ? 'e al' : 'sunt ale'} altor operații, nu ale finisării reliefului`;
+        if (o.adancime > (doc.foi[0]?.stoc.grosime ?? Infinity)) {
+          return `${unde}: podeaua finisării, la ${o.adancime} mm, trece de grosimea plăcii (${doc.foi[0]?.stoc.grosime} mm)`;
+        }
+      }
+    }
+  }
+  return null;
+}
+
+/**
+ * Finisarea unui relief al foii (ADR 0310 §4–§6, ADR 0312): compusul fiecărui relief din resurse (dalele lui, aduse de firul
+ * principal), mutat pe Z (planul zero sub față, sau vârful compusului la față), în lume, cu celula scalată; apoi
+ * `finisareRelief`.
+ */
+function programFinisare(
+  f: FinisareFoaie, resurse: ResurseRelief | undefined, regim: Regim,
+): ReturnType<typeof finisareRelief> {
+  const o = f.operatie, fin = o.finisare;
+  if (!fin) return { ok: false, motiv: `${f.piesa}/${o.id}: finisarea n-are valorile ei` };
+  if (o.pasLateral === undefined) return { ok: false, motiv: `${f.piesa}/${o.id}: finisarea n-are pasul lateral` };
+  const reliefuri: ReliefCam[] = [];
+  for (const r of f.reliefuri) {
+    const c = compusDinResurse(r.forma, resurse ?? {});
+    if (!c.ok) {
+      return { ok: false, motiv: `${r.idLume}: dalele reliefului nu sunt în acest browser (${c.lipsa.length} ${c.lipsa.length === 1 ? 'hartă sau dală lipsă' : 'hărți sau dale lipsă'}): deschide proiectul unde a fost făcut relieful` };
+    }
+    let max = -Infinity;
+    for (const v of c.valori) if (v > max) max = v;
+    const dz = fin.planZero !== undefined ? -fin.planZero : -(Number.isFinite(max) ? max : 0);
+    const m = r.matrice, s = Math.sqrt(Math.abs(m.a * m.d - m.b * m.c));
+    const z = new Float64Array(c.valori.length);
+    for (let k = 0; k < z.length; k++) z[k] = c.valori[k]! + dz;
+    reliefuri.push({
+      nx: r.forma.nx, ny: r.forma.ny, celula: r.forma.celula * s, z,
+      m: { a: m.a / s, b: m.b / s, c: m.c / s, d: m.d / s, e: m.e, f: m.f },
+    });
+  }
+  const D = o.scula.diametru, fs = o.scula.forma;
+  const freza: FrezaFinisare = fs?.tip === 'bila' ? { fel: 'bila', raza: D / 2 }
+    : fs?.tip === 'v' ? { fel: 'v', raza: D / 2, unghi: fs.unghi, varf: fs.varf ?? 0 } : { fel: 'plata', raza: D / 2 };
+  const rv = regimFrezei(o.scula, regim);
+  const r = finisareRelief({
+    reliefuri, freza, unghi: fin.unghi, nealiniat: fin.nealiniat === true, margine: fin.margine === 'trece' ? 'trece' : 'perete',
+    pasLateral: o.pasLateral, pas: o.pas, adancime: o.adancime, zSigur: regim.zSigur, avans: rv.avans, avansPlonjare: rv.avansPlonjare,
+  });
+  return r.ok ? r : { ok: false, motiv: `${f.reliefuri[0]?.idLume ?? `${f.piesa}/${o.id}`}: ${r.motiv}` };
+}
 
 /** Ultima poziție în plan a frezei, din mișcările de până acum; null înainte de prima. */
 function ultimaPozitie(miscari: readonly Miscare[]): { readonly x: number; readonly y: number } | null {
@@ -262,7 +338,7 @@ function avertismentLaturi(regula: 'lungi' | 'scurte', putine: readonly BuclaPut
  * refuză, ca nicio tăietură să nu treacă pe tăcute fără urechi.
  */
 export function programDinDocument(
-  doc: Document, regim: Regim = REGIM_IMPLICIT, supracursa = 0, prinFoaie = false, lemn?: FundLemn | 'fara',
+  doc: Document, regim: Regim = REGIM_IMPLICIT, supracursa = 0, prinFoaie = false, lemn?: FundLemn | 'fara', reliefuri?: ResurseRelief,
 ): RezultatJob {
   const foaie = doc.foi[0];
   if (!foaie) return { ok: false, motiv: 'documentul n-are foaie' };
@@ -270,22 +346,27 @@ export function programDinDocument(
     return { ok: false, motiv: `supracursa trebuie să fie între 0 și ${SUPRACURSA_MAXIMA} mm (${supracursa})` };
   }
   const grosime = foaie.stoc.grosime;
+  // Finisarea reliefului și freza bilă (ADR 0312, documentul v29): judecate înaintea tăieturilor, care sunt doar ale contururilor.
+  const v29 = refuzFinisareSiBila(doc);
+  if (v29) return { ok: false, motiv: v29 };
   // Găurile (ADR 0175): locașul prin foaie, cu adâncimea ei plus supracursa, nu cea scrisă în operație.
   doc = cuGauriPrinFoaie(doc, supracursa);
   // Cu bifa (ADR 0177): tăieturile scrise cât foaia, ca scrise grosime plus supracursă.
   if (prinFoaie) doc = cuTaieturiPrinFoaie(doc, supracursa);
   // Ordinea contractului, grupată pe sculă în fiecare clasă (ADR 0084), sau ordinea de mână a omului (ADR 0133).
   const taieturi = ordineTaieturi(doc, 0);
-  if (taieturi.length === 0) return { ok: false, motiv: 'nicio formă n-are o operație de tăiere' };
-  const prima = taieturi[0];
-  if (!prima) return { ok: false, motiv: 'nicio formă n-are o operație de tăiere' };
+  // Finisările reliefului (ADR 0312): înaintea tăieturilor pe contur, care pot scoate piesa din placă.
+  const finisari = finisariFoaie(doc, 0);
+  const prima = taieturi[0] ?? null;
+  const primaScula = prima?.scula ?? finisari[0]?.operatie.scula;
+  if (!primaScula) return { ok: false, motiv: 'nicio formă n-are o operație de tăiere' };
   const operatieDe = (t: Taietura) => doc.piese.find((p) => p.id === t.piesa)?.operatii.find((o) => o.id === t.operatie);
   // Fundul plat (ADR 0091): doar pe un V-carve, cu o freză dreaptă (plată).
   for (const t of taieturi) {
     const fp = operatieDe(t)?.fundPlat;
     if (!fp) continue;
     if (t.tip !== 'vcarve') return { ok: false, motiv: `${t.idLume}: fundul plat cu freza dreaptă e doar al unui V-carve` };
-    if (fp.scula.forma) return { ok: false, motiv: `${t.idLume}: freza fundului plat (T${fp.scula.numar}) trebuie să fie dreaptă, nu în V` };
+    if (fp.scula.forma) return { ok: false, motiv: `${t.idLume}: freza fundului plat (T${fp.scula.numar}) trebuie să fie dreaptă, nu ${felFrezei(fp.scula.forma)}` };
   }
   // Incrustația (ADR 0170 §4): locașul de aici și dopul (`incrustatie.ts`) cer aceleași lucruri, judecate înaintea traseului.
   for (const t of taieturi) {
@@ -306,7 +387,7 @@ export function programDinDocument(
     for (const [prima, lista] of liste) {
       let dinainte = prima.diametru;
       for (const r of lista) {
-        if (r.scula.forma) return { ok: false, motiv: `${t.idLume}: freza de rest T${r.scula.numar} trebuie să fie plată, nu în V` };
+        if (r.scula.forma) return { ok: false, motiv: `${t.idLume}: freza de rest T${r.scula.numar} trebuie să fie plată, nu ${felFrezei(r.scula.forma)}` };
         if (!(r.scula.diametru < dinainte)) {
           return { ok: false, motiv: `${t.idLume}: freza de rest T${r.scula.numar} (Ø${r.scula.diametru}) trebuie să fie mai mică decât cea dinainte (Ø${dinainte})` };
         }
@@ -339,14 +420,21 @@ export function programDinDocument(
   // Aceeași sculă = același număr, același diametru și aceeași formă (ADR 0025, precizarea 1; ADR 0090). Un număr cu două
   // diametre sau două forme ar fi două freze sub același T, iar omul de la mașină ar monta una singură (ADR 0084). Și freza
   // fundului plat (ADR 0091).
-  const forma = (s: Taietura['scula']): string => (s.forma?.tip === 'v' ? `în V de ${s.forma.unghi}°${s.forma.varf ? ` cu vârful de ${s.forma.varf} mm` : ''}` : 'plată');
+  const forma = (s: Taietura['scula']): string => (s.forma?.tip === 'v' ? `în V de ${s.forma.unghi}°${s.forma.varf ? ` cu vârful de ${s.forma.varf} mm` : ''}` : felFrezei(s.forma));
   const freze = new Map<number, Taietura['scula']>();
-  for (const t of taieturi) {
-    const op = operatieDe(t);
-    const fp = t.tip === 'vcarve' ? op?.fundPlat : undefined;
-    // Și frezele de rest (ADR 0093), ale buzunarului și ale fundului plat.
-    const rest = [...(t.tip === 'buzunar' ? op?.rest ?? [] : []), ...(fp?.rest ?? [])].map((r) => r.scula);
-    for (const u of [t.scula, ...(fp ? [fp.scula] : []), ...rest]) {
+  // Frezele finisărilor (ADR 0312) intră și ele: același T, aceeași freză, ca la tăieturi.
+  const deJudecat: ReadonlyArray<{ readonly idLume: string; readonly scule: readonly Taietura['scula'][] }> = [
+    ...finisari.map((f) => ({ idLume: f.reliefuri[0]?.idLume ?? `${f.instanta}/${f.operatie.id}`, scule: [f.operatie.scula] })),
+    ...taieturi.map((t) => {
+      const op = operatieDe(t);
+      const fp = t.tip === 'vcarve' ? op?.fundPlat : undefined;
+      // Și frezele de rest (ADR 0093), ale buzunarului și ale fundului plat.
+      const rest = [...(t.tip === 'buzunar' ? op?.rest ?? [] : []), ...(fp?.rest ?? [])].map((r) => r.scula);
+      return { idLume: t.idLume, scule: [t.scula, ...(fp ? [fp.scula] : []), ...rest] };
+    }),
+  ];
+  for (const t of deJudecat) {
+    for (const u of t.scule) {
       const s = freze.get(u.numar);
       if (s === undefined) { freze.set(u.numar, u); continue; }
       if (s.diametru !== u.diametru) {
@@ -363,7 +451,7 @@ export function programDinDocument(
       }
     }
   }
-  const scula: Scula = sculaIR(prima.scula);
+  const scula: Scula = sculaIR(primaScula);
   // Conturul de tăiat al fiecărui element (ADR 0034 §6): o singură dată, în lume, cu cubicele ca biarce (ADR 0033 §7).
   // Același contur îl folosesc regiunea păstrată, profilul, degajările și avertismentele.
   const contururi = new Map<string, Contur>();
@@ -498,6 +586,19 @@ export function programDinDocument(
     return `${u.instanta}/${u.piesa}/${o ? valoriBuzunarDrept(o) : u.operatie}`;
   };
   const drepteFacute = new Set<string>();
+  // Finisările reliefului (ADR 0312), întâi: placa e încă întreagă.
+  for (const f of finisari) {
+    const r = programFinisare(f, reliefuri, regim);
+    if (!r.ok) return { ok: false, motiv: r.motiv };
+    monteaza(f.operatie.scula);
+    const id = f.reliefuri[0]?.idLume ?? `${f.instanta}/${f.operatie.id}`;
+    miscari.push({
+      tip: 'eticheta', text: `${id}: finisarea reliefului, ${f.operatie.adancime} mm, pasul lateral ${Math.round(r.pasLateral * 1e4) / 1e4} mm`,
+      element: id, operatie: `${f.piesa}/${f.operatie.id}`,
+    });
+    for (const m of r.miscari) miscari.push(m);
+    for (const a of r.avertismente) avertismente.push(`${id}: ${a}`);
+  }
   for (const [it, t] of taieturi.entries()) {
     const latura = t.latura;
     // Diametrul și raza sculei acestei tăieturi.
@@ -519,7 +620,7 @@ export function programDinDocument(
       if (vcarveFacute.has(cheie)) continue;
       vcarveFacute.add(cheie);
       const forma = t.scula.forma;
-      if (forma?.tip !== 'v') return { ok: false, motiv: `${t.idLume}: V-carve-ul cere o freză în V (T${t.scula.numar} e plată)` };
+      if (forma?.tip !== 'v') return { ok: false, motiv: `${t.idLume}: V-carve-ul cere o freză în V (T${t.scula.numar} e ${felFrezei(forma)})` };
       const ale = taieturi.filter((u) => u.tip === 'vcarve' && cheieVcarve(u) === cheie);
       const op = operatieDe(t);
       const fp = op?.fundPlat;
@@ -949,7 +1050,7 @@ export function programDinDocument(
     if (putineLaturi[regula].length > 0) avertismente.push(avertismentLaturi(regula, putineLaturi[regula]));
   }
   const program: Program = {
-    axe: AXE_XYZ, scula: initiala ?? scula, turatie: regimFrezei(initialaDoc ?? prima.scula, regim).turatie, zSigur: regim.zSigur, miscari,
+    axe: AXE_XYZ, scula: initiala ?? scula, turatie: regimFrezei(initialaDoc ?? primaScula, regim).turatie, zSigur: regim.zSigur, miscari,
   };
   // Tăișul (ADR 0300 §5): nicio freză nu coboară mai adânc decât el, pe tot ce taie (treceri, rampe, elice, supracursă).
   const peste = refuzTais(program, freze);
