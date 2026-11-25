@@ -693,7 +693,10 @@ test('în engleză (ADR 0165): limba lui cvs2, schimbată pe loc printr-o reporn
   // nu „axle”, care e piesa); cuvintele fără diacritice („ax”) se cer aici
   await c.locator('#at-in-model').click();
   await expect(c.locator('#at-m-lista li')).toHaveText([/ axis 1, 1, 0$/]);
-  await expect(c.locator('.model-ales')).toContainText('· axis on stud 1, 1, z 0 plates');
+  // mutată cu un știft pe X, ca x și y să difere
+  await c.locator('#at-m-mutari [data-m="x+"]').click();
+  await expect(c.locator('#at-m-lista li')).toHaveText([/ axis 2, 1, 0$/]);
+  await expect(c.locator('.model-ales')).toContainText('· axis on stud 2, 1, z 0 plates');
   await expect(c.locator('#at-editor')).toContainText('Round pieces (wheels, propellers) sit with their axis in the middle of a stud: a new one goes on the axis of the chosen one, and a fan rotor goes into its duct.');
   expect(await romanaRamasa(page, 'Păstrat la repornire'), 'modelul').toEqual([]);
   await c.locator('#at-m-scoate').click();

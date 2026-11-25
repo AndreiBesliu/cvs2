@@ -134,6 +134,8 @@ test('2a: o roată pusă cu alta aleasă intră pe axul ei, deasupra; rotirea se
   await inModel(page);
   await expect(lista(page).nth(2)).toHaveText('Roată dințată 16 ax 2, 2, 4');
   await expect(marime(page)).toContainText('Mărime 63,4 × 57 × 16,6 mm');
+  // piesa nouă ia și rotirea celei alese
+  await expect(page.locator('.model-ales')).toContainText('Roată dințată 16 · axul pe știftul 2, 2, z 4 plăci · rotită 90°');
   // mutată cu un știft și adusă înapoi: aceleași numere
   await muta(page, 'x+');
   await expect(lista(page).nth(2)).toHaveText('Roată dințată 16 ax 3, 2, 4');
@@ -149,10 +151,18 @@ test('o cărămidă pusă cu alta aleasă intră la mijlocul ei; „Înlocuieșt
   await inModel(page);
   await expect(lista(page)).toHaveText([/^Cărămidă 2×4.* 0, 0, 0$/]);
   await expect(page.locator('.model-ales')).toContainText('· x 0, y 0, z 0 plăci');
+  // o cărămidă rotită își ține colțul, ca până acum (doar piesele rotunde își mută colțul, după ax)
+  await muta(page, 'r');
+  await expect(lista(page)).toHaveText([/^Cărămidă 2×4.* 0, 0, 0$/]);
+  await expect(page.locator('.model-ales')).toContainText('· x 0, y 0, z 0 plăci · rotită 90°');
+  await expect(marime(page)).toContainText('Mărime 15,8 × 31,8 × 11,5 mm');
+  for (let k = 0; k < 3; k++) await muta(page, 'r');
+  await expect(page.locator('.model-ales')).not.toContainText('rotită');
   await piesa(page, 'caramizi', 'rotund');
   await inModel(page);
   await expect(lista(page).nth(1)).toHaveText(/ 1, 0, 3$/);
   await expect(lista(page).nth(1)).not.toContainText('ax');
+  await expect(page.locator('.model-ales')).toContainText('· x 1, y 0, z 3 plăci');
   // o cărămidă la fel, pusă cu prima aleasă: din același colț, deasupra
   await lista(page).nth(0).locator('button').click();
   await piesa(page, 'caramizi', 'caramida');
