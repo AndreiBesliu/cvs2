@@ -510,7 +510,7 @@ exportului, desprinse din 16.A↑b-3.
   lateral); „Adaugă o freză de rest” are aspect de buton; la buzunar, „Frezele de rest” rămâne doar titlul grupului, iar la
   fundul plat și la dop lista își spune numele. Când fișa e îngustă (telefonul), lista trece pe un rând al ei.
 
-Documentul rămâne v27; nimic pe server. Probele (întâi): scrierea originii, frezele ferestrei, alegerea pe loc și filtrul, pe
+Documentul rămâne v28 (din relief); nimic pe server. Probele (întâi): scrierea originii, frezele ferestrei, alegerea pe loc și filtrul, pe
 hârtie (`test/unit/exportFreze.rest.test.ts`); în Edge, frezele de rest ale buzunarului, fundul plat, dopul și banda, cu exportul
 și fereastra redeschisă, legarea și tabelul (`test/e2e/exportFrezeRest.spec.ts`), plus frezele în plus în proba privirii. Otrăvurile:
 `test/otravuri/16.A-b5.py`. Mărimea: pornirea neschimbată (111,2 kB; cu ușa și cu Atelierul 116,5 / 125), totalul
@@ -537,7 +537,7 @@ Pe 25.11.2026, în sesiunea cloud a liniei, la „continua cu 16.A↑b-4” al o
   versiunea, valorile de lucru, tăișul), pe locul ei; T-ul și pașii rămân ai rândului. Exportă le scrie cu regula din 16.A↑b-3.
 - **Recunoașterea:** prima opțiune a listei devine „Scrisă de mână (ca „Plată Ø6”)”; nimic nu se scrie în proiect.
 
-Documentul rămâne v27; nimic pe server. Probele (întâi): diferențele, starea originii, recunoașterea și valorile noi, pe hârtie
+Documentul rămâne v28 (din relief); nimic pe server. Probele (întâi): diferențele, starea originii, recunoașterea și valorile noi, pe hârtie
 (`test/unit/exportFreze.nota.test.ts`); în Edge, freza schimbată (pe rând și „Pe toate”, cu exportul și fereastra redeschisă),
 ștearsă și frezele în plus cu recunoașterea (`test/e2e/exportFrezeNota.spec.ts`). Otrăvurile: `test/otravuri/16.A-b4.py`.
 

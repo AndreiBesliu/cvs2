@@ -14485,7 +14485,7 @@ miercuri.” și „vreau sa pornesti si celelalte sub-sesiuni”): „Deci porn
   proba privirii (7 / 7). **Otrăvurile** (`test/otravuri/16.A-b5.py`): 33 / 33 (13 pe hârtie, 20 în Edge; T02 și C02 scăpaseră: probele frezelor de rest au acum două freze în listă). Otrăvurile lui 16.A↑b-3 atinse de mutarea
   codului (S01–S04, W03, W04) țin acum codul nou.
 - **Mărimea:** pornirea neschimbată (111,2 kB; cu ușa 116,1, cu Atelierul 116,5 / 125), totalul 881,0 → 882,0 / 1 000 (măsurat
-  pe `main` `f2678300` și pe ramură). Nimic pe server; documentul rămâne v27. Apoi `main` adus (`caddd661`, plafoanele
+  pe `main` `f2678300` și pe ramură). Nimic pe server; documentul rămâne v28 (din relief). Apoi `main` adus (`caddd661`, plafoanele
   1 000 / 125 kB, ADR 0146) și cu auditul exportului (`43cf59af`). **Completed:** 25.11, 10:56.
 
 ## 2026-11-25 — Linia reliefului: felia 18.1↑b, modelul reliefului în vederea 3D („Modelul / Tăiat”) (sesiune cloud)
@@ -14665,7 +14665,7 @@ poate”
   b-5 așteaptă acum numele frezei recunoscute. **Otrăvurile** (`test/otravuri/16.A-b4.py`): 18 / 19 (W01 scăpase, proba „Pe
   toate” e acum și pe fundul plat; A01, practic echivalentă).
 - **Mărimea** (față de `b7660e94`): pornirea +14 octeți gzip (111,2 kB; cu ușa 116,1, cu Atelierul 116,5 / 125), totalul
-  886,0 → 887,5 / 1 000. Nimic pe server; documentul rămâne v27. Tot aici, ora de încheiere a lui 16.A↑b-5 îndreptată (10:56).
+  886,0 → 887,5 / 1 000. Nimic pe server; documentul rămâne v28 (din relief). Tot aici, ora de încheiere a lui 16.A↑b-5 îndreptată (10:56).
   **Completed:** 25.11, 11:40.
 
 ## 2026-11-25 — Linia exportului: felia 28.8↑n, numele fișierului (ADR 0291 §5)
