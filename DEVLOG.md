@@ -14043,6 +14043,43 @@ fără altă întrebare; răspunsul lui „Cărămizi de clădit”, la lista pi
   18.21.0, iar catalogul poartă doar ultimele cinci rânduri: de la 18.26.0, rândul nu mai e. Proba citește acum rândul
   din lista bibliotecii (fără cod de produs schimbat); completul, pornit din nou.
 
+## 2026-11-25 — Felia 3.Ce: punctele de prindere și „Se prinde cu”, în atelierul Easy 3Draw (ADR 0284) (sesiune cloud)
+
+**Prompt:** (aceeași cerere a owner-ului și aceleași răspunsuri la ADR 0284 ca la 3.Ca; felia a cincea din plan, pornită
+fără altă întrebare, cât lotul 3.Cc + 3.Cd își aștepta unirea)
+**Started:** 25.11, 00:26. **Completed:** 25.11, 01:46 (felia, cu otrăvurile; orele, după ceasul containerului, repornit o
+dată în timpul feliei).
+
+- **Motorul:** fiecare piesă își spune prinderile odată cu plasa (`construieste(def).prinderi`): felul, locul, direcția,
+  lungimea, cu gaura oarbă, brațul crucii, gulerul și lamajul. Unsprezece feluri (gaura de bară a știftului gol, adăugată
+  față de lista din ADR). `prinderi` e câmp obligatoriu al tipului `Corp`: compilatorul îl cere oricărei piese noi.
+  `Lego.montaj` duce o prindere peste perechea ei; `rezumatPrinderi`, `perechiFeluri`, `axPentru`, `stiftPentru`, pentru
+  panou.
+- **Proba, scrisă întâi** (a căzut cu „prinderi is not a function”): 88 de mostre, una sau mai multe pe fiecare tip, cu
+  numerele de pe hârtie; fiecare prindere declarată, întrebată pe plasă, punct cu punct; declarațiile mincinoase (mutate,
+  întoarse, de alt fel, prea lungi) cad; 17 perechi montate pe plasele amândurora nu se pătrund, iar mutate cu 0,4 mm se
+  pătrund.
+- **Ce a arătat proba, la prima rulare:** capătul de ax al știftului începea în guler; știftul intra cu gulerul în piese
+  fără lamaj (de aici `guler` și `lamaj`); clema pe mâner cere o jumătate de tură în jurul barei; **bila nu încape în
+  centrul cupei** (fundul plat al găurii e cu 0,2 mm peste polul bilei): prinderea cupei e dată unde se așază bila, iar
+  geometria cupei a rămas (referințele v18). Trei valori „de pe hârtie” scrise din cap au fost greșite; la fiecare s-a
+  judecat cine are dreptate.
+- **Panoul „Se prinde cu”**, sub butoanele piesei: ce are piesa (numărat ca un om) și, la deschidere, piesele atelierului
+  care se potrivesc, pe feluri, cu pictograme; axul și știftul se deschid de lungimea bună; roata dințată își spune
+  grinda perechii. Deschiderea, prima dată, ~0,3 s (se fac o dată celelalte 30 de piese); apoi sub 0,1 s.
+- **Proba pe plase, mai repede:** înfășurarea pe grilă (`infasurareRepede`), comparată cu numărarea completă pe 13 500 de
+  puncte; proba prinderilor, de la 50 s la 8 s.
+- **Procesul a fost repornit o dată** (o rulare a probei s-a oprit cu 137); lucrul era pe disc, comis apoi local, pe
+  bucăți.
+- **Otrăvurile:** 144 / 144: 132 la prima rulare (117 pe motor, 24 pe panou, prin browser, 3 pe traduceri). Cele 12 scăpate au
+  arătat o slăbiciune adevărată a probei: o gaură declarată mai scurtă decât e (cu gura în lemn) trecea. Proba cere acum
+  ca în fața gurii să fie loc; două otrăvuri erau echivalente și au scos din cod verificări de prisos (garda de rotunjire
+  și marginile axului potrivit, verificarea „oarbă” din rezumat).
+- **Probele pluginului:** unitare 224 / 224 (cu biblioteca), în browser 159 / 159 (cu extensiile). Easy 3Draw 18.28.0
+  (501,6 kB: peste pragul de 0,5 MB din ADR, de hotărât din nou), cu rândul de „ce e nou”; doar pachetul se schimbă.
+- **Neîmpinsă până la unirea lotului 3.Cc + 3.Cd** (raportat pe `d0490719`, cu rapidul și completul verzi), la rugămintea
+  sesiunii principale; împinsă doar dacă tura se încheie înainte.
+
 ## 2026-11-24 — Sesiunea principală în cloud: clicul pe „Închide” din cadrul unei extensii, pierdut (probă instabilă, reparată) (Model: Claude Fable 5.2)
 
 **Prompt:** completul de pe `main` pentru loturile 19–21 (`7312d685`, rularea 45436221341), roșu la o singură probă;

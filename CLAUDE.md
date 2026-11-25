@@ -1076,7 +1076,14 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   24.11, neunită: tipul `cremaliera`, în fila Roți, cu dinții roților de aici, pe știfturi sau cu găuri de știft,
   înaltă după roata pereche (axul roții cade pe grilă), cu „Fă perechea”; Easy 3Draw 18.26.0; melcul a trecut în
   3.Cj. **3.Cd (arcul)** gata pe 25.11, neunită: tipul `arc`, în fila Cărămizi, o cărămidă 1 × n cu boltă dedesubt și
-  știfturi pe toată lungimea; Easy 3Draw 18.27.0 (următoarea, 18.28.0); balamaua și placa turnantă au trecut în 3.Ck. **O piesă care se prinde cu alta își probează prinderea pe plasele amândurora, cu martori**
+  știfturi pe toată lungimea; Easy 3Draw 18.27.0; balamaua și placa turnantă au trecut în 3.Ck. **3.Ce (punctele de
+  prindere și „Se prinde cu”)** gata pe 25.11, neunită: fiecare piesă își spune prinderile odată cu plasa
+  (`construieste(def).prinderi`: felul, locul, direcția, lungimea; unsprezece feluri, de la știft și locaș la bilă și
+  cupă), `Lego.montaj` duce o prindere peste perechea ei (baza alipirii din Model), iar configuratorul are, sub
+  butoanele piesei, panoul „Se prinde cu”: ce are piesa și piesele atelierului care se potrivesc, cu axul și știftul
+  deschise de lungimea bună; Easy 3Draw 18.28.0 (următoarea, 18.29.0). **O piesă nouă a motorului își spune prinderile
+  (compilatorul o cere: `prinderi` e câmp obligatoriu al tipului `Corp`) și își pune mostra, cu numerele de pe hârtie, în
+  `test/unit/trenulet.prinderi.test.ts`, unde fiecare prindere declarată e întrebată pe plasă.** **O piesă care se prinde cu alta își probează prinderea pe plasele amândurora, cu martori**
   (proba cremalierei: `patrundere`, în `test/unit/trenulet.cremaliera.test.ts`). **Motorul
   face o piesă din corpuri închise care se suprapun puțin: două dintre ele nu-și împart nicio muchie** (altfel STL-ul
   iese cu muchii fără pereche la cine îl citește); proba unitară o cere cu `muchiiFaraPereche`

@@ -525,6 +525,10 @@
       "ro": "Utilizarea aplicației: pașii atașați la o raportare",
       "en": "App usage: the steps attached to a report"
     },
+    "1c8a2d3226f22a7d": {
+      "ro": "Punctele de prindere și „Se prinde cu” în atelierul Easy 3Draw",
+      "en": "Connection points and “Fits with” in the Easy 3Draw workshop"
+    },
     "1c9a6db4be7e1a3c": {
       "ro": "**Urechile la locuri alese, cu mausul** (ADR 0211, varianta a, acceptat cu „Da, toate recomandările”; documentul v26). În fereastra exportului, rândul unui profil cu urechi are „Locurile: la distanțe egale / alese pe desen”; „Alege pe desen…” ascunde fereastra și pune pânza în modul urechilor: un clic pe contur pune o ureche, un clic pe ea o scoate, trasă alunecă pe contur, două nu se apropie sub lungime / 0,9; „Gata” scrie locurile într-un pas, iar fereastra revine cu tot ce era scris în ea. Locurile se țin pe piesă (toate copiile le au). La export, fiecare ureche cade pe drumul frezei, cu flancul din golul ei, iar bucla pornește în cel mai lung gol dintre urechi; programele fără mod rămân octet cu octet. Pe proba de la 11.3↑c (trei dreptunghiuri la 9 mm unul de altul), urechile mutate pe laturile scurte țin, iar cel din mijloc nu se mai desprinde. Otrăvurile: 46 / 48 la capăt (43 unitare, 3 prin e2e): C15, C16 și C17 scăpaseră la prima rulare și au primit probe țintite; M07 și M08 (la tăiere) sunt echivalente, fiindcă bucata tăiată își păstrează id-ul formei din care vine.",
       "en": "**Tabs at chosen places, with the mouse** (ADR 0211, option a, accepted with “Yes, all the recommendations”; document v26). In the export window, the row of a profile with tabs has “Placement: evenly spaced / picked on the drawing”; “Pick on the drawing…” hides the window and puts the canvas into the tab mode: a click on the outline adds a tab, a click on a tab removes it, dragged it slides along the outline, and two never come closer than the length / 0.9; “Done” writes the places in a single step, and the window comes back with everything typed in it. The places belong to the part (every copy has them). On export, each tab lands on the cutter path, with its flank from its own gap, and the loop starts in the longest gap between tabs; programs without a mode stay byte for byte. On the 11.3↑c check (three rectangles 9 mm apart), the tabs moved to the short sides hold, and the middle one no longer comes loose. The mutations: 46 / 48 at the end (43 unit, 3 through e2e): C15, C16 and C17 had escaped on the first run and got targeted tests; M07 and M08 (in the cut) are equivalent, because a cut piece keeps the id of the shape it comes from."
@@ -1033,6 +1037,10 @@
       "ro": "Primirea lucrărilor de la alte aplicații",
       "en": "Receiving jobs from other apps"
     },
+    "357694a1f98af8d0": {
+      "ro": "**Punctele de prindere și „Se prinde cu” în atelierul Easy 3Draw** (fără mașină; ADR 0284; a cincea felie a construcțiilor; în sesiunea cloud a liniei, pe `wip/3.Xh-biblioteca-ui`; Easy 3Draw 18.28.0). Fiecare piesă a motorului își spune prinderile odată cu plasa (`construieste(def).prinderi`): felul (știft, locaș, gaură de știft, de ax sau de bară, știft Technic, capăt de ax, bară, clemă, bilă, cupă), locul, direcția și lungimea, cu gaura oarbă, brațul crucii, gulerul și lamajul; compilatorul le cere oricărei piese noi. `Lego.montaj` duce o prindere peste perechea ei (crucile se potrivesc singure, un ax lung se oprește în fundul unei găuri oarbe, gulerul intră în lamaj). În configurator, sub butoanele piesei, panoul „Se prinde cu”: închis, ce are piesa („8 știfturi · 8 locașuri”); deschis, piesele atelierului care se potrivesc, pe feluri, cu pictograme; axul și știftul se deschid de lungimea bună și o spun; roata dințată își spune grinda perechii. Găsit pe plase: bila stă pe fundul plat al cupei, cu 0,2 mm peste centrul găurii ei (prinderea e dată acolo; geometria, neschimbată). Probele: unitare 15 (88 de mostre, fiecare prindere întrebată pe plasă, 17 perechi montate fără pătrundere, cu martori), e2e 7 și engleza; otrăvurile 144 / 144 (132 la prima rulare; cele 12 scăpate au cerut probe mai tari: gura unei găuri trebuie să fie pe fața piesei, iar două, echivalente, au scos din cod verificări de prisos). Proba pe plase, de 6 ori mai repede (înfășurarea pe grilă, comparată cu numărarea completă). Doar pachetul extensiei se schimbă (501,6 kB).",
+      "en": "**Connection points and “Fits with” in the Easy 3Draw workshop** (no machine; ADR 0284; the fifth slice of the builds; in the line’s cloud session, on `wip/3.Xh-biblioteca-ui`; Easy 3Draw 18.28.0). Every piece of the engine states its connections together with its mesh (`construieste(def).prinderi`): the kind (stud, socket, pin hole, axle hole or bar hole, Technic pin, axle end, bar, clip, ball, cup), the place, the direction and the length, with the blind hole, the arm of the cross, the collar and the counterbore; the compiler requires them from any new piece. `Lego.montaj` brings one connection onto its mate (crosses align by themselves, a long axle stops at the bottom of a blind hole, the collar sinks into the counterbore). In the configurator, under the piece’s buttons, the “Fits with” panel: closed, what the piece has (“8 studs · 8 sockets”); open, the workshop pieces that fit, by kind, with pictograms; the axle and the pin open at the right length and say so; the gear names the beam for its mate. Found on the meshes: the ball rests on the flat floor of the cup, 0.2 mm above the centre of its cavity (the connection is given there; the geometry is unchanged). Tests: 15 unit (88 samples, every connection asked on the mesh, 17 mounted pairs without interpenetration, with controls), 7 e2e and the English; mutations 144 / 144 (132 at the first run; the 12 that escaped called for stronger tests: the mouth of a hole must be on the face of the piece, and two, equivalent, removed redundant checks from the code). The mesh test, 6 times faster (winding on a grid, compared with the full count). Only the extension package changes (501.6 kB)."
+    },
     "359ff308bacba946": {
       "ro": "Încercarea incrustației în V pe adresa principală de test (<https://cncvectorstudio-test.web.app/>; 12.1↑ e în `main` din 07.11): un desen, rolul „incrustație în V” din panou, Exportă (două fișiere: foaia cu locașul și dopul, cu semifabricatul lui); apoi, pe placa 12, dopul lipit (să intre și să se oprească pe pereți, cu jocul sub el)",
       "en": "Trying the V inlay on the main test address (<https://cncvectorstudio-test.web.app/>; 12.1↑ has been in `main` since 07.11): a drawing, the “V inlay” role from the panel, Export (two files: the sheet with the pocket, and the plug, with its blank); then, on plate 12, the plug glued in (it should go in and stop on the walls, with the gap under it)"
@@ -1440,6 +1448,10 @@
     "4d235580c0cc066d": {
       "ro": "Conectarea prin WiFi, mai ușoară (ADR 0136, cererea owner-ului din 05.11, cu răspunsurile lui): conexiunile ținute, fiecare cu rețeaua ei, alese de om (fără conectare singură); găsirea după nume și, la clic, în toată rețeaua; pașii la fiecare eșec; configurarea podului ESP3D din aplicație, în locul comenzilor din terminalul lui; proba pe emulator, în spatele unui pod fals",
       "en": "Connecting over WiFi, much easier (ADR 0136, the owner’s request of 05.11, with the owner’s answers): the saved connections, each with its network, chosen by the person (no connecting on its own); finding by name and, on a click, on the whole network; the steps for each failure; setting up the ESP3D bridge from the app, instead of the commands in its terminal; tested on the emulator, behind a fake bridge"
+    },
+    "4d3912c615c1a37e": {
+      "ro": "când vrei; fără imprimantă",
+      "en": "whenever you like; no printer needed"
     },
     "4d55bcd4b7fba1b8": {
       "ro": "Printează o roată dintr-o bucată („Ca LEGO 30,4 × 14”) și setul de calibrare cu cele cinci jante; pune pe jante o anvelopă LEGO 30,4 × 14 și alege „Varianta jantei” (fila Calibrare din 3D)",
@@ -3049,6 +3061,10 @@
       "ro": "Piesele atelierului Easy 3Draw pe file",
       "en": "The Easy 3Draw workshop parts on tabs"
     },
+    "b0704b4b24c0776f": {
+      "ro": "Easy 3Draw 18.28.0 (din Bibliotecă, pe canalul `biblioteca` sau pe adresa principală de test, după publicare): în atelier, sub butoanele oricărei piese, deschide **Se prinde cu**. Încearcă pe o cărămidă, pe o roată dințată (clic pe **Ax**: se deschide axul de 2) și pe o grindă (clic pe **Știft**). Spune dacă lista de piese e de folos așa (toate cele care se potrivesc) sau o vrei mai scurtă, și dacă lungimea propusă a axului e cea pe care ai alege-o",
+      "en": "Easy 3Draw 18.28.0 (from the Library, on the `biblioteca` channel or on the main test address, once published): in the workshop, under the buttons of any piece, open **Fits with**. Try it on a brick, on a gear (click **Axle**: the axle of 2 opens) and on a beam (click **Pin**). Say whether the list of pieces is useful as it is (everything that fits) or you want it shorter, and whether the proposed axle length is the one you would pick"
+    },
     "b0bd74ff72e4e581": {
       "ro": "Documentația admin",
       "en": "Admin documentation"
@@ -3520,6 +3536,10 @@
     "cabffaf32531f516": {
       "ro": "Alegerile ferestrei exportului ca cartonașe cu poze",
       "en": "Export window choices as picture cards"
+    },
+    "cae512512b51a220": {
+      "ro": "3.Ce (punctele de prindere, ADR 0284)",
+      "en": "3.Ce (connection points, ADR 0284)"
     },
     "cae9bb161abc4bb2": {
       "ro": "Îmbinări; Straturi bitmap; Sculptare; Deformare în anvelopă",
