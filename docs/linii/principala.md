@@ -193,14 +193,14 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
   - **audituri, cerute de owner pe 25.11** (înaintea arhivării sesiunilor; doar documente, fără cod de produs):
     **elicele, gata și în `main`** (`docs/linii/audit-elice.md`, `173995a1`: nimic stricat; șapte felii propuse
     pentru linia atelierului; patru întrebări la owner, cu recomandările 1a, 2a, 3a, 4a; sesiunea se poate arhiva);
-    **fereastra exportului, gata și în `main`** (`docs/linii/audit-export.md`, `ee492406`): 21 de constatări;
-    două desene nu spun ce taie programul, care e corect și sigur (cu supracursa și pe tăieturile cât foaia, „3
-    treceri de 6 mm” în loc de 4 de 4,575 mm; găurirea cu elice desenată ca ciocănire); la 150 de piese, fereastra
-    se deschide în 7,6–8,8 s; feliile propuse 28.8↑h–m (h repară desenele la cauză: le socotește stratul de
-    acțiuni, cu funcțiile lucrării), de pornit după unirea lui 16.A↑b-5, care lucrează în aceeași fișă; nouă
-    întrebări la owner, cu schița din sesiunea liniei. Ale altor linii: frezele de rest fără etichete (frezele,
-    16.A↑b-5), numele elementelor cu punct zecimal în română (`src/app/descriereElement.ts`, comun: sesiunea
-    principală), „Trimite la mașină” în Atelier (aranjamentele). Feliile propuse pornesc doar la cuvântul lui;
+    **fereastra exportului, gata și în `main`** (`docs/linii/audit-export.md`), cu **ADR 0291 acceptat de owner pe
+    25.11** (toate recomandările, în sesiunea liniei; în `main`, `b826abe9`): feliile 28.8↑h–q. Linia lucrează întâi
+    28.8↑n (numele fișierului) și 28.8↑o (centrul foii ca origine XY0: mișcă mașina, deci oracole și emulator); h
+    (desenele adevărate), i (viteza) și j–l pornesc după ce 16.A↑b-5 e în `main` (**de anunțat liniei exportului la
+    unirea lui b-5**); p (avansul, turația și plonjarea pe „Scrisă de mână”) e a exportului, cu frezele anunțate; 9a
+    (adaosul, finisarea, punctul de start) e o felie de CAM după placa 2, cu v30, pe o linie de ales. A sesiunii
+    principale: numele elementelor cu punct zecimal în română (`src/app/descriereElement.ts`), la cuvântul owner-ului.
+    Din auditul elicelor, feliile propuse pornesc doar la cuvântul lui;
   - **fără felie în lucru:** planșele (tăierea plăcii 11, la owner), incrustațiile, trasarea, tăierea (după
     10.3↑o: 10.3↑p–r),
     imprimanta (după 3.6v: 3.6w, camera), aranjamentele (28.1↑). Pornesc la cuvântul
@@ -230,8 +230,10 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
   feliilor rămân: ce nu trebuie înaintea primei randări stă la cerere, calculul greu în worker, iar felia își spune
   în raport cât adaugă la total și la pornire.
 - **Documentul e v28** (relieful: forma `relief`, 18.1↑a, în `main` din 24.11; v27, frezele, 16.A↑b-1). Cotele nu cer
-  schemă; următorul liber e v29 (operațiile pe relief cu freza bilă; toroidala și profilul desenat ale frezelor): numărul se
-  dă când felia ajunge la migrare, iar unirile cu schemă intră în `main` în ordinea numerelor. O probă care citește documentul salvat cere versiunea
+  schemă. **v29 e dat liniei reliefului (25.11, la unirea lui 18.1↑b), pentru 18.1↑c: operațiile pe relief cu freza bilă
+  în document, stabilită cu linia frezelor; nu se împarte în două.** Următorul liber e v30 (toroidala și profilul desenat
+  ale frezelor, dacă le cer): numărul se dă când felia ajunge la migrare, iar unirile cu schemă intră în `main` în ordinea
+  numerelor. O probă care citește documentul salvat cere versiunea
   curentă (`placute.spec.ts` a căzut cu `schema: 26` în completul liniei frezelor).
 - **De urmărit:** în panoul foii, la 1400 px, etichetele „Numele” și „Materialul” apar tăiate la o literă (văzut de
   linia trasării, și pe `220bd48e`: nu vine dintr-o felie de azi).

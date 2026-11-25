@@ -14568,3 +14568,19 @@ poate”
   Atelierul 116,4), totalul 884,8 / 1 000 kB (+3,9), `/admin` 138,3 / 200. Nimic pe server.
 - **Documentele:** decizia și paragraful de stare în `CLAUDE.md`; indexul liniilor; starea din
   `docs/linii/principala.md`.
+
+## 2026-11-25 — Sesiunea principală în cloud: ADR 0291 (fereastra exportului după audit), acceptat de owner, în `main` (Model: Claude Fable 5.2)
+
+**Prompt:** raportul sesiunii exportului: owner-ul a răspuns acolo la cele nouă întrebări ale auditului, „1a, 2a, 3a, 4a, 5a, 6a, 7a, 8a, 9a”
+**Started:** 25.11, 11:22. **Completed:** 25.11, 11:23.
+
+- **Unit** `5966da75` (`wip/28.8-export`, PR-ul `AndreiBesliu/cvs2#36`, doar documente) în `b826abe9`: ADR 0291, rândul
+  lui din index cu traducerea, raportul auditului și nota liniei, aduse la zi. Local: traducerile (1 116), probele
+  documentației 62 / 62.
+- **Decizia, în `CLAUDE.md`,** cu cele nouă răspunsuri și cu ce înseamnă pentru linii: 28.8↑n și o acum (nu ating fișa
+  operației); h, i, j–l după 16.A↑b-5; p la export, cu frezele anunțate; 8a la aranjamente; 9a, o felie de CAM după
+  placa 2, cu v30.
+- **O scăpare în ADR, spusă liniei:** „Documentul rămâne v27” (e v28, din relief).
+- **Înainte, în aceeași oră:** raportul atelierului pentru 3.Cj-3 (cadrul, `b7f04cb3`, porțile verzi). Neunită: `main`
+  are codul reliefului, pe care ramura nu-l are; linia aduce `main`, pune deasupra melcul (3.Cj-4) și raportează un
+  singur commit. Și `78ff30ec`: v29, dat liniei reliefului pentru 18.1↑c.

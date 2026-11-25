@@ -19,6 +19,12 @@
 - **Schița pentru owner** (capturile constatărilor 1, 2, 4, 5, 6, 8, 9, feliile și întrebările):
   <https://claude.ai/artifact/QYhaU4zsmM9Uiu1uprV7YK>.
 
+## Răspunsurile owner-ului (25.11)
+
+Exact: „1a, 2a, 3a, 4a, 5a, 6a, 7a, 8a, 9a”: toate cele nouă recomandări. Deciziile și feliile care urmează din ele
+(28.8↑h–q) sunt în ADR 0291 (`docs/adr/0291-fereastra-exportului-dupa-audit.md`). 28.8↑h–l pornesc după unirea lui
+16.A↑b-5; 28.8↑n (numele fișierului) și 28.8↑o (centrul foii ca origine) nu ating fișa operației și pot merge înainte.
+
 ## Pe scurt
 
 1. **Două desene nu spun ce taie programul.** Programul e corect și sigur în amândouă cazurile; greșește doar ce arată
