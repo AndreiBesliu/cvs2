@@ -15040,3 +15040,27 @@ pe commit-ul împins).
 - **Completul pe `main`** (45654433162, verde, 66 min: cinci complete în paralel): unit 10 513 / 0 (12 sărite, pe Linux), e2e
   859 / 859, funcțiile pe emulatoare 136 / 136, paginile 59 / 59; pornirea 111,2 kB, totalul 891,8 / 1 000 kB.
 - **Proba de fum** pe adresa de test: versiunea `6741c0beffea`, potrivită; nicio eroare în consolă, nicio cerere căzută.
+
+## 2026-11-25 — Sesiunea principală în cloud: a treizeci și șaptea unire (frezele 16.A↑b-6, cotele 10.4↑c-2) (Model: Claude Fable 5.2)
+
+**Prompt:** rapoartele liniilor („16.A↑b-6 e gata de unit”, `f53ad4ff`; „10.4↑c-2 gata de unit”, `fd21591f`), la ordinul în
+vigoare „unește ce se poate”
+**Started:** 25.11, 18:19. **Completed:** unirea în `main`, 25.11, 19:42; publicarea pe test, pornită după ea.
+
+- **Verificat înaintea unirii:** completele liniilor (45640803121, 45640765994) și rapidele, verzi; PR-urile #42 și #43;
+  fără `.lucru/`; amândouă ramurile au `65eecdc6`.
+- **Unirea, pe `unire-2511w`** (din `6741c0be`): `f53ad4ff` în `1d3882d9`, fără nicio ciocnire; `fd21591f` în `66b6b335`, cu
+  ciocnirea doar în DEVLOG. Primul complet al ramurii (doar cu b-6), oprit când a venit raportul cotelor, la un minut
+  după; lotul a repornit cu amândouă.
+- **Local, pe lot:** tipurile, regulile de import, catalogul controalelor (la zi), traducerile (1 146), biblioteca, iar
+  `cote*`, `export*`, `eps`, `freze*`, `manual` și probele documentelor: 1 853 trecute, 0 căzute.
+- **Porțile, în CI, pe `66b6b335`** (citite din jurnalul rulării): completul 45653662494, verde la prima trecere (75 min, cu
+  cinci complete în paralel): unit 10 529 / 0 (12 sărite, pe Linux), e2e 863 / 863, funcțiile pe emulatoare 136 / 136,
+  paginile 60 / 60; rapidul 45653659544, verde. Pornirea 111,2 kB (plafonul 125; cu ușa 116,2, cu Atelierul 116,5), totalul
+  896,5 / 1 000 kB, `/admin` 138,3 / 200, contul 30,3 / 32. Nimic pe server.
+- **Probele instabile ale frezelor** (semnalate de linia exportului: 4 căderi din 50): cauza, în fereastra „Frezele mele”
+  (Escape ascultat doar pe fereastră); reparația, la linia frezelor (16.A↑b-7, la porți). Completul lotului a trecut de ele.
+- **Pe aceeași ramură, înaintea unirii:** publicările loturilor 34 și 35 și cuvântul owner-ului pentru decorațiunile de
+  Crăciun (intrările de mai sus).
+- **Documentele:** decizia și paragrafele de stare în `CLAUDE.md` (frezele, cotele); indexul liniilor; starea din
+  `docs/linii/principala.md`.
