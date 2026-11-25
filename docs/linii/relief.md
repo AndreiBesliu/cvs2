@@ -114,3 +114,16 @@ degroșarea și finisarea pe relief), unde stă relieful în document și unde s
   Pornirea +0, totalul +3,9 kB (884,8 / 900).
 - **De ținut minte:** o felie care schimbă ce arată vederea 3D trece și prin `vedere3d.spec.ts` și `incrustatie3d.spec.ts`
   (shaderul e comun); `vedere` din `Vedere3D.tsx` e ținută și în `acum` (ascultătorii montați o dată o citesc de acolo).
+- **25.11: 18.1↑c pornită** (finisarea paralelă pe relief; ADR 0310 §4–§6, §13), la mesajul sesiunii principale („Poți aduce
+  `main` și porni 18.1↑c”; v29 e al reliefului, fără să-l împartă). Forma bilei, trimisă liniei frezelor: `{ tip: 'bila' }`.
+  Planul, pe bucăți (fiecare cu commit, proba înaintea funcției):
+  - **c-0, oracolul 3D** (`test/oracles/relief3d.ts`, zero importuri din `src/`): triunghiurile modelului exact (§4), drop-cutter-ul
+    exact pe ele (vârfuri, muchii, fețe, muchia discului; bila, plata, V-ul), CL-ul pe hârtie pe plan, sferă și cilindru,
+    simulatorul crestei; controalele negative (eșantionul în nod, fără muchii, fără fețe) trebuie să pice.
+  - **c-1, documentul v29**: `scula.forma = { tip: 'bila' }` și operația de relief (finisarea: freza, pasul lateral în celule,
+    unghiul, aliniată, pasul pe trecere, marginea); migrarea, ușa, oracolul documentului, corpusul de aur; `motivFormaPeOperatie`.
+  - **c-2, CAM-ul finisării** în workerul CAM (`src/cam/relief*.ts`): câmpul conservativ (maximul pe 9 puncte pe celulă), CL-ul
+    pe capsula segmentului, liniile la unghi, trecerile pe Z (niciodată mai adânc decât pasul), marginea; IR-ul; invarianta 4
+    judecată de oracol pe tot ce iese.
+  - **c-3, interfața**: rândurile finisării în fereastra exportului (vorbit întâi cu sesiunea principală), alegerea din Tăierea;
+    simularea arată rezultatul („Tăiat”), manualul.
