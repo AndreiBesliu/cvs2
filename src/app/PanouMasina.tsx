@@ -584,7 +584,7 @@ function Pozitionare({ s, st }: { readonly s: SesiuneMasina; readonly st: StareS
       </div>
       {f.program && (
         <p className="masina-z0" data-testid="masina-z0">
-          {montaj ? <>{t(`masina.z0.${montaj.z0}`)}<br />{t('masina.origine', { colt: t(`masina.colt.${montaj.origine}`) })}</> : t('masina.z0.necunoscut')}
+          {montaj ? <>{t(`masina.z0.${montaj.z0}`)}<br />{montaj.origine === 'centru' ? t('masina.origine.centru') : t('masina.origine', { colt: t(`masina.colt.${montaj.origine}`) })}</> : t('masina.z0.necunoscut')}
         </p>
       )}
 

@@ -14684,6 +14684,23 @@ nu ating fișa operației)
   are codul reliefului, pe care ramura nu-l are; linia aduce `main`, pune deasupra melcul (3.Cj-4) și raportează un
   singur commit. Și `78ff30ec`: v29, dat liniei reliefului pentru 18.1↑c.
 
+## 2026-11-25 — Linia exportului: felia 28.8↑o, centrul foii ca origine XY0 (ADR 0291 §6)
+
+**Prompt:** „1a, 2a, 3a, 4a, 5a, 6a, 7a, 8a, 9a” (6a; a doua felie de după audit, după 28.8↑n)
+**Started:** 25.11, 10:03.
+
+- **Montajul:** `centru`, a cincea alegere (`OrigineXY`, `ORIGINI`), o translație cu jumătatea foii (ADR 0008).
+  Colțurile, octet cu octet.
+- **Antetul** „origine centru”, citit de sender; nota din panoul Mașina, raportul foilor, numele dopului.
+- **Fereastra:** „centrul foii” în listă, punctul din mijlocul desenului XY0, cu eticheta lui.
+- **Probele:** `montaj.centru.oracol.test.ts`: pe hârtie; corpusul CAM, rând cu rând față de colț; poarta și oracolul
+  buzunarului, cu martori; senderul și emulatorul GRBL. Plus 2 e2e. Unitarele 10 462 / 0, spec-urile e2e ale exportului
+  313 / 313.
+- **Otrăvurile:** `28.8o.py`, 13 / 13. **Mărimea:** pornirea +0, totalul 885,9 / 1 000 (+0,1).
+- **Manualul** (ro, en), ADR 0291 („Implementarea 28.8↑o”), fișa etapei 3, registrul otrăvurilor, nota liniei.
+
+**Completed:** 25.11, 10:50.
+
 ## 2026-11-25 — Felia 10.4↑c-1: cotele în exportul vectorilor („Cu cotele”, stratul lor, cifrele ca trăsături; ADR 0330 §6, §7) (Model: Claude Opus 5.5)
 
 **Prompt:** „Pornește 10.4↑c” (sesiunea principală, 25.11, cu mesajele owner-ului: „am resetat limita saptamanale. azi este

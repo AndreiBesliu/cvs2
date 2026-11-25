@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 // Calculul acțiunilor pe care le dă fereastra asta (`actiuniDocument.ts`, `laCerere`) vine cu ea, nu în pachetul de pornire.
 import '../ui/actiuniDocumentCalcul.ts';
-import type { ColtOrigine } from '../ir/montaj.ts';
+import type { OrigineXY } from '../ir/montaj.ts';
 import { esteCaleDeschisa, type Document, type Operatie } from '../model/document.ts';
 import { grupeazaPeScula, taieturiFoaie, type ElementLume } from '../model/lume.ts';
 import { conturElement, esteContur } from '../model/forme.ts';
@@ -75,7 +75,7 @@ type Props = {
   /** Documentul cu toate foile (ADR 0210 §5): „Toate foile” și plăcuțele tuturor. */
   readonly toate: Document;
   /** „Raportul foilor…” (ADR 0210 §6): aplicația închide exportul și deschide raportul. */
-  readonly onRaport?: (p: { readonly origine: ColtOrigine; readonly z0: 'sus' | 'jos' }) => void;
+  readonly onRaport?: (p: { readonly origine: OrigineXY; readonly z0: 'sus' | 'jos' }) => void;
   /**
    * „Alege pe desen…” (ADR 0211, 3a): operația `operatie` a piesei `piesa`, cu urechile rândului; aplicația ascunde fereastra și
    * pune pânza în modul urechilor.
