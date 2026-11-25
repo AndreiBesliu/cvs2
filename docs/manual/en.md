@@ -1048,7 +1048,7 @@ From an image (a photo, a logo, a grey height map) you can make a **relief**: a 
 pixel, whose height comes from the pixel's grey. On the board, the relief shows shaded (light from the top left), under the
 vectors, with its frame; it is selected, moved, rotated and mirrored like any shape, and a part with a relief is placed
 several times and on other sheets. In the [3D view](#vedere-3d), the **Model** button shows it in three dimensions, in its
-pocket in the sheet. The relief is cut with **finishing** (below); roughing comes in a later slice.
+pocket in the sheet. The relief is cut with **finishing** and, before it, with **roughing** (below).
 
 **How to make one:** from “Import…”, pick an image (PNG, JPEG, WebP, GIF or BMP), then, at the top of the window, **Relief**
 instead of **Vectors**. The choice is kept until you reload the page. On the left, the window has:
@@ -1087,9 +1087,24 @@ the sheet's thickness). The fields:
 - **Relief on Z**: **top at the stock face** (the default) or **zero plane below the face**, at the depth you type; what would
   stand above the face is cut at the face, and the export says so.
 
-Finishing comes before the contour cuts, with its own cutter. In the **Export G-code** window it has its own row, in its place
-in the cutting order, with a read-only sheet (the cutter, the stepover, the scallop on a flat, the depth); you change it in the
-Cutting section. With **Cutting order: Mine**, its row moves like any other. In the [3D view](#vedere-3d), **Cut** shows the
+**Roughing:** the **3D relief (roughing and finishing)** role puts two operations on the relief's part: roughing first, then
+finishing (with the fields above). Roughing takes most of the wood away with a flat cutter, in passes of at most the **step**,
+and leaves the **allowance** above the relief, in every direction, for finishing; its last pass follows the allowance surface.
+Its fields:
+- **Roughing tool (flat)**: the diameter; roughing works only with a flat cutter;
+- **Roughing stepover** (by default 40 % of the cutter): the distance between lines;
+- **Allowance for finishing** (by default 0.5 mm, at most 10 mm): how much wood stays above the relief; on a slope a little
+  more stays vertically;
+- **Roughing line angle** (0° to 180°).
+
+**Relief edge** and **Relief on Z** are shared by the two operations: you change them once, for both. Where the flat cutter
+does not fit (a valley narrower than it), roughing leaves the wood and finishing takes it away in its passes.
+
+Roughing and finishing come before the contour cuts, each with its own cutter, roughing first. With **Cutting order: Mine**,
+if you move finishing before the roughing of the same relief, the export says so among the warnings: the program is fine, but
+finishing takes all the wood with its cutter and roughing cuts almost only air. In the **Export G-code** window each has its
+own row, in its place in the cutting order, with a read-only sheet (the cutter, the stepover, the scallop on a flat for
+finishing, the allowance for roughing, the depth); you change them in the Cutting section. With **Cutting order: Mine**, its row moves like any other. In the [3D view](#vedere-3d), **Cut** shows the
 sheet after the program. On slopes the cutter stays a little above the ideal surface (about 0.1 mm on a 45° slope): it is the safe side of the
 computation, which never digs into the relief. The export needs the relief's tiles from this browser; on another computer, it
 says they are missing.

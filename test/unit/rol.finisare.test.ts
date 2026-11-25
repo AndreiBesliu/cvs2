@@ -30,7 +30,7 @@ function doc(copii: readonly unknown[], operatii: readonly unknown[] = []): Docu
 const piesa = (d: Document): Piesa => d.piese[0]!;
 
 test('rolurile oferite: finisarea doar pe o piesă cu reliefuri; contururile își păstrează rolurile, fără finisare', () => {
-  assert.deepEqual(roluriOferite(piesa(doc([relief('r'), relief('r2')]))), ['finisare']);
+  assert.deepEqual(roluriOferite(piesa(doc([relief('r'), relief('r2')]))), ['finisare', 'relief3d']);
   const amestec = roluriOferite(piesa(doc([relief('r'), dreptunghi('e')])));
   assert.ok(!amestec.includes('finisare') && amestec.includes('exterior'));
   assert.ok(!roluriOferite(piesa(doc([dreptunghi('e')]))).includes('finisare'));

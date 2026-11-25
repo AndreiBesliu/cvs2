@@ -172,6 +172,26 @@ export function cuFinisare(o: Operatie, v: SchimbareFinisare): Operatie {
   return { ...o, finisare: f as NonNullable<Operatie['finisare']> };
 }
 
+/** Ce se poate schimba din panou pe o degroșare (ADR 0313 §2): `null` scoate câmpul opțional (lipsa e implicitul lui). */
+export type SchimbareDegrosare = {
+  readonly adaos?: number;
+  readonly unghi?: number;
+  readonly margine?: 'trece' | null;
+  readonly planZero?: number | null;
+};
+
+/** Operația cu valorile degroșării schimbate (îmbinate: un câmp necunoscut rămâne); o operație de alt fel rămâne cum e. */
+export function cuDegrosare(o: Operatie, v: SchimbareDegrosare): Operatie {
+  if (o.tip !== 'degrosare') return o;
+  const d: Record<string, unknown> = { ...(o.degrosare ?? { adaos: 0, unghi: 0 }) };
+  for (const [k, x] of Object.entries(v)) {
+    if (x === undefined) continue;
+    if (x === null) delete d[k];
+    else d[k] = x;
+  }
+  return { ...o, degrosare: d as NonNullable<Operatie['degrosare']> };
+}
+
 /** Forma frezei unei finisări, aleasă din panou: bila (implicit), plata sau V-ul (cu unghiul implicit). */
 export type FormaFinisare = 'bila' | 'plata' | 'v';
 

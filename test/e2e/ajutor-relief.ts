@@ -44,3 +44,15 @@ export async function rolFinisare(page: Page): Promise<void> {
   else await lista.selectOption('finisare');
   await expect(page.locator('[data-camp="fin-forma"]')).toHaveValue('bila');
 }
+
+/**
+ * Rolul „Relief 3D” (degroșarea și finisarea, ADR 0313 §6) pe piesa aleasă (doar cu reliefuri), din secțiunea Tăierea: din
+ * listă, sau, în Atelier, din butonul lui.
+ */
+export async function rolRelief3d(page: Page): Promise<void> {
+  const lista = page.locator('select[data-camp="rol"]'), buton = page.locator('button[data-rol="relief3d"]');
+  await expect(lista.locator('option[value="relief3d"]').or(buton)).toHaveCount(1);
+  if (await buton.count() > 0) await buton.click();
+  else await lista.selectOption('relief3d');
+  await expect(page.locator('[data-camp="deg-adaos"]')).toBeVisible();
+}

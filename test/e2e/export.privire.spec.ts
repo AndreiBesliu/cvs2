@@ -8,7 +8,7 @@
 import { test, expect, type Page } from '@playwright/test';
 import { adauga } from './ajutor-panza.ts';
 import { alege } from './ajutor-export.ts';
-import { importaRelief, rolFinisare } from './ajutor-relief.ts';
+import { importaRelief, rolFinisare, rolRelief3d } from './ajutor-relief.ts';
 
 const fisa = (page: Page, cheie: string) => page.locator(`[data-fisa="op"][data-operatie="${cheie}"]`);
 
@@ -165,17 +165,19 @@ test.describe('în Atelier, cu densitatea mare', () => {
  * fereastra, cu fontul lat. Finisarea e primul rând (ordinea automată), cu fișa ei. Pe telefon nu se desenează (ADR 0250 §7:
  * panoul de proprietăți nu se arată), deci foaia se pregătește la lățimea de calculator, iar fereastra se deschide la `latime`.
  */
-async function deschideCuFinisare(page: Page, latime?: { readonly width: number; readonly height: number }): Promise<void> {
+async function deschideCuFinisare(page: Page, latime?: { readonly width: number; readonly height: number }, relief3d = false): Promise<void> {
   if (latime) await page.setViewportSize({ width: 1280, height: 800 });
   await page.goto('/');
   await page.evaluate(() => { document.documentElement.style.setProperty('--font', "Verdana, 'DejaVu Sans', sans-serif"); });
   await adauga(page, 'dreptunghi');
   await importaRelief(page);
-  await rolFinisare(page);
+  if (relief3d) await rolRelief3d(page);
+  else await rolFinisare(page);
   if (latime) await page.setViewportSize(latime);
   await page.locator('[data-actiune="export.gcode"]').click();
   await expect(page.locator('[data-nav-op][data-fel="finisare"]')).toBeVisible();
   await expect(page.locator('[data-fisa="op"][data-fel="finisare"]')).toHaveCount(1);
+  if (relief3d) await expect(page.locator('[data-nav-op][data-fel="degrosare"]')).toBeVisible();
 }
 
 test.describe('cu finisarea reliefului (rândul doar de citit)', () => {
@@ -214,6 +216,53 @@ test.describe('cu finisarea reliefului (rândul doar de citit)', () => {
       expect(await tinteMici(page, 48), 'fișa finisării').toEqual([]);
       await page.locator('[data-ordine="a-mea"]').click();
       await expect(page.locator('[data-sus]')).toHaveCount(2);
+      expect(await tinteMici(page, 48), 'ordinea mea').toEqual([]);
+      expect(await ceIese(page), 'ordinea mea').toEqual([]);
+    });
+  });
+});
+
+/**
+ * Rândul degroșării reliefului (ADR 0313 §7), doar de citit, lângă al finisării: rolul „Relief 3D”, apoi fereastra, cu fontul
+ * lat, în română și în engleză, la 1280 și 1024 px, pe telefon și în Atelier cu densitatea mare.
+ */
+test.describe('cu degroșarea reliefului (rolul „Relief 3D”, rândurile doar de citit)', () => {
+  for (const [locale, limba] of [['ro-RO', 'română'], ['en-GB', 'engleză']] as const) {
+    test.describe(`în ${limba}`, () => {
+      test.use({ locale });
+      for (const [latime, inaltime] of [[1280, 800], [1024, 768]] as const) {
+        test(`la ${latime} px, cu fontul lat: rândul și fișa degroșării, nimic nu iese; și în ordinea mea`, async ({ page }) => {
+          await page.setViewportSize({ width: latime, height: inaltime });
+          await deschideCuFinisare(page, undefined, true);
+          await page.locator('[data-nav-op][data-fel="degrosare"] [data-nav]').click();
+          await expect(page.locator('[data-fisa="op"][data-fel="degrosare"]')).toHaveCount(1);
+          expect(await ceIese(page), 'fișa degroșării').toEqual([]);
+          await page.locator('[data-ordine="a-mea"]').click();
+          await expect(page.locator('[data-nav-op][data-fel="degrosare"] [data-jos]')).toBeVisible();
+          expect(await ceIese(page), 'ordinea mea').toEqual([]);
+        });
+      }
+      test.describe('pe telefon', () => {
+        test.use({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true, locale });
+        test('la 390 px: rândul degroșării se atinge și deschide fișa ei; nimic nu iese', async ({ page }) => {
+          await deschideCuFinisare(page, { width: 390, height: 844 }, true);
+          const nav = page.locator('[data-nav-op][data-fel="degrosare"] [data-nav]');
+          await nav.tap();
+          await expect(nav).toHaveAttribute('aria-current', 'true');
+          expect(await ceIese(page), 'fișa degroșării, pe telefon').toEqual([]);
+        });
+      });
+    });
+  }
+  test.describe('în Atelier, cu densitatea mare', () => {
+    test.use({ locale: 'ro-RO', viewport: { width: 1280, height: 800 } });
+    test('rândul degroșării: țintele au cel puțin 48 px și se lovesc în centrul lor, și cu ordinea mea', async ({ page }) => {
+      await page.addInitScript(() => { localStorage.setItem('cncvs2.aranjament', JSON.stringify({ v: 1, aranjament: 'atelier', densitate: 'mare' })); });
+      await deschideCuFinisare(page, undefined, true);
+      await page.locator('[data-nav-op][data-fel="degrosare"] [data-nav]').click();
+      expect(await tinteMici(page, 48), 'fișa degroșării').toEqual([]);
+      await page.locator('[data-ordine="a-mea"]').click();
+      await expect(page.locator('[data-sus]')).toHaveCount(3);
       expect(await tinteMici(page, 48), 'ordinea mea').toEqual([]);
       expect(await ceIese(page), 'ordinea mea').toEqual([]);
     });

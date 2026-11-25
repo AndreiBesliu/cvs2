@@ -40,8 +40,9 @@ o('U09', GF, "  return Dc - D <= TOLERANTA_GAURA ? 'ciocanire' : 'elice';", "  r
 o('U10', GF, "      if (k % retragere === 0) {", "      if (k % retragere === 1) {", 'hartie', 'iese din gaură la alt pas')
 o('U11', GF, "        m.push({ z: -fund + RETRAGERE_PARTIALA, taie: false });", "        m.push({ z: -fund - RETRAGERE_PARTIALA, taie: false });", 'hartie',
   'ridicarea dintre pași coboară')
-o('U12', PF, "  o.tip !== 'vcarve' && o.tip !== 'finisare' && o.incrustatie === 'fara' && Math.abs",
-  "  o.tip !== 'vcarve' && o.incrustatie === 'fara' && Math.abs", 'hartie', 'finisarea cât foaia (18.1↑c) primește supracursa, în lucrare și pe hârtie')
+# U12 mutată pe codul din 18.1↑d (26.11): `catFoaia` lasă și degroșarea reliefului cum e scrisă (`o.tip !== 'degrosare'`); aceeași greșeală.
+o('U12', PF, "  o.tip !== 'vcarve' && o.tip !== 'finisare' && o.tip !== 'degrosare' && o.incrustatie === 'fara' && Math.abs",
+  "  o.tip !== 'vcarve' && o.tip !== 'degrosare' && o.incrustatie === 'fara' && Math.abs", 'hartie', 'finisarea cât foaia (18.1↑c) primește supracursa, în lucrare și pe hârtie')
 
 # Fereastra (e2e).
 o('E01', DE, "prinFoaie: cuSupracursa && prinFoaie,", "prinFoaie: false,", 'e2e', 'rândul nu vede bifa „și tăieturile cât foaia”')

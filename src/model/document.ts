@@ -257,6 +257,8 @@ export type Degrosare = { adaos: number; unghi: number; margine?: 'trece'; planZ
 export const PLAN_ZERO_MAXIM = 1_000;
 /** ADR 0313 §2: cel mai mare adaos al unei degroșări, în mm. */
 export const ADAOS_MAXIM = 10;
+/** ADR 0313 §6: adaosul cu care pornește o degroșare nouă (rolul „Relief 3D”), în mm. */
+export const ADAOS_IMPLICIT = 0.5;
 export type StrategieBuzunar = { fel: 'paralel'; unghi: number; [cheie: string]: unknown };
 /**
  * Incrustația în V (ADR 0170 §1, documentul v20), pe locaș (un V-carve de adâncime D): `joc` = jocul pentru clei de sub dop,

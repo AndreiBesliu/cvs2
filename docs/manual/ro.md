@@ -1017,7 +1017,7 @@ Dintr-o imagine (o poză, un logo, o hartă a înălțimilor în gri) se poate f
 celulă pentru fiecare pixel, a cărei înălțime vine din griul pixelului. Pe planșă, relieful se vede umbrit (lumina din
 stânga-sus), sub vectori, cu chenarul lui; se alege, se mută, se rotește și se oglindește ca orice formă, iar piesa cu relief
 se pune de mai multe ori și pe alte foi. În [vederea 3D](#vedere-3d), butonul **Modelul** îl arată în trei dimensiuni, în
-golul lui din placă. Relieful se taie cu **finisarea** (mai jos); degroșarea vine într-o felie următoare.
+golul lui din placă. Relieful se taie cu **finisarea** și, înaintea ei, cu **degroșarea** (mai jos).
 
 **Cum îl faci:** din „Importă…”, alege o imagine (PNG, JPEG, WebP, GIF sau BMP), apoi, sus în fereastră, **Relief** în loc
 de **Vectori**. Alegerea se ține minte până reîncarci pagina. Fereastra are, în stânga:
@@ -1054,9 +1054,24 @@ model; nu coboară niciodată sub suprafața reliefului și nici sub **adâncime
 - **Relieful pe Z**: **vârful la fața plăcii** (implicit) sau **planul zero sub față**, la adâncimea scrisă; ce ar ieși
   deasupra feței se taie la față, iar exportul o spune.
 
-Finisarea se face înaintea tăieturilor pe contur, cu freza ei. În fereastra **Exportă G-code** are rândul ei, la locul ei
-în ordinea tăierii, cu o fișă doar de citit (freza, pasul lateral, creasta pe un plan, adâncimea); se schimbă din secțiunea
-Tăierea. Cu **Ordinea tăierii: A mea**, rândul ei se mută ca oricare altul. În [vederea 3D](#vedere-3d), **Tăiat** arată
+**Degroșarea:** rolul **Relief 3D (degroșare și finisare)** pune pe piesa reliefului două operații: întâi degroșarea, apoi
+finisarea (cu câmpurile de mai sus). Degroșarea scoate cea mai mare parte a lemnului cu o freză plată, în treceri de cel mult
+**pasul**, și lasă deasupra reliefului **adaosul**, pe orice direcție, pentru finisare; ultima ei trecere urmează suprafața
+adaosului. Câmpurile ei:
+- **Freza degroșării (plată)**: diametrul; degroșarea merge doar cu o freză plată;
+- **Pasul lateral al degroșării** (implicit 40 % din freză): distanța dintre linii;
+- **Adaosul pentru finisare** (implicit 0,5 mm, cel mult 10 mm): cât lemn rămâne deasupra reliefului; pe o pantă rămâne
+  puțin mai mult pe verticală;
+- **Unghiul liniilor degroșării** (0° … 180°).
+
+**Marginea reliefului** și **Relieful pe Z** sunt comune celor două operații: le schimbi o dată, pentru amândouă. Unde freza
+plată nu încape (o vale mai îngustă decât ea), degroșarea lasă lemnul, iar finisarea îl scoate în trecerile ei.
+
+Degroșarea și finisarea se fac înaintea tăieturilor pe contur, fiecare cu freza ei, degroșarea prima. Cu **Ordinea tăierii: A
+mea**, dacă muți finisarea înaintea degroșării aceluiași relief, exportul o spune printre avertismente: programul e bun, dar
+finisarea scoate tot lemnul cu freza ei, iar degroșarea taie aproape doar aer. În fereastra **Exportă G-code**, fiecare are rândul ei, la locul
+ei în ordinea tăierii, cu o fișă doar de citit (freza, pasul lateral, creasta pe un plan la finisare, adaosul la degroșare,
+adâncimea); se schimbă din secțiunea Tăierea. Cu **Ordinea tăierii: A mea**, rândul ei se mută ca oricare altul. În [vederea 3D](#vedere-3d), **Tăiat** arată
 placa după program. Freza rămâne puțin deasupra suprafeței ideale pe pante (cam 0,1 mm pe o pantă de 45°): e partea sigură a calculului,
 care nu sapă niciodată în relief. Exportul cere dalele reliefului din acest browser; pe alt calculator, le spune lipsă.
 

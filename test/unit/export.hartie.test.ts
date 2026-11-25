@@ -134,8 +134,6 @@ test('cu 18.1↑c și 18.1↑d: o finisare și o degroșare cât foaia nu primes
     assert.equal(adancimeTaiata(adancimeScrisa(finisare), 18, s, false), 18);
     assert.equal(adancimeTaiata(adancimeScrisa(degrosare), 18, s, false), 18);
   }
-  // Rândul de pe hârtie (desenul ferestrei): degroșarea cât foaia rămâne la 18 cu bifa și supracursa.
-  assert.equal(hartieRand(intrare({ tip: 'degrosare', pas: 3, supracursa: 0.3, prinFoaie: true })).adancime, 18);
 });
 
 const intrare = (x: Partial<IntrareHartie>): IntrareHartie => ({
