@@ -1084,8 +1084,11 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   butoanele piesei, panoul „Se prinde cu”: ce are piesa și piesele atelierului care se potrivesc, cu axul și știftul
   deschise de lungimea bună; Easy 3Draw 18.28.0. **3.Cj-1 (cama)** gata pe 25.11, neunită: tipul `cama`, în fila Roți,
   un disc pe ax care face din rotire un du-te-vino, în trei forme (excentric, pară, melc), cu diametrul de bază, cursa,
-  grosimea și gaura la alegere; Easy 3Draw 18.29.0 (următoarea, 18.30.0); restul lui 3.Cj (roata cu palete, cadrul,
-  melcul) vine pe bucăți. **O piesă nouă a motorului își spune prinderile
+  grosimea și gaura la alegere; Easy 3Draw 18.29.0. **3.Cj-2 (roata cu palete)** gata pe 25.11, neunită: tipul
+  `roataPalete`, în fila Elice, o roată de apă sau de vânt pe butucul roților, cu diametrul, numărul paletelor, lățimea,
+  palete drepte sau curbate, cu disc sau fără; butucul crește cu paletele, iar pe o roată mică încap mai puține (motorul
+  o spune, editorul le ține în margine); Easy 3Draw 18.30.0 (următoarea, 18.31.0); restul lui 3.Cj (cadrul, melcul)
+  vine pe bucăți. **O piesă nouă a motorului își spune prinderile
   (compilatorul o cere: `prinderi` e câmp obligatoriu al tipului `Corp`) și își pune mostra, cu numerele de pe hârtie, în
   `test/unit/trenulet.prinderi.test.ts`, unde fiecare prindere declarată e întrebată pe plasă.** **O piesă care se prinde cu alta își probează prinderea pe plasele amândurora, cu martori**
   (proba cremalierei: `patrundere`, în `test/unit/trenulet.cremaliera.test.ts`). **Motorul

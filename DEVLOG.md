@@ -14104,6 +14104,33 @@ Modelului își așteptau răspunsul)
   de „ce e nou”; doar pachetul se schimbă.
 - **Neîmpinsă până la unirea lui 3.Ce** (PR-ul `AndreiBesliu/cvs2#28`).
 
+## 2026-11-25 — Felia 3.Cj-2: roata cu palete în atelierul Easy 3Draw (ADR 0284) (sesiune cloud)
+
+**Prompt:** (aceeași cerere a owner-ului și aceleași răspunsuri la ADR 0284 ca la 3.Ca; răspunsul lui „Roata cu palete”,
+la lista pieselor noi; pornită fără altă întrebare, cât 3.Ce își aștepta rularea completă și unirea)
+**Started:** 25.11, 02:22. **Completed:** 25.11, 03:14 (felia, cu otrăvurile; orele, după ceasul containerului).
+
+- **Roata cu palete** (tipul `roataPalete`, fila Elice): o roată de apă sau de vânt, cu butucul roților, paletele
+  pornite din el, egal depărtate, până la diametrul cerut, și, la alegere, un disc pe fața de jos. Palete drepte (pe
+  rază) sau curbate (arce cu săgeata de o cincime din lungime).
+- **Proba, scrisă întâi** (a căzut cu „tip necunoscut”): paletele se numără pe plasă, pe cercuri din jurul axului.
+- **Ce a arătat proba:** la Ø24 cu 4 palete curbate ieșeau 8. Paleta pleacă din butuc pieziș, iar arcul, prelungit
+  înapoi „până intră în butuc”, doar îl atingea cu marginea de jos, îl ocolea și ieșea de partea cealaltă. Capătul
+  paletei coboară acum pe rază, de la marginea rămasă afară, până în butuc.
+- **Butucul crește cu paletele** (0,8 mm între ele lângă el), dar nu trece de jumătatea razei: pe o roată mică încap mai
+  puține palete (la Ø24, 15 drepte sau 12 curbate). Motorul o spune; editorul ține paletele în margine.
+- **Engleza:** „Drepte” și „Paletele” aveau deja traduceri cu alt sens (șinele drepte, paletele elicei); butoanele roții
+  spun „Palete drepte”, „Palete curbate”, „Câte palete”.
+- **Probele vechi, la zi:** „Elice 4” / „Propeller 4”, galeriile și desenele, căutarea („ro” găsește și roata cu
+  palete), starea unei liste vechi, rândul axului din „Se prinde cu”, proba limbii (editorul roții, în engleză),
+  versiunea 18.30.0.
+- **Otrăvurile:** 101 / 101: 97 la prima rulare (66 din 67 unitare, 31 din 34 prin browser). Scăpate: rotunjirea
+  numărului de palete (proba cerea o singură valoare), două margini de sus ale câmpurilor (proba scria peste valoarea de
+  la margine, deci motorul o aducea tot acolo; acum pornește de la valori din mijloc) și una echivalentă, înlocuită.
+- **Probele pluginului:** unitare 246 / 246 (cu biblioteca), în browser 175 / 175 (cu extensiile). Easy 3Draw 18.30.0
+  (508,4 kB), cu rândul de „ce e nou”; doar pachetul se schimbă.
+- **Neîmpinsă până la unirea lui 3.Ce** (PR-ul `AndreiBesliu/cvs2#28`).
+
 ## 2026-11-24 — Sesiunea principală în cloud: clicul pe „Închide” din cadrul unei extensii, pierdut (probă instabilă, reparată) (Model: Claude Fable 5.2)
 
 **Prompt:** completul de pe `main` pentru loturile 19–21 (`7312d685`, rularea 45436221341), roșu la o singură probă;
