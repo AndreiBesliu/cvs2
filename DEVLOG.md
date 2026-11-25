@@ -14774,3 +14774,37 @@ gata de unit”, `b099c457`; 28.8↑n, `7996e77c`), la ordinul în vigoare „un
   apoi pornește 28.8↑h), atelierul (fără felie de pornit), cotele.
 - **Documentele:** decizia și paragrafele de stare în `CLAUDE.md` (frezele, exportul, atelierul); indexul liniilor;
   starea din `docs/linii/principala.md`.
+
+## 2026-11-25 — Linia reliefului: felia 18.1↑c, finisarea reliefului (documentul v29, freza bilă) (sesiune cloud)
+
+**Prompt:** mesajul sesiunii principale, „Poți aduce `main` și porni 18.1↑c […] v29 e al tău” și „18.1↑c mișcă mașina:
+degroșarea și finisarea cer oracolul (suprafața rezultată față de model, în toleranță; creasta măsurată; niciodată mai adânc
+decât pasul pe trecere), scris înaintea funcției, și otrăvurile pe el. Raportul, ca până acum.”; pe drum, al doilea mesaj al
+ei, „nu fără rând” (rândul finisării în fereastra exportului, doar de citit).
+**Started:** 25.11, 11:03. **Completed:** 25.11, 15:12.
+
+- **Oracolul 3D întâi** (`test/oracles/relief3d.ts`, fără importuri din `src/`): modelul exact, drop-cutter-ul exact
+  (vârfuri, muchii, fețe, muchia discului) cu bila, plata, V-ul și V-ul cu vârf plat, simulatorul crestei și al materialului;
+  controalele negative cad.
+- **Documentul v29** (ADR 0312): operația `finisare` și freza `{ tip: 'bila' }`; migrarea v28 → v29 (doar numărul, refuză
+  ciocnirile); oracolul documentului și cazurile pe hârtie la v29; corpusul de aur, pasul v29 (o finisare cu bila pe medalion).
+  Lucrarea refuză bila oriunde nu e o finisare, cu forma și calea în motiv.
+- **CAM-ul finisării** (`src/cam/reliefFinisare.ts`): câmpul conservativ (9 puncte, sau 4 colțuri pe celula de calcul),
+  cota segmentului pe capsulă, căutată într-o piramidă de maxime; liniile aliniate sau la un unghi; trecerile pe Z cel mult cât
+  pasul; peretele sau „trece”; legătura dintre linii. Lucrarea primește dalele din browser și le compune în workerul CAM.
+- **Interfața:** rolul „finisarea reliefului” în Tăierea, cu câmpurile lui; manualul; „Tăiat” din vederea 3D o simulează.
+  Rândul din fereastra exportului (ADR 0312 §7): doar de citit, la locul lui în ordinea tăierii (`ordinePasi`: automat întâi;
+  în „A mea”, unde îl pune omul; fără rang, în față), cu fișa (`src/ui/FisaFinisare.tsx`), în Rezultat și în „același T”;
+  Exportă îi scrie rangul. „Exportă G-code” și „Toate foile” numără o foaie doar cu finisare. Bila are CAM în bibliotecă.
+- **Otrăvurile** (`test/otravuri/18.1c.py`): primul tur a găsit probe slabe (C01, C02, C04, C07, C15, J05), întărite:
+  oracolul cu V-ul cu vârf plat, relieful aspru cu liniile nealiniate, ce rămâne pe pantă, conul mai adânc decât placa. Al doilea tur, pe `0713a3ff`: 44 / 44 prinse (O07 și O08 prin e2e; C01, C02, C04 și C07 verificate și pe proba micșorată din `6deb68d1`).
+- **Mărimea,** față de `main` (`2aaee0b4`, adus în ramură): pornirea 111,2 → 111,4 kB (cu ușa 116,2 → 116,5, cu Atelierul 116,5 →
+  116,8 / 125), totalul 890,1 → 901,0 / 1 000 kB (+10,9).
+- **`main` adus** (`2aaee0b4`, cu 16.A↑b-5, 28.8↑n, 10.4↑c-1, 3.Cj-3–4): ciocnirile, în importuri și în lista de proprietăți a
+  ferestrei exportului și în catalogul controalelor (656 de nume). Apoi 20 de otrăvuri ale altor liste, rămase fără țintă pe
+  codul nou (`otravuri-void-noi.py`), mutate pe el, toate prinse din nou; K01 din 16.A-h4, întoarsă (bila are acum CAM).
+- **Rapidul pe `0713a3ff`:** felia 6 a ținut 14,0 minute din 15; proba reliefului aspru, micșorată la cazul care prinde
+  (`6deb68d1`), a dus-o la 10,3. Canalul `relief`: <https://cncvectorstudio-test--relief-i9yxfdsc.web.app>.
+- **Porțile, în CI, pe `edf9f0aa`:** completul 45611988372, verde (55 min): unit 10 538 / 0 (12 sărite, pe Linux), e2e 857 / 857, funcțiile pe
+  emulatoare 136 / 136, paginile 59 / 59; rapidul, verde (45611984002 la push, 45611993653 pe PR). Pornirea 111,4 / 125 kB
+  (cu ușa 116,5, cu Atelierul 116,8), totalul 901,0 / 1 000 kB, `/admin` 138,3 / 200. Nimic pe server.
