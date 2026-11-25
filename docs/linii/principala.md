@@ -155,12 +155,12 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
 
 ## Starea pe 25.11.2026, seara (după a patruzeci și una unire din cloud)
 
-- **Pe test:** `75bcf3fb` (lotul 36: 16.A↑b-6, „Pune-o înapoi în bibliotecă”; 10.4↑c-2, cotele ca DIMENSION în DXF și
-  cifrele ca text; publicat pe 25.11 la 20:54, cu serverul neschimbat; completul pe `main` 45669314051, verde; proba de
-  fum, bună). Înainte: `6741c0be` (lotul 35, „Modelul” din Easy 3Draw 18.33.0), pe 25.11 la 19:39; `65eecdc6` (lotul
-  34), la 18:25. **În `main`, nepublicate încă:** 16.A↑b-7, Escape în „Frezele mele” (`581da353`), și 18.1↑c,
-  finisarea reliefului, cu documentul v29 (`f7ca20b6`), unită la 21:11, și 28.8↑h, fereastra exportului „pe
-  hârtie” (`7d74ade2`), unită la 21:13: în drum, lotul 37 (`5649067c`), cu toate trei; apoi 3.Cf-1 (`02ac0715`).
+- **Pe test:** `5649067c` (lotul 37: 16.A↑b-7, Escape în „Frezele mele”; 18.1↑c, finisarea reliefului, cu documentul
+  v29; 28.8↑h, fereastra exportului „pe hârtie”; publicat pe 25.11 la 22:23, cu serverul neschimbat; completul pe
+  `main` 45684848118, verde; proba de fum, bună). Înainte: `75bcf3fb` (lotul 36: „Pune-o înapoi în bibliotecă”,
+  cotele ca DIMENSION), pe 25.11 la 20:54; `6741c0be` (lotul 35), la 19:39. **În `main`, nepublicate încă:** 3.Cf-1,
+  alipirea la prinderi în „Modelul”, Easy 3Draw 18.34.0 (`02ac0715`), unită la 22:15: în drum, lotul 38
+  (`c9911c14`).
 - **`main`, din cloud:** pe 23.11: 3.Tq (`0ae9c6c1`); 11.3↑e și A.4 (`ddaa7ead`); 3.Tr, unită de linia elicelor
   (`d262e57a`); 25.8↑a și A.5 (`1b46c955`), cu reparația probei extensiilor (`8287d66e`); 11.3↑f, unită de linia
   planșelor (`f4601938`); A.6 (`4497d639`); 3.Xh (`2d1e482c`) și 12.1↑e-3 cu 12.1↑e-4 (`03460cab`); A.8a cu A.8b
