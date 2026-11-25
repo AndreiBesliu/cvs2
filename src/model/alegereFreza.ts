@@ -23,6 +23,19 @@ export function sculaDinBiblioteca(f: FrezaSalvata, numar: number): Scula {
   };
 }
 
+/**
+ * Frezele care pot sta pe un rând al ferestrei exportului (ADR 0312 §7): cele cu CAM, a căror formă o primește măcar un fel de
+ * rând (profilul, buzunarul, găurirea, V-carve-ul). Bila e doar a finisării reliefului, care are un rând doar de citit: rămâne
+ * afară, ca nota bibliotecii și recunoașterea să n-o vadă (copia ferestrei, care știe doar forma în V, ar face din ea o plată).
+ */
+export function frezePeRanduri<F extends FrezaSalvata>(lista: readonly F[]): F[] {
+  const randuri: ReadonlyArray<Pick<Operatie, 'tip' | 'latura'>> = [
+    { tip: 'profil', latura: 'pe-linie' }, { tip: 'profil', latura: 'exterior' }, { tip: 'buzunar', latura: 'interior' },
+    { tip: 'gaurire', latura: 'interior' }, { tip: 'vcarve', latura: 'interior' },
+  ];
+  return lista.filter((f) => areCam(f.fel) && randuri.some((o) => motivFormaPeOperatie(o.tip, o.latura, sculaDinFreza(f).forma) === null));
+}
+
 /** Frezele care merg pe toate operațiile date (felul și latura fiecăreia), în ordinea listei; nimic fără operații. */
 export function frezePotrivite<F extends Freza>(lista: readonly F[], operatii: ReadonlyArray<Pick<Operatie, 'tip' | 'latura'>>): F[] {
   if (operatii.length === 0) return [];

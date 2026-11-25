@@ -4,7 +4,7 @@
  * împachetat) se transferă, nu se copiază (ADR 0014).
  */
 import type { IesireFoaie } from '../cam/iesire.ts';
-import type { ColtOrigine, Montaj } from '../ir/montaj.ts';
+import type { Montaj, OrigineXY } from '../ir/montaj.ts';
 import type { Document } from '../model/document.ts';
 import type { ResurseRelief } from '../relief/resurse.ts';
 import type { CerereReparare, OptiuniReparare } from '../model/reparare.ts';
@@ -30,7 +30,7 @@ import type { RezumatJob } from './rezumat.ts';
  * rămân doar montajul (colțul de origine, Z0) și confirmarea. Interfața primește doar rezultatul, ca date.
  */
 export type ParametriExport = {
-  readonly origine: ColtOrigine;
+  readonly origine: OrigineXY;
   readonly z0: 'sus' | 'jos';
   /** Postul (ADR 0083): implicit GRBL 1.1. */
   readonly post?: IdContract;

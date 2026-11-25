@@ -153,14 +153,14 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
   printr-o schiță.
 - **Observabilitatea:** erorile ajung în jurnalul aplicației; joburile își lasă marcajul.
 
-## Starea pe 25.11.2026, după-amiaza (după a treizeci și treia unire din cloud)
+## Starea pe 25.11.2026, după-amiaza (după a treizeci și patra unire din cloud)
 
-- **Pe test:** `dad1a711` (lotul 32: relieful, cu modelul în vederea 3D; plafoanele 1 000 / 125 kB; auditurile;
-  publicat pe 25.11 la 12:31, cu serverul neschimbat; completul pe `main` 45583202976, verde; proba de fum, bună).
-  Înainte: `d1a96fc4` (lotul 31, cama și roata cu palete), pe 25.11 la 10:44; `f2678300` (lotul 30, punctele de
-  prindere), la 06:03. **În `main`, nepublicate încă:** cotele în exportul vectorilor (10.4↑c-1, `f2f6fc57`) și
-  lotul unit la 13:18 (frezele, 16.A↑b-5; atelierul, 3.Cj-3 și 3.Cj-4, Easy 3Draw 18.32.0; exportul, 28.8↑n).
-  În drum: lotul 33, cu toate, într-o singură publicare.
+- **Pe test:** `2aaee0b4` (lotul 33: cotele în exportul vectorilor, 10.4↑c-1; frezele, 16.A↑b-5; atelierul, cadrul și
+  șurubul melc, Easy 3Draw 18.32.0; exportul, 28.8↑n, numele fișierului; publicat pe 25.11 la 14:24, cu serverul
+  neschimbat; completul pe `main` 45604669891, verde; proba de fum, bună). Înainte: `dad1a711` (lotul 32, relieful
+  în vederea 3D), pe 25.11 la 12:31; `d1a96fc4` (lotul 31), la 10:44. **În `main`, nepublicate încă:** 28.8↑o,
+  centrul foii ca origine XY0 (`3fd3bf49`). Pleacă împreună cu 16.A↑b-4 (pe `unire-2511t`, cu completul în lucru),
+  în lotul 34.
 - **`main`, din cloud:** pe 23.11: 3.Tq (`0ae9c6c1`); 11.3↑e și A.4 (`ddaa7ead`); 3.Tr, unită de linia elicelor
   (`d262e57a`); 25.8↑a și A.5 (`1b46c955`), cu reparația probei extensiilor (`8287d66e`); 11.3↑f, unită de linia
   planșelor (`f4601938`); A.6 (`4497d639`); 3.Xh (`2d1e482c`) și 12.1↑e-3 cu 12.1↑e-4 (`03460cab`); A.8a cu A.8b
@@ -174,27 +174,26 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
   (`9fd71053`); fereastra exportului, 28.8↑a–g (`c4ca5ec2`), și 3.Xk (`373699e6`); proba extensiilor, reparată
   (`13d9bcad`), 11.1↑d (`001b6325`) și 3.At (`cadac6c3`), scrise în sesiunea principală; 16.A↑h-5 (`4aee5405`) și
   16.A↑b-3 (`fdde5947`); 18.1↑a, relieful, cu documentul v28 (`c5b79526`); 10.4↑a-4 și 10.4↑b (`1eea83dd`). Pe
-  25.11: 3.Ca și 3.Cb, atelierul Easy 3Draw, 18.25.0 (`11877a3e`); 3.Cc și 3.Cd, 18.27.0 (`9815527f`); 3.Ce, 18.28.0 (`38ff9391`); 3.Cj-1 și 3.Cj-2, 18.30.0 (`e90edd2e`); plafoanele 1 000 / 125 (`caddd661`, ADR 0146); 18.1↑b, relieful în vederea 3D (`ef883ac1`); 10.4↑c-1, cotele în exportul vectorilor (`f2f6fc57`); 16.A↑b-5 (`03e64d33`), 3.Cj-3 și 3.Cj-4, 18.32.0 (`36559b49`), și 28.8↑n (`1eda6f0b`).
+  25.11: 3.Ca și 3.Cb, atelierul Easy 3Draw, 18.25.0 (`11877a3e`); 3.Cc și 3.Cd, 18.27.0 (`9815527f`); 3.Ce, 18.28.0 (`38ff9391`); 3.Cj-1 și 3.Cj-2, 18.30.0 (`e90edd2e`); plafoanele 1 000 / 125 (`caddd661`, ADR 0146); 18.1↑b, relieful în vederea 3D (`ef883ac1`); 10.4↑c-1, cotele în exportul vectorilor (`f2f6fc57`); 16.A↑b-5 (`03e64d33`), 3.Cj-3 și 3.Cj-4, 18.32.0 (`36559b49`), și 28.8↑n (`1eda6f0b`); 28.8↑o, centrul foii ca origine XY0 (`3fd3bf49`).
 - **Liniile** (vezi [indexul](README.md)):
   - **în lucru, pe ramuri, repornite pe 25.11 la 09:32** (owner-ul, în sesiunea principală, după resetarea limitei
     săptămânale: „vreau sa pornesti si celelalte sub-sesiuni”):
     - frezele: 16.A↑b-5, unită la 13:18; 16.A↑b-4 (nota „s-a schimbat în bibliotecă”) e gata pe ramura ei
       (`wip/16.A-freze-b4`, `AndreiBesliu/cvs2#37`): aduce `main` și raportează; 16.A↑b-6 („Pune-o înapoi în
-      bibliotecă”), la cuvântul owner-ului;
-    - exportul: 28.8↑n, unită la 13:18; 28.8↑o (centrul foii ca origine XY0; mișcă mașina) e gata pe ramură
-      (`ad41fd89`, completul 45598561359 în lucru): aduce `main` și o raportează separat; apoi 28.8↑h, care poate
-      porni, cu 16.A↑b-5 în `main`;
+      bibliotecă”), pornită pe 25.11 la 14:16, la „ok, porneste 10.4↑c-2 si 16.A↑b-6” al owner-ului, după b-4;
+    - exportul: 28.8↑n, unită la 13:18; 28.8↑o (centrul foii ca origine XY0; mișcă mașina), unită la 14:21; în
+      lucru, 28.8↑h (desenele ferestrei), apoi i și j–l;
     - relieful: 18.1↑b, unită la 11:02; în lucru, 18.1↑c (finisarea, cu bila în document, v29;
       `AndreiBesliu/cvs2#39`, ciornă), cu un rând doar de citit în fereastra exportului;
-    - atelierul: cama și roata cu palete, unite la 09:35; cadrul și melcul, la 13:18 (3.Cj, încheiată); fără
-      felie de pornit: 3.Tu și 3.Cf–3.Ci așteaptă răspunsurile owner-ului, 3.Ck tipărirea bilei și a cupei;
-    - cotele: 10.4↑c-1, unită la 12:20; fără felie: c-2 (DIMENSION și cifrele ca text), la cuvântul owner-ului.
+    - atelierul: cama și roata cu palete, unite la 09:35; cadrul și melcul, la 13:18 (3.Cj, încheiată); în lucru,
+      3.Tu (piesele rotunde pe același ax în „Modelul”, ADR 0283; Easy 3Draw 18.33.0), pornită de owner în sesiunea
+      liniei („1a, 2a, 3a la 3.Tu, pornește”); 3.Cf–3.Ci vin după ea, 3.Ck după tipărirea bilei și a cupei;
+    - cotele: 10.4↑c-1, unită la 12:20; c-2 (DIMENSION în DXF și cifrele ca text), pornită pe 25.11 la 14:16, la
+      același cuvânt al owner-ului.
 
     Se unesc la raportul liniei, în ordinea rapoartelor. **Restul de mărime** (din 25.11, cu plafoanele noi; după
     lotul de la 13:18: 109,9 kB în total, 8,5 kB în pornire): fiecare linie își spune în raport cât adaugă, iar una
     care nu mai încape se oprește și scrie aici (plafonul e decizia owner-ului);
-  - **la owner:** 3.Tu (unde stă axul pieselor rotunde în vederea „Modelul” din Easy 3Draw; trei întrebări, cu
-    recomandările 1a, 2a, 3a, în `docs/linii/elice.md`; ADR 0283): din 24.11 seara, a liniei atelierului;
   - **pornită pe 24.11, cu ADR-ul propus întâi:** atelierul Easy 3Draw (piese și configuratoare noi, compatibile în
     construcții; cererea owner-ului, în sesiunea liniei bibliotecii, pe ramura ei; ADR 0284, acceptat cu 1a–4a,
     feliile 3.Ca–3.Cj; 3.Ca, conectorul perpendicular, gata pe ramură, cu porțile în lucru;
@@ -223,10 +222,11 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
 - **La owner:**
   - „cine unește în `main`” (recomandarea: doar sesiunea principală; pe 23–24.11, biblioteca și frezele au scris întâi
     aici, iar felia era deja în lot: unirea a rămas aici);
-  - arhivarea sesiunii exportului (se poate, din 24.11) și ștergerea ramurii ei de pe `origin`;
-  - cele trei întrebări ale lui 3.Tu (axul pieselor rotunde în „Modelul”), acum la linia atelierului;
-  - plafoanele: totalul 880,9 / 900 kB după cote (rămân 19,1 kB); pornirea cu ușa și cu Atelierul, 116,4 / 120
-    (rămân 3,6 kB);
+  - proba pe mașină a centrului foii ca origine XY0 (28.8↑o): zero-ul în mijlocul foii, întâi în aer;
+  - cele patru întrebări din auditul elicelor (recomandările 1a, 2a, 3a, 4a; `docs/linii/audit-elice.md`) și
+    arhivarea sesiunii elicelor;
+  - pachetul Easy 3Draw, 514,4 kB, peste pragul de 0,5 MB din ADR 0284 (recomandarea: mergem mai departe, ne uităm
+    din nou la 1 MB); tipărirea pieselor noi (cama, roata cu palete, cadrul, melcul cu roata de 24);
   - verificarea juridică (GDPR) a utilizării aplicației, înaintea live-ului (ADR 0262 §3); pe test, colectarea merge
     din 24.11;
   - fondul semnului lui Easy 3Draw (gri-albăstrui, nu crem) și rândul de „ce e nou” al lui 18.20.0;

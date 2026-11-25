@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 // Calculul acțiunilor pe care le dă fereastra asta (`actiuniDocument.ts`, `laCerere`) vine cu ea, nu în pachetul de pornire.
 import '../ui/actiuniDocumentCalcul.ts';
-import type { ColtOrigine } from '../ir/montaj.ts';
+import type { OrigineXY } from '../ir/montaj.ts';
 import { esteCaleDeschisa, type Document, type Operatie } from '../model/document.ts';
 import type { ElementLume } from '../model/lume.ts';
 import { chenarElement, conturElement, esteContur } from '../model/forme.ts';
@@ -11,7 +11,8 @@ import type { FinisareExport } from '../ui/FisaFinisare.tsx';
 import { DialogExport } from '../ui/DialogExport.tsx';
 import type { CerereExport, FrezaOferita, FrezaRestOperatie, OperatieExport, OrigineFreza, Rand, SculaOperatie, StareExport } from '../ui/exportRand.ts';
 import { frezeleOperatiei } from '../model/formaFrezei.ts';
-import { frezePotrivite, pasLateralDin, sculaDinBiblioteca } from '../model/alegereFreza.ts';
+import { frezePeRanduri, frezePotrivite, pasLateralDin, sculaDinBiblioteca } from '../model/alegereFreza.ts';
+import type { FrezaSalvata } from '../model/freza.ts';
 import type { FrezaRest, Scula } from '../model/document.ts';
 import { useBibliotecaProiect } from './bibliotecaProiect.ts';
 import { cuprinse } from '../model/ordine.ts';
@@ -79,7 +80,7 @@ type Props = {
   /** Documentul cu toate foile (ADR 0210 §5): „Toate foile” și plăcuțele tuturor. */
   readonly toate: Document;
   /** „Raportul foilor…” (ADR 0210 §6): aplicația închide exportul și deschide raportul. */
-  readonly onRaport?: (p: { readonly origine: ColtOrigine; readonly z0: 'sus' | 'jos' }) => void;
+  readonly onRaport?: (p: { readonly origine: OrigineXY; readonly z0: 'sus' | 'jos' }) => void;
   /**
    * „Alege pe desen…” (ADR 0211, 3a): operația `operatie` a piesei `piesa`, cu urechile rândului; aplicația ascunde fereastra și
    * pune pânza în modul urechilor.
@@ -281,28 +282,33 @@ export function ExportConectat({
    * preferat (fereastra îl schimbă după celelalte freze), originea, pasul și pasul lateral.
    */
   const biblioteca = useBibliotecaProiect();
+  /** O freză din bibliotecă, cum o primește fereastra (ADR 0300 §4): copia ei, cu originea, pasul și pasul lateral. */
+  const oferita = (f: FrezaSalvata): FrezaOferita => {
+    const s = sculaDinBiblioteca(f, f.numar);
+    return {
+      id: f.id, nume: f.nume, pas: f.pas, pasLateral: pasLateralDin(f),
+      scula: {
+        numar: s.numar, diametru: s.diametru,
+        // Doar forma în V (rândurile n-au bile: `frezePeRanduri`, ADR 0312 §7).
+        ...(s.forma?.tip === 'v' ? { forma: { tip: 'v' as const, unghi: s.forma.unghi, ...(s.forma.varf !== undefined ? { varf: s.forma.varf } : {}) } } : {}),
+        origine: origineDin(s)!,
+      },
+    };
+  };
   const frezeOferite = useMemo(() => {
     const dupaFel = new Map<string, readonly FrezaOferita[]>();
     return (r: Pick<Rand, 'tip' | 'latura'>): readonly FrezaOferita[] => {
       const k = `${r.tip}/${r.latura}`;
       const gata = dupaFel.get(k);
       if (gata) return gata;
-      const lista = frezePotrivite(biblioteca.freze, [{ tip: r.tip, latura: r.latura }]).map((f): FrezaOferita => {
-        const s = sculaDinBiblioteca(f, f.numar);
-        const origine = origineDin(s)!;
-        return {
-          id: f.id, nume: f.nume, pas: f.pas, pasLateral: pasLateralDin(f),
-          scula: {
-            numar: s.numar, diametru: s.diametru,
-            ...(s.forma?.tip === 'v' ? { forma: { tip: 'v' as const, unghi: s.forma.unghi, ...(s.forma.varf !== undefined ? { varf: s.forma.varf } : {}) } } : {}),
-            origine,
-          },
-        };
-      });
+      const lista = frezePotrivite(biblioteca.freze, [{ tip: r.tip, latura: r.latura }]).map(oferita);
       dupaFel.set(k, lista);
       return lista;
     };
   }, [biblioteca.freze]);
+  // Toată biblioteca cu CAM (ADR 0300 §5, felia 16.A↑b-4), pentru nota „s-a schimbat în bibliotecă” și recunoașterea; null cât
+  // nu e citită (fereastra nu spune „nu mai e în bibliotecă” înainte să știe).
+  const bibliotecaToata = useMemo(() => (biblioteca.incarcata ? frezePeRanduri(biblioteca.freze).map(oferita) : null), [biblioteca]);
 
   const exporta = (c: CerereExport): void => {
     const loc = c.ordine ? new Map(c.ordine.map((k, i) => [k, i])) : null;
@@ -356,6 +362,7 @@ export function ExportConectat({
       {...(placuteToate ? { placuteToate } : {})}
       foi={toate.foi.length}
       {...(biblioteca.freze.length > 0 ? { frezeOferite } : {})}
+      bibliotecaToata={bibliotecaToata}
       {...(onRaport ? { onRaport } : {})}
       {...(onAlegeUrechi ? {
         onAlegeUrechi: (cheie: string, u: { readonly numar: number; readonly latime: number; readonly grosime: number }) => {

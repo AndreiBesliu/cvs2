@@ -19,14 +19,14 @@ import { verdicteGresite, type GrupExport, type VerdictRand } from './exportGrup
 import { treceriEgale } from './exportDeseneCalcul.ts';
 import { DesenColt, DesenZ0, type DesenComun } from './exportDesene.tsx';
 import { Cartonase, Poza } from './exportPoze.tsx';
-import { FisaOperatie, ListaBiblioteca, RAND_DREPT, type ContextFisa } from './FisaOperatie.tsx';
+import { cuAceeasiFreza, FisaOperatie, ListaBiblioteca, NotaBiblioteca, RAND_DREPT, type ContextFisa } from './FisaOperatie.tsx';
 import { FisaFinisare, RandListaFinisare, type FinisareExport } from './FisaFinisare.tsx';
 import {
-  bandaBuna, CHEI_COLT, CHEI_LATURA, citesteRest, COLTURI, DIAMETRU_FUND_IMPLICIT, faraNumar, incrustatieVRand, inMargini,
+  bandaBuna, CHEI_COLT, CHEI_LATURA, citesteRest, ORIGINI, DIAMETRU_FUND_IMPLICIT, faraNumar, incrustatieVRand, inMargini,
   INTRARI_IMPLICITE, intregInMargini, jocFolosit, laturi, LUNGIME_ZIGZAG_IMPLICITA, margineBuna, MAXIM_REST, PLACUTE_NUMITE, puntiBune,
   RAMPA_IMPLICITA, razaEliceImplicita, restBun, rezervaExplicatii, spatiuFolosit, UNGHI_COBORARE_IMPLICIT, URECHI_IMPLICITE, type BunRand,
   type CerereExport, type FrezaRestOperatie, type IncrustatieDreaptaOperatie, type Latura, type OperatieExport, type Rand, type RandRest,
-  cuFrezaAleasa, frezeRanduri, numarPentruRand, oferitePentruRest, type FrezaOferita, type OrigineFreza, type SculaOperatie, type StareExport,
+  cuFrezaAleasa, cuValorileNoi, frezeRanduri, locuriFreze, numarPentruRand, oferitePentruRest, stareOrigine, type FrezaOferita, type OrigineFreza, type SculaOperatie, type StareExport,
   type UndeFreza,
   type ValoriOperatie,
 } from './exportRand.ts';
@@ -103,6 +103,11 @@ type Props = {
    * fără listă (de exemplu, o bibliotecă goală).
    */
   readonly frezeOferite?: (r: Pick<Rand, 'tip' | 'latura'>) => readonly FrezaOferita[];
+  /**
+   * Toate frezele din „Frezele mele” care pot sta pe un rând (ADR 0300 §5, felia 16.A↑b-4; fără bile, ADR 0312 §7), pentru nota
+   * „s-a schimbat în bibliotecă” și recunoaștere; null (sau lipsă) cât biblioteca nu e citită.
+   */
+  readonly bibliotecaToata?: readonly FrezaOferita[] | null;
   /**
    * Finisările reliefului de pe foaie (ADR 0312 §7): rânduri doar de citit, la locul lor în ordinea tăierii (se mută în „A mea”,
    * iar Exportă le scrie rangul ca celorlalte); valorile lor se schimbă din secțiunea Tăierea a panoului.
@@ -213,13 +218,13 @@ export function DialogExport(
   {
     operatii, ordineAutomata: automataLucrarii, baza, descrieri, doarCitire, onExporta, onInchide, onReseteaza, stare, setariMasina,
     onSetariMasina, supracursa, onSupracursa, prinFoaie, onPrinFoaie, onDeschideInMasina, trimite = false, foaie, numeFoaie, placute, foi,
-    placuteToate, onRaport, grosimeFoaie, onAlegeUrechi, frezeOferite, finisari = [],
+    placuteToate, onRaport, grosimeFoaie, onAlegeUrechi, frezeOferite, bibliotecaToata = null, finisari = [],
   }: Props,
 ) {
   const limba = useLimba();
   // În română, numerele se arată cu virgulă; se citesc cu oricare separator.
   const text = (x: number): string => textNumar(x, limba === 'ro');
-  const [origine, setOrigine] = useState<(typeof COLTURI)[number]>('stanga-jos');
+  const [origine, setOrigine] = useState<(typeof ORIGINI)[number]>('stanga-jos');
   const [z0, setZ0] = useState<'sus' | 'jos'>('sus');
   const [post, setPost] = useState<IdContract>('grbl-11');
   const [unitatiCerute, setUnitati] = useState<Unitati>('mm');
@@ -564,6 +569,26 @@ export function DialogExport(
     });
     schimba(cheie, cuFrezaAleasa(p, unde, f, numar, text));
   };
+  /**
+   * „Ia valorile noi” (ADR 0300 §5, felia 16.A↑b-4): pe un loc al unui rând, sau pe toate locurile ferestrei cu aceeași freză
+   * din bibliotecă (într-o singură schimbare); T-ul și pașii rămân.
+   */
+  const iaValorileNoi = (cheie: string, unde: UndeFreza, f: FrezaOferita): void => {
+    const p = param[cheie];
+    if (p) schimba(cheie, cuValorileNoi(p, unde, f, text));
+  };
+  const iaValorileNoiPeToate = (f: FrezaOferita): void => {
+    schimbat();
+    setParam((v) => {
+      const nou: Record<string, Rand> = { ...v };
+      for (const [k, p] of Object.entries(v)) {
+        let r = p;
+        for (const l of locuriFreze(p)) if (l.origine?.biblioteca.id === f.id) r = { ...r, ...cuValorileNoi(r, l.unde, f, text) };
+        nou[k] = r;
+      }
+      return nou;
+    });
+  };
   // „Pune urechile unde țin” (ADR 0211, b): rândurile pieselor desprinse, cu urechi, care sunt în fereastră, trec pe „unde
   // ține”, într-o singură schimbare; nota spune câte, până la exportul următor.
   const [undeTinePuse, setUndeTinePuse] = useState<number | null>(null);
@@ -671,6 +696,7 @@ export function DialogExport(
     // doar dacă vreun rând are ce alege (sau o freză din bibliotecă).
     const oferiteRand = lista.map((_, k) => oferitePentruRest(drepte, k === 0 ? prima : lista[k - 1]?.diametru ?? ''));
     const cuBiblioteca = lista.some((r, k) => (oferiteRand[k]?.length ?? 0) > 0 || r.origine);
+    const stari = lista.map((r) => stareOrigine({ unde: 'scula', origine: r.origine ?? null, diametru: r.diametru }, bibliotecaToata));
     return (
       <div className="campuri-rest" data-rest={fel === 'buzunar' ? cheie : `${fel}:${cheie}`}>
         {/* La buzunar, „Frezele de rest” e titlul grupului; la fundul plat și la dop, lista își spune numele (auditul exportului, 9). */}
@@ -688,6 +714,7 @@ export function DialogExport(
           <div className="rand-rest freza-rest" role="row" data-rest-rand={k} key={k}>
             {cuBiblioteca && ((oferiteRand[k]?.length ?? 0) > 0 || r.origine ? (
               <ListaBiblioteca data-camp={`${pre}rest-biblioteca`} oferite={oferiteRand[k] ?? []} origine={r.origine} oprit={oprit} eticheta={false}
+                recunoscuta={stari[k]?.fel === 'recunoscuta' ? stari[k].freza.nume : undefined}
                 onAlege={(f) => { alegeFreza(cheie, f, { rest: fel, k }); }}
                 onMana={() => { pune(lista.map((x, i) => (i === k ? { ...x, origine: null } : x))); }} />
             ) : <span className="gol-biblioteca" />)}
@@ -699,6 +726,14 @@ export function DialogExport(
               title={t('export.pas-lateral.titlu')} aria-invalid={!bune[k]} onChange={(ev) => { pune(lista.map((x, i) => (i === k ? { ...x, pas: ev.target.value } : x))); }} />
             <button type="button" data-camp={`${pre}rest-scoate`} disabled={oprit} aria-label={t('export.rest.scoate')} title={t('export.rest.scoate')}
               onClick={() => { pune(lista.filter((_, i) => i !== k)); }}>×</button>
+            {/* Nota frezei față de bibliotecă (ADR 0300 §5, felia 16.A↑b-4), pe tot rândul tabelului. */}
+            {(stari[k]?.fel === 'schimbata' || stari[k]?.fel === 'stearsa') && (
+              <div className="nota-rest">
+                <NotaBiblioteca stare={stari[k] ?? null} origine={r.origine ?? null} oprit={oprit} fmt={fmtFreza}
+                  peToate={stari[k]?.fel === 'schimbata' ? cuAceeasiFreza(param, bibliotecaToata, stari[k].freza.id) : 0}
+                  onIa={(f) => { iaValorileNoi(cheie, { rest: fel, k }, f); }} onIaToate={iaValorileNoiPeToate} />
+              </div>
+            )}
           </div>
           ))}
         </div>
@@ -1027,7 +1062,8 @@ export function DialogExport(
   );
   const contextFisa: ContextFisa = {
     dupaCheie, param, total: ordine.length, doarCitire, schimba, randBun, greseliRand, conflict, treceri, taieturaRand, text, fmtFreza, fmtTrecere,
-    grosimeFoaie, supracursaCitita, cuSupracursa, onAlegeUrechi, frezeRest, grup, frezeOferite, alegeFreza,
+    grosimeFoaie, supracursaCitita, cuSupracursa, onAlegeUrechi, frezeRest, grup, frezeOferite, alegeFreza, bibliotecaToata,
+    iaValorileNoi, iaValorileNoiPeToate,
   };
   return (
     <div className="dialog" role="dialog" aria-modal="true" aria-labelledby="export-titlu" ref={radacina}
@@ -1156,8 +1192,8 @@ export function DialogExport(
               {grup('origine', 'foaia', <div className="dx-rand">
           <label>
             {t('export.origine')}
-            <select value={origine} data-camp="origine" onChange={(e) => { schimbat(); setOrigine(e.target.value as (typeof COLTURI)[number]); }}>
-              {COLTURI.map((c) => <option key={c} value={c}>{t(CHEI_COLT[c])}</option>)}
+            <select value={origine} data-camp="origine" onChange={(e) => { schimbat(); setOrigine(e.target.value as (typeof ORIGINI)[number]); }}>
+              {ORIGINI.map((c) => <option key={c} value={c}>{t(CHEI_COLT[c])}</option>)}
             </select>
           </label>
               </div>, [], () => <DesenColt colt={origine} nume={t(CHEI_COLT[origine])} onColt={(c) => { schimbat(); setOrigine(c); }} />)}

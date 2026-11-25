@@ -11,9 +11,10 @@ Starea: **3.Ca (conectorul perpendicular, Easy 3Draw 18.24.0) și 3.Cb (conector
 bucșă; 18.25.0), unite în `main` cu lotul 28 (`11877a3e`); 3.Cc (cremaliera; 18.26.0) și 3.Cd (arcul; 18.27.0),
 unite în `main` pe 25.11 (`9815527f`); 3.Ce (punctele de prindere și „Se prinde cu”; 18.28.0), unită în `main` pe
 25.11 (`38ff9391`, PR-ul `AndreiBesliu/cvs2#28`); 3.Cj-1 (cama; 18.29.0) și 3.Cj-2 (roata cu palete; 18.30.0), unite
-în `main` pe 25.11 (`e90edd2e`, PR-ul `AndreiBesliu/cvs2#29`); 3.Cj-3 (cadrul; 18.31.0) gata pe 25.11, pe ramură, de
-unit (PR-ul `AndreiBesliu/cvs2#33`); 3.Cj-4 (șurubul melc; 18.32.0) gata pe 25.11, de unit după ea. Cu melcul, 3.Cj e
-încheiată; urmează, la răspunsurile owner-ului, 3.Tu, apoi 3.Cf.** Versiunea următoare a pachetului: 18.33.0._
+în `main` pe 25.11 (`e90edd2e`, PR-ul `AndreiBesliu/cvs2#29`); 3.Cj-3 (cadrul; 18.31.0) și 3.Cj-4 (șurubul melc;
+18.32.0), unite în `main` pe 25.11 (`36559b49`, PR-ul `AndreiBesliu/cvs2#33`). Cu melcul, 3.Cj e încheiată. Linia n-are
+felie în lucru: 3.Tu și 3.Cf–3.Ci așteaptă răspunsurile owner-ului la cele trei întrebări ale lui 3.Tu, iar 3.Ck,
+tipărirea bilei și a cupei.** Versiunea următoare a pachetului: 18.33.0._
 
 ## Numerele liniei
 

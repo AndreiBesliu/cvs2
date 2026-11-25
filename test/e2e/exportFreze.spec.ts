@@ -26,8 +26,9 @@ test('pe rând: doar frezele potrivite; aleasă, T, Ø, forma și pasul ei; Expo
   await adauga(page, 'dreptunghi');
   await page.locator('[data-actiune="export.gcode"]').click();
   const e1 = fisa(page, 'e1/e1');
-  // Freza operației e scrisă de mână (T1 Ø6); pe un profil, doar frezele plate standard, în ordinea bibliotecii.
-  await expect(lista(e1).locator('option:checked')).toHaveText('Scrisă de mână');
+  // Freza operației e scrisă de mână (T1 Ø6), la fel cu Plată Ø6 (recunoașterea, 16.A↑b-4); pe un profil, doar frezele plate
+  // standard, în ordinea bibliotecii.
+  await expect(lista(e1).locator('option:checked')).toHaveText('Scrisă de mână (ca „Plată Ø6”)');
   await expect(oferite(e1)).toHaveText(['Plată Ø3,175', 'Plată Ø6', 'Plată Ø12']);
   // T6 scris de mână pe rândul ăsta (Ø6) nu e al altei freze: freza rândului pleacă, deci Plată Ø12 își ia T6.
   await e1.locator('[data-camp="scula"]').fill('6');

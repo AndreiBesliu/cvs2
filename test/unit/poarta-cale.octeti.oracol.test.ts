@@ -35,7 +35,7 @@ const ORIGINI = ['stanga-jos', 'dreapta-jos', 'dreapta-sus', 'stanga-sus'] as co
 test('lipire: programele documentelor fără căi (toate corpusurile de lipire 2.3a–2.6 și placa 1) sunt, octet cu octet, cele ale aplicației de dinainte de felia 2.7b (417570d)', { skip: SCHEMA >= 9 ? false : `aplicația e pe schema ${SCHEMA}` }, async () => {
   const fam: Record<string, string[]> = {};
   let trecute = 0;
-  const pune = async (f: string, doc: unknown, origine: (typeof ORIGINI)[number], z0: 'sus' | 'jos'): Promise<void> => {
+  const pune = async (f: string, doc: unknown, origine: (typeof ORIGINI)[number] | 'centru', z0: 'sus' | 'jos'): Promise<void> => {
     const r = await programulAplicatiei(doc as never, { origine, z0 });
     if (r.ok) trecute++;
     (fam[f] ??= []).push(sha(r.ok ? r.text : `REFUZ: ${r.motiv}`));

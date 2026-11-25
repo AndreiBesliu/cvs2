@@ -1765,6 +1765,30 @@ nav button[aria-pressed='true'] {
   }
 }
 
+/*
+ * Nota unei freze față de bibliotecă (ADR 0300 §5, felia 16.A↑b-4): ce s-a schimbat acolo, apoi „Ia valorile noi” și „Pe toate”,
+ * cu aspect de buton; în tabelul frezelor de rest, pe tot rândul.
+ */
+.dialog .nota-biblioteca {
+  flex-basis: 100%;
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-1) var(--sp-2);
+  color: var(--t-slab);
+  font-size: var(--fs-2);
+}
+
+.dialog .nota-biblioteca button {
+  border-color: var(--l-camp);
+  padding: 0 var(--sp-3);
+}
+
+.dialog .tabel-rest .nota-rest {
+  grid-column: 1 / -1;
+}
+
 /* Incrustația (ADR 0170 §5): jocurile și marginea dopului pe rândul lor, nota sub ele, pe toată lățimea. */
 .dialog .campuri-incrustatie {
   display: flex;

@@ -1800,7 +1800,7 @@ care). Fereastra are trei părți:
 - **fișele**, în dreapta, una sub alta. Fiecare are câmpurile grupate pe întrebări (Ce tăiere, Freza, Cât de adânc, Sensul de
   tăiere, Rampa, Intrările, Colțurile, Urechile; la un buzunar, Cum golește, Cum coboară, Frezele de rest; la un V-carve,
   Fundul plat; la o incrustație, ale ei). În stânga fiecărui grup, explicația lui; când treci cu mausul peste un câmp sau intri
-  în el, explicația câmpului. Deasupra explicației, la colțul XY0, la Z0 și supracursă, la freză, adâncime, sens, rampă,
+  în el, explicația câmpului. Deasupra explicației, la originea XY0, la Z0 și supracursă, la freză, adâncime, sens, rampă,
   intrări și urechi, desenul întrebării, făcut din valorile tale: foaia cu colțul ales (un clic pe alt colț din desen îl alege),
   secțiunea foii pe masă cu Z0 și tăieturile care trec în masă, profilul frezei, secțiunea tăieturii cu trecerile, drumul
   frezei în jurul piesei sau al găurii (ce rămâne stă în dreapta drumului la urcare), rampa din lateral, intrările de sus,
@@ -1827,7 +1827,11 @@ care). Fereastra are trei părți:
   operațiilor schimbate în ea se scriu în proiect doar la **Exportă**.
 
 În fișele foii și mașinii alegi:
-- **colțul de origine** al foii (stânga-jos, dreapta-jos, dreapta-sus, stânga-sus): unde e zero-ul X/Y pe mașină;
+- **originea XY0**: unde e zero-ul X/Y pe mașină, într-un colț al foii (stânga-jos, dreapta-jos, dreapta-sus, stânga-sus)
+  sau în **centrul foii**. Se alege din listă sau cu un clic pe punctul din desen. Cu centrul, programul are coordonate
+  negative în jumătatea din stânga și în cea de jos; pe mașină, pune zero-ul X/Y în mijlocul foii (unde se întâlnesc
+  diagonalele, sau la jumătatea fiecărei laturi măsurate). Programul spune în antet unde e originea, iar panoul Mașina o
+  arată lângă zero;
 - **Z0**: fața de sus a materialului sau fața de jos (masa de sacrificiu);
 - **Supracursa** (mm, între 0 și 2, implicit 0): cât coboară tăieturile prin placă sub fața ei de jos, în masa de sacrificiu,
   ca pe o placă puțin mai groasă decât cea scrisă să nu rămână o piele. [Gaura](#incrustatie-drept) incrustației și
@@ -1843,7 +1847,7 @@ care). Fereastra are trei părți:
   program în aer;
 - **Unitățile**: mm (implicit) sau inch (cu 5 zecimale și avansul în inch/min); antetul rămâne în mm. RichAuto citește doar mm;
 - **Numele fișierului**, fără extensie: implicit cel al foii, dacă i-ai scris unul în proprietățile ei (fără diacritice,
-  cu liniuțe: „Ușă Țarc 2” dă `usa-tarc-2`), altfel `cncvs2-` și colțul de origine. Îl poți schimba înainte de **Exportă**;
+  cu liniuțe: „Ușă Țarc 2” dă `usa-tarc-2`), altfel `cncvs2-` și originea (colțul, de exemplu `stanga-jos`, sau `centru`). Îl poți schimba înainte de **Exportă**;
   sub câmp scrie ce se descarcă, iar fișierele pe freză, ale dopurilor și arhiva foilor îl iau și ele în față. Nu merge gol,
   mai lung de 80 de caractere, cu `< > : " / \ | ? *`, cu spațiu sau punct la capete, nici un nume rezervat de Windows
   (CON, PRN, AUX, NUL, COM1…, LPT1…). Pe RichAuto, care citește de pe stick doar nume scurte, numele e al controlerului
@@ -1889,6 +1893,12 @@ V-carve și la incrustația în V), fiecare freză de rest (doar cele mai mici d
 pereți drepți și freza decupării benzii. Aleasă, freza își pune numărul T (după aceeași regulă, printre toate frezele
 ferestrei), diametrul și pasul lateral; **Exportă** o scrie cu valorile ei de lucru. Un diametru schimbat de mână o face
 **Scrisă de mână** doar pe freza aceea.
+
+Proiectul ține o copie a fiecărei freze alese din bibliotecă. Dacă freza se schimbă apoi în **Frezele mele**, rândul spune ce
+s-a schimbat (de pildă „În bibliotecă, „Plată Ø6” are acum avansul 1.400 (aici 1.000).”), cu **Ia valorile noi** pentru freza
+aceea și, dacă și alte freze ale ferestrei vin din ea, **Pe toate (N)**; numărul T și pașii rămân, iar **Exportă** scrie valorile
+noi. O freză ștearsă din bibliotecă rămâne în proiect, cu nota „nu mai e în bibliotecă”. O freză scrisă de mână, la fel cu una
+din bibliotecă (același diametru, aceeași formă), apare ca **Scrisă de mână (ca „…”)**, fără să schimbe nimic în proiect.
 
 **Ordinea tăierii** stă în listă, deasupra operațiilor. Operațiile apar în ordinea în care se taie, cu locul lor în stânga (fișa
 spune „locul N din M”):
@@ -2122,8 +2132,8 @@ următor; lista erorilor și jurnalul arată și ele titlul fiecărui cod.
 - **Jog**: săgețile mută freza cu **Pasul** ales (0,1, 1, 10 sau 100 mm) și cu **Avansul** dat; diagonalele sunt o singură
   mișcare, în linie dreaptă; Z+ și Z− în dreapta. **Oprește jog-ul** apare cât mașina e în Jog.
 - **Zero XY** și **Zero Z** fac poziția de acum 0 în sistemul programului încărcat (altfel în cel activ), scris pe buton.
-  Dedesubt: unde e Z0 pentru programul exportat de aici (fața de sus a materialului sau cea de jos, pe masă) și colțul
-  originii XY.
+  Dedesubt: unde e Z0 pentru programul exportat de aici (fața de sus a materialului sau cea de jos, pe masă) și originea
+  XY (colțul foii sau centrul ei).
 - **Palparea Z**: pune placa de contact sub freză (pe material, dacă Z0 e sus; pe masă, dacă e jos), prinde clema și apasă
   **Palpează Z**. Freza coboară până atinge placa (cel mult **Distanța de căutare**, cu **Avansul căutării**), se ridică 2 mm,
   atinge din nou încet, scrie Z0 (atingerea minus **Grosimea plăcii**) și se ridică 5 mm. După palpare, mașina e în modul de

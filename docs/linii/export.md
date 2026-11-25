@@ -83,6 +83,9 @@ vreau ca ficare setare sa fie insotita de o ilustratie sugestiva, ca sa ajute us
 - **25.11: 28.8↑n gata** (numele fișierului, 5a), pe ramură; neunită. Câmpul în „Mașina și fișierul”, după Unități;
   propunerea din numele foii; numele aplicat după calcul, deci aceiași octeți. Otrăvurile 16 / 16. Pornirea +0,1 kB,
   totalul +1,0 kB (885,8 / 1 000). Urmează 28.8↑o (centrul foii ca origine).
+- **25.11: 28.8↑o gata** (centrul foii ca origine XY0, 6a), pe ramură; neunită. Montajul cu `centru`, antetul citit de
+  sender, punctul din mijlocul desenului XY0; colțurile, octet cu octet. Otrăvurile 13 / 13. Pornirea +0, totalul +0,1 kB
+  (885,9 / 1 000). Proba pe mașina owner-ului (zero-ul în mijlocul foii, o placă privită întâi în aer) rămâne a owner-ului.
 
 ## Ce s-a găsit (23.11)
 
@@ -177,14 +180,18 @@ vreau ca ficare setare sa fie insotita de o ilustratie sugestiva, ca sa ajute us
   Numele ales se aplică după calcul, pe firul principal (`cuNumele` din `actiuniExportCalcul.ts`), nu în worker și nu în
   `App.tsx` (pornirea). Câmpul e `data-camp="nume-fisier"`, în grupul `fisier`; nota de sub el, `data-nume-rezultat`;
   Rezultatul unui singur fișier poartă `data-fisier`. O probă care cere numele de azi nu dă foii un nume.
+- **Centrul ca origine (28.8↑o):** originea e `OrigineXY` (`src/ir/montaj.ts`), nu `ColtOrigine`; o listă nouă de origini
+  pleacă de la `ORIGINI` (în interfață, `ORIGINI` din `exportRand.ts`). Un text care spune „colțul {colt}” are varianta lui
+  pentru centru (`….centru`): desenul XY0, panoul Mașina, raportul foilor. Oracolele porții și buzunarului citesc centrul pe
+  hârtie; un tip de origine local al unei probe care primește corpusurile oracolului acceptă și `centru`. Cu centrul, I / J
+  pot diferi cu o unitate a ultimei zecimale de cele ale unui colț (strategia B a postului).
 - **Intervalul diacriticelor** se scrie cu escape-uri (`\u0300-\u036f`), nu cu semnele combinatoare: scrise direct, nu se
   văd, iar o otravă pe ele iese VOID.
 
 ## Ce rămâne
 
-Din ADR 0290, nimic: toate feliile (a–f) și 28.8↑g sunt gata. Din ADR 0291 (după audit): 28.8↑o acum (centrul foii ca
-origine; mișcă mașina, deci oracolele și emulatorul); 28.8↑h, i, j, k, l, în ordine, după ce 16.A↑b-5 e în `main`; p după
-j (cu linia frezelor), q după i. Nicio întrebare deschisă la owner. Pentru alte linii, mai târziu:
+Din ADR 0290, nimic: toate feliile (a–f) și 28.8↑g sunt gata. Din ADR 0291 (după audit): 28.8↑n și 28.8↑o sunt gata pe
+ramură; 28.8↑h, i, j, k, l, în ordine, după ce 16.A↑b-5 e în `main`; p după j (cu linia frezelor), q după i. Nicio întrebare deschisă la owner. Pentru alte linii, mai târziu:
 
 - **Clasicul (28.2↑) și Pas cu pas (28.4↑)** iau fișa operației (`FisaOperatie`, cu `ContextFisa`) în panoul lor, cu starea
   lor, fără s-o copieze (ADR 0290, „Cu canvas-ul aranjamentelor”): la Clasic, în locul panoului din dreapta, cu Simularea filă;

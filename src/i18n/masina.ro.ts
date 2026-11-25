@@ -116,6 +116,7 @@ export const roMasina = {
   'masina.z0.jos': 'Z0 al programului: fața de jos a materialului (masa de sacrificiu). Palpează cu placa pe masă, lângă material.',
   'masina.z0.necunoscut': 'Programul nu spune unde e Z0: verifică-l înainte de zero.',
   'masina.origine': 'Originea XY a programului: colțul {colt} al foii.',
+  'masina.origine.centru': 'Originea XY a programului: centrul foii.',
   'masina.colt.stanga-jos': 'stânga-jos',
   'masina.colt.dreapta-jos': 'dreapta-jos',
   'masina.colt.dreapta-sus': 'dreapta-sus',
