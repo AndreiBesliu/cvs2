@@ -176,7 +176,8 @@ test('butucul crește cu paletele, cât să rămână 0,8 mm între ele lângă 
   assert.deepEqual([{}, { diam: 24 }, { diam: 24, forma: 'curbate' }, { diam: 32, forma: 'curbate' }, { diam: 36 }, { diam: 38 }].map((d) => Lr.roataPaleteCote(d).incap), [24, 15, 12, 16, 23, 24]);
   // un număr cu zecimale e rotunjit, fără mesaj (e în margini)
   assert.equal(roata({ palete: 6.4 }).avert.length, 0);
-  assert.equal(Lr.roataPaleteCote({ palete: 6.4 }).palete, 6);
+  assert.deepEqual([6.4, 6.5, 6.6, 3.6, 24.4].map((palete) => Lr.roataPaleteCote({ palete }).palete), [6, 7, 7, 4, 24]);
+  assert.equal(roata({ palete: 3.6 }).avert.length, 0);
   const a = roata({ diam: 24, palete: 24 }).avert;
   assert.equal(a.length, 1);
   assert.match(a[0]!, /încap cel mult 15 palete/);
