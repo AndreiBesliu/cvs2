@@ -14465,6 +14465,20 @@ vigoare „unește ce se poate”
 - **Documentele:** decizia și paragraful de stare în `CLAUDE.md`; `docs/linii/principala.md` (plafoanele, intervalul
   ADR: următorul al sesiunii principale e 0147).
 
+## 2026-11-25 — Sesiunea principală în cloud: auditul ferestrei exportului și al elicelor, cerut sesiunilor lor (Model: Claude Fable 5.2)
+
+**Prompt:** „pot arhiva sesiunile exportului si elicelor?”, apoi „vreau sa le intrebi ce pot imbunatati in zona in care au lucrat? dar, defapt, pune-le sa faca un audit complet in acest sens”
+**Started:** 25.11, 10:05. **Completed:** 25.11, 10:22 (cererile trimise; rapoartele vin de la linii).
+
+- **Verificat înaintea răspunsului:** `wip/28.8-export` (`ef8a6dd6`) și `wip/3.Tq-elice` (`05bdc8ec`) sunt întregi în
+  `main`; PR-urile lor, închise (deschise: `#30` relieful, `#31` frezele, `#32` cotele); nicio verificare programată
+  pe cele două sesiuni. Deci se pot arhiva.
+- **Cererea de audit, trimisă amândurora (10:19),** cu vorbele owner-ului: zona fiecăreia pe `main` `caddd661`,
+  aplicația parcursă cu Playwright, ce să judece, doar audit (fără cod de produs, fără agenți), ce predau
+  (`docs/linii/audit-export.md`, `docs/linii/audit-elice.md`, raportul scurt pentru owner în sesiunea lor).
+- **Documentele:** decizia în `CLAUDE.md`; rândurile exportului și elicelor din indexul liniilor; starea din
+  `docs/linii/principala.md`.
+
 ## 2026-11-25 — Felia 10.4↑c-1: cotele în exportul vectorilor („Cu cotele”, stratul lor, cifrele ca trăsături; ADR 0330 §6, §7) (Model: Claude Opus 5.5)
 
 **Prompt:** „Pornește 10.4↑c” (sesiunea principală, 25.11, cu mesajele owner-ului: „am resetat limita saptamanale. azi este
