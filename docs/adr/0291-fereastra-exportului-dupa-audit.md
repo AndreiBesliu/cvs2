@@ -199,7 +199,8 @@ lui 28.8↑a (3 h 20 min, carcasa).
   - `export.hartie.spec.ts` (2 e2e): cele două constatări în fereastră;
   - `export.desene.test.ts` și `gaurire.spec.ts`, aduse la zi (găurirea pe hârtie din rând; greșeala lângă freză în locul
     refuzului după clic). Spec-urile e2e care deschid exportul, 321 / 321.
-- **Otrăvurile:** `28.8h.py`, 21 / 21 (11 unitare, 10 e2e). Două din `12.1f-4.py` (F01, F02), care mutau regula din
-  `cuTaieturiPrinFoaie`, țintesc acum `catFoaia`; prinse.
+- **Otrăvurile:** `28.8h.py`, 21 / 21 (11 unitare, 10 e2e). Patru vechi, îndreptate, prinse: F01 și F02 din `12.1f-4.py`
+  (regula din `cuTaieturiPrinFoaie`) țintesc acum `catFoaia`; E07 din `28.8a.py` și D01 din `28.8b.py` (copia trecerilor)
+  țintesc `treceri.ts`, cu un caz nou pe hârtie pentru D01 (19,05 cu pasul 1,5875: 12 treceri, nu 13).
 - **Mărimea:** pornirea +0 (111,2 kB), totalul +1,4 kB (891,7 / 1 000); bucata ferestrei +1,1 kB gzip (elicea desenată,
   greșeala găuririi, textele, modulele mici ale lucrării). Estimarea din tabel (kB ±0) nu socotise desenul elicei.

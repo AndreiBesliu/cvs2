@@ -14842,8 +14842,8 @@ gata de unit”, `b099c457`; 28.8↑n, `7996e77c`), la ordinul în vigoare „un
 - **Rămân în fereastră, cu proba lor:** urechile schiței (din lucrare, +1,3 kB), pasul lateral, coborârea, V-carve-ul,
   incrustațiile.
 - **Probele:** `export.hartie.test.ts` (4), `export.hartie.spec.ts` (2 e2e); spec-urile e2e ale exportului, 321 / 321.
-- **Otrăvurile:** `28.8h.py`, 21 / 21; F01, F02 din `12.1f-4.py`, îndreptate. **Mărimea:** pornirea +0, totalul 891,7 / 1 000
-  (+1,4).
+- **Otrăvurile:** `28.8h.py`, 21 / 21; patru vechi îndreptate și prinse (`12.1f-4` F01, F02; `28.8a` E07; `28.8b` D01).
+  **Mărimea:** pornirea +0, totalul 891,7 / 1 000 (+1,4).
 - **Manualul** (ro, en), ADR 0291 („Implementarea 28.8↑h”), fișa etapei 3, registrul otrăvurilor, nota liniei.
 
 **Completed:** 25.11, 13:25.
