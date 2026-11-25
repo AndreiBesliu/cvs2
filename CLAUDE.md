@@ -1643,6 +1643,19 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 25.11.2026, dimineața: **liniile, repornite după resetarea limitei săptămânale** (owner-ul, în sesiunea
+  principală: „am resetat limita saptamanale. azi este miercuri.” și „vreau sa pornesti si celelalte sub-sesiuni”). Sesiunea principală le-a scris celor patru sesiuni de linie
+  care aveau de lucru (09:35): **atelierul** (ultima tură se oprise cu eroare: reia 3.Cj-1, cama, și 3.Cj-2, roata cu
+  palete), **frezele** (16.A↑b-5, apoi b-4), **relieful** (18.1↑b, modelul reliefului în vederea 3D) și **cotele**
+  (10.4↑c, exportul cotelor). Relieful și cotele își așteptau felia „la cuvântul owner-ului”: mesajul lui de azi e
+  acel cuvânt. 3.Tu rămâne la răspunsurile lui la cele trei întrebări. Nepornite, fiindcă n-au sesiune în cloud sau
+  n-au nimic de făcut: exportul și elicele (încheiate, de arhivat), sesiunea designului („Variante design CVS2”, pe
+  calculatorul owner-ului, cu întrebarea ei despre felia zoomului). **Mărimea:** trei linii lucrează acum în același
+  rest (totalul, 19,1 kB din 900; pornirea cu ușa și cu Atelierul, 3,6 kB din 120): fiecare își spune în raport cât
+  adaugă, unirea merge în ordinea rapoartelor, iar o felie care nu mai încape se oprește și scrie sesiunii principale;
+  plafoanele rămân decizia owner-ului (recomandarea: totalul 1 000 kB, pornirea 125 kB). **Lotul 30 (3.Ce) e pe test
+  din 25.11, 06:03** (`f2678300`; completul pe `main` 45536382490, verde: unit 10 431 / 0, 12 sărite pe Linux; e2e
+  824 / 824; funcțiile pe emulatoare 136 / 136; paginile 59 / 59; proba de fum, bună): pe test e tot ce e în `main`.
 - 25.11.2026, spre dimineață (a douăzeci și noua unire din cloud): **atelierul Easy 3Draw: punctele de prindere și
   „Se prinde cu” (3.Ce), unite în `main`** (sesiunea principală, ramura `unire-2511d`, din `188c2bb6`). Linia
   atelierului, ramura `wip/3.Xh-biblioteca-ui`, `980f239c`, PR-ul `AndreiBesliu/cvs2#28` (ADR 0284), unită în
