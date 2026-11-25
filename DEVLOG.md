@@ -14705,7 +14705,8 @@ miercuri.” și „vreau sa pornesti si celelalte sub-sesiuni”). **Started:**
   nou (648 de nume).
 - **Porțile, în container:** tipurile, regulile de import; unitarele cotelor și ale exportului 2D; oracolul exportului 2D și
   al cotelor (cu Ghostscript pus local); e2e-urile cotelor, exportului vectorilor și setărilor; build-ul determinist. Pornirea
-  111,1 → 111,2 kB (cu ușa 116,2, cu Atelierul 116,5 / 125), totalul 880,9 → 884,2 / 1 000.
+  111,1 → 111,2 kB (cu ușa 116,2, cu Atelierul 116,5 / 125), totalul 884,8 → 888,1 / 1 000 (cu relieful 18.1↑b, adus
+  după; întâi scrisese 880,9 → 884,2, fără el). Unită în `main` de sesiunea principală (`f2f6fc57`, din `d8e69780`).
 - **Otrăvurile** (`test/otravuri/10.4c1.py`, într-o clonă): 41 / 44 (31 unitare: 28 prinse, X09, W11 și V02 practic
   echivalente; 6 e2e; 7 pe oracolul Python, cu corpusul regenerat la fiecare); X08, X10, X11, W01, W02, W05, V01 și E05 au
   scăpat întâi și sunt prinse după probele noi.

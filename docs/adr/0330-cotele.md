@@ -533,8 +533,8 @@ sub-sesiuni”). Felia c s-a împărțit în c-1 (exportul cotelor, desenate ca 
 - **Manualul:** „Exportul vectorilor” (bifa) și „Setările” (grupul Exportul), în ambele limbi.
 - **Cifrele:** unitare noi 15 (`cote.export.test.ts`) și 2 în `cote.setari.test.ts`; e2e noi 3 (`cote.export.spec.ts`, cu
   SVG-ul cotei măsurat de browser), plus probele Setărilor potrivite (șapte grupuri); otrăvurile, în raport. Pornirea 111,1 →
-  111,2 kB (cu ușa 116,2, cu Atelierul 116,5 / 125), totalul 880,9 → 884,2 / 1 000 kB (după `main` adus, cu plafoanele noi,
-  ADR 0146).
+  111,2 kB (cu ușa 116,2, cu Atelierul 116,5 / 125), totalul 884,8 → 888,1 / 1 000 kB (după `main` adus, cu relieful
+  18.1↑b și plafoanele noi, ADR 0146). Unită în `main` pe 25.11 (`f2f6fc57`).
 
 ## Răspunsurile owner-ului (24.11.2026)
 
