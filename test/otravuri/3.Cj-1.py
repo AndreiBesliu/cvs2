@@ -26,7 +26,9 @@ o('A06', LG, CU, 'const c = camp(d.cursa, 0.5, 24, 8, x =>', 'cama', 'cursa poat
 GR = 'const h = camp(d.grosime, 1, 20, 7.8, x =>'
 o('A07', LG, GR, 'const h = camp(d.grosime, 1, 20, 3.8, x =>', 'cama', 'cama implicită e subțire')
 o('A08', LG, GR, 'const h = camp(d.grosime, 1, 30, 7.8, x =>', 'cama', 'grosimea poate fi 30')
-o('A09', LG, 'if (Number.isFinite(n) && (n < a - 1e-9 || n > b + 1e-9)) avert.push(ce(String(x)', 'if (Number.isFinite(n) && n > 1e9) avert.push(ce(String(x)', 'cama', 'o valoare adusă înapoi în margini nu mai e spusă')
+# (din 3.Cl-1, decorațiunile au același rând în `campMarginit`: ancora ține și sfârșitul lui `camp` al camei)
+A09 = 'if (Number.isFinite(n) && (n < a - 1e-9 || n > b + 1e-9)) avert.push(ce(String(x).replace(".", Limba.zecimal)));\n      return x;\n    };'
+o('A09', LG, A09, A09.replace('(n < a - 1e-9 || n > b + 1e-9)', 'n > 1e9'), 'cama', 'o valoare adusă înapoi în margini nu mai e spusă')
 o('A10', LG, 'const n = numarCerut(v), x = zecime(Math.min(b, Math.max(a, Number.isFinite(n) ? n : implicit)));\n      if (Number.isFinite(n) && (n < a - 1e-9 || n > b + 1e-9)) avert.push(ce(String(x)',
   'const n = numarCerut(v), x = Math.min(b, Math.max(a, Number.isFinite(n) ? n : implicit));\n      if (Number.isFinite(n) && (n < a - 1e-9 || n > b + 1e-9)) avert.push(ce(String(x)', 'cama',
   'valorile nu se mai rotunjesc la zecimi')
