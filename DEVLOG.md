@@ -15263,3 +15263,26 @@ test, după ea.
   exportului într-un singur loc, `catFoaia`, cu finisarea înăuntru și cu proba ei; porțile ei rulează pe `985261ca`.
 - **Documentele:** decizia și paragraful de stare în `CLAUDE.md` (cu v30 pentru un câmp nou); indexul liniilor; starea din
   `docs/linii/principala.md`.
+
+## 2026-11-25 — Sesiunea principală în cloud: a patruzecea unire (exportul: 28.8↑h, fereastra „pe hârtie”, cu 28.8↑h-2) (Model: Claude Fable 5.2)
+
+**Prompt:** raportul liniei exportului („28.8↑h e gata de unit”, `2ecd0054`; apoi „28.8↑h-2 gata”, `3456b134`; apoi vârful
+`985261ca`, cu porțile pornite), la ordinul în vigoare „unește ce se poate”
+**Started:** 25.11, 16:00 (primul raport). **Completed:** unirea în `main`, 25.11, 21:13; publicarea pe test, pornită după ea.
+
+- **Primul raport** (`2ecd0054`): unită de probă peste 16.A↑b-4 (`unire-2511u`); completul 45629718056 a căzut la
+  `export.hartie.spec.ts:51`, de fiecare dată și local. Măsurat în browser: panoul 71–596 px, greșeala 651–696; rândul
+  frezei, 118 px în loc de ~59, din cauza etichetei „Scrisă de mână (ca „…”)”. Întoarsă liniei, cu cifrele.
+- **Al doilea raport** (`3456b134`, 28.8↑h-2): „Du-mă la …” aduce în vedere grupul primei greșeli. Peste unirea reliefului,
+  trei ciocniri, una în CAM (`src/cam/prinFoaie.ts`): întoarsă liniei; rezolvată în `catFoaia`, cu proba întâi.
+- **Vârful `985261ca`** (peste `b35e2f75`): completul 45672890113, verde (58 min): unit 10 581 / 0 (12 sărite, pe Linux), e2e
+  883 / 883, funcțiile pe emulatoare 136 / 136, paginile 60 / 60; rapidele, verzi. Linia a spus commit-ul și a pornit
+  porțile; verdele l-am citit eu din rulare, înaintea mesajului ei.
+- **Unirea, pe `unire-2511ab`** (din `e5c217b2`): `985261ca`, în `7d74ade2`, fără nicio ciocnire; arborele are exact codul
+  lui `985261ca` (`git diff` gol în afara fișierelor `.md`). Local: traducerile (1 155), catalogul, tipurile, probele
+  documentelor. Pornirea 111,4 kB (plafonul 125; cu ușa 116,5, cu Atelierul 116,9), totalul 909,1 / 1 000 kB, `/admin`
+  138,3 / 200, contul 30,2 / 32. Nimic pe server.
+- **Linia atelierului:** ADR 0285 (decorațiunile de Crăciun), acceptat de owner în sesiunea ei („Mergem cu recomandarile”);
+  consemnat în decizie și în index. 3.Cf-1, raportată la 21:10: își face completul unirii, peste `main`-ul acesta.
+- **Documentele:** decizia și paragraful de stare în `CLAUDE.md` (cu regula `catFoaia` și a probei „greșeala se vede”);
+  indexul liniilor; starea din `docs/linii/principala.md`.
