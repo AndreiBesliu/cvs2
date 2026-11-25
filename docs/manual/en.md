@@ -1878,7 +1878,7 @@ which). The window has three parts:
   its picture too, next to the box. What does not apply to the operation is not shown: on a pocket, a drilling or a
   V-carve, the profile's ramp, lead-ins, corners and tabs are missing, and a note under Cut says why;
 - the **bottom**, always in view: **Export**, **Close**, **Sheets report…**, the confirmations and, while a value is wrong,
-  the reason, with **Take me to …**, which brings its card and goes into the field to fix. The wrong value is also told in the
+  the reason, with **Take me to …**, which brings its card, with the mistake in view, and goes into the field to fix. The wrong value is also told in the
   field's group, and its card has a red dot in the list. The window closes with **Close**, with Esc or with a click outside
   it; the operation values changed in it go into the project only on **Export**.
 

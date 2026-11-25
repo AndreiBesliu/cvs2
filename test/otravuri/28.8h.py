@@ -1,7 +1,8 @@
 # Lista de otrăvuri a feliei 28.8↑h (rândul „pe hârtie” al ferestrei exportului, ADR 0291 §1), 25.11.2026, alese de autor:
 # regula adâncimii tăiate (gaura, bifa), trecerile și felul găuririi socotite de aplicație, pașii ciocănirii; în fereastră, ce
 # primește rândul (supracursa, bifa), desenul adâncimii și nota, desenul elicei, câmpul ieșirii, greșeala cercului care nu se
-# găurește și oprirea lui Exportă, diametrele cercurilor.
+# găurește și oprirea lui Exportă, diametrele cercurilor; „Du-mă la …” (28.8↑h-2): derularea până la greșeală, întinderile care
+# încap, focusul pe câmpul greșit, diametrul marcat greșit, grupul primei greșeli.
 # Se rulează cu `scripts/otravuri.py` (docs/otravuri.md), dintr-o clonă a ramurii, după commit; cele „e2e” cer build-ul.
 # o(id, fis, vechi, nou, set, ce): `vechi` apare EXACT o dată în fișier; altfel VOID.
 O = []
@@ -57,6 +58,19 @@ o('E08', DE, "    for (const m of motiveGaura(cheie, p)) pune(m, 'freza');", "  
   'greșeala cercului nu stă lângă freză')
 o('E09', DE, "minim: fmtFreza.format(mare / 2)", "minim: fmtFreza.format(mare)", 'e2e', 'freza cea mai mică spusă greșit')
 o('E10', EC, "[diametruCerc(e.forma.raza, e.matrice)]", "[e.forma.raza]", 'e2e', 'raza cercului luată drept diametru')
+
+# „Du-mă la …” aduce greșeala întreagă în vedere (28.8↑h-2, după unirea cu 16.A↑b-4).
+o('E11', DE, "      p.scrollTop += d;\n", "      void d;\n", 'e2e', '„Du-mă la …” aduce doar capul fișei sus, ca înainte')
+o('E12', DE, "      if (a - d < v.top + m) d = a - (v.top + m);", "      if (a - d < v.top - 1000) d = a - (v.top + m);", 'e2e',
+  'întinderea mai înaltă decât panoul: capătul ei de sus iese')
+o('E13', DE, "    const [a, b] = intinderi.find(([x, y]) => Number.isFinite(x) && Number.isFinite(y) && y - x <= loc) ?? intinderi[2] ?? [NaN, NaN];",
+  "    const [a, b] = intinderi[0] ?? [NaN, NaN];", 'e2e', 'mereu tot grupul, și când nu încape')
+o('E14', DE, "    camp?.focus({ preventScroll: true });\n  };", "  };", 'e2e', 'focusul nu trece pe câmpul greșit')
+o('E15', FO, "aria-invalid={!b.scula || conflict !== undefined || gauraRea}", "aria-invalid={!b.scula || conflict !== undefined}", 'e2e',
+  'diametrul frezei nu e marcat greșit când un cerc nu se găurește')
+o('E16', DE, "    const g = [...f.querySelectorAll<HTMLElement>('[data-grup]')].find((x) => x.querySelector(`[data-greseala], ${RAU}`) !== null);",
+  "    const g = [...f.querySelectorAll<HTMLElement>('[data-grup]')].find((x) => x.querySelector('[data-greseala]') === null);", 'e2e',
+  'alt grup decât cel al primei greșeli')
 
 SETURI = {
     'hartie': ['test/unit/export.hartie.test.ts', 'test/unit/export.desene.test.ts', 'test/unit/gaurire.test.ts'],

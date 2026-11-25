@@ -200,6 +200,9 @@ export function FisaOperatie({ cheie, loc, c: ctx }: { readonly cheie: string; r
   // Câmpul ieșirii din gaură nu se aplică pe elice: lipsește când lucrarea găurește toate cercurile așa. Cu un cerc refuzat
   // (freza încă de ales) sau cu o valoare greșită, rămâne la vedere.
   const cuCiocanire = !h.gaurire || !h.gaurire.cercuri.every((c) => c.fel === 'elice') || h.gaurire.cercuri.length === 0 || !b.retragere;
+  // Un cerc pe care freza scrisă nu-l poate găuri (greșeala stă în grupul frezei): diametrul frezei e câmpul de schimbat, deci e
+  // marcat greșit și primește focusul la „Du-mă la …” (28.8↑h-2).
+  const gauraRea = h.gaurire?.cercuri.some((c) => c.fel === 'mare' || c.fel === 'mic') ?? false;
   const desen = (g: GrupExport): ((c: DesenComun) => ReactNode) | undefined => {
     switch (g) {
       case 'freza': return (c) => <DesenFreza c={c} numar={p.numarScula} diametru={citesteNumar(p.diametruScula)} v={p.formaScula === 'v'}
@@ -291,7 +294,7 @@ export function FisaOperatie({ cheie, loc, c: ctx }: { readonly cheie: string; r
         <label title={t('export.freza.titlu')}>
           {t('export.freza.diametru')}
           <input type="text" inputMode="decimal" value={p.diametruScula} data-camp="diametru" disabled={doarCitire} aria-label={t('export.freza.diametru')}
-            aria-invalid={!b.scula || conflict !== undefined} onChange={(ev) => { schimba(o.cheie, { diametruScula: ev.target.value, origineScula: null }); }} />
+            aria-invalid={!b.scula || conflict !== undefined || gauraRea} onChange={(ev) => { schimba(o.cheie, { diametruScula: ev.target.value, origineScula: null }); }} />
         </label>
         {/* Forma frezei (ADR 0090): plată sau în V, cu unghiul inclus. */}
         <label>

@@ -989,7 +989,11 @@ export function DialogExport(
     : p.tip === 'gaurire' ? t('export.latura.gaurire') : p.tip === 'vcarve' ? t(p.incrustatie ? 'export.latura.incrustatie' : 'export.latura.vcarve')
       : t(CHEI_LATURA[p.latura]);
   const cuRezultat = stare?.ok === true;
-  /** Aduce fișa aleasă sus în panou; cu `repara`, pune focusul pe primul câmp greșit al ei. */
+  /**
+   * Aduce fișa aleasă sus în panou. Cu `repara` („Du-mă la …”), aduce apoi în vedere prima greșeală a fișei (28.8↑h-2): grupul ei,
+   * de la titlu până la textul greșelii, dacă încape; altfel câmpul greșit și textul; altfel textul, întreg. Focusul trece pe
+   * câmpul greșit, fără altă derulare. Capul fișei poate ieși sus: greșeala de sub prima înălțime a panoului nu mai rămâne ascunsă.
+   */
   const du = (cheie: string, repara = false): void => {
     const p = panou.current;
     const sel = cheie === 'foaia' || cheie === 'masina' || cheie === 'rezultatul' ? `[data-fisa="${cheie}"]` : `[data-fisa="op"][data-operatie="${CSS.escape(cheie)}"]`;
@@ -997,7 +1001,28 @@ export function DialogExport(
     if (!p || !f) return;
     p.scrollTop += f.getBoundingClientRect().top - p.getBoundingClientRect().top;
     setCurent(cheie);
-    if (repara) f.querySelector<HTMLElement>('[aria-invalid="true"]:not(:disabled)')?.focus({ preventScroll: true });
+    if (!repara) return;
+    const RAU = '[aria-invalid="true"]:not(:disabled)';
+    const g = [...f.querySelectorAll<HTMLElement>('[data-grup]')].find((x) => x.querySelector(`[data-greseala], ${RAU}`) !== null);
+    const camp = (g ?? f).querySelector<HTMLElement>(RAU), text = (g ?? f).querySelector<HTMLElement>('[data-greseala]');
+    const v = p.getBoundingClientRect(), m = 8, loc = v.height - 2 * m;
+    const sus = (e: Element | null | undefined): number => e ? e.getBoundingClientRect().top : Infinity;
+    const jos = (e: Element | null | undefined): number => e ? e.getBoundingClientRect().bottom : -Infinity;
+    // Întinderile, de la cea mai largă: grupul (titlul, câmpul, textul), câmpul și textul, doar textul (sau doar câmpul).
+    const titlu = g?.querySelector('h4');
+    const intinderi: (readonly [number, number])[] = [
+      [Math.min(sus(titlu), sus(camp), sus(text)), Math.max(jos(camp), jos(text))],
+      [Math.min(sus(camp), sus(text)), Math.max(jos(camp), jos(text))],
+      text ? [sus(text), jos(text)] : [sus(camp), jos(camp)],
+    ];
+    const [a, b] = intinderi.find(([x, y]) => Number.isFinite(x) && Number.isFinite(y) && y - x <= loc) ?? intinderi[2] ?? [NaN, NaN];
+    if (Number.isFinite(a) && Number.isFinite(b)) {
+      // Cât mai puțin: doar dacă întinderea iese jos (sau sus), iar sus are întâietate când nu încape.
+      let d = b > v.bottom - m ? b - (v.bottom - m) : 0;
+      if (a - d < v.top + m) d = a - (v.top + m);
+      p.scrollTop += d;
+    }
+    camp?.focus({ preventScroll: true });
   };
   /** Fișa de sus a panoului, cât derulează omul: e cea marcată în listă. */
   const urmareste = (): void => {

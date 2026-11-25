@@ -91,6 +91,11 @@ vreau ca ficare setare sa fie insotita de o ilustratie sugestiva, ca sa ajute us
   (`src/app/hartieExport.ts`): adâncimea tăiată cu supracursa prin foaie (constatarea 1), felul găuririi cu elicea desenată și
   cercul care nu se găurește ca greșeală înainte de clic (constatarea 2). Programul, octet cu octet. Otrăvurile 21 / 21.
   Pornirea +0, totalul +1,4 kB (891,7 / 1 000). Urmează 28.8↑i (viteza).
+- **25.11: 28.8↑h-2 gata** (reparația lui „Du-mă la …”, cerută de sesiunea principală după completul unirii lui h peste
+  16.A↑b-4, căzut la `export.hartie.spec.ts:51`). Ramura are `origin/unire-2511t` adus (b-4, 3.Au), cu ciocnirile rezolvate ca
+  în `unire-2511u`. `du(cheie, true)` aduce în vedere grupul primei greșeli și pune focusul pe câmpul ei; diametrul frezei e
+  marcat greșit cât un cerc nu se găurește. Otrăvurile 6 / 6. Totalul 893,5 / 1 000 (+0,2 kB). Urmează 28.8↑i (viteza),
+  după ce h-2 e în `main`.
 
 ## Ce s-a găsit (23.11)
 
@@ -198,13 +203,17 @@ vreau ca ficare setare sa fie insotita de o ilustratie sugestiva, ca sa ajute us
   care o arată fișa se scoate într-un modul mic, folosit de amândouă, nu se copiază. Rândul primește supracursa și bifa ca
   cererea de la Exportă (supracursa doar cât e pozitivă și bună). Un cerc care nu se găurește e greșeală în grupul Freza și
   oprește Exportă (`gauriBune`), nu doar o notă.
+- **„Du-mă la …” (28.8↑h-2):** `du(cheie, true)` aduce în vedere grupul primei greșeli a fișei, nu doar capul ei, și pune
+  focusul pe primul câmp cu `aria-invalid` din grup. O greșeală nouă stă în grupul câmpului de reparat, iar câmpul acela e
+  marcat `aria-invalid` cât ține greșeala; altfel focusul rămâne pe buton. O probă care judecă „se vede” măsoară dreptunghiul
+  față de panoul `[data-fise]` (ca `cumSeVede` din `export.hartie.spec.ts`), nu cu `toBeInViewport()`, care trece cu un pixel.
 - **Intervalul diacriticelor** se scrie cu escape-uri (`\u0300-\u036f`), nu cu semnele combinatoare: scrise direct, nu se
   văd, iar o otravă pe ele iese VOID.
 
 ## Ce rămâne
 
 Din ADR 0290, nimic: toate feliile (a–f) și 28.8↑g sunt gata. Din ADR 0291 (după audit): 28.8↑n și 28.8↑o sunt în `main`,
-28.8↑h e gata pe ramură; urmează i, j, k, l, în ordine; p după j (cu linia frezelor), q după i. Nicio întrebare deschisă la
+28.8↑h e unită, iar reparația ei, 28.8↑h-2, e gata pe ramură; urmează i, j, k, l, în ordine; p după j (cu linia frezelor), q după i. Nicio întrebare deschisă la
 owner. Pentru alte linii, mai târziu:
 
 - **Clasicul (28.2↑) și Pas cu pas (28.4↑)** iau fișa operației (`FisaOperatie`, cu `ContextFisa`) în panoul lor, cu starea

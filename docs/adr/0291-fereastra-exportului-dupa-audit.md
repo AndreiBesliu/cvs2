@@ -204,3 +204,35 @@ lui 28.8↑a (3 h 20 min, carcasa).
   țintesc `treceri.ts`, cu un caz nou pe hârtie pentru D01 (19,05 cu pasul 1,5875: 12 treceri, nu 13).
 - **Mărimea:** pornirea +0 (111,2 kB), totalul +1,4 kB (891,7 / 1 000); bucata ferestrei +1,1 kB gzip (elicea desenată,
   greșeala găuririi, textele, modulele mici ale lucrării). Estimarea din tabel (kB ±0) nu socotise desenul elicei.
+
+## Implementarea 28.8↑h-2 (25.11)
+
+Reparația lui „Du-mă la …”, cerută de sesiunea principală după unirea lui 28.8↑h peste 16.A↑b-4: completul unirii a căzut la
+`export.hartie.spec.ts:51` (greșeala cercului, sub marginea panoului, după clic). Reprodusă la fiecare rulare: la 1280 × 720,
+panoul 71..596, greșeala 651..696.
+
+- **Cauza:** `du(cheie, true)` aducea doar capul fișei sus și punea focusul cu `preventScroll` pe primul câmp marcat greșit.
+  O greșeală de sub prima înălțime a panoului rămânea ascunsă. Pe 28.8↑h, proba trecea la limită: cu vreo 4 px ai greșelii în
+  panou. 16.A↑b-4 pune în lista frezei „Scrisă de mână (ca „…”)”, iar rândul se rupe pe două (118 px), deci greșeala iese de
+  tot. În plus, pe un cerc care nu se găurește niciun câmp nu era marcat greșit, deci focusul rămânea pe buton.
+- **Reparația** (`DialogExport.tsx`, `du`): după capul fișei, aduce în vedere prima greșeală a fișei, adică primul grup cu un
+  câmp greșit sau cu un text de greșeală. Încearcă, în ordine, trei întinderi și o ia pe cea mai largă care încape în panou (cu
+  8 px margine):
+  1. de la titlul grupului până la textul greșelii;
+  2. câmpul și textul;
+  3. doar textul.
+
+  Derulează cât mai puțin. Când nici textul nu încape, primul lui rând vine sus. Focusul trece pe câmpul greșit, fără altă
+  derulare. Diametrul frezei e marcat greșit (`aria-invalid`) cât un cerc al rândului e prea mic sau prea mare pentru ea
+  (`FisaOperatie.tsx`, `gauraRea`, din rândul pe hârtie, ca greșeala).
+- **Probele** (`export.hartie.spec.ts`, scrise întâi și văzute căzând):
+  - greșeala trebuie să fie întreagă în partea vizibilă a panoului, după dreptunghiuri (nu `toBeInViewport`, care se mulțumește
+    cu un pixel), cu focusul pe diametru, la 1280 × 720;
+  - aceeași probă la 1024 × 600 și 1280 × 560, cu fontul lat, și pe telefon, la 390 × 844 și 844 × 390. Pe fiecare, cu
+    biblioteca de pornire („Scrisă de mână (ca „…”)” în listă) și cu panoul derulat întâi la capăt;
+  - la 844 × 300, unde greșeala e mai înaltă decât panoul, primul ei rând stă sus.
+- **Otrăvurile:** E11–E16 în `28.8h.py`, 6 / 6. E12 (capătul de sus scăpat când nu încape) scăpase întâi; proba de la
+  844 × 300 o prinde. E01 din `28.8a.py` (derularea capului fișei) e tot prinsă.
+- **Mărimea:** pornirea +0 (111,2 kB), totalul +0,2 kB (893,5 / 1 000). Programul, documentul și serverul: neschimbate.
+- **Găsit pe drum, în afara reparației:** pe un telefon culcat îngust (640 × 360), banda listei lasă fișelor 9 px: fereastra
+  nu se poate folosi acolo. E de judecat cu 28.8↑l (privirea) sau cu aranjamentele.

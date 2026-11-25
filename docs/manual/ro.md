@@ -1806,7 +1806,7 @@ care). Fereastra are trei părți:
   poza ei, lângă bifă. Ce nu se aplică operației nu apare: pe un buzunar, o găurire sau un V-carve, rampa, intrările, colțurile
   și urechile profilului lipsesc, iar o notă sub Tăietura spune de ce;
 - **jos**, mereu la vedere: **Exportă**, **Închide**, **Raportul foilor…**, confirmările și, cât o valoare e greșită, motivul,
-  cu **Du-mă la …**, care aduce fișa ei și intră în câmpul de reparat. Valoarea greșită se spune și în grupul câmpului, iar
+  cu **Du-mă la …**, care aduce fișa ei, cu greșeala în vedere, și intră în câmpul de reparat. Valoarea greșită se spune și în grupul câmpului, iar
   fișa ei are un punct roșu în listă. Fereastra se închide cu **Închide**, cu Esc sau cu un clic în afara ei; valorile
   operațiilor schimbate în ea se scriu în proiect doar la **Exportă**.
 

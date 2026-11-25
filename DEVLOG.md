@@ -14877,3 +14877,23 @@ gata de unit”, `b099c457`; 28.8↑n, `7996e77c`), la ordinul în vigoare „un
 - **Manualul** (ro, en), ADR 0291 („Implementarea 28.8↑h”), fișa etapei 3, registrul otrăvurilor, nota liniei.
 
 **Completed:** 25.11, 13:25.
+
+## 2026-11-25 — Linia exportului: 28.8↑h-2, „Du-mă la …” aduce greșeala întreagă în vedere (ADR 0291)
+
+**Prompt:** mesajul sesiunii principale, 25.11, 16:58 („completul unirii lui 28.8↑h peste b-4 a căzut […] `test/e2e/export.hartie.spec.ts:51` […] Ce te rog […] Proba întâi […] Reparația la cauză […] Porțile, un singur commit raportat.”), la ordinul în vigoare „unește ce se poate”
+**Started:** 25.11, 16:56.
+
+- **Ramura:** `origin/unire-2511t` adus (16.A↑b-4, 3.Au), cu ciocnirile rezolvate ca în `unire-2511u` (același arbore).
+- **Cauza:** `du(cheie, true)` aducea doar capul fișei sus. Cu „Scrisă de mână (ca „…”)” din b-4, rândul frezei se rupe pe
+  două, iar greșeala găuririi rămânea sub panou (651..696 față de 71..596, la 1280 × 720). Pe un cerc care nu se găurește,
+  niciun câmp nu era marcat greșit.
+- **Reparația:** `du` aduce în vedere grupul primei greșeli (titlul, câmpul, textul; când nu încape, câmpul și textul, apoi
+  textul, cu primul rând sus) și pune focusul pe câmpul greșit. Diametrul frezei e marcat greșit cât un cerc nu se găurește.
+- **Probele:** `export.hartie.spec.ts`, 8 / 8: greșeala întreagă în panou, cu focusul pe diametru, la cinci mărimi, cu fontul
+  lat și pe telefon; la 844 × 300, primul rând sus. Spec-urile e2e care deschid exportul, 358 / 359 (căzută
+  `exportFrezeNota.spec.ts` sub încărcare; singură, 45 / 45). Nivelul rapid, local, verde (unit 10 508 / 0).
+- **Otrăvurile:** E11–E16 în `28.8h.py`, 6 / 6. **Mărimea:** pornirea +0, totalul 893,5 / 1 000 (+0,2).
+- **Găsit:** la 640 × 360, banda listei lasă fișelor 9 px.
+- **Documentele:** manualul (ro, en), ADR 0291 („Implementarea 28.8↑h-2”), fișa etapei 3, registrul otrăvurilor, nota liniei.
+
+**Completed:** 25.11, 18:05.

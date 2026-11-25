@@ -3,9 +3,10 @@
  * - constatarea 1: cu supracursa prin foaie, desenul adâncimii și nota trecerilor spun ce taie programul (4 treceri de 4,575 până
  *   la 18,3; nota, la două zecimale, 4,58), nu împărțirea adâncimii scrise; fără bifă, cea scrisă;
  * - constatarea 2: cercul de Ø30 cu freza Ø16 e desenat ca elice, fără câmpul ieșirii (ciocănirea nu se aplică); cu Ø30, ca
- *   ciocănire; cu Ø6, greșeala stă lângă freză înainte de clic, Exportă e oprit, iar „Du-mă la …” duce la ea.
+ *   ciocănire; cu Ø6, greșeala stă lângă freză înainte de clic, Exportă e oprit, iar „Du-mă la …” o aduce întreagă în panou, cu
+ *   focusul pe diametrul frezei; la fel la mai multe mărimi ale ferestrei și cu fontul lat (28.8↑h-2).
  */
-import { test, expect, type Page } from '@playwright/test';
+import { test, expect, type Locator, type Page } from '@playwright/test';
 import { adauga } from './ajutor-panza.ts';
 import { alege } from './ajutor-export.ts';
 
@@ -73,6 +74,77 @@ test('constatarea 2: cercul R15 e elice cu Ø16, ciocănire cu Ø30, iar cu Ø6 
   const greseala = e1.locator('[data-grup="freza"] [data-greseala]');
   await expect(greseala).toHaveText('Cercul de Ø30 trece de două diametre ale frezei (Ø6): în centru ar rămâne un miez. Alege o freză de cel puțin Ø15, sau taie-l ca buzunar.');
   await expect(page.locator('[data-buton="exporta"]')).toBeDisabled();
+  await expect(e1.locator('[data-camp="diametru"]')).toHaveAttribute('aria-invalid', 'true');
   await page.locator('[data-du="e1/e1"]').click();
-  await expect(greseala).toBeInViewport();
+  await expect.poll(() => cumSeVede(greseala)).toBe('întreagă');
+  await expect(e1.locator('[data-camp="diametru"]')).toBeFocused();
+});
+
+/**
+ * Cum stă un element față de partea văzută a panoului fișelor (după dreptunghiuri, cu jumătate de pixel îngăduință): „întreagă”,
+ * sau unde iese, cu cifrele, ca o cădere să spună cât.
+ */
+function cumSeVede(loc: Locator): Promise<string> {
+  return loc.evaluate((e) => {
+    const p = e.closest('[data-fise]');
+    if (!p) return 'fără panou';
+    const r = e.getBoundingClientRect(), v = p.getBoundingClientRect();
+    if (r.top >= v.top - 0.5 && r.bottom <= v.bottom + 0.5) return 'întreagă';
+    return `iese: ${String(Math.round(r.top))}..${String(Math.round(r.bottom))} față de panoul ${String(Math.round(v.top))}..${String(Math.round(v.bottom))}`;
+  });
+}
+
+// „Du-mă la …” (28.8↑h-2, după unirea cu 16.A↑b-4): greșeala de sub prima înălțime a panoului (aici, sub rândul „Din frezele
+// mele”, care cu „Scrisă de mână (ca „…”)” se rupe pe două rânduri) vine întreagă în vedere, iar focusul stă pe câmpul ei, la
+// orice mărime a ferestrei; cu fontul lat, rândurile sunt mai înalte.
+for (const [nume, latime, inaltime, lat] of [
+  ['1280 × 720', 1280, 720, false], ['1024 × 600, cu fontul lat', 1024, 600, true], ['1280 × 560, cu fontul lat', 1280, 560, true],
+  ['telefonul, 390 × 844', 390, 844, false], ['telefonul culcat, 844 × 390', 844, 390, false],
+] as const) {
+  test(`„Du-mă la …” aduce greșeala întreagă în panou, cu focusul pe câmpul ei (${nume})`, async ({ page }) => {
+    await page.setViewportSize({ width: latime, height: inaltime });
+    await page.goto('/');
+    if (lat) await page.evaluate(() => { document.documentElement.style.setProperty('--font', "Verdana, 'DejaVu Sans', sans-serif"); });
+    await adauga(page, 'cerc');
+    await page.locator('[data-actiune="export.gcode"]').click();
+    await expect(page.locator('[data-nav]').first()).toBeVisible();
+    await page.mouse.move(2, 2);
+    const e1 = fisa(page, 'e1/e1');
+    await alege(e1, 'latura', 'gaurire');
+    await e1.locator('[data-camp="diametru"]').fill('6');
+    // Biblioteca de pornire recunoaște freza scrisă: rândul listei e cel care a scos greșeala din prima înălțime.
+    await expect(e1.locator('[data-camp="freza-biblioteca"] option').first()).toHaveText(/^Scrisă de mână \(ca „/);
+    const greseala = e1.locator('[data-grup="freza"] [data-greseala]');
+    await expect(greseala).toHaveCount(1);
+    // Panoul derulat în altă parte întâi: „Du-mă la …” nu se bizuie pe unde a rămas.
+    await page.locator('[data-fise]').evaluate((p) => { p.scrollTop = p.scrollHeight; });
+    await page.locator('[data-du="e1/e1"]').click();
+    await expect.poll(() => cumSeVede(greseala)).toBe('întreagă');
+    await expect(e1.locator('[data-camp="diametru"]')).toBeFocused();
+    await expect.poll(() => cumSeVede(e1.locator('[data-camp="diametru"]'))).toBe('întreagă');
+  });
+}
+
+// Pe o fereastră atât de scundă încât greșeala e mai înaltă decât panoul (844 × 300: panoul are ~86 px, greșeala ~102), se vede
+// începutul ei, de la primul rând, nu coada; focusul stă tot pe câmpul ei.
+test('„Du-mă la …” pe o fereastră mai scundă decât greșeala: începutul ei, sus în panou (844 × 300)', async ({ page }) => {
+  await page.setViewportSize({ width: 844, height: 300 });
+  await page.goto('/');
+  await adauga(page, 'cerc');
+  await page.locator('[data-actiune="export.gcode"]').click();
+  await expect(page.locator('[data-nav]').first()).toBeVisible();
+  await page.mouse.move(2, 2);
+  const e1 = fisa(page, 'e1/e1');
+  await alege(e1, 'latura', 'gaurire');
+  await e1.locator('[data-camp="diametru"]').fill('6');
+  const greseala = e1.locator('[data-grup="freza"] [data-greseala]');
+  await page.locator('[data-du="e1/e1"]').click();
+  await expect(e1.locator('[data-camp="diametru"]')).toBeFocused();
+  const loc = await greseala.evaluate((e) => {
+    const p = e.closest('[data-fise]')?.getBoundingClientRect(), r = e.getBoundingClientRect();
+    return p ? { inalta: r.height > p.height, sus: r.top - p.top } : null;
+  });
+  expect(loc?.inalta, 'greșeala e mai înaltă decât panoul (altfel proba nu judecă nimic)').toBe(true);
+  expect(loc?.sus, 'primul rând al greșelii, sus în panou').toBeGreaterThanOrEqual(-0.5);
+  expect(loc?.sus).toBeLessThanOrEqual(16);
 });
