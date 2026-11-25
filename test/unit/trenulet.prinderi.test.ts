@@ -246,6 +246,8 @@ const MOSTRE: readonly (readonly [string, Def, Record<string, number>, { slab?: 
   ['conul 2 × 2 cu gaura oprită sub vârf', { tip: 'rotund', diam: 2, forma: 'con', varf_d: 4, gaura: 'stift' }, { locas: 4, gauraStift: 1 }, { slab: true }],
   ['arcul 1 × 4', { tip: 'arc' }, { stift: 4, locas: 2 }],
   ['arcul 1 × 6 × 2', { tip: 'arc', lung: 6, inalt: 2 }, { stift: 6, locas: 2 }],
+  ['cadrul 1 × 4 × 3', { tip: 'cadru' }, { stift: 4, locas: 4 }],
+  ['cadrul 1 × 2 × 2, cu colțurile teșite și rama groasă', { tip: 'cadru', lung: 2, inalt: 2, rama: 2.5, colturi: 'tesite' }, { stift: 2, locas: 2 }],
   ['grinda de 3', { tip: 'grinda' }, { gauraStift: 6 }],
   ['grinda subțire, cu o gaură de ax și un pas plin', { tip: 'grinda', gauri: ['r', 'x', 'p', 'r'], groasa: false }, { gauraStift: 4, gauraAx: 2 }],
   ['grinda desenată, în L', { tip: 'grinda', celule: [[0, 0, 'r'], [1, 0, 'r'], [1, 1, 'x']] }, { gauraStift: 4, gauraAx: 2 }],
