@@ -1165,7 +1165,15 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   axului; Easy 3Draw 18.33.0 (următoarea, 18.34.0). **Așezarea în model e a motorului (`asezareModel`, `pivotModel`,
   `langaPivot`): o piesă rotundă nouă intră în `ROTUNDE` (`lego.ts`) și, cu amprenta și locul axului pe hârtie, în
   tabelul probei `test/unit/trenulet.model.test.ts`; una care nu e rotundă, în `DREPTE` (proba cere fiecărui tip o
-  mostră).** Urmează 3.Cf (Modelul: orientarea pe trei axe și alipirea la prinderi).
+  mostră).** **3.Cf-1 (alipirea la prinderi în „Modelul”; ADR 0284, partea D, cu răspunsurile owner-ului din 25.11:
+  întâi alipirea, prinderea aleasă din puncte în vederea 3D, „Da, piesa alipită urmează baza”)** gata pe 25.11, pe
+  ramură: piesa aleasă din model își arată prinderile (puncte în vedere, numere în editor); una aleasă e ținta, iar
+  „Alipește în model” pune piesa următoare pe ea și o leagă de bază (o urmează când baza e mutată sau rotită, în
+  lanț); piesa prinsă are „Altă prindere”, „Alt loc pe bază”, „Rotește ↻”, „Glisează” (pe o tijă) și „Desprinde”;
+  desprinsă, e pe grilă dacă stă drept pe ea, altfel liberă; Easy 3Draw 18.34.0 (următoarea, 18.35.0). **Așezările
+  pieselor din model le socotește motorul (`rezolvaModel`): felul unei piese (pe grilă, prinsă, liberă) se întreabă
+  acolo, nu după câmpurile ei; locul de pe grilă rămâne în date ca loc de rezervă. Listele de otrăvuri ale pluginului
+  pun `E2E_BUILD = False`.** Urmează 3.Cf-2 (orientarea de mână pe trei axe, pozițiile la jumătate de pas).
   **Cotele pe desen: modelul și proba G-code-ului (ADR 0330, felia 10.4↑a-1, adusă din etapa 10)** gata pe 24.11, în
   sesiunea cloud a liniei (ramura `wip/10.4-cote`), unită în `main` pe 24.11 (`f25249cf`), fără interfață încă. ADR
   0330, acceptat de owner cu 1a–6a și cu nota lui: toate setările cotelor stau într-o fereastră nouă, „Setări”, nu în

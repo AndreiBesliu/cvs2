@@ -107,7 +107,7 @@ elice. Fiecare e un șablon din parametri, nu un desen fix.
 | 3.Cc | Cremaliera | cu montajul față de roata dințată și „Fă perechea” (gata pe 24.11); melcul a trecut în 3.Cj |
 | 3.Cd | Arcul | piesa și configuratorul (gata pe 25.11) |
 | 3.Ce | Punctele de prindere și „Se prinde cu” | motorul și panoul din configurator, pentru toate piesele (gata pe 25.11) |
-| 3.Cf | Modelul: orientarea pe trei axe și alipirea la prinderi | după 3.Tu (ADR 0283; a acestei linii din 24.11 seara) |
+| 3.Cf | Modelul: orientarea pe trei axe și alipirea la prinderi | după 3.Tu (ADR 0283; a acestei linii din 24.11 seara); pe bucăți: 3.Cf-1, alipirea la prinderi, cu piesele legate (gata pe 25.11), și 3.Cf-2, orientarea pe trei axe și pozițiile la jumătate de pas |
 | 3.Cg | Modelul: verificarea (prins, plutește, se ciocnește) | avertismente pe piese și în listă |
 | 3.Ch | Construcțiile cu nume și lista lor de piese | mai multe construcții în atelier |
 | 3.Ci | Construcțiile gata | patru șabloane |
@@ -141,6 +141,17 @@ elice. Fiecare e un șablon din parametri, nu un desen fix.
 2. **Verificarea din Model:** a, avertisment (piesa rămâne unde o pui).
 3. **Construcțiile gata:** a, cele patru (șasiul, cutia de angrenaje, brațul de macara, barca cu elice), după Model.
 4. **Lista pieselor noi:** toate cele patru grupe (conectorii 3D, mecanismele, cărămizile de clădit, roata cu palete).
+
+## Răspunsurile owner-ului la 3.Cf (25.11.2026)
+
+Trei întrebări de proiectare, puse în sesiunea liniei înaintea codului:
+
+1. **Cu ce parte începe felia:** alipirea la prinderi (recomandarea). Orientarea de mână pe trei axe și pozițiile la
+   jumătate de pas vin după ea, în 3.Cf-2.
+2. **Cum se alege prinderea pe care se așază piesa nouă:** din puncte în vederea 3D (recomandarea), cu aceeași listă
+   și în editor, pentru tastatură și pentru prinderile greu de atins.
+3. **După alipire, piesele rămân legate?** „Da, piesa alipită urmează baza” (recomandarea era ca piesa doar să fie pusă
+   acolo): o piesă alipită ține minte de ce e prinsă și se mută odată cu baza ei.
 
 ## Se redeschide dacă
 
@@ -455,3 +466,54 @@ roata cu palete, cadrul și melcul.
 - **Mărimea:** doar pachetul extensiei (510,8 → 514,4 kB); aplicația, neschimbată.
 - **Cu melcul, 3.Cj e încheiată:** cama, roata cu palete, cadrul și melcul; manivela nu e o piesă nouă (secțiunea
   3.Cj-1).
+
+## Implementat (3.Cf-1, 25.11.2026)
+
+Easy 3Draw 18.34.0, pe ramura `wip/3.Xh-biblioteca-ui`, în sesiunea cloud a liniei atelierului.
+
+- **Ce vede omul.** Piesa aleasă din model își arată prinderile: puncte în vederea 3D (albe, cu contur, văzute și prin
+  piesă, ca prinderile de dedesubt să se poată alege fără întoarcerea vederii) și numere în editor, pe feluri („știft
+  8”, „gaură de știft 5”, „capăt de ax 2”). Un clic pe un punct sau pe un număr o face **ținta** (portocalie; al doilea
+  clic o scoate), iar butonul piesei devine „Alipește în model”. Piesa următoare se așază cu prinderea ei pe țintă și e
+  aleasă, deci lanțul se continuă de la prinderile ei.
+- **Piesa alipită rămâne legată de bază** (răspunsul 3): o urmează când baza e mutată sau rotită, oricât de lung e
+  lanțul (grindă, ax, roată). Butoanele ei: „Altă prindere” (următoarea prindere a ei care se potrivește), „Alt loc pe
+  bază” (aceeași prindere a ei, pe următoarea prindere a bazei care i se potrivește), „Rotește ↻” (un sfert de tură în
+  jurul prinderii; și tasta R), „Glisează −” și „Glisează +” (câte 4 mm de-a lungul prinderii; doar pe o tijă: axul,
+  știftul Technic, bara) și „Desprinde”.
+- **Desprinsă**, piesa rămâne unde era. Dacă stă drept pe grilă, e din nou o piesă de pe grilă, cu mutările de până
+  acum; altfel e **liberă**: se mută câte 8 mm pe X și Y și câte o placă pe Z și se rotește în jurul verticalei prin
+  mijlocul cutiei ei. La fel rămân pe loc piesele unei baze scoase din model.
+- **Care prindere a piesei noi:** cea care o întoarce cel mai puțin față de cum stă în editor (o cărămidă pe un știft
+  rămâne în picioare; pe un știft lateral, se culcă); la egalitate, prima a piesei. O piesă fără nicio prindere
+  potrivită se pune deasupra, ca până acum, cu un mesaj.
+- **„Înlocuiește în model”:** o legătură rămâne cât prinderea ei e în același loc al piesei (același fel, aceeași
+  direcție, același loc de-a latul direcției): cărămida devenită placă își ține piesele de pe știfturi, iar una care
+  pierde un pătrățel le ține pe cele de pe știfturile rămase, deși numerele lor se schimbă. Fără prindere, piesa rămâne
+  unde era.
+- **Datele ținute.** O piesă din model poate avea `prins` (`de`, `a`, `b`, `unghi`, `alunec`) sau `liber` (matricea de
+  rotație și mutarea). Locul de pe grilă (x, y, z, rotirea) rămâne în date și e locul de rezervă: un model cu o legătură
+  stricată (baza lipsă, un cerc, un indice greșit, prinderi care nu se potrivesc) se deschide, cu piesa pe locul acela.
+  Un model ținut de dinainte se deschide neschimbat.
+- **Motorul** (`extensii/trenulet/sursa/lego/lego.ts`, secțiunea „alipirea in model”), funcții pure: `transfGrila`
+  (așezarea din ADR 0283, ca transformare), `transfPrins` (`montaj`, cu unghiul și glisarea), `rezolvaModel` (așezările
+  tuturor pieselor, cu lanțurile și cercurile), `potriviriPrindere`, `seGliseaza`, `grilaDinTransf` (inversa așezării),
+  `cutieTransf`, `rotitLiber`, `prindereaRamasa`.
+- **Atelierul** (`planificator/atelier.ts`): scena pune fiecare plasă cu transformarea ei (`asezari`, `arataModel`);
+  punctele au grupul lor, deci nu intră în mărimea modelului (`punctePrinderi`); ținta (`alegeTinta`, `tintaBuna`);
+  `lasaPeLoc`, `scoateM`, `inlocuiesteM`; `incarca` citește legăturile doar cu forma bună.
+- **Ce n-a intrat:** orientarea de mână pe trei axe și pozițiile la jumătate de pas (3.Cf-2); verificarea (3.Cg): o
+  piesă alipită poate intra în alta (un ax intrat până la capăt într-o gaură își ține roata în grindă până e glisat).
+  Mărimea modelului e cutia pieselor, exactă doar la piesele întoarse cu sferturi de tură.
+- **Probele.** Unitară, scrisă întâi (`test/unit/trenulet.alipire.test.ts`, 15 teste, cu valorile pe hârtie din cotele
+  pieselor): placa pe ultimul știft al cărămizii, piesa care urmează baza pe toate locurile și rotirile, lanțul grindă,
+  ax, roată, cu glisarea, potrivirile, piesa liberă, modelele stricate, locul regăsit pe grilă, rotirea piesei libere,
+  prinderea rămasă. E2e (`test/e2e/trenulet.alipire.spec.ts`, 7 scenarii): scena, judecată prin mărimea modelului;
+  punctul din vedere, atins în mijlocul pânzei. Proba în engleză din cvs2 (`trenulet.spec.ts`) alipește un ax în gaura
+  unei roți.
+- **Otrăvurile:** `test/otravuri/3.Cf-1.py`, 132 (motorul 53 / 53 (49 la prima rulare; patru scăpate, prinse după
+  întărirea probei; a cincea, echivalentă, scoasă cu codul ei), atelierul 75 / 75, textele 4 / 4); `3.Cf-1-en.py`, 13 /
+  13. Listele lui 3.Tu (`3.Tu.py`, `3.Tu-en.py`), aduse la zi: scena pune acum plasa cu transformarea motorului, deci 30
+  de ancore s-au mutat; cele mutate, rulate din nou: 30 / 30.
+- **Mărimea:** pachetul Easy 3Draw, 524,4 kB (era 516,3); aplicația, neschimbată.
+- **Felia următoare:** 3.Cf-2 (orientarea pe trei axe și pozițiile la jumătate de pas), apoi 3.Cg (verificarea).

@@ -14958,3 +14958,39 @@ poate”
 - **Linia atelierului:** owner-ul a răspuns în sesiunea ei la întrebările lui 3.Cf (întâi alipirea la prinderi; prinderea se
   alege din puncte, în vederea 3D; piesa alipită urmează baza): consemnat în decizie și în index.
 - **Documentele:** decizia și paragraful de stare în `CLAUDE.md`; indexul liniilor; starea din `docs/linii/principala.md`.
+
+## 2026-11-25 — Felia 3.Cf-1: alipirea la prinderi în vederea „Modelul” (ADR 0284, partea D) (sesiune cloud)
+
+**Prompt:** răspunsurile owner-ului la cele trei întrebări ale lui 3.Cf, puse în sesiunea liniei atelierului înaintea
+codului: „Alipirea la prinderi (Recomandat)”, „Puncte în vederea 3D (Recomandat)”, „Da, piesa alipită urmează baza”
+**Started:** 25.11, 15:40. **Completed:** 25.11, 18:15 (felia, cu otrăvurile; orele, după ceasul containerului).
+
+- **Ce face:** în vederea „Modelul” a atelierului Easy 3Draw, piesa aleasă își arată prinderile, ca puncte în vederea 3D
+  și ca numere în editor. Una aleasă e ținta; „Alipește în model” pune piesa următoare cu prinderea ei pe țintă.
+- **Piesa alipită rămâne legată de bază** (al treilea răspuns, altul decât recomandarea): o urmează când baza e mutată
+  sau rotită, în lanț. Are „Altă prindere”, „Alt loc pe bază”, „Rotește ↻” (în jurul prinderii), „Glisează” (pe o tijă)
+  și „Desprinde”.
+- **Desprinsă**, piesa rămâne unde era: pe grilă, dacă stă drept pe ea; altfel liberă (mutată în mm). La fel, piesele
+  unei baze scoase. O piesă schimbată în editor își ține legăturile cât prinderile rămân în același loc al ei.
+- **Datele:** `prins` și `liber` pe piesa din model; locul de pe grilă rămâne, ca loc de rezervă. Un model cu o legătură
+  stricată se deschide; unul ținut de dinainte, neschimbat.
+- **Motorul:** nouă funcții pure (`transfGrila`, `transfPrins`, `rezolvaModel`, `potriviriPrindere`, `seGliseaza`,
+  `grilaDinTransf`, `cutieTransf`, `rotitLiber`, `prindereaRamasa`); atelierul întreabă motorul unde stă fiecare piesă.
+- **Probele:** unitară, scrisă întâi (15 teste, cu valorile pe hârtie; a căzut cu funcțiile lipsă); e2e (7 scenarii,
+  scrise înaintea codului din atelier; scena, judecată prin mărimea modelului); proba în engleză din cvs2. Pluginul:
+  unitare 283 / 283, e2e 111 / 111.
+- **Otrăvurile:** `3.Cf-1.py`, 132 (motorul 53 / 53 (49 la prima rulare; patru scăpate, prinse după întărirea probei; a
+  cincea, echivalentă, scoasă cu codul ei), atelierul 75 / 75, textele 4 / 4); `3.Cf-1-en.py`, 13 / 13.
+- **Listele lui 3.Tu**, aduse la zi: felia a mutat 30 de ancore (scena pune plasa cu transformarea motorului, nu cu
+  pivotul și rotirea puse de atelier). Rulate din nou: 30 / 30. Celelalte liste: nicio ancoră mutată (comparat cu
+  `main`).
+- **Unealta de otrăvuri:** o listă poate sări build-ul aplicației (`E2E_BUILD = False`) când spec-urile ei își fac
+  pagina din surse; listele vechi nu se schimbă (`docs/otravuri.md`).
+- **Găsit pe drum:** amprenta pachetului se înregistrează din nou după orice schimbare a surselor (o probă a bibliotecii
+  a căzut local după ce am scos o condiție din motor); `addInitScript` pune stocarea la fiecare încărcare, deci proba
+  redeschiderii pornește fără ea.
+- **Easy 3Draw 18.34.0** (524,4 kB), cu rândul de „ce e nou”. Doar pachetul extensiei se schimbă: nimic în aplicație,
+  nimic pe server, documentul neatins.
+- **Documentele:** ADR 0284 (răspunsurile la 3.Cf, „Implementat (3.Cf-1)”), indexul ADR, fișa etapei 3 (jurnalul, coada
+  owner-ului), `docs/linii/atelier.md` (cu regulile noi), indexul liniilor, `docs/otravuri.md`, `CLAUDE.md`.
+- **Urmează:** 3.Cf-2 (orientarea de mână pe trei axe, pozițiile la jumătate de pas), apoi 3.Cg (verificarea).
