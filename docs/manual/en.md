@@ -1936,6 +1936,13 @@ that cuts out the band. Once picked, the bit puts its T number (by the same rule
 the stepover; **Export** writes it with its working values. A diameter changed by hand makes it **Entered by hand** on that bit
 only.
 
+The project keeps a copy of each bit picked from the library. If the bit then changes in **My bits**, the row says what changed
+(for example “In the library, “Flat Ø6” now has the feed 1,400 (here 1,000).”), with **Take the new values** for that bit and, if
+other bits in the window come from it too, **On all (N)**; the T number and the steps stay, and **Export** writes the new values.
+A bit deleted from the library stays in the project, with the note “is no longer in the library”. A bit entered by hand that is
+the same as one in the library (same diameter, same shape) shows as **Entered by hand (as “…”)**, without changing anything in
+the project.
+
 The **Cutting order** sits in the list, above the operations. The operations appear in the order they are cut, with their place
 on the left (the card says “N of M in cutting order”):
 - **Automatic** (the default): insides first, then lines, outsides and sheet separations last; in each, grouped by bit. A side
