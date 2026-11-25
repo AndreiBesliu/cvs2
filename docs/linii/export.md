@@ -4,8 +4,8 @@
   fereastra (aceleași câmpuri, aceleași valori, același program).
 - **Ramura:** `wip/28.8-export`, făcută din `origin/main` `d6fd5d68` pe 23.11.2026.
 - **ADR-urile:** 0290–0299 (libere pe 23.11). **Canalul:** `export` al instanței de test.
-- **Feliile:** 28.8↑a–g, în etapa 28, adusă în etapa 3, fără mașină. **Linia e încheiată** (24.11): toate feliile ADR 0290,
-  plus 28.8↑g, cerută de owner după încercarea pe canal.
+- **Feliile:** 28.8↑a–g (ADR 0290), în etapa 28, adusă în etapa 3, fără mașină, unite în `main` pe 24.11. **Linia s-a
+  redeschis pe 25.11**, după audit: feliile 28.8↑h–q, din ADR 0291 (acceptat cu „1a, 2a, 3a, 4a, 5a, 6a, 7a, 8a, 9a”).
 
 ## Cererea
 
@@ -75,6 +75,11 @@ vreau ca ficare setare sa fie insotita de o ilustratie sugestiva, ca sa ajute us
 - **25.11: auditul ferestrei,** la cererea owner-ului, prin sesiunea principală, înaintea arhivării: `audit-export.md` (21 de
   constatări, cele mai importante întâi, feliile propuse 28.8↑h–m și nouă întrebări). Două nepotriviri între desen și
   program, spuse imediat sesiunii principale: trecerile cu supracursa prin foaie și găurirea cu elice. Doar documente.
+- **25.11: răspunsurile owner-ului la audit:** „1a, 2a, 3a, 4a, 5a, 6a, 7a, 8a, 9a”. ADR 0291, acceptat, cu feliile
+  28.8↑h–q: h–l după unirea lui 16.A↑b-5 (linia frezelor lucrează în fișa operației), n (numele fișierului) și o (centrul
+  foii ca origine) înainte, fiindcă nu ating fișa; p (avansul și Z-ul sigur) și q („Toate foile” cu toate operațiile) după
+  feliile de care depind. 8a (pasul scurt din Atelier) e al liniei aranjamentelor, 9a (adaosul și trecerea de finisare)
+  o felie de CAM după placa 2, cu documentul nou.
 
 ## Ce s-a găsit (23.11)
 
