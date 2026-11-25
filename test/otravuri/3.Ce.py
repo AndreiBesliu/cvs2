@@ -59,15 +59,17 @@ o('R03', LG, 'if (PE_O_TIJA.has(fel)) cate = new Set(c.map(cheieDreapta)).size;'
 o('R04', LG, 'const s = (c.d.find(x => Math.abs(x) > 1e-6) ?? 1) < 0 ? -1 : 1, d: P3', 'const s = 1, d: P3', 'prinderi', 'cele două capete ale unui ax nu mai sunt pe aceeași dreaptă')
 o('R05', LG, 'for (const x of are(a)) for (const y of are(b)) if (sePrind(x, y)) out.push([x, y]);', 'for (const x of are(a)) for (const y of are(b)) if (sePrind(x, y)) out.push([y, x]);', 'prinderi',
   'potrivirile sunt date pe dos (felul celeilalte piese întâi)')
-AXP = 'Math.ceil((Math.max(...g.map(c => c.lung)) + P.pas + 0.2) / P.pas - 1e-9)'
-o('R06', LG, AXP, 'Math.ceil((Math.max(...g.map(c => c.lung)) + 0.2) / P.pas - 1e-9)', 'prinderi', 'axul potrivit nu mai iese din piesă')
-o('R07', LG, AXP, 'Math.ceil((Math.min(...g.map(c => c.lung)) + P.pas + 0.2) / P.pas - 1e-9)', 'prinderi', 'axul potrivit e după gaura cea mai scurtă')
-o('R08', LG, 'const g = l.filter(c => c.fel === "gauraAx" || c.fel === "gauraStift");\n    return g.length ? Math.min(12,', 'const g = l.filter(c => c.fel === "gauraAx");\n    return g.length ? Math.min(12,', 'prinderi',
+AXP = 'Math.ceil((Math.max(...g.map(c => c.lung)) + P.pas + 0.2) / P.pas)'
+o('R06', LG, AXP, 'Math.ceil((Math.max(...g.map(c => c.lung)) + 0.2) / P.pas)', 'prinderi', 'axul potrivit nu mai iese din piesă')
+o('R07', LG, AXP, 'Math.ceil((Math.min(...g.map(c => c.lung)) + P.pas + 0.2) / P.pas)', 'prinderi', 'axul potrivit e după gaura cea mai scurtă')
+o('R08', LG, 'const g = l.filter(c => c.fel === "gauraAx" || c.fel === "gauraStift");\n    return g.length ? Math.ceil(', 'const g = l.filter(c => c.fel === "gauraAx");\n    return g.length ? Math.ceil(', 'prinderi',
   'axul nu se mai potrivește unei găuri de știft')
 o('R09', LG, 'return g.length ? (g.some(c => c.lung > P.pas + 0.5) ? 3 : 2) : null;', 'return g.length ? (g.some(c => c.lung > P.pas - 0.5) ? 3 : 2) : null;', 'prinderi', 'știftul de 3 și prin grinda de 7,8')
 o('R10', LG, 'const g = l.filter(c => c.fel === "gauraStift");\n    return g.length ? (g.some(', 'const g = l.filter(c => c.fel === "gauraStift" || c.fel === "gauraAx");\n    return g.length ? (g.some(', 'prinderi',
   'știftul se potrivește și unei găuri de ax')
-o('R11', LG, AXP, 'Math.ceil((Math.max(...g.map(c => c.lung)) + P.pas + 0.2) / P.pas)', 'prinderi', 'axul prin grinda de 7,8 iese de 3 (rotunjirea)')
+# (R11 de la prima rulare scotea garda de rotunjire „− 1e-9” și marginile 2…12: nicio piesă nu ajunge la ele (căutate pe 89
+# de piese; axul cel mai lung e de 7), deci au ieșit din cod; otrava e acum alta)
+o('R11', LG, AXP, 'Math.round((Math.max(...g.map(c => c.lung)) + P.pas + 0.2) / P.pas)', 'prinderi', 'axul prin butucul de 8 mm al elicei nu mai iese un pas întreg')
 o('R12', LG, 'mutaPrinderi(r.prinderi, -a[0], -a[1], -a[2]) };', 'r.prinderi };', 'prinderi', 'prinderile rămân în coordonatele dinaintea mutării în origine')
 # --- motorul: cărămizile
 o('C01', LG, 'const adanc = fund === "tuburi" ? H - P.sus : Math.min(P.locas_h, H - 0.8);', 'const adanc = fund === "tuburi" ? H : Math.min(P.locas_h, H - 0.8);', 'prinderi', 'locașul cărămizii goale ține cât toată înălțimea')

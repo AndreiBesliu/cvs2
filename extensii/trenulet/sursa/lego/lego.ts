@@ -223,10 +223,11 @@ var Lego = (function (glob: typeof globalThis) {
     for (const x of are(a)) for (const y of are(b)) if (sePrind(x, y)) out.push([x, y]);
     return out;
   }
-  /** Axul potrivit piesei (în știfturi): trece prin gaura ei cea mai adâncă (de ax sau de știft) și mai iese un pas; între 2 și 12. */
+  /** Axul potrivit piesei (în știfturi; axul de n are 8·n − 0,2 mm): trece prin gaura ei cea mai adâncă (de ax sau de
+   *  știft) și mai iese un pas. Cea mai lată piesă cu gaură, roata de 40 mm, cere axul de 7. */
   function axPentru(l: readonly Prindere[]): number | null {
     const g = l.filter(c => c.fel === "gauraAx" || c.fel === "gauraStift");
-    return g.length ? Math.min(12, Math.max(2, Math.ceil((Math.max(...g.map(c => c.lung)) + P.pas + 0.2) / P.pas - 1e-9))) : null;
+    return g.length ? Math.ceil((Math.max(...g.map(c => c.lung)) + P.pas + 0.2) / P.pas) : null;
   }
   /** Știftul Technic potrivit piesei: de 3 doar unde o gaură de știft trece de un pas (două grosimi); altfel de 2. */
   function stiftPentru(l: readonly Prindere[]): number | null {
