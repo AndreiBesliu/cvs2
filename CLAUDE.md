@@ -1259,9 +1259,9 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   `CNCVS2`), cu desenul ei într-un bloc anonim `*Dn`; cifrele ca text sunt MTEXT în DXF, `<text>` în SVG și
   Helvetica în PDF și EPS, fără font în fișier. Textul cotei e cifra noastră, scrisă în cotă (alegerea owner-ului,
   cu recomandarea aplicată). Cu „Linii și cifre” și „Trăsături”, fișierele ies octet cu octet ca în c-1. Oracolul
-  Python are corpusul al doilea (toate felurile) și unul ASCII. Urmează, la cuvântul owner-ului, 10.4↑d (lanțul și
-  linia de bază, „Cotează selecția”, „Fă desen din cotă”, cotele în raportul foilor). Felia: pornirea +0, totalul
-  +3,0 kB.
+  Python are corpusul al doilea (toate felurile) și unul ASCII. **10.4↑d (lanțul și linia de bază, „Cotează
+  selecția”, „Fă desen din cotă”, cotele în raportul foilor), pornită pe 25.11**, la „ok, porneste 10.4↑d si
+  18.1↑d” al owner-ului. Felia: pornirea +0, totalul +3,0 kB.
   **Relieful din imagine, pe planșă (ADR 0310, ADR 0311, felia 18.1↑a, adusă din etapa 18; documentul v28)** gata pe
   24.11, în sesiunea cloud a liniei (ramura `wip/18.1-relief`), unită în `main` pe 24.11 (`c5b79526`). ADR 0310,
   acceptat de owner cu „1a–6a”. Din „Importă…”, o imagine (PNG, JPEG, WebP, GIF, BMP) se face **relief** cu alegerea
@@ -1302,9 +1302,9 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   simulatorul crestei și al materialului): o strategie nouă pe relief se judecă acolo, pe invariantele „nicio
   scobitură în model” și „niciodată mai adânc decât pasul pe trecere”. **Lista bibliotecii dată ferestrei exportului
   ține doar frezele rândurilor (fără bile)**, cu o pază a compilatorului (`exportFreze.bila.test.ts`). Nedovedit
-  fără mașină: creasta reală, suprafața față de model, timpul. Urmează, la cuvântul owner-ului, 18.1↑d (degroșarea,
-  apoi fișa plăcii reliefului) și rândul editabil al finisării. Nimic pe server. Felia: pornirea +0,2 kB, totalul
-  +10,8 kB (907,4 / 1 000).
+  fără mașină: creasta reală, suprafața față de model, timpul. **18.1↑d (degroșarea, apoi fișa plăcii reliefului),
+  pornită pe 25.11**, la „ok, porneste 10.4↑d si 18.1↑d” al owner-ului, cu v30 ținut pentru ea; rândul editabil al
+  finisării rămâne la cuvântul lui. Nimic pe server. Felia: pornirea +0,2 kB, totalul +10,8 kB (907,4 / 1 000).
   **Raportările (15.B↑b) și imprimanta (3.6g, 3.6h, 3.6i pașii 1–2; ADR 0191 acceptat, codul 3.6j încă pe ramură) unite în
   `main` pe 07.11**, peste biblioteca extensiilor (`b501571`, `6e61bee`, apoi `e9cf6ee` cu DEVLOG-ul bibliotecii): **pornirea
   101,7 (cu ușa 105,3 / 110 kB), totalul 535,0 / 550, /admin 106,5 / 200, contul 29,6 / 32.** **Pe test (și pe live), serverul
@@ -1804,6 +1804,25 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 25.11.2026, noaptea: **10.4↑d și 18.1↑d, pornite** („ok, porneste 10.4↑d si 18.1↑d”, în sesiunea principală, la
+  23:37, după publicarea lotului 38, la lista cu ce aștepta de la owner). Sesiunea principală le-a scris celor două
+  linii pe 26.11, la 00:08. **10.4↑d** (linia cotelor; ADR 0330): lanțul și linia de bază, „Cotează selecția”, „Fă
+  desen din cotă”, cotele în raportul foilor: ultima felie a cotelor. Cotele stau tot pe foaie, fără schemă nouă;
+  „cotele nu ajung niciodată în program” rămâne, iar „Fă desen din cotă” e un pas vizibil al omului, într-un pas de
+  anulare. **18.1↑d** (linia reliefului; ADR 0310): degroșarea reliefului, apoi fișa plăcii reliefului. Mișcă
+  mașina, deci oracolul întâi (`test/oracles/relief3d.ts`): nicio scobitură în model, cu adaosul lăsat finisării;
+  niciodată mai adânc decât pasul pe trecere; materialul rămas finisării. Felul nou își spune locul în `catFoaia` și
+  în ordinea tăierii (degroșarea înaintea finisării aceluiași relief). **Documentul: v30 e ținut pentru
+  degroșare**, dacă cere un câmp sau un fel nou de operație; linia spune de îndată dacă îl folosește. **Rândul
+  editabil al finisării din fereastra exportului nu e pornit** de acest cuvânt: rămâne la owner. Amândouă: proba
+  întâi, creșterea de mărime spusă în raport, un singur commit raportat, cu porțile verzi; unirea, la raport. Linia
+  exportului lucrează în aceeași fereastră (28.8↑i), deci cine raportează al doilea aduce `main` întâi. O alegere
+  care e a owner-ului (de pildă strategia degroșării și adaosul implicit) se pune grupat, cu recomandarea în față,
+  iar linia merge înainte cu recomandarea. **Rămân la owner:** rândul editabil al finisării, Escape în cele șase
+  ferestre, feliile frezelor (16.A↑d–g), cele două alegeri cu recomandarea aplicată, de încercat „Modelul” din Easy
+  3Draw (acum și alipirea), proba pe mașină a centrului foii, cele patru întrebări din auditul elicelor, pachetul
+  Easy 3Draw trecut de 0,5 MB, arhivarea sesiunii elicelor, verificarea juridică (GDPR) a utilizării aplicației
+  înaintea live-ului, „cine unește în `main`”, meniul de sus la 320 px la atingere.
 - 25.11.2026, seara (a patruzeci și una unire din cloud): **alipirea la prinderi în vederea „Modelul” a atelierului
   Easy 3Draw (3.Cf-1), unită în `main`** (sesiunea principală, ramura `unire-2511ac`, din `5649067c`). Linia
   atelierului, ramura `wip/3.Xh-biblioteca-ui`, `6b093a98`, PR-ul `AndreiBesliu/cvs2#46` (ADR 0284, partea D, cu

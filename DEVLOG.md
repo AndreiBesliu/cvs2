@@ -15364,3 +15364,15 @@ codului: „Alipirea la prinderi (Recomandat)”, „Puncte în vederea 3D (Reco
   909,1 / 1 000 kB, `/admin` 138,3 / 200, contul 30,2 / 32.
 - **Proba de fum** pe adresa de test: versiunea `c9911c141e13`, potrivită; nicio eroare în consolă, nicio cerere căzută.
 - **Pe test e tot ce e în `main`** (`42433c91` adaugă peste `c9911c14` doar documente).
+
+## 2026-11-25 — Sesiunea principală în cloud: 10.4↑d și 18.1↑d, pornite (Model: Claude Fable 5.2)
+
+**Prompt:** „ok, porneste 10.4↑d si 18.1↑d”
+**Started:** 25.11, 23:37. **Completed:** 26.11, 00:08 (mesajele către linii), apoi decizia în `main`.
+
+- **Liniile, anunțate la 00:08** (o comandă de citire agățată a ținut sesiunea pe loc 30 de minute): cotele, 10.4↑d (lanțul și
+  linia de bază, „Cotează selecția”, „Fă desen din cotă”, cotele în raportul foilor; fără schemă nouă); relieful, 18.1↑d
+  (degroșarea, apoi fișa plăcii; oracolul întâi; `catFoaia`; ordinea tăierii; v30 ținut pentru ea).
+- **Nepornit:** rândul editabil al finisării din fereastra exportului (rămâne la owner).
+- **Documentele:** decizia și cele două paragrafe de stare în `CLAUDE.md`; indexul liniilor; starea din
+  `docs/linii/principala.md`.

@@ -185,8 +185,9 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
       (desenele ferestrei, cu reparația 28.8↑h-2 a lui „Du-mă la …” și cu regula „cât foaia” unită cu relieful),
       unită la 21:13; în lucru, 28.8↑i (viteza), apoi j–l;
     - relieful: 18.1↑b, unită la 11:02; 18.1↑c (finisarea, cu bila în document, v29; `AndreiBesliu/cvs2#39`), unită
-      la 21:11, după ce linia a ținut bilele afară din lista bibliotecii a ferestrei exportului; fără felie pornită:
-      18.1↑d (degroșarea) și rândul editabil al finisării, la cuvântul owner-ului;
+      la 21:11, după ce linia a ținut bilele afară din lista bibliotecii a ferestrei exportului; în lucru, 18.1↑d
+      (degroșarea, apoi fișa plăcii reliefului; pornită de owner pe 25.11 la 23:37, „ok, porneste 10.4↑d si 18.1↑d”;
+      v30 ținut pentru ea); rândul editabil al finisării, la cuvântul owner-ului;
     - atelierul: cama și roata cu palete, unite la 09:35; cadrul și melcul, la 13:18 (3.Cj, încheiată); 3.Tu
       (piesele rotunde pe același ax în „Modelul”, ADR 0283; Easy 3Draw 18.33.0; pornită de owner în sesiunea liniei,
       „1a, 2a, 3a la 3.Tu, pornește”), unită la 18:18; în lucru, 3.Cf (alipirea la prinderi în
@@ -195,8 +196,9 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
       owner-ului din 25.11, 19:18): ADR 0285, acceptat de el în sesiunea liniei („Mergem cu recomandarile”), feliile
       3.Cl-1…4, cu 3.Cl-1 (fulgul, steaua, brăduțul) în lucru; 3.Cf-2 după ele;
       apoi 3.Cg–3.Ci; 3.Ck, după tipărirea bilei și a cupei;
-    - cotele: 10.4↑c-1, unită la 12:20; c-2 (DIMENSION în DXF și cifrele ca text), unită la 19:42; fără felie
-      pornită: 10.4↑d, la cuvântul owner-ului.
+    - cotele: 10.4↑c-1, unită la 12:20; c-2 (DIMENSION în DXF și cifrele ca text), unită la 19:42; în lucru,
+      10.4↑d (lanțul, linia de bază, „Cotează selecția”, „Fă desen din cotă”, cotele în raportul foilor; pornită de
+      owner pe 25.11 la 23:37; ultima felie a cotelor).
 
     Se unesc la raportul liniei, în ordinea rapoartelor. **Restul de mărime** (din 25.11, cu plafoanele noi; după
     lotul de la 13:18: 109,9 kB în total, 8,5 kB în pornire): fiecare linie își spune în raport cât adaugă, iar una
@@ -248,11 +250,11 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
   feliilor rămân: ce nu trebuie înaintea primei randări stă la cerere, calculul greu în worker, iar felia își spune
   în raport cât adaugă la total și la pornire.
 - **Documentul e v29** (finisarea reliefului și freza bilă, 18.1↑c, în `main` din 25.11, ADR 0312; v28, forma
-  `relief`, 18.1↑a, din 24.11; v27, frezele, 16.A↑b-1). Cotele nu cer schemă. Următorul liber e v30 (degroșarea
-  reliefului, 18.1↑d, dacă cere un câmp al ei; toroidala și profilul desenat ale frezelor; adaosul și finisarea pe
-  profil, 9a din ADR 0291): numărul se dă când felia ajunge la migrare, iar unirile cu schemă intră în `main` în ordinea
-  numerelor. O probă care citește documentul salvat cere versiunea
-  curentă (`placute.spec.ts` a căzut cu `schema: 26` în completul liniei frezelor).
+  `relief`, 18.1↑a, din 24.11; v27, frezele, 16.A↑b-1). Cotele nu cer schemă. **v30 e ținut pentru degroșarea
+  reliefului** (18.1↑d, pornită pe 25.11; linia spune de îndată dacă îl folosește). După el: toroidala și profilul
+  desenat ale frezelor; adaosul și finisarea pe profil (9a din ADR 0291): numărul se dă când felia ajunge la
+  migrare, iar unirile cu schemă intră în `main` în ordinea numerelor. O probă care citește documentul salvat cere
+  versiunea curentă (`placute.spec.ts` a căzut cu `schema: 26` în completul liniei frezelor).
 - **De urmărit:** în panoul foii, la 1400 px, etichetele „Numele” și „Materialul” apar tăiate la o literă (văzut de
   linia trasării, și pe `220bd48e`: nu vine dintr-o felie de azi).
 - **De urmărit:** `extensii.lucru.spec.ts`, „două cereri imediat după” repornire (rândul 235): sub încărcare mare
