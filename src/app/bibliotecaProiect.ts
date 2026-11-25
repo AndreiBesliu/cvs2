@@ -10,6 +10,14 @@ import { CHEIE_LOCALA, cheieBibliotecii, frezeMele, useFrezeMele, type StareFrez
 import { cuFrezeleStandard } from './frezeStandard.ts';
 
 export function useBibliotecaProiect(): StareFreze {
+  return useBibliotecaProiectCuCheie().stare;
+}
+
+/**
+ * Biblioteca proiectului și cheia ei (`cont:<uid>` sau cea fără cont): „Pune-o înapoi în bibliotecă” (ADR 0300 §5, felia
+ * 16.A↑b-6) scrie în biblioteca din care s-a ales freza.
+ */
+export function useBibliotecaProiectCuCheie(): { readonly stare: StareFreze; readonly cheie: string } {
   const cheieCont = cheieBibliotecii(useContTinut());
   const dinCont = useFrezeMele(cheieCont);
   const faraCont = useFrezeMele(CHEIE_LOCALA);
@@ -18,5 +26,6 @@ export function useBibliotecaProiect(): StareFreze {
     if (!b.stare().incarcata) void b.incarca();
     void cuFrezeleStandard();
   }, [cheieCont]);
-  return cheieCont !== CHEIE_LOCALA && (dinCont.standard || dinCont.freze.length > 0) ? dinCont : faraCont;
+  const contului = cheieCont !== CHEIE_LOCALA && (dinCont.standard || dinCont.freze.length > 0);
+  return { stare: contului ? dinCont : faraCont, cheie: contului ? cheieCont : CHEIE_LOCALA };
 }

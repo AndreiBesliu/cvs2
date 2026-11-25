@@ -229,3 +229,37 @@ test('frezele standard în cont: un cont fără freze le primește o dată, cu i
   await sincronizeaza(g, s4.cheama);
   assert.deepEqual([g.stare().freze.length, s4.freze.size], [0, 0]);
 });
+
+test('pusă înapoi din fereastra exportului (16.A↑b-6): o freză ștearsă reînvie în cont, cu același id, și ajunge pe celălalt calculator; fără scriere rămâne aici', async () => {
+  const s = new Server(), a = calculator('a'), b = calculator('b');
+  await a.incarca(); await b.incarca();
+  assert.ok((await a.salveaza(null, PLATA6)).ok);
+  await sincronizeaza(a, s.cheama);
+  await sincronizeaza(b, s.cheama);
+  const idP6 = id(a, 'Plată Ø6');
+  // Ștearsă pe b; semnul ajunge în cont și pe a.
+  assert.ok((await b.sterge(idP6)).ok);
+  await sincronizeaza(b, s.cheama);
+  await sincronizeaza(a, s.cheama);
+  assert.deepEqual([nume(a), s.nume()], [[], []]);
+  const semn = s.freze.get(idP6)!.versiune;
+  // Pusă înapoi pe a, din copia proiectului: pleacă cu versiunea semnului văzută și reînvie.
+  const r = await a.puneInapoi(idP6, 4, { ...PLATA6, avans: 1400 });
+  assert.ok(r.ok);
+  assert.equal(r.freza.id, idP6);
+  assert.equal(await sincronizeaza(a, s.cheama), 'la-zi');
+  const scrisa = s.cereri.filter((c) => c.actiune === 'scrie').at(-1)!;
+  assert.deepEqual(scrisa.actiune === 'scrie' && scrisa.freze.map((f) => [f.id, f.vazuta]), [[idP6, semn]]);
+  assert.deepEqual(s.nume(), ['Plată Ø6']);
+  await sincronizeaza(b, s.cheama);
+  assert.deepEqual(b.stare().freze.map((f) => [f.id, f.nume, f.avans]), [[idP6, 'Plată Ø6', 1400]]);
+  // Pusă înapoi din nou, cu id-ul deja acolo: refuzată, nimic suprascris.
+  assert.deepEqual(await a.puneInapoi(idP6, 5, { ...PLATA6, avans: 900 }), { ok: false, probleme: { id: 'exista' } });
+  // Fără dreptul de scriere (planul fără `cloud`): rămâne în browser, ca orice schimbare.
+  const s2 = new Server(), c = calculator('c');
+  s2.poateScrie = false;
+  await c.incarca();
+  assert.ok((await c.puneInapoi('std-plata-6', 2, PLATA6)).ok);
+  assert.equal(await sincronizeaza(c, s2.cheama), 'citire');
+  assert.deepEqual([nume(c), s2.nume()], [['Plată Ø6'], []]);
+});

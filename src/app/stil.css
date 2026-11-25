@@ -1785,6 +1785,12 @@ nav button[aria-pressed='true'] {
   padding: 0 var(--sp-3);
 }
 
+/* Refuzul lui „Pune-o înapoi în bibliotecă” (ADR 0300 §5, felia 16.A↑b-6), pe un rând al lui. */
+.dialog .nota-biblioteca .nota-motiv {
+  flex-basis: 100%;
+  color: var(--rosu);
+}
+
 .dialog .tabel-rest .nota-rest {
   grid-column: 1 / -1;
 }
