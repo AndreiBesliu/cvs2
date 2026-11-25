@@ -155,11 +155,11 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
 
 ## Starea pe 25.11.2026, seara (după a treizeci și șasea unire din cloud)
 
-- **Pe test:** `65eecdc6` (lotul 34: 28.8↑o, centrul foii ca origine XY0; 16.A↑b-4, nota „s-a schimbat în
-  bibliotecă”; 3.Au, starea lucrării imprimantei; publicat pe 25.11 la 18:25, cu serverul neschimbat; completul pe
-  `main` 45641891693, verde; proba de fum, bună). Înainte: `2aaee0b4` (lotul 33), pe 25.11 la 14:24; `dad1a711`
-  (lotul 32), la 12:31. **În `main`, nepublicate încă:** 3.Tu, Easy 3Draw 18.33.0 (`f5cf10c8`): în drum, lotul 35
-  (`6741c0be`). După el: 16.A↑b-6 și 10.4↑c-2, pe `unire-2511w`, cu completul în lucru.
+- **Pe test:** `6741c0be` (lotul 35: 3.Tu, piesele rotunde pe același ax în „Modelul”, Easy 3Draw 18.33.0; publicat
+  pe 25.11 la 19:39, cu serverul neschimbat; completul pe `main` 45654433162, verde; proba de fum, bună). Înainte:
+  `65eecdc6` (lotul 34: centrul foii, nota bibliotecii, starea imprimantei), pe 25.11 la 18:25; `2aaee0b4` (lotul
+  33), la 14:24. **În `main`, nepublicate încă:** nimic. Pe ramuri de unire, cu completul în lucru: 16.A↑b-6 și
+  10.4↑c-2 (`unire-2511w`), apoi 18.1↑c, finisarea reliefului, cu v29 (`unire-2511x`).
 - **`main`, din cloud:** pe 23.11: 3.Tq (`0ae9c6c1`); 11.3↑e și A.4 (`ddaa7ead`); 3.Tr, unită de linia elicelor
   (`d262e57a`); 25.8↑a și A.5 (`1b46c955`), cu reparația probei extensiilor (`8287d66e`); 11.3↑f, unită de linia
   planșelor (`f4601938`); A.6 (`4497d639`); 3.Xh (`2d1e482c`) și 12.1↑e-3 cu 12.1↑e-4 (`03460cab`); A.8a cu A.8b

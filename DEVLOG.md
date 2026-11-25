@@ -15030,3 +15030,13 @@ pe commit-ul împins).
   agățătoarea, din prima; doar pachetul extensiei.
 - **Documentele:** decizia în `CLAUDE.md`; indexul liniilor; starea din `docs/linii/principala.md`. Pe ramura lotului
   (`unire-2511w`): intră în `main` cu el.
+
+## 2026-11-25 — Sesiunea principală în cloud: lotul 35 (atelierul Easy 3Draw 18.33.0: piesele rotunde pe același ax), pe test (Model: Claude Fable 5.2)
+
+**Prompt:** publicarea de după a treizeci și șasea unire (pe test se publică liber)
+**Started:** 25.11, după unirea de la 18:18 (completul pe `main`, pornit la 18:29). **Completed:** 25.11, 19:39.
+
+- **Pe test: `6741c0be`** (3.Tu). `publica.yml` 45666529106, verde (19:36–19:39), pornită din prima; serverul, neschimbat.
+- **Completul pe `main`** (45654433162, verde, 66 min: cinci complete în paralel): unit 10 513 / 0 (12 sărite, pe Linux), e2e
+  859 / 859, funcțiile pe emulatoare 136 / 136, paginile 59 / 59; pornirea 111,2 kB, totalul 891,8 / 1 000 kB.
+- **Proba de fum** pe adresa de test: versiunea `6741c0beffea`, potrivită; nicio eroare în consolă, nicio cerere căzută.
