@@ -14468,8 +14468,8 @@ vigoare „unește ce se poate”
 ## 2026-11-25 — Felia 10.4↑c-1: cotele în exportul vectorilor („Cu cotele”, stratul lor, cifrele ca trăsături; ADR 0330 §6, §7) (Model: Claude Opus 5.5)
 
 **Prompt:** „Pornește 10.4↑c” (sesiunea principală, 25.11, cu mesajele owner-ului: „am resetat limita saptamanale. azi este
-miercuri.” și „vreau sa pornesti si celelalte sub-sesiuni”). **Started:** 25.11, 07:35, în sesiunea cloud a liniei cotelor.
-**Completed:** 25.11, 10:40 (în container; CI-ul, pe commit-ul împins).
+miercuri.” și „vreau sa pornesti si celelalte sub-sesiuni”). **Started:** 25.11, 09:35, în sesiunea cloud a liniei cotelor.
+**Completed:** 25.11, 10:05 (în container; CI-ul, pe commit-ul împins).
 
 - **Felia c, împărțită:** c-1 (exportul cotelor ca vectori: linii, arce, capete, cifre ca trăsături) și c-2 (DIMENSION în
   DXF, cifrele ca text), scris în ADR 0330 §10.
