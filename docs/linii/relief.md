@@ -135,7 +135,9 @@ degroșarea și finisarea pe relief), unde stă relieful în document și unde s
   după 16.A↑b-5 și 28.8↑h, la cuvântul sesiunii principale. La cererea liniei frezelor, bila are CAM în bibliotecă
   (`FELURI_CU_CAM`, `sculaDinFreza`). Pornirea +0,2 kB, totalul +10,9 kB (902,7 / 1 000, cu `main` adus). La cererea sesiunii principale, după 16.A↑b-4:
   bila stă afară din lista bibliotecii a ferestrei (`frezePeRanduri`), iar finisarea e probată și cu XY0 în centrul foii (28.8↑o). Porțile pe
-  `ff146fe1` (cu `main` `65eecdc6`), verzi; raportat sesiunii principale pe 25.11, 18:20.
+  `ff146fe1` (cu `main` `65eecdc6`), verzi. La mesajul din 18:22, adus și 16.A↑b-6 (`origin/unire-2511w`, `1d3882d9`): copia
+  de readus în bibliotecă știe doar forma în V, iar rândurile n-au bile, deci bila nu se poate readuce ca plată (paza, a
+  compilatorului, în `exportFreze.bila.test.ts`).
 - **De ținut minte, din 18.1↑c:**
   - verdictul „Exportă G-code” și „Toate foile” numără și o foaie doar cu finisare (`areFinisare`, `ordinePasi`): un cod nou
     care întreabă „are foaia ce tăia?” nu se uită doar la `taieturiFoaie`;

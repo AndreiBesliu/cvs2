@@ -14816,7 +14816,7 @@ gata de unit”, `b099c457`; 28.8↑n, `7996e77c`), la ordinul în vigoare „un
 degroșarea și finisarea cer oracolul (suprafața rezultată față de model, în toleranță; creasta măsurată; niciodată mai adânc
 decât pasul pe trecere), scris înaintea funcției, și otrăvurile pe el. Raportul, ca până acum.”; pe drum, al doilea mesaj al
 ei, „nu fără rând” (rândul finisării în fereastra exportului, doar de citit).
-**Started:** 25.11, 11:03. **Completed:** 25.11, 15:12 (raportul întâi); a doua parte, la cererile din 15:14 și 17:01, 25.11, 18:20.
+**Started:** 25.11, 11:03. **Completed:** 25.11, 15:12 (raportul întâi); a doua parte, la cererile din 15:14, 17:01 și 18:22, în lucru.
 
 - **Oracolul 3D întâi** (`test/oracles/relief3d.ts`, fără importuri din `src/`): modelul exact, drop-cutter-ul exact
   (vârfuri, muchii, fețe, muchia discului) cu bila, plata, V-ul și V-ul cu vârf plat, simulatorul crestei și al materialului;
@@ -14853,6 +14853,16 @@ ei, „nu fără rând” (rândul finisării în fereastra exportului, doar de 
   verde pe `821c9638` (doar documente peste `ff146fe1`: 45641197078 la push, 45641220999 pe PR; felia cea mai lungă,
   7,7 minute; rulările lui pe `ff146fe1` au fost oprite de împingerea documentelor). Pornirea 111,4 / 125 kB (cu ușa
   116,5, cu Atelierul 116,8), totalul 902,7 / 1 000 kB, `/admin` 138,3 / 200. Nimic pe server.
+- **Mesajul sesiunii principale din 18:22** (16.A↑b-6, „Pune-o înapoi în bibliotecă”, pe `origin/unire-2511w`, `1d3882d9`, cu
+  `main` `6741c0be` și 3.Tu): adus în ramură (`f4eaeb6b`); ciocnirile, în importurile și lista bibliotecii din
+  `ExportConectat.tsx` (rămâne `frezePeRanduri`, lângă `puneInapoi`), în `DialogExport.tsx` (`finisari` și `onPuneInapoi`),
+  în catalogul controalelor (659 de nume) și în DEVLOG. `frezaDinCopie` și `cuFrezaReadusa`, citite cu bila în minte: copia de
+  pe rând (`CopieRand`) și a proiectului (`CopieProiect`) știu doar forma în V, iar rândurile n-au bile (finisarea are rândul
+  ei, fără „Pune-o înapoi”), deci o bilă nu se poate readuce ca plată. Paza, a compilatorului (`exportFreze.bila.test.ts`, două
+  `@ts-expect-error`), otrăvită de mână: cu `CopieProiect` lărgit cu bila, `tsc` cade pe directiva nefolosită.
+- **Mărimea,** față de `1d3882d9` (măsurat pe un build al lui): pornirea 111,2 → 111,4 kB (cu ușa 116,2 → 116,5, cu
+  Atelierul 116,5 → 116,9 / 125), totalul 893,5 → 904,3 / 1 000 kB (+10,8).
+- **Porțile, în CI, pe `20532b5a`:** în lucru.
 
 ## 2026-11-25 — 16.A↑b-6: „Pune-o înapoi în bibliotecă” din fereastra exportului (Model: Claude Opus 5.5)
 
