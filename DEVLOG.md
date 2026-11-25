@@ -14137,7 +14137,7 @@ la lista pieselor noi; pornită fără altă întrebare, cât 3.Ce își aștept
 **Prompt:** (aceeași cerere a owner-ului și aceleași răspunsuri la ADR 0284 ca la 3.Ca; răspunsul lui „Cărămizi de
 clădit”, la lista pieselor noi; pornită fără altă întrebare, după raportul lui 3.Cj-1 și 3.Cj-2; sesiunea principală a
 transmis „vreau sa pornesti si celelalte sub-sesiuni” al owner-ului)
-**Started:** 25.11, 07:35. **Completed:** 25.11, 08:25 (felia, cu otrăvurile; orele, după ceasul containerului).
+**Started:** 25.11, 07:35. **Completed:** 25.11, 08:21 (felia, cu otrăvurile; orele, după ceasul containerului).
 
 - **Cadrul** (tipul `cadru`, fila Cărămizi): o cărămidă 1 × n cu un gol prin ea, cu pragul (o placă obișnuită), doi
   stâlpi groși cât rama și buiandrugul cu știfturi pe toată lungimea. Se tipărește în picioare, fără suport.
