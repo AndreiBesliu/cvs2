@@ -15340,3 +15340,14 @@ codului: „Alipirea la prinderi (Recomandat)”, „Puncte în vederea 3D (Reco
   verde. Pornirea 111,4 kB (plafonul 125; cu ușa 116,5, cu Atelierul 116,9), totalul 909,1 / 1 000 kB, `/admin` 138,3 / 200,
   contul 30,2 / 32. Nimic pe server.
 - **Documentele:** decizia și paragraful de stare în `CLAUDE.md`; indexul liniilor; starea din `docs/linii/principala.md`.
+
+## 2026-11-25 — Sesiunea principală în cloud: lotul 37 (Escape în „Frezele mele”, finisarea reliefului, exportul „pe hârtie”), pe test (Model: Claude Fable 5.2)
+
+**Prompt:** publicarea de după unirile a treizeci și opta, a treizeci și noua și a patruzecea (pe test se publică liber)
+**Started:** 25.11, după unirea de la 21:13 (completul pe `main`, pornit la 21:24). **Completed:** 25.11, 22:23.
+
+- **Pe test: `5649067c`** (16.A↑b-7, 18.1↑c cu documentul v29, 28.8↑h). `publica.yml` 45693946753, verde (22:20–22:23), pornită
+  din prima; serverul, neschimbat. Trei uniri, un singur complet pe `main`.
+- **Completul pe `main`** (45684848118, verde, 56 min): unit 10 581 / 0 (12 sărite, pe Linux), e2e 883 / 883, funcțiile pe
+  emulatoare 136 / 136, paginile 60 / 60; pornirea 111,4 kB, totalul 909,1 / 1 000 kB.
+- **Proba de fum** pe adresa de test: versiunea `5649067cdf8b`, potrivită; nicio eroare în consolă, nicio cerere căzută.
