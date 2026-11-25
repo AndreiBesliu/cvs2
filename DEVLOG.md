@@ -14498,6 +14498,19 @@ vigoare „unește ce se poate”
   desenată ca ciocănire; refuzul cercului peste 2·D abia după clic, cu id-ul intern) rămâne în raport.
 - **Documentele:** indexul liniilor (rândul elicelor, nota nouă), starea din `docs/linii/principala.md`.
 
+## 2026-11-25 — Sesiunea principală în cloud: lotul 31 (atelierul Easy 3Draw: cama și roata cu palete), pe test (Model: Claude Fable 5.2)
+
+**Prompt:** regula „pe test publici liber”, după a treizecea unire
+**Started:** 25.11, 09:36. **Completed:** 25.11, 10:44.
+
+- **Publicat:** `d1a96fc4` (rapidul pe `main` 45569358584; completul 45570396384, verde, 58 min: unit 10 445 / 0,
+  12 sărite pe Linux; e2e 830 / 830; funcțiile pe emulatoare 136 / 136; paginile 59 / 59; publicarea 45578493611).
+  Adresa de test spune `d1a96fc4c1d1`; proba de fum, bună (nicio eroare, 70 de butoane, catalogul extensiilor,
+  mesajele, manualul, codurile și documentația, toate cu 200). Nimic nou pe server.
+- **În `main`, nepublicate încă:** plafoanele noi (`caddd661`: constantele porții, care nu ajung în aplicație, și
+  rândul ADR 0146 din roadmap-ul adminului) și documentele de după; pleacă cu lotul următor, fără un complet doar
+  pentru ele.
+
 ## 2026-11-25 — Felia 10.4↑c-1: cotele în exportul vectorilor („Cu cotele”, stratul lor, cifrele ca trăsături; ADR 0330 §6, §7) (Model: Claude Opus 5.5)
 
 **Prompt:** „Pornește 10.4↑c” (sesiunea principală, 25.11, cu mesajele owner-ului: „am resetat limita saptamanale. azi este
