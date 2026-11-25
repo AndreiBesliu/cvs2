@@ -1203,7 +1203,16 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   desprinsă, e pe grilă dacă stă drept pe ea, altfel liberă; Easy 3Draw 18.34.0 (următoarea, 18.35.0). **Așezările
   pieselor din model le socotește motorul (`rezolvaModel`): felul unei piese (pe grilă, prinsă, liberă) se întreabă
   acolo, nu după câmpurile ei; locul de pe grilă rămâne în date ca loc de rezervă. Listele de otrăvuri ale pluginului
-  pun `E2E_BUILD = False`.** Urmează 3.Cf-2 (orientarea de mână pe trei axe, pozițiile la jumătate de pas).
+  pun `E2E_BUILD = False`.** **3.Cl-1 (decorațiunile de Crăciun: fulgul, steaua și brăduțul; ADR 0285, acceptat de
+  owner pe 25.11 cu „Mergem cu recomandarile”)** gata pe 25.11, pe ramură: fila nouă „Crăciun” a atelierului, cu trei
+  piese plate, tipărite culcate, fără suport: fulgul de zăpadă (șase gata făcuți și „Alt fulg”), steaua (plină,
+  contur sau în relief) și brăduțul (de agățat sau în picioare, din două plăci cu fante); agățătoarea e inelul (pe
+  un vârf ascuțit, pe o tijă) sau gaura de lângă vârf; Easy 3Draw 18.35.0 (următoarea, 18.36.0). **O piesă plată nouă
+  se face din forme unite (`unesteForme`, în motor), nu din corpuri suprapuse, iar proba ei e modelul de pe hârtie,
+  întrebat punct cu punct (`caPeHartie`, în `test/unit/trenulet.craciun.test.ts`). O filă nouă a atelierului atinge
+  probele vechi care numără filele, pictogramele și căutarea (lista, în `docs/linii/atelier.md`).** Urmează 3.Cl-2
+  (globul, relieful pe două înălțimi), 3.Cl-3 (ornamentul cu nume), 3.Cl-4 (brăduțul LEGO), apoi 3.Cf-2 (orientarea
+  de mână pe trei axe, pozițiile la jumătate de pas).
   **Cotele pe desen: modelul și proba G-code-ului (ADR 0330, felia 10.4↑a-1, adusă din etapa 10)** gata pe 24.11, în
   sesiunea cloud a liniei (ramura `wip/10.4-cote`), unită în `main` pe 24.11 (`f25249cf`), fără interfață încă. ADR
   0330, acceptat de owner cu 1a–6a și cu nota lui: toate setările cotelor stau într-o fereastră nouă, „Setări”, nu în
