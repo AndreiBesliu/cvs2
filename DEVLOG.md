@@ -16121,8 +16121,8 @@ lista de printat»”); pornită după unirea lui 3.Cg în `main` (`75d8dde2`)
   `scula.regim` (v27, fără schemă nouă). O freză din bibliotecă își păstrează valorile ei. T-ul știe turația scrisă.
 - **Probele:** `export.zSigur.oracol.test.ts` (8: fără valori, octet cu octet; Z-ul sigur doar în cuvântul lui, pe tot corpusul și
   pe toate posturile; parcarea după `M5`; dopurile; poarta, cu martorul; oracolul simulării; senderul și emulatorul GRBL;
-  marginile), `export.regimMana.test.ts` (5), `export.regimZ.spec.ts` (2), proba privirii cu câmpurile noi.
-- **Otrăvurile:** `28.8p.py`, 28 / 28. **Mărimea:** pornirea +0, totalul 922,9 / 1 000 (+1,8 kB).
+  marginile), `export.regimMana.test.ts` (6), `export.regimZ.spec.ts` (2), proba privirii cu câmpurile noi.
+- **Otrăvurile:** `28.8p.py`, 29 / 29 (cu P29, recunoașterea cu valorile scrise, semnalată de linia frezelor). **Mărimea:** pornirea +0, totalul 922,9 / 1 000 (+1,8 kB).
 - **Documentele:** ADR 0291 („Implementarea 28.8↑p”), manualul (ambele limbi), fișa etapei 3, registrul otrăvurilor, nota
   liniei.
 

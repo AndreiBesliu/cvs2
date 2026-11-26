@@ -491,8 +491,8 @@ azi, octet cu octet.
   corpusul; Z-ul sigur schimbă doar cuvântul lui, pe tot corpusul și pe toate cele opt posturi, în mm și în inch, cu Z0 sus și
   jos; parcarea, o linie după `M5`, în fiecare fișier și în dopuri; poarta, cu verdictele de azi și cu martorul unei parcări sub
   fața foii; oracolul simulării, aceeași suprafață tăiată, celulă cu celulă; senderul și emulatorul GRBL, oprit în punctul de
-  parcare; marginile), `test/unit/export.regimMana.test.ts` (5) și `test/e2e/export.regimZ.spec.ts` (2), plus proba privirii.
+  parcare; marginile), `test/unit/export.regimMana.test.ts` (6) și `test/e2e/export.regimZ.spec.ts` (2), plus proba privirii.
   Rapidul, 10 765 / 0; e2e-ul exportului, 379 / 379.
-- **Otrăvurile:** `28.8p.py`, 28 / 28 (20 unitare, 8 e2e).
+- **Otrăvurile:** `28.8p.py`, 29 / 29 (21 unitare, 8 e2e).
 - **Mărimea:** pornirea +0 (111,6 kB), totalul +1,8 kB (922,9 / 1 000). Documentul (v30) și serverul: neschimbate.
 - **Rămâne a owner-ului:** proba pe mașină, întâi în aer (un Z sigur nou, o parcare în afara foii).
