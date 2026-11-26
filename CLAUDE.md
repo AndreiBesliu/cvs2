@@ -676,8 +676,19 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   (`OperatieExport.grosime`), rezumatul fiecărei foi (`FoaieExportata.rezumat`, `[data-rezumat-foaie]`). **Programul
   fiecărei foi rămâne al documentului doar cu ea (`doarFoaia`): fereastra schimbă doar ce arată și ce scrie la
   Exportă.** Titlurile grupurilor, în română, sunt „Tăietura”, „Golirea”, „Coborârea” (decizia owner-ului, 26.11).
-  Urmează 28.8↑p (avansul, turația și plonjarea pe „Scrisă de mână”, Z-ul sigur și parcarea; mișcă mașina). Felia:
-  pornirea +0, totalul +1,7 kB (921,1 / 1 000).
+  Felia: pornirea +0, totalul +1,7 kB (921,1 / 1 000).
+  **Z-ul sigur, parcarea și valorile frezei scrise de mână (ADR 0291 §3a, felia 28.8↑p)** gata pe 26.11, unită în
+  `main` pe 26.11 (`a234dba5`): în „Mașina și fișierul”, grupul „Z-ul sigur și parcarea” (`aer`): Z-ul sigur (1–100
+  mm, implicit 5) și parcarea de la final (sus, la XY0 sau într-un punct), setări ale aplicației, nu ale proiectului;
+  Z-ul sigur intră în regimul foii și al dopurilor (`dopurileFoii` primește regimul), iar postul scrie parcarea ca
+  `G0 X Y` după `M5`, în coordonatele programului, în fiecare fișier; antetul, neschimbat. Pe „Scrisă de mână”,
+  turația, avansul și plonjarea, scrise în `scula.regim` prin `cuOrigine` (fără schemă nouă), cu câmpurile goale pe
+  valorile lucrării; regula T știe turația scrisă de mână, iar „Scrisă de mână (ca „…”)” cere, cu valori scrise,
+  aceleași valori. **Fără valori, programul de azi, octet cu octet** (corpusul CAM, cele 8 posturi). **Mișcă mașina:**
+  proba pe mașină e a owner-ului, întâi în aer. **O probă care cere o fișă mai scundă decât panoul își alege
+  fereastra destul de înaltă și spune condiția înaintea aserțiunii** (`export.viteza.spec.ts`, la 1280 × 3200: un
+  rând nou de 36 px trecea fișa de panou pe Linux). Cu ea, din ADR 0291 nu mai rămâne nicio felie a liniei. Felia:
+  pornirea +0, totalul +1,8 kB (922,9 / 1 000; 923,0 cu 3.Ci).
   **Aldinul și cursivul sintetic (ADR 0123, felia 7.5↑, adusă din etapa 7)** gata pe 02.11, în worktree-ul `wip/7.5-text`:
   bifele **Aldin** și **Cursiv** din panoul textului, pentru orice font. Cursivul înclină fiecare literă față de linia ei de
   bază, exact; aldinul așază literele la înălțimea miezului (h − 2d), le îngroașă cu d prin fațada offsetului
@@ -1974,6 +1985,36 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 26.11.2026, seara (a cincizeci și șasea unire din cloud): **Z-ul sigur, parcarea și valorile frezei scrise de
+  mână în fereastra „Exportă G-code” (28.8↑p), unite în `main`** (sesiunea principală, ramura `unire-2611o`, din
+  `86881d4c`). Linia exportului, ramura `wip/28.8-export`, `c99dabed` (codul lui `601a5eeb`), PR-ul
+  `AndreiBesliu/cvs2#62` (ADR 0291, răspunsul 3a al owner-ului; ordinea q, apoi p, confirmată de el), unită în
+  `a234dba5`: în „Mașina și fișierul”, grupul „Z-ul sigur și parcarea”: Z-ul sigur (1–100 mm, implicit 5) și parcarea
+  de la final (rămâne sus, la XY0 sau într-un punct, cu X și Y față de XY0), setări ale aplicației, ca supracursa, nu
+  ale proiectului; postul scrie parcarea ca `G0 X Y` după `M5`, în fiecare fișier (pe freză, dopuri, foi), iar
+  antetul nu se schimbă. Pe o freză „Scrisă de mână”, turația, avansul și plonjarea, într-un rând strâns sub lista
+  „Din frezele mele”, scrise în `scula.regim` (câmpul din v27, fără schemă nouă; documentul rămâne v30); câmpurile
+  goale iau valorile lucrării, iar regula T știe turația scrisă de mână. **Fără valori, programul de azi, octet cu
+  octet**, pe tot corpusul CAM și pe toate cele 8 posturi; otrăvurile 29 / 29. **Mișcă mașina:** proba pe mașină e a
+  owner-ului, întâi în aer (un Z sigur nou și o parcare în afara foii). Primul complet al liniei căzuse la o probă de
+  mărime a ferestrei (`export.viteza.spec.ts:208`: rândul nou trecea fișa de panou pe Linux), refăcută de linie
+  (`601a5eeb`). `main` primise între timp 3.Ci (codul extensiei), deci unirea și-a făcut completul ei, fără nicio
+  ciocnire. Porțile unirii, în CI, pe `a234dba5` (completul 45839405152, verde la prima trecere, 59 min): unit
+  10 786 / 0 (12 sărite, pe Linux), e2e 980 / 980, funcțiile pe emulatoare 136 / 136, paginile 60 / 60; rapidul,
+  verde pe `a234dba5`; completul liniei, verde pe `601a5eeb` (45829440842); pornirea 111,6 kB (plafonul 125; cu ușa
+  116,8, cu Atelierul 117,1), **totalul 923,0 / 1 000 kB** (+1,9), `/admin` 138,3 / 200, contul 30,2 / 32. Lotul 50
+  (3.Ci, `86881d4c`) e în drum, cu completul pe `main` în lucru, iar felia aceasta pleacă după el (lotul 51). **Din
+  ADR 0291 nu mai rămâne nicio felie a liniei exportului;** 28.8↑m vine la pornirea Clasicului, a lui Pas cu pas sau
+  a pasului scurt din Atelier, iar adaosul și trecerea de finisare (9a), după placa 2, pe linia aleasă de sesiunea
+  principală. **Acum nicio linie n-are felie pornită**: una nouă pornește la cuvântul owner-ului. **La owner:** proba
+  pe mașină a lui 28.8↑p (întâi în aer) și a centrului foii; de încercat „Toate foile” pe un proiect cu mai multe
+  foi; de încercat „Modelul” (verificarea, răsturnările, jumătățile de pas, construcțiile cu nume și cele gata); de
+  încercat și de tipărit decorațiunile, bila și cupa (pentru 3.Ck); pachetul Easy 3Draw (563,1 kB); constatarea 14;
+  întrebarea 10 a cotelor și cele două alegeri din d-1; alegerile reliefului și tăierea plăcii 18; rândul editabil al
+  finisării și al degroșării; Escape în cele șase ferestre; feliile frezelor (16.A↑d–g); cele două alegeri mai vechi
+  cu recomandarea aplicată; cele patru întrebări din auditul elicelor; arhivarea sesiunii elicelor; verificarea
+  juridică (GDPR) a utilizării aplicației înaintea live-ului; „cine unește în `main`”; meniul de sus la 320 px la
+  atingere.
 - 26.11.2026, după-amiaza (a cincizeci și cincea unire din cloud): **construcțiile gata din vederea „Modelul” a
   atelierului Easy 3Draw (3.Ci), unite în `main`** (sesiunea principală, ramura `unire-2611n`, din `fa91f78e`). Linia
   atelierului, ramura `wip/3.Xh-biblioteca-ui`, `70088dec` (codul lui `1c0bdc4b`, cu `main` `fa91f78e` adus), PR-ul

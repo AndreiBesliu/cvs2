@@ -16198,3 +16198,19 @@ angrenaje […], brațul de macara, barca cu elice”); pornită după unirea lu
   (`git diff` gol). Local: traducerile (1 218, 0 lipsă), catalogul controalelor, biblioteca, probele documentelor 52 / 52. Nimic pe
   server.
 - **Documentele:** decizia și paragraful 3.Ci în `CLAUDE.md`; indexul liniilor; starea din `docs/linii/principala.md`.
+
+## 2026-11-26 — Sesiunea principală în cloud: a cincizeci și șasea unire (fereastra exportului: 28.8↑p, Z-ul sigur, parcarea, valorile frezei scrise de mână) (Model: Claude Opus 5.5)
+
+**Prompt:** raportul liniei exportului („28.8↑p gata”, `c99dabed`), la ordinul în vigoare „unește ce se poate”
+**Started:** 26.11, 16:28. **Completed:** unirea în `main`, 26.11, 17:29; publicarea pe test, lotul 51, după lotul 50.
+
+- **Verificat înaintea unirii:** completul (45829440842) pe `601a5eeb`, verde; rapidul, verde pe `601a5eeb` și pe `c99dabed`; între
+  ele, doar documente; PR-ul #62, „clean”; fără `.lucru/`. `main` primise 3.Ci (codul extensiei) după baza ramurii, deci unirea
+  și-a făcut completul ei.
+- **Unirea, pe `unire-2611o`** (din `86881d4c`): `c99dabed`, în `a234dba5`, fără nicio ciocnire. Local: tipurile, traducerile (1 220,
+  0 lipsă), catalogul controalelor, biblioteca, probele documentelor 52 / 52. În CI, pe `a234dba5`: completul 45839405152, verde
+  (unit 10 786 / 0, 12 sărite pe Linux; e2e 980 / 980; funcțiile pe emulatoare 136 / 136; paginile 60 / 60, citite din jurnalul
+  rulării); rapidul 45839406006, verde; totalul 923,0 / 1 000 kB. Nimic pe server.
+- **Publicarea lotului 50 (3.Ci):** prima așteptare, pornită fără limita de două ore, a fost oprită la 30 de minute înaintea
+  publicării; reluată la 16:57, din același punct (completul pe `main` nu s-a pornit a doua oară).
+- **Documentele:** decizia și paragraful 28.8↑p în `CLAUDE.md`; indexul liniilor; starea din `docs/linii/principala.md`.
