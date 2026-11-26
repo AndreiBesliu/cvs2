@@ -192,7 +192,7 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
     - frezele: 16.A↑b-5, unită la 13:18; 16.A↑b-4 (nota „s-a schimbat în bibliotecă”), unită la 17:00; 16.A↑b-6
       („Pune-o înapoi în bibliotecă”, pornită pe 25.11 la 14:16, la „ok, porneste 10.4↑c-2 si 16.A↑b-6” al
       owner-ului), unită la 19:42; 16.A↑b-7 (Escape în „Frezele mele”, reparația probelor instabile), unită la
-      20:11; fără felie pornită: 16.A↑d, e, f, g, la cuvântul owner-ului;
+      20:11; 16.A↑e (bila și toroidala, cu CAM; v31 ținut pentru ea), pornită pe 26.11 la 20:16, la „Zi-le ca pot continua cu ce urmeaza la fiecare” al owner-ului; apoi f și g; d, după placa 4;
     - exportul: 28.8↑n, unită la 13:18; 28.8↑o (centrul foii ca origine XY0; mișcă mașina), unită la 14:21; 28.8↑h
       (desenele ferestrei, cu reparația 28.8↑h-2 a lui „Du-mă la …” și cu regula „cât foaia” unită cu relieful),
       unită la 21:13; 28.8↑i (viteza ferestrei), unită pe 26.11 la 02:07; 28.8↑j (greșelile pe înțeles),
@@ -200,12 +200,12 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
       ecran), unită la 10:14 (feliile h–l ale ferestrei, gata); 28.8↑q („Toate foile” cu operațiile fiecărei
       foi) și titlurile grupurilor, unite la 13:05; 28.8↑p (Z-ul sigur și parcarea; mișcă mașina, cu
       linia frezelor anunțată; ordinea confirmată de owner), unită la 17:29; din ADR 0291 nu mai rămâne nicio felie a
-      liniei; fără felie pornită;
+      liniei; începutul G-code-ului la vedere în fereastră, pornită pe 26.11 la 20:16, la „Zi-le ca pot continua cu ce urmeaza la fiecare” al owner-ului; 9a, după placa 2; 28.8↑m, cu Clasicul;
     - relieful: 18.1↑b, unită la 11:02; 18.1↑c (finisarea, cu bila în document, v29; `AndreiBesliu/cvs2#39`), unită
       la 21:11, după ce linia a ținut bilele afară din lista bibliotecii a ferestrei exportului; 18.1↑d (pornită de owner pe
       25.11 la 23:37, „ok, porneste 10.4↑d si 18.1↑d”): d-1 (degroșarea, cu documentul v30, ADR 0313) și d-2 (fișa
-      plăcii 18), unite pe 26.11 la 05:09 (`AndreiBesliu/cvs2#51`); fără felie pornită: rândul editabil al
-      finisării și al degroșării și rotunjirea în jos a pasului lateral, la cuvântul owner-ului;
+      plăcii 18), unite pe 26.11 la 05:09 (`AndreiBesliu/cvs2#51`); rândul editabil al
+      finisării și al degroșării și rotunjirea în jos a pasului lateral, pornite pe 26.11 la 20:16, la cuvântul owner-ului;
     - atelierul: cama și roata cu palete, unite la 09:35; cadrul și melcul, la 13:18 (3.Cj, încheiată); 3.Tu
       (piesele rotunde pe același ax în „Modelul”, ADR 0283; Easy 3Draw 18.33.0; pornită de owner în sesiunea liniei,
       „1a, 2a, 3a la 3.Tu, pornește”), unită la 18:18; în lucru, 3.Cf (alipirea la prinderi în
@@ -217,12 +217,12 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
       (ADR 0285, încheiat); 3.Cf-2 (răsturnările și jumătățile de pas; 18.39.0), unită la 09:18; 3.Cg (verificarea:
       prinsă, plutește, intră în alta; 18.40.0), unită la 11:58; 3.Ch (construcțiile cu nume și lista lor de piese; 18.41.0), unită la 14:12; 3.Ci
       (construcțiile gata: șasiul cu patru roți, cutia de angrenaje, brațul de macara, barca cu elice; 18.42.0), unită la 16:26;
-      fără felie pornită: 3.Ck, după tipărirea bilei și a cupei, la cuvântul owner-ului;
+      3.Ck (cu jocul din calibrare; tipărirea bilei și a cupei, încă de verificat) sau întâi feliile auditului elicelor fără decizie, pornită pe 26.11 la 20:16, la „Zi-le ca pot continua cu ce urmeaza la fiecare” al owner-ului; 18.43.0;
     - cotele: 10.4↑c-1, unită la 12:20; c-2 (DIMENSION în DXF și cifrele ca text), unită la 19:42;
       10.4↑d (ultima felie a cotelor; pornită de owner pe 25.11 la 23:37), împărțită în trei: d-1 (lanțul, linia
       de bază, „Cotează selecția”), unită pe 26.11 la 03:26; d-2 („Fă desen din cotă”) și d-3 (cotele în raportul
-      foilor), unite la 05:35; 10.4↑d, încheiată; fără felie pornită: cele „mai târziu” din ADR 0330, la cuvântul
-      owner-ului.
+      foilor), unite la 05:35; 10.4↑d, încheiată; cele „mai târziu” din ADR 0330 (toleranțele, lungimile, cota între foi, setările în cont),
+      pornite pe 26.11 la 20:16, la cuvântul owner-ului.
 
     Se unesc la raportul liniei, în ordinea rapoartelor. **Restul de mărime** (din 25.11, cu plafoanele noi; după
     lotul de la 13:18: 109,9 kB în total, 8,5 kB în pornire): fiecare linie își spune în raport cât adaugă, iar una
@@ -232,7 +232,9 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
     feliile 3.Ca–3.Cj; 3.Ca, conectorul perpendicular, gata pe ramură, cu porțile în lucru;
     ia și lucrul liniei elicelor, predat pe 24.11 seara la cererea owner-ului: 3.Tu, la răspunsurile lui);
   - **la cuvântul owner-ului:** următoarea felie a bibliotecii extensiilor, a incrustațiilor și a trasării, 11.5↑b
-    (după etapa 13);
+    (după etapa 13); din 26.11, 20:16, cuvântul e dat („pot continua cu ce urmeaza la fiecare”), dar liniile fără
+    sesiune (tăierea 10.3↑p–r, imprimanta 3.6w, incrustațiile, planșele, trasarea, aranjamentele) cer întâi o sesiune
+    nouă, cu un brief;
   - **audituri, cerute de owner pe 25.11** (înaintea arhivării sesiunilor; doar documente, fără cod de produs):
     **elicele, gata și în `main`** (`docs/linii/audit-elice.md`, `173995a1`: nimic stricat; șapte felii propuse
     pentru linia atelierului; patru întrebări la owner, cu recomandările 1a, 2a, 3a, 4a; sesiunea se poate arhiva);
