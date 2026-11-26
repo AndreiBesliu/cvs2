@@ -16255,3 +16255,16 @@ v31 e ținut pentru tine”. **Started:** 26.11, 20:16, pe `wip/16.A-freze-e`, d
 - **Otrăvurile** (`test/otravuri/16.A-e1.py`, într-o clonă): 23 / 24 prinse; S07 (capătul greșit când derivata e pozitivă de
   la început) practic echivalentă: ramura contează doar cu începutul mutării ca minim, socotit corect de mutarea dinainte.
 - **Nimic pe server.** Bila nu s-a schimbat (rămâne doar la finisarea reliefului).
+
+## 2026-11-26 — Sesiunea principală în cloud: liniile pornesc ce urmează (Model: Claude Opus 5.5)
+
+**Prompt:** „Zi-le ca pot continua cu ce urmeaza la fiecare”
+**Started:** 26.11, 20:16. **Completed:** 26.11, 20:18.
+
+- **Mesajele:** la 20:16, celor cinci sesiuni de linie din cloud, fiecare cu ce urmează din nota ei: atelierul (3.Ck, cu
+  jocul din calibrare, sau întâi feliile auditului elicelor fără decizie; 18.43.0), exportul (începutul G-code-ului la
+  vedere), frezele (16.A↑e, cu v31 ținut pentru ea), relieful (rândul editabil al finisării și al degroșării, rotunjirea
+  în jos a pasului lateral), cotele (cele „mai târziu” din ADR 0330). Toate livrate.
+- **Nepornite:** liniile fără sesiune (tăierea, imprimanta, incrustațiile, planșele, trasarea, aranjamentele) și sesiunea
+  designului, de pe calculatorul owner-ului.
+- **Documentele:** decizia în `CLAUDE.md`; starea din `docs/linii/principala.md` și indexul liniilor.
