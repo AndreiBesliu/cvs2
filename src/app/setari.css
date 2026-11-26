@@ -40,6 +40,28 @@
   color: var(--t-slab);
 }
 
+/* Setările cotelor în cont (felia 10.4↑g): rândul stării și banda ciocnirii. */
+.setari-cont {
+  margin: 0 0 var(--sp-3);
+  font-size: var(--fs-2);
+  color: var(--t-slab);
+}
+
+.setari-cont-ciocnire {
+  display: grid;
+  gap: var(--sp-2);
+  padding: var(--sp-3);
+  border: 1px solid var(--l-margine);
+  border-radius: var(--r-2);
+  background: var(--s-peste);
+  color: inherit;
+}
+
+.setari-cont-ciocnire p {
+  margin: 0;
+  font-size: var(--fs-3);
+}
+
 /* Cota de probă: deasupra grupurilor, ținută la vedere cât se derulează. */
 .setari-proba {
   position: sticky;

@@ -1798,7 +1798,7 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
           focusInapoi={focusAspect.current} />
       )}
       {freze && <FrezeleMele onInchide={() => { setFreze(false); }} focusInapoi={focusFreze.current} config={config.ok ? config.config : null} />}
-      {setari && <Setari onInchide={() => { setSetari(false); }} focusInapoi={focusSetari.current} />}
+      {setari && <Setari onInchide={() => { setSetari(false); }} focusInapoi={focusSetari.current} config={config.ok ? config.config : null} />}
       {cerereLucrare && (
         <DialogLucrare
           key={cerereLucrare.lucrare.id}

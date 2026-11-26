@@ -1620,7 +1620,7 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
         <Suspense fallback={null}>
           <StratCote doc={doc} indexFoaie={indexFoaie} selectie={selectie} vedere={vedere} marime={marime} zona={zona}
             unealta={unealta === 'cote' && activ && !p.doarCitire} activ={activ && !p.doarCitire} loc={locCote} locJos={locTaste} cerere={cerereCote}
-            lipire={lipire} grila={pasGrila} virgula={virgula} toateFoile={p.toateFoile === true}
+            lipire={lipire} grila={pasGrila} virgula={virgula} toateFoile={p.toateFoile === true} config={p.config ?? null}
             onScrie={(c) => ruleaza('foaie.cote', { coteNoi: () => c })}
             onDesen={(forme, cote) => ruleaza('foaie.desen-din-cota', { desenCota: () => ({ forme, cote }) })}
             onUnealta={(u) => { if (u === 'cote') pornesteCote('d'); else setUnealta('selectie'); }}

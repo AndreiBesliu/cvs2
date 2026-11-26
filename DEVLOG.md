@@ -16320,3 +16320,21 @@ DEVLOG). **Completed:** 26.11, 22:15 (în container; CI-ul, pe commit-ul împins
   spune, fără cotă.
 - Manualul (ro, en), e2e nou 1; otrăvurile 16 / 16, într-o clonă. Pornirea 111,7 kB (neschimbată), totalul 925,7 → 926,0 /
   1 000 kB (+0,3, măsurat local). Urmează g (setările în cont), cu mărimea bucății contului spusă întâi sesiunii principale.
+
+## 2026-11-26 — Felia 10.4↑g: setările cotelor în cont (ADR 0330)
+
+**Prompt:** sesiunea principală, 26.11, 22:15: „da, g pe varianta 14a, cum ai descris-o, după raportul lui f”, cu condițiile:
+callable-ul `preferinte` cu probele pe emulatoare, documentul închis clientului, fără `cloud` setările rămân în browser,
+sincronizarea în bucata ei, adusă la cerere; Z-ul sigur și parcarea nu se mută acolo.
+**Started:** 26.11, 22:16, în sesiunea cloud a liniei cotelor, după f. **Completed:** 26.11, 22:40 (în container; CI-ul, pe
+commit-ul împins).
+
+- **Proba întâi:** pe emulatorul Firestore, `preferinte.emulator.test.ts` (refuzurile, versiunea văzută, ciocnirea, fără
+  `cloud`, documentul stricat) și regula care ține documentul închis; pe hârtie, îmbinarea (`preferinte.sincron.test.ts`) și
+  trecerea pe un server și pe browsere închipuite (`preferinte.trecere.test.ts`).
+- **Serverul:** `functions/src/preferinte/actiuni.ts`, `shared/preferinte.ts`, exportul în `functions/src/index.ts`. **Aplicația:**
+  `src/model/preferinteSincron.ts` (pur), `src/app/preferinteSincronizare.ts` (la cerere), `cheamaPreferintele` /
+  `apeleazaPreferintele` în bucata contului, rândul stării și banda ciocnirii în Setări › Cotele.
+- Cap-coadă pe emulatoare, două browsere ale aceluiași cont și proba trecută (`setariCont.emulator.spec.ts`). Manualul (ro, en);
+  otrăvurile 32 / 32, într-o clonă. Pornirea 111,7 kB (neschimbată), totalul 928,9 / 1 000 kB (+2,9), contul 30,3 / 32 (+0,1),
+  măsurate local. Cu g, cele „mai târziu” din ADR 0330 sunt toate făcute.

@@ -1323,6 +1323,12 @@ stânga; acum una singură, **Cotele**. Sus stă **cota de probă**, desenată c
 implicit**. Un număr se scrie cu virgulă sau cu punct; unul în afara marginilor rămâne în câmp, spus în roșu, și nu se ține.
 **Închide** (sau Esc) închide fereastra.
 
+Cu **contul deschis**, setările cotelor stau și în cont: pe alt calculator, cu același cont, vin singure, la deschiderea
+ferestrei Setări sau a uneltei Cote. O schimbare pleacă în cont la 2 secunde după ultima, iar rândul de sub titlu spune cum
+stau (în cont, fără rețea, sau doar în acest browser, dacă planul contului nu scrie în cont). Dacă aceeași setare s-a
+schimbat altfel aici și pe alt calculator, o bandă întreabă: **Păstrează-le pe ale mele** sau **Ia-le pe cele din cont**;
+până alegi, rămân cele de aici și nu pleacă nimic. Fără cont, setările stau doar în acest browser, ca până acum.
+
 - **Cifrele:** unitatea (mm, cm, inch, inch în fracții; desenul rămâne în mm), zecimalele (automat: 2, în inch 3; sau 0–6),
   în fracții fracția cea mai mică (1/2 … 1/64; cifra se scrie simplificată: 1 1/2, 3/8), zerourile de la
   coadă (tăiate sau păstrate), rotunjirea (la zecimale sau la un pas, de exemplu 0,5), separatorul zecimal (după limba
