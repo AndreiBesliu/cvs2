@@ -15538,3 +15538,22 @@ foilor” (sesiunea principală, 26.11, 00:08, cu cuvântul owner-ului: „ok, p
 - **Manualul** (ro, en), catalogul controalelor (neschimbat), e2e noi 4 (`cote.serie.spec.ts`); otrăvurile 27 / 27, într-o
   clonă. Întrebările 8 și 9, la owner, cu recomandările implementate. Pornirea 111,4 kB (neschimbată), totalul
   909,1 → 910,4 / 1 000 kB (+1,3).
+
+## 2026-11-26 — Sesiunea principală în cloud: a patruzeci și patra unire (atelierul Easy 3Draw: 3.Cl-2, globul; cotele: 10.4↑d-1) (Model: Claude Fable 5.2)
+
+**Prompt:** rapoartele liniilor („3.Cl-2 (globul de Crăciun; ADR 0285) e gata de unit”, `af1f046f`; „10.4↑d-1 gata”, `93017b3b`), la ordinul în vigoare „unește ce se poate”
+**Started:** 26.11, 02:08. **Completed:** unirea în `main`, 26.11, 03:26; publicarea pe test, lotul 41.
+
+- **Verificat înaintea unirii:** completele liniilor (45718312313 pe `af1f046f`; 45715926768 pe `93017b3b`) și rapidele lor,
+  verzi; PR-urile #53 și #52; fără `.lucru/`. Ramurile aveau `554b72cb` și `a4d86d53`; `main` primise 28.8↑i, deci lotul și-a
+  făcut completul lui.
+- **Unirea, pe `unire-2611c`** (din `7a754885`): `af1f046f`, în `b6c9998d`; `93017b3b`, în `57888ad8`. Ciocnirile, în DEVLOG
+  (`rezolva-devlog.py`). Local: tipurile, regulile de import (22 / 22), traducerile (1 173), catalogul controalelor (la zi),
+  biblioteca (Easy 3Draw 18.36.0, 540 867 octeți), probele documentelor și ale manualului 76 / 76.
+- **Porțile lotului, în CI, pe `57888ad8`** (citite din jurnalul rulării): completul 45726695789, verde la prima trecere (75 min): unit
+  10 638 / 0 (12 sărite, pe Linux), e2e 911 / 911, funcțiile pe emulatoare 136 / 136, paginile 60 / 60; rapidul 45726696018, verde. Pornirea 111,4 kB
+  (plafonul 125; cu ușa 116,5, cu Atelierul 116,9), totalul 910,7 / 1 000 kB, `/admin` 138,3 / 200, contul
+  30,2 / 32. Nimic pe server.
+- **Lotul 40 pe test:** `7a754885`, publicat pe 26.11 la 03:15 (completul pe `main` 45727537251, verde;
+  proba de fum, bună).
+- **Documentele:** decizia și paragrafele de stare în `CLAUDE.md`; indexul liniilor; starea din `docs/linii/principala.md`.

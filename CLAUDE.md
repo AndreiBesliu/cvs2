@@ -1224,7 +1224,8 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   se face din forme unite (`unesteForme`, în motor), nu din corpuri suprapuse, iar proba ei e modelul de pe hârtie,
   întrebat punct cu punct (`caPeHartie`, în `test/unit/trenulet.craciun.test.ts`). O filă nouă a atelierului atinge
   probele vechi care numără filele, pictogramele și căutarea (lista, în `docs/linii/atelier.md`).** **3.Cl-2
-  (globul; ADR 0285)** gata pe 25.11, pe ramură: a patra piesă a filei „Crăciun”, un disc cu căpăcel și inel, cu
+  (globul; ADR 0285)** gata pe 25.11, unită în `main` pe 26.11 (`b6c9998d`): a patra piesă a filei „Crăciun”, un
+  disc cu căpăcel și inel, cu
   dungi, zigzag sau stele, decupate ori în relief (pentru două culori: editorul spune la ce înălțime se schimbă
   filamentul), sau din două discuri îmbinate în cruce; Easy 3Draw 18.36.0 (următoarea, 18.37.0). **Arcele mari ale
   unei decorațiuni se fac din laturi fine (`aplatizeaza(…, laturiFine)`): cu cele 48 de laturi obișnuite, un disc
@@ -1286,9 +1287,19 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   `CNCVS2`), cu desenul ei într-un bloc anonim `*Dn`; cifrele ca text sunt MTEXT în DXF, `<text>` în SVG și
   Helvetica în PDF și EPS, fără font în fișier. Textul cotei e cifra noastră, scrisă în cotă (alegerea owner-ului,
   cu recomandarea aplicată). Cu „Linii și cifre” și „Trăsături”, fișierele ies octet cu octet ca în c-1. Oracolul
-  Python are corpusul al doilea (toate felurile) și unul ASCII. **10.4↑d (lanțul și linia de bază, „Cotează
-  selecția”, „Fă desen din cotă”, cotele în raportul foilor), pornită pe 25.11**, la „ok, porneste 10.4↑d si
-  18.1↑d” al owner-ului. Felia: pornirea +0, totalul +3,0 kB.
+  Python are corpusul al doilea (toate felurile) și unul ASCII. Felia: pornirea +0, totalul +3,0 kB.
+  **Cotele în lanț și de la o linie de bază, „Cotează selecția” (ADR 0330 §4, felia 10.4↑d-1)** gata pe 26.11, unită
+  în `main` pe 26.11 (`57888ad8`), la „ok, porneste 10.4↑d si 18.1↑d” al owner-ului (felia d s-a împărțit în d-1,
+  d-2 și d-3): în bara uneltei Cote, după Aliniată, felurile **Lanț** și **Linie de bază**; prima cotă se pune din
+  două puncte, apoi fiecare clic pune cota următoare (un pas de anulare fiecare), iar Esc încheie seria; cu o cotă
+  liniară aleasă, felul pornește seria din ea. Seria e pură (`src/model/serieCote.ts`): lanțul pleacă din al doilea
+  capăt al ultimei cote, linia de bază din primul capăt al primei, cu liniile la un pas de două înălțimi de cifră; o
+  cotă care ar măsura zero nu se pune. **„Cotează selecția”** (`src/model/coteSelectie.ts`, pură), în meniul de clic
+  dreapta, după Șterge: lățimea și înălțimea cutiei fiecărei piese alese, legate de colțurile elementelor de la
+  margini, într-un singur pas de anulare. Documentul rămâne v29 (cotele stau pe foaie); nimic pe server. **Bara de
+  sus și extensia ei nu mai au loc la 1280 px cu fontul lat: un buton nou al cotelor își caută locul în meniul de
+  clic dreapta sau în panou.** Urmează 10.4↑d-2 („Fă desen din cotă”) și d-3 (cotele în raportul foilor), pe
+  ramură. Felia: pornirea +0, totalul +1,3 kB.
   **Relieful din imagine, pe planșă (ADR 0310, ADR 0311, felia 18.1↑a, adusă din etapa 18; documentul v28)** gata pe
   24.11, în sesiunea cloud a liniei (ramura `wip/18.1-relief`), unită în `main` pe 24.11 (`c5b79526`). ADR 0310,
   acceptat de owner cu „1a–6a”. Din „Importă…”, o imagine (PNG, JPEG, WebP, GIF, BMP) se face **relief** cu alegerea
@@ -1831,6 +1842,39 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 26.11.2026, noaptea (a patruzeci și patra unire din cloud): **globul de Crăciun din atelierul Easy 3Draw (3.Cl-2) și
+  cotele în lanț și de la o linie de bază, cu „Cotează selecția” (10.4↑d-1), unite în `main`**, în lot (sesiunea
+  principală, ramura `unire-2611c`, din `7a754885`). **3.Cl-2** (linia atelierului, ramura `wip/3.Xh-biblioteca-ui`,
+  `af1f046f`, PR-ul `AndreiBesliu/cvs2#53`; ADR 0285), unită în `b6c9998d`: a patra piesă a filei „Crăciun”, globul:
+  un disc cu căpăcel și inel, cu dungi, zigzag sau stele, decupate ori în relief (pentru două culori: editorul spune
+  la ce înălțime se schimbă filamentul), sau din două discuri îmbinate în cruce; **Easy 3Draw 18.36.0** (540,9 kB);
+  otrăvurile 66 / 66 și 10 / 10. Găsit de probă și reparat în felie: discul ieșea din 48 de laturi, deci colțuros
+  la diametre mari; arcele mari ale decorațiunilor se fac acum din laturi fine, iar piesele de dinainte ies la fel.
+  Doar pachetul extensiei se schimbă. **10.4↑d-1** (linia cotelor, ramura `wip/10.4-cote`, `93017b3b`, PR-ul
+  `AndreiBesliu/cvs2#52`; ADR 0330 §4; pornită la „ok, porneste 10.4↑d si 18.1↑d” al owner-ului), unită în
+  `57888ad8`: în unealta Cote, felurile **Lanț** (fiecare cotă pleacă din capătul celei dinainte) și **Linie de
+  bază** (toate pleacă din primul punct, cu liniile la un pas una de alta): fiecare clic pune o cotă, iar Esc
+  încheie seria; în meniul de clic dreapta, **„Cotează selecția”**: lățimea și înălțimea fiecărei piese alese,
+  într-un singur pas de anulare. Cotele stau tot pe foaie: documentul rămâne v29; nimic pe server; otrăvurile
+  27 / 27. Felia d s-a împărțit în trei: d-2 („Fă desen din cotă”) și d-3 (cotele în raportul foilor) sunt pe
+  ramură, de raportat. **Două alegeri ale owner-ului, cu recomandarea liniei aplicată:** pasul liniilor de bază e
+  de două înălțimi de cifră (7 mm la cifrele de 3,5 mm), fără setare (alternativa: o setare de 2–30 mm); „Cotează
+  selecția” stă în meniul de clic dreapta, fiindcă în bara de sus nu mai încăpea la 1280 px cu fontul lat
+  (alternativa: și în „Caută o comandă”, cu ~0,1 kB în pornire). Ramurile aveau `main` `554b72cb` (atelierul) și
+  `a4d86d53` (cotele); de atunci `main` primise 28.8↑i, deci lotul și-a făcut completul lui. Ciocnirile, doar în
+  DEVLOG. Porțile lotului, în CI, pe `57888ad8` (completul 45726695789, verde la prima trecere, 75 min): unit 10 638 / 0 (12 sărite, pe Linux), e2e
+  911 / 911, funcțiile pe emulatoare 136 / 136, paginile 60 / 60; rapidul, verde pe `57888ad8`; completele liniilor,
+  verzi (`af1f046f`: 45718312313; `93017b3b`: 45715926768); pornirea 111,4 kB (plafonul 125; cu ușa 116,5,
+  cu Atelierul 116,9), **totalul 910,7 / 1 000 kB**, `/admin` 138,3 / 200, contul 30,2 / 32.
+  **Lotul 40 (28.8↑i, viteza ferestrei exportului) e pe test din 26.11, 03:15** (`7a754885`;
+  completul pe `main` 45727537251, verde; proba de fum, bună); lotul acesta pleacă acum (lotul 41).
+  La linii, în lucru: exportul (28.8↑j, greșelile pe înțeles), cotele (10.4↑d-2 și d-3, de raportat), atelierul
+  (3.Cl-3, ornamentul cu nume, 18.37.0), relieful (18.1↑d, cu v30). **La owner:** cele două alegeri ale cotelor, de
+  tipărit decorațiunile (un glob decupat și unul în relief, în două culori), rândul editabil al finisării, Escape
+  în cele șase ferestre, feliile frezelor (16.A↑d–g), cele două alegeri mai vechi cu recomandarea aplicată, de
+  încercat „Modelul” din Easy 3Draw, proba pe mașină a centrului foii, cele patru întrebări din auditul elicelor,
+  pachetul Easy 3Draw trecut de 0,5 MB, arhivarea sesiunii elicelor, verificarea juridică (GDPR) a utilizării
+  aplicației înaintea live-ului, „cine unește în `main`”, meniul de sus la 320 px la atingere.
 - 26.11.2026, noaptea (a patruzeci și treia unire din cloud): **viteza ferestrei „Exportă G-code” (28.8↑i), unită în
   `main`** (sesiunea principală, ramura `unire-2611b`, din `554b72cb`). Linia exportului, ramura `wip/28.8-export`,
   `8c309846`, PR-ul `AndreiBesliu/cvs2#49` (ADR 0291 §1, răspunsul 1a al owner-ului; constatarea 4 a auditului),
