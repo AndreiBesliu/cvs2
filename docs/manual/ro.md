@@ -1285,6 +1285,12 @@ rămân unde sunt, iar cota nu mai urmează forma); **textul**, în care `<>` e 
 pozitiv afară; la unghi, **raza arcului**); **Șterge**. Distanța dintre două laturi paralele oblice e o cotă liberă: un desen
 fix, fiindcă piciorul ei pe a doua latură nu e un punct al formei.
 
+**Toleranța** (în panoul cotei alese): **Fără** (implicit), **Simetrică (±)**, cu abaterea ei (implicit 0,1), sau **Cu abateri
+(+ / −)**: abaterea de sus și cea de jos, cu semnul lor (cea de sus nu poate fi sub cea de jos). Abaterile sunt în mm (la
+unghi, în grade), cel mult 100, și se scriu după cifră, în unitatea și cu zecimalele cifrelor din Setări: „100 ±0,1”,
+„100 +0,2 -0,1” (zero, fără semn); cu unitatea arătată, ea vine la capăt („100 ±0,1 mm”). În textul cotei, toleranța stă
+lângă valoare, în locul lui `<>`. Ca orice cotă, nu se taie; la export intră în cifrele cotei (și în textul cotei DIMENSION).
+
 **Fă desen din cotă** (în panoul cotei alese): desenul cotei devine o piesă obișnuită, exact unde era cota: liniile și cifrele
 ca trăsături (cifrele cu fontul cu o singură linie), capetele ca mici contururi închise. Piesa nouă n-are nicio tăiere: e
 aleasă, cu Selecția, iar în secțiunea **Tăierea** îi dai un rol (gravura pe linie, de exemplu); de acolo merge ca orice

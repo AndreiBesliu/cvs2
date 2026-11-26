@@ -1331,6 +1331,13 @@ mm (for radius and diameter, the **figure position** from the circle, positive o
 **Delete**. The distance between two oblique parallel sides is a free dimension: a fixed drawing, since its foot on the second
 side is not a point of the shape.
 
+**Tolerance** (in the panel of the selected dimension): **None** (the default), **Symmetric (±)**, with its deviation (0.1 by
+default), or **With deviations (+ / −)**: the upper and the lower deviation, with their signs (the upper one cannot be below
+the lower one). The deviations are in mm (for an angle, in degrees), at most 100, and are written after the figure, in the
+unit and with the decimals of the figures from Settings: “100 ±0.1”, “100 +0.2 -0.1” (zero, without a sign); with the unit
+shown, it comes at the end (“100 ±0.1 mm”). In the dimension's text, the tolerance stays next to the value, in place of
+`<>`. Like any dimension, it is not cut; on export it goes into the dimension's figures (and into the text of a DIMENSION).
+
 **Make a drawing from the dimension** (in the panel of the selected dimension): the dimension's drawing becomes an ordinary
 piece, exactly where the dimension was: lines and figures as strokes (the figures in the single-line font), the ends as small
 closed contours. The new piece has no cut: it is selected, with Select, and in the **Cutting** section you give it a role

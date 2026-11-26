@@ -16238,3 +16238,24 @@ angrenaje […], brațul de macara, barca cu elice”); pornită după unirea lu
 - **Nepornite:** liniile fără sesiune (tăierea, imprimanta, incrustațiile, planșele, trasarea, aranjamentele) și sesiunea
   designului, de pe calculatorul owner-ului.
 - **Documentele:** decizia în `CLAUDE.md`; starea din `docs/linii/principala.md` și indexul liniilor.
+
+## 2026-11-26 — Felia 10.4↑e-1: toleranțele cotelor (ADR 0330)
+
+**Prompt:** sesiunea principală, 26.11, 20:16, transmițând cuvântul owner-ului: „Zi-le ca pot continua cu ce urmeaza la fiecare”
+(cele „mai târziu” din ADR 0330, în ordinea recomandată: întâi toleranțele și lungimile, apoi cota între foi, la urmă setările
+în cont).
+**Started:** 26.11, 20:20, în sesiunea cloud a liniei cotelor. **Completed:** 26.11, 20:55 (în container; CI-ul, pe commit-ul
+împins).
+
+- **Proba întâi, pe hârtie:** `cote.toleranta.test.ts`: scrierea (simetrică, abateri, zero fără semn, fără pasul cifrei; cm,
+  inch, fracții, grade, grade-minute-secunde), cifra cu toleranța (unitatea la capăt, prefixul razei, `<>`), citirea și
+  punerea, ușa, programul neatins pe placa 1, exportul (text, textul DIMENSION, trăsăturile din „Fă desen din cotă”).
+- **Pur:** `tolerantaCota`, `scrieToleranta`, `cifraCuToleranta` (`src/model/desenCota.ts`), `cotaCuToleranta`
+  (`src/model/cote.ts`); judecata ușii (`src/model/judecataCote.ts`). **Panoul cotei:** rândul Toleranța, cu acțiunea
+  `toleranta` a cotei alese. Exportul și pânza iau cifra cu toleranța.
+- **Găsit de otrăvuri și reparat:** după „Cu abateri”, „Simetrică” și o anulare, panoul arăta „Simetrică” peste abateri
+  diferite; felul vine acum din toleranță. Proba desenului cotei citește și textul cifrei.
+- Întrebările 11–14, la owner, cu recomandările (11a implementată). Manualul (ro, en), e2e noi 2; otrăvurile 20 / 20, într-o
+  clonă. Pornirea 111,6 kB (neschimbată), totalul 923,0 → 923,9 / 1 000 kB (+0,9, măsurat local); `main` `78075223` adus
+  (doar documente). Urmează e-2 (lungimile).
+

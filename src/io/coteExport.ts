@@ -17,7 +17,7 @@
 import { LINIE, type Contur, type Punct, type Segment, type Varf } from '../geom/conturBaza.ts';
 import { cutieContur, CUTIE_GOALA, uneste, type Cutie } from '../geom/cutie.ts';
 import { felCunoscut, indexLume, punctAncora, valoareCota } from '../model/cote.ts';
-import { cifraCota, desenCota, laturiUnghi, textCota, type ArcDesen, type CapatDesen, type DesenCota, type FormatCifre, type StilCota } from '../model/desenCota.ts';
+import { cifraCuToleranta, desenCota, laturiUnghi, textCota, type ArcDesen, type CapatDesen, type DesenCota, type FormatCifre, type StilCota } from '../model/desenCota.ts';
 import type { Cota, Document } from '../model/document.ts';
 import { inHelvetica, marimeHelvetica } from './helvetica.ts';
 import { bucatiContur, type DefinitieCota, type Entitate } from './vectori.ts';
@@ -173,7 +173,7 @@ export function geometrieCota(doc: Document, indexFoaie: number, id: string, o: 
   const lume = indexLume(doc, indexFoaie);
   const p = c.puncte.map((a) => punctAncora(a, lume).p);
   const valoare = valoareCota(c, p);
-  const text = valoare === null ? '' : textCota(c, cifraCota(c.fel, valoare, o.format));
+  const text = valoare === null ? '' : textCota(c, cifraCuToleranta(c, valoare, o.format));
   const dc = desenCota(c, p, o.stil, text);
   if (!dc) return null;
   const contururi: Contur[] = [...dc.extensii.map(([a, b]) => linie(a, b)), ...dc.bucati.map(([a, b]) => linie(a, b)), ...dc.arce.map(arcContur)];
@@ -208,7 +208,7 @@ export function entitatiCote(doc: Document, indexFoaie: number, o: OptiuniCote):
     if (!felCunoscut(c.fel) || !Array.isArray(c.puncte)) continue;
     const p = c.puncte.map((a) => punctAncora(a, lume).p);
     const valoare = valoareCota(c, p);
-    const text = valoare === null ? '' : textCota(c, cifraCota(c.fel, valoare, o.format));
+    const text = valoare === null ? '' : textCota(c, cifraCuToleranta(c, valoare, o.format));
     const dc = desenCota(c, p, o.stil, text);
     if (!dc) continue;
     cote++;

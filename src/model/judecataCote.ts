@@ -1,4 +1,4 @@
-import { felCunoscut, PUNCTE_COTA } from './cote.ts';
+import { felCunoscut, PUNCTE_COTA, TOLERANTA_MAXIMA } from './cote.ts';
 import { PLAFON, type Document } from './document.ts';
 import { inregistreazaJudecataCote } from './schemaDocument.ts';
 // Dezlegarea cotelor în jurnal (ADR 0330 §3) vine odată cu judecata: orice document cu cote trece întâi pe aici.
@@ -9,9 +9,10 @@ import './jurnalCote.ts';
  * (`proiectLocal.ts`), mereu în ușa întreagă (`incarcare.ts`) și cu modulul cotelor. Se înregistrează în `schemaDocument.ts`
  * când e importată: fără ea, acolo un document cu cote nu trece. Judecă documentul BRUT (ca literele plăcuțelor): o cotă e un
  * obiect cu `id` (unic pe foaie) și `fel`; una cu un fel cunoscut are punctele felului, linia și, la cerere, textul, iar
- * fiecare ancoră e un punct finit, cu legătura ei în forma ei. Legătura nu trebuie să ducă la o formă existentă: o cotă
- * dezlegată (forma ștearsă, chiar de o versiune care nu știe de cote) rămâne bună. O cotă cu un fel necunoscut (a unei
- * versiuni mai noi) se păstrează neatinsă. Câmpurile necunoscute nu se judecă.
+ * fiecare ancoră e un punct finit, cu legătura ei în forma ei; toleranța, dacă e, are abaterile în margini (felia
+ * 10.4↑e-1). Legătura nu trebuie să ducă la o formă existentă: o cotă dezlegată (forma ștearsă, chiar de o versiune care nu
+ * știe de cote) rămâne bună. O cotă cu un fel necunoscut (a unei versiuni mai noi) se păstrează neatinsă. Câmpurile
+ * necunoscute nu se judecă.
  */
 
 type Brut = Record<string, unknown>;
@@ -65,6 +66,13 @@ function problemaCota(c: Brut): string | null {
   }
   if (Object.hasOwn(c, 'text') && (typeof c['text'] !== 'string' || c['text'].length > PLAFON.numeLungime)) {
     return `text nu e un text de cel mult ${PLAFON.numeLungime} de caractere`;
+  }
+  // Toleranța (felia 10.4↑e-1): abaterile, numere finite în ±TOLERANTA_MAXIMA, cea de sus nu sub cea de jos.
+  if (Object.hasOwn(c, 'toleranta')) {
+    const t = c['toleranta'];
+    const abatere = (x: unknown): boolean => typeof x === 'number' && Number.isFinite(x) && Math.abs(x) <= TOLERANTA_MAXIMA;
+    if (!obiect(t) || !abatere(t['sus']) || !abatere(t['jos'])) return `toleranta are sus și jos, numere finite în ±${TOLERANTA_MAXIMA}`;
+    if ((t['sus'] as number) < (t['jos'] as number)) return 'toleranta.sus e sub toleranta.jos';
   }
   return null;
 }

@@ -10,6 +10,7 @@
  */
 import { cerculArcului, numarSegmente, segment, type Contur, type Punct } from '../geom/conturBaza.ts';
 import type { AncoraCota, Cota, Document, FelCota, LocCota } from './document.ts';
+import type { Toleranta } from './desenCota.ts';
 import { chenarElement, cutieElement } from './forme.ts';
 import { elementeFoaie, idLume, type ElementLume } from './lume.ts';
 
@@ -20,6 +21,8 @@ export const FELURI_COTA: readonly FelCota[] = ['orizontala', 'verticala', 'alin
 export const PUNCTE_COTA: Readonly<Record<FelCota, readonly number[]>> = {
   orizontala: [2], verticala: [2], aliniata: [2], raza: [2], diametru: [2], unghi: [3, 4],
 };
+
+export { tolerantaCota, TOLERANTA_MAXIMA, type Toleranta } from './desenCota.ts';
 
 export function felCunoscut(fel: unknown): fel is FelCota {
   return typeof fel === 'string' && (FELURI_COTA as readonly string[]).includes(fel);
@@ -160,6 +163,12 @@ export function cotaCuText(c: Cota, text: string): Cota {
   const { text: _, ...fara } = structuredClone(c);
   const t = text.trim();
   return t === '' || t === '<>' ? fara : { ...fara, text };
+}
+
+/** Toleranța cotei (felia 10.4↑e-1); nulă sau zero și zero, scoasă (cota fără ea). Cota dată rămâne neatinsă. */
+export function cotaCuToleranta(c: Cota, t: Toleranta | null): Cota {
+  const { toleranta: _, ...fara } = structuredClone(c);
+  return t === null || (t.sus === 0 && t.jos === 0) ? fara : { ...fara, toleranta: { sus: t.sus, jos: t.jos } };
 }
 
 /** Distanța liniei de cotă (ADR 0330 §5), în mm, pe normală, față de mijlocul punctelor; restul liniei rămâne. */

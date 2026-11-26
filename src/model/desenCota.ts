@@ -472,6 +472,48 @@ export function cifraCota(fel: string, valoare: number, f: FormatCifre): string 
   return fel === 'raza' ? f.prefixR + c : fel === 'diametru' ? f.prefixD + c : c;
 }
 
+/**
+ * Toleranța unei cote (felia 10.4↑e-1): abaterea de sus și cea de jos, cu semnul lor, în unitatea măsurii (mm; la unghi,
+ * grade), fiecare cel mult `TOLERANTA_MAXIMA`, cea de sus nu sub cea de jos. Două zerouri nu sunt o toleranță.
+ */
+export type Toleranta = { readonly sus: number; readonly jos: number };
+export const TOLERANTA_MAXIMA = 100;
+const abatereBuna = (x: unknown): x is number => typeof x === 'number' && Number.isFinite(x) && Math.abs(x) <= TOLERANTA_MAXIMA;
+
+/** Toleranța cotei, sau null: lipsă, stricată (a unei versiuni mai noi sau scrisă de mână) ori zero și zero. */
+export function tolerantaCota(c: Cota): Toleranta | null {
+  const t = c['toleranta'];
+  if (typeof t !== 'object' || t === null || Array.isArray(t)) return null;
+  const { sus, jos } = t as Record<string, unknown>;
+  if (!abatereBuna(sus) || !abatereBuna(jos) || sus < jos || (sus === 0 && jos === 0)) return null;
+  return { sus, jos };
+}
+
+/**
+ * Toleranța scrisă după cifră, cu spațiul dinainte: simetrică, „ ±0,1”; altfel, întâi abaterea de sus, apoi cea de jos, cu
+ * semnele lor („ +0,2 -0,1”; zero fără semn). În unitatea și cu zecimalele cifrei, fără pasul ei de rotunjire și fără
+ * unitate (ea vine după toleranță); la unghi, ca unghiurile.
+ */
+export function scrieToleranta(fel: string, t: Toleranta, f: FormatCifre): string {
+  const g: FormatCifre = { ...f, pas: null, cuUnitate: false };
+  const abs = (x: number): string => (fel === 'unghi' ? scrieUnghi(Math.abs(x), g) : scrieCifra(Math.abs(x), g));
+  const cuSemn = (x: number): string => {
+    const s = abs(x);
+    // Ce se scrie zero (rotunjit: nicio cifră nenulă) nu are semn.
+    return /[1-9]/.test(s) ? `${x < 0 ? '-' : '+'}${s}` : s;
+  };
+  if (t.sus === -t.jos) return ` ±${abs(t.sus)}`;
+  return ` ${cuSemn(t.sus)} ${cuSemn(t.jos)}`;
+}
+
+/** Cifra unei cote cu toleranța ei, înaintea unității (dacă unitatea se scrie): „100 ±0,1 mm”, „R10 +0,2 -0,1”. */
+export function cifraCuToleranta(c: Cota, valoare: number, f: FormatCifre): string {
+  const t = tolerantaCota(c);
+  if (!t) return cifraCota(c.fel, valoare, f);
+  const unitate = f.cuUnitate && c.fel !== 'unghi' ? SUFIX[f.unitate] : '';
+  return cifraCota(c.fel, valoare, { ...f, cuUnitate: false }) + scrieToleranta(c.fel, t, f) + unitate;
+}
+
 /** Scrierea implicită a cifrelor, cu virgula sau punctul (probele, cota de probă a ferestrei Setări). */
 export const formatImplicit = (virgula: boolean): FormatCifre => ({
   unitate: 'mm', zecimale: 2, zerouri: 'taiate', pas: null, virgula, cuUnitate: false, fractie: 16, prefixR: 'R', prefixD: 'Ø', unghi: 'zecimale', zecimaleUnghi: 2,

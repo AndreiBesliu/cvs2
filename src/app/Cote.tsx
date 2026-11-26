@@ -26,9 +26,12 @@ import { apropiat } from '../geom/apropiat.ts';
 import { cerculArcului, numarSegmente, segment, type Contur, type Punct } from '../geom/conturBaza.ts';
 import { lipestePunct, type FelPunct, type PunctTinta } from '../geom/lipirePuncte.ts';
 import { t, type CheieSimpla } from '../i18n/t.ts';
-import { cotaCuDistanta, cotaCuText, cotaDezlegata, felCunoscut, indexLume, punctAncora, stareCota, valoareCota, type PunctCota } from '../model/cote.ts';
 import {
-  caleArc, cifraCota, desenCota, distantaDinCursor, distantaLaDesen, distantaRadiala, felAutomat, linieUnghiDinCursor, scrieCifra, textCota, textValoare,
+  cotaCuDistanta, cotaCuText, cotaCuToleranta, cotaDezlegata, felCunoscut, indexLume, punctAncora, stareCota, tolerantaCota, TOLERANTA_MAXIMA,
+  valoareCota, type PunctCota,
+} from '../model/cote.ts';
+import {
+  caleArc, cifraCuToleranta, desenCota, distantaDinCursor, distantaLaDesen, distantaRadiala, felAutomat, linieUnghiDinCursor, scrieCifra, textCota, textValoare,
   type CapatDesen, type DesenCota, type FelLiniar, type FormatCifre, type StilCota,
 } from '../model/desenCota.ts';
 import type { AncoraCota, Cota, Document, FelCota, FormaDoc, LegaturaCota } from '../model/document.ts';
@@ -140,7 +143,7 @@ const esteRadial = (f: string): f is 'raza' | 'diametru' => f === 'raza' || f ==
 function deseneaza(c: Cota, puncte: readonly PunctCota[], stil: StilCota, format: FormatCifre): Desenata {
   const p = puncte.map((x) => x.p);
   const valoare = valoareCota(c, p);
-  const text = valoare === null ? '' : textCota(c, cifraCota(c.fel, valoare, format));
+  const text = valoare === null ? '' : textCota(c, cifraCuToleranta(c, valoare, format));
   return { cota: c, puncte, desen: desenCota(c, p, stil, text), text, valoare, dezlegata: puncte.some((x) => x.stare === 'dezlegata') };
 }
 
@@ -390,13 +393,20 @@ export function StratCote({ doc, indexFoaie, selectie, vedere, marime, zona, une
     };
     publicaPanou({
       foaie: idFoaie, id, fel: d.cota.fel, valoare: d.valoare, cifra: d.text, text: typeof d.cota.text === 'string' ? d.cota.text : '',
-      ...stareCota(d.puncte), d: d.cota.linie?.d ?? 0,
+      ...stareCota(d.puncte), d: d.cota.linie?.d ?? 0, toleranta: tolerantaCota(d.cota),
       actiuni: {
         dezleaga: () => scrie((c) => cotaDezlegata(c, d.puncte)),
         text: (t) => scrie((c) => cotaCuText(c, t)),
         // La unghi, raza arcului rămâne pozitivă (un arc de rază zero nu se desenează).
         distanta: (x) => scrie((c) => cotaCuDistanta(c, c.fel === 'unghi' ? Math.max(0.1, Math.abs(x)) : x)),
         sterge: () => scrie(() => null),
+        // Toleranța (felia 10.4↑e-1): abaterile în ±TOLERANTA_MAXIMA, cea de sus nu sub cea de jos.
+        toleranta: (t) => {
+          const bune = t === null || [t.sus, t.jos].every((x) => Number.isFinite(x) && Math.abs(x) <= TOLERANTA_MAXIMA);
+          if (!bune) return { ok: false, motiv: 'prop.cota.toleranta.margini' };
+          if (t && t.sus < t.jos) return { ok: false, motiv: 'prop.cota.toleranta.ordine' };
+          return scrie((c) => cotaCuToleranta(c, t));
+        },
         // Desenul cotei, cu cifrele ca trăsăturile fontului cu o singură linie (adus la cerere, ca la export), ca o piesă nouă.
         desen: async (sterge) => {
           const [m, tx] = await Promise.all([import('../io/coteExport.ts'), import('../text/calcul.ts')]);

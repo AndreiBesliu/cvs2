@@ -704,3 +704,60 @@ nu s-au schimbat (`cote.neatinse.test.ts`, neatins, le cere tot aceleași cu și
     - **a (recomandat, implementat):** mărite cât să se citească (cifrele cel puțin a 60-a parte din latura mare a foii), cu
       desenul pe tot rândul: la mărimea adevărată, pe o foaie de 2 440 mm, cifrele de 3,5 mm ar avea sub un pixel;
     - b: la mărimea adevărată, ca în fișierul exportat, în coloana îngustă de azi.
+
+## Ce a rămas „mai târziu”, pornit (26.11)
+
+Pornite la cuvântul owner-ului, transmis de sesiunea principală pe 26.11 („Zi-le ca pot continua cu ce urmeaza la fiecare”),
+în ordinea recomandată de ea: întâi ce stă doar pe foaie, apoi ce atinge serverul.
+
+| Felia | Ce aduce |
+|---|---|
+| 10.4↑e-1 | Toleranțele scrise pe cotă (simetrică sau cu abateri), în panoul cotei |
+| 10.4↑e-2 | Lungimea unui arc (sau a unei laturi) și a unui contur întreg |
+| 10.4↑f | Cota între două foi (după întrebarea 13) |
+| 10.4↑g | Setările cotelor sincronizate în cont (cu mărimea spusă întâi sesiunii principale) |
+
+## Implementarea (10.4↑e-1)
+
+26.11, pe ramura `wip/10.4-cote`, cu `main` `d1ab8ba5` adus. Documentul rămâne v30: toleranța e un câmp opțional al cotei
+(`toleranta: { sus, jos }`), pe foaie, iar o versiune care nu-l știe îl lasă neatins (câmpurile necunoscute ale unei cote nu se
+judecă).
+- **Toleranța, pură** (`src/model/desenCota.ts`): abaterea de sus și cea de jos, cu semnul lor, în unitatea măsurii (mm; la
+  unghi, grade), fiecare cel mult 100, cea de sus nu sub cea de jos; zero și zero nu e o toleranță (`tolerantaCota`). Se scrie
+  după cifră, cu spațiu, în unitatea și cu zecimalele cifrelor din Setări, fără pasul lor de rotunjire (`scrieToleranta`):
+  simetrică, „100 ±0,1”; altfel întâi cea de sus, apoi cea de jos, „100 +0,2 -0,1”; ce iese zero nu are semn. Unitatea, dacă
+  se scrie, vine la capăt („100 ±0,1 mm”); prefixul razei și al diametrului rămâne în față („R10 ±0,1”); în textul omului,
+  toleranța stă cu cifra, în locul lui `<>` (`cifraCuToleranta`). O toleranță stricată nu se desenează.
+- **Ușa:** pe o cotă cu fel cunoscut, toleranța, dacă e, are `sus` și `jos` finite în ±100, cea de sus nu sub cea de jos;
+  altfel documentul se oprește, cu motivul.
+- **Peste tot unde e cifra cotei:** pe pânză, în listă, în exportul vectorilor (trăsături sau text, și textul scris al cotei
+  DIMENSION), în raportul foilor și în „Fă desen din cotă”. Fontul cifrelor are toate semnele ei (±, +, -).
+- **Panoul cotei:** rândul **Toleranța** (Fără, Simetrică (±), Cu abateri (+ / −)): la simetrică, câmpul ±, cu 0,1 la
+  alegere; la abateri, „Abaterea de sus” și „Abaterea de jos”, cu semn; o abatere de sus sub cea de jos se refuză, cu motivul;
+  fiecare schimbare, un pas de anulare.
+- **Programul, neatins:** pe placa 1, o cotă cu toleranță și text dă aceiași octeți ca fără cote.
+- **Găsit de otrăvuri și reparat în felie:** după „Cu abateri”, apoi „Simetrică” și o anulare, panoul arăta „Simetrică” peste
+  o toleranță cu abateri diferite (felul ales rămânea al panoului); acum felul vine din toleranța cotei, iar alegerea panoului
+  ține doar o toleranță cu abateri egale „cu abateri”. Proba desenului cotei citește acum și textul cifrei.
+- **Cifrele:** unitare noi 7 (`cote.toleranta.test.ts`), e2e noi 2 (`cote.toleranta.spec.ts`); otrăvurile 20 / 20.
+
+### Întrebările 11–14 (feliile e–g), cu recomandările pe care se merge
+
+11. Cum se scrie toleranța:
+    - **a (recomandat, implementat în e-1):** pe rândul cifrei, simetrică („±0,1”) sau cu abateri („+0,2 -0,1”), cu cifre de
+      aceeași mărime: se citește la fel pe pânză, în trăsături, în text și în DIMENSION;
+    - b: și limitele (maxim și minim, unul sub altul) și abaterile una sub alta, cu cifre mai mici (ca în desenele tehnice).
+12. Lungimea (e-2):
+    - **a (recomandat):** un fel nou, **Lungime**: un clic pe o latură dă lungimea ei (pe un arc, un arc paralel cu el și „⌒”
+      înaintea cifrei; pe o curbă sau o linie, linia ei), iar cu Shift, lungimea conturului întreg, ca o etichetă cu săgeată
+      („L 345,6”); legată de formă, ca celelalte;
+    - b: doar arcul, fără conturul întreg.
+13. Cota între două foi (f):
+    - **a (recomandat):** fără cotă ținută: foile sunt plăci separate, iar așezarea lor pe pânză („Toate foile”) e doar o vedere,
+      care se schimbă cu ordinea lor; **Măsoară** (M) măsoară și între foi, cu „Toate foile pe pânză”, fără să păstreze nimic;
+    - b: o cotă pe foaia activă cu un capăt pe altă foaie, măsurată în așezarea foilor de pe pânză (se schimbă când foile se
+      mută în listă).
+14. Setările cotelor în cont (g):
+    - **a (recomandat):** ținute în cont, cu sincronizarea frezelor ca model (fără `cloud`, rămân în browser), cu mărimea bucății
+      contului spusă întâi sesiunii principale;
+    - b: doar „Exportă setările” și „Importă setările”, ca fișier, fără server.

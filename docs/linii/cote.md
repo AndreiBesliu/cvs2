@@ -124,6 +124,12 @@ față. Fără cod de produs până la răspunsuri. De hotărât acolo, între a
   registrului care numără acțiunile la cerere (reparat în `68979355`): **o acțiune nouă a registrului intră și în
   `actiuni.calcul.test.ts` și `actiuni.calcul.paritate.test.ts`**. **Cu d-3, felia 10.4↑d e încheiată;** din ADR 0330 rămân
   doar ce e „mai târziu” (toleranțele, lungimea unui arc sau contur, cota între foi, setările în cont).
+- **26.11, d-1, d-2 și d-3 unite în `main`** de sesiunea principală (d-1 în `57888ad8`; d-2 și d-3 în `67dfb777`).
+- **26.11, „mai târziu” pornit** (la „Zi-le ca pot continua cu ce urmeaza la fiecare” al owner-ului, prin sesiunea principală;
+  `main` `d1ab8ba5` adus, documentul v30): e-1 (toleranțele), e-2 (lungimile), f (cota între foi), g (setările în cont, cu
+  mărimea bucății contului spusă întâi sesiunii principale). **e-1 gata pe ramură:** toleranța ca câmp opțional al cotei
+  (`toleranta: { sus, jos }`, fără schemă nouă), scrisă după cifră („100 ±0,1”, „100 +0,2 -0,1”) peste tot unde e cifra, cu
+  rândul Toleranța în panoul cotei. Întrebările 11–14, la owner, cu recomandările (11a implementată). **Urmează:** e-2.
 
 ## Deciziile owner-ului
 
@@ -132,6 +138,10 @@ față. Fără cod de produs până la răspunsuri. De hotărât acolo, între a
   cât mai multe, într-o zonă de setări generale, nu în Proiectare.
 
 ## Capcane găsite
+
+- **Felul ales într-un panou nu trebuie să treacă peste starea documentului:** după o anulare, un fel ținut de panou
+  („Simetrică”) rămânea peste o toleranță cu abateri diferite (găsit de otravă la e-1). Ce ține panoul în plus față de
+  document ține doar cât nu contrazice documentul.
 
 - **Glosarul planului e `PLAN.md` §2**, nu §3 (nota spunea §3; §3 e arhitectura).
 - **Ezdxf calculează singur valoarea unei cote DXF** (`Dimension.get_measurement()`, din punctele de definiție), deci
