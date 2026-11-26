@@ -76,7 +76,7 @@ SF = 'tri.push(...stifturi(Array.from({ length: q.n }, (_, k): P2 => [s * k + s 
 o('B19', LG, SF, SF.replace('length: q.n }', 'length: q.n - 1 }'), 'cadru', 'lipsește ultimul știft')
 o('B20', LG, SF, SF.replace('[s * k + s / 2, s / 2]', '[s * k + s / 2 + 1, s / 2]'), 'cadru', 'știfturile sunt mutate cu 1 mm')
 o('B21', LG, SF, SF.replace('), q.H, e.stiftD));', '), q.H - 2, e.stiftD));'), 'cadru', 'știfturile sunt îngropate în buiandrug')
-PD = 'const prinderi: Prindere[] = prag.prinderi.filter(c => c.fel === "locas");\n    for (let k = 0; k < q.n; k++) prinderi.push({ fel: "stift", p: [s * k + s / 2, s / 2, q.H], d: SUS, lung: P.stift_h });\n    return { tri, avert: q.avert, prinderi };\n  }\n  function lateral('
+PD = 'const prinderi: Prindere[] = prag.prinderi.filter(c => c.fel === "locas");\n    for (let k = 0; k < q.n; k++) prinderi.push({ fel: "stift", p: [s * k + s / 2, s / 2, q.H], d: SUS, lung: P.stift_h });\n    return { tri, avert: q.avert, prinderi };\n  }'
 o('C01', LG, PD, PD.replace('prag.prinderi.filter(c => c.fel === "locas")', '[]'), 'cadru', 'cadrul nu-și spune locașurile')
 o('C02', LG, PD, PD.replace('k < q.n; k++', 'k < q.n - 1; k++'), 'cadru', 'cadrul nu-și spune ultimul știft')
 o('C03', LG, PD, PD.replace('p: [s * k + s / 2, s / 2, q.H]', 'p: [s * k + s / 2, s / 2, 0]'), 'cadru', 'știfturile sunt declarate pe masă')

@@ -16225,3 +16225,30 @@ angrenaje […], brațul de macara, barca cu elice”); pornită după unirea lu
 - **Lotul 51 pe test:** `77a036c0` (28.8↑p), publicat pe 26.11 la 18:43 (completul pe `main` 45851263588, verde: unit 10 786 / 0,
   e2e 980 / 980, funcțiile pe emulatoare 136 / 136, paginile 60 / 60; proba de fum, bună). Pe test e tot ce e în `main`.
 - **Documentele:** decizia în `CLAUDE.md`; starea din `docs/linii/principala.md`.
+
+## 2026-11-26 — Felia 3.Ck-1: placa turnantă a atelierului Easy 3Draw (ADR 0284) (sesiune cloud)
+
+**Prompt:** „Zi-le ca pot continua cu ce urmeaza la fiecare” (cuvântul owner-ului, transmis de sesiunea principală, cu
+recomandarea ei: „pornește 3.Ck acum, cu jocul din calibrare, și spune în raport că jocul bilei rămâne de verificat la
+tipărire”); ADR 0284, felia 3.Ck (balamaua și placa turnantă), despărțită în 3.Ck-1 (placa turnantă) și 3.Ck-2 (balamaua)
+**Started:** 26.11, 18:26. **Completed:** 26.11, ORA_CK1 (felia, cu otrăvurile; orele, după ceasul containerului).
+
+- **Ce face:** în fila Cărămizi, „Placă turnantă” de 2 × 2 sau 4 × 4, din două plăci: baza (fața de sus netedă,
+  locașurile dedesubt, în mijloc pivotul: un capăt de știft Technic de Ø4,75 cu fanta de 0,8 mm, înalt de 3,1 mm) și
+  partea de sus (placa motorului cu știfturi, locașuri și gaura de știft din mijloc), care se rotește pe pivot. „Fă placa
+  turnantă” pune amândouă piesele în listă.
+- **Jocul:** gaura e cea din pasul de calibrare; baza are „Jocul pivotului” (−0,1 … 0,2 mm, din 0,05 în 0,05), scăzut din
+  raza pivotului, cu textul care spune ce faci după prima tipărire. Cât de greu se rotește și cât de bine stă pe pivot
+  rămân de verificat la tipărire.
+- **Motorul:** `turnantaCote`, `turnanta` (în `TIPURI`); pivotul se declară știft Technic în sus, deci alipirea și
+  verificarea din „Modelul” îl folosesc fără nimic nou. **Atelierul:** galeria, pictograma, numele, editorul, „Fă placa
+  turnantă”; jocul ținut doar în definiția bazei.
+- **Probele**, scrise întâi: unitară, 9 teste (au căzut cu „Lt.turnantaCote is not a function”): plasele, pivotul,
+  partea de sus egală cu placa cu gaură, montajul la cinci unghiuri fără pătrundere, cu martori, calibrarea, verificarea,
+  marginile; e2e, 3 scenarii; pasul în engleză din cvs2. Probele filelor, galeriilor, pictogramelor, căutării,
+  prinderilor și modelului, la zi.
+- **Otrăvurile:** OTRAVURI_CK1_DEVLOG
+- **Mărimea:** Easy 3Draw 18.43.0, 579,3 kB (era 576,4); aplicația, neschimbată. Nimic pe server.
+- **Documentele:** ADR 0284 („Implementat (3.Ck-1)”), nota liniei, indexul liniilor, fișa etapei 3, registrul
+  otrăvurilor, `CLAUDE.md`, traducerile roadmap-ului.
+- **Urmează:** 3.Ck-2 (balamaua), tot cu jocul din calibrare.

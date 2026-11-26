@@ -23,9 +23,11 @@ recomandările, 1a–4a): 3.Cl-1 (fulgul, steaua și brăduțul, în fila nouă 
 și jumătățile de pas în „Modelul”; 18.39.0), unită în `main` pe 26.11 (`3e56e8cf`, PR-ul `AndreiBesliu/cvs2#57`).
 3.Cg (verificarea din „Modelul”: prinsă, plutește, intră în alta; 18.40.0), unită în `main` pe 26.11 (`75d8dde2`,
 PR-ul `AndreiBesliu/cvs2#59`). 3.Ch (construcțiile cu nume și lista lor de piese, cu filamentul și timpul; 18.41.0),
-unită în `main` pe 26.11 (`3bf86d15`, PR-ul `AndreiBesliu/cvs2#61`). **3.Ci (construcțiile gata: șasiul cu patru roți,
-cutia de angrenaje, brațul de macara, barca cu elice; 18.42.0), gata pe ramură pe 26.11.** Cu ea, din ADR 0284 rămâne
-doar 3.Ck, care așteaptă tipărirea bilei și a cupei. Versiunea următoare a pachetului: 18.43.0._
+unită în `main` pe 26.11 (`3bf86d15`, PR-ul `AndreiBesliu/cvs2#61`). 3.Ci (construcțiile gata: șasiul cu patru roți,
+cutia de angrenaje, brațul de macara, barca cu elice; 18.42.0), unită în `main` pe 26.11 (`57e58798`, PR-ul
+`AndreiBesliu/cvs2#63`). **3.Ck, pornită pe 26.11 la cuvântul owner-ului (prin sesiunea principală), cu jocul din
+calibrare, s-a despărțit: 3.Ck-1 (placa turnantă; 18.43.0), gata pe ramură pe 26.11; 3.Ck-2 (balamaua), felia
+următoare.** Versiunea următoare a pachetului: 18.44.0._
 
 ## Numerele liniei
 
@@ -51,7 +53,7 @@ doar 3.Ck, care așteaptă tipărirea bilei și a cupei. Versiunea următoare a 
 | 3.Ch | Construcțiile cu nume și lista lor de piese | gata (26.11): cu filamentul și timpul (din debitul imprimantei) |
 | 3.Ci | Construcțiile gata (șasiul, cutia de angrenaje, brațul de macara, barca cu elice) | gata (26.11): din parametri, deschise ca o construcție nouă, cu piesele prinse și verificate |
 | 3.Cj | Melcul, cama și manivela, cadrul, roata cu palete | pe bucăți: 3.Cj-1, cama, 3.Cj-2, roata cu palete, 3.Cj-3, cadrul, și 3.Cj-4, șurubul melc: gata (25.11) |
-| 3.Ck | Balamaua și placa turnantă | despărțite de 3.Cd; după ce owner-ul încearcă primele piese pe imprimantă |
+| 3.Ck | Balamaua și placa turnantă | despărțite de 3.Cd; pornite pe 26.11 cu jocul din calibrare (de verificat la tipărire): 3.Ck-1 (placa turnantă), gata (26.11); 3.Ck-2 (balamaua), următoarea |
 | 3.Cl | Decorațiunile de Crăciun (ADR 0285) | 3.Cl-1 (fulgul, steaua, brăduțul) și 3.Cl-2 (globul, relieful pe două înălțimi), gata (25.11); 3.Cl-3 (ornamentul cu nume) și 3.Cl-4 (brăduțul LEGO), gata (26.11) |
 
 ## 3.Ca, gata (24.11, în cloud): conectorul perpendicular
@@ -649,3 +651,29 @@ doar 3.Ck, care așteaptă tipărirea bilei și a cupei. Versiunea următoare a 
 - **Starea unui panou care se strânge (`<details>`) se citește din pagină când editorul se reface**, nu din `toggle`:
   evenimentul vine după, deci o alegere făcută imediat după deschidere ar reface panoul strâns (proba e2e a prins-o).
 
+## 3.Ck-1, gata (26.11, în cloud): placa turnantă (ADR 0284, partea B)
+
+- **Unde e:** motorul, după `cadru`: `TurnantaDef`, `zecimalCerut`, `turnantaCote`, `turnanta` (în `TIPURI`, după
+  `cadru`), exportat `turnantaCote` (cotele de pe hârtie: pivotul, gaura, jocul de jur împrejur). Atelierul:
+  `stare.turnanta`, `FAMILII` (Cărămizi, după cadru), `PICTOGRAME`, `numeDef`, `defCurenta` (jocul ținut doar la bază),
+  ramura editorului (`#at-tu-piesa`, `#at-tu-marime`, `#at-tu-joc`, `#at-tu-info`, `#at-tu-fa`), `textTurnanta`,
+  `adaugaTurnanta`.
+- **Ce face și ce n-a intrat:** în ADR 0284, „Implementat (3.Ck-1)”.
+- **Probele:** `test/unit/trenulet.turnanta.test.ts`, `test/e2e/trenulet.turnanta.spec.ts`, pasul plăcii turnante din
+  proba în engleză (`trenulet.spec.ts`); otrăvurile, `test/otravuri/3.Ck-1.py` și `3.Ck-1-en.py`.
+
+### Reguli și capcane (3.Ck-1)
+
+- **O piesă cu un capăt de știft Technic intră în listele care numără găurile de știft:** proba „Se prinde cu”
+  (`trenulet.prinderi.spec.ts`) arată, pe rândul găurii de știft, fiecare piesă care are un știft Technic (acum și „Placă
+  turnantă”). La fel, o piesă nouă pe știfturi intră în `PE_STIFTURI`.
+- **Jocul de mișcare vine din calibrare, nu de pe hârtie:** o piesă care se rotește pe alta folosește o pereche care se
+  potrivește deja pe imprimantă (aici, știftul Technic în gaura de știft, cu gaura din pasul de calibrare) și dă omului
+  un câmp pentru diferență (jocul pivotului), cu textul care spune în ce sens se schimbă. O pereche nouă de mișcare
+  (balamaua) face la fel.
+- **Un câmp care ține doar de o piesă a perechii se scoate din definiția celeilalte** (`defCurenta`: jocul doar la
+  bază), altfel partea de sus ar ieși pe rânduri diferite în listă după jocul ales, deși e aceeași piesă.
+- **O filă își ține minte ultima piesă deschisă:** o probă care deschide o piesă nouă într-o filă și apoi lucrează mai
+  departe cu „piesa filei” deschide întâi piesa pe care o aștepta (proba în engleză, după pasul plăcii turnante).
+- **Plasa părții de sus se compară cu a cărămizii pe triunghiuri sortate, nu pe amprentă:** ordinea celulelor diferă
+  (`randCelule` față de lista scrisă), deci amprenta nu e aceeași, deși corpul e.

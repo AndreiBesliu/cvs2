@@ -1340,6 +1340,15 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   sursa)`, peste `STARE0`), deci se adună cu cele din editor. Starea unui `<details>` se citește din pagină când
   editorul se reface, nu din `toggle` (vine după).** Din ADR 0284 rămâne doar 3.Ck (balamaua și placa turnantă), după
   ce owner-ul încearcă bila și cupa pe imprimantă.
+  **3.Ck-1 (placa turnantă; ADR 0284, partea B)** gata pe 26.11, pe ramura liniei, la cuvântul owner-ului transmis de
+  sesiunea principală, cu jocul din calibrare: în fila Cărămizi, „Placă turnantă” de 2 × 2 sau 4 × 4, din două plăci:
+  baza (fața de sus netedă, locașurile dedesubt și în mijloc pivotul, un capăt de știft Technic cu fantă) și partea de
+  sus (placa cu știfturi și gaura de știft din mijloc), care se rotește pe pivot; „Fă placa turnantă” le pune pe
+  amândouă în listă. Gaura e cea din calibrare, iar baza are „Jocul pivotului” (−0,1 … 0,2 mm): cât de greu se rotește
+  și cât de bine stă pe pivot rămân de verificat la tipărire. Easy 3Draw 18.43.0 (următoarea, 18.44.0); 3.Ck-2
+  (balamaua) urmează. **Un joc de mișcare vine dintr-o pereche care se potrivește deja pe imprimantă (calibrarea), cu un
+  câmp pentru diferență; o piesă cu un capăt de știft Technic intră în probele care numără găurile de știft
+  (`trenulet.prinderi.spec.ts`).**
   **Cotele pe desen: modelul și proba G-code-ului (ADR 0330, felia 10.4↑a-1, adusă din etapa 10)** gata pe 24.11, în
   sesiunea cloud a liniei (ramura `wip/10.4-cote`), unită în `main` pe 24.11 (`f25249cf`), fără interfață încă. ADR
   0330, acceptat de owner cu 1a–6a și cu nota lui: toate setările cotelor stau într-o fereastră nouă, „Setări”, nu în

@@ -135,6 +135,15 @@ test('pivotul, pe plasă: un cilindru de Ø4,75 cu fanta de 0,8 mm, de la fața 
         if (Math.abs(y - h.c) < h.r - 0.6) assert.equal(la(p, h.c + 0.5, y, z), true, `${ce}: lângă fantă e lemn, la y ${r3(y)}`);
       }
     }
+    // rotund de jur împrejur, nu colțuros: din grad în grad, lemn la 0,02 mm sub rază și gol la 0,02 mm după ea (un
+    // pivot cu laturi de 20° ar avea coardele cu 0,036 mm înăuntrul cercului)
+    for (let g = -75; g <= 75; g++) {
+      const u = (g * Math.PI) / 180, z = PLACA + h.hp / 2;
+      for (const s of [-1, 1]) {
+        assert.equal(la(p, h.c + s * (h.r - 0.02) * Math.cos(u), h.c + (h.r - 0.02) * Math.sin(u), z), true, `${ce}: la ${g}°, lemn până la rază`);
+        assert.equal(la(p, h.c + s * (h.r + 0.02) * Math.cos(u), h.c + (h.r + 0.02) * Math.sin(u), z), false, `${ce}: la ${g}°, gol după rază`);
+      }
+    }
     // vârful: lemn sub el, gol deasupra; rădăcina: pivotul pornește din placă, fără nicio fantă între ei
     assert.equal(la(p, h.c + 1.2, h.c, PLACA + h.hp - 0.1), true, `${ce}: vârful`);
     for (const s of [-1, 1]) assert.equal(la(p, h.c + s * 1.2, h.c, PLACA + 0.005), true, `${ce}: pivotul e lipit de placă`);
