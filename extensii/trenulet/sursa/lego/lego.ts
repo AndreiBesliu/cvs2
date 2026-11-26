@@ -3687,6 +3687,187 @@ var Lego = (function (glob: typeof globalThis) {
     if (rotor.piesa === "carcasa" || carcasa.piesa !== "carcasa") return false;
     return ventilatorCote(rotor).Rt < ventilatorCote(carcasa).D / 2;
   }
+  // ---------------------------------------------------------------------------------------------- verificarea modelului (ADR 0284, 3.Cg)
+  // Pentru fiecare piesa din model: de cine e prinsa, in cine intra si daca pluteste. E un avertisment, nu un refuz: piesa
+  // ramane unde a pus-o omul.
+  /** Inversa unei mutari rigide. */
+  const inversTransf = (T: Transf): Transf => { const m = [T.m[0]!, T.m[3]!, T.m[6]!, T.m[1]!, T.m[4]!, T.m[7]!, T.m[2]!, T.m[5]!, T.m[8]!], q = roteste(m, T.t); return { m, t: [-q[0], -q[1], -q[2]] }; };
+  // jocul socotelii la prinderi: cat pot sta doua prinderi una langa alta (mm), cat de departe de „fata in fata” (1°) si cat
+  // dintr-o tija trebuie sa fie in gaura ca sa tina (mm)
+  const PRINS_MM = 0.05, PRINS_COS = Math.cos(Math.PI / 180), PRINS_SIN = Math.sin(Math.PI / 180), PRINS_TIJA = 2;
+  /**
+   * Prinderile facute intre doua piese asezate in lume: perechile [prinderea primei, prinderea celei de-a doua] ale caror
+   * feluri se prind, cu directiile opuse si axele una peste alta. Stiftul in locas si bila in cupa tin doar pana la capat
+   * (unde le pune `montaj`); o tija (axul, stiftul Technic, bara) tine cat are cel putin 2 mm in gaura (sau cat e gaura ori
+   * tija, cand sunt mai scurte). Doua cruci (axul in gaura lui) tin doar brat pe brat.
+   */
+  function prinseInLume(pa: readonly Prindere[], Ta: Transf, pb: readonly Prindere[], Tb: Transf): [number, number][] {
+    const out: [number, number][] = [];
+    if (!transfBuna(Ta) || !transfBuna(Tb)) return out;
+    const inLume = (l: readonly Prindere[], T: Transf) => l.map(c => ({ c, p: aplicaTransf(T, c.p), d: roteste(T.m, c.d), r: c.r ? roteste(T.m, c.r) : null }));
+    const A = inLume(pa, Ta), B = inLume(pb, Tb);
+    A.forEach((a, i) => B.forEach((b, j) => {
+      if (!sePrind(a.c.fel, b.c.fel) || scalar(a.d, b.d) > -PRINS_COS) return;
+      // a doua prindere, pe axa primei: la g de ea (in sensul ei) si la `lat` de axa
+      const dp: P3 = [b.p[0] - a.p[0], b.p[1] - a.p[1], b.p[2] - a.p[2]], g = scalar(dp, a.d);
+      if (Math.hypot(dp[0] - g * a.d[0], dp[1] - g * a.d[1], dp[2] - g * a.d[2]) > PRINS_MM) return;
+      if (seGliseaza(a.c.fel, b.c.fel)) {
+        // cat din tija e in gaura: tija tine de la radacina ei (0) la lungimea ei, iar gaura, de la gura (g) cat e de adanca
+        const [tata, mama] = TATA.has(a.c.fel) ? [a.c, b.c] : [b.c, a.c];
+        if (Math.min(tata.lung, g + mama.lung) - Math.max(0, g) < Math.min(PRINS_TIJA, tata.lung, mama.lung) - 1e-9) return;
+        // doua cruci: bratele, unul peste altul sau in cruce
+        if (a.r && b.r) { const co = Math.abs(scalar(a.r, b.r)); if (co < PRINS_COS && co > PRINS_SIN) return; }
+      } else if (Math.abs(g - scalar(aplicaTransf(montaj(a.c, b.c), b.c.p), a.c.d) + scalar(a.c.p, a.c.d)) > PRINS_MM) return;
+      out.push([i, j]);
+    }));
+    return out;
+  }
+  /** Pasul razelor si grosimea de la care lemnul comun a doua piese e ciocnire (mm). */
+  const CIOCNIRE = 0.25;
+  const cutiiPlase = new WeakMap<readonly Tri[], [P3, P3]>();
+  /** Cutia unei plase (tinuta minte pe plasa). */
+  function cutiePlasa(tri: readonly Tri[]): [P3, P3] {
+    let c = cutiiPlase.get(tri);
+    if (!c) {
+      const lo: P3 = [Infinity, Infinity, Infinity], hi: P3 = [-Infinity, -Infinity, -Infinity];
+      for (const t of tri) for (const q of t) for (let k = 0; k < 3; k++) { lo[k] = Math.min(lo[k]!, q[k]!); hi[k] = Math.max(hi[k]!, q[k]!); }
+      cutiiPlase.set(tri, c = [lo, hi]);
+    }
+    return c;
+  }
+  /** Cutia (paralela cu axele) a unei cutii duse cu transformarea T: `cutieTransf`, pentru o cutie care nu incepe in origine. */
+  const cutieDusa = (T: Transf, [a, b]: readonly [P3, P3]): [P3, P3] => cutieTransf({ m: T.m, t: aplicaTransf(T, a) }, [b[0] - a[0], b[1] - a[1], b[2] - a[2]]);
+  /** Bucatile de lemn de pe o raza: de la intrarile si iesirile ei prin plasa, capetele bucatilor in care numarul de
+   *  infasurare e ≥ 1 (corpurile suprapuse ale unei piese se unesc). O raza cu intrarile si iesirile nepotrivite (a cazut pe
+   *  o muchie) nu spune nimic. */
+  function lemnPeRaza(intr: number[], ies: number[]): number[] {
+    intr.sort((x, y) => x - y); ies.sort((x, y) => x - y);
+    const out: number[] = [];
+    let n = 0, i = 0, j = 0;
+    while (i < intr.length || j < ies.length) {
+      // la aceeasi adancime, intai intrarea: doua corpuri lipite sunt o singura bucata
+      if (j >= ies.length || (i < intr.length && intr[i]! <= ies[j]!)) { if (n++ === 0) out.push(intr[i]!); i++; }
+      else { if (n === 0) return []; if (--n === 0) out.push(ies[j]!); j++; }
+    }
+    return n === 0 ? out : [];
+  }
+  /** Partea comuna a doua siruri de bucati (capetele lor, in ordine): doar bucatile de cel putin `gros`. */
+  function bucatiComune(p: readonly number[], q: readonly number[], gros: number): number[] {
+    const out: number[] = [];
+    for (let i = 0, j = 0; i < p.length && j < q.length;) {
+      const a = Math.max(p[i]!, q[j]!), b = Math.min(p[i + 1]!, q[j + 1]!);
+      if (b - a >= gros) out.push(a, b);
+      if (p[i + 1]! < q[j + 1]!) i += 2; else j += 2;
+    }
+    return out;
+  }
+  /**
+   * Doua plase se ciocnesc: au lemn comun mai gros de un sfert de milimetru. `T` duce a doua plasa in coordonatele primei.
+   * Lemnul fiecareia se citeste pe raze paralele, la un sfert de milimetru una de alta, pe axa cea mai lunga a partii comune
+   * a cutiilor (numarul de infasurare: ≥ 1 e lemn, deci corpurile suprapuse ale unei piese sunt lemn, iar un gol ramane
+   * gol). E ciocnire cand patru raze vecine (un patrat al grilei) au, toate, aceeasi bucata de lemn comun, lunga de cel
+   * putin un sfert de milimetru. Deci jocurile si strangerile dintre doua piese prinse (zecimi) nu sunt ciocniri, iar un
+   * lemn comun care cuprinde un cub de 0,5 mm (cu laturile pe axele primei plase) este mereu.
+   */
+  function seCiocnesc(a: readonly Tri[], b: readonly Tri[], T: Transf): boolean {
+    if (!a.length || !b.length || !transfBuna(T)) return false;
+    const ca = cutiePlasa(a), cb = cutieDusa(T, cutiePlasa(b)), s = CIOCNIRE;
+    const r0 = ca[0].map((x, k) => Math.max(x, cb[0][k]!)), lat = ca[1].map((x, k) => Math.min(x, cb[1][k]!) - r0[k]!);
+    if (lat.some(x => x < s)) return false;
+    // razele merg pe w; u si v sunt celelalte doua axe, in ordine ciclica (produsul vectorial isi pastreaza formula)
+    const w = lat.indexOf(Math.max(...lat)), u = (w + 1) % 3, v = (w + 2) % 3, nu = Math.ceil(lat[u]! / s), nv = Math.ceil(lat[v]! / s);
+    // razele nu cad pe coordonatele rotunde ale pieselor (fetele lor verticale): sunt decalate cu o parte oarecare din pas
+    const u0 = r0[u]! + 0.6372 * s, v0 = r0[v]! + 0.6372 * s, M = new Float64Array(15);
+    // o muchie a triunghiului (in planul u, v), citita de la capatul ei mai mic spre cel mai mare: doua triunghiuri vecine
+    // socotesc la fel muchia lor comuna, deci o raza cazuta chiar pe ea e a unuia singur (cel din partea pozitiva a muchiei).
+    // `parte` spune de care parte a muchiei e triunghiul (al treilea varf); 0: triunghiul se vede pe muchie, fara arie
+    const muchie = (k: number, pu: number, pv: number, qu: number, qv: number, ru: number, rv: number): boolean => {
+      if (pu > qu || (pu === qu && pv > qv)) { let x = pu; pu = qu; qu = x; x = pv; pv = qv; qv = x; }
+      const du = qu - pu, dv = qv - pv, parte = du * (rv - pv) - dv * (ru - pu);
+      M[k] = pu; M[k + 1] = pv; M[k + 2] = du; M[k + 3] = dv; M[k + 4] = parte;
+      return parte !== 0;
+    };
+    /** Intrarile si iesirile fiecarei raze prin plasa dusa cu transformarea data. */
+    const raze = (tri: readonly Tri[], { m, t }: Transf): [(number[] | undefined)[], (number[] | undefined)[]] => {
+      const intr: (number[] | undefined)[] = new Array(nu * nv), ies: (number[] | undefined)[] = new Array(nu * nv);
+      const ux = m[3 * u]!, uy = m[3 * u + 1]!, uz = m[3 * u + 2]!, ut = t[u]!, vx = m[3 * v]!, vy = m[3 * v + 1]!, vz = m[3 * v + 2]!, vt = t[v]!;
+      const wx = m[3 * w]!, wy = m[3 * w + 1]!, wz = m[3 * w + 2]!, wt = t[w]!;
+      for (const [p, q, r] of tri) {
+        const au = ux * p[0] + uy * p[1] + uz * p[2] + ut, bu = ux * q[0] + uy * q[1] + uz * q[2] + ut, cu = ux * r[0] + uy * r[1] + uz * r[2] + ut;
+        const i0 = Math.max(0, Math.ceil((Math.min(au, bu, cu) - u0) / s)), i1 = Math.min(nu - 1, Math.floor((Math.max(au, bu, cu) - u0) / s));
+        if (i0 > i1) continue;
+        const av = vx * p[0] + vy * p[1] + vz * p[2] + vt, bv = vx * q[0] + vy * q[1] + vz * q[2] + vt, cv = vx * r[0] + vy * r[1] + vz * r[2] + vt;
+        const j0 = Math.max(0, Math.ceil((Math.min(av, bv, cv) - v0) / s)), j1 = Math.min(nv - 1, Math.floor((Math.max(av, bv, cv) - v0) / s));
+        if (j0 > j1) continue;
+        const aw = wx * p[0] + wy * p[1] + wz * p[2] + wt, bw = wx * q[0] + wy * q[1] + wz * q[2] + wt, cw = wx * r[0] + wy * r[1] + wz * r[2] + wt;
+        // normala triunghiului (cat aria lui): pe w, spune daca raza iese din lemn prin el (> 0) sau intra (< 0)
+        const nw = (bu - au) * (cv - av) - (bv - av) * (cu - au);
+        if (nw === 0 || !muchie(0, au, av, bu, bv, cu, cv) || !muchie(5, bu, bv, cu, cv, au, av) || !muchie(10, cu, cv, au, av, bu, bv)) continue;
+        // panta planului triunghiului: cat se schimba adancimea pe u si pe v
+        const pu = ((bv - av) * (cw - aw) - (bw - aw) * (cv - av)) / nw, pv = ((bw - aw) * (cu - au) - (bu - au) * (cw - aw)) / nw, l = nw > 0 ? ies : intr;
+        for (let i = i0; i <= i1; i++) for (let j = j0; j <= j1; j++) {
+          const U = u0 + i * s, V = v0 + j * s;
+          let afara = false;
+          for (let k = 0; k < 15 && !afara; k += 5) {
+            const e = M[k + 2]! * (V - M[k + 1]!) - M[k + 3]! * (U - M[k]!);
+            afara = M[k + 4]! > 0 ? e < 0 : e >= 0;
+          }
+          if (!afara) (l[i * nv + j] ??= []).push(aw - pu * (U - au) - pv * (V - av));
+        }
+      }
+      return [intr, ies];
+    };
+    const [ia, ea] = raze(a, { m: [1, 0, 0, 0, 1, 0, 0, 0, 1], t: [0, 0, 0] }), [ib, eb] = raze(b, T);
+    // lemnul comun de pe fiecare raza (bucatile de cel putin un sfert de milimetru)
+    const comun: (number[] | undefined)[] = new Array(nu * nv);
+    for (let c = 0; c < nu * nv; c++) {
+      if (!ia[c] || !ea[c] || !ib[c] || !eb[c]) continue;
+      const x = bucatiComune(lemnPeRaza(ia[c]!, ea[c]!), lemnPeRaza(ib[c]!, eb[c]!), s);
+      if (x.length) comun[c] = x;
+    }
+    // patru raze vecine cu aceeasi bucata comuna
+    for (let i = 0; i + 1 < nu; i++) for (let j = 0; j + 1 < nv; j++) {
+      const c = i * nv + j;
+      if (!comun[c] || !comun[c + 1] || !comun[c + nv] || !comun[c + nv + 1]) continue;
+      if (bucatiComune(bucatiComune(comun[c]!, comun[c + 1]!, s), bucatiComune(comun[c + nv]!, comun[c + nv + 1]!, s), s).length) return true;
+    }
+    return false;
+  }
+  type DeVerificat = { T: Transf; tri: readonly Tri[]; prinderi: readonly Prindere[]; cheie?: string };
+  /** Cat de aproape de masa trebuie sa ajunga o piesa ca sa stea pe ea (mm). */
+  const PE_MASA = 0.05;
+  /**
+   * Verificarea modelului (ADR 0284, felia 3.Cg): pentru fiecare piesa, in ordinea listei, de care piese e prinsa
+   * (`prinsa`), in care intra (`intra`) si daca pluteste. Pluteste o piesa care nu sta jos si nu e prinsa, nici prin alte
+   * piese, de una care sta jos; „jos” e masa (z = 0) sau, cand nimic nu ajunge la ea, piesa cea mai de jos. `bucati`: cate
+   * grupuri de piese prinse intre ele are modelul. O piesa fara plasa sau cu asezarea stricata nu e judecata. `memo` tine
+   * minte ciocnirile judecate, dupa cheile celor doua piese si asezarea uneia fata de cealalta.
+   */
+  function verificaModel(piese: readonly DeVerificat[], memo?: Map<string, boolean>): { piese: { prinsa: number[]; intra: number[]; pluteste: boolean }[]; bucati: number } {
+    const out = piese.map(() => ({ prinsa: [] as number[], intra: [] as number[], pluteste: false }));
+    const cutii = piese.map(p => (p.tri.length && transfBuna(p.T) ? cutieDusa(p.T, cutiePlasa(p.tri)) : null));
+    // grupurile de piese prinse intre ele
+    const grup = piese.map((_, i) => i), radacina = (i: number): number => (grup[i] === i ? i : (grup[i] = radacina(grup[i]!)));
+    for (let i = 0; i < piese.length; i++) for (let j = i + 1; j < piese.length; j++) {
+      const ci = cutii[i], cj = cutii[j];
+      // doua piese cu cutiile departate nu se prind si nu se ciocnesc
+      if (!ci || !cj || [0, 1, 2].some(k => ci[0][k]! > cj[1][k]! + PRINS_MM || cj[0][k]! > ci[1][k]! + PRINS_MM)) continue;
+      const A = piese[i]!, B = piese[j]!;
+      if (prinseInLume(A.prinderi, A.T, B.prinderi, B.T).length) { out[i]!.prinsa.push(j); out[j]!.prinsa.push(i); grup[radacina(i)] = radacina(j); }
+      // ciocnirea, in coordonatele primei piese: nu tine de locul modelului, deci se poate tine minte
+      const rel = compuneTransf(inversTransf(A.T), B.T);
+      const cheie = memo && A.cheie !== undefined && B.cheie !== undefined ? `${A.cheie}|${B.cheie}|${[...rel.m, ...rel.t].map(x => Math.round(x * 1e5) / 1e5 + 0).join(",")}` : null;
+      let lovit = cheie ? memo!.get(cheie) : undefined;
+      if (lovit === undefined) { lovit = seCiocnesc(A.tri, B.tri, rel); if (cheie) memo!.set(cheie, lovit); }
+      if (lovit) { out[i]!.intra.push(j); out[j]!.intra.push(i); }
+    }
+    // cat de jos ajunge fiecare grup; masa e z = 0 sau, cand nimic nu ajunge la ea, piesa cea mai de jos
+    const jos = new Map<number, number>();
+    cutii.forEach((c, i) => { if (c) jos.set(radacina(i), Math.min(jos.get(radacina(i)) ?? Infinity, c[0][2])); });
+    const masa = Math.max(0, Math.min(...jos.values()));
+    cutii.forEach((c, i) => { if (c) out[i]!.pluteste = jos.get(radacina(i))! > masa + PE_MASA; });
+    return { piese: out, bucati: jos.size };
+  }
 
   // ---------------------------------------------------------------------------------------------- STL, pat, zip
   function stl(tri: readonly Tri[], antet = "atelier de caramizi (mm)") {
@@ -3770,6 +3951,7 @@ var Lego = (function (glob: typeof globalThis) {
     asezareModel, pivotModel, langaPivot, impreunaInModel,
     // alipirea la prinderi (ADR 0284, 3.Cf): transformarea unei piese (pe grilă, prinsă de alta, liberă) și rezolvarea modelului
     transfGrila, transfPrins, compuneTransf, aplicaTransf, potriviriPrindere, seGliseaza, rezolvaModel, grilaDinTransf, cutieTransf, rotitLiber, intorsLiber, loculDrept, susTransf, prindereaRamasa,
+    prinseInLume, seCiocnesc, verificaModel,
     rezumatPrinderi, perechiFeluri, axPentru, stiftPentru,
     contururi, insetRectiliniu, conturPana, pozitiiGauriPana, centreIndoita,
     // rotitele (ADR 0169): distanta dintre axele a doua roti care se prind (modulul m), pentru atelier

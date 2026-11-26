@@ -59,8 +59,8 @@ test('captura owner-ului: carcasa și rotorul de Ø48 dintr-un model ținut de d
   ] });
   await page.locator('#at-vedere-mod [data-v="model"]').click();
   // locurile ținute rămân; rândul unei piese rotunde spune știftul axului: carcasa (9 × 7) la 0, 0 are axul pe știftul 4, 3;
-  // rotorul (7 × 7) la 2, 1, pe 5, 4, cu 3 plăci mai sus
-  await expect(lista(page)).toHaveText([`${CARCASA} ax 4, 3, 0`, `${ROTOR} ax 5, 4, 3`]);
+  // rotorul (7 × 7) la 2, 1, pe 5, 4, cu 3 plăci mai sus: în aer, neprins de nimic (verificarea o spune, felia 3.Cg)
+  await expect(lista(page)).toHaveText([`${CARCASA} ax 4, 3, 0`, `${ROTOR} plutește ax 5, 4, 3`]);
   expect(await model(page)).toEqual([[0, 0, 0, 0], [2, 1, 3, 0]]);
   // pe hârtie: carcasa ține x 0,4…71,6 și y 2…54; rotorul, cu axul la (44, 36), y 12,8…59,2 și z 9,6…17,6
   await expect(marime(page)).toContainText('Mărime 71,2 × 57,2 × 17,6 mm');
@@ -100,12 +100,13 @@ test('3a: rotorul pus cu carcasa lui aleasă intră în ea, pe același ax, la a
   // rotorul, mutat cu un știft: iese din carcasă cu 23,2 + 8 − 26 = 5,2 mm
   await lista(page).nth(1).locator('button').click();
   await muta(page, 'x+');
-  await expect(lista(page)).toHaveText([`${CARCASA} ax 4, 3, 0`, `${ROTOR} ax 5, 3, 0`]);
+  await expect(lista(page)).toHaveText([`${CARCASA} intră în alta ax 4, 3, 0`, `${ROTOR} intră în alta ax 5, 3, 0`]);
   await expect(marime(page)).toContainText('Mărime 57,2 × 71,2 × 10 mm');
   // și invers: carcasa pusă cu rotorul ales intră în jurul lui, la același Z
   await ventilator48(page, 'carcasa');
   await inModel(page);
-  await expect(lista(page)).toHaveText([`${CARCASA} ax 4, 3, 0`, `${ROTOR} ax 5, 3, 0`, `${CARCASA} ax 5, 3, 0`]);
+  // (rotorul e bine în carcasa nouă, dar tot în peretele celei vechi; cele două carcase, la un știft una de alta, se pătrund)
+  await expect(lista(page)).toHaveText([`${CARCASA} intră în alta ax 4, 3, 0`, `${ROTOR} intră în alta ax 5, 3, 0`, `${CARCASA} intră în alta ax 5, 3, 0`]);
 });
 
 test('2a: o roată pusă cu alta aleasă intră pe axul ei, deasupra; rotirea se face în jurul axului', async ({ page }) => {
@@ -117,30 +118,33 @@ test('2a: o roată pusă cu alta aleasă intră pe axul ei, deasupra; rotirea se
   // roata de 40 (42 mm, amprenta 5 × 5): axul pe știftul 2, 2
   await expect(lista(page)).toHaveText(['Roată dințată 40 ax 2, 2, 0']);
   await expect(marime(page)).toContainText('Mărime 42 × 42 × 3,8 mm');
-  // elicea cu 3 palete (55,3 × 63,4, axul la 19,3 mm de marginea din stânga): pe axul roții, cu o placă mai sus
+  // elicea cu 3 palete (55,3 × 63,4, axul la 19,3 mm de marginea din stânga): pe axul roții, pe prima placă liberă de
+  // deasupra ei (roata are 3,8 mm, deci a doua placă: cu una singură, elicea ar intra 0,6 mm în roată; felia 3.Cg). Nu e
+  // prinsă de nimic (între ele nu e niciun ax), deci plutește
   await piesa(page, 'propulsie', 'elice');
   await expect(page.locator('#at-nume-piesa')).toHaveText('Elice Ø72 cu 3 palete, pasul 0,7');
   await inModel(page);
-  await expect(lista(page)).toHaveText(['Roată dințată 40 ax 2, 2, 0', 'Elice Ø72 cu 3 palete, pasul 0,7 ax 2, 2, 1']);
-  // pe hârtie, față de ax: x de la −21 (roata) la 36 (vârful unei palete); y ±31,7 (elicea); z 3,2 + 8
-  await expect(marime(page)).toContainText('Mărime 57 × 63,4 × 11,2 mm');
+  await expect(lista(page)).toHaveText(['Roată dințată 40 ax 2, 2, 0', 'Elice Ø72 cu 3 palete, pasul 0,7 plutește ax 2, 2, 2']);
+  // pe hârtie, față de ax: x de la −21 (roata) la 36 (vârful unei palete); y ±31,7 (elicea); z 6,4 + 8
+  await expect(marime(page)).toContainText('Mărime 57 × 63,4 × 14,4 mm');
   // elicea, rotită un sfert de tură în jurul axului: vârful de la x 36 trece pe y
   await muta(page, 'r');
-  await expect(lista(page)).toHaveText(['Roată dințată 40 ax 2, 2, 0', 'Elice Ø72 cu 3 palete, pasul 0,7 ax 2, 2, 1']);
-  await expect(marime(page)).toContainText('Mărime 63,4 × 57 × 11,2 mm');
+  await expect(lista(page)).toHaveText(['Roată dințată 40 ax 2, 2, 0', 'Elice Ø72 cu 3 palete, pasul 0,7 plutește ax 2, 2, 2']);
+  await expect(marime(page)).toContainText('Mărime 63,4 × 57 × 14,4 mm');
   // o roată de 16 (era pe linia dintre știfturi), pusă cu elicea aleasă: pe același ax, deasupra ei
   await piesa(page, 'roti', 'rotita');
   await page.locator('#at-r-repede [data-v="16"]').click();
   await inModel(page);
-  await expect(lista(page).nth(2)).toHaveText('Roată dințată 16 ax 2, 2, 4');
-  await expect(marime(page)).toContainText('Mărime 63,4 × 57 × 16,6 mm');
+  // (elicea are 8 mm, adică 3 plăci: roata intră pe a cincea, la z 16 … 19,8)
+  await expect(lista(page).nth(2)).toHaveText('Roată dințată 16 plutește ax 2, 2, 5');
+  await expect(marime(page)).toContainText('Mărime 63,4 × 57 × 19,8 mm');
   // piesa nouă ia și rotirea celei alese
-  await expect(page.locator('.model-ales')).toContainText('Roată dințată 16 · axul pe știftul 2, 2, z 4 plăci · rotită 90°');
+  await expect(page.locator('.model-ales')).toContainText('Roată dințată 16 · axul pe știftul 2, 2, z 5 plăci · rotită 90°');
   // mutată cu un știft și adusă înapoi: aceleași numere
   await muta(page, 'x+');
-  await expect(lista(page).nth(2)).toHaveText('Roată dințată 16 ax 3, 2, 4');
+  await expect(lista(page).nth(2)).toHaveText('Roată dințată 16 plutește ax 3, 2, 5');
   await muta(page, 'x-');
-  await expect(lista(page).nth(2)).toHaveText('Roată dințată 16 ax 2, 2, 4');
+  await expect(lista(page).nth(2)).toHaveText('Roată dințată 16 plutește ax 2, 2, 5');
 });
 
 test('o cărămidă pusă cu alta aleasă intră la mijlocul ei; „Înlocuiește în model” ține axul unei roți', async ({ page }) => {
@@ -172,13 +176,14 @@ test('o cărămidă pusă cu alta aleasă intră la mijlocul ei; „Înlocuieșt
   await piesa(page, 'roti', 'rotita');
   await page.locator('#at-r-repede [data-v="24"]').click();
   await inModel(page);
-  await expect(lista(page).nth(3)).toHaveText('Roată dințată 24 ax 1, 0, 6');
+  // (deasupra cărămizii înseamnă pe plăcile ei, la înălțimea știfturilor: roata intră în ele, iar verificarea o spune)
+  await expect(lista(page).nth(3)).toHaveText('Roată dințată 24 intră în alta ax 1, 0, 6');
   // schimbată în editor cu una de 40 (amprenta 5 × 5 în loc de 3 × 3): axul rămâne pe știftul 1, 0
   await page.locator('#at-m-editeaza').click();
   await page.locator('#at-r-repede [data-v="40"]').click();
   await expect(page.locator('#at-in-model')).toHaveText('Înlocuiește în model');
   await inModel(page);
-  await expect(lista(page).nth(3)).toHaveText('Roată dințată 40 ax 1, 0, 6');
+  await expect(lista(page).nth(3)).toHaveText('Roată dințată 40 intră în alta ax 1, 0, 6');
   expect((await model(page))?.[3]).toEqual([-1, -2, 6, 0]);
   // o cărămidă schimbată în editor își ține colțul, ca până acum
   await lista(page).nth(1).locator('button').click();

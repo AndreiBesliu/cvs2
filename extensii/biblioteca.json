@@ -18,6 +18,12 @@
       ],
       "noutati": [
         {
+          "versiune": "18.40.0",
+          "data": "2026-11-26",
+          "ro": "„Modelul” verifică piesele: îți spune care e prinsă, care plutește (nu stă pe masă și nu e ținută de nimic) și care intră în alta, pe rândul ei, la piesa aleasă și în vederea 3D. E un avertisment: piesa rămâne unde ai pus-o.",
+          "en": "“The model” checks the pieces: it tells you which is held, which floats (not on the table, held by nothing) and which goes into another, on its row, at the chosen piece and in the 3D view. Only a warning: the piece stays where you put it."
+        },
+        {
           "versiune": "18.39.0",
           "data": "2026-11-26",
           "ro": "În „Modelul”, piesa aleasă se răstoarnă pe o parte: „Răstoarnă ↓” și „Răstoarnă →”, câte un sfert de tură; cu „Rotește”, orice așezare dreaptă. „Jumătăți de pas” o mută câte o jumătate de știft și de placă, pentru piesele Technic.",
@@ -184,8 +190,8 @@
           }
         }
       ],
-      "versiune": "18.39.0",
-      "continut": "34990bff8a513d90897a6a5e468f7da3e8179eeff9d052eb8cdb7735751487f0"
+      "versiune": "18.40.0",
+      "continut": "9e9576b2a4e717ffda3b41214a8b428dab23b85e7c41e72877e6c9b4f993d5c2"
     }
   ]
 }

@@ -561,3 +561,73 @@ Easy 3Draw 18.39.0, pe ramura `wip/3.Xh-biblioteca-ui`, în sesiunea cloud a lin
   separat, 30 de ancore rămase în urmă în opt liste mai vechi ale pluginului (`3.Tg` … `3.Ts`): 30 / 30.
 - **Mărimea:** pachetul Easy 3Draw, 555,4 kB (era 553,0); aplicația, neschimbată.
 - **Felia următoare:** 3.Cg (verificarea: prinsă, plutește, se ciocnește).
+
+## Implementat (3.Cg, 26.11.2026)
+
+Easy 3Draw 18.40.0, pe ramura `wip/3.Xh-biblioteca-ui`, în sesiunea cloud a liniei atelierului.
+
+- **Ce vede omul.** În vederea „Modelul”, de la două piese în sus, fiecare piesă e verificată:
+  - **în listă**, rândul ei are un semn: „intră în alta” (roșu) sau „plutește” (galben); ciocnirea trece înaintea
+    plutirii;
+  - **deasupra listei**, rezumatul: „Verificare: 2 piese intră una în alta · o piesă plutește.” sau „Verificare: nicio
+    piesă nu plutește și niciuna nu intră în alta.”, urmat de „Toate piesele se țin între ele.” ori „Modelul e din 3
+    bucăți care nu se țin între ele.”;
+  - **la piesa aleasă**: „Intră în Cărămidă 2×4.”, „Plutește: nu stă pe masă și nu e prinsă de nimic.” (sau
+    „Plutește, cu piesele de care e prinsă: niciuna nu ajunge la masă.”), „Prinsă de Ax 4, Roată dințată 24.”, „Nu e
+    prinsă de alte piese.”; o piesă alipită a cărei prindere nu mai ține (axul glisat afară din gaură) o spune:
+    „Legată de Grindă, dar prinderea lor nu mai ține.”;
+  - **în vederea 3D**, piesa cu un avertisment are un văl și un contur în culoarea lui (roșu sau galben), oricare i-ar
+    fi culoarea.
+- **E un avertisment, nu un refuz** (răspunsul 2a): piesa rămâne unde a fost pusă, nimic nu se schimbă în model și
+  nimic din verificare nu se ține în el.
+- **Prinsă** înseamnă o prindere făcută cu altă piesă, oricum ar fi ajuns acolo (alipită sau adusă cu săgețile):
+  felurile se prind (`sePrind`), direcțiile sunt opuse (cel mult 1° abatere) și axele coincid (cel mult 0,05 mm).
+  Știftul în locaș și bila în cupă țin doar până la capăt, unde le pune montajul. O tijă (axul, știftul Technic,
+  bara) ține cât are cel puțin 2 mm în gaură (sau cât e gaura ori tija, când sunt mai scurte). Crucea axului ține
+  doar braț pe braț.
+- **Intră în alta** se judecă pe plase, nu pe cutii: cele două piese au lemn comun mai gros de un sfert de milimetru.
+  Lemnul fiecăreia se citește pe raze paralele, la 0,25 mm una de alta, cu numărul de înfășurare (corpurile suprapuse
+  ale unei piese sunt lemn, un gol rămâne gol); e ciocnire când patru raze vecine au aceeași bucată de lemn comun,
+  lungă de cel puțin 0,25 mm. Deci jocurile dintre două piese prinse nu sunt ciocniri (16 perechi montate, de toate
+  felurile: niciuna), iar un lemn comun care cuprinde un cub de 0,5 mm este mereu (aceleași perechi, mutate cu 1 mm
+  într-o parte: toate, afară de clema trasă prin deschizătura ei). Între 0,25 și 0,5 mm, răspunsul ține de locul
+  razelor.
+- **Plutește** o piesă care nu stă jos și nu e prinsă, nici prin alte piese, de una care stă jos. „Jos” e masa (z = 0,
+  cu 0,05 mm joc); o piesă care trece sub masă (o roată pe un ax) stă jos. Când nimic nu ajunge la masă, piesa cea
+  mai de jos ține loc de masă: un model ridicat cu totul nu plutește.
+- **Găsit de verificare și reparat în felie:** „Pune în model”, cu o piesă aleasă, punea piesa nouă „deasupra” la
+  înălțimea celei alese rotunjită la cea mai apropiată placă; o roată de 3,8 mm ținea o placă (3,2), deci piesa de
+  deasupra intra 0,6 mm în ea. Acum „deasupra” e prima placă liberă (roata ține două). Piesa de deasupra unei roți
+  plutește, fiindcă între ele nu e niciun ax: verificarea o spune.
+- **Ce spune verificarea despre drumurile vechi.** „Dublează” pune copia cu un știft mai la dreapta, peste original:
+  intră una în alta până e mutată. O roată pusă „deasupra” unei cărămizi stă la înălțimea știfturilor ei: intră în
+  ele. Un ax intrat până la capăt într-o gaură își ține roata în grindă până e glisat. Sunt adevărate și rămân
+  avertismente; drumul bun e alipirea (3.Cf-1).
+- **Motorul** (`extensii/trenulet/sursa/lego/lego.ts`, secțiunea „verificarea modelului”), funcții pure:
+  `prinseInLume` (prinderile făcute între două piese așezate), `seCiocnesc` (două plase, cu așezarea uneia față de
+  cealaltă), `verificaModel` (pentru fiecare piesă: de cine e prinsă, în cine intră, dacă plutește; câte bucăți are
+  modelul). Ciocnirea se socotește în coordonatele primei piese, deci nu ține de locul modelului și se ține minte
+  (`memo`, după cele două piese și așezarea uneia față de cealaltă): o piesă mutată își rejudecă doar perechile ei.
+- **Atelierul** (`planificator/atelier.ts`): `verificare(A)` (refăcută doar când modelul s-a schimbat), `semnM`,
+  rândurile `#at-m-stare`, rezumatul `#at-m-verificare`, `data-avert` pe rândurile listei; în vedere, grupul
+  `v3.avert` (vălul și conturul; nu intră în mărimea modelului și se ascunde în vederea „Piesa”).
+- **Cât durează:** o pereche de piese care se ating, 1–20 ms (măsurat pe 16 perechi: cărămizi, grinzi, roți, bila în
+  cupă); un model se judecă întreg la deschidere, apoi doar perechile piesei mutate.
+- **Ce n-a intrat:** contactul fără prindere (o piesă culcată peste alta nu e „prinsă”, deci plutește); angrenarea
+  (două roți dințate alăturate nu se țin una pe alta); pasul pe Z pentru Technic (rămâne placa sau jumătatea ei).
+- **Probele.** Unitară, scrisă întâi (`test/unit/trenulet.verificare.test.ts`, 18 teste): ciocnirea pe cutii, cu
+  valorile pe hârtie (0,2 mm nu, 0,6 mm da, pe fiecare axă; felii subțiri pe raze și de-a latul lor; pana unei cutii
+  rotite; corpuri suprapuse; un gol), ciocnirea pe 12 perechi montate ale motorului, prinderile făcute (placa pe
+  patru știfturi, o jumătate de placă mai sus, înclinată, tija cu 3 și cu 1 mm în gaură, crucea întoarsă, gaura de
+  1,9 mm, știftul mai înalt decât locașul), verificarea (placa prinsă, ridicată, coborâtă; grupul care plutește; axul
+  în grindă cu rotița pe el; modelul mutat și rotit cu totul; ținerea de minte; modelul stricat). E2e
+  (`test/e2e/trenulet.verificare.spec.ts`, 7 scenarii): semnele, rândurile piesei alese, rezumatul, culorile din
+  vedere (numărate pe pixeli: vălul și conturul, separat), mărimea neschimbată, „Dublează”, grupul, tija făcută din
+  butoane, modelul ținut de dinainte, telefonul, „deasupra”. Proba în engleză din cvs2 (`trenulet.spec.ts`) pune o
+  roată deasupra alteia, pe un ax, și o coboară în ea.
+- **Probele vechi atinse** (rândurile listei au acum semnele verificării): `trenulet.alipire.spec.ts` (copia peste
+  original, piesa lăsată în aer, axul culcat pe știfturi), `trenulet.model.spec.ts` (rotorul în aer, rotorul ieșit
+  din carcasă, „deasupra” unei roți, roata pusă pe știfturile unei cărămizi).
+- **Otrăvurile:** `test/otravuri/3.Cg.py` și `3.Cg-en.py` (rezultatul, în `docs/otravuri.md`).
+- **Mărimea:** pachetul Easy 3Draw, 562,6 kB (era 555,4); aplicația, neschimbată.
+- **Felia următoare:** 3.Ch (construcțiile cu nume și lista lor de piese).

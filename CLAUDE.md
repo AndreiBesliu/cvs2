@@ -1275,7 +1275,20 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   X și Y răstoarnă, Shift + săgeată mută cu o jumătate de pas. Easy 3Draw 18.39.0 (următoarea, 18.40.0). **Nicio dată
   nouă: o piesă răsturnată sau dintre știfturi e `liber`, ca una desprinsă; o mutare nouă din „Modelul” trece prin
   transformarea piesei și prin `lasaPeLoc`. Un buton nou al pieselor din model schimbă `MUTARI` din
-  `trenulet.alipire.spec.ts`.** Urmează 3.Cg (verificarea: prinsă, plutește, se ciocnește).
+  `trenulet.alipire.spec.ts`.** **3.Cg (verificarea din „Modelul”; ADR 0284, partea D, răspunsul 2a al owner-ului:
+  avertisment, nu refuz)** gata pe 26.11, pe ramură: de la două piese în sus, fiecare piesă a modelului e verificată:
+  **prinsă** (o prindere făcută cu altă piesă, oricum ar fi ajuns acolo), **plutește** (nu stă pe masă și nu e
+  prinsă, nici prin alte piese, de una care stă; fără nimic pe masă, piesa cea mai de jos ține loc de masă) sau
+  **intră în alta** (judecat pe plase: lemn comun mai gros de un sfert de milimetru). Semnul stă pe rândul piesei din
+  listă, rezumatul deasupra listei, rândurile ei la piesa aleasă, iar în vederea 3D piesa are un văl și un contur
+  roșu sau galben. Piesa rămâne unde a fost pusă; nimic din verificare nu se ține în model. Găsit de verificare și
+  reparat în felie: „deasupra” piesei alese e acum prima placă liberă (o roată de 3,8 mm ținea o placă, iar piesa de
+  deasupra intra 0,6 mm în ea). Easy 3Draw 18.40.0 (următoarea, 18.41.0). **Verificarea e a motorului
+  (`verificaModel`, cu `prinseInLume` și `seCiocnesc`): o regulă nouă intră acolo, cu valorile ei pe hârtie în
+  `test/unit/trenulet.verificare.test.ts`; atelierul doar o arată. Rândurile listei modelului au acum și semnul
+  („Placă 2×2 plutește 1, 0, 4”), deci o probă care cere textul întreg al unui rând îl cere cu semnul lui. Un strat
+  nou al vederii 3D care nu e o piesă își face grupul lui (`v3.avert`, ca punctele prinderilor): mărimea modelului
+  se ia din grupul pieselor.** Urmează 3.Ch (construcțiile cu nume și lista lor de piese).
   **Cotele pe desen: modelul și proba G-code-ului (ADR 0330, felia 10.4↑a-1, adusă din etapa 10)** gata pe 24.11, în
   sesiunea cloud a liniei (ramura `wip/10.4-cote`), unită în `main` pe 24.11 (`f25249cf`), fără interfață încă. ADR
   0330, acceptat de owner cu 1a–6a și cu nota lui: toate setările cotelor stau într-o fereastră nouă, „Setări”, nu în
