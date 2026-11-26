@@ -139,6 +139,10 @@ față. Fără cod de produs până la răspunsuri. De hotărât acolo, între a
   punctele celorlalte foi, mutate cu locul lor pe rând, fără legătură, iar o măsură cu un capăt pe altă foaie nu se păstrează
   („Între foi: doar măsura, nu se păstrează”, și la Enter). **Urmează:** g (setările în cont), cu mărimea bucății contului
   spusă întâi sesiunii principale.
+- **26.11, g gata pe ramură** (întrebarea 14a, cu acordul sesiunii principale pe mărime): callable-ul `preferinte` (citirea cu
+  contul, scrierea cu `cloud` și cu versiunea văzută), documentul `conturi/{uid}/preferinte/cote`, închis clientului; îmbinarea
+  pe câmpuri față de ultima versiune comună; trecerea în bucata ei, adusă la cerere (Setări, unealta Cote); banda ciocnirii în
+  Setări › Cotele. Contul 30,3 / 32. **Cu g, cele „mai târziu” din ADR 0330 sunt toate făcute;** linia n-are altă felie pornită.
 
 ## Deciziile owner-ului
 
@@ -147,6 +151,13 @@ față. Fără cod de produs până la răspunsuri. De hotărât acolo, între a
   cât mai multe, într-o zonă de setări generale, nu în Proiectare.
 
 ## Capcane găsite
+
+- **Proba pe emulatoare a unui callable se poate rula singură,** fără toată suita: `npx firebase emulators:exec --only firestore
+  --project demo-cncvs2 "node --test --test-concurrency=1 functions/test/<proba>.emulator.test.ts"`; cap-coadă, cu
+  `--only auth,firestore,functions` și `npx playwright test -c playwright.emulator.config.ts <nume>`, după `npm --prefix
+  functions run compileaza` și `npm run build`. Otrăvurile serverului: `scripts/otravuri.py … lot` rulat în
+  `emulators:exec --only firestore`, din clonă.
+- **Un document cu versiunea bună și textul stricat** e alt caz decât unul cu versiunea stricată: proba îl cere separat (C08).
 
 - **„Toate foile pe pânză” e ținut în browser:** o probă care îl găsește deja pornit nu primește încadrarea tuturor foilor (ea
   vine doar la pornirea comutatorului), deci foaia vecină poate sta în afara ecranului. Proba îl oprește întâi, apoi îl pornește

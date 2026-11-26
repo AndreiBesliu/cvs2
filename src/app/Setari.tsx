@@ -23,6 +23,8 @@ import {
   useSetariCote, type GrupCote, type SetariCote,
 } from './setariCote.ts';
 import './setari.css';
+import type { Config } from './config.ts';
+import { useContTinut } from './dreptCont.ts';
 
 /** Mesajele modulului, ca date (ADR 0086): cine îl încarcă le așteaptă (`cuMesaje`). */
 export const mesaje = mesajeGata();
@@ -226,7 +228,32 @@ function Proba({ s, virgula }: { readonly s: SetariCote; readonly virgula: boole
 }
 
 /** Secțiunea Cotele: cifrele, liniile și capetele, raza și unghiul, comportamentul, lipirea, măsurarea, exportul și raportul foilor (tabelul ADR 0330 §6). */
-function SectiuneCote({ s, virgula }: { readonly s: SetariCote; readonly virgula: boolean }): ReactNode {
+type ModulSincron = typeof import('./preferinteSincronizare.ts');
+
+/**
+ * Setările cotelor în cont (ADR 0330, întrebarea 14a, felia 10.4↑g): rândul stării și, la o ciocnire, banda cu cele două
+ * alegeri. Doar cu contul deschis (modulul sincronizării adus).
+ */
+function ContCote({ m }: { readonly m: ModulSincron }): ReactNode {
+  const st = m.useStareSetariCont();
+  if (st.ciocniri > 0) {
+    return (
+      <div className="setari-cont setari-cont-ciocnire" role="alert" data-testid="cote-cont-ciocnire">
+        <p>{t('setari.cote.cont.ciocnire', { n: st.ciocniri })}</p>
+        <div className="butoane">
+          <button type="button" data-buton="cote-cont-ale-mele" onClick={() => { m.alegeLaCiocnire('aici'); }}>{t('setari.cote.cont.ale-mele')}</button>
+          <button type="button" data-buton="cote-cont-din-cont" onClick={() => { m.alegeLaCiocnire('cont'); }}>{t('setari.cote.cont.din-cont')}</button>
+        </div>
+      </div>
+    );
+  }
+  const fel = st.ruleaza ? 'ruleaza' : st.ultima;
+  // O ciocnire aleasă între timp (ciocniri 0) așteaptă trecerea pornită de alegere: nimic de spus până atunci.
+  if (fel === null || fel === 'ciocnire') return null;
+  return <p className="setari-cont" role="status" data-testid="cote-cont-stare" data-stare={fel}>{t(`setari.cote.cont.${fel}`)}</p>;
+}
+
+function SectiuneCote({ s, virgula, sincron }: { readonly s: SetariCote; readonly virgula: boolean; readonly sincron: ModulSincron | null }): ReactNode {
   const id = useId();
   const pune = (n: SetariCote): void => { schimbaSetariCote(n); };
   const cifre = (c: Partial<SetariCote['cifre']>): void => { pune({ ...s, cifre: { ...s.cifre, ...c } }); };
@@ -249,6 +276,7 @@ function SectiuneCote({ s, virgula }: { readonly s: SetariCote; readonly virgula
     <div className="setari-sectiune" data-sectiune="cote">
       <h3 id={`${id}-titlu`}>{t('setari.sectiune.cote')}</h3>
       <p className="setari-intro">{t('setari.cote.intro')}</p>
+      {sincron ? <ContCote m={sincron} /> : null}
       <Proba s={s} virgula={virgula} />
       <Grup grup="cifre" s={s}>
         <Alegere id={`${id}-unitate`} setare="cifre.unitate" eticheta={t('setari.cote.unitate')} nota={t('setari.cote.unitate.nota')}
@@ -372,9 +400,11 @@ function SectiuneCote({ s, virgula }: { readonly s: SetariCote; readonly virgula
   );
 }
 
-export function Setari({ sectiune = 'cote', onInchide, focusInapoi }: {
+export function Setari({ sectiune = 'cote', onInchide, focusInapoi, config = null }: {
   /** Secțiunea deschisă la început (⚙ al uneltei Cote: Cotele). */
   readonly sectiune?: SectiuneSetari;
+  /** Configurația aplicației, pentru setările ținute în cont (felia 10.4↑g); null: fără cont. */
+  readonly config?: Config | null;
   readonly onInchide: () => void;
   /** Unde era focusul înainte: acolo se întoarce la închidere. */
   readonly focusInapoi: Element | null;
@@ -382,6 +412,23 @@ export function Setari({ sectiune = 'cote', onInchide, focusInapoi }: {
   const limba = useLimba();
   const s = useSetariCote();
   const [aleasa, setAleasa] = useState<SectiuneSetari>(sectiune);
+  // Cu contul deschis (adresa confirmată), setările cotelor se țin și în cont: sincronizarea vine la cerere (felia 10.4↑g).
+  const cont = useContTinut();
+  const uid = cont?.drept ? cont.uid : null;
+  const [sincron, setSincron] = useState<ModulSincron | null>(null);
+  useEffect(() => {
+    let viu = true;
+    if (uid === null || config === null) {
+      setSincron((m) => { m?.legaSetarileCotelor(null, null); return null; });
+      return undefined;
+    }
+    import('./preferinteSincronizare.ts').then((m) => {
+      if (!viu) return;
+      m.legaSetarileCotelor(uid, config);
+      setSincron(m);
+    }, () => undefined);
+    return () => { viu = false; };
+  }, [uid, config]);
   // Focusul pe prima secțiune; la închidere (curățarea rulează după ce aplicația nu mai e inertă) se întoarce unde era.
   const prima = useRef<HTMLButtonElement>(null);
   useEffect(() => {
@@ -401,7 +448,7 @@ export function Setari({ sectiune = 'cote', onInchide, focusInapoi }: {
                 onClick={() => { setAleasa(x); }}>{t(`setari.sectiune.${x}`)}</button>
             ))}
           </nav>
-          {aleasa === 'cote' ? <SectiuneCote s={s} virgula={limba === 'ro'} /> : null}
+          {aleasa === 'cote' ? <SectiuneCote s={s} virgula={limba === 'ro'} sincron={sincron} /> : null}
         </div>
         <div className="butoane">
           <button type="button" data-buton="setari-inchide" onClick={onInchide}>{t('setari.inchide')}</button>
