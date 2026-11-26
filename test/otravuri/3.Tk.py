@@ -33,7 +33,7 @@ o('U11', E, 'for (let k = 1; P.pas * k + P.stift_technic_d / 2 + 0.1 <= rb + 1e-
 o('U12', E, 'if (P.pas * k - e.gauraD / 2 >= rh + 0.4 - 1e-9) out.push(k);', 'if (P.pas * k - e.gauraD / 2 >= rh + 2 - 1e-9) out.push(k);', 'fulie',
   'gaura de știft cerută prea departe de butuc')
 o('U13', E, 'const a = (2 * j + 1) * Math.PI / (6 * k);', 'const a = 2 * j * Math.PI / (6 * k);', 'fulie', 'găurile de știft de la 0°, nu de la 30° ca la LEGO')
-o('U14', E, 'for (let j = 0; j < 6 * k; j++)', 'for (let j = 0; j < 6; j++)', 'fulie', 'doar șase găuri pe fiecare cerc (12 la r 16)')
+o('U14', E, 'for (let j = 0; j < 6 * k; j++) { const a = (2 * j + 1)', 'for (let j = 0; j < 6; j++) { const a = (2 * j + 1)', 'fulie', 'doar șase găuri pe fiecare cerc (12 la r 16)')
 o('U15', E, 're = Math.max(re, P.pas * k + rg + 0.1);', 're = Math.max(re, P.pas * k);', 'fulie',
   'fața nu se mai întinde sub o gaură de știft largă (corpul se deschide)')
 o('U16', E, 'const Dmin = Math.ceil(2 * (rh + adanc + perete(D) + 0.3) * 10 - 1e-6) / 10;',

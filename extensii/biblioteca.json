@@ -18,6 +18,12 @@
       ],
       "noutati": [
         {
+          "versiune": "18.39.0",
+          "data": "2026-11-26",
+          "ro": "În „Modelul”, piesa aleasă se răstoarnă pe o parte: „Răstoarnă ↓” și „Răstoarnă →”, câte un sfert de tură; cu „Rotește”, orice așezare dreaptă. „Jumătăți de pas” o mută câte o jumătate de știft și de placă, pentru piesele Technic.",
+          "en": "In “The model”, the chosen piece tips onto its side: “Tip ↓” and “Tip →”, a quarter turn at a time; with “Rotate”, any upright placement. “Half steps” moves it by half a stud and half a plate, for Technic pieces."
+        },
+        {
           "versiune": "18.38.0",
           "data": "2026-11-26",
           "ro": "În fila „Crăciun”, brăduțul LEGO: etaje cu marginea zimțată, cu patru știfturi sus și locașul lor dedesubt, care se clădesc pe o piesă rotundă 2 × 2, și steaua de vârf, cu cuiul ei. „Fă brăduțul” pune toate piesele în listă.",
@@ -178,8 +184,8 @@
           }
         }
       ],
-      "versiune": "18.38.0",
-      "continut": "5991eb98a877970f3468971cb6604c797d1c6f9599fea19f315f7edbca63ff87"
+      "versiune": "18.39.0",
+      "continut": "34990bff8a513d90897a6a5e468f7da3e8179eeff9d052eb8cdb7735751487f0"
     }
   ]
 }

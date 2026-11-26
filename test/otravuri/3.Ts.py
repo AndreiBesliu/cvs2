@@ -132,16 +132,16 @@ o('K18', E, 'const gol = cerc(0, 0, q.Ri, n), gauri', 'const gol = cerc(0, 0, q.
 # Rotorul și avertismentele: `ventilator` (unitare).
 o('R01', E, 'if (dat(d.palete) && q.z !== +(d.palete as number)) avert.push(', 'if (false && dat(d.palete) && q.z !== +(d.palete as number)) avert.push(', 'vent', 'paletele din afara plajei, nespuse')
 o('R02', E, 'if (dat(d.diametru) && q.D !== +(d.diametru as number)) avert.push(', 'if (false && dat(d.diametru) && q.D !== +(d.diametru as number)) avert.push(', 'vent', 'diametrul din afara plajei, nespus')
-o('R03', E, 'if (d.piesa === "carcasa") return { tri: carcasaVentilator(q), avert };', 'if (d.piesa === "carcasa") return { tri: carcasaVentilator(q), avert: [] };', 'vent', 'carcasa nu spune diametrul ieșit din plajă')
-o('R04', E, 'const tri = paleteElice(q.statii, q.z, d.sens === "stanga" ? -1 : 1, true);\n    tri.push(...butucElice(q.rh, q.Hh, d.gaura));\n    if (q.inel)', 'const tri = paleteElice(q.statii, q.z, 1, true);\n    tri.push(...butucElice(q.rh, q.Hh, d.gaura));\n    if (q.inel)', 'vent', '„stânga” la fel ca „dreapta”')
-o('R05', E, 'tri.push(...butucElice(q.rh, q.Hh, d.gaura));\n    if (q.inel)', 'tri.push(...butucElice(q.rh, q.Hh, "x"));\n    if (q.inel)', 'vent', 'gaura rotorului, mereu pentru ax')
+o('R03', E, 'return { tri: carcasaVentilator(q), avert, prinderi:', 'return { tri: carcasaVentilator(q), avert: [], prinderi:', 'vent', 'carcasa nu spune diametrul ieșit din plajă')
+o('R04', E, 'const tri = paleteElice(q.statii, q.z, d.sens === "stanga" ? -1 : 1, true), butuc = butucElice(q.rh, q.Hh, d.gaura);', 'const tri = paleteElice(q.statii, q.z, 1, true), butuc = butucElice(q.rh, q.Hh, d.gaura);', 'vent', '„stânga” la fel ca „dreapta”')
+o('R05', E, 'butuc = butucElice(q.rh, q.Hh, d.gaura);', 'butuc = butucElice(q.rh, q.Hh, "x");', 'vent', 'gaura rotorului, mereu pentru ax')
 o('R06', E, 'tri.push(...prismaGauri(cerc(0, 0, q.Rt, n), [cerc(0, 0, q.Rt - VENT.inelGros, n)], 0, q.Hinel)); }', 'tri.push(...prismaGauri(cerc(0, 0, q.Rt, n), [cerc(0, 0, q.Rt - VENT.inelGros, n)], 0, q.Hh)); }', 'vent', 'inelul cât butucul')
 o('R07', E, 'if (q.inel) { const n = laturiCerc(q.Rt);', 'if (q.inel) { const n = 24;', 'vent', 'inelul cu 24 de laturi (paletele ies din el printre colțuri)')
-o('R08', E, 'senila, elice, eliceBarca, ventilator, dinCvs2 };', 'senila, elice, eliceBarca, dinCvs2 };', 'vent', 'ventilatorul nu e un tip al motorului')
+o('R08', E, 'senila, elice, eliceBarca, ventilator, roataPalete,', 'senila, elice, eliceBarca, roataPalete,', 'vent', 'ventilatorul nu e un tip al motorului')
 
 # Atelierul (e2e, pe pagina de sine stătătoare).
-o('E01', A, '["eliceBarca", "Elice de barcă"], ["ventilator", "Ventilator cu carcasă"]]]', '["eliceBarca", "Elice de barcă"]]]', 'e2e', 'ventilatorul lipsește din galerie')
-o('E02', A, '["eliceBarca", "Elice de barcă"], ["ventilator", "Ventilator cu carcasă"]]]', '["ventilator", "Ventilator cu carcasă"], ["eliceBarca", "Elice de barcă"]]]', 'e2e', 'ventilatorul înaintea elicei de barcă')
+o('E01', A, '["eliceBarca", "Elice de barcă"], ["ventilator", "Ventilator cu carcasă"], ["roataPalete"', '["eliceBarca", "Elice de barcă"], ["roataPalete"', 'e2e', 'ventilatorul lipsește din galerie')
+o('E02', A, '["eliceBarca", "Elice de barcă"], ["ventilator", "Ventilator cu carcasă"], ["roataPalete"', '["ventilator", "Ventilator cu carcasă"], ["eliceBarca", "Elice de barcă"], ["roataPalete"', 'e2e', 'ventilatorul înaintea elicei de barcă')
 S = '    ventilator: { piesa: "rotor", palete: 7, diametru: 40, joc: 0.8, pas: 0.8, latime: 45, sens: "dreapta", gaura: "x", inel: "nu", urechi: 2 },'
 o('E03', A, S, S.replace('piesa: "rotor"', 'piesa: "carcasa"'), 'e2e', 'editorul pornește pe carcasă')
 o('E04', A, S, S.replace('palete: 7,', 'palete: 5,'), 'e2e', 'editorul pornește cu 5 palete')

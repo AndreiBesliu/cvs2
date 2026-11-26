@@ -125,11 +125,11 @@ HH = 'const Hh = Math.max(BARCA.butucH, Math.ceil(Math.max(...statii.map(st => s
 o('H01', E, HH, HH.replace('statii.map(st => st.h)', 'statii.filter(st => st.r <= rh + 0.5).map(st => st.h)'), 'barca', 'butucul, cât paleta doar la rădăcină (paletele trec de el)')
 o('H02', E, K, K.replace('butucH: 8,', 'butucH: 6,'), 'barca', 'butucul cel mai scund, 6 (sub un știft)')
 o('H03', E, HH, HH.replace('Math.ceil(', 'Math.round('), 'barca', 'butucul, rotunjit la zecime (poate ieși sub paletă)')
-BU = 'tri.push(...butucElice(rh, Hh, d.gaura));\n    if (d.capac === "da") {'
-o('H04', E, BU, BU.replace('butucElice(rh, Hh, d.gaura)', 'butucElice(rh, Hh - 1, d.gaura)'), 'barca', 'butucul cu 1 mm mai scund')
-o('H05', E, BU, BU.replace('butucElice(rh, Hh, d.gaura)', 'butucElice(rh - 0.5, Hh, d.gaura)'), 'barca', 'butucul mai subțire cu 1 mm (rădăcina paletelor iese din el)')
-o('H06', E, BU, BU.replace('d.capac === "da"', 'd.capac !== "da"'), 'barca', 'capacul, pe dos (elicea implicită are capac)')
-o('H07', E, BU, BU.replace('butucElice(rh, Hh, d.gaura)', 'butucElice(rh, Hh, "x")'), 'barca', 'gaura, mereu de ax')
+BU = 'butuc = butucElice(rh, Hh, d.gaura, d.capac === "da");\n    tri.push(...butuc.tri);\n    if (d.capac === "da") {'
+o('H04', E, BU, BU.replace('butucElice(rh, Hh, d.gaura,', 'butucElice(rh, Hh - 1, d.gaura,'), 'barca', 'butucul cu 1 mm mai scund')
+o('H05', E, BU, BU.replace('butucElice(rh, Hh, d.gaura,', 'butucElice(rh - 0.5, Hh, d.gaura,'), 'barca', 'butucul mai subțire cu 1 mm (rădăcina paletelor iese din el)')
+o('H06', E, BU, BU.replace('if (d.capac === "da") {', 'if (d.capac !== "da") {'), 'barca', 'capacul, pe dos (elicea implicită are capac)')
+o('H07', E, BU, BU.replace('butucElice(rh, Hh, d.gaura,', 'butucElice(rh, Hh, "x",'), 'barca', 'gaura, mereu de ax')
 o('K01', E, K, K.replace('capac: 1.2,', 'capac: 1,'), 'barca', 'capacul, înalt cât raza butucului')
 o('K02', E, K, K.replace('inele: 6,', 'inele: 4,'), 'barca', 'capacul din 4 inele')
 ZC = 'z0 = Hh - 0.1, hc = Hh + BARCA.capac * rh - z0, cap: Tri[] = [];'
@@ -141,8 +141,8 @@ o('K06', E, 'const varf: P3 = [0, 0, z0 + hc];', 'const varf: P3 = [0, 0, z0 + h
 o('K07', E, 'const a = (2 * Math.PI * (i % n)) / n, f = (Math.PI / 2) * k / K;', 'const a = (2 * Math.PI * (i % n)) / n, f = (Math.PI / 3) * k / K;', 'barca', 'capacul, doar până la 60° (vârf ascuțit, alt profil)')
 
 # Plasa, sensul, avertismentele, tipul (unitare).
-PA = 'const tri = paleteElice(q.statii, q.z, d.sens === "stanga" ? -1 : 1, true);\n    tri.push(...butucElice(rh, Hh, d.gaura));'
-o('M01', E, PA, PA.replace(', true);', ', false);'), 'barca', 'capetele paletei, cu tăierea urechilor (fața plată le strică)')
+PA = 'const tri = paleteElice(q.statii, q.z, d.sens === "stanga" ? -1 : 1, true), butuc = butucElice(rh, Hh, d.gaura, d.capac === "da");'
+o('M01', E, PA, PA.replace(', true),', ', false),'), 'barca', 'capetele paletei, cu tăierea urechilor (fața plată le strică)')
 o('M02', E, PA, PA.replace('? -1 : 1', '? 1 : -1'), 'barca', 'sensul, pe dos')
 o('M03', E, PA, PA.replace('q.z,', 'q.z - 1,'), 'barca', 'o paletă lipsă (neechilibrată)')
 FA = 'Array.from({ length: n / 2 - 1 }, (_, j): [number, number, number][] => [[j, j + 1, n - 2 - j], [j, n - 2 - j, n - 1 - j]]).flat()'
@@ -155,10 +155,10 @@ o('V02', E, 'if (Number.isFinite(+(d.diametru as number)) && q.D !== +(d.diametr
   'if (false) avert.push(tr`Diametrul unei elice de barcă', 'barca', 'diametrul în afara plajei, nespus')
 o('V03', E, 'avert.push(tr`O elice de barcă are între 3 și 5 palete: am făcut-o cu ${q.z}.`);', 'avert.push(tr`O elice de barcă are între 3 și 5 palete: am făcut-o cu ${d.palete}.`);', 'barca',
   'avertismentul spune paletele cerute, nu cele făcute')
-o('V04', E, 'conicaDubla, senila, elice, eliceBarca, ventilator, dinCvs2 };', 'conicaDubla, senila, elice, ventilator, dinCvs2 };', 'barca', 'elicea de barcă scoasă din tipurile motorului')
+o('V04', E, 'conicaDubla, senila, elice, eliceBarca, ventilator, roataPalete,', 'conicaDubla, senila, elice, ventilator, roataPalete,', 'barca', 'elicea de barcă scoasă din tipurile motorului')
 
 # Atelierul (e2e).
-F = '    ["propulsie", "Elice", [["elice", "Elice"], ["eliceBarca", "Elice de barcă"], ["ventilator", "Ventilator cu carcasă"]]]'
+F = '    ["propulsie", "Elice", [["elice", "Elice"], ["eliceBarca", "Elice de barcă"], ["ventilator", "Ventilator cu carcasă"], ["roataPalete", "Roată cu palete"]]],'
 o('E01', A, F, F.replace(', ["eliceBarca", "Elice de barcă"]', ''), 'e2e', 'elicea de barcă lipsește din galeria filei Elice')
 o('E02', A, F, F.replace('[["elice", "Elice"], ["eliceBarca", "Elice de barcă"],', '[["eliceBarca", "Elice de barcă"], ["elice", "Elice"],'), 'e2e', 'elicea de barcă, prima în galerie')
 ST = '    eliceBarca: { palete: 3, diametru: 40, pas: 1, latime: 100, inclinare: 20, pupa: 0, sens: "dreapta", gaura: "x", capac: "nu" },'

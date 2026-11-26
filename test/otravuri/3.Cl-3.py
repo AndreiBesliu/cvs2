@@ -112,7 +112,7 @@ o('C06', LG, 'd.relief, 0.4, 3, 0.8, x => tr`Scrisul are', 'd.relief, 0.4, 3, 1,
 o('C07', LG, 'campMarginit(et ? avert : mute, d.lungime,', 'campMarginit(avert, d.lungime,', 'orn', 'globul spune ceva despre lungimea etichetei')
 
 # --- atelierul
-o('A01', AT, '["glob", "Glob"], ["ornament", "Ornament cu nume"]]]', '["ornament", "Ornament cu nume"], ["glob", "Glob"]]]', 'e2e', 'ornamentul, înaintea globului în galerie')
+o('A01', AT, '["glob", "Glob"], ["ornament", "Ornament cu nume"], ["bradLego"', '["ornament", "Ornament cu nume"], ["glob", "Glob"], ["bradLego"', 'e2e', 'ornamentul, înaintea globului în galerie')
 o('A02', AT, 'ornament: { forma: "eticheta", text: "ANA", scris: "relief", lungime: 70,', 'ornament: { forma: "eticheta", text: "ION", scris: "relief", lungime: 70,', 'e2e', 'numele de la început e altul')
 o('A03', AT, 'q.scris === "decupat" ? tr(", decupat") : q.scris === "adancit" ?', 'q.scris === "decupat" ? "" : q.scris === "adancit" ?', 'e2e', 'numele piesei nu spune că e decupată')
 o('A04', AT, '(q.relief === 0.8 ? tr(", adâncit") : tr`, adâncit ${fmt(q.relief)} mm`)', '(q.relief === 1 ? tr(", adâncit") : tr`, adâncit ${fmt(q.relief)} mm`)', 'e2e', 'adâncimea obișnuită se scrie în nume')

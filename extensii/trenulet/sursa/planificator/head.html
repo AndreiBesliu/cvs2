@@ -331,6 +331,9 @@ pre.json { background: var(--panou-2); border-radius: 8px; padding: 10px; font-f
 .model-ales { display: flex; flex-direction: column; gap: 10px; padding: 12px; border: 1px solid var(--linie); border-radius: 8px; background: var(--panou-2); }
 .mutari { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
 .mutari .btn { padding: 8px 6px; }
+/* „Jumătăți de pas” e un comutator: ales, se vede ca filele alese; ține două coloane, ca numele să încapă și pe telefon */
+.mutari .btn[data-m="fin"] { grid-column: span 2; }
+.mutari .btn[aria-pressed="true"] { background: var(--text); color: var(--panou); border-color: var(--text); }
 .model-prinderi { display: flex; flex-direction: column; gap: 6px; }
 .model-prinderi .at-rand { align-items: flex-start; }
 .model-prinderi .fel { display: inline-block; min-width: 7.5em; padding-top: 6px; }

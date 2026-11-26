@@ -136,13 +136,13 @@ o('B04', E, 'const hRad = Math.max(...statii.filter(st => st.r <= rh + 0.5)', 'c
   'butucul, înalt cât paleta de la 5 mm de el')
 o('B05', E, 'const hRad = Math.max(...statii.filter(st => st.r <= rh + 0.5)', 'const hRad = Math.max(...statii.filter(st => st.r <= rh - 0.5)', 'elice',
   'nicio secțiune la butuc (înălțimea lui, fără paletă)')
-o('B06', E, 'const G = gaura === "b" ? { g: [cerc(0, 0, ef().baraGauraD / 2)] }', 'const G = gaura === "b" ? { g: [cerc(0, 0, ef().gauraD / 2)] }', 'elice',
+o('B06', E, 'const G = fel === "b" ? { g: [cerc(0, 0, ef().baraGauraD / 2)] }', 'const G = fel === "b" ? { g: [cerc(0, 0, ef().gauraD / 2)] }', 'elice',
   'gaura pentru bară, cât cea de știft')
-o('B07', E, 'gauraRoata(cerc(0, 0, rh), gaura === "r" || gaura === "nu" ? gaura : "x");', 'gauraRoata(cerc(0, 0, rh), gaura === "nu" ? gaura : "x");', 'elice',
+o('B07', E, 'const fel = gaura === "b" || gaura === "r" || gaura === "nu" ? gaura : "x";', 'const fel = gaura === "b" || gaura === "nu" ? gaura : "x";', 'elice',
   'gaura rotundă devine gaură de ax')
-o('B08', E, 'return prismaGauri(cerc(0, 0, rh), G.g, 0, Hh);', 'return prismaGauri(cerc(0, 0, rh), G.g, 0.2, Hh);', 'elice',
+o('B08', E, 'return { tri: prismaGauri(cerc(0, 0, rh), G.g, 0, Hh), prinderi };', 'return { tri: prismaGauri(cerc(0, 0, rh), G.g, 0.2, Hh), prinderi };', 'elice',
   'butucul la 0,2 mm deasupra mesei')
-o('B09', E, 'tri.push(...butucElice(rh, Hh, d.gaura));\n    if (d.con === "da") {', 'tri.push(...butucElice(rh, Hh, d.gaura));\n    if (d.con !== "da") {', 'elice',
+o('B09', E, 'tri.push(...butuc.tri);\n    if (d.con === "da") {', 'tri.push(...butuc.tri);\n    if (d.con !== "da") {', 'elice',
   'conul, pe dos (elicea implicită are con)')
 o('B10', E, K, K.replace('con: 1.3 }', 'con: 1.0 }'), 'elice', 'conul înalt cât raza butucului')
 o('B11', E, 'const n = N_CERC, z0 = Hh - 0.1, zv = Hh + ELICE.con * rh, con: Tri[] = [];', 'const n = N_CERC, z0 = Hh + 0.1, zv = Hh + ELICE.con * rh, con: Tri[] = [];', 'elice',
@@ -164,10 +164,10 @@ o('V03', E, 'avert.push(tr`O elice are între 2 și 8 palete: am făcut-o cu ${q
   'avertismentul spune paletele cerute, nu cele făcute')
 o('V04', E, 'avert.push(tr`Diametrul unei elice e între 20 și 200 mm: am făcut-o de ${q.D} mm.`);', 'avert.push(tr`Diametrul unei elice e între 20 și 200 mm: am făcut-o de ${q.R} mm.`);', 'elice',
   'avertismentul spune raza')
-o('V05', E, 'conicaDubla, senila, elice, eliceBarca, ventilator, dinCvs2 };', 'conicaDubla, senila, eliceBarca, ventilator, dinCvs2 };', 'elice', 'elicea scoasă din tipurile motorului')
+o('V05', E, 'conicaDubla, senila, elice, eliceBarca, ventilator, roataPalete,', 'conicaDubla, senila, eliceBarca, ventilator, roataPalete,', 'elice', 'elicea scoasă din tipurile motorului')
 
 # Atelierul (e2e).
-o('E01', A, '    ["propulsie", "Elice", [["elice", "Elice"], ["eliceBarca", "Elice de barcă"], ["ventilator", "Ventilator cu carcasă"]]]', '    ["roti2", "Elice", [["elice", "Elice"], ["eliceBarca", "Elice de barcă"], ["ventilator", "Ventilator cu carcasă"]]]', 'e2e', 'fila Elice, cu altă cheie (familia `propulsie` lipsește)')
+o('E01', A, '    ["propulsie", "Elice", [["elice", "Elice"],', '    ["roti2", "Elice", [["elice", "Elice"],', 'e2e', 'fila Elice, cu altă cheie (familia `propulsie` lipsește)')
 o('E02', A, 'elice: { palete: 3, diametru: 72, pas: 0.7, latime: 30, forma: "rot",', 'elice: { palete: 4, diametru: 72, pas: 0.7, latime: 30, forma: "rot",', 'e2e', 'editorul pornește cu 4 palete')
 o('E03', A, 'elice: { palete: 3, diametru: 72, pas: 0.7, latime: 30, forma: "rot",', 'elice: { palete: 3, diametru: 72, pas: 0.7, latime: 35, forma: "rot",', 'e2e', 'editorul pornește cu lățimea 35 %')
 o('E04', A, 'forma: "rot", paleta: "rasucita", profil: "placa", sens: "dreapta", gaura: "x", con: "nu" },',

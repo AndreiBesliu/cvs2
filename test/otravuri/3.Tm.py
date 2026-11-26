@@ -48,8 +48,8 @@ o('U13', E, 'tA = zp + r1, k = r * z1 / z2;', 'tA = zp + r1, k = r1;', 'coroana'
 o('U14', E, 'Math.min(...coroanaDinte(q, r, joc)) >= COROANA.dinteMin * q.m;', 'Math.min(...coroanaDinte(q, r, joc)) >= -1;', 'coroana',
   'razele dinților fără pragul de grosime (dinții duși până la margini)')
 o('U15', E, 'if (rOut - rIn < m - 1e-9) avert.push(', 'if (rOut - rIn < 0.5 * m - 1e-9) avert.push(', 'coroana', 'dinții scurți nespuși')
-o('U16', E, 'butuc === "scurt" ? tT : 2 * zp', 'butuc === "scurt" ? tT : 2 * zp - 1', 'coroana', 'butucul lung mai scurt decât la 3650')
-o('U17', E, 'butuc === "scurt" ? tT : 2 * zp', 'butuc === "scurt" ? tR : 2 * zp', 'coroana', 'butucul scurt doar până la disc')
+o('U16', E, 'tri.push(...butucRoata(gaura, rh, butuc === "scurt" ? tT : 2 * zp));', 'tri.push(...butucRoata(gaura, rh, butuc === "scurt" ? tT : 2 * zp - 1));', 'coroana', 'butucul lung mai scurt decât la 3650')
+o('U17', E, 'tri.push(...butucRoata(gaura, rh, butuc === "scurt" ? tT : 2 * zp));', 'tri.push(...butucRoata(gaura, rh, butuc === "scurt" ? tR : 2 * zp));', 'coroana', 'butucul scurt doar până la disc')
 o('U18', E, 'rgol ? [cerc(0, 0, rgol + 0.05)] : [], 0, tR));', 'rgol ? [cerc(0, 0, rgol + 0.6)] : [], 0, tR));', 'coroana',
   'discul oprit mai departe de alezaj (golul dintre el și butuc)')
 o('U19', E, 'rgol ? [cerc(0, 0, rgol + 0.05)] : [], 0, tR));', 'rgol ? [cerc(0, 0, rgol + 0.05)] : [], 0, tR - 0.5));', 'coroana',

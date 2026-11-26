@@ -1267,7 +1267,14 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   Easy 3Draw 18.38.0 (următoarea, 18.39.0). Cu ea, ADR 0285 are toate cele patru felii făcute. **Un locaș nou ține
   știftul din două părți (proba prinderilor o cere): la etaj, peretele golului din afară și tubul din mijloc, amândouă
   la jocul din calibrare. O prindere declarată „bară” e o bară adevărată (`sectiuneBara`), nu un cui pătrat.**
-  Urmează 3.Cf-2 (orientarea de mână pe trei axe, pozițiile la jumătate de pas).
+  **3.Cf-2 (răsturnările și jumătățile de pas în „Modelul”; ADR 0284, partea D)** gata pe 26.11, pe ramură: piesa
+  aleasă din model se răstoarnă câte un sfert de tură („Răstoarnă ↓”, spre față; „Răstoarnă →”, spre dreapta), în
+  jurul mijlocului cutiei ei, cu partea de jos la aceeași înălțime; cu „Rotește”, cele 24 de așezări drepte; a patra
+  răsturnare o pune la loc, pe grilă. „Jumătăți de pas” mută câte o jumătate de știft și o jumătate de placă. Tastele:
+  X și Y răstoarnă, Shift + săgeată mută cu o jumătate de pas. Easy 3Draw 18.39.0 (următoarea, 18.40.0). **Nicio dată
+  nouă: o piesă răsturnată sau dintre știfturi e `liber`, ca una desprinsă; o mutare nouă din „Modelul” trece prin
+  transformarea piesei și prin `lasaPeLoc`. Un buton nou al pieselor din model schimbă `MUTARI` din
+  `trenulet.alipire.spec.ts`.** Urmează 3.Cg (verificarea: prinsă, plutește, se ciocnește).
   **Cotele pe desen: modelul și proba G-code-ului (ADR 0330, felia 10.4↑a-1, adusă din etapa 10)** gata pe 24.11, în
   sesiunea cloud a liniei (ramura `wip/10.4-cote`), unită în `main` pe 24.11 (`f25249cf`), fără interfață încă. ADR
   0330, acceptat de owner cu 1a–6a și cu nota lui: toate setările cotelor stau într-o fereastră nouă, „Setări”, nu în

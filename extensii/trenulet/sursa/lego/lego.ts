@@ -3621,7 +3621,7 @@ var Lego = (function (glob: typeof globalThis) {
   }
   /** Locul de pe grila al unei piese cu transformarea T (inversa lui `transfGrila`), sau null cand piesa nu sta drept pe
    *  grila: intoarsa, rotita altfel decat cu sferturi de tura in jurul verticalei, intre stifturi sau intre placi. */
-  function grilaDinTransf(a: Asezare, T: Transf): { x: number; y: number; z: number; rot: number } | null {
+  function grilaDinTransf(a: Asezare, T: Transf, oriunde = false): { x: number; y: number; z: number; rot: number } | null {
     if (!transfBuna(T)) return null;
     const aproape = (u: number, v: number) => Math.abs(u - v) < 1e-6;
     for (let rot = 0; rot < 4; rot++) {
@@ -3629,6 +3629,7 @@ var Lego = (function (glob: typeof globalThis) {
       if (![c, -s, 0, s, c, 0, 0, 0, 1].every((v, k) => aproape(T.m[k]!, v))) continue;
       const [w, d] = rot % 2 ? [a.gd, a.gw] : [a.gw, a.gd], [u, v] = a.pivot;
       const x = (T.t[0] + (c * u - s * v)) / P.pas - w / 2, y = (T.t[1] + (s * u + c * v)) / P.pas - d / 2, z = T.t[2] / P.placa;
+      if (oriunde) return { x, y, z, rot };
       const xi = Math.round(x), yi = Math.round(y), zi = Math.round(z);
       return aproape(x * P.pas, xi * P.pas) && aproape(y * P.pas, yi * P.pas) && aproape(z * P.placa, zi * P.placa) ? { x: xi + 0, y: yi + 0, z: zi + 0, rot } : null;
     }
@@ -3644,10 +3645,40 @@ var Lego = (function (glob: typeof globalThis) {
     return [lo, hi];
   }
   /** Piesa libera, rotita un sfert de tura (trigonometric, privit de sus) in jurul verticalei prin mijlocul cutiei ei. */
-  function rotitLiber(T: Transf, dim: readonly number[]): Transf {
+  function rotitLiber(T: Transf, dim: readonly number[], pivot?: readonly number[] | null): Transf {
+    // o piesa rotunda care sta drept (intre stifturi, la o jumatate de pas) se roteste in jurul axului ei, nu al cutiei:
+    // la cama si la melc, axul nu e in mijlocul cutiei
+    if (pivot && Math.abs(T.m[8]! - 1) < 1e-9) {
+      const [px, py] = aplicaTransf(T, [pivot[0]!, pivot[1]!, 0]);
+      return compuneTransf({ m: [0, -1, 0, 1, 0, 0, 0, 0, 1], t: [px + py, py - px, 0] }, T);
+    }
     const [lo, hi] = cutieTransf(T, dim), cx = (lo[0] + hi[0]) / 2, cy = (lo[1] + hi[1]) / 2;
     // R(p) = Rz(p − c) + c, deci mutarea e c − Rz·c
     return compuneTransf({ m: [0, -1, 0, 1, 0, 0, 0, 0, 1], t: [cx + cy, cy - cx, 0] }, T);
+  }
+  // ---------------------------------------------------------------------------------------------- orientarea pe trei axe (ADR 0284, 3.Cf-2)
+  // sferturile de tura in jurul axelor X si Y, exacte: (x, y, z) → (x, −z, y), cu varful piesei spre −y, si (x, y, z) → (z, y, −x),
+  // cu varful spre +x
+  const INTORS = { x: [1, 0, 0, 0, 0, -1, 0, 1, 0], y: [0, 0, 1, 0, 1, 0, -1, 0, 0] } as const;
+  /** Piesa rasturnata un sfert de tura in jurul axei X sau Y, prin mijlocul cutiei ei: mijlocul ramane pe loc pe x si y, iar
+   *  partea de jos a cutiei, la aceeasi inaltime. Cu rotirea in jurul verticalei (`rotitLiber`), da cele 24 de asezari
+   *  drepte; patru rasturnari la rand aduc piesa de unde a plecat. O transformare stricata ramane cum e. */
+  function intorsLiber(T: Transf, dim: readonly number[], axa: string): Transf {
+    if (!transfBuna(T)) return T;
+    const [lo, hi] = cutieTransf(T, dim), c: P3 = [(lo[0] + hi[0]) / 2, (lo[1] + hi[1]) / 2, (lo[2] + hi[2]) / 2];
+    const R = INTORS[axa === "y" ? "y" : "x"], rc = roteste(R, c);
+    // R(p − c) + c, apoi coborata (sau urcata) cat sa stea cu partea de jos unde era
+    const N = compuneTransf({ m: [...R], t: [c[0] - rc[0], c[1] - rc[1], c[2] - rc[2]] }, T), jos = cutieTransf(N, dim)[0][2];
+    return { m: N.m, t: [N.t[0], N.t[1], N.t[2] + lo[2] - jos] };
+  }
+  /** Locul unei piese care sta drept (rotita cu sferturi de tura in jurul verticalei), si intre stifturi sau intre placi:
+   *  x, y in stifturi, z in placi, cu zecimale; null cand piesa e rasturnata sau rotita altfel. */
+  const loculDrept = (a: Asezare, T: Transf) => grilaDinTransf(a, T, true);
+  /** Incotro e partea de sus a piesei: „sus”, „jos”, „x+”, „x-”, „y+”, „y-”; null cand piesa e inclinata altfel. */
+  function susTransf(T: Transf): "sus" | "jos" | "x+" | "x-" | "y+" | "y-" | null {
+    const sus = [T.m[2]!, T.m[5]!, T.m[8]!], k = sus.findIndex(v => Math.abs(Math.abs(v) - 1) < 1e-6);
+    if (k < 0) return null;
+    return (sus[k]! > 0 ? ["x+", "y+", "sus"] as const : ["x-", "y-", "jos"] as const)[k]!;
   }
   /** Rotorul unui ventilator si carcasa in care incape (varful paletelor sub raza golului ei): in model stau la acelasi Z. */
   function impreunaInModel(a: DefPiesa, b: DefPiesa): boolean {
@@ -3738,7 +3769,7 @@ var Lego = (function (glob: typeof globalThis) {
     // așezarea în vederea „Modelul” (ADR 0283): amprenta și pivotul piesei, locul pivotului, locul de lângă o țintă, perechea
     asezareModel, pivotModel, langaPivot, impreunaInModel,
     // alipirea la prinderi (ADR 0284, 3.Cf): transformarea unei piese (pe grilă, prinsă de alta, liberă) și rezolvarea modelului
-    transfGrila, transfPrins, compuneTransf, aplicaTransf, potriviriPrindere, seGliseaza, rezolvaModel, grilaDinTransf, cutieTransf, rotitLiber, prindereaRamasa,
+    transfGrila, transfPrins, compuneTransf, aplicaTransf, potriviriPrindere, seGliseaza, rezolvaModel, grilaDinTransf, cutieTransf, rotitLiber, intorsLiber, loculDrept, susTransf, prindereaRamasa,
     rezumatPrinderi, perechiFeluri, axPentru, stiftPentru,
     contururi, insetRectiliniu, conturPana, pozitiiGauriPana, centreIndoita,
     // rotitele (ADR 0169): distanta dintre axele a doua roti care se prind (modulul m), pentru atelier

@@ -71,7 +71,7 @@ o('M40', LG, 'return unite.flatMap(u => { const ext = curataPoli(trig(aplatizeaz
 o('M41', LG, 'n = Math.max(1, Math.ceil(Math.abs(th) / (2 * Math.PI / (laturi ? laturi(r) : N_CERC))));', 'n = Math.max(1, Math.ceil(Math.abs(th) / (2 * Math.PI / N_CERC)));', 'glob', 'arcele nu țin seama de cât de fine li se cer laturile')
 
 # --- atelierul
-o('A01', AT, '["brad", "Brăduț"], ["glob", "Glob"]]]', '["glob", "Glob"], ["brad", "Brăduț"]]]', 'e2e', 'globul, înaintea brăduțului în galerie')
+o('A01', AT, '["brad", "Brăduț"], ["glob", "Glob"], ["ornament"', '["glob", "Glob"], ["brad", "Brăduț"], ["ornament"', 'e2e', 'globul, înaintea brăduțului în galerie')
 o('A02', AT, 'glob: { diam: 60, grosime: 3, fel: "plat", model: "dungi", desen: "decupat", relief: 0.8, cate: 3, agatatoare: "inel" },', 'glob: { diam: 60, grosime: 3, fel: "plat", model: "dungi", desen: "decupat", relief: 0.8, cate: 4, agatatoare: "inel" },', 'e2e', 'globul implicit, cu patru dungi')
 NM = 'const model = q.fel === "discuri" ? tr(", din două discuri") : q.model === "fara" ? tr(", fără model")'
 o('A03', AT, NM, NM.replace('tr(", fără model")', '""'), 'e2e', 'numele nu spune că globul n-are model')
@@ -87,7 +87,7 @@ o('A10', AT, 'const cate = q.model === "zigzag" ? tr("Zigzaguri") : q.model === 
 o('A11', AT, '${plat && cuModel ? `<div class="at-rand"><span class="mic">Desenul:</span>', '${plat ? `<div class="at-rand"><span class="mic">Desenul:</span>', 'e2e', '„Desenul” apare și la globul fără model')
 o('A12', AT, '${q.schimb ? `<label for="at-gl-relief">', '${cuModel ? `<label for="at-gl-relief">', 'e2e', 'relieful apare și la globul decupat')
 o('A13', AT, '${plat ? `<div class="at-rand"><span class="mic">Modelul:</span>', '${true ? `<div class="at-rand"><span class="mic">Modelul:</span>', 'e2e', 'modelul e oferit și discurilor îmbinate')
-o('A14', AT, 'schimbă filamentul la ${fmt(q.schimb)} mm (după stratul ${Math.round(q.schimb / 0.2)},', 'schimbă filamentul la ${fmt(q.schimb)} mm (după stratul ${Math.round(q.schimb / 0.3)},', 'e2e', 'stratul schimbului, socotit la 0,3 mm')
+o('A14', AT, '(după stratul ${Math.round(q.schimb / 0.2)}, la straturi de 0,2 mm): de acolo în sus se tipărește doar modelul.', '(după stratul ${Math.round(q.schimb / 0.3)}, la straturi de 0,2 mm): de acolo în sus se tipărește doar modelul.', 'e2e', 'stratul schimbului, socotit la 0,3 mm')
 o('A15', AT, ': cuModel ? tr`Căpăcelul are ${fmt(q.capac)} mm, iar marginea din jurul modelului, ${fmt(q.margine)} mm.` : tr`Căpăcelul are ${fmt(q.capac)} mm.`;', ': tr`Căpăcelul are ${fmt(q.capac)} mm, iar marginea din jurul modelului, ${fmt(q.margine)} mm.`;', 'e2e', 'rândul globului fără model vorbește de marginea modelului')
 o('A16', AT, 'Fantele au ${fmt(q.fanta, 2)} mm: grosimea discului', 'Fantele au ${fmt(q.grosime, 2)} mm: grosimea discului', 'e2e', 'rândul discurilor scrie grosimea în loc de fantă')
 o('A17', AT, 'camp("#at-gl-diam", 30, 120, v => { p.diam = v; });', 'camp("#at-gl-diam", 10, 300, v => { p.diam = v; });', 'e2e', 'diametrul globului primește și 20 și 200')
@@ -99,7 +99,7 @@ o('A22', AT, 'if (q.schimb) p.relief = q.relief; else delete p.relief;', 'p.reli
 
 # --- textele
 o('T01', EN, ' "Glob Ø{0}": "Bauble Ø{0}",', ' "Glob Ø{0}": "Bauble",', 'texte', 'traducerea numelui globului pierde diametrul')
-o('T02', AT, 'tr`, în relief de ${fmt(q.relief)}`', 'tr`, in relief de ${fmt(q.relief)}`', 'texte', 'relieful din nume, cu alt text decât cel tradus')
+o('T02', AT, '(q.schimb ? tr`, în relief de ${fmt(q.relief)}` : "")', '(q.schimb ? tr`, in relief de ${fmt(q.relief)}` : "")', 'texte', 'relieful din nume, cu alt text decât cel tradus')
 o('T03', LG, 'tr`Un glob are între 1 și 5 dungi: am făcut ${x}.`', 'tr`Un glob are intre 1 și 5 dungi: am făcut ${x}.`', 'texte', 'mesajul motorului, cu alt text decât cel tradus')
 
 SETURI = {
