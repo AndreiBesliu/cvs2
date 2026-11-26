@@ -281,7 +281,9 @@ test('regiunea păstrată (ADR 0026): două dreptunghiuri puse unul peste altul 
   page.on('download', () => { descarcari++; });
   await page.locator('[data-actiune="export.gcode"]').click();
   await page.locator('[data-buton="exporta"]').click();
-  await expect(page.getByTestId('export-stare')).toContainText('regiunea păstrată: e1/e1 și e2/e2 se ating sau se intersectează');
+  // Motivul spune numele elementelor, nu id-urile din lume (ADR 0291, felia 28.8↑j).
+  await expect(page.getByTestId('export-stare')).toContainText(/regiunea păstrată: dreptunghi 100\S* × 60\S* .* și dreptunghi .* se ating sau se intersectează/);
+  await expect(page.getByTestId('export-stare')).not.toContainText('e1/e1');
   // Tras deoparte (la 230 mm), al doilea nu mai atinge primul: exportul merge.
   await page.getByRole('button', { name: 'Închide' }).click();
   await trage(page, 110, 50, 120);

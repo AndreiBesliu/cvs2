@@ -1888,7 +1888,8 @@ Fiecare operație are **freza** ei (grupul **Freza** al fișei): numărul sculei
 vârfului (între 1° și 179°, implicit 60°; la V, diametrul e cel al părții tăietoare). Operațiile cu freze diferite se taie cu o
 schimbare între ele: în ordinea automată, în fiecare clasă (interioarele, apoi pe linie, apoi exterioarele), întâi freza deja
 montată, ca schimbările să fie cât mai puține. Același număr cu două diametre sau două forme e refuzat: fiecare freză cere
-numărul ei.
+numărul ei. Lângă greșeală, **Dă-i T{n}** îi dă frezei alt număr: al aceleiași freze, dacă stă deja pe un alt T, altfel cel mai
+mic liber. Roșii sunt doar frezele cu numărul ciocnit.
 
 Lista **Din frezele mele**, în grupul Freza, are frezele din biblioteca ta (vezi [Frezele mele](#freze)) care merg pe tăietura
 operației: plate pe un profil, un buzunar sau o găurire, în V la V-carve. Aleasă, freza își pune pe operație numărul T (al ei,
@@ -1987,7 +1988,8 @@ freza (alta decât cea activă, a cărei confirmare o dai aici) se exportă sing
 **Din CSV…**, **Exportă** așteaptă bifa.
 
 **Rezumatul jobului** arată timpul estimat, pe operații și pe scule. Pentru timpii mașinii tale, lipește la „Setările
-mașinii” răspunsul controlerului la `$$` (din consola senderului); programul nu se schimbă.
+mașinii” răspunsul controlerului la `$$` (din consola senderului); programul nu se schimbă. Cu setările GRBL din fabrică, un
+avans peste viteza lor maximă se spune ca notă; cu `$$`-ul tău lipit, ca avertisment: atunci e chiar mașina ta.
 
 După descărcare, fereastra **simulează** programul: harta adâncimilor pe foaie, materialul scos, cea mai adâncă tăietură și
 dacă freza trece prin foaie. Pentru placa văzută în 3D, vezi [Vederea 3D](#vedere-3d).

@@ -15493,3 +15493,22 @@ cu patru întrebări: „Mergem cu recomandarile”
 - **De ținut minte:** o comandă de citire cu `rev` pe un rând foarte lung s-a agățat de două ori câte 30 de minute;
   cozile de rând se citesc cu un script Python, cu `timeout`.
 - **Documentele:** decizia și paragraful de stare în `CLAUDE.md`; indexul liniilor; starea din `docs/linii/principala.md`.
+
+## 2026-11-26 — Linia exportului: 28.8↑j, greșelile ferestrei exportului pe înțeles (ADR 0291)
+
+**Prompt:** PR-ul AndreiBesliu/cvs2#49 (28.8↑i) unit în `main` (`953205a8`), cu starea sesiunii principale din `CLAUDE.md`
+(„exportul (28.8↑j, greșelile pe înțeles; apoi k, l)”), la ordinul în vigoare „unește ce se poate”
+**Started:** 26.11, 02:10.
+
+- **„Dă-i T{n}” (2a, constatarea 5):** lângă „T1 are două freze”, în grupul fiecărei freze cu numărul ciocnit, numărul nou după
+  regula rolurilor, fără numărul ciocnit (`numarDupaConflict`); roșii doar frezele cu numărul ciocnit, și cele de rest.
+- **Greșeala pe câmp (constatarea 15):** numărul sculei, diametrul, unghiul V, adâncimea și pasul, fiecare cu marginile lui, fără
+  gruparea miilor; „—” în listă pentru un număr lipsă.
+- **Nota vitezei (4a, constatarea 6):** cu setările GRBL din fabrică, o notă; avertismentul doar față de `$$`-ul lipit.
+- **Refuzurile din calcul (constatarea 7):** numele elementelor în locul id-urilor din lume, virgula în română, „Du-mă la …” la
+  operația primului element numit (`motivPeInteles`, `operatiiLume`).
+- **Probele:** `export.conflictT.test.ts` (5), `export.motivCalcul.test.ts` (3), `export.greseli.spec.ts` (5); trei probe vechi
+  aduse la zi (nota și refuzul pe înțeles).
+- **Mărimea:** pornirea +0 (111,4 kB), totalul 910,5 / 1 000 (+1,1 kB).
+- **Documentele:** ADR 0291 („Implementarea 28.8↑j” și pragurile lui i), manualul (ambele limbi), fișa etapei 3, registrul
+  otrăvurilor, nota liniei.

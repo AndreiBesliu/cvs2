@@ -277,6 +277,10 @@ export function ExportConectat({
       // (finisările întâi).
       automata: [...new Set(ordinePasi(faraRanguri(doc), 0).map(cheiePas))],
       descrieri: new Map(lume.map((e) => [e.idLume, descriere(e)])),
+      // Fiecare element al foii, cu prima operație de pe rând care îl taie (ADR 0291, felia 28.8↑j): „Du-mă la …” lângă un refuz al
+      // calculului, care vorbește cu id-urile din lume, în orice instanță a piesei.
+      operatiiLume: new Map((doc.foi[0]?.instante ?? []).flatMap((i) => (piese.get(i.piesa)?.operatii.filter(peRand) ?? [])
+        .flatMap((o) => o.noduri.map((n) => [`${i.id}/${n}`, `${i.piesa}/${o.id}`] as const))).reverse()),
     };
     // `limba`: descrierile sunt texte traduse.
   }, [doc, dupaIdLume, lume, descriere, limba]);
@@ -380,6 +384,7 @@ export function ExportConectat({
       finisari={exportFoaie.finisari}
       ordineAutomata={exportFoaie.automata}
       descrieri={exportFoaie.descrieri}
+      operatiiLume={exportFoaie.operatiiLume}
       doarCitire={doarCitire}
       stare={stare}
       onExporta={exporta}

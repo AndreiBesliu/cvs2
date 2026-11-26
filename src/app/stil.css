@@ -2703,6 +2703,15 @@ nav button[aria-pressed='true'] {
   padding: 0 var(--sp-3);
 }
 
+/* „Dă-i T{n}” (ADR 0291 §2a, felia 28.8↑j), lângă textul conflictului: un buton pe rândul lui, fără să rupă textul. */
+.dialog .dx-da-t {
+  display: inline-block;
+  margin-top: var(--sp-1);
+  border-color: var(--l-camp);
+  padding: 0 var(--sp-3);
+  white-space: nowrap;
+}
+
 /*
  * Densitatea mare (ADR 0250 §5; Atelier, la tabletă), în fereastra exportului (ADR 0290, felia 28.8↑f-1): câmpurile, bifele și
  * butoanele listei au ținta butoanelor (48 px, 56 la atingere), nu 32 și 24 px.

@@ -97,6 +97,49 @@ export type UndeFreza = 'scula' | 'fund' | 'dop' | 'banda' | { readonly rest: 'b
 /** O freză a unui rând al ferestrei: cheia rândului și locul ei. */
 export type LocFreza = { readonly cheie: string; readonly unde: UndeFreza };
 
+/**
+ * Identitatea unei freze montate, pentru conflictele de T (ADR 0084): diametrul, apoi unghiul V cu vârful plat (ADR 0090, 0092;
+ * vârful 0 e cel ascuțit), apoi bila (ADR 0312). Valorile exacte: în motiv, freza apare scrisă după limbă.
+ */
+export function cheieFreza(d: number, u: number | null, varf: number | null, bila = false): string {
+  if (bila) return `${String(d)} bila`;
+  const v = u !== null && varf !== null && varf > 0 ? varf : null;
+  return u !== null ? `${String(d)} V${String(u)}${v !== null ? ` t${String(v)}` : ''}` : String(d);
+}
+
+/**
+ * O freză a ferestrei, pentru conflictele de T: numărul, identitatea (`cheieFreza`) și locul ei pe un rând; fără loc, freza unei
+ * finisări a reliefului (ADR 0312 §7), care se schimbă din panou, nu de aici.
+ */
+export type FrezaT = { readonly numar: number; readonly cheie: string; readonly loc?: LocFreza };
+
+/**
+ * „Dă-i T{n}” (ADR 0291 §2a, felia 28.8↑j): numărul pe care îl ia freza `f`, ciocnită pe numărul ei, printre celelalte freze ale
+ * ferestrei (`alte`). Regula rolurilor (`numarPentruRand`, ADR 0114 §5), fără numărul ciocnit: al unei freze identice, cât pe
+ * numărul ei stau doar freze identice (deci mutarea nu face alt conflict); altfel cel mai mic liber. `null`: niciun număr liber.
+ */
+export function numarDupaConflict(alte: readonly FrezaT[], f: FrezaT): number | null {
+  const curat = (n: number): boolean => alte.every((a) => a.numar !== n || a.cheie === f.cheie);
+  const identica = alte.find((a) => a.cheie === f.cheie && a.numar !== f.numar && curat(a.numar));
+  if (identica) return identica.numar;
+  const luate = new Set(alte.map((a) => a.numar));
+  for (let k = 1; k <= MARGINI_OPERATIE.numarScula; k++) if (k !== f.numar && !luate.has(k)) return k;
+  return null;
+}
+
+/** Numărul T al locului `unde` al rândului, scris `n` (felia 28.8↑j); freza, originea și pașii rămân. */
+export function cuNumarT(p: Rand, unde: UndeFreza, n: number, text: (x: number) => string = String): Partial<Rand> {
+  const s = text(n);
+  if (unde === 'scula') return { numarScula: s };
+  if (unde === 'fund') return { numarSculaFund: s };
+  if (unde === 'dop') return { numarSculaDop: s };
+  if (unde === 'banda') return { numarSculaBanda: s };
+  const camp = unde.rest === 'fund' ? 'restFund' : unde.rest === 'dop' ? 'restDop' : 'rest';
+  const lista = p[camp];
+  if (unde.k < 0 || unde.k >= lista.length) return {};
+  return { [camp]: lista.map((r, i) => (i === unde.k ? { ...r, numar: s } : r)) };
+}
+
 const acelasiLoc = (a: UndeFreza, b: UndeFreza): boolean =>
   typeof a === 'string' || typeof b === 'string' ? a === b : a.rest === b.rest && a.k === b.k;
 
@@ -773,6 +816,18 @@ export const URECHI_IMPLICITE: UrechiOperatie = { numar: 4, latime: 8, grosime: 
 export function intregInMargini(s: string, plafon: number): boolean {
   const x = citesteNumar(s);
   return x !== null && Number.isInteger(x) && x >= 1 && x <= plafon;
+}
+
+/**
+ * Câmpurile frezei unui rând care nu trec (constatarea 15 a auditului, felia 28.8↑j): numărul sculei, diametrul, unghiul V (doar
+ * la freza în V). Fiecare își spune greșeala lui, pe câmpul lui; împreună, ele sunt verdictul `scula`.
+ */
+export function campuriSculaGresite(p: Pick<Rand, 'numarScula' | 'diametruScula' | 'formaScula' | 'unghiV'>): ReadonlyArray<'numar' | 'diametru' | 'unghi'> {
+  const rez: Array<'numar' | 'diametru' | 'unghi'> = [];
+  if (!intregInMargini(p.numarScula, MARGINI_OPERATIE.numarScula)) rez.push('numar');
+  if (!inMargini(p.diametruScula, MARGINI_OPERATIE.diametru)) rez.push('diametru');
+  if (p.formaScula === 'v' && !inMargini(p.unghiV, MARGINI_OPERATIE.unghiV, MARGINI_OPERATIE.unghiVMinim)) rez.push('unghi');
+  return rez;
 }
 
 export const SENSURI: readonly Sens[] = ['urcare', 'opozitie'];
