@@ -129,7 +129,9 @@ test('bifa tăieturilor cât foaia: implicit pusă, ascunsă fără supracursă;
   await dreptunghiMic(page);
   await page.locator('[data-actiune="export.gcode"]').click();
   const bifa = page.locator('[data-camp="supracursa-prin-foaie"]');
-  // Fără supracursă, bifa n-are ce schimba: nu se arată (28.8↑k, constatarea 11 a auditului; înainte, bifată și oprită).
+  // Fără supracursă, bifa n-are ce schimba: nu se arată (28.8↑k, constatarea 11 a auditului; înainte, bifată și oprită). Întâi
+  // fereastra: vine la cerere, iar „nicio bifă” ar trece și înainte să apară.
+  await expect(page.locator('[data-camp="supracursa"]')).toHaveValue('0');
   await expect(bifa).toHaveCount(0);
   await page.locator('[data-camp="supracursa"]').fill('0,5');
   await expect(bifa).toBeEnabled();
