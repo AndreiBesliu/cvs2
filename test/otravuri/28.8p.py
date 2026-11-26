@@ -54,6 +54,8 @@ o('P17', ER, 'return { turatie: x(r.turatie, TURATIE_IMPLICITA), avans: x(r.avan
   'avansul gol ia plonjarea')
 o('P18', ER, '      regimDinRand(p.regimMana)?.turatie);', '      undefined);', 'mana', 'T-ul nu știe turația scrisă de mână')
 o('P19', ER, "  if (a.parcare === 'punct') {", "  if (a.parcare === 'nimic') {", 'mana', 'X și Y ale parcării nu se judecă')
+o('P29', ER, ' && aceeasiForma(loc.forma, x.scula.forma) && aceleasiValori(x.scula.origine.regim));', ' && aceeasiForma(loc.forma, x.scula.forma));',
+  'mana', 'o freză cu valori scrise altfel e spusă „ca” cea din bibliotecă')
 o('P20', ER, "  const parcare = a.parcare === 'origine' ? { x: 0, y: 0 }", "  const parcare = a.parcare === 'nimic' ? { x: 0, y: 0 }", 'mana',
   'la XY0 nu pleacă nicio parcare')
 # Fereastra.

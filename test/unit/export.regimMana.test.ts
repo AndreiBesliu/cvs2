@@ -19,8 +19,8 @@ import { incarca } from '../../src/model/incarcare.ts';
 import { calculeazaExport } from '../../src/ui/actiuniExportCalcul.ts';
 import { AVANS_IMPLICIT, PLONJARE_IMPLICITA, TURATIE_IMPLICITA } from '../../src/cam/regimExport.ts';
 import {
-  AER_IMPLICIT, campuriAerGresite, campuriRegimGresite, frezeRanduri, parametriAer, regimDinRand, REGIM_GOL, type Rand, type RegimRand,
-  type SculaOperatie,
+  AER_IMPLICIT, campuriAerGresite, campuriRegimGresite, frezeRanduri, locuriFreze, parametriAer, regimDinRand, REGIM_GOL, stareOrigine,
+  type FrezaOferita, type Rand, type RegimRand, type SculaOperatie,
 } from '../../src/ui/exportRand.ts';
 import { docDin, ID } from './ajutor-document.ts';
 
@@ -143,4 +143,32 @@ test('T-ul: turația scrisă de mână e știută, ca a unei freze din bibliotec
   assert.deepEqual(frezeRanduri([['a', rand({ regimMana: R('0', '', '') })]]), [{ numar: 1, diametru: 6 }]);
   const origine = { nume: 'Plată Ø6', biblioteca: { id: 'p6', rev: 1 }, regim: { turatie: 20_000, avans: 1000, plonjare: 300 } };
   assert.deepEqual(frezeRanduri([['a', rand({ origineScula: origine, regimMana: R('16000', '', '') })]]), [{ numar: 1, diametru: 6, turatie: 20_000 }]);
+});
+
+/** O freză plată Ø6 din bibliotecă, cu valorile date (sau fără). */
+const P6 = (regim?: { turatie: number; avans: number; plonjare: number }): FrezaOferita => ({
+  id: 'p6', nume: 'Plată Ø6', pas: 3, pasLateral: 2.4,
+  scula: { numar: 2, diametru: 6, origine: { nume: 'Plată Ø6', biblioteca: { id: 'p6', rev: 1 }, ...(regim ? { regim } : {}) } },
+});
+const recunoscuta = (p: Rand, b: FrezaOferita): string | undefined => {
+  const st = stareOrigine(locuriFreze(p)[0]!, [b]);
+  return st?.fel === 'recunoscuta' ? st.freza.nume : undefined;
+};
+
+test('recunoașterea „Scrisă de mână (ca „…”)”: cu valori scrise de mână, doar o freză cu aceleași valori; fără ele, ca azi', () => {
+  const b = P6({ turatie: 18_000, avans: 1000, plonjare: 300 });
+  // Fără valori scrise: Ø și forma, ca azi.
+  assert.equal(recunoscuta(rand({}), b), 'Plată Ø6');
+  assert.equal(recunoscuta(rand({}), P6({ turatie: 20_000, avans: 2000, plonjare: 600 })), 'Plată Ø6');
+  // Cu valori scrise altfel decât ale frezei din bibliotecă: nu mai e „ca” ea.
+  assert.equal(recunoscuta(rand({ regimMana: R('16000', '', '') }), b), undefined);
+  assert.equal(recunoscuta(rand({ regimMana: R('', '800', '') }), b), undefined);
+  // Cu aceleași valori (scrise, sau golurile luate din lucrare): e.
+  assert.equal(recunoscuta(rand({ regimMana: R('18000', '1000', '300') }), b), 'Plată Ø6');
+  assert.equal(recunoscuta(rand({ regimMana: R('18000', '', '') }), b), 'Plată Ø6');
+  // O freză din bibliotecă fără valorile ei taie cu cele ale lucrării: aceleași, recunoscută; altele, nu.
+  assert.equal(recunoscuta(rand({ regimMana: R('', '', '300') }), P6()), 'Plată Ø6');
+  assert.equal(recunoscuta(rand({ regimMana: R('', '', '250') }), P6()), undefined);
+  // Un câmp greșit: fără valori de comparat, deci ca fără ele.
+  assert.equal(recunoscuta(rand({ regimMana: R('0', '', '') }), b), 'Plată Ø6');
 });

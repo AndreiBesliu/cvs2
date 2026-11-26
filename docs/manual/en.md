@@ -2026,7 +2026,8 @@ empty field takes the value used by any bit without its own values (18,000 rpm, 
 three empty, the program is the same as before. With one filled in, **Export** writes all three into the project, on the
 operation's bit, and the program cuts with them: the spindle starts at its speed, and the cuts and descents run at its feed and
 plunge. A mounted bit (one T) has a single spindle speed: two operations with the same T and different speeds are refused. A
-library bit has its own values, so the fields appear only after **Entered by hand**.
+library bit has its own values, so the fields appear only after **Entered by hand**. With values entered, the list says
+“Entered by hand (as “…”)” only when a library bit also has the same values, besides the diameter and shape.
 
 An operation's extra bits have their own **From my bits** list too, with flat bits only: the flat-bottom bit (on a V-carve and
 a V inlay), each clean-up bit (only the ones smaller than the bit before), the first bit of a straight-walled plug and the bit

@@ -1950,7 +1950,8 @@ care taie orice freză fără valorile ei (18 000 rot/min, 1 000 și 300 mm/min)
 trei goale, programul e cel de dinainte. Cu una scrisă, **Exportă** le scrie pe toate trei în proiect, pe freza operației, și
 programul taie cu ele: axul pornește cu turația ei, iar tăieturile și coborârile merg cu avansul și plonjarea ei. O freză
 montată (un T) are o singură turație: două operații cu același T și turații diferite sunt refuzate. O freză din bibliotecă își
-are valorile ei, deci câmpurile apar doar după **Scrisă de mână**.
+are valorile ei, deci câmpurile apar doar după **Scrisă de mână**. Cu valori scrise, lista spune „Scrisă de mână (ca „…”)”
+doar când o freză din bibliotecă are, pe lângă diametru și formă, și aceleași valori.
 
 Frezele în plus ale unei operații au și ele lista lor **Din frezele mele**, doar cu frezele plate: freza fundului plat (la
 V-carve și la incrustația în V), fiecare freză de rest (doar cele mai mici decât freza dinainte), prima freză a dopului cu

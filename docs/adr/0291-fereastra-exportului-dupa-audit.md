@@ -479,7 +479,9 @@ azi, octet cu octet.
   lucrării (18.000 rot/min, 1.000 și 300 mm/min)”, cele scrise, sau „o valoare e greșită”). La vedere, sub formă, depărtau
   diametrul de greșeala de sub el: pe telefonul culcat (844 × 390, coloana câmpurilor de 210 px), cele trei câmpuri țineau
   181 px, iar „Du-mă la …” nu mai putea aduce în panou (177 px) și câmpul, și greșeala (proba din 28.8↑h-2 a căzut). „Du-mă la
-  …” desface rândul când câmpul greșit e în el.
+  …” desface rândul când câmpul greșit e în el. Recunoașterea „Scrisă de mână (ca „…”)” (`stareOrigine`, 16.A↑b-4) cere,
+  cu valori scrise, aceleași valori și frezei din bibliotecă (una fără ele contează cu cele ale lucrării); fără valori scrise,
+  ca înainte (semnalat de linia frezelor).
 - **Fereastra:** grupul nou `aer` („Z-ul sigur și parcarea”), în „Mașina și fișierul”, între schimbarea frezei și setări, cu
   cartonașele parcării; câmpurile frezei în grupul ei. O valoare greșită oprește Exportă, cu greșeala în grupul ei și punctul
   pe rândul fișei. Nota `export.regim` nu mai spune Z-ul sigur.

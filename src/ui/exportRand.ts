@@ -208,7 +208,11 @@ export function cuFrezaAleasa(p: Rand, unde: UndeFreza, f: FrezaOferita, numar: 
 /** Forma unei freze pe rând (ADR 0090, ADR 0092): în V, cu unghiul și vârful (lipsă = ascuțit); lipsă = plată. */
 export type FormaRand = { readonly tip: 'v'; readonly unghi: number; readonly varf?: number };
 /** O freză a unui rând, pentru nota bibliotecii (ADR 0300 §5, felia 16.A↑b-4): locul, originea, diametrul (ca text) și forma. */
-export type LocFrezaRand = { readonly unde: UndeFreza; readonly origine: OrigineFreza | null; readonly diametru: string; readonly forma?: FormaRand };
+export type LocFrezaRand = {
+  readonly unde: UndeFreza; readonly origine: OrigineFreza | null; readonly diametru: string; readonly forma?: FormaRand;
+  /** Valorile de lucru scrise de mână (felia 28.8↑p), doar pe freza operației fără origine: recunoașterea le cere egale. */
+  readonly regim?: ValoriLucru;
+};
 
 /**
  * Frezele unui rând, cu originea lor (ADR 0300 §5, felia 16.A↑b-4): freza operației și, cu bifele lor, a fundului plat, a
@@ -216,9 +220,11 @@ export type LocFrezaRand = { readonly unde: UndeFreza; readonly origine: Origine
  */
 export function locuriFreze(p: Rand): LocFrezaRand[] {
   const u = p.formaScula === 'v' ? citesteNumar(p.unghiV) : null, vf = p.formaScula === 'v' ? citesteNumar(p.varfV) : null;
+  const regim = p.origineScula === null ? regimDinRand(p.regimMana) : null;
   const rez: LocFrezaRand[] = [{
     unde: 'scula', origine: p.origineScula, diametru: p.diametruScula,
     ...(u !== null ? { forma: { tip: 'v' as const, unghi: u, ...(vf !== null && vf > 0 ? { varf: vf } : {}) } } : {}),
+    ...(regim ? { regim } : {}),
   }];
   const fund = p.tip === 'vcarve' && p.fundPlat, dop = p.tip === 'buzunar' && p.incrustatieDreapta && p.frezaDop;
   if (fund) rez.push({ unde: 'fund', origine: p.origineFund, diametru: p.diametruSculaFund });
@@ -284,7 +290,13 @@ export function stareOrigine(loc: LocFrezaRand, biblioteca: readonly FrezaOferit
   if (d === null) return null;
   const aceeasiForma = (a: FormaRand | undefined, b: FormaRand | undefined): boolean =>
     a === undefined || b === undefined ? a === b : Math.abs(a.unghi - b.unghi) < 1e-9 && Math.abs((a.varf ?? 0) - (b.varf ?? 0)) < 1e-9;
-  const f = biblioteca.find((x) => Math.abs(x.scula.diametru - d) < 1e-9 && aceeasiForma(loc.forma, x.scula.forma));
+  // Cu valori de lucru scrise de mână (28.8↑p), freza din bibliotecă le cere egale (una fără ele taie cu cele ale lucrării).
+  const aceleasiValori = (r: ValoriLucru | undefined): boolean => {
+    if (!loc.regim) return true;
+    const b = r ?? { turatie: TURATIE_IMPLICITA, avans: AVANS_IMPLICIT, plonjare: PLONJARE_IMPLICITA };
+    return Math.abs(loc.regim.turatie - b.turatie) < 1e-9 && Math.abs(loc.regim.avans - b.avans) < 1e-9 && Math.abs(loc.regim.plonjare - b.plonjare) < 1e-9;
+  };
+  const f = biblioteca.find((x) => Math.abs(x.scula.diametru - d) < 1e-9 && aceeasiForma(loc.forma, x.scula.forma) && aceleasiValori(x.scula.origine.regim));
   return f ? { fel: 'recunoscuta', freza: f } : null;
 }
 
