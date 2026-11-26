@@ -1,8 +1,9 @@
 /**
  * Tăieturile cât grosimea foii, cu supracursa (ADR 0177): cu bifa din fereastra exportului, o operație de profil, de buzunar
  * sau de găurire, fără incrustație, scrisă cât grosimea foii (prima), se taie ca scrisă grosime plus supracursă. Rămân cum sunt
- * scrise: V-carve-urile (adâncimea lor e limita V-ului), incrustațiile (gaura are locașul ei, ADR 0175) și celelalte adâncimi
- * (mai mici, sau deja peste foaie: voia din ADR 0028 §2). În document, adâncimea nu se schimbă: doar lucrarea o vede așa.
+ * scrise: V-carve-urile (adâncimea lor e limita V-ului), incrustațiile (gaura are locașul ei, ADR 0175), operațiile reliefului
+ * (finisarea, ADR 0312, și degroșarea, ADR 0313: adâncimea lor e podeaua modelului) și celelalte adâncimi (mai mici, sau deja
+ * peste foaie: voia din ADR 0028 §2). În document, adâncimea nu se schimbă: doar lucrarea o vede așa.
  */
 import type { Document, Operatie } from '../model/document.ts';
 import { esteGaura } from '../model/incrustatie.ts';
@@ -22,7 +23,7 @@ export const adancimeScrisa = (o: Operatie): AdancimeScrisa => ({
 
 /** O tăietură cât foaia, pe care bifa o duce prin foaie cu supracursa (ADR 0177). */
 export const catFoaia = (o: AdancimeScrisa, grosime: number): boolean =>
-  o.tip !== 'vcarve' && o.tip !== 'finisare' && o.incrustatie === 'fara' && Math.abs(o.adancime - grosime) <= EPS_FOAIE;
+  o.tip !== 'vcarve' && o.tip !== 'finisare' && o.tip !== 'degrosare' && o.incrustatie === 'fara' && Math.abs(o.adancime - grosime) <= EPS_FOAIE;
 
 /**
  * Adâncimea pe care o taie lucrarea (ADR 0175 §1, ADR 0177): gaura incrustației, grosimea foii plus supracursa; cu bifa, o

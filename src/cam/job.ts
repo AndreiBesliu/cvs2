@@ -5,9 +5,9 @@ import { judecaDeschisa, NEATINS_PESTE_D, refuzDeschise } from './deschise.ts';
 import { conturElement } from '../model/forme.ts';
 import { felFrezei, frezeleOperatiei, motivFormaPeOperatie } from '../model/formaFrezei.ts';
 import { ordineTaieturi, valoriVcarve, type Taietura } from '../model/lume.ts';
-import { finisariFoaie, ordinePasi, type FinisareFoaie } from '../model/finisare.ts';
+import { degrosariFoaie, finisariFoaie, finisariInainteaDegrosarii, nepotrivireDegrosare, ordinePasi, type FinisareFoaie } from '../model/finisare.ts';
 import { compusDinResurse, type ResurseRelief } from '../relief/resurse.ts';
-import { finisareRelief, type FrezaFinisare, type ReliefCam } from './reliefFinisare.ts';
+import { degrosareRelief, finisareRelief, type FrezaFinisare, type ReliefCam } from './reliefFinisare.ts';
 import { AXE_XYZ, type Miscare, type Program, type Scula } from '../ir/ir.ts';
 import { ineleBuzunar, ordineInele, traseuBuzunar } from './buzunar.ts';
 import { traseuParalel } from './paralel.ts';
@@ -56,10 +56,11 @@ const sculaIR = (s: Taietura['scula']): Scula => ({
 });
 
 /**
- * ADR 0312: ce refuză lucrarea din documentul v29, pe piesele foii: freza bilă pe altceva decât finisarea reliefului
- * (`motivFormaPeOperatie`; și pe frezele de rest, ale fundului plat și ale dopului), câmpul `finisare` pe alt fel de operație,
- * iar pe o finisare ce e al altor operații (urechi, rampă, intrări, degajări, despărțire, câmpurile altor feluri) și o podea
- * sub placă.
+ * ADR 0312, ADR 0313: ce refuză lucrarea din documentele v29 și v30, pe piesele foii: freza bilă pe altceva decât finisarea
+ * reliefului (`motivFormaPeOperatie`; și pe frezele de rest, ale fundului plat și ale dopului), o freză care nu e plată pe o
+ * degroșare, câmpul `finisare` pe alt fel de operație decât finisarea și `degrosare` pe alt fel decât degroșarea, iar pe o
+ * operație a reliefului ce e al altor operații (urechi, rampă, intrări, degajări, despărțire, câmpurile altor feluri) și o
+ * podea sub placă.
  */
 function refuzFinisareSiBila(doc: Document): string | null {
   const pePlaca = new Set((doc.foi[0]?.instante ?? []).map((i) => i.piesa));
@@ -67,20 +68,25 @@ function refuzFinisareSiBila(doc: Document): string | null {
     if (!pePlaca.has(p.id)) continue;
     for (const o of p.operatii) {
       const unde = `${p.id}/${o.id}`;
-      if (o.tip !== 'finisare') {
+      if (o.finisare !== undefined && o.tip !== 'finisare') return `${unde}: valorile finisării sunt doar ale unei finisări a reliefului`;
+      if (o.degrosare !== undefined && o.tip !== 'degrosare') return `${unde}: valorile degroșării sunt doar ale unei degroșări a reliefului`;
+      if (o.tip === 'degrosare' && motivFormaPeOperatie(o.tip, o.latura, o.scula.forma) === 'degrosare') {
+        return `${unde}: degroșarea reliefului se face cu o freză plată (T${o.scula.numar} e ${felFrezei(o.scula.forma)})`;
+      }
+      if (o.tip !== 'finisare' && o.tip !== 'degrosare') {
         for (const { cale, scula } of frezeleOperatiei(o)) {
           if (scula.forma?.tip === 'bila') return `${unde}: freza bilă (T${scula.numar}, ${cale}) merge doar la finisarea reliefului`;
         }
-        if (o.finisare !== undefined) return `${unde}: valorile finisării sunt doar ale unei finisări a reliefului`;
-      } else {
-        if (o.urechi || o.rampa || o.intrari || o.colturi || o.despartire) {
-          return `${unde}: o finisare a reliefului nu are urechi, rampă, intrări, degajări sau despărțire`;
-        }
-        const straine = (['coborare', 'retragereCompleta', 'fundPlat', 'directie', 'rest', 'strategie', 'incrustatie'] as const).filter((k) => o[k] !== undefined);
-        if (straine.length > 0) return `${unde}: ${straine.join(', ')} ${straine.length === 1 ? 'e al' : 'sunt ale'} altor operații, nu ale finisării reliefului`;
-        if (o.adancime > (doc.foi[0]?.stoc.grosime ?? Infinity)) {
-          return `${unde}: podeaua finisării, la ${o.adancime} mm, trece de grosimea plăcii (${doc.foi[0]?.stoc.grosime} mm)`;
-        }
+        continue;
+      }
+      const felul = o.tip === 'finisare' ? 'finisare' : 'degroșare', alFelului = o.tip === 'finisare' ? 'finisării' : 'degroșării';
+      if (o.urechi || o.rampa || o.intrari || o.colturi || o.despartire) {
+        return `${unde}: o ${felul} a reliefului nu are urechi, rampă, intrări, degajări sau despărțire`;
+      }
+      const straine = (['coborare', 'retragereCompleta', 'fundPlat', 'directie', 'rest', 'strategie', 'incrustatie'] as const).filter((k) => o[k] !== undefined);
+      if (straine.length > 0) return `${unde}: ${straine.join(', ')} ${straine.length === 1 ? 'e al' : 'sunt ale'} altor operații, nu ale ${alFelului} reliefului`;
+      if (o.adancime > (doc.foi[0]?.stoc.grosime ?? Infinity)) {
+        return `${unde}: podeaua ${alFelului}, la ${o.adancime} mm, trece de grosimea plăcii (${doc.foi[0]?.stoc.grosime} mm)`;
       }
     }
   }
@@ -88,16 +94,17 @@ function refuzFinisareSiBila(doc: Document): string | null {
 }
 
 /**
- * Finisarea unui relief al foii (ADR 0310 §4–§6, ADR 0312): compusul fiecărui relief din resurse (dalele lui, aduse de firul
- * principal), mutat pe Z (planul zero sub față, sau vârful compusului la față), în lume, cu celula scalată; apoi
- * `finisareRelief`.
+ * O operație a reliefului de pe foaie (ADR 0310 §4–§6; finisarea, ADR 0312; degroșarea, ADR 0313): compusul fiecărui relief
+ * din resurse (dalele lui, aduse de firul principal), mutat pe Z (planul zero sub față, sau vârful compusului la față), în
+ * lume, cu celula scalată; apoi `finisareRelief` sau `degrosareRelief`.
  */
-function programFinisare(
+function programRelief(
   f: FinisareFoaie, resurse: ResurseRelief | undefined, regim: Regim,
 ): ReturnType<typeof finisareRelief> {
-  const o = f.operatie, fin = o.finisare;
-  if (!fin) return { ok: false, motiv: `${f.piesa}/${o.id}: finisarea n-are valorile ei` };
-  if (o.pasLateral === undefined) return { ok: false, motiv: `${f.piesa}/${o.id}: finisarea n-are pasul lateral` };
+  const o = f.operatie, fin = o.tip === 'degrosare' ? o.degrosare : o.finisare;
+  const felul = o.tip === 'degrosare' ? 'degroșarea' : 'finisarea';
+  if (!fin) return { ok: false, motiv: `${f.piesa}/${o.id}: ${felul} n-are valorile ei` };
+  if (o.pasLateral === undefined) return { ok: false, motiv: `${f.piesa}/${o.id}: ${felul} n-are pasul lateral` };
   const reliefuri: ReliefCam[] = [];
   for (const r of f.reliefuri) {
     const c = compusDinResurse(r.forma, resurse ?? {});
@@ -116,13 +123,19 @@ function programFinisare(
     });
   }
   const D = o.scula.diametru, fs = o.scula.forma;
+  const rv = regimFrezei(o.scula, regim);
+  const comune = {
+    reliefuri, unghi: fin.unghi, margine: fin.margine === 'trece' ? 'trece' as const : 'perete' as const,
+    pasLateral: o.pasLateral, pas: o.pas, adancime: o.adancime, zSigur: regim.zSigur, avans: rv.avans, avansPlonjare: rv.avansPlonjare,
+  };
+  if (o.tip === 'degrosare') {
+    // Freza plată (judecată de `refuzFinisareSiBila`, prin `motivFormaPeOperatie`); adaosul, din document.
+    const r = degrosareRelief({ ...comune, raza: D / 2, adaos: o.degrosare?.adaos ?? 0 });
+    return r.ok ? r : { ok: false, motiv: `${f.reliefuri[0]?.idLume ?? `${f.piesa}/${o.id}`}: ${r.motiv}` };
+  }
   const freza: FrezaFinisare = fs?.tip === 'bila' ? { fel: 'bila', raza: D / 2 }
     : fs?.tip === 'v' ? { fel: 'v', raza: D / 2, unghi: fs.unghi, varf: fs.varf ?? 0 } : { fel: 'plata', raza: D / 2 };
-  const rv = regimFrezei(o.scula, regim);
-  const r = finisareRelief({
-    reliefuri, freza, unghi: fin.unghi, nealiniat: fin.nealiniat === true, margine: fin.margine === 'trece' ? 'trece' : 'perete',
-    pasLateral: o.pasLateral, pas: o.pas, adancime: o.adancime, zSigur: regim.zSigur, avans: rv.avans, avansPlonjare: rv.avansPlonjare,
-  });
+  const r = finisareRelief({ ...comune, freza, nealiniat: o.finisare?.nealiniat === true });
   return r.ok ? r : { ok: false, motiv: `${f.reliefuri[0]?.idLume ?? `${f.piesa}/${o.id}`}: ${r.motiv}` };
 }
 
@@ -350,15 +363,19 @@ export function programDinDocument(
   // Finisarea reliefului și freza bilă (ADR 0312, documentul v29): judecate înaintea tăieturilor, care sunt doar ale contururilor.
   const v29 = refuzFinisareSiBila(doc);
   if (v29) return { ok: false, motiv: v29 };
+  // Degroșarea și finisarea aceluiași relief (ADR 0313 §5): același plan zero; degroșarea nu scoate peretele finisării.
+  const nepotrivire = nepotrivireDegrosare(doc, 0);
+  if (nepotrivire) return { ok: false, motiv: nepotrivire };
   // Găurile (ADR 0175): locașul prin foaie, cu adâncimea ei plus supracursa, nu cea scrisă în operație.
   doc = cuGauriPrinFoaie(doc, supracursa);
   // Cu bifa (ADR 0177): tăieturile scrise cât foaia, ca scrise grosime plus supracursă.
   if (prinFoaie) doc = cuTaieturiPrinFoaie(doc, supracursa);
   // Ordinea contractului, grupată pe sculă în fiecare clasă (ADR 0084), sau ordinea de mână a omului (ADR 0133).
   const taieturi = ordineTaieturi(doc, 0);
-  // Finisările reliefului (ADR 0312) și locul lor în ordinea foii (`ordinePasi`, §7): automat întâi, cât placa e întreagă;
-  // cu ranguri, unde le-a pus omul. `finisariLa[k]` se fac înaintea tăieturii k (la capăt, k = numărul tăieturilor).
-  const finisari = finisariFoaie(doc, 0);
+  // Operațiile reliefului (degroșarea, ADR 0313; finisarea, ADR 0312) și locul lor în ordinea foii (`ordinePasi`, §7):
+  // automat întâi, cât placa e întreagă, degroșarea înaintea finisării; cu ranguri, unde le-a pus omul. `finisariLa[k]` se fac
+  // înaintea tăieturii k (la capăt, k = numărul tăieturilor).
+  const finisari = [...degrosariFoaie(doc, 0), ...finisariFoaie(doc, 0)];
   const pasi = ordinePasi(doc, 0);
   const finisariLa = new Map<number, FinisareFoaie[]>();
   let inainte = 0;
@@ -367,7 +384,7 @@ export function programDinDocument(
     else finisariLa.set(inainte, [...(finisariLa.get(inainte) ?? []), p.f]);
   }
   const pas0 = pasi[0];
-  const primaScula = pas0 === undefined ? undefined : pas0.fel === 'finisare' ? pas0.f.operatie.scula : pas0.t.scula;
+  const primaScula = pas0 === undefined ? undefined : pas0.fel === 'taietura' ? pas0.t.scula : pas0.f.operatie.scula;
   if (!primaScula) return { ok: false, motiv: 'nicio formă n-are o operație de tăiere' };
   const operatieDe = (t: Taietura) => doc.piese.find((p) => p.id === t.piesa)?.operatii.find((o) => o.id === t.operatie);
   // Fundul plat (ADR 0091): doar pe un V-carve, cu o freză dreaptă (plată).
@@ -491,6 +508,11 @@ export function programDinDocument(
   if (!regiune.ok) return { ok: false, motiv: regiune.motiv };
   const miscari: Miscare[] = [];
   const avertismente: string[] = [];
+  // Finisarea pusă de mână înaintea degroșării aceluiași relief (ADR 0313 §4): programul rămâne bun, dar degroșarea taie aproape
+  // doar aer.
+  for (const { finisare: fi, degrosare: de } of finisariInainteaDegrosarii(pasi)) {
+    avertismente.push(`${fi.piesa}/${fi.operatie.id}: finisarea vine înaintea degroșării ${de.piesa}/${de.operatie.id} a aceluiași relief (ordinea de mână): finisarea scoate cu freza ei tot lemnul, iar degroșarea taie aproape doar aer`);
+  }
   // Urechile „unde ține” (ADR 0211, b): buclele cu mai puține decât numărul și centrele lor, în lume.
   const putine: BuclaPutine[] = [];
   const puncteLemn: Punct[] = [];
@@ -595,15 +617,19 @@ export function programDinDocument(
     return `${u.instanta}/${u.piesa}/${o ? valoriBuzunarDrept(o) : u.operatie}`;
   };
   const drepteFacute = new Set<string>();
-  /** Finisările reliefului de dinaintea tăieturii k (ADR 0312 §7); refuzul primei care nu iese. */
+  /** Operațiile reliefului de dinaintea tăieturii k (ADR 0312 §7, ADR 0313); refuzul primei care nu iese. */
   const faFinisari = (k: number): string | null => {
     for (const f of finisariLa.get(k) ?? []) {
-      const r = programFinisare(f, reliefuri, regim);
+      const r = programRelief(f, reliefuri, regim);
       if (!r.ok) return r.motiv;
       monteaza(f.operatie.scula);
       const id = f.reliefuri[0]?.idLume ?? `${f.instanta}/${f.operatie.id}`;
+      const pasL = Math.round(r.pasLateral * 1e4) / 1e4;
       miscari.push({
-        tip: 'eticheta', text: `${id}: finisarea reliefului, ${f.operatie.adancime} mm, pasul lateral ${Math.round(r.pasLateral * 1e4) / 1e4} mm`,
+        tip: 'eticheta',
+        text: f.operatie.tip === 'degrosare'
+          ? `${id}: degroșarea reliefului, ${f.operatie.adancime} mm, adaosul ${f.operatie.degrosare?.adaos ?? 0} mm, pasul lateral ${pasL} mm`
+          : `${id}: finisarea reliefului, ${f.operatie.adancime} mm, pasul lateral ${pasL} mm`,
         element: id, operatie: `${f.piesa}/${f.operatie.id}`,
       });
       for (const m of r.miscari) miscari.push(m);

@@ -90,7 +90,7 @@ test('adâncimea tăiată a fiecărei operații e cea din documentul tăiat de l
  */
 const CU_FINISARE = ((): Document => {
   const d = incarca({
-    schema: 29, rev: 0,
+    schema: 30, rev: 0,
     piese: [{
       id: 'p',
       radacina: {
@@ -106,6 +106,10 @@ const CU_FINISARE = ((): Document => {
           id: 'f', tip: 'finisare', noduri: ['r'], scula: { numar: 2, nume: 'freza bila', diametru: 4, forma: { tip: 'bila' } }, latura: 'pe-linie', sens: 'urcare',
           adancime: 18, pas: 2.5, pasLateral: 0.5, finisare: { unghi: 0 }, urechi: null, rampa: null, intrari: null, colturi: null,
         },
+        {
+          id: 'd', tip: 'degrosare', noduri: ['r'], scula: { numar: 3, nume: 'freza plata', diametru: 6 }, latura: 'pe-linie', sens: 'urcare',
+          adancime: 18, pas: 3, pasLateral: 2.4, degrosare: { adaos: 0.5, unghi: 0 }, urechi: null, rampa: null, intrari: null, colturi: null,
+        },
       ],
     }],
     foi: [{ id: 'f1', stoc: { latime: 200, inaltime: 150, grosime: 18 }, instante: [{ id: 'i', piesa: 'p', x: 40, y: 40, rotire: 0 }] }],
@@ -114,18 +118,21 @@ const CU_FINISARE = ((): Document => {
   return d.doc;
 })();
 
-test('cu 18.1↑c: o finisare cât foaia nu primește supracursa, nici în lucrare, nici pe hârtie; profilul cât foaia o primește', () => {
-  const [profil, finisare] = CU_FINISARE.piese[0]?.operatii ?? [];
-  assert.ok(profil?.tip === 'profil' && finisare?.tip === 'finisare');
+test('cu 18.1↑c și 18.1↑d: o finisare și o degroșare cât foaia nu primesc supracursa, nici în lucrare, nici pe hârtie; profilul cât foaia o primește', () => {
+  const [profil, finisare, degrosare] = CU_FINISARE.piese[0]?.operatii ?? [];
+  assert.ok(profil?.tip === 'profil' && finisare?.tip === 'finisare' && degrosare?.tip === 'degrosare');
   for (const s of [0.3, 0.5, 2]) {
-    const [p, f] = cuTaieturiPrinFoaie(CU_FINISARE, s).piese[0]?.operatii ?? [];
+    const [p, f, d] = cuTaieturiPrinFoaie(CU_FINISARE, s).piese[0]?.operatii ?? [];
     assert.equal(p?.adancime, 18 + s, `lucrarea, profilul, supracursa ${s}`);
     assert.equal(f?.adancime, 18, `lucrarea, finisarea, supracursa ${s}`);
+    assert.equal(d?.adancime, 18, `lucrarea, degroșarea, supracursa ${s}`);
     assert.equal(adancimeTaiata(adancimeScrisa(profil), 18, s, true), 18 + s, `hârtia, profilul, supracursa ${s}`);
     assert.equal(adancimeTaiata(adancimeScrisa(finisare), 18, s, true), 18, `hârtia, finisarea, supracursa ${s}`);
-    // Fără bifă, amândouă cum sunt scrise.
+    assert.equal(adancimeTaiata(adancimeScrisa(degrosare), 18, s, true), 18, `hârtia, degroșarea, supracursa ${s}`);
+    // Fără bifă, toate cum sunt scrise.
     assert.equal(adancimeTaiata(adancimeScrisa(profil), 18, s, false), 18);
     assert.equal(adancimeTaiata(adancimeScrisa(finisare), 18, s, false), 18);
+    assert.equal(adancimeTaiata(adancimeScrisa(degrosare), 18, s, false), 18);
   }
 });
 

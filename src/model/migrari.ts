@@ -763,6 +763,26 @@ function v28v29(doc: Brut): ReturnType<Migrare> {
 }
 
 /**
+ * v29 → v30 (ADR 0313): degroșarea reliefului, schimbă doar numărul. Un v29 cu o operație `degrosare` sau cu câmpul
+ * `degrosare` (necunoscut la v29) nu e un v29 valid: migrarea îl refuză, ca să nu-l facă v30 pe tăcute (schema curentă l-ar
+ * primi).
+ */
+function v29v30(doc: Brut): ReturnType<Migrare> {
+  const ob = (x: unknown): x is Brut => typeof x === 'object' && x !== null && !Array.isArray(x);
+  const piese = doc['piese'];
+  for (const p of Array.isArray(piese) ? piese : []) {
+    if (!ob(p) || !Array.isArray(p['operatii'])) continue;
+    for (const o of p['operatii'] as unknown[]) {
+      if (!ob(o)) continue;
+      const unde = `operația v29 ${String(o['id'])} din piesa ${String(p['id'])}`;
+      if (o['tip'] === 'degrosare') return { ok: false, motiv: `${unde} e o degroșare, pe care v30 o aduce: nu e un document v29 valid` };
+      if (Object.hasOwn(o, 'degrosare')) return { ok: false, motiv: `${unde} are câmpul „degrosare”, pe care v30 îl folosește: nu e un document v29 valid` };
+    }
+  }
+  return { ok: true, doc: { ...doc, schema: 30 } };
+}
+
+/**
  * Migrările pure, vN → vN+1. Cheia e versiunea de PLECARE. Lista crește; o migrare scrisă nu se mai schimbă. Fiecare
  * lucrează doar pe forma pe care o promite: v1 → v2 își validează intrarea cu schema v1 înghețată; v2 → v3 … v19 → v20
  * lucrează defensiv, iar schema curentă (care conține toate regulile de dinainte) judecă rezultatul.
@@ -807,5 +827,6 @@ export const MIGRARI: Readonly<Record<number, Migrare>> = {
   26: v26v27,
   27: v27v28,
   28: v28v29,
+  29: v29v30,
 };
 

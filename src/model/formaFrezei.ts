@@ -8,19 +8,21 @@
  * - V-carve-ul sapă pe axa medială cu conul frezei, deci cere o freză în V.
  * - Finisarea reliefului (ADR 0312 §2) merge cu freza plată, cu V-ul și cu bila; bila (ADR 0312 §1), doar acolo, până la felia
  *   bilei a liniei frezelor (16.A↑e): profilul, buzunarul și celelalte ar decala-o ca pe una plată.
+ * - Degroșarea reliefului (ADR 0313 §1) cere freza plată: adaosul se socotește cu freza plată mărită cu el (ADR 0310 §4).
  * - Freza plată merge în rest.
  */
 import type { FormaSculaDoc, Latura, Operatie, Scula, TipOperatie } from './document.ts';
 
 /**
  * De ce forma nu merge: `vcarve` (V-carve-ul cere o freză în V), `v-pe-linie` (freza în V taie doar pe linie sau într-un
- * V-carve), `bila` (freza bilă merge doar la finisarea reliefului).
+ * V-carve), `bila` (freza bilă merge doar la finisarea reliefului), `degrosare` (degroșarea reliefului cere o freză plată).
  */
-export type MotivForma = 'vcarve' | 'v-pe-linie' | 'bila';
+export type MotivForma = 'vcarve' | 'v-pe-linie' | 'bila' | 'degrosare';
 
 /** Motivul pentru care o freză de forma dată nu merge pe operație, sau null dacă merge (lipsa formei = freza plată). */
 export function motivFormaPeOperatie(tip: TipOperatie, latura: Latura, forma: FormaSculaDoc | undefined): MotivForma | null {
   if (tip === 'finisare') return null;
+  if (tip === 'degrosare') return forma === undefined ? null : 'degrosare';
   if (forma?.tip === 'bila') return 'bila';
   const v = forma?.tip === 'v';
   if (tip === 'vcarve') return v ? null : 'vcarve';

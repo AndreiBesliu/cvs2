@@ -15557,3 +15557,68 @@ foilor” (sesiunea principală, 26.11, 00:08, cu cuvântul owner-ului: „ok, p
 - **Lotul 40 pe test:** `7a754885`, publicat pe 26.11 la 03:15 (completul pe `main` 45727537251, verde;
   proba de fum, bună).
 - **Documentele:** decizia și paragrafele de stare în `CLAUDE.md`; indexul liniilor; starea din `docs/linii/principala.md`.
+
+## 2026-11-26 — Linia reliefului: felia 18.1↑d-1, degroșarea reliefului (ADR 0313, documentul v30) (Model: Claude Opus 5.5)
+
+**Prompt:** „ok, porneste 10.4↑d si 18.1↑d” (owner-ul, în sesiunea principală, transmis liniei la 26.11, 00:08)
+**Started:** 26.11, 00:10, în sesiunea cloud a liniei reliefului, cu `main` `ca38f215` adus. **Completed:** 26.11, 03:30 (felia 18.1↑d-1, cu otrăvurile; orele, după ceasul containerului, în ora României).
+
+- **Oracolul întâi** (`test/oracles/relief3d.ts`):
+  - CL-ul cu adaosul (freza plată de rază R + a, plus a) și adaosul pe hârtie, pe un plan;
+  - judecata degroșării: adaosul, podeaua, pasul pe material, rapidele;
+  - simulatorul de material pe operații la rând, cu lemnul rămas;
+  - pentru freza plată, simulatorul exact (o alarmă falsă, la marginea discului, găsită pe pană).
+
+  Probele pe hârtie: `relief3d.degrosare.oracol.test.ts`.
+- **CAM-ul:** `degrosareRelief`, drumul finisării cu cota din câmpul dilatat cu R + a, ridicată cu a; finisarea, octet cu
+  octet. Probele: platoul, pana (de-a lungul și peste pantă, cu lemnul rămas pe hârtie), calota, valurile, două reliefuri,
+  podeaua, degroșarea plus finisarea în ambele ordini.
+- **Documentul v30:**
+  - `degrosare` și câmpul ei; migrarea v29 → v30;
+  - oracolul documentului (11 valide, 20 refuzate);
+  - corpusul de aur (v29 din ultimul ei commit, `ca38f21`; v30 din `a3f8f8f`): diferența, doar numărul;
+  - probele mutate pe v30, și `placute.spec.ts`.
+- **Lucrarea:**
+  - ordinea: degroșările, finisările, tăieturile;
+  - finisarea pusă de mână înaintea degroșării e un avertisment, cu programul probat bun;
+  - freza plată;
+  - planul zero și marginea, potrivite cu finisarea;
+  - `catFoaia`;
+  - originea în centru.
+- **Interfața:**
+  - rolul „Relief 3D” (degroșarea și finisarea);
+  - câmpurile degroșării în Tăierea; marginea și Z-ul se scriu pe amândouă;
+  - rândul doar de citit în fereastra exportului;
+  - manualul (ro, en);
+  - e2e și privirea.
+- **Coborârea, găsită la fișa plăcii reliefului:** o mutare care cobora mai abrupt decât lasă avansul de plonjare (la începutul
+  fiecărei linii, de pe perete până la treaptă) mergea cu avansul de tăiere, și la finisare. Acum, cu avansul de plonjare;
+  oracolul are judecata ei (`coborariRepeziO`, pe IR și pe G-code), cu probele scrise întâi.
+- **Fâșia de lângă pereți, găsită tot acolo:** cu peretele păstrat, liniile degroșării stăteau pe tot dreptunghiul, deci lângă
+  pereții paraleli cu ele rămânea o fâșie de până la un pas lateral peste adaos (pe placă, 1,6 mm). Proba platoului număra doar
+  coloanele tăiate; acum le numără pe toate, iar liniile stau pe zona în care freza are voie.
+- **Otrăvurile:** `18.1d.py`, 43 / 43 prinse (39 unitare, 4 e2e). Primul tur: D08 și J12 scăpate (probe întărite), R02
+  echivalentă (scoasă). Opt otrăvuri vechi mutate pe codul nou (12.1f-4, 28.8h, 18.1c), toate prinse.
+- **Cu `main` `7a754885` adus** (extensia și 28.8↑i, viteza ferestrei exportului; ciocniri doar în DEVLOG). Local: suita unitară 10 638 / 0 (12 sărite), e2e-ul
+  feliei și privirea 23 / 23, tipurile, traducerile (1 166), catalogul controalelor.
+- **Mărimea:** pornirea +0,1 kB (111,5; cu ușa 116,7, cu Atelierul 117,0 / 125), totalul +1,8 kB (911,3 / 1 000), față de `main` `7a754885`.
+- **Nedovedit fără mașină:** lemnul rămas după degroșare, suprafața finisată față de model, timpul (placa reliefului, d-2).
+
+## 2026-11-26 — Linia reliefului: felia 18.1↑d-2, fișa plăcii reliefului (placa 18) (Model: Claude Opus 5.5)
+
+**Prompt:** „ok, porneste 10.4↑d si 18.1↑d” (owner-ul, prin sesiunea principală): „degroșarea, apoi fișa plăcii reliefului”.
+**Started:** 26.11, 02:40, după d-1, pe aceeași ramură. **Completed:** 26.11, 04:10 (orele, în ora României).
+
+- **Generatorul** (`test/placi/placa-18/genereaza.ts`), pe drumul aplicației:
+  - relieful de 80 × 50 din grilă: calota, rampa cu platoul, fundul;
+  - rolul „Relief 3D”, ușa, exportul cu câte un fișier pe freză (T1 plata Ø6, adaosul 0,5, liniile la 2,5; T2 bila Ø6, la 1,5).
+- **Fișierele de aur**, cu amprentele în fișă (`placa18.aur.test.ts`).
+- **Cotele**, prezise de oracolul simulării pe exportul proaspăt (`placa18.test.ts`):
+  - după T1: adaosul pe fund, pe platou și lângă pereți; pe rampă, între a · (1 + g) și marginea de sus;
+  - după T2: pe model, cu creasta 0,095;
+  - vârful calotei la față; buzunarul 79,88 × 50,00;
+  - nicăieri sub model; pasul pe material; coborârea; timpul.
+- **Găsite pe G-code-ul plăcii și reparate în d-1:** coborârea cu avansul de tăiere și fâșia de lângă pereții paraleli cu liniile.
+  ADR 0313 §3, corectat: la capetele liniilor, între două linii, rămâne o scobitură de cel mult R − √(R² − (s / 2)²) peste a.
+- **Fișa** (`docs/etape/placa-18.md`): ce măsori după T1 (înaintea lui T2) și după T2, timpul, ce devin măsurătorile. Tăierea e
+  a owner-ului (rândul din coada lui).

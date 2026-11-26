@@ -2,7 +2,7 @@ import * as v from 'valibot';
 import { compune, esteSimilitudine, IDENTITATE } from '../geom/matrice.ts';
 import {
   areArce, CELULA_RELIEF_MAXIMA, CELULA_RELIEF_MINIMA, instantaPreaDeparte, LATURA_RELIEF_MAXIMA, MODURI_RELIEF, MODURI_URECHI, noduriPiesa, numara,
-  plafonDepasit, PLAFON, PLAN_ZERO_MAXIM, RETRAGERE_COMPLETA_MAXIMA, STRATURI_RELIEF_MAXIM, UNGHI_COBORARE_MAXIM, UNGHI_V_MAXIM, UNGHI_V_MINIM, VERSIUNE_SCHEMA,
+  ADAOS_MAXIM, plafonDepasit, PLAFON, PLAN_ZERO_MAXIM, RETRAGERE_COMPLETA_MAXIMA, STRATURI_RELIEF_MAXIM, UNGHI_COBORARE_MAXIM, UNGHI_V_MAXIM, UNGHI_V_MINIM, VERSIUNE_SCHEMA,
   type Document, type Nod, type Piesa,
 } from './document.ts';
 
@@ -174,7 +174,7 @@ const SchemaUrechiOperatie = v.looseObject({
 
 const SchemaOperatieCampuri = v.looseObject({
   id: Id,
-  tip: v.picklist(['profil', 'buzunar', 'gaurire', 'vcarve', 'finisare']),
+  tip: v.picklist(['profil', 'buzunar', 'gaurire', 'vcarve', 'finisare', 'degrosare']),
   noduri: v.pipe(v.array(Id), v.minLength(1), v.maxLength(PLAFON.noduriOperatie)),
   scula: SchemaScula,
   latura: v.picklist(['exterior', 'interior', 'pe-linie', 'stanga', 'dreapta']),
@@ -254,12 +254,24 @@ const SchemaOperatieCampuri = v.looseObject({
     margine: v.optional(v.literal('trece')),
     planZero: v.optional(v.pipe(v.number(), v.finite(), v.minValue(0), v.maxValue(PLAN_ZERO_MAXIM))),
   })),
+  // ADR 0313 §2 (v30): degroșarea reliefului; forma se judecă oriunde apare, pe alt fel îl refuză lucrarea.
+  degrosare: v.optional(v.looseObject({
+    adaos: v.pipe(v.number(), v.finite(), v.minValue(0), v.maxValue(ADAOS_MAXIM)),
+    unghi: v.pipe(v.number(), v.finite(), v.minValue(0), v.ltValue(180)),
+    margine: v.optional(v.literal('trece')),
+    planZero: v.optional(v.pipe(v.number(), v.finite(), v.minValue(0), v.maxValue(PLAN_ZERO_MAXIM))),
+  })),
 });
-/** ADR 0312 §2: pe o finisare, `finisare` și `pasLateral` sunt cerute (restul felurilor nu le cer). */
+/**
+ * ADR 0312 §2: pe o finisare, `finisare` și `pasLateral` sunt cerute; ADR 0313 §2: pe o degroșare, `degrosare` și
+ * `pasLateral` (restul felurilor nu le cer).
+ */
 const SchemaOperatie = v.pipe(
   SchemaOperatieCampuri,
   v.forward(v.check((o) => o.tip !== 'finisare' || o.finisare !== undefined, 'e cerut pe o finisare'), ['finisare']),
   v.forward(v.check((o) => o.tip !== 'finisare' || o.pasLateral !== undefined, 'e cerut pe o finisare'), ['pasLateral']),
+  v.forward(v.check((o) => o.tip !== 'degrosare' || o.degrosare !== undefined, 'e cerut pe o degroșare'), ['degrosare']),
+  v.forward(v.check((o) => o.tip !== 'degrosare' || o.pasLateral !== undefined, 'e cerut pe o degroșare'), ['pasLateral']),
 );
 /** `inaltimeImprimanta` (ADR 0191, 3.6l): opțională, fără schemă nouă (nu schimbă tăierea), ca ghidajele foii. */
 const SchemaPiesa = v.looseObject({
@@ -344,7 +356,8 @@ export function matriciInMargini(p: Piesa): string | null {
 
 /**
  * Problema operațiilor unei piese (ADR 0025), sau null: id-uri unice în piesă, noduri distincte, toate elemente ale ei; o
- * finisare referă doar reliefuri (ADR 0312 §2), o operație de alt fel niciun relief (ADR 0310 §1: ea taie contururi).
+ * finisare (ADR 0312 §2) și o degroșare (ADR 0313 §2) referă doar reliefuri, o operație de alt fel niciun relief (ADR 0310
+ * §1: ea taie contururi).
  */
 function problemaOperatii(p: Piesa, elemente: ReadonlySet<string>, reliefuri: ReadonlySet<string> = new Set()): string | null {
   const ids = new Set<string>();
@@ -354,9 +367,10 @@ function problemaOperatii(p: Piesa, elemente: ReadonlySet<string>, reliefuri: Re
     if (new Set(o.noduri).size !== o.noduri.length) return `operația ${o.id} din piesa ${p.id} referă un nod de două ori`;
     const lipsa = o.noduri.find((n) => !elemente.has(n));
     if (lipsa !== undefined) return `operația ${o.id} din piesa ${p.id} referă ${lipsa}, care nu e un element al piesei`;
-    if (o.tip === 'finisare') {
+    if (o.tip === 'finisare' || o.tip === 'degrosare') {
+      const felul = o.tip === 'finisare' ? 'finisarea' : 'degroșarea';
       const contur = o.noduri.find((n) => !reliefuri.has(n));
-      if (contur !== undefined) return `finisarea ${o.id} din piesa ${p.id} referă ${contur}, care nu e un relief: finisarea lucrează doar pe reliefuri`;
+      if (contur !== undefined) return `${felul} ${o.id} din piesa ${p.id} referă ${contur}, care nu e un relief: ${felul} lucrează doar pe reliefuri`;
       continue;
     }
     const relief = o.noduri.find((n) => reliefuri.has(n));

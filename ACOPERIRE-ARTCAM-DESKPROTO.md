@@ -87,8 +87,8 @@ Sursa: **S** = ArtCAM · **D** = DeskProto · **S+D** = amândouă · **peste pr
 |---|---|---|---|---|
 | Import 3D din rețele de triunghiuri: STL, OBJ, 3MF, 3DS, VRML, DXF 3D; poziționare, scalare, oglindire, rotire, alegerea feței | S+D | v1 | de făcut | — |
 | Import de modele cu suprafețe exacte: IGES, STEP, 3DM, Parasolid, SolidWorks, Inventor și altele (rând nou) | S | mai | de făcut | — |
-| Degroșare 3D (în trepte Z) | S+D | v1 | de făcut | — |
-| Finisare paralelă (la orice unghi) | S+D | v1 | de făcut | — |
+| Degroșare 3D (în trepte Z) | S+D | v1 | în lucru: pe reliefuri, făcută pe 26.11 (ADR 0313, documentul v30): treptele Z cu pasul, pe liniile paralele ale finisării, cu adaosul pentru finisare, freza plată, rolul „Relief 3D”; netăiată încă pe lemn (placa reliefului); pe modelele 3D importate, după importul lor | a3f8f8f0, 69783c5a, 7b1856c2 |
+| Finisare paralelă (la orice unghi) | S+D | v1 | în lucru: pe reliefuri, făcută pe 25.11 (ADR 0312, documentul v29): liniile paralele la orice unghi, cu bila, freza plată sau V-ul, trecerile pe Z cel mult cât pasul; netăiată încă pe lemn (placa reliefului); pe modelele 3D importate, după importul lor | f7ca20b6 |
 | Animația traseului: freza care se mișcă pe traseu, pas cu pas, cu viteză reglabilă și glisor | S+D | v1 | făcut (28.10: freza pe pânza 2D, în timpul mașinii din estimarea planificatorului pe liniile postului; rulează / pauză, pașii, viteza 1× … 500×, glisorul, citirile; drumul parcurs colorat; ADR 0099) | a56ee45 |
 | Timpul estimat, afișat imediat după fiecare calcul, și rezumatul jobului | S+D | v1 | în lucru: modelul planificatorului GRBL 1.1h pe G-code-ul exportat și rezumatul în dialogul exportului (timpul, pe operație, pe sculă; `$$` lipit), ADR 0046; timpul și lângă traseu, după fiecare calcul (T), ADR 0046 §8; rămân comparația cu cronometrul (plăcile 2 și 3) și senderul care citește `$$` | 7d080c9, f81baf1, fba9a78 |
 | Finisare: încrucișată, spirală, spirală în cutie, circulară, radială, bloc, offset 3D (start din interior sau din exterior), Z constant (waterline), doar contur; legături pe suprafață | S+D | v1.x | de făcut | — |

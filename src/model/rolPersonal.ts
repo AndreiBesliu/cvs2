@@ -57,6 +57,9 @@ function felModel(baza: Rol): { readonly tip: TipOperatie; readonly latura: Latu
     // Finisarea reliefului (ADR 0312): pe linie, ca în document.
     case 'finisare':
       return { tip: 'finisare', latura: 'pe-linie' };
+    // „Relief 3D” (ADR 0313 §6) are două operații cu valori diferite: nu se salvează ca rol (`sablonDinPiese`).
+    case 'relief3d':
+      return { tip: 'finisare', latura: 'pe-linie' };
   }
 }
 
@@ -150,6 +153,8 @@ export function sablonDinPiese(piese: readonly Piesa[]): { readonly ok: true; re
   for (const p of piese) {
     const baza = rolPiesei(p);
     if (!baza) return { ok: false, motiv: 'fara-rol' };
+    // „Relief 3D” (ADR 0313 §6): degroșarea și finisarea au freze și valori diferite, deci nu încap într-o operație-model.
+    if (baza === 'relief3d') return { ok: false, motiv: 'invalid' };
     if (rez && baza !== rez.baza) return { ok: false, motiv: 'roluri-diferite' };
     const s = sablonPiesei(p, baza);
     if (!s) return { ok: false, motiv: 'operatii-diferite' };

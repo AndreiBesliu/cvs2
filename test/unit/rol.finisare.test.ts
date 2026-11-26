@@ -20,7 +20,7 @@ const dreptunghi = (id: string): unknown => ({ tip: 'element', id, forma: { tip:
 
 function doc(copii: readonly unknown[], operatii: readonly unknown[] = []): Document {
   const r = incarca({
-    schema: 29, rev: 0,
+    schema: 30, rev: 0,
     piese: [{ id: 'p', radacina: { tip: 'grup', id: 'g', matrice: { ...I }, copii: [...copii] }, operatii: [...operatii] }],
     foi: [{ id: 'f1', stoc: { latime: 200, inaltime: 150, grosime: 18 }, instante: [{ id: 'i', piesa: 'p', x: 0, y: 0, rotire: 0 }] }],
   });
@@ -30,7 +30,7 @@ function doc(copii: readonly unknown[], operatii: readonly unknown[] = []): Docu
 const piesa = (d: Document): Piesa => d.piese[0]!;
 
 test('rolurile oferite: finisarea doar pe o piesă cu reliefuri; contururile își păstrează rolurile, fără finisare', () => {
-  assert.deepEqual(roluriOferite(piesa(doc([relief('r'), relief('r2')]))), ['finisare']);
+  assert.deepEqual(roluriOferite(piesa(doc([relief('r'), relief('r2')]))), ['finisare', 'relief3d']);
   const amestec = roluriOferite(piesa(doc([relief('r'), dreptunghi('e')])));
   assert.ok(!amestec.includes('finisare') && amestec.includes('exterior'));
   assert.ok(!roluriOferite(piesa(doc([dreptunghi('e')]))).includes('finisare'));

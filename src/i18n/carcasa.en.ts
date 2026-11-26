@@ -350,6 +350,10 @@ export const enCarcasa = {
   'prop.fin.z.varf': 'top at the stock face',
   'prop.fin.z.plan': 'zero plane below the face',
   'prop.fin.plan-zero': 'Zero plane, below the face',
+  'prop.deg.diametru': 'Roughing tool (flat)',
+  'prop.deg.pas-lateral': 'Roughing stepover',
+  'prop.deg.adaos': 'Allowance for finishing',
+  'prop.deg.unghi': 'Roughing line angle',
   'prop.freza.valoare-v-varf': 'T{numar}, V {unghi}° with a {varf} mm tip, Ø{diametru} mm',
   'prop.fund': 'Flat floor',
   'prop.rest': 'Rest bits',
@@ -444,6 +448,10 @@ export const enCarcasa = {
   'arbore.finisare': {
     one: 'Finishing on {n} relief: down to {adancime} mm, in passes of {pas} mm, T{t} Ø{d}',
     other: 'Finishing on {n} reliefs: down to {adancime} mm, in passes of {pas} mm, T{t} Ø{d}',
+  },
+  'arbore.degrosare': {
+    one: 'Roughing on {n} relief: down to {adancime} mm, in passes of {pas} mm, T{t} Ø{d}',
+    other: 'Roughing on {n} reliefs: down to {adancime} mm, in passes of {pas} mm, T{t} Ø{d}',
   },
   'arbore.vcarve.fund': ', flat floor with T{t} Ø{d}',
   'arbore.vcarve.incrustatie': ', inlay with a plug (glue gap {joc} mm)',

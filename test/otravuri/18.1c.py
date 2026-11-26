@@ -29,8 +29,9 @@ o('D02', SD, "  v.forward(v.check((o) => o.tip !== 'finisare' || o.pasLateral !=
 o('D03', SD, '    unghi: v.pipe(v.number(), v.finite(), v.minValue(0), v.ltValue(180)),\n    nealiniat',
   '    unghi: v.pipe(v.number(), v.finite(), v.minValue(0), v.maxValue(180)),\n    nealiniat', 'doc', 'unghiul de 180° primit')
 o('D04', SD, '    nealiniat: v.optional(v.literal(true)),', '    nealiniat: v.optional(v.boolean()),', 'doc', '`nealiniat: false` primit')
-o('D05', SD, '    planZero: v.optional(v.pipe(v.number(), v.finite(), v.minValue(0), v.maxValue(PLAN_ZERO_MAXIM))),',
-  '    planZero: v.optional(v.pipe(v.number(), v.finite(), v.maxValue(PLAN_ZERO_MAXIM))),', 'doc', 'planul zero negativ primit')
+# D05 mutată la 18.1↑d (26.11): și degroșarea are planul zero; ancora ține și marginea finisării de dinainte.
+o('D05', SD, "    margine: v.optional(v.literal('trece')),\n    planZero: v.optional(v.pipe(v.number(), v.finite(), v.minValue(0), v.maxValue(PLAN_ZERO_MAXIM))),\n  })),\n  // ADR 0313",
+  "    margine: v.optional(v.literal('trece')),\n    planZero: v.optional(v.pipe(v.number(), v.finite(), v.maxValue(PLAN_ZERO_MAXIM))),\n  })),\n  // ADR 0313", 'doc', 'planul zero negativ primit')
 o('D06', SD, "    v.looseObject({ tip: v.literal('bila') }),\n", '', 'doc', 'bila refuzată de ușă')
 o('D07', SD, "      const contur = o.noduri.find((n) => !reliefuri.has(n));", "      const contur = o.noduri.find((n) => !reliefuri.has(n) && !elemente.has(n));", 'doc',
   'o finisare pe un contur trece de ușă')
@@ -45,7 +46,8 @@ o('B01', FF, "  if (forma?.tip === 'bila') return 'bila';\n", '', 'bila', 'bila 
 o('B02', FF, "  if (inc?.fel === 'v' && inc.banda?.freza) rez.push({ cale: 'incrustatie.banda.freza', scula: inc.banda.freza });\n", '', 'bila',
   'freza decupării benzii uitată printre frezele operației')
 o('B03', FF, "  (o.rest ?? []).forEach((r, k) => rez.push({ cale: `rest[${k}]`, scula: r.scula }));\n", '', 'bila', 'frezele de rest uitate')
-o('B04', JB, "        if (o.finisare !== undefined) return `${unde}: valorile finisării sunt doar ale unei finisări a reliefului`;\n", '', 'bila',
+# B04 mutată la 18.1↑d (26.11): refuzul stă acum înaintea felurilor, pentru orice operație care nu e finisare.
+o('B04', JB, "      if (o.finisare !== undefined && o.tip !== 'finisare') return `${unde}: valorile finisării sunt doar ale unei finisări a reliefului`;\n", '', 'bila',
   'câmpul `finisare` pe un profil, nespus')
 o('B05', FF, "  return forma === undefined ? 'plată' : forma.tip === 'bila' ? 'bilă' : 'în V';", "  return forma === undefined ? 'plată' : 'în V';", 'bila',
   'bila numită „în V” în motive')
@@ -63,8 +65,9 @@ o('C05', RF, '        if (x > u[k]!) u[k] = x;', '        if (x < u[k]! || u[k] 
 o('C06', RF, "  if (f.fel === 'bila') return f.raza - Math.sqrt(Math.max(0, f.raza * f.raza - r * r));", "  if (f.fel === 'bila') return (r * r) / f.raza;", 'cam',
   'urcarea bilei mai mare decât sfera')
 o('C07', RF, '  const v = f.varf / 2;', '  const v = 0;', 'cam', 'vârful plat al V-ului uitat')
-o('C08', RF, "      m = Math.max(m, cotaSegment(p, o.freza, x0, y0, x1, y1, k === ip && o.margine === 'perete'));",
-  '      m = Math.max(m, cotaSegment(p, o.freza, x0, y0, x1, y1, false));', 'cam', 'peretele (fața plăcii din jur) uitat')
+# C08 mutată la 18.1↑d (26.11): cota se socotește cu freza cotei (a operației la finisare), în drumul comun.
+o('C08', RF, "      m = Math.max(m, cotaSegment(p, so.cota, x0, y0, x1, y1, k === ip && o.margine === 'perete'));",
+  '      m = Math.max(m, cotaSegment(p, so.cota, x0, y0, x1, y1, false));', 'cam', 'peretele (fața plăcii din jur) uitat')
 o('C09', RF, '    const d = Math.min(dOut(ax, ay), dOut(bx, by));', '    const d = Math.max(dOut(ax, ay), dOut(bx, by));', 'cam',
   'distanța la perete din capătul mai depărtat')
 o('C10', RF, 'fund = k === n ? -Infinity : -k * o.pas', 'fund = k === n ? -Infinity : -(k + 0.5) * o.pas', 'cam', 'o trecere coboară mai mult decât pasul')
@@ -88,7 +91,8 @@ o('J03', JB, "  ...(s.forma?.tip === 'bila' ? { forma: { tip: 'bila' as const } 
 o('J04', JB, "    ...finisari.map((f) => ({ idLume: f.reliefuri[0]?.idLume ?? `${f.instanta}/${f.operatie.id}`, scule: [f.operatie.scula] })),\n", '', 'program',
   'frezele finisărilor lipsă din „același T”')
 # Mutată pe `catFoaia` (28.8↑h, 25.11: regula „cât foaia” comună lucrării și ferestrei); aceeași greșeală.
-o('J05', PF, "o.tip !== 'vcarve' && o.tip !== 'finisare' && o.incrustatie === 'fara'", "o.tip !== 'vcarve' && o.incrustatie === 'fara'", 'program',
+# J05 mutată pe codul din 18.1↑d (26.11): `catFoaia` lasă și degroșarea reliefului cum e scrisă (`o.tip !== 'degrosare'`); aceeași greșeală.
+o('J05', PF, "o.tip !== 'vcarve' && o.tip !== 'finisare' && o.tip !== 'degrosare' && o.incrustatie === 'fara'", "o.tip !== 'vcarve' && o.tip !== 'degrosare' && o.incrustatie === 'fara'", 'program',
   '„prin foaie” mută podeaua finisării sub placă')
 o('J06', RS, '    if (!s.vizibil) continue;\n', '', 'program', 'un strat ascuns intră în compusul tăiat')
 
@@ -97,7 +101,8 @@ FN = 'src/model/finisare.ts'
 OE = 'src/ui/ordineExport.ts'
 EC = 'src/app/ExportConectat.tsx'
 DE = 'src/ui/DialogExport.tsx'
-o('O01', FN, "rangPas(p) ?? (p.fel === 'finisare' ? Number.NEGATIVE_INFINITY : Number.POSITIVE_INFINITY)", 'rangPas(p) ?? Number.POSITIVE_INFINITY',
+# O01 mutată la 18.1↑d (26.11): locul fără rang e −∞ pentru orice pas al reliefului (degroșarea și finisarea).
+o('O01', FN, "rangPas(p) ?? (p.fel === 'taietura' ? Number.POSITIVE_INFINITY : Number.NEGATIVE_INFINITY)", 'rangPas(p) ?? Number.POSITIVE_INFINITY',
   'program', 'o finisare fără rang ajunge după tăierea de contur')
 o('O02', FN, """    ...finisariFoaie(doc, indexFoaie).map((f): PasProgram => ({ fel: 'finisare', f })),
     ...grupeazaPeScula(taieturiFoaie(doc, indexFoaie)).map((t): PasProgram => ({ fel: 'taietura', t })),""", """    ...grupeazaPeScula(taieturiFoaie(doc, indexFoaie)).map((t): PasProgram => ({ fel: 'taietura', t })),
