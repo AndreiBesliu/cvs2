@@ -1310,7 +1310,17 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   `test/unit/trenulet.verificare.test.ts`; atelierul doar o arată. Rândurile listei modelului au acum și semnul
   („Placă 2×2 plutește 1, 0, 4”), deci o probă care cere textul întreg al unui rând îl cere cu semnul lui. Un strat
   nou al vederii 3D care nu e o piesă își face grupul lui (`v3.avert`, ca punctele prinderilor): mărimea modelului
-  se ia din grupul pieselor.** Urmează 3.Ch (construcțiile cu nume și lista lor de piese).
+  se ia din grupul pieselor.** **3.Ch (construcțiile cu nume și lista lor de piese; ADR 0284, partea D)** gata pe
+  26.11, pe ramură: vederea „Modelul” arată una dintre construcțiile atelierului, fiecare cu piesele și numele ei
+  (gol: „Construcția N”, în limba paginii); „Construcție nouă”, „Dublează construcția” (aceleași piese, cu legăturile
+  lor; numele următor, „Macara 2”), „Șterge construcția” (nu și ultima). Jos, „Piesele construcției”: aceeași piesă pe
+  un rând, cu bucățile, filamentul și timpul de printat, socotit din filament la debitul mediu al imprimantei (câmp
+  nou, 1–50 mm³/s, implicit 5, în fiecare imprimantă); „Pune construcția în lista de printat”. Un model salvat înainte
+  se deschide ca „Construcția 1”. Easy 3Draw 18.41.0 (următoarea, 18.42.0). **`model` sunt piesele construcției
+  alese (`tineConstructia` le pune în ea la salvare; trecerea pe alta prin `treciPe`). Aceeași piesă e aceeași după
+  `Lego.cheieDef` (câmpurile în ordine), nu după `JSON.stringify`, și în lista de printat. Un text scris de om intră în
+  pagina pluginului prin `esc` și cu `translate="no"`: traducerea paginii (`limba.ts`) îl ocolește.** Urmează 3.Ci
+  (construcțiile gata).
   **Cotele pe desen: modelul și proba G-code-ului (ADR 0330, felia 10.4↑a-1, adusă din etapa 10)** gata pe 24.11, în
   sesiunea cloud a liniei (ramura `wip/10.4-cote`), unită în `main` pe 24.11 (`f25249cf`), fără interfață încă. ADR
   0330, acceptat de owner cu 1a–6a și cu nota lui: toate setările cotelor stau într-o fereastră nouă, „Setări”, nu în

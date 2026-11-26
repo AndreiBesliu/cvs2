@@ -16054,6 +16054,41 @@ la ordinul în vigoare „unește ce se poate”
   biblioteca (Easy 3Draw 18.40.0, 562 629 octeți), probele documentelor 76 / 76. Nimic pe server.
 - **Documentele:** decizia și paragraful de stare în `CLAUDE.md`; indexul liniilor; starea din `docs/linii/principala.md`.
 
+## 2026-11-26 — Felia 3.Ch: construcțiile cu nume și lista lor de piese (ADR 0284) (sesiune cloud)
+
+**Prompt:** „vreau sa adaugi mai multe tipuri de piese pentru fiecare categoire […] compatibile intre ele nu doar una
+cate una ci si ca constructii complexe” (cererea owner-ului din 24.11; ADR 0284, partea D: „Mai multe construcții:
+fiecare cu numele ei […]; lista de piese a construcției (câte bucăți din fiecare, grame, timp) și «Pune construcția în
+lista de printat»”); pornită după unirea lui 3.Cg în `main` (`75d8dde2`)
+**Started:** 26.11, 10:00. **Completed:** 26.11, 11:20 (felia, cu otrăvurile; orele, după ceasul containerului).
+
+- **Ce face:** vederea „Modelul” arată una dintre construcțiile atelierului, fiecare cu piesele și numele ei (gol:
+  „Construcția N”, în limba paginii): alegerea, numele scris pe loc, „Construcție nouă”, „Dublează construcția”
+  (aceleași piese, cu legăturile lor; numele următor, „Macara 2”), „Șterge construcția” (după „Sigur?”; nu și
+  ultima). Jos, „Piesele construcției”: un rând pe piesă, cu bucățile, filamentul și timpul de printat (din filament,
+  la debitul mediu al imprimantei, câmp nou, 1–50 mm³/s, implicit 5); „Pune construcția în lista de printat”.
+- **Motorul:** `cheieDef`, `pieseConstructie`, `timpPrint`, `durataPrint`, `curataNume`, `numeLiber`, `nrLiber`.
+- **Datele:** `constructii` și `activa` în stocare; `model` rămâne al construcției alese; un model salvat înainte se
+  deschide ca „Construcția 1”; o intrare stricată se citește cât se poate.
+- **Probele**, scrise întâi: unitară, 10 teste (au căzut cu „… is not a function”), pe hârtie; e2e, 8 scenarii (au
+  căzut toate întâi); pasul construcțiilor din proba în engleză din cvs2.
+- **Găsite și reparate în felie:** lista de printat ținea aceeași piesă pe două rânduri când câmpurile erau scrise în
+  altă ordine (acum, după `cheieDef`); o imprimantă aleasă din profiluri nu reîmprospăta editorul modelului (nici
+  verificarea din 3.Cg); „Sigur?” rămânea românește în engleză. `limba.ts` respectă acum `translate="no"`: numele
+  scris de om nu se traduce.
+- **Otrăvurile:** `3.Ch.py`, la prima rulare 59 / 70; probele întărite (prima apariție a unei piese, piesa aleasă
+  după trecere, numărul liber, copia cu piesele ei, numele scris din nou, salvarea după o piesă scoasă, placa scrisă
+  altfel în lista de printat) și o otravă nouă (A42, imprimanta aleasă): 68 / 70, cu A03 și A11 practic echivalente
+  (pază dublă), A25 înlocuită (era echivalentă), A15 plecată cu codul ei. `3.Ch-en.py`: 10 / 10, din prima rulare.
+  Ancorele tuturor listelor pluginului: 2 527, fiecare exact o dată.
+- **De urmărit (nu e a feliei):** `extensii.descoperire.spec.ts:177` a căzut o dată în lotul local, sub încărcare
+  (Escape după „Scoate” n-a închis fereastra bibliotecii); singură, 12 / 12. E scăparea „Escape în fereastra
+  extensiilor”, notată în `CLAUDE.md`, la cuvântul owner-ului.
+- **Easy 3Draw 18.41.0** (567,9 kB), cu rândul de „ce e nou”. Doar pachetul extensiei se schimbă.
+- **Documentele:** ADR 0284 („Implementat (3.Ch)”), fișa etapei 3, `docs/linii/atelier.md`, indexul liniilor,
+  `docs/otravuri.md`, `CLAUDE.md`.
+- **Urmează:** 3.Ci (construcțiile gata, patru șabloane).
+
 ## 2026-11-26 — Sesiunea principală în cloud: a cincizeci și treia unire (fereastra exportului: 28.8↑q, „Toate foile” cu operațiile fiecărei foi; titlurile grupurilor) (Model: Claude Opus 5.5)
 
 **Prompt:** raportul liniei exportului („28.8↑q e gata de unit cu titluri cu tot”, `a4055804`), la ordinul în vigoare „unește ce se poate”; „ok, q întâi apoi p”

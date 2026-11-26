@@ -350,6 +350,20 @@ pre.json { background: var(--panou-2); border-radius: 8px; padding: 10px; font-f
 .model-lista .semn.rau { background: var(--pericol-moale); color: var(--pericol); }
 .model-stare { display: flex; flex-direction: column; gap: 6px; }
 .model-stare p { margin: 0; }
+/* construcțiile (ADR 0284, 3.Ch): alegerea și numele, fiecare pe rândul lui, cu butoanele după; piesele construcției, ca
+   lista de printat */
+.model-constructii { display: flex; flex-direction: column; gap: 8px; padding: 12px; border: 1px solid var(--linie); border-radius: 8px; }
+.model-constructii .at-rand > label { min-width: 6.5em; }
+.model-constructii select, .model-constructii input[type="text"] { flex: 1 1 12em; width: auto; min-width: 0; font: 700 16px var(--font-text); color: var(--text);
+  background: var(--panou-2); border: 1px solid var(--linie); border-radius: 8px; padding: 7px 9px; }
+.model-piese h3 { margin: 0 0 6px; font-size: 15px; }
+.model-piese table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.model-piese td, .model-piese th { padding: 6px; border-bottom: 1px solid var(--linie); text-align: left; vertical-align: middle; }
+.model-piese thead th { font-size: 12px; text-transform: uppercase; letter-spacing: .05em; color: var(--text-2); font-weight: 700; }
+.model-piese tfoot th, .model-piese tfoot td { font-weight: 700; border-bottom: 0; }
+.model-piese td.num { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.model-piese .centru, .model-piese thead th:nth-child(2) { text-align: center; }
+.model-piese p { margin: 6px 0 0; }
 .at-lista table { width: 100%; border-collapse: collapse; font-size: 14px; }
 .at-lista td, .at-lista th { padding: 7px 6px; border-bottom: 1px solid var(--linie); text-align: left; vertical-align: middle; }
 .at-lista thead th { font-size: 12px; text-transform: uppercase; letter-spacing: .05em; color: var(--text-2); font-weight: 700; }

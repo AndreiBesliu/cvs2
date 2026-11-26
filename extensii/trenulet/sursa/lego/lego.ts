@@ -3869,6 +3869,67 @@ var Lego = (function (glob: typeof globalThis) {
     return { piese: out, bucati: jos.size };
   }
 
+  // ---------------------------------------------------------------------------------------------- construcțiile (ADR 0284, 3.Ch)
+  // O construcție e un model cu numele lui; atelierul ține mai multe. Aici stau doar regulile pure: ce piese au, cât
+  // durează printarea și ce nume primește una nouă.
+  /** Cheia unei definiții de piesă: JSON-ul ei cu câmpurile în ordine alfabetică, la fiecare nivel (un șir își ține
+   *  ordinea). Două piese cu aceeași cheie sunt aceeași piesă, oricum le-ar fi scrise câmpurile. */
+  function cheieDef(d: unknown): string {
+    const ordonat = (v: unknown): unknown => Array.isArray(v) ? v.map(ordonat)
+      : v && typeof v === "object" ? Object.fromEntries(Object.keys(v).sort().map(k => [k, ordonat((v as Record<string, unknown>)[k])])) : v;
+    return JSON.stringify(ordonat(d));
+  }
+  /** Piesele unei construcții, pe rânduri: aceeași piesă (aceeași cheie) se adună; rândul ține definiția primei apariții,
+   *  iar rândurile stau în ordinea în care piesele apar prima dată. */
+  function pieseConstructie<D>(defs: readonly D[]): { def: D; bucati: number }[] {
+    const randuri = new Map<string, { def: D; bucati: number }>();
+    for (const d of defs) {
+      const k = cheieDef(d), r = randuri.get(k);
+      if (r) r.bucati++; else randuri.set(k, { def: d, bucati: 1 });
+    }
+    return [...randuri.values()];
+  }
+  /** Timpul de printat, în secunde: volumul de filament (din grame, PLA la 1,24 g/cm³, ca la `grame`) la debitul mediu al
+   *  imprimantei (mm³/s). Fără un debit pozitiv sau cu grame care nu sunt un număr pozitiv, niciun timp (null). */
+  function timpPrint(grame: number, debit: number): number | null {
+    if (!Number.isFinite(grame) || grame < 0 || !Number.isFinite(debit) || debit <= 0) return null;
+    return grame / 1.24e-3 / debit;
+  }
+  /** Un timp de printat, cum îl scrie atelierul: rotunjit la minut („≈ 12 min”, „≈ 1 h 5 min”, „≈ 2 h”), sub un minut
+   *  „< 1 min”, fără timp „—”. */
+  function durataPrint(s: number | null): string {
+    if (s === null || !Number.isFinite(s) || s < 0) return "—";
+    if (s < 60) return "< 1 min";
+    const m = Math.round(s / 60), h = Math.floor(m / 60), r = m % 60;
+    return "≈ " + (h ? (r ? tr`${h} h ${r} min` : tr`${h} h`) : tr`${m} min`);
+  }
+  const NUME_MAX = 60;
+  /** Numele unei construcții: fără spațiile de la margini și fără cele duble, cel mult `max` caractere (fără spațiul
+   *  rămas la capătul tăieturii); ce nu e text dă gol. */
+  function curataNume(nume: unknown, max = NUME_MAX): string {
+    return typeof nume === "string" ? [...nume.replace(/\s+/g, " ").trim()].slice(0, max).join("").trimEnd() : "";
+  }
+  /** Primul nume liber pornind de la cel dorit (curățat): el, dacă nu-l are nimeni; altfel „nume 2”, „nume 3”… Un nume
+   *  dorit care se termină deja cu un număr („Macara 2”) merge mai departe de la numărul lui („Macara 3”), iar doar un număr
+   *  („2”) dă numărul următor. Numele se compară fără majuscule și fără spațiile de margine; unul cu numărul pus la capăt nu
+   *  trece de 60 de caractere. */
+  function numeLiber(existente: readonly string[], dorit: string): string {
+    const luat = new Set(existente.map(n => curataNume(n).toLocaleLowerCase())), curat = curataNume(dorit);
+    if (!luat.has(curat.toLocaleLowerCase())) return curat;
+    const m = /^(?:(.*) )?(\d+)$/.exec(curat), baza = m ? m[1] ?? "" : curat;
+    for (let n = m ? +m[2]! + 1 : 2; ; n++) {
+      const cap = baza ? ` ${n}` : String(n), nume = curataNume(baza, NUME_MAX - cap.length) + cap;
+      if (!luat.has(nume.toLocaleLowerCase())) return nume;
+    }
+  }
+  /** Numărul unei construcții noi fără nume: cel mai mic întreg pozitiv pe care nu-l are nicio construcție. */
+  function nrLiber(folosite: readonly number[]): number {
+    const f = new Set(folosite);
+    let n = 1;
+    while (f.has(n)) n++;
+    return n;
+  }
+
   // ---------------------------------------------------------------------------------------------- STL, pat, zip
   function stl(tri: readonly Tri[], antet = "atelier de caramizi (mm)") {
     let volum = 0, arie = 0;
@@ -3952,6 +4013,8 @@ var Lego = (function (glob: typeof globalThis) {
     // alipirea la prinderi (ADR 0284, 3.Cf): transformarea unei piese (pe grilă, prinsă de alta, liberă) și rezolvarea modelului
     transfGrila, transfPrins, compuneTransf, aplicaTransf, potriviriPrindere, seGliseaza, rezolvaModel, grilaDinTransf, cutieTransf, rotitLiber, intorsLiber, loculDrept, susTransf, prindereaRamasa,
     prinseInLume, seCiocnesc, verificaModel,
+    // construcțiile (ADR 0284, 3.Ch): cheia unei piese, piesele unei construcții pe rânduri, timpul de printat, numele
+    cheieDef, pieseConstructie, timpPrint, durataPrint, curataNume, numeLiber, nrLiber,
     rezumatPrinderi, perechiFeluri, axPentru, stiftPentru,
     contururi, insetRectiliniu, conturPana, pozitiiGauriPana, centreIndoita,
     // rotitele (ADR 0169): distanta dintre axele a doua roti care se prind (modulul m), pentru atelier
