@@ -1269,6 +1269,10 @@
       "ro": "Sugestiile personalului în /admin",
       "en": "Staff suggestions in /admin"
     },
+    "3b42892e8ba13daa": {
+      "ro": "**Proba în engleză a pluginului, cu bugetul ei de timp** (fără mașină; scrisă de sesiunea principală, după completul roșu de pe `main` 45888136031, lotul 52). Proba `trenulet.spec.ts:510` trece prin fiecare ecran al lui Easy 3Draw, deci crește cu fiecare piesă nouă a atelierului: în CI, 18 s pe 26.11 dimineața, 25 s seara (douăzeci și cinci de complete citite), apoi 32,7 s, oprită de limita de 30 s la ultimul pas (construcțiile gata); aplicația, în regulă (aceeași probă, verde în completele unirilor din aceeași oră). Acum `test.setTimeout(90_000)`, cu motivul scris lângă el; o felie care o duce peste 60 s o împarte pe ecrane. Controlul: cu 20 s, proba cade local, deci bugetul e cel citit; cu 90 s, verde (25,4 s). Doar proba.",
+      "en": "**The plugin's English test, with its own time budget** (no machine; written by the main session, after the red full run on `main` 45888136031, lot 52). The test `trenulet.spec.ts:510` goes through every screen of Easy 3Draw, so it grows with every new workshop piece: in CI, 18 s on 26.11 in the morning, 25 s in the evening (twenty-five full runs read), then 32.7 s, stopped by the 30 s limit at the last step (the ready-made builds); the app is fine (the same test, green in the merge full runs of the same hour). Now `test.setTimeout(90_000)`, with the reason written next to it; a slice that takes it past 60 s splits it by screen. The control: with 20 s, the test fails locally, so the budget is the one read; with 90 s, green (25.4 s). Only the test."
+    },
     "3bfec4e9ccf48644": {
       "ro": "Șenila în atelier",
       "en": "The track in the workshop"
@@ -3808,7 +3812,7 @@
     "c20c3eee1be88de6": {
       "ro": "Toleranțele cotelor",
       "en": "Dimension tolerances"
-      },
+    },
     "c2459ab6df5ac4e6": {
       "ro": "Începutul programului, la vedere în fereastra exportului",
       "en": "The start of the program, in view in the export window"
@@ -4368,6 +4372,10 @@
     "e0493dfc8a8a9bd0": {
       "ro": "Intrările cu rampă",
       "en": "Ramped lead-ins"
+    },
+    "e06ffbc393251253": {
+      "ro": "Proba în engleză a pluginului, cu bugetul ei de timp",
+      "en": "The plugin's English test, with its own time budget"
     },
     "e07d95dc6a02e661": {
       "ro": "Desenele întrebărilor în fereastra exportului",

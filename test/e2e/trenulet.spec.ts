@@ -508,6 +508,10 @@ async function romanaRamasa(page: Page, numeUtilizator = ''): Promise<readonly s
 }
 
 test('în engleză (ADR 0165): limba lui cvs2, schimbată pe loc printr-o repornire fără pierderi; nicio română pe ecranele lui', async ({ page }) => {
+  // Proba trece prin fiecare ecran al pluginului, deci crește cu fiecare piesă nouă a atelierului: în CI, 18 s pe 26.11
+  // dimineața, 25 s seara, apoi 32,7 s în completul de pe `main` 45888136031, oprită de limita de 30 s la ultimul pas
+  // (felia 3.Ax). Bugetul ei e de trei ori cel obișnuit; o felie care o duce peste 60 s o împarte pe ecrane.
+  test.setTimeout(90_000);
   await page.goto('/');
   await page.locator('[data-extensii="buton"]').click();
   await page.locator('[data-extensii="fisier-ales"]').setInputFiles(ZIP);
