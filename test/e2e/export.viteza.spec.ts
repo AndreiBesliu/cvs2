@@ -205,8 +205,11 @@ test('până la prag (12 operații), toate fișele rămân randate, ca înainte;
   expect(await randate(page).count()).toBeLessThan(13);
 });
 
-test('la 1280 × 2400, fișele randate sunt exact cele care ating panoul sau stau la cel mult o înălțime de panou de el, plus vecinele celei curente', async ({ page }) => {
-  await page.setViewportSize({ width: 1280, height: 2400 });
+// Fereastra e cât să încapă o fișă întreagă în panou, cu loc (28.8↑p): o fișă de profil are ~2 230 px; la 2 400 px panoul avea
+// 2 243, iar cu rândul valorilor frezei scrise de mână, fișa trecea de panou pe Linux (fontul mai lat), deci marginea nu mai
+// putea ajunge dincolo de vecine. Condiția e spusă mai jos, înaintea aserțiunii care depinde de ea.
+test('la 1280 × 3200, fișele randate sunt exact cele care ating panoul sau stau la cel mult o înălțime de panou de el, plus vecinele celei curente', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 3200 });
   await deschideCu(page, proiect(150));
   await page.locator('[data-actiune="export.gcode"]').click();
   await expect(page.locator('[data-nav-op]')).toHaveCount(150);
@@ -227,7 +230,13 @@ test('la 1280 × 2400, fișele randate sunt exact cele care ating panoul sau sta
     return `randate ${randate.join(' ')} | cerute ${cerute.join(' ')}`;
   }, chei);
   await expect.poll(async () => { const v = await verdict(); const [a, b] = v.split(' | cerute '); return a === `randate ${b ?? ''}` ? 'la fel' : v; }).toBe('la fel');
-  // Marginea ajunge dincolo de vecine: e o fișă randată care nu e vecina celei curente.
+  // Marginea ajunge dincolo de vecine: e o fișă randată care nu e vecina celei curente. Se poate doar cât o fișă e mai scundă
+  // decât panoul (marginea e o înălțime de panou, iar vecina ține deja o fișă întreagă).
+  const [inaltFisa, inaltPanou] = await page.evaluate(() => [
+    Math.max(...[...document.querySelectorAll<HTMLElement>('[data-fisa="op"]:not([data-gol])')].map((e) => e.getBoundingClientRect().height)),
+    document.querySelector('[data-fise]')?.getBoundingClientRect().height ?? 0,
+  ]);
+  expect(inaltFisa, `o fișă (${String(inaltFisa)} px) trebuie să fie mai scundă decât panoul (${String(inaltPanou)} px)`).toBeLessThan(inaltPanou - 100);
   const randate = await page.locator('[data-fisa="op"]:not([data-gol])').evaluateAll((els) => els.map((e) => e.getAttribute('data-operatie') ?? ''));
   expect(randate.some((k) => Math.abs(chei.indexOf(k) - 60) > 1), randate.join(' ')).toBe(true);
 });

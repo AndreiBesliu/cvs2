@@ -14,7 +14,7 @@ import { elementeFoaie } from '../model/lume.ts';
 import { doarFoaia, numeFoaie as numeFoii } from '../model/foi.ts';
 import { t } from '../i18n/t.ts';
 import type {
-  CerereExport, CopieRand, FrezaOferita, FrezaRestOperatie, OperatieExport, OrigineFreza, Rand, RezultatInapoi, SculaOperatie, StareExport,
+  CerereExport, CopieRand, FrezaOferita, FrezaRestOperatie, OperatieExport, OrigineFreza, Rand, RezultatInapoi, SculaOperatie, SetariAer, StareExport,
 } from '../ui/exportRand.ts';
 import { frezeleOperatiei } from '../model/formaFrezei.ts';
 import { frezePeRanduri, frezePotrivite, pasLateralDin, sculaDinBiblioteca } from '../model/alegereFreza.ts';
@@ -79,6 +79,9 @@ type Props = {
   /** Supracursa scrisă de om (ADR 0176): o ține aplicația, ca setările mașinii, de la o fereastră la alta. */
   readonly supracursa: string;
   readonly onSupracursa: (text: string) => void;
+  /** Z-ul sigur și parcarea de la final (ADR 0291 §3, felia 28.8↑p): le ține aplicația, ca supracursa. */
+  readonly aer?: SetariAer;
+  readonly onAer?: (a: SetariAer) => void;
   /** Bifa tăieturilor cât foaia (ADR 0177): o ține aplicația, ca supracursa. */
   readonly prinFoaie: boolean;
   readonly onPrinFoaie: (bifata: boolean) => void;
@@ -197,6 +200,9 @@ function randuriFoii(
           ...(o.scula.forma?.tip === 'v' ? { forma: { tip: 'v' as const, unghi: o.scula.forma.unghi, ...(o.scula.forma.varf !== undefined ? { varf: o.scula.forma.varf } : {}) } } : {}),
           // Freza din „Frezele mele” (ADR 0300 §4, felia 16.A↑b-3): originea ei, dacă documentul o are; altfel scrisă de mână.
           origine: origineDin(o.scula),
+          // Scrisă de mână, cu valorile ei de lucru (felia 28.8↑p): fereastra le arată în câmpurile ei.
+          ...(!o.scula.biblioteca && o.scula.regim
+            ? { regim: { turatie: o.scula.regim.turatie, avans: o.scula.regim.avans, plonjare: o.scula.regim.plonjare } } : {}),
         },
         latura: o.latura, sens: o.sens, adancime: o.adancime, pas: o.pas,
         urechi: o.urechi ? {
@@ -290,7 +296,7 @@ function randuriFoii(
 
 export function ExportConectat({
   doc, dupaIdLume, lume, descriere, limba, baza, doarCitire, stare, onExporta, onInchide, onReseteaza, setariMasina, onSetariMasina,
-  supracursa, onSupracursa, prinFoaie, onPrinFoaie, onDeschideInMasina, trimite, foaie, numeFoaie, toate, onRaport, onAlegeUrechi,
+  supracursa, onSupracursa, aer, onAer, prinFoaie, onPrinFoaie, onDeschideInMasina, trimite, foaie, numeFoaie, toate, onRaport, onAlegeUrechi,
   config = null,
 }: Props) {
   /**
@@ -461,6 +467,8 @@ export function ExportConectat({
       onSetariMasina={onSetariMasina}
       supracursa={supracursa}
       onSupracursa={onSupracursa}
+      {...(aer ? { aer } : {})}
+      {...(onAer ? { onAer } : {})}
       prinFoaie={prinFoaie}
       onPrinFoaie={onPrinFoaie}
       {...(onDeschideInMasina ? { onDeschideInMasina } : {})}

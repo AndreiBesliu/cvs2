@@ -60,6 +60,11 @@ function ceIese(page: Page): Promise<string[]> {
 /** Cu urechile, rampa și intrările pe dreptunghi și incrustația cu pereți drepți în trepte pe cerc; apoi fiecare tăietură a dreptunghiului. */
 async function prinToate(page: Page): Promise<void> {
   const e1 = fisa(page, 'e1/e1'), e2 = fisa(page, 'e2/e2');
+  // Z-ul sigur și parcarea într-un punct (felia 28.8↑p): X și Y la vedere; turația, avansul și plonjarea, pe freza scrisă de mână.
+  await alege(page.locator('[data-grup="aer"]'), 'parcare', 'punct');
+  await expect(page.locator('[data-camp="parcare-y"]')).toBeVisible();
+  await e1.locator('[data-regim] summary').click();
+  await expect(e1.locator('[data-camp="plonjare"]')).toBeVisible();
   await e1.locator('[data-camp="urechi"]').check();
   await e1.locator('[data-camp="rampa"]').check();
   await e1.locator('[data-camp="intrari"]').check();
@@ -187,11 +192,14 @@ function tinteMici(page: Page, minim: number): Promise<string[]> {
   return page.evaluate((m) => {
     const cutie = document.querySelector('.dialog-cutie');
     if (!cutie) return ['fără fereastră'];
-    const sel = 'button, select, input[type="text"], label:has(> input[type="checkbox"]), label.alegere, .dx-card';
+    const sel = 'button, select, input[type="text"], label:has(> input[type="checkbox"]), label.alegere, .dx-card, .dx-regim > summary';
     const rau: string[] = [];
     for (const e of cutie.querySelectorAll<HTMLElement>(sel)) {
       const s = getComputedStyle(e), r = e.getBoundingClientRect();
       if (s.display === 'none' || s.visibility === 'hidden' || r.height === 0) continue;
+      // Ce stă într-un rând strâns (`details` închis, afară de rezumatul lui) nu se vede: Chrome îi dă dreptunghiul, dar nu-l arată.
+      const strans = e.closest('details');
+      if (strans && !strans.open && !e.closest('summary')) continue;
       const v = e.closest('[data-fise], [data-lista]')?.getBoundingClientRect();
       if (v && (r.top < v.top || r.bottom > v.bottom)) continue;
       const nume = `${e.tagName.toLowerCase()}${[...e.classList].map((x) => `.${x}`).join('')}${Object.entries(e.dataset).map(([k, x]) => `[${k}=${x ?? ''}]`).join('')}`;
@@ -213,6 +221,8 @@ test.describe('în Atelier, cu densitatea mare', () => {
     await e1.locator('[data-camp="urechi"]').check();
     await e1.locator('[data-camp="rampa"]').check();
     await alege(e2, 'latura', 'incrustatie-drept');
+    // Parcarea într-un punct (felia 28.8↑p): și X și Y, în fișa mașinii.
+    await alege(page.locator('[data-grup="aer"]'), 'parcare', 'punct');
     // Fiecare fișă, adusă sus pe rând: țintele care se văd.
     for (const nav of ['foaia', 'masina', 'e2/e2', 'e1/e1']) {
       await page.locator(`[data-nav="${nav}"]`).click();

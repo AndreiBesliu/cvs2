@@ -51,7 +51,7 @@ test('grupurile fiecărui fel de operație, în ordinea din fereastră; ce nu se
   // Banda e a incrustației: fără ea, nimic.
   assert.deepEqual(grupuriOperatie(fel({ tip: 'vcarve', banda: true })), ['taietura', 'freza', 'adancime', 'sens', 'fund']);
   assert.deepEqual(GRUPURI_FOAIE, ['foi', 'origine', 'z0']);
-  assert.deepEqual(GRUPURI_MASINA, ['post', 'unitati', 'fisier', 'schimbare', 'setari']);
+  assert.deepEqual(GRUPURI_MASINA, ['post', 'unitati', 'fisier', 'schimbare', 'aer', 'setari']);
 });
 
 const bun: VerdictRand = {

@@ -39,6 +39,7 @@ import { cuTaieturiPrinFoaie } from './prinFoaie.ts';
 import { SUPRACURSA_MAXIMA } from './supracursaMaxima.ts';
 import { traseuProfil } from './traseu.ts';
 import { refuzTais, regimFrezei } from './regimFreza.ts';
+import { AVANS_IMPLICIT, PLONJARE_IMPLICITA, TURATIE_IMPLICITA, Z_SIGUR_IMPLICIT } from './regimExport.ts';
 import {
   centreDeLa, coloaneUrechi, EPS_VARF, geometrieUrechi, inZonaUrechii, pornireInGol, proiectiePeBucla, urecheCareNuIncape, urechiPeBucla, type GeometrieUrechi,
   type ParametriUrechi,
@@ -299,7 +300,7 @@ export type Regim = {
   readonly zSigur: number;
 };
 
-export const REGIM_IMPLICIT: Regim = { turatie: 18000, avans: 1000, avansPlonjare: 300, zSigur: 5 };
+export const REGIM_IMPLICIT: Regim = { turatie: TURATIE_IMPLICITA, avans: AVANS_IMPLICIT, avansPlonjare: PLONJARE_IMPLICITA, zSigur: Z_SIGUR_IMPLICIT };
 
 /**
  * `avertismente`: ce n-a putut face lucrarea fără să fie o greșeală, spus omului la export (ADR 0030 §3: intrarea omisă pe

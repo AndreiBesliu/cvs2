@@ -16108,6 +16108,26 @@ lista de printat»”); pornită după unirea lui 3.Cg în `main` (`75d8dde2`)
 - **Decizia owner-ului:** ordinea q, apoi p, confirmată; p pornește acum, cu linia frezelor anunțată.
 - **Documentele:** decizia și paragraful de stare în `CLAUDE.md`; indexul liniilor; starea din `docs/linii/principala.md`.
 
+## 2026-11-26 — Linia exportului: 28.8↑p, Z-ul sigur, parcarea și valorile frezei scrise de mână (ADR 0291, 3a)
+
+**Prompt:** confirmarea sesiunii principale („28.8↑q și titlurile sunt în `main` … **Poți porni 28.8↑p**, cu `main`
+(`77bf8ceb`) adus întâi”), după „ok, q întâi apoi p” al owner-ului
+**Started:** 26.11, 13:07.
+
+- **Z-ul sigur** (1–100 mm, implicit 5) și **parcarea de la final** (rămâne sus, la XY0, într-un punct) în „Mașina și
+  fișierul”, setări ale aplicației, ca supracursa. Z-ul sigur intră în regimul foii și al dopurilor; postul scrie parcarea ca
+  `G0 X Y` după `M5`, în coordonatele programului, în fiecare fișier. Mișcă mașina: probată întâi pe oracole.
+- **Turația, avansul și plonjarea** pe o freză „scrisă de mână”, în grupul Freza: goale, cele ale lucrării; scrise, în
+  `scula.regim` (v27, fără schemă nouă). O freză din bibliotecă își păstrează valorile ei. T-ul știe turația scrisă.
+- **Probele:** `export.zSigur.oracol.test.ts` (8: fără valori, octet cu octet; Z-ul sigur doar în cuvântul lui, pe tot corpusul și
+  pe toate posturile; parcarea după `M5`; dopurile; poarta, cu martorul; oracolul simulării; senderul și emulatorul GRBL;
+  marginile), `export.regimMana.test.ts` (6), `export.regimZ.spec.ts` (2), proba privirii cu câmpurile noi.
+- **Otrăvurile:** `28.8p.py`, 29 / 29 (cu P29, recunoașterea cu valorile scrise, semnalată de linia frezelor). **Mărimea:** pornirea +0, totalul 922,9 / 1 000 (+1,8 kB).
+- **Documentele:** ADR 0291 („Implementarea 28.8↑p”), manualul (ambele limbi), fișa etapei 3, registrul otrăvurilor, nota
+  liniei.
+
+**Completed:** 26.11, 14:23.
+
 ## 2026-11-26 — Sesiunea principală în cloud: a cincizeci și patra unire (atelierul Easy 3Draw: 3.Ch, construcțiile cu nume); lotul 47 pe test (Model: Claude Opus 5.5)
 
 **Prompt:** raportul liniei atelierului („3.Ch gata de unit”, `19fa5bdc`), la ordinul în vigoare „unește ce se poate”; publicarea lotului 47, pornită la unirea a cincizeci și doua

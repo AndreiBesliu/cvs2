@@ -20,7 +20,7 @@ const P6: OrigineFreza = { nume: 'Plată Ø6', biblioteca: { id: 'p6', rev: 2 },
 /** Un rând al ferestrei, cu valorile date peste cele ale unui profil cu freza plată Ø6 din bibliotecă. */
 function rand(p: Partial<Rand> = {}): Rand {
   return {
-    numarScula: '2', diametruScula: '6', origineScula: P6, formaScula: 'plata', unghiV: '60', varfV: '0', directie: '', latura: 'exterior',
+    numarScula: '2', diametruScula: '6', origineScula: P6, regimMana: { turatie: '', avans: '', plonjare: '' }, formaScula: 'plata', unghiV: '60', varfV: '0', directie: '', latura: 'exterior',
     sens: 'urcare', adancime: '3', pas: '1.5', urechi: false, numarUrechi: '4', latimeUreche: '8', grosimeUreche: '2', modUrechi: 'egale',
     rampa: false, lungimeRampa: '10', intrari: false, razaIntrare: '3', colturi: '', despartire: false, tip: 'profil', retragereCompleta: '1',
     pasLateral: '2.4', coborare: 'plonjare', unghiCoborare: '3', lungimeZigzag: '20', razaElice: '3',

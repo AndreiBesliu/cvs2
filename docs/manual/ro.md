@@ -1901,7 +1901,15 @@ care). Fereastra are trei părți:
 - **Schimbarea frezei**, doar când operațiile au freze diferite: **oprire în senderul aplicației** (implicit pe familia GRBL:
   lucrarea se oprește la `T… M6`, scoți freza, o pui pe următoarea, palpezi Z și **Continui**), **M6 la controler** (grblHAL,
   FluidNC, cu schimbarea configurată acolo; implicit pe Syntec, Mach3 și Mach4), **M0, cu freza în comentariu** sau **câte un
-  fișier pe freză** (se descarcă toate; implicit pe NcStudio și RichAuto, care n-au M06).
+  fișier pe freză** (se descarcă toate; implicit pe NcStudio și RichAuto, care n-au M06);
+- **Z-ul sigur și parcarea**: **Z sigur** (mm, între 1 și 100, implicit 5) e înălțimea la care trece freza peste foaie între
+  tăieturi, față de fața ei de sus. Din el coboară freza în fiecare tăietură, cu avansul de plonjare: un Z sigur mai mare ocolește
+  clemele, dar fiecare coborâre ține mai mult. Cu Z0 jos, programul îl scrie peste grosimea foii. **La final** alegi unde merge
+  mașina după ultima tăietură: **Rămâne sus** (implicit: deasupra ultimei tăieturi, ca până acum), **La XY0** sau **Într-un
+  punct**, cu X și Y față de XY0, cum le arată mașina (pot fi și în afara foii, cu minus spre stânga sau în jos; cel mult
+  10 000 mm pe fiecare axă). Freza urcă întâi la Z-ul sigur, axul se oprește (`M5`), apoi mașina pleacă, tot la Z-ul sigur, în
+  punctul ales; în fiecare fișier (pe freză, ale dopurilor, ale foilor). Ca supracursa, rămân cât e deschisă aplicația și nu
+  intră în proiect. Cu valorile implicite, programul e cel de dinainte. Un Z sigur nou sau o parcare nouă se încearcă întâi în aer.
 
 Posturile atelierelor scriu ce cere documentația controlerului. Setările de care depinde fișierul apar în fereastră și în
 antetul programului: verifică-le pe controler înainte de pornire.
@@ -1934,6 +1942,16 @@ dacă nicio altă freză a ferestrei nu-l are; altfel al aceleiași freze, dacă
 pasul pe trecere și, la buzunar, pasul lateral; **Exportă** o scrie în proiect cu valorile ei de lucru (turația, avansul,
 plonjarea) și cu tăișul. Un diametru sau o formă schimbate de mână o fac **Scrisă de mână**: proiectul nu mai ține că e din
 bibliotecă. Numărul T îl poți schimba fără să o pierzi.
+
+O freză **Scrisă de mână** are în grupul Freza, chiar sub lista **Din frezele mele**, un rând strâns care spune cu ce turație,
+avans și plonjare taie (de pildă „Turația, avansul și plonjarea: ale lucrării (18.000 rot/min, 1.000 și 300 mm/min)”). Desfăcut cu
+un clic, are câmpurile **Turația** (rot/min, un număr întreg), **Avansul** și **Plonjarea** (mm/min). Un câmp gol ia valoarea cu
+care taie orice freză fără valorile ei (18 000 rot/min, 1 000 și 300 mm/min), arătată în el; cu toate
+trei goale, programul e cel de dinainte. Cu una scrisă, **Exportă** le scrie pe toate trei în proiect, pe freza operației, și
+programul taie cu ele: axul pornește cu turația ei, iar tăieturile și coborârile merg cu avansul și plonjarea ei. O freză
+montată (un T) are o singură turație: două operații cu același T și turații diferite sunt refuzate. O freză din bibliotecă își
+are valorile ei, deci câmpurile apar doar după **Scrisă de mână**. Cu valori scrise, lista spune „Scrisă de mână (ca „…”)”
+doar când o freză din bibliotecă are, pe lângă diametru și formă, și aceleași valori.
 
 Frezele în plus ale unei operații au și ele lista lor **Din frezele mele**, doar cu frezele plate: freza fundului plat (la
 V-carve și la incrustația în V), fiecare freză de rest (doar cele mai mici decât freza dinainte), prima freză a dopului cu

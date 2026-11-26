@@ -10,6 +10,7 @@ import { programeDopuri } from '../cam/dopV.ts';
 import { programeDopuriDrepte } from '../cam/dopDrept.ts';
 import type { DopCalculat } from '../cam/incrustatie.ts';
 import { programDinDocument, REGIM_IMPLICIT, type Regim, type RezultatJob } from '../cam/job.ts';
+import { motivMiscariAer } from '../cam/regimExport.ts';
 import { PLAFON, type Document } from '../model/document.ts';
 import type { ResurseRelief } from '../relief/resurse.ts';
 import { repara, verificaPentruPanou, type RezultatReparare, type VerificarePanou } from '../model/reparare.ts';
@@ -98,10 +99,12 @@ function desprinseFoii(doc: Document, simulare: ProgramSimulat): ParteDesprinsa[
  * fișierelor exportului și „Dopul N” din vederea 3D (ADR 0178) le urmează. Decupările lor trec de placă cu `supracursa`
  * (ADR 0176). O singură funcție, a exportului și a vederii 3D; sau motivul primului dop care nu se poate tăia.
  */
-export function dopurileFoii(doc: Document, supracursa: number): { readonly ok: true; readonly dopuri: readonly DopCalculat[] } | { readonly ok: false; readonly motiv: string } {
-  const inV = programeDopuri(doc, REGIM_IMPLICIT, supracursa);
+export function dopurileFoii(
+  doc: Document, supracursa: number, regim: Regim = REGIM_IMPLICIT,
+): { readonly ok: true; readonly dopuri: readonly DopCalculat[] } | { readonly ok: false; readonly motiv: string } {
+  const inV = programeDopuri(doc, regim, supracursa);
   if (!inV.ok) return inV;
-  const drepte = programeDopuriDrepte(doc, REGIM_IMPLICIT, supracursa);
+  const drepte = programeDopuriDrepte(doc, regim, supracursa);
   if (!drepte.ok) return drepte;
   return { ok: true, dopuri: [...inV.dopuri, ...drepte.dopuri] };
 }
@@ -110,7 +113,12 @@ export function dopurileFoii(doc: Document, supracursa: number): { readonly ok: 
 export async function calculeazaExportul(doc: Document, p: ParametriExport, reliefuri?: ResurseRelief): Promise<RaspunsExport> {
   const foaie = doc.foi[0];
   if (!foaie) return { ok: false, motiv: 'documentul n-are foaie' };
-  const job = programFoii(doc, REGIM_IMPLICIT, p.supracursa ?? 0, p.prinFoaie === true, reliefuri);
+  // Z-ul sigur și parcarea (ADR 0291 §3, felia 28.8↑p): setările aplicației; fără ele, regimul și finalul de dinainte.
+  const aer = motivMiscariAer(p.zSigur, p.parcare);
+  if (aer) return { ok: false, motiv: aer };
+  const regim: Regim = p.zSigur === undefined ? REGIM_IMPLICIT : { ...REGIM_IMPLICIT, zSigur: p.zSigur };
+  const parcare = p.parcare ? { parcare: { x: p.parcare.x, y: p.parcare.y } } : {};
+  const job = programFoii(doc, regim, p.supracursa ?? 0, p.prinFoaie === true, reliefuri);
   if (!job.ok) return job;
   const iesire = iesireDinFoaie(job.program, foaie.stoc);
   if (iesire) {
@@ -126,13 +134,13 @@ export async function calculeazaExportul(doc: Document, p: ParametriExport, reli
   const contract = CONTRACTE[p.post ?? 'grbl-11'];
   const e = await exporta(job.program, { foaie: foaie.stoc, origine: p.origine, z0: p.z0 }, contract, {
     asteptareAx: ASTEPTARE_AX, unitati: p.unitati ?? 'mm', ...(p.strategieScula ? { strategieScula: p.strategieScula } : {}),
-    ...(iesire ? { iesireConfirmata: iesire.depasire } : {}),
+    ...(iesire ? { iesireConfirmata: iesire.depasire } : {}), ...parcare,
   });
   if (!e.ok) return e;
   // Dopurile incrustațiilor (ADR 0170 §3): câte un program pe semifabricatul lui, cu originea în colțul ales și Z0 mereu pe fața
   // lui. Fața se coboară până dincolo de marginea semifabricatului (în aer), deci ieșirea e a construcției, scrisă în program.
   // Decupările lor trec de placă cu aceeași supracursă ca foaia (ADR 0176).
-  const calculate = dopurileFoii(doc, p.supracursa ?? 0);
+  const calculate = dopurileFoii(doc, p.supracursa ?? 0, regim);
   if (!calculate.ok) return calculate;
   const dopuri: DopExportat[] = [];
   for (const [k, d] of calculate.dopuri.entries()) {
@@ -140,7 +148,7 @@ export async function calculeazaExportul(doc: Document, p: ParametriExport, reli
     const iesireDop = iesireDinFoaie(d.program, semifabricat);
     const ed = await exporta(d.program, { foaie: semifabricat, origine: p.origine, z0: 'sus' }, contract, {
       asteptareAx: ASTEPTARE_AX, unitati: p.unitati ?? 'mm', ...(p.strategieScula ? { strategieScula: p.strategieScula } : {}),
-      ...(iesireDop ? { iesireConfirmata: iesireDop.depasire } : {}),
+      ...(iesireDop ? { iesireConfirmata: iesireDop.depasire } : {}), ...parcare,
     });
     if (!ed.ok) return { ok: false, motiv: `dopul ${k + 1} (${d.element}): ${ed.motiv}` };
     const fisiere = ed.fisiere.map((f) => ({ ...f, nume: numeFisierDop(f.nume, k, contract.numeScurt === true) }));

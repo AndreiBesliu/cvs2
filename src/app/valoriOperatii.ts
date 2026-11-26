@@ -1,7 +1,8 @@
 import type { BandaDop, FrezaRest, FundPlat, Incrustatie, IncrustatieDreapta, IncrustatieV, Operatie, Urechi } from '../model/document.ts';
 import { PUNTI_DOP_DREPT } from '../model/incrustatie.ts';
 import type {
-  BandaOperatie, FrezaRestOperatie, FundPlatOperatie, IncrustatieDreaptaOperatie, IncrustatieOperatie, OrigineFreza, SculaOperatie, ValoriOperatie,
+  BandaOperatie, FrezaRestOperatie, FundPlatOperatie, IncrustatieDreaptaOperatie, IncrustatieOperatie, OrigineFreza, SculaOperatie, ValoriLucru,
+  ValoriOperatie,
 } from '../ui/exportRand.ts';
 
 /**
@@ -12,13 +13,15 @@ import type {
  * tăișul ei, la locul lor dacă documentul le avea (un Exportă fără nicio schimbare scrie aceeași freză, la octet), iar cele pe
  * care freza aleasă nu le are pleacă.
  */
-function cuOrigine(vechi: Operatie['scula'] | undefined, x: Operatie['scula'], origine: OrigineFreza | null | undefined, numeMana: string): Operatie['scula'] {
+function cuOrigine(
+  vechi: Operatie['scula'] | undefined, x: Operatie['scula'], origine: OrigineFreza | null | undefined, numeMana: string, regimMana?: ValoriLucru | null,
+): Operatie['scula'] {
   if (origine === undefined) return x;
   if (origine === null) {
-    if (!vechi?.biblioteca) return x;
+    if (!vechi?.biblioteca) return cuRegimMana(x, regimMana);
     const { biblioteca: _b, regim: _r, tais: _t, ...fara } = x;
     void _b; void _r; void _t;
-    return { ...fara, nume: numeMana };
+    return cuRegimMana({ ...fara, nume: numeMana }, regimMana);
   }
   const c: Record<string, unknown> = {
     ...x, nume: origine.nume, biblioteca: { id: origine.biblioteca.id, rev: origine.biblioteca.rev },
@@ -28,6 +31,21 @@ function cuOrigine(vechi: Operatie['scula'] | undefined, x: Operatie['scula'], o
   if (origine.regim === undefined) delete c['regim'];
   if (origine.tais === undefined) delete c['tais'];
   return c as Operatie['scula'];
+}
+
+/**
+ * Valorile de lucru scrise de mână pe o freză fără origine (ADR 0291 §3, felia 28.8↑p): `undefined` le lasă pe cele din `x`;
+ * `null` scoate câmpul; altfel îl scrie, la locul lui dacă `x` îl avea (cu aceleași valori, aceeași freză, la octet).
+ */
+function cuRegimMana(x: Operatie['scula'], regim: ValoriLucru | null | undefined): Operatie['scula'] {
+  if (regim === undefined) return x;
+  if (regim === null) {
+    if (!('regim' in x)) return x;
+    const { regim: _r, ...fara } = x;
+    void _r;
+    return fara;
+  }
+  return { ...x, regim: { turatie: regim.turatie, avans: regim.avans, plonjare: regim.plonjare } };
 }
 
 /**
@@ -47,9 +65,9 @@ function sculaScrisa(o: Operatie['scula'], s: SculaOperatie): Operatie['scula'] 
       : `freza V${s.forma.unghi}${varf > 0 ? ` varf ${varf}` : ''}`;
     const { varf: _v, ...formaVeche } = o.forma ?? {};
     void _v;
-    return cuOrigine(o, { ...baza, numar: s.numar, diametru: s.diametru, nume, forma: { ...formaVeche, tip: 'v', unghi: s.forma.unghi, ...(varf > 0 ? { varf } : {}) } }, s.origine, numeMana);
+    return cuOrigine(o, { ...baza, numar: s.numar, diametru: s.diametru, nume, forma: { ...formaVeche, tip: 'v', unghi: s.forma.unghi, ...(varf > 0 ? { varf } : {}) } }, s.origine, numeMana, s.regim);
   }
-  return cuOrigine(o, { ...baza, numar: s.numar, diametru: s.diametru, nume: o.forma ? 'freza plata' : o.nume }, s.origine, numeMana);
+  return cuOrigine(o, { ...baza, numar: s.numar, diametru: s.diametru, nume: o.forma ? 'freza plata' : o.nume }, s.origine, numeMana, s.regim);
 }
 
 /**

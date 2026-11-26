@@ -11,6 +11,10 @@ export { INCRUSTATIE_DREAPTA_IMPLICITA, INCRUSTATIE_IMPLICITA, LATIME_UMAR_IMPLI
 export { latimeMinimaBanda, PUNTI_BANDA, PUNTI_DOP_DREPT, REZERVA_BANDA, SUB_FATA_DOPULUI, susLaMicron } from '../model/incrustatie.ts';
 // Supracursa (ADR 0028 §2, ADR 0176): marginea câmpului din fereastra exportului, aceeași cu a lucrării.
 export { SUPRACURSA_MAXIMA } from '../cam/supracursaMaxima.ts';
+// Regimul implicit al lucrării, Z-ul sigur și parcarea (ADR 0291 §3, felia 28.8↑p): valori pure, fără CAM-ul în pornire.
+export {
+  AVANS_IMPLICIT, PARCARE_MAXIMA, parcareBuna, PLONJARE_IMPLICITA, TURATIE_IMPLICITA, Z_SIGUR_IMPLICIT, Z_SIGUR_MAXIM, Z_SIGUR_MINIM, zSigurBun,
+} from '../cam/regimExport.ts';
 // Numele fișierului ales de om (ADR 0291 §5): aceeași regulă ca a exportului, nu o copie în fereastră.
 export { bazaFisier, LUNGIME_NUME, motivNume, propunereNume, type MotivNume } from '../post/numeFisier.ts';
 import type { StrategieScula } from '../post/contract.ts';
@@ -44,6 +48,8 @@ export const MARGINI_OPERATIE = {
   latimeBanda: PLAFON.latura, placaBanda: PLAFON.adancimeOperatie,
   // Treapta incrustației cu pereți drepți (ADR 0175): lățimea umărului, în mm (plafonul laturii; adâncimea lui, al adâncimii).
   latimeUmar: PLAFON.latura,
+  // Turația, avansul și plonjarea unei freze scrise de mână (ADR 0291 §3, documentul v27): cel mult cât ușa documentului.
+  regimFreza: PLAFON.regimFreza,
 } as const;
 
 /**

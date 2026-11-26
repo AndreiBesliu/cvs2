@@ -453,3 +453,49 @@ Constatarea 18 a auditului, cu răspunsul 7a. Programul fiecărei foi rămâne c
   schimbat ordinea. Proba trage acum al doilea rând al foii 2 pe foaia 1.
 - **Mărimea:** pornirea +0 (111,6 kB), totalul +1,7 kB (921,1 / 1 000): bucata ferestrei (rândurile și capetele foilor,
   rezumatul pe foi) și `grupeFoi`. Programul, documentul (v30) și serverul: neschimbate.
+
+## Implementarea 28.8↑p (26.11)
+
+Lipsurile 1 și 2 ale auditului, cu răspunsul 3a. Mișcă mașina, deci s-a probat întâi pe oracole; fără valori, programul de
+azi, octet cu octet.
+
+- **Z-ul sigur** (`ParametriExport.zSigur`, mm deasupra feței de sus a foii): o setare a aplicației, ca supracursa, între 1 și
+  100 mm, implicit 5 (`src/cam/regimExport.ts`, pur, citit și de fereastră). Exportul îl pune în regimul lucrării, al foii și al
+  dopurilor (`dopurileFoii` primește regimul). Minimul de 1 mm: ciocănirea găuririi urcă rapid cu 1 mm peste fundul trecerii
+  de dinainte (`RETRAGERE_PARTIALA`), deci un Z sigur mai mic ar strica ordinea mișcărilor. Traseul, timpul de lângă el și
+  vederea 3D rămân la 5 mm, ca la supracursă.
+- **Parcarea** (`ParametriExport.parcare`): un punct în coordonatele PROGRAMULUI (față de XY0, cum îl arată mașina), cel mult
+  10 000 mm pe fiecare axă. Postul (`OptiuniPost.parcare`) o scrie ca `G0 X Y` după `M5`, înaintea liniilor de final ale
+  contractului: freza e deja sus, la Z-ul sigur, iar axul se oprește înainte ca mașina să plece. Nu trece prin montaj (e deja
+  în coordonatele programului), doar prin unitate și zecimale. Fiecare fișier o are: pe freză, ale dopurilor, ale foilor.
+  Fereastra: „Rămâne sus” (implicit, fără linie), „La XY0” (punctul (0, 0)) și „Într-un punct” (X și Y, cu semn).
+- **Valorile frezei scrise de mână** (`Rand.regimMana`, `SculaOperatie.regim`): pe „Scrisă de mână”, grupul Freza are turația,
+  avansul și plonjarea. Un câmp gol ia valoarea lucrării (18 000, 1 000, 300); toate goale = fără `regim` (programul de azi);
+  cu unul scris, Exportă le scrie pe toate trei în `scula.regim` (v27, fără schemă nouă), prin `cuOrigine`, la locul lor dacă
+  documentul le avea. Marginile, ale ușii documentului: turația un întreg în [1, 100 000], avansul și plonjarea în
+  (0, 100 000]. O freză din bibliotecă își păstrează valorile ei; câmpurile apar doar fără origine. Deschisă din nou, fereastra
+  le citește din document (`ExportConectat`). Regula numerelor T (`frezeRanduri`) știe turația scrisă de mână.
+  Câmpurile stau într-un rând strâns (`details`), chiar sub lista „Din frezele mele”, cu un rezumat al valorilor folosite („ale
+  lucrării (18.000 rot/min, 1.000 și 300 mm/min)”, cele scrise, sau „o valoare e greșită”). La vedere, sub formă, depărtau
+  diametrul de greșeala de sub el: pe telefonul culcat (844 × 390, coloana câmpurilor de 210 px), cele trei câmpuri țineau
+  181 px, iar „Du-mă la …” nu mai putea aduce în panou (177 px) și câmpul, și greșeala (proba din 28.8↑h-2 a căzut). „Du-mă la
+  …” desface rândul când câmpul greșit e în el. Recunoașterea „Scrisă de mână (ca „…”)” (`stareOrigine`, 16.A↑b-4) cere,
+  cu valori scrise, aceleași valori și frezei din bibliotecă (una fără ele contează cu cele ale lucrării); fără valori scrise,
+  ca înainte (semnalat de linia frezelor).
+- **Fereastra:** grupul nou `aer` („Z-ul sigur și parcarea”), în „Mașina și fișierul”, între schimbarea frezei și setări, cu
+  cartonașele parcării; câmpurile frezei în grupul ei. O valoare greșită oprește Exportă, cu greșeala în grupul ei și punctul
+  pe rândul fișei. Nota `export.regim` nu mai spune Z-ul sigur.
+- **Senderul și antetul:** antetul nu se schimbă (senderul citește din el doar originea și Z0); programul cu parcarea se
+  încarcă și rulează pe emulatorul GRBL fără pierderi, oprindu-se în punctul de parcare, la Z-ul sigur.
+- **Probele** (scrise înaintea codului): `test/unit/export.zSigur.oracol.test.ts` (8: fără valori, octet cu octet, pe tot
+  corpusul; Z-ul sigur schimbă doar cuvântul lui, pe tot corpusul și pe toate cele opt posturi, în mm și în inch, cu Z0 sus și
+  jos; parcarea, o linie după `M5`, în fiecare fișier și în dopuri; poarta, cu verdictele de azi și cu martorul unei parcări sub
+  fața foii; oracolul simulării, aceeași suprafață tăiată, celulă cu celulă; senderul și emulatorul GRBL, oprit în punctul de
+  parcare; marginile), `test/unit/export.regimMana.test.ts` (6) și `test/e2e/export.regimZ.spec.ts` (2), plus proba privirii.
+  Rapidul, 10 765 / 0; e2e-ul exportului, 379 / 379. Primul complet al ramurii a căzut la proba vitezei (28.8↑i): la
+  1280 × 2400, marginea ferestrei fișelor ajunge dincolo de vecine doar cât o fișă e mai scundă decât panoul, iar rândul
+  valorilor scrise de mână (36 px) a dus fișa (~2 230 px) peste panou (2 243 px) pe Linux. Proba merge acum la 1280 × 3200,
+  cu condiția spusă înaintea aserțiunii.
+- **Otrăvurile:** `28.8p.py`, 29 / 29 (21 unitare, 8 e2e).
+- **Mărimea:** pornirea +0 (111,6 kB), totalul +1,8 kB (922,9 / 1 000). Documentul (v30) și serverul: neschimbate.
+- **Rămâne a owner-ului:** proba pe mașină, întâi în aer (un Z sigur nou, o parcare în afara foii).
