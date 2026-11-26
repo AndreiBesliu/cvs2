@@ -492,7 +492,10 @@ azi, octet cu octet.
   jos; parcarea, o linie după `M5`, în fiecare fișier și în dopuri; poarta, cu verdictele de azi și cu martorul unei parcări sub
   fața foii; oracolul simulării, aceeași suprafață tăiată, celulă cu celulă; senderul și emulatorul GRBL, oprit în punctul de
   parcare; marginile), `test/unit/export.regimMana.test.ts` (6) și `test/e2e/export.regimZ.spec.ts` (2), plus proba privirii.
-  Rapidul, 10 765 / 0; e2e-ul exportului, 379 / 379.
+  Rapidul, 10 765 / 0; e2e-ul exportului, 379 / 379. Primul complet al ramurii a căzut la proba vitezei (28.8↑i): la
+  1280 × 2400, marginea ferestrei fișelor ajunge dincolo de vecine doar cât o fișă e mai scundă decât panoul, iar rândul
+  valorilor scrise de mână (36 px) a dus fișa (~2 230 px) peste panou (2 243 px) pe Linux. Proba merge acum la 1280 × 3200,
+  cu condiția spusă înaintea aserțiunii.
 - **Otrăvurile:** `28.8p.py`, 29 / 29 (21 unitare, 8 e2e).
 - **Mărimea:** pornirea +0 (111,6 kB), totalul +1,8 kB (922,9 / 1 000). Documentul (v30) și serverul: neschimbate.
 - **Rămâne a owner-ului:** proba pe mașină, întâi în aer (un Z sigur nou, o parcare în afara foii).

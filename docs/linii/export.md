@@ -293,6 +293,9 @@ vreau ca ficare setare sa fie insotita de o ilustratie sugestiva, ca sa ajute us
 - **Parcarea e deja în coordonatele programului** (28.8↑p): postul n-o trece prin montaj, doar prin unitate și zecimale, și o
   scrie după ultimul `M5`. O probă care o caută în text o scrie cu zecimalele contractului (`G0 X-10.000 Y250.500`), iar una
   care schimbă Z-ul sigur compară cuvânt cu cuvânt (`Z5.000` → `Z20.000`), cu Z0 jos peste grosimea foii.
+- **Un rând nou în fișa operației o lungește, iar proba vitezei depinde de înălțimea ei** (`export.viteza.spec.ts`, regula
+  ferestrei): marginea trece de vecine doar cât o fișă (~2 230 px pe un profil) e mai scundă decât panoul. Din 28.8↑p, proba
+  merge la 1280 × 3200 și spune condiția; o fișă care trece de ~3 000 px o face să cadă, cu motivul.
 - **Un câmp nou al rândului (`Rand`) intră și în bazele probelor care fac rânduri de mână** (`exportFreze.nota`, `.inapoi`,
   `.rest`): compilatorul le cere; valoarea lui o pune inițializarea rândului din `DialogExport.tsx`.
 
