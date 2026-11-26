@@ -16,7 +16,7 @@
  */
 import { LINIE, type Contur, type Punct, type Segment, type Varf } from '../geom/conturBaza.ts';
 import { cutieContur, CUTIE_GOALA, uneste, type Cutie } from '../geom/cutie.ts';
-import { felCunoscut, indexLume, punctAncora, valoareCota } from '../model/cote.ts';
+import { felCunoscut, indexLume, lungimeCota, masuraCota, punctAncora } from '../model/cote.ts';
 import { cifraCuToleranta, desenCota, laturiUnghi, textCota, type ArcDesen, type CapatDesen, type DesenCota, type FormatCifre, type StilCota } from '../model/desenCota.ts';
 import type { Cota, Document } from '../model/document.ts';
 import { inHelvetica, marimeHelvetica } from './helvetica.ts';
@@ -114,7 +114,8 @@ function cutieText(t: DesenCota['text'], text: string): Cutie {
  * Mijlocul textului (11) e la jumătate de majusculă deasupra mijlocului bazei.
  */
 export function definitieCota(c: Cota, p: readonly Punct[], dc: DesenCota, text: string, valoare: number | null): DefinitieCota | null {
-  if (valoare === null || text.trim() === '') return null;
+  // Lungimea (felia 10.4↑e-2) n-are o DIMENSION potrivită: iese ca linii și cifre, pe stratul cotelor.
+  if (valoare === null || text.trim() === '' || c.fel === 'lungime') return null;
   const mijloc = plus(dc.text.p, sus(dc.text.unghi), dc.text.inaltime / 2);
   const baza = { element: c.id, steaguri: 32, text, mijloc };
   const [a, b] = p as [Punct, Punct];
@@ -151,6 +152,18 @@ export function definitieCota(c: Cota, p: readonly Punct[], dc: DesenCota, text:
   return { ...baza, tip: 2, puncte: { 13: prima[0], 14: prima[1], 15: adoua[0], 10: adoua[1], 16: peArc }, masura };
 }
 
+/**
+ * O cotă citită din lume: punctele, valoarea (la lungime, din conturul formei: felia 10.4↑e-2), cifra scrisă și desenul (la
+ * lungime, cu simbolul arcului pe o latură curbă). Comună exportului și lui „Fă desen din cotă”.
+ */
+function cotaCitita(c: Cota, lume: ReturnType<typeof indexLume>, o: Pick<OptiuniCote, 'stil' | 'format'>): { readonly p: Punct[]; readonly valoare: number | null; readonly text: string; readonly dc: DesenCota | null } {
+  const pc = (c.puncte ?? []).map((a) => punctAncora(a, lume));
+  const p = pc.map((x) => x.p);
+  const valoare = masuraCota(c, pc, lume);
+  const text = valoare === null ? '' : textCota(c, cifraCuToleranta(c, valoare, o.format));
+  return { p, valoare, text, dc: desenCota(c, p, o.stil, text, lungimeCota(c, lume)?.curba ?? false) };
+}
+
 /** Cotele foii `indexFoaie`, ca entități ale exportului (pe stratul COTE), cu cutia lor, semnele lipsă din font și definițiile. */
 /** Cercul închis de rază `r` din `c`, din două semicercuri (bulge 1): un punct al cotei, ca formă. */
 const cercContur = (c: Punct, r: number): Contur => ({
@@ -170,11 +183,7 @@ export type GeometrieCota = { readonly contururi: readonly Contur[]; readonly li
 export function geometrieCota(doc: Document, indexFoaie: number, id: string, o: Pick<OptiuniCote, 'stil' | 'format' | 'cifre'>): GeometrieCota | null {
   const c = doc.foi[indexFoaie]?.cote?.find((x) => x.id === id);
   if (!c || !felCunoscut(c.fel) || !Array.isArray(c.puncte)) return null;
-  const lume = indexLume(doc, indexFoaie);
-  const p = c.puncte.map((a) => punctAncora(a, lume).p);
-  const valoare = valoareCota(c, p);
-  const text = valoare === null ? '' : textCota(c, cifraCuToleranta(c, valoare, o.format));
-  const dc = desenCota(c, p, o.stil, text);
+  const { text, dc } = cotaCitita(c, indexLume(doc, indexFoaie), o);
   if (!dc) return null;
   const contururi: Contur[] = [...dc.extensii.map(([a, b]) => linie(a, b)), ...dc.bucati.map(([a, b]) => linie(a, b)), ...dc.arce.map(arcContur)];
   for (const k of dc.capete) {
@@ -206,10 +215,7 @@ export function entitatiCote(doc: Document, indexFoaie: number, o: OptiuniCote):
   const lume = indexLume(doc, indexFoaie);
   for (const c of foaie.cote) {
     if (!felCunoscut(c.fel) || !Array.isArray(c.puncte)) continue;
-    const p = c.puncte.map((a) => punctAncora(a, lume).p);
-    const valoare = valoareCota(c, p);
-    const text = valoare === null ? '' : textCota(c, cifraCuToleranta(c, valoare, o.format));
-    const dc = desenCota(c, p, o.stil, text);
+    const { p, valoare, text, dc } = cotaCitita(c, lume, o);
     if (!dc) continue;
     cote++;
     const pune = (k: Contur): void => {

@@ -14,7 +14,7 @@ import { CampText } from '../ui/CampText.tsx';
 import type { CotaPanou } from '../ui/coteVedere.ts';
 import { textNumar } from '../ui/numar.ts';
 
-const FELURI = new Set(['orizontala', 'verticala', 'aliniata', 'raza', 'diametru', 'unghi']);
+const FELURI = new Set(['orizontala', 'verticala', 'aliniata', 'raza', 'diametru', 'unghi', 'lungime']);
 type FelTol = 'fara' | 'simetrica' | 'abateri';
 /** Toleranța pusă la alegerea felului, pe o cotă fără ea: ±0,1 (mm sau grade). */
 const TOLERANTA_IMPLICITA = 0.1;

@@ -180,6 +180,11 @@ export function pozitiePeCurba(c: Contur, q: Punct): number | null {
   return c.inchis ? ((rez % par.lungime) + par.lungime) % par.lungime : rez;
 }
 
+/** Lungimea segmentului `i` al curbei (mm, pe curbă): linia și arcul exact, cubica prin cuadratură (cota de lungime). */
+export function lungimeSegmentului(c: Contur, i: number): number {
+  return masoara(c, i).lungime;
+}
+
 /** Lungimea curbei (mm, pe curbă). */
 export function lungimeCurba(c: Contur): number {
   let s = 0;

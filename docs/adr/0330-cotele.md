@@ -741,17 +741,18 @@ judecă).
   ține doar o toleranță cu abateri egale „cu abateri”. Proba desenului cotei citește acum și textul cifrei.
 - **Cifrele:** unitare noi 7 (`cote.toleranta.test.ts`), e2e noi 2 (`cote.toleranta.spec.ts`); otrăvurile 20 / 20.
 
-### Întrebările 11–14 (feliile e–g), cu recomandările pe care se merge
+### Întrebările 11–15 (feliile e–g), cu recomandările pe care se merge
 
 11. Cum se scrie toleranța:
     - **a (recomandat, implementat în e-1):** pe rândul cifrei, simetrică („±0,1”) sau cu abateri („+0,2 -0,1”), cu cifre de
       aceeași mărime: se citește la fel pe pânză, în trăsături, în text și în DIMENSION;
     - b: și limitele (maxim și minim, unul sub altul) și abaterile una sub alta, cu cifre mai mici (ca în desenele tehnice).
 12. Lungimea (e-2):
-    - **a (recomandat):** un fel nou, **Lungime**: un clic pe o latură dă lungimea ei (pe un arc, un arc paralel cu el și „⌒”
-      înaintea cifrei; pe o curbă sau o linie, linia ei), iar cu Shift, lungimea conturului întreg, ca o etichetă cu săgeată
-      („L 345,6”); legată de formă, ca celelalte;
-    - b: doar arcul, fără conturul întreg.
+    - **a (recomandat, implementat în e-2):** un fel nou, **Lungime**, pentru latură și pentru conturul întreg, ca o etichetă cu
+      săgeată: pe un arc sau o curbă, simbolul arcului deasupra cifrei (desenat, fiindcă fontul cifrelor n-are „⌒”); pe contur,
+      „L 345,6”; legată de formă, ca celelalte;
+    - b: pe latură, o cotă paralelă cu ea (un arc concentric pe un arc, linia ei pe o linie), ca în desenele tehnice; pe contur,
+      tot eticheta.
 13. Cota între două foi (f):
     - **a (recomandat):** fără cotă ținută: foile sunt plăci separate, iar așezarea lor pe pânză („Toate foile”) e doar o vedere,
       care se schimbă cu ordinea lor; **Măsoară** (M) măsoară și între foi, cu „Toate foile pe pânză”, fără să păstreze nimic;
@@ -761,3 +762,33 @@ judecă).
     - **a (recomandat):** ținute în cont, cu sincronizarea frezelor ca model (fără `cloud`, rămân în browser), cu mărimea bucății
       contului spusă întâi sesiunii principale;
     - b: doar „Exportă setările” și „Importă setările”, ca fișier, fără server.
+15. Unde se cere lungimea (e-2), fiindcă în bara de sus nu mai încape un buton (mai rămân 22 px în română, iar un buton are 34):
+    - **a (recomandat, implementat):** în meniul de clic dreapta, pe forma de sub cursor, „Cotează lungimea laturii” și
+      „Cotează lungimea conturului” (ca „Cotează selecția”);
+    - b: felul **Lungime** în bara uneltei Cote, cu bara strânsă (de pildă Rază și Diametru într-un singur buton cu meniu).
+
+## Implementarea (10.4↑e-2)
+
+26.11, pe ramura `wip/10.4-cote`, după e-1. Documentul rămâne v30: felul nou, `lungime`, stă tot în `foaie.cote`, iar o versiune
+care nu-l știe îl lasă neatins (un fel necunoscut nu se judecă).
+- **Datele:** un singur capăt, legat la mijlocul laturii (`loc: mijloc k`); `pe: 'contur'` pentru conturul întreg; `linie: { d,
+  u }`, lungimea liniei etichetei și direcția ei, în grade; `urma: { l, curba }`, ultima lungime văzută și dacă latura e curbă.
+- **Lungimea, din lume** (`lungimeCota`, `masuraCota`, `src/model/cote.ts`): legată, din conturul elementului: latura k
+  (linia și arcul exact, cubica prin cuadratura Gauss–Legendre a copierii pe curbă, `lungimeSegmentului`) sau tot conturul;
+  dezlegată (forma ștearsă, alte noduri) ori liberă, urma. Urma se scrie la punere, de jurnal la dezlegare (`cotaVazuta`, în
+  același pas cu comanda) și de „Dezleagă”. Fără lume (`valoareCota`), doar urma.
+- **Desenul** (`desenLungime`, `src/model/desenCota.ts`): săgeata cu vârful pe latură, linia pe direcția `u`, cel puțin cât
+  săgeata și un gol, umărul orizontal spre partea liniei, cât cifra și câte un gol, cifra pe umăr (deasupra, în linie sau
+  orizontală, ca celelalte); pe o latură curbă, simbolul arcului (ISO 129-1), desenat: un arc cât cifra, la un gol deasupra
+  ei, cu săgeata 0,3 × înălțimea. Pe contur, „L ” înaintea cifrei. Clicul alege cota și pe umăr.
+- **Punerea** (`cotaLungimeLa`, `src/model/coteLungime.ts`): din meniul de clic dreapta (întrebarea 15), latura cea mai
+  apropiată de clic, la cel mult 8 px, a unui element al foii (un relief n-are laturi); cota e mereu legată (din formă vine
+  lungimea, oricare ar fi setarea), cu eticheta spre afara formei: din centrul cutiei ei spre capăt, la cel mai apropiat
+  multiplu de 45°. Unealta Cote pornește, cu cota aleasă; eticheta se trage (cotul vine în cursor). Departe de orice contur,
+  „Nicio latură aici”.
+- **Exportul:** cu „Linii și cifre” ca orice cotă; cu „Cote (DIMENSION)”, lungimea n-are o DIMENSION potrivită (ARC_DIMENSION
+  ar cere geometria arcului, nu și a curbelor sau a conturului) și iese tot ca linii și cifre, pe stratul cotelor. Oracolul
+  Python are corpusul al cincilea (`cote-lungime.*`: o latură curbă cu simbolul arcului și un contur), cu valorile pe hârtie.
+- **Programul, neatins:** pe placa 1, o cotă de lungime dă aceiași octeți ca fără cote.
+- **Cifrele:** unitare noi 10 (`cote.lungime.test.ts`), e2e noi 2 (`cote.lungime.spec.ts`); otrăvurile 33 / 33.
+

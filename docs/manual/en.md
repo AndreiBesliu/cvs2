@@ -1300,6 +1300,14 @@ have their own colour on the canvas. Pick the type in the bar:
 - **Measure** (`M`): two points, no trace. The distance, Δx, Δy and the angle from the horizontal show next to the cursor and
   in the bottom bar; **Enter** (or **Keep**) makes it an aligned dimension, **Esc** clears it.
 
+**Length** (in the right-click menu): right-click right on a shape’s outline, then **Dimension the side’s length** (the side under
+the cursor: a line, an arc or a curve, measured along it) or **Dimension the contour’s length** (the whole outline, open or closed,
+with “L ” before the number); the Dimensions tool starts, with the new dimension selected. The dimension is a label with an arrow:
+the arrow touches the side at its middle, and the number sits on a horizontal shoulder, away from the shape; drag the label to
+move it. On an arc or a curve, the arc symbol appears above the number. The dimension stays attached to the shape (the number
+changes with it); when the shape is deleted, or after **Unlink**, it keeps the last length seen. In DXF, with “Dimensions
+(DIMENSION)”, a length comes out as lines and numbers.
+
 **Dimension selection** (in the right-click menu): select the pieces with Select, right-click, **Dimension selection**; the
 Dimensions tool starts by itself. Each selected piece gets the width (below) and the height (on the right) of its box, attached to the box
 corners, so they follow it when it moves, rotates or scales; the lines sit at the dimension line distance from Settings. All

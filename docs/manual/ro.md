@@ -1256,6 +1256,13 @@ pe care au fost puse (**Cotele foii**), se salvează cu proiectul și au culoare
 - **Măsoară** (`M`): două puncte, fără urmă. Distanța, Δx, Δy și unghiul față de orizontală se văd lângă cursor și în bara de
   jos; **Enter** (sau **Păstrează**) o face cotă aliniată, **Esc** o șterge.
 
+**Lungimea** (în meniul de clic dreapta): clic dreapta chiar pe conturul unei forme, apoi **Cotează lungimea laturii** (latura
+de sub cursor: o linie, un arc sau o curbă, măsurată pe ea) sau **Cotează lungimea conturului** (tot conturul, deschis sau
+închis, cu „L ” înaintea cifrei); unealta Cote pornește, cu cota nouă aleasă. Cota e o etichetă cu săgeată: săgeata atinge
+latura la mijlocul ei, iar cifra stă pe un umăr orizontal, spre afara formei; trage de etichetă ca s-o muți. Pe un arc sau pe o
+curbă, deasupra cifrei apare simbolul arcului. Cota rămâne legată de formă (cifra se schimbă cu ea); ștearsă forma, sau cu
+**Dezleagă**, rămâne la ultima lungime văzută. În DXF, cu „Cote (DIMENSION)”, lungimea iese ca linii și cifre.
+
 **Cotează selecția** (în meniul de clic dreapta): alegi piesele cu Selecția, clic dreapta, **Cotează selecția**; unealta Cote
 pornește singură. Fiecare
 piesă aleasă primește lățimea (dedesubt) și înălțimea (la dreapta) cutiei ei, legate de colțurile cutiei, deci o urmează la

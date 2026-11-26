@@ -164,11 +164,31 @@ def hartie_cote():
         'text': ('2x45°', plus(v, dm, 30 + G), -67.5),
         'dim': {'tip': 2, 'steaguri': 32, 'p': {13: (245, 30), 14: (285, 30), 15: (250, 45), 10: (270, 65), 16: pe(math.pi / 8)}, 'masura': 45},
     }
+    # Corpusul lungimilor (felia 10.4↑e-2): eticheta cu săgeată. Săgeata are vârful în capăt, cu baza pe direcția u; linia merge
+    # d (cel puțin săgeata și golul cifrei: 2,5 + 1,05) până în cot; umărul, orizontal, spre partea liniei, cât cifra (0,6 · 3,5 pe
+    # semn) și câte un gol de 0,3 · 3,5 de o parte și de alta; cifra centrată pe umăr, cu baza la un gol deasupra.
+    # L: capătul (150, 160), u = 90°, d = 10: cotul (150, 170); „63” e lat de 4,2, deci umărul până la 150 + 6,3, cifra la
+    # (153,15; 171,05). Simbolul arcului (ISO 129-1): coarda cât cifra (2,1 de fiecare parte) la un gol deasupra ei
+    # (171,05 + 3,5 + 1,05 = 175,6), săgeata 1,05: raza (2,1² + 1,05²) / 2,1 = 2,625, centrul la 175,6 + 1,05 − 2,625.
+    yc, R = 175.6, 2.625
+    centru = (153.15, yc + G - R)
+    de = math.atan2(yc - centru[1], 2.1)
+    c['L'] = {
+        'seg': [('L', (150, 160), (150, 170)), ('L', (150, 170), (156.3, 170)), sageata((150, 160), (0, 1)), ('A', centru, R, de, math.pi - de)],
+        'text': ('63', (153.15, 170 + G), 0),
+    }
+    # K: capătul (60, 180), u = 180°, d = 6: cotul (54, 180); umărul spre stânga, cât „L 320” (cinci semne, 10,5) și golurile:
+    # până la 54 − 12,6 = 41,4; cifra la (47,7; 181,05).
+    c['K'] = {
+        'seg': [('L', (60, 180), (54, 180)), ('L', (54, 180), (41.4, 180)), sageata((60, 180), (-1, 0))],
+        'text': ('L 320', (47.7, 180 + G), 0),
+    }
     return c
 
 
 COTE_1 = ['h', 'v', 'u', 'd']
 COTE_2 = ['h', 'v', 'u', 'd', 'a', 'r', 'w']
+COTE_L = ['L', 'K']
 
 
 def segmente_cota(x):
@@ -736,6 +756,23 @@ def verifica_dim(cale, ca_text):
     return len(dims)
 
 
+def verifica_lungime(dosar):
+    """Corpusul lungimilor (felia 10.4↑e-2): în DXF, cu cotele cerute ca DIMENSION, lungimea n-are una: liniile, arcul simbolului,
+    săgețile și trăsăturile cifrelor, exact cele de pe hârtie (1e-9), niciun DIMENSION; în PDF și SVG, la toleranța lor."""
+    cale = f'{dosar}/cote-lungime.dxf'
+    doc, auditor = recover.readfile(cale)
+    verifica(not auditor.has_errors and len(auditor.fixes) == 0, f'{cale}: recover, {len(auditor.errors)} erori, {len(auditor.fixes)} reparații')
+    msp = list(doc.modelspace())
+    tipuri = Counter(e.dxftype() for e in msp if e.dxf.layer == STRAT)
+    verifica(set(tipuri) <= {'LWPOLYLINE', 'SPLINE', 'SOLID'}, f'{cale}: entitățile lungimilor: {dict(tipuri)}')
+    verifica(not any(e.dxftype() == 'DIMENSION' for e in msp), f'{cale}: o lungime scrisă ca DIMENSION')
+    hartie = pe_hartie(COTE_L)
+    citite = segmente_dxf([e for e in msp if e.dxf.layer == STRAT])
+    una_la_una('DXF lungimi', citite, hartie)
+    pline = sum(1 for x in hartie if x[0] == 'T')
+    return len(citite), max(verifica_pdf(f'{dosar}/cote-lungime.pdf', hartie, pline), verifica_svg(f'{dosar}/cote-lungime.svg', hartie))
+
+
 def main(dosar):
     n_dxf, n_h = verifica_dxf(f'{dosar}/cote.dxf')
     ab_pdf = verifica_pdf(f'{dosar}/cote.pdf')
@@ -755,6 +792,7 @@ def main(dosar):
     ab2 = [verifica_pdf(f'{dosar}/cote-text.pdf', h2, pline2, True), verifica_svg(f'{dosar}/cote-text.svg', h2, True),
            desene_eps_cote(f'{dosar}/cote-text.eps', h2, True)]
     verifica_ascii(f'{dosar}/cote-ascii.pdf')
+    n_l, ab_l = verifica_lungime(dosar)
     if os.path.exists(f'{dosar}/cote-text-eps.pdf'):
         ab2.append(verifica_gs(f'{dosar}/cote-text-eps.pdf', h2, True))
     else:
@@ -769,7 +807,8 @@ def main(dosar):
     print(f'cotele în exportul 2D: DXF {n_dxf} segmente, exact cele {n_h} de pe hârtie (ezdxf {ezdxf.__version__}: 0 erori, 0 reparații); '
           f'abaterea max: PDF {ab_pdf:.6f} mm, SVG {ab_svg:.6f} mm, EPS {ab_eps:.6f} mm, prin Ghostscript {ab_gs:.6f} mm; '
           f'{n_dim} cote ca DIMENSION (felul, punctele, măsura, textul, stilul CNCVS2, blocul exact), cu cifrele ca trăsături și ca '
-          f'MTEXT; cifrele ca text în PDF, SVG, EPS și prin Ghostscript, liniile la cel mult {max(ab2):.6f} mm')
+          f'MTEXT; cifrele ca text în PDF, SVG, EPS și prin Ghostscript, liniile la cel mult {max(ab2):.6f} mm; lungimile: DXF {n_l} '
+          f'segmente, exact pe hârtie, fără DIMENSION, PDF și SVG la cel mult {ab_l:.6f} mm')
 
 
 if __name__ == '__main__':

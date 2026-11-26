@@ -2,9 +2,10 @@
  * Dezlegarea cotelor după o comandă (ADR 0330 §3), înregistrată în jurnal când modulul vine (cu judecata cotelor, deci cu
  * orice document care are cote, și cu unealta Cote). Pe fiecare foaie cu cote legate a cărei lume s-ar fi putut schimba
  * (instanțele foii sau piesele), un capăt legat înainte și dezlegat după își scrie punctul de dinainte: ultimul punct văzut.
- * Legătura rămâne, ca panoul să spună de ce s-a dezlegat. Un capăt deja dezlegat nu se mai atinge.
+ * Legătura rămâne, ca panoul să spună de ce s-a dezlegat. Un capăt deja dezlegat nu se mai atinge. O cotă de lungime (felia
+ * 10.4↑e-2) își scrie și ultima lungime văzută (`urma`), ca să rămână la ea.
  */
-import { felCunoscut, indexLume, punctAncora } from './cote.ts';
+import { cotaVazuta, felCunoscut, indexLume, punctAncora } from './cote.ts';
 import type { AncoraCota, Cota, Document } from './document.ts';
 import { inregistreazaCotele, type Comanda } from './jurnal.ts';
 
@@ -32,7 +33,7 @@ export function dezleagaDupa(inainte: Document, dupa: Document): Comanda[] {
       });
       if (!ale) return c;
       schimbat = true;
-      return { ...c, puncte };
+      return { ...cotaVazuta(c, lumeV), puncte };
     });
     if (schimbat) rez.push({ tip: 'inlocuieste-cote', foaie: f.id, vechi: cote, nou: noi });
   }

@@ -46,6 +46,25 @@ function problemaAncora(a: unknown): string | null {
   return p ? `legătura.${p}` : null;
 }
 
+/**
+ * Lungimea (felia 10.4↑e-2): capătul, dacă e legat, la mijlocul unei laturi; direcția etichetei (`linie.u`, grade, în ±360);
+ * `pe`, dacă e, „contur”; ultima lungime văzută (`urma`), dacă e, un număr finit nenegativ și dacă latura e curbă.
+ */
+function problemaLungime(c: Brut, linie: Brut): string | null {
+  const l = (c['puncte'] as Brut[])[0]?.['legatura'];
+  if (obiect(l) && obiect(l['loc']) && l['loc']['fel'] !== 'mijloc') return 'o lungime e legată la mijlocul unei laturi (loc.fel e mijloc)';
+  const u = linie['u'];
+  if (typeof u !== 'number' || !Number.isFinite(u) || Math.abs(u) > 360) return 'linie.u e direcția etichetei, în grade (±360)';
+  if (Object.hasOwn(c, 'pe') && c['pe'] !== 'contur') return 'pe e „contur”, sau lipsește (latura)';
+  if (Object.hasOwn(c, 'urma')) {
+    const m = c['urma'];
+    if (!obiect(m) || !inPlafon(m['l']) || (m['l'] as number) < 0 || typeof m['curba'] !== 'boolean') {
+      return `urma are l, un număr finit de la 0 la ${PLAFON.translatie}, și curba, adevărat sau fals`;
+    }
+  }
+  return null;
+}
+
 function problemaCota(c: Brut): string | null {
   const fel = c['fel'];
   if (typeof fel !== 'string') return '`fel` lipsește sau nu e un text';
@@ -63,6 +82,10 @@ function problemaCota(c: Brut): string | null {
   if (!inPlafon(linie['d'])) return `linie.d nu e un număr finit în ±${PLAFON.translatie}`;
   for (const s of ['s1', 's2']) {
     if (Object.hasOwn(linie, s) && linie[s] !== 1 && linie[s] !== -1) return `linie.${s} e 1 sau −1`;
+  }
+  if (fel === 'lungime') {
+    const p = problemaLungime(c, linie);
+    if (p) return p;
   }
   if (Object.hasOwn(c, 'text') && (typeof c['text'] !== 'string' || c['text'].length > PLAFON.numeLungime)) {
     return `text nu e un text de cel mult ${PLAFON.numeLungime} de caractere`;

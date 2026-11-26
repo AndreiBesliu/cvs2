@@ -407,13 +407,14 @@ export type AncoraCota = { x: number; y: number; legatura?: LegaturaCota; [cheie
  * Felurile cunoscute ale unei cote (ADR 0330 §4): lanțul și linia de bază sunt cote liniare puse una după alta. Lista lor, ca
  * valoare, stă în `cote.ts` (în afara pachetului de pornire).
  */
-export type FelCota = 'orizontala' | 'verticala' | 'aliniata' | 'raza' | 'diametru' | 'unghi';
+export type FelCota = 'orizontala' | 'verticala' | 'aliniata' | 'raza' | 'diametru' | 'unghi' | 'lungime';
 /**
  * Unde stă linia cotei (ADR 0330 §2): la cotele liniare, `d` e distanța liniei de cotă de primul punct, pe normala din stânga
  * direcției măsurate; la rază și diametru, cât iese linia dincolo de punctul de pe cerc; la unghi, raza arcului, iar `s1` și
- * `s2` (±1) aleg semidreptele (unghiul din cele patru).
+ * `s2` (±1) aleg semidreptele (unghiul din cele patru); la lungime (felia 10.4↑e-2), `d` e lungimea liniei etichetei, iar `u`
+ * direcția ei, în grade.
  */
-export type LinieCota = { d: number; s1?: number; s2?: number; [cheie: string]: unknown };
+export type LinieCota = { d: number; s1?: number; s2?: number; u?: number; [cheie: string]: unknown };
 /**
  * O cotă a foii (ADR 0330): nu se taie, deci a intrat fără schemă nouă, ca ghidajele. `puncte`: 2 la cotele liniare, la rază
  * și la diametru (centrul, apoi punctul de pe cerc), 3 sau 4 la unghi (vârful și câte un punct pe fiecare latură, sau două

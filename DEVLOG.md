@@ -16259,3 +16259,23 @@ angrenaje […], brațul de macara, barca cu elice”); pornită după unirea lu
   clonă. Pornirea 111,6 kB (neschimbată), totalul 923,0 → 923,9 / 1 000 kB (+0,9, măsurat local); `main` `78075223` adus
   (doar documente). Urmează e-2 (lungimile).
 
+## 2026-11-26 — Felia 10.4↑e-2: lungimea laturii și a conturului (ADR 0330)
+
+**Prompt:** același cu e-1 (sesiunea principală, 26.11, 20:16: „Zi-le ca pot continua cu ce urmeaza la fiecare”; întâi
+toleranțele și lungimile).
+**Started:** 26.11, 20:58, în sesiunea cloud a liniei cotelor, după e-1. **Completed:** 26.11, 21:30 (în container; CI-ul, pe
+commit-ul împins).
+
+- **Proba întâi, pe hârtie:** `cote.lungime.test.ts`: lungimea laturii (100, 50, semicercul 20π, cubica 50 (√2 + asinh 1)) și
+  a conturului (300, 40 + 20π), simbolul arcului doar pe arc și cubică, „L ” pe contur, urma la dezlegare (și scrisă de jurnal),
+  desenul etichetei (linia, umărul, săgeata, simbolul arcului), punerea din clic, exportul fără DIMENSION, ușa, programul
+  neatins pe placa 1.
+- **Pur:** `lungimeCota`, `masuraCota`, `cotaVazuta` (`src/model/cote.ts`), `lungimeSegmentului` (`src/model/curba.ts`),
+  `desenLungime` (`src/model/desenCota.ts`), `cotaLungimeLa` (`src/model/coteLungime.ts`); judecata ușii; jurnalul scrie urma.
+  **Unealta:** cererile `l` și `c` (din meniul de clic dreapta), tragerea etichetei, „Dezleagă” cu urma. **Exportul:** prin
+  `cotaCitita`, comun cu „Fă desen din cotă”; lungimea n-are DIMENSION.
+- **Bara de sus nu mai are loc** (22 px liberi în română, un buton are 34): lungimea stă în meniul de clic dreapta (întrebarea
+  15). Oracolul Python, cu corpusul al cincilea, trece din prima pe valorile de pe hârtie (DXF 103 segmente, exact). Manualul
+  (ro, en), e2e noi 2; otrăvurile, într-o clonă. Pornirea 111,6 kB (neschimbată), totalul 923,9 → 925,4 / 1 000 kB (+1,5,
+  măsurat local). Urmează f (cota între foi).
+

@@ -130,6 +130,10 @@ față. Fără cod de produs până la răspunsuri. De hotărât acolo, între a
   mărimea bucății contului spusă întâi sesiunii principale). **e-1 gata pe ramură:** toleranța ca câmp opțional al cotei
   (`toleranta: { sus, jos }`, fără schemă nouă), scrisă după cifră („100 ±0,1”, „100 +0,2 -0,1”) peste tot unde e cifra, cu
   rândul Toleranța în panoul cotei. Întrebările 11–14, la owner, cu recomandările (11a implementată). **Urmează:** e-2.
+- **26.11, e-2 gata pe ramură:** felul `lungime` (latura sau conturul întreg), legat la mijlocul laturii, cu urma la dezlegare;
+  eticheta cu săgeată, simbolul arcului desenat pe o latură curbă, „L ” pe contur; din meniul de clic dreapta („Cotează lungimea
+  laturii”, „Cotează lungimea conturului”), fiindcă bara de sus nu mai are loc; în DXF, ca linii și cifre și cu DIMENSION.
+  Întrebările 12 și 15, la owner, cu recomandările implementate. **Urmează:** f (cota între foi, după întrebarea 13).
 
 ## Deciziile owner-ului
 
@@ -138,6 +142,11 @@ față. Fără cod de produs până la răspunsuri. De hotărât acolo, între a
   cât mai multe, într-o zonă de setări generale, nu în Proiectare.
 
 ## Capcane găsite
+
+- **Sub colțul din stânga-jos al foii stă rândul comenzilor foii active:** o probă e2e care apasă pe ceva desenat jos, lângă
+  marginea foii, nimerește un buton (proba etichetei de lungime a căzut așa; trage acum deasupra formei).
+- **Fontul cifrelor n-are „⌒”, „Σ” sau „∩”:** un semn nou în cifra unei cote se verifică întâi în Relief SingleLine
+  (`cifreDinFont(...).lipsa`); simbolul arcului e desenat ca geometrie.
 
 - **Felul ales într-un panou nu trebuie să treacă peste starea documentului:** după o anulare, un fel ținut de panou
   („Simetrică”) rămânea peste o toleranță cu abateri diferite (găsit de otravă la e-1). Ce ține panoul în plus față de
