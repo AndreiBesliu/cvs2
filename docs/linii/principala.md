@@ -153,20 +153,21 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
   printr-o schiță.
 - **Observabilitatea:** erorile ajung în jurnalul aplicației; joburile își lasă marcajul.
 
-## Starea pe 26.11.2026, dimineața (după a cincizeci și una unire din cloud)
+## Starea pe 26.11.2026, la prânz (după a cincizeci și una unire din cloud)
 
-- **Pe test:** `1d9671d3` (lotul 44: 28.8↑k, curățenia vizuală a ferestrei exportului; publicat pe 26.11 la
-  08:56, cu serverul neschimbat; completul pe `main` 45763781195, verde; proba de fum, bună). Înainte:
-  `c1d1c81d` (lotul 43: 3.Cl-3 și 3.Cl-4, ornamentul cu nume și brăduțul LEGO, Easy 3Draw 18.38.0), pe 26.11 la
+- **Pe test:** `a2e5bfdf` (lotul 46: 28.8↑l, tastatura și cititorul de ecran în fereastra exportului; publicat pe
+  26.11 la 11:25, cu serverul neschimbat; completul pe `main` 45782747599, verde; proba de fum, bună). Înainte:
+  `1a577464` (lotul 45: 3.Cf-2, răsturnările și jumătățile de pas în „Modelul”, Easy 3Draw 18.39.0), pe 26.11 la
+  10:42; `1d9671d3` (lotul 44: 28.8↑k, curățenia vizuală a ferestrei exportului), la 08:56; `c1d1c81d` (lotul 43: 3.Cl-3 și 3.Cl-4, ornamentul cu nume și brăduțul LEGO, Easy 3Draw 18.38.0), pe 26.11 la
   07:46; `9edf9ae0` (lotul 42: 18.1↑d, degroșarea reliefului, cu documentul v30, și fișa plăcii 18; 10.4↑d-2 și
   d-3, „Fă desen din cotă” și cotele în raportul foilor; 28.8↑j, greșelile ferestrei exportului), la 06:47;
   `9c728412` (lotul 41: 3.Cl-2, globul de Crăciun, Easy 3Draw 18.36.0, și 10.4↑d-1, cotele în lanț), la
   04:35; `7a754885` (lotul 40: 28.8↑i, viteza ferestrei exportului), la 03:15; `554b72cb` (lotul 39: 3.Cl-1, decorațiunile de Crăciun, Easy 3Draw 18.35.0), la 01:43; `c9911c14` (lotul 38: 3.Cf-1,
   alipirea la prinderi în vederea „Modelul”, Easy 3Draw 18.34.0), pe 25.11 la 23:28; `5649067c` (lotul 37: 16.A↑b-7, Escape în „Frezele mele”; 18.1↑c, finisarea reliefului, cu documentul
   v29; 28.8↑h, fereastra exportului „pe hârtie”), pe 25.11 la 22:23; `75bcf3fb` (lotul 36: „Pune-o înapoi în
-  bibliotecă”, cotele ca DIMENSION), la 20:54. **În `main`, nepublicate încă:** 3.Cf-2, răsturnările și jumătățile de pas în „Modelul”, Easy
-  3Draw 18.39.0 (`3e56e8cf`), unită pe 26.11 la 09:18: în drum, lotul 45; 28.8↑l, tastatura și cititorul de ecran în
-  fereastra exportului (`c3a0c184`), unită la 10:14: lotul 46, după el.
+  bibliotecă”, cotele ca DIMENSION), la 20:54. **Pe test e tot ce e în `main`.**
+- **Modelul:** din 26.11, la prânz, sesiunea principală merge pe Opus („o sa folosim Opus de aici in colo”); sesiunile
+  liniilor își păstrează modelul până îl schimbă owner-ul în fiecare.
 - **`main`, din cloud:** pe 23.11: 3.Tq (`0ae9c6c1`); 11.3↑e și A.4 (`ddaa7ead`); 3.Tr, unită de linia elicelor
   (`d262e57a`); 25.8↑a și A.5 (`1b46c955`), cu reparația probei extensiilor (`8287d66e`); 11.3↑f, unită de linia
   planșelor (`f4601938`); A.6 (`4497d639`); 3.Xh (`2d1e482c`) și 12.1↑e-3 cu 12.1↑e-4 (`03460cab`); A.8a cu A.8b

@@ -1933,6 +1933,15 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 26.11.2026, la prânz: **sesiunea principală merge pe Opus de acum** („o sa folosim Opus de aici in colo”, spus în
+  sesiunea principală, după ce owner-ul a schimbat modelul ei cu `/model`). Intrările noi din DEVLOG scriu modelul
+  care a lucrat. Sesiunile liniilor își păstrează modelul până îl schimbă owner-ul în fiecare; o linie nouă pornită
+  din sesiunea principală poate primi Opus de la început. **Loturile 45 și 46 sunt pe test:** `1a577464` (3.Cf-2,
+  răsturnările și jumătățile de pas în „Modelul”, Easy 3Draw 18.39.0), din 26.11, 10:42 (completul pe `main`
+  45775484767, verde: unit 10 729 / 0, e2e 951 / 951, funcțiile pe emulatoare 136 / 136, paginile 60 / 60), și
+  `a2e5bfdf` (28.8↑l, tastatura și cititorul de ecran în fereastra exportului), din 11:25 (completul 45782747599,
+  verde: unit 10 729 / 0, e2e 954 / 954, funcțiile pe emulatoare 136 / 136, paginile 60 / 60); probele de fum, bune.
+  Pe test e tot ce e în `main`.
 - 26.11.2026, dimineața (a cincizeci și una unire din cloud): **tastatura și cititorul de ecran în fereastra „Exportă
   G-code” (28.8↑l), unite în `main`** (sesiunea principală, ramura `unire-2611j`, peste unirea atelierului). Linia
   exportului, ramura `wip/28.8-export`, `454c6fa3`, PR-ul `AndreiBesliu/cvs2#58` (ADR 0291; constatarea 13 a
