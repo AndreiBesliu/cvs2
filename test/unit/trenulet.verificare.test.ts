@@ -110,6 +110,11 @@ test('ciocnirea, cu cutiile mult suprapuse: o felie subțire de lemn comun tot n
   assert.equal(cuFelie([2, 9.4, 0], [8, 19, 10]), true, 'felie de 0,6 mm pe y');
   assert.equal(cuFelie([2, 0, 9.9], [8, 10, 19]), false, 'felie de 0,1 mm pe z');
   assert.equal(cuFelie([2, 0, 9.4], [8, 10, 19]), true, 'felie de 0,6 mm pe z');
+  // la fel la marginea cealaltă a primei cutii (acolo, primul rând de raze, la 0,16 mm de margine, cade în felia de 0,2 mm)
+  assert.equal(cuFelie([2, -9, 0], [8, 0.2, 10]), false, 'felie de 0,2 mm pe y, la marginea de jos');
+  assert.equal(cuFelie([2, -9, 0], [8, 0.6, 10]), true, 'felie de 0,6 mm pe y, la marginea de jos');
+  assert.equal(cuFelie([2, 0, -9], [8, 10, 0.2]), false, 'felie de 0,2 mm pe z, la marginea de jos');
+  assert.equal(cuFelie([2, 0, -9], [8, 10, 0.6]), true, 'felie de 0,6 mm pe z, la marginea de jos');
 });
 
 test('ciocnirea ține seama de așezare: a doua plasă e dusă cu transformarea ei', () => {
