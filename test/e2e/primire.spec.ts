@@ -152,3 +152,15 @@ test('pe live, primirea nu se încarcă: niciun „gata”, nicio bucată a prim
   expect(await page.evaluate(() => (window as unknown as Fixtura).gata)).toBe(false);
   expect(cerute).toEqual([]);
 });
+
+test('Escape răspunde „renuntat” și cu focusul căzut pe pagină (felia 3.Aw)', async ({ page, baseURL }) => {
+  const cvs2 = await deschide(page, baseURL);
+  const dialog = cvs2.getByTestId('dialog-lucrare');
+  await trimite(page, lucrare('p', 'Pe pagină', [fisier('p.nc', prog(5))]));
+  await expect(dialog).toBeVisible();
+  await cvs2.evaluate(() => { (document.activeElement as HTMLElement | null)?.blur(); });
+  expect(await cvs2.evaluate(() => document.activeElement === document.body), 'focusul e pe pagină').toBe(true);
+  await cvs2.keyboard.press('Escape');
+  await expect(dialog).toHaveCount(0);
+  await expect.poll(() => primite(page)).toEqual([{ protocol: 'cvs2-lucrare', versiune: 1, tip: 'primit', id: 'p', renuntat: true, acceptate: [], refuzate: [] }]);
+});
