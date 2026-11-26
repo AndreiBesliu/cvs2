@@ -24,7 +24,7 @@ const op = (v: Liber): Liber => ({
 const relief = { tip: 'relief', nx: 40, ny: 40, celula: 0.5, straturi: [{ id: 's1', mod: 'aduna', vizibil: true, dale: 'ab'.repeat(32) }] };
 function doc(operatii: readonly Liber[], cuRelief = false): Liber {
   return {
-    schema: 30, rev: 0,
+    schema: 31, rev: 0,
     piese: [{
       id: 'p',
       radacina: {

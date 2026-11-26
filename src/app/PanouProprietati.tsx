@@ -162,6 +162,8 @@ function operatie(o: Operatie, n: number, grosimeFoaie?: number): ReactNode {
         {rand(t('export.pas'), mm(o.pas))}
         {rand(t('prop.freza'), o.scula.forma?.tip === 'bila'
           ? t('prop.freza.valoare-bila', { numar: o.scula.numar, diametru: mmFreza(o.scula.diametru) })
+          : o.scula.forma?.tip === 'toroidala'
+          ? t('prop.freza.valoare-toroidala', { numar: o.scula.numar, diametru: mmFreza(o.scula.diametru), raza: mmFreza(o.scula.forma.raza) })
           : o.scula.forma?.tip === 'v'
           ? o.scula.forma.varf
             ? t('prop.freza.valoare-v-varf', { numar: o.scula.numar, unghi: o.scula.forma.unghi, diametru: mmFreza(o.scula.diametru), varf: mmFreza(o.scula.forma.varf) })

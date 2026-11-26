@@ -6691,3 +6691,45 @@ export const REFUZATE_V30: readonly RefuzV18[] = [
   rF('RZ18 o degroșare într-o piesă fără relief', docV18(dreptunghi(), [opV18(), degrosare30({ noduri: ['e'] })], 30), 'relief', 'piese.0.operatii.1', 'ADR 0313 §2: o degroșare referă doar reliefuri'),
   rF('RZ19 un v29 cu câmpul `degrosare` pe finisare (ciocnirea migrării)', docRelief28(relief28(), { operatii: [opV18(), finisare29({ degrosare: { adaos: 0.5, unghi: 0 } })] }, 29), 'ciocnire', 'piese.0.operatii.1.degrosare', 'ADR 0313 §3: nu e un v29 valid'),
 ];
+
+// ---------------------------------------------------------------------------------------------------------------
+// v31 (ADR 0303): freza toroidală (`{ tip: 'toroidala', raza }`, 0 < raza < diametru / 2). Cazurile pe hârtie, scrise din ADR.
+
+const laV31 = (d: Liber): Liber => cuSchema(d, 31);
+/** O freză toroidală (ADR 0303 §1): raza colțului `raza`, sub jumătatea diametrului. */
+const toro31 = (numar: number, diametru: number, raza: number, v: Liber = {}): Liber => (
+  { numar, nume: 'freza toroidala', diametru, forma: { tip: 'toroidala', raza }, ...v }
+);
+/** Documentul dreptunghiului `e`, cu profilul `o1` și operațiile date (implicit v31). */
+const docT31 = (alte: readonly Liber[] = [], schema = 31): Liber => docV18(dreptunghi(), [opV18(), ...alte], schema);
+/** Profilul `o2` pe linie al dreptunghiului, cu scula dată. */
+const peLinie31 = (scula: Liber): Liber => opV18({ id: 'o2', latura: 'pe-linie', adancime: 1, pas: 1, scula });
+
+export const VALIDE_V31: readonly CazV18[] = [
+  ...VALIDE_V30.map((c) => ({ nume: `${c.nume} (v31)`, doc: laV31(c.doc) })),
+  { nume: 'T01 toroidala Ø6 cu raza colțului 1, pe un profil pe linie (ADR 0303 §1)', doc: docT31([peLinie31(toro31(2, 6, 1))]) },
+  { nume: 'T02 marginile razei: 0,001 și 2,999 pe Ø6', doc: docT31([peLinie31(toro31(2, 6, 0.001)), opV18({ id: 'o3', latura: 'pe-linie', scula: toro31(3, 6, 2.999) })]) },
+  { nume: 'T03 toroidala în fundul plat și ca freză de rest (ușa o primește; lucrarea judecă)', doc: docT31([vcarve({ fundPlat: fund({ scula: toro31(6, 3.175, 0.5) }) }), buzunar({ rest: [{ scula: toro31(7, 2, 0.25), pasLateral: 0.5 }] })]) },
+  { nume: 'T04 câmpuri necunoscute în forma toroidalei (rămân)', doc: docT31([peLinie31(toro31(2, 6, 1, { forma: { tip: 'toroidala', raza: 1, unghi: 60, nota: 'x' } }))]) },
+  { nume: 'T05 toroidala cu valorile de lucru și originea din bibliotecă (v27)', doc: docT31([peLinie31({ ...freza27(2, 6), forma: { tip: 'toroidala', raza: 1 } })]) },
+  { nume: 'T06 toroidala pe o finisare a reliefului (ușa o primește; lucrarea o refuză)', doc: docFin29(finisare29({ scula: toro31(4, 6, 1) }), [], 31) },
+  { nume: 'T07 o bilă și o toroidală de același diametru, pe două profile', doc: docT31([peLinie31(toro31(2, 6, 1)), opV18({ id: 'o3', latura: 'pe-linie', scula: bila29(3, 6) })]) },
+];
+
+const opT = 'piese.0.operatii.1';
+
+export const REFUZATE_V31: readonly RefuzV18[] = [
+  ...REFUZATE_V30.filter((r) => !r.nume.startsWith('R01 ')),
+  { nume: 'R01 scris de o versiune mai nouă (v32)', doc: docT31([peLinie31(toro31(2, 6, 1))], 32), categorie: 'schema', camp: 'schema', motiv: 'ADR 0070 §2: o versiune mai veche refuză una mai nouă', text: 'versiune mai nouă' },
+  rF('RT0 un v30 cu toroidala pe profil (forma, necunoscută la v30)', docT31([peLinie31(toro31(2, 6, 1))], 30), 'scula', `${opT}.scula.forma.tip`, 'ADR 0303 §1: toroidala vine cu v31'),
+  rF('RT1 raza colțului 0', docT31([peLinie31(toro31(2, 6, 0))]), 'scula', `${opT}.scula.forma.raza`, 'ADR 0303 §1: în (0, Ø / 2)'),
+  rF('RT2 raza cât jumătatea diametrului (o bilă)', docT31([peLinie31(toro31(2, 6, 3))]), 'scula', `${opT}.scula.forma.raza`, 'ADR 0303 §1: cât jumătatea e o bilă'),
+  rF('RT3 raza peste jumătatea diametrului', docT31([peLinie31(toro31(2, 6, 4))]), 'scula', `${opT}.scula.forma.raza`, 'ADR 0303 §1: sub Ø / 2'),
+  rF('RT4 raza lipsă', docT31([peLinie31({ numar: 2, nume: 'freza toroidala', diametru: 6, forma: { tip: 'toroidala' } })]), 'scula', `${opT}.scula.forma.raza`, 'ADR 0303 §1: cerută'),
+  rF('RT5 raza ca text', docT31([peLinie31(toro31(2, 6, '1' as unknown as number))]), 'scula', `${opT}.scula.forma.raza`, 'ADR 0303 §1: un număr'),
+  rF('RT6 raza −1', docT31([peLinie31(toro31(2, 6, -1))]), 'scula', `${opT}.scula.forma.raza`, 'ADR 0303 §1: pozitivă'),
+  rF('RT7 un v30 cu toroidala în fundul plat', docT31([vcarve({ fundPlat: fund({ scula: toro31(6, 3.175, 0.5) }) })], 30), 'fund-plat', `${opT}.fundPlat.scula.forma.tip`, 'ADR 0303 §1: toroidala vine cu v31'),
+  rF('RT8 forma „toroidală” cu diacritice', docT31([peLinie31({ ...toro31(2, 6, 1), forma: { tip: 'toroidală', raza: 1 } })]), 'scula', `${opT}.scula.forma.tip`, "ADR 0303 §1: 'v', 'bila' sau 'toroidala'"),
+  rF('RT9 raza 2,6 pe Ø5 (peste 2,5)', docT31([peLinie31(toro31(2, 5, 2.6))]), 'scula', `${opT}.scula.forma.raza`, 'ADR 0303 §1: sub Ø / 2'),
+  rF('RT10 o freză de rest toroidală cu raza cât jumătatea ei', docT31([buzunar({ rest: [{ scula: toro31(7, 2, 1), pasLateral: 0.5 }] })]), 'rest', `${opT}.rest.0.scula.forma.raza`, 'ADR 0303 §1: sub Ø / 2, pe orice freză'),
+];
