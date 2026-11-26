@@ -12,6 +12,7 @@ import {
   type RezumatFoi, type RezumatJob, type StrategieScula, type TimpPortiune, type Unitati,
 } from './actiuniExportTipuri.ts';
 import { durata } from './durata.ts';
+import { motivPeInteles } from './motivCalcul.ts';
 import { citesteNumar, textNumar } from './numar.ts';
 import { legaturi, muta, ordineAutomata, ordineDinRanguri, riscuri, type RandOrdine } from './ordineExport.ts';
 import { PrevizualizareSimulare } from './PrevizualizareSimulare.tsx';
@@ -19,7 +20,9 @@ import { useLimba } from './useLimba.ts';
 import { verdicteGresite, type GrupExport, type VerdictRand } from './exportGrupuri.ts';
 import { DesenColt, DesenZ0, type DesenComun } from './exportDesene.tsx';
 import { Cartonase, Poza } from './exportPoze.tsx';
-import { cuAceeasiFreza, FisaOperatie, ListaBiblioteca, NotaBiblioteca, RAND_DREPT, type ContextFisa, type InapoiNota } from './FisaOperatie.tsx';
+import {
+  cuAceeasiFreza, FisaOperatie, ListaBiblioteca, NotaBiblioteca, RAND_DREPT, type ContextFisa, type Greseala, type InapoiNota, type ReparatieT,
+} from './FisaOperatie.tsx';
 import { FisaFinisare, RandListaFinisare, type FinisareExport } from './FisaFinisare.tsx';
 import {
   bandaBuna, CHEI_COLT, CHEI_LATURA, citesteRest, ORIGINI, DIAMETRU_FUND_IMPLICIT, faraNumar, incrustatieVRand, inMargini,
@@ -27,7 +30,7 @@ import {
   RAMPA_IMPLICITA, razaEliceImplicita, restBun, rezervaExplicatii, spatiuFolosit, UNGHI_COBORARE_IMPLICIT, URECHI_IMPLICITE, type BunRand,
   type CerereExport, type FrezaRestOperatie, type IncrustatieDreaptaOperatie, type Latura, type OperatieExport, type Rand, type RandRest,
   copieDeReadus, cuFrezaAleasa, cuFrezaPusaInapoi, cuValorileNoi, frezeRanduri, locuriFreze, numarPentruRand, oferitePentruRest, stareOrigine, type FrezaOferita, type OrigineFreza, type SculaOperatie, type StareExport,
-  type CopieRand, type RezultatInapoi, type UndeFreza,
+  type CopieRand, type RezultatInapoi, type UndeFreza, campuriSculaGresite, cheieFreza, cuNumarT, numarDupaConflict, type FrezaT, type LocFreza,
   type ValoriOperatie, type HartieRand, type IntrareHartie,
 } from './exportRand.ts';
 
@@ -42,6 +45,11 @@ type Props = {
   readonly baza: number;
   /** Descrierea fiecărui element în lume (`<instanță>/<element>`), pentru locul unde freza iese din foaie. */
   readonly descrieri: ReadonlyMap<string, string>;
+  /**
+   * Elementul din lume, cu prima operație de pe rând care îl taie (ADR 0291, felia 28.8↑j): „Du-mă la …” lângă un refuz al
+   * calculului. Lipsă: refuzul fără buton.
+   */
+  readonly operatiiLume?: ReadonlyMap<string, string>;
   /** Fila doar citește: operațiile nu se pot schimba, exportul merge pe cele din document. */
   readonly doarCitire: boolean;
   readonly onExporta: (p: CerereExport) => void;
@@ -132,6 +140,8 @@ type Props = {
  * Sub prag, toate rămân randate, ca înainte.
  */
 const PRAG_FISE = 12;
+/** O valoare a rândului din listă, sau „—” când nu e un număr (constatarea 15: azi, „· mm” fără număr). */
+const sau = (x: string): string => (citesteNumar(x) === null ? '—' : x);
 /** Înălțimea locului unei fișe încă nemăsurate: cât ține de obicei o fișă de profil, la 1280 px. */
 const INALTIME_FISA = 2000;
 
@@ -190,7 +200,7 @@ const RandListaOp = memo(function RandListaOp({ o, p, loc, total, mana, trasAici
       <button type="button" className="dx-nav" data-nav={o.cheie} aria-current={curent} data-gresit={gresit ? '' : undefined}
         onClick={() => { a.du(o.cheie); }}>
         <span className="dx-nume">{o.descriere}</span>
-        <span className="dx-meta"><Poza k={`latura.${latura}`} />{nume} · T{p.numarScula} Ø{p.diametruScula} · {p.adancime} mm</span>
+        <span className="dx-meta"><Poza k={`latura.${latura}`} />{nume} · T{sau(p.numarScula)} Ø{sau(p.diametruScula)} · {citesteNumar(p.adancime) === null ? '—' : `${p.adancime} mm`}</span>
       </button>
     </div>
 );
@@ -235,9 +245,11 @@ function Rezumat({ r, operatii, limba, alte }: {
       <p className="nota" data-rezumat="masina" data-sursa={m.sursa}>
         {t(m.sursa === 'setari' ? 'export.rezumat.masina.setari' : 'export.rezumat.masina.implicit', masina)}
       </p>
-      {r.liniiLimitate > 0 && (
-        <p className="avertisment" data-rezumat="limitat">{t('export.rezumat.limitat', { n: r.liniiLimitate })}</p>
-      )}
+      {/* Avansul peste viteza maximă (ADR 0291 §4a, felia 28.8↑j): avertisment doar față de `$$`-ul lipit; cu setările din fabrică,
+          o notă, fiindcă ar apărea la orice program și omul nu-l poate rezolva din fereastră. */}
+      {r.liniiLimitate > 0 && (m.sursa === 'setari'
+        ? <p className="avertisment" data-rezumat="limitat" data-sursa="setari">{t('export.rezumat.limitat', { n: r.liniiLimitate })}</p>
+        : <p className="nota" data-rezumat="limitat" data-sursa="implicit">{t('export.rezumat.limitat.implicit', { n: r.liniiLimitate })}</p>)}
       <table data-rezumat="operatii" aria-label={t('export.rezumat.pe-operatie')}>
         {antet('export.rezumat.operatia')}
         <tbody>
@@ -296,7 +308,7 @@ function ListaFoi({ foi: r, sha256, limba }: { readonly foi: RezumatFoi; readonl
  */
 export function DialogExport(
   {
-    operatii, ordineAutomata: automataLucrarii, baza, descrieri, doarCitire, onExporta, onInchide, onReseteaza, stare, setariMasina,
+    operatii, ordineAutomata: automataLucrarii, baza, descrieri, operatiiLume, doarCitire, onExporta, onInchide, onReseteaza, stare, setariMasina,
     onSetariMasina, supracursa, onSupracursa, prinFoaie, onPrinFoaie, onDeschideInMasina, trimite = false, foaie, numeFoaie, placute, foi,
     placuteToate, onRaport, grosimeFoaie, onAlegeUrechi, frezeOferite, bibliotecaToata = null, finisari = [], onPuneInapoi, hartie,
   }: Props,
@@ -551,46 +563,52 @@ export function DialogExport(
   const randuri = operatii.map((o) => randBun(param[o.cheie]));
   const sculeBune = randuri.every((b) => b.scula);
   const fmtFreza = new Intl.NumberFormat(limba === 'ro' ? 'ro-RO' : 'en-GB', { maximumFractionDigits: 3 });
+  // Marginile din greșelile pe câmp (felia 28.8↑j), fără gruparea miilor: „1.000 mm” s-ar citi un milimetru.
+  const fmtMargine = new Intl.NumberFormat(limba === 'ro' ? 'ro-RO' : 'en-GB', { maximumFractionDigits: 3, useGrouping: false });
   // Cât scoate o trecere, rotunjit la sutime (ca într-o fișă de atelier); lucrarea folosește valoarea exactă.
   const fmtTrecere = new Intl.NumberFormat(limba === 'ro' ? 'ro-RO' : 'en-GB', { maximumFractionDigits: 2 });
   // Frezele rândurilor (ADR 0084): același număr cu două diametre (sau două forme, ADR 0090) ar fi două freze sub același T.
   // Freza se compară după valorile exacte; în motiv apare scrisă după limbă.
   const scule = new Map<number, Map<string, string>>();
-  const adaugaFreza = (n: number, d: number, u: number | null, v: number | null = null, bila = false): void => {
+  // Fiecare freză, cu locul ei pe rând (fără loc, a unei finisări): „Dă-i T{n}” caută numărul nou printre ele (28.8↑j).
+  const frezeT: FrezaT[] = [];
+  const adaugaFreza = (n: number, d: number, u: number | null, v: number | null = null, bila = false, loc?: LocFreza): void => {
     const m = scule.get(n) ?? new Map<string, string>();
-    // Bila (ADR 0312): același diametru cu altă formă e altă freză.
-    if (bila) {
-      m.set(`${d} bila`, `Ø${fmtFreza.format(d)} mm ${t('export.finisare.forma.bila')}`);
-      scule.set(n, m);
-      return;
-    }
-    // ADR 0092: același unghi cu alt vârf e altă freză.
+    // Bila (ADR 0312): același diametru cu altă formă e altă freză. ADR 0092: același unghi cu alt vârf e altă freză.
+    const cheie = cheieFreza(d, bila ? null : u, bila ? null : v, bila);
     const varf = u !== null && v !== null && v > 0 ? v : null;
-    m.set(u !== null ? `${d} V${u}${varf !== null ? ` t${varf}` : ''}` : `${d}`, u !== null
+    m.set(cheie, bila ? `Ø${fmtFreza.format(d)} mm ${t('export.finisare.forma.bila')}` : u !== null
       ? `Ø${fmtFreza.format(d)} mm V${fmtFreza.format(u)}°${varf !== null ? ` ${t('export.freza.varf-scurt', { mm: fmtFreza.format(varf) })}` : ''}`
       : `Ø${fmtFreza.format(d)} mm`);
     scule.set(n, m);
+    frezeT.push({ numar: n, cheie, ...(loc ? { loc } : {}) });
   };
   for (const o of operatii) {
     const p = param[o.cheie];
     const n = p ? citesteNumar(p.numarScula) : null, d = p ? citesteNumar(p.diametruScula) : null;
     const u = p && p.formaScula === 'v' ? citesteNumar(p.unghiV) : null;
-    if (n !== null && d !== null) adaugaFreza(n, d, u, p ? citesteNumar(p.varfV) : null);
+    const loc = (unde: UndeFreza): LocFreza => ({ cheie: o.cheie, unde });
+    if (n !== null && d !== null) adaugaFreza(n, d, u, p ? citesteNumar(p.varfV) : null, false, loc('scula'));
     // Și freza dreaptă a fundului plat (ADR 0091), cu bifa pusă.
     const nf = p?.tip === 'vcarve' && p.fundPlat ? citesteNumar(p.numarSculaFund) : null, df = p ? citesteNumar(p.diametruSculaFund) : null;
-    if (nf !== null && df !== null) adaugaFreza(nf, df, null);
+    if (nf !== null && df !== null) adaugaFreza(nf, df, null, null, false, loc('fund'));
     // Și freza dopului cu pereți drepți (ADR 0171, răspunsul 4), cu bifa pusă: același T e aceeași freză și în fișierul dopului.
     const dopPropriu = p?.tip === 'buzunar' && p.incrustatieDreapta && p.frezaDop;
     const nd = dopPropriu ? citesteNumar(p.numarSculaDop) : null, dd = p ? citesteNumar(p.diametruSculaDop) : null;
-    if (nd !== null && dd !== null) adaugaFreza(nd, dd, null);
+    if (nd !== null && dd !== null) adaugaFreza(nd, dd, null, null, false, loc('dop'));
     // Și freza decupării dopului cu bandă (ADR 0172), cu bifa ei și cu decuparea: același T e aceeași freză și în fișierul dopului.
     const bandaProprie = p?.tip === 'vcarve' && p.incrustatie && p.jurDop === 'banda' && p.decupareBanda && p.frezaBanda;
     const nb = bandaProprie ? citesteNumar(p.numarSculaBanda) : null, db = p ? citesteNumar(p.diametruSculaBanda) : null;
-    if (nb !== null && db !== null) adaugaFreza(nb, db, null);
+    if (nb !== null && db !== null) adaugaFreza(nb, db, null, null, false, loc('banda'));
     // Și frezele de rest (ADR 0093): ale buzunarului și, cu bifa pusă, ale fundului plat și ale dopului.
-    for (const r of [...(p?.tip === 'buzunar' ? p.rest : []), ...(p?.tip === 'vcarve' && p.fundPlat ? p.restFund : []), ...(dopPropriu ? p.restDop : [])]) {
-      const nr = citesteNumar(r.numar), dr = citesteNumar(r.diametru);
-      if (nr !== null && dr !== null) adaugaFreza(nr, dr, null);
+    const resturi: ReadonlyArray<readonly ['buzunar' | 'fund' | 'dop', readonly RandRest[]]> = [
+      ['buzunar', p?.tip === 'buzunar' ? p.rest : []], ['fund', p?.tip === 'vcarve' && p.fundPlat ? p.restFund : []], ['dop', dopPropriu ? p.restDop : []],
+    ];
+    for (const [rest, lista] of resturi) {
+      lista.forEach((r, k) => {
+        const nr = citesteNumar(r.numar), dr = citesteNumar(r.diametru);
+        if (nr !== null && dr !== null) adaugaFreza(nr, dr, null, null, false, loc({ rest, k }));
+      });
     }
   }
   // Și freza fiecărei finisări a reliefului (ADR 0312 §7): același T e aceeași freză în tot programul.
@@ -599,6 +617,24 @@ export function DialogExport(
       f.scula.forma === 'bila');
   }
   const conflict = [...scule].find(([, ds]) => ds.size > 1);
+  /** O freză pe numărul ciocnit (felia 28.8↑j): doar câmpurile ei se înroșesc. */
+  const ciocnitT = (x: string): boolean => conflict !== undefined && citesteNumar(x) === conflict[0];
+  /** Grupul fișei în care stă freza unui loc (cel în care se spune conflictul ei). */
+  const grupLoc = (u: UndeFreza): GrupExport => (u === 'scula' ? 'freza' : typeof u === 'string' ? u : u.rest === 'buzunar' ? 'rest' : u.rest);
+  /**
+   * „Dă-i T{n}” (ADR 0291 §2a, felia 28.8↑j): pe fiecare grup al rândului cu o freză pe numărul ciocnit, prima ei și numărul ei
+   * nou, după regula rolurilor (`numarDupaConflict`). După un clic, conflictul se socotește din nou.
+   */
+  const reparatiiT = (cheie: string): ReadonlyMap<GrupExport, { readonly unde: UndeFreza; readonly numar: number }> => {
+    const m = new Map<GrupExport, { readonly unde: UndeFreza; readonly numar: number }>();
+    if (!conflict) return m;
+    for (const f of frezeT) {
+      if (f.loc?.cheie !== cheie || f.numar !== conflict[0] || m.has(grupLoc(f.loc.unde))) continue;
+      const n = numarDupaConflict(frezeT.filter((x) => x !== f), f);
+      if (n !== null) m.set(grupLoc(f.loc.unde), { unde: f.loc.unde, numar: n });
+    }
+    return m;
+  };
   const operatiiBune = sculeBune && !conflict && randuri.every((b) => b.adancime && b.pas);
   const urechiBune = randuri.every((b) => b.numar && b.latime && b.grosime);
   const rampeBune = randuri.every((b) => b.rampa);
@@ -883,9 +919,9 @@ export function DialogExport(
                 onMana={() => { pune(lista.map((x, i) => (i === k ? { ...x, origine: null } : x))); }} />
             ) : <span className="gol-biblioteca" />)}
             <input type="text" inputMode="numeric" value={r.numar} data-camp={`${pre}rest-scula`} disabled={oprit} aria-label={t('export.freza.numar')}
-              className="numar-scula" aria-invalid={!bune[k]} onChange={(ev) => { pune(lista.map((x, i) => (i === k ? { ...x, numar: ev.target.value } : x))); }} />
+              className="numar-scula" aria-invalid={!bune[k] || ciocnitT(r.numar)} onChange={(ev) => { pune(lista.map((x, i) => (i === k ? { ...x, numar: ev.target.value } : x))); }} />
             <input type="text" inputMode="decimal" value={r.diametru} data-camp={`${pre}rest-diametru`} disabled={oprit} aria-label={t('export.freza.diametru')}
-              aria-invalid={!bune[k]} onChange={(ev) => { pune(lista.map((x, i) => (i === k ? { ...x, diametru: ev.target.value, origine: null } : x))); }} />
+              aria-invalid={!bune[k] || ciocnitT(r.numar)} onChange={(ev) => { pune(lista.map((x, i) => (i === k ? { ...x, diametru: ev.target.value, origine: null } : x))); }} />
             <input type="text" inputMode="decimal" value={r.pas} data-camp={`${pre}rest-pas`} disabled={oprit} aria-label={t('export.pas-lateral')}
               title={t('export.pas-lateral.titlu')} aria-invalid={!bune[k]} onChange={(ev) => { pune(lista.map((x, i) => (i === k ? { ...x, pas: ev.target.value } : x))); }} />
             <button type="button" data-camp={`${pre}rest-scoate`} disabled={oprit} aria-label={t('export.rest.scoate')} title={t('export.rest.scoate')}
@@ -1079,10 +1115,14 @@ export function DialogExport(
    * Motivul fiecărei verificări greșite a unui rând, spus în grupul câmpului de reparat (ADR 0290): aceleași texte ca sub
    * butoane, fără celelalte rânduri.
    */
-  const motivVerdict = (k: keyof VerdictRand, p: Rand): string => {
+  const motivVerdict = (k: keyof VerdictRand, p: Rand): string | readonly string[] => {
     switch (k) {
-      case 'scula': return t('motiv.scula-invalida', { n: MARGINI_OPERATIE.numarScula, diametru: fmtFreza.format(MARGINI_OPERATIE.diametru) });
-      case 'adancime': case 'pas': return t('motiv.operatie-invalida');
+      // Pe câmp (constatarea 15 a auditului, felia 28.8↑j): fiecare câmp greșit își spune marginile lui.
+      case 'scula': return campuriSculaGresite(p).map((c) => (c === 'numar' ? t('motiv.camp.scula-numar', { n: fmtMargine.format(MARGINI_OPERATIE.numarScula) })
+        : c === 'diametru' ? t('motiv.camp.scula-diametru', { max: fmtMargine.format(MARGINI_OPERATIE.diametru) })
+          : t('motiv.camp.unghi-v', { min: fmtMargine.format(MARGINI_OPERATIE.unghiVMinim), max: fmtMargine.format(MARGINI_OPERATIE.unghiV) })));
+      case 'adancime': return t('motiv.camp.adancime', { max: fmtMargine.format(MARGINI_OPERATIE.adancime) });
+      case 'pas': return t('motiv.camp.pas', { max: fmtMargine.format(MARGINI_OPERATIE.adancime) });
       case 'numar': case 'latime': case 'grosime': return t('motiv.urechi-invalide', {
         n: MARGINI_OPERATIE.urechi, latime: fmtFreza.format(MARGINI_OPERATIE.latimeUreche), grosime: fmtFreza.format(MARGINI_OPERATIE.grosimeUreche),
       });
@@ -1115,22 +1155,33 @@ export function DialogExport(
    * Greșelile unui rând, fiecare cu grupul în care se spune: verificările lui și, la Freza, un T al lui folosit cu altă freză.
    * Frezele de rest ale unui V-carve sunt ale fundului plat, deci se spun acolo.
    */
-  const greseliRand = (cheie: string): Array<readonly [string, GrupExport]> => {
+  const greseliRand = (cheie: string): Array<readonly [string, GrupExport, ReparatieT?]> => {
     const p = param[cheie];
     if (!p) return [];
-    const out: Array<readonly [string, GrupExport]> = [];
-    const pune = (m: string, g: GrupExport): void => { if (!out.some(([x, h]) => x === m && h === g)) out.push([m, g]); };
-    for (const [k, g] of verdicteGresite(randBun(p))) pune(motivVerdict(k, p), k === 'rest' && p.tip === 'vcarve' ? 'fund' : g);
+    const out: Array<readonly [string, GrupExport, ReparatieT?]> = [];
+    const pune = (m: string, g: GrupExport, rep?: ReparatieT): void => {
+      if (!out.some(([x, h]) => x === m && h === g)) out.push(rep ? [m, g, rep] : [m, g]);
+    };
+    for (const [k, g] of verdicteGresite(randBun(p))) {
+      const m = motivVerdict(k, p);
+      for (const x of typeof m === 'string' ? [m] : m) pune(x, k === 'rest' && p.tip === 'vcarve' ? 'fund' : g);
+    }
     // Un T folosit cu două freze se spune la fiecare loc al rândului unde e scris: freza, fundul plat, dopul, banda, frezele de rest.
     if (conflict) {
       const m = t('motiv.scula-conflict', { numar: conflict[0], diametre: [...conflict[1].values()].join(', ') });
       const e = (x: string): boolean => citesteNumar(x) === conflict[0];
       const vc = p.tip === 'vcarve', dop = p.tip === 'buzunar' && p.incrustatieDreapta && p.frezaDop;
-      if (e(p.numarScula)) pune(m, 'freza');
-      if (vc && p.fundPlat && (e(p.numarSculaFund) || p.restFund.some((r) => e(r.numar)))) pune(m, 'fund');
-      if (p.tip === 'buzunar' && p.rest.some((r) => e(r.numar))) pune(m, 'rest');
-      if (dop && (e(p.numarSculaDop) || p.restDop.some((r) => e(r.numar)))) pune(m, 'dop');
-      if (vc && p.incrustatie && p.jurDop === 'banda' && p.decupareBanda && p.frezaBanda && e(p.numarSculaBanda)) pune(m, 'banda');
+      // „Dă-i T{n}” (ADR 0291 §2a, felia 28.8↑j) pe prima freză a grupului cu numărul ciocnit.
+      const rep = reparatiiT(cheie);
+      const da = (g: GrupExport): ReparatieT | undefined => {
+        const x = rep.get(g);
+        return x ? { numar: x.numar, fa: () => { const q = param[cheie]; if (q) schimba(cheie, cuNumarT(q, x.unde, x.numar, text)); } } : undefined;
+      };
+      if (e(p.numarScula)) pune(m, 'freza', da('freza'));
+      if (vc && p.fundPlat && (e(p.numarSculaFund) || p.restFund.some((r) => e(r.numar)))) pune(m, 'fund', da('fund'));
+      if (p.tip === 'buzunar' && p.rest.some((r) => e(r.numar))) pune(m, 'rest', da('rest'));
+      if (dop && (e(p.numarSculaDop) || p.restDop.some((r) => e(r.numar)))) pune(m, 'dop', da('dop'));
+      if (vc && p.incrustatie && p.jurDop === 'banda' && p.decupareBanda && p.frezaBanda && e(p.numarSculaBanda)) pune(m, 'banda', da('banda'));
     }
     // Găurirea (ADR 0087): un cerc pe care freza scrisă nu-l poate găuri se spune lângă freză, înainte de clic (ADR 0291, felia
     // 28.8↑h; până acum, exportul îl refuza abia după clic, cu id-ul intern).
@@ -1265,7 +1316,7 @@ export function DialogExport(
   useLayoutEffect(() => { rezervaExplicatii(panou.current); });
   // Grupul fișei unei operații (ADR 0290): explicația câmpului activ (sau a grupului) în stânga, unde vin desenele din 28.8↑b,
   // câmpurile și greșelile lui în dreapta.
-  const grup = (id: GrupExport, fisa: string, corp: ReactNode, greseli: readonly string[] = [], desen?: (c: DesenComun) => ReactNode): ReactNode => {
+  const grup = (id: GrupExport, fisa: string, corp: ReactNode, greseli: ReadonlyArray<string | Greseala> = [], desen?: (c: DesenComun) => ReactNode): ReactNode => {
     const loc = `${fisa}|${id}`, aici = activ?.loc === loc ? activ : null;
     return (
       <div className="dx-grup" data-grup={id} key={id}>
@@ -1278,7 +1329,8 @@ export function DialogExport(
         <div className="dx-campuri">
           <h4>{t(`export.grup.${id}` as CheieSimpla)}</h4>
           {corp}
-          {greseli.map((g) => <p className="dx-greseala" data-greseala key={g}>{g}</p>)}
+          {greseli.map((g) => (typeof g === 'string' ? <p className="dx-greseala" data-greseala key={g}>{g}</p>
+            : <p className="dx-greseala" data-greseala key={g.text}>{g.text}{g.buton && <> {g.buton}</>}</p>))}
         </div>
       </div>
     );
@@ -1609,7 +1661,16 @@ export function DialogExport(
           <button type="button" onClick={onInchide}>{t('export.inchide')}</button>
           {onRaport && <button type="button" data-buton="raport" onClick={() => { onRaport({ origine, z0 }); }}>{t('export.raport.deschide')}</button>}
         </div>
-          {stare && !stare.ok && !cere && <p role="status" className="avertisment" data-testid="export-stare">{t('export.eroare', { motiv: stare.motiv })}</p>}
+          {stare && !stare.ok && !cere && ((m) => (
+            <div className="dx-invalid">
+              <p role="status" className="avertisment" data-testid="export-stare">{t('export.eroare', { motiv: m.text })}</p>
+              {m.cheie !== null && dupaCheie.has(m.cheie) && (
+                <button type="button" className="dx-du" data-du-calcul={m.cheie} onClick={() => { if (m.cheie !== null) du(m.cheie); }}>
+                  {t('export.du', { nume: dupaCheie.get(m.cheie)?.descriere ?? m.cheie })}
+                </button>
+              )}
+            </div>
+          ))(motivPeInteles(stare.motiv, descrieri, operatiiLume ?? new Map<string, string>(), limba === 'ro'))}
         </div>
       </div>
     </div>

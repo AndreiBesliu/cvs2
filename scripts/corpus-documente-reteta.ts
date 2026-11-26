@@ -6,7 +6,7 @@
  * Proiectul trăiește prin versiuni, ca al unui om: versiunea N deschide salvarea versiunii N − 1 cu ușa ei (deci cu
  * migrarea ei), adaugă ce a adus versiunea N (v2 grupul și a doua instanță, v3 operațiile … v23 literele unei plăcuțe, v24
  * punțile dopului decupat, v25 gaura prin foaie, v26 urechile capacului la locuri alese, v27 frezele din bibliotecă, v28 un
- * medalion în relief, v29 finisarea lui cu freza bilă), apoi
+ * medalion în relief, v29 finisarea lui cu freza bilă, v30 degroșarea lui cu freza plată), apoi
  * salvează, după ce ușa ei a primit documentul neschimbat. v1 îl desenează de la zero. `gol` e documentul nou al lui v1.
  *
  *   node scripts/corpus-documente-reteta.ts <salvarea N − 1 | -> <ieșirea> proiect|gol [<deschis>]
@@ -263,6 +263,18 @@ const ADAUGIRI: Readonly<Record<number, (d: Obj) => void>> = {
       id: 'finisare', tip: 'finisare', noduri: ['medalion'], scula: { numar: 9, nume: 'Bilă 6', diametru: 6, forma: { tip: 'bila' } },
       latura: 'pe-linie', sens: 'urcare', adancime: 8, pas: 3, pasLateral: 0.5, urechi: null, rampa: null, intrari: null, colturi: null,
       finisare: { unghi: 45, nealiniat: true, margine: 'trece', planZero: 1.5 },
+    });
+    d['rev'] += 1;
+  },
+  // v30 (ADR 0313): medalionul se degroșează înaintea finisării, cu freza plată de Ø6 (T1, aceeași cu a profilurilor), cu
+  // 0,5 mm adaos, liniile la 0°, peste margine și cu planul zero ca la finisare: 8 mm podeaua, 3 mm pe trecere, 2,4 mm între
+  // linii.
+  30: (d) => {
+    const medalion = d['piese'].find((p: Obj) => p['id'] === 'medalion');
+    medalion['operatii'].unshift({
+      id: 'degrosare', tip: 'degrosare', noduri: ['medalion'], scula: { numar: 1, nume: 'freza plata', diametru: 6 },
+      latura: 'pe-linie', sens: 'urcare', adancime: 8, pas: 3, pasLateral: 2.4, urechi: null, rampa: null, intrari: null, colturi: null,
+      degrosare: { adaos: 0.5, unghi: 0, margine: 'trece', planZero: 1.5 },
     });
     d['rev'] += 1;
   },

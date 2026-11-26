@@ -224,7 +224,7 @@ function Proba({ s, virgula }: { readonly s: SetariCote; readonly virgula: boole
   );
 }
 
-/** Secțiunea Cotele: cifrele, liniile și capetele, raza și unghiul, comportamentul, lipirea, măsurarea (tabelul ADR 0330 §6). */
+/** Secțiunea Cotele: cifrele, liniile și capetele, raza și unghiul, comportamentul, lipirea, măsurarea, exportul și raportul foilor (tabelul ADR 0330 §6). */
 function SectiuneCote({ s, virgula }: { readonly s: SetariCote; readonly virgula: boolean }): ReactNode {
   const id = useId();
   const pune = (n: SetariCote): void => { schimbaSetariCote(n); };
@@ -235,6 +235,7 @@ function SectiuneCote({ s, virgula }: { readonly s: SetariCote; readonly virgula
   const lipire = (l: Partial<SetariCote['lipire']>): void => { pune({ ...s, lipire: { ...s.lipire, ...l } }); };
   const masurare = (m: Partial<SetariCote['masurare']>): void => { pune({ ...s, masurare: { ...s.masurare, ...m } }); };
   const exp = (x: Partial<SetariCote['export']>): void => { pune({ ...s, export: { ...s.export, ...x } }); };
+  const raport = (x: Partial<SetariCote['raport']>): void => { pune({ ...s, raport: { ...s.raport, ...x } }); };
   const v = <T extends string>(prefix: string, valori: readonly T[]): readonly { readonly v: T; readonly text: string }[] =>
     valori.map((x) => ({ v: x, text: t(`${prefix}.${x}` as CheieSimpla) }));
   const nr = (k: string, setare: string, eticheta: CheieSimpla, valoare: number, margini: Margini, la: (x: number) => void, nota?: CheieSimpla): ReactNode => (
@@ -361,6 +362,10 @@ function SectiuneCote({ s, virgula }: { readonly s: SetariCote; readonly virgula
           valori={v('setari.cote.export.dxf', ['dimension', 'linii'] as const)} la={(x) => { exp({ dxf: x }); }} />
         <Alegere id={`${id}-cifre-export`} setare="export.cifre" eticheta={t('setari.cote.export.cifre')} nota={t('setari.cote.export.cifre.nota')} valoare={s.export.cifre}
           valori={v('setari.cote.export.cifre', ['trasaturi', 'text'] as const)} la={(x) => { exp({ cifre: x }); }} />
+      </Grup>
+      <Grup grup="raport" s={s}>
+        <Bifa id={`${id}-raport-cote`} setare="raport.cuCote" eticheta={t('setari.cote.raport.cu-cote')} nota={t('setari.cote.raport.cu-cote.nota')}
+          valoare={s.raport.cuCote} la={(x) => { raport({ cuCote: x }); }} />
       </Grup>
     </div>
   );

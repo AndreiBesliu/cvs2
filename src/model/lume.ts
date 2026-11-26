@@ -163,8 +163,8 @@ export function taieturiFoaie(doc: Document, indexFoaie = 0): Taietura[] {
     const elemente = new Map(elementeInstanta(p.radacina, i, matriceInstanta(i)).map((e) => [e.nod, e]));
     const noduri = noduriInInstanta(p.radacina, i.texte);
     for (const o of p.operatii) {
-      // Finisarea reliefului (ADR 0312) nu e o tăietură pe contur: are drumul ei în lucrare.
-      if (o.tip === 'finisare') continue;
+      // Finisarea (ADR 0312) și degroșarea reliefului (ADR 0313) nu sunt tăieturi pe contur: au drumul lor în lucrare.
+      if (o.tip === 'finisare' || o.tip === 'degrosare') continue;
       for (const n of noduri(o)) {
         const e = elemente.get(n);
         if (!e) continue;

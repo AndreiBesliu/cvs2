@@ -14,6 +14,12 @@
  *   z = zc + R − √(R² − d²); creasta e cât rămâne deasupra modelului. Pe plan, `creastaPlan` = R − √(R² − (s / 2)²).
  * - **Invarianta 4** (`judecaTraseul`): pe fiecare segment al traseului, cu 16 sub-eșantioane, vârful nu coboară sub CL-ul
  *   exact (nicio scobitură față de model) și nici sub fața plăcii minus pasul trecerii (niciodată mai adânc decât pasul).
+ * - **Adaosul degroșării** (felia 18.1↑d-0, ADR 0313; `clAdaos`, `judecaDegrosarea`): freza plată de rază R, cu adaosul a,
+ *   nu se apropie de model (cu podeaua ca plan al lui) mai mult de a, în nicio direcție. Margine: vârful ei stă cel puțin la
+ *   CL-ul exact al frezei plate de rază R + a, plus a (cilindrul de rază R + a, coborât cu a, cuprinde cilindrul de rază R
+ *   dilatat cu o sferă de rază a). Pe un plan de pantă g, distanța pe normală e a · (1 + g) / √(1 + g²) ≥ a.
+ * - **Materialul pe mai multe operații** (`materialSecventaO`): același simulator de material, pe blocuri cu frezele lor
+ *   (degroșarea, apoi finisarea), cu lemnul rămas la capăt (`ramasO`): cât rămâne deasupra modelului unde a trecut freza.
  */
 
 export type FrezaO =
@@ -324,19 +330,101 @@ export type MaterialO = {
 
 /**
  * Pasul pe trecere, pe material (felia 18.1↑c-2, invarianta „niciodată mai adânc decât pasul pe trecere”): un simulator de
- * material independent de lucrare. Placa e o grilă de coloane (pasul `pasGrila`, pe dreptunghiul `zona`), cu fața la `fata`.
+ * material independent de lucrare (cu freza plată, exact: felia 18.1↑d-0). Placa e o grilă de coloane (pasul `pasGrila`, pe dreptunghiul `zona`), cu fața la `fata`.
  * Adâncimea unei mutări e cât lemn stă, ÎNAINTEA ei, deasupra suprafeței frezei în oricare poziție a ei (eșantionată la
  * `pasEs`): coloana minus (vârful plus urcarea la raza coloanei). Așa o plonjare de 2 mm măsoară 2 mm, nu pasul eșantionului.
  * După măsurare, coloanele coboară la suprafața frezei. Prima poziție vine prin aer. Întoarce cel mai adânc, separat pentru
  * tăieri și pentru rapide (o rapidă nu trebuie să atingă lemnul deloc).
  */
 export function materialO(
-  pasi: readonly PasO[], f: FrezaO, zona: { readonly x0: number; readonly y0: number; readonly x1: number; readonly y1: number },
-  pasGrila: number, fata = 0, pasEs = pasGrila / 2,
+  pasi: readonly PasO[], f: FrezaO, zona: ZonaO, pasGrila: number, fata = 0, pasEs = pasGrila / 2,
 ): MaterialO {
   const nx = Math.max(1, Math.ceil((zona.x1 - zona.x0) / pasGrila)), ny = Math.max(1, Math.ceil((zona.y1 - zona.y0) / pasGrila));
+  return materialPeGrila(pasi, f, zona, pasGrila, nx, ny, new Float64Array(nx * ny).fill(fata), pasEs);
+}
+
+/** Dreptunghiul simulatorului de material, în lume. */
+export type ZonaO = { readonly x0: number; readonly y0: number; readonly x1: number; readonly y1: number };
+
+/** Lemnul simulat: grila de coloane (centrele la zona.x0 + (i + ½) · pasGrila), cu înălțimea fiecărei coloane. */
+export type LemnO = { readonly zona: ZonaO; readonly pasGrila: number; readonly nx: number; readonly ny: number; readonly H: Float64Array };
+
+/**
+ * Simulatorul de material pe operații la rând (felia 18.1↑d-0): fiecare bloc are traseul și freza lui, pe același lemn
+ * (degroșarea, apoi finisarea, în orice ordine). Întoarce adâncimile fiecărui bloc, ca `materialO`, și lemnul de la capăt.
+ */
+export function materialSecventaO(
+  blocuri: ReadonlyArray<{ readonly pasi: readonly PasO[]; readonly f: FrezaO }>, zona: ZonaO, pasGrila: number, fata = 0, pasEs = pasGrila / 2,
+): { readonly blocuri: MaterialO[]; readonly lemn: LemnO } {
+  const nx = Math.max(1, Math.ceil((zona.x1 - zona.x0) / pasGrila)), ny = Math.max(1, Math.ceil((zona.y1 - zona.y0) / pasGrila));
   const H = new Float64Array(nx * ny).fill(fata);
+  const rez = blocuri.map((b) => materialPeGrila(b.pasi, b.f, zona, pasGrila, nx, ny, H, pasEs));
+  return { blocuri: rez, lemn: { zona, pasGrila, nx, ny, H } };
+}
+
+/**
+ * Cât lemn rămâne deasupra modelului `zModel` în coloanele atinse de freză (cele sub `fata`), în zona `in` (lume): cel mai
+ * puțin și cel mai mult, cu locurile lor. Coloanele neatinse nu intră (acolo nu s-a tăiat nimic).
+ */
+export function ramasO(
+  lemn: LemnO, zModel: (x: number, y: number) => number, fata = 0, inZona: (x: number, y: number) => boolean = () => true,
+): { readonly min: number; readonly max: number; readonly undeMin: readonly [number, number] | null; readonly undeMax: readonly [number, number] | null; readonly coloane: number } {
+  let min = Infinity, max = -Infinity, undeMin: readonly [number, number] | null = null, undeMax: readonly [number, number] | null = null, coloane = 0;
+  for (let j = 0; j < lemn.ny; j++) {
+    for (let i = 0; i < lemn.nx; i++) {
+      const h = lemn.H[j * lemn.nx + i]!;
+      if (!(h < fata - 1e-12)) continue;
+      const x = lemn.zona.x0 + (i + 0.5) * lemn.pasGrila, y = lemn.zona.y0 + (j + 0.5) * lemn.pasGrila;
+      if (!inZona(x, y)) continue;
+      const d = h - zModel(x, y);
+      coloane++;
+      if (d < min) { min = d; undeMin = [x, y]; }
+      if (d > max) { max = d; undeMax = [x, y]; }
+    }
+  }
+  return { min, max, undeMin, undeMax, coloane };
+}
+
+/** Miezul simulatorului de material: mutările, pe grila H dată (pe care o coboară). */
+function materialPeGrila(
+  pasi: readonly PasO[], f: FrezaO, zona: ZonaO, pasGrila: number, nx: number, ny: number, H: Float64Array, pasEs: number,
+): MaterialO {
   let taiere = 0, rapida = 0, unde: PunctO | null = null, undeRapida: PunctO | null = null;
+  if (f.fel === 'plata') {
+    // Freza plată (felia 18.1↑d-0): exact, fără eșantioane. O mutare liniară atinge coloana q pe intervalul [u1, u2] al
+    // parametrului în care axa ei e la cel mult R de q (în plan); fundul plat e cel mai jos la un capăt al intervalului. Cu
+    // eșantioanele, o coloană de pe marginea discului scăpa la o trecere și era prinsă la alta, cu toată adâncimea. Coloana
+    // se ia la 1 µm înăuntrul marginii: una aflată fix la R (pe grilă și pe liniile din multipli binari se întâmplă) ar intra
+    // sau nu după rotunjirea fiecărei mutări.
+    const R2 = (f.R - 1e-6) ** 2;
+    for (let q = 1; q < pasi.length; q++) {
+      const a = pasi[q - 1]!, b = pasi[q]!, dx = b.x - a.x, dy = b.y - a.y, dz = b.z - a.z, L2 = dx * dx + dy * dy;
+      const i0 = Math.max(0, Math.floor((Math.min(a.x, b.x) - f.R - zona.x0) / pasGrila)), i1 = Math.min(nx - 1, Math.floor((Math.max(a.x, b.x) + f.R - zona.x0) / pasGrila));
+      const j0 = Math.max(0, Math.floor((Math.min(a.y, b.y) - f.R - zona.y0) / pasGrila)), j1 = Math.min(ny - 1, Math.floor((Math.max(a.y, b.y) + f.R - zona.y0) / pasGrila));
+      let adanc = 0, aici: PunctO | null = null;
+      for (let j = j0; j <= j1; j++) {
+        for (let i = i0; i <= i1; i++) {
+          const wx = zona.x0 + (i + 0.5) * pasGrila - a.x, wy = zona.y0 + (j + 0.5) * pasGrila - a.y, w2 = wx * wx + wy * wy;
+          let u1: number, u2: number;
+          if (L2 < 1e-24) {
+            if (w2 > R2) continue;
+            u1 = 0; u2 = 1;
+          } else {
+            const wd = wx * dx + wy * dy, disc = wd * wd - L2 * (w2 - R2);
+            if (disc < 0) continue;
+            const sq = Math.sqrt(disc);
+            u1 = Math.max(0, (wd - sq) / L2); u2 = Math.min(1, (wd + sq) / L2);
+            if (u1 > u2) continue;
+          }
+          const u = dz <= 0 ? u2 : u1, sup = a.z + u * dz, c = j * nx + i;
+          if (H[c]! - sup > adanc) { adanc = H[c]! - sup; aici = { x: a.x + u * dx, y: a.y + u * dy, z: sup }; }
+          if (sup < H[c]!) H[c] = sup;
+        }
+      }
+      if (b.rapida) { if (adanc > rapida) { rapida = adanc; undeRapida = aici; } } else if (adanc > taiere) { taiere = adanc; unde = aici; }
+    }
+    return { taiere, unde, rapida, undeRapida };
+  }
   const k = Math.ceil(f.R / pasGrila) + 1;
   const jos = new Map<number, number>();
   for (let q = 1; q < pasi.length; q++) {
@@ -362,4 +450,99 @@ export function materialO(
     if (b.rapida) { if (adanc > rapida) { rapida = adanc; undeRapida = aici; } } else if (adanc > taiere) { taiere = adanc; unde = aici; }
   }
   return { taiere, unde, rapida, undeRapida };
+}
+
+/**
+ * CL-ul cu adaosul (felia 18.1↑d-0, ADR 0313): cel mai jos loc al vârfului frezei plate de rază R care lasă cel puțin `a` de
+ * lemn între freză și model în orice direcție, cu podeaua ca plan al modelului: CL-ul exact al frezei plate de rază R + a,
+ * plus a. (Cilindrul de rază R, dilatat cu sfera de rază a, stă în cilindrul de rază R + a coborât cu a.)
+ */
+export function clAdaos(ix: IndexO, R: number, a: number, x: number, y: number, podea = -Infinity): number {
+  return clExact(ix, { fel: 'plata', R: R + a }, x, y, podea) + a;
+}
+
+/**
+ * Adaosul pe un plan de pantă g (z = g · x + c), pe hârtie: cât stă vârful frezei plate de rază R deasupra planului, în axa
+ * ei, la CL-ul cu adaosul, și distanța pe normală de la buza ei de sus la plan.
+ */
+export function adaosPePlan(R: number, a: number, g: number): { readonly vertical: number; readonly normala: number } {
+  return { vertical: (R + a) * g + a, normala: (a * (1 + g)) / Math.sqrt(1 + g * g) };
+}
+
+/** O problemă a degroșării: o scobitură în adaos, sub podea, o mutare prea adâncă în lemn sau o rapidă prin lemn. */
+export type ProblemaDegrosareO = { readonly fel: 'adaos' | 'podea' | 'adancime' | 'rapida'; readonly x: number; readonly y: number; readonly cu: number };
+
+/**
+ * Judecata unei degroșări (felia 18.1↑d-0, ADR 0313), pe pozițiile vârfului (rapidele marcate): pe fiecare segment de tăiere,
+ * cu `sub` sub-eșantioane, vârful nu coboară sub CL-ul cu adaosul și nici sub podea; pe materialul simulat (fața la `fata`),
+ * nicio mutare nu intră mai adânc decât `pas` și nicio rapidă nu atinge lemnul.
+ */
+export function judecaDegrosarea(
+  ix: IndexO, R: number, a: number, pasi: readonly PasO[],
+  o: { readonly podea: number; readonly pas: number; readonly zona: ZonaO; readonly pasGrila: number; readonly tol: number; readonly sub?: number; readonly fata?: number },
+): ProblemaDegrosareO[] {
+  const p: ProblemaDegrosareO[] = [], sub = o.sub ?? 16;
+  for (let k = 1; k < pasi.length; k++) {
+    const A = pasi[k - 1]!, B = pasi[k]!;
+    if (B.rapida) continue;
+    for (let q = 0; q <= sub; q++) {
+      const u = q / sub, x = A.x + u * (B.x - A.x), y = A.y + u * (B.y - A.y), z = A.z + u * (B.z - A.z);
+      const cl = clAdaos(ix, R, a, x, y, o.podea);
+      if (z < cl - o.tol) p.push({ fel: 'adaos', x, y, cu: cl - z });
+      if (z < o.podea - o.tol) p.push({ fel: 'podea', x, y, cu: o.podea - z });
+    }
+  }
+  const m = materialO(pasi, { fel: 'plata', R }, o.zona, o.pasGrila, o.fata ?? 0, o.pasGrila / 5);
+  if (m.taiere > o.pas + o.tol + o.pasGrila / 5) p.push({ fel: 'adancime', x: m.unde?.x ?? NaN, y: m.unde?.y ?? NaN, cu: m.taiere - o.pas });
+  if (m.rapida > 0) p.push({ fel: 'rapida', x: m.undeRapida?.x ?? NaN, y: m.undeRapida?.y ?? NaN, cu: m.rapida });
+  return p;
+}
+
+/** O poziție a vârfului cu avansul mutării care ajunge în ea (mm/min; lipsă pe rapide). */
+export type PasAvansO = PasO & { readonly f?: number };
+/** O mutare de tăiere care coboară mai repede decât avansul de plonjare: al câtelea pas, unde ajunge și viteza ei pe Z. */
+export type CoborareRepedeO = { readonly k: number; readonly x: number; readonly y: number; readonly z: number; readonly viteza: number };
+
+/**
+ * Coborârea (felia 18.1↑d-1, găsită la placa reliefului): o mutare de tăiere care coboară are viteza pe Z, f · |dz| / L, cel
+ * mult avansul de plonjare. Altfel freza intră în lemn cu avansul de tăiere, la începutul unei linii sau pe o pantă abruptă: o
+ * plonjare prea repede. `tol` e relativ (avansul scris la 0,1); `rotunjire` e cât poate crește coborârea unei mutări din
+ * rotunjirea coordonatelor (pe G-code, cu 3 zecimale: 0,001 mm, câte o jumătate la fiecare capăt), scăzută din ea.
+ */
+export function coborariRepeziO(pasi: readonly PasAvansO[], plonjare: number, tol = 0.01, rotunjire = 0): CoborareRepedeO[] {
+  const p: CoborareRepedeO[] = [];
+  for (let k = 1; k < pasi.length; k++) {
+    const A = pasi[k - 1]!, B = pasi[k]!;
+    if (B.rapida || B.f === undefined) continue;
+    const dz = A.z - B.z;
+    if (!(dz > 0) || !Number.isFinite(A.x + A.y + B.x + B.y)) continue;
+    const L = Math.hypot(B.x - A.x, B.y - A.y, dz), viteza = (B.f * Math.max(0, dz - rotunjire)) / L;
+    if (viteza > plonjare * (1 + tol)) p.push({ k, x: B.x, y: B.y, z: B.z, viteza });
+  }
+  return p;
+}
+
+/**
+ * Pozițiile vârfului dintr-un program G-code (G0 / G1, X Y Z F modale; comentariile între paranteze sărite), cu avansul
+ * fiecărei mutări de tăiere. Coordonatele încă nespuse sunt NaN (de exemplu X și Y înaintea primei mutări în plan).
+ */
+export function pasiDinGcodeO(text: string): PasAvansO[] {
+  const out: PasAvansO[] = [];
+  let x = NaN, y = NaN, z = NaN, f: number | undefined, g = 0;
+  for (const brut of text.split('\n')) {
+    const l = brut.replace(/\([^)]*\)/g, '').replace(/;.*$/, '').trim().toUpperCase();
+    if (l === '') continue;
+    const cuv = [...l.matchAll(/([A-Z])\s*(-?\d+(?:\.\d*)?|-?\.\d+)/g)];
+    let misca = false;
+    for (const [, lit, val] of cuv) {
+      const v = Number(val);
+      if (lit === 'G' && (v === 0 || v === 1)) g = v;
+      else if (lit === 'F') f = v;
+      else if (lit === 'X') { x = v; misca = true; }
+      else if (lit === 'Y') { y = v; misca = true; }
+      else if (lit === 'Z') { z = v; misca = true; }
+    }
+    if (misca) out.push(g === 0 ? { x, y, z, rapida: true } : { x, y, z, rapida: false, ...(f !== undefined ? { f } : {}) });
+  }
+  return out;
 }

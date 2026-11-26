@@ -283,6 +283,8 @@ test('(o) ciocnirile v23: rândul lui CAMPURI_NOI_O, pe orice instanță a oric�
     28: [],
     // ADR 0312 §3 (v29): câmpul `finisare` al operației (felul și bila le refuză contractul v28).
     29: ['finisare'],
+    // ADR 0313 §3 (v30): câmpul `degrosare` al operației (felul îl refuză contractul v29).
+    30: ['degrosare'],
   });
   assert.equal(PE_INSTANTA_O, 'instanta:');
   // Fiecare câmp nou, pe un document al versiunii dinainte, se ciocnește exact la pasul lui (cu `texte` pe instanță).

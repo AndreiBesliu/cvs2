@@ -3,16 +3,21 @@ import '../i18n/export.ts';
 import { t } from '../i18n/t.ts';
 
 /**
- * Fișa finisării reliefului în fereastra exportului (ADR 0312 §7, cererea sesiunii principale din 25.11): doar de citit. Rândul
- * stă în listă la locul lui în ordinea tăierii (se mută ca oricare altul în „A mea”), iar fișa spune ce taie programul: freza,
- * pasul lateral, creasta pe plan, liniile, marginea, înălțimea și adâncimea cea mai mare, cu nota că valorile se schimbă din
- * secțiunea Tăierea a panoului. Câmpurile editabile vin într-o felie a lor; aici nimic nu se scrie.
+ * Fișa unei operații a reliefului în fereastra exportului, finisarea (ADR 0312 §7, cererea sesiunii principale din 25.11) sau
+ * degroșarea (ADR 0313 §7): doar de citit. Rândul stă în listă la locul lui în ordinea tăierii (se mută ca oricare altul în
+ * „A mea”), iar fișa spune ce taie programul: freza, pasul lateral, creasta pe plan (la finisare) sau adaosul (la degroșare),
+ * liniile, marginea, înălțimea și adâncimea cea mai mare, cu nota că valorile se schimbă din secțiunea Tăierea a panoului.
+ * Câmpurile editabile vin într-o felie a lor; aici nimic nu se scrie.
  */
 
-/** Ce arată fereastra despre o finisare: valorile documentului, citite de cel care deschide fereastra (`ExportConectat`). */
+/** Ce arată fereastra despre o operație a reliefului: valorile documentului, citite de cel care deschide fereastra (`ExportConectat`). */
 export type FinisareExport = {
   /** Cheia rândului, ca la celelalte operații: `<piesă>/<operație>`. */
   readonly cheie: string;
+  /** Felul: finisarea (ADR 0312) sau degroșarea (ADR 0313). */
+  readonly fel: 'finisare' | 'degrosare';
+  /** Adaosul degroșării (mm); doar pe o degroșare. */
+  readonly adaos?: number;
   readonly descriere: string;
   /** Locul în ordinea de mână (ADR 0133), dacă documentul îl are. */
   readonly rang?: number;
@@ -46,22 +51,25 @@ export function FisaFinisare({ fin, loc, total, f }: {
   const rand = (eticheta: string, valoare: string, nume: string): ReactNode => (
     <div className="dx-citire-rand" key={nume} data-finisare={nume}><dt>{eticheta}</dt><dd>{valoare}</dd></div>
   );
+  const deg = fin.fel === 'degrosare';
   return (
-    <section className="dx-fisa" data-fisa="op" data-operatie={fin.cheie} data-fel="finisare">
+    <section className="dx-fisa" data-fisa="op" data-operatie={fin.cheie} data-fel={fin.fel}>
       <h3>{fin.descriere}</h3>
       <p className="dx-loc">{t('export.fisa.loc', { n: loc + 1, total })}</p>
       <div className="dx-grup">
         <div className="dx-stanga">
-          <p className="dx-explicatie" data-testid="finisare-nota">{t('export.finisare.nota')}</p>
+          <p className="dx-explicatie" data-testid="finisare-nota">{t(deg ? 'export.degrosare.nota' : 'export.finisare.nota')}</p>
         </div>
         <div className="dx-campuri">
-          <h4>{t('export.finisare.titlu')}</h4>
+          <h4>{t(deg ? 'export.degrosare.titlu' : 'export.finisare.titlu')}</h4>
           <dl className="dx-citire">
             {rand(t('export.finisare.freza'), t('export.finisare.freza.valoare', {
               t: String(fin.scula.numar), d: f(fin.scula.diametru), forma: formaFinisareText(fin.scula, f),
             }), 'freza')}
             {rand(t('export.finisare.pas-lateral'), mm(fin.pasLateral), 'pas-lateral')}
-            {rand(t('export.finisare.creasta'), fin.creasta === null ? t('export.finisare.creasta.prea-mare') : mm(fin.creasta), 'creasta')}
+            {deg
+              ? rand(t('export.degrosare.adaos'), mm(fin.adaos ?? 0), 'adaos')
+              : rand(t('export.finisare.creasta'), fin.creasta === null ? t('export.finisare.creasta.prea-mare') : mm(fin.creasta), 'creasta')}
             {rand(t('export.finisare.linii'), t(fin.aliniat ? 'export.finisare.linii.aliniate' : 'export.finisare.linii.nealiniate', { u: f(fin.unghi) }), 'linii')}
             {rand(t('export.finisare.margine'), t(fin.margine === 'trece' ? 'export.finisare.margine.trece' : 'export.finisare.margine.perete'), 'margine')}
             {rand(t('export.finisare.z'), fin.planZero === undefined ? t('export.finisare.z.varf') : t('export.finisare.z.plan', { mm: f(fin.planZero) }), 'z')}
@@ -87,7 +95,7 @@ export function RandListaFinisare({ fin, loc, total, mana, tras, curent, f, onMu
 }): ReactNode {
   const c = fin.cheie;
   return (
-    <div className={tras === c ? 'dx-nav-op tras' : 'dx-nav-op'} data-nav-op={c} data-fel="finisare"
+    <div className={tras === c ? 'dx-nav-op tras' : 'dx-nav-op'} data-nav-op={c} data-fel={fin.fel}
       onDragOver={mana && tras !== null ? (ev) => { ev.preventDefault(); ev.dataTransfer.dropEffect = 'move'; } : undefined}
       onDrop={mana && tras !== null ? (ev) => { ev.preventDefault(); onMuta(-1, loc); onTrage(null); } : undefined}>
       <span className="ordine">
@@ -119,7 +127,7 @@ export function RandListaFinisare({ fin, loc, total, mana, tras, curent, f, onMu
       <button type="button" className="dx-nav" data-nav={c} aria-current={curent} onClick={onDu}>
         <span className="dx-nume">{fin.descriere}</span>
         <span className="dx-meta">
-          {t('export.finisare.lista')} · T{fin.scula.numar} Ø{f(fin.scula.diametru)} {formaFinisareText(fin.scula, f)} · {t('export.finisare.mm', { mm: f(fin.adancime) })}
+          {t(fin.fel === 'degrosare' ? 'export.degrosare.lista' : 'export.finisare.lista')} · T{fin.scula.numar} Ø{f(fin.scula.diametru)} {formaFinisareText(fin.scula, f)} · {t('export.finisare.mm', { mm: f(fin.adancime) })}
         </span>
       </button>
     </div>

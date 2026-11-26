@@ -49,7 +49,7 @@ const finisare = (v: Liber = {}): Liber => op({
 
 function doc(amprenta: string, operatii: readonly Liber[], o: { readonly matriceRelief?: Liber; readonly rotire?: number; readonly x?: number } = {}): Document {
   const d = {
-    schema: 29, rev: 0,
+    schema: 30, rev: 0,
     piese: [{
       id: 'p',
       radacina: {

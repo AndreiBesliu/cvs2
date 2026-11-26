@@ -1017,7 +1017,7 @@ Dintr-o imagine (o poză, un logo, o hartă a înălțimilor în gri) se poate f
 celulă pentru fiecare pixel, a cărei înălțime vine din griul pixelului. Pe planșă, relieful se vede umbrit (lumina din
 stânga-sus), sub vectori, cu chenarul lui; se alege, se mută, se rotește și se oglindește ca orice formă, iar piesa cu relief
 se pune de mai multe ori și pe alte foi. În [vederea 3D](#vedere-3d), butonul **Modelul** îl arată în trei dimensiuni, în
-golul lui din placă. Relieful se taie cu **finisarea** (mai jos); degroșarea vine într-o felie următoare.
+golul lui din placă. Relieful se taie cu **finisarea** și, înaintea ei, cu **degroșarea** (mai jos).
 
 **Cum îl faci:** din „Importă…”, alege o imagine (PNG, JPEG, WebP, GIF sau BMP), apoi, sus în fereastră, **Relief** în loc
 de **Vectori**. Alegerea se ține minte până reîncarci pagina. Fereastra are, în stânga:
@@ -1054,9 +1054,24 @@ model; nu coboară niciodată sub suprafața reliefului și nici sub **adâncime
 - **Relieful pe Z**: **vârful la fața plăcii** (implicit) sau **planul zero sub față**, la adâncimea scrisă; ce ar ieși
   deasupra feței se taie la față, iar exportul o spune.
 
-Finisarea se face înaintea tăieturilor pe contur, cu freza ei. În fereastra **Exportă G-code** are rândul ei, la locul ei
-în ordinea tăierii, cu o fișă doar de citit (freza, pasul lateral, creasta pe un plan, adâncimea); se schimbă din secțiunea
-Tăierea. Cu **Ordinea tăierii: A mea**, rândul ei se mută ca oricare altul. În [vederea 3D](#vedere-3d), **Tăiat** arată
+**Degroșarea:** rolul **Relief 3D (degroșare și finisare)** pune pe piesa reliefului două operații: întâi degroșarea, apoi
+finisarea (cu câmpurile de mai sus). Degroșarea scoate cea mai mare parte a lemnului cu o freză plată, în treceri de cel mult
+**pasul**, și lasă deasupra reliefului **adaosul**, pe orice direcție, pentru finisare; ultima ei trecere urmează suprafața
+adaosului. Câmpurile ei:
+- **Freza degroșării (plată)**: diametrul; degroșarea merge doar cu o freză plată;
+- **Pasul lateral al degroșării** (implicit 40 % din freză): distanța dintre linii;
+- **Adaosul pentru finisare** (implicit 0,5 mm, cel mult 10 mm): cât lemn rămâne deasupra reliefului; pe o pantă rămâne
+  puțin mai mult pe verticală;
+- **Unghiul liniilor degroșării** (0° … 180°).
+
+**Marginea reliefului** și **Relieful pe Z** sunt comune celor două operații: le schimbi o dată, pentru amândouă. Unde freza
+plată nu încape (o vale mai îngustă decât ea), degroșarea lasă lemnul, iar finisarea îl scoate în trecerile ei.
+
+Degroșarea și finisarea se fac înaintea tăieturilor pe contur, fiecare cu freza ei, degroșarea prima. Cu **Ordinea tăierii: A
+mea**, dacă muți finisarea înaintea degroșării aceluiași relief, exportul o spune printre avertismente: programul e bun, dar
+finisarea scoate tot lemnul cu freza ei, iar degroșarea taie aproape doar aer. În fereastra **Exportă G-code**, fiecare are rândul ei, la locul
+ei în ordinea tăierii, cu o fișă doar de citit (freza, pasul lateral, creasta pe un plan la finisare, adaosul la degroșare,
+adâncimea); se schimbă din secțiunea Tăierea. Cu **Ordinea tăierii: A mea**, rândul ei se mută ca oricare altul. În [vederea 3D](#vedere-3d), **Tăiat** arată
 placa după program. Freza rămâne puțin deasupra suprafeței ideale pe pante (cam 0,1 mm pe o pantă de 45°): e partea sigură a calculului,
 care nu sapă niciodată în relief. Exportul cere dalele reliefului din acest browser; pe alt calculator, le spune lipsă.
 
@@ -1216,7 +1231,7 @@ de alta a urmei, punctată mai rar; cu îmbinare, în locul fâșiei se văd din
 
 ## Cotele și măsurarea
 %% capitol: cote
-%% acopera: unealta.cote, foaie.cote, vedere.cote
+%% acopera: unealta.cote, foaie.cote, vedere.cote, foaie.desen-din-cota
 
 Unealta **Cote** (`D`; butonul ei stă în extensia barei, după Convertește) pune pe desen cote care arată o mărime: lungimea unei laturi, distanța dintre două puncte
 pe X, pe Y sau dreaptă, raza sau diametrul unui cerc ori al unui arc, unghiul dintre două laturi. O cotă **nu se taie niciodată**: G-code-ul exportat e același cu și fără cote. Cotele sunt ale foii
@@ -1270,6 +1285,11 @@ rămân unde sunt, iar cota nu mai urmează forma); **textul**, în care `<>` e 
 pozitiv afară; la unghi, **raza arcului**); **Șterge**. Distanța dintre două laturi paralele oblice e o cotă liberă: un desen
 fix, fiindcă piciorul ei pe a doua latură nu e un punct al formei.
 
+**Fă desen din cotă** (în panoul cotei alese): desenul cotei devine o piesă obișnuită, exact unde era cota: liniile și cifrele
+ca trăsături (cifrele cu fontul cu o singură linie), capetele ca mici contururi închise. Piesa nouă n-are nicio tăiere: e
+aleasă, cu Selecția, iar în secțiunea **Tăierea** îi dai un rol (gravura pe linie, de exemplu); de acolo merge ca orice
+formă. Cu bifa **Șterge cota**, cota pleacă odată cu desenul, în același pas de anulare; fără ea, cota rămâne.
+
 În **listă**, sub piesele foii active, rândul **Cote (N)**: deschis, arată cotele foii (valoarea, felul, „dezlegată”), iar un
 clic pe una trece la unealta Cote, cu ea aleasă. **Ochiul** de pe rând ascunde cotele foii pe pânză (nu le șterge; cu
 unealta Cote se văd oricum). **Arată cotele** (din **Caută o comandă**) le ascunde sau le arată pe toate, ca setarea „Cotele
@@ -1313,6 +1333,7 @@ implicit**. Un număr se scrie cu virgulă sau cu punct; unul în afara marginil
   (DIMENSION)**, implicit: în AutoCAD și LibreCAD rămân cote; sau **Linii și cifre**, pentru programele care nu știu cotele) și
   **Cifrele** (**Trăsături**, implicit: aceleași în orice program, fără fonturi; sau **Text**, de editat în alt program, dar
   desenat cu fontul lui).
+- **Raportul foilor:** dacă bifa „Cu cotele” din [raportul foilor](#raport) pornește pusă (implicit, nu).
 
 ## Conversia vectorilor
 %% capitol: conversie
@@ -1900,7 +1921,8 @@ Fiecare operație are **freza** ei (grupul **Freza** al fișei): numărul sculei
 vârfului (între 1° și 179°, implicit 60°; la V, diametrul e cel al părții tăietoare). Operațiile cu freze diferite se taie cu o
 schimbare între ele: în ordinea automată, în fiecare clasă (interioarele, apoi pe linie, apoi exterioarele), întâi freza deja
 montată, ca schimbările să fie cât mai puține. Același număr cu două diametre sau două forme e refuzat: fiecare freză cere
-numărul ei.
+numărul ei. Lângă greșeală, **Dă-i T{n}** îi dă frezei alt număr: al aceleiași freze, dacă stă deja pe un alt T, altfel cel mai
+mic liber. Roșii sunt doar frezele cu numărul ciocnit.
 
 Lista **Din frezele mele**, în grupul Freza, are frezele din biblioteca ta (vezi [Frezele mele](#freze)) care merg pe tăietura
 operației: plate pe un profil, un buzunar sau o găurire, în V la V-carve. Aleasă, freza își pune pe operație numărul T (al ei,
@@ -1999,7 +2021,8 @@ freza (alta decât cea activă, a cărei confirmare o dai aici) se exportă sing
 **Din CSV…**, **Exportă** așteaptă bifa.
 
 **Rezumatul jobului** arată timpul estimat, pe operații și pe scule. Pentru timpii mașinii tale, lipește la „Setările
-mașinii” răspunsul controlerului la `$$` (din consola senderului); programul nu se schimbă.
+mașinii” răspunsul controlerului la `$$` (din consola senderului); programul nu se schimbă. Cu setările GRBL din fabrică, un
+avans peste viteza lor maximă se spune ca notă; cu `$$`-ul tău lipit, ca avertisment: atunci e chiar mașina ta.
 
 După descărcare, fereastra **simulează** programul: harta adâncimilor pe foaie, materialul scos, cea mai adâncă tăietură și
 dacă freza trece prin foaie. Pentru placa văzută în 3D, vezi [Vederea 3D](#vedere-3d).
@@ -2022,6 +2045,13 @@ pe material** (câte foi de fiecare mărime și material: ce cumperi).
 grosimea foii), în axele piesei: rotirea ei pe foaie n-o schimbă. O piesă fără un astfel de profil primește mărimea
 desenului, marcată „(desen)”. Cu **desen**, toate primesc cutia întregului lor desen. Z0 și colțul de origine sunt ale
 exportului: cele alese în fereastra lui, când raportul vine de acolo.
+
+**Cu cotele (N)** apare când o foaie a raportului are [cote](#cote). Bifată, fiecare foaie cu cote le arată pe desenul ei,
+cu culoarea și cifrele din [Setări](#setari) › Cotele › Exportul, iar desenul ia tot rândul, deasupra datelor foii. Cifrele, săgețile și
+golurile se măresc cât să se citească (cel puțin a 60-a parte din latura mare a foii); linia fiecărei cote rămâne unde ai
+pus-o. O cotă care iese din foaie lărgește desenul, ca să nu se taie. Foile identice arată cotele primei. Bifa pornește după
+Setări › Cotele › Raportul foilor (implicit oprită); CSV-ul n-are cote (e lista de tăiere), iar **Tipărește** ia desenele
+așa cum le vezi.
 
 **Descarcă CSV** scrie lista în `cncvs2-lista-de-taiere.csv`, în UTF-8, cu trei tabele unul sub altul: foile (un rând pe
 piesă, cu foaia, de câte ori se taie și cât e folosită), totalurile pe piesă și foile pe material. **CSV cu `;`**

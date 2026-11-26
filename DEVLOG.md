@@ -15494,6 +15494,28 @@ cu patru întrebări: „Mergem cu recomandarile”
   cozile de rând se citesc cu un script Python, cu `timeout`.
 - **Documentele:** decizia și paragraful de stare în `CLAUDE.md`; indexul liniilor; starea din `docs/linii/principala.md`.
 
+## 2026-11-26 — Linia exportului: 28.8↑j, greșelile ferestrei exportului pe înțeles (ADR 0291)
+
+**Prompt:** PR-ul AndreiBesliu/cvs2#49 (28.8↑i) unit în `main` (`953205a8`), cu starea sesiunii principale din `CLAUDE.md`
+(„exportul (28.8↑j, greșelile pe înțeles; apoi k, l)”), la ordinul în vigoare „unește ce se poate”
+**Started:** 26.11, 02:10.
+
+- **„Dă-i T{n}” (2a, constatarea 5):** lângă „T1 are două freze”, în grupul fiecărei freze cu numărul ciocnit, numărul nou după
+  regula rolurilor, fără numărul ciocnit (`numarDupaConflict`); roșii doar frezele cu numărul ciocnit, și cele de rest.
+- **Greșeala pe câmp (constatarea 15):** numărul sculei, diametrul, unghiul V, adâncimea și pasul, fiecare cu marginile lui, fără
+  gruparea miilor; „—” în listă pentru un număr lipsă.
+- **Nota vitezei (4a, constatarea 6):** cu setările GRBL din fabrică, o notă; avertismentul doar față de `$$`-ul lipit.
+- **Refuzurile din calcul (constatarea 7):** numele elementelor în locul id-urilor din lume, virgula în română, „Du-mă la …” la
+  operația primului element numit (`motivPeInteles`, `operatiiLume`).
+- **Probele:** `export.conflictT.test.ts` (5), `export.motivCalcul.test.ts` (3), `export.greseli.spec.ts` (5); trei probe vechi
+  aduse la zi (nota și refuzul pe înțeles).
+- **Mărimea:** pornirea +0 (111,4 kB), totalul 910,5 / 1 000 (+1,1 kB).
+- **Otrăvurile:** `28.8j.py`, 16 / 16. **E2e-ul care deschide exportul:** 352 / 352.
+- **Documentele:** ADR 0291 („Implementarea 28.8↑j” și pragurile lui i), manualul (ambele limbi), fișa etapei 3, registrul
+  otrăvurilor, nota liniei.
+
+**Completed:** 26.11, 02:45.
+
 ## 2026-11-25 — Felia 3.Cl-2: globul de Crăciun (ADR 0285) (sesiune cloud)
 
 **Prompt:** „Mergem cu recomandarile” (răspunsul owner-ului la ADR 0285, în sesiunea liniei: după fulg, stea și brăduț
@@ -15526,6 +15548,8 @@ orele, după ceasul containerului).
 foilor” (sesiunea principală, 26.11, 00:08, cu cuvântul owner-ului: „ok, porneste 10.4↑d si 18.1↑d”). **Started:** 26.11,
 00:10, în sesiunea cloud a liniei cotelor. **Completed:** 26.11, 01:30 (în container; CI-ul, pe commit-ul împins).
 
+00:10, în sesiunea cloud a liniei cotelor. **Completed:** 26.11, 00:45 (în container; CI-ul, pe commit-ul împins).
+
 - **`main` adus** (`a4d86d53`, documentul v29), prin avans rapid. Felia d s-a împărțit în d-1 (aici), d-2 („Fă desen din
   cotă”) și d-3 (cotele în raportul foilor).
 - **Proba întâi, pe hârtie:** `cote.serie.test.ts` (lanțul orizontal, vertical, aliniat; baza, cu pasul, partea, d = 0; cota de
@@ -15557,6 +15581,167 @@ foilor” (sesiunea principală, 26.11, 00:08, cu cuvântul owner-ului: „ok, p
 - **Lotul 40 pe test:** `7a754885`, publicat pe 26.11 la 03:15 (completul pe `main` 45727537251, verde;
   proba de fum, bună).
 - **Documentele:** decizia și paragrafele de stare în `CLAUDE.md`; indexul liniilor; starea din `docs/linii/principala.md`.
+
+## 2026-11-26 — Linia reliefului: felia 18.1↑d-1, degroșarea reliefului (ADR 0313, documentul v30) (Model: Claude Opus 5.5)
+
+**Prompt:** „ok, porneste 10.4↑d si 18.1↑d” (owner-ul, în sesiunea principală, transmis liniei la 26.11, 00:08)
+**Started:** 26.11, 00:10, în sesiunea cloud a liniei reliefului, cu `main` `ca38f215` adus. **Completed:** 26.11, 03:30 (felia 18.1↑d-1, cu otrăvurile; orele, după ceasul containerului, în ora României).
+
+- **Oracolul întâi** (`test/oracles/relief3d.ts`):
+  - CL-ul cu adaosul (freza plată de rază R + a, plus a) și adaosul pe hârtie, pe un plan;
+  - judecata degroșării: adaosul, podeaua, pasul pe material, rapidele;
+  - simulatorul de material pe operații la rând, cu lemnul rămas;
+  - pentru freza plată, simulatorul exact (o alarmă falsă, la marginea discului, găsită pe pană).
+
+  Probele pe hârtie: `relief3d.degrosare.oracol.test.ts`.
+- **CAM-ul:** `degrosareRelief`, drumul finisării cu cota din câmpul dilatat cu R + a, ridicată cu a; finisarea, octet cu
+  octet. Probele: platoul, pana (de-a lungul și peste pantă, cu lemnul rămas pe hârtie), calota, valurile, două reliefuri,
+  podeaua, degroșarea plus finisarea în ambele ordini.
+- **Documentul v30:**
+  - `degrosare` și câmpul ei; migrarea v29 → v30;
+  - oracolul documentului (11 valide, 20 refuzate);
+  - corpusul de aur (v29 din ultimul ei commit, `ca38f21`; v30 din `a3f8f8f`): diferența, doar numărul;
+  - probele mutate pe v30, și `placute.spec.ts`.
+- **Lucrarea:**
+  - ordinea: degroșările, finisările, tăieturile;
+  - finisarea pusă de mână înaintea degroșării e un avertisment, cu programul probat bun;
+  - freza plată;
+  - planul zero și marginea, potrivite cu finisarea;
+  - `catFoaia`;
+  - originea în centru.
+- **Interfața:**
+  - rolul „Relief 3D” (degroșarea și finisarea);
+  - câmpurile degroșării în Tăierea; marginea și Z-ul se scriu pe amândouă;
+  - rândul doar de citit în fereastra exportului;
+  - manualul (ro, en);
+  - e2e și privirea.
+- **Coborârea, găsită la fișa plăcii reliefului:** o mutare care cobora mai abrupt decât lasă avansul de plonjare (la începutul
+  fiecărei linii, de pe perete până la treaptă) mergea cu avansul de tăiere, și la finisare. Acum, cu avansul de plonjare;
+  oracolul are judecata ei (`coborariRepeziO`, pe IR și pe G-code), cu probele scrise întâi.
+- **Fâșia de lângă pereți, găsită tot acolo:** cu peretele păstrat, liniile degroșării stăteau pe tot dreptunghiul, deci lângă
+  pereții paraleli cu ele rămânea o fâșie de până la un pas lateral peste adaos (pe placă, 1,6 mm). Proba platoului număra doar
+  coloanele tăiate; acum le numără pe toate, iar liniile stau pe zona în care freza are voie.
+- **Otrăvurile:** `18.1d.py`, 43 / 43 prinse (39 unitare, 4 e2e). Primul tur: D08 și J12 scăpate (probe întărite), R02
+  echivalentă (scoasă). Opt otrăvuri vechi mutate pe codul nou (12.1f-4, 28.8h, 18.1c), toate prinse.
+- **Cu `main` `7a754885` adus** (extensia și 28.8↑i, viteza ferestrei exportului; ciocniri doar în DEVLOG). Local: suita unitară 10 638 / 0 (12 sărite), e2e-ul
+  feliei și privirea 23 / 23, tipurile, traducerile (1 166), catalogul controalelor.
+- **Mărimea:** pornirea +0,1 kB (111,5; cu ușa 116,7, cu Atelierul 117,0 / 125), totalul +1,8 kB (911,3 / 1 000), față de `main` `7a754885`.
+- **Nedovedit fără mașină:** lemnul rămas după degroșare, suprafața finisată față de model, timpul (placa reliefului, d-2).
+
+## 2026-11-26 — Linia reliefului: felia 18.1↑d-2, fișa plăcii reliefului (placa 18) (Model: Claude Opus 5.5)
+
+**Prompt:** „ok, porneste 10.4↑d si 18.1↑d” (owner-ul, prin sesiunea principală): „degroșarea, apoi fișa plăcii reliefului”.
+**Started:** 26.11, 02:40, după d-1, pe aceeași ramură. **Completed:** 26.11, 04:10 (orele, în ora României).
+
+- **Generatorul** (`test/placi/placa-18/genereaza.ts`), pe drumul aplicației:
+  - relieful de 80 × 50 din grilă: calota, rampa cu platoul, fundul;
+  - rolul „Relief 3D”, ușa, exportul cu câte un fișier pe freză (T1 plata Ø6, adaosul 0,5, liniile la 2,5; T2 bila Ø6, la 1,5).
+- **Fișierele de aur**, cu amprentele în fișă (`placa18.aur.test.ts`).
+- **Cotele**, prezise de oracolul simulării pe exportul proaspăt (`placa18.test.ts`):
+  - după T1: adaosul pe fund, pe platou și lângă pereți; pe rampă, între a · (1 + g) și marginea de sus;
+  - după T2: pe model, cu creasta 0,095;
+  - vârful calotei la față; buzunarul 79,88 × 50,00;
+  - nicăieri sub model; pasul pe material; coborârea; timpul.
+- **Găsite pe G-code-ul plăcii și reparate în d-1:** coborârea cu avansul de tăiere și fâșia de lângă pereții paraleli cu liniile.
+  ADR 0313 §3, corectat: la capetele liniilor, între două linii, rămâne o scobitură de cel mult R − √(R² − (s / 2)²) peste a.
+- **Fișa** (`docs/etape/placa-18.md`): ce măsori după T1 (înaintea lui T2) și după T2, timpul, ce devin măsurătorile. Tăierea e
+  a owner-ului (rândul din coada lui).
+
+## 2026-11-26 — Felia 10.4↑d-2: „Fă desen din cotă” (ADR 0330 §8)
+
+**Prompt:** același cu d-1 (sesiunea principală, 26.11, 00:08: „**10.4↑d pornește**”, cu „Fă desen din cotă”). **Started:**
+26.11, 00:45, în sesiunea cloud a liniei cotelor, după d-1. **Completed:** 26.11, 01:10 (în container; CI-ul, pe commit-ul
+împins).
+
+- **Proba întâi:** `cote.fadesen.test.ts`, pe placa 1 a corpusului CAM: desenul orizontalei pe hârtie (extensiile, linia,
+  săgețile, cifrele „100”), punctul și bara, comanda cu anularea, apoi programul: cota și desenul fără rol dau aceiași octeți,
+  desenul cu un rol pe linie taie linia cotei (Y = 10, X 20 → 120).
+- **Pur:** `geometrieCota` (`src/io/coteExport.ts`), lângă `entitatiCote`, neatinsă. **Comanda:** `comandaDesenCota` și
+  acțiunea `foaie.desen-din-cota` (piesa fără operații, instanța în colțul foii; cu „Șterge cota”, și `inlocuieste-cote`).
+- **Panoul cotei:** „Fă desen din cotă” și „Șterge cota”; fontul cifrelor, adus la cerere; după desen, Selecția cu piesa
+  aleasă. Manualul (ro, en; ușa a 120-a), e2e noi 2; otrăvurile 16 / 16, într-o clonă.
+- **Rapidul pe `29065f64` a căzut** la două probe ale registrului care numără acțiunile la cerere
+  (`actiuni.calcul.test.ts`, `actiuni.calcul.paritate.test.ts`): acțiunea nouă lipsea din listele lor. Reparat în `68979355`
+  (doar probele); comiterea nu rulase suita unitară întreagă, doar probele cotelor.
+
+## 2026-11-26 — Felia 10.4↑d-3: cotele în raportul foilor (ADR 0330 §7)
+
+**Prompt:** același cu d-1 (sesiunea principală, 26.11, 00:08: „**10.4↑d pornește**”, cu „cotele în raportul foilor”).
+**Started:** 26.11, 01:10, în sesiunea cloud a liniei cotelor, după d-2. **Completed:** 26.11, 01:45 (în container; CI-ul, pe
+commit-ul împins).
+
+- **Proba întâi, pe hârtie:** `cote.raport.test.ts`: fără cote cerute, desenul de dinainte, octet cu octet, pe tot corpusul
+  CAM (și pe o foaie cu cote); stilul raportului (cifrele cel puțin a 60-a parte din latura mare); stratul COTE cu culoarea din
+  setări și liniile la jumătate; pagina lărgită de o cotă din afara foii. `cote.setari.test.ts`: grupul nou, Raportul foilor.
+- **Pur:** `svgFoaieRaport` și `stilRaport` (`src/io/raportCote.ts`); `scrieSvg` primește, opțional, pagina (exportul,
+  neschimbat). **Raportul:** bifa „Cu cotele (N)”, cu implicitul din Setări › Cotele › Raportul foilor; desenul cu cote pe tot
+  rândul; setările, fontul și desenul cu cote, aduse la cerere. `raportFoi` și CSV-ul, neatinse.
+- Întrebarea 10 (cotele mărite sau la mărimea adevărată), la owner, cu recomandarea implementată. Manualul (ro, en), e2e noi
+  2, grupul al optulea numărat în `setari.spec.ts`; otrăvurile 20 / 20, într-o clonă (R06, culoarea, după proba întărită). Pornirea
+  111,5 kB (neschimbată), totalul 912,5 → 915,5 / 1 000 kB (+3,0); `main` `554b72cb` adus (ciocniri doar în DEVLOG și în
+  traducerile roadmap-ului). Cu d-3, felia 10.4↑d e încheiată.
+
+## 2026-11-26 — Sesiunea principală în cloud: a patruzeci și cincea unire (relieful: 18.1↑d-1, degroșarea, documentul v30; 18.1↑d-2, fișa plăcii 18) (Model: Claude Fable 5.2)
+
+**Prompt:** raportul liniei reliefului („18.1↑d-1 (degroșarea reliefului, documentul v30, ADR 0313) e gata pe `wip/18.1-relief`, la `4381cc92`”; d-2 „gata pe aceeași ramură, la `2b38215a`”), la ordinul în vigoare „unește ce se poate”
+**Started:** 26.11, 04:09. **Completed:** unirea în `main`, 26.11, 05:09; publicarea pe test, lotul 42.
+
+- **Verificat înaintea unirii:** completele liniei (45731673147 pe `4381cc92`; 45733724086 pe `2b38215a`, terminat după raport,
+  citit din GitHub) și rapidele lor, verzi; PR-ul #51; fără `.lucru/`; d-1 e strămoșul lui d-2, deci s-au unit împreună, din
+  `2b38215a` (cu îndreptarea lui ADR 0313 §3 din d-2). Ramura avea `7a754885`; `main` primise `9c728412` (globul și cotele în
+  lanț: cod al aplicației), deci unirea și-a făcut completul ei.
+- **Unirea, pe `unire-2611d`** (din `9c728412`): `2b38215a`, în `3d0d0c15`. Ciocnirea, în DEVLOG (`rezolva-devlog.py`). Local:
+  tipurile, regulile de import (22 / 22), traducerile (1 181), catalogul controalelor (la zi), biblioteca (Easy 3Draw 18.36.0),
+  probele documentelor și ale manualului 76 / 76 și probele de la întâlnirea liniilor (cotele, documentul v30, corpusul de
+  aur, placa 18, grupurile exportului, catalogul utilizării) 51 / 51; nicio probă a cotelor nu ține scrisă versiunea 29.
+- **Porțile unirii, în CI, pe `3d0d0c15`** (citite din jurnalul rulării): completul 45740693114, verde la prima trecere (57 min): unit
+  10 684 / 0 (12 sărite, pe Linux), e2e 919 / 919, funcțiile pe emulatoare 136 / 136, paginile 60 / 60; rapidul 45740694151, verde. Pornirea 111,4 kB
+  (plafonul 125; cu ușa 116,7, cu Atelierul 117,0), totalul 912,6 / 1 000 kB, `/admin` 138,3 / 200, contul
+  30,2 / 32. Nimic pe server.
+- **Lotul 41 pe test:** `9c728412`, publicat pe 26.11 la 04:35 (completul pe `main` 45736916608, verde;
+  proba de fum, bună).
+- **Documentele:** decizia și paragraful de stare în `CLAUDE.md` (documentul v30, următorul liber v31); indexul liniilor;
+  starea din `docs/linii/principala.md`.
+
+## 2026-11-26 — Sesiunea principală în cloud: a patruzeci și șasea unire (cotele: 10.4↑d-2, „Fă desen din cotă”; 10.4↑d-3, cotele în raportul foilor) (Model: Claude Fable 5.2)
+
+**Prompt:** raportul liniei cotelor („Linia cotelor raportează 10.4↑d-2 și 10.4↑d-3, împreună, pe un singur commit: `fc1d28a4`”), la ordinul în vigoare „unește ce se poate”
+**Started:** 26.11, 04:25. **Completed:** unirea în `main`, 26.11, 05:35; publicarea pe test, lotul 42 (cu degroșarea reliefului).
+
+- **Verificat înaintea unirii:** completul liniei (45735958188) și rapidul (45735965697), verzi pe `fc1d28a4`; `main`
+  `9c728412` era strămoș; PR-ul #52; fără `.lucru/`.
+- **Ordinea aleasă:** relieful (unirea a patruzeci și cincea) era deja în CI pe `unire-2611d`. Cotele s-au unit peste el, pe
+  `unire-2611e` (din `3d0d0c15`): `fc1d28a4`, în `67dfb777`. Așa, completul reliefului a rămas bun. Ciocnirea, în DEVLOG (`rezolva-devlog.py`). Local: tipurile, regulile de
+  import (22 / 22), traducerile (1 185), catalogul controalelor (la zi), biblioteca, probele documentelor și ale manualului
+  76 / 76 și 261 de probe unitare de la întâlnirea liniilor (cotele, raportul foilor, registrul acțiunilor, documentul v30,
+  placa 18).
+- **Porțile** (citite din jurnalul rulării): completul unirii cotelor singure (45742512400, pe `67dfb777`) a nimerit un
+  runner lent (pasul rapid, peste 40 de minute; la unirea de deasupra, pornită după, trecuse de mult) și rula încă la
+  unire. Cotele au intrat pe completul unirii de deasupra, `93ff3b29`, care le cuprinde, cu exportul: 45742818700,
+  verde la prima trecere (62 min): unit 10 701 / 0 (12 sărite, pe Linux), e2e 928 / 928, funcțiile pe emulatoare 136 / 136, paginile 60 / 60; rapidul pe `67dfb777`,
+  45742513122, verde. Cu exportul: pornirea 111,6 kB (plafonul 125; cu ușa 116,8, cu Atelierul 117,1), totalul
+  918,7 / 1 000 kB, `/admin` 138,3 / 200, contul 30,2 / 32. Nimic pe server. Față de commit-ul cu porțile
+  (`93ff3b29`), în `main` intră în plus doar documente (`.md`).
+- **Documentele:** decizia și paragrafele de stare în `CLAUDE.md`; indexul liniilor; starea din `docs/linii/principala.md`.
+
+## 2026-11-26 — Sesiunea principală în cloud: a patruzeci și șaptea unire (fereastra exportului: 28.8↑j, greșelile pe înțeles) (Model: Claude Fable 5.2)
+
+**Prompt:** raportul liniei exportului („28.8↑j e gata de unit”, `c0a59b6c`), la ordinul în vigoare „unește ce se poate”
+**Started:** 26.11, 04:28. **Completed:** unirea în `main`, 26.11, 05:35; publicarea pe test, lotul 42 (cu degroșarea reliefului și cotele d-2 și d-3).
+
+- **Verificat înaintea unirii:** completul liniei (45736014907) și rapidul, verzi pe `c0a59b6c`; `main` `9c728412` era strămoș;
+  PR-ul #54; fără `.lucru/`.
+- **Unirea, pe `unire-2611f`** (din `67dfb777`, deci peste relief și cote): `c0a59b6c`, în `93ff3b29`, fără nicio ciocnire.
+  Local: tipurile, regulile de import (22 / 22), traducerile (1 187), catalogul controalelor (la zi), biblioteca, probele
+  documentelor și ale manualului 76 / 76 și 103 probe unitare ale exportului, reliefului și registrului. Citit în cod: frezele
+  degroșărilor intră în lista conflictelor de T prin rândurile reliefului (`finisari`), deci „Dă-i T{n}” le vede.
+- **Porțile unirii, în CI, pe `93ff3b29`** (citite din jurnalul rulării): completul 45742818700, verde la prima trecere (62 min): unit
+  10 701 / 0 (12 sărite, pe Linux), e2e 928 / 928, funcțiile pe emulatoare 136 / 136, paginile 60 / 60; rapidul 45742819637, verde. Pornirea 111,6 kB
+  (plafonul 125; cu ușa 116,8, cu Atelierul 117,1), totalul 918,7 / 1 000 kB, `/admin` 138,3 / 200, contul
+  30,2 / 32. Nimic pe server. Față de commit-ul cu porțile, în `main` intră în plus doar documente (`.md`).
+- **Trei uniri la rând, fiecare pe completul ei:** relieful (`unire-2611d`), cotele peste el (`unire-2611e`), exportul peste
+  ele (`unire-2611f`); între ele, doar commit-urile de documente, aduse din una în alta. O singură publicare, lotul 42.
+- **Documentele:** decizia și paragraful de stare în `CLAUDE.md`; indexul liniilor; starea din `docs/linii/principala.md`.
 
 ## 2026-11-26 — Felia 3.Cl-3: ornamentul cu nume (ADR 0285) (sesiune cloud)
 
@@ -15611,6 +15796,26 @@ otrăvurile; orele, după ceasul containerului).
 - **Documentele:** ADR 0285 („Implementat (3.Cl-4)”), indexul ADR, fișa etapei 3, `docs/linii/atelier.md`, indexul
   liniilor, `docs/otravuri.md`, `CLAUDE.md`.
 - **Urmează:** 3.Cf-2 (orientarea de mână pe trei axe), la cuvântul owner-ului dacă vrea altă ordine.
+
+## 2026-11-26 — Sesiunea principală în cloud: a patruzeci și opta unire (atelierul Easy 3Draw: 3.Cl-3, ornamentul cu nume; 3.Cl-4, brăduțul LEGO) (Model: Claude Fable 5.2)
+
+**Prompt:** raportul liniei atelierului („3.Cl-3 și 3.Cl-4 gata de unit”, `b71c3c98`), la ordinul în vigoare „unește ce se poate”
+**Started:** 26.11, 05:36. **Completed:** unirea în `main`, 26.11, 06:36; publicarea pe test, lotul 43.
+
+- **Verificat înaintea unirii:** completul liniei (45742415047) și rapidul (45742410323), verzi pe `b71c3c98`; PR-ul #55; fără
+  `.lucru/`. Ramura avea `9c728412`; `main` era la `9edf9ae0` (relieful, cotele, exportul: cod al aplicației), deci unirea și-a
+  făcut completul ei.
+- **Unirea, pe `unire-2611g`** (din `9edf9ae0`): `b71c3c98`, în `474b76fc`. Ciocnirile: DEVLOG (`rezolva-devlog.py`) și
+  `docs/traduceri/roadmap.en.json` (rândul lui 3.Cl-4 și rândul fișei plăcii 18, amândouă păstrate, în ordinea cheilor;
+  1 195 de texte, 0 fără traducere). Local: tipurile, regulile de import (22 / 22), catalogul controalelor (la zi), biblioteca
+  (Easy 3Draw 18.38.0, 553 010 octeți), probele documentelor și ale manualului 76 / 76.
+- **Porțile unirii, în CI, pe `474b76fc`** (citite din jurnalul rulării): completul 45750142136, verde la prima trecere (58 min): unit
+  10 714 / 0 (12 sărite, pe Linux), e2e 937 / 937, funcțiile pe emulatoare 136 / 136, paginile 60 / 60; rapidul 45750143104, verde. Pornirea 111,6 kB
+  (plafonul 125; cu ușa 116,8, cu Atelierul 117,1), totalul 918,7 / 1 000 kB, `/admin` 138,3 / 200, contul
+  30,2 / 32. Nimic pe server.
+- **Completul unirii cotelor singure** (45742512400, pe `67dfb777`), care rula la unirea a patruzeci și șasea: a ieșit și el verde, la 05:46, după 79 de minute (unit 10 693 / 0, e2e 923 / 923, funcțiile pe emulatoare 136 / 136, paginile 60 / 60).
+- **Lotul 42** (`9edf9ae0`: relieful, cotele, exportul) e încă în drum; lotul 43 pleacă după el.
+- **Documentele:** decizia și paragrafele de stare în `CLAUDE.md`; indexul liniilor; starea din `docs/linii/principala.md`.
 
 ## 2026-11-26 — Felia 3.Cf-2: răsturnările și jumătățile de pas în „Modelul” (ADR 0284) (sesiune cloud)
 

@@ -81,7 +81,8 @@ test('incrustația în V: rolul din panou, valorile pe hârtie, exportul cu fiș
   // Un fierăstrău de 3: dopul s-ar săpa la 2,5 + 3 = 5,5, peste conul de 5,196: exportul e refuzat, cu motivul.
   await detalii.locator('[data-camp="inc-fierastrau"]').fill('3');
   await page.locator('[data-buton="exporta"]').click();
-  await expect(page.getByTestId('export-stare')).toContainText('dopul se sapă până la 5.5 mm');
+  // Numerele lucrării, cu virgula în română (ADR 0291, felia 28.8↑j).
+  await expect(page.getByTestId('export-stare')).toContainText('dopul se sapă până la 5,5 mm');
   await detalii.locator('[data-camp="inc-fierastrau"]').fill('2');
 
   const descarcari: Download[] = [];

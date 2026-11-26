@@ -18,9 +18,9 @@ unite în `main` pe 25.11 (`9815527f`); 3.Ce (punctele de prindere și „Se pri
 (`02ac0715`, PR-ul `AndreiBesliu/cvs2#46`). **Decorațiunile de Crăciun (ADR 0285, cerute de owner pe 25.11 și acceptate cu
 recomandările, 1a–4a): 3.Cl-1 (fulgul, steaua și brăduțul, în fila nouă „Crăciun”; 18.35.0), unită în `main` pe 26.11
 (`41b1fb6f`, PR-ul `AndreiBesliu/cvs2#50`); 3.Cl-2 (globul; 18.36.0), unită în `main` pe 26.11 (`b6c9998d`, PR-ul
-`AndreiBesliu/cvs2#53`); 3.Cl-3 (ornamentul cu nume; 18.37.0) și 3.Cl-4 (brăduțul LEGO; 18.38.0), gata pe ramură pe
-26.11 (PR-ul `AndreiBesliu/cvs2#55`, raportat): ADR 0285 are toate feliile făcute.** **3.Cf-2 (răsturnările și jumătățile de
-pas în „Modelul”; 18.39.0), gata local pe 26.11, neîmpinsă cât PR-ul #55 își așteaptă unirea.**
+`AndreiBesliu/cvs2#53`); 3.Cl-3 (ornamentul cu nume; 18.37.0) și 3.Cl-4 (brăduțul LEGO; 18.38.0), unite în
+`main` pe 26.11 (`474b76fc`, PR-ul `AndreiBesliu/cvs2#55`): ADR 0285 are toate feliile făcute.** **3.Cf-2 (răsturnările
+și jumătățile de pas în „Modelul”; 18.39.0), gata pe ramură pe 26.11.**
 Urmează 3.Cg (verificarea); 3.Ck așteaptă tipărirea bilei și a cupei. Versiunea
 următoare a pachetului: 18.40.0._
 

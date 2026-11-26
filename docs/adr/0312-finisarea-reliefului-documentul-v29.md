@@ -113,6 +113,15 @@ se vede în fereastră din prima zi, altfel omul numără N operații, iar mași
 - **Fereastra exportului** (§7): rândul doar de citit al finisării, în listă și în fișă, cu ordinea și rangul; o freză bilă
   pe alt fel n-are rând (Exportă o scrie înapoi neschimbată, iar lucrarea o refuză).
 
+### Completarea din 26.11 (felia 18.1↑d-1, ADR 0313 §3): coborârea, cu avansul de plonjare
+
+La fișa plăcii reliefului s-a văzut că o mutare de tăiere care coboară de-a lungul liniei (la începutul ei, de pe perete până la
+treapta trecerii, sau pe o pantă abruptă) mergea cu avansul de tăiere: la prima trecere a finisării, în lemn nou, o plonjare
+aproape verticală cu 1 000 mm/min. Acum, o mutare care coboară mai abrupt decât lasă avansul de plonjare (viteza ei pe Z,
+avans · |dz| / L, ar trece de el) merge cu avansul de plonjare; urcarea, palierul și coborârea lină rămân la avans. Drumul e
+același; se schimbă doar avansul acelor mutări. Oracolul are judecata ei (`coborariRepeziO`, pe IR și pe G-code), iar o
+mutare care nu coboară e probată la avansul de tăiere.
+
 ## Respinse
 
 - **Bila ca formă cu rază** (`{ tip: 'bila', raza }`): raza ar dubla diametrul și ar cere o regulă de potrivire; toroidala

@@ -15,12 +15,12 @@ async function exportaDocument(doc: Document, p: ParametriExport, semnal: AbortS
 }
 
 /**
- * O finisare a reliefului pe foaie (ADR 0312): e o operație de tăiere, deși nu e o tăietură pe contur. Fără `finisariFoaie`
- * (`model/finisare.ts`), ca verdictul să nu aducă în pornire codul finisării.
+ * O operație a reliefului pe foaie (finisarea, ADR 0312; degroșarea, ADR 0313): e o operație de tăiere, deși nu e o tăietură
+ * pe contur. Fără `finisariFoaie` (`model/finisare.ts`), ca verdictul să nu aducă în pornire codul finisării.
  */
 const areFinisare = (doc: Document): boolean => {
   const piese = new Map(doc.piese.map((p) => [p.id, p]));
-  return (doc.foi[0]?.instante ?? []).some((i) => piese.get(i.piesa)?.operatii.some((o) => o.tip === 'finisare') === true);
+  return (doc.foi[0]?.instante ?? []).some((i) => piese.get(i.piesa)?.operatii.some((o) => o.tip === 'finisare' || o.tip === 'degrosare') === true);
 };
 
 /** Ce cere un program: forme pe foaie și măcar o operație (o tăietură sau o finisare); altfel motivul. */

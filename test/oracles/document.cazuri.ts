@@ -6624,3 +6624,70 @@ export const REFUZATE_V29: readonly RefuzV18[] = [
   rF('RY19 o finisare într-o piesă fără relief', docV18(dreptunghi(), [opV18(), finisare29({ noduri: ['e'] })], 29), 'relief', opF, 'ADR 0312 §2: o finisare referă doar reliefuri'),
   rF('RY20 un v28 cu bila ca freză a fundului plat', docFin29(null, [vcarve({ fundPlat: fund({ scula: bila29(6, 3.175) }) })], 28), 'fund-plat', `${opF}.fundPlat.scula.forma.tip`, 'ADR 0312 §3: bila vine cu v29'),
 ];
+
+// ---------------------------------------------------------------------------------------------------------------
+// v30 (ADR 0313): degroșarea reliefului (felul `degrosare`, câmpul `degrosare`). Cazurile pe hârtie, scrise din ADR.
+
+const laV30 = (d: Liber): Liber => cuSchema(d, 30);
+/**
+ * O degroșare a reliefului `r` cu freza plată Ø6, adaosul 0,5 mm, liniile la 0°, 2,4 mm între ele, 12 mm podeaua, 3 mm pe
+ * trecere (ADR 0313 §2).
+ */
+const degrosare30 = (v: Liber = {}): Liber => ({
+  id: 'o4', tip: 'degrosare', noduri: ['r'], scula: plata(3, 6), latura: 'pe-linie', sens: 'urcare', adancime: 12, pas: 3,
+  pasLateral: 2.4, urechi: null, rampa: null, intrari: null, colturi: null, degrosare: { adaos: 0.5, unghi: 0 }, ...v,
+});
+/** Documentul cu relieful `r` și dreptunghiul `e` (profilul `o1`), finisarea `o2`, degroșarea dată (și operațiile în plus). */
+const docDeg30 = (deg: Liber | null = degrosare30(), alte: readonly Liber[] = [], schema = 30): Liber => (
+  docRelief28(relief28(), { operatii: [opV18(), finisare29(), ...(deg ? [deg] : []), ...alte] }, schema)
+);
+const deg30 = (d: Liber): Liber => degrosare30({ degrosare: d });
+/** Același document, cu un al doilea relief `r2` lângă `r`. */
+function docDouaReliefuri30(deg: Liber): Liber {
+  const d = docDeg30(deg);
+  const g = ((d['piese'] as Liber[])[0]!['radacina'] as Liber)['copii'] as Liber[];
+  g.push({ tip: 'element', id: 'r2', forma: relief28({ nx: 100, ny: 100, celula: 0.4 }), matrice: M(1, 0, 0, 1, 150, 10) });
+  return d;
+}
+
+export const VALIDE_V30: readonly CazV18[] = [
+  ...VALIDE_V29.map((c) => ({ nume: `${c.nume} (v30)`, doc: laV30(c.doc) })),
+  { nume: 'Z01 o degroșare cu freza plată Ø6 pe relief, înaintea finisării cu bila (ADR 0313 §2)', doc: docDeg30() },
+  { nume: 'Z02 adaosul 0, la 90°, peste margine, planul zero la 2,5 mm', doc: docDeg30(deg30({ adaos: 0, unghi: 90, margine: 'trece', planZero: 2.5 })) },
+  { nume: 'Z03 marginile: adaosul 10 mm, unghiul 179,999°, planul zero 0', doc: docDeg30(deg30({ adaos: 10, unghi: 179.999, planZero: 0 })) },
+  { nume: 'Z04 planul zero 1 000 mm, pasul lateral 50 mm', doc: docDeg30(degrosare30({ pasLateral: 50, degrosare: { adaos: 1, unghi: 0, planZero: 1000 } })) },
+  { nume: 'Z05 o degroșare pe două reliefuri ale piesei', doc: docDouaReliefuri30(degrosare30({ noduri: ['r', 'r2'] })) },
+  { nume: 'Z06 câmpul `degrosare` pe un profil (ușa îi judecă forma; lucrarea îl refuză)', doc: docDeg30(null, [opV18({ id: 'o3', degrosare: { adaos: 0.5, unghi: 30 } })]) },
+  { nume: 'Z07 câmpuri necunoscute în `degrosare` (rămân)', doc: docDeg30(deg30({ adaos: 0.4, unghi: 10, strategie3d: 'nivele' })) },
+  { nume: 'Z08 bila pe o degroșare (ușa o primește; lucrarea judecă)', doc: docDeg30(degrosare30({ scula: bila29(5, 6) })) },
+  { nume: 'Z09 latura, sensul, coborârea și urechile pe degroșare (ușa nu le leagă de fel)', doc: docDeg30(degrosare30({ latura: 'exterior', sens: 'opozitie', coborare: { fel: 'plonjare' }, urechi: { numar: 2, latime: 6, grosime: 2 } })) },
+  { nume: 'Z10 o piesă doar cu relief și degroșarea lui, cu valorile de lucru ale frezei (v27)', doc: docRelief28(relief28(), { operatii: [degrosare30({ scula: freza27(3, 6) })] }, 30) },
+  { nume: 'Z11 câmpul `finisare` pe o degroșare (ușa îi judecă forma; lucrarea îl refuză)', doc: docDeg30(degrosare30({ finisare: { unghi: 0 } })) },
+];
+
+const opD = 'piese.0.operatii.2';
+
+export const REFUZATE_V30: readonly RefuzV18[] = [
+  ...REFUZATE_V29.filter((r) => !r.nume.startsWith('R01 ')),
+  { nume: 'R01 scris de o versiune mai nouă (v31)', doc: docDeg30(degrosare30(), [], 31), categorie: 'schema', camp: 'schema', motiv: 'ADR 0070 §2: o versiune mai veche refuză una mai nouă', text: 'versiune mai nouă' },
+  rF('RZ0 un v29 cu o degroșare (felul, necunoscut la v29)', docDeg30(degrosare30({ noduri: ['e'] }), [], 29), 'operatie', `${opD}.tip`, 'ADR 0313 §3: felul vine cu v30'),
+  rF('RZ1 un v29 cu câmpul `degrosare` pe profil (ciocnirea migrării)', docDeg30(null, [opV18({ id: 'o3', degrosare: { adaos: 0.5, unghi: 0 } })], 29), 'ciocnire', `${opD}.degrosare`, 'ADR 0313 §3: nu e un v29 valid'),
+  rF('RZ2 o degroșare fără câmpul `degrosare`', docDeg30((() => { const d = degrosare30(); delete d['degrosare']; return d; })()), 'degrosare', `${opD}.degrosare`, 'ADR 0313 §2: cerut pe o degroșare'),
+  rF('RZ3 o degroșare fără pasul lateral', docDeg30((() => { const d = degrosare30(); delete d['pasLateral']; return d; })()), 'pas-lateral', `${opD}.pasLateral`, 'ADR 0313 §2: cerut pe o degroșare'),
+  rF('RZ4 adaosul −0,01 mm', docDeg30(deg30({ adaos: -0.01, unghi: 0 })), 'degrosare', `${opD}.degrosare.adaos`, 'ADR 0313 §2: în [0, 10]'),
+  rF('RZ5 adaosul 10,001 mm', docDeg30(deg30({ adaos: 10.001, unghi: 0 })), 'degrosare', `${opD}.degrosare.adaos`, 'ADR 0313 §2: în [0, 10]'),
+  rF('RZ6 adaosul ca text', docDeg30(deg30({ adaos: '0.5', unghi: 0 })), 'degrosare', `${opD}.degrosare.adaos`, 'ADR 0313 §2: un număr'),
+  rF('RZ7 adaosul lipsă', docDeg30(deg30({ unghi: 0 })), 'degrosare', `${opD}.degrosare.adaos`, 'ADR 0313 §2: cerut'),
+  rF('RZ8 unghiul 180°', docDeg30(deg30({ adaos: 0.5, unghi: 180 })), 'degrosare', `${opD}.degrosare.unghi`, 'ADR 0313 §2: în [0, 180)'),
+  rF('RZ9 unghiul lipsă', docDeg30(deg30({ adaos: 0.5 })), 'degrosare', `${opD}.degrosare.unghi`, 'ADR 0313 §2: cerut'),
+  rF('RZ10 marginea „ramane”', docDeg30(deg30({ adaos: 0.5, unghi: 0, margine: 'ramane' })), 'degrosare', `${opD}.degrosare.margine`, "ADR 0313 §2: doar 'trece'"),
+  rF('RZ11 planul zero −0,1 mm', docDeg30(deg30({ adaos: 0.5, unghi: 0, planZero: -0.1 })), 'degrosare', `${opD}.degrosare.planZero`, 'ADR 0313 §2: în [0, 1 000]'),
+  rF('RZ12 planul zero 1 000,001 mm', docDeg30(deg30({ adaos: 0.5, unghi: 0, planZero: 1000.001 })), 'degrosare', `${opD}.degrosare.planZero`, 'ADR 0313 §2: în [0, 1 000]'),
+  rF('RZ13 `degrosare` nu e un obiect', docDeg30(degrosare30({ degrosare: 0.5 })), 'degrosare', `${opD}.degrosare`, 'ADR 0313 §2: un obiect'),
+  rF('RZ14 degroșarea referă dreptunghiul', docDeg30(degrosare30({ noduri: ['e'] })), 'relief', opD, 'ADR 0313 §2: o degroșare referă doar reliefuri'),
+  rF('RZ15 degroșarea referă relieful și dreptunghiul', docDeg30(degrosare30({ noduri: ['r', 'e'] })), 'relief', opD, 'ADR 0313 §2: o degroșare referă doar reliefuri'),
+  rF('RZ16 câmpul `degrosare` stricat pe un profil (forma se judecă oriunde)', docDeg30(null, [opV18({ id: 'o3', degrosare: { adaos: 0.5, unghi: 200 } })]), 'degrosare', `${opD}.degrosare.unghi`, 'ADR 0313 §2'),
+  rF('RZ17 pasul lateral 0 pe degroșare', docDeg30(degrosare30({ pasLateral: 0 })), 'pas-lateral', `${opD}.pasLateral`, 'ADR 0069 §1: în (0, 50]'),
+  rF('RZ18 o degroșare într-o piesă fără relief', docV18(dreptunghi(), [opV18(), degrosare30({ noduri: ['e'] })], 30), 'relief', 'piese.0.operatii.1', 'ADR 0313 §2: o degroșare referă doar reliefuri'),
+  rF('RZ19 un v29 cu câmpul `degrosare` pe finisare (ciocnirea migrării)', docRelief28(relief28(), { operatii: [opV18(), finisare29({ degrosare: { adaos: 0.5, unghi: 0 } })] }, 29), 'ciocnire', 'piese.0.operatii.1.degrosare', 'ADR 0313 §3: nu e un v29 valid'),
+];

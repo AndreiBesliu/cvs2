@@ -111,7 +111,7 @@ function placuteIesite(d: Document, k?: number): { readonly nume: readonly strin
  * neschimbată, iar lucrarea o refuză, cu motivul, deci nimic nu se taie pe tăcute altfel.
  */
 function peRand(o: Operatie): boolean {
-  return o.tip !== 'finisare' && frezeleOperatiei(o).every((f) => f.scula.forma?.tip !== 'bila');
+  return o.tip !== 'finisare' && o.tip !== 'degrosare' && frezeleOperatiei(o).every((f) => f.scula.forma?.tip !== 'bila');
 }
 
 /** Documentul fără rangurile operațiilor: ordinea automată a lucrării (ADR 0133 §3). */
@@ -158,8 +158,9 @@ export function ExportConectat({
       const k = cutieContur(chenarElement(e));
       return { x: (k.minX + k.maxX) / 2, y: (k.minY + k.maxY) / 2 };
     };
-    const inauntru = cuprinse(lista.flatMap(({ piesa, instanta: inst }) => piesa.operatii.filter((o) => peRand(o) || o.tip === 'finisare').map((o) => {
-      if (o.tip === 'finisare') return { cheie: `${piesa.id}/${o.id}`, piesa: piesa.id, contururi: [], punct: centruRelief(inst, o) };
+    const peRelief = (o: Operatie): boolean => o.tip === 'finisare' || o.tip === 'degrosare';
+    const inauntru = cuprinse(lista.flatMap(({ piesa, instanta: inst }) => piesa.operatii.filter((o) => peRand(o) || peRelief(o)).map((o) => {
+      if (peRelief(o)) return { cheie: `${piesa.id}/${o.id}`, piesa: piesa.id, contururi: [], punct: centruRelief(inst, o) };
       const contururi = o.noduri.flatMap((n) => {
         const e = dupaIdLume.get(`${inst}/${n}`);
         return e && esteContur(e) ? [conturElement(e)] : [];
@@ -251,13 +252,17 @@ export function ExportConectat({
         },
       };
     }));
-    // Finisările reliefului (ADR 0312 §7): rândurile doar de citit, cu valorile documentului.
-    const finisari: FinisareExport[] = lista.flatMap(({ piesa, instanta: inst }) => piesa.operatii.filter((o) => o.tip === 'finisare').map((o) => {
+    // Operațiile reliefului (finisarea, ADR 0312 §7; degroșarea, ADR 0313 §7): rândurile doar de citit, cu valorile
+    // documentului.
+    const finisari: FinisareExport[] = lista.flatMap(({ piesa, instanta: inst }) => piesa.operatii.filter(peRelief).map((o): FinisareExport => {
       const e = dupaIdLume.get(`${inst}/${o.noduri[0] ?? ''}`);
       const baza = e ? descriere(e) : (piesa.nume ?? piesa.id);
-      const s = o.scula, fin = o.finisare;
+      const s = o.scula, deg = o.tip === 'degrosare';
+      const fin: { readonly unghi?: number; readonly nealiniat?: true; readonly margine?: 'trece'; readonly planZero?: number } | undefined = deg ? o.degrosare : o.finisare;
       return {
         cheie: `${piesa.id}/${o.id}`,
+        fel: deg ? 'degrosare' : 'finisare',
+        ...(deg ? { adaos: o.degrosare?.adaos ?? 0 } : {}),
         descriere: o.noduri.length > 1 ? `${baza} (+${o.noduri.length - 1})` : baza,
         ...(o.rang !== undefined ? { rang: o.rang } : {}),
         scula: {
@@ -277,6 +282,10 @@ export function ExportConectat({
       // (finisările întâi).
       automata: [...new Set(ordinePasi(faraRanguri(doc), 0).map(cheiePas))],
       descrieri: new Map(lume.map((e) => [e.idLume, descriere(e)])),
+      // Fiecare element al foii, cu prima operație de pe rând care îl taie (ADR 0291, felia 28.8↑j): „Du-mă la …” lângă un refuz al
+      // calculului, care vorbește cu id-urile din lume, în orice instanță a piesei.
+      operatiiLume: new Map((doc.foi[0]?.instante ?? []).flatMap((i) => (piese.get(i.piesa)?.operatii.filter(peRand) ?? [])
+        .flatMap((o) => o.noduri.map((n) => [`${i.id}/${n}`, `${i.piesa}/${o.id}`] as const))).reverse()),
     };
     // `limba`: descrierile sunt texte traduse.
   }, [doc, dupaIdLume, lume, descriere, limba]);
@@ -350,8 +359,9 @@ export function ExportConectat({
     for (const { piesa } of exportFoaie.piese) {
       noi.set(piesa.id, piesa.operatii.map((o) => {
         const cheie = `${piesa.id}/${o.id}`;
-        // Finisarea (ADR 0312 §7): rândul ei e doar de citit, deci Exportă îi scrie doar rangul (sau îl scoate, în ordinea automată).
-        if (o.tip === 'finisare') {
+        // Finisarea (ADR 0312 §7) și degroșarea (ADR 0313 §7): rândul lor e doar de citit, deci Exportă le scrie doar rangul (sau
+        // îl scoate, în ordinea automată).
+        if (o.tip === 'finisare' || o.tip === 'degrosare') {
           const { rang: _r, ...fara } = o;
           void _r;
           const r = loc?.get(cheie);
@@ -380,6 +390,7 @@ export function ExportConectat({
       finisari={exportFoaie.finisari}
       ordineAutomata={exportFoaie.automata}
       descrieri={exportFoaie.descrieri}
+      operatiiLume={exportFoaie.operatiiLume}
       doarCitire={doarCitire}
       stare={stare}
       onExporta={exporta}

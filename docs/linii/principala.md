@@ -153,16 +153,19 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
   printr-o schiță.
 - **Observabilitatea:** erorile ajung în jurnalul aplicației; joburile își lasă marcajul.
 
-## Starea pe 26.11.2026, noaptea (după a patruzeci și patra unire din cloud)
+## Starea pe 26.11.2026, dimineața (după a patruzeci și opta unire din cloud)
 
-- **Pe test:** `7a754885` (lotul 40: 28.8↑i, viteza ferestrei exportului; publicat pe 26.11 la 03:15, cu
-  serverul neschimbat; completul pe `main` 45727537251, verde; proba de fum, bună). Înainte: `554b72cb` (lotul
-  39: 3.Cl-1, decorațiunile de Crăciun, Easy 3Draw 18.35.0), pe 26.11 la 01:43; `c9911c14` (lotul 38: 3.Cf-1,
+- **Pe test:** `9c728412` (lotul 41: 3.Cl-2, globul de Crăciun, Easy 3Draw 18.36.0, și 10.4↑d-1, cotele în lanț
+  și „Cotează selecția”; publicat pe 26.11 la 04:35, cu serverul neschimbat; completul pe `main`
+  45736916608, verde; proba de fum, bună). Înainte: `7a754885` (lotul 40: 28.8↑i, viteza ferestrei exportului),
+  pe 26.11 la 03:15; `554b72cb` (lotul 39: 3.Cl-1, decorațiunile de Crăciun, Easy 3Draw 18.35.0), la 01:43; `c9911c14` (lotul 38: 3.Cf-1,
   alipirea la prinderi în vederea „Modelul”, Easy 3Draw 18.34.0), pe 25.11 la 23:28; `5649067c` (lotul 37: 16.A↑b-7, Escape în „Frezele mele”; 18.1↑c, finisarea reliefului, cu documentul
   v29; 28.8↑h, fereastra exportului „pe hârtie”), pe 25.11 la 22:23; `75bcf3fb` (lotul 36: „Pune-o înapoi în
-  bibliotecă”, cotele ca DIMENSION), la 20:54. **În `main`, nepublicate încă:** 3.Cl-2, globul de Crăciun, Easy 3Draw 18.36.0
-  (`b6c9998d`), și 10.4↑d-1, cotele în lanț și „Cotează selecția” (`57888ad8`), unite pe 26.11 la 03:26: în drum,
-  lotul 41.
+  bibliotecă”, cotele ca DIMENSION), la 20:54. **În `main`, nepublicate încă:** 18.1↑d-1 și d-2, degroșarea reliefului, cu documentul v30, și
+  fișa plăcii 18 (`3d0d0c15`), unite pe 26.11 la 05:09, și 10.4↑d-2 și d-3, „Fă desen din cotă” și cotele în
+  raportul foilor (`67dfb777`), unite la 05:35, și 28.8↑j, greșelile ferestrei exportului pe înțeles
+  (`93ff3b29`), unită la 05:35: în drum, într-o singură publicare, lotul 42; 3.Cl-3 și 3.Cl-4, ornamentul cu
+  nume și brăduțul LEGO, Easy 3Draw 18.38.0 (`474b76fc`), unite la 06:36: lotul 43, după el.
 - **`main`, din cloud:** pe 23.11: 3.Tq (`0ae9c6c1`); 11.3↑e și A.4 (`ddaa7ead`); 3.Tr, unită de linia elicelor
   (`d262e57a`); 25.8↑a și A.5 (`1b46c955`), cu reparația probei extensiilor (`8287d66e`); 11.3↑f, unită de linia
   planșelor (`f4601938`); A.6 (`4497d639`); 3.Xh (`2d1e482c`) și 12.1↑e-3 cu 12.1↑e-4 (`03460cab`); A.8a cu A.8b
@@ -176,7 +179,7 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
   (`9fd71053`); fereastra exportului, 28.8↑a–g (`c4ca5ec2`), și 3.Xk (`373699e6`); proba extensiilor, reparată
   (`13d9bcad`), 11.1↑d (`001b6325`) și 3.At (`cadac6c3`), scrise în sesiunea principală; 16.A↑h-5 (`4aee5405`) și
   16.A↑b-3 (`fdde5947`); 18.1↑a, relieful, cu documentul v28 (`c5b79526`); 10.4↑a-4 și 10.4↑b (`1eea83dd`). Pe
-  25.11: 3.Ca și 3.Cb, atelierul Easy 3Draw, 18.25.0 (`11877a3e`); 3.Cc și 3.Cd, 18.27.0 (`9815527f`); 3.Ce, 18.28.0 (`38ff9391`); 3.Cj-1 și 3.Cj-2, 18.30.0 (`e90edd2e`); plafoanele 1 000 / 125 (`caddd661`, ADR 0146); 18.1↑b, relieful în vederea 3D (`ef883ac1`); 10.4↑c-1, cotele în exportul vectorilor (`f2f6fc57`); 16.A↑b-5 (`03e64d33`), 3.Cj-3 și 3.Cj-4, 18.32.0 (`36559b49`), și 28.8↑n (`1eda6f0b`); 28.8↑o, centrul foii ca origine XY0 (`3fd3bf49`); 16.A↑b-4, nota „s-a schimbat în bibliotecă” (`9f18522e`), și 3.Au, starea lucrării imprimantei, scrisă în sesiunea principală (`307d4f9a`); 3.Tu, piesele rotunde pe același ax în „Modelul”, Easy 3Draw 18.33.0 (`f5cf10c8`); 16.A↑b-6, „Pune-o înapoi în bibliotecă” (`1d3882d9`), și 10.4↑c-2, cotele ca DIMENSION în DXF (`66b6b335`); 16.A↑b-7, Escape în „Frezele mele” (`581da353`); 18.1↑c, finisarea reliefului, cu documentul v29 (`f7ca20b6`); 28.8↑h, fereastra exportului „pe hârtie” (`7d74ade2`); 3.Cf-1, alipirea la prinderi în „Modelul”, Easy 3Draw 18.34.0 (`02ac0715`). Pe 26.11: 3.Cl-1, decorațiunile de Crăciun (fulgul, steaua, brăduțul), Easy 3Draw 18.35.0 (`41b1fb6f`); 28.8↑i, viteza ferestrei exportului (`953205a8`); 3.Cl-2, globul de Crăciun, Easy 3Draw 18.36.0 (`b6c9998d`), și 10.4↑d-1, cotele în lanț și „Cotează selecția” (`57888ad8`).
+  25.11: 3.Ca și 3.Cb, atelierul Easy 3Draw, 18.25.0 (`11877a3e`); 3.Cc și 3.Cd, 18.27.0 (`9815527f`); 3.Ce, 18.28.0 (`38ff9391`); 3.Cj-1 și 3.Cj-2, 18.30.0 (`e90edd2e`); plafoanele 1 000 / 125 (`caddd661`, ADR 0146); 18.1↑b, relieful în vederea 3D (`ef883ac1`); 10.4↑c-1, cotele în exportul vectorilor (`f2f6fc57`); 16.A↑b-5 (`03e64d33`), 3.Cj-3 și 3.Cj-4, 18.32.0 (`36559b49`), și 28.8↑n (`1eda6f0b`); 28.8↑o, centrul foii ca origine XY0 (`3fd3bf49`); 16.A↑b-4, nota „s-a schimbat în bibliotecă” (`9f18522e`), și 3.Au, starea lucrării imprimantei, scrisă în sesiunea principală (`307d4f9a`); 3.Tu, piesele rotunde pe același ax în „Modelul”, Easy 3Draw 18.33.0 (`f5cf10c8`); 16.A↑b-6, „Pune-o înapoi în bibliotecă” (`1d3882d9`), și 10.4↑c-2, cotele ca DIMENSION în DXF (`66b6b335`); 16.A↑b-7, Escape în „Frezele mele” (`581da353`); 18.1↑c, finisarea reliefului, cu documentul v29 (`f7ca20b6`); 28.8↑h, fereastra exportului „pe hârtie” (`7d74ade2`); 3.Cf-1, alipirea la prinderi în „Modelul”, Easy 3Draw 18.34.0 (`02ac0715`). Pe 26.11: 3.Cl-1, decorațiunile de Crăciun (fulgul, steaua, brăduțul), Easy 3Draw 18.35.0 (`41b1fb6f`); 28.8↑i, viteza ferestrei exportului (`953205a8`); 3.Cl-2, globul de Crăciun, Easy 3Draw 18.36.0 (`b6c9998d`), și 10.4↑d-1, cotele în lanț și „Cotează selecția” (`57888ad8`); 18.1↑d-1 și d-2, degroșarea reliefului, cu documentul v30, și fișa plăcii 18 (`3d0d0c15`); 10.4↑d-2 și d-3, „Fă desen din cotă” și cotele în raportul foilor (`67dfb777`); 28.8↑j, greșelile ferestrei exportului pe înțeles (`93ff3b29`); 3.Cl-3 și 3.Cl-4, ornamentul cu nume și brăduțul LEGO, Easy 3Draw 18.38.0 (`474b76fc`).
 - **Liniile** (vezi [indexul](README.md)):
   - **în lucru, pe ramuri, repornite pe 25.11 la 09:32** (owner-ul, în sesiunea principală, după resetarea limitei
     săptămânale: „vreau sa pornesti si celelalte sub-sesiuni”):
@@ -186,13 +189,13 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
       20:11; fără felie pornită: 16.A↑d, e, f, g, la cuvântul owner-ului;
     - exportul: 28.8↑n, unită la 13:18; 28.8↑o (centrul foii ca origine XY0; mișcă mașina), unită la 14:21; 28.8↑h
       (desenele ferestrei, cu reparația 28.8↑h-2 a lui „Du-mă la …” și cu regula „cât foaia” unită cu relieful),
-      unită la 21:13; 28.8↑i (viteza ferestrei), unită pe 26.11 la 02:07; în lucru, 28.8↑j (greșelile pe
-      înțeles), apoi k, l;
+      unită la 21:13; 28.8↑i (viteza ferestrei), unită pe 26.11 la 02:07; 28.8↑j (greșelile pe înțeles),
+      unită la 05:35; în lucru, 28.8↑k (curățenia vizuală), apoi l;
     - relieful: 18.1↑b, unită la 11:02; 18.1↑c (finisarea, cu bila în document, v29; `AndreiBesliu/cvs2#39`), unită
-      la 21:11, după ce linia a ținut bilele afară din lista bibliotecii a ferestrei exportului; în lucru, 18.1↑d
-      (degroșarea, apoi fișa plăcii reliefului; pornită de owner pe 25.11 la 23:37, „ok, porneste 10.4↑d si 18.1↑d”;
-      v30 luat de ea: operația `degrosare`, ADR 0313, propus de linie); rândul editabil al finisării, la cuvântul
-      owner-ului;
+      la 21:11, după ce linia a ținut bilele afară din lista bibliotecii a ferestrei exportului; 18.1↑d (pornită de owner pe
+      25.11 la 23:37, „ok, porneste 10.4↑d si 18.1↑d”): d-1 (degroșarea, cu documentul v30, ADR 0313) și d-2 (fișa
+      plăcii 18), unite pe 26.11 la 05:09 (`AndreiBesliu/cvs2#51`); fără felie pornită: rândul editabil al
+      finisării și al degroșării și rotunjirea în jos a pasului lateral, la cuvântul owner-ului;
     - atelierul: cama și roata cu palete, unite la 09:35; cadrul și melcul, la 13:18 (3.Cj, încheiată); 3.Tu
       (piesele rotunde pe același ax în „Modelul”, ADR 0283; Easy 3Draw 18.33.0; pornită de owner în sesiunea liniei,
       „1a, 2a, 3a la 3.Tu, pornește”), unită la 18:18; în lucru, 3.Cf (alipirea la prinderi în
@@ -200,12 +203,14 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
       18.34.0), unită la 22:15; **decorațiunile de Crăciun** (cererea
       owner-ului din 25.11, 19:18): ADR 0285, acceptat de el în sesiunea liniei („Mergem cu recomandarile”), feliile
       3.Cl-1…4: 3.Cl-1 (fulgul, steaua, brăduțul; 18.35.0), unită pe 26.11 la 00:15; 3.Cl-2 (globul; 18.36.0),
-      unită la 03:26; în lucru, 3.Cl-3 (ornamentul cu nume; 18.37.0); 3.Cf-2 după ele;
+      unită la 03:26; 3.Cl-3 (ornamentul cu nume; 18.37.0) și 3.Cl-4 (brăduțul LEGO; 18.38.0), unite la 06:36
+      (ADR 0285, încheiat); în lucru, 3.Cf-2 (orientarea de mână pe trei axe);
       apoi 3.Cg–3.Ci; 3.Ck, după tipărirea bilei și a cupei;
     - cotele: 10.4↑c-1, unită la 12:20; c-2 (DIMENSION în DXF și cifrele ca text), unită la 19:42;
       10.4↑d (ultima felie a cotelor; pornită de owner pe 25.11 la 23:37), împărțită în trei: d-1 (lanțul, linia
       de bază, „Cotează selecția”), unită pe 26.11 la 03:26; d-2 („Fă desen din cotă”) și d-3 (cotele în raportul
-      foilor), pe ramură, de raportat.
+      foilor), unite la 05:35; 10.4↑d, încheiată; fără felie pornită: cele „mai târziu” din ADR 0330, la cuvântul
+      owner-ului.
 
     Se unesc la raportul liniei, în ordinea rapoartelor. **Restul de mărime** (din 25.11, cu plafoanele noi; după
     lotul de la 13:18: 109,9 kB în total, 8,5 kB în pornire): fiecare linie își spune în raport cât adaugă, iar una
@@ -236,15 +241,25 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
     sesiunea se poate arhiva), biblioteca extensiilor (3.Xh–3.Xk; ce urmează, la cuvântul owner-ului), elicele
     (3.Tq–3.Tt; linia predată atelierului, sesiunea ei se poate arhiva după lotul 25).
 - **La owner:**
+  - constatarea 14 a auditului exportului (numele elementelor cu virgulă în română, `src/app/descriereElement.ts`):
+    o felie mică a sesiunii principale, nepornită;
   - „cine unește în `main`” (recomandarea: doar sesiunea principală; pe 23–24.11, biblioteca și frezele au scris întâi
     aici, iar felia era deja în lot: unirea a rămas aici);
   - proba pe mașină a centrului foii ca origine XY0 (28.8↑o): zero-ul în mijlocul foii, întâi în aer;
   - cele două alegeri ale cotelor din 10.4↑d-1, cu recomandarea liniei aplicată: pasul liniilor de bază (două
-    înălțimi de cifră, fără setare) și locul lui „Cotează selecția” (meniul de clic dreapta);
-  - de tipărit decorațiunile de Crăciun (fulgul, steaua, brăduțul; un glob decupat și unul în relief, în două culori);
+    înălțimi de cifră, fără setare) și locul lui „Cotează selecția” (meniul de clic dreapta); și întrebarea 10, din
+    d-3: cotele din desenul raportului foilor, mărite cât să se citească (aplicat) sau la mărimea adevărată;
+  - alegerile reliefului din 18.1↑d (ADR 0313 §8), cu recomandarea liniei aplicată: strategia degroșării (trepte Z
+    pe liniile finisării), adaosul implicit (0,5 mm), freza doar plată, avertismentul la finisarea pusă înaintea
+    degroșării, finisarea pornită tot de la fața plăcii, liniile finisării la 1,5 mm pe placa 18; și una nepornită:
+    rotunjirea în jos a pasului lateral la liniile aliniate (azi, la cel mai apropiat număr de celule, deci și în
+    sus);
+  - tăierea plăcii 18 (relieful: MDF de 18 mm, plata Ø6 și bila Ø6; `docs/etape/placa-18.md`);
+  - de tipărit decorațiunile de Crăciun (fulgul, steaua, brăduțul; un glob decupat și unul în relief, în două culori;
+    un ornament cu nume în relief și unul decupat; brăduțul LEGO);
   - cele patru întrebări din auditul elicelor (recomandările 1a, 2a, 3a, 4a; `docs/linii/audit-elice.md`) și
     arhivarea sesiunii elicelor;
-  - pachetul Easy 3Draw, 514,4 kB, peste pragul de 0,5 MB din ADR 0284 (recomandarea: mergem mai departe, ne uităm
+  - pachetul Easy 3Draw, 553,0 kB (18.38.0), peste pragul de 0,5 MB din ADR 0284 (recomandarea: mergem mai departe, ne uităm
     din nou la 1 MB); tipărirea pieselor noi (cama, roata cu palete, cadrul, melcul cu roata de 24);
   - verificarea juridică (GDPR) a utilizării aplicației, înaintea live-ului (ADR 0262 §3); pe test, colectarea merge
     din 24.11;
@@ -259,10 +274,9 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
   zile, totalul a crescut cu 87 kB (cotele 25,3, fereastra exportului 16,3, frezele 13,9, relieful 12,7). Regulile
   feliilor rămân: ce nu trebuie înaintea primei randări stă la cerere, calculul greu în worker, iar felia își spune
   în raport cât adaugă la total și la pornire.
-- **Documentul e v29** (finisarea reliefului și freza bilă, 18.1↑c, în `main` din 25.11, ADR 0312; v28, forma
-  `relief`, 18.1↑a, din 24.11; v27, frezele, 16.A↑b-1). Cotele nu cer schemă. **v30 e al degroșării
-  reliefului** (18.1↑d, încă pe ramură: operația `degrosare`, cu câmpul ei; ADR 0313, propus de linie; linia a
-  confirmat pe 26.11 că îl folosește). **Următorul liber e v31.** După el: toroidala și profilul
+- **Documentul e v30** (degroșarea reliefului, 18.1↑d-1, în `main` din 26.11, ADR 0313: operația `degrosare`, cu
+  câmpul ei; v29, finisarea reliefului și freza bilă, 18.1↑c, din 25.11, ADR 0312; v28, forma `relief`, 18.1↑a,
+  din 24.11; v27, frezele, 16.A↑b-1). Cotele nu cer schemă. **Următorul liber e v31.** După el: toroidala și profilul
   desenat ale frezelor; adaosul și finisarea pe profil (9a din ADR 0291): numărul se dă când felia ajunge la
   migrare, iar unirile cu schemă intră în `main` în ordinea numerelor. O probă care citește documentul salvat cere
   versiunea curentă (`placute.spec.ts` a căzut cu `schema: 26` în completul liniei frezelor).

@@ -1048,7 +1048,7 @@ From an image (a photo, a logo, a grey height map) you can make a **relief**: a 
 pixel, whose height comes from the pixel's grey. On the board, the relief shows shaded (light from the top left), under the
 vectors, with its frame; it is selected, moved, rotated and mirrored like any shape, and a part with a relief is placed
 several times and on other sheets. In the [3D view](#vedere-3d), the **Model** button shows it in three dimensions, in its
-pocket in the sheet. The relief is cut with **finishing** (below); roughing comes in a later slice.
+pocket in the sheet. The relief is cut with **finishing** and, before it, with **roughing** (below).
 
 **How to make one:** from “Import…”, pick an image (PNG, JPEG, WebP, GIF or BMP), then, at the top of the window, **Relief**
 instead of **Vectors**. The choice is kept until you reload the page. On the left, the window has:
@@ -1087,9 +1087,24 @@ the sheet's thickness). The fields:
 - **Relief on Z**: **top at the stock face** (the default) or **zero plane below the face**, at the depth you type; what would
   stand above the face is cut at the face, and the export says so.
 
-Finishing comes before the contour cuts, with its own cutter. In the **Export G-code** window it has its own row, in its place
-in the cutting order, with a read-only sheet (the cutter, the stepover, the scallop on a flat, the depth); you change it in the
-Cutting section. With **Cutting order: Mine**, its row moves like any other. In the [3D view](#vedere-3d), **Cut** shows the
+**Roughing:** the **3D relief (roughing and finishing)** role puts two operations on the relief's part: roughing first, then
+finishing (with the fields above). Roughing takes most of the wood away with a flat cutter, in passes of at most the **step**,
+and leaves the **allowance** above the relief, in every direction, for finishing; its last pass follows the allowance surface.
+Its fields:
+- **Roughing tool (flat)**: the diameter; roughing works only with a flat cutter;
+- **Roughing stepover** (by default 40 % of the cutter): the distance between lines;
+- **Allowance for finishing** (by default 0.5 mm, at most 10 mm): how much wood stays above the relief; on a slope a little
+  more stays vertically;
+- **Roughing line angle** (0° to 180°).
+
+**Relief edge** and **Relief on Z** are shared by the two operations: you change them once, for both. Where the flat cutter
+does not fit (a valley narrower than it), roughing leaves the wood and finishing takes it away in its passes.
+
+Roughing and finishing come before the contour cuts, each with its own cutter, roughing first. With **Cutting order: Mine**,
+if you move finishing before the roughing of the same relief, the export says so among the warnings: the program is fine, but
+finishing takes all the wood with its cutter and roughing cuts almost only air. In the **Export G-code** window each has its
+own row, in its place in the cutting order, with a read-only sheet (the cutter, the stepover, the scallop on a flat for
+finishing, the allowance for roughing, the depth); you change them in the Cutting section. With **Cutting order: Mine**, its row moves like any other. In the [3D view](#vedere-3d), **Cut** shows the
 sheet after the program. On slopes the cutter stays a little above the ideal surface (about 0.1 mm on a 45° slope): it is the safe side of the
 computation, which never digs into the relief. The export needs the relief's tiles from this browser; on another computer, it
 says they are missing.
@@ -1258,7 +1273,7 @@ goes right through.
 
 ## Dimensions and measuring
 %% capitol: cote
-%% acopera: unealta.cote, foaie.cote, vedere.cote
+%% acopera: unealta.cote, foaie.cote, vedere.cote, foaie.desen-din-cota
 
 The **Dimensions** tool (`D`; its button sits in the bar's extension, after Convert) puts dimensions on the drawing that show a size: the length of a side, the
 distance between two points along X, along Y or straight, the radius or diameter of a circle or an arc, the angle between two
@@ -1316,6 +1331,12 @@ mm (for radius and diameter, the **figure position** from the circle, positive o
 **Delete**. The distance between two oblique parallel sides is a free dimension: a fixed drawing, since its foot on the second
 side is not a point of the shape.
 
+**Make a drawing from the dimension** (in the panel of the selected dimension): the dimension's drawing becomes an ordinary
+piece, exactly where the dimension was: lines and figures as strokes (the figures in the single-line font), the ends as small
+closed contours. The new piece has no cut: it is selected, with Select, and in the **Cutting** section you give it a role
+(on-line engraving, for example); from there it works like any shape. With **Delete the dimension** ticked, the dimension
+goes with the drawing, in the same undo step; without it, the dimension stays.
+
 In the **list**, under the active sheet's pieces, the **Dimensions (N)** row: open, it shows the sheet's dimensions (the value,
 the type, “unlinked”), and a click on one switches to the Dimensions tool with it selected. The **eye** on the row hides the
 sheet's dimensions on the canvas (it does not delete them; with the Dimensions tool they show anyway). **Show dimensions**
@@ -1360,6 +1381,8 @@ field, said in red, and is not kept. **Close** (or Esc) closes the window.
   **Dimensions in DXF** (**Dimensions (DIMENSION)**, the default: in AutoCAD and LibreCAD they stay dimensions; or **Lines and
   numbers**, for programs that don't know dimensions) and **Numbers** (**Strokes**, the default: the same in any program, with
   no fonts; or **Text**, editable in another program, but drawn with its font).
+- **Sheets report:** whether the “With dimensions” tick box in the [sheets report](#raport) starts ticked (unticked by
+  default).
 
 ## Converting vectors
 %% capitol: conversie
@@ -1973,7 +1996,8 @@ Each operation has its own **bit** (the card's **Bit** group): the tool number (
 of the tip (from 1° to 179°, 60° by default; for a V bit, the diameter is that of the cutting part). Operations with different bits
 are cut with a change between them: in the automatic order, in each class (insides, then on the line, then outsides), the bit
 already mounted first, so there are as few changes as possible. The same number with two diameters or two shapes is refused:
-each bit needs its own number.
+each bit needs its own number. Next to the error, **Make it T{n}** gives the bit another number: that of the same bit, if it is
+already on another T, otherwise the lowest free one. Only the bits on the clashing number are red.
 
 The **From my bits** list, in the Bit group, has the bits from your library (see [My bits](#freze)) that suit the operation's
 cut: flat ones on a profile, a pocket or drilling, V bits on a V-carve. Once picked, the bit puts on the operation its T number
@@ -2079,7 +2103,8 @@ is exported alone, with its own confirmation. **Open in Machine** loads the acti
 out of are, here, those of all sheets: if you chose the confirmation in **From CSV…**, **Export** waits for the tick.
 
 The **job summary** shows the estimated time, per operation and per tool. For your machine's times, paste the controller's
-answer to `$$` (from the sender's console) under “Machine settings”; the program does not change.
+answer to `$$` (from the sender's console) under “Machine settings”; the program does not change. With the GRBL factory
+settings, a feed above their maximum speed is told as a note; with your own `$$` pasted, as a warning: then it is your machine.
 
 After the download, the window **simulates** the program: the depth map of the sheet, the material removed, the deepest cut
 and whether the cutter goes through the sheet. For the sheet seen in 3D, see [The 3D view](#vedere-3d).
@@ -2103,6 +2128,13 @@ material: what you buy).
 through the whole sheet thickness), in the part's own axes: its rotation on the sheet does not change it. A part without
 such a profile gets the size of its drawing, marked “(drawing)”. With **drawing**, all get the box of their whole drawing.
 Z0 and the origin corner are the export's: those chosen in its window, when the report comes from there.
+
+**With dimensions (N)** appears when a sheet of the report has [dimensions](#cote). Ticked, each sheet with dimensions shows
+them on its drawing, with the colour and numbers from [Settings](#setari) › Dimensions › Export, and the drawing takes the whole row, above
+the sheet's data. The numbers, arrows and gaps grow until they can be read (at least a 60th of the sheet's long side); each
+dimension line stays where you put it. A dimension that goes outside the sheet widens the drawing, so it is not cut off.
+Identical sheets show the first one's dimensions. The tick box starts from Settings › Dimensions › Sheets report (unticked by
+default); the CSV has no dimensions (it is the cut list), and **Print** takes the drawings as you see them.
 
 **Download CSV** writes the list to `cncvs2-lista-de-taiere.csv`, in UTF-8, with three tables one under the other: the
 sheets (one row per part, with the sheet, how many times it is cut and how much of it is used), the totals per part and the

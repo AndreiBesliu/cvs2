@@ -38,8 +38,9 @@ test('rezumatul: timpul fișierului descărcat, pe implicitele GRBL 1.1h, cu fie
   await expect(rez.locator('[data-rezumat="timp"]')).toHaveText(`Timpul estimat: ${minSec(e.total.secunde)}`);
   await expect(rez.locator('[data-rezumat="masina"]')).toHaveAttribute('data-sursa', 'implicit');
   await expect(rez.locator('[data-rezumat="masina"]')).toContainText('viteza maximă X 500, Y 500, Z 500 mm/min');
-  // F1000 trece de $110 = 500: spus pe față.
-  await expect(rez.locator('[data-rezumat="limitat"]')).toContainText('avansul trece de viteza maximă a mașinii');
+  // F1000 trece de $110 = 500 din fabrică: spus ca notă, nu ca avertisment (ADR 0291 §4a, felia 28.8↑j).
+  await expect(rez.locator('[data-rezumat="limitat"]')).toContainText('avansul trece de viteza maximă din setările GRBL din fabrică');
+  await expect(rez.locator('[data-rezumat="limitat"]')).toHaveClass('nota');
   await expect(rez.locator('tr[data-operatie]')).toHaveCount(2);
   await expect(rez.locator('tr[data-rand="restul"] td[data-col="timp"]')).toHaveText(/\d+,\d s/);
   await expect(rez.locator('tr[data-rand="total"] td[data-col="taiere"]')).toHaveText(new Intl.NumberFormat('ro-RO', { maximumFractionDigits: 0 }).format(e.total.taiere));

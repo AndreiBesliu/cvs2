@@ -152,6 +152,50 @@ export function definitieCota(c: Cota, p: readonly Punct[], dc: DesenCota, text:
 }
 
 /** Cotele foii `indexFoaie`, ca entități ale exportului (pe stratul COTE), cu cutia lor, semnele lipsă din font și definițiile. */
+/** Cercul închis de rază `r` din `c`, din două semicercuri (bulge 1): un punct al cotei, ca formă. */
+const cercContur = (c: Punct, r: number): Contur => ({
+  inchis: true, varfuri: [{ p: { x: c.x - r, y: c.y }, s: { tip: 'A', bulge: 1 } }, { p: { x: c.x + r, y: c.y }, s: { tip: 'A', bulge: 1 } }],
+});
+
+/** Desenul unei cote ca forme (felia 10.4↑d-2): contururile, în mm ai foii, și semnele pe care fontul cifrelor nu le are. */
+export type GeometrieCota = { readonly contururi: readonly Contur[]; readonly lipsa: readonly string[] };
+
+/**
+ * „Fă desen din cotă” (ADR 0330 §8, felia 10.4↑d-2), pur: desenul cotei `id` de pe foaie, același cu al pânzei și al
+ * exportului, ca forme obișnuite, în ordine: liniile de extensie, linia de cotă (sau bucățile ei), arcul unghiului, trăsături
+ * deschise; capetele (săgeata plină sau deschisă, un triunghi închis; punctul, un cerc închis; bara oblică, o trăsătură);
+ * apoi cifrele, ca trăsăturile fontului cu o singură linie (așezate de `cifre`). Null: cota lipsă, cu un fel necunoscut sau
+ * fără desen. Fără `cifre`, semnele cifrei rămân nedesenate și sunt spuse lipsă.
+ */
+export function geometrieCota(doc: Document, indexFoaie: number, id: string, o: Pick<OptiuniCote, 'stil' | 'format' | 'cifre'>): GeometrieCota | null {
+  const c = doc.foi[indexFoaie]?.cote?.find((x) => x.id === id);
+  if (!c || !felCunoscut(c.fel) || !Array.isArray(c.puncte)) return null;
+  const lume = indexLume(doc, indexFoaie);
+  const p = c.puncte.map((a) => punctAncora(a, lume).p);
+  const valoare = valoareCota(c, p);
+  const text = valoare === null ? '' : textCota(c, cifraCota(c.fel, valoare, o.format));
+  const dc = desenCota(c, p, o.stil, text);
+  if (!dc) return null;
+  const contururi: Contur[] = [...dc.extensii.map(([a, b]) => linie(a, b)), ...dc.bucati.map(([a, b]) => linie(a, b)), ...dc.arce.map(arcContur)];
+  for (const k of dc.capete) {
+    if (k.fel === 'bara') contururi.push(linie(k.bucata[0], k.bucata[1]));
+    else if (k.fel === 'punct') contururi.push(cercContur(k.centru, k.raza));
+    else contururi.push({ inchis: true, varfuri: k.puncte.map((q) => ({ p: q, s: LINIE })) });
+  }
+  const lipsa: string[] = [];
+  if (text.trim() !== '') {
+    if (!o.cifre) {
+      for (const x of text) if (x.trim() && !lipsa.includes(x)) lipsa.push(x);
+    } else {
+      const t = o.cifre(textPentruFont(text), dc.text.inaltime);
+      lipsa.push(...t.lipsa);
+      const f = transformare(dc.text.unghi, dc.text.p);
+      for (const k of t.contururi) contururi.push(mutaContur(k, f));
+    }
+  }
+  return { contururi, lipsa };
+}
+
 export function entitatiCote(doc: Document, indexFoaie: number, o: OptiuniCote): CoteExport {
   const foaie = doc.foi[indexFoaie];
   const entitati: Entitate[] = [];

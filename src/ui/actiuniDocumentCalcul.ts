@@ -551,6 +551,26 @@ export const CALCUL_DOCUMENT: CalculDocument = {
       ctx.scrie(executa(h, { tip: 'inlocuieste-cote', foaie: foaie.id, vechi, nou: nou.map((c) => structuredClone(c)) }));
     },
   },
+  // „Fă desen din cotă” (ADR 0330 §8, felia 10.4↑d-2): o piesă nouă, fără operații, și, la cerere, cota scoasă, un pas.
+  'foaie.desen-din-cota': {
+    activa: (ctx) => {
+      const d = ctx.desenCota?.();
+      if (!d) return 'motiv.nimic-ales';
+      const s = scrie(ctx);
+      if (s !== true) return s;
+      const r = comandaDesenCota(ctx.istoric().doc, d.forme, d.cote, ctx.foaie?.());
+      return r.ok ? true : r.motiv;
+    },
+    ruleaza: (ctx) => {
+      const d = ctx.desenCota?.();
+      if (!d) return;
+      const h = ctx.istoric();
+      const r = comandaDesenCota(h.doc, d.forme, d.cote, ctx.foaie?.());
+      if (!r.ok) return;
+      ctx.scrie(executa(h, r.comanda));
+      ctx.selecteaza([r.id]);
+    },
+  },
   // Imaginile foii (ADR 0272): lista întreagă, judecată ca la ușă; aceeași listă nu e o comandă.
   'foaie.imagini': {
     activa: (ctx) => {
@@ -1128,6 +1148,36 @@ function comandaDesen(doc: Document, f: FormaNoua | readonly FormaNoua[], sterge
   }
   ultimulDesen = { doc, f, sterge, foaie: idFoaie, rez };
   return rez;
+}
+
+/**
+ * „Fă desen din cotă” (ADR 0330 §8, felia 10.4↑d-2): o piesă nouă din formele desenului unei cote (în mm ai foii), cu
+ * instanța ei în colțul foii, nerotită, deci formele stau exact unde era cota; fără operații: nu se taie până nu primește un
+ * rol. Cu `cote` (lista foii fără cota făcută desen, la „Șterge cota”), și cota pleacă, în același pas de anulare. Refuzată:
+ * nicio formă, plafoanele, documentul de după peste schemele documentului.
+ */
+export type ComandaDesenCota = { readonly ok: true; readonly comanda: Comanda; readonly id: string } | { readonly ok: false; readonly motiv: CheieSimpla };
+export function comandaDesenCota(doc: Document, forme: readonly FormaDoc[], cote: readonly Cota[] | null, idFoaie?: string): ComandaDesenCota {
+  if (forme.length === 0) return { ok: false, motiv: 'motiv.nimic-ales' };
+  const varfuri = forme.reduce((n, f) => n + (f.tip === 'cale' ? f.varfuri.length : 0), 0);
+  const grup = forme.length > 1 ? 1 : 0;
+  if (!incape(doc, { noduri: forme.length + grup, instante: 1, elementeLume: forme.length, operatii: 0, taieturi: 0, varfuri, varfuriLume: varfuri })) {
+    return { ok: false, motiv: 'motiv.plafon' };
+  }
+  const foaie = foaieCurenta(doc, idFoaie);
+  const id = idNou(doc);
+  const radacina: Nod = forme.length === 1
+    ? { tip: 'element', id, forma: structuredClone(forme[0]!), matrice: { ...IDENTITATE } }
+    : { tip: 'grup', id: 'g', matrice: { ...IDENTITATE }, copii: forme.map((forma, j) => ({ tip: 'element' as const, id: `e${j + 1}`, forma: structuredClone(forma), matrice: { ...IDENTITATE } })) };
+  const comenzi: Comanda[] = [{
+    tip: 'adauga', foaie: foaie.id, instanta: { id, piesa: id, x: 0, y: 0, rotire: 0 }, pozitie: foaie.instante.length,
+    piesa: { piesa: { id, radacina, operatii: [] }, pozitie: doc.piese.length },
+  }];
+  if (cote) comenzi.push({ tip: 'inlocuieste-cote', foaie: foaie.id, vechi: foaie.cote ?? [], nou: cote.map((c) => structuredClone(c)) });
+  const comanda = pas(comenzi);
+  if (!comanda) return { ok: false, motiv: 'motiv.nimic-ales' };
+  const dupa = executa(istoricDin(doc), comanda).doc;
+  return is(SchemaDocument, JSON.parse(JSON.stringify(dupa))) ? { ok: true, comanda, id } : { ok: false, motiv: 'motiv.import-refuzat' };
 }
 
 /**

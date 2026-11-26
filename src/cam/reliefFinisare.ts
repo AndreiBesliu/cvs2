@@ -15,6 +15,10 @@
  *   trecerilor sunt una în alta, deci sub fiecare linie lemnul a fost scos până la fundul de dinainte.
  * - **Alinierea** (§5): la 0° și 90°, liniile trec prin centrele celulelor, iar pasul lateral e un număr întreg de celule.
  *
+ * - **Degroșarea** (ADR 0313, felia 18.1↑d-1): același drum, cu freza plată de rază R, cu cota din câmpul dilatat cu
+ *   discul de rază R + a, plus a (adaosul a, lăsat finisării în orice direcție), pe trepte Z cu pasul: treapta k lucrează
+ *   unde cota e sub fundul treptei de dinainte, la max(cota, −k · pas); ultima stă pe suprafața adaosului.
+ *
  * Doar + − × ÷ √ min max, afară de direcția liniilor la un unghi oarecare (`Math.cos`, `Math.sin`, o dată pe operație; 0° și
  * 90° sunt exacte), ca strategia paralelă a buzunarului: CAM-ul nu importă din simulare. Totul în lume (mm, Z față de fața
  * plăcii), fără stare.
@@ -62,6 +66,28 @@ export type RezultatFinisare =
     readonly pasLateral: number; readonly avertismente: string[];
   }
   | { readonly ok: false; readonly motiv: string };
+
+/**
+ * Degroșarea reliefului (ADR 0313): freza plată de rază `raza`, cu adaosul `adaos` lăsat finisării; restul, ca la finisare
+ * (liniile aliniate la 0° și 90°, marginea, pasul pe trecere, podeaua).
+ */
+export type ParametriDegrosare = {
+  readonly reliefuri: readonly ReliefCam[];
+  readonly raza: number;
+  /** Adaosul (mm): cât lemn rămâne deasupra modelului, în orice direcție, pentru finisare. */
+  readonly adaos: number;
+  readonly unghi: number;
+  readonly margine: 'perete' | 'trece';
+  readonly pasLateral: number;
+  readonly pas: number;
+  readonly adancime: number;
+  readonly zSigur: number;
+  readonly avans: number;
+  readonly avansPlonjare: number;
+};
+
+/** Cel mai mare adaos al unei degroșări (mm), ca în ușa documentului (ADR 0313). */
+export const ADAOS_MAXIM = 10;
 
 /** Cele mai multe puncte (linii × puncte × treceri) ale unei finisări; peste, refuzul (felia 18.1↑h măsoară 4000²). */
 export const PUNCTE_FINISARE_MAXIM = 20_000_000;
@@ -312,20 +338,24 @@ type Linie = number[];
  * Liniile pe relieful `p`, cu pasul lateral folosit: aliniate, prin centrele celulelor reliefului, cu pasul un număr întreg de
  * celule; punctele pe linie la pasul celulei de calcul.
  */
-function linii(p: Pregatit, o: ParametriFinisare): { readonly linii: Linie[]; readonly pas: number; readonly aliniat: boolean } {
+function linii(p: Pregatit, o: ParametriFinisare, inset = 0): { readonly linii: Linie[]; readonly pas: number; readonly aliniat: boolean } {
   const c = p.r.celula, h = p.h, E = o.margine === 'trece' ? o.freza.raza : 0;
   const aliniat = !o.nealiniat && (o.unghi === 0 || o.unghi === 90);
   const rez: Linie[] = [];
   if (aliniat) {
     const k = Math.max(1, Math.round(o.pasLateral / c)), s = k * c;
-    // Centrele pe o axă, de la cel mai mic ≥ −E la cel mai mare ≤ L + E (pasul `d`, decalate cu `d / 2`).
-    const centre = (L: number, d: number): number[] => {
-      const a = Math.ceil(-E / d - 0.5), b = Math.floor((L + E) / d - 0.5), out: number[] = [];
+    // Centrele pe o axă, de la cel mai mic ≥ −E + I la cel mai mare ≤ L + E − I (pasul `d`, decalate cu `d / 2`). Cu I > 0 și
+    // nimic între margini (o zonă mai îngustă decât 2 · I), centrul cel mai apropiat de mijloc.
+    const centre = (L: number, d: number, I = 0): number[] => {
+      const a = Math.ceil((I - E) / d - 0.5), b = Math.floor((L + E - I) / d - 0.5), out: number[] = [];
       for (let i = a; i <= b; i++) out.push((i + 0.5) * d);
+      if (out.length === 0 && I > 0) out.push((Math.max(0, Math.min(Math.ceil(L / d) - 1, Math.floor(L / 2 / d))) + 0.5) * d);
       return out;
     };
-    // Lateral, prin centrele celulelor reliefului; de-a lungul, la pasul celulei de calcul.
-    const lung = o.unghi === 0 ? centre(p.W, h) : centre(p.H, h), lat = o.unghi === 0 ? centre(p.H, c) : centre(p.W, c);
+    // Lateral, prin centrele celulelor reliefului (la degroșare cu peretele păstrat, doar pe zona în care freza are voie: la
+    // R + a de margini; altfel prima linie nu taie nimic, iar a doua lasă lângă perete o fâșie peste adaos); de-a lungul, la
+    // pasul celulei de calcul.
+    const lung = o.unghi === 0 ? centre(p.W, h) : centre(p.H, h), lat = o.unghi === 0 ? centre(p.H, c, inset) : centre(p.W, c, inset);
     const alese: number[] = [];
     for (let q = 0; q < lat.length; q += k) alese.push(lat[q]!);
     if (lat.length > 0 && alese[alese.length - 1] !== lat[lat.length - 1]) alese.push(lat[lat.length - 1]!);
@@ -338,7 +368,9 @@ function linii(p: Pregatit, o: ParametriFinisare): { readonly linii: Linie[]; re
   }
   const t = (o.unghi * Math.PI) / 180, ux = o.unghi === 90 ? 0 : Math.cos(t), uy = o.unghi === 0 ? 0 : o.unghi === 90 ? 1 : Math.sin(t);
   const vx = -uy, vy = ux;
-  const x0 = -E, y0 = -E, x1 = p.W + E, y1 = p.H + E;
+  // La degroșare cu peretele păstrat, liniile acoperă zona în care freza are voie (la `inset` = R + a de margini).
+  const ix = Math.min(inset, p.W / 2), iy = Math.min(inset, p.H / 2);
+  const x0 = -E + ix, y0 = -E + iy, x1 = p.W + E - ix, y1 = p.H + E - iy;
   const colturi = [[x0, y0], [x1, y0], [x0, y1], [x1, y1]] as const;
   let bmin = Infinity, bmax = -Infinity;
   for (const [x, y] of colturi) { const b = x * vx + y * vy; bmin = Math.min(bmin, b); bmax = Math.max(bmax, b); }
@@ -365,6 +397,32 @@ const EPS = 1e-9;
 
 /** Finisarea paralelă a reliefurilor unei operații (vezi capul fișierului). Mișcările sunt în lume. */
 export function finisareRelief(o: ParametriFinisare): RezultatFinisare {
+  return treceriRelief(o, { cota: o.freza, ridicare: 0, degrosare: false });
+}
+
+/**
+ * Degroșarea reliefurilor unei operații (ADR 0313): drumul finisării, cu freza plată de rază R, cota din freza plată de rază
+ * R + a, ridicată cu a. Lemnul rămas deasupra modelului e cel puțin a pe orice direcție (pe un plan de pantă g, a · (1 + g)
+ * pe verticală). Mișcările sunt în lume.
+ */
+export function degrosareRelief(o: ParametriDegrosare): RezultatFinisare {
+  if (!(o.adaos >= 0 && o.adaos <= ADAOS_MAXIM)) return { ok: false, motiv: `adaosul, ${o.adaos} mm, trebuie să fie în [0, ${ADAOS_MAXIM}] mm` };
+  const freza: FrezaFinisare = { fel: 'plata', raza: o.raza };
+  return treceriRelief(
+    { ...o, freza, nealiniat: false },
+    { cota: { fel: 'plata', raza: o.raza + o.adaos }, ridicare: o.adaos, degrosare: true },
+  );
+}
+
+/**
+ * Cum se socotește cota unui segment: freza cotei (cea a operației la finisare; la degroșare, plata de rază R + a), ridicarea
+ * adăugată peste cotă și podea (adaosul), și felul (pentru mesaje).
+ */
+type Socotire = { readonly cota: FrezaFinisare; readonly ridicare: number; readonly degrosare: boolean };
+
+/** Drumul comun al finisării și al degroșării: liniile, cotele, trecerile pe Z (vezi capul fișierului). */
+function treceriRelief(o: ParametriFinisare, so: Socotire): RezultatFinisare {
+  const nume = so.degrosare ? 'degroșarea' : 'finisarea';
   const R = o.freza.raza;
   if (!(R > 0)) return { ok: false, motiv: 'freza n-are rază' };
   if (!(o.pasLateral > 0 && o.pasLateral <= 2 * R)) {
@@ -372,37 +430,41 @@ export function finisareRelief(o: ParametriFinisare): RezultatFinisare {
   }
   if (!(o.pas > 0)) return { ok: false, motiv: 'pasul pe trecere trebuie să fie pozitiv' };
   if (!(o.unghi >= 0 && o.unghi < 180)) return { ok: false, motiv: `unghiul liniilor, ${o.unghi}°, trebuie să fie în [0°, 180°)` };
-  if (o.reliefuri.length === 0) return { ok: false, motiv: 'finisarea n-are niciun relief' };
+  if (o.reliefuri.length === 0) return { ok: false, motiv: `${nume} n-are niciun relief` };
   const pregatite: Pregatit[] = o.reliefuri.map(pregateste);
   const avertismente: string[] = [];
-  if (pregatite.some((p) => { for (let k = 0; k < p.r.z.length; k++) if (p.r.z[k]! > EPS) return true; return false; })) {
+  // Degroșarea lucrează doar sub față (de la −pas în jos): partea de deasupra o spune finisarea.
+  if (!so.degrosare && pregatite.some((p) => { for (let k = 0; k < p.r.z.length; k++) if (p.r.z[k]! > EPS) return true; return false; })) {
     avertismente.push('o parte din relief iese deasupra feței plăcii: acolo se taie la față');
   }
   const podea = -o.adancime;
-  /** Cota unui segment în lume, peste toate reliefurile: al lui `ip` cu marginea lui, celelalte doar înăuntru. */
+  /**
+   * Cota unui segment în lume, peste toate reliefurile: al lui `ip` cu marginea lui, celelalte doar înăuntru; podeaua e un
+   * plan al modelului. La degroșare, ridicată cu adaosul.
+   */
   const cota = (ip: number, ax: number, ay: number, bx: number, by: number): number => {
     let m = podea;
     pregatite.forEach((p, k) => {
       const [x0, y0] = inRelief(p, ax, ay), [x1, y1] = inRelief(p, bx, by);
-      m = Math.max(m, cotaSegment(p, o.freza, x0, y0, x1, y1, k === ip && o.margine === 'perete'));
+      m = Math.max(m, cotaSegment(p, so.cota, x0, y0, x1, y1, k === ip && o.margine === 'perete'));
     });
-    return m;
+    return m + so.ridicare;
   };
   // Liniile, în lume, cu vârful fiecărui punct.
   type LinieZ = { readonly ip: number; readonly x: Float64Array; readonly y: Float64Array; readonly z: Float64Array };
   const toate: LinieZ[] = [];
   let pasFolosit = o.pasLateral, puncte = 0;
   for (const [ip, p] of pregatite.entries()) {
-    const l = linii(p, o);
+    const l = linii(p, o, so.degrosare && o.margine !== 'trece' ? so.cota.raza : 0);
     if (ip === 0) pasFolosit = l.pas;
-    if (ip === 0 && !l.aliniat) avertismente.push(`liniile ${o.nealiniat ? 'nealiniate' : `la ${o.unghi}°`} nu urmează centrele celulelor: pot apărea riduri (moiré) pe detaliile fine`);
+    if (ip === 0 && !l.aliniat && !so.degrosare) avertismente.push(`liniile ${o.nealiniat ? 'nealiniate' : `la ${o.unghi}°`} nu urmează centrele celulelor: pot apărea riduri (moiré) pe detaliile fine`);
     if (ip === 0 && l.aliniat && Math.abs(l.pas - o.pasLateral) > 1e-9) {
       avertismente.push(`pasul lateral, rotunjit la ${Math.round(l.pas / p.r.celula)} ${Math.round(l.pas / p.r.celula) === 1 ? 'celulă' : 'celule'} ale reliefului: ${Math.round(l.pas * 1e4) / 1e4} mm`);
     }
     for (const [k, pts] of l.linii.entries()) {
       const n = pts.length / 2;
       puncte += n;
-      if (puncte > PUNCTE_FINISARE_MAXIM) return { ok: false, motiv: `finisarea ar avea peste ${PUNCTE_FINISARE_MAXIM} de puncte pe trecere: mărește pasul lateral` };
+      if (puncte > PUNCTE_FINISARE_MAXIM) return { ok: false, motiv: `${nume} ar avea peste ${PUNCTE_FINISARE_MAXIM} de puncte pe trecere: mărește pasul lateral` };
       const x = new Float64Array(n), y = new Float64Array(n), z = new Float64Array(n);
       const { a, b, c, d, e, f } = p.r.m;
       for (let i = 0; i < n; i++) {
@@ -423,11 +485,13 @@ export function finisareRelief(o: ParametriFinisare): RezultatFinisare {
   for (const l of toate) for (const v of l.z) if (v < adanc) adanc = v;
   const m: Miscare[] = [];
   if (adanc >= -EPS) {
-    avertismente.push('relieful n-are nimic sub fața plăcii: finisarea n-are ce tăia');
+    avertismente.push(so.degrosare
+      ? 'relieful nu coboară sub fața plăcii mai mult decât adaosul: degroșarea n-are ce tăia'
+      : 'relieful n-are nimic sub fața plăcii: finisarea n-are ce tăia');
     return { ok: true, miscari: m, treceri: 0, linii: toate.length, pasLateral: pasFolosit, avertismente };
   }
   const n = Math.max(1, Math.ceil(-adanc / o.pas - 1e-9));
-  if (puncte * n > PUNCTE_FINISARE_MAXIM) return { ok: false, motiv: `finisarea ar avea peste ${PUNCTE_FINISARE_MAXIM} de puncte: mărește pasul lateral sau pasul pe trecere` };
+  if (puncte * n > PUNCTE_FINISARE_MAXIM) return { ok: false, motiv: `${nume} ar avea peste ${PUNCTE_FINISARE_MAXIM} de puncte: mărește pasul lateral sau pasul pe trecere` };
   const sus = (): void => { m.push({ tip: 'rapida', la: { Z: o.zSigur } }); };
   let unde: { readonly ip: number; readonly x: number; readonly y: number; readonly z: number } | null = null;
   for (let k = 1; k <= n; k++) {
@@ -452,20 +516,21 @@ export function finisareRelief(o: ParametriFinisare): RezultatFinisare {
             m.push({ tip: 'taiere', la: { X: x0, Y: y0 }, avans: o.avans });
             if (z0 < zl - EPS) m.push({ tip: 'taiere', la: { Z: z0 }, avans: o.avansPlonjare });
           } else {
-            m.push({ tip: 'taiere', la: { X: x0, Y: y0, Z: z0 }, avans: o.avans });
+            m.push({ tip: 'taiere', la: { X: x0, Y: y0, Z: z0 }, avans: avansSpre(unde.x, unde.y, unde.z, x0, y0, z0) });
           }
         } else {
           sus();
           m.push({ tip: 'rapida', la: { X: x0, Y: y0 } });
           m.push({ tip: 'taiere', la: { Z: z0 }, avans: o.avansPlonjare });
         }
-        let pz = z0;
+        let px = x0, py = y0, pz = z0;
         for (let q = a + 1; q <= b; q++) {
           const zq = Z(q);
           // Punctele de mijloc ale unui palier drept (aceeași cotă, pe aceeași linie dreaptă) nu schimbă drumul.
           if (q < b && zq === pz && Z(q + 1) === zq) continue;
-          m.push({ tip: 'taiere', la: { X: l.x[q]!, Y: l.y[q]!, Z: zq }, avans: o.avans });
-          pz = zq;
+          const xq = l.x[q]!, yq = l.y[q]!;
+          m.push({ tip: 'taiere', la: { X: xq, Y: yq, Z: zq }, avans: avansSpre(px, py, pz, xq, yq, zq) });
+          px = xq; py = yq; pz = zq;
         }
         unde = { ip: l.ip, x: l.x[b]!, y: l.y[b]!, z: Z(b) };
         i = j + 1;
@@ -476,6 +541,17 @@ export function finisareRelief(o: ParametriFinisare): RezultatFinisare {
   }
   sus();
   return { ok: true, miscari: m, treceri: n, linii: toate.length, pasLateral: pasFolosit, avertismente };
+
+  /**
+   * Avansul unei mutări de tăiere (felia 18.1↑d-1, găsită la placa reliefului): una care coboară mai abrupt decât lasă avansul
+   * de plonjare (viteza pe Z, avans · |dz| / L, peste el) merge cu avansul de plonjare. Așa freza nu intră în lemn cu avansul de
+   * tăiere la începutul unei linii (de pe perete, în jos) și nici pe o pantă abruptă; urcarea și coborârea lină rămân la avans.
+   */
+  function avansSpre(ax: number, ay: number, az: number, bx: number, by: number, bz: number): number {
+    const dz = az - bz;
+    if (!(dz > EPS)) return o.avans;
+    return (o.avans * dz) / Math.hypot(bx - ax, by - ay, dz) > o.avansPlonjare ? o.avansPlonjare : o.avans;
+  }
 
   /** O legătură la adâncime doar spre un punct apropiat (linia vecină): cel mult de două ori pasul lateral. */
   function legatura(a: { readonly x: number; readonly y: number }, b: { readonly x: number; readonly y: number }): boolean {

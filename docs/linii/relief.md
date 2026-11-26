@@ -158,3 +158,40 @@ degroșarea și finisarea pe relief), unde stă relieful în document și unde s
     cele aliniate, fiecare segment trece prin celulele vecine); un traseu ridicat peste lemn nu mai taie, deci surplusul
     măsurat doar pe mutările de tăiere nu-l vede (ce rămâne se măsoară cu fața plăcii unde bila n-a trecut); podeaua se
     probează doar pe un relief mai adânc decât ea.
+- **26.11: felia 18.1↑d-1 (degroșarea reliefului, documentul v30, ADR 0313)**, pornită la cuvântul owner-ului („ok, porneste
+  10.4↑d si 18.1↑d”, prin sesiunea principală), cu `main` `ca38f215` adus. Oracolul întâi: CL-ul cu adaosul (freza plată de
+  rază R + a, plus a), judecata degroșării, simulatorul de material pe operații la rând. Apoi CAM-ul (drumul finisării, cu
+  cota din câmpul dilatat), documentul **v30** (`degrosare`, câmpul `degrosare`), lucrarea (ordinea, potrivirea cu finisarea,
+  avertismentul finisării puse înaintea degroșării), rolul „Relief 3D” și rândul doar de citit din fereastra exportului.
+  Felia s-a împărțit: d-1 (degroșarea) și d-2 (fișa plăcii reliefului).
+- **De ținut minte, din 18.1↑d-1:**
+  - **Schema:** documentul e v30 (degroșarea); un câmp nou ia v31, numărul îl dă sesiunea principală.
+  - **Simulatorul de material** e exact pentru freza plată (intervalul segmentului la cel mult R de coloană, coloana la 1 µm
+    înăuntrul marginii). Cu eșantioane, o coloană de pe marginea discului scăpa la o trecere și era prinsă la alta, cu toată
+    adâncimea: o alarmă falsă de „mai adânc decât pasul”, doar la freza plată (la bilă, marginea e sus).
+  - **Pașii programului:** `PasProgram` are trei feluri (`degrosare`, `finisare`, `taietura`); un cod care alege între ele
+    întreabă `p.fel === 'taietura'`, nu `p.fel === 'finisare'`.
+  - **`catFoaia`** lasă și degroșarea cum e scrisă; proba în `export.hartie.test.ts`. Opt otrăvuri vechi (12.1f-4, 28.8h,
+    18.1c) au fost mutate pe codul nou: `scripts/otravuri-void-noi.py` le arată.
+  - **Același plan zero și aceeași margine:** lucrarea refuză o degroșare cu alt plan zero decât finisarea aceluiași relief,
+    și una care trece de margine când finisarea păstrează peretele; panoul le scrie pe amândouă deodată.
+  - **Probele de lângă:** o probă care cere un refuz al migrării cere și motivul lui (altfel ușa versiunii noi, după migrare,
+    îl refuză oricum, cu alt motiv, și otrava trece); `hartiFinisare` are proba ei (ce dale ajung în worker).
+- **26.11, 03:30: 18.1↑d-1 gata pe ramură**: otrăvurile 39 / 39 (și opt vechi, mutate), pornirea +0,1 kB, totalul +1,8 kB;
+  porțile în CI, pe commit-ul raportat. Urmează 18.1↑d-2 (fișa plăcii reliefului, `docs/etape/placa-18.md`).
+  - **Coborârea:** o mutare de tăiere care coboară are viteza pe Z cel mult avansul de plonjare (`avansSpre` în
+    `treceriRelief`, `coborariRepeziO` în oracol). Găsită pe G-code-ul plăcii: oracolul judeca adâncimea pe material, nu și
+    viteza cu care freza intră în el. Pe G-code, oracolul scade rotunjirea coordonatelor (0,001 mm) din coborâre: pe segmente
+    de 0,125 mm, la prag, rotunjirea singură trecea cu ~2 % peste.
+  - **Lemnul rămas, cu `ramasO`:** numără doar coloanele tăiate (sub `fata`). O probă care cere „nimic uitat” (o fâșie
+    netăiată) îi dă `fata = Infinity`. Așa a scăpat fâșia de lângă pereții paraleli cu liniile degroșării.
+- **26.11, 04:10: 18.1↑d-2 gata pe ramură**: fișa plăcii reliefului (`docs/etape/placa-18.md`), generatorul și fișierele de
+  aur în `test/placi/placa-18/`, cotele prezise de oracolul simulării (`placa18.test.ts`, pe exportul proaspăt), otrăvurile
+  10 / 10. Tăierea e a owner-ului.
+- **De ținut minte, din 18.1↑d-2:**
+  - **Vârful compusului e la fața plăcii:** pe o grilă, vârful e al celulei celei mai înalte (aici 7,999, nu 8), deci fundul e
+    la −zmax; cotele se socotesc din zmax, nu din înălțimea pe hârtie.
+  - **Bila cu peretele păstrat nu atinge fața din jur:** la capetele liniilor, pe perete rămâne cel mult o celulă de calcul
+    (0,0625); pe pereții paraleli cu liniile, linia de lângă perete rotunjește muchia de sus.
+  - **Modelul unei probe pe placă** e cel triangulat prin centrele celulelor (`triunghiuriModel` + `clExact`), nu funcția pe
+    hârtie: lângă trepte, funcția sare, triangularea nu.

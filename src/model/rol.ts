@@ -3,7 +3,7 @@ import { cutieContur, type Cutie } from '../geom/cutie.ts';
 import { adancimiImbricare } from '../geom/imbricare.ts';
 import { IDENTITATE } from '../geom/matrice.ts';
 import {
-  inaltimeConV, INCRUSTATIE_DREAPTA_IMPLICITA, INCRUSTATIE_IMPLICITA, JOC_INCRUSTATIE_MINIM, operatieImplicita, pasLateralImplicit, PLAFON,
+  ADAOS_IMPLICIT, inaltimeConV, INCRUSTATIE_DREAPTA_IMPLICITA, INCRUSTATIE_IMPLICITA, JOC_INCRUSTATIE_MINIM, operatieImplicita, pasLateralImplicit, PLAFON,
   UNGHI_V_IMPLICIT, type Document, type FormaSculaDoc, type Incrustatie, type IncrustatieDreapta, type IncrustatieV, type Latura, type Operatie,
   type Piesa, type Scula, type TipOperatie,
 } from './document.ts';
@@ -20,13 +20,19 @@ import { cuNoduri } from './urechiLocuri.ts';
  * - incrustație în V (ADR 0170 §5): un V-carve al tuturor contururilor, care își declară dopul (`incrustatie`), cu freza dreaptă
  *   a fundului plat și a feței dopului;
  * - incrustație cu pereți drepți (ADR 0171 §5): un buzunar al tuturor contururilor, care își declară dopul;
- * - găurire: toate cercurile, doar pe o piesă numai din cercuri.
+ * - găurire: toate cercurile, doar pe o piesă numai din cercuri;
+ * - finisarea reliefului (ADR 0312): o finisare pe toate reliefurile, doar pe o piesă numai cu reliefuri;
+ * - Relief 3D (ADR 0310 §6, ADR 0313 §6): degroșarea, apoi finisarea, pe toate reliefurile.
  * Un rol se oferă doar dacă se potrivește tuturor formelor piesei.
  */
-export type Rol = 'exterior' | 'interior' | 'pe-linie' | 'stanga' | 'dreapta' | 'buzunar' | 'gaurire' | 'vcarve' | 'incrustatie' | 'incrustatie-drept' | 'finisare';
+export type Rol =
+  | 'exterior' | 'interior' | 'pe-linie' | 'stanga' | 'dreapta' | 'buzunar' | 'gaurire' | 'vcarve' | 'incrustatie' | 'incrustatie-drept' | 'finisare'
+  | 'relief3d';
 
 /** Rolurile, în ordinea listei din panou (a tăieturii din fereastra exportului). */
-export const ROLURI: readonly Rol[] = ['exterior', 'interior', 'pe-linie', 'stanga', 'dreapta', 'buzunar', 'gaurire', 'vcarve', 'incrustatie', 'incrustatie-drept', 'finisare'];
+export const ROLURI: readonly Rol[] = [
+  'exterior', 'interior', 'pe-linie', 'stanga', 'dreapta', 'buzunar', 'gaurire', 'vcarve', 'incrustatie', 'incrustatie-drept', 'finisare', 'relief3d',
+];
 
 /**
  * Bugetul imbricării unei piese (candidații vizitați plus vârfurile măsurate, ca la import): panoul o cere la fiecare
@@ -44,7 +50,7 @@ const ANALIZE = new WeakMap<Piesa, Analiza>();
 function analiza(p: Piesa): Analiza {
   const tinuta = ANALIZE.get(p);
   if (tinuta) return tinuta;
-  // Relieful (ADR 0310) n-are rolurile contururilor: are rolul lui, finisarea (ADR 0312; degroșarea vine în 18.1↑d).
+  // Relieful (ADR 0310) n-are rolurile contururilor: are rolurile lui, finisarea (ADR 0312) și „Relief 3D” (ADR 0313).
   const elemente = elementeInstanta(p.radacina, { id: '', piesa: p.id }, IDENTITATE);
   const reliefuri = elemente.filter((e) => e.forma.tip === 'relief').map((e) => e.nod);
   const forme = elemente.filter(esteContur).map((e): FormaPiesei => {
@@ -67,7 +73,7 @@ export function roluriOferite(p: Piesa): Rol[] {
   const { forme, adancimi, reliefuri } = analiza(p);
   // O piesă doar cu reliefuri are finisarea (ADR 0312); una cu reliefuri și contururi, deocamdată doar rolurile contururilor
   // (rolul e al piesei întregi, ADR 0112): finisarea ei se scrie din document sau dintr-un rol separat, mai târziu.
-  if (forme.length === 0) return reliefuri.length > 0 && reliefuri.length <= PLAFON.noduriOperatie ? ['finisare'] : [];
+  if (forme.length === 0) return reliefuri.length > 0 && reliefuri.length <= PLAFON.noduriOperatie ? ['finisare', 'relief3d'] : [];
   const inchise = forme.every((f) => f.inchis);
   const potrivit: Record<Rol, boolean> = {
     exterior: inchise && adancimi !== null,
@@ -84,6 +90,7 @@ export function roluriOferite(p: Piesa): Rol[] {
     // Cu pereți drepți, un buzunar (ADR 0171 §2), tot al unei singure operații: conturul potrivit e al figurii întregi.
     'incrustatie-drept': inchise && forme.length <= PLAFON.noduriOperatie,
     finisare: false,
+    relief3d: false,
   };
   return ROLURI.filter((r) => potrivit[r]);
 }
@@ -132,6 +139,11 @@ export function grupeRol(p: Piesa, rol: Rol): Grupa[] | null {
       return bucati('incrustatie-drept', 'buzunar', 'interior', toate).map((g) => ({ ...g, incrustatie: 'drept' as const }));
     case 'finisare':
       return [{ id: 'finisare', tip: 'finisare', latura: 'pe-linie', noduri: [...reliefuri] }];
+    case 'relief3d':
+      return [
+        { id: 'degrosare', tip: 'degrosare', latura: 'pe-linie', noduri: [...reliefuri] },
+        { id: 'finisare', tip: 'finisare', latura: 'pe-linie', noduri: [...reliefuri] },
+      ];
   }
 }
 
@@ -314,13 +326,16 @@ function incrustatieDreaptaPentru(vechi: Incrustatie | undefined, adancime: numb
 export function operatiiPentruRol(doc: Document, p: Piesa, rol: Rol): Operatie[] | null {
   const g = grupeRol(p, rol);
   if (!g || g.length === 0) return null;
-  const prima = p.operatii[0] ?? operatieImplicita(g[0]!.id, { tip: 'cerc', raza: 1 });
+  if (rol === 'relief3d') return operatiiRelief3d(doc, p, g);
+  // La finisare, operația de pornire e finisarea piesei, dacă are una (din „Relief 3D”, prima e degroșarea).
+  const finPiesei = rol === 'finisare' ? p.operatii.find((o) => o.tip === 'finisare') : undefined;
+  const prima = finPiesei ?? p.operatii[0] ?? operatieImplicita(g[0]!.id, { tip: 'cerc', raza: 1 });
   const {
     id: _id, tip: tipVechi, noduri: _noduri, latura: _latura, scula: sculaVeche, sens, adancime: adancimeVeche, pas, urechi, rampa, intrari, colturi,
     despartire: _d, pasLateral: pasVechi, coborare: _c, retragereCompleta: _r, fundPlat: fundVechi, directie: _dir, rest: _rest, strategie: _s,
-    incrustatie: incVechi, finisare: finVechi, ...necunoscute
+    incrustatie: incVechi, finisare: finVechi, degrosare: _deg, ...necunoscute
   } = prima;
-  void _id; void _noduri; void _latura; void _d; void _c; void _r; void _dir; void _rest; void _s;
+  void _id; void _noduri; void _latura; void _d; void _c; void _r; void _dir; void _rest; void _s; void _deg;
   const scula = frezaPentruRol(doc, sculaVeche, rol);
   // La V-carve, adâncimea e cel mult conul frezei, rotunjit în jos la 0,001 mm (ADR 0112, precizarea 5.8↑c): altfel lucrarea
   // l-ar refuza („regiunea cere … iar conul frezei are …”), de pildă la gaura de 8 mm a unui cerc nou, cu V60 Ø6.
@@ -351,7 +366,41 @@ export function operatiiPentruRol(doc: Document, p: Piesa, rol: Rol): Operatie[]
     ...structuredClone(extra), ...(x.tip === 'buzunar' ? { pasLateral } : {}), ...(fin ? structuredClone(fin) : {}),
     ...(incrustatie ? { incrustatie: structuredClone(incrustatie) } : {}), ...(fundPlat ? { fundPlat: structuredClone(fundPlat) } : {}),
   }, [...x.noduri]));
-  const singura = p.operatii.length === 1 ? p.operatii[0] : undefined;
+  const singura = finPiesei ?? (p.operatii.length === 1 ? p.operatii[0] : undefined);
   if (ops.length === 1 && singura) ops[0] = { ...ops[0]!, id: singura.id };
   return ops;
+}
+
+/**
+ * Operațiile rolului „Relief 3D” (ADR 0313 §6): finisarea, ca la rolul ei (din finisarea piesei, dacă are una), și înaintea
+ * ei degroșarea: a piesei, dacă are una, cu valorile ei, altfel freza plată cu diametrul finisării, pasul lateral 40 % din ea,
+ * adaosul 0,5 mm, liniile la 0°, adâncimea și pasul finisării. Marginea și planul zero ale degroșării sunt mereu ale
+ * finisării (lucrarea le cere potrivite). Numărul T al frezei plate nu ia numărul bilei finisării.
+ */
+function operatiiRelief3d(doc: Document, p: Piesa, g: readonly Grupa[]): Operatie[] | null {
+  const degVeche = p.operatii.find((o) => o.tip === 'degrosare');
+  const finVeche = p.operatii.find((o) => o.tip === 'finisare');
+  const pornire = finVeche ?? degVeche ?? p.operatii[0];
+  const finOps = operatiiPentruRol(doc, { ...p, operatii: pornire ? [pornire] : [] }, 'finisare');
+  const fin = finOps?.[0];
+  const noduri = g[0]?.noduri ?? [];
+  if (!fin) return null;
+  const D = degVeche?.scula.diametru ?? fin.scula.diametru;
+  const luate = [...sculeProiect(doc, new Set([p.id])), fin.scula];
+  const plata: Scula = degVeche && !degVeche.scula.forma ? structuredClone(degVeche.scula) : { numar: 0, nume: 'freza plata', diametru: D };
+  const scula = { ...plata, numar: numarPrintre(luate, plata.numar === 0 ? { ...plata, numar: primulLiber(luate) } : plata) };
+  const vf = fin.finisare;
+  const valori: Record<string, unknown> = degVeche?.degrosare ? structuredClone(degVeche.degrosare) : { adaos: ADAOS_IMPLICIT, unghi: 0 };
+  delete valori['margine']; delete valori['planZero'];
+  if (vf?.margine !== undefined) valori['margine'] = vf.margine;
+  if (vf?.planZero !== undefined) valori['planZero'] = vf.planZero;
+  const pasLateral = degVeche?.pasLateral !== undefined && degVeche.pasLateral <= 2 * D ? degVeche.pasLateral : pasLateralImplicit(D);
+  let id = degVeche?.id ?? 'degrosare';
+  if (id === fin.id) id = `${id}-2`;
+  const deg = cuNoduri({
+    id, tip: 'degrosare', noduri: [], scula, latura: 'pe-linie', sens: fin.sens, adancime: degVeche?.adancime ?? fin.adancime,
+    pas: degVeche?.pas ?? fin.pas, pasLateral, urechi: null, rampa: null, intrari: null, colturi: null,
+    degrosare: valori as NonNullable<Operatie['degrosare']>,
+  }, [...noduri]);
+  return [deg, fin];
 }

@@ -183,6 +183,8 @@ export type ContextDocument = {
   readonly imaginiNoi?: () => readonly ImagineFoaie[];
   /** Cotele noi ale foii (ADR 0330): lista întreagă, după o cotă pusă, mutată, legată din nou sau ștearsă. */
   readonly coteNoi?: () => readonly Cota[];
+  /** „Fă desen din cotă” (felia 10.4↑d-2): formele desenului cotei și, cu „Șterge cota”, lista cotelor fără ea. */
+  readonly desenCota?: () => { readonly forme: readonly FormaDoc[]; readonly cote: readonly Cota[] | null };
   /** Deplasările instanțelor, fiecare cu a ei, în mm (alinierea, distribuirea, săgețile; ADR 0050). */
   readonly deplasari?: () => readonly { readonly id: string; readonly dx: number; readonly dy: number }[];
   /** Panoul, fără selecție: materialul nou al foii, în mm; doar mărimile scrise. */
@@ -594,6 +596,8 @@ export const ACTIUNI_DOCUMENT: readonly Actiune<ContextDocument>[] = [
   laCerere('foaie.imagini', 'actiune.imagini', (ctx) => (ctx.imaginiNoi ? true : 'motiv.nimic-ales')),
   // Cotele foii (ADR 0330): din unealta Cote, la cerere (ca ghidajele).
   laCerere('foaie.cote', 'actiune.cote', (ctx) => (ctx.coteNoi ? true : 'motiv.nimic-ales')),
+  // „Fă desen din cotă” (ADR 0330 §8): din panoul cotei alese.
+  laCerere('foaie.desen-din-cota', 'actiune.desen-din-cota', (ctx) => (ctx.desenCota ? true : 'motiv.nimic-ales')),
   // Foile proiectului (ADR 0210 §1, felia 11.1↑): din lista cu foile, din panou și din meniul de clic dreapta. Calculul vine
   // cu modulul editării (ca la degrupare): până atunci, acțiunile spun că se încarcă, nu aruncă.
   laCerere('foaie.adauga', 'actiune.foaie-adauga', dupaCalcul),
