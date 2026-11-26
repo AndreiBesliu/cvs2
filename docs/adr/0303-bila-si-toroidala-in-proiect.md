@@ -90,6 +90,31 @@ e-1 adaugă silueta în nucleu (în workerele simulării și CAM) și forma în 
    a. Refuzate, cu motiv (recomandat: geometria lor e a frezei plate).
    b. Permise, cu fundul socotit ca la buzunar.
 
+## Implementarea (16.A↑e-1)
+
+Pe 26.11, pe `wip/16.A-freze-e` (din `main` `d1ab8ba5`), cu v31 ținut de sesiunea principală pentru linie.
+
+- **Documentul v31** (`src/model/document.ts`, `schemaDocument.ts`, `migrari.ts`): `FormaToroidala = { tip: 'toroidala',
+  raza }` în `FormaSculaDoc`; la ușă, `raza` pozitivă și sub jumătatea diametrului (judecată pe scula întreagă, cu calea
+  `forma.raza`); `v30v31` schimbă doar numărul și refuză un v30 cu o toroidală pe orice freză a unei operații
+  (`frezeOperatieBrute`). Oracolul documentului are secțiunea v31 (`SCHEMA_V31_O`, `problemeRazaToroidalaO`), cu cazurile pe
+  hârtie T01–T07 și RT0–RT10; corpusul de aur are canelura cu o toroidală Ø6 r1 (T10) în v31.
+- **IR-ul și simularea:** `FormaScula` primește toroidala; nucleul are felul 3 al siluetei (`a = R − ρ`, `rho`), cu `H` și
+  raza la o adâncime în formă închisă, iar linia înclinată ia minimul lui m·s + h(√(s² + p²)) prin înjumătățirea derivatei,
+  în 64 de pași (`minimToroidala`); pe orizontală, s = 0 tăiat la interval. `program.ts` refuză raza în afara (0, Ø / 2) și
+  elicea cu toroidala (e-2).
+- **Oracolul simulării** (`test/oracles/simulare.ts`): felul `toroidala`, cu h(r) = ρ·(1 − cos(asin((r − a) / ρ))), panta
+  utilă și refuzul razei. Proba (`test/unit/simulare.toroidala.test.ts`): nucleul față de oracol pe plonjări, linii orizontale
+  și înclinate, arce, cu martorul unei bile de același diametru (cade); h pe hârtie; secțiunea canelurii la −1 (Ø6 r1,5:
+  2·(a + √(ρ² − (ρ − d)²)) = 5,828 mm); axa rampei pe hârtie.
+- **Lucrarea** (`src/cam/job.ts`, `src/model/formaFrezei.ts`): toroidala e refuzată pe orice operație și pe orice freză a ei
+  (scula, rest, fundul plat, dopul, banda, finisarea, degroșarea), cu motivul „freza toroidală (T…, cale) nu se taie încă”;
+  `motivFormaPeOperatie` dă `toroidala`, deci biblioteca n-o oferă (nici `FELURI_CU_CAM` nu o are încă). Fereastra exportului
+  face rând doar operațiilor cu freze plate și în V (`operatieCuRand`, `formaPeRand`): altfel copia ferestrei, care știe doar
+  V-ul, ar scrie la Exportă o plată în locul toroidalei. Panoul numește freza toroidală (`prop.freza.valoare-toroidala`).
+- **Rămâne pentru e-3:** `sculaIR` trece toroidala în IR, raportul foilor o numește, lista „Freza” și rândurile exportului o
+  poartă (cu raza), biblioteca o scoate din „în curând”.
+
 ## Se redeschide dacă
 
 - placa 4 (sau o placă a bilei) arată că secțiunea canelurii sau creasta din buzunar nu ies ca pe hârtie;
