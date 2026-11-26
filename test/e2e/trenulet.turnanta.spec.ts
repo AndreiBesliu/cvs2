@@ -115,12 +115,15 @@ test('STL-ul bazei e închis și are cotele de pe hârtie; „Fă placa turnant�
   await expect(page.locator('#at-toast')).toHaveText('1 × placa turnantă (baza și partea de sus) în listă.');
   await expect(page.locator('#at-lista tr td:first-child')).toHaveText(['Placă turnantă 2×2, baza', 'Placă turnantă 2×2, partea de sus']);
   await expect(page.locator('#at-lista tr[data-id] .pas-n')).toHaveText(['1', '1']);
-  // a doua oară, se adună pe aceleași rânduri; partea de sus făcută din editor e aceeași piesă
+  // cu jocul 0,2: baza e altă piesă (rând nou), partea de sus e aceeași (jocul e al pivotului), deci se adună pe rândul ei,
+  // ca și cea făcută din editor
+  await scrie(page, '#at-tu-joc', '0.2');
   await page.locator('#at-tu-fa').click();
+  await expect(page.locator('#at-lista tr td:first-child')).toHaveText(['Placă turnantă 2×2, baza', 'Placă turnantă 2×2, partea de sus', 'Placă turnantă 2×2, baza, jocul 0,2']);
+  await expect(page.locator('#at-lista tr[data-id] .pas-n')).toHaveText(['1', '2', '1']);
   await page.locator('#at-tu-piesa [data-v="sus"]').click();
   await page.locator('#at-adauga').click();
-  await expect(page.locator('#at-lista tr td:first-child')).toHaveText(['Placă turnantă 2×2, baza', 'Placă turnantă 2×2, partea de sus']);
-  await expect(page.locator('#at-lista tr[data-id] .pas-n')).toHaveText(['2', '3']);
+  await expect(page.locator('#at-lista tr[data-id] .pas-n')).toHaveText(['1', '3', '1']);
   // prinderile: partea de sus, ale plăcii cu gaură; baza, locașurile și pivotul (în găurile de știft)
   await expect(page.locator('#at-prinde-are')).toHaveText('4 știfturi · 4 locașuri · 1 gaură de știft');
   await page.locator('#at-tu-piesa [data-v="baza"]').click();

@@ -135,8 +135,9 @@ test('pivotul, pe plasă: un cilindru de Ø4,75 cu fanta de 0,8 mm, de la fața 
         if (Math.abs(y - h.c) < h.r - 0.6) assert.equal(la(p, h.c + 0.5, y, z), true, `${ce}: lângă fantă e lemn, la y ${r3(y)}`);
       }
     }
-    // vârful: lemn sub el, gol deasupra; rădăcina: în fața bazei
+    // vârful: lemn sub el, gol deasupra; rădăcina: pivotul pornește din placă, fără nicio fantă între ei
     assert.equal(la(p, h.c + 1.2, h.c, PLACA + h.hp - 0.1), true, `${ce}: vârful`);
+    for (const s of [-1, 1]) assert.equal(la(p, h.c + s * 1.2, h.c, PLACA + 0.005), true, `${ce}: pivotul e lipit de placă`);
     assert.equal(la(p, h.c + 1.2, h.c, PLACA + h.hp + 0.1), false, `${ce}: după vârf, gol`);
     const q = Lt.turnantaCote({ marime, joc });
     assert.deepEqual([r3(q.pivotD), r3(q.jocRadial)], [r3(2 * h.r), r3((Lt.efective().gauraD! - 2 * h.r) / 2)], ce);
@@ -215,6 +216,7 @@ test('valorile din afara marginilor: mărimea e 2 sau 4, jocul între −0,1 și
   assert.equal(q({ marime: 6 }).marime, 4);
   assert.equal(q({ marime: '4' }).marime, 4);
   assert.match(turnanta({ marime: 3 }).avert.join(' '), /2 × 2 sau 4 × 4/);
+  assert.match(turnanta({ marime: 3, piesa: 'sus' }).avert.join(' '), /2 × 2 sau 4 × 4/);
   assert.equal(turnanta({ marime: 4 }).avert.length, 0);
   assert.equal(q({ joc: 0.5 }).joc, 0.2);
   assert.equal(q({ joc: -1 }).joc, -0.1);
