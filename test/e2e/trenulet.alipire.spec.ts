@@ -134,9 +134,10 @@ test('știftul din colț: o cărămidă alipită pe știftul 8 al alteia urmeaz�
   await expect(marime(page)).toContainText('Mărime 39,8 × 39,8 × 21,1 mm');
   expect((await tinut(page))[1]!.prins).toEqual({ de: baza!.id, a: 15, b: 1, unghi: 90, alunec: 0 });
 
-  // dublată: copia nu mai e prinsă; stă pe grilă, cu un știft mai la dreapta (x 32,1 … 47,9)
+  // dublată: copia nu mai e prinsă; stă pe grilă, cu un știft mai la dreapta (x 32,1 … 47,9), deci peste original: intră
+  // una în alta, iar verificarea o spune pe rândurile lor (felia 3.Cg)
   await page.locator('#at-m-dubla').click();
-  await expect(lista(page)).toHaveText([`${CARAMIDA} 0, 0, 0`, `${CARAMIDA} prinsă`, `${CARAMIDA} 4, 1, 3`]);
+  await expect(lista(page)).toHaveText([`${CARAMIDA} 0, 0, 0`, `${CARAMIDA} intră în alta prinsă`, `${CARAMIDA} intră în alta 4, 1, 3`]);
   await expect(marime(page)).toContainText('Mărime 47,8 × 39,8 × 21,1 mm');
   await page.locator('#at-m-scoate').click();
   await expect(lista(page)).toHaveCount(2);
@@ -295,7 +296,8 @@ test('știftul de pe lateral: cărămida alipită stă în picioare; baza scoas�
   await piesa(page, 'caramizi', 'caramida');
   await expect(butonul(page)).toHaveText('Pune în model');
   await inModel(page);
-  await expect(lista(page).nth(1)).toHaveText(`${CARAMIDA} -2, -1, 11`);
+  // (e deasupra cutiei piesei libere, fără nicio prindere făcută: plutește, iar verificarea o spune)
+  await expect(lista(page).nth(1)).toHaveText(`${CARAMIDA} plutește -2, -1, 11`);
 });
 
 test('punctele din vederea 3D: un clic pe punctul unei prinderi o alege ca țintă, fără să schimbe piesa aleasă', async ({ page }) => {
@@ -382,7 +384,8 @@ test('ținta pe un locaș: piesa se alipește dedesubt; una fără prindere potr
   await expect(butonul(page)).toHaveText('Alipește în model');
   await inModel(page);
   await expect(page.locator('#at-toast')).toContainText('Ax 4 nu are nicio prindere pentru știft');
-  await expect(lista(page).nth(2)).toHaveText(/^Ax 4 \d+, \d+, 3$/);
+  // (culcat peste știfturile cărămizii, axul intră în ele: verificarea o spune pe rândul lui)
+  await expect(lista(page).nth(2)).toHaveText(/^Ax 4 intră în alta \d+, \d+, 3$/);
   expect((await tinut(page))[2]!.prins).toBeUndefined();
 
   // redeschisă, pagina ține legătura făcută

@@ -67,7 +67,8 @@ declare namespace Trei {
     HemisphereLight: new (cer: number, sol: number, intensitate: number) => Object3D;
     DirectionalLight: new (culoare: number, intensitate: number) => Object3D;
     MeshStandardMaterial: new (p: { color: string | number; roughness: number; metalness: number; emissive?: number }) => Material;
-    MeshBasicMaterial: new (p: { color: string | number; depthTest?: boolean; transparent?: boolean; opacity?: number }) => Material;
+    MeshBasicMaterial: new (p: { color: string | number; depthTest?: boolean; transparent?: boolean; opacity?: number; side?: number }) => Material;
+    BackSide: number;
     Matrix4: new () => Matrix4;
     SphereGeometry: new (raza: number, segmenteLatime?: number, segmenteInaltime?: number) => BufferGeometry;
     BufferAttribute: new (date: Float32Array, marime: number) => BufferAttribute;

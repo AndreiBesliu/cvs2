@@ -19,10 +19,11 @@ unite în `main` pe 25.11 (`9815527f`); 3.Ce (punctele de prindere și „Se pri
 recomandările, 1a–4a): 3.Cl-1 (fulgul, steaua și brăduțul, în fila nouă „Crăciun”; 18.35.0), unită în `main` pe 26.11
 (`41b1fb6f`, PR-ul `AndreiBesliu/cvs2#50`); 3.Cl-2 (globul; 18.36.0), unită în `main` pe 26.11 (`b6c9998d`, PR-ul
 `AndreiBesliu/cvs2#53`); 3.Cl-3 (ornamentul cu nume; 18.37.0) și 3.Cl-4 (brăduțul LEGO; 18.38.0), unite în
-`main` pe 26.11 (`474b76fc`, PR-ul `AndreiBesliu/cvs2#55`): ADR 0285 are toate feliile făcute.** **3.Cf-2 (răsturnările
-și jumătățile de pas în „Modelul”; 18.39.0), gata pe ramură pe 26.11.**
-Urmează 3.Cg (verificarea); 3.Ck așteaptă tipărirea bilei și a cupei. Versiunea
-următoare a pachetului: 18.40.0._
+`main` pe 26.11 (`474b76fc`, PR-ul `AndreiBesliu/cvs2#55`): ADR 0285 are toate feliile făcute.** 3.Cf-2 (răsturnările
+și jumătățile de pas în „Modelul”; 18.39.0), unită în `main` pe 26.11 (`3e56e8cf`, PR-ul `AndreiBesliu/cvs2#57`).
+**3.Cg (verificarea din „Modelul”: prinsă, plutește, intră în alta; 18.40.0), gata pe ramură pe 26.11.**
+Urmează 3.Ch (construcțiile cu nume și lista lor de piese); 3.Ck așteaptă tipărirea bilei și a cupei. Versiunea
+următoare a pachetului: 18.41.0._
 
 ## Numerele liniei
 
@@ -44,7 +45,7 @@ următoare a pachetului: 18.40.0._
 | 3.Ce | Punctele de prindere și „Se prinde cu” | gata (25.11) |
 | 3.Tu | Modelul: piesele rotunde pe același ax (ADR 0283) | gata (25.11); acceptată de owner cu 1a, 2a, 3a |
 | 3.Cf | Modelul: orientarea pe trei axe și alipirea la prinderi | 3.Cf-1 (alipirea, cu piesele legate), gata (25.11); 3.Cf-2 (răsturnările, jumătățile de pas), gata (26.11) |
-| 3.Cg | Modelul: verificarea (prins, plutește, se ciocnește) | avertisment, nu refuz (răspunsul 2a) |
+| 3.Cg | Modelul: verificarea (prins, plutește, se ciocnește) | gata (26.11): avertisment, nu refuz (răspunsul 2a) |
 | 3.Ch | Construcțiile cu nume și lista lor de piese | |
 | 3.Ci | Construcțiile gata (șasiul, cutia de angrenaje, brațul de macara, barca cu elice) | după Model (răspunsul 3a) |
 | 3.Cj | Melcul, cama și manivela, cadrul, roata cu palete | pe bucăți: 3.Cj-1, cama, 3.Cj-2, roata cu palete, 3.Cj-3, cadrul, și 3.Cj-4, șurubul melc: gata (25.11) |
@@ -540,3 +541,50 @@ următoare a pachetului: 18.40.0._
   `3.Tq`, `3.Tr`, `3.Ts`), rămase în urmă când au intrat piese noi lângă rândurile lor (prinderile din 3.Ce, roata cu
   palete, înclinarea spre pupa). Toate, aduse la zi și rulate din nou: 6 / 6 și 30 / 30. Acum cele 2 326 de otrăvuri de
   pe sursele pluginului își găsesc ancora exact o dată.
+
+## 3.Cg, gata (26.11, în cloud): verificarea din „Modelul” (ADR 0284, partea D)
+
+- **Unde e:** motorul, după `impreunaInModel`, secțiunea „verificarea modelului”: `prinseInLume`, `seCiocnesc` (cu
+  `cutiePlasa`, `cutieDusa`, `lemnPeRaza`, `bucatiComune`), `verificaModel`; pragurile `PRINS_MM`, `PRINS_COS`,
+  `PRINS_TIJA`, `CIOCNIRE`, `PE_MASA`. Atelierul: `verificare(A)`, `semnM`, `ciocniri` (ținerea de minte), în
+  `editorModel` rândurile `#at-m-stare`, rezumatul `#at-m-verificare` și `data-avert` pe rândurile listei; în
+  `arataModel`, grupul `v3.avert` (vălul și conturul), cu `materialAvert` și `CONTUR`; `head.html`: `.model-lista .semn`,
+  `.model-stare`.
+- **Ce face și ce n-a intrat:** în ADR 0284, „Implementat (3.Cg)”.
+- **Probele:** `test/unit/trenulet.verificare.test.ts`, `test/e2e/trenulet.verificare.spec.ts`; otrăvurile,
+  `test/otravuri/3.Cg.py` și `3.Cg-en.py`.
+
+### Reguli și capcane (3.Cg)
+
+- **Verificarea nu schimbă și nu ține nimic în model.** E socotită din așezări la fiecare schimbare (`verificare`, cu
+  cheia modelului) și e doar arătată. O regulă nouă intră în motor, în `verificaModel`, cu valorile ei pe hârtie în
+  proba unitară; atelierul doar o arată.
+- **Ciocnirea se judecă pe plase, nu pe cutii:** cutia unei cărămizi cuprinde și știfturile, deci două cărămizi
+  clădite au cutiile suprapuse. Pragul e un sfert de milimetru: jocurile motorului sunt zecimi, iar o piesă pusă greșit
+  intră cu milimetri. Între 0,25 și 0,5 mm, răspunsul ține de locul razelor: **o probă nu cere nimic în intervalul
+  ăsta** (0,2 nu, 0,6 da).
+- **Lemnul se numără cu înfășurarea, nu par-impar:** piesele motorului sunt din corpuri închise care se suprapun
+  puțin; par-impar, zona suprapusă ar ieși gol.
+- **Ciocnirea e socotită în coordonatele primei piese** (a doua e dusă cu așezarea ei față de prima): nu ține de locul
+  modelului, deci aceeași pereche, la fel așezată, se judecă o singură dată (`memo`). Un zid de cărămizi are puține
+  perechi diferite.
+- **Razele nu cad pe coordonatele rotunde ale pieselor** (sunt decalate cu o parte din pas), iar o muchie comună a două
+  triunghiuri e citită la fel de amândouă (de la capătul mai mic spre cel mai mare): o rază căzută chiar pe ea e a
+  unuia singur. O rază cu intrările și ieșirile nepotrivite nu spune nimic, iar o ciocnire cere patru raze vecine.
+- **Un fel nou de prindere** își spune în `prinseInLume` cum ține: până la capăt (ca știftul) sau pe o tijă
+  (`seGliseaza`). Proba cu perechile montate (`ciocnirea, pe piesele motorului`) primește perechea lui: montată, nu se
+  ciocnește; mutată cu 1 mm, da.
+- **„Deasupra” (`inaltimeM`) e prima placă liberă de deasupra piesei alese** (rotunjit în sus): rotunjit la cea mai
+  apropiată placă, o roată de 3,8 mm ținea o placă, iar piesa de deasupra intra 0,6 mm în ea. Verificarea a găsit-o.
+- **Rândurile listei modelului au acum și semnul** („Placă 2×2 plutește 1, 0, 4”): o probă care cere textul întreg al
+  unui rând (`toHaveText`) îl cere cu semnul lui. Semnul e și în `data-avert` (`''`, `pluteste`, `intra`).
+- **Vălul și conturul stau în grupul lor (`v3.avert`), nu în al pieselor:** mărimea modelului se ia din grupul
+  pieselor, iar conturul e cu 0,7 mm mai mare decât piesa. Un strat nou al vederii care nu e o piesă își face grupul
+  lui, ca punctele prinderilor.
+- **Culorile din vedere se probează pe pixeli, cu piese albe** (`culori`, în proba e2e): albul are r ≈ g ≈ b oricum ar
+  cădea lumina, deci roșul și galbenul sunt doar ale avertismentelor; conturul are chiar culoarea avertismentului, iar
+  vălul e amestecat cu piesa, deci se numără separat.
+- **Un tablou întors de motor vine din alt tărâm** (`vm`): `deepEqual` cade pe el și după `.map` (tabloul nou e tot al
+  motorului). Proba îl copiază cu `Array.from(…)`.
+- **O linie copiată în motor strică ancora unei otrăvi vechi** (apare de două ori): `cutieDusa` cheamă `cutieTransf`,
+  nu îi repetă bucla. Verificarea ancorelor, înaintea commit-ului, pe toate listele pluginului (acum 2 434 de otrăvuri).
