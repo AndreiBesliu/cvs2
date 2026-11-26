@@ -51,9 +51,9 @@ const aproape = (a: readonly number[], b: readonly number[]) => expect(a.map((x,
 
 test('piesa nouă din fila „Crăciun”: eticheta de 70 × 26 cu „ANA” în relief și gaura de agățat', async ({ page }) => {
   await atelier(page);
-  await expect(page.locator('#at-tipuri [data-fila="craciun"]')).toHaveText('Crăciun 5');
-  // ornamentul e ultimul din galerie: piesele stau în ordinea în care au venit
-  await expect(page.locator('#at-galerie button')).toHaveText(['Fulg de zăpadă', 'Stea', 'Brăduț', 'Glob', 'Ornament cu nume']);
+  await expect(page.locator('#at-tipuri [data-fila="craciun"]')).toHaveText('Crăciun 6');
+  // ornamentul stă după glob: piesele sunt în ordinea în care au venit
+  await expect(page.locator('#at-galerie button')).toHaveText(['Fulg de zăpadă', 'Stea', 'Brăduț', 'Glob', 'Ornament cu nume', 'Brăduț LEGO']);
   await expect(page.locator('#at-editor h2')).toHaveText('Ornament cu nume');
   await expect(cote(page)).toContainText('70 × 26 × 3,8 mm');
   await expect(avert(page)).toBeHidden();

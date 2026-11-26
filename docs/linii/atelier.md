@@ -18,10 +18,11 @@ unite în `main` pe 25.11 (`9815527f`); 3.Ce (punctele de prindere și „Se pri
 (PR-ul `AndreiBesliu/cvs2#46`). **Decorațiunile de Crăciun (ADR 0285, cerute de owner pe 25.11 și acceptate cu
 recomandările, 1a–4a): 3.Cl-1 (fulgul, steaua și brăduțul, în fila nouă „Crăciun”; 18.35.0), unită în `main` pe 26.11
 (`41b1fb6f`, PR-ul `AndreiBesliu/cvs2#50`); 3.Cl-2 (globul; 18.36.0), gata pe ramură pe 25.11 (PR-ul
-`AndreiBesliu/cvs2#53`); 3.Cl-3 (ornamentul cu nume; 18.37.0), gata pe ramură pe 26.11.**
-Urmează 3.Cl-4 (brăduțul LEGO); apoi 3.Cf-2
+`AndreiBesliu/cvs2#53`); 3.Cl-3 (ornamentul cu nume; 18.37.0) și 3.Cl-4 (brăduțul LEGO; 18.38.0), gata pe ramură pe
+26.11: ADR 0285 are toate feliile făcute.**
+Urmează 3.Cf-2
 (orientarea pe trei axe, pozițiile la jumătate de pas); 3.Ck așteaptă tipărirea bilei și a cupei.** Versiunea
-următoare a pachetului: 18.38.0._
+următoare a pachetului: 18.39.0._
 
 ## Numerele liniei
 
@@ -48,7 +49,7 @@ următoare a pachetului: 18.38.0._
 | 3.Ci | Construcțiile gata (șasiul, cutia de angrenaje, brațul de macara, barca cu elice) | după Model (răspunsul 3a) |
 | 3.Cj | Melcul, cama și manivela, cadrul, roata cu palete | pe bucăți: 3.Cj-1, cama, 3.Cj-2, roata cu palete, 3.Cj-3, cadrul, și 3.Cj-4, șurubul melc: gata (25.11) |
 | 3.Ck | Balamaua și placa turnantă | despărțite de 3.Cd; după ce owner-ul încearcă primele piese pe imprimantă |
-| 3.Cl | Decorațiunile de Crăciun (ADR 0285) | 3.Cl-1 (fulgul, steaua, brăduțul) și 3.Cl-2 (globul, relieful pe două înălțimi), gata (25.11); 3.Cl-3 (ornamentul cu nume), gata (26.11); 3.Cl-4 (brăduțul LEGO), urmează |
+| 3.Cl | Decorațiunile de Crăciun (ADR 0285) | 3.Cl-1 (fulgul, steaua, brăduțul) și 3.Cl-2 (globul, relieful pe două înălțimi), gata (25.11); 3.Cl-3 (ornamentul cu nume) și 3.Cl-4 (brăduțul LEGO), gata (26.11) |
 
 ## 3.Ca, gata (24.11, în cloud): conectorul perpendicular
 
@@ -326,6 +327,29 @@ următoare a pachetului: 18.38.0._
 - **Verificări de prisos, arătate la scrisul listei de otrăvuri și scoase:** ocolirea găurii etichetei (numele stă la
   mijlocul locului rămas, deci cutia lui nu ajunge la gaură) și „mijlocul e în poligon” (locul numelui e mereu în
   formă).
+
+## 3.Cl-4, gata (26.11, în cloud): brăduțul LEGO (ADR 0285)
+
+- **Unde e:** motorul, după `ornament`: `BRAD_LEGO`, `trunchiForme` (trunchiul dintre două contururi cu același număr
+  de vârfuri), `bradLegoCote`, `bradLego` (etajul și steaua; în `TIPURI`), `bradLegoPiese` (piesele brăduțului întreg);
+  atelierul: `stare.bradLego`, `PICTOGRAME`, `numeDef`, `defCurenta`, editorul (`at-bl-…`), `adaugaBradLego`.
+- **Datele piesei:** în ADR 0285, „Implementat (3.Cl-4)”.
+- **Probele:** `test/unit/trenulet.bradlego.test.ts`, `test/e2e/trenulet.bradlego.spec.ts`; otrăvurile,
+  `test/otravuri/3.Cl-4.py` și `3.Cl-4-en.py`.
+
+### Reguli și capcane (3.Cl-4)
+
+- **Proba prinderilor (`trenulet.prinderi.test.ts`) judecă și piesa nouă, după regulile ei:** un locaș ține știftul din
+  două părți (golul etajului, făcut întâi cu 0,15 mm mai larg, îl ținea doar cu tubul: a căzut), iar o „bară” e plină
+  pe toată raza ei (cuiul pătrat al stelei a căzut: acum e bara culcată a atelierului, `sectiuneBara`).
+- **O suprafață între două contururi diferite se scrie cu triunghiurile ei pe hârtie.** Fiecare latură a conului
+  zimțat e din două triunghiuri; la o înălțime dată, conturul are și punctul muchiei dintre ele. `inel(…, exteriorSus)`
+  reface contururile pe unghiuri și dă altă suprafață: pentru o hârtie exactă, trunchiul se face cu `trunchiForme`.
+- **Piesele unui set, cu aceleași chei ca în editorul lor:** `bradLegoPiese` dă trunchiul și vârful cu cheile piesei
+  rotunde, în ordinea din `defCurenta` (fără `gaura` când nu e): altfel aceeași piesă ar sta pe două rânduri în listă.
+- **Un câmp al editorului care e doar al setului (`etaje`) se scoate din piesă** în `defCurenta`.
+- **Un diametru de etaj e par:** locașul 2 × 2 e între patru știfturi doar dacă mijlocul piesei cade pe un colț al
+  grilei.
 
 ## Reguli și capcane (de la 3.Ca–3.Cj)
 

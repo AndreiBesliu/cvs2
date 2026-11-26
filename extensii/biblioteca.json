@@ -18,6 +18,12 @@
       ],
       "noutati": [
         {
+          "versiune": "18.38.0",
+          "data": "2026-11-26",
+          "ro": "În fila „Crăciun”, brăduțul LEGO: etaje cu marginea zimțată, cu patru știfturi sus și locașul lor dedesubt, care se clădesc pe o piesă rotundă 2 × 2, și steaua de vârf, cu cuiul ei. „Fă brăduțul” pune toate piesele în listă.",
+          "en": "In the Christmas tab, the LEGO Christmas tree: tiers with a serrated edge, four studs on top and their socket underneath, stacked on a 2 × 2 round piece, and the tree-top star with its peg. “Make the tree” puts every part in the list."
+        },
+        {
           "versiune": "18.37.0",
           "data": "2026-11-25",
           "ro": "În fila „Crăciun”, ornamentul cu nume: o etichetă, un glob, o inimă sau o stea, cu numele scris cu majuscule, cât încape de mare: în relief (pentru două culori), adâncit sau decupat, cu punți.",
@@ -172,8 +178,8 @@
           }
         }
       ],
-      "versiune": "18.37.0",
-      "continut": "fd5be85bbd1a4ab0febf8b1049d3b5cb9f0788d29d4f79c5e70b343a99e28db2"
+      "versiune": "18.38.0",
+      "continut": "5991eb98a877970f3468971cb6604c797d1c6f9599fea19f315f7edbca63ff87"
     }
   ]
 }

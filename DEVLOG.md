@@ -15489,3 +15489,25 @@ orele, după ceasul containerului).
 - **Documentele:** ADR 0285 („Implementat (3.Cl-3)”), indexul ADR, fișa etapei 3, `docs/linii/atelier.md`, indexul
   liniilor, `docs/otravuri.md`, `CLAUDE.md`.
 - **Urmează:** 3.Cl-4 (brăduțul LEGO).
+
+## 2026-11-26 — Felia 3.Cl-4: brăduțul LEGO (ADR 0285) (sesiune cloud)
+
+**Prompt:** „Mergem cu recomandarile” (răspunsul owner-ului la ADR 0285, în sesiunea liniei; 1a: după ornamentul cu
+nume vine brăduțul LEGO)
+**Started:** 26.11, 00:52 (local, cât 3.Cl-2 își aștepta unirea). **Completed:** 26.11, 01:50 (felia, cu
+otrăvurile; orele, după ceasul containerului).
+
+- **Ce face:** a șasea piesă a filei „Crăciun”, brăduțul LEGO: etajele (trunchiuri de con cu marginea zimțată, cu
+  patru știfturi sus și locașul lor dedesubt) și steaua de vârf (plată, cu un cui care e o bară de 3,2 mm).
+- **„Fă brăduțul”** pune în listă trunchiul și vârful (piese rotunde 2 × 2 care existau), etajele și steaua.
+- **Motorul:** `bradLegoCote`, `bradLego`, `bradLegoPiese`, `trunchiForme`.
+- **Probele**, scrise întâi (au căzut cu „tip necunoscut”): unitară, 5 teste; e2e, 4 scenarii (au trecut din prima, cu
+  valorile socotite pe hârtie); proba în engleză din cvs2 trece și prin brăduț.
+- **Respinse de proba prinderilor** (a tuturor pieselor atelierului) și refăcute: golul locașului cu 0,15 mm prea larg
+  (știftul era ținut doar de tub) și cuiul pătrat al stelei (declarat „bară”, dar nu era una).
+- **Otrăvurile:** `3.Cl-4.py`, 75 / 75, la prima rulare; `3.Cl-4-en.py`, 8 / 8.
+- **Easy 3Draw 18.38.0** (553,0 kB), cu rândul de „ce e nou”. Doar pachetul extensiei se schimbă.
+- **Față de propunere:** steaua stă cu un cui în știftul gol al vârfului; brăduțul clădit în „Modelul” vine cu 3.Cg.
+- **Documentele:** ADR 0285 („Implementat (3.Cl-4)”), indexul ADR, fișa etapei 3, `docs/linii/atelier.md`, indexul
+  liniilor, `docs/otravuri.md`, `CLAUDE.md`.
+- **Urmează:** 3.Cf-2 (orientarea de mână pe trei axe), la cuvântul owner-ului dacă vrea altă ordine.

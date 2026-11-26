@@ -19,7 +19,7 @@ var Atelier3D = (function () {
     palete?: number; diametru?: number; pas?: number; latime?: number; paleta?: string; con?: string; inclinare?: number; pupa?: number; capac?: string;
     joc?: number; inel?: string; urechi?: number; opritor?: boolean; mansoane?: [number, string][]; prindere?: string; roata?: number; bolta?: string; disc?: string; rama?: number; colturi?: string;
     linie?: number; ramuri?: number; lungime?: number; miez?: string; agatatoare?: string; varfuri?: number; interior?: number; inaltime?: number; etaje?: number;
-    model?: string; desen?: string; relief?: number; cate?: number; text?: string; scris?: string };
+    model?: string; desen?: string; relief?: number; cate?: number; text?: string; scris?: string; margine?: string; marime?: number };
   /** O gaură pe grilă: colțul de celulă și tipul. */
   type Gaura = [number, number, string];
   /** O piesă gata de printat: corpul, mărimea și ce a spus motorul despre ea. */
@@ -125,6 +125,9 @@ var Atelier3D = (function () {
     glob: { diam: 60, grosime: 3, fel: "plat", model: "dungi", desen: "decupat", relief: 0.8, cate: 3, agatatoare: "inel" },
     // ornamentul cu nume (ADR 0285, felia 3.Cl-3): eticheta de 70 × 26, cu „ANA” în relief și gaura de agățat
     ornament: { forma: "eticheta", text: "ANA", scris: "relief", lungime: 70, inaltime: 26, diam: 60, grosime: 3, relief: 0.8, agatatoare: "gaura" },
+    // brăduțul LEGO (ADR 0285, felia 3.Cl-4): etajul de 8 știfturi, de 5 plăci, cu marginea zimțată; `etaje` și steaua sunt
+    // ale editorului, pentru „Fă brăduțul”
+    bradLego: { piesa: "etaj", diam: 8, placi: 5, margine: "zimti", marime: 28, etaje: 3 },
     // forma trimisă din desenul cvs2 (ADR 0166): doar contururile închise; câte erau deschise și refuzul, pentru om
     dinCvs2: { contururi: [] as [number, number][][], grosime: 3.2, deschise: 0, refuz: "" },
   };
@@ -139,7 +142,7 @@ var Atelier3D = (function () {
     ["legaturi", "Legături", [["stiftTechnic", "Știft"], ["ax", "Ax"], ["bucsa", "Bucșă / conector"], ["conector", "Conector perpendicular"], ["conectorUnghi", "Conector în unghi"], ["clema", "Clemă"], ["bara", "Bară"], ["maner", "Mâner"], ["bila", "Bilă"], ["cupa", "Cupă"]]],
     ["roti", "Roți", [["rotita", "Roată dințată"], ["cremaliera", "Cremalieră"], ["melc", "Șurub melc"], ["cama", "Camă"], ["conica", "Roată conică"], ["coroana", "Roată coroană"], ["conicaDubla", "Conică dublă"], ["fulie", "Fulie"], ["roata", "Roată cu anvelopă"], ["senila", "Șenilă"]]],
     ["propulsie", "Elice", [["elice", "Elice"], ["eliceBarca", "Elice de barcă"], ["ventilator", "Ventilator cu carcasă"], ["roataPalete", "Roată cu palete"]]],
-    ["craciun", "Crăciun", [["fulg", "Fulg de zăpadă"], ["stea", "Stea"], ["brad", "Brăduț"], ["glob", "Glob"], ["ornament", "Ornament cu nume"]]]
+    ["craciun", "Crăciun", [["fulg", "Fulg de zăpadă"], ["stea", "Stea"], ["brad", "Brăduț"], ["glob", "Glob"], ["ornament", "Ornament cu nume"], ["bradLego", "Brăduț LEGO"]]]
   ];
   // Fulgii gata făcuți (ADR 0285): doar forma (ramurile, miezul, linia); mărimea, grosimea și agățătoarea rămân cum sunt.
   const FULGI: readonly (readonly [string, { ramuri: number; unghi: number; inceput: number; lungime: number; miez: string; linie: number }])[] = [
@@ -217,6 +220,7 @@ var Atelier3D = (function () {
     brad: `<path d="M12 2.5l4.2 6h-2.4l4 5.5h-2.6l4.3 5.5H4.5l4.3-5.5H6.2l4-5.5H7.8z"/><path d="M12 19.5V22"/>`,
     glob: `<circle cx="12" cy="14" r="7.5"/><path d="M10 6.6V4h4v2.6M5.3 11.5h13.4M5.3 16.5h13.4"/>`,
     ornament: `<path d="M7.5 6H21v12H7.5L3 13.5v-3z"/><circle cx="7" cy="12" r="1.1"/><path d="M11.5 15.5l2.5-7 2.5 7M12.4 13.2h3.2"/>`,
+    bradLego: `<path d="M9.5 8.5L11 4.5h2l1.5 4zM6.5 14l2-5.5h7l2 5.5zM3.5 19.5l2-5.5h13l2 5.5zM10 19.5V22h4v-2.5M11 4.5V3h2v1.5"/>`,
   };
   const PICTOGRAMA_GENERICA = `<path d="M12 3l8 4.5v9L12 21l-8-4.5v-9zM4 7.5l8 4.5 8-4.5M12 12v9"/>`;
   /** Butonul unei piese din galerie: pictograma ei, apoi numele (pictograma e ascunsă cititoarelor de ecran: butonul se
@@ -368,6 +372,12 @@ var Atelier3D = (function () {
       const model = q.fel === "discuri" ? tr(", din două discuri") : q.model === "fara" ? tr(", fără model")
         : (q.model === "zigzag" ? tr`, zigzag × ${q.cate}` : q.model === "stele" ? tr`, stele × ${q.cate}` : tr`, dungi × ${q.cate}`) + (q.schimb ? tr`, în relief de ${fmt(q.relief)}` : "");
       return tr`Glob Ø${fmt(q.diam)}` + model + (q.grosime === 3 ? "" : tr`, ${fmt(q.grosime)} mm`) + (q.agatatoare === "fara" ? tr(", fără inel") : "");
+    }
+    if (d.tip === "bradLego") {
+      // etajul: câte știfturi are în diametru; apoi înălțimea neobișnuită și marginea netedă. Steaua: mărimea
+      const q = Lego.bradLegoCote(d);
+      if (q.piesa === "stea") return tr`Stea de vârf, ${fmt(q.marime)} mm`;
+      return tr`Etaj de brăduț, ${q.diam} știfturi` + (q.placi === 5 ? "" : tr`, ${q.placi} plăci`) + (q.margine === "neteda" ? tr(", neted") : "");
     }
     if (d.tip === "ornament") {
       // forma și numele; apoi mărimea, scrisul (adâncit, decupat sau relieful neobișnuit), grosimea neobișnuită, lipsa agățătorii
@@ -544,6 +554,12 @@ var Atelier3D = (function () {
       if (q.fel === "plat") p.model = q.model; else delete p.model;
       if (q.model !== "fara") { p.cate = q.cate; p.desen = q.desen; } else { delete p.cate; delete p.desen; }
       if (q.schimb) p.relief = q.relief; else delete p.relief;
+    }
+    if (t === "bradLego") {
+      // etajul își ține diametrul, înălțimea și marginea; steaua, mărimea; câte etaje are brăduțul întreg e al editorului
+      const q = Lego.bradLegoCote(p);
+      p.piesa = q.piesa; delete p.etaje;
+      if (q.piesa === "stea") { p.marime = q.marime; delete p.diam; delete p.placi; delete p.margine; } else { p.diam = q.diam; p.placi = q.placi; p.margine = q.margine; delete p.marime; }
     }
     if (t === "ornament") {
       // mărimile sunt ale formei (lungimea și înălțimea, ale etichetei); scrisul, al unui ornament cu nume; relieful, al
@@ -1295,6 +1311,34 @@ var Atelier3D = (function () {
       alege("#at-gl-model", v => { p.model = v; });
       alege("#at-gl-desen", v => { p.desen = v; });
       alege("#at-gl-ag", v => { p.agatatoare = v; });
+    } else if (t === "bradLego") {
+      // brăduțul LEGO (ADR 0285, felia 3.Cl-4): etajul (diametrul, înălțimea, marginea) sau steaua de vârf; brăduțul întreg
+      // (câte etaje, de la cel ales în sus, cu trunchiul, vârful și steaua) și „Fă brăduțul”
+      const p = stare.bradLego, q = Lego.bradLegoCote(p), stea = q.piesa === "stea", piese = Lego.bradLegoPiese(p), et = piese.filter(x => x.piesa === "etaj").map(x => x.diam as number);
+      // înălțimea brăduțului clădit: trunchiul (3 plăci), etajele, vârful (6 plăci, cu știftul lui) și steaua de peste știft
+      const inalt = (3 + et.length * q.placi + 6) * 3.2 + 1.9 + q.marime / 2 * (1 + Math.cos(Math.PI / 5));
+      const intreg = tr`Brăduțul întreg: trunchiul, ${et.length === 1 ? tr("un etaj") : tr`${et.length} etaje`} (de ${et.join(", ")} știfturi), vârful și steaua; clădit, are ${fmt(inalt, 0)} mm.`;
+      e.innerHTML = `<h2>Brăduț LEGO</h2>
+        <p class="mic">Un brăduț din etaje care se clădesc: fiecare are patru știfturi sus și locașul lor dedesubt. Trunchiul e o piesă rotundă 2 × 2, vârful e conul 2 × 2 cu știftul gol, iar steaua intră în el cu cuiul ei. Toate se tipăresc fără suport.</p>
+        <div class="at-rand"><span class="mic">Piesa:</span>${seg("at-bl-piesa", [["etaj", "Etaj"], ["stea", "Stea de vârf"]], q.piesa)}</div>
+        ${stea ? "" : `<div class="at-rand"><span class="mic">Diametrul (știfturi):</span>${seg("at-bl-diam", [["4", "4"], ["6", "6"], ["8", "8"], ["10", "10"]], String(q.diam))}</div>
+        <div class="at-rand"><span class="mic">Marginea:</span>${seg("at-bl-margine", [["zimti", "Zimțată"], ["neteda", "Netedă"]], q.margine)}</div>`}
+        <div class="at-campuri">
+          ${stea ? "" : `<label for="at-bl-placi">Înălțimea (plăci)<input id="at-bl-placi" type="number" min="3" max="9" step="1" value="${q.placi}"></label>
+          <label for="at-bl-etaje">Etaje în brăduț<input id="at-bl-etaje" type="number" min="1" max="${(q.diam - 4) / 2 + 1}" step="1" value="${et.length}"></label>`}
+          <label for="at-bl-marime">Steaua (mm)<input id="at-bl-marime" type="number" min="16" max="48" step="1" value="${q.marime}"></label>
+        </div>
+        <div class="at-rand"><button class="btn" type="button" id="at-bl-fa">Fă brăduțul</button><span class="mic">${tr("pune în listă trunchiul, etajele, vârful și steaua")}</span></div>
+        <div class="at-rand"><span class="mic" id="at-bl-info">${stea ? tr`Steaua e groasă de ${fmt(q.gros, 2)} mm, cât cuiul ei (o bară de 3,2 mm, culcată), care intră în știftul gol al vârfului.` + " " : ""}${intreg}</span></div>`;
+      const camp = (id: string, a: number, b: number, f: (v: number) => void) => { const c = document.querySelector<HTMLInputElement>(id); if (c) c.onchange = () => { const v = +c.value; if (v >= a && v <= b) { f(v); schimbat(); } editor(); }; };
+      const alege = (id: string, f: (v: string) => void) => { const c = document.querySelector<HTMLElement>(id); if (c) c.onclick = ev => { const b = (ev.target as Element).closest<HTMLElement>("[data-v]"); if (!b) return; f(b.dataset.v!); editor(); schimbat(); }; };
+      camp("#at-bl-placi", 3, 9, v => { p.placi = Math.round(v); });
+      camp("#at-bl-etaje", 1, (q.diam - 4) / 2 + 1, v => { p.etaje = Math.round(v); });
+      camp("#at-bl-marime", 16, 48, v => { p.marime = v; });
+      alege("#at-bl-piesa", v => { p.piesa = v; });
+      alege("#at-bl-diam", v => { p.diam = +v; });
+      alege("#at-bl-margine", v => { p.margine = v; });
+      $("#at-bl-fa").onclick = adaugaBradLego;
     } else if (t === "ornament") {
       // ornamentul cu nume (ADR 0285, felia 3.Cl-3): forma, numele (scris cu majuscule, cât încape de mare), scrisul (în
       // relief, adâncit sau decupat), mărimea formei, grosimea, relieful sau adâncimea, agățătoarea
@@ -2682,6 +2726,15 @@ var Atelier3D = (function () {
     pune({ tip: "senila", piesa: "pinion", dinti: m.z2, gaura: p.gaura }, n);
     salveaza(); randeazaLista();
     toast(tr`${n} × șenila (${zaleText(m.zale)}) și pinioanele de ${m.z1} și ${m.z2} în listă (axele la ${fmt(m.d, 2)} mm; întinsă, la ${fmt(m.intins, 2)}).`);
+  }
+  function adaugaBradLego() {
+    // brăduțul întreg, de jos în sus: trunchiul, etajele (de la cel din editor, cu câte două știfturi mai puțin), vârful
+    // și steaua, câte bucăți sunt cerute
+    laZi();
+    const n = bucatiCerute(), piese = Lego.bradLegoPiese(stare.bradLego), etaje = piese.filter(x => x.piesa === "etaj").length;
+    for (const d of piese) pune(d as Def, n);
+    salveaza(); randeazaLista();
+    toast(tr`${n} × brăduțul (trunchiul, ${etaje === 1 ? tr("un etaj") : tr`${etaje} etaje`}, vârful și steaua) în listă.`);
   }
   function adaugaVentilator() {
     // rotorul și carcasa lui (aceleași palete, diametru, joc, pas și lățime), câte bucăți sunt cerute

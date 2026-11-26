@@ -87,7 +87,7 @@ const DREPTE: readonly Def[] = [
   { tip: 'suport' }, { tip: 'suport', lung: 2, adanc: 2, inalt: 2, invers: true }, { tip: 'clema' }, { tip: 'clema', lung: 2, axa: 'orizontala' },
   { tip: 'maner', lung: 2, axa: 'orizontala' }, { tip: 'maner', lung: 3, axa: 'orizontala' }, { tip: 'bara' },
   { tip: 'bila' }, { tip: 'bila', baza: 2 }, { tip: 'cupa' }, { tip: 'cupa', baza: 2 }, { tip: 'cremaliera' }, { tip: 'senila' },
-  { tip: 'fulg' }, { tip: 'stea' }, { tip: 'brad' }, { tip: 'glob' }, { tip: 'ornament', text: 'ANA' },
+  { tip: 'fulg' }, { tip: 'stea' }, { tip: 'brad' }, { tip: 'glob' }, { tip: 'ornament', text: 'ANA' }, { tip: 'bradLego' }, { tip: 'bradLego', piesa: 'stea' },
   { tip: 'dinCvs2', contururi: [[[0, 0], [20, 0], [20, 10], [0, 10]]] },
 ];
 /** Așezarea de până la 18.32.0 (`corpModel` din sursele v18): mijlocul cutiei, sau placa piesei, în mijlocul amprentei. */

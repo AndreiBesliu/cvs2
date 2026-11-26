@@ -325,6 +325,8 @@ const MOSTRE: readonly (readonly [string, Def, Record<string, number>, { slab?: 
   ['bradul în picioare', { tip: 'brad', fel: 'picioare' }, {}],
   ['globul în relief', { tip: 'glob', desen: 'relief', model: 'stele' }, {}],
   ['ornamentul cu nume', { tip: 'ornament', text: 'ANA' }, {}],
+  ['etajul brăduțului LEGO', { tip: 'bradLego' }, { stift: 4, locas: 4 }],
+  ['steaua de vârf', { tip: 'bradLego', piesa: 'stea' }, { bara: 1 }],
   ['forma din cvs2', { tip: 'dinCvs2', contururi: [[[0, 0], [20, 0], [20, 12], [0, 12]]] }, {}],
 ];
 const numara = (l: readonly Prindere[]): Record<string, number> => { const n: Record<string, number> = {}; for (const c of l) n[c.fel] = (n[c.fel] ?? 0) + 1; return n; };

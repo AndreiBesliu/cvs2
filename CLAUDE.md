@@ -1224,7 +1224,13 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   pe ea însăși, iar o schimbare a desenului schimbă amprenta din `test/unit/trenulet.ornament.test.ts`, după ce a fost
   privită pe randare. Un arc de peste o jumătate de cerc dat lui Cavalier se împarte întâi în sferturi (`sferturi`):
   altfel decalarea și unirea lui pot ieși greșit, fără nicio eroare.**
-  Urmează 3.Cl-4 (brăduțul LEGO), apoi 3.Cf-2 (orientarea de mână pe trei axe, pozițiile la jumătate de pas).
+  **3.Cl-4 (brăduțul LEGO; ADR 0285)** gata pe 26.11, pe ramură: a șasea piesă a filei „Crăciun”: etajele (trunchiuri
+  de con cu marginea zimțată, de 4, 6, 8 sau 10 știfturi, cu patru știfturi sus și locașul lor dedesubt) și steaua de
+  vârf (plată, cu un cui care e o bară de 3,2 mm); „Fă brăduțul” pune în listă trunchiul, etajele, vârful și steaua;
+  Easy 3Draw 18.38.0 (următoarea, 18.39.0). Cu ea, ADR 0285 are toate cele patru felii făcute. **Un locaș nou ține
+  știftul din două părți (proba prinderilor o cere): la etaj, peretele golului din afară și tubul din mijloc, amândouă
+  la jocul din calibrare. O prindere declarată „bară” e o bară adevărată (`sectiuneBara`), nu un cui pătrat.**
+  Urmează 3.Cf-2 (orientarea de mână pe trei axe, pozițiile la jumătate de pas).
   **Cotele pe desen: modelul și proba G-code-ului (ADR 0330, felia 10.4↑a-1, adusă din etapa 10)** gata pe 24.11, în
   sesiunea cloud a liniei (ramura `wip/10.4-cote`), unită în `main` pe 24.11 (`f25249cf`), fără interfață încă. ADR
   0330, acceptat de owner cu 1a–6a și cu nota lui: toate setările cotelor stau într-o fereastră nouă, „Setări”, nu în

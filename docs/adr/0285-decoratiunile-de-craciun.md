@@ -265,6 +265,31 @@ mărimi; potrivirea (cutia stă în formă și e cea mai mare); formele de pe h�
 decupat, pe hârtie, lemnul din jurul fiecărui semn e legat de margine (nicio insulă), iar fără punte ar cădea un ochi.
 `test/e2e/trenulet.ornament.spec.ts`: editorul. Otrăvurile: `test/otravuri/3.Cl-3.py`, `3.Cl-3-en.py`.
 
+## Implementat (3.Cl-4, 26.11.2026): brăduțul LEGO
+
+Easy 3Draw 18.38.0. A șasea piesă a filei „Crăciun”: `bradLego`, cu două piese (`piesa`), și brăduțul întreg.
+
+- **Etajul** (`etaj`): un trunchi de con cu marginea zimțată (2 · D + 4 zimți, adânci de 12 % din rază, cel puțin
+  2 mm) sau netedă, cu diametrul de 4, 6, 8 sau 10 știfturi (`diam`; obișnuit 8) și înalt de 3–9 plăci (`placi`; 5).
+  Sus, vârful plat de 18,4 mm, cu **patru știfturi**. Dedesubt, **locașul 2 × 2**: un gol rotund, al cărui perete ține
+  cele patru știfturi din afară, și tubul din mijloc, care le ține dinăuntru, amândouă la jocul din calibrare.
+  Diametrul e par: doar așa locașul stă între patru știfturi ale grilei.
+- **Steaua de vârf** (`stea`): plată, cu cinci colțuri (`marime`, 16–48 mm; 28), groasă cât cuiul ei, care e o **bară
+  de 3,2 mm culcată** (tăiată dedesubt cu 0,25 mm, ca bara atelierului), lungă de 6 mm; un umăr cât știftul o oprește la
+  nivelul colțurilor de jos.
+- **Brăduțul întreg** (`Lego.bradLegoPiese`; în editor, „Fă brăduțul”): de jos în sus, **trunchiul** (cărămida rotundă
+  2 × 2, care există), **etajele** (de la cel ales, cu câte două știfturi mai puțin, până la 4; 1–4 etaje), **vârful**
+  (conul 2 × 2 de 6 plăci cu știftul gol, care există) și **steaua**, al cărei cui intră în știftul gol. Toate piesele
+  se tipăresc fără suport și se prind prin știfturi: se clădesc și pe orice placă LEGO.
+
+Față de propunere: steaua stă cu un cui în știftul gol al vârfului (ca o bară LEGO), nu cu un locaș pe un știft plin;
+așa se tipărește culcată, fără gaură orizontală. Brăduțul clădit în „Modelul”, cu piesele alipite, vine cu construcțiile
+(3.Cg); azi piesele se pun în model una câte una.
+
+Probele: `test/unit/trenulet.bradlego.test.ts` (etajul de pe hârtie, punct cu punct, la opt înălțimi: locașul, marginea,
+conul, știfturile; știfturile de dedesubt au loc și sunt ținute din două părți; steaua de pe hârtie, la trei înălțimi;
+piesele brăduțului întreg), `test/e2e/trenulet.bradlego.spec.ts`. Otrăvurile: `test/otravuri/3.Cl-4.py`, `3.Cl-4-en.py`.
+
 ## Se redeschide dacă
 
 - o piesă tipărită iese prea fragilă la nervura de 1,2 mm (atunci pragul urcă);

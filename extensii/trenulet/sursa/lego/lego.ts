@@ -3327,6 +3327,74 @@ var Lego = (function (glob: typeof globalThis) {
     return corp(prismaUnite(q.baza, [...q.gauri, ...goluri.map(poli)], 0, h));
   }
 
+  // Brăduțul LEGO (ADR 0285, felia 3.Cl-4): etajele lui și steaua de vârf. Un etaj e un trunchi de con cu marginea
+  // zimțată (sau netedă), cu locașul 2 × 2 dedesubt (un gol rotund, care ține cele patru știfturi din afară, cu tubul din
+  // mijloc, care le ține dinăuntru) și cu patru știfturi sus; etajele se clădesc unul pe altul, pe o piesă rotundă 2 × 2
+  // (trunchiul). Vârful e conul 2 × 2 cu știftul gol, iar steaua, plată, are un cui (o bară de 3,2 mm, culcată) care
+  // intră în el.
+  const BRAD_LEGO = { varf: 9.2, umar: 5.2, cui: 6 };
+  /** Trunchiul dintre două contururi cu același număr de vârfuri (cel de jos și cel de sus), închis; fiecare latură e din
+   *  două triunghiuri, cu muchia dintre ele de la vârful de jos la vârful următor de sus. */
+  function trunchiForme(A: readonly P2[], B: readonly P2[], z0: number, z1: number): Tri[] {
+    const tri: Tri[] = [], n = A.length, a3 = (q: Pt, z: number): P3 => [q[0], q[1], z];
+    for (const [a, b, c] of triunghiuriPoligon(A)) tri.push([a3(A[a]!, z0), a3(A[c]!, z0), a3(A[b]!, z0)]);
+    for (const [a, b, c] of triunghiuriPoligon(B)) tri.push([a3(B[a]!, z1), a3(B[b]!, z1), a3(B[c]!, z1)]);
+    for (let i = 0; i < n; i++) { const j = (i + 1) % n; tri.push([a3(A[i]!, z0), a3(A[j]!, z0), a3(B[j]!, z1)], [a3(A[i]!, z0), a3(B[j]!, z1), a3(B[i]!, z1)]); }
+    return tri;
+  }
+  type BradLegoDef = { piesa?: unknown; diam?: unknown; placi?: unknown; margine?: unknown; marime?: unknown; etaje?: unknown };
+  function bradLegoCote(d: BradLegoDef) {
+    const avert: string[] = [], mute: string[] = [], piesa = d.piesa === "stea" ? "stea" : "etaj", et = piesa === "etaj";
+    // diametrul etajului: 4, 6, 8 sau 10 știfturi (locașul 2 × 2 stă între patru știfturi doar la un diametru par)
+    const cerut = numarCerut(d.diam), diam = Number.isFinite(cerut) ? Math.min(10, Math.max(4, 2 * Math.round(cerut / 2))) : 8;
+    if (et && Number.isFinite(cerut) && cerut !== diam) avert.push(tr`Un etaj are 4, 6, 8 sau 10 știfturi în diametru: l-am făcut de ${diam}.`);
+    const placi = campMarginit(et ? avert : mute, d.placi, 3, 9, 5, x => tr`Un etaj are între 3 și 9 plăci: l-am făcut de ${x}.`, true);
+    const margine = d.margine === "neteda" ? "neteda" : "zimti";
+    const marime = campMarginit(et ? mute : avert, d.marime, 16, 48, 28, x => tr`Steaua de vârf are între 16 și 48 mm: am făcut-o de ${x} mm.`);
+    const R = diam * P.pas / 2 - P.joc_lateral, H = placi * P.placa, ad = Math.min(P.locas_h, H - 0.8);
+    // steaua e groasă cât bara culcată a cuiului ei (bara de 3,2 mm, tăiată dedesubt cu 0,25)
+    return { piesa, diam, placi, margine, marime, R, H, ad, zc: Math.min(H - 0.6, ad + 1), zimti: margine === "zimti" ? 2 * diam + 4 : 0, gros: P.bara_d - 0.25, avert };
+  }
+  function bradLego(d: BradLegoDef): Corp {
+    const q = bradLegoCote(d), e = ef();
+    if (q.piesa === "stea") {
+      // steaua cu cinci colțuri (vârfurile dinăuntru la 45 %), groasă cât cuiul; umărul (cât știftul) se oprește pe
+      // știftul gol al vârfului, la nivelul colțurilor de jos, iar cuiul (bara culcată) intră în el
+      const R = q.marime / 2, yt = -R * Math.cos(Math.PI / 5), zb = P.bara_d / 2 - 0.25;
+      const stea = Array.from({ length: 10 }, (_, k: number): Vf => { const rr = k % 2 ? 0.45 * R : R, u = Math.PI / 2 + Math.PI * k / 5; return [rr * Math.cos(u), rr * Math.sin(u), 0]; });
+      const unite = unesteForme([stea, dreptForma(-BRAD_LEGO.umar / 2, yt, BRAD_LEGO.umar / 2, -0.45 * R + 1)]);
+      const cui = axe(prisma(sectiuneBara(P.bara_d / 2), yt - BRAD_LEGO.cui, yt + 0.5), ([a, b, t]): P3 => [a, t, b], true);
+      return { tri: [...prismaUnite(unite, [], 0, q.gros), ...cui], avert: q.avert, prinderi: [{ fel: "bara", p: [0, yt - BRAD_LEGO.cui, zb], d: PE_Y, lung: BRAD_LEGO.cui }] };
+    }
+    const { R, H, ad, zc } = q, s = P.pas, Rt = BRAD_LEGO.varf;
+    // marginea: zimții cu vârfurile pe R și golurile mai înăuntru cu 12 % din rază (cel puțin 2 mm), sau cercul
+    const Rz = R - Math.max(2, 0.12 * R), contur: Poli = q.zimti
+      ? Array.from({ length: 2 * q.zimti }, (_, k: number): P2 => { const rr = k % 2 ? Rz : R, u = Math.PI / 2 + Math.PI * k / q.zimti; return [rr * Math.cos(u), rr * Math.sin(u)]; })
+      : cerc(0, 0, R, laturiFine(R));
+    // sus, fiecare vârf al marginii ajunge pe cercul vârfului, pe raza lui
+    const sus = contur.map(([x, y]): P2 => { const u = Math.atan2(y, x); return [Rt * Math.cos(u), Rt * Math.sin(u)]; });
+    // dedesubt: golul celor patru știfturi, cu peretele lui la jocul din calibrare (le ține din afară), și tubul din mijloc,
+    // care le ține dinăuntru
+    const ro = P.tub_contact - e.joc, colturi: P2[] = [[-s / 2, -s / 2], [s / 2, -s / 2], [-s / 2, s / 2], [s / 2, s / 2]];
+    const tri: Tri[] = [
+      ...inel(contur, cerc(0, 0, Math.hypot(s / 2, s / 2) + P.stift_d / 2 + e.joc), [0, 0], 0, ad + 0.01), ...tub(0, 0, ro, Math.min(ro - 0.8, P.stift_d / 2), 0, ad + 0.01),
+      ...prisma(contur, ad, zc + 0.01), ...trunchiForme(contur, sus, zc, H), ...stifturi(colturi, H, e.stiftD),
+    ];
+    return { tri, avert: q.avert, prinderi: [...colturi.map(([x, y]): Prindere => ({ fel: "locas", p: [x, y, 0], d: JOS, lung: ad, orb: true })), ...colturi.map(([x, y]): Prindere => ({ fel: "stift", p: [x, y, H], d: SUS, lung: P.stift_h }))] };
+  }
+  /** Piesele unui brăduț întreg, de jos în sus: trunchiul (rotund, 2 × 2), etajele (cu câte două știfturi mai puțin, până la
+   *  4), vârful (conul 2 × 2 cu știftul gol) și steaua. */
+  function bradLegoPiese(d: BradLegoDef): Record<string, unknown>[] {
+    const q = bradLegoCote({ ...d, piesa: "etaj" }), cate = numarCerut(d.etaje), etaje = Math.min((q.diam - 4) / 2 + 1, Math.max(1, Number.isFinite(cate) ? Math.round(cate) : 3));
+    return [
+      // (cheile, ca în lista atelierului: aceeași piesă făcută din editorul ei se adună pe același rând)
+      { tip: "rotund", diam: 2, placi: 3, forma: "cilindru", varf_d: 5.4, stifturi: "toate" },
+      ...Array.from({ length: etaje }, (_, k: number) => ({ tip: "bradLego", piesa: "etaj", diam: q.diam - 2 * k, placi: q.placi, margine: q.margine })),
+      { tip: "rotund", diam: 2, placi: 6, forma: "con", varf_d: 5.4, stifturi: "toate", gaura: "bara" },
+      { tip: "bradLego", piesa: "stea", marime: bradLegoCote({ piesa: "stea", marime: d.marime }).marime },
+    ];
+  }
+
   function semne(n: number, x0: number, y0: number, z0: number, pas = 2.4) {
     // n cuburi mici de 1,2 mm, ca sa recunosti varianta
     const tri: Tri[] = [];
@@ -3421,7 +3489,7 @@ var Lego = (function (glob: typeof globalThis) {
   }
 
   // ---------------------------------------------------------------------------------------------- piesa dupa definitie
-  const TIPURI = { caramida, lateral, panta, pantaInversa, pana, rotund, arc, cadru, grinda, caramidaTechnic, ax, stiftTechnic, bucsa, conector, conectorUnghi, suport, clema, maner, bara, bila, cupa, rotita, cremaliera, cama, melc, roata, fulie, conica, coroana, conicaDubla, senila, elice, eliceBarca, ventilator, roataPalete, fulg, stea, brad, glob: globCraciun, ornament, dinCvs2 };
+  const TIPURI = { caramida, lateral, panta, pantaInversa, pana, rotund, arc, cadru, grinda, caramidaTechnic, ax, stiftTechnic, bucsa, conector, conectorUnghi, suport, clema, maner, bara, bila, cupa, rotita, cremaliera, cama, melc, roata, fulie, conica, coroana, conicaDubla, senila, elice, eliceBarca, ventilator, roataPalete, fulg, stea, brad, glob: globCraciun, ornament, bradLego, dinCvs2 };
   function construieste(def: DefPiesa) {
     const f = TIPURI[def.tip];
     if (!f) throw new Error("tip necunoscut: " + def.tip);
@@ -3757,6 +3825,8 @@ var Lego = (function (glob: typeof globalThis) {
     bradCote: (d: BradDef) => { const q = bradCote(d); return { inaltime: q.inaltime, etaje: q.etaje, latime: q.latime, grosime: q.grosime, fel: q.fel, agatatoare: q.agatatoare, lat: q.lat, fanta: q.fanta, taiat: q.taiat }; },
     // globul (ADR 0285): cotele din parametri; `capac`: cât e căpăcelul de înalt; `schimb`: înălțimea la care se schimbă
     // filamentul (0 când globul nu e în relief)
+    bradLegoCote: (d: BradLegoDef) => { const q = bradLegoCote(d); return { piesa: q.piesa, diam: q.diam, placi: q.placi, margine: q.margine, marime: q.marime, inaltime: q.H, zimti: q.zimti, gros: q.gros }; },
+    bradLegoPiese,
     ornamentCote: (d: OrnamentDef) => { const q = ornamentCote(d); return { forma: q.forma, text: q.text, sarite: q.sarite, scris: q.scris, lungime: q.lungime, inaltime: q.inaltime, diam: q.diam, grosime: q.grosime, relief: q.relief, agatatoare: q.agatatoare,
       litera: q.litera, linie: q.cutie.w, intre: q.cutie.G, loc: q.loc, cutie: [q.cutie.X, q.cutie.Y], schimb: q.scris === "relief" && q.litera ? q.grosime : 0 }; },
     globCote: (d: GlobDef) => { const q = globCote(d); return { diam: q.diam, grosime: q.grosime, fel: q.fel, model: q.model, desen: q.desen, relief: q.relief, cate: q.cate, agatatoare: q.agatatoare, capac: q.capH, margine: q.margine, fanta: q.fanta, schimb: q.inRelief ? q.grosime : 0 }; },
