@@ -317,7 +317,19 @@ export const roExport = {
   'export.foi': 'Ce exporți',
   'export.foi.activa': 'Foaia activă',
   'export.foi.toate': 'Toate foile ({n})',
-  'export.foi.nota': 'Câte un program pe foaie, într-o arhivă .zip; foile identice ies o dată, cu ×N. Rândurile de mai jos sunt ale foii active; celelalte foi își păstrează operațiile.',
+  'export.foi.nota': 'Câte un program pe foaie, într-o arhivă .zip; foile identice ies o dată, cu ×N. Lista arată operațiile fiecărei foi, sub numele ei; o piesă pusă pe mai multe foi își are operațiile la prima dintre ele.',
+  'export.foi.comune': {
+    one: 'Și o operație a pieselor de pe {foaie} (o schimbi acolo).',
+    few: 'Și {n} operații ale pieselor de pe {foaie} (le schimbi acolo).',
+    other: 'Și {n} de operații ale pieselor de pe {foaie} (le schimbi acolo).',
+  },
+  'export.foi.comune.a-mea': {
+    one: 'Și o operație a pieselor de pe {foaie} (o schimbi acolo); în ordinea ta, se taie înaintea celor de aici.',
+    few: 'Și {n} operații ale pieselor de pe {foaie} (le schimbi acolo); în ordinea ta, se taie înaintea celor de aici.',
+    other: 'Și {n} de operații ale pieselor de pe {foaie} (le schimbi acolo); în ordinea ta, se taie înaintea celor de aici.',
+  },
+  'export.foi.simulare': 'Simularea e a foii active: {foaie}.',
+  'export.foi.goala': 'Fără piese: nu intră în arhivă.',
   'export.foi.gata': {
     one: 'Arhiva {arhiva}: o foaie, SHA-256 {sha}.',
     few: 'Arhiva {arhiva}: {n} foi, SHA-256 {sha}.',
@@ -403,6 +415,7 @@ export const roExport = {
   'export.ordine.legat.titlu': 'Se sapă odată cu rândul {n}: V-carve-urile aceleiași piese, cu aceleași valori, sunt o singură regiune.',
   'export.ordine.risc.exterior': 'Exteriorul din rândul {a} se taie înaintea rândului {b}, de pe aceeași piesă sau din interiorul ei: piesa se poate desprinde înainte să fie gata.',
   'export.ordine.risc.despartire': 'Despărțirea foii din rândul {a} se taie înaintea rândului {b}: o parte a foii se poate desprinde înainte să fie gata.',
+  'export.ordine.risc.foaie': '{foaie}: {text}',
   'export.ordine.confirma': 'Taie în ordinea mea',
   'export.setari.titlu': 'Setările mașinii ($$)',
   'export.setari.nota': 'Lipește aici răspunsul controlerului la $$ (din consola senderului): estimarea timpului folosește atunci vitezele și accelerațiile mașinii tale. Programul nu se schimbă. Gol: setările din fabrică ale GRBL 1.1h.',

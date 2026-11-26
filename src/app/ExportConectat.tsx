@@ -8,7 +8,11 @@ import { chenarElement, conturElement, esteContur } from '../model/forme.ts';
 import { cheiePas, creastaPePlan, ordinePasi } from '../model/finisare.ts';
 import { cutieContur } from '../geom/cutie.ts';
 import type { FinisareExport } from '../ui/FisaFinisare.tsx';
-import { DialogExport } from '../ui/DialogExport.tsx';
+import { DialogExport, type ToateFoileExport } from '../ui/DialogExport.tsx';
+import { ordineAutomata } from '../ui/ordineExport.ts';
+import { elementeFoaie } from '../model/lume.ts';
+import { doarFoaia, numeFoaie as numeFoii } from '../model/foi.ts';
+import { t } from '../i18n/t.ts';
 import type {
   CerereExport, CopieRand, FrezaOferita, FrezaRestOperatie, OperatieExport, OrigineFreza, Rand, RezultatInapoi, SculaOperatie, StareExport,
 } from '../ui/exportRand.ts';
@@ -22,6 +26,7 @@ import { useContTinut } from './dreptCont.ts';
 import { CHEIE_LOCALA, frezeMele } from './frezeMele.ts';
 import { trimiteSchimbarea } from './frezeSincronizare.ts';
 import { cuprinse } from '../model/ordine.ts';
+import { grupeFoi } from '../model/foiExport.ts';
 import { numePlacutei, placuteCuTextIesit } from '../model/placuteIesire.ts';
 import { iesireTextTinuta } from './iesireTextTinuta.ts';
 import { operatieDinDialog } from './valoriOperatii.ts';
@@ -114,6 +119,9 @@ function peRand(o: Operatie): boolean {
   return o.tip !== 'finisare' && o.tip !== 'degrosare' && frezeleOperatiei(o).every((f) => f.scula.forma?.tip !== 'bila');
 }
 
+/** Operațiile reliefului (finisarea, ADR 0312; degroșarea, ADR 0313): un rând doar de citit. */
+const peRelief = (o: Operatie): boolean => o.tip === 'finisare' || o.tip === 'degrosare';
+
 /** Documentul fără rangurile operațiilor: ordinea automată a lucrării (ADR 0133 §3). */
 function faraRanguri(doc: Document): Document {
   if (!doc.piese.some((p) => p.operatii.some((o) => o.rang !== undefined))) return doc;
@@ -125,6 +133,158 @@ function sculaRand(s: Operatie['scula']): SculaOperatie {
   return {
     numar: s.numar, diametru: s.diametru,
     ...(s.forma?.tip === 'v' ? { forma: { tip: 'v' as const, unghi: s.forma.unghi, ...(s.forma.varf !== undefined ? { varf: s.forma.varf } : {}) } } : {}),
+  };
+}
+
+/** O piesă a listei ferestrei, cu instanța ei pe foaia rândurilor (prima de acolo). */
+type PiesaLista = { readonly piesa: Document['piese'][number]; readonly instanta: string };
+
+/**
+ * Rândurile ferestrei pentru piesele `lista` ale foii `doc` (un document doar cu ea, `doarFoaia`): câte un rând pe operație, cu
+ * descrierea primului ei element în instanța din listă; finisările reliefului; ordinea automată a foii; elementele foii cu
+ * operația care le taie. `grosime`: a foii, pe fiecare rând (cu „Toate foile”, foile pot avea grosimi diferite, ADR 0291, 7a).
+ */
+function randuriFoii(
+  doc: Document, lista: readonly PiesaLista[], dupaIdLume: ReadonlyMap<string, ElementLume>, descriere: (e: Pick<ElementLume, 'forma' | 'matrice'>) => string,
+): { readonly randuri: OperatieExport[]; readonly finisari: FinisareExport[]; readonly automata: string[]; readonly operatiiLume: Map<string, string> } {
+  const piese = new Map(doc.piese.map((p) => [p.id, p]));
+  const grosime = doc.foi[0]?.stoc.grosime;
+  // Ce stă în interiorul fiecărui rând (ADR 0133 §3), în prima instanță a piesei, ca rândurile: riscul îl judecă dialogul,
+  // după latura aleasă acolo.
+  // Finisarea reliefului (ADR 0312 §7) n-are contururi de cuprins, dar stă în interiorul plăcii decupate: punctul ei e
+  // centrul primului relief.
+  const centruRelief = (inst: string, o: Operatie): { readonly x: number; readonly y: number } | null => {
+    const e = dupaIdLume.get(`${inst}/${o.noduri[0] ?? ''}`);
+    if (!e || e.forma.tip !== 'relief') return null;
+    const k = cutieContur(chenarElement(e));
+    return { x: (k.minX + k.maxX) / 2, y: (k.minY + k.maxY) / 2 };
+  };
+  const inauntru = cuprinse(lista.flatMap(({ piesa, instanta: inst }) => piesa.operatii.filter((o) => peRand(o) || peRelief(o)).map((o) => {
+    if (peRelief(o)) return { cheie: `${piesa.id}/${o.id}`, piesa: piesa.id, contururi: [], punct: centruRelief(inst, o) };
+    const contururi = o.noduri.flatMap((n) => {
+      const e = dupaIdLume.get(`${inst}/${n}`);
+      return e && esteContur(e) ? [conturElement(e)] : [];
+    });
+    return { cheie: `${piesa.id}/${o.id}`, piesa: piesa.id, contururi, punct: contururi[0]?.varfuri[0]?.p ?? null };
+  })));
+  const randuriOp: OperatieExport[] = lista.flatMap(({ piesa, instanta: inst }) => piesa.operatii.filter(peRand).map((o) => {
+    const e = dupaIdLume.get(`${inst}/${o.noduri[0] ?? ''}`);
+    const cuprinseOp = inauntru.get(`${piesa.id}/${o.id}`);
+    const baza = e ? descriere(e) : (piesa.nume ?? piesa.id);
+    return {
+      cheie: `${piesa.id}/${o.id}`,
+      descriere: o.noduri.length > 1 ? `${baza} (+${o.noduri.length - 1})` : baza,
+      ...(grosime !== undefined ? { grosime } : {}),
+      // Câte căi deschise taie operația (ADR 0037 §12): dialogul nu oferă ce refuză exportul pe ele.
+      deschise: o.noduri.filter((n) => {
+        const e = dupaIdLume.get(`${inst}/${n}`);
+        return e !== undefined && esteCaleDeschisa(e.forma);
+      }).length,
+      noduri: o.noduri.length,
+      // Găurirea (ADR 0087): doar pe un rând numai cu cercuri.
+      cercuri: o.noduri.length > 0 && o.noduri.every((n) => dupaIdLume.get(`${inst}/${n}`)?.forma.tip === 'cerc'),
+      // Diametrele cercurilor, ca le citește găurirea (ADR 0291, felia 28.8↑h): fișa spune felul și cercul care nu se găurește.
+      ...((d) => (d.length > 0 ? { diametre: d } : {}))([...new Set(o.noduri.flatMap((n) => {
+        const e = dupaIdLume.get(`${inst}/${n}`);
+        return e && e.forma.tip === 'cerc' ? [diametruCerc(e.forma.raza, e.matrice)] : [];
+      }))].sort((a, b) => a - b)),
+      // Locul în ordinea de mână (ADR 0133), dacă documentul îl are, și rândurile din interiorul formelor ei.
+      ...(o.rang !== undefined ? { rang: o.rang } : {}),
+      ...(cuprinseOp ? { inauntru: cuprinseOp } : {}),
+      valori: {
+        scula: {
+          numar: o.scula.numar, diametru: o.scula.diametru,
+          ...(o.scula.forma?.tip === 'v' ? { forma: { tip: 'v' as const, unghi: o.scula.forma.unghi, ...(o.scula.forma.varf !== undefined ? { varf: o.scula.forma.varf } : {}) } } : {}),
+          // Freza din „Frezele mele” (ADR 0300 §4, felia 16.A↑b-3): originea ei, dacă documentul o are; altfel scrisă de mână.
+          origine: origineDin(o.scula),
+        },
+        latura: o.latura, sens: o.sens, adancime: o.adancime, pas: o.pas,
+        urechi: o.urechi ? {
+          numar: o.urechi.numar, latime: o.urechi.latime, grosime: o.urechi.grosime,
+          ...(o.urechi.mod === 'alese' ? { mod: 'alese' as const, alese: numarUrechiAlese(o) } : o.urechi.mod !== undefined && o.urechi.mod !== 'egale' ? { mod: o.urechi.mod } : {}),
+        } : null,
+        rampa: o.rampa ? { lungime: o.rampa.lungime } : null,
+        intrari: o.intrari ? { raza: o.intrari.raza } : null,
+        colturi: o.colturi ? { tip: o.colturi.tip } : null,
+        ...(o.despartire ? { despartire: true } : {}),
+        ...(o.tip === 'profil' && o.latura === 'pe-linie' && o.directie ? { directie: o.directie } : {}),
+        ...(o.tip === 'buzunar' && o.pasLateral !== undefined ? { tip: 'buzunar' as const, pasLateral: o.pasLateral } : {}),
+        ...(o.tip === 'buzunar' && o.coborare ? { coborare: o.coborare } : {}),
+        ...(o.tip === 'buzunar' && o.strategie ? { strategie: { fel: 'paralel' as const, unghi: o.strategie.unghi } } : {}),
+        ...(o.tip === 'buzunar' && o.rest ? { rest: o.rest.map(restDin) } : {}),
+        // Incrustația cu pereți drepți (ADR 0171): rândul o arată ca rol, cu valorile ei și frezele dopului (lipsă = ale locașului);
+        // punțile dopului decupat (ADR 0174), dacă le are.
+        ...(o.tip === 'buzunar' ? {
+          incrustatieDreapta: o.incrustatie?.fel === 'drept' ? {
+            jocLateral: o.incrustatie.jocLateral, dop: o.incrustatie.dop, sprijin: o.incrustatie.sprijin, joc: o.incrustatie.joc,
+            fierastrau: o.incrustatie.fierastrau, margine: o.incrustatie.margine,
+            ...(o.incrustatie.frezeDop ? { frezeDop: o.incrustatie.frezeDop.map(restDin) } : {}),
+            ...(o.incrustatie.punti ? { punti: { numar: o.incrustatie.punti.numar, latime: o.incrustatie.punti.latime, grosime: o.incrustatie.punti.grosime } } : {}),
+            ...(o.incrustatie.locas === 'gaura' ? { locas: 'gaura' as const } : {}),
+            // Treapta (ADR 0175 §5): umărul, cu încotro (lipsă = spre interior).
+            ...(o.incrustatie.treapta ? {
+              treapta: {
+                adancime: o.incrustatie.treapta.adancime, latime: o.incrustatie.treapta.latime,
+                ...(o.incrustatie.treapta.spre === 'exterior' ? { spre: 'exterior' as const } : {}),
+              },
+            } : {}),
+          } : null,
+        } : {}),
+        ...(o.tip === 'vcarve' ? {
+          tip: 'vcarve' as const,
+          fundPlat: o.fundPlat ? {
+            numar: o.fundPlat.scula.numar, diametru: o.fundPlat.scula.diametru, pasLateral: o.fundPlat.pasLateral, origine: origineDin(o.fundPlat.scula),
+            ...(o.fundPlat.rest ? { rest: o.fundPlat.rest.map(restDin) } : {}),
+          } : null,
+          // Incrustația (ADR 0170): rândul o arată ca rol, cu jocurile și marginea ei; banda (ADR 0172), cu valorile ei.
+          incrustatie: o.incrustatie?.fel === 'v' ? {
+            joc: o.incrustatie.joc, fierastrau: o.incrustatie.fierastrau, margine: o.incrustatie.margine, jurDop: o.incrustatie.jurDop,
+            ...(o.incrustatie.banda ? { banda: {
+              ...(o.incrustatie.banda.latime !== undefined ? { latime: o.incrustatie.banda.latime } : {}), decupare: o.incrustatie.banda.decupare,
+              grosimePlaca: o.incrustatie.banda.grosimePlaca,
+              ...(o.incrustatie.banda.freza ? {
+                freza: { numar: o.incrustatie.banda.freza.numar, diametru: o.incrustatie.banda.freza.diametru, origine: origineDin(o.incrustatie.banda.freza) },
+              } : {}),
+              punti: { numar: o.incrustatie.banda.punti.numar, latime: o.incrustatie.banda.punti.latime, grosime: o.incrustatie.banda.punti.grosime },
+            } } : {}),
+          } : null,
+        } : {}),
+        ...(o.tip === 'gaurire' ? { tip: 'gaurire' as const, ...(o.retragereCompleta !== undefined ? { retragereCompleta: o.retragereCompleta } : {}) } : {}),
+      },
+    };
+  }));
+  // Operațiile reliefului (finisarea, ADR 0312 §7; degroșarea, ADR 0313 §7): rândurile doar de citit, cu valorile
+  // documentului.
+  const finisari: FinisareExport[] = lista.flatMap(({ piesa, instanta: inst }) => piesa.operatii.filter(peRelief).map((o): FinisareExport => {
+    const e = dupaIdLume.get(`${inst}/${o.noduri[0] ?? ''}`);
+    const baza = e ? descriere(e) : (piesa.nume ?? piesa.id);
+    const s = o.scula, deg = o.tip === 'degrosare';
+    const fin: { readonly unghi?: number; readonly nealiniat?: true; readonly margine?: 'trece'; readonly planZero?: number } | undefined = deg ? o.degrosare : o.finisare;
+    return {
+      cheie: `${piesa.id}/${o.id}`,
+      fel: deg ? 'degrosare' : 'finisare',
+      ...(deg ? { adaos: o.degrosare?.adaos ?? 0 } : {}),
+      descriere: o.noduri.length > 1 ? `${baza} (+${o.noduri.length - 1})` : baza,
+      ...(o.rang !== undefined ? { rang: o.rang } : {}),
+      scula: {
+        numar: s.numar, diametru: s.diametru, forma: s.forma?.tip === 'bila' ? 'bila' : s.forma?.tip === 'v' ? 'v' : 'plata',
+        ...(s.forma?.tip === 'v' ? { unghi: s.forma.unghi, ...(s.forma.varf !== undefined ? { varf: s.forma.varf } : {}) } : {}),
+      },
+      pasLateral: o.pasLateral ?? 0, creasta: creastaPePlan(s, o.pasLateral ?? 0), unghi: fin?.unghi ?? 0, aliniat: fin?.nealiniat !== true,
+      margine: fin?.margine === 'trece' ? 'trece' : 'perete', ...(fin?.planZero !== undefined ? { planZero: fin.planZero } : {}),
+      adancime: o.adancime, pas: o.pas,
+    };
+  }));
+  return {
+    randuri: randuriOp,
+    finisari,
+    // Ordinea automată a rândurilor (ADR 0133 §3, ADR 0312 §7): primul pas al fiecărei operații în ordinea lucrării fără ranguri
+    // (finisările întâi).
+    automata: [...new Set(ordinePasi(faraRanguri(doc), 0).map(cheiePas))],
+    // Fiecare element al foii, cu prima operație de pe rând care îl taie (ADR 0291, felia 28.8↑j): „Du-mă la …” lângă un refuz al
+    // calculului, care vorbește cu id-urile din lume, în orice instanță a piesei.
+    operatiiLume: new Map((doc.foi[0]?.instante ?? []).flatMap((i) => (piese.get(i.piesa)?.operatii.filter(peRand) ?? [])
+      .flatMap((o) => o.noduri.map((n) => [`${i.id}/${n}`, `${i.piesa}/${o.id}`] as const))).reverse()),
   };
 }
 
@@ -140,153 +300,12 @@ export function ExportConectat({
    */
   const exportFoaie = useMemo(() => {
     const piese = new Map(doc.piese.map((p) => [p.id, p]));
-    const vazute = new Set<string>();
-    const lista: Array<{ readonly piesa: Document['piese'][number]; readonly instanta: string }> = [];
-    for (const i of doc.foi[0]?.instante ?? []) {
-      const p = vazute.has(i.piesa) ? undefined : piese.get(i.piesa);
-      if (!p) continue;
-      vazute.add(p.id);
-      lista.push({ piesa: p, instanta: i.id });
+    const lista: PiesaLista[] = [];
+    for (const g of grupeFoi(doc)[0]?.piese ?? []) {
+      const p = piese.get(g.piesa);
+      if (p) lista.push({ piesa: p, instanta: g.instanta });
     }
-    // Ce stă în interiorul fiecărui rând (ADR 0133 §3), în prima instanță a piesei, ca rândurile: riscul îl judecă dialogul,
-    // după latura aleasă acolo.
-    // Finisarea reliefului (ADR 0312 §7) n-are contururi de cuprins, dar stă în interiorul plăcii decupate: punctul ei e
-    // centrul primului relief.
-    const centruRelief = (inst: string, o: Operatie): { readonly x: number; readonly y: number } | null => {
-      const e = dupaIdLume.get(`${inst}/${o.noduri[0] ?? ''}`);
-      if (!e || e.forma.tip !== 'relief') return null;
-      const k = cutieContur(chenarElement(e));
-      return { x: (k.minX + k.maxX) / 2, y: (k.minY + k.maxY) / 2 };
-    };
-    const peRelief = (o: Operatie): boolean => o.tip === 'finisare' || o.tip === 'degrosare';
-    const inauntru = cuprinse(lista.flatMap(({ piesa, instanta: inst }) => piesa.operatii.filter((o) => peRand(o) || peRelief(o)).map((o) => {
-      if (peRelief(o)) return { cheie: `${piesa.id}/${o.id}`, piesa: piesa.id, contururi: [], punct: centruRelief(inst, o) };
-      const contururi = o.noduri.flatMap((n) => {
-        const e = dupaIdLume.get(`${inst}/${n}`);
-        return e && esteContur(e) ? [conturElement(e)] : [];
-      });
-      return { cheie: `${piesa.id}/${o.id}`, piesa: piesa.id, contururi, punct: contururi[0]?.varfuri[0]?.p ?? null };
-    })));
-    const randuriOp: OperatieExport[] = lista.flatMap(({ piesa, instanta: inst }) => piesa.operatii.filter(peRand).map((o) => {
-      const e = dupaIdLume.get(`${inst}/${o.noduri[0] ?? ''}`);
-      const cuprinseOp = inauntru.get(`${piesa.id}/${o.id}`);
-      const baza = e ? descriere(e) : (piesa.nume ?? piesa.id);
-      return {
-        cheie: `${piesa.id}/${o.id}`,
-        descriere: o.noduri.length > 1 ? `${baza} (+${o.noduri.length - 1})` : baza,
-        // Câte căi deschise taie operația (ADR 0037 §12): dialogul nu oferă ce refuză exportul pe ele.
-        deschise: o.noduri.filter((n) => {
-          const e = dupaIdLume.get(`${inst}/${n}`);
-          return e !== undefined && esteCaleDeschisa(e.forma);
-        }).length,
-        noduri: o.noduri.length,
-        // Găurirea (ADR 0087): doar pe un rând numai cu cercuri.
-        cercuri: o.noduri.length > 0 && o.noduri.every((n) => dupaIdLume.get(`${inst}/${n}`)?.forma.tip === 'cerc'),
-        // Diametrele cercurilor, ca le citește găurirea (ADR 0291, felia 28.8↑h): fișa spune felul și cercul care nu se găurește.
-        ...((d) => (d.length > 0 ? { diametre: d } : {}))([...new Set(o.noduri.flatMap((n) => {
-          const e = dupaIdLume.get(`${inst}/${n}`);
-          return e && e.forma.tip === 'cerc' ? [diametruCerc(e.forma.raza, e.matrice)] : [];
-        }))].sort((a, b) => a - b)),
-        // Locul în ordinea de mână (ADR 0133), dacă documentul îl are, și rândurile din interiorul formelor ei.
-        ...(o.rang !== undefined ? { rang: o.rang } : {}),
-        ...(cuprinseOp ? { inauntru: cuprinseOp } : {}),
-        valori: {
-          scula: {
-            numar: o.scula.numar, diametru: o.scula.diametru,
-            ...(o.scula.forma?.tip === 'v' ? { forma: { tip: 'v' as const, unghi: o.scula.forma.unghi, ...(o.scula.forma.varf !== undefined ? { varf: o.scula.forma.varf } : {}) } } : {}),
-            // Freza din „Frezele mele” (ADR 0300 §4, felia 16.A↑b-3): originea ei, dacă documentul o are; altfel scrisă de mână.
-            origine: origineDin(o.scula),
-          },
-          latura: o.latura, sens: o.sens, adancime: o.adancime, pas: o.pas,
-          urechi: o.urechi ? {
-            numar: o.urechi.numar, latime: o.urechi.latime, grosime: o.urechi.grosime,
-            ...(o.urechi.mod === 'alese' ? { mod: 'alese' as const, alese: numarUrechiAlese(o) } : o.urechi.mod !== undefined && o.urechi.mod !== 'egale' ? { mod: o.urechi.mod } : {}),
-          } : null,
-          rampa: o.rampa ? { lungime: o.rampa.lungime } : null,
-          intrari: o.intrari ? { raza: o.intrari.raza } : null,
-          colturi: o.colturi ? { tip: o.colturi.tip } : null,
-          ...(o.despartire ? { despartire: true } : {}),
-          ...(o.tip === 'profil' && o.latura === 'pe-linie' && o.directie ? { directie: o.directie } : {}),
-          ...(o.tip === 'buzunar' && o.pasLateral !== undefined ? { tip: 'buzunar' as const, pasLateral: o.pasLateral } : {}),
-          ...(o.tip === 'buzunar' && o.coborare ? { coborare: o.coborare } : {}),
-          ...(o.tip === 'buzunar' && o.strategie ? { strategie: { fel: 'paralel' as const, unghi: o.strategie.unghi } } : {}),
-          ...(o.tip === 'buzunar' && o.rest ? { rest: o.rest.map(restDin) } : {}),
-          // Incrustația cu pereți drepți (ADR 0171): rândul o arată ca rol, cu valorile ei și frezele dopului (lipsă = ale locașului);
-          // punțile dopului decupat (ADR 0174), dacă le are.
-          ...(o.tip === 'buzunar' ? {
-            incrustatieDreapta: o.incrustatie?.fel === 'drept' ? {
-              jocLateral: o.incrustatie.jocLateral, dop: o.incrustatie.dop, sprijin: o.incrustatie.sprijin, joc: o.incrustatie.joc,
-              fierastrau: o.incrustatie.fierastrau, margine: o.incrustatie.margine,
-              ...(o.incrustatie.frezeDop ? { frezeDop: o.incrustatie.frezeDop.map(restDin) } : {}),
-              ...(o.incrustatie.punti ? { punti: { numar: o.incrustatie.punti.numar, latime: o.incrustatie.punti.latime, grosime: o.incrustatie.punti.grosime } } : {}),
-              ...(o.incrustatie.locas === 'gaura' ? { locas: 'gaura' as const } : {}),
-              // Treapta (ADR 0175 §5): umărul, cu încotro (lipsă = spre interior).
-              ...(o.incrustatie.treapta ? {
-                treapta: {
-                  adancime: o.incrustatie.treapta.adancime, latime: o.incrustatie.treapta.latime,
-                  ...(o.incrustatie.treapta.spre === 'exterior' ? { spre: 'exterior' as const } : {}),
-                },
-              } : {}),
-            } : null,
-          } : {}),
-          ...(o.tip === 'vcarve' ? {
-            tip: 'vcarve' as const,
-            fundPlat: o.fundPlat ? {
-              numar: o.fundPlat.scula.numar, diametru: o.fundPlat.scula.diametru, pasLateral: o.fundPlat.pasLateral, origine: origineDin(o.fundPlat.scula),
-              ...(o.fundPlat.rest ? { rest: o.fundPlat.rest.map(restDin) } : {}),
-            } : null,
-            // Incrustația (ADR 0170): rândul o arată ca rol, cu jocurile și marginea ei; banda (ADR 0172), cu valorile ei.
-            incrustatie: o.incrustatie?.fel === 'v' ? {
-              joc: o.incrustatie.joc, fierastrau: o.incrustatie.fierastrau, margine: o.incrustatie.margine, jurDop: o.incrustatie.jurDop,
-              ...(o.incrustatie.banda ? { banda: {
-                ...(o.incrustatie.banda.latime !== undefined ? { latime: o.incrustatie.banda.latime } : {}), decupare: o.incrustatie.banda.decupare,
-                grosimePlaca: o.incrustatie.banda.grosimePlaca,
-                ...(o.incrustatie.banda.freza ? {
-                  freza: { numar: o.incrustatie.banda.freza.numar, diametru: o.incrustatie.banda.freza.diametru, origine: origineDin(o.incrustatie.banda.freza) },
-                } : {}),
-                punti: { numar: o.incrustatie.banda.punti.numar, latime: o.incrustatie.banda.punti.latime, grosime: o.incrustatie.banda.punti.grosime },
-              } } : {}),
-            } : null,
-          } : {}),
-          ...(o.tip === 'gaurire' ? { tip: 'gaurire' as const, ...(o.retragereCompleta !== undefined ? { retragereCompleta: o.retragereCompleta } : {}) } : {}),
-        },
-      };
-    }));
-    // Operațiile reliefului (finisarea, ADR 0312 §7; degroșarea, ADR 0313 §7): rândurile doar de citit, cu valorile
-    // documentului.
-    const finisari: FinisareExport[] = lista.flatMap(({ piesa, instanta: inst }) => piesa.operatii.filter(peRelief).map((o): FinisareExport => {
-      const e = dupaIdLume.get(`${inst}/${o.noduri[0] ?? ''}`);
-      const baza = e ? descriere(e) : (piesa.nume ?? piesa.id);
-      const s = o.scula, deg = o.tip === 'degrosare';
-      const fin: { readonly unghi?: number; readonly nealiniat?: true; readonly margine?: 'trece'; readonly planZero?: number } | undefined = deg ? o.degrosare : o.finisare;
-      return {
-        cheie: `${piesa.id}/${o.id}`,
-        fel: deg ? 'degrosare' : 'finisare',
-        ...(deg ? { adaos: o.degrosare?.adaos ?? 0 } : {}),
-        descriere: o.noduri.length > 1 ? `${baza} (+${o.noduri.length - 1})` : baza,
-        ...(o.rang !== undefined ? { rang: o.rang } : {}),
-        scula: {
-          numar: s.numar, diametru: s.diametru, forma: s.forma?.tip === 'bila' ? 'bila' : s.forma?.tip === 'v' ? 'v' : 'plata',
-          ...(s.forma?.tip === 'v' ? { unghi: s.forma.unghi, ...(s.forma.varf !== undefined ? { varf: s.forma.varf } : {}) } : {}),
-        },
-        pasLateral: o.pasLateral ?? 0, creasta: creastaPePlan(s, o.pasLateral ?? 0), unghi: fin?.unghi ?? 0, aliniat: fin?.nealiniat !== true,
-        margine: fin?.margine === 'trece' ? 'trece' : 'perete', ...(fin?.planZero !== undefined ? { planZero: fin.planZero } : {}),
-        adancime: o.adancime, pas: o.pas,
-      };
-    }));
-    return {
-      piese: lista,
-      randuri: randuriOp,
-      finisari,
-      // Ordinea automată a rândurilor (ADR 0133 §3, ADR 0312 §7): primul pas al fiecărei operații în ordinea lucrării fără ranguri
-      // (finisările întâi).
-      automata: [...new Set(ordinePasi(faraRanguri(doc), 0).map(cheiePas))],
-      descrieri: new Map(lume.map((e) => [e.idLume, descriere(e)])),
-      // Fiecare element al foii, cu prima operație de pe rând care îl taie (ADR 0291, felia 28.8↑j): „Du-mă la …” lângă un refuz al
-      // calculului, care vorbește cu id-urile din lume, în orice instanță a piesei.
-      operatiiLume: new Map((doc.foi[0]?.instante ?? []).flatMap((i) => (piese.get(i.piesa)?.operatii.filter(peRand) ?? [])
-        .flatMap((o) => o.noduri.map((n) => [`${i.id}/${n}`, `${i.piesa}/${o.id}`] as const))).reverse()),
-    };
+    return { piese: lista, ...randuriFoii(doc, lista, dupaIdLume, descriere), descrieri: new Map(lume.map((e) => [e.idLume, descriere(e)])) };
     // `limba`: descrierile sunt texte traduse.
   }, [doc, dupaIdLume, lume, descriere, limba]);
 
@@ -297,6 +316,43 @@ export function ExportConectat({
   const placute = useMemo(() => placuteIesite(doc, 0), [doc]);
   // Cu „Toate foile” (ADR 0210 §5), plăcuțele tuturor foilor.
   const placuteToate = useMemo(() => placuteIesite(toate), [toate]);
+
+  /**
+   * „Toate foile” (ADR 0291, 7a, felia 28.8↑q): rândurile tuturor foilor, grupate pe foi (`grupeFoi`: o piesă la prima foaie pe
+   * care e pusă), socotite abia când fereastra le cere (omul alege „Toate foile”) și o singură dată pe document și pe limbă.
+   * Fiecare foaie, cu elementele ei în lume, descrierile, ordinea ei automată și grosimea ei.
+   */
+  const toateFoile = useMemo(() => {
+    if (toate.foi.length < 2) return undefined;
+    let gata: ToateFoileExport | null = null;
+    const socoteste = (): ToateFoileExport => {
+      const piese = new Map(toate.piese.map((p) => [p.id, p]));
+      const nume = toate.foi.map((f, k) => numeFoii(f, k, (n) => t('foaia.n', { n: String(n) })));
+      const operatii: OperatieExport[] = [], finisari: FinisareExport[] = [];
+      const descrieri = new Map<string, string>(), operatiiLume = new Map<string, string>();
+      const cuRand = (id: string): number => piese.get(id)?.operatii.filter((o) => peRand(o) || peRelief(o)).length ?? 0;
+      const foi = grupeFoi(toate).map((g) => {
+        const f = toate.foi[g.k];
+        if (!f) return { id: '', nume: '', chei: [], comune: [], goala: true };
+        const lumeFoii = elementeFoaie(toate, g.k);
+        for (const e of lumeFoii) descrieri.set(e.idLume, descriere(e));
+        const lista = g.piese.flatMap((x) => ((p) => (p ? [{ piesa: p, instanta: x.instanta }] : []))(piese.get(x.piesa)));
+        const r = randuriFoii(doarFoaia(toate, f.id), lista, new Map(lumeFoii.map((e) => [e.idLume, e])), descriere);
+        operatii.push(...r.randuri);
+        finisari.push(...r.finisari);
+        for (const [el, op] of r.operatiiLume) operatiiLume.set(el, op);
+        return {
+          id: f.id, nume: nume[g.k] ?? f.id,
+          chei: ordineAutomata(r.automata, [...r.randuri.map((o) => o.cheie), ...r.finisari.map((x) => x.cheie)]),
+          comune: g.comune.map((c) => ({ foaie: nume[c.k] ?? '', operatii: c.piese.reduce((n, id) => n + cuRand(id), 0) })).filter((c) => c.operatii > 0),
+          goala: g.goala,
+        };
+      });
+      return { foi, operatii, finisari, descrieri, operatiiLume };
+    };
+    return (): ToateFoileExport => (gata ??= socoteste());
+    // `limba`: descrierile și numele foilor sunt texte traduse.
+  }, [toate, descriere, limba]);
 
   /**
    * Exportă: valorile din dialog, ca operațiile noi ale fiecărei piese de pe foaie (aplicația le scrie într-un singur pas), cu
@@ -356,7 +412,12 @@ export function ExportConectat({
   const exporta = (c: CerereExport): void => {
     const loc = c.ordine ? new Map(c.ordine.map((k, i) => [k, i])) : null;
     const noi = new Map<string, Operatie[]>();
-    for (const { piesa } of exportFoaie.piese) {
+    // Cu „Toate foile” (ADR 0291, 7a), operațiile tuturor pieselor puse pe foi; altfel, ale pieselor foii active.
+    const pieseToate = new Map(toate.piese.map((p) => [p.id, p]));
+    const deScris = c.toateFoile
+      ? grupeFoi(toate).flatMap((g) => g.piese.flatMap((x) => ((p) => (p ? [{ piesa: p }] : []))(pieseToate.get(x.piesa))))
+      : exportFoaie.piese;
+    for (const { piesa } of deScris) {
       noi.set(piesa.id, piesa.operatii.map((o) => {
         const cheie = `${piesa.id}/${o.id}`;
         // Finisarea (ADR 0312 §7) și degroșarea (ADR 0313 §7): rândul lor e doar de citit, deci Exportă le scrie doar rangul (sau
@@ -407,6 +468,7 @@ export function ExportConectat({
       {...(placute ? { placute } : {})}
       {...(placuteToate ? { placuteToate } : {})}
       foi={toate.foi.length}
+      {...(toateFoile ? { toateFoile } : {})}
       {...(biblioteca.freze.length > 0 ? { frezeOferite } : {})}
       bibliotecaToata={bibliotecaToata}
       onPuneInapoi={puneInapoi}

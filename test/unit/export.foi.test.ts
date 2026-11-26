@@ -1,5 +1,5 @@
 /**
- * „Toate foile” la export (ADR 0210 §5, felia 11.5↑): arhiva `.zip` stocată (pe hârtie: o intrare „a.txt” cu „hi” are 110
+ * „Toate foile” la export (ADR 0210 §5, felia 11.5↑; rezumatul pe foi, ADR 0291, 7a, felia 28.8↑q): arhiva `.zip` stocată (pe hârtie: o intrare „a.txt” cu „hi” are 110
  * octeți), citită înapoi de cititorul extensiilor (altă implementare, cu CRC-ul verificat), cu aceiași octeți la fiecare
  * scriere; numele fișierelor unei foi în arhivă; foile identice; și calculul întreg: fiecare program din arhivă e, octet cu
  * octet, cel exportat doar din foaia lui, foile identice ies o dată, cu „-x2”, iar o foaie goală nu intră.
@@ -155,6 +155,11 @@ test('„Toate foile”: fiecare program din arhivă e, octet cu octet, cel expo
     ['Foaia 1', ['Foaia 3'], ['cncvs2-stanga-jos-foaia-1-x2.nc']], ['Foaia 2', [], ['cncvs2-stanga-jos-foaia-2.nc']],
   ]);
   assert.deepEqual(foi.goale, ['Foaia 4']);
+  // Rezultatul pe foi (ADR 0291, 7a, felia 28.8↑q): rezumatul fiecărei foi e cel al foii exportate singure; activa e foaia 2.
+  const rezumat = async (id: string) => ((r) => (r.ok ? r.rezumat : null))(await calculeazaExport(doarFoaia(d, id), p));
+  assert.deepEqual(foi.foi[0]!.rezumat, await rezumat('f1'));
+  assert.deepEqual(foi.foi[1]!.rezumat, await rezumat('f2'));
+  assert.deepEqual(foi.foi.map((f) => f.activa === true), [false, true]);
   const [s1, s2] = foi.foi.map((f) => f.secunde ?? Number.NaN);
   assert.ok(Math.abs((foi.secunde ?? 0) - (2 * s1! + s2!)) < 1e-9);
   // Panoul mașinii primește foaia activă (a doua), ca un export doar din ea; aceeași arhivă la al doilea export.

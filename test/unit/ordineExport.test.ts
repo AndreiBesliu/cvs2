@@ -4,7 +4,7 @@
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { legaturi, muta, ordineAutomata, ordineDinRanguri, riscuri, type RandOrdine } from '../../src/ui/ordineExport.ts';
+import { legaturi, muta, ordineAutomata, ordineDinRanguri, riscuri, type RandOrdine, ordineDinRanguriPeFoi, peFoi } from '../../src/ui/ordineExport.ts';
 
 const r = (piesa: string, latura: RandOrdine['latura'], extra: Partial<RandOrdine> = {}): RandOrdine => ({ piesa, latura, despartire: false, vcarve: null, ...extra });
 
@@ -92,4 +92,20 @@ test('finisarea reliefului (ADR 0312 §7): fără rang rămâne în față, ca �
   assert.deepEqual(riscuri(['p/o', 'p/f', 'q/1'], randuri), [{ fel: 'exterior', a: 1, b: 2 }]);
   assert.deepEqual(riscuri(['q/1', 'p/f', 'p/o'], randuri), [{ fel: 'exterior', a: 1, b: 2 }]);
   assert.deepEqual(riscuri(['p/f', 'p/o', 'q/1'], randuri), []);
+});
+
+test('cu „Toate foile” (28.8↑q): rangurile pun în ordine fiecare foaie a ei, fără să le amestece; fără ranguri, null', () => {
+  const foi = [['a', 'b', 'c'], ['d', 'e'], []];
+  assert.equal(ordineDinRanguriPeFoi(foi, new Map()), null);
+  // Rangurile scrise de exporturi diferite (fiecare foaie 0 … n − 1) nu trec rândurile pe altă foaie.
+  assert.deepEqual(ordineDinRanguriPeFoi(foi, new Map([['c', 0], ['a', 1], ['b', 2], ['e', 0], ['d', 1]])), ['c', 'a', 'b', 'e', 'd']);
+  // O foaie fără ranguri rămâne în ordinea ei automată; un rând fără rang la capătul foii lui; finisările fără rang în față.
+  assert.deepEqual(ordineDinRanguriPeFoi(foi, new Map([['b', 5]])), ['b', 'a', 'c', 'd', 'e']);
+  assert.deepEqual(ordineDinRanguriPeFoi(foi, new Map([['e', 0]]), new Set(['d'])), ['a', 'b', 'c', 'd', 'e']);
+});
+
+test('ordinea despărțită pe foi, în ordinea dată; un rând fără foaie nu intră', () => {
+  const de = new Map([['a', 0], ['b', 1], ['c', 0], ['d', 2]]);
+  assert.deepEqual(peFoi(['b', 'x', 'c', 'a', 'd'], 3, de), [['c', 'a'], ['b'], ['d']]);
+  assert.deepEqual(peFoi([], 2, de), [[], []]);
 });

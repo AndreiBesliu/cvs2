@@ -35,6 +35,31 @@ export function ordineDinRanguri(automata: readonly string[], ranguri: ReadonlyM
   return automata.map((c, i) => ({ c, i })).sort((a, b) => (loc(a.c) === loc(b.c) ? a.i - b.i : loc(a.c) < loc(b.c) ? -1 : 1)).map((x) => x.c);
 }
 
+/**
+ * Ordinea omului cu „Toate foile” (ADR 0291, 7a, felia 28.8↑q): rândurile fiecărei foi (`foi`, în ordinea ei automată), puse
+ * după rang ca în `ordineDinRanguri`, foaie după foaie: fiecare program își taie foaia în ordinea rangurilor lui, deci o foaie
+ * nu se amestecă cu alta. Null dacă niciun rând n-are rang.
+ */
+export function ordineDinRanguriPeFoi(
+  foi: readonly (readonly string[])[], ranguri: ReadonlyMap<string, number>, inFata: ReadonlySet<string> = new Set(),
+): string[] | null {
+  if (!foi.some((f) => f.some((c) => ranguri.has(c)))) return null;
+  return foi.flatMap((f) => ordineDinRanguri(f, ranguri, inFata) ?? [...f]);
+}
+
+/**
+ * Ordinea despărțită pe foi (ADR 0291, 7a): rândurile fiecărei foi, în ordinea dată, după foaia lor (`foaieDe`, indicele ei);
+ * un rând fără foaie nu intră.
+ */
+export function peFoi(ordine: readonly string[], foi: number, foaieDe: ReadonlyMap<string, number>): string[][] {
+  const rez = Array.from({ length: foi }, (): string[] => []);
+  for (const c of ordine) {
+    const k = foaieDe.get(c);
+    if (k !== undefined) rez[k]?.push(c);
+  }
+  return rez;
+}
+
 /** Lista cu rândul de pe locul `de` mutat pe locul `la` (indicii listei, de la 0). */
 export function muta(ordine: readonly string[], de: number, la: number): string[] {
   if (de < 0 || de >= ordine.length || la < 0 || la >= ordine.length || de === la) return [...ordine];

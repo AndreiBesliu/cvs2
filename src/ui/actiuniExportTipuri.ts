@@ -197,6 +197,10 @@ export type RezultatExport =
  */
 export type FoaieExportata = {
   readonly nume: string; readonly identice: readonly string[]; readonly fisiere: readonly string[]; readonly secunde: number | null;
+  /** Timpul pe operații și pe scule al programului foii (ADR 0291, 7a, felia 28.8↑q: Rezultatul pe foi). */
+  readonly rezumat?: RezumatJob;
+  /** E foaia activă (sau una identică cu ea): a ei sunt simularea și programul dus în Mașina. */
+  readonly activa?: true;
 };
 
 /** Arhiva „Toate foile”: numele ei, foile cu program, foile fără nimic de tăiat și timpul tuturor (fiecare foaie de N ori). */

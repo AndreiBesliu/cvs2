@@ -2018,8 +2018,13 @@ foile** face câte un program pe foaie, fiecare exact cel pe care l-ai exporta d
 arhivă `.zip` (`cncvs2-stanga-jos-foile.zip`), cu foaia în numele fiecărui fișier (`cncvs2-stanga-jos-foaia-2.nc`); pe
 RichAuto, `CNCVS2.ZIP`, cu fiecare foaie în dosarul ei (`F2/CNCVS2.NC`). Foile identice (aceleași piese în aceleași locuri,
 cu aceleași operații, ca după „Duplică foaia cu aceleași piese”) ies o dată, cu ×N în nume (`…-foaia-1-x3.nc`: se taie de
-trei ori), iar o foaie fără nimic de tăiat nu intră. Fișele ferestrei rămân ale foii active: celelalte foi își păstrează
-operațiile lor. După export, fereastra arată foile, fișierele și timpul fiecăreia, apoi timpul tuturor. O foaie din care iese
+trei ori), iar o foaie fără nimic de tăiat nu intră. Cu **Toate foile**, lista și fișele arată operațiile fiecărei foi, sub
+numele ei, și le poți schimba de aici: **Exportă** le scrie pe toate. O piesă pusă pe mai multe foi (o copie legată, plăcuțele
+din CSV) are aceleași operații pe toate, deci rândurile ei stau o singură dată, la prima foaie pe care e pusă; celelalte foi
+spun „Și N operații ale pieselor de pe Foaia 1”. Numerele ordinii pornesc de la 1 pe fiecare foaie, iar în **A mea** un rând
+se mută doar în foaia lui (fiecare foaie e un program al ei); o greșeală pe altă foaie oprește doar **Toate foile**. Cu **Foaia
+activă**, fereastra arată, ca înainte, doar foaia activă. După export, fereastra arată foile, fișierele și timpul fiecăreia,
+apoi timpul tuturor, iar sub **Timpul** rezumatul fiecărei foi (al foii active, deschis); simularea e a foii active. O foaie din care iese
 freza (alta decât cea activă, a cărei confirmare o dai aici) se exportă singură, cu confirmarea ei. **Deschide în Mașina**
 încarcă programul foii active. Plăcuțele din care iese textul sunt, aici, ale tuturor foilor: dacă ai ales confirmarea în
 **Din CSV…**, **Exportă** așteaptă bifa.
