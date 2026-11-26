@@ -628,6 +628,8 @@ Easy 3Draw 18.40.0, pe ramura `wip/3.Xh-biblioteca-ui`, în sesiunea cloud a lin
 - **Probele vechi atinse** (rândurile listei au acum semnele verificării): `trenulet.alipire.spec.ts` (copia peste
   original, piesa lăsată în aer, axul culcat pe știfturi), `trenulet.model.spec.ts` (rotorul în aer, rotorul ieșit
   din carcasă, „deasupra” unei roți, roata pusă pe știfturile unei cărămizi).
-- **Otrăvurile:** `test/otravuri/3.Cg.py` și `3.Cg-en.py` (rezultatul, în `docs/otravuri.md`).
+- **Otrăvurile:** `test/otravuri/3.Cg.py`, 98 / 98 (la prima rulare 90 / 97: șapte scăpate pe proba unitară, care a
+  fost întărită: așezarea stricată la funcțiile directe, lemnul numărat par-impar, feliile subțiri la marginea de jos,
+  grupul cu o piesă prinsă de două, cheia ținerii de minte pe amândouă piesele; plus V21, nouă); `3.Cg-en.py`, 11 / 11.
 - **Mărimea:** pachetul Easy 3Draw, 562,6 kB (era 555,4); aplicația, neschimbată.
 - **Felia următoare:** 3.Ch (construcțiile cu nume și lista lor de piese).
