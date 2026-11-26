@@ -1966,6 +1966,14 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 26.11.2026, după-amiaza: **loturile 48 și 49 sunt pe test:** `77bf8ceb` (28.8↑q, „Toate foile” cu operațiile
+  fiecărei foi în fereastra exportului, cu titlurile grupurilor „Tăietura”, „Golirea”, „Coborârea”), din 26.11, 14:20
+  (completul pe `main` 45808757348, verde: unit 10 752 / 0, e2e 967 / 967, funcțiile pe emulatoare 136 / 136,
+  paginile 60 / 60), și `e84651e3` (3.Ch, construcțiile cu nume din „Modelul”, Easy 3Draw 18.41.0), din 15:27
+  (completul 45818672800, verde: unit 10 762 / 0, e2e 975 / 975, funcțiile pe emulatoare 136 / 136, paginile
+  60 / 60); probele de fum, bune; mărimile, neschimbate (pornirea 111,6 kB, cu ușa 116,8, cu Atelierul 117,1 / 125;
+  totalul 921,1 / 1 000). Pe test e tot ce e în `main`. **La owner, de încercat:** „Toate foile” pe un proiect cu
+  mai multe foi și construcțiile din „Modelul” (cu alegerile liniei, din decizia unirii a cincizeci și patra).
 - 26.11.2026, după-amiaza (a cincizeci și patra unire din cloud): **construcțiile cu nume din vederea „Modelul” a
   atelierului Easy 3Draw și lista lor de piese (3.Ch), unite în `main`** (sesiunea principală, ramura `unire-2611m`,
   din `77bf8ceb`). Linia atelierului, ramura `wip/3.Xh-biblioteca-ui`, `19fa5bdc` (codul în `5395e6af`, cu `main`
