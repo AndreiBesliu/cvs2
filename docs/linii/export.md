@@ -111,8 +111,11 @@ vreau ca ficare setare sa fie insotita de o ilustratie sugestiva, ca sa ajute us
 - **26.11: 28.8↑k gata** (curățenia vizuală, constatările 8, 10, 11, 12, 16, 17 și 21). Capul listei nu se mai strânge; bifele
   cu căsuța lângă etichetă; fundul plat pe rânduri, cu lista „Din frezele mele” pe rândul ei; bifa „și tăieturile cât foaia”
   doar cu supracursă; golurile desenului Z0 doar când sunt în proiect; diametrul frezei în V sub vârf; titlurile în engleză;
-  textele lungi prescurtate, cu „Mai mult” al grupului și al notelor. Totalul 919,2 / 1 000 (+0,5 kB). Urmează 28.8↑l
-  (tastatura și cititorul de ecran).
+  textele lungi prescurtate, cu „Mai mult” al grupului și al notelor. Totalul 919,2 / 1 000 (+0,5 kB). Unită în `main` pe
+  26.11 (`3cdd23f5`).
+- **26.11: 28.8↑l gata** (tastatura și cititorul de ecran, constatarea 13). Lista duce focusul pe titlul fișei; titlul grupului
+  înaintea explicației; câmpurile descrise de explicația întreagă și de greșelile grupului; `aria-live` doar pe greșeli; pe telefonul culcat, banda listei pe
+  un rând. Totalul 919,5 / 1 000 (+0,3 kB). Cu ea, feliile din ADR 0291 cerute de audit pentru fereastră (h–l) sunt gata; rămân p și q.
 
 ## Ce s-a găsit (23.11)
 
@@ -256,6 +259,14 @@ vreau ca ficare setare sa fie insotita de o ilustratie sugestiva, ca sa ajute us
 - **O bifă nouă primește singură căsuța lângă etichetă** (`.dialog-export label:where(:has(> input[type='checkbox']))`), iar
   `ceIese` din proba privirii o cere la fiecare tăietură. Confirmările de sub fișe își păstrează regula lor (specificitatea
   e a lui `.dialog label`, prin `:where`).
+- **Ordinea unui grup e titlul, explicația, câmpurile** (28.8↑l): `h4` e primul copil al lui `.dx-grup`, iar grila îl pune în
+  dreapta, deasupra câmpurilor (`grid-template-areas`). Un grup nou se face tot prin `grup(...)`; o fișă scrisă de mână (ca
+  finisarea) pune și ea titlul întâi. Selectorii pe `.dx-campuri h4` nu mai găsesc nimic.
+- **Câmpurile primesc `aria-describedby` de la `legaDescrierile`, după randare** (28.8↑l): un câmp care își pune singur
+  `aria-describedby` în JSX e suprascris, deci o descriere în plus intră în grup (o greșeală, `[data-greseala]` cu id, sau
+  explicația), nu pe câmp.
+- **`du(cheie, cum)`**: `'titlu'` din listă și din „Du-mă la …” al refuzurilor (focusul pe titlul fișei), `'repara'` din
+  „Du-mă la …” al greșelilor (focusul pe câmpul greșit), fără `cum` doar când fereastra mută singură fișa (Rezultatul).
 - **Rândurile listei nu se strâng** (`.dx-lista > * { flex-shrink: 0 }`, doar pe desktop): un rând nou își ține înălțimea, iar
   lista se derulează. Pe telefon, banda le strânge pe lățime.
 - **Un refuz al calculului trece prin `motivPeInteles`** (`src/ui/motivCalcul.ts`) înaintea afișării: id-urile din lume devin
@@ -265,10 +276,9 @@ vreau ca ficare setare sa fie insotita de o ilustratie sugestiva, ca sa ajute us
 ## Ce rămâne
 
 Din ADR 0290, nimic: toate feliile (a–f) și 28.8↑g sunt gata. Din ADR 0291 (după audit): 28.8↑n și 28.8↑o sunt în `main`,
-28.8↑h, 28.8↑h-2, 28.8↑i și 28.8↑j sunt în `main`, iar 28.8↑k (curățenia vizuală) e gata pe ramură; urmează l; p după j
-(cu linia frezelor), q după i. La owner: titlurile în română („Ce tăiere”, „Cum golește”, „Cum coboară”; recomandarea
-„Tăietura”, „Golirea”, „Coborârea”). De luat într-o felie a liniei: la 640 × 360 (telefon culcat îngust), banda
-listei lasă fișelor 9 px (găsit la 28.8↑h-2; cu 28.8↑l, privirea). Pentru alte linii, mai târziu:
+28.8↑h–28.8↑k sunt în `main`, iar 28.8↑l (tastatura și cititorul de ecran) e gata pe ramură; rămân p (Z sigur și parcarea,
+cu linia frezelor anunțată) și q („Toate foile” cu operațiile fiecărei foi). La owner: titlurile în română („Ce tăiere”, „Cum golește”, „Cum coboară”; recomandarea
+„Tăietura”, „Golirea”, „Coborârea”). Telefonul culcat (640 × 360) e rezolvat în 28.8↑l. Pentru alte linii, mai târziu:
 
 - **Clasicul (28.2↑) și Pas cu pas (28.4↑)** iau fișa operației (`FisaOperatie`, cu `ContextFisa`) în panoul lor, cu starea
   lor, fără s-o copieze (ADR 0290, „Cu canvas-ul aranjamentelor”): la Clasic, în locul panoului din dreapta, cu Simularea filă;
