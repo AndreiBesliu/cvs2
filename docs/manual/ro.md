@@ -1558,7 +1558,7 @@ ridice cât drumul rămâne în buzunar. Cu pasul lateral de cel mult jumătate 
 doar colțurile pe care nicio freză rotundă nu le atinge (cu raza frezei). Unde buzunarul e mai îngust decât freza, ea nu
 intră. Pe un buzunar nu există urechi, intrări sau degajări, iar rampa profilului e înlocuită de coborâre.
 
-**Traseul buzunarului.** Pe fișa unui buzunar, la **Cum golește**, **Traseul** alege între **inele (paralele cu conturul)**, implicit, și
+**Traseul buzunarului.** Pe fișa unui buzunar, la **Golirea**, **Traseul** alege între **inele (paralele cu conturul)**, implicit, și
 **linii paralele**, la **Unghiul** dat față de X (de la 0 până sub 180°), cu pasul lateral între ele. Pe fiecare trecere, freza
 trece întâi pe linii, legate la adâncime doar cu linia vecină și doar dacă drumul rămâne în buzunar (altfel se ridică), apoi pe
 o **trecere de profil** de-a lungul marginii, ca peretele să iasă exact pe vector, nu în trepte. Liniile coboară prin plonjare
@@ -1839,8 +1839,8 @@ care). Fereastra are trei părți:
   lista marchează fișa la care ai ajuns. Din tastatură, Enter pe un rând duce focusul pe titlul fișei, iar Tab merge apoi
   în câmpurile ei; un cititor de ecran spune la fiecare câmp explicația grupului lui, întreagă, și greșelile lui. Pe un ecran îngust, lista stă sus, pe un rând care se derulează, cu ordinea tăierii
   la capăt; cu **Butoane mari** (vezi [Aspectul](#aspect)), câmpurile și bifele ferestrei au și ele ținta mare;
-- **fișele**, în dreapta, una sub alta. Fiecare are câmpurile grupate pe întrebări (Ce tăiere, Freza, Cât de adânc, Sensul de
-  tăiere, Rampa, Intrările, Colțurile, Urechile; la un buzunar, Cum golește, Cum coboară, Frezele de rest; la un V-carve,
+- **fișele**, în dreapta, una sub alta. Fiecare are câmpurile grupate pe întrebări (Tăietura, Freza, Cât de adânc, Sensul de
+  tăiere, Rampa, Intrările, Colțurile, Urechile; la un buzunar, Golirea, Coborârea, Frezele de rest; la un V-carve,
   Fundul plat; la o incrustație, ale ei). În stânga fiecărui grup, explicația lui; când treci cu mausul peste un câmp sau intri
   în el, explicația câmpului. O explicație lungă se vede până la capătul primei propoziții, cu „…”: **Mai mult**, sub ea, le
   arată întregi pe toate ale grupului (și pe ale câmpurilor pe care treci apoi), iar **Mai puțin** le strânge la loc; la fel

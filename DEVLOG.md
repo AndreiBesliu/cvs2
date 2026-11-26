@@ -15982,3 +15982,15 @@ la ordinul în vigoare „unește ce se poate”
 - **Modelul:** de aici, intrările sesiunii principale scriu Opus; sesiunile liniilor rămân pe modelul lor până la `/model` dat de
   owner în fiecare.
 - **Documentele:** decizia în `CLAUDE.md`; starea din `docs/linii/principala.md`.
+
+## 2026-11-26 — Linia exportului: titlurile grupurilor în română, alese de owner (ADR 0291)
+
+**Prompt:** sesiunea principală, cu răspunsul owner-ului: „da, Tăietura, Golirea, Coborârea”
+**Started:** 26.11, 11:53.
+
+- `export.grup.taietura`, `golire`, `coborare`: „Tăietura”, „Golirea”, „Coborârea” (erau „Ce tăiere”, „Cum golește”, „Cum
+  coboară”); engleza rămâne Cut type, Clearing, Descent. Programul nu se schimbă.
+- **Proba:** `export.cartonase.spec.ts` cere cele trei titluri pe fișa unui buzunar (5 / 5).
+- **Documentele:** manualul (română), ADR 0291 (rândul din „Implementarea 28.8↑k”), nota liniei.
+
+**Completed:** 26.11, 11:54.

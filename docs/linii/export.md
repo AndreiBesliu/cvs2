@@ -288,8 +288,8 @@ vreau ca ficare setare sa fie insotita de o ilustratie sugestiva, ca sa ajute us
 
 Din ADR 0290, nimic: toate feliile (a–f) și 28.8↑g sunt gata. Din ADR 0291 (după audit): 28.8↑n, 28.8↑o și 28.8↑h–28.8↑l sunt
 în `main`, iar 28.8↑q („Toate foile” cu operațiile fiecărei foi) e gata pe ramură; rămâne p (avansul, turația și plonjarea pe
-„Scrisă de mână”, Z-ul sigur și parcarea), pe care o deschide sesiunea principală, cu linia frezelor anunțată. La owner: titlurile în română („Ce tăiere”, „Cum golește”, „Cum coboară”; recomandarea
-„Tăietura”, „Golirea”, „Coborârea”). Telefonul culcat (640 × 360) e rezolvat în 28.8↑l. Pentru alte linii, mai târziu:
+„Scrisă de mână”, Z-ul sigur și parcarea), pe care o deschide sesiunea principală, cu linia frezelor anunțată. Titlurile în
+română sunt, din 26.11, cele alese de owner: „Tăietura”, „Golirea”, „Coborârea”. Telefonul culcat (640 × 360) e rezolvat în 28.8↑l. Pentru alte linii, mai târziu:
 
 - **Clasicul (28.2↑) și Pas cu pas (28.4↑)** iau fișa operației (`FisaOperatie`, cu `ContextFisa`) în panoul lor, cu starea
   lor, fără s-o copieze (ADR 0290, „Cu canvas-ul aranjamentelor”): la Clasic, în locul panoului din dreapta, cu Simularea filă;

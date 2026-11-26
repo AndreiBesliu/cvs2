@@ -356,8 +356,8 @@ Constatările 8, 10, 11, 12, 16, 17 și 21 ale auditului. Programul rămâne oct
 - **Freza în V (constatarea 17).** Diametrul sub vârf, ca la freza plată, cu liniile ajutătoare din marginile conului: pe coadă,
   „Ø 3,175 mm” trecea peste „T1”.
 - **Titlurile în engleză (constatarea 16).** „Cut type”, „Clearing”, „Descent” (ca eticheta câmpului; „Plunge” e una dintre
-  alegerile lui) și „Rest machining”. Titlurile în română („Ce tăiere”, „Cum golește”, „Cum coboară”) rămân, cum spune auditul,
-  la owner, cu recomandarea „Tăietura”, „Golirea”, „Coborârea”.
+  alegerile lui) și „Rest machining”. Titlurile în română („Ce tăiere”, „Cum golește”, „Cum coboară”) au rămas, cum spunea
+  auditul, la owner; pe 26.11 a ales recomandarea („da, Tăietura, Golirea, Coborârea”), într-un commit separat, după 28.8↑q.
 - **Textele lungi (constatarea 21).** Peste 160 de caractere, un text arată prima propoziție și „…” (`scurtat`, `textStrans`,
   `src/ui/exportRand.ts`; o propoziție se termină cu un punct urmat de spațiu și de o literă mare, o paranteză sau ghilimele):
   - în caseta explicației, „Mai mult” / „Mai puțin” e al grupului, nu al textului: deschis, arată întregi toate explicațiile
