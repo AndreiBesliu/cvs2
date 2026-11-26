@@ -91,3 +91,5 @@ sigur editabil a venit cu 28.8↑p. Rămâne începutul programului: felia 28.8�
   întocmai, cu Z-ul sigur ales, în afara regiunii anunțate, focusabil și cu nume, plecat la un parametru schimbat; câte un rând
   pe fișier, cu fișiere pe freză), proba privirii (la 1280, 1024 și 390 px, cu fontul lat; ținta rândului cu densitatea mare).
 - Programul, fișierele și amprentele rămân octet cu octet: fereastra arată doar un prefix al textului descărcat.
+- **Otrăvurile:** `test/otravuri/28.8r.py`, 17 / 17 din prima (11 unitare, 6 e2e). **Mărimea:** pornirea +0 (111,6 kB; cu ușa
+  116,8, cu Atelierul 117,1 / 125), totalul 923,5 / 1 000 (+0,5 kB, în bucata acțiunilor exportului și a ferestrei).
