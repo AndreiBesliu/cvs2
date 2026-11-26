@@ -117,8 +117,9 @@ o('E02', 'src/ui/exportGrupuri.ts', "  degrosare: ['freza-relief', 'linii', 'ada
   'fișa degroșării fără adaos')
 o('E03', EC, "        if (o.tip === 'finisare' || o.tip === 'degrosare') {", "        if (o.tip === 'finisare') {", 'e2e',
   'Exportă nu scrie rangul degroșării în „A mea”')
-o('E04', EC, "    const peRelief = (o: Operatie): boolean => o.tip === 'finisare' || o.tip === 'degrosare';",
-  "    const peRelief = (o: Operatie): boolean => o.tip === 'finisare';", 'e2e', 'rândul degroșării lipsește din fereastră')
+# Îndreptată în 18.1↑d-4: `peRelief` stă la nivelul modulului (fără indentare), deci lista o rata (VOID).
+o('E04', EC, "const peRelief = (o: Operatie): boolean => o.tip === 'finisare' || o.tip === 'degrosare';",
+  "const peRelief = (o: Operatie): boolean => o.tip === 'finisare';", 'e2e', 'rândul degroșării lipsește din fereastră')
 
 SETURI = {
     'doc': ['test/unit/document.v30.oracol.test.ts'],
