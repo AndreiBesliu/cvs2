@@ -1994,6 +1994,23 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 26.11.2026, seara: **liniile pornesc ce urmează la fiecare** („Zi-le ca pot continua cu ce urmeaza la fiecare”, în sesiunea principală, la 20:16, după
+  publicarea lotului 51). Sesiunea principală le-a scris celor cinci sesiuni de linie din cloud tot la 20:16, cu ce
+  urmează din nota fiecăreia: **atelierul**, 3.Ck (balamaua și placa turnantă, ultima din ADR 0284), cu jocul din
+  calibrare și cu tipărirea bilei și a cupei încă de verificat, sau întâi feliile auditului elicelor fără decizie
+  (1, 4, 6; pentru 2, 3, 5 și 7, cu recomandările 1a–4a aplicate); Easy 3Draw 18.43.0; **exportul**, începutul
+  G-code-ului la vedere în fereastră (singura felie a liniei care poate porni; 9a cere placa 2, 28.8↑m vine cu
+  Clasicul); **frezele**, 16.A↑e (bila și toroidala, cu CAM, în proiect; mișcă mașina, deci oracolul întâi), apoi f și
+  g, iar d după placa 4; **v31 e ținut pentru freze**, dacă e cere un câmp nou; **relieful**, rândul editabil al
+  finisării și al degroșării în fereastra exportului și rotunjirea în jos a pasului lateral; **cotele**, cele „mai
+  târziu” din ADR 0330 (toleranțele, lungimea unui arc sau a unui contur, cota între foi, setările în cont, în ordinea
+  aceasta). Exportul și relieful lucrează în aceeași fereastră: cine raportează al doilea aduce întâi `main`. Regulile
+  rămân: proba întâi, oracolul întâi la ce mișcă mașina, creșterea de mărime spusă în raport, un singur commit
+  raportat, cu porțile verzi; unirea, la raport. **Fără sesiune, deci nepornite:** tăierea (10.3↑p–r), imprimanta
+  (3.6w, camera), incrustațiile, planșele (11.5↑b, după etapa 13), trasarea (ADR 0274) și aranjamentele; fiecare cere
+  o sesiune nouă, cu un brief. Sesiunea designului („Variante design CVS2”) stă pe calculatorul owner-ului și n-a fost
+  trezită. **La owner:** brief-urile liniilor fără sesiune; constatarea 14 și Escape în cele șase ferestre (felii ale
+  sesiunii principale, la cuvântul lui); restul listei, neschimbat.
 - 26.11.2026, seara: **loturile 50 și 51 sunt pe test:** `86881d4c` (3.Ci, construcțiile gata din „Modelul”, Easy
   3Draw 18.42.0), din 26.11, 17:35 (completul pe `main` 45840352477, verde: unit 10 772 / 0, e2e 978 / 978, funcțiile
   pe emulatoare 136 / 136, paginile 60 / 60), și `77a036c0` (28.8↑p, Z-ul sigur, parcarea și valorile frezei scrise
