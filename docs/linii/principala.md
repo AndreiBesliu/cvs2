@@ -153,7 +153,7 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
   printr-o schiță.
 - **Observabilitatea:** erorile ajung în jurnalul aplicației; joburile își lasă marcajul.
 
-## Starea pe 26.11.2026, dimineața (după a cincizecea unire din cloud)
+## Starea pe 26.11.2026, dimineața (după a cincizeci și una unire din cloud)
 
 - **Pe test:** `1d9671d3` (lotul 44: 28.8↑k, curățenia vizuală a ferestrei exportului; publicat pe 26.11 la
   08:56, cu serverul neschimbat; completul pe `main` 45763781195, verde; proba de fum, bună). Înainte:
@@ -164,8 +164,9 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
   04:35; `7a754885` (lotul 40: 28.8↑i, viteza ferestrei exportului), la 03:15; `554b72cb` (lotul 39: 3.Cl-1, decorațiunile de Crăciun, Easy 3Draw 18.35.0), la 01:43; `c9911c14` (lotul 38: 3.Cf-1,
   alipirea la prinderi în vederea „Modelul”, Easy 3Draw 18.34.0), pe 25.11 la 23:28; `5649067c` (lotul 37: 16.A↑b-7, Escape în „Frezele mele”; 18.1↑c, finisarea reliefului, cu documentul
   v29; 28.8↑h, fereastra exportului „pe hârtie”), pe 25.11 la 22:23; `75bcf3fb` (lotul 36: „Pune-o înapoi în
-  bibliotecă”, cotele ca DIMENSION), la 20:54. **În `main`, nepublicată încă:** 3.Cf-2, răsturnările și jumătățile de pas în „Modelul”, Easy
-  3Draw 18.39.0 (`3e56e8cf`), unită pe 26.11 la 09:18: în drum, lotul 45.
+  bibliotecă”, cotele ca DIMENSION), la 20:54. **În `main`, nepublicate încă:** 3.Cf-2, răsturnările și jumătățile de pas în „Modelul”, Easy
+  3Draw 18.39.0 (`3e56e8cf`), unită pe 26.11 la 09:18: în drum, lotul 45; 28.8↑l, tastatura și cititorul de ecran în
+  fereastra exportului (`c3a0c184`), unită la 10:14: lotul 46, după el.
 - **`main`, din cloud:** pe 23.11: 3.Tq (`0ae9c6c1`); 11.3↑e și A.4 (`ddaa7ead`); 3.Tr, unită de linia elicelor
   (`d262e57a`); 25.8↑a și A.5 (`1b46c955`), cu reparația probei extensiilor (`8287d66e`); 11.3↑f, unită de linia
   planșelor (`f4601938`); A.6 (`4497d639`); 3.Xh (`2d1e482c`) și 12.1↑e-3 cu 12.1↑e-4 (`03460cab`); A.8a cu A.8b
@@ -179,7 +180,7 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
   (`9fd71053`); fereastra exportului, 28.8↑a–g (`c4ca5ec2`), și 3.Xk (`373699e6`); proba extensiilor, reparată
   (`13d9bcad`), 11.1↑d (`001b6325`) și 3.At (`cadac6c3`), scrise în sesiunea principală; 16.A↑h-5 (`4aee5405`) și
   16.A↑b-3 (`fdde5947`); 18.1↑a, relieful, cu documentul v28 (`c5b79526`); 10.4↑a-4 și 10.4↑b (`1eea83dd`). Pe
-  25.11: 3.Ca și 3.Cb, atelierul Easy 3Draw, 18.25.0 (`11877a3e`); 3.Cc și 3.Cd, 18.27.0 (`9815527f`); 3.Ce, 18.28.0 (`38ff9391`); 3.Cj-1 și 3.Cj-2, 18.30.0 (`e90edd2e`); plafoanele 1 000 / 125 (`caddd661`, ADR 0146); 18.1↑b, relieful în vederea 3D (`ef883ac1`); 10.4↑c-1, cotele în exportul vectorilor (`f2f6fc57`); 16.A↑b-5 (`03e64d33`), 3.Cj-3 și 3.Cj-4, 18.32.0 (`36559b49`), și 28.8↑n (`1eda6f0b`); 28.8↑o, centrul foii ca origine XY0 (`3fd3bf49`); 16.A↑b-4, nota „s-a schimbat în bibliotecă” (`9f18522e`), și 3.Au, starea lucrării imprimantei, scrisă în sesiunea principală (`307d4f9a`); 3.Tu, piesele rotunde pe același ax în „Modelul”, Easy 3Draw 18.33.0 (`f5cf10c8`); 16.A↑b-6, „Pune-o înapoi în bibliotecă” (`1d3882d9`), și 10.4↑c-2, cotele ca DIMENSION în DXF (`66b6b335`); 16.A↑b-7, Escape în „Frezele mele” (`581da353`); 18.1↑c, finisarea reliefului, cu documentul v29 (`f7ca20b6`); 28.8↑h, fereastra exportului „pe hârtie” (`7d74ade2`); 3.Cf-1, alipirea la prinderi în „Modelul”, Easy 3Draw 18.34.0 (`02ac0715`). Pe 26.11: 3.Cl-1, decorațiunile de Crăciun (fulgul, steaua, brăduțul), Easy 3Draw 18.35.0 (`41b1fb6f`); 28.8↑i, viteza ferestrei exportului (`953205a8`); 3.Cl-2, globul de Crăciun, Easy 3Draw 18.36.0 (`b6c9998d`), și 10.4↑d-1, cotele în lanț și „Cotează selecția” (`57888ad8`); 18.1↑d-1 și d-2, degroșarea reliefului, cu documentul v30, și fișa plăcii 18 (`3d0d0c15`); 10.4↑d-2 și d-3, „Fă desen din cotă” și cotele în raportul foilor (`67dfb777`); 28.8↑j, greșelile ferestrei exportului pe înțeles (`93ff3b29`); 3.Cl-3 și 3.Cl-4, ornamentul cu nume și brăduțul LEGO, Easy 3Draw 18.38.0 (`474b76fc`); 28.8↑k, curățenia vizuală a ferestrei exportului (`3cdd23f5`); 3.Cf-2, răsturnările și jumătățile de pas în „Modelul”, Easy 3Draw 18.39.0 (`3e56e8cf`).
+  25.11: 3.Ca și 3.Cb, atelierul Easy 3Draw, 18.25.0 (`11877a3e`); 3.Cc și 3.Cd, 18.27.0 (`9815527f`); 3.Ce, 18.28.0 (`38ff9391`); 3.Cj-1 și 3.Cj-2, 18.30.0 (`e90edd2e`); plafoanele 1 000 / 125 (`caddd661`, ADR 0146); 18.1↑b, relieful în vederea 3D (`ef883ac1`); 10.4↑c-1, cotele în exportul vectorilor (`f2f6fc57`); 16.A↑b-5 (`03e64d33`), 3.Cj-3 și 3.Cj-4, 18.32.0 (`36559b49`), și 28.8↑n (`1eda6f0b`); 28.8↑o, centrul foii ca origine XY0 (`3fd3bf49`); 16.A↑b-4, nota „s-a schimbat în bibliotecă” (`9f18522e`), și 3.Au, starea lucrării imprimantei, scrisă în sesiunea principală (`307d4f9a`); 3.Tu, piesele rotunde pe același ax în „Modelul”, Easy 3Draw 18.33.0 (`f5cf10c8`); 16.A↑b-6, „Pune-o înapoi în bibliotecă” (`1d3882d9`), și 10.4↑c-2, cotele ca DIMENSION în DXF (`66b6b335`); 16.A↑b-7, Escape în „Frezele mele” (`581da353`); 18.1↑c, finisarea reliefului, cu documentul v29 (`f7ca20b6`); 28.8↑h, fereastra exportului „pe hârtie” (`7d74ade2`); 3.Cf-1, alipirea la prinderi în „Modelul”, Easy 3Draw 18.34.0 (`02ac0715`). Pe 26.11: 3.Cl-1, decorațiunile de Crăciun (fulgul, steaua, brăduțul), Easy 3Draw 18.35.0 (`41b1fb6f`); 28.8↑i, viteza ferestrei exportului (`953205a8`); 3.Cl-2, globul de Crăciun, Easy 3Draw 18.36.0 (`b6c9998d`), și 10.4↑d-1, cotele în lanț și „Cotează selecția” (`57888ad8`); 18.1↑d-1 și d-2, degroșarea reliefului, cu documentul v30, și fișa plăcii 18 (`3d0d0c15`); 10.4↑d-2 și d-3, „Fă desen din cotă” și cotele în raportul foilor (`67dfb777`); 28.8↑j, greșelile ferestrei exportului pe înțeles (`93ff3b29`); 3.Cl-3 și 3.Cl-4, ornamentul cu nume și brăduțul LEGO, Easy 3Draw 18.38.0 (`474b76fc`); 28.8↑k, curățenia vizuală a ferestrei exportului (`3cdd23f5`); 3.Cf-2, răsturnările și jumătățile de pas în „Modelul”, Easy 3Draw 18.39.0 (`3e56e8cf`); 28.8↑l, tastatura și cititorul de ecran în fereastra exportului (`c3a0c184`).
 - **Liniile** (vezi [indexul](README.md)):
   - **în lucru, pe ramuri, repornite pe 25.11 la 09:32** (owner-ul, în sesiunea principală, după resetarea limitei
     săptămânale: „vreau sa pornesti si celelalte sub-sesiuni”):
@@ -190,8 +191,9 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
     - exportul: 28.8↑n, unită la 13:18; 28.8↑o (centrul foii ca origine XY0; mișcă mașina), unită la 14:21; 28.8↑h
       (desenele ferestrei, cu reparația 28.8↑h-2 a lui „Du-mă la …” și cu regula „cât foaia” unită cu relieful),
       unită la 21:13; 28.8↑i (viteza ferestrei), unită pe 26.11 la 02:07; 28.8↑j (greșelile pe înțeles),
-      unită la 05:35; 28.8↑k (curățenia vizuală), unită la 07:37; în lucru, 28.8↑l (tastatura și cititorul de
-      ecran);
+      unită la 05:35; 28.8↑k (curățenia vizuală), unită la 07:37; 28.8↑l (tastatura și cititorul de
+      ecran), unită la 10:14 (feliile h–l ale ferestrei, gata); în lucru, 28.8↑q („Toate foile” cu operațiile
+      fiecărei foi); apoi 28.8↑p (Z-ul sigur și parcarea; mișcă mașina, cu linia frezelor anunțată);
     - relieful: 18.1↑b, unită la 11:02; 18.1↑c (finisarea, cu bila în document, v29; `AndreiBesliu/cvs2#39`), unită
       la 21:11, după ce linia a ținut bilele afară din lista bibliotecii a ferestrei exportului; 18.1↑d (pornită de owner pe
       25.11 la 23:37, „ok, porneste 10.4↑d si 18.1↑d”): d-1 (degroșarea, cu documentul v30, ADR 0313) și d-2 (fișa
@@ -244,6 +246,8 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
 - **La owner:**
   - constatarea 14 a auditului exportului (numele elementelor cu virgulă în română, `src/app/descriereElement.ts`):
     o felie mică a sesiunii principale, nepornită;
+  - ordinea feliilor rămase ale exportului: q întâi, apoi p (recomandarea liniei și a sesiunii principale, aplicată;
+    owner-ul o poate întoarce);
   - titlurile în română ale grupurilor din fereastra exportului: „Ce tăiere”, „Cum golește”, „Cum coboară” (linia
     recomandă „Tăietura”, „Golirea”, „Coborârea”; rămân cum sunt până la cuvântul lui);
   - „cine unește în `main`” (recomandarea: doar sesiunea principală; pe 23–24.11, biblioteca și frezele au scris întâi

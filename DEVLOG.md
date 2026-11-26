@@ -15927,3 +15927,22 @@ ordinul în vigoare „unește ce se poate”
   10 714 / 0, e2e 937 / 937, funcțiile pe emulatoare 136 / 136, paginile 60 / 60); `1d9671d3`, la 08:56 (completul
   pe `main` 45763781195, verde: unit 10 719 / 0, e2e 945 / 945, funcțiile pe emulatoare 136 / 136, paginile 60 / 60). Probele de fum, bune.
 - **Documentele:** decizia și paragraful de stare în `CLAUDE.md`; indexul liniilor; starea din `docs/linii/principala.md`.
+
+## 2026-11-26 — Sesiunea principală în cloud: a cincizeci și una unire (fereastra exportului: 28.8↑l, tastatura și cititorul de ecran) (Model: Claude Fable 5.2)
+
+**Prompt:** raportul liniei exportului („28.8↑l e gata de unit”, `454c6fa3`), la ordinul în vigoare „unește ce se poate”
+**Started:** 26.11, 09:11. **Completed:** unirea în `main`, 26.11, 10:14; publicarea pe test, lotul 46.
+
+- **Verificat înaintea unirii:** completul liniei (45766087135) și rapidul, verzi pe `454c6fa3`; PR-ul #58; fără `.lucru/`;
+  `main` (`1d9671d3`) era strămoș. Unirea atelierului (a cincizecea) era în CI pe `unire-2611i`, deci exportul s-a unit peste
+  ea, pe `unire-2611j` (din `3e56e8cf`): `454c6fa3`, în `c3a0c184`. Ciocnirea, în DEVLOG (`rezolva-devlog.py`). Local: tipurile,
+  regulile de import (22 / 22), traducerile (1 204), catalogul controalelor (la zi), biblioteca, probele documentelor și ale
+  manualului 76 / 76.
+- **Porțile unirii, în CI, pe `c3a0c184`** (citite din jurnalul rulării): completul 45773517865, verde la prima trecere (62 min): unit
+  10 729 / 0 (12 sărite, pe Linux), e2e 954 / 954, funcțiile pe emulatoare 136 / 136, paginile 60 / 60; rapidul 45773519078, verde. Pornirea 111,6 kB
+  (plafonul 125; cu ușa 116,8, cu Atelierul 117,1), totalul 919,4 / 1 000 kB, `/admin` 138,3 / 200, contul
+  30,2 / 32. Nimic pe server. Față de commit-ul cu porțile, în `main` intră în plus doar documente (`.md`).
+- **Linia exportului:** feliile ferestrei din ADR 0291 (h–l), gata. Urmează q, apoi p (ordinea recomandată de linie; p mișcă
+  mașina).
+- **Lotul 45** (`1a577464`, 3.Cf-2) e încă în drum; lotul 46 pleacă după el.
+- **Documentele:** decizia și paragraful de stare în `CLAUDE.md`; indexul liniilor; starea din `docs/linii/principala.md`.

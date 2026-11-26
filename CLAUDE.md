@@ -654,8 +654,20 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   propoziție și „…”, cu „Mai mult” al grupului (explicațiile) și al notelor. **O probă care cere „nu există”
   într-o fereastră adusă la cerere așteaptă întâi fereastra. Un text lung din fereastra exportului se prescurtează
   singur, deci o probă care caută a doua propoziție apasă întâi „Mai mult” (`[data-mai-mult]`).** Programul,
-  documentul și serverul, neschimbate. Urmează 28.8↑l (tastatura și cititorul de ecran). Felia: pornirea +0,
-  totalul +0,5 kB (919,2 / 1 000).
+  documentul și serverul, neschimbate. Felia: pornirea +0, totalul +0,5 kB (919,2 / 1 000).
+  **Tastatura și cititorul de ecran în fereastra exportului (ADR 0291, felia 28.8↑l)** gata pe 26.11, unită în
+  `main` pe 26.11 (`c3a0c184`): un rând al listei și „Du-mă la …” al unui refuz duc focusul pe titlul fișei
+  (`<h3 tabindex="-1">`); „Du-mă la …” al greșelilor rămâne pe câmpul greșit; Rezultatul adus singur după export nu
+  mută focusul. Titlul grupului (`h4`) e primul copil al lui `.dx-grup`, înaintea explicației (așezarea o face
+  grila, `grid-template-areas`), și în fișa finisării și a degroșării. Fiecare câmp al unui grup are
+  `aria-describedby`, cu explicația întreagă (dintr-o copie ascunsă, și când pe ecran e prescurtată) și cu greșelile
+  grupului (`legaDescrierile`, după randare); `aria-live` stă doar pe greșeli. Pe telefonul culcat (640 × 360),
+  banda listei arată doar numele. **Cine mută programatic focusul în fereastră folosește `du(cheie, 'titlu')` sau
+  `du(cheie, 'repara')`. Un câmp al ferestrei care își pune singur `aria-describedby` e suprascris de
+  `legaDescrierile`: o descriere în plus intră în grup (ca greșeală cu id, sau în explicație). Un selector pe
+  `.dx-campuri h4` nu mai găsește nimic.** Programul, documentul și serverul, neschimbate. Cu ea, feliile ferestrei
+  din ADR 0291 (h–l) sunt gata; urmează 28.8↑q („Toate foile” cu operațiile fiecărei foi), apoi 28.8↑p (Z-ul sigur
+  și parcarea; mișcă mașina). Felia: pornirea +0, totalul +0,2 kB.
   **Aldinul și cursivul sintetic (ADR 0123, felia 7.5↑, adusă din etapa 7)** gata pe 02.11, în worktree-ul `wip/7.5-text`:
   bifele **Aldin** și **Cursiv** din panoul textului, pentru orice font. Cursivul înclină fiecare literă față de linia ei de
   bază, exact; aldinul așază literele la înălțimea miezului (h − 2d), le îngroașă cu d prin fațada offsetului
@@ -1921,6 +1933,35 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 26.11.2026, dimineața (a cincizeci și una unire din cloud): **tastatura și cititorul de ecran în fereastra „Exportă
+  G-code” (28.8↑l), unite în `main`** (sesiunea principală, ramura `unire-2611j`, peste unirea atelierului). Linia
+  exportului, ramura `wip/28.8-export`, `454c6fa3`, PR-ul `AndreiBesliu/cvs2#58` (ADR 0291; constatarea 13 a
+  auditului), unită în `c3a0c184`: un rând al listei (Enter sau clic) și „Du-mă la …” al unui refuz duc focusul pe
+  titlul fișei, deci Tab ajunge în primul ei câmp dintr-un pas, nu din 19; „Du-mă la …” al unei greșeli rămâne pe
+  câmpul greșit; titlul fiecărui grup stă înaintea explicației lui, și pentru cititorul de ecran; fiecare câmp își
+  are descrierea (explicația întreagă a grupului și greșelile lui); anunțate cu voce sunt doar greșelile; pe
+  telefonul culcat (640 × 360), banda listei arată doar numele, pe un rând, iar fișelor le rămân 150 px, nu 80.
+  **Programul, documentul (v30) și serverul nu se schimbă**; otrăvurile 13 / 13. **Cu ea, feliile ferestrei din
+  ADR 0291 (h–l) sunt toate gata.** Linia pornise din `main` `1d9671d3`; înaintea ei raportase atelierul (3.Cf-2),
+  deja în CI pe ramura lui de unire, deci s-a unit peste el, cu completul ei; ciocnirea, doar în DEVLOG. Porțile
+  unirii, în CI, pe `c3a0c184` (completul 45773517865, verde la prima trecere, 62 min): unit 10 729 / 0 (12 sărite, pe Linux), e2e 954 / 954, funcțiile pe
+  emulatoare 136 / 136, paginile 60 / 60; rapidul, verde pe `c3a0c184`; completul liniei, verde pe `454c6fa3`
+  (45766087135); pornirea 111,6 kB (plafonul 125; cu ușa 116,8, cu Atelierul 117,1), **totalul 919,4 /
+  1 000 kB**, `/admin` 138,3 / 200, contul 30,2 / 32.
+  Pe test e `1d9671d3` (lotul 44); lotul 45 (3.Cf-2, `1a577464`) e în drum, cu completul pe `main` în lucru,
+  iar felia aceasta pleacă după el (lotul 46).
+  **Ce urmează la linia exportului, din ADR 0291, acceptat de owner (răspunsurile 7a și 3a):** întâi 28.8↑q
+  („Toate foile” cu operațiile fiecărei foi: nu mișcă mașina și nu atinge altă linie), apoi 28.8↑p (avansul,
+  turația și plonjarea pe „Scrisă de mână”, Z-ul sigur și parcarea: schimbă ce scrie postul, deci vine cu oracolele
+  ei, cu linia frezelor anunțată și cu proba owner-ului pe mașină, întâi în aer). Ordinea e recomandarea liniei și
+  a sesiunii principale; owner-ul o poate întoarce. La linii, în lucru: exportul (28.8↑q), atelierul (3.Cg,
+  verificarea: prinsă, plutește, se ciocnește). **La owner:** ordinea q / p, dacă o vrea altfel; titlurile
+  grupurilor exportului, constatarea 14, de încercat „Modelul” (răsturnările, jumătățile de pas), de încercat și de
+  tipărit decorațiunile, pachetul Easy 3Draw (555,4 kB), întrebarea 10 a cotelor și cele două alegeri din d-1,
+  alegerile reliefului și tăierea plăcii 18, rândul editabil al finisării și al degroșării, Escape în cele șase
+  ferestre, feliile frezelor (16.A↑d–g), cele două alegeri mai vechi cu recomandarea aplicată, proba pe mașină a
+  centrului foii, cele patru întrebări din auditul elicelor, arhivarea sesiunii elicelor, verificarea juridică
+  (GDPR) a utilizării aplicației înaintea live-ului, „cine unește în `main`”, meniul de sus la 320 px la atingere.
 - 26.11.2026, dimineața (a cincizecea unire din cloud): **răsturnările și jumătățile de pas în vederea „Modelul” a
   atelierului Easy 3Draw (3.Cf-2), unite în `main`** (sesiunea principală, ramura `unire-2611i`, din `1d9671d3`).
   Linia atelierului, ramura `wip/3.Xh-biblioteca-ui`, `fc9ee1db`, PR-ul `AndreiBesliu/cvs2#57` (ADR 0284, partea
