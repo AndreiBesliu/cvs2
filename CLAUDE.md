@@ -1310,7 +1310,17 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   `test/unit/trenulet.verificare.test.ts`; atelierul doar o arată. Rândurile listei modelului au acum și semnul
   („Placă 2×2 plutește 1, 0, 4”), deci o probă care cere textul întreg al unui rând îl cere cu semnul lui. Un strat
   nou al vederii 3D care nu e o piesă își face grupul lui (`v3.avert`, ca punctele prinderilor): mărimea modelului
-  se ia din grupul pieselor.** Urmează 3.Ch (construcțiile cu nume și lista lor de piese).
+  se ia din grupul pieselor.** **3.Ch (construcțiile cu nume și lista lor de piese; ADR 0284, partea D)** gata pe
+  26.11, unită în `main` pe 26.11 (`3bf86d15`): vederea „Modelul” arată una dintre construcțiile atelierului, fiecare cu piesele și numele ei
+  (gol: „Construcția N”, în limba paginii); „Construcție nouă”, „Dublează construcția” (aceleași piese, cu legăturile
+  lor; numele următor, „Macara 2”), „Șterge construcția” (nu și ultima). Jos, „Piesele construcției”: aceeași piesă pe
+  un rând, cu bucățile, filamentul și timpul de printat, socotit din filament la debitul mediu al imprimantei (câmp
+  nou, 1–50 mm³/s, implicit 5, în fiecare imprimantă); „Pune construcția în lista de printat”. Un model salvat înainte
+  se deschide ca „Construcția 1”. Easy 3Draw 18.41.0 (următoarea, 18.42.0). **`model` sunt piesele construcției
+  alese (`tineConstructia` le pune în ea la salvare; trecerea pe alta prin `treciPe`). Aceeași piesă e aceeași după
+  `Lego.cheieDef` (câmpurile în ordine), nu după `JSON.stringify`, și în lista de printat. Un text scris de om intră în
+  pagina pluginului prin `esc` și cu `translate="no"`: traducerea paginii (`limba.ts`) îl ocolește.** Urmează 3.Ci
+  (construcțiile gata).
   **Cotele pe desen: modelul și proba G-code-ului (ADR 0330, felia 10.4↑a-1, adusă din etapa 10)** gata pe 24.11, în
   sesiunea cloud a liniei (ramura `wip/10.4-cote`), unită în `main` pe 24.11 (`f25249cf`), fără interfață încă. ADR
   0330, acceptat de owner cu 1a–6a și cu nota lui: toate setările cotelor stau într-o fereastră nouă, „Setări”, nu în
@@ -1956,6 +1966,36 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 26.11.2026, după-amiaza (a cincizeci și patra unire din cloud): **construcțiile cu nume din vederea „Modelul” a
+  atelierului Easy 3Draw și lista lor de piese (3.Ch), unite în `main`** (sesiunea principală, ramura `unire-2611m`,
+  din `77bf8ceb`). Linia atelierului, ramura `wip/3.Xh-biblioteca-ui`, `19fa5bdc` (codul în `5395e6af`, cu `main`
+  `77bf8ceb` adus), PR-ul `AndreiBesliu/cvs2#61` (ADR 0284, partea D), unită în `3bf86d15`: „Modelul” arată una dintre
+  construcțiile atelierului, fiecare cu piesele și numele ei; „Construcție nouă”, „Dublează construcția” (aceleași
+  piese, cu legăturile lor; numele următor, „Macara 2”), „Șterge construcția” (nu și ultima); jos, „Piesele
+  construcției”: aceeași piesă pe un rând, cu bucățile, filamentul și timpul de printat, socotit din filament la
+  debitul mediu al imprimantei (câmp nou, 1–50 mm³/s, implicit 5); „Pune construcția în lista de printat”. Un model
+  salvat înainte se deschide ca „Construcția 1”. **Easy 3Draw 18.41.0** (567,9 kB); otrăvurile 68 / 70 (două,
+  practic echivalente: pază dublă) și 10 / 10; ancorele tuturor listelor pluginului (2 527), fiecare găsită exact o
+  dată. Doar pachetul extensiei se schimbă; nimic pe server; documentul rămâne v30. `main` nu se mișcase de la
+  `77bf8ceb`, deci **arborele unirii e chiar al lui `19fa5bdc`** (`git diff` gol) și a intrat pe porțile lui, fără
+  alt complet: completul 45807882937, verde la prima trecere (59 min): unit 10 762 / 0 (12 sărite, pe Linux), e2e 975 / 975,
+  funcțiile pe emulatoare 136 / 136, paginile 60 / 60; rapidul, verde pe `19fa5bdc`; aplicația, neschimbată: pornirea
+  111,6 kB (plafonul 125; cu ușa 116,8, cu Atelierul 117,1), totalul 921,1 / 1 000 kB, `/admin` 138,3 / 200, contul
+  30,2 / 32. **Lotul 47 (3.Cg, verificarea din „Modelul”, Easy 3Draw 18.40.0) e pe test din 26.11, 13:13**
+  (`3e9d3d9c`; completul pe `main` 45798312781, verde: unit 10 747 / 0, e2e 961 / 961, funcțiile pe emulatoare
+  136 / 136, paginile 60 / 60; proba de fum, bună); lotul 48 (28.8↑q, `77bf8ceb`) e în drum, cu completul pe `main`
+  pornit la 13:14, iar felia aceasta pleacă după el (lotul 49). **Alegerile liniei, cu recomandarea aplicată, la
+  owner** (ADR 0284, „Implementat (3.Ch)”): timpul socotit din filament la un debit mediu, nu din felierea
+  programului; numele implicite „Construcția N” și copia „Macara 2”; vederea rămâne „Modelul”; ultima construcție nu
+  se șterge. La linii, în lucru: atelierul (3.Ci, construcțiile gata: șasiul cu patru roți, cutia de angrenaje, brațul
+  de macara, barca cu elice; Easy 3Draw 18.42.0), exportul (28.8↑p). **Tot la owner:** de încercat „Toate foile” pe un
+  proiect cu mai multe foi (după lotul 48); de încercat „Modelul” (verificarea, răsturnările, jumătățile de pas,
+  construcțiile); de încercat și de tipărit decorațiunile; pachetul Easy 3Draw (567,9 kB); constatarea 14;
+  întrebarea 10 a cotelor și cele două alegeri din d-1; alegerile reliefului și tăierea plăcii 18; rândul editabil al
+  finisării și al degroșării; Escape în cele șase ferestre; feliile frezelor (16.A↑d–g); cele două alegeri mai vechi
+  cu recomandarea aplicată; proba pe mașină a centrului foii; cele patru întrebări din auditul elicelor; arhivarea
+  sesiunii elicelor; verificarea juridică (GDPR) a utilizării aplicației înaintea live-ului; „cine unește în `main`”;
+  meniul de sus la 320 px la atingere.
 - 26.11.2026, după-amiaza (a cincizeci și treia unire din cloud): **„Toate foile” cu operațiile fiecărei foi în
   fereastra „Exportă G-code” (28.8↑q) și titlurile grupurilor alese de owner, unite în `main`** (sesiunea principală,
   ramura `unire-2611l`, din `3e9d3d9c`). Linia exportului, ramura `wip/28.8-export`, `a4055804` (vârful `787509d4`,

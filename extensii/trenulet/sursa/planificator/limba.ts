@@ -35,12 +35,15 @@ var Limba = (function (glob: typeof globalThis) {
     const m = /^(\s*)[\s\S]*?(\s*)$/.exec(s)!;
     return m[1] + t + m[2];
   }
+  /** Un element al omului (`translate="no"`, ca numele unei construcții) nu se traduce, nici ce e în el. */
+  const alOmului = (e: Element | null): boolean => !!e && !!e.closest('[translate="no"]');
   function traduText(n: Text): void {
-    if (n.parentElement && FARA.has(n.parentElement.tagName)) return;
+    if (n.parentElement && (FARA.has(n.parentElement.tagName) || alOmului(n.parentElement))) return;
     const t = fragment(n.data);
     if (t !== null && t !== n.data) n.data = t;
   }
   function traduAtribute(e: Element): void {
+    if (alOmului(e)) return;
     for (const a of ATRIBUTE) {
       const v = e.getAttribute(a);
       const t = v === null ? null : fragment(v);
