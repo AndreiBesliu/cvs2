@@ -1319,8 +1319,16 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   se deschide ca „Construcția 1”. Easy 3Draw 18.41.0 (următoarea, 18.42.0). **`model` sunt piesele construcției
   alese (`tineConstructia` le pune în ea la salvare; trecerea pe alta prin `treciPe`). Aceeași piesă e aceeași după
   `Lego.cheieDef` (câmpurile în ordine), nu după `JSON.stringify`, și în lista de printat. Un text scris de om intră în
-  pagina pluginului prin `esc` și cu `translate="no"`: traducerea paginii (`limba.ts`) îl ocolește.** Urmează 3.Ci
-  (construcțiile gata).
+  pagina pluginului prin `esc` și cu `translate="no"`: traducerea paginii (`limba.ts`) îl ocolește.**
+  **3.Ci (construcțiile gata; ADR 0284, partea E)** gata pe 26.11, pe ramură: în „Modelul”, panoul „Construcții gata”
+  (șasiul cu patru roți, cutia de angrenaje de la 1 : 1 la 1 : 25, brațul de macara, barca cu elice), fiecare din
+  parametri, cu ce iese pe hârtie; „Fă construcția” o deschide ca o construcție nouă, cu piesele prinse între ele, pe
+  masă, iar dinții roților îmbucați. Easy 3Draw 18.42.0 (următoarea, 18.43.0). **Un șablon nou intră în motor
+  (`constructieGata`), cu proba lui în `test/unit/trenulet.sabloane.test.ts` (verificarea din 3.Cg și mecanismul pe
+  hârtie). Piesele șablonului au doar câmpurile care contează: atelierul le completează ca editorul (`defCurenta(tip,
+  sursa)`, peste `STARE0`), deci se adună cu cele din editor. Starea unui `<details>` se citește din pagină când
+  editorul se reface, nu din `toggle` (vine după).** Din ADR 0284 rămâne doar 3.Ck (balamaua și placa turnantă), după
+  ce owner-ul încearcă bila și cupa pe imprimantă.
   **Cotele pe desen: modelul și proba G-code-ului (ADR 0330, felia 10.4↑a-1, adusă din etapa 10)** gata pe 24.11, în
   sesiunea cloud a liniei (ramura `wip/10.4-cote`), unită în `main` pe 24.11 (`f25249cf`), fără interfață încă. ADR
   0330, acceptat de owner cu 1a–6a și cu nota lui: toate setările cotelor stau într-o fereastră nouă, „Setări”, nu în

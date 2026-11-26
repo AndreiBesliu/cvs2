@@ -3930,6 +3930,182 @@ var Lego = (function (glob: typeof globalThis) {
     return n;
   }
 
+  // ---------------------------------------------------------------------------------------------- construcțiile gata (ADR 0284, 3.Ci)
+  // Patru construcții de pornire, făcute din parametri: șasiul cu patru roți, cutia de angrenaje, brațul de macara, barca cu
+  // elice. Prima piesă stă pe grilă (x = y = 0, ridicată cât să atingă masa cea mai de jos piesă); celelalte sunt prinse,
+  // prindere în prindere (`montaj`), de una de dinaintea lor, deci construcția își urmează baza. Piesele au doar câmpurile
+  // care le deosebesc de implicitele motorului (atelierul le completează ca editorul).
+  const SABLOANE = ["sasiu", "angrenaje", "macara", "barca"] as const;
+  type PiesaSablon = { def: DefPiesa; x: number; y: number; z: number; rot: number; culoare: string; prins?: { de: number; a: number; b: number; unghi: number; alunec: number } };
+  /** Culorile pieselor din construcțiile gata (aceleași ca mostrele atelierului). */
+  const CULOARE = { rosu: "#c8322b", albastru: "#1f5fbf", galben: "#f2c12e", verde: "#2e8b4a", alb: "#f1f1ee", negru: "#2b2b2b", gri: "#9aa3ab" } as const;
+  /** Rapoartele cutiei de angrenaje: treptele (dinții roții conducătoare și ai celei conduse, modulul 1), fiecare cu axele la
+   *  un număr întreg de pași, (z1 + z2) / 2 = 8 · k mm, deci în găurile cărămizii Technic. */
+  const RAPOARTE: Readonly<Record<string, readonly (readonly [number, number])[]>> = {
+    "1:1": [[24, 24]], "1:3": [[8, 24]], "1:5": [[8, 40]], "1:9": [[8, 24], [8, 24]], "1:15": [[8, 24], [8, 40]], "1:25": [[8, 40], [8, 40]] };
+  /** Roțile șasiului (diametrul anvelopei, mm): mică, mijlocie, mare. */
+  const ROTI_SASIU = [30.4, 43.2, 56] as const;
+  const zecimal = (x: number) => String(x).replace(".", Limba.zecimal);
+  /** Un parametru întreg al unui șablon: în margini, cu avertismentul când a fost cerut altul; lipsă, implicitul. */
+  function intregSablon(v: unknown, a: number, b: number, implicit: number, avert: string[], ce: (x: number) => string): number {
+    const c = numarCerut(v), r = Math.round(Number.isFinite(c) ? c : implicit), x = Math.min(b, Math.max(a, r));
+    if (Number.isFinite(c) && x !== c) avert.push(ce(x));
+    return x;
+  }
+  /**
+   * Construcția gata `fel` (unul din `SABLOANE`), din valorile cerute (lipsă: implicitele): piesele (definiția, locul pe
+   * grilă, culoarea, prinderea), numele, avertismentele (o valoare dusă în margini) și cotele pe hârtie. Un fel necunoscut
+   * aruncă.
+   */
+  function constructieGata(fel: string, d: Record<string, unknown> = {}): { fel: string; nume: string; piese: PiesaSablon[]; avert: string[]; cote: Record<string, number> } {
+    if (!(SABLOANE as readonly string[]).includes(fel)) throw new Error(tr`Nu știu construcția „${fel}”.`);
+    const piese: PiesaSablon[] = [], avert: string[] = [], cote: Record<string, number> = {}, corpuri = new Map<string, ReturnType<typeof construieste>>();
+    const corp = (def: DefPiesa) => { const k = JSON.stringify(def); let c = corpuri.get(k); if (!c) corpuri.set(k, c = construieste(def)); return c; };
+    const pune = (def: DefPiesa, culoare: keyof typeof CULOARE, prins?: { de: number; a: number; b: number; unghi?: number; alunec?: number }): number => {
+      piese.push({ def, x: 0, y: 0, z: 0, rot: 0, culoare: CULOARE[culoare], ...(prins ? { prins: { unghi: 0, alunec: 0, ...prins } } : {}) });
+      return piese.length - 1;
+    };
+    /** Prinderea de felul dat a piesei, cea mai apropiată de punctul p (și, cu `d`, cu direcția aceea). */
+    const prindere = (i: number, felP: FelPrindere, p: readonly number[], d?: P3): number => {
+      let k = -1, cel = Infinity;
+      corp(piese[i]!.def).prinderi.forEach((c, j) => {
+        if (c.fel !== felP || (d && scalar(c.d, d) < 1 - 1e-9)) return;
+        const x = Math.hypot(c.p[0] - p[0]!, c.p[1] - p[1]!, c.p[2] - p[2]!);
+        if (x < cel - 1e-9) { cel = x; k = j; }
+      });
+      if (k < 0) throw new Error(tr`O piesă a construcției n-are prinderea „${felP}” de care e nevoie.`);
+      return k;
+    };
+    /** Așezările pieselor, ca în model: prima pe grilă, celelalte după prinderile lor. */
+    const asezari = () => rezolvaModel(piese.map((p, i) => ({ id: String(i), grila: transfGrila(asezareModel(p.def, corp(p.def)), p.x, p.y, p.z, p.rot), prinderi: corp(p.def).prinderi,
+      prins: p.prins ? { ...p.prins, de: String(p.prins.de) } : null }))).map(a => a.T);
+    const s = P.pas, h = P.technic_h, j0 = P.joc_lateral, H = 3 * P.placa, adanc = s - 2 * j0;
+    const rand = (n: number, m = 1): Celula[] => Array.from({ length: n * m }, (_, k): Celula => [k % n, Math.floor(k / n)]);
+    /** Gura din față (spre −y) a găurii k a unei cărămizi Technic (între știfturile k și k + 1). */
+    const guraFata = (i: number, k: number) => prindere(i, "gauraStift", [s * (k + 1) - j0, 0, h], [0, -1, 0]);
+    /** Un perete: cărămida Technic 1 × n, pe `cate` cărămizi 1 × n, prinse în știftul (0, 0) al piesei `de` (prinderea `a`). */
+    const perete = (de: number, a: number, n: number, cate: number, culoare: keyof typeof CULOARE): number => {
+      for (let k = 0; k < cate; k++) {
+        const i = pune({ tip: "caramida", celule: rand(n) } as DefPiesa, culoare, { de, a, b: 0 });
+        de = i; a = prindere(i, "stift", [s / 2 - j0, s / 2 - j0, H]);
+      }
+      const i = pune({ tip: "caramidaTechnic", lung: n } as DefPiesa, culoare, { de, a, b: 0 });
+      return i;
+    };
+    const stiftPlaca = (i: number, ci: number, cj: number) => prindere(i, "stift", [s * ci + s / 2 - j0, s * cj + s / 2 - j0, P.placa]);
+    let nume = "";
+    if (fel === "sasiu") {
+      nume = tr("Șasiu cu patru roți");
+      const ceruta = numarCerut(d.roata), roata = Number.isFinite(ceruta) ? ROTI_SASIU.reduce((a, b) => (Math.abs(b - ceruta) < Math.abs(a - ceruta) ? b : a)) : ROTI_SASIU[0];
+      let lung = intregSablon(d.lung, 6, 16, 8, avert, x => tr`Un șasiu are între 6 și 16 știfturi lungime: l-am făcut de ${x}.`);
+      const lat = intregSablon(d.lat, 4, 10, 6, avert, x => tr`Un șasiu are între 4 și 10 știfturi lățime: l-am făcut de ${x}.`);
+      if (Number.isFinite(ceruta) && roata !== ceruta) avert.push(tr`Roțile șasiului au Ø30,4, Ø43,2 sau Ø56 mm: am pus-o pe cea mai apropiată, Ø${zecimal(roata)} mm.`);
+      // între axe (prima și ultima gaură a șinelor, 8 · (L − 2)) încap cele două roți și un milimetru între ele
+      const minim = Math.ceil((roata + 1) / s - 1e-9) + 2;
+      if (lung < minim) { lung = minim; avert.push(tr`Cu roțile de Ø${zecimal(roata)} mm, șasiul are cel puțin ${minim} știfturi, ca roțile să nu se atingă: l-am lungit.`); }
+      const placa = pune({ tip: "caramida", celule: rand(lung, lat), placi: 1 } as DefPiesa, "albastru");
+      // șinele: câte o cărămidă Technic 1 × L sub marginea din față și sub cea din spate a plăcii
+      const sina = { tip: "caramidaTechnic", lung } as DefPiesa, stift0 = corp(sina).prinderi.findIndex(c => c.fel === "stift");
+      const sine = [0, lat - 1].map(cj => pune(sina, "gri", { de: placa, a: prindere(placa, "locas", [s / 2 - j0, s * cj + s / 2 - j0, 0]), b: stift0 }));
+      // axele: W + 5 știfturi, deci ies câte 20 mm de fiecare parte a șinelor (roata, golul de 2,6 și bucșa ½)
+      const nAx = lat + 5, iese = (s * nAx - (s * lat)) / 2, roataDef = { tip: "roata", diam: roata } as DefPiesa, lat0 = corp(roataDef).dim[2]!;
+      for (const k of [0, lung - 2]) {
+        const ax = pune({ tip: "ax", lung: nAx } as DefPiesa, "negru", { de: sine[0]!, a: guraFata(sine[0]!, k), b: 0, alunec: iese });
+        for (const capat of [0, 1]) {
+          pune(roataDef, "negru", { de: ax, a: capat, b: 1 });
+          pune({ tip: "bucsa", lung: 0.5 } as DefPiesa, "gri", { de: ax, a: capat, b: 1, alunec: iese - (s / 2 - 0.2) - j0 });
+        }
+      }
+      cote.ampatament = s * (lung - 2);
+      cote.ecartament = s * nAx - 0.2 - lat0;
+    } else if (fel === "angrenaje") {
+      nume = tr("Cutie de angrenaje");
+      let cheie = d.raport === undefined ? "1:3" : String(d.raport).replace(/\s+/g, "");
+      if (!RAPOARTE[cheie]) { avert.push(tr("Raportul ales nu e printre cele știute: am făcut cutia de 1 : 3.")); cheie = "1:3"; }
+      const trepte = RAPOARTE[cheie]!, pasi = trepte.map(([a, b]) => (a + b) / 2 / s), gauri = [0];
+      for (const p of pasi) gauri.push(gauri[gauri.length - 1]! + p);
+      const lung = gauri[gauri.length - 1]! + 2, lat = 2 + trepte.length, rotita = (z: number) => ({ tip: "rotita", dinti: z } as DefPiesa);
+      // pereții: roata cea mai mare trece cu 0,4 mm peste știfturile plăcii
+      const R = Math.max(...trepte.flat().map(z => corp(rotita(z)).dim[0]! / 2)), gros = corp(rotita(trepte[0]![0])).dim[2]!;
+      const cate = Math.max(0, Math.ceil((R + P.stift_h + 0.4 - h) / H - 1e-9));
+      const placa = pune({ tip: "caramida", celule: rand(lung, lat), placi: 1 } as DefPiesa, "verde");
+      const pereti = [0, lat - 1].map(cj => perete(placa, stiftPlaca(placa, 0, cj), lung, cate, "galben"));
+      // axele: W + 2 știfturi, deci ies câte 8 mm de fiecare parte; o bucșă ½ pe fiecare față de afară a pereților
+      const axe = gauri.map(k => {
+        const ax = pune({ tip: "ax", lung: lat + 2 } as DefPiesa, "negru", { de: pereti[0]!, a: guraFata(pereti[0]!, k), b: 0, alunec: s });
+        for (const capat of [0, 1]) pune({ tip: "bucsa", lung: 0.5 } as DefPiesa, "rosu", { de: ax, a: capat, b: 1, alunec: s - (s / 2 - 0.2) - j0 });
+        return ax;
+      });
+      // roțile treptei t, pe planul t: de la fața dinăuntru a primului perete, la 0,3 mm, apoi câte o roată și 0,5 mm
+      const roti = trepte.map(([z1, z2], t) => [z1, z2].map((z, k) => pune(rotita(z), "gri", { de: axe[t + k]!, a: 0, b: 1, alunec: s + adanc + 0.3 + t * (gros + 0.5) })));
+      // dinții îmbucați: axul roții conduse (într-o gaură rotundă) se rotește cât să-i stea un gol în fața dintelui celeilalte
+      roti.forEach(([ia, ib], t) => {
+        const T = asezari(), [z1, z2] = trepte[t]!, ca = corp(piese[ia!]!.def), cb = corp(piese[ib!]!.def);
+        const A = aplicaTransf(T[ia!]!, [ca.ax![0], ca.ax![1], 0]), B = aplicaTransf(T[ib!]!, [cb.ax![0], cb.ax![1], 0]), v = roteste(T[ia!]!.m, SUS);
+        const ab: P3 = [B[0] - A[0], B[1] - A[1], B[2] - A[2]], q = scalar(ab, v), u0: P3 = [ab[0] - q * v[0], ab[1] - q * v[1], ab[2] - q * v[2]], l = Math.hypot(...u0);
+        const u: P3 = [u0[0] / l, u0[1] / l, u0[2] / l], w = vectorial(v, u), da = roteste(T[ia!]!.m, PE_X), db = roteste(T[ib!]!.m, PE_X);
+        const tA = Math.atan2(scalar(da, w), scalar(da, u)), tB = Math.atan2(-scalar(db, w), -scalar(db, u)), f = (tA * z1 + tB * z2) / (2 * Math.PI);
+        // cât trebuie să se rotească roata condusă (în sensul lui v): până la ½, cel mult o jumătate de dinte
+        let delta = (0.5 - (f - Math.floor(f))) * 2 * Math.PI / z2;
+        if (delta > Math.PI / z2) delta -= 2 * Math.PI / z2;
+        const ax = piese[ib!]!.prins!.de, pa = piese[ax]!.prins!, perete0 = piese[pa.de]!;
+        const dir = roteste(T[pa.de]!.m, corp(perete0.def).prinderi[pa.a]!.d), semn = scalar(dir, v) < 0 ? -1 : 1;
+        pa.unghi = ((pa.unghi + semn * delta * 180 / Math.PI) % 360 + 360) % 360;
+      });
+      cote.raport = trepte.reduce((r, [a, b]) => r * b / a, 1);
+      cote.trepte = trepte.length;
+      cote.pereti = cate + 1;
+    } else if (fel === "macara") {
+      nume = tr("Braț de macara");
+      const inalt = intregSablon(d.inalt, 2, 8, 4, avert, x => tr`Stâlpul macaralei are între 2 și 8 cărămizi: l-am făcut de ${x}.`);
+      const brat = intregSablon(d.brat, 5, 15, 9, avert, x => tr`Brațul macaralei are între 5 și 15 găuri: l-am făcut de ${x}.`);
+      const unghi = intregSablon(d.unghi, 0, 80, 45, avert, x => tr`Brațul macaralei stă între 0° și 80°: l-am pus la ${x}°.`);
+      const placa = pune({ tip: "caramida", celule: rand(4, 4), placi: 1 } as DefPiesa, "gri");
+      // stâlpul: cărămizi 1 × 2 pe mijlocul plăcii, sus o cărămidă Technic 1 × 2, cu gaura de-a latul (pivotul)
+      const varf = perete(placa, stiftPlaca(placa, 1, 1), 2, inalt - 1, "galben");
+      const stift = pune({ tip: "stiftTechnic" } as DefPiesa, "negru", { de: varf, a: guraFata(varf, 0), b: 1 });
+      // brațul: grinda pe capătul de afară al știftului; nerotită, ar atârna în jos, deci se rotește cu u + 90° (spre +x)
+      const grinda = pune({ tip: "grinda", celule: Array.from({ length: brat }, (_, k) => [k, 0, "r"]) } as DefPiesa, "galben", { de: stift, a: 0, b: 0, unghi: unghi + 90 });
+      // în vârf: axul de 3 prin ultima gaură, cu fulia în față (la 0,3 mm de grindă) și bucșa ½ în spate
+      const ax = pune({ tip: "ax", lung: 3 } as DefPiesa, "gri", { de: grinda, a: 2 * (brat - 1), b: 0, alunec: 0 });
+      const fulie = { tip: "fulie" } as DefPiesa, groasa = corp(fulie).dim[2]!;
+      piese[ax]!.prins!.alunec = groasa + 0.3;
+      pune(fulie, "negru", { de: ax, a: 0, b: 1 });
+      pune({ tip: "bucsa", lung: 0.5 } as DefPiesa, "rosu", { de: ax, a: 1, b: 1, alunec: 3 * s - 0.2 - (groasa + 0.3) - P.grinda_groasa - j0 - (s / 2 - 0.2) });
+      const pivot = P.placa + H * (inalt - 1) + h, u = unghi * Math.PI / 180;
+      cote.pivot = pivot; cote.raza = s * (brat - 1) * Math.cos(u); cote.varf = pivot + s * (brat - 1) * Math.sin(u);
+    } else {
+      nume = tr("Barcă cu elice");
+      const lung = intregSablon(d.lung, 8, 16, 10, avert, x => tr`O barcă are între 8 și 16 știfturi lungime: am făcut-o de ${x}.`);
+      const lc = numarCerut(d.lat), lat = Math.min(8, Math.max(4, 2 * Math.round((Number.isFinite(lc) ? lc : 6) / 2)));
+      if (Number.isFinite(lc) && lat !== lc) avert.push(tr`O barcă are 4, 6 sau 8 știfturi lățime: am făcut-o de ${lat}.`);
+      const diametru = intregSablon(d.diametru, 24, 48, 32, avert, x => tr`Elicea bărcii are între 24 și 48 mm: am făcut-o de ${x} mm.`);
+      const palete = intregSablon(d.palete, 3, 5, 3, avert, x => tr`Elicea bărcii are între 3 și 5 palete: am făcut-o cu ${x}.`);
+      // corpul: o placă L × W, cu prora (spre +x) ascuțită: ultimele W / 2 − 1 coloane, tot mai înguste cu câte o celulă pe parte
+      const t = lat / 2 - 1, celule: Celula[] = [];
+      for (let i = 0; i < lung; i++) { const a = Math.max(0, i - (lung - 1 - t)); for (let j = a; j < lat - a; j++) celule.push([i, j]); }
+      const placa = pune({ tip: "caramida", celule, placi: 1 } as DefPiesa, "rosu"), jm = lat / 2 - 1;
+      // cabina 2 × 2, la mijloc; blocul motorului (o cărămidă Technic 1 × 2, rotită: gaura de-a lungul bărcii), la pupă
+      pune({ tip: "caramida", celule: rand(2, 2) } as DefPiesa, "alb", { de: placa, a: stiftPlaca(placa, Math.floor(lung / 2) - 1, jm), b: 0 });
+      const motor = pune({ tip: "caramidaTechnic", lung: 2 } as DefPiesa, "negru", { de: placa, a: stiftPlaca(placa, 0, jm + 1), b: 0, unghi: -90 });
+      // axul: iese spre pupă cât butucul elicei și 2 mm; în față, bucșa ½ lângă bloc
+      const elice = { tip: "eliceBarca", diametru, palete } as DefPiesa, butuc = corp(elice).dim[2]!, iese = butuc + 2;
+      const nAx = Math.ceil((iese + adanc + j0 + s / 2 - 0.2 + 0.2) / s - 1e-9);
+      const ax = pune({ tip: "ax", lung: nAx } as DefPiesa, "gri", { de: motor, a: guraFata(motor, 0), b: 0, alunec: iese });
+      // elicea, cu fața dinspre barcă (z = 0 a piesei) spre bloc
+      pune(elice, "galben", { de: ax, a: 0, b: 0 });
+      pune({ tip: "bucsa", lung: 0.5 } as DefPiesa, "gri", { de: ax, a: 1, b: 1, alunec: s * nAx - 0.2 - iese - adanc - j0 - (s / 2 - 0.2) });
+      cote.axul = nAx; cote.diametru = diametru;
+    }
+    // baza, ridicată cât să atingă masa cea mai de jos piesă (o roată, o elice): pe plasă, nu pe cutie (o piesă rotită are
+    // cutia mai mare decât ea)
+    const T = asezari();
+    let jos = Infinity;
+    piese.forEach((p, i) => { const m = T[i]!.m, tz = T[i]!.t[2]; for (const t of corp(p.def).tri) for (const q of t) jos = Math.min(jos, m[6]! * q[0] + m[7]! * q[1] + m[8]! * q[2] + tz); });
+    if (jos < -1e-9) piese[0]!.z = Math.ceil(-jos / P.placa - 1e-9);
+    return { fel, nume, piese, avert, cote };
+  }
+
   // ---------------------------------------------------------------------------------------------- STL, pat, zip
   function stl(tri: readonly Tri[], antet = "atelier de caramizi (mm)") {
     let volum = 0, arie = 0;
@@ -4015,6 +4191,8 @@ var Lego = (function (glob: typeof globalThis) {
     prinseInLume, seCiocnesc, verificaModel,
     // construcțiile (ADR 0284, 3.Ch): cheia unei piese, piesele unei construcții pe rânduri, timpul de printat, numele
     cheieDef, pieseConstructie, timpPrint, durataPrint, curataNume, numeLiber, nrLiber,
+    // construcțiile gata (ADR 0284, 3.Ci): felurile, rapoartele cutiei de angrenaje, roțile șasiului și construcția din parametri
+    SABLOANE, rapoarte: Object.keys(RAPOARTE), rotiSasiu: ROTI_SASIU, constructieGata,
     rezumatPrinderi, perechiFeluri, axPentru, stiftPentru,
     contururi, insetRectiliniu, conturPana, pozitiiGauriPana, centreIndoita,
     // rotitele (ADR 0169): distanta dintre axele a doua roti care se prind (modulul m), pentru atelier
