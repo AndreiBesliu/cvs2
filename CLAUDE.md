@@ -1985,6 +1985,14 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 26.11.2026, seara: **loturile 50 și 51 sunt pe test:** `86881d4c` (3.Ci, construcțiile gata din „Modelul”, Easy
+  3Draw 18.42.0), din 26.11, 17:35 (completul pe `main` 45840352477, verde: unit 10 772 / 0, e2e 978 / 978, funcțiile
+  pe emulatoare 136 / 136, paginile 60 / 60), și `77a036c0` (28.8↑p, Z-ul sigur, parcarea și valorile frezei scrise
+  de mână în fereastra exportului), din 18:43 (completul 45851263588, verde: unit 10 786 / 0, e2e 980 / 980,
+  funcțiile pe emulatoare 136 / 136, paginile 60 / 60); probele de fum, bune; pornirea 111,6 kB (cu ușa 116,8, cu
+  Atelierul 117,1 / 125), totalul 923,0 / 1 000, `/admin` 138,3 / 200, contul 30,2 / 32. Pe test e tot ce e în
+  `main`. **La owner, de încercat:** construcțiile gata din „Modelul” (cu alegerile liniei, din decizia unirii a
+  cincizeci și cincea) și, pe mașină, întâi în aer, Z-ul sigur și parcarea lui 28.8↑p.
 - 26.11.2026, seara (a cincizeci și șasea unire din cloud): **Z-ul sigur, parcarea și valorile frezei scrise de
   mână în fereastra „Exportă G-code” (28.8↑p), unite în `main`** (sesiunea principală, ramura `unire-2611o`, din
   `86881d4c`). Linia exportului, ramura `wip/28.8-export`, `c99dabed` (codul lui `601a5eeb`), PR-ul

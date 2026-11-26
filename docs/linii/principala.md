@@ -155,8 +155,10 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
 
 ## Starea pe 26.11.2026, seara (după a cincizeci și șasea unire din cloud)
 
-- **Pe test:** `e84651e3` (lotul 49: 3.Ch, construcțiile cu nume din „Modelul”, Easy 3Draw 18.41.0; publicat pe
-  26.11 la 15:27, cu serverul neschimbat; completul pe `main` 45818672800, verde; proba de fum, bună). Înainte:
+- **Pe test:** `77a036c0` (lotul 51: 28.8↑p, Z-ul sigur, parcarea și valorile frezei scrise de mână în fereastra
+  exportului; publicat pe 26.11 la 18:43, cu serverul neschimbat; completul pe `main` 45851263588, verde; proba de
+  fum, bună). Înainte: `86881d4c` (lotul 50: 3.Ci, construcțiile gata din „Modelul”, Easy 3Draw 18.42.0), pe 26.11 la
+  17:35; `e84651e3` (lotul 49: 3.Ch, construcțiile cu nume din „Modelul”, Easy 3Draw 18.41.0), la 15:27;
   `77bf8ceb` (lotul 48: 28.8↑q, „Toate foile” cu operațiile fiecărei foi, cu titlurile grupurilor în română), pe
   26.11 la 14:20; `3e9d3d9c` (lotul 47: 3.Cg, verificarea din „Modelul”, Easy 3Draw 18.40.0), la 13:13; `a2e5bfdf`
   (lotul 46: 28.8↑l, tastatura și cititorul de ecran în fereastra exportului), pe 26.11 la 11:25; `1a577464` (lotul 45: 3.Cf-2, răsturnările și jumătățile de pas în „Modelul”, Easy 3Draw 18.39.0), pe 26.11 la
@@ -167,9 +169,7 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
   04:35; `7a754885` (lotul 40: 28.8↑i, viteza ferestrei exportului), la 03:15; `554b72cb` (lotul 39: 3.Cl-1, decorațiunile de Crăciun, Easy 3Draw 18.35.0), la 01:43; `c9911c14` (lotul 38: 3.Cf-1,
   alipirea la prinderi în vederea „Modelul”, Easy 3Draw 18.34.0), pe 25.11 la 23:28; `5649067c` (lotul 37: 16.A↑b-7, Escape în „Frezele mele”; 18.1↑c, finisarea reliefului, cu documentul
   v29; 28.8↑h, fereastra exportului „pe hârtie”), pe 25.11 la 22:23; `75bcf3fb` (lotul 36: „Pune-o înapoi în
-  bibliotecă”, cotele ca DIMENSION), la 20:54. **În `main`, nepublicată încă:** 3.Ci, construcțiile gata din
-  „Modelul”, Easy 3Draw 18.42.0 (`57e58798`), unită pe 26.11 la 16:26: în drum, lotul 50; 28.8↑p, Z-ul sigur,
-  parcarea și valorile frezei scrise de mână în fereastra exportului (`a234dba5`), unită la 17:29: lotul 51, după el.
+  bibliotecă”, cotele ca DIMENSION), la 20:54. **Pe test e tot ce e în `main`.**
 - **Modelul:** din 26.11, la prânz, sesiunea principală merge pe Opus („o sa folosim Opus de aici in colo”); sesiunile
   liniilor își păstrează modelul până îl schimbă owner-ul în fiecare.
 - **`main`, din cloud:** pe 23.11: 3.Tq (`0ae9c6c1`); 11.3↑e și A.4 (`ddaa7ead`); 3.Tr, unită de linia elicelor
@@ -259,7 +259,7 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
   - „cine unește în `main`” (recomandarea: doar sesiunea principală; pe 23–24.11, biblioteca și frezele au scris întâi
     aici, iar felia era deja în lot: unirea a rămas aici);
   - proba pe mașină a centrului foii ca origine XY0 (28.8↑o): zero-ul în mijlocul foii, întâi în aer;
-  - proba pe mașină a lui 28.8↑p (Z-ul sigur și parcarea), întâi în aer: un Z sigur nou și o parcare în afara foii;
+  - proba pe mașină a lui 28.8↑p (Z-ul sigur și parcarea; pe test din 26.11, 18:43), întâi în aer: un Z sigur nou și o parcare în afara foii;
   - cele două alegeri ale cotelor din 10.4↑d-1, cu recomandarea liniei aplicată: pasul liniilor de bază (două
     înălțimi de cifră, fără setare) și locul lui „Cotează selecția” (meniul de clic dreapta); și întrebarea 10, din
     d-3: cotele din desenul raportului foilor, mărite cât să se citească (aplicat) sau la mărimea adevărată;
@@ -280,7 +280,7 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
   - de încercat construcțiile cu nume din „Modelul” (18.41.0), cu alegerile liniei aplicate (ADR 0284, „Implementat
     (3.Ch)”): timpul din filament la un debit mediu (implicit 5 mm³/s, de schimbat pe imprimantă), nu din feliere;
     numele implicite „Construcția N” și copia „Macara 2”; vederea rămâne „Modelul”; ultima construcție nu se șterge;
-  - de încercat construcțiile gata din „Modelul” (18.42.0), cu alegerile liniei aplicate (ADR 0284, „Implementat
+  - de încercat construcțiile gata din „Modelul” (18.42.0; pe test din 26.11, 17:35), cu alegerile liniei aplicate (ADR 0284, „Implementat
     (3.Ci)”): cele patru construcții și mărimile lor, roțile în trei mărimi, rapoartele cutiei, construcția deschisă ca
     una nouă; pentru 3.Ck (balamaua și placa turnantă), tipărirea bilei și a cupei;
   - pachetul Easy 3Draw, 563,1 kB (18.42.0), peste pragul de 0,5 MB din ADR 0284 (recomandarea: mergem mai departe, ne uităm

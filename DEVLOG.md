@@ -16214,3 +16214,14 @@ angrenaje […], brațul de macara, barca cu elice”); pornită după unirea lu
 - **Publicarea lotului 50 (3.Ci):** prima așteptare, pornită fără limita de două ore, a fost oprită la 30 de minute înaintea
   publicării; reluată la 16:57, din același punct (completul pe `main` nu s-a pornit a doua oară).
 - **Documentele:** decizia și paragraful 28.8↑p în `CLAUDE.md`; indexul liniilor; starea din `docs/linii/principala.md`.
+
+## 2026-11-26 — Sesiunea principală în cloud: loturile 50 și 51 pe test (Model: Claude Opus 5.5)
+
+**Prompt:** publicările loturilor 50 și 51, pornite la unirile a cincizeci și cincea și a cincizeci și șasea
+**Started:** 26.11, 16:26. **Completed:** 26.11, 18:44.
+
+- **Lotul 50 pe test:** `86881d4c` (3.Ci), publicat pe 26.11 la 17:35 (completul pe `main` 45840352477, verde: unit 10 772 / 0,
+  e2e 978 / 978, funcțiile pe emulatoare 136 / 136, paginile 60 / 60; proba de fum, bună).
+- **Lotul 51 pe test:** `77a036c0` (28.8↑p), publicat pe 26.11 la 18:43 (completul pe `main` 45851263588, verde: unit 10 786 / 0,
+  e2e 980 / 980, funcțiile pe emulatoare 136 / 136, paginile 60 / 60; proba de fum, bună). Pe test e tot ce e în `main`.
+- **Documentele:** decizia în `CLAUDE.md`; starea din `docs/linii/principala.md`.
