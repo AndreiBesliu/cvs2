@@ -17,7 +17,7 @@ const piesa = (page: Page) => page.getByTestId('prop-piesa');
 const banda = (page: Page) => page.getByTestId('banda-legata');
 const intrebare = (page: Page) => page.getByTestId('intrebare-grupare');
 const cip = (page: Page) => page.getByTestId('foaia-activa');
-const dr = (x: number, y: number, latime = 100): string => `dreptunghi ${latime}.00 × 60.00 la X ${x}.00, Y ${y}.00`;
+const dr = (x: number, y: number, latime = 100): string => `dreptunghi ${latime},00 × 60,00 la X ${x},00, Y ${y},00`;
 
 /** Clic pe pânză la un punct al foii (mm), cu Shift ținut dacă se cere, sau cu butonul drept. */
 async function clic(page: Page, x: number, y: number, fel: 'shift' | 'dreapta' | null = null): Promise<void> {

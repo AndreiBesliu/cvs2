@@ -60,7 +60,7 @@ test('dopul în 3D: „Foaia / Dopul 1”; dopul pe semifabricatul de 40 × 30 �
   await dreptunghiMic(page);
   await taierea(page).locator('[data-camp="rol"]').selectOption('incrustatie-drept');
   // Pe hârtie: dreptunghiul de 30 × 20 din (20, 20), cum îl spune și bara de jos.
-  const forma = 'dreptunghi 30.00 × 20.00 la X 20.00, Y 20.00';
+  const forma = 'dreptunghi 30,00 × 20,00 la X 20,00, Y 20,00';
   await expect(page.getByTestId('selectie')).toHaveText(`Selectat: ${forma}`);
   await deschide(page);
   const p = panza3d(page), grup = page.getByTestId('alegere-3d');

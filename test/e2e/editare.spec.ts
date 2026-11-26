@@ -104,7 +104,7 @@ test('lipirea mutării de un ghidaj (Alt o oprește), alinierea față de foaie,
   await page.goto('/');
   await expect(page.getByTestId('rigla-stanga')).toBeVisible();
   await adauga(page, 'dreptunghi');
-  await expect(randuri(page)).toHaveText(['dreptunghi 100.00 × 60.00 la X 20.00, Y 20.00']);
+  await expect(randuri(page)).toHaveText(['dreptunghi 100,00 × 60,00 la X 20,00, Y 20,00']);
 
   // Un ghidaj vertical la x = 200, din rigla din stânga.
   let v = await vedere(page);
@@ -127,7 +127,7 @@ test('lipirea mutării de un ghidaj (Alt o oprește), alinierea față de foaie,
   // Apucat lângă marginea stângă, nu pe ea: pe margine stă mânerul de scalare (ADR 0052).
   const dinColt = la(30, 50);
   await trageEcran(page, dinColt, { x: dinColt.x + dx * v.scara, y: dinColt.y });
-  await expect(randuri(page)).toHaveText(['dreptunghi 100.00 × 60.00 la X 100.00, Y 20.00']);
+  await expect(randuri(page)).toHaveText(['dreptunghi 100,00 × 60,00 la X 100,00, Y 20,00']);
   // Cât se trage, linia de aliniere a ghidajului se vede.
   const a = la(110, 50);
   await page.mouse.move(a.x, a.y);
@@ -142,12 +142,12 @@ test('lipirea mutării de un ghidaj (Alt o oprește), alinierea față de foaie,
 
   // Cu Alt, fără lipire: aceeași tragere lasă marginea la 0,4 mm de ghidaj.
   await page.keyboard.press('Control+z');
-  await expect(randuri(page)).toHaveText(['dreptunghi 100.00 × 60.00 la X 20.00, Y 20.00']);
+  await expect(randuri(page)).toHaveText(['dreptunghi 100,00 × 60,00 la X 20,00, Y 20,00']);
   v = await vedere(page);
   la = await ecran(page, v);
   const c = la(30, 50);
   await trageEcran(page, c, { x: c.x + dx * v.scara, y: c.y }, true);
-  await expect(randuri(page)).not.toHaveText(['dreptunghi 100.00 × 60.00 la X 100.00, Y 20.00']);
+  await expect(randuri(page)).not.toHaveText(['dreptunghi 100,00 × 60,00 la X 100,00, Y 20,00']);
 
   // Alinierea unei singure forme, față de foaie (300 × 200): centrul pe orizontală, apoi sus. Butoanele stau în extensia
   // barei de sus, la vedere (ADR 0053); secțiunea se strânge spre stânga și se deschide la loc, iar extensia rămâne.
@@ -160,15 +160,15 @@ test('lipirea mutării de un ghidaj (Alt o oprește), alinierea față de foaie,
   await page.locator('[data-editare="aliniere"]').click();
   await expect(ext.locator('[data-aliniaza]')).toHaveCount(9);
   await page.locator('[data-aliniaza="centru-x"]').click();
-  await expect(randuri(page)).toHaveText(['dreptunghi 100.00 × 60.00 la X 100.00, Y 20.00']);
+  await expect(randuri(page)).toHaveText(['dreptunghi 100,00 × 60,00 la X 100,00, Y 20,00']);
   await page.locator('[data-aliniaza="sus"]').click();
-  await expect(randuri(page)).toHaveText(['dreptunghi 100.00 × 60.00 la X 100.00, Y 140.00']);
+  await expect(randuri(page)).toHaveText(['dreptunghi 100,00 × 60,00 la X 100,00, Y 140,00']);
   // Centrarea pe foaie (ADR 0110), într-un clic, pe ambele axe: 100 × 60 pe 300 × 200 → colțul în (100, 70); apoi iar sus.
   await expect(page.locator('[data-aliniaza="centru-foaie"]')).toHaveAttribute('title', 'Centrează pe foaie (pe ambele axe; mai multe forme se mută împreună, ca un bloc)');
   await page.locator('[data-aliniaza="centru-foaie"]').click();
-  await expect(randuri(page)).toHaveText(['dreptunghi 100.00 × 60.00 la X 100.00, Y 70.00']);
+  await expect(randuri(page)).toHaveText(['dreptunghi 100,00 × 60,00 la X 100,00, Y 70,00']);
   await page.locator('[data-aliniaza="sus"]').click();
-  await expect(randuri(page)).toHaveText(['dreptunghi 100.00 × 60.00 la X 100.00, Y 140.00']);
+  await expect(randuri(page)).toHaveText(['dreptunghi 100,00 × 60,00 la X 100,00, Y 140,00']);
   await expect(page.locator('[data-aliniaza="distribuie-x"]')).toBeDisabled();
 
   // Săgețile: 1 mm, Shift 10 mm, Alt 0,1 mm.
@@ -176,7 +176,7 @@ test('lipirea mutării de un ghidaj (Alt o oprește), alinierea față de foaie,
   await page.keyboard.press('ArrowRight');
   await page.keyboard.press('Shift+ArrowDown');
   await page.keyboard.press('Alt+ArrowLeft');
-  await expect(randuri(page)).toHaveText(['dreptunghi 100.00 × 60.00 la X 100.90, Y 130.00']);
+  await expect(randuri(page)).toHaveText(['dreptunghi 100,00 × 60,00 la X 100,90, Y 130,00']);
 
   // Grila: pornită, se vede pe foaie; pasul se schimbă.
   await expect(page.locator('[data-testid="grila"] line')).toHaveCount(0);
@@ -213,15 +213,15 @@ test('uneltele de desen (ADR 0051): fiecare formă prin tragere, tastele, lipire
   await expect(page.locator('[data-unealta="dreptunghi"]')).toHaveAttribute('aria-pressed', 'true');
   await expect(page.getByTestId('panza')).toHaveAttribute('data-desen', '');
   await deseneaza(page, { x: 40, y: 30 }, { x: 140, y: 90 });
-  await expect(randuri(page)).toHaveText(['dreptunghi 100.00 × 60.00 la X 40.00, Y 30.00']);
+  await expect(randuri(page)).toHaveText(['dreptunghi 100,00 × 60,00 la X 40,00, Y 30,00']);
   // Shift: pătrat, în direcția tragerii.
   await deseneaza(page, { x: 170, y: 20 }, { x: 210, y: 45 }, true);
-  await expect(randuri(page).nth(1)).toHaveText('dreptunghi 40.00 × 40.00 la X 170.00, Y 20.00');
+  await expect(randuri(page).nth(1)).toHaveText('dreptunghi 40,00 × 40,00 la X 170,00, Y 20,00');
 
   // Cercul, din centru (butonul); elipsa, linia și poligonul (tastele); poligonul cu laturile lui.
   await page.locator('[data-unealta="cerc"]').click();
   await deseneaza(page, { x: 230, y: 130 }, { x: 245, y: 130 });
-  await expect(randuri(page).nth(2)).toHaveText('cerc R15.00 cu centrul la X 230.00, Y 130.00');
+  await expect(randuri(page).nth(2)).toHaveText('cerc R15,00 cu centrul la X 230,00, Y 130,00');
   await page.locator('body').focus();
   await page.keyboard.press('e');
   await deseneaza(page, { x: 20, y: 150 }, { x: 70, y: 175 });
@@ -252,7 +252,7 @@ test('uneltele de desen (ADR 0051): fiecare formă prin tragere, tastele, lipire
   await page.getByTestId('ghidaj-camp').press('Enter');
   await page.locator('[data-unealta="dreptunghi"]').click();
   await deseneaza(page, { x: 60, y: 105 }, { x: 122.4, y: 118.7 });
-  await expect(randuri(page).nth(5)).toHaveText('dreptunghi 63.00 × 13.70 la X 60.00, Y 105.00');
+  await expect(randuri(page).nth(5)).toHaveText('dreptunghi 63,00 × 13,70 la X 60,00, Y 105,00');
   // Colțul nelipit e rotunjit la 0,001 mm (nu 60,000002661 din pixelii mausului): panoul arată valoarea exactă.
   await expect(page.locator('[data-camp="pozitie-x"]')).toHaveValue('60');
   await expect(page.locator('[data-camp="pozitie-y"]')).toHaveValue('105');
@@ -273,9 +273,9 @@ test('uneltele de desen (ADR 0051): fiecare formă prin tragere, tastele, lipire
 /** Rândul listei de vectori al unui dreptunghi, ca numere: [lățime, înălțime, X, Y]. */
 async function dreptunghi(page: Page, n = 0): Promise<number[]> {
   const text = await randuri(page).nth(n).textContent() ?? '';
-  const m = /dreptunghi ([\d.]+) × ([\d.]+) la X ([\d.-]+), Y ([\d.-]+)/.exec(text);
+  const m = /dreptunghi ([\d,]+) × ([\d,]+) la X ([\d,-]+), Y ([\d,-]+)/.exec(text);
   if (!m) throw new Error(`rând neașteptat: ${text}`);
-  return m.slice(1).map(Number);
+  return m.slice(1).map((s) => Number(s.replace(',', '.')));
 }
 
 /** Centrul unui mâner pe ecran. */
@@ -307,7 +307,7 @@ test('transformările (ADR 0052): mânerele de scalare și rotire, refuzul inexa
     await page.mouse.move(m.x, m.y, { steps: 3 });
     await page.mouse.up();
     await expect(page.locator('[data-maner="ne"]')).toBeVisible();
-    await expect(randuri(page)).toHaveText(['dreptunghi 100.00 × 60.00 la X 20.00, Y 20.00']);
+    await expect(randuri(page)).toHaveText(['dreptunghi 100,00 × 60,00 la X 20,00, Y 20,00']);
   }
   // Mânerele sunt doar desen: rotița și butonul din mijloc, deasupra unui mâner, ajung la pânză (oracolul traseului
   // panoramează din punctul cercului, unde stă mânerul e); un clic pe mâner, fără tragere, nu schimbă nimic.
@@ -326,7 +326,7 @@ test('transformările (ADR 0052): mânerele de scalare și rotire, refuzul inexa
     await expect.poll(async () => Math.round((await vedere(page)).tx - tx0)).toBe(-40);
     const ne2 = await maner(page, 'ne');
     await page.mouse.click(ne2.x + 3, ne2.y + 3);
-    await expect(randuri(page)).toHaveText(['dreptunghi 100.00 × 60.00 la X 20.00, Y 20.00']);
+    await expect(randuri(page)).toHaveText(['dreptunghi 100,00 × 60,00 la X 20,00, Y 20,00']);
     await page.locator('[data-actiune="vedere.potriveste"]').click();
   }
 
@@ -349,7 +349,7 @@ test('transformările (ADR 0052): mânerele de scalare și rotire, refuzul inexa
 
   // Latura e: doar lățimea; anularea întoarce mărimea.
   await page.keyboard.press('Control+z');
-  await expect(randuri(page)).toHaveText(['dreptunghi 100.00 × 60.00 la X 20.00, Y 20.00']);
+  await expect(randuri(page)).toHaveText(['dreptunghi 100,00 × 60,00 la X 20,00, Y 20,00']);
   v = await vedere(page);
   la = await ecran(page, v);
   await trageEcran(page, await maner(page, 'e'), { x: la(160, 0).x, y: (await maner(page, 'e')).y + 30 });
@@ -372,19 +372,19 @@ test('transformările (ADR 0052): mânerele de scalare și rotire, refuzul inexa
 
   // Cercul scalat de pe o latură devine elipsă (ADR 0240 §F): elipsa uneltei Elipsă, cu razele editabile în panou.
   await adauga(page, 'cerc');
-  await expect(randuri(page).nth(1)).toHaveText('cerc R15.00 cu centrul la X 70.00, Y 50.00');
+  await expect(randuri(page).nth(1)).toHaveText('cerc R15,00 cu centrul la X 70,00, Y 50,00');
   const e = await maner(page, 'e');
   await trageEcran(page, e, { x: e.x + 40, y: e.y });
   await expect(page.getByTestId('manere-motiv')).toHaveCount(0);
   await expect(randuri(page).nth(1)).toHaveText(/^cale /);
   await expect(page.locator('[data-camp="forma-ry"]')).toHaveValue('15');
   await page.keyboard.press('Control+z');
-  await expect(randuri(page).nth(1)).toHaveText('cerc R15.00 cu centrul la X 70.00, Y 50.00');
+  await expect(randuri(page).nth(1)).toHaveText('cerc R15,00 cu centrul la X 70,00, Y 50,00');
   // Din colț, proporțional, trece: raza crește.
   const se = await maner(page, 'se');
   await trageEcran(page, se, { x: se.x + 30, y: se.y + 30 });
   await expect(page.getByTestId('manere-motiv')).toHaveCount(0);
-  await expect(randuri(page).nth(1)).not.toHaveText('cerc R15.00 cu centrul la X 70.00, Y 50.00');
+  await expect(randuri(page).nth(1)).not.toHaveText('cerc R15,00 cu centrul la X 70,00, Y 50,00');
   await page.keyboard.press('Control+z');
 
   // Alt inversează lipirea: cu lipirea oprită și grila de 10 mm, mutarea cu Alt se prinde de grilă, fără Alt nu.
@@ -405,7 +405,7 @@ test('transformările (ADR 0052): mânerele de scalare și rotire, refuzul inexa
   la = await ecran(page, v);
   const din2 = la(40, 35);
   await trageEcran(page, din2, { x: din2.x + 19.2 * v.scara, y: din2.y }, true);
-  await expect(randuri(page).nth(0)).toHaveText('dreptunghi 100.00 × 60.00 la X 40.00, Y 20.00');
+  await expect(randuri(page).nth(0)).toHaveText('dreptunghi 100,00 × 60,00 la X 40,00, Y 20,00');
   await page.locator('[data-editare="lipire"]').click();
   await page.locator('[data-editare="grila"]').click();
 
@@ -416,7 +416,7 @@ test('transformările (ADR 0052): mânerele de scalare și rotire, refuzul inexa
   la = await ecran(page, v);
   const p = la(220, 140);
   await page.mouse.click(p.x, p.y);
-  await expect(randuri(page).nth(2)).toHaveText(/^cerc R12\.00 cu centrul la X 2\d\d\.\d\d, Y 1\d\d\.\d\d$/);
+  await expect(randuri(page).nth(2)).toHaveText(/^cerc R12,00 cu centrul la X 2\d\d,\d\d, Y 1\d\d,\d\d$/);
   await trageEcran(page, la(250, 60), la(258, 60));
   await expect.poll(async () => Math.abs(Number((await page.locator('[data-editare="raza"]').inputValue()).replace(',', '.')) - 8)).toBeLessThan(0.05);
   await page.locator('body').focus();
@@ -514,7 +514,7 @@ test('editarea după plasare (ADR 0053): laturile și raza colțurilor dreptungh
   await adauga(page, 'dreptunghi');
   await expect(forma).toHaveAttribute('data-forma', 'dreptunghi');
   await scrieCamp('forma-latime', '150');
-  await expect(randuri(page)).toHaveText(['dreptunghi 150.00 × 60.00 la X 20.00, Y 20.00']);
+  await expect(randuri(page)).toHaveText(['dreptunghi 150,00 × 60,00 la X 20,00, Y 20,00']);
   await scrieCamp('forma-raza-colt', '40');
   await expect(page.locator('[data-motiv="forma-raza-colt"]')).toContainText('jumătatea');
   await page.locator('[data-camp="forma-raza-colt"]').press('Escape');
@@ -529,7 +529,7 @@ test('editarea după plasare (ADR 0053): laturile și raza colțurilor dreptungh
   await adauga(page, 'cerc');
   await expect(forma).toHaveAttribute('data-forma', 'cerc');
   await scrieCamp('forma-raza', '25');
-  await expect(randuri(page).nth(1)).toHaveText('cerc R25.00 cu centrul la X 70.00, Y 50.00');
+  await expect(randuri(page).nth(1)).toHaveText('cerc R25,00 cu centrul la X 70,00, Y 50,00');
 
   // Poligonul desenat (6 laturi, raza 20): 8 laturi, apoi raza 10; centrul rămâne.
   await page.locator('[data-unealta="poligon"]').click();
@@ -545,7 +545,7 @@ test('editarea după plasare (ADR 0053): laturile și raza colțurilor dreptungh
   await expect(page.locator('[data-motiv="forma-laturi"]')).toBeVisible();
   await page.locator('[data-camp="forma-laturi"]').press('Escape');
   await scrieCamp('forma-raza', '10');
-  await expect(randuri(page).nth(2)).toContainText('20.00 × 20.00, 8 segmente, la X 210.00, Y 110.00');
+  await expect(randuri(page).nth(2)).toContainText('20,00 × 20,00, 8 segmente, la X 210,00, Y 110,00');
 
   // Elipsa desenată (razele 30 și 15): raza pe X devine 40, centrul rămâne.
   await page.locator('[data-unealta="elipsa"]').click();
@@ -556,8 +556,8 @@ test('editarea după plasare (ADR 0053): laturile și raza colțurilor dreptungh
   // Cutia elipsei e exactă (extremele sunt vârfuri): colțul e 20, 120, nu 119,999999663.
   await expect(page.locator('[data-camp="pozitie-y"]')).toHaveValue('120');
   await scrieCamp('forma-rx', '40');
-  await expect(randuri(page).nth(3)).toContainText('80.00 × 30.00');
-  await expect(randuri(page).nth(3)).toContainText('la X 20.00, Y 120.00');
+  await expect(randuri(page).nth(3)).toContainText('80,00 × 30,00');
+  await expect(randuri(page).nth(3)).toContainText('la X 20,00, Y 120,00');
 
   mkdirSync('.tmp', { recursive: true });
   await page.screenshot({ path: '.tmp/forma-panou.png' });
@@ -639,7 +639,7 @@ test('lipirea mânerelor (ADR 0055, ADR 0240): latura trasă lângă un ghidaj a
   await page.goto('/');
   await expect(page.getByTestId('rigla-stanga')).toBeVisible();
   await adauga(page, 'dreptunghi');
-  await expect(randuri(page)).toHaveText(['dreptunghi 100.00 × 60.00 la X 20.00, Y 20.00']);
+  await expect(randuri(page)).toHaveText(['dreptunghi 100,00 × 60,00 la X 20,00, Y 20,00']);
 
   // Un ghidaj vertical exact la x = 200.
   let v = await vedere(page);
@@ -667,13 +667,13 @@ test('lipirea mânerelor (ADR 0055, ADR 0240): latura trasă lângă un ghidaj a
   await expect(page.locator('line.aliniere[data-fel="ghidaj"]')).toHaveCount(1);
   await page.mouse.up();
   await expect(page.locator('line.aliniere')).toHaveCount(0);
-  await expect(randuri(page)).toHaveText(['dreptunghi 180.00 × 60.00 la X 20.00, Y 20.00']);
+  await expect(randuri(page)).toHaveText(['dreptunghi 180,00 × 60,00 la X 20,00, Y 20,00']);
   await expect(page.locator('[data-camp="forma-latime"]')).toHaveValue('180');
 
   // Cu lipirea oprită de Shift+L (ADR 0240, răspunsul 2a: la mânere, Alt înseamnă acum „față de centru”), aceeași tragere
   // rămâne liberă: lățimea nu e 180. Shift+L o pornește la loc.
   await page.keyboard.press('Control+z');
-  await expect(randuri(page)).toHaveText(['dreptunghi 100.00 × 60.00 la X 20.00, Y 20.00']);
+  await expect(randuri(page)).toHaveText(['dreptunghi 100,00 × 60,00 la X 20,00, Y 20,00']);
   await page.locator('body').focus();
   await page.keyboard.press('Shift+L');
   await expect(page.locator('[data-editare="lipire"]')).toHaveAttribute('aria-pressed', 'false');
@@ -685,8 +685,8 @@ test('lipirea mânerelor (ADR 0055, ADR 0240): latura trasă lângă un ghidaj a
   await page.mouse.move(la(199.2, 50).x, e2.y, { steps: 4 });
   await expect(page.locator('line.aliniere')).toHaveCount(0);
   await page.mouse.up();
-  await expect(randuri(page)).not.toHaveText(['dreptunghi 180.00 × 60.00 la X 20.00, Y 20.00']);
-  await expect(randuri(page)).toHaveText([/^dreptunghi 179\.\d\d × 60\.00 la X 20\.00, Y 20\.00$/]);
+  await expect(randuri(page)).not.toHaveText(['dreptunghi 180,00 × 60,00 la X 20,00, Y 20,00']);
+  await expect(randuri(page)).toHaveText([/^dreptunghi 179,\d\d × 60,00 la X 20,00, Y 20,00$/]);
   await page.keyboard.press('Shift+L');
   await expect(page.locator('[data-editare="lipire"]')).toHaveAttribute('aria-pressed', 'true');
   expect(erori).toEqual([]);

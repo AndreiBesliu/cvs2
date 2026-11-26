@@ -24,7 +24,7 @@ test('dreptunghiul spre exterior cu 5 mm: previzualizarea, Aplică dă calea 110
   await page.locator('[data-offset="aplica"]').click();
   await expect(panou(page)).toHaveCount(0);
   await expect(randuri(page)).toHaveCount(2);
-  await expect(randuri(page).nth(1)).toContainText('110.00 × 70.00');
+  await expect(randuri(page).nth(1)).toContainText('110,00 × 70,00');
   await expect(randuri(page).nth(1)).toHaveAttribute('aria-pressed', 'true');
   await page.locator('[data-actiune="istoric.anuleaza"]').click();
   await expect(randuri(page)).toHaveCount(1);
@@ -45,7 +45,7 @@ test('spre interior: 5 mm dă 90 × 50; 31 mm nu încape (Aplică oprit); distan
   await expect(motiv(page)).toHaveText('Distanța: un număr între 0,01 și 1000 mm.');
   await camp.fill('5');
   await page.locator('[data-offset="aplica"]').click();
-  await expect(randuri(page).nth(1)).toContainText('90.00 × 50.00');
+  await expect(randuri(page).nth(1)).toContainText('90,00 × 50,00');
   await page.locator('[data-editare="offset"]').click();
   await expect(panou(page)).toBeVisible();
   await expect(page.locator('[data-offset-sens="interior"]')).toHaveAttribute('aria-checked', 'true', { timeout: 2000 });
@@ -59,14 +59,14 @@ test('colțurile (ADR 0074 §2): implicit ca originalul (4 segmente), Rotunjite 
   await page.locator('[data-editare="offset"]').click();
   await expect(page.locator('[data-offset-colturi="ca-originalul"]')).toHaveAttribute('aria-checked', 'true');
   await page.locator('[data-offset="aplica"]').click();
-  await expect(randuri(page).nth(1)).toContainText('110.00 × 70.00, 4 segmente');
+  await expect(randuri(page).nth(1)).toContainText('110,00 × 70,00, 4 segmente');
   await page.locator('[data-actiune="istoric.anuleaza"]').click();
   await expect(randuri(page)).toHaveCount(1);
   await randuri(page).first().click();
   await page.locator('[data-editare="offset"]').click();
   await page.locator('[data-offset-colturi="rotunjite"]').click();
   await page.locator('[data-offset="aplica"]').click();
-  await expect(randuri(page).nth(1)).toContainText('110.00 × 70.00, 8 segmente');
+  await expect(randuri(page).nth(1)).toContainText('110,00 × 70,00, 8 segmente');
   // Selecția la clic (ADR 0074 §1): înăuntrul ambelor, cea mică; între contururi, cea mare.
   const e = await ecran(page, await vedere(page));
   const centru = e(70, 50), intre = e(17.5, 50);
