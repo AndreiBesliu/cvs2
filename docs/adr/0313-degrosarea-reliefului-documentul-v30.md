@@ -113,7 +113,7 @@ Degroșarea are rândul ei, doar de citit, la locul ei în ordinea tăierii, pri
 - în „A mea” se mută ca oricare alt rând, iar Exportă îi scrie doar rangul;
 - lista nu s-a schimbat: rândurile reliefului sunt aceleași rânduri ale ferestrei.
 
-Rândul editabil (al finisării și al degroșării) e o felie a lui, la cuvântul owner-ului.
+Rândul editabil (al finisării și al degroșării) e o felie a lui, la cuvântul owner-ului. (Făcut în felia 18.1↑d-4, ADR 0315.)
 
 ### 8. Alegerile owner-ului (recomandarea aplicată)
 

@@ -1071,8 +1071,11 @@ plată nu încape (o vale mai îngustă decât ea), degroșarea lasă lemnul, ia
 Degroșarea și finisarea se fac înaintea tăieturilor pe contur, fiecare cu freza ei, degroșarea prima. Cu **Ordinea tăierii: A
 mea**, dacă muți finisarea înaintea degroșării aceluiași relief, exportul o spune printre avertismente: programul e bun, dar
 finisarea scoate tot lemnul cu freza ei, iar degroșarea taie aproape doar aer. În fereastra **Exportă G-code**, fiecare are rândul ei, la locul
-ei în ordinea tăierii, cu o fișă doar de citit (freza, pasul lateral, creasta pe un plan la finisare, adaosul la degroșare,
-adâncimea); se schimbă din secțiunea Tăierea. Cu **Ordinea tăierii: A mea**, rândul ei se mută ca oricare altul. În [vederea 3D](#vedere-3d), **Tăiat** arată
+ei în ordinea tăierii, cu o fișă în care le schimbi și acolo: freza (numărul, diametrul, forma; degroșarea, doar plată),
+liniile (pasul lateral, unghiul, prin centrele celulelor sau nealiniate), adaosul la degroșare, marginea și înălțimea, adâncimea
+și pasul pe trecere. Fișa spune pasul folosit (cu liniile prin centrele celulelor, rotunjit în jos la celule întregi) și, la
+finisare, creasta pe un plan. Marginea și înălțimea, schimbate pe un rând, se schimbă și pe celălalt rând al aceluiași relief;
+**Exportă** scrie valorile în proiect, iar secțiunea Tăierea le arată apoi. Cu **Ordinea tăierii: A mea**, rândul ei se mută ca oricare altul. În [vederea 3D](#vedere-3d), **Tăiat** arată
 placa după program. Freza rămâne puțin deasupra suprafeței ideale pe pante (cam 0,1 mm pe o pantă de 45°): e partea sigură a calculului,
 care nu sapă niciodată în relief. Exportul cere dalele reliefului din acest browser; pe alt calculator, le spune lipsă.
 

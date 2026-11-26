@@ -86,7 +86,7 @@ se vede în fereastră din prima zi, altfel omul numără N operații, iar mași
   freza (T, Ø, forma), pasul lateral, creasta pe plan pe hârtie (`creastaPePlan`: bila R − √(R² − (s/2)²), V-ul
   (s − v) / 2 / tan(θ/2), plata 0), liniile, marginea, înălțimea, adâncimea cea mai mare și pasul pe trecere, cu nota că se
   schimbă din secțiunea Tăierea. Fără câmpuri: rândul editabil (freza din bibliotecă, pasul în celule și mm, unghiul, creasta,
-  timpul) vine într-o felie a lui, după 16.A↑b-5 și 28.8↑h.
+  timpul) vine într-o felie a lui, după 16.A↑b-5 și 28.8↑h. (Făcut în felia 18.1↑d-4, ADR 0315, fără freza din bibliotecă.)
 - **Rezultatul** o cuprinde: rândul ei în timpul pe operații (eticheta programului poartă cheia ei), freza ei între scule și în
   judecata „același T” a ferestrei (bila de același diametru e altă freză), adâncimea și simularea.
 - **Biblioteca** (cererea liniei frezelor): bila are acum CAM (`FELURI_CU_CAM`), iar `sculaDinFreza` îi dă `{ tip: 'bila' }`;

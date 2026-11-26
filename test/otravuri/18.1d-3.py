@@ -12,14 +12,16 @@ def o(id, fis, vechi, nou, set, ce):
 
 
 RF = 'src/cam/reliefFinisare.ts'
+# Regula celulelor stă din 18.1↑d-4 în modulul ei (o citește și fereastra exportului): R00–R03, mutate acolo.
+CA = 'src/cam/celuleAliniate.ts'
 
-o('R00', RF, "export function celuleAliniate(s: number, c: number): number {",
+o('R00', CA, "export function celuleAliniate(s: number, c: number): number {",
   "export function celuleAliniate(s: number, c: number): number {\n  void 0;", 'relief', 'martorul: o instrucțiune fără efect (trebuie să scape)')
-o('R01', RF, "  return Math.max(1, Math.floor(s / c + 1e-9));", "  return Math.max(1, Math.round(s / c));", 'relief',
+o('R01', CA, "  return Math.max(1, Math.floor(s / c + 1e-9));", "  return Math.max(1, Math.round(s / c));", 'relief',
   'rotunjirea la cel mai apropiat număr de celule (cum era): 1,3 pe celula 0,5 dă 1,5, creasta peste cea cerută')
-o('R02', RF, "  return Math.max(1, Math.floor(s / c + 1e-9));", "  return Math.max(1, Math.floor(s / c));", 'relief',
+o('R02', CA, "  return Math.max(1, Math.floor(s / c + 1e-9));", "  return Math.max(1, Math.floor(s / c));", 'relief',
   'fără marja de virgulă mobilă: 0,3 / 0,1 dă două celule, nu trei')
-o('R03', RF, "  return Math.max(1, Math.floor(s / c + 1e-9));", "  return Math.max(1, Math.ceil(s / c - 1e-9));", 'relief',
+o('R03', CA, "  return Math.max(1, Math.floor(s / c + 1e-9));", "  return Math.max(1, Math.ceil(s / c - 1e-9));", 'relief',
   'rotunjirea în sus: liniile mai rare decât cere omul')
 o('R04', RF, "    if (l.aliniat && l.pas > 2 * R + EPS) {", "    if (false && l.aliniat && l.pas > 2 * R + EPS) {", 'relief',
   'fără refuzul celulei mai late decât freza: dungi netăiate între linii')

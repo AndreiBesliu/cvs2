@@ -23,6 +23,7 @@
  * 90° sunt exacte), ca strategia paralelă a buzunarului: CAM-ul nu importă din simulare. Totul în lume (mm, Z față de fața
  * plăcii), fără stare.
  */
+import { celuleAliniate } from './celuleAliniate.ts';
 import type { Miscare } from '../ir/ir.ts';
 
 /** Forma frezei, cu raza ei: plata, bila, V-ul (unghiul inclus, în grade, și vârful plat, diametrul lui). */
@@ -329,15 +330,6 @@ function cotaSegment(p: Pregatit, f: FrezaFinisare, ax: number, ay: number, bx: 
     if (d < R) m = Math.max(m, -urcare(f, d));
   }
   return m;
-}
-
-/**
- * Câte celule ale reliefului (de latură `c`) are pasul lateral `s` pe liniile aliniate: cel mai mare număr întreg care nu trece
- * de pas (felia 18.1↑d-3), cel puțin unul. Pe hârtie, un pas care e un număr întreg de celule rămâne întreg și când împărțirea
- * în virgulă mobilă iese puțin sub el (0,3 / 0,1 = 2,9999999999999996).
- */
-export function celuleAliniate(s: number, c: number): number {
-  return Math.max(1, Math.floor(s / c + 1e-9));
 }
 
 /** O linie a finisării: punctele ei, în sistemul reliefului (x, y alternate). */

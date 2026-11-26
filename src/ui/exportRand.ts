@@ -525,7 +525,25 @@ export type HartieRand = {
  * Ce trimite dialogul la Exportă: montajul, postul, valorile operațiilor cu frezele lor (se scriu în document), confirmarea și
  * ordinea tăierii (ADR 0133 §3): cheile rândurilor în ordinea omului, sau null pentru ordinea automată.
  */
-export type CerereExport = ParametriExport & { readonly valori: ReadonlyMap<string, ValoriOperatie>; readonly ordine: readonly string[] | null };
+/** Forma frezei citită: bila, plata (`null`) sau V-ul, cu unghiul și vârful (vârful 0 nu se scrie, ADR 0092). */
+export type FormaRelief = { readonly tip: 'bila' } | { readonly tip: 'v'; readonly unghi: number; readonly varf?: number } | null;
+
+/** Valorile rândului unei operații a reliefului, citite (felia 18.1↑d-4, `exportRelief.ts`); ce scrie Exportă în operație. */
+export type ValoriRelief = {
+  readonly fel: 'finisare' | 'degrosare';
+  readonly scula: { readonly numar: number; readonly diametru: number; readonly forma: FormaRelief };
+  readonly pasLateral: number; readonly adaos: number; readonly unghi: number; readonly aliniat: boolean;
+  readonly margine: 'perete' | 'trece';
+  /** Planul zero (mm sub fața plăcii), sau `null`: vârful reliefului la fața plăcii. */
+  readonly planZero: number | null;
+  readonly adancime: number; readonly pas: number;
+};
+
+export type CerereExport = ParametriExport & {
+  readonly valori: ReadonlyMap<string, ValoriOperatie>; readonly ordine: readonly string[] | null;
+  /** Valorile rândurilor operațiilor reliefului (felia 18.1↑d-4); lipsă = cele din document. */
+  readonly valoriRelief?: ReadonlyMap<string, ValoriRelief>;
+};
 
 /**
  * Ultimul rezultat: liniile și SHA-256 cu rezumatul jobului (ADR 0046), motivul, sau ieșirea din foaie care așteaptă
