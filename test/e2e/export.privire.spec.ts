@@ -165,6 +165,23 @@ for (const [locale, limba] of [['ro-RO', 'română'], ['en-GB', 'engleză']] as 
   });
 }
 
+/**
+ * Telefonul culcat (28.8↑l; găsit la 28.8↑h-2, când banda listei lăsa fișelor 9 px): la 640 × 360, cu fontul lat, fișelor le
+ * rămâne cel puțin o treime din fereastră, iar rândurile benzii se ating.
+ */
+test.describe('pe telefonul culcat', () => {
+  test.use({ viewport: { width: 640, height: 360 }, hasTouch: true, isMobile: true, locale: 'ro-RO' });
+  test('la 640 × 360: fișelor le rămâne cel puțin o treime din fereastră; rândurile benzii se ating', async ({ page }) => {
+    await deschide(page);
+    expect((await page.locator('[data-fise]').boundingBox())?.height ?? 0, 'înălțimea fișelor').toBeGreaterThanOrEqual(360 / 3);
+    for (const nav of ['masina', 'e2/e2', 'foaia']) {
+      await page.locator(`[data-nav="${nav}"]`).tap();
+      await expect(page.locator(`[data-nav="${nav}"]`)).toHaveAttribute('aria-current', 'true');
+    }
+    expect(await ceIese(page)).toEqual([]);
+  });
+});
+
 /** Țintele ferestrei: înălțimea fiecăreia (cel puțin `minim`) și ce lovește clicul în centrul ei (ea sau ceva din ea). */
 function tinteMici(page: Page, minim: number): Promise<string[]> {
   return page.evaluate((m) => {

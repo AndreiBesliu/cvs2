@@ -2893,6 +2893,28 @@ nav button[aria-pressed='true'] {
 }
 
 /*
+ * Pe un ecran îngust și jos (telefonul culcat, 640 × 360; 28.8↑l): banda listei doar cu numele, pe un rând, tăiat cu „…”
+ * (fișa aleasă îl arată întreg în titlul ei), și titlul ferestrei mai strâns, ca fișelor să le rămână o treime din fereastră,
+ * nu un sfert.
+ */
+@media (max-width: 48rem) and (max-height: 30rem) {
+  .dx-lista .dx-meta {
+    display: none;
+  }
+
+  .dx-lista .dx-nume {
+    max-width: 100%;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  .dialog-export > h2 {
+    padding-block: var(--sp-2);
+  }
+}
+
+/*
  * Raportul foilor și lista de tăiere (ADR 0210 §6, felia 11.6↑): previzualizarea foii lângă rândurile ei, pe un ecran îngust
  * una sub alta. Previzualizarea e SVG-ul exportului de vectori, desenat pentru hârtie albă: stă pe alb și în tema întunecată.
  */

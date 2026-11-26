@@ -42,5 +42,8 @@ o('L11', DE, '          <span id={`${idGrup}-e`} data-descriere hidden>{explicat
   'descrierea e explicația prescurtată, ca pe ecran')
 o('L12', ER, "  return `dx-d-${loc.replace(/[^A-Za-z0-9_-]/g, '_')}`;", "  return 'dx-d';", 'e2e',
   'același id la toate grupurile: câmpurile descrise de explicația altui grup')
+# Telefonul culcat (640 × 360).
+o('L13', 'src/app/stil.css', '  .dx-lista .dx-nume {\n    max-width: 100%;\n    overflow: hidden;\n    white-space: nowrap;',
+  '  .dx-lista .dx-nume {\n    max-width: 100%;\n    overflow: hidden;', 'e2e', 'numele din bandă pe două rânduri: fișelor le rămâne sub o treime')
 
-E2E = ['test/e2e/export.tastatura.spec.ts', 'test/e2e/export.hartie.spec.ts']
+E2E = ['test/e2e/export.tastatura.spec.ts', 'test/e2e/export.hartie.spec.ts', 'test/e2e/export.privire.spec.ts']
