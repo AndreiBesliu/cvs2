@@ -6,8 +6,10 @@
  *   acoperă celula; plonjarea verticală: discul sculei la Z-ul cel mai jos;
  * - arcul la Z constant, cu orice formă: distanța exactă de la celulă la arc (în deschiderea lui) sau la capete;
  * - elicea cu freza plată: intervalul exact de unghiuri în care scula acoperă celula; Z-ul e liniar în unghi, deci
- *   minimul e la un capăt al intersecției (`acos` și `atan2` pe celulă, ale noastre).
- * Elicea cu bila sau cu V-ul n-are încă formă exactă: programul o refuză înainte (`program.ts`).
+ *   minimul e la un capăt al intersecției (`acos` și `atan2` pe celulă, ale noastre);
+ * - linia înclinată cu toroidala (ADR 0303 §2): minimul funcției convexe m·s + h(√(s² + p²)), prin înjumătățirea derivatei
+ *   (monotonă), cu un număr fix de pași.
+ * Elicea cu bila, cu V-ul sau cu toroidala n-are încă formă exactă: programul o refuză înainte (`program.ts`).
  *
  * Scula e o siluetă h(r) ≥ 0, nedescrescătoare, cu h(0) = 0: înălțimea muchiei deasupra vârfului la raza r ≤ R. Peste R,
  * coada sculei e un cilindru: peretele. Fără subtăieri (limita oricărui câmp de înălțimi).
@@ -35,17 +37,21 @@ export type DateScula = { readonly forma: FormaScula; readonly diametru: number 
 export type GrupSimulare = { readonly scula: DateScula; readonly mutari: Float64Array };
 
 /**
- * Silueta: felul (0 plată, 1 bilă, 2 V), raza, pătratul ei, panta V-ului și raza vârfului lui plat (ADR 0092; 0 = ascuțit):
- * h = k·max(0, r − a).
+ * Silueta: felul (0 plată, 1 bilă, 2 V, 3 toroidală), raza, pătratul ei, panta V-ului și raza vârfului lui plat (ADR 0092;
+ * 0 = ascuțit): h = k·max(0, r − a). La toroidală (ADR 0303 §2), `a` e raza discului plat (R − ρ), `rho` raza colțului:
+ * h = 0 pe r ≤ a, ρ − √(ρ² − (r − a)²) dincolo.
  */
-export type Silueta = { readonly fel: 0 | 1 | 2; readonly R: number; readonly R2: number; readonly k: number; readonly a: number };
+export type Silueta = {
+  readonly fel: 0 | 1 | 2 | 3; readonly R: number; readonly R2: number; readonly k: number; readonly a: number; readonly rho: number;
+};
 
 export function silueta(s: DateScula): Silueta {
   const R = s.diametru / 2;
   const f = s.forma;
-  if (f.tip === 'plata') return { fel: 0, R, R2: R * R, k: 0, a: 0 };
-  if (f.tip === 'bila') return { fel: 1, R, R2: R * R, k: 0, a: 0 };
-  return { fel: 2, R, R2: R * R, k: 1 / tanD((f.unghi * Math.PI) / 360), a: (f.varf ?? 0) / 2 };
+  if (f.tip === 'plata') return { fel: 0, R, R2: R * R, k: 0, a: 0, rho: 0 };
+  if (f.tip === 'bila') return { fel: 1, R, R2: R * R, k: 0, a: 0, rho: 0 };
+  if (f.tip === 'toroidala') return { fel: 3, R, R2: R * R, k: 0, a: R - f.raza, rho: f.raza };
+  return { fel: 2, R, R2: R * R, k: 1 / tanD((f.unghi * Math.PI) / 360), a: (f.varf ?? 0) / 2, rho: 0 };
 }
 
 /** h(d), d în [0, R]. */
@@ -54,6 +60,11 @@ function H(T: Silueta, d: number): number {
   if (T.fel === 1) {
     const q = T.R2 - d * d;
     return T.R - Math.sqrt(q > 0 ? q : 0);
+  }
+  if (T.fel === 3) {
+    if (d <= T.a) return 0;
+    const e = d - T.a, q = T.rho * T.rho - e * e;
+    return T.rho - Math.sqrt(q > 0 ? q : 0);
   }
   return d > T.a ? T.k * (d - T.a) : 0;
 }
@@ -67,7 +78,42 @@ export function raza(T: Silueta, adanc: number): number {
     const q = T.R2 - (T.R - adanc) * (T.R - adanc);
     return Math.min(T.R, Math.sqrt(q > 0 ? q : 0));
   }
+  if (T.fel === 3) {
+    if (adanc >= T.rho) return T.R;
+    const q = T.rho * T.rho - (T.rho - adanc) * (T.rho - adanc);
+    return Math.min(T.R, T.a + Math.sqrt(q > 0 ? q : 0));
+  }
   return Math.min(T.R, T.a + adanc / T.k);
+}
+
+/** Pașii înjumătățirii pe linia înclinată cu toroidala: intervalul (cel mult 2·R) ajunge sub 1e-15 mm. */
+const PASI_TOROIDALA = 64;
+
+/**
+ * Linia înclinată cu toroidala (ADR 0303 §2): argumentul minimului lui F(s) = m·s + h(√(s² + p²)) pe [sa, sb] (s de-a lungul
+ * mutării, în mm, față de proiecția celulei; p² = `perp2`). F e convexă (h convexă și nedescrescătoare, distanța convexă), deci
+ * derivata F'(s) = m + h'(d)·s / d e nedescrescătoare: capetele, dacă derivata nu-și schimbă semnul pe interval, altfel
+ * rădăcina ei, prin înjumătățire cu un număr fix de pași (doar + − × ÷ √: aceeași amprentă în Node și în browser). Pe orizontală
+ * (m = 0) minimul e la s = 0, tăiat la interval.
+ */
+function minimToroidala(T: Silueta, m: number, perp2: number, sa: number, sb: number): number {
+  if (m === 0) return sa > 0 ? sa : sb < 0 ? sb : 0;
+  const a = T.a, rho2 = T.rho * T.rho;
+  const deriv = (s: number): number => {
+    const d = Math.sqrt(s * s + perp2);
+    if (d <= a) return m;
+    const e = d - a, q = rho2 - e * e;
+    if (q <= 0) return s > 0 ? Infinity : s < 0 ? -Infinity : m;
+    return m + (e / Math.sqrt(q)) * (s / d);
+  };
+  if (deriv(sa) >= 0) return sa;
+  if (deriv(sb) <= 0) return sb;
+  let lo = sa, hi = sb;
+  for (let it = 0; it < PASI_TOROIDALA; it++) {
+    const mij = (lo + hi) / 2;
+    if (deriv(mij) < 0) lo = mij; else hi = mij;
+  }
+  return (lo + hi) / 2;
 }
 
 /** Primul și ultimul rând de celule de scris, tăiate la câmp. */
@@ -151,6 +197,9 @@ export function taieLinie(F: Camp, T: Silueta, ax: number, ay: number, az: numbe
           if (sv < sa) sv = sa; else if (sv > sb) sv = sb;
           const q = rho2 - sv * sv;
           zs = az + dz * tp + m * sv + R - Math.sqrt(q > 0 ? q : 0);
+        } else if (fel === 3) {
+          const sa = (ta - tp) * L, sb = (tb - tp) * L, sv = minimToroidala(T, m, perp2, sa, sb);
+          zs = az + dz * tp + m * sv + H(T, Math.sqrt(sv * sv + perp2));
         } else {
           // z(s) + k·max(0, √(s² + p²) − a), convexă în s: minimul liber, apoi tăiat la [sa, sb]. Cu vârful plat (a > 0,
           // ADR 0092) și p < a, pe discul vârfului (|s| ≤ c, c = √(a² − p²)) funcția e liniară (panta m); punctul staționar al
@@ -190,7 +239,7 @@ export function taieArc(
   const top = F.sus;
   if (az >= top && bz >= top) return;
   if (az !== bz) {
-    if (T.fel !== 0) throw new Error('elicea cu bila sau cu V-ul nu se simulează încă');
+    if (T.fel !== 0) throw new Error('elicea cu bila, cu V-ul sau cu toroidala nu se simulează încă');
     eliceaPlata(F, T, ax, ay, az, bz, cx, cy, trig, S);
     return;
   }

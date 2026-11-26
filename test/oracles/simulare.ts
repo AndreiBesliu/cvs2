@@ -33,7 +33,8 @@
  *    program exportat cu alt colț de origine sau cu Z0 jos se judecă pe aceeași grilă.
  * 4. Scula: silueta h(r), înălțimea muchiei tăietoare deasupra vârfului la raza r ≤ D/2, cu formulele lui s4, scrise
  *    altfel decât valorile pe hârtie: plata h = 0; bila h = R·(1 − cos(asin(r/R))); V-ul h = r·cos(α/2)/sin(α/2) (α =
- *    unghiul inclus); profilul, interpolare liniară între puncte. Peste D/2 scula nu atinge nimic (coada sculei e un
+ *    unghiul inclus); toroidala (ADR 0303 §3, raza colțului ρ, a = R − ρ) h = 0 pe r ≤ a și ρ·(1 − cos(asin((r − a)/ρ)))
+ *    dincolo; profilul, interpolare liniară între puncte. Peste D/2 scula nu atinge nimic (coada sculei e un
  *    cilindru vertical: peretele).
  * 5. Câmpul: grila densă Float64; celula (i, j) are centrul în (x0 + (i + 0,5)·celula, y0 + (j + 0,5)·celula), indexul
  *    j·nx + i, nx = ceil(latime / celula − 1e-9) (la fel ny). Valoarea = cel mai jos Z atins de suprafața sculei
@@ -71,6 +72,8 @@ export type P3 = readonly [number, number, number];
 export type SculaOracol =
   | { readonly tip: 'plata'; readonly diametru: number }
   | { readonly tip: 'bila'; readonly diametru: number }
+  /** ADR 0303 §3: toroidala, cu raza colțului ρ (0 < ρ < D/2): discul plat de rază D/2 − ρ și sfertul de cerc în jurul lui. */
+  | { readonly tip: 'toroidala'; readonly diametru: number; readonly raza: number }
   | { readonly tip: 'v'; readonly diametru: number; readonly unghi: number }
   | { readonly tip: 'profil'; readonly diametru: number; readonly puncte: readonly P2[] };
 
@@ -391,6 +394,9 @@ export type Silueta = { readonly raza: number; readonly h: (r: number) => number
 export function valideazaScula(s: SculaOracol): void {
   if (!(Number.isFinite(s.diametru) && s.diametru > 0)) throw new Error(`scula: diametrul ${s.diametru} nu e pozitiv`);
   if (s.tip === 'v' && !(s.unghi > 0 && s.unghi < 180)) throw new Error(`scula V: unghiul inclus ${s.unghi}° nu e în (0°, 180°)`);
+  if (s.tip === 'toroidala' && !(s.raza > 0 && s.raza < s.diametru / 2)) {
+    throw new Error(`scula toroidală: raza colțului ${s.raza} nu e în (0, D/2 = ${s.diametru / 2})`);
+  }
   if (s.tip === 'profil') {
     const P = s.puncte;
     if (P.length < 2) throw new Error('scula profil: cel puțin două puncte');
@@ -417,6 +423,11 @@ export function silueta(s: SculaOracol): Silueta {
       return { raza: R, h: () => 0 };
     case 'bila':
       return { raza: R, h: (r) => R * (1 - Math.cos(Math.asin(Math.min(1, r / R)))) };
+    case 'toroidala': {
+      // ADR 0303 §3: pe discul plat (r ≤ a = R − ρ) h = 0; dincolo, sfertul de cerc de rază ρ, scris ca la bilă.
+      const rho = s.raza, a = R - rho;
+      return { raza: R, h: (r) => (r <= a ? 0 : rho * (1 - Math.cos(Math.asin(Math.min(1, (r - a) / rho))))) };
+    }
     case 'v': {
       const jum = (s.unghi / 2) * (Math.PI / 180);
       const c = Math.cos(jum), si = Math.sin(jum);
@@ -477,6 +488,11 @@ export function pantaUtila(scula: SculaOracol, adancime: number, pas: number): n
     case 'bila':
       // h = R(1 − cos(asin(r/R))) ⇒ h' = tan(asin(r/R)), crescătoare: maximul e la rLim.
       return Math.tan(Math.asin(rLim / S.raza));
+    case 'toroidala': {
+      // Pe disc h' = 0; pe sfertul de cerc h' = tan(asin((r − a)/ρ)), crescătoare: maximul e la rLim.
+      const a = S.raza - scula.raza;
+      return rLim <= a ? 0 : Math.tan(Math.asin(Math.min(1, (rLim - a) / scula.raza)));
+    }
     case 'profil': {
       let L = 0;
       const P = scula.puncte;
@@ -585,6 +601,7 @@ function pantaMaxima(s: SculaOracol): number {
       return Math.cos(jum) / Math.sin(jum);
     }
     case 'bila':
+    case 'toroidala':
       return Infinity;
     case 'profil': {
       let m = 0;

@@ -43,6 +43,10 @@ function sculaRefuzata(s: Program['scula']): string | null {
   if (forma?.tip === 'v' && forma.varf !== undefined && !(Number.isFinite(forma.varf) && forma.varf >= 0 && forma.varf < diametru)) {
     return `scula V are vârful de ${forma.varf} mm, în afara [0, ${diametru}) mm`;
   }
+  // ADR 0303 §1: raza colțului toroidalei, sub jumătatea diametrului (cât jumătatea ar fi o bilă).
+  if (forma?.tip === 'toroidala' && !(Number.isFinite(forma.raza) && forma.raza > 0 && forma.raza < diametru / 2)) {
+    return `scula toroidală are raza colțului ${forma.raza} mm, în afara (0, ${diametru / 2}) mm`;
+  }
   return null;
 }
 
@@ -80,7 +84,10 @@ export function pregatesteProgram(p: Program, sus: number): ProgramSimulat {
     if (m.tip === 'arc') {
       const r = arc(m, x, y, nx, ny);
       if (typeof r === 'string') return refuz(r, q);
-      if (z !== nz && forma.tip !== 'plata' && !inAer) return refuz(`elicea cu ${forma.tip === 'bila' ? 'bila' : 'V-ul'} nu se simulează încă (doar cu freza plată)`, q);
+      if (z !== nz && forma.tip !== 'plata' && !inAer) {
+        const cu = forma.tip === 'bila' ? 'bila' : forma.tip === 'toroidala' ? 'toroidala' : 'V-ul';
+        return refuz(`elicea cu ${cu} nu se simulează încă (doar cu freza plată)`, q);
+      }
       if (!inAer) out.push(m.sens === 'trigonometric' ? ARC_TRIG : ARC_ORAR, x, y, z, nx, ny, nz, m.centru.x, m.centru.y, r);
     } else if (!inAer) {
       out.push(LINIE, x, y, z, nx, ny, nz, 0, 0, 0);
