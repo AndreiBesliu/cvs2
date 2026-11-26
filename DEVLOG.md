@@ -15510,5 +15510,8 @@ cu patru întrebări: „Mergem cu recomandarile”
 - **Probele:** `export.conflictT.test.ts` (5), `export.motivCalcul.test.ts` (3), `export.greseli.spec.ts` (5); trei probe vechi
   aduse la zi (nota și refuzul pe înțeles).
 - **Mărimea:** pornirea +0 (111,4 kB), totalul 910,5 / 1 000 (+1,1 kB).
+- **Otrăvurile:** `28.8j.py`, 16 / 16. **E2e-ul care deschide exportul:** 352 / 352.
 - **Documentele:** ADR 0291 („Implementarea 28.8↑j” și pragurile lui i), manualul (ambele limbi), fișa etapei 3, registrul
   otrăvurilor, nota liniei.
+
+**Completed:** 26.11, 02:45.

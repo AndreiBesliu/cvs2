@@ -332,3 +332,7 @@ fereastra și un număr T, la clicul omului.
   și unghi, cu „—” în listă; nota față de avertisment, cu `$$`-ul unei mașini lente; refuzul regiunii cu numele, virgula și
   „Du-mă la …”; engleza). Trei probe vechi aduse la zi: `rezumat.spec.ts` (nota), `export.spec.ts` și `incrustatie.spec.ts`
   (numele și virgula). E2e-ul care deschide exportul: 352 / 352.
+- **Otrăvurile:** `28.8j.py`, 16 / 16 (numărul nou, scrierea pe rând, butonul și grupul lui, roșul, greșeala pe câmp, „—” în listă,
+  marginile fără grupare, nota vitezei, refuzul cu numele, virgula, cheia și harta elementelor).
+- **Mărimea:** pornirea +0 (111,4 kB), totalul +1,1 kB (910,5 / 1 000), peste estimarea de +0,5 kB: patru părți în loc de una
+  (butonul, greșelile pe câmp, nota și refuzul pe înțeles). Programul, documentul și serverul: neschimbate.
