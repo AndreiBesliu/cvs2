@@ -109,7 +109,7 @@ function judeca(c: Caz): { readonly miscari: Miscare[]; readonly pasi: PasO[]; r
   return { miscari: r.miscari, pasi: p, treceri: r.treceri, ix };
 }
 
-test('platoul (buzunarul cu peretele plăcii): adaosul pe fund, peretele neatins pe a, trecerile ⌈(adâncimea − a) / pas⌉', () => {
+test('platoul (buzunarul cu peretele plăcii): adaosul pe fund și lângă toți pereții, peretele neatins pe a, trecerile ⌈(adâncimea − a) / pas⌉', () => {
   const c = 0.5, nx = 60, ny = 40, R = 3, a = 0.5;
   const r = relief(grila(nx, ny, c, () => 0), nx, ny, c, T(10, 20), -6);
   const j = judeca({ nume: 'platou', reliefuri: [r], raza: R, adaos: a, pasLateral: 2.4, pas: 2, adancime: 20 });
@@ -120,6 +120,13 @@ test('platoul (buzunarul cu peretele plăcii): adaosul pe fund, peretele neatins
   assert.ok(mijloc.coloane > 200 && Math.abs(mijloc.min - a) < 1e-9 && Math.abs(mijloc.max - a) < 1e-9, `fundul: ${mijloc.min} … ${mijloc.max}`);
   // Lângă perete, pe a: nicio coloană atinsă.
   assert.equal(ramasO(lemn, () => -6, 0, (x, y) => Math.abs(y - 30) < 0.06 && (x < 10 + a - 0.05 || x > 40 - a + 0.05)).coloane, 0);
+  // Și pe pereții paraleli cu liniile (jos și sus, y = 20 și y = 40): pe coloana din mijloc, până la a + 0,3 de perete, tot a.
+  // Liniile stau pe zona în care freza are voie (la R + a de pereți): altfel, prima linie cade la mai puțin de R + a de perete
+  // (nu taie nimic), iar a doua, la un pas mai încolo, lasă o fâșie de lemn peste adaos.
+  // Cu fața la +∞, și coloanele netăiate (o fâșie uitată ar rămâne la fața plăcii, la 6 deasupra fundului).
+  const lateral = ramasO(lemn, () => -6, Infinity, (x, y) => Math.abs(x - 25) < 0.06 && y > 20 + a + 0.3 && y < 40 - a - 0.3);
+  assert.ok(lateral.coloane > 100 && Math.abs(lateral.min - a) < 1e-9 && Math.abs(lateral.max - a) < 1e-9, `pe lângă pereții liniilor: ${lateral.min} … ${lateral.max}`);
+  assert.equal(ramasO(lemn, () => -6, 0, (x, y) => Math.abs(x - 25) < 0.06 && (y < 20 + a - 0.05 || y > 40 - a + 0.05)).coloane, 0);
 });
 
 test('pana 0 → −5 mm (g = 0,25), liniile de-a lungul pantei: rămâne a · (1 + g), cel mult cu surplusul câmpului', () => {

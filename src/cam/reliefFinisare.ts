@@ -338,20 +338,24 @@ type Linie = number[];
  * Liniile pe relieful `p`, cu pasul lateral folosit: aliniate, prin centrele celulelor reliefului, cu pasul un număr întreg de
  * celule; punctele pe linie la pasul celulei de calcul.
  */
-function linii(p: Pregatit, o: ParametriFinisare): { readonly linii: Linie[]; readonly pas: number; readonly aliniat: boolean } {
+function linii(p: Pregatit, o: ParametriFinisare, inset = 0): { readonly linii: Linie[]; readonly pas: number; readonly aliniat: boolean } {
   const c = p.r.celula, h = p.h, E = o.margine === 'trece' ? o.freza.raza : 0;
   const aliniat = !o.nealiniat && (o.unghi === 0 || o.unghi === 90);
   const rez: Linie[] = [];
   if (aliniat) {
     const k = Math.max(1, Math.round(o.pasLateral / c)), s = k * c;
-    // Centrele pe o axă, de la cel mai mic ≥ −E la cel mai mare ≤ L + E (pasul `d`, decalate cu `d / 2`).
-    const centre = (L: number, d: number): number[] => {
-      const a = Math.ceil(-E / d - 0.5), b = Math.floor((L + E) / d - 0.5), out: number[] = [];
+    // Centrele pe o axă, de la cel mai mic ≥ −E + I la cel mai mare ≤ L + E − I (pasul `d`, decalate cu `d / 2`). Cu I > 0 și
+    // nimic între margini (o zonă mai îngustă decât 2 · I), centrul cel mai apropiat de mijloc.
+    const centre = (L: number, d: number, I = 0): number[] => {
+      const a = Math.ceil((I - E) / d - 0.5), b = Math.floor((L + E - I) / d - 0.5), out: number[] = [];
       for (let i = a; i <= b; i++) out.push((i + 0.5) * d);
+      if (out.length === 0 && I > 0) out.push((Math.max(0, Math.min(Math.ceil(L / d) - 1, Math.floor(L / 2 / d))) + 0.5) * d);
       return out;
     };
-    // Lateral, prin centrele celulelor reliefului; de-a lungul, la pasul celulei de calcul.
-    const lung = o.unghi === 0 ? centre(p.W, h) : centre(p.H, h), lat = o.unghi === 0 ? centre(p.H, c) : centre(p.W, c);
+    // Lateral, prin centrele celulelor reliefului (la degroșare cu peretele păstrat, doar pe zona în care freza are voie: la
+    // R + a de margini; altfel prima linie nu taie nimic, iar a doua lasă lângă perete o fâșie peste adaos); de-a lungul, la
+    // pasul celulei de calcul.
+    const lung = o.unghi === 0 ? centre(p.W, h) : centre(p.H, h), lat = o.unghi === 0 ? centre(p.H, c, inset) : centre(p.W, c, inset);
     const alese: number[] = [];
     for (let q = 0; q < lat.length; q += k) alese.push(lat[q]!);
     if (lat.length > 0 && alese[alese.length - 1] !== lat[lat.length - 1]) alese.push(lat[lat.length - 1]!);
@@ -364,7 +368,9 @@ function linii(p: Pregatit, o: ParametriFinisare): { readonly linii: Linie[]; re
   }
   const t = (o.unghi * Math.PI) / 180, ux = o.unghi === 90 ? 0 : Math.cos(t), uy = o.unghi === 0 ? 0 : o.unghi === 90 ? 1 : Math.sin(t);
   const vx = -uy, vy = ux;
-  const x0 = -E, y0 = -E, x1 = p.W + E, y1 = p.H + E;
+  // La degroșare cu peretele păstrat, liniile acoperă zona în care freza are voie (la `inset` = R + a de margini).
+  const ix = Math.min(inset, p.W / 2), iy = Math.min(inset, p.H / 2);
+  const x0 = -E + ix, y0 = -E + iy, x1 = p.W + E - ix, y1 = p.H + E - iy;
   const colturi = [[x0, y0], [x1, y0], [x0, y1], [x1, y1]] as const;
   let bmin = Infinity, bmax = -Infinity;
   for (const [x, y] of colturi) { const b = x * vx + y * vy; bmin = Math.min(bmin, b); bmax = Math.max(bmax, b); }
@@ -449,7 +455,7 @@ function treceriRelief(o: ParametriFinisare, so: Socotire): RezultatFinisare {
   const toate: LinieZ[] = [];
   let pasFolosit = o.pasLateral, puncte = 0;
   for (const [ip, p] of pregatite.entries()) {
-    const l = linii(p, o);
+    const l = linii(p, o, so.degrosare && o.margine !== 'trece' ? so.cota.raza : 0);
     if (ip === 0) pasFolosit = l.pas;
     if (ip === 0 && !l.aliniat && !so.degrosare) avertismente.push(`liniile ${o.nealiniat ? 'nealiniate' : `la ${o.unghi}°`} nu urmează centrele celulelor: pot apărea riduri (moiré) pe detaliile fine`);
     if (ip === 0 && l.aliniat && Math.abs(l.pas - o.pasLateral) > 1e-9) {

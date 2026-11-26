@@ -64,6 +64,8 @@ o('C07', RF, "    if (!(dz > EPS)) return o.avans;", "    if (!(dz > EPS)) retur
   'urcarea și palierul încetinite la avansul de plonjare')
 o('C08', RF, "            m.push({ tip: 'taiere', la: { X: x0, Y: y0, Z: z0 }, avans: avansSpre(unde.x, unde.y, unde.z, x0, y0, z0) });",
   "            m.push({ tip: 'taiere', la: { X: x0, Y: y0, Z: z0 }, avans: o.avans });", 'cam', 'legătura la adâncime coboară cu avansul de tăiere')
+o('C09', RF, "    const l = linii(p, o, so.degrosare && o.margine !== 'trece' ? so.cota.raza : 0);", "    const l = linii(p, o, 0);", 'cam',
+  'liniile degroșării pe tot dreptunghiul: lângă pereții paraleli cu ele rămâne o fâșie peste adaos (placa reliefului)')
 
 # ── Lucrarea ─────────────────────────────────────────────────────────────────────────────────────────────────────
 o('J01', FN, """    ...degrosariFoaie(doc, indexFoaie).map((f): PasProgram => ({ fel: 'degrosare', f })),
