@@ -44,7 +44,7 @@ function citesteStl(stl: Buffer): { rele: number; dim: number[] } {
 
 test('piesa nouă din fila Cărămizi: cadrul 1 × 4 × 3, cu golul de 28,6 × 22,4 mm și puntea de sus', async ({ page }) => {
   await atelier(page);
-  await expect(page.locator('#at-tipuri [data-fila="caramizi"]')).toHaveText('Cărămizi 12');
+  await expect(page.locator('#at-tipuri [data-fila="caramizi"]')).toHaveText('Cărămizi 13');
   // 4 · 8 − 0,2 pe lung, 7,8 pe lat, 3 cărămizi (28,8) și știftul (1,9)
   await expect(cote(page)).toContainText('31,8 × 7,8 × 30,7 mm');
   await expect(page.locator('#at-avert')).toBeHidden();

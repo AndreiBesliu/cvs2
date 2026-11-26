@@ -27,7 +27,7 @@ const are = (page: Page) => page.locator('#at-prinde-are');
 const rand = (page: Page, fel: string) => page.locator(`#at-prinde-lista [data-rand="${fel}"]`);
 const nume = (page: Page) => page.locator('#at-nume-piesa');
 
-const PE_STIFTURI = ['Pantă', 'Pantă inversă', 'Pană / aripă', 'Rotund / con', 'Arc', 'Cadru / fereastră', 'Știfturi pe lateral', 'Suport (bracket)', 'Cărămidă Technic', 'Clemă', 'Mâner', 'Bilă', 'Cupă', 'Cremalieră', 'Brăduț LEGO'];
+const PE_STIFTURI = ['Pantă', 'Pantă inversă', 'Pană / aripă', 'Rotund / con', 'Arc', 'Cadru / fereastră', 'Placă turnantă', 'Știfturi pe lateral', 'Suport (bracket)', 'Cărămidă Technic', 'Clemă', 'Mâner', 'Bilă', 'Cupă', 'Cremalieră', 'Brăduț LEGO'];
 const IN_LOCASURI = ['Pantă', 'Pantă inversă', 'Pană / aripă', 'Rotund / con', 'Arc', 'Cadru / fereastră', 'Știfturi pe lateral', 'Suport (bracket)', 'Cărămidă Technic', 'Clemă', 'Mâner', 'Brăduț LEGO'];
 const PE_AX = ['Grindă', 'Cărămidă Technic', 'Bucșă / conector', 'Conector perpendicular', 'Conector în unghi', 'Roată dințată', 'Șurub melc', 'Camă', 'Roată conică', 'Roată coroană', 'Conică dublă', 'Fulie',
   'Roată cu anvelopă', 'Șenilă', 'Elice', 'Elice de barcă', 'Ventilator cu carcasă', 'Roată cu palete'];
@@ -108,7 +108,8 @@ test('grinda și bucșa: știftul vine de 2 sau de 3, după cât de adâncă e g
   await expect(are(page)).toHaveText('5 găuri de știft');
   await panou(page).locator('summary').click();
   await expect(rand(page, 'gauraStift').locator('.at-prinde-unde')).toHaveText('În găurile de știft');
-  await expect(rand(page, 'gauraStift').locator('button')).toHaveText(['Știft', 'Ax']);
+  // (baza plăcii turnante intră cu pivotul, un capăt de știft Technic)
+  await expect(rand(page, 'gauraStift').locator('button')).toHaveText(['Placă turnantă', 'Știft', 'Ax']);
   // bucșa rotundă de 2 (15,8 mm): știftul de 3
   await piesa(page, 'legaturi', 'bucsa');
   await page.locator('#at-b-lung [data-v="2"]').click();
@@ -169,7 +170,7 @@ test('piesele celelalte se judecă așa cum sunt acum în editoarele lor: o roat
   await piesa(page, 'roti', 'rotita');
   await page.locator('#at-r-gaura [data-v="r"]').click();
   await expect(are(page)).toHaveText('1 gaură de știft');
-  await expect(rand(page, 'gauraStift').locator('button')).toHaveText(['Știft', 'Ax']);
+  await expect(rand(page, 'gauraStift').locator('button')).toHaveText(['Placă turnantă', 'Știft', 'Ax']);
   await piesa(page, 'legaturi', 'ax');
   await expect(rand(page, 'capatAx').locator('button')).toHaveText(PE_AX);
 });

@@ -16247,6 +16247,37 @@ fiecare”): „Din nota ta („Ce rămâne”), singura felie care poate porni 
 
 **Completed:** 26.11, 21:09.
 
+## 2026-11-26 — Felia 3.Ck-1: placa turnantă a atelierului Easy 3Draw (ADR 0284) (sesiune cloud)
+
+**Prompt:** „Zi-le ca pot continua cu ce urmeaza la fiecare” (cuvântul owner-ului, transmis de sesiunea principală, cu
+recomandarea ei: „pornește 3.Ck acum, cu jocul din calibrare, și spune în raport că jocul bilei rămâne de verificat la
+tipărire”); ADR 0284, felia 3.Ck (balamaua și placa turnantă), despărțită în 3.Ck-1 (placa turnantă) și 3.Ck-2 (balamaua)
+**Started:** 26.11, 18:26. **Completed:** 26.11, 19:17 (felia, cu otrăvurile; orele, după ceasul containerului).
+
+- **Ce face:** în fila Cărămizi, „Placă turnantă” de 2 × 2 sau 4 × 4, din două plăci: baza (fața de sus netedă,
+  locașurile dedesubt, în mijloc pivotul: un capăt de știft Technic de Ø4,75 cu fanta de 0,8 mm, înalt de 3,1 mm) și
+  partea de sus (placa motorului cu știfturi, locașuri și gaura de știft din mijloc), care se rotește pe pivot. „Fă placa
+  turnantă” pune amândouă piesele în listă.
+- **Jocul:** gaura e cea din pasul de calibrare; baza are „Jocul pivotului” (−0,1 … 0,2 mm, din 0,05 în 0,05), scăzut din
+  raza pivotului, cu textul care spune ce faci după prima tipărire. Cât de greu se rotește și cât de bine stă pe pivot
+  rămân de verificat la tipărire.
+- **Motorul:** `turnantaCote`, `turnanta` (în `TIPURI`); pivotul se declară știft Technic în sus, deci alipirea și
+  verificarea din „Modelul” îl folosesc fără nimic nou. **Atelierul:** galeria, pictograma, numele, editorul, „Fă placa
+  turnantă”; jocul ținut doar în definiția bazei.
+- **Probele**, scrise întâi: unitară, 9 teste (au căzut cu „Lt.turnantaCote is not a function”): plasele, pivotul,
+  partea de sus egală cu placa cu gaură, montajul la cinci unghiuri fără pătrundere, cu martori, calibrarea, verificarea,
+  marginile; e2e, 4 scenarii; pasul în engleză din cvs2. Probele filelor, galeriilor, pictogramelor, căutării,
+  prinderilor și modelului, la zi.
+- **Otrăvurile:** `3.Ck-1.py`, la prima rulare 42 / 45 (M18, pivotul colțuros: proba cere acum pivotul rotund din
+  grad în grad; A05, partea de sus care își spune jocul: proba unei construcții din stocare cu partea de sus scrisă de
+  mână cu un joc; A16, fără pictogramă: prinsă de proba unitară a pictogramelor, pusă în setul ei): 45 / 45.
+  `3.Ck-1-en.py`: 6 / 6. Ancorele tuturor listelor pluginului: 2 641 (ancora `PD` din `3.Cj-3.py`, scurtată: placa
+  turnantă stă acum între cadru și `lateral`).
+- **Mărimea:** Easy 3Draw 18.43.0, 579,3 kB (era 576,4); aplicația, neschimbată. Nimic pe server.
+- **Documentele:** ADR 0284 („Implementat (3.Ck-1)”), nota liniei, indexul liniilor, fișa etapei 3, registrul
+  otrăvurilor, `CLAUDE.md`, traducerile roadmap-ului.
+- **Urmează:** 3.Ck-2 (balamaua), tot cu jocul din calibrare.
+
 ## 2026-11-26 — Sesiunea principală în cloud: liniile pornesc ce urmează (Model: Claude Opus 5.5)
 
 **Prompt:** „Zi-le ca pot continua cu ce urmeaza la fiecare”
