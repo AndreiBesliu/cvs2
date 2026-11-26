@@ -16004,3 +16004,17 @@ unirea lui 3.Cf-2
   probele care caută titlurile după text; i-am scris la 11:53. Unirea, la raportul ei.
 - **Documentele:** decizia în `CLAUDE.md`; rândul exportului în indexul liniilor; întrebarea scoasă din lista owner-ului, în
   `docs/linii/principala.md`.
+
+## 2026-11-26 — Sesiunea principală în cloud: a cincizeci și doua unire (atelierul Easy 3Draw: 3.Cg, verificarea din „Modelul”) (Model: Claude Opus 5.5)
+
+**Prompt:** raportul liniei atelierului („3.Cg gata de unit”, `9e7b9ced`), la ordinul în vigoare „unește ce se poate”
+**Started:** 26.11, 11:57. **Completed:** unirea în `main`, 26.11, 11:58; publicarea pe test, lotul 47.
+
+- **Verificat înaintea unirii:** completul (45786956243) și rapidul (45786937250) pe `5f46d9d5`, verzi; rapidul pe `9e7b9ced`, verde;
+  între `5f46d9d5` și `9e7b9ced`, doar documente; PR-ul #59; fără `.lucru/`. Codul lui `main` (`a2e5bfdf`) era strămoșul lui
+  `5f46d9d5`, iar după el `main` a primit doar documente.
+- **Unirea, pe `unire-2611k`** (din `5acec698`): `9e7b9ced`, în `75d8dde2`, fără nicio ciocnire. Arborele unirii are exact codul lui
+  `5f46d9d5`, deci a intrat pe porțile lui: unit 10 747 / 0 (12 sărite, pe Linux), e2e 961 / 961, funcțiile pe emulatoare
+  136 / 136, paginile 60 / 60 (citite din jurnalul rulării). Local: traducerile (1 208), catalogul controalelor,
+  biblioteca (Easy 3Draw 18.40.0, 562 629 octeți), probele documentelor 76 / 76. Nimic pe server.
+- **Documentele:** decizia și paragraful de stare în `CLAUDE.md`; indexul liniilor; starea din `docs/linii/principala.md`.

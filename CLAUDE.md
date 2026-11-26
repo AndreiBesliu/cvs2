@@ -1288,7 +1288,7 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   nouă: o piesă răsturnată sau dintre știfturi e `liber`, ca una desprinsă; o mutare nouă din „Modelul” trece prin
   transformarea piesei și prin `lasaPeLoc`. Un buton nou al pieselor din model schimbă `MUTARI` din
   `trenulet.alipire.spec.ts`.** **3.Cg (verificarea din „Modelul”; ADR 0284, partea D, răspunsul 2a al owner-ului:
-  avertisment, nu refuz)** gata pe 26.11, pe ramură: de la două piese în sus, fiecare piesă a modelului e verificată:
+  avertisment, nu refuz)** gata pe 26.11, unită în `main` pe 26.11 (`75d8dde2`): de la două piese în sus, fiecare piesă a modelului e verificată:
   **prinsă** (o prindere făcută cu altă piesă, oricum ar fi ajuns acolo), **plutește** (nu stă pe masă și nu e
   prinsă, nici prin alte piese, de una care stă; fără nimic pe masă, piesa cea mai de jos ține loc de masă) sau
   **intră în alta** (judecat pe plase: lemn comun mai gros de un sfert de milimetru). Semnul stă pe rândul piesei din
@@ -1946,6 +1946,34 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 26.11.2026, la prânz (a cincizeci și doua unire din cloud): **verificarea din vederea „Modelul” a atelierului Easy
+  3Draw (3.Cg), unită în `main`** (sesiunea principală, ramura `unire-2611k`, din `5acec698`). Linia atelierului,
+  ramura `wip/3.Xh-biblioteca-ui`, `9e7b9ced` (codul lui `5f46d9d5`), PR-ul `AndreiBesliu/cvs2#59` (ADR 0284, partea
+  D, răspunsul 2a al owner-ului: avertisment, nu refuz), unită în `75d8dde2`: de la două piese în sus, fiecare piesă a
+  modelului e **prinsă** (o prindere făcută cu altă piesă), **plutește** (nu stă pe masă și nu e prinsă, nici prin
+  alte piese, de una care stă) sau **intră în alta** (lemn comun mai gros de un sfert de milimetru, judecat pe plase);
+  semnul stă pe rândul piesei, rezumatul deasupra listei, iar în vederea 3D piesa are un văl și un contur roșu sau
+  galben; piesa rămâne unde a fost pusă și nimic din verificare nu se ține în model. Găsit de verificare și reparat
+  în felie: „deasupra” piesei alese e acum prima placă liberă (o roată de 3,8 mm ținea o placă, iar piesa de
+  deasupra intra 0,6 mm în ea). **Easy 3Draw 18.40.0** (562,6 kB); otrăvurile 98 / 98 și 11 / 11; ancorele tuturor
+  listelor pluginului (2 434), fiecare găsită exact o dată. Doar pachetul extensiei se schimbă; nimic pe server;
+  documentul rămâne v30. Ramura avea codul lui `main` (`a2e5bfdf`), iar de atunci `main` a primit doar documente:
+  **arborele unirii are exact codul lui `5f46d9d5`** (`git diff` gol în afara fișierelor `.md`), deci a intrat pe
+  porțile lui, fără alt complet: completul 45786956243, verde la prima trecere (63 min): unit 10 747 / 0 (12 sărite,
+  pe Linux), e2e 961 / 961, funcțiile pe emulatoare 136 / 136, paginile 60 / 60; rapidul, verde pe `5f46d9d5` și pe
+  `9e7b9ced`; aplicația, neschimbată: pornirea 111,6 kB (plafonul 125; cu ușa 116,8, cu Atelierul 117,1), totalul
+  919,4 / 1 000 kB, `/admin` 138,3 / 200, contul 30,2 / 32. Pe test e `a2e5bfdf` (lotul 46); felia aceasta pleacă
+  acum (lotul 47). **La owner, de încercat în „Modelul”** (întrebările liniei, din fișa etapei 3): sunt bune cuvintele
+  „plutește” și „intră în alta”? se vede bine vălul și conturul în 3D? o piesă care stă pe alta fără prindere să fie
+  „plutește” (azi da)? e bun pragul de un sfert de milimetru? La linii, în lucru: atelierul (3.Ch, construcțiile cu
+  nume și lista lor de piese), exportul (28.8↑q, „Toate foile” cu operațiile fiecărei foi, cu titlurile grupurilor
+  alese de owner; de raportat). **Tot la owner:** de încercat „Modelul” (răsturnările, jumătățile de pas), de încercat
+  și de tipărit decorațiunile, pachetul Easy 3Draw (562,6 kB), constatarea 14, întrebarea 10 a cotelor și cele două
+  alegeri din d-1, alegerile reliefului și tăierea plăcii 18, rândul editabil al finisării și al degroșării, Escape
+  în cele șase ferestre, feliile frezelor (16.A↑d–g), cele două alegeri mai vechi cu recomandarea aplicată, proba pe
+  mașină a centrului foii, cele patru întrebări din auditul elicelor, arhivarea sesiunii elicelor, verificarea
+  juridică (GDPR) a utilizării aplicației înaintea live-ului, „cine unește în `main`”, meniul de sus la 320 px la
+  atingere.
 - 26.11.2026, la prânz: **titlurile în română ale grupurilor din fereastra exportului: „Tăietura”, „Golirea”,
   „Coborârea”** („da, Tăietura, Golirea, Coborârea”, în sesiunea principală, la recomandarea liniei exportului, lăsată
   owner-ului de auditul ferestrei: constatarea 21, ADR 0291, „Implementarea 28.8↑k”). În locul lui „Ce tăiere”, „Cum
