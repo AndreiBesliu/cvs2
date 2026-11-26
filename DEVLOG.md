@@ -16244,7 +16244,8 @@ v31 e ținut pentru tine”. **Started:** 26.11, 20:16, pe `wip/16.A-freze-e`, d
   migrarea v30 → v31 refuză un v30 cu toroidală; oracolul documentului (secțiunea v31, T01–T07, RT0–RT10); corpusul de aur
   (`854ddf9`): canelura cu o toroidală Ø6 r1 în v31, `ISTORIE` v30 pe părintele ușii (aceiași octeți), ieșirile v1–v30 doar cu
   numărul schimbat. Probele care țin versiunea curentă, mutate pe v31 (ca la v30: lanțurile oracolului, „schema mai nouă” 32;
-  proba plăcii 18 cere acum `VERSIUNE_SCHEMA`).
+  proba plăcii 18 și proba e2e a plăcuțelor cer acum `VERSIUNE_SCHEMA`; a doua a căzut în primul complet al ramurii, 979 /
+  980, pe `43c9709a`).
 - **Lucrarea** refuză toroidala pe orice operație și pe orice freză a ei, cu forma, T-ul și calea în motiv; fereastra exportului
   nu face rând unei operații cu o freză pe care copia ei n-o poartă (`operatieCuRand`): altfel Exportă ar fi scris o plată în
   locul toroidalei. Panoul o numește. Programul de azi rămâne octet cu octet (corpusul CAM, plăcile, atelierele).
