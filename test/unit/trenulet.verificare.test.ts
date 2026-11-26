@@ -97,9 +97,11 @@ test('ciocnirea, pe cutii: lemnul comun mai subțire de un sfert de milimetru nu
 });
 
 test('ciocnirea, cu cutiile mult suprapuse: o felie subțire de lemn comun tot nu e ciocnire, pe raze sau de-a latul lor', () => {
-  // a doua piesă e din două cutii: una lângă prima (sau intrată puțin în ea) și una departe, pe toată lungimea, care doar îi
-  // întinde cutia peste toată prima. Partea comună a cutiilor e atunci cubul întreg, iar razele merg pe x
-  const departe = cutie([-5, 20, 0], [30, 21, 1]), cuFelie = (a: P3, b: P3) => Lm.seCiocnesc(ZECE, [...cutie(a, b), ...departe], PE_LOC);
+  // a doua piesă e din trei cutii: una lângă prima (sau intrată puțin în ea) și două mici, departe, în colțuri opuse, care
+  // doar îi întind cutia peste toată prima. Partea comună a cutiilor e atunci cubul întreg, iar razele merg pe x
+  const departe = [...cutie([-6, -6, -6], [-5, -5, -5]), ...cutie([20, 20, 20], [21, 21, 21])];
+  const cuFelie = (a: P3, b: P3) => Lm.seCiocnesc(ZECE, [...cutie(a, b), ...departe], PE_LOC);
+  assert.equal(Lm.seCiocnesc(ZECE, departe, PE_LOC), false, 'cutiile de departe nu ating nimic');
   // felia e subțire de-a lungul razelor (0,1 mm pe x): fiecare rază are lemn comun, dar prea scurt
   assert.equal(cuFelie([9.9, 0, 0], [20, 10, 10]), false, 'felie de 0,1 mm pe raze');
   assert.equal(cuFelie([9.4, 0, 0], [20, 10, 10]), true, 'felie de 0,6 mm pe raze');
@@ -304,6 +306,10 @@ test('verificarea: plutește tot grupul care nu ajunge la masă; fără nimic pe
   // la o jumătate de placă (1,6 mm) deasupra mesei, o cărămidă plutește; la 0,03 mm (jocul socotelii), stă
   assert.deepEqual(verifica([{ d: CARAMIDA }, { d: CARAMIDA, x: 6, cu: [0, 0, 1.6] }]).piese, [BINE, { prinsa: [], intra: [], pluteste: true }]);
   assert.deepEqual(verifica([{ d: CARAMIDA }, { d: CARAMIDA, x: 6, cu: [0, 0, 0.03] }]).piese, [BINE, BINE]);
+  // o cărămidă cu două plăci pe ea: amândouă ajung la masă prin ea (un singur grup, oricare ar fi ordinea perechilor)
+  assert.deepEqual(verifica([{ d: CARAMIDA }, { d: PLACA, z: 3 }, { d: PLACA, x: 2, z: 3 }]),
+    { bucati: 1, piese: [{ prinsa: [1, 2], intra: [], pluteste: false }, { prinsa: [0], intra: [], pluteste: false }, { prinsa: [0], intra: [], pluteste: false }] });
+  assert.deepEqual(verifica([{ d: PLACA, z: 3 }, { d: PLACA, x: 2, z: 3 }, { d: CARAMIDA }]).piese.map((p) => p.pluteste), [false, false, false]);
   // scos mijlocul: placa de sus rămâne în aer
   assert.deepEqual(verifica([{ d: CARAMIDA }, { d: PLACA, x: 1, z: 6 }]).piese, [BINE, { prinsa: [], intra: [], pluteste: true }]);
 });
@@ -351,6 +357,17 @@ test('verificarea ține minte perechile judecate: a doua oară nu mai socotește
   // dusă sub grindă (cutiile lor nu se mai ating), perechea cu grinda nici nu mai e judecată
   Lm.verificaModel(model(montat(8, 16.2)), memo2);
   assert.equal(memo2.size, 6);
+  // cheia ține amândouă piesele: în golul cărămizii (între tuburile ei, la 11,9, 7,9), un cub mic nu atinge nimic; o tijă
+  // înaltă, pusă în același loc, iese prin tavanul ei (8,6 … 9,6). Aceeași așezare, altă piesă: alt răspuns
+  const memo4 = new Map<string, boolean>(), caramida = { T: PE_LOC, tri: fa(CARAMIDA).tri, prinderi: [], cheie: 'cărămida' }, loc = mutare(11.65, 7.65, 3);
+  const cuPiesa = (tri: Tri[], cheie: string) => [...Lm.verificaModel([caramida, { T: loc, tri, prinderi: [], cheie }], memo4).piese[0]!.intra];
+  assert.deepEqual(cuPiesa(cutie([0, 0, 0], [0.5, 0.5, 9]), 'tija'), [1]);
+  assert.deepEqual(cuPiesa(cutie([0, 0, 0], [0.5, 0.5, 0.5]), 'cubul'), []);
+  assert.deepEqual(cuPiesa(cutie([0, 0, 0], [0.5, 0.5, 9]), 'tija'), [1]);
+  assert.equal(memo4.size, 2);
+  // și prima piesă: același cub, la fel așezat, în plin (o cutie plină în locul cărămizii)
+  assert.deepEqual([...Lm.verificaModel([{ T: PE_LOC, tri: cutie([0, 0, 0], [31.8, 15.8, 11.5]), prinderi: [], cheie: 'plina' }, { T: loc, tri: cutie([0, 0, 0], [0.5, 0.5, 0.5]), prinderi: [], cheie: 'cubul' }], memo4).piese[0]!.intra], [1]);
+  assert.equal(memo4.size, 3);
   // fără cheia piesei, nu se ține minte nimic
   const memo3 = new Map<string, boolean>();
   Lm.verificaModel(piese.map(({ cheie: _c, ...p }) => p), memo3);
@@ -360,6 +377,14 @@ test('verificarea ține minte perechile judecate: a doua oară nu mai socotește
 test('verificarea nu se împiedică de un model stricat: o piesă fără plasă sau cu o așezare stricată nu e judecată', () => {
   const [a, b] = model([{ d: CARAMIDA }, { d: PLACA, x: 1, z: 3 }]);
   const stricata = { T: { m: [1, 0, 0], t: [0, 0, Number.NaN] }, tri: b!.tri, prinderi: b!.prinderi };
+  // nici funcțiile ei: o așezare stricată nu prinde nimic și nu se ciocnește cu nimic (și nu aruncă)
+  for (const T of [stricata.T, { m: [...UNITATE], t: [0, 0, Number.NaN] }, { m: [...UNITATE].map(() => Number.NaN), t: [0, 0, 0] }]) {
+    assert.equal(Lm.prinseInLume(a!.prinderi, a!.T, b!.prinderi, T).length, 0);
+    assert.equal(Lm.prinseInLume(b!.prinderi, T, a!.prinderi, a!.T).length, 0);
+    assert.equal(Lm.seCiocnesc(ZECE, ZECE, T), false);
+  }
+  assert.equal(Lm.seCiocnesc(ZECE, [], PE_LOC), false);
+  assert.equal(Lm.seCiocnesc([], ZECE, PE_LOC), false);
   const v = Lm.verificaModel([a!, stricata]);
   assert.deepEqual(v.piese.map((p) => ({ prinsa: [...p.prinsa], intra: [...p.intra], pluteste: p.pluteste })), [BINE, BINE]);
   // piesa stricată nu e nici măcar o bucată a modelului

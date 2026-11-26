@@ -46,8 +46,8 @@ o('C02', LG, 'const CIOCNIRE = 0.25;', 'const CIOCNIRE = 1;', 'verificare', 'un 
 o('C03', LG, '    if (lat.some(x => x < s)) return false;\n', '', 'verificare', 'cutiile care nu se ating nu mai opresc socoteala')
 WN = '''      if (j >= ies.length || (i < intr.length && intr[i]! <= ies[j]!)) { if (n++ === 0) out.push(intr[i]!); i++; }
       else { if (n === 0) return []; if (--n === 0) out.push(ies[j]!); j++; }'''
-o('C04', LG, WN, WN.replace('if (n++ === 0) out.push(intr[i]!)', 'if (n++ % 2 === 0) out.push(intr[i]!)').replace('if (--n === 0) out.push(ies[j]!)', 'if (--n % 2 === 0) out.push(ies[j]!)'),
-  'verificare', 'lemnul, numărat par-impar: zona suprapusă a două corpuri ale piesei iese gol')
+o('C04', LG, WN, WN.replace('if (n++ === 0) out.push(intr[i]!)', 'n++; out.push(intr[i]!)').replace('if (--n === 0) out.push(ies[j]!)', '--n; out.push(ies[j]!)'),
+  'verificare', 'lemnul, numărat par-impar (fiecare trecere schimbă starea): zona suprapusă a două corpuri ale piesei iese gol')
 o('C05', LG, 'l = nw > 0 ? ies : intr;', 'l = nw > 0 ? intr : ies;', 'verificare', 'intrările și ieșirile razelor, schimbate între ele')
 UV = 'const u0 = r0[u]! + 0.6372 * s, v0 = r0[v]! + 0.6372 * s, M = new Float64Array(15);'
 o('C06', LG, UV, UV.replace('u0 = r0[u]! + 0.6372 * s', 'u0 = r0[u]! + 1.6372 * s'), 'verificare', 'primul rând de raze cade în afara părții comune')
@@ -91,6 +91,7 @@ o('V08', LG, CT, CT.replace('[0, 1, 2].some', '[0, 1].some'), 'verificare', 'cut
 CH = '''`${A.cheie}|${B.cheie}|${[...rel.m, ...rel.t].map(x => Math.round(x * 1e5) / 1e5 + 0).join(",")}`'''
 o('V09', LG, CH, '`${A.cheie}|${B.cheie}`', 'verificare', 'ciocnirea ținută minte fără așezarea pieselor: mutată, perechea spune tot ce spunea')
 o('V10', LG, CH, CH.replace('${A.cheie}|${B.cheie}|', '${A.cheie}|'), 'verificare', 'ciocnirea ținută minte fără a doua piesă')
+o('V21', LG, CH, CH.replace('${A.cheie}|${B.cheie}|', '${B.cheie}|'), 'verificare', 'ciocnirea ținută minte fără prima piesă')
 LV = 'if (lovit) { out[i]!.intra.push(j); out[j]!.intra.push(i); }'
 o('V11', LG, LV, 'if (lovit) { out[i]!.intra.push(j); }', 'verificare', 'ciocnirea e spusă doar pentru prima piesă a perechii')
 o('V12', LG, LV, 'if (!lovit) { out[i]!.intra.push(j); out[j]!.intra.push(i); }', 'verificare', 'ciocnirea, spusă pe dos')
