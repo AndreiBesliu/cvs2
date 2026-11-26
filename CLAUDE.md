@@ -1320,7 +1320,7 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   alese (`tineConstructia` le pune în ea la salvare; trecerea pe alta prin `treciPe`). Aceeași piesă e aceeași după
   `Lego.cheieDef` (câmpurile în ordine), nu după `JSON.stringify`, și în lista de printat. Un text scris de om intră în
   pagina pluginului prin `esc` și cu `translate="no"`: traducerea paginii (`limba.ts`) îl ocolește.**
-  **3.Ci (construcțiile gata; ADR 0284, partea E)** gata pe 26.11, pe ramură: în „Modelul”, panoul „Construcții gata”
+  **3.Ci (construcțiile gata; ADR 0284, partea E)** gata pe 26.11, unită în `main` pe 26.11 (`57e58798`): în „Modelul”, panoul „Construcții gata”
   (șasiul cu patru roți, cutia de angrenaje de la 1 : 1 la 1 : 25, brațul de macara, barca cu elice), fiecare din
   parametri, cu ce iese pe hârtie; „Fă construcția” o deschide ca o construcție nouă, cu piesele prinse între ele, pe
   masă, iar dinții roților îmbucați. Easy 3Draw 18.42.0 (următoarea, 18.43.0). **Un șablon nou intră în motor
@@ -1974,6 +1974,32 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 26.11.2026, după-amiaza (a cincizeci și cincea unire din cloud): **construcțiile gata din vederea „Modelul” a
+  atelierului Easy 3Draw (3.Ci), unite în `main`** (sesiunea principală, ramura `unire-2611n`, din `fa91f78e`). Linia
+  atelierului, ramura `wip/3.Xh-biblioteca-ui`, `70088dec` (codul lui `1c0bdc4b`, cu `main` `fa91f78e` adus), PR-ul
+  `AndreiBesliu/cvs2#63` (ADR 0284, partea E), unită în `57e58798`: în „Modelul”, panoul „Construcții gata” face din
+  parametri patru construcții, șasiul cu patru roți, cutia de angrenaje (de la 1 : 1 la 1 : 25), brațul de macara și
+  barca cu elice, fiecare cu ce iese pe hârtie; „Fă construcția” o deschide ca o construcție nouă, cu piesele prinse
+  între ele, pe masă, iar dinții roților îmbucați. **Easy 3Draw 18.42.0** (563,1 kB); otrăvurile 55 / 57 (două,
+  practic echivalente pentru cele patru șabloane, scris în ADR) și 6 / 6; ancorele tuturor listelor pluginului
+  (2 590), fiecare găsită exact o dată. Doar pachetul extensiei se schimbă; nimic pe server; documentul rămâne v30.
+  `main` nu se mișcase de la `fa91f78e`, iar între `1c0bdc4b` și `70088dec` diferă doar documente, deci **arborele
+  unirii are exact codul lui `1c0bdc4b`** și a intrat pe porțile lui, fără alt complet: completul 45828364875, verde
+  la prima trecere (62 min): unit 10 772 / 0 (12 sărite, pe Linux), e2e 978 / 978, funcțiile pe emulatoare 136 / 136,
+  paginile 60 / 60; rapidul, verde pe `1c0bdc4b` și pe `70088dec`; aplicația, neschimbată: pornirea 111,6 kB
+  (plafonul 125; cu ușa 116,8, cu Atelierul 117,1), totalul 921,1 / 1 000 kB, `/admin` 138,3 / 200, contul
+  30,2 / 32. Loturile 48 și 49 sunt pe test din 14:20 și 15:27; felia aceasta pleacă acum (lotul 50). **Alegerile
+  liniei, cu recomandarea aplicată, la owner** (ADR 0284, „Implementat (3.Ci)”): cele patru construcții și mărimile
+  lor; roțile în trei mărimi; rapoartele cutiei; construcția se deschide ca una nouă. **Din ADR 0284 rămâne doar
+  3.Ck** (balamaua și placa turnantă), după ce owner-ul tipărește bila și cupa; linia nu pornește altă felie fără
+  cuvântul lui. La linii, în lucru: exportul (28.8↑p). **Tot la owner:** de încercat „Toate foile” pe un proiect cu
+  mai multe foi; de încercat „Modelul” (verificarea, răsturnările, jumătățile de pas, construcțiile cu nume și cele
+  gata); de încercat și de tipărit decorațiunile; pachetul Easy 3Draw (563,1 kB); constatarea 14; întrebarea 10 a
+  cotelor și cele două alegeri din d-1; alegerile reliefului și tăierea plăcii 18; rândul editabil al finisării și al
+  degroșării; Escape în cele șase ferestre; feliile frezelor (16.A↑d–g); cele două alegeri mai vechi cu
+  recomandarea aplicată; proba pe mașină a centrului foii; cele patru întrebări din auditul elicelor; arhivarea
+  sesiunii elicelor; verificarea juridică (GDPR) a utilizării aplicației înaintea live-ului; „cine unește în `main`”;
+  meniul de sus la 320 px la atingere.
 - 26.11.2026, după-amiaza: **loturile 48 și 49 sunt pe test:** `77bf8ceb` (28.8↑q, „Toate foile” cu operațiile
   fiecărei foi în fereastra exportului, cu titlurile grupurilor „Tăietura”, „Golirea”, „Coborârea”), din 26.11, 14:20
   (completul pe `main` 45808757348, verde: unit 10 752 / 0, e2e 967 / 967, funcțiile pe emulatoare 136 / 136,
