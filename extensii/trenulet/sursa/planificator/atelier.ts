@@ -43,6 +43,8 @@ var Atelier3D = (function () {
   /** Vederea 3D: câmpurile există de când `ok` e adevărat (din `porneste3D`). */
   type Vedere3D = { ok: boolean; T: Trei.Biblioteca; r: Trei.WebGLRenderer; scena: Trei.Object3D; cam: Trei.PerspectiveCamera; mat: Trei.Material;
     matTren: Trei.Material; mesh: Trei.Mesh | null; grila: Trei.GridHelper | null; grup?: Trei.Object3D; teta: number; fi: number; dist: number; tinta: Trei.Vector3;
+    /** Avertismentele verificării (vălul și conturul pieselor cu probleme; un grup al lor: nu intră în mărimea modelului). */
+    avert?: Trei.Object3D;
     /** Punctele prinderilor piesei alese din model (un grup al lor: nu intră în mărimea modelului). */
     puncte?: Trei.Object3D; geomPunct?: Trei.BufferGeometry; geomContur?: Trei.BufferGeometry; matPunct?: Trei.Material; matTinta?: Trei.Material; matContur?: Trei.Material };
   /** Corpul unei piese din model: plasa, amprenta pe grilă (știfturi) și pivotul din mijlocul ei (axul, la piesele rotunde). */
@@ -2091,6 +2093,7 @@ var Atelier3D = (function () {
     if (v3.mesh) { v3.scena.remove(v3.mesh); v3.mesh.geometry.dispose(); }
     if (v3.grup) v3.grup.visible = false;
     if (v3.puncte) v3.puncte.visible = false;
+    if (v3.avert) v3.avert.visible = false;
     v3.mesh = new T.Mesh(g, dinTren ? v3.matTren : v3.mat); v3.scena.add(v3.mesh);
     const b = g.boundingBox, c = new T.Vector3(); b!.getCenter(c);
     const m = Math.max(b!.max.x - b!.min.x, b!.max.y - b!.min.y, b!.max.z - b!.min.z);
@@ -2152,6 +2155,28 @@ var Atelier3D = (function () {
     const r = Lego.rezolvaModel(piese);
     return new Map(piese.map((p, i) => [p.id, r[i]!]));
   }
+  /** Ce spune verificarea despre o piesă din model: de cine e prinsă și în cine intră (id-urile lor) și dacă plutește. */
+  type StareM = { prinsa: string[]; intra: string[]; pluteste: boolean };
+  // ciocnirile judecate (motorul le ține minte după cele două piese și așezarea uneia față de cealaltă) și ultima verificare
+  const ciocniri = new Map<string, boolean>();
+  let verificat: { cheie: string; piese: Map<string, StareM>; bucati: number } | null = null;
+  /** Verificarea modelului (ADR 0284, felia 3.Cg): pentru fiecare piesă, dacă e prinsă, dacă plutește sau dacă intră în alta.
+   *  E un avertisment: nu schimbă nimic în model și nu se ține în el. Se reface doar când modelul s-a schimbat. */
+  function verificare(A: Map<string, Asezat>) {
+    const cheie = JSON.stringify([model, paramMotor()]);
+    if (verificat && verificat.cheie === cheie) return verificat;
+    const piese: { id: string; T: Transf; tri: readonly Tri[]; prinderi: readonly Prindere[]; cheie: string }[] = [];
+    for (const m of model) {
+      const c = corpSigur(m.def), a = A.get(m.id);
+      if (c && a) piese.push({ id: m.id, T: a.T, tri: c.tri, prinderi: c.prinderi, cheie: JSON.stringify([m.def, paramMotor()]) });
+    }
+    if (ciocniri.size > 4000) ciocniri.clear();
+    const v = Lego.verificaModel(piese, ciocniri), id = (k: number) => piese[k]!.id;
+    verificat = { cheie, piese: new Map(piese.map((x, i) => [x.id, { prinsa: v.piese[i]!.prinsa.map(id), intra: v.piese[i]!.intra.map(id), pluteste: v.piese[i]!.pluteste }])), bucati: v.bucati };
+    return verificat;
+  }
+  /** Semnul unei piese: „intra” (intră în alta), „pluteste” sau „”. Ciocnirea trece înaintea plutirii. */
+  const semnM = (st: StareM | undefined) => (!st ? "" : st.intra.length ? "intra" : st.pluteste ? "pluteste" : "");
   /** Piesa rămâne unde e (cu transformarea T), fără legătură: pe grilă, dacă stă drept pe ea; altfel, liberă. */
   function lasaPeLoc(m: InModel, T: Transf) {
     const c = corpSigur(m.def), g = c && Lego.grilaDinTransf(c, T);
@@ -2194,13 +2219,22 @@ var Atelier3D = (function () {
     return [Math.round(px / 8 - 0.5), Math.round(py / 8 - 0.5)];
   };
   const inaltimeM = (m: InModel): number => m.def.placi || (m.def.tip === "lateral" || m.def.tip === "caramidaTechnic" ? 3 : ["clema", "maner", "bila", "cupa"].includes(m.def.tip) ? 1
-    : m.def.tip === "suport" && !m.def.invers ? 1 : Math.max(1, Math.round(corpModel(m.def).dim[2]! / 3.2)));
+    : m.def.tip === "suport" && !m.def.invers ? 1 : Math.max(1, Math.ceil(corpModel(m.def).dim[2]! / 3.2 - 1e-6)));
   const materiale = new Map<string, Trei.Material>();
   function material(cul: string, ales: boolean) {
     const k = cul + (ales ? "*" : "");
     if (!materiale.has(k)) materiale.set(k, new v3.T.MeshStandardMaterial({ color: cul, roughness: 0.42, metalness: 0.02, emissive: ales ? 0x3a3a3a : 0x000000 }));
     return materiale.get(k);
   }
+  /** Culoarea avertismentului din vedere: roșu, piesa intră în alta; galben, plutește. `contur`: materialul conturului (o
+   *  coajă puțin mai mare decât piesa, văzută doar pe dinăuntru, deci doar în jurul ei); altfel, al vălului de peste piesă. */
+  function materialAvert(semn: string, contur: boolean) {
+    const k = (contur ? "!!" : "!") + semn, color = semn === "intra" ? 0xe5484d : 0xf5a524;
+    if (!materiale.has(k)) materiale.set(k, contur ? new v3.T.MeshBasicMaterial({ color, side: v3.T.BackSide }) : new v3.T.MeshBasicMaterial({ color, transparent: true, opacity: 0.5 }));
+    return materiale.get(k);
+  }
+  /** Cât iese conturul unui avertisment în jurul piesei (mm). */
+  const CONTUR = 0.7;
   function arataModel(pastreaza?: boolean) {
     if (!v3.ok) return;
     const T = v3.T;
@@ -2208,7 +2242,10 @@ var Atelier3D = (function () {
     if (!v3.grup) { v3.grup = new T.Group(); v3.scena.add(v3.grup); }
     v3.grup.visible = true;
     while (v3.grup.children.length) v3.grup.remove(v3.grup.children[0]!);
-    const A = asezari();
+    if (!v3.avert) { v3.avert = new T.Group(); v3.scena.add(v3.avert); }
+    v3.avert.visible = true;
+    while (v3.avert.children.length) v3.avert.remove(v3.avert.children[0]!);
+    const A = asezari(), V = verificare(A);
     for (const m of model) {
       const c = corpSigur(m.def), a = A.get(m.id);
       if (!c || !a) continue;
@@ -2218,6 +2255,20 @@ var Atelier3D = (function () {
       mesh.applyMatrix4(new T.Matrix4().set(r[0]!, r[1]!, r[2]!, t[0], r[3]!, r[4]!, r[5]!, t[1], r[6]!, r[7]!, r[8]!, t[2], 0, 0, 0, 1));
       mesh.userData.id = m.id;
       v3.grup.add(mesh);
+      // avertismentul verificarii (ADR 0284, 3.Cg): aceeasi plasa, inca o data, in culoarea lui
+      const semn = semnM(V.piese.get(m.id));
+      if (semn) {
+        // un văl peste piesă (se vede oricare i-ar fi culoarea alături de contur)
+        const val = new T.Mesh(c.geom, materialAvert(semn, false)!);
+        val.applyMatrix4(new T.Matrix4().set(r[0]!, r[1]!, r[2]!, t[0], r[3]!, r[4]!, r[5]!, t[1], r[6]!, r[7]!, r[8]!, t[2], 0, 0, 0, 1));
+        val.renderOrder = 5;
+        v3.avert.add(val);
+        // conturul: piesa mărită cu CONTUR mm în fiecare parte, în jurul mijlocului cutiei ei (p → s·p + c·(1 − s), apoi așezarea)
+        const s = c.dim.map(d => (d + 2 * CONTUR) / d), k = c.dim.map((d, i) => d / 2 * (1 - s[i]!)), kt = Lego.aplicaTransf(a.T, k);
+        const contur = new T.Mesh(c.geom, materialAvert(semn, true)!);
+        contur.applyMatrix4(new T.Matrix4().set(r[0]! * s[0]!, r[1]! * s[1]!, r[2]! * s[2]!, kt[0], r[3]! * s[0]!, r[4]! * s[1]!, r[5]! * s[2]!, kt[1], r[6]! * s[0]!, r[7]! * s[1]!, r[8]! * s[2]!, kt[2], 0, 0, 0, 1));
+        v3.avert.add(contur);
+      }
     }
     punctePrinderi(A);
     const box = new T.Box3();
@@ -2283,7 +2334,7 @@ var Atelier3D = (function () {
   /** Încotro e partea de sus a unei piese răsturnate, cu semnele de pe butoanele de mutare. */
   const SPRE: Record<string, string> = { "x+": "X →", "x-": "← X", "y+": "Y ↑", "y-": "↓ Y" };
   function editorModel() {
-    const A = asezari(), fel = (x: InModel) => A.get(x.id)?.fel ?? "grila";
+    const A = asezari(), V = verificare(A), fel = (x: InModel) => A.get(x.id)?.fel ?? "grila";
     const e = $("#at-editor"), m = model.find(x => x.id === alesM), c = m ? corpSigur(m.def) : null, felM = m ? fel(m) : "grila", axM = m && felM === "grila" ? stiftAx(m) : null;
     // locul unei piese, in lista: coltul amprentei; la o piesa rotunda, stiftul axului; „prinsă” sau „liberă”, la celelalte
     const loculM = (x: InModel) => { const f = fel(x), a = f === "grila" ? stiftAx(x) : null; return f === "prins" ? tr("prinsă") : f === "liber" ? tr("liberă") : a ? tr`ax ${a[0]}, ${a[1]}, ${x.z}` : `${x.x}, ${x.y}, ${x.z}`; };
@@ -2320,12 +2371,32 @@ var Atelier3D = (function () {
             pr.map((p, k) => p.fel !== f ? "" : `<button type="button" data-pk="${k}" aria-pressed="${!!tinta && tinta.k === k}" aria-label="${numePrindere(pr, k)}">${nrPrindere(pr, k)}</button>`).join("")}</div></div>`).join("")}
           ${tinta ? `<p class="mic" id="at-m-tinta">${tr`Ținta: ${numePrindere(pr, tinta.k)}. Alege piesa următoare (filele de sus), apoi „Alipește în model”.`}</p>` : ""}
         </div>` : "";
+    // verificarea (ADR 0284, 3.Cg): ce spune despre piesa aleasa si, deasupra listei, despre tot modelul. Cu o singura piesa
+    // nu e nimic de verificat
+    const st = m ? V.piese.get(m.id) : undefined, numeM = (ids: readonly string[]) => ids.map(id => titluM(model.find(x => x.id === id)!)).join(", ");
+    let stari = "";
+    if (m && st && model.length > 1) {
+      const baza = felM === "prins" ? model.find(x => x.id === m.prins!.de) : undefined;
+      if (baza && !st.prinsa.includes(baza.id)) stari += `<p class="avert" data-stare="desfacuta">${tr`Legată de ${titluM(baza)}, dar prinderea lor nu mai ține.`}</p>`;
+      if (st.intra.length) stari += `<p class="avert rau" data-stare="intra">${tr`Intră în ${numeM(st.intra)}.`}</p>`;
+      if (st.pluteste) stari += `<p class="avert" data-stare="pluteste">${st.prinsa.length ? tr("Plutește, cu piesele de care e prinsă: niciuna nu ajunge la masă.") : tr("Plutește: nu stă pe masă și nu e prinsă de nimic.")}</p>`;
+      if (st.prinsa.length) stari += `<p class="mic" data-stare="prinsa">${tr`Prinsă de ${numeM(st.prinsa)}.`}</p>`;
+      else if (!st.intra.length && !st.pluteste) stari += `<p class="mic" data-stare="neprinsa">${tr("Nu e prinsă de alte piese.")}</p>`;
+    }
+    // „20 de piese”, dar „19 piese”
+    const cuDe = (n: number) => (n % 100 === 0 || n % 100 >= 20 ? tr`${n} de` : String(n));
+    const lovite = model.filter(x => V.piese.get(x.id)?.intra.length).length, inAer = model.filter(x => V.piese.get(x.id)?.pluteste).length;
+    const rele = [lovite ? tr`${cuDe(lovite)} piese intră una în alta` : "", inAer === 1 ? tr("o piesă plutește") : inAer ? tr`${cuDe(inAer)} piese plutesc` : ""].filter(Boolean);
+    const rezumat = model.length < 2 ? "" : `<p class="${rele.length ? "at-avert" : "mic"}" id="at-m-verificare">${rele.length ? tr`Verificare: ${rele.join(" · ")}.`
+      : tr("Verificare: nicio piesă nu plutește și niciuna nu intră în alta.") + " " + (V.bucati > 1 ? tr`Modelul e din ${cuDe(V.bucati)} bucăți care nu se țin între ele.` : tr("Toate piesele se țin între ele."))}</p>`;
+    const semnLista = (x: InModel) => { const f = semnM(V.piese.get(x.id)); return f === "intra" ? ` <span class="semn rau">intră în alta</span>` : f === "pluteste" ? ` <span class="semn">plutește</span>` : ""; };
     e.innerHTML = `<h2>Modelul</h2>
-      <p class="mic">Așezi piesele pe grila de știfturi, ca să vezi avionul întreg înainte să-l printezi. Alegi o piesă cu un clic în vedere sau din listă, apoi o muți: X și Y câte un știft, Z câte o placă. O piesă nouă intră deasupra celei alese, la mijlocul ei. Piesele rotunde (roțile, elicele) stau cu axul în mijlocul unui știft: una nouă intră pe axul celei alese, iar rotorul unui ventilator, în carcasa lui. Nu verific dacă piesele se prind între ele: e doar privirea de ansamblu.</p>
+      <p class="mic">Așezi piesele pe grila de știfturi, ca să vezi avionul întreg înainte să-l printezi. Alegi o piesă cu un clic în vedere sau din listă, apoi o muți: X și Y câte un știft, Z câte o placă. O piesă nouă intră deasupra celei alese, la mijlocul ei. Piesele rotunde (roțile, elicele) stau cu axul în mijlocul unui știft: una nouă intră pe axul celei alese, iar rotorul unui ventilator, în carcasa lui. Modelul verifică piesele: îți spune care plutește (nu stă pe masă și nu e prinsă de nimic) și care intră în alta. E un avertisment: piesa rămâne unde ai pus-o.</p>
       <p class="mic">Ca să prinzi două piese între ele, alege una, apoi una dintre prinderile ei (un punct din vedere sau un număr de mai jos): piesa următoare se alipește acolo și rămâne legată de ea, deci o urmează când o muți.</p>
       <p class="mic">„Răstoarnă ↓” și „Răstoarnă →” culcă piesa câte un sfert de tură, spre față sau spre dreapta; cu „Rotește”, ajungi la orice așezare dreaptă. „Jumătăți de pas” mută câte o jumătate de știft și o jumătate de placă, pentru piesele Technic. O piesă răsturnată sau pusă între știfturi e „liberă”: nu mai ține de grilă, dar se mută la fel.</p>
       ${m ? `<div class="model-ales">
         <div><b>${titluM(m)}</b> <span class="mic">· ${unde}</span></div>
+        ${stari ? `<div class="model-stare" id="at-m-stare">${stari}</div>` : ""}
         <div class="mutari" id="at-m-mutari">
           ${mutari}
         </div>
@@ -2333,7 +2404,8 @@ var Atelier3D = (function () {
         <div class="at-rand"><span class="mic">Culoare:</span><div class="culori" id="at-m-culori">${cul}</div></div>
         <div class="at-rand"><button class="btn" type="button" id="at-m-dubla">Dublează</button><button class="btn" type="button" id="at-m-scoate">Scoate din model</button><button class="btn" type="button" id="at-m-editeaza">Schimb-o în editor</button></div>
       </div>` : model.length ? `<p class="mic">Nicio piesă aleasă.</p>` : `<p class="mic">Modelul e gol. Alege o piesă (fila de sus), apoi „Pune în model”.</p>`}
-      ${model.length ? `<ol class="model-lista" id="at-m-lista">${model.map(x => `<li><button type="button" data-mid="${x.id}" aria-pressed="${x.id === alesM}"><span class="punct" data-fundal="${x.culoare}"></span>${titluM(x)} <span class="mic">${loculM(x)}</span></button></li>`).join("")}</ol>` : ""}
+      ${rezumat}
+      ${model.length ? `<ol class="model-lista" id="at-m-lista">${model.map(x => `<li data-avert="${semnM(V.piese.get(x.id))}"><button type="button" data-mid="${x.id}" aria-pressed="${x.id === alesM}"><span class="punct" data-fundal="${x.culoare}"></span>${titluM(x)}${semnLista(x)} <span class="mic">${loculM(x)}</span></button></li>`).join("")}</ol>` : ""}
       <p class="mic">Cu vederea 3D aleasă (un clic pe ea): săgețile mută (cu Shift, câte o jumătate de pas), PageUp / PageDown urcă și coboară, R rotește, X și Y răstoarnă, Delete scoate.</p>`;
     fundaluri(e);
     if (m) {

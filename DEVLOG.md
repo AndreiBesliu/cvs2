@@ -15970,6 +15970,39 @@ la ordinul în vigoare „unește ce se poate”
 
 **Completed:** 26.11, 11:16.
 
+## 2026-11-26 — Felia 3.Cg: verificarea din „Modelul” (prinsă, plutește, intră în alta; ADR 0284) (sesiune cloud)
+
+**Prompt:** „vreau sa adaugi mai multe tipuri de piese pentru fiecare categoire […] compatibile intre ele nu doar una
+cate una ci si ca constructii complexe” (cererea owner-ului din 24.11; ADR 0284, partea D, cu răspunsul lui 2a:
+verificarea e un avertisment, nu un refuz); pornită la confirmarea sesiunii principale („Poți porni 3.Cg”), după
+unirea lui 3.Cf-2
+**Started:** 26.11, 07:20. **Completed:** 26.11, 09:00 (felia, cu otrăvurile; orele, după ceasul containerului).
+
+- **Ce face:** de la două piese în sus, fiecare piesă din „Modelul” e verificată: prinsă (o prindere făcută cu altă
+  piesă, oricum ar fi ajuns acolo), plutește (nu stă pe masă și nu e prinsă, nici prin alte piese, de una care stă)
+  sau intră în alta (lemn comun mai gros de un sfert de milimetru, judecat pe plase). Semnul pe rândul din listă,
+  rezumatul deasupra listei, rândurile piesei alese, vălul și conturul din vederea 3D. Piesa rămâne unde e pusă.
+- **Motorul:** `prinseInLume`, `seCiocnesc` (razele, numărul de înfășurare, patru raze vecine), `verificaModel` (cu
+  ținerea de minte a perechilor judecate, în coordonatele primei piese).
+- **Probele**, scrise întâi: unitară, 18 teste (au căzut cu „seCiocnesc is not a function”), cu valorile pe hârtie și
+  12 perechi montate ale motorului (montate, nu se ciocnesc; mutate cu 1 mm, da); e2e, 7 scenarii (au căzut întâi pe
+  semnele lipsă), cu culorile din vedere numărate pe pixeli; proba în engleză din cvs2.
+- **Găsit de verificare și reparat:** „deasupra” piesei alese rotunjea înălțimea ei la cea mai apropiată placă; o
+  roată de 3,8 mm ținea o placă, deci piesa de deasupra intra 0,6 mm în ea. Acum e prima placă liberă.
+- **Găsit la privirea capturii:** vălul văzut prin celelalte piese încâlcea vederea; acum e un văl obișnuit peste
+  piesă și un contur (o coajă mai mare cu 0,7 mm, văzută pe dinăuntru), în grupul lor, în afara mărimii modelului.
+- **Probe vechi aduse la zi:** `trenulet.alipire.spec.ts` și `trenulet.model.spec.ts` (rândurile listei au acum
+  semnele; „deasupra” unei roți e a doua placă), `trenulet.spec.ts` (versiunea).
+- **Otrăvurile:** `3.Cg.py`, 98: la prima rulare (97) 90 / 97 (motorul și textele pe proba unitară: 51 / 58; atelierul
+  pe e2e: 39 / 39); proba unitară, întărită pentru cele șapte scăpate (așezarea stricată la funcțiile directe, lemnul
+  numărat par-impar, feliile subțiri la marginea de jos, grupul cu o piesă prinsă de două, cheia ținerii de minte pe
+  amândouă piesele), apoi 8 / 8 (cu o otravă nouă, V21). `3.Cg-en.py`: 11 / 11, din prima rulare. Ancorele
+  tuturor listelor pluginului, verificate față de sursele de acum: 2 434, fiecare exact o dată.
+- **Easy 3Draw 18.40.0** (562,6 kB), cu rândul de „ce e nou”. Doar pachetul extensiei se schimbă.
+- **Documentele:** ADR 0284 („Implementat (3.Cg)”), fișa etapei 3, `docs/linii/atelier.md`, indexul liniilor,
+  `docs/otravuri.md`, `CLAUDE.md`.
+- **Urmează:** 3.Ch (construcțiile cu nume și lista lor de piese).
+
 ## 2026-11-26 — Sesiunea principală în cloud: loturile 45 și 46 pe test; sesiunea principală pe Opus (Model: Claude Opus 5.5)
 
 **Prompt:** „o sa folosim Opus de aici in colo” (după `/model claude-opus-5-5`); publicările loturilor 45 și 46, pornite la unirile a cincizecea și a cincizeci și una
@@ -16006,3 +16039,17 @@ la ordinul în vigoare „unește ce se poate”
   probele care caută titlurile după text; i-am scris la 11:53. Unirea, la raportul ei.
 - **Documentele:** decizia în `CLAUDE.md`; rândul exportului în indexul liniilor; întrebarea scoasă din lista owner-ului, în
   `docs/linii/principala.md`.
+
+## 2026-11-26 — Sesiunea principală în cloud: a cincizeci și doua unire (atelierul Easy 3Draw: 3.Cg, verificarea din „Modelul”) (Model: Claude Opus 5.5)
+
+**Prompt:** raportul liniei atelierului („3.Cg gata de unit”, `9e7b9ced`), la ordinul în vigoare „unește ce se poate”
+**Started:** 26.11, 11:57. **Completed:** unirea în `main`, 26.11, 11:58; publicarea pe test, lotul 47.
+
+- **Verificat înaintea unirii:** completul (45786956243) și rapidul (45786937250) pe `5f46d9d5`, verzi; rapidul pe `9e7b9ced`, verde;
+  între `5f46d9d5` și `9e7b9ced`, doar documente; PR-ul #59; fără `.lucru/`. Codul lui `main` (`a2e5bfdf`) era strămoșul lui
+  `5f46d9d5`, iar după el `main` a primit doar documente.
+- **Unirea, pe `unire-2611k`** (din `5acec698`): `9e7b9ced`, în `75d8dde2`, fără nicio ciocnire. Arborele unirii are exact codul lui
+  `5f46d9d5`, deci a intrat pe porțile lui: unit 10 747 / 0 (12 sărite, pe Linux), e2e 961 / 961, funcțiile pe emulatoare
+  136 / 136, paginile 60 / 60 (citite din jurnalul rulării). Local: traducerile (1 208), catalogul controalelor,
+  biblioteca (Easy 3Draw 18.40.0, 562 629 octeți), probele documentelor 76 / 76. Nimic pe server.
+- **Documentele:** decizia și paragraful de stare în `CLAUDE.md`; indexul liniilor; starea din `docs/linii/principala.md`.
