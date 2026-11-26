@@ -15611,3 +15611,29 @@ otrăvurile; orele, după ceasul containerului).
 - **Documentele:** ADR 0285 („Implementat (3.Cl-4)”), indexul ADR, fișa etapei 3, `docs/linii/atelier.md`, indexul
   liniilor, `docs/otravuri.md`, `CLAUDE.md`.
 - **Urmează:** 3.Cf-2 (orientarea de mână pe trei axe), la cuvântul owner-ului dacă vrea altă ordine.
+
+## 2026-11-26 — Felia 3.Cf-2: răsturnările și jumătățile de pas în „Modelul” (ADR 0284) (sesiune cloud)
+
+**Prompt:** „vreau sa adaugi mai multe tipuri de piese pentru fiecare categoire […] compatibile intre ele nu doar una
+cate una ci si ca constructii complexe” (cererea owner-ului din 24.11; ADR 0284, partea D, cu răspunsul lui din 25.11:
+întâi alipirea, apoi orientarea de mână, în 3.Cf-2)
+**Started:** 26.11, 03:40 (local, cât 3.Cl-3 și 3.Cl-4 își așteaptă unirea). **Completed:** 26.11, 04:40 (felia, cu
+otrăvurile; orele, după ceasul containerului).
+
+- **Ce face:** în vederea „Modelul”, piesa aleasă se răstoarnă câte un sfert de tură („Răstoarnă ↓”, „Răstoarnă →”),
+  în jurul mijlocului cutiei ei, cu partea de jos la aceeași înălțime; cu „Rotește”, cele 24 de așezări drepte.
+- **„Jumătăți de pas”:** o jumătate de știft pe X și Y, o jumătate de placă pe Z. Tastele: X, Y, Shift + săgeată.
+- **Nicio dată nouă:** piesa răsturnată sau dintre știfturi e „liberă”; ajunsă iar drept pe grilă, e din nou a grilei.
+- **Motorul:** `intorsLiber`, `loculDrept`, `susTransf`; `rotitLiber` primește pivotul (cama se rotește în jurul axului).
+- **Probele**, scrise întâi: unitară, 10 teste (au căzut cu „intorsLiber is not a function”); e2e, 6 scenarii (au
+  trecut din prima, cu valorile socotite pe hârtie); proba în engleză din cvs2.
+- **Găsit la privirea capturii:** comutatorul ales arăta ca unul neales (butoanele n-aveau aspect de „ales”); are acum
+  aspectul lui și ține două coloane, cu proba.
+- **Probe vechi aduse la zi:** `trenulet.alipire.spec.ts` număra butoanele piesei din model (trei în plus).
+- **Otrăvurile:** `3.Cf-2.py`, 71 / 71, la prima rulare; `3.Cf-2-en.py`, 10 / 10. Șase ancore ale unor liste mai vechi
+  (3.Cf-1, 3.Cl-2, 3.Cl-3), mutate de feliile din urmă, aduse la zi și rulate din nou: 6 / 6.
+- **De făcut, în afara feliei:** 30 de ancore mutate în opt liste mai vechi ale pluginului (`3.Tg` … `3.Ts`).
+- **Easy 3Draw 18.39.0** (555,4 kB), cu rândul de „ce e nou”. Doar pachetul extensiei se schimbă.
+- **Documentele:** ADR 0284 („Implementat (3.Cf-2)”), fișa etapei 3, `docs/linii/atelier.md`, indexul liniilor,
+  `docs/otravuri.md`, `CLAUDE.md`.
+- **Urmează:** 3.Cg (verificarea), la cuvântul owner-ului dacă vrea altă ordine.

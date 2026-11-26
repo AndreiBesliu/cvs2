@@ -517,3 +517,46 @@ Easy 3Draw 18.34.0, pe ramura `wip/3.Xh-biblioteca-ui`, în sesiunea cloud a lin
   de ancore s-au mutat; cele mutate, rulate din nou: 30 / 30.
 - **Mărimea:** pachetul Easy 3Draw, 524,4 kB (era 516,3); aplicația, neschimbată.
 - **Felia următoare:** 3.Cf-2 (orientarea pe trei axe și pozițiile la jumătate de pas), apoi 3.Cg (verificarea).
+
+## Implementat (3.Cf-2, 26.11.2026)
+
+Easy 3Draw 18.39.0, pe ramura `wip/3.Xh-biblioteca-ui`, în sesiunea cloud a liniei atelierului.
+
+- **Ce vede omul.** Piesa aleasă din model (de pe grilă sau liberă) are trei butoane noi:
+  - **„Răstoarnă ↓”** și **„Răstoarnă →”** o culcă un sfert de tură: vârful ei cade spre față (↓ Y), respectiv spre
+    dreapta (X →). Piesa se întoarce în jurul mijlocului cutiei ei: mijlocul rămâne pe loc pe X și Y, iar partea de
+    jos, la aceeași înălțime. Cu „Rotește ↻”, cele două dau toate cele 24 de așezări drepte. A patra răsturnare la
+    rând pune piesa exact de unde a plecat, deci iar pe grilă.
+  - **„Jumătăți de pas”** e un comutator al vederii: cu el ales, X și Y mută câte o jumătate de știft (4 mm), iar
+    „Sus” și „Jos”, câte o jumătate de placă (1,6 mm). Nu se ține minte de la o deschidere la alta.
+- **Rândul piesei.** O piesă răsturnată sau pusă între știfturi e „liberă”, ca una desprinsă. Rândul ei spune în plus
+  cum stă: „cu partea de sus spre ↓ Y” (sau X →, ← X, Y ↑), „cu fața în jos”, ori „între știfturi: x 1,5, y 0, z 0,5”
+  (locul, în știfturi și plăci). Ajunsă iar drept pe grilă, e din nou o piesă de pe grilă.
+- **Tastele**, cu vederea 3D aleasă: X și Y răstoarnă; Shift + săgeată (sau PageUp / PageDown) mută cu o jumătate de
+  pas, oricum ar fi comutatorul. Cu Ctrl, Alt sau Meta, tastele rămân ale browserului (înainte, Ctrl + R era oprit de
+  vedere).
+- **O piesă prinsă** n-are răsturnări: se mișcă în jurul prinderii ei. Răstorni baza, iar piesele prinse o urmează.
+- **O piesă rotundă care stă drept, între știfturi, se rotește în jurul axului ei**, nu al cutiei (la camă și la melc,
+  axul nu e în mijlocul cutiei).
+- **Datele ținute** nu se schimbă: o piesă răsturnată sau dintre știfturi e `liber` (transformarea ei), ca una
+  desprinsă. Un model ținut de dinainte se deschide la fel.
+- **Motorul** (`extensii/trenulet/sursa/lego/lego.ts`, secțiunea „orientarea pe trei axe”), funcții pure: `intorsLiber`
+  (răsturnarea, cu matricele exacte ale sferturilor de tură), `loculDrept` (locul unei piese care stă drept, și între
+  știfturi), `susTransf` (încotro e partea de sus); `rotitLiber` primește pivotul.
+- **Atelierul** (`planificator/atelier.ts`): `pasFin`, `SPRE`; `mutaM(op, fin)`: o piesă de pe grilă răsturnată sau
+  mutată cu o jumătate de pas trece prin transformarea ei, iar `lasaPeLoc` o ține liberă cât nu stă drept pe grilă.
+- **Ce n-a intrat:** alinierea la o prindere a unei piese răsturnate de mână se face tot prin alipire (3.Cf-1);
+  verificarea (3.Cg). Pasul pe Z rămâne placa sau jumătatea ei: gaura unei grinzi Technic culcate nu cade pe el, deci
+  un ax se pune prin ea cu alipirea, nu cu săgețile.
+- **Probele.** Unitară, scrisă întâi (`test/unit/trenulet.intoarcere.test.ts`, 10 teste, cu valorile pe hârtie din
+  cotele cărămizii 2 × 4): cele două răsturnări, piesa ridicată, cele patru răsturnări care se întorc pe grilă (cinci
+  piese, patru locuri, două axe), cele 24 de așezări (cu mijlocul și partea de jos neschimbate), piesa prinsă de una
+  răsturnată, locul dintre știfturi, partea de sus, cama rotită în jurul axului. E2e
+  (`test/e2e/trenulet.intoarcere.spec.ts`, 6 scenarii): butoanele, rândul piesei și mărimea modelului, jumătățile de
+  pas, tastele, piesa prinsă care urmează baza și modelul redeschis, cama. Proba în engleză din cvs2
+  (`trenulet.spec.ts`) răstoarnă roata de 24 și o mută cu o jumătate de pas.
+- **Otrăvurile:** `test/otravuri/3.Cf-2.py`, 71 / 71 la prima rulare (motorul 29, atelierul 38, textele 4);
+  `3.Cf-2-en.py`, 10 / 10. Ancorele a șase otrăvuri mai vechi, mutate de această felie și de 3.Cl-3 și 3.Cl-4 (3.Cf-1
+  A53; 3.Cl-2 A01, A14, T02; 3.Cl-2-en N09; 3.Cl-3 A01), aduse la zi și rulate din nou: 6 / 6.
+- **Mărimea:** pachetul Easy 3Draw, 555,4 kB (era 553,0); aplicația, neschimbată.
+- **Felia următoare:** 3.Cg (verificarea: prinsă, plutește, se ciocnește).

@@ -19,10 +19,10 @@ unite în `main` pe 25.11 (`9815527f`); 3.Ce (punctele de prindere și „Se pri
 recomandările, 1a–4a): 3.Cl-1 (fulgul, steaua și brăduțul, în fila nouă „Crăciun”; 18.35.0), unită în `main` pe 26.11
 (`41b1fb6f`, PR-ul `AndreiBesliu/cvs2#50`); 3.Cl-2 (globul; 18.36.0), unită în `main` pe 26.11 (`b6c9998d`, PR-ul
 `AndreiBesliu/cvs2#53`); 3.Cl-3 (ornamentul cu nume; 18.37.0) și 3.Cl-4 (brăduțul LEGO; 18.38.0), gata pe ramură pe
-26.11: ADR 0285 are toate feliile făcute.**
-Urmează 3.Cf-2
-(orientarea pe trei axe, pozițiile la jumătate de pas); 3.Ck așteaptă tipărirea bilei și a cupei.** Versiunea
-următoare a pachetului: 18.39.0._
+26.11 (PR-ul `AndreiBesliu/cvs2#55`, raportat): ADR 0285 are toate feliile făcute.** **3.Cf-2 (răsturnările și jumătățile de
+pas în „Modelul”; 18.39.0), gata local pe 26.11, neîmpinsă cât PR-ul #55 își așteaptă unirea.**
+Urmează 3.Cg (verificarea); 3.Ck așteaptă tipărirea bilei și a cupei. Versiunea
+următoare a pachetului: 18.40.0._
 
 ## Numerele liniei
 
@@ -43,7 +43,7 @@ următoare a pachetului: 18.39.0._
 | 3.Cd | Arcul | gata (25.11) |
 | 3.Ce | Punctele de prindere și „Se prinde cu” | gata (25.11) |
 | 3.Tu | Modelul: piesele rotunde pe același ax (ADR 0283) | gata (25.11); acceptată de owner cu 1a, 2a, 3a |
-| 3.Cf | Modelul: orientarea pe trei axe și alipirea la prinderi | 3.Cf-1 (alipirea, cu piesele legate), gata (25.11); 3.Cf-2 (orientarea pe trei axe, jumătățile de pas), urmează |
+| 3.Cf | Modelul: orientarea pe trei axe și alipirea la prinderi | 3.Cf-1 (alipirea, cu piesele legate), gata (25.11); 3.Cf-2 (răsturnările, jumătățile de pas), gata (26.11) |
 | 3.Cg | Modelul: verificarea (prins, plutește, se ciocnește) | avertisment, nu refuz (răspunsul 2a) |
 | 3.Ch | Construcțiile cu nume și lista lor de piese | |
 | 3.Ci | Construcțiile gata (șasiul, cutia de angrenaje, brațul de macara, barca cu elice) | după Model (răspunsul 3a) |
@@ -510,3 +510,32 @@ următoare a pachetului: 18.39.0._
   (`extensii.descoperire.spec.ts`, rândul lui 18.21.0, ieșit din catalog la 18.26.0); proba citește acum din lista
   bibliotecii un rând cu dată dintre cele rămase. La fel, orice probă care privește catalogul adevărat își ia valorile
   din `extensii/biblioteca.json`.
+
+## 3.Cf-2, gata (26.11, în cloud): răsturnările și jumătățile de pas în „Modelul” (ADR 0284, partea D)
+
+- **Unde e:** motorul, după `rotitLiber`: `INTORS`, `intorsLiber`, `loculDrept` (prin `grilaDinTransf(…, oriunde)`),
+  `susTransf`; `rotitLiber` are al treilea parametru, pivotul. Atelierul: `pasFin`, `SPRE`, `editorModel` (rândul piesei
+  libere și butoanele `tx`, `ty`, `fin`), `mutaM(op, fin)`, `tasteModel`; `head.html`: `.mutari .btn[data-m="fin"]`.
+- **Ce face și ce n-a intrat:** în ADR 0284, „Implementat (3.Cf-2)”.
+- **Probele:** `test/unit/trenulet.intoarcere.test.ts`, `test/e2e/trenulet.intoarcere.spec.ts`; otrăvurile,
+  `test/otravuri/3.Cf-2.py` și `3.Cf-2-en.py`.
+
+### Reguli și capcane (3.Cf-2)
+
+- **Nicio dată nouă:** o piesă răsturnată sau dintre știfturi e `liber`. Cine adaugă o mutare nouă în „Modelul” o trece
+  prin transformarea piesei și prin `lasaPeLoc`, care hotărăște singur dacă piesa e pe grilă sau liberă.
+- **Răsturnarea ține mijlocul cutiei pe X și Y și partea de jos a cutiei.** Nu prinde nimic de grilă: așa, patru
+  răsturnări se întorc exact de unde au plecat (o prindere la grilă ar aduna rotunjiri, iar la egalitate ar sări cu 4
+  mm). Matricele sferturilor sunt exacte (0, 1, −1), deci cele 24 de așezări nu adună 6e−17.
+- **Așezarea de pe grilă are −0 în matrice** (de la −sin 0). O probă care compară matrice le trece întâi prin `v + 0`.
+- **Butoanele vechi ale unei piese din model sunt numărate în `trenulet.alipire.spec.ts`** (`MUTARI`): un buton nou al
+  pieselor de pe grilă sau libere o schimbă.
+- **Un comutator nou printre butoanele de mutare își cere aspectul de „ales”:** `.btn` n-avea niciunul, iar pe captură
+  comutatorul ales arăta ca unul neales. Proba compară culoarea de fond, cu mausul mutat de pe buton.
+- **Tastele vederii nu iau tastele cu Ctrl, Alt sau Meta.** O tastă nouă a modelului se adaugă în `tasteModel`, după
+  paza aceea.
+- **Ancorele otrăvurilor vechi:** înaintea commit-ului, fiecare listă care țintește sursele pluginului se verifică față
+  de fișierele de acum (un script scurt: `vechi` apare exact o dată). La această felie erau mutate șase ancore ale
+  feliilor din aceeași săptămână, aduse la zi. **Rămân 30 de ancore mutate în opt liste mai vechi** (`3.Tg`, `3.Th`,
+  `3.Tk`, `3.Tm`, `3.Tpb`, `3.Tq`, `3.Tr`, `3.Ts`), de dinaintea acestei felii: de adus la zi într-o felie de
+  întreținere, cu rularea lor din nou.
