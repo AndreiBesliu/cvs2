@@ -173,4 +173,14 @@ test('(u) ușa documentului curent: null pe o versiune întreagă de la 1 până
     assert.ok(c, p);
     assert.equal(usa(c.doc).ok, false, p);
   }
+  // Refuzul e al migrării (ADR 0313 §3), nu al ușii v30 de după ea: și o degroșare v29 fără câmpul ei (pe care ușa v30 ar
+  // refuza-o oricum, cu alt motiv) e spusă ca document v29 nevalid.
+  const rz0 = REFUZATE_V30.find((r) => r.nume.startsWith('RZ0 '));
+  assert.ok(rz0);
+  const faraCamp = copie(rz0.doc) as { piese: { operatii: Liber[] }[] };
+  for (const p of faraCamp.piese) for (const o of p.operatii) if (o['tip'] === 'degrosare') delete o['degrosare'];
+  for (const [nume, d] of [['RZ0', rz0.doc], ['fără câmp', faraCamp]] as const) {
+    const r = usa(d);
+    assert.ok(!r.ok && /e o degroșare, pe care v30 o aduce: nu e un document v29 valid/.test(String(r.motiv)), `${nume}: ${r.ok ? 'primit' : String(r.motiv)}`);
+  }
 });

@@ -88,9 +88,8 @@ o('J13', JB, '  const finisari = [...degrosariFoaie(doc, 0), ...finisariFoaie(do
 
 # ── Rolul „Relief 3D” ────────────────────────────────────────────────────────────────────────────────────────────
 o('R01', RO, "['finisare', 'relief3d'] : [];", "['finisare'] : [];", 'rol', 'rolul „Relief 3D” nu e oferit')
-o('R02', RO, """        { id: 'degrosare', tip: 'degrosare', latura: 'pe-linie', noduri: [...reliefuri] },
-        { id: 'finisare', tip: 'finisare', latura: 'pe-linie', noduri: [...reliefuri] },""", """        { id: 'finisare', tip: 'finisare', latura: 'pe-linie', noduri: [...reliefuri] },
-        { id: 'degrosare', tip: 'degrosare', latura: 'pe-linie', noduri: [...reliefuri] },""", 'rol', 'operațiile rolului în ordinea greșită')
+# R02 (operațiile rolului în ordinea greșită, în `grupeRol`) a fost scoasă: echivalentă. Recunoașterea (`impartire`) sortează
+# împărțirea, iar operațiile rolului „Relief 3D” le face `operatiiRelief3d`, nu grupele (proba ordinii: `rol.degrosare.test.ts`).
 o('R03', RO, "  if (vf?.planZero !== undefined) valori['planZero'] = vf.planZero;\n", '', 'rol', 'planul zero al degroșării nu urmează finisarea')
 o('R04', RO, '  const luate = [...sculeProiect(doc, new Set([p.id])), fin.scula];', '  const luate = [...sculeProiect(doc, new Set([p.id]))];', 'rol',
   'freza plată ia numărul bilei finisării')

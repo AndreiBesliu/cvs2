@@ -15,7 +15,7 @@ import assert from 'node:assert/strict';
 import { incarca } from '../../src/model/incarcare.ts';
 import { programDinDocument, REGIM_IMPLICIT } from '../../src/cam/job.ts';
 import { calculeazaExportul, programFoii } from '../../src/jobs/calculCam.ts';
-import { cheiePas, ordinePasi } from '../../src/model/finisare.ts';
+import { cheiePas, hartiFinisare, ordinePasi } from '../../src/model/finisare.ts';
 import { compusDinResurse, type ResurseRelief } from '../../src/relief/resurse.ts';
 import { stratDinGrila } from '../../src/relief/strat.ts';
 import type { Document } from '../../src/model/document.ts';
@@ -167,6 +167,14 @@ test('ordinea de mână: cu ranguri, unde le-a pus omul; o degroșare fără ran
   const sec = materialSecventaO([{ pasi: pf, f: { fel: 'bila', R: 2 } }, { pasi: pd, f: { fel: 'plata', R: 2 } }], ZONA, 0.2, 0, 0.04);
   assert.ok(sec.blocuri[0]!.taiere <= 6 + 0.05 && sec.blocuri[1]!.taiere <= 2.5 + 0.05, `adâncimi ${sec.blocuri.map((b) => b.taiere)}`);
   assert.ok(sec.blocuri.every((b) => b.rapida === 0));
+});
+
+test('dalele aduse workerului (`hartiFinisare`): ale unui relief doar degroșat, doar finisat sau amândouă, o singură dată', async () => {
+  const { amprenta } = await strat(calota(), 40, 40);
+  assert.deepEqual(hartiFinisare(doc(amprenta, [degrosare()])), [amprenta]);
+  assert.deepEqual(hartiFinisare(doc(amprenta, [finisare()])), [amprenta]);
+  assert.deepEqual(hartiFinisare(doc(amprenta, [degrosare(), finisare()])), [amprenta]);
+  assert.deepEqual(hartiFinisare(doc(amprenta, [op({})])), []);
 });
 
 test('refuzurile lucrării: freza nu e plată, câmpul pe alt fel, urechile, podeaua, planul zero și marginea altfel decât la finisare, același T', async () => {
