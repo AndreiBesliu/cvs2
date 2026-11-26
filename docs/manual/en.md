@@ -1996,7 +1996,8 @@ Each operation has its own **bit** (the card's **Bit** group): the tool number (
 of the tip (from 1° to 179°, 60° by default; for a V bit, the diameter is that of the cutting part). Operations with different bits
 are cut with a change between them: in the automatic order, in each class (insides, then on the line, then outsides), the bit
 already mounted first, so there are as few changes as possible. The same number with two diameters or two shapes is refused:
-each bit needs its own number.
+each bit needs its own number. Next to the error, **Make it T{n}** gives the bit another number: that of the same bit, if it is
+already on another T, otherwise the lowest free one. Only the bits on the clashing number are red.
 
 The **From my bits** list, in the Bit group, has the bits from your library (see [My bits](#freze)) that suit the operation's
 cut: flat ones on a profile, a pocket or drilling, V bits on a V-carve. Once picked, the bit puts on the operation its T number
@@ -2102,7 +2103,8 @@ is exported alone, with its own confirmation. **Open in Machine** loads the acti
 out of are, here, those of all sheets: if you chose the confirmation in **From CSV…**, **Export** waits for the tick.
 
 The **job summary** shows the estimated time, per operation and per tool. For your machine's times, paste the controller's
-answer to `$$` (from the sender's console) under “Machine settings”; the program does not change.
+answer to `$$` (from the sender's console) under “Machine settings”; the program does not change. With the GRBL factory
+settings, a feed above their maximum speed is told as a note; with your own `$$` pasted, as a warning: then it is your machine.
 
 After the download, the window **simulates** the program: the depth map of the sheet, the material removed, the deepest cut
 and whether the cutter goes through the sheet. For the sheet seen in 3D, see [The 3D view](#vedere-3d).

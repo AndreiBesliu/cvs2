@@ -292,3 +292,47 @@ Constatarea 4 a auditului: pe 150 de operații, toate fișele stăteau randate u
   marginea, fereastra nesocotită, „Du-mă la …” fără randarea fișei, `content-visibility` pus la loc pe rânduri). `memo`
   schimbă doar timpul: îl judecă măsurătoarea, nu o otravă.
 - **Mărimea:** pornirea +0 (111,4 kB), totalul +0,3 kB (909,4 / 1 000). Programul, documentul și serverul: neschimbate.
+- **Pragurile la care felia se redeschide** (cerute de sesiunea principală după primul complet): judecata e pe ce se numără
+  (cel mult 6 fișe randate la deschidere pe 150 de operații, sub 6 000 de noduri, regula ferestrei la 1280 × 2400); ceasul e
+  plasa largă, la cea mai bună încercare măsurată în pagină: deschiderea sub 1 s (cea mai bună ~0,15 s) și o tastă sub 30 ms
+  (cea mai bună ~6 ms). Peste ele, felia se redeschide. Completul a trecut de două ori la rând pe `8c309846`.
+
+## Implementarea 28.8↑j (26.11)
+
+Constatările 5, 6, 7 și 15 ale auditului, cu răspunsurile 2a și 4a. Programul rămâne octet cu octet: se schimbă doar ce spune
+fereastra și un număr T, la clicul omului.
+
+- **„Dă-i T{n}” (2a, constatarea 5).** Lângă greșeala „T{n} are două freze”, în grupul fiecărei freze cu numărul ciocnit (freza
+  operației, fundul plat, dopul, banda, frezele de rest), un buton îi dă frezei alt număr (`numarDupaConflict`,
+  `src/ui/exportRand.ts`):
+  - regula rolurilor (`numarPentruRand`, ADR 0114 §5), fără numărul ciocnit: numărul aceleiași freze, cât pe el stau doar freze
+    identice; altfel cel mai mic liber, printre toate frezele ferestrei și ale finisărilor reliefului;
+  - identitatea e cea a conflictului (`cheieFreza`: diametrul, unghiul V cu vârful plat, bila), deci mutarea nu face alt
+    conflict;
+  - butonul apare pe fiecare freză cu numărul ciocnit, nu doar pe cea „în minoritate”: fiecare clic face un pas (mută freza pe
+    numărul aceleiași freze sau pe unul liber), iar după el conflictul se socotește din nou;
+  - roșii sunt doar câmpurile (T și Ø) frezelor cu numărul ciocnit, și la frezele de rest; azi, conflictul înroșea toate
+    frezele rândului (pe V-carve-ul cu fund plat, și T2 Ø3,175).
+- **Greșeala pe câmp (constatarea 15).** Numărul sculei, diametrul, unghiul V, adâncimea și pasul își spun fiecare greșeala, cu
+  marginile lor („Pasul: scrie un număr mai mare ca 0, cel mult 1000 mm.”), fără gruparea miilor („1.000 mm” s-ar citi un
+  milimetru); roșu e doar câmpul greșit (`campuriSculaGresite`). În listă, un număr lipsă e „—” („T— Ø6 · —”), nu „ mm”. Fraza
+  generală rămâne doar lângă Exportă, unde o întoarce și registrul.
+- **Nota vitezei (4a, constatarea 6).** Cu setările GRBL din fabrică, avansul peste viteza lor maximă se spune ca notă, cu „Lipește
+  $$ pentru timpul mașinii tale”; avertismentul rămâne doar față de `$$`-ul lipit (`data-sursa` pe rândul rezumatului).
+- **Refuzurile din calcul (constatarea 7).** Înainte de afișare, id-urile din lume („e2/c1”) devin numele elementelor, ca în
+  listă, iar în română numerele lucrării primesc virgula („1,000 mm”, „X 24,0”) (`motivPeInteles`, `src/ui/motivCalcul.ts`,
+  pur). Lângă refuz, „Du-mă la …” aduce fișa operației primului element numit; harta element → operație o face
+  `ExportConectat.tsx` (`operatiiLume`, prima operație de pe rând, în orice instanță a piesei). Textele motivelor rămân ale
+  lucrării (`src/cam/`); selecția elementului pe pânză, la închidere, nu e în felie.
+- **Ce rămâne nepotrivit:** numele elementelor își scriu încă numerele cu punct („dreptunghi 100.00 × 60.00”), deci un refuz
+  le are lângă numerele cu virgulă ale lucrării. E constatarea 14, a liniei principale (`src/app/descriereElement.ts`).
+- **Probele:** `test/unit/export.conflictT.test.ts` (5: identitatea, numărul nou, freza identică cu numărul ei curat sau ciocnit,
+  niciodată numărul ciocnit, scrierea pe rând), `test/unit/export.motivCalcul.test.ts` (3) și `test/e2e/export.greseli.spec.ts`
+  (5: „Dă-i T3” pe ambele fișe, cu roșul doar pe T1 și un clic care repară; greșeala pe câmp la pas, adâncime, număr, diametru
+  și unghi, cu „—” în listă; nota față de avertisment, cu `$$`-ul unei mașini lente; refuzul regiunii cu numele, virgula și
+  „Du-mă la …”; engleza). Trei probe vechi aduse la zi: `rezumat.spec.ts` (nota), `export.spec.ts` și `incrustatie.spec.ts`
+  (numele și virgula). E2e-ul care deschide exportul: 352 / 352.
+- **Otrăvurile:** `28.8j.py`, 16 / 16 (numărul nou, scrierea pe rând, butonul și grupul lui, roșul, greșeala pe câmp, „—” în listă,
+  marginile fără grupare, nota vitezei, refuzul cu numele, virgula, cheia și harta elementelor).
+- **Mărimea:** pornirea +0 (111,4 kB), totalul +1,1 kB (910,5 / 1 000), peste estimarea de +0,5 kB: patru părți în loc de una
+  (butonul, greșelile pe câmp, nota și refuzul pe înțeles). Programul, documentul și serverul: neschimbate.

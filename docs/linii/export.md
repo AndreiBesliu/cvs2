@@ -102,8 +102,12 @@ vreau ca ficare setare sa fie insotita de o ilustratie sugestiva, ca sa ajute us
   curentă cu vecinele și cea cu focusul se randează; rândurile listei sunt `memo`. Pe 150 de operații: deschiderea 9,7 s →
   ~0,5 s (următoarele ~0,15 s), o tastă 96 → ~10 ms. Primul complet a căzut la proba de viteză: timpul citit pe treptele lui
   `expect` și, găsit apoi sub suprasarcină, `content-visibility` pe rânduri (un rând departe de vedere avea înălțimea 0, deci
-  clicul cădea pe listă); amândouă reparate la cauză. Otrăvurile 10 / 10. Totalul 909,4 / 1 000 (+0,3 kB). Urmează 28.8↑j
-  (greșelile pe înțeles).
+  clicul cădea pe listă); amândouă reparate la cauză. Otrăvurile 10 / 10. Totalul 909,4 / 1 000 (+0,3 kB). Unită în `main` pe
+  26.11 (`953205a8`).
+- **26.11: 28.8↑j gata** (greșelile pe înțeles, constatările 5, 6, 7 și 15). „Dă-i T{n}” lângă conflictul de freze, cu roșul
+  doar pe frezele cu numărul ciocnit; greșeala pe câmp, cu marginile ei, și „—” în listă; nota în locul avertismentului de viteză
+  cu setările din fabrică; refuzurile din calcul cu numele elementelor, cu virgula și cu „Du-mă la …”. Totalul 910,5 / 1 000
+  (+1,1 kB). Urmează 28.8↑k (curățenia vizuală).
 
 ## Ce s-a găsit (23.11)
 
@@ -234,11 +238,19 @@ vreau ca ficare setare sa fie insotita de o ilustratie sugestiva, ca sa ajute us
 - **Intervalul diacriticelor** se scrie cu escape-uri (`\u0300-\u036f`), nu cu semnele combinatoare: scrise direct, nu se
   văd, iar o otravă pe ele iese VOID.
 
+- **O greșeală a unui grup poate avea un buton** (28.8↑j): `greseliRand` întoarce `[text, grup, reparație?]`, iar `grup` primește
+  textele sau `{ text, buton }`. Un buton nou de reparat stă lângă textul lui, nu în câmpurile grupului.
+- **Conflictul de T are o singură identitate, `cheieFreza`** (diametrul, unghiul V cu vârful, bila): detectarea și „Dă-i T{n}”
+  o citesc de acolo, deci un fel nou de freză (bila în proiect, toroidala) își pune forma în cheie, nu în etichetă.
+- **Un refuz al calculului trece prin `motivPeInteles`** (`src/ui/motivCalcul.ts`) înaintea afișării: id-urile din lume devin
+  nume, iar în română numerele lucrării primesc virgula. O probă care citește un refuz caută numele elementului, nu „e1/e1”, și
+  „5,5 mm”, nu „5.5 mm”.
+
 ## Ce rămâne
 
 Din ADR 0290, nimic: toate feliile (a–f) și 28.8↑g sunt gata. Din ADR 0291 (după audit): 28.8↑n și 28.8↑o sunt în `main`,
-28.8↑h și 28.8↑h-2 sunt în `main`, iar 28.8↑i (viteza) e gata pe ramură; urmează j, k, l, în ordine; p după j (cu linia
-frezelor), q după i. Nicio întrebare deschisă la owner. De luat într-o felie a liniei: la 640 × 360 (telefon culcat îngust), banda
+28.8↑h, 28.8↑h-2 și 28.8↑i sunt în `main`, iar 28.8↑j (greșelile pe înțeles) e gata pe ramură; urmează k, l, în ordine; p
+după j (cu linia frezelor), q după i. Nicio întrebare deschisă la owner. De luat într-o felie a liniei: la 640 × 360 (telefon culcat îngust), banda
 listei lasă fișelor 9 px (găsit la 28.8↑h-2; cu 28.8↑l, privirea). Pentru alte linii, mai târziu:
 
 - **Clasicul (28.2↑) și Pas cu pas (28.4↑)** iau fișa operației (`FisaOperatie`, cu `ContextFisa`) în panoul lor, cu starea
