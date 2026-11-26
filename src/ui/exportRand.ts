@@ -594,6 +594,26 @@ export function rezervaExplicatii(panou: HTMLElement | null): void {
   }
 }
 
+/** Începutul id-urilor descrierilor unui grup (`fisa|grup`), doar din `[A-Za-z0-9_-]` (28.8↑l). */
+export function idDescriere(loc: string): string {
+  return `dx-d-${loc.replace(/[^A-Za-z0-9_-]/g, '_')}`;
+}
+
+/**
+ * Leagă fiecare câmp al unui grup de descrierile lui (ADR 0291, felia 28.8↑l; constatarea 13 a auditului): explicația întreagă
+ * (`[data-descriere]`, ascunsă) și greșelile grupului, prin `aria-describedby`. Câmpurile nu și-l pun singure (stau în corpul
+ * grupului, scris de fișă), deci îl pune pasul de după randare, ca `rezervaExplicatii`, și doar când se schimbă.
+ */
+export function legaDescrierile(panou: HTMLElement | null): void {
+  for (const g of panou?.querySelectorAll<HTMLElement>('[data-grup]') ?? []) {
+    const ids = [...g.querySelectorAll<HTMLElement>('[data-descriere], [data-greseala]')].map((x) => x.id).filter((x) => x !== '').join(' ');
+    for (const c of g.querySelectorAll<HTMLElement>('.dx-campuri input, .dx-campuri select, .dx-campuri textarea')) {
+      if (ids === '') c.removeAttribute('aria-describedby');
+      else if (c.getAttribute('aria-describedby') !== ids) c.setAttribute('aria-describedby', ids);
+    }
+  }
+}
+
 export const COLTURI = ['stanga-jos', 'dreapta-jos', 'dreapta-sus', 'stanga-sus'] as const;
 /** Unde poate sta XY0: în colțuri, apoi în centrul foii (ADR 0291 §6). */
 export const ORIGINI = [...COLTURI, 'centru'] as const;

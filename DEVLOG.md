@@ -15887,6 +15887,27 @@ otrăvurile; orele, după ceasul containerului).
   `docs/otravuri.md`, `CLAUDE.md`.
 - **Urmează:** 3.Cg (verificarea), la cuvântul owner-ului dacă vrea altă ordine.
 
+## 2026-11-26 — Linia exportului: 28.8↑l, tastatura și cititorul de ecran în fereastra exportului (ADR 0291)
+
+**Prompt:** confirmarea sesiunii principale („28.8↑k e în `main` … Poți porni 28.8↑l, cu `main` (`1d9671d3`) adus întâi”), la
+ordinul în vigoare „unește ce se poate”
+**Started:** 26.11, 07:38.
+
+- **Focusul (constatarea 13):** un rând al listei și „Du-mă la …” al unui refuz duc focusul pe titlul fișei; Tab merge apoi în
+  câmpurile ei (de pe rândul dreptunghiului, un Tab, nu 19).
+- **Ordinea grupului:** titlul înaintea explicației în DOM, așezarea a grilei; pe telefon, titlul deasupra explicației.
+- **Descrierile:** fiecare câmp, descris de explicația întreagă a grupului și de greșelile lui (`legaDescrierile`).
+- **Anunțurile:** `aria-live` doar pe greșeli.
+- **Telefonul culcat (640 × 360):** banda listei pe un rând; fișelor le rămân 150 px, nu 80.
+- **Probele:** `export.tastatura.spec.ts` (2) și telefonul culcat în privire, scrise întâi și văzute căzând; e2e-ul care
+  deschide exportul, 193 / 193.
+- **Otrăvurile:** `28.8l.py`, 13 / 13 (L06 scăpase: proba cere acum și locul titlului); E04 din `28.8b.py`, mutată, prinsă.
+- **Mărimea:** pornirea +0 (111,6 kB), totalul 919,5 / 1 000 (+0,3 kB).
+- **Documentele:** ADR 0291 („Implementarea 28.8↑l”), manualul (ambele limbi), fișa etapei 3, registrul otrăvurilor, nota
+  liniei.
+
+**Completed:** 26.11, 08:07.
+
 ## 2026-11-26 — Sesiunea principală în cloud: a cincizecea unire (atelierul Easy 3Draw: 3.Cf-2, răsturnările și jumătățile de pas în „Modelul”) (Model: Claude Fable 5.2)
 
 **Prompt:** raportul liniei atelierului („3.Cf-2 gata de unit”, `fc9ee1db`), la ordinul în vigoare „unește ce se poate”
@@ -15905,4 +15926,23 @@ otrăvurile; orele, după ceasul containerului).
 - **Loturile 43 și 44 pe test:** `c1d1c81d`, publicat pe 26.11 la 07:46 (completul pe `main` 45757325901, verde: unit
   10 714 / 0, e2e 937 / 937, funcțiile pe emulatoare 136 / 136, paginile 60 / 60); `1d9671d3`, la 08:56 (completul
   pe `main` 45763781195, verde: unit 10 719 / 0, e2e 945 / 945, funcțiile pe emulatoare 136 / 136, paginile 60 / 60). Probele de fum, bune.
+- **Documentele:** decizia și paragraful de stare în `CLAUDE.md`; indexul liniilor; starea din `docs/linii/principala.md`.
+
+## 2026-11-26 — Sesiunea principală în cloud: a cincizeci și una unire (fereastra exportului: 28.8↑l, tastatura și cititorul de ecran) (Model: Claude Fable 5.2)
+
+**Prompt:** raportul liniei exportului („28.8↑l e gata de unit”, `454c6fa3`), la ordinul în vigoare „unește ce se poate”
+**Started:** 26.11, 09:11. **Completed:** unirea în `main`, 26.11, 10:14; publicarea pe test, lotul 46.
+
+- **Verificat înaintea unirii:** completul liniei (45766087135) și rapidul, verzi pe `454c6fa3`; PR-ul #58; fără `.lucru/`;
+  `main` (`1d9671d3`) era strămoș. Unirea atelierului (a cincizecea) era în CI pe `unire-2611i`, deci exportul s-a unit peste
+  ea, pe `unire-2611j` (din `3e56e8cf`): `454c6fa3`, în `c3a0c184`. Ciocnirea, în DEVLOG (`rezolva-devlog.py`). Local: tipurile,
+  regulile de import (22 / 22), traducerile (1 204), catalogul controalelor (la zi), biblioteca, probele documentelor și ale
+  manualului 76 / 76.
+- **Porțile unirii, în CI, pe `c3a0c184`** (citite din jurnalul rulării): completul 45773517865, verde la prima trecere (62 min): unit
+  10 729 / 0 (12 sărite, pe Linux), e2e 954 / 954, funcțiile pe emulatoare 136 / 136, paginile 60 / 60; rapidul 45773519078, verde. Pornirea 111,6 kB
+  (plafonul 125; cu ușa 116,8, cu Atelierul 117,1), totalul 919,4 / 1 000 kB, `/admin` 138,3 / 200, contul
+  30,2 / 32. Nimic pe server. Față de commit-ul cu porțile, în `main` intră în plus doar documente (`.md`).
+- **Linia exportului:** feliile ferestrei din ADR 0291 (h–l), gata. Urmează q, apoi p (ordinea recomandată de linie; p mișcă
+  mașina).
+- **Lotul 45** (`1a577464`, 3.Cf-2) e încă în drum; lotul 46 pleacă după el.
 - **Documentele:** decizia și paragraful de stare în `CLAUDE.md`; indexul liniilor; starea din `docs/linii/principala.md`.

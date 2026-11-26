@@ -4145,6 +4145,10 @@
       "ro": "Senderul prin WiFi pe mașina owner-ului",
       "en": "The sender over WiFi on the owner’s machine"
     },
+    "da63dc0e5c8cc536": {
+      "ro": "Tastatura și cititorul de ecran în fereastra exportului",
+      "en": "The keyboard and the screen reader in the export window"
+    },
     "da7250a9da464353": {
       "ro": "Importul DXF",
       "en": "DXF import"
@@ -4508,6 +4512,10 @@
     "edbaa5695545ce85": {
       "ro": "„20 mm” = 20,00 mm; diacritice; text pe arc",
       "en": "“20 mm” = 20.00 mm; diacritics; text on an arc"
+    },
+    "edbae2200c5befbd": {
+      "ro": "**Tastatura și cititorul de ecran în fereastra exportului** (fără mașină; ADR 0291, „Implementarea 28.8↑l”; constatarea 13 a auditului). Un rând al listei (Enter sau clic) și „Du-mă la …” al unui refuz duc focusul pe titlul fișei (`tabindex=\"-1\"`), deci Tab merge apoi în câmpurile ei (un Tab, nu 19); „Du-mă la …” al greșelilor rămâne pe câmpul greșit. Titlul grupului înaintea explicației în DOM, cu așezarea a grilei; fiecare câmp descris de explicația întreagă a grupului și de greșelile lui (`legaDescrierile`); `aria-live` doar pe greșeli. Programul, octet cu octet. **Probele:** `export.tastatura.spec.ts` (2), scrisă întâi și văzută căzând; e2e-ul care deschide exportul, 193 / 193. **Otrăvurile:** `28.8l.py`, 13 / 13 (L06, titlul mutat în coloana explicației, scăpase: proba cere acum și locul titlului); E04 din `28.8b.py`, mutată, prinsă. Pe telefonul culcat (640 × 360), banda listei pe un rând: fișelor le rămân 150 px, nu 80. Pornirea +0, totalul 919,5 / 1 000 (+0,3 kB).",
+      "en": "**The keyboard and the screen reader in the export window** (no machine; ADR 0291, “Implementarea 28.8↑l”; finding 13 of the audit). A list row (Enter or click) and the “Take me to …” of a refusal move the focus to the card’s title (`tabindex=\"-1\"`), so Tab then goes through its fields (one Tab, not 19); the “Take me to …” of the errors stays on the wrong field. The group title before the explanation in the DOM, with the layout kept by the grid; each field described by its group’s full explanation and errors (`legaDescrierile`); `aria-live` only on the errors. The program, byte for byte. **Probes:** `export.tastatura.spec.ts` (2), written first and seen failing; the e2e that opens the export, 193 / 193. **Poisons:** `28.8l.py`, 13 / 13 (L06, the title moved into the explanation column, had escaped: the probe now also asks for the title’s place); E04 from `28.8b.py`, moved, caught. On a landscape phone (640 × 360), the list band on one row: the cards keep 150 px, not 80. Startup +0, total 919.5 / 1,000 (+0.3 kB)."
     },
     "edbc66811761ee86": {
       "ro": "Verificarea vectorilor",

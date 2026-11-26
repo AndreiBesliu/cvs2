@@ -377,3 +377,33 @@ Constatările 8, 10, 11, 12, 16, 17 și 21 ale auditului. Programul rămâne oct
   caseta, „Mai mult” al grupului și al notelor). B02 din `12.1f-4.py`, mutată pe codul nou, scăpase: proba bifei ascunse din
   `supracursa.spec.ts` trecea înainte să apară fereastra (vine la cerere); acum așteaptă întâi câmpul supracursei, iar B02 e prinsă.
 - **Mărimea:** pornirea +0 (111,6 kB), totalul +0,5 kB (919,2 / 1 000). Programul, documentul și serverul: neschimbate.
+
+## Implementarea 28.8↑l (26.11)
+
+Constatarea 13 a auditului. Programul rămâne octet cu octet: se schimbă doar focusul și ce aude un cititor de ecran.
+
+- **Focusul adus de listă.** Un rând al listei (Enter sau clic) și „Du-mă la …” al unui refuz din calcul duc focusul pe titlul
+  fișei (`<h3 tabindex="-1">`, nu o oprire a lui Tab), deci Tab merge apoi în câmpurile ei: de pe rândul dreptunghiului, un Tab,
+  nu 19. „Du-mă la …” al greșelilor duce focusul pe câmpul greșit, ca înainte (28.8↑h-2); Rezultatul adus singur după export nu
+  mută focusul (`du(cheie, cum)`, `cum` = `'titlu'`, `'repara'` sau nimic).
+- **Ordinea grupului.** Titlul grupului (`h4`) e acum înaintea desenului și a explicației în DOM, deci cititorul îl spune întâi;
+  așezarea rămâne a grilei (`grid-template-areas`: explicația în stânga, titlul și câmpurile în dreapta). Pe telefon, titlul stă
+  deasupra explicației. Fișa doar de citit a finisării și a degroșării are aceeași ordine.
+- **Descrierile.** Fiecare câmp al unui grup e descris (`aria-describedby`) de explicația întreagă a grupului (o copie
+  ascunsă, `[data-descriere]`, și când pe ecran e prescurtată de 28.8↑k) și de greșelile grupului; legătura o pune pasul de după
+  randare (`legaDescrierile`, `src/ui/exportRand.ts`, lângă `rezervaExplicatii`), fiindcă câmpurile stau în corpul scris de fișă.
+  Id-urile vin din cheia grupului (`idDescriere`).
+- **Anunțurile.** `aria-live` stă doar pe greșelile grupului (`[data-greseli]`, mereu prezent, ca o greșeală nouă să se anunțe),
+  nu și pe explicații, care se schimbau la fiecare mutare a mausului și a focusului.
+- **Telefonul culcat (găsit la 28.8↑h-2).** La 640 × 360, cu fontul lat, banda listei lăsa fișelor 80 px. Pe un ecran îngust și
+  jos (`max-height: 30rem`), banda arată doar numele, pe un rând, tăiat cu „…” (fișa aleasă îl arată întreg în titlul ei), iar
+  titlul ferestrei e mai strâns: fișelor le rămân 150 px.
+- **Probele:** `test/e2e/export.tastatura.spec.ts` (2: Enter și clic pe rânduri, Tab în fișă, `tabindex`; ordinea titlului și locul
+  lui deasupra câmpurilor, `aria-live`, descrierile cu explicația, cu greșeala pasului și cu explicația întreagă a treptei) și
+  telefonul culcat în `export.privire.spec.ts`, scrise întâi și văzute căzând. E2e-ul care deschide exportul: 193 / 193.
+- **Otrăvurile:** `28.8l.py`, 13 / 13 (focusul pe titlu de la listă, de la rânduri și de la mașină, `tabindex` lipsă, „Du-mă la …” pe
+  titlu în loc de câmp, ordinea grupului, `aria-live` pe explicații și lipsă pe greșeli, descrierile lipsă, fără greșeli,
+  prescurtate sau cu același id, numele benzii pe două rânduri). L06 (titlul mutat în coloana explicației) scăpase: ordinea din
+  DOM rămânea bună, iar proba nu se uita la așezare; acum cere și titlul deasupra câmpurilor. E04 din `28.8b.py`, mutată pe
+  efectul care leagă și descrierile, prinsă.
+- **Mărimea:** pornirea +0 (111,6 kB), totalul +0,3 kB (919,5 / 1 000). Programul, documentul și serverul: neschimbate.

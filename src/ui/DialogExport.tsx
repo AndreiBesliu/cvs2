@@ -28,7 +28,7 @@ import { FisaFinisare, RandListaFinisare, type FinisareExport } from './FisaFini
 import {
   bandaBuna, CHEI_COLT, CHEI_LATURA, citesteRest, ORIGINI, DIAMETRU_FUND_IMPLICIT, faraNumar, incrustatieVRand, inMargini,
   INTRARI_IMPLICITE, intregInMargini, jocFolosit, laturi, LUNGIME_ZIGZAG_IMPLICITA, margineBuna, MAXIM_REST, PLACUTE_NUMITE, puntiBune,
-  RAMPA_IMPLICITA, razaEliceImplicita, restBun, rezervaExplicatii, spatiuFolosit, textStrans, UNGHI_COBORARE_IMPLICIT, URECHI_IMPLICITE, type BunRand,
+  RAMPA_IMPLICITA, razaEliceImplicita, restBun, rezervaExplicatii, legaDescrierile, idDescriere, spatiuFolosit, textStrans, UNGHI_COBORARE_IMPLICIT, URECHI_IMPLICITE, type BunRand,
   type CerereExport, type FrezaRestOperatie, type IncrustatieDreaptaOperatie, type Latura, type OperatieExport, type Rand, type RandRest,
   copieDeReadus, cuFrezaAleasa, cuFrezaPusaInapoi, cuValorileNoi, frezeRanduri, locuriFreze, numarPentruRand, oferitePentruRest, stareOrigine, type FrezaOferita, type OrigineFreza, type SculaOperatie, type StareExport,
   type CopieRand, type RezultatInapoi, type UndeFreza, campuriSculaGresite, cheieFreza, cuNumarT, numarDupaConflict, type FrezaT, type LocFreza,
@@ -1209,11 +1209,13 @@ export function DialogExport(
       : t(CHEI_LATURA[p.latura]);
   const cuRezultat = stare?.ok === true;
   /**
-   * Aduce fișa aleasă sus în panou. Cu `repara` („Du-mă la …”), aduce apoi în vedere prima greșeală a fișei (28.8↑h-2): grupul ei,
-   * de la titlu până la textul greșelii, dacă încape; altfel câmpul greșit și textul; altfel textul, întreg. Focusul trece pe
-   * câmpul greșit, fără altă derulare. Capul fișei poate ieși sus: greșeala de sub prima înălțime a panoului nu mai rămâne ascunsă.
+   * Aduce fișa aleasă sus în panou. Cu `cum = 'titlu'` (un rând al listei, „Du-mă la …” al unui refuz), focusul trece pe titlul
+   * fișei (28.8↑l, constatarea 13 a auditului), deci Tab merge apoi în fișa ei. Cu `cum = 'repara'` („Du-mă la …” al greșelilor),
+   * aduce apoi în vedere prima greșeală a fișei (28.8↑h-2): grupul ei, de la titlu până la textul greșelii, dacă încape; altfel
+   * câmpul greșit și textul; altfel textul, întreg. Focusul trece pe câmpul greșit, fără altă derulare. Capul fișei poate ieși
+   * sus: greșeala de sub prima înălțime a panoului nu mai rămâne ascunsă. Fără `cum` (Rezultatul adus după export), focusul rămâne.
    */
-  const du = (cheie: string, repara = false): void => {
+  const du = (cheie: string, cum: 'titlu' | 'repara' | null = null): void => {
     const p = panou.current;
     const sel = cheie === 'foaia' || cheie === 'masina' || cheie === 'rezultatul' ? `[data-fisa="${cheie}"]` : `[data-fisa="op"][data-operatie="${CSS.escape(cheie)}"]`;
     // O fișă care își ține doar locul (28.8↑i) se randează întâi, ca derularea și greșeala să vadă fișa adevărată.
@@ -1222,7 +1224,8 @@ export function DialogExport(
     if (!p || !f) return;
     p.scrollTop += f.getBoundingClientRect().top - p.getBoundingClientRect().top;
     setCurent(cheie);
-    if (!repara) return;
+    if (cum === 'titlu') f.querySelector<HTMLElement>(':scope > h3')?.focus({ preventScroll: true });
+    if (cum !== 'repara') return;
     const RAU = '[aria-invalid="true"]:not(:disabled)';
     const g = [...f.querySelectorAll<HTMLElement>('[data-grup]')].find((x) => x.querySelector(`[data-greseala], ${RAU}`) !== null);
     const camp = (g ?? f).querySelector<HTMLElement>(RAU), text = (g ?? f).querySelector<HTMLElement>('[data-greseala]');
@@ -1271,7 +1274,7 @@ export function DialogExport(
   useLayoutEffect(fereastra);
   useLayoutEffect(() => {
     actiuniAcum.current = {
-      du: (c) => { du(c); },
+      du: (c) => { du(c, 'titlu'); },
       muta: mutaRand,
       trage: setTras,
       lasa: (loc) => { if (tras !== null) mutaRand(ordine.indexOf(tras), loc); setTras(null); },
@@ -1322,28 +1325,35 @@ export function DialogExport(
   }, [cuRezultat]);
   // Caseta explicației fiecărui grup își ține înălțimea celui mai lung text al lui (al grupului sau al unui câmp): altfel, la
   // clic, focusul schimbă textul la apăsare, grupul își schimbă înălțimea, iar ce e dedesubt fuge de sub cursor înainte de ridicare.
-  useLayoutEffect(() => { rezervaExplicatii(panou.current); });
+  useLayoutEffect(() => { rezervaExplicatii(panou.current); legaDescrierile(panou.current); });
   // Grupul fișei unei operații (ADR 0290): explicația câmpului activ (sau a grupului) în stânga, unde vin desenele din 28.8↑b,
   // câmpurile și greșelile lui în dreapta.
   const grup = (id: GrupExport, fisa: string, corp: ReactNode, greseli: ReadonlyArray<string | Greseala> = [], desen?: (c: DesenComun) => ReactNode): ReactNode => {
     const loc = `${fisa}|${id}`, aici = activ?.loc === loc ? activ : null, deschisa = deschise.has(loc);
     const explicatie = aici && aici.text !== '' ? aici.text : t(`export.grup.${id}.text` as CheieSimpla);
+    const idGrup = idDescriere(loc);
+    // Titlul întâi, apoi explicația, apoi câmpurile (28.8↑l, constatarea 13): cititorul de ecran spune titlul înaintea explicației;
+    // așezarea (explicația în stânga, titlul și câmpurile în dreapta) o face grila. Câmpurile sunt descrise de explicația întreagă
+    // (copia ascunsă, și când pe ecran e prescurtată) și de greșelile grupului (`legaDescrierile`); se anunță singure doar greșelile.
     return (
       <div className="dx-grup" data-grup={id} key={id}>
+        <h4>{t(`export.grup.${id}` as CheieSimpla)}</h4>
         <div className="dx-stanga">
           {desen && <figure className="dx-desen" data-desen>{desen({ f: (x) => fmtTrecere.format(x), fz: (x) => fmtFreza.format(x), aprins: aici && aici.camp !== '' ? [aici.camp] : [] })}</figure>}
           {/* Lungă, explicația se arată prescurtată, cu „Mai mult” sub ea (28.8↑k); butonul se vede doar într-un grup cu un text lung. */}
           <p className="dx-explicatie" data-explicatie data-implicit={t(`export.grup.${id}.text` as CheieSimpla)}
-            data-deschisa={deschisa ? '' : undefined} aria-live="polite">
+            data-deschisa={deschisa ? '' : undefined}>
             {deschisa ? explicatie : textStrans(explicatie)}
           </p>
+          <span id={`${idGrup}-e`} data-descriere hidden>{explicatie}</span>
           <ButonMaiMult deschis={deschisa} onComuta={() => { comutaExplicatia(loc); }} />
         </div>
         <div className="dx-campuri">
-          <h4>{t(`export.grup.${id}` as CheieSimpla)}</h4>
           {corp}
-          {greseli.map((g) => (typeof g === 'string' ? <p className="dx-greseala" data-greseala key={g}>{g}</p>
-            : <p className="dx-greseala" data-greseala key={g.text}>{g.text}{g.buton && <> {g.buton}</>}</p>))}
+          <div className="dx-greseli" data-greseli aria-live="polite">
+            {greseli.map((g, i) => (typeof g === 'string' ? <p className="dx-greseala" data-greseala id={`${idGrup}-g${String(i)}`} key={g}>{g}</p>
+              : <p className="dx-greseala" data-greseala id={`${idGrup}-g${String(i)}`} key={g.text}>{g.text}{g.buton && <> {g.buton}</>}</p>))}
+          </div>
         </div>
       </div>
     );
@@ -1353,7 +1363,7 @@ export function DialogExport(
   const randFinisare = (fin: FinisareExport, loc: number): ReactNode => (
     <RandListaFinisare key={fin.cheie} fin={fin} loc={loc} total={ordine.length} mana={ordineMea !== null && !doarCitire} tras={tras}
       curent={curent === fin.cheie} f={(x) => fmtFreza.format(x)}
-      onMuta={(de, la) => { mutaRand(de < 0 ? ordine.indexOf(tras ?? '') : de, la); }} onTrage={setTras} onDu={() => { du(fin.cheie); }} />
+      onMuta={(de, la) => { mutaRand(de < 0 ? ordine.indexOf(tras ?? '') : de, la); }} onTrage={setTras} onDu={() => { du(fin.cheie, 'titlu'); }} />
   );
   const contextFisa: ContextFisa = {
     dupaCheie, param, total: ordine.length, doarCitire, schimba, randBun, greseliRand, conflict, hartie: hartieRandului, taieturaRand,
@@ -1377,11 +1387,11 @@ export function DialogExport(
           <nav className="dx-lista" data-lista aria-label={t('export.lista')}>
             <span className="dx-sectiune">{t('export.lista.inainte')}</span>
             <button type="button" className="dx-nav" data-nav="foaia" aria-current={curent === 'foaia'} data-gresit={supracursaBuna ? undefined : ''}
-              onClick={() => { du('foaia'); }}>
+              onClick={() => { du('foaia', 'titlu'); }}>
               <span className="dx-nume">{t('export.fisa.foaia')}</span>
               <span className="dx-meta">{t(CHEI_COLT[origine])} · {t(z0 === 'sus' ? 'export.lista.z0.sus' : 'export.lista.z0.jos')}</span>
             </button>
-            <button type="button" className="dx-nav" data-nav="masina" aria-current={curent === 'masina'} data-gresit={numeBun ? undefined : ''} onClick={() => { du('masina'); }}>
+            <button type="button" className="dx-nav" data-nav="masina" aria-current={curent === 'masina'} data-gresit={numeBun ? undefined : ''} onClick={() => { du('masina', 'titlu'); }}>
               <span className="dx-nume">{t('export.fisa.masina')}</span>
               <span className="dx-meta">{postAles?.nume ?? ''} · {unitati === 'inch' ? 'inch' : 'mm'}</span>
             </button>
@@ -1415,7 +1425,7 @@ export function DialogExport(
             })}
             {cuRezultat && (
               <button type="button" className="dx-nav" data-nav="rezultatul" aria-current={curent === 'rezultatul'}
-                data-avertisment={stare?.ok && stare.avertismente.length > 0 ? '' : undefined} onClick={() => { du('rezultatul'); }}>
+                data-avertisment={stare?.ok && stare.avertismente.length > 0 ? '' : undefined} onClick={() => { du('rezultatul', 'titlu'); }}>
                 <span className="dx-nume">{t('export.fisa.rezultatul')}</span>
                 {stare?.ok && (
                   <span className="dx-meta">{[
@@ -1430,7 +1440,7 @@ export function DialogExport(
             onBlur={(e) => { if (cuFocus !== null && !(e.relatedTarget instanceof Node && e.currentTarget.contains(e.relatedTarget))) setCuFocus(null); }}
             onPointerOver={arata}>
             <section className="dx-fisa" data-fisa="foaia">
-              <h3>{t('export.fisa.foaia')}</h3>
+              <h3 tabIndex={-1}>{t('export.fisa.foaia')}</h3>
               {(foi ?? 0) > 1 && grup('foi', 'foaia', <div className="dx-rand">
         {(foi ?? 0) > 1 && (
           <div className="ordine-taierii" data-testid="export-foi-alegere">
@@ -1485,7 +1495,7 @@ export function DialogExport(
                 gaura={gauraIncrustatie} />)}
             </section>
             <section className="dx-fisa" data-fisa="masina">
-              <h3>{t('export.fisa.masina')}</h3>
+              <h3 tabIndex={-1}>{t('export.fisa.masina')}</h3>
               {grup('post', 'masina', <div className="dx-rand">
           <label title={t('export.post.titlu')}>
             {t('export.post')}
@@ -1549,13 +1559,13 @@ export function DialogExport(
               // Locul unei fișe nerandate (28.8↑i): titlul și înălțimea ei, ca derularea și lista s-o găsească.
               return (
                 <section className="dx-fisa" data-fisa="op" data-operatie={cheie} data-gol="" key={cheie} style={{ height: inaltimeLoc(cheie) }}>
-                  <h3>{dupaCheie.get(cheie)?.descriere}</h3>
+                  <h3 tabIndex={-1}>{dupaCheie.get(cheie)?.descriere}</h3>
                 </section>
               );
             })}
             {cuRezultat && (
               <section className="dx-fisa" data-fisa="rezultatul">
-                <h3>{t('export.fisa.rezultatul')}</h3>
+                <h3 tabIndex={-1}>{t('export.fisa.rezultatul')}</h3>
                 {/* Întâi ce e de văzut înaintea tăierii, apoi fișierele, timpul și simularea (ADR 0290, felia 28.8↑f-2). */}
                 {stare?.ok && (stare.avertismente.length > 0 || (undeTine.length > 0 && !doarCitire)) && (
                   <div className="dx-rez" data-rezultat="avertismente">
@@ -1616,7 +1626,7 @@ export function DialogExport(
             <div className="dx-invalid">
               <p role="status" className="avertisment" data-testid="export-invalid">{motivInvalid}</p>
               {primaGresita !== null && (
-                <button type="button" className="dx-du" data-du={primaGresita} onClick={() => { du(primaGresita, true); }}>
+                <button type="button" className="dx-du" data-du={primaGresita} onClick={() => { du(primaGresita, 'repara'); }}>
                   {t('export.du', { nume: primaGresita === 'foaia' ? t('export.fisa.foaia') : primaGresita === 'masina' ? t('export.fisa.masina') : dupaCheie.get(primaGresita)?.descriere ?? primaGresita })}
                 </button>
               )}
@@ -1684,7 +1694,7 @@ export function DialogExport(
             <div className="dx-invalid">
               <p role="status" className="avertisment" data-testid="export-stare">{t('export.eroare', { motiv: m.text })}</p>
               {m.cheie !== null && dupaCheie.has(m.cheie) && (
-                <button type="button" className="dx-du" data-du-calcul={m.cheie} onClick={() => { if (m.cheie !== null) du(m.cheie); }}>
+                <button type="button" className="dx-du" data-du-calcul={m.cheie} onClick={() => { if (m.cheie !== null) du(m.cheie, 'titlu'); }}>
                   {t('export.du', { nume: dupaCheie.get(m.cheie)?.descriere ?? m.cheie })}
                 </button>
               )}
