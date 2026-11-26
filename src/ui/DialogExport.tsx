@@ -1,4 +1,4 @@
-import { memo, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
+import { Fragment, memo, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { flushSync } from 'react-dom';
 import '../i18n/export.ts';
 // Durata în cuvinte (`durata.*`) stă în dicționarul traseului, comun cu cipul timpului de lângă traseu (ADR 0046 §8).
@@ -14,7 +14,7 @@ import {
 import { durata } from './durata.ts';
 import { motivPeInteles } from './motivCalcul.ts';
 import { citesteNumar, textNumar } from './numar.ts';
-import { legaturi, muta, ordineAutomata, ordineDinRanguri, riscuri, type RandOrdine } from './ordineExport.ts';
+import { legaturi, muta, ordineAutomata, ordineDinRanguri, ordineDinRanguriPeFoi, peFoi, riscuri, type RandOrdine } from './ordineExport.ts';
 import { PrevizualizareSimulare } from './PrevizualizareSimulare.tsx';
 import { useLimba } from './useLimba.ts';
 import { verdicteGresite, type GrupExport, type VerdictRand } from './exportGrupuri.ts';
@@ -132,7 +132,36 @@ type Props = {
    * rând și o trimite în cont; lipsă = fără buton.
    */
   readonly onPuneInapoi?: (c: CopieRand) => Promise<RezultatInapoi>;
+  /**
+   * „Toate foile” (ADR 0291, 7a, felia 28.8↑q): rândurile tuturor foilor, grupate pe foi, cerute abia când omul alege „Toate
+   * foile” (cu multe foi, socotirea lor ține). Lipsă: o singură foaie.
+   */
+  readonly toateFoile?: () => ToateFoileExport;
 };
+
+/**
+ * O foaie a ferestrei cu „Toate foile” (ADR 0291, 7a): numele, rândurile ei (ale pieselor puse întâi pe ea, cu finisările), în
+ * ordinea ei automată, câte operații ale pieselor puse întâi pe foi de dinainte taie și ea (după numele acelei foi; rândurile
+ * lor stau acolo) și dacă n-are nicio piesă.
+ */
+export type FoaieFereastra = {
+  readonly id: string;
+  readonly nume: string;
+  readonly chei: readonly string[];
+  readonly comune: readonly { readonly foaie: string; readonly operatii: number }[];
+  readonly goala: boolean;
+};
+/** Rândurile tuturor foilor (ADR 0291, 7a): ale fiecărei foi, cu descrierile și elementele tuturor (refuzurile, ieșirea). */
+export type ToateFoileExport = {
+  readonly foi: readonly FoaieFereastra[];
+  readonly operatii: readonly OperatieExport[];
+  readonly finisari: readonly FinisareExport[];
+  readonly descrieri: ReadonlyMap<string, string>;
+  readonly operatiiLume: ReadonlyMap<string, string>;
+};
+
+/** Fără finisări (aceeași listă la fiecare randare). */
+const NICIO_FINISARE: readonly FinisareExport[] = [];
 
 /** Rezumatul jobului (ADR 0046): timpul, apoi tabelul pe operații și cel pe scule, cu distanțele de tăiere și de rapide. */
 /**
@@ -159,8 +188,12 @@ interface ActiuniLista {
  * obiect stabil. Pe 150 de operații, lista întreagă randată la fiecare tastă ținea cam jumătate din timpul ei. `limba` îl
  * randează din nou când se schimbă limba (textele vin din `t`).
  */
-const RandListaOp = memo(function RandListaOp({ o, p, loc, total, mana, trasAici, trasActiv, legat, gresit, curent, nume, latura, a }: {
-  readonly o: OperatieExport; readonly p: Rand; readonly loc: number; readonly total: number; readonly mana: boolean;
+const RandListaOp = memo(function RandListaOp({ o, p, loc, nr, sus, jos, mana, trasAici, trasActiv, legat, gresit, curent, nume, latura, a }: {
+  /**
+   * `loc`: locul în ordinea întreagă (mutările); `nr`: numărul arătat, iar `sus` / `jos`: dacă rândul se poate muta (cu „Toate
+   * foile”, numărul e cel din foaia lui și rândul se mută doar în ea; 28.8↑q).
+   */
+  readonly o: OperatieExport; readonly p: Rand; readonly loc: number; readonly nr: number; readonly sus: boolean; readonly jos: boolean; readonly mana: boolean;
   readonly trasAici: boolean; readonly trasActiv: boolean; readonly legat: number | undefined; readonly gresit: boolean;
   readonly curent: boolean; readonly nume: string; readonly latura: string; readonly a: ActiuniLista; readonly limba: Limba;
 }): ReactNode {
@@ -170,8 +203,8 @@ const RandListaOp = memo(function RandListaOp({ o, p, loc, total, mana, trasAici
       onDrop={mana && trasActiv ? (ev) => { ev.preventDefault(); a.lasa(loc); } : undefined}>
       <span className="ordine">
         {mana && (
-          <button type="button" className="trage" draggable data-trage={o.cheie} aria-label={t('export.ordine.trage', { n: loc + 1 })}
-            title={t('export.ordine.trage', { n: loc + 1 })}
+          <button type="button" className="trage" draggable data-trage={o.cheie} aria-label={t('export.ordine.trage', { n: nr })}
+            title={t('export.ordine.trage', { n: nr })}
             onDragStart={(ev) => { ev.dataTransfer.setData('text/plain', o.cheie); ev.dataTransfer.effectAllowed = 'move'; a.trage(o.cheie); }}
             onDragEnd={() => { a.trage(null); }}>
             <svg viewBox="0 0 10 16" width="10" height="16" aria-hidden="true">
@@ -180,19 +213,19 @@ const RandListaOp = memo(function RandListaOp({ o, p, loc, total, mana, trasAici
             </svg>
           </button>
         )}
-        <span className="loc" data-loc={loc + 1}>{loc + 1}</span>
+        <span className="loc" data-loc={nr}>{nr}</span>
         {legat !== undefined && (
           <span className="legat" data-legat={legat} title={t('export.ordine.legat.titlu', { n: legat })}>{t('export.ordine.legat', { n: legat })}</span>
         )}
         {/* Săgețile, una peste alta (coloana rămâne îngustă), desenate: glifele ↑ ↓ ar veni din alt font, colorate. */}
         {mana && (
           <span className="sageti">
-            <button type="button" data-sus={o.cheie} disabled={loc === 0} aria-label={t('export.ordine.sus', { n: loc + 1 })}
-              title={t('export.ordine.sus', { n: loc + 1 })} onClick={() => { a.muta(loc, loc - 1); }}>
+            <button type="button" data-sus={o.cheie} disabled={!sus} aria-label={t('export.ordine.sus', { n: nr })}
+              title={t('export.ordine.sus', { n: nr })} onClick={() => { a.muta(loc, loc - 1); }}>
               <svg viewBox="0 0 12 12" width="12" height="12" aria-hidden="true"><path d="M6 2.5 10.5 8.5H1.5Z" /></svg>
             </button>
-            <button type="button" data-jos={o.cheie} disabled={loc === total - 1} aria-label={t('export.ordine.jos', { n: loc + 1 })}
-              title={t('export.ordine.jos', { n: loc + 1 })} onClick={() => { a.muta(loc, loc + 1); }}>
+            <button type="button" data-jos={o.cheie} disabled={!jos} aria-label={t('export.ordine.jos', { n: nr })}
+              title={t('export.ordine.jos', { n: nr })} onClick={() => { a.muta(loc, loc + 1); }}>
               <svg viewBox="0 0 12 12" width="12" height="12" aria-hidden="true"><path d="M6 9.5 1.5 3.5H10.5Z" /></svg>
             </button>
           </span>
@@ -207,16 +240,23 @@ const RandListaOp = memo(function RandListaOp({ o, p, loc, total, mana, trasAici
 );
 });
 
-function Rezumat({ r, operatii, limba, alte }: {
+function Rezumat({ r, operatii, limba, alte, foaie }: {
   readonly r: RezumatJob; readonly operatii: readonly OperatieExport[]; readonly limba: Limba;
   /** Numele altor rânduri (finisările reliefului, ADR 0312 §7), după cheie. */
   readonly alte?: ReadonlyMap<string, string>;
+  /**
+   * Cu „Toate foile” (ADR 0291, 7a), rezumatul unei foi, după locul ei în rezultat: titlul își ia id-ul după el, iar rezumatul
+   * poartă `data-foaie` în locul lui `data-testid` (sunt mai multe).
+   */
+  readonly foaie?: number;
 }) {
+  const marca = foaie === undefined ? { 'data-testid': 'export-rezumat' } : { 'data-foaie': foaie };
+  const idTitlu = foaie === undefined ? 'rezumat-titlu' : `rezumat-titlu-${foaie}`;
   if (!r.ok) {
     const cheie: CheieSimpla = r.sursa === 'setari'
       ? (r.linie > 0 ? 'export.rezumat.eroare.setari' : 'export.rezumat.eroare.setari-tot')
       : (r.linie > 0 ? 'export.rezumat.eroare.program' : 'export.rezumat.eroare');
-    return <p role="status" className="avertisment" data-testid="export-rezumat">{t(cheie, { linie: r.linie, motiv: r.motiv })}</p>;
+    return <p role="status" className="avertisment" {...marca}>{t(cheie, { linie: r.linie, motiv: r.motiv })}</p>;
   }
   const nr = new Intl.NumberFormat(limba === 'ro' ? 'ro-RO' : 'en-GB', { maximumFractionDigits: 0 });
   const zec = new Intl.NumberFormat(limba === 'ro' ? 'ro-RO' : 'en-GB', { maximumFractionDigits: 3 });
@@ -239,8 +279,8 @@ function Rezumat({ r, operatii, limba, alte }: {
     </tr></thead>
   );
   return (
-    <section className="rezumat" data-testid="export-rezumat" aria-labelledby="rezumat-titlu">
-      <h4 id="rezumat-titlu">{t('export.rezumat.titlu')}</h4>
+    <section className="rezumat" {...marca} aria-labelledby={idTitlu}>
+      <h4 id={idTitlu}>{t('export.rezumat.titlu')}</h4>
       <p data-rezumat="timp" role="status"><strong>{t('export.rezumat.timp', { timp: durata(r.total.secunde, limba) })}</strong></p>
       {r.opriri > 0 && <p className="nota" data-rezumat="opriri">{t('export.rezumat.opriri', { n: r.opriri })}</p>}
       <p className="nota" data-rezumat="masina" data-sursa={m.sursa}>
@@ -309,12 +349,23 @@ function ListaFoi({ foi: r, sha256, limba }: { readonly foi: RezumatFoi; readonl
  */
 export function DialogExport(
   {
-    operatii, ordineAutomata: automataLucrarii, baza, descrieri, operatiiLume, doarCitire, onExporta, onInchide, onReseteaza, stare, setariMasina,
-    onSetariMasina, supracursa, onSupracursa, prinFoaie, onPrinFoaie, onDeschideInMasina, trimite = false, foaie, numeFoaie, placute, foi,
-    placuteToate, onRaport, grosimeFoaie, onAlegeUrechi, frezeOferite, bibliotecaToata = null, finisari = [], onPuneInapoi, hartie,
+    operatii: operatiiFoaie, ordineAutomata: automataFoaie, baza, descrieri: descrieriFoaie, operatiiLume: operatiiLumeFoaie, doarCitire, onExporta,
+    onInchide, onReseteaza, stare, setariMasina, onSetariMasina, supracursa, onSupracursa, prinFoaie, onPrinFoaie, onDeschideInMasina, trimite = false,
+    foaie, numeFoaie, placute, foi, placuteToate, onRaport, grosimeFoaie, onAlegeUrechi, frezeOferite, bibliotecaToata = null,
+    finisari: finisariFoaie = NICIO_FINISARE, onPuneInapoi, hartie, toateFoile,
   }: Props,
 ) {
   const limba = useLimba();
+  // „Toate foile” (ADR 0210 §5): un program pe foaie, într-o arhivă; plăcuțele de judecat sunt atunci ale tuturor foilor. Cu ea,
+  // rândurile sunt ale tuturor foilor, grupate pe foi (ADR 0291, 7a, felia 28.8↑q); altfel, ale foii active, ca înainte.
+  const [toate, setToate] = useState(false);
+  const dateToate = toate && toateFoile ? toateFoile() : null;
+  const operatii = dateToate?.operatii ?? operatiiFoaie;
+  const finisari = dateToate?.finisari ?? finisariFoaie;
+  const descrieri = dateToate?.descrieri ?? descrieriFoaie;
+  const operatiiLume = dateToate?.operatiiLume ?? operatiiLumeFoaie;
+  // Cheile rândurilor văzute: „Pe toate (N)” și golul incrustației din desenul Z0 nu numără rândurile ascunse ale altor foi.
+  const cheiVazute = new Set(operatii.map((o) => o.cheie));
   // În română, numerele se arată cu virgulă; se citesc cu oricare separator.
   const text = (x: number): string => textNumar(x, limba === 'ro');
   const [origine, setOrigine] = useState<(typeof ORIGINI)[number]>('stanga-jos');
@@ -337,7 +388,7 @@ export function DialogExport(
   // scoase și rămân oprite, iar Exportă le scrie scoase (ce refuză exportul nu se oferă).
   // Cel mai mare T al operațiilor (frezele lor, ale fundului plat, de rest, ale dopurilor): o freză nouă, cu bifa ei, pornește
   // de la următorul, ca să nu ia numărul altei freze.
-  const tMaxim = Math.max(0, ...operatii.flatMap((o) => {
+  const tMaximIn = (randuri: readonly OperatieExport[]): number => Math.max(0, ...randuri.flatMap((o) => {
     const v = o.valori, fp = v.fundPlat;
     return [
       v.scula?.numar ?? 0, fp?.numar ?? 0, ...(fp?.rest ?? []).map((r) => r.numar), ...(v.rest ?? []).map((r) => r.numar),
@@ -346,7 +397,13 @@ export function DialogExport(
   }));
   /** O freză de rest din document pe rând (ADR 0093), ca text, cu originea ei din „Frezele mele” (felia 16.A↑b-5). */
   const randRest = (r: FrezaRestOperatie): RandRest => ({ numar: text(r.numar), diametru: text(r.diametru), pas: text(r.pasLateral), origine: r.origine ?? null });
-  const dinDocument = (): Record<string, Rand> => Object.fromEntries(operatii.map((o) => {
+  /**
+   * Rândurile ca text, din valorile documentului. T-ul de pornire al unei freze noi vine după toate frezele foii active și ale
+   * rândurilor date (cu „Toate foile”, și ale celorlalte foi).
+   */
+  const dinDocument = (randuri: readonly OperatieExport[]): Record<string, Rand> => {
+  const tMaxim = Math.max(tMaximIn(operatiiFoaie), tMaximIn(randuri));
+  return Object.fromEntries(randuri.map((o) => {
     const u = o.valori.urechi ?? URECHI_IMPLICITE;
     const inchise = o.deschise === 0;
     const fund = o.valori.fundPlat ?? null;
@@ -407,21 +464,37 @@ export function DialogExport(
       sprijinInc: dr?.locas === 'gaura' && dr.sprijin === 'fund' ? (dr.treapta ? 'umar' : 'fata') : dr?.sprijin ?? INCRUSTATIE_DREAPTA_IMPLICITA.sprijin,
       // Treapta (ADR 0175 §5): a proiectului; fără ea, umărul pornește de la jumătatea locașului (la gaură, a foii), lat de 3 mm.
       treaptaInc: dr?.treapta ? (dr.treapta.spre === 'exterior' ? 'exterior' : 'interior') : 'fara',
-      adancimeTreapta: text(dr?.treapta?.adancime ?? Math.round((dr?.locas === 'gaura' && grosimeFoaie !== undefined ? grosimeFoaie : o.valori.adancime) * 5) / 10),
+      adancimeTreapta: text(dr?.treapta?.adancime ?? ((g) => Math.round((dr?.locas === 'gaura' && g !== undefined ? g : o.valori.adancime) * 5) / 10)(o.grosime ?? grosimeFoaie)),
       latimeTreapta: text(dr?.treapta?.latime ?? LATIME_UMAR_IMPLICITA),
       frezaDop: dop0 !== undefined, numarSculaDop: text(dop0?.numar ?? Math.min(MARGINI_OPERATIE.numarScula, tMaxim + 1)), diametruSculaDop: text(diametruDop),
       pasLateralDop: text(dop0?.pasLateral ?? pasLateralImplicit(diametruDop)), origineDop: dop0?.origine ?? null,
       restDop: (dr?.frezeDop ?? []).slice(1).map(randRest),
     }];
   }));
-  const [param, setParam] = useState<Record<string, Rand>>(dinDocument);
+  };
+  /** Rândurile foii active, apoi ale celorlalte foi care nu sunt deja între ele (o cheie e a unei operații, oricare ar fi foaia). */
+  const cuCelelalte = (alte: readonly OperatieExport[]): readonly OperatieExport[] => [
+    ...operatiiFoaie, ...alte.filter(((are) => (o: OperatieExport) => !are.has(o.cheie))(new Set(operatiiFoaie.map((o) => o.cheie)))),
+  ];
+  const [param, setParam] = useState<Record<string, Rand>>(() => dinDocument(operatiiFoaie));
   // Ordinea tăierii (ADR 0133 §3): null = automată; altfel cheile rândurilor, în ordinea omului, pornită din rangurile
   // documentului. Ordinea automată arătată e cea de la deschidere (o latură sau o freză schimbată o reface la export).
   // Finisările reliefului (ADR 0312 §7) au și ele rândul lor în ordine: fără rang, în față, ca în lucrare.
-  const automata = ordineAutomata(automataLucrarii, [...operatii.map((o) => o.cheie), ...finisari.map((f) => f.cheie)]);
-  const dinRanguri = (): string[] | null => ordineDinRanguri(automata, new Map([...operatii, ...finisari].flatMap((o) => (o.rang !== undefined ? [[o.cheie, o.rang] as const] : []))),
-    new Set(finisari.map((f) => f.cheie)));
-  const [ordineMea, setOrdineMea] = useState<string[] | null>(dinRanguri);
+  // Cu „Toate foile” (28.8↑q), ordinea e foaie după foaie, fiecare în ordinea ei; „A mea” mută rândurile doar în foaia lor.
+  const automataFoii = ordineAutomata(automataFoaie, [...operatiiFoaie.map((o) => o.cheie), ...finisariFoaie.map((f) => f.cheie)]);
+  const automata = dateToate ? dateToate.foi.flatMap((f) => f.chei) : automataFoii;
+  const ranguriIn = (randuri: readonly { readonly cheie: string; readonly rang?: number }[]): Map<string, number> =>
+    new Map(randuri.flatMap((o) => (o.rang !== undefined ? [[o.cheie, o.rang] as const] : [])));
+  const dinRanguri = (): string[] | null => ordineDinRanguri(automataFoii, ranguriIn([...operatiiFoaie, ...finisariFoaie]), new Set(finisariFoaie.map((f) => f.cheie)));
+  const dinRanguriToate = (d: ToateFoileExport): string[] | null => ordineDinRanguriPeFoi(d.foi.map((f) => f.chei), ranguriIn([...d.operatii, ...d.finisari]),
+    new Set(d.finisari.map((f) => f.cheie)));
+  const [ordineFoaie, setOrdineFoaie] = useState<string[] | null>(dinRanguri);
+  // Cu „Toate foile”: `undefined` cât omul n-a schimbat-o (se ia din ranguri, ca la deschidere).
+  const [ordineToate, setOrdineToate] = useState<string[] | null | undefined>(undefined);
+  const ordineMea = dateToate ? (ordineToate === undefined ? dinRanguriToate(dateToate) : ordineToate) : ordineFoaie;
+  const setOrdineMea = (o: string[] | null): void => { if (dateToate) setOrdineToate(o); else setOrdineFoaie(o); };
+  // Foaia fiecărui rând (indicele ei în „Toate foile”); goală cu foaia activă.
+  const foaieDe = new Map((dateToate?.foi ?? []).flatMap((f, k) => f.chei.map((c) => [c, k] as const)));
   // Bifa ordinii riscante: se șterge la orice mutare (ordinea nouă e alta decât cea văzută).
   const [riscAcceptat, setRiscAcceptat] = useState(false);
   // Rândul tras cu mânerul, cât ține tragerea.
@@ -441,16 +514,28 @@ export function DialogExport(
   const [bazaVazuta, setBazaVazuta] = useState(baza);
   if (bazaVazuta !== baza) {
     setBazaVazuta(baza);
-    setParam(dinDocument());
+    setParam(dinDocument(toate && toateFoile ? cuCelelalte(toateFoile().operatii) : operatiiFoaie));
     setConfirmata(null);
-    setOrdineMea(dinRanguri());
+    setOrdineFoaie(dinRanguri());
+    setOrdineToate(undefined);
     setRiscAcceptat(false);
   }
   const bifat = cere !== undefined && confirmata === cere;
   // Plăcuțele cu textul ieșit (răspunsul 5): bifa ține lista văzută; cu confirmarea aleasă, fără ea nu se exportă.
-  // „Toate foile” (ADR 0210 §5): un program pe foaie, într-o arhivă; plăcuțele de judecat sunt atunci ale tuturor foilor.
-  const [toate, setToate] = useState(false);
   const pl = toate ? placuteToate : placute;
+  /**
+   * Alegerea foilor (ADR 0210 §5). Cu „Toate foile” (28.8↑q), rândurile celorlalte foi intră în fereastră, cu valorile din
+   * document; cele ale foii active își păstrează ce a scris omul (sunt aceleași operații).
+   */
+  const alegeToate = (da: boolean): void => {
+    if (da === toate) return;
+    // Rezultatul de până acum e al celeilalte alegeri.
+    schimbat();
+    setToate(da);
+    if (!da || !toateFoile) return;
+    const alte = toateFoile().operatii;
+    setParam((v) => ({ ...dinDocument(alte.filter((o) => !(o.cheie in v))), ...v }));
+  };
   const [placuteVazute, setPlacuteVazute] = useState<object | null>(null);
   const placuteOprite = pl?.confirmare === true && placuteVazute !== pl;
   const textPlacute = pl ? t('export.placute.iese', {
@@ -666,16 +751,20 @@ export function DialogExport(
   // Bifa tăieturilor cât foaia (ADR 0177) are ce schimba doar cu o supracursă bună, peste 0.
   const cuSupracursa = supracursaBuna && supracursaCitita !== null && supracursaCitita > 0;
   // O incrustație cu pereți drepți și gaură prin foaie (ADR 0175): singura care trece mereu prin foaie, deci are golul ei în desenul Z0.
-  const gauraIncrustatie = Object.values(param).some((p) => p.tip === 'buzunar' && p.incrustatieDreapta && p.locasInc === 'gaura');
+  // Rândurile văzute (cu foaia activă, fără cele ale altor foi aduse de „Toate foile”): „Pe toate (N)” le numără doar pe ele.
+  const paramVazut: Readonly<Record<string, Rand>> = Object.keys(param).length === operatii.length ? param
+    : Object.fromEntries(operatii.flatMap((o) => ((p) => (p ? [[o.cheie, p] as const] : []))(param[o.cheie])));
+  const gauraIncrustatie = operatii.some((o) => ((p) => p?.tip === 'buzunar' && p.incrustatieDreapta && p.locasInc === 'gaura')(param[o.cheie]));
   /**
    * Rândul „pe hârtie” (ADR 0291, felia 28.8↑h), cu valorile pe care le primește lucrarea la Exportă: supracursa doar cât e
    * pozitivă și bună, bifa doar cu ea (ca cererea de la Exportă), diametrele cercurilor rândului.
    */
   const diametreRand = new Map(operatii.map((o) => [o.cheie, o.diametre ?? []]));
+  const grosimeRand = new Map(operatii.flatMap((o) => (o.grosime !== undefined ? [[o.cheie, o.grosime] as const] : [])));
   const hartieRandului = (cheie: string, p: Rand): HartieRand => hartie({
     tip: p.tip, adancime: citesteNumar(p.adancime), pas: citesteNumar(p.pas),
     incrustatie: p.tip === 'buzunar' && p.incrustatieDreapta ? (p.locasInc === 'gaura' ? 'gaura' : 'alta') : p.tip === 'vcarve' && p.incrustatie ? 'alta' : 'fara',
-    grosime: grosimeFoaie, supracursa: cuSupracursa && supracursaCitita !== null ? supracursaCitita : 0, prinFoaie: cuSupracursa && prinFoaie,
+    grosime: grosimeRand.get(cheie) ?? grosimeFoaie, supracursa: cuSupracursa && supracursaCitita !== null ? supracursaCitita : 0, prinFoaie: cuSupracursa && prinFoaie,
     diametruScula: citesteNumar(p.diametruScula), retragere: citesteNumar(p.retragereCompleta), diametre: diametreRand.get(cheie) ?? [],
   });
   /**
@@ -748,6 +837,7 @@ export function DialogExport(
     setParam((v) => {
       const nou: Record<string, Rand> = { ...v };
       for (const [k, p] of Object.entries(v)) {
+        if (!cheiVazute.has(k)) continue;
         let r = p;
         for (const l of locuriFreze(p)) if (l.origine?.biblioteca.id === f.id) r = { ...r, ...cuValorileNoi(r, l.unde, f, text) };
         nou[k] = r;
@@ -860,11 +950,21 @@ export function DialogExport(
   // Finisarea reliefului (ADR 0312 §7): un rând pe linie al piesei ei, deci exteriorul piesei (sau al plăcii care o cuprinde, prin
   // `inauntru`) tăiat înaintea ei cere bifa riscului.
   for (const f of finisari) randuriOrdine.set(f.cheie, { piesa: f.cheie.slice(0, f.cheie.indexOf('/')), latura: 'pe-linie', despartire: false, vcarve: null });
-  const legate = legaturi(ordine, randuriOrdine);
-  const riscuriOrdine = ordineMea === null ? [] : riscuri(ordineMea, randuriOrdine);
-  /** Ordinea omului cu rândul de pe locul `de` mutat pe `la`; rezultatul vechi și bifa riscului nu mai sunt ale ei. */
+  // Cu „Toate foile” (28.8↑q), fiecare foaie e un program al ei: rândurile legate, riscurile și numerele se socotesc pe foaie.
+  const grupe = dateToate ? peFoi(ordine, dateToate.foi.length, foaieDe) : [ordine];
+  const inGrupa = new Map(grupe.flatMap((g) => g.map((c, i) => [c, { i, n: g.length }] as const)));
+  const legate = new Map(grupe.flatMap((g) => [...legaturi(g, randuriOrdine)]));
+  const riscuriOrdine = ordineMea === null ? [] : grupe.flatMap((g, k) => riscuri(g, randuriOrdine).map((r) => ({
+    ...r, ...(dateToate ? { foaie: dateToate.foi[k]?.nume ?? '' } : {}),
+  })));
+  /**
+   * Ordinea omului cu rândul de pe locul `de` mutat pe `la`; rezultatul vechi și bifa riscului nu mai sunt ale ei. Cu „Toate
+   * foile”, doar în foaia rândului: un program nu-și taie rândurile altei foi.
+   */
   const mutaRand = (de: number, la: number): void => {
     if (ordineMea === null) return;
+    const a = ordineMea[de], b = ordineMea[la];
+    if (dateToate && (a === undefined || b === undefined || foaieDe.get(a) !== foaieDe.get(b))) return;
     schimbat();
     setRiscAcceptat(false);
     setOrdineMea(muta(ordineMea, de, la));
@@ -939,7 +1039,7 @@ export function DialogExport(
             {(stari[k]?.fel === 'schimbata' || stari[k]?.fel === 'stearsa') && (
               <div className="nota-rest">
                 <NotaBiblioteca stare={stari[k] ?? null} origine={r.origine ?? null} oprit={oprit} fmt={fmtFreza}
-                  peToate={stari[k]?.fel === 'schimbata' ? cuAceeasiFreza(param, bibliotecaToata, stari[k].freza.id) : 0}
+                  peToate={stari[k]?.fel === 'schimbata' ? cuAceeasiFreza(paramVazut, bibliotecaToata, stari[k].freza.id) : 0}
                   onIa={(f) => { iaValorileNoi(cheie, { rest: fel, k }, f); }} onIaToate={iaValorileNoiPeToate}
                   inapoi={stari[k]?.fel === 'stearsa' ? inapoiLa(cheie, { rest: fel, k }) : undefined} />
               </div>
@@ -1360,13 +1460,56 @@ export function DialogExport(
   };
   // Ce îi trebuie fișei unei operații (ADR 0290, felia 28.8↑f-3): aceeași componentă o pot pune Clasicul și Pas cu pas.
   /** Rândul unei finisări în listă (ADR 0312 §7): ca celelalte, mutat cu mânerul sau cu săgețile; tragerea lasă rândul tras aici. */
-  const randFinisare = (fin: FinisareExport, loc: number): ReactNode => (
-    <RandListaFinisare key={fin.cheie} fin={fin} loc={loc} total={ordine.length} mana={ordineMea !== null && !doarCitire} tras={tras}
+  const randFinisare = (fin: FinisareExport, loc: number, poz: { readonly nr: number; readonly sus: boolean; readonly jos: boolean }): ReactNode => (
+    <RandListaFinisare key={fin.cheie} fin={fin} loc={loc} total={ordine.length} nr={poz.nr} sus={poz.sus} jos={poz.jos}
+      mana={ordineMea !== null && !doarCitire} tras={tras}
       curent={curent === fin.cheie} f={(x) => fmtFreza.format(x)}
       onMuta={(de, la) => { mutaRand(de < 0 ? ordine.indexOf(tras ?? '') : de, la); }} onTrage={setTras} onDu={() => { du(fin.cheie, 'titlu'); }} />
   );
+  /** Locul fiecărui rând în ordinea întreagă; numărul arătat și marginile mutării (cu „Toate foile”, în foaia lui). */
+  const locDe = new Map(ordine.map((c, i) => [c, i] as const));
+  const pozitie = (cheie: string, loc: number): { readonly nr: number; readonly n: number; readonly sus: boolean; readonly jos: boolean } => {
+    const g = inGrupa.get(cheie) ?? { i: loc, n: ordine.length };
+    return { nr: g.i + 1, n: g.n, sus: g.i > 0, jos: g.i < g.n - 1 };
+  };
+  const randLista = (cheie: string, loc: number): ReactNode => {
+    const poz = pozitie(cheie, loc);
+    const fin = finisareDupaCheie.get(cheie);
+    if (fin) return randFinisare(fin, loc, poz);
+    const o = dupaCheie.get(cheie);
+    const p = o ? param[o.cheie] : undefined;
+    if (!o || !p) return null;
+    return (
+      <RandListaOp key={o.cheie} o={o} p={p} loc={loc} nr={poz.nr} sus={poz.sus} jos={poz.jos} mana={ordineMea !== null && !doarCitire}
+        trasAici={tras === o.cheie} trasActiv={tras !== null} legat={legate.get(o.cheie)} gresit={greseliRand(o.cheie).length > 0}
+        curent={curent === o.cheie} nume={numeTaietura(p)} latura={taieturaRand(p)} a={actiuniLista} limba={limba} />
+    );
+  };
+  const fisa = (cheie: string, loc: number): ReactNode => {
+    const poz = pozitie(cheie, loc);
+    const fin = finisareDupaCheie.get(cheie);
+    if (fin) return <FisaFinisare key={cheie} fin={fin} loc={poz.nr - 1} total={poz.n} f={(x) => fmtFreza.format(x)} />;
+    if (randata(cheie, loc)) return <FisaOperatie key={cheie} cheie={cheie} loc={poz.nr - 1} total={poz.n} c={contextFisa} />;
+    // Locul unei fișe nerandate (28.8↑i): titlul și înălțimea ei, ca derularea și lista s-o găsească.
+    return (
+      <section className="dx-fisa" data-fisa="op" data-operatie={cheie} data-gol="" key={cheie} style={{ height: inaltimeLoc(cheie) }}>
+        <h3 tabIndex={-1}>{dupaCheie.get(cheie)?.descriere}</h3>
+      </section>
+    );
+  };
+  /**
+   * Ce spune capul unei foi, sub nume (28.8↑q): operațiile pieselor puse întâi pe foi de dinainte (rândurile lor stau acolo,
+   * iar în „A mea” se taie înaintea celor de aici) și foaia fără piese.
+   */
+  const notaFoii = (f: FoaieFereastra, unde: 'lista' | 'fise'): ReactNode => {
+    const texte = [
+      ...f.comune.map((c) => t(ordineMea !== null ? 'export.foi.comune.a-mea' : 'export.foi.comune', { n: c.operatii, foaie: c.foaie })),
+      ...(f.goala ? [t('export.foi.goala')] : []),
+    ];
+    return texte.length === 0 ? null : <span className="nota" data-nota-foaie={unde}>{texte.join(' ')}</span>;
+  };
   const contextFisa: ContextFisa = {
-    dupaCheie, param, total: ordine.length, doarCitire, schimba, randBun, greseliRand, conflict, hartie: hartieRandului, taieturaRand,
+    dupaCheie, param: paramVazut, total: ordine.length, doarCitire, schimba, randBun, greseliRand, conflict, hartie: hartieRandului, taieturaRand,
     text, fmtFreza, fmtTrecere, grosimeFoaie, supracursaCitita, cuSupracursa, onAlegeUrechi, frezeRest, grup, frezeOferite, alegeFreza,
     bibliotecaToata, iaValorileNoi, iaValorileNoiPeToate, inapoi: inapoiLa,
   };
@@ -1411,18 +1554,17 @@ export function DialogExport(
             <button type="button" data-ordine="inapoi" disabled={doarCitire} onClick={() => { alegeOrdine(false); }}>{t('export.ordine.inapoi')}</button>
           )}
         </div>
-            {ordine.map((cheie, loc) => {
-              const fin = finisareDupaCheie.get(cheie);
-              if (fin) return randFinisare(fin, loc);
-              const o = dupaCheie.get(cheie);
-              const p = o ? param[o.cheie] : undefined;
-              if (!o || !p) return null;
-              return (
-                <RandListaOp key={o.cheie} o={o} p={p} loc={loc} total={ordine.length} mana={ordineMea !== null && !doarCitire}
-                  trasAici={tras === o.cheie} trasActiv={tras !== null} legat={legate.get(o.cheie)} gresit={greseliRand(o.cheie).length > 0}
-                  curent={curent === o.cheie} nume={numeTaietura(p)} latura={taieturaRand(p)} a={actiuniLista} limba={limba} />
-              );
-            })}
+            {dateToate
+              ? dateToate.foi.map((f, k) => (
+                <Fragment key={f.id}>
+                  <div className="dx-foaie-lista" data-foaie-lista={f.id}>
+                    <span className="dx-foaie-nume">{f.nume}</span>
+                    {notaFoii(f, 'lista')}
+                  </div>
+                  {(grupe[k] ?? []).map((cheie) => randLista(cheie, locDe.get(cheie) ?? 0))}
+                </Fragment>
+              ))
+              : ordine.map((cheie, loc) => randLista(cheie, loc))}
             {cuRezultat && (
               <button type="button" className="dx-nav" data-nav="rezultatul" aria-current={curent === 'rezultatul'}
                 data-avertisment={stare?.ok && stare.avertismente.length > 0 ? '' : undefined} onClick={() => { du('rezultatul', 'titlu'); }}>
@@ -1446,10 +1588,10 @@ export function DialogExport(
           <div className="ordine-taierii" data-testid="export-foi-alegere">
             <span className="eticheta">{t('export.foi')}</span>
             <div className="dx-carduri mari" role="group" aria-label={t('export.foi')}>
-              <button type="button" className="dx-card" aria-pressed={!toate} data-foi="activa" onClick={() => { setToate(false); }}>
+              <button type="button" className="dx-card" aria-pressed={!toate} data-foi="activa" onClick={() => { alegeToate(false); }}>
                 <Poza k="foi.activa" /><span>{t('export.foi.activa')}</span>
               </button>
-              <button type="button" className="dx-card" aria-pressed={toate} data-foi="toate" onClick={() => { setToate(true); }}>
+              <button type="button" className="dx-card" aria-pressed={toate} data-foi="toate" onClick={() => { alegeToate(true); }}>
                 <Poza k="foi.toate" /><span>{t('export.foi.toate', { n: foi ?? 0 })}</span>
               </button>
             </div>
@@ -1552,17 +1694,17 @@ export function DialogExport(
         </details>
               </div>)}
             </section>
-            {ordine.map((cheie, loc) => {
-              const fin = finisareDupaCheie.get(cheie);
-              if (fin) return <FisaFinisare key={cheie} fin={fin} loc={loc} total={ordine.length} f={(x) => fmtFreza.format(x)} />;
-              if (randata(cheie, loc)) return <FisaOperatie key={cheie} cheie={cheie} loc={loc} c={contextFisa} />;
-              // Locul unei fișe nerandate (28.8↑i): titlul și înălțimea ei, ca derularea și lista s-o găsească.
-              return (
-                <section className="dx-fisa" data-fisa="op" data-operatie={cheie} data-gol="" key={cheie} style={{ height: inaltimeLoc(cheie) }}>
-                  <h3 tabIndex={-1}>{dupaCheie.get(cheie)?.descriere}</h3>
-                </section>
-              );
-            })}
+            {dateToate
+              ? dateToate.foi.map((f, k) => (
+                <Fragment key={f.id}>
+                  <div className="dx-foaie-fise" data-foaie-fise={f.id}>
+                    <h3>{f.nume}</h3>
+                    {notaFoii(f, 'fise')}
+                  </div>
+                  {(grupe[k] ?? []).map((cheie) => fisa(cheie, locDe.get(cheie) ?? 0))}
+                </Fragment>
+              ))
+              : ordine.map((cheie, loc) => fisa(cheie, loc))}
             {cuRezultat && (
               <section className="dx-fisa" data-fisa="rezultatul">
                 <h3 tabIndex={-1}>{t('export.fisa.rezultatul')}</h3>
@@ -1612,9 +1754,26 @@ export function DialogExport(
                     </div>
                   )}
                 </div>
-                {stare?.ok && <div className="dx-rez" data-rezultat="timp"><Rezumat r={stare.rezumat} operatii={operatii} limba={limba}
+                {stare?.ok && !stare.foi && <div className="dx-rez" data-rezultat="timp"><Rezumat r={stare.rezumat} operatii={operatii} limba={limba}
                   alte={new Map(finisari.map((f) => [f.cheie, f.descriere]))} /></div>}
-                {stare?.ok && <div className="dx-rez" data-rezultat="simulare"><PrevizualizareSimulare s={stare.simulare} limba={limba} /></div>}
+                {/* Rezultatul pe foi (ADR 0291, 7a, felia 28.8↑q): timpul pe operații al fiecărei foi; a foii active, deschis. */}
+                {stare?.ok && stare.foi && (
+                  <div className="dx-rez" data-rezultat="timp">
+                    {stare.foi.foi.map((f, k) => f.rezumat && (
+                      <details key={f.nume} className="dx-rezumat-foaie" data-rezumat-foaie={k} open={f.activa === true}>
+                        <summary>{f.identice.length > 0 ? t('export.foi.identice', { foaie: f.nume, n: f.identice.length + 1, alte: f.identice.join(', ') }) : f.nume}
+                          {f.secunde !== null ? ` · ${durata(f.secunde, limba)}` : ''}</summary>
+                        <Rezumat r={f.rezumat} operatii={operatii} limba={limba} alte={new Map(finisari.map((x) => [x.cheie, x.descriere]))} foaie={k} />
+                      </details>
+                    ))}
+                  </div>
+                )}
+                {stare?.ok && (
+                  <div className="dx-rez" data-rezultat="simulare">
+                    {stare.foi && foaie !== undefined && <p className="nota" data-nota="simulare-foaie">{t('export.foi.simulare', { foaie })}</p>}
+                    <PrevizualizareSimulare s={stare.simulare} limba={limba} />
+                  </div>
+                )}
               </section>
             )}
             {/* Loc sub ultima fișă, ca un clic în listă s-o aducă și pe ea sus. */}
@@ -1658,9 +1817,9 @@ export function DialogExport(
         {riscuriOrdine.length > 0 && (
           <div className="confirmare-iesire" data-testid="risc-ordine">
             <div role="alert">
-              {riscuriOrdine.map((r) => (
-                <p key={`${r.fel}-${r.a}-${r.b}`}>{t(r.fel === 'exterior' ? 'export.ordine.risc.exterior' : 'export.ordine.risc.despartire', { a: r.a, b: r.b })}</p>
-              ))}
+              {riscuriOrdine.map((r) => ((text) => (
+                <p key={`${r.foaie ?? ''}-${r.fel}-${r.a}-${r.b}`}>{r.foaie === undefined ? text : t('export.ordine.risc.foaie', { foaie: r.foaie, text })}</p>
+              ))(t(r.fel === 'exterior' ? 'export.ordine.risc.exterior' : 'export.ordine.risc.despartire', { a: r.a, b: r.b })))}
             </div>
             <label>
               <input type="checkbox" checked={riscAcceptat} data-camp="confirma-ordine" onChange={(e) => { setRiscAcceptat(e.target.checked); }} />

@@ -86,8 +86,10 @@ export function FisaFinisare({ fin, loc, total, f }: {
  * Rândul finisării în lista ferestrei (ADR 0312 §7): locul în ordine, cu mânerul și săgețile în „A mea” (ca la celelalte
  * rânduri), numele și, dedesubt, felul, freza și adâncimea. Mutarea, tragerea și alegerea fișei sunt ale ferestrei.
  */
-export function RandListaFinisare({ fin, loc, total, mana, tras, curent, f, onMuta, onTrage, onDu }: {
+export function RandListaFinisare({ fin, loc, total, nr = loc + 1, sus = loc > 0, jos = loc < total - 1, mana, tras, curent, f, onMuta, onTrage, onDu }: {
   readonly fin: FinisareExport; readonly loc: number; readonly total: number; readonly mana: boolean; readonly tras: string | null;
+  /** Numărul arătat și dacă rândul se poate muta în sus și în jos (cu „Toate foile”, doar în foaia lui; 28.8↑q). */
+  readonly nr?: number; readonly sus?: boolean; readonly jos?: boolean;
   readonly curent: boolean; readonly f: (x: number) => string;
   readonly onMuta: (de: number, la: number) => void;
   /** Tragerea începe (cheia) sau se termină (null); lăsarea altui rând pe acesta îl mută aici. */
@@ -101,8 +103,8 @@ export function RandListaFinisare({ fin, loc, total, mana, tras, curent, f, onMu
       onDrop={mana && tras !== null ? (ev) => { ev.preventDefault(); onMuta(-1, loc); onTrage(null); } : undefined}>
       <span className="ordine">
         {mana && (
-          <button type="button" className="trage" draggable data-trage={c} aria-label={t('export.ordine.trage', { n: loc + 1 })}
-            title={t('export.ordine.trage', { n: loc + 1 })}
+          <button type="button" className="trage" draggable data-trage={c} aria-label={t('export.ordine.trage', { n: nr })}
+            title={t('export.ordine.trage', { n: nr })}
             onDragStart={(ev) => { ev.dataTransfer.setData('text/plain', c); ev.dataTransfer.effectAllowed = 'move'; onTrage(c); }}
             onDragEnd={() => { onTrage(null); }}>
             <svg viewBox="0 0 10 16" width="10" height="16" aria-hidden="true">
@@ -111,15 +113,15 @@ export function RandListaFinisare({ fin, loc, total, mana, tras, curent, f, onMu
             </svg>
           </button>
         )}
-        <span className="loc" data-loc={loc + 1}>{loc + 1}</span>
+        <span className="loc" data-loc={nr}>{nr}</span>
         {mana && (
           <span className="sageti">
-            <button type="button" data-sus={c} disabled={loc === 0} aria-label={t('export.ordine.sus', { n: loc + 1 })}
-              title={t('export.ordine.sus', { n: loc + 1 })} onClick={() => { onMuta(loc, loc - 1); }}>
+            <button type="button" data-sus={c} disabled={!sus} aria-label={t('export.ordine.sus', { n: nr })}
+              title={t('export.ordine.sus', { n: nr })} onClick={() => { onMuta(loc, loc - 1); }}>
               <svg viewBox="0 0 12 12" width="12" height="12" aria-hidden="true"><path d="M6 2.5 10.5 8.5H1.5Z" /></svg>
             </button>
-            <button type="button" data-jos={c} disabled={loc === total - 1} aria-label={t('export.ordine.jos', { n: loc + 1 })}
-              title={t('export.ordine.jos', { n: loc + 1 })} onClick={() => { onMuta(loc, loc + 1); }}>
+            <button type="button" data-jos={c} disabled={!jos} aria-label={t('export.ordine.jos', { n: nr })}
+              title={t('export.ordine.jos', { n: nr })} onClick={() => { onMuta(loc, loc + 1); }}>
               <svg viewBox="0 0 12 12" width="12" height="12" aria-hidden="true"><path d="M6 9.5 1.5 3.5H10.5Z" /></svg>
             </button>
           </span>
