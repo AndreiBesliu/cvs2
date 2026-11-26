@@ -800,12 +800,17 @@ turnantă** (aici), și **3.Ck-2, balamaua** (felia următoare). Easy 3Draw **18
   motorului cu gaură, prinderile (numărate pe fel), partea de sus montată pe pivot fără nicio pătrundere la cinci
   unghiuri de rotire, cu martori (pivotul mutat cu 0,4 sau −0,2 mm intră în placă), jocul 0,2 față de 0, gaura după
   varianta din calibrare (5 → Ø5,2, 0,225 mm de jur împrejur), verificarea din 3.Cg (partea de sus prinsă de bază),
-  marginile cu mesajele lor. E2e (`test/e2e/trenulet.turnanta.spec.ts`, 3 scenarii): galeria („Cărămizi 13”), editorul
+  marginile cu mesajele lor. E2e (`test/e2e/trenulet.turnanta.spec.ts`, 4 scenarii): galeria („Cărămizi 13”), editorul
   (piesa, mărimea, jocul cu marginile și rotunjirea, numele, cotele, textul), STL-ul închis cu cotele de pe hârtie, „Fă
-  placa turnantă” și adunarea rândurilor, prinderile și „Se prinde cu”. Proba în engleză din cvs2 (`trenulet.spec.ts`):
+  placa turnantă” și adunarea rândurilor, prinderile și „Se prinde cu”, o construcție din stocare cu partea de sus
+  scrisă de mână cu un joc (numele ei, fără joc). Proba în engleză din cvs2 (`trenulet.spec.ts`):
   piesa, butoanele, jocul, textul cu punctul zecimal. Probele filelor, galeriilor, pictogramelor, căutării, prinderilor și
   modelului, la zi (13 piese în Cărămizi, 43 de pictograme).
-- **Otrăvurile:** `test/otravuri/3.Ck-1.py`, OTRAVURI_CK1; `3.Ck-1-en.py`, OTRAVURI_CK1EN.
+- **Otrăvurile:** `test/otravuri/3.Ck-1.py`, 45 / 45 (la prima rulare 42 / 45: M18, pivotul colțuros, prinsă după proba
+  care cere pivotul rotund din grad în grad; A05, partea de sus care își spune jocul, prinsă după proba construcției din
+  stocare; A16, fără pictogramă, prinsă de proba unitară a pictogramelor, pusă în setul ei); `3.Ck-1-en.py`, 6 / 6.
+  Ancorele tuturor listelor pluginului: 2 641, fiecare găsită exact o dată (ancora `PD` din `3.Cj-3.py` se termina cu
+  `function lateral(`, despărțit acum de placa turnantă: scurtată).
 - **Mărimea:** pachetul Easy 3Draw, 579,3 kB (era 576,4); aplicația, neschimbată; nimic pe server.
 - **Alegeri făcute cu recomandarea, de întrebat owner-ul:** (1) pivotul e capătul de știft Technic, deci jocul vine din
   calibrare (nu un disc pe disc, ca la placa LEGO, al cărui joc nu se poate hotărî pe hârtie); (2) mărimile 2 × 2 și 4 × 4;
