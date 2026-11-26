@@ -104,7 +104,7 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   `test/oracles/document.ts` (peste partea v1–v10), cazurile pe hârtie la finalul lui `test/oracles/document.cazuri.ts`, proba
   cu ușa aplicației în `test/unit/document.v22.oracol.test.ts` (din 08.11, cu incrustațiile din v20–v22) și, pentru v23 (literele
   plăcuțelor, 11.4↑, în `main` din 13.11), în `test/unit/document.v23.oracol.test.ts`. **Un câmp nou al documentului
-  (v30; v29, cu finisarea reliefului și freza bilă, ADR 0312, e în `main` din 25.11; v28, cu forma `relief`, ADR
+  (v31; v30 e al degroșării reliefului, 18.1↑d, încă pe ramură; v29, cu finisarea reliefului și freza bilă, ADR 0312, e în `main` din 25.11; v28, cu forma `relief`, ADR
   0310, din 24.11; v27, cu `biblioteca`, `regim` și `tais` pe frezele
   operațiilor, ADR 0300) intră acolo, ca rangul și incrustația:** rândul
   lui în `CAMPURI_NOI_O` (ciocnirea migrării), judecata în `problemeOperatieO`, frontierele pe hârtie, iar probele care țin
@@ -323,7 +323,7 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   buzunarul, liniile paralele, frezele de rest, găurirea, V-ul, fundul plat, dopurile), turația primei freze montate
   și a celei noi la schimbare. **Fără valori, programul de azi, octet cu octet;** același T cu două turații și o
   adâncime peste tăiș se refuză. Fără interfață încă: urmează 16.A↑b-2 (lista „Freza” pe rândurile exportului și în
-  Tăierea) și 16.A↑b-3 (nota schimbării din bibliotecă). **Un câmp nou al documentului ia v30 (v28 e relieful, ADR 0310; v29, finisarea lui, ADR 0312). O probă e2e care
+  Tăierea) și 16.A↑b-3 (nota schimbării din bibliotecă). **Un câmp nou al documentului ia v31 (v28 e relieful, ADR 0310; v29, finisarea lui, ADR 0312; v30, degroșarea lui, 18.1↑d, încă pe ramură). O probă e2e care
   citește documentul salvat cere versiunea curentă:** `placute.spec.ts` a căzut în completul liniei cu `schema: 26`.
   **Biblioteca de freze în cont (ADR 0300 §3, §7, felia 16.A↑c)** gata pe 24.11, unită în `main` pe 24.11
   (`6b74074d`), la „b, pornește 16.A↑c” al owner-ului: callable-ul `freze` (`functions/src/freze/`, contractul în
@@ -620,8 +620,20 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   e oprit înainte de clic (`gauriBune`). „Du-mă la …” aduce în vedere grupul primei greșeli și pune focusul pe câmpul
   greșit. **O probă care cere „greșeala se vede” o cere întreagă în panou, pe dreptunghiuri, nu `toBeInViewport()`**
   (trecea cu 4 px). Programul, octet cu octet. Rămân în fereastră, cu proba lor: urechile de pe schiță, pasul
-  lateral și coborârea, V-carve-ul și incrustațiile (28.8↑m). Urmează 28.8↑i (viteza ferestrei), apoi j–l. Felia:
+  lateral și coborârea, V-carve-ul și incrustațiile (28.8↑m). Felia:
   pornirea +0, totalul +1,7 kB (909,1 / 1 000).
+  **Viteza ferestrei exportului (ADR 0291 §1, felia 28.8↑i)** gata pe 25.11, unită în `main` pe 26.11 (`953205a8`):
+  peste 12 operații (`PRAG_FISE`, `src/ui/DialogExport.tsx`), se randează doar fișele din jurul panoului, cea
+  curentă cu vecinele ei și cea cu focusul; celelalte își țin locul (`[data-fisa="op"][data-gol]`, cu titlul și
+  înălțimea măsurată), iar „Du-mă la …” randează întâi fișa, apoi derulează. Rândurile listei sunt `memo`
+  (`RandListaOp`, cu acțiunile printr-un obiect stabil). Pe 150 de operații, măsurat de linie: deschiderea 9,7 s →
+  ~0,5 s, o tastă 96 → ~10 ms. **O probă care lucrează într-o fișă departe o aduce întâi** (clic în listă, „Du-mă
+  la …” sau derulând), iar una care numără fișele randate le caută după `:has([data-grup])` sau `:not([data-gol])`.
+  **O probă de timp măsoară în pagină și ia cea mai bună încercare** (`export.viteza.spec.ts`): `expect` din
+  Playwright întreabă pagina în trepte (0, 100, 350, 850 ms…), deci un timp citit așa sare pe treptele lui.
+  **Fără `content-visibility` pe rânduri pe care se dă clic:** departe de vedere au înălțimea 0, iar clicul cade
+  alături. Programul, octet cu octet. Urmează 28.8↑j (greșelile pe înțeles), apoi k, l. Felia: pornirea +0,
+  totalul +0,3 kB (909,4 / 1 000).
   **Aldinul și cursivul sintetic (ADR 0123, felia 7.5↑, adusă din etapa 7)** gata pe 02.11, în worktree-ul `wip/7.5-text`:
   bifele **Aldin** și **Cursiv** din panoul textului, pentru orice font. Cursivul înclină fiecare literă față de linia ei de
   bază, exact; aldinul așază literele la înălțimea miezului (h − 2d), le îngroașă cu d prin fațada offsetului
@@ -1313,7 +1325,7 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   scobitură în model” și „niciodată mai adânc decât pasul pe trecere”. **Lista bibliotecii dată ferestrei exportului
   ține doar frezele rândurilor (fără bile)**, cu o pază a compilatorului (`exportFreze.bila.test.ts`). Nedovedit
   fără mașină: creasta reală, suprafața față de model, timpul. **18.1↑d (degroșarea, apoi fișa plăcii reliefului),
-  pornită pe 25.11**, la „ok, porneste 10.4↑d si 18.1↑d” al owner-ului, cu v30 ținut pentru ea; rândul editabil al
+  pornită pe 25.11**, la „ok, porneste 10.4↑d si 18.1↑d” al owner-ului, cu v30 luat de ea (operația `degrosare`, ADR 0313, propus de linie); rândul editabil al
   finisării rămâne la cuvântul lui. Nimic pe server. Felia: pornirea +0,2 kB, totalul +10,8 kB (907,4 / 1 000).
   **Raportările (15.B↑b) și imprimanta (3.6g, 3.6h, 3.6i pașii 1–2; ADR 0191 acceptat, codul 3.6j încă pe ramură) unite în
   `main` pe 07.11**, peste biblioteca extensiilor (`b501571`, `6e61bee`, apoi `e9cf6ee` cu DEVLOG-ul bibliotecii): **pornirea
@@ -1814,6 +1826,37 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 26.11.2026, noaptea (a patruzeci și treia unire din cloud): **viteza ferestrei „Exportă G-code” (28.8↑i), unită în
+  `main`** (sesiunea principală, ramura `unire-2611b`, din `554b72cb`). Linia exportului, ramura `wip/28.8-export`,
+  `8c309846`, PR-ul `AndreiBesliu/cvs2#49` (ADR 0291 §1, răspunsul 1a al owner-ului; constatarea 4 a auditului),
+  unită în `953205a8`: peste 12 operații, fereastra randează doar fișele din jurul panoului, pe cea curentă cu
+  vecinele ei și pe cea cu focusul; restul își țin locul, cu titlul și înălțimea măsurată, deci lista, derularea și
+  „Du-mă la …” le găsesc; rândurile listei nu se mai randează la fiecare tastă. Până la 12 operații, fereastra
+  rămâne cum era. Măsurat de linie, pe 150 de operații: deschiderea 9,7 s → ~0,5 s (următoarele ~0,15 s), o tastă
+  96 ms → ~10 ms, fișele randate 150 → 3, nodurile 37 800 → 2 667. **Programul, documentul și serverul nu se
+  schimbă** (documentul rămâne v29). Otrăvurile 10 / 10. **Drumul până în `main`:** primul complet al liniei a
+  căzut la proba de viteză (1 159 ms la pragul de 1 s): timpul era citit pe treptele de așteptare ale lui `expect`
+  din Playwright; linia a mutat judecata pe numărători (fișele randate, nodurile) și pe timpul măsurat în pagină,
+  cu cea mai bună încercare, și a găsit apoi, sub suprasarcină, un defect adevărat: `content-visibility` pe
+  rândurile listei le dădea înălțimea 0 departe de vedere, deci un clic pe un rând de departe cădea pe listă (4 din
+  64 de rulări); scos, cu proba lui. Completul liniei, verde de două ori pe `8c309846` (45704990640, 45705182587).
+  După commit-ul verificat de linie, `main` primise 3.Cl-1 (extensia și probele ei), deci arborele unirii nu era al
+  niciunui commit verificat și și-a făcut completul lui. Unirea, fără nicio ciocnire. Porțile unirii, în CI, pe
+  `953205a8` (completul 45714218828, verde la prima trecere, 60 min): unit 10 617 / 0 (12 sărite, pe Linux), e2e
+  903 / 903, funcțiile pe emulatoare 136 / 136, paginile 60 / 60; rapidul, verde pe `953205a8`; pornirea 111,4 kB
+  (plafonul 125; cu ușa 116,5, cu Atelierul 116,9), **totalul 909,4 / 1 000 kB** (+0,3), `/admin` 138,3 / 200,
+  contul 30,2 / 32. **Lotul 39 (decorațiunile de Crăciun) e pe test din 26.11, 01:43** (`554b72cb`; completul pe
+  `main` 45712796123, verde; proba de fum, bună); 28.8↑i pleacă acum (lotul 40). **Schema:** linia reliefului a
+  luat v30 pentru degroșare (operația `degrosare`, ADR 0313, propus de ea), deci **un câmp nou pe altă linie ia
+  v31**. La linii, raportate gata, pentru lotul următor: atelierul (3.Cl-2, globul de Crăciun, Easy 3Draw 18.36.0,
+  `AndreiBesliu/cvs2#53`) și cotele (10.4↑d-1: lanțul, linia de bază, „Cotează selecția”, `AndreiBesliu/cvs2#52`);
+  în lucru: exportul (28.8↑j, greșelile pe înțeles; apoi k, l), relieful (18.1↑d), cotele (10.4↑d-2, d-3),
+  atelierul (3.Cl-3, ornamentul cu nume). **La owner:** de tipărit decorațiunile, rândul
+  editabil al finisării, Escape în cele șase ferestre, feliile frezelor (16.A↑d–g), cele două alegeri cu
+  recomandarea aplicată, de încercat „Modelul” din Easy 3Draw, proba pe mașină a centrului foii, cele patru
+  întrebări din auditul elicelor, pachetul Easy 3Draw trecut de 0,5 MB, arhivarea sesiunii elicelor, verificarea
+  juridică (GDPR) a utilizării aplicației înaintea live-ului, „cine unește în `main`”, meniul de sus la 320 px la
+  atingere.
 - 26.11.2026, noaptea (a patruzeci și doua unire din cloud): **decorațiunile de Crăciun din atelierul Easy 3Draw:
   fulgul, steaua și brăduțul (3.Cl-1), unite în `main`** (sesiunea principală, ramura `unire-2611a`, din
   `ca38f215`). Linia atelierului, ramura `wip/3.Xh-biblioteca-ui`, `42775bb0`, PR-ul `AndreiBesliu/cvs2#50` (ADR
