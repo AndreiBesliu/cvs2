@@ -8,14 +8,16 @@
  * - lemnul rămas, pe hârtie: pe platou, a (și peretele neatins pe a); pe pană, a · (1 + g) (plus surplusul câmpului);
  * - degroșarea, apoi finisarea, pe același lemn: finisarea nu intră mai adânc decât pasul ei; invers (finisarea întâi, „A mea”),
  *   degroșarea nu atinge modelul plus adaosul și nu intră mai adânc decât pasul ei;
- * - coborârea în lemn e verticală, cu avansul de plonjare, cel mult cât pasul; trecerile, ⌈adâncimea / pas⌉.
+ * - coborârea: orice mutare de tăiere care coboară (și cea de la începutul unei linii, de pe perete în lemn) are viteza pe Z cel
+ *   mult avansul de plonjare (`coborariRepeziO`), la degroșare și la finisare; trecerile, ⌈adâncimea / pas⌉.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { degrosareRelief, finisareRelief, type ParametriDegrosare, type ReliefCam } from '../../src/cam/reliefFinisare.ts';
 import type { Miscare } from '../../src/ir/ir.ts';
 import {
-  adaosPePlan, clAdaos, clExact, IndexO, judecaDegrosarea, judecaTraseul, materialSecventaO, ramasO, triunghiuriModel, type PasO, type ZonaO,
+  adaosPePlan, clAdaos, clExact, coborariRepeziO, IndexO, judecaDegrosarea, judecaTraseul, materialSecventaO, ramasO, triunghiuriModel, type PasAvansO,
+  type PasO, type ZonaO,
 } from '../oracles/relief3d.ts';
 
 const Z_SIGUR = 5;
@@ -58,13 +60,13 @@ const concat = (...a: Float64Array[]): Float64Array => {
   for (const x of a) { out.set(x, o); o += x.length; }
   return out;
 };
-function pasi(miscari: readonly Miscare[], x0: number, y0: number): PasO[] {
+function pasi(miscari: readonly Miscare[], x0: number, y0: number): PasAvansO[] {
   let x = x0, y = y0, z = Z_SIGUR;
-  const out: PasO[] = [{ x, y, z, rapida: true }];
+  const out: PasAvansO[] = [{ x, y, z, rapida: true }];
   for (const m of miscari) {
     if (m.tip !== 'rapida' && m.tip !== 'taiere') continue;
     x = m.la.X ?? x; y = m.la.Y ?? y; z = m.la.Z ?? z;
-    out.push({ x, y, z, rapida: m.tip === 'rapida' });
+    out.push(m.tip === 'rapida' ? { x, y, z, rapida: true } : { x, y, z, rapida: false, f: m.avans });
   }
   return out;
 }
@@ -90,7 +92,13 @@ function judeca(c: Caz): { readonly miscari: Miscare[]; readonly pasi: PasO[]; r
   const p = pasi(r.miscari, 0, 0);
   const probleme = judecaDegrosarea(ix, c.raza, c.adaos, p, { podea: -c.adancime, pas: c.pas, zona: zonaDin(p, c.raza + 1), pasGrila: 0.2, tol: 1e-6 });
   assert.deepEqual(probleme.slice(0, 3), [], `${c.nume}: ${probleme.length} probleme`);
-  // Coborârea în lemn: orice mutare care coboară pe loc (fără X, Y) are avansul de plonjare.
+  // Coborârea în lemn: nicio mutare de tăiere nu coboară mai repede decât avansul de plonjare (și cea pe loc îl are întreg).
+  assert.deepEqual(coborariRepeziO(p, 400).slice(0, 3), [], `${c.nume}: coborâri prea repezi`);
+  // Și invers: o mutare de tăiere care nu coboară (palierul, urcarea) merge cu avansul de tăiere, nu încetinită la plonjare.
+  for (let k = 1; k < p.length; k++) {
+    const q = p[k]!;
+    if (!q.rapida && q.z >= p[k - 1]!.z - 1e-9) assert.equal(q.f, 1200, `${c.nume}: pasul ${k} nu coboară, dar are avansul ${q.f}`);
+  }
   let zc = Z_SIGUR;
   for (const m of r.miscari) {
     if (m.tip !== 'taiere' && m.tip !== 'rapida') continue;
@@ -166,7 +174,7 @@ test('valuri, două reliefuri suprapuse, podeaua deasupra modelului, la un unghi
   assert.ok(Math.min(...j.pasi.map((p) => p.z)) >= -4 + 0.3 - 1e-9, 'podeaua plus adaosul');
 });
 
-test('degroșarea, apoi finisarea, pe același lemn: finisarea nu intră mai adânc decât pasul ei; nimic sub model', () => {
+test('degroșarea, apoi finisarea, pe același lemn: finisarea nu intră mai adânc decât pasul ei; nimic sub model; coborârile, cu plonjarea', () => {
   const c = 0.5, n = 40, Rs = 8;
   const v = grila(n, n, c, (x, y) => { const d2 = (x - 10) ** 2 + (y - 10) ** 2; return d2 < Rs * Rs ? Math.sqrt(Rs * Rs - d2) : 0; });
   const r = relief(v, n, n, c, T(5, 5), -Rs - 1);
@@ -174,6 +182,9 @@ test('degroșarea, apoi finisarea, pe același lemn: finisarea nu intră mai ad�
   const fin = finisareRelief({ reliefuri: [r], freza: { fel: 'bila', raza: 1.5 }, unghi: 0, nealiniat: false, margine: 'perete', pasLateral: 0.5, pas: 3, adancime: 20, zSigur: Z_SIGUR, avans: 1000, avansPlonjare: 300 });
   assert.ok(deg.ok && fin.ok);
   const pd = pasi(deg.miscari, 0, 0), pf = pasi(fin.miscari, 0, 0), zona = { x0: 0, y0: 0, x1: 30, y1: 30 };
+  // Coborârea: nici degroșarea, nici finisarea nu intră în lemn mai repede decât avansul de plonjare (și pe peretele calotei).
+  assert.deepEqual(coborariRepeziO(pd, 400).slice(0, 3), []);
+  assert.deepEqual(coborariRepeziO(pf, 300).slice(0, 3), []);
   const inainte = materialSecventaO([{ pasi: pd, f: { fel: 'plata', R: 3 } }, { pasi: pf, f: { fel: 'bila', R: 1.5 } }], zona, 0.2, 0, 0.04);
   assert.ok(inainte.blocuri[0]!.taiere <= 2.5 + 0.05 && inainte.blocuri[1]!.taiere <= 3 + 0.05, `adâncimi ${inainte.blocuri.map((b) => b.taiere)}`);
   assert.ok(inainte.blocuri.every((b) => b.rapida === 0));

@@ -13,8 +13,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  adaosPePlan, clAdaos, clExact, clPlan, clRadial, distantaPunctTriunghiO, IndexO, judecaDegrosarea, materialSecventaO, ramasO, triunghiuriModel,
-  type PasO,
+  adaosPePlan, clAdaos, clExact, clPlan, clRadial, coborariRepeziO, distantaPunctTriunghiO, IndexO, judecaDegrosarea, materialSecventaO,
+  pasiDinGcodeO, ramasO, triunghiuriModel, type PasO,
 } from '../oracles/relief3d.ts';
 
 const GRAD = Math.PI / 180;
@@ -134,4 +134,30 @@ test('judecaDegrosarea: un traseu la CL-ul cu adaosul trece; sub el cu 0,01, sub
   assert.ok(judecaDegrosarea(ix, R, a, adanc, o).some((q) => q.fel === 'adancime'));
   const rapida = [...bun.slice(0, 4), P(12, 10, -2.1, true), P(14, 10, 5)];
   assert.ok(judecaDegrosarea(ix, R, a, rapida, o).some((q) => q.fel === 'rapida'));
+});
+
+test('coborârea, pe hârtie: viteza pe Z a unei mutări care coboară, f · |dz| / L, cel mult avansul de plonjare', () => {
+  // De pe (0, 0, 0.5): plonjarea verticală de 3,5 mm cu 1000 (prea repede) și cu 300 (bine); la 45° cu 1000, 707 pe Z (prea
+  // repede); pe panta 0,3 cu 1000, 1000 · 0,3 / √1,09 = 287,3 (bine); urcarea, oricât de repede (bine).
+  const P = (x: number, y: number, z: number, f?: number) => ({ x, y, z, rapida: f === undefined, ...(f !== undefined ? { f } : {}) });
+  const drum = [P(0, 0, 0.5), P(0, 0, -3, 1000), P(0, 0, 0.5), P(0, 0, -3, 300), P(1, 0, -4, 1000), P(11, 0, -7, 1000), P(12, 0, 0, 5000)];
+  const r = coborariRepeziO(drum, 300);
+  assert.deepEqual(r.map((q) => q.k), [1, 4]);
+  assert.ok(Math.abs(r[0]!.viteza - 1000) < 1e-9 && Math.abs(r[1]!.viteza - 1000 / Math.SQRT2) < 1e-9);
+  // La margine: 300 · (1 + 1 %) trece, puțin peste nu.
+  assert.deepEqual(coborariRepeziO([P(0, 0, 0), P(0, 0, -1, 303)], 300), []);
+  assert.equal(coborariRepeziO([P(0, 0, 0), P(0, 0, -1, 303.1)], 300).length, 1);
+  // Rotunjirea coordonatelor: pe 0,125 mm, o pantă de la prag (dz 0,040 din coordonatele rotunjite: 1000 · 0,04 / 0,13124 =
+  // 304,8 pe Z) trece cu 0,001 scăzut din coborâre (297,2); fără el, nu. Plonjarea de 3,5 mm cu 1000 rămâne prinsă și cu el.
+  const prag = [P(47.094, 44.75, -0.565), P(46.969, 44.75, -0.605, 1000)];
+  assert.equal(coborariRepeziO(prag, 300).length, 1);
+  assert.deepEqual(coborariRepeziO(prag, 300, 0.01, 0.001), []);
+  assert.equal(coborariRepeziO([P(0, 0, 0.5), P(0.063, 0, -3, 1000)], 300, 0.01, 0.001).length, 1);
+  // Din G-code: G0 / G1 și F modale, comentariile sărite; coborârea de pe perete la începutul liniei, cu avansul de tăiere.
+  const g = pasiDinGcodeO('(scula T1)\nG0 Z5.000\nG0 X33.531 Y30.125\nG1 Z0.500 F300.0\nG1 X33.594 Y30.125 Z-3.000 F1000.0 (linia)\nG1 X106.406\nG0 Z5\n');
+  assert.deepEqual(g.map((q) => [q.x, q.y, q.z, q.rapida, q.f]), [
+    [NaN, NaN, 5, true, undefined], [33.531, 30.125, 5, true, undefined], [33.531, 30.125, 0.5, false, 300],
+    [33.594, 30.125, -3, false, 1000], [106.406, 30.125, -3, false, 1000], [106.406, 30.125, 5, true, undefined],
+  ]);
+  assert.deepEqual(coborariRepeziO(g, 300).map((q) => q.k), [3]);
 });

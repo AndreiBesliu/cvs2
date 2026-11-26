@@ -20,7 +20,9 @@ import { compusDinResurse, type ResurseRelief } from '../../src/relief/resurse.t
 import { stratDinGrila } from '../../src/relief/strat.ts';
 import type { Document } from '../../src/model/document.ts';
 import type { Miscare, Program } from '../../src/ir/ir.ts';
-import { IndexO, judecaDegrosarea, materialSecventaO, triunghiuriModel, type FrezaO, type PasO } from '../oracles/relief3d.ts';
+import {
+  coborariRepeziO, IndexO, judecaDegrosarea, materialSecventaO, pasiDinGcodeO, triunghiuriModel, type FrezaO, type PasO,
+} from '../oracles/relief3d.ts';
 
 type Liber = Record<string, unknown>;
 const I = { a: 1, b: 0, c: 0, d: 1, e: 0, f: 0 };
@@ -175,6 +177,17 @@ test('dalele aduse workerului (`hartiFinisare`): ale unui relief doar degroșat,
   assert.deepEqual(hartiFinisare(doc(amprenta, [finisare()])), [amprenta]);
   assert.deepEqual(hartiFinisare(doc(amprenta, [degrosare(), finisare()])), [amprenta]);
   assert.deepEqual(hartiFinisare(doc(amprenta, [op({})])), []);
+});
+
+test('G-code-ul exportat (degroșarea, finisarea, profilul): nicio mutare nu coboară mai repede decât avansul de plonjare', async () => {
+  const { amprenta, resurse } = await strat(calota(), 40, 40);
+  const e = await calculeazaExportul(doc(amprenta, [op({}), degrosare(), finisare()]), { origine: 'stanga-jos', z0: 'sus' }, resurse);
+  if (!e.ok) assert.fail(e.motiv);
+  const text = e.fisiere.map((f) => f.text).join('\n');
+  assert.match(text, /degro[sș]area reliefului/);
+  assert.match(text, /finisarea reliefului/);
+  // Coordonatele G-code-ului au 3 zecimale: o coborâre poate crește cu cel mult 0,001 mm din rotunjire.
+  assert.deepEqual(coborariRepeziO(pasiDinGcodeO(text), REGIM_IMPLICIT.avansPlonjare, 0.01, 0.001).slice(0, 3), []);
 });
 
 test('refuzurile lucrării: freza nu e plată, câmpul pe alt fel, urechile, podeaua, planul zero și marginea altfel decât la finisare, același T', async () => {

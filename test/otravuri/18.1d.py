@@ -58,6 +58,12 @@ o('C03', RF, '    return m + so.ridicare;', '    return m;', 'cam', 'ridicarea u
 o('C04', RF, "  if (!(o.adaos >= 0 && o.adaos <= ADAOS_MAXIM)) return", "  if (!(o.adaos <= ADAOS_MAXIM)) return", 'cam', 'adaosul negativ primit de CAM')
 o('C05', RF, "      ? 'relieful nu coboară sub fața plăcii mai mult decât adaosul: degroșarea n-are ce tăia'",
   "      ? 'relieful n-are nimic sub fața plăcii: finisarea n-are ce tăia'", 'cam', 'mesajul degroșării fără nimic de tăiat spune finisarea')
+o('C06', RF, "    return (o.avans * dz) / Math.hypot(bx - ax, by - ay, dz) > o.avansPlonjare ? o.avansPlonjare : o.avans;",
+  "    return o.avans;", 'cam', 'coborârea de pe perete și pe pantele abrupte, cu avansul de tăiere (placa reliefului)')
+o('C07', RF, "    if (!(dz > EPS)) return o.avans;", "    if (!(dz > EPS)) return o.avansPlonjare;", 'cam',
+  'urcarea și palierul încetinite la avansul de plonjare')
+o('C08', RF, "            m.push({ tip: 'taiere', la: { X: x0, Y: y0, Z: z0 }, avans: avansSpre(unde.x, unde.y, unde.z, x0, y0, z0) });",
+  "            m.push({ tip: 'taiere', la: { X: x0, Y: y0, Z: z0 }, avans: o.avans });", 'cam', 'legătura la adâncime coboară cu avansul de tăiere')
 
 # ── Lucrarea ─────────────────────────────────────────────────────────────────────────────────────────────────────
 o('J01', FN, """    ...degrosariFoaie(doc, indexFoaie).map((f): PasProgram => ({ fel: 'degrosare', f })),

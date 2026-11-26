@@ -497,3 +497,52 @@ export function judecaDegrosarea(
   if (m.rapida > 0) p.push({ fel: 'rapida', x: m.undeRapida?.x ?? NaN, y: m.undeRapida?.y ?? NaN, cu: m.rapida });
   return p;
 }
+
+/** O poziție a vârfului cu avansul mutării care ajunge în ea (mm/min; lipsă pe rapide). */
+export type PasAvansO = PasO & { readonly f?: number };
+/** O mutare de tăiere care coboară mai repede decât avansul de plonjare: al câtelea pas, unde ajunge și viteza ei pe Z. */
+export type CoborareRepedeO = { readonly k: number; readonly x: number; readonly y: number; readonly z: number; readonly viteza: number };
+
+/**
+ * Coborârea (felia 18.1↑d-1, găsită la placa reliefului): o mutare de tăiere care coboară are viteza pe Z, f · |dz| / L, cel
+ * mult avansul de plonjare. Altfel freza intră în lemn cu avansul de tăiere, la începutul unei linii sau pe o pantă abruptă: o
+ * plonjare prea repede. `tol` e relativ (avansul scris la 0,1); `rotunjire` e cât poate crește coborârea unei mutări din
+ * rotunjirea coordonatelor (pe G-code, cu 3 zecimale: 0,001 mm, câte o jumătate la fiecare capăt), scăzută din ea.
+ */
+export function coborariRepeziO(pasi: readonly PasAvansO[], plonjare: number, tol = 0.01, rotunjire = 0): CoborareRepedeO[] {
+  const p: CoborareRepedeO[] = [];
+  for (let k = 1; k < pasi.length; k++) {
+    const A = pasi[k - 1]!, B = pasi[k]!;
+    if (B.rapida || B.f === undefined) continue;
+    const dz = A.z - B.z;
+    if (!(dz > 0) || !Number.isFinite(A.x + A.y + B.x + B.y)) continue;
+    const L = Math.hypot(B.x - A.x, B.y - A.y, dz), viteza = (B.f * Math.max(0, dz - rotunjire)) / L;
+    if (viteza > plonjare * (1 + tol)) p.push({ k, x: B.x, y: B.y, z: B.z, viteza });
+  }
+  return p;
+}
+
+/**
+ * Pozițiile vârfului dintr-un program G-code (G0 / G1, X Y Z F modale; comentariile între paranteze sărite), cu avansul
+ * fiecărei mutări de tăiere. Coordonatele încă nespuse sunt NaN (de exemplu X și Y înaintea primei mutări în plan).
+ */
+export function pasiDinGcodeO(text: string): PasAvansO[] {
+  const out: PasAvansO[] = [];
+  let x = NaN, y = NaN, z = NaN, f: number | undefined, g = 0;
+  for (const brut of text.split('\n')) {
+    const l = brut.replace(/\([^)]*\)/g, '').replace(/;.*$/, '').trim().toUpperCase();
+    if (l === '') continue;
+    const cuv = [...l.matchAll(/([A-Z])\s*(-?\d+(?:\.\d*)?|-?\.\d+)/g)];
+    let misca = false;
+    for (const [, lit, val] of cuv) {
+      const v = Number(val);
+      if (lit === 'G' && (v === 0 || v === 1)) g = v;
+      else if (lit === 'F') f = v;
+      else if (lit === 'X') { x = v; misca = true; }
+      else if (lit === 'Y') { y = v; misca = true; }
+      else if (lit === 'Z') { z = v; misca = true; }
+    }
+    if (misca) out.push(g === 0 ? { x, y, z, rapida: true } : { x, y, z, rapida: false, ...(f !== undefined ? { f } : {}) });
+  }
+  return out;
+}

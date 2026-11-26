@@ -510,20 +510,21 @@ function treceriRelief(o: ParametriFinisare, so: Socotire): RezultatFinisare {
             m.push({ tip: 'taiere', la: { X: x0, Y: y0 }, avans: o.avans });
             if (z0 < zl - EPS) m.push({ tip: 'taiere', la: { Z: z0 }, avans: o.avansPlonjare });
           } else {
-            m.push({ tip: 'taiere', la: { X: x0, Y: y0, Z: z0 }, avans: o.avans });
+            m.push({ tip: 'taiere', la: { X: x0, Y: y0, Z: z0 }, avans: avansSpre(unde.x, unde.y, unde.z, x0, y0, z0) });
           }
         } else {
           sus();
           m.push({ tip: 'rapida', la: { X: x0, Y: y0 } });
           m.push({ tip: 'taiere', la: { Z: z0 }, avans: o.avansPlonjare });
         }
-        let pz = z0;
+        let px = x0, py = y0, pz = z0;
         for (let q = a + 1; q <= b; q++) {
           const zq = Z(q);
           // Punctele de mijloc ale unui palier drept (aceeași cotă, pe aceeași linie dreaptă) nu schimbă drumul.
           if (q < b && zq === pz && Z(q + 1) === zq) continue;
-          m.push({ tip: 'taiere', la: { X: l.x[q]!, Y: l.y[q]!, Z: zq }, avans: o.avans });
-          pz = zq;
+          const xq = l.x[q]!, yq = l.y[q]!;
+          m.push({ tip: 'taiere', la: { X: xq, Y: yq, Z: zq }, avans: avansSpre(px, py, pz, xq, yq, zq) });
+          px = xq; py = yq; pz = zq;
         }
         unde = { ip: l.ip, x: l.x[b]!, y: l.y[b]!, z: Z(b) };
         i = j + 1;
@@ -534,6 +535,17 @@ function treceriRelief(o: ParametriFinisare, so: Socotire): RezultatFinisare {
   }
   sus();
   return { ok: true, miscari: m, treceri: n, linii: toate.length, pasLateral: pasFolosit, avertismente };
+
+  /**
+   * Avansul unei mutări de tăiere (felia 18.1↑d-1, găsită la placa reliefului): una care coboară mai abrupt decât lasă avansul
+   * de plonjare (viteza pe Z, avans · |dz| / L, peste el) merge cu avansul de plonjare. Așa freza nu intră în lemn cu avansul de
+   * tăiere la începutul unei linii (de pe perete, în jos) și nici pe o pantă abruptă; urcarea și coborârea lină rămân la avans.
+   */
+  function avansSpre(ax: number, ay: number, az: number, bx: number, by: number, bz: number): number {
+    const dz = az - bz;
+    if (!(dz > EPS)) return o.avans;
+    return (o.avans * dz) / Math.hypot(bx - ax, by - ay, dz) > o.avansPlonjare ? o.avansPlonjare : o.avans;
+  }
 
   /** O legătură la adâncime doar spre un punct apropiat (linia vecină): cel mult de două ori pasul lateral. */
   function legatura(a: { readonly x: number; readonly y: number }, b: { readonly x: number; readonly y: number }): boolean {
