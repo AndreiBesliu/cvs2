@@ -1,4 +1,5 @@
-import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
+import { memo, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
+import { flushSync } from 'react-dom';
 import '../i18n/export.ts';
 // Durata în cuvinte (`durata.*`) stă în dicționarul traseului, comun cu cipul timpului de lângă traseu (ADR 0046 §8).
 import '../i18n/traseu.ts';
@@ -125,6 +126,76 @@ type Props = {
 };
 
 /** Rezumatul jobului (ADR 0046): timpul, apoi tabelul pe operații și cel pe scule, cu distanțele de tăiere și de rapide. */
+/**
+ * Peste atâtea fișe de operații, doar cele din jurul panoului și vecinele celei curente se randează; restul își țin locul, cu
+ * înălțimea măsurată (28.8↑i, constatarea 4 a auditului: 150 de fișe randate cereau ~9 s la deschidere și ~100 ms la o tastă).
+ * Sub prag, toate rămân randate, ca înainte.
+ */
+const PRAG_FISE = 12;
+/** Înălțimea locului unei fișe încă nemăsurate: cât ține de obicei o fișă de profil, la 1280 px. */
+const INALTIME_FISA = 2000;
+
+/** Ce poate face un rând al listei (28.8↑i): un obiect stabil, deci rândurile neschimbate nu se mai randează la fiecare tastă. */
+interface ActiuniLista {
+  readonly du: (cheie: string) => void;
+  readonly muta: (de: number, la: number) => void;
+  readonly trage: (cheie: string | null) => void;
+  readonly lasa: (loc: number) => void;
+}
+
+/**
+ * Rândul unei operații în listă (28.8↑i): primește doar ce arată (datele rândului, locul, starea tragerii), iar acțiunile printr-un
+ * obiect stabil. Pe 150 de operații, lista întreagă randată la fiecare tastă ținea cam jumătate din timpul ei. `limba` îl
+ * randează din nou când se schimbă limba (textele vin din `t`).
+ */
+const RandListaOp = memo(function RandListaOp({ o, p, loc, total, mana, trasAici, trasActiv, legat, gresit, curent, nume, latura, a }: {
+  readonly o: OperatieExport; readonly p: Rand; readonly loc: number; readonly total: number; readonly mana: boolean;
+  readonly trasAici: boolean; readonly trasActiv: boolean; readonly legat: number | undefined; readonly gresit: boolean;
+  readonly curent: boolean; readonly nume: string; readonly latura: string; readonly a: ActiuniLista; readonly limba: Limba;
+}): ReactNode {
+  return (
+    <div className={trasAici ? 'dx-nav-op tras' : 'dx-nav-op'} data-nav-op={o.cheie}
+      onDragOver={mana && trasActiv ? (ev) => { ev.preventDefault(); ev.dataTransfer.dropEffect = 'move'; } : undefined}
+      onDrop={mana && trasActiv ? (ev) => { ev.preventDefault(); a.lasa(loc); } : undefined}>
+      <span className="ordine">
+        {mana && (
+          <button type="button" className="trage" draggable data-trage={o.cheie} aria-label={t('export.ordine.trage', { n: loc + 1 })}
+            title={t('export.ordine.trage', { n: loc + 1 })}
+            onDragStart={(ev) => { ev.dataTransfer.setData('text/plain', o.cheie); ev.dataTransfer.effectAllowed = 'move'; a.trage(o.cheie); }}
+            onDragEnd={() => { a.trage(null); }}>
+            <svg viewBox="0 0 10 16" width="10" height="16" aria-hidden="true">
+              <circle cx="3" cy="3" r="1.4" /><circle cx="7" cy="3" r="1.4" /><circle cx="3" cy="8" r="1.4" />
+              <circle cx="7" cy="8" r="1.4" /><circle cx="3" cy="13" r="1.4" /><circle cx="7" cy="13" r="1.4" />
+            </svg>
+          </button>
+        )}
+        <span className="loc" data-loc={loc + 1}>{loc + 1}</span>
+        {legat !== undefined && (
+          <span className="legat" data-legat={legat} title={t('export.ordine.legat.titlu', { n: legat })}>{t('export.ordine.legat', { n: legat })}</span>
+        )}
+        {/* Săgețile, una peste alta (coloana rămâne îngustă), desenate: glifele ↑ ↓ ar veni din alt font, colorate. */}
+        {mana && (
+          <span className="sageti">
+            <button type="button" data-sus={o.cheie} disabled={loc === 0} aria-label={t('export.ordine.sus', { n: loc + 1 })}
+              title={t('export.ordine.sus', { n: loc + 1 })} onClick={() => { a.muta(loc, loc - 1); }}>
+              <svg viewBox="0 0 12 12" width="12" height="12" aria-hidden="true"><path d="M6 2.5 10.5 8.5H1.5Z" /></svg>
+            </button>
+            <button type="button" data-jos={o.cheie} disabled={loc === total - 1} aria-label={t('export.ordine.jos', { n: loc + 1 })}
+              title={t('export.ordine.jos', { n: loc + 1 })} onClick={() => { a.muta(loc, loc + 1); }}>
+              <svg viewBox="0 0 12 12" width="12" height="12" aria-hidden="true"><path d="M6 9.5 1.5 3.5H10.5Z" /></svg>
+            </button>
+          </span>
+        )}
+      </span>
+      <button type="button" className="dx-nav" data-nav={o.cheie} aria-current={curent} data-gresit={gresit ? '' : undefined}
+        onClick={() => { a.du(o.cheie); }}>
+        <span className="dx-nume">{o.descriere}</span>
+        <span className="dx-meta"><Poza k={`latura.${latura}`} />{nume} · T{p.numarScula} Ø{p.diametruScula} · {p.adancime} mm</span>
+      </button>
+    </div>
+);
+});
+
 function Rezumat({ r, operatii, limba, alte }: {
   readonly r: RezumatJob; readonly operatii: readonly OperatieExport[]; readonly limba: Limba;
   /** Numele altor rânduri (finisările reliefului, ADR 0312 §7), după cheie. */
@@ -377,6 +448,18 @@ export function DialogExport(
   const panou = useRef<HTMLDivElement>(null);
   const [curent, setCurent] = useState('foaia');
   const [activ, setActiv] = useState<{ readonly loc: string; readonly text: string; readonly camp: string } | null>(null);
+  // Acțiunile rândurilor listei, printr-un obiect stabil (28.8↑i): funcțiile de acum stau în `actiuniAcum`, puse după fiecare randare.
+  const actiuniAcum = useRef<ActiuniLista | null>(null);
+  const [actiuniLista] = useState<ActiuniLista>(() => ({
+    du: (c) => { actiuniAcum.current?.du(c); },
+    muta: (de, la) => { actiuniAcum.current?.muta(de, la); },
+    trage: (c) => { actiuniAcum.current?.trage(c); },
+    lasa: (loc) => { actiuniAcum.current?.lasa(loc); },
+  }));
+  // Pe un proiect mare (28.8↑i): fișele din jurul panoului, cea cu focusul și înălțimea fiecărei fișe randate o dată.
+  const [vazute, setVazute] = useState<ReadonlySet<string>>(() => new Set());
+  const [cuFocus, setCuFocus] = useState<string | null>(null);
+  const inaltimi = useRef(new Map<string, number>());
   const cerereVizibila = useRef<HTMLDivElement>(null);
   // La deschidere, focusul intră în dialog (butonul care l-a deschis rămâne sub el, inert).
   useEffect(() => { cutie.current?.focus(); }, []);
@@ -688,6 +771,11 @@ export function DialogExport(
   // latura, despărțirea și valorile care unesc un V-carve (freza, adâncimea, pasul, sensul, fundul plat, incrustația în V;
   // ADR 0133 §2, ADR 0170) sau o incrustație cu pereți drepți (ADR 0171).
   const ordine = ordineMea ?? automata;
+  const toateFisele = ordine.length <= PRAG_FISE;
+  const locCurent = ordine.indexOf(curent);
+  /** Fișa se randează întreagă: sub prag toate; peste, cele din jurul panoului, cea curentă cu vecinele ei și cea cu focusul. */
+  const randata = (cheie: string, loc: number): boolean => toateFisele || vazute.has(cheie) || cheie === cuFocus
+    || (locCurent >= 0 ? Math.abs(loc - locCurent) <= 1 : vazute.size === 0 && loc < 3);
   const dupaCheie = new Map(operatii.map((o) => [o.cheie, o]));
   const finisareDupaCheie = new Map(finisari.map((f) => [f.cheie, f]));
   const numar = (s: string): string => String(citesteNumar(s));
@@ -1068,6 +1156,8 @@ export function DialogExport(
   const du = (cheie: string, repara = false): void => {
     const p = panou.current;
     const sel = cheie === 'foaia' || cheie === 'masina' || cheie === 'rezultatul' ? `[data-fisa="${cheie}"]` : `[data-fisa="op"][data-operatie="${CSS.escape(cheie)}"]`;
+    // O fișă care își ține doar locul (28.8↑i) se randează întâi, ca derularea și greșeala să vadă fișa adevărată.
+    if (p?.querySelector(`${sel}[data-gol]`)) flushSync(() => { setCurent(cheie); });
     const f = p?.querySelector<HTMLElement>(sel);
     if (!p || !f) return;
     p.scrollTop += f.getBoundingClientRect().top - p.getBoundingClientRect().top;
@@ -1095,6 +1185,38 @@ export function DialogExport(
     }
     camp?.focus({ preventScroll: true });
   };
+  /**
+   * Pe un proiect mare (28.8↑i), fișele de operații care ating panoul sau stau la cel mult o înălțime de panou de el se
+   * randează; restul își țin locul. Înălțimea fiecărei fișe randate se ține minte, pentru locul ei.
+   */
+  const fereastra = (): void => {
+    const p = panou.current;
+    if (!p || toateFisele) return;
+    const r = p.getBoundingClientRect();
+    const aproape = new Set<string>();
+    for (const f of p.querySelectorAll<HTMLElement>('[data-fisa="op"]')) {
+      const cheie = f.dataset['operatie'] ?? '', b = f.getBoundingClientRect();
+      if (f.dataset['gol'] === undefined) inaltimi.current.set(cheie, b.height);
+      if (b.bottom >= r.top - r.height && b.top <= r.bottom + r.height) aproape.add(cheie);
+    }
+    if (aproape.size !== vazute.size || [...aproape].some((c) => !vazute.has(c))) setVazute(aproape);
+  };
+  /** Înălțimea locului unei fișe nerandate: cea măsurată, altfel media celor măsurate, altfel una obișnuită. */
+  const inaltimeLoc = (cheie: string): number => {
+    const h = inaltimi.current.get(cheie);
+    if (h !== undefined) return h;
+    const toate = [...inaltimi.current.values()];
+    return toate.length > 0 ? toate.reduce((a, b) => a + b, 0) / toate.length : INALTIME_FISA;
+  };
+  useLayoutEffect(fereastra);
+  useLayoutEffect(() => {
+    actiuniAcum.current = {
+      du: (c) => { du(c); },
+      muta: mutaRand,
+      trage: setTras,
+      lasa: (loc) => { if (tras !== null) mutaRand(ordine.indexOf(tras), loc); setTras(null); },
+    };
+  });
   /** Fișa de sus a panoului, cât derulează omul: e cea marcată în listă. */
   const urmareste = (): void => {
     const p = panou.current;
@@ -1106,6 +1228,13 @@ export function DialogExport(
       gasit = f.dataset['fisa'] === 'op' ? f.dataset['operatie'] ?? null : f.dataset['fisa'] ?? null;
     }
     if (gasit !== null && gasit !== curent) setCurent(gasit);
+    fereastra();
+  };
+  /** Fișa cu focusul rămâne randată cât omul derulează departe de ea (28.8↑i). */
+  const urmaresteFocusul = (ev: { readonly target: EventTarget }): void => {
+    const f = ev.target instanceof Element ? ev.target.closest<HTMLElement>('[data-fisa="op"]') : null;
+    const cheie = f?.dataset['operatie'] ?? null;
+    if (!toateFisele && cheie !== cuFocus) setCuFocus(cheie);
   };
   /**
    * Câmpul sub maus sau cu focusul: explicația lui (titlul) ia locul celei a grupului, iar cota lui se aprinde în desen (28.8↑b);
@@ -1213,49 +1342,10 @@ export function DialogExport(
               const o = dupaCheie.get(cheie);
               const p = o ? param[o.cheie] : undefined;
               if (!o || !p) return null;
-              const legat = legate.get(o.cheie);
-              const mana = ordineMea !== null && !doarCitire;
-              const gresit = greseliRand(o.cheie).length > 0;
               return (
-                <div className={tras === o.cheie ? 'dx-nav-op tras' : 'dx-nav-op'} key={o.cheie} data-nav-op={o.cheie}
-                  onDragOver={mana && tras !== null ? (ev) => { ev.preventDefault(); ev.dataTransfer.dropEffect = 'move'; } : undefined}
-                  onDrop={mana && tras !== null ? (ev) => { ev.preventDefault(); mutaRand(ordine.indexOf(tras), loc); setTras(null); } : undefined}>
-                  <span className="ordine">
-                    {mana && (
-                      <button type="button" className="trage" draggable data-trage={o.cheie} aria-label={t('export.ordine.trage', { n: loc + 1 })}
-                        title={t('export.ordine.trage', { n: loc + 1 })}
-                        onDragStart={(ev) => { ev.dataTransfer.setData('text/plain', o.cheie); ev.dataTransfer.effectAllowed = 'move'; setTras(o.cheie); }}
-                        onDragEnd={() => { setTras(null); }}>
-                        <svg viewBox="0 0 10 16" width="10" height="16" aria-hidden="true">
-                          <circle cx="3" cy="3" r="1.4" /><circle cx="7" cy="3" r="1.4" /><circle cx="3" cy="8" r="1.4" />
-                          <circle cx="7" cy="8" r="1.4" /><circle cx="3" cy="13" r="1.4" /><circle cx="7" cy="13" r="1.4" />
-                        </svg>
-                      </button>
-                    )}
-                    <span className="loc" data-loc={loc + 1}>{loc + 1}</span>
-                    {legat !== undefined && (
-                      <span className="legat" data-legat={legat} title={t('export.ordine.legat.titlu', { n: legat })}>{t('export.ordine.legat', { n: legat })}</span>
-                    )}
-                    {/* Săgețile, una peste alta (coloana rămâne îngustă), desenate: glifele ↑ ↓ ar veni din alt font, colorate. */}
-                    {mana && (
-                      <span className="sageti">
-                        <button type="button" data-sus={o.cheie} disabled={loc === 0} aria-label={t('export.ordine.sus', { n: loc + 1 })}
-                          title={t('export.ordine.sus', { n: loc + 1 })} onClick={() => { mutaRand(loc, loc - 1); }}>
-                          <svg viewBox="0 0 12 12" width="12" height="12" aria-hidden="true"><path d="M6 2.5 10.5 8.5H1.5Z" /></svg>
-                        </button>
-                        <button type="button" data-jos={o.cheie} disabled={loc === ordine.length - 1} aria-label={t('export.ordine.jos', { n: loc + 1 })}
-                          title={t('export.ordine.jos', { n: loc + 1 })} onClick={() => { mutaRand(loc, loc + 1); }}>
-                          <svg viewBox="0 0 12 12" width="12" height="12" aria-hidden="true"><path d="M6 9.5 1.5 3.5H10.5Z" /></svg>
-                        </button>
-                      </span>
-                    )}
-                  </span>
-                  <button type="button" className="dx-nav" data-nav={o.cheie} aria-current={curent === o.cheie} data-gresit={gresit ? '' : undefined}
-                    onClick={() => { du(o.cheie); }}>
-                    <span className="dx-nume">{o.descriere}</span>
-                    <span className="dx-meta"><Poza k={`latura.${taieturaRand(p)}`} />{numeTaietura(p)} · T{p.numarScula} Ø{p.diametruScula} · {p.adancime} mm</span>
-                  </button>
-                </div>
+                <RandListaOp key={o.cheie} o={o} p={p} loc={loc} total={ordine.length} mana={ordineMea !== null && !doarCitire}
+                  trasAici={tras === o.cheie} trasActiv={tras !== null} legat={legate.get(o.cheie)} gresit={greseliRand(o.cheie).length > 0}
+                  curent={curent === o.cheie} nume={numeTaietura(p)} latura={taieturaRand(p)} a={actiuniLista} limba={limba} />
               );
             })}
             {cuRezultat && (
@@ -1271,7 +1361,9 @@ export function DialogExport(
               </button>
             )}
           </nav>
-          <div className="dx-fise" data-fise ref={panou} onScroll={urmareste} onFocus={arata} onPointerOver={arata}>
+          <div className="dx-fise" data-fise ref={panou} onScroll={urmareste} onFocus={(e) => { arata(e); urmaresteFocusul(e); }}
+            onBlur={(e) => { if (cuFocus !== null && !(e.relatedTarget instanceof Node && e.currentTarget.contains(e.relatedTarget))) setCuFocus(null); }}
+            onPointerOver={arata}>
             <section className="dx-fisa" data-fisa="foaia">
               <h3>{t('export.fisa.foaia')}</h3>
               {(foi ?? 0) > 1 && grup('foi', 'foaia', <div className="dx-rand">
@@ -1381,8 +1473,14 @@ export function DialogExport(
             </section>
             {ordine.map((cheie, loc) => {
               const fin = finisareDupaCheie.get(cheie);
-              return fin ? <FisaFinisare key={cheie} fin={fin} loc={loc} total={ordine.length} f={(x) => fmtFreza.format(x)} />
-                : <FisaOperatie key={cheie} cheie={cheie} loc={loc} c={contextFisa} />;
+              if (fin) return <FisaFinisare key={cheie} fin={fin} loc={loc} total={ordine.length} f={(x) => fmtFreza.format(x)} />;
+              if (randata(cheie, loc)) return <FisaOperatie key={cheie} cheie={cheie} loc={loc} c={contextFisa} />;
+              // Locul unei fișe nerandate (28.8↑i): titlul și înălțimea ei, ca derularea și lista s-o găsească.
+              return (
+                <section className="dx-fisa" data-fisa="op" data-operatie={cheie} data-gol="" key={cheie} style={{ height: inaltimeLoc(cheie) }}>
+                  <h3>{dupaCheie.get(cheie)?.descriere}</h3>
+                </section>
+              );
             })}
             {cuRezultat && (
               <section className="dx-fisa" data-fisa="rezultatul">

@@ -14,10 +14,10 @@ unite în `main` pe 25.11 (`9815527f`); 3.Ce (punctele de prindere și „Se pri
 în `main` pe 25.11 (`e90edd2e`, PR-ul `AndreiBesliu/cvs2#29`); 3.Cj-3 (cadrul; 18.31.0) și 3.Cj-4 (șurubul melc;
 18.32.0), unite în `main` pe 25.11 (`36559b49`, PR-ul `AndreiBesliu/cvs2#33`). Cu melcul, 3.Cj e încheiată. 3.Tu
 (piesele rotunde pe același ax în „Modelul”; 18.33.0), unită în `main` pe 25.11 (`f5cf10c8`, PR-ul
-`AndreiBesliu/cvs2#45`). 3.Cf-1 (alipirea la prinderi, cu piesele legate; 18.34.0), gata pe ramură pe 25.11, neunită
-(PR-ul `AndreiBesliu/cvs2#46`). **Decorațiunile de Crăciun (ADR 0285, cerute de owner pe 25.11 și acceptate cu
+`AndreiBesliu/cvs2#45`). 3.Cf-1 (alipirea la prinderi, cu piesele legate; 18.34.0), unită în `main` pe 25.11
+(`02ac0715`, PR-ul `AndreiBesliu/cvs2#46`). **Decorațiunile de Crăciun (ADR 0285, cerute de owner pe 25.11 și acceptate cu
 recomandările, 1a–4a): 3.Cl-1 (fulgul, steaua și brăduțul, în fila nouă „Crăciun”; 18.35.0), unită în `main` pe 26.11
-(`41b1fb6f`, PR-ul `AndreiBesliu/cvs2#50`); 3.Cl-2 (globul; 18.36.0), gata pe ramură pe 25.11 (PR-ul
+(`41b1fb6f`, PR-ul `AndreiBesliu/cvs2#50`); 3.Cl-2 (globul; 18.36.0), unită în `main` pe 26.11 (`b6c9998d`, PR-ul
 `AndreiBesliu/cvs2#53`); 3.Cl-3 (ornamentul cu nume; 18.37.0) și 3.Cl-4 (brăduțul LEGO; 18.38.0), gata pe ramură pe
 26.11: ADR 0285 are toate feliile făcute.**
 Urmează 3.Cf-2
