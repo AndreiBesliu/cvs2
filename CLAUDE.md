@@ -666,8 +666,18 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   `du(cheie, 'repara')`. Un câmp al ferestrei care își pune singur `aria-describedby` e suprascris de
   `legaDescrierile`: o descriere în plus intră în grup (ca greșeală cu id, sau în explicație). Un selector pe
   `.dx-campuri h4` nu mai găsește nimic.** Programul, documentul și serverul, neschimbate. Cu ea, feliile ferestrei
-  din ADR 0291 (h–l) sunt gata; urmează 28.8↑q („Toate foile” cu operațiile fiecărei foi), apoi 28.8↑p (Z-ul sigur
-  și parcarea; mișcă mașina). Felia: pornirea +0, totalul +0,2 kB.
+  din ADR 0291 (h–l) sunt gata. Felia: pornirea +0, totalul +0,2 kB.
+  **„Toate foile” cu operațiile fiecărei foi (ADR 0291 §7a, felia 28.8↑q) și titlurile grupurilor în română** gata pe
+  26.11, unite în `main` pe 26.11 (`d3da8953`): grupele foilor sunt pure (`grupeFoi`, `src/model/foiExport.ts`): o
+  piesă pusă pe mai multe foi stă o singură dată, la prima foaie pe care e pusă, iar pe celelalte e „comună”; rândurile
+  fiecărei foi le face `randuriFoii` (`src/app/ExportConectat.tsx`), socotite abia când omul alege „Toate foile”
+  (`toateFoile`, un getter). În fereastră, capul fiecărei foi (`[data-foaie-lista]`, `[data-foaie-fise]`), ordinea pe
+  foaie (`ordineDinRanguriPeFoi`; o tragere pe altă foaie, refuzată de `mutaRand`), grosimea foii pe rând
+  (`OperatieExport.grosime`), rezumatul fiecărei foi (`FoaieExportata.rezumat`, `[data-rezumat-foaie]`). **Programul
+  fiecărei foi rămâne al documentului doar cu ea (`doarFoaia`): fereastra schimbă doar ce arată și ce scrie la
+  Exportă.** Titlurile grupurilor, în română, sunt „Tăietura”, „Golirea”, „Coborârea” (decizia owner-ului, 26.11).
+  Urmează 28.8↑p (avansul, turația și plonjarea pe „Scrisă de mână”, Z-ul sigur și parcarea; mișcă mașina). Felia:
+  pornirea +0, totalul +1,7 kB (921,1 / 1 000).
   **Aldinul și cursivul sintetic (ADR 0123, felia 7.5↑, adusă din etapa 7)** gata pe 02.11, în worktree-ul `wip/7.5-text`:
   bifele **Aldin** și **Cursiv** din panoul textului, pentru orice font. Cursivul înclină fiecare literă față de linia ei de
   bază, exact; aldinul așază literele la înălțimea miezului (h − 2d), le îngroașă cu d prin fațada offsetului
@@ -1946,6 +1956,34 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 26.11.2026, după-amiaza (a cincizeci și treia unire din cloud): **„Toate foile” cu operațiile fiecărei foi în
+  fereastra „Exportă G-code” (28.8↑q) și titlurile grupurilor alese de owner, unite în `main`** (sesiunea principală,
+  ramura `unire-2611l`, din `3e9d3d9c`). Linia exportului, ramura `wip/28.8-export`, `a4055804` (vârful `787509d4`,
+  cu `main` adus), PR-ul `AndreiBesliu/cvs2#60` (ADR 0291, răspunsul 7a; constatarea 18 a auditului), unită în
+  `d3da8953`: cu „Toate foile”, lista și fișele arată operațiile fiecărei foi, cu capul foii; o piesă pusă pe mai multe
+  foi stă o singură dată, la prima ei foaie, cu nota „comună”; ordinea, numerele și săgețile sunt pe foaie, iar o
+  tragere pe altă foaie e refuzată; fiecare rând se socotește „pe hârtie” cu grosimea foii lui; o greșeală pe altă
+  foaie oprește doar „Toate foile”; Rezultatul are rezumatul fiecărei foi. **Programul fiecărei foi rămâne octet cu
+  octet al foii exportate singure**; documentul (v30) și serverul, neschimbate; otrăvurile 17 / 17. **Titlurile
+  grupurilor, în română** (decizia owner-ului de la prânz): „Tăietura”, „Golirea”, „Coborârea”, cu manualul; engleza,
+  neschimbată. **Ordinea feliilor rămase, confirmată de owner** („ok, q întâi apoi p”, în sesiunea principală): după q,
+  28.8↑p (avansul, turația și plonjarea pe „Scrisă de mână”, Z-ul sigur și parcarea). p mișcă mașina: vine cu probele
+  pe oracole și pe emulatorul GRBL, cu programul de azi octet cu octet cât valorile sunt cele implicite, cu linia
+  frezelor anunțată (valorile stau în `regim`, câmpul ei, fără schemă nouă) și cu proba owner-ului pe mașină, întâi în
+  aer. Între commit-ul liniei și unire, `main` primise 3.Cg (doar pluginul), deci unirea și-a făcut completul ei,
+  pornit în paralel cu al liniei; ciocnirea, doar în DEVLOG. Porțile unirii, în CI, pe `d3da8953` (completul
+  45797155066, verde la prima trecere, 63 min): unit 10 752 / 0 (12 sărite, pe Linux), e2e 967 / 967, funcțiile pe
+  emulatoare 136 / 136, paginile 60 / 60; rapidul, verde pe `d3da8953`; completul liniei, verde pe `a4055804`
+  (45796313016); pornirea 111,6 kB (plafonul 125; cu ușa 116,8, cu Atelierul 117,1), **totalul 921,1 / 1 000 kB**
+  (+1,7), `/admin` 138,3 / 200, contul 30,2 / 32. Pe test e `a2e5bfdf` (lotul 46); lotul 47 (3.Cg, `3e9d3d9c`) e în
+  drum, iar felia aceasta pleacă după el (lotul 48). La linii, în lucru: exportul (28.8↑p, pornită după unire),
+  atelierul (3.Ch, construcțiile cu nume). **La owner:** de încercat „Toate foile” pe un proiect cu mai multe foi; de
+  încercat „Modelul” (verificarea, răsturnările, jumătățile de pas); de încercat și de tipărit decorațiunile; pachetul
+  Easy 3Draw (562,6 kB); constatarea 14; întrebarea 10 a cotelor și cele două alegeri din d-1; alegerile reliefului și
+  tăierea plăcii 18; rândul editabil al finisării și al degroșării; Escape în cele șase ferestre; feliile frezelor
+  (16.A↑d–g); cele două alegeri mai vechi cu recomandarea aplicată; proba pe mașină a centrului foii; cele patru
+  întrebări din auditul elicelor; arhivarea sesiunii elicelor; verificarea juridică (GDPR) a utilizării aplicației
+  înaintea live-ului; „cine unește în `main`”; meniul de sus la 320 px la atingere.
 - 26.11.2026, la prânz (a cincizeci și doua unire din cloud): **verificarea din vederea „Modelul” a atelierului Easy
   3Draw (3.Cg), unită în `main`** (sesiunea principală, ramura `unire-2611k`, din `5acec698`). Linia atelierului,
   ramura `wip/3.Xh-biblioteca-ui`, `9e7b9ced` (codul lui `5f46d9d5`), PR-ul `AndreiBesliu/cvs2#59` (ADR 0284, partea
