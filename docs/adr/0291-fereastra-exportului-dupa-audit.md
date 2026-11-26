@@ -485,3 +485,12 @@ azi, octet cu octet.
   pe rândul fișei. Nota `export.regim` nu mai spune Z-ul sigur.
 - **Senderul și antetul:** antetul nu se schimbă (senderul citește din el doar originea și Z0); programul cu parcarea se
   încarcă și rulează pe emulatorul GRBL fără pierderi, oprindu-se în punctul de parcare, la Z-ul sigur.
+- **Probele** (scrise înaintea codului): `test/unit/export.zSigur.oracol.test.ts` (8: fără valori, octet cu octet, pe tot
+  corpusul; Z-ul sigur schimbă doar cuvântul lui, pe tot corpusul și pe toate cele opt posturi, în mm și în inch, cu Z0 sus și
+  jos; parcarea, o linie după `M5`, în fiecare fișier și în dopuri; poarta, cu verdictele de azi și cu martorul unei parcări sub
+  fața foii; oracolul simulării, aceeași suprafață tăiată, celulă cu celulă; senderul și emulatorul GRBL, oprit în punctul de
+  parcare; marginile), `test/unit/export.regimMana.test.ts` (5) și `test/e2e/export.regimZ.spec.ts` (2), plus proba privirii.
+  Rapidul, 10 765 / 0; e2e-ul exportului, 379 / 379.
+- **Otrăvurile:** `28.8p.py`, 28 / 28 (20 unitare, 8 e2e).
+- **Mărimea:** pornirea +0 (111,6 kB), totalul +1,8 kB (922,9 / 1 000). Documentul (v30) și serverul: neschimbate.
+- **Rămâne a owner-ului:** proba pe mașină, întâi în aer (un Z sigur nou, o parcare în afara foii).

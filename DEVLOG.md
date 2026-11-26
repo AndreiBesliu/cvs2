@@ -16087,3 +16087,8 @@ la ordinul în vigoare „unește ce se poate”
 - **Probele:** `export.zSigur.oracol.test.ts` (8: fără valori, octet cu octet; Z-ul sigur doar în cuvântul lui, pe tot corpusul și
   pe toate posturile; parcarea după `M5`; dopurile; poarta, cu martorul; oracolul simulării; senderul și emulatorul GRBL;
   marginile), `export.regimMana.test.ts` (5), `export.regimZ.spec.ts` (2), proba privirii cu câmpurile noi.
+- **Otrăvurile:** `28.8p.py`, 28 / 28. **Mărimea:** pornirea +0, totalul 922,9 / 1 000 (+1,8 kB).
+- **Documentele:** ADR 0291 („Implementarea 28.8↑p”), manualul (ambele limbi), fișa etapei 3, registrul otrăvurilor, nota
+  liniei.
+
+**Completed:** 26.11, 14:23.

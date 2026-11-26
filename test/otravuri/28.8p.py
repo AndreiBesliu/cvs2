@@ -68,7 +68,7 @@ o('P25', FO, '        {p.origineScula === null && (\n        <details className=
 o('P27', DE, '    if (strans && !strans.open) strans.open = true;', '', 'e2e', '„Du-mă la …” nu desface rândul strâns al câmpului greșit')
 o('P28', FO, "    : t(regimFolosit === null ? 'export.regim.rezumat.implicit' : 'export.regim.rezumat', {",
   "    : t('export.regim.rezumat.implicit', {", 'e2e', 'rezumatul spune „ale lucrării” și cu valorile scrise')
-o('P26', DE, "      && (p.origineScula !== null || campuriRegimGresite(p.regimMana).length === 0),", '', 'e2e',
+o('P26', DE, "      && (p.origineScula !== null || campuriRegimGresite(p.regimMana).length === 0),", '      ,', 'e2e',
   'o turație greșită nu oprește Exportă')
 
 SETURI = {
