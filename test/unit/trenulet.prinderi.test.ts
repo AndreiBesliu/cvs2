@@ -324,6 +324,7 @@ const MOSTRE: readonly (readonly [string, Def, Record<string, number>, { slab?: 
   ['steaua în relief', { tip: 'stea', fel: 'relief', grosime: 8 }, {}],
   ['bradul în picioare', { tip: 'brad', fel: 'picioare' }, {}],
   ['globul în relief', { tip: 'glob', desen: 'relief', model: 'stele' }, {}],
+  ['ornamentul cu nume', { tip: 'ornament', text: 'ANA' }, {}],
   ['forma din cvs2', { tip: 'dinCvs2', contururi: [[[0, 0], [20, 0], [20, 12], [0, 12]]] }, {}],
 ];
 const numara = (l: readonly Prindere[]): Record<string, number> => { const n: Record<string, number> = {}; for (const c of l) n[c.fel] = (n[c.fel] ?? 0) + 1; return n; };

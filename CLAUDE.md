@@ -1217,8 +1217,14 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   filamentul), sau din două discuri îmbinate în cruce; Easy 3Draw 18.36.0 (următoarea, 18.37.0). **Arcele mari ale
   unei decorațiuni se fac din laturi fine (`aplatizeaza(…, laturiFine)`): cu cele 48 de laturi obișnuite, un disc
   mare iese colțuros. Uneltele „de pe hârtie” ale probelor decorațiunilor stau în `test/unit/ajutor-craciun.ts`.**
-  Urmează 3.Cl-3 (ornamentul cu nume), 3.Cl-4 (brăduțul LEGO), apoi 3.Cf-2 (orientarea de mână pe trei axe,
-  pozițiile la jumătate de pas).
+  **3.Cl-3 (ornamentul cu nume; ADR 0285)** gata pe 26.11, pe ramură: a cincea piesă a filei „Crăciun”, o etichetă,
+  un glob, o inimă sau o stea cu un nume scris cu majuscule, cât încape de mare: în relief (pentru două culori),
+  adâncit sau decupat, cu punți la semnele cu ochi; Easy 3Draw 18.37.0 (următoarea, 18.38.0). **Fontul e al motorului,
+  dintr-o singură linie (`SCRIS`, cu punțile în `PUNTI`): un semn nou își scrie trăsăturile fără ca una să se atingă
+  pe ea însăși, iar o schimbare a desenului schimbă amprenta din `test/unit/trenulet.ornament.test.ts`, după ce a fost
+  privită pe randare. Un arc de peste o jumătate de cerc dat lui Cavalier se împarte întâi în sferturi (`sferturi`):
+  altfel decalarea și unirea lui pot ieși greșit, fără nicio eroare.**
+  Urmează 3.Cl-4 (brăduțul LEGO), apoi 3.Cf-2 (orientarea de mână pe trei axe, pozițiile la jumătate de pas).
   **Cotele pe desen: modelul și proba G-code-ului (ADR 0330, felia 10.4↑a-1, adusă din etapa 10)** gata pe 24.11, în
   sesiunea cloud a liniei (ramura `wip/10.4-cote`), unită în `main` pe 24.11 (`f25249cf`), fără interfață încă. ADR
   0330, acceptat de owner cu 1a–6a și cu nota lui: toate setările cotelor stau într-o fereastră nouă, „Setări”, nu în

@@ -19,7 +19,7 @@ var Atelier3D = (function () {
     palete?: number; diametru?: number; pas?: number; latime?: number; paleta?: string; con?: string; inclinare?: number; pupa?: number; capac?: string;
     joc?: number; inel?: string; urechi?: number; opritor?: boolean; mansoane?: [number, string][]; prindere?: string; roata?: number; bolta?: string; disc?: string; rama?: number; colturi?: string;
     linie?: number; ramuri?: number; lungime?: number; miez?: string; agatatoare?: string; varfuri?: number; interior?: number; inaltime?: number; etaje?: number;
-    model?: string; desen?: string; relief?: number; cate?: number };
+    model?: string; desen?: string; relief?: number; cate?: number; text?: string; scris?: string };
   /** O gaură pe grilă: colțul de celulă și tipul. */
   type Gaura = [number, number, string];
   /** O piesă gata de printat: corpul, mărimea și ce a spus motorul despre ea. */
@@ -123,6 +123,8 @@ var Atelier3D = (function () {
     brad: { inaltime: 80, etaje: 3, latime: 65, grosime: 3, fel: "agatat", agatatoare: "inel" },
     // globul (ADR 0285, felia 3.Cl-2): Ø60, plat, cu trei dungi decupate, căpăcel și inel
     glob: { diam: 60, grosime: 3, fel: "plat", model: "dungi", desen: "decupat", relief: 0.8, cate: 3, agatatoare: "inel" },
+    // ornamentul cu nume (ADR 0285, felia 3.Cl-3): eticheta de 70 × 26, cu „ANA” în relief și gaura de agățat
+    ornament: { forma: "eticheta", text: "ANA", scris: "relief", lungime: 70, inaltime: 26, diam: 60, grosime: 3, relief: 0.8, agatatoare: "gaura" },
     // forma trimisă din desenul cvs2 (ADR 0166): doar contururile închise; câte erau deschise și refuzul, pentru om
     dinCvs2: { contururi: [] as [number, number][][], grosime: 3.2, deschise: 0, refuz: "" },
   };
@@ -137,7 +139,7 @@ var Atelier3D = (function () {
     ["legaturi", "Legături", [["stiftTechnic", "Știft"], ["ax", "Ax"], ["bucsa", "Bucșă / conector"], ["conector", "Conector perpendicular"], ["conectorUnghi", "Conector în unghi"], ["clema", "Clemă"], ["bara", "Bară"], ["maner", "Mâner"], ["bila", "Bilă"], ["cupa", "Cupă"]]],
     ["roti", "Roți", [["rotita", "Roată dințată"], ["cremaliera", "Cremalieră"], ["melc", "Șurub melc"], ["cama", "Camă"], ["conica", "Roată conică"], ["coroana", "Roată coroană"], ["conicaDubla", "Conică dublă"], ["fulie", "Fulie"], ["roata", "Roată cu anvelopă"], ["senila", "Șenilă"]]],
     ["propulsie", "Elice", [["elice", "Elice"], ["eliceBarca", "Elice de barcă"], ["ventilator", "Ventilator cu carcasă"], ["roataPalete", "Roată cu palete"]]],
-    ["craciun", "Crăciun", [["fulg", "Fulg de zăpadă"], ["stea", "Stea"], ["brad", "Brăduț"], ["glob", "Glob"]]]
+    ["craciun", "Crăciun", [["fulg", "Fulg de zăpadă"], ["stea", "Stea"], ["brad", "Brăduț"], ["glob", "Glob"], ["ornament", "Ornament cu nume"]]]
   ];
   // Fulgii gata făcuți (ADR 0285): doar forma (ramurile, miezul, linia); mărimea, grosimea și agățătoarea rămân cum sunt.
   const FULGI: readonly (readonly [string, { ramuri: number; unghi: number; inceput: number; lungime: number; miez: string; linie: number }])[] = [
@@ -214,6 +216,7 @@ var Atelier3D = (function () {
     stea: `<path d="M12 3.1L14.2 9.5L21 9.7L15.6 13.8L17.6 20.3L12 16.4L6.4 20.3L8.4 13.8L3 9.7L9.8 9.5z"/>`,
     brad: `<path d="M12 2.5l4.2 6h-2.4l4 5.5h-2.6l4.3 5.5H4.5l4.3-5.5H6.2l4-5.5H7.8z"/><path d="M12 19.5V22"/>`,
     glob: `<circle cx="12" cy="14" r="7.5"/><path d="M10 6.6V4h4v2.6M5.3 11.5h13.4M5.3 16.5h13.4"/>`,
+    ornament: `<path d="M7.5 6H21v12H7.5L3 13.5v-3z"/><circle cx="7" cy="12" r="1.1"/><path d="M11.5 15.5l2.5-7 2.5 7M12.4 13.2h3.2"/>`,
   };
   const PICTOGRAMA_GENERICA = `<path d="M12 3l8 4.5v9L12 21l-8-4.5v-9zM4 7.5l8 4.5 8-4.5M12 12v9"/>`;
   /** Butonul unei piese din galerie: pictograma ei, apoi numele (pictograma e ascunsă cititoarelor de ecran: butonul se
@@ -365,6 +368,15 @@ var Atelier3D = (function () {
       const model = q.fel === "discuri" ? tr(", din două discuri") : q.model === "fara" ? tr(", fără model")
         : (q.model === "zigzag" ? tr`, zigzag × ${q.cate}` : q.model === "stele" ? tr`, stele × ${q.cate}` : tr`, dungi × ${q.cate}`) + (q.schimb ? tr`, în relief de ${fmt(q.relief)}` : "");
       return tr`Glob Ø${fmt(q.diam)}` + model + (q.grosime === 3 ? "" : tr`, ${fmt(q.grosime)} mm`) + (q.agatatoare === "fara" ? tr(", fără inel") : "");
+    }
+    if (d.tip === "ornament") {
+      // forma și numele; apoi mărimea, scrisul (adâncit, decupat sau relieful neobișnuit), grosimea neobișnuită, lipsa agățătorii
+      const q = Lego.ornamentCote(d), cu = q.text !== "", et = q.forma === "eticheta";
+      const cap = q.forma === "glob" ? (cu ? tr`Glob „${q.text}”` : tr("Glob fără nume")) : q.forma === "inima" ? (cu ? tr`Inimă „${q.text}”` : tr("Inimă fără nume"))
+        : q.forma === "stea" ? (cu ? tr`Stea „${q.text}”` : tr("Stea fără nume")) : cu ? tr`Etichetă „${q.text}”` : tr("Etichetă fără nume");
+      const scris = !cu ? "" : q.scris === "decupat" ? tr(", decupat") : q.scris === "adancit" ? (q.relief === 0.8 ? tr(", adâncit") : tr`, adâncit ${fmt(q.relief)} mm`) : q.relief === 0.8 ? "" : tr`, în relief de ${fmt(q.relief)}`;
+      return cap + (et ? tr`, ${fmt(q.lungime)} × ${fmt(q.inaltime)} mm` : tr`, de ${fmt(q.diam)} mm`) + scris + (q.grosime === 3 ? "" : tr`, ${fmt(q.grosime)} mm`)
+        + (q.agatatoare !== "fara" ? "" : et ? tr(", fără gaură") : tr(", fără inel"));
     }
     if (d.tip === "rotita") {
       const sens = d.sens === "stanga" ? tr("stânga") : tr("dreapta");
@@ -532,6 +544,15 @@ var Atelier3D = (function () {
       if (q.fel === "plat") p.model = q.model; else delete p.model;
       if (q.model !== "fara") { p.cate = q.cate; p.desen = q.desen; } else { delete p.cate; delete p.desen; }
       if (q.schimb) p.relief = q.relief; else delete p.relief;
+    }
+    if (t === "ornament") {
+      // mărimile sunt ale formei (lungimea și înălțimea, ale etichetei); scrisul, al unui ornament cu nume; relieful, al
+      // celui în relief sau adâncit
+      const q = Lego.ornamentCote(p);
+      for (const k of ["forma", "text", "grosime", "agatatoare"] as const) p[k] = q[k];
+      if (q.forma === "eticheta") { p.lungime = q.lungime; p.inaltime = q.inaltime; delete p.diam; } else { p.diam = q.diam; delete p.lungime; delete p.inaltime; }
+      if (q.text) p.scris = q.scris; else delete p.scris;
+      if (q.text && q.scris !== "decupat") p.relief = q.relief; else delete p.relief;
     }
     if (t === "cremaliera") { const q = Lego.cremalieraMontaj(p); p.lung = q.lung; p.roata = q.z; p.prindere = q.prindere; if (q.m === 1) delete p.modul; else p.modul = q.m; }
     if (t === "rotita") {
@@ -1274,6 +1295,44 @@ var Atelier3D = (function () {
       alege("#at-gl-model", v => { p.model = v; });
       alege("#at-gl-desen", v => { p.desen = v; });
       alege("#at-gl-ag", v => { p.agatatoare = v; });
+    } else if (t === "ornament") {
+      // ornamentul cu nume (ADR 0285, felia 3.Cl-3): forma, numele (scris cu majuscule, cât încape de mare), scrisul (în
+      // relief, adâncit sau decupat), mărimea formei, grosimea, relieful sau adâncimea, agățătoarea
+      const p = stare.ornament, q = Lego.ornamentCote(p), et = q.forma === "eticheta", cuNume = q.litera > 0;
+      const litere = tr`Literele au ${fmt(q.litera)} mm, cu linia de ${fmt(q.linie, 2)} mm.`;
+      const info = !q.text ? tr("Scrie un nume: litere, cifre și semnele - . ! ' + (cel mult 16).") : !cuNume ? tr("Numele nu e scris: nu încape pe forma asta.")
+        : q.scris === "relief" ? litere + " " + tr`Pentru două culori, schimbă filamentul la ${fmt(q.schimb)} mm (după stratul ${Math.round(q.schimb / 0.2)}, la straturi de 0,2 mm): de acolo în sus se tipărește doar numele.`
+          : q.scris === "adancit" ? litere + " " + tr`Sunt adânci de ${fmt(q.relief)} mm.` : litere + " " + tr("Semnele cu ochi (ca A, B, O, 8) au câte o punte, ca mijlocul lor să nu cadă.");
+      // un semn pe care fontul nu-l are e sărit: numele din câmp rămâne cum se scrie, iar rândul de jos o spune
+      const sarite = !q.sarite ? "" : ([...q.sarite].length > 1 ? tr`Nu am semnele „${q.sarite}”: le-am sărit.` : tr`Nu am semnul „${q.sarite}”: l-am sărit.`) + " ";
+      e.innerHTML = `<h2>Ornament cu nume</h2>
+        <p class="mic">O formă plată cu un nume pe ea: în relief (pentru două culori), adâncit sau decupat. Numele se scrie cu majuscule, cât încape de mare. Se tipărește culcat, fără suport.</p>
+        <div class="at-rand"><span class="mic">Forma:</span>${seg("at-on-forma", [["eticheta", "Etichetă"], ["glob", "Glob"], ["inima", "Inimă"], ["stea", "Stea"]], q.forma)}</div>
+        <div class="at-campuri"><label for="at-on-text">Numele<input id="at-on-text" type="text" maxlength="16" autocomplete="off" spellcheck="false" value="${q.text}"></label></div>
+        <div class="at-rand"><span class="mic">Scrisul:</span>${seg("at-on-scris", [["relief", "În relief"], ["adancit", "Adâncit"], ["decupat", "Decupat"]], q.scris)}</div>
+        <div class="at-campuri">
+          ${et ? `<label for="at-on-lungime">Lungimea (mm)<input id="at-on-lungime" type="number" min="40" max="160" step="1" value="${q.lungime}"></label>
+          <label for="at-on-inaltime">Înălțimea (mm)<input id="at-on-inaltime" type="number" min="16" max="60" step="1" value="${q.inaltime}"></label>`
+          : `<label for="at-on-diam">Mărimea (mm)<input id="at-on-diam" type="number" min="30" max="120" step="1" value="${q.diam}"></label>`}
+          <label for="at-on-grosime">Grosimea (mm)<input id="at-on-grosime" type="number" min="1.2" max="6" step="0.1" value="${q.grosime}"></label>
+          ${q.text && q.scris !== "decupat" ? `<label for="at-on-relief">${q.scris === "adancit" ? tr("Adâncimea (mm)") : tr("Relieful (mm)")}<input id="at-on-relief" type="number" min="0.4" max="3" step="0.1" value="${q.relief}"></label>` : ""}
+        </div>
+        <div class="at-rand"><span class="mic">Agățătoarea:</span>${seg("at-on-ag", et ? [["gaura", "Gaură"], ["fara", "Fără"]] : [["inel", "Inel"], ["fara", "Fără"]], q.agatatoare)}</div>
+        <div class="at-rand"><span class="mic" id="at-on-info"></span></div>`;
+      // (rândul de jos poartă semnele scrise de om: se pune ca text, nu ca marcaj)
+      $("#at-on-info").textContent = sarite + info;
+      const camp = (id: string, a: number, b: number, f: (v: number) => void) => { const c = document.querySelector<HTMLInputElement>(id); if (c) c.onchange = () => { const v = +c.value; if (v >= a && v <= b) { f(v); schimbat(); } editor(); }; };
+      const alege = (id: string, f: (v: string) => void) => { $(id).onclick = ev => { const b = (ev.target as Element).closest<HTMLElement>("[data-v]"); if (!b) return; f(b.dataset.v!); editor(); schimbat(); }; };
+      // numele: cum l-a scris omul; editorul îl arată cum se scrie pe piesă (majuscule, doar semnele fontului)
+      ($("#at-on-text") as HTMLInputElement).onchange = ev => { p.text = (ev.target as HTMLInputElement).value; editor(); schimbat(); };
+      camp("#at-on-lungime", 40, 160, v => { p.lungime = v; });
+      camp("#at-on-inaltime", 16, 60, v => { p.inaltime = v; });
+      camp("#at-on-diam", 30, 120, v => { p.diam = v; });
+      camp("#at-on-grosime", 1.2, 6, v => { p.grosime = v; });
+      camp("#at-on-relief", 0.4, 3, v => { p.relief = v; });
+      alege("#at-on-forma", v => { p.forma = v; });
+      alege("#at-on-scris", v => { p.scris = v; });
+      alege("#at-on-ag", v => { p.agatatoare = v; });
     } else if (t === "roata") {
       // roata cu anvelopă (ADR 0280): felul, mărimea, banda de rulare, fața, gaura; janta și anvelopa, împreună
       const p = stare.roata, faraJanta = p.fel === "anvelopa", faraAnvelopa = p.fel === "janta";

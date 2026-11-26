@@ -190,7 +190,7 @@ Easy 3Draw 18.36.0. A patra piesă a filei „Crăciun”: `glob`.
 - **Decupat sau în relief** (`desen`): decupat, modelul e gol în disc; în relief, modelul stă peste discul întreg, mai
   înalt cu `relief` (0,4–3 mm). **Două culori fără schimbător de filament:** editorul spune înălțimea la care se
   schimbă filamentul (înălțimea discului) și stratul ei la straturi de 0,2 mm; de acolo în sus se tipărește doar
-  modelul. În cvs2, fereastra Imprimanta poate pune pauza la stratul acela (felia 3.6p).
+  modelul. Pauza sau schimbul de filament se pune în programul de feliere, la stratul acela.
 - **Din două discuri** (`fel: "discuri"`): două discuri alăturate pe pat, îmbinate în cruce ca plăcile bradului. Primul
   are căpăcelul, inelul și fanta de jos (până la 0,2 mm peste mijloc); al doilea, fanta de sus. Fără model.
 - **Arcele mari, din laturi fine:** conturul unui disc se face cu săgeata de cel mult 0,02 mm (un disc de 120 mm nu
@@ -202,6 +202,68 @@ Relieful pe două înălțimi e deocamdată al globului; la stea și la brad se 
 Probele: `test/unit/trenulet.glob.test.ts` (modelul de pe hârtie, punct cu punct; dungile numărate pe plasă; relieful
 peste disc; fantele discurilor), `test/e2e/trenulet.glob.spec.ts`; uneltele comune, în `test/unit/ajutor-craciun.ts`.
 Otrăvurile: `test/otravuri/3.Cl-2.py`, `3.Cl-2-en.py`.
+
+## Implementat (3.Cl-3, 26.11.2026): ornamentul cu nume
+
+Easy 3Draw 18.37.0. A cincea piesă a filei „Crăciun”: `ornament`, o formă plată cu un nume scris pe ea.
+
+### Fontul
+
+Un font propriu, dintr-o singură linie (răspunsul 4a): fiecare semn e din **trăsături** (linii și arce de cerc), iar
+litera tipărită e tot ce stă la cel mult jumătate de linie de trăsături, cu capetele rotunde. Tabelul e în motor
+(`SCRIS`), în unități: majuscula are 6, linia de bază e la 0.
+
+- **Semnele:** majusculele A–Z, Ă Â Î Ș Ț, cifrele, spațiul și `- . ! ' +` (46 de semne). Numele se scrie cu
+  majuscule: literele mici devin mari, S și T cu sedilă devin cele cu virgulă, spațiile se strâng, un semn pe care
+  fontul nu-l are e sărit (și se spune), iar numele are cel mult 16 semne.
+- **Linia** are 16 % din majusculă, între 1,2 și 2,6 mm. Între casetele a două semne stau linia și un gol de 0,8 linii.
+- **Cum se îngroașă:** fiecare trăsătură e decalată cu Cavalier de o parte și de alta, cu capete rotunde; o trăsătură
+  închisă (O, 0, D, buclele lui B, 6, 8, 9) dă un inel, cu ochiul ei. Trăsăturile unui semn se unesc. Trei lucruri țin
+  unirea sigură: arcele de peste un sfert de cerc se împart în sferturi; o trăsătură nu se atinge pe ea însăși
+  (întâlnirile sunt între trăsături diferite); fiecare trăsătură a unui semn e cu 2 µm mai subțire decât cea dinainte,
+  ca laturile lor să nu se suprapună niciodată. Și întinderea unui semn (cât e de înalt, cu arcele lui) se socotește
+  pe sferturi: altfel „S” și „3” ieșeau din cutia lor.
+
+### Potrivirea numelui
+
+Numele stă pe un rând, la locul lui din formă, cu **cea mai mare majusculă** (din zecime în zecime, cel mult 40 mm) a
+cărei cutie de cerneală, lărgită cu 2 mm, stă cu totul în formă. Cutia are înălțimea trăsăturilor numelui (virgula de
+sub Ș și Ț și căciula lui Ă, Â, Î o măresc), deci un nume cu diacritice iese cu litere ceva mai mici.
+
+- Sub 6 mm, piesa spune că literele au ieșit mici.
+- Sub 4,8 mm (sub 8 mm la scrisul decupat), numele nu se scrie: forma rămâne goală, cu mesajul „nu încape”.
+
+### Scrisul (`scris`)
+
+- **În relief** (obișnuit): literele stau peste placa întreagă, mai înalte cu `relief` (0,4–3 mm; 0,8). Pentru două
+  culori, editorul spune înălțimea la care se schimbă filamentul, ca la glob.
+- **Adâncit:** un buzunar adânc de `relief`, cu cel puțin 0,6 mm de placă dedesubt; ochiurile literelor rămân.
+- **Decupat:** literele trec prin placă. Semnele cu ochi (A, B, D, O, P, Q, R, 0, 4, 6, 8, 9, Ă, Â) au câte o
+  **punte** de 1,2 mm (tabelul `PUNTI`: locul ei în semn și înălțimile între care stă), ca mijlocul lor să nu cadă;
+  între semne rămâne un perete de cel puțin 1,2 mm.
+
+### Formele (`forma`)
+
+- **Eticheta** (`lungime` 40–160, `inaltime` 16–60; 70 × 26): un dreptunghi cu colțurile din stânga teșite (o treime
+  din înălțime, cel mult 8 mm) și cu gaura de 4 mm la 5 mm de capăt (sau fără); numele, la mijlocul locului rămas.
+- **Globul** (`diam` 30–120; 60): discul cu căpăcelul și inelul globului.
+- **Inima:** doi lobi de rază `diam` / 3,6, cu centrele la ±0,8 raze, și vârful de jos la 2,2 raze sub ei; inelul stă
+  pe o tijă din crestătură. Numele, puțin sub linia lobilor.
+- **Steaua:** cinci colțuri, plină (vârfurile dinăuntru la 55 % din rază), cu inelul pe colțul de sus.
+
+### Ce a rămas din propunere
+
+- **Literele mici** și **numele pe două rânduri** n-au intrat: fontul are doar majuscule, pe un rând.
+- **Brăduțul cu nume** n-a intrat: etajele lui sunt prea înguste pentru un rând de litere.
+- Numele ca ornament (literele legate între ele, fără placă) se poate face cu același font, la cerere.
+
+### Probele
+
+`test/unit/trenulet.ornament.test.ts`: fontul (semnele, lățimile, câteva litere pe hârtie, amprenta desenului);
+literele plasei, punct cu punct, față de „la cel mult jumătate de linie de trăsături”, pentru toate semnele, la trei
+mărimi; potrivirea (cutia stă în formă și e cea mai mare); formele de pe hârtie; cele trei feluri de scris; la scrisul
+decupat, pe hârtie, lemnul din jurul fiecărui semn e legat de margine (nicio insulă), iar fără punte ar cădea un ochi.
+`test/e2e/trenulet.ornament.spec.ts`: editorul. Otrăvurile: `test/otravuri/3.Cl-3.py`, `3.Cl-3-en.py`.
 
 ## Se redeschide dacă
 

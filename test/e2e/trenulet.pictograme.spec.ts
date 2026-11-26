@@ -24,7 +24,7 @@ const FAMILII: readonly (readonly [string, readonly (readonly [string, string])[
   ['roti', [['rotita', 'Roată dințată'], ['cremaliera', 'Cremalieră'], ['melc', 'Șurub melc'], ['cama', 'Camă'], ['conica', 'Roată conică'], ['coroana', 'Roată coroană'], ['conicaDubla', 'Conică dublă'], ['fulie', 'Fulie'],
     ['roata', 'Roată cu anvelopă'], ['senila', 'Șenilă']]],
   ['propulsie', [['elice', 'Elice'], ['eliceBarca', 'Elice de barcă'], ['ventilator', 'Ventilator cu carcasă'], ['roataPalete', 'Roată cu palete']]],
-  ['craciun', [['fulg', 'Fulg de zăpadă'], ['stea', 'Stea'], ['brad', 'Brăduț'], ['glob', 'Glob']]],
+  ['craciun', [['fulg', 'Fulg de zăpadă'], ['stea', 'Stea'], ['brad', 'Brăduț'], ['glob', 'Glob'], ['ornament', 'Ornament cu nume']]],
 ];
 
 async function deschide(page: Page): Promise<void> {
@@ -82,7 +82,7 @@ test('fiecare piesă, în fiecare galerie, are pictograma ei înaintea numelui, 
     // butonul se numește tot ca piesa: pictograma nu se citește
     for (const [k, n] of piese) await expect(page.locator('#at-galerie').getByRole('button', { name: n, exact: true }), k).toHaveAttribute('data-piesa', k);
   }
-  expect(desene.size).toBe(40);
+  expect(desene.size).toBe(41);
   const dupa = new Map<string, string>();
   for (const [k, d] of desene) {
     expect(dupa.get(d), `${k} are același desen ca ${dupa.get(d)}`).toBeUndefined();
