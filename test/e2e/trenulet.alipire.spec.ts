@@ -49,6 +49,8 @@ const alege = (page: Page, k: number) => lista(page).nth(k).locator('button').cl
 const marime = (page: Page) => page.locator('#at-cote');
 const aleasa = (page: Page) => page.locator('.model-ales');
 const muta = (page: Page, op: string) => page.locator(`#at-m-mutari [data-m="${op}"]`).click();
+/** Butoanele unei piese de pe grilă sau libere: mutările, rotirea, apoi răsturnările și jumătățile de pas (felia 3.Cf-2). */
+const MUTARI = ['x-', 'x+', 'y-', 'y+', 'z-', 'z+', 'r', 'tx', 'ty', 'fin'];
 const butoane = (page: Page) => page.locator('#at-m-mutari [data-m]').evaluateAll((e) => e.map((b) => (b as HTMLElement).dataset['m']));
 const prinderea = (page: Page, k: number) => page.locator(`#at-m-prinderi [data-pk="${k}"]`);
 const tinut = (page: Page) => page.evaluate((k) => (JSON.parse(localStorage.getItem(k) ?? '{}') as { model?: Tinut[] }).model ?? [], CHEIE);
@@ -94,7 +96,7 @@ test('știftul din colț: o cărămidă alipită pe știftul 8 al alteia urmeaz�
 
   // baza mutată cu un știft: piesa prinsă o urmează (altfel modelul s-ar lungi cu 8 mm)
   await alege(page, 0);
-  expect(await butoane(page)).toEqual(['x-', 'x+', 'y-', 'y+', 'z-', 'z+', 'r']);
+  expect(await butoane(page)).toEqual(MUTARI);
   // baza, aleasă din nou, nu mai are ținta de dinainte
   await expect(page.locator('#at-m-prinderi [data-pk]')).toHaveCount(16);
   await expect(page.locator('#at-m-prinderi [aria-pressed="true"]')).toHaveCount(0);
@@ -147,7 +149,7 @@ test('știftul din colț: o cărămidă alipită pe știftul 8 al alteia urmeaz�
   await expect(marime(page)).toContainText('Mărime 39,8 × 39,8 × 21,1 mm');
   const dupa = (await tinut(page))[1]!;
   expect([dupa.x, dupa.y, dupa.z, dupa.rot, dupa.prins, dupa.liber]).toEqual([3, 1, 3, 1, undefined, undefined]);
-  expect(await butoane(page)).toEqual(['x-', 'x+', 'y-', 'y+', 'z-', 'z+', 'r']);
+  expect(await butoane(page)).toEqual(MUTARI);
   // și nu mai urmează baza: baza mutată cu un știft iese de sub ea (x 8,1 … 39,9)
   await alege(page, 0);
   await muta(page, 'x+');
@@ -220,7 +222,7 @@ test('lanțul: un ax prin gaura din mijloc a grinzii și o roată pe capătul lu
   // axul liber: colțul cutiei lui (Ø4,75 în jurul lui (4, 20), deci 1,625 și 17,625; z de la −24 + 3,2)
   await alege(page, 0);
   await expect(aleasa(page)).toContainText(/Ax 4 · liberă, colțul cutiei la 1,6[23], 17,6[23], -20,8 mm/);
-  expect(await butoane(page)).toEqual(['x-', 'x+', 'y-', 'y+', 'z-', 'z+', 'r']);
+  expect(await butoane(page)).toEqual(MUTARI);
   // mutat cu 8 mm: roata îl urmează
   await muta(page, 'x+');
   await expect(aleasa(page)).toContainText(/colțul cutiei la 9,6[23], 17,6[23], -20,8 mm/);
@@ -353,7 +355,7 @@ test('un model ținut de dinainte: legăturile bune se păstrează; cele stricat
   // o piesă stricată se poartă ca una de pe grilă
   await alege(page, 3);
   await expect(aleasa(page)).toContainText('· x 0, y 6, z 0 plăci');
-  expect(await butoane(page)).toEqual(['x-', 'x+', 'y-', 'y+', 'z-', 'z+', 'r']);
+  expect(await butoane(page)).toEqual(MUTARI);
   // modelul golit își uită și legăturile
   await page.locator('#at-model-goleste').click();
   await page.locator('#at-model-goleste-da').click();

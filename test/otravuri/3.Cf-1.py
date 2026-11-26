@@ -207,7 +207,7 @@ o('A49', AT, PA, PA.replace('"x+": [8, 0, 0]', '"x+": [4, 0, 0]'), 'e2e', 'piesa
 o('A50', AT, PA, PA.replace('"y+": [0, 8, 0]', '"y+": [0, -8, 0]'), 'e2e', 'piesa liberă merge invers pe y')
 o('A51', AT, PA, PA.replace('"z-": [0, 0, -3.2]', '"z-": [0, 0, -8]'), 'e2e', 'piesa liberă coboară cu 8 mm, nu cu o placă')
 o('A52', AT, PA, PA.replace('"x-": [-8, 0, 0]', '"x-": [0, -8, 0]'), 'e2e', 'săgeata spre stânga mută piesa liberă pe y')
-o('A53', AT, 'else if (op === "r") lasaPeLoc(m, Lego.rotitLiber(a.T, c.dim));', 'else if (op === "r") lasaPeLoc(m, a.T);', 'e2e', 'piesa liberă nu se rotește')
+o('A53', AT, 'else if (op === "r") lasaPeLoc(m, Lego.rotitLiber(a.T, c.dim, c.ax ? c.pivot : null));', 'else if (op === "r") lasaPeLoc(m, a.T);', 'e2e', 'piesa liberă nu se rotește')
 
 # --- atelierul: „Înlocuiește în model”
 IK = 'const ax = A.get(x.id), pa = a.prinderi[x.prins.a], k = pa ? Lego.prindereaRamasa(pa, b.prinderi) : -1;'

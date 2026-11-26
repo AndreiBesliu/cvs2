@@ -21,7 +21,7 @@ o('N05', T, ' "Decupat": "Cut out",', ' "Decupat": "Decupat",', 'e2e', 'desenul 
 o('N06', T, ' "Zigzaguri": "Zigzags",', ' "Zigzaguri": "Zigzaguri",', 'e2e', 'câmpul zigzagurilor, rămas în română')
 o('N07', T, ' "Din două discuri": "Two discs",', ' "Din două discuri": "Din doua discuri",', 'e2e', 'felul „Din două discuri”, rămas în română (fără diacritice)')
 o('N08', T, ' ", zigzag × {0}": ", zigzag × {0}",', ' ", zigzag × {0}": ", zigzag",', 'e2e', 'numele globului cu zigzag pierde numărul')
-o('N09', T, '(after layer {1}, with 0.2 mm layers)', '(after layer {0}, with 0.2 mm layers)', 'e2e', 'rândul reliefului scrie înălțimea în locul stratului')
+o('N09', T, '(after layer {1}, with 0.2 mm layers): from there up, only the pattern is printed.', '(after layer {0}, with 0.2 mm layers): from there up, only the pattern is printed.', 'e2e', 'rândul reliefului scrie înălțimea în locul stratului')
 o('N10', T, ' ", din două discuri": ", two discs",', ' ", din două discuri": "",', 'e2e', 'numele globului din două discuri, fără traducere')
 
 SETURI = {}
