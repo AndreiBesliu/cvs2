@@ -16246,3 +16246,16 @@ fiecare”): „Din nota ta („Ce rămâne”), singura felie care poate porni 
   otrăvurilor, nota liniei.
 
 **Completed:** 26.11, 21:09.
+
+## 2026-11-26 — Sesiunea principală în cloud: liniile pornesc ce urmează (Model: Claude Opus 5.5)
+
+**Prompt:** „Zi-le ca pot continua cu ce urmeaza la fiecare”
+**Started:** 26.11, 20:16. **Completed:** 26.11, 20:18.
+
+- **Mesajele:** la 20:16, celor cinci sesiuni de linie din cloud, fiecare cu ce urmează din nota ei: atelierul (3.Ck, cu
+  jocul din calibrare, sau întâi feliile auditului elicelor fără decizie; 18.43.0), exportul (începutul G-code-ului la
+  vedere), frezele (16.A↑e, cu v31 ținut pentru ea), relieful (rândul editabil al finisării și al degroșării, rotunjirea
+  în jos a pasului lateral), cotele (cele „mai târziu” din ADR 0330). Toate livrate.
+- **Nepornite:** liniile fără sesiune (tăierea, imprimanta, incrustațiile, planșele, trasarea, aranjamentele) și sesiunea
+  designului, de pe calculatorul owner-ului.
+- **Documentele:** decizia în `CLAUDE.md`; starea din `docs/linii/principala.md` și indexul liniilor.
