@@ -1901,7 +1901,9 @@ which). The window has three parts:
 - the **list**, on the left: **Sheet and origin**, **Machine and file**, then the [operations](#operatii), in the order they
   are cut, each with what it cuts, the bit and the depth; after the export, also the **Result**, with the estimated time and how
   many warnings it has (a coloured dot, if any). Its card holds, in order: **Check before cutting** (the warnings, only when
-  there are some), **Files** (with **Open in Machine**), **Job summary** and **Simulation**. A click brings the chosen card
+  there are some), **Files** (with **Open in Machine** and **the start of each file**: its first lines, as the controller
+  reads them, up to the first cutting move, exactly as in the downloaded file, at most 40; one row per file, the first one
+  open), **Job summary** and **Simulation**. A click brings the chosen card
   to the top; as you scroll, the list marks the card you have reached. From the keyboard, Enter on a row moves the focus to
   the card's title, and Tab then goes through its fields; a screen reader reads, at each field, its group's explanation, in
   full, and its errors. On a narrow screen, the list sits at the top, on a row

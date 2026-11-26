@@ -16225,3 +16225,14 @@ angrenaje […], brațul de macara, barca cu elice”); pornită după unirea lu
 - **Lotul 51 pe test:** `77a036c0` (28.8↑p), publicat pe 26.11 la 18:43 (completul pe `main` 45851263588, verde: unit 10 786 / 0,
   e2e 980 / 980, funcțiile pe emulatoare 136 / 136, paginile 60 / 60; proba de fum, bună). Pe test e tot ce e în `main`.
 - **Documentele:** decizia în `CLAUDE.md`; starea din `docs/linii/principala.md`.
+
+## 2026-11-26 — Linia exportului: 28.8↑r, începutul programului la vedere (ADR 0292, propus)
+
+**Prompt:** mesajul sesiunii principale (26.11, 20:16), cu cuvântul owner-ului („Zi-le ca pot continua cu ce urmeaza la
+fiecare”): „Din nota ta („Ce rămâne”), singura felie care poate porni acum e „ce desenează canvas-ul și nu există azi”:
+începutul G-code-ului la vedere în fereastră. Pornește-o: întâi propunerea (ADR 0292, dacă cere decizii, cu întrebările grupate
+și recomandarea întâi; mergi mai departe cu recomandarea).”
+**Started:** 26.11, 20:16.
+
+- **ADR 0292, propus:** după Exportă, în Rezultat › Fișierele, primele linii ale fiecărui fișier scris, până la prima mișcare de
+  tăiere (cel mult 40), din textul descărcat; trei întrebări, cu recomandarea aplicată.

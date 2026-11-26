@@ -192,7 +192,7 @@ function tinteMici(page: Page, minim: number): Promise<string[]> {
   return page.evaluate((m) => {
     const cutie = document.querySelector('.dialog-cutie');
     if (!cutie) return ['fără fereastră'];
-    const sel = 'button, select, input[type="text"], label:has(> input[type="checkbox"]), label.alegere, .dx-card, .dx-regim > summary';
+    const sel = 'button, select, input[type="text"], label:has(> input[type="checkbox"]), label.alegere, .dx-card, .dx-regim > summary, .dx-inceput summary';
     const rau: string[] = [];
     for (const e of cutie.querySelectorAll<HTMLElement>(sel)) {
       const s = getComputedStyle(e), r = e.getBoundingClientRect();
@@ -342,5 +342,32 @@ test.describe('cu degroșarea reliefului (rolul „Relief 3D”, rândurile doar
       expect(await tinteMici(page, 48), 'ordinea mea').toEqual([]);
       expect(await ceIese(page), 'ordinea mea').toEqual([]);
     });
+  });
+});
+
+/**
+ * Începutul fișierelor în Rezultat (ADR 0292, felia 28.8↑r): liniile lungi ale antetului se derulează în locul lor, deci nimic
+ * nu iese din fereastră, la 1280, 1024 și 390 px, cu fontul lat; rândul fișierului are ținta mare cu densitatea mare.
+ */
+test.describe('începutul fișierelor, după export', () => {
+  test.use({ locale: 'ro-RO' });
+  for (const [latime, inaltime] of [[1280, 800], [1024, 768], [390, 844]] as const) {
+    test(`la ${latime} px, cu fontul lat: nimic nu iese, iar liniile se derulează în locul lor`, async ({ page }) => {
+      await page.setViewportSize({ width: latime, height: inaltime });
+      await deschide(page);
+      await page.locator('[data-buton="exporta"]').click();
+      const pre = page.locator('[data-inceput] pre').first();
+      await expect(pre).toBeVisible();
+      expect(await ceIese(page), 'începutul fișierului').toEqual([]);
+      expect(await pre.evaluate((e) => getComputedStyle(e).overflowX), 'derularea liniilor').toBe('auto');
+    });
+  }
+  test('cu densitatea mare, rândul fișierului are cel puțin 48 px și se lovește în centrul lui', async ({ page }) => {
+    await page.addInitScript(() => { localStorage.setItem('cncvs2.aranjament', JSON.stringify({ v: 1, aranjament: 'atelier', densitate: 'mare' })); });
+    await deschide(page);
+    await page.locator('[data-buton="exporta"]').click();
+    await expect(page.locator('[data-inceput] summary').first()).toBeVisible();
+    await page.locator('[data-nav="rezultatul"]').click();
+    expect(await tinteMici(page, 48), 'Rezultatul, cu începutul fișierelor').toEqual([]);
   });
 });

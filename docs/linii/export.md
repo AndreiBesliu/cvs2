@@ -127,6 +127,11 @@ vreau ca ficare setare sa fie insotita de o ilustratie sugestiva, ca sa ajute us
   mână”, turația, avansul și plonjarea, în `scula.regim` (v27, fără schemă nouă); goale, programul de azi. Probate pe hârtie,
   pe poartă, pe oracolul simulării, pe sender și pe emulatorul GRBL; fără valori, octet cu octet. Proba pe mașină, întâi în
   aer, rămâne a owner-ului.
+- **26.11: 28.8↑r gata** (ADR 0292, propus și implementat cu recomandările, la „Zi-le ca pot continua cu ce urmeaza la
+  fiecare” al owner-ului, adus de sesiunea principală; ce desenează canvas-ul și nu exista). După Exportă, în Rezultat ›
+  Fișierele, începutul fiecărui fișier scris, din textul descărcat: primele linii, până la prima mișcare de tăiere, cel mult
+  40; un rând pe fișier (pe freză, ale dopurilor; cu „Toate foile”, ale foii active, cu numele din arhivă), primul desfăcut.
+  Programul, octet cu octet. Detaliile: ADR 0292, „Implementarea 28.8↑r”.
 
 ## Ce s-a găsit (23.11)
 
@@ -301,9 +306,9 @@ vreau ca ficare setare sa fie insotita de o ilustratie sugestiva, ca sa ajute us
 
 ## Ce rămâne
 
-Din ADR 0290, nimic: toate feliile (a–f) și 28.8↑g sunt gata. Din ADR 0291 (după audit): 28.8↑n, 28.8↑o și 28.8↑h–28.8↑l sunt
-în `main`, cu 28.8↑q („Toate foile” cu operațiile fiecărei foi); 28.8↑p (avansul, turația și plonjarea pe „Scrisă de mână”,
-Z-ul sigur și parcarea) e gata pe ramură. Din ADR 0291 nu mai rămâne nicio felie a liniei: 28.8↑m (starea ca hook) vine la
+Din ADR 0290, nimic: toate feliile (a–f) și 28.8↑g sunt gata. Din ADR 0291 (după audit): toate feliile liniei sunt în `main`
+(28.8↑h–l, n–q). Din ADR 0292: 28.8↑r (începutul programului în Rezultat) e gata pe ramură; începutul **înaintea** exportului
+(1b) ar fi o felie a ei, la cuvântul owner-ului, cu un calcul întreg al lucrării la fiecare schimbare. Din ADR 0291 nu mai rămâne nicio felie a liniei: 28.8↑m (starea ca hook) vine la
 pornirea Clasicului, a lui Pas cu pas sau a pasului scurt din Atelier, iar adaosul și trecerea de finisare (9a), după placa 2,
 pe linia aleasă de sesiunea principală. Titlurile în
 română sunt, din 26.11, cele alese de owner: „Tăietura”, „Golirea”, „Coborârea”. Telefonul culcat (640 × 360) e rezolvat în 28.8↑l. Pentru alte linii, mai târziu:
@@ -311,8 +316,8 @@ română sunt, din 26.11, cele alese de owner: „Tăietura”, „Golirea”, �
 - **Clasicul (28.2↑) și Pas cu pas (28.4↑)** iau fișa operației (`FisaOperatie`, cu `ContextFisa`) în panoul lor, cu starea
   lor, fără s-o copieze (ADR 0290, „Cu canvas-ul aranjamentelor”): la Clasic, în locul panoului din dreapta, cu Simularea filă;
   la Pas cu pas, ca panou al pasului 2, iar pasul 5 ia „Foaia și originea” și „Mașina și fișierul”.
-- **Ce desenează canvas-ul și nu există azi** (începutul G-code-ului la vedere): o felie a lui, la cuvântul owner-ului; Z-ul
-  sigur editabil a venit cu 28.8↑p.
+- **Ce desenează canvas-ul și nu exista:** Z-ul sigur editabil a venit cu 28.8↑p, iar începutul G-code-ului cu 28.8↑r (după
+  export, în Rezultat). Clasicul îl poate lua de acolo (`InceputFisiere`, în `DialogExport.tsx`), sub panoul cu postul.
 - **Frezele din bibliotecă pe rândurile exportului (16.A↑b-3, linia frezelor)** vin peste fereastra nouă: câmpul nou stă în
   fișă, cu grupul lui în `GRUP_CAMP`, explicația (`….titlu`, ambele limbi) și locul în proba privirii; ce îi trebuie fișei
   intră în `ContextFisa`; catalogul controalelor se scrie din nou. Capcanele de mai sus sunt și ale ei.

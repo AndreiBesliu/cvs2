@@ -695,7 +695,7 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
         if (traseuArat.current) calculeazaTraseu();
         setStareExport({
           ok: true, linii: r.program.linii, sha256: r.program.sha256, avertismente: r.avertismente, rezumat: r.rezumat, simulare: 'calcul',
-          ...(r.undeTine ? { undeTine: r.undeTine } : {}),
+          ...(r.undeTine ? { undeTine: r.undeTine } : {}), ...(r.inceput.length > 0 ? { inceput: r.inceput } : {}),
           ...(fisiere.length > 1 ? { fisiere: fisiere.map(({ nume, linii, sha256 }) => ({ nume, linii, sha256 })) } : fisiere[0] ? { nume: fisiere[0].nume } : {}),
           ...(dopuri.length > 0 ? { dopuri: dopuri.map(({ octeti: _o, ...d }) => d) } : {}), ...(r.foi ? { foi: r.foi } : {}),
         });
