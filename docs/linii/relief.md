@@ -195,3 +195,6 @@ degroșarea și finisarea pe relief), unde stă relieful în document și unde s
     (0,0625); pe pereții paraleli cu liniile, linia de lângă perete rotunjește muchia de sus.
   - **Modelul unei probe pe placă** e cel triangulat prin centrele celulelor (`triunghiuriModel` + `clExact`), nu funcția pe
     hârtie: lângă trepte, funcția sare, triangularea nu.
+- **26.11, 21:00: 18.1↑d-3 gata pe ramură** (la cuvântul owner-ului, transmis de sesiunea principală la 20:16): pasul lateral
+  aliniat se rotunjește în jos la celule întregi (ADR 0314), cu refuzul celulei mai late decât freza; otrăvurile 10 / 10, placa
+  18 neschimbată. Urmează 18.1↑d-4 (rândul editabil al finisării și al degroșării în fereastra exportului).

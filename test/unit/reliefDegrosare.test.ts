@@ -218,6 +218,7 @@ test('liniile aliniate (felia 18.1↑d-3): pasul lateral rotunjit în jos la cel
   const ys = new Set<number>();
   let x = 0, y = 0, z = Z_SIGUR;
   for (const m of o.miscari) {
+    if (m.tip !== 'rapida' && m.tip !== 'taiere') continue;
     const x1 = m.la.X ?? x, y1 = m.la.Y ?? y, z1 = m.la.Z ?? z;
     // O mișcare de tăiere de-a lungul X, pe prima treaptă (Z = −2).
     if (m.tip === 'taiere' && Math.abs(z1 + 2) < 1e-9 && Math.abs(z + 2) < 1e-9 && Math.abs(y1 - y) < 1e-9 && Math.abs(x1 - x) > 1e-9) ys.add(Math.round(y1 * 1e6) / 1e6);

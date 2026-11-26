@@ -16225,3 +16225,17 @@ angrenaje […], brațul de macara, barca cu elice”); pornită după unirea lu
 - **Lotul 51 pe test:** `77a036c0` (28.8↑p), publicat pe 26.11 la 18:43 (completul pe `main` 45851263588, verde: unit 10 786 / 0,
   e2e 980 / 980, funcțiile pe emulatoare 136 / 136, paginile 60 / 60; proba de fum, bună). Pe test e tot ce e în `main`.
 - **Documentele:** decizia în `CLAUDE.md`; starea din `docs/linii/principala.md`.
+
+## 2026-11-26 — Linia reliefului: felia 18.1↑d-3, pasul lateral aliniat, rotunjit în jos (Model: Claude Opus 5.5)
+
+**Prompt:** „Zi-le ca pot continua cu ce urmeaza la fiecare” (owner-ul, în sesiunea principală, transmis liniei la 20:16): „rotunjirea
+în jos a pasului lateral cu liniile aliniate (a șaptea alegere: creasta să nu iasă mai mare decât cea cerută)”. **Started:**
+26.11, 20:20, pe ramura `wip/18.1-relief`, cu `main` `d1ab8ba5` adus. **Completed:** 26.11, 21:00 (în container; CI-ul, pe
+commit-ul împins).
+
+- **Proba întâi, pe oracolul 3D:** pe un plan, la 0° și 90°, pașii 1,3, 1,7, 1,5 și 0,3 pe celula 0,5: pasul folosit, avertismentul,
+  creasta măsurată de simulatorul independent cel mult cea cerută; pașii întregi pe hârtie, dar nu în virgulă mobilă (0,3 / 0,1);
+  celula mai lată decât freza, refuzată; la degroșare, distanța dintre liniile tăiate, citită din mișcări.
+- **CAM-ul:** `celuleAliniate` (k = max(1, ⌊s / c + 1e-9⌋)) în `linii`, refuzul celulei peste diametru, avertismentele („rotunjit
+  în jos la k celule”, „mărit la o celulă”). Programele cu pași întregi de celule, octet cu octet (placa 18, neschimbată).
+- **ADR 0314** (schimbă rotunjirea din ADR 0310 §5 și ADR 0312), manualul (ro, en); otrăvurile 10 / 10, într-o clonă.
