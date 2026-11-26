@@ -112,7 +112,9 @@ o('R08', RO, "incrustatie: incVechi, finisare: finVechi, degrosare: _deg, ...nec
 o('E01', CF, "  const scrieAmbele = (v: Pick<SchimbareFinisare, 'margine' | 'planZero'>): RezultatActiune => scrie((o) => cuDegrosare(cuFinisare(o, v), v));",
   "  const scrieAmbele = (v: Pick<SchimbareFinisare, 'margine' | 'planZero'>): RezultatActiune => scrie((o) => cuFinisare(o, v));", 'e2e',
   'planul zero scris doar pe finisare (degroșarea refuzată)')
-o('E02', FI, "            {deg\n              ? rand(", "            {false\n              ? rand(", 'e2e', 'fișa degroșării arată creasta, nu adaosul')
+# Mutată în 18.1↑d-4: fișa e pe grupuri, iar adaosul are grupul lui, doar la degroșare.
+o('E02', 'src/ui/exportGrupuri.ts', "  degrosare: ['freza-relief', 'linii', 'adaos', 'margine', 'podea'],", "  degrosare: ['freza-relief', 'linii', 'margine', 'podea'],", 'e2e',
+  'fișa degroșării fără adaos')
 o('E03', EC, "        if (o.tip === 'finisare' || o.tip === 'degrosare') {", "        if (o.tip === 'finisare') {", 'e2e',
   'Exportă nu scrie rangul degroșării în „A mea”')
 o('E04', EC, "    const peRelief = (o: Operatie): boolean => o.tip === 'finisare' || o.tip === 'degrosare';",

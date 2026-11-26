@@ -101,8 +101,9 @@ o('E14', AP, '(r.masina ?? fisiere).map', 'fisiere.map', 'e2e', 'Mașina primeș
 o('E15', AP, '...(r.foi ? { foi: r.foi } : {})', '...({})', 'e2e', 'starea exportului pierde foile')
 o('E16', AP, '{...(doc.foi.length > 1 && foaie ? { foaie: numeFoaie(foaie, indexActiva, sablonFoaie) } : {})}', '{...({})}', 'e2e',
   'titlul fără foaie (nici „Toate foile”)')
-o('E17', AP, 'const { valori: _valori, ordine: _ordine, ...parametri } = c;',
-  'const { valori: _valori, ordine: _ordine, toateFoile: _toate, ...parametri } = c;', 'e2e', 'App pierde „Toate foile” din cerere')
+# Mutată în 18.1↑d-4 (cererea are și valorile reliefului, scoase tot aici).
+o('E17', AP, 'const { valori: _valori, ordine: _ordine, valoriRelief: _relief, ...parametri } = c;',
+  'const { valori: _valori, ordine: _ordine, valoriRelief: _relief, toateFoile: _toate, ...parametri } = c;', 'e2e', 'App pierde „Toate foile” din cerere')
 
 SETURI = {
     'foi': ['test/unit/export.foi.test.ts', 'test/unit/extensii.zip.test.ts'],
