@@ -160,6 +160,11 @@ test('șasiul: lungimea, lățimea și roata ies în margini, cu un avertisment;
   assert.equal((s.piese[0]!.def.celule as unknown[]).length, 10 * 6);
   assert.equal(s.avert.length, 1);
   assert.match(s.avert[0]!, /10/);
+  // un număr cu zecimale se rotunjește, cu avertismentul (7,6 → 8)
+  const z = Lm.constructieGata('sasiu', { lung: 7.6 });
+  assert.equal(z.cote.ampatament, 48);
+  assert.equal(z.avert.length, 1);
+  assert.match(z.avert[0]!, /de 8\./);
   // Ø43,2 cere 8: la 8 nu se lungește
   assert.deepEqual([...Lm.constructieGata('sasiu', { lung: 8, lat: 6, roata: 43.2 }).avert], []);
   assert.equal(Lm.constructieGata('sasiu', { lung: 7, lat: 6, roata: 43.2 }).cote.ampatament, 48);

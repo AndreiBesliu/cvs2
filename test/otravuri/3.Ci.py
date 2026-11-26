@@ -19,6 +19,7 @@ AT = 'extensii/trenulet/sursa/planificator/atelier.ts'
 o('M01', LG, 'const SABLOANE = ["sasiu", "angrenaje", "macara", "barca"] as const;', 'const SABLOANE = ["sasiu", "macara", "angrenaje", "barca"] as const;', 'sabloane', 'felurile, în altă ordine')
 o('M02', LG, '    if (!(SABLOANE as readonly string[]).includes(fel)) throw new Error(tr`Nu știu construcția „${fel}”.`);\n', '', 'sabloane', 'un fel necunoscut nu mai e refuzat (iese o barcă)')
 o('M03', LG, '    if (Number.isFinite(c) && x !== c) avert.push(ce(x));', '    if (x !== c) avert.push(ce(x));', 'sabloane', 'valorile lipsă (implicitele) dau avertismente')
+# M04: a scăpat la prima rulare (nicio probă nu cerea un număr cu zecimale); proba cere acum 7,6 → 8, cu avertismentul
 o('M04', LG, '    if (Number.isFinite(c) && x !== c) avert.push(ce(x));', '    if (Number.isFinite(c) && x !== r) avert.push(ce(x));', 'sabloane', 'un număr cu zecimale, rotunjit, nu mai e spus')
 RS = 'ROTI_SASIU.reduce((a, b) => (Math.abs(b - ceruta) < Math.abs(a - ceruta) ? b : a))'
 o('M05', LG, RS, 'ROTI_SASIU[2]', 'sabloane', 'roata cerută e mereu cea mare')
@@ -67,6 +68,9 @@ o('M34', LG, 'butuc = corp(elice).dim[2]!, iese = butuc + 2;', 'butuc = corp(eli
 
 # --- motorul: ridicarea pe masă
 o('M35', LG, '    if (jos < -1e-9) piese[0]!.z = Math.ceil(-jos / P.placa - 1e-9);', '    if (jos < -1e-9) piese[0]!.z = Math.floor(-jos / P.placa - 1e-9);', 'sabloane', 'baza, ridicată prea puțin: roțile sub masă')
+# M36: practic echivalentă pentru cele patru șabloane: piesele cele mai de jos (roțile, elicea) sunt rotite doar cu sferturi
+# de tură, deci cutia lor coboară cât plasa (măsurat, pe nouă construcții: aceeași înălțime a bazei). Ridicarea rămâne pe
+# plasă, corectă și pentru o piesă rotită oblic
 JS = '    piese.forEach((p, i) => { const m = T[i]!.m, tz = T[i]!.t[2]; for (const t of corp(p.def).tri) for (const q of t) jos = Math.min(jos, m[6]! * q[0] + m[7]! * q[1] + m[8]! * q[2] + tz); });'
 o('M36', LG, JS, '    piese.forEach((p, i) => { jos = Math.min(jos, cutieTransf(T[i]!, corp(p.def).dim)[0][2]); });', 'sabloane', 'ridicarea după cutii: o roată rotită ridică baza prea mult')
 
