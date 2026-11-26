@@ -8,7 +8,7 @@ import type { Limba } from '../i18n/tipuri.ts';
 import {
   bazaFisier, INCRUSTATIE_DREAPTA_IMPLICITA, INCRUSTATIE_IMPLICITA, LATIME_UMAR_IMPLICITA, LUNGIME_NUME, MARGINI_OPERATIE, motivNume,
   PARCARE_MAXIMA, pasLateralImplicit, POSTURI_EXPORT, propunereNume, Z_SIGUR_MAXIM, Z_SIGUR_MINIM,
-  PUNTI_DOP_DREPT, SUPRACURSA_MAXIMA, UNGHI_V_IMPLICIT, type Coborare, type IdContract, type IesireFoaie, type ParametriExport,
+  PUNTI_DOP_DREPT, SUPRACURSA_MAXIMA, UNGHI_V_IMPLICIT, type Coborare, type IdContract, type IesireFoaie, type InceputFisier, type ParametriExport,
   type RezumatFoi, type RezumatJob, type StrategieScula, type TimpPortiune, type Unitati,
 } from './actiuniExportTipuri.ts';
 import { durata } from './durata.ts';
@@ -322,6 +322,25 @@ function Rezumat({ r, operatii, limba, alte, foaie }: {
   );
 }
 
+
+/**
+ * Începutul fiecărui fișier scris (ADR 0292): câte un rând strâns pe fișier, cu numele și câte linii arată, primul desfăcut;
+ * liniile, în locul lor, cu derularea lor (focusabile, cu nume). Fără tăiere în primele linii, restul fișierului e numărat.
+ */
+function InceputFisiere({ inceput }: { readonly inceput: readonly InceputFisier[] }): ReactNode {
+  return (
+    <div className="dx-inceput" data-inceput="">
+      <p className="nota">{t('export.rezultat.inceput')}</p>
+      {inceput.map((f, k) => (
+        <details key={f.nume} data-inceput-fisier={f.nume} open={k === 0}>
+          <summary>{t(f.taiere ? 'export.rezultat.inceput.fisier' : 'export.rezultat.inceput.fara', { nume: f.nume, n: f.linii.length })}</summary>
+          <pre tabIndex={0} aria-label={t('export.rezultat.inceput.eticheta', { nume: f.nume })}>{f.linii.join('\n')}</pre>
+          {!f.taiere && f.restul > 0 && <p className="nota">{t('export.rezultat.inceput.restul', { n: f.restul })}</p>}
+        </details>
+      ))}
+    </div>
+  );
+}
 
 /**
  * „Toate foile” exportate (ADR 0210 §5): arhiva și amprenta ei; pe fiecare foaie (cu cele identice, ×N), fișierele ei din arhivă
@@ -1815,6 +1834,8 @@ export function DialogExport(
                       <button type="button" data-buton="in-masina" title={t('export.in-masina.titlu')} onClick={onDeschideInMasina}>{t('export.in-masina')}</button>
                     </div>
                   )}
+                  {/* Începutul fiecărui fișier scris (ADR 0292): în afara regiunii anunțate, ca să nu fie citit la fiecare export. */}
+                  {stare?.ok && stare.inceput && stare.inceput.length > 0 && <InceputFisiere inceput={stare.inceput} />}
                 </div>
                 {stare?.ok && !stare.foi && <div className="dx-rez" data-rezultat="timp"><Rezumat r={stare.rezumat} operatii={operatii} limba={limba}
                   alte={new Map(finisari.map((f) => [f.cheie, f.descriere]))} /></div>}

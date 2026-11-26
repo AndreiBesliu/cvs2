@@ -15,6 +15,7 @@ import { scrieZip, type IntrareArhiva } from '../io/scrieZip.ts';
 import { CONTRACTE } from '../post/contracte/index.ts';
 import { sha256Hex, type FisierExportat } from '../post/export.ts';
 import { faraComentarii, foiIdentice, numeInArhiva } from '../post/foi.ts';
+import { inceputProgram } from '../post/inceput.ts';
 import type { CerereReparare, OptiuniReparare, RezultatReparare, VerificarePanou } from '../model/reparare.ts';
 import type { CerereConversie, RezultatConversie } from '../model/conversie.ts';
 import type { CerereLegare, OptiuniLegare, RezultatLegare } from '../model/legareCai.ts';
@@ -27,7 +28,7 @@ import { reliefPentru } from '../sim/banda.ts';
 import { campPentruFoaie, dimensiuni, type ParametriCamp } from '../sim/camp.ts';
 import type { DateScula, GrupSimulare } from '../sim/nucleu.ts';
 import type { ProgramSimulat } from '../sim/program.ts';
-import type { FereastraRelief, ParametriExport, ProgramSimulare, RaspunsPotrivire, ReliefSimulat, RezultatExport, RezumatJob, SimulareExport } from './actiuniExportTipuri.ts';
+import type { FereastraRelief, InceputFisier, ParametriExport, ProgramSimulare, RaspunsPotrivire, ReliefSimulat, RezultatExport, RezumatJob, SimulareExport } from './actiuniExportTipuri.ts';
 
 // Cine cheamă calculul își recunoaște anularea (nu se arată) și workerul căzut (merge în jurnal).
 export { CalculAnulat, LucratorCazut } from '../jobs/bazinCam.ts';
@@ -101,10 +102,20 @@ export async function calculeazaExport(doc: Document, p: ParametriExport, semnal
   if (!r.ok) return r;
   const { simulare, foaie, desprinse, ...rest } = r;
   const undeTine = operatiiDesprinse(doc, desprinse);
+  const numit = cuNumele(rest, p);
   return {
-    ...cuNumele(rest, p), avertismente: await cuDesprinse(doc, rest.avertismente, desprinse), ...(undeTine.length > 0 ? { undeTine } : {}),
+    ...numit, inceput: inceputuri([...numit.fisiere, ...numit.dopuri.flatMap((d) => d.fisiere)], p), avertismente: await cuDesprinse(doc, rest.avertismente, desprinse), ...(undeTine.length > 0 ? { undeTine } : {}),
     simulare: (s) => simuleazaExport(simulare, foaie, s),
   };
+}
+
+/**
+ * Începutul fiecărui fișier scris (ADR 0292), din textul lui, după comentariile dialectului postului: ce primește controlerul
+ * întâi, până la prima mișcare de tăiere.
+ */
+function inceputuri(fisiere: readonly { readonly nume: string; readonly text: string }[], p: ParametriExport): InceputFisier[] {
+  const { comentariu } = CONTRACTE[p.post ?? 'grbl-11'];
+  return fisiere.map((f) => ({ nume: f.nume, ...inceputProgram(f.text, comentariu) }));
 }
 
 /**
@@ -154,19 +165,22 @@ async function calculeazaToateFoile(doc: Document, activa: string, p: ParametriE
     fisiereFoii(r).map(async (x) => [x.nume, await sha256Hex(new TextEncoder().encode(faraComentarii(x.text)))]),
   ))));
   const intrari: IntrareArhiva[] = [];
+  /** Fișierele foii active din arhivă (ADR 0292): numele lor de acolo și textul, pentru începutul lor. */
+  const aleActivei: Array<{ readonly nume: string; readonly text: string }> = [];
   let linii = 0;
   const foi = foiIdentice(semnaturi).flatMap((g) => {
     const prim = facute[g[0] ?? -1];
     if (!prim) return [];
+    // Rezultatul pe foi (ADR 0291, 7a): timpul pe operații al programului ei; foaia activă, însemnată.
+    const activa = g.some((j) => facute[j] === activ);
     const fisiere = fisiereFoii(prim.r).map((x) => {
       linii += x.linii;
       const intrare = { nume: cuBaza(numeInArhiva(x.nume, prim.k + 1, g.length, p.origine, contract.numeScurt), p.origine, p.numeFisier), octeti: x.octeti };
       intrari.push(intrare);
+      if (activa) aleActivei.push({ nume: intrare.nume, text: x.text });
       return intrare.nume;
     });
     const identice = g.slice(1).flatMap((j) => facute[j]?.nume ?? []);
-    // Rezultatul pe foi (ADR 0291, 7a): timpul pe operații al programului ei; foaia activă, însemnată.
-    const activa = g.some((j) => facute[j] === activ);
     return [{
       nume: prim.nume, identice, fisiere, secunde: prim.r.rezumat.ok ? prim.r.rezumat.total.secunde : null, rezumat: prim.r.rezumat,
       ...(activa ? { activa: true as const } : {}),
@@ -183,7 +197,7 @@ async function calculeazaToateFoile(doc: Document, activa: string, p: ParametriE
   const avertismente = (await Promise.all(facute.map(async ({ nume, d, r }) => (await cuDesprinse(d, r.avertismente, r.desprinse)).map((a) => `${nume}: ${a}`)))).flat();
   const undeTine = [...new Set(facute.flatMap(({ d, r }) => operatiiDesprinse(d, r.desprinse)))];
   return {
-    ok: true, program: zip, fisiere: [zip], dopuri: [], rezumat, sender, ...(sender ? { masina: fisiere.map((f) => ({ ...f, nume: cuBaza(f.nume, p.origine, p.numeFisier) })) } : {}),
+    ok: true, program: zip, fisiere: [zip], dopuri: [], inceput: inceputuri(aleActivei, p), rezumat, sender, ...(sender ? { masina: fisiere.map((f) => ({ ...f, nume: cuBaza(f.nume, p.origine, p.numeFisier) })) } : {}),
     avertismente, ...(undeTine.length > 0 ? { undeTine } : {}),
     foi: { arhiva, foi, goale, secunde },
     simulare: (s) => simuleazaExport(simulare, foaie, s),

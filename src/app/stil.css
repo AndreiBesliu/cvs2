@@ -2452,6 +2452,69 @@ nav button[aria-pressed='true'] {
 }
 
 /*
+ * Începutul fiecărui fișier scris (ADR 0292, felia 28.8↑r): câte un rând strâns pe fișier; liniile în monospațiat, întregi
+ * (derulare pe orizontală) și cel mult ~16 rânduri la vedere, în locul lor: nimic nu iese din fereastră.
+ */
+.dx-inceput {
+  margin-top: var(--sp-3);
+}
+
+.dx-inceput > .nota {
+  margin: 0 0 var(--sp-1);
+  font-size: var(--fs-2);
+  color: var(--t-slab);
+}
+
+.dx-inceput details + details {
+  margin-top: var(--sp-1);
+}
+
+.dx-inceput summary {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  min-height: var(--tinta);
+  font-family: var(--mono);
+  font-size: var(--fs-2);
+  overflow-wrap: anywhere;
+  cursor: pointer;
+  list-style: none;
+}
+
+.dx-inceput summary::-webkit-details-marker {
+  display: none;
+}
+
+/* Semnul rândului strâns, ca la valorile frezei scrise de mână (28.8↑p). */
+.dx-inceput summary::before {
+  content: '▸';
+  flex: none;
+  width: 1em;
+  color: var(--t-slab);
+}
+
+.dx-inceput details[open] > summary::before {
+  content: '▾';
+}
+
+.dx-inceput pre {
+  max-height: 16lh;
+  margin: var(--sp-1) 0 0;
+  padding: var(--sp-2);
+  overflow: auto;
+  border: 1px solid var(--l-margine);
+  border-radius: var(--r-1);
+  background: var(--s-panou);
+  font: var(--fs-1) / 1.5 var(--mono);
+  white-space: pre;
+}
+
+.dx-inceput pre:focus-visible {
+  outline: 2px solid var(--a);
+  outline-offset: 2px;
+}
+
+/*
  * Grupul (28.8↑l): titlul, explicația și câmpurile, în ordinea asta în DOM (cititorul spune întâi titlul); pe ecran, explicația
  * (și desenul) în stânga, titlul și câmpurile în dreapta, ca înainte.
  */

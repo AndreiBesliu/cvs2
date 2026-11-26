@@ -3,7 +3,7 @@ import '../i18n/traseu.ts';
 import { t, type CheieSimpla } from '../i18n/t.ts';
 import {
   AVANS_IMPLICIT, latimeMinimaBanda, MARGINI_OPERATIE, parcareBuna, PLONJARE_IMPLICITA, PUNTI_BANDA, SUB_FATA_DOPULUI, TURATIE_IMPLICITA,
-  Z_SIGUR_IMPLICIT, zSigurBun, type Coborare, type Depasire, type IesireFoaie, type LaturaExport,
+  Z_SIGUR_IMPLICIT, zSigurBun, type Coborare, type Depasire, type IesireFoaie, type InceputFisier, type LaturaExport,
   type ParametriExport, type RezumatFoi, type RezumatJob, type SimulareExport,
 } from './actiuniExportTipuri.ts';
 import { citesteNumar } from './numar.ts';
@@ -553,6 +553,8 @@ export type StareExport =
     readonly foi?: RezumatFoi;
     /** Rândurile pieselor desprinse care nu sunt încă „unde ține” (ADR 0211, b): butonul „Pune urechile unde țin”. */
     readonly undeTine?: readonly string[];
+    /** Începutul fiecărui fișier scris (ADR 0292): primele linii, până la prima mișcare de tăiere. */
+    readonly inceput?: readonly InceputFisier[];
   }
   | { readonly ok: false; readonly motiv: string; readonly cereConfirmare?: IesireFoaie };
 

@@ -20,6 +20,7 @@ export { bazaFisier, LUNGIME_NUME, motivNume, propunereNume, type MotivNume } fr
 import type { StrategieScula } from '../post/contract.ts';
 import { CONTRACTE, ID_CONTRACTE, type IdContract } from '../post/contracte/index.ts';
 import type { FisierExportat, ProgramExportat } from '../post/export.ts';
+import type { Inceput } from '../post/inceput.ts';
 export type { IdContract } from '../post/contracte/index.ts';
 export type { StrategieScula, Unitati } from '../post/contract.ts';
 export type { FisierExportat } from '../post/export.ts';
@@ -168,12 +169,20 @@ export type ReliefSimulat =
   }
   | { readonly ok: false; readonly motiv: string; readonly eroare: boolean; readonly anulata?: true };
 
+/** Începutul unui fișier scris (ADR 0292): numele lui și primele linii, până la prima mișcare de tăiere. */
+export type InceputFisier = Inceput & { readonly nume: string };
+
 export type RezultatExport =
   /** `avertismente`: ce s-a făcut altfel decât s-a cerut, fără să fie o greșeală (intrarea omisă, ADR 0030 §3). */
   | {
     readonly ok: true; readonly program: ProgramExportat; readonly avertismente: readonly string[]; readonly rezumat: RezumatJob;
     /** Fișierele de descărcat: unul, sau câte unul pe sculă (ADR 0084); `program` e primul. */
     readonly fisiere: readonly FisierExportat[];
+    /**
+     * Începutul fiecărui fișier scris (ADR 0292), în ordinea lor: ale foii (cu „Toate foile”, ale foii active, cu numele din
+     * arhivă), apoi ale dopurilor.
+     */
+    readonly inceput: readonly InceputFisier[];
     /** Dopurile incrustațiilor (ADR 0170 §3): fiecare cu fișierele lui, de descărcat după ale foii. */
     readonly dopuri: readonly DopExportat[];
     /** Postul e al senderului aplicației (familia GRBL): fișierele ajung și în panoul mașinii (ADR 0125). */

@@ -502,6 +502,12 @@ export const enExport = {
   'export.rezultat.avertismente': 'Check before cutting',
   'export.rezultat.fisiere': 'Files',
   'export.rezultat.meta.avertismente': { one: '{n} warning', other: '{n} warnings' },
+  // The start of each written file (ADR 0292, slice 28.8↑r), under the files, from the downloaded text.
+  'export.rezultat.inceput': 'The start of each file, as the controller reads it, up to the first cutting move:',
+  'export.rezultat.inceput.fisier': { one: '{nume} · {n} line, up to the first cut', other: '{nume} · {n} lines, up to the first cut' },
+  'export.rezultat.inceput.fara': { one: '{nume} · the first line', other: '{nume} · the first {n} lines' },
+  'export.rezultat.inceput.restul': { one: '… and {n} more line', other: '… and {n} more lines' },
+  'export.rezultat.inceput.eticheta': 'Start of the file {nume}',
   'export.fisa.loc': '{n} of {total} in cutting order',
   'export.lista.z0.sus': 'Z0 on top',
   'export.lista.z0.jos': 'Z0 on the bed',

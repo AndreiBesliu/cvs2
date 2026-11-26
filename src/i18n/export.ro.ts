@@ -522,6 +522,14 @@ export const roExport = {
   'export.rezultat.avertismente': 'De văzut înainte de tăiere',
   'export.rezultat.fisiere': 'Fișierele',
   'export.rezultat.meta.avertismente': { one: '{n} avertisment', few: '{n} avertismente', other: '{n} de avertismente' },
+  // Începutul fiecărui fișier scris (ADR 0292, felia 28.8↑r), sub fișiere, din textul descărcat.
+  'export.rezultat.inceput': 'Începutul fiecărui fișier, cum îl citește controlerul, până la prima mișcare de tăiere:',
+  'export.rezultat.inceput.fisier': {
+    one: '{nume} · {n} linie, până la prima tăiere', few: '{nume} · {n} linii, până la prima tăiere', other: '{nume} · {n} de linii, până la prima tăiere',
+  },
+  'export.rezultat.inceput.fara': { one: '{nume} · prima linie', few: '{nume} · primele {n} linii', other: '{nume} · primele {n} de linii' },
+  'export.rezultat.inceput.restul': { one: '… și încă {n} linie', few: '… și încă {n} linii', other: '… și încă {n} de linii' },
+  'export.rezultat.inceput.eticheta': 'Începutul fișierului {nume}',
   'export.fisa.loc': 'locul {n} din {total} în ordinea tăierii',
   'export.lista.z0.sus': 'Z0 pe față',
   'export.lista.z0.jos': 'Z0 pe masă',
