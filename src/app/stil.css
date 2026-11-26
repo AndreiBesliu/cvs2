@@ -2408,11 +2408,32 @@ nav button[aria-pressed='true'] {
   color: var(--t-slab);
 }
 
+/*
+ * Grupul (28.8↑l): titlul, explicația și câmpurile, în ordinea asta în DOM (cititorul spune întâi titlul); pe ecran, explicația
+ * (și desenul) în stânga, titlul și câmpurile în dreapta, ca înainte.
+ */
 .dx-grup {
   display: grid;
   grid-template-columns: minmax(11rem, 17rem) minmax(0, 1fr);
-  gap: var(--sp-4);
+  grid-template-rows: auto 1fr;
+  grid-template-areas: 'stanga titlu' 'stanga campuri';
+  column-gap: var(--sp-4);
   padding: var(--sp-3) 0;
+}
+
+.dx-grup > h4 {
+  grid-area: titlu;
+  margin: 0 0 var(--sp-2);
+  font-size: var(--fs-3);
+  font-weight: 650;
+}
+
+.dx-grup > .dx-stanga {
+  grid-area: stanga;
+}
+
+.dx-grup > .dx-campuri {
+  grid-area: campuri;
 }
 
 .dx-grup + .dx-grup {
@@ -2638,12 +2659,6 @@ nav button[aria-pressed='true'] {
   min-width: 0;
 }
 
-.dx-campuri h4 {
-  margin: 0 0 var(--sp-2);
-  font-size: var(--fs-3);
-  font-weight: 650;
-}
-
 /* Fișa doar de citit a finisării reliefului (ADR 0312 §7): eticheta și valoarea, pe rânduri; pe un ecran îngust, una sub alta. */
 .dx-citire {
   display: grid;
@@ -2854,7 +2869,13 @@ nav button[aria-pressed='true'] {
 
   .dx-grup {
     grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: none;
+    grid-template-areas: 'titlu' 'stanga' 'campuri';
     gap: var(--sp-2);
+  }
+
+  .dx-grup > h4 {
+    margin-bottom: 0;
   }
 
   .dx-citire {
