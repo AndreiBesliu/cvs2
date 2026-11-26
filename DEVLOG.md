@@ -15431,3 +15431,43 @@ cu patru întrebări: „Mergem cu recomandarile”
   (plafonul 125; cu ușa 116,5, cu Atelierul 116,9), totalul 909,1 / 1 000 kB, `/admin` 138,3 / 200, contul 30,2 / 32.
   Nimic pe server.
 - **Documentele:** decizia și paragraful de stare în `CLAUDE.md`; indexul liniilor; starea din `docs/linii/principala.md`.
+
+## 2026-11-26 — Linia reliefului: felia 18.1↑d-1, degroșarea reliefului (ADR 0313, documentul v30) (Model: Claude Opus 5.5)
+
+**Prompt:** „ok, porneste 10.4↑d si 18.1↑d” (owner-ul, în sesiunea principală, transmis liniei la 26.11, 00:08)
+**Started:** 26.11, 00:10, în sesiunea cloud a liniei reliefului, cu `main` `ca38f215` adus. **Completed:** 26.11, 03:30 (felia 18.1↑d-1, cu otrăvurile; orele, după ceasul containerului, în ora României).
+
+- **Oracolul întâi** (`test/oracles/relief3d.ts`):
+  - CL-ul cu adaosul (freza plată de rază R + a, plus a) și adaosul pe hârtie, pe un plan;
+  - judecata degroșării: adaosul, podeaua, pasul pe material, rapidele;
+  - simulatorul de material pe operații la rând, cu lemnul rămas;
+  - pentru freza plată, simulatorul exact (o alarmă falsă, la marginea discului, găsită pe pană).
+
+  Probele pe hârtie: `relief3d.degrosare.oracol.test.ts`.
+- **CAM-ul:** `degrosareRelief`, drumul finisării cu cota din câmpul dilatat cu R + a, ridicată cu a; finisarea, octet cu
+  octet. Probele: platoul, pana (de-a lungul și peste pantă, cu lemnul rămas pe hârtie), calota, valurile, două reliefuri,
+  podeaua, degroșarea plus finisarea în ambele ordini.
+- **Documentul v30:**
+  - `degrosare` și câmpul ei; migrarea v29 → v30;
+  - oracolul documentului (11 valide, 20 refuzate);
+  - corpusul de aur (v29 din ultimul ei commit, `ca38f21`; v30 din `a3f8f8f`): diferența, doar numărul;
+  - probele mutate pe v30, și `placute.spec.ts`.
+- **Lucrarea:**
+  - ordinea: degroșările, finisările, tăieturile;
+  - finisarea pusă de mână înaintea degroșării e un avertisment, cu programul probat bun;
+  - freza plată;
+  - planul zero și marginea, potrivite cu finisarea;
+  - `catFoaia`;
+  - originea în centru.
+- **Interfața:**
+  - rolul „Relief 3D” (degroșarea și finisarea);
+  - câmpurile degroșării în Tăierea; marginea și Z-ul se scriu pe amândouă;
+  - rândul doar de citit în fereastra exportului;
+  - manualul (ro, en);
+  - e2e și privirea.
+- **Otrăvurile:** `18.1d.py`, 39 / 39 prinse (35 unitare, 4 e2e). Primul tur: D08 și J12 scăpate (probe întărite), R02
+  echivalentă (scoasă). Opt otrăvuri vechi mutate pe codul nou (12.1f-4, 28.8h, 18.1c), toate prinse.
+- **Cu `main` `554b72cb` adus** (doar extensia; ciocnire doar în DEVLOG). Local: suita unitară 10 638 / 0 (12 sărite), e2e-ul
+  feliei și privirea 23 / 23, tipurile, traducerile (1 166), catalogul controalelor.
+- **Mărimea:** pornirea +0,1 kB (111,5; cu ușa 116,7, cu Atelierul 117,0 / 125), totalul +1,7 kB (910,8 / 1 000).
+- **Nedovedit fără mașină:** lemnul rămas după degroșare, suprafața finisată față de model, timpul (placa reliefului, d-2).

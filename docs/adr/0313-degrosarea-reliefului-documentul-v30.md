@@ -152,6 +152,13 @@ Rândul editabil (al finisării și al degroșării) e o felie a lui, la cuvânt
   - rolul (`src/model/rol.ts`), `cuDegrosare`, câmpurile (`src/app/CampuriFinisare.tsx`);
   - rândul din fereastră și manualul;
   - e2e: `degrosare.spec.ts` și privirea (`export.privire.spec.ts`).
+- **Otrăvurile:** `test/otravuri/18.1d.py`, 39 / 39 prinse (35 unitare, 4 e2e). Primul tur a găsit două probe slabe (refuzul
+  migrării pe o degroșare fără câmpul ei; dalele unui relief doar degroșat, aduse workerului), întărite, și o otravă echivalentă,
+  scoasă. Opt otrăvuri vechi, pe codul schimbat de felie, mutate și prinse.
+- **Mărimea**, față de `main` `554b72cb`: pornirea +0,1 kB (111,5; cu ușa 116,7, cu Atelierul 117,0 / 125), totalul +1,7 kB
+  (910,8 / 1 000).
+- **Nedovedit fără mașină:** lemnul rămas după degroșare (adaosul pe fund, pe platou și pe pantă), suprafața finisată față de
+  model și timpul. Le măsoară placa reliefului (felia 18.1↑d-2, fișa ei).
 
 ## Respinse
 

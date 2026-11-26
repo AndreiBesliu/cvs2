@@ -175,3 +175,7 @@ degroșarea și finisarea pe relief), unde stă relieful în document și unde s
     18.1c) au fost mutate pe codul nou: `scripts/otravuri-void-noi.py` le arată.
   - **Același plan zero și aceeași margine:** lucrarea refuză o degroșare cu alt plan zero decât finisarea aceluiași relief,
     și una care trece de margine când finisarea păstrează peretele; panoul le scrie pe amândouă deodată.
+  - **Probele de lângă:** o probă care cere un refuz al migrării cere și motivul lui (altfel ușa versiunii noi, după migrare,
+    îl refuză oricum, cu alt motiv, și otrava trece); `hartiFinisare` are proba ei (ce dale ajung în worker).
+- **26.11, 03:30: 18.1↑d-1 gata pe ramură**: otrăvurile 39 / 39 (și opt vechi, mutate), pornirea +0,1 kB, totalul +1,7 kB;
+  porțile în CI, pe commit-ul raportat. Urmează 18.1↑d-2 (fișa plăcii reliefului, `docs/etape/placa-18.md`).
