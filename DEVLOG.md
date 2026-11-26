@@ -16072,3 +16072,18 @@ la ordinul în vigoare „unește ce se poate”
   30,2 / 32. Nimic pe server. Față de commit-ul cu porțile, în `main` intră în plus doar documente (`.md`).
 - **Decizia owner-ului:** ordinea q, apoi p, confirmată; p pornește acum, cu linia frezelor anunțată.
 - **Documentele:** decizia și paragraful de stare în `CLAUDE.md`; indexul liniilor; starea din `docs/linii/principala.md`.
+
+## 2026-11-26 — Linia exportului: 28.8↑p, Z-ul sigur, parcarea și valorile frezei scrise de mână (ADR 0291, 3a)
+
+**Prompt:** confirmarea sesiunii principale („28.8↑q și titlurile sunt în `main` … **Poți porni 28.8↑p**, cu `main`
+(`77bf8ceb`) adus întâi”), după „ok, q întâi apoi p” al owner-ului
+**Started:** 26.11, 13:07.
+
+- **Z-ul sigur** (1–100 mm, implicit 5) și **parcarea de la final** (rămâne sus, la XY0, într-un punct) în „Mașina și
+  fișierul”, setări ale aplicației, ca supracursa. Z-ul sigur intră în regimul foii și al dopurilor; postul scrie parcarea ca
+  `G0 X Y` după `M5`, în coordonatele programului, în fiecare fișier. Mișcă mașina: probată întâi pe oracole.
+- **Turația, avansul și plonjarea** pe o freză „scrisă de mână”, în grupul Freza: goale, cele ale lucrării; scrise, în
+  `scula.regim` (v27, fără schemă nouă). O freză din bibliotecă își păstrează valorile ei. T-ul știe turația scrisă.
+- **Probele:** `export.zSigur.oracol.test.ts` (8: fără valori, octet cu octet; Z-ul sigur doar în cuvântul lui, pe tot corpusul și
+  pe toate posturile; parcarea după `M5`; dopurile; poarta, cu martorul; oracolul simulării; senderul și emulatorul GRBL;
+  marginile), `export.regimMana.test.ts` (5), `export.regimZ.spec.ts` (2), proba privirii cu câmpurile noi.

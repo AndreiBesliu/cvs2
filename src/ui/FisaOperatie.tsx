@@ -3,7 +3,7 @@ import '../i18n/export.ts';
 // Durata în cuvinte (`durata.*`) stă în dicționarul traseului, comun cu cipul timpului de lângă traseu (ADR 0046 §8).
 import '../i18n/traseu.ts';
 import { t, type CheieSimpla } from '../i18n/t.ts';
-import { laturiOferite, MARGINI_OPERATIE, susLaMicron } from './actiuniExportTipuri.ts';
+import { AVANS_IMPLICIT, laturiOferite, MARGINI_OPERATIE, PLONJARE_IMPLICITA, susLaMicron, TURATIE_IMPLICITA } from './actiuniExportTipuri.ts';
 import { citesteNumar } from './numar.ts';
 import { grupuriOperatie, type GrupExport } from './exportGrupuri.ts';
 import { coborareDesen } from './exportDeseneCalcul.ts';
@@ -15,7 +15,7 @@ import { Card, Cartonase, GrupCartonase, Poza } from './exportPoze.tsx';
 import { TextScurt } from './TextScurt.tsx';
 import {
   bandaBuna, bandaRand, CHEI_LATURA, CHEI_SENS, faraNumar, FELURI_COBORARE, inMargini, jocFolosit, margineBuna, SENSURI,
-  campuriSculaGresite, locuriFreze, spatiuFolosit, stareOrigine, URECHI_IMPLICITE, type BunRand, type DiferentaFreza, type FrezaOferita, type HartieRand,
+  campuriRegimGresite, campuriSculaGresite, locuriFreze, regimDinRand, spatiuFolosit, stareOrigine, URECHI_IMPLICITE, type BunRand, type DiferentaFreza, type FrezaOferita, type HartieRand,
   type Latura, type OperatieExport, type OrigineFreza, type Rand, type StareOrigine, type UndeFreza,
 } from './exportRand.ts';
 
@@ -235,6 +235,15 @@ export function FisaOperatie({ cheie, loc, total: totalFisa, c: ctx }: {
   const ciocnit = (x: string): boolean => conflict !== undefined && citesteNumar(x) === conflict[0];
   // Greșeala pe câmp (constatarea 15): doar câmpul frezei care nu trece se înroșește.
   const sculaRea = campuriSculaGresite(p);
+  // Turația, avansul și plonjarea, doar pe o freză scrisă de mână (ADR 0291 §3, felia 28.8↑p); goale, cele implicite.
+  const regimRau = p.origineScula === null ? campuriRegimGresite(p.regimMana) : [];
+  // Rezumatul lor, pe rândul strâns: valorile cu care taie freza (cele scrise, cu golurile luate din lucrare).
+  const regimFolosit = regimDinRand(p.regimMana);
+  const rezumatRegim = regimFolosit === undefined ? t('export.regim.rezumat.gresit')
+    : t(regimFolosit === null ? 'export.regim.rezumat.implicit' : 'export.regim.rezumat', {
+      turatie: fmtFreza.format(regimFolosit?.turatie ?? TURATIE_IMPLICITA), avans: fmtFreza.format(regimFolosit?.avans ?? AVANS_IMPLICIT),
+      plonjare: fmtFreza.format(regimFolosit?.plonjare ?? PLONJARE_IMPLICITA),
+    });
   const grupuri = grupuriOperatie({
     tip: p.tip, deschis, inele: p.strategie === 'inele', incrustatie: vc && p.incrustatie, banda: vc && p.incrustatie && p.jurDop === 'banda',
     incrustatieDreapta: buz && p.incrustatieDreapta,
@@ -332,6 +341,37 @@ export function FisaOperatie({ cheie, loc, total: totalFisa, c: ctx }: {
         <ListaBiblioteca data-camp="freza-biblioteca" oferite={oferite} origine={p.origineScula} oprit={doarCitire} recunoscuta={recunoscuta('scula')}
           onAlege={(f) => { alegeFreza(o.cheie, f); }} onMana={() => { schimba(o.cheie, { origineScula: null }); }} />
         {nota('scula', p.origineScula)}
+        {/*
+          Scrisă de mână (ADR 0291 §3, felia 28.8↑p): turația, avansul și plonjarea ei, scrise în `scula.regim`; goale, cele ale
+          lucrării. Strânse sub un rând care le spune, chiar sub alegerea „Scrisă de mână”: între diametru și greșeala de sub el
+          nu se pune nimic (pe telefonul culcat, „Du-mă la …” le aduce pe amândouă în panou). O freză din bibliotecă își are
+          valorile ei (nota de mai sus le spune), deci rândul nu apare. „Du-mă la …” desface rândul când greșeala e înăuntru.
+        */}
+        {p.origineScula === null && (
+        <details className="dx-regim" data-regim>
+          <summary>{rezumatRegim}</summary>
+          <div className="dx-rand">
+          <label title={t('export.regim.turatie.titlu', { n: fmtFreza.format(TURATIE_IMPLICITA) })}>
+            {t('export.regim.turatie')}
+            <input type="text" inputMode="numeric" value={p.regimMana.turatie} data-camp="turatie" disabled={doarCitire} className="regim"
+              placeholder={fmtFreza.format(TURATIE_IMPLICITA)} aria-invalid={regimRau.includes('turatie')}
+              onChange={(ev) => { schimba(o.cheie, { regimMana: { ...p.regimMana, turatie: ev.target.value } }); }} />
+          </label>
+          <label title={t('export.regim.avans.titlu', { n: fmtFreza.format(AVANS_IMPLICIT) })}>
+            {t('export.regim.avans')}
+            <input type="text" inputMode="decimal" value={p.regimMana.avans} data-camp="avans" disabled={doarCitire} className="regim"
+              placeholder={fmtFreza.format(AVANS_IMPLICIT)} aria-invalid={regimRau.includes('avans')}
+              onChange={(ev) => { schimba(o.cheie, { regimMana: { ...p.regimMana, avans: ev.target.value } }); }} />
+          </label>
+          <label title={t('export.regim.plonjare.titlu', { n: fmtFreza.format(PLONJARE_IMPLICITA) })}>
+            {t('export.regim.plonjare')}
+            <input type="text" inputMode="decimal" value={p.regimMana.plonjare} data-camp="plonjare" disabled={doarCitire} className="regim"
+              placeholder={fmtFreza.format(PLONJARE_IMPLICITA)} aria-invalid={regimRau.includes('plonjare')}
+              onChange={(ev) => { schimba(o.cheie, { regimMana: { ...p.regimMana, plonjare: ev.target.value } }); }} />
+          </label>
+          </div>
+        </details>
+        )}
         <label title={t('export.freza.titlu')}>
           {t('export.freza.numar')}
           <input type="text" inputMode="numeric" value={p.numarScula} data-camp="scula" disabled={doarCitire} aria-label={t('export.freza.numar')}

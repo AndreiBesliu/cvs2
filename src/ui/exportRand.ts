@@ -2,7 +2,8 @@ import '../i18n/export.ts';
 import '../i18n/traseu.ts';
 import { t, type CheieSimpla } from '../i18n/t.ts';
 import {
-  latimeMinimaBanda, MARGINI_OPERATIE, PUNTI_BANDA, SUB_FATA_DOPULUI, type Coborare, type Depasire, type IesireFoaie, type LaturaExport,
+  AVANS_IMPLICIT, latimeMinimaBanda, MARGINI_OPERATIE, parcareBuna, PLONJARE_IMPLICITA, PUNTI_BANDA, SUB_FATA_DOPULUI, TURATIE_IMPLICITA,
+  Z_SIGUR_IMPLICIT, zSigurBun, type Coborare, type Depasire, type IesireFoaie, type LaturaExport,
   type ParametriExport, type RezumatFoi, type RezumatJob, type SimulareExport,
 } from './actiuniExportTipuri.ts';
 import { citesteNumar } from './numar.ts';
@@ -48,7 +49,14 @@ export type SculaOperatie = {
    * de Exportă lângă T, Ø și formă; `null` = scrisă de mână (originea pleacă din document); lipsă = rămâne cea din document.
    */
   readonly origine?: OrigineFreza | null;
+  /**
+   * Valorile de lucru scrise de mână (ADR 0291 §3, felia 28.8↑p), doar pe o freză fără origine din bibliotecă: scrise în
+   * `scula.regim`; `null` = fără ele (câmpul pleacă); lipsă = rămân cele din document. Cu o origine, câștigă ale ei.
+   */
+  readonly regim?: ValoriLucru | null;
 };
+/** Turația (rot/min), avansul și plonjarea (mm/min) unei freze, ca în document (v27). */
+export type ValoriLucru = { readonly turatie: number; readonly avans: number; readonly plonjare: number };
 /** Originea unei freze din „Frezele mele” (ADR 0300 §5): numele, id-ul și versiunea, valorile de lucru și tăișul, dacă le are. */
 export type OrigineFreza = {
   readonly nume: string; readonly biblioteca: { readonly id: string; readonly rev: number };
@@ -151,13 +159,15 @@ const acelasiLoc = (a: UndeFreza, b: UndeFreza): boolean =>
 export function frezeRanduri(randuri: Iterable<readonly [string, Rand]>, fara?: LocFreza): FrezaRand[] {
   const rez: FrezaRand[] = [];
   for (const [cheie, p] of randuri) {
-    const pune = (unde: UndeFreza, n: string, d: string, origine: OrigineFreza | null | undefined, forma?: FrezaRand['forma']): void => {
+    const pune = (unde: UndeFreza, n: string, d: string, origine: OrigineFreza | null | undefined, forma?: FrezaRand['forma'], mana?: number): void => {
       if (fara && fara.cheie === cheie && acelasiLoc(fara.unde, unde)) return;
-      const numar = citesteNumar(n), diametru = citesteNumar(d), turatie = origine?.regim?.turatie;
+      const numar = citesteNumar(n), diametru = citesteNumar(d), turatie = origine?.regim?.turatie ?? (origine ? undefined : mana);
       if (numar !== null && diametru !== null) rez.push({ numar, diametru, ...(forma ? { forma } : {}), ...(turatie !== undefined ? { turatie } : {}) });
     };
     const u = p.formaScula === 'v' ? citesteNumar(p.unghiV) : null, vf = p.formaScula === 'v' ? citesteNumar(p.varfV) : null;
-    pune('scula', p.numarScula, p.diametruScula, p.origineScula, u !== null ? { tip: 'v', unghi: u, ...(vf !== null && vf > 0 ? { varf: vf } : {}) } : undefined);
+    // Turația scrisă de mână (felia 28.8↑p) e știută, ca a unei freze din bibliotecă.
+    pune('scula', p.numarScula, p.diametruScula, p.origineScula, u !== null ? { tip: 'v', unghi: u, ...(vf !== null && vf > 0 ? { varf: vf } : {}) } : undefined,
+      regimDinRand(p.regimMana)?.turatie);
     const fund = p.tip === 'vcarve' && p.fundPlat, dop = p.tip === 'buzunar' && p.incrustatieDreapta && p.frezaDop;
     if (fund) pune('fund', p.numarSculaFund, p.diametruSculaFund, p.origineFund);
     if (dop) pune('dop', p.numarSculaDop, p.diametruSculaDop, p.origineDop);
@@ -672,6 +682,8 @@ export type Rand = {
    * scrisă de mână. Un diametru sau o formă schimbate de mână o scot.
    */
   readonly origineScula: OrigineFreza | null;
+  /** Valorile de lucru scrise de mână pe freza operației (ADR 0291 §3, felia 28.8↑p), ca text; contează doar fără origine. */
+  readonly regimMana: RegimRand;
   /** Forma frezei (ADR 0090), unghiul V și diametrul vârfului plat (ADR 0092; 0 = ascuțit), ca text. */
   readonly formaScula: 'plata' | 'v'; readonly unghiV: string; readonly varfV: string;
   /** Direcția pe linie (ADR 0092 §4): „” = ca desenul. */
@@ -878,6 +890,68 @@ export function campuriSculaGresite(p: Pick<Rand, 'numarScula' | 'diametruScula'
   if (!inMargini(p.diametruScula, MARGINI_OPERATIE.diametru)) rez.push('diametru');
   if (p.formaScula === 'v' && !inMargini(p.unghiV, MARGINI_OPERATIE.unghiV, MARGINI_OPERATIE.unghiVMinim)) rez.push('unghi');
   return rez;
+}
+
+/** Valorile de lucru scrise de mână pe freza unui rând (ADR 0291 §3, felia 28.8↑p), ca text: gol = valoarea implicită. */
+export type RegimRand = { readonly turatie: string; readonly avans: string; readonly plonjare: string };
+export const REGIM_GOL: RegimRand = { turatie: '', avans: '', plonjare: '' };
+const gol = (s: string): boolean => s.trim() === '';
+
+/**
+ * Câmpurile greșite ale valorilor de lucru scrise de mână, ca la ușa documentului (v27): turația un întreg între 1 și plafon,
+ * avansul și plonjarea peste 0, cel mult plafonul. Un câmp gol nu e greșit: ia valoarea implicită a lucrării.
+ */
+export function campuriRegimGresite(r: RegimRand): ReadonlyArray<'turatie' | 'avans' | 'plonjare'> {
+  const max = MARGINI_OPERATIE.regimFreza, rez: Array<'turatie' | 'avans' | 'plonjare'> = [];
+  if (!gol(r.turatie) && !intregInMargini(r.turatie, max)) rez.push('turatie');
+  if (!gol(r.avans) && !inMargini(r.avans, max)) rez.push('avans');
+  if (!gol(r.plonjare) && !inMargini(r.plonjare, max)) rez.push('plonjare');
+  return rez;
+}
+
+/**
+ * Valorile de lucru de scris pe freză (`scula.regim`): `null` fără niciuna scrisă (programul de azi); altfel toate trei, cele
+ * goale cu valorile implicite ale lucrării (18 000 rot/min, 1 000 și 300 mm/min); `undefined` cu un câmp greșit.
+ */
+export function regimDinRand(r: RegimRand): ValoriLucru | null | undefined {
+  if (gol(r.turatie) && gol(r.avans) && gol(r.plonjare)) return null;
+  if (campuriRegimGresite(r).length > 0) return undefined;
+  const x = (s: string, implicit: number): number => (gol(s) ? implicit : citesteNumar(s) ?? implicit);
+  return { turatie: x(r.turatie, TURATIE_IMPLICITA), avans: x(r.avans, AVANS_IMPLICIT), plonjare: x(r.plonjare, PLONJARE_IMPLICITA) };
+}
+
+/**
+ * Z-ul sigur și parcarea de la final (ADR 0291 §3, felia 28.8↑p), cum le ține aplicația, ca text: setări ale ei, de la o
+ * fereastră la alta, ca supracursa. `parcare`: rămâne deasupra ultimei tăieturi, merge la XY0 sau la punctul (x, y), față de
+ * XY0, în coordonatele programului.
+ */
+export type SetariAer = { readonly zSigur: string; readonly parcare: 'nu' | 'origine' | 'punct'; readonly x: string; readonly y: string };
+export const AER_IMPLICIT: SetariAer = { zSigur: String(Z_SIGUR_IMPLICIT), parcare: 'nu', x: '0', y: '0' };
+
+/** Câmpurile greșite ale Z-ului sigur și ale parcării (X și Y doar pentru un punct ales). */
+export function campuriAerGresite(a: SetariAer): ReadonlyArray<'z-sigur' | 'parcare-x' | 'parcare-y'> {
+  const rez: Array<'z-sigur' | 'parcare-x' | 'parcare-y'> = [];
+  const z = citesteNumar(a.zSigur);
+  if (z === null || !zSigurBun(z)) rez.push('z-sigur');
+  if (a.parcare === 'punct') {
+    const x = citesteNumar(a.x, true), y = citesteNumar(a.y, true);
+    if (x === null || !parcareBuna({ x, y: 0 })) rez.push('parcare-x');
+    if (y === null || !parcareBuna({ x: 0, y })) rez.push('parcare-y');
+  }
+  return rez;
+}
+
+/**
+ * Ce trimite fereastra exportului (`ParametriExport`) din Z-ul sigur și parcare: Z-ul sigur doar când nu e cel implicit, iar
+ * parcarea doar când e aleasă (la XY0, punctul (0, 0)), ca exportul fără ele să rămână cererea de dinainte. Cu un câmp greșit,
+ * null (Exportă e oprit).
+ */
+export function parametriAer(a: SetariAer): Pick<ParametriExport, 'zSigur' | 'parcare'> | null {
+  if (campuriAerGresite(a).length > 0) return null;
+  const z = citesteNumar(a.zSigur) ?? Z_SIGUR_IMPLICIT;
+  const parcare = a.parcare === 'origine' ? { x: 0, y: 0 }
+    : a.parcare === 'punct' ? { x: citesteNumar(a.x, true) ?? 0, y: citesteNumar(a.y, true) ?? 0 } : undefined;
+  return { ...(z !== Z_SIGUR_IMPLICIT ? { zSigur: z } : {}), ...(parcare ? { parcare } : {}) };
 }
 
 export const SENSURI: readonly Sens[] = ['urcare', 'opozitie'];

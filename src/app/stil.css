@@ -2765,6 +2765,43 @@ nav button[aria-pressed='true'] {
   max-width: 3.25rem;
 }
 
+/*
+ * Valorile frezei scrise de mână (28.8↑p): pe rândul lor, strânse sub un rezumat cu valorile folosite; desfăcute, câmpurile.
+ * Rezumatul e o țintă ca oricare (`--tinta`: 48 px la densitatea mare).
+ */
+.dx-rand > .dx-regim {
+  flex-basis: 100%;
+}
+
+.dx-regim > summary {
+  min-height: var(--tinta);
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  font-size: var(--fs-2);
+  cursor: pointer;
+  list-style: none;
+}
+
+.dx-regim > summary::-webkit-details-marker {
+  display: none;
+}
+
+.dx-regim > summary::before {
+  content: '▸';
+  flex: none;
+  width: 1em;
+  color: var(--t-slab);
+}
+
+.dx-regim[open] > summary::before {
+  content: '▾';
+}
+
+.dx-regim > .dx-rand {
+  margin-top: var(--sp-1);
+}
+
 /* Sub pas: câte treceri ies și cât scoate fiecare (egale, ca în lucrare). */
 .nota-camp {
   font-size: var(--fs-1);

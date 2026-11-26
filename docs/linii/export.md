@@ -120,6 +120,13 @@ vreau ca ficare setare sa fie insotita de o ilustratie sugestiva, ca sa ajute us
 - **26.11: 28.8↑q gata** („Toate foile” cu operațiile fiecărei foi, constatarea 18, răspunsul 7a). Lista și fișele au capul
   fiecărei foi, cu operațiile ei; o piesă comună (copia legată, plăcuțele din CSV) stă o dată, la prima ei foaie; numerele și
   „A mea” pe foaie; grosimea pe rând; Exportă scrie toate piesele; Rezultatul pe foi. Programul fiecărei foi, cel exportat singur.
+  Unită în `main` pe 26.11 (`d3da8953`), cu titlurile alese de owner („Tăietura”, „Golirea”, „Coborârea”).
+- **26.11: 28.8↑p gata** (lipsurile 1 și 2, răspunsul 3a; mișcă mașina). În „Mașina și fișierul”, grupul „Z-ul sigur și
+  parcarea”: Z-ul sigur (1–100 mm, implicit 5) și locul de la final (rămâne sus, la XY0, într-un punct), setări ale aplicației,
+  ca supracursa; postul scrie parcarea ca `G0 X Y` după `M5`, în coordonatele programului, în fiecare fișier. Pe „Scrisă de
+  mână”, turația, avansul și plonjarea, în `scula.regim` (v27, fără schemă nouă); goale, programul de azi. Probate pe hârtie,
+  pe poartă, pe oracolul simulării, pe sender și pe emulatorul GRBL; fără valori, octet cu octet. Proba pe mașină, întâi în
+  aer, rămâne a owner-ului.
 
 ## Ce s-a găsit (23.11)
 
@@ -283,19 +290,26 @@ vreau ca ficare setare sa fie insotita de o ilustratie sugestiva, ca sa ajute us
 - **Un refuz al calculului trece prin `motivPeInteles`** (`src/ui/motivCalcul.ts`) înaintea afișării: id-urile din lume devin
   nume, iar în română numerele lucrării primesc virgula. O probă care citește un refuz caută numele elementului, nu „e1/e1”, și
   „5,5 mm”, nu „5.5 mm”.
+- **Parcarea e deja în coordonatele programului** (28.8↑p): postul n-o trece prin montaj, doar prin unitate și zecimale, și o
+  scrie după ultimul `M5`. O probă care o caută în text o scrie cu zecimalele contractului (`G0 X-10.000 Y250.500`), iar una
+  care schimbă Z-ul sigur compară cuvânt cu cuvânt (`Z5.000` → `Z20.000`), cu Z0 jos peste grosimea foii.
+- **Un câmp nou al rândului (`Rand`) intră și în bazele probelor care fac rânduri de mână** (`exportFreze.nota`, `.inapoi`,
+  `.rest`): compilatorul le cere; valoarea lui o pune inițializarea rândului din `DialogExport.tsx`.
 
 ## Ce rămâne
 
 Din ADR 0290, nimic: toate feliile (a–f) și 28.8↑g sunt gata. Din ADR 0291 (după audit): 28.8↑n, 28.8↑o și 28.8↑h–28.8↑l sunt
-în `main`, iar 28.8↑q („Toate foile” cu operațiile fiecărei foi) e gata pe ramură; rămâne p (avansul, turația și plonjarea pe
-„Scrisă de mână”, Z-ul sigur și parcarea), pe care o deschide sesiunea principală, cu linia frezelor anunțată. Titlurile în
+în `main`, cu 28.8↑q („Toate foile” cu operațiile fiecărei foi); 28.8↑p (avansul, turația și plonjarea pe „Scrisă de mână”,
+Z-ul sigur și parcarea) e gata pe ramură. Din ADR 0291 nu mai rămâne nicio felie a liniei: 28.8↑m (starea ca hook) vine la
+pornirea Clasicului, a lui Pas cu pas sau a pasului scurt din Atelier, iar adaosul și trecerea de finisare (9a), după placa 2,
+pe linia aleasă de sesiunea principală. Titlurile în
 română sunt, din 26.11, cele alese de owner: „Tăietura”, „Golirea”, „Coborârea”. Telefonul culcat (640 × 360) e rezolvat în 28.8↑l. Pentru alte linii, mai târziu:
 
 - **Clasicul (28.2↑) și Pas cu pas (28.4↑)** iau fișa operației (`FisaOperatie`, cu `ContextFisa`) în panoul lor, cu starea
   lor, fără s-o copieze (ADR 0290, „Cu canvas-ul aranjamentelor”): la Clasic, în locul panoului din dreapta, cu Simularea filă;
   la Pas cu pas, ca panou al pasului 2, iar pasul 5 ia „Foaia și originea” și „Mașina și fișierul”.
-- **Ce desenează canvas-ul și nu există azi** (Z sigur editabil, începutul G-code-ului la vedere): felii ale lor, la cuvântul
-  owner-ului; linia nu le-a adus.
+- **Ce desenează canvas-ul și nu există azi** (începutul G-code-ului la vedere): o felie a lui, la cuvântul owner-ului; Z-ul
+  sigur editabil a venit cu 28.8↑p.
 - **Frezele din bibliotecă pe rândurile exportului (16.A↑b-3, linia frezelor)** vin peste fereastra nouă: câmpul nou stă în
   fișă, cu grupul lui în `GRUP_CAMP`, explicația (`….titlu`, ambele limbi) și locul în proba privirii; ce îi trebuie fișei
   intră în `ContextFisa`; catalogul controalelor se scrie din nou. Capcanele de mai sus sunt și ale ei.

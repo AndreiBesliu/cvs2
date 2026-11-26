@@ -61,6 +61,10 @@ export const POZE: Readonly<Record<string, ReactNode>> = {
   'sprijin.fata': <><path className="l" d="M3 14H20V40H44V14H61V43H3Z" /><path className="l2" d="M12 3H52V14H44V34H20V14H12Z" /><path className="ua" d="M12 14H20M44 14H52" /></>,
   'foi.activa': <><rect className="g contur slab" x={6} y={10} width={26} height={20} /><rect className="l" x={30} y={6} width={28} height={22} /><path className="ua" d="M30 34H58" /></>,
   'foi.toate': <><rect className="l" x={6} y={12} width={26} height={20} /><rect className="l" x={30} y={6} width={28} height={22} /><path className="ua" d="M6 38H32M30 34H58" /></>,
+  // Parcarea de la final (ADR 0291 §3, felia 28.8↑p): freza rămâne deasupra ultimei tăieturi, merge la XY0 sau într-un punct ales.
+  'parcare.nu': <>{LEMN}<rect className="d" x={14} y={11} width={26} height={22} rx={3} /><circle className="f" cx={40} cy={22} r={4} /></>,
+  'parcare.origine': <>{LEMN}<rect className="d" x={22} y={9} width={30} height={20} rx={3} /><path className="cs" d="M52 19L10 35" /><path className="ua" d="M4 40H14M4 40V30" /><circle className="f" cx={8} cy={36} r={4} /></>,
+  'parcare.punct': <><rect className="l" x={3} y={12} width={42} height={29} rx={2} /><rect className="d" x={10} y={18} width={24} height={16} rx={3} /><path className="cs" d="M34 26L55 9" /><circle className="f" cx={56} cy={8} r={4} /></>,
 };
 
 /** Poza unei alegeri, ca SVG decorativ (numele alegerii e textul cartonașului). */

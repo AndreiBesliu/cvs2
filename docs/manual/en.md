@@ -1976,7 +1976,16 @@ On the sheet and machine cards you choose:
 - the **Tool change**, only when the operations have different bits: **stop in this app's sender** (the default for the GRBL family:
   the job stops at `T… M6`, you take the bit out, put in the next one, probe Z and **Continue**), **M6 at the controller**
   (grblHAL, FluidNC, with the change set up there; the default for Syntec, Mach3 and Mach4), **M0, with the bit in a comment**
-  or **one file per bit** (all of them are downloaded; the default for NcStudio and RichAuto, which have no M06).
+  or **one file per bit** (all of them are downloaded; the default for NcStudio and RichAuto, which have no M06);
+- **Safe Z and parking**: **Safe Z** (mm, from 1 to 100, default 5) is the height at which the bit travels above the sheet
+  between cuts, measured from its top. The bit goes down from it into every cut, at the plunge rate: a higher safe Z clears the
+  clamps, but every descent takes longer. With Z0 at the bottom, the program writes it above the sheet thickness. **At the end**
+  you choose where the machine goes after the last cut: **Stays up** (the default: above the last cut, as before), **At XY0** or
+  **At a point**, with X and Y from XY0, as the machine shows them (they can be outside the sheet, negative to the left or down;
+  at most 10,000 mm on each axis). The bit first rises to the safe Z, the spindle stops (`M5`), then the machine moves, still at
+  the safe Z, to the chosen point; in every file (per bit, for the plugs, for the sheets). Like overtravel, they stay while the
+  app is open and are not saved in the project. With the defaults, the program is the same as before. Try a new safe Z or a new
+  parking point in the air first.
 
 The workshop posts write what the controller's documentation asks for. The settings the file depends on appear in the window
 and in the program's header: check them on the controller before you start.
@@ -2009,6 +2018,15 @@ cut: flat ones on a profile, a pocket or drilling, V bits on a V-carve. Once pic
 the diameter, the shape, the step-down and, for a pocket, the stepover; **Export** writes it to the project with its working
 values (spindle speed, feed, plunge) and its cutting length. A diameter or shape changed by hand makes it **Entered by hand**:
 the project no longer records that it came from the library. You can change the T number without losing it.
+
+A bit **Entered by hand** has, in the Bit group, right under the **From my bits** list, a collapsed row that says the spindle
+speed, feed and plunge it cuts with (for example “Spindle speed, feed and plunge: the defaults (18,000 rpm, 1,000 and 300
+mm/min)”). Expanded with a click, it has the **Spindle speed** (rpm, a whole number), **Feed** and **Plunge** (mm/min) fields. An
+empty field takes the value used by any bit without its own values (18,000 rpm, 1,000 and 300 mm/min), shown in it; with all
+three empty, the program is the same as before. With one filled in, **Export** writes all three into the project, on the
+operation's bit, and the program cuts with them: the spindle starts at its speed, and the cuts and descents run at its feed and
+plunge. A mounted bit (one T) has a single spindle speed: two operations with the same T and different speeds are refused. A
+library bit has its own values, so the fields appear only after **Entered by hand**.
 
 An operation's extra bits have their own **From my bits** list too, with flat bits only: the flat-bottom bit (on a V-carve and
 a V inlay), each clean-up bit (only the ones smaller than the bit before), the first bit of a straight-walled plug and the bit

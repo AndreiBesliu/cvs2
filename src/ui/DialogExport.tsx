@@ -7,7 +7,7 @@ import { t, type CheieSimpla } from '../i18n/t.ts';
 import type { Limba } from '../i18n/tipuri.ts';
 import {
   bazaFisier, INCRUSTATIE_DREAPTA_IMPLICITA, INCRUSTATIE_IMPLICITA, LATIME_UMAR_IMPLICITA, LUNGIME_NUME, MARGINI_OPERATIE, motivNume,
-  pasLateralImplicit, POSTURI_EXPORT, propunereNume,
+  PARCARE_MAXIMA, pasLateralImplicit, POSTURI_EXPORT, propunereNume, Z_SIGUR_MAXIM, Z_SIGUR_MINIM,
   PUNTI_DOP_DREPT, SUPRACURSA_MAXIMA, UNGHI_V_IMPLICIT, type Coborare, type IdContract, type IesireFoaie, type ParametriExport,
   type RezumatFoi, type RezumatJob, type StrategieScula, type TimpPortiune, type Unitati,
 } from './actiuniExportTipuri.ts';
@@ -31,7 +31,8 @@ import {
   RAMPA_IMPLICITA, razaEliceImplicita, restBun, rezervaExplicatii, legaDescrierile, idDescriere, spatiuFolosit, textStrans, UNGHI_COBORARE_IMPLICIT, URECHI_IMPLICITE, type BunRand,
   type CerereExport, type FrezaRestOperatie, type IncrustatieDreaptaOperatie, type Latura, type OperatieExport, type Rand, type RandRest,
   copieDeReadus, cuFrezaAleasa, cuFrezaPusaInapoi, cuValorileNoi, frezeRanduri, locuriFreze, numarPentruRand, oferitePentruRest, stareOrigine, type FrezaOferita, type OrigineFreza, type SculaOperatie, type StareExport,
-  type CopieRand, type RezultatInapoi, type UndeFreza, campuriSculaGresite, cheieFreza, cuNumarT, numarDupaConflict, type FrezaT, type LocFreza,
+  AER_IMPLICIT, campuriAerGresite, parametriAer, type SetariAer,
+  type CopieRand, type RezultatInapoi, type UndeFreza, campuriRegimGresite, campuriSculaGresite, cheieFreza, regimDinRand, REGIM_GOL, cuNumarT, numarDupaConflict, type FrezaT, type LocFreza,
   type ValoriOperatie, type HartieRand, type IntrareHartie,
 } from './exportRand.ts';
 
@@ -70,6 +71,12 @@ type Props = {
    */
   readonly supracursa: string;
   readonly onSupracursa: (text: string) => void;
+  /**
+   * Z-ul sigur și parcarea de la final (ADR 0291 §3, felia 28.8↑p): setările aplicației, ca supracursa. Fără ele, cele implicite
+   * (Z sigur 5 mm, freza rămâne sus), fără să poată fi schimbate.
+   */
+  readonly aer?: SetariAer;
+  readonly onAer?: (a: SetariAer) => void;
   /**
    * Bifa de lângă supracursă (ADR 0177): și tăieturile scrise cât grosimea foii trec cu ea. O ține aplicația, ca supracursa;
    * fără supracursă, e oprită.
@@ -350,7 +357,8 @@ function ListaFoi({ foi: r, sha256, limba }: { readonly foi: RezumatFoi; readonl
 export function DialogExport(
   {
     operatii: operatiiFoaie, ordineAutomata: automataFoaie, baza, descrieri: descrieriFoaie, operatiiLume: operatiiLumeFoaie, doarCitire, onExporta,
-    onInchide, onReseteaza, stare, setariMasina, onSetariMasina, supracursa, onSupracursa, prinFoaie, onPrinFoaie, onDeschideInMasina, trimite = false,
+    onInchide, onReseteaza, stare, setariMasina, onSetariMasina, supracursa, onSupracursa, aer = AER_IMPLICIT, onAer, prinFoaie, onPrinFoaie,
+    onDeschideInMasina, trimite = false,
     foaie, numeFoaie, placute, foi, placuteToate, onRaport, grosimeFoaie, onAlegeUrechi, frezeOferite, bibliotecaToata = null,
     finisari: finisariFoaie = NICIO_FINISARE, onPuneInapoi, hartie, toateFoile,
   }: Props,
@@ -414,6 +422,8 @@ export function DialogExport(
     const diametruDop = dop0?.diametru ?? Math.round((o.valori.scula?.diametru ?? 6) * 500) / 1000;
     return [o.cheie, {
       numarScula: text(o.valori.scula?.numar ?? 1), diametruScula: text(o.valori.scula?.diametru ?? 6), origineScula: o.valori.scula?.origine ?? null,
+      // Valorile scrise de mână (felia 28.8↑p): doar pe o freză fără origine; pe una din bibliotecă, câmpurile pornesc goale.
+      regimMana: ((r) => (r && !o.valori.scula?.origine ? { turatie: text(r.turatie), avans: text(r.avans), plonjare: text(r.plonjare) } : REGIM_GOL))(o.valori.scula?.regim),
       formaScula: o.valori.scula?.forma ? 'v' : 'plata', unghiV: text(o.valori.scula?.forma?.unghi ?? UNGHI_V_IMPLICIT),
       varfV: text(o.valori.scula?.forma?.varf ?? 0), directie: o.valori.directie ?? '',
       latura: o.valori.latura, sens: o.valori.sens, adancime: text(o.valori.adancime), pas: text(o.valori.pas),
@@ -621,7 +631,9 @@ export function DialogExport(
     rest: p !== undefined && (p.tip !== 'buzunar' || restBun(p.rest, p.diametruScula).every(Boolean))
       && (p.tip !== 'vcarve' || !p.fundPlat || restBun(p.restFund, p.diametruSculaFund).every(Boolean)),
     scula: p !== undefined && intregInMargini(p.numarScula, MARGINI_OPERATIE.numarScula) && inMargini(p.diametruScula, MARGINI_OPERATIE.diametru)
-      && (p.formaScula !== 'v' || inMargini(p.unghiV, MARGINI_OPERATIE.unghiV, MARGINI_OPERATIE.unghiVMinim)),
+      && (p.formaScula !== 'v' || inMargini(p.unghiV, MARGINI_OPERATIE.unghiV, MARGINI_OPERATIE.unghiVMinim))
+      // Turația, avansul și plonjarea scrise de mână (felia 28.8↑p): doar fără origine din bibliotecă.
+      && (p.origineScula !== null || campuriRegimGresite(p.regimMana).length === 0),
     // V-carve-ul (ADR 0090) cere freza în V.
     vcarve: p !== undefined && (p.tip !== 'vcarve' || p.formaScula === 'v'),
     // Vârful plat (ADR 0092): de la 0 (ascuțit) până sub diametru.
@@ -791,9 +803,15 @@ export function DialogExport(
   const numeFisier = numeAles ?? propunereNume(numeFoaie, origine);
   const motivNumeFisier = numeScurt ? null : motivNume(numeFisier);
   const numeBun = motivNumeFisier === null;
+  // Z-ul sigur și parcarea (felia 28.8↑p): fiecare câmp greșit oprește Exportă, cu motivul în grupul lor.
+  const aerRau = campuriAerGresite(aer), aerBun = aerRau.length === 0;
+  const motiveAer = [
+    ...(aerRau.includes('z-sigur') ? [t('motiv.z-sigur-invalid', { min: fmtMargine.format(Z_SIGUR_MINIM), max: fmtMargine.format(Z_SIGUR_MAXIM) })] : []),
+    ...(aerRau.some((c) => c !== 'z-sigur') ? [t('motiv.parcare-invalida', { max: fmtMargine.format(PARCARE_MAXIMA) })] : []),
+  ];
   const valid = operatiiBune && urechiBune && rampeBune && intrariBune && pasiBuni && coborariBune && retrageriBune && vcarveBune && funduriBune
     && varfuriBune && vPeLinie && resturiBune && strategiiBune && incrustatiiBune && drepteBune && frezeDopBune && benziBune && puntiDopBune
-    && supracursaBuna && numeBun && gauriBune;
+    && supracursaBuna && numeBun && aerBun && gauriBune;
   /**
    * Orice parametru schimbat face vechi rezultatul. Bifa nu mai trebuie ștearsă aici: cererea următoare e alt obiect, deci
    * vine oricum nebifată.
@@ -1070,6 +1088,8 @@ export function DialogExport(
       ...(unghiV !== null ? { forma: { tip: 'v' as const, unghi: unghiV, ...(varfV !== null && varfV > 0 ? { varf: varfV } : {}) } } : {}),
       // Freza din „Frezele mele” (ADR 0300 §4): originea ei, sau `null` (scrisă de mână: originea pleacă din document).
       origine: p.origineScula,
+      // Scrisă de mână, cu valorile ei de lucru (felia 28.8↑p): în `scula.regim`, sau `null` fără ele.
+      ...(p.origineScula === null ? { regim: regimDinRand(p.regimMana) ?? null } : {}),
     };
     // V-carve-ul (ADR 0090): latura interior, nimic din profil; adâncimea e cea maximă. Fundul plat (ADR 0091): cu bifa pusă.
     if (p.tip === 'vcarve') {
@@ -1211,6 +1231,7 @@ export function DialogExport(
     ...(puntiDopBune ? [] : [t('motiv.punti-dop-invalide', { n: MARGINI_OPERATIE.urechi })]),
     ...(supracursaBuna ? [] : [t('motiv.supracursa-invalida', { max: fmtFreza.format(SUPRACURSA_MAXIMA) })]),
     ...(motivNumeFisier === null ? [] : [t(`export.nume-fisier.${motivNumeFisier}`, { max: LUNGIME_NUME })]),
+    ...motiveAer,
     ...(intrariBune ? [] : [operatii.some((o, i) => !randuri[i]?.intrari && param[o.cheie]?.rampa)
       ? t('motiv.intrari-invalide-rampa', {
         minim: fmtFreza.format(MARGINI_OPERATIE.razaIntrareMinimaRampa), raza: fmtFreza.format(MARGINI_OPERATIE.razaIntrare),
@@ -1227,9 +1248,13 @@ export function DialogExport(
   const motivVerdict = (k: keyof VerdictRand, p: Rand): string | readonly string[] => {
     switch (k) {
       // Pe câmp (constatarea 15 a auditului, felia 28.8↑j): fiecare câmp greșit își spune marginile lui.
-      case 'scula': return campuriSculaGresite(p).map((c) => (c === 'numar' ? t('motiv.camp.scula-numar', { n: fmtMargine.format(MARGINI_OPERATIE.numarScula) })
-        : c === 'diametru' ? t('motiv.camp.scula-diametru', { max: fmtMargine.format(MARGINI_OPERATIE.diametru) })
-          : t('motiv.camp.unghi-v', { min: fmtMargine.format(MARGINI_OPERATIE.unghiVMinim), max: fmtMargine.format(MARGINI_OPERATIE.unghiV) })));
+      case 'scula': return [
+        ...campuriSculaGresite(p).map((c) => (c === 'numar' ? t('motiv.camp.scula-numar', { n: fmtMargine.format(MARGINI_OPERATIE.numarScula) })
+          : c === 'diametru' ? t('motiv.camp.scula-diametru', { max: fmtMargine.format(MARGINI_OPERATIE.diametru) })
+            : t('motiv.camp.unghi-v', { min: fmtMargine.format(MARGINI_OPERATIE.unghiVMinim), max: fmtMargine.format(MARGINI_OPERATIE.unghiV) }))),
+        // Turația, avansul și plonjarea scrise de mână (felia 28.8↑p): fiecare câmp greșit, cu marginile lui.
+        ...(p.origineScula === null ? campuriRegimGresite(p.regimMana) : []).map((c) => t(`motiv.camp.${c}`, { max: fmtMargine.format(MARGINI_OPERATIE.regimFreza) })),
+      ];
       case 'adancime': return t('motiv.camp.adancime', { max: fmtMargine.format(MARGINI_OPERATIE.adancime) });
       case 'pas': return t('motiv.camp.pas', { max: fmtMargine.format(MARGINI_OPERATIE.adancime) });
       case 'numar': case 'latime': case 'grosime': return t('motiv.urechi-invalide', {
@@ -1298,7 +1323,7 @@ export function DialogExport(
     return out;
   };
   // Prima fișă cu o greșeală, în ordinea listei: „du-mă acolo” de lângă Exportă.
-  const primaGresita: string | null = !supracursaBuna ? 'foaia' : !numeBun ? 'masina' : ordine.find((k) => greseliRand(k).length > 0) ?? null;
+  const primaGresita: string | null = !supracursaBuna ? 'foaia' : !numeBun || !aerBun ? 'masina' : ordine.find((k) => greseliRand(k).length > 0) ?? null;
   /** Tăietura unui rând, ca valoare a cartonașului ei (și poza ei, în listă). */
   const taieturaRand = (p: Rand): Latura | 'buzunar' | 'gaurire' | 'vcarve' | 'incrustatie' | 'incrustatie-drept' =>
     p.tip === 'vcarve' ? (p.incrustatie ? 'incrustatie' : 'vcarve') : p.tip === 'buzunar' ? (p.incrustatieDreapta ? 'incrustatie-drept' : 'buzunar')
@@ -1329,6 +1354,9 @@ export function DialogExport(
     const RAU = '[aria-invalid="true"]:not(:disabled)';
     const g = [...f.querySelectorAll<HTMLElement>('[data-grup]')].find((x) => x.querySelector(`[data-greseala], ${RAU}`) !== null);
     const camp = (g ?? f).querySelector<HTMLElement>(RAU), text = (g ?? f).querySelector<HTMLElement>('[data-greseala]');
+    // Un câmp greșit într-un rând strâns (valorile frezei scrise de mână, 28.8↑p): rândul se desface întâi, ca să se poată măsura.
+    const strans = camp?.closest('details');
+    if (strans && !strans.open) strans.open = true;
     const v = p.getBoundingClientRect(), m = 8, loc = v.height - 2 * m;
     const sus = (e: Element | null | undefined): number => e ? e.getBoundingClientRect().top : Infinity;
     const jos = (e: Element | null | undefined): number => e ? e.getBoundingClientRect().bottom : -Infinity;
@@ -1534,7 +1562,7 @@ export function DialogExport(
               <span className="dx-nume">{t('export.fisa.foaia')}</span>
               <span className="dx-meta">{t(CHEI_COLT[origine])} · {t(z0 === 'sus' ? 'export.lista.z0.sus' : 'export.lista.z0.jos')}</span>
             </button>
-            <button type="button" className="dx-nav" data-nav="masina" aria-current={curent === 'masina'} data-gresit={numeBun ? undefined : ''} onClick={() => { du('masina', 'titlu'); }}>
+            <button type="button" className="dx-nav" data-nav="masina" aria-current={curent === 'masina'} data-gresit={numeBun && aerBun ? undefined : ''} onClick={() => { du('masina', 'titlu'); }}>
               <span className="dx-nume">{t('export.fisa.masina')}</span>
               <span className="dx-meta">{postAles?.nume ?? ''} · {unitati === 'inch' ? 'inch' : 'mm'}</span>
             </button>
@@ -1681,6 +1709,40 @@ export function DialogExport(
               onAlege={(v) => { schimbat(); setStrategie(v); }} />
           )}
               </div>)}
+              {/*
+                Z-ul sigur și parcarea (ADR 0291 §3, felia 28.8↑p): setări ale aplicației, ca supracursa; nu scriu în document, deci rămân
+                deschise și când fila doar citește.
+              */}
+              {grup('aer', 'masina', <div className="dx-coloana">
+          <div className="dx-rand">
+          <label title={t('export.z-sigur.titlu', { min: fmtMargine.format(Z_SIGUR_MINIM), max: fmtMargine.format(Z_SIGUR_MAXIM) })}>
+            {t('export.z-sigur')}
+            <input type="text" inputMode="decimal" value={aer.zSigur} data-camp="z-sigur" aria-invalid={aerRau.includes('z-sigur')} disabled={!onAer}
+              onChange={(e) => { schimbat(); onAer?.({ ...aer, zSigur: e.target.value }); }} />
+          </label>
+          </div>
+          <Cartonase<SetariAer['parcare']> data-camp="parcare" poze="parcare" eticheta={t('export.parcare')} nume="parcare" valoare={aer.parcare}
+            oprit={!onAer} titlu={t('export.parcare.titlu')} onAlege={(v) => { schimbat(); onAer?.({ ...aer, parcare: v }); }}
+            variante={[
+              { v: 'nu', text: t('export.parcare.nu'), nota: t('export.parcare.nu.nota') },
+              { v: 'origine', text: t('export.parcare.origine'), nota: t('export.parcare.origine.nota') },
+              { v: 'punct', text: t('export.parcare.punct'), nota: t('export.parcare.punct.nota') },
+            ]} />
+          {aer.parcare === 'punct' && (
+          <div className="dx-rand">
+            <label title={t('export.parcare.punct.titlu', { max: fmtMargine.format(PARCARE_MAXIMA) })}>
+              {t('export.parcare.x')}
+              <input type="text" inputMode="decimal" value={aer.x} data-camp="parcare-x" aria-invalid={aerRau.includes('parcare-x')} disabled={!onAer}
+                onChange={(e) => { schimbat(); onAer?.({ ...aer, x: e.target.value }); }} />
+            </label>
+            <label title={t('export.parcare.punct.titlu', { max: fmtMargine.format(PARCARE_MAXIMA) })}>
+              {t('export.parcare.y')}
+              <input type="text" inputMode="decimal" value={aer.y} data-camp="parcare-y" aria-invalid={aerRau.includes('parcare-y')} disabled={!onAer}
+                onChange={(e) => { schimbat(); onAer?.({ ...aer, y: e.target.value }); }} />
+            </label>
+          </div>
+          )}
+              </div>, motiveAer)}
               {grup('setari', 'masina', <div className="dx-coloana">
         <p className="nota">{t('export.regim')}</p>
         <details className="setari-masina">
@@ -1842,6 +1904,8 @@ export function DialogExport(
                 ...(cuSupracursa && supracursaCitita !== null ? { supracursa: supracursaCitita, ...(prinFoaie ? { prinFoaie: true } : {}) } : {}),
                 // Numele ales (ADR 0291 §5) pleacă doar când nu e chiar baza de azi: altfel, cererea de dinainte.
                 ...(!numeScurt && numeFisier !== bazaFisier(origine) ? { numeFisier } : {}),
+                // Z-ul sigur și parcarea (felia 28.8↑p): doar cele schimbate; cele implicite, cererea de dinainte.
+                ...(parametriAer(aer) ?? {}),
               });
             }}>
             {t(trimiteAcum ? 'export.trimite' : 'export.exporta')}

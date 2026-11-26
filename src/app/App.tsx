@@ -32,7 +32,7 @@ import { ACTIUNI_EXPORT, type ContextExport, type ParametriExport, type Rezultat
 import {
   ACTIUNI_IMPORT, preincarcaImport, type ContextImport, type FisierImport, type ImportPregatit, type PrevizualizareImport, type AlegeriImport,
 } from '../ui/actiuniImport.ts';
-import type { CerereExport, StareExport } from '../ui/exportRand.ts';
+import type { CerereExport, SetariAer, StareExport } from '../ui/exportRand.ts';
 import type { RezumatJob } from '../ui/actiuniExportTipuri.ts';
 import { incarcaMeniuFoaie, incarcaNivelPiesa, ListaVectori, type ActiuniFoi, type FoaieLista, type RandLista } from '../ui/ListaVectori.tsx';
 import { useLimba } from '../ui/useLimba.ts';
@@ -431,6 +431,8 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
   const [supracursa, setSupracursa] = useState('0');
   // Bifa de lângă ea (ADR 0177): și tăieturile cât foaia trec cu supracursa; implicit pusă, ținută la fel.
   const [prinFoaie, setPrinFoaie] = useState(true);
+  // Z-ul sigur și parcarea de la final (ADR 0291 §3, felia 28.8↑p), ca supracursa: implicit 5 mm și freza rămâne sus.
+  const [aer, setAer] = useState<SetariAer>({ zSigur: '5', parcare: 'nu', x: '0', y: '0' });
   const [timpTraseu, setTimpTraseu] = useState<{ readonly program: Program; readonly setari: string; readonly r: RezumatJob } | null>(null);
   const [bugetTraseu, setBugetTraseu] = useState(BUGET_TRASEU);
   const [stareStrat, setStareStrat] = useState<StareStrat>('ok');
@@ -1744,6 +1746,8 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
           onSetariMasina={setSetariMasina}
           supracursa={supracursa}
           onSupracursa={setSupracursa}
+          aer={aer}
+          onAer={setAer}
           prinFoaie={prinFoaie}
           onPrinFoaie={setPrinFoaie}
           onRaport={(p) => { cerereExport.current++; exportInCurs.current = false; opresteSimularea(); opresteExportul(); setDialogExport(false); setRaport(p); }}

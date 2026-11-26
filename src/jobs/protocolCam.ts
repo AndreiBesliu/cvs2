@@ -50,6 +50,16 @@ export type ParametriExport = {
    */
   readonly supracursa?: number;
   /**
+   * Z-ul sigur, mm deasupra feței de sus a foii (ADR 0291 §3, felia 28.8↑p): înălțimea rapidelor, în foaie și în dopuri.
+   * Lipsă: 5 mm, programul de dinainte, octet cu octet. Marginile: `src/cam/regimExport.ts`.
+   */
+  readonly zSigur?: number;
+  /**
+   * Parcarea de la final (ADR 0291 §3, felia 28.8↑p): un punct în coordonatele programului (față de XY0), mm. Postul îl scrie
+   * ca `G0 X Y` după `M5`, în fiecare fișier. Lipsă: freza rămâne deasupra ultimei tăieturi, ca până acum.
+   */
+  readonly parcare?: { readonly x: number; readonly y: number };
+  /**
    * Baza numelor fișierelor aleasă de om (ADR 0291 §5): pusă în locul lui `cncvs2-<colț>` pe firul principal, după calcul
    * (`cuBaza`, `src/post/numeFisier.ts`); workerul n-o folosește. Lipsă = numele de azi.
    */

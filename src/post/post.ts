@@ -47,6 +47,12 @@ export type OptiuniPost = {
   readonly unitati?: Unitati;
   /** Cum se schimbă scula; implicit, cea a contractului. `fisiere-separate` se scrie cu `posteazaPeScule`. */
   readonly strategieScula?: StrategieScula;
+  /**
+   * Parcarea de la final (ADR 0291 §3, felia 28.8↑p): un punct în coordonatele PROGRAMULUI (față de XY0, după montaj), mm.
+   * Se scrie ca `G0 X Y` după `M5` (freza e sus, la Z-ul sigur, cu axul oprit), înaintea liniilor de final ale contractului;
+   * fără ea, finalul de dinainte, octet cu octet. Marginile le judecă exportul (`src/cam/regimExport.ts`).
+   */
+  readonly parcare?: { readonly x: number; readonly y: number };
 };
 
 /** Plafonul programului pe artefact (T23). Se reglează cu capacitatea senderului, în etapa 3. */
@@ -405,6 +411,8 @@ function scrie(
   liniiMiscari.push(linii.length);
   if (!pePozitie({ Z: zSigur })) adauga(`G0${cuvinte({ Z: zSigur })}`);
   adauga('M5');
+  // Parcarea: deja în coordonatele programului, deci fără montaj, doar unitatea și zecimalele lui.
+  if (optiuni.parcare) adauga(`G0 X${n(u(optiuni.parcare.x))} Y${n(u(optiuni.parcare.y))}`);
   for (const l of k.final) adauga(l);
   return { text: `${linii.join('\n')}\n`, linii: linii.length, aproximari, sectiuni, liniiMiscari };
 }
