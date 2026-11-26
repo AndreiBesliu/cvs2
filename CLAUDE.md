@@ -1240,14 +1240,16 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   filamentul), sau din două discuri îmbinate în cruce; Easy 3Draw 18.36.0 (următoarea, 18.37.0). **Arcele mari ale
   unei decorațiuni se fac din laturi fine (`aplatizeaza(…, laturiFine)`): cu cele 48 de laturi obișnuite, un disc
   mare iese colțuros. Uneltele „de pe hârtie” ale probelor decorațiunilor stau în `test/unit/ajutor-craciun.ts`.**
-  **3.Cl-3 (ornamentul cu nume; ADR 0285)** gata pe 26.11, pe ramură: a cincea piesă a filei „Crăciun”, o etichetă,
+  **3.Cl-3 (ornamentul cu nume; ADR 0285)** gata pe 26.11, unită în `main` pe 26.11 (`474b76fc`): a cincea piesă a
+  filei „Crăciun”, o etichetă,
   un glob, o inimă sau o stea cu un nume scris cu majuscule, cât încape de mare: în relief (pentru două culori),
   adâncit sau decupat, cu punți la semnele cu ochi; Easy 3Draw 18.37.0 (următoarea, 18.38.0). **Fontul e al motorului,
   dintr-o singură linie (`SCRIS`, cu punțile în `PUNTI`): un semn nou își scrie trăsăturile fără ca una să se atingă
   pe ea însăși, iar o schimbare a desenului schimbă amprenta din `test/unit/trenulet.ornament.test.ts`, după ce a fost
   privită pe randare. Un arc de peste o jumătate de cerc dat lui Cavalier se împarte întâi în sferturi (`sferturi`):
   altfel decalarea și unirea lui pot ieși greșit, fără nicio eroare.**
-  **3.Cl-4 (brăduțul LEGO; ADR 0285)** gata pe 26.11, pe ramură: a șasea piesă a filei „Crăciun”: etajele (trunchiuri
+  **3.Cl-4 (brăduțul LEGO; ADR 0285)** gata pe 26.11, unită în `main` odată cu ea: a șasea piesă a filei „Crăciun”:
+  etajele (trunchiuri
   de con cu marginea zimțată, de 4, 6, 8 sau 10 știfturi, cu patru știfturi sus și locașul lor dedesubt) și steaua de
   vârf (plată, cu un cui care e o bară de 3,2 mm); „Fă brăduțul” pune în listă trunchiul, etajele, vârful și steaua;
   Easy 3Draw 18.38.0 (următoarea, 18.39.0). Cu ea, ADR 0285 are toate cele patru felii făcute. **Un locaș nou ține
@@ -1899,6 +1901,42 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 26.11.2026, dimineața (a patruzeci și opta unire din cloud): **ornamentul cu nume (3.Cl-3) și brăduțul LEGO
+  (3.Cl-4) din atelierul Easy 3Draw, unite în `main`** (sesiunea principală, ramura `unire-2611g`, din `9edf9ae0`).
+  Linia atelierului, ramura `wip/3.Xh-biblioteca-ui`, `b71c3c98`, PR-ul `AndreiBesliu/cvs2#55` (ADR 0285), unite
+  în `474b76fc`. **3.Cl-3**, a cincea piesă a filei „Crăciun”: o etichetă, un glob, o inimă sau o stea cu un nume
+  scris cu majuscule, pe un rând, cât încape de mare (cel mult 16 semne), în relief (pentru două culori), adâncit
+  sau decupat, cu punți la semnele cu ochi; fontul e al motorului, dintr-o singură linie, fără niciun fișier de font
+  în pachet (Easy 3Draw 18.37.0; otrăvurile 116 / 116 și 8 / 8). **3.Cl-4**, a șasea piesă: brăduțul LEGO, din
+  etaje (trunchiuri de con cu marginea zimțată sau netedă, de 4, 6, 8 sau 10 știfturi, cu patru știfturi sus și
+  locașul lor dedesubt) și steaua de vârf, cu „Fă brăduțul”, care pune în listă trunchiul, etajele, vârful și
+  steaua (**Easy 3Draw 18.38.0**, 553,0 kB; otrăvurile 75 / 75 și 8 / 8). **Cu ele, ADR 0285 (decorațiunile de
+  Crăciun) are toate cele patru felii făcute.** Abaterile de la ADR, scrise în el: doar majuscule, pe un singur
+  rând; brăduțul plat cu nume nu e în felie; brăduțul asamblat se vede piesă cu piesă (ca asamblare întreagă în
+  „Modelul”, după 3.Cg). Găsite de probe și reparate în felii: Cavalier dă rezultate greșite, fără nicio eroare,
+  pe arce de peste o jumătate de cerc (decalarea cifrei 2 ieșea goală, unirea inimii cu tija ei ieșea greșit, un
+  „S” ieșea din etichetă), deci arcele se împart acum în sferturi; locașul etajului ținea știftul dintr-o singură
+  parte, iar cuiul stelei era pătrat, deși era declarat „bară”. Doar pachetul extensiei se schimbă; nimic pe
+  server; documentul rămâne v30. Ramura avea `main` `9c728412`; de atunci `main` primise relieful, cotele și
+  exportul (cod al aplicației), deci unirea și-a făcut completul ei. Ciocnirile: DEVLOG și dicționarul
+  traducerilor roadmap-ului (ambele rânduri, în ordinea cheilor). Porțile unirii, în CI, pe `474b76fc` (completul
+  45750142136, verde la prima trecere, 58 min): unit 10 714 / 0 (12 sărite, pe Linux), e2e 937 / 937, funcțiile pe emulatoare 136 / 136, paginile 60 / 60; rapidul,
+  verde pe `474b76fc`; completul liniei, verde pe `b71c3c98` (45742415047); aplicația, neschimbată de felii:
+  pornirea 111,6 kB (plafonul 125; cu ușa 116,8, cu Atelierul 117,1), totalul 918,7 / 1 000 kB, `/admin`
+  138,3 / 200, contul 30,2 / 32.
+  Pe test e `9c728412` (lotul 41); lotul 42 (`9edf9ae0`: relieful, cotele, exportul) e în drum, cu completul pe
+  `main` în lucru, iar lotul acesta pleacă după el (lotul 43).
+  Completul unirii cotelor singure (45742512400, pe `67dfb777`), care rula la unirea a patruzeci și șasea,
+  a ieșit și el verde, la 05:46, după 79 de minute (unit 10 693 / 0, e2e 923 / 923, funcțiile pe emulatoare 136 / 136, paginile 60 / 60). De urmărit: `extensii.stari.spec.ts:349` a căzut o dată la linie, local, sub încărcare, și a
+  trecut la reluare; în CI a trecut. La linii, în lucru: atelierul (3.Cf-2, orientarea de mână pe trei axe),
+  exportul (28.8↑k, curățenia vizuală). **La owner:** de încercat și de tipărit un ornament cu nume (unul în
+  relief, în două culori, și unul decupat) și brăduțul LEGO, pe lângă celelalte decorațiuni; pachetul Easy 3Draw,
+  acum 553,0 kB (pragul din ADR 0284 era 0,5 MB); constatarea 14 a exportului, întrebarea 10 a cotelor și cele două
+  alegeri din d-1, alegerile reliefului și tăierea plăcii 18, rândul editabil al finisării și al degroșării, Escape
+  în cele șase ferestre, feliile frezelor (16.A↑d–g), cele două alegeri mai vechi cu recomandarea aplicată, de
+  încercat „Modelul” din Easy 3Draw, proba pe mașină a centrului foii, cele patru întrebări din auditul elicelor,
+  arhivarea sesiunii elicelor, verificarea juridică (GDPR) a utilizării aplicației înaintea live-ului, „cine unește
+  în `main`”, meniul de sus la 320 px la atingere.
 - 26.11.2026, dimineața (a patruzeci și șaptea unire din cloud): **greșelile ferestrei „Exportă G-code”, pe înțeles
   (28.8↑j), unite în `main`** (sesiunea principală, ramura `unire-2611f`, peste unirile reliefului și cotelor). Linia
   exportului, ramura `wip/28.8-export`, `c0a59b6c`, PR-ul `AndreiBesliu/cvs2#54` (ADR 0291, răspunsurile 2a și 4a ale
