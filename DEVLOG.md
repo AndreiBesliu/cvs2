@@ -16257,7 +16257,7 @@ commit-ul împins).
 
 **Prompt:** „Zi-le ca pot continua cu ce urmeaza la fiecare” (owner-ul, în sesiunea principală, transmis liniei la 20:16):
 „rândul editabil al finisării și al degroșării în fereastra exportului (azi doar de citit, prin `FisaFinisare`)”. **Started:**
-26.11, 21:00, după 18.1↑d-3, pe aceeași ramură. **Completed:** 26.11, 21:15 (în container; CI-ul, pe commit-ul împins).
+26.11, 21:00, după 18.1↑d-3, pe aceeași ramură. **Completed:** 26.11, 21:25 (în container; CI-ul, pe commit-ul împins).
 
 - **Proba întâi, pe hârtie:** `export.relief.test.ts` (rândul ca text, câmpurile greșite, perechile, scrierea: fără schimbare,
   aceeași operație la octet; fiecare câmp; freza cu alt T, alt diametru, altă formă, doar alt vârf al V-ului).
@@ -16266,7 +16266,10 @@ commit-ul împins).
   `celuleAliniate`, mutată într-un modul al ei, `src/cam/celuleAliniate.ts`) și creasta pe plan; marginea și înălțimea pe
   perechea rândului. Exportă dă valorile în `CerereExport.valoriRelief`; aplicația le scrie cu `operatieReliefDinDialog`.
 - **ADR 0315**, manualul (ro, en), e2e nou (`relief.export.spec.ts`), fișele din `finisare.spec.ts` și `degrosare.spec.ts`,
-  privirea cu V-ul și planul zero; otrăvurile 14 / 14 unitare prinse (cele e2e, în lucru), într-o clonă; patru otrăvuri vechi mutate (11.5 E17, 28.8p P24, 18.1d
+  privirea cu V-ul și planul zero; otrăvurile 23 / 23 prinse (14 unitare, 9 e2e), într-o clonă; patru otrăvuri vechi mutate (11.5 E17, 28.8p P24, 18.1d
   E02, E04, ultima VOID încă de pe `main`).
+- **Rapidul pe `bf77526c` a căzut** la regulile de import: fișa importa `celuleAliniate` direct din `src/cam`; interfața ia
+  din domeniu doar prin `src/ui/actiuni*` (acum prin `actiuniExportTipuri.ts`). Regulile se rulează după orice import nou în
+  `src/ui`, nu doar la începutul feliei.
 - **De ținut minte:** un `npm ci` într-o clonă al cărei `node_modules` e o legătură spre repo golește `node_modules` din repo
   (aici s-a văzut ca `tsc: not found`); clona își face întâi `node_modules` al ei.

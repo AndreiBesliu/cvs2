@@ -9,6 +9,8 @@ export type { Coborare } from '../model/document.ts';
 export { pasLateralImplicit, UNGHI_V_IMPLICIT } from '../model/document.ts';
 // Adaosul implicit al degroșării reliefului (ADR 0313), pentru rândul ei din fereastra exportului (felia 18.1↑d-4).
 export { ADAOS_IMPLICIT } from '../model/document.ts';
+// Câte celule are pasul lateral al liniilor aliniate (ADR 0314): aceeași regulă ca lucrarea, pentru nota pasului folosit.
+export { celuleAliniate } from '../cam/celuleAliniate.ts';
 // Implicitele incrustațiilor (ADR 0170 în V, ADR 0171 cu pereți drepți), pentru rândurile lor din fereastra exportului.
 export { INCRUSTATIE_DREAPTA_IMPLICITA, INCRUSTATIE_IMPLICITA, LATIME_UMAR_IMPLICITA } from '../model/document.ts';
 // Banda dopului în V (ADR 0172): lățimea cea mai mică, rotunjirea ei arătată, punțile implicite și ce rămâne sub fața coborâtă.

@@ -1,7 +1,7 @@
 import { type ReactNode } from 'react';
-import { celuleAliniate } from '../cam/celuleAliniate.ts';
 import '../i18n/export.ts';
 import { t } from '../i18n/t.ts';
+import { celuleAliniate } from './actiuniExportTipuri.ts';
 import { Cartonase } from './exportPoze.tsx';
 import type { GrupExport } from './exportGrupuri.ts';
 import { GRUPURI_RELIEF } from './exportGrupuri.ts';
