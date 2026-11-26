@@ -1046,7 +1046,8 @@ se șterge la o pornire, după cel puțin o zi.
 reliefuri). Freza urmează relieful pe linii paralele, la pasul lateral, coborând în treceri de cel mult **pasul**, ultima pe
 model; nu coboară niciodată sub suprafața reliefului și nici sub **adâncime** (podeaua, implicit cât placa). Câmpurile:
 - **Freza**: bilă (implicit), plată sau în V, și **diametrul ei**; bila merge doar aici;
-- **Pasul lateral** (implicit 10 % din freză): distanța dintre linii; prin centrele celulelor, se rotunjește la celule întregi;
+- **Pasul lateral** (implicit 10 % din freză): distanța dintre linii; prin centrele celulelor, se rotunjește în jos la celule
+  întregi (cel puțin una), deci liniile nu stau mai rar decât ai cerut; o celulă mai lată decât freza se refuză;
 - **Unghiul liniilor** (0° … 180°) și **Liniile**: prin centrele celulelor (la 0° și 90°) sau nealiniate, unde pot apărea riduri
   pe detaliile fine;
 - **Marginea reliefului**: **peretele rămâne** (în afara reliefului e fața plăcii, deci freza nu taie acolo) sau **freza

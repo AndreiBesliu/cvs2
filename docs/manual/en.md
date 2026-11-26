@@ -1078,8 +1078,8 @@ reliefs only). The cutter follows the relief on parallel lines, one stepover apa
 **step**, the last one on the model; it never goes below the relief's surface, nor below the **depth** (the floor, by default
 the sheet's thickness). The fields:
 - **Cutter**: ball nose (the default), flat or V-bit, and its **diameter**; the ball nose is used only here;
-- **Stepover** (by default 10 % of the cutter): the distance between lines; through the cell centres, it is rounded to whole
-  cells;
+- **Stepover** (by default 10 % of the cutter): the distance between lines; through the cell centres, it is rounded down to
+  whole cells (at least one), so the lines are never further apart than you asked; a cell wider than the cutter is refused;
 - **Line angle** (0° to 180°) and **Lines**: through the cell centres (at 0° and 90°) or not aligned, where ripples can show on
   fine detail;
 - **Relief edge**: **the wall stays** (outside the relief is the stock face, so the cutter does not cut there) or **the cutter

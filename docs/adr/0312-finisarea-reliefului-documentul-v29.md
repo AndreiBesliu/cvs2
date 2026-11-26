@@ -27,7 +27,7 @@ operație 2D pe un relief). Câmpurile comune rămân, cu sensul lor pe relief:
 - `noduri`: reliefurile piesei pe care le finisează (unul sau mai multe; unde se suprapun, „păstrează înalt”, ADR 0310 §1);
 - `scula`: plata, V-ul sau bila;
 - `pasLateral` (cerut de ușă pe o finisare): distanța dintre liniile paralele, în mm, în (0, 50] ca pe buzunar; aliniată,
-  lucrarea o rotunjește la celule întregi (ADR 0310 §5) și spune valoarea rotunjită;
+  lucrarea o rotunjește la celule întregi (ADR 0310 §5; în jos, din ADR 0314) și spune valoarea rotunjită;
 - `pas`: cât coboară cel mult o trecere (invarianta: niciodată mai adânc decât pasul pe trecere); finisarea se face în treceri
   pe Z, ultima pe model;
 - `adancime`: cel mai adânc loc sub fața plăcii la care ajunge freza (o podea: sub ea finisarea nu coboară);
