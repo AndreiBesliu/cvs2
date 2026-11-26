@@ -107,7 +107,12 @@ vreau ca ficare setare sa fie insotita de o ilustratie sugestiva, ca sa ajute us
 - **26.11: 28.8↑j gata** (greșelile pe înțeles, constatările 5, 6, 7 și 15). „Dă-i T{n}” lângă conflictul de freze, cu roșul
   doar pe frezele cu numărul ciocnit; greșeala pe câmp, cu marginile ei, și „—” în listă; nota în locul avertismentului de viteză
   cu setările din fabrică; refuzurile din calcul cu numele elementelor, cu virgula și cu „Du-mă la …”. Totalul 910,5 / 1 000
-  (+1,1 kB). Urmează 28.8↑k (curățenia vizuală).
+  (+1,1 kB). Unită în `main` pe 26.11 (`93ff3b29`).
+- **26.11: 28.8↑k gata** (curățenia vizuală, constatările 8, 10, 11, 12, 16, 17 și 21). Capul listei nu se mai strânge; bifele
+  cu căsuța lângă etichetă; fundul plat pe rânduri, cu lista „Din frezele mele” pe rândul ei; bifa „și tăieturile cât foaia”
+  doar cu supracursă; golurile desenului Z0 doar când sunt în proiect; diametrul frezei în V sub vârf; titlurile în engleză;
+  textele lungi prescurtate, cu „Mai mult” al grupului și al notelor. Totalul 919,2 / 1 000 (+0,5 kB). Urmează 28.8↑l
+  (tastatura și cititorul de ecran).
 
 ## Ce s-a găsit (23.11)
 
@@ -242,6 +247,17 @@ vreau ca ficare setare sa fie insotita de o ilustratie sugestiva, ca sa ajute us
   textele sau `{ text, buton }`. Un buton nou de reparat stă lângă textul lui, nu în câmpurile grupului.
 - **Conflictul de T are o singură identitate, `cheieFreza`** (diametrul, unghiul V cu vârful, bila): detectarea și „Dă-i T{n}”
   o citesc de acolo, deci un fel nou de freză (bila în proiect, toroidala) își pune forma în cheie, nu în etichetă.
+- **Un text lung al ferestrei se prescurtează singur** (28.8↑k): peste 160 de caractere, explicațiile grupurilor și notele
+  `TextScurt` arată doar prima propoziție. O probă care caută o propoziție de după prima apasă întâi „Mai mult”
+  (`[data-mai-mult]`), iar o notă nouă cu variante își pune prima propoziția care se schimbă (cum sunt acum notele dopului).
+- **„Mai mult” din caseta explicației e al grupului, nu al textului** (28.8↑k): mausul care merge spre buton trece peste alte
+  câmpuri, care schimbă textul; deschis, grupul își arată toate explicațiile întregi. `rezervaExplicatii` măsoară textele
+  prescurtate cât grupul e strâns și pune `data-lung` pe grupurile cu un text lung (altfel butonul nu se vede).
+- **O bifă nouă primește singură căsuța lângă etichetă** (`.dialog-export label:where(:has(> input[type='checkbox']))`), iar
+  `ceIese` din proba privirii o cere la fiecare tăietură. Confirmările de sub fișe își păstrează regula lor (specificitatea
+  e a lui `.dialog label`, prin `:where`).
+- **Rândurile listei nu se strâng** (`.dx-lista > * { flex-shrink: 0 }`, doar pe desktop): un rând nou își ține înălțimea, iar
+  lista se derulează. Pe telefon, banda le strânge pe lățime.
 - **Un refuz al calculului trece prin `motivPeInteles`** (`src/ui/motivCalcul.ts`) înaintea afișării: id-urile din lume devin
   nume, iar în română numerele lucrării primesc virgula. O probă care citește un refuz caută numele elementului, nu „e1/e1”, și
   „5,5 mm”, nu „5.5 mm”.
@@ -249,8 +265,9 @@ vreau ca ficare setare sa fie insotita de o ilustratie sugestiva, ca sa ajute us
 ## Ce rămâne
 
 Din ADR 0290, nimic: toate feliile (a–f) și 28.8↑g sunt gata. Din ADR 0291 (după audit): 28.8↑n și 28.8↑o sunt în `main`,
-28.8↑h, 28.8↑h-2 și 28.8↑i sunt în `main`, iar 28.8↑j (greșelile pe înțeles) e gata pe ramură; urmează k, l, în ordine; p
-după j (cu linia frezelor), q după i. Nicio întrebare deschisă la owner. De luat într-o felie a liniei: la 640 × 360 (telefon culcat îngust), banda
+28.8↑h, 28.8↑h-2, 28.8↑i și 28.8↑j sunt în `main`, iar 28.8↑k (curățenia vizuală) e gata pe ramură; urmează l; p după j
+(cu linia frezelor), q după i. La owner: titlurile în română („Ce tăiere”, „Cum golește”, „Cum coboară”; recomandarea
+„Tăietura”, „Golirea”, „Coborârea”). De luat într-o felie a liniei: la 640 × 360 (telefon culcat îngust), banda
 listei lasă fișelor 9 px (găsit la 28.8↑h-2; cu 28.8↑l, privirea). Pentru alte linii, mai târziu:
 
 - **Clasicul (28.2↑) și Pas cu pas (28.4↑)** iau fișa operației (`FisaOperatie`, cu `ContextFisa`) în panoul lor, cu starea
@@ -263,10 +280,8 @@ listei lasă fișelor 9 px (găsit la 28.8↑h-2; cu 28.8↑l, privirea). Pentru
   intră în `ContextFisa`; catalogul controalelor se scrie din nou. Capcanele de mai sus sunt și ale ei.
 - **Inventarul din ADR 0290** (câmpurile și condițiile lor) e ținut de `export.grupuri.test.ts`, care citește `data-camp` din
   `DialogExport.tsx` și `FisaOperatie.tsx`: un câmp nou fără grup cade acolo.
-- **Rândul frezei, în 28.8↑k** (cu linia frezelor, 25.11): „Scrisă de mână (ca „Plată Ø6”)” din 16.A↑b-4 lărgește lista
-  „Din frezele mele” și rupe rândul (la 1280 px, 240 px față de 147). N-o tăiem cu „…”: `title` al listei e explicația
-  câmpului (`arata`), iar tăietura ar cădea pe numele frezei. Propunerea, cu acordul liniei frezelor: recunoașterea ca notă
-  sub listă (ca `NotaBiblioteca`), iar opțiunea goală doar „Scrisă de mână”. Probele lui b-4 (`exportFrezeNota.spec.ts`)
-  citesc azi eticheta opțiunii alese: se mută pe nota nouă. `ListaBiblioteca` rămâne a liniei exportului (16.A↑b-6 n-o atinge).
+- **Rândul frezei** (cu linia frezelor, 25.11): „Scrisă de mână (ca „Plată Ø6”)” din 16.A↑b-4 lărgea lista „Din frezele mele”
+  și rupea rândul. Rezolvat în 28.8↑k fără să schimbe eticheta: lista stă pe rândul ei (la freza operației și la fundul plat),
+  iar numărul, diametrul și forma pe rândul de sub ea. Recunoașterea ca notă sub listă rămâne o idee, nu o felie.
 - **Proba „adâncimea”** (`export.desene.spec.ts:48`): cauza celor câteva căderi nu e dovedită (vezi Capcanele); dacă mai cade,
   se rulează singură, cu `--workers=1`, ca să se vadă așteptarea care expiră.

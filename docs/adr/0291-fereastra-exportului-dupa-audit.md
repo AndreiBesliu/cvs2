@@ -336,3 +336,44 @@ fereastra și un număr T, la clicul omului.
   marginile fără grupare, nota vitezei, refuzul cu numele, virgula, cheia și harta elementelor).
 - **Mărimea:** pornirea +0 (111,4 kB), totalul +1,1 kB (910,5 / 1 000), peste estimarea de +0,5 kB: patru părți în loc de una
   (butonul, greșelile pe câmp, nota și refuzul pe înțeles). Programul, documentul și serverul: neschimbate.
+
+## Implementarea 28.8↑k (26.11)
+
+Constatările 8, 10, 11, 12, 16, 17 și 21 ale auditului. Programul rămâne octet cu octet: se schimbă doar cum arată fereastra.
+
+- **Capul listei (constatarea 8).** Rândurile listei au `flex-shrink: 0`: `min-height: 32px` al butoanelor le înlocuia minimul
+  automat al coloanei flex, deci, pe o fereastră joasă sau cu „A mea” pornită, „Foaia și originea” și „Mașina și fișierul” se
+  strângeau la 32 px și treceau peste rândul următor (la 1280 × 720, și în ordinea automată). Pe telefon, banda le strânge pe
+  lățime, ca înainte.
+- **Bifele și fundul plat (constatarea 10).** Orice bifă a ferestrei are căsuța lângă etichetă (regula `.dialog label` e o
+  grilă, pentru câmpurile cu eticheta deasupra; `:where`, ca să rămână confirmările de sub fișe cum sunt). Fundul plat are
+  câmpurile pe rânduri, ca freza operației: lista „Din frezele mele” pe rândul ei (și la freza operației), apoi numărul,
+  diametrul și pasul; câmpul T al fundului și al dopului e îngust, ca al frezei operației.
+- **Bifa „și tăieturile cât foaia” (constatarea 11).** Se arată doar cu o supracursă bună, peste 0; la 0 nu schimbă nimic, iar
+  „bifată și oprită” nu spunea dacă e pornită. Alegerea omului rămâne ținută de aplicație și reapare cu supracursa.
+- **Desenul Z0 (constatarea 12).** Golul incrustației doar dacă foaia are o incrustație cu pereți drepți și gaură prin foaie;
+  tăietura „scrisă cât foaia” doar cu supracursa peste 0 și bifa ei; cota supracursei lângă golul care se vede.
+- **Freza în V (constatarea 17).** Diametrul sub vârf, ca la freza plată, cu liniile ajutătoare din marginile conului: pe coadă,
+  „Ø 3,175 mm” trecea peste „T1”.
+- **Titlurile în engleză (constatarea 16).** „Cut type”, „Clearing”, „Descent” (ca eticheta câmpului; „Plunge” e una dintre
+  alegerile lui) și „Rest machining”. Titlurile în română („Ce tăiere”, „Cum golește”, „Cum coboară”) rămân, cum spune auditul,
+  la owner, cu recomandarea „Tăietura”, „Golirea”, „Coborârea”.
+- **Textele lungi (constatarea 21).** Peste 160 de caractere, un text arată prima propoziție și „…” (`scurtat`, `textStrans`,
+  `src/ui/exportRand.ts`; o propoziție se termină cu un punct urmat de spațiu și de o literă mare, o paranteză sau ghilimele):
+  - în caseta explicației, „Mai mult” / „Mai puțin” e al grupului, nu al textului: deschis, arată întregi toate explicațiile
+    grupului, și pe ale câmpurilor pe care treci apoi (drumul mausului spre buton trece de obicei peste alte câmpuri, care
+    schimbă textul). Butonul se vede doar într-un grup cu un text lung (`data-lung`, pus de `rezervaExplicatii`), iar caseta își
+    rezervă înălțimea textelor prescurtate cât e strâns: la treaptă, ~6 rânduri în loc de 11;
+  - nota ordinii automate și notele dopului au „Mai mult” al lor (`TextScurt`, `src/ui/TextScurt.tsx`). Notele dopului spun acum
+    întâi ce face varianta aleasă („Fără freză dreaptă, freza în V face tot…”, „Marginile semifabricatului rămân întregi…”):
+    prima lor propoziție era fișierul dopului, aceeași la toate variantele, deci prescurtarea ar fi ascuns tocmai ce se schimbă.
+- **Probele:** `test/e2e/export.privire.spec.ts` (bifele pe rândul etichetei, în `ceIese`, la fiecare tăietură; câmpurile
+  fundului plat pe un rând; lista cu trei operații, în ordinea automată și în „A mea”, la 1280 × 720), `export.desene.spec.ts`
+  (golurile Z0, bifa și cota supracursei; cotele frezei în V, cu trei diametre), `export.texte.spec.ts` (4: treapta cu „Mai
+  mult” al grupului, supracursa, notele, engleza), `test/unit/export.textScurt.test.ts` (5, pe hârtie), `supracursa.spec.ts`
+  (bifa ascunsă la 0); scrise întâi și văzute căzând. Două probe ale incrustației au prins nota dopului prescurtată greșit
+  (`incrustatie.spec.ts`, `incrustatieBanda.spec.ts`), de unde ordinea nouă a notelor. E2e-ul care deschide exportul: 190 / 190.
+- **Otrăvurile:** `28.8k.py`, 17 / 17 (lista, bifele, fundul plat, bifa la 0, golurile și cota Z0, freza în V, prescurtarea,
+  caseta, „Mai mult” al grupului și al notelor). B02 din `12.1f-4.py`, mutată pe codul nou, scăpase: proba bifei ascunse din
+  `supracursa.spec.ts` trecea înainte să apară fereastra (vine la cerere); acum așteaptă întâi câmpul supracursei, iar B02 e prinsă.
+- **Mărimea:** pornirea +0 (111,6 kB), totalul +0,5 kB (919,2 / 1 000). Programul, documentul și serverul: neschimbate.

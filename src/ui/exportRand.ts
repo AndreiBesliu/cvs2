@@ -545,16 +545,41 @@ export function laturi(d: Depasire, limba: string): string {
   return LATURI_FOAIE.filter(([k]) => d[k] > 0).map(([k, cheie]) => t(cheie, { mm: f.format(d[k]) })).join(', ');
 }
 
+/** Peste atâtea caractere, un text al ferestrei se arată prescurtat (28.8↑k): prima propoziție, restul sub „Mai mult”. */
+export const PRAG_TEXT_LUNG = 160;
+
+/**
+ * Prima propoziție a unui text lung și restul (ADR 0291, felia 28.8↑k; constatarea 21 a auditului: explicația treptei avea 11
+ * rânduri, nota ordinii automate 6, mereu la vedere). Un text de cel mult `PRAG_TEXT_LUNG` caractere sau dintr-o singură
+ * propoziție rămâne întreg (`rest` gol). O propoziție se termină cu un punct urmat de spațiu și de o literă mare, o paranteză sau
+ * ghilimele: „3.175” și „…-dop-1.nc” nu taie textul.
+ */
+export function scurtat(text: string): { readonly prima: string; readonly rest: string } {
+  if (text.length <= PRAG_TEXT_LUNG) return { prima: text, rest: '' };
+  const m = /^(.+?\.)\s+(?=[\p{Lu}(„"“])/su.exec(text);
+  return m?.[1] ? { prima: m[1], rest: text.slice(m[0].length) } : { prima: text, rest: '' };
+}
+
+/** Un text cum îl arată fereastra cât e strâns: prima propoziție și „…”, dacă are rest. */
+export function textStrans(text: string): string {
+  const { prima, rest } = scurtat(text);
+  return rest === '' ? text : `${prima} …`;
+}
+
 /**
  * Rezervă înălțimea casetei explicației fiecărui grup: cel mai lung dintre textul grupului și titlurile câmpurilor lui, măsurat
- * pe o copie goală a casetei (textul ei rămâne al lui React). Se măsoară din nou doar când se schimbă textele sau lățimea.
+ * pe o copie goală a casetei (textul ei rămâne al lui React). Se măsoară din nou doar când se schimbă textele, lățimea sau
+ * „Mai mult”. Cât grupul e strâns, textele se măsoară prescurtate (`textStrans`, 28.8↑k); grupul cu vreun text lung primește
+ * `data-lung` (atunci se vede „Mai mult”).
  */
 export function rezervaExplicatii(panou: HTMLElement | null): void {
   for (const g of panou?.querySelectorAll<HTMLElement>('[data-grup]') ?? []) {
     const e = g.querySelector<HTMLElement>('[data-explicatie]');
     if (!e?.parentElement) continue;
     const texte = [e.dataset['implicit'] ?? '', ...Array.from(g.querySelectorAll('[title]'), (x) => x.getAttribute('title') ?? '')];
-    const cheie = `${e.clientWidth}|${texte.join('\u0001')}`;
+    const deschisa = e.dataset['deschisa'] !== undefined;
+    g.toggleAttribute('data-lung', texte.some((x) => scurtat(x).rest !== ''));
+    const cheie = `${e.clientWidth}|${deschisa ? 'd' : 's'}|${texte.join('\u0001')}`;
     if (e.dataset['masurat'] === cheie) continue;
     const m = e.cloneNode(false) as HTMLElement;
     m.removeAttribute('data-explicatie');
@@ -562,7 +587,7 @@ export function rezervaExplicatii(panou: HTMLElement | null): void {
     Object.assign(m.style, { position: 'absolute', visibility: 'hidden', minHeight: '0', width: `${e.getBoundingClientRect().width}px` });
     e.parentElement.append(m);
     let max = 0;
-    for (const x of texte) { m.textContent = x; max = Math.max(max, m.getBoundingClientRect().height); }
+    for (const x of texte) { m.textContent = deschisa ? x : textStrans(x); max = Math.max(max, m.getBoundingClientRect().height); }
     m.remove();
     e.style.minHeight = `${Math.ceil(max)}px`;
     e.dataset['masurat'] = cheie;

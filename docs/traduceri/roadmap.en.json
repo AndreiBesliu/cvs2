@@ -241,6 +241,10 @@
       "ro": "Roata cu anvelopă în atelier",
       "en": "Wheels with tyres in the workshop"
     },
+    "0b8b5388b201b9a1": {
+      "ro": "**Curățenia vizuală a ferestrei exportului** (fără mașină; ADR 0291, „Implementarea 28.8↑k”; constatările 8, 10, 11, 12, 16, 17 și 21 ale auditului). Rândurile listei nu se mai strâng (capul trecea peste rândul următor cu „A mea” sau pe o fereastră joasă); bifele cu căsuța lângă etichetă; fundul plat pe rânduri, cu lista „Din frezele mele” pe rândul ei; bifa „și tăieturile cât foaia” doar cu supracursă peste 0; golurile desenului Z0 doar când sunt în proiect, cu cota lângă golul care se vede; diametrul frezei în V sub vârf; titlurile în engleză (Cut type, Clearing, Descent, Rest machining); textele lungi cu prima propoziție și „Mai mult” al grupului și al notelor, iar notele dopului cu varianta întâi. Programul, octet cu octet. **Probele:** `export.texte.spec.ts` (4), `export.textScurt.test.ts` (5), privirea, desenele și supracursa, scrise întâi și văzute căzând; e2e-ul care deschide exportul, 190 / 190. **Otrăvurile:** `28.8k.py`, 17 / 17 (2 unitare, 15 e2e); B02 din `12.1f-4.py`, mutată pe codul nou, scăpase: proba bifei ascunse trecea înainte să apară fereastra (vine la cerere), deci așteaptă acum câmpul supracursei, iar B02 e prinsă. Pornirea +0, totalul 919,2 / 1 000 (+0,5 kB).",
+      "en": "**Visual clean-up of the export window** (no machine; ADR 0291, “Implementarea 28.8↑k”; findings 8, 10, 11, 12, 16, 17 and 21 of the audit). The list rows no longer shrink (the head ran over the next row with “Mine” or in a low window); checkboxes with the box next to the label; the flat bottom on rows, with the “From my bits” list on its own row; the “also cuts as deep as the sheet” box only with an overtravel above 0; the gaps of the Z0 drawing only when they are in the project, with the dimension next to the visible gap; the V-bit diameter under the tip; the English titles (Cut type, Clearing, Descent, Rest machining); long texts with the first sentence and the group’s and notes’ “More”, and the plug notes with the chosen variant first. The program, byte for byte. **Probes:** `export.texte.spec.ts` (4), `export.textScurt.test.ts` (5), the look, the drawings and the overtravel, written first and seen failing; the e2e that opens the export, 190 / 190. **Poisons:** `28.8k.py`, 17 / 17 (2 unit, 15 e2e); B02 from `12.1f-4.py`, moved onto the new code, had escaped: the hidden-box probe passed before the window appeared (it loads on demand), so it now waits for the overtravel field first, and B02 is caught. Startup +0, total 919.2 / 1,000 (+0.5 kB)."
+    },
     "0c249186cf38af52": {
       "ro": "Ventilatorul cu carcasă în atelier",
       "en": "The ducted fan in the workshop"
@@ -4452,6 +4456,10 @@
     "ebf6b77116fe80ad": {
       "ro": "Raportările clienților, partea întâi, aduse din etapa 15",
       "en": "Customer reports, part one, brought forward from stage 15"
+    },
+    "ec0eceba1baef4df": {
+      "ro": "Curățenia vizuală a ferestrei exportului",
+      "en": "Visual clean-up of the export window"
     },
     "eca127da7c72e5f7": {
       "ro": "Relief pe două fețe + întoarcere; Bas-relief din STL; Conturul vectorial al reliefului",

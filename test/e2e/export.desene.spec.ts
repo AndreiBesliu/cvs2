@@ -113,6 +113,65 @@ test('colțul XY0 se alege și din desen; Z0 și supracursa se văd pe secțiune
   await expect(z).toContainText('exact prin placă');
 });
 
+/**
+ * Desenul Z0 arată doar ce e în proiect (28.8↑k, constatările 11 și 12 ale auditului): golul incrustației doar cu o incrustație cu
+ * gaură prin foaie, tăietura „scrisă cât foaia” doar cu supracursa peste 0 și bifa ei; bifa însăși, doar cât are ce schimba (cu
+ * supracursa 0 nu face nimic: ascunsă, nu bifată și oprită), cu alegerea omului ținută.
+ */
+test('Z0: golul incrustației și tăietura cât foaia doar când sunt în proiect; bifa doar cu supracursă', async ({ page }) => {
+  await deschide(page);
+  const z = desen(page, 'foaia', 'z0'), bifa = page.locator('[data-camp="supracursa-prin-foaie"]');
+  await expect(z.locator('[data-gol]')).toHaveCount(0);
+  await expect(bifa).toHaveCount(0);
+  await page.locator('[data-camp="supracursa"]').fill('0,5');
+  await expect(bifa).toBeChecked();
+  await expect(z.locator('[data-gol="foaia"]')).toHaveCount(1);
+  await expect(z.locator('[data-gol="gaura"]')).toHaveCount(0);
+  // Cota supracursei stă lângă golul care se vede, la stânga lui.
+  const gol = await z.locator('[data-gol="foaia"]').boundingBox(), cota = await z.locator('[data-cota="supracursa"] path').first().boundingBox();
+  expect(gol && cota ? gol.x - (cota.x + cota.width) : -1, 'cota lângă gol').toBeGreaterThanOrEqual(0);
+  expect(gol && cota ? gol.x - (cota.x + cota.width) : 99, 'cota lângă gol').toBeLessThan(gol ? gol.width * 1.5 : 0);
+  await bifa.uncheck();
+  await expect(z.locator('[data-gol]')).toHaveCount(0);
+  await page.locator('[data-camp="supracursa"]').fill('0');
+  await expect(bifa).toHaveCount(0);
+  await page.locator('[data-camp="supracursa"]').fill('1');
+  await expect(bifa, 'alegerea omului rămâne').not.toBeChecked();
+  await bifa.check();
+  // Incrustația cu pereți drepți, cu gaura prin foaie: golul ei, cu supracursa.
+  const e2 = fisa(page, 'e2/e2');
+  await alege(e2, 'latura', 'incrustatie-drept');
+  await expect(z.locator('[data-gol="gaura"]')).toHaveCount(0);
+  await alege(e2, 'inc-locas', 'gaura');
+  await expect(z.locator('[data-gol="gaura"]')).toHaveCount(1);
+  await expect(z.locator('[data-gol="foaia"]')).toHaveCount(1);
+  await page.locator('[data-camp="supracursa"]').fill('0');
+  await expect(z.locator('[data-gol="gaura"]'), 'gaura merge și fără supracursă, exact prin placă').toHaveCount(1);
+  await expect(z.locator('[data-gol="foaia"]')).toHaveCount(0);
+});
+
+/** Freza în V (28.8↑k, constatarea 17): T, diametrul, unghiul și vârful nu se suprapun, nici cu un diametru lung. */
+test('freza în V: cotele nu se suprapun', async ({ page }) => {
+  await deschide(page);
+  const e1 = fisa(page, 'e1/e1');
+  await e1.locator('[data-camp="forma-scula"]').selectOption('v');
+  for (const d of ['3,175', '12,7', '6']) {
+    await e1.locator('[data-camp="diametru"]').fill(d);
+    const f = desen(page, 'e1/e1', 'freza');
+    await expect(f.locator('[data-cota="diametru"]')).toContainText(`Ø ${d} mm`);
+    const peste = await f.evaluate((svg) => {
+      const t = [...svg.querySelectorAll('text')].filter((x) => (x.textContent ?? '').trim() !== '').map((x) => ({ s: x.textContent ?? '', r: x.getBoundingClientRect() }));
+      const rau: string[] = [];
+      for (let i = 0; i < t.length; i++) for (let j = i + 1; j < t.length; j++) {
+        const a = t[i]!.r, b = t[j]!.r;
+        if (a.left < b.right - 0.5 && b.left < a.right - 0.5 && a.top < b.bottom - 0.5 && b.top < a.bottom - 0.5) rau.push(`${t[i]!.s} × ${t[j]!.s}`);
+      }
+      return rau;
+    });
+    expect(peste, `Ø ${d}`).toEqual([]);
+  }
+});
+
 test('sensul: partea piesei după tăietură și sens; freza, rampa și intrările cu valorile lor', async ({ page }) => {
   await deschide(page);
   const e1 = fisa(page, 'e1/e1'), e2 = fisa(page, 'e2/e2');

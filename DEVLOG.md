@@ -15743,6 +15743,31 @@ commit-ul împins).
   ele (`unire-2611f`); între ele, doar commit-urile de documente, aduse din una în alta. O singură publicare, lotul 42.
 - **Documentele:** decizia și paragraful de stare în `CLAUDE.md`; indexul liniilor; starea din `docs/linii/principala.md`.
 
+## 2026-11-26 — Linia exportului: 28.8↑k, curățenia vizuală a ferestrei exportului (ADR 0291)
+
+**Prompt:** confirmarea sesiunii principale („28.8↑j e în `main` … Poți porni 28.8↑k, cu `main` (`9edf9ae0`) adus întâi”), la
+ordinul în vigoare „unește ce se poate”
+**Started:** 26.11, 05:37.
+
+- **Lista (constatarea 8):** rândurile nu se mai strâng; capul („Foaia și originea”, „Mașina și fișierul”) nu mai trece peste
+  rândul următor, cu „A mea” sau pe o fereastră joasă.
+- **Bifele și fundul plat (constatarea 10):** căsuța lângă etichetă la toate bifele; lista „Din frezele mele” pe rândul ei, apoi
+  numărul, diametrul și pasul pe un rând.
+- **Bifa prin foaie și desenul Z0 (constatările 11, 12):** bifa doar cu supracursă peste 0; golurile desenului doar când sunt în
+  proiect, cu cota lângă golul care se vede.
+- **Freza în V (constatarea 17):** diametrul sub vârf.
+- **Engleza (constatarea 16):** Cut type, Clearing, Descent, Rest machining; româna rămâne la owner.
+- **Textele lungi (constatarea 21):** prima propoziție și „Mai mult” al grupului (explicațiile) și al notelor (ordinea, dopul);
+  notele dopului spun întâi ce face varianta aleasă.
+- **Probele:** `export.texte.spec.ts` (4), `export.textScurt.test.ts` (5), privirea, desenele și supracursa aduse la zi.
+- **Mărimea:** pornirea +0 (111,6 kB), totalul 919,2 / 1 000 (+0,5 kB).
+- **Otrăvurile:** `28.8k.py`, 17 / 17; B02 din `12.1f-4.py` (mutată) scăpase, fiindcă proba bifei nu aștepta fereastra: reparată
+  proba, B02 prinsă. **E2e-ul care deschide exportul:** 190 / 190.
+- **Documentele:** ADR 0291 („Implementarea 28.8↑k”), manualul (ambele limbi), fișa etapei 3, registrul otrăvurilor, nota
+  liniei.
+
+**Completed:** 26.11, 06:37.
+
 ## 2026-11-26 — Felia 3.Cl-3: ornamentul cu nume (ADR 0285) (sesiune cloud)
 
 **Prompt:** „Mergem cu recomandarile” (răspunsul owner-ului la ADR 0285, în sesiunea liniei; 4a: numele de pe ornament,

@@ -1617,14 +1617,14 @@ clean everywhere; only the corners no round cutter can reach are left (with the 
 narrower than the cutter, the cutter does not go in. A pocket has no tabs, leads or corner relief, and the profile's ramp
 is replaced by the descent.
 
-**Pocket path.** On a pocket's card, under **How it clears**, **Path** chooses between **rings (offset)**, the default, and **parallel lines**, at the
+**Pocket path.** On a pocket's card, under **Clearing**, **Path** chooses between **rings (offset)**, the default, and **parallel lines**, at the
 given **Angle** to X (from 0 up to below 180°), with the stepover between them. On each pass, the bit first runs the lines,
 linked at depth only to the next line and only when the way stays inside the pocket (otherwise it lifts), then a **profile pass**
 along the edge, so the wall comes out exactly on the vector, not in steps. Lines plunge straight (the ramp, zigzag and helix
 belong to the rings); on the lines the bit cuts back and forth, so alternately climb and conventional, and the profile pass
 follows the operation's direction. Islands and rest bits work as with rings.
 
-**Rest bits.** On a pocket's card, **Add a rest bit** puts a smaller bit after the operation's bit (by default half the diameter,
+**Rest machining.** On a pocket's card, under **Rest machining**, **Add a rest bit** puts a smaller bit after the operation's bit (by default half the diameter,
 with the next free T and a 40 % stepover); you can add several, each smaller than the one before, and remove them with ×. Each
 one cuts only where the one before could not reach: the corners and the strips narrower than it, on the same passes; it does
 not run again along the walls the big one has already cut. The corners keep the radius of the smallest one. For example, an
@@ -1905,10 +1905,12 @@ which). The window has three parts:
   to the top; as you scroll, the list marks the card you have reached. On a narrow screen, the list sits at the top, on a row
   that scrolls, with the cutting order at the end; with **Big buttons** (see [Appearance](#aspect)), the window's fields and
   checkboxes get the large target too;
-- the **cards**, on the right, one under the other. Each has its fields grouped by question (What cut, Bit, How deep, Cut
-  direction, Ramp, Lead-ins, Corners, Tabs; on a pocket, How it clears, How it goes down, Rest bits; on a V-carve, Flat bottom;
+- the **cards**, on the right, one under the other. Each has its fields grouped by question (Cut type, Bit, How deep, Cut
+  direction, Ramp, Lead-ins, Corners, Tabs; on a pocket, Clearing, Descent, Rest machining; on a V-carve, Flat bottom;
   on an inlay, its own). On the left of each group, its explanation; when you hover over a field or go into it, the field's
-  explanation. Above the explanation, for the XY0 origin, Z0 and overtravel, the bit, depth, direction, ramp, lead-ins and
+  explanation. A long explanation shows up to the end of its first sentence, with “…”: **More**, under it, shows all of the
+  group's explanations in full (and those of the fields you move over next), and **Less** folds them again; the same goes for
+  the automatic order note and the plug notes. Above the explanation, for the XY0 origin, Z0 and overtravel, the bit, depth, direction, ramp, lead-ins and
   tabs, the question's drawing, made from your values: the sheet with the chosen corner (a click on another corner in the
   drawing chooses it), the section of the sheet on the table with Z0 and the cuts that go into the table, the bit profile, the
   section of the cut with its passes, the bit path around the part or the hole (in climb, what stays is to the right of the
@@ -1949,8 +1951,8 @@ On the sheet and machine cards you choose:
 - **Z0**: the top of the material or the bottom of the material (the spoilboard);
 - the **Overtravel** (mm, from 0 to 2, 0 by default): how far through cuts go below the bottom of the board, into the
   spoilboard, so that a board a little thicker than the one written leaves no skin. The inlay [hole](#incrustatie-drept)
-  and the plug cut-outs go that much deeper by themselves. With the box **also cuts as deep as the sheet** (ticked by default),
-  a profile, a pocket or a drilling written as deep as the sheet goes that much deeper too, as if you had written the thickness
+  and the plug cut-outs go that much deeper by themselves. With an overtravel above 0, the box **also cuts as deep as the sheet**
+  appears (ticked by default; at 0 it is hidden, since it would change nothing): with it, a profile, a pocket or a drilling written as deep as the sheet goes that much deeper too, as if you had written the thickness
   plus the overtravel (in the project, the depth stays as written); V-carves and inlays do not change. The depth drawing and the
   note next to the step then show the depth and the passes that are cut (for example, 18 mm with a 6 step and 0.3 overtravel:
   4 passes of 4.58 mm, down to 18.3 mm). Unticked, the cuts stay as written. Either way, a depth you write may exceed the sheet thickness by at most the overtravel (for example 18.3 in an

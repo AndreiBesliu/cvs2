@@ -1841,7 +1841,9 @@ care). Fereastra are trei părți:
 - **fișele**, în dreapta, una sub alta. Fiecare are câmpurile grupate pe întrebări (Ce tăiere, Freza, Cât de adânc, Sensul de
   tăiere, Rampa, Intrările, Colțurile, Urechile; la un buzunar, Cum golește, Cum coboară, Frezele de rest; la un V-carve,
   Fundul plat; la o incrustație, ale ei). În stânga fiecărui grup, explicația lui; când treci cu mausul peste un câmp sau intri
-  în el, explicația câmpului. Deasupra explicației, la originea XY0, la Z0 și supracursă, la freză, adâncime, sens, rampă,
+  în el, explicația câmpului. O explicație lungă se vede până la capătul primei propoziții, cu „…”: **Mai mult**, sub ea, le
+  arată întregi pe toate ale grupului (și pe ale câmpurilor pe care treci apoi), iar **Mai puțin** le strânge la loc; la fel
+  nota ordinii automate și notele dopului. Deasupra explicației, la originea XY0, la Z0 și supracursă, la freză, adâncime, sens, rampă,
   intrări și urechi, desenul întrebării, făcut din valorile tale: foaia cu colțul ales (un clic pe alt colț din desen îl alege),
   secțiunea foii pe masă cu Z0 și tăieturile care trec în masă, profilul frezei, secțiunea tăieturii cu trecerile, drumul
   frezei în jurul piesei sau al găurii (ce rămâne stă în dreapta drumului la urcare), rampa din lateral, intrările de sus,
@@ -1876,7 +1878,8 @@ care). Fereastra are trei părți:
 - **Z0**: fața de sus a materialului sau fața de jos (masa de sacrificiu);
 - **Supracursa** (mm, între 0 și 2, implicit 0): cât coboară tăieturile prin placă sub fața ei de jos, în masa de sacrificiu,
   ca pe o placă puțin mai groasă decât cea scrisă să nu rămână o piele. [Gaura](#incrustatie-drept) incrustației și
-  decupările dopurilor merg cu atât mai jos, singure. Cu bifa **și tăieturile cât foaia** (implicit pusă), un profil, un
+  decupările dopurilor merg cu atât mai jos, singure. Cu o supracursă peste 0 apare bifa **și tăieturile cât foaia** (implicit
+  pusă; la 0 nu se vede, fiindcă n-ar schimba nimic): cu ea, un profil, un
   buzunar sau o găurire scrise cât grosimea foii merg și ele cu atât mai jos, ca și cum ai fi scris grosimea plus supracursa
   (în proiect, adâncimea rămâne cum e scrisă); V-carve-urile și incrustațiile nu se schimbă. Desenul adâncimii și nota de
   lângă pas arată atunci adâncimea și trecerile tăiate (de exemplu, 18 mm cu pasul 6 și supracursa 0,3: 4 treceri de 4,58 mm,

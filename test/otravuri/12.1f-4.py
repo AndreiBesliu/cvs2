@@ -45,8 +45,9 @@ o('F09', CALC, 'p.supracursa ?? 0, p.prinFoaie === true, reliefuri);', 'p.suprac
 # ---- Fereastra și aplicația ----
 o('B01', APP, '  const [prinFoaie, setPrinFoaie] = useState(true);', '  const [prinFoaie, setPrinFoaie] = useState(false);', 'e2e',
   'bifa implicit scoasă')
-o('B02', DLG, 'data-camp="supracursa-prin-foaie" disabled={!cuSupracursa}', 'data-camp="supracursa-prin-foaie" disabled={false}', 'e2e',
-  'bifa pornită și fără supracursă')
+# Mutată pe codul din 28.8↑k (26.11: fără supracursă, bifa nu se mai arată, în loc de oprită); aceeași greșeală.
+o('B02', DLG, '          {cuSupracursa && (\n          <label className="alegere bifa-supracursa"',
+  '          {true && (\n          <label className="alegere bifa-supracursa"', 'e2e', 'bifa arătată și fără supracursă')
 o('B03', DLG, '  const cuSupracursa = supracursaBuna && supracursaCitita !== null && supracursaCitita > 0;',
   '  const cuSupracursa = supracursaBuna && supracursaCitita !== null && supracursaCitita >= 0;', 'e2e', 'bifa pornită la supracursa 0')
 o('B04', DLG, 'supracursa: supracursaCitita, ...(prinFoaie ? { prinFoaie: true } : {}) } : {}),',

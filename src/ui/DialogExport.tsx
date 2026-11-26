@@ -19,6 +19,7 @@ import { PrevizualizareSimulare } from './PrevizualizareSimulare.tsx';
 import { useLimba } from './useLimba.ts';
 import { verdicteGresite, type GrupExport, type VerdictRand } from './exportGrupuri.ts';
 import { DesenColt, DesenZ0, type DesenComun } from './exportDesene.tsx';
+import { ButonMaiMult, TextScurt } from './TextScurt.tsx';
 import { Cartonase, Poza } from './exportPoze.tsx';
 import {
   cuAceeasiFreza, FisaOperatie, ListaBiblioteca, NotaBiblioteca, RAND_DREPT, type ContextFisa, type Greseala, type InapoiNota, type ReparatieT,
@@ -27,7 +28,7 @@ import { FisaFinisare, RandListaFinisare, type FinisareExport } from './FisaFini
 import {
   bandaBuna, CHEI_COLT, CHEI_LATURA, citesteRest, ORIGINI, DIAMETRU_FUND_IMPLICIT, faraNumar, incrustatieVRand, inMargini,
   INTRARI_IMPLICITE, intregInMargini, jocFolosit, laturi, LUNGIME_ZIGZAG_IMPLICITA, margineBuna, MAXIM_REST, PLACUTE_NUMITE, puntiBune,
-  RAMPA_IMPLICITA, razaEliceImplicita, restBun, rezervaExplicatii, spatiuFolosit, UNGHI_COBORARE_IMPLICIT, URECHI_IMPLICITE, type BunRand,
+  RAMPA_IMPLICITA, razaEliceImplicita, restBun, rezervaExplicatii, spatiuFolosit, textStrans, UNGHI_COBORARE_IMPLICIT, URECHI_IMPLICITE, type BunRand,
   type CerereExport, type FrezaRestOperatie, type IncrustatieDreaptaOperatie, type Latura, type OperatieExport, type Rand, type RandRest,
   copieDeReadus, cuFrezaAleasa, cuFrezaPusaInapoi, cuValorileNoi, frezeRanduri, locuriFreze, numarPentruRand, oferitePentruRest, stareOrigine, type FrezaOferita, type OrigineFreza, type SculaOperatie, type StareExport,
   type CopieRand, type RezultatInapoi, type UndeFreza, campuriSculaGresite, cheieFreza, cuNumarT, numarDupaConflict, type FrezaT, type LocFreza,
@@ -460,6 +461,12 @@ export function DialogExport(
   const panou = useRef<HTMLDivElement>(null);
   const [curent, setCurent] = useState('foaia');
   const [activ, setActiv] = useState<{ readonly loc: string; readonly text: string; readonly camp: string } | null>(null);
+  // Grupurile cu explicațiile desfăcute („Mai mult”, 28.8↑k): ale grupului, nu ale unui text, deci rămân întregi și după ce mausul
+  // trece pe alt câmp (drumul spre buton trece de obicei peste alte câmpuri ale grupului).
+  const [deschise, setDeschise] = useState<ReadonlySet<string>>(() => new Set());
+  const comutaExplicatia = (loc: string): void => {
+    setDeschise((d) => { const n = new Set(d); if (!n.delete(loc)) n.add(loc); return n; });
+  };
   // Acțiunile rândurilor listei, printr-un obiect stabil (28.8↑i): funcțiile de acum stau în `actiuniAcum`, puse după fiecare randare.
   const actiuniAcum = useRef<ActiuniLista | null>(null);
   const [actiuniLista] = useState<ActiuniLista>(() => ({
@@ -658,6 +665,8 @@ export function DialogExport(
   const supracursaBuna = supracursaCitita !== null && Number.isFinite(supracursaCitita) && supracursaCitita >= 0 && supracursaCitita <= SUPRACURSA_MAXIMA;
   // Bifa tăieturilor cât foaia (ADR 0177) are ce schimba doar cu o supracursă bună, peste 0.
   const cuSupracursa = supracursaBuna && supracursaCitita !== null && supracursaCitita > 0;
+  // O incrustație cu pereți drepți și gaură prin foaie (ADR 0175): singura care trece mereu prin foaie, deci are golul ei în desenul Z0.
+  const gauraIncrustatie = Object.values(param).some((p) => p.tip === 'buzunar' && p.incrustatieDreapta && p.locasInc === 'gaura');
   /**
    * Rândul „pe hârtie” (ADR 0291, felia 28.8↑h), cu valorile pe care le primește lucrarea la Exportă: supracursa doar cât e
    * pozitivă și bună, bifa doar cu ea (ca cererea de la Exportă), diametrele cercurilor rândului.
@@ -1317,14 +1326,18 @@ export function DialogExport(
   // Grupul fișei unei operații (ADR 0290): explicația câmpului activ (sau a grupului) în stânga, unde vin desenele din 28.8↑b,
   // câmpurile și greșelile lui în dreapta.
   const grup = (id: GrupExport, fisa: string, corp: ReactNode, greseli: ReadonlyArray<string | Greseala> = [], desen?: (c: DesenComun) => ReactNode): ReactNode => {
-    const loc = `${fisa}|${id}`, aici = activ?.loc === loc ? activ : null;
+    const loc = `${fisa}|${id}`, aici = activ?.loc === loc ? activ : null, deschisa = deschise.has(loc);
+    const explicatie = aici && aici.text !== '' ? aici.text : t(`export.grup.${id}.text` as CheieSimpla);
     return (
       <div className="dx-grup" data-grup={id} key={id}>
         <div className="dx-stanga">
           {desen && <figure className="dx-desen" data-desen>{desen({ f: (x) => fmtTrecere.format(x), fz: (x) => fmtFreza.format(x), aprins: aici && aici.camp !== '' ? [aici.camp] : [] })}</figure>}
-          <p className="dx-explicatie" data-explicatie data-implicit={t(`export.grup.${id}.text` as CheieSimpla)} aria-live="polite">
-            {aici && aici.text !== '' ? aici.text : t(`export.grup.${id}.text` as CheieSimpla)}
+          {/* Lungă, explicația se arată prescurtată, cu „Mai mult” sub ea (28.8↑k); butonul se vede doar într-un grup cu un text lung. */}
+          <p className="dx-explicatie" data-explicatie data-implicit={t(`export.grup.${id}.text` as CheieSimpla)}
+            data-deschisa={deschisa ? '' : undefined} aria-live="polite">
+            {deschisa ? explicatie : textStrans(explicatie)}
           </p>
+          <ButonMaiMult deschis={deschisa} onComuta={() => { comutaExplicatia(loc); }} />
         </div>
         <div className="dx-campuri">
           <h4>{t(`export.grup.${id}` as CheieSimpla)}</h4>
@@ -1383,7 +1396,7 @@ export function DialogExport(
               {t('export.ordine.a-mea')}
             </button>
           </div>
-          <span className="nota">{t(ordineMea === null ? 'export.ordine.nota.automata' : 'export.ordine.nota.a-mea')}</span>
+          <span className="nota"><TextScurt text={t(ordineMea === null ? 'export.ordine.nota.automata' : 'export.ordine.nota.a-mea')} /></span>
           {ordineMea !== null && (
             <button type="button" data-ordine="inapoi" disabled={doarCitire} onClick={() => { alegeOrdine(false); }}>{t('export.ordine.inapoi')}</button>
           )}
@@ -1456,14 +1469,20 @@ export function DialogExport(
             <input type="text" inputMode="decimal" value={supracursa} data-camp="supracursa" aria-invalid={!supracursaBuna}
               onChange={(e) => { schimbat(); onSupracursa(e.target.value); }} />
           </label>
-          {/* Bifa tăieturilor cât foaia (ADR 0177), implicit pusă; fără supracursă, oprită. */}
+          {/*
+            Bifa tăieturilor cât foaia (ADR 0177), implicit pusă; doar cu o supracursă peste 0 (28.8↑k, constatarea 11 a auditului:
+            fără ea nu schimbă nimic, iar „bifată și oprită” nu spunea dacă e pornită). Alegerea omului rămâne ținută.
+          */}
+          {cuSupracursa && (
           <label className="alegere bifa-supracursa" title={t('export.supracursa.prin-foaie.titlu')}>
-            <input type="checkbox" checked={prinFoaie} data-camp="supracursa-prin-foaie" disabled={!cuSupracursa}
+            <input type="checkbox" checked={prinFoaie} data-camp="supracursa-prin-foaie"
               onChange={(e) => { schimbat(); onPrinFoaie(e.target.checked); }} />
             {t('export.supracursa.prin-foaie')}
           </label>
+          )}
               </div>, supracursaBuna ? [] : [t('motiv.supracursa-invalida', { max: fmtFreza.format(SUPRACURSA_MAXIMA) })],
-              (c) => <DesenZ0 c={c} z0={z0} supracursa={supracursaBuna ? supracursaCitita : null} prinFoaie={prinFoaie} />)}
+              (c) => <DesenZ0 c={c} z0={z0} supracursa={supracursaBuna ? supracursaCitita : null} prinFoaie={cuSupracursa && prinFoaie}
+                gaura={gauraIncrustatie} />)}
             </section>
             <section className="dx-fisa" data-fisa="masina">
               <h3>{t('export.fisa.masina')}</h3>

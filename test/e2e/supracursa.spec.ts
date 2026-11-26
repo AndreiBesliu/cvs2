@@ -120,17 +120,19 @@ test('supracursa 0: gaura și decuparea dopului exact prin plăcile lor, ca îna
 });
 
 /**
- * Bifa „și tăieturile cât foaia” (ADR 0177, felia 12.1↑f-4), lângă supracursă: implicit pusă, oprită fără supracursă. Cu 0,5,
+ * Bifa „și tăieturile cât foaia” (ADR 0177, felia 12.1↑f-4), lângă supracursă: implicit pusă, ascunsă fără supracursă. Cu 0,5,
  * profilul dreptunghiului scris cât foaia (18) coboară la 18,5; debifată, la 18 (rezultatul vechi pleacă la schimbare). În
  * proiect, adâncimea rămâne 18; bifa scoasă rămâne scoasă la redeschiderea ferestrei.
  */
-test('bifa tăieturilor cât foaia: implicit pusă, oprită fără supracursă; profilul de 18 la 18,5, debifată la 18', async ({ page }) => {
+test('bifa tăieturilor cât foaia: implicit pusă, ascunsă fără supracursă; profilul de 18 la 18,5, debifată la 18', async ({ page }) => {
   await page.goto('/');
   await dreptunghiMic(page);
   await page.locator('[data-actiune="export.gcode"]').click();
   const bifa = page.locator('[data-camp="supracursa-prin-foaie"]');
-  await expect(bifa).toBeChecked();
-  await expect(bifa).toBeDisabled();
+  // Fără supracursă, bifa n-are ce schimba: nu se arată (28.8↑k, constatarea 11 a auditului; înainte, bifată și oprită). Întâi
+  // fereastra: vine la cerere, iar „nicio bifă” ar trece și înainte să apară.
+  await expect(page.locator('[data-camp="supracursa"]')).toHaveValue('0');
+  await expect(bifa).toHaveCount(0);
   await page.locator('[data-camp="supracursa"]').fill('0,5');
   await expect(bifa).toBeEnabled();
   await expect(bifa).toBeChecked();
