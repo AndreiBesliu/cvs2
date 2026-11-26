@@ -71,6 +71,8 @@ var Atelier3D = (function () {
     arc: { lung: 4, inalt: 1, bolta: "inalta" },
     // cadrul (ADR 0284, felia 3.Cj): fereastra 1 × 4 × 3, cu rama de 1,6 mm și golul drept
     cadru: { lung: 4, inalt: 3, rama: 1.6, colturi: "drepte" },
+    // placa turnantă (ADR 0284, felia 3.Ck-1): baza de 2 × 2, cu pivotul ca un capăt de știft Technic (jocul 0)
+    turnanta: { piesa: "baza", marime: 2, joc: 0 },
     grinda: { cols: 9, rows: 5, celule: [0, 1, 2, 3, 4].map((i): Gaura => [i, 0, "r"]), groasa: true, unealta: "r", fel: "grila", brate: [6, 4], unghiuri: [53.13], gauriInd: [] as string[] },
     caramidaTechnic: { lung: 4, gauri: ["r", "r", "r"], goale: false },
     ax: { lung: 4 } as { lung: number; opritor?: boolean },
@@ -144,7 +146,7 @@ var Atelier3D = (function () {
   // „Calibrare” sunt file proprii, la capăt (în body.html). Datele nu știu de familii: piesele se țin după tip.
   type Familie = readonly [id: string, nume: string, piese: readonly (readonly [tip: string, nume: string])[]];
   const FAMILII: readonly Familie[] = [
-    ["caramizi", "Cărămizi", [["caramida", "Cărămidă / placă"], ["panta", "Pantă"], ["pantaInversa", "Pantă inversă"], ["pana", "Pană / aripă"], ["rotund", "Rotund / con"], ["arc", "Arc"], ["cadru", "Cadru / fereastră"],
+    ["caramizi", "Cărămizi", [["caramida", "Cărămidă / placă"], ["panta", "Pantă"], ["pantaInversa", "Pantă inversă"], ["pana", "Pană / aripă"], ["rotund", "Rotund / con"], ["arc", "Arc"], ["cadru", "Cadru / fereastră"], ["turnanta", "Placă turnantă"],
       ["lateral", "Știfturi pe lateral"], ["suport", "Suport (bracket)"], ["grinda", "Grindă"], ["caramidaTechnic", "Cărămidă Technic"], ["placaTechnic", "Placă cu găuri"]]],
     ["legaturi", "Legături", [["stiftTechnic", "Știft"], ["ax", "Ax"], ["bucsa", "Bucșă / conector"], ["conector", "Conector perpendicular"], ["conectorUnghi", "Conector în unghi"], ["clema", "Clemă"], ["bara", "Bară"], ["maner", "Mâner"], ["bila", "Bilă"], ["cupa", "Cupă"]]],
     ["roti", "Roți", [["rotita", "Roată dințată"], ["cremaliera", "Cremalieră"], ["melc", "Șurub melc"], ["cama", "Camă"], ["conica", "Roată conică"], ["coroana", "Roată coroană"], ["conicaDubla", "Conică dublă"], ["fulie", "Fulie"], ["roata", "Roată cu anvelopă"], ["senila", "Șenilă"]]],
@@ -193,6 +195,7 @@ var Atelier3D = (function () {
     rotund: `<path d="M6 11.5v6a6 2.3 0 0 0 12 0v-6"/><ellipse cx="12" cy="11.5" rx="6" ry="2.3"/><path d="M9.8 11.2V8a2.2.85 0 0 1 4.4 0v3.2"/>`,
     arc: `<path d="M2.5 19v-11h19v11h-4.5v-1.5a5 5 0 0 0-10 0v1.5z"/><path d="M5 8v-2.2h3.2v2.2M10.4 8v-2.2h3.2v2.2M15.8 8v-2.2h3.2v2.2"/>`,
     cadru: `<path d="M3 20.5v-13.5h18v13.5z"/><path d="M6.5 17.5v-7.5h11v7.5z"/><path d="M5 7v-2.2h3.2v2.2M10.4 7v-2.2h3.2v2.2M15.8 7v-2.2h3.2v2.2"/>`,
+    turnanta: `<path d="M3 21h18v-3.5h-18z"/><path d="M4.5 17.5v-3.5h15v3.5"/><path d="M7.5 14v-2h3v2M13.5 14v-2h3v2"/><path d="M17.6 6.6a7 2.6 0 1 1-4.2-2.1"/><path d="M13.4 2.7l.1 1.9-1.8.6"/>`,
     lateral: `<rect x="5" y="9" width="11" height="11" rx="1"/><path d="M8.5 9V6.5h4V9M16 12.5h2.5v4H16"/>`,
     suport: `<path d="M5 5.5h3.5V15H21v4H5z"/><path d="M5 8H2.5v4H5M13 15v-2.5h4V15"/>`,
     grinda: `<rect x="2" y="8" width="20" height="8" rx="4"/><circle cx="6" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="18" cy="12" r="2"/>`,
@@ -299,6 +302,11 @@ var Atelier3D = (function () {
       // ca la ferestrele LEGO: 1 × lungimea × înălțimea în cărămizi; apoi ce nu e obișnuit: rama, colțurile teșite
       const q = Lego.cadruCote(d);
       return tr`Cadru 1×${q.lung}×${q.inalt}` + (q.rama === 1.6 ? "" : tr`, rama ${fmt(q.rama)} mm`) + (q.colturi === "tesite" ? tr(", colțuri teșite") : "");
+    }
+    if (d.tip === "turnanta") {
+      // mărimea, apoi piesa; jocul pivotului, doar când nu e cel al știftului Technic
+      const q = Lego.turnantaCote(d);
+      return tr`Placă turnantă ${q.marime}×${q.marime}, ` + (q.piesa === "sus" ? tr("partea de sus") : tr("baza")) + (q.piesa === "baza" && q.joc ? tr`, jocul ${fmt(q.joc, 2)}` : "");
     }
     if (d.tip === "rotund") {
       const m = `${d.diam}×${d.diam}`, h = d.placi !== 3 ? `, ${d.placi} ${d.placi === 1 ? tr("placă", "LEGO") : tr("plăci", "LEGO")}` : "";
@@ -550,6 +558,7 @@ var Atelier3D = (function () {
     if (t === "dinCvs2") { delete p.deschise; delete p.refuz; }
     if (t === "arc") { const q = Lego.arcCote(p); p.lung = q.lung; p.inalt = q.inalt; if (q.bolta === "joasa") p.bolta = "joasa"; else delete p.bolta; }
     if (t === "cadru") { const q = Lego.cadruCote(p); p.lung = q.lung; p.inalt = q.inalt; p.rama = q.rama; if (q.colturi === "tesite") p.colturi = "tesite"; else delete p.colturi; }
+    if (t === "turnanta") { const q = Lego.turnantaCote(p); p.piesa = q.piesa; p.marime = q.marime; if (q.piesa === "baza" && q.joc) p.joc = q.joc; else delete p.joc; }
     if (t === "melc") { const q = Lego.melcCote(p); p.diam = q.diam; p.lung = q.lung; delete p.pereche; }
     if (t === "cama") { const q = Lego.camaCote(p); p.forma = q.forma; p.diam = q.diam; p.cursa = q.cursa; p.grosime = q.grosime; p.gaura = q.gaura; }
     if (t === "roataPalete") { const q = Lego.roataPaleteCote(p); p.diam = q.diam; p.palete = q.palete; p.lat = q.lat; p.forma = q.forma; p.disc = q.disc; p.gaura = q.gaura; }
@@ -967,6 +976,23 @@ var Atelier3D = (function () {
       camp("#at-cad-rama", 1.2, 4, v => { p.rama = v; });
       $("#at-cad-repede").onclick = ev => { const b = (ev.target as Element).closest<HTMLElement>("[data-v]"), f = b && CADRE.find(a => a.join("x") === b.dataset.v); if (f) { p.lung = f[0]; p.inalt = f[1]; editor(); schimbat(); } };
       $("#at-cad-colturi").onclick = ev => { const b = (ev.target as Element).closest<HTMLElement>("[data-v]"); if (!b) return; p.colturi = b.dataset.v!; editor(); schimbat(); };
+    } else if (t === "turnanta") {
+      // placa turnantă (ADR 0284, felia 3.Ck-1): baza sau partea de sus, mărimea, jocul pivotului (doar la bază); „Fă placa
+      // turnantă” pune în listă amândouă piesele
+      const p = stare.turnanta, q = Lego.turnantaCote(p), baza = q.piesa === "baza";
+      e.innerHTML = `<h2>Placă turnantă</h2>
+        <p class="mic">Două plăci care se rotesc una peste alta, de 6,4 mm împreună, ca placa turnantă LEGO. Baza stă pe știfturi și are fața de sus netedă, cu pivotul în mijloc; partea de sus are știfturi, pentru ce clădești peste ea, și o gaură de știft în mijloc. Pivotul e un capăt de știft Technic: în gaura din calibrare se rotește și ține ca un știft Technic într-o placă cu găuri. Amândouă se tipăresc ca plăcile obișnuite, fără suport.</p>
+        <div class="at-rand"><span class="mic">Piesa:</span>${seg("at-tu-piesa", [["baza", "Baza"], ["sus", "Partea de sus"]], q.piesa)}</div>
+        <div class="at-rand"><span class="mic">Mărimea:</span>${seg("at-tu-marime", [["2", "2 × 2"], ["4", "4 × 4"]], String(q.marime))}</div>
+        ${baza ? `<div class="at-campuri"><label for="at-tu-joc">Jocul pivotului (mm)<input id="at-tu-joc" type="number" min="-0.1" max="0.2" step="0.05" value="${q.joc}"></label></div>` : ""}
+        <p class="mic" id="at-tu-info">${textTurnanta(p)}</p>
+        <div class="at-rand"><button class="btn" type="button" id="at-tu-fa">Fă placa turnantă</button><span class="mic">${tr("pune în listă baza și partea de sus")}</span></div>`;
+      const alege = (id: string, f2: (v: string) => void) => { $(id).onclick = ev => { const b = (ev.target as Element).closest<HTMLElement>("[data-v]"); if (!b) return; f2(b.dataset.v!); editor(); schimbat(); }; };
+      alege("#at-tu-piesa", v => { p.piesa = v; });
+      alege("#at-tu-marime", v => { p.marime = +v; });
+      // jocul: din 0,05 în 0,05, doar în margini (altfel câmpul se întoarce la valoarea de dinainte)
+      if (baza) $("#at-tu-joc").onchange = ev => { const v = Math.round(+(ev.target as HTMLInputElement).value * 20) / 20 || 0; if (v >= -0.1 && v <= 0.2) { p.joc = v; schimbat(); } editor(); };
+      $("#at-tu-fa").onclick = adaugaTurnanta;
     } else if (t === "lateral") {
       const p = stare.lateral;
       e.innerHTML = `<h2>Cărămidă cu știfturi pe lateral</h2>
@@ -3013,6 +3039,21 @@ var Atelier3D = (function () {
     for (const d of piese) pune(d as Def, n);
     salveaza(); randeazaLista();
     toast(tr`${n} × brăduțul (trunchiul, ${etaje === 1 ? tr("un etaj") : tr`${etaje} etaje`}, vârful și steaua) în listă.`);
+  }
+  function textTurnanta(p: { piesa?: string; marime?: number; joc?: number }): string {
+    // pivotul bazei în gaura părții de sus: diametrele și jocul de jur împrejur; ce faci dacă se rotește greu sau iese ușor
+    const q = Lego.turnantaCote({ ...p, piesa: "baza" });
+    return tr`Pivotul are Ø${fmt(q.pivotD, 2)} mm, iar gaura din calibrare, Ø${fmt(q.gauraD, 2)} mm: ${fmt(q.jocRadial, 3)} mm de jur împrejur.` + " " +
+      tr("Dacă partea de sus se rotește prea greu, mărește jocul pivotului cu 0,05 mm; dacă iese prea ușor de pe pivot, micșorează-l.");
+  }
+  function adaugaTurnanta() {
+    // baza și partea de sus (aceeași mărime; jocul e al bazei), câte bucăți sunt cerute
+    laZi();
+    const n = bucatiCerute();
+    pune(defCurenta("turnanta", { ...stare.turnanta, piesa: "baza" }), n);
+    pune(defCurenta("turnanta", { ...stare.turnanta, piesa: "sus" }), n);
+    salveaza(); randeazaLista();
+    toast(tr`${n} × placa turnantă (baza și partea de sus) în listă.`);
   }
   function adaugaVentilator() {
     // rotorul și carcasa lui (aceleași palete, diametru, joc, pas și lățime), câte bucăți sunt cerute

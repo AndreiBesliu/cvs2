@@ -694,6 +694,33 @@ var Lego = (function (glob: typeof globalThis) {
     for (let k = 0; k < q.n; k++) prinderi.push({ fel: "stift", p: [s * k + s / 2, s / 2, q.H], d: SUS, lung: P.stift_h });
     return { tri, avert: q.avert, prinderi };
   }
+  // Placa turnantă (ADR 0284, felia 3.Ck-1): două plăci de 2 × 2 sau 4 × 4, una peste alta (6,4 mm, ca la LEGO).
+  // - baza: o placă plină (cu locașurile dedesubt, deci stă pe știfturi), cu fața de sus netedă și, în mijloc, pivotul: un
+  //   capăt de știft Technic în picioare (Ø4,75, cu fanta de 0,8 mm pe toată înălțimea), înalt cât o placă fără 0,1 mm;
+  // - partea de sus: placa cu știfturi și cu gaura de știft din mijloc (aceeași cu placa cu gaură a cărămizii).
+  // Pivotul intră în gaura din calibrare ca un știft Technic într-o placă cu găuri: se rotește și ține ca el. Jocul (cât se
+  // scoate din raza pivotului, de la −0,1 la 0,2 mm, din 0,05 în 0,05) o reglează doar pe ea, fără calibrarea găurilor.
+  type TurnantaDef = { marime?: unknown; piesa?: unknown; joc?: unknown };
+  const zecimalCerut = (v: unknown): number => (typeof v === "string" ? numarCerut(v.trim().replace(",", ".")) : numarCerut(v));
+  function turnantaCote(d: TurnantaDef) {
+    const avert: string[] = [], m = zecimalCerut(d.marime), marime = Number.isFinite(m) && m >= 3 ? 4 : 2, piesa = d.piesa === "sus" ? "sus" : "baza";
+    if (Number.isFinite(m) && m !== 2 && m !== 4) avert.push(tr`Placa turnantă e de 2 × 2 sau 4 × 4: am făcut-o de ${marime} × ${marime}.`);
+    const j = zecimalCerut(d.joc), joc = Number.isFinite(j) ? Math.min(0.2, Math.max(-0.1, Math.round(j * 20) / 20)) || 0 : 0;
+    if (piesa === "baza" && Number.isFinite(j) && (j < -0.1 - 1e-9 || j > 0.2 + 1e-9)) avert.push(tr`Jocul pivotului e între −0,1 și 0,2 mm: l-am făcut de ${String(joc).replace(".", Limba.zecimal)} mm.`);
+    return { marime, piesa, joc, r: P.stift_technic_d / 2 - joc, hp: P.placa - 0.1, gauraD: ef().gauraD, avert };
+  }
+  function turnanta(d: TurnantaDef): Corp {
+    const q = turnantaCote(d), n = q.marime, c = P.pas * n / 2, H = P.placa, celule = randCelule(n, n);
+    if (q.piesa === "sus") {
+      const sus = caramida({ celule, placi: 1, gauri: [[n / 2, n / 2, "r"]] });
+      return { ...sus, avert: [...sus.avert, ...q.avert] };
+    }
+    const baza = caramida({ celule, placi: 1, stifturi: false, fund: "locasuri" }), tri = [...baza.tri], f2 = 0.4, N = 64, a0 = Math.acos(f2 / q.r);
+    // pivotul: cele două brațe de o parte și de alta a fantei, fiecare cu arcul lui de cerc și coarda de la fantă
+    const brat: P2[] = Array.from({ length: N + 1 }, (_, k): P2 => { const u = -a0 + 2 * a0 * k / N; return [q.r * Math.cos(u), q.r * Math.sin(u)]; });
+    tri.push(...prisma(brat.map(([x, y]): P2 => [c + x, c + y]), H - 0.01, H + q.hp), ...prisma(brat.map(([x, y]): P2 => [c - x, c - y]), H - 0.01, H + q.hp));
+    return { tri, avert: q.avert, prinderi: [...baza.prinderi, { fel: "stiftTechnic", p: [c, c, H], d: SUS, lung: q.hp }] };
+  }
   function lateral({ lung = 1, fete = "una" }: { lung?: number; fete?: string }): Corp {
     // caramida 1 x n cu stifturi si pe latura lunga (SNOT): stiftul lateral la 5,6 mm de jos, ca o piesa prinsa in el sa
     // iasa la nivel cu fata de sus. Plina, cu locasuri dedesubt; se printeaza in picioare (stifturile laterale sunt scurte).
@@ -3489,7 +3516,7 @@ var Lego = (function (glob: typeof globalThis) {
   }
 
   // ---------------------------------------------------------------------------------------------- piesa dupa definitie
-  const TIPURI = { caramida, lateral, panta, pantaInversa, pana, rotund, arc, cadru, grinda, caramidaTechnic, ax, stiftTechnic, bucsa, conector, conectorUnghi, suport, clema, maner, bara, bila, cupa, rotita, cremaliera, cama, melc, roata, fulie, conica, coroana, conicaDubla, senila, elice, eliceBarca, ventilator, roataPalete, fulg, stea, brad, glob: globCraciun, ornament, bradLego, dinCvs2 };
+  const TIPURI = { caramida, lateral, panta, pantaInversa, pana, rotund, arc, cadru, turnanta, grinda, caramidaTechnic, ax, stiftTechnic, bucsa, conector, conectorUnghi, suport, clema, maner, bara, bila, cupa, rotita, cremaliera, cama, melc, roata, fulie, conica, coroana, conicaDubla, senila, elice, eliceBarca, ventilator, roataPalete, fulg, stea, brad, glob: globCraciun, ornament, bradLego, dinCvs2 };
   function construieste(def: DefPiesa) {
     const f = TIPURI[def.tip];
     if (!f) throw new Error("tip necunoscut: " + def.tip);
@@ -4201,6 +4228,7 @@ var Lego = (function (glob: typeof globalThis) {
     arcCote: (d: ArcDef) => { const q = arcCote(d); return { lung: q.n, inalt: q.c, bolta: q.joasa ? "joasa" : "inalta", deschidere: q.w, sageata: q.s, raza: q.R, deasupra: q.H - q.s, inaltime: q.H }; },
     // cadrul (ADR 0284): cotele din parametri, după margini; golul (lat, înalt), teșitura colțurilor de sus și puntea rămasă
     cadruCote: (d: CadruDef) => { const q = cadruCote(d); return { lung: q.n, inalt: q.c, rama: q.rama, colturi: q.tesit ? "tesite" : "drepte", golLat: q.w, golInalt: q.h, tesitura: q.k, punte: q.w - 2 * q.k, inaltime: q.H }; },
+    turnantaCote: (d: TurnantaDef) => { const q = turnantaCote(d); return { marime: q.marime, piesa: q.piesa, joc: q.joc, pivotD: 2 * q.r, pivotH: q.hp, gauraD: q.gauraD, jocRadial: (q.gauraD - 2 * q.r) / 2, inaltime: 2 * P.placa }; },
     // roata cu palete (ADR 0284): cotele din parametri, după margini; butucul (raza), grosimea și lungimea unei palete
     // (de la butuc la vârf), săgeata celor curbate, grosimea discului, câte palete încap la diametrul ăsta
     roataPaleteCote: (d: PaleteDef) => { const q = roataPaleteCote(d); return { diam: q.D, palete: q.n, lat: q.W, forma: q.forma, disc: q.disc, gaura: q.gaura, butuc: q.rh, grosime: q.t, lungime: q.c, sageata: q.sageata, discGros: PALETE.disc, incap: q.incap }; },

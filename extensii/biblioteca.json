@@ -18,6 +18,12 @@
       ],
       "noutati": [
         {
+          "versiune": "18.43.0",
+          "data": "2026-11-26",
+          "ro": "Placa turnantă, de 2 × 2 sau 4 × 4: o bază pe știfturi și o parte de sus cu știfturi, care se rotește pe un pivot ca un știft Technic. „Fă placa turnantă” pune amândouă în listă.",
+          "en": "The turntable, 2 × 2 or 4 × 4: a base on studs and a top with studs that turns on a pivot like a Technic pin. “Make the turntable” adds both to the list."
+        },
+        {
           "versiune": "18.42.0",
           "data": "2026-11-26",
           "ro": "Patru construcții gata, făcute cu mărimile tale: un șasiu cu patru roți, o cutie de angrenaje (de la 1 : 1 la 1 : 25), un braț de macara și o barcă cu elice. Se deschid ca o construcție nouă, cu piesele prinse între ele.",
@@ -202,8 +208,8 @@
           }
         }
       ],
-      "versiune": "18.42.0",
-      "continut": "fa79a30460473141d25eafc93f48964602378146bcea792667a7128d3c37741f"
+      "versiune": "18.43.0",
+      "continut": "7d2d093d72b819c5528d014edc24f74175d80e7b27505217cc9a1450c5d9763d"
     }
   ]
 }

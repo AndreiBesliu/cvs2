@@ -82,7 +82,7 @@ const DREPTE: readonly Def[] = [
   CARAMIDA24, { tip: 'caramida', celule: rand(2, 2), placi: 1 }, { tip: 'caramida', celule: rand(2) },
   { tip: 'caramida', celule: [[0, 0], [1, 0], [2, 0], [0, 1], [0, 2]], placi: 2 },
   { tip: 'lateral' }, { tip: 'lateral', lung: 2, fete: 'doua' }, { tip: 'panta' }, { tip: 'pantaInversa' }, { tip: 'pana' },
-  { tip: 'rotund' }, { tip: 'rotund', diam: 2 }, { tip: 'arc' }, { tip: 'cadru' }, { tip: 'grinda' }, { tip: 'caramidaTechnic' },
+  { tip: 'rotund' }, { tip: 'rotund', diam: 2 }, { tip: 'arc' }, { tip: 'cadru' }, { tip: 'turnanta' }, { tip: 'turnanta', piesa: 'sus', marime: 4 }, { tip: 'grinda' }, { tip: 'caramidaTechnic' },
   { tip: 'ax', lung: 3 }, { tip: 'stiftTechnic' }, { tip: 'bucsa' }, { tip: 'conector' }, { tip: 'conectorUnghi' },
   { tip: 'suport' }, { tip: 'suport', lung: 2, adanc: 2, inalt: 2, invers: true }, { tip: 'clema' }, { tip: 'clema', lung: 2, axa: 'orizontala' },
   { tip: 'maner', lung: 2, axa: 'orizontala' }, { tip: 'maner', lung: 3, axa: 'orizontala' }, { tip: 'bara' },
