@@ -36,11 +36,11 @@ test('cercul: nodul e curbă pe ambele părți, cu mânere; mânerul tras face o
   // Cele două semicercuri au devenit câte 3 curbe (6 noduri), iar curba trasă a ieșit din cercul de 30 × 30.
   await expect(noduri(page)).toHaveAttribute('data-noduri', '6');
   await expect(randuri(page).first()).toContainText('cale');
-  await expect(randuri(page).first()).not.toContainText('30.00 × 30.00');
+  await expect(randuri(page).first()).not.toContainText('30,00 × 30,00');
   await expect(noduri(page)).toHaveAttribute('data-tip', 'ambele');
   await expect(page.getByTestId('noduri-sfat')).not.toHaveClass(/cip-atentie/);
   await page.locator('[data-actiune="istoric.anuleaza"]').click();
-  await expect(randuri(page).first()).toContainText('cerc R15.00');
+  await expect(randuri(page).first()).toContainText('cerc R15,00');
   // „Colț” pe un nod de cerc: fără refuz, nodul devine colț.
   await clic(page, 85, 50);
   await page.locator('[data-editare="nod-colt"]').click();
@@ -74,6 +74,6 @@ test('o piesă cu gaură (Scade): ambele contururi au noduri; un nod al găurii 
   await page.mouse.up();
   await expect(noduri(page)).toHaveAttribute('data-contur', '1');
   await expect(randuri(page)).toHaveCount(1);
-  await expect(randuri(page).first()).toContainText('cale 100.00 × 60.00');
+  await expect(randuri(page).first()).toContainText('cale 100,00 × 60,00');
   await expect(randuri(page).first()).toContainText('(+1)');
 });

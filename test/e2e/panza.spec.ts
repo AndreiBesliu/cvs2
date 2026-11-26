@@ -73,10 +73,10 @@ test('clic, mutare prin tragere, anulare: totul prin acțiuni, cu poziția din l
   // apropiat câștigă (ADR 0074 §1), deci cercul; departe de cerc, înăuntrul dreptunghiului, dreptunghiul.
   const p = ecran(85, 50);
   await page.mouse.click(p.x, p.y);
-  await expect(page.getByTestId('selectie')).toContainText('cerc R15.00 cu centrul la X 70.00, Y 50.00');
+  await expect(page.getByTestId('selectie')).toContainText('cerc R15,00 cu centrul la X 70,00, Y 50,00');
   const inDreptunghi = ecran(30, 30);
   await page.mouse.click(inDreptunghi.x, inDreptunghi.y);
-  await expect(page.getByTestId('selectie')).toContainText('dreptunghi 100.00 × 60.00 la X 20.00, Y 20.00');
+  await expect(page.getByTestId('selectie')).toContainText('dreptunghi 100,00 × 60,00 la X 20,00, Y 20,00');
   // Clic în afara oricărei forme: nimic selectat.
   const gol = ecran(250, 150);
   await page.mouse.click(gol.x, gol.y);
@@ -88,12 +88,12 @@ test('clic, mutare prin tragere, anulare: totul prin acțiuni, cu poziția din l
   await page.mouse.move(a.x + 50, a.y, { steps: 5 });
   await page.mouse.move(a.x + 100, a.y, { steps: 5 });
   await page.mouse.up();
-  const x = (20 + 100 / v.scara).toFixed(2);
-  await expect(page.getByTestId('selectie')).toContainText(`la X ${x}, Y 20.00`);
+  const x = (20 + 100 / v.scara).toFixed(2).replace('.', ',');
+  await expect(page.getByTestId('selectie')).toContainText(`la X ${x}, Y 20,00`);
   await page.keyboard.press('Control+z');
-  await expect(page.getByTestId('selectie')).toContainText('la X 20.00, Y 20.00');
+  await expect(page.getByTestId('selectie')).toContainText('la X 20,00, Y 20,00');
   await page.keyboard.press('Control+y');
-  await expect(page.getByTestId('selectie')).toContainText(`la X ${x}, Y 20.00`);
+  await expect(page.getByTestId('selectie')).toContainText(`la X ${x}, Y 20,00`);
 });
 
 test('pan cu butonul din mijloc și zoomul limitat la 1 000 px/mm', async ({ page }) => {

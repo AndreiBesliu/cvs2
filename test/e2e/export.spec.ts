@@ -103,7 +103,7 @@ test('freza iese din foaie: avertismentul stă în bara de jos, iar exportul cer
   await expect(page.getByTestId('avertisment')).toHaveCount(1);
   await expect(page.getByTestId('avertisment')).toContainText('iese din foaie');
   const stare = (await page.getByTestId('selectie').textContent()) ?? '';
-  const x = Number(/la X (-?\d+\.\d+)/.exec(stare)?.[1]);
+  const x = Number(/la X (-?\d+,\d+)/.exec(stare)?.[1]?.replace(',', '.'));
   expect(x).toBeLessThan(0);
 
   // Fără confirmare: nimic descărcat, butonul blocat.

@@ -294,7 +294,7 @@ test('«Din CSV…» pe un șablon cu urechi (felia 11.3↑b): distanța urcă s
   // Urechile pe profilul exterior al ramei (Ø6), din fereastra exportului: prin foaia de 18, în treceri de 6.
   await page.locator('[data-actiune="export.gcode"]').click();
   // Rândul ramei (literele au și ele un profil exterior, pe rândul lor, fără urechi).
-  const rama = page.locator('[data-operatie]').filter({ hasText: 'dreptunghi 60.00 × 20.00' });
+  const rama = page.locator('[data-operatie]').filter({ hasText: 'dreptunghi 60,00 × 20,00' });
   await expect(rama).toHaveCount(1);
   await rama.locator('[data-camp="adancime"]').fill('18');
   await rama.locator('[data-camp="pas"]').fill('6');
