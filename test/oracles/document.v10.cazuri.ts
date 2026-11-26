@@ -118,7 +118,7 @@ export const OTRAVURI_V10: readonly OtravaV10[] = [
   { nume: 'X25 o cale deschisă cu 50 001 de vârfuri', categorie: 'plafon', doc: docV10O(deschisaLunga(50_001)) },
   otrava('X26 p.y NaN pe ultimul vârf (punctul lui se judecă)', 'finit', (f) => { (ultim(f)['p'] as Liber)['y'] = NaN; }),
   // Felia 5.1↑ (ADR 0069): ușa curentă era v11, deci „mai nouă” era 12; din 5.3↑ (ADR 0076), v12, deci 13; din 5.4↑ (ADR 0087), 14; din 8.1↑ (ADR 0090), 15; din 8.2↑ (ADR 0091), 16; din 8.3↑ (ADR 0092), 17; din 5.5↑ (ADR 0093), 18; din 5.6↑ (ADR 0094), 19; din 5.9↑ (ADR 0133), 20; din 12.1↑ (ADR 0170), 21; din 12.1↑b (ADR 0171), 22; din 12.1↑c (ADR 0172), 23; din 11.4↑ (ADR 0210), 24; din 12.1↑b-2 (ADR 0174), 25; din 12.1↑f (ADR 0175), 26; din 11.3↑d (ADR 0211), 27; din 16.A↑b (ADR 0300), 28; din 18.1↑a (ADR 0310), 29; din 18.1↑c (ADR 0312), 30.
-  otrava('X27 schema 30', 'schema', (_f, d) => { (d as unknown as Liber)['schema'] = 30; }),
+  otrava('X27 schema 31', 'schema', (_f, d) => { (d as unknown as Liber)['schema'] = 31; }),
   otrava('X28 cale deschisă cu arce sub o forfecare', 'forma', () => {}, { matrice: SHEAR }),
 ];
 

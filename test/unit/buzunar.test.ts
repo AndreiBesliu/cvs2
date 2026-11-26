@@ -200,8 +200,8 @@ test('migrarea v10 → v11 schimbă doar numărul; un v10 cu un buzunar sau cu p
   const b = incarca(cuPas);
   assert.ok(!b.ok && /are câmpul „pasLateral”, pe care v11 îl folosește: nu e un document v10 valid/.test(b.motiv));
   // Un document cu schema peste a aplicației (din 5.4↑, v13) e refuzat cu motivul versiunii.
-  const c = incarca({ ...(doc([{ id: 'e', forma: DREPT }], []) as Record<string, unknown>), schema: 30 });
-  assert.ok(!c.ok && /versiune mai nouă \(schema 30, aici 29\)/.test(c.motiv));
+  const c = incarca({ ...(doc([{ id: 'e', forma: DREPT }], []) as Record<string, unknown>), schema: 31 });
+  assert.ok(!c.ok && /versiune mai nouă \(schema 31, aici 30\)/.test(c.motiv));
 });
 
 test('lucrarea: buzunarul nu e inel al regiunii păstrate, se taie înaintea exteriorului piesei și stă înăuntrul ei', () => {
