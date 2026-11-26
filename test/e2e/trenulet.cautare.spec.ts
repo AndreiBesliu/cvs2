@@ -90,7 +90,8 @@ test('fără diacritice și majuscule, la început de cuvânt, fiecare cuvânt; 
   await expect(page.locator('#at-galerie')).toHaveAttribute('aria-label', 'Cărămizi');
   // Enter alege prima piesă găsită, iar fila ei o ține minte
   await camp(page).fill('fu');
-  await expect(gasite(page)).toHaveText(['Fulie']);
+  // („fu” găsește și fulgul de zăpadă, din fila Crăciun, 3.Cl-1; fulia e prima, în ordinea filelor)
+  await expect(gasite(page)).toHaveText(['Fulie', 'Fulg de zăpadă']);
   await camp(page).press('Enter');
   await expect(filaApasata(page)).toHaveAttribute('data-fila', 'roti');
   await expect(titlu(page)).toHaveText('Fulie');
@@ -101,7 +102,7 @@ test('fără diacritice și majuscule, la început de cuvânt, fiecare cuvânt; 
   await expect(piesaApasata(page)).toHaveAttribute('data-piesa', 'fulie');
   // același text din nou, după golire: rezultatele, nu galeria familiei rămasă
   await camp(page).fill('fu');
-  await expect(gasite(page)).toHaveText(['Fulie']);
+  await expect(gasite(page)).toHaveText(['Fulie', 'Fulg de zăpadă']);
   await camp(page).fill('');
   await fila(page, 'caramizi').click();
   await fila(page, 'roti').click();

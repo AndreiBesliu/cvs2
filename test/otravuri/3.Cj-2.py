@@ -115,7 +115,8 @@ o('E03', AT, NU, NU.replace(' + (q.forma === "curbate" ? tr(", curbate") : "")',
 o('E04', AT, NU, NU.replace('q.lat === 15.8 ? ""', 'q.lat === 7.8 ? ""'), 'e2e', 'numele spune lățimea obișnuită și o tace pe cea de o grindă')
 o('E05', AT, NU, NU.replace('${q.palete} palete`', '${q.incap} palete`'), 'e2e', 'numele scrie câte palete încap')
 o('E06', AT, NU, NU.replace('Ø${fmt(q.diam)}', 'Ø${fmt(q.lat)}'), 'e2e', 'numele scrie lățimea în locul diametrului')
-N2 = '+ (q.disc === "fara" ? tr(", fără disc") : "") + (q.gaura === "r" ? tr(", gaură rotundă") : "");\n    }\n    if (d.tip === "rotita") {'
+# (din 3.Cl-1, după roata cu palete vin numele decorațiunilor: ancora se oprește la `fulg`)
+N2 = '+ (q.disc === "fara" ? tr(", fără disc") : "") + (q.gaura === "r" ? tr(", gaură rotundă") : "");\n    }\n    if (d.tip === "fulg") {'
 o('E07', AT, N2, N2.replace('(q.disc === "fara" ? tr(", fără disc") : "") + ', ''), 'e2e', 'numele nu spune că roata n-are disc')
 o('E08', AT, N2, N2.replace(' + (q.gaura === "r" ? tr(", gaură rotundă") : "")', ''), 'e2e', 'numele nu spune gaura rotundă')
 o('E09', AT, 'camp("#at-rp-diam", 24, 160, v => { p.diam = v; });', 'camp("#at-rp-diam", 20, 160, v => { p.diam = v; });', 'e2e', 'câmpul primește diametrul 23')
@@ -146,7 +147,9 @@ o('E31', AT, '<input id="at-rp-palete" type="number" min="4" max="${q.incap}" st
   'câmpul paletelor nu-și ține marginea de sus după diametru')
 # (E32 de la prima rulare punea în câmpul paletelor numărul ținut, nu cel făcut: echivalentă prin editor, fiindcă `tine` le
 # face egale după fiecare schimbare; diferă doar la o stare salvată din afara marginilor. Otrava e acum alta.)
-o('E32', AT, 'if (v >= a && v <= b) { f(v); tine(); schimbat(); } editor(); }; };', 'if (v >= a && v <= b) { f(v); tine(); schimbat(); editor(); } }; };', 'e2e',
+# (din 3.Cl-1, editorul fulgului are același rând: ancora pleacă de la `tine` al roții cu palete)
+E32 = 'const tine = () => { p.palete = Lego.roataPaleteCote(p).palete; };\n      const camp = (id: string, a: number, b: number, f: (v: number) => void) => { $(id).onchange = ev => { const v = +(ev.target as HTMLInputElement).value; if (v >= a && v <= b) { f(v); tine(); schimbat(); } editor(); }; };'
+o('E32', AT, E32, E32.replace('{ f(v); tine(); schimbat(); } editor(); }; };', '{ f(v); tine(); schimbat(); editor(); } }; };'), 'e2e',
   'un număr refuzat rămâne scris în câmp')
 o('E33', AT, '<input id="at-rp-diam" type="number" min="24" max="160" step="0.1" value="${q.diam}">', '<input id="at-rp-diam" type="number" min="24" max="160" step="0.1" value="${p.diam}">', 'e2e',
   'câmpul diametrului arată zecimalele scrise, nu rotunjirea')
@@ -157,3 +160,5 @@ SETURI = {
     'tabele': ['test/unit/trenulet.familii.test.ts', 'test/unit/trenulet.pictograme.test.ts', 'test/unit/trenulet.engleza.test.ts', 'test/unit/trenulet.tipuri.test.ts'],
 }
 E2E = ['test/e2e/trenulet.palete.spec.ts']
+# pagina și pachetul se fac din surse în spec: build-ul aplicației nu le schimbă (docs/otravuri.md)
+E2E_BUILD = False
