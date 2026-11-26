@@ -15539,3 +15539,22 @@ cu patru întrebări: „Mergem cu recomandarile”
   feliei și privirea 23 / 23, tipurile, traducerile (1 166), catalogul controalelor.
 - **Mărimea:** pornirea +0,1 kB (111,5; cu ușa 116,7, cu Atelierul 117,0 / 125), totalul +1,8 kB (911,3 / 1 000), față de `main` `7a754885`.
 - **Nedovedit fără mașină:** lemnul rămas după degroșare, suprafața finisată față de model, timpul (placa reliefului, d-2).
+
+## 2026-11-26 — Linia reliefului: felia 18.1↑d-2, fișa plăcii reliefului (placa 18) (Model: Claude Opus 5.5)
+
+**Prompt:** „ok, porneste 10.4↑d si 18.1↑d” (owner-ul, prin sesiunea principală): „degroșarea, apoi fișa plăcii reliefului”.
+**Started:** 26.11, 02:40, după d-1, pe aceeași ramură. **Completed:** 26.11, 04:10 (orele, în ora României).
+
+- **Generatorul** (`test/placi/placa-18/genereaza.ts`), pe drumul aplicației:
+  - relieful de 80 × 50 din grilă: calota, rampa cu platoul, fundul;
+  - rolul „Relief 3D”, ușa, exportul cu câte un fișier pe freză (T1 plata Ø6, adaosul 0,5, liniile la 2,5; T2 bila Ø6, la 1,5).
+- **Fișierele de aur**, cu amprentele în fișă (`placa18.aur.test.ts`).
+- **Cotele**, prezise de oracolul simulării pe exportul proaspăt (`placa18.test.ts`):
+  - după T1: adaosul pe fund, pe platou și lângă pereți; pe rampă, între a · (1 + g) și marginea de sus;
+  - după T2: pe model, cu creasta 0,095;
+  - vârful calotei la față; buzunarul 79,88 × 50,00;
+  - nicăieri sub model; pasul pe material; coborârea; timpul.
+- **Găsite pe G-code-ul plăcii și reparate în d-1:** coborârea cu avansul de tăiere și fâșia de lângă pereții paraleli cu liniile.
+  ADR 0313 §3, corectat: la capetele liniilor, între două linii, rămâne o scobitură de cel mult R − √(R² − (s / 2)²) peste a.
+- **Fișa** (`docs/etape/placa-18.md`): ce măsori după T1 (înaintea lui T2) și după T2, timpul, ce devin măsurătorile. Tăierea e
+  a owner-ului (rândul din coada lui).

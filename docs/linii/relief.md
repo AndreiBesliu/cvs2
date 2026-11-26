@@ -185,3 +185,13 @@ degroșarea și finisarea pe relief), unde stă relieful în document și unde s
     de 0,125 mm, la prag, rotunjirea singură trecea cu ~2 % peste.
   - **Lemnul rămas, cu `ramasO`:** numără doar coloanele tăiate (sub `fata`). O probă care cere „nimic uitat” (o fâșie
     netăiată) îi dă `fata = Infinity`. Așa a scăpat fâșia de lângă pereții paraleli cu liniile degroșării.
+- **26.11, 04:10: 18.1↑d-2 gata pe ramură**: fișa plăcii reliefului (`docs/etape/placa-18.md`), generatorul și fișierele de
+  aur în `test/placi/placa-18/`, cotele prezise de oracolul simulării (`placa18.test.ts`, pe exportul proaspăt), otrăvurile
+  10 / 10. Tăierea e a owner-ului.
+- **De ținut minte, din 18.1↑d-2:**
+  - **Vârful compusului e la fața plăcii:** pe o grilă, vârful e al celulei celei mai înalte (aici 7,999, nu 8), deci fundul e
+    la −zmax; cotele se socotesc din zmax, nu din înălțimea pe hârtie.
+  - **Bila cu peretele păstrat nu atinge fața din jur:** la capetele liniilor, pe perete rămâne cel mult o celulă de calcul
+    (0,0625); pe pereții paraleli cu liniile, linia de lângă perete rotunjește muchia de sus.
+  - **Modelul unei probe pe placă** e cel triangulat prin centrele celulelor (`triunghiuriModel` + `clExact`), nu funcția pe
+    hârtie: lângă trepte, funcția sare, triangularea nu.
