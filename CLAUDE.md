@@ -643,7 +643,19 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   (`src/ui/motivCalcul.ts`, pur): numele elementelor în locul id-urilor din lume, virgula în română, „Du-mă la …”
   la operația primului element numit (harta `operatiiLume`, în `src/app/ExportConectat.tsx`). **O probă care
   citește un refuz al calculului caută numele elementului, nu „e1/e1”, și „5,5 mm”, nu „5.5 mm”.** Programul,
-  octet cu octet. Urmează 28.8↑k (curățenia vizuală), apoi l. Felia: pornirea +0, totalul +1,1 kB.
+  octet cu octet. Felia: pornirea +0, totalul +1,1 kB.
+  **Curățenia vizuală a ferestrei exportului (ADR 0291, felia 28.8↑k)** gata pe 26.11, unită în `main` pe 26.11
+  (`3cdd23f5`): rândurile listei nu se mai strâng; căsuța fiecărei bife stă lângă etichetă; la fundul plat (și la
+  freza operației), lista „Din frezele mele” stă pe rândul ei, iar numărul, diametrul și pasul pe unul singur; „și
+  tăieturile cât foaia” se arată doar cu o supracursă peste 0 (alegerea omului rămâne ținută); desenul Z0 arată
+  golul incrustației doar cu o incrustație cu pereți drepți și gaură prin foaie, iar tăietura „cât foaia” doar cu
+  bifa pusă și o supracursă peste 0; la freza în V, diametrul e desenat sub vârf; titlurile în engleză: Cut type,
+  Clearing, Descent, Rest machining. Textele lungi (`src/ui/TextScurt.tsx`): peste 160 de caractere se vede prima
+  propoziție și „…”, cu „Mai mult” al grupului (explicațiile) și al notelor. **O probă care cere „nu există”
+  într-o fereastră adusă la cerere așteaptă întâi fereastra. Un text lung din fereastra exportului se prescurtează
+  singur, deci o probă care caută a doua propoziție apasă întâi „Mai mult” (`[data-mai-mult]`).** Programul,
+  documentul și serverul, neschimbate. Urmează 28.8↑l (tastatura și cititorul de ecran). Felia: pornirea +0,
+  totalul +0,5 kB (919,2 / 1 000).
   **Aldinul și cursivul sintetic (ADR 0123, felia 7.5↑, adusă din etapa 7)** gata pe 02.11, în worktree-ul `wip/7.5-text`:
   bifele **Aldin** și **Cursiv** din panoul textului, pentru orice font. Cursivul înclină fiecare literă față de linia ei de
   bază, exact; aldinul așază literele la înălțimea miezului (h − 2d), le îngroașă cu d prin fațada offsetului
@@ -1901,6 +1913,36 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 26.11.2026, dimineața (a patruzeci și noua unire din cloud): **curățenia vizuală a ferestrei „Exportă G-code”
+  (28.8↑k), unită în `main`** (sesiunea principală, ramura `unire-2611h`, din `c1d1c81d`). Linia exportului, ramura
+  `wip/28.8-export`, `d14f83cb`, PR-ul `AndreiBesliu/cvs2#56` (ADR 0291; constatările 8, 10, 11, 12, 16, 17 și 21
+  ale auditului), unită în `3cdd23f5`: rândurile listei nu se mai strâng una peste alta (cu „A mea”, sau la
+  1280 × 720); căsuța fiecărei bife stă lângă eticheta ei; la fundul plat, lista „Din frezele mele” stă pe rândul
+  ei, iar numărul, diametrul și pasul pe un singur rând; „și tăieturile cât foaia” se arată doar cu o supracursă
+  peste 0; desenul Z0 arată golul incrustației și tăietura „cât foaia” doar când există; la freza în V, diametrul e
+  desenat sub vârf; în engleză, titlurile grupurilor sunt Cut type, Clearing, Descent, Rest machining; un text de
+  peste 160 de caractere își arată prima propoziție și „…”, cu „Mai mult” alături. **Programul, documentul (v30)
+  și serverul nu se schimbă**; otrăvurile 17 / 17. O probă mai veche a liniei incrustațiilor verifica „nicio bifă”
+  înainte să se încarce fereastra, deci trecea oricum (otrava B02 din `12.1f-4.py` scăpa): proba așteaptă acum
+  câmpul supracursei. Ramura avea `main` `c1d1c81d`, iar `main` nu se mișcase: **arborele unirii e chiar al lui
+  `d14f83cb`** (`git diff` gol), deci felia a intrat pe porțile lui, fără alt complet: completul 45756457933, verde
+  la prima trecere (57 min): unit 10 719 / 0 (12 sărite, pe Linux), e2e 945 / 945, funcțiile pe emulatoare
+  136 / 136, paginile 60 / 60; rapidul 45756450864, verde; pornirea 111,6 kB (plafonul 125; cu ușa 116,8, cu
+  Atelierul 117,1), **totalul 919,2 / 1 000 kB** (+0,5), `/admin` 138,3 / 200, contul 30,2 / 32. **Lotul 42
+  (degroșarea reliefului, cotele d-2 și d-3, greșelile ferestrei exportului) e pe test din 26.11, 06:47**
+  (`9edf9ae0`; completul pe `main` 45751184091, verde: unit 10 701 / 0, e2e 928 / 928, funcțiile pe emulatoare
+  136 / 136, paginile 60 / 60; proba de fum, bună); lotul 43 (ornamentul cu nume și brăduțul LEGO, `c1d1c81d`) e în
+  drum, iar felia aceasta pleacă după el (lotul 44). **O alegere a owner-ului, lăsată lui de audit:** titlurile în
+  română ale grupurilor „Ce tăiere”, „Cum golește” și „Cum coboară”; linia recomandă „Tăietura”, „Golirea” și
+  „Coborârea”; până la cuvântul lui rămân cum sunt. La linii, în lucru: exportul (28.8↑l, tastatura și cititorul de
+  ecran), atelierul (3.Cf-2, orientarea de mână pe trei axe, 18.39.0, de raportat). **La owner:** titlurile
+  grupurilor exportului, constatarea 14, de încercat și de tipărit decorațiunile (și ornamentul cu nume și brăduțul
+  LEGO), pachetul Easy 3Draw (553,0 kB), întrebarea 10 a cotelor și cele două alegeri din d-1, alegerile reliefului
+  și tăierea plăcii 18, rândul editabil al finisării și al degroșării, Escape în cele șase ferestre, feliile
+  frezelor (16.A↑d–g), cele două alegeri mai vechi cu recomandarea aplicată, de încercat „Modelul” din Easy 3Draw,
+  proba pe mașină a centrului foii, cele patru întrebări din auditul elicelor, arhivarea sesiunii elicelor,
+  verificarea juridică (GDPR) a utilizării aplicației înaintea live-ului, „cine unește în `main`”, meniul de sus la
+  320 px la atingere.
 - 26.11.2026, dimineața (a patruzeci și opta unire din cloud): **ornamentul cu nume (3.Cl-3) și brăduțul LEGO
   (3.Cl-4) din atelierul Easy 3Draw, unite în `main`** (sesiunea principală, ramura `unire-2611g`, din `9edf9ae0`).
   Linia atelierului, ramura `wip/3.Xh-biblioteca-ui`, `b71c3c98`, PR-ul `AndreiBesliu/cvs2#55` (ADR 0285), unite

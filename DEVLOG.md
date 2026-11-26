@@ -15841,3 +15841,20 @@ otrăvurile; orele, după ceasul containerului).
 - **Completul unirii cotelor singure** (45742512400, pe `67dfb777`), care rula la unirea a patruzeci și șasea: a ieșit și el verde, la 05:46, după 79 de minute (unit 10 693 / 0, e2e 923 / 923, funcțiile pe emulatoare 136 / 136, paginile 60 / 60).
 - **Lotul 42** (`9edf9ae0`: relieful, cotele, exportul) e încă în drum; lotul 43 pleacă după el.
 - **Documentele:** decizia și paragrafele de stare în `CLAUDE.md`; indexul liniilor; starea din `docs/linii/principala.md`.
+
+## 2026-11-26 — Sesiunea principală în cloud: a patruzeci și noua unire (fereastra exportului: 28.8↑k, curățenia vizuală) și lotul 42 pe test (Model: Claude Fable 5.2)
+
+**Prompt:** raportul liniei exportului („28.8↑k e gata de unit”, `d14f83cb`), la ordinul în vigoare „unește ce se poate”
+**Started:** 26.11, 07:36. **Completed:** unirea în `main`, 26.11, 07:37; publicarea pe test, lotul 44, după lotul 43.
+
+- **Verificat înaintea unirii:** completul liniei (45756457933) și rapidul (45756450864), verzi pe `d14f83cb`; PR-ul #56; fără
+  `.lucru/`; `main` (`c1d1c81d`) era strămoș și nu se mișcase.
+- **Unirea, pe `unire-2611h`** (din `c1d1c81d`): `d14f83cb`, în `3cdd23f5`, fără nicio ciocnire. Arborele unirii e chiar al lui
+  `d14f83cb` (`git diff` gol), deci felia a intrat pe porțile lui, fără alt complet: unit 10 719 / 0 (12 sărite, pe Linux), e2e
+  945 / 945, funcțiile pe emulatoare 136 / 136, paginile 60 / 60 (citite din jurnalul rulării); pornirea 111,6 kB (cu ușa
+  116,8, cu Atelierul 117,1 / 125), totalul 919,2 / 1 000 kB, `/admin` 138,3 / 200, contul 30,2 / 32. Nimic pe server.
+- **Lotul 42 pe test:** `9edf9ae0`, publicat pe 26.11 la 06:47 (completul pe `main` 45751184091, verde: unit 10 701 / 0, e2e
+  928 / 928, funcțiile pe emulatoare 136 / 136, paginile 60 / 60; proba de fum, bună). Lotul 43 (`c1d1c81d`) e în drum.
+- **Greșit la prima încercare a unirii:** `git merge -F -` nu citește mesajul de la intrare („could not read file '-'”), deci
+  unirea nu s-a făcut; mesajul se dă dintr-un fișier.
+- **Documentele:** decizia și paragraful de stare în `CLAUDE.md`; indexul liniilor; starea din `docs/linii/principala.md`.
