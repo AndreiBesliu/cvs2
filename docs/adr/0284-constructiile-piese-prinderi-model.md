@@ -633,3 +633,61 @@ Easy 3Draw 18.40.0, pe ramura `wip/3.Xh-biblioteca-ui`, în sesiunea cloud a lin
   grupul cu o piesă prinsă de două, cheia ținerii de minte pe amândouă piesele; plus V21, nouă); `3.Cg-en.py`, 11 / 11.
 - **Mărimea:** pachetul Easy 3Draw, 562,6 kB (era 555,4); aplicația, neschimbată.
 - **Felia următoare:** 3.Ch (construcțiile cu nume și lista lor de piese).
+
+## Implementat (3.Ch, 26.11.2026)
+
+Easy 3Draw 18.41.0, pe ramura `wip/3.Xh-biblioteca-ui`, în sesiunea cloud a liniei atelierului.
+
+- **Ce vede omul.** Vederea „Modelul” arată una dintre construcțiile atelierului. Sus, în editorul ei:
+  - **Construcția:** lista construcțiilor, din care alege una; fiecare își ține piesele, cu așezările și legăturile lor;
+  - **Numele:** scris de om, pe loc (Enter sau ieșirea din câmp); gol, construcția e „Construcția N” (N, numărul ei),
+    în limba paginii;
+  - **„Construcție nouă”** (goală, cu câmpul numelui gata de scris), **„Dublează construcția”** (aceleași piese, cu
+    legăturile lor, după ea) și **„Șterge construcția”** (după „Sigur?”; cu una singură, oprit: golirea rămâne
+    „Golește modelul”).
+  Jos, **„Piesele construcției”**: un rând pe piesă (aceeași piesă se adună, oricum i-ar fi scrise câmpurile), cu
+  bucățile, filamentul și timpul de printat, și totalul. Butonul de sub vedere e acum **„Pune construcția în lista de
+  printat”**: pune aceleași rânduri, cu aceleași bucăți și grame. Cotele vederii au și timpul.
+- **Timpul** e socotit din filament: gramele (ca în lista de printat), împărțite la densitatea PLA (1,24 g/cm³) și la
+  **debitul mediu al imprimantei**, un câmp nou în „Imprimanta și potrivirea pieselor” (mm³/s, întreg, între 1 și 50,
+  implicit 5; ținut în profilul fiecărei imprimante). E aproximativ și nu cuprinde încălzirea: pagina o spune sub tabel.
+  Se scrie rotunjit la minut: „< 1 min”, „≈ 12 min”, „≈ 1 h 5 min”, „≈ 2 h”.
+- **Numele sunt ale omului:** nu se traduc (`translate="no"`, pe care traducerea paginii îl respectă acum), nu intră în
+  pagină ca HTML, au cel mult 60 de caractere, fără spațiile de prisos. Un nume luat de altă construcție primește
+  numărul următor („Macara” → „Macara 2”; „Macara 2” → „Macara 3”), la fel copia unei construcții cu nume; copia uneia
+  fără nume rămâne fără nume, cu numărul ei. O construcție nouă ia cel mai mic număr liber.
+- **Datele.** Stocarea ține `constructii` (`{ id, nume, nr, model }`) și `activa`; `model` rămâne al construcției
+  alese, deci un model salvat înainte se deschide ca o construcție fără nume, „Construcția 1”, iar o pagină de dinainte
+  găsește construcția aleasă. O intrare stricată se citește cât se poate: cele fără piese se sar, id-urile și numerele
+  se fac unice, numele se curăță, piesele se citesc ca înainte. (O pagină de dinainte care salvează păstrează doar
+  construcția aleasă: e drumul înapoi, la o versiune mai veche a pachetului.)
+- **Motorul** (`lego.ts`, secțiunea „construcțiile”), funcții pure: `cheieDef` (cheia unei piese, cu câmpurile în
+  ordine alfabetică), `pieseConstructie` (rândurile, cu bucățile), `timpPrint` și `durataPrint`, `curataNume`,
+  `numeLiber`, `nrLiber`. Lista de printat adună acum aceeași piesă după `cheieDef`.
+- **Atelierul** (`atelier.ts`): `constructii`, `activa`, `tineConstructia` (construcția aleasă, cu piesele de acum),
+  `treciPe`, `constructieNoua`, `dubleazaConstructia`, `stergeConstructia`, `redenumesteConstructia`, `grameDef` (ținute
+  minte), blocul `#at-c` și tabelul `#at-c-piese` în `editorModel`; debitul (`debit`, `debitBun`) în setări și în
+  imprimantă. O schimbare a imprimantei reface și editorul modelului (era doar vederea): timpul și verificarea urmează
+  setările.
+- **Ce n-a intrat:** o construcție ca fișier (exportul și importul ei); o listă a construcțiilor în afara vederii
+  „Modelul”; timpul spus de un slicer (piesele mici durează mai mult decât spune debitul: stratul are un timp minim);
+  construcțiile gata (3.Ci).
+- **Alegeri făcute cu recomandarea, de întrebat owner-ul:** (1) timpul din filament, la un debit mediu (implicit 5
+  mm³/s), nu dintr-un slicer; (2) numele implicit „Construcția N” și copia „Macara 2”, nu „Macara (copie)” (un cuvânt
+  scris ar rămâne în limba în care a fost făcută copia); (3) vederea se cheamă tot „Modelul”, cu construcțiile alese în
+  ea; (4) ultima construcție nu se șterge (se golește).
+- **Găsite și reparate în felie:** lista de printat ținea aceeași piesă pe două rânduri când câmpurile ei erau scrise în
+  altă ordine (acum, după `cheieDef`); o imprimantă aleasă din profiluri reîmprospăta doar vederea, nu și editorul
+  modelului (nici verificarea din 3.Cg nu urma variantele noi); „Sigur?” rămânea românește în engleză (o etichetă cu
+  semnul întrebării nu era cerută ca text de tradus).
+- **Probele.** Unitară, scrisă întâi (`test/unit/trenulet.constructii.test.ts`, 10 teste, pe hârtie): cheia, rândurile,
+  timpul (12,4 g = 10 000 mm³; 2 000 s la 5 mm³/s), scrierea lui la praguri, numele și numerele. E2e
+  (`test/e2e/trenulet.constructii.spec.ts`, 8 scenarii): modelul de dinainte, construcția nouă, copia (cu legăturile și
+  cu piesele ei), ștergerea, numele omului, stocarea stricată, tabelul cu timpul pe hârtie, debitul și imprimanta
+  aleasă, lista de printat, reîncărcarea. Proba în engleză din cvs2 (`trenulet.spec.ts`): butoanele, tabelul, nota,
+  „Sure?”, un nume „Roți” rămas „Roți”.
+- **Otrăvurile:** `test/otravuri/3.Ch.py`, 68 / 70 (la prima rulare 59 / 70: unsprezece scăpate, din care șapte prinse
+  după probele întărite, A25 înlocuită, A15 plecată cu codul ei; A03 și A11, practic echivalente, rămân ca pază; A42,
+  nouă); `3.Ch-en.py`, 10 / 10.
+- **Mărimea:** pachetul Easy 3Draw, 567,9 kB (era 562,6); aplicația, neschimbată.
+- **Felia următoare:** 3.Ci (construcțiile gata, patru șabloane).

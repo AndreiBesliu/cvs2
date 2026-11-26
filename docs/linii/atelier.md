@@ -21,9 +21,10 @@ recomandările, 1a–4a): 3.Cl-1 (fulgul, steaua și brăduțul, în fila nouă 
 `AndreiBesliu/cvs2#53`); 3.Cl-3 (ornamentul cu nume; 18.37.0) și 3.Cl-4 (brăduțul LEGO; 18.38.0), unite în
 `main` pe 26.11 (`474b76fc`, PR-ul `AndreiBesliu/cvs2#55`): ADR 0285 are toate feliile făcute.** 3.Cf-2 (răsturnările
 și jumătățile de pas în „Modelul”; 18.39.0), unită în `main` pe 26.11 (`3e56e8cf`, PR-ul `AndreiBesliu/cvs2#57`).
-**3.Cg (verificarea din „Modelul”: prinsă, plutește, intră în alta; 18.40.0), gata pe ramură pe 26.11.**
-Urmează 3.Ch (construcțiile cu nume și lista lor de piese); 3.Ck așteaptă tipărirea bilei și a cupei. Versiunea
-următoare a pachetului: 18.41.0._
+3.Cg (verificarea din „Modelul”: prinsă, plutește, intră în alta; 18.40.0), unită în `main` pe 26.11 (`75d8dde2`,
+PR-ul `AndreiBesliu/cvs2#59`). **3.Ch (construcțiile cu nume și lista lor de piese, cu filamentul și timpul; 18.41.0),
+gata pe ramură pe 26.11.** Urmează 3.Ci (construcțiile gata, patru șabloane); 3.Ck așteaptă tipărirea bilei și a cupei.
+Versiunea următoare a pachetului: 18.42.0._
 
 ## Numerele liniei
 
@@ -46,7 +47,7 @@ următoare a pachetului: 18.41.0._
 | 3.Tu | Modelul: piesele rotunde pe același ax (ADR 0283) | gata (25.11); acceptată de owner cu 1a, 2a, 3a |
 | 3.Cf | Modelul: orientarea pe trei axe și alipirea la prinderi | 3.Cf-1 (alipirea, cu piesele legate), gata (25.11); 3.Cf-2 (răsturnările, jumătățile de pas), gata (26.11) |
 | 3.Cg | Modelul: verificarea (prins, plutește, se ciocnește) | gata (26.11): avertisment, nu refuz (răspunsul 2a) |
-| 3.Ch | Construcțiile cu nume și lista lor de piese | |
+| 3.Ch | Construcțiile cu nume și lista lor de piese | gata (26.11): cu filamentul și timpul (din debitul imprimantei) |
 | 3.Ci | Construcțiile gata (șasiul, cutia de angrenaje, brațul de macara, barca cu elice) | după Model (răspunsul 3a) |
 | 3.Cj | Melcul, cama și manivela, cadrul, roata cu palete | pe bucăți: 3.Cj-1, cama, 3.Cj-2, roata cu palete, 3.Cj-3, cadrul, și 3.Cj-4, șurubul melc: gata (25.11) |
 | 3.Ck | Balamaua și placa turnantă | despărțite de 3.Cd; după ce owner-ul încearcă primele piese pe imprimantă |
@@ -588,3 +589,32 @@ următoare a pachetului: 18.41.0._
   motorului). Proba îl copiază cu `Array.from(…)`.
 - **O linie copiată în motor strică ancora unei otrăvi vechi** (apare de două ori): `cutieDusa` cheamă `cutieTransf`,
   nu îi repetă bucla. Verificarea ancorelor, înaintea commit-ului, pe toate listele pluginului (acum 2 434 de otrăvuri).
+
+## 3.Ch, gata (26.11, în cloud): construcțiile cu nume și lista lor de piese (ADR 0284, partea D)
+
+- **Unde e:** motorul, după verificarea modelului, secțiunea „construcțiile”: `cheieDef`, `pieseConstructie`,
+  `timpPrint`, `durataPrint`, `curataNume`, `numeLiber`, `nrLiber`. Atelierul: `constructii`, `activa`,
+  `tineConstructia`, `treciPe`, `constructieNoua`, `dubleazaConstructia`, `stergeConstructia`, `redenumesteConstructia`,
+  `grameDef`, `esc`; în `editorModel`, blocul `#at-c` și tabelul `#at-c-piese`; debitul (`debit`, `debitBun`) în
+  `SETARI_IMPLICIT`, `CHEI_IMPRIMANTA`, `puneImprimanta`, `reglaje`, `schimbaSetare`; citirea în `incarca`
+  (`curataModel`), salvarea în `salveaza`. `limba.ts`: `alOmului` (`translate="no"`). `head.html`: `.model-constructii`,
+  `.model-piese`.
+- **Ce face și ce n-a intrat:** în ADR 0284, „Implementat (3.Ch)”.
+- **Probele:** `test/unit/trenulet.constructii.test.ts`, `test/e2e/trenulet.constructii.spec.ts`, pasul construcțiilor
+  din proba în engleză (`trenulet.spec.ts`); otrăvurile, `test/otravuri/3.Ch.py` și `3.Ch-en.py`.
+
+### Reguli și capcane (3.Ch)
+
+- **`model` sunt piesele construcției alese.** Codul de până acum lucrează mai departe pe `model`; `tineConstructia()`
+  îl pune în construcția aleasă (la salvare, înaintea oricărei treceri pe alta). O operație nouă care înlocuiește
+  `model` (`model = …`) nu are nimic de făcut în plus; una care trece pe altă construcție trece prin `treciPe`.
+- **Numele scris de om e date, nu text al paginii:** intră în pagină doar prin `esc` și cu `translate="no"` (traducerea
+  paginii îl ocolește: un nume ca „Roți” nu devine „Wheels”). Un nume implicit nu se scrie în stocare: construcția fără
+  nume are `nume: ""` și se arată „Construcția N” în limba de acum.
+- **Aceeași piesă e aceeași după `cheieDef`, nu după `JSON.stringify`:** o definiție citită din stocare și una făcută în
+  editor pot avea câmpurile în altă ordine. Lista de printat (`pune`) și tabelul construcției adună la fel.
+- **O schimbare a imprimantei (sau a setărilor ei) reface și editorul modelului**, nu doar vederea: timpul și
+  verificarea depind de ele (`dupaSchimbare`, `aplicaImprimanta`).
+- **Timpul e din filament, la debitul mediu:** piesele mici (cărămizile) durează mai mult decât spune debitul, din
+  cauza timpului minim pe strat; de aceea implicitul e 5 mm³/s, nu cât poate imprimanta. O regulă nouă a timpului
+  intră în motor (`timpPrint`, `durataPrint`), cu valorile ei pe hârtie.

@@ -58,6 +58,8 @@ o('M28', LG, '    let n = 1;\n    while (f.has(n)) n++;', '    let n = Math.max(
 # --- atelierul: construcțiile
 o('A01', AT, '  const numeC = (c: Constructie) => c.nume || tr`Construcția ${c.nr}`;', '  const numeC = (c: Constructie) => c.nume || tr`Construcția ${constructii.indexOf(c) + 1}`;', 'e2e', 'numele implicit după locul din listă, nu după numărul construcției')
 o('A02', AT, '    activa = c.id; model = c.model; alegeM(null); inlocuieste = null;', '    activa = c.id; model = c.model; inlocuieste = null;', 'e2e', 'piesa aleasă rămâne aleasă în altă construcție')
+# A03 și A11, practic echivalente: fiecare drum care schimbă `model` salvează (iar salvarea ține construcția la zi), iar
+# „Șterge” e oprit cu o singură construcție; apelurile rămân ca pază
 o('A03', AT, '    tineConstructia(); treciPe(c);\n  }', '    treciPe(c);\n  }', 'e2e', 'trecerea pe altă construcție pierde piesele puse în cea de dinainte')
 CN2 = '    const c: Constructie = { id: idNou(), nume: "", nr: Lego.nrLiber(constructii.map(x => x.nr)), model: [] };'
 o('A04', AT, CN2, CN2.replace('model: []', 'model: JSON.parse(JSON.stringify(model))'), 'e2e', 'construcția nouă are piesele celei de dinainte')
@@ -73,7 +75,8 @@ o('A12', AT, '    treciPe(constructii[Math.min(i, constructii.length - 1)]!);', 
 RN = '    a.nume = v ? Lego.numeLiber(constructii.filter(x => x !== a).map(numeC), v) : "";'
 o('A13', AT, RN, '    a.nume = v;', 'e2e', 'un nume luat de altă construcție rămâne la fel')
 o('A14', AT, RN, RN.replace('constructii.filter(x => x !== a).map(numeC)', 'constructii.map(numeC)'), 'e2e', 'numele scris din nou al aceleiași construcții primește „2”')
-o('A15', AT, '    campNume.onkeydown = ev => { if (ev.key === "Enter") { ev.preventDefault(); campNume.blur(); } };\n', '', 'e2e', 'Enter nu mai scrie numele')
+# (A15 scotea apăsarea lui Enter din câmpul numelui: echivalentă, Chromium scrie numele la Enter, iar editorul făcut din
+# nou scoate focusul; apăsarea a plecat din cod)
 o('A16', AT, '`<option value="${esc(c.id)}" translate="no"${c === ac ? " selected" : ""}>${esc(numeC(c))}</option>`', '`<option value="${esc(c.id)}" translate="no"${c === ac ? " selected" : ""}>${numeC(c)}</option>`', 'e2e', 'numele scris de om intră în pagină ca HTML')
 o('A17', AT, 'value="${esc(ac.nume)}"', 'value="${ac.nume}"', 'e2e', 'numele cu ghilimele strică câmpul')
 o('A18', AT, ' id="at-c-sterge"${constructii.length < 2 ? " disabled" : ""}>', ' id="at-c-sterge">', 'e2e', '„Șterge” nu e oprit cu o singură construcție')

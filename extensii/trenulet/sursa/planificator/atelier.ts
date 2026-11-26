@@ -2511,9 +2511,8 @@ var Atelier3D = (function () {
     $("#at-c-sterge").onclick = () => { $("#at-c-confirma").hidden = false; };
     $("#at-c-sterge-da").onclick = stergeConstructia;
     const campNume = $<HTMLInputElement>("#at-c-nume");
+    // numele se scrie la Enter sau la ieșirea din câmp (`change`); editorul se face din nou, deci focusul pleacă din câmp
     campNume.onchange = () => redenumesteConstructia(campNume.value);
-    // Enter scrie numele (ca ieșirea din câmp)
-    campNume.onkeydown = ev => { if (ev.key === "Enter") { ev.preventDefault(); campNume.blur(); } };
     if (m) {
       $("#at-m-mutari").onclick = ev => { const b = (ev.target as Element).closest<HTMLElement>("[data-m]"); if (b) mutaM(b.dataset.m!); };
       const P = document.getElementById("at-m-prinderi");
