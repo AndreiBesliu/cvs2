@@ -1795,6 +1795,27 @@ nav button[aria-pressed='true'] {
   grid-column: 1 / -1;
 }
 
+/*
+ * Fundul plat (ADR 0091): bifa, lista „Din frezele mele”, numărul, diametrul și pasul pe un rând, ca la freza operației (28.8↑k,
+ * constatarea 10 a auditului; înainte stăteau unul sub altul); nota bibliotecii și frezele de rest, pe rândurile lor.
+ */
+.dialog .campuri-fund {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: var(--sp-2) var(--sp-4);
+}
+
+/*
+ * Lista „Din frezele mele” stă pe rândul ei, deasupra numărului și diametrului (la freza operației, la fundul plat, la dop):
+ * alături, numele unei freze lungi împingea pasul lateral pe rândul următor, iar rândul arăta altfel la fiecare lățime.
+ */
+.dialog .dx-rand .freza-biblioteca,
+.dialog .campuri-fund > .freza-biblioteca {
+  flex-basis: 100%;
+  justify-items: start;
+}
+
 /* Incrustația (ADR 0170 §5): jocurile și marginea dopului pe rândul lor, nota sub ele, pe toată lățimea. */
 .dialog .campuri-incrustatie {
   display: flex;
@@ -2019,6 +2040,25 @@ nav button[aria-pressed='true'] {
   accent-color: var(--a-plin);
 }
 
+/*
+ * Bifele fișei, ca rampa și urechile (28.8↑k, constatarea 10 a auditului): căsuța și eticheta pe același rând, nu eticheta sub
+ * căsuță (regula `.dialog label` e o grilă pentru câmpurile cu eticheta deasupra). Cât un câmp, ca o bifă de pe rândul
+ * câmpurilor să stea la nivelul lor. Cu specificitatea lui `.dialog label` (`:where`), deci confirmările de sub fișe, cu textul
+ * lor pe mai multe rânduri, își păstrează regula.
+ */
+.dialog-export label:where(:has(> input[type='checkbox'])) {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+  min-height: 32px;
+  color: var(--t);
+  font-size: var(--fs-3);
+}
+
+.dialog-export label:where(:has(> input[type='checkbox']:disabled)) {
+  color: var(--t-slab);
+}
+
 /* Bifa tăieturilor cât foaia (ADR 0177), pe rândul câmpurilor exportului: la nivelul câmpurilor, nu al etichetelor lor. */
 .dialog .campuri label.bifa-supracursa {
   align-self: end;
@@ -2179,6 +2219,15 @@ nav button[aria-pressed='true'] {
   padding: var(--sp-2) var(--sp-2) var(--sp-4);
   border-right: 1px solid var(--l-margine);
   background: var(--s-peste);
+}
+
+/*
+ * Rândurile listei stau cât conținutul lor, iar lista se derulează (28.8↑k, constatarea 8 a auditului): `min-height: 32px` al
+ * butoanelor le înlocuia minimul automat al coloanei flex, deci, pe o fereastră joasă sau cu „A mea”, capul listei se strângea
+ * la 32 px, iar numele și ce e sub el treceau peste rândul următor. Pe telefon, banda le strânge pe lățime (mai jos).
+ */
+.dx-lista > * {
+  flex-shrink: 0;
 }
 
 .dx-sectiune {
@@ -2713,6 +2762,25 @@ nav button[aria-pressed='true'] {
 }
 
 /*
+ * „Mai mult” / „Mai puțin” (ADR 0291, felia 28.8↑k; constatarea 21 a auditului): sub explicația prescurtată a grupului sau după
+ * o notă lungă, pe rândul lui, cât textul lui. Într-un grup fără texte lungi (`data-lung`, pus de `rezervaExplicatii`) nu se vede.
+ */
+.dialog button.dx-mai-mult {
+  display: flex;
+  justify-self: start;
+  width: fit-content;
+  margin-top: var(--sp-1);
+  padding: 0 var(--sp-2);
+  border-color: var(--l-camp);
+  font-size: var(--fs-2);
+  font-weight: 400;
+}
+
+.dx-grup:not([data-lung]) > .dx-stanga > .dx-mai-mult {
+  display: none;
+}
+
+/*
  * Densitatea mare (ADR 0250 §5; Atelier, la tabletă), în fereastra exportului (ADR 0290, felia 28.8↑f-1): câmpurile, bifele și
  * butoanele listei au ținta butoanelor (48 px, 56 la atingere), nu 32 și 24 px.
  */
@@ -2748,6 +2816,11 @@ nav button[aria-pressed='true'] {
 
   .dx-lista .dx-sectiune {
     display: none;
+  }
+
+  /* Pe bandă, rândurile se strâng pe lățime, până la minimul lor (`min-width` al butoanelor, lățimea rândului unei operații). */
+  .dx-lista > * {
+    flex-shrink: 1;
   }
 
   /* Ordinea tăierii trece la capătul benzii: întâi se văd operațiile, care se ating mai des. */

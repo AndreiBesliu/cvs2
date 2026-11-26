@@ -93,18 +93,30 @@ export function DesenColt({ colt, nume, onColt }: { colt: ColtDesen; nume: strin
   );
 }
 
-/** Secțiunea foii pe masă: Z0 sus sau jos, gaura incrustației (mereu cu supracursa) și o tăietură scrisă cât foaia (cu bifa). */
-export function DesenZ0({ c, z0, supracursa, prinFoaie }: { c: DesenComun; z0: 'sus' | 'jos'; supracursa: number | null; prinFoaie: boolean }): ReactNode {
+/**
+ * Secțiunea foii pe masă: Z0 sus sau jos; gaura incrustației (mereu cu supracursa), doar dacă foaia are o incrustație cu gaură
+ * prin foaie, și o tăietură scrisă cât foaia, doar cu supracursa peste 0 și bifa ei (28.8↑k, constatarea 12 a auditului: altfel
+ * cine deschide fereastra vede goluri care nu sunt în proiectul lui).
+ */
+export function DesenZ0({ c, z0, supracursa, prinFoaie, gaura }: {
+  c: DesenComun; z0: 'sus' | 'jos'; supracursa: number | null; prinFoaie: boolean; gaura: boolean;
+}): ReactNode {
   const y0 = 54, yb = 94, sup = supracursa ?? 0, sp = sup > 0 ? Math.max(4, Math.min(sup * 8, 22)) : 0, yz = z0 === 'sus' ? y0 : yb;
+  // Cota supracursei, lângă golul care se vede (cel al incrustației, altfel cel scris cât foaia).
+  const xc = !gaura && prinFoaie && sp > 0 ? 186 : 140;
   return (
     <Desen eticheta={t('export.desen.z0')} data-z0={z0}>
       <rect className="m" x={6} y={yb} width={248} height={26} /><text x={12} y={yb + 18}>{t('export.desen.masa')}</text>
       <rect className="l" data-lemn x={6} y={y0} width={248} height={yb - y0} />
-      <rect className="g" x={150} y={y0} width={16} height={yb - y0 + sp} />
-      <rect className="g" x={196} y={y0} width={16} height={yb - y0 + (prinFoaie ? sp : 0)} />
-      <text x={158} y={y0 - 6} textAnchor="middle">{t('export.desen.z0.gaura')}</text>
-      <text x={204} y={y0 - 20} textAnchor="middle">{t('export.desen.z0.foaia')}</text>
-      {sp > 0 && <Cota pentru="supracursa" c={c} x1={140} y1={yb} x2={140} y2={yb + sp} text={c.f(sup)} tx={136} ty={yb + sp / 2 + 4} anc="end" />}
+      {gaura && <>
+        <rect className="g" data-gol="gaura" x={150} y={y0} width={16} height={yb - y0 + sp} />
+        <text x={158} y={y0 - 6} textAnchor="middle">{t('export.desen.z0.gaura')}</text>
+      </>}
+      {prinFoaie && sp > 0 && <>
+        <rect className="g" data-gol="foaia" x={196} y={y0} width={16} height={yb - y0 + sp} />
+        <text x={204} y={y0 - 20} textAnchor="middle">{t('export.desen.z0.foaia')}</text>
+      </>}
+      {sp > 0 && <Cota pentru="supracursa" c={c} x1={xc} y1={yb} x2={xc} y2={yb + sp} text={c.f(sup)} tx={xc - 4} ty={yb + sp / 2 + 4} anc="end" />}
       <path className="ua" d={`M6 ${yz}H${z0 === 'sus' ? 96 : 140}`} /><text x={8} y={yz - 6} className="tare z0">Z0</text>
       <Jos>{sp > 0 ? t('export.desen.z0.cu', { mm: c.f(sup) }) : t('export.desen.z0.fara')}</Jos>
     </Desen>
@@ -127,7 +139,10 @@ export function DesenFreza({ c, numar, diametru, v, unghi, varfPlat }: {
         <text x={130} y={r(yv - 24)} textAnchor="middle">{`${unghi === null ? '?' : c.f(unghi)}°`}</text>
       </g>
       <Cota pentru="varf-v" c={c} text={t('export.desen.freza.varf', { mm: varfPlat === null ? '?' : c.f(varfPlat) })} tx={172} ty={yv + 4} anc="start" />
-      <Cota pentru="diametru" c={c} x1={96} y1={30} x2={164} y2={30} text={`Ø ${D} mm`} tx={130} ty={24} />
+      {/* Diametrul sub vârf, ca la freza plată, cu liniile ajutătoare din marginile conului (28.8↑k, constatarea 17): pe coadă,
+          un diametru lung („Ø 3,175 mm”) trecea peste T. */}
+      <path className="c slab" d="M96 48V130M164 48V130" />
+      <Cota pentru="diametru" c={c} x1={96} y1={126} x2={164} y2={126} text={`Ø ${D} mm`} tx={130} ty={141} />
     </>);
   } else {
     corp = (<>

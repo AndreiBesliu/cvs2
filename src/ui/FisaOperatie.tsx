@@ -12,6 +12,7 @@ import {
   DesenIntrari, DesenLocasDrept, DesenRampa, DesenRest, DesenSens, DesenTreapta, DesenUrechi, type DesenComun,
 } from './exportDesene.tsx';
 import { Card, Cartonase, GrupCartonase, Poza } from './exportPoze.tsx';
+import { TextScurt } from './TextScurt.tsx';
 import {
   bandaBuna, bandaRand, CHEI_LATURA, CHEI_SENS, faraNumar, FELURI_COBORARE, inMargini, jocFolosit, margineBuna, SENSURI,
   campuriSculaGresite, locuriFreze, spatiuFolosit, stareOrigine, URECHI_IMPLICITE, type BunRand, type DiferentaFreza, type FrezaOferita, type HartieRand,
@@ -602,7 +603,7 @@ export function FisaOperatie({ cheie, loc, c: ctx }: { readonly cheie: string; r
           {nota('fund', p.origineFund)}
           <label>
             {t('export.freza.numar')}
-            <input type="text" inputMode="numeric" value={p.numarSculaFund} data-camp="fund-scula" disabled={doarCitire || !p.fundPlat}
+            <input type="text" inputMode="numeric" value={p.numarSculaFund} data-camp="fund-scula" className="numar-scula" disabled={doarCitire || !p.fundPlat}
               aria-invalid={p.fundPlat && (!b.fund || ciocnit(p.numarSculaFund))} onChange={(ev) => { schimba(o.cheie, { numarSculaFund: ev.target.value }); }} />
           </label>
           <label>
@@ -651,8 +652,10 @@ export function FisaOperatie({ cheie, loc, c: ctx }: { readonly cheie: string; r
             variante={[{ v: 'fata', text: t('export.banda.jur.fata'), nota: t('export.card.jur.fata') },
               { v: 'banda', text: t('export.banda.jur.banda'), nota: t('export.card.jur.banda') }]} />
           {/* Fără freză dreaptă (ADR 0173), nota spune că fundul îl fac inelele frezei V. */}
+          {/* Lungă, ca toate notele dopului: prima propoziție la vedere, restul sub „Mai mult” (28.8↑k). */}
           <p className="nota-incrustatie" data-fund={p.fundPlat ? 'plat' : 'v'}>
-            {t(p.jurDop === 'banda' ? (p.fundPlat ? 'export.banda.nota' : 'export.banda.nota-v') : (p.fundPlat ? 'export.incrustatie.nota' : 'export.incrustatie.nota-v'))}
+            <TextScurt text={t(p.jurDop === 'banda' ? (p.fundPlat ? 'export.banda.nota' : 'export.banda.nota-v')
+              : (p.fundPlat ? 'export.incrustatie.nota' : 'export.incrustatie.nota-v'))} />
           </p>
           </div>
           )}
@@ -836,7 +839,7 @@ export function FisaOperatie({ cheie, loc, c: ctx }: { readonly cheie: string; r
           {nota('dop', p.origineDop)}
           <label>
             {t('export.freza.numar')}
-            <input type="text" inputMode="numeric" value={p.numarSculaDop} data-camp="dop-scula" disabled={doarCitire}
+            <input type="text" inputMode="numeric" value={p.numarSculaDop} data-camp="dop-scula" className="numar-scula" disabled={doarCitire}
               aria-invalid={!b.frezaDop || ciocnit(p.numarSculaDop)} onChange={(ev) => { schimba(o.cheie, { numarSculaDop: ev.target.value }); }} />
           </label>
           <label>
@@ -851,7 +854,7 @@ export function FisaOperatie({ cheie, loc, c: ctx }: { readonly cheie: string; r
           </label>
           {frezeRest(o.cheie, p, 'dop', doarCitire)}
           </>)}
-          <p className="nota-incrustatie">{t('export.incrustatie-drept.nota')}</p>
+          <p className="nota-incrustatie"><TextScurt text={t('export.incrustatie-drept.nota')} /></p>
         </>);
       }
       default: return null;

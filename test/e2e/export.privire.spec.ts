@@ -43,6 +43,15 @@ function ceIese(page: Page): Promise<string[]> {
       if (r.left < m.left - 1 || r.right > m.right + 1) iese.push(`iese ${nume(e)}`);
       if (e instanceof HTMLElement && !(e instanceof HTMLInputElement) && !(e instanceof HTMLSelectElement) && !e.closest('svg')
         && s.overflowX !== 'auto' && s.overflowX !== 'scroll' && e.clientWidth > 0 && e.scrollWidth > e.clientWidth + 1) iese.push(`tăiat ${nume(e)}`);
+      // O bifă cu eticheta ei (28.8↑k, constatarea 10 a auditului): căsuța și primul rând al textului, pe același rând, textul după ea.
+      const bifa = e instanceof HTMLLabelElement ? e.querySelector(':scope > input[type="checkbox"]') : null;
+      const text = bifa ? [...e.childNodes].find((n) => n.nodeType === Node.TEXT_NODE && (n.textContent ?? '').trim() !== '') : undefined;
+      if (bifa && text) {
+        const b = bifa.getBoundingClientRect(), interval = document.createRange();
+        interval.selectNodeContents(text);
+        const r0 = interval.getClientRects()[0];
+        if (r0 && (r0.top >= b.bottom || r0.bottom <= b.top || r0.left < b.right - 1)) iese.push(`bifa cu eticheta dedesubt ${nume(e)}`);
+      }
     }
     return [...new Set(iese)];
   });
@@ -84,6 +93,27 @@ async function prinToate(page: Page): Promise<void> {
   expect(await ceIese(page), 'fundul plat și banda').toEqual([]);
 }
 
+/**
+ * Lista din stânga (28.8↑k, constatarea 8 a auditului): rândurile ei stau unul sub altul, fiecare cât conținutul lui (o coloană
+ * flex strângea capul listei, „Foaia și originea” și „Mașina și fișierul”, până se suprapuneau, cu „A mea” pornită).
+ */
+function listaStransa(page: Page): Promise<string[]> {
+  return page.locator('[data-lista]').evaluate((l) => {
+    if (getComputedStyle(l).flexDirection === 'row') return [];
+    const rau: string[] = [];
+    let jos = -Infinity;
+    for (const x of l.querySelectorAll<HTMLElement>(':scope > *, :scope > .dx-nav-op > *')) {
+      if (x.classList.contains('dx-nav-op')) continue;
+      const r = x.getBoundingClientRect(), nume = `${x.className} ${x.dataset['nav'] ?? x.dataset['navOp'] ?? ''}`.trim();
+      if (r.height === 0) continue;
+      if (x.scrollHeight > x.clientHeight + 1) rau.push(`strâns ${nume}: ${String(x.scrollHeight)} > ${String(x.clientHeight)}`);
+      if (!x.closest('.ordine') && r.top < jos - 1) rau.push(`peste rândul de deasupra ${nume}`);
+      if (!x.classList.contains('ordine')) jos = Math.max(jos, r.bottom);
+    }
+    return rau;
+  });
+}
+
 for (const [locale, limba] of [['ro-RO', 'română'], ['en-GB', 'engleză']] as const) {
   test.describe(`în ${limba}`, () => {
     test.use({ locale });
@@ -92,8 +122,27 @@ for (const [locale, limba] of [['ro-RO', 'română'], ['en-GB', 'engleză']] as 
         await page.setViewportSize({ width: latime, height: inaltime });
         await deschide(page);
         await prinToate(page);
+        // Fundul plat (28.8↑k, constatarea 10): numărul, diametrul și pasul frezei drepte pe același rând, ca la freza operației.
+        const fund = fisa(page, 'e1/e1');
+        const sus = await Promise.all(['fund-scula', 'fund-diametru', 'fund-pas'].map(async (c) => (await fund.locator(`[data-camp="${c}"]`).boundingBox())?.y ?? -1));
+        expect(Math.max(...sus) - Math.min(...sus), 'câmpurile fundului plat').toBeLessThan(2);
       });
     }
+    test('cu „A mea” și trei operații, la 1280 × 720, rândurile listei nu se strâng și nu se suprapun', async ({ page }) => {
+      await page.setViewportSize({ width: 1280, height: 720 });
+      await page.goto('/');
+      await page.evaluate(() => { document.documentElement.style.setProperty('--font', "Verdana, 'DejaVu Sans', sans-serif"); });
+      await adauga(page, 'dreptunghi');
+      await adauga(page, 'cerc');
+      await adauga(page, 'cerc');
+      await page.locator('[data-actiune="export.gcode"]').click();
+      await expect(page.locator('[data-nav-op]')).toHaveCount(3);
+      expect(await listaStransa(page), 'în ordinea automată').toEqual([]);
+      await page.locator('[data-ordine="a-mea"]').click();
+      await expect(page.locator('[data-ordine="inapoi"]')).toBeVisible();
+      expect(await listaStransa(page), 'în ordinea mea').toEqual([]);
+      expect(await ceIese(page), 'în ordinea mea').toEqual([]);
+    });
     test.describe('pe telefon', () => {
       test.use({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true, locale });
       test('la 390 px: fiecare rând al listei se atinge și deschide fișa lui; banda lasă loc fișelor; nimic nu iese', async ({ page }) => {
