@@ -1350,15 +1350,25 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   sursa)`, peste `STARE0`), deci se adună cu cele din editor. Starea unui `<details>` se citește din pagină când
   editorul se reface, nu din `toggle` (vine după).** Din ADR 0284 rămâne doar 3.Ck (balamaua și placa turnantă), după
   ce owner-ul încearcă bila și cupa pe imprimantă.
-  **3.Ck-1 (placa turnantă; ADR 0284, partea B)** gata pe 26.11, pe ramura liniei, la cuvântul owner-ului transmis de
-  sesiunea principală, cu jocul din calibrare: în fila Cărămizi, „Placă turnantă” de 2 × 2 sau 4 × 4, din două plăci:
-  baza (fața de sus netedă, locașurile dedesubt și în mijloc pivotul, un capăt de știft Technic cu fantă) și partea de
-  sus (placa cu știfturi și gaura de știft din mijloc), care se rotește pe pivot; „Fă placa turnantă” le pune pe
-  amândouă în listă. Gaura e cea din calibrare, iar baza are „Jocul pivotului” (−0,1 … 0,2 mm): cât de greu se rotește
-  și cât de bine stă pe pivot rămân de verificat la tipărire. Easy 3Draw 18.43.0 (următoarea, 18.44.0); 3.Ck-2
-  (balamaua) urmează. **Un joc de mișcare vine dintr-o pereche care se potrivește deja pe imprimantă (calibrarea), cu un
-  câmp pentru diferență; o piesă cu un capăt de știft Technic intră în probele care numără găurile de știft
-  (`trenulet.prinderi.spec.ts`).**
+  **3.Ck-1 (placa turnantă; ADR 0284, partea B)** gata pe 26.11, unită în `main` pe 26.11 (`0a1f26c8`), la cuvântul
+  owner-ului transmis de sesiunea principală, cu jocul din calibrare: în fila Cărămizi, „Placă turnantă” de 2 × 2 sau 4
+  × 4, din două plăci: baza (fața de sus netedă, locașurile dedesubt și în mijloc pivotul, un capăt de știft Technic cu
+  fantă) și partea de sus (placa cu știfturi și gaura de știft din mijloc), care se rotește pe pivot; „Fă placa
+  turnantă” le pune pe amândouă în listă. Gaura e cea din calibrare, iar baza are „Jocul pivotului” (−0,1 … 0,2 mm): cât
+  de greu se rotește și cât de bine stă pe pivot rămân de verificat la tipărire. Easy 3Draw 18.43.0 (următoarea,
+  18.44.0); 3.Ck-2 (balamaua) urmează. **Un joc de mișcare vine dintr-o pereche care se potrivește deja pe imprimantă
+  (calibrarea), cu un câmp pentru diferență; o piesă cu un capăt de știft Technic intră în probele care numără găurile
+  de știft (`trenulet.prinderi.spec.ts`).**
+  **3.Ck-2 (balamaua; ADR 0284, partea B)** gata pe 26.11, pe ramura liniei, după 3.Ck-1, tot cu jocul din calibrare:
+  în fila Cărămizi, „Balama” de 1 sau 2 știfturi lățime și 1–4 lungime, din două jumătăți tipărite culcate: una cu
+  bolțul (o bară de 3,2 între obraji), alta cu câte o clemă din calibrarea barei pe fiecare știft, care se prinde pe bolț
+  și se pliază de la 110° în jos până la 130° în sus; puse cap la cap, știfturile rămân pe grila de 8 mm. Clema are
+  „Jocul clemei” (−0,1 … 0,2 mm); cât de ușor intră și cât de greu se rotește rămân de verificat la tipărire. „Fă
+  balamaua” pune amândouă jumătățile în listă. Easy 3Draw 18.44.0 (următoarea, 18.45.0). Cu ea, ADR 0284 are toate
+  feliile făcute. **Prefixul id-urilor unui editor nou se caută întâi în `atelier.ts` (`at-bl-` era al brăduțului LEGO;
+  balamaua are `at-bm-`); o piesă nouă care seamănă cu una veche mută ancorele otrăvurilor vechi: verificarea ancorelor
+  se rulează după fiecare piesă. Proba în engleză din `trenulet.spec.ts` e în trei, pe ecrane (întreagă trecuse de 30 s
+  în CI): o piesă nouă își pune pasul în a doua, cea a galeriilor.**
   **Cotele pe desen: modelul și proba G-code-ului (ADR 0330, felia 10.4↑a-1, adusă din etapa 10)** gata pe 24.11, în
   sesiunea cloud a liniei (ramura `wip/10.4-cote`), unită în `main` pe 24.11 (`f25249cf`), fără interfață încă. ADR
   0330, acceptat de owner cu 1a–6a și cu nota lui: toate setările cotelor stau într-o fereastră nouă, „Setări”, nu în

@@ -18,6 +18,12 @@
       ],
       "noutati": [
         {
+          "versiune": "18.44.0",
+          "data": "2026-11-26",
+          "ro": "Balamaua: o placă cu un bolț la capăt și una cu cleme, care se prind pe el și se rotesc, de 1 sau 2 știfturi lățime și 1–4 lungime. „Fă balamaua” pune amândouă jumătățile în listă.",
+          "en": "The hinge: a plate with a pin at the end and one with clips that snap onto it and turn, 1 or 2 studs wide and 1–4 long. “Make the hinge” adds both halves to the list."
+        },
+        {
           "versiune": "18.43.0",
           "data": "2026-11-26",
           "ro": "Placa turnantă, de 2 × 2 sau 4 × 4: o bază pe știfturi și o parte de sus cu știfturi, care se rotește pe un pivot ca un știft Technic. „Fă placa turnantă” pune amândouă în listă.",
@@ -208,8 +214,8 @@
           }
         }
       ],
-      "versiune": "18.43.0",
-      "continut": "7d2d093d72b819c5528d014edc24f74175d80e7b27505217cc9a1450c5d9763d"
+      "versiune": "18.44.0",
+      "continut": "31d46e643aad5d6cce18ef43f4a2f9f1266d7af37f5ca5bbd72dff814f24bda4"
     }
   ]
 }

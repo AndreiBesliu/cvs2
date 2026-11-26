@@ -721,6 +721,64 @@ var Lego = (function (glob: typeof globalThis) {
     tri.push(...prisma(brat.map(([x, y]): P2 => [c + x, c + y]), H - 0.01, H + q.hp), ...prisma(brat.map(([x, y]): P2 => [c - x, c - y]), H - 0.01, H + q.hp));
     return { tri, avert: q.avert, prinderi: [...baza.prinderi, { fel: "stiftTechnic", p: [c, c, H], d: SUS, lung: q.hp }] };
   }
+  // Balamaua (ADR 0284, felia 3.Ck-2): două plăci de câte o placă, de 1 sau 2 știfturi lățime (pe y) și 1–4 lungime (pe x),
+  // legate la capătul x al fiecăreia de o balama cu axa pe lățime, la 4 mm după capătul plăcii (deci, puse cap la cap,
+  // știfturile lor rămân pe grila de 8 mm, cu un pas liber între ele) și la înălțimea razei de afară a inelului clemei.
+  // - cu bolțul: obrajii (pe margini și între clemele vecine), de la placă până la 1 mm după bolț, iar între ei bolțul, o
+  //   bară de Ø3,2 culcată, pe toată lățimea; în dreptul fiecărui știft al lățimii, bolțul rămâne liber pe 4,6 mm;
+  // - cu clema: în dreptul fiecărui știft al lățimii, o clemă lată de 3,8 (0,4 mm de fiecare obraz), cu inelul din
+  //   calibrarea barei și gura în sus (se prinde pe bolț de sus), legată de placă printr-un gât; inelul atinge masa.
+  // Jocul clemei (−0,1 … 0,2 mm, din 0,05 în 0,05) mărește inelul pe dinăuntru; cel de afară rămâne, deci axa rămâne la
+  // aceeași înălțime pentru orice joc (cu jocul negativ, clema strânge bolțul).
+  type BalamaDef = { piesa?: unknown; latime?: unknown; lungime?: unknown; joc?: unknown };
+  const BALAMA = { capat: 4, obraz: 1, peste: 0.6, falca: 1.9, liber: 2.3, gat: 0.3 };
+  function balamaCote(d: BalamaDef) {
+    const avert: string[] = [], piesa = d.piesa === "clema" ? "clema" : "bolt", e = ef(), s = P.pas;
+    const w = zecimalCerut(d.latime), latime = Number.isFinite(w) && w >= 1.5 ? 2 : 1;
+    if (Number.isFinite(w) && w !== 1 && w !== 2) avert.push(tr`Balamaua e lată de 1 sau 2 știfturi: am făcut-o de ${latime}.`);
+    const n = zecimalCerut(d.lungime), lungime = Number.isFinite(n) ? Math.min(4, Math.max(1, Math.round(n))) : 2;
+    if (Number.isFinite(n) && n !== lungime) avert.push(tr`Balamaua e lungă între 1 și 4 știfturi: am făcut-o de ${lungime}.`);
+    const j = zecimalCerut(d.joc), joc = Number.isFinite(j) ? Math.min(0.2, Math.max(-0.1, Math.round(j * 20) / 20)) || 0 : 0;
+    if (piesa === "clema" && Number.isFinite(j) && (j < -0.1 - 1e-9 || j > 0.2 + 1e-9)) avert.push(tr`Jocul clemei e între −0,1 și 0,2 mm: l-am făcut de ${String(joc).replace(".", Limba.zecimal)} mm.`);
+    const ro = e.clemaD / 2 + P.clema_perete, ri = e.clemaD / 2 + joc, xa = s * lungime + BALAMA.capat;
+    const falci = Array.from({ length: latime }, (_, k): [number, number] => [s * k + s / 2 - BALAMA.falca, s * k + s / 2 + BALAMA.falca]);
+    return { piesa, latime, lungime, joc, ro, ri, rb: P.bara_d / 2, xa, zb: ro, falci, avert };
+  }
+  function balama(d: BalamaDef): Corp {
+    const q = balamaCote(d), s = P.pas, j0 = P.joc_lateral, H = P.placa, B = BALAMA, n = q.lungime, w = q.latime;
+    const placa = caramida({ celule: randCelule(n, w), placi: 1 }), tri = [...placa.tri], prinderi = [...placa.prinderi];
+    // profilele în planul (x, z), întinse pe lățime (y)
+    const peY = (p: Poli, y0: number, y1: number) => axe(prisma(trig(p), y0, y1), ([a, b, t]): P3 => [a, t, b], true);
+    const capat = s * n - j0, liber = q.falci.map(([y0, y1]): [number, number] => [(y0 + y1) / 2 - B.liber, (y0 + y1) / 2 + B.liber]);
+    if (q.piesa === "bolt") {
+      // obrajii: lățimea fără locurile libere ale bolțului
+      const lat = s * w - j0, zone: [number, number][] = [];
+      let y = j0;
+      for (const [a, b] of liber) { zone.push([y, a]); y = b; }
+      zone.push([y, lat]);
+      for (const [a, b] of zone) tri.push(...cutie(capat - 0.5, a, 0, q.xa + q.rb + B.obraz, b, q.zb + q.rb + B.peste));
+      // bolțul, cu capetele în obrajii de pe margini
+      tri.push(...peY(cerc(q.xa, q.zb, q.rb, N_CERC), j0 + 0.3, lat - 0.3));
+      for (const [a, b] of liber) prinderi.push({ fel: "bara", p: [q.xa, a, q.zb], d: PE_Y, lung: b - a }, { fel: "bara", p: [q.xa, b, q.zb], d: [0, -1, 0], lung: b - a });
+      return { tri, avert: q.avert, prinderi };
+    }
+    const inel = sectiuneC(q.ri, q.ro, P.clema_gura, Math.PI / 2, q.xa, q.zb), gat = dreptunghi(capat - 0.5, 0, q.xa - q.ri - B.gat, H);
+    for (const [y0, y1] of q.falci) {
+      tri.push(...peY(inel, y0, y1), ...peY(gat, y0, y1));
+      prinderi.push(...prinGaura("clema", [q.xa, y0, q.zb], [q.xa, y1, q.zb]));
+    }
+    return { tri, avert: q.avert, prinderi };
+  }
+  /**
+   * Jumătatea cu clema pusă pe cea cu bolțul (în plasele mutate în origine, ca în model): cap la cap la `pliere` 0, apoi
+   * pliată în jurul axei, cu capătul ei depărtat în sus. Clema stă la mijlocul locului liber al bolțului.
+   */
+  function balamaMontaj(d: BalamaDef, pliere = 0) {
+    const bolt = construieste({ ...d, tip: "balama", piesa: "bolt" } as DefPiesa), clema = construieste({ ...d, tip: "balama", piesa: "clema" } as DefPiesa);
+    const bara = bolt.prinderi.find(c => c.fel === "bara")!, gura = clema.prinderi.filter(c => c.fel === "clema").at(-1)!;
+    const M = montaj(bara, gura, 180 - (Number.isFinite(+pliere) ? +pliere : 0)), dy = BALAMA.liber - BALAMA.falca;
+    return { m: M.m, t: [M.t[0], M.t[1] + dy, M.t[2]] as P3 };
+  }
   function lateral({ lung = 1, fete = "una" }: { lung?: number; fete?: string }): Corp {
     // caramida 1 x n cu stifturi si pe latura lunga (SNOT): stiftul lateral la 5,6 mm de jos, ca o piesa prinsa in el sa
     // iasa la nivel cu fata de sus. Plina, cu locasuri dedesubt; se printeaza in picioare (stifturile laterale sunt scurte).
@@ -3516,7 +3574,7 @@ var Lego = (function (glob: typeof globalThis) {
   }
 
   // ---------------------------------------------------------------------------------------------- piesa dupa definitie
-  const TIPURI = { caramida, lateral, panta, pantaInversa, pana, rotund, arc, cadru, turnanta, grinda, caramidaTechnic, ax, stiftTechnic, bucsa, conector, conectorUnghi, suport, clema, maner, bara, bila, cupa, rotita, cremaliera, cama, melc, roata, fulie, conica, coroana, conicaDubla, senila, elice, eliceBarca, ventilator, roataPalete, fulg, stea, brad, glob: globCraciun, ornament, bradLego, dinCvs2 };
+  const TIPURI = { caramida, lateral, panta, pantaInversa, pana, rotund, arc, cadru, turnanta, balama, grinda, caramidaTechnic, ax, stiftTechnic, bucsa, conector, conectorUnghi, suport, clema, maner, bara, bila, cupa, rotita, cremaliera, cama, melc, roata, fulie, conica, coroana, conicaDubla, senila, elice, eliceBarca, ventilator, roataPalete, fulg, stea, brad, glob: globCraciun, ornament, bradLego, dinCvs2 };
   function construieste(def: DefPiesa) {
     const f = TIPURI[def.tip];
     if (!f) throw new Error("tip necunoscut: " + def.tip);
@@ -3532,7 +3590,7 @@ var Lego = (function (glob: typeof globalThis) {
   // Vederea „Modelul” a atelierului pune fiecare piesa pe grila de stifturi dupa amprenta ei (gw × gd stifturi) si dupa pivot:
   // punctul piesei (in plasa mutata in origine) care sta in mijlocul amprentei si in jurul caruia se roteste piesa.
   // - piesa obisnuita: amprenta e cutia ei, rotunjita la stifturi; pivotul, mijlocul cutiei;
-  // - piesa cu o placa pe grila si ceva ce iese din ea (stifturi laterale, suport, clema, maner, bila, cupa): amprenta e
+  // - piesa cu o placa pe grila si ceva ce iese din ea (stifturi laterale, suport, clema, maner, bila, cupa, balama): amprenta e
   //   placa, iar pivotul, mijlocul placii (corpul ramane unde l-a facut motorul);
   // - piesa rotunda (axul ei e originea piesei din motor): amprenta e impara pe ambele axe (cu un stift in plus unde iesea
   //   para), iar pivotul e axul. Deci axul sta mereu pe centrul unui stift, iar doua piese rotunde ajung pe acelasi ax.
@@ -3542,7 +3600,9 @@ var Lego = (function (glob: typeof globalThis) {
   type Asezare = { gw: number; gd: number; pivot: [number, number]; ax: boolean };
   function asezareModel(def: DefPiesa, corp: { dim: readonly number[]; baza: readonly number[]; ax: readonly number[] | null } = construieste(def)): Asezare {
     const st = (v: number) => Math.max(1, Math.round((v + 0.2) / P.pas)), d = def as { tip: string; lung?: unknown; adanc?: unknown; baza?: unknown };
-    const placa = ({ lateral: [d.lung, 1], suport: [d.lung, d.adanc], clema: [d.lung, 1], maner: [d.lung, 1], bila: [d.baza, d.baza], cupa: [1, 1] } as Record<string, unknown[] | undefined>)[d.tip];
+    // balamaua (3.Ck-2) stă după placa ei, ca clema și mânerul: lungimea și lățimea făcute de motor
+    const bal = def.tip === "balama" ? balamaCote(def as BalamaDef) : null;
+    const placa = bal ? [bal.lungime, bal.latime] : ({ lateral: [d.lung, 1], suport: [d.lung, d.adanc], clema: [d.lung, 1], maner: [d.lung, 1], bila: [d.baza, d.baza], cupa: [1, 1] } as Record<string, unknown[] | undefined>)[d.tip];
     if (placa) {
       const [gw, gd] = placa.map(v => Math.max(1, Math.round(+(v as number) || 1))) as [number, number];
       return { gw, gd, pivot: [gw * P.pas / 2 - corp.baza[0]!, gd * P.pas / 2 - corp.baza[1]!], ax: false };
@@ -4229,6 +4289,11 @@ var Lego = (function (glob: typeof globalThis) {
     // cadrul (ADR 0284): cotele din parametri, după margini; golul (lat, înalt), teșitura colțurilor de sus și puntea rămasă
     cadruCote: (d: CadruDef) => { const q = cadruCote(d); return { lung: q.n, inalt: q.c, rama: q.rama, colturi: q.tesit ? "tesite" : "drepte", golLat: q.w, golInalt: q.h, tesitura: q.k, punte: q.w - 2 * q.k, inaltime: q.H }; },
     turnantaCote: (d: TurnantaDef) => { const q = turnantaCote(d); return { marime: q.marime, piesa: q.piesa, joc: q.joc, pivotD: 2 * q.r, pivotH: q.hp, gauraD: q.gauraD, jocRadial: (q.gauraD - 2 * q.r) / 2, inaltime: 2 * P.placa }; },
+    balamaCote: (d: BalamaDef) => {
+      const q = balamaCote(d);
+      return { piesa: q.piesa, latime: q.latime, lungime: q.lungime, joc: q.joc, boltD: 2 * q.rb, clemaD: 2 * q.ri, jocRadial: q.ri - q.rb, axa: [q.xa, q.zb], falci: q.falci.map(f => [...f]) };
+    },
+    balamaMontaj,
     // roata cu palete (ADR 0284): cotele din parametri, după margini; butucul (raza), grosimea și lungimea unei palete
     // (de la butuc la vârf), săgeata celor curbate, grosimea discului, câte palete încap la diametrul ăsta
     roataPaleteCote: (d: PaleteDef) => { const q = roataPaleteCote(d); return { diam: q.D, palete: q.n, lat: q.W, forma: q.forma, disc: q.disc, gaura: q.gaura, butuc: q.rh, grosime: q.t, lungime: q.c, sageata: q.sageata, discGros: PALETE.disc, incap: q.incap }; },

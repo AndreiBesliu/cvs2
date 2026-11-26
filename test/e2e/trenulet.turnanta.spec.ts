@@ -61,7 +61,7 @@ const SFAT = 'Dacă partea de sus se rotește prea greu, mărește jocul pivotul
 
 test('piesa nouă din fila Cărămizi: baza plăcii turnante de 2 × 2, cu pivotul de Ø4,75 în gaura de Ø5 din calibrare', async ({ page }) => {
   await atelier(page);
-  await expect(page.locator('#at-tipuri [data-fila="caramizi"]')).toHaveText('Cărămizi 13');
+  await expect(page.locator('#at-tipuri [data-fila="caramizi"]')).toHaveText('Cărămizi 14');
   // 2 · 8 − 0,2 pe fiecare latură; placa (3,2) și pivotul (3,1)
   await expect(cote(page)).toContainText('15,8 × 15,8 × 6,3 mm');
   await expect(page.locator('#at-avert')).toBeHidden();

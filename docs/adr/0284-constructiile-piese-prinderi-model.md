@@ -112,7 +112,7 @@ elice. Fiecare e un șablon din parametri, nu un desen fix.
 | 3.Ch | Construcțiile cu nume și lista lor de piese | mai multe construcții în atelier |
 | 3.Ci | Construcțiile gata | patru șabloane |
 | 3.Cj | Melcul, cama și manivela, cadrul, roata cu palete | restul pieselor din B, pe bucăți: 3.Cj-1, cama, 3.Cj-2, roata cu palete, 3.Cj-3, cadrul, și 3.Cj-4, șurubul melc (toate gata pe 25.11) |
-| 3.Ck | Balamaua și placa turnantă | despărțite de 3.Cd: au jocuri de mișcare care se potrivesc pe piese tipărite; pe bucăți: 3.Ck-1, placa turnantă (gata pe 26.11), și 3.Ck-2, balamaua |
+| 3.Ck | Balamaua și placa turnantă | despărțite de 3.Cd: au jocuri de mișcare care se potrivesc pe piese tipărite; pe bucăți: 3.Ck-1, placa turnantă, și 3.Ck-2, balamaua (amândouă gata pe 26.11) |
 
 ## Marginile
 
@@ -817,3 +817,75 @@ turnantă** (aici), și **3.Ck-2, balamaua** (felia următoare). Easy 3Draw **18
   (3) jocul pivotului, un câmp al bazei, în pași de 0,05 mm; (4) fiecare piesă înaltă cât o placă (împreună, cât o
   cărămidă fără o placă, 6,4 mm până la fața de sus).
 - **Felia următoare:** 3.Ck-2 (balamaua), tot cu jocul din calibrare, de verificat la tipărire.
+
+## Implementat (3.Ck-2, 26.11.2026)
+
+Felia 3.Ck-2, în sesiunea cloud a liniei (ramura `wip/3.Xh-biblioteca-ui`), după 3.Ck-1, la cuvântul sesiunii
+principale („Poți porni 3.Ck-2 (balamaua)”), tot cu jocul din calibrare, de verificat la tipărire. Easy 3Draw
+**18.44.0**. Cu ea, ADR-ul are toate feliile făcute.
+
+- **Piesa** (tipul `balama`, fila Cărămizi, după placa turnantă): două plăci de câte o placă, de 1 sau 2 știfturi
+  lățime și 1–4 lungime, legate la capătul lor de o balama cu axa pe lățime. Axa stă la 4 mm după capătul fiecărei
+  plăci, deci, puse cap la cap, știfturile celor două plăci rămân pe grila de 8 mm, cu un pas liber între ele (cât
+  balamaua), și la înălțimea razei de afară a inelului clemei (2,75 la valorile implicite), deci inelul atinge masa.
+  - **Jumătatea cu bolțul:** placa motorului (cu știfturi și locașuri) și, la capăt, obrajii (pe margini și, la lățimea 2,
+    între cele două cleme), de la placă până la 1 mm după bolț și 0,6 mm deasupra lui; între ei, **bolțul**, o bară de
+    Ø3,2 culcată (bara motorului, cea pe care o ține clema din calibrare), cu capetele în obrajii de pe margini. În
+    dreptul fiecărui știft al lățimii, bolțul rămâne liber pe 4,6 mm, cu gol sub el (acolo trece inelul clemei).
+  - **Jumătatea cu clema:** placa motorului și, la capăt, în dreptul fiecărui știft al lățimii, o **clemă** lată de 3,8
+    mm (0,4 mm de fiecare obraz), cu inelul din calibrarea barei (Ø3,3 la varianta de mijloc, peretele de 1,1 mm) și
+    gura de 2,5 mm în sus, legată de placă printr-un gât. Se pune peste bolț de sus și se rotește în jurul lui.
+- **Jocul din calibrare:** inelul clemei e cel din pasul de calibrare al barei, iar bolțul e bara de 3,2, deci se
+  potrivesc cum se potrivesc clemele tipărite pe barele tipărite pe aceeași imprimantă (0,05 mm de jur împrejur la
+  valorile implicite). Clema are **jocul clemei** (−0,1 … 0,2 mm, din 0,05 în 0,05; implicit 0), adunat la raza de
+  dinăuntru a inelului: cea de afară rămâne, deci axa rămâne la aceeași înălțime, oricare ar fi jocul (cu −0,1, clema
+  strânge bolțul). Jocul e al clemei: bolțul e același, oricare ar fi el.
+- **Cât se pliază:** clema pusă pe bolț nu atinge nimic de la 110° în jos până la 130° în sus (măsurat pe plase; prima
+  atingere, a plăcilor între ele, vine pe la 118° în jos și 136° în sus).
+- **Configuratorul:** jumătatea (cu bolțul, cu clema), lățimea (1 sau 2 știfturi), lungimea (1–4) și, la clemă, jocul;
+  textul de sub ele spune bolțul, clema (din calibrare sau, cu un joc ales, cu el), jocul de jur împrejur, cât se pliază
+  și ce faci după prima tipărire (prea greu: jocul mai mare cu 0,05 mm; nu stă unde o lași: mai mic). **„Fă balamaua”**
+  pune în listă amândouă jumătățile (aceeași lățime și lungime; jocul, doar la clemă), câte bucăți sunt cerute. Numele:
+  „Balama 1×2, cu bolțul”, „Balama 1×2, cu clema” (cu „, jocul 0,1” când jocul nu e 0); lățimea întâi, ca la plăcile LEGO.
+- **Prinderile:** ale plăcii și, la bolț, câte o **bară** pe fiecare loc liber (în ambele sensuri, numărată ca una), la
+  clemă, câte o **clemă** cu două guri pe fiecare inel. Deci clema se prinde pe bolț prin perechea existentă (bara în
+  clemă), „Se prinde cu” arată, pentru bolț, clemele atelierului, iar pentru clemă, barele lor; în „Modelul”, alipirea pune
+  clema pe bolț, iar verificarea din 3.Cg o spune prinsă, oricât ar fi pliată. În model, piesa se așază după placa ei
+  (lungimea × lățimea), cu balamaua ieșită dincolo, ca clema și mânerul. Motorul exportă și `balamaMontaj` (clema pe bolț,
+  pliată cu un unghi), folosit de probe.
+- **Tipărirea:** amândouă culcate, cu știfturile în sus, fără suport: obrajii și bolțul se sprijină pe placă, iar inelul
+  clemei atinge masa, cu gura în sus.
+- **Nedovedit fără tipărire:** cât de ușor intră clema pe bolț fără să crape, cât de greu se rotește și dacă stă unde o
+  lași. De aceea jocul e un câmp, iar textul spune în ce sens se schimbă.
+- **Ce n-a intrat:** balamaua cu degete prinse una în alta, tipărită dintr-o bucată; pozițiile cu clic (crestăturile);
+  balamaua cu axa în picioare; alte lățimi.
+- **Găsit în felie:** prefixul id-urilor editorului (`at-bl-`) era deja al brăduțului LEGO (3.Cl-4); două editoare nu
+  sunt niciodată în pagină deodată, deci nimic nu se strica, dar o probă sau o otravă ar fi putut nimeri câmpul altuia:
+  balamaua ia `at-bm-`. Textul de sub configurator spunea „clema din calibrare” și cu un joc ales: acum spune „cu jocul
+  ales”.
+- **Probele.** Unitară, scrisă întâi (`test/unit/trenulet.balama.test.ts`, 9 teste): implicitele și cotele (22,5 × 7,8
+  × 5,1), valorile pe hârtie ale lui `balamaCote` (axa, clemele, jocul de jur împrejur), jumătatea cu bolțul pe plasă
+  (placa, obrajii, bolțul rotund, golul de sub el), jumătatea cu clema (inelul care atinge masa, gura după lățime, gâtul,
+  marginile clemei), prinderile, montajul față de transformarea de pe hârtie la patru unghiuri și grila de 8 mm, plierea
+  fără nicio pătrundere de la −110° la 130° și atingerea dincolo (cu martori: clema mutată cu 0,5 mm pe lățime sau în jos
+  intră în lemn), jocul 0,2 față de 0, inelul după varianta din calibrare, verificarea din 3.Cg (clema prinsă la 0° și la
+  60°), marginile cu mesajele lor; probele unitare ale prinderilor și ale modelului, cu rândurile balamalei. E2e
+  (`test/e2e/trenulet.balama.spec.ts`, 4 scenarii): galeria („Cărămizi 14”), editorul (jumătatea, lățimea, lungimea,
+  jocul cu marginile și rotunjirea, numele, cotele, textul), STL-urile închise cu cotele de pe hârtie, „Fă balamaua” și
+  adunarea rândurilor, prinderile și „Se prinde cu”, o construcție din stocare cu bolțul scris de mână cu un joc (numele
+  lui, fără joc). Probele filelor, galeriilor, pictogramelor, căutării și prinderilor, la zi (14 piese în Cărămizi, 44 de
+  pictograme; balamaua stă acum pe știfturi și în locașuri, iar bolțul ei intră în clemă). Proba în engleză din cvs2
+  (`trenulet.spec.ts`): pasul balamalei (piesa, jumătățile, lățimea, lungimea, jocul, textul cu punctul zecimal). Proba
+  aceea trecuse de 30 s în CI (felia 3.Ax, cu bugetul de 90 s), deci e acum împărțită pe ecrane, în trei, fiecare pornită
+  din instalare și trecerea în engleză (`inEngleza`): paleta, circuitele și exportul CNC; galeriile atelierului, filă cu
+  filă, cu editoarele lor; căutarea, „Se prinde cu”, „Modelul” și construcțiile. Local: 4,5, 12,9 și 8,9 s (întreagă,
+  25,4).
+- **Otrăvurile:** `test/otravuri/3.Ck-2.py`, 55 / 55 (la prima rulare 53 / 55: M02, lățimea 1,5 făcută de 1, și M06, o
+  lungime rotunjită fără mesaj, prinse după proba marginilor cu valorile dintre ele); `3.Ck-2-en.py`, 8 / 8. Ancorele
+  tuturor listelor pluginului: 2 704, fiecare găsită exact o dată (liniile jocului și ale editorului erau ca la placa
+  turnantă: ancorele din `3.Ck-1.py` au primit rândul de după; la fel S08 din `3.Cl-4.py` și harta plăcilor din `3.Tu.py`).
+- **Mărimea:** pachetul Easy 3Draw, 582,8 kB (era 579,3); aplicația, neschimbată; nimic pe server.
+- **Alegeri făcute cu recomandarea, de întrebat owner-ul:** (1) două jumătăți, bolțul și clema, nu o balama tipărită
+  dintr-o bucată (jocul vine din calibrarea clemei, iar jumătățile se tipăresc culcate, fără suport); (2) lățimea 1 sau 2
+  și lungimea 1–4; (3) axa la 4 mm după capătul plăcii, deci, desfăcută, balamaua ține grila de 8 mm cu un pas liber; (4)
+  jocul clemei, un câmp al clemei, în pași de 0,05 mm.

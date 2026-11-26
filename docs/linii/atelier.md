@@ -26,8 +26,8 @@ PR-ul `AndreiBesliu/cvs2#59`). 3.Ch (construcțiile cu nume și lista lor de pie
 unită în `main` pe 26.11 (`3bf86d15`, PR-ul `AndreiBesliu/cvs2#61`). 3.Ci (construcțiile gata: șasiul cu patru roți,
 cutia de angrenaje, brațul de macara, barca cu elice; 18.42.0), unită în `main` pe 26.11 (`57e58798`, PR-ul
 `AndreiBesliu/cvs2#63`). **3.Ck, pornită pe 26.11 la cuvântul owner-ului (prin sesiunea principală), cu jocul din
-calibrare, s-a despărțit: 3.Ck-1 (placa turnantă; 18.43.0), gata pe ramură pe 26.11; 3.Ck-2 (balamaua), felia
-următoare.** Versiunea următoare a pachetului: 18.44.0._
+calibrare, s-a despărțit: 3.Ck-1 (placa turnantă; 18.43.0), unită în `main` pe 26.11 (`0a1f26c8`, PR-ul
+`AndreiBesliu/cvs2#68`); 3.Ck-2 (balamaua; 18.44.0), gata pe ramură pe 26.11: ADR 0284 are toate feliile făcute.** Versiunea următoare a pachetului: 18.45.0._
 
 ## Numerele liniei
 
@@ -53,7 +53,7 @@ următoare.** Versiunea următoare a pachetului: 18.44.0._
 | 3.Ch | Construcțiile cu nume și lista lor de piese | gata (26.11): cu filamentul și timpul (din debitul imprimantei) |
 | 3.Ci | Construcțiile gata (șasiul, cutia de angrenaje, brațul de macara, barca cu elice) | gata (26.11): din parametri, deschise ca o construcție nouă, cu piesele prinse și verificate |
 | 3.Cj | Melcul, cama și manivela, cadrul, roata cu palete | pe bucăți: 3.Cj-1, cama, 3.Cj-2, roata cu palete, 3.Cj-3, cadrul, și 3.Cj-4, șurubul melc: gata (25.11) |
-| 3.Ck | Balamaua și placa turnantă | despărțite de 3.Cd; pornite pe 26.11 cu jocul din calibrare (de verificat la tipărire): 3.Ck-1 (placa turnantă), gata (26.11); 3.Ck-2 (balamaua), următoarea |
+| 3.Ck | Balamaua și placa turnantă | despărțite de 3.Cd; pornite pe 26.11 cu jocul din calibrare (de verificat la tipărire): 3.Ck-1 (placa turnantă) și 3.Ck-2 (balamaua), gata (26.11) |
 | 3.Cl | Decorațiunile de Crăciun (ADR 0285) | 3.Cl-1 (fulgul, steaua, brăduțul) și 3.Cl-2 (globul, relieful pe două înălțimi), gata (25.11); 3.Cl-3 (ornamentul cu nume) și 3.Cl-4 (brăduțul LEGO), gata (26.11) |
 
 ## 3.Ca, gata (24.11, în cloud): conectorul perpendicular
@@ -677,3 +677,37 @@ următoare.** Versiunea următoare a pachetului: 18.44.0._
   departe cu „piesa filei” deschide întâi piesa pe care o aștepta (proba în engleză, după pasul plăcii turnante).
 - **Plasa părții de sus se compară cu a cărămizii pe triunghiuri sortate, nu pe amprentă:** ordinea celulelor diferă
   (`randCelule` față de lista scrisă), deci amprenta nu e aceeași, deși corpul e.
+
+## 3.Ck-2, gata (26.11, în cloud): balamaua (ADR 0284, partea B)
+
+- **Unde e:** motorul, după `turnanta`: `BalamaDef`, `BALAMA` (cotele balamalei), `balamaCote`, `balama` (în `TIPURI`,
+  după `turnanta`), `balamaMontaj` (clema pe bolț, pliată cu un unghi), exportate `balamaCote` (cotele de pe hârtie:
+  bolțul, clema, jocul de jur împrejur, axa, clemele) și `balamaMontaj`; în `asezareModel`, placa după lungime × lățime.
+  Atelierul: `stare.balama`, `FAMILII` (Cărămizi, după placa turnantă), `PICTOGRAME`, `numeDef`, `defCurenta` (jocul
+  ținut doar la clemă), ramura editorului (`#at-bm-piesa`, `#at-bm-latime`, `#at-bm-lungime`, `#at-bm-joc`,
+  `#at-bm-info`, `#at-bm-fa`), `textBalama`, `adaugaBalama`.
+- **Ce face și ce n-a intrat:** în ADR 0284, „Implementat (3.Ck-2)”.
+- **Probele:** `test/unit/trenulet.balama.test.ts`, rândurile balamalei din `trenulet.prinderi.test.ts` și
+  `trenulet.model.test.ts`, `test/e2e/trenulet.balama.spec.ts`, pasul balamalei din proba în engleză
+  (`trenulet.spec.ts`); otrăvurile, `test/otravuri/3.Ck-2.py` și `3.Ck-2-en.py`.
+
+### Reguli și capcane (3.Ck-2)
+
+- **Prefixul id-urilor unui editor nou se caută întâi în `atelier.ts`:** `at-bl-` era al brăduțului LEGO, iar `at-ba-`
+  al barei; balamaua are `at-bm-`. Două editoare nu sunt în pagină deodată, deci nimic nu cade, dar o probă sau o otravă
+  scrisă pe un id comun poate nimeri editorul altei piese.
+- **O piesă cu o bară intră în rândul clemei din „Se prinde cu”, iar una pe știfturi, în `PE_STIFTURI` și
+  `IN_LOCASURI`** (`trenulet.prinderi.spec.ts`): piesele se judecă așa cum sunt în editoarele lor, deci balamaua apare
+  ca bolț (implicitul ei). Piesa de pe ecran nu se propune pe ea însăși: clema balamalei nu vede bolțul balamalei.
+- **O piesă nouă care seamănă cu una veche mută ancorele otrăvurilor vechi:** liniile jocului și ale editorului erau
+  aceleași ca la placa turnantă, deci ancorele din `3.Ck-1.py` au primit rândul de după (`if (piesa === "baza"`,
+  `$("#at-tu-fa")`); la fel `3.Cl-4.py` (S08, cuiul) și `3.Tu.py` (`PL`, harta plăcilor din model). Verificarea
+  ancorelor (`.tmp/ancore.py`, în sesiune) se rulează după orice piesă nouă.
+- **Unghiurile de pliere spuse omului se măsoară pe plase, cu o margine:** textul spune 110° în jos și 130° în sus, iar
+  plăcile se ating pe la 118° și 136°; proba cere „nimic” în interval și „se ating” la 140° și −120°.
+- **Proba în engleză din cvs2 e în trei, pe ecrane** (`trenulet.spec.ts`, de la 3.Ck-2; întreagă trecuse de 30 s în CI):
+  paleta, circuitele și exportul CNC; galeriile atelierului, filă cu filă, cu editoarele lor; căutarea, „Se prinde cu”,
+  „Modelul” și construcțiile. Fiecare pornește din `inEngleza` (instalarea, un nume scris în circuit, trecerea în
+  engleză). **O piesă nouă își pune pasul în a doua** (în blocul filei ei); a treia își face singură starea de care are
+  nevoie (placa cu găuri în Cărămizi, elicea ca LEGO 6041), deci nu depinde de drumul prin galerii.
+

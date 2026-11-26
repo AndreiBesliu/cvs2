@@ -16291,6 +16291,43 @@ tipărire”); ADR 0284, felia 3.Ck (balamaua și placa turnantă), despărțit�
   designului, de pe calculatorul owner-ului.
 - **Documentele:** decizia în `CLAUDE.md`; starea din `docs/linii/principala.md` și indexul liniilor.
 
+## 2026-11-26 — Felia 3.Ck-2: balamaua atelierului Easy 3Draw (ADR 0284) (sesiune cloud)
+
+**Prompt:** „Poți porni 3.Ck-2 (balamaua).” (sesiunea principală, după raportul lui 3.Ck-1); ADR 0284, felia 3.Ck, partea
+a doua, tot cu jocul din calibrare, de verificat la tipărire
+**Started:** 26.11, 21:42. **Completed:** 26.11, 23:01 (felia, cu otrăvurile, cu proba în engleză împărțită; orele, după ceasul containerului).
+
+- **Ce face:** în fila Cărămizi, „Balama” de 1 sau 2 știfturi lățime și 1–4 lungime, din două jumătăți tipărite culcate:
+  una cu bolțul (o bară de Ø3,2 între obraji, la 4 mm după capătul plăcii, liberă pe 4,6 mm în dreptul fiecărui știft) și
+  una cu câte o clemă din calibrarea barei pe fiecare știft (gura în sus, legată de placă printr-un gât, inelul atinge
+  masa), care se prinde pe bolț de sus. Puse cap la cap, știfturile rămân pe grila de 8 mm; clema se pliază de la 110° în
+  jos până la 130° în sus fără să atingă nimic (plăcile se ating pe la 118° și 136°). „Fă balamaua” pune amândouă
+  jumătățile în listă.
+- **Jocul:** inelul e cel din calibrarea barei; clema are „Jocul clemei” (−0,1 … 0,2 mm, din 0,05 în 0,05), adunat la raza
+  de dinăuntru (axa rămâne la aceeași înălțime), cu textul care spune ce faci după prima tipărire. Cât de ușor intră și
+  cât de greu se rotește rămân de verificat la tipărire.
+- **Motorul:** `balamaCote`, `balama` (în `TIPURI`), `balamaMontaj`; bolțul se declară bară, clema clemă, deci alipirea și
+  verificarea din „Modelul” le folosesc fără nimic nou; în model, piesa se așază după placa ei. **Atelierul:** galeria,
+  pictograma, numele, editorul, „Fă balamaua”; jocul ținut doar în definiția clemei.
+- **Găsit în felie:** prefixul id-urilor editorului (`at-bl-`) era deja al brăduțului LEGO: balamaua are `at-bm-`. Textul
+  spunea „clema din calibrare” și cu un joc ales: acum spune „cu jocul ales”.
+- **Probele**, scrise întâi: unitară, 9 teste (au căzut cu „Lt.balamaCote is not a function”): plasele, prinderile,
+  montajul față de hârtie și grila, plierea fără pătrundere cu martori, jocul, calibrarea, verificarea, marginile; e2e, 4
+  scenarii; pasul în engleză din cvs2. Probele filelor, galeriilor, pictogramelor, căutării, prinderilor și modelului, la
+  zi.
+- **Otrăvurile:** `3.Ck-2.py`, la prima rulare 53 / 55 (M02, lățimea 1,5 făcută de 1, și M06, o lungime rotunjită fără
+  mesaj: proba marginilor cere acum și valorile dintre ele): 55 / 55. `3.Ck-2-en.py`: 8 / 8. Ancorele tuturor listelor
+  pluginului: 2 704 (cele din `3.Ck-1.py`, S08 din `3.Cl-4.py` și harta plăcilor din `3.Tu.py`, mutate: liniile balamalei
+  le repetau).
+- **Proba în engleză, împărțită:** trecuse de 30 s în CI (felia 3.Ax, cu bugetul de 90 s), deci e acum în trei, pe
+  ecrane, fiecare pornită din instalare și trecerea în engleză (`inEngleza`): paleta, circuitele și exportul CNC;
+  galeriile atelierului, filă cu filă (cu pasul balamalei); căutarea, „Se prinde cu”, „Modelul” și construcțiile. Local:
+  4,5, 12,9 și 8,9 s (întreagă, 25,4); bugetul de 90 s nu mai e nevoie.
+- **Mărimea:** Easy 3Draw 18.44.0, 582,8 kB (era 579,3); aplicația, neschimbată. Nimic pe server.
+- **Documentele:** ADR 0284 („Implementat (3.Ck-2)”), nota liniei, indexul liniilor, fișa etapei 3, registrul
+  otrăvurilor, `CLAUDE.md`, traducerile roadmap-ului.
+- **Urmează:** ADR 0284 are toate feliile făcute; o felie nouă a liniei pornește la cuvântul owner-ului.
+
 ## 2026-11-26 — Linia reliefului: felia 18.1↑d-3, pasul lateral aliniat, rotunjit în jos (Model: Claude Opus 5.5)
 
 **Prompt:** „Zi-le ca pot continua cu ce urmeaza la fiecare” (owner-ul, în sesiunea principală, transmis liniei la 20:16): „rotunjirea

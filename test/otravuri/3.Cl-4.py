@@ -61,7 +61,7 @@ o('S04', LG, 'dreptForma(-BRAD_LEGO.umar / 2, yt, BRAD_LEGO.umar / 2, -0.45 * R 
 o('S05', LG, 'const cui = axe(prisma(sectiuneBara(P.bara_d / 2), yt - BRAD_LEGO.cui, yt + 0.5),', 'const cui = axe(prisma(sectiuneBara(P.bara_d / 2 - 0.3), yt - BRAD_LEGO.cui, yt + 0.5),', 'brad', 'cuiul e mai subțire decât bara')
 o('S06', LG, 'yt = -R * Math.cos(Math.PI / 5), zb = P.bara_d / 2 - 0.25;', 'yt = -R * Math.cos(Math.PI / 5), zb = P.bara_d / 2;', 'brad', 'prinderea cuiului, mai sus decât axul barei')
 o('S07', LG, 'prinderi: [{ fel: "bara", p: [0, yt - BRAD_LEGO.cui, zb], d: PE_Y, lung: BRAD_LEGO.cui }] };', 'prinderi: [] };', 'brad', 'steaua nu-și spune cuiul')
-o('S08', LG, '([a, b, t]): P3 => [a, t, b], true);', '([a, b, t]): P3 => [a, t, b], false);', 'brad', 'cuiul, cu fețele întoarse pe dos')
+o('S08', LG, 'yt + 0.5), ([a, b, t]): P3 => [a, t, b], true);', 'yt + 0.5), ([a, b, t]): P3 => [a, t, b], false);', 'brad', 'cuiul, cu fețele întoarse pe dos')
 
 # --- motorul: brăduțul întreg
 EJ = 'etaje = Math.min((q.diam - 4) / 2 + 1, Math.max(1, Number.isFinite(cate) ? Math.round(cate) : 3));'
