@@ -217,10 +217,17 @@ test('cutia de angrenaje, proba de control: cu roata condusă întoarsă cu o ju
   assert.ok(v.piese[roti[0]!]!.intra.includes(roti[1]!), 'verificarea vede roțile una în alta');
 });
 
-test('cutia de angrenaje: un raport necunoscut dă 1 : 3, cu un avertisment', () => {
-  const g = Lm.constructieGata('angrenaje', { raport: '2:7' });
-  assert.equal(g.cote.raport, 3);
-  assert.equal(g.avert.length, 1);
+test('cutia de angrenaje: fără raport, 1 : 3; un raport necunoscut (și unul scris ca număr) dă 1 : 3, cu un avertisment', () => {
+  const implicita = Lm.constructieGata('angrenaje');
+  assert.equal(implicita.cote.raport, 3);
+  assert.deepEqual([...implicita.avert], []);
+  for (const raport of ['2:7', 9]) {
+    const g = Lm.constructieGata('angrenaje', { raport });
+    assert.equal(g.cote.raport, 3, String(raport));
+    assert.equal(g.avert.length, 1, String(raport));
+  }
+  // cu spații, se citește
+  assert.equal(Lm.constructieGata('angrenaje', { raport: '1 : 9' }).cote.raport, 9);
 });
 
 // ---------------------------------------------------------------------------------------------------- brațul de macara

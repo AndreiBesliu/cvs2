@@ -23,7 +23,11 @@ o('M04', LG, '    if (Number.isFinite(c) && x !== c) avert.push(ce(x));', '    i
 RS = 'ROTI_SASIU.reduce((a, b) => (Math.abs(b - ceruta) < Math.abs(a - ceruta) ? b : a))'
 o('M05', LG, RS, 'ROTI_SASIU[2]', 'sabloane', 'roata cerută e mereu cea mare')
 o('M06', LG, '      const minim = Math.ceil((roata + 1) / s - 1e-9) + 2;', '      const minim = Math.ceil((roata + 1) / s - 1e-9) + 1;', 'sabloane', 'șasiul prea scurt pentru roți (roțile se ating)')
-o('M07', LG, '      if (!RAPOARTE[cheie]) { if (d.raport !== undefined) avert.push(', '      if (!RAPOARTE[cheie]) { avert.push(', 'sabloane', 'raportul implicit dă un avertisment')
+# M07: la prima rulare (`d.raport !== undefined` scos) a scăpat, fiindcă era cod mort: un raport lipsă dădea deja 1 : 3;
+# codul s-a simplificat (și un raport scris ca număr primește avertismentul), iar otrava s-a mutat pe el
+o('M07', LG, '      if (!RAPOARTE[cheie]) { avert.push(tr("Raportul ales nu e printre cele știute: am făcut cutia de 1 : 3.")); cheie = "1:3"; }', '      if (!RAPOARTE[cheie]) { cheie = "1:3"; }', 'sabloane', 'raportul necunoscut, fără avertisment')
+o('M37', LG, '      let cheie = d.raport === undefined ? "1:3" : String(d.raport).replace(/\\s+/g, "");', '      let cheie = d.raport === undefined ? "1:9" : String(d.raport).replace(/\\s+/g, "");', 'sabloane', 'fără raport, alt raport decât 1 : 3')
+o('M38', LG, '      let cheie = d.raport === undefined ? "1:3" : String(d.raport).replace(/\\s+/g, "");', '      let cheie = d.raport === undefined ? "1:3" : String(d.raport);', 'sabloane', 'un raport scris cu spații nu se mai citește')
 
 # --- motorul: șasiul
 o('M09', LG, '[s / 2 - j0, s * cj + s / 2 - j0, 0]), b: stift0 }));', '[s / 2 - j0, s / 2 - j0, 0]), b: stift0 }));', 'sabloane', 'ambele șine sub marginea din față (una în alta)')
@@ -39,6 +43,8 @@ o('M16', LG, '      const cate = Math.max(0, Math.ceil((R + P.stift_h + 0.4 - h)
 o('M17', LG, 'alunec: s + adanc + 0.3 + t * (gros + 0.5) })));', 'alunec: s + adanc - 0.5 + t * (gros + 0.5) })));', 'sabloane', 'roțile intră 0,5 mm în primul perete')
 o('M18', LG, 'alunec: s + adanc + 0.3 + t * (gros + 0.5) })));', 'alunec: s + adanc + 0.3 + t * gros })));', 'sabloane', 'treptele lipite una de alta')
 o('M19', LG, '        let delta = (0.5 - (f - Math.floor(f))) * 2 * Math.PI / z2;', '        let delta = (0 - (f - Math.floor(f))) * 2 * Math.PI / z2;', 'sabloane', 'dinte în fața dintelui (roțile una în alta)')
+# M20: practic echivalentă pentru cele patru șabloane: rotirea pusă pe axul condus e 0 sau exact o jumătate de dinte (măsurat:
+# 1 : 1, 23,5 dinți; celelalte, 0), iar o jumătate de dinte într-un sens sau în celălalt e același loc al dinților
 o('M20', LG, 'semn = scalar(dir, v) < 0 ? -1 : 1;', 'semn = scalar(dir, v) < 0 ? 1 : -1;', 'sabloane', 'roata condusă, rotită în sensul greșit')
 o('M21', LG, '        pa.unghi = ((pa.unghi + semn * delta * 180 / Math.PI) % 360 + 360) % 360;', '        pa.unghi = pa.unghi;', 'sabloane', 'dinții nu se mai îmbucă: axul condus nu se rotește')
 o('M22', LG, '      cote.raport = trepte.reduce((r, [a, b]) => r * b / a, 1);', '      cote.raport = trepte.reduce((r, [a, b]) => r * a / b, 1);', 'sabloane', 'raportul, întors')

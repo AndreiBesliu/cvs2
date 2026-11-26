@@ -4020,8 +4020,8 @@ var Lego = (function (glob: typeof globalThis) {
       cote.ecartament = s * nAx - 0.2 - lat0;
     } else if (fel === "angrenaje") {
       nume = tr("Cutie de angrenaje");
-      let cheie = typeof d.raport === "string" ? d.raport.replace(/\s+/g, "") : "1:3";
-      if (!RAPOARTE[cheie]) { if (d.raport !== undefined) avert.push(tr("Raportul ales nu e printre cele știute: am făcut cutia de 1 : 3.")); cheie = "1:3"; }
+      let cheie = d.raport === undefined ? "1:3" : String(d.raport).replace(/\s+/g, "");
+      if (!RAPOARTE[cheie]) { avert.push(tr("Raportul ales nu e printre cele știute: am făcut cutia de 1 : 3.")); cheie = "1:3"; }
       const trepte = RAPOARTE[cheie]!, pasi = trepte.map(([a, b]) => (a + b) / 2 / s), gauri = [0];
       for (const p of pasi) gauri.push(gauri[gauri.length - 1]! + p);
       const lung = gauri[gauri.length - 1]! + 2, lat = 2 + trepte.length, rotita = (z: number) => ({ tip: "rotita", dinti: z } as DefPiesa);
