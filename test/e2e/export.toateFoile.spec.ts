@@ -138,28 +138,33 @@ test('în „A mea”, un rând se mută doar în foaia lui; ordinea fiecărei f
   await lista(page).locator('[data-actiune="foaie.adauga"]').click();
   await expect(lista(page).locator('[data-foaie]')).toHaveCount(2);
   await adauga(page, 'dreptunghi');
+  await adauga(page, 'cerc');
   await deschide(page);
   await page.locator('[data-foi="toate"]').click();
   await page.locator('[data-ordine="a-mea"]').click();
   const randuri = await ceArataLista(page);
   expect(randuri[0]).toBe('foaie:f1');
   expect(randuri[3]).toBe('foaie:f2');
+  expect(randuri).toHaveLength(6);
   const [prim, ultim] = [randuri[1]!.slice(3), randuri[2]!.slice(3)];
-  const altul = randuri[4]!.slice(3);
-  // Ultimul rând al foii 1 nu coboară pe foaia 2, primul al foii 2 nu urcă pe foaia 1.
+  const [altul, altul2] = [randuri[4]!.slice(3), randuri[5]!.slice(3)];
+  const lista1 = (a: string, b: string): string[] => ['foaie:f1', `op:${a}`, `op:${b}`, 'foaie:f2', `op:${altul}`, `op:${altul2}`];
+  // Ultimul rând al foii 1 nu coboară pe foaia 2, primul al foii 2 nu urcă pe foaia 1; numerele pornesc de la 1 pe foaia 2.
   await expect(page.locator(`[data-jos="${ultim}"]`)).toBeDisabled();
   await expect(page.locator(`[data-sus="${altul}"]`)).toBeDisabled();
   await expect(page.locator(`[data-nav-op="${altul}"] [data-loc]`)).toHaveText('1');
-  // Nici trasă cu mânerul: rândul foii 2 lăsat pe unul al foii 1 rămâne pe foaia lui; în foaia lui, tragerea îl mută.
-  await page.locator(`[data-trage="${altul}"]`).dragTo(page.locator(`[data-nav-op="${prim}"]`));
-  expect(await ceArataLista(page)).toEqual(['foaie:f1', `op:${prim}`, `op:${ultim}`, 'foaie:f2', `op:${altul}`]);
+  await expect(page.locator(`[data-nav-op="${altul2}"] [data-loc]`)).toHaveText('2');
+  // Nici trasă cu mânerul: al doilea rând al foii 2, lăsat pe unul al foii 1, nu trece înaintea primului de pe foaia lui.
+  await page.locator(`[data-trage="${altul2}"]`).dragTo(page.locator(`[data-nav-op="${prim}"]`));
+  expect(await ceArataLista(page)).toEqual(lista1(prim, ultim));
+  // În foaia lui, tragerea și săgețile îl mută.
   await page.locator(`[data-trage="${ultim}"]`).dragTo(page.locator(`[data-nav-op="${prim}"]`));
-  expect(await ceArataLista(page)).toEqual(['foaie:f1', `op:${ultim}`, `op:${prim}`, 'foaie:f2', `op:${altul}`]);
+  expect(await ceArataLista(page)).toEqual(lista1(ultim, prim));
   await page.locator(`[data-jos="${ultim}"]`).click();
-  expect(await ceArataLista(page)).toEqual(['foaie:f1', `op:${prim}`, `op:${ultim}`, 'foaie:f2', `op:${altul}`]);
-  // În foaia lui, da. Cercul stă în dreptunghi: tăiat după exteriorul lui, riscul e spus cu numele foii.
+  expect(await ceArataLista(page)).toEqual(lista1(prim, ultim));
+  // Cercul stă în dreptunghi: tăiat după exteriorul lui, riscul e spus cu numele foii.
   await page.locator(`[data-sus="${ultim}"]`).click();
-  expect(await ceArataLista(page)).toEqual(['foaie:f1', `op:${ultim}`, `op:${prim}`, 'foaie:f2', `op:${altul}`]);
+  expect(await ceArataLista(page)).toEqual(lista1(ultim, prim));
   await expect(page.getByTestId('risc-ordine')).toContainText('Foaia 1: Exteriorul din rândul 1 se taie înaintea rândului 2');
   await page.locator('[data-camp="confirma-ordine"]').check();
   await descarca(page);
@@ -167,7 +172,7 @@ test('în „A mea”, un rând se mută doar în foaia lui; ordinea fiecărei f
   await deschide(page);
   await page.locator('[data-foi="toate"]').click();
   await expect(page.locator('[data-ordine="a-mea"]')).toHaveAttribute('aria-pressed', 'true');
-  expect(await ceArataLista(page)).toEqual(['foaie:f1', `op:${ultim}`, `op:${prim}`, 'foaie:f2', `op:${altul}`]);
+  expect(await ceArataLista(page)).toEqual(lista1(ultim, prim));
 });
 
 test('pe telefon, banda listei rămâne cât era: capul foii e doar numele ei, pe un rând', async ({ page }) => {
