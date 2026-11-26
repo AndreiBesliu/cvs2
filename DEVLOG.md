@@ -16123,3 +16123,32 @@ lista de printat»”); pornită după unirea lui 3.Cg în `main` (`75d8dde2`)
   136 / 136, paginile 60 / 60 (citite din jurnalul rulării). Local: traducerile (1 214), catalogul
   controalelor, biblioteca (Easy 3Draw 18.41.0, 567 855 octeți), probele documentelor și ale manualului 52 / 52. Nimic pe server.
 - **Documentele:** decizia în `CLAUDE.md` și paragraful liniei, la zi; indexul liniilor; starea din `docs/linii/principala.md`.
+
+## 2026-11-26 — Felia 3.Ci: construcțiile gata ale atelierului Easy 3Draw (ADR 0284) (sesiune cloud)
+
+**Prompt:** „vreau sa adaugi mai multe tipuri de piese pentru fiecare categoire […] compatibile intre ele nu doar una
+cate una ci si ca constructii complexe” (cererea owner-ului din 24.11; ADR 0284, partea E: „Câteva construcții de
+pornire, făcute din piesele de mai sus și deschise în Model, cu mărimile la alegere: șasiul cu patru roți, cutia de
+angrenaje […], brațul de macara, barca cu elice”); pornită după unirea lui 3.Ch în `main` (`3bf86d15`)
+**Started:** 26.11, 12:15. **Completed:** 26.11, 13:40 (felia, cu otrăvurile; orele, după ceasul containerului).
+
+- **Ce face:** în „Modelul”, panoul „Construcții gata”: șasiul cu patru roți (lungimea, lățimea, roțile Ø30,4 / Ø43,2 /
+  Ø56), cutia de angrenaje (1 : 1 … 1 : 25, într-una sau două trepte), brațul de macara (stâlpul, brațul, unghiul
+  0–80°), barca cu elice (lungimea, lățimea pară, elicea, paletele); ce iese pe hârtie; „Fă construcția”, o construcție
+  nouă, cu numele felului, cu piesele prinse între ele, pe masă, cu dinții roților îmbucați.
+- **Motorul:** `constructieGata(fel, valori)`, pură (`SABLOANE`, `RAPOARTE`, `ROTI_SASIU`, `intregSablon`); prinderile
+  se caută după loc (`prindere`); dinții se îmbucă rotind axul condus; baza se ridică pe masă, pe plasă.
+- **Atelierul:** panoul `#at-cg`; piesele, completate ca în editor (`defCurenta(tip, sursa)`, peste `STARE0`), deci o
+  piesă din editor se adună pe același rând.
+- **Probele**, scrise întâi: unitară, 10 teste (au căzut cu „… is not a function”): verificarea din 3.Cg pe fiecare
+  șablon și mecanismul pe hârtie, cu proba de control a dinților; e2e, 3 scenarii; pasul în engleză din cvs2.
+- **Găsite și reparate în felie:** starea panoului se lua din `toggle`, care vine după (o alegere imediat după
+  deschidere refăcea panoul strâns: 8 din 12 rulări au căzut la focus); unghiul brațului, măsurat pe grinda făcută ca
+  în editor (alt sens decât grinda dreaptă de probă); ridicarea bazei, pe plasă; un mesaj de eroare intern, prin `tr`;
+  un raport scris ca număr dădea tăcut 1 : 3.
+- **Otrăvurile:** `3.Ci.py`, la prima rulare 51 / 55 (M04, un număr cu zecimale, prinsă după probă; M07 a arătat cod
+  mort în citirea raportului, simplificat, cu M37 și M38 noi): 55 / 57, cu M20 și M36 practic echivalente pentru cele
+  patru șabloane. `3.Ci-en.py`: 6 / 6. Ancorele tuturor listelor pluginului: 2 590.
+- **Mărimea:** Easy 3Draw 18.42.0, 576,4 kB (era 567,9); aplicația, neschimbată. Nimic pe server.
+- **Documentele:** ADR 0284 („Implementat (3.Ci)”), nota liniei, indexul liniilor, fișa etapei 3, registrul
+  otrăvurilor, `CLAUDE.md`, traducerile roadmap-ului.

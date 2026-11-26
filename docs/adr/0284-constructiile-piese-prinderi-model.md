@@ -747,7 +747,12 @@ Felia 3.Ci, în sesiunea cloud a liniei (ramura `wip/3.Xh-biblioteca-ui`), după
   construcții puse și verificate în pagină, o roată din editor pe același rând cu cele ale șasiului, numele următor.
   Proba în engleză din cvs2 (`trenulet.spec.ts`): panoul, felurile, ce iese pe hârtie cu punctul zecimal, avertismentul,
   numele construcției noi.
-- **Otrăvurile:** `test/otravuri/3.Ci.py` și `3.Ci-en.py` (rezultatele, mai jos).
+- **Otrăvurile:** `test/otravuri/3.Ci.py`, 55 / 57 (la prima rulare 51 / 55: M04 scăpată, prinsă după proba unui număr
+  cu zecimale; M07 a arătat cod mort în citirea raportului, simplificat, cu M37 și M38 noi; M20 și M36 rămân, practic
+  echivalente pentru cele patru șabloane: rotirea pusă pe axul condus e 0 sau exact o jumătate de dinte, iar piesele
+  cele mai de jos sunt rotite doar cu sferturi de tură); `3.Ci-en.py`, 6 / 6. Ancorele tuturor listelor pluginului:
+  2 590, fiecare găsită exact o dată.
+- **Găsit tot de otrăvuri și reparat:** un raport scris ca număr (nu ca text) dădea tăcut 1 : 3; acum are avertismentul.
 - **Mărimea:** pachetul Easy 3Draw, 576,4 kB (era 567,9); aplicația, neschimbată.
 - **Alegeri făcute cu recomandarea, de întrebat owner-ul:** (1) cele patru construcții, cu mărimile de mai sus; (2) roțile
   șasiului, în trei mărimi (nu orice diametru); (3) cutia, cu rapoartele reducătoare (axul de ieșire mai încet); pentru
