@@ -753,7 +753,7 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
   // o apăsare nouă să schimbe felul și cu unealta deja aleasă.
   const [locCote, setLocCote] = useState<HTMLElement | null>(null);
   const [cerereCote, setCerereCote] = useState<CerereCote>({ mod: 'd', n: 0 });
-  const pornesteCote = (mod: 'd' | 'm'): void => {
+  const pornesteCote = (mod: CerereCote['mod']): void => {
     setUnealta('cote');
     setCerereCote((c) => ({ mod, n: c.n + 1 }));
   };
@@ -1328,6 +1328,7 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
     };
     const poate = !p.doarCitire;
     const doua = selectie.length === 2 && poate;
+    const selectiePeFoaie = foaie !== undefined && selectie.some((id) => foaie.instante.some((i) => i.id === id));
     // Cu o piesă pusă de mai multe ori printre cele alese (ADR 0210 §2), două rânduri, fără întrebare.
     const grupare: ArticolMeniu[] = surori === null
       ? [{ id: 'grupeaza', eticheta: t('actiune.grupeaza'), tasta: tastaActiunii('document.grupeaza'), activ: selectie.length >= 2 && poate, ruleaza: () => { facut(grupeaza()); } }]
@@ -1347,6 +1348,8 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
       'separator',
       { id: 'duplica', eticheta: t('actiune.duplica-selectia'), tasta: tastaActiunii('document.duplica-selectia'), activ: selectie.length > 0 && poate, ruleaza: () => { din('document.duplica-selectia'); } },
       { id: 'sterge', eticheta: t('actiune.sterge-selectia'), tasta: tastaActiunii('document.sterge-selectia'), activ: selectie.length > 0 && poate, ruleaza: () => { din('document.sterge-selectia'); } },
+      // „Cotează selecția” (ADR 0330 §4, felia 10.4↑d-1): unealta Cote pornește și pune lățimea și înălțimea pieselor alese.
+      { id: 'coteaza-selectia', eticheta: numeScurt(t('editare.cote.coteaza-selectia')), activ: selectiePeFoaie && poate, ruleaza: () => { facut(null); pornesteCote('s'); } },
       // Mutarea pe altă foaie (ADR 0210 §1): fiecare piesă își păstrează locul; foaia activă rămâne.
       'separator',
       ...doc.foi.flatMap((f, k) => (f.id === idFoaie ? [] : [{
@@ -1611,7 +1614,7 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
       ) : null}
       {foaie && !vedere3d && (unealta === 'cote' || (foaie.cote?.length ?? 0) > 0 || (p.toateFoile === true && doc.foi.some((f) => (f.cote?.length ?? 0) > 0))) ? (
         <Suspense fallback={null}>
-          <StratCote doc={doc} indexFoaie={indexFoaie} vedere={vedere} marime={marime} zona={zona}
+          <StratCote doc={doc} indexFoaie={indexFoaie} selectie={selectie} vedere={vedere} marime={marime} zona={zona}
             unealta={unealta === 'cote' && activ && !p.doarCitire} activ={activ && !p.doarCitire} loc={locCote} locJos={locTaste} cerere={cerereCote}
             lipire={lipire} grila={pasGrila} virgula={virgula} toateFoile={p.toateFoile === true}
             onScrie={(c) => ruleaza('foaie.cote', { coteNoi: () => c })}

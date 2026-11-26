@@ -35,14 +35,16 @@ import type { AncoraCota, Cota, Document, FelCota, LegaturaCota } from '../model
 import { locuriFoi } from '../model/foi.ts';
 // Judecata cotelor și dezlegarea lor în jurnal (ADR 0330 §2, §3): cu unealta, o cotă nouă trece de ușă și se dezleagă cinstit.
 import '../model/judecataCote.ts';
+import { coteSelectie } from '../model/coteSelectie.ts';
 import { puncteFoaie, surseCote } from '../model/puncteCote.ts';
+import { cotaUrmatoare, idCotaNou, pornesteSerie, type ModSerie, type StareSerie } from '../model/serieCote.ts';
 import type { RezultatActiune } from '../ui/actiuni.ts';
 import { alegeCota, publicaPanou, publicaRanduri, useAscunse, useStareCote } from '../ui/coteVedere.ts';
 import './cote.css';
 import { formatCote, optiuniLipireCote, setariCote, stilCote, useSetariCote, type SetariCote } from './setariCote.ts';
 
 /** Felurile din bara uneltei, în ordine. */
-export const FELURI_UNEALTA = ['automata', 'orizontala', 'verticala', 'aliniata', 'raza', 'diametru', 'unghi', 'masoara'] as const;
+export const FELURI_UNEALTA = ['automata', 'orizontala', 'verticala', 'aliniata', 'lant', 'baza', 'raza', 'diametru', 'unghi', 'masoara'] as const;
 export type FelUnealta = (typeof FELURI_UNEALTA)[number];
 
 /** Ultimul fel folosit (setarea „Unealta pornește cu: ultimul fel folosit”), ținut în browser. */
@@ -201,14 +203,16 @@ function cotaInceputa(p: Puse, fel: FelUnealta, w: Punct, shift: boolean): { rea
   }
   const [a, b] = p.capete;
   if (!a || !b) return null;
-  const f: FelCota = p.fix ?? (fel === 'automata' ? (shift ? 'aliniata' : felAutomat(a.p, b.p, w)) : fel);
+  // Lanțul și linia de bază își pun prima cotă ca Automata între două puncte: orizontală, verticală sau aliniată.
+  const f: FelCota = p.fix ?? (fel === 'automata' || esteSerie(fel) ? (shift ? 'aliniata' : felAutomat(a.p, b.p, w)) : fel);
   const linie = linieDin(f, p.capete.map((c) => c.p), w, undefined);
   return linie ? { fel: f, capete: p.capete, linie } : null;
 }
 
 /** Sfatul de jos al uneltei, după fel și după ce s-a ales până acum. */
-function sfatCote(fel: FelUnealta, p: Puse, aleasa: boolean): CheieSimpla {
+function sfatCote(fel: FelUnealta, p: Puse, aleasa: boolean, serie: boolean): CheieSimpla {
   if (fel === 'masoara') return 'editare.cote.sfat.masoara';
+  if (serie) return fel === 'baza' ? 'editare.cote.sfat.baza' : 'editare.cote.sfat.lant';
   if (p.cerc) return 'editare.cote.sfat.cifra';
   if (p.latura && p.fix === 'unghi') return 'editare.cote.sfat.a-doua-latura';
   if (p.latura) return 'editare.cote.sfat.latura';
@@ -226,14 +230,13 @@ function sfatCote(fel: FelUnealta, p: Puse, aleasa: boolean): CheieSimpla {
 }
 
 /** Un id nou pe foaie: `c` și primul număr după cele folosite. */
-function idCota(cote: readonly Cota[]): string {
-  let n = 0;
-  for (const c of cote) {
-    const m = /^c(\d+)$/.exec(c.id);
-    if (m) n = Math.max(n, Number(m[1]));
-  }
-  return `c${n + 1}`;
-}
+const idCota = idCotaNou;
+/** Lanțul și linia de bază (felia 10.4↑d-1): felul uneltei e o serie. */
+const esteSerie = (f: FelUnealta): f is ModSerie => f === 'lant' || f === 'baza';
+/** O serie pornită: starea ei (pură) și capătul din care pleacă cota următoare, cu legătura lui. */
+type Serie = { readonly s: StareSerie; readonly din: Capat };
+/** Depărtarea dintre liniile de bază: două înălțimi de cifră (7 mm la cifrele implicite de 3,5). */
+const pasBaza = (stil: StilCota): number => 2 * stil.inaltime;
 
 /**
  * Măsurile dintre două puncte (Măsoară, ADR 0330 §1): distanța, Δx, Δy, unghiul față de orizontală, ca text, după setări
@@ -250,11 +253,16 @@ function textMasura(a: Punct, b: Punct, s: SetariCote, format: FormatCifre): str
   return parti.join(' · ');
 }
 
-export type CerereCote = { readonly mod: 'd' | 'm'; readonly n: number };
+/** D, M sau „Cotează selecția” (`s`), cu un număr care crește la fiecare cerere: un obiect nou pentru fiecare. */
+export type CerereCote = { readonly mod: 'd' | 'm' | 's'; readonly n: number };
+/** Cererile „Cotează selecția” deja făcute: un strat montat din nou nu le repetă. */
+const CERERI_FACUTE = new WeakSet<CerereCote>();
 
-export function StratCote({ doc, indexFoaie, vedere, marime, zona, unealta, activ, loc, locJos, cerere, lipire, grila, virgula, toateFoile, onScrie, onUnealta, onSetari, poateDublu }: {
+export function StratCote({ doc, indexFoaie, selectie, vedere, marime, zona, unealta, activ, loc, locJos, cerere, lipire, grila, virgula, toateFoile, onScrie, onUnealta, onSetari, poateDublu }: {
   readonly doc: Document;
   readonly indexFoaie: number;
+  /** Instanțele alese în editor: „Cotează selecția” le cotează pe cele de pe foaie (felia 10.4↑d-1). */
+  readonly selectie: readonly string[];
   readonly vedere: Vedere;
   readonly marime: { readonly latime: number; readonly inaltime: number };
   readonly zona: Zona;
@@ -319,6 +327,8 @@ export function StratCote({ doc, indexFoaie, vedere, marime, zona, unealta, acti
   const [tinta, setTinta] = useState<PunctTinta<LegaturaCota> | null>(null);
   const [cursor, setCursor] = useState<{ readonly p: Punct; readonly shift: boolean } | null>(null);
   const [masura, setMasura] = useState<{ readonly a: Capat; readonly b: Capat | null } | null>(null);
+  // Lanțul sau linia de bază pornite: fiecare clic pune cota următoare, până la Esc (felia 10.4↑d-1).
+  const [serie, setSerie] = useState<Serie | null>(null);
   // Cota aleasă stă în depozitul cotelor (`coteVedere.ts`): panoul o descrie, iar lista o poate alege.
   const stareCote = useStareCote();
   const aleasa = stareCote.aleasa?.foaie === idFoaie ? stareCote.aleasa.id : null;
@@ -337,12 +347,14 @@ export function StratCote({ doc, indexFoaie, vedere, marime, zona, unealta, acti
     setFel(cerere.mod === 'm' ? 'masoara' : felLaPornire(setariCote()));
     setPuse(NIMIC);
     setMasura(null);
+    setSerie(null);
   }, [cerere]);
   // Fără unealtă: nimic început, nimic ales.
   useEffect(() => {
     if (unealta) return;
     setPuse(NIMIC);
     setMasura(null);
+    setSerie(null);
     setAleasa(null);
     setTrage(null);
     setTinta(null);
@@ -386,14 +398,32 @@ export function StratCote({ doc, indexFoaie, vedere, marime, zona, unealta, acti
       },
     });
   }, [aleasa, toate, idFoaie]);
+  // „Cotează selecția” (felia 10.4↑d-1), cerută din extensia barei: lățimea și înălțimea fiecărei piese alese, legate de
+  // colțurile cutiei, într-un singur pas. O cerere se face o singură dată, și după o montare din nou a stratului.
+  const coteaza = useRef<() => void>(() => undefined);
+  coteaza.current = (): void => {
+    const noi = coteSelectie(doc, indexFoaie, selectie, setari.linii.distanta, cote, setari.comportament.legate);
+    if (noi.length === 0) {
+      setMotiv(t('editare.cote.motiv.selectie'));
+      return;
+    }
+    const r = onScrie([...cote, ...noi]);
+    setMotiv(r.ok ? null : t(r.motiv));
+    if (r.ok && setari.comportament.dupa === 'selectie') onUnealta('selectie');
+  };
+  useEffect(() => {
+    if (cerere.mod !== 's' || CERERI_FACUTE.has(cerere)) return;
+    CERERI_FACUTE.add(cerere);
+    coteaza.current();
+  }, [cerere]);
   // Plecată (alt proiect, vederea 3D, nicio cotă), unealta nu mai publică nimic.
   useEffect(() => () => {
     publicaPanou(null);
     publicaRanduri('', []);
   }, []);
 
-  const acum = useRef({ cote, desenate, surse, fixe, vedere, setari, lipire, grila, fel, puse, masura, aleasa, unealta, activ, onScrie, onUnealta, poateDublu });
-  acum.current = { cote, desenate, surse, fixe, vedere, setari, lipire, grila, fel, puse, masura, aleasa, unealta, activ, onScrie, onUnealta, poateDublu };
+  const acum = useRef({ cote, desenate, surse, fixe, vedere, setari, stil, lipire, grila, fel, puse, masura, serie, aleasa, unealta, activ, onScrie, onUnealta, poateDublu });
+  acum.current = { cote, desenate, surse, fixe, vedere, setari, stil, lipire, grila, fel, puse, masura, serie, aleasa, unealta, activ, onScrie, onUnealta, poateDublu };
 
   useEffect(() => {
     const el = radacina.current;
@@ -495,11 +525,14 @@ export function StratCote({ doc, indexFoaie, vedere, marime, zona, unealta, acti
       else setMotiv(null);
       return r.ok;
     };
-    const puneCota = (capete: readonly Capat[], felCota: FelCota, linie: NonNullable<Cota['linie']>): void => {
+    const puneCota = (capete: readonly Capat[], felCota: FelCota, linie: NonNullable<Cota['linie']>): boolean => {
       const s = acum.current;
       const l = { ...linie, d: rot(linie.d) };
       const noua: Cota = { id: idCota(s.cote), fel: felCota, puncte: capete.map(ancoraDin), linie: l };
-      if (scrie([...s.cote, noua]) && s.setari.comportament.dupa === 'selectie') s.onUnealta('selectie');
+      if (!scrie([...s.cote, noua])) return false;
+      // Într-un lanț sau într-o linie de bază, unealta rămâne până la Esc (setarea „După o cotă” vine după ultima).
+      if (s.setari.comportament.dupa === 'selectie' && !esteSerie(s.fel)) s.onUnealta('selectie');
+      return true;
     };
 
     const peCote = (e: Event): boolean => e.target === panza && !spatiu;
@@ -514,6 +547,17 @@ export function StratCote({ doc, indexFoaie, vedere, marime, zona, unealta, acti
       if (s.fel === 'masoara') {
         const { c } = lipit(e);
         setMasura((m) => (!m || m.b ? { a: c, b: null } : { a: m.a, b: c }));
+        return;
+      }
+      // Lanțul sau linia de bază pornite: punctul de sub maus pune cota următoare, din capătul seriei.
+      if (s.serie && esteSerie(s.fel)) {
+        const { c } = lipit(e);
+        const r = cotaUrmatoare(s.serie.s, c.p, pasBaza(s.stil));
+        if (!r) {
+          setMotiv(t('editare.cote.motiv.zero'));
+          return;
+        }
+        if (puneCota([s.serie.din, c], s.serie.s.fel, { d: r.d })) setSerie({ s: r.stare, din: s.serie.s.mod === 'lant' ? c : s.serie.din });
         return;
       }
       const n = s.puse.capete.length;
@@ -533,7 +577,13 @@ export function StratCote({ doc, indexFoaie, vedere, marime, zona, unealta, acti
         const x = cotaInceputa(s.puse, s.fel, w, e.shiftKey);
         if (!x) return;
         setPuse(NIMIC);
-        puneCota(x.capete, x.fel, x.linie);
+        const pusa = puneCota(x.capete, x.fel, x.linie);
+        // Prima cotă a unui lanț sau a unei linii de bază: seria pornește din ea.
+        const [a, b] = x.capete;
+        if (pusa && esteSerie(s.fel) && a && b && (x.fel === 'orizontala' || x.fel === 'verticala' || x.fel === 'aliniata')) {
+          const st = pornesteSerie(s.fel, x.fel, a.p, b.p, rot(x.linie.d));
+          if (st) setSerie({ s: st, din: s.fel === 'lant' ? b : a });
+        }
         return;
       }
       // La Unghi, cu prima latură aleasă: a doua latură.
@@ -661,6 +711,13 @@ export function StratCote({ doc, indexFoaie, vedere, marime, zona, unealta, acti
       const ia = (): void => { e.preventDefault(); e.stopImmediatePropagation(); };
       if (e.key === 'Escape') {
         if (s.puse.capete.length > 0 || s.puse.cerc) { ia(); setPuse(NIMIC); setMotiv(null); return; }
+        if (s.serie) {
+          ia();
+          setSerie(null);
+          setMotiv(null);
+          if (s.setari.comportament.dupa === 'selectie') s.onUnealta('selectie');
+          return;
+        }
         if (s.masura) { ia(); setMasura(null); return; }
         if (s.aleasa) { ia(); setAleasa(null); return; }
         return;
@@ -737,10 +794,15 @@ export function StratCote({ doc, indexFoaie, vedere, marime, zona, unealta, acti
   });
   let elastic: ReactElement | null = null;
   const inceputa = unealta && cursor ? cotaInceputa(puse, fel, cursor.p, cursor.shift) : null;
-  if (inceputa) {
+  const urmatoarea = unealta && cursor && serie && esteSerie(fel) ? cotaUrmatoare(serie.s, cursor.p, pasBaza(stil)) : null;
+  if (serie && urmatoarea && cursor) {
+    // Cota următoare a seriei, de la capătul ei la punctul lipit de sub maus.
+    const c: Cota = { id: '-', fel: serie.s.fel, puncte: [ancoraDin(serie.din), { x: cursor.p.x, y: cursor.p.y }], linie: { d: urmatoarea.d } };
+    desene.push({ ...deseneaza(c, [{ p: serie.din.p, stare: 'libera' }, { p: cursor.p, stare: 'libera' }], stil, format), cls: 'noua' });
+  } else if (inceputa) {
     const c: Cota = { id: '-', fel: inceputa.fel, puncte: inceputa.capete.map(ancoraDin), linie: inceputa.linie };
     desene.push({ ...deseneaza(c, inceputa.capete.map((q) => ({ p: q.p, stare: 'libera' as const })), stil, format), cls: 'noua' });
-  } else if (unealta && fel !== 'masoara' && !asteapta(puse) && !puse.latura && cursor) {
+  } else if (unealta && fel !== 'masoara' && !serie && !asteapta(puse) && !puse.latura && cursor) {
     // Capătul elastic: de la ultimul punct pus (la unghi, al doilea punct se leagă tot de vârf).
     const a = puse.fix === 'unghi' ? puse.capete[0] : puse.capete[puse.capete.length - 1];
     if (a) elastic = <line className="cota-elastic" x1={sx(a.p.x)} y1={sy(a.p.y)} x2={sx(cursor.p.x)} y2={sy(cursor.p.y)} />;
@@ -749,16 +811,26 @@ export function StratCote({ doc, indexFoaie, vedere, marime, zona, unealta, acti
   const capatMasura = masura ? (masura.b?.p ?? cursor?.p ?? null) : null;
   const textM = masura && capatMasura ? textMasura(masura.a.p, capatMasura, setari, format) : null;
   const marcaj = unealta && tinta ? <Marcaj fel={tinta.fel} x={sx(tinta.p.x)} y={sy(tinta.p.y)} /> : null;
-  const sfat = !unealta ? null : motiv ?? t(sfatCote(fel, puse, aleasa !== null));
+  const sfat = !unealta ? null : motiv ?? t(sfatCote(fel, puse, aleasa !== null, serie !== null));
   const alegeFel = (f: FelUnealta): void => {
     setFel(f);
     tineFel(f);
     setPuse(NIMIC);
     setMasura(null);
+    setMotiv(null);
+    // Lanțul sau linia de bază cu o cotă liniară aleasă: seria pornește din ea (lanțul, din al doilea capăt; baza, din primul).
+    const d = esteSerie(f) && aleasa ? toate.find((x) => x.cota.id === aleasa) : undefined;
+    const [a, b] = d?.cota.puncte ?? [];
+    const [pa, pb] = d?.puncte ?? [];
+    const st = d && a && b && pa && pb && esteLiniar(d.cota.fel) && d.cota.linie ? pornesteSerie(f as ModSerie, d.cota.fel, pa.p, pb.p, d.cota.linie.d) : null;
+    const capatDin = f === 'lant' ? { a: b, p: pb } : { a, p: pa };
+    setSerie(st && capatDin.a && capatDin.p ? { s: st, din: { p: capatDin.p.p, legatura: capatDin.p.stare === 'legata' ? capatDin.a.legatura ?? null : null } } : null);
   };
+
 
   return (
     <div className="strat-cote" ref={radacina} data-testid="strat-cote" data-fel={unealta ? fel : undefined} data-puse={puse.capete.length} data-fix={puse.fix ?? undefined} data-cerc={puse.cerc ? '' : undefined} data-aleasa={aleasa ?? undefined}
+      data-serie={serie ? serie.s.mod : undefined}
       data-ascunse={vizibile ? undefined : ''} style={setari.comportament.culoare ? ({ '--cota': setari.comportament.culoare } as CSSProperties) : undefined}>
       <svg className="rigle-desen" width={marime.latime} height={marime.inaltime} aria-hidden="true">
         {vecine.map((v) => (
@@ -843,6 +915,8 @@ function IconaFel({ f }: { readonly f: FelUnealta }): ReactElement {
     orizontala: 'M2 4 V12 M14 4 V12 M2 8 H14 M2 8 L4.5 6.5 M2 8 L4.5 9.5 M14 8 L11.5 6.5 M14 8 L11.5 9.5',
     verticala: 'M4 2 H12 M4 14 H12 M8 2 V14 M8 2 L6.5 4.5 M8 2 L9.5 4.5 M8 14 L6.5 11.5 M8 14 L9.5 11.5',
     aliniata: 'M3 13 L13 3 M3 13 L3.4 10 M3 13 L6 12.6 M13 3 L10 3.4 M13 3 L12.6 6',
+    lant: 'M1.5 4 V12 M8 4 V12 M14.5 4 V12 M1.5 8 H14.5 M1.5 8 L3.5 7 M1.5 8 L3.5 9 M8 8 L6 7 M8 8 L6 9 M8 8 L10 7 M8 8 L10 9 M14.5 8 L12.5 7 M14.5 8 L12.5 9',
+    baza: 'M2 14 V3 M8 14 V8 M14 14 V3 M2 10 H8 M2 5 H14 M2 10 L4 9 M2 10 L4 11 M8 10 L6 9 M8 10 L6 11 M2 5 L4 4 M2 5 L4 6 M14 5 L12 4 M14 5 L12 6',
     raza: 'M14 8 A6 6 0 1 1 2 8 A6 6 0 1 1 14 8 M8 8 L12.2 3.8 M12.2 3.8 L9.8 4.4 M12.2 3.8 L11.6 6.2',
     diametru: 'M14 8 A6 6 0 1 1 2 8 A6 6 0 1 1 14 8 M3.8 12.2 L12.2 3.8 M12.2 3.8 L9.8 4.4 M12.2 3.8 L11.6 6.2 M3.8 12.2 L6.2 11.6 M3.8 12.2 L4.4 9.8',
     unghi: 'M2 13 H14 M2 13 L11 3 M10 13 A8 8 0 0 0 7.4 7.1',
