@@ -1933,6 +1933,12 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 26.11.2026, la prânz: **titlurile în română ale grupurilor din fereastra exportului: „Tăietura”, „Golirea”,
+  „Coborârea”** („da, Tăietura, Golirea, Coborârea”, în sesiunea principală, la recomandarea liniei exportului, lăsată
+  owner-ului de auditul ferestrei: constatarea 21, ADR 0291, „Implementarea 28.8↑k”). În locul lui „Ce tăiere”, „Cum
+  golește” și „Cum coboară” (`export.grup.taietura`, `export.grup.golire`, `export.grup.coborare`); engleza rămâne
+  Cut type, Clearing, Descent. O face linia exportului, care lucrează în fereastră: un commit mic, cu manualul și cu
+  probele care caută titlurile după text, înaintea lui 28.8↑q sau odată cu ea. Programul nu se schimbă.
 - 26.11.2026, la prânz: **sesiunea principală merge pe Opus de acum** („o sa folosim Opus de aici in colo”, spus în
   sesiunea principală, după ce owner-ul a schimbat modelul ei cu `/model`). Intrările noi din DEVLOG scriu modelul
   care a lucrat. Sesiunile liniilor își păstrează modelul până îl schimbă owner-ul în fiecare; o linie nouă pornită
