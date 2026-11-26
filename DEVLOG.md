@@ -15622,3 +15622,25 @@ foilor” (sesiunea principală, 26.11, 00:08, cu cuvântul owner-ului: „ok, p
   ADR 0313 §3, corectat: la capetele liniilor, între două linii, rămâne o scobitură de cel mult R − √(R² − (s / 2)²) peste a.
 - **Fișa** (`docs/etape/placa-18.md`): ce măsori după T1 (înaintea lui T2) și după T2, timpul, ce devin măsurătorile. Tăierea e
   a owner-ului (rândul din coada lui).
+
+## 2026-11-26 — Sesiunea principală în cloud: a patruzeci și cincea unire (relieful: 18.1↑d-1, degroșarea, documentul v30; 18.1↑d-2, fișa plăcii 18) (Model: Claude Fable 5.2)
+
+**Prompt:** raportul liniei reliefului („18.1↑d-1 (degroșarea reliefului, documentul v30, ADR 0313) e gata pe `wip/18.1-relief`, la `4381cc92`”; d-2 „gata pe aceeași ramură, la `2b38215a`”), la ordinul în vigoare „unește ce se poate”
+**Started:** 26.11, 04:09. **Completed:** unirea în `main`, 26.11, 05:09; publicarea pe test, lotul 42.
+
+- **Verificat înaintea unirii:** completele liniei (45731673147 pe `4381cc92`; 45733724086 pe `2b38215a`, terminat după raport,
+  citit din GitHub) și rapidele lor, verzi; PR-ul #51; fără `.lucru/`; d-1 e strămoșul lui d-2, deci s-au unit împreună, din
+  `2b38215a` (cu îndreptarea lui ADR 0313 §3 din d-2). Ramura avea `7a754885`; `main` primise `9c728412` (globul și cotele în
+  lanț: cod al aplicației), deci unirea și-a făcut completul ei.
+- **Unirea, pe `unire-2611d`** (din `9c728412`): `2b38215a`, în `3d0d0c15`. Ciocnirea, în DEVLOG (`rezolva-devlog.py`). Local:
+  tipurile, regulile de import (22 / 22), traducerile (1 181), catalogul controalelor (la zi), biblioteca (Easy 3Draw 18.36.0),
+  probele documentelor și ale manualului 76 / 76 și probele de la întâlnirea liniilor (cotele, documentul v30, corpusul de
+  aur, placa 18, grupurile exportului, catalogul utilizării) 51 / 51; nicio probă a cotelor nu ține scrisă versiunea 29.
+- **Porțile unirii, în CI, pe `3d0d0c15`** (citite din jurnalul rulării): completul 45740693114, verde la prima trecere (57 min): unit
+  10 684 / 0 (12 sărite, pe Linux), e2e 919 / 919, funcțiile pe emulatoare 136 / 136, paginile 60 / 60; rapidul 45740694151, verde. Pornirea 111,4 kB
+  (plafonul 125; cu ușa 116,7, cu Atelierul 117,0), totalul 912,6 / 1 000 kB, `/admin` 138,3 / 200, contul
+  30,2 / 32. Nimic pe server.
+- **Lotul 41 pe test:** `9c728412`, publicat pe 26.11 la 04:35 (completul pe `main` 45736916608, verde;
+  proba de fum, bună).
+- **Documentele:** decizia și paragraful de stare în `CLAUDE.md` (documentul v30, următorul liber v31); indexul liniilor;
+  starea din `docs/linii/principala.md`.
