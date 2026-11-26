@@ -1301,6 +1301,10 @@
       "ro": "**Imaginile TIFF** (fără mașină; ADR 0229, acceptat la „vreau să mergi înainte și testez la final”, cu recomandările, și implementat; worktree-ul `trasare`, ramura `wip/25.1-trasare`). Un cititor TIFF propriu, în workerul trasării (`src/trasare/tiff.ts`, CCITT în `ccitt.ts`): II și MM; benzi și plăci; ordinea planară 1 și 2; compresiile fără, CCITT 2 / 3 / 4, LZW, Deflate (prin `DecompressionStream`), PackBits; predictorul 2; alb-e-zero, negru-e-zero, RGB, paleta, CMYK; 1–16 biți; alfa; FillOrder; orientarea. Refuzate cu numele: JPEG în TIFF, BigTIFF, virgula mobilă, YCbCr, CIELab. Peste 16 Mpx, reducerea din mers, pe blocuri; DPI-ul din etichete; alegerea paginii, ca la PDF; scanarea sub vectori, decodată de worker. Probele: 16 fișiere scrise de WIC și GDI+, cu pixelii citiți de WIC, exact; fișiere scrise de mână, cu valorile pe hârtie. O scanare A4 la 600 dpi: ~1 s. **Treceri:** (1) felia și otrăvurile (`9a6d6b56`, `8dfa3190`: previzualizarea, probele cerute de otrăvuri); (2) reluarea după întrerupere: `main` adus (`ddfc3c00`), porțile din nou, canalul. Otrăvurile: 41 / 41, fiecare pe proba ei (30 unitare ale cititorului, 8 ale ușii, 4 prin e2e); la prima rulare (`9a6d6b56`), 36 / 38: C10 (fără a treia santinelă a referinței CCITT) a cerut o probă pe date stricate, iar T02 (LZW, KwKwK) era echivalent, deci ramura a ieșit (`8dfa3190`); U07, U08 și W04 păzesc previzualizarea, adăugată după. Totalul 722,1 / 800 kB pe arborele unit (+5,4), pornirea 106,6 / 115, cu ușa 110,6; publicat pe canalul `trasare` (<https://cncvectorstudio-test--trasare-icw58h57.web.app>, până pe 18.12), amprenta `ddfc3c006a80`.",
       "en": "**TIFF images** (no machine; ADR 0229, accepted at “I want you to go ahead and I will test at the end”, with the recommendations, and implemented; the `trasare` worktree, the `wip/25.1-trasare` branch). An own TIFF reader, in the tracing worker (`src/trasare/tiff.ts`, CCITT in `ccitt.ts`): II and MM; strips and tiles; planar configuration 1 and 2; uncompressed, CCITT 2 / 3 / 4, LZW, Deflate (through `DecompressionStream`), PackBits; predictor 2; white-is-zero, black-is-zero, RGB, palette, CMYK; 1–16 bits; alpha; FillOrder; orientation. Refused by name: JPEG in TIFF, BigTIFF, floating point, YCbCr, CIELab. Over 16 Mpx, reduced on the fly, in blocks; DPI from the tags; page choice, as for PDF; the scan under the vectors, decoded by the worker. The tests: 16 files written by WIC and GDI+, with the pixels read by WIC, exact; files written by hand, with the values worked out on paper. An A4 scan at 600 dpi: ~1 s. **Passes:** (1) the slice and the poisons (`9a6d6b56`, `8dfa3190`: the preview, the tests the poisons asked for); (2) the restart after an interruption: `main` brought in (`ddfc3c00`), the gates again, the channel. The poisons: 41 / 41, each on its own test (30 unit tests of the reader, 8 of the door, 4 through e2e); on the first run (`9a6d6b56`), 36 / 38: C10 (without the third sentinel of the CCITT reference) asked for a test on damaged data, and T02 (LZW, KwKwK) was equivalent, so the branch went (`8dfa3190`); U07, U08 and W04 guard the preview, added after. Total 722.1 / 800 kB on the merged tree (+5.4), startup 106.6 / 115, with the door 110.6; published on the `trasare` channel (<https://cncvectorstudio-test--trasare-icw58h57.web.app>, until 18.12), fingerprint `ddfc3c006a80`."
     },
+    "3ecbc9ab09a020af": {
+      "ro": "Rândul editabil al finisării și al degroșării în fereastra exportului",
+      "en": "The editable row of finishing and roughing in the export window"
+    },
     "3f19b83fdc63d738": {
       "ro": "Regula `nonzero` la ușă",
       "en": "The `nonzero` rule at the door"
@@ -1536,6 +1540,10 @@
     "4aea7905acfeea1b": {
       "ro": "Afișarea simulării în WebGL2.",
       "en": "Simulation display in WebGL2."
+    },
+    "4afb2ec7336384a1": {
+      "ro": "Rândul editabil al reliefului în fereastra exportului",
+      "en": "The editable relief row in the export window"
     },
     "4b26d01c119308aa": {
       "ro": "Numele fișierului în fereastra exportului",
@@ -1976,6 +1984,10 @@
     "61be8812d1af403f": {
       "ro": "Decorațiunile de Crăciun din Easy 3Draw",
       "en": "Christmas decorations in Easy 3Draw"
+    },
+    "62267dfe3c3c64fd": {
+      "ro": "**Rândul editabil al finisării și al degroșării în fereastra exportului** (fără mașină; ADR 0315, după ADR 0312 §7 și ADR 0313 §7; ramura `wip/18.1-relief`; la cuvântul owner-ului, transmis de sesiunea principală). Fișa reliefului are grupurile ferestrei (freza, liniile, adaosul la degroșare, marginea și înălțimea, adâncimea), cu câmpurile `relief-*`, explicațiile, greșelile în grupul lor, marcajul din listă și „Du-mă la …”; notele pasului folosit (ADR 0314) și ale crestei pe plan; marginea și înălțimea se scriu și pe perechea rândului, ca în panou. Exportă scrie doar ce s-a schimbat (fără schimbare, aceeași operație, la octet; alt diametru sau altă formă, freza scrisă de mână). Rămân freza din bibliotecă, desenele grupurilor și „Dă-i T{n}”. Proba întâi: `export.relief.test.ts`; e2e `relief.export.spec.ts`, fișele din `finisare.spec.ts` și `degrosare.spec.ts`, privirea. Otrăvurile: `18.1d-4.py`, 14 / 14 unitare prinse (cele e2e, în lucru), martorul a scăpat; patru vechi, mutate. Totalul +3,2 kB.",
+      "en": "**The editable row of finishing and roughing in the export window** (no machine; ADR 0315, after ADR 0312 §7 and ADR 0313 §7; branch `wip/18.1-relief`; on the owner's word, passed on by the main session). The relief sheet has the window's groups (cutter, lines, allowance for roughing, edge and height, depth), with the `relief-*` fields, their explanations, the mistakes in their group, the mark in the list and “Take me to …”; the notes on the step used (ADR 0314) and on the scallop on a flat; the edge and the height are written on the row's pair too, as in the panel. Export writes only what changed (without a change, the same operation, byte for byte; another diameter or shape, the cutter written by hand). Left: the cutter from the library, the group drawings and “Give it T{n}”. The probe first: `export.relief.test.ts`; e2e `relief.export.spec.ts`, the sheets in `finisare.spec.ts` and `degrosare.spec.ts`, the look. The poisons: `18.1d-4.py`, 14 / 14 unit caught (the e2e ones, in progress), the control escaped; four old ones moved. The total +3.2 kB."
     },
     "62adc5ca19ce0931": {
       "ro": "Gata pe 09.11",

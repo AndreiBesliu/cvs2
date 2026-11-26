@@ -16239,3 +16239,21 @@ commit-ul împins).
 - **CAM-ul:** `celuleAliniate` (k = max(1, ⌊s / c + 1e-9⌋)) în `linii`, refuzul celulei peste diametru, avertismentele („rotunjit
   în jos la k celule”, „mărit la o celulă”). Programele cu pași întregi de celule, octet cu octet (placa 18, neschimbată).
 - **ADR 0314** (schimbă rotunjirea din ADR 0310 §5 și ADR 0312), manualul (ro, en); otrăvurile 10 / 10, într-o clonă.
+
+## 2026-11-26 — Linia reliefului: felia 18.1↑d-4, rândul editabil al finisării și al degroșării (Model: Claude Opus 5.5)
+
+**Prompt:** „Zi-le ca pot continua cu ce urmeaza la fiecare” (owner-ul, în sesiunea principală, transmis liniei la 20:16):
+„rândul editabil al finisării și al degroșării în fereastra exportului (azi doar de citit, prin `FisaFinisare`)”. **Started:**
+26.11, 21:00, după 18.1↑d-3, pe aceeași ramură. **Completed:** 26.11, 21:15 (în container; CI-ul, pe commit-ul împins).
+
+- **Proba întâi, pe hârtie:** `export.relief.test.ts` (rândul ca text, câmpurile greșite, perechile, scrierea: fără schimbare,
+  aceeași operație la octet; fiecare câmp; freza cu alt T, alt diametru, altă formă, doar alt vârf al V-ului).
+- **Fereastra:** fișa pe grupuri (`GRUPURI_RELIEF`: freza, liniile, adaosul, marginea și înălțimea, adâncimea), câmpurile
+  `relief-*` cu explicațiile lor, greșelile în grup, marcajul din listă, „Du-mă la …” cu numele rândului; pasul folosit (din
+  `celuleAliniate`, mutată într-un modul al ei, `src/cam/celuleAliniate.ts`) și creasta pe plan; marginea și înălțimea pe
+  perechea rândului. Exportă dă valorile în `CerereExport.valoriRelief`; aplicația le scrie cu `operatieReliefDinDialog`.
+- **ADR 0315**, manualul (ro, en), e2e nou (`relief.export.spec.ts`), fișele din `finisare.spec.ts` și `degrosare.spec.ts`,
+  privirea cu V-ul și planul zero; otrăvurile 14 / 14 unitare prinse (cele e2e, în lucru), într-o clonă; patru otrăvuri vechi mutate (11.5 E17, 28.8p P24, 18.1d
+  E02, E04, ultima VOID încă de pe `main`).
+- **De ținut minte:** un `npm ci` într-o clonă al cărei `node_modules` e o legătură spre repo golește `node_modules` din repo
+  (aici s-a văzut ca `tsc: not found`); clona își face întâi `node_modules` al ei.

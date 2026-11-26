@@ -298,6 +298,13 @@ vreau ca ficare setare sa fie insotita de o ilustratie sugestiva, ca sa ajute us
   merge la 1280 × 3200 și spune condiția; o fișă care trece de ~3 000 px o face să cadă, cu motivul.
 - **Un câmp nou al rândului (`Rand`) intră și în bazele probelor care fac rânduri de mână** (`exportFreze.nota`, `.inapoi`,
   `.rest`): compilatorul le cere; valoarea lui o pune inițializarea rândului din `DialogExport.tsx`.
+- **Rândurile reliefului sunt editabile din 18.1↑d-4 (linia reliefului, ADR 0315):** fișa finisării și a degroșării stă în
+  `src/ui/FisaFinisare.tsx`, cu starea ei în fereastră (`paramRelief`; rândul ca text, verificarea și perechile în
+  `src/ui/exportRelief.ts`), grupurile ei (`GRUPURI_RELIEF`: `freza-relief`, `linii`, `adaos`, `margine`, `podea`) și câmpurile
+  `relief-*` în `GRUP_CAMP` (proba grupurilor citește și `FisaFinisare.tsx`). `greseliRand(cheie)` întoarce și greșelile lor
+  (marcajul din listă, „Du-mă la …”), iar `valid` cere `reliefBun`. Exportă le dă în `CerereExport.valoriRelief`, pe care
+  `App.tsx` îl scoate înaintea calculului, ca pe `valori`; aplicația le scrie cu `operatieReliefDinDialog`
+  (`src/app/valoriOperatii.ts`). Marginea și planul zero se scriu și pe perechea rândului (`perechi`).
 
 ## Ce rămâne
 
