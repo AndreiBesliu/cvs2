@@ -56,6 +56,9 @@ test('titlul grupului înaintea explicației; câmpurile descrise de explicație
       const h = g.querySelector('h4'), e = g.querySelector('[data-explicatie]'), nume = g.dataset['grup'] ?? '?';
       if (!h || !e || !(h.compareDocumentPosition(e) & Node.DOCUMENT_POSITION_FOLLOWING)) r.push(`${nume}: titlul nu e înaintea explicației`);
       if (g.querySelector('[data-greseli][aria-live="polite"]') === null) r.push(`${nume}: greșelile fără aria-live`);
+      // Pe ecran, titlul stă tot în dreapta, deasupra câmpurilor (ordinea din DOM nu mută așezarea).
+      const c = g.querySelector('.dx-campuri')?.getBoundingClientRect(), t = h?.getBoundingClientRect();
+      if (c && t && (Math.abs(t.left - c.left) > 1 || t.bottom > c.top + 1)) r.push(`${nume}: titlul nu stă deasupra câmpurilor`);
     }
     if (d.querySelector('[data-explicatie][aria-live]')) r.push('o explicație cu aria-live');
     return r;
