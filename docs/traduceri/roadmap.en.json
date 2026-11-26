@@ -4631,7 +4631,7 @@
     },
     "efca218d82f22bdd": {
       "ro": "**Începutul programului, la vedere în fereastra exportului** (fără mașină; ADR 0292, propus, cu recomandările aplicate). În lucru.",
-      "en": ""
+      "en": "**The start of the program, in view in the export window** (no machine; ADR 0292, proposed, with the recommendations applied). In progress."
     },
     "f015589558c813f1": {
       "ro": "Proba raportărilor complete pe adresa principală de test (<https://cncvectorstudio-test.web.app/>; 15.B↑b unită în `main` și publicată pe 07.11, serverul înaintea site-ului): o raportare cu **Atașează proiectul** (meniul contului → Raportează o problemă…), proiectul descărcat din `/admin` → Tichete, o raportare fără bifă; a doua zi după 04:00, jobul `pastrareTichete` în Diagnoză",
