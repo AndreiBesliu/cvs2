@@ -1267,7 +1267,8 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   Easy 3Draw 18.38.0 (următoarea, 18.39.0). Cu ea, ADR 0285 are toate cele patru felii făcute. **Un locaș nou ține
   știftul din două părți (proba prinderilor o cere): la etaj, peretele golului din afară și tubul din mijloc, amândouă
   la jocul din calibrare. O prindere declarată „bară” e o bară adevărată (`sectiuneBara`), nu un cui pătrat.**
-  **3.Cf-2 (răsturnările și jumătățile de pas în „Modelul”; ADR 0284, partea D)** gata pe 26.11, pe ramură: piesa
+  **3.Cf-2 (răsturnările și jumătățile de pas în „Modelul”; ADR 0284, partea D)** gata pe 26.11, unită în `main` pe
+  26.11 (`3e56e8cf`): piesa
   aleasă din model se răstoarnă câte un sfert de tură („Răstoarnă ↓”, spre față; „Răstoarnă →”, spre dreapta), în
   jurul mijlocului cutiei ei, cu partea de jos la aceeași înălțime; cu „Rotește”, cele 24 de așezări drepte; a patra
   răsturnare o pune la loc, pe grilă. „Jumătăți de pas” mută câte o jumătate de știft și o jumătate de placă. Tastele:
@@ -1920,6 +1921,40 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 26.11.2026, dimineața (a cincizecea unire din cloud): **răsturnările și jumătățile de pas în vederea „Modelul” a
+  atelierului Easy 3Draw (3.Cf-2), unite în `main`** (sesiunea principală, ramura `unire-2611i`, din `1d9671d3`).
+  Linia atelierului, ramura `wip/3.Xh-biblioteca-ui`, `fc9ee1db`, PR-ul `AndreiBesliu/cvs2#57` (ADR 0284, partea
+  D), unită în `3e56e8cf`: în „Modelul”, „Răstoarnă ↓” și „Răstoarnă →” culcă piesa aleasă câte un sfert de tură
+  (spre față, spre dreapta), în jurul mijlocului cutiei ei, cu partea de jos la aceeași înălțime; cu „Rotește”, dau
+  cele 24 de așezări drepte, iar a patra răsturnare pune piesa la loc, pe grilă; „Jumătăți de pas” mută câte o
+  jumătate de știft și o jumătate de placă; tastele: X și Y răstoarnă, Shift + săgeată mută cu o jumătate de pas.
+  Datele ținute nu se schimbă: piesa răsturnată sau dintre știfturi e „liberă”, ca una desprinsă. **Easy 3Draw
+  18.39.0** (555,4 kB); otrăvurile 71 / 71 și 10 / 10. Tot de la linie, în commit-uri separate, doar în
+  `test/otravuri/`: 36 de ancore rămase în urmă în listele mai vechi ale pluginului, aduse la zi și rulate din nou
+  (6 / 6 și 30 / 30). De știut: pasul pe Z rămâne placa sau jumătatea ei, deci gaura unei grinzi Technic culcate
+  nu cade pe el; un ax se pune prin ea cu alipirea (3.Cf-1), nu cu săgețile. Doar pachetul extensiei se schimbă;
+  nimic pe server; documentul rămâne v30. Ramura avea `main` `c1d1c81d`; de atunci `main` primise 28.8↑k (cod al
+  aplicației), deci unirea și-a făcut completul ei; ciocnirea, doar în DEVLOG. Porțile unirii, în CI, pe
+  `3e56e8cf` (completul 45765623732, verde la prima trecere, 73 min): unit 10 729 / 0 (12 sărite, pe Linux), e2e 951 / 951, funcțiile pe emulatoare 136 / 136,
+  paginile 60 / 60; rapidul, verde pe `3e56e8cf`; completul liniei, verde pe `fc9ee1db` (45758429079); aplicația,
+  neschimbată de felie: pornirea 111,6 kB (plafonul 125; cu ușa 116,8, cu Atelierul 117,1), totalul
+  919,2 / 1 000 kB, `/admin` 138,3 / 200, contul 30,2 / 32.
+  **Lotul 43 (ornamentul cu nume și brăduțul LEGO, Easy 3Draw 18.38.0) e pe test din 26.11, 07:46** (`c1d1c81d`;
+  completul pe `main` 45757325901, verde: unit 10 714 / 0, e2e 937 / 937, funcțiile pe emulatoare 136 / 136,
+  paginile 60 / 60; proba de fum, bună), iar **lotul 44 (28.8↑k, curățenia vizuală a ferestrei exportului), din 08:56**
+  (`1d9671d3`; completul pe `main` 45763781195, verde: unit 10 719 / 0, e2e 945 / 945, funcțiile pe emulatoare 136 / 136, paginile 60 / 60; proba de fum, bună); felia aceasta
+  pleacă acum (lotul 45).
+  La linii: exportul a raportat 28.8↑l (tastatura și cititorul de ecran) și e în CI, pe o ramură de unire pusă
+  peste aceasta; în lucru, atelierul (3.Cg, verificarea: prinsă, plutește, se ciocnește). **La owner, de încercat
+  în „Modelul”** (întrebările liniei, din fișa etapei 3): se răstoarnă
+  piesa cum te aștepți? sunt bune numele butoanelor? ajung jumătățile de pas la piesele Technic, sau trebuie un pas
+  și mai fin? **Tot la owner:** titlurile grupurilor exportului, constatarea 14, de încercat și de tipărit
+  decorațiunile (și ornamentul cu nume și brăduțul LEGO), pachetul Easy 3Draw (555,4 kB), întrebarea 10 a cotelor
+  și cele două alegeri din d-1, alegerile reliefului și tăierea plăcii 18, rândul editabil al finisării și al
+  degroșării, Escape în cele șase ferestre, feliile frezelor (16.A↑d–g), cele două alegeri mai vechi cu
+  recomandarea aplicată, proba pe mașină a centrului foii, cele patru întrebări din auditul elicelor, arhivarea
+  sesiunii elicelor, verificarea juridică (GDPR) a utilizării aplicației înaintea live-ului, „cine unește în
+  `main`”, meniul de sus la 320 px la atingere.
 - 26.11.2026, dimineața (a patruzeci și noua unire din cloud): **curățenia vizuală a ferestrei „Exportă G-code”
   (28.8↑k), unită în `main`** (sesiunea principală, ramura `unire-2611h`, din `c1d1c81d`). Linia exportului, ramura
   `wip/28.8-export`, `d14f83cb`, PR-ul `AndreiBesliu/cvs2#56` (ADR 0291; constatările 8, 10, 11, 12, 16, 17 și 21

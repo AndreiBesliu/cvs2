@@ -15907,3 +15907,23 @@ ordinul în vigoare „unește ce se poate”
   liniei.
 
 **Completed:** 26.11, 08:07.
+
+## 2026-11-26 — Sesiunea principală în cloud: a cincizecea unire (atelierul Easy 3Draw: 3.Cf-2, răsturnările și jumătățile de pas în „Modelul”) (Model: Claude Fable 5.2)
+
+**Prompt:** raportul liniei atelierului („3.Cf-2 gata de unit”, `fc9ee1db`), la ordinul în vigoare „unește ce se poate”
+**Started:** 26.11, 08:03. **Completed:** unirea în `main`, 26.11, 09:18; publicarea pe test, lotul 45.
+
+- **Verificat înaintea unirii:** completul liniei (45758429079) și rapidul (45758430318), verzi pe `fc9ee1db`; PR-ul #57; fără
+  `.lucru/`. Ramura avea `c1d1c81d`; `main` era la `1d9671d3` (28.8↑k: cod al aplicației), deci unirea și-a făcut completul
+  ei: față de `fc9ee1db`, arborele unirii are în plus exact fișierele lui 28.8↑k.
+- **Unirea, pe `unire-2611i`** (din `1d9671d3`): `fc9ee1db`, în `3e56e8cf`. Ciocnirea, în DEVLOG (`rezolva-devlog.py`). Local:
+  tipurile, regulile de import (22 / 22), traducerile (1 202), catalogul controalelor (la zi), biblioteca (Easy 3Draw 18.39.0,
+  555 425 octeți), probele documentelor și ale manualului 76 / 76.
+- **Porțile unirii, în CI, pe `3e56e8cf`** (citite din jurnalul rulării): completul 45765623732, verde la prima trecere (73 min): unit
+  10 729 / 0 (12 sărite, pe Linux), e2e 951 / 951, funcțiile pe emulatoare 136 / 136, paginile 60 / 60; rapidul 45765624128, verde. Pornirea 111,6 kB
+  (plafonul 125; cu ușa 116,8, cu Atelierul 117,1), totalul 919,2 / 1 000 kB, `/admin` 138,3 / 200, contul
+  30,2 / 32. Nimic pe server.
+- **Loturile 43 și 44 pe test:** `c1d1c81d`, publicat pe 26.11 la 07:46 (completul pe `main` 45757325901, verde: unit
+  10 714 / 0, e2e 937 / 937, funcțiile pe emulatoare 136 / 136, paginile 60 / 60); `1d9671d3`, la 08:56 (completul
+  pe `main` 45763781195, verde: unit 10 719 / 0, e2e 945 / 945, funcțiile pe emulatoare 136 / 136, paginile 60 / 60). Probele de fum, bune.
+- **Documentele:** decizia și paragraful de stare în `CLAUDE.md`; indexul liniilor; starea din `docs/linii/principala.md`.
