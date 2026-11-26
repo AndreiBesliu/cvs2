@@ -37,6 +37,9 @@ var Atelier3D = (function () {
   type Transf = ReturnType<typeof Lego.transfGrila>;
   type Asezat = ReturnType<typeof Lego.rezolvaModel>[number];
   type InModel = { id: string; def: Def; x: number; y: number; z: number; rot: number; culoare: string; prins?: PrinsM; liber?: Transf };
+  /** O construcție (ADR 0284, felia 3.Ch): un model cu numele lui. `nume` gol: fără nume, deci „Construcția <nr>”, în limba
+   *  paginii; `nr` e unic printre construcții. Atelierul ține mai multe; vederea „Modelul” arată construcția aleasă. */
+  type Constructie = { id: string; nume: string; nr: number; model: InModel[] };
   type PiesaTren = ReturnType<typeof TrenPentru3D.piese>["piese"][number] & { dim: number[]; g: number };
   type Valori = Record<string, number | number[] | string | boolean | null | undefined>;
   type Imprimante = { lista: { id: string; nume: string; v: Valori }[]; activ: string; implicit: string };
@@ -231,9 +234,9 @@ var Atelier3D = (function () {
     `<button type="button" data-piesa="${k}"><svg class="at-pict" viewBox="0 0 24 24" aria-hidden="true">${PICTOGRAME[k] ?? PICTOGRAMA_GENERICA}</svg>${n}</button>`;
   let puneGrila: boolean | null = null, trageGrinda = false;
   // inaltimile (ADR 0168) sunt implicitele motorului (Lego.IMPLICIT; o proba le tine la fel); regulile lor, in Lego.inaltimi
-  const SETARI_IMPLICIT = { varianta_stift: 3, varianta_locas: 3, varianta_gaura: 3, varianta_ax: 3, varianta_bara: 3, varianta_cupa: 3, varianta_dinti: 3, varianta_janta: 3, stift_h: 1.9, locas_h: 2.1, locas_urmeaza: true, pat: [180, 180], pat_margine: 5, pat_distanta: 4, culoare: "#c8322b", cuTren: true };
+  const SETARI_IMPLICIT = { varianta_stift: 3, varianta_locas: 3, varianta_gaura: 3, varianta_ax: 3, varianta_bara: 3, varianta_cupa: 3, varianta_dinti: 3, varianta_janta: 3, stift_h: 1.9, locas_h: 2.1, locas_urmeaza: true, pat: [180, 180], pat_margine: 5, pat_distanta: 4, debit: 5, culoare: "#c8322b", cuTren: true };
   // imprimantele: fiecare cu patul ei, variantele de la calibrare si inaltimile (si cuplajele pieselor de cale printate, din 2D)
-  const CHEI_IMPRIMANTA: (keyof typeof SETARI_IMPLICIT)[] = ["pat", "pat_margine", "pat_distanta", "varianta_stift", "varianta_locas", "varianta_gaura", "varianta_ax", "varianta_bara", "varianta_cupa", "varianta_dinti", "varianta_janta", "stift_h", "locas_h", "locas_urmeaza"];
+  const CHEI_IMPRIMANTA: (keyof typeof SETARI_IMPLICIT)[] = ["pat", "pat_margine", "pat_distanta", "debit", "varianta_stift", "varianta_locas", "varianta_gaura", "varianta_ax", "varianta_bara", "varianta_cupa", "varianta_dinti", "varianta_janta", "stift_h", "locas_h", "locas_urmeaza"];
   const INALTIMI = ["stift_h", "locas_h", "locas_urmeaza"] as const;
   // inaltimile din setari prin motor: la zecimi, in margini, locasul dupa stift cat e bifat
   function puneInaltimi(v: Valori) {
@@ -249,6 +252,8 @@ var Atelier3D = (function () {
     for (const k of CHEI_IMPRIMANTA) {
       if (k === "pat") { if (Array.isArray(v.pat) && v.pat.length === 2 && v.pat.every(x => Number.isFinite(+x))) setari.pat = v.pat.map(x => Math.min(500, Math.max(60, Math.round(+x)))); continue; }
       if ((INALTIMI as readonly string[]).includes(k)) continue;
+      // debitul mediu (ADR 0284, 3.Ch): cât filament curge, în mm³/s, între 1 și 50
+      if (k === "debit") { if (Number.isFinite(+v[k]!) && v[k] !== null && v[k] !== "") setari.debit = debitBun(+v[k]!); continue; }
       if (Number.isFinite(+v[k]!) && v[k] !== null && v[k] !== "") (setari as Valori)[k] = k.startsWith("varianta_") ? Math.min(9, Math.max(-3, Math.round(+v[k]!))) : Math.max(0, Math.round(+v[k]!));
     }
     // un profil de dinainte de 18.8.0 n-are inaltimile: ia implicitele motorului
@@ -256,6 +261,8 @@ var Atelier3D = (function () {
     if (window.TrenPentru3D && TrenPentru3D.seteazaPrint) TrenPentru3D.seteazaPrint({ print_tata: v.print_tata as number | undefined, print_mama: v.print_mama as number | undefined });
   }
   let setari = { ...SETARI_IMPLICIT, pat: SETARI_IMPLICIT.pat.slice() };
+  /** Debitul mediu al imprimantei, întreg, între 1 și 50 mm³/s. */
+  function debitBun(v: number) { return Math.min(50, Math.max(1, Math.round(v))); }
   let lista: InLista[] = [];          // [{ id, def, nume, bucati }]
   let db: ClaudeDb | null = null, pornit = false;
 
@@ -2113,6 +2120,69 @@ var Atelier3D = (function () {
   // O piesa poate fi si prinsa de alta (`prins`) sau libera (`liber`): transformarea fiecareia o socoteste motorul
   // (`Lego.rezolvaModel`, ADR 0284, felia 3.Cf), iar scena pune plasa cu ea.
   let model: InModel[] = [], vedere = "piesa", alesM: string | null = null;
+  // Construcțiile (ADR 0284, felia 3.Ch): `model` sunt piesele construcției alese (`activa`); celelalte își țin piesele lor.
+  let constructii: Constructie[] = [], activa = "";
+  /** Numele unei construcții, cum se vede: al omului, neschimbat; fără nume, „Construcția <nr>”, în limba paginii. */
+  const numeC = (c: Constructie) => c.nume || tr`Construcția ${c.nr}`;
+  /** Construcția aleasă, cu piesele de acum (`model`); fără nicio construcție, una, fără nume, cu ele. */
+  function tineConstructia(): Constructie {
+    if (!constructii.length) constructii.push({ id: idNou(), nume: "", nr: 1, model });
+    const c = constructii.find(x => x.id === activa) ?? constructii[0]!;
+    activa = c.id; c.model = model;
+    return c;
+  }
+  /** Trece pe altă construcție: piesa aleasă, ținta și înlocuirea din editor sunt ale celei de dinainte. */
+  function treciPe(c: Constructie) {
+    activa = c.id; model = c.model; alegeM(null); inlocuieste = null;
+    dupaModel();
+  }
+  function alegeConstructie(id: string) {
+    const c = constructii.find(x => x.id === id);
+    if (!c) return;
+    tineConstructia(); treciPe(c);
+  }
+  /** O construcție nouă, goală, fără nume (cu cel mai mic număr liber), la capătul listei; câmpul numelui e gata de scris. */
+  function constructieNoua() {
+    tineConstructia();
+    const c: Constructie = { id: idNou(), nume: "", nr: Lego.nrLiber(constructii.map(x => x.nr)), model: [] };
+    constructii.push(c); treciPe(c);
+    $<HTMLInputElement>("#at-c-nume").focus();
+  }
+  /** Copia construcției alese, după ea: aceleași piese, cu id-urile lor (deci și legăturile dintre ele); cu nume, numele
+   *  următor („Macara 2”); fără nume, tot fără nume, cu numărul ei. */
+  function dubleazaConstructia() {
+    const a = tineConstructia();
+    const c: Constructie = { id: idNou(), nume: a.nume ? Lego.numeLiber(constructii.map(numeC), a.nume) : "", nr: Lego.nrLiber(constructii.map(x => x.nr)), model: JSON.parse(JSON.stringify(a.model)) };
+    constructii.splice(constructii.indexOf(a) + 1, 0, c); treciPe(c);
+  }
+  /** Șterge construcția aleasă (după întrebare); alegerea trece pe cea care îi ia locul în listă, sau pe cea de dinainte. */
+  function stergeConstructia() {
+    if (constructii.length < 2) return;
+    const i = constructii.indexOf(tineConstructia());
+    constructii.splice(i, 1);
+    treciPe(constructii[Math.min(i, constructii.length - 1)]!);
+  }
+  /** Numele scris de om, curățat; luat de altă construcție, cu numărul următor; gol, construcția rămâne fără nume. */
+  function redenumesteConstructia(scris: string) {
+    const a = tineConstructia(), v = Lego.curataNume(scris);
+    a.nume = v ? Lego.numeLiber(constructii.filter(x => x !== a).map(numeC), v) : "";
+    dupaModel();
+  }
+  /** Gramele unei piese, ținute minte după definiție și parametrii motorului (ca în lista de printat). */
+  const grameTinute = new Map<string, number>();
+  function grameDef(def: Def): number {
+    const k = JSON.stringify([def, paramMotor()]);
+    let g = grameTinute.get(k);
+    if (g === undefined) {
+      const c = corpSigur(def);
+      g = c ? Lego.grame(c.tri) : 0;
+      grameTinute.set(k, g);
+      if (grameTinute.size > 200) grameTinute.delete(grameTinute.keys().next().value!);
+    }
+    return g;
+  }
+  /** Numele, scris de om, pus într-un text HTML: ca text, nu ca etichete. */
+  const esc = (s: string) => s.replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
   /** Ținta piesei următoare: o prindere a piesei alese din model (aleasă cu un clic pe punctul ei sau pe numărul ei). */
   let tintaM: { id: string; k: number } | null = null;
   /** „Jumătăți de pas” (ADR 0284, 3.Cf-2): mutările merg câte o jumătate de știft și o jumătate de placă. E al vederii, nu al
@@ -2286,7 +2356,7 @@ var Atelier3D = (function () {
     // marimea modelului, in cote
     if (vedere === "model") {
       const g = model.reduce((t, m) => { try { return t + Lego.grame(corpModel(m.def).tri); } catch (e) { return t; } }, 0);
-      $("#at-cote").innerHTML = model.length ? `<span><b>Piese</b> ${model.length}</span><span><b>Mărime</b> ${tr`${fmt(box.max.x - box.min.x)} × ${fmt(box.max.y - box.min.y)} × ${fmt(box.max.z - box.min.z)} mm`}</span><span><b>Filament</b> ≈ ${fmt(g, 0)} g</span>` : `<span>Modelul e gol.</span>`;
+      $("#at-cote").innerHTML = model.length ? `<span><b>Piese</b> ${model.length}</span><span><b>Mărime</b> ${tr`${fmt(box.max.x - box.min.x)} × ${fmt(box.max.y - box.min.y)} × ${fmt(box.max.z - box.min.z)} mm`}</span><span><b>Filament</b> ≈ ${fmt(g, 0)} g</span><span><b>Timp</b> ${Lego.durataPrint(Lego.timpPrint(g, setari.debit))}</span>` : `<span>Modelul e gol.</span>`;
     }
   }
   /** Punctele prinderilor piesei alese, în vederea 3D: un clic pe unul îl face ținta piesei următoare. Se văd și prin
@@ -2390,7 +2460,33 @@ var Atelier3D = (function () {
     const rezumat = model.length < 2 ? "" : `<p class="${rele.length ? "at-avert" : "mic"}" id="at-m-verificare">${rele.length ? tr`Verificare: ${rele.join(" · ")}.`
       : tr("Verificare: nicio piesă nu plutește și niciuna nu intră în alta.") + " " + (V.bucati > 1 ? tr`Modelul e din ${cuDe(V.bucati)} bucăți care nu se țin între ele.` : tr("Toate piesele se țin între ele."))}</p>`;
     const semnLista = (x: InModel) => { const f = semnM(V.piese.get(x.id)); return f === "intra" ? ` <span class="semn rau">intră în alta</span>` : f === "pluteste" ? ` <span class="semn">plutește</span>` : ""; };
+    // construcțiile (ADR 0284, 3.Ch): alegerea, numele (al omului: nu se traduce) și ce se face cu ele; piesele construcției,
+    // pe rânduri (aceeași piesă se adună), cu filamentul și timpul de printat, la debitul imprimantei
+    const ac = tineConstructia();
+    const blocC = `<div class="model-constructii" id="at-c">
+        <div class="at-rand"><label class="mic" for="at-c-alege">Construcția</label>
+          <select id="at-c-alege">${constructii.map(c => `<option value="${esc(c.id)}" translate="no"${c === ac ? " selected" : ""}>${esc(numeC(c))}</option>`).join("")}</select></div>
+        <div class="at-rand"><label class="mic" for="at-c-nume">Numele</label>
+          <input id="at-c-nume" type="text" maxlength="60" autocomplete="off" spellcheck="false" translate="no" value="${esc(ac.nume)}" placeholder="${esc(tr`Construcția ${ac.nr}`)}"></div>
+        <div class="at-rand"><button class="btn" type="button" id="at-c-noua">Construcție nouă</button>
+          <button class="btn" type="button" id="at-c-dubla">Dublează construcția</button>
+          <button class="btn" type="button" id="at-c-sterge"${constructii.length < 2 ? " disabled" : ""}>Șterge construcția</button>
+          <span class="mic" id="at-c-confirma" hidden>${tr("Sigur?")} <button class="btn" type="button" id="at-c-sterge-da">Da, șterge</button></span></div>
+      </div>`;
+    const randC = Lego.pieseConstructie(model.map(x => x.def)).map(r => ({ ...r, g: grameDef(r.def) * r.bucati }));
+    const gC = randC.reduce((t, r) => t + r.g, 0), timpC = (g: number) => Lego.timpPrint(g, setari.debit);
+    const celule = (g: number) => `<td class="num" data-grame>${fmt(g)} g</td><td class="num" data-timp>${Lego.durataPrint(timpC(g))}</td>`;
+    const pieseC = model.length ? `<section class="model-piese" id="at-c-piese" aria-labelledby="at-c-piese-t">
+        <h3 id="at-c-piese-t">Piesele construcției</h3>
+        <div class="tabel"><table>
+          <thead><tr><th>Piesa</th><th>Bucăți</th><th>Filament</th><th>Timp</th></tr></thead>
+          <tbody>${randC.map(r => `<tr data-g="${r.g}" data-s="${timpC(r.g)}"><td>${numeDef(r.def)}</td><td class="num centru" data-bucati>${r.bucati}</td>${celule(r.g)}</tr>`).join("")}</tbody>
+          <tfoot><tr data-g="${gC}" data-s="${timpC(gC)}"><th>Total</th><td class="num centru" data-bucati>${model.length}</td>${celule(gC)}</tr></tfoot>
+        </table></div>
+        <p class="mic">${tr`Timpul e socotit din filament, la debitul mediu al imprimantei (${setari.debit} mm³/s, în „Imprimanta și potrivirea pieselor”, mai jos): e aproximativ și nu cuprinde încălzirea.`}</p>
+      </section>` : "";
     e.innerHTML = `<h2>Modelul</h2>
+      ${blocC}
       <p class="mic">Așezi piesele pe grila de știfturi, ca să vezi avionul întreg înainte să-l printezi. Alegi o piesă cu un clic în vedere sau din listă, apoi o muți: X și Y câte un știft, Z câte o placă. O piesă nouă intră deasupra celei alese, la mijlocul ei. Piesele rotunde (roțile, elicele) stau cu axul în mijlocul unui știft: una nouă intră pe axul celei alese, iar rotorul unui ventilator, în carcasa lui. Modelul verifică piesele: îți spune care plutește (nu stă pe masă și nu e prinsă de nimic) și care intră în alta. E un avertisment: piesa rămâne unde ai pus-o.</p>
       <p class="mic">Ca să prinzi două piese între ele, alege una, apoi una dintre prinderile ei (un punct din vedere sau un număr de mai jos): piesa următoare se alipește acolo și rămâne legată de ea, deci o urmează când o muți.</p>
       <p class="mic">„Răstoarnă ↓” și „Răstoarnă →” culcă piesa câte un sfert de tură, spre față sau spre dreapta; cu „Rotește”, ajungi la orice așezare dreaptă. „Jumătăți de pas” mută câte o jumătate de știft și o jumătate de placă, pentru piesele Technic. O piesă răsturnată sau pusă între știfturi e „liberă”: nu mai ține de grilă, dar se mută la fel.</p>
@@ -2406,8 +2502,18 @@ var Atelier3D = (function () {
       </div>` : model.length ? `<p class="mic">Nicio piesă aleasă.</p>` : `<p class="mic">Modelul e gol. Alege o piesă (fila de sus), apoi „Pune în model”.</p>`}
       ${rezumat}
       ${model.length ? `<ol class="model-lista" id="at-m-lista">${model.map(x => `<li data-avert="${semnM(V.piese.get(x.id))}"><button type="button" data-mid="${x.id}" aria-pressed="${x.id === alesM}"><span class="punct" data-fundal="${x.culoare}"></span>${titluM(x)}${semnLista(x)} <span class="mic">${loculM(x)}</span></button></li>`).join("")}</ol>` : ""}
-      <p class="mic">Cu vederea 3D aleasă (un clic pe ea): săgețile mută (cu Shift, câte o jumătate de pas), PageUp / PageDown urcă și coboară, R rotește, X și Y răstoarnă, Delete scoate.</p>`;
+      <p class="mic">Cu vederea 3D aleasă (un clic pe ea): săgețile mută (cu Shift, câte o jumătate de pas), PageUp / PageDown urcă și coboară, R rotește, X și Y răstoarnă, Delete scoate.</p>
+      ${pieseC}`;
     fundaluri(e);
+    $<HTMLSelectElement>("#at-c-alege").onchange = ev => alegeConstructie((ev.target as HTMLSelectElement).value);
+    $("#at-c-noua").onclick = constructieNoua;
+    $("#at-c-dubla").onclick = dubleazaConstructia;
+    $("#at-c-sterge").onclick = () => { $("#at-c-confirma").hidden = false; };
+    $("#at-c-sterge-da").onclick = stergeConstructia;
+    const campNume = $<HTMLInputElement>("#at-c-nume");
+    campNume.onchange = () => redenumesteConstructia(campNume.value);
+    // Enter scrie numele (ca ieșirea din câmp)
+    campNume.onkeydown = ev => { if (ev.key === "Enter") { ev.preventDefault(); campNume.blur(); } };
     if (m) {
       $("#at-m-mutari").onclick = ev => { const b = (ev.target as Element).closest<HTMLElement>("[data-m]"); if (b) mutaM(b.dataset.m!); };
       const P = document.getElementById("at-m-prinderi");
@@ -2583,11 +2689,12 @@ var Atelier3D = (function () {
     if (ev.key === "Delete" || ev.key === "Backspace") { ev.preventDefault(); scoateM(alesM); dupaModel(); }
   }
   function modelInLista() {
-    // fiecare piesa a modelului intra in lista de printat (aceeasi piesa se aduna)
+    // piesele construcției alese intră în lista de printat, pe rândurile ei (aceeași piesă se adună)
     if (!model.length) return;
-    for (const m of model) pune(m.def, 1);
+    for (const r of Lego.pieseConstructie(model.map(m => m.def))) pune(r.def, r.bucati);
     salveaza(); randeazaLista();
-    toast(tr`${model.length} ${model.length === 1 ? tr("piesă") : tr("piese")} din model în lista de printat.`);
+    const n = model.length;
+    toast(tr`${n === 1 ? tr("O piesă") : cuDe(n) ? tr`${n} de piese` : tr`${n} piese`} din „${numeC(tineConstructia())}” în lista de printat.`);
   }
 
   // --------------------------------------------------------------------------- piesa curenta
@@ -2734,7 +2841,7 @@ var Atelier3D = (function () {
 
   // --------------------------------------------------------------------------- lista de printat
   function pune(def: Def, n: number) {
-    const k = JSON.stringify(def), gasit = lista.find(x => JSON.stringify(x.def) === k);
+    const k = Lego.cheieDef(def), gasit = lista.find(x => Lego.cheieDef(x.def) === k);
     if (gasit) gasit.bucati += n;
     else lista.push({ id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6), def, nume: numeDef(def), bucati: n });
   }
@@ -3045,7 +3152,7 @@ var Atelier3D = (function () {
     const loc = $("#at-reglaje");
     campuriVariante(loc);
     loc.insertAdjacentHTML("beforeend", [["pat.0", "Patul: lățime (mm)", setari.pat[0], 60, 500], ["pat.1", "Patul: adâncime (mm)", setari.pat[1], 60, 500],
-      ["pat_margine", "Margine (mm)", setari.pat_margine, 0, 30], ["pat_distanta", "Între piese (mm)", setari.pat_distanta, 1, 20]]
+      ["pat_margine", "Margine (mm)", setari.pat_margine, 0, 30], ["pat_distanta", "Între piese (mm)", setari.pat_distanta, 1, 20], ["debit", "Debitul mediu (mm³/s)", setari.debit, 1, 50]]
       .map(([k, e, v, a, b]) => `<label for="at-r-${k}">${e}<input id="at-r-${k}" data-setare="${k}" type="number" min="${a}" max="${b}" step="1" value="${v}"></label>`).join(""));
   }
   function schimbaSetare(ev: Event) {
@@ -3065,6 +3172,7 @@ var Atelier3D = (function () {
     if (!Number.isFinite(v)) return;
     if (k!.startsWith("pat.")) setari.pat[+k!.slice(4)] = Math.min(500, Math.max(60, v));
     else if (k!.startsWith("varianta_")) (setari as Valori)[k!] = Math.min(9, Math.max(-3, v));
+    else if (k === "debit") { setari.debit = debitBun(v); el.value = setari.debit; }
     else (setari as Valori)[k!] = Math.max(0, v);
     document.querySelectorAll<CampNumeric>(`#mod-3d [data-setare="${k}"]`).forEach(x => { if (x !== el) x.value = el.value; });
     dupaSchimbare();
@@ -3072,15 +3180,17 @@ var Atelier3D = (function () {
   function dupaSchimbare() {
     if (imprimante) Profiluri.memoreaza(imprimante, valoriImprimanta());
     rezumatImprimanta();
-    salveaza(); if (vedere === "model") arataModel(true); else if (privita) arataPrivita(); else construiesteCurent(true); randeazaLista();
+    salveaza(); if (vedere === "model") { editorModel(); arataModel(true); } else if (privita) arataPrivita(); else construiesteCurent(true); randeazaLista();
   }
   let cronSalvare: ReturnType<typeof setTimeout> | null = null;
   function salveaza() {
-    const date = { setari, lista, stare, model, imprimante };
+    // construcțiile (ADR 0284, 3.Ch), cu cea aleasă la zi; `model` rămâne al ei, ca o pagină de dinainte să-l găsească
+    tineConstructia();
+    const date = { setari, lista, stare, model, constructii, activa, imprimante };
     try { localStorage.setItem(CHEIE, JSON.stringify(date)); } catch (e) { /* fara stocare locala */ }
     const inDb = async () => {
       if (!db) return;
-      try { await db.doc("atelier/curent").set({ setari, lista, stare: JSON.parse(JSON.stringify(stare)), model, imprimante: JSON.parse(JSON.stringify(imprimante)), actualizat: new Date().toISOString() }); } catch (e) { /* raman cele locale */ }
+      try { await db.doc("atelier/curent").set({ setari, lista, stare: JSON.parse(JSON.stringify(stare)), model, constructii, activa, imprimante: JSON.parse(JSON.stringify(imprimante)), actualizat: new Date().toISOString() }); } catch (e) { /* raman cele locale */ }
     };
     // in cvs2 (ADR 0164), salvarea amanata o tine gazda: o porneste pe loc la inchiderea ferestrei
     if (window.cvs2) { window.cvs2.amana("atelier", inDb, 700); return; }
@@ -3089,6 +3199,7 @@ var Atelier3D = (function () {
   }
   /** Ce stă în stocare (de la o versiune oarecare a paginii): se citește doar ce se poate. */
   type Stocat = { setari?: Valori & { pat?: number[] }; imprimante?: Imprimante | null; lista?: InLista[]; model?: InModel[];
+    constructii?: ({ id?: unknown; nume?: unknown; nr?: unknown; model?: unknown } | null)[]; activa?: unknown;
     stare?: Record<string, unknown> & { tip?: string; grinda?: { gauri?: string[]; celule?: unknown } } };
   function incarca(d: Stocat | null | undefined) {
     if (!d || typeof d !== "object") return;
@@ -3097,19 +3208,43 @@ var Atelier3D = (function () {
     imprimante = Profiluri.curata(d.imprimante || imprimante, valoriImprimanta(), tr("Imprimanta mea"));
     puneImprimanta(Profiluri.laDeschidere(imprimante));
     if (Array.isArray(d.lista)) lista = d.lista.filter(x => x && x.def && x.def.tip && x.bucati > 0);
-    if (Array.isArray(d.model)) model = d.model.filter(x => x && x.def && x.def.tip && x.def.tip !== "calibrare" && Number.isFinite(x.x) && Number.isFinite(x.y) && Number.isFinite(x.z))
-      .map(x => {
-        const m: InModel = { id: String(x.id || idNou()), def: x.def, x: Math.round(x.x), y: Math.round(x.y), z: Math.round(x.z), rot: ((Math.round(x.rot) || 0) % 4 + 4) % 4, culoare: /^#[0-9a-f]{6}$/i.test(x.culoare) ? x.culoare : "#c8322b" };
-        // legatura si locul liber (ADR 0284, 3.Cf), doar cu forma buna; daca prinderile chiar se potrivesc judeca motorul
-        const q = x.prins as Partial<PrinsM> | undefined, l = x.liber as Partial<Transf> | undefined;
-        if (q && typeof q === "object" && typeof q.de === "string" && Number.isInteger(q.a) && q.a! >= 0 && Number.isInteger(q.b) && q.b! >= 0)
-          m.prins = { de: q.de, a: q.a!, b: q.b!, unghi: Number.isFinite(q.unghi) ? ((q.unghi! % 360) + 360) % 360 : 0, alunec: Number.isFinite(q.alunec) ? Math.max(-200, Math.min(200, q.alunec!)) : 0 };
-        if (l && typeof l === "object" && Array.isArray(l.m) && l.m.length === 9 && Array.isArray(l.t) && l.t.length === 3 && [...l.m, ...l.t].every(v => Number.isFinite(v)))
-          m.liber = { m: l.m.slice(), t: [l.t[0]!, l.t[1]!, l.t[2]!] };
-        return m;
-      });
-    // o legatura fara baza (sau cu piesa insasi) nu se tine
-    for (const x of model) if (x.prins && (x.prins.de === x.id || !model.some(y => y.id === x.prins!.de))) delete x.prins;
+    /** Piesele unui model din stocare: doar cele care se pot citi; o legătură fără bază (sau cu piesa însăși) nu se ține. */
+    const curataModel = (lista: InModel[]): InModel[] => {
+      const m = lista.filter(x => x && x.def && x.def.tip && x.def.tip !== "calibrare" && Number.isFinite(x.x) && Number.isFinite(x.y) && Number.isFinite(x.z))
+        .map(x => {
+          const m: InModel = { id: String(x.id || idNou()), def: x.def, x: Math.round(x.x), y: Math.round(x.y), z: Math.round(x.z), rot: ((Math.round(x.rot) || 0) % 4 + 4) % 4, culoare: /^#[0-9a-f]{6}$/i.test(x.culoare) ? x.culoare : "#c8322b" };
+          // legatura si locul liber (ADR 0284, 3.Cf), doar cu forma buna; daca prinderile chiar se potrivesc judeca motorul
+          const q = x.prins as Partial<PrinsM> | undefined, l = x.liber as Partial<Transf> | undefined;
+          if (q && typeof q === "object" && typeof q.de === "string" && Number.isInteger(q.a) && q.a! >= 0 && Number.isInteger(q.b) && q.b! >= 0)
+            m.prins = { de: q.de, a: q.a!, b: q.b!, unghi: Number.isFinite(q.unghi) ? ((q.unghi! % 360) + 360) % 360 : 0, alunec: Number.isFinite(q.alunec) ? Math.max(-200, Math.min(200, q.alunec!)) : 0 };
+          if (l && typeof l === "object" && Array.isArray(l.m) && l.m.length === 9 && Array.isArray(l.t) && l.t.length === 3 && [...l.m, ...l.t].every(v => Number.isFinite(v)))
+            m.liber = { m: l.m.slice(), t: [l.t[0]!, l.t[1]!, l.t[2]!] };
+          return m;
+        });
+      for (const x of m) if (x.prins && (x.prins.de === x.id || !m.some(y => y.id === x.prins!.de))) delete x.prins;
+      return m;
+    };
+    // construcțiile (ADR 0284, 3.Ch): fiecare intrare cu piese se citește; id-urile și numerele se fac unice, iar un nume
+    // luat primește numărul următor. Fără ele, modelul de dinainte e o construcție fără nume.
+    const stocate = Array.isArray(d.constructii) ? d.constructii.filter(c => c && typeof c === "object" && Array.isArray(c.model)) : [];
+    if (stocate.length) {
+      constructii = [];
+      for (const c of stocate) {
+        const nume = Lego.curataNume(c!.nume), nr = c!.nr;
+        constructii.push({
+          id: typeof c!.id === "string" && c!.id && !constructii.some(x => x.id === c!.id) ? c!.id : idNou(),
+          nume: nume ? Lego.numeLiber(constructii.map(numeC), nume) : "",
+          nr: Number.isInteger(nr) && (nr as number) >= 1 && !constructii.some(x => x.nr === nr) ? nr as number : Lego.nrLiber(constructii.map(x => x.nr)),
+          model: curataModel(c!.model as InModel[]),
+        });
+      }
+      const a = constructii.find(x => x.id === d.activa) ?? constructii[0]!;
+      activa = a.id; model = a.model;
+    } else if (Array.isArray(d.model)) {
+      model = curataModel(d.model);
+      constructii = [{ id: idNou(), nume: "", nr: 1, model }]; activa = constructii[0]!.id;
+    }
+    tineConstructia();
     if (d.stare && d.stare.tip) for (const k of Object.keys(stare)) if (d.stare[k] !== undefined) (stare as unknown as Record<string, unknown>)[k] = d.stare[k] && typeof d.stare[k] === "object" && !Array.isArray(d.stare[k]) ? { ...(stare as unknown as Record<string, object>)[k], ...d.stare[k] } : d.stare[k];
     if (!(stare as unknown as Record<string, unknown>)[stare.tip] && stare.tip !== "calibrare") stare.tip = "caramida";
     // grinda salvata inainte (doar dreapta, cu `gauri`) trece pe grila

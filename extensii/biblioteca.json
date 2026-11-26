@@ -18,6 +18,12 @@
       ],
       "noutati": [
         {
+          "versiune": "18.41.0",
+          "data": "2026-11-26",
+          "ro": "Atelierul ține mai multe construcții, fiecare cu numele ei: o nouă, o copie, ștearsă. Fiecare are lista ei de piese, cu bucățile, filamentul și timpul de printat, și se pune dintr-un clic în lista de printat.",
+          "en": "The workshop keeps several builds, each with its name: new, copied, deleted. Each has its own piece list, with the counts, the filament and the print time, and goes into the print list in one click."
+        },
+        {
           "versiune": "18.40.0",
           "data": "2026-11-26",
           "ro": "„Modelul” verifică piesele: îți spune care e prinsă, care plutește (nu stă pe masă și nu e ținută de nimic) și care intră în alta, pe rândul ei, la piesa aleasă și în vederea 3D. E un avertisment: piesa rămâne unde ai pus-o.",
@@ -190,8 +196,8 @@
           }
         }
       ],
-      "versiune": "18.40.0",
-      "continut": "9e9576b2a4e717ffda3b41214a8b428dab23b85e7c41e72877e6c9b4f993d5c2"
+      "versiune": "18.41.0",
+      "continut": "c87f17c35544f08da2aaf4ab48d634f8e1208ffb2f44a7eb2e07f1eb832d3e5a"
     }
   ]
 }

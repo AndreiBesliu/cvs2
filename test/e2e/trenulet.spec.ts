@@ -16,7 +16,7 @@ import { faraEroriInJurnal } from './ajutor-jurnal.ts';
  * - „Salvează fișierul .json” din exportul CNC ajunge descărcare a browserului, din pagina lui cvs2, cu numele dat de
  *   planificator;
  * - ștergerea circuitului, cu confirmarea lui, rămâne și după reîncărcare; jurnalul local, fără erori;
- * - numele (ADR 0167): „Easy 3Draw” 18.40.0, instalat peste „Planificator Trenuleț” 18.6.0, îi ia locul (același id), cu
+ * - numele (ADR 0167): „Easy 3Draw” 18.41.0, instalat peste „Planificator Trenuleț” 18.6.0, îi ia locul (același id), cu
  *   circuitul lui;
  * - „Trimite la cvs2” (ADR 0160 §D): G-code-ul ovalului de exemplu ajunge în dialogul primirii, cu originea extensiei, iar după
  *   „Primește”, în „Lucrarea primită” din fereastra Mașina; planificatorul spune că cvs2 l-a primit;
@@ -31,7 +31,7 @@ import { faraEroriInJurnal } from './ajutor-jurnal.ts';
 test.use({ locale: 'ro-RO' });
 
 const PACHET = Buffer.from(pachetTrenulet().octeti);
-const ZIP = { name: 'trenulet-18.40.0.zip', mimeType: 'application/zip', buffer: PACHET };
+const ZIP = { name: 'trenulet-18.41.0.zip', mimeType: 'application/zip', buffer: PACHET };
 const cadru = (page: Page) => page.frameLocator('iframe.cadru-extensie');
 /**
  * Cât așteaptă probele cadrul extensiei până la „pornit”: un document separat, în procesul lui, cu pachetul adus din
@@ -82,7 +82,7 @@ test('instalat din fișier: pagina în cadru; circuitul, modul și culoarea păs
   await page.locator('[data-extensii="buton"]').click();
   await page.locator('[data-extensii="fisier-ales"]').setInputFiles(ZIP);
   await expect(page.getByTestId('extensii-instalare').locator('h2')).toHaveText('Instalezi „Easy 3Draw”?');
-  await expect(page.getByTestId('extensii-despre')).toHaveText(/^18\.40\.0 · din fișierul trenulet-18\.40\.0\.zip · \d+ (de )?fișiere, [\d,]+ MB$/);
+  await expect(page.getByTestId('extensii-despre')).toHaveText(/^18\.41\.0 · din fișierul trenulet-18\.41\.0\.zip · \d+ (de )?fișiere, [\d,]+ MB$/);
   await expect(page.getByTestId('extensii-permisiuni').locator('li')).toHaveText([
     'Mașina încarcă programe, le pornește sau le reia doar după confirmarea ta, pune pauză și oprește lucrarea',
     'Formele din desen primește formele pe care i le trimiți din desen și îți propune forme pentru desen (le adaugi tu, din Importă)',
@@ -180,7 +180,7 @@ async function pachetVechi(): Promise<Buffer> {
   })));
 }
 
-test('numele nou (ADR 0167): „Easy 3Draw” 18.40.0, instalat peste „Planificator Trenuleț” 18.6.0, îi ia locul, cu circuitul lui', async ({ page }) => {
+test('numele nou (ADR 0167): „Easy 3Draw” 18.41.0, instalat peste „Planificator Trenuleț” 18.6.0, îi ia locul, cu circuitul lui', async ({ page }) => {
   await page.goto('/');
   await page.locator('[data-extensii="buton"]').click();
   await page.locator('[data-extensii="fisier-ales"]').setInputFiles({ name: 'trenulet-18.6.0.zip', mimeType: 'application/zip', buffer: await pachetVechi() });
@@ -197,7 +197,7 @@ test('numele nou (ADR 0167): „Easy 3Draw” 18.40.0, instalat peste „Planifi
   await page.locator('[data-extensii="buton"]').click();
   await page.locator('[data-extensii="fisier-ales"]').setInputFiles(ZIP);
   await expect(page.getByTestId('extensii-instalare').locator('h2')).toHaveText('Instalezi „Easy 3Draw”?');
-  await expect(page.getByTestId('extensii-despre')).toContainText('18.40.0 · din fișierul trenulet-18.40.0.zip · ');
+  await expect(page.getByTestId('extensii-despre')).toContainText('18.41.0 · din fișierul trenulet-18.41.0.zip · ');
   await page.locator('[data-extensii="instaleaza"]').click();
   // același id: un singur rând în meniu, cu numele nou; circuitul de dinainte, redeschis
   await page.locator('[data-extensii="buton"]').click();
@@ -879,6 +879,34 @@ test('în engleză (ADR 0165): limba lui cvs2, schimbată pe loc printr-o reporn
   await expect(c.locator('#at-m-stare [data-stare]')).toHaveText(['Goes into Gear 24.', /^Held by Axle \d+\.$/]);
   await expect(c.locator('#at-m-verificare')).toHaveText('Check: 2 pieces go into one another.');
   expect(await romanaRamasa(page, 'Păstrat la repornire'), 'verificarea: intră în alta').toEqual([]);
+  // construcțiile (3.Ch), în engleză: numele implicit, în limba paginii; butoanele; piesele construcției, cu timpul; un nume
+  // scris de om rămâne cum l-a scris, chiar dacă e un cuvânt din dicționar („Roți”); gol, din nou numele implicit
+  await expect(c.locator('#at-c-alege option')).toHaveText(['Build 1']);
+  await expect(c.locator('#at-c-nume')).toHaveAttribute('placeholder', 'Build 1');
+  await expect(c.locator('#at-c-noua')).toHaveText('New build');
+  await expect(c.locator('#at-c-dubla')).toHaveText('Duplicate build');
+  await expect(c.locator('#at-c-sterge')).toHaveText('Delete build');
+  await expect(c.locator('#at-c-piese thead th')).toHaveText(['Piece', 'Pieces', 'Filament', 'Time']);
+  await expect(c.locator('#at-c-piese tbody td').first()).toHaveText('Gear 24');
+  await expect(c.locator('#at-c-piese tfoot th')).toHaveText('Total');
+  await expect(c.locator('#at-c-piese tfoot [data-timp]')).toHaveText(/^(< 1 min|≈ \d+ min|≈ \d+ h( \d+ min)?)$/);
+  await expect(c.locator('#at-c-piese')).toContainText('The time comes from the filament, at the printer’s average flow (5 mm³/s, in “The printer and the fit of the pieces”, below): it is approximate and leaves out heating up.');
+  await expect(c.locator('#at-model-lista')).toHaveText('Put the build in the print list');
+  await expect(c.locator('#at-cote')).toContainText('Time');
+  expect(await romanaRamasa(page, 'Păstrat la repornire'), 'construcțiile').toEqual([]);
+  await expect(c.locator('#at-c-sterge')).toBeDisabled();
+  await c.locator('#at-c-noua').click();
+  await expect(c.locator('#at-c-alege option')).toHaveText(['Build 1', 'Build 2']);
+  await c.locator('#at-c-sterge').click();
+  await expect(c.locator('#at-c-confirma')).toHaveText('Sure? Yes, delete');
+  await c.locator('#at-c-sterge-da').click();
+  await expect(c.locator('#at-c-alege option')).toHaveText(['Build 1']);
+  await c.locator('#at-c-nume').fill('Roți');
+  await c.locator('#at-c-nume').press('Enter');
+  await expect(c.locator('#at-c-alege option')).toHaveText(['Roți']);
+  await c.locator('#at-c-nume').fill('');
+  await c.locator('#at-c-nume').press('Enter');
+  await expect(c.locator('#at-c-alege option')).toHaveText(['Build 1']);
   await c.locator('#at-model-goleste').click();
   await c.locator('#at-model-goleste-da').click();
   await expect(c.locator('#at-cote')).toHaveText('The model is empty.');
