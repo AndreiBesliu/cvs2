@@ -45,7 +45,7 @@ o('E03', A, 'g.innerHTML = gasite.map(([k, n]) => butonPiesa(k, n)).join("");', 
   'piesele găsite la căutare, fără pictograme')
 o('E04', A, 'g.innerHTML = fam[2].map(([k, n]) => butonPiesa(k, n)).join("");', 'g.innerHTML = fam[2].map(([k, n]) => ' + VECHI + ').join("");', 'e2e',
   'galeria familiei, fără pictograme')
-o('E05', A, '${PICTOGRAME[k] ?? PICTOGRAMA_GENERICA}', '${PICTOGRAMA_GENERICA}', 'e2e', 'toate piesele cu cubul generic')
+o('E05', A, 'data-piesa="${k}"><svg class="at-pict" viewBox="0 0 24 24" aria-hidden="true">${PICTOGRAME[k] ?? PICTOGRAMA_GENERICA}', 'data-piesa="${k}"><svg class="at-pict" viewBox="0 0 24 24" aria-hidden="true">${PICTOGRAMA_GENERICA}', 'e2e', 'toate piesele cu cubul generic')
 o('E06', A, BUTON, BUTON.replace('viewBox="0 0 24 24"', 'viewBox="0 0 20 20"'), 'e2e', 'pătratul desenului mai mic: desenele tăiate în dreapta și jos')
 o('E07', A, BUTON, BUTON.replace(' class="at-pict"', ''), 'e2e', 'fără clasa pictogramei: desen plin, negru, cât îl lasă butonul')
 

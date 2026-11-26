@@ -70,7 +70,7 @@ o('H17', LEGO, 'P = { ...salvat, stift_h: h, locas_h: zecime(h + 0.2) };', 'P = 
 # atelierul: profilul, câmpurile, bifa, pașii, implicitele
 o('A01', ATE, 'stift_h: 1.9, locas_h: 2.1, locas_urmeaza: true,', 'stift_h: 1.8, locas_h: 2.1, locas_urmeaza: true,', 'inaltimi',
   'atelierul pornește cu alt știft decât motorul')
-o('A02', ATE, '"varianta_cupa", "stift_h", "locas_h", "locas_urmeaza"];', '"varianta_cupa"];', 'inaltimi',
+o('A02', ATE, '"varianta_janta", "stift_h", "locas_h", "locas_urmeaza"];', '"varianta_janta"];', 'inaltimi',
   'profilul imprimantei nu ține înălțimile')
 o('A03', ATE, 'pat_distanta: setari.pat_distanta, ...Lego.inaltimi(setari) });', 'pat_distanta: setari.pat_distanta });', 'e2e',
   'motorul nu primește înălțimile din atelier: piesa nu crește')

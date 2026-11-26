@@ -39,7 +39,7 @@ o('U12', E, 'let g: Poli[] = gaura === "r" ? [cerc(0, 0, e.gauraD / 2)] : gaura 
 # rotiței înainte, fiindcă formatul peretelui e și în avertismentul conicei duble
 o('U13', E, 'slaba: !lipseste && g.length > 0 && perete < 0.8 }', 'slaba: !lipseste && g.length > 0 && perete < 0.2 }', 'rotite',
   'peretele de 0,23 mm al roții de 8 nu mai e spus')
-o('U14', E, 'const z = Math.round(Math.min(80, Math.max(8,', 'const z = Math.round(Math.min(80, Math.max(6,', 'rotite', 'roți cu 6 dinți')
+o('U14', E, 'const z = Math.round(Math.min(80, Math.max(8, Number.isFinite(+dinti)', 'const z = Math.round(Math.min(80, Math.max(6, Number.isFinite(+dinti)', 'rotite', 'roți cu 6 dinți')
 o('U15', E, 'P = { ...salvat, varianta_dinti: v };', 'P = { ...salvat, varianta_dinti: 3 };', 'rotite', 'toate roțile de probă cu același joc')
 o('U16', E, 'tri.push(...semne(v, -3.4, 3.6, 3.79, 1.4));', 'tri.push(...semne(1, -3.4, 3.6, 3.79, 1.4));', 'rotite',
   'roțile de probă fără numărul lor pe față')
@@ -69,10 +69,10 @@ o('E05', A, 'varianta_cupa: setari.varianta_cupa, varianta_dinti: setari.variant
 o('E06', A, '["varianta_cupa", "Varianta cupei"], ["varianta_dinti", "Varianta roților dințate"], ', '["varianta_cupa", "Varianta cupei"], ',
   'e2e', 'fila Calibrare fără câmpul roților (mutată pe lista cu janta, de la 3.Tj)')
 # E07: cu plaja rotiței (8 … 80) înainte; conica dublă (3.Tn) are aceeași coadă, cu plaja 8 … 60
-o('E07', A, 'if (v >= 8 && v <= 80) { p.pereche = v; editor(); } };', 'if (v >= 8 && v <= 80) { p.pereche = v + 2; editor(); } };', 'e2e', 'dinții perechii citiți greșit')
+o('E07', A, 'if (v >= 8 && v <= 80) { p.pereche = v; editor(); randeazaPrinde(); } };', 'if (v >= 8 && v <= 80) { p.pereche = v + 2; editor(); randeazaPrinde(); } };', 'e2e', 'dinții perechii citiți greșit')
 o('E08', A, '${oblic ? `<div class="at-campuri"><label for="at-r-unghi">', '${true ? `<div class="at-campuri"><label for="at-r-unghi">', 'e2e',
   'unghiul și la dinții drepți')
-o('E09', A, 'Lego.distantaRoti(p.dinti, p.pereche, p.modul)', 'Lego.distantaRoti(p.dinti, p.dinti, p.modul)', 'e2e',
+o('E09', A, 'a = Lego.distantaRoti(p.dinti, p.pereche, p.modul), grila = textGrila(a);', 'a = Lego.distantaRoti(p.dinti, p.dinti, p.modul), grila = textGrila(a);', 'e2e',
   'distanța socotită cu dinții primei roți de două ori')
 
 SETURI = {
