@@ -249,8 +249,6 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
     o felie mică a sesiunii principale, nepornită;
   - ordinea feliilor rămase ale exportului: q întâi, apoi p (recomandarea liniei și a sesiunii principale, aplicată;
     owner-ul o poate întoarce);
-  - titlurile în română ale grupurilor din fereastra exportului: „Ce tăiere”, „Cum golește”, „Cum coboară” (linia
-    recomandă „Tăietura”, „Golirea”, „Coborârea”; rămân cum sunt până la cuvântul lui);
   - „cine unește în `main`” (recomandarea: doar sesiunea principală; pe 23–24.11, biblioteca și frezele au scris întâi
     aici, iar felia era deja în lot: unirea a rămas aici);
   - proba pe mașină a centrului foii ca origine XY0 (28.8↑o): zero-ul în mijlocul foii, întâi în aer;

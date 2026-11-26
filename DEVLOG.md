@@ -15994,3 +15994,15 @@ la ordinul în vigoare „unește ce se poate”
 - **Documentele:** manualul (română), ADR 0291 (rândul din „Implementarea 28.8↑k”), nota liniei.
 
 **Completed:** 26.11, 11:54.
+
+## 2026-11-26 — Sesiunea principală în cloud: titlurile grupurilor din fereastra exportului (Model: Claude Opus 5.5)
+
+**Prompt:** „da, Tăietura, Golirea, Coborârea”
+**Started:** 26.11, 11:52. **Completed:** 26.11, 11:53.
+
+- **Decizia owner-ului:** în română, grupurile din fereastra exportului se numesc „Tăietura”, „Golirea”, „Coborârea”, în locul lui
+  „Ce tăiere”, „Cum golește”, „Cum coboară” (recomandarea liniei exportului, constatarea 21 a auditului). Engleza rămâne.
+- **Cine o face:** linia exportului, care lucrează în fereastră (28.8↑q): un commit mic, cu `src/i18n/export.ro.ts`, manualul și
+  probele care caută titlurile după text; i-am scris la 11:53. Unirea, la raportul ei.
+- **Documentele:** decizia în `CLAUDE.md`; rândul exportului în indexul liniilor; întrebarea scoasă din lista owner-ului, în
+  `docs/linii/principala.md`.
