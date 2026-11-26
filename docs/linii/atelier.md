@@ -22,9 +22,10 @@ recomandările, 1a–4a): 3.Cl-1 (fulgul, steaua și brăduțul, în fila nouă 
 `main` pe 26.11 (`474b76fc`, PR-ul `AndreiBesliu/cvs2#55`): ADR 0285 are toate feliile făcute.** 3.Cf-2 (răsturnările
 și jumătățile de pas în „Modelul”; 18.39.0), unită în `main` pe 26.11 (`3e56e8cf`, PR-ul `AndreiBesliu/cvs2#57`).
 3.Cg (verificarea din „Modelul”: prinsă, plutește, intră în alta; 18.40.0), unită în `main` pe 26.11 (`75d8dde2`,
-PR-ul `AndreiBesliu/cvs2#59`). **3.Ch (construcțiile cu nume și lista lor de piese, cu filamentul și timpul; 18.41.0),
-gata pe ramură pe 26.11.** Urmează 3.Ci (construcțiile gata, patru șabloane); 3.Ck așteaptă tipărirea bilei și a cupei.
-Versiunea următoare a pachetului: 18.42.0._
+PR-ul `AndreiBesliu/cvs2#59`). 3.Ch (construcțiile cu nume și lista lor de piese, cu filamentul și timpul; 18.41.0),
+unită în `main` pe 26.11 (`3bf86d15`, PR-ul `AndreiBesliu/cvs2#61`). **3.Ci (construcțiile gata: șasiul cu patru roți,
+cutia de angrenaje, brațul de macara, barca cu elice; 18.42.0), gata pe ramură pe 26.11.** Cu ea, din ADR 0284 rămâne
+doar 3.Ck, care așteaptă tipărirea bilei și a cupei. Versiunea următoare a pachetului: 18.43.0._
 
 ## Numerele liniei
 
@@ -48,7 +49,7 @@ Versiunea următoare a pachetului: 18.42.0._
 | 3.Cf | Modelul: orientarea pe trei axe și alipirea la prinderi | 3.Cf-1 (alipirea, cu piesele legate), gata (25.11); 3.Cf-2 (răsturnările, jumătățile de pas), gata (26.11) |
 | 3.Cg | Modelul: verificarea (prins, plutește, se ciocnește) | gata (26.11): avertisment, nu refuz (răspunsul 2a) |
 | 3.Ch | Construcțiile cu nume și lista lor de piese | gata (26.11): cu filamentul și timpul (din debitul imprimantei) |
-| 3.Ci | Construcțiile gata (șasiul, cutia de angrenaje, brațul de macara, barca cu elice) | după Model (răspunsul 3a) |
+| 3.Ci | Construcțiile gata (șasiul, cutia de angrenaje, brațul de macara, barca cu elice) | gata (26.11): din parametri, deschise ca o construcție nouă, cu piesele prinse și verificate |
 | 3.Cj | Melcul, cama și manivela, cadrul, roata cu palete | pe bucăți: 3.Cj-1, cama, 3.Cj-2, roata cu palete, 3.Cj-3, cadrul, și 3.Cj-4, șurubul melc: gata (25.11) |
 | 3.Ck | Balamaua și placa turnantă | despărțite de 3.Cd; după ce owner-ul încearcă primele piese pe imprimantă |
 | 3.Cl | Decorațiunile de Crăciun (ADR 0285) | 3.Cl-1 (fulgul, steaua, brăduțul) și 3.Cl-2 (globul, relieful pe două înălțimi), gata (25.11); 3.Cl-3 (ornamentul cu nume) și 3.Cl-4 (brăduțul LEGO), gata (26.11) |
@@ -618,3 +619,33 @@ Versiunea următoare a pachetului: 18.42.0._
 - **Timpul e din filament, la debitul mediu:** piesele mici (cărămizile) durează mai mult decât spune debitul, din
   cauza timpului minim pe strat; de aceea implicitul e 5 mm³/s, nu cât poate imprimanta. O regulă nouă a timpului
   intră în motor (`timpPrint`, `durataPrint`), cu valorile ei pe hârtie.
+
+## 3.Ci, gata (26.11, în cloud): construcțiile gata (ADR 0284, partea E)
+
+- **Unde e:** motorul, după secțiunea „construcțiile”, secțiunea „construcțiile gata”: `SABLOANE`, `CULOARE`,
+  `RAPOARTE`, `ROTI_SASIU`, `intregSablon`, `constructieGata` (exportate și `rapoarte`, `rotiSasiu`). Atelierul: `STARE0`
+  (lângă `stare`), `defCurenta(tip, sursa)`, `gata`, `CAMPURI_GATA`, `constructiaGata`, `infoGata`,
+  `faConstructiaGata`; în `editorModel`, panoul `#at-cg` (`blocGata`, `campuriGata`) și ascultătorii lui. `head.html`:
+  `.model-gata`.
+- **Ce face și ce n-a intrat:** în ADR 0284, „Implementat (3.Ci)”.
+- **Probele:** `test/unit/trenulet.sabloane.test.ts`, `test/e2e/trenulet.sabloane.spec.ts`, pasul construcțiilor gata
+  din proba în engleză (`trenulet.spec.ts`); otrăvurile, `test/otravuri/3.Ci.py` și `3.Ci-en.py`.
+
+### Reguli și capcane (3.Ci)
+
+- **Un șablon nou intră în motor** (`constructieGata`, un fel nou în `SABLOANE`), cu proba lui în
+  `test/unit/trenulet.sabloane.test.ts`: verificarea din 3.Cg (`buna`: fiecare piesă prinsă, nicio piesă în alta,
+  niciuna nu plutește, cea mai de jos pe masă) și mecanismul lui, pe hârtie. Atelierul îi pune doar câmpurile
+  (`CAMPURI_GATA`) și ce iese pe hârtie (`infoGata`).
+- **Prinderile se caută după loc, nu după număr:** `prindere(i, fel, punct, direcție)` ia prinderea de felul dat cea mai
+  apropiată de punct; numărul ei se schimbă când se schimbă piesa (o cărămidă cu găuri are întâi găurile).
+- **Piesele șablonului au doar câmpurile care contează**; atelierul le completează cu `defCurenta(tip, { ...STARE0[tip],
+  ...def })`, ca pe cele din editor. O piesă nouă într-un șablon are nevoie de implicitele ei în `stare` (cele de la
+  pornire), altfel nu se adună cu cea din editor.
+- **Dinții se îmbucă rotind axul roții conduse**, nu roata: roata stă pe cruce (se prinde doar din sfert în sfert de
+  tură), axul stă într-o gaură rotundă. Treptele se potrivesc pe rând (axul treptei a doua poartă și roata primei).
+- **Un șablon ridică baza pe plasă:** cutia unei piese rotite (o roată pe cruce) e mai mare decât piesa, deci ar ridica
+  prea mult. Proba, la fel (`josPlasa`).
+- **Starea unui panou care se strânge (`<details>`) se citește din pagină când editorul se reface**, nu din `toggle`:
+  evenimentul vine după, deci o alegere făcută imediat după deschidere ar reface panoul strâns (proba e2e a prins-o).
+

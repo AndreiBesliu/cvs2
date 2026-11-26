@@ -690,4 +690,66 @@ Easy 3Draw 18.41.0, pe ramura `wip/3.Xh-biblioteca-ui`, în sesiunea cloud a lin
   după probele întărite, A25 înlocuită, A15 plecată cu codul ei; A03 și A11, practic echivalente, rămân ca pază; A42,
   nouă); `3.Ch-en.py`, 10 / 10.
 - **Mărimea:** pachetul Easy 3Draw, 567,9 kB (era 562,6); aplicația, neschimbată.
-- **Felia următoare:** 3.Ci (construcțiile gata, patru șabloane).
+- **Felia următoare:** 3.Ci (construcțiile gata, patru șabloane), făcută mai jos.
+
+## Implementat (3.Ci, 26.11.2026)
+
+Felia 3.Ci, în sesiunea cloud a liniei (ramura `wip/3.Xh-biblioteca-ui`), după unirea lui 3.Ch: **construcțiile gata**
+(partea E), Easy 3Draw **18.42.0**.
+
+- **Ce vede omul.** În editorul vederii „Modelul”, sub construcții, panoul **„Construcții gata”** (strâns la deschidere;
+  rămâne cum l-a lăsat omul cât fereastra e deschisă). În el: **Felul** (șasiul cu patru roți, cutia de angrenaje,
+  brațul de macara, barca cu elice), câmpurile felului, **ce iese pe hârtie** (mărimile mecanismului și câte piese are,
+  cu avertismentul motorului, dacă e unul) și **„Fă construcția”**: o construcție nouă, după cele de acum, aleasă, cu
+  numele felului (cu numărul următor, dacă e luat: „Șasiu cu patru roți 2”) și cu piesele prinse între ele. Un număr
+  scris în afara marginilor se întoarce la cel mai apropiat din ele. Valorile fiecărui fel țin cât fereastra e deschisă
+  (nu se țin minte).
+- **Cele patru șabloane** (fiecare din parametri; prima piesă stă pe grilă, celelalte sunt prinse de una de dinaintea
+  lor, prindere în prindere, deci construcția își urmează baza):
+  - **Șasiul cu patru roți** (lungimea 6–16 știfturi, lățimea 4–10, roțile Ø30,4, Ø43,2 sau Ø56): placa L × W, două
+    cărămizi Technic 1 × L sub marginile ei (șinele), două axe de W + 5 prin prima și ultima gaură, câte o roată la
+    fiecare capăt de ax și câte o bucșă ½ lângă fiecare șină (axul nu alunecă). Axele stau la 8 · (L − 2) mm, iar roțile
+    de pe un ax, la 8 · W + 26,2 mm. Un șasiu prea scurt pentru roți (între axe trebuie să încapă două raze și un
+    milimetru) se lungește, cu avertismentul: Ø43,2 cere 8 știfturi, Ø56, 10.
+  - **Cutia de angrenaje** (raportul 1 : 1, 1 : 3, 1 : 5, 1 : 9, 1 : 15, 1 : 25): placa, doi pereți (cărămizi 1 × L, cât
+    trebuie ca roata cea mai mare să treacă cu 0,4 mm peste știfturile plăcii, și deasupra o cărămidă Technic), axele de
+    W + 2 cu câte o bucșă ½ pe fețele de afară și roțile treptelor (24 / 24; 8 / 24; 8 / 40; două trepte de 8 / 24; 8 /
+    24 și 8 / 40; două de 8 / 40), fiecare treaptă cu axele la (z1 + z2) / 2 mm, deci în găurile cărămizii Technic.
+    **Dinții sunt îmbucați:** axul roții conduse (într-o gaură rotundă) se rotește cât să stea un gol al ei în fața
+    dintelui celeilalte (θA · zA / 2π + θB · zB / 2π, cu partea fracționară ½).
+  - **Brațul de macara** (stâlpul de 2–8 cărămizi, brațul de 5–15 găuri, unghiul 0–80°): placa 4 × 4, stâlpul (cărămizi
+    1 × 2 și sus o cărămidă Technic 1 × 2), știftul Technic în gaura ei, brațul (o grindă) pe știft, la unghiul cerut,
+    spre +x, și în vârf axul de 3 cu fulia în față și o bucșă ½ în spate. Pivotul stă la 3,2 + 9,6 · (H − 1) + 5,8 mm.
+  - **Barca cu elice** (lungimea 8–16, lățimea 4, 6 sau 8, elicea de 24–48 mm, 3–5 palete): corpul (o placă cu prora
+    ascuțită: ultimele W / 2 − 1 coloane, tot mai înguste), cabina 2 × 2 la mijloc, blocul motorului la pupă (o cărămidă
+    Technic 1 × 2, rotită, cu gaura de-a lungul bărcii), axul cu bucșa ½ în față și elicea de barcă în spatele pupei, la
+    2 mm de ea, cu fața dinspre barcă spre bloc.
+- **Pe masă:** baza se ridică (cu plăci întregi) cât cea mai de jos piesă să atingă masa (roțile, elicea); judecat pe
+  plasă, nu pe cutie (o piesă rotită are cutia mai mare decât ea).
+- **Motorul** (`lego.ts`, secțiunea „construcțiile gata”): `SABLOANE`, `RAPOARTE`, `ROTI_SASIU`, `constructieGata(fel,
+  valori)` (pură: piesele, cu definiția, locul pe grilă, culoarea și prinderea, numele, avertismentele, cotele) și
+  `intregSablon`. Definițiile au doar câmpurile care le deosebesc de implicite.
+- **Atelierul** (`atelier.ts`): `gata` (felul, panoul, valorile), `CAMPURI_GATA`, `constructiaGata`, `infoGata`,
+  `faConstructiaGata`; panoul `#at-cg` în `editorModel`. **Piesele se completează ca în editor**: `defCurenta` primește
+  o sursă (`STARE0`, câmpurile editorului de la pornire, peste care vin cele din șablon), deci o piesă pusă din editor e
+  aceeași cu una din șablon și se adună pe rândul ei.
+- **Ce n-a intrat:** o construcție gata salvată de om ca șablon nou; alte construcții (un pod, o macara pe șenile);
+  manivela cutiei de angrenaje; mișcarea angrenajelor în vederea 3D.
+- **Găsit de probă și reparat în felie:** panoul își lua starea (deschis sau strâns) din `toggle`, care vine după
+  deschidere; o alegere făcută imediat după deschidere refăcea panoul strâns. Acum starea se citește din pagină în clipa
+  în care editorul se reface.
+- **Probele.** Unitară, scrisă întâi (`test/unit/trenulet.sabloane.test.ts`, 10 teste): pe fiecare șablon, la valori
+  diferite, verificarea din 3.Cg (fiecare piesă prinsă, nicio piesă în alta, niciuna nu plutește, un singur grup, cea mai
+  de jos pe masă) și mecanismul pe hârtie (distanțele dintre axe și dintre roți, dinții îmbucați, raportul, unghiul și
+  lungimea brațului, înălțimea pivotului, forma corpului bărcii, elicea în spatele pupei, întoarsă spre barcă); proba de
+  control (roata condusă întoarsă cu o jumătate de dinte intră în cealaltă); marginile, cu avertismentele. E2e
+  (`test/e2e/trenulet.sabloane.spec.ts`, 3 scenarii): panoul, ce iese pe hârtie, marginile câmpurilor, cele patru
+  construcții puse și verificate în pagină, o roată din editor pe același rând cu cele ale șasiului, numele următor.
+  Proba în engleză din cvs2 (`trenulet.spec.ts`): panoul, felurile, ce iese pe hârtie cu punctul zecimal, avertismentul,
+  numele construcției noi.
+- **Otrăvurile:** `test/otravuri/3.Ci.py` și `3.Ci-en.py` (rezultatele, mai jos).
+- **Mărimea:** pachetul Easy 3Draw, 576,4 kB (era 567,9); aplicația, neschimbată.
+- **Alegeri făcute cu recomandarea, de întrebat owner-ul:** (1) cele patru construcții, cu mărimile de mai sus; (2) roțile
+  șasiului, în trei mărimi (nu orice diametru); (3) cutia, cu rapoartele reducătoare (axul de ieșire mai încet); pentru
+  mai repede, se învârte celălalt ax; (4) construcția gata se deschide ca o construcție nouă, nu în cea aleasă.
+- **Felia următoare:** 3.Ck (balamaua și placa turnantă), după ce owner-ul încearcă bila și cupa pe imprimantă.
