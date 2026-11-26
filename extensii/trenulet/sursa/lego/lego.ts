@@ -355,8 +355,9 @@ var Lego = (function (glob: typeof globalThis) {
     }
     return tri;
   }
-  function aplatizeaza(v: readonly Vf[]): Poli {
-    // contur Cavalier [x, y, bulge] -> poligon (arcele in segmente)
+  function aplatizeaza(v: readonly Vf[], laturi?: (r: number) => number): Poli {
+    // contur Cavalier [x, y, bulge] -> poligon (arcele in segmente: cate N_CERC pe un cerc intreg sau, cu `laturi`, cate
+    // spune ea pentru raza arcului)
     const out: Poli = [];
     for (let i = 0; i < v.length; i++) {
       const [x1, y1, b] = v[i]!, [x2, y2] = v[(i + 1) % v.length]!;
@@ -365,7 +366,7 @@ var Lego = (function (glob: typeof globalThis) {
       const th = 4 * Math.atan(b), dx = x2 - x1, dy = y2 - y1, c = Math.hypot(dx, dy);
       if (c < 1e-9) continue;
       const k = (c / 2) / Math.tan(th / 2), cx = (x1 + x2) / 2 - dy / c * k, cy = (y1 + y2) / 2 + dx / c * k;
-      const r = Math.hypot(x1 - cx, y1 - cy), a1 = Math.atan2(y1 - cy, x1 - cx), n = Math.max(1, Math.ceil(Math.abs(th) / (2 * Math.PI / N_CERC)));
+      const r = Math.hypot(x1 - cx, y1 - cy), a1 = Math.atan2(y1 - cy, x1 - cx), n = Math.max(1, Math.ceil(Math.abs(th) / (2 * Math.PI / (laturi ? laturi(r) : N_CERC))));
       for (let s = 1; s < n; s++) out.push([cx + r * Math.cos(a1 + th * s / n), cy + r * Math.sin(a1 + th * s / n)]);
     }
     return out;
@@ -2837,7 +2838,8 @@ var Lego = (function (glob: typeof globalThis) {
   }
   /** Prisma bucăților unite, cu golurile lor și cu găurile date în plus (fiecare, în bucata care o cuprinde). */
   function prismaUnite(unite: readonly Unita[], gauriInPlus: readonly Poli[], z0: number, z1: number): Tri[] {
-    return unite.flatMap(u => { const ext = curataPoli(trig(aplatizeaza(u.ext))); return prismaGauri(ext, [...u.gauri.map(g => curataPoli(aplatizeaza(g))), ...gauriInPlus.filter(g => inPoli(ext, g[0]!))], z0, z1); });
+    // arcele, cu săgeata de cel mult 0,02 mm (`laturiFine`): un disc mare nu iese din 48 de laturi
+    return unite.flatMap(u => { const ext = curataPoli(trig(aplatizeaza(u.ext, laturiFine))); return prismaGauri(ext, [...u.gauri.map(g => curataPoli(aplatizeaza(g, laturiFine))), ...gauriInPlus.filter(g => inPoli(ext, g[0]!))], z0, z1); });
   }
   /** Tija cu capăt rotund: pleacă drept din A, pe direcția u, lungă de L (până la vârful capătului), lată de w. */
   function tijaRotunda(A: Pt, u: number, L: number, w: number): Vf[] {
@@ -3024,6 +3026,77 @@ var Lego = (function (glob: typeof globalThis) {
     return { tri: prismaUnite(unesteForme(forme), gauri, 0, h), avert, prinderi: [] };
   }
 
+  // Globul (ADR 0285, felia 3.Cl-2): un disc cu căpăcel (lat de 26 % din diametru, cel puțin 8 mm; înalt de 9 %, cel
+  // puțin 4) și cu inelul pe el. Modelul stă în cercul dinăuntru, la o margine de 8 % din diametru (cel puțin 2,4 mm):
+  // - dungi: n dungi și n + 1 goluri la fel de înalte, pe tot cercul dinăuntru;
+  // - zigzag: n benzi în zigzag pe 72 % din rază, în sus și în jos, cu dinții la pasul de jumătate de rază;
+  // - stele: una în mijloc (34 % din rază) și n pe un cerc (la 66 %), cu un colț spre afară.
+  // Decupat, modelul e gol în disc; în relief, stă peste disc, mai înalt cu `relief` (de la înălțimea discului în sus
+  // se poate tipări cu alt filament). „Din două discuri”: două discuri alăturate, îmbinate în cruce ca plăcile bradului
+  // (primul are căpăcelul, inelul și fanta de jos; al doilea, fanta de sus), fără model.
+  type GlobDef = { diam?: unknown; grosime?: unknown; fel?: unknown; model?: unknown; desen?: unknown; relief?: unknown; cate?: unknown; agatatoare?: unknown };
+  const GLOB_CATE: Readonly<Record<string, readonly [number, number, number]>> = { dungi: [1, 5, 3], zigzag: [1, 3, 2], stele: [3, 8, 5] };
+  function globCote(d: GlobDef) {
+    const avert: string[] = [], mute: string[] = [];
+    const diam = campMarginit(avert, d.diam, 30, 120, 60, x => tr`Diametrul unui glob e între 30 și 120 mm: l-am făcut de ${x} mm.`);
+    const grosime = campMarginit(avert, d.grosime, 1.2, 6, 3, x => tr`Grosimea unui glob e între 1,2 și 6 mm: l-am făcut de ${x} mm.`);
+    const fel = d.fel === "discuri" ? "discuri" : "plat";
+    const model = fel === "discuri" ? "fara" : d.model === "zigzag" || d.model === "stele" || d.model === "fara" ? d.model : "dungi";
+    const desen = d.desen === "relief" ? "relief" : "decupat", inRelief = desen === "relief" && model !== "fara";
+    // relieful e al globului în relief: la celelalte nu se spune nimic despre el
+    const relief = campMarginit(inRelief ? avert : mute, d.relief, 0.4, 3, 0.8, x => tr`Relieful unui glob are între 0,4 și 3 mm: l-am făcut de ${x} mm.`);
+    const [c0, c1, ci] = GLOB_CATE[model] ?? [0, 0, 0];
+    const cate = model === "fara" ? 0 : campMarginit(avert, d.cate, c0, c1, ci, x => (model === "stele" ? tr`În jurul stelei din mijloc stau între 3 și 8 stele: am făcut ${x}.`
+      : model === "zigzag" ? tr`Un glob are între 1 și 3 zigzaguri: am făcut ${x}.` : tr`Un glob are între 1 și 5 dungi: am făcut ${x}.`), true);
+    const agatatoare = d.agatatoare === "fara" ? "fara" : "inel";
+    const R = diam / 2, capL = Math.max(8, 0.26 * diam), capH = Math.max(4, 0.09 * diam), margine = Math.max(2.4, 0.08 * diam);
+    return { diam, grosime, fel, model, desen, relief, cate, agatatoare, R, capL, capH, margine, Ri: R - margine, inRelief, fanta: grosime + 2 * (ef().joc + 0.1), avert };
+  }
+  /** Formele modelului unui glob, în cercul dinăuntru. */
+  function modelGlob(q: ReturnType<typeof globCote>): Vf[][] {
+    const { Ri } = q, n = q.cate, out: Vf[][] = [];
+    if (q.model === "dungi") {
+      const s = 2 * Ri / (2 * n + 1);
+      for (let i = 0; i < n; i++) {
+        // dunga: între două coarde, cu capetele pe cercul dinăuntru
+        const y0 = -Ri + (2 * i + 1) * s, y1 = y0 + s, x0 = Math.sqrt(Ri * Ri - y0 * y0), x1 = Math.sqrt(Ri * Ri - y1 * y1), b = Math.tan((Math.atan2(y1, x1) - Math.atan2(y0, x0)) / 4);
+        out.push([[-x0, y0, 0], [x0, y0, b], [x1, y1, 0], [-x1, y1, b]]);
+      }
+    } else if (q.model === "zigzag") {
+      const zona = 0.72 * Ri, pas = 2 * zona / n, A = 0.22 * pas, s = 0.28 * pas, p = Ri / 2, CV = glob.Cavalier;
+      for (let k = 0; k < n; k++) {
+        // banda: unda (vârfurile la fiecare jumătate de pas, jos la cele pare, sus la cele impare), groasă de s pe
+        // verticală, tăiată la cercul dinăuntru
+        const yc = -zona + (k + 0.5) * pas, sus: Vf[] = [], jos: Vf[] = [];
+        for (let j = -6; j <= 6; j++) { const x = j * p / 2, y = yc + A * (j % 2 ? 1 : -1); jos.push([x, y - s / 2, 0]); sus.push([x, y + s / 2, 0]); }
+        out.push(...bucatiBune(CV.plineClosed([...jos, ...sus.reverse()]).boolean(CV.plineClosed([[Ri, 0, 1], [-Ri, 0, 1]]), "and").posPlines));
+      }
+    } else if (q.model === "stele") {
+      const stea5 = (cx: number, cy: number, r: number, u: number): Vf[] => Array.from({ length: 10 }, (_, k): Vf => { const rr = k % 2 ? 0.42 * r : r, a = u + Math.PI * k / 5; return [cx + rr * Math.cos(a), cy + rr * Math.sin(a), 0]; });
+      const rk = 0.2 * Ri; // până la 8 stele pe cercul de 0,66 · Ri rămân cel puțin 0,1 · Ri între ele
+      out.push(stea5(0, 0, 0.34 * Ri, Math.PI / 2));
+      for (let j = 0; j < n; j++) { const u = Math.PI / 2 + 2 * Math.PI * j / n; out.push(stea5(0.66 * Ri * Math.cos(u), 0.66 * Ri * Math.sin(u), rk, u)); }
+    }
+    return out;
+  }
+  function globCraciun(d: GlobDef): Corp {
+    const q = globCote(d), { R, capL, capH } = q, h = q.grosime;
+    // discul, căpăcelul (intrat 0,6 mm sub locul unde marginea lui taie discul) și inelul de pe căpăcel
+    const disc: Vf[] = [[R, 0, 1], [-R, 0, 1]], forme: Vf[][] = [disc, dreptForma(-capL / 2, Math.sqrt(R * R - capL * capL / 4) - 0.6, capL / 2, R + capH)], gauri: Poli[] = [];
+    if (q.agatatoare === "inel") { const c = inelAgatat(R + capH); forme.push(c.disc); gauri.push(c.gol); }
+    const baza = unesteForme(forme);
+    if (q.fel === "discuri") {
+      // primul disc (cu căpăcelul): fanta de jos până la 0,2 peste mijloc; al doilea, alături: fanta de sus până la 0,2 sub el
+      const s = q.fanta / 2, A = baza.flatMap(u => scadeForma(u.ext, dreptForma(-s, -R - 1, s, 0.2))), B = scadeForma(disc, dreptForma(-s, -0.2, s, R + 1));
+      const alaturi = q.diam + CRACIUN.intrePlaci;
+      return { tri: [...prismaUnite(A.map(ext => ({ ext, gauri: [] })), gauri, 0, h), ...B.flatMap(v => prismaGauri(curataPoli(trig(aplatizeaza(v, laturiFine))).map(([x, y]): P2 => [x + alaturi, y]), [], 0, h))], avert: q.avert, prinderi: [] };
+    }
+    const model = modelGlob(q).map(m => curataPoli(trig(aplatizeaza(m, laturiFine))));
+    // decupat: modelul e gol în disc; în relief: discul întreg, cu modelul peste el (intrat 0,01 mm în disc)
+    if (!q.inRelief) return { tri: prismaUnite(baza, [...gauri, ...model], 0, h), avert: q.avert, prinderi: [] };
+    return { tri: [...prismaUnite(baza, gauri, 0, h), ...model.flatMap(m => prismaGauri(m, [], h - 0.01, h + q.relief))], avert: q.avert, prinderi: [] };
+  }
+
   function semne(n: number, x0: number, y0: number, z0: number, pas = 2.4) {
     // n cuburi mici de 1,2 mm, ca sa recunosti varianta
     const tri: Tri[] = [];
@@ -3118,7 +3191,7 @@ var Lego = (function (glob: typeof globalThis) {
   }
 
   // ---------------------------------------------------------------------------------------------- piesa dupa definitie
-  const TIPURI = { caramida, lateral, panta, pantaInversa, pana, rotund, arc, cadru, grinda, caramidaTechnic, ax, stiftTechnic, bucsa, conector, conectorUnghi, suport, clema, maner, bara, bila, cupa, rotita, cremaliera, cama, melc, roata, fulie, conica, coroana, conicaDubla, senila, elice, eliceBarca, ventilator, roataPalete, fulg, stea, brad, dinCvs2 };
+  const TIPURI = { caramida, lateral, panta, pantaInversa, pana, rotund, arc, cadru, grinda, caramidaTechnic, ax, stiftTechnic, bucsa, conector, conectorUnghi, suport, clema, maner, bara, bila, cupa, rotita, cremaliera, cama, melc, roata, fulie, conica, coroana, conicaDubla, senila, elice, eliceBarca, ventilator, roataPalete, fulg, stea, brad, glob: globCraciun, dinCvs2 };
   function construieste(def: DefPiesa) {
     const f = TIPURI[def.tip];
     if (!f) throw new Error("tip necunoscut: " + def.tip);
@@ -3452,5 +3525,8 @@ var Lego = (function (glob: typeof globalThis) {
     fulgCote: (d: FulgDef) => { const q = fulgCote(d); return { diam: q.diam, grosime: q.grosime, linie: q.linie, linieMax: q.linieMax, ramuri: q.ramuri, unghi: q.unghi, inceput: q.inceput, lungime: q.lungime, miez: q.miez, agatatoare: q.agatatoare, facute: q.perechi.length }; },
     steaCote: (d: SteaDef) => { const q = steaCote(d); return { varfuri: q.varfuri, diam: q.diam, interior: q.interior, grosime: q.grosime, fel: q.fel, linie: q.linie, agatatoare: q.agatatoare, varf: q.varf }; },
     bradCote: (d: BradDef) => { const q = bradCote(d); return { inaltime: q.inaltime, etaje: q.etaje, latime: q.latime, grosime: q.grosime, fel: q.fel, agatatoare: q.agatatoare, lat: q.lat, fanta: q.fanta, taiat: q.taiat }; },
+    // globul (ADR 0285): cotele din parametri; `capac`: cât e căpăcelul de înalt; `schimb`: înălțimea la care se schimbă
+    // filamentul (0 când globul nu e în relief)
+    globCote: (d: GlobDef) => { const q = globCote(d); return { diam: q.diam, grosime: q.grosime, fel: q.fel, model: q.model, desen: q.desen, relief: q.relief, cate: q.cate, agatatoare: q.agatatoare, capac: q.capH, margine: q.margine, fanta: q.fanta, schimb: q.inRelief ? q.grosime : 0 }; },
     _: { inel, prisma, cruce, razaPoligon, insetConvex, taieSemiplan, trunchi, profilRoata, conturRoata, prismaRasucita, unesteForme } };
 })(typeof globalThis !== "undefined" ? globalThis : window);

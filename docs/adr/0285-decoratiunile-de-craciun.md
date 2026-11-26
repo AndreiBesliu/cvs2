@@ -175,6 +175,34 @@ de care se leagă.
   adevărat), mesajele, STL-urile închise, lista.
 - Otrăvurile: `test/otravuri/3.Cl-1.py`, `test/otravuri/3.Cl-1-en.py`.
 
+## Implementat (3.Cl-2, 25.11.2026): globul
+
+Easy 3Draw 18.36.0. A patra piesă a filei „Crăciun”: `glob`.
+
+- **Plat:** un disc (`diam`, 30–120 mm; `grosime`, 1,2–6) cu un căpăcel sus (lat de 26 % din diametru, cel puțin 8 mm;
+  înalt de 9 %, cel puțin 4) și cu inelul pe căpăcel (`agatatoare`: inel sau fără).
+- **Modelul** (`model`) stă în cercul dinăuntru, la o margine de 8 % din diametru (cel puțin 2,4 mm):
+  - dungi: 1–5 dungi și tot atâtea goluri plus unul, la fel de înalte;
+  - zigzag: 1–3 benzi în zigzag, pe 72 % din rază în sus și în jos;
+  - stele: una în mijloc și 3–8 în jurul ei, cu un colț spre afară;
+  - fără.
+  Numărul lor e `cate`, în marginile modelului ales (editorul îl arată în ele; numărul scris rămâne ținut minte, deci întoarcerea la modelul dinainte îl dă înapoi).
+- **Decupat sau în relief** (`desen`): decupat, modelul e gol în disc; în relief, modelul stă peste discul întreg, mai
+  înalt cu `relief` (0,4–3 mm). **Două culori fără schimbător de filament:** editorul spune înălțimea la care se
+  schimbă filamentul (înălțimea discului) și stratul ei la straturi de 0,2 mm; de acolo în sus se tipărește doar
+  modelul. În cvs2, fereastra Imprimanta poate pune pauza la stratul acela (felia 3.6p).
+- **Din două discuri** (`fel: "discuri"`): două discuri alăturate pe pat, îmbinate în cruce ca plăcile bradului. Primul
+  are căpăcelul, inelul și fanta de jos (până la 0,2 mm peste mijloc); al doilea, fanta de sus. Fără model.
+- **Arcele mari, din laturi fine:** conturul unui disc se face cu săgeata de cel mult 0,02 mm (un disc de 120 mm nu
+  mai iese din 48 de laturi de aproape 8 mm). Piesele de până acum au arce mici și ies la fel.
+
+Față de propunere: globul din **trei** discuri n-a intrat (cere fante în unghi, altă îmbinare); se face la cerere.
+Relieful pe două înălțimi e deocamdată al globului; la stea și la brad se poate adăuga la fel.
+
+Probele: `test/unit/trenulet.glob.test.ts` (modelul de pe hârtie, punct cu punct; dungile numărate pe plasă; relieful
+peste disc; fantele discurilor), `test/e2e/trenulet.glob.spec.ts`; uneltele comune, în `test/unit/ajutor-craciun.ts`.
+Otrăvurile: `test/otravuri/3.Cl-2.py`, `3.Cl-2-en.py`.
+
 ## Se redeschide dacă
 
 - o piesă tipărită iese prea fragilă la nervura de 1,2 mm (atunci pragul urcă);

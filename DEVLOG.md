@@ -15515,3 +15515,67 @@ cu patru întrebări: „Mergem cu recomandarile”
   otrăvurilor, nota liniei.
 
 **Completed:** 26.11, 02:45.
+
+## 2026-11-25 — Felia 3.Cl-2: globul de Crăciun (ADR 0285) (sesiune cloud)
+
+**Prompt:** „Mergem cu recomandarile” (răspunsul owner-ului la ADR 0285, în sesiunea liniei: după fulg, stea și brăduț
+vine globul, cu relieful pe două înălțimi)
+**Started:** 25.11, 22:16 (după unirea lui 3.Cl-1 în `main`). **Completed:** 25.11, 23:05 (felia, cu otrăvurile;
+orele, după ceasul containerului).
+
+- **Ce face:** a patra piesă a filei „Crăciun”, globul: un disc cu căpăcel și inel, cu un model în cercul dinăuntru
+  (dungi, zigzag, stele sau fără), decupat ori în relief, sau din două discuri îmbinate în cruce.
+- **Două culori fără schimbător:** în relief, modelul stă peste discul întreg; editorul spune înălțimea la care se
+  schimbă filamentul și stratul ei (la straturi de 0,2 mm).
+- **Motorul:** `globCote`, `modelGlob`, `globCraciun` (tipul `glob`); arcele mari ale decorațiunilor, din laturi fine
+  (`aplatizeaza(…, laturiFine)`).
+- **Probele**, scrise întâi: unitară (6 teste, cu modelul de pe hârtie; a căzut cu funcțiile lipsă) și e2e (4
+  scenarii); proba în engleză din cvs2 trece și prin glob. Pluginul: unitare 310 / 310, e2e 219 / 219.
+- **Găsit de probă:** discul era din 48 de laturi (abatere de 0,06 mm la Ø60; la Ø120, laturi de aproape 8 mm, vizibile
+  pe un glob). Reparat pentru decorațiuni; piesele de dinainte ies la fel (au arce mici).
+- **Probele decorațiunilor** își împart uneltele „de pe hârtie” (`test/unit/ajutor-craciun.ts`).
+- **Otrăvurile:** `3.Cl-2.py`, 66 / 66, în clonă (62 la prima rulare: M25 era pe un cod mort al motorului, scos; A09, pe o aducere în margini de prisos din editor, scoasă: numărul scris rămâne ținut minte; A01 și A22, prinse după întărirea probei e2e); `3.Cl-2-en.py`, 10 / 10. Două ancore mutate din `3.Cl-1.py` (rândul familiei
+  și un text la fel în alt editor), aduse la zi și rulate din nou.
+- **Easy 3Draw 18.36.0** (540,9 kB), cu rândul de „ce e nou”. Doar pachetul extensiei se schimbă.
+- **Față de propunere:** globul din trei discuri n-a intrat (altă îmbinare); se face la cerere.
+- **Documentele:** ADR 0285 („Implementat (3.Cl-2)”), indexul ADR, fișa etapei 3 (jurnalul, coada owner-ului),
+  `docs/linii/atelier.md`, indexul liniilor, `docs/otravuri.md`, `CLAUDE.md`.
+- **Urmează:** 3.Cl-3 (ornamentul cu nume, cu un font propriu dintr-o singură linie).
+
+## 2026-11-26 — Felia 10.4↑d-1: lanțul, linia de bază, „Cotează selecția” (ADR 0330 §4)
+
+**Prompt:** „Deci **10.4↑d pornește**: lanțul și linia de bază, „Cotează selecția”, „Fă desen din cotă”, cotele în raportul
+foilor” (sesiunea principală, 26.11, 00:08, cu cuvântul owner-ului: „ok, porneste 10.4↑d si 18.1↑d”). **Started:** 26.11,
+00:10, în sesiunea cloud a liniei cotelor. **Completed:** 26.11, 01:30 (în container; CI-ul, pe commit-ul împins).
+
+- **`main` adus** (`a4d86d53`, documentul v29), prin avans rapid. Felia d s-a împărțit în d-1 (aici), d-2 („Fă desen din
+  cotă”) și d-3 (cotele în raportul foilor).
+- **Proba întâi, pe hârtie:** `cote.serie.test.ts` (lanțul orizontal, vertical, aliniat; baza, cu pasul, partea, d = 0; cota de
+  zero; id-ul) și `cote.selectie.test.ts` (o piesă, o piesă din două elemente, mai multe piese, o linie, legarea oprită,
+  distanța din setări).
+- **Pur:** `src/model/serieCote.ts` (`pornesteSerie`, `cotaUrmatoare`, `idCotaNou`) și `src/model/coteSelectie.ts`
+  (`coteSelectie`). **Unealta:** felurile Lanț și Linie de bază (prima cotă ca la Automată din două puncte, apoi un clic pe
+  punct, Esc încheie; pornite și din cota liniară aleasă); „Cotează selecția” în meniul de clic dreapta: în bara uneltei, bara
+  de sus ieșea cu 14 px din 1280 px cu fontul lat, iar în extensia barei butonul 3D ieșea din fereastră.
+- **Manualul** (ro, en), catalogul controalelor (neschimbat), e2e noi 4 (`cote.serie.spec.ts`); otrăvurile 27 / 27, într-o
+  clonă. Întrebările 8 și 9, la owner, cu recomandările implementate. Pornirea 111,4 kB (neschimbată), totalul
+  909,1 → 910,4 / 1 000 kB (+1,3).
+
+## 2026-11-26 — Sesiunea principală în cloud: a patruzeci și patra unire (atelierul Easy 3Draw: 3.Cl-2, globul; cotele: 10.4↑d-1) (Model: Claude Fable 5.2)
+
+**Prompt:** rapoartele liniilor („3.Cl-2 (globul de Crăciun; ADR 0285) e gata de unit”, `af1f046f`; „10.4↑d-1 gata”, `93017b3b`), la ordinul în vigoare „unește ce se poate”
+**Started:** 26.11, 02:08. **Completed:** unirea în `main`, 26.11, 03:26; publicarea pe test, lotul 41.
+
+- **Verificat înaintea unirii:** completele liniilor (45718312313 pe `af1f046f`; 45715926768 pe `93017b3b`) și rapidele lor,
+  verzi; PR-urile #53 și #52; fără `.lucru/`. Ramurile aveau `554b72cb` și `a4d86d53`; `main` primise 28.8↑i, deci lotul și-a
+  făcut completul lui.
+- **Unirea, pe `unire-2611c`** (din `7a754885`): `af1f046f`, în `b6c9998d`; `93017b3b`, în `57888ad8`. Ciocnirile, în DEVLOG
+  (`rezolva-devlog.py`). Local: tipurile, regulile de import (22 / 22), traducerile (1 173), catalogul controalelor (la zi),
+  biblioteca (Easy 3Draw 18.36.0, 540 867 octeți), probele documentelor și ale manualului 76 / 76.
+- **Porțile lotului, în CI, pe `57888ad8`** (citite din jurnalul rulării): completul 45726695789, verde la prima trecere (75 min): unit
+  10 638 / 0 (12 sărite, pe Linux), e2e 911 / 911, funcțiile pe emulatoare 136 / 136, paginile 60 / 60; rapidul 45726696018, verde. Pornirea 111,4 kB
+  (plafonul 125; cu ușa 116,5, cu Atelierul 116,9), totalul 910,7 / 1 000 kB, `/admin` 138,3 / 200, contul
+  30,2 / 32. Nimic pe server.
+- **Lotul 40 pe test:** `7a754885`, publicat pe 26.11 la 03:15 (completul pe `main` 45727537251, verde;
+  proba de fum, bună).
+- **Documentele:** decizia și paragrafele de stare în `CLAUDE.md`; indexul liniilor; starea din `docs/linii/principala.md`.
