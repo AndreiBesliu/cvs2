@@ -15469,3 +15469,27 @@ cu patru întrebări: „Mergem cu recomandarile”
   (plafonul 125; cu ușa 116,5, cu Atelierul 116,9), totalul 909,1 / 1 000 kB, `/admin` 138,3 / 200, contul 30,2 / 32.
   Nimic pe server.
 - **Documentele:** decizia și paragraful de stare în `CLAUDE.md`; indexul liniilor; starea din `docs/linii/principala.md`.
+
+## 2026-11-26 — Sesiunea principală în cloud: a patruzeci și treia unire (fereastra exportului: 28.8↑i, viteza) și lotul 39 pe test (Model: Claude Fable 5.2)
+
+**Prompt:** raportul liniei exportului („28.8↑i […] e gata de unit”, `8c309846`), la ordinul în vigoare „unește ce se poate”
+**Started:** 26.11, 00:33 (commit-ul unirii). **Completed:** unirea în `main`, 26.11, 02:07; publicarea pe test, lotul 40.
+
+- **Verificat înaintea unirii:** completele liniei (45704990640 și 45705182587, pe `8c309846`), verzi; PR-ul #49; fără
+  `.lucru/`; ramura are `a4d86d53`. `main` primise între timp 3.Cl-1 (`41b1fb6f`: fișierele extensiei, probele ei și
+  traducerile roadmap-ului), deci
+  arborele unirii nu era al niciunui commit verificat: completul unirii, pornit la 00:33.
+- **Unirea, pe `unire-2611b`** (din `554b72cb`): `8c309846`, în `953205a8`, fără nicio ciocnire. Local: tipurile, regulile de
+  import (22 / 22), traducerile (1 167), catalogul controalelor, biblioteca (Easy 3Draw 18.35.0), probele documentelor
+  62 / 62.
+- **Porțile unirii, în CI, pe `953205a8`** (citite din jurnalul rulării): completul 45714218828, verde la prima trecere
+  (60 min): unit 10 617 / 0 (12 sărite, pe Linux), e2e 903 / 903, funcțiile pe emulatoare 136 / 136, paginile 60 / 60;
+  rapidul 45714219455, verde. Pornirea 111,4 kB (plafonul 125; cu ușa 116,5, cu Atelierul 116,9), totalul 909,4 / 1 000 kB,
+  `/admin` 138,3 / 200, contul 30,2 / 32. Nimic pe server.
+- **Lotul 39 pe test:** `554b72cb`, publicat pe 26.11 la 01:43 (completul pe `main` 45712796123, verde: unit 10 617 / 0,
+  e2e 898 / 898, funcțiile pe emulatoare 136 / 136, paginile 60 / 60; publicarea 45723187893; proba de fum, bună).
+- **Schema:** linia reliefului a confirmat că 18.1↑d folosește v30 (operația `degrosare`, ADR 0313, propus de ea);
+  următorul număr liber e v31, trecut în `CLAUDE.md`, în indexul liniilor și în starea sesiunii.
+- **De ținut minte:** o comandă de citire cu `rev` pe un rând foarte lung s-a agățat de două ori câte 30 de minute;
+  cozile de rând se citesc cu un script Python, cu `timeout`.
+- **Documentele:** decizia și paragraful de stare în `CLAUDE.md`; indexul liniilor; starea din `docs/linii/principala.md`.
