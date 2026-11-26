@@ -180,15 +180,20 @@ export type ReparatieT = { readonly numar: number; readonly fa: () => void };
 /** O greșeală a unui grup, cu butonul care o repară, dacă are unul (felia 28.8↑j). */
 export type Greseala = { readonly text: string; readonly buton?: ReactNode };
 
-export function FisaOperatie({ cheie, loc, c: ctx }: { readonly cheie: string; readonly loc: number; readonly c: ContextFisa }): ReactNode {
+export function FisaOperatie({ cheie, loc, total: totalFisa, c: ctx }: {
+  /** `loc`: locul în ordinea tăierii (de la 0), din `total` (lipsă: al ferestrei; cu „Toate foile”, al foii, 28.8↑q). */
+  readonly cheie: string; readonly loc: number; readonly total?: number; readonly c: ContextFisa;
+}): ReactNode {
   const {
     dupaCheie, param, total, doarCitire, schimba, randBun, greseliRand, conflict, hartie, taieturaRand, text, fmtFreza, fmtTrecere,
-    grosimeFoaie, supracursaCitita, cuSupracursa, onAlegeUrechi, frezeRest, grup, frezeOferite, alegeFreza, bibliotecaToata,
+    grosimeFoaie: grosimeActiva, supracursaCitita, cuSupracursa, onAlegeUrechi, frezeRest, grup, frezeOferite, alegeFreza, bibliotecaToata,
     iaValorileNoi, iaValorileNoiPeToate, inapoi,
   } = ctx;
   const o = dupaCheie.get(cheie);
   const p = o ? param[o.cheie] : undefined;
   if (!o || !p) return null;
+  // Grosimea foii rândului (cu „Toate foile”, a foii lui, 28.8↑q).
+  const grosimeFoaie = o.grosime ?? grosimeActiva;
   const b = randBun(p);
   // Rândul are căi deschise (ADR 0037 §12): doar pe linie, fără urechi, rampă, intrări și degajări, cu motivul în titlu.
   const deschis = o.deschise > 0;
@@ -863,7 +868,7 @@ export function FisaOperatie({ cheie, loc, c: ctx }: { readonly cheie: string; r
   return (
     <section className="dx-fisa" data-fisa="op" data-operatie={o.cheie} key={o.cheie}>
       <h3 tabIndex={-1}>{o.descriere}</h3>
-      <p className="dx-loc">{t('export.fisa.loc', { n: loc + 1, total })}</p>
+      <p className="dx-loc">{t('export.fisa.loc', { n: loc + 1, total: totalFisa ?? total })}</p>
       {grupuri.map((g) => { const c = corp(g); return c === null ? null : grup(g, o.cheie, c, aici(g), desen(g)); })}
       {/* O greșeală al cărei grup nu e pe fișă (o bifă rămasă de la alt fel de tăiere) se spune la capăt, nu se pierde. */}
       {greseli.filter(([, g]) => !grupuri.includes(g)).map(([m]) => <p className="dx-greseala" data-greseala key={m}>{m}</p>)}

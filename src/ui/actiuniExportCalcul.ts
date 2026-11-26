@@ -165,7 +165,12 @@ async function calculeazaToateFoile(doc: Document, activa: string, p: ParametriE
       return intrare.nume;
     });
     const identice = g.slice(1).flatMap((j) => facute[j]?.nume ?? []);
-    return [{ nume: prim.nume, identice, fisiere, secunde: prim.r.rezumat.ok ? prim.r.rezumat.total.secunde : null }];
+    // Rezultatul pe foi (ADR 0291, 7a): timpul pe operații al programului ei; foaia activă, însemnată.
+    const activa = g.some((j) => facute[j] === activ);
+    return [{
+      nume: prim.nume, identice, fisiere, secunde: prim.r.rezumat.ok ? prim.r.rezumat.total.secunde : null, rezumat: prim.r.rezumat,
+      ...(activa ? { activa: true as const } : {}),
+    }];
   });
   const z = scrieZip(intrari);
   if (!z.ok) return { ok: false, motiv: z.motiv };

@@ -107,8 +107,11 @@ test('tăietura: cartonașele cu poze, găurirea oprită pe un rând fără cerc
   await expect(aleasa(e1, 'latura')).toHaveValue('buzunar');
   await expect(nav).toContainText('buzunar');
   expect(await nav.locator('svg.dx-poza').innerHTML()).not.toBe(pozaInainte);
-  // Fișa buzunarului își arată grupurile lui (Cum golește), nu pe ale profilului.
+  // Fișa buzunarului își arată grupurile lui (Golirea), nu pe ale profilului; titlurile, alese de owner pe 26.11.
   await expect(e1.locator('[data-grup="golire"]')).toHaveCount(1);
+  await expect(e1.locator('[data-grup="taietura"] > h4')).toHaveText('Tăietura');
+  await expect(e1.locator('[data-grup="golire"] > h4')).toHaveText('Golirea');
+  await expect(e1.locator('[data-grup="coborare"] > h4')).toHaveText('Coborârea');
   await expect(e1.locator('[data-grup="urechi"]')).toHaveCount(0);
 });
 

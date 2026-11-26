@@ -2409,6 +2409,49 @@ nav button[aria-pressed='true'] {
 }
 
 /*
+ * „Toate foile” (ADR 0291, 7a, felia 28.8↑q): capul fiecărei foi, în listă (numele, apoi nota pieselor comune sau a foii fără
+ * piese) și între fișe (numele foii, mai mare decât titlul unei fișe, cu linia de deasupra).
+ */
+.dx-foaie-lista {
+  display: grid;
+  gap: 2px;
+  padding: var(--sp-3) var(--sp-2) var(--sp-1);
+  border-top: 1px solid var(--l-margine);
+}
+
+.dx-foaie-lista .dx-foaie-nume {
+  font-weight: 650;
+}
+
+.dx-foaie-lista .nota,
+.dx-foaie-fise .nota {
+  font-size: var(--fs-1);
+  color: var(--t-slab);
+}
+
+.dx-foaie-fise {
+  padding: var(--sp-4) 0 var(--sp-2);
+  border-top: 2px solid var(--l-margine);
+}
+
+.dx-foaie-fise h3 {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+
+/* Rezultatul pe foi (28.8↑q): rezumatul fiecărei foi, strâns sub numele ei; al foii active, deschis. */
+.dx-rezumat-foaie + .dx-rezumat-foaie {
+  margin-top: var(--sp-2);
+}
+
+.dx-rezumat-foaie > summary {
+  min-height: 32px;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+/*
  * Grupul (28.8↑l): titlul, explicația și câmpurile, în ordinea asta în DOM (cititorul spune întâi titlul); pe ecran, explicația
  * (și desenul) în stânga, titlul și câmpurile în dreapta, ca înainte.
  */
@@ -2830,6 +2873,19 @@ nav button[aria-pressed='true'] {
   }
 
   .dx-lista .dx-sectiune {
+    display: none;
+  }
+
+  /* „Toate foile” (28.8↑q): pe bandă, capul foii e doar numele ei, pe un rând (nota stă în capul din fișe). */
+  .dx-lista .dx-foaie-lista {
+    align-content: center;
+    padding: var(--sp-1) var(--sp-2);
+    border-top: 0;
+    border-left: 1px solid var(--l-margine);
+    white-space: nowrap;
+  }
+
+  .dx-lista .dx-foaie-lista .nota {
     display: none;
   }
 

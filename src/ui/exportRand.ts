@@ -462,6 +462,11 @@ export type OperatieExport = {
   readonly rang?: number;
   /** Rândurile altor piese din interiorul formelor ei (ADR 0133 §3, `cuprinse`): riscul unui exterior tăiat înaintea lor. */
   readonly inauntru?: readonly string[];
+  /**
+   * Grosimea foii rândului (lipsă: a foii active): cu „Toate foile” (ADR 0291, 7a), rândul unei alte foi se socotește pe hârtie
+   * cu grosimea ei.
+   */
+  readonly grosime?: number;
 };
 
 /**

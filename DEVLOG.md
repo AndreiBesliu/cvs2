@@ -15980,6 +15980,29 @@ unirea lui 3.Cf-2
   `docs/otravuri.md`, `CLAUDE.md`.
 - **Urmează:** 3.Ch (construcțiile cu nume și lista lor de piese).
 
+## 2026-11-26 — Linia exportului: 28.8↑q, „Toate foile” cu operațiile fiecărei foi (ADR 0291, 7a)
+
+**Prompt:** confirmarea sesiunii principale („28.8↑l e în `main` … Poți porni **28.8↑q**, cu `main` (`a2e5bfdf`) adus întâi”),
+la ordinul în vigoare „unește ce se poate”
+**Started:** 26.11, 10:15.
+
+- **Grupele foilor (constatarea 18):** `grupeFoi` (`src/model/foiExport.ts`): o piesă la prima foaie pe care e pusă; pe cele de
+  după, comună; foaia fără piese, goală.
+- **Fereastra:** cu „Toate foile”, lista și fișele au capul fiecărei foi, cu operațiile ei, editabile, și nota pieselor comune;
+  numerele ordinii pe foaie; „A mea” mută doar în foaie (săgețile și tragerea); riscurile cu numele foii; fiecare rând, pe
+  hârtie, cu grosimea foii lui; o greșeală pe altă foaie oprește doar „Toate foile”. Cu „Foaia activă”, ca înainte.
+- **Exportă** scrie, cu „Toate foile”, operațiile tuturor pieselor; programul fiecărei foi rămâne cel exportat singur.
+- **Rezultatul pe foi:** timpul pe operații al fiecărei foi, strâns sub numele ei (al foii active, deschis); simularea, a foii
+  active.
+- **Probele:** `export.grupeFoi.test.ts` (3), `ordineExport.test.ts` (+2), `export.foi.test.ts` (rezumatul pe foi),
+  `export.toateFoile.spec.ts` (6); e2e-ul care deschide exportul, 377 / 377; unitarele, 10 734 / 0.
+- **Otrăvurile:** `28.8q.py`, 17 / 17 (Q12 scăpase: proba trage acum al doilea rând al foii 2 pe foaia 1).
+- **Mărimea:** pornirea +0 (111,6 kB), totalul 921,1 / 1 000 (+1,7 kB).
+- **Documentele:** ADR 0291 („Implementarea 28.8↑q”), manualul (ambele limbi), fișa etapei 3, registrul otrăvurilor, nota
+  liniei.
+
+**Completed:** 26.11, 11:16.
+
 ## 2026-11-26 — Sesiunea principală în cloud: loturile 45 și 46 pe test; sesiunea principală pe Opus (Model: Claude Opus 5.5)
 
 **Prompt:** „o sa folosim Opus de aici in colo” (după `/model claude-opus-5-5`); publicările loturilor 45 și 46, pornite la unirile a cincizecea și a cincizeci și una
@@ -15992,6 +16015,18 @@ unirea lui 3.Cf-2
 - **Modelul:** de aici, intrările sesiunii principale scriu Opus; sesiunile liniilor rămân pe modelul lor până la `/model` dat de
   owner în fiecare.
 - **Documentele:** decizia în `CLAUDE.md`; starea din `docs/linii/principala.md`.
+
+## 2026-11-26 — Linia exportului: titlurile grupurilor în română, alese de owner (ADR 0291)
+
+**Prompt:** sesiunea principală, cu răspunsul owner-ului: „da, Tăietura, Golirea, Coborârea”
+**Started:** 26.11, 11:53.
+
+- `export.grup.taietura`, `golire`, `coborare`: „Tăietura”, „Golirea”, „Coborârea” (erau „Ce tăiere”, „Cum golește”, „Cum
+  coboară”); engleza rămâne Cut type, Clearing, Descent. Programul nu se schimbă.
+- **Proba:** `export.cartonase.spec.ts` cere cele trei titluri pe fișa unui buzunar (5 / 5).
+- **Documentele:** manualul (română), ADR 0291 (rândul din „Implementarea 28.8↑k”), nota liniei.
+
+**Completed:** 26.11, 11:54.
 
 ## 2026-11-26 — Sesiunea principală în cloud: titlurile grupurilor din fereastra exportului (Model: Claude Opus 5.5)
 
@@ -16053,3 +16088,22 @@ lista de printat»”); pornită după unirea lui 3.Cg în `main` (`75d8dde2`)
 - **Documentele:** ADR 0284 („Implementat (3.Ch)”), fișa etapei 3, `docs/linii/atelier.md`, indexul liniilor,
   `docs/otravuri.md`, `CLAUDE.md`.
 - **Urmează:** 3.Ci (construcțiile gata, patru șabloane).
+
+## 2026-11-26 — Sesiunea principală în cloud: a cincizeci și treia unire (fereastra exportului: 28.8↑q, „Toate foile” cu operațiile fiecărei foi; titlurile grupurilor) (Model: Claude Opus 5.5)
+
+**Prompt:** raportul liniei exportului („28.8↑q e gata de unit cu titluri cu tot”, `a4055804`), la ordinul în vigoare „unește ce se poate”; „ok, q întâi apoi p”
+**Started:** 26.11, 12:00. **Completed:** unirea în `main`, 26.11, 13:05; publicarea pe test, lotul 48.
+
+- **Verificat înaintea unirii:** completul liniei (45796313016) pe `a4055804`, verde; rapidul, verde pe toate vârfurile ramurii;
+  între `a4055804` și vârf (`787509d4`), doar documente; PR-ul #60; fără `.lucru/`. `main` primise 3.Cg (doar pluginul) după
+  commit-ul liniei, deci unirea și-a făcut completul ei, pornit la 12:00, în paralel cu al liniei.
+- **Unirea, pe `unire-2611l`** (din `3e9d3d9c`): `53ab2a1e` (codul lui `a4055804`), în `d3da8953`; apoi vârful liniei
+  (`787509d4`, aceleași rânduri în DEVLOG, în altă ordine; se păstrează ordinea unirii), ca PR-ul să se închidă singur.
+  Ciocnirile, doar în DEVLOG. Local: tipurile, regulile de import (22 / 22), traducerile (1 210), catalogul controalelor,
+  biblioteca, probele documentelor și ale manualului 76 / 76.
+- **Porțile unirii, în CI, pe `d3da8953`** (citite din jurnalul rulării): completul 45797155066, verde la prima trecere (63 min):
+  unit 10 752 / 0 (12 sărite, pe Linux), e2e 967 / 967, funcțiile pe emulatoare 136 / 136, paginile 60 / 60; rapidul 45797154008,
+  verde. Pornirea 111,6 kB (cu ușa 116,8, cu Atelierul 117,1 / 125), totalul 921,1 / 1 000 kB, `/admin` 138,3 / 200, contul
+  30,2 / 32. Nimic pe server. Față de commit-ul cu porțile, în `main` intră în plus doar documente (`.md`).
+- **Decizia owner-ului:** ordinea q, apoi p, confirmată; p pornește acum, cu linia frezelor anunțată.
+- **Documentele:** decizia și paragraful de stare în `CLAUDE.md`; indexul liniilor; starea din `docs/linii/principala.md`.

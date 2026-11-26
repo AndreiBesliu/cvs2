@@ -2100,9 +2100,14 @@ sheets** makes one program per sheet, each exactly the one you would export from
 `.zip` archive (`cncvs2-stanga-jos-foile.zip`), with the sheet in each file's name (`cncvs2-stanga-jos-foaia-2.nc`); on
 RichAuto, `CNCVS2.ZIP`, with each sheet in its own folder (`F2/CNCVS2.NC`). Identical sheets (the same parts in the same
 places, with the same operations, as after “Duplicate the sheet with the same parts”) come out once, with ×N in the name
-(`…-foaia-1-x3.nc`: cut it three times), and a sheet with nothing to cut is left out. The window's cards stay those of the
-active sheet: the other sheets keep their own operations. After the export, the window shows the sheets, the files and the
-time of each, then the time of all. A sheet the cutter leaves (other than the active one, whose confirmation you give here)
+(`…-foaia-1-x3.nc`: cut it three times), and a sheet with nothing to cut is left out. With **All sheets**, the list and the
+cards show the operations of each sheet, under its name, and you can change them here: **Export** writes them all. A part
+placed on several sheets (a linked copy, the plates from CSV) has the same operations on all of them, so its rows stand once,
+on the first sheet it is placed on; the other sheets say “Also N operations of the pieces on Sheet 1”. The order numbers
+start at 1 on each sheet, and in **Mine** a row moves only within its sheet (each sheet is a program of its own); a mistake on
+another sheet stops only **All sheets**. With **The active sheet**, the window shows, as before, only the active sheet. After
+the export, the window shows the sheets, the files and the time of each, then the time of all, and under the time the summary
+of each sheet (the active sheet's, open); the simulation is of the active sheet. A sheet the cutter leaves (other than the active one, whose confirmation you give here)
 is exported alone, with its own confirmation. **Open in Machine** loads the active sheet's program. The plates the text comes
 out of are, here, those of all sheets: if you chose the confirmation in **From CSV…**, **Export** waits for the tick.
 

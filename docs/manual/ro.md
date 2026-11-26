@@ -1558,7 +1558,7 @@ ridice cât drumul rămâne în buzunar. Cu pasul lateral de cel mult jumătate 
 doar colțurile pe care nicio freză rotundă nu le atinge (cu raza frezei). Unde buzunarul e mai îngust decât freza, ea nu
 intră. Pe un buzunar nu există urechi, intrări sau degajări, iar rampa profilului e înlocuită de coborâre.
 
-**Traseul buzunarului.** Pe fișa unui buzunar, la **Cum golește**, **Traseul** alege între **inele (paralele cu conturul)**, implicit, și
+**Traseul buzunarului.** Pe fișa unui buzunar, la **Golirea**, **Traseul** alege între **inele (paralele cu conturul)**, implicit, și
 **linii paralele**, la **Unghiul** dat față de X (de la 0 până sub 180°), cu pasul lateral între ele. Pe fiecare trecere, freza
 trece întâi pe linii, legate la adâncime doar cu linia vecină și doar dacă drumul rămâne în buzunar (altfel se ridică), apoi pe
 o **trecere de profil** de-a lungul marginii, ca peretele să iasă exact pe vector, nu în trepte. Liniile coboară prin plonjare
@@ -1839,8 +1839,8 @@ care). Fereastra are trei părți:
   lista marchează fișa la care ai ajuns. Din tastatură, Enter pe un rând duce focusul pe titlul fișei, iar Tab merge apoi
   în câmpurile ei; un cititor de ecran spune la fiecare câmp explicația grupului lui, întreagă, și greșelile lui. Pe un ecran îngust, lista stă sus, pe un rând care se derulează, cu ordinea tăierii
   la capăt; cu **Butoane mari** (vezi [Aspectul](#aspect)), câmpurile și bifele ferestrei au și ele ținta mare;
-- **fișele**, în dreapta, una sub alta. Fiecare are câmpurile grupate pe întrebări (Ce tăiere, Freza, Cât de adânc, Sensul de
-  tăiere, Rampa, Intrările, Colțurile, Urechile; la un buzunar, Cum golește, Cum coboară, Frezele de rest; la un V-carve,
+- **fișele**, în dreapta, una sub alta. Fiecare are câmpurile grupate pe întrebări (Tăietura, Freza, Cât de adânc, Sensul de
+  tăiere, Rampa, Intrările, Colțurile, Urechile; la un buzunar, Golirea, Coborârea, Frezele de rest; la un V-carve,
   Fundul plat; la o incrustație, ale ei). În stânga fiecărui grup, explicația lui; când treci cu mausul peste un câmp sau intri
   în el, explicația câmpului. O explicație lungă se vede până la capătul primei propoziții, cu „…”: **Mai mult**, sub ea, le
   arată întregi pe toate ale grupului (și pe ale câmpurilor pe care treci apoi), iar **Mai puțin** le strânge la loc; la fel
@@ -2018,8 +2018,13 @@ foile** face câte un program pe foaie, fiecare exact cel pe care l-ai exporta d
 arhivă `.zip` (`cncvs2-stanga-jos-foile.zip`), cu foaia în numele fiecărui fișier (`cncvs2-stanga-jos-foaia-2.nc`); pe
 RichAuto, `CNCVS2.ZIP`, cu fiecare foaie în dosarul ei (`F2/CNCVS2.NC`). Foile identice (aceleași piese în aceleași locuri,
 cu aceleași operații, ca după „Duplică foaia cu aceleași piese”) ies o dată, cu ×N în nume (`…-foaia-1-x3.nc`: se taie de
-trei ori), iar o foaie fără nimic de tăiat nu intră. Fișele ferestrei rămân ale foii active: celelalte foi își păstrează
-operațiile lor. După export, fereastra arată foile, fișierele și timpul fiecăreia, apoi timpul tuturor. O foaie din care iese
+trei ori), iar o foaie fără nimic de tăiat nu intră. Cu **Toate foile**, lista și fișele arată operațiile fiecărei foi, sub
+numele ei, și le poți schimba de aici: **Exportă** le scrie pe toate. O piesă pusă pe mai multe foi (o copie legată, plăcuțele
+din CSV) are aceleași operații pe toate, deci rândurile ei stau o singură dată, la prima foaie pe care e pusă; celelalte foi
+spun „Și N operații ale pieselor de pe Foaia 1”. Numerele ordinii pornesc de la 1 pe fiecare foaie, iar în **A mea** un rând
+se mută doar în foaia lui (fiecare foaie e un program al ei); o greșeală pe altă foaie oprește doar **Toate foile**. Cu **Foaia
+activă**, fereastra arată, ca înainte, doar foaia activă. După export, fereastra arată foile, fișierele și timpul fiecăreia,
+apoi timpul tuturor, iar sub **Timpul** rezumatul fiecărei foi (al foii active, deschis); simularea e a foii active. O foaie din care iese
 freza (alta decât cea activă, a cărei confirmare o dai aici) se exportă singură, cu confirmarea ei. **Deschide în Mașina**
 încarcă programul foii active. Plăcuțele din care iese textul sunt, aici, ale tuturor foilor: dacă ai ales confirmarea în
 **Din CSV…**, **Exportă** așteaptă bifa.

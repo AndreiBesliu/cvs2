@@ -356,8 +356,8 @@ Constatările 8, 10, 11, 12, 16, 17 și 21 ale auditului. Programul rămâne oct
 - **Freza în V (constatarea 17).** Diametrul sub vârf, ca la freza plată, cu liniile ajutătoare din marginile conului: pe coadă,
   „Ø 3,175 mm” trecea peste „T1”.
 - **Titlurile în engleză (constatarea 16).** „Cut type”, „Clearing”, „Descent” (ca eticheta câmpului; „Plunge” e una dintre
-  alegerile lui) și „Rest machining”. Titlurile în română („Ce tăiere”, „Cum golește”, „Cum coboară”) rămân, cum spune auditul,
-  la owner, cu recomandarea „Tăietura”, „Golirea”, „Coborârea”.
+  alegerile lui) și „Rest machining”. Titlurile în română („Ce tăiere”, „Cum golește”, „Cum coboară”) au rămas, cum spunea
+  auditul, la owner; pe 26.11 a ales recomandarea („da, Tăietura, Golirea, Coborârea”), într-un commit separat, după 28.8↑q.
 - **Textele lungi (constatarea 21).** Peste 160 de caractere, un text arată prima propoziție și „…” (`scurtat`, `textStrans`,
   `src/ui/exportRand.ts`; o propoziție se termină cu un punct urmat de spațiu și de o literă mare, o paranteză sau ghilimele):
   - în caseta explicației, „Mai mult” / „Mai puțin” e al grupului, nu al textului: deschis, arată întregi toate explicațiile
@@ -407,3 +407,49 @@ Constatarea 13 a auditului. Programul rămâne octet cu octet: se schimbă doar 
   DOM rămânea bună, iar proba nu se uita la așezare; acum cere și titlul deasupra câmpurilor. E04 din `28.8b.py`, mutată pe
   efectul care leagă și descrierile, prinsă.
 - **Mărimea:** pornirea +0 (111,6 kB), totalul +0,3 kB (919,5 / 1 000). Programul, documentul și serverul: neschimbate.
+
+## Implementarea 28.8↑q (26.11)
+
+Constatarea 18 a auditului, cu răspunsul 7a. Programul fiecărei foi rămâne cel al documentului doar cu ea (`doarFoaia`, ADR
+0210 §5): fereastra schimbă doar ce arată și ce scrie în document la Exportă.
+
+- **Grupele foilor** (`grupeFoi`, `src/model/foiExport.ts`, pură). Operațiile stau pe piesă, nu pe instanță: o piesă pusă pe
+  mai multe foi (o copie legată a foii, plăcuțele din CSV) are aceleași operații pe toate. Rândurile ei stau deci o singură
+  dată, la prima foaie pe care e pusă (în ordinea foilor, apoi a instanțelor), cu prima ei instanță de acolo; pe foile de
+  după, piesa e „comună” cu foaia ei de început. O foaie fără nicio piesă e goală.
+- **Rândurile tuturor foilor** (`ExportConectat.tsx`): construirea rândurilor unei foi e o funcție (`randuriFoii`), chemată
+  pentru foaia activă, ca înainte, și pentru fiecare foaie, cu elementele ei în lume (`elementeFoaie`), descrierile ei, ordinea
+  ei automată și grosimea ei. Cu mai multe foi, fereastra primește un getter (`toateFoile`) care le socotește abia când omul
+  alege „Toate foile”, o singură dată pe document și pe limbă. Exportă scrie, cu „Toate foile”, operațiile tuturor pieselor
+  puse pe foi; altfel, ale foii active, ca înainte.
+- **Fereastra** (`DialogExport.tsx`): setul văzut e al alegerii. Cu „Foaia activă”, rândurile foii active, exact ca înainte.
+  Cu „Toate foile”:
+  - lista și fișele au capul fiecărei foi (`[data-foaie-lista]`, `[data-foaie-fise]`), cu nota pieselor comune („Și o operație
+    a pieselor de pe Foaia 1 (o schimbi acolo)”; în „A mea”: „…se taie înaintea celor de aici”) și a foii fără piese;
+  - rândurile celorlalte foi intră cu valorile din document; cele ale foii active își păstrează ce a scris omul (aceleași
+    chei). Greșelile, „Pe toate (N)” și golul incrustației din desenul Z0 numără doar rândurile văzute: o greșeală pe altă
+    foaie oprește doar „Toate foile”;
+  - ordinea e foaie după foaie: rangurile pun în ordine fiecare foaie a ei (`ordineDinRanguriPeFoi`), numerele pornesc de la 1
+    pe fiecare foaie, săgețile se opresc la marginea foii, iar o tragere pe altă foaie e refuzată (`mutaRand`). Rangurile se
+    scriu pe toată lista, deci în ordinea fiecărui program. Rândurile legate și riscurile se socotesc pe foaie, cu numele ei în
+    față („Foaia 1: Exteriorul din rândul 1…”);
+  - fiecare rând își socotește „pe hârtie” cu grosimea foii lui (`OperatieExport.grosime`): o tăietură cât foaia de 18 a foii
+    1 trece cu supracursa și când foaia activă are 12;
+  - schimbarea alegerii scoate rezultatul de până atunci (era al celeilalte).
+- **Rezultatul pe foi:** calculul „Toate foile” ține rezumatul (timpul pe operații și pe scule) al fiecărui program
+  (`FoaieExportata.rezumat`) și însemnează foaia activă (`activa`). Sub Timpul, fiecare foaie are rezumatul ei, strâns sub
+  numele ei (`[data-rezumat-foaie]`); al foii active, deschis. Simularea spune că e a foii active.
+- **Pe telefon,** pe bandă, capul foii e doar numele ei, pe un rând; nota stă în capul din fișe.
+- **Ce nu se judecă:** riscul unui exterior al unei piese comune (rândul ei e pe foaia de început) față de o piesă din
+  interiorul lui pusă doar pe o foaie de după. Riscul e un avertisment, nu o regulă a programului.
+- **Probele:** `test/unit/export.grupeFoi.test.ts` (3, pe hârtie), `ordineExport.test.ts` (+2: rangurile pe foi, despărțirea
+  pe foi), `export.foi.test.ts` (rezumatul fiecărei foi = al foii exportate singure, foaia activă) și
+  `test/e2e/export.toateFoile.spec.ts` (6: lista și fișele pe foi, cu piesa comună o dată și numerele pe foaie; o schimbare pe
+  foaia 1 intră în document, iar arhiva are programul fiecărei foi exportate singure; rezultatul pe foi; greșeala pe altă foaie;
+  „A mea” doar în foaie, cu săgețile, cu tragerea și cu riscul cu numele foii; banda de pe telefon; grosimea foii pe rând).
+  Scrise după cod, deci probate cu otrăvurile. E2e-ul care deschide exportul: 377 / 377; unitarele, 10 734 / 0.
+- **Otrăvurile:** `28.8q.py`, 17 / 17 (12 e2e, 5 unitare). Q12 (tragerea pe altă foaie) scăpase: pe o foaie cu un singur rând,
+  rândul tras în ordinea întreagă se arăta tot pe foaia lui; pe o foaie cu două rânduri, tragerea celui de-al doilea i-ar fi
+  schimbat ordinea. Proba trage acum al doilea rând al foii 2 pe foaia 1.
+- **Mărimea:** pornirea +0 (111,6 kB), totalul +1,7 kB (921,1 / 1 000): bucata ferestrei (rândurile și capetele foilor,
+  rezumatul pe foi) și `grupeFoi`. Programul, documentul (v30) și serverul: neschimbate.
