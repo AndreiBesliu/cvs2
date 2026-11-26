@@ -16225,3 +16225,33 @@ angrenaje […], brațul de macara, barca cu elice”); pornită după unirea lu
 - **Lotul 51 pe test:** `77a036c0` (28.8↑p), publicat pe 26.11 la 18:43 (completul pe `main` 45851263588, verde: unit 10 786 / 0,
   e2e 980 / 980, funcțiile pe emulatoare 136 / 136, paginile 60 / 60; proba de fum, bună). Pe test e tot ce e în `main`.
 - **Documentele:** decizia în `CLAUDE.md`; starea din `docs/linii/principala.md`.
+
+## 2026-11-26 — 16.A↑e-1: freza toroidală în document (v31), în simulare și în oracol; lucrarea o refuză (Model: Claude Opus 5.5)
+
+**Prompt:** cuvântul owner-ului transmis de sesiunea principală (20:16): „Zi-le ca pot continua cu ce urmeaza la fiecare”;
+16.A↑d cere placa 4 tăiată, deci „Pornește 16.A↑e (bila și toroidala, cu CAM, în proiect). Mișcă mașina: oracolul întâi […];
+v31 e ținut pentru tine”. **Started:** 26.11, 20:16, pe `wip/16.A-freze-e`, din `main` `d1ab8ba5`. **Completed:** 26.11,
+21:35 (în container; completul pe ramură, după push).
+
+- **ADR 0303 propus:** bila și toroidala în proiect, pe sub-felii (e-1 documentul, simularea, oracolul și refuzul lucrării;
+  e-2 elicea; e-3 canelura și intrarea în proiect; e-4 buzunarul; e-5 profilul pe o parte), cu cinci întrebări pentru owner.
+- **Simularea întâi** (`5c60b1d`): oracolul simulării cu toroidala (h(r) pe hârtie, panta utilă, refuzul razei), apoi nucleul:
+  felul 3 al siluetei, raza la o adâncime, linia înclinată prin înjumătățirea derivatei funcției convexe m·s + h(√(s² + p²))
+  (64 de pași, doar + − × ÷ √: aceeași amprentă în Node și în browser); `program.ts` refuză raza în afara (0, Ø / 2) și elicea.
+  Proba: nucleul față de oracol pe plonjări, linii, rampe care coboară și care urcă, arce, cu martorul bilei (cade); h, secțiunea
+  canelurii și axa rampei pe hârtie.
+- **Documentul v31** (`60ba0c0`; anunțat sesiunii principale de îndată): forma `{ tip: 'toroidala', raza }`, 0 < raza < Ø / 2;
+  migrarea v30 → v31 refuză un v30 cu toroidală; oracolul documentului (secțiunea v31, T01–T07, RT0–RT10); corpusul de aur
+  (`854ddf9`): canelura cu o toroidală Ø6 r1 în v31, `ISTORIE` v30 pe părintele ușii (aceiași octeți), ieșirile v1–v30 doar cu
+  numărul schimbat. Probele care țin versiunea curentă, mutate pe v31 (ca la v30: lanțurile oracolului, „schema mai nouă” 32;
+  proba plăcii 18 cere acum `VERSIUNE_SCHEMA`).
+- **Lucrarea** refuză toroidala pe orice operație și pe orice freză a ei, cu forma, T-ul și calea în motiv; fereastra exportului
+  nu face rând unei operații cu o freză pe care copia ei n-o poartă (`operatieCuRand`): altfel Exportă ar fi scris o plată în
+  locul toroidalei. Panoul o numește. Programul de azi rămâne octet cu octet (corpusul CAM, plăcile, atelierele).
+- **Porțile locale:** tipurile (și ale funcțiilor), regulile de import, licențele, traducerile (1 223, 0 lipsă), suita unitară
+  10 823 de teste (singura cădere, proba plăcii 18 cu v30 scris, reparată: 2 / 2), build-ul determinist. Mărimea: pornirea
+  111,6 kB (+0), cu ușa 116,9 (+0,1), cu Atelierul 117,2 / 125 (+0,1), totalul 924,1 / 1 000 (+1,1; ținta din ADR era +1),
+  contul 30,2 / 32 (neschimbat).
+- **Otrăvurile** (`test/otravuri/16.A-e1.py`, într-o clonă): 23 / 24 prinse; S07 (capătul greșit când derivata e pozitivă de
+  la început) practic echivalentă: ramura contează doar cu începutul mutării ca minim, socotit corect de mutarea dinainte.
+- **Nimic pe server.** Bila nu s-a schimbat (rămâne doar la finisarea reliefului).
