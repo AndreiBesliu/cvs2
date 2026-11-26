@@ -16,10 +16,11 @@ unite în `main` pe 25.11 (`9815527f`); 3.Ce (punctele de prindere și „Se pri
 (piesele rotunde pe același ax în „Modelul”; 18.33.0), unită în `main` pe 25.11 (`f5cf10c8`, PR-ul
 `AndreiBesliu/cvs2#45`). 3.Cf-1 (alipirea la prinderi, cu piesele legate; 18.34.0), gata pe ramură pe 25.11, neunită
 (PR-ul `AndreiBesliu/cvs2#46`). **Decorațiunile de Crăciun (ADR 0285, cerute de owner pe 25.11 și acceptate cu
-recomandările, 1a–4a): 3.Cl-1 (fulgul, steaua și brăduțul, în fila nouă „Crăciun”; 18.35.0), gata pe ramură pe 25.11.**
-Urmează 3.Cl-2 (globul, relieful pe două înălțimi), 3.Cl-3 (ornamentul cu nume), 3.Cl-4 (brăduțul LEGO); apoi 3.Cf-2
+recomandările, 1a–4a): 3.Cl-1 (fulgul, steaua și brăduțul, în fila nouă „Crăciun”; 18.35.0), unită în `main` pe 26.11
+(`41b1fb6f`, PR-ul `AndreiBesliu/cvs2#50`); 3.Cl-2 (globul; 18.36.0), gata pe ramură pe 25.11.**
+Urmează 3.Cl-3 (ornamentul cu nume), 3.Cl-4 (brăduțul LEGO); apoi 3.Cf-2
 (orientarea pe trei axe, pozițiile la jumătate de pas); 3.Ck așteaptă tipărirea bilei și a cupei.** Versiunea
-următoare a pachetului: 18.36.0._
+următoare a pachetului: 18.37.0._
 
 ## Numerele liniei
 
@@ -46,7 +47,7 @@ următoare a pachetului: 18.36.0._
 | 3.Ci | Construcțiile gata (șasiul, cutia de angrenaje, brațul de macara, barca cu elice) | după Model (răspunsul 3a) |
 | 3.Cj | Melcul, cama și manivela, cadrul, roata cu palete | pe bucăți: 3.Cj-1, cama, 3.Cj-2, roata cu palete, 3.Cj-3, cadrul, și 3.Cj-4, șurubul melc: gata (25.11) |
 | 3.Ck | Balamaua și placa turnantă | despărțite de 3.Cd; după ce owner-ul încearcă primele piese pe imprimantă |
-| 3.Cl | Decorațiunile de Crăciun (ADR 0285) | 3.Cl-1 (fulgul, steaua, brăduțul), gata (25.11); 3.Cl-2 (globul, relieful pe două înălțimi), 3.Cl-3 (ornamentul cu nume), 3.Cl-4 (brăduțul LEGO), urmează |
+| 3.Cl | Decorațiunile de Crăciun (ADR 0285) | 3.Cl-1 (fulgul, steaua, brăduțul) și 3.Cl-2 (globul, relieful pe două înălțimi), gata (25.11); 3.Cl-3 (ornamentul cu nume), 3.Cl-4 (brăduțul LEGO), urmează |
 
 ## 3.Ca, gata (24.11, în cloud): conectorul perpendicular
 
@@ -253,6 +254,32 @@ următoare a pachetului: 18.36.0._
 - **Un cuvânt cu alt sens în altă parte își ia contextul:** „Gol” era „Empty”; miezul gol e `tr("Gol", "miez")`,
   „Hollow”.
 - **Rândul din indexul ADR are patru celule** (a patra: etapa și starea): cu trei, build-ul se oprește.
+
+## 3.Cl-2, gata (25.11, în cloud): globul (ADR 0285)
+
+- **Unde e:** motorul, după `brad`: `GLOB_CATE`, `globCote`, `modelGlob` (formele modelului, în cercul dinăuntru) și
+  `globCraciun` (în `TIPURI`, sub numele `glob`: `glob` e, în motor, numele obiectului global); atelierul:
+  `stare.glob`, `CATE_GLOB`, `PICTOGRAME`, `numeDef`, `defCurenta`, editorul (`at-gl-…`).
+- **Datele piesei:** în ADR 0285, „Implementat (3.Cl-2)”.
+- **Probele:** `test/unit/trenulet.glob.test.ts`, `test/e2e/trenulet.glob.spec.ts`; uneltele „de pe hârtie”, comune cu
+  ale lui 3.Cl-1, în `test/unit/ajutor-craciun.ts`; otrăvurile, `test/otravuri/3.Cl-2.py` și `3.Cl-2-en.py`.
+
+### Reguli și capcane (3.Cl-2)
+
+- **Arcele mari se fac din laturi fine.** `aplatizeaza` împarte orice arc ca pe un cerc de 48 de laturi; la un disc de
+  60 mm, abaterea era de 0,06 mm (a arătat-o comparația punct cu punct, la marginea de 0,04), iar la 120 mm laturile
+  aveau aproape 8 mm. Decorațiunile cheamă `aplatizeaza(…, laturiFine)` (săgeata de cel mult 0,02 mm); sub raza de
+  9 mm iese același număr de laturi, deci piesele de dinainte nu se schimbă.
+- **Un nume de tip care e deja nume în motor:** funcția se numește altfel (`globCraciun`) și intră în `TIPURI` cu cheia
+  tipului (`glob: globCraciun`).
+- **Un număr care ține de altă alegere e arătat în marginile ei, dar rămâne ținut minte cum l-a scris omul:** cele 5
+  dungi se văd ca 3 zigzaguri, iar întoarcerea la dungi dă înapoi 5. În margini îl aduce `defCurenta` (prin
+  `globCote`), deci piesa nu primește avertisment; o aducere în margini și în editor era de prisos (a arătat-o o
+  otravă scăpată) și a fost scoasă.
+- **Relieful stă peste disc ca un corp al lui, intrat 0,01 mm:** două corpuri închise, fără muchii comune; proba cere
+  discul întreg dedesubt și doar modelul deasupra.
+- **O piesă nouă într-o filă mută ancorele listei feliei dinainte** (rândul familiei din `FAMILII`, un text la fel în
+  alt editor): se caută cu comparația față de `main` și se aduc la zi în aceeași felie.
 
 ## Reguli și capcane (de la 3.Ca–3.Cj)
 

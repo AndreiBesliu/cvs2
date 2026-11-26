@@ -18,6 +18,12 @@
       ],
       "noutati": [
         {
+          "versiune": "18.36.0",
+          "data": "2026-11-25",
+          "ro": "În fila „Crăciun”, globul: un disc cu căpăcel și inel, cu dungi, zigzag sau stele, decupate ori în relief (pentru două culori, cu înălțimea la care schimbi filamentul), sau două discuri cu fante, îmbinate în cruce.",
+          "en": "In the Christmas tab, the bauble: a disc with a cap and a ring, with stripes, zigzags or stars, cut out or raised (for two colours, with the height at which to change the filament), or two slotted discs joined crosswise."
+        },
+        {
           "versiune": "18.35.0",
           "data": "2026-11-25",
           "ro": "O filă nouă, „Crăciun”: fulgul de zăpadă (șase gata făcuți și „Alt fulg”), steaua (plină, contur sau în relief) și brăduțul (de agățat sau în picioare, din două plăci îmbinate). Plate, cu inelul lor, tipărite fără suport.",
@@ -160,8 +166,8 @@
           }
         }
       ],
-      "versiune": "18.35.0",
-      "continut": "7f4e9ca89462deae515aed93993934b65b1c8acfd4d9d0de446e31ccfa8ceaec"
+      "versiune": "18.36.0",
+      "continut": "3ba6dc1556d226901f620247ef69571c72c22a696ec1671a1cb95507d0461489"
     }
   ]
 }

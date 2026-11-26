@@ -115,7 +115,8 @@ o('M71', LG, 'else { ag = "inel"; avert.push(tr("Vârful bradului e prea îngust
 o('M72', LG, 'agatatoare = fel === "picioare" || d.agatatoare === "fara" ? "fara" : d.agatatoare === "gaura" ? "gaura" : "inel";', 'agatatoare = d.agatatoare === "fara" ? "fara" : d.agatatoare === "gaura" ? "gaura" : "inel";', 'craciun', 'bradul în picioare își ține agățătoarea în cote')
 
 # --- atelierul: fila, cei gata făcuți, „Alt fulg”
-o('A01', AT, '["craciun", "Crăciun", [["fulg", "Fulg de zăpadă"], ["stea", "Stea"], ["brad", "Brăduț"]]]', '["craciun", "Crăciun", [["stea", "Stea"], ["fulg", "Fulg de zăpadă"], ["brad", "Brăduț"]]]', 'e2e', 'steaua, înaintea fulgului în galerie')
+# (din 3.Cl-2, rândul familiei are și globul: ancora ține doar începutul lui)
+o('A01', AT, '["craciun", "Crăciun", [["fulg", "Fulg de zăpadă"], ["stea", "Stea"],', '["craciun", "Crăciun", [["stea", "Stea"], ["fulg", "Fulg de zăpadă"],', 'e2e', 'steaua, înaintea fulgului în galerie')
 o('A02', AT, '["Steluță", { ramuri: 1, unghi: 45,', '["Steluță", { ramuri: 1, unghi: 50,', 'e2e', '„Steluță”, cu ramurile la 50°')
 o('A03', AT, 'lungime: 40, miez: "gol", linie: 1.6 }],', 'lungime: 40, miez: "gol", linie: 1.8 }],', 'e2e', '„Dantelă”, cu linia de 1,8')
 o('A04', AT, '["Simplu", { ramuri: 0,', '["Simplu", { ramuri: 1,', 'e2e', '„Simplu”, cu o pereche de ramuri')
@@ -161,7 +162,8 @@ o('A37', AT, 'camp("#at-st-interior", 30, 75, v => { p.interior = Math.round(v);
 o('A38', AT, '[["50", "50 mm"], ["80", "80 mm"], ["120", "120 mm"]]', '[["50", "50 mm"], ["80", "80 mm"], ["100", "120 mm"]]', 'e2e', '„120 mm” face un brad de 100')
 o('A39', AT, '${picioare ? "" : `<div class="at-rand"><span class="mic">Agățătoarea:</span>${seg("at-bd-ag"', '${false ? "" : `<div class="at-rand"><span class="mic">Agățătoarea:</span>${seg("at-bd-ag"', 'e2e', 'agățătoarea e oferită și bradului în picioare')
 o('A40', AT, 'A doua placă se oprește la ${fmt(q.taiat)} mm,', 'A doua placă se oprește la ${fmt(q.inaltime)} mm,', 'e2e', 'rândul bradului scrie înălțimea întreagă pentru a doua placă')
-o('A41', AT, 'Fantele au ${fmt(q.fanta, 2)} mm:', 'Fantele au ${fmt(q.grosime, 2)} mm:', 'e2e', 'rândul bradului scrie grosimea în loc de fantă')
+# (din 3.Cl-2, globul din două discuri are un rând la fel: ancora ține și „grosimea plăcii”)
+o('A41', AT, 'Fantele au ${fmt(q.fanta, 2)} mm: grosimea plăcii', 'Fantele au ${fmt(q.grosime, 2)} mm: grosimea plăcii', 'e2e', 'rândul bradului scrie grosimea în loc de fantă')
 o('A42', AT, 'camp("#at-bd-etaje", 2, 6, v => { p.etaje = Math.round(v); });', 'camp("#at-bd-etaje", 1, 9, v => { p.etaje = Math.round(v); });', 'e2e', 'etajele primesc și 1 și 7')
 o('A43', AT, 'alege("#at-bd-repede", v => { p.inaltime = +v; });', 'alege("#at-bd-repede", v => { p.inaltime = +v; p.fel = "agatat"; });', 'e2e', 'mărimea gata întoarce bradul la cel de agățat')
 o('A44', AT, ': tr`Lat de ${fmt(q.lat)} mm la bază.`}', ': tr`Lat de ${fmt(q.latime)} mm la bază.`}', 'e2e', 'rândul bradului scrie procentul în loc de lățime')
