@@ -51,9 +51,9 @@ const aproape = (a: readonly number[], b: readonly number[]) => expect(a.map((x,
 
 test('piesa nouă din fila „Crăciun”: globul Ø60, plat, cu trei dungi decupate, căpăcel și inel', async ({ page }) => {
   await atelier(page);
-  await expect(page.locator('#at-tipuri [data-fila="craciun"]')).toHaveText('Crăciun 4');
-  // globul e ultimul din galerie: piesele stau în ordinea în care au venit
-  await expect(page.locator('#at-galerie button')).toHaveText(['Fulg de zăpadă', 'Stea', 'Brăduț', 'Glob']);
+  await expect(page.locator('#at-tipuri [data-fila="craciun"]')).toHaveText('Crăciun 6');
+  // globul stă după brăduț: piesele sunt în ordinea în care au venit
+  await expect(page.locator('#at-galerie button')).toHaveText(['Fulg de zăpadă', 'Stea', 'Brăduț', 'Glob', 'Ornament cu nume', 'Brăduț LEGO']);
   await expect(page.locator('#at-editor h2')).toHaveText('Glob');
   // înalt: discul (60), căpăcelul (9 % din 60) și inelul (1,9 + 3,1)
   await expect(cote(page)).toContainText('60 × 70,4 × 3 mm');

@@ -15767,3 +15767,77 @@ ordinul în vigoare „unește ce se poate”
   liniei.
 
 **Completed:** 26.11, 06:37.
+
+## 2026-11-26 — Felia 3.Cl-3: ornamentul cu nume (ADR 0285) (sesiune cloud)
+
+**Prompt:** „Mergem cu recomandarile” (răspunsul owner-ului la ADR 0285, în sesiunea liniei; 4a: numele de pe ornament,
+în felia a treia, cu un font propriu dintr-o singură linie)
+**Started:** 25.11, 23:22 (cât rula completul lui 3.Cl-2; local, fără nimic împins). **Completed:** 26.11, 00:55
+(felia, cu otrăvurile; orele, după ceasul containerului).
+
+- **Ce face:** a cincea piesă a filei „Crăciun”, ornamentul cu nume: o etichetă, un glob, o inimă sau o stea, cu un
+  nume scris cu majuscule, cât încape de mare, în relief (pentru două culori), adâncit sau decupat.
+- **Fontul** e al motorului, dintr-o singură linie: 46 de semne din trăsături (linii și arce), îngroșate cu Cavalier,
+  cu capete rotunde; trăsăturile închise dau inele cu ochiul lor; trăsăturile unui semn se unesc.
+- **Potrivirea:** cea mai mare majusculă (din zecime în zecime) a cărei cutie, lărgită cu 2 mm, stă în formă.
+- **Scrisul decupat** are punți la semnele cu ochi; proba cere, pe hârtie, ca lemnul din jurul fiecărui semn să fie
+  legat de margine.
+- **Probele**, scrise întâi (au căzut cu funcțiile lipsă): unitară, 8 teste; e2e, 5 scenarii; proba în engleză din
+  cvs2 trece și prin ornament. Înainte de cod, o sondă aruncată a arătat că îngroșarea iese pentru toate semnele.
+- **Găsit la scris:** Cavalier decalează și unește greșit, fără nicio eroare, un arc de peste o jumătate de cerc
+  (cifra 2; inima cu tija inelului). Arcele se împart în sferturi. Tot atunci: o trăsătură nu se atinge pe ea însăși,
+  iar trăsăturile unui semn diferă cu 2 µm în grosime, ca laturile lor să nu coincidă.
+- **Găsit de o sondă pe multe mărimi** (12 420 de piese: fiecare semn, singur și de opt ori, la 45 de înălțimi, în
+  cele trei feluri de scris): un „S” sau un „3” singur ieșea din etichetă, fiindcă întinderea arcelor lui (tot din
+  Cavalier) era greșită. Reparat (întinderea, pe sferturi), cu proba pe fiecare semn; după reparație, nicio piesă rea.
+- **Rândul de jos al editorului** poartă semnele scrise de om: se pune ca text, nu ca marcaj.
+- **Otrăvurile:** `3.Cl-3.py`, 116 / 116 (114 din 115 la prima rulare: una, prinsă după întărirea probei; a 116-a, adăugată odată cu reparația întinderii semnelor); `3.Cl-3-en.py`, 8 / 8.
+- **Easy 3Draw 18.37.0** (549,0 kB), cu rândul de „ce e nou”. Doar pachetul extensiei se schimbă.
+- **Față de propunere:** fără litere mici, fără al doilea rând, fără brăduțul cu nume (etajele sunt prea înguste).
+- **Îndreptat:** ADR 0285 spunea, la glob, că fereastra Imprimanta din cvs2 poate pune pauza la stratul schimbului;
+  pauza aceea e a pieselor feliate din desen, nu a unui STL: schimbul se pune în programul de feliere.
+- **Documentele:** ADR 0285 („Implementat (3.Cl-3)”), indexul ADR, fișa etapei 3, `docs/linii/atelier.md`, indexul
+  liniilor, `docs/otravuri.md`, `CLAUDE.md`.
+- **Urmează:** 3.Cl-4 (brăduțul LEGO).
+
+## 2026-11-26 — Felia 3.Cl-4: brăduțul LEGO (ADR 0285) (sesiune cloud)
+
+**Prompt:** „Mergem cu recomandarile” (răspunsul owner-ului la ADR 0285, în sesiunea liniei; 1a: după ornamentul cu
+nume vine brăduțul LEGO)
+**Started:** 26.11, 00:52 (local, cât 3.Cl-2 își aștepta unirea). **Completed:** 26.11, 01:50 (felia, cu
+otrăvurile; orele, după ceasul containerului).
+
+- **Ce face:** a șasea piesă a filei „Crăciun”, brăduțul LEGO: etajele (trunchiuri de con cu marginea zimțată, cu
+  patru știfturi sus și locașul lor dedesubt) și steaua de vârf (plată, cu un cui care e o bară de 3,2 mm).
+- **„Fă brăduțul”** pune în listă trunchiul și vârful (piese rotunde 2 × 2 care existau), etajele și steaua.
+- **Motorul:** `bradLegoCote`, `bradLego`, `bradLegoPiese`, `trunchiForme`.
+- **Probele**, scrise întâi (au căzut cu „tip necunoscut”): unitară, 5 teste; e2e, 4 scenarii (au trecut din prima, cu
+  valorile socotite pe hârtie); proba în engleză din cvs2 trece și prin brăduț.
+- **Respinse de proba prinderilor** (a tuturor pieselor atelierului) și refăcute: golul locașului cu 0,15 mm prea larg
+  (știftul era ținut doar de tub) și cuiul pătrat al stelei (declarat „bară”, dar nu era una).
+- **Otrăvurile:** `3.Cl-4.py`, 75 / 75, la prima rulare; `3.Cl-4-en.py`, 8 / 8.
+- **Easy 3Draw 18.38.0** (553,0 kB), cu rândul de „ce e nou”. Doar pachetul extensiei se schimbă.
+- **Față de propunere:** steaua stă cu un cui în știftul gol al vârfului; brăduțul clădit în „Modelul” vine cu 3.Cg.
+- **Documentele:** ADR 0285 („Implementat (3.Cl-4)”), indexul ADR, fișa etapei 3, `docs/linii/atelier.md`, indexul
+  liniilor, `docs/otravuri.md`, `CLAUDE.md`.
+- **Urmează:** 3.Cf-2 (orientarea de mână pe trei axe), la cuvântul owner-ului dacă vrea altă ordine.
+
+## 2026-11-26 — Sesiunea principală în cloud: a patruzeci și opta unire (atelierul Easy 3Draw: 3.Cl-3, ornamentul cu nume; 3.Cl-4, brăduțul LEGO) (Model: Claude Fable 5.2)
+
+**Prompt:** raportul liniei atelierului („3.Cl-3 și 3.Cl-4 gata de unit”, `b71c3c98`), la ordinul în vigoare „unește ce se poate”
+**Started:** 26.11, 05:36. **Completed:** unirea în `main`, 26.11, 06:36; publicarea pe test, lotul 43.
+
+- **Verificat înaintea unirii:** completul liniei (45742415047) și rapidul (45742410323), verzi pe `b71c3c98`; PR-ul #55; fără
+  `.lucru/`. Ramura avea `9c728412`; `main` era la `9edf9ae0` (relieful, cotele, exportul: cod al aplicației), deci unirea și-a
+  făcut completul ei.
+- **Unirea, pe `unire-2611g`** (din `9edf9ae0`): `b71c3c98`, în `474b76fc`. Ciocnirile: DEVLOG (`rezolva-devlog.py`) și
+  `docs/traduceri/roadmap.en.json` (rândul lui 3.Cl-4 și rândul fișei plăcii 18, amândouă păstrate, în ordinea cheilor;
+  1 195 de texte, 0 fără traducere). Local: tipurile, regulile de import (22 / 22), catalogul controalelor (la zi), biblioteca
+  (Easy 3Draw 18.38.0, 553 010 octeți), probele documentelor și ale manualului 76 / 76.
+- **Porțile unirii, în CI, pe `474b76fc`** (citite din jurnalul rulării): completul 45750142136, verde la prima trecere (58 min): unit
+  10 714 / 0 (12 sărite, pe Linux), e2e 937 / 937, funcțiile pe emulatoare 136 / 136, paginile 60 / 60; rapidul 45750143104, verde. Pornirea 111,6 kB
+  (plafonul 125; cu ușa 116,8, cu Atelierul 117,1), totalul 918,7 / 1 000 kB, `/admin` 138,3 / 200, contul
+  30,2 / 32. Nimic pe server.
+- **Completul unirii cotelor singure** (45742512400, pe `67dfb777`), care rula la unirea a patruzeci și șasea: a ieșit și el verde, la 05:46, după 79 de minute (unit 10 693 / 0, e2e 923 / 923, funcțiile pe emulatoare 136 / 136, paginile 60 / 60).
+- **Lotul 42** (`9edf9ae0`: relieful, cotele, exportul) e încă în drum; lotul 43 pleacă după el.
+- **Documentele:** decizia și paragrafele de stare în `CLAUDE.md`; indexul liniilor; starea din `docs/linii/principala.md`.

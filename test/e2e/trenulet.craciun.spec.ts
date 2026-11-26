@@ -51,8 +51,8 @@ const aproape = (a: readonly number[], b: readonly number[]) => expect(a.map((x,
 
 test('fila „Crăciun”: fulgul de zăpadă, steaua, brăduțul și globul; fulgul implicit, Ø70, cu inelul lui', async ({ page }) => {
   await atelier(page, 'fulg', 'Fulg Ø70, ramuri 2 × 60°');
-  await expect(page.locator('#at-tipuri [data-fila="craciun"]')).toHaveText('Crăciun 4');
-  await expect(page.locator('#at-galerie button')).toHaveText(['Fulg de zăpadă', 'Stea', 'Brăduț', 'Glob']);
+  await expect(page.locator('#at-tipuri [data-fila="craciun"]')).toHaveText('Crăciun 6');
+  await expect(page.locator('#at-galerie button')).toHaveText(['Fulg de zăpadă', 'Stea', 'Brăduț', 'Glob', 'Ornament cu nume', 'Brăduț LEGO']);
   await expect(page.locator('#at-editor h2')).toHaveText('Fulg de zăpadă');
   // lat până la capetele ramurilor de pe brațele de la ±30° (63,27); înalt cât diametrul și inelul (70 + 1,9 + 3,1)
   await expect(cote(page)).toContainText('63,3 × 75 × 2,4 mm');
