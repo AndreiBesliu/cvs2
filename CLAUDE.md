@@ -1995,6 +1995,27 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 26.11.2026, seara (a cincizeci și șaptea unire din cloud): **numele elementelor cu virgula limbii (3.Av) și Escape
+  oriunde ar fi focusul, în celelalte șase ferestre (3.Aw), unite în `main`** (sesiunea principală, ramura
+  `unire-2611p`, din `78075223`). Felii ale sesiunii principale, la „Ok, fa-le” al owner-ului (spus după oferta de la
+  20:16), pe ramura `wip/3.Av-virgula-escape`, `2d5b9303`, PR-ul `AndreiBesliu/cvs2#66`, unite în `3e1683f8`.
+  **3.Av** (constatarea 14 a auditului exportului): numele unui element (bara de jos, lista, avertismentele, fereastra
+  exportului, titlul dopului) scrie numerele în română cu virgula zecimală, în engleză cu punct; proba unitară întâi,
+  probele e2e care citeau numele aduse la virgulă (127 de rânduri, în 19 fișiere); otrăvurile 6 / 6. Cotele din panou
+  își păstrează punctul; partea din listă a constatării (numele dat de om, locul pe al doilea rând) rămâne a liniei
+  exportului. **3.Aw** (tiparul găsit la 16.A↑b-7): „Așază pe foi”, Setări, raportul foilor, lucrarea primită,
+  Aspectul, ferestrele extensiilor și întrebarea de la închiderea unei extensii închid acum la Escape și cu focusul
+  căzut pe pagină, prin ascultătorul comun `useEscapeFereastra`; șapte probe noi, roșii pe aplicația dinainte;
+  otrăvurile 8 / 8. Programul, documentul și serverul, neatinse. `main` nu se mișcase, deci **arborele unirii e chiar al
+  lui `2d5b9303`** și a intrat pe porțile lui: completul 45879439214 pe `7dd7b9a8` (codul), verde la prima trecere
+  (60 min): unit 10 789 / 0 (12 sărite, pe Linux), e2e 986 / 986, funcțiile pe emulatoare 136 / 136, paginile 60 / 60;
+  rapidul, verde pe `2d5b9303`; pornirea 111,7 kB (plafonul 125; cu ușa 116,9, cu Atelierul 117,2), **totalul
+  923,3 / 1 000 kB** (+0,3), `/admin` 138,3 / 200, contul 30,2 / 32. Lotul 52, spre test. **Schema:** linia frezelor
+  a luat v31 (16.A↑e-1, forma toroidalei, ADR 0303 propus, pe `wip/16.A-freze-e`), deci **un câmp nou pe altă linie
+  ia v32**. La linii, în lucru: atelierul (3.Ck), exportul (începutul G-code-ului la vedere), frezele (16.A↑e-1, la
+  porți), relieful (rândul editabil, rotunjirea pasului lateral), cotele (cele „mai târziu”). **La owner:** de încercat
+  virgula din numele elementelor și Escape în cele șapte ferestre; brief-urile liniilor fără sesiune; restul listei,
+  neschimbat.
 - 26.11.2026, seara: **liniile pornesc ce urmează la fiecare** („Zi-le ca pot continua cu ce urmeaza la fiecare”, în sesiunea principală, la 20:16, după
   publicarea lotului 51). Sesiunea principală le-a scris celor cinci sesiuni de linie din cloud tot la 20:16, cu ce
   urmează din nota fiecăreia: **atelierul**, 3.Ck (balamaua și placa turnantă, ultima din ADR 0284), cu jocul din
