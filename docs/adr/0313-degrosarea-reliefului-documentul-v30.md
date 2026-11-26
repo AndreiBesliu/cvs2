@@ -62,8 +62,9 @@ Câmpurile necunoscute se păstrează. Câmpul `finisare` pe o degroșare e refu
   - Lângă un perete păstrat, paralel cu liniile, cel mult a plus jumătate de celulă: cu peretele păstrat, liniile stau doar pe
     zona în care freza are voie, de la prima celulă aflată la R + a de margine (găsit la fișa plăcii reliefului: pe tot
     dreptunghiul, prima linie cădea prea aproape de perete, deci nu tăia nimic, iar a doua lăsa o fâșie de până la un pas
-    lateral peste adaos). La capetele liniilor, peretele rămâne exact la a. Cu liniile la un unghi oarecare, între capetele a
-    două linii vecine, la perete, rămâne o scobitură de cel mult R − √(R² − (s / (2 · sin θ))²) peste a.
+    lateral peste adaos). La capetele liniilor, între două linii, capătul rotund al frezei lasă o scobitură de cel mult
+    R − √(R² − (s / 2)²) peste a (pe placă, 0,27); cu liniile la un unghi θ față de perete, cel mult R − √(R² − (s / (2 · sin θ))²).
+    Finisarea le scoate în trecerile ei.
 
 ### 4. Ordinea
 

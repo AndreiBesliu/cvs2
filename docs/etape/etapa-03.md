@@ -83,6 +83,7 @@ implicit n-are dreptul de export, eșecul apare în fila Erori și în Diagnoză
 |---|---|---|
 | Tăierea plăcilor 1 și 2 | 3.5 (transcrierile rejucate pe emulator) și prima felie a etapei | cât mai curând |
 | Placa de contact pentru Z | 3.7b | înainte de 3.7b |
+| Tăierea plăcii reliefului (placa 18), după [fișa ei](https://github.com/AndreiBesliu/cvs2/blob/main/docs/etape/placa-18.md): MDF 18, T1 freza plată Ø6, T2 bila Ø6; cotele „după T1” măsurate înaintea lui T2, apoi cele „după T2”, timpii și `$$` | 18.1↑d (lemnul rămas după degroșare, suprafața față de model, creasta, timpul): relieful pe lemn | când ai bila Ø6 |
 | Pe **live**, înaintea comutării (inventarul de mai jos): bucket-ul `gs://cncvectorstudio-backup` în `us-central1` (îl poate crea asistentul, la cerere); apoi `scripts/wif/pregateste-proiect.sh cncvectorstudio live --pitr` în Cloud Shell (WIF, contul de publicare, contul backup-ului, PITR); mediul GitHub `live` cu **Required reviewers** și doar `main`, cu variabilele tipărite de script (ADR 0044); protecția la ștergere a bazei (recomandată); un export manual chiar înaintea comutării. Pe test: făcut pe 18.10 | 3.9: prima publicare pe live | înainte de 3.9 |
 | Copia locală a aplicației vechi, verificată pe calculatorul de la mașină (decizia 8) | lucrul de zi cu zi după primul live | înainte de 3.9 |
 | Arhivarea repo-ului vechi pe GitHub | 3.9 | la comutare |

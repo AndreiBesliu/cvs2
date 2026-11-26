@@ -1237,6 +1237,10 @@
       "ro": "CAM 3D doar pe câmpul conservativ",
       "en": "3D CAM only on the conservative field"
     },
+    "3d4f847e400557fe": {
+      "ro": "când ai bila Ø6",
+      "en": "when you have the Ø6 ball cutter"
+    },
     "3d64c66453dc43e5": {
       "ro": "**Gata pe 13.11.** Notificările și semnul din bară (ADR 0194, acceptat pe 11.11, grupul 3: „notificările și istoricul”): finalul, oprirea, pauza din fișier (cu nota), lipsa filamentului, o eroare, legătura pierdută, ca notificare a sistemului cât cvs2 e ascuns sau ca bandă în aplicație, cu sunet; semnul pe butonul Imprimanta, în orice aranjament, și procentul în titlul filei; doar citiri; proba pe imprimanta falsă, apoi ghidul pe imprimanta owner-ului",
       "en": "**Done on 13.11.** Notifications and the mark on the bar (ADR 0194, accepted on 11.11, group 3: \"notifications and history\"): the end, the stop, the pause from the file (with its note), running out of filament, an error, a lost connection, as a system notification while cvs2 is hidden or as a banner in the app, with a sound; the mark on the Printer button, in every layout, and the percentage in the tab title; reads only; tested on the fake printer, then with the guide on the owner's printer"
@@ -3693,6 +3697,10 @@
       "ro": "Tăierea plăcilor 1 și 2",
       "en": "Cutting plates 1 and 2"
     },
+    "c6cb2a8ffbf91fa1": {
+      "ro": "18.1↑d (lemnul rămas după degroșare, suprafața față de model, creasta, timpul): relieful pe lemn",
+      "en": "18.1↑d (the wood left after roughing, the surface against the model, the crest, the time): the relief on wood"
+    },
     "c6fc577354dc6e02": {
       "ro": "**Placa și stratul viu** (fără imprimantă; ADR 0193, acceptat cu recomandările, „Da, recomandările”, apoi „Da, 3.6q”; în worktree-ul `imprimanta`). În fereastra Imprimanta, cât imprimă: **placa** (patul de sus, cu piesele, piesa de acum, cele anulate, duza și stratul de acum peste cel de dedesubt), bara straturilor cu pauzele, lista pieselor cu numele din cvs2, pauza fișierului cu nota ei. Stratul, din filamentul folosit (K1C amestecă două numărători), cu numărul imprimantei luat doar aproape de el; fișierele trimise din cvs2, ținute în browser (ultimele 5) ca să li se poată desena straturile. Driverul K1 citește piesele, poziția duzei și filamentul; imprimanta falsă „imprimă” fișierul primit. **Probe:** pe hârtie (`imprimanta.placa.test.ts`, sesiunea, driverul), două e2e; otrăvurile 45 / 45 (35 pe probele unitare, 10 prin e2e; U06 a scăpat întâi, prinsă după ce proba verifică nota pauzei fără reîncercări; U07, prinsă întâi de proba 3.6h). **Mărimea:** totalul 579,7 / 600 kB (+4,8), pornirea 102,0. Proba pe imprimanta owner-ului: ghidul, pasul 7.",
       "en": "**The plate and the live layer** (no printer; ADR 0193, accepted with the recommendations, \"Da, recomandările\", then \"Da, 3.6q\"; in the `imprimanta` worktree). In the Printer window, while printing: **the plate** (the bed from above, with the parts, the current part, the cancelled ones, the nozzle and the current layer over the one below), the layer bar with the pauses, the list of parts with their cvs2 names, the file pause with its note. The layer comes from the filament used (the K1C mixes two counters), with the printer's number taken only close to it; files sent from cvs2 are kept in the browser (the last 5) so their layers can be drawn. The K1 driver reads the parts, the nozzle position and the filament; the fake printer \"prints\" the file it receives. **Tests:** on paper (`imprimanta.placa.test.ts`, the session, the driver), two e2e; poisons 45 / 45 (35 on the unit tests, 10 through e2e; U06 escaped at first, caught once the test checks the pause note without retries; U07 caught first by the 3.6h test). **Size:** total 579.7 / 600 kB (+4.8), start-up 102.0. The test on the owner's printer: the guide, step 7."
@@ -4216,6 +4224,10 @@
     "e4b3470c17d3b5d4": {
       "ro": "Degajările aceleiași bucle, rămase din etapa 2",
       "en": "Same-loop corner relief, left over from stage 2"
+    },
+    "e4fb507fee6cac0f": {
+      "ro": "Tăierea plăcii reliefului (placa 18), după [fișa ei](https://github.com/AndreiBesliu/cvs2/blob/main/docs/etape/placa-18.md): MDF 18, T1 freza plată Ø6, T2 bila Ø6; cotele „după T1” măsurate înaintea lui T2, apoi cele „după T2”, timpii și `$$`",
+      "en": "Cutting the relief plate (plate 18), following [its sheet](https://github.com/AndreiBesliu/cvs2/blob/main/docs/etape/placa-18.md): MDF 18, T1 the Ø6 flat cutter, T2 the Ø6 ball; the “after T1” dimensions measured before T2, then the “after T2” ones, the times and `$$`"
     },
     "e52e7a353bd48966": {
       "ro": "**Căutarea peste toate filele atelierului** (3.Tp↑a din ADR 0281, fără întrebare; worktree-ul `galeria`, ramura `wip/3.Tp-galeria-pe-file`; „da si vreau sa pornesti si restul worktrees”). „Caută o piesă”, lângă file (pe telefon, pe un rând al lui): la fiecare literă, galeria arată piesele găsite din toate familiile, în ordinea filelor; fiecare cuvânt căutat începe un cuvânt din numele de pe ecran, fără diacritice și fără majuscule („con”: Rotund / con, Bucșă / conector, Roată conică, Conică dublă). Alegerea deschide piesa cu fila ei, iar rezultatele rămân; Enter alege prima, Escape sau o filă întorc galeria familiei. Pachetul 18.17.0 (3.To, cu 18.16.0, adusă în ramură înaintea unirii). E2e 4, otrăvuri 21 / 21. Urmează 3.Tp↑b (pictogramele).",
