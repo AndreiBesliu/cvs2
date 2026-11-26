@@ -37,8 +37,9 @@ o('E01', DES, "    <g className=\"cota\" data-cota={id} data-aprinsa={c.aprins.i
 o('E02', DES, "onClick={() => { onColt(k); }}>", "onClick={() => { void k; }}>", 'e2e', 'clicul pe un colț din desen nu-l alege')
 o('E03', DES, "  const ext = fel === 'exterior', orar = ext ? urcare : !urcare;", "  const ext = fel === 'exterior', orar = urcare;", 'e2e',
   'gaura la urcare desenată orar (piesa ar ieși în stânga)')
-o('E04', DLG, '  useLayoutEffect(() => { rezervaExplicatii(panou.current); });', '  useLayoutEffect(() => {});', 'e2e',
-  'caseta explicației nu-și ține înălțimea: bifa fuge de sub cursor')
+# Mutată pe codul din 28.8↑l (26.11: același efect leagă și descrierile câmpurilor); aceeași greșeală.
+o('E04', DLG, '  useLayoutEffect(() => { rezervaExplicatii(panou.current); legaDescrierile(panou.current); });',
+  '  useLayoutEffect(() => { legaDescrierile(panou.current); });', 'e2e', 'caseta explicației nu-și ține înălțimea: bifa fuge de sub cursor')
 o('E05', CSS, '  box-sizing: border-box;\n  align-self: start;\n  margin: 0;\n  padding: var(--sp-2) var(--sp-3);', '  align-self: start;\n  margin: 0;\n  padding: var(--sp-2) var(--sp-3);', 'e2e',
   'înălțimea măsurată pe o copie mai lată (paddingul în afara lățimii)')
 o('E06', DES, '      : centreUrechiDesen(mod as LocuriUrechiDesen, N, [w, h, w, h]);', '      : centreUrechiDesen(mod as LocuriUrechiDesen, N, [h, w, h, w]);', 'e2e',

@@ -15886,3 +15886,24 @@ otrăvurile; orele, după ceasul containerului).
 - **Documentele:** ADR 0284 („Implementat (3.Cf-2)”), fișa etapei 3, `docs/linii/atelier.md`, indexul liniilor,
   `docs/otravuri.md`, `CLAUDE.md`.
 - **Urmează:** 3.Cg (verificarea), la cuvântul owner-ului dacă vrea altă ordine.
+
+## 2026-11-26 — Linia exportului: 28.8↑l, tastatura și cititorul de ecran în fereastra exportului (ADR 0291)
+
+**Prompt:** confirmarea sesiunii principale („28.8↑k e în `main` … Poți porni 28.8↑l, cu `main` (`1d9671d3`) adus întâi”), la
+ordinul în vigoare „unește ce se poate”
+**Started:** 26.11, 07:38.
+
+- **Focusul (constatarea 13):** un rând al listei și „Du-mă la …” al unui refuz duc focusul pe titlul fișei; Tab merge apoi în
+  câmpurile ei (de pe rândul dreptunghiului, un Tab, nu 19).
+- **Ordinea grupului:** titlul înaintea explicației în DOM, așezarea a grilei; pe telefon, titlul deasupra explicației.
+- **Descrierile:** fiecare câmp, descris de explicația întreagă a grupului și de greșelile lui (`legaDescrierile`).
+- **Anunțurile:** `aria-live` doar pe greșeli.
+- **Telefonul culcat (640 × 360):** banda listei pe un rând; fișelor le rămân 150 px, nu 80.
+- **Probele:** `export.tastatura.spec.ts` (2) și telefonul culcat în privire, scrise întâi și văzute căzând; e2e-ul care
+  deschide exportul, 193 / 193.
+- **Otrăvurile:** `28.8l.py`, 13 / 13 (L06 scăpase: proba cere acum și locul titlului); E04 din `28.8b.py`, mutată, prinsă.
+- **Mărimea:** pornirea +0 (111,6 kB), totalul 919,5 / 1 000 (+0,3 kB).
+- **Documentele:** ADR 0291 („Implementarea 28.8↑l”), manualul (ambele limbi), fișa etapei 3, registrul otrăvurilor, nota
+  liniei.
+
+**Completed:** 26.11, 08:07.

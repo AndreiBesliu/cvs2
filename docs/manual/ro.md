@@ -1836,7 +1836,8 @@ care). Fereastra are trei părți:
   taie, fiecare cu ce taie, freza și adâncimea; după export, și **Rezultatul**, cu timpul estimat și câte avertismente are (un
   punct colorat, dacă are). Fișa lui are, în ordine: **De văzut înainte de tăiere** (avertismentele, doar când sunt), **Fișierele**
   (cu **Deschide în Mașina**), **Rezumatul jobului** și **Simularea**. Un clic aduce sus fișa aleasă; cât derulezi,
-  lista marchează fișa la care ai ajuns. Pe un ecran îngust, lista stă sus, pe un rând care se derulează, cu ordinea tăierii
+  lista marchează fișa la care ai ajuns. Din tastatură, Enter pe un rând duce focusul pe titlul fișei, iar Tab merge apoi
+  în câmpurile ei; un cititor de ecran spune la fiecare câmp explicația grupului lui, întreagă, și greșelile lui. Pe un ecran îngust, lista stă sus, pe un rând care se derulează, cu ordinea tăierii
   la capăt; cu **Butoane mari** (vezi [Aspectul](#aspect)), câmpurile și bifele ferestrei au și ele ținta mare;
 - **fișele**, în dreapta, una sub alta. Fiecare are câmpurile grupate pe întrebări (Ce tăiere, Freza, Cât de adânc, Sensul de
   tăiere, Rampa, Intrările, Colțurile, Urechile; la un buzunar, Cum golește, Cum coboară, Frezele de rest; la un V-carve,

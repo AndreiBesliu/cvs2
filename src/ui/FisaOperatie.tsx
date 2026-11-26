@@ -862,7 +862,7 @@ export function FisaOperatie({ cheie, loc, c: ctx }: { readonly cheie: string; r
   };
   return (
     <section className="dx-fisa" data-fisa="op" data-operatie={o.cheie} key={o.cheie}>
-      <h3>{o.descriere}</h3>
+      <h3 tabIndex={-1}>{o.descriere}</h3>
       <p className="dx-loc">{t('export.fisa.loc', { n: loc + 1, total })}</p>
       {grupuri.map((g) => { const c = corp(g); return c === null ? null : grup(g, o.cheie, c, aici(g), desen(g)); })}
       {/* O greșeală al cărei grup nu e pe fișă (o bifă rămasă de la alt fel de tăiere) se spune la capăt, nu se pierde. */}

@@ -54,14 +54,15 @@ export function FisaFinisare({ fin, loc, total, f }: {
   const deg = fin.fel === 'degrosare';
   return (
     <section className="dx-fisa" data-fisa="op" data-operatie={fin.cheie} data-fel={fin.fel}>
-      <h3>{fin.descriere}</h3>
+      <h3 tabIndex={-1}>{fin.descriere}</h3>
       <p className="dx-loc">{t('export.fisa.loc', { n: loc + 1, total })}</p>
+      {/* Titlul grupului înaintea explicației, ca la fișa unei operații (28.8↑l). */}
       <div className="dx-grup">
+        <h4>{t(deg ? 'export.degrosare.titlu' : 'export.finisare.titlu')}</h4>
         <div className="dx-stanga">
           <p className="dx-explicatie" data-testid="finisare-nota">{t(deg ? 'export.degrosare.nota' : 'export.finisare.nota')}</p>
         </div>
         <div className="dx-campuri">
-          <h4>{t(deg ? 'export.degrosare.titlu' : 'export.finisare.titlu')}</h4>
           <dl className="dx-citire">
             {rand(t('export.finisare.freza'), t('export.finisare.freza.valoare', {
               t: String(fin.scula.numar), d: f(fin.scula.diametru), forma: formaFinisareText(fin.scula, f),
