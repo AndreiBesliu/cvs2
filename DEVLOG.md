@@ -16152,3 +16152,15 @@ angrenaje […], brațul de macara, barca cu elice”); pornită după unirea lu
 - **Mărimea:** Easy 3Draw 18.42.0, 576,4 kB (era 567,9); aplicația, neschimbată. Nimic pe server.
 - **Documentele:** ADR 0284 („Implementat (3.Ci)”), nota liniei, indexul liniilor, fișa etapei 3, registrul
   otrăvurilor, `CLAUDE.md`, traducerile roadmap-ului.
+
+## 2026-11-26 — Sesiunea principală în cloud: loturile 48 și 49 pe test (Model: Claude Opus 5.5)
+
+**Prompt:** publicările loturilor 48 și 49, pornite la unirile a cincizeci și treia și a cincizeci și patra
+**Started:** 26.11, 13:14. **Completed:** 26.11, 15:29.
+
+- **Lotul 48 pe test:** `77bf8ceb` (28.8↑q), publicat pe 26.11 la 14:20 (completul pe `main` 45808757348, verde: unit 10 752 / 0,
+  e2e 967 / 967, funcțiile pe emulatoare 136 / 136, paginile 60 / 60; proba de fum, bună).
+- **Lotul 49 pe test:** `e84651e3` (3.Ch), publicat pe 26.11 la 15:27 (completul pe `main` 45818672800, verde: unit 10 762 / 0,
+  e2e 975 / 975, funcțiile pe emulatoare 136 / 136, paginile 60 / 60, citite din jurnalul rulării; proba de fum, bună). Pe test
+  e tot ce e în `main`.
+- **Documentele:** decizia în `CLAUDE.md`; starea din `docs/linii/principala.md`.

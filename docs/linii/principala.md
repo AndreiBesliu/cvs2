@@ -155,8 +155,10 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
 
 ## Starea pe 26.11.2026, după-amiaza (după a cincizeci și patra unire din cloud)
 
-- **Pe test:** `3e9d3d9c` (lotul 47: 3.Cg, verificarea din „Modelul”, Easy 3Draw 18.40.0; publicat pe 26.11 la
-  13:13, cu serverul neschimbat; completul pe `main` 45798312781, verde; proba de fum, bună). Înainte: `a2e5bfdf`
+- **Pe test:** `e84651e3` (lotul 49: 3.Ch, construcțiile cu nume din „Modelul”, Easy 3Draw 18.41.0; publicat pe
+  26.11 la 15:27, cu serverul neschimbat; completul pe `main` 45818672800, verde; proba de fum, bună). Înainte:
+  `77bf8ceb` (lotul 48: 28.8↑q, „Toate foile” cu operațiile fiecărei foi, cu titlurile grupurilor în română), pe
+  26.11 la 14:20; `3e9d3d9c` (lotul 47: 3.Cg, verificarea din „Modelul”, Easy 3Draw 18.40.0), la 13:13; `a2e5bfdf`
   (lotul 46: 28.8↑l, tastatura și cititorul de ecran în fereastra exportului), pe 26.11 la 11:25; `1a577464` (lotul 45: 3.Cf-2, răsturnările și jumătățile de pas în „Modelul”, Easy 3Draw 18.39.0), pe 26.11 la
   10:42; `1d9671d3` (lotul 44: 28.8↑k, curățenia vizuală a ferestrei exportului), la 08:56; `c1d1c81d` (lotul 43: 3.Cl-3 și 3.Cl-4, ornamentul cu nume și brăduțul LEGO, Easy 3Draw 18.38.0), pe 26.11 la
   07:46; `9edf9ae0` (lotul 42: 18.1↑d, degroșarea reliefului, cu documentul v30, și fișa plăcii 18; 10.4↑d-2 și
@@ -165,9 +167,7 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
   04:35; `7a754885` (lotul 40: 28.8↑i, viteza ferestrei exportului), la 03:15; `554b72cb` (lotul 39: 3.Cl-1, decorațiunile de Crăciun, Easy 3Draw 18.35.0), la 01:43; `c9911c14` (lotul 38: 3.Cf-1,
   alipirea la prinderi în vederea „Modelul”, Easy 3Draw 18.34.0), pe 25.11 la 23:28; `5649067c` (lotul 37: 16.A↑b-7, Escape în „Frezele mele”; 18.1↑c, finisarea reliefului, cu documentul
   v29; 28.8↑h, fereastra exportului „pe hârtie”), pe 25.11 la 22:23; `75bcf3fb` (lotul 36: „Pune-o înapoi în
-  bibliotecă”, cotele ca DIMENSION), la 20:54. **În `main`, nepublicate încă:** 28.8↑q, „Toate foile” cu operațiile
-  fiecărei foi, cu titlurile grupurilor în română (`d3da8953`), unită pe 26.11 la 13:05: în drum, lotul 48; 3.Ch,
-  construcțiile cu nume din „Modelul”, Easy 3Draw 18.41.0 (`3bf86d15`), unită la 14:12: lotul 49, după el.
+  bibliotecă”, cotele ca DIMENSION), la 20:54. **Pe test e tot ce e în `main`.**
 - **Modelul:** din 26.11, la prânz, sesiunea principală merge pe Opus („o sa folosim Opus de aici in colo”); sesiunile
   liniilor își păstrează modelul până îl schimbă owner-ul în fiecare.
 - **`main`, din cloud:** pe 23.11: 3.Tq (`0ae9c6c1`); 11.3↑e și A.4 (`ddaa7ead`); 3.Tr, unită de linia elicelor
@@ -251,7 +251,7 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
 - **La owner:**
   - constatarea 14 a auditului exportului (numele elementelor cu virgulă în română, `src/app/descriereElement.ts`):
     o felie mică a sesiunii principale, nepornită;
-  - de încercat „Toate foile” în fereastra exportului, pe un proiect cu mai multe foi (lotul 48);
+  - de încercat „Toate foile” în fereastra exportului, pe un proiect cu mai multe foi (pe test din 26.11, 14:20);
   - „cine unește în `main`” (recomandarea: doar sesiunea principală; pe 23–24.11, biblioteca și frezele au scris întâi
     aici, iar felia era deja în lot: unirea a rămas aici);
   - proba pe mașină a centrului foii ca origine XY0 (28.8↑o): zero-ul în mijlocul foii, întâi în aer;
