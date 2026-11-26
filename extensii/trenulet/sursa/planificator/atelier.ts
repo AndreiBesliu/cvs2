@@ -136,6 +136,8 @@ var Atelier3D = (function () {
     // forma trimisă din desenul cvs2 (ADR 0166): doar contururile închise; câte erau deschise și refuzul, pentru om
     dinCvs2: { contururi: [] as [number, number][][], grosime: 3.2, deschise: 0, refuz: "" },
   };
+  /** Câmpurile editorului de la pornire (înaintea celor ținute minte): de aici își completează piesele construcțiile gata. */
+  const STARE0: typeof stare = JSON.parse(JSON.stringify(stare));
   // Piesele pe familii (ADR 0281): o singură tabelă, din care se fac filele de sus și galeriile de sub ele. Fiecare tip al
   // motorului stă într-o singură familie, afară de „dinCvs2”, care are fila lui (o probă unitară o cere, cu `Lego.tipuri`);
   // „placaTechnic” nu e un tip, ci o formă gata a cărămizii (o placă 2 × 6 cu găuri), deschisă în editorul ei. „Din cvs2” și
@@ -505,12 +507,12 @@ var Atelier3D = (function () {
     for (const b of rotite) if (out.every(([v]) => Math.abs(((b[0] - v) % 360 + 540) % 360 - 180) >= 90 - 1e-6)) out.push(b);
     return out;
   }
-  function defCurenta(tip: string = stare.tip): Def {
-    // copia JSON a câmpurilor editorului (al piesei de pe ecran sau al altui tip): netipizată (din JSON.parse), ca în stocare;
-    // ce iese din ea se verifică la motor
+  function defCurenta(tip: string = stare.tip, sursa?: object): Def {
+    // copia JSON a câmpurilor editorului (al piesei de pe ecran sau al altui tip; cu `sursa`, ale ei): netipizată (din
+    // JSON.parse), ca în stocare; ce iese din ea se verifică la motor
     const t = tip as Exclude<keyof typeof stare, "tip"> | "calibrare";
     if (t === "calibrare") return { tip: "calibrare" };
-    const p = JSON.parse(JSON.stringify(stare[t]));
+    const p = JSON.parse(JSON.stringify(sursa ?? stare[t]));
     if (t === "caramida") {
       const minI = Math.min(...p.celule.map((c: number[]) => c[0])), minJ = Math.min(...p.celule.map((c: number[]) => c[1]));
       // doar gaurile care au material de jur imprejur; cele laterale doar la o caramida dreapta 1 x n
@@ -2168,6 +2170,46 @@ var Atelier3D = (function () {
     a.nume = v ? Lego.numeLiber(constructii.filter(x => x !== a).map(numeC), v) : "";
     dupaModel();
   }
+  // --- construcțiile gata (ADR 0284, 3.Ci): felul ales și valorile fiecăruia țin de fereastra deschisă (nu se țin minte)
+  type ValoriGata = Record<string, number | string>;
+  const gata: { fel: string; deschis: boolean; valori: Record<string, ValoriGata> } = { fel: "sasiu", deschis: false, valori: {
+    sasiu: { lung: 8, lat: 6, roata: 30.4 }, angrenaje: { raport: "1:3" }, macara: { inalt: 4, brat: 9, unghi: 45 }, barca: { lung: 10, lat: 6, diametru: 32, palete: 3 } } };
+  /** Câmpurile fiecărei construcții gata: [cheia, eticheta, minim, maxim] (numere întregi) sau [cheia, eticheta, alegerile];
+   *  o alegere fără nume e un diametru, scris „Ø” și numărul, cu virgula limbii. */
+  const CAMPURI_GATA: Record<string, readonly (readonly [string, string, number, number] | readonly [string, string, readonly (readonly [string, string])[]])[]> = {
+    sasiu: [["lung", "Lungimea (știfturi)", 6, 16], ["lat", "Lățimea (știfturi)", 4, 10], ["roata", "Roțile", [["30.4", ""], ["43.2", ""], ["56", ""]]]],
+    angrenaje: [["raport", "Raportul", [["1:1", "1 : 1"], ["1:3", "1 : 3"], ["1:5", "1 : 5"], ["1:9", "1 : 9"], ["1:15", "1 : 15"], ["1:25", "1 : 25"]]]],
+    macara: [["inalt", "Stâlpul (cărămizi)", 2, 8], ["brat", "Brațul (găuri)", 5, 15], ["unghi", "Unghiul brațului (°)", 0, 80]],
+    barca: [["lung", "Lungimea (știfturi)", 8, 16], ["lat", "Lățimea", [["4", "4 știfturi"], ["6", "6 știfturi"], ["8", "8 știfturi"]]], ["diametru", "Elicea (mm)", 24, 48], ["palete", "Palete", 3, 5]],
+  };
+  /** Construcția gata aleasă, din motor, cu valorile de acum. */
+  function constructiaGata() {
+    Lego.seteaza(paramMotor());
+    return Lego.constructieGata(gata.fel, gata.valori[gata.fel]!);
+  }
+  /** Ce iese, pe hârtie: mărimile mecanismului, câte piese are și avertismentele motorului. */
+  function infoGata(): string {
+    const g = constructiaGata(), c = g.cote, n = g.piese.length;
+    const piese = n % 100 === 0 || n % 100 >= 20 ? tr`${n} de piese` : tr`${n} piese`;
+    const text = g.fel === "sasiu" ? tr`Între axe: ${fmt(c.ampatament!)} mm; între roțile de pe un ax: ${fmt(c.ecartament!)} mm.`
+      : g.fel === "angrenaje" ? (c.raport === 1 ? tr("Axul de ieșire se rotește la fel de repede ca cel de intrare, în sens opus.")
+        : tr`Axul de ieșire se rotește de ${c.raport} ori mai încet decât cel de intrare (${c.trepte === 1 ? tr("o treaptă") : tr("două trepte")}).`)
+      : g.fel === "macara" ? tr`Pivotul, la ${fmt(c.pivot!)} mm de masă; vârful brațului, la ${fmt(c.varf!)} mm înălțime și ${fmt(c.raza!)} mm în față.`
+      : tr`Axul elicei are ${c.axul} știfturi; elicea stă în spatele pupei.`;
+    return `<p class="mic" id="at-cg-text">${text} ${piese}.</p>${g.avert.map(a => `<p class="avert" data-avert-gata>${a}</p>`).join("")}`;
+  }
+  /** Construcția gata, ca o construcție nouă, după cele de acum: piesele completate ca în editor, fiecare cu id-ul ei, iar
+   *  legăturile dintre ele, după id; numele șablonului (cu numărul următor, dacă e luat). */
+  function faConstructiaGata() {
+    const g = constructiaGata();
+    tineConstructia();
+    const ids = g.piese.map(() => idNou());
+    const piese: InModel[] = g.piese.map((p, i) => ({ id: ids[i]!, def: defCurenta(p.def.tip, { ...(STARE0 as unknown as Record<string, object>)[p.def.tip], ...p.def }), x: p.x, y: p.y, z: p.z, rot: p.rot, culoare: p.culoare,
+      ...(p.prins ? { prins: { de: ids[p.prins.de]!, a: p.prins.a, b: p.prins.b, unghi: p.prins.unghi, alunec: p.prins.alunec } } : {}) }));
+    const c: Constructie = { id: idNou(), nume: Lego.numeLiber(constructii.map(numeC), g.nume), nr: Lego.nrLiber(constructii.map(x => x.nr)), model: piese };
+    constructii.push(c); treciPe(c);
+    toast(tr`„${numeC(c)}” e în model.`);
+  }
   /** Gramele unei piese, ținute minte după definiție și parametrii motorului (ca în lista de printat). */
   const grameTinute = new Map<string, number>();
   function grameDef(def: Def): number {
@@ -2473,6 +2515,25 @@ var Atelier3D = (function () {
           <button class="btn" type="button" id="at-c-sterge"${constructii.length < 2 ? " disabled" : ""}>Șterge construcția</button>
           <span class="mic" id="at-c-confirma" hidden>${tr("Sigur?")} <button class="btn" type="button" id="at-c-sterge-da">Da, șterge</button></span></div>
       </div>`;
+    // construcțiile gata (ADR 0284, 3.Ci): felul, valorile lui, ce iese pe hârtie și „Fă construcția” (una nouă, după cele de acum).
+    // Panoul rămâne cum l-a lăsat omul: starea se citește din pagină acum, nu din `toggle` (vine după, deci o alegere făcută
+    // imediat după deschidere ar reface panoul strâns)
+    const detVechi = document.getElementById("at-cg") as HTMLDetailsElement | null;
+    if (detVechi) gata.deschis = detVechi.open;
+    const campuriGata = CAMPURI_GATA[gata.fel]!.map(c => {
+      const v = gata.valori[gata.fel]![c[0]];
+      if (c.length === 3) return `<label for="at-cg-${c[0]}">${c[1]}<select id="at-cg-${c[0]}" data-cg="${c[0]}">${c[2].map(([k, t]) => `<option value="${k}"${String(v) === k ? " selected" : ""}>${t || `Ø${fmt(+k)}`}</option>`).join("")}</select></label>`;
+      return `<label for="at-cg-${c[0]}">${c[1]}<input id="at-cg-${c[0]}" data-cg="${c[0]}" type="number" min="${c[2]}" max="${c[3]}" step="1" value="${v}"></label>`;
+    }).join("");
+    const blocGata = `<details class="model-gata" id="at-cg"${gata.deschis ? " open" : ""}>
+        <summary>Construcții gata</summary>
+        <p class="mic">Pornești de la o construcție făcută din piesele atelierului, cu mărimile tale: se deschide ca o construcție nouă, cu piesele prinse între ele.</p>
+        <div class="at-rand"><label class="mic" for="at-cg-fel">Felul</label>
+          <select id="at-cg-fel">${[["sasiu", "Șasiu cu patru roți"], ["angrenaje", "Cutie de angrenaje"], ["macara", "Braț de macara"], ["barca", "Barcă cu elice"]].map(([f, t]) => `<option value="${f}"${f === gata.fel ? " selected" : ""}>${t}</option>`).join("")}</select></div>
+        <div class="at-campuri" id="at-cg-campuri">${campuriGata}</div>
+        <div id="at-cg-info" aria-live="polite">${gata.deschis ? infoGata() : ""}</div>
+        <div class="at-rand"><button class="btn" type="button" id="at-cg-fa">Fă construcția</button></div>
+      </details>`;
     const randC = Lego.pieseConstructie(model.map(x => x.def)).map(r => ({ ...r, g: grameDef(r.def) * r.bucati }));
     const gC = randC.reduce((t, r) => t + r.g, 0), timpC = (g: number) => Lego.timpPrint(g, setari.debit);
     const celule = (g: number) => `<td class="num" data-grame>${fmt(g)} g</td><td class="num" data-timp>${Lego.durataPrint(timpC(g))}</td>`;
@@ -2487,6 +2548,7 @@ var Atelier3D = (function () {
       </section>` : "";
     e.innerHTML = `<h2>Modelul</h2>
       ${blocC}
+      ${blocGata}
       <p class="mic">Așezi piesele pe grila de știfturi, ca să vezi avionul întreg înainte să-l printezi. Alegi o piesă cu un clic în vedere sau din listă, apoi o muți: X și Y câte un știft, Z câte o placă. O piesă nouă intră deasupra celei alese, la mijlocul ei. Piesele rotunde (roțile, elicele) stau cu axul în mijlocul unui știft: una nouă intră pe axul celei alese, iar rotorul unui ventilator, în carcasa lui. Modelul verifică piesele: îți spune care plutește (nu stă pe masă și nu e prinsă de nimic) și care intră în alta. E un avertisment: piesa rămâne unde ai pus-o.</p>
       <p class="mic">Ca să prinzi două piese între ele, alege una, apoi una dintre prinderile ei (un punct din vedere sau un număr de mai jos): piesa următoare se alipește acolo și rămâne legată de ea, deci o urmează când o muți.</p>
       <p class="mic">„Răstoarnă ↓” și „Răstoarnă →” culcă piesa câte un sfert de tură, spre față sau spre dreapta; cu „Rotește”, ajungi la orice așezare dreaptă. „Jumătăți de pas” mută câte o jumătate de știft și o jumătate de placă, pentru piesele Technic. O piesă răsturnată sau pusă între știfturi e „liberă”: nu mai ține de grilă, dar se mută la fel.</p>
@@ -2510,6 +2572,21 @@ var Atelier3D = (function () {
     $("#at-c-dubla").onclick = dubleazaConstructia;
     $("#at-c-sterge").onclick = () => { $("#at-c-confirma").hidden = false; };
     $("#at-c-sterge-da").onclick = stergeConstructia;
+    const detGata = $<HTMLDetailsElement>("#at-cg");
+    detGata.ontoggle = () => { if (!detGata.isConnected) return; gata.deschis = detGata.open; if (gata.deschis) $("#at-cg-info").innerHTML = infoGata(); };
+    $<HTMLSelectElement>("#at-cg-fel").onchange = ev => { gata.fel = (ev.target as HTMLSelectElement).value; editorModel(); $("#at-cg-fel").focus(); };
+    $("#at-cg-campuri").onchange = ev => {
+      const el = ev.target as HTMLInputElement | HTMLSelectElement, k = el.dataset.cg, c = CAMPURI_GATA[gata.fel]!.find(x => x[0] === k);
+      if (!k || !c) return;
+      if (c.length === 3) gata.valori[gata.fel]![k] = el.value;
+      else {
+        // un număr scris în afara marginilor (sau deloc) se întoarce la cel mai apropiat întreg din ele
+        const v = Math.round(+el.value), x = Number.isFinite(v) && el.value !== "" ? Math.min(c[3], Math.max(c[2], v)) : +gata.valori[gata.fel]![k]!;
+        gata.valori[gata.fel]![k] = x; el.value = String(x);
+      }
+      $("#at-cg-info").innerHTML = infoGata();
+    };
+    $("#at-cg-fa").onclick = faConstructiaGata;
     const campNume = $<HTMLInputElement>("#at-c-nume");
     // numele se scrie la Enter sau la ieșirea din câmp (`change`); editorul se face din nou, deci focusul pleacă din câmp
     campNume.onchange = () => redenumesteConstructia(campNume.value);

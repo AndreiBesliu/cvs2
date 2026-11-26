@@ -356,6 +356,15 @@ pre.json { background: var(--panou-2); border-radius: 8px; padding: 10px; font-f
 .model-constructii .at-rand > label { min-width: 6.5em; }
 .model-constructii select, .model-constructii input[type="text"] { flex: 1 1 12em; width: auto; min-width: 0; font: 700 16px var(--font-text); color: var(--text);
   background: var(--panou-2); border: 1px solid var(--linie); border-radius: 8px; padding: 7px 9px; }
+/* construcțiile gata (ADR 0284, 3.Ci): un panou care se desface, cu felul, câmpurile lui și ce iese pe hârtie */
+.model-gata { border: 1px solid var(--linie); border-radius: 8px; padding: 10px 12px; }
+.model-gata > summary { cursor: pointer; font-weight: 700; font-size: 15px; }
+.model-gata > summary:focus-visible { outline: 2px solid var(--focus, var(--text)); outline-offset: 2px; border-radius: 4px; }
+.model-gata[open] { display: flex; flex-direction: column; gap: 8px; }
+.model-gata p { margin: 0; }
+.model-gata .at-rand > label { min-width: 6.5em; }
+.model-gata .at-rand > select { flex: 1 1 12em; width: auto; min-width: 0; font: 700 16px var(--font-text); color: var(--text);
+  background: var(--panou-2); border: 1px solid var(--linie); border-radius: 8px; padding: 7px 9px; }
 .model-piese h3 { margin: 0 0 6px; font-size: 15px; }
 .model-piese table { width: 100%; border-collapse: collapse; font-size: 14px; }
 .model-piese td, .model-piese th { padding: 6px; border-bottom: 1px solid var(--linie); text-align: left; vertical-align: middle; }

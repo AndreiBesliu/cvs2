@@ -18,6 +18,12 @@
       ],
       "noutati": [
         {
+          "versiune": "18.42.0",
+          "data": "2026-11-26",
+          "ro": "Patru construcții gata, făcute cu mărimile tale: un șasiu cu patru roți, o cutie de angrenaje (de la 1 : 1 la 1 : 25), un braț de macara și o barcă cu elice. Se deschid ca o construcție nouă, cu piesele prinse între ele.",
+          "en": "Four ready-made builds, in your sizes: a four-wheel chassis, a gearbox (from 1 : 1 to 1 : 25), a crane arm and a boat with a propeller. Each opens as a new build, with the pieces attached to each other."
+        },
+        {
           "versiune": "18.41.0",
           "data": "2026-11-26",
           "ro": "Atelierul ține mai multe construcții, fiecare cu numele ei: o nouă, o copie, ștearsă. Fiecare are lista ei de piese, cu bucățile, filamentul și timpul de printat, și se pune dintr-un clic în lista de printat.",
@@ -196,8 +202,8 @@
           }
         }
       ],
-      "versiune": "18.41.0",
-      "continut": "2942a9a3846a2892db3579a2642b77f6448b9974e8421be7234e5223c3442290"
+      "versiune": "18.42.0",
+      "continut": "0eb366b6841a4cd021b79b0cc269fe9ff19e8c2cd31abc5bf8f8977f92253da3"
     }
   ]
 }
