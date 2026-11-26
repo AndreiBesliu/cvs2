@@ -1254,7 +1254,9 @@ pe care au fost puse (**Cotele foii**), se salvează cu proiectul și au culoare
   două înălțimi de cifră (7 mm la cifrele de 3,5 mm), de aceeași parte cu prima. Lanțul și linia de bază pornesc și dintr-o
   cotă orizontală, verticală sau aliniată deja pusă: o alegi, apoi alegi felul. Fiecare cotă e un pas de anulare;
 - **Măsoară** (`M`): două puncte, fără urmă. Distanța, Δx, Δy și unghiul față de orizontală se văd lângă cursor și în bara de
-  jos; **Enter** (sau **Păstrează**) o face cotă aliniată, **Esc** o șterge.
+  jos; **Enter** (sau **Păstrează**) o face cotă aliniată, **Esc** o șterge. Cu **Toate foile pe pânză**, Măsoară se lipește și
+  de punctele celorlalte foi, în așezarea lor de pe pânză; o măsură cu un capăt pe altă foaie nu se păstrează („Între foi: doar
+  măsura”): foile sunt plăci separate, iar locul lor pe rând se schimbă cu ordinea din listă.
 
 **Lungimea** (în meniul de clic dreapta): clic dreapta chiar pe conturul unei forme, apoi **Cotează lungimea laturii** (latura
 de sub cursor: o linie, un arc sau o curbă, măsurată pe ea) sau **Cotează lungimea conturului** (tot conturul, deschis sau

@@ -134,6 +134,11 @@ față. Fără cod de produs până la răspunsuri. De hotărât acolo, între a
   eticheta cu săgeată, simbolul arcului desenat pe o latură curbă, „L ” pe contur; din meniul de clic dreapta („Cotează lungimea
   laturii”, „Cotează lungimea conturului”), fiindcă bara de sus nu mai are loc; în DXF, ca linii și cifre și cu DIMENSION.
   Întrebările 12 și 15, la owner, cu recomandările implementate. **Urmează:** f (cota între foi, după întrebarea 13).
+- **26.11, `main` adus în ramură** (3.Av, 3.Aw; `0a885cd2`), după ce GitHub a spus PR-ul neunibil: ciocnirea doar în DEVLOG.
+- **26.11, f gata pe ramură** (întrebarea 13a): nicio cotă între foi; cu „Toate foile pe pânză”, **Măsoară** se lipește și de
+  punctele celorlalte foi, mutate cu locul lor pe rând, fără legătură, iar o măsură cu un capăt pe altă foaie nu se păstrează
+  („Între foi: doar măsura, nu se păstrează”, și la Enter). **Urmează:** g (setările în cont), cu mărimea bucății contului
+  spusă întâi sesiunii principale.
 
 ## Deciziile owner-ului
 
@@ -142,6 +147,12 @@ față. Fără cod de produs până la răspunsuri. De hotărât acolo, între a
   cât mai multe, într-o zonă de setări generale, nu în Proiectare.
 
 ## Capcane găsite
+
+- **„Toate foile pe pânză” e ținut în browser:** o probă care îl găsește deja pornit nu primește încadrarea tuturor foilor (ea
+  vine doar la pornirea comutatorului), deci foaia vecină poate sta în afara ecranului. Proba îl oprește întâi, apoi îl pornește
+  (`cote.foi.spec.ts`).
+- **„Păstrează” al măsurii stă lângă cursor:** spre marginea din dreapta, cade sub panoul de proprietăți; o probă care nu
+  judecă butonul însuși apasă Enter.
 
 - **Sub colțul din stânga-jos al foii stă rândul comenzilor foii active:** o probă e2e care apasă pe ceva desenat jos, lângă
   marginea foii, nimerește un buton (proba etichetei de lungime a căzut așa; trage acum deasupra formei).

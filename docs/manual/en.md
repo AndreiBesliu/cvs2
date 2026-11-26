@@ -1298,7 +1298,10 @@ have their own colour on the canvas. Pick the type in the bar:
   text heights (7 mm with 3.5 mm figures), on the same side as the first. Chain and baseline also start from a horizontal,
   vertical or aligned dimension already put down: select it, then pick the type. Each dimension is one undo step;
 - **Measure** (`M`): two points, no trace. The distance, Δx, Δy and the angle from the horizontal show next to the cursor and
-  in the bottom bar; **Enter** (or **Keep**) makes it an aligned dimension, **Esc** clears it.
+  in the bottom bar; **Enter** (or **Keep**) makes it an aligned dimension, **Esc** clears it. With **All sheets on the canvas**,
+  Measure also snaps to the points of the other sheets, as they sit on the canvas; a measurement with an end on another sheet is
+  not kept (“Between sheets: measurement only”): sheets are separate boards, and their place in the row changes with the list
+  order.
 
 **Length** (in the right-click menu): right-click right on a shape’s outline, then **Dimension the side’s length** (the side under
 the cursor: a line, an arc or a curve, measured along it) or **Dimension the contour’s length** (the whole outline, open or closed,

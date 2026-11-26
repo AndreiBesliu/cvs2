@@ -719,6 +719,7 @@ export const roEditare = {
   'editare.cote.masura.dx': 'Δx {v}',
   'editare.cote.masura.dy': 'Δy {v}',
   'editare.cote.masura.unghi': '{v}°',
+  'editare.cote.masura.alta-foaie': 'Între foi: doar măsura, nu se păstrează',
   'editare.cote.pastreaza': 'Păstrează',
   'editare.taiere.intersectii': 'La intersecții',
   'editare.taiere.intersectii.text': 'Formele alese se taie între ele, în toate locurile lor comune; fiecare bucată devine o formă, de ales și de șters.',

@@ -16304,3 +16304,19 @@ commit-ul împins).
   (ro, en), e2e noi 2; otrăvurile, într-o clonă. Pornirea 111,6 kB (neschimbată), totalul 923,9 → 925,4 / 1 000 kB (+1,5,
   măsurat local). Urmează f (cota între foi).
 
+
+## 2026-11-26 — Felia 10.4↑f: Măsoară între foi (ADR 0330)
+
+**Prompt:** același cu e-1 (sesiunea principală, 26.11, 20:16: „Zi-le ca pot continua cu ce urmeaza la fiecare”; ordinea:
+toleranțele, lungimile, cota între foi, setările în cont).
+**Started:** 26.11, 21:40, în sesiunea cloud a liniei cotelor, după e-2 și după `main` adus (3.Av, 3.Aw; ciocnirea doar aici, în
+DEVLOG). **Completed:** 26.11, 22:15 (în container; CI-ul, pe commit-ul împins).
+
+- **Întrebarea 13, varianta a:** nicio cotă ținută între foi, nimic nou în document (v30).
+- **Proba întâi, pe hârtie:** `cote.foi.test.ts`: din foaia A, punctele foii B la X + 400 (300 + 100 între foi), din B, ale lui A
+  la X − 400, conturul mutat, fiecare punct cu foaia lui și fără legătură, colțurile celor două foi la `SPATIU_FOI`.
+- **Pur:** `surseFoiVecine` (`src/model/puncteCote.ts`). **Unealta:** doar la Măsoară și doar cu „Toate foile pe pânză”; o
+  măsură cu un capăt pe altă foaie are nota „Între foi: doar măsura, nu se păstrează” în locul lui „Păstrează”, iar Enter o
+  spune, fără cotă.
+- Manualul (ro, en), e2e nou 1; otrăvurile 16 / 16, într-o clonă. Pornirea 111,7 kB (neschimbată), totalul 925,7 → 926,0 /
+  1 000 kB (+0,3, măsurat local). Urmează g (setările în cont), cu mărimea bucății contului spusă întâi sesiunii principale.

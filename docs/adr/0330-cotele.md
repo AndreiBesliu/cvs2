@@ -754,7 +754,7 @@ judecă).
     - b: pe latură, o cotă paralelă cu ea (un arc concentric pe un arc, linia ei pe o linie), ca în desenele tehnice; pe contur,
       tot eticheta.
 13. Cota între două foi (f):
-    - **a (recomandat):** fără cotă ținută: foile sunt plăci separate, iar așezarea lor pe pânză („Toate foile”) e doar o vedere,
+    - **a (recomandat, implementat în f):** fără cotă ținută: foile sunt plăci separate, iar așezarea lor pe pânză („Toate foile”) e doar o vedere,
       care se schimbă cu ordinea lor; **Măsoară** (M) măsoară și între foi, cu „Toate foile pe pânză”, fără să păstreze nimic;
     - b: o cotă pe foaia activă cu un capăt pe altă foaie, măsurată în așezarea foilor de pe pânză (se schimbă când foile se
       mută în listă).
@@ -791,4 +791,20 @@ care nu-l știe îl lasă neatins (un fel necunoscut nu se judecă).
   Python are corpusul al cincilea (`cote-lungime.*`: o latură curbă cu simbolul arcului și un contur), cu valorile pe hârtie.
 - **Programul, neatins:** pe placa 1, o cotă de lungime dă aceiași octeți ca fără cote.
 - **Cifrele:** unitare noi 10 (`cote.lungime.test.ts`), e2e noi 2 (`cote.lungime.spec.ts`); otrăvurile 33 / 33.
+
+## Implementarea (10.4↑f)
+
+26.11, pe ramura `wip/10.4-cote`, după e-2, cu `main` adus (3.Av, 3.Aw). Întrebarea 13, varianta a: nicio cotă ținută între foi,
+nimic nou în document (rămâne v30).
+- **Sursele foilor vecine** (`surseFoiVecine`, `src/model/puncteCote.ts`): cu „Toate foile pe pânză”, elementele celorlalte foi
+  și cele nouă puncte ale fiecăreia, mutate cu locul foii pe rândul pânzei față de foaia activă (`locuriFoi`, doar pe X; conturul,
+  prin `transformaContur`), cu indexul cutiilor de la lipire. Un punct al altei foi nu are legătură: poartă doar foaia lui
+  (`PunctVecin`).
+- **Doar la Măsoară:** unealta le adaugă la lipire numai pe Măsoară și numai cu comutatorul pornit; celelalte feluri lipesc, ca
+  până acum, doar pe foaia activă, deci o cotă nu se leagă și nu se lipește de altă foaie.
+- **Măsura nu se ține:** cu un capăt pe altă foaie, în locul lui **Păstrează** stă nota „Între foi: doar măsura, nu se
+  păstrează”, iar **Enter** o spune în bara uneltei, fără să pună cota. O măsură doar pe foaia activă se păstrează ca înainte.
+- **Cifrele:** unitare noi 5 (`cote.foi.test.ts`, pe hârtie: foaia vecină la X ± 400 = 300 + 100, colțul foii vecine la
+  `SPATIU_FOI` de al celei active), e2e nou 1 (`cote.foi.spec.ts`: 400 mm din vârful foii active până la al foii vecine);
+  otrăvurile 16 / 16.
 

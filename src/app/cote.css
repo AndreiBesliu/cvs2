@@ -105,6 +105,12 @@
   margin-inline-start: 0.5rem;
 }
 
+/* Măsura până pe altă foaie (felia 10.4↑f): nota în locul lui „Păstrează”. */
+.cip-masura .masura-nota {
+  margin-inline-start: 0.5rem;
+  opacity: 0.8;
+}
+
 .cip-masura-jos {
   font-variant-numeric: tabular-nums;
 }

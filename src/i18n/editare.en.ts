@@ -702,6 +702,7 @@ export const enEditare = {
   'editare.cote.masura.dx': 'Δx {v}',
   'editare.cote.masura.dy': 'Δy {v}',
   'editare.cote.masura.unghi': '{v}°',
+  'editare.cote.masura.alta-foaie': 'Between sheets: measurement only, not kept',
   'editare.cote.pastreaza': 'Keep',
   'editare.taiere.intersectii': 'At intersections',
   'editare.taiere.intersectii.text': 'The chosen shapes cut each other at all their common points; each piece becomes a shape, to choose and delete.',
