@@ -10,16 +10,23 @@
  */
 import { cerculArcului, numarSegmente, segment, type Contur, type Punct } from '../geom/conturBaza.ts';
 import type { AncoraCota, Cota, Document, FelCota, LocCota } from './document.ts';
+import type { Toleranta } from './desenCota.ts';
+import { lungimeCurba, lungimeSegmentului } from './curba.ts';
 import { chenarElement, cutieElement } from './forme.ts';
 import { elementeFoaie, idLume, type ElementLume } from './lume.ts';
 
 /** Felurile cunoscute (ADR 0330 §4), ca valoare; tipul lor e în `document.ts`. */
-export const FELURI_COTA: readonly FelCota[] = ['orizontala', 'verticala', 'aliniata', 'raza', 'diametru', 'unghi'];
+export const FELURI_COTA: readonly FelCota[] = ['orizontala', 'verticala', 'aliniata', 'raza', 'diametru', 'unghi', 'lungime'];
 
-/** Câte puncte are o cotă din fiecare fel: cele liniare, raza și diametrul, două; unghiul, trei (vârful) sau patru (două laturi). */
+/**
+ * Câte puncte are o cotă din fiecare fel: cele liniare, raza și diametrul, două; unghiul, trei (vârful) sau patru (două
+ * laturi); lungimea (felia 10.4↑e-2), unul, legat la mijlocul laturii.
+ */
 export const PUNCTE_COTA: Readonly<Record<FelCota, readonly number[]>> = {
-  orizontala: [2], verticala: [2], aliniata: [2], raza: [2], diametru: [2], unghi: [3, 4],
+  orizontala: [2], verticala: [2], aliniata: [2], raza: [2], diametru: [2], unghi: [3, 4], lungime: [1],
 };
+
+export { tolerantaCota, TOLERANTA_MAXIMA, type Toleranta } from './desenCota.ts';
 
 export function felCunoscut(fel: unknown): fel is FelCota {
   return typeof fel === 'string' && (FELURI_COTA as readonly string[]).includes(fel);
@@ -98,6 +105,7 @@ function unghi(u: Punct, v: Punct): number | null {
 /**
  * Valoarea cotei, din punctele ei (ADR 0330 §4), exactă (rotunjirea e a afișării): distanța pe X, pe Y sau dreaptă, raza,
  * diametrul, unghiul în grade. Null: un fel necunoscut, alt număr de puncte, o latură de lungime zero sau două laturi paralele.
+ * Lungimea se citește din lume (`masuraCota`, `lungimeCota`); aici, fără lume, doar ultima ei lungime văzută.
  */
 export function valoareCota(c: Cota, p: readonly Punct[]): number | null {
   if (!felCunoscut(c.fel) || !PUNCTE_COTA[c.fel].includes(p.length)) return null;
@@ -107,6 +115,7 @@ export function valoareCota(c: Cota, p: readonly Punct[]): number | null {
     case 'verticala': return Math.abs(b.y - a.y);
     case 'aliniata': case 'raza': return Math.hypot(b.x - a.x, b.y - a.y);
     case 'diametru': return 2 * Math.hypot(b.x - a.x, b.y - a.y);
+    case 'lungime': return urmaCota(c)?.l ?? null;
     case 'unghi': {
       const s1 = c.linie?.s1 === -1 ? -1 : 1, s2 = c.linie?.s2 === -1 ? -1 : 1;
       if (!x) return null;
@@ -117,6 +126,52 @@ export function valoareCota(c: Cota, p: readonly Punct[]): number | null {
       return unghi(d1, d2);
     }
   }
+}
+
+/** Lungimea unei cote de lungime: în mm, și dacă latura e curbă (arcul sau cubica: simbolul arcului deasupra cifrei). */
+export type LungimeCota = { readonly l: number; readonly curba: boolean };
+
+/** Ultima lungime văzută (`urma`), scrisă la punere și la dezlegare, sau null dacă lipsește ori e stricată. */
+function urmaCota(c: Cota): LungimeCota | null {
+  const u = c['urma'];
+  if (typeof u !== 'object' || u === null || Array.isArray(u)) return null;
+  const { l, curba } = u as Record<string, unknown>;
+  return typeof l === 'number' && Number.isFinite(l) && l >= 0 && typeof curba === 'boolean' ? { l, curba } : null;
+}
+
+/**
+ * Lungimea cotei de lungime (felia 10.4↑e-2): cu capătul legat (la mijlocul laturii k), din conturul elementului în lume:
+ * latura k (linia, arcul exact, cubica pe curbă), sau, cu `pe: 'contur'`, conturul întreg (deschis sau închis). Dezlegată
+ * (forma ștearsă, alte noduri) ori liberă: ultima lungime văzută (`urma`). Null: alt fel, sau nimic de măsurat.
+ */
+export function lungimeCota(c: Cota, lume: ReadonlyMap<string, ElementLume>): LungimeCota | null {
+  if (c.fel !== 'lungime' || !Array.isArray(c.puncte) || c.puncte.length !== 1) return null;
+  const a = c.puncte[0]!, l = a.legatura;
+  if (l && l.loc.fel === 'mijloc' && punctAncora(a, lume).stare === 'legata') {
+    const e = lume.get(idLume(l.instanta, l.nod));
+    if (e) {
+      const contur = chenarElement(e);
+      if (c['pe'] === 'contur') return { l: lungimeCurba(contur), curba: false };
+      const { s } = segment(contur, l.loc.k);
+      return { l: lungimeSegmentului(contur, l.loc.k), curba: s.tip === 'C' || (s.tip === 'A' && Math.abs(s.bulge) > 1e-12) };
+    }
+  }
+  return urmaCota(c);
+}
+
+/** Valoarea oricărei cote, cu punctele citite: lungimea din lume (felia 10.4↑e-2), restul din puncte (`valoareCota`). */
+export function masuraCota(c: Cota, puncte: readonly PunctCota[], lume: ReadonlyMap<string, ElementLume>): number | null {
+  return c.fel === 'lungime' ? lungimeCota(c, lume)?.l ?? null : valoareCota(c, puncte.map((x) => x.p));
+}
+
+/**
+ * Cota cu ultima lungime văzută scrisă (`urma`), la punere și înainte de dezlegare (jurnalul, „Dezleagă”): o cotă de lungime
+ * dezlegată rămâne la ea. Celelalte feluri rămân neschimbate. Cota dată rămâne neatinsă.
+ */
+export function cotaVazuta(c: Cota, lume: ReadonlyMap<string, ElementLume>): Cota {
+  if (c.fel !== 'lungime') return c;
+  const m = lungimeCota(c, lume);
+  return m ? { ...structuredClone(c), urma: { l: m.l, curba: m.curba } } : c;
 }
 
 /**
@@ -160,6 +215,12 @@ export function cotaCuText(c: Cota, text: string): Cota {
   const { text: _, ...fara } = structuredClone(c);
   const t = text.trim();
   return t === '' || t === '<>' ? fara : { ...fara, text };
+}
+
+/** Toleranța cotei (felia 10.4↑e-1); nulă sau zero și zero, scoasă (cota fără ea). Cota dată rămâne neatinsă. */
+export function cotaCuToleranta(c: Cota, t: Toleranta | null): Cota {
+  const { toleranta: _, ...fara } = structuredClone(c);
+  return t === null || (t.sus === 0 && t.jos === 0) ? fara : { ...fara, toleranta: { sus: t.sus, jos: t.jos } };
 }
 
 /** Distanța liniei de cotă (ADR 0330 §5), în mm, pe normală, față de mijlocul punctelor; restul liniei rămâne. */

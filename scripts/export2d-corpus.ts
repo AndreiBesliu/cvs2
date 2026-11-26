@@ -38,6 +38,11 @@
  * Al patrulea document (felia 10.4↑c-2), exportat ca `cote-ascii.pdf`, cu cifrele ca text: o orizontală între (20, 100) și
  * (280, 100), cu linia la d = 20 și textul ei, `TEXT_ASCII`: toate semnele ASCII tipăribile (fără `<>` alăturate), apoi ° ± × Ø;
  * centrarea lui în PDF cere lățimea lui Helvetica a fiecărui semn.
+ *
+ * Al cincilea document (felia 10.4↑e-2), exportat ca `cote-lungime.dxf`, `.svg` și `.pdf` (cu cotele DXF-ului ca DIMENSION:
+ * lungimea n-are una și iese ca linii și cifre), cu cifrele ca trăsături: două lungimi dezlegate, la ultima lungime văzută:
+ * - `L`: latura curbă de 63 mm, cu capătul în (150, 160) și eticheta în sus (u = 90°, d = 10), cu simbolul arcului;
+ * - `K`: conturul de 320 mm, cu capătul în (60, 180) și eticheta spre stânga (u = 180°, d = 6), „L 320”.
  */
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -149,6 +154,15 @@ export const CORPUS_COTE_ASCII = {
   ...CORPUS_COTE,
   foi: [{ ...CORPUS_COTE.foi[0]!, cote: [{ id: 'q', fel: 'orizontala', puncte: [Q(20, 100), Q(280, 100)], linie: { d: 20 }, text: TEXT_ASCII }] }],
 };
+export const CORPUS_COTE_LUNGIME = {
+  ...CORPUS_COTE,
+  foi: [{
+    ...CORPUS_COTE.foi[0]!, cote: [
+      { id: 'L', fel: 'lungime', puncte: [Q(150, 160)], linie: { d: 10, u: 90 }, urma: { l: 63, curba: true } },
+      { id: 'K', fel: 'lungime', puncte: [Q(60, 180)], linie: { d: 6, u: 180 }, pe: 'contur', urma: { l: 320, curba: false } },
+    ],
+  }],
+};
 export const CORPUS_COTE_2 = {
   ...CORPUS_COTE,
   foi: [{
@@ -197,5 +211,12 @@ if (dosar) {
   const ascii = exportaVectori(r3.doc, 0, 'pdf', false, { ...cerute, dxf: 'dimension', ca: 'text' });
   if (ascii.cote !== 1 || ascii.lipsa.length > 0) throw new Error(`corpusul ASCII al cotelor: ${ascii.cote} cote, lipsă: ${ascii.lipsa.join(' ')}`);
   writeFileSync(join(dosar, 'cote-ascii.pdf'), ascii.text);
-  console.log(`corpusul cotelor: 4 cote, apoi 7 (ca DIMENSION și cu cifrele ca text), în ${dosar}`);
+  const r5 = incarca(structuredClone(CORPUS_COTE_LUNGIME));
+  if (!r5.ok) throw new Error(`corpusul lungimilor nu trece de ușă: ${r5.motiv}`);
+  for (const fmt of ['dxf', 'svg', 'pdf'] as const) {
+    const x = exportaVectori(r5.doc, 0, fmt, true, { ...cerute, dxf: 'dimension' });
+    if (x.cote !== 2 || x.lipsa.length > 0) throw new Error(`corpusul lungimilor: ${x.cote} cote, lipsă: ${x.lipsa.join(' ')}`);
+    writeFileSync(join(dosar, `cote-lungime.${fmt}`), x.text);
+  }
+  console.log(`corpusul cotelor: 4 cote, apoi 7 (ca DIMENSION și cu cifrele ca text), apoi 2 lungimi, în ${dosar}`);
 }

@@ -366,6 +366,34 @@ export function desenUnghi(p: readonly Punct[], d: number, s1: number, s2: numbe
 }
 
 /**
+ * Desenul cotei de lungime (felia 10.4↑e-2), sau null (fără capăt): o etichetă cu săgeată. Săgeata are vârful în capătul `a`
+ * (pe latură), linia merge pe direcția `u` (grade), cel puțin cât săgeata și un gol, până în cot, iar din cot umărul orizontal,
+ * spre partea liniei, cât cifra și câte un gol de o parte și de alta; cifra stă pe umăr (deasupra, în linie sau orizontală,
+ * ca la celelalte). Pe o latură curbă (`arc`: arcul sau cubica), simbolul arcului (ISO 129-1) deasupra cifrei: un arc cât
+ * cifra, la un gol deasupra ei, cu săgeata 0,3 × înălțimea.
+ */
+export function desenLungime(a: Punct, d: number, u: number, s: StilCota, text = '', arc = false): DesenCota | null {
+  const r = (u * Math.PI) / 180, v = { x: Math.cos(r), y: Math.sin(r) };
+  const h = s.inaltime, gol = 0.3 * h, w = latimeText(text, h);
+  const e = plus(a, v, Math.max(d, s.capat + gol));
+  const spre = v.x >= -1e-12 ? 1 : -1;
+  const f = { x: e.x + spre * (w + 2 * gol), y: e.y };
+  const umar: Bucata = [e, f];
+  const t = textPeLinie({ x: (e.x + f.x) / 2, y: e.y }, { x: 1, y: 0 }, umar, text, s);
+  const arce: ArcDesen[] = [];
+  if (arc && w > 0) {
+    // Coarda la un gol deasupra cifrei (cifra e orizontală pe umăr), cât ea; cercul din coardă și săgeată.
+    const sag = 0.3 * h, jum = w / 2, yc = t.text.p.y + h + gol;
+    const R = (jum * jum + sag * sag) / (2 * sag);
+    const centru = { x: t.text.p.x, y: yc + sag - R };
+    const de = Math.atan2(yc - centru.y, jum);
+    arce.push({ centru, raza: R, de, baleiaj: Math.PI - 2 * de });
+  }
+  const linie: Bucata = [a, e];
+  return { picioare: [a, e], linie, bucati: [linie, ...t.bucati], arc: null, arce, extensii: [], capete: capete(capatIn(a, v, s)), text: t.text };
+}
+
+/**
  * Calea SVG a unui arc, pe un ecran cu Y în jos: `sx` și `sy` duc un punct al foii pe ecran, `k` e scara (raza pe ecran). Cu
  * Y întors, sensul trigonometric al foii rămâne cel invers acelor de ceasornic la vedere, iar în SVG (Y în jos) acela e
  * sensul unghiurilor negative: sweep-flag 0.
@@ -375,9 +403,14 @@ export function caleArc(a: ArcDesen, sx: (x: number) => number, sy: (y: number) 
   return `M${sx(p0.x)} ${sy(p0.y)} A${r} ${r} 0 ${a.baleiaj > Math.PI ? 1 : 0} 0 ${sx(p1.x)} ${sy(p1.y)}`;
 }
 
-/** Desenul oricărei cote cunoscute, după felul ei, cu punctele citite; null pentru un fel necunoscut sau fără desen. */
-export function desenCota(c: Cota, p: readonly Punct[], s: StilCota, text = ''): DesenCota | null {
+/**
+ * Desenul oricărei cote cunoscute, după felul ei, cu punctele citite; null pentru un fel necunoscut sau fără desen. La lungime,
+ * `arc` cere simbolul arcului (latura e curbă).
+ */
+export function desenCota(c: Cota, p: readonly Punct[], s: StilCota, text = '', arc = false): DesenCota | null {
   const [a, b] = p;
+  // Lungimea (felia 10.4↑e-2): un singur capăt; `arc` pune simbolul arcului (latura curbă, citită din lume de apelant).
+  if (c.fel === 'lungime') return a && p.length === 1 && c.linie ? desenLungime(a, c.linie.d, typeof c.linie.u === 'number' ? c.linie.u : 45, s, text, arc) : null;
   if (!a || !b || !c.linie) return null;
   if (c.fel === 'orizontala' || c.fel === 'verticala' || c.fel === 'aliniata') return p.length === 2 ? desenLiniar(c.fel, a, b, c.linie.d, s, text) : null;
   if (c.fel === 'raza' || c.fel === 'diametru') return p.length === 2 ? desenRadial(c.fel, a, b, c.linie.d, s, text) : null;
@@ -472,6 +505,52 @@ export function cifraCota(fel: string, valoare: number, f: FormatCifre): string 
   return fel === 'raza' ? f.prefixR + c : fel === 'diametru' ? f.prefixD + c : c;
 }
 
+/**
+ * Toleranța unei cote (felia 10.4↑e-1): abaterea de sus și cea de jos, cu semnul lor, în unitatea măsurii (mm; la unghi,
+ * grade), fiecare cel mult `TOLERANTA_MAXIMA`, cea de sus nu sub cea de jos. Două zerouri nu sunt o toleranță.
+ */
+export type Toleranta = { readonly sus: number; readonly jos: number };
+export const TOLERANTA_MAXIMA = 100;
+const abatereBuna = (x: unknown): x is number => typeof x === 'number' && Number.isFinite(x) && Math.abs(x) <= TOLERANTA_MAXIMA;
+
+/** Toleranța cotei, sau null: lipsă, stricată (a unei versiuni mai noi sau scrisă de mână) ori zero și zero. */
+export function tolerantaCota(c: Cota): Toleranta | null {
+  const t = c['toleranta'];
+  if (typeof t !== 'object' || t === null || Array.isArray(t)) return null;
+  const { sus, jos } = t as Record<string, unknown>;
+  if (!abatereBuna(sus) || !abatereBuna(jos) || sus < jos || (sus === 0 && jos === 0)) return null;
+  return { sus, jos };
+}
+
+/**
+ * Toleranța scrisă după cifră, cu spațiul dinainte: simetrică, „ ±0,1”; altfel, întâi abaterea de sus, apoi cea de jos, cu
+ * semnele lor („ +0,2 -0,1”; zero fără semn). În unitatea și cu zecimalele cifrei, fără pasul ei de rotunjire și fără
+ * unitate (ea vine după toleranță); la unghi, ca unghiurile.
+ */
+export function scrieToleranta(fel: string, t: Toleranta, f: FormatCifre): string {
+  const g: FormatCifre = { ...f, pas: null, cuUnitate: false };
+  const abs = (x: number): string => (fel === 'unghi' ? scrieUnghi(Math.abs(x), g) : scrieCifra(Math.abs(x), g));
+  const cuSemn = (x: number): string => {
+    const s = abs(x);
+    // Ce se scrie zero (rotunjit: nicio cifră nenulă) nu are semn.
+    return /[1-9]/.test(s) ? `${x < 0 ? '-' : '+'}${s}` : s;
+  };
+  if (t.sus === -t.jos) return ` ±${abs(t.sus)}`;
+  return ` ${cuSemn(t.sus)} ${cuSemn(t.jos)}`;
+}
+
+/**
+ * Cifra unei cote cu toleranța ei, înaintea unității (dacă unitatea se scrie): „100 ±0,1 mm”, „R10 +0,2 -0,1”. Lungimea
+ * conturului întreg (felia 10.4↑e-2) are „L ” în față: „L 300”.
+ */
+export function cifraCuToleranta(c: Cota, valoare: number, f: FormatCifre): string {
+  const prefix = c.fel === 'lungime' && c['pe'] === 'contur' ? 'L ' : '';
+  const t = tolerantaCota(c);
+  if (!t) return prefix + cifraCota(c.fel, valoare, f);
+  const unitate = f.cuUnitate && c.fel !== 'unghi' ? SUFIX[f.unitate] : '';
+  return prefix + cifraCota(c.fel, valoare, { ...f, cuUnitate: false }) + scrieToleranta(c.fel, t, f) + unitate;
+}
+
 /** Scrierea implicită a cifrelor, cu virgula sau punctul (probele, cota de probă a ferestrei Setări). */
 export const formatImplicit = (virgula: boolean): FormatCifre => ({
   unitate: 'mm', zecimale: 2, zerouri: 'taiate', pas: null, virgula, cuUnitate: false, fractie: 16, prefixR: 'R', prefixD: 'Ø', unghi: 'zecimale', zecimaleUnghi: 2,
@@ -509,7 +588,8 @@ function laArc(p: Punct, a: ArcDesen): number {
  */
 export function distantaLaDesen(dc: DesenCota, text: string, p: Punct): number {
   let d = dc.arc ? laArc(p, dc.arc) : laBucata(p, dc.linie);
-  for (const e of dc.extensii) d = Math.min(d, laBucata(p, e));
+  // Bucățile: pe celelalte feluri, părți ale liniei; la lungime, și umărul etichetei.
+  for (const e of [...dc.extensii, ...dc.bucati]) d = Math.min(d, laBucata(p, e));
   // Cutia cifrei, în axele ei: de la bază în sus cât înălțimea, cât lățimea de o parte și de alta a mijlocului.
   const r = (dc.text.unghi * Math.PI) / 180, ux = Math.cos(r), uy = Math.sin(r);
   const qx = p.x - dc.text.p.x, qy = p.y - dc.text.p.y;

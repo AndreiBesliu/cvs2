@@ -1301,7 +1301,18 @@ have their own colour on the canvas. Pick the type in the bar:
   text heights (7 mm with 3.5 mm figures), on the same side as the first. Chain and baseline also start from a horizontal,
   vertical or aligned dimension already put down: select it, then pick the type. Each dimension is one undo step;
 - **Measure** (`M`): two points, no trace. The distance, Δx, Δy and the angle from the horizontal show next to the cursor and
-  in the bottom bar; **Enter** (or **Keep**) makes it an aligned dimension, **Esc** clears it.
+  in the bottom bar; **Enter** (or **Keep**) makes it an aligned dimension, **Esc** clears it. With **All sheets on the canvas**,
+  Measure also snaps to the points of the other sheets, as they sit on the canvas; a measurement with an end on another sheet is
+  not kept (“Between sheets: measurement only”): sheets are separate boards, and their place in the row changes with the list
+  order.
+
+**Length** (in the right-click menu): right-click right on a shape’s outline, then **Dimension the side’s length** (the side under
+the cursor: a line, an arc or a curve, measured along it) or **Dimension the contour’s length** (the whole outline, open or closed,
+with “L ” before the number); the Dimensions tool starts, with the new dimension selected. The dimension is a label with an arrow:
+the arrow touches the side at its middle, and the number sits on a horizontal shoulder, away from the shape; drag the label to
+move it. On an arc or a curve, the arc symbol appears above the number. The dimension stays attached to the shape (the number
+changes with it); when the shape is deleted, or after **Unlink**, it keeps the last length seen. In DXF, with “Dimensions
+(DIMENSION)”, a length comes out as lines and numbers.
 
 **Dimension selection** (in the right-click menu): select the pieces with Select, right-click, **Dimension selection**; the
 Dimensions tool starts by itself. Each selected piece gets the width (below) and the height (on the right) of its box, attached to the box
@@ -1333,6 +1344,13 @@ value with its prefix (for instance “4× <>” gives “4× Ø10”; empty, on
 mm (for radius and diameter, the **figure position** from the circle, positive outside; for an angle, the **arc radius**);
 **Delete**. The distance between two oblique parallel sides is a free dimension: a fixed drawing, since its foot on the second
 side is not a point of the shape.
+
+**Tolerance** (in the panel of the selected dimension): **None** (the default), **Symmetric (±)**, with its deviation (0.1 by
+default), or **With deviations (+ / −)**: the upper and the lower deviation, with their signs (the upper one cannot be below
+the lower one). The deviations are in mm (for an angle, in degrees), at most 100, and are written after the figure, in the
+unit and with the decimals of the figures from Settings: “100 ±0.1”, “100 +0.2 -0.1” (zero, without a sign); with the unit
+shown, it comes at the end (“100 ±0.1 mm”). In the dimension's text, the tolerance stays next to the value, in place of
+`<>`. Like any dimension, it is not cut; on export it goes into the dimension's figures (and into the text of a DIMENSION).
 
 **Make a drawing from the dimension** (in the panel of the selected dimension): the dimension's drawing becomes an ordinary
 piece, exactly where the dimension was: lines and figures as strokes (the figures in the single-line font), the ends as small

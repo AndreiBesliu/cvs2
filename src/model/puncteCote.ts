@@ -6,8 +6,10 @@
  */
 import { numarSegmente, segment, type Contur } from '../geom/conturBaza.ts';
 import type { PunctTinta, SursaPuncte } from '../geom/lipirePuncte.ts';
+import { transformaContur, translatie } from '../geom/matrice.ts';
 import { punctLoc } from './cote.ts';
 import type { Document, LegaturaCota, LocCota } from './document.ts';
+import { locuriFoi } from './foi.ts';
 import { chenarElement, cutieElement } from './forme.ts';
 import { elementeFoaie, type ElementLume } from './lume.ts';
 
@@ -71,4 +73,40 @@ export function puncteFoaie(latime: number, inaltime: number): PunctTinta<Legatu
   const rez: PunctTinta<LegaturaCota>[] = [];
   for (const y of [0, inaltime / 2, inaltime]) for (const x of [0, latime / 2, latime]) rez.push({ p: { x, y }, fel: 'foaie', date: null });
   return rez;
+}
+
+/** Un punct al altei foi, la Măsoară: doar foaia lui, nicio legătură. */
+export type PunctVecin = { readonly foaie: string };
+
+/**
+ * Sursele de lipire ale celorlalte foi, pentru **Măsoară** cu „Toate foile pe pânză” (ADR 0330, întrebarea 13a, felia 10.4↑f):
+ * elementele fiecărei foi și cele nouă puncte ale ei, mutate cu locul foii pe rândul pânzei față de foaia activă (`locuriFoi`:
+ * doar pe X), **fără legătură**: fiecare punct poartă doar foaia lui (`PunctVecin`), iar unealta nu păstrează o măsură cu un
+ * capăt pe altă foaie. Foile sunt plăci separate, iar așezarea lor pe pânză e doar o vedere, care se schimbă cu ordinea lor.
+ * Punctele și conturul unei surse se fac doar cu cursorul lângă cutia ei.
+ */
+export function surseFoiVecine(doc: Document, indexFoaie: number): SursaPuncte<PunctVecin>[] {
+  if (doc.foi.length < 2) return [];
+  const locuri = locuriFoi(doc), x0 = locuri[indexFoaie] ?? 0;
+  return doc.foi.flatMap((f, k) => {
+    if (k === indexFoaie) return [];
+    const dx = (locuri[k] ?? 0) - x0, m = translatie(dx, 0);
+    const date: PunctVecin = { foaie: f.id };
+    const muta = (t: PunctTinta<LegaturaCota>): PunctTinta<PunctVecin> => ({ p: { x: t.p.x + dx, y: t.p.y }, fel: t.fel, date });
+    const foaie: SursaPuncte<PunctVecin> = {
+      cutie: { minX: dx, minY: 0, maxX: dx + f.stoc.latime, maxY: f.stoc.inaltime },
+      puncte: () => puncteFoaie(f.stoc.latime, f.stoc.inaltime).map(muta),
+    };
+    const elemente = surseCote(doc, k).map((s): SursaPuncte<PunctVecin> => {
+      let puncte: PunctTinta<PunctVecin>[] | null = null;
+      let contur: Contur | null = null;
+      const b = s.cutie, cs = s.contur;
+      return {
+        cutie: { minX: b.minX + dx, minY: b.minY, maxX: b.maxX + dx, maxY: b.maxY },
+        puncte: () => (puncte ??= s.puncte().map(muta)),
+        ...(cs ? { contur: () => (contur ??= transformaContur(cs(), m)) } : {}),
+      };
+    });
+    return [foaie, ...elemente];
+  });
 }

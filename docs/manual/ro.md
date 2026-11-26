@@ -1258,7 +1258,16 @@ pe care au fost puse (**Cotele foii**), se salvează cu proiectul și au culoare
   două înălțimi de cifră (7 mm la cifrele de 3,5 mm), de aceeași parte cu prima. Lanțul și linia de bază pornesc și dintr-o
   cotă orizontală, verticală sau aliniată deja pusă: o alegi, apoi alegi felul. Fiecare cotă e un pas de anulare;
 - **Măsoară** (`M`): două puncte, fără urmă. Distanța, Δx, Δy și unghiul față de orizontală se văd lângă cursor și în bara de
-  jos; **Enter** (sau **Păstrează**) o face cotă aliniată, **Esc** o șterge.
+  jos; **Enter** (sau **Păstrează**) o face cotă aliniată, **Esc** o șterge. Cu **Toate foile pe pânză**, Măsoară se lipește și
+  de punctele celorlalte foi, în așezarea lor de pe pânză; o măsură cu un capăt pe altă foaie nu se păstrează („Între foi: doar
+  măsura”): foile sunt plăci separate, iar locul lor pe rând se schimbă cu ordinea din listă.
+
+**Lungimea** (în meniul de clic dreapta): clic dreapta chiar pe conturul unei forme, apoi **Cotează lungimea laturii** (latura
+de sub cursor: o linie, un arc sau o curbă, măsurată pe ea) sau **Cotează lungimea conturului** (tot conturul, deschis sau
+închis, cu „L ” înaintea cifrei); unealta Cote pornește, cu cota nouă aleasă. Cota e o etichetă cu săgeată: săgeata atinge
+latura la mijlocul ei, iar cifra stă pe un umăr orizontal, spre afara formei; trage de etichetă ca s-o muți. Pe un arc sau pe o
+curbă, deasupra cifrei apare simbolul arcului. Cota rămâne legată de formă (cifra se schimbă cu ea); ștearsă forma, sau cu
+**Dezleagă**, rămâne la ultima lungime văzută. În DXF, cu „Cote (DIMENSION)”, lungimea iese ca linii și cifre.
 
 **Cotează selecția** (în meniul de clic dreapta): alegi piesele cu Selecția, clic dreapta, **Cotează selecția**; unealta Cote
 pornește singură. Fiecare
@@ -1288,6 +1297,12 @@ rămân unde sunt, iar cota nu mai urmează forma); **textul**, în care `<>` e 
 „4× Ø10”; gol, se vede doar valoarea); **distanța liniei** de cotă, în mm (la rază și diametru, **locul cifrei** față de cerc,
 pozitiv afară; la unghi, **raza arcului**); **Șterge**. Distanța dintre două laturi paralele oblice e o cotă liberă: un desen
 fix, fiindcă piciorul ei pe a doua latură nu e un punct al formei.
+
+**Toleranța** (în panoul cotei alese): **Fără** (implicit), **Simetrică (±)**, cu abaterea ei (implicit 0,1), sau **Cu abateri
+(+ / −)**: abaterea de sus și cea de jos, cu semnul lor (cea de sus nu poate fi sub cea de jos). Abaterile sunt în mm (la
+unghi, în grade), cel mult 100, și se scriu după cifră, în unitatea și cu zecimalele cifrelor din Setări: „100 ±0,1”,
+„100 +0,2 -0,1” (zero, fără semn); cu unitatea arătată, ea vine la capăt („100 ±0,1 mm”). În textul cotei, toleranța stă
+lângă valoare, în locul lui `<>`. Ca orice cotă, nu se taie; la export intră în cifrele cotei (și în textul cotei DIMENSION).
 
 **Fă desen din cotă** (în panoul cotei alese): desenul cotei devine o piesă obișnuită, exact unde era cota: liniile și cifrele
 ca trăsături (cifrele cu fontul cu o singură linie), capetele ca mici contururi închise. Piesa nouă n-are nicio tăiere: e

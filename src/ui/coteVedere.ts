@@ -22,10 +22,14 @@ export type CotaPanou = {
   readonly stare: 'libera' | 'legata' | 'dezlegata';
   readonly motiv: 'forma' | 'noduri' | null;
   readonly d: number;
+  /** Toleranța (felia 10.4↑e-1): abaterea de sus și cea de jos, în mm (la unghi, grade), sau null. */
+  readonly toleranta: { readonly sus: number; readonly jos: number } | null;
   readonly actiuni: {
     readonly dezleaga: () => RezultatActiune;
     readonly text: (text: string) => RezultatActiune;
     readonly distanta: (d: number) => RezultatActiune;
+    /** Toleranța nouă, sau null (fără); refuzată în afara marginilor sau cu cea de sus sub cea de jos. */
+    readonly toleranta: (t: { readonly sus: number; readonly jos: number } | null) => RezultatActiune;
     readonly sterge: () => RezultatActiune;
     /** „Fă desen din cotă” (felia 10.4↑d-2), cu „Șterge cota” sau fără: vine după fontul cifrelor, deci la o promisiune. */
     readonly desen: (sterge: boolean) => Promise<RezultatActiune>;

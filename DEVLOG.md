@@ -16350,3 +16350,60 @@ commit-ul împins).
   136 / 136, paginile 60 / 60; rapidul, verde pe `2d5b9303`; totalul 923,3 / 1 000 kB, pornirea 111,7 (cu Atelierul 117,2 / 125).
 - **Linia frezelor** a luat v31 (16.A↑e-1, ADR 0303 propus); un câmp nou pe altă linie ia v32.
 - **Documentele:** decizia în `CLAUDE.md`; starea din `docs/linii/principala.md`.
+
+## 2026-11-26 — Felia 10.4↑e-1: toleranțele cotelor (ADR 0330)
+
+**Prompt:** sesiunea principală, 26.11, 20:16, transmițând cuvântul owner-ului: „Zi-le ca pot continua cu ce urmeaza la fiecare”
+(cele „mai târziu” din ADR 0330, în ordinea recomandată: întâi toleranțele și lungimile, apoi cota între foi, la urmă setările
+în cont).
+**Started:** 26.11, 20:20, în sesiunea cloud a liniei cotelor. **Completed:** 26.11, 20:55 (în container; CI-ul, pe commit-ul
+împins).
+
+- **Proba întâi, pe hârtie:** `cote.toleranta.test.ts`: scrierea (simetrică, abateri, zero fără semn, fără pasul cifrei; cm,
+  inch, fracții, grade, grade-minute-secunde), cifra cu toleranța (unitatea la capăt, prefixul razei, `<>`), citirea și
+  punerea, ușa, programul neatins pe placa 1, exportul (text, textul DIMENSION, trăsăturile din „Fă desen din cotă”).
+- **Pur:** `tolerantaCota`, `scrieToleranta`, `cifraCuToleranta` (`src/model/desenCota.ts`), `cotaCuToleranta`
+  (`src/model/cote.ts`); judecata ușii (`src/model/judecataCote.ts`). **Panoul cotei:** rândul Toleranța, cu acțiunea
+  `toleranta` a cotei alese. Exportul și pânza iau cifra cu toleranța.
+- **Găsit de otrăvuri și reparat:** după „Cu abateri”, „Simetrică” și o anulare, panoul arăta „Simetrică” peste abateri
+  diferite; felul vine acum din toleranță. Proba desenului cotei citește și textul cifrei.
+- Întrebările 11–14, la owner, cu recomandările (11a implementată). Manualul (ro, en), e2e noi 2; otrăvurile 20 / 20, într-o
+  clonă. Pornirea 111,6 kB (neschimbată), totalul 923,0 → 923,9 / 1 000 kB (+0,9, măsurat local); `main` `78075223` adus
+  (doar documente). Urmează e-2 (lungimile).
+
+## 2026-11-26 — Felia 10.4↑e-2: lungimea laturii și a conturului (ADR 0330)
+
+**Prompt:** același cu e-1 (sesiunea principală, 26.11, 20:16: „Zi-le ca pot continua cu ce urmeaza la fiecare”; întâi
+toleranțele și lungimile).
+**Started:** 26.11, 20:58, în sesiunea cloud a liniei cotelor, după e-1. **Completed:** 26.11, 21:30 (în container; CI-ul, pe
+commit-ul împins).
+
+- **Proba întâi, pe hârtie:** `cote.lungime.test.ts`: lungimea laturii (100, 50, semicercul 20π, cubica 50 (√2 + asinh 1)) și
+  a conturului (300, 40 + 20π), simbolul arcului doar pe arc și cubică, „L ” pe contur, urma la dezlegare (și scrisă de jurnal),
+  desenul etichetei (linia, umărul, săgeata, simbolul arcului), punerea din clic, exportul fără DIMENSION, ușa, programul
+  neatins pe placa 1.
+- **Pur:** `lungimeCota`, `masuraCota`, `cotaVazuta` (`src/model/cote.ts`), `lungimeSegmentului` (`src/model/curba.ts`),
+  `desenLungime` (`src/model/desenCota.ts`), `cotaLungimeLa` (`src/model/coteLungime.ts`); judecata ușii; jurnalul scrie urma.
+  **Unealta:** cererile `l` și `c` (din meniul de clic dreapta), tragerea etichetei, „Dezleagă” cu urma. **Exportul:** prin
+  `cotaCitita`, comun cu „Fă desen din cotă”; lungimea n-are DIMENSION.
+- **Bara de sus nu mai are loc** (22 px liberi în română, un buton are 34): lungimea stă în meniul de clic dreapta (întrebarea
+  15). Oracolul Python, cu corpusul al cincilea, trece din prima pe valorile de pe hârtie (DXF 103 segmente, exact). Manualul
+  (ro, en), e2e noi 2; otrăvurile, într-o clonă. Pornirea 111,6 kB (neschimbată), totalul 923,9 → 925,4 / 1 000 kB (+1,5,
+  măsurat local). Urmează f (cota între foi).
+
+
+## 2026-11-26 — Felia 10.4↑f: Măsoară între foi (ADR 0330)
+
+**Prompt:** același cu e-1 (sesiunea principală, 26.11, 20:16: „Zi-le ca pot continua cu ce urmeaza la fiecare”; ordinea:
+toleranțele, lungimile, cota între foi, setările în cont).
+**Started:** 26.11, 21:40, în sesiunea cloud a liniei cotelor, după e-2 și după `main` adus (3.Av, 3.Aw; ciocnirea doar aici, în
+DEVLOG). **Completed:** 26.11, 22:15 (în container; CI-ul, pe commit-ul împins).
+
+- **Întrebarea 13, varianta a:** nicio cotă ținută între foi, nimic nou în document (v30).
+- **Proba întâi, pe hârtie:** `cote.foi.test.ts`: din foaia A, punctele foii B la X + 400 (300 + 100 între foi), din B, ale lui A
+  la X − 400, conturul mutat, fiecare punct cu foaia lui și fără legătură, colțurile celor două foi la `SPATIU_FOI`.
+- **Pur:** `surseFoiVecine` (`src/model/puncteCote.ts`). **Unealta:** doar la Măsoară și doar cu „Toate foile pe pânză”; o
+  măsură cu un capăt pe altă foaie are nota „Între foi: doar măsura, nu se păstrează” în locul lui „Păstrează”, iar Enter o
+  spune, fără cotă.
+- Manualul (ro, en), e2e nou 1; otrăvurile 16 / 16, într-o clonă. Pornirea 111,7 kB (neschimbată), totalul 925,7 → 926,0 /
+  1 000 kB (+0,3, măsurat local). Urmează g (setările în cont), cu mărimea bucății contului spusă întâi sesiunii principale.
