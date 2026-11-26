@@ -5,13 +5,28 @@
  * - configuratorul: baza sau partea de sus, mărimea, jocul pivotului (doar la bază), cu numele, cotele și textul de pe
  *   hârtie; un joc din afara marginilor nu e primit, iar unul cu mai multe zecimale e adus din 0,05 în 0,05;
  * - STL-ul descărcat e închis și are cotele de pe hârtie; „Fă placa turnantă” pune în listă amândouă piesele; „Se prinde
- *   cu” arată pivotul (un capăt de știft Technic).
+ *   cu” arată pivotul (un capăt de știft Technic);
+ * - o construcție din stocare cu partea de sus scrisă cu un joc (de mână: pagina nu-l pune) își numește piesa fără el:
+ *   jocul e al pivotului, nu al părții de sus.
  */
 import { readFileSync } from 'node:fs';
 import { test, expect, type Page } from '@playwright/test';
 import { paginiPlanificator } from '../../scripts/construieste-trenulet.ts';
 import { intraIn3D, threeDinPachet } from './ajutor-atelier.ts';
 
+const PAGINA = 'http://easy3draw.test/';
+const CHEIE = 'atelier.caramizi.v1';
+
+/** Pagina planificatorului, servită de pe o origine a probei, cu stocarea dată, în partea 3D. */
+async function cuStocare(page: Page, stocat: unknown): Promise<void> {
+  const { preview } = paginiPlanificator();
+  await page.route(PAGINA, (r) => r.fulfill({ body: preview, contentType: 'text/html; charset=utf-8' }));
+  await threeDinPachet(page);
+  await page.route(/fonts\.(googleapis|gstatic)\.com/, (r) => r.abort());
+  await page.addInitScript(([k, s]) => { localStorage.setItem(k, s); }, [CHEIE, JSON.stringify(stocat)] as const);
+  await page.goto(PAGINA);
+  await intraIn3D(page);
+}
 async function atelier(page: Page): Promise<void> {
   await threeDinPachet(page);
   await page.setContent(paginiPlanificator().preview);
@@ -130,4 +145,17 @@ test('STL-ul bazei e închis și are cotele de pe hârtie; „Fă placa turnant�
   await expect(page.locator('#at-prinde-are')).toHaveText('4 locașuri · 1 știft Technic');
   await page.locator('#at-prinde summary').click();
   await expect(page.locator('#at-prinde-lista [data-rand="stiftTechnic"] [data-prinde="grinda"]')).toHaveCount(1);
+});
+
+test('o construcție din stocare cu partea de sus scrisă cu un joc își numește piesa fără el; baza, cu jocul ei', async ({ page }) => {
+  const piesa = (id: string, def: object, z: number) => ({ id, def, x: 0, y: 0, z, rot: 0, culoare: '#2b6cc8' });
+  await cuStocare(page, {
+    constructii: [{ id: 'a', nume: '', nr: 1, model: [
+      piesa('b', { tip: 'turnanta', piesa: 'baza', marime: 2, joc: 0.1 }, 0),
+      piesa('s', { tip: 'turnanta', piesa: 'sus', marime: 2, joc: 0.1 }, 1),
+    ] }],
+    activa: 'a',
+  });
+  await page.locator('#at-vedere-mod [data-v="model"]').click();
+  await expect(page.locator('#at-c-piese tbody tr td:first-child')).toHaveText(['Placă turnantă 2×2, baza, jocul 0,1', 'Placă turnantă 2×2, partea de sus']);
 });

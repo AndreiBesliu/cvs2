@@ -60,12 +60,14 @@ o('A12', AT, 'if (v >= -0.1 && v <= 0.2) { p.joc = v; schimbat(); }', 'if (v >= 
 o('A13', AT, 'iar gaura din calibrare, Ø${fmt(q.gauraD, 2)} mm: ${fmt(q.jocRadial, 3)} mm de jur împrejur.`', 'iar gaura din calibrare, Ø${fmt(q.gauraD, 2)} mm: ${fmt(q.jocRadial, 2)} mm de jur împrejur.`', 'e2e', 'jocul de jur împrejur, rotunjit la sutimi')
 o('A14', AT, '      alege("#at-tu-marime", v => { p.marime = +v; });', '      alege("#at-tu-marime", v => { p.marime = 2; });', 'e2e', 'mărimea nu se schimbă')
 o('A15', AT, '      alege("#at-tu-piesa", v => { p.piesa = v; });', '      alege("#at-tu-piesa", v => { p.piesa = "baza"; });', 'e2e', 'piesa nu se schimbă')
-o('A16', AT, "    turnanta: `<path d=\"M3 21h18v-3.5h-18z\"/>", "    turnanta_: `<path d=\"M3 21h18v-3.5h-18z\"/>", 'e2e', 'fără pictogramă')
+o('A16', AT, "    turnanta: `<path d=\"M3 21h18v-3.5h-18z\"/>", "    turnanta_: `<path d=\"M3 21h18v-3.5h-18z\"/>", 'pictograme', 'fără pictogramă')
 o('A17', AT, 'toast(tr`${n} × placa turnantă (baza și partea de sus) în listă.`);', 'toast(tr`${n} × placa turnantă în listă.`);', 'e2e', 'mesajul nu spune piesele')
 o('A18', AT, '      $("#at-tu-fa").onclick = adaugaTurnanta;', '', 'e2e', '„Fă placa turnantă” nu face nimic')
 
 SETURI = {
     'turnanta': ['test/unit/trenulet.turnanta.test.ts', 'test/unit/trenulet.prinderi.test.ts'],
+    # fiecare piesă din FAMILII are desenul ei: proba unitară a pictogramelor (galeria arată altfel desenul generic)
+    'pictograme': ['test/unit/trenulet.pictograme.test.ts'],
 }
 E2E = ['test/e2e/trenulet.turnanta.spec.ts', 'test/e2e/trenulet.pictograme.spec.ts', 'test/e2e/trenulet.file.spec.ts']
 # pagina și pachetul se fac din surse în spec: build-ul aplicației nu le schimbă (docs/otravuri.md)
