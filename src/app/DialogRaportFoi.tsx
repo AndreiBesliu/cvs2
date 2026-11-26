@@ -10,7 +10,8 @@
  * pune pe desenul ei, mărite cât să se citească, cu desenul pe tot rândul; desenul cu cote, setările și fontul cifrelor vin la
  * cerere, doar cu bifa pusă. Oprită, desenul e cel de dinainte; CSV-ul nu le are niciodată (e lista de tăiere).
  */
-import { useEffect, useMemo, useState, type KeyboardEvent, type ReactNode } from 'react';
+import { useEffect, useMemo, useState, type ReactNode } from 'react';
+import { useEscapeFereastra } from '../ui/escapeFereastra.ts';
 import { createPortal } from 'react-dom';
 import '../i18n/export.ts';
 import { mesajeGata } from '../i18n/laCerere.ts';
@@ -110,12 +111,8 @@ export function DialogRaportFoi({ doc, origine, z0, onInchide }: {
     a.click();
     setTimeout(() => { URL.revokeObjectURL(url); }, 10_000);
   };
-  const tasta = (e: KeyboardEvent): void => {
-    if (e.key !== 'Escape') return;
-    e.preventDefault();
-    e.stopPropagation();
-    onInchide();
-  };
+  // Escape, oriunde ar fi focusul (felia 3.Aw): după „Tipărește” sau „CSV”, focusul poate fi pe `body`.
+  useEscapeFereastra(onInchide);
   const comutator = (atribut: string, valori: ReadonlyArray<readonly [string, string]>, ales: string, alege: (v: string) => void): ReactNode => (
     <div role="group" className="raport-comutator">
       {valori.map(([v, text]) => (
@@ -125,7 +122,7 @@ export function DialogRaportFoi({ doc, origine, z0, onInchide }: {
   );
 
   return createPortal(
-    <div className="dialog raport-foi-tipar" role="dialog" aria-modal="true" aria-labelledby="raport-titlu" data-testid="dialog-raport" onKeyDown={tasta}>
+    <div className="dialog raport-foi-tipar" role="dialog" aria-modal="true" aria-labelledby="raport-titlu" data-testid="dialog-raport">
       <div className="dialog-cutie raport-foi">
         <h2 id="raport-titlu">{t('export.raport.titlu')}</h2>
         <p className="nota">{origine === 'centru' ? t('export.raport.parametri.centru', { z0: t(`export.z0.${z0}`) })

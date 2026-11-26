@@ -72,7 +72,7 @@ test('paleta de comenzi (Ctrl+K): se deschide, filtrează fără diacritice, rul
   await expect(optiuni).toHaveAttribute('aria-selected', 'true');
   await page.keyboard.press('Enter');
   await expect(paleta).toHaveCount(0);
-  await expect(randuri(page)).toHaveText(['cerc R15.00 cu centrul la X 70.00, Y 50.00']);
+  await expect(randuri(page)).toHaveText(['cerc R15,00 cu centrul la X 70,00, Y 50,00']);
   await expect(dreptunghi).toBeFocused();
   // Escape o închide fără să ruleze nimic; focusul se întoarce tot pe buton.
   await page.keyboard.press('Control+k');
@@ -155,7 +155,7 @@ test('panourile se strâng și se deschid din colțul lor; foaia se potrivește 
   // Deschise la loc, cu ce aveau.
   await lista.click();
   await expect(lista).toHaveAttribute('aria-expanded', 'true');
-  await expect(randuri(page)).toHaveText(['cerc R15.00 cu centrul la X 70.00, Y 50.00']);
+  await expect(randuri(page)).toHaveText(['cerc R15,00 cu centrul la X 70,00, Y 50,00']);
   // Cercul e ales: bara selecției arată, neapăsat, că proprietățile sunt strânse, și le deschide.
   const dinSelectie = page.locator('[data-context="vedere.proprietati"]');
   await expect(dinSelectie).toHaveAttribute('aria-pressed', 'false');

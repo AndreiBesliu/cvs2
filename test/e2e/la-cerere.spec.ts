@@ -50,7 +50,7 @@ test('(calculul vine cu panoul) doar panoul de proprietăți se poate încărca:
   await x.fill('5');
   await x.press('Enter');
   await expect(x).toHaveValue('5');
-  await expect(page.getByTestId('selectie')).toContainText('X 5.00');
+  await expect(page.getByTestId('selectie')).toContainText('X 5,00');
   await expect(page.getByTestId('jurnal')).toHaveText('0 erori în jurnalul local');
 });
 
@@ -89,7 +89,7 @@ test('schemele documentului care nu vin (o publicare nouă): proiectul salvat e 
   await page.unroute(/schemaDocument-[^/]*\.js$/);
   await page.reload();
   await expect(page.getByTestId('lista-vectori').locator('button[data-instanta]')).toHaveCount(1);
-  await expect(page.getByTestId('lista-vectori')).toContainText('dreptunghi 100.00 × 60.00');
+  await expect(page.getByTestId('lista-vectori')).toContainText('dreptunghi 100,00 × 60,00');
 });
 
 test.describe('dicționarul limbii, la cerere', () => {
@@ -185,13 +185,13 @@ test.describe('alegerea cu clicul, la cerere', () => {
     const elibereaza = await alegereOprita(page);
     await page.goto('/');
     await adauga(page, 'dreptunghi');
-    await expect(page.getByTestId('selectie')).toContainText('dreptunghi 100.00 × 60.00');
+    await expect(page.getByTestId('selectie')).toContainText('dreptunghi 100,00 × 60,00');
     const la = await ecran(page, await vedere(page));
     const p = la(30, 30);
     await page.mouse.click(p.x, p.y);
     await expect(page.getByTestId('selectie')).toContainText('Nimic selectat');
     elibereaza();
-    await expect(page.getByTestId('selectie')).toContainText('dreptunghi 100.00 × 60.00 la X 20.00, Y 20.00');
+    await expect(page.getByTestId('selectie')).toContainText('dreptunghi 100,00 × 60,00 la X 20,00, Y 20,00');
     await expect(page.getByTestId('jurnal')).toHaveText('0 erori în jurnalul local');
   });
 
@@ -208,11 +208,11 @@ test.describe('alegerea cu clicul, la cerere', () => {
     // Fără selecție, tragerea n-a pornit: forma stă pe loc.
     await expect(page.getByTestId('selectie')).toContainText('Nimic selectat');
     elibereaza();
-    await expect(page.getByTestId('selectie')).toContainText('dreptunghi 100.00 × 60.00 la X 20.00, Y 20.00');
+    await expect(page.getByTestId('selectie')).toContainText('dreptunghi 100,00 × 60,00 la X 20,00, Y 20,00');
     await page.mouse.move(a.x + 100, a.y, { steps: 5 });
     await page.mouse.up();
-    const x = (20 + 100 / v.scara).toFixed(2);
-    await expect(page.getByTestId('selectie')).toContainText(`la X ${x}, Y 20.00`);
+    const x = (20 + 100 / v.scara).toFixed(2).replace('.', ',');
+    await expect(page.getByTestId('selectie')).toContainText(`la X ${x}, Y 20,00`);
   });
 
   test('bucata care nu vine: clicul nu alege, cu intrarea în jurnal la fiecare clic; după reîncărcare alege', async ({ page }) => {
@@ -237,13 +237,13 @@ test.describe('alegerea cu clicul, la cerere', () => {
     if (cereri === 3) {
       // Unde browserul reîncearcă, rețeaua revenită ajunge fără reîncărcare: clicul următor alege.
       await page.mouse.click(p.x, p.y);
-      await expect(page.getByTestId('selectie')).toContainText('dreptunghi 100.00 × 60.00 la X 20.00, Y 20.00');
+      await expect(page.getByTestId('selectie')).toContainText('dreptunghi 100,00 × 60,00 la X 20,00, Y 20,00');
     }
     await page.reload();
     const dupa = await ecran(page, await vedere(page));
     const q = dupa(30, 30);
     await page.mouse.click(q.x, q.y);
-    await expect(page.getByTestId('selectie')).toContainText('dreptunghi 100.00 × 60.00 la X 20.00, Y 20.00');
+    await expect(page.getByTestId('selectie')).toContainText('dreptunghi 100,00 × 60,00 la X 20,00, Y 20,00');
     await expect(page.getByTestId('jurnal')).toHaveText('2 erori în jurnalul local');
   });
 });

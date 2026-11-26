@@ -13,7 +13,7 @@ test.use({ locale: 'ro-RO' });
 const lista = (page: Page) => page.getByTestId('lista-vectori');
 const randuri = (page: Page) => lista(page).locator('button[data-instanta]');
 const dialog = (page: Page) => page.getByTestId('dialog-asezare');
-const dr = (x: number, y: number): string => `dreptunghi 100.00 × 60.00 la X ${x}.00, Y ${y}.00`;
+const dr = (x: number, y: number): string => `dreptunghi 100,00 × 60,00 la X ${x},00, Y ${y},00`;
 
 async function clicDreapta(page: Page, x: number, y: number): Promise<void> {
   const la = await ecran(page, await vedere(page));

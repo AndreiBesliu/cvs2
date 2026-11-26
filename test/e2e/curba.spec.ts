@@ -44,7 +44,7 @@ test('cercul copiat de 4 ori pe linie: previzualizarea, copiile la pas egal, ale
   await expect(page.getByTestId('retea-previzualizare').locator('polygon')).toHaveCount(4);
   await page.locator('[data-retea="copiaza"]').click();
   await expect(randuri(page)).toHaveCount(6);
-  for (const x of ['100.00', '150.00', '200.00', '250.00']) await expect(page.getByTestId('lista-vectori')).toContainText(`X ${x}, Y 150.00`);
+  for (const x of ['100,00', '150,00', '200,00', '250,00']) await expect(page.getByTestId('lista-vectori')).toContainText(`X ${x}, Y 150,00`);
   await expect(randuri(page).nth(1)).toHaveAttribute('aria-pressed', 'false');
   await expect(page.getByTestId('lista-vectori').locator('button[data-instanta][aria-pressed="true"]')).toHaveCount(5);
   await page.locator('[data-actiune="istoric.anuleaza"]').click();
@@ -76,7 +76,7 @@ test('față de curbă (ADR 0074 §3): la stânga, la 2 mm, cercurile R15 stau c
   await expect(page.getByTestId('motiv-retea')).toHaveCount(0);
   await page.locator('[data-retea="copiaza"]').click();
   await expect(randuri(page)).toHaveCount(6);
-  for (const x of ['100.00', '150.00', '200.00', '250.00']) await expect(page.getByTestId('lista-vectori')).toContainText(`X ${x}, Y 167.00`);
+  for (const x of ['100,00', '150,00', '200,00', '250,00']) await expect(page.getByTestId('lista-vectori')).toContainText(`X ${x}, Y 167,00`);
 });
 
 test('doar curba aleasă: motivul, Copiază oprit', async ({ page }) => {

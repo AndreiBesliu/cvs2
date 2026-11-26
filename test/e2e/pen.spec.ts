@@ -220,5 +220,5 @@ test('Noduri: colțul devine curbă pe ambele părți, mânerul tras îl roteșt
   await expect(noduri(page)).toHaveAttribute('data-tip', 'colt');
   // Un pas de anulare pe fiecare schimbare: cinci, până la dreptunghi.
   for (let k = 0; k < 5; k++) await page.locator('[data-actiune="istoric.anuleaza"]').click();
-  await expect(randuri(page).first()).toContainText('dreptunghi 100.00 × 60.00');
+  await expect(randuri(page).first()).toContainText('dreptunghi 100,00 × 60,00');
 });

@@ -7,7 +7,8 @@
  * Doar aranjamentele pe care build-ul le are se pot alege (azi, Insule); celelalte se văd, „în curând”, cu descrierea lor.
  * Vine la cerere, cu mesajele panourilor (`carcasa`).
  */
-import { useEffect, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { useEscapeFereastra } from '../ui/escapeFereastra.ts';
 import '../i18n/carcasa.ts';
 import { mesajeGata } from '../i18n/laCerere.ts';
 import { t } from '../i18n/t.ts';
@@ -83,18 +84,15 @@ export function Aspectul({ tema, onTema, onAranjament, onInchide, focusInapoi }:
     }
     onInchide();
   };
-  const tasta = (e: KeyboardEvent): void => {
-    if (e.key !== 'Escape') return;
-    e.preventDefault();
-    renunta();
-  };
+  // Escape e „Renunță”, oriunde ar fi focusul (felia 3.Aw).
+  useEscapeFereastra(renunta);
   const densitate = (mare: boolean): Densitate => (mare ? 'mare' : 'normala');
   const eticheta = (id: IdAranjament): string => {
     if (!ARANJAMENTE_DISPONIBILE.includes(id)) return t('aspect.in-curand');
     return id === 'modern' ? t('aspect.implicit') : '';
   };
   return (
-    <div className="dialog" role="dialog" aria-modal="true" aria-labelledby="aspect-titlu" data-testid="dialog-aspect" onKeyDown={tasta}>
+    <div className="dialog" role="dialog" aria-modal="true" aria-labelledby="aspect-titlu" data-testid="dialog-aspect">
       <div className="dialog-cutie dialog-aspect">
         <h2 id="aspect-titlu">{t('vedere.aspect')}</h2>
         <p className="aspect-intro">{t('aspect.intro')}</p>

@@ -408,9 +408,8 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   butonul apăsat pleca din pagină sau se oprea sub focus, ori după un clic pe un text. Acum se ascultă pe
   `document` cât fereastra e deschisă, pe urcare, cu `defaultPrevented` (un strat de deasupra, ca manualul, își ține
   tasta), și închide stratul de sus care se vede, citit din pagină în clipa apăsării. **O fereastră nouă își ascultă
-  Escape pe `document`, nu pe ea însăși, iar proba ei apasă Escape după ce butonul apăsat a plecat sau s-a oprit**
-  (aceeași scăpare e încă în „Așază pe foi”, Setări, raportul foilor, lucrarea primită, Aspectul și fereastra
-  extensiilor: o felie comună, la cuvântul owner-ului). Cu ea, linia frezelor n-are felie pornită: urmează, la
+  Escape pe `document`, nu pe ea însăși (din 3.Aw, cu `useEscapeFereastra`), iar proba ei apasă Escape după ce butonul
+  apăsat a plecat sau s-a oprit** (aceeași scăpare, în celelalte șase ferestre, reparată în 3.Aw). Cu ea, linia frezelor n-are felie pornită: urmează, la
   cuvântul owner-ului, 16.A↑d (calibrarea, după placa 4), e (bila și toroidala, cu relieful), f (profilul desenat),
   g (valorile pe material). Felia: pornirea +0, totalul +0,1 kB.
   **Plafonul pornirii 120 kB (ADR 0145, decizia owner-ului din 24.11, „ok, ridica plafonul pornirii la 120 kB”):** după
@@ -1159,6 +1158,17 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   știută. **Imprimanta falsă are `bucataIntaiMs`** (`test/e2e/imprimantaFalsa.ts`): întâi o bucată doar cu progresul,
   apoi starea întreagă, la fiecare legare. **O probă care depinde de ordinea în care sosesc cadrele imprimantei
   forțează ordinea rea, nu o așteaptă de la ceas.**
+  **Numele elementelor, cu numerele în formatul limbii (felia 3.Av, constatarea 14 a auditului exportului)** gata pe
+  26.11, scrisă de sesiunea principală la „Ok, fa-le” al owner-ului: `descriere` (`src/app/descriereElement.ts`), comun
+  barei de jos, listei, avertismentelor, fereastrei exportului și titlului dopului, scrie în română cu virgula zecimală,
+  în engleză cu punct, după limba de acum. **O probă e2e care citește numele unui element îl scrie cu virgulă**
+  („dreptunghi 100,00 × 60,00 la X 20,00, Y 20,00”; un parser al rândului ia `[\d,]+` și schimbă virgula în punct
+  înaintea lui `Number`). Cotele din panou își păstrează punctul. **Escape închide fereastra oriunde ar fi focusul, în
+  celelalte șase ferestre (felia 3.Aw)** gata pe 26.11, tot la „Ok, fa-le”: „Așază pe foi”, Setări, raportul foilor,
+  lucrarea primită, Aspectul, ferestrele extensiilor și întrebarea de la închiderea unei extensii trec prin
+  `useEscapeFereastra` (`src/ui/escapeFereastra.ts`: pe `document`, pe urcare, cu `defaultPrevented`, apoi oprit).
+  **O fereastră nouă își ia Escape-ul de la `useEscapeFereastra`, iar proba ei pune focusul pe `body` înaintea
+  tastei.** Otrăvurile 6 / 6 și 8 / 8; pornirea și totalul, din porțile ramurii.
   **Biblioteca extensiilor (ADR 0230, felia 3.Xg)** gata pe 07.11, în worktree-ul `biblioteca`, cu recomandările („Da,
   1a–7a”), **unită în `main` pe 07.11** („Da, unește”): Easy 3Draw se instalează și se actualizează dintr-o listă servită
   lângă aplicație. **La fiecare build,

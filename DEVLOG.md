@@ -16238,3 +16238,17 @@ angrenaje […], brațul de macara, barca cu elice”); pornită după unirea lu
 - **Nepornite:** liniile fără sesiune (tăierea, imprimanta, incrustațiile, planșele, trasarea, aranjamentele) și sesiunea
   designului, de pe calculatorul owner-ului.
 - **Documentele:** decizia în `CLAUDE.md`; starea din `docs/linii/principala.md` și indexul liniilor.
+
+## 2026-11-26 — Sesiunea principală în cloud: 3.Av și 3.Aw (Model: Claude Opus 5.5)
+
+**Prompt:** „Ok, fa-le”
+**Started:** 26.11, 20:19. **Completed:** 26.11, 21:03.
+
+- **3.Av** (`6f7cc4a3`): numele elementelor, cu numerele în formatul limbii (constatarea 14 a auditului exportului); proba
+  unitară întâi, cele 127 de rânduri ale probelor e2e care citeau numele aduse la virgulă; otrăvurile 6 / 6.
+- **3.Aw** (`7dd7b9a8`): Escape închide fereastra oriunde ar fi focusul, în celelalte șase ferestre, prin
+  `useEscapeFereastra`; șapte probe noi, toate roșii pe aplicația dinainte, verzi după; otrăvurile 8 / 8.
+- **Local:** e2e întreg pe 3.Av, 975 / 980 (trei căderi: un parser al probei exportului, reparat; proba atelierului în
+  engleză, verde la reluare; proba podului WiFi, care cade și singură în container, din rețeaua lui); după 3.Aw, cele nouă
+  spec-uri atinse, 62 / 62.
+- **Documentele:** fișa etapei 3 (3.Av, 3.Aw), registrul otrăvurilor, `CLAUDE.md`.
