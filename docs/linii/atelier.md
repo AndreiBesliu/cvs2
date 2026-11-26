@@ -26,7 +26,7 @@ PR-ul `AndreiBesliu/cvs2#59`). 3.Ch (construcțiile cu nume și lista lor de pie
 unită în `main` pe 26.11 (`3bf86d15`, PR-ul `AndreiBesliu/cvs2#61`). 3.Ci (construcțiile gata: șasiul cu patru roți,
 cutia de angrenaje, brațul de macara, barca cu elice; 18.42.0), unită în `main` pe 26.11 (`57e58798`, PR-ul
 `AndreiBesliu/cvs2#63`). **3.Ck, pornită pe 26.11 la cuvântul owner-ului (prin sesiunea principală), cu jocul din
-calibrare, s-a despărțit: 3.Ck-1 (placa turnantă; 18.43.0), unită în `main` pe 26.11 (`0a1f26c8`, PR-ul
+calibrare, s-a despărțit: 3.Ck-1 (placa turnantă; 18.43.0), unită în `main` pe 27.11 (`0a1f26c8`, PR-ul
 `AndreiBesliu/cvs2#68`); 3.Ck-2 (balamaua; 18.44.0), gata pe ramură pe 26.11: ADR 0284 are toate feliile făcute.** Versiunea următoare a pachetului: 18.45.0._
 
 ## Numerele liniei

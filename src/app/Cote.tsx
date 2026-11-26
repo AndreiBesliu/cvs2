@@ -47,6 +47,8 @@ import type { RezultatActiune } from '../ui/actiuni.ts';
 import { alegeCota, publicaPanou, publicaRanduri, useAscunse, useStareCote } from '../ui/coteVedere.ts';
 import './cote.css';
 import { formatCote, optiuniLipireCote, setariCote, stilCote, useSetariCote, type SetariCote } from './setariCote.ts';
+import type { Config } from './config.ts';
+import { useContTinut } from './dreptCont.ts';
 
 /** Felurile din bara uneltei, în ordine. */
 export const FELURI_UNEALTA = ['automata', 'orizontala', 'verticala', 'aliniata', 'lant', 'baza', 'raza', 'diametru', 'unghi', 'masoara'] as const;
@@ -277,7 +279,7 @@ export type CerereCote = { readonly mod: 'd' | 'm' | 's' | 'l' | 'c'; readonly n
 /** Cererile „Cotează selecția” deja făcute: un strat montat din nou nu le repetă. */
 const CERERI_FACUTE = new WeakSet<CerereCote>();
 
-export function StratCote({ doc, indexFoaie, selectie, vedere, marime, zona, unealta, activ, loc, locJos, cerere, lipire, grila, virgula, toateFoile, onScrie, onDesen, onUnealta, onSetari, poateDublu }: {
+export function StratCote({ doc, indexFoaie, selectie, vedere, marime, zona, unealta, activ, loc, locJos, cerere, lipire, grila, virgula, toateFoile, config = null, onScrie, onDesen, onUnealta, onSetari, poateDublu }: {
   readonly doc: Document;
   readonly indexFoaie: number;
   /** Instanțele alese în editor: „Cotează selecția” le cotează pe cele de pe foaie (felia 10.4↑d-1). */
@@ -301,6 +303,8 @@ export function StratCote({ doc, indexFoaie, selectie, vedere, marime, zona, une
   readonly virgula: boolean;
   /** „Toate foile pe pânză” (ADR 0210 §1): cotele foilor vecine se desenează lângă ale foii active, după setare (a-4). */
   readonly toateFoile: boolean;
+  /** Configurația aplicației, pentru setările ținute în cont (felia 10.4↑g); null: fără cont. */
+  readonly config?: Config | null;
   /** Lista nouă a cotelor foii (acțiunea `foaie.cote`), cu verdictul ei. */
   readonly onScrie: (cote: readonly Cota[]) => RezultatActiune;
   /** „Fă desen din cotă” (felia 10.4↑d-2): formele desenului și, cu „Șterge cota”, lista fără ea (acțiunea `foaie.desen-din-cota`). */
@@ -312,6 +316,13 @@ export function StratCote({ doc, indexFoaie, selectie, vedere, marime, zona, une
   readonly poateDublu: () => boolean;
 }): ReactElement | null {
   const setari = useSetariCote();
+  // Setările cotelor în cont (felia 10.4↑g): cu unealta aleasă și contul deschis, o trecere prin bucata sincronizării.
+  const cont = useContTinut();
+  const uidCont = cont?.drept ? cont.uid : null;
+  useEffect(() => {
+    if (!unealta || uidCont === null || config === null) return;
+    import('./preferinteSincronizare.ts').then((m) => { m.legaSetarileCotelor(uidCont, config); }, () => undefined);
+  }, [unealta, uidCont, config]);
   const stil = useMemo(() => stilCote(setari), [setari]);
   const format = useMemo(() => formatCote(setari, virgula), [setari, virgula]);
   const foaie = doc.foi[indexFoaie];

@@ -16444,3 +16444,38 @@ DEVLOG). **Completed:** 26.11, 22:15 (în container; CI-ul, pe commit-ul împins
   spune, fără cotă.
 - Manualul (ro, en), e2e nou 1; otrăvurile 16 / 16, într-o clonă. Pornirea 111,7 kB (neschimbată), totalul 925,7 → 926,0 /
   1 000 kB (+0,3, măsurat local). Urmează g (setările în cont), cu mărimea bucății contului spusă întâi sesiunii principale.
+
+## 2026-11-26 — Felia 10.4↑g: setările cotelor în cont (ADR 0330)
+
+**Prompt:** sesiunea principală, 26.11, 22:15: „da, g pe varianta 14a, cum ai descris-o, după raportul lui f”, cu condițiile:
+callable-ul `preferinte` cu probele pe emulatoare, documentul închis clientului, fără `cloud` setările rămân în browser,
+sincronizarea în bucata ei, adusă la cerere; Z-ul sigur și parcarea nu se mută acolo.
+**Started:** 26.11, 22:16, în sesiunea cloud a liniei cotelor, după f. **Completed:** 26.11, 22:40 (în container; CI-ul, pe
+commit-ul împins).
+
+- **Proba întâi:** pe emulatorul Firestore, `preferinte.emulator.test.ts` (refuzurile, versiunea văzută, ciocnirea, fără
+  `cloud`, documentul stricat) și regula care ține documentul închis; pe hârtie, îmbinarea (`preferinte.sincron.test.ts`) și
+  trecerea pe un server și pe browsere închipuite (`preferinte.trecere.test.ts`).
+- **Serverul:** `functions/src/preferinte/actiuni.ts`, `shared/preferinte.ts`, exportul în `functions/src/index.ts`. **Aplicația:**
+  `src/model/preferinteSincron.ts` (pur), `src/app/preferinteSincronizare.ts` (la cerere), `cheamaPreferintele` /
+  `apeleazaPreferintele` în bucata contului, rândul stării și banda ciocnirii în Setări › Cotele.
+- Cap-coadă pe emulatoare, două browsere ale aceluiași cont și proba trecută (`setariCont.emulator.spec.ts`). Manualul (ro, en);
+  otrăvurile 32 / 32, într-o clonă. Pornirea 111,7 kB (neschimbată), totalul 928,9 / 1 000 kB (+2,9), contul 30,3 / 32 (+0,1),
+  măsurate local. Cu g, cele „mai târziu” din ADR 0330 sunt toate făcute.
+
+## 2026-11-26 — Sesiunea principală în cloud: a cincizeci și opta unire (28.8↑r, 3.Ck-1, 18.1↑d-3 și d-4, 10.4↑e-1, e-2, f și g, 3.Ax) (Model: Claude Opus 5.5)
+
+**Prompt:** „Zi-le ca pot continua cu ce urmeaza la fiecare” (unirile, la rapoartele liniilor; ordinul „unește ce se poate”)
+**Started:** 26.11, 22:03. **Completed:** 27.11, 01:02.
+
+- **Unirile, una peste alta, probate în paralel:** 28.8↑r (`9f442284`, #67) în `4532622d`, pe `unire-2611q`, din `f7964490`;
+  3.Ck-1 (`8292d7de`, #68) în `0a1f26c8`, pe `unire-2611r`; 18.1↑d-3 și d-4 (`7bddd762`, #65) în `709d3e2a`, pe `unire-2611s`;
+  10.4↑e-1, e-2 și f (`4c1f1c0d`, #64) în `602e5649`, pe `unire-2611t`; 3.Ax (`0df06eca`), pe `unire-2611u`; 10.4↑g (`f943406e`)
+  în `1d02dc1e`, pe `unire-2611v`, cu funcția nouă `preferinte` (serverul, publicat întâi). Ciocniri: DEVLOG,
+  traducerile roadmap-ului (ambele rânduri), catalogul controalelor (scris din nou). Completele: q 45889231745 și r 45891634795,
+  verzi; s: completul 45894771513, verde la prima trecere (60 min): unit 10 815 / 0, e2e 997 / 997, funcțiile pe emulatoare 136 / 136, paginile 60 / 60; t: completul 45897328832, verde la prima trecere (60 min): unit 10 837 / 0, e2e 1 002 / 1 002, funcțiile pe emulatoare 136 / 136, paginile 60 / 60; u: completul 45899016939, verde la prima trecere (63 min; proba în engleză, 28,8 s): unit 10 837 / 0, e2e 1 002 / 1 002, funcțiile pe emulatoare 136 / 136, paginile 60 / 60; v: completul 45899780194, verde la prima trecere (81 min; proba în engleză, 33,1 s): unit 10 853 / 0 (12 sărite, pe Linux), e2e 1 002 / 1 002, funcțiile pe emulatoare 142 / 142, paginile 62 / 62.
+- **Incidentul:** completul lotului 52 pe `main` (45888136031) a ieșit roșu doar la `trenulet.spec.ts:510` (32,7 s la limita de
+  30 s; proba crește cu fiecare piesă a atelierului: 18 → 25 s azi). 3.Ax îi dă 90 s, cu motivul; controlul local: 20 s cade,
+  90 s trece. Lotul 52 pleacă împreună cu lotul 53.
+- **Mărimea:** **totalul 932,8 / 1 000 kB**, pornirea 111,7 kB (cu ușa 116,9, cu Atelierul 117,3 / 125), `/admin` 138,3 / 200, contul 30,3 / 32; Easy 3Draw 18.43.0.
+- **Documentele:** decizia și Starea în `CLAUDE.md`; starea din `docs/linii/principala.md`; indexul liniilor.

@@ -75,6 +75,8 @@ before(async () => {
     // Biblioteca de freze a contului (ADR 0300 §7): o freză și contorul.
     await setDoc(doc(db, 'conturi/om/freze/f1'), { versiune: 1, json: '{"id":"f1"}' });
     await setDoc(doc(db, 'conturi/om/sincron/freze'), { versiune: 1, numar: 1, sterse: 0, purjatPana: 0 });
+    // Setările aplicației în cont (ADR 0330, felia 10.4↑g): setările cotelor.
+    await setDoc(doc(db, 'conturi/om/preferinte/cote'), { versiune: 1, json: '{"v":1}' });
     await setDoc(doc(db, 'setari/conturi'), { zileOffline: 7 });
     await setDoc(doc(db, 'setari/raspunsuriRapide'), { schema: 1, lista: [{ eticheta: 'Am primit', ro: 'Ne uităm.', en: '' }], versiune: 1 });
     await setDoc(doc(db, `roluri/${CONT_CIT}`), { nume: 'Conturi: citește', permisiuni: ['conturi.citeste'] });
@@ -388,6 +390,16 @@ test('biblioteca de freze din cont (ADR 0300 §7): nimeni din client n-o citeșt
     await assertFails(updateDoc(doc(ca(uid), 'conturi/om/freze/f1'), { json: null }));
     await assertFails(deleteDoc(doc(ca(uid), 'conturi/om/freze/f1')));
     await assertFails(setDoc(doc(ca(uid), 'conturi/om/sincron/freze'), { versiune: 9 }));
+  }
+});
+
+test('setările aplicației din cont (ADR 0330, felia 10.4↑g): nimeni din client nu le citește și nu le scrie, nici omul contului, nici owner-ul: doar callable-ul', async () => {
+  for (const uid of [null, 'om', 'sup', 'ccit', 'cadm', 'tot', 'own']) {
+    await assertFails(getDoc(doc(ca(uid), 'conturi/om/preferinte/cote')));
+    await assertFails(getDocs(collection(ca(uid), 'conturi/om/preferinte')));
+    await assertFails(setDoc(doc(ca(uid), 'conturi/om/preferinte/cote'), { versiune: 2, json: '{}' }));
+    await assertFails(updateDoc(doc(ca(uid), 'conturi/om/preferinte/cote'), { json: '{}' }));
+    await assertFails(deleteDoc(doc(ca(uid), 'conturi/om/preferinte/cote')));
   }
 });
 

@@ -1377,6 +1377,13 @@ sections are on the left; for now just one, **Dimensions**. At the top is the **
 settings; each group has **Back to defaults**. A number is typed with a comma or a point; one outside the limits stays in the
 field, said in red, and is not kept. **Close** (or Esc) closes the window.
 
+With the **account open**, the dimension settings are also kept in the account: on another computer, with the same account,
+they come by themselves, when the Settings window or the Dimensions tool opens. A change goes to the account 2 seconds after
+the last one, and the line under the title says how things stand (in the account, no network, or only in this browser, if
+the account's plan doesn't write to the account). If the same setting changed differently here and on another computer, a
+band asks: **Keep mine** or **Take the account’s**; until you choose, the ones here stay and nothing is sent. Without an
+account, the settings stay only in this browser, as before.
+
 - **Numbers:** the unit (mm, cm, inch, fractional inch; the drawing stays in mm), the decimals (automatic: 2, in inch 3; or
   0–6), for fractions the smallest fraction (1/2 … 1/64; the number is written reduced: 1 1/2, 3/8), trailing zeros (dropped
   or kept), rounding (to the decimals or to a step, for instance 0.5), the decimal separator (by the app

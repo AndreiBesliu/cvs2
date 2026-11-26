@@ -25,6 +25,7 @@ import { agregaUtilizarea as agregaUtilizareaZilnic } from './utilizare/agregare
 import { trateazaContul } from './conturi/actiuni.ts';
 import { administreazaConturile as administreazaConturi } from './conturi/admin.ts';
 import { trateazaFrezele } from './freze/actiuni.ts';
+import { trateazaPreferintele } from './preferinte/actiuni.ts';
 import { memorieNoua, trateazaFonturiGoogle } from './fonturi/google.ts';
 import { REGIUNI } from './regiuni.ts';
 
@@ -129,6 +130,15 @@ export const utilizare = onCall(
 export const freze = onCall(
   { region: REGIUNI.callable, enforceAppCheck: true, maxInstances: 5, memory: '256MiB', timeoutSeconds: 30 },
   async (cerere) => trateazaFrezele(getFirestore(), cerere.auth?.uid ?? null, cerere.data),
+);
+
+/**
+ * Setările aplicației în cont (ADR 0330, întrebarea 14a, felia 10.4↑g): citirea (contul deschis) și scrierea cu versiunea
+ * văzută (cu capabilitatea `cloud` a planului). Acum, doar setările cotelor.
+ */
+export const preferinte = onCall(
+  { region: REGIUNI.callable, enforceAppCheck: true, maxInstances: 5, memory: '256MiB', timeoutSeconds: 20 },
+  async (cerere) => trateazaPreferintele(getFirestore(), cerere.auth?.uid ?? null, cerere.data),
 );
 
 const memorieGoogle = memorieNoua();
