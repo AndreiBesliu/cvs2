@@ -16236,3 +16236,13 @@ fiecare”): „Din nota ta („Ce rămâne”), singura felie care poate porni 
 
 - **ADR 0292, propus:** după Exportă, în Rezultat › Fișierele, primele linii ale fiecărui fișier scris, până la prima mișcare de
   tăiere (cel mult 40), din textul descărcat; trei întrebări, cu recomandarea aplicată.
+- **Implementarea:** `inceputProgram` (`src/post/inceput.ts`, pură: codul fără comentariile dialectului, tăierea la primul
+  G1 / G2 / G3, plafonul 40); `RezultatExport.inceput` din fișierele foii și ale dopurilor (cu „Toate foile”, ale foii active,
+  cu numele din arhivă); blocul din Rezultat › Fișierele, un `<details>` pe fișier, primul desfăcut, liniile într-un `<pre>`
+  focusabil, cu nume, derulat în locul lui. Programul, octet cu octet.
+- **Probele:** `export.inceput.test.ts` (6), `export.inceput.spec.ts` (2), proba privirii (4 noi). Suita unitară întreagă:
+  10 804 / 0 (12 sărite). **Otrăvurile:** `28.8r.py`, 17 / 17. **Mărimea:** pornirea +0, totalul 923,5 / 1 000 (+0,5 kB).
+- **Documentele:** ADR 0292 (cu „Implementarea 28.8↑r”), indexul ADR, manualul (ambele limbi), fișa etapei 3, registrul
+  otrăvurilor, nota liniei.
+
+**Completed:** 26.11, 21:09.

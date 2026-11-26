@@ -4521,6 +4521,10 @@
       "ro": "Piesele puse de mai multe ori, la tăiere și la conversie",
       "en": "Parts placed more than once, when cutting and converting"
     },
+    "eb80226a5838c5d3": {
+      "ro": "**Începutul programului, la vedere în fereastra exportului** (fără mașină; ADR 0292, propus și implementat cu recomandările, la cuvântul owner-ului adus de sesiunea principală; ce desenează canvas-ul și nu exista). După Exportă, în Rezultat › Fișierele, începutul fiecărui fișier scris, din textul descărcat: primele linii, până la prima mișcare de tăiere (G1, G2, G3), cel mult 40; un rând strâns pe fișier (pe freză, ale dopurilor; cu „Toate foile”, ale foii active, cu numele din arhivă), primul desfăcut; liniile într-un `<pre>` focusabil, cu nume, derulat în locul lui, în afara regiunii anunțate. Funcția pură `inceputProgram` (`src/post/inceput.ts`) citește codul fără comentariile dialectului postului. Programul, octet cu octet. **Probele:** `export.inceput.test.ts` (6: pe hârtie; corpusul CAM pe toate posturile, în mm și în inch, cu dopurile, judecat de cititorul dialectelor; Z-ul sigur și numele alese; „Toate foile”), `export.inceput.spec.ts` (2), proba privirii (1280, 1024, 390 px, fontul lat; ținta rândului). **Otrăvurile:** `28.8r.py`, 17 / 17 (11 unitare, 6 e2e). Pornirea +0, totalul 923,5 / 1 000 (+0,5 kB).",
+      "en": "**The start of the program, in view in the export window** (no machine; ADR 0292, proposed and implemented with the recommendations, at the owner's word relayed by the main session; what the canvas draws and did not exist). After Export, under Result › Files, the start of each written file, from the downloaded text: the first lines, up to the first cutting move (G1, G2, G3), at most 40; one collapsed row per file (per bit, the plugs'; with “All sheets”, the active sheet's, with their names in the archive), the first one open; the lines in a focusable, named `<pre>` that scrolls in place, outside the announced region. The pure function `inceputProgram` (`src/post/inceput.ts`) reads the code without the post dialect's comments. The program, byte for byte. **Tests:** `export.inceput.test.ts` (6: on paper; the CAM corpus on every post, in mm and in inches, with the plugs, judged by the dialect reader; the chosen safe Z and name; “All sheets”), `export.inceput.spec.ts` (2), the look test (1280, 1024, 390 px, the wide font; the row's target). **Poisons:** `28.8r.py`, 17 / 17 (11 unit, 6 e2e). Startup +0, total 923.5 / 1,000 (+0.5 kB)."
+    },
     "ebb42495c8845605": {
       "ro": "Foarfeca, Retează și Desparte",
       "en": "Scissors, Trim and Split"
@@ -4628,10 +4632,6 @@
     "efbfea901afba00d": {
       "ro": "**da (primul)**",
       "en": "**yes (the first)**"
-    },
-    "efca218d82f22bdd": {
-      "ro": "**Începutul programului, la vedere în fereastra exportului** (fără mașină; ADR 0292, propus, cu recomandările aplicate). În lucru.",
-      "en": "**The start of the program, in view in the export window** (no machine; ADR 0292, proposed, with the recommendations applied). In progress."
     },
     "f015589558c813f1": {
       "ro": "Proba raportărilor complete pe adresa principală de test (<https://cncvectorstudio-test.web.app/>; 15.B↑b unită în `main` și publicată pe 07.11, serverul înaintea site-ului): o raportare cu **Atașează proiectul** (meniul contului → Raportează o problemă…), proiectul descărcat din `/admin` → Tichete, o raportare fără bifă; a doua zi după 04:00, jobul `pastrareTichete` în Diagnoză",
