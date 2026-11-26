@@ -164,11 +164,11 @@ Rândul editabil (al finisării și al degroșării) e o felie a lui, la cuvânt
 - **Coborârea:** oracolul are `coborariRepeziO` (viteza pe Z a fiecărei mutări care coboară, cel mult avansul de plonjare; pe
   G-code, cu rotunjirea coordonatelor scăzută din coborâre) și `pasiDinGcodeO`; probele pe hârtie, pe CAM (degroșarea și
   finisarea) și pe G-code-ul exportat.
-- **Otrăvurile:** `test/otravuri/18.1d.py`, 42 / 42 prinse (38 unitare, 4 e2e). Primul tur a găsit două probe slabe (refuzul migrării pe o degroșare
+- **Otrăvurile:** `test/otravuri/18.1d.py`, 43 / 43 prinse (39 unitare, 4 e2e). Primul tur a găsit două probe slabe (refuzul migrării pe o degroșare
   fără câmpul ei; dalele unui relief doar degroșat, aduse workerului), întărite, și o otravă echivalentă, scoasă. Opt otrăvuri
   vechi, pe codul schimbat de felie, mutate și prinse.
-- **Mărimea**, față de `main` `7a754885`: pornirea +0,1 kB (111,5; cu ușa 116,7, cu Atelierul 117,0 / 125), totalul +1,7 kB
-  (911,2 / 1 000).
+- **Mărimea**, față de `main` `7a754885`: pornirea +0,1 kB (111,5; cu ușa 116,7, cu Atelierul 117,0 / 125), totalul +1,8 kB
+  (911,3 / 1 000).
 - **Nedovedit fără mașină:** lemnul rămas după degroșare (adaosul pe fund, pe platou și pe pantă), suprafața finisată față de
   model și timpul. Le măsoară placa reliefului (felia 18.1↑d-2, fișa ei).
 

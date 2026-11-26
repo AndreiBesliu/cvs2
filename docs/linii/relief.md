@@ -177,9 +177,11 @@ degroșarea și finisarea pe relief), unde stă relieful în document și unde s
     și una care trece de margine când finisarea păstrează peretele; panoul le scrie pe amândouă deodată.
   - **Probele de lângă:** o probă care cere un refuz al migrării cere și motivul lui (altfel ușa versiunii noi, după migrare,
     îl refuză oricum, cu alt motiv, și otrava trece); `hartiFinisare` are proba ei (ce dale ajung în worker).
-- **26.11, 03:30: 18.1↑d-1 gata pe ramură**: otrăvurile 39 / 39 (și opt vechi, mutate), pornirea +0,1 kB, totalul +1,7 kB;
+- **26.11, 03:30: 18.1↑d-1 gata pe ramură**: otrăvurile 39 / 39 (și opt vechi, mutate), pornirea +0,1 kB, totalul +1,8 kB;
   porțile în CI, pe commit-ul raportat. Urmează 18.1↑d-2 (fișa plăcii reliefului, `docs/etape/placa-18.md`).
   - **Coborârea:** o mutare de tăiere care coboară are viteza pe Z cel mult avansul de plonjare (`avansSpre` în
     `treceriRelief`, `coborariRepeziO` în oracol). Găsită pe G-code-ul plăcii: oracolul judeca adâncimea pe material, nu și
     viteza cu care freza intră în el. Pe G-code, oracolul scade rotunjirea coordonatelor (0,001 mm) din coborâre: pe segmente
     de 0,125 mm, la prag, rotunjirea singură trecea cu ~2 % peste.
+  - **Lemnul rămas, cu `ramasO`:** numără doar coloanele tăiate (sub `fata`). O probă care cere „nimic uitat” (o fâșie
+    netăiată) îi dă `fata = Infinity`. Așa a scăpat fâșia de lângă pereții paraleli cu liniile degroșării.
