@@ -16107,3 +16107,19 @@ lista de printat»”); pornită după unirea lui 3.Cg în `main` (`75d8dde2`)
   30,2 / 32. Nimic pe server. Față de commit-ul cu porțile, în `main` intră în plus doar documente (`.md`).
 - **Decizia owner-ului:** ordinea q, apoi p, confirmată; p pornește acum, cu linia frezelor anunțată.
 - **Documentele:** decizia și paragraful de stare în `CLAUDE.md`; indexul liniilor; starea din `docs/linii/principala.md`.
+
+## 2026-11-26 — Sesiunea principală în cloud: a cincizeci și patra unire (atelierul Easy 3Draw: 3.Ch, construcțiile cu nume); lotul 47 pe test (Model: Claude Opus 5.5)
+
+**Prompt:** raportul liniei atelierului („3.Ch gata de unit”, `19fa5bdc`), la ordinul în vigoare „unește ce se poate”; publicarea lotului 47, pornită la unirea a cincizeci și doua
+**Started:** 26.11, 14:11. **Completed:** unirea în `main`, 26.11, 14:12; publicarea pe test, lotul 49.
+
+- **Lotul 47 pe test:** `3e9d3d9c` (3.Cg), publicat pe 26.11 la 13:13 (completul pe `main` 45798312781, verde: unit 10 747 / 0,
+  e2e 961 / 961, funcțiile pe emulatoare 136 / 136, paginile 60 / 60; proba de fum, bună). Lotul 48 (`77bf8ceb`), în drum:
+  completul pe `main` pornit la 13:14.
+- **Verificat înaintea unirii:** completul (45807882937) și rapidul (45807836355, 45807886208) pe `19fa5bdc`, verzi; `19fa5bdc` e
+  unirea liniei cu `main` `77bf8ceb` (codul în `5395e6af`); PR-ul #61; fără `.lucru/`; `main` nu se mișcase de la `77bf8ceb`.
+- **Unirea, pe `unire-2611m`** (din `77bf8ceb`): `19fa5bdc`, în `3bf86d15`, fără nicio ciocnire. Arborele unirii e chiar al lui
+  `19fa5bdc`, deci a intrat pe porțile lui: unit 10 762 / 0 (12 sărite, pe Linux), e2e 975 / 975, funcțiile pe emulatoare
+  136 / 136, paginile 60 / 60 (citite din jurnalul rulării). Local: traducerile (1 214), catalogul
+  controalelor, biblioteca (Easy 3Draw 18.41.0, 567 855 octeți), probele documentelor și ale manualului 52 / 52. Nimic pe server.
+- **Documentele:** decizia în `CLAUDE.md` și paragraful liniei, la zi; indexul liniilor; starea din `docs/linii/principala.md`.
