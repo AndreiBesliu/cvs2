@@ -16225,3 +16225,16 @@ angrenaje […], brațul de macara, barca cu elice”); pornită după unirea lu
 - **Lotul 51 pe test:** `77a036c0` (28.8↑p), publicat pe 26.11 la 18:43 (completul pe `main` 45851263588, verde: unit 10 786 / 0,
   e2e 980 / 980, funcțiile pe emulatoare 136 / 136, paginile 60 / 60; proba de fum, bună). Pe test e tot ce e în `main`.
 - **Documentele:** decizia în `CLAUDE.md`; starea din `docs/linii/principala.md`.
+
+## 2026-11-26 — Sesiunea principală în cloud: liniile pornesc ce urmează (Model: Claude Opus 5.5)
+
+**Prompt:** „Zi-le ca pot continua cu ce urmeaza la fiecare”
+**Started:** 26.11, 20:16. **Completed:** 26.11, 20:18.
+
+- **Mesajele:** la 20:16, celor cinci sesiuni de linie din cloud, fiecare cu ce urmează din nota ei: atelierul (3.Ck, cu
+  jocul din calibrare, sau întâi feliile auditului elicelor fără decizie; 18.43.0), exportul (începutul G-code-ului la
+  vedere), frezele (16.A↑e, cu v31 ținut pentru ea), relieful (rândul editabil al finisării și al degroșării, rotunjirea
+  în jos a pasului lateral), cotele (cele „mai târziu” din ADR 0330). Toate livrate.
+- **Nepornite:** liniile fără sesiune (tăierea, imprimanta, incrustațiile, planșele, trasarea, aranjamentele) și sesiunea
+  designului, de pe calculatorul owner-ului.
+- **Documentele:** decizia în `CLAUDE.md`; starea din `docs/linii/principala.md` și indexul liniilor.
