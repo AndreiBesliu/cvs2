@@ -3,7 +3,8 @@
  * numele, de unde vine), lista „Ce poate face” și întrebarea de la „Scoate”. Le folosesc ferestrele de confirmare
  * (`Instalare.tsx`) și fereastra bibliotecii (`Biblioteca.tsx`); vin la cerere, odată cu ele.
  */
-import { useState, type KeyboardEvent, type ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
+import { useEscapeFereastra } from '../ui/escapeFereastra.ts';
 import { t, type CheieSimpla } from '../i18n/t.ts';
 import type { Limba } from '../i18n/tipuri.ts';
 import { ADRESA_CATALOG, type NoutateBiblioteca } from '../../shared/biblioteca.ts';
@@ -31,15 +32,12 @@ export function Fereastra({ titlu, test, onEscape, cap, children }: {
   readonly cap?: { readonly semn: string | null; readonly sub?: string };
   readonly children: ReactNode;
 }): ReactNode {
-  const tasta = (e: KeyboardEvent): void => {
-    if (e.key !== 'Escape') return;
-    e.preventDefault();
-    onEscape();
-  };
+  // Escape, oriunde ar fi focusul (felia 3.Aw): butonul apăsat se oprește cât lucrează, iar focusul cade pe `body`.
+  useEscapeFereastra(onEscape);
   // O fereastră mai înaltă decât ecranul rămâne sus, cu despre ce extensie e vorba la vedere: butoanele ei sunt lipite jos
   // (`extensii.css`), deci focusul pus pe unul nu o mai derulează la capăt.
   return (
-    <div className="dialog dialog-extensii" role="dialog" aria-modal="true" aria-labelledby={`${test}-titlu`} data-testid={test} onKeyDown={tasta}>
+    <div className="dialog dialog-extensii" role="dialog" aria-modal="true" aria-labelledby={`${test}-titlu`} data-testid={test}>
       <div className="dialog-cutie">
         {cap ? (
           <div className="confirmare-cap">

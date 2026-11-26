@@ -38,6 +38,7 @@ import type { Jurnal } from '../app/jurnalErori.ts';
 import '../i18n/carcasa.ts';
 import { mesajeGata } from '../i18n/laCerere.ts';
 import { cuMesaje, t } from '../i18n/t.ts';
+import { useEscapeFereastra } from '../ui/escapeFereastra.ts';
 import { useLimba } from '../ui/useLimba.ts';
 import type { FormeCvs2 } from '../../extensii/api.ts';
 import { ADRESA_CATALOG, type CatalogBiblioteca, type RandBiblioteca } from '../../shared/biblioteca.ts';
@@ -338,6 +339,8 @@ export function Extensii({ jurnal, fereastra, onFereastra, onDeschisa, onModal, 
     // Cu meniul deschis (o actualizare cerută de acolo), focusul se întoarce în el (mai jos), nu la ×.
     setTimeout(() => { if (!refMeniu.current) butonInchide.current?.focus(); }, 0);
   };
+  // Escape e „Rămân”, oriunde ar fi focusul (felia 3.Aw).
+  useEscapeFereastra(ramai, intrebare && deschisa !== null);
   // O extensie din meniu: cea deschisă doar se arată; alta o înlocuiește, după închiderea fără pierderi a celei de acum.
   const deschideExtensia = (x: ExtensieInstalata): void => {
     if (deschisa?.id === x.id) { onFereastra(); return; }
@@ -569,13 +572,7 @@ export function Extensii({ jurnal, fereastra, onFereastra, onDeschisa, onModal, 
   // Ce a rămas nesalvat după salvările de la închidere: întrebarea, peste toată pagina (aplicația de sub ea e inertă). „Rămân”
   // e gestul dialogului: primul, plin și cu focusul; „Închide oricum”, care pierde lucrul, e roșu, ca „Scoate” (ADR 0232 §A.5).
   const intrebarea = intrebare && deschisa && (
-    <div className="dialog" role="dialog" aria-modal="true" aria-labelledby="extensii-inchidere-titlu" data-testid="extensii-inchidere"
-      onKeyDown={(e) => {
-        if (e.key !== 'Escape') return;
-        e.preventDefault();
-        e.stopPropagation();
-        ramai();
-      }}>
+    <div className="dialog" role="dialog" aria-modal="true" aria-labelledby="extensii-inchidere-titlu" data-testid="extensii-inchidere">
       <div className="dialog-cutie">
         <h2 id="extensii-inchidere-titlu">{t('extensii.inchidere.titlu', { nume: deschisa.manifest.nume })}</h2>
         <p>{t('extensii.inchidere.text', { nume: deschisa.manifest.nume })}</p>

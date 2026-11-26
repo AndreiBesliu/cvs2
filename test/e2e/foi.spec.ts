@@ -16,8 +16,8 @@ const foaie = (page: Page, id: string) => lista(page).locator(`[data-foaie="${id
 const cip = (page: Page) => page.getByTestId('foaia-activa');
 const faraComentarii = (text: string): string[] => text.split('\n').filter((l) => l !== '' && !l.startsWith('('));
 
-const DREPTUNGHI = 'dreptunghi 100.00 × 60.00 la X 20.00, Y 20.00';
-const CERC = 'cerc R15.00 cu centrul la X 70.00, Y 50.00';
+const DREPTUNGHI = 'dreptunghi 100,00 × 60,00 la X 20,00, Y 20,00';
+const CERC = 'cerc R15,00 cu centrul la X 70,00, Y 50,00';
 
 /** Ultima versiune salvată a proiectului (rev-ul ei), după ce salvarea asincronă a ajuns în bază. */
 async function revSalvat(page: Page): Promise<number> {

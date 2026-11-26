@@ -6,7 +6,8 @@
  * ele, iar sub ea apare avertismentul (felia 11.3↑b). Alegerile se țin în browser; „Mută și așază la capăt” le folosește.
  * Vine la cerere, cu mesajele panoului (`carcasa`) și cu calculul acțiunilor.
  */
-import { useMemo, useState, type KeyboardEvent, type ReactNode } from 'react';
+import { useMemo, useState, type ReactNode } from 'react';
+import { useEscapeFereastra } from '../ui/escapeFereastra.ts';
 import '../i18n/carcasa.ts';
 import { mesajeGata } from '../i18n/laCerere.ts';
 import { t } from '../i18n/t.ts';
@@ -89,12 +90,8 @@ export function DialogAsezare({ doc, idFoaie, selectie, stare, aseaza, onInchide
     tineOptiunile(optiuni);
     onInchide();
   };
-  const tasta = (e: KeyboardEvent): void => {
-    if (e.key !== 'Escape') return;
-    e.preventDefault();
-    e.stopPropagation();
-    onInchide();
-  };
+  // Escape, oriunde ar fi focusul (felia 3.Aw): „Așază” pleacă din pagină, iar focusul cade pe `body`.
+  useEscapeFereastra(onInchide);
 
   // Rezultatul: câte piese pe câte foi („15 + 10”), cele rămase pe loc, cele rotite; sau motivul refuzului.
   const rezultat: string[] = [];
@@ -117,7 +114,7 @@ export function DialogAsezare({ doc, idFoaie, selectie, stare, aseaza, onInchide
   );
 
   return (
-    <div className="dialog" role="dialog" aria-modal="true" aria-labelledby="aseaza-titlu" data-testid="dialog-asezare" onKeyDown={tasta}>
+    <div className="dialog" role="dialog" aria-modal="true" aria-labelledby="aseaza-titlu" data-testid="dialog-asezare">
       <div className="dialog-cutie dialog-asezare">
         <h2 id="aseaza-titlu">{t('aseaza.titlu')}</h2>
         <fieldset className="alegeri">

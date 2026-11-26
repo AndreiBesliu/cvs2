@@ -26,9 +26,9 @@ test('dreptunghiul cu 45° pe orizontală: previzualizarea, Înclină dă o cale
   await expect(page.locator('[data-inclinare="arce"]')).toHaveCount(0);
   await page.locator('[data-inclinare="aplica"]').click();
   await expect(panou(page)).toHaveCount(0);
-  await expect(randuri(page).first()).toContainText('cale 160.00 × 60.00');
+  await expect(randuri(page).first()).toContainText('cale 160,00 × 60,00');
   await page.locator('[data-actiune="istoric.anuleaza"]').click();
-  await expect(randuri(page).first()).toContainText('dreptunghi 100.00 × 60.00');
+  await expect(randuri(page).first()).toContainText('dreptunghi 100,00 × 60,00');
 });
 
 test('cercul R15 se înclină doar cu arcele făcute curbe: 15° pe orizontală dau elipsa de 31,06 × 30,00; un pas de anulare', async ({ page }) => {
@@ -44,13 +44,13 @@ test('cercul R15 se înclină doar cu arcele făcute curbe: 15° pe orizontală 
   await expect(motiv(page)).toHaveCount(0);
   await page.locator('[data-inclinare="aplica"]').click();
   // Lățimea pe hârtie: 30 · √(1 + tan² 15°) = 31,058; înălțimea rămâne 30.
-  await expect(randuri(page).first()).toContainText('cale 31.06 × 30.00');
+  await expect(randuri(page).first()).toContainText('cale 31,06 × 30,00');
   // La redeschidere, bifa e iar scoasă (o alegere a fiecărei înclinări); pe elipsă nu mai sunt arce, deci nu apare.
   await page.locator('[data-editare="inclinare"]').click();
   await expect(arce).toHaveCount(0);
   await page.locator('[data-inclinare="inchide"]').click();
   await page.locator('[data-actiune="istoric.anuleaza"]').click();
-  await expect(randuri(page).first()).toContainText('cerc R15.00');
+  await expect(randuri(page).first()).toContainText('cerc R15,00');
   await page.locator('[data-editare="inclinare"]').click();
   await expect(arce).not.toBeChecked();
 });
