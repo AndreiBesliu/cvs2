@@ -38,6 +38,7 @@ export const ro = {
   'actiune.foaie-stoc': 'Mărimea foii',
   'actiune.ghidaje': 'Ghidajele foii',
   'actiune.cote': 'Cotele foii',
+  'actiune.desen-din-cota': 'Fă desen din cotă',
   'actiune.imagini': 'Imaginile foii',
   'actiune.foaie-adauga': 'Foaie nouă',
   'actiune.muta-instantele': 'Aliniază',

@@ -15526,6 +15526,8 @@ orele, după ceasul containerului).
 foilor” (sesiunea principală, 26.11, 00:08, cu cuvântul owner-ului: „ok, porneste 10.4↑d si 18.1↑d”). **Started:** 26.11,
 00:10, în sesiunea cloud a liniei cotelor. **Completed:** 26.11, 01:30 (în container; CI-ul, pe commit-ul împins).
 
+00:10, în sesiunea cloud a liniei cotelor. **Completed:** 26.11, 00:45 (în container; CI-ul, pe commit-ul împins).
+
 - **`main` adus** (`a4d86d53`, documentul v29), prin avans rapid. Felia d s-a împărțit în d-1 (aici), d-2 („Fă desen din
   cotă”) și d-3 (cotele în raportul foilor).
 - **Proba întâi, pe hârtie:** `cote.serie.test.ts` (lanțul orizontal, vertical, aliniat; baza, cu pasul, partea, d = 0; cota de
@@ -15622,3 +15624,37 @@ foilor” (sesiunea principală, 26.11, 00:08, cu cuvântul owner-ului: „ok, p
   ADR 0313 §3, corectat: la capetele liniilor, între două linii, rămâne o scobitură de cel mult R − √(R² − (s / 2)²) peste a.
 - **Fișa** (`docs/etape/placa-18.md`): ce măsori după T1 (înaintea lui T2) și după T2, timpul, ce devin măsurătorile. Tăierea e
   a owner-ului (rândul din coada lui).
+
+## 2026-11-26 — Felia 10.4↑d-2: „Fă desen din cotă” (ADR 0330 §8)
+
+**Prompt:** același cu d-1 (sesiunea principală, 26.11, 00:08: „**10.4↑d pornește**”, cu „Fă desen din cotă”). **Started:**
+26.11, 00:45, în sesiunea cloud a liniei cotelor, după d-1. **Completed:** 26.11, 01:10 (în container; CI-ul, pe commit-ul
+împins).
+
+- **Proba întâi:** `cote.fadesen.test.ts`, pe placa 1 a corpusului CAM: desenul orizontalei pe hârtie (extensiile, linia,
+  săgețile, cifrele „100”), punctul și bara, comanda cu anularea, apoi programul: cota și desenul fără rol dau aceiași octeți,
+  desenul cu un rol pe linie taie linia cotei (Y = 10, X 20 → 120).
+- **Pur:** `geometrieCota` (`src/io/coteExport.ts`), lângă `entitatiCote`, neatinsă. **Comanda:** `comandaDesenCota` și
+  acțiunea `foaie.desen-din-cota` (piesa fără operații, instanța în colțul foii; cu „Șterge cota”, și `inlocuieste-cote`).
+- **Panoul cotei:** „Fă desen din cotă” și „Șterge cota”; fontul cifrelor, adus la cerere; după desen, Selecția cu piesa
+  aleasă. Manualul (ro, en; ușa a 120-a), e2e noi 2; otrăvurile 16 / 16, într-o clonă.
+- **Rapidul pe `29065f64` a căzut** la două probe ale registrului care numără acțiunile la cerere
+  (`actiuni.calcul.test.ts`, `actiuni.calcul.paritate.test.ts`): acțiunea nouă lipsea din listele lor. Reparat în `68979355`
+  (doar probele); comiterea nu rulase suita unitară întreagă, doar probele cotelor.
+
+## 2026-11-26 — Felia 10.4↑d-3: cotele în raportul foilor (ADR 0330 §7)
+
+**Prompt:** același cu d-1 (sesiunea principală, 26.11, 00:08: „**10.4↑d pornește**”, cu „cotele în raportul foilor”).
+**Started:** 26.11, 01:10, în sesiunea cloud a liniei cotelor, după d-2. **Completed:** 26.11, 01:45 (în container; CI-ul, pe
+commit-ul împins).
+
+- **Proba întâi, pe hârtie:** `cote.raport.test.ts`: fără cote cerute, desenul de dinainte, octet cu octet, pe tot corpusul
+  CAM (și pe o foaie cu cote); stilul raportului (cifrele cel puțin a 60-a parte din latura mare); stratul COTE cu culoarea din
+  setări și liniile la jumătate; pagina lărgită de o cotă din afara foii. `cote.setari.test.ts`: grupul nou, Raportul foilor.
+- **Pur:** `svgFoaieRaport` și `stilRaport` (`src/io/raportCote.ts`); `scrieSvg` primește, opțional, pagina (exportul,
+  neschimbat). **Raportul:** bifa „Cu cotele (N)”, cu implicitul din Setări › Cotele › Raportul foilor; desenul cu cote pe tot
+  rândul; setările, fontul și desenul cu cote, aduse la cerere. `raportFoi` și CSV-ul, neatinse.
+- Întrebarea 10 (cotele mărite sau la mărimea adevărată), la owner, cu recomandarea implementată. Manualul (ro, en), e2e noi
+  2, grupul al optulea numărat în `setari.spec.ts`; otrăvurile 20 / 20, într-o clonă (R06, culoarea, după proba întărită). Pornirea
+  111,5 kB (neschimbată), totalul 912,5 → 915,5 / 1 000 kB (+3,0); `main` `554b72cb` adus (ciocniri doar în DEVLOG și în
+  traducerile roadmap-ului). Cu d-3, felia 10.4↑d e încheiată.

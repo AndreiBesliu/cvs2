@@ -295,7 +295,7 @@ function scrieLocal(cheie: string, valoare: string): void {
   }
 }
 
-type Extra = Partial<Pick<ContextDocument, 'ghidajeNoi' | 'imaginiNoi' | 'coteNoi' | 'deplasari' | 'deplasare' | 'formaNoua' | 'transformare' | 'alese' | 'retea' | 'formaEditata' | 'sterge' | 'nodEditat' | 'textNou' | 'reparatie' | 'taiere' | 'conversie' | 'foaieTinta' | 'grupareSurori'>>;
+type Extra = Partial<Pick<ContextDocument, 'ghidajeNoi' | 'imaginiNoi' | 'coteNoi' | 'desenCota' | 'deplasari' | 'deplasare' | 'formaNoua' | 'transformare' | 'alese' | 'retea' | 'formaEditata' | 'sterge' | 'nodEditat' | 'textNou' | 'reparatie' | 'taiere' | 'conversie' | 'foaieTinta' | 'grupareSurori'>>;
 
 /** Ca la pânză: cât de departe de contur prinde un clic (px) și de la cât începe o tragere (px). */
 const TOLERANTA_CLIC_PX = 4;
@@ -1618,6 +1618,7 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
             unealta={unealta === 'cote' && activ && !p.doarCitire} activ={activ && !p.doarCitire} loc={locCote} locJos={locTaste} cerere={cerereCote}
             lipire={lipire} grila={pasGrila} virgula={virgula} toateFoile={p.toateFoile === true}
             onScrie={(c) => ruleaza('foaie.cote', { coteNoi: () => c })}
+            onDesen={(forme, cote) => ruleaza('foaie.desen-din-cota', { desenCota: () => ({ forme, cote }) })}
             onUnealta={(u) => { if (u === 'cote') pornesteCote('d'); else setUnealta('selectie'); }}
             {...(p.onSetari ? { onSetari: p.onSetari } : {})}
             poateDublu={() => unealtaRef.current !== 'pen' && unealtaRef.current !== 'cutit'} />

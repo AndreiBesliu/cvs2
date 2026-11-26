@@ -8,6 +8,7 @@
  * punctele, discuri (calea cu lățimea lor). Cifrele scrise ca text (felia 10.4↑c-2) sunt `<text>` cu Helvetica (sau, fără ea,
  * fontul fără serife al programului), centrate pe mijlocul bazei, cât majuscula / 0,718, rotite în jurul acelui punct.
  */
+import type { Cutie } from '../geom/cutie.ts';
 import { marimeHelvetica } from './helvetica.ts';
 import { STRATURI, type Entitate, type Strat, type VectoriFoaie } from './vectori.ts';
 
@@ -63,13 +64,15 @@ function cale(e: Extract<Entitate, { fel: 'polilinie' | 'spline' | 'plin' }>, H:
 
 /**
  * `grosime`: grosimea liniilor, în mm; implicit 0,1 (fișierul exportat). Previzualizarea mică a raportului foilor (ADR 0210
- * §6) le cere mai groase, cât să se vadă.
+ * §6) le cere mai groase, cât să se vadă. `pagina`: cutia paginii, în coordonatele foii; implicit, foaia (fișierul exportat
+ * are mărimea ei). Desenul raportului cu cotele o lărgește cât ies cotele din foaie (felia 10.4↑d-3).
  */
-export function scrieSvg(v: VectoriFoaie, grosime = 0.1): string {
+export function scrieSvg(v: VectoriFoaie, grosime = 0.1, pagina?: Cutie): string {
   const H = v.inaltime;
+  const [x0, y0, w, h] = pagina ? [pagina.minX, H - pagina.maxY, pagina.maxX - pagina.minX, pagina.maxY - pagina.minY] : [0, 0, v.latime, H];
   const linii = [
     '<?xml version="1.0" encoding="UTF-8"?>',
-    `<svg xmlns="http://www.w3.org/2000/svg" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" width="${nr(v.latime)}mm" height="${nr(H)}mm" viewBox="0 0 ${nr(v.latime)} ${nr(H)}">`,
+    `<svg xmlns="http://www.w3.org/2000/svg" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" width="${nr(w)}mm" height="${nr(h)}mm" viewBox="${nr(x0)} ${nr(y0)} ${nr(w)} ${nr(h)}">`,
   ];
   for (const s of STRATURI) {
     const din = v.entitati.filter((e) => e.strat === s);

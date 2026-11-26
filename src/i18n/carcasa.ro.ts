@@ -693,4 +693,7 @@ export const roCarcasa = {
   'prop.cota.distanta.raza': 'Locul cifrei (de la cerc)',
   'prop.cota.distanta.unghi': 'Raza arcului',
   'prop.cota.sterge': 'Șterge',
+  'prop.cota.desen': 'Fă desen din cotă',
+  'prop.cota.desen.sterge': 'Șterge cota',
+  'prop.cota.desen.nota': 'Desenul e o piesă obișnuită, fără tăiere: îi dai un rol (gravura pe linie, de exemplu). Cota nu se taie niciodată.',
 } as const satisfies DictionarRoPentru<typeof enCarcasa>;

@@ -2817,6 +2817,24 @@ nav button[aria-pressed='true'] {
   margin: 0 0 var(--sp-1);
 }
 
+/* „Cu cotele” (ADR 0330 §7, felia 10.4↑d-3): bifa pe rândul comenzilor; desenul cu cote ia tot rândul (cifrele mărite cât
+   să se citească la lățimea ferestrei), deasupra datelor foii, fără să treacă de înălțimea ecranului. */
+.dialog .raport-bifa {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+  min-height: var(--tinta);
+}
+
+.raport-foaie[data-cu-cote] {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.raport-foaie[data-cu-cote] img {
+  max-height: 70vh;
+  object-fit: contain;
+}
+
 /* Rândurile tabelelor raportului se citesc ca text, nu ca antete de coloană. */
 .raport-foi tbody th {
   font-size: inherit;
@@ -2832,6 +2850,10 @@ nav button[aria-pressed='true'] {
 
   .raport-foaie img {
     max-width: 12rem;
+  }
+
+  .raport-foaie[data-cu-cote] img {
+    max-width: none;
   }
 }
 
@@ -2879,6 +2901,10 @@ nav button[aria-pressed='true'] {
 
   .raport-foaie {
     break-inside: avoid;
+  }
+
+  .raport-foaie[data-cu-cote] img {
+    max-height: 180mm;
   }
 }
 
@@ -4152,4 +4178,20 @@ main h1 {
 
 .prop-cota-butoane {
   margin-top: var(--sp-2);
+}
+
+/* „Fă desen din cotă” (felia 10.4↑d-2): butonul și bifa „Șterge cota”, pe un rând, care se rupe pe un panou îngust. */
+.prop-cota-desen {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-1) var(--sp-3);
+  margin-top: var(--sp-2);
+}
+
+.prop-cota-desen label {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+  min-height: var(--tinta);
 }

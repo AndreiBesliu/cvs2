@@ -1273,7 +1273,7 @@ goes right through.
 
 ## Dimensions and measuring
 %% capitol: cote
-%% acopera: unealta.cote, foaie.cote, vedere.cote
+%% acopera: unealta.cote, foaie.cote, vedere.cote, foaie.desen-din-cota
 
 The **Dimensions** tool (`D`; its button sits in the bar's extension, after Convert) puts dimensions on the drawing that show a size: the length of a side, the
 distance between two points along X, along Y or straight, the radius or diameter of a circle or an arc, the angle between two
@@ -1331,6 +1331,12 @@ mm (for radius and diameter, the **figure position** from the circle, positive o
 **Delete**. The distance between two oblique parallel sides is a free dimension: a fixed drawing, since its foot on the second
 side is not a point of the shape.
 
+**Make a drawing from the dimension** (in the panel of the selected dimension): the dimension's drawing becomes an ordinary
+piece, exactly where the dimension was: lines and figures as strokes (the figures in the single-line font), the ends as small
+closed contours. The new piece has no cut: it is selected, with Select, and in the **Cutting** section you give it a role
+(on-line engraving, for example); from there it works like any shape. With **Delete the dimension** ticked, the dimension
+goes with the drawing, in the same undo step; without it, the dimension stays.
+
 In the **list**, under the active sheet's pieces, the **Dimensions (N)** row: open, it shows the sheet's dimensions (the value,
 the type, “unlinked”), and a click on one switches to the Dimensions tool with it selected. The **eye** on the row hides the
 sheet's dimensions on the canvas (it does not delete them; with the Dimensions tool they show anyway). **Show dimensions**
@@ -1375,6 +1381,8 @@ field, said in red, and is not kept. **Close** (or Esc) closes the window.
   **Dimensions in DXF** (**Dimensions (DIMENSION)**, the default: in AutoCAD and LibreCAD they stay dimensions; or **Lines and
   numbers**, for programs that don't know dimensions) and **Numbers** (**Strokes**, the default: the same in any program, with
   no fonts; or **Text**, editable in another program, but drawn with its font).
+- **Sheets report:** whether the “With dimensions” tick box in the [sheets report](#raport) starts ticked (unticked by
+  default).
 
 ## Converting vectors
 %% capitol: conversie
@@ -2118,6 +2126,13 @@ material: what you buy).
 through the whole sheet thickness), in the part's own axes: its rotation on the sheet does not change it. A part without
 such a profile gets the size of its drawing, marked “(drawing)”. With **drawing**, all get the box of their whole drawing.
 Z0 and the origin corner are the export's: those chosen in its window, when the report comes from there.
+
+**With dimensions (N)** appears when a sheet of the report has [dimensions](#cote). Ticked, each sheet with dimensions shows
+them on its drawing, with the colour and numbers from [Settings](#setari) › Dimensions › Export, and the drawing takes the whole row, above
+the sheet's data. The numbers, arrows and gaps grow until they can be read (at least a 60th of the sheet's long side); each
+dimension line stays where you put it. A dimension that goes outside the sheet widens the drawing, so it is not cut off.
+Identical sheets show the first one's dimensions. The tick box starts from Settings › Dimensions › Sheets report (unticked by
+default); the CSV has no dimensions (it is the cut list), and **Print** takes the drawings as you see them.
 
 **Download CSV** writes the list to `cncvs2-lista-de-taiere.csv`, in UTF-8, with three tables one under the other: the
 sheets (one row per part, with the sheet, how many times it is cut and how much of it is used), the totals per part and the

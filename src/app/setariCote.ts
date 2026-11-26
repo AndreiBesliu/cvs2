@@ -104,6 +104,11 @@ export type SetariCote = {
     /** Cifrele: trăsăturile fontului cu o singură linie, sau text (MTEXT, `<text>`, Helvetica), în toate formatele. */
     readonly cifre: 'trasaturi' | 'text';
   };
+  /** Raportul foilor (felia 10.4↑d-3). */
+  readonly raport: {
+    /** Implicitul bifei „Cu cotele” din raport. */
+    readonly cuCote: boolean;
+  };
 };
 
 export const SETARI_IMPLICITE: SetariCote = {
@@ -114,6 +119,7 @@ export const SETARI_IMPLICITE: SetariCote = {
   lipire: { felurile: { varf: true, mijloc: true, centru: true, cadran: true, cutie: true, foaie: true, grila: true }, toleranta: 8, contur: 'ctrl' },
   masurare: { distanta: true, delta: true, unghi: true, cursor: true, bara: true },
   export: { cuCote: false, strat: 'COTE', culoare: '#006d8f', grosime: 0.1, dxf: 'dimension', cifre: 'trasaturi' },
+  raport: { cuCote: false },
 };
 
 /**
@@ -170,7 +176,7 @@ export function citesteSetariCote(text: string | null): SetariCote {
   const I = SETARI_IMPLICITE;
   const ci = obiect(brut['cifre']), li = obiect(brut['linii']), ra = obiect(brut['raza']);
   const c = obiect(brut['comportament']), l = obiect(brut['lipire']), m = obiect(brut['masurare']), f = obiect(l['felurile']);
-  const ex = obiect(brut['export']);
+  const ex = obiect(brut['export']), rp = obiect(brut['raport']);
   const culoare = c['culoare'];
   return {
     cifre: {
@@ -228,6 +234,7 @@ export function citesteSetariCote(text: string | null): SetariCote {
       dxf: unul(ex['dxf'], ['dimension', 'linii'], I.export.dxf),
       cifre: unul(ex['cifre'], ['trasaturi', 'text'], I.export.cifre),
     },
+    raport: { cuCote: bif(rp['cuCote'], I.raport.cuCote) },
   };
 }
 
@@ -265,7 +272,7 @@ export const formatCote = (s: SetariCote, virgulaLimbii: boolean): FormatCifre =
 });
 
 /** Grupurile setărilor, în ordinea ferestrei Setări › Cotele. */
-export const GRUPURI_COTE = ['cifre', 'linii', 'raza', 'comportament', 'lipire', 'masurare', 'export'] as const satisfies readonly (keyof SetariCote)[];
+export const GRUPURI_COTE = ['cifre', 'linii', 'raza', 'comportament', 'lipire', 'masurare', 'export', 'raport'] as const satisfies readonly (keyof SetariCote)[];
 export type GrupCote = (typeof GRUPURI_COTE)[number];
 
 /** Pură: setările cu un grup adus la implicit („Înapoi la implicit”), celelalte neatinse. */

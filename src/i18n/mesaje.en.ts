@@ -34,6 +34,7 @@ export const en = {
   'actiune.foaie-stoc': 'Sheet size',
   'actiune.ghidaje': 'Sheet guides',
   'actiune.cote': 'Sheet dimensions',
+  'actiune.desen-din-cota': 'Make a drawing from the dimension',
   'actiune.imagini': 'Sheet images',
   'actiune.foaie-adauga': 'New sheet',
   'actiune.muta-instantele': 'Align',

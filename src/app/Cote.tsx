@@ -31,7 +31,7 @@ import {
   caleArc, cifraCota, desenCota, distantaDinCursor, distantaLaDesen, distantaRadiala, felAutomat, linieUnghiDinCursor, scrieCifra, textCota, textValoare,
   type CapatDesen, type DesenCota, type FelLiniar, type FormatCifre, type StilCota,
 } from '../model/desenCota.ts';
-import type { AncoraCota, Cota, Document, FelCota, LegaturaCota } from '../model/document.ts';
+import type { AncoraCota, Cota, Document, FelCota, FormaDoc, LegaturaCota } from '../model/document.ts';
 import { locuriFoi } from '../model/foi.ts';
 // Judecata cotelor și dezlegarea lor în jurnal (ADR 0330 §2, §3): cu unealta, o cotă nouă trece de ușă și se dezleagă cinstit.
 import '../model/judecataCote.ts';
@@ -258,7 +258,7 @@ export type CerereCote = { readonly mod: 'd' | 'm' | 's'; readonly n: number };
 /** Cererile „Cotează selecția” deja făcute: un strat montat din nou nu le repetă. */
 const CERERI_FACUTE = new WeakSet<CerereCote>();
 
-export function StratCote({ doc, indexFoaie, selectie, vedere, marime, zona, unealta, activ, loc, locJos, cerere, lipire, grila, virgula, toateFoile, onScrie, onUnealta, onSetari, poateDublu }: {
+export function StratCote({ doc, indexFoaie, selectie, vedere, marime, zona, unealta, activ, loc, locJos, cerere, lipire, grila, virgula, toateFoile, onScrie, onDesen, onUnealta, onSetari, poateDublu }: {
   readonly doc: Document;
   readonly indexFoaie: number;
   /** Instanțele alese în editor: „Cotează selecția” le cotează pe cele de pe foaie (felia 10.4↑d-1). */
@@ -284,6 +284,8 @@ export function StratCote({ doc, indexFoaie, selectie, vedere, marime, zona, une
   readonly toateFoile: boolean;
   /** Lista nouă a cotelor foii (acțiunea `foaie.cote`), cu verdictul ei. */
   readonly onScrie: (cote: readonly Cota[]) => RezultatActiune;
+  /** „Fă desen din cotă” (felia 10.4↑d-2): formele desenului și, cu „Șterge cota”, lista fără ea (acțiunea `foaie.desen-din-cota`). */
+  readonly onDesen: (forme: readonly FormaDoc[], cote: readonly Cota[] | null) => RezultatActiune;
   readonly onUnealta: (u: 'cote' | 'selectie') => void;
   /** ⚙ din bara uneltei: fereastra Setări, la secțiunea Cotele (ADR 0330 §5, §6). */
   readonly onSetari?: () => void;
@@ -395,6 +397,20 @@ export function StratCote({ doc, indexFoaie, selectie, vedere, marime, zona, une
         // La unghi, raza arcului rămâne pozitivă (un arc de rază zero nu se desenează).
         distanta: (x) => scrie((c) => cotaCuDistanta(c, c.fel === 'unghi' ? Math.max(0.1, Math.abs(x)) : x)),
         sterge: () => scrie(() => null),
+        // Desenul cotei, cu cifrele ca trăsăturile fontului cu o singură linie (adus la cerere, ca la export), ca o piesă nouă.
+        desen: async (sterge) => {
+          const [m, tx] = await Promise.all([import('../io/coteExport.ts'), import('../text/calcul.ts')]);
+          const f = await tx.incarcaFont(tx.FONT_COTE);
+          if (!f.ok) return { ok: false, motiv: 'editare.cote.motiv.font' };
+          const s = acum.current;
+          const g = m.geometrieCota(s.doc, s.indexFoaie, id, { stil: s.stil, format: s.format, cifre: tx.cifreDinFont(f.font) });
+          if (!g) return { ok: false, motiv: 'motiv.nimic-ales' };
+          const forme: FormaDoc[] = g.contururi.map((k) => ({ tip: 'cale', inchis: k.inchis, varfuri: k.varfuri.map((v) => structuredClone(v)) }));
+          const r = s.onDesen(forme, sterge ? s.cote.filter((c) => c.id !== id) : null);
+          // Desenul e ales (de acțiune), cu Selecția: panoul îi arată tăierea, de unde primește un rol.
+          if (r.ok) s.onUnealta('selectie');
+          return r;
+        },
       },
     });
   }, [aleasa, toate, idFoaie]);
@@ -422,8 +438,8 @@ export function StratCote({ doc, indexFoaie, selectie, vedere, marime, zona, une
     publicaRanduri('', []);
   }, []);
 
-  const acum = useRef({ cote, desenate, surse, fixe, vedere, setari, stil, lipire, grila, fel, puse, masura, serie, aleasa, unealta, activ, onScrie, onUnealta, poateDublu });
-  acum.current = { cote, desenate, surse, fixe, vedere, setari, stil, lipire, grila, fel, puse, masura, serie, aleasa, unealta, activ, onScrie, onUnealta, poateDublu };
+  const acum = useRef({ doc, indexFoaie, cote, desenate, surse, fixe, vedere, setari, stil, format, lipire, grila, fel, puse, masura, serie, aleasa, unealta, activ, onScrie, onDesen, onUnealta, poateDublu });
+  acum.current = { doc, indexFoaie, cote, desenate, surse, fixe, vedere, setari, stil, format, lipire, grila, fel, puse, masura, serie, aleasa, unealta, activ, onScrie, onDesen, onUnealta, poateDublu };
 
   useEffect(() => {
     const el = radacina.current;

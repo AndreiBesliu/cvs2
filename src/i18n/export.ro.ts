@@ -339,6 +339,7 @@ export const roExport = {
   'export.raport.marime.nota': 'Tăiată: cutia conturului decupat prin toată grosimea (profilul exterior); fără el, cutia desenului, marcată „desen”.',
   'export.raport.separator': 'CSV cu',
   'export.raport.csv': 'Descarcă CSV',
+  'export.raport.cote': 'Cu cotele ({n})',
   'export.raport.tipareste': 'Tipărește',
   'export.raport.foaie': '{material} · {latime} × {inaltime} × {grosime} mm · folosită {procent} %',
   'export.raport.fara-material': 'fără material',

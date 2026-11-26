@@ -27,6 +27,8 @@ export type CotaPanou = {
     readonly text: (text: string) => RezultatActiune;
     readonly distanta: (d: number) => RezultatActiune;
     readonly sterge: () => RezultatActiune;
+    /** „Fă desen din cotă” (felia 10.4↑d-2), cu „Șterge cota” sau fără: vine după fontul cifrelor, deci la o promisiune. */
+    readonly desen: (sterge: boolean) => Promise<RezultatActiune>;
   };
 };
 

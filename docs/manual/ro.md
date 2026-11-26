@@ -1231,7 +1231,7 @@ de alta a urmei, punctată mai rar; cu îmbinare, în locul fâșiei se văd din
 
 ## Cotele și măsurarea
 %% capitol: cote
-%% acopera: unealta.cote, foaie.cote, vedere.cote
+%% acopera: unealta.cote, foaie.cote, vedere.cote, foaie.desen-din-cota
 
 Unealta **Cote** (`D`; butonul ei stă în extensia barei, după Convertește) pune pe desen cote care arată o mărime: lungimea unei laturi, distanța dintre două puncte
 pe X, pe Y sau dreaptă, raza sau diametrul unui cerc ori al unui arc, unghiul dintre două laturi. O cotă **nu se taie niciodată**: G-code-ul exportat e același cu și fără cote. Cotele sunt ale foii
@@ -1285,6 +1285,11 @@ rămân unde sunt, iar cota nu mai urmează forma); **textul**, în care `<>` e 
 pozitiv afară; la unghi, **raza arcului**); **Șterge**. Distanța dintre două laturi paralele oblice e o cotă liberă: un desen
 fix, fiindcă piciorul ei pe a doua latură nu e un punct al formei.
 
+**Fă desen din cotă** (în panoul cotei alese): desenul cotei devine o piesă obișnuită, exact unde era cota: liniile și cifrele
+ca trăsături (cifrele cu fontul cu o singură linie), capetele ca mici contururi închise. Piesa nouă n-are nicio tăiere: e
+aleasă, cu Selecția, iar în secțiunea **Tăierea** îi dai un rol (gravura pe linie, de exemplu); de acolo merge ca orice
+formă. Cu bifa **Șterge cota**, cota pleacă odată cu desenul, în același pas de anulare; fără ea, cota rămâne.
+
 În **listă**, sub piesele foii active, rândul **Cote (N)**: deschis, arată cotele foii (valoarea, felul, „dezlegată”), iar un
 clic pe una trece la unealta Cote, cu ea aleasă. **Ochiul** de pe rând ascunde cotele foii pe pânză (nu le șterge; cu
 unealta Cote se văd oricum). **Arată cotele** (din **Caută o comandă**) le ascunde sau le arată pe toate, ca setarea „Cotele
@@ -1328,6 +1333,7 @@ implicit**. Un număr se scrie cu virgulă sau cu punct; unul în afara marginil
   (DIMENSION)**, implicit: în AutoCAD și LibreCAD rămân cote; sau **Linii și cifre**, pentru programele care nu știu cotele) și
   **Cifrele** (**Trăsături**, implicit: aceleași în orice program, fără fonturi; sau **Text**, de editat în alt program, dar
   desenat cu fontul lui).
+- **Raportul foilor:** dacă bifa „Cu cotele” din [raportul foilor](#raport) pornește pusă (implicit, nu).
 
 ## Conversia vectorilor
 %% capitol: conversie
@@ -2037,6 +2043,13 @@ pe material** (câte foi de fiecare mărime și material: ce cumperi).
 grosimea foii), în axele piesei: rotirea ei pe foaie n-o schimbă. O piesă fără un astfel de profil primește mărimea
 desenului, marcată „(desen)”. Cu **desen**, toate primesc cutia întregului lor desen. Z0 și colțul de origine sunt ale
 exportului: cele alese în fereastra lui, când raportul vine de acolo.
+
+**Cu cotele (N)** apare când o foaie a raportului are [cote](#cote). Bifată, fiecare foaie cu cote le arată pe desenul ei,
+cu culoarea și cifrele din [Setări](#setari) › Cotele › Exportul, iar desenul ia tot rândul, deasupra datelor foii. Cifrele, săgețile și
+golurile se măresc cât să se citească (cel puțin a 60-a parte din latura mare a foii); linia fiecărei cote rămâne unde ai
+pus-o. O cotă care iese din foaie lărgește desenul, ca să nu se taie. Foile identice arată cotele primei. Bifa pornește după
+Setări › Cotele › Raportul foilor (implicit oprită); CSV-ul n-are cote (e lista de tăiere), iar **Tipărește** ia desenele
+așa cum le vezi.
 
 **Descarcă CSV** scrie lista în `cncvs2-lista-de-taiere.csv`, în UTF-8, cu trei tabele unul sub altul: foile (un rând pe
 piesă, cu foaia, de câte ori se taie și cât e folosită), totalurile pe piesă și foile pe material. **CSV cu `;`**

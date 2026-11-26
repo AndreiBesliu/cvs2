@@ -18,6 +18,9 @@ const FELURI = new Set(['orizontala', 'verticala', 'aliniata', 'raza', 'diametru
 export function PanouCota({ cota, doarCitire, virgula }: { readonly cota: CotaPanou; readonly doarCitire: boolean; readonly virgula: boolean }): ReactNode {
   // Ce s-a întâmplat la ultimul buton (copierea, un refuz), pentru cota de atunci.
   const [stare, setStare] = useState<{ readonly id: string; readonly text: string; readonly rosu: boolean } | null>(null);
+  // „Fă desen din cotă” (felia 10.4↑d-2): bifa „Șterge cota” și, cât vine fontul cifrelor, butonul ocupat.
+  const [stergeCota, setStergeCota] = useState(false);
+  const [lucreaza, setLucreaza] = useState(false);
   const oprit = doarCitire ? t('motiv.doar-citire') : undefined;
   const spune = (r: RezultatActiune): RezultatActiune => {
     setStare(r.ok ? null : { id: cota.id, text: t(r.motiv), rosu: true });
@@ -68,6 +71,19 @@ export function PanouCota({ cota, doarCitire, virgula }: { readonly cota: CotaPa
           unitate="mm" semn={cota.fel !== 'unghi'} dezactivat={doarCitire} {...(oprit ? { titlu: oprit } : {})} onAplica={(x) => spune(cota.actiuni.distanta(x))} />)}
       </dl>
       <p className="prop-nota">{t('prop.cota.textul.nota')}</p>
+      <div className="prop-cota-desen">
+        <button type="button" data-buton="cota-desen" disabled={doarCitire || lucreaza} aria-busy={lucreaza || undefined} {...(oprit ? { title: oprit } : {})}
+          onClick={() => {
+            setLucreaza(true);
+            void cota.actiuni.desen(stergeCota).then((r) => { spune(r); }, () => { setStare({ id: cota.id, text: t('editare.cote.motiv.font'), rosu: true }); })
+              .finally(() => { setLucreaza(false); });
+          }}>{t('prop.cota.desen')}</button>
+        <label>
+          <input type="checkbox" data-camp="cota-desen-sterge" checked={stergeCota} disabled={doarCitire} onChange={(e) => { setStergeCota(e.currentTarget.checked); }} />
+          {t('prop.cota.desen.sterge')}
+        </label>
+      </div>
+      <p className="prop-nota">{t('prop.cota.desen.nota')}</p>
       <div className="prop-cota-butoane">
         <button type="button" data-buton="cota-sterge" disabled={doarCitire} {...(oprit ? { title: oprit } : {})}
           onClick={() => { spune(cota.actiuni.sterge()); }}>{t('prop.cota.sterge')}</button>

@@ -155,8 +155,9 @@ test('ușile: fiecare are o etichetă cu nume scurt, fără id-uri repetate (sun
   // `extensii.biblioteca`. Fereastra „Frezele mele” (ADR 0300 §3, felia 16.A↑a), încă una: `vedere.freze`. Butonul Admin
   // (ADR 0132 §11, felia 14.C↑d), încă una: `editare.admin`. Cotele (ADR 0330, felia 10.4↑a-2), încă două: unealta Cote și
   // acțiunea `foaie.cote`. Fereastra Setări (ADR 0330 §6, felia 10.4↑a-3), încă una: `vedere.setari`. „Arată cotele” (ADR
-  // 0330 §5, felia 10.4↑a-4), încă una: `vedere.cote`.
-  assert.equal(USI.length, 119);
+  // 0330 §5, felia 10.4↑a-4), încă una: `vedere.cote`. „Fă desen din cotă” (ADR 0330 §8, felia 10.4↑d-2), încă una:
+  // `foaie.desen-din-cota`.
+  assert.equal(USI.length, 120);
 });
 
 test('fiecare ușă e acoperită, în ambele limbi, de un capitol care o numește cu eticheta din interfață', () => {

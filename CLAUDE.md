@@ -1300,6 +1300,22 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   sus și extensia ei nu mai au loc la 1280 px cu fontul lat: un buton nou al cotelor își caută locul în meniul de
   clic dreapta sau în panou.** Urmează 10.4↑d-2 („Fă desen din cotă”) și d-3 (cotele în raportul foilor), pe
   ramură. Felia: pornirea +0, totalul +1,3 kB.
+  **„Fă desen din cotă” (ADR 0330 §8, felia 10.4↑d-2)** gata pe 26.11, pe ramura `wip/10.4-cote`: în panoul cotei
+  alese, butonul **Fă desen din cotă** face din desenul ei (liniile, capetele, cifrele ca trăsăturile lui Relief
+  SingleLine) o piesă nouă, **fără operații**, exact unde era cota, aleasă, cu secțiunea Tăierea în panou; cu bifa
+  **Șterge cota**, cota pleacă în același pas de anulare. Desenul ca forme e pur (`geometrieCota`,
+  `src/io/coteExport.ts`, lângă `entitatiCote`, neatinsă); acțiunea e `foaie.desen-din-cota` (`laCerere`). Proba
+  programului: cota și desenul fără rol nu se taie (aceiași octeți), desenul cu un rol pe linie taie linia cotei.
+  **O acțiune nouă a registrului intră și în listele din `actiuni.calcul.test.ts` și `actiuni.calcul.paritate.test.ts`**
+  (rapidul a căzut acolo). Felia: pornirea +0,1 kB, totalul +2,1 kB.
+  **Cotele în raportul foilor (ADR 0330 §7, felia 10.4↑d-3)** gata pe 26.11, pe aceeași ramură: bifa **„Cu cotele
+  (N)”** în raportul foilor, doar când o foaie are cote, cu implicitul din **Setări › Cotele › Raportul foilor** (al
+  optulea grup, oprit). Bifată, desenul fiecărei foi cu cote (`svgFoaieRaport`, `src/io/raportCote.ts`, pur, la
+  cerere) le arată cu culoarea și cifrele exportului, mărite cât să se citească (cifrele cel puțin a 60-a parte din
+  latura mare a foii), pe tot rândul, cu pagina lărgită cât ies din foaie (`scrieSvg` primește pagina, opțional);
+  oprită, desenul de dinainte, octet cu octet. `raportFoi` și CSV-ul, neschimbate. Întrebarea 10 (cotele mărite sau
+  la mărimea adevărată), la owner, cu recomandarea aplicată. Cu ea, felia 10.4↑d e încheiată; din ADR 0330 rămân doar
+  cele „mai târziu”. Felia: pornirea +0, totalul +3,0 kB.
   **Relieful din imagine, pe planșă (ADR 0310, ADR 0311, felia 18.1↑a, adusă din etapa 18; documentul v28)** gata pe
   24.11, în sesiunea cloud a liniei (ramura `wip/18.1-relief`), unită în `main` pe 24.11 (`c5b79526`). ADR 0310,
   acceptat de owner cu „1a–6a”. Din „Importă…”, o imagine (PNG, JPEG, WebP, GIF, BMP) se face **relief** cu alegerea

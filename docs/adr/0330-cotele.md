@@ -652,3 +652,55 @@ Documentul rămâne v29: cotele stau tot pe foaie, iar fiecare cotă nouă e o o
    - **a (recomandat, implementat):** în meniul de clic dreapta al pieselor alese (bara de sus și extensia ei nu mai au loc la
      1280 px cu fontul lat);
    - b: și în **Caută o comandă**, ca acțiune a registrului (aproximativ +0,1 kB în pornire).
+
+## Implementarea (10.4↑d-2)
+
+26.11, pe ramura `wip/10.4-cote`, după d-1. Documentul rămâne v29: desenul e o piesă obișnuită, iar cota rămâne pe foaie.
+- **Desenul cotei, ca forme** (`geometrieCota`, `src/io/coteExport.ts`, pur): același desen cu al pânzei și al exportului, în
+  mm ai foii, ca forme: liniile de extensie, linia de cotă (sau bucățile ei), arcul unghiului, ca trăsături deschise; capetele
+  (săgeata plină sau deschisă, un triunghi închis; punctul, un cerc închis din două semicercuri; bara oblică, o trăsătură); apoi
+  cifrele, ca trăsăturile lui Relief SingleLine (`cifreDinFont`, adus la cerere, ca la export). Exportul nu s-a schimbat
+  (`entitatiCote` e neatins; amprentele `cote.*` rămân).
+- **Comanda** (`comandaDesenCota`, acțiunea nouă `foaie.desen-din-cota`, `laCerere`): o piesă nouă, din forme (un element,
+  sau un grup cu câte un element pe formă), cu instanța în colțul foii, nerotită, deci formele stau exact unde era cota;
+  **fără operații**: nu se taie până nu primește un rol. Cu „Șterge cota”, `inlocuieste-cote` cu lista fără ea, în același pas.
+  Refuzată: nicio formă, plafoanele, documentul de după peste schemele documentului.
+- **Panoul cotei:** butonul **Fă desen din cotă** și bifa **Șterge cota** (nebifată), cu nota „Desenul e o piesă obișnuită, fără
+  tăiere”. După desen, unealta trece la Selecție, cu piesa nouă aleasă: panoul arată secțiunea Tăierea, de unde primește un rol.
+  Fără fontul cifrelor (rețeaua), nimic nu se face, cu motivul spus.
+- **Proba programului** (`cote.fadesen.test.ts`, pe placa 1 a corpusului CAM): cota nu ajunge în program; desenul ei fără rol
+  nici el (aceiași octeți); cu o operație pe linie pe toate formele desenului, programul se schimbă și taie linia cotei (Y = 10,
+  de la X = 20 la X = 120).
+- **Cifrele:** unitare noi 4 (desenul pe hârtie, punctul și bara, comanda cu anularea, programul), e2e noi 2
+  (`cote.fadesen.spec.ts`); acțiunea nouă e o ușă a manualului (120) și intră în cele două liste ale registrului
+  (`actiuni.calcul.test.ts`, `actiuni.calcul.paritate.test.ts`); otrăvurile 16 / 16. Pornirea 111,4 → 111,5 kB, totalul
+  910,4 → 912,5 / 1 000 kB (+2,1).
+
+## Implementarea (10.4↑d-3)
+
+26.11, pe ramura `wip/10.4-cote`, după d-2: ultima parte a feliei d. Documentul rămâne v29; raportul (`raportFoi`) și CSV-ul
+nu s-au schimbat (`cote.neatinse.test.ts`, neatins, le cere tot aceleași cu și fără cote).
+- **Desenul foii cu cotele, pur** (`svgFoaieRaport`, `src/io/raportCote.ts`, adus la cerere): fără cote cerute (sau pe o foaie
+  fără cote), desenul de până acum, octet cu octet (SVG-ul exportului de vectori, cu foaia, liniile la a 150-a parte din latura
+  mare a foii). Cu ele, cotele pe stratul COTE, cu culoarea și cifrele din Setări › Cotele › Exportul (trăsăturile fontului cu o
+  singură linie, sau text; fără font, ca text), liniile lor la jumătate din ale pieselor.
+- **Cotele se citesc pe desen** (întrebarea 10): cifrele cresc până la cel puțin a 60-a parte din latura mare a foii, iar
+  capetele, golul și depășirea cresc la fel (`stilRaport`); linia fiecărei cote rămâne unde a pus-o omul. Pe o foaie de 210 mm
+  sau mai mică (la cifrele de 3,5), desenul e chiar cel al exportului. O cotă care iese din foaie lărgește pagina desenului
+  (`scrieSvg` primește pagina, opțional; exportul o lasă cât foaia, ca până acum).
+- **Raportul:** bifa **„Cu cotele (N)”** pe rândul comenzilor, doar când o foaie a raportului are cote; pornește după setarea
+  nouă **Setări › Cotele › Raportul foilor › „Cu cotele, în raportul foilor”** (oprită implicit; al optulea grup, cu
+  „Înapoi la implicit”). Bifată, desenul fiecărei foi cu cote ia tot rândul, deasupra datelor ei (cel mult 70 % din înălțimea
+  ecranului; la tipar, 180 mm). Foile identice (aceleași piese, aceleași operații) arată cotele primei: cotele nu despart
+  foile, cum nu le despart nici imaginile (ADR 0272 §10). **Tipărește** ia desenele cum le vezi.
+- **Cifrele:** unitare noi 5 (`cote.raport.test.ts` 4: desenul de dinainte pe tot corpusul CAM, stilul pe hârtie, stratul și
+  cifrele, pagina lărgită; `cote.setari.test.ts` 1), e2e noi 2 (`cote.raport.spec.ts`), plus grupul nou numărat în
+  `setari.spec.ts`; otrăvurile 20 / 20 (19 din prima; culoarea, după ce proba a luat alta decât cea implicită). Pornirea
+  111,5 kB (neschimbată; cu ușa 116,7, cu Atelierul 117,0 / 125), totalul 912,5 → 915,5 / 1 000 kB (+3,0).
+
+### Întrebarea 10 (d-3), cu recomandarea pe care s-a mers
+
+10. Cotele pe desenul raportului:
+    - **a (recomandat, implementat):** mărite cât să se citească (cifrele cel puțin a 60-a parte din latura mare a foii), cu
+      desenul pe tot rândul: la mărimea adevărată, pe o foaie de 2 440 mm, cifrele de 3,5 mm ar avea sub un pixel;
+    - b: la mărimea adevărată, ca în fișierul exportat, în coloana îngustă de azi.
