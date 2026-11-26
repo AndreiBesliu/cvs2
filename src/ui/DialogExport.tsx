@@ -24,7 +24,8 @@ import { Cartonase, Poza } from './exportPoze.tsx';
 import {
   cuAceeasiFreza, FisaOperatie, ListaBiblioteca, NotaBiblioteca, RAND_DREPT, type ContextFisa, type Greseala, type InapoiNota, type ReparatieT,
 } from './FisaOperatie.tsx';
-import { FisaFinisare, RandListaFinisare, type FinisareExport } from './FisaFinisare.tsx';
+import { FisaFinisare, RandListaFinisare, type ContextFisaRelief, type FinisareExport } from './FisaFinisare.tsx';
+import { campuriReliefGresite, cuPerechile, randRelief, valoriRelief, type CampRelief, type RandRelief, type ValoriRelief } from './exportRelief.ts';
 import {
   bandaBuna, CHEI_COLT, CHEI_LATURA, citesteRest, ORIGINI, DIAMETRU_FUND_IMPLICIT, faraNumar, incrustatieVRand, inMargini,
   INTRARI_IMPLICITE, intregInMargini, jocFolosit, laturi, LUNGIME_ZIGZAG_IMPLICITA, margineBuna, MAXIM_REST, PLACUTE_NUMITE, puntiBune,
@@ -134,6 +135,11 @@ type Props = {
    * iar Exportă le scrie rangul ca celorlalte); valorile lor se schimbă din secțiunea Tăierea a panoului.
    */
   readonly finisari?: readonly FinisareExport[];
+  /**
+   * Creasta lăsată pe un plan de o freză a reliefului, la pasul dat (regula aplicației, `creastaPePlan`), pentru nota din fișa
+   * finisării (felia 18.1↑d-4); lipsă = fără notă.
+   */
+  readonly creasta?: (s: FinisareExport['scula'], pasLateral: number) => number | null;
   /**
    * „Pune-o înapoi în bibliotecă” (ADR 0300 §5, felia 16.A↑b-6): aplicația pune în biblioteca proiectului freza din copia de pe
    * rând și o trimite în cont; lipsă = fără buton.
@@ -379,7 +385,7 @@ export function DialogExport(
     onInchide, onReseteaza, stare, setariMasina, onSetariMasina, supracursa, onSupracursa, aer = AER_IMPLICIT, onAer, prinFoaie, onPrinFoaie,
     onDeschideInMasina, trimite = false,
     foaie, numeFoaie, placute, foi, placuteToate, onRaport, grosimeFoaie, onAlegeUrechi, frezeOferite, bibliotecaToata = null,
-    finisari: finisariFoaie = NICIO_FINISARE, onPuneInapoi, hartie, toateFoile,
+    finisari: finisariFoaie = NICIO_FINISARE, onPuneInapoi, hartie, toateFoile, creasta,
   }: Props,
 ) {
   const limba = useLimba();
@@ -506,6 +512,16 @@ export function DialogExport(
     ...operatiiFoaie, ...alte.filter(((are) => (o: OperatieExport) => !are.has(o.cheie))(new Set(operatiiFoaie.map((o) => o.cheie)))),
   ];
   const [param, setParam] = useState<Record<string, Rand>>(() => dinDocument(operatiiFoaie));
+  /**
+   * Rândurile operațiilor reliefului (felia 18.1↑d-4, ADR 0315), ca text, din valorile documentului; cu „Toate foile”, și ale
+   * celorlalte foi (aduse la alegere, ca rândurile celorlalte operații).
+   */
+  const dinFinisari = (lista: readonly FinisareExport[]): Record<string, RandRelief> => Object.fromEntries(lista.map((f) => [f.cheie, randRelief(f, text)]));
+  const [paramRelief, setParamRelief] = useState<Readonly<Record<string, RandRelief>>>(() => dinFinisari(finisariFoaie));
+  /** Finisările reliefului foii active, apoi ale celorlalte foi care nu sunt deja între ele. */
+  const cuCeleRelief = (alte: readonly FinisareExport[]): readonly FinisareExport[] => [
+    ...finisariFoaie, ...alte.filter(((are) => (f: FinisareExport) => !are.has(f.cheie))(new Set(finisariFoaie.map((f) => f.cheie)))),
+  ];
   // Ordinea tăierii (ADR 0133 §3): null = automată; altfel cheile rândurilor, în ordinea omului, pornită din rangurile
   // documentului. Ordinea automată arătată e cea de la deschidere (o latură sau o freză schimbată o reface la export).
   // Finisările reliefului (ADR 0312 §7) au și ele rândul lor în ordine: fără rang, în față, ca în lucrare.
@@ -544,6 +560,7 @@ export function DialogExport(
   if (bazaVazuta !== baza) {
     setBazaVazuta(baza);
     setParam(dinDocument(toate && toateFoile ? cuCelelalte(toateFoile().operatii) : operatiiFoaie));
+    setParamRelief(dinFinisari(toate && toateFoile ? cuCeleRelief(toateFoile().finisari) : finisariFoaie));
     setConfirmata(null);
     setOrdineFoaie(dinRanguri());
     setOrdineToate(undefined);
@@ -562,8 +579,9 @@ export function DialogExport(
     schimbat();
     setToate(da);
     if (!da || !toateFoile) return;
-    const alte = toateFoile().operatii;
+    const date = toateFoile(), alte = date.operatii;
     setParam((v) => ({ ...dinDocument(alte.filter((o) => !(o.cheie in v))), ...v }));
+    setParamRelief((v) => ({ ...dinFinisari(date.finisari.filter((f) => !(f.cheie in v))), ...v }));
   };
   const [placuteVazute, setPlacuteVazute] = useState<object | null>(null);
   const placuteOprite = pl?.confirmare === true && placuteVazute !== pl;
@@ -734,10 +752,14 @@ export function DialogExport(
       });
     }
   }
-  // Și freza fiecărei finisări a reliefului (ADR 0312 §7): același T e aceeași freză în tot programul.
+  // Și freza fiecărei operații a reliefului (ADR 0312 §7), cum e scrisă pe rândul ei (felia 18.1↑d-4): același T e aceeași
+  // freză în tot programul.
   for (const f of finisari) {
-    adaugaFreza(f.scula.numar, f.scula.diametru, f.scula.forma === 'v' ? f.scula.unghi ?? null : null, f.scula.forma === 'v' ? f.scula.varf ?? null : null,
-      f.scula.forma === 'bila');
+    const r = paramRelief[f.cheie];
+    const n = r ? citesteNumar(r.numarScula) : null, d = r ? citesteNumar(r.diametruScula) : null;
+    if (!r || n === null || d === null) continue;
+    const v = r.fel === 'finisare' && r.formaScula === 'v';
+    adaugaFreza(n, d, v ? citesteNumar(r.unghiV) : null, v ? citesteNumar(r.varfV) : null, r.fel === 'finisare' && r.formaScula === 'bila');
   }
   const conflict = [...scule].find(([, ds]) => ds.size > 1);
   /** O freză pe numărul ciocnit (felia 28.8↑j): doar câmpurile ei se înroșesc. */
@@ -828,9 +850,39 @@ export function DialogExport(
     ...(aerRau.includes('z-sigur') ? [t('motiv.z-sigur-invalid', { min: fmtMargine.format(Z_SIGUR_MINIM), max: fmtMargine.format(Z_SIGUR_MAXIM) })] : []),
     ...(aerRau.some((c) => c !== 'z-sigur') ? [t('motiv.parcare-invalida', { max: fmtMargine.format(PARCARE_MAXIMA) })] : []),
   ];
+  // Operațiile reliefului (felia 18.1↑d-4): fiecare câmp în marginile lui, fiecare valoare citită.
+  const gresiteRelief = (cheie: string): readonly CampRelief[] => ((r) => (r ? campuriReliefGresite(r) : []))(paramRelief[cheie]);
+  const reliefBun = finisari.every((f) => ((r) => r !== undefined && campuriReliefGresite(r).length === 0 && valoriRelief(r) !== null)(paramRelief[f.cheie]));
+  /** Greșelile rândului unei operații a reliefului, fiecare cu grupul în care se spune (cel al câmpului de schimbat). */
+  const motiveRelief = (cheie: string): Array<readonly [string, GrupExport]> => {
+    const r = paramRelief[cheie];
+    if (!r) return [];
+    const d = citesteNumar(r.diametruScula);
+    const out = gresiteRelief(cheie).map((c): readonly [string, GrupExport] => {
+      switch (c) {
+        case 'scula': return [t('motiv.camp.scula-numar', { n: fmtMargine.format(MARGINI_OPERATIE.numarScula) }), 'freza-relief'];
+        case 'diametru': return [t('motiv.camp.scula-diametru', { max: fmtMargine.format(MARGINI_OPERATIE.diametru) }), 'freza-relief'];
+        case 'unghi-v': return [t('motiv.camp.unghi-v', { min: fmtMargine.format(MARGINI_OPERATIE.unghiVMinim), max: fmtMargine.format(MARGINI_OPERATIE.unghiV) }), 'freza-relief'];
+        case 'varf-v': return [t('motiv.varf-invalid'), 'freza-relief'];
+        case 'pas-lateral': return [t('motiv.relief.pas-lateral', {
+          max: fmtMargine.format(d !== null && d > 0 ? Math.min(d, MARGINI_OPERATIE.pasLateral) : MARGINI_OPERATIE.pasLateral),
+        }), 'linii'];
+        case 'adaos': return [t('motiv.relief.adaos', { max: fmtMargine.format(MARGINI_OPERATIE.adaos) }), 'adaos'];
+        case 'unghi': return [t('motiv.relief.unghi'), 'linii'];
+        case 'plan-zero': return [t('motiv.relief.plan-zero', { max: fmtMargine.format(MARGINI_OPERATIE.planZero) }), 'margine'];
+        case 'adancime': return [t('motiv.camp.adancime', { max: fmtMargine.format(MARGINI_OPERATIE.adancime) }), 'podea'];
+        case 'pas': return [t('motiv.camp.pas', { max: fmtMargine.format(MARGINI_OPERATIE.adancime) }), 'podea'];
+      }
+    });
+    // Un T folosit cu două freze se spune și aici, lângă freza reliefului.
+    if (conflict && citesteNumar(r.numarScula) === conflict[0]) {
+      out.push([t('motiv.scula-conflict', { numar: conflict[0], diametre: [...conflict[1].values()].join(', ') }), 'freza-relief']);
+    }
+    return out;
+  };
   const valid = operatiiBune && urechiBune && rampeBune && intrariBune && pasiBuni && coborariBune && retrageriBune && vcarveBune && funduriBune
     && varfuriBune && vPeLinie && resturiBune && strategiiBune && incrustatiiBune && drepteBune && frezeDopBune && benziBune && puntiDopBune
-    && supracursaBuna && numeBun && aerBun && gauriBune;
+    && supracursaBuna && numeBun && aerBun && gauriBune && reliefBun;
   /**
    * Orice parametru schimbat face vechi rezultatul. Bifa nu mai trebuie ștearsă aici: cererea următoare e alt obiect, deci
    * vine oricum nebifată.
@@ -844,6 +896,12 @@ export function DialogExport(
       const vechi = v[id];
       return vechi ? { ...v, [id]: { ...vechi, ...p } } : v;
     });
+  };
+  /** O valoare a unui rând al reliefului (felia 18.1↑d-4); marginea și planul zero ajung și pe perechile lui. */
+  const perechiRelief = new Map(finisari.map((f) => [f.cheie, f.perechi] as const));
+  const schimbaRelief = (cheie: string, p: Partial<RandRelief>): void => {
+    schimbat();
+    setParamRelief((v) => cuPerechile(v, perechiRelief, cheie, p));
   };
   /**
    * Freza aleasă din „Frezele mele” pe locul `unde` al rândului `cheie` (ADR 0300 §4; freza operației din 16.A↑b-3, cele în plus
@@ -1092,6 +1150,11 @@ export function DialogExport(
       </div>
     );
   };
+  /** Valorile rândurilor operațiilor reliefului (felia 18.1↑d-4), citite; un rând care nu se citește lasă operația cum e. */
+  const valoriReliefToate = (): Map<string, ValoriRelief> => new Map(finisari.flatMap((f): Array<readonly [string, ValoriRelief]> => {
+    const r = paramRelief[f.cheie], v = r ? valoriRelief(r) : null;
+    return v ? [[f.cheie, v]] : [];
+  }));
   const valori = (): Map<string, ValoriOperatie> => new Map(operatii.flatMap((o): Array<readonly [string, ValoriOperatie]> => {
     const p = param[o.cheie];
     const adancime = p ? citesteNumar(p.adancime) : null;
@@ -1247,6 +1310,9 @@ export function DialogExport(
     ...(drepteBune ? [] : [t('motiv.incrustatie-dreapta-invalida', { max: fmtFreza.format(MARGINI_OPERATIE.margineDop) })]),
     ...(frezeDopBune ? [] : [t('motiv.freza-dop-invalida', { n: MARGINI_OPERATIE.numarScula, diametru: fmtFreza.format(MARGINI_OPERATIE.diametru) })]),
     ...(benziBune ? [] : [t('motiv.banda-invalida', { n: MARGINI_OPERATIE.numarScula })]),
+    // Operațiile reliefului (felia 18.1↑d-4): prima greșeală, cu numele rândului.
+    ...(reliefBun ? [] : ((f) => (f ? [`${f.descriere}: ${motiveRelief(f.cheie)[0]?.[0] ?? t('motiv.operatie-invalida')}`] : []))(
+      finisari.find((x) => ((r) => !r || campuriReliefGresite(r).length > 0 || valoriRelief(r) === null)(paramRelief[x.cheie])))),
     ...(puntiDopBune ? [] : [t('motiv.punti-dop-invalide', { n: MARGINI_OPERATIE.urechi })]),
     ...(supracursaBuna ? [] : [t('motiv.supracursa-invalida', { max: fmtFreza.format(SUPRACURSA_MAXIMA) })]),
     ...(motivNumeFisier === null ? [] : [t(`export.nume-fisier.${motivNumeFisier}`, { max: LUNGIME_NUME })]),
@@ -1309,6 +1375,7 @@ export function DialogExport(
    * Frezele de rest ale unui V-carve sunt ale fundului plat, deci se spun acolo.
    */
   const greseliRand = (cheie: string): Array<readonly [string, GrupExport, ReparatieT?]> => {
+    if (paramRelief[cheie]) return motiveRelief(cheie);
     const p = param[cheie];
     if (!p) return [];
     const out: Array<readonly [string, GrupExport, ReparatieT?]> = [];
@@ -1508,7 +1575,8 @@ export function DialogExport(
   // Ce îi trebuie fișei unei operații (ADR 0290, felia 28.8↑f-3): aceeași componentă o pot pune Clasicul și Pas cu pas.
   /** Rândul unei finisări în listă (ADR 0312 §7): ca celelalte, mutat cu mânerul sau cu săgețile; tragerea lasă rândul tras aici. */
   const randFinisare = (fin: FinisareExport, loc: number, poz: { readonly nr: number; readonly sus: boolean; readonly jos: boolean }): ReactNode => (
-    <RandListaFinisare key={fin.cheie} fin={fin} loc={loc} total={ordine.length} nr={poz.nr} sus={poz.sus} jos={poz.jos}
+    <RandListaFinisare key={fin.cheie} fin={fin} {...((r) => (r ? { r } : {}))(paramRelief[fin.cheie])} gresit={motiveRelief(fin.cheie).length > 0}
+      loc={loc} total={ordine.length} nr={poz.nr} sus={poz.sus} jos={poz.jos}
       mana={ordineMea !== null && !doarCitire} tras={tras}
       curent={curent === fin.cheie} f={(x) => fmtFreza.format(x)}
       onMuta={(de, la) => { mutaRand(de < 0 ? ordine.indexOf(tras ?? '') : de, la); }} onTrage={setTras} onDu={() => { du(fin.cheie, 'titlu'); }} />
@@ -1535,7 +1603,11 @@ export function DialogExport(
   const fisa = (cheie: string, loc: number): ReactNode => {
     const poz = pozitie(cheie, loc);
     const fin = finisareDupaCheie.get(cheie);
-    if (fin) return <FisaFinisare key={cheie} fin={fin} loc={poz.nr - 1} total={poz.n} f={(x) => fmtFreza.format(x)} />;
+    if (fin) {
+      const r = paramRelief[cheie];
+      return r ? <FisaFinisare key={cheie} fin={fin} r={r} loc={poz.nr - 1} total={poz.n} c={contextRelief} greseli={motiveRelief(cheie)}
+        gresite={gresiteRelief(cheie)} onSchimba={(p) => { schimbaRelief(cheie, p); }} /> : null;
+    }
     if (randata(cheie, loc)) return <FisaOperatie key={cheie} cheie={cheie} loc={poz.nr - 1} total={poz.n} c={contextFisa} />;
     // Locul unei fișe nerandate (28.8↑i): titlul și înălțimea ei, ca derularea și lista s-o găsească.
     return (
@@ -1555,6 +1627,8 @@ export function DialogExport(
     ];
     return texte.length === 0 ? null : <span className="nota" data-nota-foaie={unde}>{texte.join(' ')}</span>;
   };
+  // Ce îi trebuie fișei unei operații a reliefului (felia 18.1↑d-4): grupul comun, formatul, creasta.
+  const contextRelief: ContextFisaRelief = { doarCitire, grup, f: (x) => fmtFreza.format(x), creasta };
   const contextFisa: ContextFisa = {
     dupaCheie, param: paramVazut, total: ordine.length, doarCitire, schimba, randBun, greseliRand, conflict, hartie: hartieRandului, taieturaRand,
     text, fmtFreza, fmtTrecere, grosimeFoaie, supracursaCitita, cuSupracursa, onAlegeUrechi, frezeRest, grup, frezeOferite, alegeFreza,
@@ -1869,7 +1943,8 @@ export function DialogExport(
               <p role="status" className="avertisment" data-testid="export-invalid">{motivInvalid}</p>
               {primaGresita !== null && (
                 <button type="button" className="dx-du" data-du={primaGresita} onClick={() => { du(primaGresita, 'repara'); }}>
-                  {t('export.du', { nume: primaGresita === 'foaia' ? t('export.fisa.foaia') : primaGresita === 'masina' ? t('export.fisa.masina') : dupaCheie.get(primaGresita)?.descriere ?? primaGresita })}
+                  {t('export.du', { nume: primaGresita === 'foaia' ? t('export.fisa.foaia') : primaGresita === 'masina' ? t('export.fisa.masina')
+                    : dupaCheie.get(primaGresita)?.descriere ?? finisareDupaCheie.get(primaGresita)?.descriere ?? primaGresita })}
                 </button>
               )}
             </div>
@@ -1919,7 +1994,7 @@ export function DialogExport(
             onClick={() => {
               if (!valid || (riscuriOrdine.length > 0 && !riscAcceptat) || placuteOprite) return;
               onExporta({
-                origine, z0, post, unitati, valori: valori(), ...(scule.size > 1 && strategie ? { strategieScula: strategie } : {}),
+                origine, z0, post, unitati, valori: valori(), valoriRelief: valoriReliefToate(), ...(scule.size > 1 && strategie ? { strategieScula: strategie } : {}),
                 ...(cere && bifat ? { confirmareIesire: cere } : {}), ordine: ordineMea, ...(toate ? { toateFoile: true } : {}),
                 // Fără supracursă (0), cererea e cea de dinainte (ADR 0176); cu ea, și bifa tăieturilor cât foaia (ADR 0177).
                 ...(cuSupracursa && supracursaCitita !== null ? { supracursa: supracursaCitita, ...(prinFoaie ? { prinFoaie: true } : {}) } : {}),

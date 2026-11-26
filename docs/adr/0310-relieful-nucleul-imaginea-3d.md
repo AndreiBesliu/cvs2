@@ -122,7 +122,8 @@ redeschide.
 
 - **Implicit, o celulă a reliefului e un pixel al imaginii**, fără resamplare; lățimea scrisă dă celula.
 - **Liniile finisării la 0° și 90°** trec prin centrele celulelor, iar pasul lateral e un număr întreg de celule. Pasul se
-  scrie în mm și se rotunjește la cel mai apropiat multiplu; valoarea rotunjită se spune lângă câmp.
+  scrie în mm și se rotunjește la cel mai apropiat multiplu; valoarea rotunjită se spune lângă câmp. (Rotunjirea, schimbată de
+  ADR 0314: în jos, cel puțin o celulă.)
 - **Cu un unghi oarecare** sau cu „Nealiniat”, aplicația spune că pot apărea riduri (moiré).
 - **Opțiune:** resamplarea la o celulă aleasă. O imagine mare se reduce pe medie, una mică se mărește biliniar.
 - **Proba:** o imagine cu linii fine, finisată aliniat (fără bătăi) și nealiniat (bătăile măsurate).

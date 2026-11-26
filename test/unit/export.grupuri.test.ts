@@ -6,11 +6,12 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import {
-  GRUP_CAMP, GRUP_VERDICT, GRUPURI_FOAIE, GRUPURI_MASINA, grupuriGresite, grupuriOperatie, verdicteGresite, type FelFisa, type VerdictRand,
+  GRUP_CAMP, GRUP_VERDICT, GRUPURI_FOAIE, GRUPURI_MASINA, GRUPURI_RELIEF, grupuriGresite, grupuriOperatie, verdicteGresite, type FelFisa, type VerdictRand,
 } from '../../src/ui/exportGrupuri.ts';
 
-// Câmpurile stau în fereastră (foaia, mașina) și în fișa operației, scoasă într-o componentă a ei (28.8↑f-3).
-const SURSA = ['DialogExport.tsx', 'FisaOperatie.tsx'].map((f) => readFileSync(new URL(`../../src/ui/${f}`, import.meta.url), 'utf8')).join('\n');
+// Câmpurile stau în fereastră (foaia, mașina), în fișa operației, scoasă într-o componentă a ei (28.8↑f-3), și în fișa
+// operațiilor reliefului (felia 18.1↑d-4).
+const SURSA = ['DialogExport.tsx', 'FisaOperatie.tsx', 'FisaFinisare.tsx'].map((f) => readFileSync(new URL(`../../src/ui/${f}`, import.meta.url), 'utf8')).join('\n');
 
 /**
  * Câmpurile ferestrei, din sursă: `data-camp="x"` (și pe cartonașe, din 28.8↑b-2, scris tot așa, pentru catalogul controalelor)
@@ -26,7 +27,7 @@ function campuriDinSursa(): Set<string> {
 test('fiecare câmp al ferestrei are grupul lui, iar fiecare intrare a hărții e un câmp al ferestrei', () => {
   const campuri = campuriDinSursa();
   // Proba se sprijină pe forma sursei: fără câmpurile ei știute, ar trece goală.
-  for (const c of ['adancime', 'pas', 'latura', 'urechi-lemn', 'urechi-mijloc', 'fund-rest-pas', 'dop-rest-scula', 'inc-treapta-latime']) assert.ok(campuri.has(c), c);
+  for (const c of ['adancime', 'pas', 'latura', 'urechi-lemn', 'urechi-mijloc', 'fund-rest-pas', 'dop-rest-scula', 'inc-treapta-latime', 'relief-pas-lateral', 'relief-z']) assert.ok(campuri.has(c), c);
   const fara = [...campuri].filter((c) => !(c in GRUP_CAMP));
   assert.deepEqual(fara, [], `câmpuri fără grup: ${fara.join(', ')}`);
   const straine = Object.keys(GRUP_CAMP).filter((c) => !campuri.has(c));
@@ -71,4 +72,15 @@ test('valoarea greșită se spune în grupul câmpului de reparat', () => {
   const toate = new Set([...grupuriOperatie(fel({})), ...grupuriOperatie(fel({ tip: 'buzunar', incrustatieDreapta: true })), ...grupuriOperatie(fel({ tip: 'gaurire' })),
     ...grupuriOperatie(fel({ tip: 'vcarve', incrustatie: true, banda: true }))]);
   for (const [k, g] of Object.entries(GRUP_VERDICT)) assert.ok(toate.has(g), `${k} → ${g}`);
+});
+
+test('grupurile operațiilor reliefului (felia 18.1↑d-4): adaosul doar la degroșare; fiecare câmp `relief-` stă într-unul dintre ele', () => {
+  assert.deepEqual(GRUPURI_RELIEF.finisare, ['freza-relief', 'linii', 'margine', 'podea']);
+  assert.deepEqual(GRUPURI_RELIEF.degrosare, ['freza-relief', 'linii', 'adaos', 'margine', 'podea']);
+  const ale = new Set(GRUPURI_RELIEF.degrosare);
+  const relief = Object.entries(GRUP_CAMP).filter(([c]) => c.startsWith('relief-'));
+  assert.equal(relief.length, 14);
+  for (const [c, g] of relief) assert.ok(g.length === 1 && ale.has(g[0]!), `${c} → ${g.join(', ')}`);
+  // Și invers: grupurile reliefului nu primesc câmpurile celorlalte operații.
+  for (const [c, g] of Object.entries(GRUP_CAMP)) if (!c.startsWith('relief-')) assert.ok(g.every((x) => !['freza-relief', 'linii', 'adaos', 'margine', 'podea'].includes(x)), c);
 });

@@ -61,6 +61,13 @@ export const POZE: Readonly<Record<string, ReactNode>> = {
   'sprijin.fata': <><path className="l" d="M3 14H20V40H44V14H61V43H3Z" /><path className="l2" d="M12 3H52V14H44V34H20V14H12Z" /><path className="ua" d="M12 14H20M44 14H52" /></>,
   'foi.activa': <><rect className="g contur slab" x={6} y={10} width={26} height={20} /><rect className="l" x={30} y={6} width={28} height={22} /><path className="ua" d="M30 34H58" /></>,
   'foi.toate': <><rect className="l" x={6} y={12} width={26} height={20} /><rect className="l" x={30} y={6} width={28} height={22} /><path className="ua" d="M6 38H32M30 34H58" /></>,
+  // Operațiile reliefului (felia 18.1↑d-4): liniile prin centrele celulelor sau nu, marginea, unde stă relieful pe Z.
+  'relief-linii.aliniate': <>{LEMN}<path className="cs" d="M3 17.5H61M3 26.5H61M12 3V41M21 3V41M30 3V41M39 3V41M48 3V41" /><path className="d" d="M5 13H59M5 22H59M5 31H59" /></>,
+  'relief-linii.nealiniate': <>{LEMN}<path className="cs" d="M3 17.5H61M3 26.5H61M12 3V41M21 3V41M30 3V41M39 3V41M48 3V41" /><path className="d" d="M5 15.5H59M5 23.5H59M5 31.5H59" /></>,
+  'relief-margine.perete': <><path className="l" d="M3 12H16V41H3ZM48 12H61V41H48Z" /><path className="l2" d="M16 41V30Q32 14 48 30V41Z" /><circle className="f" cx={43} cy={23} r={4} /></>,
+  'relief-margine.trece': <><path className="l" d="M3 34H61V41H3Z" /><path className="l2" d="M12 41V30Q30 12 48 30V41Z" /><circle className="f" cx={53} cy={30} r={4} /></>,
+  'relief-z.varf': <><path className="l" d="M3 12H14V41H3ZM50 12H61V41H50Z" /><path className="l2" d="M14 41V28Q32 -4 50 28V41Z" /><path className="ua" d="M3 12H61" /></>,
+  'relief-z.plan': <><path className="l" d="M3 12H14V41H3ZM50 12H61V41H50Z" /><path className="l2" d="M14 41V32Q32 12 50 32V41Z" /><path className="ua" d="M3 12H61M8 12V20" /></>,
   // Parcarea de la final (ADR 0291 §3, felia 28.8↑p): freza rămâne deasupra ultimei tăieturi, merge la XY0 sau într-un punct ales.
   'parcare.nu': <>{LEMN}<rect className="d" x={14} y={11} width={26} height={22} rx={3} /><circle className="f" cx={40} cy={22} r={4} /></>,
   'parcare.origine': <>{LEMN}<rect className="d" x={22} y={9} width={30} height={20} rx={3} /><path className="cs" d="M52 19L10 35" /><path className="ua" d="M4 40H14M4 40V30" /><circle className="f" cx={8} cy={36} r={4} /></>,

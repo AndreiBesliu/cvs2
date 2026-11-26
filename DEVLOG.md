@@ -16291,6 +16291,41 @@ tipărire”); ADR 0284, felia 3.Ck (balamaua și placa turnantă), despărțit�
   designului, de pe calculatorul owner-ului.
 - **Documentele:** decizia în `CLAUDE.md`; starea din `docs/linii/principala.md` și indexul liniilor.
 
+## 2026-11-26 — Linia reliefului: felia 18.1↑d-3, pasul lateral aliniat, rotunjit în jos (Model: Claude Opus 5.5)
+
+**Prompt:** „Zi-le ca pot continua cu ce urmeaza la fiecare” (owner-ul, în sesiunea principală, transmis liniei la 20:16): „rotunjirea
+în jos a pasului lateral cu liniile aliniate (a șaptea alegere: creasta să nu iasă mai mare decât cea cerută)”. **Started:**
+26.11, 20:20, pe ramura `wip/18.1-relief`, cu `main` `d1ab8ba5` adus. **Completed:** 26.11, 21:00 (în container; CI-ul, pe
+commit-ul împins).
+
+- **Proba întâi, pe oracolul 3D:** pe un plan, la 0° și 90°, pașii 1,3, 1,7, 1,5 și 0,3 pe celula 0,5: pasul folosit, avertismentul,
+  creasta măsurată de simulatorul independent cel mult cea cerută; pașii întregi pe hârtie, dar nu în virgulă mobilă (0,3 / 0,1);
+  celula mai lată decât freza, refuzată; la degroșare, distanța dintre liniile tăiate, citită din mișcări.
+- **CAM-ul:** `celuleAliniate` (k = max(1, ⌊s / c + 1e-9⌋)) în `linii`, refuzul celulei peste diametru, avertismentele („rotunjit
+  în jos la k celule”, „mărit la o celulă”). Programele cu pași întregi de celule, octet cu octet (placa 18, neschimbată).
+- **ADR 0314** (schimbă rotunjirea din ADR 0310 §5 și ADR 0312), manualul (ro, en); otrăvurile 10 / 10, într-o clonă.
+
+## 2026-11-26 — Linia reliefului: felia 18.1↑d-4, rândul editabil al finisării și al degroșării (Model: Claude Opus 5.5)
+
+**Prompt:** „Zi-le ca pot continua cu ce urmeaza la fiecare” (owner-ul, în sesiunea principală, transmis liniei la 20:16):
+„rândul editabil al finisării și al degroșării în fereastra exportului (azi doar de citit, prin `FisaFinisare`)”. **Started:**
+26.11, 21:00, după 18.1↑d-3, pe aceeași ramură. **Completed:** 26.11, 21:25 (în container; CI-ul, pe commit-ul împins).
+
+- **Proba întâi, pe hârtie:** `export.relief.test.ts` (rândul ca text, câmpurile greșite, perechile, scrierea: fără schimbare,
+  aceeași operație la octet; fiecare câmp; freza cu alt T, alt diametru, altă formă, doar alt vârf al V-ului).
+- **Fereastra:** fișa pe grupuri (`GRUPURI_RELIEF`: freza, liniile, adaosul, marginea și înălțimea, adâncimea), câmpurile
+  `relief-*` cu explicațiile lor, greșelile în grup, marcajul din listă, „Du-mă la …” cu numele rândului; pasul folosit (din
+  `celuleAliniate`, mutată într-un modul al ei, `src/cam/celuleAliniate.ts`) și creasta pe plan; marginea și înălțimea pe
+  perechea rândului. Exportă dă valorile în `CerereExport.valoriRelief`; aplicația le scrie cu `operatieReliefDinDialog`.
+- **ADR 0315**, manualul (ro, en), e2e nou (`relief.export.spec.ts`), fișele din `finisare.spec.ts` și `degrosare.spec.ts`,
+  privirea cu V-ul și planul zero; otrăvurile 23 / 23 prinse (14 unitare, 9 e2e), într-o clonă; patru otrăvuri vechi mutate (11.5 E17, 28.8p P24, 18.1d
+  E02, E04, ultima VOID încă de pe `main`).
+- **Rapidul pe `bf77526c` a căzut** la regulile de import: fișa importa `celuleAliniate` direct din `src/cam`; interfața ia
+  din domeniu doar prin `src/ui/actiuni*` (acum prin `actiuniExportTipuri.ts`). Regulile se rulează după orice import nou în
+  `src/ui`, nu doar la începutul feliei.
+- **De ținut minte:** un `npm ci` într-o clonă al cărei `node_modules` e o legătură spre repo golește `node_modules` din repo
+  (aici s-a văzut ca `tsc: not found`); clona își face întâi `node_modules` al ei.
+
 ## 2026-11-26 — Sesiunea principală în cloud: 3.Av și 3.Aw (Model: Claude Opus 5.5)
 
 **Prompt:** „Ok, fa-le”

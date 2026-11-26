@@ -1078,8 +1078,8 @@ reliefs only). The cutter follows the relief on parallel lines, one stepover apa
 **step**, the last one on the model; it never goes below the relief's surface, nor below the **depth** (the floor, by default
 the sheet's thickness). The fields:
 - **Cutter**: ball nose (the default), flat or V-bit, and its **diameter**; the ball nose is used only here;
-- **Stepover** (by default 10 % of the cutter): the distance between lines; through the cell centres, it is rounded to whole
-  cells;
+- **Stepover** (by default 10 % of the cutter): the distance between lines; through the cell centres, it is rounded down to
+  whole cells (at least one), so the lines are never further apart than you asked; a cell wider than the cutter is refused;
 - **Line angle** (0° to 180°) and **Lines**: through the cell centres (at 0° and 90°) or not aligned, where ripples can show on
   fine detail;
 - **Relief edge**: **the wall stays** (outside the relief is the stock face, so the cutter does not cut there) or **the cutter
@@ -1103,8 +1103,11 @@ does not fit (a valley narrower than it), roughing leaves the wood and finishing
 Roughing and finishing come before the contour cuts, each with its own cutter, roughing first. With **Cutting order: Mine**,
 if you move finishing before the roughing of the same relief, the export says so among the warnings: the program is fine, but
 finishing takes all the wood with its cutter and roughing cuts almost only air. In the **Export G-code** window each has its
-own row, in its place in the cutting order, with a read-only sheet (the cutter, the stepover, the scallop on a flat for
-finishing, the allowance for roughing, the depth); you change them in the Cutting section. With **Cutting order: Mine**, its row moves like any other. In the [3D view](#vedere-3d), **Cut** shows the
+own row, in its place in the cutting order, with a sheet where you can change them there too: the cutter (number, diameter,
+shape; roughing, flat only), the lines (stepover, angle, through the cell centres or not aligned), the allowance for roughing,
+the edge and the height, the depth and the step down. The sheet tells the step used (with the lines through the cell centres,
+rounded down to whole cells) and, for finishing, the scallop on a flat. The edge and the height, changed on one row, change on
+the other row of the same relief too; **Export** writes the values into the project, and the Cutting section then shows them. With **Cutting order: Mine**, its row moves like any other. In the [3D view](#vedere-3d), **Cut** shows the
 sheet after the program. On slopes the cutter stays a little above the ideal surface (about 0.1 mm on a 45° slope): it is the safe side of the
 computation, which never digs into the relief. The export needs the relief's tiles from this browser; on another computer, it
 says they are missing.

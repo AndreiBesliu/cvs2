@@ -206,6 +206,29 @@ test('degroșarea, apoi finisarea, pe același lemn: finisarea nu intră mai ad�
   assert.ok(ramasO(inainte.lemn, zModel, 0, (x, y) => x > 7 && x < 23 && y > 7 && y < 23).min >= -1e-6);
 });
 
+test('liniile aliniate (felia 18.1↑d-3): pasul lateral rotunjit în jos la celule întregi; liniile tăiate nu stau mai rar decât pasul cerut', () => {
+  // Celula 0,5, pasul cerut 2,4: 4 celule (2,0), nu 5 (2,5, mai rar decât cerut). Distanța dintre liniile vecine se citește din
+  // mișcări (Y-ul trecerilor de tăiere de pe prima treaptă), nu din pasul spus de lucrare.
+  const c = 0.5, nx = 60, ny = 40;
+  const r = relief(grila(nx, ny, c, () => 0), nx, ny, c, T(10, 20), -6);
+  const o = degrosareRelief({ reliefuri: [r], raza: 3, adaos: 0.5, unghi: 0, margine: 'perete', pasLateral: 2.4, pas: 2, adancime: 20, zSigur: Z_SIGUR, avans: 1200, avansPlonjare: 400 });
+  assert.ok(o.ok);
+  assert.equal(o.pasLateral, 2);
+  assert.ok(o.avertismente.some((x) => /pasul lateral, rotunjit în jos la 4 celule ale reliefului: 2 mm/.test(x)), o.avertismente.join('; '));
+  const ys = new Set<number>();
+  let x = 0, y = 0, z = Z_SIGUR;
+  for (const m of o.miscari) {
+    if (m.tip !== 'rapida' && m.tip !== 'taiere') continue;
+    const x1 = m.la.X ?? x, y1 = m.la.Y ?? y, z1 = m.la.Z ?? z;
+    // O mișcare de tăiere de-a lungul X, pe prima treaptă (Z = −2).
+    if (m.tip === 'taiere' && Math.abs(z1 + 2) < 1e-9 && Math.abs(z + 2) < 1e-9 && Math.abs(y1 - y) < 1e-9 && Math.abs(x1 - x) > 1e-9) ys.add(Math.round(y1 * 1e6) / 1e6);
+    x = x1; y = y1; z = z1;
+  }
+  const s = [...ys].sort((a, b) => a - b);
+  assert.ok(s.length >= 5, `liniile: ${s.join(', ')}`);
+  for (let k = 1; k < s.length; k++) assert.ok(s[k]! - s[k - 1]! <= 2.4 + 1e-9, `liniile ${s[k - 1]} și ${s[k]}: mai rar decât 2,4`);
+});
+
 test('refuzurile: raza, pasul lateral peste diametru, pasul, adaosul, unghiul, fără reliefuri; nimic de tăiat e un avertisment', () => {
   const c = 0.5, r = relief(grila(10, 10, c, () => 0), 10, 10, c, T(0, 0), -2);
   const baza: ParametriDegrosare = { reliefuri: [r], raza: 2, adaos: 0.5, unghi: 0, margine: 'perete', pasLateral: 2, pas: 1, adancime: 10, zSigur: 5, avans: 1, avansPlonjare: 1 };

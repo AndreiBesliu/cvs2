@@ -1229,7 +1229,7 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
       return;
     }
     // Parametrii, cum i-a dat fereastra (și „Toate foile”, ADR 0210 §5); valorile și ordinea operațiilor sunt scrise mai sus.
-    const { valori: _valori, ordine: _ordine, ...parametri } = c;
+    const { valori: _valori, ordine: _ordine, valoriRelief: _relief, ...parametri } = c;
     exportInCurs.current = true;
     opresteSimularea();
     opresteExportul();
