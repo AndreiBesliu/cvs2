@@ -112,7 +112,7 @@ elice. Fiecare e un șablon din parametri, nu un desen fix.
 | 3.Ch | Construcțiile cu nume și lista lor de piese | mai multe construcții în atelier |
 | 3.Ci | Construcțiile gata | patru șabloane |
 | 3.Cj | Melcul, cama și manivela, cadrul, roata cu palete | restul pieselor din B, pe bucăți: 3.Cj-1, cama, 3.Cj-2, roata cu palete, 3.Cj-3, cadrul, și 3.Cj-4, șurubul melc (toate gata pe 25.11) |
-| 3.Ck | Balamaua și placa turnantă | despărțite de 3.Cd: au jocuri de mișcare care se potrivesc pe piese tipărite |
+| 3.Ck | Balamaua și placa turnantă | despărțite de 3.Cd: au jocuri de mișcare care se potrivesc pe piese tipărite; pe bucăți: 3.Ck-1, placa turnantă (gata pe 26.11), și 3.Ck-2, balamaua |
 
 ## Marginile
 
@@ -757,4 +757,63 @@ Felia 3.Ci, în sesiunea cloud a liniei (ramura `wip/3.Xh-biblioteca-ui`), după
 - **Alegeri făcute cu recomandarea, de întrebat owner-ul:** (1) cele patru construcții, cu mărimile de mai sus; (2) roțile
   șasiului, în trei mărimi (nu orice diametru); (3) cutia, cu rapoartele reducătoare (axul de ieșire mai încet); pentru
   mai repede, se învârte celălalt ax; (4) construcția gata se deschide ca o construcție nouă, nu în cea aleasă.
-- **Felia următoare:** 3.Ck (balamaua și placa turnantă), după ce owner-ul încearcă bila și cupa pe imprimantă.
+- **Felia următoare:** 3.Ck (balamaua și placa turnantă), pornită pe 26.11 cu jocul din calibrare (mai jos).
+
+## Implementat (3.Ck-1, 26.11.2026)
+
+Felia 3.Ck-1, în sesiunea cloud a liniei (ramura `wip/3.Xh-biblioteca-ui`), după unirea lui 3.Ci, la cuvântul owner-ului
+transmis de sesiunea principală („Zi-le ca pot continua cu ce urmeaza la fiecare”), cu recomandarea ei: 3.Ck acum, cu
+jocul din calibrare, iar jocul de mișcare rămâne de verificat la tipărire. 3.Ck s-a despărțit: **3.Ck-1, placa
+turnantă** (aici), și **3.Ck-2, balamaua** (felia următoare). Easy 3Draw **18.43.0**.
+
+- **Piesa** (tipul `turnanta`, fila Cărămizi, după cadru): două plăci de 2 × 2 sau 4 × 4 știfturi, înalte cât o placă
+  fiecare, ca placa turnantă LEGO.
+  - **Baza:** o placă plină, cu fața de sus netedă (fără știfturi, ca partea de sus să se rotească pe ea) și cu locașurile
+    dedesubt, deci stă pe știfturi. În mijloc, **pivotul**: un capăt de știft Technic (Ø4,75, cu fanta de 0,8 mm a
+    capetelor știftului, deci cele două jumătăți se strâng la intrare), înalt de 3,1 mm (placa fără 0,1 mm, ca să nu
+    iasă peste fața de sus a celeilalte piese). Pivotul e lipit de placă (intră 0,01 mm în ea), deci piesa e una.
+  - **Partea de sus:** placa motorului cu știfturi și locașuri, cu o gaură de știft Technic în mijloc (aceeași gaură ca
+    la plăcile cu găuri), deci se pune peste bază, pe pivot, și se rotește; se clădește pe ea și sub bază ca pe orice placă.
+- **Jocul din calibrare:** gaura părții de sus e cea din pasul de calibrare al imprimantei (Ø5 la varianta de mijloc),
+  iar pivotul e cât știftul Technic, deci se potrivesc cum se potrivesc știfturile Technic tipărite pe aceeași
+  imprimantă (0,125 mm de jur împrejur la valorile implicite). Pentru o rotire mai strânsă sau mai largă, baza are
+  **jocul pivotului** (−0,1 … 0,2 mm, din 0,05 în 0,05; implicit 0), scăzut din raza pivotului: −0,1 îl îngroașă la
+  4,95 mm, 0,2 îl subțiază la 4,35 mm. Jocul e al bazei: partea de sus e aceeași, oricare ar fi el.
+- **Configuratorul:** baza sau partea de sus, mărimea (2 × 2, 4 × 4) și, la bază, jocul pivotului; textul de sub ele
+  spune pivotul, gaura din calibrare și jocul de jur împrejur, plus ce faci după prima tipărire (prea greu: jocul mai mare
+  cu 0,05 mm; iese prea ușor de pe pivot: mai mic). **„Fă placa turnantă”** pune în listă amândouă piesele (baza cu
+  jocul ales și partea de sus), câte bucăți sunt cerute. Numele: „Placă turnantă 2×2, baza” (cu „, jocul 0,1” când jocul nu
+  e 0), „Placă turnantă 2×2, partea de sus”.
+- **Prinderile:** baza, locașurile dedesubt și pivotul, ca un capăt de **știft Technic** în sus; partea de sus, ale plăcii
+  cu gaură (știfturile, locașurile, gaura de știft în ambele sensuri). Deci pivotul se prinde în gaura părții de sus prin
+  perechea existentă (știftul Technic în gaura de știft), iar „Se prinde cu” arată, pentru pivot, și piesele cu găuri de
+  știft ale atelierului (de exemplu grinzile). În „Modelul”, alipirea pune partea de sus pe pivot, iar verificarea o spune prinsă.
+- **Tipărirea:** amândouă culcate pe fața mare, fără suport: baza cu pivotul în sus, partea de sus cu știfturile în sus.
+- **Nedovedit fără tipărire:** cât de greu se rotește partea de sus și cât de bine stă pe pivot (pivotul n-are
+  bordura de prindere a știftului Technic LEGO; ține doar strângerea fantei). De aceea jocul e un câmp, iar textul spune
+  în ce sens se schimbă. Bila și cupa (3.Ce) rămân și ele de încercat la tipărire.
+- **Ce n-a intrat:** alte mărimi (6 × 6, plăcile turnante rotunde), o bordură care să țină partea de sus pe pivot,
+  rotirea părții de sus în vederea 3D.
+- **Probele.** Unitară, scrisă întâi (`test/unit/trenulet.turnanta.test.ts`, 9 teste): implicitele și cotele (15,8 ×
+  15,8 × 6,3), valorile pe hârtie ale lui `turnantaCote` (pivotul, gaura, jocul de jur împrejur), baza (fața de sus fără
+  știfturi, plină, cu locașurile), pivotul (raza, înălțimea, fanta, lipit de placă), partea de sus egală cu placa
+  motorului cu gaură, prinderile (numărate pe fel), partea de sus montată pe pivot fără nicio pătrundere la cinci
+  unghiuri de rotire, cu martori (pivotul mutat cu 0,4 sau −0,2 mm intră în placă), jocul 0,2 față de 0, gaura după
+  varianta din calibrare (5 → Ø5,2, 0,225 mm de jur împrejur), verificarea din 3.Cg (partea de sus prinsă de bază),
+  marginile cu mesajele lor. E2e (`test/e2e/trenulet.turnanta.spec.ts`, 4 scenarii): galeria („Cărămizi 13”), editorul
+  (piesa, mărimea, jocul cu marginile și rotunjirea, numele, cotele, textul), STL-ul închis cu cotele de pe hârtie, „Fă
+  placa turnantă” și adunarea rândurilor, prinderile și „Se prinde cu”, o construcție din stocare cu partea de sus
+  scrisă de mână cu un joc (numele ei, fără joc). Proba în engleză din cvs2 (`trenulet.spec.ts`):
+  piesa, butoanele, jocul, textul cu punctul zecimal. Probele filelor, galeriilor, pictogramelor, căutării, prinderilor și
+  modelului, la zi (13 piese în Cărămizi, 43 de pictograme).
+- **Otrăvurile:** `test/otravuri/3.Ck-1.py`, 45 / 45 (la prima rulare 42 / 45: M18, pivotul colțuros, prinsă după proba
+  care cere pivotul rotund din grad în grad; A05, partea de sus care își spune jocul, prinsă după proba construcției din
+  stocare; A16, fără pictogramă, prinsă de proba unitară a pictogramelor, pusă în setul ei); `3.Ck-1-en.py`, 6 / 6.
+  Ancorele tuturor listelor pluginului: 2 641, fiecare găsită exact o dată (ancora `PD` din `3.Cj-3.py` se termina cu
+  `function lateral(`, despărțit acum de placa turnantă: scurtată).
+- **Mărimea:** pachetul Easy 3Draw, 579,3 kB (era 576,4); aplicația, neschimbată; nimic pe server.
+- **Alegeri făcute cu recomandarea, de întrebat owner-ul:** (1) pivotul e capătul de știft Technic, deci jocul vine din
+  calibrare (nu un disc pe disc, ca la placa LEGO, al cărui joc nu se poate hotărî pe hârtie); (2) mărimile 2 × 2 și 4 × 4;
+  (3) jocul pivotului, un câmp al bazei, în pași de 0,05 mm; (4) fiecare piesă înaltă cât o placă (împreună, cât o
+  cărămidă fără o placă, 6,4 mm până la fața de sus).
+- **Felia următoare:** 3.Ck-2 (balamaua), tot cu jocul din calibrare, de verificat la tipărire.

@@ -8,7 +8,9 @@
 export type GrupExport =
   | 'foi' | 'origine' | 'z0' | 'post' | 'unitati' | 'fisier' | 'schimbare' | 'aer' | 'setari'
   | 'taietura' | 'freza' | 'adancime' | 'sens' | 'rampa' | 'intrari' | 'colturi' | 'urechi'
-  | 'golire' | 'coborare' | 'rest' | 'gaurire' | 'fund' | 'incrustatie' | 'banda' | 'locas' | 'treapta' | 'dop';
+  | 'golire' | 'coborare' | 'rest' | 'gaurire' | 'fund' | 'incrustatie' | 'banda' | 'locas' | 'treapta' | 'dop'
+  // Operațiile reliefului (felia 18.1↑d-4, ADR 0315): freza, liniile, adaosul (la degroșare), marginea și înălțimea, adâncimea.
+  | 'freza-relief' | 'linii' | 'adaos' | 'margine' | 'podea';
 
 /** Grupurile foii și ale mașinii, în ordinea din fereastră (cele două fișe de dinaintea operațiilor). */
 export const GRUPURI_FOAIE: readonly GrupExport[] = ['foi', 'origine', 'z0'];
@@ -40,6 +42,15 @@ export function grupuriOperatie(f: FelFisa): readonly GrupExport[] {
   if (f.tip === 'vcarve') return [...comune, 'fund', ...(f.incrustatie ? ['incrustatie' as const] : []), ...(f.incrustatie && f.banda ? ['banda' as const] : [])];
   return [...comune, 'golire', ...(f.inele ? ['coborare' as const] : []), 'rest', ...(f.incrustatieDreapta ? ['locas' as const, 'treapta' as const, 'dop' as const] : [])];
 }
+
+/**
+ * Grupurile fișei unei operații a reliefului (felia 18.1↑d-4, ADR 0315), în ordinea din fereastră: freza, liniile, adaosul (doar
+ * la degroșare), marginea cu înălțimea, adâncimea.
+ */
+export const GRUPURI_RELIEF: Readonly<Record<'finisare' | 'degrosare', readonly GrupExport[]>> = {
+  finisare: ['freza-relief', 'linii', 'margine', 'podea'],
+  degrosare: ['freza-relief', 'linii', 'adaos', 'margine', 'podea'],
+};
 
 /**
  * Grupul fiecărui câmp al ferestrei, după `data-camp`. `strategie` are două: schimbarea frezei (fișa mașinii) și traseul
@@ -78,6 +89,10 @@ export const GRUP_CAMP: Readonly<Record<string, readonly GrupExport[]>> = {
   'inc-dop': ['dop'], 'inc-sprijin': ['dop'], 'dop-punti-numar': ['dop'], 'dop-punti-latime': ['dop'], 'dop-punti-grosime': ['dop'],
   'inc-freza-dop': ['dop'], 'dop-biblioteca': ['dop'], 'dop-rest-biblioteca': ['dop'], 'dop-scula': ['dop'], 'dop-diametru': ['dop'], 'dop-pas': ['dop'],
   'dop-rest-adauga': ['dop'], 'dop-rest-scula': ['dop'], 'dop-rest-diametru': ['dop'], 'dop-rest-pas': ['dop'], 'dop-rest-scoate': ['dop'],
+  // Operațiile reliefului (felia 18.1↑d-4): câmpurile lor, cu prefixul `relief-`.
+  'relief-scula': ['freza-relief'], 'relief-diametru': ['freza-relief'], 'relief-forma': ['freza-relief'], 'relief-unghi-v': ['freza-relief'],
+  'relief-varf-v': ['freza-relief'], 'relief-pas-lateral': ['linii'], 'relief-unghi': ['linii'], 'relief-aliniat': ['linii'], 'relief-adaos': ['adaos'],
+  'relief-margine': ['margine'], 'relief-z': ['margine'], 'relief-plan-zero': ['margine'], 'relief-adancime': ['podea'], 'relief-pas': ['podea'],
   'confirma-iesire': [], 'confirma-placute': [], 'confirma-ordine': [],
 };
 

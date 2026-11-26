@@ -63,7 +63,8 @@ o('P21', EC, '          ...(!o.scula.biblioteca && o.scula.regim\n', '          
   'valorile scrise nu se mai arată la redeschidere')
 o('P22', DE, '      ...(p.origineScula === null ? { regim: regimDinRand(p.regimMana) ?? null } : {}),', '', 'e2e', 'Exportă nu scrie valorile de mână')
 o('P23', DE, '                ...(parametriAer(aer) ?? {}),\n', '', 'e2e', 'Exportă nu trimite Z-ul sigur și parcarea')
-o('P24', DE, '    && supracursaBuna && numeBun && aerBun && gauriBune;', '    && supracursaBuna && numeBun && gauriBune;', 'e2e',
+# Mutată în 18.1↑d-4 (`valid` cere și rândurile reliefului).
+o('P24', DE, '    && supracursaBuna && numeBun && aerBun && gauriBune && reliefBun;', '    && supracursaBuna && numeBun && gauriBune && reliefBun;', 'e2e',
   'un Z sigur greșit nu oprește Exportă')
 o('P25', FO, '        {p.origineScula === null && (\n        <details className="dx-regim" data-regim>',
   '        {(\n        <details className="dx-regim" data-regim>', 'e2e', 'câmpurile apar și pe o freză din bibliotecă')

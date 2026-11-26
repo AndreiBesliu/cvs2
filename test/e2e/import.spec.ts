@@ -200,7 +200,7 @@ test('CNC-referinta.svg (ADR 0037 §11, §12): valul vine ca o cale deschisă, c
   // exterior cu Ø6 (regiunea refuză), deci exterioarele și interioarele trec și ele pe linie.
   await page.locator('[data-actiune="export.gcode"]').click();
   const val = page.locator('[data-operatie="e1/deschise"]');
-  await expect(val).toContainText('cale deschisă 150.00 × 34.64, 1 segment, la X 160.00, Y 42.68');
+  await expect(val).toContainText('cale deschisă 150,00 × 34,64, 1 segment, la X 160,00, Y 42,68');
   await expect(val.locator('input[data-camp="latura"]:checked')).toHaveValue('pe-linie');
   // Un rând cu o singură cale deschisă: pe linie, stânga, dreapta (ADR 0037 §12).
   await expect(val.locator('[data-alegere="latura"] .dx-card > span')).toHaveText(['pe linie', 'stânga', 'dreapta']);

@@ -6,14 +6,14 @@ import { importaRelief, rolFinisare } from './ajutor-relief.ts';
  * Finisarea reliefului (ADR 0312, felia 18.1↑c), în Edge: o imagine de 64 × 32 px, jumătatea din stânga albă, cea din dreapta
  * neagră, făcută relief la 1 mm pe celulă și 5 mm înălțime. În secțiunea Tăierea, rolul „finisarea reliefului”: bila Ø6,
  * pasul lateral 10 % (0,6 mm), liniile la 0°, podeaua cât placa; pasul lateral schimbat la 2 mm. În fereastra exportului,
- * finisarea are rândul ei, doar de citit (§7): în listă, la locul ei, cu fișa (freza, pasul, creasta pe plan 3 − √8 =
- * 0,172 mm, adâncimea) și nota că se schimbă din Tăierea. Exportul G-code cere dalele reliefului din browser (prin firul
+ * finisarea are rândul ei (§7): în listă, la locul ei, cu fișa (felia 18.1↑d-4: freza, pasul, creasta pe plan 3 − √8 =
+ * 0,172 mm, pasul folosit, adâncimea), cu valorile documentului. Exportul G-code cere dalele reliefului din browser (prin firul
  * principal), iar programul coboară cel mult 5 mm, în două treceri de 3 mm; Rezultatul are finisarea și freza ei. „Tăiat”,
  * în vederea 3D, simulează placa cu finisarea.
  */
 test.use({ locale: 'ro-RO' });
 
-test('rolul „finisarea reliefului”, rândul ei doar de citit în fereastra exportului, G-code-ul cu dalele din browser și „Tăiat”', async ({ page }) => {
+test('rolul „finisarea reliefului”, rândul ei în fereastra exportului, G-code-ul cu dalele din browser și „Tăiat”', async ({ page }) => {
   await page.goto('/');
   await importaRelief(page);
   await rolFinisare(page);
@@ -29,7 +29,7 @@ test('rolul „finisarea reliefului”, rândul ei doar de citit în fereastra e
   await page.locator('[data-camp="pas"]').fill('3');
   await page.locator('[data-camp="pas"]').press('Enter');
 
-  // Fereastra exportului: rândul finisării, primul în ordinea tăierii, cu fișa doar de citit.
+  // Fereastra exportului: rândul finisării, primul în ordinea tăierii, cu fișa lui.
   await page.locator('[data-actiune="export.gcode"]').click();
   const rand = page.locator('[data-nav-op][data-fel="finisare"]');
   await expect(rand).toHaveCount(1);
@@ -39,14 +39,19 @@ test('rolul „finisarea reliefului”, rândul ei doar de citit în fereastra e
   const cheie = await rand.getAttribute('data-nav-op');
   const fisa = page.locator('[data-fisa="op"][data-fel="finisare"]');
   await expect(fisa).toHaveAttribute('data-operatie', cheie ?? '');
-  await expect(fisa.locator('[data-finisare="freza"] dd')).toContainText('Ø6 mm · bilă');
-  await expect(fisa.locator('[data-finisare="pas-lateral"] dd')).toHaveText('2 mm');
-  await expect(fisa.locator('[data-finisare="creasta"] dd')).toHaveText('0,172 mm');
-  await expect(fisa.locator('[data-finisare="linii"] dd')).toHaveText('la 0°, prin centrele celulelor reliefului');
-  await expect(fisa.locator('[data-finisare="adancime"] dd')).toContainText('câte cel mult 3 mm pe trecere');
-  await expect(fisa.getByTestId('finisare-nota')).toContainText('secțiunea Tăierea');
-  // Doar de citit: nimic de scris în fișă.
-  await expect(fisa.locator('input, select, textarea')).toHaveCount(0);
+  // Fișa are valorile documentului, de schimbat aici (felia 18.1↑d-4): freza, liniile, marginea, înălțimea, adâncimea.
+  await expect(fisa.locator('[data-camp="relief-diametru"]')).toHaveValue('6');
+  await expect(fisa.locator('[data-camp="relief-forma"]')).toHaveValue('bila');
+  await expect(fisa.locator('[data-camp="relief-pas-lateral"]')).toHaveValue('2');
+  await expect(fisa.locator('[data-finisare="creasta"]')).toContainText('0,172 mm');
+  // Celula e de 1 mm: pasul de 2 mm sunt 2 celule întregi.
+  await expect(fisa.locator('[data-nota="relief-pas-folosit"]')).toContainText('2 mm, 2 celule de 1 mm');
+  await expect(fisa.locator('input[data-camp="relief-aliniat"][value="aliniate"]')).toBeChecked();
+  await expect(fisa.locator('input[data-camp="relief-margine"][value="perete"]')).toBeChecked();
+  await expect(fisa.locator('input[data-camp="relief-z"][value="varf"]')).toBeChecked();
+  await expect(fisa.locator('[data-camp="relief-pas"]')).toHaveValue('3');
+  // Fără degroșare, marginea și înălțimea n-au pereche.
+  await expect(fisa.locator('[data-nota="relief-perechi"]')).toHaveCount(0);
   await rand.locator('[data-nav]').click();
   await expect(rand.locator('[data-nav]')).toHaveAttribute('aria-current', 'true');
   // „A mea”: rândul are mânerul și săgețile ca oricare altul; Exportă îi scrie rangul (fereastra redeschisă pornește în „A mea”).

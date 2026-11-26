@@ -5,8 +5,8 @@ import { importaRelief, rolRelief3d } from './ajutor-relief.ts';
 /**
  * Degroșarea reliefului (ADR 0313, felia 18.1↑d-1), în Edge: imaginea de 64 × 32 px (stânga albă, dreapta neagră), relief la
  * 1 mm pe celulă și 5 mm înălțime. În secțiunea Tăierea, rolul „Relief 3D”: întâi degroșarea (freza plată Ø6, pasul lateral
- * 40 %, adaosul 0,5 mm), apoi finisarea (bila Ø6). În fereastra exportului, amândouă au rândul lor, doar de citit, degroșarea
- * prima; fișa ei spune adaosul. Planul zero, scris o dată în Tăierea, ajunge pe amândouă. Cu „A mea”, finisarea mutată
+ * 40 %, adaosul 0,5 mm), apoi finisarea (bila Ø6). În fereastra exportului, amândouă au rândul lor, degroșarea prima; fișa
+ * ei are adaosul și pasul folosit (felia 18.1↑d-4). Planul zero, scris o dată în Tăierea, ajunge pe amândouă. Cu „A mea”, finisarea mutată
  * înaintea degroșării dă avertismentul, iar programul iese.
  * G-code-ul: degroșarea nu coboară sub −4,5 (partea neagră, la −5, plus adaosul), iar finisarea ajunge la −5. „Tăiat”, în
  * vederea 3D, simulează placa.
@@ -35,7 +35,7 @@ test('rolul „Relief 3D”: câmpurile degroșării, rândurile în fereastra e
   await page.locator('[data-camp="fin-plan-zero"]').press('Enter');
   await expect(page.locator('[data-camp="fin-plan-zero"]')).toHaveValue('5');
 
-  // Fereastra exportului: degroșarea, apoi finisarea, cu fișele doar de citit.
+  // Fereastra exportului: degroșarea, apoi finisarea, cu fișele lor.
   await page.locator('[data-actiune="export.gcode"]').click();
   const deg = page.locator('[data-nav-op][data-fel="degrosare"]'), fin = page.locator('[data-nav-op][data-fel="finisare"]');
   await expect(deg.locator('[data-loc]')).toHaveText('1');
@@ -44,10 +44,17 @@ test('rolul „Relief 3D”: câmpurile degroșării, rândurile în fereastra e
   await expect(deg).toContainText('Ø6 plată');
   await deg.locator('[data-nav]').click();
   const fisa = page.locator('[data-fisa="op"][data-fel="degrosare"]');
-  await expect(fisa.locator('[data-finisare="adaos"] dd')).toHaveText('0,5 mm');
-  await expect(fisa.locator('[data-finisare="pas-lateral"] dd')).toHaveText('2,4 mm');
-  await expect(fisa.getByTestId('finisare-nota')).toContainText('degroșarea reliefului');
-  await expect(fisa.locator('input, select, textarea')).toHaveCount(0);
+  await expect(fisa.locator('[data-camp="relief-adaos"]')).toHaveValue('0,5');
+  await expect(fisa.locator('[data-camp="relief-pas-lateral"]')).toHaveValue('2,4');
+  // Pe celula de 1 mm, 2,4 mm se rotunjește în jos la 2 celule (ADR 0314).
+  await expect(fisa.locator('[data-nota="relief-pas-folosit"]')).toContainText('2 mm, 2 celule de 1 mm');
+  // Degroșarea merge doar cu freza plată: forma nu se alege.
+  await expect(fisa.locator('[data-camp="relief-forma"]')).toHaveCount(0);
+  await expect(fisa.locator('[data-nota="relief-plata"]')).toBeVisible();
+  // Planul zero, scris în Tăierea, e pe amândouă; marginea și înălțimea sunt comune cu finisarea.
+  await expect(fisa.locator('input[data-camp="relief-z"][value="plan"]')).toBeChecked();
+  await expect(fisa.locator('[data-camp="relief-plan-zero"]')).toHaveValue('5');
+  await expect(fisa.locator('[data-nota="relief-perechi"]')).toBeVisible();
 
   // „A mea”: finisarea înaintea degroșării (avertismentul), apoi Exportă.
   await page.locator('[data-ordine="a-mea"]').click();

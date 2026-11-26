@@ -1046,7 +1046,8 @@ se șterge la o pornire, după cel puțin o zi.
 reliefuri). Freza urmează relieful pe linii paralele, la pasul lateral, coborând în treceri de cel mult **pasul**, ultima pe
 model; nu coboară niciodată sub suprafața reliefului și nici sub **adâncime** (podeaua, implicit cât placa). Câmpurile:
 - **Freza**: bilă (implicit), plată sau în V, și **diametrul ei**; bila merge doar aici;
-- **Pasul lateral** (implicit 10 % din freză): distanța dintre linii; prin centrele celulelor, se rotunjește la celule întregi;
+- **Pasul lateral** (implicit 10 % din freză): distanța dintre linii; prin centrele celulelor, se rotunjește în jos la celule
+  întregi (cel puțin una), deci liniile nu stau mai rar decât ai cerut; o celulă mai lată decât freza se refuză;
 - **Unghiul liniilor** (0° … 180°) și **Liniile**: prin centrele celulelor (la 0° și 90°) sau nealiniate, unde pot apărea riduri
   pe detaliile fine;
 - **Marginea reliefului**: **peretele rămâne** (în afara reliefului e fața plăcii, deci freza nu taie acolo) sau **freza
@@ -1070,8 +1071,11 @@ plată nu încape (o vale mai îngustă decât ea), degroșarea lasă lemnul, ia
 Degroșarea și finisarea se fac înaintea tăieturilor pe contur, fiecare cu freza ei, degroșarea prima. Cu **Ordinea tăierii: A
 mea**, dacă muți finisarea înaintea degroșării aceluiași relief, exportul o spune printre avertismente: programul e bun, dar
 finisarea scoate tot lemnul cu freza ei, iar degroșarea taie aproape doar aer. În fereastra **Exportă G-code**, fiecare are rândul ei, la locul
-ei în ordinea tăierii, cu o fișă doar de citit (freza, pasul lateral, creasta pe un plan la finisare, adaosul la degroșare,
-adâncimea); se schimbă din secțiunea Tăierea. Cu **Ordinea tăierii: A mea**, rândul ei se mută ca oricare altul. În [vederea 3D](#vedere-3d), **Tăiat** arată
+ei în ordinea tăierii, cu o fișă în care le schimbi și acolo: freza (numărul, diametrul, forma; degroșarea, doar plată),
+liniile (pasul lateral, unghiul, prin centrele celulelor sau nealiniate), adaosul la degroșare, marginea și înălțimea, adâncimea
+și pasul pe trecere. Fișa spune pasul folosit (cu liniile prin centrele celulelor, rotunjit în jos la celule întregi) și, la
+finisare, creasta pe un plan. Marginea și înălțimea, schimbate pe un rând, se schimbă și pe celălalt rând al aceluiași relief;
+**Exportă** scrie valorile în proiect, iar secțiunea Tăierea le arată apoi. Cu **Ordinea tăierii: A mea**, rândul ei se mută ca oricare altul. În [vederea 3D](#vedere-3d), **Tăiat** arată
 placa după program. Freza rămâne puțin deasupra suprafeței ideale pe pante (cam 0,1 mm pe o pantă de 45°): e partea sigură a calculului,
 care nu sapă niciodată în relief. Exportul cere dalele reliefului din acest browser; pe alt calculator, le spune lipsă.
 
@@ -1254,7 +1258,16 @@ pe care au fost puse (**Cotele foii**), se salvează cu proiectul și au culoare
   două înălțimi de cifră (7 mm la cifrele de 3,5 mm), de aceeași parte cu prima. Lanțul și linia de bază pornesc și dintr-o
   cotă orizontală, verticală sau aliniată deja pusă: o alegi, apoi alegi felul. Fiecare cotă e un pas de anulare;
 - **Măsoară** (`M`): două puncte, fără urmă. Distanța, Δx, Δy și unghiul față de orizontală se văd lângă cursor și în bara de
-  jos; **Enter** (sau **Păstrează**) o face cotă aliniată, **Esc** o șterge.
+  jos; **Enter** (sau **Păstrează**) o face cotă aliniată, **Esc** o șterge. Cu **Toate foile pe pânză**, Măsoară se lipește și
+  de punctele celorlalte foi, în așezarea lor de pe pânză; o măsură cu un capăt pe altă foaie nu se păstrează („Între foi: doar
+  măsura”): foile sunt plăci separate, iar locul lor pe rând se schimbă cu ordinea din listă.
+
+**Lungimea** (în meniul de clic dreapta): clic dreapta chiar pe conturul unei forme, apoi **Cotează lungimea laturii** (latura
+de sub cursor: o linie, un arc sau o curbă, măsurată pe ea) sau **Cotează lungimea conturului** (tot conturul, deschis sau
+închis, cu „L ” înaintea cifrei); unealta Cote pornește, cu cota nouă aleasă. Cota e o etichetă cu săgeată: săgeata atinge
+latura la mijlocul ei, iar cifra stă pe un umăr orizontal, spre afara formei; trage de etichetă ca s-o muți. Pe un arc sau pe o
+curbă, deasupra cifrei apare simbolul arcului. Cota rămâne legată de formă (cifra se schimbă cu ea); ștearsă forma, sau cu
+**Dezleagă**, rămâne la ultima lungime văzută. În DXF, cu „Cote (DIMENSION)”, lungimea iese ca linii și cifre.
 
 **Cotează selecția** (în meniul de clic dreapta): alegi piesele cu Selecția, clic dreapta, **Cotează selecția**; unealta Cote
 pornește singură. Fiecare
@@ -1284,6 +1297,12 @@ rămân unde sunt, iar cota nu mai urmează forma); **textul**, în care `<>` e 
 „4× Ø10”; gol, se vede doar valoarea); **distanța liniei** de cotă, în mm (la rază și diametru, **locul cifrei** față de cerc,
 pozitiv afară; la unghi, **raza arcului**); **Șterge**. Distanța dintre două laturi paralele oblice e o cotă liberă: un desen
 fix, fiindcă piciorul ei pe a doua latură nu e un punct al formei.
+
+**Toleranța** (în panoul cotei alese): **Fără** (implicit), **Simetrică (±)**, cu abaterea ei (implicit 0,1), sau **Cu abateri
+(+ / −)**: abaterea de sus și cea de jos, cu semnul lor (cea de sus nu poate fi sub cea de jos). Abaterile sunt în mm (la
+unghi, în grade), cel mult 100, și se scriu după cifră, în unitatea și cu zecimalele cifrelor din Setări: „100 ±0,1”,
+„100 +0,2 -0,1” (zero, fără semn); cu unitatea arătată, ea vine la capăt („100 ±0,1 mm”). În textul cotei, toleranța stă
+lângă valoare, în locul lui `<>`. Ca orice cotă, nu se taie; la export intră în cifrele cotei (și în textul cotei DIMENSION).
 
 **Fă desen din cotă** (în panoul cotei alese): desenul cotei devine o piesă obișnuită, exact unde era cota: liniile și cifrele
 ca trăsături (cifrele cu fontul cu o singură linie), capetele ca mici contururi închise. Piesa nouă n-are nicio tăiere: e
@@ -1835,7 +1854,9 @@ care). Fereastra are trei părți:
 - **lista**, în stânga: **Foaia și originea**, **Mașina și fișierul**, apoi [operațiile](#operatii), în ordinea în care se
   taie, fiecare cu ce taie, freza și adâncimea; după export, și **Rezultatul**, cu timpul estimat și câte avertismente are (un
   punct colorat, dacă are). Fișa lui are, în ordine: **De văzut înainte de tăiere** (avertismentele, doar când sunt), **Fișierele**
-  (cu **Deschide în Mașina**), **Rezumatul jobului** și **Simularea**. Un clic aduce sus fișa aleasă; cât derulezi,
+  (cu **Deschide în Mașina** și cu **începutul fiecărui fișier**: primele lui linii, cum le citește controlerul, până la
+  prima mișcare de tăiere, întocmai ca în fișierul descărcat, cel mult 40; un rând pe fișier, primul desfăcut),
+  **Rezumatul jobului** și **Simularea**. Un clic aduce sus fișa aleasă; cât derulezi,
   lista marchează fișa la care ai ajuns. Din tastatură, Enter pe un rând duce focusul pe titlul fișei, iar Tab merge apoi
   în câmpurile ei; un cititor de ecran spune la fiecare câmp explicația grupului lui, întreagă, și greșelile lui. Pe un ecran îngust, lista stă sus, pe un rând care se derulează, cu ordinea tăierii
   la capăt; cu **Butoane mari** (vezi [Aspectul](#aspect)), câmpurile și bifele ferestrei au și ele ținta mare;

@@ -11,7 +11,7 @@
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { finisareRelief, type FrezaFinisare, type ParametriFinisare, type ReliefCam } from '../../src/cam/reliefFinisare.ts';
+import { degrosareRelief, finisareRelief, type FrezaFinisare, type ParametriFinisare, type ReliefCam } from '../../src/cam/reliefFinisare.ts';
 import type { Miscare } from '../../src/ir/ir.ts';
 import {
   clExact, clPlan, creastaPlan, creastaSimulata, IndexO, judecaTraseul, materialO, suprafataBila, triunghiuriModel, type FrezaO, type PasO, type PunctO,
@@ -283,6 +283,88 @@ test('creasta la 30° (liniile la cel mult pasul cerut): cel mult cât formula c
   const m = creastaSimulata(treceri, R, puncte, () => -2, 0.02);
   assert.ok(m <= creastaPlan(R, s) + 2e-4, `creasta ${m}, pe hârtie cel mult ${creastaPlan(R, s)}`);
   assert.ok(m >= creastaPlan(R, o.pasLateral) - 2e-3, `creasta ${m}, sub cea a pasului folosit ${creastaPlan(R, o.pasLateral)}`);
+});
+
+/** Trecerile de tăiere la cota `zt` (fără rapide), ca liste de puncte. */
+function treceriLa(miscari: readonly Miscare[], zt: number): PunctO[][] {
+  const treceri: PunctO[][] = [];
+  let cur: PunctO[] = [], x = 0, y = 0, z = Z_SIGUR;
+  for (const m of miscari) {
+    if (m.tip !== 'rapida' && m.tip !== 'taiere') continue;
+    x = m.la.X ?? x; y = m.la.Y ?? y; z = m.la.Z ?? z;
+    if (m.tip === 'rapida' || Math.abs(z - zt) > 1e-9) { if (cur.length > 1) treceri.push(cur); cur = []; continue; }
+    cur.push({ x, y, z });
+  }
+  if (cur.length > 1) treceri.push(cur);
+  return treceri;
+}
+
+test('liniile aliniate (felia 18.1↑d-3): pasul lateral se rotunjește în jos la celule întregi, deci creasta măsurată nu trece de cea cerută', () => {
+  // Celula 0,5: 1,3 → 2 celule (1,0; la cel mai apropiat număr ar fi fost 3, adică 1,5, cu creasta peste cea cerută), 1,7 → 3
+  // celule (1,5), 1,5 → exact 3 celule, fără avertisment; sub o celulă (0,3), o celulă: alt pas aliniat nu există, iar
+  // avertismentul spune că s-a mărit.
+  const c = 0.5, n = 60, R = 3;
+  const r = relief(grila(n, n, c, () => 2), n, n, c, T(0, 0), -4);
+  for (const [s, celule, nota] of [[1.3, 2, /rotunjit în jos la 2 celule ale reliefului: 1 mm/], [1.7, 3, /rotunjit în jos la 3 celule ale reliefului: 1\.5 mm/],
+    [1.5, 3, null], [0.3, 1, /mărit la o celulă a reliefului: 0\.5 mm/]] as const) {
+    for (const unghi of [0, 90] as const) {
+      const o = finisareRelief({
+        reliefuri: [r], freza: bila(R), unghi, nealiniat: false, margine: 'trece', pasLateral: s, pas: 10, adancime: 10,
+        zSigur: Z_SIGUR, avans: 1000, avansPlonjare: 300,
+      });
+      assert.ok(o.ok);
+      assert.equal(o.pasLateral, celule * c, `s ${s}, ${unghi}°: pasul folosit ${o.pasLateral}`);
+      const av = o.avertismente.filter((x) => x.startsWith('pasul lateral'));
+      if (nota === null) assert.deepEqual(av, [], `s ${s}: ${av.join('; ')}`);
+      else assert.ok(av.length === 1 && nota.test(av[0]!), `s ${s}: ${av.join('; ')}`);
+      const puncte: Array<readonly [number, number]> = [];
+      for (let q = 0; q <= 300; q++) {
+        const a = 12 + (q * 6) / 300, b = 15 + (q % 3) * 0.37;
+        puncte.push(unghi === 0 ? [b, a] : [a, b]);
+      }
+      const m = creastaSimulata(treceriLa(o.miscari, -2), R, puncte, () => -2, 0.02);
+      // Creasta măsurată: cea a pasului folosit; de la o celulă în sus, cel mult cea a pasului cerut.
+      assert.ok(Math.abs(m - creastaPlan(R, o.pasLateral)) < 2e-3, `s ${s}, ${unghi}°: creasta ${m}, a pasului folosit ${creastaPlan(R, o.pasLateral)}`);
+      if (s >= c) assert.ok(m <= creastaPlan(R, s) + 2e-4, `s ${s}, ${unghi}°: creasta ${m}, peste cea cerută ${creastaPlan(R, s)}`);
+    }
+  }
+});
+
+test('liniile aliniate: o celulă mai mare decât diametrul frezei se refuză (ar lăsa dungi); rotunjit în sus, pasul ar fi trecut de diametru', () => {
+  // Celula 2: bila Ø1 (pasul cerut 0,5) ar trece pe linii la 2 mm, cu dungi netăiate între ele: refuzul, la finisare și la
+  // degroșare, și la 90°. Nealiniat sau la 30°, merge. Bila Ø3 cu pasul 3 (1,5 celule): rotunjit în jos, o celulă (2 mm);
+  // la cel mai apropiat număr ar fi fost 2 celule, adică 4 mm, peste diametru.
+  const c = 2, n = 12;
+  const r = relief(grila(n, n, c, () => 1), n, n, c, T(0, 0), -2);
+  const fin = (o: Partial<ParametriFinisare>) => finisareRelief({
+    reliefuri: [r], freza: bila(0.5), unghi: 0, nealiniat: false, margine: 'trece', pasLateral: 0.5, pas: 10, adancime: 10,
+    zSigur: Z_SIGUR, avans: 1000, avansPlonjare: 300, ...o,
+  });
+  for (const unghi of [0, 90] as const) {
+    const x = fin({ unghi });
+    assert.ok(!x.ok && /celula reliefului \(2 mm\) e mai mare decât diametrul frezei \(1 mm\)/.test(x.motiv), x.ok ? 'trecut' : x.motiv);
+  }
+  assert.ok(fin({ nealiniat: true }).ok);
+  assert.ok(fin({ unghi: 30 }).ok);
+  const d = degrosareRelief({ reliefuri: [r], raza: 0.5, adaos: 0.2, unghi: 0, margine: 'trece', pasLateral: 0.8, pas: 2, adancime: 10, zSigur: Z_SIGUR, avans: 1000, avansPlonjare: 300 });
+  assert.ok(!d.ok && /celula reliefului \(2 mm\)/.test(d.motiv), d.ok ? 'trecut' : d.motiv);
+  const mare = fin({ freza: bila(1.5), pasLateral: 3 });
+  assert.ok(mare.ok);
+  assert.equal(mare.pasLateral, 2);
+});
+
+test('liniile aliniate: un pas cerut care e, pe hârtie, un număr întreg de celule, dar nu în virgulă mobilă (0,3 / 0,1), rămâne întreg', () => {
+  const c = 0.1, n = 100;
+  const r = relief(grila(n, n, c, () => 1), n, n, c, T(0, 0), -2);
+  for (const [s, k] of [[0.3, 3], [0.7, 7], [0.6, 6], [1.1, 11]] as const) {
+    const o = finisareRelief({
+      reliefuri: [r], freza: bila(1), unghi: 0, nealiniat: false, margine: 'trece', pasLateral: s, pas: 10, adancime: 10,
+      zSigur: Z_SIGUR, avans: 1000, avansPlonjare: 300,
+    });
+    assert.ok(o.ok);
+    assert.ok(Math.abs(o.pasLateral - k * c) < 1e-12, `s ${s}: ${o.pasLateral}, nu ${k} celule`);
+    assert.deepEqual(o.avertismente.filter((x) => x.startsWith('pasul lateral')), [], `s ${s}`);
+  }
 });
 
 /** Un relief aspru: valori pseudoaleatoare, deterministe, între 0 și `a`. */

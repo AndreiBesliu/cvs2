@@ -753,9 +753,9 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
   // o apăsare nouă să schimbe felul și cu unealta deja aleasă.
   const [locCote, setLocCote] = useState<HTMLElement | null>(null);
   const [cerereCote, setCerereCote] = useState<CerereCote>({ mod: 'd', n: 0 });
-  const pornesteCote = (mod: CerereCote['mod']): void => {
+  const pornesteCote = (mod: CerereCote['mod'], la?: { readonly p: Punct; readonly tol: number }): void => {
     setUnealta('cote');
-    setCerereCote((c) => ({ mod, n: c.n + 1 }));
+    setCerereCote((c) => ({ mod, n: c.n + 1, ...la }));
   };
   const pornesteCoteRef = useRef(pornesteCote);
   pornesteCoteRef.current = pornesteCote;
@@ -1327,6 +1327,7 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
       facut(r.ok ? null : t(r.motiv));
     };
     const poate = !p.doarCitire;
+    const laMeniu = meniu ? { p: { x: (meniu.x - vedere.tx) / vedere.scara, y: (vedere.ty - meniu.y) / vedere.scara }, tol: (2 * TOLERANTA_CLIC_PX) / vedere.scara } : null;
     const doua = selectie.length === 2 && poate;
     const selectiePeFoaie = foaie !== undefined && selectie.some((id) => foaie.instante.some((i) => i.id === id));
     // Cu o piesă pusă de mai multe ori printre cele alese (ADR 0210 §2), două rânduri, fără întrebare.
@@ -1350,6 +1351,9 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
       { id: 'sterge', eticheta: t('actiune.sterge-selectia'), tasta: tastaActiunii('document.sterge-selectia'), activ: selectie.length > 0 && poate, ruleaza: () => { din('document.sterge-selectia'); } },
       // „Cotează selecția” (ADR 0330 §4, felia 10.4↑d-1): unealta Cote pornește și pune lățimea și înălțimea pieselor alese.
       { id: 'coteaza-selectia', eticheta: numeScurt(t('editare.cote.coteaza-selectia')), activ: selectiePeFoaie && poate, ruleaza: () => { facut(null); pornesteCote('s'); } },
+      // Lungimea laturii sau a conturului de sub clicul dreapta (felia 10.4↑e-2): punctul meniului, în mm ai foii.
+      { id: 'coteaza-latura', eticheta: t('editare.cote.coteaza-latura'), activ: laMeniu !== null && poate, ruleaza: () => { facut(null); if (laMeniu) pornesteCote('l', laMeniu); } },
+      { id: 'coteaza-conturul', eticheta: t('editare.cote.coteaza-conturul'), activ: laMeniu !== null && poate, ruleaza: () => { facut(null); if (laMeniu) pornesteCote('c', laMeniu); } },
       // Mutarea pe altă foaie (ADR 0210 §1): fiecare piesă își păstrează locul; foaia activă rămâne.
       'separator',
       ...doc.foi.flatMap((f, k) => (f.id === idFoaie ? [] : [{

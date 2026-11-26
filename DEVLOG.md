@@ -16257,6 +16257,58 @@ v31 e ținut pentru tine”. **Started:** 26.11, 20:16, pe `wip/16.A-freze-e`, d
   la început) practic echivalentă: ramura contează doar cu începutul mutării ca minim, socotit corect de mutarea dinainte.
 - **Nimic pe server.** Bila nu s-a schimbat (rămâne doar la finisarea reliefului).
 
+## 2026-11-26 — Linia exportului: 28.8↑r, începutul programului la vedere (ADR 0292, propus)
+
+**Prompt:** mesajul sesiunii principale (26.11, 20:16), cu cuvântul owner-ului („Zi-le ca pot continua cu ce urmeaza la
+fiecare”): „Din nota ta („Ce rămâne”), singura felie care poate porni acum e „ce desenează canvas-ul și nu există azi”:
+începutul G-code-ului la vedere în fereastră. Pornește-o: întâi propunerea (ADR 0292, dacă cere decizii, cu întrebările grupate
+și recomandarea întâi; mergi mai departe cu recomandarea).”
+**Started:** 26.11, 20:16.
+
+- **ADR 0292, propus:** după Exportă, în Rezultat › Fișierele, primele linii ale fiecărui fișier scris, până la prima mișcare de
+  tăiere (cel mult 40), din textul descărcat; trei întrebări, cu recomandarea aplicată.
+- **Implementarea:** `inceputProgram` (`src/post/inceput.ts`, pură: codul fără comentariile dialectului, tăierea la primul
+  G1 / G2 / G3, plafonul 40); `RezultatExport.inceput` din fișierele foii și ale dopurilor (cu „Toate foile”, ale foii active,
+  cu numele din arhivă); blocul din Rezultat › Fișierele, un `<details>` pe fișier, primul desfăcut, liniile într-un `<pre>`
+  focusabil, cu nume, derulat în locul lui. Programul, octet cu octet.
+- **Probele:** `export.inceput.test.ts` (6), `export.inceput.spec.ts` (2), proba privirii (4 noi). Suita unitară întreagă:
+  10 804 / 0 (12 sărite). **Otrăvurile:** `28.8r.py`, 17 / 17. **Mărimea:** pornirea +0, totalul 923,5 / 1 000 (+0,5 kB).
+- **Documentele:** ADR 0292 (cu „Implementarea 28.8↑r”), indexul ADR, manualul (ambele limbi), fișa etapei 3, registrul
+  otrăvurilor, nota liniei.
+
+**Completed:** 26.11, 21:09.
+
+## 2026-11-26 — Felia 3.Ck-1: placa turnantă a atelierului Easy 3Draw (ADR 0284) (sesiune cloud)
+
+**Prompt:** „Zi-le ca pot continua cu ce urmeaza la fiecare” (cuvântul owner-ului, transmis de sesiunea principală, cu
+recomandarea ei: „pornește 3.Ck acum, cu jocul din calibrare, și spune în raport că jocul bilei rămâne de verificat la
+tipărire”); ADR 0284, felia 3.Ck (balamaua și placa turnantă), despărțită în 3.Ck-1 (placa turnantă) și 3.Ck-2 (balamaua)
+**Started:** 26.11, 18:26. **Completed:** 26.11, 19:17 (felia, cu otrăvurile; orele, după ceasul containerului).
+
+- **Ce face:** în fila Cărămizi, „Placă turnantă” de 2 × 2 sau 4 × 4, din două plăci: baza (fața de sus netedă,
+  locașurile dedesubt, în mijloc pivotul: un capăt de știft Technic de Ø4,75 cu fanta de 0,8 mm, înalt de 3,1 mm) și
+  partea de sus (placa motorului cu știfturi, locașuri și gaura de știft din mijloc), care se rotește pe pivot. „Fă placa
+  turnantă” pune amândouă piesele în listă.
+- **Jocul:** gaura e cea din pasul de calibrare; baza are „Jocul pivotului” (−0,1 … 0,2 mm, din 0,05 în 0,05), scăzut din
+  raza pivotului, cu textul care spune ce faci după prima tipărire. Cât de greu se rotește și cât de bine stă pe pivot
+  rămân de verificat la tipărire.
+- **Motorul:** `turnantaCote`, `turnanta` (în `TIPURI`); pivotul se declară știft Technic în sus, deci alipirea și
+  verificarea din „Modelul” îl folosesc fără nimic nou. **Atelierul:** galeria, pictograma, numele, editorul, „Fă placa
+  turnantă”; jocul ținut doar în definiția bazei.
+- **Probele**, scrise întâi: unitară, 9 teste (au căzut cu „Lt.turnantaCote is not a function”): plasele, pivotul,
+  partea de sus egală cu placa cu gaură, montajul la cinci unghiuri fără pătrundere, cu martori, calibrarea, verificarea,
+  marginile; e2e, 4 scenarii; pasul în engleză din cvs2. Probele filelor, galeriilor, pictogramelor, căutării,
+  prinderilor și modelului, la zi.
+- **Otrăvurile:** `3.Ck-1.py`, la prima rulare 42 / 45 (M18, pivotul colțuros: proba cere acum pivotul rotund din
+  grad în grad; A05, partea de sus care își spune jocul: proba unei construcții din stocare cu partea de sus scrisă de
+  mână cu un joc; A16, fără pictogramă: prinsă de proba unitară a pictogramelor, pusă în setul ei): 45 / 45.
+  `3.Ck-1-en.py`: 6 / 6. Ancorele tuturor listelor pluginului: 2 641 (ancora `PD` din `3.Cj-3.py`, scurtată: placa
+  turnantă stă acum între cadru și `lateral`).
+- **Mărimea:** Easy 3Draw 18.43.0, 579,3 kB (era 576,4); aplicația, neschimbată. Nimic pe server.
+- **Documentele:** ADR 0284 („Implementat (3.Ck-1)”), nota liniei, indexul liniilor, fișa etapei 3, registrul
+  otrăvurilor, `CLAUDE.md`, traducerile roadmap-ului.
+- **Urmează:** 3.Ck-2 (balamaua), tot cu jocul din calibrare.
+
 ## 2026-11-26 — Sesiunea principală în cloud: liniile pornesc ce urmează (Model: Claude Opus 5.5)
 
 **Prompt:** „Zi-le ca pot continua cu ce urmeaza la fiecare”
@@ -16269,3 +16321,120 @@ v31 e ținut pentru tine”. **Started:** 26.11, 20:16, pe `wip/16.A-freze-e`, d
 - **Nepornite:** liniile fără sesiune (tăierea, imprimanta, incrustațiile, planșele, trasarea, aranjamentele) și sesiunea
   designului, de pe calculatorul owner-ului.
 - **Documentele:** decizia în `CLAUDE.md`; starea din `docs/linii/principala.md` și indexul liniilor.
+
+## 2026-11-26 — Linia reliefului: felia 18.1↑d-3, pasul lateral aliniat, rotunjit în jos (Model: Claude Opus 5.5)
+
+**Prompt:** „Zi-le ca pot continua cu ce urmeaza la fiecare” (owner-ul, în sesiunea principală, transmis liniei la 20:16): „rotunjirea
+în jos a pasului lateral cu liniile aliniate (a șaptea alegere: creasta să nu iasă mai mare decât cea cerută)”. **Started:**
+26.11, 20:20, pe ramura `wip/18.1-relief`, cu `main` `d1ab8ba5` adus. **Completed:** 26.11, 21:00 (în container; CI-ul, pe
+commit-ul împins).
+
+- **Proba întâi, pe oracolul 3D:** pe un plan, la 0° și 90°, pașii 1,3, 1,7, 1,5 și 0,3 pe celula 0,5: pasul folosit, avertismentul,
+  creasta măsurată de simulatorul independent cel mult cea cerută; pașii întregi pe hârtie, dar nu în virgulă mobilă (0,3 / 0,1);
+  celula mai lată decât freza, refuzată; la degroșare, distanța dintre liniile tăiate, citită din mișcări.
+- **CAM-ul:** `celuleAliniate` (k = max(1, ⌊s / c + 1e-9⌋)) în `linii`, refuzul celulei peste diametru, avertismentele („rotunjit
+  în jos la k celule”, „mărit la o celulă”). Programele cu pași întregi de celule, octet cu octet (placa 18, neschimbată).
+- **ADR 0314** (schimbă rotunjirea din ADR 0310 §5 și ADR 0312), manualul (ro, en); otrăvurile 10 / 10, într-o clonă.
+
+## 2026-11-26 — Linia reliefului: felia 18.1↑d-4, rândul editabil al finisării și al degroșării (Model: Claude Opus 5.5)
+
+**Prompt:** „Zi-le ca pot continua cu ce urmeaza la fiecare” (owner-ul, în sesiunea principală, transmis liniei la 20:16):
+„rândul editabil al finisării și al degroșării în fereastra exportului (azi doar de citit, prin `FisaFinisare`)”. **Started:**
+26.11, 21:00, după 18.1↑d-3, pe aceeași ramură. **Completed:** 26.11, 21:25 (în container; CI-ul, pe commit-ul împins).
+
+- **Proba întâi, pe hârtie:** `export.relief.test.ts` (rândul ca text, câmpurile greșite, perechile, scrierea: fără schimbare,
+  aceeași operație la octet; fiecare câmp; freza cu alt T, alt diametru, altă formă, doar alt vârf al V-ului).
+- **Fereastra:** fișa pe grupuri (`GRUPURI_RELIEF`: freza, liniile, adaosul, marginea și înălțimea, adâncimea), câmpurile
+  `relief-*` cu explicațiile lor, greșelile în grup, marcajul din listă, „Du-mă la …” cu numele rândului; pasul folosit (din
+  `celuleAliniate`, mutată într-un modul al ei, `src/cam/celuleAliniate.ts`) și creasta pe plan; marginea și înălțimea pe
+  perechea rândului. Exportă dă valorile în `CerereExport.valoriRelief`; aplicația le scrie cu `operatieReliefDinDialog`.
+- **ADR 0315**, manualul (ro, en), e2e nou (`relief.export.spec.ts`), fișele din `finisare.spec.ts` și `degrosare.spec.ts`,
+  privirea cu V-ul și planul zero; otrăvurile 23 / 23 prinse (14 unitare, 9 e2e), într-o clonă; patru otrăvuri vechi mutate (11.5 E17, 28.8p P24, 18.1d
+  E02, E04, ultima VOID încă de pe `main`).
+- **Rapidul pe `bf77526c` a căzut** la regulile de import: fișa importa `celuleAliniate` direct din `src/cam`; interfața ia
+  din domeniu doar prin `src/ui/actiuni*` (acum prin `actiuniExportTipuri.ts`). Regulile se rulează după orice import nou în
+  `src/ui`, nu doar la începutul feliei.
+- **De ținut minte:** un `npm ci` într-o clonă al cărei `node_modules` e o legătură spre repo golește `node_modules` din repo
+  (aici s-a văzut ca `tsc: not found`); clona își face întâi `node_modules` al ei.
+
+## 2026-11-26 — Sesiunea principală în cloud: 3.Av și 3.Aw (Model: Claude Opus 5.5)
+
+**Prompt:** „Ok, fa-le”
+**Started:** 26.11, 20:19. **Completed:** 26.11, 21:03.
+
+- **3.Av** (`6f7cc4a3`): numele elementelor, cu numerele în formatul limbii (constatarea 14 a auditului exportului); proba
+  unitară întâi, cele 127 de rânduri ale probelor e2e care citeau numele aduse la virgulă; otrăvurile 6 / 6.
+- **3.Aw** (`7dd7b9a8`): Escape închide fereastra oriunde ar fi focusul, în celelalte șase ferestre, prin
+  `useEscapeFereastra`; șapte probe noi, toate roșii pe aplicația dinainte, verzi după; otrăvurile 8 / 8.
+- **Local:** e2e întreg pe 3.Av, 975 / 980 (trei căderi: un parser al probei exportului, reparat; proba atelierului în
+  engleză, verde la reluare; proba podului WiFi, care cade și singură în container, din rețeaua lui); după 3.Aw, cele nouă
+  spec-uri atinse, 62 / 62.
+- **Documentele:** fișa etapei 3 (3.Av, 3.Aw), registrul otrăvurilor, `CLAUDE.md`.
+
+## 2026-11-26 — Sesiunea principală în cloud: a cincizeci și șaptea unire (3.Av și 3.Aw) (Model: Claude Opus 5.5)
+
+**Prompt:** „Ok, fa-le” (feliile sesiunii principale, după porțile lor)
+**Started:** 26.11, 21:53. **Completed:** 26.11, 21:54.
+
+- **Unirea:** `wip/3.Av-virgula-escape` (`2d5b9303`, PR-ul #66) în `3e1683f8`, pe `unire-2611p`, din `78075223`; arborele,
+  identic cu al ramurii. Completul 45879439214 pe `7dd7b9a8`, verde: unit 10 789 / 0, e2e 986 / 986, funcțiile pe emulatoare
+  136 / 136, paginile 60 / 60; rapidul, verde pe `2d5b9303`; totalul 923,3 / 1 000 kB, pornirea 111,7 (cu Atelierul 117,2 / 125).
+- **Linia frezelor** a luat v31 (16.A↑e-1, ADR 0303 propus); un câmp nou pe altă linie ia v32.
+- **Documentele:** decizia în `CLAUDE.md`; starea din `docs/linii/principala.md`.
+
+## 2026-11-26 — Felia 10.4↑e-1: toleranțele cotelor (ADR 0330)
+
+**Prompt:** sesiunea principală, 26.11, 20:16, transmițând cuvântul owner-ului: „Zi-le ca pot continua cu ce urmeaza la fiecare”
+(cele „mai târziu” din ADR 0330, în ordinea recomandată: întâi toleranțele și lungimile, apoi cota între foi, la urmă setările
+în cont).
+**Started:** 26.11, 20:20, în sesiunea cloud a liniei cotelor. **Completed:** 26.11, 20:55 (în container; CI-ul, pe commit-ul
+împins).
+
+- **Proba întâi, pe hârtie:** `cote.toleranta.test.ts`: scrierea (simetrică, abateri, zero fără semn, fără pasul cifrei; cm,
+  inch, fracții, grade, grade-minute-secunde), cifra cu toleranța (unitatea la capăt, prefixul razei, `<>`), citirea și
+  punerea, ușa, programul neatins pe placa 1, exportul (text, textul DIMENSION, trăsăturile din „Fă desen din cotă”).
+- **Pur:** `tolerantaCota`, `scrieToleranta`, `cifraCuToleranta` (`src/model/desenCota.ts`), `cotaCuToleranta`
+  (`src/model/cote.ts`); judecata ușii (`src/model/judecataCote.ts`). **Panoul cotei:** rândul Toleranța, cu acțiunea
+  `toleranta` a cotei alese. Exportul și pânza iau cifra cu toleranța.
+- **Găsit de otrăvuri și reparat:** după „Cu abateri”, „Simetrică” și o anulare, panoul arăta „Simetrică” peste abateri
+  diferite; felul vine acum din toleranță. Proba desenului cotei citește și textul cifrei.
+- Întrebările 11–14, la owner, cu recomandările (11a implementată). Manualul (ro, en), e2e noi 2; otrăvurile 20 / 20, într-o
+  clonă. Pornirea 111,6 kB (neschimbată), totalul 923,0 → 923,9 / 1 000 kB (+0,9, măsurat local); `main` `78075223` adus
+  (doar documente). Urmează e-2 (lungimile).
+
+## 2026-11-26 — Felia 10.4↑e-2: lungimea laturii și a conturului (ADR 0330)
+
+**Prompt:** același cu e-1 (sesiunea principală, 26.11, 20:16: „Zi-le ca pot continua cu ce urmeaza la fiecare”; întâi
+toleranțele și lungimile).
+**Started:** 26.11, 20:58, în sesiunea cloud a liniei cotelor, după e-1. **Completed:** 26.11, 21:30 (în container; CI-ul, pe
+commit-ul împins).
+
+- **Proba întâi, pe hârtie:** `cote.lungime.test.ts`: lungimea laturii (100, 50, semicercul 20π, cubica 50 (√2 + asinh 1)) și
+  a conturului (300, 40 + 20π), simbolul arcului doar pe arc și cubică, „L ” pe contur, urma la dezlegare (și scrisă de jurnal),
+  desenul etichetei (linia, umărul, săgeata, simbolul arcului), punerea din clic, exportul fără DIMENSION, ușa, programul
+  neatins pe placa 1.
+- **Pur:** `lungimeCota`, `masuraCota`, `cotaVazuta` (`src/model/cote.ts`), `lungimeSegmentului` (`src/model/curba.ts`),
+  `desenLungime` (`src/model/desenCota.ts`), `cotaLungimeLa` (`src/model/coteLungime.ts`); judecata ușii; jurnalul scrie urma.
+  **Unealta:** cererile `l` și `c` (din meniul de clic dreapta), tragerea etichetei, „Dezleagă” cu urma. **Exportul:** prin
+  `cotaCitita`, comun cu „Fă desen din cotă”; lungimea n-are DIMENSION.
+- **Bara de sus nu mai are loc** (22 px liberi în română, un buton are 34): lungimea stă în meniul de clic dreapta (întrebarea
+  15). Oracolul Python, cu corpusul al cincilea, trece din prima pe valorile de pe hârtie (DXF 103 segmente, exact). Manualul
+  (ro, en), e2e noi 2; otrăvurile, într-o clonă. Pornirea 111,6 kB (neschimbată), totalul 923,9 → 925,4 / 1 000 kB (+1,5,
+  măsurat local). Urmează f (cota între foi).
+
+
+## 2026-11-26 — Felia 10.4↑f: Măsoară între foi (ADR 0330)
+
+**Prompt:** același cu e-1 (sesiunea principală, 26.11, 20:16: „Zi-le ca pot continua cu ce urmeaza la fiecare”; ordinea:
+toleranțele, lungimile, cota între foi, setările în cont).
+**Started:** 26.11, 21:40, în sesiunea cloud a liniei cotelor, după e-2 și după `main` adus (3.Av, 3.Aw; ciocnirea doar aici, în
+DEVLOG). **Completed:** 26.11, 22:15 (în container; CI-ul, pe commit-ul împins).
+
+- **Întrebarea 13, varianta a:** nicio cotă ținută între foi, nimic nou în document (v30).
+- **Proba întâi, pe hârtie:** `cote.foi.test.ts`: din foaia A, punctele foii B la X + 400 (300 + 100 între foi), din B, ale lui A
+  la X − 400, conturul mutat, fiecare punct cu foaia lui și fără legătură, colțurile celor două foi la `SPATIU_FOI`.
+- **Pur:** `surseFoiVecine` (`src/model/puncteCote.ts`). **Unealta:** doar la Măsoară și doar cu „Toate foile pe pânză”; o
+  măsură cu un capăt pe altă foaie are nota „Între foi: doar măsura, nu se păstrează” în locul lui „Păstrează”, iar Enter o
+  spune, fără cotă.
+- Manualul (ro, en), e2e nou 1; otrăvurile 16 / 16, într-o clonă. Pornirea 111,7 kB (neschimbată), totalul 925,7 → 926,0 /
+  1 000 kB (+0,3, măsurat local). Urmează g (setările în cont), cu mărimea bucății contului spusă întâi sesiunii principale.

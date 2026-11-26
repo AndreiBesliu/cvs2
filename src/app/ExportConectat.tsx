@@ -29,7 +29,7 @@ import { cuprinse } from '../model/ordine.ts';
 import { grupeFoi } from '../model/foiExport.ts';
 import { numePlacutei, placuteCuTextIesit } from '../model/placuteIesire.ts';
 import { iesireTextTinuta } from './iesireTextTinuta.ts';
-import { operatieDinDialog } from './valoriOperatii.ts';
+import { operatieDinDialog, operatieReliefDinDialog } from './valoriOperatii.ts';
 import { numarUrechiAlese } from '../model/urechiLocuri.ts';
 import { mesajeGata } from '../i18n/laCerere.ts';
 import { diametruCerc } from '../cam/gaurireFel.ts';
@@ -257,16 +257,19 @@ function randuriFoii(
       },
     };
   }));
-  // Operațiile reliefului (finisarea, ADR 0312 §7; degroșarea, ADR 0313 §7): rândurile doar de citit, cu valorile
-  // documentului.
+  // Operațiile reliefului (finisarea, ADR 0312 §7; degroșarea, ADR 0313 §7): rândurile lor, cu valorile documentului; editabile
+  // din felia 18.1↑d-4 (ADR 0315), cu perechile (operațiile reliefului aceleiași piese, pe un relief comun: marginea și planul
+  // zero se scriu pe toate) și celula primului relief, în mm de lume.
   const finisari: FinisareExport[] = lista.flatMap(({ piesa, instanta: inst }) => piesa.operatii.filter(peRelief).map((o): FinisareExport => {
     const e = dupaIdLume.get(`${inst}/${o.noduri[0] ?? ''}`);
     const baza = e ? descriere(e) : (piesa.nume ?? piesa.id);
     const s = o.scula, deg = o.tip === 'degrosare';
     const fin: { readonly unghi?: number; readonly nealiniat?: true; readonly margine?: 'trece'; readonly planZero?: number } | undefined = deg ? o.degrosare : o.finisare;
+    const perechi = piesa.operatii.filter((x) => peRelief(x) && x !== o && x.noduri.some((n) => o.noduri.includes(n))).map((x) => `${piesa.id}/${x.id}`);
+    const celula = e && e.forma.tip === 'relief' ? e.forma.celula * Math.sqrt(Math.abs(e.matrice.a * e.matrice.d - e.matrice.b * e.matrice.c)) : undefined;
     return {
       cheie: `${piesa.id}/${o.id}`,
-      fel: deg ? 'degrosare' : 'finisare',
+      fel: deg ? 'degrosare' : 'finisare', perechi, ...(celula !== undefined ? { celula } : {}),
       ...(deg ? { adaos: o.degrosare?.adaos ?? 0 } : {}),
       descriere: o.noduri.length > 1 ? `${baza} (+${o.noduri.length - 1})` : baza,
       ...(o.rang !== undefined ? { rang: o.rang } : {}),
@@ -274,7 +277,7 @@ function randuriFoii(
         numar: s.numar, diametru: s.diametru, forma: s.forma?.tip === 'bila' ? 'bila' : s.forma?.tip === 'v' ? 'v' : 'plata',
         ...(s.forma?.tip === 'v' ? { unghi: s.forma.unghi, ...(s.forma.varf !== undefined ? { varf: s.forma.varf } : {}) } : {}),
       },
-      pasLateral: o.pasLateral ?? 0, creasta: creastaPePlan(s, o.pasLateral ?? 0), unghi: fin?.unghi ?? 0, aliniat: fin?.nealiniat !== true,
+      pasLateral: o.pasLateral ?? 0, unghi: fin?.unghi ?? 0, aliniat: fin?.nealiniat !== true,
       margine: fin?.margine === 'trece' ? 'trece' : 'perete', ...(fin?.planZero !== undefined ? { planZero: fin.planZero } : {}),
       adancime: o.adancime, pas: o.pas,
     };
@@ -424,10 +427,11 @@ export function ExportConectat({
     for (const { piesa } of deScris) {
       noi.set(piesa.id, piesa.operatii.map((o) => {
         const cheie = `${piesa.id}/${o.id}`;
-        // Finisarea (ADR 0312 §7) și degroșarea (ADR 0313 §7): rândul lor e doar de citit, deci Exportă le scrie doar rangul (sau
-        // îl scoate, în ordinea automată).
+        // Finisarea (ADR 0312 §7) și degroșarea (ADR 0313 §7): valorile rândului lor (felia 18.1↑d-4; fără schimbare, aceeași
+        // operație, la octet), apoi rangul (sau fără el, în ordinea automată).
         if (o.tip === 'finisare' || o.tip === 'degrosare') {
-          const { rang: _r, ...fara } = o;
+          const vr = c.valoriRelief?.get(cheie);
+          const { rang: _r, ...fara } = vr ? operatieReliefDinDialog(o, vr) : o;
           void _r;
           const r = loc?.get(cheie);
           return r !== undefined ? { ...fara, rang: r } : fara;
@@ -453,6 +457,10 @@ export function ExportConectat({
       hartie={hartieRand}
       operatii={exportFoaie.randuri}
       finisari={exportFoaie.finisari}
+      creasta={(sc, pas) => creastaPePlan({
+        numar: sc.numar, nume: '', diametru: sc.diametru,
+        ...(sc.forma === 'bila' ? { forma: { tip: 'bila' as const } } : sc.forma === 'v' ? { forma: { tip: 'v' as const, unghi: sc.unghi ?? 0, ...(sc.varf !== undefined ? { varf: sc.varf } : {}) } } : {}),
+      }, pas)}
       ordineAutomata={exportFoaie.automata}
       descrieri={exportFoaie.descrieri}
       operatiiLume={exportFoaie.operatiiLume}

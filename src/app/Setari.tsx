@@ -8,7 +8,8 @@
  * Un număr se scrie cu virgulă sau cu punct; unul greșit sau în afara marginilor rămâne în câmp, spus, și nu se ține.
  * Vine la cerere, cu mesajele editării (`editare`).
  */
-import { useEffect, useId, useRef, useState, type CSSProperties, type KeyboardEvent, type ReactNode } from 'react';
+import { useEffect, useId, useRef, useState, type CSSProperties, type ReactNode } from 'react';
+import { useEscapeFereastra } from '../ui/escapeFereastra.ts';
 import '../i18n/editare.ts';
 import { mesajeGata } from '../i18n/laCerere.ts';
 import { t, type CheieSimpla } from '../i18n/t.ts';
@@ -387,13 +388,10 @@ export function Setari({ sectiune = 'cote', onInchide, focusInapoi }: {
     prima.current?.focus();
     return () => { if (focusInapoi instanceof HTMLElement) focusInapoi.focus(); };
   }, [focusInapoi]);
-  const tasta = (e: KeyboardEvent): void => {
-    if (e.key !== 'Escape') return;
-    e.preventDefault();
-    onInchide();
-  };
+  // Escape, oriunde ar fi focusul (felia 3.Aw).
+  useEscapeFereastra(onInchide);
   return (
-    <div className="dialog" role="dialog" aria-modal="true" aria-labelledby="setari-titlu" data-testid="dialog-setari" onKeyDown={tasta}>
+    <div className="dialog" role="dialog" aria-modal="true" aria-labelledby="setari-titlu" data-testid="dialog-setari">
       <div className="dialog-cutie dialog-setari">
         <h2 id="setari-titlu">{t('setari.titlu')}</h2>
         <div className="setari-corp">

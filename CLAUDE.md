@@ -408,9 +408,8 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   butonul apăsat pleca din pagină sau se oprea sub focus, ori după un clic pe un text. Acum se ascultă pe
   `document` cât fereastra e deschisă, pe urcare, cu `defaultPrevented` (un strat de deasupra, ca manualul, își ține
   tasta), și închide stratul de sus care se vede, citit din pagină în clipa apăsării. **O fereastră nouă își ascultă
-  Escape pe `document`, nu pe ea însăși, iar proba ei apasă Escape după ce butonul apăsat a plecat sau s-a oprit**
-  (aceeași scăpare e încă în „Așază pe foi”, Setări, raportul foilor, lucrarea primită, Aspectul și fereastra
-  extensiilor: o felie comună, la cuvântul owner-ului). Cu ea, linia frezelor n-are felie pornită: urmează, la
+  Escape pe `document`, nu pe ea însăși (din 3.Aw, cu `useEscapeFereastra`), iar proba ei apasă Escape după ce butonul
+  apăsat a plecat sau s-a oprit** (aceeași scăpare, în celelalte șase ferestre, reparată în 3.Aw). Cu ea, linia frezelor n-are felie pornită: urmează, la
   cuvântul owner-ului, 16.A↑d (calibrarea, după placa 4), e (bila și toroidala, cu relieful), f (profilul desenat),
   g (valorile pe material). Felia: pornirea +0, totalul +0,1 kB.
   **Plafonul pornirii 120 kB (ADR 0145, decizia owner-ului din 24.11, „ok, ridica plafonul pornirii la 120 kB”):** după
@@ -1159,6 +1158,17 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   știută. **Imprimanta falsă are `bucataIntaiMs`** (`test/e2e/imprimantaFalsa.ts`): întâi o bucată doar cu progresul,
   apoi starea întreagă, la fiecare legare. **O probă care depinde de ordinea în care sosesc cadrele imprimantei
   forțează ordinea rea, nu o așteaptă de la ceas.**
+  **Numele elementelor, cu numerele în formatul limbii (felia 3.Av, constatarea 14 a auditului exportului)** gata pe
+  26.11, scrisă de sesiunea principală la „Ok, fa-le” al owner-ului: `descriere` (`src/app/descriereElement.ts`), comun
+  barei de jos, listei, avertismentelor, fereastrei exportului și titlului dopului, scrie în română cu virgula zecimală,
+  în engleză cu punct, după limba de acum. **O probă e2e care citește numele unui element îl scrie cu virgulă**
+  („dreptunghi 100,00 × 60,00 la X 20,00, Y 20,00”; un parser al rândului ia `[\d,]+` și schimbă virgula în punct
+  înaintea lui `Number`). Cotele din panou își păstrează punctul. **Escape închide fereastra oriunde ar fi focusul, în
+  celelalte șase ferestre (felia 3.Aw)** gata pe 26.11, tot la „Ok, fa-le”: „Așază pe foi”, Setări, raportul foilor,
+  lucrarea primită, Aspectul, ferestrele extensiilor și întrebarea de la închiderea unei extensii trec prin
+  `useEscapeFereastra` (`src/ui/escapeFereastra.ts`: pe `document`, pe urcare, cu `defaultPrevented`, apoi oprit).
+  **O fereastră nouă își ia Escape-ul de la `useEscapeFereastra`, iar proba ei pune focusul pe `body` înaintea
+  tastei.** Otrăvurile 6 / 6 și 8 / 8; pornirea și totalul, din porțile ramurii.
   **Biblioteca extensiilor (ADR 0230, felia 3.Xg)** gata pe 07.11, în worktree-ul `biblioteca`, cu recomandările („Da,
   1a–7a”), **unită în `main` pe 07.11** („Da, unește”): Easy 3Draw se instalează și se actualizează dintr-o listă servită
   lângă aplicație. **La fiecare build,
@@ -1340,6 +1350,15 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   sursa)`, peste `STARE0`), deci se adună cu cele din editor. Starea unui `<details>` se citește din pagină când
   editorul se reface, nu din `toggle` (vine după).** Din ADR 0284 rămâne doar 3.Ck (balamaua și placa turnantă), după
   ce owner-ul încearcă bila și cupa pe imprimantă.
+  **3.Ck-1 (placa turnantă; ADR 0284, partea B)** gata pe 26.11, pe ramura liniei, la cuvântul owner-ului transmis de
+  sesiunea principală, cu jocul din calibrare: în fila Cărămizi, „Placă turnantă” de 2 × 2 sau 4 × 4, din două plăci:
+  baza (fața de sus netedă, locașurile dedesubt și în mijloc pivotul, un capăt de știft Technic cu fantă) și partea de
+  sus (placa cu știfturi și gaura de știft din mijloc), care se rotește pe pivot; „Fă placa turnantă” le pune pe
+  amândouă în listă. Gaura e cea din calibrare, iar baza are „Jocul pivotului” (−0,1 … 0,2 mm): cât de greu se rotește
+  și cât de bine stă pe pivot rămân de verificat la tipărire. Easy 3Draw 18.43.0 (următoarea, 18.44.0); 3.Ck-2
+  (balamaua) urmează. **Un joc de mișcare vine dintr-o pereche care se potrivește deja pe imprimantă (calibrarea), cu un
+  câmp pentru diferență; o piesă cu un capăt de știft Technic intră în probele care numără găurile de știft
+  (`trenulet.prinderi.spec.ts`).**
   **Cotele pe desen: modelul și proba G-code-ului (ADR 0330, felia 10.4↑a-1, adusă din etapa 10)** gata pe 24.11, în
   sesiunea cloud a liniei (ramura `wip/10.4-cote`), unită în `main` pe 24.11 (`f25249cf`), fără interfață încă. ADR
   0330, acceptat de owner cu 1a–6a și cu nota lui: toate setările cotelor stau într-o fereastră nouă, „Setări”, nu în
@@ -1985,6 +2004,27 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 26.11.2026, seara (a cincizeci și șaptea unire din cloud): **numele elementelor cu virgula limbii (3.Av) și Escape
+  oriunde ar fi focusul, în celelalte șase ferestre (3.Aw), unite în `main`** (sesiunea principală, ramura
+  `unire-2611p`, din `78075223`). Felii ale sesiunii principale, la „Ok, fa-le” al owner-ului (spus după oferta de la
+  20:16), pe ramura `wip/3.Av-virgula-escape`, `2d5b9303`, PR-ul `AndreiBesliu/cvs2#66`, unite în `3e1683f8`.
+  **3.Av** (constatarea 14 a auditului exportului): numele unui element (bara de jos, lista, avertismentele, fereastra
+  exportului, titlul dopului) scrie numerele în română cu virgula zecimală, în engleză cu punct; proba unitară întâi,
+  probele e2e care citeau numele aduse la virgulă (127 de rânduri, în 19 fișiere); otrăvurile 6 / 6. Cotele din panou
+  își păstrează punctul; partea din listă a constatării (numele dat de om, locul pe al doilea rând) rămâne a liniei
+  exportului. **3.Aw** (tiparul găsit la 16.A↑b-7): „Așază pe foi”, Setări, raportul foilor, lucrarea primită,
+  Aspectul, ferestrele extensiilor și întrebarea de la închiderea unei extensii închid acum la Escape și cu focusul
+  căzut pe pagină, prin ascultătorul comun `useEscapeFereastra`; șapte probe noi, roșii pe aplicația dinainte;
+  otrăvurile 8 / 8. Programul, documentul și serverul, neatinse. `main` nu se mișcase, deci **arborele unirii e chiar al
+  lui `2d5b9303`** și a intrat pe porțile lui: completul 45879439214 pe `7dd7b9a8` (codul), verde la prima trecere
+  (60 min): unit 10 789 / 0 (12 sărite, pe Linux), e2e 986 / 986, funcțiile pe emulatoare 136 / 136, paginile 60 / 60;
+  rapidul, verde pe `2d5b9303`; pornirea 111,7 kB (plafonul 125; cu ușa 116,9, cu Atelierul 117,2), **totalul
+  923,3 / 1 000 kB** (+0,3), `/admin` 138,3 / 200, contul 30,2 / 32. Lotul 52, spre test. **Schema:** linia frezelor
+  a luat v31 (16.A↑e-1, forma toroidalei, ADR 0303 propus, pe `wip/16.A-freze-e`), deci **un câmp nou pe altă linie
+  ia v32**. La linii, în lucru: atelierul (3.Ck), exportul (începutul G-code-ului la vedere), frezele (16.A↑e-1, la
+  porți), relieful (rândul editabil, rotunjirea pasului lateral), cotele (cele „mai târziu”). **La owner:** de încercat
+  virgula din numele elementelor și Escape în cele șapte ferestre; brief-urile liniilor fără sesiune; restul listei,
+  neschimbat.
 - 26.11.2026, seara: **liniile pornesc ce urmează la fiecare** („Zi-le ca pot continua cu ce urmeaza la fiecare”, în sesiunea principală, la 20:16, după
   publicarea lotului 51). Sesiunea principală le-a scris celor cinci sesiuni de linie din cloud tot la 20:16, cu ce
   urmează din nota fiecăreia: **atelierul**, 3.Ck (balamaua și placa turnantă, ultima din ADR 0284), cu jocul din

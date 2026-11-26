@@ -27,7 +27,7 @@ operație 2D pe un relief). Câmpurile comune rămân, cu sensul lor pe relief:
 - `noduri`: reliefurile piesei pe care le finisează (unul sau mai multe; unde se suprapun, „păstrează înalt”, ADR 0310 §1);
 - `scula`: plata, V-ul sau bila;
 - `pasLateral` (cerut de ușă pe o finisare): distanța dintre liniile paralele, în mm, în (0, 50] ca pe buzunar; aliniată,
-  lucrarea o rotunjește la celule întregi (ADR 0310 §5) și spune valoarea rotunjită;
+  lucrarea o rotunjește la celule întregi (ADR 0310 §5; în jos, din ADR 0314) și spune valoarea rotunjită;
 - `pas`: cât coboară cel mult o trecere (invarianta: niciodată mai adânc decât pasul pe trecere); finisarea se face în treceri
   pe Z, ultima pe model;
 - `adancime`: cel mai adânc loc sub fața plăcii la care ajunge freza (o podea: sub ea finisarea nu coboară);
@@ -86,7 +86,7 @@ se vede în fereastră din prima zi, altfel omul numără N operații, iar mași
   freza (T, Ø, forma), pasul lateral, creasta pe plan pe hârtie (`creastaPePlan`: bila R − √(R² − (s/2)²), V-ul
   (s − v) / 2 / tan(θ/2), plata 0), liniile, marginea, înălțimea, adâncimea cea mai mare și pasul pe trecere, cu nota că se
   schimbă din secțiunea Tăierea. Fără câmpuri: rândul editabil (freza din bibliotecă, pasul în celule și mm, unghiul, creasta,
-  timpul) vine într-o felie a lui, după 16.A↑b-5 și 28.8↑h.
+  timpul) vine într-o felie a lui, după 16.A↑b-5 și 28.8↑h. (Făcut în felia 18.1↑d-4, ADR 0315, fără freza din bibliotecă.)
 - **Rezultatul** o cuprinde: rândul ei în timpul pe operații (eticheta programului poartă cheia ei), freza ei între scule și în
   judecata „același T” a ferestrei (bila de același diametru e altă freză), adâncimea și simularea.
 - **Biblioteca** (cererea liniei frezelor): bila are acum CAM (`FELURI_CU_CAM`), iar `sculaDinFreza` îi dă `{ tip: 'bila' }`;

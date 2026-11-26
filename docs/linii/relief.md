@@ -195,3 +195,17 @@ degroșarea și finisarea pe relief), unde stă relieful în document și unde s
     (0,0625); pe pereții paraleli cu liniile, linia de lângă perete rotunjește muchia de sus.
   - **Modelul unei probe pe placă** e cel triangulat prin centrele celulelor (`triunghiuriModel` + `clExact`), nu funcția pe
     hârtie: lângă trepte, funcția sare, triangularea nu.
+- **26.11, 21:00: 18.1↑d-3 gata pe ramură** (la cuvântul owner-ului, transmis de sesiunea principală la 20:16): pasul lateral
+  aliniat se rotunjește în jos la celule întregi (ADR 0314), cu refuzul celulei mai late decât freza; otrăvurile 10 / 10, placa
+  18 neschimbată. Urmează 18.1↑d-4 (rândul editabil al finisării și al degroșării în fereastra exportului).
+- **26.11, 21:25: 18.1↑d-4 gata pe ramură**: rândul editabil al finisării și al degroșării în fereastra exportului (ADR 0315),
+  otrăvurile 23 / 23 prinse (14 unitare, 9 e2e), totalul +3,2 kB, pornirea neschimbată. Rămân, la cuvântul owner-ului: freza din „Frezele mele” pe rândurile
+  reliefului (cu bila), desenele grupurilor, „Dă-i T{n}” pe freza reliefului.
+- **De ținut minte, din 18.1↑d-4:**
+  - **Fișa reliefului are starea ei în fereastră** (`paramRelief`, `src/ui/exportRelief.ts`), separată de rândurile celorlalte
+    operații (`Rand`): un câmp nou al ei intră în `RandRelief`, `campuriReliefGresite`, `valoriRelief`, `GRUP_CAMP` (cu prefixul
+    `relief-`) și în `operatieReliefDinDialog`, cu proba „fără schimbare, la octet”.
+  - **`npm ci` într-o clonă cu `node_modules` legat de repo** golește `node_modules` din repo (`tsc: not found`).
+  - **`src/ui` ia din domeniu doar prin `src/ui/actiuni*`** (regula `interfata-prin-actiuni`): o funcție a CAM-ului de care are
+    nevoie fișa (`celuleAliniate`) se reexportă din `actiuniExportTipuri.ts`.
+

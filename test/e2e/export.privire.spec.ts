@@ -3,7 +3,7 @@
  * pe Linux, unde `system-ui` e oricum lat): nimic nu iese din fereastră și niciun text nu e tăiat, la 1280 și 1024 px, în română
  * și în engleză, pe fiecare tăietură; pe telefon (390 px), fiecare rând al listei se atinge și deschide fișa lui, iar banda listei
  * lasă loc fișelor; în Atelier, cu densitatea mare, fiecare țintă a ferestrei are cel puțin 48 px și se lovește în centrul ei.
- * La fel cu rândul finisării reliefului (ADR 0312 §7), doar de citit.
+ * La fel cu rândurile reliefului (ADR 0312 §7, ADR 0313 §7), editabile din felia 18.1↑d-4.
  */
 import { test, expect, type Page } from '@playwright/test';
 import { adauga } from './ajutor-panza.ts';
@@ -192,7 +192,7 @@ function tinteMici(page: Page, minim: number): Promise<string[]> {
   return page.evaluate((m) => {
     const cutie = document.querySelector('.dialog-cutie');
     if (!cutie) return ['fără fereastră'];
-    const sel = 'button, select, input[type="text"], label:has(> input[type="checkbox"]), label.alegere, .dx-card, .dx-regim > summary';
+    const sel = 'button, select, input[type="text"], label:has(> input[type="checkbox"]), label.alegere, .dx-card, .dx-regim > summary, .dx-inceput summary';
     const rau: string[] = [];
     for (const e of cutie.querySelectorAll<HTMLElement>(sel)) {
       const s = getComputedStyle(e), r = e.getBoundingClientRect();
@@ -237,7 +237,7 @@ test.describe('în Atelier, cu densitatea mare', () => {
 });
 
 /**
- * Rândul finisării reliefului (ADR 0312 §7), doar de citit: dreptunghiul și un relief cu rolul „finisarea reliefului”, apoi
+ * Rândul finisării reliefului (ADR 0312 §7; editabil din felia 18.1↑d-4): dreptunghiul și un relief cu rolul „finisarea reliefului”, apoi
  * fereastra, cu fontul lat. Finisarea e primul rând (ordinea automată), cu fișa ei. Pe telefon nu se desenează (ADR 0250 §7:
  * panoul de proprietăți nu se arată), deci foaia se pregătește la lățimea de calculator, iar fereastra se deschide la `latime`.
  */
@@ -256,7 +256,7 @@ async function deschideCuFinisare(page: Page, latime?: { readonly width: number;
   if (relief3d) await expect(page.locator('[data-nav-op][data-fel="degrosare"]')).toBeVisible();
 }
 
-test.describe('cu finisarea reliefului (rândul doar de citit)', () => {
+test.describe('cu finisarea reliefului (rândul editabil)', () => {
   for (const [locale, limba] of [['ro-RO', 'română'], ['en-GB', 'engleză']] as const) {
     test.describe(`în ${limba}`, () => {
       test.use({ locale });
@@ -266,6 +266,13 @@ test.describe('cu finisarea reliefului (rândul doar de citit)', () => {
           await deschideCuFinisare(page);
           await page.locator('[data-nav-op][data-fel="finisare"] [data-nav]').click();
           expect(await ceIese(page), 'fișa finisării').toEqual([]);
+          // Cu freza în V (unghiul și vârful) și planul zero, fișa are toate câmpurile ei (felia 18.1↑d-4).
+          const f = page.locator('[data-fisa="op"][data-fel="finisare"]');
+          await f.locator('[data-camp="relief-forma"]').selectOption('v');
+          await alege(f, 'relief-z', 'plan');
+          await expect(f.locator('[data-camp="relief-varf-v"]')).toBeVisible();
+          await expect(f.locator('[data-camp="relief-plan-zero"]')).toBeVisible();
+          expect(await ceIese(page), 'fișa finisării, cu V și planul zero').toEqual([]);
           await page.locator('[data-ordine="a-mea"]').click();
           await expect(page.locator('[data-nav-op][data-fel="finisare"] [data-jos]')).toBeVisible();
           expect(await ceIese(page), 'ordinea mea').toEqual([]);
@@ -299,10 +306,10 @@ test.describe('cu finisarea reliefului (rândul doar de citit)', () => {
 });
 
 /**
- * Rândul degroșării reliefului (ADR 0313 §7), doar de citit, lângă al finisării: rolul „Relief 3D”, apoi fereastra, cu fontul
+ * Rândul degroșării reliefului (ADR 0313 §7; editabil din felia 18.1↑d-4), lângă al finisării: rolul „Relief 3D”, apoi fereastra, cu fontul
  * lat, în română și în engleză, la 1280 și 1024 px, pe telefon și în Atelier cu densitatea mare.
  */
-test.describe('cu degroșarea reliefului (rolul „Relief 3D”, rândurile doar de citit)', () => {
+test.describe('cu degroșarea reliefului (rolul „Relief 3D”, rândurile editabile)', () => {
   for (const [locale, limba] of [['ro-RO', 'română'], ['en-GB', 'engleză']] as const) {
     test.describe(`în ${limba}`, () => {
       test.use({ locale });
@@ -342,5 +349,32 @@ test.describe('cu degroșarea reliefului (rolul „Relief 3D”, rândurile doar
       expect(await tinteMici(page, 48), 'ordinea mea').toEqual([]);
       expect(await ceIese(page), 'ordinea mea').toEqual([]);
     });
+  });
+});
+
+/**
+ * Începutul fișierelor în Rezultat (ADR 0292, felia 28.8↑r): liniile lungi ale antetului se derulează în locul lor, deci nimic
+ * nu iese din fereastră, la 1280, 1024 și 390 px, cu fontul lat; rândul fișierului are ținta mare cu densitatea mare.
+ */
+test.describe('începutul fișierelor, după export', () => {
+  test.use({ locale: 'ro-RO' });
+  for (const [latime, inaltime] of [[1280, 800], [1024, 768], [390, 844]] as const) {
+    test(`la ${latime} px, cu fontul lat: nimic nu iese, iar liniile se derulează în locul lor`, async ({ page }) => {
+      await page.setViewportSize({ width: latime, height: inaltime });
+      await deschide(page);
+      await page.locator('[data-buton="exporta"]').click();
+      const pre = page.locator('[data-inceput] pre').first();
+      await expect(pre).toBeVisible();
+      expect(await ceIese(page), 'începutul fișierului').toEqual([]);
+      expect(await pre.evaluate((e) => getComputedStyle(e).overflowX), 'derularea liniilor').toBe('auto');
+    });
+  }
+  test('cu densitatea mare, rândul fișierului are cel puțin 48 px și se lovește în centrul lui', async ({ page }) => {
+    await page.addInitScript(() => { localStorage.setItem('cncvs2.aranjament', JSON.stringify({ v: 1, aranjament: 'atelier', densitate: 'mare' })); });
+    await deschide(page);
+    await page.locator('[data-buton="exporta"]').click();
+    await expect(page.locator('[data-inceput] summary').first()).toBeVisible();
+    await page.locator('[data-nav="rezultatul"]').click();
+    expect(await tinteMici(page, 48), 'Rezultatul, cu începutul fișierelor').toEqual([]);
   });
 });

@@ -1,10 +1,16 @@
 import type { IesireFoaie } from '../cam/iesire.ts';
 import { RAZA_INTRARE_MINIMA, RAZA_INTRARE_MINIMA_RAMPA } from '../cam/intrariMinima.ts';
 import { RAMPA_MINIMA } from '../cam/rampaMinima.ts';
-import { PLAFON, type Document, type Latura, COBORARE_MINIME, UNGHI_COBORARE_MAXIM, RETRAGERE_COMPLETA_MAXIMA, UNGHI_V_MAXIM, UNGHI_V_MINIM } from '../model/document.ts';
+import {
+  ADAOS_MAXIM, PLAFON, PLAN_ZERO_MAXIM, type Document, type Latura, COBORARE_MINIME, UNGHI_COBORARE_MAXIM, RETRAGERE_COMPLETA_MAXIMA, UNGHI_V_MAXIM, UNGHI_V_MINIM,
+} from '../model/document.ts';
 export type { Coborare } from '../model/document.ts';
 // Implicitele frezei în V și ale pasului lateral, comune ferestrei exportului și rolului din panou (ADR 0112).
 export { pasLateralImplicit, UNGHI_V_IMPLICIT } from '../model/document.ts';
+// Adaosul implicit al degroșării reliefului (ADR 0313), pentru rândul ei din fereastra exportului (felia 18.1↑d-4).
+export { ADAOS_IMPLICIT } from '../model/document.ts';
+// Câte celule are pasul lateral al liniilor aliniate (ADR 0314): aceeași regulă ca lucrarea, pentru nota pasului folosit.
+export { celuleAliniate } from '../cam/celuleAliniate.ts';
 // Implicitele incrustațiilor (ADR 0170 în V, ADR 0171 cu pereți drepți), pentru rândurile lor din fereastra exportului.
 export { INCRUSTATIE_DREAPTA_IMPLICITA, INCRUSTATIE_IMPLICITA, LATIME_UMAR_IMPLICITA } from '../model/document.ts';
 // Banda dopului în V (ADR 0172): lățimea cea mai mică, rotunjirea ei arătată, punțile implicite și ce rămâne sub fața coborâtă.
@@ -20,6 +26,7 @@ export { bazaFisier, LUNGIME_NUME, motivNume, propunereNume, type MotivNume } fr
 import type { StrategieScula } from '../post/contract.ts';
 import { CONTRACTE, ID_CONTRACTE, type IdContract } from '../post/contracte/index.ts';
 import type { FisierExportat, ProgramExportat } from '../post/export.ts';
+import type { Inceput } from '../post/inceput.ts';
 export type { IdContract } from '../post/contracte/index.ts';
 export type { StrategieScula, Unitati } from '../post/contract.ts';
 export type { FisierExportat } from '../post/export.ts';
@@ -50,6 +57,8 @@ export const MARGINI_OPERATIE = {
   latimeUmar: PLAFON.latura,
   // Turația, avansul și plonjarea unei freze scrise de mână (ADR 0291 §3, documentul v27): cel mult cât ușa documentului.
   regimFreza: PLAFON.regimFreza,
+  // Operațiile reliefului (ADR 0312 §2, ADR 0313 §2; rândul editabil, felia 18.1↑d-4): pasul lateral, adaosul și planul zero.
+  pasLateral: PLAFON.diametruScula / 2, adaos: ADAOS_MAXIM, planZero: PLAN_ZERO_MAXIM,
 } as const;
 
 /**
@@ -168,12 +177,20 @@ export type ReliefSimulat =
   }
   | { readonly ok: false; readonly motiv: string; readonly eroare: boolean; readonly anulata?: true };
 
+/** Începutul unui fișier scris (ADR 0292): numele lui și primele linii, până la prima mișcare de tăiere. */
+export type InceputFisier = Inceput & { readonly nume: string };
+
 export type RezultatExport =
   /** `avertismente`: ce s-a făcut altfel decât s-a cerut, fără să fie o greșeală (intrarea omisă, ADR 0030 §3). */
   | {
     readonly ok: true; readonly program: ProgramExportat; readonly avertismente: readonly string[]; readonly rezumat: RezumatJob;
     /** Fișierele de descărcat: unul, sau câte unul pe sculă (ADR 0084); `program` e primul. */
     readonly fisiere: readonly FisierExportat[];
+    /**
+     * Începutul fiecărui fișier scris (ADR 0292), în ordinea lor: ale foii (cu „Toate foile”, ale foii active, cu numele din
+     * arhivă), apoi ale dopurilor.
+     */
+    readonly inceput: readonly InceputFisier[];
     /** Dopurile incrustațiilor (ADR 0170 §3): fiecare cu fișierele lui, de descărcat după ale foii. */
     readonly dopuri: readonly DopExportat[];
     /** Postul e al senderului aplicației (familia GRBL): fișierele ajung și în panoul mașinii (ADR 0125). */

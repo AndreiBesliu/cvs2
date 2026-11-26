@@ -16,7 +16,7 @@ import { faraEroriInJurnal } from './ajutor-jurnal.ts';
  * - „Salvează fișierul .json” din exportul CNC ajunge descărcare a browserului, din pagina lui cvs2, cu numele dat de
  *   planificator;
  * - ștergerea circuitului, cu confirmarea lui, rămâne și după reîncărcare; jurnalul local, fără erori;
- * - numele (ADR 0167): „Easy 3Draw” 18.42.0, instalat peste „Planificator Trenuleț” 18.6.0, îi ia locul (același id), cu
+ * - numele (ADR 0167): „Easy 3Draw” 18.43.0, instalat peste „Planificator Trenuleț” 18.6.0, îi ia locul (același id), cu
  *   circuitul lui;
  * - „Trimite la cvs2” (ADR 0160 §D): G-code-ul ovalului de exemplu ajunge în dialogul primirii, cu originea extensiei, iar după
  *   „Primește”, în „Lucrarea primită” din fereastra Mașina; planificatorul spune că cvs2 l-a primit;
@@ -31,7 +31,7 @@ import { faraEroriInJurnal } from './ajutor-jurnal.ts';
 test.use({ locale: 'ro-RO' });
 
 const PACHET = Buffer.from(pachetTrenulet().octeti);
-const ZIP = { name: 'trenulet-18.42.0.zip', mimeType: 'application/zip', buffer: PACHET };
+const ZIP = { name: 'trenulet-18.43.0.zip', mimeType: 'application/zip', buffer: PACHET };
 const cadru = (page: Page) => page.frameLocator('iframe.cadru-extensie');
 /**
  * Cât așteaptă probele cadrul extensiei până la „pornit”: un document separat, în procesul lui, cu pachetul adus din
@@ -82,7 +82,7 @@ test('instalat din fișier: pagina în cadru; circuitul, modul și culoarea păs
   await page.locator('[data-extensii="buton"]').click();
   await page.locator('[data-extensii="fisier-ales"]').setInputFiles(ZIP);
   await expect(page.getByTestId('extensii-instalare').locator('h2')).toHaveText('Instalezi „Easy 3Draw”?');
-  await expect(page.getByTestId('extensii-despre')).toHaveText(/^18\.42\.0 · din fișierul trenulet-18\.42\.0\.zip · \d+ (de )?fișiere, [\d,]+ MB$/);
+  await expect(page.getByTestId('extensii-despre')).toHaveText(/^18\.43\.0 · din fișierul trenulet-18\.43\.0\.zip · \d+ (de )?fișiere, [\d,]+ MB$/);
   await expect(page.getByTestId('extensii-permisiuni').locator('li')).toHaveText([
     'Mașina încarcă programe, le pornește sau le reia doar după confirmarea ta, pune pauză și oprește lucrarea',
     'Formele din desen primește formele pe care i le trimiți din desen și îți propune forme pentru desen (le adaugi tu, din Importă)',
@@ -180,7 +180,7 @@ async function pachetVechi(): Promise<Buffer> {
   })));
 }
 
-test('numele nou (ADR 0167): „Easy 3Draw” 18.42.0, instalat peste „Planificator Trenuleț” 18.6.0, îi ia locul, cu circuitul lui', async ({ page }) => {
+test('numele nou (ADR 0167): „Easy 3Draw” 18.43.0, instalat peste „Planificator Trenuleț” 18.6.0, îi ia locul, cu circuitul lui', async ({ page }) => {
   await page.goto('/');
   await page.locator('[data-extensii="buton"]').click();
   await page.locator('[data-extensii="fisier-ales"]').setInputFiles({ name: 'trenulet-18.6.0.zip', mimeType: 'application/zip', buffer: await pachetVechi() });
@@ -197,7 +197,7 @@ test('numele nou (ADR 0167): „Easy 3Draw” 18.42.0, instalat peste „Planifi
   await page.locator('[data-extensii="buton"]').click();
   await page.locator('[data-extensii="fisier-ales"]').setInputFiles(ZIP);
   await expect(page.getByTestId('extensii-instalare').locator('h2')).toHaveText('Instalezi „Easy 3Draw”?');
-  await expect(page.getByTestId('extensii-despre')).toContainText('18.42.0 · din fișierul trenulet-18.42.0.zip · ');
+  await expect(page.getByTestId('extensii-despre')).toContainText('18.43.0 · din fișierul trenulet-18.43.0.zip · ');
   await page.locator('[data-extensii="instaleaza"]').click();
   // același id: un singur rând în meniu, cu numele nou; circuitul de dinainte, redeschis
   await page.locator('[data-extensii="buton"]').click();
@@ -508,6 +508,10 @@ async function romanaRamasa(page: Page, numeUtilizator = ''): Promise<readonly s
 }
 
 test('în engleză (ADR 0165): limba lui cvs2, schimbată pe loc printr-o repornire fără pierderi; nicio română pe ecranele lui', async ({ page }) => {
+  // Proba trece prin fiecare ecran al pluginului, deci crește cu fiecare piesă nouă a atelierului: în CI, 18 s pe 26.11
+  // dimineața, 25 s seara, apoi 32,7 s în completul de pe `main` 45888136031, oprită de limita de 30 s la ultimul pas
+  // (felia 3.Ax). Bugetul ei e de trei ori cel obișnuit; o felie care o duce peste 60 s o împarte pe ecrane.
+  test.setTimeout(90_000);
   await page.goto('/');
   await page.locator('[data-extensii="buton"]').click();
   await page.locator('[data-extensii="fisier-ales"]').setInputFiles(ZIP);
@@ -564,7 +568,7 @@ test('în engleză (ADR 0165): limba lui cvs2, schimbată pe loc printr-o reporn
   await intraIn3D(c);
   // filele (ADR 0281): familiile, cu câte piese au, apoi cele proprii; numele lor, aici (cuvinte fără diacritice, pe care
   // proba de română nu le recunoaște); apoi fiecare piesă a fiecărei familii și fiecare filă proprie, fără română
-  await expect(c.locator('#at-tipuri button:not([hidden])')).toHaveText(['Bricks 12', 'Joints 10', 'Wheels 10', 'Propeller 4', 'Christmas 6', 'From cvs2', 'Calibration']);
+  await expect(c.locator('#at-tipuri button:not([hidden])')).toHaveText(['Bricks 13', 'Joints 10', 'Wheels 10', 'Propeller 4', 'Christmas 6', 'From cvs2', 'Calibration']);
   // (fila „Crăciun” întâi, ca la capăt să rămână deschisă roata cu palete, ultima piesă a filei Elice)
   for (const fila of ['craciun', 'caramizi', 'legaturi', 'roti', 'propulsie']) {
     await c.locator(`#at-tipuri [data-fila="${fila}"]`).click();
@@ -677,6 +681,31 @@ test('în engleză (ADR 0165): limba lui cvs2, schimbată pe loc printr-o reporn
       await expect(c.locator('#at-nume-piesa')).toHaveText('Snowflake Ø70, no branches, hollow core, line 3');
       await c.locator('#at-fg-repede [data-v="0"]').click();
       await expect(c.locator('#at-nume-piesa')).toHaveText('Snowflake Ø70, branches 2 × 60°');
+    }
+    if (fila === 'caramizi') {
+      // placa turnantă (3.Ck-1), în engleză: numele, piesele, mărimea, jocul pivotului, textul (zecimalele, cu punct) și
+      // butonul; partea de sus nu are jocul în nume. La capăt, baza fără joc, cum era
+      await c.locator('#at-galerie [data-piesa="turnanta"]').click();
+      await expect(c.locator('#at-editor h2')).toHaveText('Turntable');
+      await expect(c.locator('#at-galerie [data-piesa="turnanta"]')).toHaveText('Turntable');
+      await expect(c.locator('#at-nume-piesa')).toHaveText('Turntable 2×2, base');
+      await expect(c.locator('#at-tu-piesa [data-v]')).toHaveText(['The base', 'The top']);
+      await expect(c.locator('.at-rand', { has: c.locator('#at-tu-marime') }).locator('.mic')).toHaveText('Size:');
+      await expect(c.locator('label[for="at-tu-joc"]')).toHaveText('Pivot clearance (mm)');
+      await expect(c.locator('#at-tu-info')).toHaveText('The pivot is Ø4.75 mm and the hole from the calibration Ø5 mm: 0.125 mm all around. If the top turns too stiffly, raise the pivot clearance by 0.05 mm; if it comes off the pivot too easily, lower it.');
+      await expect(c.locator('#at-tu-fa')).toHaveText('Make the turntable');
+      await c.locator('#at-tu-joc').fill('0.15');
+      await c.locator('#at-tu-joc').press('Tab');
+      await expect(c.locator('#at-nume-piesa')).toHaveText('Turntable 2×2, base, clearance 0.15');
+      await c.locator('#at-tu-piesa [data-v="sus"]').click();
+      await expect(c.locator('#at-nume-piesa')).toHaveText('Turntable 2×2, top');
+      expect(await romanaRamasa(page, 'Păstrat la repornire'), 'placa turnantă').toEqual([]);
+      await c.locator('#at-tu-piesa [data-v="baza"]').click();
+      await c.locator('#at-tu-joc').fill('0');
+      await c.locator('#at-tu-joc').press('Tab');
+      await expect(c.locator('#at-nume-piesa')).toHaveText('Turntable 2×2, base');
+      // fila ține minte ultima piesă deschisă: înapoi la ultima din galerie, ca la capătul drumului prin ea
+      await c.locator('#at-galerie [data-piesa]').last().click();
     }
   }
   // roata cu palete (3.Cj), rămasă deschisă: editorul ei, în engleză (cuvinte fără diacritice, pe care proba de română nu le

@@ -16,7 +16,7 @@ import { useLimba } from './useLimba.ts';
 export const mesaje = mesajeGata();
 mesaje.catch(() => undefined);
 
-const FELURI = new Set(['orizontala', 'verticala', 'aliniata', 'raza', 'diametru', 'unghi']);
+const FELURI = new Set(['orizontala', 'verticala', 'aliniata', 'raza', 'diametru', 'unghi', 'lungime']);
 
 export function ListaCote({ foaie, n }: { readonly foaie: string; readonly n: number }): ReactNode {
   useLimba();

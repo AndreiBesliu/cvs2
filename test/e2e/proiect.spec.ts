@@ -67,15 +67,15 @@ test('proiectul rămâne după reîncărcare, cu formele mutate; lista arată ce
   await adauga(page, 'dreptunghi');
   await adauga(page, 'cerc');
   await trage(page, 70, 50, 30);
-  await expect(randuri(page)).toHaveText(['dreptunghi 100.00 × 60.00 la X 20.00, Y 20.00', 'cerc R15.00 cu centrul la X 100.00, Y 50.00']);
+  await expect(randuri(page)).toHaveText(['dreptunghi 100,00 × 60,00 la X 20,00, Y 20,00', 'cerc R15,00 cu centrul la X 100,00, Y 50,00']);
   // Salvarea e asincronă: așteaptă ultima versiune (trei comenzi: rev 3).
   await expect.poll(async () => (await versiuni(page)).map(([, r]) => r)).toContain(3);
   await page.reload();
-  await expect(randuri(page)).toHaveText(['dreptunghi 100.00 × 60.00 la X 20.00, Y 20.00', 'cerc R15.00 cu centrul la X 100.00, Y 50.00']);
+  await expect(randuri(page)).toHaveText(['dreptunghi 100,00 × 60,00 la X 20,00, Y 20,00', 'cerc R15,00 cu centrul la X 100,00, Y 50,00']);
   await expect(page.getByTestId('proiect')).toHaveCount(0);
   // Alegerea din listă selectează forma, ca un clic pe pânză.
   await randuri(page).nth(1).click();
-  await expect(page.getByTestId('selectie')).toHaveText('Selectat: cerc R15.00 cu centrul la X 100.00, Y 50.00');
+  await expect(page.getByTestId('selectie')).toHaveText('Selectat: cerc R15,00 cu centrul la X 100,00, Y 50,00');
   await expect(randuri(page).nth(1)).toHaveAttribute('aria-pressed', 'true');
 });
 
@@ -120,7 +120,7 @@ test('fără Web Locks (o origine nesigură), două file scriu, dar a doua nu o 
   // Versiunea primei file a rămas singura: nimic n-a fost acoperit.
   expect(await versiuni(a1)).toEqual([['proiect', 1]]);
   await a1.reload();
-  await expect(randuri(a1)).toHaveText(['cerc R15.00 cu centrul la X 70.00, Y 50.00']);
+  await expect(randuri(a1)).toHaveText(['cerc R15,00 cu centrul la X 70,00, Y 50,00']);
 });
 
 test('un proiect salvat care nu se poate deschide nu se acoperă: fila lucrează în memorie și o spune', async ({ page }) => {
@@ -146,7 +146,7 @@ test('un proiect v1 salvat se deschide prin migrare: forma stă unde era', async
   await scrieVersiune(page, 4, JSON.stringify(v1));
   await page.reload();
   await expect(page.getByTestId('proiect')).toHaveCount(0);
-  await expect(randuri(page)).toHaveText(['cerc R15.00 cu centrul la X 70.00, Y 50.00']);
+  await expect(randuri(page)).toHaveText(['cerc R15,00 cu centrul la X 70,00, Y 50,00']);
   // Prima schimbare salvează documentul v2 la revizia următoare.
   await adauga(page, 'dreptunghi');
   await expect.poll(async () => (await versiuni(page)).map(([, r]) => r)).toEqual([4, 5]);
@@ -176,8 +176,8 @@ test('Ctrl+D: o copie separată, decalată cu 20 mm, selectată; Ctrl+Z o scoate
   await page.goto('/');
   await adauga(page, 'cerc');
   await page.keyboard.press('Control+d');
-  await expect(randuri(page)).toHaveText(['cerc R15.00 cu centrul la X 70.00, Y 50.00', 'cerc R15.00 cu centrul la X 90.00, Y 30.00']);
-  await expect(page.getByTestId('selectie')).toHaveText('Selectat: cerc R15.00 cu centrul la X 90.00, Y 30.00');
+  await expect(randuri(page)).toHaveText(['cerc R15,00 cu centrul la X 70,00, Y 50,00', 'cerc R15,00 cu centrul la X 90,00, Y 30,00']);
+  await expect(page.getByTestId('selectie')).toHaveText('Selectat: cerc R15,00 cu centrul la X 90,00, Y 30,00');
   await page.keyboard.press('Control+z');
   await expect(randuri(page)).toHaveCount(1);
   // Copia anulată nu rămâne selectată: bara spune „nimic selectat”, iar bara selecției (Duplică, Șterge) a plecat.
@@ -216,7 +216,7 @@ test('operațiile stau în document (ADR 0025): adâncimea din dialog intră la 
   const deschide = async (): Promise<void> => { await page.locator('[data-actiune="export.gcode"]').click(); };
   const inchide = async (): Promise<void> => { await page.getByRole('button', { name: 'Închide' }).click(); };
   await deschide();
-  await expect(page.locator('[data-operatie="e1/e1"]')).toContainText('cerc R15.00');
+  await expect(page.locator('[data-operatie="e1/e1"]')).toContainText('cerc R15,00');
   await expect(adancime).toHaveValue('8');
   // Peste marginile documentului (freza până la Ø100, adâncimea până la 1000 mm), Exportă e inactiv: un proiect salvat
   // așa nu s-ar mai deschide.
@@ -488,7 +488,7 @@ test('o cale salvată (inima din patru cubice, ADR 0034): în listă cu cutia ei
   };
   await scrieVersiune(page, 5, JSON.stringify(doc));
   await page.reload();
-  const text = 'cale 68.21 × 78.30, 4 segmente, la X 115.89, Y 60.00';
+  const text = 'cale 68,21 × 78,30, 4 segmente, la X 115,89, Y 60,00';
   await expect(randuri(page)).toHaveText([text]);
   // Clicul pe pânză, în mijlocul inimii (150, 100): includerea se măsoară pe cubice.
   const v = await vedere(page);

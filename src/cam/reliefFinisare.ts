@@ -23,6 +23,7 @@
  * 90° sunt exacte), ca strategia paralelă a buzunarului: CAM-ul nu importă din simulare. Totul în lume (mm, Z față de fața
  * plăcii), fără stare.
  */
+import { celuleAliniate } from './celuleAliniate.ts';
 import type { Miscare } from '../ir/ir.ts';
 
 /** Forma frezei, cu raza ei: plata, bila, V-ul (unghiul inclus, în grade, și vârful plat, diametrul lui). */
@@ -336,14 +337,15 @@ type Linie = number[];
 
 /**
  * Liniile pe relieful `p`, cu pasul lateral folosit: aliniate, prin centrele celulelor reliefului, cu pasul un număr întreg de
- * celule; punctele pe linie la pasul celulei de calcul.
+ * celule, rotunjit în jos (felia 18.1↑d-3: liniile nu stau mai rar decât cere omul, deci nici creasta nu iese mai mare; sub o
+ * celulă, o celulă); punctele pe linie la pasul celulei de calcul.
  */
 function linii(p: Pregatit, o: ParametriFinisare, inset = 0): { readonly linii: Linie[]; readonly pas: number; readonly aliniat: boolean } {
   const c = p.r.celula, h = p.h, E = o.margine === 'trece' ? o.freza.raza : 0;
   const aliniat = !o.nealiniat && (o.unghi === 0 || o.unghi === 90);
   const rez: Linie[] = [];
   if (aliniat) {
-    const k = Math.max(1, Math.round(o.pasLateral / c)), s = k * c;
+    const k = celuleAliniate(o.pasLateral, c), s = k * c;
     // Centrele pe o axă, de la cel mai mic ≥ −E + I la cel mai mare ≤ L + E − I (pasul `d`, decalate cu `d / 2`). Cu I > 0 și
     // nimic între margini (o zonă mai îngustă decât 2 · I), centrul cel mai apropiat de mijloc.
     const centre = (L: number, d: number, I = 0): number[] => {
@@ -456,10 +458,20 @@ function treceriRelief(o: ParametriFinisare, so: Socotire): RezultatFinisare {
   let pasFolosit = o.pasLateral, puncte = 0;
   for (const [ip, p] of pregatite.entries()) {
     const l = linii(p, o, so.degrosare && o.margine !== 'trece' ? so.cota.raza : 0);
+    // Aliniate, liniile trec prin centrele celulelor: o celulă mai lată decât freza lasă dungi netăiate între ele.
+    if (l.aliniat && l.pas > 2 * R + EPS) {
+      return {
+        ok: false,
+        motiv: `celula reliefului (${Math.round(p.r.celula * 1e4) / 1e4} mm) e mai mare decât diametrul frezei (${2 * R} mm): liniile aliniate trec prin centrele celulelor și ar lăsa dungi între ele; alege ${so.degrosare ? 'un unghi care nu e 0° sau 90°' : 'liniile nealiniate (sau un unghi care nu e 0° sau 90°)'} ori o freză mai mare`,
+      };
+    }
     if (ip === 0) pasFolosit = l.pas;
     if (ip === 0 && !l.aliniat && !so.degrosare) avertismente.push(`liniile ${o.nealiniat ? 'nealiniate' : `la ${o.unghi}°`} nu urmează centrele celulelor: pot apărea riduri (moiré) pe detaliile fine`);
     if (ip === 0 && l.aliniat && Math.abs(l.pas - o.pasLateral) > 1e-9) {
-      avertismente.push(`pasul lateral, rotunjit la ${Math.round(l.pas / p.r.celula)} ${Math.round(l.pas / p.r.celula) === 1 ? 'celulă' : 'celule'} ale reliefului: ${Math.round(l.pas * 1e4) / 1e4} mm`);
+      const k = celuleAliniate(o.pasLateral, p.r.celula), mm = Math.round(l.pas * 1e4) / 1e4;
+      avertismente.push(l.pas > o.pasLateral
+        ? `pasul lateral, mărit la o celulă a reliefului: ${mm} mm (liniile aliniate nu pot sta mai des; creasta iese mai mare decât cea cerută)`
+        : `pasul lateral, rotunjit în jos la ${k} ${k === 1 ? 'celulă' : 'celule'} ale reliefului: ${mm} mm`);
     }
     for (const [k, pts] of l.linii.entries()) {
       const n = pts.length / 2;

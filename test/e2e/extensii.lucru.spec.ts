@@ -127,6 +127,14 @@ test('închiderea: × îi lasă extensiei salvarea; ce rămâne nesalvat e într
   await expect(intrebare).toHaveCount(0);
   await expect(page.locator('iframe.cadru-extensie')).toHaveCount(1);
   await expect(page.locator('.aplicatie')).not.toHaveAttribute('inert', '');
+  // Și cu focusul căzut pe pagină (felia 3.Aw): Escape tot „Rămân”.
+  await x.click();
+  await expect(intrebare).toBeVisible();
+  await page.evaluate(() => { (document.activeElement as HTMLElement | null)?.blur(); });
+  expect(await page.evaluate(() => document.activeElement === document.body), 'focusul e pe pagină').toBe(true);
+  await page.keyboard.press('Escape');
+  await expect(intrebare).toHaveCount(0);
+  await expect(page.locator('iframe.cadru-extensie')).toHaveCount(1);
   await x.click();
   await page.locator('[data-extensii="inchidere-ramai"]').click();
   await expect(intrebare).toHaveCount(0);

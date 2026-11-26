@@ -44,7 +44,7 @@ test('tragerea unui nod: dreptunghiul devine o cale cu colțul mutat; un pas de 
   await expect(page.locator('#root, body').getByText('120.00 × 70.00 mm')).toBeVisible();
   await expect(noduri(page)).toHaveAttribute('data-noduri', '4');
   await page.locator('[data-actiune="istoric.anuleaza"]').click();
-  await expect(randuri(page).first()).toContainText('dreptunghi 100.00 × 60.00');
+  await expect(randuri(page).first()).toContainText('dreptunghi 100,00 × 60,00');
 });
 
 test('dublu clic pe o latură adaugă un nod; Delete scoate nodul ales, nu forma; Esc îl lasă', async ({ page }) => {
@@ -79,7 +79,7 @@ test('cercul: două noduri pe arce, prea puține de scos; cu un nod nou pe arc, 
   const sus = await peEcran(page, { x: 70, y: 65 });
   await page.mouse.dblclick(sus.x, sus.y);
   await expect(noduri(page)).toHaveAttribute('data-noduri', '3');
-  await expect(randuri(page).first()).toContainText('cale 30.00 × 30.00');
+  await expect(randuri(page).first()).toContainText('cale 30,00 × 30,00');
   // Cu 3 noduri, o cale închisă nu mai pierde unul; încă un nod, jos, și scoaterea dintre arce e refuzată cu motivul ei.
   const jos = await peEcran(page, { x: 70, y: 35 });
   await page.mouse.dblclick(jos.x, jos.y);

@@ -7,7 +7,8 @@
  * care apasă din nou „Trimite” vrea ultima variantă. Nimic nu pornește singur: după „Primește”, fișierele verificate stau
  * în panoul mașinii, iar încărcarea și pornirea rămân ale omului.
  */
-import { useState, type KeyboardEvent, type ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
+import { useEscapeFereastra } from '../ui/escapeFereastra.ts';
 import '../i18n/masina.ts';
 import { mesajeGata } from '../i18n/laCerere.ts';
 import { t } from '../i18n/t.ts';
@@ -92,14 +93,11 @@ export function DialogLucrare({ cerere, onPrimita, onInchide }: {
     if (raspundeLa(cerere, r)) onPrimita({ id: l.id, titlu: l.titlu, de_la: l.de_la, origine, ...r });
   };
   const nu = (): void => { if (raspundeLa(cerere, null)) onInchide(); };
-  const tasta = (e: KeyboardEvent): void => {
-    if (e.key !== 'Escape' || verific) return;
-    e.preventDefault();
-    nu();
-  };
+  // Escape răspunde „Nu”, oriunde ar fi focusul (felia 3.Aw), dar nu cât se verifică fișierele.
+  useEscapeFereastra(nu, !verific);
   const aplicatie = l.de_la.versiune ? `${l.de_la.aplicatie} ${l.de_la.versiune}` : l.de_la.aplicatie;
   return (
-    <div className="dialog" role="dialog" aria-modal="true" aria-labelledby="lucrare-titlu" data-testid="dialog-lucrare" onKeyDown={tasta}>
+    <div className="dialog" role="dialog" aria-modal="true" aria-labelledby="lucrare-titlu" data-testid="dialog-lucrare">
       <div className="dialog-cutie">
         <h2 id="lucrare-titlu">{t('masina.lucrare.titlu')}</h2>
         <p data-testid="lucrare-de-la">
