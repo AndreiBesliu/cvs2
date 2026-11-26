@@ -536,6 +536,7 @@ următoare a pachetului: 18.40.0._
   paza aceea.
 - **Ancorele otrăvurilor vechi:** înaintea commit-ului, fiecare listă care țintește sursele pluginului se verifică față
   de fișierele de acum (un script scurt: `vechi` apare exact o dată). La această felie erau mutate șase ancore ale
-  feliilor din aceeași săptămână, aduse la zi. **Rămân 30 de ancore mutate în opt liste mai vechi** (`3.Tg`, `3.Th`,
-  `3.Tk`, `3.Tm`, `3.Tpb`, `3.Tq`, `3.Tr`, `3.Ts`), de dinaintea acestei felii: de adus la zi într-o felie de
-  întreținere, cu rularea lor din nou.
+  feliilor din aceeași săptămână și **30 de ancore în opt liste mai vechi** (`3.Tg`, `3.Th`, `3.Tk`, `3.Tm`, `3.Tpb`,
+  `3.Tq`, `3.Tr`, `3.Ts`), rămase în urmă când au intrat piese noi lângă rândurile lor (prinderile din 3.Ce, roata cu
+  palete, înclinarea spre pupa). Toate, aduse la zi și rulate din nou: 6 / 6 și 30 / 30. Acum cele 2 326 de otrăvuri de
+  pe sursele pluginului își găsesc ancora exact o dată.

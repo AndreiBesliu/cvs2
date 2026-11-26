@@ -557,6 +557,7 @@ Easy 3Draw 18.39.0, pe ramura `wip/3.Xh-biblioteca-ui`, în sesiunea cloud a lin
   (`trenulet.spec.ts`) răstoarnă roata de 24 și o mută cu o jumătate de pas.
 - **Otrăvurile:** `test/otravuri/3.Cf-2.py`, 71 / 71 la prima rulare (motorul 29, atelierul 38, textele 4);
   `3.Cf-2-en.py`, 10 / 10. Ancorele a șase otrăvuri mai vechi, mutate de această felie și de 3.Cl-3 și 3.Cl-4 (3.Cf-1
-  A53; 3.Cl-2 A01, A14, T02; 3.Cl-2-en N09; 3.Cl-3 A01), aduse la zi și rulate din nou: 6 / 6.
+  A53; 3.Cl-2 A01, A14, T02; 3.Cl-2-en N09; 3.Cl-3 A01), aduse la zi și rulate din nou: 6 / 6. Într-un commit
+  separat, 30 de ancore rămase în urmă în opt liste mai vechi ale pluginului (`3.Tg` … `3.Ts`): 30 / 30.
 - **Mărimea:** pachetul Easy 3Draw, 555,4 kB (era 553,0); aplicația, neschimbată.
 - **Felia următoare:** 3.Cg (verificarea: prinsă, plutește, se ciocnește).

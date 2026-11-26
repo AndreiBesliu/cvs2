@@ -15632,7 +15632,9 @@ otrăvurile; orele, după ceasul containerului).
 - **Probe vechi aduse la zi:** `trenulet.alipire.spec.ts` număra butoanele piesei din model (trei în plus).
 - **Otrăvurile:** `3.Cf-2.py`, 71 / 71, la prima rulare; `3.Cf-2-en.py`, 10 / 10. Șase ancore ale unor liste mai vechi
   (3.Cf-1, 3.Cl-2, 3.Cl-3), mutate de feliile din urmă, aduse la zi și rulate din nou: 6 / 6.
-- **De făcut, în afara feliei:** 30 de ancore mutate în opt liste mai vechi ale pluginului (`3.Tg` … `3.Ts`).
+- **Întreținere, într-un commit separat:** 30 de ancore mutate în opt liste mai vechi ale pluginului (`3.Tg`, `3.Th`,
+  `3.Tk`, `3.Tm`, `3.Tpb`, `3.Tq`, `3.Tr`, `3.Ts`), aduse la zi și rulate din nou: 30 / 30. Toate cele 2 326 de
+  otrăvuri de pe sursele pluginului își găsesc acum ancora exact o dată.
 - **Easy 3Draw 18.39.0** (555,4 kB), cu rândul de „ce e nou”. Doar pachetul extensiei se schimbă.
 - **Documentele:** ADR 0284 („Implementat (3.Cf-2)”), fișa etapei 3, `docs/linii/atelier.md`, indexul liniilor,
   `docs/otravuri.md`, `CLAUDE.md`.
