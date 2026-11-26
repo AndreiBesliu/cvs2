@@ -15946,3 +15946,26 @@ ordinul în vigoare „unește ce se poate”
   mașina).
 - **Lotul 45** (`1a577464`, 3.Cf-2) e încă în drum; lotul 46 pleacă după el.
 - **Documentele:** decizia și paragraful de stare în `CLAUDE.md`; indexul liniilor; starea din `docs/linii/principala.md`.
+
+## 2026-11-26 — Linia exportului: 28.8↑q, „Toate foile” cu operațiile fiecărei foi (ADR 0291, 7a)
+
+**Prompt:** confirmarea sesiunii principale („28.8↑l e în `main` … Poți porni **28.8↑q**, cu `main` (`a2e5bfdf`) adus întâi”),
+la ordinul în vigoare „unește ce se poate”
+**Started:** 26.11, 10:15.
+
+- **Grupele foilor (constatarea 18):** `grupeFoi` (`src/model/foiExport.ts`): o piesă la prima foaie pe care e pusă; pe cele de
+  după, comună; foaia fără piese, goală.
+- **Fereastra:** cu „Toate foile”, lista și fișele au capul fiecărei foi, cu operațiile ei, editabile, și nota pieselor comune;
+  numerele ordinii pe foaie; „A mea” mută doar în foaie (săgețile și tragerea); riscurile cu numele foii; fiecare rând, pe
+  hârtie, cu grosimea foii lui; o greșeală pe altă foaie oprește doar „Toate foile”. Cu „Foaia activă”, ca înainte.
+- **Exportă** scrie, cu „Toate foile”, operațiile tuturor pieselor; programul fiecărei foi rămâne cel exportat singur.
+- **Rezultatul pe foi:** timpul pe operații al fiecărei foi, strâns sub numele ei (al foii active, deschis); simularea, a foii
+  active.
+- **Probele:** `export.grupeFoi.test.ts` (3), `ordineExport.test.ts` (+2), `export.foi.test.ts` (rezumatul pe foi),
+  `export.toateFoile.spec.ts` (6); e2e-ul care deschide exportul, 377 / 377; unitarele, 10 734 / 0.
+- **Otrăvurile:** `28.8q.py`, 17 / 17 (Q12 scăpase: proba trage acum al doilea rând al foii 2 pe foaia 1).
+- **Mărimea:** pornirea +0 (111,6 kB), totalul 921,1 / 1 000 (+1,7 kB).
+- **Documentele:** ADR 0291 („Implementarea 28.8↑q”), manualul (ambele limbi), fișa etapei 3, registrul otrăvurilor, nota
+  liniei.
+
+**Completed:** 26.11, 11:16.

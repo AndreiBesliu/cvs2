@@ -116,6 +116,10 @@ vreau ca ficare setare sa fie insotita de o ilustratie sugestiva, ca sa ajute us
 - **26.11: 28.8↑l gata** (tastatura și cititorul de ecran, constatarea 13). Lista duce focusul pe titlul fișei; titlul grupului
   înaintea explicației; câmpurile descrise de explicația întreagă și de greșelile grupului; `aria-live` doar pe greșeli; pe telefonul culcat, banda listei pe
   un rând. Totalul 919,5 / 1 000 (+0,3 kB). Cu ea, feliile din ADR 0291 cerute de audit pentru fereastră (h–l) sunt gata; rămân p și q.
+  Unită în `main` pe 26.11 (`c3a0c184`).
+- **26.11: 28.8↑q gata** („Toate foile” cu operațiile fiecărei foi, constatarea 18, răspunsul 7a). Lista și fișele au capul
+  fiecărei foi, cu operațiile ei; o piesă comună (copia legată, plăcuțele din CSV) stă o dată, la prima ei foaie; numerele și
+  „A mea” pe foaie; grosimea pe rând; Exportă scrie toate piesele; Rezultatul pe foi. Programul fiecărei foi, cel exportat singur.
 
 ## Ce s-a găsit (23.11)
 
@@ -269,15 +273,22 @@ vreau ca ficare setare sa fie insotita de o ilustratie sugestiva, ca sa ajute us
   „Du-mă la …” al greșelilor (focusul pe câmpul greșit), fără `cum` doar când fereastra mută singură fișa (Rezultatul).
 - **Rândurile listei nu se strâng** (`.dx-lista > * { flex-shrink: 0 }`, doar pe desktop): un rând nou își ține înălțimea, iar
   lista se derulează. Pe telefon, banda le strânge pe lățime.
+- **Cu „Toate foile”, `operatii` din fereastră e setul văzut, iar `param` ține și rândurile aduse ale altor foi** (28.8↑q): ce
+  judecă sau numără rândurile (greșelile, „Pe toate (N)”, golul din desenul Z0) merge pe `operatii` sau pe `paramVazut`, nu pe
+  `Object.values(param)`; altfel un rând ascuns al altei foi oprește „Foaia activă”. Ordinea e foaie după foaie: o mutare nouă
+  trece prin `mutaRand`, iar numerele arătate vin din `pozitie` (pe foaie), nu din locul în ordinea întreagă.
+- **Rândurile altor foi le socotește getter-ul `toateFoile`** (din `ExportConectat.tsx`), doar la alegerea lui „Toate foile”: o
+  valoare nouă a rândului se pune în `randuriFoii`, ca să fie și a celorlalte foi, iar grosimea pe rând (`grosime`) se citește cu
+  `o.grosime ?? grosimeFoaie`.
 - **Un refuz al calculului trece prin `motivPeInteles`** (`src/ui/motivCalcul.ts`) înaintea afișării: id-urile din lume devin
   nume, iar în română numerele lucrării primesc virgula. O probă care citește un refuz caută numele elementului, nu „e1/e1”, și
   „5,5 mm”, nu „5.5 mm”.
 
 ## Ce rămâne
 
-Din ADR 0290, nimic: toate feliile (a–f) și 28.8↑g sunt gata. Din ADR 0291 (după audit): 28.8↑n și 28.8↑o sunt în `main`,
-28.8↑h–28.8↑k sunt în `main`, iar 28.8↑l (tastatura și cititorul de ecran) e gata pe ramură; rămân p (Z sigur și parcarea,
-cu linia frezelor anunțată) și q („Toate foile” cu operațiile fiecărei foi). La owner: titlurile în română („Ce tăiere”, „Cum golește”, „Cum coboară”; recomandarea
+Din ADR 0290, nimic: toate feliile (a–f) și 28.8↑g sunt gata. Din ADR 0291 (după audit): 28.8↑n, 28.8↑o și 28.8↑h–28.8↑l sunt
+în `main`, iar 28.8↑q („Toate foile” cu operațiile fiecărei foi) e gata pe ramură; rămâne p (avansul, turația și plonjarea pe
+„Scrisă de mână”, Z-ul sigur și parcarea), pe care o deschide sesiunea principală, cu linia frezelor anunțată. La owner: titlurile în română („Ce tăiere”, „Cum golește”, „Cum coboară”; recomandarea
 „Tăietura”, „Golirea”, „Coborârea”). Telefonul culcat (640 × 360) e rezolvat în 28.8↑l. Pentru alte linii, mai târziu:
 
 - **Clasicul (28.2↑) și Pas cu pas (28.4↑)** iau fișa operației (`FisaOperatie`, cu `ContextFisa`) în panoul lor, cu starea
