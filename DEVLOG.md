@@ -15979,3 +15979,16 @@ unirea lui 3.Cf-2
 - **Documentele:** ADR 0284 („Implementat (3.Cg)”), fișa etapei 3, `docs/linii/atelier.md`, indexul liniilor,
   `docs/otravuri.md`, `CLAUDE.md`.
 - **Urmează:** 3.Ch (construcțiile cu nume și lista lor de piese).
+
+## 2026-11-26 — Sesiunea principală în cloud: loturile 45 și 46 pe test; sesiunea principală pe Opus (Model: Claude Opus 5.5)
+
+**Prompt:** „o sa folosim Opus de aici in colo” (după `/model claude-opus-5-5`); publicările loturilor 45 și 46, pornite la unirile a cincizecea și a cincizeci și una
+**Started:** 26.11, 10:16. **Completed:** 26.11, 11:26.
+
+- **Lotul 45 pe test:** `1a577464` (3.Cf-2), publicat pe 26.11 la 10:42 (completul pe `main` 45775484767, verde: unit 10 729 / 0,
+  e2e 951 / 951, funcțiile pe emulatoare 136 / 136, paginile 60 / 60; proba de fum, bună).
+- **Lotul 46 pe test:** `a2e5bfdf` (28.8↑l), publicat pe 26.11 la 11:25 (completul pe `main` 45782747599, verde: unit 10 729 / 0,
+  e2e 954 / 954, funcțiile pe emulatoare 136 / 136, paginile 60 / 60; proba de fum, bună). Pe test e tot ce e în `main`.
+- **Modelul:** de aici, intrările sesiunii principale scriu Opus; sesiunile liniilor rămân pe modelul lor până la `/model` dat de
+  owner în fiecare.
+- **Documentele:** decizia în `CLAUDE.md`; starea din `docs/linii/principala.md`.
