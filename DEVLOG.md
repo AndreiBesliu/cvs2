@@ -15287,6 +15287,23 @@ test, după ea.
 - **Documentele:** decizia și paragraful de stare în `CLAUDE.md` (cu regula `catFoaia` și a probei „greșeala se vede”);
   indexul liniilor; starea din `docs/linii/principala.md`.
 
+## 2026-11-25 — Linia exportului: 28.8↑i, viteza ferestrei exportului (ADR 0291)
+
+**Prompt:** mesajul sesiunii principale, 25.11, 21:14 („**28.8↑h (cu 28.8↑h-2) e în `main`** […] **Poți împinge din nou.** Adu `main` […] și **pornește 28.8↑i (viteza ferestrei)**, cum scrie ADR 0291.”), la ordinul în vigoare „unește ce se poate”
+**Started:** 25.11, 21:14.
+
+- **Înainte, pe 150 de operații** (1280 × 720): deschiderea 9,7 s, 37 800 de noduri, 150 de fișe randate, o tastă 96 ms.
+- **Fereastra fișelor:** peste 12 fișe, doar cele din jurul panoului, cea curentă cu vecinele ei și cea cu focusul; restul, locuri
+  cu titlul și înălțimea măsurată. „Du-mă la …” randează întâi fișa.
+- **Lista:** rândurile `memo`, cu acțiunile printr-un obiect stabil, și `content-visibility: auto`. Fișa operației nu e `memo`
+  (măsurat: ~0,5 ms pe fișă, 3–5 randate).
+- **După:** deschiderea ~0,5 s, 2 667 de noduri, 3 fișe, o tastă 7,7–9 ms.
+- **Probele:** `export.viteza.spec.ts`, 4 / 4, scrise întâi și văzute căzând; e2e-ul care deschide exportul, 345 / 345.
+- **Otrăvurile:** `28.8i.py`, 9 / 9. **Mărimea:** pornirea +0, totalul 909,4 / 1 000 (+0,3 kB).
+- **Documentele:** ADR 0291 („Implementarea 28.8↑i”), fișa etapei 3, registrul otrăvurilor, nota liniei.
+
+**Completed:** 25.11, 21:47.
+
 ## 2026-11-25 — Felia 3.Cf-1: alipirea la prinderi în vederea „Modelul” (ADR 0284, partea D) (sesiune cloud)
 
 **Prompt:** răspunsurile owner-ului la cele trei întrebări ale lui 3.Cf, puse în sesiunea liniei atelierului înaintea
@@ -15340,6 +15357,27 @@ codului: „Alipirea la prinderi (Recomandat)”, „Puncte în vederea 3D (Reco
   verde. Pornirea 111,4 kB (plafonul 125; cu ușa 116,5, cu Atelierul 116,9), totalul 909,1 / 1 000 kB, `/admin` 138,3 / 200,
   contul 30,2 / 32. Nimic pe server.
 - **Documentele:** decizia și paragraful de stare în `CLAUDE.md`; indexul liniilor; starea din `docs/linii/principala.md`.
+
+## 2026-11-25 — Linia exportului: 28.8↑i, a doua trecere (completul căzut pe `da8ef7a5`)
+
+**Prompt:** evenimentul GitHub „Nivelul complet” căzut pe AndreiBesliu/cvs2#49 (`da8ef7a5`) și verificarea programată a porților
+lui #49
+**Started:** 25.11, 22:10.
+
+- **Căderea:** o singură probă din 894, `export.viteza.spec.ts:89`: deschiderea 1 159 ms, pragul 1 000. Timpul se citea cu
+  `expect` din Playwright, care întreabă pagina la 0, 100, 350, 850 ms…: o deschidere de sub 850 ieșea peste prag.
+- **Reparația probei:** timpii se măsoară în pagină (de la clic la cadrul desenat), cu cea mai bună din cel mult trei
+  deschideri și din 11 taste; fiecare tastă scrie altă valoare (una la fel nu randează nimic). Măsurat cu patru probe deodată
+  pe patru procesoare: mediana unei taste 9–31 ms, cea mai bună 6–17.
+- **Găsit sub suprasarcină** (opt lucrători pe patru procesoare): proba listei cădea în 4 din 64 de rulări, cu clicul pe un rând
+  de departe căzut pe listă. Cauza, `content-visibility: auto` pe rânduri, pus de felie: un rând departe de vedere avea
+  înălțimea 0 (lista de 150 măsura 1 969 px în loc de 12 491), iar adus în vedere, 79 px. Scos; fără el, 0 din 48. Câștigul lui
+  la o tastă era sub zgomotul măsurătorii.
+- **Proba nouă:** un rând al listei are, departe de vedere, înălțimea pe care o are adus în vedere; cade cu proprietatea pusă
+  la loc (otrava V10).
+- **După:** prima deschidere ~0,45–0,5 s (cu bucata ferestrei), următoarele ~0,15 s; o tastă ~10 ms (cea mai bună ~6).
+  Proba de viteză, 30 / 30 cu patru lucrători și cu opt.
+- **Documentele:** ADR 0291, fișa etapei 3, registrul otrăvurilor, nota liniei.
 
 ## 2026-11-25 — Sesiunea principală în cloud: lotul 37 (Escape în „Frezele mele”, finisarea reliefului, exportul „pe hârtie”), pe test (Model: Claude Fable 5.2)
 
@@ -15430,6 +15468,30 @@ cu patru întrebări: „Mergem cu recomandarile”
   10 617 / 0 (12 sărite, pe Linux), e2e 898 / 898, funcțiile pe emulatoare 136 / 136, paginile 60 / 60. Pornirea 111,4 kB
   (plafonul 125; cu ușa 116,5, cu Atelierul 116,9), totalul 909,1 / 1 000 kB, `/admin` 138,3 / 200, contul 30,2 / 32.
   Nimic pe server.
+- **Documentele:** decizia și paragraful de stare în `CLAUDE.md`; indexul liniilor; starea din `docs/linii/principala.md`.
+
+## 2026-11-26 — Sesiunea principală în cloud: a patruzeci și treia unire (fereastra exportului: 28.8↑i, viteza) și lotul 39 pe test (Model: Claude Fable 5.2)
+
+**Prompt:** raportul liniei exportului („28.8↑i […] e gata de unit”, `8c309846`), la ordinul în vigoare „unește ce se poate”
+**Started:** 26.11, 00:33 (commit-ul unirii). **Completed:** unirea în `main`, 26.11, 02:07; publicarea pe test, lotul 40.
+
+- **Verificat înaintea unirii:** completele liniei (45704990640 și 45705182587, pe `8c309846`), verzi; PR-ul #49; fără
+  `.lucru/`; ramura are `a4d86d53`. `main` primise între timp 3.Cl-1 (`41b1fb6f`: fișierele extensiei, probele ei și
+  traducerile roadmap-ului), deci
+  arborele unirii nu era al niciunui commit verificat: completul unirii, pornit la 00:33.
+- **Unirea, pe `unire-2611b`** (din `554b72cb`): `8c309846`, în `953205a8`, fără nicio ciocnire. Local: tipurile, regulile de
+  import (22 / 22), traducerile (1 167), catalogul controalelor, biblioteca (Easy 3Draw 18.35.0), probele documentelor
+  62 / 62.
+- **Porțile unirii, în CI, pe `953205a8`** (citite din jurnalul rulării): completul 45714218828, verde la prima trecere
+  (60 min): unit 10 617 / 0 (12 sărite, pe Linux), e2e 903 / 903, funcțiile pe emulatoare 136 / 136, paginile 60 / 60;
+  rapidul 45714219455, verde. Pornirea 111,4 kB (plafonul 125; cu ușa 116,5, cu Atelierul 116,9), totalul 909,4 / 1 000 kB,
+  `/admin` 138,3 / 200, contul 30,2 / 32. Nimic pe server.
+- **Lotul 39 pe test:** `554b72cb`, publicat pe 26.11 la 01:43 (completul pe `main` 45712796123, verde: unit 10 617 / 0,
+  e2e 898 / 898, funcțiile pe emulatoare 136 / 136, paginile 60 / 60; publicarea 45723187893; proba de fum, bună).
+- **Schema:** linia reliefului a confirmat că 18.1↑d folosește v30 (operația `degrosare`, ADR 0313, propus de ea);
+  următorul număr liber e v31, trecut în `CLAUDE.md`, în indexul liniilor și în starea sesiunii.
+- **De ținut minte:** o comandă de citire cu `rev` pe un rând foarte lung s-a agățat de două ori câte 30 de minute;
+  cozile de rând se citesc cu un script Python, cu `timeout`.
 - **Documentele:** decizia și paragraful de stare în `CLAUDE.md`; indexul liniilor; starea din `docs/linii/principala.md`.
 
 ## 2026-11-26 — Linia reliefului: felia 18.1↑d-1, degroșarea reliefului (ADR 0313, documentul v30) (Model: Claude Opus 5.5)
