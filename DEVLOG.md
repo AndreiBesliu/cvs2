@@ -15527,9 +15527,12 @@ cu patru întrebări: „Mergem cu recomandarile”
   - rândul doar de citit în fereastra exportului;
   - manualul (ro, en);
   - e2e și privirea.
-- **Otrăvurile:** `18.1d.py`, 39 / 39 prinse (35 unitare, 4 e2e). Primul tur: D08 și J12 scăpate (probe întărite), R02
+- **Coborârea, găsită la fișa plăcii reliefului:** o mutare care cobora mai abrupt decât lasă avansul de plonjare (la începutul
+  fiecărei linii, de pe perete până la treaptă) mergea cu avansul de tăiere, și la finisare. Acum, cu avansul de plonjare;
+  oracolul are judecata ei (`coborariRepeziO`, pe IR și pe G-code), cu probele scrise întâi.
+- **Otrăvurile:** `18.1d.py`, 42 / 42 prinse (38 unitare, 4 e2e). Primul tur: D08 și J12 scăpate (probe întărite), R02
   echivalentă (scoasă). Opt otrăvuri vechi mutate pe codul nou (12.1f-4, 28.8h, 18.1c), toate prinse.
-- **Cu `main` `554b72cb` adus** (doar extensia; ciocnire doar în DEVLOG). Local: suita unitară 10 638 / 0 (12 sărite), e2e-ul
+- **Cu `main` `7a754885` adus** (extensia și 28.8↑i, viteza ferestrei exportului; ciocniri doar în DEVLOG). Local: suita unitară 10 638 / 0 (12 sărite), e2e-ul
   feliei și privirea 23 / 23, tipurile, traducerile (1 166), catalogul controalelor.
-- **Mărimea:** pornirea +0,1 kB (111,5; cu ușa 116,7, cu Atelierul 117,0 / 125), totalul +1,7 kB (910,8 / 1 000).
+- **Mărimea:** pornirea +0,1 kB (111,5; cu ușa 116,7, cu Atelierul 117,0 / 125), totalul +1,7 kB (911,2 / 1 000), față de `main` `7a754885`.
 - **Nedovedit fără mașină:** lemnul rămas după degroșare, suprafața finisată față de model, timpul (placa reliefului, d-2).

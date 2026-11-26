@@ -49,6 +49,10 @@ Câmpurile necunoscute se păstrează. Câmpul `finisare` pe o degroșare e refu
     mai adânc decât pasul).
   - Legăturile și coborârea sunt cele ale finisării. Între linii vecine, legătura e la adâncime, pe drumul care nu coboară sub
     cotă. Altfel, freza urcă la Z sigur, merge cu rapidă și coboară cu avansul de plonjare, într-un loc deja scos.
+  - **Coborârea** (găsită la fișa plăcii reliefului, comună cu finisarea): o mutare de tăiere care coboară mai abrupt decât lasă
+    avansul de plonjare (viteza ei pe Z, avans · |dz| / L, ar trece de el) merge cu avansul de plonjare. Altfel, la începutul
+    fiecărei linii, freza plată ar coborî aproape vertical de pe perete până la treaptă (3,5 mm) cu avansul de tăiere.
+    Urcarea, palierul și coborârea lină rămân la avans.
 - **Lemnul rămas** (pe hârtie, în probe):
   - pe un fund plat, a;
   - pe un plan de pantă g, cu liniile de-a lungul pantei, între a · (1 + g) și a · (1 + g) + g · (R − √(R² − (s / 2)²));
@@ -152,11 +156,14 @@ Rândul editabil (al finisării și al degroșării) e o felie a lui, la cuvânt
   - rolul (`src/model/rol.ts`), `cuDegrosare`, câmpurile (`src/app/CampuriFinisare.tsx`);
   - rândul din fereastră și manualul;
   - e2e: `degrosare.spec.ts` și privirea (`export.privire.spec.ts`).
-- **Otrăvurile:** `test/otravuri/18.1d.py`, 39 / 39 prinse (35 unitare, 4 e2e). Primul tur a găsit două probe slabe (refuzul
-  migrării pe o degroșare fără câmpul ei; dalele unui relief doar degroșat, aduse workerului), întărite, și o otravă echivalentă,
-  scoasă. Opt otrăvuri vechi, pe codul schimbat de felie, mutate și prinse.
-- **Mărimea**, față de `main` `554b72cb`: pornirea +0,1 kB (111,5; cu ușa 116,7, cu Atelierul 117,0 / 125), totalul +1,7 kB
-  (910,8 / 1 000).
+- **Coborârea:** oracolul are `coborariRepeziO` (viteza pe Z a fiecărei mutări care coboară, cel mult avansul de plonjare; pe
+  G-code, cu rotunjirea coordonatelor scăzută din coborâre) și `pasiDinGcodeO`; probele pe hârtie, pe CAM (degroșarea și
+  finisarea) și pe G-code-ul exportat.
+- **Otrăvurile:** `test/otravuri/18.1d.py`, 42 / 42 prinse (38 unitare, 4 e2e). Primul tur a găsit două probe slabe (refuzul migrării pe o degroșare
+  fără câmpul ei; dalele unui relief doar degroșat, aduse workerului), întărite, și o otravă echivalentă, scoasă. Opt otrăvuri
+  vechi, pe codul schimbat de felie, mutate și prinse.
+- **Mărimea**, față de `main` `7a754885`: pornirea +0,1 kB (111,5; cu ușa 116,7, cu Atelierul 117,0 / 125), totalul +1,7 kB
+  (911,2 / 1 000).
 - **Nedovedit fără mașină:** lemnul rămas după degroșare (adaosul pe fund, pe platou și pe pantă), suprafața finisată față de
   model și timpul. Le măsoară placa reliefului (felia 18.1↑d-2, fișa ei).
 
