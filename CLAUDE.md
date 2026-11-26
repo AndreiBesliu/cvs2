@@ -688,6 +688,14 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   fereastra destul de înaltă și spune condiția înaintea aserțiunii** (`export.viteza.spec.ts`, la 1280 × 3200: un
   rând nou de 36 px trecea fișa de panou pe Linux). Cu ea, din ADR 0291 nu mai rămâne nicio felie a liniei. Felia:
   pornirea +0, totalul +1,8 kB (922,9 / 1 000; 923,0 cu 3.Ci).
+  **Începutul programului, la vedere în Rezultat (ADR 0292, felia 28.8↑r)** gata pe 26.11, unită în `main` pe 27.11
+  (`4532622d`), la „Zi-le ca pot continua cu ce urmeaza la fiecare” al owner-ului: după Exportă, Rezultat ›
+  Fișierele arată începutul fiecărui fișier scris (pe freză, ale dopurilor; cu „Toate foile”, cele ale foii active),
+  luat din textul descărcat: primele linii, până la prima mișcare de tăiere (G1, G2, G3) inclusiv, cel mult 40,
+  într-un `<pre>` care se poate focaliza, în afara regiunii anunțate. Funcția pură e `inceputProgram`
+  (`src/post/inceput.ts`), fără comentariile dialectului postului; proba o judecă pe corpusul CAM, pe toate
+  posturile, cu cititorul dialectelor. Programul și amprentele, octet cu octet; documentul rămâne v30. Felia:
+  pornirea +0, totalul +0,5 kB.
   **Aldinul și cursivul sintetic (ADR 0123, felia 7.5↑, adusă din etapa 7)** gata pe 02.11, în worktree-ul `wip/7.5-text`:
   bifele **Aldin** și **Cursiv** din panoul textului, pentru orice font. Cursivul înclină fiecare literă față de linia ei de
   bază, exact; aldinul așază literele la înălțimea miezului (h − 2d), le îngroașă cu d prin fațada offsetului
@@ -1350,8 +1358,8 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   sursa)`, peste `STARE0`), deci se adună cu cele din editor. Starea unui `<details>` se citește din pagină când
   editorul se reface, nu din `toggle` (vine după).** Din ADR 0284 rămâne doar 3.Ck (balamaua și placa turnantă), după
   ce owner-ul încearcă bila și cupa pe imprimantă.
-  **3.Ck-1 (placa turnantă; ADR 0284, partea B)** gata pe 26.11, pe ramura liniei, la cuvântul owner-ului transmis de
-  sesiunea principală, cu jocul din calibrare: în fila Cărămizi, „Placă turnantă” de 2 × 2 sau 4 × 4, din două plăci:
+  **3.Ck-1 (placa turnantă; ADR 0284, partea B)** gata pe 26.11, unită în `main` pe 27.11 (`0a1f26c8`), la cuvântul
+  owner-ului transmis de sesiunea principală, cu jocul din calibrare: în fila Cărămizi, „Placă turnantă” de 2 × 2 sau 4 × 4, din două plăci:
   baza (fața de sus netedă, locașurile dedesubt și în mijloc pivotul, un capăt de știft Technic cu fantă) și partea de
   sus (placa cu știfturi și gaura de știft din mijloc), care se rotește pe pivot; „Fă placa turnantă” le pune pe
   amândouă în listă. Gaura e cea din calibrare, iar baza are „Jocul pivotului” (−0,1 … 0,2 mm): cât de greu se rotește
@@ -1442,6 +1450,28 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   oprită, desenul de dinainte, octet cu octet. `raportFoi` și CSV-ul, neschimbate. Întrebarea 10 (cotele mărite sau
   la mărimea adevărată), la owner, cu recomandarea aplicată. Cu ea, felia 10.4↑d e încheiată; din ADR 0330 rămân doar
   cele „mai târziu”. Felia: pornirea +0, totalul +3,0 kB.
+  **Toleranțele, lungimile și Măsoară între foi (ADR 0330, cele „mai târziu”, feliile 10.4↑e-1, e-2 și f)** gata pe
+  26.11, unite în `main` pe 27.11 (`602e5649`), la cuvântul owner-ului, cu răspunsurile 11a, 12a, 13a, 15a aplicate:
+  **e-1**, toleranțele (±, +/−, limitele) pe orice cotă cu valoare, în panoul cotei, ieșite cu cifrele cotei în export
+  și în raport; **e-2**, felul nou de cotă `lungime`, din meniul de clic dreapta pe forma de sub cursor („Cotează
+  lungimea laturii”, „Cotează lungimea conturului”): o etichetă cu săgeată, cu simbolul arcului pe o latură curbă și
+  „L ” pe contur; lungimea vine din conturul formei (linia și arcul exact, cubica pe curbă; `src/model/coteLungime.ts`),
+  iar dezlegată rămâne la ultima lungime văzută; în DXF, și cu DIMENSION, iese ca linii și cifre; **f**, cu „Toate
+  foile pe pânză”, unealta Măsoară se lipește și de foile vecine (punctele foii, ale formelor, conturul), doar măsurat:
+  cipul spune distanța, Δx, Δy și „Între foi: doar măsura, nu se păstrează”. **O cotă nu leagă două foi** (13a: rămâne pe foaia ei).
+  Cotele stau tot pe foaie; documentul rămâne v30; nimic pe server; „cotele nu ajung niciodată în program”, neatins
+  (`cote.neatinse.test.ts`). Feliile: pornirea +0, totalul +2,7 kB.
+  **Setările cotelor în cont (ADR 0330, întrebarea 14a, felia 10.4↑g)** gata pe 26.11, unită în `main` pe 27.11
+  (`1d02dc1e`): callable-ul `preferinte` (`functions/src/preferinte/actiuni.ts`, contractul în `shared/preferinte.ts`):
+  citirea cu contul deschis, scrierea cu capabilitatea `cloud` și cu versiunea văzută (altfel ciocnire, cu ce e în
+  cont); documentul `conturi/{uid}/preferinte/cote`, **fără nicio regulă: închis clientului**; fără `cloud`, setările
+  din cont vin, dar o schimbare rămâne în browser. Trecerea (`src/app/preferinteSincronizare.ts`, pură în
+  `src/model/preferinteSincron.ts`) stă în bucata ei, adusă la cerere (la deschiderea Setărilor, la unealta Cote, la
+  2 s după o schimbare, la revenirea rețelei; niciodată la pornire), cu cererile prin bucata contului; o ciocnire pe
+  același câmp oprește scrierea, cu banda „Păstrează-le pe ale mele” / „Ia-le pe cele din cont”. Numele e generic
+  (acum doar cheia `cote`): **o setare nouă a aplicației care se ține în cont intră aici, ca altă cheie, nu într-un
+  callable nou.** Pe test și pe live, serverul se publică înaintea site-ului. Cu g, cele „mai târziu” din ADR 0330
+  sunt toate făcute. Felia: pornirea +0, totalul +2,9 kB, contul 30,3 / 32.
   **Relieful din imagine, pe planșă (ADR 0310, ADR 0311, felia 18.1↑a, adusă din etapa 18; documentul v28)** gata pe
   24.11, în sesiunea cloud a liniei (ramura `wip/18.1-relief`), unită în `main` pe 24.11 (`c5b79526`). ADR 0310,
   acceptat de owner cu „1a–6a”. Din „Importă…”, o imagine (PNG, JPEG, WebP, GIF, BMP) se face **relief** cu alegerea
@@ -1505,6 +1535,17 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   Nedovedit fără mașină: lemnul rămas după degroșare, suprafața finisată față de model, timpul. Rândul editabil al
   finisării și al degroșării rămâne la cuvântul owner-ului. Nimic pe server. Felia: pornirea +0,1 kB (măsurat de
   linie), totalul +1,8 kB (912,6 / 1 000).
+  **Pasul lateral aliniat, rotunjit în jos (ADR 0314, felia 18.1↑d-3) și rândul editabil al reliefului în fereastra
+  exportului (ADR 0315, felia 18.1↑d-4)** gata pe 26.11, unite în `main` pe 27.11 (`709d3e2a`), la cuvântul owner-ului.
+  **d-3 (mișcă mașina):** cu liniile la 0° sau 90°, finisarea și degroșarea iau ⌊s / c⌋ celule, cel puțin una
+  (`celuleAliniate`, `src/cam/celuleAliniate.ts`), deci creasta nu trece de cea cerută; sub o celulă, una, cu
+  avertismentul; o celulă mai lată decât freza se refuză. Pașii care erau deja celule întregi, octet cu octet (placa
+  18, neschimbată). **d-4:** fișa finisării și a degroșării are grupurile ferestrei (freza, liniile, adaosul, marginea
+  și înălțimea, adâncimea; câmpurile `relief-*`), cu pasul folosit și creasta pe plan; marginea și înălțimea se scriu
+  și pe perechea rândului, ca în panou; Exportă scrie doar ce s-a schimbat (`operatieReliefDinDialog`): fără nicio
+  schimbare, aceeași operație, octet cu octet; alt diametru sau altă formă fac freza scrisă de mână. Rămân: freza din
+  „Frezele mele” pe rândurile reliefului, desenele grupurilor, „Dă-i T{n}”. Documentul rămâne v30; nimic pe server.
+  Feliile: pornirea +0, totalul +3,3 kB.
   **Raportările (15.B↑b) și imprimanta (3.6g, 3.6h, 3.6i pașii 1–2; ADR 0191 acceptat, codul 3.6j încă pe ramură) unite în
   `main` pe 07.11**, peste biblioteca extensiilor (`b501571`, `6e61bee`, apoi `e9cf6ee` cu DEVLOG-ul bibliotecii): **pornirea
   101,7 (cu ușa 105,3 / 110 kB), totalul 535,0 / 550, /admin 106,5 / 200, contul 29,6 / 32.** **Pe test (și pe live), serverul
@@ -2004,6 +2045,68 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 27.11.2026, după miezul nopții (a cincizeci și opta unire din cloud): **începutul programului în Rezultat (28.8↑r), placa
+  turnantă din atelierul Easy 3Draw (3.Ck-1), relieful: pasul lateral aliniat, rotunjit în jos, și rândul editabil
+  din fereastra exportului (18.1↑d-3, d-4) și cotele: toleranțele, lungimile, Măsoară între foi, setările în cont
+  (10.4↑e-1, e-2, f, g), unite în `main`**, în lot, cu reparația probei în engleză a pluginului (3.Ax), pe șase ramuri
+  de unire puse una peste alta și probate în paralel (sesiunea principală, `unire-2611q` ⊂ `r` ⊂ `s` ⊂ `t` ⊂ `u` ⊂ `unire-2611v`, din
+  `f7964490`); feliile liniilor, pornite la „Zi-le ca pot continua cu ce urmeaza la fiecare” al owner-ului.
+  **Incidentul:** completul lotului 52 pe `main` (45888136031, pe `f7964490`) a ieșit roșu la un singur test din 986,
+  `trenulet.spec.ts:510` (proba în engleză a lui Easy 3Draw), oprit de limita de 30 s la ultimul pas, după 32,7 s;
+  aplicația, în regulă. Cauza, citită în douăzeci și cinci de complete: proba trece prin fiecare ecran al pluginului și
+  a crescut azi, cu fiecare piesă nouă a atelierului, de la 18 la 25 s (linia cotelor văzuse și ea 32 s). **3.Ax**
+  (scrisă de sesiunea principală, `0df06eca`): `test.setTimeout(90_000)` pe ea, cu motivul lângă el; o felie care o
+  duce peste 60 s o împarte pe ecrane (anunțată liniei atelierului, care pune pasul balamalei în aceeași probă);
+  controlul, local: cu 20 s cade, cu 90 s trece (25,4 s). Lotul 52 nu s-a publicat singur: pleacă împreună cu acesta. **28.8↑r** (linia exportului, `9f442284`, PR-ul
+  `AndreiBesliu/cvs2#67`; ADR 0292, propus de linie și implementat cu recomandările aplicate), unită în `4532622d`:
+  după Exportă, Rezultat › Fișierele arată începutul fiecărui fișier scris (primele linii, până la prima mișcare de
+  tăiere, cel mult 40), luat din textul descărcat, câte un rând strâns pe fișier, primul desfăcut; programul și
+  amprentele, octet cu octet; otrăvurile 17 / 17. **3.Ck-1** (linia atelierului, `8292d7de`, PR-ul
+  `AndreiBesliu/cvs2#68`; ADR 0284, partea B, despărțită în 3.Ck-1 și 3.Ck-2), unită în `0a1f26c8`: în fila Cărămizi,
+  „Placă turnantă” de 2 × 2 sau 4 × 4, din baza cu pivotul (un capăt de știft Technic cu fantă) și partea de sus cu
+  gaura de știft, care se rotește pe el; gaura e cea din calibrare, iar baza are „Jocul pivotului” (−0,1 … 0,2 mm);
+  „Fă placa turnantă” le pune pe amândouă în listă; **Easy 3Draw 18.43.0** (579,3 kB); otrăvurile 45 / 45 și 6 / 6.
+  **18.1↑d-3 și d-4** (linia reliefului, `7bddd762`, PR-ul `AndreiBesliu/cvs2#65`), unite în `709d3e2a`: **d-3**
+  (ADR 0314; **mișcă mașina**): cu liniile la 0° sau la 90°, finisarea și degroșarea iau ⌊s / c⌋ celule ale
+  reliefului, cel puțin una, deci creasta nu mai iese peste cea cerută (până acum se rotunjea la cel mai apropiat
+  număr, deci și în sus); o celulă mai lată decât freza se refuză; pașii care erau deja celule întregi ies octet cu
+  octet, și placa 18; probat pe oracolul 3D (creasta măsurată, distanța dintre liniile degroșării); otrăvurile
+  10 / 10; **d-4** (ADR 0315): rândurile finisării și degroșării din fereastra exportului devin editabile, pe
+  grupurile ferestrei (freza, liniile, adaosul, marginea și înălțimea, adâncimea), cu greșeala în grupul ei și pasul
+  folosit spus în fișă; fără nicio schimbare, aceeași operație, octet cu octet; otrăvurile 23 / 23. **10.4↑e-1, e-2 și
+  f** (linia cotelor, `4c1f1c0d`, PR-ul `AndreiBesliu/cvs2#64`; ADR 0330, cele „mai târziu”, cu răspunsurile 11a, 12a,
+  13a, 15a aplicate), unite în `602e5649`: **e-1**, toleranțele (±, +/−, limitele) pe orice cotă cu valoare, din panoul
+  cotei, ieșite și în export și în raport; **e-2**, felul nou de cotă `lungime`, pus din meniul de clic dreapta pe
+  forma de sub cursor („Cotează lungimea laturii”, „Cotează lungimea conturului”): o etichetă cu săgeată, cu simbolul
+  arcului pe o latură curbă și „L ” pe contur, cu lungimea din conturul formei (linia și arcul exact, cubica pe curbă;
+  dezlegată, rămâne la ultima lungime văzută); în DXF, și cu DIMENSION, iese ca linii și cifre; **f**, cu „Toate foile
+  pe pânză”, unealta Măsoară se lipește și de foile vecine, doar măsurat (distanța, Δx, Δy, „Între foi: doar măsura,
+  nu se păstrează”): o cotă nu leagă două foi (13a); „cotele nu ajung niciodată în program”, neatins; otrăvurile, toate
+  prinse (f: 16 / 16). **10.4↑g** (`f943406e`, raportată separat; ADR 0330, întrebarea 14a, cu condițiile sesiunii
+  principale), unită în `1d02dc1e`: setările cotelor se țin și în cont, prin callable-ul nou `preferinte` (citirea cu
+  contul deschis, scrierea cu capabilitatea `cloud` și cu versiunea văzută, altfel ciocnire), în
+  `conturi/{uid}/preferinte/cote`, închis clientului (nicio regulă nouă; proba regulilor o cere); fără `cloud`, setările
+  din cont vin, iar o schimbare rămâne în browser; trecerea stă în bucata ei, adusă la cerere (la Setări, la unealta
+  Cote, la 2 s după o schimbare, la revenirea rețelei; niciodată la pornire), cu cererile prin bucata contului; o
+  ciocnire pe același câmp oprește scrierea, cu banda „Păstrează-le pe ale mele” / „Ia-le pe cele din cont”; Z-ul sigur
+  și parcarea n-au fost mutate; probele pe emulatoare (+6) și cap-coadă, cu două browsere ale aceluiași cont
+  (+2); otrăvurile 32 / 32; contul 30,3 / 32 kB. **La publicare, serverul pleacă înaintea site-ului** (funcția nouă
+  `preferinte`). Cu g, cele „mai târziu” din ADR 0330 sunt toate făcute. Documentul proiectului rămâne v30. Ciocnirile: DEVLOG (cu `rezolva-devlog.py`), traducerile roadmap-ului (ambele rânduri,
+  în ordinea cheilor) și catalogul controalelor (scris din nou, 684 de nume). Porțile, în CI, pe fiecare ramură de
+  unire: `unire-2611q` (completul 45889231745, verde), `unire-2611r` (45891634795, verde), `unire-2611s` (completul 45894771513, verde la prima trecere (60 min): unit 10 815 / 0, e2e 997 / 997, funcțiile pe emulatoare 136 / 136, paginile 60 / 60),
+  `unire-2611t` (completul 45897328832, verde la prima trecere (60 min): unit 10 837 / 0, e2e 1 002 / 1 002, funcțiile pe emulatoare 136 / 136, paginile 60 / 60), `unire-2611u`, cu 3.Ax (completul 45899016939, verde la prima trecere (63 min; proba în engleză, 28,8 s): unit 10 837 / 0, e2e 1 002 / 1 002, funcțiile pe emulatoare 136 / 136, paginile 60 / 60); al șaselea, care le cuprinde, cu g: completul 45899780194, verde la prima trecere (81 min; proba în engleză, 33,1 s): unit 10 853 / 0 (12 sărite, pe Linux), e2e 1 002 / 1 002, funcțiile pe emulatoare 142 / 142, paginile 62 / 62;
+  rapidele, verzi pe toate; completele
+  liniilor, verzi; **totalul 932,8 / 1 000 kB**, pornirea 111,7 kB (cu ușa 116,9, cu Atelierul 117,3 / 125), `/admin` 138,3 / 200, contul 30,3 / 32.
+  **Alegerile liniilor, cu recomandarea aplicată, la owner:** la 28.8↑r, începutul se vede după export, nu înainte
+  (înainte ar cere un calcul întreg la fiecare schimbare); la placa turnantă, pivotul ca știft Technic (nu disc pe
+  disc), mărimile 2 × 2 și 4 × 4, jocul în pași de 0,05 mm, fiecare placă înaltă cât o placă. **Nedovedit fără
+  tipărire:** cât de greu se rotește placa turnantă și cât de bine stă pe pivot. **Linia reliefului n-are altă felie
+  pornită;** la cuvântul owner-ului: freza din „Frezele mele” pe rândurile reliefului (cu bila), desenele grupurilor,
+  „Dă-i T{n}” pe rândurile reliefului. Linia atelierului trece la 3.Ck-2 (balamaua). La linii, în lucru: frezele
+  (16.A↑e-1, forma toroidalei, cu v31), atelierul (3.Ck-2, cu proba în engleză împărțită pe ecrane); linia cotelor e
+  încheiată până la cuvântul owner-ului. **La owner:** de încercat începutul programului în Rezultat, rândul editabil
+  al reliefului, toleranțele, lungimile, Măsoară între foi și setările cotelor în cont (cu două browsere); de tipărit placa turnantă; proba pe mașină a pasului rotunjit în jos (placa 18 îl cuprinde); restul listei,
+  neschimbat.
 - 26.11.2026, seara (a cincizeci și șaptea unire din cloud): **numele elementelor cu virgula limbii (3.Av) și Escape
   oriunde ar fi focusul, în celelalte șase ferestre (3.Aw), unite în `main`** (sesiunea principală, ramura
   `unire-2611p`, din `78075223`). Felii ale sesiunii principale, la „Ok, fa-le” al owner-ului (spus după oferta de la
