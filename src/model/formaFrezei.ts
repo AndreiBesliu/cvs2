@@ -50,6 +50,14 @@ export function formaPeRand(forma: FormaSculaDoc | undefined): boolean {
 }
 
 /**
+ * Operațiile cu un rând editabil în fereastra exportului: cele pe contur (nu finisarea și degroșarea reliefului, cu rândul lor
+ * doar de citit), cu toate frezele purtate de rând (`formaPeRand`).
+ */
+export function operatieCuRand(o: Operatie): boolean {
+  return o.tip !== 'finisare' && o.tip !== 'degrosare' && frezeleOperatiei(o).every((f) => formaPeRand(f.scula.forma));
+}
+
+/**
  * Toate frezele unei operații, cu calea lor în operație (ADR 0300 §5: scula, frezele de rest, fundul plat și frezele lui de
  * rest, frezele dopului cu pereți drepți, freza decupării benzii), în această ordine.
  */

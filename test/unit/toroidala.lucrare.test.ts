@@ -8,8 +8,8 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { incarca } from '../../src/model/incarcare.ts';
 import { programDinDocument, REGIM_IMPLICIT } from '../../src/cam/job.ts';
-import { felFrezei, formaPeRand, motivFormaPeOperatie } from '../../src/model/formaFrezei.ts';
-import type { Document, FormaSculaDoc, Latura, TipOperatie } from '../../src/model/document.ts';
+import { felFrezei, formaPeRand, motivFormaPeOperatie, operatieCuRand } from '../../src/model/formaFrezei.ts';
+import type { Document, FormaSculaDoc, Latura, Operatie, TipOperatie } from '../../src/model/document.ts';
 
 type Liber = Record<string, unknown>;
 const I = { a: 1, b: 0, c: 0, d: 1, e: 0, f: 0 };
@@ -102,4 +102,13 @@ test('fereastra exportului: rând doar pentru frezele plate și în V (copia ei)
   assert.equal(formaPeRand({ tip: 'bila' }), false);
   assert.equal(formaPeRand({ tip: 'toroidala', raza: 1 }), false);
   assert.equal(formaPeRand({ tip: 'conica' } as unknown as FormaSculaDoc), false);
+  // Operația întreagă: toate frezele ei (aici, una de rest toroidală); finisarea și degroșarea au rândul lor, doar de citit.
+  const cu = (v: Liber): Operatie => op(v) as unknown as Operatie;
+  assert.equal(operatieCuRand(cu({})), true);
+  assert.equal(operatieCuRand(cu({ scula: inV(1, 6, 60), latura: 'pe-linie' })), true);
+  assert.equal(operatieCuRand(cu({ scula: toro(1, 6, 1) })), false);
+  assert.equal(operatieCuRand(cu({ tip: 'buzunar', pasLateral: 2, rest: [{ scula: toro(2, 3, 0.5), pasLateral: 1 }] })), false);
+  assert.equal(operatieCuRand(cu({ tip: 'buzunar', pasLateral: 2, rest: [{ scula: plata(2, 3), pasLateral: 1 }] })), true);
+  assert.equal(operatieCuRand(cu({ tip: 'finisare', scula: plata(1, 6) })), false);
+  assert.equal(operatieCuRand(cu({ tip: 'degrosare', scula: plata(1, 6) })), false);
 });
