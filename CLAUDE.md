@@ -632,8 +632,18 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   **O probă de timp măsoară în pagină și ia cea mai bună încercare** (`export.viteza.spec.ts`): `expect` din
   Playwright întreabă pagina în trepte (0, 100, 350, 850 ms…), deci un timp citit așa sare pe treptele lui.
   **Fără `content-visibility` pe rânduri pe care se dă clic:** departe de vedere au înălțimea 0, iar clicul cade
-  alături. Programul, octet cu octet. Urmează 28.8↑j (greșelile pe înțeles), apoi k, l. Felia: pornirea +0,
-  totalul +0,3 kB (909,4 / 1 000).
+  alături. Programul, octet cu octet. Felia: pornirea +0, totalul +0,3 kB (909,4 / 1 000).
+  **Greșelile ferestrei exportului, pe înțeles (ADR 0291 §2a, §4a, felia 28.8↑j)** gata pe 26.11, unită în `main`
+  pe 26.11 (`93ff3b29`): lângă „T{n} are două freze”, în grupul fiecărei freze cu numărul ciocnit, butonul **„Dă-i
+  T{n}”** (`numarDupaConflict`, `src/ui/exportRand.ts`: regula rolurilor, fără numărul ciocnit; printre toate
+  frezele ferestrei, și ale rândurilor reliefului); roșii sunt doar câmpurile frezelor cu numărul ciocnit. Greșeala
+  pe câmp: numărul sculei, diametrul, unghiul V, adâncimea și pasul, fiecare cu marginile lui, fără gruparea miilor
+  (`campuriSculaGresite`); în listă, un număr lipsă e „—”. Cu setările GRBL din fabrică, avansul peste viteza
+  maximă e o notă; avertismentul, doar față de `$$`-ul lipit. Refuzurile calculului trec prin `motivPeInteles`
+  (`src/ui/motivCalcul.ts`, pur): numele elementelor în locul id-urilor din lume, virgula în română, „Du-mă la …”
+  la operația primului element numit (harta `operatiiLume`, în `src/app/ExportConectat.tsx`). **O probă care
+  citește un refuz al calculului caută numele elementului, nu „e1/e1”, și „5,5 mm”, nu „5.5 mm”.** Programul,
+  octet cu octet. Urmează 28.8↑k (curățenia vizuală), apoi l. Felia: pornirea +0, totalul +1,1 kB.
   **Aldinul și cursivul sintetic (ADR 0123, felia 7.5↑, adusă din etapa 7)** gata pe 02.11, în worktree-ul `wip/7.5-text`:
   bifele **Aldin** și **Cursiv** din panoul textului, pentru orice font. Cursivul înclină fiecare literă față de linia ei de
   bază, exact; aldinul așază literele la înălțimea miezului (h − 2d), le îngroașă cu d prin fațada offsetului
@@ -1298,9 +1308,8 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   dreapta, după Șterge: lățimea și înălțimea cutiei fiecărei piese alese, legate de colțurile elementelor de la
   margini, într-un singur pas de anulare. Documentul rămâne v29 (cotele stau pe foaie); nimic pe server. **Bara de
   sus și extensia ei nu mai au loc la 1280 px cu fontul lat: un buton nou al cotelor își caută locul în meniul de
-  clic dreapta sau în panou.** Urmează 10.4↑d-2 („Fă desen din cotă”) și d-3 (cotele în raportul foilor), pe
-  ramură. Felia: pornirea +0, totalul +1,3 kB.
-  **„Fă desen din cotă” (ADR 0330 §8, felia 10.4↑d-2)** gata pe 26.11, pe ramura `wip/10.4-cote`: în panoul cotei
+  clic dreapta sau în panou.** Felia: pornirea +0, totalul +1,3 kB.
+  **„Fă desen din cotă” (ADR 0330 §8, felia 10.4↑d-2)** gata pe 26.11, unită în `main` pe 26.11 (`67dfb777`): în panoul cotei
   alese, butonul **Fă desen din cotă** face din desenul ei (liniile, capetele, cifrele ca trăsăturile lui Relief
   SingleLine) o piesă nouă, **fără operații**, exact unde era cota, aleasă, cu secțiunea Tăierea în panou; cu bifa
   **Șterge cota**, cota pleacă în același pas de anulare. Desenul ca forme e pur (`geometrieCota`,
@@ -1308,7 +1317,7 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   programului: cota și desenul fără rol nu se taie (aceiași octeți), desenul cu un rol pe linie taie linia cotei.
   **O acțiune nouă a registrului intră și în listele din `actiuni.calcul.test.ts` și `actiuni.calcul.paritate.test.ts`**
   (rapidul a căzut acolo). Felia: pornirea +0,1 kB, totalul +2,1 kB.
-  **Cotele în raportul foilor (ADR 0330 §7, felia 10.4↑d-3)** gata pe 26.11, pe aceeași ramură: bifa **„Cu cotele
+  **Cotele în raportul foilor (ADR 0330 §7, felia 10.4↑d-3)** gata pe 26.11, unită în `main` odată cu ea: bifa **„Cu cotele
   (N)”** în raportul foilor, doar când o foaie are cote, cu implicitul din **Setări › Cotele › Raportul foilor** (al
   optulea grup, oprit). Bifată, desenul fiecărei foi cu cote (`svgFoaieRaport`, `src/io/raportCote.ts`, pur, la
   cerere) le arată cu culoarea și cifrele exportului, mărite cât să se citească (cifrele cel puțin a 60-a parte din
@@ -1878,6 +1887,67 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 26.11.2026, dimineața (a patruzeci și șaptea unire din cloud): **greșelile ferestrei „Exportă G-code”, pe înțeles
+  (28.8↑j), unite în `main`** (sesiunea principală, ramura `unire-2611f`, peste unirile reliefului și cotelor). Linia
+  exportului, ramura `wip/28.8-export`, `c0a59b6c`, PR-ul `AndreiBesliu/cvs2#54` (ADR 0291, răspunsurile 2a și 4a ale
+  owner-ului; constatările 5, 6, 7 și 15 ale auditului), unită în `93ff3b29`: lângă „T{n} are două freze”, butonul
+  **„Dă-i T{n}”** îi dă frezei alt număr (al aceleiași freze, cât numărul ei e curat, altfel cel mai mic liber,
+  printre toate frezele ferestrei, și ale reliefului), iar roșii sunt doar frezele cu numărul ciocnit; numărul
+  sculei, diametrul, unghiul V, adâncimea și pasul își spun fiecare greșeala, cu marginile lor; cu setările GRBL din
+  fabrică, avansul peste viteza maximă e o notă, iar avertismentul rămâne doar față de `$$`-ul lipit; refuzurile
+  calculului spun numele elementelor în locul id-urilor, cu virgula în română și cu „Du-mă la …” la operația
+  primului element numit. **Programul, octet cu octet**; documentul rămâne v30; nimic pe server; otrăvurile
+  16 / 16. Linia își adusese `main` `9c728412` și avea porțile verzi pe `c0a59b6c`; înaintea ei raportaseră relieful
+  și cotele, deja în CI pe ramurile lor de unire, deci s-a unit peste ele, cu completul ei, fără nicio ciocnire.
+  Porțile unirii, în CI, pe `93ff3b29` (completul 45742818700, verde la prima trecere, 62 min): unit 10 701 / 0 (12 sărite, pe Linux), e2e 928 / 928,
+  funcțiile pe emulatoare 136 / 136, paginile 60 / 60; rapidul, verde pe `93ff3b29`; completul liniei, verde pe
+  `c0a59b6c` (45736014907); pornirea 111,6 kB (plafonul 125; cu ușa 116,8, cu Atelierul 117,1), **totalul
+  918,7 / 1 000 kB**, `/admin` 138,3 / 200, contul 30,2 / 32. Pe test e `9c728412` (lotul 41); degroșarea
+  reliefului, cotele d-2 și d-3 și felia aceasta pleacă acum, într-o singură publicare (lotul 42). **Rămâne, la
+  sesiunea principală:** numele elementelor își scriu încă numerele cu punct („dreptunghi 100.00 × 60.00”), deci un
+  refuz le are lângă numerele cu virgulă ale lucrării (constatarea 14 a auditului, `src/app/descriereElement.ts`): o
+  felie mică, la cuvântul owner-ului. La linii, în lucru: exportul (28.8↑k, curățenia vizuală; apoi l), atelierul
+  (3.Cl-3, ornamentul cu nume, 18.37.0). **La owner:** constatarea 14, întrebarea 10 a cotelor și cele două alegeri
+  din d-1, alegerile reliefului și tăierea plăcii 18, de tipărit decorațiunile, rândul editabil al finisării și al
+  degroșării, Escape în cele șase ferestre, feliile frezelor (16.A↑d–g), cele două alegeri mai vechi cu
+  recomandarea aplicată, de încercat „Modelul” din Easy 3Draw, proba pe mașină a centrului foii, cele patru
+  întrebări din auditul elicelor, pachetul Easy 3Draw trecut de 0,5 MB, arhivarea sesiunii elicelor, verificarea
+  juridică (GDPR) a utilizării aplicației înaintea live-ului, „cine unește în `main`”, meniul de sus la 320 px la
+  atingere.
+- 26.11.2026, dimineața (a patruzeci și șasea unire din cloud): **„Fă desen din cotă” (10.4↑d-2) și cotele în raportul
+  foilor (10.4↑d-3), unite în `main`** (sesiunea principală, ramura `unire-2611e`, peste unirea reliefului). Linia
+  cotelor, ramura `wip/10.4-cote`, `fc1d28a4`, PR-ul `AndreiBesliu/cvs2#52` (ADR 0330 §7, §8; pornite la „ok,
+  porneste 10.4↑d si 18.1↑d” al owner-ului), unite în `67dfb777`. **10.4↑d-2:** în panoul cotei alese, butonul „Fă
+  desen din cotă” face din desenul ei (liniile, capetele, cifrele) o piesă nouă, fără operații, exact unde era cota;
+  cu bifa „Șterge cota”, cota pleacă în același pas de anulare. „Cotele nu ajung niciodată în program” rămâne:
+  desenul fără rol nu se taie (aceiași octeți), iar cu un rol pe linie, pus de om, taie linia cotei; otrăvurile
+  16 / 16. **10.4↑d-3:** în raportul foilor, bifa „Cu cotele (N)”, doar când o foaie are cote, cu implicitul din
+  Setări › Cotele › Raportul foilor (oprit); bifată, desenul fiecărei foi le arată cu culoarea și cifrele
+  exportului; oprită, desenul de dinainte, octet cu octet; tabelele și CSV-ul, neschimbate; otrăvurile 20 / 20.
+  **Cu ele, felia 10.4↑d e încheiată**, iar din ADR 0330 rămân doar cele lăsate „mai târziu”, la cuvântul
+  owner-ului: toleranțele (±0,1), lungimea unui arc sau a unui contur, cota între două foi, setările sincronizate
+  în cont. Documentul rămâne v30 (cotele stau pe foaie); nimic pe server. **O alegere a owner-ului, cu recomandarea
+  liniei aplicată (întrebarea 10):** în desenul din raport, cotele sunt mărite cât să se citească (cifrele, cel
+  puțin a 60-a parte din latura mare a foii), cu desenul pe tot rândul; alternativa: la mărimea adevărată, ca în
+  fișier. Linia își adusese `main` `9c728412` și avea porțile verzi pe `fc1d28a4`; între raportul ei și unire a
+  raportat și relieful, care era deja în CI pe ramura lui de unire, deci cotele s-au unit peste el (relieful a
+  intrat în `main` la 05:09). Ciocnirea, doar în DEVLOG. **Porțile:** completul unirii cotelor singure
+  (45742512400, pe `67dfb777`) a nimerit un runner lent (pasul rapid a ținut peste 40 de minute) și rula încă la
+  unire; cotele au intrat pe completul unirii de deasupra, `93ff3b29`, care le cuprinde, cu exportul (completul
+  45742818700, verde la prima trecere, 62 min): unit 10 701 / 0 (12 sărite, pe Linux), e2e 928 / 928, funcțiile pe emulatoare 136 / 136, paginile 60 / 60;
+  rapidul, verde pe `67dfb777` și pe `93ff3b29`; completul liniei, verde pe `fc1d28a4` (45735958188); cu exportul,
+  pornirea 111,6 kB (plafonul 125; cu ușa 116,8, cu Atelierul 117,1), **totalul 918,7 / 1 000 kB**,
+  `/admin` 138,3 / 200, contul 30,2 / 32.
+  Pe test e `9c728412` (lotul 41); degroșarea reliefului, feliile acestea și 28.8↑j pleacă acum, într-o
+  singură publicare (lotul 42).
+  **Linia cotelor și linia reliefului n-au altă felie pornită.** La linii: exportul (28.8↑j) a intrat odată cu
+  ele (decizia de deasupra); în lucru, atelierul (3.Cl-3, ornamentul cu nume, 18.37.0). **La owner:** întrebarea 10 a cotelor și cele două
+  alegeri din d-1, alegerile reliefului și tăierea plăcii 18, de tipărit decorațiunile, rândul editabil al
+  finisării și al degroșării, Escape în cele șase ferestre, feliile frezelor (16.A↑d–g), cele două alegeri mai
+  vechi cu recomandarea aplicată, de încercat „Modelul” din Easy 3Draw, proba pe mașină a centrului foii, cele
+  patru întrebări din auditul elicelor, pachetul Easy 3Draw trecut de 0,5 MB, arhivarea sesiunii elicelor,
+  verificarea juridică (GDPR) a utilizării aplicației înaintea live-ului, „cine unește în `main`”, meniul de sus la
+  320 px la atingere.
 - 26.11.2026, spre dimineață (a patruzeci și cincea unire din cloud): **degroșarea reliefului (18.1↑d-1, cu documentul
   v30) și fișa plăcii reliefului (18.1↑d-2), unite în `main`** (sesiunea principală, ramura `unire-2611d`, din
   `9c728412`). Linia reliefului, ramura `wip/18.1-relief`, `2b38215a` (d-1 e `4381cc92`), PR-ul

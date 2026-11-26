@@ -15702,3 +15702,43 @@ commit-ul împins).
   proba de fum, bună).
 - **Documentele:** decizia și paragraful de stare în `CLAUDE.md` (documentul v30, următorul liber v31); indexul liniilor;
   starea din `docs/linii/principala.md`.
+
+## 2026-11-26 — Sesiunea principală în cloud: a patruzeci și șasea unire (cotele: 10.4↑d-2, „Fă desen din cotă”; 10.4↑d-3, cotele în raportul foilor) (Model: Claude Fable 5.2)
+
+**Prompt:** raportul liniei cotelor („Linia cotelor raportează 10.4↑d-2 și 10.4↑d-3, împreună, pe un singur commit: `fc1d28a4`”), la ordinul în vigoare „unește ce se poate”
+**Started:** 26.11, 04:25. **Completed:** unirea în `main`, 26.11, 05:35; publicarea pe test, lotul 42 (cu degroșarea reliefului).
+
+- **Verificat înaintea unirii:** completul liniei (45735958188) și rapidul (45735965697), verzi pe `fc1d28a4`; `main`
+  `9c728412` era strămoș; PR-ul #52; fără `.lucru/`.
+- **Ordinea aleasă:** relieful (unirea a patruzeci și cincea) era deja în CI pe `unire-2611d`. Cotele s-au unit peste el, pe
+  `unire-2611e` (din `3d0d0c15`): `fc1d28a4`, în `67dfb777`. Așa, completul reliefului a rămas bun. Ciocnirea, în DEVLOG (`rezolva-devlog.py`). Local: tipurile, regulile de
+  import (22 / 22), traducerile (1 185), catalogul controalelor (la zi), biblioteca, probele documentelor și ale manualului
+  76 / 76 și 261 de probe unitare de la întâlnirea liniilor (cotele, raportul foilor, registrul acțiunilor, documentul v30,
+  placa 18).
+- **Porțile** (citite din jurnalul rulării): completul unirii cotelor singure (45742512400, pe `67dfb777`) a nimerit un
+  runner lent (pasul rapid, peste 40 de minute; la unirea de deasupra, pornită după, trecuse de mult) și rula încă la
+  unire. Cotele au intrat pe completul unirii de deasupra, `93ff3b29`, care le cuprinde, cu exportul: 45742818700,
+  verde la prima trecere (62 min): unit 10 701 / 0 (12 sărite, pe Linux), e2e 928 / 928, funcțiile pe emulatoare 136 / 136, paginile 60 / 60; rapidul pe `67dfb777`,
+  45742513122, verde. Cu exportul: pornirea 111,6 kB (plafonul 125; cu ușa 116,8, cu Atelierul 117,1), totalul
+  918,7 / 1 000 kB, `/admin` 138,3 / 200, contul 30,2 / 32. Nimic pe server. Față de commit-ul cu porțile
+  (`93ff3b29`), în `main` intră în plus doar documente (`.md`).
+- **Documentele:** decizia și paragrafele de stare în `CLAUDE.md`; indexul liniilor; starea din `docs/linii/principala.md`.
+
+## 2026-11-26 — Sesiunea principală în cloud: a patruzeci și șaptea unire (fereastra exportului: 28.8↑j, greșelile pe înțeles) (Model: Claude Fable 5.2)
+
+**Prompt:** raportul liniei exportului („28.8↑j e gata de unit”, `c0a59b6c`), la ordinul în vigoare „unește ce se poate”
+**Started:** 26.11, 04:28. **Completed:** unirea în `main`, 26.11, 05:35; publicarea pe test, lotul 42 (cu degroșarea reliefului și cotele d-2 și d-3).
+
+- **Verificat înaintea unirii:** completul liniei (45736014907) și rapidul, verzi pe `c0a59b6c`; `main` `9c728412` era strămoș;
+  PR-ul #54; fără `.lucru/`.
+- **Unirea, pe `unire-2611f`** (din `67dfb777`, deci peste relief și cote): `c0a59b6c`, în `93ff3b29`, fără nicio ciocnire.
+  Local: tipurile, regulile de import (22 / 22), traducerile (1 187), catalogul controalelor (la zi), biblioteca, probele
+  documentelor și ale manualului 76 / 76 și 103 probe unitare ale exportului, reliefului și registrului. Citit în cod: frezele
+  degroșărilor intră în lista conflictelor de T prin rândurile reliefului (`finisari`), deci „Dă-i T{n}” le vede.
+- **Porțile unirii, în CI, pe `93ff3b29`** (citite din jurnalul rulării): completul 45742818700, verde la prima trecere (62 min): unit
+  10 701 / 0 (12 sărite, pe Linux), e2e 928 / 928, funcțiile pe emulatoare 136 / 136, paginile 60 / 60; rapidul 45742819637, verde. Pornirea 111,6 kB
+  (plafonul 125; cu ușa 116,8, cu Atelierul 117,1), totalul 918,7 / 1 000 kB, `/admin` 138,3 / 200, contul
+  30,2 / 32. Nimic pe server. Față de commit-ul cu porțile, în `main` intră în plus doar documente (`.md`).
+- **Trei uniri la rând, fiecare pe completul ei:** relieful (`unire-2611d`), cotele peste el (`unire-2611e`), exportul peste
+  ele (`unire-2611f`); între ele, doar commit-urile de documente, aduse din una în alta. O singură publicare, lotul 42.
+- **Documentele:** decizia și paragraful de stare în `CLAUDE.md`; indexul liniilor; starea din `docs/linii/principala.md`.
