@@ -106,6 +106,8 @@ test('construcție nouă, goală, cu numele în câmp; fiecare construcție îș
   await expect(numeCamp(page)).toBeFocused();
   await redenumeste(page, 'Șasiu');
   await expect(optiuni(page)).toHaveText(['Construcția 1', 'Șasiu']);
+  // Enter scrie numele și iese din câmp
+  await expect(numeCamp(page)).not.toBeFocused();
   // o piesă pusă acum intră în construcția aleasă
   await piesa(page, 'caramizi', 'caramida');
   await page.locator('#at-in-model').click();
@@ -128,6 +130,17 @@ test('construcție nouă, goală, cu numele în câmp; fiecare construcție îș
   await expect(optiuni(page)).toHaveText(['Construcția 1', 'Șasiu']);
   await expect(alegere(page).locator('option:checked')).toHaveText('Șasiu');
   await expect(lista(page)).toHaveCount(1);
+  // o piesă scoasă, cu pagina reîncărcată imediat: rămâne scoasă (salvarea ține construcția la zi)
+  await lista(page).nth(0).locator('button').click();
+  await page.locator('#at-m-scoate').click();
+  await expect(lista(page)).toHaveCount(0);
+  await page.reload();
+  await intraIn3D(page);
+  await modelul(page);
+  await expect(alegere(page).locator('option:checked')).toHaveText('Șasiu');
+  await expect(lista(page)).toHaveCount(0);
+  await alegere(page).selectOption({ label: 'Construcția 1' });
+  await expect(lista(page)).toHaveCount(1);
 });
 
 test('Dublează: aceleași piese, cu legăturile lor, și numele următor; Șterge, cu întrebarea; cu una rămasă, oprit', async ({ page }) => {
@@ -135,10 +148,23 @@ test('Dublează: aceleași piese, cu legăturile lor, și numele următor; Șter
   await deschide(page, { constructii: [{ id: 'a', nume: 'Macara', nr: 1, model: [caramida('c1', 0, 0, 0), legata] }], activa: 'a' });
   await modelul(page);
   await expect(optiuni(page)).toHaveText(['Macara']);
+  // o piesă aleasă în original nu rămâne aleasă în copie (piesa aleasă e a construcției de dinainte)
+  await lista(page).nth(0).locator('button').click();
+  await expect(page.locator('.model-ales')).toBeVisible();
   await page.locator('#at-c-dubla').click();
   await expect(optiuni(page)).toHaveText(['Macara', 'Macara 2']);
   await expect(alegere(page).locator('option:checked')).toHaveText('Macara 2');
   await expect(lista(page)).toHaveCount(2);
+  await expect(page.locator('.model-ales')).toHaveCount(0);
+  await expect(page.locator('#at-editor')).toContainText('Nicio piesă aleasă.');
+  // copia are piesele ei: una mutată în copie rămâne pe loc în original
+  await lista(page).nth(0).locator('button').click();
+  await page.locator('#at-m-mutari [data-m="x+"]').click();
+  await expect(lista(page).nth(0)).toContainText('1, 0, 0');
+  await alegere(page).selectOption({ label: 'Macara' });
+  await expect(lista(page).nth(0)).toContainText('0, 0, 0');
+  await alegere(page).selectOption({ label: 'Macara 2' });
+  await expect(lista(page).nth(0)).toContainText('1, 0, 0');
   await expect.poll(async () => (await tinut(page)).constructii?.length).toBe(2);
   const t = await tinut(page);
   // copia ține piesele cu id-urile lor, deci și legătura plăcii de cărămidă
@@ -167,15 +193,20 @@ test('Dublează: aceleași piese, cu legăturile lor, și numele următor; Șter
   await expect.poll(async () => (await tinut(page)).constructii?.map((c) => c.nume)).toEqual(['Macara 2']);
 });
 
-test('o construcție fără nume dublată rămâne fără nume, cu numărul ei; cea nouă ia cel mai mic număr liber', async ({ page }) => {
+test('o construcție nouă ia cel mai mic număr liber; o construcție fără nume dublată rămâne fără nume, cu numărul următor liber', async ({ page }) => {
   await deschide(page, { constructii: [{ id: 'a', nume: '', nr: 2, model: [caramida('c1', 0, 0, 0)] }, { id: 'b', nume: 'Barca', nr: 3, model: [] }], activa: 'a' });
   await modelul(page);
   await expect(optiuni(page)).toHaveText(['Construcția 2', 'Barca']);
-  await page.locator('#at-c-dubla').click();
-  await expect(optiuni(page)).toHaveText(['Construcția 2', 'Construcția 1', 'Barca']);
-  await expect(numeCamp(page)).toHaveValue('');
+  // numerele 2 și 3 sunt luate: cea nouă e „Construcția 1”, la capătul listei
   await page.locator('#at-c-noua').click();
-  await expect(optiuni(page)).toHaveText(['Construcția 2', 'Construcția 1', 'Barca', 'Construcția 4']);
+  await expect(optiuni(page)).toHaveText(['Construcția 2', 'Barca', 'Construcția 1']);
+  // copia celei fără nume: tot fără nume, cu numărul următor liber (4), după original
+  await alegere(page).selectOption({ label: 'Construcția 2' });
+  await page.locator('#at-c-dubla').click();
+  await expect(optiuni(page)).toHaveText(['Construcția 2', 'Construcția 4', 'Barca', 'Construcția 1']);
+  await expect(alegere(page).locator('option:checked')).toHaveText('Construcția 4');
+  await expect(numeCamp(page)).toHaveValue('');
+  await expect(lista(page)).toHaveCount(1);
 });
 
 test('numele sunt ale omului: nu sunt HTML, au cel mult 60 de caractere, iau numărul următor dacă sunt luate; gol întoarce numele implicit', async ({ page }) => {
@@ -186,6 +217,9 @@ test('numele sunt ale omului: nu sunt HTML, au cel mult 60 de caractere, iau num
   await expect(page.locator('#at-c-alege b')).toHaveCount(0);
   await expect(numeCamp(page)).toHaveValue('<b>x</b> & "y"');
   await redenumeste(page, '  Barca  ');
+  await expect(optiuni(page)).toHaveText(['Barca', 'Barca 2']);
+  // numele ei, scris din nou (cu un spațiu în plus): rămâne al ei, fără alt număr
+  await redenumeste(page, 'Barca 2 ');
   await expect(optiuni(page)).toHaveText(['Barca', 'Barca 2']);
   await redenumeste(page, 'z'.repeat(70));
   await expect(numeCamp(page)).toHaveValue('z'.repeat(60));
@@ -218,7 +252,9 @@ test('ce stă stricat în stocare se citește cât se poate: intrările fără p
 });
 
 test('piesele construcției: aceeași piesă se adună, cu filamentul și timpul ei; timpul urmează debitul imprimantei; „Pune construcția în lista de printat”', async ({ page }) => {
-  await deschide(page, { model: [caramida('c1', 0, 0, 0), placa('p1', 0, 0, 3), caramida('c2', 0, 3, 0), placa('p2', 2, 0, 3, DEF_PLACA_ALTFEL)] });
+  // în lista de printat e deja o placă, scrisă cu câmpurile în altă ordine
+  await deschide(page, { model: [caramida('c1', 0, 0, 0), placa('p1', 0, 0, 3), caramida('c2', 0, 3, 0), placa('p2', 2, 0, 3, DEF_PLACA_ALTFEL)],
+    lista: [{ id: 'l1', def: DEF_PLACA_ALTFEL, nume: PLACA, bucati: 1 }] });
   await modelul(page);
   await expect(page.locator('#at-c-piese')).toBeVisible();
   const r = await randuri(page);
@@ -255,17 +291,29 @@ test('piesele construcției: aceeași piesă se adună, cu filamentul și timpul
   await debit.fill('400');
   await debit.blur();
   await expect(debit).toHaveValue('50');
-  // în lista de printat: aceleași rânduri, cu aceleași bucăți și grame
+  // fiecare imprimantă își ține debitul: alta, aleasă, schimbă timpul din tabel
+  const profil = page.locator('#prof-imprimanta'), imprimanta = profil.locator('[data-prof="alege"]');
+  await profil.locator('[data-prof="nou"]').click();
+  await profil.locator('[data-prof="ok"]').click();
+  await expect(imprimanta.locator('option')).toHaveCount(2);
+  await debit.fill('2');
+  await debit.blur();
+  await expect.poll(async () => (await total(page)).s).toBeCloseTo(T.g / 1.24e-3 / 2, 6);
+  await imprimanta.selectOption({ index: 0 });
+  await expect(debit).toHaveValue('50');
+  await expect.poll(async () => (await total(page)).s).toBeCloseTo(T.g / 1.24e-3 / 50, 6);
+  await expect(page.locator('#at-c-piese')).toContainText('50 mm³/s');
+  // în lista de printat: aceleași bucăți și grame; plăcile se adună pe rândul plăcii de dinainte (aceeași piesă)
   await page.locator('#at-model-lista').click();
   await expect(page.locator('#at-toast')).toHaveText('4 piese din „Construcția 1” în lista de printat.');
   const rl = page.locator('#at-lista tr');
   await expect(rl).toHaveCount(2);
-  await expect(rl.nth(0).locator('td').nth(0)).toHaveText(CARAMIDA);
-  await expect(rl.nth(0).locator('.pas-n')).toHaveText('2');
-  await expect(rl.nth(0).locator('td').nth(3)).toHaveText(grame(r[0]!.g));
-  await expect(rl.nth(1).locator('td').nth(0)).toHaveText(PLACA);
+  await expect(rl.nth(0).locator('td').nth(0)).toHaveText(PLACA);
+  await expect(rl.nth(0).locator('.pas-n')).toHaveText('3');
+  await expect(rl.nth(0).locator('td').nth(3)).toHaveText(grame(r[1]!.g / 2 * 3));
+  await expect(rl.nth(1).locator('td').nth(0)).toHaveText(CARAMIDA);
   await expect(rl.nth(1).locator('.pas-n')).toHaveText('2');
-  await expect(rl.nth(1).locator('td').nth(3)).toHaveText(grame(r[1]!.g));
+  await expect(rl.nth(1).locator('td').nth(3)).toHaveText(grame(r[0]!.g));
 });
 
 test('timpul, rotunjit la minut: o placă la 1 mm³/s, câteva minute; la 50 mm³/s, sub un minut', async ({ page }) => {

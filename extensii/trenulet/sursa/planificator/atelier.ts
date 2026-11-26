@@ -3144,7 +3144,8 @@ var Atelier3D = (function () {
   function aplicaImprimanta(v: Valori | null) {
     puneImprimanta(v);
     reglaje(); salveaza();
-    if (pornit) { if (vedere === "model") arataModel(true); else if (privita) arataPrivita(); else construiesteCurent(true); randeazaLista(); }
+    // în vederea modelului, și editorul: timpul pieselor (debitul) și verificarea urmează imprimanta aleasă
+    if (pornit) { if (vedere === "model") { editorModel(); arataModel(true); } else if (privita) arataPrivita(); else construiesteCurent(true); randeazaLista(); }
   }
   function reglaje() {
     rezumatImprimanta();

@@ -86,7 +86,8 @@ NR = '          nr: Number.isInteger(nr) && (nr as number) >= 1 && !constructii.
 o('A22', AT, NR, NR.replace(' && !constructii.some(x => x.nr === nr)', ''), 'e2e', 'două construcții citite cu același număr rămân așa')
 o('A23', AT, NR, NR.replace('Number.isInteger(nr) && (nr as number) >= 1 && ', ''), 'e2e', 'un număr care nu e întreg pozitiv se citește')
 o('A24', AT, '      const a = constructii.find(x => x.id === d.activa) ?? constructii[0]!;', '      const a = constructii[0]!;', 'e2e', 'construcția aleasă nu se mai ține la reîncărcare')
-o('A25', AT, '      constructii = [{ id: idNou(), nume: "", nr: 1, model }]; activa = constructii[0]!.id;', '      constructii = [{ id: idNou(), nume: "", nr: 1, model: [] }]; activa = constructii[0]!.id;', 'e2e', 'un model salvat înainte se pierde la deschidere')
+# (la prima rulare, A25 golea doar construcția, iar `tineConstructia` îi punea piesele la loc: echivalentă; acum, modelul)
+o('A25', AT, '      model = curataModel(d.model);\n      constructii = [{', '      constructii = [{', 'e2e', 'un model salvat înainte se pierde la deschidere')
 o('A26', AT, 'const stocate = Array.isArray(d.constructii) ? d.constructii.filter(c => c && typeof c === "object" && Array.isArray(c.model)) : [];', 'const stocate = Array.isArray(d.constructii) ? d.constructii.filter(c => c && typeof c === "object") : [];', 'e2e', 'o construcție fără piese citite se ia oricum (și strică pagina)')
 o('A27', AT, '    const date = { setari, lista, stare, model, constructii, activa, imprimante };', '    const date = { setari, lista, stare, model, imprimante };', 'e2e', 'construcțiile nu se mai salvează')
 o('A28', AT, '    tineConstructia();\n    const date = {', '    const date = {', 'e2e', 'construcția aleasă se salvează cu piesele de dinaintea ultimei schimbări')
@@ -104,6 +105,7 @@ o('A38', AT, '    salveaza(); if (vedere === "model") { editorModel(); arataMode
 o('A39', AT, 'pat_distanta: 4, debit: 5, culoare', 'pat_distanta: 4, debit: 8, culoare', 'e2e', 'debitul implicit, altul decât cel spus')
 o('A40', AT, '<span><b>Timp</b> ${Lego.durataPrint(Lego.timpPrint(g, setari.debit))}</span>', '', 'e2e', 'cotele vederii nu mai spun timpul')
 o('A41', AT, '      ${pieseC}`;', '`;', 'e2e', 'tabelul pieselor nu mai e pus în pagină')
+o('A42', AT, '    if (pornit) { if (vedere === "model") { editorModel(); arataModel(true); } else if (privita) arataPrivita(); else construiesteCurent(true); randeazaLista(); }', '    if (pornit) { if (vedere === "model") arataModel(true); else if (privita) arataPrivita(); else construiesteCurent(true); randeazaLista(); }', 'e2e', 'altă imprimantă aleasă nu schimbă timpul din tabel')
 
 # --- textele
 o('T01', AT, '<button class="btn" type="button" id="at-c-noua">Construcție nouă</button>', '<button class="btn" type="button" id="at-c-noua">O construcție nouă</button>', 'texte', 'butonul, cu alt text decât cel tradus')

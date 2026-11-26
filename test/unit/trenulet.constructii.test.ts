@@ -44,9 +44,9 @@ test('cheieDef: ordinea dintr-un șir contează, la fel orice valoare; un câmp 
 test('pieseConstructie: aceeași piesă se adună, în ordinea în care apare prima dată', () => {
   const A: Def = { tip: 'caramida', placi: 3, celule: [[0, 0]] }, A2: Def = { celule: [[0, 0]], placi: 3, tip: 'caramida' };
   const B: Def = { tip: 'ax', lung: 3 }, C: Def = { tip: 'grinda', celule: [[0, 0, 'r']] };
-  const r = copie(Lc.pieseConstructie([A, B, A2, C, B, A]));
+  const r = copie(Lc.pieseConstructie([A, B, A, C, B, A2]));
   assert.deepEqual(r, [{ def: A, bucati: 3 }, { def: B, bucati: 2 }, { def: C, bucati: 1 }]);
-  // rândul ține definiția primei apariții (cu ordinea ei de câmpuri)
+  // rândul ține definiția primei apariții (cu ordinea ei de câmpuri), nu a ultimei (A2, scrisă altfel)
   assert.deepEqual(Object.keys(r[0]!.def), ['tip', 'placi', 'celule']);
   assert.deepEqual(copie(Lc.pieseConstructie([])), []);
   assert.deepEqual(copie(Lc.pieseConstructie([B])), [{ def: B, bucati: 1 }]);
