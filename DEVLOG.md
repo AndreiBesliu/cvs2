@@ -15742,3 +15742,57 @@ commit-ul împins).
 - **Trei uniri la rând, fiecare pe completul ei:** relieful (`unire-2611d`), cotele peste el (`unire-2611e`), exportul peste
   ele (`unire-2611f`); între ele, doar commit-urile de documente, aduse din una în alta. O singură publicare, lotul 42.
 - **Documentele:** decizia și paragraful de stare în `CLAUDE.md`; indexul liniilor; starea din `docs/linii/principala.md`.
+
+## 2026-11-26 — Felia 3.Cl-3: ornamentul cu nume (ADR 0285) (sesiune cloud)
+
+**Prompt:** „Mergem cu recomandarile” (răspunsul owner-ului la ADR 0285, în sesiunea liniei; 4a: numele de pe ornament,
+în felia a treia, cu un font propriu dintr-o singură linie)
+**Started:** 25.11, 23:22 (cât rula completul lui 3.Cl-2; local, fără nimic împins). **Completed:** 26.11, 00:55
+(felia, cu otrăvurile; orele, după ceasul containerului).
+
+- **Ce face:** a cincea piesă a filei „Crăciun”, ornamentul cu nume: o etichetă, un glob, o inimă sau o stea, cu un
+  nume scris cu majuscule, cât încape de mare, în relief (pentru două culori), adâncit sau decupat.
+- **Fontul** e al motorului, dintr-o singură linie: 46 de semne din trăsături (linii și arce), îngroșate cu Cavalier,
+  cu capete rotunde; trăsăturile închise dau inele cu ochiul lor; trăsăturile unui semn se unesc.
+- **Potrivirea:** cea mai mare majusculă (din zecime în zecime) a cărei cutie, lărgită cu 2 mm, stă în formă.
+- **Scrisul decupat** are punți la semnele cu ochi; proba cere, pe hârtie, ca lemnul din jurul fiecărui semn să fie
+  legat de margine.
+- **Probele**, scrise întâi (au căzut cu funcțiile lipsă): unitară, 8 teste; e2e, 5 scenarii; proba în engleză din
+  cvs2 trece și prin ornament. Înainte de cod, o sondă aruncată a arătat că îngroșarea iese pentru toate semnele.
+- **Găsit la scris:** Cavalier decalează și unește greșit, fără nicio eroare, un arc de peste o jumătate de cerc
+  (cifra 2; inima cu tija inelului). Arcele se împart în sferturi. Tot atunci: o trăsătură nu se atinge pe ea însăși,
+  iar trăsăturile unui semn diferă cu 2 µm în grosime, ca laturile lor să nu coincidă.
+- **Găsit de o sondă pe multe mărimi** (12 420 de piese: fiecare semn, singur și de opt ori, la 45 de înălțimi, în
+  cele trei feluri de scris): un „S” sau un „3” singur ieșea din etichetă, fiindcă întinderea arcelor lui (tot din
+  Cavalier) era greșită. Reparat (întinderea, pe sferturi), cu proba pe fiecare semn; după reparație, nicio piesă rea.
+- **Rândul de jos al editorului** poartă semnele scrise de om: se pune ca text, nu ca marcaj.
+- **Otrăvurile:** `3.Cl-3.py`, 116 / 116 (114 din 115 la prima rulare: una, prinsă după întărirea probei; a 116-a, adăugată odată cu reparația întinderii semnelor); `3.Cl-3-en.py`, 8 / 8.
+- **Easy 3Draw 18.37.0** (549,0 kB), cu rândul de „ce e nou”. Doar pachetul extensiei se schimbă.
+- **Față de propunere:** fără litere mici, fără al doilea rând, fără brăduțul cu nume (etajele sunt prea înguste).
+- **Îndreptat:** ADR 0285 spunea, la glob, că fereastra Imprimanta din cvs2 poate pune pauza la stratul schimbului;
+  pauza aceea e a pieselor feliate din desen, nu a unui STL: schimbul se pune în programul de feliere.
+- **Documentele:** ADR 0285 („Implementat (3.Cl-3)”), indexul ADR, fișa etapei 3, `docs/linii/atelier.md`, indexul
+  liniilor, `docs/otravuri.md`, `CLAUDE.md`.
+- **Urmează:** 3.Cl-4 (brăduțul LEGO).
+
+## 2026-11-26 — Felia 3.Cl-4: brăduțul LEGO (ADR 0285) (sesiune cloud)
+
+**Prompt:** „Mergem cu recomandarile” (răspunsul owner-ului la ADR 0285, în sesiunea liniei; 1a: după ornamentul cu
+nume vine brăduțul LEGO)
+**Started:** 26.11, 00:52 (local, cât 3.Cl-2 își aștepta unirea). **Completed:** 26.11, 01:50 (felia, cu
+otrăvurile; orele, după ceasul containerului).
+
+- **Ce face:** a șasea piesă a filei „Crăciun”, brăduțul LEGO: etajele (trunchiuri de con cu marginea zimțată, cu
+  patru știfturi sus și locașul lor dedesubt) și steaua de vârf (plată, cu un cui care e o bară de 3,2 mm).
+- **„Fă brăduțul”** pune în listă trunchiul și vârful (piese rotunde 2 × 2 care existau), etajele și steaua.
+- **Motorul:** `bradLegoCote`, `bradLego`, `bradLegoPiese`, `trunchiForme`.
+- **Probele**, scrise întâi (au căzut cu „tip necunoscut”): unitară, 5 teste; e2e, 4 scenarii (au trecut din prima, cu
+  valorile socotite pe hârtie); proba în engleză din cvs2 trece și prin brăduț.
+- **Respinse de proba prinderilor** (a tuturor pieselor atelierului) și refăcute: golul locașului cu 0,15 mm prea larg
+  (știftul era ținut doar de tub) și cuiul pătrat al stelei (declarat „bară”, dar nu era una).
+- **Otrăvurile:** `3.Cl-4.py`, 75 / 75, la prima rulare; `3.Cl-4-en.py`, 8 / 8.
+- **Easy 3Draw 18.38.0** (553,0 kB), cu rândul de „ce e nou”. Doar pachetul extensiei se schimbă.
+- **Față de propunere:** steaua stă cu un cui în știftul gol al vârfului; brăduțul clădit în „Modelul” vine cu 3.Cg.
+- **Documentele:** ADR 0285 („Implementat (3.Cl-4)”), indexul ADR, fișa etapei 3, `docs/linii/atelier.md`, indexul
+  liniilor, `docs/otravuri.md`, `CLAUDE.md`.
+- **Urmează:** 3.Cf-2 (orientarea de mână pe trei axe), la cuvântul owner-ului dacă vrea altă ordine.

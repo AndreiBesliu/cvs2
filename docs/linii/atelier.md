@@ -14,13 +14,15 @@ unite în `main` pe 25.11 (`9815527f`); 3.Ce (punctele de prindere și „Se pri
 în `main` pe 25.11 (`e90edd2e`, PR-ul `AndreiBesliu/cvs2#29`); 3.Cj-3 (cadrul; 18.31.0) și 3.Cj-4 (șurubul melc;
 18.32.0), unite în `main` pe 25.11 (`36559b49`, PR-ul `AndreiBesliu/cvs2#33`). Cu melcul, 3.Cj e încheiată. 3.Tu
 (piesele rotunde pe același ax în „Modelul”; 18.33.0), unită în `main` pe 25.11 (`f5cf10c8`, PR-ul
-`AndreiBesliu/cvs2#45`). 3.Cf-1 (alipirea la prinderi, cu piesele legate; 18.34.0), gata pe ramură pe 25.11, neunită
-(PR-ul `AndreiBesliu/cvs2#46`). **Decorațiunile de Crăciun (ADR 0285, cerute de owner pe 25.11 și acceptate cu
+`AndreiBesliu/cvs2#45`). 3.Cf-1 (alipirea la prinderi, cu piesele legate; 18.34.0), unită în `main` pe 25.11
+(`02ac0715`, PR-ul `AndreiBesliu/cvs2#46`). **Decorațiunile de Crăciun (ADR 0285, cerute de owner pe 25.11 și acceptate cu
 recomandările, 1a–4a): 3.Cl-1 (fulgul, steaua și brăduțul, în fila nouă „Crăciun”; 18.35.0), unită în `main` pe 26.11
-(`41b1fb6f`, PR-ul `AndreiBesliu/cvs2#50`); 3.Cl-2 (globul; 18.36.0), gata pe ramură pe 25.11.**
-Urmează 3.Cl-3 (ornamentul cu nume), 3.Cl-4 (brăduțul LEGO); apoi 3.Cf-2
+(`41b1fb6f`, PR-ul `AndreiBesliu/cvs2#50`); 3.Cl-2 (globul; 18.36.0), unită în `main` pe 26.11 (`b6c9998d`, PR-ul
+`AndreiBesliu/cvs2#53`); 3.Cl-3 (ornamentul cu nume; 18.37.0) și 3.Cl-4 (brăduțul LEGO; 18.38.0), gata pe ramură pe
+26.11: ADR 0285 are toate feliile făcute.**
+Urmează 3.Cf-2
 (orientarea pe trei axe, pozițiile la jumătate de pas); 3.Ck așteaptă tipărirea bilei și a cupei.** Versiunea
-următoare a pachetului: 18.37.0._
+următoare a pachetului: 18.39.0._
 
 ## Numerele liniei
 
@@ -47,7 +49,7 @@ următoare a pachetului: 18.37.0._
 | 3.Ci | Construcțiile gata (șasiul, cutia de angrenaje, brațul de macara, barca cu elice) | după Model (răspunsul 3a) |
 | 3.Cj | Melcul, cama și manivela, cadrul, roata cu palete | pe bucăți: 3.Cj-1, cama, 3.Cj-2, roata cu palete, 3.Cj-3, cadrul, și 3.Cj-4, șurubul melc: gata (25.11) |
 | 3.Ck | Balamaua și placa turnantă | despărțite de 3.Cd; după ce owner-ul încearcă primele piese pe imprimantă |
-| 3.Cl | Decorațiunile de Crăciun (ADR 0285) | 3.Cl-1 (fulgul, steaua, brăduțul) și 3.Cl-2 (globul, relieful pe două înălțimi), gata (25.11); 3.Cl-3 (ornamentul cu nume), 3.Cl-4 (brăduțul LEGO), urmează |
+| 3.Cl | Decorațiunile de Crăciun (ADR 0285) | 3.Cl-1 (fulgul, steaua, brăduțul) și 3.Cl-2 (globul, relieful pe două înălțimi), gata (25.11); 3.Cl-3 (ornamentul cu nume) și 3.Cl-4 (brăduțul LEGO), gata (26.11) |
 
 ## 3.Ca, gata (24.11, în cloud): conectorul perpendicular
 
@@ -280,6 +282,74 @@ următoare a pachetului: 18.37.0._
   discul întreg dedesubt și doar modelul deasupra.
 - **O piesă nouă într-o filă mută ancorele listei feliei dinainte** (rândul familiei din `FAMILII`, un text la fel în
   alt editor): se caută cu comparația față de `main` și se aduc la zi în aceeași felie.
+
+## 3.Cl-3, gata (26.11, în cloud): ornamentul cu nume (ADR 0285)
+
+- **Unde e:** motorul, după `globCraciun`: tabelul fontului (`SCRIS`) și al punților (`PUNTI`), `sferturi`,
+  `trasatura` (o trăsătură îngroșată), `numeScris` (numele cum se scrie), `cutieScris` (cât ocupă), `dreptInPoli`,
+  `ornamentCote` (forma, potrivirea), `semneNume` (semnele așezate, ca bucăți cu ochiuri și punți), `ornament` (în
+  `TIPURI`); atelierul: `stare.ornament`, `PICTOGRAME`, `numeDef`, `defCurenta`, editorul (`at-on-…`), cu primul
+  câmp de text al atelierului (`.mod-3d .at-campuri input[type="text"]`, în `head.html`).
+- **Datele piesei:** în ADR 0285, „Implementat (3.Cl-3)”.
+- **Probele:** `test/unit/trenulet.ornament.test.ts`, `test/e2e/trenulet.ornament.spec.ts`; hârtia fontului
+  (`distArc`, `distSemn`, `intreSemn`, `numePeHartie`), în `test/unit/ajutor-craciun.ts`; otrăvurile,
+  `test/otravuri/3.Cl-3.py` și `3.Cl-3-en.py`.
+
+### Reguli și capcane (3.Cl-3)
+
+- **Un arc de peste o jumătate de cerc nu se dă întreg lui Cavalier.** Decalarea unei polilinii deschise cu un arc de
+  220° urmat de un colț întoarce zero bucăți (cifra 2), iar unirea unui contur cu arce de 188° cu un dreptunghi care îl
+  taie întoarce „e înăuntru” (inima și tija inelului), fără nicio eroare. Arcele se împart întâi în sferturi
+  (`sferturi`) sau se scriu din bucăți (inima: până la punctul cel mai din afară, până la cel mai de sus, până la
+  crestătură, ceea ce dă și mărimile întregi). La fel `extents()`: întinderea unui arc de 240° iese greșită (un „S”
+  singur ieșea din etichetă).
+- **O piesă cu multe intrări se trece și printr-o sondă pe multe mărimi, nu doar prin cazurile probei.** Sonda
+  (fiecare semn, singur și de opt ori, la 45 de înălțimi, în cele trei feluri de scris; aruncată după) a găsit „S” și
+  „3” ieșite din etichetă, pe care cazurile alese de mână nu le aveau. Ce găsește sonda intră în probă ca regulă
+  (cutia fiecărui semn, față de hârtie), nu ca listă de cazuri.
+- **O trăsătură nu se atinge pe ea însăși.** O polilinie deschisă care se întoarce pe ea (bucla lui P scrisă dintr-o
+  bucată, 4 cu bara care taie tija, 3 cu cele două arce puse cap la cap, care se întorc la mijloc) nu se decalează
+  bine: semnul se scrie din trăsături diferite, care se întâlnesc.
+- **Trăsăturile aceluiași semn nu au aceeași grosime la micron.** Două trăsături cu laturi suprapuse (bara din mijloc
+  a lui B, comună celor două bucle; un capăt rotund pe axa altei trăsături, tangent la marginea ei) se unesc sigur
+  doar dacă laturile nu coincid: fiecare e cu 2 µm mai subțire decât cea dinainte.
+- **Fontul se probează cu el însuși ca hârtie.** Tabelul trăsăturilor e desenul; proba ia tabelul din motor și cere
+  plasei „la cel mult jumătate de linie de trăsături”, pentru toate semnele. Desenul însuși e păzit de câteva litere
+  scrise în probă și de o amprentă: o schimbare a unui semn se privește pe randare (`.tmp/vezi-ornament.cjs`, în
+  sesiune) înainte de amprenta nouă.
+- **Un text scris de om nu se pune în piesă cum a fost scris.** `defCurenta` ține numele cum se scrie pe piesă
+  (majuscule, doar semnele fontului): altfel „Ana” și „ANA” ar fi două piese în listă. Starea editorului ține ce a
+  scris omul, ca rândul de jos să poată spune ce semne au fost sărite.
+- **Culegătorul de texte ia orice șir cu diacritice dat unui apel** (`.replace(…, "Ș")`): un semn românesc care nu e
+  text se scrie cu `String.fromCharCode`; ca nume de proprietate (`"Ș": …`) trece.
+- **O alegere între două liste de butoane se scrie cu listele întregi** (`et ? [[…], […]] : [[…], […]]`): cu alegerea
+  înăuntrul listei, detectorul textelor nelipite de `tr` o ia drept text compus.
+- **Verificări de prisos, arătate la scrisul listei de otrăvuri și scoase:** ocolirea găurii etichetei (numele stă la
+  mijlocul locului rămas, deci cutia lui nu ajunge la gaură) și „mijlocul e în poligon” (locul numelui e mereu în
+  formă).
+
+## 3.Cl-4, gata (26.11, în cloud): brăduțul LEGO (ADR 0285)
+
+- **Unde e:** motorul, după `ornament`: `BRAD_LEGO`, `trunchiForme` (trunchiul dintre două contururi cu același număr
+  de vârfuri), `bradLegoCote`, `bradLego` (etajul și steaua; în `TIPURI`), `bradLegoPiese` (piesele brăduțului întreg);
+  atelierul: `stare.bradLego`, `PICTOGRAME`, `numeDef`, `defCurenta`, editorul (`at-bl-…`), `adaugaBradLego`.
+- **Datele piesei:** în ADR 0285, „Implementat (3.Cl-4)”.
+- **Probele:** `test/unit/trenulet.bradlego.test.ts`, `test/e2e/trenulet.bradlego.spec.ts`; otrăvurile,
+  `test/otravuri/3.Cl-4.py` și `3.Cl-4-en.py`.
+
+### Reguli și capcane (3.Cl-4)
+
+- **Proba prinderilor (`trenulet.prinderi.test.ts`) judecă și piesa nouă, după regulile ei:** un locaș ține știftul din
+  două părți (golul etajului, făcut întâi cu 0,15 mm mai larg, îl ținea doar cu tubul: a căzut), iar o „bară” e plină
+  pe toată raza ei (cuiul pătrat al stelei a căzut: acum e bara culcată a atelierului, `sectiuneBara`).
+- **O suprafață între două contururi diferite se scrie cu triunghiurile ei pe hârtie.** Fiecare latură a conului
+  zimțat e din două triunghiuri; la o înălțime dată, conturul are și punctul muchiei dintre ele. `inel(…, exteriorSus)`
+  reface contururile pe unghiuri și dă altă suprafață: pentru o hârtie exactă, trunchiul se face cu `trunchiForme`.
+- **Piesele unui set, cu aceleași chei ca în editorul lor:** `bradLegoPiese` dă trunchiul și vârful cu cheile piesei
+  rotunde, în ordinea din `defCurenta` (fără `gaura` când nu e): altfel aceeași piesă ar sta pe două rânduri în listă.
+- **Un câmp al editorului care e doar al setului (`etaje`) se scoate din piesă** în `defCurenta`.
+- **Un diametru de etaj e par:** locașul 2 × 2 e între patru știfturi doar dacă mijlocul piesei cade pe un colț al
+  grilei.
 
 ## Reguli și capcane (de la 3.Ca–3.Cj)
 
