@@ -104,7 +104,7 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   `test/oracles/document.ts` (peste partea v1–v10), cazurile pe hârtie la finalul lui `test/oracles/document.cazuri.ts`, proba
   cu ușa aplicației în `test/unit/document.v22.oracol.test.ts` (din 08.11, cu incrustațiile din v20–v22) și, pentru v23 (literele
   plăcuțelor, 11.4↑, în `main` din 13.11), în `test/unit/document.v23.oracol.test.ts`. **Un câmp nou al documentului
-  (v31; v30 e al degroșării reliefului, 18.1↑d, încă pe ramură; v29, cu finisarea reliefului și freza bilă, ADR 0312, e în `main` din 25.11; v28, cu forma `relief`, ADR
+  (v31; v30, cu degroșarea reliefului, ADR 0313, e în `main` din 26.11; v29, cu finisarea reliefului și freza bilă, ADR 0312, din 25.11; v28, cu forma `relief`, ADR
   0310, din 24.11; v27, cu `biblioteca`, `regim` și `tais` pe frezele
   operațiilor, ADR 0300) intră acolo, ca rangul și incrustația:** rândul
   lui în `CAMPURI_NOI_O` (ciocnirea migrării), judecata în `problemeOperatieO`, frontierele pe hârtie, iar probele care țin
@@ -323,7 +323,7 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   buzunarul, liniile paralele, frezele de rest, găurirea, V-ul, fundul plat, dopurile), turația primei freze montate
   și a celei noi la schimbare. **Fără valori, programul de azi, octet cu octet;** același T cu două turații și o
   adâncime peste tăiș se refuză. Fără interfață încă: urmează 16.A↑b-2 (lista „Freza” pe rândurile exportului și în
-  Tăierea) și 16.A↑b-3 (nota schimbării din bibliotecă). **Un câmp nou al documentului ia v31 (v28 e relieful, ADR 0310; v29, finisarea lui, ADR 0312; v30, degroșarea lui, 18.1↑d, încă pe ramură). O probă e2e care
+  Tăierea) și 16.A↑b-3 (nota schimbării din bibliotecă). **Un câmp nou al documentului ia v31 (v28 e relieful, ADR 0310; v29, finisarea lui, ADR 0312; v30, degroșarea lui, ADR 0313). O probă e2e care
   citește documentul salvat cere versiunea curentă:** `placute.spec.ts` a căzut în completul liniei cu `schema: 26`.
   **Biblioteca de freze în cont (ADR 0300 §3, §7, felia 16.A↑c)** gata pe 24.11, unită în `main` pe 24.11
   (`6b74074d`), la „b, pornește 16.A↑c” al owner-ului: callable-ul `freze` (`functions/src/freze/`, contractul în
@@ -1356,9 +1356,29 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   simulatorul crestei și al materialului): o strategie nouă pe relief se judecă acolo, pe invariantele „nicio
   scobitură în model” și „niciodată mai adânc decât pasul pe trecere”. **Lista bibliotecii dată ferestrei exportului
   ține doar frezele rândurilor (fără bile)**, cu o pază a compilatorului (`exportFreze.bila.test.ts`). Nedovedit
-  fără mașină: creasta reală, suprafața față de model, timpul. **18.1↑d (degroșarea, apoi fișa plăcii reliefului),
-  pornită pe 25.11**, la „ok, porneste 10.4↑d si 18.1↑d” al owner-ului, cu v30 luat de ea (operația `degrosare`, ADR 0313, propus de linie); rândul editabil al
-  finisării rămâne la cuvântul lui. Nimic pe server. Felia: pornirea +0,2 kB, totalul +10,8 kB (907,4 / 1 000).
+  fără mașină: creasta reală, suprafața față de model, timpul. Rândul editabil al finisării rămâne la cuvântul owner-ului. Nimic pe server. Felia: pornirea +0,2 kB, totalul
+  +10,8 kB (907,4 / 1 000).
+  **Degroșarea reliefului (ADR 0313, felia 18.1↑d-1; documentul v30) și fișa plăcii reliefului (18.1↑d-2)** gata pe
+  26.11, unite în `main` pe 26.11 (`3d0d0c15`), la „ok, porneste 10.4↑d si 18.1↑d” al owner-ului. **Documentul
+  v30:** operația `tip: 'degrosare'`, doar pe elemente `relief`, cu câmpul `degrosare` (`adaos`, în [0, 10] mm;
+  `unghi`; `margine`; `planZero`); migrarea v29 → v30 schimbă doar numărul și refuză un v29 care le are deja.
+  **Degroșarea se face doar cu freza plată** (`motivFormaPeOperatie`). CAM-ul e `degrosareRelief`
+  (`src/cam/reliefFinisare.ts`): drumul finisării, cu cota din câmpul conservativ dilatat cu discul de rază R + a,
+  ridicată cu a (adaosul rămâne în orice direcție, nu doar pe verticală), în trepte pe Z cel mult cât pasul; cu
+  peretele păstrat, liniile stau doar pe zona în care freza are voie. **O mutare de tăiere care coboară mai abrupt
+  decât lasă avansul de plonjare merge cu avansul de plonjare, și la finisare** (completare în ADR 0312; drumul
+  finisării e același, se schimbă doar F-ul acelor mutări). Ordinea automată (`ordinePasi`): degroșările,
+  finisările, tăieturile; finisarea pusă de mână înaintea degroșării aceluiași relief dă un avertisment; lucrarea
+  refuză un plan zero diferit de al finisării și o degroșare care trece de margine când finisarea păstrează
+  peretele. În Tăierea, rolul „Relief 3D” pune amândouă operațiile (nu se salvează ca rol personalizat); în
+  fereastra exportului, rândul degroșării e doar de citit, prin fișa finisării (`src/ui/FisaFinisare.tsx`).
+  **Oracolul 3D are judecata degroșării** (`judecaDegrosarea`, `coborariRepeziO`, simulatorul de material pe
+  operații la rând, în `test/oracles/relief3d.ts`): o strategie nouă de degroșare se judecă acolo. **Fișa plăcii
+  18** (`docs/etape/placa-18.md`): generatorul și fișierele de aur în `test/placi/placa-18/` (T1 plata Ø6, T2 bila
+  Ø6), cotele prezise în `test/unit/placa18.test.ts`, octeții în `placa18.aur.test.ts`; tăierea ei e a owner-ului.
+  Nedovedit fără mașină: lemnul rămas după degroșare, suprafața finisată față de model, timpul. Rândul editabil al
+  finisării și al degroșării rămâne la cuvântul owner-ului. Nimic pe server. Felia: pornirea +0,1 kB (măsurat de
+  linie), totalul +1,8 kB (912,6 / 1 000).
   **Raportările (15.B↑b) și imprimanta (3.6g, 3.6h, 3.6i pașii 1–2; ADR 0191 acceptat, codul 3.6j încă pe ramură) unite în
   `main` pe 07.11**, peste biblioteca extensiilor (`b501571`, `6e61bee`, apoi `e9cf6ee` cu DEVLOG-ul bibliotecii): **pornirea
   101,7 (cu ușa 105,3 / 110 kB), totalul 535,0 / 550, /admin 106,5 / 200, contul 29,6 / 32.** **Pe test (și pe live), serverul
@@ -1858,6 +1878,52 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 26.11.2026, spre dimineață (a patruzeci și cincea unire din cloud): **degroșarea reliefului (18.1↑d-1, cu documentul
+  v30) și fișa plăcii reliefului (18.1↑d-2), unite în `main`** (sesiunea principală, ramura `unire-2611d`, din
+  `9c728412`). Linia reliefului, ramura `wip/18.1-relief`, `2b38215a` (d-1 e `4381cc92`), PR-ul
+  `AndreiBesliu/cvs2#51` (ADR 0313, propus de linie, în cadrul ADR 0310 §4, §6; pornită la „ok, porneste 10.4↑d si
+  18.1↑d” al owner-ului), unite în `3d0d0c15`. **18.1↑d-1:** o piesă-relief primește în Tăierea rolul „Relief 3D”:
+  întâi degroșarea cu freza plată, în trepte pe Z cel mult cât pasul, pe liniile finisării, cu un adaos lăsat
+  finisării (implicit 0,5 mm, ținut în orice direcție, nu doar pe verticală), apoi finisarea; în ordinea automată vin
+  degroșările, apoi finisările, apoi tăieturile; în fereastra exportului, degroșarea are rândul ei, doar de citit.
+  **Mișcă mașina**, deci oracolul a fost scris întâi (`test/oracles/relief3d.ts`: adaosul în 3D, podeaua, pasul pe
+  material, simulatorul de material pe operații la rând); otrăvurile 43 / 43. **Documentul trece pe v30** (operația
+  `degrosare`, cu câmpul ei: `adaos`, `unghi`, `margine`, `planZero`; migrarea schimbă doar numărul): **un câmp nou
+  ia de acum v31**, iar numărul îl dă sesiunea principală, la cerere. **Două defecte găsite de linie pe G-code-ul
+  plăcii și reparate în felie, cu probele scrise întâi:** (1) o mutare de tăiere care cobora abrupt mergea cu
+  avansul de tăiere, și la finisarea din 18.1↑c (la începutul fiecărei linii, 3,5 mm aproape vertical cu F1000);
+  acum merge cu avansul de plonjare, iar drumul finisării rămâne același (se schimbă doar F-ul acelor mutări;
+  completare în ADR 0312); (2) cu peretele păstrat, lângă pereții paraleli cu liniile rămânea o fâșie de până la un
+  pas lateral peste adaos; acum liniile stau pe zona în care freza are voie. **18.1↑d-2:** fișa plăcii 18
+  (`docs/etape/placa-18.md`), pregătită fără mașină: MDF de 18 mm, T1 plata Ø6 (degroșarea), T2 bila Ø6
+  (finisarea), cu generatorul și fișierele de aur în `test/placi/placa-18/` și cotele prezise de oracolul
+  simulării; otrăvurile 10 / 10. Nimic pe server. Între raport și unire, `main` primise lotul cu globul și cotele
+  (cod al aplicației), deci unirea și-a făcut completul ei; ciocnirea, doar în DEVLOG. Porțile unirii, în CI, pe
+  `3d0d0c15` (completul 45740693114, verde la prima trecere, 57 min): unit 10 684 / 0 (12 sărite, pe Linux), e2e 919 / 919, funcțiile pe emulatoare 136 / 136,
+  paginile 60 / 60; rapidul, verde pe `3d0d0c15`; completele liniei, verzi (`4381cc92`: 45731673147; `2b38215a`:
+  45733724086); pornirea 111,4 kB (plafonul 125; cu ușa 116,7, cu Atelierul 117,0), **totalul 912,6 /
+  1 000 kB**, `/admin` 138,3 / 200, contul 30,2 / 32.
+  **Lotul 41 (globul de Crăciun, Easy 3Draw 18.36.0, și cotele în lanț) e pe test din 26.11, 04:35**
+  (`9c728412`; completul pe `main` 45736916608, verde; proba de fum, bună); lotul acesta pleacă împreună cu cotele
+  (10.4↑d-2, d-3) și cu exportul (28.8↑j), într-o singură publicare (lotul 42).
+  **Nedovedit fără mașină:** lemnul rămas după degroșare, suprafața finisată față de model, timpul: le măsoară
+  placa 18, tăiată de owner. **Alegerile owner-ului, cu recomandarea liniei aplicată (ADR 0313 §8):** (1) strategia
+  degroșării: trepte Z pe liniile finisării, cu panta urmată pe adaos (altfel: trepte curate, sau inele ca la
+  buzunar); (2) adaosul implicit 0,5 mm (altfel 0,3 sau 1); (3) freza degroșării, doar plată (altfel și bila);
+  (4) finisarea pusă de mână înaintea degroșării aceluiași relief: avertisment (altfel bifă sau refuz);
+  (5) finisarea după degroșare pornește tot de la fața plăcii (altfel o felie care sare trecerile din aer); (6) pe
+  placa 18, liniile finisării la 1,5 mm, ca să se vadă și să se măsoare creasta, 0,095 (altfel 0,6, o finisare de
+  lucru, cu creasta de 0,015, greu de măsurat). **A șaptea, nepornită:** cu liniile aliniate (0° / 90°), pasul
+  lateral al finisării se rotunjește la cel mai apropiat număr de celule, deci și în sus (2,4 devine 2,5, cu
+  avertisment), iar creasta iese mai mare decât cea cerută; linia recomandă rotunjirea în jos, o felie mică, la
+  cuvântul owner-ului. La linii: cotele (10.4↑d-2 și d-3) și exportul (28.8↑j) au raportat și sunt în CI, pe ramuri
+  de unire puse peste aceasta; în lucru, atelierul (3.Cl-3, ornamentul cu nume, 18.37.0). **La owner:** alegerile
+  reliefului și tăierea plăcii
+  18, cele două alegeri ale cotelor, de tipărit decorațiunile, rândul editabil al finisării și al degroșării,
+  Escape în cele șase ferestre, feliile frezelor (16.A↑d–g), cele două alegeri mai vechi cu recomandarea aplicată,
+  de încercat „Modelul” din Easy 3Draw, proba pe mașină a centrului foii, cele patru întrebări din auditul
+  elicelor, pachetul Easy 3Draw trecut de 0,5 MB, arhivarea sesiunii elicelor, verificarea juridică (GDPR) a
+  utilizării aplicației înaintea live-ului, „cine unește în `main`”, meniul de sus la 320 px la atingere.
 - 26.11.2026, noaptea (a patruzeci și patra unire din cloud): **globul de Crăciun din atelierul Easy 3Draw (3.Cl-2) și
   cotele în lanț și de la o linie de bază, cu „Cotează selecția” (10.4↑d-1), unite în `main`**, în lot (sesiunea
   principală, ramura `unire-2611c`, din `7a754885`). **3.Cl-2** (linia atelierului, ramura `wip/3.Xh-biblioteca-ui`,
