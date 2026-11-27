@@ -189,15 +189,16 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
   sâmbătă, 28.11, la 10:00; comună tuturor sesiunilor): „vezi sa nu se piarda din progresul pe care il fac celelalte
   sesiuni”. Liniile (atelierul, frezele, relieful, exportul) au primit, la 16:22, cererea să comită și să împingă tot, ca
   WIP unde nu e gata, cu starea scrisă în nota liniei. **Dacă sesiunea principală se oprește, cine o reia face, în ordine:**
-  1. loturile 64 (`30bcae13`, 3.Cm-3) și 65 (`75ae7f50`, 16.A↑f-3): `bash scripts/cloud/ci-si-publica.sh <sha întreg>`, întâi
-     64, apoi 65 (fiecare așteaptă completul pe `main`, apoi publică pe test);
+  1. loturile 64 (`30bcae13`, 3.Cm-3) și 65 (`75ae7f50`, 16.A↑f-3): **pe test** (16:33 și 16:50, proba de fum bună);
   2. `unire-2711t` (`ae43f184`, 3.Cm-4, Easy 3Draw 18.47.0): completul 46013605071; verde → adu `main` în ramură (doar
      documente), verifică `git diff --name-only ae43f184 HEAD | grep -v '\.md$'` gol, apoi `main` pe ea; documentele unirii;
   3. `unire-2711u` (`404d54a1`, 3.Cm-5, 18.48.0, peste 3.Cm-4): completul 46014154590; la fel, după 3.Cm-4;
   4. relieful (`cc2be106`, PR-ul #75, cu ciocnirea cu f-3 rezolvată, `main` `75ae7f50` adus): completul liniei 46011101795;
      verde și `main` încă fără 3.Cm-4 → unit direct (cod identic). Lotul `unire-2711w` (`3de94487`: 3.Cm-4, 3.Cm-5 și
      relieful, peste `main`) are completul 46016058170: el acoperă orice ordine a celor trei, cât `main` primește doar
-     documente; frezele (f-4, `d03f1561`, PR-ul #79) și atelierul (3.Cm-6) raportează la porți.
+     documente;
+  5. `unire-2711x` (`aad08f65`: 16.A↑f-4, marginea profilată, din `4930de51`, PR-ul #79, peste `unire-2711w`): completul
+     46019938355; se unește după `unire-2711w`, la fel; atelierul (3.Cm-6) raportează la porți.
 - **Modelul:** din 26.11, la prânz, sesiunea principală merge pe Opus („o sa folosim Opus de aici in colo”); sesiunile
   liniilor își păstrează modelul până îl schimbă owner-ul în fiecare.
 - **`main`, din cloud:** pe 23.11: 3.Tq (`0ae9c6c1`); 11.3↑e și A.4 (`ddaa7ead`); 3.Tr, unită de linia elicelor
