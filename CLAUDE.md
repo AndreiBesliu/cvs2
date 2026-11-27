@@ -1367,7 +1367,8 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   18.44.0); 3.Ck-2 (balamaua) urmează. **Un joc de mișcare vine dintr-o pereche care se potrivește deja pe imprimantă
   (calibrarea), cu un câmp pentru diferență; o piesă cu un capăt de știft Technic intră în probele care numără găurile
   de știft (`trenulet.prinderi.spec.ts`).**
-  **3.Ck-2 (balamaua; ADR 0284, partea B)** gata pe 26.11, pe ramura liniei, după 3.Ck-1, tot cu jocul din calibrare:
+  **3.Ck-2 (balamaua; ADR 0284, partea B)** gata pe 26.11, unită în `main` pe 27.11 (`439d0395`), după 3.Ck-1, tot cu
+  jocul din calibrare:
   în fila Cărămizi, „Balama” de 1 sau 2 știfturi lățime și 1–4 lungime, din două jumătăți tipărite culcate: una cu
   bolțul (o bară de 3,2 între obraji), alta cu câte o clemă din calibrarea barei pe fiecare știft, care se prinde pe bolț
   și se pliază de la 110° în jos până la 130° în sus; puse cap la cap, știfturile rămân pe grila de 8 mm. Clema are
@@ -2055,6 +2056,29 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 27.11.2026, noaptea (a cincizeci și noua unire din cloud): **balamaua din atelierul Easy 3Draw (3.Ck-2), unită în
+  `main`** (sesiunea principală, ramura `unire-2711a`, din `e656da6a`). Linia atelierului, ramura
+  `wip/3.Xh-biblioteca-ui`, `bd7a0751` (felia `fba8ecbe`, cu `main` `e656da6a` adus), PR-ul `AndreiBesliu/cvs2#70`
+  (ADR 0284, partea B, ultima felie), unită în `439d0395`: în fila Cărămizi, „Balama” de 1 sau 2 știfturi lățime și 1–4
+  lungime, din două jumătăți tipărite culcate, fără suport: una cu bolțul (o bară de Ø3,2 între obraji, cu axa la 4 mm
+  după capătul plăcii), alta cu câte o clemă din calibrarea barei pe fiecare știft, care se prinde pe bolț de sus și se
+  pliază de la 110° în jos până la 130° în sus fără nicio pătrundere (măsurat pe plase); puse cap la cap, știfturile
+  rămân pe grila de 8 mm; „Jocul clemei” (−0,1 … 0,2 mm); „Fă balamaua” pune amândouă jumătățile în listă. **Easy 3Draw
+  18.44.0** (582,8 kB); otrăvurile 55 / 55 și 8 / 8; ancorele tuturor listelor pluginului (2 704), fiecare găsită exact o
+  dată. **Cu ea, ADR 0284 are toate feliile făcute.** **Proba în engleză a pluginului, împărțită pe ecrane în trei**
+  (cum ceruse sesiunea principală după incident), fiecare pornită din `inEngleza`: paleta, circuitele și exportul CNC
+  (5,0 s), galeriile atelierului (16,0 s), căutarea, „Se prinde cu”, „Modelul” și construcțiile (11,6 s); bugetul de
+  90 s din 3.Ax a ieșit. Doar pachetul extensiei și probele se schimbă; nimic pe server; documentul rămâne v30. `main`
+  nu se mișcase, deci **arborele unirii e chiar al lui `bd7a0751`** și a intrat pe porțile lui: completul 45908777625,
+  verde: unit 10 862 / 0 (12 sărite, pe Linux), e2e 1 008 / 1 008, funcțiile pe emulatoare 142 / 142, paginile
+  62 / 62; rapidele, verzi; aplicația, neschimbată (pornirea 111,7 kB, totalul 932,8 / 1 000, `/admin` 138,3 / 200,
+  contul 30,3 / 32). Lotul 53 (`e656da6a`) e în drum spre test; 3.Ck-2 pleacă după el (lotul 54). **Alegerile liniei,
+  cu recomandarea aplicată, la owner:** două jumătăți, nu o balama dintr-o bucată; lățimea 1–2 și lungimea 1–4; axa la
+  4 mm după capătul plăcii, ca să rămână grila; jocul ca un câmp al clemei. **Nedovedit fără tipărire:** cât de ușor
+  intră clema pe bolț fără să crape și cât de greu se rotește. **Linia atelierului n-are altă felie pornită**
+  (următoarea versiune a pachetului e 18.45.0); din auditul elicelor, feliile propuse, la cuvântul owner-ului. La linii,
+  în lucru: frezele (16.A↑e-1, cu `main` adus, completul din nou). **La owner:** de tipărit balamaua și placa turnantă;
+  restul listei, neschimbat.
 - 27.11.2026, după miezul nopții (a cincizeci și opta unire din cloud): **începutul programului în Rezultat (28.8↑r), placa
   turnantă din atelierul Easy 3Draw (3.Ck-1), relieful: pasul lateral aliniat, rotunjit în jos, și rândul editabil
   din fereastra exportului (18.1↑d-3, d-4) și cotele: toleranțele, lungimile, Măsoară între foi, setările în cont
