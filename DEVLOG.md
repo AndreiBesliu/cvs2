@@ -16924,3 +16924,17 @@ ADR 0304 §3 (întrebarea 4a, partea canelurii). **Started:** 27.11, 09:40, pe `
 - **DEVLOG-ul:** titlul gol și bulinele dublate la unirea lui e-5, scoase (`9e599576`; semnalat de linia frezelor).
 - **Pe test:** lotul 60 (16.A↑e-6), în drum; lotul 61 (28.8↑s), după el.
 - **Documentele:** decizia și Starea în `CLAUDE.md`; starea din `docs/linii/principala.md`; indexul liniilor.
+
+## 2026-11-27 — Linia reliefului: `main` cu frezele v32 adus; profilul desenat fără rândul reliefului (Model: Claude Opus 5.5)
+
+**Prompt:** mesajul sesiunii principale (10:09, 11:05): „adu `main` în `wip/18.1-relief` și repară
+`src/app/valoriOperatii.ts:308`, apelul `numeDupaForma(s.forma)`, cu proba lui”. **Started:** 27.11, 10:10 (unirea de probă,
+locală). **Completed:** 27.11, 11:15 (în container; CI-ul, pe commit-ul împins).
+
+- **Unirea:** `main` `8906dedf` (16.A↑e-6, 16.A↑f-1, f-2, 28.8↑s) în ramură; ciocnirile (comentariile, `const rotunda` de
+  două ori în `job.ts`, DEVLOG) rezolvate întâi pe o unire de probă, reluate cu `git rerere`.
+- **Reparația, cu proba întâi** (`export.relief.test.ts`, roșie fără ea): `operatieCuRandRelief` dă rândul reliefului doar
+  operațiilor cu freza purtată de rând; `formaPeRand` e predicat de tip, deci tipul de la `numeDupaForma(s.forma)` trece. Un
+  profil pe relief rămâne neatins la Exportă (lucrarea îl refuză). ADR 0319, completarea din 27.11.
+- **Otrăvurile:** E29 și E30 (`18.1e.py`), prinse; E03 și E04 (`18.1d.py`), mutate pe codul nou, prinse (e2e).
+- **Mărimea și porțile:** din CI, pe commit-ul raportat.

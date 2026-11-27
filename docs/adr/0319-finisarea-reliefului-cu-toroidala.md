@@ -69,6 +69,15 @@ aici, lucrarea o refuza pe finisare (`motivFormaPeOperatie`), deși simularea o 
   puncte; proba programului a primit măsura suprafeței; două otrăvuri au fost rescrise (una echivalentă pe Ø4 r1, una de
   neatins).
 
+## Completarea din 27.11: profilul desenat (documentul v32)
+
+După unirea frezelor (16.A↑f-1, f-2; ADR 0304), freza unei operații poate fi și un profil desenat (`{ tip: 'profil', puncte }`),
+pe care lucrarea îl refuză pe relief. Rândul reliefului din fereastra exportului l-ar fi citit ca plată, iar Exportă l-ar fi
+scris înapoi așa. De aceea rândul reliefului îl au doar operațiile cu freza purtată de rând: `operatieCuRandRelief`
+(`src/model/formaFrezei.ts`), cu `formaPeRand` (acum predicat de tip: plata, V-ul, bila, toroidala). Fără rând, Exportă lasă
+operația neatinsă, iar lucrarea o refuză cu motivul ei, ca la rândurile operațiilor pe contur (`operatieCuRand`). Proba,
+scrisă întâi: `test/unit/export.relief.test.ts` (regula și Exportă cu valorile unui rând); otrăvurile E29 și E30, prinse.
+
 ## Nedovedit fără mașină
 
 Creasta reală (raza adevărată a colțului, bătaia frezei), suprafața tăiată față de model și timpul: le măsoară o placă a

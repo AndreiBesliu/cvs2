@@ -230,6 +230,10 @@ degroșarea și finisarea pe relief), unde stă relieful în document și unde s
   - **Freza reliefului are loc între frezele ferestrei** (`FrezaT.loc`, pe `scula`): „Dă-i T{n}” o tratează ca pe celelalte.
 - **27.11: 18.1↑e gata pe ramură**: finisarea reliefului cu freza toroidală (ADR 0319), cu oracolul 3D întâi. Cu ea, feliile
   lăsate la cuvântul owner-ului pe 27.11 sunt toate făcute; linia n-are altă felie pornită.
+- **27.11, după unirea frezelor (16.A↑f-1, f-2; documentul v32):** `main` adus în ramură. Cu v32, freza unei operații poate fi
+  și un profil desenat (`{ tip: 'profil', puncte }`), pe care rândul reliefului l-ar fi citit ca plată; acum rândul reliefului
+  îl au doar operațiile cu freza purtată de rând (`operatieCuRandRelief`, `src/model/formaFrezei.ts`), iar un profil rămâne
+  neatins la Exportă (lucrarea îl refuză pe relief). Un câmp nou al documentului ia v33.
 - **De ținut minte, din 18.1↑e:**
   - **O formă nouă de freză pe relief intră întâi în oracolul 3D** (`FrezaO`, `urcareO`, `clExact`, `clPlan`, `clRadial`), cu
     controalele negative, apoi în `urcare` (`src/cam/reliefFinisare.ts`); o siluetă mai jos decât freza adevărată sapă, una mai
@@ -238,3 +242,5 @@ degroșarea și finisarea pe relief), unde stă relieful în document și unde s
     nou intră într-un fișier care rămâne sub un minut.
   - **Rândul reliefului poartă raza colțului** (`RandRelief.razaColt`, `relief-raza-colt`): formele noi intră și în
     `formaRandRelief`, `campuriFormaRelief`, `frezaCitita`, `metaRand` și în regula T din `DialogExport`.
+  - **O formă de freză pe care rândul reliefului n-o poartă n-are rând** (`operatieCuRandRelief`, cu `formaPeRand`, predicat
+    de tip): o formă nouă care trebuie să ajungă pe relief intră întâi în `formaPeRand` și în rândul reliefului, cu proba ei.
