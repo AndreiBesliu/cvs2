@@ -24,7 +24,8 @@ var Atelier3D = (function () {
   type Gaura = [number, number, string];
   /** O piesă gata de printat: corpul, mărimea și ce a spus motorul despre ea. */
   type PiesaGata = { nume: string; titlu: string; tri: Tri[]; dim: number[]; baza?: number[] | undefined; ax?: number[] | null | undefined; avert?: string[] | undefined; unghi?: number | undefined;
-    stifturi?: number | undefined; locasuri?: number | undefined; deschise?: number | undefined; prinderi?: Prindere[] | undefined };
+    stifturi?: number | undefined; locasuri?: number | undefined; deschise?: number | undefined; prinderi?: Prindere[] | undefined;
+    tipar?: ReturnType<typeof Lego.construieste>["tipar"] };
   /** O prindere a unei piese, cum o spune motorul (ADR 0284, felia 3.Ce). */
   type Prindere = ReturnType<typeof Lego.prinderi>[number];
   type InLista = { id: string; def: Def; nume: string; bucati: number };
@@ -655,7 +656,7 @@ var Atelier3D = (function () {
     Lego.seteaza(paramMotor());
     if (def.tip === "calibrare") return Lego.calibrare().map(c => ({ nume: c.nume, titlu: c.titlu, tri: c.tri, dim: dimTri(c.tri) }));
     const r = Lego.construieste(def as Parameters<typeof Lego.construieste>[0]);
-    return [{ nume: slug(numeDef(def)), titlu: numeDef(def), tri: r.tri, dim: r.dim, baza: r.baza, ax: r.ax, avert: r.avert, unghi: r.unghi, stifturi: r.stifturi, locasuri: r.locasuri, deschise: r.deschise, prinderi: r.prinderi }];
+    return [{ nume: slug(numeDef(def)), titlu: numeDef(def), tri: r.tri, dim: r.dim, baza: r.baza, ax: r.ax, avert: r.avert, unghi: r.unghi, stifturi: r.stifturi, locasuri: r.locasuri, deschise: r.deschise, prinderi: r.prinderi, tipar: r.tipar }];
   }
   const slug = (t: string) => t.normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/×/g, "x").replace(/°/g, "").replace(/[^a-zA-Z0-9]+/g, "_").replace(/^_|_$/g, "").toLowerCase();
 
@@ -702,25 +703,37 @@ var Atelier3D = (function () {
     return tr`Pe pinioanele de ${m.z1} și ${m.z2}, cu axele la ${fmt(m.d, 2)} mm (${stf}), șenila are ${zaleText(m.zale)} (${m.zale * 12} mm) și rămân ${fmt(m.joc, 1)} mm de joc; întinsă, axele ar sta la ${fmt(m.intins, 2)} mm.`;
   }
   function textElice(p: { palete?: number; diametru?: number; pas?: number; latime?: number; paleta?: string }): string {
-    // elicea din editor: pasul, unghiul paletei (la butuc și la vârf, sau același, la cea plată) și consola la vârf, pe strat
+    // elicea din editor: pasul și unghiul paletei (la butuc și la vârf, sau același, la cea plată); cum se tipărește o spune
+    // paragraful de după construire (`textTipar`)
     const c = Lego.eliceCote(p), g = (x: number) => fmt(x * 180 / Math.PI, 0);
     const paleta = c.plata ? tr`Paleta plată, la ${g(c.bVarf)}° de la butuc la vârf, ca la LEGO.` : tr`Paleta răsucită: ${g(c.bRad)}° lângă butuc, ${g(c.bVarf)}° la vârf.`;
-    return tr`Pasul ${fmt(c.P, 0)} mm (${fmt(c.pd, 2)} × diametrul). ${paleta} Se tipărește fără suport: la vârf, un strat iese cu ${fmt(c.consola, 1)} mm peste cel de dedesubt.`;
+    return tr`Pasul ${fmt(c.P, 0)} mm (${fmt(c.pd, 2)} × diametrul).` + " " + paleta;
   }
   function textBarca(p: { palete?: number; diametru?: number; pas?: number; latime?: number; inclinare?: number; pupa?: number }): string {
     // elicea de barcă din editor: pasul, unghiul paletei la butuc și la vârf, cât din disc acoperă paletele, butucul (crește cu
-    // diametrul și cu paletele) și consola la vârf, pe strat; cu înclinarea spre pupa (3.Tt), cât urcă vârful de pe masă și
-    // suportul de sub palete, în locul consolei
+    // diametrul și cu paletele); cu înclinarea spre pupa (3.Tt), cât urcă vârful de pe masă. Cum se tipărește o spune paragraful
+    // de după construire (`textTipar`)
     const c = Lego.eliceBarcaCote(p), g = (x: number) => fmt(x * 180 / Math.PI, 0);
-    if (c.pupa > 0) return tr`Pasul ${fmt(c.P, 0)} mm (${fmt(c.pd, 2)} × diametrul): paleta stă la ${g(c.bRad)}° lângă butuc și la ${g(c.bVarf)}° la vârf. Paletele acoperă ${fmt(c.acoperire * 100, 0)} % din disc; butucul e de Ø${fmt(2 * c.rh, 1)} × ${fmt(c.Hh, 1)} mm. Înclinată spre pupa cu ${fmt(c.pupa, 0)}°: muchia de jos a paletei urcă de pe masă până la ${fmt(c.urca, 1)} mm la vârf, deci se tipărește cu suport sub palete (îl pune programul de feliere), tot cu partea dinspre barcă pe masă.`;
-    return tr`Pasul ${fmt(c.P, 0)} mm (${fmt(c.pd, 2)} × diametrul): paleta stă la ${g(c.bRad)}° lângă butuc și la ${g(c.bVarf)}° la vârf. Paletele acoperă ${fmt(c.acoperire * 100, 0)} % din disc; butucul e de Ø${fmt(2 * c.rh, 1)} × ${fmt(c.Hh, 1)} mm. Se tipărește fără suport, cu partea dinspre barcă pe masă: la vârf, un strat iese cu ${fmt(c.consola, 1)} mm peste cel de dedesubt.`;
+    const baza = tr`Pasul ${fmt(c.P, 0)} mm (${fmt(c.pd, 2)} × diametrul): paleta stă la ${g(c.bRad)}° lângă butuc și la ${g(c.bVarf)}° la vârf. Paletele acoperă ${fmt(c.acoperire * 100, 0)} % din disc; butucul e de Ø${fmt(2 * c.rh, 1)} × ${fmt(c.Hh, 1)} mm.`;
+    return c.pupa > 0 ? baza + " " + tr`Înclinată spre pupa cu ${fmt(c.pupa, 0)}°: muchia de jos a paletei urcă de pe masă până la ${fmt(c.urca, 1)} mm la vârf.` : baza;
   }
   function textVentilator(p: { palete?: number; diametru?: number; joc?: number; pas?: number; latime?: number; inel?: string }): string {
-    // ventilatorul din editor: rotorul (vârful, butucul, inelul, unghiurile, consola) și carcasa (diametrele, înălțimea, unde
-    // stau găurile urechilor față de ax)
+    // ventilatorul din editor: rotorul (vârful, butucul, inelul, unghiurile) și carcasa (diametrele, înălțimea, unde stau
+    // găurile urechilor față de ax); cum se tipărește rotorul o spune paragraful de după construire (`textTipar`)
     const c = Lego.ventilatorCote(p), g = (x: number) => fmt(x * 180 / Math.PI, 0), stf = cuDe(c.k) ? tr`${c.k} de știfturi` : tr`${c.k} știfturi`;
     const inel = p.inel === "da" ? tr` Inelul, gros de 1,2 mm, e înalt de ${fmt(c.Hinel, 1)} mm.` : "";
-    return tr`Rotorul: paletele până la Ø${fmt(2 * c.Rt, 1)} (${fmt(c.joc, 1)} mm de carcasă), pe un butuc de Ø${fmt(2 * c.rh, 1)} × ${fmt(c.Hh, 1)} mm. Pasul ${fmt(c.P, 0)} mm (${fmt(c.pd, 2)} × diametrul): paleta stă la ${g(c.bRad)}° lângă butuc și la ${g(c.bVarf)}° la vârf; la vârf, un strat iese cu ${fmt(c.consola, 1)} mm peste cel de dedesubt.${inel} Carcasa: Ø${fmt(c.D, 1)} în interior, Ø${fmt(c.D + 4, 1)} în afară, înaltă de ${fmt(c.Hc, 1)} mm; găurile urechilor, la ${8 * c.k} mm de ax (${stf}).`;
+    return tr`Rotorul: paletele până la Ø${fmt(2 * c.Rt, 1)} (${fmt(c.joc, 1)} mm de carcasă), pe un butuc de Ø${fmt(2 * c.rh, 1)} × ${fmt(c.Hh, 1)} mm. Pasul ${fmt(c.P, 0)} mm (${fmt(c.pd, 2)} × diametrul): paleta stă la ${g(c.bRad)}° lângă butuc și la ${g(c.bVarf)}° la vârf.${inel} Carcasa: Ø${fmt(c.D, 1)} în interior, Ø${fmt(c.D + 4, 1)} în afară, înaltă de ${fmt(c.Hc, 1)} mm; găurile urechilor, la ${8 * c.k} mm de ax (${stf}).`;
+  }
+  function textTipar(def: Def, t: NonNullable<PiesaGata["tipar"]>): string {
+    // cum se tipăresc paletele (ADR 0340, 3.Cm-2): verdictul motorului, pe praguri, cu treapta cea mai mare dintre straturi
+    // (măsurată pe secțiuni) și, când primul strat acoperă puțin din disc, marginea de aderență
+    const cine = def.tip === "eliceBarca" ? tr("Se tipărește cu partea dinspre barcă pe masă,") : def.tip === "ventilator" ? tr("Rotorul se tipărește") : tr("Se tipărește");
+    const tr2 = fmt(t.treapta, 2);
+    const s = t.ridicata ? tr`${cine} cu suport sub palete (îl pune programul de feliere): muchia lor de jos urcă de pe masă.`
+      : t.fel === "suport" ? tr`${cine} cu suport sub vârfurile paletelor (sau alege un pas mai mare): spre vârf, un strat iese peste cel de dedesubt cu peste 1 mm, pe alocuri cu până la ${tr2} mm.`
+      : t.fel === "aspru" ? tr`${cine} fără suport, dar dedesubtul paletelor iese aspru pe alocuri (ventilatorul de răcire, la maxim): un strat iese peste cel de dedesubt cu până la ${tr2} mm.`
+      : tr`${cine} fără suport: un strat iese peste cel de dedesubt cu cel mult ${tr2} mm.`;
+    return t.brim ? s + " " + tr`Primul strat atinge masa doar pe ${fmt(100 * t.parte, 1)} % din discul paletelor: pune o margine de aderență (brim) în programul de feliere.` : s;
   }
   // „Ca LEGO” (ADR 0282, cotele din LDraw, măsurate față de axa găurii, nu față de centrul cutiei): diametrul (vârfurile la
   // 13,69, 21,56 și 36,96 mm de axă: cât spun numele pieselor, 3½, 5½ și 9 știfturi), paleta plată cu unghiul de la 70 % din
@@ -1621,7 +1634,7 @@ var Atelier3D = (function () {
       // gaura și conul; „Ca LEGO” pune cotele măsurate în LDraw; „Fă perechea” pune în listă ambele sensuri
       const p = stare.elice, lego = Object.keys(ELICE_LEGO).find(k => Object.entries(ELICE_LEGO[k]!).every(([c, v]) => (p as Record<string, unknown>)[c] === v)) ?? "";
       e.innerHTML = `<h2>Elice</h2>
-        <p class="mic">Elice pentru motoarele LEGO, pe un butuc ca la LEGO (Ø8, înalt cât un știft), cu gaura din calibrare. Se tipărește fără suport: butucul și muchia de jos a fiecărei palete stau pe masă.</p>
+        <p class="mic">Elice pentru motoarele LEGO, pe un butuc ca la LEGO (Ø8, înalt cât un știft), cu gaura din calibrare. Se tipărește cu butucul și muchia de jos a fiecărei palete pe masă.</p>
         <div class="at-rand"><span class="mic">Repede:</span>${seg("at-el-repede", [["6041", "Ca LEGO 6041"], ["92842", "Ca LEGO 92842"], ["15790", "Ca LEGO 15790"]], lego)}</div>
         <div class="at-campuri">
           <label for="at-el-palete">Paletele<input id="at-el-palete" type="number" min="2" max="8" step="1" value="${p.palete}"></label>
@@ -1660,7 +1673,7 @@ var Atelier3D = (function () {
       // motoare, care se rotesc invers)
       const p = stare.eliceBarca;
       e.innerHTML = `<h2>Elice de barcă</h2>
-        <p class="mic">Elice pentru bărcile cu motoare LEGO: palete late, înclinate înapoi, cu pasul la fel de la butuc la vârf, pe un butuc cu gaura din calibrare. Se tipărește cu partea dinspre barcă pe masă, fără suport (cu paletele înclinate spre pupa, cu suport sub ele); axul intră de jos, iar capacul, dacă îl pui, rămâne spre pupa.</p>
+        <p class="mic">Elice pentru bărcile cu motoare LEGO: palete late, înclinate înapoi, cu pasul la fel de la butuc la vârf, pe un butuc cu gaura din calibrare. Se tipărește cu partea dinspre barcă pe masă; axul intră de jos, iar capacul, dacă îl pui, rămâne spre pupa.</p>
         <div class="at-rand"><span class="mic">Repede:</span>${seg("at-eb-repede", [["24", "Ø24"], ["32", "Ø32"], ["40", "Ø40"], ["56", "Ø56"]], String(p.diametru))}<span class="mic">${tr("3, 4, 5 și 7 știfturi")}</span></div>
         <div class="at-campuri">
           <label for="at-eb-palete">Paletele<input id="at-eb-palete" type="number" min="3" max="5" step="1" value="${p.palete}"></label>
@@ -1697,7 +1710,7 @@ var Atelier3D = (function () {
       // urechile, ale carcasei; „Fă ventilatorul” pune în listă rotorul și carcasa
       const p = stare.ventilator, rotor = p.piesa !== "carcasa";
       e.innerHTML = `<h2>Ventilator cu carcasă</h2>
-        <p class="mic">Un ventilator în tub, pentru motoarele LEGO: rotorul, cu paletele răsucite, pe un butuc cu gaura din calibrare, și carcasa din jurul lui, cu urechi pentru grinzi. Găurile urechilor sunt pe grila axului: pe o grindă prinsă de urechi cu știfturi, axul trece prin gaura din mijloc, iar rotorul stă în mijlocul carcasei. Amândouă se tipăresc fără suport: rotorul cu muchia de jos a paletelor pe masă, carcasa în picioare.</p>
+        <p class="mic">Un ventilator în tub, pentru motoarele LEGO: rotorul, cu paletele răsucite, pe un butuc cu gaura din calibrare, și carcasa din jurul lui, cu urechi pentru grinzi. Găurile urechilor sunt pe grila axului: pe o grindă prinsă de urechi cu știfturi, axul trece prin gaura din mijloc, iar rotorul stă în mijlocul carcasei. Rotorul se tipărește cu muchia de jos a paletelor pe masă, carcasa în picioare, fără suport.</p>
         <div class="at-rand"><span class="mic">Piesa:</span>${seg("at-ve-piesa", [["rotor", "Rotorul"], ["carcasa", "Carcasa"]], rotor ? "rotor" : "carcasa")}</div>
         <div class="at-rand"><span class="mic">Repede:</span>${seg("at-ve-repede", [["24", "Ø24"], ["32", "Ø32"], ["40", "Ø40"], ["48", "Ø48"]], String(p.diametru))}<span class="mic">${tr("3, 4, 5 și 6 știfturi")}</span></div>
         <div class="at-campuri">
@@ -2801,7 +2814,7 @@ var Atelier3D = (function () {
     if (vedere === "model") {
       privita = null;
       $("#at-nume-piesa").textContent = "Modelul";
-      $("#at-avert").hidden = true;
+      $("#at-avert").hidden = true; $("#at-tipar").hidden = true;
       editorModel(); arataModel(); randeazaPrinde();
     } else {
       privita = null; editor(); construiesteCurent();
@@ -2925,7 +2938,7 @@ var Atelier3D = (function () {
     const p = privita;
     $("#at-nume-piesa").textContent = p!.titlu;
     $("#at-cote").innerHTML = `<span><b>Mărime</b> ${tr`${fmt(p!.dim[0]!)} × ${fmt(p!.dim[1]!)} × ${fmt(p!.dim[2]!)} mm`}</span><span><b>Filament</b> ≈ ${fmt(p!.g)} g</span><span><b>Din circuit</b> ${p!.bucati} ${p!.bucati === 1 ? tr("bucată") : tr("bucăți")}</span>`;
-    $("#at-avert").hidden = false; $("#at-avert").textContent = "E o piesă din circuitul de tren: o vezi aici, cum se așază pe pat. Se schimbă din 2D, la Export CNC.";
+    $("#at-avert").hidden = false; $("#at-avert").textContent = "E o piesă din circuitul de tren: o vezi aici, cum se așază pe pat. Se schimbă din 2D, la Export CNC."; $("#at-tipar").hidden = true;
     $("#at-adauga").hidden = true; $("#at-bucati-rand").hidden = true; $("#at-in-model").hidden = true;
     randeazaPrinde();
     arata3D(p!.tri, false, true);
@@ -2941,7 +2954,7 @@ var Atelier3D = (function () {
       curent = null;
       randeazaPrinde();
       $("#at-adauga").hidden = true; $("#at-bucati-rand").hidden = true; $("#at-in-model").hidden = true;
-      $("#at-nume-piesa").textContent = tr("Formă din cvs2"); $("#at-cote").innerHTML = ""; $("#at-avert").hidden = true;
+      $("#at-nume-piesa").textContent = tr("Formă din cvs2"); $("#at-cote").innerHTML = ""; $("#at-avert").hidden = true; $("#at-tipar").hidden = true;
       if (v3.ok && v3.mesh) { v3.scena.remove(v3.mesh); v3.mesh.geometry.dispose(); v3.mesh = null; randeaza(); }
       return;
     }
@@ -2960,11 +2973,16 @@ var Atelier3D = (function () {
       const av = piese.flatMap(p => p.avert || []);
       if (def.tip === "caramida" && bucatiSeparate(def.celule!) > 1) av.push(tr("Forma are bucăți care nu se ating: ies piese separate, în același fișier."));
       $("#at-avert").hidden = !av.length; $("#at-avert").textContent = av.join(" ");
+      // cum se tipăresc paletele (ADR 0340): doar la elice, la elicea de barcă și la rotor (carcasa și celelalte piese n-au).
+      // Paragraful stă în panoul piesei, sub „Se prinde cu”, nu în editor: o redesenare a editorului nu-l golește, deci nu
+      // mută butoanele de sub el cât se face piesa
+      const tp = piese.length === 1 ? piese[0]!.tipar : undefined;
+      $("#at-tipar").hidden = !tp; $("#at-tipar").textContent = tp ? textTipar(def, tp) : "";
       if ($("#at-p-unghi")) $("#at-p-unghi").textContent = def.tip === "pantaInversa" ? tr`Fața de dedesubt urcă la ${fmt(piese[0]!.unghi!)}° (înălțimea ${fmt(def.placi! * 3.2)} mm, buza ${fmt(def.buza!)} mm).`
         : def.profil === "curb" ? tr`Curba urcă de la buză (${fmt(def.buza!)} mm) la ${fmt(def.placi! * 3.2)} mm; în medie ${fmt(piese[0]!.unghi!)}°.` : tr`Panta iese de ${fmt(piese[0]!.unghi!)}° (înălțimea ${fmt(def.placi! * 3.2)} mm, buza ${fmt(def.buza!)} mm).`;
       if ($("#at-pana-info") && def.tip === "pana") $("#at-pana-info").textContent = tr`Tăietura e la ${fmt(piese[0]!.unghi!)}° față de latura lungă · ${piese[0]!.stifturi} ${piese[0]!.stifturi === 1 ? tr("știft") : tr("știfturi")} sus, ${piese[0]!.locasuri} ${piese[0]!.locasuri === 1 ? tr("locaș") : tr("locașuri")} dedesubt` + (piese[0]!.deschise ? tr`, plus ${piese[0]!.deschise} deschise lângă marginea oblică (acolo stă pe știfturi, fără să le prindă).` : ".");
       arata3D(tri, pastreaza!);
-    } catch (e) { prinderiCurente = []; $("#at-avert").hidden = false; $("#at-avert").textContent = tr`Nu am putut face piesa: ${(e as Error).message || e}`; }
+    } catch (e) { prinderiCurente = []; $("#at-tipar").hidden = true; $("#at-avert").hidden = false; $("#at-avert").textContent = tr`Nu am putut face piesa: ${(e as Error).message || e}`; }
     randeazaPrinde();
   }
 

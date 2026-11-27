@@ -42,8 +42,9 @@ var Lego = (function (glob: typeof globalThis) {
    */
   type Prindere = { fel: FelPrindere; p: P3; d: P3; lung: number; orb?: true; r?: P3; guler?: number; lamaj?: number };
   type Corp = { tri: Tri[]; avert: string[]; prinderi: Prindere[] };
-  /** Ce mai spun unele piese: unghiul pantei sau al tăieturii, câte știfturi, locașuri și găuri au ieșit. */
-  type Rezultat = Corp & { unghi?: number; stifturi?: number; locasuri?: number; deschise?: number; gauri?: number };
+  /** Ce mai spun unele piese: unghiul pantei sau al tăieturii, câte știfturi, locașuri și găuri au ieșit, cum se tipăresc
+   *  paletele (elicele, ADR 0340). */
+  type Rezultat = Corp & { unghi?: number; stifturi?: number; locasuri?: number; deschise?: number; gauri?: number; tipar?: Tipar };
   /** Discul scos dintr-un poligon: buclele rămase sau o gaură întreagă. */
   type Disc = { bucle: Poli[]; gaura?: never } | { gaura: true; bucle?: never };
   type Ef = ReturnType<typeof ef>;
@@ -2636,6 +2637,64 @@ var Lego = (function (glob: typeof globalThis) {
     }
     return tri;
   }
+  // ------------------------------------------------------------------------- tipărirea paletelor (ADR 0340, felia 3.Cm-2)
+  // Paletele se tipăresc cu muchia de jos pe masă: la fiecare strat de 0,2 mm, dedesubtul lor iese peste stratul de dedesubt.
+  // Consola din cote, 0,2 / tan β la vârf, e a corzii, deci în medie pe secțiune; pe secțiunea reală, curbată, treapta crește
+  // spre muchia de sus (unde dedesubtul e mai culcat) și la primele straturi de lângă masă (muchia rotunjită). Aici, treapta
+  // cea mai mare dintre două straturi, pe secțiunile din afara butucului, cu straturile tăiate la mijloc (0,1 + 0,2k, ca un
+  // program de feliere): spre muchia de sus a elicei implicite, 1,53 mm, deși la vârf, în medie, 0,90; iar un vârf jos, de un
+  // singur strat, nu iese peste nimic, oricât ar spune consola. Verdictul, pe praguri: treapta de cel mult 0,5 mm (cam o linie
+  // de duză de 0,42), fără suport; până la 1 mm, sau peste doar pe alocuri (consola de la vârf, cel mult 1 mm), fără suport,
+  // dar aspru pe alocuri; peste 1 mm și treapta, și consola de la vârf, cu suport sub vârfuri; cu paletele ridicate de pe masă
+  // (înclinarea spre pupa), cu suport sub palete. Margine (brim): când primul strat (felia plasei la 0,1 mm) acoperă sub 10 %
+  // din discul paletelor, ele țin de masă doar pe fâșii subțiri.
+  const TIPAR = { strat: 0.2, bine: 0.5, aspru: 1, brim: 0.1 };
+  type Tipar = { consola: number; treapta: number; fel: "bine" | "aspru" | "suport"; ridicata: boolean; aria: number; parte: number; brim: boolean };
+  /** Treapta cea mai mare dintre două straturi, pe secțiunile (s, h) din afara butucului (r > rh). */
+  function treaptaPalete(statii: readonly StatieElice[], rh: number): number {
+    let max = 0;
+    for (const st of statii) {
+      if (st.r <= rh) continue;
+      const sec = st.sec, n = sec.length, hmax = Math.max(...sec.map(p => p[1]));
+      let inainte: { lo: number; hi: number } | null = null;
+      for (let k = 0; TIPAR.strat / 2 + TIPAR.strat * k < hmax; k++) {
+        const h = TIPAR.strat / 2 + TIPAR.strat * k, xs: number[] = [];
+        for (let j = 0; j < n; j++) {
+          const a = sec[j]!, b = sec[(j + 1) % n]!;
+          if ((a[1] - h) * (b[1] - h) < 0) xs.push(a[0] + (h - a[1]) / (b[1] - a[1]) * (b[0] - a[0]));
+        }
+        if (xs.length < 2) { inainte = null; continue; }
+        const lo = Math.min(...xs), hi = Math.max(...xs);
+        if (inainte) max = Math.max(max, hi - inainte.hi, inainte.lo - lo);
+        inainte = { lo, hi };
+      }
+    }
+    return max;
+  }
+  /** Aria secțiunii plasei închise la planul z = h (½ Σ p × q pe segmentele tăiate, orientate după normala triunghiului). */
+  function ariaFeliei(tri: readonly Tri[], h: number): number {
+    let a = 0;
+    for (const t of tri) {
+      const pts: P2[] = [];
+      for (let i = 0; i < 3; i++) {
+        const p = t[i]!, q = t[(i + 1) % 3]!;
+        if ((p[2] - h) * (q[2] - h) < 0) { const u = (h - p[2]) / (q[2] - p[2]); pts.push([p[0] + u * (q[0] - p[0]), p[1] + u * (q[1] - p[1])]); }
+      }
+      if (pts.length !== 2) continue;
+      const nx = (t[1][1] - t[0][1]) * (t[2][2] - t[0][2]) - (t[1][2] - t[0][2]) * (t[2][1] - t[0][1]);
+      const ny = (t[1][2] - t[0][2]) * (t[2][0] - t[0][0]) - (t[1][0] - t[0][0]) * (t[2][2] - t[0][2]);
+      let [p, q] = pts as [P2, P2];
+      if ((q[0] - p[0]) * -ny + (q[1] - p[1]) * nx < 0) [p, q] = [q, p];
+      a += 0.5 * (p[0] * q[1] - p[1] * q[0]);
+    }
+    return a;
+  }
+  /** Verdictul tipăririi paletelor: din consola de la vârf, din secțiuni (treapta) și din plasă (primul strat, pe discul R). */
+  function tiparPalete(statii: readonly StatieElice[], rh: number, tri: readonly Tri[], consola: number, R: number, ridicata = false): Tipar {
+    const aria = ariaFeliei(tri, TIPAR.strat / 2), parte = aria / (Math.PI * R * R), treapta = treaptaPalete(statii, rh);
+    const fel = ridicata || (consola > TIPAR.aspru && treapta > TIPAR.aspru) ? "suport" : treapta > TIPAR.bine ? "aspru" : "bine";
+    return { consola, treapta, fel, ridicata, aria, parte, brim: parte < TIPAR.brim };
+  }
   function butucElice(rh: number, Hh: number, gaura: string | undefined, inchisSus = false): { tri: Tri[]; prinderi: Prindere[] } {
     // butucul elicelor, cu gaura din calibrare: pentru ax (crucea), rotundă (știftul), pentru bară sau fără. Prinderile:
     // gaura, prin butuc; sub un con sau un capac (care intră 0,1 mm în butuc), doar de jos
@@ -2644,7 +2703,7 @@ var Lego = (function (glob: typeof globalThis) {
     const prinderi = G.g.length ? prinderiButuc(fel, inchisSus ? Hh - 0.1 : Hh, bratCruce(G.g[0]!, [0, 0]), inchisSus) : [];
     return { tri: prismaGauri(cerc(0, 0, rh), G.g, 0, Hh), prinderi };
   }
-  function elice(d: EliceDef): Corp {
+  function elice(d: EliceDef): Rezultat {
     const avert: string[] = [], q = eliceCote(d), { z, R } = q, rh = ELICE.butucR;
     if (Number.isFinite(+(d.palete as number)) && q.z !== +(d.palete as number)) avert.push(tr`O elice are între 2 și 8 palete: am făcut-o cu ${q.z}.`);
     if (Number.isFinite(+(d.diametru as number)) && q.D !== +(d.diametru as number)) avert.push(tr`Diametrul unei elice e între 20 și 200 mm: am făcut-o de ${q.D} mm.`);
@@ -2683,7 +2742,7 @@ var Lego = (function (glob: typeof globalThis) {
       }
       tri.push(...orienteaza(con));
     }
-    return { tri, avert, prinderi: butuc.prinderi };
+    return { tri, avert, prinderi: butuc.prinderi, tipar: tiparPalete(statii, rh, tri, q.consola, R) };
   }
 
   // ------------------------------------------------------------------------------------- elicea de barcă (ADR 0282, 3.Tr)
@@ -2753,7 +2812,7 @@ var Lego = (function (glob: typeof globalThis) {
     }
     return { z, D, R, pd, P, lat, inc, pupa, urca: urca(R), rh, Hh, statii, bRad: beta(rh), bVarf: beta(R), consola: 0.2 / Math.tan(beta(R)), acoperire: z * arie / (Math.PI * R * R) };
   }
-  function eliceBarca(d: BarcaDef): Corp {
+  function eliceBarca(d: BarcaDef): Rezultat {
     const avert: string[] = [], q = eliceBarcaCote(d), { rh, Hh } = q;
     if (Number.isFinite(+(d.palete as number)) && q.z !== +(d.palete as number)) avert.push(tr`O elice de barcă are între 3 și 5 palete: am făcut-o cu ${q.z}.`);
     if (Number.isFinite(+(d.diametru as number)) && q.D !== +(d.diametru as number)) avert.push(tr`Diametrul unei elice de barcă e între 20 și 120 mm: am făcut-o de ${q.D} mm.`);
@@ -2771,7 +2830,7 @@ var Lego = (function (glob: typeof globalThis) {
       }
       tri.push(...orienteaza(cap));
     }
-    return { tri, avert, prinderi: butuc.prinderi };
+    return { tri, avert, prinderi: butuc.prinderi, tipar: tiparPalete(q.statii, rh, tri, q.consola, q.R, q.pupa > 0) };
   }
 
   // ------------------------------------------------------------------------------------ ventilatorul cu carcasă (ADR 0282, 3.Ts)
@@ -2861,7 +2920,7 @@ var Lego = (function (glob: typeof globalThis) {
     return [...prismaGauri(ext, gauri(e.lamajD), 0, h), ...prismaGauri(ext, gauri(e.gauraD), h - 0.01, g - h + 0.01),
       ...prismaGauri(ext, gauri(e.lamajD), g - h, g), ...prismaGauri(tub, [gol], g - 0.01, q.Hc)];
   }
-  function ventilator(d: VentDef): Corp {
+  function ventilator(d: VentDef): Rezultat {
     const avert: string[] = [], q = ventilatorCote(d);
     const dat = (v: unknown) => v !== null && v !== undefined && v !== "" && Number.isFinite(+(v as number));
     if (dat(d.palete) && q.z !== +(d.palete as number)) avert.push(tr`Un ventilator are între 3 și 12 palete: l-am făcut cu ${q.z}.`);
@@ -2874,7 +2933,7 @@ var Lego = (function (glob: typeof globalThis) {
     const tri = paleteElice(q.statii, q.z, d.sens === "stanga" ? -1 : 1, true), butuc = butucElice(q.rh, q.Hh, d.gaura);
     tri.push(...butuc.tri);
     if (q.inel) { const n = laturiCerc(q.Rt); tri.push(...prismaGauri(cerc(0, 0, q.Rt, n), [cerc(0, 0, q.Rt - VENT.inelGros, n)], 0, q.Hinel)); }
-    return { tri, avert, prinderi: butuc.prinderi };
+    return { tri, avert, prinderi: butuc.prinderi, tipar: tiparPalete(q.statii, q.rh, tri, q.consola, q.Rt) };
   }
 
   // ---------------------------------------------------------------------------------------------- decorațiunile de Crăciun (ADR 0285)

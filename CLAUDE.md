@@ -104,7 +104,7 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   `test/oracles/document.ts` (peste partea v1–v10), cazurile pe hârtie la finalul lui `test/oracles/document.cazuri.ts`, proba
   cu ușa aplicației în `test/unit/document.v22.oracol.test.ts` (din 08.11, cu incrustațiile din v20–v22) și, pentru v23 (literele
   plăcuțelor, 11.4↑, în `main` din 13.11), în `test/unit/document.v23.oracol.test.ts`. **Un câmp nou al documentului
-  (v32; v31, cu forma toroidalei, ADR 0303, e în `main` din 27.11; v30, cu degroșarea reliefului, ADR 0313, din 26.11; v29, cu finisarea reliefului și freza bilă, ADR 0312, din 25.11; v28, cu forma `relief`, ADR
+  (v33; v32, cu forma `profil` a frezei, ADR 0304, e în `main` din 27.11; v31, cu forma toroidalei, ADR 0303, din 27.11; v30, cu degroșarea reliefului, ADR 0313, din 26.11; v29, cu finisarea reliefului și freza bilă, ADR 0312, din 25.11; v28, cu forma `relief`, ADR
   0310, din 24.11; v27, cu `biblioteca`, `regim` și `tais` pe frezele
   operațiilor, ADR 0300) intră acolo, ca rangul și incrustația:** rândul
   lui în `CAMPURI_NOI_O` (ciocnirea migrării), judecata în `problemeOperatieO`, frontierele pe hârtie, iar probele care țin
@@ -323,7 +323,7 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   buzunarul, liniile paralele, frezele de rest, găurirea, V-ul, fundul plat, dopurile), turația primei freze montate
   și a celei noi la schimbare. **Fără valori, programul de azi, octet cu octet;** același T cu două turații și o
   adâncime peste tăiș se refuză. Fără interfață încă: urmează 16.A↑b-2 (lista „Freza” pe rândurile exportului și în
-  Tăierea) și 16.A↑b-3 (nota schimbării din bibliotecă). **Un câmp nou al documentului ia v32 (v28 e relieful, ADR 0310; v29, finisarea lui, ADR 0312; v30, degroșarea lui, ADR 0313; v31, forma toroidalei, ADR 0303). O probă e2e care
+  Tăierea) și 16.A↑b-3 (nota schimbării din bibliotecă). **Un câmp nou al documentului ia v33 (v28 e relieful, ADR 0310; v29, finisarea lui, ADR 0312; v30, degroșarea lui, ADR 0313; v31, forma toroidalei, ADR 0303; v32, profilul desenat al frezei, ADR 0304). O probă e2e care
   citește documentul salvat cere versiunea curentă:** `placute.spec.ts` a căzut în completul liniei cu `schema: 26`.
   **Biblioteca de freze în cont (ADR 0300 §3, §7, felia 16.A↑c)** gata pe 24.11, unită în `main` pe 24.11
   (`6b74074d`), la „b, pornește 16.A↑c” al owner-ului: callable-ul `freze` (`functions/src/freze/`, contractul în
@@ -458,6 +458,13 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   unei laturi se schimbă odată cu regula** (`frezeTaiere.spec.ts` cerea încă doar frezele plate pe exterior).
   Documentul rămâne v31; nimic pe server. Felia: pornirea +0, totalul +0,5 kB (cu primul pas din f-1, profilul în IR
   și în simulare, +2,0).
+  **Profilul desenat al frezei (ADR 0304, felia 16.A↑f-1; documentul v32) și canelura cu el (felia 16.A↑f-2)** gata pe
+  27.11, unite în `main` pe 27.11 (`8906dedf`): forma `{ tip: 'profil', puncte: [[r, h], …] }` (2–200 de puncte, primul
+  (0, 0), r strict crescător, h nedescrescător, capătul la Ø / 2), cu migrarea v31 → v32 doar pe număr; canelura pe
+  drumul frezei plate de același Ø, cu secțiunea oglinda siluetei; în rest, refuzat cu motiv (`motivFormaPeOperatie`
+  întoarce `'profil'` întâi, deci și pe relief). **O formă nouă a frezei intră în tipul `FormaSculaDoc` și ajunge la orice
+  cod care primește forma unei operații: un apel care cere o formă mai îngustă (`FormaRand`) se păzește înainte** (d-5 a
+  reliefului a căzut așa, peste f-1). Nimic pe server. Feliile: pornirea +0,1 kB, totalul +0,5 kB.
   **Plafonul pornirii 120 kB (ADR 0145, decizia owner-ului din 24.11, „ok, ridica plafonul pornirii la 120 kB”):** după
   lotul al paisprezecelea, pornirea era 109,9 kB, cu ușa 114,4 și cu Atelierul 114,7 / 115, iar feliile următoare ale
   frezelor, exportului și aranjamentelor nu mai încăpeau în 0,3 kB. Poarta judecă tot trei măsuri sub același plafon
@@ -1430,6 +1437,19 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   balamaua are `at-bm-`); o piesă nouă care seamănă cu una veche mută ancorele otrăvurilor vechi: verificarea ancorelor
   se rulează după fiecare piesă. Proba în engleză din `trenulet.spec.ts` e în trei, pe ecrane (întreagă trecuse de 30 s
   în CI): o piesă nouă își pune pasul în a doua, cea a galeriilor.**
+  **Elicele după audit (ADR 0340, feliile 3.Cm-1…3.Cm-7; acceptat pe 27.11 cu recomandările auditului, 1a–4a, la
+  cuvântul owner-ului transmis de sesiunea principală: „zi-le sesiunilor sa continue cu recomandarile, acolo unde inca
+  asteapta”)**, pe ramura liniei atelierului; 3.Cm-1 și 3.Cm-2, unite în `main` pe 27.11 (`6d8abb70`). **3.Cm-1** gata pe 27.11: listele de otrăvuri ale elicelor (`3.Tq`, `3.Tr`,
+  `3.Ts`, `3.Tt` și cele în engleză, 472), rulate toate din nou pe codul de azi, cu `E2E_BUILD = False`. **3.Cm-2
+  (tipărirea spusă cinstit)** gata pe 27.11: proba pe plasă a arătat că consola de la vârf din audit (0,2 / tan β) e doar
+  o medie: pe paleta curbată, treapta dintre straturi crește spre muchia de sus (elicea implicită: 1,53 mm, nu 0,90), iar
+  un vârf jos, de un strat, nu iese peste nimic. Motorul măsoară treapta pe secțiuni și primul strat pe plasă
+  (`treaptaPalete`, `ariaFeliei`, `tiparPalete`; câmpul `tipar` al elicei, al elicei de barcă și al rotorului); atelierul o
+  spune în panoul piesei, sub „Se prinde cu”, pe praguri (fără suport până la 0,5 mm; cu suport sub vârfuri când și treapta, și
+  consola trec de 1 mm; altfel, aspru pe alocuri), cu marginea de aderență (brim) sub 10 % din disc. Piesele, la octet
+  (amprenta a 742 de plase). Easy 3Draw 18.45.0 (următoarea, 18.46.0). **O probă e2e care cere textul tipăririi îi ia
+  cifrele din motor pentru starea exactă a editorului din probă. Un paragraf umplut după construire nu stă în editor deasupra
+  unor butoane (apare după 90 ms și le mută: un clic se pierde sub încărcare).** La owner: verdictul a / b / c (fișa etapei 3).
   **Cotele pe desen: modelul și proba G-code-ului (ADR 0330, felia 10.4↑a-1, adusă din etapa 10)** gata pe 24.11, în
   sesiunea cloud a liniei (ramura `wip/10.4-cote`), unită în `main` pe 24.11 (`f25249cf`), fără interfață încă. ADR
   0330, acceptat de owner cu 1a–6a și cu nota lui: toate setările cotelor stau într-o fereastră nouă, „Setări”, nu în
@@ -2108,6 +2128,44 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 27.11.2026, după-amiaza (a șaizeci și opta unire din cloud): **elicele după audit: otrăvurile rulate din nou (3.Cm-1) și
+  tipărirea spusă cinstit (3.Cm-2), unite în `main`** (sesiunea principală, ramura `unire-2711l`, peste 16.A↑f-1 și f-2).
+  Linia atelierului, ramura `wip/3.Xh-biblioteca-ui`, `ca9577b2`, PR-ul `AndreiBesliu/cvs2#77` (ADR 0340, acceptat cu
+  recomandările auditului, 1a–4a), unită în `6d8abb70`. **3.Cm-1:** listele de otrăvuri ale elicelor (`3.Tq`, `3.Tr`,
+  `3.Ts`, `3.Tt` și cele în engleză), rulate din nou pe codul de azi: toate prinse. **3.Cm-2:** consola de la vârf din
+  audit (0,2 / tan β) era doar o medie; motorul măsoară treapta dintre straturi pe secțiuni și primul strat pe plasă,
+  iar editorul spune verdictul în panoul piesei (fără suport până la 0,5 mm; cu suport sub vârfuri când și treapta, și
+  consola trec de 1 mm; altfel, aspru pe alocuri; brim sub 10 % din disc); piesele, la octet (742 de plase). **Easy
+  3Draw 18.45.0** (584,8 kB); otrăvurile 42 / 42 și 6 / 6, plus 12 ancore mutate. Doar pachetul extensiei și probele;
+  nimic pe server; documentul rămâne v32. Pus peste frezele (unite înaintea lui), lotul s-a unit fără ciocniri, cu
+  completul lui: completul 45983011704 pe `6d8abb70`, verde: unit 10 983 / 0 (12 sărite, pe Linux), e2e 1 015 / 1 015,
+  funcțiile pe emulatoare 142 / 142, paginile 62 / 62; rapidul, verde; porțile liniei, verzi pe `ca9577b2`; aplicația,
+  neschimbată de felie (pornirea 111,8 kB, totalul 940,8 / 1 000). **Lotul 61 (28.8↑s) e pe test din 27.11, 13:29**
+  (`8e23171c`); lotul 62 (frezele) e în drum, iar felia aceasta pleacă după el (lotul 63). Linia atelierului continuă
+  cu 3.Cm-3 (ventilatorul ca trusă). **La owner:** verdictul tipăririi elicelor: a) ca acum (recomandarea liniei), b) doar
+  după treapta cea mai mare (atunci elicea implicită, 92842, 15790 și rotorul implicit ar cere suport), c) pragul de sus
+  mutat după o elice tipărită; până la cuvântul lui rămâne a.
+- 27.11.2026, la prânz (a șaizeci și șaptea unire din cloud): **profilul desenat al frezei (16.A↑f-1, documentul v32) și
+  canelura cu el (16.A↑f-2), unite în `main`** (sesiunea principală, din `048ecc39`). Linia frezelor, ramura
+  `wip/16.A-freze-e`, `36866d16` (cu `main` adus, cu 28.8↑s), PR-ul `AndreiBesliu/cvs2#74` (ADR 0304, propus, mers cu
+  recomandările), unită în `8906dedf`. **f-1:** forma `{ tip: 'profil', puncte: [[r, h], …] }` a frezei (2–200 de puncte,
+  primul (0, 0), r strict crescător, h nedescrescător, capătul la Ø / 2); **documentul trece pe v32**, cu migrarea v31 → v32
+  doar pe număr (un v31 cu profil e o ciocnire); oracolul documentului, cazurile pe hârtie și corpusul de aur (o canelură
+  cu „Rotunjire 8”) la v32; probele care țin versiunea curentă, pe v32, iar „mai nouă” e 33; panoul spune „profilată”;
+  otrăvurile 20 / 20 (plus F15, practic echivalentă). **f-2** (mișcă mașina, deci proba secțiunii pe hârtie întâi):
+  profilul pe linie, ca freză a operației, pe drumul frezei plate de același Ø, mișcare cu mișcare (cu urechile și rampa);
+  secțiunea simulată e oglinda siluetei, celulă cu celulă, la 0,01 mm, pe trei profiluri; pe o parte, în buzunar, la
+  găurire, în V-carve, pe relief și pe frezele în plus, refuzat cu motiv; același T cu altă siluetă e altă freză;
+  otrăvurile 9 / 9. Sub-feliile ADR 0304, renumerotate: f-3 intrarea în proiect, f-4 marginea profilată, f-5 editorul.
+  Nimic pe server; programul fără profil, octet cu octet. **Arborele unirii are exact codul lui `36866d16`** și a intrat
+  pe porțile liniei: completul 45978896631, verde: unit 10 977 / 0 (12 sărite, pe Linux), e2e 1 014 / 1 014, funcțiile
+  pe emulatoare 142 / 142, paginile 62 / 62; rapidul, verde; totalul 940,8 / 1 000 kB, pornirea 111,8 kB (cu ușa 117,3,
+  cu Atelierul 117,6 / 125). **Un câmp nou al documentului ia de acum v33.** Relieful (18.1↑d-5…d-7 și 18.1↑e,
+  `3057d113`) a raportat după frezele, dar peste ele nu trece de tipuri (`numeDupaForma(s.forma)` din d-5 primește acum și
+  un profil): linia își aduce `main` și repară. Atelierul (3.Cm-1 și 3.Cm-2, `ca9577b2`) e pe `unire-2711l`, peste
+  frezele, cu completul lotului în lucru. **Lotul 60 (16.A↑e-6) e pe test din 27.11, 12:21** (`244dce86`); lotul 61
+  (28.8↑s) e în drum, iar felia aceasta pleacă după el (lotul 62). **La owner:** verdictul tipăririi elicelor din
+  3.Cm-2 (recomandarea liniei: a, ca acum); restul listei, neschimbat.
 - 27.11.2026, la prânz (a șaizeci și șasea unire din cloud): **rândul unei operații în lista ferestrei „Exportă
   G-code” (28.8↑s), unit în `main`** (sesiunea principală, ramura `unire-2711i`, peste unirea lui 16.A↑e-6). Linia
   exportului, ramura `wip/28.8-export`, `cd2ed898`, PR-ul `AndreiBesliu/cvs2#76` (ADR 0292, acceptat cu recomandările:

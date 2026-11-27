@@ -25,10 +25,12 @@ o('N07', A, 'const s = d.sens === "stanga" ? tr(", stânga") : "", i = d.inel ==
 o('N08', T, ' "Rotor de ventilator Ø{0} cu {1} palete, pasul {2}{3}{4}{5}{6}{7}": "Fan rotor Ø{0} with {1} blades, pitch {2}{3}{4}{5}{6}{7}",',
   ' "Rotor de ventilator Ø{0} cu {1} palete, pasul {2}{3}{4}{5}{6}{7}": "Fan rotor Ø{0} with {1} blades, pitch {2}{3}{4}{5}{7}{6}",', 'e2e',
   'numele în engleză, cu gaura și inelul schimbate între ele')
-o('N09', T, 'The duct: Ø{10} inside, Ø{11} outside, {12} mm tall;', 'The duct: Ø{11} inside, Ø{10} outside, {12} mm tall;', 'e2e',
+o('N09', T, 'The duct: Ø{9} inside, Ø{10} outside, {11} mm tall;', 'The duct: Ø{10} inside, Ø{9} outside, {11} mm tall;', 'e2e',
   'textul în engleză, cu diametrele carcasei schimbate între ele')
 
 SETURI = {}
 E2E = ['test/e2e/trenulet.spec.ts']
+# pagina și pachetul se fac din surse în spec: build-ul aplicației nu le schimbă (docs/otravuri.md; felia 3.Cm-1)
+E2E_BUILD = False
 for x in O:
     assert x['vechi'] != x['nou'], x['id']
