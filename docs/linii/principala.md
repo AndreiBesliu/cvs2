@@ -155,7 +155,8 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
 
 ## Starea pe 27.11.2026, la prânz (după a șaizeci și șasea unire din cloud)
 
-- **Pe test:** `a67ec32c` (lotul 59: 16.A↑e-5, buzunarul cu bila și cu toroidala; publicat pe 27.11 la 10:35, cu
+- **Pe test:** `244dce86` (lotul 60: 16.A↑e-6, profilul pe o parte cu bila și cu toroidala; publicat pe 27.11 la 12:21, cu
+  serverul neschimbat; completul pe `main` 45969456308, verde; proba de fum, bună). Înainte: `a67ec32c` (lotul 59: 16.A↑e-5, buzunarul cu bila și cu toroidala; publicat pe 27.11 la 10:35, cu
   serverul neschimbat; completul pe `main` 45956556314, verde; proba de fum, bună). Înainte: `eac92d1c` (lotul 58: 16.A↑e-4, bila și toroidala în proiect; publicat pe 27.11 la 08:38, cu
   serverul neschimbat; completul pe `main` 45946101842, verde; adresa de test o servește). Înainte: `3ecb5678` (lotul 57: 16.A↑e-3, canelura cu bila și cu toroidala; publicat pe 27.11 la 07:08, cu
   serverul neschimbat; completul pe `main` 45937766970, verde; proba de fum, bună). Înainte: `7f3938aa` (lotul 56:
@@ -177,9 +178,8 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
   04:35; `7a754885` (lotul 40: 28.8↑i, viteza ferestrei exportului), la 03:15; `554b72cb` (lotul 39: 3.Cl-1, decorațiunile de Crăciun, Easy 3Draw 18.35.0), la 01:43; `c9911c14` (lotul 38: 3.Cf-1,
   alipirea la prinderi în vederea „Modelul”, Easy 3Draw 18.34.0), pe 25.11 la 23:28; `5649067c` (lotul 37: 16.A↑b-7, Escape în „Frezele mele”; 18.1↑c, finisarea reliefului, cu documentul
   v29; 28.8↑h, fereastra exportului „pe hârtie”), pe 25.11 la 22:23; `75bcf3fb` (lotul 36: „Pune-o înapoi în
-  bibliotecă”, cotele ca DIMENSION), la 20:54. **În `main`, nepublicate încă:** 16.A↑e-6, profilul pe o parte cu
-  bila și cu toroidala (`e9790edb`), unită pe 27.11 la 10:52: lotul 60, în drum (completul pe `main`); 28.8↑s, rândul unei
-  operații în lista exportului (`fec801bc`, din `cd2ed898`), unită pe 27.11 la 12:02: lotul 61, după el. **Schema:** v32 e ținut pentru
+  bibliotecă”, cotele ca DIMENSION), la 20:54. **În `main`, nepublicate încă:** 28.8↑s, rândul unei
+  operații în lista exportului (`fec801bc`, din `cd2ed898`), unită pe 27.11 la 12:02: lotul 61, în drum (completul pe `main`). **Schema:** v32 e ținut pentru
   linia frezelor (16.A↑f-1, forma `profil` a frezei, ADR 0304); un câmp nou pe altă linie ia v33.
 - **Modelul:** din 26.11, la prânz, sesiunea principală merge pe Opus („o sa folosim Opus de aici in colo”); sesiunile
   liniilor își păstrează modelul până îl schimbă owner-ul în fiecare.
