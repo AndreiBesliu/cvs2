@@ -50,12 +50,15 @@ function citesteStl(stl: Buffer): { triunghiuri: number; rele: number; raza: num
   return { triunghiuri: n, rele, raza };
 }
 
-test('elicea implicită, în fila Elice: 3 palete, Ø72, pasul 0,7, răsucită; textul cu pasul, unghiurile și consola', async ({ page }) => {
+test('elicea implicită, în fila Elice: 3 palete, Ø72, pasul 0,7, răsucită; textul cu pasul și unghiurile; tipărirea (treapta, brim)', async ({ page }) => {
   await atelierElice(page);
   await expect(page.locator('#at-tipuri [data-fila="propulsie"]')).toHaveText('Elice 4');
   // pe hârtie: P = 0,7 · 72 = 50,4; atan(50,4 / 8π) = 63,498° la butuc (63, la grad); atan(0,7 / π) = 12,56° la vârf;
-  // 0,2 / tan 12,56° = 0,898
-  await expect(page.locator('#at-el-info')).toHaveText('Pasul 50 mm (0,7 × diametrul). Paleta răsucită: 63° lângă butuc, 13° la vârf. Se tipărește fără suport: la vârf, un strat iese cu 0,9 mm peste cel de dedesubt.');
+  // 0,2 / tan 12,56° = 0,898 la vârf; dar treapta dintre straturi, pe paleta curbată, ajunge la 1,53 spre muchia de sus (ADR 0340):
+  // fără suport, dar aspru pe alocuri; primul strat, 1,3 % din disc, deci margine (brim)
+  await expect(page.locator('#at-editor > p.mic').first()).toHaveText('Elice pentru motoarele LEGO, pe un butuc ca la LEGO (Ø8, înalt cât un știft), cu gaura din calibrare. Se tipărește cu butucul și muchia de jos a fiecărei palete pe masă.');
+  await expect(page.locator('#at-el-info')).toHaveText('Pasul 50 mm (0,7 × diametrul). Paleta răsucită: 63° lângă butuc, 13° la vârf.');
+  await expect(page.locator('#at-tipar')).toHaveText('Se tipărește fără suport, dar dedesubtul paletelor iese aspru pe alocuri (ventilatorul de răcire, la maxim): un strat iese peste cel de dedesubt cu până la 1,53 mm. Primul strat atinge masa doar pe 1,3 % din discul paletelor: pune o margine de aderență (brim) în programul de feliere.');
   await expect(page.locator('#at-cote')).toContainText('× 8 mm');
   await expect(page.locator('#at-avert')).toBeHidden();
   // editorul, la început: câmpurile și alegerile implicite; niciun „Ca LEGO” apăsat
@@ -68,6 +71,27 @@ test('elicea implicită, în fila Elice: 3 palete, Ø72, pasul 0,7, răsucită; 
   await expect(page.locator('#at-nume-piesa')).toHaveText('Elice Ø72 cu 3 palete, pasul 0,7');
   await seteaza(page, '#at-el-diam', '250');
   await expect(page.locator('#at-nume-piesa')).toHaveText('Elice Ø72 cu 3 palete, pasul 0,7');
+});
+
+test('tipărirea, pe praguri (ADR 0340): la pasul 0,3, cu suport sub vârfuri; o elice mică ține de masă cu butucul, fără margine', async ({ page }) => {
+  await atelierElice(page);
+  const tipar = page.locator('#at-tipar');
+  // pasul 0,3: consola de la vârf 0,2 · π / 0,3 = 2,09, iar treapta pe secțiuni, 4,70; primul strat, 1,6 % din disc
+  await seteaza(page, '#at-el-pas', '0.3');
+  await expect(page.locator('#at-nume-piesa')).toHaveText('Elice Ø72 cu 3 palete, pasul 0,3');
+  await expect(tipar).toHaveText('Se tipărește cu suport sub vârfurile paletelor (sau alege un pas mai mare): spre vârf, un strat iese peste cel de dedesubt cu peste 1 mm, pe alocuri cu până la 4,7 mm. Primul strat atinge masa doar pe 1,6 % din discul paletelor: pune o margine de aderență (brim) în programul de feliere.');
+  // Ø20: butucul acoperă 13,1 % din disc, deci fără margine
+  await seteaza(page, '#at-el-diam', '20');
+  await expect(page.locator('#at-nume-piesa')).toHaveText('Elice Ø20 cu 3 palete, pasul 0,3');
+  await expect(tipar).toHaveText('Se tipărește cu suport sub vârfurile paletelor (sau alege un pas mai mare): spre vârf, un strat iese peste cel de dedesubt cu peste 1 mm, pe alocuri cu până la 2,19 mm.');
+  // pasul 0,7 la loc: consola de la vârf 0,90, treapta 1,15: aspru pe alocuri, nu suport
+  await seteaza(page, '#at-el-pas', '0.7');
+  await expect(tipar).toHaveText('Se tipărește fără suport, dar dedesubtul paletelor iese aspru pe alocuri (ventilatorul de răcire, la maxim): un strat iese peste cel de dedesubt cu până la 1,15 mm.');
+  // în vederea „Modelul”, paragraful piesei nu se vede; înapoi la piesă, iar
+  await page.locator('#at-vedere-mod [data-v="model"]').click();
+  await expect(tipar).toBeHidden();
+  await page.locator('#at-vedere-mod [data-v="piesa"]').click();
+  await expect(tipar).toBeVisible();
 });
 
 test('„Ca LEGO 15790”: Ø73,9, paleta plată la 15°, gaura rotundă; cu 4 palete, STL-ul închis, cu raza 36,95', async ({ page }) => {
@@ -96,9 +120,9 @@ test('fiecare „Ca LEGO”, cu cotele piesei din LDraw, măsurate față de axa
   // - 92842: R 21,56 → Ø43,1; 15° → 0,59; coarda 6,3 din 21,56 → 29 %; elicoid drept; P = 25,4 mm; consola 0,2 / tan 15° = 0,75
   // - 15790: R 36,96 → Ø73,9; 15° → 0,59; coarda 9,2 (media) din 36,96 → 25 %; elicoid drept; P = 43,6 mm
   const LEGO = [
-    ['6041', 'Elice Ø27,4 cu 3 palete, pasul 0,93, plată, stânga', '27.4', '0.93', '60', 'stanga', 'x', 'Pasul 25 mm (0,93 × diametrul). Paleta plată, la 23° de la butuc la vârf, ca la LEGO. Se tipărește fără suport: la vârf, un strat iese cu 0,5 mm peste cel de dedesubt.'],
-    ['92842', 'Elice Ø43,1 cu 3 palete, pasul 0,59, plată, gaură rotundă', '43.1', '0.59', '29', 'dreapta', 'r', 'Pasul 25 mm (0,59 × diametrul). Paleta plată, la 15° de la butuc la vârf, ca la LEGO. Se tipărește fără suport: la vârf, un strat iese cu 0,7 mm peste cel de dedesubt.'],
-    ['15790', 'Elice Ø73,9 cu 3 palete, pasul 0,59, plată, gaură rotundă', '73.9', '0.59', '25', 'dreapta', 'r', 'Pasul 44 mm (0,59 × diametrul). Paleta plată, la 15° de la butuc la vârf, ca la LEGO. Se tipărește fără suport: la vârf, un strat iese cu 0,7 mm peste cel de dedesubt.'],
+    ['6041', 'Elice Ø27,4 cu 3 palete, pasul 0,93, plată, stânga', '27.4', '0.93', '60', 'stanga', 'x', 'Pasul 25 mm (0,93 × diametrul). Paleta plată, la 23° de la butuc la vârf, ca la LEGO.'],
+    ['92842', 'Elice Ø43,1 cu 3 palete, pasul 0,59, plată, gaură rotundă', '43.1', '0.59', '29', 'dreapta', 'r', 'Pasul 25 mm (0,59 × diametrul). Paleta plată, la 15° de la butuc la vârf, ca la LEGO.'],
+    ['15790', 'Elice Ø73,9 cu 3 palete, pasul 0,59, plată, gaură rotundă', '73.9', '0.59', '25', 'dreapta', 'r', 'Pasul 44 mm (0,59 × diametrul). Paleta plată, la 15° de la butuc la vârf, ca la LEGO.'],
   ] as const;
   // de la 15790 înapoi la 6041: sensul trece pe stânga și la loc (fiecare „Ca LEGO” își pune sensul, nu-l lasă pe cel de dinainte)
   for (const [piesa, nume, diam, pas, lat, sens, gaura, info] of [LEGO[2], LEGO[0], LEGO[1], LEGO[0]]) {
@@ -115,6 +139,8 @@ test('fiecare „Ca LEGO”, cu cotele piesei din LDraw, măsurate față de axa
     await expect(page.locator('#at-el-paleta [aria-pressed="true"]')).toHaveAttribute('data-v', 'plata');
     await expect(page.locator('#at-el-repede [aria-pressed="true"]')).toHaveAttribute('data-v', piesa);
   }
+  // 6041 (cea din urmă): treapta 0,72, primul strat 6,8 % din disc
+  await expect(page.locator('#at-tipar')).toHaveText('Se tipărește fără suport, dar dedesubtul paletelor iese aspru pe alocuri (ventilatorul de răcire, la maxim): un strat iese peste cel de dedesubt cu până la 0,72 mm. Primul strat atinge masa doar pe 6,8 % din discul paletelor: pune o margine de aderență (brim) în programul de feliere.');
   // sensul schimbat de om: nu mai e „Ca LEGO 6041” (piesa LEGO e pe stânga)
   await page.locator('#at-el-sens [data-v="dreapta"]').click();
   await expect(page.locator('#at-nume-piesa')).toHaveText('Elice Ø27,4 cu 3 palete, pasul 0,93, plată');
@@ -163,7 +189,7 @@ test('editorul: fiecare alegere și fiecare câmp ajung în piesă; câmpurile, 
   await expect(nume).toHaveText('Elice Ø72,3 cu 4 palete, pasul 1,2');
   await expect(page.locator('#at-el-pas')).toHaveValue('1.2');
   // pasul 1,2 · 72,3 = 86,76 mm; răsucită: atan(86,76 / 8π) = 73,8° la butuc, atan(1,2 / π) = 20,9° la vârf; 0,2 / tan 20,9° = 0,52
-  await expect(page.locator('#at-el-info')).toHaveText('Pasul 87 mm (1,2 × diametrul). Paleta răsucită: 74° lângă butuc, 21° la vârf. Se tipărește fără suport: la vârf, un strat iese cu 0,5 mm peste cel de dedesubt.');
+  await expect(page.locator('#at-el-info')).toHaveText('Pasul 87 mm (1,2 × diametrul). Paleta răsucită: 74° lângă butuc, 21° la vârf.');
   await seteaza(page, '#at-el-lat', '44.6');
   await expect(page.locator('#at-el-lat')).toHaveValue('45');
   // marginile plajei: chiar pe margine intră, dincolo de ea nu (piesa rămâne; la redesenare, câmpul arată iar ce e în piesă)

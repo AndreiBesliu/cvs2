@@ -191,11 +191,11 @@ o('E13', A, 'const paleta = c.plata ? tr`Paleta plată, la ${g(c.bVarf)}° de la
   'textul elicei: plata și răsucita, pe dos')
 o('E14', A, 'tr`Paleta răsucită: ${g(c.bRad)}° lângă butuc, ${g(c.bVarf)}° la vârf.`;', 'tr`Paleta răsucită: ${g(c.bVarf)}° lângă butuc, ${g(c.bRad)}° la vârf.`;', 'e2e',
   'textul elicei: unghiurile de la butuc și de la vârf, inversate')
-o('E15', A, 'return tr`Pasul ${fmt(c.P, 0)} mm (${fmt(c.pd, 2)} × diametrul). ${paleta} Se tipărește fără suport: la vârf, un strat iese cu ${fmt(c.consola, 1)} mm',
-  'return tr`Pasul ${fmt(c.D, 0)} mm (${fmt(c.pd, 2)} × diametrul). ${paleta} Se tipărește fără suport: la vârf, un strat iese cu ${fmt(c.consola, 1)} mm', 'e2e',
+o('E15', A, 'return tr`Pasul ${fmt(c.P, 0)} mm (${fmt(c.pd, 2)} × diametrul).` + " " + paleta;',
+  'return tr`Pasul ${fmt(c.D, 0)} mm (${fmt(c.pd, 2)} × diametrul).` + " " + paleta;', 'e2e',
   'textul elicei: diametrul în locul pasului')
-o('E16', A, 'Se tipărește fără suport: la vârf, un strat iese cu ${fmt(c.consola, 1)} mm peste cel de dedesubt.`;', 'Se tipărește fără suport: la vârf, un strat iese cu ${fmt(c.consola, 0)} mm peste cel de dedesubt.`;', 'e2e',
-  'textul elicei: consola la milimetru (0,9 devine 1)')
+# E16 (consola la milimetru) a plecat cu textul consolei, în paragraful tipăririi (felia 3.Cm-2; otrăvurile lui, în 3.Cm-2.py)
+o('E16', A, '× diametrul).` + " " + paleta;', '× diametrul).`;', 'e2e', 'textul elicei fără paleta (unghiurile)')
 L1 = '    "6041": { palete: 3, diametru: 27.4, pas: 0.93, latime: 60, forma: "drept", paleta: "plata", sens: "stanga", gaura: "x" },'
 L2 = '    "92842": { palete: 3, diametru: 43.1, pas: 0.59, latime: 29, forma: "drept", paleta: "plata", sens: "dreapta", gaura: "r" },'
 L3 = '    "15790": { palete: 3, diametru: 73.9, pas: 0.59, latime: 25, forma: "drept", paleta: "plata", sens: "dreapta", gaura: "r" },'
@@ -263,6 +263,8 @@ SETURI = {
     'engleza': ['test/unit/trenulet.engleza.test.ts'],
 }
 E2E = ['test/e2e/trenulet.elice.spec.ts']
+# pagina și pachetul se fac din surse în spec: build-ul aplicației nu le schimbă (docs/otravuri.md; felia 3.Cm-1)
+E2E_BUILD = False
 
 for x in O:
     assert x['vechi'] != x['nou'], x['id']

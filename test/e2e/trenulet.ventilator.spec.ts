@@ -61,7 +61,9 @@ test('ventilatorul implicit, a treia piesă a filei Elice: rotorul de 7 palete, 
   // pe hârtie: vârful la 20 − 0,8 = 19,2; butucul max(4; 0,25 · 19,2 = 4,8) → Ø9,6, înalt de 8 (paletele, 4,59); P = 0,8 · 40;
   // atan(32 / (2π · 4,8)) = 46,70° la butuc, atan(32 / (2π · 19,2)) = 14,86° la vârf; 0,2 / tan 14,86° = 0,754; carcasa:
   // ⌈4,59⌉ + 4 = 9; găurile la ⌈(20 + 0,8 + 3,2) / 8⌉ · 8 = 24 de ax
-  await expect(page.locator('#at-ve-info')).toHaveText('Rotorul: paletele până la Ø38,4 (0,8 mm de carcasă), pe un butuc de Ø9,6 × 8 mm. Pasul 32 mm (0,8 × diametrul): paleta stă la 47° lângă butuc și la 15° la vârf; la vârf, un strat iese cu 0,8 mm peste cel de dedesubt. Carcasa: Ø40 în interior, Ø44 în afară, înaltă de 9 mm; găurile urechilor, la 24 mm de ax (3 știfturi).');
+  await expect(page.locator('#at-ve-info')).toHaveText('Rotorul: paletele până la Ø38,4 (0,8 mm de carcasă), pe un butuc de Ø9,6 × 8 mm. Pasul 32 mm (0,8 × diametrul): paleta stă la 47° lângă butuc și la 15° la vârf. Carcasa: Ø40 în interior, Ø44 în afară, înaltă de 9 mm; găurile urechilor, la 24 mm de ax (3 știfturi).');
+  await expect(page.locator('#at-editor > p.mic').first()).toContainText('Rotorul se tipărește cu muchia de jos a paletelor pe masă, carcasa în picioare, fără suport.');
+  await expect(page.locator('#at-tipar')).toHaveText('Rotorul se tipărește fără suport, dar dedesubtul paletelor iese aspru pe alocuri (ventilatorul de răcire, la maxim): un strat iese peste cel de dedesubt cu până la 1,31 mm. Primul strat atinge masa doar pe 6,7 % din discul paletelor: pune o margine de aderență (brim) în programul de feliere.');
   await expect(page.locator('#at-cote')).toContainText('× 8 mm');
   await expect(page.locator('#at-avert')).toBeHidden();
   // editorul, la început: câmpurile și alegerile implicite; la „Repede”, Ø40; urechile sunt ale carcasei
@@ -85,6 +87,9 @@ test('piesa: carcasa are urechile (2 sau 4), nu sensul, gaura sau inelul; creșt
   await atelierVentilator(page);
   await page.locator('#at-ve-piesa [data-v="carcasa"]').click();
   await expect(page.locator('#at-nume-piesa')).toHaveText(CARCASA);
+  // carcasa e un tub în picioare: n-are verdictul paletelor (ADR 0340); paragraful e ascuns, nu doar gol
+  await expect(page.locator('#at-tipar')).toBeHidden();
+  await expect(page.locator('#at-tipar')).toHaveJSProperty('hidden', true);
   // pe hârtie: pe x, până la marginea urechii (24 + 3,6); pe y, tubul (Ø44)
   await expect(page.locator('#at-cote')).toContainText('55,2 × 44 × 9 mm');
   for (const grup of ['sens', 'gaura', 'inel']) await expect(page.locator(`#at-ve-${grup}`)).toHaveCount(0);
@@ -144,7 +149,7 @@ test('editorul: fiecare alegere și fiecare câmp ajung în piesă; câmpurile, 
   // inelul: în același contur (vârful tot la Ø38,4), înalt cât paletele (4,58 → 4,6)
   await page.locator('#at-ve-inel [data-v="da"]').click();
   await expect(nume).toHaveText(IMPLICIT + ', cu inel');
-  await expect(page.locator('#at-ve-info')).toContainText('la vârf, un strat iese cu 0,8 mm peste cel de dedesubt. Inelul, gros de 1,2 mm, e înalt de 4,6 mm. Carcasa:');
+  await expect(page.locator('#at-ve-info')).toContainText('la 15° la vârf. Inelul, gros de 1,2 mm, e înalt de 4,6 mm. Carcasa:');
   // în nume, gaura stă înaintea inelului
   await page.locator('#at-ve-gaura [data-v="r"]').click();
   await expect(nume).toHaveText(IMPLICIT + ', gaură rotundă, cu inel');
@@ -169,7 +174,7 @@ test('editorul: fiecare alegere și fiecare câmp ajung în piesă; câmpurile, 
   // pe hârtie: vârful la 28,15 − 1,5 = 26,65; butucul 0,25 · 26,65 → 6,7 (Ø13,4); P = 1,2 · 56,3 = 67,56; atan(67,56 /
   // (2π · 6,7)) = 58,07° la butuc, atan(67,56 / (2π · 26,65)) = 21,97° la vârf; consola 0,496; paletele, 6,89 → carcasa 11;
   // găurile la ⌈(28,15 + 0,8 + 3,2) / 8⌉ · 8 = 40
-  await expect(page.locator('#at-ve-info')).toHaveText('Rotorul: paletele până la Ø53,3 (1,5 mm de carcasă), pe un butuc de Ø13,4 × 8 mm. Pasul 68 mm (1,2 × diametrul): paleta stă la 58° lângă butuc și la 22° la vârf; la vârf, un strat iese cu 0,5 mm peste cel de dedesubt. Carcasa: Ø56,3 în interior, Ø60,3 în afară, înaltă de 11 mm; găurile urechilor, la 40 mm de ax (5 știfturi).');
+  await expect(page.locator('#at-ve-info')).toHaveText('Rotorul: paletele până la Ø53,3 (1,5 mm de carcasă), pe un butuc de Ø13,4 × 8 mm. Pasul 68 mm (1,2 × diametrul): paleta stă la 58° lângă butuc și la 22° la vârf. Carcasa: Ø56,3 în interior, Ø60,3 în afară, înaltă de 11 mm; găurile urechilor, la 40 mm de ax (5 știfturi).');
   // lățimea intră în nume doar când nu e cea obișnuită (45 %)
   await seteaza(page, '#at-ve-lat', '30.4');
   await expect(page.locator('#at-ve-lat')).toHaveValue('30');
@@ -194,7 +199,10 @@ test('editorul: fiecare alegere și fiecare câmp ajung în piesă; câmpurile, 
   }
   // cel mai mic și mai culcat: Ø24 cu jocul 0,3, 3 palete, pasul 0,3 (P 7,2): atan(7,2 / 8π) = 15,99° la butuc,
   // atan(7,2 / (2π · 11,7)) = 5,59° la vârf; consola 2,04; paletele, 1,51 → carcasa de 8 (cel puțin cât un știft)
-  await expect(page.locator('#at-ve-info')).toHaveText('Rotorul: paletele până la Ø23,4 (0,3 mm de carcasă), pe un butuc de Ø8 × 8 mm. Pasul 7 mm (0,3 × diametrul): paleta stă la 16° lângă butuc și la 6° la vârf; la vârf, un strat iese cu 2 mm peste cel de dedesubt. Carcasa: Ø24 în interior, Ø28 în afară, înaltă de 8 mm; găurile urechilor, la 16 mm de ax (2 știfturi).');
+  await expect(page.locator('#at-ve-info')).toHaveText('Rotorul: paletele până la Ø23,4 (0,3 mm de carcasă), pe un butuc de Ø8 × 8 mm. Pasul 7 mm (0,3 × diametrul): paleta stă la 16° lângă butuc și la 6° la vârf. Carcasa: Ø24 în interior, Ø28 în afară, înaltă de 8 mm; găurile urechilor, la 16 mm de ax (2 știfturi).');
+  // pasul cel mai mic: și consola de la vârf (2,04), și treapta (cu paletele cele mai înguste, 15 %: 1,40) trec de 1 mm, deci
+  // suport; primul strat acoperă peste 10 % din disc, deci fără margine
+  await expect(page.locator('#at-tipar')).toHaveText('Rotorul se tipărește cu suport sub vârfurile paletelor (sau alege un pas mai mare): spre vârf, un strat iese peste cel de dedesubt cu peste 1 mm, pe alocuri cu până la 1,4 mm.');
   // inelul, aici cel puțin 2 (paletele au doar 1,51)
   await page.locator('#at-ve-inel [data-v="da"]').click();
   await expect(page.locator('#at-ve-info')).toContainText('Inelul, gros de 1,2 mm, e înalt de 2 mm.');

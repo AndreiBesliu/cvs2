@@ -22,10 +22,12 @@ o('N04', A, 'const s = d.sens === "stanga" ? tr(", stânga") : "", c = d.capac =
 o('N05', T, ' "Elice de barcă Ø{0} cu {1} palete, pasul {2}{3}{4}{5}{6}{7}{8}": "Boat propeller Ø{0} with {1} blades, pitch {2}{3}{4}{5}{6}{7}{8}",',
   ' "Elice de barcă Ø{0} cu {1} palete, pasul {2}{3}{4}{5}{6}{7}{8}": "Boat propeller Ø{0} with {1} blades, pitch {2}{3}{4}{5}{6}{8}{7}",', 'e2e',
   'numele în engleză, cu gaura și capacul schimbate între ele')
-o('N06', T, 'The blades cover {4}% of the disc; the hub is Ø{5} × {6} mm. It prints', 'The blades cover {4}% of the disc; the hub is Ø{6} × {5} mm. It prints', 'e2e',
+o('N06', T, 'The blades cover {4}% of the disc; the hub is Ø{5} × {6} mm."', 'The blades cover {4}% of the disc; the hub is Ø{6} × {5} mm."', 'e2e',
   'textul în engleză, cu diametrul și înălțimea butucului schimbate între ele')
 
 SETURI = {}
 E2E = ['test/e2e/trenulet.spec.ts']
+# pagina și pachetul se fac din surse în spec: build-ul aplicației nu le schimbă (docs/otravuri.md; felia 3.Cm-1)
+E2E_BUILD = False
 for x in O:
     assert x['vechi'] != x['nou'], x['id']

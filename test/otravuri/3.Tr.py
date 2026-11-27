@@ -182,14 +182,14 @@ o('E16', A, NN, NN.replace('fmt(d.diametru ?? 40, 1)', 'fmt(d.diametru ?? 40, 0)
 o('E17', A, NN, NN.replace('fmt(d.pas ?? 1, 2)', 'fmt(d.pas ?? 1, 1)'), 'e2e', 'numele, cu pasul la zecime')
 o('E18', A, NN, NN.replace('${l}${i}${pu}${s}${g}${c}', '${l}${i}${pu}${s}${c}${g}'), 'e2e', 'numele, cu capacul înaintea găurii')
 o('E19', A, NN, NN.replace('${l}${i}${pu}${s}${g}${c}', '${i}${l}${pu}${s}${g}${c}'), 'e2e', 'numele, cu înclinarea înaintea lățimii')
-TX = '\n    return tr`Pasul ${fmt(c.P, 0)} mm (${fmt(c.pd, 2)} × diametrul): paleta stă la ${g(c.bRad)}° lângă butuc și la ${g(c.bVarf)}° la vârf. Paletele acoperă ${fmt(c.acoperire * 100, 0)} % din disc; butucul e de Ø${fmt(2 * c.rh, 1)} × ${fmt(c.Hh, 1)} mm.'
+TX = '\n    const baza = tr`Pasul ${fmt(c.P, 0)} mm (${fmt(c.pd, 2)} × diametrul): paleta stă la ${g(c.bRad)}° lângă butuc și la ${g(c.bVarf)}° la vârf. Paletele acoperă ${fmt(c.acoperire * 100, 0)} % din disc; butucul e de Ø${fmt(2 * c.rh, 1)} × ${fmt(c.Hh, 1)} mm.'
 o('E20', A, TX, TX.replace('${fmt(c.P, 0)} mm', '${fmt(c.P, 1)} mm'), 'e2e', 'textul: pasul cu zecimi')
 o('E21', A, TX, TX.replace('${g(c.bRad)}° lângă butuc și la ${g(c.bVarf)}°', '${g(c.bVarf)}° lângă butuc și la ${g(c.bRad)}°'), 'e2e', 'textul: unghiurile, pe dos')
 o('E22', A, TX, TX.replace('fmt(c.acoperire * 100, 0)', 'fmt(c.acoperire * 100, 1)'), 'e2e', 'textul: acoperirea cu zecimi')
 o('E23', A, TX, TX.replace('Ø${fmt(2 * c.rh, 1)}', 'Ø${fmt(c.rh, 1)}'), 'e2e', 'textul: raza butucului, spusă ca diametru')
 o('E24', A, TX, TX.replace('× ${fmt(c.Hh, 1)} mm.', '× ${fmt(c.Hh, 0)} mm.'), 'e2e', 'textul: butucul la milimetru')
-o('E25', A, 'cu partea dinspre barcă pe masă: la vârf, un strat iese cu ${fmt(c.consola, 1)} mm peste cel de dedesubt.`;',
-  'cu partea dinspre barcă pe masă: la vârf, un strat iese cu ${fmt(c.consola, 0)} mm peste cel de dedesubt.`;', 'e2e', 'textul: consola la milimetru')
+# E25 (consola la milimetru) a plecat cu textul consolei, în paragraful tipăririi (felia 3.Cm-2; otrăvurile lui, în 3.Cm-2.py)
+o('E25', A, '    return c.pupa > 0 ? baza + " "', '    return c.pupa >= 0 ? baza + " "', 'e2e', 'textul spune înclinarea spre pupa și la 0°')
 o('E26', A, 'const c = Lego.eliceBarcaCote(p), g = (x: number) => fmt(x * 180 / Math.PI, 0);', 'const c = Lego.eliceBarcaCote({}), g = (x: number) => fmt(x * 180 / Math.PI, 0);', 'e2e',
   'textul, mereu al elicei implicite')
 o('E27', A, '<h2>Elice de barcă</h2>', '<h2>Elice</h2>', 'e2e', 'titlul editorului, al elicei')
@@ -231,6 +231,8 @@ SETURI = {
     'engleza': ['test/unit/trenulet.engleza.test.ts'],
 }
 E2E = ['test/e2e/trenulet.barca.spec.ts']
+# pagina și pachetul se fac din surse în spec: build-ul aplicației nu le schimbă (docs/otravuri.md; felia 3.Cm-1)
+E2E_BUILD = False
 
 for x in O:
     assert x['vechi'] != x['nou'], x['id']
