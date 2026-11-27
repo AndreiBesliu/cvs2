@@ -130,13 +130,13 @@ export type FormaSculaDoc = FormaV | FormaBila | FormaToroidala;
 export type FormaV = { tip: 'v'; unghi: number; varf?: number; [cheie: string]: unknown };
 /**
  * Freza bilă (ADR 0312 §1, documentul v29): capătul e o semisferă de rază diametru / 2. Ușa o primește pe orice freză; unde
- * se poate folosi o judecă lucrarea (`motivFormaPeOperatie`): azi, doar pe finisarea reliefului.
+ * se poate folosi o judecă lucrarea (`motivFormaPeOperatie`): azi, pe finisarea reliefului și pe linie (canelura, ADR 0303).
  */
 export type FormaBila = { tip: 'bila'; [cheie: string]: unknown };
 /**
  * Freza toroidală (ADR 0303 §1, documentul v31): discul plat cu colțul rotunjit de rază `raza` (mm), 0 < raza < diametru / 2,
  * judecată la ușă (o freză cu raza cât jumătatea diametrului e o bilă și se scrie așa). Unde se poate folosi o judecă lucrarea
- * (`motivFormaPeOperatie`), ca la bilă.
+ * (`motivFormaPeOperatie`): azi, doar pe linie (canelura, 16.A↑e-3a).
  */
 export type FormaToroidala = { tip: 'toroidala'; raza: number; [cheie: string]: unknown };
 /** De unde vine copia unei freze (ADR 0300 §5, v27): id-ul ei din biblioteca „Frezele mele” și versiunea copiată. */

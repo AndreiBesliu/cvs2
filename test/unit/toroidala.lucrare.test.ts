@@ -1,7 +1,7 @@
 /**
  * Freza toroidală în lucrare (ADR 0303 §1, §4, felia 16.A↑e-1): ușa v31 o primește pe orice freză a unei operații, simularea o
- * taie (simulare.toroidala.test.ts), iar lucrarea o refuză pe orice operație, cu motivul care numește forma, T-ul și calea,
- * până la CAM-ul ei (e-3 … e-5). Fereastra exportului nu-i face rând (copia ei știe doar plata și V-ul: ar scrie la Exportă o
+ * taie (simulare.toroidala.test.ts), iar lucrarea o refuză pe orice operație în afara canelurii (profilul pe linie, din
+ * 16.A↑e-3a, canelura.rotunda.test.ts), cu motivul care numește forma, T-ul și calea, până la CAM-ul ei (e-4, e-5). Fereastra exportului nu-i face rând (copia ei știe doar plata și V-ul: ar scrie la Exportă o
  * plată în locul toroidalei), deci o lasă neschimbată, ca pe bilă. Tabelul `motivFormaPeOperatie` pe hârtie.
  */
 import { test } from 'node:test';
@@ -48,10 +48,10 @@ const motiv = (d: Liber): string => {
   return r.ok ? '' : r.motiv;
 };
 
-test('motivFormaPeOperatie: toroidala nu merge încă pe nicio operație (nici pe finisarea reliefului); restul, ca până acum', () => {
+test('motivFormaPeOperatie: toroidala merge doar pe profilul pe linie (nici pe finisarea reliefului); restul, ca până acum', () => {
   const T: FormaSculaDoc = { tip: 'toroidala', raza: 1 }, B: FormaSculaDoc = { tip: 'bila' }, V: FormaSculaDoc = { tip: 'v', unghi: 60 };
   const randuri: ReadonlyArray<readonly [TipOperatie, Latura, FormaSculaDoc | undefined, string | null]> = [
-    ['profil', 'pe-linie', T, 'toroidala'], ['profil', 'exterior', T, 'toroidala'], ['profil', 'stanga', T, 'toroidala'],
+    ['profil', 'pe-linie', T, null], ['profil', 'exterior', T, 'toroidala'], ['profil', 'stanga', T, 'toroidala'],
     ['buzunar', 'interior', T, 'toroidala'], ['gaurire', 'interior', T, 'toroidala'], ['vcarve', 'interior', T, 'toroidala'],
     ['finisare', 'pe-linie', T, 'toroidala'], ['degrosare', 'pe-linie', T, 'toroidala'],
     // Neschimbate (finisare.bila.test.ts, degrosare): bila doar la finisare, degroșarea doar cu plata, V-ul pe linie și în V-carve.
@@ -64,10 +64,9 @@ test('motivFormaPeOperatie: toroidala nu merge încă pe nicio operație (nici p
   assert.deepEqual([felFrezei(undefined), felFrezei(V), felFrezei(B)], ['plată', 'în V', 'bilă']);
 });
 
-test('lucrarea refuză toroidala pe orice operație și pe orice freză a ei, cu forma, T-ul și calea în motiv', () => {
+test('lucrarea refuză toroidala pe orice operație în afara canelurii și pe orice freză în plus, cu forma, T-ul și calea în motiv', () => {
   const cazuri: ReadonlyArray<readonly [string, Liber, string, number]> = [
     ['profilul', op({ scula: toro(1, 6, 1) }), 'scula', 1],
-    ['profilul pe linie', op({ scula: toro(1, 6, 1), latura: 'pe-linie' }), 'scula', 1],
     ['buzunarul', op({ tip: 'buzunar', scula: toro(1, 6, 1.5), pasLateral: 2 }), 'scula', 1],
     ['freza de rest', op({ tip: 'buzunar', pasLateral: 2, rest: [{ scula: toro(2, 3, 0.5), pasLateral: 1 }] }), 'rest[0]', 2],
     ['fundul plat', op({ tip: 'vcarve', scula: inV(1, 6, 90), fundPlat: { scula: toro(2, 3, 0.5), pasLateral: 1 } }), 'fundPlat', 2],
@@ -81,6 +80,8 @@ test('lucrarea refuză toroidala pe orice operație și pe orice freză a ei, cu
     assert.ok(m.includes(`(T${numar}, ${cale})`), `${nume}: motivul nu numește T${numar} și ${cale}: ${m}`);
     assert.match(m, /nu se taie încă/, nume);
   }
+  // Canelura cu toroidala se taie (canelura.rotunda.test.ts).
+  assert.equal(motiv(doc([op({ scula: toro(1, 6, 1), latura: 'pe-linie' })])), '');
   // Pe o finisare și pe o degroșare a reliefului, la fel (nu doar refuzul degroșării, „cu o freză plată”).
   const reliefOp = (tip: 'finisare' | 'degrosare'): Liber => op({
     id: 'f', tip, noduri: ['r'], scula: toro(4, 6, 1), latura: 'pe-linie', adancime: 8, pas: 3, pasLateral: 0.5,

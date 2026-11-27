@@ -24,6 +24,8 @@ export type MotivForma = 'vcarve' | 'v-pe-linie' | 'bila' | 'degrosare' | 'toroi
 
 /** Motivul pentru care o freză de forma dată nu merge pe operație, sau null dacă merge (lipsa formei = freza plată). */
 export function motivFormaPeOperatie(tip: TipOperatie, latura: Latura, forma: FormaSculaDoc | undefined): MotivForma | null {
+  // Canelura (ADR 0303 §4, 16.A↑e-3): bila și toroidala pe linie, cu centrul pe vector (drumul frezei plate de același Ø).
+  if ((forma?.tip === 'bila' || forma?.tip === 'toroidala') && tip === 'profil' && latura === 'pe-linie') return null;
   if (forma?.tip === 'toroidala') return 'toroidala';
   if (tip === 'finisare') return null;
   if (tip === 'degrosare') return forma === undefined ? null : 'degrosare';
