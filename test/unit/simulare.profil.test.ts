@@ -50,7 +50,8 @@ function nucleu(mutari: readonly MutareCaz[], grila: GrilaOracol, diametru: numb
 
 const L = (a: P3, b: P3): MutareCaz => ({ tip: 'linie', a, b });
 const A = (sens: 'orar' | 'trigonometric', a: P3, b: P3, c: readonly [number, number]): MutareCaz => ({ tip: 'arc', sens, a, b, centru: c });
-const G: GrilaOracol = { x0: 0, y0: 0, latime: 30, inaltime: 20, celula: 0.05 };
+/** Celula de 0,1 mm: oracolul costă cu cubul celulei (eșantioanele pe mutare și celulele sub sculă); calculul pe celulă e exact oricum. */
+const G: GrilaOracol = { x0: 0, y0: 0, latime: 30, inaltime: 20, celula: 0.1 };
 const P = (puncte: readonly Pct[]): FormaScula => ({ tip: 'profil', puncte });
 
 /** O rotunjire (fundul plat, apoi o curbă care se înalță tot mai abrupt), un S (abrupt la mijloc) și trepte (bucăți orizontale). */
@@ -70,22 +71,23 @@ const MUTARI: ReadonlyArray<readonly [string, readonly MutareCaz[]]> = [
   ['plonjări: −1 și −3', [L([8, 8, 0], [8, 8, -1]), L([20, 12, 0], [20, 12, -3])]],
 ];
 
-function verifica(nume: string, mutari: readonly MutareCaz[], puncte: readonly Pct[], diametru: number, grila: GrilaOracol = G): void {
+/** Nucleul față de oracol; întoarce judecata oracolului (scumpă), ca proba dinților s-o refolosească. */
+function verifica(nume: string, mutari: readonly MutareCaz[], puncte: readonly Pct[], diametru: number, grila: GrilaOracol = G): ReturnType<typeof judeca> {
   const s: SculaOracol = { tip: 'profil', diametru, puncte };
   const o = judeca(scrieGcode(mutari), grila, s);
   const z = nucleu(mutari, grila, diametru, P(puncte));
   const cmp = compara(z, o, s);
   assert.equal(cmp.maiSus, 0, `${nume}: nucleul mai sus pe ${cmp.maiSus} celule (max ${cmp.maiSusMax}, prima ${JSON.stringify(cmp.primaMaiSus)})`);
   assert.equal(cmp.maiJosPesteMarja, 0, `${nume}: nucleul sub marja ${cmp.marja} pe ${cmp.maiJosPesteMarja} celule`);
+  return o;
 }
 
 for (const [numeP, puncte] of [['rotunjirea', RUND], ['S-ul', S_URI], ['treptele', TREPTE]] as const) {
   for (const [numeM, mutari] of MUTARI) {
     test(`profilul: nucleul față de oracol, ${numeP}, ${numeM}`, () => {
-      verifica(`${numeP}, ${numeM}`, mutari, puncte, 8);
+      const o = verifica(`${numeP}, ${numeM}`, mutari, puncte, 8);
       // Proba are dinți: V-ul de același diametru și aceeași înălțime pică pe aceeași piesă.
       const s: SculaOracol = { tip: 'profil', diametru: 8, puncte };
-      const o = judeca(scrieGcode(mutari), G, s);
       const hmax = puncte[puncte.length - 1]![1];
       const alt = compara(nucleu(mutari, G, 8, P([[0, 0], [4, hmax]])), o, s);
       assert.ok(alt.maiSus > 0 || alt.maiJosPesteMarja > 0, 'conul trece și el: piesa nu vede silueta');
