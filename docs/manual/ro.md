@@ -1045,7 +1045,11 @@ se șterge la o pornire, după cel puțin o zi.
 **Finisarea:** cu piesa reliefului aleasă, secțiunea **Tăierea** oferă rolul **finisarea reliefului** (pe o piesă doar cu
 reliefuri). Freza urmează relieful pe linii paralele, la pasul lateral, coborând în treceri de cel mult **pasul**, ultima pe
 model; nu coboară niciodată sub suprafața reliefului și nici sub **adâncime** (podeaua, implicit cât placa). Câmpurile:
-- **Freza**: bilă (implicit), plată sau în V, și **diametrul ei**; bila merge doar aici;
+- **Freza**: bilă (implicit), plată, în V sau **toroidală** (fundul plat cu colțurile rotunjite), și **diametrul ei**; la
+  toroidală, și **Raza colțului** (peste 0 și sub jumătatea diametrului; implicit 1 mm, cel mult un sfert din diametru). Pe un
+  plan, toroidala nu lasă creastă cât pasul lateral e cel mult cât fundul ei plat (diametrul minus de două ori raza
+  colțului), deci pe pantele line ajung linii mai rare decât cu bila; pe pantele abrupte și în văile înguste, colțul ei
+  rotunjit lucrează ca o bilă mică;
 - **Pasul lateral** (implicit 10 % din freză): distanța dintre linii; prin centrele celulelor, se rotunjește în jos la celule
   întregi (cel puțin una), deci liniile nu stau mai rar decât ai cerut; o celulă mai lată decât freza se refuză;
 - **Unghiul liniilor** (0° … 180°) și **Liniile**: prin centrele celulelor (la 0° și 90°) sau nealiniate, unde pot apărea riduri
@@ -1076,7 +1080,7 @@ liniile (pasul lateral, unghiul, prin centrele celulelor sau nealiniate), adaosu
 și pasul pe trecere. Fișa spune pasul folosit (cu liniile prin centrele celulelor, rotunjit în jos la celule întregi) și, la
 finisare, creasta pe un plan. Marginea și înălțimea, schimbate pe un rând, se schimbă și pe celălalt rând al aceluiași relief;
 **Exportă** scrie valorile în proiect, iar secțiunea Tăierea le arată apoi. Freza o poți lua și **Din frezele mele**: la
-finisare, o plată, o freză în V sau o bilă; la degroșare, doar o plată. Aleasă, freza își aduce numărul (cât e liber), diametrul,
+finisare, o plată, o freză în V, o bilă sau o toroidală (cu raza colțului ei); la degroșare, doar o plată. Aleasă, freza își aduce numărul (cât e liber), diametrul,
 forma, pasul pe trecere și pasul lateral ei (o bilă de finisare are de obicei unul mic); schimbată apoi în bibliotecă, rândul
 spune ce diferă, cu **Ia valorile noi**, ca la celelalte rânduri. Fiecare grup al fișei are desenul lui, din valorile tale:
 freza, liniile văzute de sus (prin centrele celulelor, la pasul folosit), adaosul în secțiune, marginea și înălțimea, podeaua cu

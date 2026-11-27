@@ -16,7 +16,8 @@ FF = 'src/ui/FisaFinisare.tsx'
 o('T00', FF, "  /** Freza e pe numărul unui conflict de T: câmpurile ei se înroșesc, ca la celelalte rânduri (felia 18.1↑d-7). */",
   "  /** Freza e pe numărul unui conflict de T: câmpurile ei se înroșesc, ca la celelalte rânduri (felia 18.1↑d-7).  */", 'e2e',
   'martorul: un spațiu într-un comentariu (trebuie să scape)')
-o('T01', DE, "      { cheie: f.cheie, unde: 'scula' });", ");", 'e2e', 'freza reliefului fără locul ei: niciun buton')
+# T01, mutată pe 27.11 (18.1↑e): apelul a primit raza colțului toroidalei.
+o('T01', DE, "      { cheie: f.cheie, unde: 'scula' }, tor);", "      undefined, tor);", 'e2e', 'freza reliefului fără locul ei: niciun buton')
 o('T02', DE, "      out.push(x ? [m, 'freza-relief', { numar: x.numar, fa: () => { schimbaRelief(cheie, { numarScula: text(x.numar) }); } }] : [m, 'freza-relief']);",
   "      out.push(x ? [m, 'freza-relief', { numar: x.numar, fa: () => { schimbaRelief(cheie, { numarScula: text(x.numar + 1) }); } }] : [m, 'freza-relief']);",
   'e2e', 'butonul scrie alt număr decât cel spus')

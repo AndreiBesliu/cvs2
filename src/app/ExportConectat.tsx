@@ -281,8 +281,11 @@ function randuriFoii(
       descriere: o.noduri.length > 1 ? `${baza} (+${o.noduri.length - 1})` : baza,
       ...(o.rang !== undefined ? { rang: o.rang } : {}),
       scula: {
-        numar: s.numar, diametru: s.diametru, forma: s.forma?.tip === 'bila' ? 'bila' : s.forma?.tip === 'v' ? 'v' : 'plata',
+        numar: s.numar, diametru: s.diametru,
+        forma: s.forma?.tip === 'bila' ? 'bila' : s.forma?.tip === 'v' ? 'v' : s.forma?.tip === 'toroidala' ? 'toroidala' : 'plata',
         ...(s.forma?.tip === 'v' ? { unghi: s.forma.unghi, ...(s.forma.varf !== undefined ? { varf: s.forma.varf } : {}) } : {}),
+        // Toroidala (felia 18.1↑e, ADR 0319): raza colțului.
+        ...(s.forma?.tip === 'toroidala' ? { razaColt: s.forma.raza } : {}),
         // Originea din „Frezele mele” (felia 18.1↑d-5, ADR 0316): nota bibliotecii și Exportă o citesc, ca la celelalte rânduri.
         ...((x) => (x ? { origine: x } : {}))(origineDin(s)),
       },
@@ -404,7 +407,7 @@ export function ExportConectat({
     };
   }, [biblioteca.freze]);
   // Frezele oferite rândurilor reliefului (felia 18.1↑d-5, ADR 0316): cele pe care lucrarea le primește pe finisare (plata, V-ul,
-  // bila) și pe degroșare (doar plata).
+  // bila și, din felia 18.1↑e, toroidala) și pe degroșare (doar plata).
   const frezeRelief = useMemo(() => {
     const dupaFel = new Map<string, readonly FrezaOferita[]>();
     return (fel: 'finisare' | 'degrosare'): readonly FrezaOferita[] => {
@@ -479,7 +482,8 @@ export function ExportConectat({
       finisari={exportFoaie.finisari}
       creasta={(sc, pas) => creastaPePlan({
         numar: sc.numar, nume: '', diametru: sc.diametru,
-        ...(sc.forma === 'bila' ? { forma: { tip: 'bila' as const } } : sc.forma === 'v' ? { forma: { tip: 'v' as const, unghi: sc.unghi ?? 0, ...(sc.varf !== undefined ? { varf: sc.varf } : {}) } } : {}),
+        ...(sc.forma === 'bila' ? { forma: { tip: 'bila' as const } } : sc.forma === 'v' ? { forma: { tip: 'v' as const, unghi: sc.unghi ?? 0, ...(sc.varf !== undefined ? { varf: sc.varf } : {}) } }
+          : sc.forma === 'toroidala' ? { forma: { tip: 'toroidala' as const, raza: sc.razaColt ?? 0 } } : {}),
       }, pas)}
       ordineAutomata={exportFoaie.automata}
       descrieri={exportFoaie.descrieri}

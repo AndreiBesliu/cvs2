@@ -25,7 +25,7 @@ const ro = (x: number): string => String(x).replace('.', ',');
 test('rândul ca text, din valorile documentului (cu virgula în română)', () => {
   const r = randRelief(fin, ro);
   assert.deepEqual(r, {
-    fel: 'finisare', numarScula: '2', diametruScula: '6', formaScula: 'bila', unghiV: '60', varfV: '0', pasLateral: '0,6', adaos: '0,5',
+    fel: 'finisare', numarScula: '2', diametruScula: '6', formaScula: 'bila', unghiV: '60', varfV: '0', razaColt: '1', pasLateral: '0,6', adaos: '0,5',
     unghi: '0', aliniat: true, margine: 'perete', z: 'varf', planZero: '0', adancime: '18', pas: '3', origineScula: null,
   });
   const d = randRelief(deg, ro);
@@ -116,6 +116,8 @@ const finDin = (o: Operatie): FinisareExport => ({
   ...fin, cheie: `p/${o.id}`, fel: o.tip === 'degrosare' ? 'degrosare' : 'finisare', ...(o.tip === 'degrosare' ? { adaos: o.degrosare!.adaos } : {}),
   scula: o.scula.forma?.tip === 'v'
     ? { numar: o.scula.numar, diametru: o.scula.diametru, forma: 'v', unghi: o.scula.forma.unghi, ...(o.scula.forma.varf !== undefined ? { varf: o.scula.forma.varf } : {}), ...origineDin(o.scula) }
+    : o.scula.forma?.tip === 'toroidala'
+    ? { numar: o.scula.numar, diametru: o.scula.diametru, forma: 'toroidala', razaColt: o.scula.forma.raza, ...origineDin(o.scula) }
     : { numar: o.scula.numar, diametru: o.scula.diametru, forma: o.scula.forma?.tip === 'bila' ? 'bila' : 'plata', ...origineDin(o.scula) },
   pasLateral: o.pasLateral!, unghi: (o.tip === 'degrosare' ? o.degrosare : o.finisare)!.unghi,
   aliniat: o.finisare?.nealiniat !== true, margine: (o.tip === 'degrosare' ? o.degrosare : o.finisare)!.margine === 'trece' ? 'trece' : 'perete',
@@ -168,4 +170,34 @@ test('freza: alt T o păstrează; alt diametru sau altă formă o face scrisă d
   // Degroșarea: freza rămâne plată, oricare ar fi forma din text.
   const dg = scrie(opDeg, { diametruScula: '8', formaScula: 'bila' });
   assert.deepEqual(dg.scula, { numar: 1, nume: 'freza plata', diametru: 8 });
+});
+
+test('toroidala pe finisare (felia 18.1↑e, ADR 0319): rândul, raza colțului în (0, Ø / 2), citirea și ce scrie Exportă', () => {
+  // Din document: forma și raza colțului, ca text.
+  const tor: FinisareExport = { ...fin, scula: { numar: 3, diametru: 6, forma: 'toroidala', razaColt: 1.5 } };
+  const r = randRelief(tor, ro);
+  assert.deepEqual([r.formaScula, r.razaColt], ['toroidala', '1,5']);
+  assert.deepEqual(valoriRelief(r)?.scula.forma, { tip: 'toroidala', raza: 1.5 });
+  assert.deepEqual(campuriReliefGresite(r), []);
+  // Raza colțului: peste 0 și sub jumătatea diametrului (cu Ø / 2 e o bilă), ca la ușă.
+  const rau = (p: Partial<RandRelief>): readonly string[] => campuriReliefGresite({ ...r, ...p });
+  assert.deepEqual(rau({ razaColt: '0' }), ['raza-colt']);
+  assert.deepEqual(rau({ razaColt: '3' }), ['raza-colt']);
+  assert.deepEqual(rau({ razaColt: '2,999' }), []);
+  assert.deepEqual(rau({ razaColt: 'x' }), ['raza-colt']);
+  assert.deepEqual(rau({ diametruScula: '4', razaColt: '2' }), ['raza-colt']);
+  // Doar cu toroidala: pe bilă, raza scrisă nu se judecă.
+  assert.deepEqual(rau({ formaScula: 'bila', razaColt: '0' }), []);
+  assert.equal(valoriRelief({ ...r, razaColt: '' }), null);
+  // Degroșarea rămâne plată: o toroidală scrisă pe ea nu e citită ca formă.
+  assert.equal(valoriRelief({ ...randRelief(deg, ro), formaScula: 'toroidala', razaColt: '1' })?.scula.forma, null);
+  // Exportă: altă formă sau altă rază fac freza scrisă de mână, cu numele după formă; pe aceeași formă, un câmp necunoscut rămâne.
+  const t = scrie(opFin, { formaScula: 'toroidala', razaColt: '1.5' });
+  assert.deepEqual(t.scula, { numar: 2, nume: 'freza toroidala r1.5', diametru: 6, forma: { tip: 'toroidala', raza: 1.5 } });
+  const opT = { ...opFin, scula: { numar: 4, nume: 'Toro', diametru: 6, forma: { tip: 'toroidala', raza: 1, profil: 'x' } } } as Operatie;
+  assert.equal(JSON.stringify(scrie(opT)), JSON.stringify(opT));
+  const rc = scrie(opT, { razaColt: '2' });
+  assert.deepEqual(rc.scula, { numar: 4, nume: 'freza toroidala r2', diametru: 6, forma: { tip: 'toroidala', profil: 'x', raza: 2 } });
+  // De pe toroidală pe bilă: forma bilei, fără raza colțului.
+  assert.deepEqual(scrie(opT, { formaScula: 'bila' }).scula, { numar: 4, nume: 'freza bila', diametru: 6, forma: { tip: 'bila' } });
 });

@@ -11,7 +11,7 @@
  * - Bila și toroidala (ADR 0303 §4) merg pe linie (canelura, 16.A↑e-3) și în buzunar (16.A↑e-5): centrul frezei stă la R de
  *   perete, ca la freza plată, iar fundul rămâne cu creasta lor. În buzunar, fără freze de rest (geometria lor e a frezei
  *   plate, întrebarea 5a) și fără incrustație cu pereți drepți (pereții și fundul dopului cer freza plată). Profilul pe o
- *   parte vine în e-6; toroidala pe relief e a liniei reliefului.
+ *   parte vine în e-6. Toroidala merge și la finisarea reliefului (18.1↑e, ADR 0319).
  * - Freza plată merge în rest.
  */
 import type { FormaSculaDoc, Latura, Operatie, Scula, TipOperatie } from './document.ts';
@@ -44,8 +44,9 @@ export function motivFormaPeOperatie(tip: TipOperatie, latura: Latura, forma: Fo
     if (o?.incrustatie?.fel === 'drept') return 'rotunda-incrustatie';
     return null;
   }
-  if (forma?.tip === 'toroidala') return 'toroidala';
+  // Finisarea reliefului (ADR 0312 §2) merge cu orice formă cu CAM: plata, V-ul, bila și, din 18.1↑e (ADR 0319), toroidala.
   if (tip === 'finisare') return null;
+  if (forma?.tip === 'toroidala') return 'toroidala';
   if (tip === 'degrosare') return forma === undefined ? null : 'degrosare';
   if (forma?.tip === 'bila') return 'bila';
   const v = forma?.tip === 'v';

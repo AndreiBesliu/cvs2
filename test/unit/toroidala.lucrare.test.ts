@@ -48,12 +48,12 @@ const motiv = (d: Liber): string => {
   return r.ok ? '' : r.motiv;
 };
 
-test('motivFormaPeOperatie: toroidala merge pe profilul pe linie și (16.A↑e-5) în buzunar, nu pe finisarea reliefului; restul, ca până acum', () => {
+test('motivFormaPeOperatie: toroidala merge pe profilul pe linie, (16.A↑e-5) în buzunar și (18.1↑e) la finisarea reliefului; restul, ca până acum', () => {
   const T: FormaSculaDoc = { tip: 'toroidala', raza: 1 }, B: FormaSculaDoc = { tip: 'bila' }, V: FormaSculaDoc = { tip: 'v', unghi: 60 };
   const randuri: ReadonlyArray<readonly [TipOperatie, Latura, FormaSculaDoc | undefined, string | null]> = [
     ['profil', 'pe-linie', T, null], ['profil', 'exterior', T, 'toroidala'], ['profil', 'stanga', T, 'toroidala'],
     ['buzunar', 'interior', T, null], ['gaurire', 'interior', T, 'toroidala'], ['vcarve', 'interior', T, 'toroidala'],
-    ['finisare', 'pe-linie', T, 'toroidala'], ['degrosare', 'pe-linie', T, 'toroidala'],
+    ['finisare', 'pe-linie', T, null], ['degrosare', 'pe-linie', T, 'toroidala'],
     // Neschimbate (finisare.bila.test.ts, degrosare): bila doar la finisare, degroșarea doar cu plata, V-ul pe linie și în V-carve.
     ['finisare', 'pe-linie', B, null], ['profil', 'exterior', B, 'bila'], ['degrosare', 'pe-linie', undefined, null],
     ['degrosare', 'pe-linie', B, 'degrosare'], ['vcarve', 'interior', V, null], ['profil', 'exterior', V, 'v-pe-linie'],
@@ -82,15 +82,14 @@ test('lucrarea refuză toroidala pe orice operație în afara canelurii și a bu
   // Canelura și buzunarul cu toroidala se taie (canelura.rotunda.test.ts, buzunar.rotunda.test.ts).
   assert.equal(motiv(doc([op({ scula: toro(1, 6, 1), latura: 'pe-linie' })])), '');
   assert.equal(motiv(doc([op({ tip: 'buzunar', scula: toro(1, 6, 1.5), pasLateral: 2 })])), '');
-  // Pe o finisare și pe o degroșare a reliefului, la fel (nu doar refuzul degroșării, „cu o freză plată”).
+  // Pe o degroșare a reliefului, la fel (nu doar refuzul degroșării, „cu o freză plată”); pe finisare, din 18.1↑e (ADR 0319),
+  // regula ei nu mai refuză (finisarea cu toroidala: reliefFinisare.toroidala.test.ts).
   const reliefOp = (tip: 'finisare' | 'degrosare'): Liber => op({
     id: 'f', tip, noduri: ['r'], scula: toro(4, 6, 1), latura: 'pe-linie', adancime: 8, pas: 3, pasLateral: 0.5,
     ...(tip === 'finisare' ? { finisare: { unghi: 0 } } : { degrosare: { adaos: 0.5, unghi: 0 } }),
   });
-  for (const tip of ['finisare', 'degrosare'] as const) {
-    const m = motiv(doc([reliefOp(tip)], true));
-    assert.match(m, /^p\/f: freza toroidală \(T4, scula\) nu se taie încă/, `${tip}: ${m}`);
-  }
+  assert.match(motiv(doc([reliefOp('degrosare')], true)), /^p\/f: freza toroidală \(T4, scula\) nu se taie încă/);
+  assert.doesNotMatch(motiv(doc([reliefOp('finisare')], true)), /toroidal/);
   // Fără toroidală, aceleași operații nu sunt refuzate de regula ei.
   assert.doesNotMatch(motiv(doc([op({})])), /toroidal/);
   assert.equal(motiv(doc([op({})])), '');

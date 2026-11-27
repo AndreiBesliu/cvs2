@@ -71,8 +71,9 @@ function refuzFinisareSiBila(doc: Document): string | null {
     if (!pePlaca.has(p.id)) continue;
     for (const o of p.operatii) {
       const unde = `${p.id}/${o.id}`;
-      // Bila și toroidala (ADR 0303 §4): ca freză a operației, pe linie (canelura, 16.A↑e-3) și în buzunar (16.A↑e-5); bila și
-      // la finisarea reliefului. Pe orice freză în plus și pe celelalte operații, refuzate (profilul pe o parte vine în e-6).
+      // Bila și toroidala (ADR 0303 §4): ca freză a operației, pe linie (canelura, 16.A↑e-3), în buzunar (16.A↑e-5) și la
+      // finisarea reliefului (bila, ADR 0312; toroidala, 18.1↑e, ADR 0319). Pe orice freză în plus și pe celelalte operații,
+      // refuzate (profilul pe o parte vine în e-6).
       const rotunda = (s: { readonly forma?: { readonly tip: string } | undefined }): boolean => s.forma?.tip === 'bila' || s.forma?.tip === 'toroidala';
       const motivRotunda = motivFormaPeOperatie(o.tip, o.latura, o.scula.forma, o);
       if (rotunda(o.scula) && motivRotunda === 'rotunda-rest') {
@@ -83,7 +84,7 @@ function refuzFinisareSiBila(doc: Document): string | null {
       }
       for (const { cale, scula } of frezeleOperatiei(o)) {
         if (scula.forma?.tip === 'toroidala' && !(cale === 'scula' && motivRotunda === null)) {
-          return `${unde}: freza toroidală (T${scula.numar}, ${cale}) nu se taie încă aici: azi pe linie (canelura) și în buzunar; profilul pe o parte vine pe sub-felii`;
+          return `${unde}: freza toroidală (T${scula.numar}, ${cale}) nu se taie încă aici: azi pe linie (canelura), în buzunar și la finisarea reliefului; profilul pe o parte vine pe sub-felii`;
         }
       }
       if (o.finisare !== undefined && o.tip !== 'finisare') return `${unde}: valorile finisării sunt doar ale unei finisări a reliefului`;
@@ -154,7 +155,8 @@ function programRelief(
     return r.ok ? r : { ok: false, motiv: `${f.reliefuri[0]?.idLume ?? `${f.piesa}/${o.id}`}: ${r.motiv}` };
   }
   const freza: FrezaFinisare = fs?.tip === 'bila' ? { fel: 'bila', raza: D / 2 }
-    : fs?.tip === 'v' ? { fel: 'v', raza: D / 2, unghi: fs.unghi, varf: fs.varf ?? 0 } : { fel: 'plata', raza: D / 2 };
+    : fs?.tip === 'v' ? { fel: 'v', raza: D / 2, unghi: fs.unghi, varf: fs.varf ?? 0 }
+      : fs?.tip === 'toroidala' ? { fel: 'toroidala', raza: D / 2, colt: fs.raza } : { fel: 'plata', raza: D / 2 };
   const r = finisareRelief({ ...comune, freza, nealiniat: o.finisare?.nealiniat === true });
   return r.ok ? r : { ok: false, motiv: `${f.reliefuri[0]?.idLume ?? `${f.piesa}/${o.id}`}: ${r.motiv}` };
 }

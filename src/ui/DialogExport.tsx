@@ -784,8 +784,10 @@ export function DialogExport(
     if (!r || n === null || d === null) continue;
     const v = r.fel === 'finisare' && r.formaScula === 'v';
     // Cu locul ei (felia 18.1↑d-7): „Dă-i T{n}” îi caută numărul nou ca la celelalte freze.
+    // Toroidala (felia 18.1↑e): raza colțului face parte din freză, ca la celelalte rânduri.
+    const tor = r.fel === 'finisare' && r.formaScula === 'toroidala' ? citesteNumar(r.razaColt) : null;
     adaugaFreza(n, d, v ? citesteNumar(r.unghiV) : null, v ? citesteNumar(r.varfV) : null, r.fel === 'finisare' && r.formaScula === 'bila',
-      { cheie: f.cheie, unde: 'scula' });
+      { cheie: f.cheie, unde: 'scula' }, tor);
   }
   const conflict = [...scule].find(([, ds]) => ds.size > 1);
   /** O freză pe numărul ciocnit (felia 28.8↑j): doar câmpurile ei se înroșesc. */
@@ -897,6 +899,7 @@ export function DialogExport(
         case 'diametru': return [t('motiv.camp.scula-diametru', { max: fmtMargine.format(MARGINI_OPERATIE.diametru) }), 'freza-relief'];
         case 'unghi-v': return [t('motiv.camp.unghi-v', { min: fmtMargine.format(MARGINI_OPERATIE.unghiVMinim), max: fmtMargine.format(MARGINI_OPERATIE.unghiV) }), 'freza-relief'];
         case 'varf-v': return [t('motiv.varf-invalid'), 'freza-relief'];
+        case 'raza-colt': return [t('motiv.camp.raza-colt', { max: d !== null ? fmtMargine.format(d / 2) : '–' }), 'freza-relief'];
         case 'pas-lateral': return [t('motiv.relief.pas-lateral', {
           max: fmtMargine.format(d !== null && d > 0 ? Math.min(d, MARGINI_OPERATIE.pasLateral) : MARGINI_OPERATIE.pasLateral),
         }), 'linii'];

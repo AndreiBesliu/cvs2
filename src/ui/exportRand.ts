@@ -586,8 +586,12 @@ export type HartieRand = {
  * Ce trimite dialogul la Exportă: montajul, postul, valorile operațiilor cu frezele lor (se scriu în document), confirmarea și
  * ordinea tăierii (ADR 0133 §3): cheile rândurilor în ordinea omului, sau null pentru ordinea automată.
  */
-/** Forma frezei citită: bila, plata (`null`) sau V-ul, cu unghiul și vârful (vârful 0 nu se scrie, ADR 0092). */
-export type FormaRelief = { readonly tip: 'bila' } | { readonly tip: 'v'; readonly unghi: number; readonly varf?: number } | null;
+/**
+ * Forma frezei citită: bila, plata (`null`), V-ul, cu unghiul și vârful (vârful 0 nu se scrie, ADR 0092), sau toroidala, cu raza
+ * colțului (felia 18.1↑e, ADR 0319).
+ */
+export type FormaRelief =
+  | { readonly tip: 'bila' } | { readonly tip: 'v'; readonly unghi: number; readonly varf?: number } | { readonly tip: 'toroidala'; readonly raza: number } | null;
 
 /** Valorile rândului unei operații a reliefului, citite (felia 18.1↑d-4, `exportRelief.ts`); ce scrie Exportă în operație. */
 export type ValoriRelief = {

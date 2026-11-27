@@ -262,8 +262,8 @@ export function operatieDinDialog(o: Operatie, v: ValoriOperatie | undefined, sc
  * Operația reliefului (finisarea sau degroșarea) cu valorile rândului ei din fereastra exportului (felia 18.1↑d-4, ADR 0315).
  * Se scrie doar ce s-a schimbat, la locul lui: un Exportă fără nicio schimbare dă aceeași operație, la octet. Freza: alt T o
  * păstrează (cu originea din bibliotecă); alt diametru sau altă formă o face scrisă de mână, ca în panou (`frezaFinisare`):
- * numărul, numele după formă, diametrul și forma, fără origine, valori de lucru și tăiș; pe aceeași formă în V, un câmp
- * necunoscut al ei rămâne. Din felia 18.1↑d-5 (ADR 0316), originea frezei din „Frezele mele” se scrie ca la celelalte rânduri.
+ * numărul, numele după formă, diametrul și forma, fără origine, valori de lucru și tăiș; pe aceeași formă în V (și toroidală, din
+ * felia 18.1↑e), un câmp necunoscut al ei rămâne. Din felia 18.1↑d-5 (ADR 0316), originea frezei din „Frezele mele” se scrie ca la celelalte rânduri.
  * Degroșarea rămâne cu freza plată. Câmpurile finisării și ale degroșării se îmbină (`cuFinisare`,
  * `cuDegrosare`), iar cele opționale lăsate la implicit pleacă. O operație de alt fel rămâne cum e.
  */
@@ -272,15 +272,23 @@ export function operatieReliefDinDialog(o: Operatie, v: ValoriRelief): Operatie 
   const deg = o.tip === 'degrosare';
   const s = o.scula;
   const formaNoua = deg ? null : v.scula.forma;
-  const formaVeche = s.forma?.tip === 'bila' ? 'bila' : s.forma?.tip === 'v' ? 'v' : null;
+  const formaVeche = s.forma?.tip === 'bila' ? 'bila' : s.forma?.tip === 'v' ? 'v' : s.forma?.tip === 'toroidala' ? 'toroidala' : null;
   const aceeasiForma = formaNoua === null ? formaVeche === null : formaNoua.tip === 'bila' ? formaVeche === 'bila'
+    : formaNoua.tip === 'toroidala' ? s.forma?.tip === 'toroidala' && s.forma.raza === formaNoua.raza
     : s.forma?.tip === 'v' && s.forma.unghi === formaNoua.unghi && (s.forma.varf ?? 0) === (formaNoua.varf ?? 0);
   let scula: Operatie['scula'] = s;
   const alta = s.diametru !== v.scula.diametru || !aceeasiForma;
   if (alta) {
     if (formaNoua === null) scula = { numar: v.scula.numar, nume: 'freza plata', diametru: v.scula.diametru };
     else if (formaNoua.tip === 'bila') scula = { numar: v.scula.numar, nume: 'freza bila', diametru: v.scula.diametru, forma: { tip: 'bila' } };
-    else {
+    else if (formaNoua.tip === 'toroidala') {
+      // Toroidala (felia 18.1↑e, ADR 0319): pe aceeași formă, un câmp necunoscut al ei rămâne, ca la V.
+      const vechi = s.forma?.tip === 'toroidala' ? s.forma : { tip: 'toroidala' as const };
+      scula = {
+        numar: v.scula.numar, nume: numeDupaForma({ tip: 'toroidala', raza: formaNoua.raza }), diametru: v.scula.diametru,
+        forma: { ...vechi, tip: 'toroidala', raza: formaNoua.raza },
+      };
+    } else {
       const { varf: _v, ...vechi } = s.forma?.tip === 'v' ? s.forma : { tip: 'v' as const };
       void _v;
       const varf = formaNoua.varf ?? 0;

@@ -6,7 +6,7 @@
  */
 import { ADAOS_IMPLICIT, MARGINI_OPERATIE, UNGHI_V_IMPLICIT } from './actiuniExportTipuri.ts';
 import {
-  diferenteFreza, intregInMargini, inMargini, stareOrigine, type CopieRand, type FormaRand, type FormaRelief, type FrezaOferita,
+  RAZA_COLT_IMPLICITA, diferenteFreza, intregInMargini, inMargini, stareOrigine, type CopieRand, type FormaRand, type FormaRelief, type FrezaOferita,
   type FrezaRand, type LocFrezaRand, type OrigineFreza, type ValoriRelief,
 } from './exportRand.ts';
 export type { FormaRelief, ValoriRelief } from './exportRand.ts';
@@ -29,8 +29,10 @@ export type FinisareExport = {
   /** Locul în ordinea de mână (ADR 0133), dacă documentul îl are. */
   readonly rang?: number;
   readonly scula: {
-    readonly numar: number; readonly diametru: number; readonly forma: 'bila' | 'plata' | 'v';
+    readonly numar: number; readonly diametru: number; readonly forma: 'bila' | 'plata' | 'v' | 'toroidala';
     readonly unghi?: number; readonly varf?: number;
+    /** Raza colțului toroidalei (felia 18.1↑e, ADR 0319), în mm; doar cu forma `toroidala`. */
+    readonly razaColt?: number;
     /** Originea frezei din „Frezele mele” (felia 18.1↑d-5, ADR 0316), dacă documentul o are. */
     readonly origine?: OrigineFreza;
   };
@@ -54,9 +56,11 @@ export type FinisareExport = {
 export type RandRelief = {
   readonly fel: 'finisare' | 'degrosare';
   readonly numarScula: string; readonly diametruScula: string;
-  /** Forma frezei: la degroșare, doar plata (ADR 0313 §1). */
-  readonly formaScula: 'bila' | 'plata' | 'v';
+  /** Forma frezei: la degroșare, doar plata (ADR 0313 §1); toroidala doar la finisare (felia 18.1↑e, ADR 0319). */
+  readonly formaScula: 'bila' | 'plata' | 'v' | 'toroidala';
   readonly unghiV: string; readonly varfV: string;
+  /** Raza colțului toroidalei, ca text (ținută și cât forma e alta, ca la celelalte rânduri). */
+  readonly razaColt: string;
   readonly pasLateral: string;
   /** Adaosul lăsat finisării; doar pe o degroșare. */
   readonly adaos: string;
@@ -82,6 +86,7 @@ export function randRelief(f: FinisareExport, text: (x: number) => string): Rand
   return {
     fel: f.fel, numarScula: text(s.numar), diametruScula: text(s.diametru), formaScula: f.fel === 'degrosare' ? 'plata' : s.forma,
     unghiV: text(s.forma === 'v' ? s.unghi ?? UNGHI_V_IMPLICIT : UNGHI_V_IMPLICIT), varfV: text(s.forma === 'v' ? s.varf ?? 0 : 0),
+    razaColt: text(s.forma === 'toroidala' ? s.razaColt ?? RAZA_COLT_IMPLICITA : RAZA_COLT_IMPLICITA),
     pasLateral: text(f.pasLateral), adaos: text(f.adaos ?? ADAOS_IMPLICIT), unghi: text(f.unghi), aliniat: f.aliniat, margine: f.margine,
     z: f.planZero === undefined ? 'varf' : 'plan', planZero: text(f.planZero ?? 0), adancime: text(f.adancime), pas: text(f.pas),
     origineScula: f.scula.origine ?? null,
@@ -89,7 +94,7 @@ export function randRelief(f: FinisareExport, text: (x: number) => string): Rand
 }
 
 /** Un câmp al rândului reliefului care poate fi greșit (`data-camp` = `relief-<câmp>`). */
-export type CampRelief = 'scula' | 'diametru' | 'unghi-v' | 'varf-v' | 'pas-lateral' | 'adaos' | 'unghi' | 'plan-zero' | 'adancime' | 'pas';
+export type CampRelief = 'scula' | 'diametru' | 'unghi-v' | 'varf-v' | 'raza-colt' | 'pas-lateral' | 'adaos' | 'unghi' | 'plan-zero' | 'adancime' | 'pas';
 
 /** Un număr citit în [0, plafon] (adaosul și planul zero pot fi 0). */
 function inMarginiCuZero(s: string, plafon: number): boolean {
@@ -100,7 +105,7 @@ function inMarginiCuZero(s: string, plafon: number): boolean {
 /**
  * Câmpurile greșite ale rândului, în ordinea fișei: T-ul un întreg, diametrul și adâncimea ca la ușă; pasul lateral peste 0, cel
  * mult diametrul frezei (altfel rămân dungi: lucrarea refuză) și ușa; unghiul în [0, 180); V-ul (doar la finisare) cu unghiul
- * frezei în V și vârful de la 0 până sub diametru; adaosul (doar la degroșare) în [0, 10]; planul zero (doar „plan”) în
+ * frezei în V și vârful de la 0 până sub diametru; raza colțului toroidalei (doar la finisare) în (0, Ø / 2), ca la ușă; adaosul (doar la degroșare) în [0, 10]; planul zero (doar „plan”) în
  * [0, 1 000]; pasul pe trecere peste 0.
  */
 export function campuriReliefGresite(r: RandRelief): readonly CampRelief[] {
@@ -112,6 +117,10 @@ export function campuriReliefGresite(r: RandRelief): readonly CampRelief[] {
   const v = r.fel === 'finisare' && r.formaScula === 'v';
   if (v && !inMargini(r.unghiV, MARGINI_OPERATIE.unghiV, MARGINI_OPERATIE.unghiVMinim)) rez.push('unghi-v');
   if (v && !((x) => x !== null && x >= 0 && (d === null || !dBun || x < d))(citesteNumar(r.varfV))) rez.push('varf-v');
+  if (r.fel === 'finisare' && r.formaScula === 'toroidala') {
+    const rc = citesteNumar(r.razaColt);
+    if (rc === null || !Number.isFinite(rc) || !(rc > 0) || (dBun && d !== null && !(rc < d / 2))) rez.push('raza-colt');
+  }
   const s = citesteNumar(r.pasLateral);
   if (!inMargini(r.pasLateral, MARGINI_OPERATIE.pasLateral) || (dBun && d !== null && s !== null && s > d)) rez.push('pas-lateral');
   if (r.fel === 'degrosare' && !inMarginiCuZero(r.adaos, MARGINI_OPERATIE.adaos)) rez.push('adaos');
@@ -137,6 +146,10 @@ export function valoriRelief(r: RandRelief): ValoriRelief | null {
     const u = n(r.unghiV), vf = n(r.varfV);
     if (u === null || vf === null) return null;
     forma = { tip: 'v', unghi: u, ...(vf > 0 ? { varf: vf } : {}) };
+  } else if (r.fel === 'finisare' && r.formaScula === 'toroidala') {
+    const rc = n(r.razaColt);
+    if (rc === null) return null;
+    forma = { tip: 'toroidala', raza: rc };
   }
   return {
     fel: r.fel, scula: { numar, diametru, forma, origine: r.origineScula }, pasLateral, adaos, unghi, aliniat: r.fel === 'degrosare' || r.aliniat,
@@ -149,10 +162,14 @@ export function valoriRelief(r: RandRelief): ValoriRelief | null {
  * §4–§5): aleasă din listă, nota „s-a schimbat în bibliotecă”, „Ia valorile noi”, recunoașterea și „Pune-o înapoi în bibliotecă”.
  */
 
-/** Forma frezei rândului, pentru bibliotecă: bila sau V-ul (cu vârful) doar la finisare; plata (lipsă) altfel. */
+/** Forma frezei rândului, pentru bibliotecă: bila, toroidala sau V-ul (cu vârful) doar la finisare; plata (lipsă) altfel. */
 function formaRandRelief(r: RandRelief): FormaRand | undefined {
   if (r.fel !== 'finisare' || r.formaScula === 'plata') return undefined;
   if (r.formaScula === 'bila') return { tip: 'bila' };
+  if (r.formaScula === 'toroidala') {
+    const rc = citesteNumar(r.razaColt);
+    return rc !== null && rc > 0 ? { tip: 'toroidala', raza: rc } : undefined;
+  }
   const u = citesteNumar(r.unghiV), v = citesteNumar(r.varfV);
   return u !== null ? { tip: 'v', unghi: u, ...(v !== null && v > 0 ? { varf: v } : {}) } : undefined;
 }
@@ -178,22 +195,21 @@ export function frezeRanduriRelief(randuri: Readonly<Record<string, RandRelief>>
   return rez;
 }
 
-/** Câmpurile rândului care scriu forma `f` (finisarea: bila, V-ul, plata; degroșarea rămâne plată). */
+/** Câmpurile rândului care scriu forma `f` (finisarea: bila, toroidala, V-ul, plata; degroșarea rămâne plată). */
 function campuriFormaRelief(r: RandRelief, f: FormaRand | undefined, text: (x: number) => string): Partial<RandRelief> {
   if (r.fel === 'degrosare' || f === undefined) return { formaScula: 'plata' };
   if (f.tip === 'bila') return { formaScula: 'bila' };
-  if (f.tip === 'v') return { formaScula: 'v', unghiV: text(f.unghi), varfV: text(f.varf ?? 0) };
-  return {};
+  if (f.tip === 'toroidala') return { formaScula: 'toroidala', razaColt: text(f.raza) };
+  return { formaScula: 'v', unghiV: text(f.unghi), varfV: text(f.varf ?? 0) };
 }
 
 /**
  * Ce se schimbă pe rândul reliefului când freza `f` din bibliotecă e aleasă, cu numărul T dat (`numarPentruRand`): T-ul, Ø-ul,
- * forma, pasul pe trecere, pasul lateral (al frezei, din procentul ei: o bilă de finisare își are pasul ei mic) și originea. O
- * formă pe care rândul n-o poartă (toroidala, până la felia ei) nu schimbă nimic.
+ * forma (toroidala, din felia 18.1↑e, cu raza colțului), pasul pe trecere, pasul lateral (al frezei, din procentul ei: o bilă de
+ * finisare își are pasul ei mic) și originea.
  */
 export function cuFrezaAleasaRelief(r: RandRelief, f: FrezaOferita, numar: number, text: (x: number) => string = String): Partial<RandRelief> {
   const s = f.scula;
-  if (r.fel === 'finisare' && s.forma?.tip === 'toroidala') return {};
   return {
     numarScula: text(numar), diametruScula: text(s.diametru), ...campuriFormaRelief(r, s.forma, text),
     pas: text(f.pas), pasLateral: text(f.pasLateral), origineScula: s.origine,
@@ -203,7 +219,6 @@ export function cuFrezaAleasaRelief(r: RandRelief, f: FrezaOferita, numar: numbe
 /** „Ia valorile noi” pe rândul reliefului: diametrul, forma și originea frezei din bibliotecă; T-ul și pașii rămân ai rândului. */
 export function cuValorileNoiRelief(r: RandRelief, f: FrezaOferita, text: (x: number) => string = String): Partial<RandRelief> {
   const s = f.scula;
-  if (r.fel === 'finisare' && s.forma?.tip === 'toroidala') return {};
   return { diametruScula: text(s.diametru), ...campuriFormaRelief(r, s.forma, text), origineScula: s.origine };
 }
 

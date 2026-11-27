@@ -63,9 +63,20 @@ test('aleasă pe finisare: T-ul dat, diametrul, forma (bila, V-ul cu vârful), p
   const d = randRelief(deg, ro);
   assert.equal(cuFrezaAleasaRelief(d, PLATA8, 3, ro).formaScula, 'plata');
   assert.equal(cuFrezaAleasaRelief(d, BILA8, 3, ro).formaScula, 'plata');
-  // Toroidala nu se taie încă pe relief (ADR 0303 §4, răspunsul 4a: felia liniei reliefului): nu se scrie nimic.
-  const tor: FrezaOferita = { ...BILA8, id: 't', scula: { ...BILA8.scula, forma: { tip: 'toroidala', raza: 1 } } };
-  assert.deepEqual(cuFrezaAleasaRelief(r, tor, 4, ro), {});
+  // Toroidala, din felia 18.1↑e (ADR 0319; ADR 0303 §4, răspunsul 4a): forma cu raza colțului.
+  const tor: FrezaOferita = { ...BILA8, id: 't', nume: 'Toroidală Ø8', scula: { ...BILA8.scula, forma: { tip: 'toroidala', raza: 1.5 }, origine: origine('t', 'Toroidală Ø8') } };
+  assert.deepEqual(cuFrezaAleasaRelief(r, tor, 4, ro), {
+    numarScula: '4', diametruScula: '8', formaScula: 'toroidala', razaColt: '1,5', pas: '4', pasLateral: '0,8', origineScula: tor.scula.origine,
+  });
+  assert.deepEqual(valoriRelief({ ...r, ...cuFrezaAleasaRelief(r, tor, 4, ro) })?.scula.forma, { tip: 'toroidala', raza: 1.5 });
+  // Pe degroșare, rămâne plată.
+  assert.equal(cuFrezaAleasaRelief(d, tor, 3, ro).formaScula, 'plata');
+  // Identitatea frezei (regula T, nota bibliotecii) ține felul și raza colțului: o toroidală r1,5 nu e o plată sau o bilă de Ø8.
+  const cuTor = { ...r, ...cuFrezaAleasaRelief(r, tor, 4, ro) };
+  assert.deepEqual(locFrezaRelief(cuTor).forma, { tip: 'toroidala', raza: 1.5 });
+  assert.deepEqual(frezeRanduriRelief({ x: cuTor }), [{ numar: 4, diametru: 8, forma: { tip: 'toroidala', raza: 1.5 }, turatie: 16000 }]);
+  assert.deepEqual(stareOrigine(locFrezaRelief(cuTor), [tor]), { fel: 'la-zi' });
+  assert.equal(stareOrigine(locFrezaRelief({ ...cuTor, razaColt: '2' }), [tor])?.fel, 'schimbata');
   // Valorile citite poartă originea.
   assert.deepEqual(valoriRelief({ ...r, ...cuFrezaAleasaRelief(r, BILA8, 4, ro) })?.scula, { numar: 4, diametru: 8, forma: { tip: 'bila' }, origine: BILA8.scula.origine });
   assert.equal(valoriRelief(r)?.scula.origine, null);

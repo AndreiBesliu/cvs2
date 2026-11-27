@@ -18,8 +18,9 @@ FF = 'src/ui/FisaFinisare.tsx'
 EC = 'src/app/ExportConectat.tsx'
 DE = 'src/ui/DialogExport.tsx'
 
-o('B00', ER, "/** Forma frezei rândului, pentru bibliotecă: bila sau V-ul (cu vârful) doar la finisare; plata (lipsă) altfel. */",
-  "/** Forma frezei rândului, pentru bibliotecă: bila sau V-ul (cu vârful) doar la finisare; plata (lipsă) altfel.  */", 'unit',
+# B00, mutată pe 27.11 (18.1↑e): comentariul și-a primit toroidala.
+o('B00', ER, "/** Forma frezei rândului, pentru bibliotecă: bila, toroidala sau V-ul (cu vârful) doar la finisare; plata (lipsă) altfel. */",
+  "/** Forma frezei rândului, pentru bibliotecă: bila, toroidala sau V-ul (cu vârful) doar la finisare; plata (lipsă) altfel.  */", 'unit',
   'martorul: un spațiu într-un comentariu (trebuie să scape)')
 o('B01', ER, "    pas: text(f.pas), pasLateral: text(f.pasLateral), origineScula: s.origine,",
   "    pas: text(f.pas), origineScula: s.origine,", 'unit', 'freza aleasă nu-și aduce pasul lateral')
@@ -35,8 +36,9 @@ o('B06', ER, "    if (l.origine?.biblioteca.id === id && stareOrigine(l, bibliot
   "    if (l.origine?.biblioteca.id === id) n++;", 'unit', '„Pe toate (N)” numără și rândurile la zi')
 o('B07', ER, "    if (k === cheie || diferenteFreza(l, f).every((d) => d.camp === 'nume')) nou[k] = { ...r, ...cuValorileNoiRelief(r, f, text) };",
   "    nou[k] = { ...r, ...cuValorileNoiRelief(r, f, text) };", 'unit', '„Pune-o înapoi” schimbă și rândurile cu altă copie')
-o('B08', ER, "  if (r.fel === 'finisare' && s.forma?.tip === 'toroidala') return {};\n  return {\n    numarScula:",
-  "  return {\n    numarScula:", 'unit', 'toroidala aleasă pe finisare, înaintea feliei ei')
+# B08, mutată pe 27.11 (18.1↑e, ADR 0319): garda care ținea toroidala afară de pe rând a plecat; otrava trece pe ramura ei.
+o('B08', ER, "  if (f.tip === 'toroidala') return { formaScula: 'toroidala', razaColt: text(f.raza) };\n",
+  "", 'unit', 'toroidala aleasă pe finisare se scrie ca V (fără raza colțului)')
 o('B09', ER, "    pas: citesteNumar(r.pas), pasLateral: citesteNumar(r.pasLateral),", "    pas: citesteNumar(r.pas), pasLateral: citesteNumar(r.pas),", 'unit',
   'copia de pus înapoi ia pasul pe trecere ca pas lateral')
 o('B10', ER, "    origineScula: f.scula.origine ?? null,", "    origineScula: null,", 'unit', 'rândul uită originea din document')

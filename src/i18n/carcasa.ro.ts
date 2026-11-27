@@ -355,6 +355,8 @@ export const roCarcasa = {
   'prop.fin.forma.bila': 'bilă',
   'prop.fin.forma.plata': 'plată',
   'prop.fin.forma.v': 'în V',
+  'prop.fin.forma.toroidala': 'toroidală',
+  'prop.fin.raza-colt': 'Raza colțului',
   'prop.fin.diametru': 'Diametrul frezei',
   'prop.fin.pas-lateral': 'Pasul lateral',
   'prop.fin.unghi': 'Unghiul liniilor',
