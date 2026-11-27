@@ -27,5 +27,7 @@ o('N06', T, 'The blades cover {4}% of the disc; the hub is Ø{5} × {6} mm. It p
 
 SETURI = {}
 E2E = ['test/e2e/trenulet.spec.ts']
+# pagina și pachetul se fac din surse în spec: build-ul aplicației nu le schimbă (docs/otravuri.md; felia 3.Cm-1)
+E2E_BUILD = False
 for x in O:
     assert x['vechi'] != x['nou'], x['id']

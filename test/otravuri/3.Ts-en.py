@@ -30,5 +30,7 @@ o('N09', T, 'The duct: Ø{10} inside, Ø{11} outside, {12} mm tall;', 'The duct:
 
 SETURI = {}
 E2E = ['test/e2e/trenulet.spec.ts']
+# pagina și pachetul se fac din surse în spec: build-ul aplicației nu le schimbă (docs/otravuri.md; felia 3.Cm-1)
+E2E_BUILD = False
 for x in O:
     assert x['vechi'] != x['nou'], x['id']
