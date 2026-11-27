@@ -16531,3 +16531,37 @@ commit-ul împins).
   Completul unirii: completul 45915480549 pe `8b92246d`, verde la prima trecere (65 min): unit 10 887 / 0 (12 sărite, pe Linux), e2e 1 008 / 1 008, funcțiile pe emulatoare 142 / 142, paginile 62 / 62; rapidul, verde. pornirea 111,7 kB (cu ușa 117,0, cu Atelierul 117,3 / 125), **totalul 933,8 / 1 000 kB** (+1,0), `/admin` 138,3 / 200, contul 30,3 / 32.
 - **Schema:** documentul e v31 (forma toroidalei); un câmp nou ia v32.
 - **Documentele:** decizia și Starea în `CLAUDE.md`; starea din `docs/linii/principala.md`; indexul liniilor.
+
+## 2026-11-27 — 16.A↑e-2: elicea cu bila și cu toroidala în nucleul simulării (Model: Claude Opus 5.5)
+
+**Prompt:** cuvântul owner-ului transmis de sesiunea principală pe 26.11 (20:16, „Zi-le ca pot continua cu ce urmeaza la
+fiecare”: 16.A↑e pe sub-felii, ADR 0303), apoi „Poți lucra la e-2 peste `7c3f166b`” (sesiunea principală, 27.11, 00:14).
+**Started:** 27.11, 00:15, pe `wip/16.A-freze-e`, peste `7c3f166b` (e-1 raportată gata de unit, cu `main` `0df06eca` adus și
+completul verde). **Completed:** 27.11, 01:20 (în container; completul pe ramură, după push).
+
+- **Nucleul** (`eliceaRotunda`, `src/sim/nucleu.ts`): pe fiecare celulă, cel mai jos punct al sculei pe toată elicea, exact.
+  Bila e toroidala cu a = 0 și ρ = R. Urcarea se citește de la capăt. Se caută doar în ultimele 2π, fiindcă o celulă atinsă
+  pe o tură e atinsă mai jos pe următoarea. Pe fiecare bucată a cercului în care scula acoperă celula, latura de dinaintea
+  trecerii are minimul la capăt. Latura de după se minimizează în distanța d: semnul derivatei e al lui G(d) − |m|, fără
+  trigonometrie; pragul vine prin înjumătățire, iar maximul lui G prin secțiunea de aur, cu un număr fix de pași, doar
+  + − × ÷ √.
+- **Programul:** elicea cu bila și cu toroidala nu mai e refuzată; cea cu V-ul, da.
+- **Structura lui G:**
+  - pe bilă, pe hârtie: g e convexă când scula atinge celula doar pe o bucată de cerc, cu o singură inflexiune când o atinge
+    de pe tot cercul;
+  - pe toroidală, sondată pe 200 000 de cazuri: același tipar.
+- **Probele** (`test/unit/simulare.elice.test.ts`, scrise întâi; cădeau toate):
+  - nucleul față de oracol pe șapte piese (miezul și inelul, coborârea și urcarea, o tură, o bucată de tură, ture la rând),
+    fiecare cu martorul celeilalte forme;
+  - centrul unei ture pe hârtie (z_capăt + h(r));
+  - 1, 2, 3 și 5 benzi;
+  - 300 de elice la întâmplare față de o căutare densă scrisă în probă (minimul global, la un ulp de Float32).
+- **Probele vechi:** oracolul simulării eșantiona deja orice arc cu Z liniar în unghi, deci n-a avut nimic de schimbat; două
+  probe care cereau refuzul elicei cu bila sau cu toroidala au fost întoarse.
+- **Otrăvurile:** 19 / 19 prinse (`test/otravuri/16.A-e2.py`). Două (latura de dinaintea trecerii judecată la început;
+  capătul bucății uitat) le prinde doar proba celor 300 de elice.
+- **Porțile:** tsc, unitarele, build-ul determinist (432 de fișiere identice).
+- **Mărimea:** totalul 933,5 / 1 000 kB (+2,6: nucleul e și în workerul CAM, și în al simulării). Pornirea 111,7 (+0), cu ușa
+  117,0, cu Atelierul 117,4 / 125.
+- **Neschimbate:** nimic pe server; documentul rămâne v31. Lucrarea refuză mai departe toroidala și bila pe operațiile lor,
+  deci programul de azi iese octet cu octet.

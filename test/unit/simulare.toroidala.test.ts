@@ -129,9 +129,9 @@ test('toroidala nevalidă e refuzată de simulare, cu motiv: raza colțului ≤ 
   }
 });
 
-test('elicea cu toroidala nu se simulează încă (e-2): refuzată cu motiv; cea cu freza plată, ca azi', () => {
+test('elicea cu toroidala se simulează din e-2 (simulare.elice.test.ts); cea cu freza plată, ca azi', () => {
   const elice = [A('trigonometric', [20, 10, -0.5], [20, 10, -1.5], [15, 10])];
   const p = pregatesteProgram(program(elice, 6, { tip: 'toroidala', raza: 1 }), 0);
-  assert.ok(!p.ok && /elicea cu toroidala/.test(p.motiv), p.ok ? 'acceptat' : p.motiv);
+  assert.ok(p.ok, p.ok ? '' : p.motiv);
   assert.ok(pregatesteProgram(program(elice, 6, { tip: 'plata' }), 0).ok);
 });

@@ -8,8 +8,10 @@
  * - elicea cu freza plată: intervalul exact de unghiuri în care scula acoperă celula; Z-ul e liniar în unghi, deci
  *   minimul e la un capăt al intersecției (`acos` și `atan2` pe celulă, ale noastre);
  * - linia înclinată cu toroidala (ADR 0303 §2): minimul funcției convexe m·s + h(√(s² + p²)), prin înjumătățirea derivatei
- *   (monotonă), cu un număr fix de pași.
- * Elicea cu bila, cu V-ul sau cu toroidala n-are încă formă exactă: programul o refuză înainte (`program.ts`).
+ *   (monotonă), cu un număr fix de pași;
+ * - elicea cu bila și cu toroidala (ADR 0303 §2, felia 16.A↑e-2): pe ultima tură, pe fiecare bucată a cercului în care scula
+ *   acoperă celula, minimul în distanța d (`eliceaRotunda`), cu un număr fix de pași.
+ * Elicea cu V-ul n-are încă formă exactă: programul o refuză înainte (`program.ts`).
  *
  * Scula e o siluetă h(r) ≥ 0, nedescrescătoare, cu h(0) = 0: înălțimea muchiei deasupra vârfului la raza r ≤ R. Peste R,
  * coada sculei e un cilindru: peretele. Fără subtăieri (limita oricărui câmp de înălțimi).
@@ -20,7 +22,7 @@
  */
 import type { FormaScula } from '../ir/ir.ts';
 import { alocaDala, M, NEATINSA, SH, SH2, type Camp } from './camp.ts';
-import { acosD, atan2D, tanD } from './unghi.ts';
+import { acosD, atan2D, cosD, tanD } from './unghi.ts';
 
 /** Mutările nucleului: câte 10 numere, [fel, ax, ay, az, bx, by, bz, cx, cy, baleiaj]. Felul: 0 linie, 2 arc orar, 3 arc trigonometric. */
 export const STRIDE = 10;
@@ -230,7 +232,7 @@ export function taieLinie(F: Camp, T: Silueta, ax: number, ay: number, az: numbe
 
 /**
  * Arcul în planul XY, de la A la B în jurul lui C, cu baleiajul `S` (> 0, în radiani; ≥ 2π = cercul întreg). La Z
- * constant: exact pe celulă, pentru orice formă. Cu Z diferit la capete: elicea, doar cu freza plată.
+ * constant: exact pe celulă, pentru orice formă. Cu Z diferit la capete: elicea, cu freza plată, cu bila și cu toroidala.
  */
 export function taieArc(
   F: Camp, T: Silueta, ax: number, ay: number, az: number, bx: number, by: number, bz: number,
@@ -239,8 +241,9 @@ export function taieArc(
   const top = F.sus;
   if (az >= top && bz >= top) return;
   if (az !== bz) {
-    if (T.fel !== 0) throw new Error('elicea cu bila, cu V-ul sau cu toroidala nu se simulează încă');
-    eliceaPlata(F, T, ax, ay, az, bz, cx, cy, trig, S);
+    if (T.fel === 0) eliceaPlata(F, T, ax, ay, az, bz, cx, cy, trig, S);
+    else if (T.fel === 1 || T.fel === 3) eliceaRotunda(F, T, ax, ay, az, bz, cx, cy, trig, S);
+    else throw new Error('elicea cu V-ul nu se simulează încă');
     return;
   }
   // Arcul orar de la A la B e arcul trigonometric de la B la A.
@@ -359,6 +362,145 @@ function eliceaPlata(F: Camp, T: Silueta, ax: number, ay: number, az: number, bz
         if (tx !== tcur) { tcur = tx; d = trow + tx; s = loc[d]!; }
         const kq = roff | (i & M);
         const cur = s >= 0 ? atlas[(s << SH2) | kq]! : s === NEATINSA ? top : unif[d]!;
+        if (zs < cur) {
+          if (s < 0) { s = alocaDala(F, d); atlas = F.atlas; }
+          atlas[(s << SH2) | kq] = zs;
+        }
+      }
+    }
+  }
+}
+
+/** Pașii secțiunii de aur pe elicea rotundă: intervalul (cel mult R) se strânge cu 0,618 la fiecare pas, sub 1e-13 mm. */
+const PASI_AUR = 64;
+const AUR = 0.6180339887498949;
+
+/**
+ * Elicea cu bila sau cu toroidala, exact pe celulă (ADR 0303 §2, felia 16.A↑e-2). Bila e toroidala cu discul plat a = 0 și
+ * raza colțului ρ = R. Celula e la distanța p de centrul elicei (raza r); când scula e la unghiul ψ față de celulă, distanța
+ * dintre ele e d(ψ) = √(p² + r² − 2pr·cos ψ), iar cel mai jos punct al sculei e z(u) + h(d(ψ)).
+ *
+ * Urcarea se citește de la capăt (u' = S − u, unghiul celulei S − v), deci Z-ul scade mereu cu u (panta m < 0, pe radian).
+ * Pe fiecare bucată a cercului în care scula acoperă celula (|ψ| ≤ α), latura de dinaintea trecerii peste celulă (ψ ≤ 0) doar
+ * coboară, deci minimul ei e la capătul ei; pe latura de după (ψ ≥ 0), F(d) = h(d) + m·ψ(d), iar semnul lui F' e semnul lui
+ * G(d) − |m|, cu G(d) = h'(d)·√((d² − (p − r)²)((p + r)² − d²)) / (2d) = dh/dψ, fără trigonometrie. G e crescătoare cât
+ * scula acoperă celula doar pe o bucată din cerc, și crescătoare apoi descrescătoare când o acoperă de pe tot cercul (pe bilă,
+ * pe hârtie: g'' are cel mult o rădăcină în cos ψ, pe ramura de după domeniu; pe toroidală, sonda din ADR 0303 §2); deci
+ * mulțimea {G ≥ |m|} e un interval [d1, d2], iar minimul lui F e în d1 sau în capătul bucății. d1 vine prin înjumătățire, iar
+ * maximul lui G (doar când G e sub |m| la capăt) prin secțiunea de aur, cu un număr fix de pași (doar + − × ÷ √, plus
+ * `acosD` / `cosD` o dată pe candidat). Celulele de pe tururi mai vechi decât ultimele 2π sunt deja mai jos pe tura
+ * următoare, deci se caută doar în fereastra [max(0, S − 2π), S].
+ */
+function eliceaRotunda(F: Camp, T: Silueta, ax: number, ay: number, az: number, bz: number, cx: number, cy: number, trig: boolean, S: number): void {
+  const cell = F.celula, R = T.R, R2 = T.R2, top = F.sus, loc = F.loc, unif = F.uniforma, ntx = F.ntx, bn = F.banda.n, bw = F.banda.w;
+  const va = T.fel === 1 ? 0 : T.a, rc = T.fel === 1 ? T.R : T.rho, rc2 = rc * rc;
+  const rx = ax - cx, ry = ay - cy, r = Math.sqrt(rx * rx + ry * ry), th0 = atan2D(ry, rx);
+  const dir = trig ? 1 : -1, urca = bz > az;
+  const z0 = urca ? bz : az, dz = urca ? az - bz : bz - az, m = dz / S, mm = -m, zCapat = z0 + dz;
+  const U0 = S > DOI_PI ? S - DOI_PI : 0;
+  const ro = r + R, ri = r - R;
+  const [j0, j1] = randuri(F, cy - ro, cy + ro);
+  let atlas = F.atlas;
+  // Pe celula curentă: A = p² + r², B = 2pr, δ = |p − r|, σ = p + r.
+  let A = 0, B = 0, del = 0, sig = 0;
+  const hp = (d: number): number => {
+    if (d <= va) return 0;
+    const e = d - va, q = rc2 - e * e;
+    return q > 0 ? e / Math.sqrt(q) : Infinity;
+  };
+  const G = (d: number): number => {
+    if (d <= 0) return 0;
+    const h1 = hp(d);
+    if (h1 === 0) return 0;
+    const w = (d - del) * (d + del) * (sig - d) * (sig + d);
+    if (h1 === Infinity) return Infinity;
+    return w > 0 ? (h1 * Math.sqrt(w)) / (2 * d) : 0;
+  };
+  const dPsi = (psi: number): number => {
+    const q = A - B * cosD(psi);
+    return q > 0 ? Math.sqrt(q) : 0;
+  };
+  /** Primul d din [lo, hi] cu G(d) ≥ |m|, știind G(lo) < |m| ≤ G(hi) și G crescătoare acolo. */
+  const prag = (lo: number, hi: number): number => {
+    for (let it = 0; it < PASI_TOROIDALA; it++) {
+      const mij = (lo + hi) / 2;
+      if (G(mij) < mm) lo = mij; else hi = mij;
+    }
+    return (lo + hi) / 2;
+  };
+  for (let j = j0; j <= j1; j++) {
+    if (bn > 1 && (j >> SH) % bn !== bw) continue;
+    const py = F.y0 + (j + 0.5) * cell, wy = py - cy;
+    if (wy * wy > ro * ro) continue;
+    const xo = Math.sqrt(ro * ro - wy * wy);
+    const xi = ri > 0 && wy * wy < ri * ri ? Math.sqrt(ri * ri - wy * wy) : -1;
+    const roff = (j & M) << SH, trow = (j >> SH) * ntx;
+    for (let parte = 0; parte < (xi >= 0 ? 2 : 1); parte++) {
+      const xlo = xi < 0 || parte === 0 ? cx - xo : cx + xi, xhi = xi < 0 || parte === 1 ? cx + xo : cx - xi;
+      let i0 = Math.floor((xlo - F.x0) / cell - 0.5) - 1, i1 = Math.ceil((xhi - F.x0) / cell - 0.5) + 1;
+      if (i0 < 0) i0 = 0;
+      if (i1 > F.nx - 1) i1 = F.nx - 1;
+      let tcur = -1, d = -1, s = NEATINSA;
+      for (let i = i0; i <= i1; i++) {
+        const wx = F.x0 + (i + 0.5) * cell - cx, p2 = wx * wx + wy * wy, p = Math.sqrt(p2);
+        const dmin = p > r ? p - r : r - p;
+        if (dmin > R) continue;
+        const tx = i >> SH;
+        if (tx !== tcur) { tcur = tx; d = trow + tx; s = loc[d]!; }
+        const kq = roff | (i & M);
+        const cur = s >= 0 ? atlas[(s << SH2) | kq]! : s === NEATINSA ? top : unif[d]!;
+        // Cel mai jos punct posibil: Z-ul capătului, cu scula cât mai aproape de celulă.
+        if (zCapat + H(T, dmin) >= cur) continue;
+        let zs = Infinity;
+        A = p2 + r * r; B = 2 * p * r; del = dmin; sig = p + r;
+        if (B <= 1e-12) {
+          // Celula în centrul elicei (sau elicea de rază 0): distanța nu se schimbă, deci cel mai jos e la capăt.
+          const dd = Math.sqrt(A);
+          if (dd <= R) zs = zCapat + H(T, dd);
+        } else {
+          const C = (A - R2) / B;
+          const plin = C <= -1, al = plin ? Math.PI : acosD(C);
+          let v = dir * (atan2D(wy, wx) - th0);
+          v = v - DOI_PI * Math.floor(v / DOI_PI);
+          if (urca) { v = S - v; v = v - DOI_PI * Math.floor(v / DOI_PI); }
+          const kmin = Math.ceil((U0 - al - v) / DOI_PI), kmax = Math.floor((S + al - v) / DOI_PI);
+          for (let k = kmin; k <= kmax; k++) {
+            const c = v + DOI_PI * k;
+            const pa = U0 - c > -al ? U0 - c : -al, pb = S - c < al ? S - c : al;
+            if (pa > pb) continue;
+            if (pb <= 0) {
+              const z = z0 + m * (c + pb) + H(T, dPsi(pb));
+              if (z < zs) zs = z;
+              continue;
+            }
+            // Latura de după trecere: ψ în [ψL, pb], d în [dL, dR].
+            const pL = pa > 0 ? pa : 0;
+            const dL = pL === 0 ? del : dPsi(pL);
+            let dR = pb === al && !plin ? R : dPsi(pb);
+            if (dR < dL) dR = dL;
+            const zR = z0 + m * (c + pb) + H(T, dR);
+            if (zR < zs) zs = zR;
+            const gL = G(dL);
+            let d1 = -1;
+            if (gL >= mm) d1 = dL;
+            else if (G(dR) >= mm) d1 = prag(dL, dR);
+            else {
+              // G sub |m| la ambele capete: urcă peste |m| doar dacă maximul lui e peste (secțiunea de aur).
+              let lo = dL, hi = dR, x1 = hi - AUR * (hi - lo), x2 = lo + AUR * (hi - lo), g1 = G(x1), g2 = G(x2);
+              for (let it = 0; it < PASI_AUR; it++) {
+                if (g1 <= g2) { lo = x1; x1 = x2; g1 = g2; x2 = lo + AUR * (hi - lo); g2 = G(x2); }
+                else { hi = x2; x2 = x1; g2 = g1; x1 = hi - AUR * (hi - lo); g1 = G(x1); }
+              }
+              const dS = g1 >= g2 ? x1 : x2;
+              if ((g1 >= g2 ? g1 : g2) >= mm) d1 = prag(dL, dS);
+            }
+            if (d1 >= 0) {
+              const ps = d1 === dL ? pL : acosD((A - d1 * d1) / B);
+              const z = z0 + m * (c + ps) + H(T, d1);
+              if (z < zs) zs = z;
+            }
+          }
+        }
         if (zs < cur) {
           if (s < 0) { s = alocaDala(F, d); atlas = F.atlas; }
           atlas[(s << SH2) | kq] = zs;

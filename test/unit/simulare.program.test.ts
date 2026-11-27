@@ -43,15 +43,17 @@ test('axa A e refuzată explicit (T22: simularea pe XYZ în v1), și în lista d
   assert.ok(!b.ok && b.miscare === 1 && /axa A/.test(b.motiv), JSON.stringify(b));
 });
 
-test('elicea cu bilă sau cu V e refuzată (nesimulată exact încă); cu freza plată trece', () => {
+test('elicea cu V e refuzată (nesimulată exact încă); cu freza plată, cu bila și cu toroidala trece (ADR 0303, e-2)', () => {
   const elice: Miscare[] = [
     { tip: 'rapida', la: { Z: 5 } }, { tip: 'rapida', la: { X: 30, Y: 20 } }, { tip: 'taiere', la: { Z: 0 }, avans: 300 },
     { tip: 'arc', la: { X: 30, Y: 20, Z: -2 }, centru: { x: 20, y: 20 }, sens: 'trigonometric', avans: 1000 },
   ];
   assert.ok(pregatesteProgram(program(elice), 0).ok);
-  for (const forma of [{ tip: 'bila' }, { tip: 'v', unghi: 60 }] as const) {
+  const v = pregatesteProgram(program(elice, { ...PLATA6, forma: { tip: 'v', unghi: 60 } }), 0);
+  assert.ok(!v.ok && v.miscare === 3 && /elicea cu V-ul/.test(v.motiv), JSON.stringify(v));
+  for (const forma of [{ tip: 'bila' }, { tip: 'toroidala', raza: 1 }] as const) {
     const r = pregatesteProgram(program(elice, { ...PLATA6, forma }), 0);
-    assert.ok(!r.ok && r.miscare === 3 && /elice/.test(r.motiv), JSON.stringify(r));
+    assert.ok(r.ok, JSON.stringify(r));
   }
   // Același arc la Z constant, cu bila: trece (exact pe celulă pentru orice formă).
   const plan: Miscare[] = [...elice.slice(0, 3), { tip: 'arc', la: { X: 30, Y: 20 }, centru: { x: 20, y: 20 }, sens: 'trigonometric', avans: 1000 }];

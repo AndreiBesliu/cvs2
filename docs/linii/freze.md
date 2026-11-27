@@ -3,7 +3,8 @@
 _cncvs2, biblioteca de freze („Frezele mele”), felia 16.A↑ adusă din etapa 16: ramura `wip/16.A-freze` (din `main`
 `c8b235ab`), ADR-urile 0300–0309 (liber: 0304), canalul `freze`; ADR 0300 ACCEPTAT pe 23.11 („Da, 1a–6a”), ADR 0302 ACCEPTAT pe
 24.11 („Da, 1a–5a”); 16.A↑a … 16.A↑h-5 și 16.A↑b-1 … 16.A↑b-7 UNITE în `main`; ADR 0303 PROPUS pe 26.11 (bila și toroidala în
-proiect); 16.A↑e-1 (documentul v31, toroidala în simulare, refuzul lucrării) pe `wip/16.A-freze-e`_
+proiect); 16.A↑e-1 (documentul v31, toroidala în simulare, refuzul lucrării) raportată gata de unit pe 26.11 (`7c3f166b`, cu
+`main` `0df06eca` adus); 16.A↑e-2 (elicea cu bila și cu toroidala în nucleu) pe `wip/16.A-freze-e`, peste ea_
 
 Pornită pe 23.11.2026, în sesiunea cloud a liniei, la cererea owner-ului: „Vreau sa pot crea freze l sau profiluri de freze in
 aplicatie si sa le salvez in cont”. Rândurile din prag: „Bibliotecă de freze cu geometrie reală (dreaptă, bilă, toroidală, V,
@@ -160,6 +161,14 @@ gravare, profil, formă desenată)” și „Freze de profil desenate de utiliza
   față de oracol are martorul unei bile de același diametru, care trebuie să cadă; o freză pe care copia ferestrei exportului
   n-o poartă (bila, toroidala, o formă necunoscută) n-are rând, altfel Exportă scrie o plată în locul ei
   (`operatieCuRand`); la `ISTORIE`, v30 primește părintele commit-ului care urcă schema (aceiași octeți ca vechiul a3f8f8f).
+- **27.11, 00:15–: 16.A↑e-2 pe `wip/16.A-freze-e`**, peste `7c3f166b` (e-1 raportată gata de unit, cu `main` `0df06eca`
+  adus și completul verde). Elicea cu bila și cu toroidala în nucleu (`eliceaRotunda`): urcarea citită de la capăt, doar
+  ultimele 2π, pe fiecare bucată a cercului minimul în distanța d (pragul G = |m| prin înjumătățire, maximul lui G prin
+  secțiunea de aur). **Capcane:** cu raza elicei sub raza sculei (miezul), scula atinge celula de pe tot cercul, iar cel mai
+  jos punct poate fi la capătul turei, departe de trecere: g(ψ) e convexă, apoi concavă, deci înjumătățirea singură greșește;
+  pe toroidală structura e doar sondată, deci proba are 300 de elice la întâmplare față de o căutare densă, nu doar oracolul;
+  câmpul ține Float32, deci o comparație cu o valoare exactă cere un ulp de toleranță; oracolul simulării eșantiona deja
+  orice arc cu Z liniar în unghi, deci e-2 n-a avut nimic de schimbat acolo.
 - **Feliile**, în ordine: 16.A↑a (biblioteca în browser, fereastra, fișierul), apoi b (alegerea în proiect, v27), c
   (contul), d (calibrarea), e (bila și toroidala), f (profilul desenat), g (valorile pe material).
 
@@ -172,7 +181,8 @@ gravare, profil, formă desenată)” și „Freze de profil desenate de utiliza
   (`src/cam/regimFreza.ts`) ia valorile frezei, iar fără ele întoarce chiar regimul lucrării (programele de azi, octet cu
   octet). Nota din fereastră rămâne de schimbat în 16.A↑b-2, odată cu alegerea frezei.
 - **Formele:** CAM-ul, plata și V-ul (cu vârf); IR-ul și nucleul simulării, și bila (elicea cu bila, încă refuzată); oracolul
-  simulării, și profilul ca puncte (r, h). Toroidala nu e nicăieri.
+  simulării, și profilul ca puncte (r, h). Toroidala nu e nicăieri. (Din 16.A↑e-1, toroidala e în document, în IR și în
+  simulare; din 16.A↑e-2, elicea cu bila și cu toroidala se simulează.)
 - **Contul:** nicio dată a omului nu stă încă pe server; biblioteca ar fi prima. Callable-urile cer App Check, deci
   sincronizarea se încearcă doar pe adresa principală de test, după unire și publicarea serverului.
 - **Mărimea:** rândul din meniul contului stă în bucata editării (`Editare.tsx` importă `meniuCont.ts`), nu în pornire;
