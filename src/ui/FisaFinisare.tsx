@@ -8,8 +8,8 @@ import { liniiReliefDesen, treceriPodeaRelief } from './exportDeseneCalcul.ts';
 import type { GrupExport } from './exportGrupuri.ts';
 import { GRUPURI_RELIEF } from './exportGrupuri.ts';
 import type { CampRelief, FinisareExport, RandRelief } from './exportRelief.ts';
-import { locFrezaRelief } from './exportRelief.ts';
-import { stareOrigine, type FrezaOferita } from './exportRand.ts';
+import { stareOrigineRelief } from './exportRelief.ts';
+import type { FrezaOferita } from './exportRand.ts';
 import { ListaBiblioteca, NotaBiblioteca, type Greseala, type InapoiNota, type ReparatieT } from './FisaOperatie.tsx';
 import { citesteNumar } from './numar.ts';
 
@@ -112,7 +112,8 @@ export function FisaFinisare({ fin, r, loc, total, c, greseli, gresite, ciocnit 
   const creasta = !deg && !rau('pas-lateral') && !rau('diametru') && !rau('raza-colt') && freza !== null && folosit !== null && folosit > 0 && c.creasta
     ? c.creasta(freza, folosit) : undefined;
   // Freza față de bibliotecă (felia 18.1↑d-5): nota ei și recunoașterea celei scrise de mână.
-  const st = stareOrigine(locFrezaRelief(r), c.bibliotecaToata);
+  // Biblioteca fără profilul desenat (16.A↑f-3): rândul reliefului nu-l poate purta (`stareOrigineRelief`).
+  const st = stareOrigineRelief(r, c.bibliotecaToata);
   const oferite = c.frezeRelief ? c.frezeRelief(fin.fel) : [];
   const corp = (g: GrupExport): ReactNode => {
     switch (g) {
