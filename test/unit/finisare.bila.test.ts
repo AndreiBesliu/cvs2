@@ -53,7 +53,7 @@ const finisare = (v: Liber = {}): Liber => op({
   finisare: { unghi: 0 }, ...v,
 });
 
-test('motivFormaPeOperatie: pe finisare merg plata, V-ul și bila; bila în rest doar pe linie (canelura, 16.A↑e-3a); V-ul ca până acum', () => {
+test('motivFormaPeOperatie: pe finisare merg plata, V-ul și bila; bila în rest doar pe linie (canelura, 16.A↑e-3); V-ul ca până acum', () => {
   const B: FormaSculaDoc = { tip: 'bila' }, V: FormaSculaDoc = { tip: 'v', unghi: 60 };
   const randuri: ReadonlyArray<readonly [TipOperatie, Latura, FormaSculaDoc | undefined, string | null]> = [
     ['finisare', 'pe-linie', undefined, null], ['finisare', 'pe-linie', V, null], ['finisare', 'pe-linie', B, null],

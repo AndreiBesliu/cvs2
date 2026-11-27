@@ -19,7 +19,7 @@ export const FELURI_FREZA = ['plata', 'v', 'gravare', 'bila', 'toroidala', 'coni
 export type FelFreza = (typeof FELURI_FREZA)[number];
 /**
  * Felurile pe care CAM-ul le taie azi (ADR 0302 §2): plata, V-ul, gravarea și, din documentul v29, bila (ADR 0312: pe
- * finisarea reliefului și, din 16.A↑e-3a, pe linie; `motivFormaPeOperatie` o oprește în rest, iar listele care pun o freză pe
+ * finisarea reliefului și, din 16.A↑e-3, pe linie; `motivFormaPeOperatie` o oprește în rest, iar listele care pun o freză pe
  * o operație cu rând în fereastra exportului cer și `formaPeRand`). Celelalte (toroidala, conica cu vârf rotund, burghiul,
  * profilurile) stau în bibliotecă și în catalog, „în curând”, dar nu se aleg în proiect până la CAM-ul lor.
  */

@@ -136,7 +136,7 @@ export type FormaBila = { tip: 'bila'; [cheie: string]: unknown };
 /**
  * Freza toroidală (ADR 0303 §1, documentul v31): discul plat cu colțul rotunjit de rază `raza` (mm), 0 < raza < diametru / 2,
  * judecată la ușă (o freză cu raza cât jumătatea diametrului e o bilă și se scrie așa). Unde se poate folosi o judecă lucrarea
- * (`motivFormaPeOperatie`): azi, doar pe linie (canelura, 16.A↑e-3a).
+ * (`motivFormaPeOperatie`): azi, doar pe linie (canelura, 16.A↑e-3).
  */
 export type FormaToroidala = { tip: 'toroidala'; raza: number; [cheie: string]: unknown };
 /** De unde vine copia unei freze (ADR 0300 §5, v27): id-ul ei din biblioteca „Frezele mele” și versiunea copiată. */

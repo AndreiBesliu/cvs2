@@ -1,5 +1,5 @@
 /**
- * Canelura cu bila și cu toroidala (ADR 0303 §4, felia 16.A↑e-3a): profilul pe linie primește freza bilă și pe cea toroidală.
+ * Canelura cu bila și cu toroidala (ADR 0303 §4, felia 16.A↑e-3): profilul pe linie primește freza bilă și pe cea toroidală.
  * Centrul frezei merge pe linie, deci drumul e al unei freze plate de același diametru, mișcare cu mișcare; doar scula din IR
  * își poartă forma (simularea și raportul o citesc de acolo). Pe hârtie, secțiunea canelurii simulate: la adâncimea d, lățimea
  * la față e 2·(a + √(ρ² − (ρ − d)²)) cât d < ρ și Ø de la d ≥ ρ (a = R − ρ; la bilă a = 0, ρ = R), iar fundul e plat pe 2·a.

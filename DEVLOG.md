@@ -16565,3 +16565,26 @@ completul verde). **Completed:** 27.11, 01:20 (în container; completul pe ramur
   117,0, cu Atelierul 117,4 / 125.
 - **Neschimbate:** nimic pe server; documentul rămâne v31. Lucrarea refuză mai departe toroidala și bila pe operațiile lor,
   deci programul de azi iese octet cu octet.
+
+## 2026-11-27 — 16.A↑e-3: canelura cu bila și cu toroidala (profilul pe linie) (Model: Claude Opus 5.5)
+
+**Prompt:** cuvântul owner-ului transmis de sesiunea principală pe 26.11 (20:16, „Zi-le ca pot continua cu ce urmeaza la
+fiecare”: 16.A↑e pe sub-felii, ADR 0303); e-3 după e-2, raportată gata de unit. **Started:** 27.11, 02:20, pe
+`wip/16.A-freze-e`, peste `e5bdde83`. **Completed:** 27.11, 03:20 (în container; completul pe ramură, după push).
+
+- **Felia e-3 de la propunere s-a împărțit:**
+  - e-3: CAM-ul canelurii și raportul;
+  - e-4: intrarea în proiect (biblioteca, Tăierea, rândurile exportului, cu copia ferestrei care poartă formele rotunde);
+  - buzunarul și profilul pe o parte, renumerotate e-5 și e-6, fiindcă id-urile feliilor primesc după cratimă doar cifre.
+- **Lucrarea:** profilul pe linie primește bila și toroidala. Drumul e al frezei plate de același Ø, mișcare cu mișcare.
+  `sculaIR` trece toroidala în IR, cu raza colțului. Pe o parte, în buzunar, la găurire, în V-carve și pe frezele în plus,
+  formele rotunde rămân refuzate, cu motiv. Același T cu altă rază a colțului e refuzat: sunt două freze.
+- **Raportul foilor** numește freza („toroidală r1,5”, ca „bilă” la bilă).
+- **Listele:** bila era deja între felurile cu CAM (de la relief), deci ar fi apărut pe canelură în lista „Freza” din Tăierea
+  și pe rândurile exportului, iar Exportă ar fi scris o plată în locul ei. Am găsit asta după probele vechi care au căzut.
+  `frezePotrivite` și `frezePeRanduri` cer acum și `formaPeRand`.
+- **Probele** (`test/unit/canelura.rotunda.test.ts`, scrise întâi): tabelul formei, drumul față de freza plată, refuzurile,
+  același T, secțiunea canelurii simulate pe hârtie (șase adâncimi, sub și peste raza colțului, cu fundul plat), raportul.
+  Probele vechi care cereau refuzul pe linie au fost întoarse.
+- **Otrăvurile:** 10 / 10 prinse (`test/otravuri/16.A-e3.py`).
+- **Neschimbate:** nimic pe server; documentul rămâne v31; programul fără forme rotunde, octet cu octet.

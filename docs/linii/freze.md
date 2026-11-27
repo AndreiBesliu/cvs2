@@ -4,7 +4,8 @@ _cncvs2, biblioteca de freze („Frezele mele”), felia 16.A↑ adusă din etap
 `c8b235ab`), ADR-urile 0300–0309 (liber: 0304), canalul `freze`; ADR 0300 ACCEPTAT pe 23.11 („Da, 1a–6a”), ADR 0302 ACCEPTAT pe
 24.11 („Da, 1a–5a”); 16.A↑a … 16.A↑h-5 și 16.A↑b-1 … 16.A↑b-7 UNITE în `main`; ADR 0303 PROPUS pe 26.11 (bila și toroidala în
 proiect); 16.A↑e-1 (documentul v31, toroidala în simulare, refuzul lucrării) raportată gata de unit pe 26.11 (`7c3f166b`, cu
-`main` `0df06eca` adus); 16.A↑e-2 (elicea cu bila și cu toroidala în nucleu) pe `wip/16.A-freze-e`, peste ea_
+`main` `0df06eca` adus), UNITĂ în `main` pe 27.11 (`8b92246d`); 16.A↑e-2 (elicea cu bila și cu toroidala în nucleu) raportată
+gata de unit pe 27.11 (`e5bdde83`, PR-ul #71); 16.A↑e-3 (canelura cu bila și cu toroidala) pe `wip/16.A-freze-e`, peste ea_
 
 Pornită pe 23.11.2026, în sesiunea cloud a liniei, la cererea owner-ului: „Vreau sa pot crea freze l sau profiluri de freze in
 aplicatie si sa le salvez in cont”. Rândurile din prag: „Bibliotecă de freze cu geometrie reală (dreaptă, bilă, toroidală, V,
@@ -169,6 +170,14 @@ gravare, profil, formă desenată)” și „Freze de profil desenate de utiliza
   pe toroidală structura e doar sondată, deci proba are 300 de elice la întâmplare față de o căutare densă, nu doar oracolul;
   câmpul ține Float32, deci o comparație cu o valoare exactă cere un ulp de toleranță; oracolul simulării eșantiona deja
   orice arc cu Z liniar în unghi, deci e-2 n-a avut nimic de schimbat acolo.
+- **27.11, 02:20–: 16.A↑e-3 pe `wip/16.A-freze-e`**, peste `e5bdde83`. Felia e-3 de la propunere s-a împărțit: e-3 e CAM-ul
+  canelurii (profilul pe linie primește bila și toroidala; drumul frezei plate de același Ø; `sculaIR` cu forma; raportul
+  foilor o numește), e-4 e intrarea în proiect (biblioteca, Tăierea, rândurile exportului); buzunarul și profilul pe o parte
+  s-au renumerotat e-5 și e-6. **Capcane:** id-urile feliilor primesc după cratimă doar cifre (`RE_ID`), deci „e-3a” oprește
+  build-ul documentației; bila e între felurile cu CAM (de la relief), deci o regulă de formă lărgită o arată imediat în lista
+  „Freza” din Tăierea și pe rândurile exportului: acolo intră și `formaPeRand` (copia rândului poartă doar plata și V-ul);
+  `frezePeRanduri` judecă felul înaintea copiei (`sculaDinFreza` aruncă pe un fel fără CAM); lucrarea împarte adâncimea în
+  treceri egale, nu în pași de mărimea pasului.
 - **Feliile**, în ordine: 16.A↑a (biblioteca în browser, fereastra, fișierul), apoi b (alegerea în proiect, v27), c
   (contul), d (calibrarea), e (bila și toroidala), f (profilul desenat), g (valorile pe material).
 

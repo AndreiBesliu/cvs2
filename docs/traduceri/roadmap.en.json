@@ -1505,6 +1505,10 @@
       "ro": "Fișa plăcii reliefului (placa 18)",
       "en": "The relief plate sheet (plate 18)"
     },
+    "46a2ebe91f442bc7": {
+      "ro": "**Canelura cu bila și cu toroidala** (ADR 0303, „Implementarea (16.A↑e-3)”; pe `wip/16.A-freze-e`, peste e-2; felia e-3 de la propunere împărțită: e-3, CAM-ul și raportul; e-4, intrarea în proiect; buzunarul și profilul pe o parte renumerotate e-5 și e-6). Profilul pe linie primește freza bilă și pe cea toroidală: drumul e al frezei plate de același Ø, mișcare cu mișcare, cu trecerile egale cel mult cât pasul; scula din IR își poartă forma (toroidala cu raza colțului), deci simularea și raportul foilor o văd. Pe o parte, în buzunar, la găurire, în V-carve și pe frezele în plus, formele rotunde rămân refuzate, cu motiv; același T cu altă rază a colțului e două freze. Lista „Freza” din Tăierea și rândurile exportului oferă doar formele pe care rândul le poartă (plata și V-ul), până la e-4: altfel bila ar fi apărut pe canelură, iar Exportă ar fi scris o plată în locul ei. Probele: tabelul formei, drumul față de freza plată, refuzurile, același T, secțiunea canelurii simulate pe hârtie (lățimea la față sub și peste raza colțului, fundul plat), raportul. Programul de azi, octet cu octet. Nimic pe server.",
+      "en": "**The groove with the ball and the bull nose** (ADR 0303, \"Implementation (16.A↑e-3)\"; on `wip/16.A-freze-e`, on top of e-2; the proposal's e-3 split: e-3, the CAM and the report; e-4, the entry into the project; the pocket and the one-sided profile renumbered e-5 and e-6). The on-line profile takes the ball and the bull nose: the path is that of a flat cutter of the same Ø, move by move, with equal passes no deeper than the step; the IR tool carries its shape (the bull nose with its corner radius), so the simulation and the sheet report see it. On one side, in a pocket, when drilling, in V-carving and as extra cutters, the round shapes stay refused, with a reason; the same T with another corner radius is two cutters. The \"Cutter\" list in Cutting and the export rows offer only the shapes the row carries (flat and V), until e-4: otherwise the ball would have shown up on the groove, and Export would have written a flat cutter in its place. The probes: the shape table, the path against the flat cutter, the refusals, the same T, the simulated groove section on paper (the width at the face below and above the corner radius, the flat bottom), the report. Today's program, byte for byte. Nothing on the server."
+    },
     "470b43073b428a4c": {
       "ro": "Fișa plăcii 2, cu programele de aur (`docs/etape/placa-02.md`, gata pe 16.10: exportul aplicației pe documentul plăcii, poarta cu regiunea, cotele pe hârtie)",
       "en": "The plate 2 file, with the golden programs (`docs/etape/placa-02.md`, done on 16.10: the app's export on the plate document, the gate with the region, dimensions on paper)"
@@ -1688,6 +1692,10 @@
     "4f9a40a7649b8de8": {
       "ro": "Stratul WebGL2 (traseul ca LINE_STRIP; foaia rămâne în workerul vectorilor până la etapa 4; ADR 0038) și panoul de proprietăți editabil, în carcasa din 2.8a; sub-feliile 2.8c–2.8e",
       "en": "The WebGL2 layer (the toolpath as LINE_STRIP; the sheet stays in the vector worker until stage 4; ADR 0038) and the editable properties panel, in the 2.8a shell; sub-slices 2.8c–2.8e"
+    },
+    "4fd6485c49167319": {
+      "ro": "Canelura cu bila și cu toroidala",
+      "en": "The groove with the ball and the bull nose"
     },
     "5049464b423fd3f8": {
       "ro": "Gata pe 18.11",

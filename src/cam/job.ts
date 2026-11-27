@@ -59,7 +59,7 @@ const sculaIR = (s: Taietura['scula']): Scula => ({
 
 /**
  * ADR 0312, ADR 0313, ADR 0303: ce refuză lucrarea din documentele v29–v31, pe piesele foii: freza toroidală pe orice
- * operație în afara canelurii (profilul pe linie, 16.A↑e-3a; până la CAM-ul ei), freza bilă pe altceva decât finisarea
+ * operație în afara canelurii (profilul pe linie, 16.A↑e-3; până la CAM-ul ei), freza bilă pe altceva decât finisarea
  * reliefului și canelura (`motivFormaPeOperatie`; și pe frezele de rest, ale fundului plat și ale dopului), o freză care nu e plată pe o
  * degroșare, câmpul `finisare` pe alt fel de operație decât finisarea și `degrosare` pe alt fel decât degroșarea, iar pe o
  * operație a reliefului ce e al altor operații (urechi, rampă, intrări, degajări, despărțire, câmpurile altor feluri) și o
@@ -72,7 +72,7 @@ function refuzFinisareSiBila(doc: Document): string | null {
     for (const o of p.operatii) {
       const unde = `${p.id}/${o.id}`;
       // Toroidala (ADR 0303 §4): doar ca freză a canelurii (profilul pe linie, 16.A↑e-3); pe orice altă operație și pe orice
-      // freză în plus, până la CAM-ul ei (buzunarul în e-4, profilul pe o parte în e-5).
+      // freză în plus, până la CAM-ul ei (buzunarul în e-5, profilul pe o parte în e-6).
       const canelura = o.tip === 'profil' && o.latura === 'pe-linie';
       for (const { cale, scula } of frezeleOperatiei(o)) {
         if (scula.forma?.tip === 'toroidala' && !(canelura && cale === 'scula')) {

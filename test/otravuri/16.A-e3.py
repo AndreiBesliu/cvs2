@@ -1,4 +1,4 @@
-# Lista de otrăvuri a feliei 16.A↑e-3a (canelura cu bila și cu toroidala: profilul pe linie; ADR 0303 §4), 27.11.2026, aleasă
+# Lista de otrăvuri a feliei 16.A↑e-3 (canelura cu bila și cu toroidala: profilul pe linie; ADR 0303 §4), 27.11.2026, aleasă
 # de autor: regula formei pe operație, refuzurile lucrării (doar freza canelurii, doar pe linie), scula din IR cu forma și raza,
 # același T cu altă rază a colțului, listele care pun o freză pe o operație cu rând în fereastra exportului (doar formele pe
 # care rândul le poartă) și numele frezei în raportul foilor. Se rulează cu `scripts/otravuri.py` (docs/otravuri.md), dintr-o

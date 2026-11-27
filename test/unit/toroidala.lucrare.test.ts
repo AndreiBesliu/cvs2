@@ -1,7 +1,7 @@
 /**
  * Freza toroidală în lucrare (ADR 0303 §1, §4, felia 16.A↑e-1): ușa v31 o primește pe orice freză a unei operații, simularea o
  * taie (simulare.toroidala.test.ts), iar lucrarea o refuză pe orice operație în afara canelurii (profilul pe linie, din
- * 16.A↑e-3a, canelura.rotunda.test.ts), cu motivul care numește forma, T-ul și calea, până la CAM-ul ei (e-4, e-5). Fereastra exportului nu-i face rând (copia ei știe doar plata și V-ul: ar scrie la Exportă o
+ * 16.A↑e-3, canelura.rotunda.test.ts), cu motivul care numește forma, T-ul și calea, până la CAM-ul ei (e-5, e-6). Fereastra exportului nu-i face rând (copia ei știe doar plata și V-ul: ar scrie la Exportă o
  * plată în locul toroidalei), deci o lasă neschimbată, ca pe bilă. Tabelul `motivFormaPeOperatie` pe hârtie.
  */
 import { test } from 'node:test';

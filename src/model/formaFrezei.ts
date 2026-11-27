@@ -10,7 +10,7 @@
  *   bilei a liniei frezelor (16.A↑e): profilul, buzunarul și celelalte ar decala-o ca pe una plată.
  * - Degroșarea reliefului (ADR 0313 §1) cere freza plată: adaosul se socotește cu freza plată mărită cu el (ADR 0310 §4).
  * - Freza toroidală (ADR 0303 §1, documentul v31) nu merge încă pe nicio operație, nici pe finisare: simularea o taie, dar
- *   CAM-ul ei vine pe sub-felii (canelura în 16.A↑e-3, buzunarul în e-4, profilul în e-5), fiecare cu rândul ei aici.
+ *   CAM-ul ei vine pe sub-felii (canelura în 16.A↑e-3, buzunarul în e-5, profilul în e-6), fiecare cu rândul ei aici.
  * - Freza plată merge în rest.
  */
 import type { FormaSculaDoc, Latura, Operatie, Scula, TipOperatie } from './document.ts';
