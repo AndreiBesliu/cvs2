@@ -1,6 +1,7 @@
 /**
  * Câmpurile operațiilor reliefului în secțiunea Tăierea, când toate operațiile alese sunt ale reliefului:
- * - ale finisării (ADR 0312, felia 18.1↑c-3): freza (forma și diametrul), pasul lateral, unghiul liniilor, alinierea;
+ * - ale finisării (ADR 0312, felia 18.1↑c-3): freza (forma și diametrul; la toroidală și raza colțului, 18.1↑e-1, ADR 0319),
+ *   pasul lateral, unghiul liniilor, alinierea;
  * - ale degroșării (ADR 0313, felia 18.1↑d-1): diametrul frezei plate, pasul lateral, adaosul, unghiul liniilor;
  * - marginea și locul pe Z, scrise pe amândouă (lucrarea le cere egale pe același relief).
  * Valorile se scriu pe toate operațiile alese de felul lor, îmbinate (un câmp necunoscut rămâne); cu valori diferite, câmpul e
@@ -52,19 +53,24 @@ export function CampuriFinisare({ doc, piese, cheie, doarCitire, oprit, onOperat
   const margine = comunPe(toate, (o) => (valoriRelief(o)?.margine === 'trece' ? 'trece' : 'perete'));
   const z = comunPe(toate, (o) => (valoriRelief(o)?.planZero === undefined ? 'varf' : 'plan'));
   const planZero = comunPe(toate, (o) => valoriRelief(o)?.planZero ?? Number.NaN);
-  const freza = (f: FormaFinisare, d: number): RezultatActiune => scrie((o) => (o.tip === 'finisare' ? { ...o, scula: frezaFinisare(doc, o.scula, f, d) } : o));
+  const freza = (f: FormaFinisare, d: number, raza?: number): RezultatActiune =>
+    scrie((o) => (o.tip === 'finisare' ? { ...o, scula: frezaFinisare(doc, o.scula, f, d, raza) } : o));
+  const razaColt = forma === 'toroidala' ? comun((o) => (o.scula.forma?.tip === 'toroidala' ? o.scula.forma.raza : Number.NaN)) : null;
   const frezaDeg = (d: number): RezultatActiune => scrie((o) => (o.tip === 'degrosare' ? { ...o, scula: frezaFinisare(doc, o.scula, 'plata', d) } : o));
   const finisare = ops.length > 0 && (
     <>
       {rand(t('prop.fin.forma'), (
         <select key={`${cheie}/fin-forma`} value={forma ?? ''} data-camp="fin-forma" aria-label={t('prop.fin.forma')} disabled={doarCitire} {...titlu}
-          onChange={(ev) => { const v = ev.target.value; if ((v === 'bila' || v === 'plata' || v === 'v') && diametru !== null) freza(v, diametru); }}>
+          onChange={(ev) => { const v = ev.target.value; if ((v === 'bila' || v === 'plata' || v === 'v' || v === 'toroidala') && diametru !== null) freza(v, diametru); }}>
           {forma === null && <option value="" disabled>{t('prop.rol.diferite')}</option>}
           <option value="bila">{t('prop.fin.forma.bila')}</option>
           <option value="plata">{t('prop.fin.forma.plata')}</option>
           <option value="v">{t('prop.fin.forma.v')}</option>
+          <option value="toroidala">{t('prop.fin.forma.toroidala')}</option>
         </select>
       ))}
+      {forma === 'toroidala' && rand(t('prop.fin.raza-colt'), camp(t('prop.fin.raza-colt'), 'fin-raza-colt', razaColt, 'mm', (x) => (diametru === null || !(x > 0) || x >= diametru / 2
+        ? { ok: false, motiv: 'motiv.operatie-invalida' } : freza('toroidala', diametru, x))))}
       {rand(t('prop.fin.diametru'), camp(t('prop.fin.diametru'), 'fin-diametru', diametru, 'mm', (x) => (forma === null
         ? { ok: false, motiv: 'motiv.operatie-invalida' } : freza(forma, x))))}
       {rand(t('prop.fin.pas-lateral'), camp(t('prop.fin.pas-lateral'), 'fin-pas-lateral', comun((o) => o.pasLateral ?? Number.NaN), 'mm',

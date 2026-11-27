@@ -1077,7 +1077,11 @@ of the project uses any more is deleted at a start-up, after at least a day.
 reliefs only). The cutter follows the relief on parallel lines, one stepover apart, going down in passes of at most the
 **step**, the last one on the model; it never goes below the relief's surface, nor below the **depth** (the floor, by default
 the sheet's thickness). The fields:
-- **Cutter**: ball nose (the default), flat or V-bit, and its **diameter**; the ball nose is used only here;
+- **Cutter**: ball nose (the default), flat, V-bit or **bull nose** (a flat bottom with rounded corners), and its
+  **diameter**; for the bull nose, also the **Corner radius** (above 0 and below half the diameter; 1 mm by default, at most a
+  quarter of the diameter). On a flat, the bull nose leaves no scallop while the stepover is at most its flat bottom (the
+  diameter minus twice the corner radius), so gentle slopes need fewer lines than with a ball nose; on steep slopes and in
+  narrow valleys its rounded corner works like a small ball nose;
 - **Stepover** (by default 10 % of the cutter): the distance between lines; through the cell centres, it is rounded down to
   whole cells (at least one), so the lines are never further apart than you asked; a cell wider than the cutter is refused;
 - **Line angle** (0° to 180°) and **Lines**: through the cell centres (at 0° and 90°) or not aligned, where ripples can show on
@@ -1107,7 +1111,13 @@ own row, in its place in the cutting order, with a sheet where you can change th
 shape; roughing, flat only), the lines (stepover, angle, through the cell centres or not aligned), the allowance for roughing,
 the edge and the height, the depth and the step down. The sheet tells the step used (with the lines through the cell centres,
 rounded down to whole cells) and, for finishing, the scallop on a flat. The edge and the height, changed on one row, change on
-the other row of the same relief too; **Export** writes the values into the project, and the Cutting section then shows them. With **Cutting order: Mine**, its row moves like any other. In the [3D view](#vedere-3d), **Cut** shows the
+the other row of the same relief too; **Export** writes the values into the project, and the Cutting section then shows them. You
+can also take the cutter **From my bits**: for finishing, a flat, a V, a ball or a bull nose cutter (with its corner radius); for roughing, a flat one only. Once
+chosen, the cutter brings its number (while it is free), diameter, shape, step down and its own stepover (a finishing ball usually
+has a small one); changed later in the library, the row says what differs, with **Take the new values**, as on the other rows.
+Each group of the sheet has its drawing, made from your values: the bit, the lines seen from above (through the cell centres, at
+the stepover used), the allowance in section, the edge and the height, the floor with the passes in Z (the bottoms one step apart,
+the last on the model); the dimension of the field you are on lights up. With **Cutting order: Mine**, its row moves like any other. In the [3D view](#vedere-3d), **Cut** shows the
 sheet after the program. On slopes the cutter stays a little above the ideal surface (about 0.1 mm on a 45° slope): it is the safe side of the
 computation, which never digs into the relief. The export needs the relief's tiles from this browser; on another computer, it
 says they are missing.

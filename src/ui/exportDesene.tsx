@@ -804,3 +804,143 @@ export function DesenDopDrept({ c, adancime, gaura, dop, sprijin, joc, fierastra
     </Desen>
   );
 }
+
+/*
+ * Desenele fișei reliefului (felia 18.1↑d-6, ADR 0317): liniile de sus, adaosul degroșării, marginea și înălțimea, podeaua cu
+ * trecerile. Schițe la scară liberă; ce face lucrarea (pasul folosit, fundurile trecerilor) vine din `exportDeseneCalcul.ts`, cu
+ * proba lui față de lucrare (`export.desene.relief.test.ts`).
+ */
+
+/** Un profil de relief schițat, de la x0 la x1, între sus (y) și jos (y + h): un deal cu o vale, ca un model adevărat. */
+function profilRelief(x0: number, x1: number, y: number, h: number, n = 24): Array<readonly [number, number]> {
+  return Array.from({ length: n + 1 }, (_, i) => {
+    const u = i / n, v = 0.5 + 0.32 * Math.sin(u * Math.PI * 2.2 + 0.4) + 0.18 * Math.sin(u * Math.PI * 5.1);
+    return [x0 + (x1 - x0) * u, y + h * (1 - Math.min(1, Math.max(0, v)))] as const;
+  });
+}
+const linie = (p: ReadonlyArray<readonly [number, number]>): string => p.map(([x, y], i) => `${i ? 'L' : 'M'}${r(x)} ${r(y)}`).join('');
+
+/**
+ * Liniile reliefului văzute de sus (ADR 0310 §5, ADR 0314): prin centrele celulelor (grila, la 0° și 90°), la pasul folosit de
+ * lucrare (k celule), sau la unghiul lor, la cel mult pasul cerut.
+ */
+export function DesenLiniiRelief({ c, linii, unghi }: {
+  c: DesenComun; linii: { readonly aliniate: boolean; readonly pas: number; readonly celule: number | null } | null; unghi: number | null;
+}): ReactNode {
+  if (!linii) {
+    return (<Desen eticheta={t('export.desen.relief.linii')}><rect className="l2" x={16} y={10} width={228} height={110} /><Jos tare>{t('export.desen.relief.linii.lipsa')}</Jos></Desen>);
+  }
+  const a = unghi !== null && Number.isFinite(unghi) && unghi >= 0 && unghi < 180 ? unghi : 0;
+  const sp = 22, k = linii.celule, cel = k !== null ? sp / k : 0;
+  // Liniile la unghiul lor, tăiate exact la marginile reliefului desenat (dreptunghiul 16…244 × 10…120): pe ecran, Y în jos.
+  const ux = Math.cos((a * Math.PI) / 180), uy = -Math.sin((a * Math.PI) / 180);
+  const segmente = [-6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6].flatMap((i) => {
+    const px = 130 - uy * i * sp, py = 65 + ux * i * sp;
+    let t0 = -Infinity, t1 = Infinity;
+    for (const [p, d, lo, hi] of [[px, ux, 16, 244], [py, uy, 10, 120]] as const) {
+      if (Math.abs(d) < 1e-12) { if (p < lo || p > hi) return []; continue; }
+      const ta = (lo - p) / d, tb = (hi - p) / d;
+      t0 = Math.max(t0, Math.min(ta, tb)); t1 = Math.min(t1, Math.max(ta, tb));
+    }
+    return t1 - t0 > 1 ? [`M${r(px + ux * t0)} ${r(py + uy * t0)}L${r(px + ux * t1)} ${r(py + uy * t1)}`] : [];
+  });
+  // Marginile celulelor, la jumătate de celulă de linii: liniile trec prin centrele lor.
+  const grila: ReactNode[] = [];
+  if (linii.aliniate && cel >= 4) {
+    for (let x = 16 + cel; x < 244; x += cel) grila.push(<path key={`x${x}`} className="cs slab" d={`M${r(x)} 10V120`} />);
+    for (let y = 65 + cel / 2 - Math.floor((55 + cel / 2) / cel) * cel; y <= 120; y += cel) {
+      if (y > 10) grila.push(<path key={`y${y}`} className="cs slab" d={`M16 ${r(y)}H244`} />);
+    }
+  }
+  return (
+    <Desen eticheta={t('export.desen.relief.linii')} data-aliniate={String(linii.aliniate)}>
+      <rect className="l2" x={16} y={10} width={228} height={110} />
+      {grila}
+      {segmente.map((d, i) => <path key={i} className="d" data-linie-relief d={d} />)}
+      <Cota pentru="relief-pas-lateral" c={c} text={t('export.desen.golire.pas', { mm: c.f(linii.pas) })} tx={16} ty={132} anc="start" />
+      <Unghi pentru="relief-unghi" c={c} cx={130} cy={65} raza={40} a0={0} a1={-a} text={`${c.f(a)}°`} tx={176} ty={58} />
+      <Jos>{linii.aliniate && k !== null ? t('export.desen.relief.linii.celule', { n: k, mm: c.f(linii.pas) }) : t('export.desen.relief.linii.cel-mult', { mm: c.f(linii.pas) })}</Jos>
+    </Desen>
+  );
+}
+
+/** Adaosul degroșării (ADR 0313 §2), în secțiune: modelul, lemnul lăsat deasupra lui (în orice direcție) și treptele degroșării. */
+export function DesenAdaosRelief({ c, adaos }: { c: DesenComun; adaos: number | null }): ReactNode {
+  const model = profilRelief(16, 244, 52, 66), a = adaos ?? 0, ap = adaos === null || a <= 0 ? 0 : Math.max(5, Math.min(18, a * 12));
+  // Adaosul pe normala modelului (în orice direcție, nu doar pe verticală).
+  const sus = model.map(([x, y], i) => {
+    const [xa, ya] = model[Math.max(0, i - 1)]!, [xb, yb] = model[Math.min(model.length - 1, i + 1)]!;
+    const L = Math.hypot(xb - xa, yb - ya) || 1;
+    return [x + (ap * (yb - ya)) / L, y - (ap * (xb - xa)) / L] as const;
+  });
+  const vf = model.reduce((m, p, i) => (p[1] < model[m]![1] ? i : m), 0), [xv, yv] = model[vf]!;
+  const trepte = [30, 52, 74, 96].filter((y) => y < 118);
+  return (
+    <Desen eticheta={t('export.desen.relief.adaos')}>
+      <rect className="l" data-lemn x={6} y={18} width={248} height={102} />
+      <path className="g2" d={`${linie(sus)}L244 18H16Z`} />
+      <path className="l2" d={`${linie(model)}L244 120H16Z`} />
+      {ap > 0 && <path className="cs" d={linie(sus)} />}
+      {trepte.map((y) => <path key={y} className="d slab" d={`M16 ${y}H244`} />)}
+      {ap > 0 && <Cota pentru="relief-adaos" c={c} x1={xv} y1={yv - ap} x2={xv} y2={yv} text={`${c.f(a)} mm`} tx={xv + 8} ty={yv - ap / 2 + 4} anc="start" />}
+      <Jos>{ap > 0 ? t('export.desen.relief.adaos.rest', { mm: c.f(a) }) : t('export.desen.relief.adaos.zero')}</Jos>
+    </Desen>
+  );
+}
+
+/**
+ * Marginea și înălțimea reliefului (ADR 0312 §3, ADR 0313 §5), în secțiune: la perete freza nu iese din dreptunghiul reliefului
+ * (peretele rămâne); la „trece”, freza trece de margine cu raza ei. Vârful la fața plăcii sau planul zero la `planZero` sub ea.
+ */
+export function DesenMargineRelief({ c, margine, z, planZero }: {
+  c: DesenComun; margine: 'perete' | 'trece'; z: 'varf' | 'plan'; planZero: number | null;
+}): ReactNode {
+  const yf = 34, pz = z === 'plan' && planZero !== null && planZero > 0 ? Math.max(6, Math.min(30, planZero * 4)) : 0;
+  const yb = yf + pz, model = profilRelief(70, 236, yb, 60), xe = 70, R = 12;
+  const trece = margine === 'trece';
+  return (
+    <Desen eticheta={t('export.desen.relief.margine')} data-margine={margine}>
+      <rect className="l" data-lemn x={6} y={yf} width={248} height={92} />
+      <path className="g" d={`M${xe} ${yf}${linie(model).replace(/^M/u, 'L')}L236 ${yf}Z`} />
+      {trece && <rect className="g" data-trece x={xe - R} y={yf} width={R} height={r(yb + 60 - yf)} />}
+      <path className="l2" d={`${linie(model)}L236 126H${xe}Z`} />
+      {/* Freza la margine: la perete, cu partea ei pe perete; la „trece”, cu centrul pe margine. */}
+      <path className="f" d={`M${r((trece ? xe : xe + R) - 6)} 4H${r((trece ? xe : xe + R) + 6)}V16H${r((trece ? xe : xe + R) + R)}V${r(yb + 4)}A${R} ${R} 0 0 1 ${r((trece ? xe : xe + R) - R)} ${r(yb + 4)}V16H${r((trece ? xe : xe + R) - 6)}Z`} />
+      <path className="ua" d={`M6 ${yf}H${xe - 4}`} /><text x={8} y={yf - 6} className="tare z0">Z0</text>
+      {pz > 0 && <>
+        <path className="cs" d={`M${xe} ${r(yb)}H244`} />
+        <Cota pentru="relief-plan-zero" c={c} x1={248} y1={yf} x2={248} y2={yb} text={`${c.f(planZero ?? 0)} mm`} tx={244} ty={r(yb - pz / 2 + 4)} anc="end" />
+      </>}
+      <Jos>{t(trece ? 'export.desen.relief.trece' : 'export.desen.relief.perete')}</Jos>
+    </Desen>
+  );
+}
+
+/**
+ * Podeaua și trecerile pe Z ale reliefului (ADR 0312 §4, ADR 0313 §3), în secțiune: fundurile la k · pas sub față și ultima pe
+ * model, cel mult la podea (la degroșare, ridicată cu adaosul), ca lucrarea (`treceriPodeaRelief`).
+ */
+export function DesenPodeaRelief({ c, adancime, pas, treceri }: {
+  c: DesenComun; adancime: number | null; pas: number | null; treceri: { readonly funduri: readonly number[]; readonly n: number; readonly podea: number };
+}): ReactNode {
+  if (treceri.n === 0 || adancime === null || pas === null) {
+    return (<Desen eticheta={t('export.desen.relief.podea')}><rect className="l" data-lemn x={6} y={24} width={248} height={96} /><Jos tare>{t('export.desen.adancime.lipsa')}</Jos></Desen>);
+  }
+  const yf = 24, k = 84 / Math.max(adancime, 1e-9), yp = yf + treceri.podea * k;
+  // Modelul coboară sub podea pe mijloc: acolo, ultima trecere rămâne pe podea.
+  const model = profilRelief(30, 236, yf + 6, Math.max(12, adancime * k + 14)).map(([x, y]) => [x, Math.min(y, yp)] as const);
+  return (
+    <Desen eticheta={t('export.desen.relief.podea')}>
+      <rect className="l" data-lemn x={6} y={yf} width={248} height={96} />
+      <path className="g" d={`M30 ${yf}${linie(model).replace(/^M/u, 'L')}L236 ${yf}Z`} />
+      {treceri.n <= 12 && treceri.funduri.map((f, i) => (<g key={i}>
+        <path className="cs" data-fund={i + 1} d={`M30 ${r(yf + f * k)}H236`} />
+        <text x={33} y={r(yf + f * k - 2)}>{i + 1}</text>
+      </g>))}
+      <path className="ua" data-podea d={`M30 ${r(yp)}H236`} />
+      <Cota pentru="relief-pas" c={c} x1={24} y1={yf} x2={24} y2={yf + Math.min(pas, treceri.podea) * k} text={c.f(pas)} tx={19} ty={yf + 12} anc="end" />
+      <Cota pentru="relief-adancime" c={c} x1={250} y1={yf} x2={250} y2={yf + adancime * k} text={`${c.f(adancime)} mm`} tx={246} ty={r(yf + adancime * k + 12)} anc="end" />
+      <Jos>{t('export.desen.relief.treceri', { n: treceri.n, mm: c.f(pas) })}</Jos>
+    </Desen>
+  );
+}

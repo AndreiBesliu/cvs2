@@ -90,8 +90,8 @@ export const GRUP_CAMP: Readonly<Record<string, readonly GrupExport[]>> = {
   'inc-freza-dop': ['dop'], 'dop-biblioteca': ['dop'], 'dop-rest-biblioteca': ['dop'], 'dop-scula': ['dop'], 'dop-diametru': ['dop'], 'dop-pas': ['dop'],
   'dop-rest-adauga': ['dop'], 'dop-rest-scula': ['dop'], 'dop-rest-diametru': ['dop'], 'dop-rest-pas': ['dop'], 'dop-rest-scoate': ['dop'],
   // Operațiile reliefului (felia 18.1↑d-4): câmpurile lor, cu prefixul `relief-`.
-  'relief-scula': ['freza-relief'], 'relief-diametru': ['freza-relief'], 'relief-forma': ['freza-relief'], 'relief-unghi-v': ['freza-relief'],
-  'relief-varf-v': ['freza-relief'], 'relief-pas-lateral': ['linii'], 'relief-unghi': ['linii'], 'relief-aliniat': ['linii'], 'relief-adaos': ['adaos'],
+  'relief-biblioteca': ['freza-relief'], 'relief-scula': ['freza-relief'], 'relief-diametru': ['freza-relief'], 'relief-forma': ['freza-relief'], 'relief-unghi-v': ['freza-relief'],
+  'relief-varf-v': ['freza-relief'], 'relief-raza-colt': ['freza-relief'], 'relief-pas-lateral': ['linii'], 'relief-unghi': ['linii'], 'relief-aliniat': ['linii'], 'relief-adaos': ['adaos'],
   'relief-margine': ['margine'], 'relief-z': ['margine'], 'relief-plan-zero': ['margine'], 'relief-adancime': ['podea'], 'relief-pas': ['podea'],
   'confirma-iesire': [], 'confirma-placute': [], 'confirma-ordine': [],
 };

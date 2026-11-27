@@ -26,11 +26,15 @@
 import { celuleAliniate } from './celuleAliniate.ts';
 import type { Miscare } from '../ir/ir.ts';
 
-/** Forma frezei, cu raza ei: plata, bila, V-ul (unghiul inclus, în grade, și vârful plat, diametrul lui). */
+/**
+ * Forma frezei, cu raza ei: plata, bila, V-ul (unghiul inclus, în grade, și vârful plat, diametrul lui), toroidala (raza
+ * colțului `colt`, 0 < colt < raza; felia 18.1↑e-1, ADR 0319).
+ */
 export type FrezaFinisare =
   | { readonly fel: 'plata'; readonly raza: number }
   | { readonly fel: 'bila'; readonly raza: number }
-  | { readonly fel: 'v'; readonly raza: number; readonly unghi: number; readonly varf: number };
+  | { readonly fel: 'v'; readonly raza: number; readonly unghi: number; readonly varf: number }
+  | { readonly fel: 'toroidala'; readonly raza: number; readonly colt: number };
 
 /**
  * Un relief, cum îl vede finisarea: grila (rândul j în sus), celula în mm de lume (scalarea uniformă a matricei o schimbă),
@@ -97,6 +101,11 @@ export const PUNCTE_FINISARE_MAXIM = 20_000_000;
 export function urcare(f: FrezaFinisare, r: number): number {
   if (f.fel === 'plata') return 0;
   if (f.fel === 'bila') return f.raza - Math.sqrt(Math.max(0, f.raza * f.raza - r * r));
+  // Toroidala (ADR 0303 §2): zero pe discul plat de rază a = R − ρ, apoi sfertul de cerc de rază ρ.
+  if (f.fel === 'toroidala') {
+    const a = f.raza - f.colt, w = r - a;
+    return w <= 0 ? 0 : f.colt - Math.sqrt(Math.max(0, f.colt * f.colt - w * w));
+  }
   const v = f.varf / 2;
   return r <= v ? 0 : (r - v) * cotJumatate(f.unghi);
 }

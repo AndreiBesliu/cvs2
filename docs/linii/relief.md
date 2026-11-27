@@ -208,4 +208,44 @@ degroșarea și finisarea pe relief), unde stă relieful în document și unde s
   - **`npm ci` într-o clonă cu `node_modules` legat de repo** golește `node_modules` din repo (`tsc: not found`).
   - **`src/ui` ia din domeniu doar prin `src/ui/actiuni*`** (regula `interfata-prin-actiuni`): o funcție a CAM-ului de care are
     nevoie fișa (`celuleAliniate`) se reexportă din `actiuniExportTipuri.ts`.
-
+- **27.11, 06:37: cuvântul owner-ului** („zi-le sesiunilor sa continue cu recomandarile, acolo unde inca asteapta”, transmis de
+  sesiunea principală): alegerile din ADR 0313 §8 (1–6) și liniile plăcii 18 la 1,5 mm, confirmate cum sunt; pornesc, în
+  ordine, freza din bibliotecă pe rândurile reliefului (18.1↑d-5), desenele grupurilor (18.1↑d-6), „Dă-i T{n}” (18.1↑d-7), apoi
+  finisarea cu toroidala (18.1↑e, ADR 0303 răspunsul 4a, oracolul întâi). Documentul e v31; un câmp nou ia v32, cu numărul cerut.
+- **27.11, 07:10: 18.1↑d-5 gata pe ramură**: freza din „Frezele mele” pe rândurile reliefului (ADR 0316), otrăvurile 19 / 19
+  prinse (14 unitare, 5 e2e). Freza aleasă își aduce și pasul lateral (bila de finisare din catalog are 10 %), la fel în Tăierea.
+- **De ținut minte, din 18.1↑d-5:**
+  - **Originea frezei stă pe rândul reliefului** (`RandRelief.origineScula`, citită din document în `ExportConectat`): un câmp
+    al frezei schimbat de mână o scoate (`origineScula: null`), ca la celelalte rânduri; Exportă o scrie cu `cuOrigine`.
+  - **T-ul unei freze alese numără frezele tuturor rândurilor** (`frezeRanduri` + `frezeRanduriRelief`), și pe rândurile
+    obișnuite: o finisare cu T2 nu mai poate fi ciocnită de o freză aleasă pe un profil.
+  - **„Pe toate (N)” vine din fereastră** (`ContextFisa.peToate`), cu rândurile reliefului; fișa o socotea singură doar pe ale ei.
+- **27.11: 18.1↑d-6 și 18.1↑d-7 gata pe ramură**: desenele grupurilor din fișa reliefului (ADR 0317) și „Dă-i T{n}” pe freza
+  reliefului (ADR 0318). Urmează 18.1↑e (finisarea cu toroidala, oracolul întâi).
+- **De ținut minte, din 18.1↑d-6 și d-7:**
+  - **Ce spune un desen al reliefului se socotește în `exportDeseneCalcul.ts`** (`treceriPodeaRelief`, `liniiReliefDesen`) și se
+    compară cu mișcările programului; la degroșare, adaosul ridică și podeaua, deci și ultima trecere.
+  - **Un desen cu linii oblice le taie exact la cadru:** proba privirii măsoară geometria, iar un `clipPath` lasă liniile lungi
+    (le vede ca „ies”).
+  - **Freza reliefului are loc între frezele ferestrei** (`FrezaT.loc`, pe `scula`): „Dă-i T{n}” o tratează ca pe celelalte.
+- **27.11: 18.1↑e gata pe ramură**: finisarea reliefului cu freza toroidală (ADR 0319), cu oracolul 3D întâi. Cu ea, feliile
+  lăsate la cuvântul owner-ului pe 27.11 sunt toate făcute; linia n-are altă felie pornită.
+- **27.11, după unirea frezelor (16.A↑f-1, f-2; documentul v32):** `main` adus în ramură. Cu v32, freza unei operații poate fi
+  și un profil desenat (`{ tip: 'profil', puncte }`), pe care rândul reliefului l-ar fi citit ca plată; acum rândul reliefului
+  îl au doar operațiile cu freza purtată de rând (`operatieCuRandRelief`, `src/model/formaFrezei.ts`), iar un profil rămâne
+  neatins la Exportă (lucrarea îl refuză pe relief). Un câmp nou al documentului ia v33.
+- **27.11, după unirea lui 16.A↑f-3 (profilul pe rândul exportului):** `main` adus din nou. `formaPeRand` e acum a frezelor și
+  poartă profilul; rândul reliefului are garda lui, `formaPeRandRelief`. Pe rândul reliefului, alegerea și „Ia valorile noi” nu
+  scriu un profil, iar nota și „Pe toate (N)” văd biblioteca fără profiluri (`bibliotecaRelief`, `stareOrigineRelief`).
+- **De ținut minte, din 18.1↑e:**
+  - **O formă nouă de freză pe relief intră întâi în oracolul 3D** (`FrezaO`, `urcareO`, `clExact`, `clPlan`, `clRadial`), cu
+    controalele negative, apoi în `urcare` (`src/cam/reliefFinisare.ts`); o siluetă mai jos decât freza adevărată sapă, una mai
+    sus lasă doar lemn (o toroidală socotită plată nu sapă și cade doar la creastă).
+  - **Probele finisării își iau ajutoarele din `test/unit/ajutor-relief-finisare.ts`** (`judeca`, `relief`, `grila`): un caz
+    nou intră într-un fișier care rămâne sub un minut.
+  - **Rândul reliefului poartă raza colțului** (`RandRelief.razaColt`, `relief-raza-colt`): formele noi intră și în
+    `formaRandRelief`, `campuriFormaRelief`, `frezaCitita`, `metaRand` și în regula T din `DialogExport`.
+  - **O formă de freză pe care rândul reliefului n-o poartă n-are rând** (`operatieCuRandRelief`, cu `formaPeRandRelief`,
+    predicat de tip; `formaPeRand` e a rândurilor pe contur): o formă nouă care trebuie să ajungă pe relief intră întâi în
+    `formaPeRandRelief`, în `FormaPeRelief` și în rândul reliefului, cu proba ei. Una nouă pe rândul exportului, dar nu pe
+    relief, se oprește și în `bibliotecaRelief`.

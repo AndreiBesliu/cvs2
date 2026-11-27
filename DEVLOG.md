@@ -16659,6 +16659,39 @@ program. Dacă cere un câmp nou în document, v32 e liber și ți-l dau la cere
 - **Linia frezelor** pornește e-5 (buzunarul cu bila și cu toroidala; oracolul întâi).
 - **Documentele:** decizia și Starea în `CLAUDE.md`; starea din `docs/linii/principala.md`; indexul liniilor.
 
+## 2026-11-27 — Linia reliefului: felia 18.1↑d-5, freza din „Frezele mele” pe rândurile reliefului (Model: Claude Opus 5.5)
+
+**Prompt:** „zi-le sesiunilor sa continue cu recomandarile, acolo unde inca asteapta” (owner-ul, în sesiunea principală,
+transmis liniei la 06:37): „întâi freza din „Frezele mele” pe rândurile reliefului, cu bila”. **Started:** 27.11, 06:40, cu
+`main` `eac92d1c` adus (fast-forward). **Completed:** 27.11, 07:10 (în container; CI-ul, pe commit-ul împins).
+
+- **Proba întâi, pe hârtie:** `export.relief.biblioteca.test.ts` (alegerea pe finisare și pe degroșare, T-ul printre frezele
+  ferestrei, nota și „Ia valorile noi”, „Pune-o înapoi”, scrierea originii la Exportă, pasul lateral din Tăierea).
+- **Fereastra:** lista „Din frezele mele” în grupul Freza al fișei reliefului (finisarea: plata, V-ul, bila; degroșarea: plata),
+  nota bibliotecii, „Pe toate (N)” cu rândurile reliefului, „Pune-o înapoi”; T-ul unei freze alese, și pe rândurile obișnuite,
+  numără și frezele reliefului. Exportă scrie originea (`cuOrigine`), iar fără schimbare aceeași operație, la octet.
+- **Tăierea:** freza aleasă aduce pasul lateral și pe finisare și degroșare (`cuPasLateral`), ca fereastra.
+- **ADR 0316**, manualul (ro, en), e2e nou (`relief.biblioteca.spec.ts`); otrăvurile 19 / 19 prinse (14 unitare, 5 e2e), într-o
+  clonă; A11 din `16.A-b2.py` mutată pe `cuPasLateral`, prinsă.
+- **De ținut minte:** configul Playwright al clonei otrăvurilor își scrie căile spre clonă (`testDir`, `cwd`); cu cele ale
+  repo-ului, toate otrăvurile e2e ies „NEVALIDĂ” („No tests found”).
+
+## 2026-11-27 — Linia reliefului: feliile 18.1↑d-6 și 18.1↑d-7, desenele fișei reliefului și „Dă-i T{n}” (Model: Claude Opus 5.5)
+
+**Prompt:** același cuvânt al owner-ului (transmis la 06:37): „apoi desenele grupurilor; apoi „Dă-i T{n}” pe freza reliefului”.
+**Started:** 27.11, 07:00, peste 18.1↑d-5. **Completed:** 27.11, 07:30 (în container; CI-ul, pe commit-ul împins).
+
+- **18.1↑d-6, proba întâi:** `export.desene.relief.test.ts`: fundurile trecerilor desenate față de cotele Z ale programului (la
+  degroșare, adaosul ridică și podeaua: ultima trecere la A − a), pasul liniilor față de pasul folosit de lucrare.
+- **Desenele:** freza (desenul comun, cu cotele aprinse prin numele scurte), liniile de sus (prin centrele celulelor, la pasul
+  folosit; nealiniate, cel mult pasul cerut), adaosul în secțiune, marginea și înălțimea, podeaua cu trecerile; ADR 0317, e2e
+  `relief.desene.spec.ts`, manualul. Proba privirii a prins liniile oblice decupate cu `clipPath` (lungi, deci „ies”): acum se
+  taie exact la cadru. Otrăvurile 13 / 13 (5 unitare, 8 e2e).
+- **18.1↑d-7:** freza reliefului are locul ei între frezele ferestrei, deci „Dă-i T{n}” îi caută numărul ca la celelalte; butonul
+  în grupul Freza al fișei reliefului, T-ul și diametrul ciocnite înroșite. ADR 0318, e2e în `relief.export.spec.ts` (scrisă
+  întâi, roșie pe codul dinainte), otrăvurile 4 / 4.
+- **Mărimea, cu amândouă:** totalul 940,6 / 1 000 kB (+2,1), pornirea 111,7 kB, neschimbată (măsurat pe clonă, la `5444361f`).
+
 ## 2026-11-27 — Linia exportului: 28.8↑s, rândul unei operații în listă, numele, apoi locul
 
 **Prompt:** mesajul sesiunii principale (27.11, 08:37), cu cuvântul owner-ului („zi-le sesiunilor sa continue cu
@@ -16747,6 +16780,39 @@ ramură, după push).
   1 010 / 1 010, funcțiile pe emulatoare 142 / 142, paginile 62 / 62. Totalul 937,8 / 1 000 kB.
 - **Pe test:** lotul 58 (`eac92d1c`, 16.A↑e-4), la 08:38; lotul 59 (`e412ebcc`), în drum.
 - **Documentele:** decizia și Starea în `CLAUDE.md`; starea din `docs/linii/principala.md`; indexul liniilor.
+
+## 2026-11-27 — Linia reliefului: felia 18.1↑e, finisarea reliefului cu freza toroidală (Model: Claude Opus 5.5)
+
+**Prompt:** cuvântul owner-ului, transmis la 06:37: „**Finisarea reliefului cu toroidala** e a ta, după răspunsul 4a din ADR
+0303, confirmat acum. Pune-o după cele trei. Mișcă mașina, deci întâi oracolul (`test/oracles/relief3d.ts`), cu toroidala pe
+hârtie.”
+**Started:** 27.11, 07:30, după 18.1↑d-7. **Completed:** 27.11, 08:10 (în container; CI-ul, pe commit-ul împins).
+
+- **Oracolul întâi:** toroidala în oracolul 3D independent (urcarea pe hârtie; CL-ul exact pe triunghiurile modelului, cu
+  punctul de sprijin al tubului pe fețe și bisecția pe derivată pe muchii; CL-ul pe un plan, z0 + g · a + ρ · (√(1 + g²) − 1);
+  semisfera, cu controalele negative fără fețe, fără muchii și doar în noduri; creasta ρ − √(ρ² − ((s − 2a) / 2)²); materialul).
+- **CAM-ul:** silueta toroidalei în câmpul conservativ (`urcare`), judecat de oracol pe calote (ρ 0,25 / 1 / 2,5), pana cu
+  freza trecând de margine, peretele de o celulă și valurile la un unghi: fără scobituri, podeaua, pasul pe material, nicio
+  rapidă în lemn; pe un plan înclinat, vârful la CL-ul de pe hârtie. Probele finisării s-au împărțit: ajutoarele în
+  `ajutor-relief-finisare.ts`, toroidala în două fișiere (fiecare sub un minut).
+- **Lucrarea, panoul, fereastra:** toroidala doar ca freză a finisării (degroșarea rămâne plată); în Tăierea, raza colțului;
+  în fereastra exportului, forma, raza cu greșeala ei, desenul, creasta, regula T, Exportă o scrie (fără schimbare, la octet);
+  din „Frezele mele”, oferită pe finisare. ADR 0319, manualul, e2e `relief.toroidala.spec.ts`.
+- **`main` adus** (16.A↑e-5, buzunarul cu bila și cu toroidala; `6a4244e0`): ciocnirile în `formaFrezei.ts`, `job.ts`,
+  `finisare.ts` și două probe, rezolvate pe regula din `main` (creasta lui `main`, prin `inaltimeFreza`, dă aceeași formulă).
+- **Otrăvurile:** `18.1e.py`, 28 / 28 prinse (5 ale CAM-ului și ale lucrării, 2 ale regulii, 4 ale modelului, 8 ale rândului
+  și ale scrierii, 9 e2e), martorul a scăpat; B00, B08 (`18.1d-5.py`) și T01 (`18.1d-7.py`), mutate pe codul nou și rulate
+  (B08, T01 prinse; martorul a scăpat). La prima rulare au scăpat patru: proba planului înclinat nu judeca niciun punct (pe o
+  pantă constantă, linia e un singur segment), iar proba programului judeca doar scobiturile (o toroidală tăiată ca plată lasă
+  lemn, nu sapă). Acum judecă segmentele interpolate, cere puncte și măsoară suprafața (pe pantele sub 30°, vârful cel mult
+  0,06 mm peste CL-ul exact); E05 (echivalentă pe Ø4 r1) și E07 (de neatins) au fost rescrise.
+- **Mărimea:** totalul 941,5 / 1 000 kB (+0,5, față de `6a4244e0` măsurat la 941,0), pornirea 111,7 kB, neschimbată.
+
+- **Mesajele (07:45):** frezele (ADR 0303 confirmat; e-5, e-6, f, g), atelierul (balamaua, placa turnantă; auditul
+  elicelor, feliile 1–7), relieful (ADR 0313 §8; cele trei felii lăsate la owner, apoi finisarea cu toroidala), exportul
+  (ADR 0292 1a; lista, constatarea 14). Cotele n-au nimic de pornit.
+- **Sesiunea designului**, pe calculatorul owner-ului, nu primește din cloud (doar de pe un dispozitiv de încredere).
+- **Documentele:** decizia în `CLAUDE.md`; lista owner-ului și versiunea documentului (v31) în `docs/linii/principala.md`.
 
 ## 2026-11-27 — Feliile 3.Cm-1 și 3.Cm-2: otrăvurile elicelor și tipărirea spusă cinstit (ADR 0340) (sesiune cloud)
 
@@ -16909,6 +16975,20 @@ principală: auditul elicelor, felia 3, răspunsul 3a)
 - **Pe test:** lotul 60 (16.A↑e-6), în drum; lotul 61 (28.8↑s), după el.
 - **Documentele:** decizia și Starea în `CLAUDE.md`; starea din `docs/linii/principala.md`; indexul liniilor.
 
+## 2026-11-27 — Linia reliefului: `main` cu frezele v32 adus; profilul desenat fără rândul reliefului (Model: Claude Opus 5.5)
+
+**Prompt:** mesajul sesiunii principale (10:09, 11:05): „adu `main` în `wip/18.1-relief` și repară
+`src/app/valoriOperatii.ts:308`, apelul `numeDupaForma(s.forma)`, cu proba lui”. **Started:** 27.11, 10:10 (unirea de probă,
+locală). **Completed:** 27.11, 11:15 (în container; CI-ul, pe commit-ul împins).
+
+- **Unirea:** `main` `8906dedf` (16.A↑e-6, 16.A↑f-1, f-2, 28.8↑s) în ramură; ciocnirile (comentariile, `const rotunda` de
+  două ori în `job.ts`, DEVLOG) rezolvate întâi pe o unire de probă, reluate cu `git rerere`.
+- **Reparația, cu proba întâi** (`export.relief.test.ts`, roșie fără ea): `operatieCuRandRelief` dă rândul reliefului doar
+  operațiilor cu freza purtată de rând; `formaPeRand` e predicat de tip, deci tipul de la `numeDupaForma(s.forma)` trece. Un
+  profil pe relief rămâne neatins la Exportă (lucrarea îl refuză). ADR 0319, completarea din 27.11.
+- **Otrăvurile:** E29 și E30 (`18.1e.py`), prinse; E03 și E04 (`18.1d.py`), mutate pe codul nou, prinse (e2e).
+- **Mărimea și porțile:** din CI, pe commit-ul raportat.
+
 ## 2026-11-27 — 16.A↑f-3: profilul desenat în proiect (Model: Claude Opus 5.5)
 
 **Prompt:** sesiunea principală, după unirea lui f-1 și f-2 (`8906dedf`): „Poți porni f-3 din `main`.” (ADR 0304 §5, cu
@@ -17026,3 +17106,21 @@ principală: auditul elicelor, felia 5, răspunsul 2a)
 - **Mărimea:** Easy 3Draw 18.48.0; aplicația, neschimbată. Nimic pe server.
 - **Documentele:** ADR 0340, nota liniei, fișa etapei 3, registrul otrăvurilor, `CLAUDE.md`, traducerile roadmap-ului.
 - **Urmează:** 3.Cm-6 (curățenia motorului, singură, la octet).
+
+## 2026-11-27 — Linia reliefului: `main` cu 16.A↑f-3 adus; garda rândului reliefului separată (Model: Claude Opus 5.5)
+
+**Prompt:** mesajul sesiunii principale (13:42): „după ce îți scriu că f-3 e în `main`: 1. adu `main` în `wip/18.1-relief`;
+2. rezolvă ciocnirea cu regulile ambelor linii; 3. refă porțile pe commit-ul cu `main` adus și raportează-l.” **Started:**
+27.11, 13:45 (unirea de probă, locală, peste `05f1bdc9`). **Completed:** 27.11, 14:40 (în container; CI-ul, pe commit-ul împins).
+
+- **Unirea:** `main` `75ae7f50` (16.A↑f-3, 3.Cm-3); ciocnirea din `formaFrezei.ts` (f-3 lărgea `formaPeRand` cu profilul, iar
+  aici era predicat fără el), rezolvată cu ambele reguli: `formaPeRand` a frezelor, `formaPeRandRelief` a reliefului.
+- **Proba întâi**, roșie peste unire: `export.relief.test.ts` (cele două reguli, Exportă) și `export.relief.biblioteca.test.ts`
+  (alegerea, „Ia valorile noi”, nota și „Pe toate (N)” cu un profil în bibliotecă).
+- **Reparația:** `valoriOperatii` cu `formaPeRandRelief`; în `exportRelief.ts`, `FormaPeRelief`, `bibliotecaRelief`,
+  `stareOrigineRelief`, iar `copieRelief` citește forma rândului (`FormaRand` are acum profilul); `FisaFinisare`, nota prin
+  `stareOrigineRelief`.
+- **Otrăvurile:** E31–E35 (`18.1e.py`), 5 / 5 prinse; E29, E30 și E04 (`18.1d.py`, e2e), mutate pe garda nouă și prinse.
+- **Neprobat cap-coadă:** linia din `FisaFinisare` care cheamă `stareOrigineRelief` (o probă e2e ar cere o freză a bibliotecii
+  schimbată în profil sub un rând al reliefului).
+- **Documentele:** ADR 0319, fișa etapei 3, registrul otrăvurilor, nota liniei, traducerea.

@@ -3,9 +3,14 @@ import '../i18n/export.ts';
 import { t } from '../i18n/t.ts';
 import { celuleAliniate } from './actiuniExportTipuri.ts';
 import { Cartonase } from './exportPoze.tsx';
+import { DesenAdaosRelief, DesenFreza, DesenLiniiRelief, DesenMargineRelief, DesenPodeaRelief, type DesenComun } from './exportDesene.tsx';
+import { liniiReliefDesen, treceriPodeaRelief } from './exportDeseneCalcul.ts';
 import type { GrupExport } from './exportGrupuri.ts';
 import { GRUPURI_RELIEF } from './exportGrupuri.ts';
 import type { CampRelief, FinisareExport, RandRelief } from './exportRelief.ts';
+import { stareOrigineRelief } from './exportRelief.ts';
+import type { FrezaOferita } from './exportRand.ts';
+import { ListaBiblioteca, NotaBiblioteca, type Greseala, type InapoiNota, type ReparatieT } from './FisaOperatie.tsx';
 import { citesteNumar } from './numar.ts';
 
 export type { FinisareExport } from './exportRelief.ts';
@@ -21,18 +26,33 @@ export type { FinisareExport } from './exportRelief.ts';
 /** Forma frezei, în cuvinte. */
 export function formaFinisareText(s: FinisareExport['scula'], f: (x: number) => string): string {
   return s.forma === 'bila' ? t('export.finisare.forma.bila') : s.forma === 'v' ? t('export.finisare.forma.v', { u: f(s.unghi ?? 0) })
-    : t('export.finisare.forma.plata');
+    : s.forma === 'toroidala' ? t('export.finisare.forma.toroidala', { r: f(s.razaColt ?? 0) }) : t('export.finisare.forma.plata');
 }
 
 /** Ce îi dă fereastra fișei unei operații a reliefului (ca `ContextFisa` la celelalte operații). */
 export type ContextFisaRelief = {
   readonly doarCitire: boolean;
-  /** Grupul unei întrebări, comun cu celelalte fișe (titlul, explicația câmpului activ, câmpurile, greșelile). */
-  readonly grup: (id: GrupExport, fisa: string, corp: ReactNode, greseli?: ReadonlyArray<string>) => ReactNode;
+  /**
+   * Grupul unei întrebări, comun cu celelalte fișe (titlul, explicația câmpului activ, câmpurile, greșelile) și, din felia
+   * 18.1↑d-6, desenul lui.
+   */
+  readonly grup: (id: GrupExport, fisa: string, corp: ReactNode, greseli?: ReadonlyArray<string | Greseala>, desen?: (c: DesenComun) => ReactNode) => ReactNode;
   /** Formatul numerelor (al frezelor: până la miime). */
   readonly f: (x: number) => string;
   /** Creasta lăsată pe un plan de freza dată, la pasul dat (regula aplicației, `creastaPePlan`); lipsă = fără notă. */
   readonly creasta: ((s: FinisareExport['scula'], pasLateral: number) => number | null) | undefined;
+  /*
+   * Freza din „Frezele mele” (felia 18.1↑d-5, ADR 0316), ca la celelalte rânduri (ADR 0300 §4–§5): frezele oferite felului,
+   * biblioteca întreagă (null cât nu e citită), alegerea, „Ia valorile noi” pe rând și pe toate, câte sunt și „Pune-o înapoi”.
+   */
+  readonly fmtFreza: Intl.NumberFormat;
+  readonly frezeRelief: ((fel: 'finisare' | 'degrosare') => readonly FrezaOferita[]) | undefined;
+  readonly bibliotecaToata: readonly FrezaOferita[] | null;
+  readonly alege: (cheie: string, f: FrezaOferita) => void;
+  readonly ia: (cheie: string, f: FrezaOferita) => void;
+  readonly iaToate: (f: FrezaOferita) => void;
+  readonly peToate: (id: string) => number;
+  readonly inapoi: (cheie: string) => InapoiNota | undefined;
 };
 
 /** Freza rândului, citită (pentru creastă): forma, diametrul, unghiul și vârful V-ului; `null` cât nu se citește. */
@@ -42,6 +62,10 @@ function frezaCitita(r: RandRelief): FinisareExport['scula'] | null {
   if (r.fel === 'finisare' && r.formaScula === 'v') {
     const u = citesteNumar(r.unghiV), v = citesteNumar(r.varfV);
     return u === null || v === null ? null : { numar: n, diametru: d, forma: 'v', unghi: u, ...(v > 0 ? { varf: v } : {}) };
+  }
+  if (r.fel === 'finisare' && r.formaScula === 'toroidala') {
+    const rc = citesteNumar(r.razaColt);
+    return rc === null ? null : { numar: n, diametru: d, forma: 'toroidala', razaColt: rc };
   }
   return { numar: n, diametru: d, forma: r.fel === 'finisare' && r.formaScula === 'bila' ? 'bila' : 'plata' };
 }
@@ -59,18 +83,25 @@ function Intrare({ 'data-camp': dc, eticheta, titlu, valoare, oprit, rau, mod = 
   );
 }
 
-export function FisaFinisare({ fin, r, loc, total, c, greseli, gresite, onSchimba }: {
+export function FisaFinisare({ fin, r, loc, total, c, greseli, gresite, ciocnit = false, onSchimba }: {
   readonly fin: FinisareExport; readonly r: RandRelief; readonly loc: number; readonly total: number; readonly c: ContextFisaRelief;
-  /** Greșelile rândului, fiecare cu grupul în care se spune. */
-  readonly greseli: ReadonlyArray<readonly [string, GrupExport]>;
+  /** Greșelile rândului, fiecare cu grupul în care se spune; la un T cu două freze, și „Dă-i T{n}” (felia 18.1↑d-7). */
+  readonly greseli: ReadonlyArray<readonly [string, GrupExport, ReparatieT?]>;
   /** Câmpurile greșite (se înroșesc; „Du-mă la …” pune focusul pe primul). */
   readonly gresite: readonly CampRelief[];
+  /** Freza e pe numărul unui conflict de T: câmpurile ei se înroșesc, ca la celelalte rânduri (felia 18.1↑d-7). */
+  readonly ciocnit?: boolean;
   readonly onSchimba: (p: Partial<RandRelief>) => void;
 }): ReactNode {
   const { doarCitire: oprit, grup, f } = c;
   const deg = fin.fel === 'degrosare';
   const rau = (x: CampRelief): boolean => gresite.includes(x);
-  const aici = (g: GrupExport): string[] => greseli.filter(([, x]) => x === g).map(([m]) => m);
+  const aici = (g: GrupExport): Greseala[] => greseli.filter(([, x]) => x === g).map(([m, , rep]) => ({
+    text: m,
+    ...(rep ? {
+      buton: <button type="button" className="dx-da-t" data-da-t={rep.numar} disabled={oprit} onClick={rep.fa}>{t('export.da-t', { n: rep.numar })}</button>,
+    } : {}),
+  }));
   // Pasul folosit (ADR 0314): cu liniile la 0° sau 90°, prin centrele celulelor, rotunjit în jos la celule întregi.
   const s = citesteNumar(r.pasLateral), u = citesteNumar(r.unghi), celula = fin.celula;
   // Cu pasul greșit (greșeala lui se spune în grup), notele pasului folosit și ale crestei tac.
@@ -78,31 +109,48 @@ export function FisaFinisare({ fin, r, loc, total, c, greseli, gresite, onSchimb
   const k = aliniate && s !== null && s > 0 && celula !== undefined && celula > 0 ? celuleAliniate(s, celula) : null;
   const folosit = k !== null && celula !== undefined ? k * celula : s;
   const freza = frezaCitita(r);
-  const creasta = !deg && !rau('pas-lateral') && !rau('diametru') && freza !== null && folosit !== null && folosit > 0 && c.creasta
+  const creasta = !deg && !rau('pas-lateral') && !rau('diametru') && !rau('raza-colt') && freza !== null && folosit !== null && folosit > 0 && c.creasta
     ? c.creasta(freza, folosit) : undefined;
+  // Freza față de bibliotecă (felia 18.1↑d-5): nota ei și recunoașterea celei scrise de mână.
+  // Biblioteca fără profilul desenat (16.A↑f-3): rândul reliefului nu-l poate purta (`stareOrigineRelief`).
+  const st = stareOrigineRelief(r, c.bibliotecaToata);
+  const oferite = c.frezeRelief ? c.frezeRelief(fin.fel) : [];
   const corp = (g: GrupExport): ReactNode => {
     switch (g) {
-      case 'freza-relief': return (<div className="dx-rand">
-        <Intrare data-camp="relief-scula" eticheta={t('export.freza.numar')} titlu={t('export.relief.scula.titlu')} valoare={r.numarScula} oprit={oprit} rau={rau('scula')} mod="numeric"
+      case 'freza-relief': return (<>
+        {/* Lista „Din frezele mele” stă pe rândul ei, ca la celelalte fișe (28.8↑k). */}
+        <ListaBiblioteca data-camp="relief-biblioteca" oferite={oferite} origine={r.origineScula} oprit={oprit}
+          recunoscuta={st?.fel === 'recunoscuta' ? st.freza.nume : undefined}
+          onAlege={(x) => { c.alege(fin.cheie, x); }} onMana={() => { onSchimba({ origineScula: null }); }} />
+        <NotaBiblioteca stare={st} origine={r.origineScula} peToate={st?.fel === 'schimbata' ? c.peToate(st.freza.id) : 0} oprit={oprit}
+          fmt={c.fmtFreza} onIa={(x) => { c.ia(fin.cheie, x); }} onIaToate={c.iaToate}
+          inapoi={st?.fel === 'stearsa' ? c.inapoi(fin.cheie) : undefined} />
+        <div className="dx-rand">
+        <Intrare data-camp="relief-scula" eticheta={t('export.freza.numar')} titlu={t('export.relief.scula.titlu')} valoare={r.numarScula} oprit={oprit} rau={rau('scula') || ciocnit} mod="numeric"
           onText={(x) => { onSchimba({ numarScula: x }); }} />
-        <Intrare data-camp="relief-diametru" eticheta={t('export.freza.diametru')} titlu={t('export.relief.diametru.titlu')} valoare={r.diametruScula} oprit={oprit} rau={rau('diametru')}
-          onText={(x) => { onSchimba({ diametruScula: x }); }} />
+        {/* Un diametru sau o formă schimbate de mână fac freza scrisă de mână (originea pleacă), ca la celelalte rânduri. */}
+        <Intrare data-camp="relief-diametru" eticheta={t('export.freza.diametru')} titlu={t('export.relief.diametru.titlu')} valoare={r.diametruScula} oprit={oprit} rau={rau('diametru') || ciocnit}
+          onText={(x) => { onSchimba({ diametruScula: x, origineScula: null }); }} />
         {deg ? <p className="nota" data-nota="relief-plata">{t('export.degrosare.doar-plata')}</p> : (
         <label title={t('export.relief.forma.titlu')}>
           {t('export.freza.forma')}
           <select value={r.formaScula} data-camp="relief-forma" disabled={oprit}
-            onChange={(ev) => { const v = ev.target.value; if (v === 'bila' || v === 'plata' || v === 'v') onSchimba({ formaScula: v }); }}>
+            onChange={(ev) => { const v = ev.target.value; if (v === 'bila' || v === 'plata' || v === 'v' || v === 'toroidala') onSchimba({ formaScula: v, origineScula: null }); }}>
             <option value="bila">{t('export.finisare.forma.bila')}</option>
+            <option value="toroidala">{t('export.freza.toroidala')}</option>
             <option value="plata">{t('export.finisare.forma.plata')}</option>
             <option value="v">{t('export.freza.v')}</option>
           </select>
         </label>
         )}
         {!deg && r.formaScula === 'v' && <Intrare data-camp="relief-unghi-v" eticheta={t('export.freza.unghi')} titlu={t('export.freza.unghi')} valoare={r.unghiV} oprit={oprit} rau={rau('unghi-v')}
-          onText={(x) => { onSchimba({ unghiV: x }); }} />}
+          onText={(x) => { onSchimba({ unghiV: x, origineScula: null }); }} />}
         {!deg && r.formaScula === 'v' && <Intrare data-camp="relief-varf-v" eticheta={t('export.freza.varf')} titlu={t('export.freza.varf.titlu')} valoare={r.varfV} oprit={oprit} rau={rau('varf-v')}
-          onText={(x) => { onSchimba({ varfV: x }); }} />}
-      </div>);
+          onText={(x) => { onSchimba({ varfV: x, origineScula: null }); }} />}
+        {!deg && r.formaScula === 'toroidala' && <Intrare data-camp="relief-raza-colt" eticheta={t('export.freza.raza-colt')} titlu={t('export.freza.raza-colt.titlu')} valoare={r.razaColt} oprit={oprit} rau={rau('raza-colt')}
+          onText={(x) => { onSchimba({ razaColt: x, origineScula: null }); }} />}
+        </div>
+      </>);
       case 'linii': return (<div className="dx-rand">
         <Intrare data-camp="relief-pas-lateral" eticheta={t('export.finisare.pas-lateral')} titlu={t(deg ? 'export.relief.pas-lateral.deg.titlu' : 'export.relief.pas-lateral.titlu')} valoare={r.pasLateral} oprit={oprit} rau={rau('pas-lateral')}
           onText={(x) => { onSchimba({ pasLateral: x }); }} />
@@ -153,12 +201,37 @@ export function FisaFinisare({ fin, r, loc, total, c, greseli, gresite, onSchimb
       default: return null;
     }
   };
+  /*
+   * Desenul fiecărei întrebări (felia 18.1↑d-6, ADR 0317), din valorile rândului; trecerile pe Z și pasul liniilor, ca lucrarea
+   * (`exportDeseneCalcul.ts`). Desenul frezei e cel al celorlalte fișe: cotele lui poartă numele câmpurilor fără `relief-`.
+   */
+  const nr = (x: string, camp: CampRelief): number | null => (rau(camp) ? null : citesteNumar(x));
+  const desen = (g: GrupExport): ((dc: DesenComun) => ReactNode) | undefined => {
+    switch (g) {
+      case 'freza-relief': return (dc) => (
+        <DesenFreza c={{ ...dc, aprins: dc.aprins.map((x) => (x.startsWith('relief-') ? x.slice(7) : x)) }} numar={r.numarScula}
+          diametru={nr(r.diametruScula, 'diametru')} v={!deg && r.formaScula === 'v'} unghi={nr(r.unghiV, 'unghi-v')} varfPlat={nr(r.varfV, 'varf-v')}
+          {...(!deg && r.formaScula === 'bila' ? { rotunda: 'bila' as const } : {})}
+          {...(!deg && r.formaScula === 'toroidala' ? { rotunda: 'toroidala' as const, razaColt: nr(r.razaColt, 'raza-colt') } : {})} />
+      );
+      case 'linii': return (dc) => (
+        <DesenLiniiRelief c={dc} unghi={u} linii={((p) => (p === null ? null : liniiReliefDesen(p, celula, deg || r.aliniat, u ?? 0)))(nr(r.pasLateral, 'pas-lateral'))} />
+      );
+      case 'adaos': return (dc) => <DesenAdaosRelief c={dc} adaos={nr(r.adaos, 'adaos')} />;
+      case 'margine': return (dc) => <DesenMargineRelief c={dc} margine={r.margine} z={r.z} planZero={nr(r.planZero, 'plan-zero')} />;
+      case 'podea': return (dc) => {
+        const a = nr(r.adancime, 'adancime'), p = nr(r.pas, 'pas'), x = deg ? nr(r.adaos, 'adaos') ?? 0 : 0;
+        return <DesenPodeaRelief c={dc} adancime={a} pas={p} treceri={a === null || p === null ? { funduri: [], n: 0, podea: 0 } : treceriPodeaRelief(a, p, x)} />;
+      };
+      default: return undefined;
+    }
+  };
   return (
     <section className="dx-fisa" data-fisa="op" data-operatie={fin.cheie} data-fel={fin.fel}>
       <h3 tabIndex={-1}>{fin.descriere}</h3>
       {/* Felul, înaintea locului: degroșarea și finisarea aceluiași relief au același nume. */}
       <p className="dx-loc">{t(deg ? 'export.degrosare.lista' : 'export.finisare.lista')} · {t('export.fisa.loc', { n: loc + 1, total })}</p>
-      {GRUPURI_RELIEF[fin.fel].map((g) => grup(g, fin.cheie, corp(g), aici(g)))}
+      {GRUPURI_RELIEF[fin.fel].map((g) => grup(g, fin.cheie, corp(g), aici(g), desen(g)))}
     </section>
   );
 }
@@ -231,6 +304,6 @@ function metaDocument(fin: FinisareExport, f: (x: number) => string): string {
 function metaRand(r: RandRelief, f: (x: number) => string): string {
   const nr = (s: string): string => ((x) => (x === null ? '—' : f(x)))(citesteNumar(s));
   const forma = r.fel === 'degrosare' || r.formaScula === 'plata' ? t('export.finisare.forma.plata') : r.formaScula === 'bila' ? t('export.finisare.forma.bila')
-    : t('export.finisare.forma.v', { u: nr(r.unghiV) });
+    : r.formaScula === 'toroidala' ? t('export.finisare.forma.toroidala', { r: nr(r.razaColt) }) : t('export.finisare.forma.v', { u: nr(r.unghiV) });
   return `T${nr(r.numarScula)} Ø${nr(r.diametruScula)} ${forma} · ${t('export.finisare.mm', { mm: nr(r.adancime) })}`;
 }

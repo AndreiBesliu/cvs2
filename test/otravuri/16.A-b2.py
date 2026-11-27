@@ -38,8 +38,9 @@ o('A08', AF, '  return numarPrintre(sculeProiect(doc, new Set(), (p) => alese.ha
 o('A09', AF, '  const jos = Math.floor(x * 1000) / 1000;', '  const jos = Math.round(x * 1000) / 1000;', 'model', 'pasul lateral trece de rază la 50 %')
 o('A10', AF, '    ...structuredClone(o), scula: structuredClone(scula), pas: f.pas,', '    ...structuredClone(o), scula: structuredClone(scula),', 'model',
   'pasul pe trecere al frezei nu se scrie')
-o('A11', AF, "...(o.tip === 'buzunar' ? { pasLateral: pasLateralDin(f) } : {}),", 'pasLateral: pasLateralDin(f),', 'model',
-  'pasul lateral și pe profil')
+# Din 18.1↑d-5, operațiile cu pas lateral stau în `cuPasLateral` (buzunarul și relieful).
+o('A11', AF, "const cuPasLateral = (o: Pick<Operatie, 'tip'>): boolean => o.tip === 'buzunar' || o.tip === 'finisare' || o.tip === 'degrosare';",
+  "const cuPasLateral = (o: Pick<Operatie, 'tip'>): boolean => o.tip !== 'gaurire';", 'model', 'pasul lateral și pe profil')
 o('A12', AF, '  if (operatii.length === 0 || frezePotrivite([f], operatii).length === 0) return null;', '  if (operatii.length === 0) return null;',
   'model', 'o freză care nu se potrivește trece')
 o('A13', AF, '  const gasite = doc.piese.filter((p) => piese.includes(p.id));', '  const gasite = doc.piese;', 'model', 'toate piesele primesc freza')

@@ -339,6 +339,8 @@ export const enCarcasa = {
   'prop.fin.forma.bila': 'ball nose',
   'prop.fin.forma.plata': 'flat',
   'prop.fin.forma.v': 'V-bit',
+  'prop.fin.forma.toroidala': 'bull nose',
+  'prop.fin.raza-colt': 'Corner radius',
   'prop.fin.diametru': 'Cutter diameter',
   'prop.fin.pas-lateral': 'Stepover',
   'prop.fin.unghi': 'Line angle',
