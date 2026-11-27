@@ -1649,7 +1649,6 @@ var Atelier3D = (function () {
         <div class="at-rand"><span class="mic">Gaura:</span>${seg("at-el-gaura", [["x", "Pentru ax"], ["r", "Rotundă"], ["b", "Pentru bară"], ["nu", "Fără"]], p.gaura)}</div>
         <div class="at-rand"><span class="mic">Conul:</span>${seg("at-el-con", [["nu", "Fără"], ["da", "Cu con"]], p.con)}</div>
         <p class="mic" id="at-el-info">${textElice(p)}</p>
-        <p class="mic" id="at-tipar" hidden></p>
         <div class="at-rand"><button class="btn" type="button" id="at-el-pereche">Fă perechea</button><span class="mic">${tr("pune în listă aceeași elice în ambele sensuri, pentru două motoare")}</span></div>`;
       const alege = (id: string, f2: (v: string) => void) => { if (!$(id)) return; $(id).onclick = ev => { const b = (ev.target as Element).closest<HTMLElement>("[data-v]"); if (!b) return; f2(b.dataset.v!); editor(); schimbat(); }; };
       alege("#at-el-repede", v => { Object.assign(p, ELICE_LEGO[v]); });
@@ -1688,7 +1687,6 @@ var Atelier3D = (function () {
         <div class="at-rand"><span class="mic">Gaura:</span>${seg("at-eb-gaura", [["x", "Pentru ax"], ["r", "Rotundă"], ["b", "Pentru bară"], ["nu", "Fără"]], p.gaura)}</div>
         <div class="at-rand"><span class="mic">Capacul:</span>${seg("at-eb-capac", [["nu", "Fără"], ["da", "Cu capac"]], p.capac)}</div>
         <p class="mic" id="at-eb-info">${textBarca(p)}</p>
-        <p class="mic" id="at-tipar" hidden></p>
         <div class="at-rand"><button class="btn" type="button" id="at-eb-pereche">Fă perechea</button><span class="mic">${tr("pune în listă aceeași elice în ambele sensuri, pentru două motoare")}</span></div>`;
       const alege = (id: string, f2: (v: string) => void) => { if (!$(id)) return; $(id).onclick = ev => { const b = (ev.target as Element).closest<HTMLElement>("[data-v]"); if (!b) return; f2(b.dataset.v!); editor(); schimbat(); }; };
       alege("#at-eb-repede", v => { p.diametru = +v; });
@@ -1727,7 +1725,6 @@ var Atelier3D = (function () {
         <div class="at-rand"><span class="mic">Inelul:</span>${seg("at-ve-inel", [["nu", "Fără"], ["da", "Cu inel"]], p.inel)}</div>`
           : `<div class="at-rand"><span class="mic">Urechile:</span>${seg("at-ve-urechi", [["2", "Două"], ["4", "Patru"]], String(p.urechi))}</div>`}
         <p class="mic" id="at-ve-info">${textVentilator(p)}</p>
-        <p class="mic" id="at-tipar" hidden></p>
         <div class="at-rand"><button class="btn" type="button" id="at-ve-fa">Fă ventilatorul</button><span class="mic">${tr("pune în listă rotorul și carcasa")}</span></div>`;
       const alege = (id: string, f2: (v: string) => void) => { if (!$(id)) return; $(id).onclick = ev => { const b = (ev.target as Element).closest<HTMLElement>("[data-v]"); if (!b) return; f2(b.dataset.v!); editor(); schimbat(); }; };
       alege("#at-ve-piesa", v => { p.piesa = v; });
@@ -2817,7 +2814,7 @@ var Atelier3D = (function () {
     if (vedere === "model") {
       privita = null;
       $("#at-nume-piesa").textContent = "Modelul";
-      $("#at-avert").hidden = true;
+      $("#at-avert").hidden = true; $("#at-tipar").hidden = true;
       editorModel(); arataModel(); randeazaPrinde();
     } else {
       privita = null; editor(); construiesteCurent();
@@ -2941,7 +2938,7 @@ var Atelier3D = (function () {
     const p = privita;
     $("#at-nume-piesa").textContent = p!.titlu;
     $("#at-cote").innerHTML = `<span><b>Mărime</b> ${tr`${fmt(p!.dim[0]!)} × ${fmt(p!.dim[1]!)} × ${fmt(p!.dim[2]!)} mm`}</span><span><b>Filament</b> ≈ ${fmt(p!.g)} g</span><span><b>Din circuit</b> ${p!.bucati} ${p!.bucati === 1 ? tr("bucată") : tr("bucăți")}</span>`;
-    $("#at-avert").hidden = false; $("#at-avert").textContent = "E o piesă din circuitul de tren: o vezi aici, cum se așază pe pat. Se schimbă din 2D, la Export CNC.";
+    $("#at-avert").hidden = false; $("#at-avert").textContent = "E o piesă din circuitul de tren: o vezi aici, cum se așază pe pat. Se schimbă din 2D, la Export CNC."; $("#at-tipar").hidden = true;
     $("#at-adauga").hidden = true; $("#at-bucati-rand").hidden = true; $("#at-in-model").hidden = true;
     randeazaPrinde();
     arata3D(p!.tri, false, true);
@@ -2957,7 +2954,7 @@ var Atelier3D = (function () {
       curent = null;
       randeazaPrinde();
       $("#at-adauga").hidden = true; $("#at-bucati-rand").hidden = true; $("#at-in-model").hidden = true;
-      $("#at-nume-piesa").textContent = tr("Formă din cvs2"); $("#at-cote").innerHTML = ""; $("#at-avert").hidden = true;
+      $("#at-nume-piesa").textContent = tr("Formă din cvs2"); $("#at-cote").innerHTML = ""; $("#at-avert").hidden = true; $("#at-tipar").hidden = true;
       if (v3.ok && v3.mesh) { v3.scena.remove(v3.mesh); v3.mesh.geometry.dispose(); v3.mesh = null; randeaza(); }
       return;
     }
@@ -2976,14 +2973,16 @@ var Atelier3D = (function () {
       const av = piese.flatMap(p => p.avert || []);
       if (def.tip === "caramida" && bucatiSeparate(def.celule!) > 1) av.push(tr("Forma are bucăți care nu se ating: ies piese separate, în același fișier."));
       $("#at-avert").hidden = !av.length; $("#at-avert").textContent = av.join(" ");
-      // cum se tipăresc paletele (ADR 0340): doar la elice, la elicea de barcă și la rotor (carcasa n-are)
+      // cum se tipăresc paletele (ADR 0340): doar la elice, la elicea de barcă și la rotor (carcasa și celelalte piese n-au).
+      // Paragraful stă în panoul piesei, sub „Se prinde cu”, nu în editor: o redesenare a editorului nu-l golește, deci nu
+      // mută butoanele de sub el cât se face piesa
       const tp = piese.length === 1 ? piese[0]!.tipar : undefined;
-      if ($("#at-tipar")) { $("#at-tipar").hidden = !tp; $("#at-tipar").textContent = tp ? textTipar(def, tp) : ""; }
+      $("#at-tipar").hidden = !tp; $("#at-tipar").textContent = tp ? textTipar(def, tp) : "";
       if ($("#at-p-unghi")) $("#at-p-unghi").textContent = def.tip === "pantaInversa" ? tr`Fața de dedesubt urcă la ${fmt(piese[0]!.unghi!)}° (înălțimea ${fmt(def.placi! * 3.2)} mm, buza ${fmt(def.buza!)} mm).`
         : def.profil === "curb" ? tr`Curba urcă de la buză (${fmt(def.buza!)} mm) la ${fmt(def.placi! * 3.2)} mm; în medie ${fmt(piese[0]!.unghi!)}°.` : tr`Panta iese de ${fmt(piese[0]!.unghi!)}° (înălțimea ${fmt(def.placi! * 3.2)} mm, buza ${fmt(def.buza!)} mm).`;
       if ($("#at-pana-info") && def.tip === "pana") $("#at-pana-info").textContent = tr`Tăietura e la ${fmt(piese[0]!.unghi!)}° față de latura lungă · ${piese[0]!.stifturi} ${piese[0]!.stifturi === 1 ? tr("știft") : tr("știfturi")} sus, ${piese[0]!.locasuri} ${piese[0]!.locasuri === 1 ? tr("locaș") : tr("locașuri")} dedesubt` + (piese[0]!.deschise ? tr`, plus ${piese[0]!.deschise} deschise lângă marginea oblică (acolo stă pe știfturi, fără să le prindă).` : ".");
       arata3D(tri, pastreaza!);
-    } catch (e) { prinderiCurente = []; $("#at-avert").hidden = false; $("#at-avert").textContent = tr`Nu am putut face piesa: ${(e as Error).message || e}`; }
+    } catch (e) { prinderiCurente = []; $("#at-tipar").hidden = true; $("#at-avert").hidden = false; $("#at-avert").textContent = tr`Nu am putut face piesa: ${(e as Error).message || e}`; }
     randeazaPrinde();
   }
 

@@ -87,6 +87,11 @@ test('tipărirea, pe praguri (ADR 0340): la pasul 0,3, cu suport sub vârfuri; o
   // pasul 0,7 la loc: consola de la vârf 0,90, treapta 1,15: aspru pe alocuri, nu suport
   await seteaza(page, '#at-el-pas', '0.7');
   await expect(tipar).toHaveText('Se tipărește fără suport, dar dedesubtul paletelor iese aspru pe alocuri (ventilatorul de răcire, la maxim): un strat iese peste cel de dedesubt cu până la 1,15 mm.');
+  // în vederea „Modelul”, paragraful piesei nu se vede; înapoi la piesă, iar
+  await page.locator('#at-vedere-mod [data-v="model"]').click();
+  await expect(tipar).toBeHidden();
+  await page.locator('#at-vedere-mod [data-v="piesa"]').click();
+  await expect(tipar).toBeVisible();
 });
 
 test('„Ca LEGO 15790”: Ø73,9, paleta plată la 15°, gaura rotundă; cu 4 palete, STL-ul închis, cu raza 36,95', async ({ page }) => {

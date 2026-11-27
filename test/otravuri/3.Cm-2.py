@@ -63,8 +63,9 @@ o('A06', AT, '      : t.fel === "suport" ? tr`${cine} cu suport sub vârfurile p
 o('A07', AT, '      : t.fel === "aspru" ? tr`${cine} fără suport, dar dedesubtul paletelor iese aspru', '      : t.fel !== "aspru" ? tr`${cine} fără suport, dar dedesubtul paletelor iese aspru', 'e2e', '„aspru” și „fără suport”, pe dos')
 o('A08', AT, '    return t.brim ? s + " " + tr`Primul strat atinge masa doar pe ${fmt(100 * t.parte, 1)} %', '    return true ? s + " " + tr`Primul strat atinge masa doar pe ${fmt(100 * t.parte, 1)} %', 'e2e', 'marginea, cerută mereu')
 o('A09', AT, '    return t.brim ? s + " " + tr`Primul strat atinge masa doar pe ${fmt(100 * t.parte, 1)} %', '    return t.brim ? s + " " + tr`Primul strat atinge masa doar pe ${fmt(t.parte, 1)} %', 'e2e', 'partea din disc, nu în procente')
-o('A10', AT, '      if ($("#at-tipar")) { $("#at-tipar").hidden = !tp;', '      if ($("#at-tipar")) { $("#at-tipar").hidden = false;', 'e2e', 'paragraful, la vedere și la carcasă (gol)')
-o('A11', AT, '$("#at-tipar").textContent = tp ? textTipar(def, tp) : ""; }', '$("#at-tipar").textContent = ""; }', 'e2e', 'paragraful rămâne gol')
+o('A10', AT, '      $("#at-tipar").hidden = !tp; $("#at-tipar").textContent', '      $("#at-tipar").hidden = false; $("#at-tipar").textContent', 'e2e', 'paragraful, la vedere și la carcasă (gol)')
+o('A11', AT, '$("#at-tipar").textContent = tp ? textTipar(def, tp) : "";', '$("#at-tipar").textContent = "";', 'e2e', 'paragraful rămâne gol')
+o('A13', AT, '      $("#at-avert").hidden = true; $("#at-tipar").hidden = true;\n', '      $("#at-avert").hidden = true;\n', 'e2e', 'în vederea „Modelul”, paragraful piesei rămâne la vedere')
 o('A12', AT, 'deschise: r.deschise, prinderi: r.prinderi, tipar: r.tipar }];', 'deschise: r.deschise, prinderi: r.prinderi }];', 'e2e', 'piesa din editor fără verdict')
 # descrierile
 o('D01', AT, 'Se tipărește cu partea dinspre barcă pe masă; axul intră de jos,', 'Se tipărește cu partea dinspre barcă pe masă, fără suport (cu paletele înclinate spre pupa, cu suport sub ele); axul intră de jos,', 'e2e', 'descrierea bărcii, din nou cu fraza care se contrazice')
