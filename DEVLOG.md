@@ -16791,6 +16791,28 @@ container; completul pe ramură, după push).
 - **Neschimbate:** nimic pe server; programul fără profil, octet cu octet.
 
 
+
+## 2026-11-27 — 16.A↑f-2: canelura cu profilul desenat (Model: Claude Opus 5.5)
+
+**Prompt:** același mesaj al sesiunii principale ca la f-1 („Apoi vin f (profilul desenat) și g …”); felia urmează după f-1, pe
+ADR 0304 §3 (întrebarea 4a, partea canelurii). **Started:** 27.11, 09:40, pe `wip/16.A-freze-e`, peste f-1. **Completed:** 27.11
+(în container; completul pe ramură, cu `main` adus, după push).
+
+- **Proba secțiunii întâi** (`test/unit/canelura.profil.test.ts`): canelura simulată pe celule de 0,01 mm față de hârtie, celulă
+  cu celulă, z = min(0, −d + h(x)) cât x ≤ R, pe o rotunjire, un S și trepte, sub, la și peste înălțimea profilului; fundul și
+  lățimea la față ca dinți. Fundul e la −d + h(0,005): celula cea mai apropiată de linie e la 0,005 mm.
+- **Lucrarea:** profilul desenat merge pe linie, ca freză a operației: drumul frezei plate de același Ø, mișcare cu mișcare, și
+  cu urechile și rampa. `sculaIR` copiază punctele siluetei în IR. Pe o parte, în buzunar, la găurire, în V-carve, pe relief și
+  pe frezele în plus, refuzat cu motiv.
+- **Identitatea pe T:** cheia formei ține toate punctele, deci două siluete (și doar în h) sunt două freze, refuzate sub același
+  număr, cu „cu altă siluetă” în motiv.
+- **Raportul foilor** spune „profilată” (`profilata`, cu textul în ambele limbi).
+- **Sub-feliile** din ADR 0304, renumerotate ca la ADR 0303: f-3 intrarea în proiect, f-4 marginea profilată, f-5 editorul.
+- **Rapidul pe `ab6d5033`** a căzut doar la traducerile roadmap-ului (rândul lui f-2 din fișă); traducerea, în `b8b5be2f`.
+- **Otrăvurile:** 9 / 9 prinse (`test/otravuri/16.A-f2.py`).
+- **Mărimea** (rapidul pe `b3d6e273`, cu `main` adus): pornirea 111,8 kB (cu ușa 117,3, cu Atelierul 117,6 / 125), totalul
+  940,5 / 1 000 kB; f-2 singură, +0,1 kB.
+- **Neschimbate:** nimic pe server; documentul rămâne v32; programul fără profil, octet cu octet.
 ## 2026-11-27 — Sesiunea principală în cloud: a șaizeci și cincea unire (16.A↑e-6) (Model: Claude Opus 5.5)
 
 **Prompt:** „zi-le sesiunilor sa continue cu recomandarile, acolo unde inca asteapta” (unirea, la raportul liniei; ordinul „unește ce se poate”)
