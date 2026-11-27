@@ -115,6 +115,39 @@ Pe 26.11, pe `wip/16.A-freze-e` (din `main` `d1ab8ba5`), cu v31 ținut de sesiun
 - **Rămâne pentru e-3:** `sculaIR` trece toroidala în IR, raportul foilor o numește, lista „Freza” și rândurile exportului o
   poartă (cu raza), biblioteca o scoate din „în curând”.
 
+## Implementarea (16.A↑e-2)
+
+Pe 27.11, pe `wip/16.A-freze-e` (peste `7c3f166b`, cu `main` `0df06eca` adus).
+
+- **Nucleul** (`src/sim/nucleu.ts`, `eliceaRotunda`): bila e toroidala cu discul plat a = 0 și raza colțului ρ = R. Pe celula
+  de la distanța p de centrul elicei (raza r), cu scula la unghiul ψ față de ea, distanța e d(ψ) = √(p² + r² − 2pr·cos ψ), iar
+  cel mai jos punct e z(u) + h(d(ψ)). Urcarea se citește de la capăt (u' = S − u, unghiul celulei S − v), deci Z-ul scade
+  mereu. O celulă atinsă pe o tură e atinsă la fel și pe tura următoare, mai jos, deci se caută doar în ultimele 2π ale
+  elicei. Pe fiecare bucată a cercului în care scula acoperă celula (|ψ| ≤ α), latura de dinaintea trecerii doar coboară
+  (minimul la capătul ei). Pe latura de după trecere, F(d) = h(d) + m·ψ(d), iar semnul lui F' e semnul lui G(d) − |m|, cu
+  G(d) = h'(d)·√((d² − (p − r)²)((p + r)² − d²)) / (2d), fără trigonometrie.
+- **Structura lui G:** G crește când scula acoperă celula doar pe o bucată din cerc; când o acoperă de pe tot cercul (miezul,
+  p + r ≤ R), întâi crește, apoi scade. Pe bilă, pe hârtie: numărătorul lui g''(ψ) e c² + κc + 1 (c = cos ψ, κ = (R² − p² −
+  r²) / (pr)), cu vârful exact la marginea domeniului, deci g e convexă cât acoperirea e parțială și are o singură inflexiune
+  când e totală. Pe toroidală, structura e sondată: pe 200 000 de cazuri la întâmplare, cel mult o inflexiune, mereu din convex
+  în concav, și doar cu acoperirea totală.
+- **Minimul:** mulțimea {G ≥ |m|} e un interval [d1, d2], deci minimul lui F e în d1 sau la capătul bucății. Pragul d1 vine
+  prin înjumătățire (64 de pași). Când G e sub |m| la ambele capete (miezul), maximul lui G vine prin secțiunea de aur (64 de
+  pași). Pe fiecare candidat se fac un `acosD` și un `cosD`, iar în rest doar + − × ÷ √ (ADR 0047 §6). Celulele pe care
+  capătul elicei, cu scula cât mai aproape, nu le-ar coborî se sar.
+- **Programul** (`src/sim/program.ts`): elicea cu bila și cu toroidala nu mai e refuzată; cea cu V-ul, da, cu motiv.
+- **Probele** (`test/unit/simulare.elice.test.ts`):
+  - nucleul față de oracol pe șapte piese: miezul și inelul; coborârea și urcarea; o tură, o bucată de tură și două ture la
+    rând; panta mică și mare. Pe fiecare, martorul celeilalte forme rotunde cade;
+  - centrul unei ture întregi, pe hârtie: z_capăt + h(r);
+  - aceeași amprentă pe 1, 2, 3 și 5 benzi;
+  - 300 de elice la întâmplare (sămânță fixă, 19 200 de celule): fiecare celulă e minimul global al unei căutări dense pe
+    elice, scrisă în probă cu h din oracol, la un ulp de Float32. Proba ar prinde un minim doar local, unde structura e doar
+    sondată.
+- **Neschimbate:** elicea cu freza plată (`eliceaPlata`), arcele la Z constant, liniile; programul (CAM-ul), octet cu octet.
+  Lucrarea refuză mai departe toroidala pe orice operație și bila în afara finisării reliefului: elicea lor din buzunar și din
+  găurire ajunge în program abia cu CAM-ul lor (e-3 … e-5).
+
 ## Se redeschide dacă
 
 - placa 4 (sau o placă a bilei) arată că secțiunea canelurii sau creasta din buzunar nu ies ca pe hârtie;
