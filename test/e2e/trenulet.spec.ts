@@ -16,7 +16,7 @@ import { faraEroriInJurnal } from './ajutor-jurnal.ts';
  * - „Salvează fișierul .json” din exportul CNC ajunge descărcare a browserului, din pagina lui cvs2, cu numele dat de
  *   planificator;
  * - ștergerea circuitului, cu confirmarea lui, rămâne și după reîncărcare; jurnalul local, fără erori;
- * - numele (ADR 0167): „Easy 3Draw” 18.44.0, instalat peste „Planificator Trenuleț” 18.6.0, îi ia locul (același id), cu
+ * - numele (ADR 0167): „Easy 3Draw” 18.45.0, instalat peste „Planificator Trenuleț” 18.6.0, îi ia locul (același id), cu
  *   circuitul lui;
  * - „Trimite la cvs2” (ADR 0160 §D): G-code-ul ovalului de exemplu ajunge în dialogul primirii, cu originea extensiei, iar după
  *   „Primește”, în „Lucrarea primită” din fereastra Mașina; planificatorul spune că cvs2 l-a primit;
@@ -31,7 +31,7 @@ import { faraEroriInJurnal } from './ajutor-jurnal.ts';
 test.use({ locale: 'ro-RO' });
 
 const PACHET = Buffer.from(pachetTrenulet().octeti);
-const ZIP = { name: 'trenulet-18.44.0.zip', mimeType: 'application/zip', buffer: PACHET };
+const ZIP = { name: 'trenulet-18.45.0.zip', mimeType: 'application/zip', buffer: PACHET };
 const cadru = (page: Page) => page.frameLocator('iframe.cadru-extensie');
 /**
  * Cât așteaptă probele cadrul extensiei până la „pornit”: un document separat, în procesul lui, cu pachetul adus din
@@ -82,7 +82,7 @@ test('instalat din fișier: pagina în cadru; circuitul, modul și culoarea păs
   await page.locator('[data-extensii="buton"]').click();
   await page.locator('[data-extensii="fisier-ales"]').setInputFiles(ZIP);
   await expect(page.getByTestId('extensii-instalare').locator('h2')).toHaveText('Instalezi „Easy 3Draw”?');
-  await expect(page.getByTestId('extensii-despre')).toHaveText(/^18\.44\.0 · din fișierul trenulet-18\.44\.0\.zip · \d+ (de )?fișiere, [\d,]+ MB$/);
+  await expect(page.getByTestId('extensii-despre')).toHaveText(/^18\.45\.0 · din fișierul trenulet-18\.45\.0\.zip · \d+ (de )?fișiere, [\d,]+ MB$/);
   await expect(page.getByTestId('extensii-permisiuni').locator('li')).toHaveText([
     'Mașina încarcă programe, le pornește sau le reia doar după confirmarea ta, pune pauză și oprește lucrarea',
     'Formele din desen primește formele pe care i le trimiți din desen și îți propune forme pentru desen (le adaugi tu, din Importă)',
@@ -180,7 +180,7 @@ async function pachetVechi(): Promise<Buffer> {
   })));
 }
 
-test('numele nou (ADR 0167): „Easy 3Draw” 18.44.0, instalat peste „Planificator Trenuleț” 18.6.0, îi ia locul, cu circuitul lui', async ({ page }) => {
+test('numele nou (ADR 0167): „Easy 3Draw” 18.45.0, instalat peste „Planificator Trenuleț” 18.6.0, îi ia locul, cu circuitul lui', async ({ page }) => {
   await page.goto('/');
   await page.locator('[data-extensii="buton"]').click();
   await page.locator('[data-extensii="fisier-ales"]').setInputFiles({ name: 'trenulet-18.6.0.zip', mimeType: 'application/zip', buffer: await pachetVechi() });
@@ -197,7 +197,7 @@ test('numele nou (ADR 0167): „Easy 3Draw” 18.44.0, instalat peste „Planifi
   await page.locator('[data-extensii="buton"]').click();
   await page.locator('[data-extensii="fisier-ales"]').setInputFiles(ZIP);
   await expect(page.getByTestId('extensii-instalare').locator('h2')).toHaveText('Instalezi „Easy 3Draw”?');
-  await expect(page.getByTestId('extensii-despre')).toContainText('18.44.0 · din fișierul trenulet-18.44.0.zip · ');
+  await expect(page.getByTestId('extensii-despre')).toContainText('18.45.0 · din fișierul trenulet-18.45.0.zip · ');
   await page.locator('[data-extensii="instaleaza"]').click();
   // același id: un singur rând în meniu, cu numele nou; circuitul de dinainte, redeschis
   await page.locator('[data-extensii="buton"]').click();
@@ -768,7 +768,8 @@ test('în engleză (ADR 0165): atelierul 3D, filă cu filă, fiecare piesă făr
   await expect(c.locator('#at-editor h2')).toHaveText('Ducted fan');
   await expect(c.locator('#at-nume-piesa')).toHaveText('Fan rotor Ø40 with 7 blades, pitch 0.8');
   await expect(c.locator('#at-ve-piesa [data-v]')).toHaveText(['The rotor', 'The duct']);
-  await expect(c.locator('#at-ve-info')).toHaveText('The rotor: blades out to Ø38.4 (0.8 mm from the duct), on a Ø9.6 × 8 mm hub. Pitch 32 mm (0.8 × diameter): the blade sits at 47° near the hub and 15° at the tip; at the tip, each layer overhangs the one below by 0.8 mm. The duct: Ø40 inside, Ø44 outside, 9 mm tall; the lug holes, 24 mm from the axle (3 studs).');
+  await expect(c.locator('#at-ve-info')).toHaveText('The rotor: blades out to Ø38.4 (0.8 mm from the duct), on a Ø9.6 × 8 mm hub. Pitch 32 mm (0.8 × diameter): the blade sits at 47° near the hub and 15° at the tip. The duct: Ø40 inside, Ø44 outside, 9 mm tall; the lug holes, 24 mm from the axle (3 studs).');
+  await expect(c.locator('#at-tipar')).toHaveText('The rotor prints without supports, but the underside of the blades comes out rough in places (part cooling fan at full): a layer overhangs the one below by up to 1.31 mm. The first layer touches the bed on only 6.7% of the blade disc: add a brim in your slicer.');
   await expect(c.locator('.at-rand:has(#at-ve-inel) > .mic').first()).toHaveText('Ring:');
   await expect(c.locator('#at-ve-inel [data-v]')).toHaveText(['None', 'With ring']);
   await c.locator('#at-ve-inel [data-v="da"]').click();
@@ -790,7 +791,8 @@ test('în engleză (ADR 0165): atelierul 3D, filă cu filă, fiecare piesă făr
   await c.locator('#at-galerie [data-piesa="eliceBarca"]').click();
   await expect(c.locator('#at-editor h2')).toHaveText('Boat propeller');
   await expect(c.locator('#at-nume-piesa')).toHaveText('Boat propeller Ø40 with 3 blades, pitch 1');
-  await expect(c.locator('#at-eb-info')).toHaveText('Pitch 40 mm (1 × diameter): the blade sits at 58° near the hub and 18° at the tip. The blades cover 55% of the disc; the hub is Ø8 × 11.5 mm. It prints without supports, boat side down on the bed: at the tip, each layer overhangs the one below by 0.6 mm.');
+  await expect(c.locator('#at-eb-info')).toHaveText('Pitch 40 mm (1 × diameter): the blade sits at 58° near the hub and 18° at the tip. The blades cover 55% of the disc; the hub is Ø8 × 11.5 mm.');
+  await expect(c.locator('#at-tipar')).toHaveText('Prints boat side down on the bed, without supports, but the underside of the blades comes out rough in places (part cooling fan at full): a layer overhangs the one below by up to 0.85 mm. The first layer touches the bed on only 4% of the blade disc: add a brim in your slicer.');
   await expect(c.locator('.at-rand:has(#at-eb-capac) > .mic').first()).toHaveText('Cap:');
   await expect(c.locator('#at-eb-capac [data-v]')).toHaveText(['None', 'With cap']);
   await c.locator('#at-eb-capac [data-v="da"]').click();
@@ -805,7 +807,8 @@ test('în engleză (ADR 0165): atelierul 3D, filă cu filă, fiecare piesă făr
   await c.locator('#at-eb-pupa').fill('10');
   await c.locator('#at-eb-pupa').blur();
   await expect(c.locator('#at-nume-piesa')).toHaveText('Boat propeller Ø40 with 3 blades, pitch 1, rake 10°, with cap');
-  await expect(c.locator('#at-eb-info')).toHaveText('Pitch 40 mm (1 × diameter): the blade sits at 58° near the hub and 18° at the tip. The blades cover 55% of the disc; the hub is Ø8 × 12.2 mm. Raked aft by 10°: the bottom edge of the blade lifts off the bed, up to 2.8 mm at the tip, so it prints with supports under the blades (your slicer adds them), still boat side down on the bed.');
+  await expect(c.locator('#at-eb-info')).toHaveText('Pitch 40 mm (1 × diameter): the blade sits at 58° near the hub and 18° at the tip. The blades cover 55% of the disc; the hub is Ø8 × 12.2 mm. Raked aft by 10°: the bottom edge of the blade lifts off the bed, up to 2.8 mm at the tip.');
+  await expect(c.locator('#at-tipar')).toHaveText('Prints boat side down on the bed, with supports under the blades (your slicer adds them): their bottom edge lifts off the bed. The first layer touches the bed on only 2.8% of the blade disc: add a brim in your slicer.');
   expect(await romanaRamasa(page, 'Păstrat la repornire'), 'elicea de barcă, spre pupa').toEqual([]);
   await c.locator('#at-eb-pupa').fill('0');
   await c.locator('#at-eb-pupa').blur();
@@ -815,7 +818,8 @@ test('în engleză (ADR 0165): atelierul 3D, filă cu filă, fiecare piesă făr
   await expect(c.locator('#at-editor h2')).toHaveText('Propeller');
   await expect(c.locator('#at-el-repede [data-v]')).toHaveText(['Like LEGO 6041', 'Like LEGO 92842', 'Like LEGO 15790']);
   await expect(c.locator('#at-nume-piesa')).toHaveText('Propeller Ø72 with 3 blades, pitch 0.7');
-  await expect(c.locator('#at-el-info')).toHaveText('Pitch 50 mm (0.7 × diameter). Twisted blade: 63° near the hub, 13° at the tip. Prints without supports: at the tip, each layer overhangs the one below by 0.9 mm.');
+  await expect(c.locator('#at-el-info')).toHaveText('Pitch 50 mm (0.7 × diameter). Twisted blade: 63° near the hub, 13° at the tip.');
+  await expect(c.locator('#at-tipar')).toHaveText('Prints without supports, but the underside of the blades comes out rough in places (part cooling fan at full): a layer overhangs the one below by up to 1.53 mm. The first layer touches the bed on only 1.3% of the blade disc: add a brim in your slicer.');
   await c.locator('#at-el-repede [data-v="6041"]').click();
   await expect(c.locator('#at-nume-piesa')).toHaveText('Propeller Ø27.4 with 3 blades, pitch 0.93, flat, left-hand');
   await expect(c.locator('#at-el-info')).toContainText('Flat blade, at 23° from hub to tip, like LEGO’s.');

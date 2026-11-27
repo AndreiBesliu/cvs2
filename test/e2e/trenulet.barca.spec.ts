@@ -58,7 +58,11 @@ test('elicea de barcă implicită, a doua piesă a filei Elice: 3 palete, Ø40, 
   await expect(page.locator('#at-editor h2').first()).toHaveText('Elice de barcă');
   // pe hârtie: P = 1 · 40; atan(40 / 8π) = 57,86° la butuc; atan(1 / π) = 17,66° la vârf; 0,2 · π = 0,628; paletele acoperă
   // 55,14 % din disc; cea mai înaltă secțiune a paletei, 11,43 → butucul de 11,5
-  await expect(page.locator('#at-eb-info')).toHaveText('Pasul 40 mm (1 × diametrul): paleta stă la 58° lângă butuc și la 18° la vârf. Paletele acoperă 55 % din disc; butucul e de Ø8 × 11,5 mm. Se tipărește fără suport, cu partea dinspre barcă pe masă: la vârf, un strat iese cu 0,6 mm peste cel de dedesubt.');
+  await expect(page.locator('#at-eb-info')).toHaveText('Pasul 40 mm (1 × diametrul): paleta stă la 58° lângă butuc și la 18° la vârf. Paletele acoperă 55 % din disc; butucul e de Ø8 × 11,5 mm.');
+  // descrierea nu se mai contrazice (auditul elicelor): suportul îl spune doar paragraful tipăririi
+  await expect(page.locator('#at-editor > p.mic').first()).toHaveText('Elice pentru bărcile cu motoare LEGO: palete late, înclinate înapoi, cu pasul la fel de la butuc la vârf, pe un butuc cu gaura din calibrare. Se tipărește cu partea dinspre barcă pe masă; axul intră de jos, iar capacul, dacă îl pui, rămâne spre pupa.');
+  // treapta dintre straturi, 0,85 (la vârful de jos, rotunjit, lângă masă): aspru pe alocuri; primul strat, 4 % din disc
+  await expect(page.locator('#at-tipar')).toHaveText('Se tipărește cu partea dinspre barcă pe masă, fără suport, dar dedesubtul paletelor iese aspru pe alocuri (ventilatorul de răcire, la maxim): un strat iese peste cel de dedesubt cu până la 0,85 mm. Primul strat atinge masa doar pe 4 % din discul paletelor: pune o margine de aderență (brim) în programul de feliere.');
   await expect(page.locator('#at-cote')).toContainText('× 11,5 mm');
   await expect(page.locator('#at-avert')).toBeHidden();
   // editorul, la început: câmpurile și alegerile implicite; la „Repede”, Ø40
@@ -130,7 +134,7 @@ test('editorul: fiecare alegere și fiecare câmp ajung în piesă; câmpurile, 
   await expect(page.locator('#at-eb-pas')).toHaveValue('1.2');
   // pe hârtie: P = 1,2 · 56,3 = 67,56; butucul 0,09 · 56,3 = 5,07 → raza 5,1; atan(67,56 / (2π · 5,1)) = 64,62° la butuc;
   // atan(1,2 / π) = 20,91° la vârf; 0,2 · π / 1,2 = 0,524; cu 4 palete, acoperă 65,23 %; cea mai înaltă secțiune → 14,7
-  await expect(page.locator('#at-eb-info')).toHaveText('Pasul 68 mm (1,2 × diametrul): paleta stă la 65° lângă butuc și la 21° la vârf. Paletele acoperă 65 % din disc; butucul e de Ø10,2 × 14,7 mm. Se tipărește fără suport, cu partea dinspre barcă pe masă: la vârf, un strat iese cu 0,5 mm peste cel de dedesubt.');
+  await expect(page.locator('#at-eb-info')).toHaveText('Pasul 68 mm (1,2 × diametrul): paleta stă la 65° lângă butuc și la 21° la vârf. Paletele acoperă 65 % din disc; butucul e de Ø10,2 × 14,7 mm.');
   // lățimea și înclinarea intră în nume doar când nu sunt cele obișnuite (100 %, 20°)
   await seteaza(page, '#at-eb-lat', '79.6');
   await expect(page.locator('#at-eb-lat')).toHaveValue('80');
@@ -163,7 +167,10 @@ test('editorul: fiecare alegere și fiecare câmp ajung în piesă; câmpurile, 
   }
   // cea mai îngustă și mai culcată: Ø20, pasul 0,5 (P 10): atan(10 / 8π) = 21,7° la butuc, atan(0,5 / π) = 9,04° la vârf;
   // consola 0,2 · π / 0,5 = 1,257; acoperă 19,75 %; paletele încap sub un știft (butucul de 8)
-  await expect(page.locator('#at-eb-info')).toHaveText('Pasul 10 mm (0,5 × diametrul): paleta stă la 22° lângă butuc și la 9° la vârf. Paletele acoperă 20 % din disc; butucul e de Ø8 × 8 mm. Se tipărește fără suport, cu partea dinspre barcă pe masă: la vârf, un strat iese cu 1,3 mm peste cel de dedesubt.');
+  await expect(page.locator('#at-eb-info')).toHaveText('Pasul 10 mm (0,5 × diametrul): paleta stă la 22° lângă butuc și la 9° la vârf. Paletele acoperă 20 % din disc; butucul e de Ø8 × 8 mm.');
+  // consola de la vârf trece de 1, dar vârful jos, de un strat, nu iese peste nimic: treapta 0,67, aspru; primul strat, 19,9 %
+  // din disc, deci fără margine
+  await expect(page.locator('#at-tipar')).toHaveText('Se tipărește cu partea dinspre barcă pe masă, fără suport, dar dedesubtul paletelor iese aspru pe alocuri (ventilatorul de răcire, la maxim): un strat iese peste cel de dedesubt cu până la 0,67 mm.');
 });
 
 test('STL-ul descărcat e un corp închis, cu raza cerută (4 palete, Ø56, cu capac)', async ({ page }) => {

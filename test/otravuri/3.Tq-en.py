@@ -25,5 +25,7 @@ o('N04', A, 'const pl = d.paleta === "plata" ? tr(", plată") : "", s = d.sens =
 
 SETURI = {}
 E2E = ['test/e2e/trenulet.spec.ts']
+# pagina și pachetul se fac din surse în spec: build-ul aplicației nu le schimbă (docs/otravuri.md; felia 3.Cm-1)
+E2E_BUILD = False
 for x in O:
     assert x['vechi'] != x['nou'], x['id']

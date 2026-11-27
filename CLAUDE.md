@@ -1430,6 +1430,19 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   balamaua are `at-bm-`); o piesă nouă care seamănă cu una veche mută ancorele otrăvurilor vechi: verificarea ancorelor
   se rulează după fiecare piesă. Proba în engleză din `trenulet.spec.ts` e în trei, pe ecrane (întreagă trecuse de 30 s
   în CI): o piesă nouă își pune pasul în a doua, cea a galeriilor.**
+  **Elicele după audit (ADR 0340, feliile 3.Cm-1…3.Cm-7; acceptat pe 27.11 cu recomandările auditului, 1a–4a, la
+  cuvântul owner-ului transmis de sesiunea principală: „zi-le sesiunilor sa continue cu recomandarile, acolo unde inca
+  asteapta”)**, pe ramura liniei atelierului. **3.Cm-1** gata pe 27.11: listele de otrăvuri ale elicelor (`3.Tq`, `3.Tr`,
+  `3.Ts`, `3.Tt` și cele în engleză, 472), rulate toate din nou pe codul de azi, cu `E2E_BUILD = False`. **3.Cm-2
+  (tipărirea spusă cinstit)** gata pe 27.11: proba pe plasă a arătat că consola de la vârf din audit (0,2 / tan β) e doar
+  o medie: pe paleta curbată, treapta dintre straturi crește spre muchia de sus (elicea implicită: 1,53 mm, nu 0,90), iar
+  un vârf jos, de un strat, nu iese peste nimic. Motorul măsoară treapta pe secțiuni și primul strat pe plasă
+  (`treaptaPalete`, `ariaFeliei`, `tiparPalete`; câmpul `tipar` al elicei, al elicei de barcă și al rotorului); atelierul o
+  spune în panoul piesei, sub „Se prinde cu”, pe praguri (fără suport până la 0,5 mm; cu suport sub vârfuri când și treapta, și
+  consola trec de 1 mm; altfel, aspru pe alocuri), cu marginea de aderență (brim) sub 10 % din disc. Piesele, la octet
+  (amprenta a 742 de plase). Easy 3Draw 18.45.0 (următoarea, 18.46.0). **O probă e2e care cere textul tipăririi îi ia
+  cifrele din motor pentru starea exactă a editorului din probă. Un paragraf umplut după construire nu stă în editor deasupra
+  unor butoane (apare după 90 ms și le mută: un clic se pierde sub încărcare).** La owner: verdictul a / b / c (fișa etapei 3).
   **Cotele pe desen: modelul și proba G-code-ului (ADR 0330, felia 10.4↑a-1, adusă din etapa 10)** gata pe 24.11, în
   sesiunea cloud a liniei (ramura `wip/10.4-cote`), unită în `main` pe 24.11 (`f25249cf`), fără interfață încă. ADR
   0330, acceptat de owner cu 1a–6a și cu nota lui: toate setările cotelor stau într-o fereastră nouă, „Setări”, nu în

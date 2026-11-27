@@ -16748,6 +16748,37 @@ ramură, după push).
 - **Pe test:** lotul 58 (`eac92d1c`, 16.A↑e-4), la 08:38; lotul 59 (`e412ebcc`), în drum.
 - **Documentele:** decizia și Starea în `CLAUDE.md`; starea din `docs/linii/principala.md`; indexul liniilor.
 
+## 2026-11-27 — Feliile 3.Cm-1 și 3.Cm-2: otrăvurile elicelor și tipărirea spusă cinstit (ADR 0340) (sesiune cloud)
+
+**Prompt:** „zi-le sesiunilor sa continue cu recomandarile, acolo unde inca asteapta” (owner-ul, transmis de sesiunea
+principală la 06:37: auditul elicelor, întrebările 1a–4a, feliile 1–7 în ordinea recomandată)
+**Started:** 27.11, 06:39. **Completed:** 27.11, 10:05 (orele, după ceasul containerului).
+
+- **ADR 0340** („Elicele după audit”), primul din intervalul 0340–0349 al liniei: deciziile 1a–4a și feliile 3.Cm-1…3.Cm-7.
+- **3.Cm-1:** cele 22 de ancore VOID din audit fuseseră aduse la zi pe 26.11 (cu 3.Cf-2); după opt felii de atunci, toate
+  listele elicelor au fost rulate din nou, în clonă, cu `E2E_BUILD = False`: `3.Tq` 138 / 138, `3.Tr` 141 / 141, `3.Ts`
+  134 / 134, `3.Tt` 35 / 35, cele în engleză 24 / 24. Doar liste.
+- **3.Cm-2, găsit de proba pe plasă:** consola de la vârf din audit (0,2 / tan β) e doar o medie. Pe paleta curbată,
+  treapta dintre straturi crește spre muchia de sus (elicea implicită: 1,53 mm, nu 0,90; 92842, 15790 și rotorul implicit,
+  la fel, 1,30–1,37); un vârf jos, de un strat, nu iese peste nimic (elicea de barcă Ø20 cu pasul 0,5: 0,67, nu 1,26).
+- **3.Cm-2, ce s-a făcut:** motorul măsoară treapta pe secțiuni (`treaptaPalete`, straturile la 0,1 + 0,2k) și primul strat
+  pe plasă (`ariaFeliei`); `tiparPalete` dă verdictul (fără suport până la 0,5 mm; cu suport când și treapta, și consola trec
+  de 1 mm; altfel, aspru pe alocuri; înclinată spre pupa, cu suport sub palete; brim sub 10 % din disc), în câmpul `tipar` al
+  elicei, al elicei de barcă și al rotorului. Atelierul îl spune în paragraful nou din panoul piesei; descrierile nu mai
+  promit „fără suport” oricum, iar a bărcii nu se mai contrazice. Plasele, la octet (amprenta a 742 de piese).
+- **Probele**, scrise întâi: `trenulet.tipar.test.ts` (6 teste; treapta și aria, din plasă, cu o reimplementare separată);
+  un scenariu e2e nou, patru spec-uri ale elicelor și proba în engleză, aduse la zi.
+- **Găsit de lotul e2e al pluginului:** în editor, paragraful pornea ascuns la fiecare redesenare și apărea după construire,
+  deci muta butonul „Fă perechea”; sub încărcare, un clic s-a pierdut. Paragraful stă acum în panoul piesei, sub „Se prinde
+  cu” (lotul, din nou: 263 / 263).
+- **Otrăvurile:** `3.Cm-2.py`, 42 / 42 (39 / 43 la prima rulare: T03 și A10, prinse după întărirea probei; S01 și C02,
+  echivalente, scoase cu motivul; A13, adăugată odată cu mutarea paragrafului); `3.Cm-2-en.py`, 6 / 6; 12 ancore mutate în listele `3.T*`, 12 / 12. O a doua clonă
+  (`otravuri-cm2`, pe portul 4175) a rulat 3.Cm-2 cât prima rula 3.Cm-1.
+- **Mărimea:** Easy 3Draw 18.45.0; aplicația, neschimbată. Nimic pe server.
+- **Documentele:** ADR 0340 (și indexul), nota liniei, indexul liniilor, fișa etapei 3 (jurnalul și întrebarea a / b / c a
+  verdictului, la owner), registrul otrăvurilor, `CLAUDE.md`, traducerile roadmap-ului.
+- **Urmează:** 3.Cm-3 (ventilatorul ca trusă), după unire.
+
 ## 2026-11-27 — 16.A↑e-6: profilul pe o parte cu bila și cu toroidala (Model: Claude Opus 5.5)
 
 **Prompt:** sesiunea principală, după unirea lui e-4 (`72263843`): „Poți porni e-5 (buzunarul cu bila și cu toroidala) pe aceeași
