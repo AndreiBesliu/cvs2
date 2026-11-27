@@ -16659,6 +16659,27 @@ program. Dacă cere un câmp nou în document, v32 e liber și ți-l dau la cere
 - **Linia frezelor** pornește e-5 (buzunarul cu bila și cu toroidala; oracolul întâi).
 - **Documentele:** decizia și Starea în `CLAUDE.md`; starea din `docs/linii/principala.md`; indexul liniilor.
 
+## 2026-11-27 — Linia exportului: 28.8↑s, rândul unei operații în listă, numele, apoi locul
+
+**Prompt:** mesajul sesiunii principale (27.11, 08:37), cu cuvântul owner-ului („zi-le sesiunilor sa continue cu
+recomandarile, acolo unde inca asteapta”): „1. Partea din listă a constatării 14 (`docs/linii/audit-export.md`). Recomandarea
+ta: în listă, numele piesei când omul i-a dat unul (un import „logo-80mm”), iar locul pe al doilea rând, mai mic. Virgula e
+deja în `main`, din 3.Av. 2. ADR 0292 rămâne la 1a: începutul programului se arată după export. 1b nu se face. 3. 28.8↑m și
+9a rămân cum sunt”.
+**Started:** 27.11, 08:38.
+
+- **Rândul listei:** pe primul rând, numele piesei dat de om, altfel forma și mărimea, fără loc; dedesubt, mai mic, locul pe
+  foaie (`.dx-unde`). `randLista` (`src/app/randListaExport.ts`, textele în modulul exportului), pe `OperatieExport.lista`;
+  titlul fișei rămâne numele întreg; pe telefonul culcat, banda doar cu numele. Rândurile reliefului, neatinse. Programul,
+  octet cu octet.
+- **Probele:** `export.randLista.test.ts` (6), `export.lista.spec.ts` (3); proba benzii din `export.toateFoile.spec.ts`,
+  refăcută pe ce spune (capul foii nu înalță banda). Suita unitară întreagă: 10 918 / 0 (12 sărite); e2e-ul ferestrei,
+  verde. **Otrăvurile:** `28.8s.py`, 14 / 14. **Mărimea:** pornirea +0, totalul 937,8 / 1 000 (+0,4 kB).
+- **Documentele:** ADR 0292 acceptat cu recomandările (și indexul), manualul (ambele limbi), auditul (starea constatării 14),
+  fișa etapei 3, registrul otrăvurilor, nota liniei.
+
+**Completed:** 27.11, 09:23.
+
 ## 2026-11-27 — Sesiunea principală în cloud: liniile continuă cu recomandările (Model: Claude Opus 5.5)
 
 **Prompt:** „zi-le sesiunilor sa continue cu recomandarile, acolo unde inca asteapta”
