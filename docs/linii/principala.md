@@ -194,8 +194,10 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
   2. `unire-2711t` (`ae43f184`, 3.Cm-4, Easy 3Draw 18.47.0): completul 46013605071; verde → adu `main` în ramură (doar
      documente), verifică `git diff --name-only ae43f184 HEAD | grep -v '\.md$'` gol, apoi `main` pe ea; documentele unirii;
   3. `unire-2711u` (`404d54a1`, 3.Cm-5, 18.48.0, peste 3.Cm-4): completul 46014154590; la fel, după 3.Cm-4;
-  4. relieful (`dd855461`, PR-ul #75): își aduce `main` și rezolvă `formaPeRand` / `operatieCuRandRelief` (ciocnirea cu f-3),
-     apoi raportează; frezele (f-4) și atelierul (3.Cm-6) raportează la porți.
+  4. relieful (`cc2be106`, PR-ul #75, cu ciocnirea cu f-3 rezolvată, `main` `75ae7f50` adus): completul liniei 46011101795;
+     verde și `main` încă fără 3.Cm-4 → unit direct (cod identic). Lotul `unire-2711w` (`3de94487`: 3.Cm-4, 3.Cm-5 și
+     relieful, peste `main`) are completul 46016058170: el acoperă orice ordine a celor trei, cât `main` primește doar
+     documente; frezele (f-4, `d03f1561`, PR-ul #79) și atelierul (3.Cm-6) raportează la porți.
 - **Modelul:** din 26.11, la prânz, sesiunea principală merge pe Opus („o sa folosim Opus de aici in colo”); sesiunile
   liniilor își păstrează modelul până îl schimbă owner-ul în fiecare.
 - **`main`, din cloud:** pe 23.11: 3.Tq (`0ae9c6c1`); 11.3↑e și A.4 (`ddaa7ead`); 3.Tr, unită de linia elicelor
