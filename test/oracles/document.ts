@@ -327,7 +327,7 @@ export const COLTURI_IMPLICITE_O = null;
 /** ADR 0032 §1: tipurile degajărilor, exact. */
 export const TIPURI_COLTURI_O: readonly TipColturiO[] = ['dog-bone', 't-bone'];
 /** Versiunea curentă a contractului documentului, după oracol. */
-export const SCHEMA_CURENTA_O = 31;
+export const SCHEMA_CURENTA_O = 32;
 
 export const PLAFOANE_O = {
   latura: 10_000,
@@ -2283,7 +2283,7 @@ export type DocV21O = Liber & { schema: 21; rev: number; piese: PiesaV21O[]; foi
 export type DocV22O = Liber & { schema: 22; rev: number; piese: PiesaV22O[]; foi: FoaieO[] };
 
 /** Un document v11 … v24, după numărul lui. */
-export type DocNouO = DocV11O | DocV12O | DocV13O | DocV14O | DocV15O | DocV16O | DocV17O | DocV18O | DocV19O | DocV20O | DocV21O | DocV22O | DocV23O | DocV24O | DocV25O | DocV26O | DocV27O | DocV28O | DocV29O | DocV30O | DocV31O;
+export type DocNouO = DocV11O | DocV12O | DocV13O | DocV14O | DocV15O | DocV16O | DocV17O | DocV18O | DocV19O | DocV20O | DocV21O | DocV22O | DocV23O | DocV24O | DocV25O | DocV26O | DocV27O | DocV28O | DocV29O | DocV30O | DocV31O | DocV32O;
 
 // ---------------------------------------------------------------------------------------------------------------
 // Ajutoarele.
@@ -2333,7 +2333,8 @@ function instantele(doc: Liber): Array<{ readonly inst: Liber; readonly unde: st
  * ADR 0090 §1, ADR 0092 §1: forma frezei (`{ tip: 'v', unghi }`, de la v16 și `varf`); ADR 0312 §1 (v29): și bila,
  * `{ tip: 'bila' }`, fără alte câmpuri cerute (raza e diametrul / 2; câmpurile necunoscute rămân, nejudecate). ADR 0303 §1
  * (v31): și toroidala, `{ tip: 'toroidala', raza }`, cu raza colțului în (0, plafonul diametrului]; sub jumătatea
- * diametrului o judecă scula (`problemeSculaO`).
+ * diametrului o judecă scula (`problemeSculaO`). ADR 0304 §1 (v32): și profilul desenat, `{ tip: 'profil', puncte }`
+ * (`problemeProfilO`; ultimul r cât raza o judecă scula).
  */
 export function problemeFormaO(forma: unknown, versiune: number): string[] {
   if (!esteObiect(forma)) return [` = ${arata(forma)} nu e un obiect { tip: 'v', unghi }`];
@@ -2342,8 +2343,9 @@ export function problemeFormaO(forma: unknown, versiune: number): string[] {
     return pozitivPana(forma['raza'], PLAFOANE_O.sculaDiametru) ? []
       : [`.raza = ${are(forma, 'raza') ? arata(forma['raza']) : '(lipsă)'} nu e în (0, ${PLAFOANE_O.sculaDiametru}]`];
   }
+  if (versiune >= 32 && forma['tip'] === 'profil') return problemeProfilO(forma);
   const rez: string[] = [];
-  const felurile = versiune >= 31 ? "'v' / 'bila' / 'toroidala'" : versiune >= 29 ? "'v' / 'bila'" : "'v'";
+  const felurile = versiune >= 32 ? "'v' / 'bila' / 'toroidala' / 'profil'" : versiune >= 31 ? "'v' / 'bila' / 'toroidala'" : versiune >= 29 ? "'v' / 'bila'" : "'v'";
   if (forma['tip'] !== 'v') rez.push(`.tip = ${are(forma, 'tip') ? arata(forma['tip']) : '(lipsă)'} nu e ${felurile}`);
   if (!intre(forma['unghi'], PLAFOANE_V18_O.unghiVMin, PLAFOANE_V18_O.unghiVMax)) {
     rez.push(`.unghi = ${are(forma, 'unghi') ? arata(forma['unghi']) : '(lipsă)'} nu e în [${PLAFOANE_V18_O.unghiVMin}, ${PLAFOANE_V18_O.unghiVMax}]`);
@@ -2371,8 +2373,46 @@ export function problemeSculaO(scula: unknown, versiune: number): string[] {
   }
   if (versiune >= 14 && are(scula, 'forma')) rez.push(...problemeFormaO(scula['forma'], versiune).map((m) => `.forma${m}`));
   rez.push(...problemeRazaToroidalaO(scula, versiune));
+  rez.push(...problemeCapatProfilO(scula, versiune));
   if (versiune >= 27) rez.push(...problemeFrezaV27O(scula));
   return rez;
+}
+
+/**
+ * ADR 0304 §1 (v32): punctele profilului desenat, ca listă de motive. `puncte`: o listă de 2 … 200 de perechi [r, h], fiecare
+ * exact două numere finite, r în [0, plafonul diametrului], h în [0, plafonul adâncimii]; prima (0, 0); r strict crescător;
+ * h nedescrescător. Câmpurile necunoscute ale formei rămân, nejudecate.
+ */
+export function problemeProfilO(forma: Liber): string[] {
+  const P = forma['puncte'], p = PLAFOANE_O;
+  if (!Array.isArray(P)) return [`.puncte = ${are(forma, 'puncte') ? arata(P) : '(lipsă)'} nu e o listă de puncte [r, h]`];
+  if (P.length < 2 || P.length > 200) return [`.puncte are ${P.length} puncte, nu 2 … 200`];
+  const rez: string[] = [];
+  for (const [k, q] of P.entries()) {
+    if (!Array.isArray(q) || q.length !== 2 || !intre(q[0], 0, p.sculaDiametru) || !intre(q[1], 0, p.adancimeOperatie)) {
+      rez.push(`.puncte[${k}] = ${arata(q)} nu e [r în [0, ${p.sculaDiametru}], h în [0, ${p.adancimeOperatie}]]`);
+    }
+  }
+  if (rez.length > 0) return rez;
+  const Q = P as Array<[number, number]>;
+  if (Q[0]![0] !== 0 || Q[0]![1] !== 0) rez.push(`.puncte[0] = ${arata(Q[0])} nu e [0, 0]`);
+  for (let k = 1; k < Q.length; k++) {
+    if (!(Q[k]![0] > Q[k - 1]![0])) rez.push(`.puncte[${k}] are r = ${Q[k]![0]}, nu peste ${Q[k - 1]![0]} (r strict crescător)`);
+    if (!(Q[k]![1] >= Q[k - 1]![1])) rez.push(`.puncte[${k}] are h = ${Q[k]![1]}, sub ${Q[k - 1]![1]} (h nedescrescător)`);
+  }
+  return rez;
+}
+
+/**
+ * ADR 0304 §1 (v32): ultimul punct al profilului desenat stă la raza sculei (diametru / 2, la 1e-9). Doar când forma și
+ * diametrul sunt bune altfel (motivele lor le dau `problemeFormaO` și scula).
+ */
+export function problemeCapatProfilO(scula: Liber, versiune: number): string[] {
+  const f = scula['forma'], p = PLAFOANE_O;
+  if (versiune < 32 || !esteObiect(f) || f['tip'] !== 'profil' || problemeProfilO(f).length > 0) return [];
+  if (!pozitivPana(scula['diametru'], p.sculaDiametru)) return [];
+  const P = f['puncte'] as Array<[number, number]>, r = P[P.length - 1]![0], jum = (scula['diametru'] as number) / 2;
+  return Math.abs(r - jum) <= 1e-9 ? [] : [`.forma.puncte[${P.length - 1}] are r = ${r}, nu raza sculei (${jum})`];
 }
 
 /**
@@ -2580,6 +2620,7 @@ export function problemeOperatieO(op: Liber, versiune: number, unde: string): st
   const scula = op['scula'];
   if (versiune >= 14 && esteObiect(scula) && are(scula, 'forma')) cu('scula', 'scula.forma', problemeFormaO(scula['forma'], versiune));
   if (versiune >= 31 && esteObiect(scula)) cu('scula', 'scula', problemeRazaToroidalaO(scula, versiune));
+  if (versiune >= 32 && esteObiect(scula)) cu('scula', 'scula', problemeCapatProfilO(scula, versiune));
   if (versiune >= 27 && esteObiect(scula)) cu('scula', 'scula', problemeFrezaV27O(scula));
   if (versiune >= 15 && are(op, 'fundPlat')) cu('fund-plat', 'fundPlat', problemeFundPlatO(op['fundPlat'], versiune));
   if (versiune >= 16 && are(op, 'directie') && !(DIRECTII_O as readonly unknown[]).includes(op['directie'])) {
@@ -2810,9 +2851,9 @@ export function verificaO(doc: unknown): string[] {
   return verificaPanaLaO(doc, SCHEMA_CURENTA_O);
 }
 
-/** Un document primit de ușa curentă, cum iese din ea: v31 (o copie; un v31 valid rămâne neschimbat). */
-export function ridicaO(doc: unknown): DocV31O {
-  return ridicaPanaLaO(doc, SCHEMA_CURENTA_O) as DocV31O;
+/** Un document primit de ușa curentă, cum iese din ea: v32 (o copie; un v32 valid rămâne neschimbat). */
+export function ridicaO(doc: unknown): DocV32O {
+  return ridicaPanaLaO(doc, SCHEMA_CURENTA_O) as DocV32O;
 }
 
 /**
@@ -3810,3 +3851,22 @@ export function ridicaV31O(doc: unknown): DocV31O { return ridicaPanaLaO(doc, SC
 export function usaCurentaV31O(doc: unknown): 'migrari' | 'usa' { return usaCurentaPanaLaO(doc, SCHEMA_V31_O); }
 export function migreazaV1V31O(v1: DocV1O): DocV31O { return ridicaPanaLaO(v1, SCHEMA_V31_O) as DocV31O; }
 export function migreazaV30V31O(v30: DocV30O): DocV31O { return ridicaPanaLaO(v30, SCHEMA_V31_O) as DocV31O; }
+
+// ---------------------------------------------------------------------------------------------------------------
+// v32 (ADR 0304): profilul desenat. Scris din ADR:
+// - forma frezei poate fi și `{ tip: 'profil', puncte }`, pe orice freză: 2 … 200 de puncte [r, h], prima (0, 0), r strict
+//   crescător, h nedescrescător, ultimul r cât raza sculei (la 1e-9); câmpurile necunoscute ale formei rămân;
+// - unde se poate folosi o judecă lucrarea;
+// - migrarea v31 → v32 schimbă doar numărul; un v31 cu un profil îl refuză chiar contractul v31 (felul formei e necunoscut
+//   la v31), deci nu e nevoie de o ciocnire de câmp nou.
+
+export const SCHEMA_V32_O = 32;
+/** v32 (ADR 0304): ca v31; o freză poate avea un profil desenat. */
+export type DocV32O = Liber & { schema: 32; rev: number; piese: PiesaV22O[]; foi: FoaieO[] };
+
+export function verificaV32(doc: unknown): string[] { return verificaVnO(doc, SCHEMA_V32_O); }
+export function verificaPanaLaV32O(doc: unknown): string[] { return verificaPanaLaO(doc, SCHEMA_V32_O); }
+export function ridicaV32O(doc: unknown): DocV32O { return ridicaPanaLaO(doc, SCHEMA_V32_O) as DocV32O; }
+export function usaCurentaV32O(doc: unknown): 'migrari' | 'usa' { return usaCurentaPanaLaO(doc, SCHEMA_V32_O); }
+export function migreazaV1V32O(v1: DocV1O): DocV32O { return ridicaPanaLaO(v1, SCHEMA_V32_O) as DocV32O; }
+export function migreazaV31V32O(v31: DocV31O): DocV32O { return ridicaPanaLaO(v31, SCHEMA_V32_O) as DocV32O; }

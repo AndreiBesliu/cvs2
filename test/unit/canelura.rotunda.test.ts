@@ -27,7 +27,7 @@ const op = (v: Liber): Liber => ({
 });
 function doc(operatii: readonly Liber[]): Liber {
   return {
-    schema: 31, rev: 0,
+    schema: 32, rev: 0,
     piese: [{
       id: 'p',
       radacina: {
@@ -66,8 +66,9 @@ test('motivFormaPeOperatie: bila și toroidala merg pe profilul pe linie (și, d
     // Buzunarul: din 16.A↑e-5 (`buzunar.rotunda.test.ts`).
     ['buzunar', 'interior', b, null], ['buzunar', 'interior', t, null], ['gaurire', 'interior', t, 'toroidala'],
     ['vcarve', 'interior', b, 'bila'], ['vcarve', 'interior', t, 'toroidala'],
-    // Relieful: finisarea cu bila rămâne; toroidala pe relief e a liniei reliefului (ADR 0303, întrebarea 4).
-    ['finisare', 'pe-linie', b, null], ['finisare', 'pe-linie', t, 'toroidala'], ['degrosare', 'pe-linie', t, 'toroidala'],
+    // Relieful: finisarea cu bila rămâne; toroidala pe finisare, din 18.1↑e-1 (ADR 0319, a liniei reliefului, ADR 0303
+    // răspunsul 4a); degroșarea rămâne cu plata.
+    ['finisare', 'pe-linie', b, null], ['finisare', 'pe-linie', t, null], ['degrosare', 'pe-linie', t, 'toroidala'],
   ];
   for (const [tip, latura, forma, asteptat] of randuri) assert.equal(motivFormaPeOperatie(tip, latura, forma), asteptat, `${tip} ${latura} ${forma.tip}`);
 });

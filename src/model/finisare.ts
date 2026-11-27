@@ -127,8 +127,8 @@ export function nepotrivireDegrosare(doc: Document, indexFoaie = 0): string | nu
 
 /**
  * Creasta lăsată pe un plan între două linii vecine (ADR 0310 §5), pe hârtie: mijlocul e la s / 2 de amândouă, deci silueta
- * frezei acolo (`inaltimeFreza`): bila de rază R lasă R − √(R² − (s/2)²); toroidala (ADR 0303), ρ − √(ρ² − (s/2 − a)²)
- * dincolo de discul ei plat a; V-ul de unghi θ, cu vârful plat v, (s − v) / 2 / tan(θ/2) când s trece de v; freza plată,
+ * frezei acolo (`inaltimeFreza`): bila de rază R lasă R − √(R² − (s/2)²); toroidala (ADR 0303; pe relief din 18.1↑e),
+ * ρ − √(ρ² − (s/2 − a)²) dincolo de discul ei plat a; V-ul de unghi θ, cu vârful plat v, (s − v) / 2 / tan(θ/2) când s trece de v; freza plată,
  * nimic. Peste diametru, freza nu mai acoperă planul: `null`.
  */
 export function creastaPePlan(s: Scula, pasLateral: number): number | null {
@@ -187,9 +187,9 @@ export function cuDegrosare(o: Operatie, v: SchimbareDegrosare): Operatie {
 }
 
 /** Forma frezei unei finisări, aleasă din panou: bila (implicit), plata sau V-ul (cu unghiul implicit). */
-export type FormaFinisare = 'bila' | 'plata' | 'v';
+export type FormaFinisare = 'bila' | 'plata' | 'v' | 'toroidala';
 
-/** Felul frezei unei finisări, din documentul ei. */
+/** Felul frezei unei finisări, din documentul ei (toroidala din 18.1↑e-1, ADR 0319). */
 export function formaFinisare(s: Scula): FormaFinisare {
-  return s.forma?.tip === 'bila' ? 'bila' : s.forma?.tip === 'v' ? 'v' : 'plata';
+  return s.forma?.tip === 'bila' ? 'bila' : s.forma?.tip === 'v' ? 'v' : s.forma?.tip === 'toroidala' ? 'toroidala' : 'plata';
 }

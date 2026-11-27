@@ -4,8 +4,8 @@
  * valorile de lucru, tăișul: documentul v27, ADR 0300 §5) și numărul T, după regula rolurilor personalizate (ADR 0114 §5):
  * al bibliotecii cât e liber, altfel al unei freze identice (aceeași turație), altfel cel mai mic liber.
  *
- * Alegerea schimbă freza principală a operațiilor și pașii lor (pasul pe trecere; la buzunar, pasul lateral din procentul
- * frezei); adâncimea, frezele de rest, fundul plat, dopurile și restul rămân. Pur: secțiunea Tăierea dă rezultatul acțiunii
+ * Alegerea schimbă freza principală a operațiilor și pașii lor (pasul pe trecere; la buzunar și pe relief, pasul lateral din
+ * procentul frezei); adâncimea, frezele de rest, fundul plat, dopurile și restul rămân. Pur: secțiunea Tăierea dă rezultatul acțiunii
  * `document.aplica-operatii`, într-un pas de anulare.
  */
 import type { Document, Operatie, Scula } from './document.ts';
@@ -84,6 +84,12 @@ export function pasLateralDin(f: Freza): number {
 }
 
 /**
+ * Operațiile cu pas lateral, care îl primesc de la freza aleasă: buzunarul și, din felia 18.1↑d-5 (ADR 0316), finisarea și
+ * degroșarea reliefului (o bilă de finisare își are pasul ei mic, ca la rândul din fereastra exportului).
+ */
+const cuPasLateral = (o: Pick<Operatie, 'tip'>): boolean => o.tip === 'buzunar' || o.tip === 'finisare' || o.tip === 'degrosare';
+
+/**
  * Operațiile pieselor date cu freza aleasă, pe piesă; null dacă nu e nicio piesă de-a documentului sau dacă freza nu merge pe
  * una dintre operațiile lor.
  */
@@ -93,6 +99,6 @@ export function operatiiCuFreza(doc: Document, piese: readonly string[], f: Frez
   if (operatii.length === 0 || frezePotrivite([f], operatii).length === 0) return null;
   const scula = sculaDinBiblioteca(f, numarPentruAlegere(doc, gasite.map((p) => p.id), sculaDinBiblioteca(f, f.numar)));
   return new Map(gasite.map((p) => [p.id, p.operatii.map((o): Operatie => ({
-    ...structuredClone(o), scula: structuredClone(scula), pas: f.pas, ...(o.tip === 'buzunar' ? { pasLateral: pasLateralDin(f) } : {}),
+    ...structuredClone(o), scula: structuredClone(scula), pas: f.pas, ...(cuPasLateral(o) ? { pasLateral: pasLateralDin(f) } : {}),
   }))]));
 }

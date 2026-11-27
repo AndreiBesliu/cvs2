@@ -1045,7 +1045,11 @@ se șterge la o pornire, după cel puțin o zi.
 **Finisarea:** cu piesa reliefului aleasă, secțiunea **Tăierea** oferă rolul **finisarea reliefului** (pe o piesă doar cu
 reliefuri). Freza urmează relieful pe linii paralele, la pasul lateral, coborând în treceri de cel mult **pasul**, ultima pe
 model; nu coboară niciodată sub suprafața reliefului și nici sub **adâncime** (podeaua, implicit cât placa). Câmpurile:
-- **Freza**: bilă (implicit), plată sau în V, și **diametrul ei**; bila merge doar aici;
+- **Freza**: bilă (implicit), plată, în V sau **toroidală** (fundul plat cu colțurile rotunjite), și **diametrul ei**; la
+  toroidală, și **Raza colțului** (peste 0 și sub jumătatea diametrului; implicit 1 mm, cel mult un sfert din diametru). Pe un
+  plan, toroidala nu lasă creastă cât pasul lateral e cel mult cât fundul ei plat (diametrul minus de două ori raza
+  colțului), deci pe pantele line ajung linii mai rare decât cu bila; pe pantele abrupte și în văile înguste, colțul ei
+  rotunjit lucrează ca o bilă mică;
 - **Pasul lateral** (implicit 10 % din freză): distanța dintre linii; prin centrele celulelor, se rotunjește în jos la celule
   întregi (cel puțin una), deci liniile nu stau mai rar decât ai cerut; o celulă mai lată decât freza se refuză;
 - **Unghiul liniilor** (0° … 180°) și **Liniile**: prin centrele celulelor (la 0° și 90°) sau nealiniate, unde pot apărea riduri
@@ -1075,7 +1079,12 @@ ei în ordinea tăierii, cu o fișă în care le schimbi și acolo: freza (numă
 liniile (pasul lateral, unghiul, prin centrele celulelor sau nealiniate), adaosul la degroșare, marginea și înălțimea, adâncimea
 și pasul pe trecere. Fișa spune pasul folosit (cu liniile prin centrele celulelor, rotunjit în jos la celule întregi) și, la
 finisare, creasta pe un plan. Marginea și înălțimea, schimbate pe un rând, se schimbă și pe celălalt rând al aceluiași relief;
-**Exportă** scrie valorile în proiect, iar secțiunea Tăierea le arată apoi. Cu **Ordinea tăierii: A mea**, rândul ei se mută ca oricare altul. În [vederea 3D](#vedere-3d), **Tăiat** arată
+**Exportă** scrie valorile în proiect, iar secțiunea Tăierea le arată apoi. Freza o poți lua și **Din frezele mele**: la
+finisare, o plată, o freză în V, o bilă sau o toroidală (cu raza colțului ei); la degroșare, doar o plată. Aleasă, freza își aduce numărul (cât e liber), diametrul,
+forma, pasul pe trecere și pasul lateral ei (o bilă de finisare are de obicei unul mic); schimbată apoi în bibliotecă, rândul
+spune ce diferă, cu **Ia valorile noi**, ca la celelalte rânduri. Fiecare grup al fișei are desenul lui, din valorile tale:
+freza, liniile văzute de sus (prin centrele celulelor, la pasul folosit), adaosul în secțiune, marginea și înălțimea, podeaua cu
+trecerile pe Z (fundurile la câte un pas, ultima pe model); cota câmpului pe care stai se aprinde. Cu **Ordinea tăierii: A mea**, rândul ei se mută ca oricare altul. În [vederea 3D](#vedere-3d), **Tăiat** arată
 placa după program. Freza rămâne puțin deasupra suprafeței ideale pe pante (cam 0,1 mm pe o pantă de 45°): e partea sigură a calculului,
 care nu sapă niciodată în relief. Exportul cere dalele reliefului din acest browser; pe alt calculator, le spune lipsă.
 
@@ -1465,9 +1474,10 @@ catalog își arată fișa; **Pune în frezele mele** o copiază în bibliotecă
 grup, și **Pune tot ce vezi**, lângă titlu (după căutare și filtru), pun mai multe deodată. O freză care e deja la tine
 (același fel, diametru, unghi, vârf, rază și treaptă) nu se pune a doua oară: fișa spune **E deja în frezele mele.**
 
-**Bila, toroidala, conica, burghiul și profilurile** (rotunjirea, ogee-ul, ogee-ul roman, panoul ridicat) stau în biblioteca
-ta și în catalog, cu **în curând în proiect**: în secțiunea Tăierea se aleg abia când aplicația le va putea tăia. Până
-atunci, le ții la un loc cu celelalte. O freză de canelură (cu vârful rotund, „core box”) e o **Bilă**.
+**Bila, toroidala și profilurile** (rotunjirea, ogee-ul, ogee-ul roman, panoul ridicat) se aleg și în proiect: bila și
+toroidala pe linie, în buzunar și pe o parte, profilurile pe linie (o canelură) și pe o parte (o margine profilată). **Conica și burghiul** stau
+în biblioteca ta și în catalog, cu **în curând în proiect**: în secțiunea Tăierea se aleg abia când aplicația le va putea
+tăia. O freză de canelură (cu vârful rotund, „core box”) e o **Bilă**.
 
 **Freză nouă** deschide editorul, cu câmpurile:
 - **Numele**: gol, freza primește numele propus din fel și diametru („Plată Ø6”, „V60 Ø6”, „Gravare 30° vârf 0,2 Ø3,175”).
@@ -1978,6 +1988,14 @@ inele, cel mult 1,2 mm”. Pe colțurile inelelor și pe mijlocul buzunarului cr
 lateral mai mic micșorează creasta. Cu o freză de rest sau cu o incrustație cu pereți drepți, exportul se oprește: frezele de rest
 și dopul cer o freză plată.
 
+**Freza profilată pe linie.** O rotunjire, un ogee, un ogee roman sau un panou ridicat din **Frezele mele** se alege pe o
+tăietură **pe linie**, din lista **Din frezele mele**: forma devine **profilată (din „Frezele mele”)**, iar desenul frezei îi
+arată silueta. Silueta și diametrul sunt ale frezei din bibliotecă: diametrul nu se schimbă de mână, iar altă formă aleasă
+scoate profilul. Centrul frezei merge pe linie, ca la freza plată, iar canelura iese cu secțiunea siluetei, în oglindă: la
+adâncimea scrisă, cât silueta ajunge sub fața plăcii; mai adânc decât înălțimea profilului, pereții coboară drept, cu
+diametrul frezei. În buzunar, la găurire și în V-carve, exportul se oprește, cu motivul. Raportul foilor numește freza
+„profilată”.
+
 **Bila și toroidala pe o parte.** Și pe un profil **pe o parte** (exterior, interior, stânga, dreapta), forma poate fi **bilă**
 sau **toroidală**, dacă adâncimea e cel puțin raza colțului (la bilă, jumătatea diametrului). Drumul e al frezei plate de
 același diametru, cu urechile, rampa, intrările și degajările lui, deci nimic nu intră în piesă. Peretele iese drept doar
@@ -1985,6 +2003,15 @@ până la adâncimea minus raza colțului: sub **Adâncimea**, nota spune, de ex
 la fund rămâne racordarea de rază 3 mm”. Pe o tăietură prin foaie, cu supracursa sub raza colțului, racordarea rămâne pe
 muchia de jos a piesei, iar nota o spune. Mai puțin adânc decât raza colțului, exportul se oprește: peretele n-ar ajunge la
 desen.
+
+**Marginea profilată.** Pe un profil **pe o parte** (exterior, interior, stânga, dreapta), freza profilată face o margine: o
+rotunjire, un ogee pe muchia piesei. Centrul frezei stă de desen cât fundul plat al siluetei (la o rotunjire, raza vârfului de
+sub arc), deci la fund peretele cade exact pe desen, iar mai sus se retrage după silueta frezei; sub **Adâncimea**, nota spune
+cât, de exemplu „La fund, peretele cade pe desen; muchia de sus se retrage cu 0,76 mm, după silueta frezei”. Adâncimea e cel
+mult înălțimea profilului (la o rotunjire, raza ei): mai adânc, cilindrul frezei ar tăia o treaptă în piesă, iar exportul se
+oprește, cu înălțimea în motiv. Lista **Din frezele mele** oferă pe o parte doar profilurile destul de înalte pentru adâncimea
+scrisă. Silueta fără fund plat (care urcă de la axă), urechile, degajările, intrările și despărțirea foii nu merg încă pe o
+margine profilată: exportul se oprește, cu motivul.
 
 Lista **Din frezele mele**, în grupul Freza, are frezele din biblioteca ta (vezi [Frezele mele](#freze)) care merg pe tăietura
 operației: plate pe un profil, un buzunar sau o găurire, în V la V-carve. Aleasă, freza își pune pe operație numărul T (al ei,

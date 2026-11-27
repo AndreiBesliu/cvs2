@@ -16,7 +16,7 @@ import { compusDinResurse, type ResurseRelief } from '../../src/relief/resurse.t
 import { stratDinGrila } from '../../src/relief/strat.ts';
 import type { Document } from '../../src/model/document.ts';
 import type { Miscare, Program } from '../../src/ir/ir.ts';
-import { creastaPlan, IndexO, judecaTraseul, materialO, triunghiuriModel, type FrezaO, type PasO } from '../oracles/relief3d.ts';
+import { clExact, creastaPlan, IndexO, judecaTraseul, materialO, triunghiuriModel, type FrezaO, type PasO } from '../oracles/relief3d.ts';
 
 type Liber = Record<string, unknown>;
 const I = { a: 1, b: 0, c: 0, d: 1, e: 0, f: 0 };
@@ -49,7 +49,7 @@ const finisare = (v: Liber = {}): Liber => op({
 
 function doc(amprenta: string, operatii: readonly Liber[], o: { readonly matriceRelief?: Liber; readonly rotire?: number; readonly x?: number } = {}): Document {
   const d = {
-    schema: 31, rev: 0,
+    schema: 32, rev: 0,
     piese: [{
       id: 'p',
       radacina: {
@@ -82,7 +82,7 @@ function pasiFinisare(p: Program): PasO[] {
 }
 
 /** Judecata oracolului pe finisarea programului: modelul din aceleași dale, cu fața plăcii în jur (marginea „perete”). */
-function judeca(p: Program, valori: ArrayLike<number>, m: { a: number; b: number; c: number; d: number; e: number; f: number }, celula: number, dz: number, f: FrezaO, pas: number, podea: number, tol = 1e-6): void {
+function judeca(p: Program, valori: ArrayLike<number>, m: { a: number; b: number; c: number; d: number; e: number; f: number }, celula: number, dz: number, f: FrezaO, pas: number, podea: number, tol = 1e-6): { readonly ix: IndexO; readonly pasi: PasO[] } {
   const z = Float64Array.from(valori, (v) => v + dz);
   const T0 = triunghiuriModel(z, 40, 40, celula), T = new Float64Array(T0.length);
   for (let k = 0; k < T0.length; k += 3) {
@@ -107,6 +107,7 @@ function judeca(p: Program, valori: ArrayLike<number>, m: { a: number; b: number
   const mat = materialO(pasi, f, { x0: x0 - f.R - 1, y0: y0 - f.R - 1, x1: x1 + f.R + 1, y1: y1 + f.R + 1 }, 0.2, 0, 0.04);
   assert.ok(mat.taiere <= pas + 0.03, `o mutare intră ${mat.taiere} mm (pasul ${pas})`);
   assert.equal(mat.rapida, 0);
+  return { ix, pasi };
 }
 
 test('o calotă din dale, finisată cu bila Ø4 înaintea profilului: oracolul pe compusul din aceleași dale; bila în IR', async () => {
@@ -291,4 +292,42 @@ test('originea în centrul foii (28.8↑o): G-code-ul finisării, citit din cent
   const comp = compusDinResurse({ tip: 'relief', nx: 40, ny: 40, celula: 0.5, straturi: [{ id: 's1', mod: 'aduna', vizibil: true, dale: amprenta }] }, resurse);
   assert.ok(comp.ok);
   judeca(c, comp.valori, { ...I, e: 40, f: 40 }, 0.5, -Math.max(...comp.valori), { fel: 'bila', R: 2 }, 2.5, -10, 6e-4);
+});
+
+// Toroidala (felia 18.1↑e-1, ADR 0319): aceeași calotă din dale, finisată cu o toroidală Ø4 r1 (din documentul v31): oracolul
+// cu toroidala pe compusul din aceleași dale; în IR, forma cu raza colțului; același T cu o bilă de același Ø e altă freză.
+test('o calotă din dale, finisată cu toroidala Ø4 r1: oracolul pe compusul din aceleași dale; toroidala în IR, cu raza colțului', async () => {
+  const v = calota();
+  const { amprenta, resurse } = await strat(v, 40, 40);
+  const tor = { numar: 2, nume: 'freza toroidala r1', diametru: 4, forma: { tip: 'toroidala', raza: 1 } };
+  const d = doc(amprenta, [finisare({ scula: tor })]);
+  const r = programDinDocument(d, REGIM_IMPLICIT, 0, false, undefined, resurse);
+  if (!r.ok) assert.fail(r.motiv);
+  assert.deepEqual(r.program.scula.forma, { tip: 'toroidala', raza: 1 });
+  const c = compusDinResurse({ tip: 'relief', nx: 40, ny: 40, celula: 0.5, straturi: [{ id: 's1', mod: 'aduna', vizibil: true, dale: amprenta }] }, resurse);
+  assert.ok(c.ok);
+  const fo: FrezaO = { fel: 'toroidala', R: 2, rho: 1 };
+  const { ix, pasi } = judeca(r.program, c.valori, { ...I, e: 40, f: 40 }, 0.5, -Math.max(...c.valori), fo, 2.5, -10);
+  // Și suprafața, nu doar „fără scobituri”: pe pantele line ale calotei (centrul ei e la 50, 50 pe foaie, raza 6; până la 3 mm
+  // de centru, panta e sub 30°), vârful stă cel mult cu surplusul câmpului conservativ deasupra CL-ului exact al toroidalei. O
+  // toroidală tăiată ca plată (sau ca bilă) ar sta cu zecimi de milimetru mai sus (sau mai jos).
+  let sus = -Infinity, n = 0;
+  for (let k = 1; k < pasi.length; k++) {
+    const a = pasi[k - 1]!, b = pasi[k]!;
+    // Doar tăierile pe linie: coborârea din Z-ul sigur (după o rapidă) e în aer.
+    if (a.rapida || b.rapida) continue;
+    for (let t = 0; t <= 8; t++) {
+      const x = a.x + ((b.x - a.x) * t) / 8, y = a.y + ((b.y - a.y) * t) / 8, z = a.z + ((b.z - a.z) * t) / 8;
+      if (Math.hypot(x - 50, y - 50) > 3) continue;
+      const cl = clExact(ix, fo, x, y);
+      n++;
+      sus = Math.max(sus, z - cl);
+    }
+  }
+  assert.ok(n > 200, `puncte pe pantele line: ${n}`);
+  assert.ok(sus < 0.06, `vârful deasupra CL-ului exact: ${sus}`);
+  // Același T cu o bilă Ø4 pe profil: două freze sub același număr, refuzate.
+  const dublu = doc(amprenta, [finisare({ scula: tor }), op({ scula: { numar: 2, nume: 'freza bila', diametru: 4, forma: { tip: 'bila' } }, latura: 'pe-linie' })]);
+  const x = programDinDocument(dublu, REGIM_IMPLICIT, 0, false, undefined, resurse);
+  assert.ok(!x.ok && /T2/.test(x.motiv), x.ok ? 'trecut' : x.motiv);
 });

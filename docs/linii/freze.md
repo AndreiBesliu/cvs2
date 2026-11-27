@@ -8,13 +8,43 @@ proiect), ACCEPTAT pe 27.11 cu recomandările (1a–5a); 16.A↑e-1 (documentul 
 gata de unit pe 27.11 (`e5bdde83`, PR-ul #71), UNITĂ (`0d2a8c2c`); 16.A↑e-3 (canelura cu bila și cu toroidala) UNITĂ pe 27.11
 (`db066160`); 16.A↑e-4 (bila și toroidala în proiect: fereastra exportului, Tăierea, biblioteca) UNITĂ pe 27.11 (`72263843`);
 16.A↑e-5 (buzunarul cu bila și cu toroidala, cu creasta pe fund) raportată gata de unit pe 27.11 (`106b4a51`, PR-ul #74);
-16.A↑e-6 (profilul pe o parte cu bila și cu toroidala, cu adâncimea cel puțin raza colțului) pe `wip/16.A-freze-e`, peste ea_
+16.A↑e-6 (profilul pe o parte cu bila și cu toroidala, cu adâncimea cel puțin raza colțului) pe `wip/16.A-freze-e`, peste ea;
+ADR 0304 PROPUS pe 27.11 (profilul desenat), mers cu recomandările; 16.A↑f-1 (documentul v32, nucleul) și 16.A↑f-2 (canelura) UNITE
+în `main` pe 27.11 (`8906dedf`, din `36866d16`, PR-ul #74); 16.A↑f-3 (profilurile parametrice în proiect) raportată pe 27.11 (`0a1fd1a4`, PR-ul #78), unită de sesiunea principală din acel commit; 16.A↑f-4 (marginea profilată pe o parte) pe aceeași ramură, peste ea_
 
 Pornită pe 23.11.2026, în sesiunea cloud a liniei, la cererea owner-ului: „Vreau sa pot crea freze l sau profiluri de freze in
 aplicatie si sa le salvez in cont”. Rândurile din prag: „Bibliotecă de freze cu geometrie reală (dreaptă, bilă, toroidală, V,
 gravare, profil, formă desenată)” și „Freze de profil desenate de utilizator; roundover cu offset față de interior”.
 
 ## Starea
+
+### Unde am rămas (27.11, 14:30; pentru o sesiune nouă)
+
+Owner-ul, prin sesiunea principală, pe 27.11 la 14:25: limita săptămânală de folosire e la 94 % (se resetează sâmbătă la
+10:00). Deci pași mici, fiecare cu commit și push, și **nicio felie nouă după f-4**.
+
+- **16.A↑f-4 (marginea profilată pe o parte) e gata** pe `wip/16.A-freze-e`. Commit-ul de raportat e `d03f1561`, cu `main`
+  adus (`75ae7f50`, f-3 unită). PR-ul e #79, ciornă. Rapidul e verde pe `99979e16` și pe `d03f1561`. **Completul 46010593843**,
+  pe `99979e16`, rula la 14:30; între `99979e16` și `d03f1561` e doar DEVLOG-ul, deci același cod.
+- **De făcut, în ordine:**
+  1. Citește completul: `gh run view 46010593843 --json conclusion,jobs`.
+     - Verde: raportează f-4 sesiunii principale (`session_01QcxiUZLthXDrpYQ6KLNzAC`, cu `send_message`). Raportul are
+       commit-ul `d03f1561`, PR-ul #79, porțile, mărimea (pornirea 111,8 kB neschimbată; totalul 942,2 / 1 000, +0,7),
+       otrăvurile 18 / 18 și nota de mai jos despre `formaFrezei.ts`.
+     - Roșu: găsește cauza, repară cu proba, comite și împinge, apoi pornește din nou completul
+       (`gh workflow run complet.yml --ref wip/16.A-freze-e`).
+  2. După raport, **nu porni f-5** până nu spune sesiunea principală (sau owner-ul) că limita s-a resetat.
+- **Pentru raport:** f-4 schimbă în `src/model/formaFrezei.ts` funcția `motivFormaPeOperatie` și tipul `MotivForma`
+  (`profil-fund`, `profil-adancime`). Nu atinge `formaPeRand`, unde se ciocnește linia reliefului cu f-3.
+- **Ce urmează după reset:**
+  - f-5, editorul siluetei desenate în „Frezele mele” (ADR 0304 §5, recomandarea 5a): felul nou `desenata`, cu punctele
+    într-un tabel (r, h), desenul la scară, tragerea cu lipirea la 0,1 mm, „Pornește de la…” un profil parametric, CSV și JSON
+    cu punctele, apoi copia în proiect prin `sculaDinFreza` (forma `profil`). Probele întâi: marginile punctelor, dus-întors
+    prin fișier, e2e pe editor;
+  - apoi g (valorile pe material); d rămâne după placa 4.
+- **Unealta otrăvurilor:** spec-urile e2e ale unei liste stau în `E2E = [...]`, nu în `SETURI`. Altfel rulează toată suita.
+  După o rulare oprită, un `vite preview` rămas din clonă ține portul 4173 și otrăvurile ies NEVALIDE; îl oprești cu
+  `pkill -f "clona-otravuri/node_modules/.bin/vite preview"`.
 
 - **23.11, seara:** ADR 0300 propus (`docs/adr/0300-biblioteca-de-freze.md`), cu rândul în indexul ADR și titlul tradus.
   Schița: <https://claude.ai/artifact/HntiSsxBQyPFmZoA8B39EP> (machetele pe ambele teme, la birou și la 390 / 360 / 320 px;
@@ -208,6 +238,45 @@ gravare, profil, formă desenată)” și „Freze de profil desenate de utiliza
   - lista „Din frezele mele” a rândului din fereastră nu cere adâncimea (ca frezele de rest ale buzunarului): greșeala o spune
     rândul, iar lista nu se schimbă la fiecare tastă;
   - urechile se socotesc de la fundul plăcii: o probă cu urechi pe o parte taie cât foaia, altfel lucrarea le refuză.
+- **27.11, 08:30–: 16.A↑f-1 pe `wip/16.A-freze-e`**, peste e-6. ADR 0304 propus (profilul desenat), cu cinci întrebări,
+  mers cu recomandările. Forma `profil` în IR, în nucleu (felul 4, linia frântă) și în documentul v32 (numărul dat de
+  sesiunea principală); lucrarea o refuză peste tot, cu motiv. **Capcane:**
+  - **un v nou mută lanțurile din ajutoarele probelor** (`test/unit/ajutor-document-oracol.ts`: `PE_Vn`, uniunile,
+    `taieturileOracolului`), nu doar probele `document.v*`: fără ele, sute de probe pică la „versiune necunoscută”;
+  - **cazurile de refuz au prefixe unice în tot fișierul** (`document.cazuri.ts`): „RP” era deja al lui v24, deci v32 are
+    „RD”;
+  - **corpusul de aur cere întâi commit-ul codului:** rândul din `ISTORIE` ține hash-ul lui, apoi `--istorie` și ieșirile;
+  - **oracolul simulării e scump:** proba nucleului pe celule de 0,05 mm, cu oracolul judecat de două ori pe caz, ținea 391 s;
+    pe 0,1 mm, cu judecata refolosită, 35 s. O probă nouă pe oracol se socotește întâi;
+  - un h negativ la ușă e refuzat oricum de „primul punct (0, 0) și h nedescrescător”: marginea de jos a lui h nu se poate
+    otrăvi (F15, echivalentă).
+- **27.11, 09:40–: 16.A↑f-2 pe `wip/16.A-freze-e`**, peste f-1. Canelura cu profilul desenat: regula (doar pe linie, ca freză a
+  operației), silueta în IR, identitatea pe T (cheia ține toate punctele), raportul foilor. Sub-feliile de după, renumerotate:
+  f-3 intrarea în proiect, f-4 marginea profilată, f-5 editorul. **Capcane:**
+  - fundul canelurii simulate e la −d + h(0,005), nu la −d: celula cea mai apropiată de linie e la 0,005 mm, iar o siluetă
+    care urcă de la axă (S-ul) e acolo deja cu 0,001 mm mai sus;
+  - listele de otrăvuri mai vechi rămân legate de commit-ul lor (ancorele lui e-3, e-5 și f-1 s-au mutat cu feliile de după):
+    `verifica` le arată VOID, fără să fie o greșeală.
+- **27.11, 11:10–: 16.A↑f-3 pe `wip/16.A-freze-e`**, din `main` cu f-1 și f-2 unite (`8906dedf`, PR-ul #74 unit). Profilurile
+  parametrice în proiect: punctele (`puncteProfil`), CAM-ul în bibliotecă, Tăierea, rândul ferestrei cu silueta doar de citit,
+  identitatea pe T, nota bibliotecii, ce scrie Exportă. **Capcane:**
+  - **`freza.ts` și `profilFreza.ts` nu se pot importa una pe alta** (regula `fara-cicluri`, și cu importuri doar de tipuri):
+    `inaltimeCon` și silueta stau în `profilFreza.ts`, cu tipul `CampuriProfil`, iar `freza.ts` le reexportă;
+  - **cu forma aleasă, oracolul simulării în e2e e scump** (cost ≈ celule × mutări × puncte): cu 2 001 de puncte pe o grilă de
+    40 × 400, proba trecea de 30 s în procesul Playwright (pagina nu era blocată); cu 200 de pași și o fâșie de 10 × 400, 4 s;
+  - un profil nu se pune înapoi în bibliotecă din copia de pe rând (copia ține punctele, nu felul parametric): `copieDeReadus`
+    întoarce null, până la editorul siluetei desenate (f-5).
+- **27.11, 11:45–: 16.A↑f-4 pe `wip/16.A-freze-e`**, din vârful ramurii (cu f-3 raportată, `0a1fd1a4`; sesiunea principală unește
+  commit-ul acela, nu vârful, iar f-4 se raportează cu `main` adus întâi). Marginea profilată: centrul la r(0) de desen,
+  adâncimea cel mult h_max, nota retragerii muchiei. **Capcane:**
+  - **raza drumului nu mai e mereu Ø / 2:** pe o parte, cu profilul, e r(0) (`razaTraseu` în `src/cam/job.ts`), și pentru
+    profilul tăieturii, și pentru verificarea invariantei 2; o rază mai mică în verificare doar o slăbește (otrava aceea scapă),
+    iar raza frezei întregi refuză pe nedrept marginea;
+  - **urechile, degajările și intrările** se calculează cu raza frezei (din `scula.diametru`), nu cu fundul siluetei: pe o
+    margine profilată se refuză, până la o sub-felie a lor;
+  - **regula ferestrei citește acum adâncimea și opțiunile rândului** (`motivProfilRand`): o probă care cerea „profilul doar
+    pe linie” (`frezeTaiere.spec.ts`) numără acum și rotunjirile oferite pe exterior (10 din 11 la 3 mm, toate la 1 mm);
+  - un `vite preview` rămas dintr-o rulare oprită a otrăvurilor ține portul 4173: otrăvurile e2e ies NEVALIDE până e oprit.
 - **Feliile**, în ordine: 16.A↑a (biblioteca în browser, fereastra, fișierul), apoi b (alegerea în proiect, v27), c
   (contul), d (calibrarea), e (bila și toroidala), f (profilul desenat), g (valorile pe material).
 

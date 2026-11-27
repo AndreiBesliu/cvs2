@@ -316,7 +316,8 @@ test('redenumirea unui grup: toate frezele lui, cu versiunea crescută; spre un 
 
 test('felurile noi (ADR 0302 §2, felia 16.A↑h-4): bila, toroidala, conica cu vârf rotund, burghiul; în bibliotecă; bila cu CAM din v29', () => {
   assert.deepEqual(FELURI_FREZA.slice(0, 7), ['plata', 'v', 'gravare', 'bila', 'toroidala', 'conica', 'burghiu']);
-  assert.deepEqual(FELURI_CU_CAM, ['plata', 'v', 'gravare', 'bila', 'toroidala']); // toroidala, din 16.A↑e-4 (ADR 0303)
+  // Toroidala, din 16.A↑e-4 (ADR 0303); profilurile parametrice, din 16.A↑f-3 (ADR 0304).
+  assert.deepEqual(FELURI_CU_CAM, ['plata', 'v', 'gravare', 'bila', 'toroidala', 'rotunjire', 'ogee', 'ogee-roman', 'panou']);
   const BILA: Freza = { ...PLATA6, nume: 'Bilă Ø6', fel: 'bila', tais: undefined };
   const TOR: Freza = { ...PLATA6, nume: 'Toroidală', fel: 'toroidala', raza: 1, tais: undefined };
   const CON: Freza = { ...PLATA6, nume: 'Conică', fel: 'conica', unghi: 15, raza: 0.5, tais: undefined };
@@ -363,9 +364,9 @@ test('felurile noi (ADR 0302 §2, felia 16.A↑h-4): bila, toroidala, conica cu 
   for (const f of [CON, BUR]) assert.throws(() => sculaDinFreza(f), /CAM/u, f.nume);
 });
 
-test('profilurile parametrice (ADR 0302 §1, felia 16.A↑h-5): rotunjirea, ogee-ul, ogee-ul roman, panoul ridicat; fără CAM încă', () => {
+test('profilurile parametrice (ADR 0302 §1, felia 16.A↑h-5): rotunjirea, ogee-ul, ogee-ul roman, panoul ridicat; cu CAM din 16.A↑f-3', () => {
   assert.deepEqual(FELURI_FREZA, ['plata', 'v', 'gravare', 'bila', 'toroidala', 'conica', 'burghiu', 'rotunjire', 'ogee', 'ogee-roman', 'panou']);
-  assert.deepEqual(FELURI_CU_CAM, ['plata', 'v', 'gravare', 'bila', 'toroidala']);
+  assert.deepEqual(FELURI_CU_CAM, ['plata', 'v', 'gravare', 'bila', 'toroidala', 'rotunjire', 'ogee', 'ogee-roman', 'panou']);
   const ROT: Freza = { ...PLATA6, nume: 'Rotunjire R3', fel: 'rotunjire', diametru: 12, raza: 3, tais: undefined };
   const OG: Freza = { ...PLATA6, nume: 'Ogee R3', fel: 'ogee', diametru: 18, raza: 3, tais: undefined };
   const OGR: Freza = { ...PLATA6, nume: 'Ogee roman R3', fel: 'ogee-roman', diametru: 21, raza: 3, treapta: 1.5, tais: undefined };
@@ -419,6 +420,6 @@ test('profilurile parametrice (ADR 0302 §1, felia 16.A↑h-5): rotunjirea, ogee
   assert.equal(frezaDinDate({ ...salvata(OGR, 'a'), treapta: 'x' }), null);
   assert.equal(frezaDinDate({ ...salvata(ROT, 'a'), treapta: 'x' }), null);
   assert.equal(frezaDinDate(salvata(OGR, 'a'))?.treapta, 1.5);
-  // Copia pentru document: niciun profil, până la CAM-ul lor (16.A↑f).
-  for (const f of [ROT, OG, OGR, PAN]) assert.throws(() => sculaDinFreza(f), /CAM/u);
+  // Copia pentru document (ADR 0304, 16.A↑f-3): silueta ca linii, cu punctele lui `puncteProfil` (`profil.document.test.ts`).
+  for (const f of [ROT, OG, OGR, PAN]) assert.equal(sculaDinFreza(f).forma?.tip, 'profil', f.nume);
 });

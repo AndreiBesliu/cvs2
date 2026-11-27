@@ -1077,7 +1077,11 @@ of the project uses any more is deleted at a start-up, after at least a day.
 reliefs only). The cutter follows the relief on parallel lines, one stepover apart, going down in passes of at most the
 **step**, the last one on the model; it never goes below the relief's surface, nor below the **depth** (the floor, by default
 the sheet's thickness). The fields:
-- **Cutter**: ball nose (the default), flat or V-bit, and its **diameter**; the ball nose is used only here;
+- **Cutter**: ball nose (the default), flat, V-bit or **bull nose** (a flat bottom with rounded corners), and its
+  **diameter**; for the bull nose, also the **Corner radius** (above 0 and below half the diameter; 1 mm by default, at most a
+  quarter of the diameter). On a flat, the bull nose leaves no scallop while the stepover is at most its flat bottom (the
+  diameter minus twice the corner radius), so gentle slopes need fewer lines than with a ball nose; on steep slopes and in
+  narrow valleys its rounded corner works like a small ball nose;
 - **Stepover** (by default 10 % of the cutter): the distance between lines; through the cell centres, it is rounded down to
   whole cells (at least one), so the lines are never further apart than you asked; a cell wider than the cutter is refused;
 - **Line angle** (0° to 180°) and **Lines**: through the cell centres (at 0° and 90°) or not aligned, where ripples can show on
@@ -1107,7 +1111,13 @@ own row, in its place in the cutting order, with a sheet where you can change th
 shape; roughing, flat only), the lines (stepover, angle, through the cell centres or not aligned), the allowance for roughing,
 the edge and the height, the depth and the step down. The sheet tells the step used (with the lines through the cell centres,
 rounded down to whole cells) and, for finishing, the scallop on a flat. The edge and the height, changed on one row, change on
-the other row of the same relief too; **Export** writes the values into the project, and the Cutting section then shows them. With **Cutting order: Mine**, its row moves like any other. In the [3D view](#vedere-3d), **Cut** shows the
+the other row of the same relief too; **Export** writes the values into the project, and the Cutting section then shows them. You
+can also take the cutter **From my bits**: for finishing, a flat, a V, a ball or a bull nose cutter (with its corner radius); for roughing, a flat one only. Once
+chosen, the cutter brings its number (while it is free), diameter, shape, step down and its own stepover (a finishing ball usually
+has a small one); changed later in the library, the row says what differs, with **Take the new values**, as on the other rows.
+Each group of the sheet has its drawing, made from your values: the bit, the lines seen from above (through the cell centres, at
+the stepover used), the allowance in section, the edge and the height, the floor with the passes in Z (the bottoms one step apart,
+the last on the model); the dimension of the field you are on lights up. With **Cutting order: Mine**, its row moves like any other. In the [3D view](#vedere-3d), **Cut** shows the
 sheet after the program. On slopes the cutter stays a little above the ideal surface (about 0.1 mm on a 45° slope): it is the safe side of the
 computation, which never digs into the relief. The export needs the relief's tiles from this browser; on another computer, it
 says they are missing.
@@ -1520,9 +1530,10 @@ catalogue bit shows its details; **Add to my bits** copies it to the library, wi
 a group, and **Add everything shown**, next to the title (after the search and the filter), add several at once. A bit you
 already have (same kind, diameter, angle, tip, radius and fillet) is not added twice: the details say **Already in my bits.**
 
-**Ball, bull nose, tapered and drill bits and the profiles** (roundover, ogee, Roman ogee, raised panel) sit in your library
-and in the catalogue, marked **coming to projects**: in the Cutting section you can pick them once the app can cut them.
-Until then, you keep them together with the others. A veining (core box) bit is a **Ball**.
+**Ball, bull nose and the profiles** (roundover, ogee, Roman ogee, raised panel) can be picked in projects too: ball and bull
+nose on the line, in a pocket and on one side, the profiles on the line (a groove) and on one side (a profiled edge). **Tapered and drill bits** sit
+in your library and in the catalogue, marked **coming to projects**: in the Cutting section you can pick them once the app can
+cut them. A veining (core box) bit is a **Ball**.
 
 **New bit** opens the editor, with the fields:
 - **Name**: left empty, the bit gets the name proposed from its kind and diameter (“Flat Ø6”, “V60 Ø6”, “Engraving 30° tip
@@ -2058,6 +2069,14 @@ under **Side step**, as "Scallop on the floor: 0.25 mm between the rings, at mos
 of the pocket the scallop is larger, up to the second value. A smaller side step makes the scallop smaller. With a rest cutter or
 a straight-walled inlay, the export stops: rest cutters and the plug need a flat bit.
 
+**The profile bit on the line.** A roundover, an ogee, a Roman ogee or a raised panel bit from **My bits** is picked on a cut
+**on the line**, from the **From my bits** list: the shape becomes **profile (from “My bits”)**, and the bit drawing shows its
+silhouette. The silhouette and the diameter belong to the bit in your library: the diameter cannot be changed by hand, and
+picking another shape removes the profile. The centre of the bit runs on the line, as with a flat bit, and the groove comes out
+with the silhouette's section, mirrored: at the depth you wrote, as far as the silhouette reaches below the face; deeper than
+the profile's height, the walls go down straight, at the bit's diameter. In a pocket, when drilling and in V-carving, the
+export stops, with the reason. The sheet report names the bit "profile".
+
 **The ball nose and the bull nose on one side.** On a profile **on one side** (outside, inside, left, right) too, the shape can
 be **ball nose** or **bull nose**, if the depth is at least the corner radius (for a ball nose, half the diameter). The path is
 that of a flat bit of the same diameter, with its tabs, ramp, lead-ins and dog-bones, so nothing cuts into the part. The wall
@@ -2065,6 +2084,16 @@ comes out straight only down to the depth minus the corner radius: under **Depth
 vertical from the face down to 1 mm; at the floor a 3 mm radius fillet remains". On a cut through the sheet, with the overcut
 below the corner radius, the fillet stays on the bottom edge of the part, and the note says so. Shallower than the corner
 radius, the export stops: the wall would not reach the drawing.
+
+**The profiled edge.** On a profile **on one side** (outside, inside, left, right), a profile bit makes an edge: a roundover,
+an ogee on the edge of the part. The centre of the bit sits as far from the drawing as the silhouette's flat bottom (for a
+roundover, the radius of the pilot below the arc), so at the floor the wall falls exactly on the drawing, and higher up it steps
+back along the bit's silhouette; under **Depth**, the note says how far, for example "At the floor, the wall falls on the
+drawing; the top edge sets back 0.76 mm, following the cutter’s silhouette". The depth is at most the profile's height (for a
+roundover, its radius): deeper, the bit's cylinder would cut a step into the part, and the export stops, with the height in
+the reason. On one side, the **From my bits** list offers only the profiles tall enough for the depth you wrote. A silhouette
+without a flat bottom (one that rises from the axis), tabs, dog-bones, lead-ins and the sheet split do not work on a profiled
+edge yet: the export stops, with the reason.
 
 The **From my bits** list, in the Bit group, has the bits from your library (see [My bits](#freze)) that suit the operation's
 cut: flat ones on a profile, a pocket or drilling, V bits on a V-carve. Once picked, the bit puts on the operation its T number

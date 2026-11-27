@@ -360,7 +360,7 @@ test('felurile noi (16.A↑h-4): toroidala și burghiul în editor, cu câmpuril
   await expect(page.getByTestId('jurnal')).toHaveText('0 erori în jurnalul local');
 });
 
-test('profilurile (16.A↑h-5): rotunjirea, ogee-ul roman cu treapta, panoul cu fundul plat și scobitura opțională; în catalog, „în curând”', async ({ page }) => {
+test('profilurile (16.A↑h-5): rotunjirea, ogee-ul roman cu treapta, panoul cu fundul plat și scobitura opțională; cu CAM din 16.A↑f-3', async ({ page }) => {
   await page.goto('/');
   const f = await deschideFrezele(page);
   await standard(f);
@@ -378,7 +378,8 @@ test('profilurile (16.A↑h-5): rotunjirea, ogee-ul roman cu treapta, panoul cu 
   await f.locator('[data-freze="salveaza"]').click();
   await expect(valoare(f, 'fel')).toHaveText('Rotunjire');
   await expect(valoare(f, 'raza')).toHaveText('3 mm');
-  await expect(fisa(f).locator('[data-freze="curand"]')).toBeVisible();
+  // Din 16.A↑f-3 (ADR 0304), profilurile intră în proiect (canelura): fișa nu mai spune „în curând”.
+  await expect(fisa(f).locator('[data-freze="curand"]')).toHaveCount(0);
   await expect(fisa(f).getByRole('img', { name: 'Silueta frezei' })).toBeVisible();
   await expect(f.getByRole('heading', { name: 'Rotunjiri (1)' })).toBeVisible();
   // Ogee-ul roman: raza arcelor și treapta, cu diametrul care le cuprinde (21); o treaptă prea mare se refuză.
@@ -418,9 +419,9 @@ test('profilurile (16.A↑h-5): rotunjirea, ogee-ul roman cu treapta, panoul cu 
   await camp(f, 'raza').fill('6,35');
   await expect(camp(f, 'nume')).toHaveAttribute('placeholder', 'Panou 12° R6,35 Ø50,8');
   await f.locator('[data-freze="renunta"]').click();
-  // Catalogul: grupurile profilurilor, cu „în curând”; fișa unui panou cu scobitură.
+  // Catalogul: grupurile profilurilor, fără „în curând” (16.A↑f-3); fișa unui panou cu scobitură.
   await f.locator('[data-freze="catalog-arata"]').click();
-  for (const g of ['rotunjire', 'ogee', 'ogee-roman', 'panou']) await expect(f.locator(`[data-catalog-grup="${g}"]`)).toContainText('în curând în proiect');
+  for (const g of ['rotunjire', 'ogee', 'ogee-roman', 'panou']) await expect(f.locator(`[data-catalog-grup="${g}"] .freze-curand`)).toHaveCount(0);
   await f.locator('[data-catalog="cat-panou-12-r6.35-50.8"]').click();
   await expect(fisa(f).getByRole('heading', { name: 'Panou 12° R6,35 Ø50,8', level: 3 })).toBeVisible();
   await expect(valoare(f, 'varf')).toHaveText('6,35 mm');

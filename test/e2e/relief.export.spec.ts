@@ -101,3 +101,53 @@ test('rândurile reliefului în fereastra exportului: se schimbă aici, marginea
   await randFin.locator('[data-nav]').click();
   await expect(fin.locator('[data-camp="relief-pas-lateral"]')).toHaveValue('1');
 });
+
+/**
+ * „Dă-i T{n}” pe freza reliefului (felia 18.1↑d-7, ADR 0318): finisarea pusă pe T-ul degroșării (bila Ø6 și plata Ø6 sub același
+ * număr) e un conflict, spus în grupul frezei al ambelor fișe, cu câmpurile frezei înroșite; „Dă-i T2” pe finisare îi dă cel mai
+ * mic număr liber, conflictul pleacă, iar Exportă scrie numărul nou.
+ */
+test('„Dă-i T{n}” pe freza reliefului: conflictul în grupul frezei, numărul nou din regula rolurilor, scris de Exportă', async ({ page }) => {
+  await page.goto('/');
+  await importaRelief(page);
+  await rolRelief3d(page);
+  await page.locator('[data-actiune="export.gcode"]').click();
+  const randDeg = page.locator('[data-nav-op][data-fel="degrosare"]'), randFin = page.locator('[data-nav-op][data-fel="finisare"]');
+  const deg = page.locator('[data-fisa="op"][data-fel="degrosare"]'), fin = page.locator('[data-fisa="op"][data-fel="finisare"]');
+  await randDeg.locator('[data-nav]').click();
+  const tDeg = await deg.locator('[data-camp="relief-scula"]').inputValue();
+  await randFin.locator('[data-nav]').click();
+  await fin.locator('[data-camp="relief-scula"]').fill(tDeg);
+  // Conflictul: în grupul frezei al ambelor fișe, cu butonul; câmpurile frezei înroșite; Exportă oprit.
+  const greseala = fin.locator('[data-grup="freza-relief"] [data-greseala]');
+  await expect(greseala).toContainText(`T${tDeg}`);
+  await expect(fin.locator('[data-camp="relief-scula"]')).toHaveAttribute('aria-invalid', 'true');
+  await expect(fin.locator('[data-camp="relief-diametru"]')).toHaveAttribute('aria-invalid', 'true');
+  await expect(page.locator('[data-buton="exporta"]')).toBeDisabled();
+  const buton = fin.locator('[data-grup="freza-relief"] [data-da-t]');
+  await expect(buton).toBeVisible();
+  const nou = await buton.getAttribute('data-da-t');
+  expect(nou).not.toBe(tDeg);
+  await expect(buton).toHaveText(`Dă-i T${nou ?? ''}`);
+  await randDeg.locator('[data-nav]').click();
+  await expect(deg.locator('[data-grup="freza-relief"] [data-da-t]')).toBeVisible();
+  await randFin.locator('[data-nav]').click();
+  await buton.click();
+  await expect(fin.locator('[data-camp="relief-scula"]')).toHaveValue(nou ?? '');
+  await expect(fin.locator('[data-grup="freza-relief"] [data-greseala]')).toHaveCount(0);
+  await expect(fin.locator('[data-camp="relief-scula"]')).toHaveAttribute('aria-invalid', 'false');
+  await expect(page.locator('[data-buton="exporta"]')).toBeEnabled();
+  // Exportă scrie numărul nou: fereastra redeschisă îl arată.
+  await page.locator('[data-buton="exporta"]').click();
+  const iesire = page.getByTestId('iesire-foaie');
+  await expect(iesire).toBeVisible();
+  await iesire.getByRole('checkbox').check();
+  const descarcare = page.waitForEvent('download');
+  await page.locator('[data-buton="exporta"]').click();
+  const text = readFileSync(await (await descarcare).path(), 'ascii');
+  expect(text).toContain(`T${nou ?? ''}`);
+  await page.getByRole('button', { name: 'Închide' }).click();
+  await page.locator('[data-actiune="export.gcode"]').click();
+  await randFin.locator('[data-nav]').click();
+  await expect(fin.locator('[data-camp="relief-scula"]')).toHaveValue(nou ?? '');
+});

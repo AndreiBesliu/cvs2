@@ -53,7 +53,7 @@ export function ListaBiblioteca(props: {
 /** Numele câmpului unei diferențe, în propoziția notei (ADR 0300 §5). */
 const CAMP_DIFERENTA: Readonly<Record<DiferentaFreza['camp'], CheieSimpla>> = {
   nume: 'export.biblioteca.camp.nume', diametru: 'export.biblioteca.camp.diametru', forma: 'export.biblioteca.camp.forma',
-  unghi: 'export.biblioteca.camp.unghi', varf: 'export.biblioteca.camp.varf', raza: 'export.biblioteca.camp.raza',
+  unghi: 'export.biblioteca.camp.unghi', varf: 'export.biblioteca.camp.varf', raza: 'export.biblioteca.camp.raza', silueta: 'export.biblioteca.camp.silueta',
   turatie: 'export.biblioteca.camp.turatie', avans: 'export.biblioteca.camp.avans', plonjare: 'export.biblioteca.camp.plonjare',
   tais: 'export.biblioteca.camp.tais',
 };
@@ -174,6 +174,11 @@ export interface ContextFisa {
   readonly iaValorileNoiPeToate: (f: FrezaOferita) => void;
   /** „Pune-o înapoi în bibliotecă” pe un loc al rândului (ADR 0300 §5, felia 16.A↑b-6); lipsă = fără buton. */
   readonly inapoi: (cheie: string, unde: UndeFreza) => InapoiNota | undefined;
+  /**
+   * „Pe toate (N)”: câte freze ale ferestrei vin din freza `id` a bibliotecii și diferă de ea, cu ale rândurilor reliefului (felia
+   * 18.1↑d-5); lipsă = doar rândurile acestor fișe (`cuAceeasiFreza`).
+   */
+  readonly peToate?: (id: string) => number;
 }
 
 /** „Dă-i T{n}” pe o freză ciocnită (ADR 0291 §2a, felia 28.8↑j): numărul nou și scrierea lui pe rând. */
@@ -188,7 +193,7 @@ export function FisaOperatie({ cheie, loc, total: totalFisa, c: ctx }: {
   const {
     dupaCheie, param, total, doarCitire, schimba, randBun, greseliRand, conflict, hartie, taieturaRand, text, fmtFreza, fmtTrecere,
     grosimeFoaie: grosimeActiva, supracursaCitita, cuSupracursa, onAlegeUrechi, frezeRest, grup, frezeOferite, alegeFreza, bibliotecaToata,
-    iaValorileNoi, iaValorileNoiPeToate, inapoi,
+    iaValorileNoi, iaValorileNoiPeToate, inapoi, peToate,
   } = ctx;
   const o = dupaCheie.get(cheie);
   const p = o ? param[o.cheie] : undefined;
@@ -221,7 +226,7 @@ export function FisaOperatie({ cheie, loc, total: totalFisa, c: ctx }: {
   const nota = (unde: UndeFreza, origine: OrigineFreza | null): ReactNode => {
     const st = stareLa(unde);
     return (
-      <NotaBiblioteca stare={st} origine={origine} peToate={st?.fel === 'schimbata' ? cuAceeasiFreza(param, bibliotecaToata, st.freza.id) : 0}
+      <NotaBiblioteca stare={st} origine={origine} peToate={st?.fel === 'schimbata' ? (peToate ?? ((id: string) => cuAceeasiFreza(param, bibliotecaToata, id)))(st.freza.id) : 0}
         oprit={doarCitire} fmt={fmtFreza} onIa={(f) => { iaValorileNoi(o.cheie, unde, f); }} onIaToate={iaValorileNoiPeToate}
         inapoi={st?.fel === 'stearsa' ? inapoi(o.cheie, unde) : undefined} />
     );
@@ -267,7 +272,8 @@ export function FisaOperatie({ cheie, loc, total: totalFisa, c: ctx }: {
     switch (g) {
       case 'freza': return (c) => <DesenFreza c={c} numar={p.numarScula} diametru={citesteNumar(p.diametruScula)} v={p.formaScula === 'v'}
         unghi={citesteNumar(p.unghiV)} varfPlat={citesteNumar(p.varfV)}
-        {...(p.formaScula === 'bila' || p.formaScula === 'toroidala' ? { rotunda: p.formaScula, razaColt: citesteNumar(p.razaColt) } : {})} />;
+        {...(p.formaScula === 'bila' || p.formaScula === 'toroidala' ? { rotunda: p.formaScula, razaColt: citesteNumar(p.razaColt) } : {})}
+        {...(p.formaScula === 'profil' && p.profil ? { profil: p.profil } : {})} />;
       case 'adancime': return (c) => <DesenAdancime c={c} adancime={h.adancime} treceri={h.treceri} grosime={grosimeFoaie}
         supracursa={cuSupracursa ? supracursaCitita ?? 0 : 0} />;
       case 'sens': return () => <DesenSens sens={p.sens}
@@ -385,7 +391,9 @@ export function FisaOperatie({ cheie, loc, total: totalFisa, c: ctx }: {
         </label>
         <label title={t('export.freza.titlu')}>
           {t('export.freza.diametru')}
+          {/* Cu un profil desenat (ADR 0304, felia 16.A↑f-3), diametrul e al siluetei: doar de citit. */}
           <input type="text" inputMode="decimal" value={p.diametruScula} data-camp="diametru" disabled={doarCitire} aria-label={t('export.freza.diametru')}
+            readOnly={p.formaScula === 'profil'} {...(p.formaScula === 'profil' ? { title: t('export.freza.diametru-profil.titlu') } : {})}
             aria-invalid={sculaRea.includes('diametru') || ciocnit(p.numarScula) || gauraRea} onChange={(ev) => { schimba(o.cheie, { diametruScula: ev.target.value, origineScula: null }); }} />
         </label>
         {/* Forma frezei (ADR 0090): plată sau în V, cu unghiul inclus; bila și toroidala (ADR 0303, felia 16.A↑e-4) doar pe
@@ -395,12 +403,15 @@ export function FisaOperatie({ cheie, loc, total: totalFisa, c: ctx }: {
           <select value={p.formaScula} data-camp="forma-scula" disabled={doarCitire} aria-label={t('export.freza.forma')}
             aria-invalid={!b.vcarve || !b.vPeLinie || !b.rotunda} onChange={(ev) => {
               const v = ev.target.value;
+              if (v === 'profil') return;
               schimba(o.cheie, { formaScula: v === 'v' || v === 'bila' || v === 'toroidala' ? v : 'plata', origineScula: null });
             }}>
             <option value="plata">{t('export.freza.plata')}</option>
             <option value="v">{t('export.freza.v')}</option>
             {(rotundaAici || p.formaScula === 'bila') && <option value="bila">{t('export.freza.bila')}</option>}
             {(rotundaAici || p.formaScula === 'toroidala') && <option value="toroidala">{t('export.freza.toroidala')}</option>}
+            {/* Profilul desenat (ADR 0304): doar cât rândul îl are, din document sau din „Frezele mele”; o altă formă îl scoate. */}
+            {p.formaScula === 'profil' && <option value="profil">{t('export.freza.profil')}</option>}
           </select>
         </label>
         {/* Raza colțului toroidalei (ADR 0303 §1): peste 0, sub jumătatea diametrului. */}
@@ -453,6 +464,10 @@ export function FisaOperatie({ cheie, loc, total: totalFisa, c: ctx }: {
           <span className="nota" data-nota="perete-rotunda">{t('export.perete-rotunda', {
             vertical: fmtFreza.format(h.perete.vertical), raza: fmtFreza.format(h.perete.raza),
           })}{h.perete.margineJos > 0 && ` ${t('export.perete-rotunda-jos', { jos: fmtFreza.format(h.perete.margineJos), raza: fmtFreza.format(h.perete.raza) })}`}</span>
+        )}
+        {/* Marginea profilată (ADR 0304 §4, felia 16.A↑f-4): cât se retrage muchia de sus în piesă. */}
+        {h.margine && (
+          <span className="nota" data-nota="margine-profil">{t('export.margine-profil', { retragere: fmtFreza.format(h.margine.retragere) })}</span>
         )}
       </div>);
       case 'sens': return (<div className="dx-rand">
