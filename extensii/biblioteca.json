@@ -18,6 +18,12 @@
       ],
       "noutati": [
         {
+          "versiune": "18.49.0",
+          "data": "2026-11-27",
+          "ro": "Curățenie în motorul elicelor: cele trei elice își fac paletele din aceeași funcție. Piesele rămân exact cum erau.",
+          "en": "A clean-up in the propeller engine: the three propellers now build their blades with the same function. The pieces stay exactly as they were."
+        },
+        {
           "versiune": "18.48.0",
           "data": "2026-11-27",
           "ro": "Elicele și ventilatoarele mari au paletele mai groase: peste Ø80, grosimea crește cu diametrul (o elice Ø200, de la 3 mm la rădăcină la 2 la vârf), ca să nu tremure la tipărire. Cele de până la Ø80 rămân la fel.",
@@ -238,8 +244,8 @@
           }
         }
       ],
-      "versiune": "18.48.0",
-      "continut": "88475af4fd42d5058c91997ad5c20c1ae6d876218d2abb48efdbb8f2d1b1faad"
+      "versiune": "18.49.0",
+      "continut": "abce015dabd006bb8f197a57970549024585bf92b3a669e5a04f841a9c71bb13"
     }
   ]
 }

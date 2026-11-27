@@ -16890,3 +16890,18 @@ principală: auditul elicelor, felia 5, răspunsul 2a)
 - **Mărimea:** Easy 3Draw 18.48.0; aplicația, neschimbată. Nimic pe server.
 - **Documentele:** ADR 0340, nota liniei, fișa etapei 3, registrul otrăvurilor, `CLAUDE.md`, traducerile roadmap-ului.
 - **Urmează:** 3.Cm-6 (curățenia motorului, singură, la octet).
+
+## 2026-11-27 — Felia 3.Cm-6: curățenia motorului elicelor, la octet (ADR 0340) (sesiune cloud)
+
+**Prompt:** „zi-le sesiunilor sa continue cu recomandarile, acolo unde inca asteapta” (owner-ul, transmis de sesiunea
+principală: auditul elicelor, felia 6, singură, la octet)
+**Started:** 27.11, 13:05. **Completed:** 27.11, 13:38 (orele, după ceasul containerului).
+
+- **Motorul:** o singură funcție a secțiunilor paletei pentru elice, elicea de barcă și rotor (`sectiunePaleta`, cu
+  `latimePeCerc`), cu pașii strângerii (8 la elice, 40 la celelalte) ca parametru; `laturiCerc` unit cu `laturiFine`.
+- **Nu s-a unit:** butucul roților cu al elicelor (alte reguli ale găurii; la calibrările extreme, roțile s-ar schimba).
+- **Proba**, scrisă întâi: `trenulet.curatenie.test.ts`, amprenta a 840 de piese, luată înaintea feliei, aceeași după.
+- **Otrăvurile:** `3.Cm-6.py`, 9 / 9 (S03 și S08, echivalente, scoase). S06, prinsă, arăta că cei 8 pași ai elicei se ating:
+  măsurat pe 5 040 de elice, doar în butuc sau cu cel mult 0,16 % peste ținta de 85 %, deci paletele nu se ating.
+- **Mărimea:** Easy 3Draw 18.49.0 (aceleași piese, alte surse); aplicația, neschimbată. Nimic pe server.
+- **Urmează:** 3.Cm-7 (duza Kort).

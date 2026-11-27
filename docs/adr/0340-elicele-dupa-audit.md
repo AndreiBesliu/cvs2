@@ -2,7 +2,7 @@
 
 **Starea:** acceptat pe 27.11.2026, cu recomandările auditului (1a, 2a, 3a, 4a), la cuvântul owner-ului transmis de
 sesiunea principală („zi-le sesiunilor sa continue cu recomandarile, acolo unde inca asteapta”). Feliile 3.Cm-1…3.Cm-7, în
-ordinea din audit, ale liniei atelierului (ramura `wip/3.Xh-biblioteca-ui`). **3.Cm-1…3.Cm-5 implementate pe 27.11**
+ordinea din audit, ale liniei atelierului (ramura `wip/3.Xh-biblioteca-ui`). **3.Cm-1…3.Cm-6 implementate pe 27.11**
 (mai jos).
 **Continuă:** ADR 0282 (elicele, feliile 3.Tq–3.Tt). **Pleacă de la:** `docs/linii/audit-elice.md` (auditul din 25.11, pe
 Easy 3Draw 18.30.0). Primul număr al intervalului 0340–0349 al liniei atelierului.
@@ -164,6 +164,32 @@ ventilatorului, pe piese de peste Ø80, refăcute cu grosimea nouă; e2e, câte 
 `trenulet.ventilator.spec.ts` și fraza în proba în engleză din cvs2. Otrăvurile: `3.Cm-5.py`, 13 / 13, și `3.Cm-5-en.py`, 2 / 2, din prima rulare.
 
 **Easy 3Draw 18.48.0.**
+
+## Implementarea (3.Cm-6): curățenia motorului, la octet
+
+Constatarea 7, singură, fără altă felie a liniei deschisă:
+
+- **Secțiunile:** cele trei generatoare (elicea, elicea de barcă, rotorul) folosesc acum o singură funcție, `sectiunePaleta`
+  (profilul rotit cu β, coarda strânsă până încape în 85 % din pasul dintre palete), cu `latimePeCerc`. Ce era diferit fără
+  explicație (strângerea se oprea după 8 pași la elice și după 40 la celelalte) a rămas un parametru: cu 40 la elice, unele
+  piese s-ar schimba. **Măsurat** (pe 5 040 de elice, 270 de elice de barcă și 144 de rotoare, din clonă, cu motorul
+  instrumentat): la elice, plafonul de 8 pași e atins cu secțiunea încă mai lată decât U în 604 stații, dar 580 sunt în butuc
+  (acolo nu contează), iar celelalte 24 trec de U cu cel mult 0,16 % (paleta ocupă 85,1 % din pasul dintre palete, nu 85 %):
+  paletele nu se ating. La rotor, cele 6 stații peste U sunt tot în butuc, chiar cu 40 de pași (coarda e deja la minim); la
+  elicea de barcă, strângerea nu trece de 3 pași. Deci cei 8 pași nu ascund o greșeală.
+- **Cercurile:** `laturiCerc` al ventilatorului era chiar `laturiFine` (săgeata 0,02 mm, multiplu de 8): a rămas unul.
+- **`nr`**, cititorul cu implicit scris de trei ori în cotele elicelor, plecase deja în 3.Cm-4 (`campElice`).
+- **Butucul nu s-a unit:** `butucRoata` (roțile, fulia, conicele, roata cu palete, cama) pune gaura fără verificarea peretelui,
+  iar `butucElice` o rotește când peretele scade sub 0,8 mm și are și gaura de bară. La calibrările extreme ale găurii de ax
+  (varianta 9 cu un butuc mic), o funcție comună ar schimba roțile, deci n-ar fi o curățenie la octet; rămân două, cu
+  prinderile deja comune (`prinderiButuc`).
+
+**Probele:** `test/unit/trenulet.curatenie.test.ts` (3 teste: amprenta a 360 de elice, 240 de elice de barcă și 240 de
+ventilatoare, pe toată plaja, cu plasa, prinderile, tipărirea și cotele, luată din motorul lui 18.48.0, înaintea feliei: aceeași
+după). Otrăvurile: `3.Cm-6.py`, 9 / 9 (S03 și S08, echivalente, scoase cu motivul; S06, prinsă, a dus la măsurătoarea de
+mai sus).
+
+**Easy 3Draw 18.49.0** (pachetul are alte surse, deci altă versiune; piesele, aceleași).
 
 **Rămâne la owner** (lista grupată, cu recomandarea întâi): verdictul după treapta cea mai mare, oricât de îngustă ar fi
 fâșia? a (recomandat): ca acum (suport doar când și consola de la vârf trece de 1 mm; elicea implicită, 92842, 15790 și

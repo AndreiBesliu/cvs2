@@ -31,8 +31,8 @@ calibrare, s-a despărțit: 3.Ck-1 (placa turnantă; 18.43.0), unită în `main`
 feliile făcute.** **Auditul elicelor (ADR 0340, acceptat pe 27.11 cu recomandările, 1a–4a, la cuvântul owner-ului prin
 sesiunea principală): feliile 3.Cm-1…3.Cm-7; 3.Cm-1 (otrăvurile elicelor, rulate din nou) și 3.Cm-2 (tipărirea spusă
 cinstit; 18.45.0), raportate pe 27.11 (PR-ul `AndreiBesliu/cvs2#77`); 3.Cm-3 (ventilatorul ca trusă; 18.46.0) și 3.Cm-4
-(claritatea editorului elicelor; 18.47.0) și 3.Cm-5 (grosimea paletelor peste Ø80; 18.48.0), pe ramură, la raport după unirea
-lor.** Versiunea următoare a pachetului: 18.49.0._
+(claritatea editorului elicelor; 18.47.0), 3.Cm-5 (grosimea paletelor peste Ø80; 18.48.0) și 3.Cm-6 (curățenia motorului, la
+octet; 18.49.0), pe ramură, la raport după unirea lor.** Versiunea următoare a pachetului: 18.50.0._
 
 ## Numerele liniei
 
@@ -789,4 +789,14 @@ lor.** Versiunea următoare a pachetului: 18.49.0._
 - **Un loc nou într-un text `tr` cu locuri numerotate le mută pe cele de după** (`textVentilator`: {8} devine {8}{9}): traducerea
   se mută odată cu el, nu se scrie din nou.
 - **Easy 3Draw 18.48.0.**
+
+## 3.Cm-6, gata (27.11, în cloud): curățenia motorului elicelor (ADR 0340)
+
+- **Unde e:** `latimePeCerc` și `sectiunePaleta` (lângă `StatieElice`, înaintea lui `paleteElice`); `laturiFine` (lângă cama),
+  folosit acum și de ventilator.
+- **O secțiune nouă de paletă se face cu `sectiunePaleta`**: profilul în (u, v), β, coarda de pornire, U (85 % din pasul dintre
+  palete), coarda minimă, pașii.
+- **O curățenie „la octet” se probează cu amprenta pieselor luată înaintea ei** (`trenulet.curatenie.test.ts`); ce ar schimba
+  piese (cei 8 pași ai elicei, butucul roților) rămâne, cu motivul, nu se „îndreaptă” în aceeași felie.
+- **Easy 3Draw 18.49.0.**
 
