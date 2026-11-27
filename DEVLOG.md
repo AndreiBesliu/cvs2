@@ -16716,8 +16716,6 @@ ramură, după push).
 - **Mărimea:** totalul 937,8 / 1 000 kB (+0,4); pornirea neschimbată (111,7 kB; cu ușa 117,0, cu Atelierul 117,4 / 125).
 - **Neschimbate:** nimic pe server; documentul rămâne v31; programul fără forme rotunde, octet cu octet.
 
-## 2026-11-27 — Sesiunea principală în cloud: liniile continuă cu recomandările (Model: Claude Opus 5.5)
-
 ## 2026-11-27 — Sesiunea principală în cloud: a șaizeci și patra unire (16.A↑e-5) (Model: Claude Opus 5.5)
 
 **Prompt:** „zi-le sesiunilor sa continue cu recomandarile, acolo unde inca asteapta” (unirea, la raportul liniei; ordinul „unește ce se poate”)
@@ -16728,12 +16726,6 @@ ramură, după push).
   1 010 / 1 010, funcțiile pe emulatoare 142 / 142, paginile 62 / 62. Totalul 937,8 / 1 000 kB.
 - **Pe test:** lotul 58 (`eac92d1c`, 16.A↑e-4), la 08:38; lotul 59 (`e412ebcc`), în drum.
 - **Documentele:** decizia și Starea în `CLAUDE.md`; starea din `docs/linii/principala.md`; indexul liniilor.
-
-- **Mesajele (07:45):** frezele (ADR 0303 confirmat; e-5, e-6, f, g), atelierul (balamaua, placa turnantă; auditul
-  elicelor, feliile 1–7), relieful (ADR 0313 §8; cele trei felii lăsate la owner, apoi finisarea cu toroidala), exportul
-  (ADR 0292 1a; lista, constatarea 14). Cotele n-au nimic de pornit.
-- **Sesiunea designului**, pe calculatorul owner-ului, nu primește din cloud (doar de pe un dispozitiv de încredere).
-- **Documentele:** decizia în `CLAUDE.md`; lista owner-ului și versiunea documentului (v31) în `docs/linii/principala.md`.
 
 ## 2026-11-27 — 16.A↑e-6: profilul pe o parte cu bila și cu toroidala (Model: Claude Opus 5.5)
 
