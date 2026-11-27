@@ -15,8 +15,8 @@ import { operatiiCuFreza } from '../../src/model/alegereFreza.ts';
 import type { FrezaSalvata } from '../../src/model/freza.ts';
 import { operatieReliefDinDialog } from '../../src/app/valoriOperatii.ts';
 import {
-  copieRelief, cuFrezaAleasaRelief, cuFrezaPusaInapoiRelief, cuValorileNoiRelief, frezeRanduriRelief, locFrezaRelief, randRelief,
-  reliefCuAceeasiFreza, valoriRelief, type RandRelief,
+  bibliotecaRelief, copieRelief, cuFrezaAleasaRelief, cuFrezaPusaInapoiRelief, cuValorileNoiRelief, frezeRanduriRelief, locFrezaRelief,
+  randRelief, reliefCuAceeasiFreza, stareOrigineRelief, valoriRelief, type RandRelief,
 } from '../../src/ui/exportRelief.ts';
 import { numarPentruRand, stareOrigine, type FrezaOferita, type OrigineFreza } from '../../src/ui/exportRand.ts';
 import type { FinisareExport } from '../../src/ui/FisaFinisare.tsx';
@@ -223,4 +223,31 @@ test('Tăierea: freza aleasă aduce pasul lateral și pe finisarea și degroșar
   const noi = operatiiCuFreza(d, ['r'], P8)!.get('r')!;
   assert.deepEqual(noi.map((o) => o.pasLateral), [3.2, 3.2]);
   assert.deepEqual(noi.map((o) => o.pas), [4, 4]);
+});
+
+// Profilul desenat (documentul v32, ADR 0304) stă pe rândul exportului din 16.A↑f-3, doar pe linie; pe relief, lucrarea îl refuză
+// (finisarea și degroșarea), iar rândul reliefului nu-l poate purta (plata, V-ul, bila, toroidala).
+const PROFIL6: FrezaOferita = {
+  id: 'pr6', nume: 'Rotunjire R3', pas: 1, pasLateral: 0.5,
+  scula: { numar: 9, diametru: 6, forma: { tip: 'profil', puncte: [[0, 0], [3, 3]] }, origine: origine('pr6', 'Rotunjire R3') },
+};
+
+test('profilul desenat (v32, pe rândul exportului din 16.A↑f-3) nu ajunge pe rândul reliefului: nici alegerea, nici „Ia valorile noi”, nici nota', () => {
+  for (const f of [fin, deg]) {
+    const r = { ...randRelief(f, ro), origineScula: origine('pr6', 'Rotunjire R3') };
+    // Alegerea și „Ia valorile noi” (și „Pe toate (N)”, venit din nota unui rând pe contur) nu schimbă nimic pe rândul reliefului.
+    assert.deepEqual(cuFrezaAleasaRelief(r, PROFIL6, 9, ro), {});
+    assert.deepEqual(cuValorileNoiRelief(r, PROFIL6, ro), {});
+  }
+  // Biblioteca văzută de rândurile reliefului e fără profiluri: ca până la 16.A↑f-3, o freză devenită profil e, aici, ștearsă.
+  assert.deepEqual(bibliotecaRelief([PROFIL6, BILA8, V30, PLATA8]), [BILA8, V30, PLATA8]);
+  assert.equal(bibliotecaRelief(null), null);
+  const r = { ...randRelief(fin, ro), origineScula: origine('pr6', 'Rotunjire R3') };
+  // Nota rândului reliefului (`stareOrigineRelief`, citită de fișă) și „Pe toate (N)” o citesc singure, din biblioteca întreagă.
+  assert.deepEqual(stareOrigineRelief(r, [PROFIL6, BILA8]), { fel: 'stearsa' });
+  assert.equal(stareOrigine(locFrezaRelief(r), [PROFIL6, BILA8])?.fel, 'schimbata');
+  assert.equal(reliefCuAceeasiFreza({ [fin.cheie]: r }, [PROFIL6], 'pr6'), 0);
+  // Fără profiluri, aceeași notă ca până acum.
+  const ales = { ...randRelief(fin, ro), ...cuFrezaAleasaRelief(randRelief(fin, ro), BILA8, 7, ro) };
+  assert.deepEqual(stareOrigineRelief(ales, [PROFIL6, BILA8]), { fel: 'la-zi' });
 });
