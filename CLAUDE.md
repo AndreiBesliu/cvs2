@@ -445,6 +445,12 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   nu mai e „în curând”. **O formă de freză care intră pe rândurile exportului se probează scrisă în program, cu
   comentariul sculei citit** (`test/e2e/export.rotunda.spec.ts`), **iar o probă a copiei folosește o valoare diferită de
   implicit** (otrava F15 scăpa cu raza 1). Documentul rămâne v31; nimic pe server. Felia: pornirea +0, totalul +0,9 kB.
+  **Buzunarul cu bila și cu toroidala (ADR 0303, felia 16.A↑e-5)** gata pe 27.11, unită în `main` pe 27.11
+  (`e412ebcc`): inelele și liniile frezei plate de același Ø, mișcare cu mișcare, cu orice coborâre; creasta pe fund,
+  h(s / 2) între inele și cel mult h(s) pe colțurile inelelor și pe mijloc; frezele de rest după o freză rotundă și
+  incrustația cu pereți drepți, refuzate cu motiv. **Creasta unei strategii noi cu forme rotunde se măsoară pe tot
+  fundul, nu doar între treceri** (pe colțurile inelelor un punct stă la aproape s de drum). Documentul rămâne v31;
+  nimic pe server. Felia: pornirea +0, totalul +0,4 kB.
   **Plafonul pornirii 120 kB (ADR 0145, decizia owner-ului din 24.11, „ok, ridica plafonul pornirii la 120 kB”):** după
   lotul al paisprezecelea, pornirea era 109,9 kB, cu ușa 114,4 și cu Atelierul 114,7 / 115, iar feliile următoare ale
   frezelor, exportului și aranjamentelor nu mai încăpeau în 0,3 kB. Poarta judecă tot trei măsuri sub același plafon
@@ -2089,6 +2095,25 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 27.11.2026, dimineața (a șaizeci și patra unire din cloud): **buzunarul cu bila și cu toroidala (16.A↑e-5), unit în
+  `main`** (sesiunea principală, ramura `unire-2711g`, din `ecfd9f03`). Linia frezelor, ramura `wip/16.A-freze-e`,
+  `106b4a51` (codul în `cf67e858`, cu `main` `72263843` adus în `c4435321`), PR-ul `AndreiBesliu/cvs2#74` (ADR 0303,
+  răspunsurile 1a și 5a, confirmate de owner în aceeași dimineață), unită în `e412ebcc`; capul ramurii mersese mai
+  departe, cu e-6 la porți, deci s-a unit commit-ul raportat. Buzunarul cu formele rotunde ia inelele și liniile frezei
+  plate de același Ø, mișcare cu mișcare (centrul la R de perete, pereții nu trec de desen), cu orice coborâre, elicea
+  inclusă; creasta pe fund stă sub pasul lateral: h(s / 2) între inele și cel mult h(s) pe colțurile inelelor și pe
+  mijloc (măsurat pe dreptunghiul 100 × 60, bila Ø6, s = 2,4: 0,321 mm, față de 0,25 între inele; precizarea, scrisă în
+  ADR); frezele de rest după o freză rotundă (5a) și incrustația cu pereți drepți, refuzate cu motiv, iar Tăierea nu le
+  oferă acolo; oracolul buzunarului are silueta rotundă, refuzurile, judecata fundului, cazurile pe hârtie. **Mișcă
+  mașina**; otrăvurile 17 / 17. Documentul rămâne v31; nimic pe server; fără forme rotunde, programul octet cu octet.
+  `main` adusese peste ramură doar documente, deci **arborele unirii are exact codul lui `106b4a51`** și a intrat pe
+  porțile liniei: completul 45949673319 pe `c4435321` (între el și `106b4a51`, doar documente), verde: unit 10 919 / 0
+  (12 sărite, pe Linux), e2e 1 010 / 1 010, funcțiile pe emulatoare 142 / 142, paginile 62 / 62; rapidul, verde pe
+  `106b4a51`; totalul 937,8 / 1 000 kB (+0,4), pornirea 111,7 kB (cu ușa 117,0, cu Atelierul 117,4 / 125). **Lotul 58
+  (16.A↑e-4) e pe test din 27.11, 08:38** (`eac92d1c`; completul pe `main` 45946101842, verde); felia aceasta pleacă
+  acum (lotul 59). Linia frezelor are e-6 (profilul pe o parte, 2a) la porți, apoi pornește f (profilul desenat), întâi
+  cu ADR 0304 și cu numărul v32 cerut sesiunii principale. **La owner:** proba pe mașină a buzunarului cu bila sau cu
+  toroidala (întâi în aer); restul listei, neschimbat.
 - 27.11.2026, dimineața: **sesiunea designului trece în cloud** („Sesiunea designului o sa o aducem si pe ea in sesiune
   cloud”). Linia aranjamentelor (ADR 0250, 0251) continuă într-o sesiune cloud nouă, pe `wip/28.1-aranjamente` (toată în
   `main`: 28.1↑a–d, ultima unită pe 18.11 în `a88502ab`), cu brief-ul dat owner-ului ca fișier, ca la celelalte linii:
