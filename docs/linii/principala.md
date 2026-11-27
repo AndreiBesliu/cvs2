@@ -198,7 +198,9 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
      relieful, peste `main`) are completul 46016058170: el acoperă orice ordine a celor trei, cât `main` primește doar
      documente;
   5. `unire-2711x` (`aad08f65`: 16.A↑f-4, marginea profilată, din `4930de51`, PR-ul #79, peste `unire-2711w`): completul
-     46019938355; se unește după `unire-2711w`, la fel; atelierul (3.Cm-6) raportează la porți.
+     46019938355; se unește după `unire-2711w`, la fel;
+  6. `unire-2711y` (`9a9a4477`: 3.Cm-6, Easy 3Draw 18.49.0, din `76911274`, peste `unire-2711x`): completul 46020109714;
+     după `unire-2711x`. Atelierul (3.Cm-7, duza Kort) raportează la porți.
 - **Modelul:** din 26.11, la prânz, sesiunea principală merge pe Opus („o sa folosim Opus de aici in colo”); sesiunile
   liniilor își păstrează modelul până îl schimbă owner-ul în fiecare.
 - **`main`, din cloud:** pe 23.11: 3.Tq (`0ae9c6c1`); 11.3↑e și A.4 (`ddaa7ead`); 3.Tr, unită de linia elicelor
