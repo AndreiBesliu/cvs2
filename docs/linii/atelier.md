@@ -30,9 +30,10 @@ calibrare, s-a despărțit: 3.Ck-1 (placa turnantă; 18.43.0), unită în `main`
 `AndreiBesliu/cvs2#68`); 3.Ck-2 (balamaua; 18.44.0), unită în `main` pe 27.11 (`439d0395`, PR-ul `AndreiBesliu/cvs2#70`): ADR 0284 are toate
 feliile făcute.** **Auditul elicelor (ADR 0340, acceptat pe 27.11 cu recomandările, 1a–4a, la cuvântul owner-ului prin
 sesiunea principală): feliile 3.Cm-1…3.Cm-7; 3.Cm-1 (otrăvurile elicelor, rulate din nou) și 3.Cm-2 (tipărirea spusă
-cinstit; 18.45.0), raportate pe 27.11 (PR-ul `AndreiBesliu/cvs2#77`); 3.Cm-3 (ventilatorul ca trusă; 18.46.0) și 3.Cm-4
-(claritatea editorului elicelor; 18.47.0), 3.Cm-5 (grosimea paletelor peste Ø80; 18.48.0) și 3.Cm-6 (curățenia motorului, la
-octet; 18.49.0), pe ramură, la raport după unirea lor.** Versiunea următoare a pachetului: 18.50.0._
+cinstit; 18.45.0), unite în `main` (`6d8abb70`); 3.Cm-3 (ventilatorul ca trusă; 18.46.0), unită (`f9b2bbc8`); 3.Cm-4
+(claritatea editorului elicelor; 18.47.0) și 3.Cm-5 (grosimea paletelor peste Ø80; 18.48.0), unite (`90e9fc20`); 3.Cm-6
+(curățenia motorului, la octet; 18.49.0), unită (`154e8125`); 3.Cm-7 (duza Kort; 18.50.0), pe ramură, cu `main` adus, la
+raport după complet: cu ea, ADR 0340 are toate feliile făcute.** Versiunea următoare a pachetului: 18.51.0._
 
 ## Numerele liniei
 
@@ -800,3 +801,27 @@ octet; 18.49.0), pe ramură, la raport după unirea lor.** Versiunea următoare 
   piese (cei 8 pași ai elicei, butucul roților) rămâne, cu motivul, nu se „îndreaptă” în aceeași felie.
 - **Easy 3Draw 18.49.0.**
 
+## 3.Cm-7, gata (27.11, în cloud): duza Kort (ADR 0340)
+
+- **Unde e:** motorul, `KORT`, `duzaCote` și `duzaKort` (înaintea lui `eliceBarca`, care cheamă `duzaKort` la `piesa: "duza"`;
+  `duzaCote` și în API); atelierul: câmpurile noi în `STARE0.eliceBarca` (`piesa`, `joc`, `lungime`, `urechi`), `defCurenta`
+  (elicea fără ele, duza fără sens, gaură și capac), `numeDef`, `textDuza`, `adaugaEliceCuDuza`, editorul elicei de barcă.
+- **O piesă a doua a unei piese existente (ca duza, ca rotorul și carcasa) păstrează exact cheile piesei de dinainte în
+  definiție** (`defCurenta` le scoate pe ale celeilalte): altfel o listă salvată nu mai adună elicea pe linia ei.
+- **Un corp de revoluție se face din profil, pe laturile lui `laturiFine`**, cu fețele orientate în afară (exteriorul, apoi
+  interiorul întors, jos și sus): proba îi cere muchiile cu pereche și volumul pozitiv.
+- **Un câmp nou în starea editorului unei piese atinge `trenulet.file.spec.ts`** (starea implicită, scrisă înapoi la deschiderea
+  unei liste vechi): lotul e2e al pluginului a prins-o.
+- **Easy 3Draw 18.50.0.**
+
+### Unde am rămas (27.11, 15:00; limita săptămânală aproape)
+
+- **3.Cm-7 e comisă și împinsă** (`5190e662`), cu porțile locale verzi (unitarele pluginului, lotul e2e al pluginului 265 / 265,
+  documentele, otrăvurile 29 / 29 și 3 / 3). **Nu e raportată:** completul (46020418674) stătea la coadă; rapidul îl reia commit-ul
+  acesta de note (doar `.md`, același cod). Canalul `biblioteca` a refuzat publicarea cât rapidul nu era verde: se repornește după.
+- **Ce urmează, în ordine:** (1) completul și rapidul verzi; (2) `main` adus în ramură (făcut la 16:20, după unirea lui 3.Cm-4…3.Cm-6, la
+  `99a4a6b6`), cu DEVLOG-ul prin `scripts/rezolva-devlog.py`; (3) porțile pe commit-ul cu `main` adus (unitarele, lotul e2e al pluginului, documentele);
+  (4) raportul către sesiunea principală, cu commit-ul de unit, otrăvurile 29 / 29 (22 / 29 la prima rulare, 7 goluri închise)
+  și 3 / 3, cifrele CI, Easy 3Draw 18.50.0 și alegerile duzei, la owner; (5) canalul `biblioteca`, din nou.
+- **După 3.Cm-7, linia n-are felie pornită**; la owner: verdictul tipăririi (a / b / c; până atunci a), alegerile duzei,
+  tipăririle din fișa etapei 3.
