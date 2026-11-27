@@ -11,7 +11,9 @@ test.use({ locale: 'ro-RO' });
  * desenul frezei; Exportă scrie programul cu numele ei în comentariul sculei, iar oracolul simulării, cu silueta adevărată (pe
  * hârtie: fundul plat până la 3 mm de axă, apoi sfertul de cerc cu centrul în (6, 0), h(x) = √(9 − (6 − x)²)), dă sub latura de
  * jos secțiunea canelurii: la adâncimea 2, fundul la −2 pe 6 mm, lățimea la față 2·(6 − √5) = 7,528 mm, nimic tăiat la peste 6
- * mm de linie. Pe exterior, profilul oprește exportul, cu motivul.
+ * mm de linie. Pe exterior (marginea profilată, 16.A↑f-4), la 2 mm, centrul stă la fundul plat (3 mm) de desen: nota spune
+ * retragerea muchiei de sus, iar oracolul dă secțiunea marginii, fără nimic tăiat în piesă dincolo de muchie; peste înălțimea
+ * profilului (3 mm), exportul se oprește, cu motivul.
  */
 const ROTUNJIRE = {
   id: 'r3', rev: 1, schimbatLa: 1_000, nume: 'Rotunjire R3', fel: 'rotunjire', diametru: 12, raza: 3, numar: 7,
@@ -36,7 +38,7 @@ async function bibliotecaCuRotunjire(page: Page): Promise<void> {
 
 const lista = (f: Locator): Locator => f.locator('[data-camp="freza-biblioteca"]');
 
-test('canelura cu o rotunjire din „Frezele mele”: forma profilată pe rând, programul taie secțiunea siluetei; pe exterior, refuzat', async ({ page }) => {
+test('o rotunjire din „Frezele mele”: canelura și marginea profilată tăiate ca silueta, pe hârtie; peste înălțimea profilului, refuzat', async ({ page }) => {
   await page.goto('/');
   await bibliotecaCuRotunjire(page);
   await adauga(page, 'dreptunghi');
@@ -79,14 +81,34 @@ test('canelura cu o rotunjire din „Frezele mele”: forma profilată pe rând,
   }
   expect(maxAbatere).toBeLessThanOrEqual(1e-3);
   expect(Math.abs(taiate * g.celula - 2 * (6 - Math.sqrt(5)))).toBeLessThanOrEqual(2 * g.celula + 1e-9);
-  // Pe exterior: refuzat, cu motivul în grupul frezei și sub tabel.
+  // Pe exterior (marginea profilată, 16.A↑f-4): la 2 mm (sub înălțimea profilului, 3 mm), centrul la fundul plat (3 mm) de
+  // desen; nota spune retragerea muchiei de sus, r(2) − 3 = 3 − √5 = 0,764 mm (pe linii, la cel mult 0,001 de arc).
   await page.keyboard.press('Escape');
   await expect(page.locator('[data-fisa="op"]')).toHaveCount(0);
   await page.locator('[data-actiune="export.gcode"]').click();
   await expect(forma).toHaveValue('profil');
   await rand.locator('input[data-camp="latura"][value="exterior"]').check();
+  await expect(rand.locator('[data-nota="margine-profil"]')).toHaveText(/^La fund, peretele cade pe desen; muchia de sus se retrage cu 0,76[45] mm, după silueta frezei\.$/);
+  await expect(page.locator('[data-buton="exporta"]')).toBeEnabled();
+  const d2 = page.waitForEvent('download');
+  await page.locator('[data-buton="exporta"]').click();
+  const text2 = readFileSync(await (await d2).path(), 'ascii');
+  await expect(page.getByTestId('export-stare')).toContainText('SHA-256');
+  // Secțiunea marginii sub latura de jos: centrul la y = 17, piesa deasupra lui y = 20.
+  const o2 = judeca(text2, g, { tip: 'profil', diametru: 12, puncte });
+  let abatere2 = 0;
+  for (let j = 0; j < o2.ny; j++) {
+    const y = g.y0 + (j + 0.5) * g.celula, rho = Math.abs(y - 17), z = o2.z[j * o2.nx + i]!;
+    const hartie = rho <= 6 ? Math.min(0, -2 + h(rho)) : 0;
+    abatere2 = Math.max(abatere2, Math.abs(z - hartie));
+    // În piesă, dincolo de muchia retrasă (cu o celulă), nimic tăiat.
+    if (y > 20 + (3 - Math.sqrt(5)) + g.celula) expect(z, `tăiat în piesă la y = ${y.toFixed(3)}`).toBeGreaterThan(-1e-9);
+  }
+  expect(abatere2).toBeLessThanOrEqual(1e-3);
+  // Peste înălțimea profilului: refuzat, cu motivul în grupul frezei și sub tabel.
+  await rand.locator('[data-camp="adancime"]').fill('3,5');
   await expect(page.locator('[data-buton="exporta"]')).toBeDisabled();
-  await expect(page.getByTestId('export-invalid')).toContainText('Freza profilată taie deocamdată doar pe linie');
-  await expect(rand.locator('[data-grup="freza"] [data-greseala]')).toContainText(['Freza profilată taie deocamdată doar pe linie']);
+  await expect(page.getByTestId('export-invalid')).toContainText('taie cel mult cât înălțimea profilului (3 mm)');
+  await expect(rand.locator('[data-grup="freza"] [data-greseala]')).toContainText(['taie cel mult cât înălțimea profilului (3 mm)']);
   await expect(page.getByTestId('jurnal')).toHaveText('0 erori în jurnalul local');
 });

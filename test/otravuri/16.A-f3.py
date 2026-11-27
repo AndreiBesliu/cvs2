@@ -37,8 +37,8 @@ o('H07', FF, "&& f.scula.forma?.tip !== 'toroidala' && f.scula.forma?.tip !== 'p
   'operația cu profilul pe o freză de rest primește rând (Exportă l-ar face plată)')
 o('H08', ER, "    return b.tip === 'profil' && a.puncte.length === b.puncte.length\n      && a.puncte.every(([r, h], i) => egal(r, b.puncte[i]![0]) && egal(h, b.puncte[i]![1]));",
   "    return b.tip === 'profil';", 'm', 'două siluete luate drept aceeași freză (același T)')
-o('H09', ER, "  return p.formaScula !== 'profil' || (p.tip === 'profil' && p.latura === 'pe-linie');", "  return true;", 'm',
-  'fereastra lasă profilul pe o parte și în buzunar')
+o('H09', ER, "  return motivProfilRand(p) === null;", "  return true;", 'm',
+  'fereastra lasă profilul în buzunar și pe o parte peste înălțimea lui (ancora mutată în 16.A↑f-4)')
 o('H10', ER, "  if (p.formaScula === 'profil') return p.profil !== undefined && p.profil.length >= 2 ? { tip: 'profil', puncte: p.profil } : undefined;",
   "  if (p.formaScula === 'profil') return null;", 'm', 'rândul cu profil scrie o freză plată')
 o('H11', ER, "  if (loc.forma?.tip === 'profil') return null;\n", '', 'm', 'un profil pus înapoi în bibliotecă fără felul lui')

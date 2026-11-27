@@ -228,12 +228,44 @@ export function formeEgale(a: FormaRand | undefined, b: FormaRand | undefined): 
   return b.tip === 'bila';
 }
 
+/** Raza fundului plat al siluetei (cel mai mare r cu h = 0), ca `fundProfil` din model, scrisă aici fiindcă interfața nu-l importă. */
+export function fundProfilRand(puncte: readonly (readonly [number, number])[]): number {
+  let r0 = 0;
+  for (const [r, h] of puncte) {
+    if (h > 0) break;
+    r0 = r;
+  }
+  return r0;
+}
+
+/** Înălțimea profilului (h la capăt), ca `inaltimeProfil` din model. */
+export function inaltimeProfilRand(puncte: readonly (readonly [number, number])[]): number {
+  return puncte[puncte.length - 1]?.[1] ?? 0;
+}
+
 /**
- * Profilul desenat pe rând (ADR 0304 §3): deocamdată doar pe linie (canelura, felia 16.A↑f-2); marginea profilată vine pe o
- * sub-felie a ei. Aceeași regulă ca `motivFormaPeOperatie` din model (o probă le compară).
+ * Profilul desenat pe rând (ADR 0304 §3, §4): pe linie (canelura, felia 16.A↑f-2) și pe o parte (marginea profilată, 16.A↑f-4),
+ * cu fund plat, cu adâncimea cel mult înălțimea profilului și, deocamdată, fără urechi, degajări, intrări și despărțire. Aceeași
+ * regulă ca `motivFormaPeOperatie` din model și ca refuzurile lucrării (o probă le compară); o adâncime de necitit nu se judecă
+ * aici (își are greșeala pe câmp).
  */
-export function profilPermis(p: Pick<Rand, 'tip' | 'latura' | 'formaScula'>): boolean {
-  return p.formaScula !== 'profil' || (p.tip === 'profil' && p.latura === 'pe-linie');
+export function profilPermis(p: Pick<Rand, 'tip' | 'latura' | 'formaScula' | 'profil' | 'adancime' | 'urechi' | 'colturi' | 'intrari' | 'despartire'>): boolean {
+  return motivProfilRand(p) === null;
+}
+
+/** De ce nu merge profilul pe rând: `profil` (nu e un profil), `fund`, `adancime` sau `optiuni`; null dacă merge (sau nu e profil). */
+export function motivProfilRand(
+  p: Pick<Rand, 'tip' | 'latura' | 'formaScula' | 'profil' | 'adancime' | 'urechi' | 'colturi' | 'intrari' | 'despartire'>,
+): 'profil' | 'fund' | 'adancime' | 'optiuni' | null {
+  if (p.formaScula !== 'profil') return null;
+  if (p.tip !== 'profil') return 'profil';
+  if (p.latura === 'pe-linie') return null;
+  const puncte = p.profil ?? [];
+  if (!(fundProfilRand(puncte) > 0)) return 'fund';
+  const d = citesteNumar(p.adancime);
+  if (d !== null && d > inaltimeProfilRand(puncte) + 1e-9) return 'adancime';
+  if (p.urechi || p.colturi !== '' || p.intrari || p.despartire) return 'optiuni';
+  return null;
 }
 
 /**
@@ -635,6 +667,11 @@ export type HartieRand = {
    * foaie); null altfel.
    */
   readonly perete?: { readonly vertical: number; readonly raza: number; readonly margineJos: number } | null;
+  /**
+   * Doar pe un profil pe o parte cu o freză profilată (felia 16.A↑f-4): cât se retrage muchia de sus în piesă, ca
+   * `retragereMuchie` din lucrare (la fund, peretele cade pe desen); null altfel.
+   */
+  readonly margine?: { readonly retragere: number } | null;
 };
 
 /**

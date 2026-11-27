@@ -1466,7 +1466,7 @@ grup, și **Pune tot ce vezi**, lângă titlu (după căutare și filtru), pun m
 (același fel, diametru, unghi, vârf, rază și treaptă) nu se pune a doua oară: fișa spune **E deja în frezele mele.**
 
 **Bila, toroidala și profilurile** (rotunjirea, ogee-ul, ogee-ul roman, panoul ridicat) se aleg și în proiect: bila și
-toroidala pe linie, în buzunar și pe o parte, profilurile deocamdată doar pe linie (o canelură). **Conica și burghiul** stau
+toroidala pe linie, în buzunar și pe o parte, profilurile pe linie (o canelură) și pe o parte (o margine profilată). **Conica și burghiul** stau
 în biblioteca ta și în catalog, cu **în curând în proiect**: în secțiunea Tăierea se aleg abia când aplicația le va putea
 tăia. O freză de canelură (cu vârful rotund, „core box”) e o **Bilă**.
 
@@ -1984,8 +1984,8 @@ tăietură **pe linie**, din lista **Din frezele mele**: forma devine **profilat
 arată silueta. Silueta și diametrul sunt ale frezei din bibliotecă: diametrul nu se schimbă de mână, iar altă formă aleasă
 scoate profilul. Centrul frezei merge pe linie, ca la freza plată, iar canelura iese cu secțiunea siluetei, în oglindă: la
 adâncimea scrisă, cât silueta ajunge sub fața plăcii; mai adânc decât înălțimea profilului, pereții coboară drept, cu
-diametrul frezei. Pe o parte, în buzunar, la găurire și în V-carve, exportul se oprește, cu motivul: marginea profilată vine
-mai târziu. Raportul foilor numește freza „profilată”.
+diametrul frezei. În buzunar, la găurire și în V-carve, exportul se oprește, cu motivul. Raportul foilor numește freza
+„profilată”.
 
 **Bila și toroidala pe o parte.** Și pe un profil **pe o parte** (exterior, interior, stânga, dreapta), forma poate fi **bilă**
 sau **toroidală**, dacă adâncimea e cel puțin raza colțului (la bilă, jumătatea diametrului). Drumul e al frezei plate de
@@ -1994,6 +1994,15 @@ până la adâncimea minus raza colțului: sub **Adâncimea**, nota spune, de ex
 la fund rămâne racordarea de rază 3 mm”. Pe o tăietură prin foaie, cu supracursa sub raza colțului, racordarea rămâne pe
 muchia de jos a piesei, iar nota o spune. Mai puțin adânc decât raza colțului, exportul se oprește: peretele n-ar ajunge la
 desen.
+
+**Marginea profilată.** Pe un profil **pe o parte** (exterior, interior, stânga, dreapta), freza profilată face o margine: o
+rotunjire, un ogee pe muchia piesei. Centrul frezei stă de desen cât fundul plat al siluetei (la o rotunjire, raza vârfului de
+sub arc), deci la fund peretele cade exact pe desen, iar mai sus se retrage după silueta frezei; sub **Adâncimea**, nota spune
+cât, de exemplu „La fund, peretele cade pe desen; muchia de sus se retrage cu 0,76 mm, după silueta frezei”. Adâncimea e cel
+mult înălțimea profilului (la o rotunjire, raza ei): mai adânc, cilindrul frezei ar tăia o treaptă în piesă, iar exportul se
+oprește, cu înălțimea în motiv. Lista **Din frezele mele** oferă pe o parte doar profilurile destul de înalte pentru adâncimea
+scrisă. Silueta fără fund plat (care urcă de la axă), urechile, degajările, intrările și despărțirea foii nu merg încă pe o
+margine profilată: exportul se oprește, cu motivul.
 
 Lista **Din frezele mele**, în grupul Freza, are frezele din biblioteca ta (vezi [Frezele mele](#freze)) care merg pe tăietura
 operației: plate pe un profil, un buzunar sau o găurire, în V la V-carve. Aleasă, freza își pune pe operație numărul T (al ei,

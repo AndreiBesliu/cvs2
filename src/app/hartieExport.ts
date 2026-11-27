@@ -15,6 +15,7 @@ import { felGaurire, pasiCiocanire, RETRAGERE_PARTIALA } from '../cam/gaurireFel
 import { adancimeTaiata } from '../cam/prinFoaie.ts';
 import { adancimiTreceri } from '../cam/treceri.ts';
 import { creastaBuzunar, peretePeOParte } from '../model/creasta.ts';
+import { fundProfil, inaltimeProfil, retragereMuchie } from '../model/profilMargine.ts';
 import type { HartieRand, IntrareHartie } from '../ui/exportRand.ts';
 
 export function hartieRand(i: IntrareHartie): HartieRand {
@@ -37,7 +38,11 @@ export function hartieRand(i: IntrareHartie): HartieRand {
     const rotunda = f?.tip === 'bila' || f?.tip === 'toroidala';
     const perete = rotunda && i.peOParte === true && D !== null && adancime !== null
       ? peretePeOParte({ numar: 0, nume: '', diametru: D, forma: f }, adancime, i.grosime) : null;
-    return { adancime, treceri, gaurire: null, perete };
+    // Marginea profilată (ADR 0304 §4, felia 16.A↑f-4): cât se retrage muchia de sus, cât adâncimea e în profil.
+    const margine = f?.tip === 'profil' && i.peOParte === true && adancime !== null && adancime > 0
+      && fundProfil(f.puncte) > 0 && adancime <= inaltimeProfil(f.puncte) + 1e-9
+      ? { retragere: retragereMuchie(f.puncte, adancime) } : null;
+    return { adancime, treceri, gaurire: null, perete, margine };
   }
   if (i.tip !== 'gaurire') return { adancime, treceri, gaurire: null };
   const D = i.diametruScula;

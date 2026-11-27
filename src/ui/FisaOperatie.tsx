@@ -460,6 +460,10 @@ export function FisaOperatie({ cheie, loc, total: totalFisa, c: ctx }: {
             vertical: fmtFreza.format(h.perete.vertical), raza: fmtFreza.format(h.perete.raza),
           })}{h.perete.margineJos > 0 && ` ${t('export.perete-rotunda-jos', { jos: fmtFreza.format(h.perete.margineJos), raza: fmtFreza.format(h.perete.raza) })}`}</span>
         )}
+        {/* Marginea profilată (ADR 0304 §4, felia 16.A↑f-4): cât se retrage muchia de sus în piesă. */}
+        {h.margine && (
+          <span className="nota" data-nota="margine-profil">{t('export.margine-profil', { retragere: fmtFreza.format(h.margine.retragere) })}</span>
+        )}
       </div>);
       case 'sens': return (<div className="dx-rand">
         {/* Pe linie, scula taie ambii pereți: sensul nu schimbă materialul (ADR 0027 §3). */}
