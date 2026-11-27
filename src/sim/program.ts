@@ -47,6 +47,28 @@ function sculaRefuzata(s: Program['scula']): string | null {
   if (forma?.tip === 'toroidala' && !(Number.isFinite(forma.raza) && forma.raza > 0 && forma.raza < diametru / 2)) {
     return `scula toroidală are raza colțului ${forma.raza} mm, în afara (0, ${diametru / 2}) mm`;
   }
+  if (forma?.tip === 'profil') return profilRefuzat(forma.puncte, diametru);
+  return null;
+}
+
+/** Cel mult atâtea puncte într-un profil desenat (ADR 0304 §1, ca la ușă). */
+export const PUNCTE_PROFIL_MAXIM = 200;
+
+/**
+ * Profilul desenat (ADR 0304 §1): 2–200 de puncte, primul (0, 0), r strict crescător, h nedescrescător, toate finite,
+ * ultimul r cât raza (la 1e-9). Motivul, sau null.
+ */
+export function profilRefuzat(puncte: readonly (readonly [number, number])[], diametru: number): string | null {
+  const n = puncte.length;
+  if (n < 2 || n > PUNCTE_PROFIL_MAXIM) return `scula profil are ${n} puncte, în afara [2, ${PUNCTE_PROFIL_MAXIM}]`;
+  if (puncte[0]![0] !== 0 || puncte[0]![1] !== 0) return 'scula profil începe în alt punct decât (0, 0)';
+  for (let i = 1; i < n; i++) {
+    const [r0, h0] = puncte[i - 1]!, [r1, h1] = puncte[i]!;
+    if (!(Number.isFinite(r1) && Number.isFinite(h1))) return `scula profil are punctul ${i} nefinit`;
+    if (!(r1 > r0)) return `scula profil: r nu crește strict la punctul ${i}`;
+    if (!(h1 >= h0)) return `scula profil: h scade la punctul ${i}`;
+  }
+  if (Math.abs(puncte[n - 1]![0] - diametru / 2) > 1e-9) return `scula profil se termină la r = ${puncte[n - 1]![0]}, nu la raza ${diametru / 2}`;
   return null;
 }
 
@@ -84,8 +106,8 @@ export function pregatesteProgram(p: Program, sus: number): ProgramSimulat {
     if (m.tip === 'arc') {
       const r = arc(m, x, y, nx, ny);
       if (typeof r === 'string') return refuz(r, q);
-      if (z !== nz && forma.tip === 'v' && !inAer) {
-        return refuz('elicea cu V-ul nu se simulează încă (doar cu freza plată, cu bila și cu toroidala)', q);
+      if (z !== nz && (forma.tip === 'v' || forma.tip === 'profil') && !inAer) {
+        return refuz(`elicea cu ${forma.tip === 'v' ? 'V-ul' : 'profilul'} nu se simulează încă (doar cu freza plată, cu bila și cu toroidala)`, q);
       }
       if (!inAer) out.push(m.sens === 'trigonometric' ? ARC_TRIG : ARC_ORAR, x, y, z, nx, ny, nz, m.centru.x, m.centru.y, r);
     } else if (!inAer) {
