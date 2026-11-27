@@ -1449,7 +1449,8 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   consola trec de 1 mm; altfel, aspru pe alocuri), cu marginea de aderență (brim) sub 10 % din disc. Piesele, la octet
   (amprenta a 742 de plase). Easy 3Draw 18.45.0. **3.Cm-3 (ventilatorul ca trusă)** gata pe 27.11: `ventilatorTrusa` (grinda
   de 2k + 1 găuri sub carcasă, prinsă de două urechi opuse, o jumătate de bucșă, rotorul în tub, axul cel mai scurt); la
-  carcasă, rândul grinzii în „Se prinde cu”; bifa „Și trusa” la „Fă ventilatorul”. Easy 3Draw 18.46.0 (următoarea, 18.47.0). **O probă e2e care cere textul tipăririi îi ia
+  carcasă, rândul grinzii în „Se prinde cu”; bifa „Și trusa” la „Fă ventilatorul”; unită în `main` pe 27.11 (`f9b2bbc8`).
+  Easy 3Draw 18.46.0 (următoarea, 18.47.0). **O probă e2e care cere textul tipăririi îi ia
   cifrele din motor pentru starea exactă a editorului din probă. Un paragraf umplut după construire nu stă în editor deasupra
   unor butoane (apare după 90 ms și le mută: un clic se pierde sub încărcare).** La owner: verdictul a / b / c (fișa etapei 3).
   **Cotele pe desen: modelul și proba G-code-ului (ADR 0330, felia 10.4↑a-1, adusă din etapa 10)** gata pe 24.11, în
@@ -2130,6 +2131,20 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 27.11.2026, după-amiaza (a șaizeci și noua unire din cloud): **ventilatorul ca trusă (3.Cm-3), unit în `main`**
+  (sesiunea principală, ramura `unire-2711o`, din `0f1e0766`). Linia atelierului, ramura `wip/3.Xh-biblioteca-ui`,
+  `61eb3689`, PR-ul `AndreiBesliu/cvs2#77` (ADR 0340, răspunsul 3a din auditul elicelor), unită în `f9b2bbc8`: sub
+  carcasă, o grindă groasă cu 2k + 1 găuri, prinsă cu știfturi de două urechi opuse (Ø40: 7 găuri, Ø48: 9), o jumătate de
+  bucșă, rotorul cu paletele toate în tub și axul cel mai scurt care trece prin grindă, bucșă și butuc; la carcasă,
+  rândul grinzii în „Se prinde cu”; sub „Fă ventilatorul”, bifa „Și trusa”. **Easy 3Draw 18.46.0** (585,9 kB);
+  otrăvurile 23 / 23 și 2 / 2, plus două ancore mutate. Doar pachetul extensiei și probele; nimic pe server. Felia avea
+  `main` de dinaintea frezelor f-1 și f-2, deci unirea și-a făcut completul ei (ciocnirea, doar în indexul liniilor):
+  completul 45998645923 pe `f9b2bbc8`, verde: unit 10 986 / 0 (12 sărite, pe Linux), e2e 1 016 / 1 016, funcțiile pe
+  emulatoare 142 / 142, paginile 62 / 62; rapidul, verde. **Loturile 62 (16.A↑f-1 și f-2, documentul v32) și 63 (3.Cm-1
+  și 3.Cm-2) sunt pe test din 27.11, 14:29 și 14:42**; felia aceasta pleacă acum (lotul 64). Frezele au raportat 16.A↑f-3
+  (profilurile parametrice în proiect, `0a1fd1a4`), puse peste ventilator pe `unire-2711p`, cu completul lotului.
+  Atelierul are 3.Cm-4 (claritatea editorului elicelor) la porți. **La owner:** de tipărit ventilatorul și de montat ca
+  trusă; verdictul tipăririi elicelor (până la cuvântul lui, a); restul listei, neschimbat.
 - 27.11.2026, după-amiaza (a șaizeci și opta unire din cloud): **elicele după audit: otrăvurile rulate din nou (3.Cm-1) și
   tipărirea spusă cinstit (3.Cm-2), unite în `main`** (sesiunea principală, ramura `unire-2711l`, peste 16.A↑f-1 și f-2).
   Linia atelierului, ramura `wip/3.Xh-biblioteca-ui`, `ca9577b2`, PR-ul `AndreiBesliu/cvs2#77` (ADR 0340, acceptat cu
