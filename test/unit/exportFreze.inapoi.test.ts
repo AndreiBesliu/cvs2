@@ -22,7 +22,7 @@ const V60: OrigineFreza = { nume: 'V60 Ø6', biblioteca: { id: 'v60', rev: 1 }, 
 /** Un rând al ferestrei, cu valorile date peste cele ale unui profil cu freza plată Ø12 din bibliotecă. */
 function rand(p: Partial<Rand> = {}): Rand {
   return {
-    numarScula: '6', diametruScula: '12', origineScula: P12, regimMana: { turatie: '', avans: '', plonjare: '' }, formaScula: 'plata', unghiV: '60', varfV: '0', directie: '', latura: 'exterior',
+    numarScula: '6', diametruScula: '12', origineScula: P12, regimMana: { turatie: '', avans: '', plonjare: '' }, formaScula: 'plata', unghiV: '60', varfV: '0', razaColt: '1', directie: '', latura: 'exterior',
     sens: 'urcare', adancime: '6', pas: '4', urechi: false, numarUrechi: '4', latimeUreche: '8', grosimeUreche: '2', modUrechi: 'egale',
     rampa: false, lungimeRampa: '10', intrari: false, razaIntrare: '3', colturi: '', despartire: false, tip: 'profil', retragereCompleta: '1',
     pasLateral: '4.8', coborare: 'plonjare', unghiCoborare: '3', lungimeZigzag: '20', razaElice: '3',

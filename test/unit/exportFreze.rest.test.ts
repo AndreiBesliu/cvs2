@@ -124,7 +124,7 @@ test('frezele dopului drept și freza decupării benzii primesc originea aleasă
 /** Un rând al ferestrei, cu valorile date peste cele ale unui V-carve cu fundul plat. */
 function rand(p: Partial<Rand> = {}): Rand {
   return {
-    numarScula: '1', diametruScula: '6', origineScula: null, regimMana: { turatie: '', avans: '', plonjare: '' }, formaScula: 'v', unghiV: '60', varfV: '0', directie: '', latura: 'interior',
+    numarScula: '1', diametruScula: '6', origineScula: null, regimMana: { turatie: '', avans: '', plonjare: '' }, formaScula: 'v', unghiV: '60', varfV: '0', razaColt: '1', directie: '', latura: 'interior',
     sens: 'urcare', adancime: '3', pas: '1.5', urechi: false, numarUrechi: '4', latimeUreche: '8', grosimeUreche: '2', modUrechi: 'egale',
     rampa: false, lungimeRampa: '10', intrari: false, razaIntrare: '3', colturi: '', despartire: false, tip: 'vcarve', retragereCompleta: '1',
     pasLateral: '2.4', coborare: 'plonjare', unghiCoborare: '3', lungimeZigzag: '20', razaElice: '3',

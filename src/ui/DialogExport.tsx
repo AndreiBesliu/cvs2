@@ -34,7 +34,7 @@ import {
   copieDeReadus, cuFrezaAleasa, cuFrezaPusaInapoi, cuValorileNoi, frezeRanduri, locuriFreze, numarPentruRand, oferitePentruRest, stareOrigine, type FrezaOferita, type OrigineFreza, type SculaOperatie, type StareExport,
   AER_IMPLICIT, campuriAerGresite, parametriAer, type SetariAer,
   type CopieRand, type RezultatInapoi, type UndeFreza, campuriRegimGresite, campuriSculaGresite, cheieFreza, regimDinRand, REGIM_GOL, cuNumarT, numarDupaConflict, type FrezaT, type LocFreza,
-  type ValoriOperatie, type HartieRand, type IntrareHartie,
+  type ValoriOperatie, type HartieRand, type IntrareHartie, formaDinRand, RAZA_COLT_IMPLICITA,
 } from './exportRand.ts';
 
 type Props = {
@@ -449,8 +449,12 @@ export function DialogExport(
       numarScula: text(o.valori.scula?.numar ?? 1), diametruScula: text(o.valori.scula?.diametru ?? 6), origineScula: o.valori.scula?.origine ?? null,
       // Valorile scrise de mână (felia 28.8↑p): doar pe o freză fără origine; pe una din bibliotecă, câmpurile pornesc goale.
       regimMana: ((r) => (r && !o.valori.scula?.origine ? { turatie: text(r.turatie), avans: text(r.avans), plonjare: text(r.plonjare) } : REGIM_GOL))(o.valori.scula?.regim),
-      formaScula: o.valori.scula?.forma ? 'v' : 'plata', unghiV: text(o.valori.scula?.forma?.unghi ?? UNGHI_V_IMPLICIT),
-      varfV: text(o.valori.scula?.forma?.varf ?? 0), directie: o.valori.directie ?? '',
+      // Forma frezei (ADR 0303, felia 16.A↑e-4): și bila și toroidala; câmpurile celorlalte forme pornesc cu implicitele lor.
+      ...((f) => ({
+        formaScula: f?.tip ?? 'plata', unghiV: text(f?.tip === 'v' ? f.unghi : UNGHI_V_IMPLICIT), varfV: text(f?.tip === 'v' ? f.varf ?? 0 : 0),
+        razaColt: text(f?.tip === 'toroidala' ? f.raza : RAZA_COLT_IMPLICITA),
+      }))(o.valori.scula?.forma),
+      directie: o.valori.directie ?? '',
       latura: o.valori.latura, sens: o.valori.sens, adancime: text(o.valori.adancime), pas: text(o.valori.pas),
       urechi: inchise && o.valori.urechi !== null, numarUrechi: text(u.numar), latimeUreche: text(u.latime), grosimeUreche: text(u.grosime),
       modUrechi: o.valori.urechi?.mod ?? 'egale',
@@ -669,6 +673,8 @@ export function DialogExport(
       && (p.tip !== 'vcarve' || !p.fundPlat || restBun(p.restFund, p.diametruSculaFund).every(Boolean)),
     scula: p !== undefined && intregInMargini(p.numarScula, MARGINI_OPERATIE.numarScula) && inMargini(p.diametruScula, MARGINI_OPERATIE.diametru)
       && (p.formaScula !== 'v' || inMargini(p.unghiV, MARGINI_OPERATIE.unghiV, MARGINI_OPERATIE.unghiVMinim))
+      // Raza colțului toroidalei (ADR 0303 §1, felia 16.A↑e-4): în (0, Ø / 2).
+      && !campuriSculaGresite(p).includes('raza')
       // Turația, avansul și plonjarea scrise de mână (felia 28.8↑p): doar fără origine din bibliotecă.
       && (p.origineScula !== null || campuriRegimGresite(p.regimMana).length === 0),
     // V-carve-ul (ADR 0090) cere freza în V.
@@ -677,6 +683,8 @@ export function DialogExport(
     varf: p !== undefined && (p.formaScula !== 'v' || ((v, d) => v !== null && d !== null && v >= 0 && v < d)(citesteNumar(p.varfV), citesteNumar(p.diametruScula))),
     // Freza în V (ADR 0092 §3) taie pe linie sau într-un V-carve; pe o parte, într-un buzunar sau la găurire, nu.
     vPeLinie: p !== undefined && (p.formaScula !== 'v' || p.tip === 'vcarve' || (p.tip === 'profil' && p.latura === 'pe-linie')),
+    // Bila și toroidala (ADR 0303, felia 16.A↑e-4) taie azi doar pe linie (canelura).
+    rotunda: p !== undefined && ((p.formaScula !== 'bila' && p.formaScula !== 'toroidala') || (p.tip === 'profil' && p.latura === 'pe-linie')),
     // Fundul plat (ADR 0091): doar cu bifa pusă; pasul lateral cel mult raza frezei drepte.
     fund: p !== undefined && (p.tip !== 'vcarve' || !p.fundPlat || (intregInMargini(p.numarSculaFund, MARGINI_OPERATIE.numarScula)
       && inMargini(p.diametruSculaFund, MARGINI_OPERATIE.diametru) && ((d) => d !== null && inMargini(p.pasLateralFund, d / 2))(citesteNumar(p.diametruSculaFund)))),
@@ -713,12 +721,15 @@ export function DialogExport(
   const scule = new Map<number, Map<string, string>>();
   // Fiecare freză, cu locul ei pe rând (fără loc, a unei finisări): „Dă-i T{n}” caută numărul nou printre ele (28.8↑j).
   const frezeT: FrezaT[] = [];
-  const adaugaFreza = (n: number, d: number, u: number | null, v: number | null = null, bila = false, loc?: LocFreza): void => {
+  const adaugaFreza = (n: number, d: number, u: number | null, v: number | null = null, bila = false, loc?: LocFreza, razaColt: number | null = null): void => {
     const m = scule.get(n) ?? new Map<string, string>();
-    // Bila (ADR 0312): același diametru cu altă formă e altă freză. ADR 0092: același unghi cu alt vârf e altă freză.
-    const cheie = cheieFreza(d, bila ? null : u, bila ? null : v, bila);
+    // Bila (ADR 0312) și toroidala (ADR 0303, cu raza colțului): același diametru cu altă formă e altă freză. ADR 0092: același
+    // unghi cu alt vârf e altă freză.
+    const rotunda = bila || razaColt !== null;
+    const cheie = cheieFreza(d, rotunda ? null : u, rotunda ? null : v, bila, bila ? null : razaColt);
     const varf = u !== null && v !== null && v > 0 ? v : null;
-    m.set(cheie, bila ? `Ø${fmtFreza.format(d)} mm ${t('export.finisare.forma.bila')}` : u !== null
+    m.set(cheie, bila ? `Ø${fmtFreza.format(d)} mm ${t('export.finisare.forma.bila')}`
+      : razaColt !== null ? `Ø${fmtFreza.format(d)} mm ${t('export.raport.toroidala', { raza: fmtFreza.format(razaColt) })}` : u !== null
       ? `Ø${fmtFreza.format(d)} mm V${fmtFreza.format(u)}°${varf !== null ? ` ${t('export.freza.varf-scurt', { mm: fmtFreza.format(varf) })}` : ''}`
       : `Ø${fmtFreza.format(d)} mm`);
     scule.set(n, m);
@@ -729,7 +740,11 @@ export function DialogExport(
     const n = p ? citesteNumar(p.numarScula) : null, d = p ? citesteNumar(p.diametruScula) : null;
     const u = p && p.formaScula === 'v' ? citesteNumar(p.unghiV) : null;
     const loc = (unde: UndeFreza): LocFreza => ({ cheie: o.cheie, unde });
-    if (n !== null && d !== null) adaugaFreza(n, d, u, p ? citesteNumar(p.varfV) : null, false, loc('scula'));
+    // Bila și toroidala (felia 16.A↑e-4): forma face parte din freză, ca la V.
+    const fr = p ? formaDinRand(p) : null;
+    if (n !== null && d !== null) {
+      adaugaFreza(n, d, u, p ? citesteNumar(p.varfV) : null, fr?.tip === 'bila', loc('scula'), fr?.tip === 'toroidala' ? fr.raza : null);
+    }
     // Și freza dreaptă a fundului plat (ADR 0091), cu bifa pusă.
     const nf = p?.tip === 'vcarve' && p.fundPlat ? citesteNumar(p.numarSculaFund) : null, df = p ? citesteNumar(p.diametruSculaFund) : null;
     if (nf !== null && df !== null) adaugaFreza(nf, df, null, null, false, loc('fund'));
@@ -791,6 +806,7 @@ export function DialogExport(
   const funduriBune = randuri.every((b) => b.fund);
   const varfuriBune = randuri.every((b) => b.varf);
   const vPeLinie = randuri.every((b) => b.vPeLinie);
+  const rotundePeLinie = randuri.every((b) => b.rotunda);
   const resturiBune = randuri.every((b) => b.rest);
   const strategiiBune = randuri.every((b) => b.strategie);
   const incrustatiiBune = randuri.every((b) => b.incrustatie);
@@ -881,7 +897,7 @@ export function DialogExport(
     return out;
   };
   const valid = operatiiBune && urechiBune && rampeBune && intrariBune && pasiBuni && coborariBune && retrageriBune && vcarveBune && funduriBune
-    && varfuriBune && vPeLinie && resturiBune && strategiiBune && incrustatiiBune && drepteBune && frezeDopBune && benziBune && puntiDopBune
+    && varfuriBune && vPeLinie && rotundePeLinie && resturiBune && strategiiBune && incrustatiiBune && drepteBune && frezeDopBune && benziBune && puntiDopBune
     && supracursaBuna && numeBun && aerBun && gauriBune && reliefBun;
   /**
    * Orice parametru schimbat face vechi rezultatul. Bifa nu mai trebuie ștearsă aici: cererea următoare e alt obiect, deci
@@ -1015,7 +1031,7 @@ export function DialogExport(
     const p = param[o.cheie];
     if (!p) return [];
     const vcarve = p.tip !== 'vcarve' ? null : [
-      numar(p.numarScula), numar(p.diametruScula), p.formaScula, numar(p.unghiV), numar(p.varfV), numar(p.adancime), numar(p.pas), p.sens,
+      numar(p.numarScula), numar(p.diametruScula), p.formaScula, numar(p.unghiV), numar(p.varfV), numar(p.razaColt), numar(p.adancime), numar(p.pas), p.sens,
       p.fundPlat ? [numar(p.numarSculaFund), numar(p.diametruSculaFund), numar(p.pasLateralFund), org(p.origineFund),
         ...p.restFund.map((r) => `${numar(r.numar)} ${numar(r.diametru)} ${numar(r.pas)} ${org(r.origine)}`)].join(' ') : '',
       // Incrustația în V (ADR 0170, ADR 0172): lucrarea unește doar locașele cu aceeași incrustație, deci și rândurile se leagă
@@ -1161,13 +1177,12 @@ export function DialogExport(
     const pas = p ? citesteNumar(p.pas) : null;
     const numarScula = p ? citesteNumar(p.numarScula) : null, diametruScula = p ? citesteNumar(p.diametruScula) : null;
     if (!p || adancime === null || pas === null || numarScula === null || diametruScula === null) return [];
-    const unghiV = p.formaScula === 'v' ? citesteNumar(p.unghiV) : null;
-    const varfV = p.formaScula === 'v' ? citesteNumar(p.varfV) : null;
-    if (p.formaScula === 'v' && (unghiV === null || varfV === null)) return [];
-    // Vârful 0 = ascuțit: nu se scrie (ADR 0092).
+    // Forma (ADR 0090, 0303): în V, bila sau toroidala; una de necitit (un unghi, un vârf sau o rază care nu e un număr)
+    // nu scrie nimic. Vârful 0 = ascuțit: nu se scrie (ADR 0092).
+    const forma = formaDinRand(p);
+    if (forma === undefined || (p.formaScula === 'v' && citesteNumar(p.varfV) === null)) return [];
     const scula: SculaOperatie = {
-      numar: numarScula, diametru: diametruScula,
-      ...(unghiV !== null ? { forma: { tip: 'v' as const, unghi: unghiV, ...(varfV !== null && varfV > 0 ? { varf: varfV } : {}) } } : {}),
+      numar: numarScula, diametru: diametruScula, ...(forma ? { forma } : {}),
       // Freza din „Frezele mele” (ADR 0300 §4): originea ei, sau `null` (scrisă de mână: originea pleacă din document).
       origine: p.origineScula,
       // Scrisă de mână, cu valorile ei de lucru (felia 28.8↑p): în `scula.regim`, sau `null` fără ele.
@@ -1303,6 +1318,7 @@ export function DialogExport(
     ...(vcarveBune ? [] : [t('motiv.vcarve-freza')]),
     ...(varfuriBune ? [] : [t('motiv.varf-invalid')]),
     ...(vPeLinie ? [] : [t('motiv.v-pe-linie')]),
+    ...(rotundePeLinie ? [] : [t('motiv.rotunda-pe-linie')]),
     ...(funduriBune ? [] : [t('motiv.fund-plat-invalid', { n: MARGINI_OPERATIE.numarScula, diametru: fmtFreza.format(MARGINI_OPERATIE.diametru) })]),
     ...(resturiBune ? [] : [t('motiv.rest-invalid', { n: MARGINI_OPERATIE.numarScula })]),
     ...(strategiiBune ? [] : [t('motiv.strategie-invalida')]),
@@ -1336,7 +1352,8 @@ export function DialogExport(
       case 'scula': return [
         ...campuriSculaGresite(p).map((c) => (c === 'numar' ? t('motiv.camp.scula-numar', { n: fmtMargine.format(MARGINI_OPERATIE.numarScula) })
           : c === 'diametru' ? t('motiv.camp.scula-diametru', { max: fmtMargine.format(MARGINI_OPERATIE.diametru) })
-            : t('motiv.camp.unghi-v', { min: fmtMargine.format(MARGINI_OPERATIE.unghiVMinim), max: fmtMargine.format(MARGINI_OPERATIE.unghiV) }))),
+            : c === 'raza' ? t('motiv.camp.raza-colt', { max: ((d) => (d !== null ? fmtMargine.format(d / 2) : '–'))(citesteNumar(p.diametruScula)) })
+              : t('motiv.camp.unghi-v', { min: fmtMargine.format(MARGINI_OPERATIE.unghiVMinim), max: fmtMargine.format(MARGINI_OPERATIE.unghiV) }))),
         // Turația, avansul și plonjarea scrise de mână (felia 28.8↑p): fiecare câmp greșit, cu marginile lui.
         ...(p.origineScula === null ? campuriRegimGresite(p.regimMana) : []).map((c) => t(`motiv.camp.${c}`, { max: fmtMargine.format(MARGINI_OPERATIE.regimFreza) })),
       ];
@@ -1360,6 +1377,7 @@ export function DialogExport(
       case 'vcarve': return t('motiv.vcarve-freza');
       case 'varf': return t('motiv.varf-invalid');
       case 'vPeLinie': return t('motiv.v-pe-linie');
+      case 'rotunda': return t('motiv.rotunda-pe-linie');
       case 'fund': return t('motiv.fund-plat-invalid', { n: MARGINI_OPERATIE.numarScula, diametru: fmtFreza.format(MARGINI_OPERATIE.diametru) });
       case 'rest': return t('motiv.rest-invalid', { n: MARGINI_OPERATIE.numarScula });
       case 'strategie': return t('motiv.strategie-invalida');

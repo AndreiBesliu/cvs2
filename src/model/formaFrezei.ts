@@ -42,21 +42,23 @@ export function felFrezei(forma: FormaSculaDoc | undefined): 'plată' | 'în V' 
 }
 
 /**
- * Forma pe care o poartă un rând editabil al ferestrei exportului: plata (fără formă) și V-ul (cu vârful plat), singurele pe
- * care copia ferestrei le știe (ADR 0290, `exportRand.ts`). O operație cu altă freză (bila, toroidala, o formă necunoscută
- * a unei versiuni mai noi) n-are rând: Exportă o lasă neschimbată, iar lucrarea o refuză cu motivul ei, deci o freză nu
- * devine pe tăcute o plată.
+ * Forma pe care o poartă freza operației pe un rând editabil al ferestrei exportului (ADR 0290, `exportRand.ts`): plata (fără
+ * formă), V-ul (cu vârful plat) și, din 16.A↑e-4, bila și toroidala (cu raza colțului, ADR 0303). O formă necunoscută (a unei
+ * versiuni mai noi) n-are rând: Exportă o lasă neschimbată, iar lucrarea o refuză cu motivul ei, deci o freză nu devine pe
+ * tăcute o plată.
  */
 export function formaPeRand(forma: FormaSculaDoc | undefined): boolean {
-  return forma === undefined || forma.tip === 'v';
+  return forma === undefined || forma.tip === 'v' || forma.tip === 'bila' || forma.tip === 'toroidala';
 }
 
 /**
  * Operațiile cu un rând editabil în fereastra exportului: cele pe contur (nu finisarea și degroșarea reliefului, cu rândul lor
- * doar de citit), cu toate frezele purtate de rând (`formaPeRand`).
+ * doar de citit), cu freza operației purtată de rând (`formaPeRand`) și cu frezele în plus (de rest, ale fundului plat, ale
+ * dopului, a benzii) plate sau în V, ca până acum: rândul nu le poartă o formă rotundă, deci Exportă ar face din ea o plată.
  */
 export function operatieCuRand(o: Operatie): boolean {
-  return o.tip !== 'finisare' && o.tip !== 'degrosare' && frezeleOperatiei(o).every((f) => formaPeRand(f.scula.forma));
+  return o.tip !== 'finisare' && o.tip !== 'degrosare'
+    && frezeleOperatiei(o).every((f) => formaPeRand(f.scula.forma) && (f.cale === 'scula' || (f.scula.forma?.tip !== 'bila' && f.scula.forma?.tip !== 'toroidala')));
 }
 
 /**

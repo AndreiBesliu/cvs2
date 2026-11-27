@@ -14,7 +14,7 @@ import { elementeFoaie } from '../model/lume.ts';
 import { doarFoaia, numeFoaie as numeFoii } from '../model/foi.ts';
 import { t } from '../i18n/t.ts';
 import type {
-  CerereExport, CopieRand, FrezaOferita, FrezaRestOperatie, OperatieExport, OrigineFreza, Rand, RezultatInapoi, SculaOperatie, SetariAer, StareExport,
+  CerereExport, CopieRand, FormaRand, FrezaOferita, FrezaRestOperatie, OperatieExport, OrigineFreza, Rand, RezultatInapoi, SculaOperatie, SetariAer, StareExport,
 } from '../ui/exportRand.ts';
 import { frezeleOperatiei, operatieCuRand } from '../model/formaFrezei.ts';
 import { frezePeRanduri, frezePotrivite, pasLateralDin, sculaDinBiblioteca } from '../model/alegereFreza.ts';
@@ -129,12 +129,20 @@ function faraRanguri(doc: Document): Document {
   return { ...doc, piese: doc.piese.map((p) => ({ ...p, operatii: p.operatii.map((o) => { const { rang: _r, ...fara } = o; void _r; return fara; }) })) };
 }
 
-/** Scula unui rând (fără bilă, `peRand`), cum o citește fereastra: numărul, diametrul și forma în V. */
+/**
+ * Forma frezei din document, cum o poartă rândul ferestrei (`FormaRand`): în V (unghiul, vârful), bila sau toroidala (raza
+ * colțului, ADR 0303, felia 16.A↑e-4); câmpurile necunoscute ale formei rămân în document (Exportă le îmbină). Lipsă = plată.
+ */
+function formaRand(f: Operatie['scula']['forma']): { readonly forma?: FormaRand } {
+  if (f?.tip === 'v') return { forma: { tip: 'v', unghi: f.unghi, ...(f.varf !== undefined ? { varf: f.varf } : {}) } };
+  if (f?.tip === 'bila') return { forma: { tip: 'bila' } };
+  if (f?.tip === 'toroidala') return { forma: { tip: 'toroidala', raza: f.raza } };
+  return {};
+}
+
+/** Scula unui rând (`peRand`), cum o citește fereastra: numărul, diametrul și forma. */
 function sculaRand(s: Operatie['scula']): SculaOperatie {
-  return {
-    numar: s.numar, diametru: s.diametru,
-    ...(s.forma?.tip === 'v' ? { forma: { tip: 'v' as const, unghi: s.forma.unghi, ...(s.forma.varf !== undefined ? { varf: s.forma.varf } : {}) } } : {}),
-  };
+  return { numar: s.numar, diametru: s.diametru, ...formaRand(s.forma) };
 }
 
 /** O piesă a listei ferestrei, cu instanța ei pe foaia rândurilor (prima de acolo). */
@@ -194,8 +202,7 @@ function randuriFoii(
       ...(cuprinseOp ? { inauntru: cuprinseOp } : {}),
       valori: {
         scula: {
-          numar: o.scula.numar, diametru: o.scula.diametru,
-          ...(o.scula.forma?.tip === 'v' ? { forma: { tip: 'v' as const, unghi: o.scula.forma.unghi, ...(o.scula.forma.varf !== undefined ? { varf: o.scula.forma.varf } : {}) } } : {}),
+          numar: o.scula.numar, diametru: o.scula.diametru, ...formaRand(o.scula.forma),
           // Freza din „Frezele mele” (ADR 0300 §4, felia 16.A↑b-3): originea ei, dacă documentul o are; altfel scrisă de mână.
           origine: origineDin(o.scula),
           // Scrisă de mână, cu valorile ei de lucru (felia 28.8↑p): fereastra le arată în câmpurile ei.
@@ -377,9 +384,8 @@ export function ExportConectat({
     return {
       id: f.id, nume: f.nume, pas: f.pas, pasLateral: pasLateralDin(f),
       scula: {
-        numar: s.numar, diametru: s.diametru,
-        // Doar forma în V (rândurile n-au bile: `frezePeRanduri`, ADR 0312 §7).
-        ...(s.forma?.tip === 'v' ? { forma: { tip: 'v' as const, unghi: s.forma.unghi, ...(s.forma.varf !== undefined ? { varf: s.forma.varf } : {}) } } : {}),
+        // Forma întreagă (în V, bila, toroidala): rândul le poartă pe toate (felia 16.A↑e-4).
+        numar: s.numar, diametru: s.diametru, ...formaRand(s.forma),
         origine: origineDin(s)!,
       },
     };

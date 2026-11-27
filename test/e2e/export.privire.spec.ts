@@ -77,6 +77,12 @@ async function prinToate(page: Page): Promise<void> {
     await expect(e1.locator('input[data-camp="latura"]:checked')).toHaveValue(t);
     expect(await ceIese(page), t).toEqual([]);
   }
+  // Canelura cu toroidala (ADR 0303, felia 16.A↑e-4): raza colțului, lângă forma frezei.
+  await alege(e1, 'latura', 'pe-linie');
+  await e1.locator('[data-camp="forma-scula"]').selectOption('toroidala');
+  await expect(e1.locator('[data-camp="raza-colt"]')).toBeVisible();
+  expect(await ceIese(page), 'canelura cu toroidala').toEqual([]);
+  await e1.locator('[data-camp="forma-scula"]').selectOption('plata');
   await alege(e1, 'latura', 'buzunar');
   await alege(e1, 'coborare', 'elice');
   expect(await ceIese(page), 'buzunarul cu elicea').toEqual([]);

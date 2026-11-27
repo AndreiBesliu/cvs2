@@ -124,8 +124,10 @@ export function DesenZ0({ c, z0, supracursa, prinFoaie, gaura }: {
 }
 
 /** Profilul frezei: plată sau în V, cu T, diametrul, unghiul și vârful pe cote. */
-export function DesenFreza({ c, numar, diametru, v, unghi, varfPlat }: {
+export function DesenFreza({ c, numar, diametru, v, unghi, varfPlat, rotunda, razaColt }: {
   c: DesenComun; numar: string; diametru: number | null; v: boolean; unghi: number | null; varfPlat: number | null;
+  /** Bila sau toroidala (ADR 0303, felia 16.A↑e-4): capătul rotund, cu raza colțului (la toroidală) cotată. */
+  rotunda?: 'bila' | 'toroidala'; razaColt?: number | null;
 }): ReactNode {
   const D = diametru === null ? '?' : c.fz(diametru);
   let corp: ReactNode;
@@ -143,6 +145,16 @@ export function DesenFreza({ c, numar, diametru, v, unghi, varfPlat }: {
           un diametru lung („Ø 3,175 mm”) trecea peste T. */}
       <path className="c slab" d="M96 48V130M164 48V130" />
       <Cota pentru="diametru" c={c} x1={96} y1={126} x2={164} y2={126} text={`Ø ${D} mm`} tx={130} ty={141} />
+    </>);
+  } else if (rotunda) {
+    // Corpul de 40 px lățime: bila are capătul semicerc de 20 px; toroidala, colțurile la scara razei față de raza frezei.
+    const rr = rotunda === 'bila' ? 20 : Math.max(2, Math.min(18, ((razaColt ?? 0) / Math.max(1e-9, (diametru ?? 6) / 2)) * 20));
+    corp = (<>
+      <path className="f" d={`M116 6H144V44H150V${r(112 - rr)}A${r(rr)} ${r(rr)} 0 0 1 ${r(150 - rr)} 112H${r(110 + rr)}A${r(rr)} ${r(rr)} 0 0 1 110 ${r(112 - rr)}V44H116Z`} />
+      {rotunda === 'toroidala' && (
+        <Cota pentru="raza-colt" c={c} text={t('export.desen.freza.raza', { mm: razaColt === null || razaColt === undefined ? '?' : c.f(razaColt) })} tx={160} ty={r(112 - rr / 2)} anc="start" />
+      )}
+      <Cota pentru="diametru" c={c} x1={110} y1={126} x2={150} y2={126} text={`Ø ${D} mm`} tx={130} ty={141} />
     </>);
   } else {
     corp = (<>

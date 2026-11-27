@@ -5,7 +5,8 @@ _cncvs2, biblioteca de freze („Frezele mele”), felia 16.A↑ adusă din etap
 24.11 („Da, 1a–5a”); 16.A↑a … 16.A↑h-5 și 16.A↑b-1 … 16.A↑b-7 UNITE în `main`; ADR 0303 PROPUS pe 26.11 (bila și toroidala în
 proiect); 16.A↑e-1 (documentul v31, toroidala în simulare, refuzul lucrării) raportată gata de unit pe 26.11 (`7c3f166b`, cu
 `main` `0df06eca` adus), UNITĂ în `main` pe 27.11 (`8b92246d`); 16.A↑e-2 (elicea cu bila și cu toroidala în nucleu) raportată
-gata de unit pe 27.11 (`e5bdde83`, PR-ul #71); 16.A↑e-3 (canelura cu bila și cu toroidala) pe `wip/16.A-freze-e`, peste ea_
+gata de unit pe 27.11 (`e5bdde83`, PR-ul #71), UNITĂ (`0d2a8c2c`); 16.A↑e-3 (canelura cu bila și cu toroidala) UNITĂ pe 27.11
+(`db066160`); 16.A↑e-4 (bila și toroidala în proiect: fereastra exportului, Tăierea, biblioteca) pe `wip/16.A-freze-e`, peste ea_
 
 Pornită pe 23.11.2026, în sesiunea cloud a liniei, la cererea owner-ului: „Vreau sa pot crea freze l sau profiluri de freze in
 aplicatie si sa le salvez in cont”. Rândurile din prag: „Bibliotecă de freze cu geometrie reală (dreaptă, bilă, toroidală, V,
@@ -178,6 +179,14 @@ gravare, profil, formă desenată)” și „Freze de profil desenate de utiliza
   „Freza” din Tăierea și pe rândurile exportului: acolo intră și `formaPeRand` (copia rândului poartă doar plata și V-ul);
   `frezePeRanduri` judecă felul înaintea copiei (`sculaDinFreza` aruncă pe un fel fără CAM); lucrarea împarte adâncimea în
   treceri egale, nu în pași de mărimea pasului.
+- **27.11, 03:55–: 16.A↑e-4 pe `wip/16.A-freze-e`**, peste `db066160` (e-3 unită). Bila și toroidala în proiect: copia rândului
+  ferestrei exportului (`FormaRand` cu trei feluri, `razaColt` pe rând), identitatea pentru T cu felul și raza, nota și
+  recunoașterea pe forma întreagă, Exportă cu numele după formă, lista formei doar pe linie, câmpul razei, desenul; toroidala
+  cu CAM în bibliotecă. **Capcane:** fereastra citește freza din document în trei locuri din `ExportConectat` (`sculaRand`,
+  `valori.scula`, `oferita`): o formă scăpată acolo ajunge plată pe rând, iar Exportă o scrie plată; `Rand` are un câmp nou, deci
+  fiecare probă care construiește un rând întreg îl cere (`razaColt`); un câmp nou al ferestrei intră în `GRUP_CAMP`, în proba
+  privirii și, dacă e o greșeală, în motivul de sus (`motiv.scula-invalida`) și în greșeala pe câmp; paza compilatorului din
+  `exportFreze.bila.test.ts` a căzut exact cum spunea, deci s-a înlocuit cu proba felului readus.
 - **Feliile**, în ordine: 16.A↑a (biblioteca în browser, fereastra, fișierul), apoi b (alegerea în proiect, v27), c
   (contul), d (calibrarea), e (bila și toroidala), f (profilul desenat), g (valorile pe material).
 

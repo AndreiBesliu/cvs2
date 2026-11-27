@@ -2042,6 +2042,13 @@ already mounted first, so there are as few changes as possible. The same number 
 each bit needs its own number. Next to the error, **Make it T{n}** gives the bit another number: that of the same bit, if it is
 already on another T, otherwise the lowest free one. Only the bits on the clashing number are red.
 
+**The ball nose and the bull nose on the line.** On a cut **on the line** (a groove), the shape can also be **ball nose** or
+**bull nose**; for a bull nose, **Corner radius (mm)** is the radius of the rounded corner, above 0 and below half the diameter
+(with the radius at half the diameter, the bit is a ball nose). The centre of the bit runs on the line, as with a flat bit, and
+the groove comes out with a round bottom (ball nose) or a flat one with rounded corners (bull nose). On one side, in a pocket,
+when drilling and in V-carving, the ball nose and the bull nose are not cut yet: pick "on the line" or another bit. The sheet
+report names the bit ("ball nose", "bull nose r1.5"), so the right one gets mounted at the machine.
+
 The **From my bits** list, in the Bit group, has the bits from your library (see [My bits](#freze)) that suit the operation's
 cut: flat ones on a profile, a pocket or drilling, V bits on a V-carve. Once picked, the bit puts on the operation its T number
 (its own, if no other bit in the window has it; otherwise that of the same bit, if there is one; otherwise the lowest free one),

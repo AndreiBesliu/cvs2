@@ -57,7 +57,7 @@ test('grupurile fiecărui fel de operație, în ordinea din fereastră; ce nu se
 
 const bun: VerdictRand = {
   scula: true, adancime: true, pas: true, numar: true, latime: true, grosime: true, rampa: true, intrari: true, pasLateral: true, coborare: true,
-  retragere: true, vcarve: true, fund: true, varf: true, vPeLinie: true, rest: true, strategie: true, incrustatie: true, dreapta: true, frezaDop: true,
+  retragere: true, vcarve: true, fund: true, varf: true, vPeLinie: true, rotunda: true, rest: true, strategie: true, incrustatie: true, dreapta: true, frezaDop: true,
   banda: true, puntiDop: true,
 };
 
