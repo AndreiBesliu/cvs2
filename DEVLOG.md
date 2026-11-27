@@ -16858,3 +16858,29 @@ ADR 0304 §3 (întrebarea 4a, partea canelurii). **Started:** 27.11, 09:40, pe `
 - **DEVLOG-ul:** titlul gol și bulinele dublate la unirea lui e-5, scoase (`9e599576`; semnalat de linia frezelor).
 - **Pe test:** lotul 60 (16.A↑e-6), în drum; lotul 61 (28.8↑s), după el.
 - **Documentele:** decizia și Starea în `CLAUDE.md`; starea din `docs/linii/principala.md`; indexul liniilor.
+
+## 2026-11-27 — 16.A↑f-3: profilul desenat în proiect (Model: Claude Opus 5.5)
+
+**Prompt:** sesiunea principală, după unirea lui f-1 și f-2 (`8906dedf`): „Poți porni f-3 din `main`.” (ADR 0304 §5, cu
+recomandările.) **Started:** 27.11, 11:10, pe `wip/16.A-freze-e`, adusă la `main`. **Completed:** 27.11 (în container; completul
+pe ramură, după push).
+
+- **Punctele întâi** (`test/unit/profil.document.test.ts`): pe 11 profiluri parametrice, de la R0,5 la cele mai mari de pe
+  Ø100, invariantele (din (0, 0) până exact la (Ø / 2, capătul), r strict crescător, h nedescrescător, cel mult 200), abaterea
+  în ambele sensuri față de silueta din arce foarte dese (sub 0,001 mm), ușa și lucrarea pe fiecare.
+- **`puncteProfil`**: arcele siluetei împărțite după rază și unghi (coarda la cel mult 0,0009 mm de arc), treapta ogee-ului
+  roman cu 0,0001 mm pe r; cel mai mare profil are 190 de puncte. `inaltimeCon` s-a mutat lângă siluetă (`CampuriProfil`),
+  fiindcă `freza.ts` și `profilFreza.ts` nu se pot importa una pe alta.
+- **Biblioteca:** profilurile au CAM și se copiază cu punctele; Tăierea și „Din frezele mele” le oferă pe canelură, nu pe o
+  parte; conica și burghiul rămân „în curând”.
+- **Fereastra exportului:** rândul poartă profilul (forma „profilată”, diametrul doar de citit, silueta în desen); pe o parte,
+  exportul se oprește cu motivul; altă siluetă e altă freză pe T; nota bibliotecii spune silueta schimbată; Exportă scrie
+  profilul; un profil nu se pune înapoi în bibliotecă (copia n-are felul parametric).
+- **E2e** (`test/e2e/export.profil.spec.ts`): rotunjirea R3 Ø12 pe canelură, programul judecat de oracolul simulării cu arcul
+  pe hârtie (secțiunea la 0,001 mm, lățimea 2·(6 − √5)), refuzul pe exterior. Oracolul cu 2 001 de puncte trecea de 30 s;
+  cu 200 de pași și o fâșie îngustă, 4 s.
+- **Probele vechi** care știau profilurile „în curând”, întoarse; manualul, în ambele limbi.
+- **Otrăvurile:** 17 / 17 prinse (`test/otravuri/16.A-f3.py`: 14 pe model și fereastră, 3 e2e).
+- **Mărimea** (rapidul pe `e0059f4c`): pornirea 111,8 kB (cu ușa 117,3, cu Atelierul 117,6 / 125), neschimbată; totalul
+  941,5 / 1 000 kB (+0,7).
+- **Neschimbate:** nimic pe server; documentul rămâne v32; programul fără profil, octet cu octet.
