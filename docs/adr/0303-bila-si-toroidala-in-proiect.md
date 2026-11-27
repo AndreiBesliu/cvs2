@@ -57,9 +57,10 @@ Programul de azi rămâne octet cu octet: nicio operație fără bilă sau toroi
 | --- | --- | --- |
 | e-1 | documentul v31, IR-ul, nucleul și oracolul cu toroidala; lucrarea refuză toroidala pe orice operație, cu motiv | nucleul față de oracol (plonjarea, liniile orizontale și înclinate, arcele), secțiunea canelurii pe hârtie, ușa și oracolul documentului |
 | e-2 | elicea cu bila și cu toroidala, în nucleu și în oracol | nucleul față de oracol pe elice |
-| e-3 | CAM-ul pe linie (canelura) cu bila și cu toroidala; intrarea în proiect: biblioteca (toroidala pleacă din „în curând”), lista „Freza” din Tăierea, rândurile exportului | secțiunea canelurii simulate față de hârtie: lățimea la față 2·(a + √(ρ² − (ρ − d)²)) pentru d < ρ, Ø pentru d ≥ ρ |
-| e-4 | buzunarul cu bila și cu toroidala: fundul și pereții | creasta dintre treceri pe hârtie, h = ρ − √(ρ² − ((s − 2a) / 2)²) pentru pasul lateral s > 2a (0 pentru s ≤ 2a; la bilă a = 0); pereții nu trec de desen; oracolul buzunarului judecă fundul cu creasta |
-| e-5 | profilul pe o parte, doar cât peretele iese vertical | peretele de la față până la adâncimea − ρ e pe desen, racordarea de rază ρ la fund; refuzul cu motiv sub adâncimea ρ |
+| e-3 | CAM-ul pe linie (canelura) cu bila și cu toroidala: lucrarea, scula din IR cu forma, raportul foilor | secțiunea canelurii simulate față de hârtie: lățimea la față 2·(a + √(ρ² − (ρ − d)²)) pentru d < ρ, Ø pentru d ≥ ρ |
+| e-4 | intrarea în proiect: biblioteca (toroidala pleacă din „în curând”), lista „Freza” din Tăierea, rândurile exportului (copia ferestrei cu formele rotunde) | rândul poartă forma și raza; Exportă scrie freza rotundă, nu o plată; lista oferă freza doar unde lucrarea o primește |
+| e-5 | buzunarul cu bila și cu toroidala: fundul și pereții | creasta dintre treceri pe hârtie, h = ρ − √(ρ² − ((s − 2a) / 2)²) pentru pasul lateral s > 2a (0 pentru s ≤ 2a; la bilă a = 0); pereții nu trec de desen; oracolul buzunarului judecă fundul cu creasta |
+| e-6 | profilul pe o parte, doar cât peretele iese vertical | peretele de la față până la adâncimea − ρ e pe desen, racordarea de rază ρ la fund; refuzul cu motiv sub adâncimea ρ |
 
 Frezele de rest, fundul plat al V-carve-ului, dopurile și banda rămân doar cu freza plată (refuzul de azi, cu motiv).
 
@@ -85,7 +86,7 @@ e-1 adaugă silueta în nucleu (în workerele simulării și CAM) și forma în 
    b. Refuzată, cu motiv (coborârea se alege plonjare, rampă sau zigzag).
 4. **Finisarea reliefului cu toroidala:**
    a. A liniei reliefului, după e-1 (forma există în document; o felie a ei) (recomandat).
-   b. În linia frezelor, după e-5.
+   b. În linia frezelor, după e-6.
 5. **Bila și toroidala ca freze de rest, de fund plat sau ale dopului:**
    a. Refuzate, cu motiv (recomandat: geometria lor e a frezei plate).
    b. Permise, cu fundul socotit ca la buzunar.
@@ -112,7 +113,7 @@ Pe 26.11, pe `wip/16.A-freze-e` (din `main` `d1ab8ba5`), cu v31 ținut de sesiun
   `motivFormaPeOperatie` dă `toroidala`, deci biblioteca n-o oferă (nici `FELURI_CU_CAM` nu o are încă). Fereastra exportului
   face rând doar operațiilor cu freze plate și în V (`operatieCuRand`, `formaPeRand`): altfel copia ferestrei, care știe doar
   V-ul, ar scrie la Exportă o plată în locul toroidalei. Panoul numește freza toroidală (`prop.freza.valoare-toroidala`).
-- **Rămâne pentru e-3:** `sculaIR` trece toroidala în IR, raportul foilor o numește, lista „Freza” și rândurile exportului o
+- **Rămâne pentru e-3 și e-4** (renumerotate la e-3): `sculaIR` trece toroidala în IR, raportul foilor o numește, lista „Freza” și rândurile exportului o
   poartă (cu raza), biblioteca o scoate din „în curând”.
 
 ## Implementarea (16.A↑e-2)
@@ -146,7 +147,40 @@ Pe 27.11, pe `wip/16.A-freze-e` (peste `7c3f166b`, cu `main` `0df06eca` adus).
     sondată.
 - **Neschimbate:** elicea cu freza plată (`eliceaPlata`), arcele la Z constant, liniile; programul (CAM-ul), octet cu octet.
   Lucrarea refuză mai departe toroidala pe orice operație și bila în afara finisării reliefului: elicea lor din buzunar și din
-  găurire ajunge în program abia cu CAM-ul lor (e-3 … e-5).
+  găurire ajunge în program abia cu CAM-ul lor (e-5).
+
+## Implementarea (16.A↑e-3)
+
+Pe 27.11, pe `wip/16.A-freze-e`, peste e-2 (`e5bdde83`). Felia e-3 de la propunere s-a împărțit în două, iar sub-feliile de
+după s-au renumerotat (tabelul de mai sus e la zi; id-urile feliilor primesc după cratimă doar cifre): **e-3** e CAM-ul
+canelurii și raportul, **e-4** e
+intrarea în proiect (biblioteca, lista „Freza” din Tăierea, rândurile exportului, care cer copia ferestrei cu
+formele rotunde).
+
+- **Regula formei** (`motivFormaPeOperatie`): bila și toroidala merg pe profilul pe linie. Pe o parte, în buzunar, la găurire și
+  în V-carve rămân refuzate (`bila`, `toroidala`). Pe relief rămân cum erau: finisarea cu bila merge, toroidala e a liniei
+  reliefului.
+- **Lucrarea** (`refuzFinisareSiBila`, `src/cam/job.ts`): o formă rotundă e primită doar ca freză a canelurii (calea `scula` a
+  unui profil pe linie), iar pe orice freză în plus rămâne refuzată, cu motiv. Centrul frezei merge pe linie, deci drumul e al
+  frezei plate de același Ø, mișcare cu mișcare, cu treceri egale cel mult cât pasul. `sculaIR` trece toroidala în IR, cu raza
+  colțului, iar simularea o taie cu forma ei. Același T cu două raze ale colțului (sau o bilă și o toroidală) înseamnă două
+  freze, deci e refuzat, cu forma fiecăreia în motiv.
+- **Raportul foilor** numește freza canelurii („T1 toroidală r1,5 Ø6”, ca „bilă” la bilă), ca operatorul să nu monteze o plată.
+- **Listele care pun o freză pe o operație cu rând în fereastra exportului** (`frezePotrivite`, adică lista „Freza” din Tăierea,
+  și `frezePeRanduri`) oferă doar formele pe care copia rândului le poartă (`formaPeRand`: plata și V-ul). Bila e de la
+  relief între felurile cu CAM, deci altfel ar fi apărut pe canelură și pe rândurile exportului, iar Exportă ar fi scris o
+  plată în locul ei. Le deschide e-4, odată cu copia ferestrei. Buzunarul e acum e-5, iar profilul pe o parte e-6.
+- **Probele** (`test/unit/canelura.rotunda.test.ts`):
+  - tabelul formei pe operație;
+  - drumul canelurii cu bila și cu toroidala (r1, r2,5), identic cu al frezei plate, cu forma în IR;
+  - refuzurile rămase;
+  - același T;
+  - secțiunea canelurii simulate pe hârtie: lățimea la față 2·(a + √(ρ² − (ρ − d)²)) sub raza colțului, Ø peste ea, fundul
+    plat 2·a, pe bila Ø6 și pe toroidala Ø6 r1 și r2,5, la șase adâncimi;
+  - raportul.
+
+  Probele vechi care cereau refuzul pe linie (`finisare.bila`, `toroidala.lucrare`) au fost întoarse.
+- **Programul de azi**, fără forme rotunde, iese octet cu octet.
 
 ## Se redeschide dacă
 

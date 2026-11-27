@@ -10,7 +10,7 @@
  */
 import type { Document, Operatie, Scula } from './document.ts';
 import { areCam, sculaDinFreza, type Freza, type FrezaSalvata } from './freza.ts';
-import { motivFormaPeOperatie } from './formaFrezei.ts';
+import { formaPeRand, motivFormaPeOperatie } from './formaFrezei.ts';
 import { numarPrintre, sculeProiect } from './rol.ts';
 
 /** Copia frezei din bibliotecă, cu numărul dat: forma, originea (id, versiunea), valorile de lucru și tăișul, dacă îl are. */
@@ -24,16 +24,22 @@ export function sculaDinBiblioteca(f: FrezaSalvata, numar: number): Scula {
 }
 
 /**
- * Frezele care pot sta pe un rând al ferestrei exportului (ADR 0312 §7): cele cu CAM, a căror formă o primește măcar un fel de
- * rând (profilul, buzunarul, găurirea, V-carve-ul). Bila e doar a finisării reliefului, care are un rând doar de citit: rămâne
- * afară, ca nota bibliotecii și recunoașterea să n-o vadă (copia ferestrei, care știe doar forma în V, ar face din ea o plată).
+ * Frezele care pot sta pe un rând al ferestrei exportului (ADR 0312 §7): cele cu CAM, a căror formă o poartă copia rândului
+ * (`formaPeRand`: plata și V-ul) și o primește măcar un fel de rând (profilul, buzunarul, găurirea, V-carve-ul). Bila (a
+ * finisării reliefului, cu rândul doar de citit, și a canelurii din 16.A↑e-3) rămâne afară, ca nota bibliotecii și
+ * recunoașterea să n-o vadă: copia ferestrei, care știe doar forma în V, ar face din ea o plată.
  */
 export function frezePeRanduri<F extends FrezaSalvata>(lista: readonly F[]): F[] {
   const randuri: ReadonlyArray<Pick<Operatie, 'tip' | 'latura'>> = [
     { tip: 'profil', latura: 'pe-linie' }, { tip: 'profil', latura: 'exterior' }, { tip: 'buzunar', latura: 'interior' },
     { tip: 'gaurire', latura: 'interior' }, { tip: 'vcarve', latura: 'interior' },
   ];
-  return lista.filter((f) => areCam(f.fel) && randuri.some((o) => motivFormaPeOperatie(o.tip, o.latura, sculaDinFreza(f).forma) === null));
+  return lista.filter((f) => {
+    // Întâi felul: o freză fără CAM n-are copie pentru document (`sculaDinFreza` aruncă).
+    if (!areCam(f.fel)) return false;
+    const forma = sculaDinFreza(f).forma;
+    return formaPeRand(forma) && randuri.some((o) => motivFormaPeOperatie(o.tip, o.latura, forma) === null);
+  });
 }
 
 /** Frezele care merg pe toate operațiile date (felul și latura fiecăreia), în ordinea listei; nimic fără operații. */
@@ -43,7 +49,10 @@ export function frezePotrivite<F extends Freza>(lista: readonly F[], operatii: R
     // Felurile fără CAM încă (ADR 0302 §2) nu se oferă: n-au copie pentru document.
     if (!areCam(f.fel)) return false;
     const forma = sculaDinFreza(f).forma;
-    return operatii.every((o) => motivFormaPeOperatie(o.tip, o.latura, forma) === null);
+    // O operație cu rând editabil în fereastra exportului primește doar o freză pe care rândul o poartă (`formaPeRand`):
+    // altfel operația n-ar avea rând (bila pe canelură, până la 16.A↑e-4). Relieful își are rândul lui, doar de citit.
+    const cuRand = (o: Pick<Operatie, 'tip'>): boolean => o.tip !== 'finisare' && o.tip !== 'degrosare';
+    return operatii.every((o) => motivFormaPeOperatie(o.tip, o.latura, forma) === null && (!cuRand(o) || formaPeRand(forma)));
   });
 }
 

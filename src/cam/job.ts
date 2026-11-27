@@ -49,17 +49,18 @@ import { urechiLemnBucla, type FundLemn, type LaturaLemn } from './urechiLemn.ts
 
 /** Scula din operație, în IR: numărul, numele și diametrul (câmpurile necunoscute ale documentului rămân acolo). */
 // Forma frezei (ADR 0090) trece în IR: simularea și postul o citesc de acolo.
-// Bila (ADR 0312 §1) trece și ea, ca simularea s-o taie cu capătul ei.
+// Bila (ADR 0312 §1) trece și ea, ca simularea s-o taie cu capătul ei; toroidala (ADR 0303 §4), cu raza colțului.
 const sculaIR = (s: Taietura['scula']): Scula => ({
   numar: s.numar, nume: s.nume, diametru: s.diametru,
   ...(s.forma?.tip === 'v' ? { forma: { tip: 'v' as const, unghi: s.forma.unghi, ...(s.forma.varf !== undefined ? { varf: s.forma.varf } : {}) } } : {}),
   ...(s.forma?.tip === 'bila' ? { forma: { tip: 'bila' as const } } : {}),
+  ...(s.forma?.tip === 'toroidala' ? { forma: { tip: 'toroidala' as const, raza: s.forma.raza } } : {}),
 });
 
 /**
  * ADR 0312, ADR 0313, ADR 0303: ce refuză lucrarea din documentele v29–v31, pe piesele foii: freza toroidală pe orice
- * operație (până la CAM-ul ei), freza bilă pe altceva decât finisarea
- * reliefului (`motivFormaPeOperatie`; și pe frezele de rest, ale fundului plat și ale dopului), o freză care nu e plată pe o
+ * operație în afara canelurii (profilul pe linie, 16.A↑e-3; până la CAM-ul ei), freza bilă pe altceva decât finisarea
+ * reliefului și canelura (`motivFormaPeOperatie`; și pe frezele de rest, ale fundului plat și ale dopului), o freză care nu e plată pe o
  * degroșare, câmpul `finisare` pe alt fel de operație decât finisarea și `degrosare` pe alt fel decât degroșarea, iar pe o
  * operație a reliefului ce e al altor operații (urechi, rampă, intrări, degajări, despărțire, câmpurile altor feluri) și o
  * podea sub placă.
@@ -70,9 +71,13 @@ function refuzFinisareSiBila(doc: Document): string | null {
     if (!pePlaca.has(p.id)) continue;
     for (const o of p.operatii) {
       const unde = `${p.id}/${o.id}`;
-      // Toroidala (ADR 0303 §4): pe orice operație și pe orice freză a ei, până la CAM-ul ei (16.A↑e-3 … e-5).
+      // Toroidala (ADR 0303 §4): doar ca freză a canelurii (profilul pe linie, 16.A↑e-3); pe orice altă operație și pe orice
+      // freză în plus, până la CAM-ul ei (buzunarul în e-5, profilul pe o parte în e-6).
+      const canelura = o.tip === 'profil' && o.latura === 'pe-linie';
       for (const { cale, scula } of frezeleOperatiei(o)) {
-        if (scula.forma?.tip === 'toroidala') return `${unde}: freza toroidală (T${scula.numar}, ${cale}) nu se taie încă: CAM-ul ei vine pe sub-felii (canelura, buzunarul, profilul)`;
+        if (scula.forma?.tip === 'toroidala' && !(canelura && cale === 'scula')) {
+          return `${unde}: freza toroidală (T${scula.numar}, ${cale}) nu se taie încă aici: azi doar pe linie (canelura); buzunarul și profilul pe o parte vin pe sub-felii`;
+        }
       }
       if (o.finisare !== undefined && o.tip !== 'finisare') return `${unde}: valorile finisării sunt doar ale unei finisări a reliefului`;
       if (o.degrosare !== undefined && o.tip !== 'degrosare') return `${unde}: valorile degroșării sunt doar ale unei degroșări a reliefului`;
@@ -81,7 +86,9 @@ function refuzFinisareSiBila(doc: Document): string | null {
       }
       if (o.tip !== 'finisare' && o.tip !== 'degrosare') {
         for (const { cale, scula } of frezeleOperatiei(o)) {
-          if (scula.forma?.tip === 'bila') return `${unde}: freza bilă (T${scula.numar}, ${cale}) merge doar la finisarea reliefului`;
+          if (scula.forma?.tip === 'bila' && !(canelura && cale === 'scula')) {
+            return `${unde}: freza bilă (T${scula.numar}, ${cale}) merge doar pe linie (canelura) și la finisarea reliefului`;
+          }
         }
         continue;
       }
@@ -452,7 +459,9 @@ export function programDinDocument(
   // Aceeași sculă = același număr, același diametru și aceeași formă (ADR 0025, precizarea 1; ADR 0090). Un număr cu două
   // diametre sau două forme ar fi două freze sub același T, iar omul de la mașină ar monta una singură (ADR 0084). Și freza
   // fundului plat (ADR 0091).
-  const forma = (s: Taietura['scula']): string => (s.forma?.tip === 'v' ? `în V de ${s.forma.unghi}°${s.forma.varf ? ` cu vârful de ${s.forma.varf} mm` : ''}` : felFrezei(s.forma));
+  const forma = (s: Taietura['scula']): string => (s.forma?.tip === 'v'
+    ? `în V de ${s.forma.unghi}°${s.forma.varf ? ` cu vârful de ${s.forma.varf} mm` : ''}`
+    : s.forma?.tip === 'toroidala' ? `toroidală cu raza colțului ${s.forma.raza} mm` : felFrezei(s.forma));
   const freze = new Map<number, Taietura['scula']>();
   // Frezele finisărilor (ADR 0312) intră și ele: același T, aceeași freză, ca la tăieturi.
   const deJudecat: ReadonlyArray<{ readonly idLume: string; readonly scule: readonly Taietura['scula'][] }> = [

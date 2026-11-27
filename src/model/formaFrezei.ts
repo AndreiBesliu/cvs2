@@ -10,7 +10,7 @@
  *   bilei a liniei frezelor (16.A↑e): profilul, buzunarul și celelalte ar decala-o ca pe una plată.
  * - Degroșarea reliefului (ADR 0313 §1) cere freza plată: adaosul se socotește cu freza plată mărită cu el (ADR 0310 §4).
  * - Freza toroidală (ADR 0303 §1, documentul v31) nu merge încă pe nicio operație, nici pe finisare: simularea o taie, dar
- *   CAM-ul ei vine pe sub-felii (canelura în 16.A↑e-3, buzunarul în e-4, profilul în e-5), fiecare cu rândul ei aici.
+ *   CAM-ul ei vine pe sub-felii (canelura în 16.A↑e-3, buzunarul în e-5, profilul în e-6), fiecare cu rândul ei aici.
  * - Freza plată merge în rest.
  */
 import type { FormaSculaDoc, Latura, Operatie, Scula, TipOperatie } from './document.ts';
@@ -24,6 +24,8 @@ export type MotivForma = 'vcarve' | 'v-pe-linie' | 'bila' | 'degrosare' | 'toroi
 
 /** Motivul pentru care o freză de forma dată nu merge pe operație, sau null dacă merge (lipsa formei = freza plată). */
 export function motivFormaPeOperatie(tip: TipOperatie, latura: Latura, forma: FormaSculaDoc | undefined): MotivForma | null {
+  // Canelura (ADR 0303 §4, 16.A↑e-3): bila și toroidala pe linie, cu centrul pe vector (drumul frezei plate de același Ø).
+  if ((forma?.tip === 'bila' || forma?.tip === 'toroidala') && tip === 'profil' && latura === 'pe-linie') return null;
   if (forma?.tip === 'toroidala') return 'toroidala';
   if (tip === 'finisare') return null;
   if (tip === 'degrosare') return forma === undefined ? null : 'degrosare';

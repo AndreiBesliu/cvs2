@@ -376,6 +376,7 @@ export const enExport = {
   'export.raport.op.finisare': 'relief finishing',
   'export.raport.op.degrosare': 'relief roughing',
   'export.raport.bila': 'ball nose',
+  'export.raport.toroidala': 'bull nose r{raza}',
   'export.raport.op.despartire': 'sheet separation',
   'export.raport.op.adancime': { one: '{adancime} mm, {n} pass', other: '{adancime} mm, {n} passes' },
   'export.raport.op.urechi': { one: '{n} tab', other: '{n} tabs' },
