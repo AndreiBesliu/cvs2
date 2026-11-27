@@ -2291,6 +2291,13 @@ nav button[aria-pressed='true'] {
   overflow-wrap: anywhere;
 }
 
+/* Locul pe foaie al operației, sub numele ei (constatarea 14 a auditului, felia 28.8↑s): mai mic, ca rândul de sub el. */
+.dx-unde {
+  font-size: var(--fs-1);
+  color: var(--t-slab);
+  overflow-wrap: anywhere;
+}
+
 /* O fișă cu o valoare greșită: punctul roșu în listă, pe lângă motivul din grupul ei. */
 .dialog .dx-nav[data-gresit]::after {
   content: '';
@@ -3054,7 +3061,8 @@ nav button[aria-pressed='true'] {
  * nu un sfert.
  */
 @media (max-width: 48rem) and (max-height: 30rem) {
-  .dx-lista .dx-meta {
+  .dx-lista .dx-meta,
+  .dx-lista .dx-unde {
     display: none;
   }
 

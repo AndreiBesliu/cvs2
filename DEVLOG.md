@@ -16659,6 +16659,27 @@ program. Dacă cere un câmp nou în document, v32 e liber și ți-l dau la cere
 - **Linia frezelor** pornește e-5 (buzunarul cu bila și cu toroidala; oracolul întâi).
 - **Documentele:** decizia și Starea în `CLAUDE.md`; starea din `docs/linii/principala.md`; indexul liniilor.
 
+## 2026-11-27 — Linia exportului: 28.8↑s, rândul unei operații în listă, numele, apoi locul
+
+**Prompt:** mesajul sesiunii principale (27.11, 08:37), cu cuvântul owner-ului („zi-le sesiunilor sa continue cu
+recomandarile, acolo unde inca asteapta”): „1. Partea din listă a constatării 14 (`docs/linii/audit-export.md`). Recomandarea
+ta: în listă, numele piesei când omul i-a dat unul (un import „logo-80mm”), iar locul pe al doilea rând, mai mic. Virgula e
+deja în `main`, din 3.Av. 2. ADR 0292 rămâne la 1a: începutul programului se arată după export. 1b nu se face. 3. 28.8↑m și
+9a rămân cum sunt”.
+**Started:** 27.11, 08:38.
+
+- **Rândul listei:** pe primul rând, numele piesei dat de om, altfel forma și mărimea, fără loc; dedesubt, mai mic, locul pe
+  foaie (`.dx-unde`). `randLista` (`src/app/randListaExport.ts`, textele în modulul exportului), pe `OperatieExport.lista`;
+  titlul fișei rămâne numele întreg; pe telefonul culcat, banda doar cu numele. Rândurile reliefului, neatinse. Programul,
+  octet cu octet.
+- **Probele:** `export.randLista.test.ts` (6), `export.lista.spec.ts` (3); proba benzii din `export.toateFoile.spec.ts`,
+  refăcută pe ce spune (capul foii nu înalță banda). Suita unitară întreagă: 10 918 / 0 (12 sărite); e2e-ul ferestrei,
+  verde. **Otrăvurile:** `28.8s.py`, 14 / 14. **Mărimea:** pornirea +0, totalul 937,8 / 1 000 (+0,4 kB).
+- **Documentele:** ADR 0292 acceptat cu recomandările (și indexul), manualul (ambele limbi), auditul (starea constatării 14),
+  fișa etapei 3, registrul otrăvurilor, nota liniei.
+
+**Completed:** 27.11, 09:23.
+
 ## 2026-11-27 — Sesiunea principală în cloud: liniile continuă cu recomandările (Model: Claude Opus 5.5)
 
 **Prompt:** „zi-le sesiunilor sa continue cu recomandarile, acolo unde inca asteapta”
@@ -16821,3 +16842,14 @@ principală: auditul elicelor, felia 3, răspunsul 3a)
   traducerile roadmap-ului.
 - **Urmează:** 3.Cm-4 (claritatea editorului elicelor).
 
+## 2026-11-27 — Sesiunea principală în cloud: a șaizeci și șasea unire (28.8↑s) (Model: Claude Opus 5.5)
+
+**Prompt:** „zi-le sesiunilor sa continue cu recomandarile, acolo unde inca asteapta” (unirea, la raportul liniei; ordinul „unește ce se poate”)
+**Started:** 27.11, 10:52. **Completed:** 27.11, 12:03.
+
+- **Unirea:** `wip/28.8-export` (`cd2ed898`, PR-ul #76) în `fec801bc`, pe `unire-2711i`, peste 16.A↑e-6 (`e9790edb`), fără
+  ciocniri; `main` adus apoi (`276d99ab`, doar documente). Completul 45969212819 pe `fec801bc`, verde: unit 10 959 / 0, e2e
+  1 014 / 1 014, funcțiile pe emulatoare 142 / 142, paginile 62 / 62. Totalul 940,3 / 1 000 kB.
+- **DEVLOG-ul:** titlul gol și bulinele dublate la unirea lui e-5, scoase (`9e599576`; semnalat de linia frezelor).
+- **Pe test:** lotul 60 (16.A↑e-6), în drum; lotul 61 (28.8↑s), după el.
+- **Documentele:** decizia și Starea în `CLAUDE.md`; starea din `docs/linii/principala.md`; indexul liniilor.

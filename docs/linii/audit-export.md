@@ -257,6 +257,8 @@ sunt măsurate cu `gzip -9` pe `dist/`; poarta build-ului numără puțin altfel
   locul în a doua linie, mai mic.
   - **Costul:** ~1 h.
 - **A cui:** **a liniei principale** (`descriereElement` e comun). Partea din listă e a exportului.
+- **Starea (27.11):** numerele, în formatul limbii, în 3.Av (sesiunea principală); partea din listă, în 28.8↑s (linia
+  exportului): numele piesei sau forma, apoi locul, pe rândul de dedesubt, mai mic.
 
 ### 15. Frecare: greșeala de valoare e o frază generală
 
