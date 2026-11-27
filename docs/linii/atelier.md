@@ -31,8 +31,8 @@ calibrare, s-a despărțit: 3.Ck-1 (placa turnantă; 18.43.0), unită în `main`
 feliile făcute.** **Auditul elicelor (ADR 0340, acceptat pe 27.11 cu recomandările, 1a–4a, la cuvântul owner-ului prin
 sesiunea principală): feliile 3.Cm-1…3.Cm-7; 3.Cm-1 (otrăvurile elicelor, rulate din nou) și 3.Cm-2 (tipărirea spusă
 cinstit; 18.45.0), raportate pe 27.11 (PR-ul `AndreiBesliu/cvs2#77`); 3.Cm-3 (ventilatorul ca trusă; 18.46.0) și 3.Cm-4
-(claritatea editorului elicelor; 18.47.0), pe ramură, la raport după unirea lor.** Versiunea următoare a pachetului:
-18.48.0._
+(claritatea editorului elicelor; 18.47.0) și 3.Cm-5 (grosimea paletelor peste Ø80; 18.48.0), pe ramură, la raport după unirea
+lor.** Versiunea următoare a pachetului: 18.49.0._
 
 ## Numerele liniei
 
@@ -778,4 +778,15 @@ cinstit; 18.45.0), raportate pe 27.11 (PR-ul `AndreiBesliu/cvs2#77`); 3.Cm-3 (ve
 - **Un text nou din motor intră cu `tr` și are cifrele plajei în el** („între 0,3 și 1,5”): engleza le scrie cu punct, în
   traducere.
 - **Easy 3Draw 18.47.0.**
+
+## 3.Cm-5, gata (27.11, în cloud): grosimea paletelor la elicele mari (ADR 0340)
+
+- **Unde e:** motorul, `GROS_PRAG` și `grosK` (înaintea lui `eliceCote`); `tRad`, `tVarf` în cotele elicei și ale ventilatorului
+  (și în API); atelierul, `textGrosime` (lângă `textBarca`), chemat de `textElice` și `textVentilator`.
+- **O schimbare care trebuie să lase piesele de sub un prag la octet se probează cu amprenta luată înaintea feliei**
+  (`trenulet.grosime.test.ts`: 48 de elice, 32 de ventilatoare, 12 elice de barcă), ca la 3.Tt; peste prag, valorile pe hârtie
+  ale probelor vechi se refac, cu socoteala în comentariu.
+- **Un loc nou într-un text `tr` cu locuri numerotate le mută pe cele de după** (`textVentilator`: {8} devine {8}{9}): traducerea
+  se mută odată cu el, nu se scrie din nou.
+- **Easy 3Draw 18.48.0.**
 

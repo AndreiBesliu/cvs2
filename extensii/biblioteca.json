@@ -18,6 +18,12 @@
       ],
       "noutati": [
         {
+          "versiune": "18.48.0",
+          "data": "2026-11-27",
+          "ro": "Elicele și ventilatoarele mari au paletele mai groase: peste Ø80, grosimea crește cu diametrul (o elice Ø200, de la 3 mm la rădăcină la 2 la vârf), ca să nu tremure la tipărire. Cele de până la Ø80 rămân la fel.",
+          "en": "Large propellers and fans get thicker blades: above Ø80 the thickness grows with the diameter (a Ø200 propeller goes from 3 mm at the root to 2 at the tip), so they don’t wobble while printing. Those up to Ø80 stay the same."
+        },
+        {
           "versiune": "18.47.0",
           "data": "2026-11-27",
           "ro": "Editorul elicelor spune mai limpede: o frază despre cum alegi sensul după motor, „Repede” cu diametrele pe grila de știfturi la elice și, când scrii o valoare din afara plajei, marginea, cu un mesaj sub câmpuri.",
@@ -232,8 +238,8 @@
           }
         }
       ],
-      "versiune": "18.47.0",
-      "continut": "a26cfd17467d23c1faa71a28854d8eab1a035e1f33109c90992ee2ddfb7e0ec0"
+      "versiune": "18.48.0",
+      "continut": "88475af4fd42d5058c91997ad5c20c1ae6d876218d2abb48efdbb8f2d1b1faad"
     }
   ]
 }

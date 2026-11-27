@@ -2,7 +2,7 @@
 
 **Starea:** acceptat pe 27.11.2026, cu recomandările auditului (1a, 2a, 3a, 4a), la cuvântul owner-ului transmis de
 sesiunea principală („zi-le sesiunilor sa continue cu recomandarile, acolo unde inca asteapta”). Feliile 3.Cm-1…3.Cm-7, în
-ordinea din audit, ale liniei atelierului (ramura `wip/3.Xh-biblioteca-ui`). **3.Cm-1…3.Cm-4 implementate pe 27.11**
+ordinea din audit, ale liniei atelierului (ramura `wip/3.Xh-biblioteca-ui`). **3.Cm-1…3.Cm-5 implementate pe 27.11**
 (mai jos).
 **Continuă:** ADR 0282 (elicele, feliile 3.Tq–3.Tt). **Pleacă de la:** `docs/linii/audit-elice.md` (auditul din 25.11, pe
 Easy 3Draw 18.30.0). Primul număr al intervalului 0340–0349 al liniei atelierului.
@@ -143,6 +143,27 @@ Constatarea 5 a auditului, fără desenul pasului (pe care auditul îl socotea s
 35 / 35 (C10, pe setul greșit la prima rulare); `3.Cm-4-en.py`, 5 / 5.
 
 **Easy 3Draw 18.47.0.**
+
+## Implementarea (3.Cm-5): grosimea paletelor la elicele mari
+
+Răspunsul 2a: grosimea crește cu diametrul doar peste Ø80, deci piesele de până la Ø80 rămân aceleași, la octet.
+
+- **Motorul** (`GROS_PRAG`, `grosK`, lângă `eliceCote`): peste Ø80, paleta elicei și a rotorului se îngroașă în aceeași formă,
+  cu k = Ø / 80: de la 1,2 · k la rădăcină la 0,8 · k la vârf (elicea Ø200: 3 și 2 mm; Ø100: 1,5 și 1; rotorul Ø120: 1,8 și
+  1,2); până la Ø80, k = 1. La ventilator, pragul e diametrul din carcasă (câmpul editorului). Cotele o spun (`tRad`, `tVarf`,
+  și în API). Elicea de barcă nu se schimbă: își avea deja grosimea după diametru (4 %, între 1,6 și 3).
+- **Ce se mai schimbă cu ea, peste Ø80:** butucul, înalt cât cea mai înaltă secțiune (elicea Ø200 cu 2 palete, pasul 1,5 și
+  lățimea 60: de la 36,0 la 36,2; rotorul Ø120 cu jocul 2: de la 12,4 la 12,7), carcasa, înaltă cât paletele + 4 (Ø120 cu pasul
+  1,5: de la 31 la 32), coarda minimă de la vârf (2,5 · grosimea: Ø155,3, de la 2 la 3,88).
+- **Editorul:** peste Ø80, textul elicei și al rotorului spune „Peste Ø80, paleta e mai groasă: … mm la rădăcină, … la vârf.”
+
+**Probele:** `test/unit/trenulet.grosime.test.ts` (3 teste: amprenta a 48 de elice și 32 de ventilatoare de până la Ø80 și a 12
+elice de barcă pe toată plaja, luată din motorul lui 18.47.0, înaintea feliei; cotele pe hârtie; grosimea măsurată pe
+secțiunile plasei, la rădăcină și spre vârf, la Ø200, Ø120 și sub prag); cinci valori pe hârtie din probele elicei și ale
+ventilatorului, pe piese de peste Ø80, refăcute cu grosimea nouă; e2e, câte un scenariu în `trenulet.elice.spec.ts` și
+`trenulet.ventilator.spec.ts` și fraza în proba în engleză din cvs2. Otrăvurile: `3.Cm-5.py`, 13 / 13, și `3.Cm-5-en.py`, 2 / 2, din prima rulare.
+
+**Easy 3Draw 18.48.0.**
 
 **Rămâne la owner** (lista grupată, cu recomandarea întâi): verdictul după treapta cea mai mare, oricât de îngustă ar fi
 fâșia? a (recomandat): ca acum (suport doar când și consola de la vârf trece de 1 mm; elicea implicită, 92842, 15790 și

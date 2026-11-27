@@ -713,7 +713,11 @@ var Atelier3D = (function () {
     // paragraful de după construire (`textTipar`)
     const c = Lego.eliceCote(p), g = (x: number) => fmt(x * 180 / Math.PI, 0);
     const paleta = c.plata ? tr`Paleta plată, la ${g(c.bVarf)}° de la butuc la vârf, ca la LEGO.` : tr`Paleta răsucită: ${g(c.bRad)}° lângă butuc, ${g(c.bVarf)}° la vârf.`;
-    return tr`Pasul ${fmt(c.P, 0)} mm (${fmt(c.pd, 2)} × diametrul).` + " " + paleta;
+    return tr`Pasul ${fmt(c.P, 0)} mm (${fmt(c.pd, 2)} × diametrul).` + " " + paleta + textGrosime(c);
+  }
+  /** Peste Ø80, paletele elicei și ale rotorului se îngroașă cu diametrul (ADR 0340, 3.Cm-5): editorul o spune. */
+  function textGrosime(c: { tRad: number; tVarf: number }): string {
+    return c.tRad > 1.2 + 1e-9 ? " " + tr`Peste Ø80, paleta e mai groasă: ${fmt(c.tRad, 1)} mm la rădăcină, ${fmt(c.tVarf, 1)} la vârf.` : "";
   }
   function textBarca(p: { palete?: number; diametru?: number; pas?: number; latime?: number; inclinare?: number; pupa?: number }): string {
     // elicea de barcă din editor: pasul, unghiul paletei la butuc și la vârf, cât din disc acoperă paletele, butucul (crește cu
@@ -728,7 +732,7 @@ var Atelier3D = (function () {
     // găurile urechilor față de ax); cum se tipărește rotorul o spune paragraful de după construire (`textTipar`)
     const c = Lego.ventilatorCote(p), g = (x: number) => fmt(x * 180 / Math.PI, 0), stf = cuDe(c.k) ? tr`${c.k} de știfturi` : tr`${c.k} știfturi`;
     const inel = p.inel === "da" ? tr` Inelul, gros de 1,2 mm, e înalt de ${fmt(c.Hinel, 1)} mm.` : "";
-    return tr`Rotorul: paletele până la Ø${fmt(2 * c.Rt, 1)} (${fmt(c.joc, 1)} mm de carcasă), pe un butuc de Ø${fmt(2 * c.rh, 1)} × ${fmt(c.Hh, 1)} mm. Pasul ${fmt(c.P, 0)} mm (${fmt(c.pd, 2)} × diametrul): paleta stă la ${g(c.bRad)}° lângă butuc și la ${g(c.bVarf)}° la vârf.${inel} Carcasa: Ø${fmt(c.D, 1)} în interior, Ø${fmt(c.D + 4, 1)} în afară, înaltă de ${fmt(c.Hc, 1)} mm; găurile urechilor, la ${8 * c.k} mm de ax (${stf}).`;
+    return tr`Rotorul: paletele până la Ø${fmt(2 * c.Rt, 1)} (${fmt(c.joc, 1)} mm de carcasă), pe un butuc de Ø${fmt(2 * c.rh, 1)} × ${fmt(c.Hh, 1)} mm. Pasul ${fmt(c.P, 0)} mm (${fmt(c.pd, 2)} × diametrul): paleta stă la ${g(c.bRad)}° lângă butuc și la ${g(c.bVarf)}° la vârf.${textGrosime(c)}${inel} Carcasa: Ø${fmt(c.D, 1)} în interior, Ø${fmt(c.D + 4, 1)} în afară, înaltă de ${fmt(c.Hc, 1)} mm; găurile urechilor, la ${8 * c.k} mm de ax (${stf}).`;
   }
   function textTipar(def: Def, t: NonNullable<PiesaGata["tipar"]>): string {
     // cum se tipăresc paletele (ADR 0340, 3.Cm-2): verdictul motorului, pe praguri, cu treapta cea mai mare dintre straturi

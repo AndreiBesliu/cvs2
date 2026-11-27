@@ -114,6 +114,19 @@ test('elicea implicită, în fila Elice: 3 palete, Ø72, pasul 0,7, răsucită; 
   await expect(plaja).toHaveCount(0);
 });
 
+test('peste Ø80, textul spune grosimea paletei (ADR 0340, 3.Cm-5): k = Ø / 80, de la 1,2 · k la rădăcină la 0,8 · k la vârf', async ({ page }) => {
+  await atelierElice(page);
+  const info = page.locator('#at-el-info');
+  // Ø80: încă grosimea obișnuită, fără frază; Ø100: 1,5 și 1; Ø200: 3 și 2
+  await seteaza(page, '#at-el-diam', '80');
+  await expect(page.locator('#at-nume-piesa')).toHaveText('Elice Ø80 cu 3 palete, pasul 0,7');
+  await expect(info).toHaveText('Pasul 56 mm (0,7 × diametrul). Paleta răsucită: 66° lângă butuc, 13° la vârf.');
+  await seteaza(page, '#at-el-diam', '100');
+  await expect(info).toHaveText('Pasul 70 mm (0,7 × diametrul). Paleta răsucită: 70° lângă butuc, 13° la vârf. Peste Ø80, paleta e mai groasă: 1,5 mm la rădăcină, 1 la vârf.');
+  await seteaza(page, '#at-el-diam', '200');
+  await expect(info).toContainText('Peste Ø80, paleta e mai groasă: 3 mm la rădăcină, 2 la vârf.');
+});
+
 test('„Repede”: diametrele pe grila de știfturi (Ø40, Ø56, Ø72, Ø96); „Piese LEGO” rămân alături', async ({ page }) => {
   await atelierElice(page);
   const nume = page.locator('#at-nume-piesa'), grila = page.locator('#at-el-grila');
