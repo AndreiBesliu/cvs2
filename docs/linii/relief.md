@@ -228,4 +228,13 @@ degroșarea și finisarea pe relief), unde stă relieful în document și unde s
   - **Un desen cu linii oblice le taie exact la cadru:** proba privirii măsoară geometria, iar un `clipPath` lasă liniile lungi
     (le vede ca „ies”).
   - **Freza reliefului are loc între frezele ferestrei** (`FrezaT.loc`, pe `scula`): „Dă-i T{n}” o tratează ca pe celelalte.
-
+- **27.11: 18.1↑e gata pe ramură**: finisarea reliefului cu freza toroidală (ADR 0319), cu oracolul 3D întâi. Cu ea, feliile
+  lăsate la cuvântul owner-ului pe 27.11 sunt toate făcute; linia n-are altă felie pornită.
+- **De ținut minte, din 18.1↑e:**
+  - **O formă nouă de freză pe relief intră întâi în oracolul 3D** (`FrezaO`, `urcareO`, `clExact`, `clPlan`, `clRadial`), cu
+    controalele negative, apoi în `urcare` (`src/cam/reliefFinisare.ts`); o siluetă mai jos decât freza adevărată sapă, una mai
+    sus lasă doar lemn (o toroidală socotită plată nu sapă și cade doar la creastă).
+  - **Probele finisării își iau ajutoarele din `test/unit/ajutor-relief-finisare.ts`** (`judeca`, `relief`, `grila`): un caz
+    nou intră într-un fișier care rămâne sub un minut.
+  - **Rândul reliefului poartă raza colțului** (`RandRelief.razaColt`, `relief-raza-colt`): formele noi intră și în
+    `formaRandRelief`, `campuriFormaRelief`, `frezaCitita`, `metaRand` și în regula T din `DialogExport`.

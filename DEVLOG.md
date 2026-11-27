@@ -16759,3 +16759,30 @@ ramură, după push).
   1 010 / 1 010, funcțiile pe emulatoare 142 / 142, paginile 62 / 62. Totalul 937,8 / 1 000 kB.
 - **Pe test:** lotul 58 (`eac92d1c`, 16.A↑e-4), la 08:38; lotul 59 (`e412ebcc`), în drum.
 - **Documentele:** decizia și Starea în `CLAUDE.md`; starea din `docs/linii/principala.md`; indexul liniilor.
+
+## 2026-11-27 — Linia reliefului: felia 18.1↑e, finisarea reliefului cu freza toroidală (Model: Claude Opus 5.5)
+
+**Prompt:** cuvântul owner-ului, transmis la 06:37: „**Finisarea reliefului cu toroidala** e a ta, după răspunsul 4a din ADR
+0303, confirmat acum. Pune-o după cele trei. Mișcă mașina, deci întâi oracolul (`test/oracles/relief3d.ts`), cu toroidala pe
+hârtie.”
+**Started:** 27.11, 07:30, după 18.1↑d-7. **Completed:** 27.11, 08:30 (în container; CI-ul, pe commit-ul împins).
+
+- **Oracolul întâi:** toroidala în oracolul 3D independent (urcarea pe hârtie; CL-ul exact pe triunghiurile modelului, cu
+  punctul de sprijin al tubului pe fețe și bisecția pe derivată pe muchii; CL-ul pe un plan, z0 + g · a + ρ · (√(1 + g²) − 1);
+  semisfera, cu controalele negative fără fețe, fără muchii și doar în noduri; creasta ρ − √(ρ² − ((s − 2a) / 2)²); materialul).
+- **CAM-ul:** silueta toroidalei în câmpul conservativ (`urcare`), judecat de oracol pe calote (ρ 0,25 / 1 / 2,5), pana cu
+  freza trecând de margine, peretele de o celulă și valurile la un unghi: fără scobituri, podeaua, pasul pe material, nicio
+  rapidă în lemn; pe un plan înclinat, vârful la CL-ul de pe hârtie. Probele finisării s-au împărțit: ajutoarele în
+  `ajutor-relief-finisare.ts`, toroidala în două fișiere (fiecare sub un minut).
+- **Lucrarea, panoul, fereastra:** toroidala doar ca freză a finisării (degroșarea rămâne plată); în Tăierea, raza colțului;
+  în fereastra exportului, forma, raza cu greșeala ei, desenul, creasta, regula T, Exportă o scrie (fără schimbare, la octet);
+  din „Frezele mele”, oferită pe finisare. ADR 0319, manualul, e2e `relief.toroidala.spec.ts`.
+- **`main` adus** (16.A↑e-5, buzunarul cu bila și cu toroidala; `6a4244e0`): ciocnirile în `formaFrezei.ts`, `job.ts`,
+  `finisare.ts` și două probe, rezolvate pe regula din `main` (creasta lui `main`, prin `inaltimeFreza`, dă aceeași formulă).
+- **Otrăvurile:** `18.1e.py`, 28 / 28 prinse (5 ale CAM-ului și ale lucrării, 2 ale regulii, 4 ale modelului, 8 ale rândului
+  și ale scrierii, 9 e2e), martorul a scăpat; B00, B08 (`18.1d-5.py`) și T01 (`18.1d-7.py`), mutate pe codul nou și rulate
+  (B08, T01 prinse; martorul a scăpat). La prima rulare au scăpat patru: proba planului înclinat nu judeca niciun punct (pe o
+  pantă constantă, linia e un singur segment), iar proba programului judeca doar scobiturile (o toroidală tăiată ca plată lasă
+  lemn, nu sapă). Acum judecă segmentele interpolate, cere puncte și măsoară suprafața (pe pantele sub 30°, vârful cel mult
+  0,06 mm peste CL-ul exact); E05 (echivalentă pe Ø4 r1) și E07 (de neatins) au fost rescrise.
+- **Mărimea:** totalul 941,5 / 1 000 kB (+0,5, față de `6a4244e0` măsurat la 941,0), pornirea 111,7 kB, neschimbată.

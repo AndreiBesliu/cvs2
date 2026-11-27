@@ -54,15 +54,20 @@ aici, lucrarea o refuza pe finisare (`motivFormaPeOperatie`), deși simularea o 
   peretele de o celulă, valurile la un unghi nealiniat): fără scobituri, podeaua, pasul pe material, nicio rapidă în lemn.
   Ajutoarele comune ale probelor finisării stau în `test/unit/ajutor-relief-finisare.ts`.
 - Lucrarea: `test/unit/finisare.program.test.ts` (calota din dale, finisată cu toroidala Ø4 r1, oracolul pe compusul din
-  aceleași dale, toroidala în IR cu raza colțului), `toroidala.lucrare.test.ts` și `canelura.rotunda.test.ts` (regula formei:
-  finisarea da, degroșarea nu).
+  aceleași dale, toroidala în IR cu raza colțului; și suprafața: pe pantele sub 30°, vârful cel mult 0,06 mm peste CL-ul exact,
+  deci o toroidală tăiată ca plată, care nu sapă, dar lasă lemn, cade), `toroidala.lucrare.test.ts` și
+  `canelura.rotunda.test.ts` (regula formei: finisarea da, degroșarea nu).
 - Modelul: `test/unit/finisare.toroidala.model.test.ts` (felul, creasta, freza scrisă de panou).
 - Fereastra: `test/unit/export.relief.test.ts` (rândul, raza în (0, Ø / 2), citirea, ce scrie Exportă),
   `export.relief.biblioteca.test.ts` (aleasă din bibliotecă), `alegereFreza.test.ts` (oferită pe finisare, nu pe degroșare),
   `export.grupuri.test.ts` (câmpul în grupul Freza).
 - Cap-coadă, în Edge: `test/e2e/relief.toroidala.spec.ts` (Tăierea, rândul din fereastră, creasta, greșeala, Exportă o scrie și
   o taie, fereastra redeschisă).
-- Otrăvurile: `test/otravuri/18.1e.py`.
+- Otrăvurile: `test/otravuri/18.1e.py`, 28 / 28 prinse. La prima rulare au scăpat patru, toate de partea sigură (o siluetă mai
+  sus decât freza adevărată lasă lemn, nu sapă) sau atinse de o probă fără puncte: proba planului înclinat nu judeca nimic
+  (pe o pantă constantă, linia e un singur segment, fără puncte în fereastră), acum judecă segmentele interpolate și cere
+  puncte; proba programului a primit măsura suprafeței; două otrăvuri au fost rescrise (una echivalentă pe Ø4 r1, una de
+  neatins).
 
 ## Nedovedit fără mașină
 
