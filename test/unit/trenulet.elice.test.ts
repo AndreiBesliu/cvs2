@@ -79,11 +79,12 @@ test('cotele: diametrul, butucul Ø8 cu gaura din calibrare, înălțimea și co
   assert.ok(Math.abs(elice().dim[2]! - 8) < 1e-9, `înălțimea ${elice().dim[2]}`);
   assert.ok(Math.abs(elice({ con: 'da' }).dim[2]! - 13.2) < 1e-9, `cu con ${elice({ con: 'da' }).dim[2]}`);
   // paleta lată și abruptă la rădăcină cere butucul mai înalt: Ø200, 2 palete, pasul 1,5 (P 300), lățimea 60 %: la r 3,6,
-  // β = atan(300 / 2π · 3,6) = 85,69°, coarda 0,6 · 60 = 36 (sub 0,85 · π · 3,6 / cos β), deci 36 · sin β + 1,2 · cos β = 35,99:
-  // butucul, 36,0; mai departe, paletele (coarda 60, la 60°) urcă peste el
+  // β = atan(300 / 2π · 3,6) = 85,69°, coarda 0,6 · 60 = 36 (sub 0,85 · π · 3,6 / cos β); peste Ø80, paleta e groasă de
+  // 1,2 · 200 / 80 = 3 la rădăcină (ADR 0340, 3.Cm-5), deci 36 · sin β + 3 · cos β = 36,12: butucul, 36,2; mai departe,
+  // paletele (coarda 60, la 60°) urcă peste el
   const inalta = elice({ diametru: 200, palete: 2, pas: 1.5, latime: 60, gaura: 'nu' }), ci = centru(inalta);
   const butuc = polare(inalta, ci).filter((q) => Math.abs(q[0] - 4) < 1e-3);
-  assert.ok(Math.abs(Math.max(...butuc.map((q) => q[2])) - 36.0) < 1e-9, `butucul înalt: ${Math.max(...butuc.map((q) => q[2]))}`);
+  assert.ok(Math.abs(Math.max(...butuc.map((q) => q[2])) - 36.2) < 1e-9, `butucul înalt: ${Math.max(...butuc.map((q) => q[2]))}`);
   assert.ok(inalta.dim[2]! > 40, `paletele, mai înalte decât butucul: ${inalta.dim[2]}`);
   // gaura: vârfurile ei (prisma are vârfuri doar sus și jos), sub r 3,3: sub rădăcina paletelor (r 3,6) și butucul (r 4)
   const gaura = (g: string) => {
@@ -253,13 +254,14 @@ test('formele paletei, pe hârtie: rotunjită (eliptică după 55 %), îngustat�
 test('profilul de aripă (NACA 4412), pe hârtie: gros de 12 % din coardă spre muchia de atac, cel puțin cât placa, cu săgeata de 4 % la 40 % de muchia de atac', () => {
   // Ø200, 2 palete, lățimea 60 %: coarda 60; stația 12 (r = 3,6 + 96,4 · 12 / 28 = 44,914; la 42,6 %): pasul 0,7 → β = atan(140 / 2πr)
   const d = { gaura: 'nu', profil: 'aripa', diametru: 200, palete: 2, latime: 60 }, p = elice(d), v = polare(p, centru(p)), r = statii(v)[12]!;
-  const x = (r - 4) / 96, s = sectiune(v, r, Math.atan(140 / (2 * Math.PI * r)), 2), t = 1.2 - 0.4 * x;
+  // peste Ø80, grosimea plăcii crește cu k = 200 / 80 = 2,5 (ADR 0340, 3.Cm-5)
+  const x = (r - 4) / 96, s = sectiune(v, r, Math.atan(140 / (2 * Math.PI * r)), 2), t = 2.5 * (1.2 - 0.4 * x);
   assert.ok(Math.abs(s.coarda - 60) < 1e-6, `coarda ${s.coarda}`);
   // punctele corzii sunt pe cosinus (x = ½ − ½ cos(πi / 12)); grosimea NACA la xa = 1 − x de la muchia de atac:
   // 0,6 · (0,2969 √xa − 0,126 xa − 0,3516 xa² + 0,2843 xa³ − 0,1036 xa⁴) · c; cea mai mare dintre puncte, la xa = 0,25: 0,11882 · 60 = 7,129
   const cel = s.puncte.reduce((a, b) => (b.gros > a.gros ? b : a));
   assert.ok(Math.abs(cel.x - 0.75) < 1e-6 && Math.abs(cel.gros - 7.129) < 2e-3, `cel mai gros: la ${cel.x}, ${cel.gros}`);
-  // la muchia de fugă și la cea de atac, cât placa (1,2 − 0,4 · x): profilul nu se subțiază sub două linii de duză
+  // la muchia de fugă și la cea de atac, cât placa (k · (1,2 − 0,4 · x)): profilul nu se subțiază sub grosimea plăcii
   assert.ok(Math.abs(s.puncte[0]!.gros - t) < 1e-6 && Math.abs(s.puncte[12]!.gros - t) < 1e-6, `muchiile: ${s.puncte[0]!.gros}, ${s.puncte[12]!.gros} față de ${t}`);
   assert.ok(s.puncte.every((q) => q.gros >= t - 1e-9));
   // linia de mijloc: la mijlocul corzii (xa = 0,5), 0,04 / 0,36 · (1 − 0,8 + 0,4 − 0,25) · 60 = 2,333; mai sus spre muchia de atac
@@ -269,7 +271,7 @@ test('profilul de aripă (NACA 4412), pe hârtie: gros de 12 % din coardă spre 
   assert.ok(Math.abs(s.puncte[7]!.mijloc - 2.387) < 2e-3 && Math.abs(s.puncte[5]!.mijloc - 2.049) < 2e-3, `săgeata: ${s.puncte[7]!.mijloc}, ${s.puncte[5]!.mijloc}`);
 });
 
-test('vârful paletei rotunjite, la diametrele la care ultima stație cade cu o rotunjire peste 100 % din paletă: 2 mm, fără NaN', () => {
+test('vârful paletei rotunjite, la diametrele la care ultima stație cade cu o rotunjire peste 100 % din paletă: 2,5 · grosimea vârfului (2 mm până la Ø80), fără NaN', () => {
   // la 99 dintre diametrele din 0,1 în 0,1 mm (20,3; 20,8 … 155,3 … 195,8), r0 + (R − r0) · 28 / 28 iese cu un ulp peste R, iar
   // 1 − ((x − 0,55) / 0,45)² coboară sub zero cu 9e-16: radicalul lui ar fi NaN, deci coarda vârfului și toată plasa lui
   for (const diametru of [20.3, 20.8, 155.3, 177.8, 195.8]) {
@@ -277,7 +279,9 @@ test('vârful paletei rotunjite, la diametrele la care ultima stație cade cu o 
     assert.ok(p.tri.flat().every((q) => q.every(Number.isFinite)), `Ø${diametru}: un vârf fără coordonate`);
     assert.equal(muchiiRele(p.tri), 0, `Ø${diametru}`);
     const raze = statii(v), varf = sectiune(v, raze[28]!, Math.atan(0.7 * diametru / (2 * Math.PI * raze[28]!)), 3);
-    assert.ok(Math.abs(raze[28]! - R) < 1e-9 && Math.abs(varf.coarda - 2.0) < 1e-6, `Ø${diametru}: vârful la r ${raze[28]}, coarda ${varf.coarda}`);
+    // coarda vârfului, 2,5 · 0,8 · k (peste Ø80, k = Ø / 80: ADR 0340, 3.Cm-5): Ø155,3 → 3,8825
+    const coarda = 2.5 * 0.8 * Math.max(1, diametru / 80);
+    assert.ok(Math.abs(raze[28]! - R) < 1e-9 && Math.abs(varf.coarda - coarda) < 1e-6, `Ø${diametru}: vârful la r ${raze[28]}, coarda ${varf.coarda}, pe hârtie ${coarda}`);
   }
 });
 

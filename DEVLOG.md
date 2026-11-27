@@ -17010,3 +17010,19 @@ principală: auditul elicelor, felia 4, constatarea 5)
 - **Mărimea:** Easy 3Draw 18.47.0; aplicația, neschimbată. Nimic pe server.
 - **Documentele:** ADR 0340, nota liniei, fișa etapei 3, registrul otrăvurilor, `CLAUDE.md`, traducerile roadmap-ului.
 - **Urmează:** 3.Cm-5 (grosimea paletelor peste Ø80).
+
+## 2026-11-27 — Felia 3.Cm-5: grosimea paletelor la elicele mari (ADR 0340) (sesiune cloud)
+
+**Prompt:** „zi-le sesiunilor sa continue cu recomandarile, acolo unde inca asteapta” (owner-ul, transmis de sesiunea
+principală: auditul elicelor, felia 5, răspunsul 2a)
+**Started:** 27.11, 12:50. **Completed:** 27.11, 13:10 (orele, după ceasul containerului).
+
+- **Motorul:** peste Ø80, paleta elicei și a rotorului se îngroașă cu k = Ø / 80, de la 1,2 · k la rădăcină la 0,8 · k la
+  vârf (elicea Ø200: 3 și 2 mm); până la Ø80, la octet; elicea de barcă, neschimbată. Cotele o spun (`tRad`, `tVarf`).
+- **Editorul:** peste Ø80, textul elicei și al rotorului spune grosimea.
+- **Probele**, scrise întâi: `trenulet.grosime.test.ts` (amprenta de până la Ø80, luată înaintea feliei; cotele; grosimea pe
+  plasă); cinci valori pe hârtie ale probelor vechi, de peste Ø80, refăcute; e2e la elice, la ventilator și în engleză.
+- **Otrăvurile:** `3.Cm-5.py`, 13 / 13; `3.Cm-5-en.py`, 2 / 2; din prima rulare.
+- **Mărimea:** Easy 3Draw 18.48.0; aplicația, neschimbată. Nimic pe server.
+- **Documentele:** ADR 0340, nota liniei, fișa etapei 3, registrul otrăvurilor, `CLAUDE.md`, traducerile roadmap-ului.
+- **Urmează:** 3.Cm-6 (curățenia motorului, singură, la octet).

@@ -157,6 +157,18 @@ test('„Repede”: diametrele pe grila de știfturi, cu carcasa și găurile ei
   await expect(page.locator('#at-ve-repede [aria-pressed="true"]')).toHaveCount(0);
 });
 
+test('peste Ø80, textul rotorului spune grosimea paletei (ADR 0340, 3.Cm-5): la Ø120, 1,8 la rădăcină, 1,2 la vârf', async ({ page }) => {
+  await atelierVentilator(page);
+  const info = page.locator('#at-ve-info');
+  await expect(info).not.toContainText('mai groasă');
+  await seteaza(page, '#at-ve-diam', '80');
+  await expect(page.locator('#at-nume-piesa')).toHaveText('Rotor de ventilator Ø80 cu 7 palete, pasul 0,8');
+  await expect(info).not.toContainText('mai groasă');
+  await seteaza(page, '#at-ve-diam', '120');
+  await expect(page.locator('#at-nume-piesa')).toHaveText('Rotor de ventilator Ø120 cu 7 palete, pasul 0,8');
+  await expect(info).toContainText('Peste Ø80, paleta e mai groasă: 1,8 mm la rădăcină, 1,2 la vârf.');
+});
+
 test('editorul: fiecare alegere și fiecare câmp ajung în piesă; câmpurile, rotunjite la pasul lor și aduse în plajă', async ({ page }) => {
   await atelierVentilator(page);
   const nume = page.locator('#at-nume-piesa'), apasat = (grup: string) => page.locator(`#at-ve-${grup} [aria-pressed="true"]`);

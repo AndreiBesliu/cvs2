@@ -104,9 +104,11 @@ test('rotorul: vârful la Ø / 2 − jocul, butucul (Ø8, sau un sfert din rază
     assert.ok(Math.abs(L.ventilatorCote({ diametru, joc }).Rt - R) < 1e-9);
   }
   // butucul: max(4; un sfert din raza vârfului, la zecime): Ø40 → 4,8; Ø24 → 4; Ø120 cu jocul 2 → 14,5; înălțimea, cât cea mai
-  // înaltă secțiune a paletei, la zecime în sus, cel puțin 8: implicit 8 (paletele, 4,59); Ø120, 3 palete, pasul 1,5, lățimea 60 → 27
+  // înaltă secțiune a paletei, la zecime în sus, cel puțin 8: implicit 8 (paletele, 4,59); Ø120, 3 palete, pasul 1,5, lățimea 60 → 27,4
+  // (peste Ø80, paleta se îngroașă cu k = Ø / 80, ADR 0340, 3.Cm-5: la Ø120, de la 1,8 la 1,2, deci butucul crește cu Δt · cos β:
+  // Ø120 cu jocul 2, de la 12,4 la 12,7; cel cu pasul 1,5, de la 27 la 27,4)
   // Ø56,3 cu jocul 1,5: 0,25 · 26,65 = 6,6625 → 6,7 (la zecime)
-  for (const [d, rh, Hh] of [[{}, 4.8, 8], [{ diametru: 24 }, 4, 8], [{ diametru: 120, joc: 2 }, 14.5, 12.4], [{ diametru: 120, palete: 3, pas: 1.5, latime: 60 }, 14.8, 27],
+  for (const [d, rh, Hh] of [[{}, 4.8, 8], [{ diametru: 24 }, 4, 8], [{ diametru: 120, joc: 2 }, 14.5, 12.7], [{ diametru: 120, palete: 3, pas: 1.5, latime: 60 }, 14.8, 27.4],
     [{ diametru: 56.3, joc: 1.5 }, 6.7, 8]] as const) {
     const q = L.ventilatorCote(d);
     assert.ok(Math.abs(q.rh - rh) < 1e-9 && Math.abs(q.Hh - Hh) < 1e-9, `${JSON.stringify(d)}: butucul ${q.rh} × ${q.Hh}`);
@@ -299,8 +301,9 @@ test('carcasa se potrivește rotorului: jocul pe rază, înălțimea cât palete
     const hb = Math.max(...r.filter((w) => w[0] > q.rh + 0.01).map((w) => w[2]));
     assert.ok(Math.abs(q.Hc - Math.max(8, Math.ceil(hb - 1e-9) + 4)) < 1e-9, `${JSON.stringify(d)}: carcasa ${q.Hc}, paletele ${hb}`);
   }
-  // pe hârtie: Ø24 cu jocul 0,3 → 8; Ø120 cu jocul 2 → 17; Ø120, 3 palete, pasul 1,5, lățimea 60 → 31
-  assert.deepEqual([L.ventilatorCote({ diametru: 24, joc: 0.3 }).Hc, L.ventilatorCote({ diametru: 120, joc: 2 }).Hc, L.ventilatorCote({ diametru: 120, palete: 3, pas: 1.5, latime: 60 }).Hc], [8, 17, 31]);
+  // pe hârtie: Ø24 cu jocul 0,3 → 8; Ø120 cu jocul 2 → ⌈12,7⌉ + 4 = 17; Ø120, 3 palete, pasul 1,5, lățimea 60 → ⌈27,4⌉ + 4 = 32
+  // (paletele mai groase peste Ø80, ADR 0340, 3.Cm-5; înainte, 31)
+  assert.deepEqual([L.ventilatorCote({ diametru: 24, joc: 0.3 }).Hc, L.ventilatorCote({ diametru: 120, joc: 2 }).Hc, L.ventilatorCote({ diametru: 120, palete: 3, pas: 1.5, latime: 60 }).Hc], [8, 17, 32]);
   // cel puțin cât un știft: Ø24 cu jocul 0,3, 3 palete, pasul 0,3, lățimea 15 → paletele 1,51, deci ⌈1,51⌉ + 4 = 6 → 8
   assert.equal(L.ventilatorCote({ diametru: 24, palete: 3, pas: 0.3, latime: 15, joc: 0.3 }).Hc, 8);
   // carcasa nu depinde de inel, sens sau gaură (și unde paletele cu inel ar cere alta: Ø24, 3 palete, pasul 1,2 → fără inel
