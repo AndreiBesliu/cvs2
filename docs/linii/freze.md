@@ -6,7 +6,8 @@ _cncvs2, biblioteca de freze („Frezele mele”), felia 16.A↑ adusă din etap
 proiect); 16.A↑e-1 (documentul v31, toroidala în simulare, refuzul lucrării) raportată gata de unit pe 26.11 (`7c3f166b`, cu
 `main` `0df06eca` adus), UNITĂ în `main` pe 27.11 (`8b92246d`); 16.A↑e-2 (elicea cu bila și cu toroidala în nucleu) raportată
 gata de unit pe 27.11 (`e5bdde83`, PR-ul #71), UNITĂ (`0d2a8c2c`); 16.A↑e-3 (canelura cu bila și cu toroidala) UNITĂ pe 27.11
-(`db066160`); 16.A↑e-4 (bila și toroidala în proiect: fereastra exportului, Tăierea, biblioteca) pe `wip/16.A-freze-e`, peste ea_
+(`db066160`); 16.A↑e-4 (bila și toroidala în proiect: fereastra exportului, Tăierea, biblioteca) UNITĂ pe 27.11 (`72263843`);
+16.A↑e-5 (buzunarul cu bila și cu toroidala, cu creasta pe fund) pe `wip/16.A-freze-e`, peste ea_
 
 Pornită pe 23.11.2026, în sesiunea cloud a liniei, la cererea owner-ului: „Vreau sa pot crea freze l sau profiluri de freze in
 aplicatie si sa le salvez in cont”. Rândurile din prag: „Bibliotecă de freze cu geometrie reală (dreaptă, bilă, toroidală, V,
@@ -187,6 +188,16 @@ gravare, profil, formă desenată)” și „Freze de profil desenate de utiliza
   fiecare probă care construiește un rând întreg îl cere (`razaColt`); un câmp nou al ferestrei intră în `GRUP_CAMP`, în proba
   privirii și, dacă e o greșeală, în motivul de sus (`motiv.scula-invalida`) și în greșeala pe câmp; paza compilatorului din
   `exportFreze.bila.test.ts` a căzut exact cum spunea, deci s-a înlocuit cu proba felului readus.
+- **27.11, 05:30–: 16.A↑e-5 pe `wip/16.A-freze-e`**, peste `72263843` (e-4 unită). Buzunarul cu bila și cu toroidala: drumul
+  frezei plate de același Ø, creasta pe fund în fereastră (`creastaBuzunar`), refuzurile cu freze de rest și cu incrustație cu
+  pereți drepți, oracolul buzunarului cu judecata a 7-a (fundul). **Capcane:**
+  - formula din ADR (h(s / 2)) e doar creasta dintre două inele: pe colțurile inelelor și pe mijloc, un punct poate sta la
+    aproape s de drum, deci fundul ajunge până la h(s). Măsurat pe dreptunghiul 100 × 60 cu bila Ø6, s = 2,4: 0,32 mm, față de
+    0,25 între inele;
+  - o judecată a oracolului care măsoară doar punctele deja „la cel mult s” nu poate cădea niciodată: distanța se caută până la
+    R, iar perechea care pică e același program față de un pas lateral mai mic;
+  - interfața nu importă modelul, deci regula formei rotunde stă de două ori (`motivFormaPeOperatie`, `rotundaPermisa`), cu o
+    probă care le compară; creasta vine pe rândul „pe hârtie” (`hartieRand`), nu din formule în fișă.
 - **Feliile**, în ordine: 16.A↑a (biblioteca în browser, fereastra, fișierul), apoi b (alegerea în proiect, v27), c
   (contul), d (calibrarea), e (bila și toroidala), f (profilul desenat), g (valorile pe material).
 

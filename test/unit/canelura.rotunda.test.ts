@@ -57,12 +57,13 @@ const motiv = (d: Liber): string => {
 const B: Liber = { tip: 'bila' };
 const T = (raza: number): Liber => ({ tip: 'toroidala', raza });
 
-test('motivFormaPeOperatie: bila și toroidala merg pe profilul pe linie; în rest, ca până acum', () => {
+test('motivFormaPeOperatie: bila și toroidala merg pe profilul pe linie (și, din 16.A↑e-5, în buzunar); în rest, ca până acum', () => {
   const b: FormaSculaDoc = { tip: 'bila' }, t: FormaSculaDoc = { tip: 'toroidala', raza: 1 };
   const randuri: ReadonlyArray<readonly [TipOperatie, Latura, FormaSculaDoc, string | null]> = [
     ['profil', 'pe-linie', b, null], ['profil', 'pe-linie', t, null],
     ['profil', 'exterior', b, 'bila'], ['profil', 'interior', t, 'toroidala'], ['profil', 'stanga', b, 'bila'], ['profil', 'dreapta', t, 'toroidala'],
-    ['buzunar', 'interior', b, 'bila'], ['buzunar', 'interior', t, 'toroidala'], ['gaurire', 'interior', t, 'toroidala'],
+    // Buzunarul: din 16.A↑e-5 (`buzunar.rotunda.test.ts`).
+    ['buzunar', 'interior', b, null], ['buzunar', 'interior', t, null], ['gaurire', 'interior', t, 'toroidala'],
     ['vcarve', 'interior', b, 'bila'], ['vcarve', 'interior', t, 'toroidala'],
     // Relieful: finisarea cu bila rămâne; toroidala pe relief e a liniei reliefului (ADR 0303, întrebarea 4).
     ['finisare', 'pe-linie', b, null], ['finisare', 'pe-linie', t, 'toroidala'], ['degrosare', 'pe-linie', t, 'toroidala'],
@@ -85,13 +86,11 @@ test('canelura cu bila și cu toroidala: drumul frezei plate de același Ø, mi�
   treceri.forEach((v, k) => assert.ok(Math.abs(v + (4 * (k + 1)) / 3) < 1e-12, `trecerea ${k + 1} la ${v}`));
 });
 
-test('formele rotunde rămân refuzate pe o parte, în buzunar, la găurire, în V-carve și pe frezele în plus, cu motiv', () => {
+test('formele rotunde rămân refuzate pe o parte și pe frezele de rest, cu motiv (buzunarul: `buzunar.rotunda.test.ts`)', () => {
   const cazuri: ReadonlyArray<readonly [string, Liber, RegExp]> = [
     ['bila pe exterior', op({ scula: scula(1, 6, B), latura: 'exterior' }), /freza bilă \(T1, scula\)/],
     ['toroidala pe interior', op({ scula: scula(1, 6, T(1)), latura: 'interior' }), /freza toroidală \(T1, scula\)/],
     ['toroidala pe stânga', op({ scula: scula(1, 6, T(1)), latura: 'stanga' }), /freza toroidală \(T1, scula\)/],
-    ['bila în buzunar', op({ tip: 'buzunar', latura: 'interior', scula: scula(1, 6, B), pasLateral: 2 }), /freza bilă \(T1, scula\)/],
-    ['toroidala în buzunar', op({ tip: 'buzunar', latura: 'interior', scula: scula(1, 6, T(1)), pasLateral: 2 }), /freza toroidală \(T1, scula\)/],
     ['toroidala de rest', op({ tip: 'buzunar', latura: 'interior', pasLateral: 2, rest: [{ scula: scula(2, 3, T(0.5)), pasLateral: 1 }] }), /freza toroidală \(T2, rest\[0\]\)/],
     ['bila de rest', op({ tip: 'buzunar', latura: 'interior', pasLateral: 2, rest: [{ scula: scula(2, 3, B), pasLateral: 1 }] }), /freza bilă \(T2, rest\[0\]\)/],
   ];
