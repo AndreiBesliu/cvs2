@@ -16600,6 +16600,18 @@ fiecare”: 16.A↑e pe sub-felii, ADR 0303); e-3 după e-2, raportată gata de 
 - **Otrăvurile:** 10 / 10 prinse (`test/otravuri/16.A-e3.py`).
 - **Neschimbate:** nimic pe server; documentul rămâne v31; programul fără forme rotunde, octet cu octet.
 
+## 2026-11-27 — Sesiunea principală în cloud: a șaizeci și doua unire (16.A↑e-3) (Model: Claude Opus 5.5)
+
+**Prompt:** „Zi-le ca pot continua cu ce urmeaza la fiecare” (unirea, la raportul liniei; ordinul „unește ce se poate”)
+**Started:** 27.11, 05:50. **Completed:** 27.11, 05:51.
+
+- **Unirea:** `wip/16.A-freze-e` (`3a55a0c2`, PR-ul #72) în `db066160`, pe `unire-2711d`, din `7f3938aa`; arborele, identic cu
+  al ramurii. Completul 45931240985, verde: unit 10 904 / 0, e2e 1 008 / 1 008, funcțiile pe emulatoare 142 / 142, paginile
+  62 / 62. Totalul 936,5 / 1 000 kB.
+- **Pe test:** lotul 55 (`8270aae7`, toroidala, documentul v31), la 04:58; lotul 56 (`7f3938aa`), în drum.
+- **Linia frezelor** pornește e-4 în fereastra exportului (linia exportului n-are felie pornită).
+- **Documentele:** decizia și Starea în `CLAUDE.md`; starea din `docs/linii/principala.md`; indexul liniilor.
+
 ## 2026-11-27 — 16.A↑e-4: bila și toroidala în proiect (fereastra exportului, Tăierea, biblioteca) (Model: Claude Opus 5.5)
 
 **Prompt:** sesiunea principală, după unirea lui e-3 (`db066160`): „Poți porni e-4 în `DialogExport.tsx`,
