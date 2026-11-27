@@ -34,7 +34,7 @@ import {
   copieDeReadus, cuFrezaAleasa, cuFrezaPusaInapoi, cuValorileNoi, frezeRanduri, locuriFreze, numarPentruRand, oferitePentruRest, stareOrigine, type FrezaOferita, type OrigineFreza, type SculaOperatie, type StareExport,
   AER_IMPLICIT, campuriAerGresite, parametriAer, type SetariAer,
   type CopieRand, type RezultatInapoi, type UndeFreza, campuriRegimGresite, campuriSculaGresite, cheieFreza, regimDinRand, REGIM_GOL, cuNumarT, numarDupaConflict, type FrezaT, type LocFreza,
-  type ValoriOperatie, type HartieRand, type IntrareHartie, formaDinRand, RAZA_COLT_IMPLICITA, rotundaPermisa,
+  type ValoriOperatie, type HartieRand, type IntrareHartie, formaDinRand, RAZA_COLT_IMPLICITA, razaColtRand, rotundaPermisa,
 } from './exportRand.ts';
 
 type Props = {
@@ -683,8 +683,8 @@ export function DialogExport(
     varf: p !== undefined && (p.formaScula !== 'v' || ((v, d) => v !== null && d !== null && v >= 0 && v < d)(citesteNumar(p.varfV), citesteNumar(p.diametruScula))),
     // Freza în V (ADR 0092 §3) taie pe linie sau într-un V-carve; pe o parte, într-un buzunar sau la găurire, nu.
     vPeLinie: p !== undefined && (p.formaScula !== 'v' || p.tip === 'vcarve' || (p.tip === 'profil' && p.latura === 'pe-linie')),
-    // Bila și toroidala (ADR 0303): pe linie (canelura, 16.A↑e-4) și în buzunar, fără freze de rest și fără incrustație cu
-    // pereți drepți (16.A↑e-5).
+    // Bila și toroidala (ADR 0303): pe linie (canelura, 16.A↑e-4), în buzunar, fără freze de rest și fără incrustație cu
+    // pereți drepți (16.A↑e-5), și pe o parte, cu adâncimea cel puțin raza colțului (16.A↑e-6).
     rotunda: p !== undefined && rotundaPermisa(p),
     // Fundul plat (ADR 0091): doar cu bifa pusă; pasul lateral cel mult raza frezei drepte.
     fund: p !== undefined && (p.tip !== 'vcarve' || !p.fundPlat || (intregInMargini(p.numarSculaFund, MARGINI_OPERATIE.numarScula)
@@ -837,6 +837,7 @@ export function DialogExport(
     grosime: grosimeRand.get(cheie) ?? grosimeFoaie, supracursa: cuSupracursa && supracursaCitita !== null ? supracursaCitita : 0, prinFoaie: cuSupracursa && prinFoaie,
     diametruScula: citesteNumar(p.diametruScula), retragere: citesteNumar(p.retragereCompleta), diametre: diametreRand.get(cheie) ?? [],
     ...(p.tip === 'buzunar' ? { forma: formaDinRand(p), pasLateral: citesteNumar(p.pasLateral) } : {}),
+    ...(p.tip === 'profil' ? { forma: formaDinRand(p), peOParte: p.latura !== 'pe-linie' } : {}),
   });
   /**
    * Cercurile unei găuriri pe care freza scrisă nu le poate găuri (ADR 0087): cel mai mare peste două diametre, cel mai mic sub
@@ -1379,7 +1380,11 @@ export function DialogExport(
       case 'vcarve': return t('motiv.vcarve-freza');
       case 'varf': return t('motiv.varf-invalid');
       case 'vPeLinie': return t('motiv.v-pe-linie');
-      case 'rotunda': return t('motiv.rotunda');
+      case 'rotunda': {
+        // Pe o parte, sub raza colțului (16.A↑e-6): motivul spune raza; altfel, unde merg formele rotunde.
+        const rho = p.tip === 'profil' && p.latura !== 'pe-linie' ? razaColtRand(p) : null;
+        return rho !== null ? t('motiv.rotunda-adancime', { raza: fmtFreza.format(rho) }) : t('motiv.rotunda');
+      }
       case 'fund': return t('motiv.fund-plat-invalid', { n: MARGINI_OPERATIE.numarScula, diametru: fmtFreza.format(MARGINI_OPERATIE.diametru) });
       case 'rest': return t('motiv.rest-invalid', { n: MARGINI_OPERATIE.numarScula });
       case 'strategie': return t('motiv.strategie-invalida');

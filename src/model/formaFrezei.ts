@@ -8,36 +8,51 @@
  * - V-carve-ul sapă pe axa medială cu conul frezei, deci cere o freză în V.
  * - Finisarea reliefului (ADR 0312 §2) merge cu freza plată, cu V-ul și cu bila (ADR 0312 §1).
  * - Degroșarea reliefului (ADR 0313 §1) cere freza plată: adaosul se socotește cu freza plată mărită cu el (ADR 0310 §4).
- * - Bila și toroidala (ADR 0303 §4) merg pe linie (canelura, 16.A↑e-3) și în buzunar (16.A↑e-5): centrul frezei stă la R de
- *   perete, ca la freza plată, iar fundul rămâne cu creasta lor. În buzunar, fără freze de rest (geometria lor e a frezei
- *   plate, întrebarea 5a) și fără incrustație cu pereți drepți (pereții și fundul dopului cer freza plată). Profilul pe o
- *   parte vine în e-6; toroidala pe relief e a liniei reliefului.
+ * - Bila și toroidala (ADR 0303 §4) merg pe linie (canelura, 16.A↑e-3), în buzunar (16.A↑e-5) și pe o parte (16.A↑e-6):
+ *   centrul frezei stă la R de perete, ca la freza plată, iar fundul rămâne cu creasta lor. În buzunar, fără freze de rest
+ *   (geometria lor e a frezei plate, întrebarea 5a) și fără incrustație cu pereți drepți (pereții și fundul dopului cer freza
+ *   plată). Pe o parte, cu adâncimea cel puțin raza colțului ρ (întrebarea 2a): pe desen, silueta are raza R abia la ρ
+ *   deasupra vârfului, deci mai puțin adânc peretele n-ar ajunge la desen. Toroidala pe relief e a liniei reliefului.
  * - Freza plată merge în rest.
  */
 import type { FormaSculaDoc, Latura, Operatie, Scula, TipOperatie } from './document.ts';
+import { razaColtului } from './creasta.ts';
 
 /**
  * De ce forma nu merge: `vcarve` (V-carve-ul cere o freză în V), `v-pe-linie` (freza în V taie doar pe linie sau într-un
  * V-carve), `bila` și `toroidala` (freza rotundă nu merge aici: azi, pe linie și în buzunar; bila și la finisarea
  * reliefului), `degrosare` (degroșarea reliefului cere o freză plată), `rotunda-rest` (un buzunar cu o freză rotundă nu are
- * freze de rest) și `rotunda-incrustatie` (incrustația cu pereți drepți cere o freză plată).
+ * freze de rest), `rotunda-incrustatie` (incrustația cu pereți drepți cere o freză plată) și `rotunda-adancime` (pe o parte,
+ * o freză rotundă cere adâncimea cel puțin raza colțului).
  */
-export type MotivForma = 'vcarve' | 'v-pe-linie' | 'bila' | 'degrosare' | 'toroidala' | 'rotunda-rest' | 'rotunda-incrustatie';
+export type MotivForma = 'vcarve' | 'v-pe-linie' | 'bila' | 'degrosare' | 'toroidala' | 'rotunda-rest' | 'rotunda-incrustatie' | 'rotunda-adancime';
 
-/** Ce mai contează din operație pentru o freză rotundă în buzunar: frezele de rest și incrustația (lipsă = fără ele). */
+/**
+ * Ce mai contează din operație pentru o freză rotundă: în buzunar, frezele de rest și incrustația (lipsă = fără ele); pe o
+ * parte, adâncimea (lipsă = necunoscută, deci refuzată).
+ */
 export type RestulOperatiei = {
   readonly rest?: readonly unknown[] | undefined;
   readonly incrustatie?: { readonly fel: string } | null | undefined;
+  readonly adancime?: number | undefined;
 };
 
 /**
  * Motivul pentru care o freză de forma dată nu merge pe operație, sau null dacă merge (lipsa formei = freza plată). `o`:
- * frezele de rest și incrustația operației, unde se știu (o freză rotundă în buzunar le refuză).
+ * frezele de rest, incrustația și adâncimea operației, unde se știu; `diametru`: al frezei judecate (la bilă, raza colțului e
+ * Ø / 2). Pe o parte, o freză rotundă fără adâncime sau, la bilă, fără diametru nu se poate judeca: refuzată.
  */
-export function motivFormaPeOperatie(tip: TipOperatie, latura: Latura, forma: FormaSculaDoc | undefined, o?: RestulOperatiei): MotivForma | null {
+export function motivFormaPeOperatie(
+  tip: TipOperatie, latura: Latura, forma: FormaSculaDoc | undefined, o?: RestulOperatiei, diametru?: number,
+): MotivForma | null {
   const rotunda = forma?.tip === 'bila' || forma?.tip === 'toroidala';
   // Canelura (ADR 0303 §4, 16.A↑e-3): bila și toroidala pe linie, cu centrul pe vector (drumul frezei plate de același Ø).
   if (rotunda && tip === 'profil' && latura === 'pe-linie') return null;
+  // Pe o parte (16.A↑e-6, întrebarea 2a): drumul frezei plate de același Ø, cu adâncimea cel puțin raza colțului.
+  if (rotunda && tip === 'profil') {
+    const rho = razaColtului(forma, diametru);
+    return rho !== null && o?.adancime !== undefined && o.adancime >= rho ? null : 'rotunda-adancime';
+  }
   // Buzunarul (16.A↑e-5): inelele frezei plate de același Ø, fără freze de rest și fără incrustație cu pereți drepți.
   if (rotunda && tip === 'buzunar') {
     if ((o?.rest?.length ?? 0) > 0) return 'rotunda-rest';

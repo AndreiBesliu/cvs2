@@ -16757,3 +16757,47 @@ principală la 06:37: auditul elicelor, întrebările 1a–4a, feliile 1–7 în
 - **Documentele:** ADR 0340 (și indexul), nota liniei, indexul liniilor, fișa etapei 3 (jurnalul și întrebarea a / b / c a
   verdictului, la owner), registrul otrăvurilor, `CLAUDE.md`, traducerile roadmap-ului.
 - **Urmează:** 3.Cm-3 (ventilatorul ca trusă), după unire.
+
+## 2026-11-27 — 16.A↑e-6: profilul pe o parte cu bila și cu toroidala (Model: Claude Opus 5.5)
+
+**Prompt:** sesiunea principală, după unirea lui e-4 (`72263843`): „Poți porni e-5 (buzunarul cu bila și cu toroidala) pe aceeași
+ramură, după ce aduci `main`: mișcă mașina, deci întâi oracolul (fundul și creasta pe hârtie, pasul pe trecere, peretele), apoi
+e-6.” Apoi: „Pentru tine, recomandările ADR 0303 sunt confirmate: 1a, 2a, 4a și 5a; 3a era deja făcută. Continuă cu e-5 și
+e-6.” **Started:** 27.11, 06:30, pe `wip/16.A-freze-e`, peste e-5. **Completed:** 27.11 (în container; completul pe ramură,
+după push).
+
+- **Proba peretelui întâi** (`test/unit/profil.rotunda.test.ts`): secțiunea peretelui simulat (nucleul, celula de 0,01 mm)
+  față de hârtie, celulă cu celulă: la δ de desen spre deșeu, d − h(|R − δ|); în piesă, nimic tăiat; între desen și centrul
+  frezei, totul tăiat cel puțin d − ρ (peretele vertical). Pe bila Ø6 (la 3, 4, 5 mm), pe toroidala r1 (la 1 și 2 mm) și r2,5
+  (la 3,5 mm), pe exterior și pe interior.
+- **Regula** (întrebarea 2a): pe o parte, bila și toroidala merg cu adâncimea cel puțin raza colțului ρ (bila: Ø / 2).
+  `motivFormaPeOperatie` primește adâncimea în `o` și diametrul frezei; sub ρ, sau fără ele, `rotunda-adancime`. Lucrarea
+  spune freza, raza colțului și adâncimea; Tăierea oferă freza rotundă pe o parte doar de la adâncimea ei (cu diametrul frezei
+  din bibliotecă).
+- **Drumul:** al frezei plate de același Ø, mișcare cu mișcare, pe exterior, interior, stânga și dreapta, cu urechile, rampa,
+  intrările și degajările.
+- **Peretele pe hârtie:** `peretePeOParte` și `razaColtului` (`src/model/creasta.ts`): vertical de la față până la d − ρ,
+  racordarea de rază ρ la fund; prin foaie, cu supracursa sub ρ, racordarea rămasă pe muchia de jos a piesei.
+- **Fereastra exportului:** forma rotundă pe orice profil; regula rândului (`rotundaPermisa`, cu `razaColtRand`) și greșeala
+  din grupul Freza cu raza colțului; nota peretelui sub adâncime, din rândul „pe hârtie” (`hartieRand`, câmpul `perete`).
+  Lista „Din frezele mele” a rândului nu cere adâncimea, ca frezele de rest ale buzunarului.
+- **Probele vechi** care cereau refuzul pe o parte, întoarse; e2e: nota peretelui (bila și toroidala) și programul cu bila
+  simulat de oracol pe octeții din browser; manualul, în ambele limbi.
+- **ADR 0303 acceptat** cu recomandările (1a–5a), la cuvântul owner-ului transmis de sesiunea principală; cu e-6, ADR-ul are
+  toate sub-feliile.
+- **Otrăvurile:** 16 / 16 prinse (`test/otravuri/16.A-e6.py`: 12 pe lucrare și fereastră, 4 e2e).
+- **Mărimea:** totalul 938,3 / 1 000 kB (+0,5); pornirea neschimbată (111,7 kB; cu ușa 117,0, cu Atelierul 117,4 / 125).
+- **Neschimbate:** nimic pe server; documentul rămâne v31; programul fără forme rotunde, octet cu octet.
+
+## 2026-11-27 — Sesiunea principală în cloud: a șaizeci și cincea unire (16.A↑e-6) (Model: Claude Opus 5.5)
+
+**Prompt:** „zi-le sesiunilor sa continue cu recomandarile, acolo unde inca asteapta” (unirea, la raportul liniei; ordinul „unește ce se poate”)
+**Started:** 27.11, 10:52. **Completed:** 27.11, 10:54.
+
+- **Unirea:** `wip/16.A-freze-e` (`f1866d2d`, PR-ul #74; nu capul ramurii, cu 16.A↑f-1 la porți) în `e9790edb`, pe
+  `unire-2711h`, din `f4bac612`; codul, identic cu al lui `f1866d2d`. Completul 45960847118, verde: unit 10 953 / 0, e2e
+  1 011 / 1 011, funcțiile pe emulatoare 142 / 142, paginile 62 / 62. Totalul 939,8 / 1 000 kB.
+- **Exportul (28.8↑s, `cd2ed898`, PR-ul #76):** pus peste unire pe `unire-2711i` (`fec801bc`, fără ciocniri); completul
+  45969212819, în lucru.
+- **Pe test:** lotul 59 (`a67ec32c`, 16.A↑e-5), la 10:35; lotul 60 (16.A↑e-6), în drum.
+- **Documentele:** decizia și Starea în `CLAUDE.md`; starea din `docs/linii/principala.md`; indexul liniilor.

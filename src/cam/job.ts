@@ -4,6 +4,7 @@ import { conturDeTaiat } from './contur.ts';
 import { judecaDeschisa, NEATINS_PESTE_D, refuzDeschise } from './deschise.ts';
 import { conturElement } from '../model/forme.ts';
 import { felFrezei, frezeleOperatiei, motivFormaPeOperatie } from '../model/formaFrezei.ts';
+import { razaColtului } from '../model/creasta.ts';
 import { ordineTaieturi, valoriVcarve, type Taietura } from '../model/lume.ts';
 import { degrosariFoaie, finisariFoaie, finisariInainteaDegrosarii, nepotrivireDegrosare, ordinePasi, type FinisareFoaie } from '../model/finisare.ts';
 import { compusDinResurse, type ResurseRelief } from '../relief/resurse.ts';
@@ -71,10 +72,15 @@ function refuzFinisareSiBila(doc: Document): string | null {
     if (!pePlaca.has(p.id)) continue;
     for (const o of p.operatii) {
       const unde = `${p.id}/${o.id}`;
-      // Bila și toroidala (ADR 0303 §4): ca freză a operației, pe linie (canelura, 16.A↑e-3) și în buzunar (16.A↑e-5); bila și
-      // la finisarea reliefului. Pe orice freză în plus și pe celelalte operații, refuzate (profilul pe o parte vine în e-6).
+      // Bila și toroidala (ADR 0303 §4): ca freză a operației, pe linie (canelura, 16.A↑e-3), în buzunar (16.A↑e-5) și pe o parte,
+      // cu adâncimea cel puțin raza colțului (16.A↑e-6); bila și la finisarea reliefului. Pe orice freză în plus și pe celelalte
+      // operații, refuzate.
       const rotunda = (s: { readonly forma?: { readonly tip: string } | undefined }): boolean => s.forma?.tip === 'bila' || s.forma?.tip === 'toroidala';
-      const motivRotunda = motivFormaPeOperatie(o.tip, o.latura, o.scula.forma, o);
+      const motivRotunda = motivFormaPeOperatie(o.tip, o.latura, o.scula.forma, o, o.scula.diametru);
+      if (rotunda(o.scula) && motivRotunda === 'rotunda-adancime') {
+        return `${unde}: pe o parte, freza ${felFrezei(o.scula.forma)} (T${o.scula.numar}) cere o adâncime de cel puțin raza colțului, `
+          + `${razaColtului(o.scula.forma, o.scula.diametru)} mm (e ${o.adancime} mm): mai puțin adânc, peretele n-ar ajunge la desen`;
+      }
       if (rotunda(o.scula) && motivRotunda === 'rotunda-rest') {
         return `${unde}: buzunarul cu freza ${felFrezei(o.scula.forma)} (T${o.scula.numar}) se taie fără freze de rest: geometria lor e a frezei plate`;
       }
@@ -83,7 +89,7 @@ function refuzFinisareSiBila(doc: Document): string | null {
       }
       for (const { cale, scula } of frezeleOperatiei(o)) {
         if (scula.forma?.tip === 'toroidala' && !(cale === 'scula' && motivRotunda === null)) {
-          return `${unde}: freza toroidală (T${scula.numar}, ${cale}) nu se taie încă aici: azi pe linie (canelura) și în buzunar; profilul pe o parte vine pe sub-felii`;
+          return `${unde}: freza toroidală (T${scula.numar}, ${cale}) nu se taie aici: taie doar pe linie (canelura), în buzunar și pe o parte, ca freză a operației`;
         }
       }
       if (o.finisare !== undefined && o.tip !== 'finisare') return `${unde}: valorile finisării sunt doar ale unei finisări a reliefului`;
@@ -94,7 +100,7 @@ function refuzFinisareSiBila(doc: Document): string | null {
       if (o.tip !== 'finisare' && o.tip !== 'degrosare') {
         for (const { cale, scula } of frezeleOperatiei(o)) {
           if (scula.forma?.tip === 'bila' && !(cale === 'scula' && motivRotunda === null)) {
-            return `${unde}: freza bilă (T${scula.numar}, ${cale}) merge doar pe linie (canelura), în buzunar și la finisarea reliefului`;
+            return `${unde}: freza bilă (T${scula.numar}, ${cale}) taie doar pe linie (canelura), în buzunar, pe o parte și la finisarea reliefului, ca freză a operației`;
           }
         }
         continue;

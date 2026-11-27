@@ -44,18 +44,20 @@ export function frezePeRanduri<F extends FrezaSalvata>(lista: readonly F[]): F[]
 
 /**
  * Frezele care merg pe toate operațiile date (felul și latura fiecăreia; frezele de rest și incrustația, unde se știu: o freză
- * rotundă nu merge pe un buzunar cu ele), în ordinea listei; nimic fără operații.
+ * rotundă nu merge pe un buzunar cu ele; adâncimea: pe o parte, o freză rotundă cere cel puțin raza colțului), în ordinea
+ * listei; nimic fără operații.
  */
 export function frezePotrivite<F extends Freza>(lista: readonly F[], operatii: ReadonlyArray<Pick<Operatie, 'tip' | 'latura'> & RestulOperatiei>): F[] {
   if (operatii.length === 0) return [];
   return lista.filter((f) => {
     // Felurile fără CAM încă (ADR 0302 §2) nu se oferă: n-au copie pentru document.
     if (!areCam(f.fel)) return false;
-    const forma = sculaDinFreza(f).forma;
+    const { forma, diametru } = sculaDinFreza(f);
     // O operație cu rând editabil în fereastra exportului primește doar o freză pe care rândul o poartă (`formaPeRand`):
     // altfel operația n-ar avea rând (bila pe canelură, până la 16.A↑e-4). Relieful își are rândul lui, doar de citit.
+    // Diametrul e al frezei din bibliotecă: pe o parte, raza colțului bilei e Ø / 2 (16.A↑e-6).
     const cuRand = (o: Pick<Operatie, 'tip'>): boolean => o.tip !== 'finisare' && o.tip !== 'degrosare';
-    return operatii.every((o) => motivFormaPeOperatie(o.tip, o.latura, forma, o) === null && (!cuRand(o) || formaPeRand(forma)));
+    return operatii.every((o) => motivFormaPeOperatie(o.tip, o.latura, forma, o, diametru) === null && (!cuRand(o) || formaPeRand(forma)));
   });
 }
 

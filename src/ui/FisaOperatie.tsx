@@ -236,10 +236,10 @@ export function FisaOperatie({ cheie, loc, total: totalFisa, c: ctx }: {
   const ciocnit = (x: string): boolean => conflict !== undefined && citesteNumar(x) === conflict[0];
   // Greșeala pe câmp (constatarea 15): doar câmpul frezei care nu trece se înroșește.
   const sculaRea = campuriSculaGresite(p);
-  // Bila și toroidala se aleg doar pe linie (canelura, ADR 0303 §4): lucrarea le refuză în rest.
-  // Bila și toroidala se oferă pe linie (canelura) și în buzunar (ADR 0303, feliile 16.A↑e-4 și e-5); cu freze de rest sau cu
-  // incrustație cu pereți drepți, alegerea se spune greșită (`rotundaPermisa`).
-  const peLinieRotunda = (p.tip === 'profil' && p.latura === 'pe-linie') || p.tip === 'buzunar';
+  // Bila și toroidala se oferă pe orice profil (pe linie, canelura; pe o parte, din 16.A↑e-6) și în buzunar (ADR 0303, feliile
+  // 16.A↑e-4…e-6); cu freze de rest, cu incrustație cu pereți drepți sau pe o parte sub raza colțului, alegerea se spune
+  // greșită (`rotundaPermisa`).
+  const rotundaAici = p.tip === 'profil' || p.tip === 'buzunar';
   // Turația, avansul și plonjarea, doar pe o freză scrisă de mână (ADR 0291 §3, felia 28.8↑p); goale, cele implicite.
   const regimRau = p.origineScula === null ? campuriRegimGresite(p.regimMana) : [];
   // Rezumatul lor, pe rândul strâns: valorile cu care taie freza (cele scrise, cu golurile luate din lucrare).
@@ -399,8 +399,8 @@ export function FisaOperatie({ cheie, loc, total: totalFisa, c: ctx }: {
             }}>
             <option value="plata">{t('export.freza.plata')}</option>
             <option value="v">{t('export.freza.v')}</option>
-            {(peLinieRotunda || p.formaScula === 'bila') && <option value="bila">{t('export.freza.bila')}</option>}
-            {(peLinieRotunda || p.formaScula === 'toroidala') && <option value="toroidala">{t('export.freza.toroidala')}</option>}
+            {(rotundaAici || p.formaScula === 'bila') && <option value="bila">{t('export.freza.bila')}</option>}
+            {(rotundaAici || p.formaScula === 'toroidala') && <option value="toroidala">{t('export.freza.toroidala')}</option>}
           </select>
         </label>
         {/* Raza colțului toroidalei (ADR 0303 §1): peste 0, sub jumătatea diametrului. */}
@@ -447,6 +447,12 @@ export function FisaOperatie({ cheie, loc, total: totalFisa, c: ctx }: {
           <span className="nota-camp" data-treceri>{h.adancime === adancimeRand
             ? t('export.treceri', { n: h.treceri.length, mm: fmtTrecere.format(trecere) })
             : t('export.treceri.prin', { n: h.treceri.length, mm: fmtTrecere.format(trecere), a: fmtTrecere.format(h.adancime) })}</span>
+        )}
+        {/* Peretele pe o parte cu bila sau cu toroidala (ADR 0303 §4, felia 16.A↑e-6; întrebarea 2a: racordarea spusă în fișă). */}
+        {h.perete && (
+          <span className="nota" data-nota="perete-rotunda">{t('export.perete-rotunda', {
+            vertical: fmtFreza.format(h.perete.vertical), raza: fmtFreza.format(h.perete.raza),
+          })}{h.perete.margineJos > 0 && ` ${t('export.perete-rotunda-jos', { jos: fmtFreza.format(h.perete.margineJos), raza: fmtFreza.format(h.perete.raza) })}`}</span>
         )}
       </div>);
       case 'sens': return (<div className="dx-rand">
