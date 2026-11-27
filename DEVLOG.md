@@ -16765,7 +16765,7 @@ ramură, după push).
 **Prompt:** cuvântul owner-ului, transmis la 06:37: „**Finisarea reliefului cu toroidala** e a ta, după răspunsul 4a din ADR
 0303, confirmat acum. Pune-o după cele trei. Mișcă mașina, deci întâi oracolul (`test/oracles/relief3d.ts`), cu toroidala pe
 hârtie.”
-**Started:** 27.11, 07:30, după 18.1↑d-7. **Completed:** 27.11, 08:30 (în container; CI-ul, pe commit-ul împins).
+**Started:** 27.11, 07:30, după 18.1↑d-7. **Completed:** 27.11, 08:10 (în container; CI-ul, pe commit-ul împins).
 
 - **Oracolul întâi:** toroidala în oracolul 3D independent (urcarea pe hârtie; CL-ul exact pe triunghiurile modelului, cu
   punctul de sprijin al tubului pe fețe și bisecția pe derivată pe muchii; CL-ul pe un plan, z0 + g · a + ρ · (√(1 + g²) − 1);
