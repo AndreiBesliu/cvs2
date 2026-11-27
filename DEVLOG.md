@@ -17124,3 +17124,34 @@ principală: auditul elicelor, felia 5, răspunsul 2a)
 - **Neprobat cap-coadă:** linia din `FisaFinisare` care cheamă `stareOrigineRelief` (o probă e2e ar cere o freză a bibliotecii
   schimbată în profil sub un rând al reliefului).
 - **Documentele:** ADR 0319, fișa etapei 3, registrul otrăvurilor, nota liniei, traducerea.
+
+## 2026-11-27 — 16.A↑f-4: marginea profilată pe o parte (Model: Claude Opus 5.5)
+
+**Prompt:** sesiunea principală, la raportul lui f-3: „Poți porni f-4 din vârful ramurii tale. Unesc `0a1fd1a4`, nu vârful. Când
+raportezi f-4, adu întâi `main`.” (ADR 0304 §4, întrebările 2a și 3a, cu recomandările.) **Started:** 27.11, 11:45, pe
+`wip/16.A-freze-e`, din vârful ramurii. **Completed:** 27.11 (în container; completul pe ramură, după push, cu `main` adus).
+
+- **Proba secțiunii întâi** (`test/unit/profil.margine.test.ts`): pe hârtie, fundul plat r(0), înălțimea profilului și
+  retragerea muchiei r(d) − r(0); regula; drumul față de freza plată de 2·r(0), mișcare cu mișcare (exterior, interior, rampa,
+  stânga și dreapta pe o cale deschisă); secțiunea marginii simulate, celulă cu celulă, la 0,01 mm (z = min(0, −d + h(ρ))), cu
+  dinți pe retragerea muchiei și nimic tăiat dincolo de ea; refuzurile (peste înălțime, fără fund plat, cu urechi, degajări,
+  intrări, despărțire).
+- **Pe hârtie** (`src/model/profilMargine.ts`, pur): `fundProfil`, `inaltimeProfil`, `retragereMuchie`.
+- **Regula** (`motivFormaPeOperatie`): pe o parte, profilul merge cu fund plat (`profil-fund`) și cu adâncimea cel mult înălțimea
+  lui (`profil-adancime`); pe linie, ca în f-2.
+- **Lucrarea:** raza drumului (`razaTraseu`) e r(0) pe o parte cu profilul, și pentru profilul tăieturii, și pentru invarianta
+  2; refuzurile, cu T-ul și, la adâncime, cu înălțimea; urechile, degajările, intrările și despărțirea se refuză deocamdată
+  (le calculează lucrarea cu raza frezei).
+- **Fereastra exportului:** `motivProfilRand` (aceeași regulă, pe rând, cu motivul ei), nota retragerii sub Adâncimea
+  (`HartieRand.margine`); Tăierea și „Din frezele mele” oferă pe o parte doar profilurile destul de înalte.
+- **E2e** (`test/e2e/export.profil.spec.ts`): rotunjirea R3 Ø12 pe exterior, la 2 mm: nota (0,764 mm), programul judecat de
+  oracolul simulării cu silueta pe hârtie (abaterea ≤ 0,001 mm, nimic tăiat în piesă dincolo de muchie); la 3,5 mm, refuzul cu
+  înălțimea. `frezeTaiere.spec.ts` numără rotunjirile pe exterior (10 din 11 la 3 mm, toate la 1 mm).
+- **Manualul**, în ambele limbi: paragraful „Marginea profilată”, iar profilurile nu mai sunt „doar pe linie”.
+- **Otrăvurile:** 18 / 18 prinse (`test/otravuri/16.A-f4.py`: 16 pe model, lucrare și fereastră, 2 e2e); G09, o rază mai mică în
+  verificare, scăpa (doar slăbea verificarea) și a fost înlocuită cu raza frezei întregi. G01, G02 din `16.A-f2.py` și H09 din
+  `16.A-f3.py`, mutate pe regula nouă, prinse. Prima rulare e2e a pus spec-ul sub `SETURI` în loc de `E2E` (unealta a rulat toată
+  suita); reparat.
+- **Mărimea** (rapidul pe `99979e16`, verde): pornirea 111,8 kB (cu ușa 117,3, cu Atelierul 117,6 / 125), neschimbată; totalul
+  942,2 / 1 000 kB (+0,7).
+- **Neschimbate:** nimic pe server; documentul rămâne v32; programul fără profil pe o parte, octet cu octet.

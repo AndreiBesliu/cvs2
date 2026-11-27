@@ -14,22 +14,26 @@
  *   plată). Pe o parte, cu adâncimea cel puțin raza colțului ρ (întrebarea 2a): pe desen, silueta are raza R abia la ρ
  *   deasupra vârfului, deci mai puțin adânc peretele n-ar ajunge la desen. Toroidala merge și la finisarea reliefului
  *   (18.1↑e, ADR 0319).
- * - Profilul desenat (ADR 0304 §3) merge pe linie (canelura, 16.A↑f-2): centrul pe vector, ca la bilă, deci drumul frezei
- *   plate de același Ø; secțiunea canelurii e oglinda siluetei.
+ * - Profilul desenat (ADR 0304 §3, §4) merge pe linie (canelura, 16.A↑f-2): centrul pe vector, ca la bilă, deci drumul frezei
+ *   plate de același Ø; secțiunea canelurii e oglinda siluetei. Pe o parte (marginea profilată, 16.A↑f-4): centrul la fundul
+ *   plat al siluetei r(0) de desen (drumul frezei plate de 2·r(0)), cu adâncimea cel mult înălțimea profilului.
  * - Freza plată merge în rest.
  */
 import type { FormaBila, FormaSculaDoc, FormaToroidala, FormaV, Latura, Operatie, Scula, TipOperatie } from './document.ts';
 import { razaColtului } from './creasta.ts';
+import { fundProfil, inaltimeProfil } from './profilMargine.ts';
 
 /**
  * De ce forma nu merge: `vcarve` (V-carve-ul cere o freză în V), `v-pe-linie` (freza în V taie doar pe linie sau într-un
  * V-carve), `bila` și `toroidala` (freza rotundă nu merge aici: azi, pe linie, pe o parte, în buzunar și la finisarea
  * reliefului), `degrosare` (degroșarea reliefului cere o freză plată), `rotunda-rest` (un buzunar cu o freză rotundă nu are
  * freze de rest), `rotunda-incrustatie` (incrustația cu pereți drepți cere o freză plată), `rotunda-adancime` (pe o parte,
- * o freză rotundă cere adâncimea cel puțin raza colțului) și `profil` (profilul desenat taie doar pe linie, canelura: ADR 0304
- * §3, felia 16.A↑f-2; marginea profilată vine pe o sub-felie a ei).
+ * o freză rotundă cere adâncimea cel puțin raza colțului), `profil` (profilul desenat taie doar ca profil: pe linie, canelura,
+ * și pe o parte, marginea profilată; ADR 0304 §3), `profil-adancime` (pe o parte, adâncimea peste înălțimea profilului sau
+ * necunoscută) și `profil-fund` (pe o parte, o siluetă fără fund plat: centrul n-ar avea unde sta de desen).
  */
-export type MotivForma = 'vcarve' | 'v-pe-linie' | 'bila' | 'degrosare' | 'toroidala' | 'rotunda-rest' | 'rotunda-incrustatie' | 'rotunda-adancime' | 'profil';
+export type MotivForma = 'vcarve' | 'v-pe-linie' | 'bila' | 'degrosare' | 'toroidala' | 'rotunda-rest' | 'rotunda-incrustatie' | 'rotunda-adancime'
+  | 'profil' | 'profil-adancime' | 'profil-fund';
 
 /**
  * Ce mai contează din operație pentru o freză rotundă: în buzunar, frezele de rest și incrustația (lipsă = fără ele); pe o
@@ -49,9 +53,16 @@ export type RestulOperatiei = {
 export function motivFormaPeOperatie(
   tip: TipOperatie, latura: Latura, forma: FormaSculaDoc | undefined, o?: RestulOperatiei, diametru?: number,
 ): MotivForma | null {
-  // Profilul desenat (ADR 0304 §3): pe linie (canelura, 16.A↑f-2), cu centrul pe vector, ca bila; marginea profilată (pe o
-  // parte) vine pe o sub-felie a ei, iar buzunarul, găurirea, V-carve-ul și relieful îl refuză.
-  if (forma?.tip === 'profil') return tip === 'profil' && latura === 'pe-linie' ? null : 'profil';
+  // Profilul desenat (ADR 0304 §3, §4): pe linie (canelura, 16.A↑f-2), cu centrul pe vector, ca bila; pe o parte (marginea
+  // profilată, 16.A↑f-4), cu centrul la fundul plat al siluetei de desen (deci cere un fund plat) și cu adâncimea cel mult
+  // înălțimea profilului (peste ea, cilindrul frezei ar tăia o treaptă în piesă). Buzunarul, găurirea, V-carve-ul și
+  // relieful îl refuză.
+  if (forma?.tip === 'profil') {
+    if (tip !== 'profil') return 'profil';
+    if (latura === 'pe-linie') return null;
+    if (!(fundProfil(forma.puncte) > 0)) return 'profil-fund';
+    return o?.adancime !== undefined && o.adancime <= inaltimeProfil(forma.puncte) + 1e-9 ? null : 'profil-adancime';
+  }
   const rotunda = forma?.tip === 'bila' || forma?.tip === 'toroidala';
   // Canelura (ADR 0303 §4, 16.A↑e-3): bila și toroidala pe linie, cu centrul pe vector (drumul frezei plate de același Ø).
   if (rotunda && tip === 'profil' && latura === 'pe-linie') return null;

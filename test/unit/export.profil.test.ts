@@ -2,7 +2,9 @@
  * Profilul desenat în proiect (ADR 0304 §5, felia 16.A↑f-3), partea pură a ferestrei exportului și a alegerii din bibliotecă:
  *
  * - **forma pe rând** (`formaDinRand`, `campuriForma`): profilul cu punctele lui, dus-întors; fără puncte nu e o formă;
- * - **regula** (`profilPermis`): doar pe linie, ca `motivFormaPeOperatie` din model;
+ * - **regula** (`profilPermis`, `motivProfilRand`): pe linie și, din 16.A↑f-4, pe o parte (cu fund plat, până la înălțimea
+ *   profilului, fără urechi, degajări, intrări și despărțire), ca `motivFormaPeOperatie` din model; rândul „pe hârtie” spune
+ *   retragerea muchiei;
  * - **identitatea frezei** pentru numărul T (`numarPentruRand`): două siluete sunt două freze, aceeași siluetă una;
  * - **alegerea din bibliotecă** (`cuFrezaAleasa`) pune profilul pe rând; **nota** (`diferenteFreza`) vede silueta schimbată;
  * - **copia de readus** (`copieDeReadus`): un profil nu se pune înapoi (copia n-are felul parametric);
@@ -13,9 +15,11 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  campuriForma, copieDeReadus, cuFrezaAleasa, diferenteFreza, formaDinRand, locuriFreze, numarPentruRand, profilPermis,
-  type FrezaOferita, type FormaRand, type OrigineFreza, type Rand,
+  campuriForma, copieDeReadus, cuFrezaAleasa, diferenteFreza, formaDinRand, fundProfilRand, inaltimeProfilRand, locuriFreze,
+  motivProfilRand, numarPentruRand, profilPermis, type FrezaOferita, type FormaRand, type OrigineFreza, type Rand,
 } from '../../src/ui/exportRand.ts';
+import { fundProfil, inaltimeProfil } from '../../src/model/profilMargine.ts';
+import { hartieRand } from '../../src/app/hartieExport.ts';
 import { formaPeRand, motivFormaPeOperatie, operatieCuRand } from '../../src/model/formaFrezei.ts';
 import { frezePeRanduri, frezePotrivite } from '../../src/model/alegereFreza.ts';
 import { sculaDinFreza, type Freza, type FrezaSalvata } from '../../src/model/freza.ts';
@@ -60,16 +64,42 @@ test('forma pe rând: profilul cu punctele lui, dus-întors; fără puncte nu e 
   assert.equal(formaDinRand(rand({ formaScula: 'profil' })), undefined);
 });
 
-test('regula ferestrei: profilul doar pe linie, ca regula modelului', () => {
+test('regula ferestrei: profilul pe linie și pe o parte (până la înălțimea lui, cu fund plat, fără opțiuni), ca regula modelului', () => {
   const locuri: ReadonlyArray<readonly [Rand['tip'] & TipOperatie, Latura]> = [
     ['profil', 'pe-linie'], ['profil', 'exterior'], ['profil', 'interior'], ['profil', 'stanga'], ['profil', 'dreapta'],
     ['buzunar', 'interior'], ['gaurire', 'interior'], ['vcarve', 'interior'],
   ];
-  for (const [tip, latura] of locuri) {
-    const model = motivFormaPeOperatie(tip, latura, { tip: 'profil', puncte: PR3 }, { adancime: 10 }, 12) === null;
-    assert.equal(profilPermis(rand({ tip, latura, formaScula: 'profil', profil: PR3 })), model, `${tip} ${latura}`);
+  // Rotunjirea R3 pe Ø12: fundul plat 3, înălțimea 3; la 2 mm merge pe o parte, la 3,5 nu.
+  for (const d of [2, 3, 3.5]) {
+    for (const [tip, latura] of locuri) {
+      const model = motivFormaPeOperatie(tip, latura, { tip: 'profil', puncte: PR3 }, { adancime: d }, 12) === null;
+      assert.equal(profilPermis(rand({ tip, latura, formaScula: 'profil', profil: PR3, adancime: String(d) })), model, `${tip} ${latura} la ${d}`);
+    }
   }
   assert.equal(profilPermis(rand({ tip: 'buzunar', latura: 'interior' })), true);
+  // Motivele: fundul plat lipsă, adâncimea peste înălțime, opțiunile pe o parte; pe linie, nimic.
+  const ext = (p: Partial<Rand>): Rand => rand({ latura: 'exterior', formaScula: 'profil', profil: PR3, adancime: '2', ...p });
+  assert.equal(motivProfilRand(ext({})), null);
+  assert.equal(motivProfilRand(ext({ profil: [[0, 0], [6, 2]] })), 'fund');
+  assert.equal(motivProfilRand(ext({ adancime: '3,5' })), 'adancime');
+  assert.equal(motivProfilRand(ext({ adancime: 'x' })), null);
+  for (const o of [{ urechi: true }, { colturi: 'dog-bone' as const }, { intrari: true }, { despartire: true }]) assert.equal(motivProfilRand(ext(o)), 'optiuni', JSON.stringify(o));
+  assert.equal(motivProfilRand(rand({ formaScula: 'profil', profil: PR3, adancime: '20', urechi: true })), null);
+  assert.equal(motivProfilRand(rand({ tip: 'buzunar', latura: 'interior', formaScula: 'profil', profil: PR3 })), 'profil');
+  assert.equal(fundProfilRand(PR3), fundProfil(PR3));
+  assert.equal(inaltimeProfilRand(PR3), inaltimeProfil(PR3));
+});
+
+test('rândul „pe hârtie”: pe o parte, retragerea muchiei de sus; pe linie și peste înălțime, nimic', () => {
+  const intrare = {
+    tip: 'profil' as const, adancime: 2, incrustatie: 'fara' as const, pas: 1, grosime: 18, supracursa: 0, prinFoaie: false, diametruScula: 12,
+    retragere: null, diametre: [], forma: F3,
+  };
+  const m = hartieRand({ ...intrare, peOParte: true }).margine;
+  // R3 pe Ø12: h(r) = √(9 − (6 − r)²) după fundul plat 3, deci la 2 mm r = 6 − √5; retragerea r − 3, sub 0,001 de arc.
+  assert.ok(m !== null && m !== undefined && Math.abs(m.retragere - (3 - Math.sqrt(5))) < 2e-3, JSON.stringify(m));
+  assert.equal(hartieRand({ ...intrare, peOParte: false }).margine ?? null, null);
+  assert.equal(hartieRand({ ...intrare, peOParte: true, adancime: 3.5 }).margine ?? null, null);
 });
 
 test('identitatea frezei: două siluete sunt două freze pentru T, aceeași siluetă una', () => {
@@ -124,13 +154,15 @@ test('ce scrie Exportă: profilul, cu numele după formă; fără schimbare, ace
   assert.deepEqual(p.program.scula.forma, { tip: 'profil', puncte: PR3 });
 });
 
-test('listele: rândul poartă profilul; Tăierea îl oferă pe canelură, nu pe o parte; pe o freză în plus, fără rând', () => {
+test('listele: rândul poartă profilul; Tăierea îl oferă pe canelură și pe o parte până la înălțimea lui; pe o freză în plus, fără rând', () => {
   assert.equal(formaPeRand({ tip: 'profil', puncte: PR3 }), true);
   assert.deepEqual(sculaDinFreza(ROT3).forma, { tip: 'profil', puncte: PR3 });
   assert.equal(operatieCuRand({ ...opLinie, scula: { ...opLinie.scula, forma: { tip: 'profil', puncte: PR3 } } } as Operatie), true);
   assert.equal(operatieCuRand({ ...opLinie, tip: 'buzunar', latura: 'interior', pasLateral: 2, rest: [{ scula: { numar: 3, nume: 'r', diametru: 6, forma: { tip: 'profil', puncte: [[0, 0], [3, 1]] } }, pasLateral: 1 }] } as Operatie), false);
   assert.deepEqual(frezePeRanduri([P6, ROT3]).map((f) => f.id), ['p6', 'r3']);
   assert.deepEqual(frezePotrivite([P6, ROT3], [{ tip: 'profil', latura: 'pe-linie' }]).map((f) => f.id), ['p6', 'r3']);
+  // Pe o parte (16.A↑f-4): până la înălțimea profilului (3 mm la R3), nu peste.
   assert.deepEqual(frezePotrivite([P6, ROT3], [{ tip: 'profil', latura: 'exterior', adancime: 20 }]).map((f) => f.id), ['p6']);
+  assert.deepEqual(frezePotrivite([P6, ROT3], [{ tip: 'profil', latura: 'exterior', adancime: 2 }]).map((f) => f.id), ['p6', 'r3']);
   assert.deepEqual(frezePotrivite([P6, ROT3], [{ tip: 'buzunar', latura: 'interior' }]).map((f) => f.id), ['p6']);
 });

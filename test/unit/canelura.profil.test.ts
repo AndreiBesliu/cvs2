@@ -3,9 +3,9 @@
  * pe linie, deci drumul e al unei freze plate de același diametru, mișcare cu mișcare (și cu urechile, rampa, intrările);
  * doar scula din IR își poartă silueta (simularea o citește de acolo). Pe hârtie, secțiunea canelurii simulate e oglinda
  * siluetei: la distanța x de linie, cât x ≤ R, adâncimea e d − h(x), dar nu sub fața plăcii (min(0, −d + h(x))); dincolo de R,
- * neatins. Peste înălțimea profilului, peretele e vertical la R. Pe o parte, în buzunar, la găurire, în V-carve și pe frezele
- * în plus, profilul rămâne refuzat, cu motiv (marginea profilată vine pe o sub-felie a ei); același T cu altă siluetă e altă
- * freză.
+ * neatins. Peste înălțimea profilului, peretele e vertical la R. În buzunar, la găurire, în V-carve și pe frezele în plus,
+ * profilul rămâne refuzat, cu motiv; pe o parte merge din 16.A↑f-4 (marginea profilată, `profil.margine.test.ts`); același T cu
+ * altă siluetă e altă freză.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -71,11 +71,12 @@ function h(puncte: readonly Pct[], x: number): number {
   return puncte[puncte.length - 1]![1];
 }
 
-test('motivFormaPeOperatie: profilul desenat merge pe linie (canelura); în rest, refuzat (marginea profilată vine pe o sub-felie)', () => {
+test('motivFormaPeOperatie: profilul desenat merge pe linie (canelura) oricât de adânc; pe o parte, doar până la înălțimea lui (16.A↑f-4); în rest, refuzat', () => {
   const p: FormaSculaDoc = { tip: 'profil', puncte: RUND.map(([r, hh]) => [r, hh]) };
   const randuri: ReadonlyArray<readonly [TipOperatie, Latura, string | null]> = [
     ['profil', 'pe-linie', null],
-    ['profil', 'exterior', 'profil'], ['profil', 'interior', 'profil'], ['profil', 'stanga', 'profil'], ['profil', 'dreapta', 'profil'],
+    // Pe o parte, la 10 mm (peste înălțimea profilului, 3 mm): refuzat (`profil.margine.test.ts`).
+    ['profil', 'exterior', 'profil-adancime'], ['profil', 'interior', 'profil-adancime'], ['profil', 'stanga', 'profil-adancime'], ['profil', 'dreapta', 'profil-adancime'],
     ['buzunar', 'interior', 'profil'], ['gaurire', 'interior', 'profil'], ['vcarve', 'interior', 'profil'],
     ['finisare', 'pe-linie', 'profil'], ['degrosare', 'pe-linie', 'profil'],
   ];
@@ -141,9 +142,9 @@ test('pe hârtie: secțiunea canelurii simulate e oglinda siluetei, celulă cu c
   }
 });
 
-test('profilul rămâne refuzat pe o parte, în buzunar, la găurire și pe frezele în plus, cu forma, T-ul și calea', () => {
+test('profilul rămâne refuzat în buzunar, pe frezele în plus și pe o parte peste înălțimea lui, cu forma și T-ul', () => {
   const cazuri: ReadonlyArray<readonly [string, Liber, RegExp]> = [
-    ['pe exterior', op({ latura: 'exterior', scula: scula(1, 8, P(RUND)), adancime: 3 }), /freza profilată \(T1, scula\).*pe linie/],
+    ['pe exterior, peste înălțimea profilului', op({ latura: 'exterior', scula: scula(1, 8, P(RUND)), adancime: 3.5 }), /freza profilată \(T1\).*înălțimea profilului/],
     ['în buzunar', op({ tip: 'buzunar', latura: 'interior', pasLateral: 2, scula: scula(1, 8, P(RUND)) }), /freza profilată \(T1, scula\)/],
     ['ca freză de rest', op({ tip: 'buzunar', latura: 'interior', pasLateral: 2, scula: scula(1, 8), rest: [{ scula: scula(2, 6, P([[0, 0], [3, 1]])), pasLateral: 1 }] }), /freza profilată \(T2, rest\[0\]\)/],
   ];

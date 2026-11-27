@@ -14,11 +14,12 @@ FF = 'src/model/formaFrezei.ts'
 JB = 'src/cam/job.ts'
 RF = 'src/model/raportFoi.ts'
 
-o('G01', FF, "  if (forma?.tip === 'profil') return tip === 'profil' && latura === 'pe-linie' ? null : 'profil';",
-  "  if (forma?.tip === 'profil') return null;", 'm', 'profilul primit pe orice operație (buzunar, V-carve, relief)')
-o('G02', FF, "  if (forma?.tip === 'profil') return tip === 'profil' && latura === 'pe-linie' ? null : 'profil';",
-  "  if (forma?.tip === 'profil') return tip === 'profil' ? null : 'profil';", 'm',
-  'profilul primit pe o parte (marginea profilată, cu drumul frezei plate)')
+# G01 și G02, mutate în 16.A↑f-4 (regula profilului are acum ramura „pe o parte”): G02 era profilul primit pe o parte; din
+# f-4 e primit, cu fund plat și până la înălțimea lui, deci otrava devine primirea fără judecata lor.
+o('G01', FF, "    if (tip !== 'profil') return 'profil';", "    if (tip !== 'profil') return null;", 'm',
+  'profilul primit pe orice operație (buzunar, V-carve, relief)')
+o('G02', FF, "    if (latura === 'pe-linie') return null;", "    return null;", 'm',
+  'profilul primit pe o parte fără judecata fundului plat și a înălțimii')
 o('G03', JB, "        if (scula.forma?.tip === 'profil' && !(cale === 'scula' && motivRotunda === null)) {",
   "        if (scula.forma?.tip === 'profil' && !(motivRotunda === null)) {", 'm', 'profilul primit ca freză de rest')
 o('G04', JB, "  ...(s.forma?.tip === 'profil' ? { forma: { tip: 'profil' as const, puncte: s.forma.puncte.map(([r, h]) => [r, h] as const) } } : {}),\n",

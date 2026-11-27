@@ -37,7 +37,7 @@ import {
   copieDeReadus, cuFrezaAleasa, cuFrezaPusaInapoi, cuValorileNoi, frezeRanduri, locuriFreze, numarPentruRand, oferitePentruRest, stareOrigine, type FrezaOferita, type OrigineFreza, type SculaOperatie, type StareExport,
   AER_IMPLICIT, campuriAerGresite, parametriAer, type SetariAer,
   type CopieRand, type RezultatInapoi, type UndeFreza, campuriRegimGresite, campuriSculaGresite, cheieFreza, regimDinRand, REGIM_GOL, cuNumarT, numarDupaConflict, type FrezaT, type LocFreza,
-  type ValoriOperatie, type HartieRand, type IntrareHartie, formaDinRand, profilPermis, RAZA_COLT_IMPLICITA, razaColtRand, rotundaPermisa,
+  type ValoriOperatie, type HartieRand, type IntrareHartie, formaDinRand, inaltimeProfilRand, motivProfilRand, profilPermis, RAZA_COLT_IMPLICITA, razaColtRand, rotundaPermisa,
 } from './exportRand.ts';
 
 type Props = {
@@ -726,6 +726,14 @@ export function DialogExport(
   const randuri = operatii.map((o) => randBun(param[o.cheie]));
   const sculeBune = randuri.every((b) => b.scula);
   const fmtFreza = new Intl.NumberFormat(limba === 'ro' ? 'ro-RO' : 'en-GB', { maximumFractionDigits: 3 });
+  /** Motivul profilului desenat pe un rând (ADR 0304, feliile 16.A↑f-2…f-4): unde merge, fundul plat, adâncimea, opțiunile. */
+  const mesajProfil = (p: Rand): string => {
+    const m = motivProfilRand(p);
+    if (m === 'fund') return t('motiv.profil-fund');
+    if (m === 'adancime') return t('motiv.profil-adancime', { inaltime: fmtFreza.format(inaltimeProfilRand(p.profil ?? [])) });
+    if (m === 'optiuni') return t('motiv.profil-optiuni');
+    return t('motiv.profil');
+  };
   // Marginile din greșelile pe câmp (felia 28.8↑j), fără gruparea miilor: „1.000 mm” s-ar citi un milimetru.
   const fmtMargine = new Intl.NumberFormat(limba === 'ro' ? 'ro-RO' : 'en-GB', { maximumFractionDigits: 3, useGrouping: false });
   // Cât scoate o trecere, rotunjit la sutime (ca într-o fișă de atelier); lucrarea folosește valoarea exactă.
@@ -1407,7 +1415,7 @@ export function DialogExport(
     ...(varfuriBune ? [] : [t('motiv.varf-invalid')]),
     ...(vPeLinie ? [] : [t('motiv.v-pe-linie')]),
     // Profilul desenat are motivul lui (ADR 0304): primul rând greșit spune care.
-    ...(rotundeBune ? [] : [param[operatii.find((o, i) => !randuri[i]?.rotunda)?.cheie ?? '']?.formaScula === 'profil' ? t('motiv.profil') : t('motiv.rotunda')]),
+    ...(rotundeBune ? [] : [((p) => (p?.formaScula === 'profil' ? mesajProfil(p) : t('motiv.rotunda')))(param[operatii.find((o, i) => !randuri[i]?.rotunda)?.cheie ?? ''])]),
     ...(funduriBune ? [] : [t('motiv.fund-plat-invalid', { n: MARGINI_OPERATIE.numarScula, diametru: fmtFreza.format(MARGINI_OPERATIE.diametru) })]),
     ...(resturiBune ? [] : [t('motiv.rest-invalid', { n: MARGINI_OPERATIE.numarScula })]),
     ...(strategiiBune ? [] : [t('motiv.strategie-invalida')]),
@@ -1467,7 +1475,7 @@ export function DialogExport(
       case 'varf': return t('motiv.varf-invalid');
       case 'vPeLinie': return t('motiv.v-pe-linie');
       case 'rotunda': {
-        if (p.formaScula === 'profil') return t('motiv.profil');
+        if (p.formaScula === 'profil') return mesajProfil(p);
         // Pe o parte, sub raza colțului (16.A↑e-6): motivul spune raza; altfel, unde merg formele rotunde.
         const rho = p.tip === 'profil' && p.latura !== 'pe-linie' ? razaColtRand(p) : null;
         return rho !== null ? t('motiv.rotunda-adancime', { raza: fmtFreza.format(rho) }) : t('motiv.rotunda');
