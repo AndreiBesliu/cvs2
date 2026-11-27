@@ -6,8 +6,9 @@
  *   carcasa Ø40 / Ø44, înaltă de 9, cu găurile urechilor la 24 mm de ax);
  * - piesa: rotorul (sensul, gaura, inelul) sau carcasa (urechile); câmpurile sunt ale amândurora, iar carcasa crește cu paletele;
  * - „Repede”: diametrele pe grila de știfturi (Ø24, Ø32, Ø40, Ø48), cu înălțimea carcasei și locul găurilor urechilor;
- * - editorul: fiecare alegere și fiecare câmp (rotunjit la pasul lui, doar în plajă) ajung în piesă; jocul și lățimea intră în
- *   nume doar când nu sunt cele obișnuite;
+ * - editorul: fiecare alegere și fiecare câmp (rotunjit la pasul lui, adus în plajă) ajung în piesă; jocul și lățimea intră în
+ *   nume doar când nu sunt cele obișnuite; un câmp din afara plajei e adus la margine, iar editorul o spune sub câmpuri, la
+ *   rotor și la carcasă (ADR 0340, 3.Cm-4); fraza sensului, doar la rotor;
  * - STL-urile închise (rotorul cu inel, carcasa cu 4 urechi); „Fă ventilatorul”: rotorul și carcasa lui, în listă.
  * Valorile „pe hârtie” sunt calculate separat de motor (formulele din ADR).
  */
@@ -71,11 +72,34 @@ test('ventilatorul implicit, a treia piesă a filei Elice: rotorul de 7 palete, 
   for (const [grup, v] of [['piesa', 'rotor'], ['repede', '40'], ['sens', 'dreapta'], ['gaura', 'x'], ['inel', 'nu']] as const)
     await expect(page.locator(`#at-ve-${grup} [aria-pressed="true"]`)).toHaveAttribute('data-v', v);
   await expect(page.locator('#at-ve-urechi')).toHaveCount(0);
-  // un câmp în afara plajei nu schimbă piesa
-  for (const [camp, rau] of [['palete', '2'], ['palete', '13'], ['diam', '23.9'], ['diam', '121'], ['joc', '0.2'], ['joc', '2.1'], ['pas', '0.29'], ['pas', '1.6'], ['lat', '14'], ['lat', '61']] as const) {
+  // sensul, spus pentru omul care alege după motorul lui (ADR 0340, 3.Cm-4)
+  await expect(page.locator('#at-ve-sensul')).toHaveText('Pornește motorul și privește axul dinspre partea spre care vrei să sufle: dacă se învârte în sensul acelor de ceasornic, alege „Dreapta”; invers, „Stânga”. Rotorul stă pe ax cu partea de pe masă spre acea parte.');
+  // un câmp în afara plajei e adus la margine, iar editorul o spune sub câmpuri; înapoi la valoarea obișnuită, mesajul pleacă
+  const plaja = page.locator('#at-plaja');
+  for (const [camp, rau, margine, cum, obisnuit, mesaj] of [
+    ['palete', '13', '12', 'Rotor de ventilator Ø40 cu 12 palete, pasul 0,8', '7', 'Un ventilator are între 3 și 12 palete: l-am făcut cu 12.'],
+    ['diam', '23.9', '24', 'Rotor de ventilator Ø24 cu 7 palete, pasul 0,8', '40', 'Carcasa unui ventilator are între 24 și 120 mm în interior: am făcut-o de 24 mm.'],
+    ['joc', '2.1', '2', IMPLICIT + ', jocul 2 mm', '0.8', 'Jocul de la vârful paletelor e între 0,3 și 2 mm: l-am făcut de 2 mm.'],
+    ['pas', '0.29', '0.3', 'Rotor de ventilator Ø40 cu 7 palete, pasul 0,3', '0.8', 'Pasul unui ventilator e între 0,3 și 1,5 × diametrul: l-am făcut cu 0,3.'],
+    ['lat', '61', '60', IMPLICIT + ', lățimea 60 %', '45', 'Lățimea paletei unui ventilator e între 15 și 60 % din rază: l-am făcut de 60 %.'],
+  ] as const) {
     await seteaza(page, `#at-ve-${camp}`, rau);
+    await expect(page.locator('#at-nume-piesa')).toHaveText(cum);
+    await expect(page.locator(`#at-ve-${camp}`)).toHaveValue(margine);
+    await expect(plaja).toHaveText(mesaj);
+    await seteaza(page, `#at-ve-${camp}`, obisnuit);
     await expect(page.locator('#at-nume-piesa')).toHaveText(IMPLICIT);
+    await expect(plaja).toHaveCount(0);
   }
+  // la carcasă, la fel; fraza sensului nu e a ei
+  await page.locator('#at-ve-piesa [data-v="carcasa"]').click();
+  await expect(page.locator('#at-ve-sensul')).toHaveCount(0);
+  await seteaza(page, '#at-ve-diam', '121');
+  await expect(page.locator('#at-nume-piesa')).toContainText('Carcasă de ventilator Ø120 × ');
+  await expect(plaja).toHaveText('Carcasa unui ventilator are între 24 și 120 mm în interior: am făcut-o de 120 mm.');
+  await seteaza(page, '#at-ve-diam', '40');
+  await expect(plaja).toHaveCount(0);
+  await page.locator('#at-ve-piesa [data-v="rotor"]').click();
   // elicea de barcă (3.Tr) rămâne a doua piesă a filei, cu editorul ei
   await page.locator('#at-galerie [data-piesa="eliceBarca"]').click();
   await expect(page.locator('#at-nume-piesa')).toHaveText('Elice de barcă Ø40 cu 3 palete, pasul 1');
@@ -133,7 +157,7 @@ test('„Repede”: diametrele pe grila de știfturi, cu carcasa și găurile ei
   await expect(page.locator('#at-ve-repede [aria-pressed="true"]')).toHaveCount(0);
 });
 
-test('editorul: fiecare alegere și fiecare câmp ajung în piesă; câmpurile, rotunjite la pasul lor și doar în plajă', async ({ page }) => {
+test('editorul: fiecare alegere și fiecare câmp ajung în piesă; câmpurile, rotunjite la pasul lor și aduse în plajă', async ({ page }) => {
   await atelierVentilator(page);
   const nume = page.locator('#at-nume-piesa'), apasat = (grup: string) => page.locator(`#at-ve-${grup} [aria-pressed="true"]`);
   // alegerile
@@ -181,7 +205,8 @@ test('editorul: fiecare alegere și fiecare câmp ajung în piesă; câmpurile, 
   await expect(nume).toHaveText('Rotor de ventilator Ø56,3 cu 9 palete, pasul 1,2, jocul 1,5 mm, lățimea 30 %');
   await seteaza(page, '#at-ve-lat', '45');
   await expect(nume).toHaveText('Rotor de ventilator Ø56,3 cu 9 palete, pasul 1,2, jocul 1,5 mm');
-  // marginile plajei: chiar pe margine intră, dincolo de ea nu (piesa rămâne; la redesenare, câmpul arată iar ce e în piesă)
+  // marginile plajei: chiar pe margine intră; dincolo de ea, câmpul e adus la margine (piesa rămâne cea de la margine), cu
+  // mesajul sub câmpuri, până la următoarea alegere
   const r = (d: string, z: string, p: string, j: string, l = '') => `Rotor de ventilator Ø${d} cu ${z} palete, pasul ${p}, jocul ${j} mm${l}`;
   for (const [camp, bun, rau, cum] of [
     ['palete', '12', '13', r('56,3', '12', '1,2', '1,5')], ['palete', '3', '2', r('56,3', '3', '1,2', '1,5')],
@@ -192,10 +217,14 @@ test('editorul: fiecare alegere și fiecare câmp ajung în piesă; câmpurile, 
   ] as const) {
     await seteaza(page, `#at-ve-${camp}`, bun);
     await expect(nume).toHaveText(cum);
+    await expect(page.locator('#at-plaja')).toHaveCount(0);
     await seteaza(page, `#at-ve-${camp}`, rau);
     await expect(nume).toHaveText(cum);
+    await expect(page.locator(`#at-ve-${camp}`)).toHaveValue(bun);
+    await expect(page.locator('#at-plaja')).toBeVisible();
     await page.locator('#at-ve-sens [data-v="dreapta"]').click();
     await expect(page.locator(`#at-ve-${camp}`)).toHaveValue(bun);
+    await expect(page.locator('#at-plaja')).toHaveCount(0);
   }
   // cel mai mic și mai culcat: Ø24 cu jocul 0,3, 3 palete, pasul 0,3 (P 7,2): atan(7,2 / 8π) = 15,99° la butuc,
   // atan(7,2 / (2π · 11,7)) = 5,59° la vârf; consola 2,04; paletele, 1,51 → carcasa de 8 (cel puțin cât un știft)

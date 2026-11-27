@@ -147,13 +147,14 @@ test('corpul e închis cu înclinarea spre pupa, pe plaja parametrilor; „stân
   assert.ok(lipsa === 0 && vs.length === vd.length && vd.length > 1000, `vârfuri fără pereche în oglindă: ${lipsa} din ${vs.length}`);
 });
 
-test('marginile: înclinarea spre pupa e între 0 și 15°, adusă în plajă fără avertisment; ce nu e număr ia 0', () => {
+test('marginile: înclinarea spre pupa e între 0 și 15°, adusă în plajă și spusă (ADR 0340, 3.Cm-4); ce nu e număr ia 0, fără nimic de spus', () => {
   const c = (d: Record<string, unknown>) => L.eliceBarcaCote(d);
   assert.deepEqual([c({ pupa: 30 }).pupa, c({ pupa: -5 }).pupa, c({ pupa: 15 }).pupa, c({ pupa: 7.5 }).pupa], [15, 0, 15, 7.5]);
   assert.deepEqual([c({}).pupa, c({ pupa: 'mult' }).pupa, c({ pupa: null }).pupa, c({ pupa: '' }).pupa], [0, 0, 0, 0]);
   assert.deepEqual([c({ pupa: 30 }).urca, c({ pupa: -5 }).urca], [c({ pupa: 15 }).urca, 0]);
   // și sub un grad se ridică: pe hârtie, 16 · tan 0,5° = 0,13963
   assert.ok(Math.abs(c({ pupa: 0.5 }).urca - 0.13963) < 5e-6, `la 0,5°: ${c({ pupa: 0.5 }).urca}`);
-  assert.deepEqual(simplu(barca({ pupa: 30 }).avert), []);
+  assert.deepEqual(simplu(barca({ pupa: 30 }).avert), ['Înclinarea spre pupa a unei elice de barcă e între 0 și 15°: am făcut-o de 15°.']);
+  assert.deepEqual(simplu(barca({ pupa: 'mult' }).avert), []);
   assert.deepEqual(barca({ pupa: 30 }).tri, barca({ pupa: 15 }).tri);
 });

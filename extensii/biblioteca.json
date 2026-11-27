@@ -18,6 +18,12 @@
       ],
       "noutati": [
         {
+          "versiune": "18.47.0",
+          "data": "2026-11-27",
+          "ro": "Editorul elicelor spune mai limpede: o frază despre cum alegi sensul după motor, „Repede” cu diametrele pe grila de știfturi la elice și, când scrii o valoare din afara plajei, marginea, cu un mesaj sub câmpuri.",
+          "en": "The propeller editors say more clearly: a line on choosing the hand for your motor, “Quick” stud-grid diameters on the propeller and, when you type a value out of range, the nearest limit, with a note under the fields."
+        },
+        {
           "versiune": "18.46.0",
           "data": "2026-11-27",
           "ro": "Ventilatorul vine ca trusă: la carcasă, „Se prinde cu” spune grinda de sub ea și o pune în listă, iar „Fă ventilatorul” poate pune și grinda, axul de lungimea bună, bucșa și știfturile.",
@@ -226,8 +232,8 @@
           }
         }
       ],
-      "versiune": "18.46.0",
-      "continut": "1873e39b635347adb4596a7a9e95916bb97919367b99eb0dce90a27f19b52a01"
+      "versiune": "18.47.0",
+      "continut": "de258b8cde9d96c4d2330a55cd9f91d8d896473a7aa40e1dcef7dde8aa3fd6ae"
     }
   ]
 }

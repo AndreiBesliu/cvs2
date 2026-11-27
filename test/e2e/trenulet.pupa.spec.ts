@@ -1,7 +1,8 @@
 /**
  * Înclinarea spre pupa a elicei de barcă, în atelierul Easy 3Draw (ADR 0282, felia 3.Tt), pe pagina de sine stătătoare a
  * planificatorului (din aceleași surse ca pachetul):
- * - câmpul „Înclinarea spre pupa (°)”: 0 la început (elicea de dinainte, fără suport), la întreg, doar 0–15; ce intră schimbă
+ * - câmpul „Înclinarea spre pupa (°)”: 0 la început (elicea de dinainte, fără suport), la întreg, adus în 0–15 (cu mesajul de
+ *   sub câmpuri, ADR 0340, 3.Cm-4); ce intră schimbă
  *   numele, butucul (crește cât cel mai înalt vârf al paletelor) și textul (cât urcă vârful de pe masă și că cere suport);
  * - în listă: fără înclinare, piesa e cea de dinainte (o listă salvată cu 18.22.0 adună pe aceeași linie, iar ce se scrie e
  *   exact ce scria 18.22.0); cu ea, o linie a ei; „Fă perechea” o păstrează pe ambele sensuri;
@@ -68,15 +69,18 @@ test('înclinarea spre pupa: 0 la început; la întreg, doar 0–15; numele, but
   await expect(page.locator('#at-cote')).toContainText('× 12,2 mm');
   await expect(info).toHaveText('Pasul 40 mm (1 × diametrul): paleta stă la 58° lângă butuc și la 18° la vârf. Paletele acoperă 55 % din disc; butucul e de Ø8 × 12,2 mm. Înclinată spre pupa cu 10°: muchia de jos a paletei urcă de pe masă până la 2,8 mm la vârf.');
   await expect(tipar).toHaveText('Se tipărește cu partea dinspre barcă pe masă, cu suport sub palete (îl pune programul de feliere): muchia lor de jos urcă de pe masă. Primul strat atinge masa doar pe 2,8 % din discul paletelor: pune o margine de aderență (brim) în programul de feliere.');
-  // la întreg; dincolo de plajă, piesa rămâne (la redesenare, câmpul arată iar ce e în piesă)
+  // la întreg; dincolo de plajă, adusă la margine, cu mesajul sub câmpuri (ADR 0340, 3.Cm-4)
   await seteaza(page, '#at-eb-pupa', '9.6');
   await expect(camp).toHaveValue('10');
   await expect(nume).toHaveText(IMPLICIT + ', spre pupa 10°');
-  for (const rau of ['16', '-1']) {
+  for (const [rau, margine, cum] of [['16', '15', IMPLICIT + ', spre pupa 15°'], ['-1', '0', IMPLICIT]] as const) {
     await seteaza(page, '#at-eb-pupa', rau);
+    await expect(nume).toHaveText(cum);
+    await expect(camp).toHaveValue(margine);
+    await expect(page.locator('#at-plaja')).toHaveText(`Înclinarea spre pupa a unei elice de barcă e între 0 și 15°: am făcut-o de ${margine}°.`);
+    await seteaza(page, '#at-eb-pupa', '10');
     await expect(nume).toHaveText(IMPLICIT + ', spre pupa 10°');
-    await page.locator('#at-eb-sens [data-v="dreapta"]').click();
-    await expect(camp).toHaveValue('10');
+    await expect(page.locator('#at-plaja')).toHaveCount(0);
   }
   // marginea: 15° (16 · tan 15° = 4,29; butucul de 12,6; cu capacul, 1,2 · 4 peste el: 17,4)
   await seteaza(page, '#at-eb-pupa', '15');

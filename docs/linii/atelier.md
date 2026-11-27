@@ -30,8 +30,9 @@ calibrare, s-a despărțit: 3.Ck-1 (placa turnantă; 18.43.0), unită în `main`
 `AndreiBesliu/cvs2#68`); 3.Ck-2 (balamaua; 18.44.0), unită în `main` pe 27.11 (`439d0395`, PR-ul `AndreiBesliu/cvs2#70`): ADR 0284 are toate
 feliile făcute.** **Auditul elicelor (ADR 0340, acceptat pe 27.11 cu recomandările, 1a–4a, la cuvântul owner-ului prin
 sesiunea principală): feliile 3.Cm-1…3.Cm-7; 3.Cm-1 (otrăvurile elicelor, rulate din nou) și 3.Cm-2 (tipărirea spusă
-cinstit; 18.45.0), raportate pe 27.11 (PR-ul `AndreiBesliu/cvs2#77`); 3.Cm-3 (ventilatorul ca trusă; 18.46.0), gata local,
-la raport după unirea lor.** Versiunea următoare a pachetului: 18.47.0._
+cinstit; 18.45.0), raportate pe 27.11 (PR-ul `AndreiBesliu/cvs2#77`); 3.Cm-3 (ventilatorul ca trusă; 18.46.0) și 3.Cm-4
+(claritatea editorului elicelor; 18.47.0), pe ramură, la raport după unirea lor.** Versiunea următoare a pachetului:
+18.48.0._
 
 ## Numerele liniei
 
@@ -762,4 +763,19 @@ la raport după unirea lor.** Versiunea următoare a pachetului: 18.47.0._
 - **O ancoră care cuprinde capătul unei funcții se mută când intră o funcție nouă după ea** (`3.Ts`, C55 și C56: coada
   `}\n  function carcasaVentilator`); ancora a rămas doar pe rândul ei, care e unic.
 - **Easy 3Draw 18.46.0.**
+
+## 3.Cm-4, gata (27.11, în cloud): claritatea editorului elicelor (ADR 0340)
+
+- **Unde e:** motorul, `campElice` (lângă `eliceCote`): cititorul comun al câmpurilor numerice ale celor trei elice; textele
+  stau în `…Cote(d).avert` (și în API), iar `elice`, `eliceBarca` și `ventilator` pornesc de la ele. Atelierul: `plaja` (lângă
+  `trusaVentilator`), `campElice` și `plajaHtml` (înaintea lui `editor`), `#at-plaja` sub câmpurile fiecărei elice; frazele
+  sensului (`#at-el-sensul`, `#at-eb-sensul`, `#at-ve-sensul`, aceasta doar la rotor); „Repede” la elice, `#at-el-grila`.
+- **Regula editorului elicelor, de acum:** o valoare din afara plajei intră ca margine, cu mesajul motorului pentru acel câmp
+  sub câmpuri, până la o alegere, un câmp în plajă sau altă piesă; un câmp golit rămâne cu ce era. Celelalte piese ale
+  atelierului ignoră încă valoarea (o lasă deoparte, fără mesaj): aceeași regulă la ele ar fi o felie a atelierului întreg.
+- **O valoare scrisă egală cu ce arată deja câmpul nu dă `change`:** după „paletele 2 → 3” (marginea e chiar implicitul),
+  scrierea lui 3 nu scoate mesajul; îl scoate o alegere (proba elicei de barcă o spune).
+- **Un text nou din motor intră cu `tr` și are cifrele plajei în el** („între 0,3 și 1,5”): engleza le scrie cu punct, în
+  traducere.
+- **Easy 3Draw 18.47.0.**
 

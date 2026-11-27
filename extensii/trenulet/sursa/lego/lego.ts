@@ -2573,15 +2573,24 @@ var Lego = (function (glob: typeof globalThis) {
   // „Stânga” e oglinda ei. Conul, la alegere, pe butuc (îl închide sus).
   const ELICE = { butucR: 4, butucH: 8, tRad: 1.2, tVarf: 0.8, sageata: 0.04, radacina: 0.6, umplere: 0.85, statii: 28, perSuprafata: 12, con: 1.3 };
   type EliceDef = { palete?: unknown; diametru?: unknown; pas?: unknown; latime?: unknown; forma?: string; profil?: string; sens?: string; gaura?: string; con?: string; paleta?: string };
+  /** Un câmp numeric al unei elice (ADR 0340, 3.Cm-4): lipsă, gol sau fără sens dă implicitul, fără nimic de spus; altfel,
+   *  adus în plaja [a, b] (și rotunjit, cu `rot`), iar dacă iese altceva decât s-a cerut, `ce(x)`, cu valoarea făcută scrisă
+   *  cu zecimala limbii, intră în `avert`. Editorul își ia de aici mesajul unui câmp din afara plajei. */
+  function campElice(avert: string[], v: unknown, a: number, b: number, implicit: number, ce: (x: string) => string, rot = (n: number) => n): number {
+    if (v === null || v === undefined || v === "" || !Number.isFinite(+(v as number))) return implicit;
+    const n = +(v as number), x = rot(Math.min(b, Math.max(a, n)));
+    if (x !== n) avert.push(ce(String(x).replace(".", Limba.zecimal)));
+    return x;
+  }
   function eliceCote(d: EliceDef) {
-    const nr = (v: unknown, implicit: number) => (v !== null && v !== undefined && v !== "" && Number.isFinite(+(v as number)) ? +(v as number) : implicit);
-    const z = Math.round(Math.min(8, Math.max(2, nr(d.palete, 3))));
-    const D = Math.min(200, Math.max(20, nr(d.diametru, 72))), R = D / 2;
-    const pd = Math.min(1.5, Math.max(0.3, nr(d.pas, 0.7))), P = pd * D;
-    const lat = Math.min(60, Math.max(15, nr(d.latime, 30)));
+    const avert: string[] = [];
+    const z = campElice(avert, d.palete, 2, 8, 3, x => tr`O elice are între 2 și 8 palete: am făcut-o cu ${x}.`, Math.round);
+    const D = campElice(avert, d.diametru, 20, 200, 72, x => tr`Diametrul unei elice e între 20 și 200 mm: am făcut-o de ${x} mm.`), R = D / 2;
+    const pd = campElice(avert, d.pas, 0.3, 1.5, 0.7, x => tr`Pasul unei elice e între 0,3 și 1,5 × diametrul: am făcut-o cu ${x}.`), P = pd * D;
+    const lat = campElice(avert, d.latime, 15, 60, 30, x => tr`Lățimea paletei unei elice e între 15 și 60 % din rază: am făcut-o de ${x} %.`);
     const plata = d.paleta === "plata", b70 = Math.atan(P / (2 * Math.PI * 0.7 * R));
     const beta = (r: number) => (plata ? b70 : Math.atan(P / (2 * Math.PI * r)));
-    return { z, D, R, pd, P, lat, plata, beta, bRad: beta(ELICE.butucR), bVarf: beta(R), consola: 0.2 / Math.tan(beta(R)) };
+    return { z, D, R, pd, P, lat, plata, beta, bRad: beta(ELICE.butucR), bVarf: beta(R), consola: 0.2 / Math.tan(beta(R)), avert };
   }
   function sectiuneElice(c: number, t: number, profil: string): P2[] {
     // secțiunea paletei în (u, v): u de la muchia de fugă (0) la cea de atac (c), v grosimea; pe deasupra spre muchia de atac,
@@ -2704,9 +2713,7 @@ var Lego = (function (glob: typeof globalThis) {
     return { tri: prismaGauri(cerc(0, 0, rh), G.g, 0, Hh), prinderi };
   }
   function elice(d: EliceDef): Rezultat {
-    const avert: string[] = [], q = eliceCote(d), { z, R } = q, rh = ELICE.butucR;
-    if (Number.isFinite(+(d.palete as number)) && q.z !== +(d.palete as number)) avert.push(tr`O elice are între 2 și 8 palete: am făcut-o cu ${q.z}.`);
-    if (Number.isFinite(+(d.diametru as number)) && q.D !== +(d.diametru as number)) avert.push(tr`Diametrul unei elice e între 20 și 200 mm: am făcut-o de ${q.D} mm.`);
+    const q = eliceCote(d), avert = [...q.avert], { z, R } = q, rh = ELICE.butucR;
     const forma = d.forma === "drept" || d.forma === "ingust" ? d.forma : "rot", profil = d.profil === "aripa" ? "aripa" : "placa";
     const semn = d.sens === "stanga" ? -1 : 1, cmax = q.lat / 100 * R, N = ELICE.statii, r0 = rh - 0.4;
     // secțiunile, de la puțin din butuc la vârf: (s, z) după rotirea cu β, cu muchia de jos pe masă
@@ -2773,12 +2780,13 @@ var Lego = (function (glob: typeof globalThis) {
     return [...sus, ...jos.reverse()];
   }
   function eliceBarcaCote(d: BarcaDef) {
-    const nr = (v: unknown, implicit: number) => (v !== null && v !== undefined && v !== "" && Number.isFinite(+(v as number)) ? +(v as number) : implicit);
-    const z = Math.round(Math.min(5, Math.max(3, nr(d.palete, 3))));
-    const D = Math.min(120, Math.max(20, nr(d.diametru, 40))), R = D / 2;
-    const pd = Math.min(1.6, Math.max(0.5, nr(d.pas, 1))), P = pd * D;
-    const lat = Math.min(150, Math.max(40, nr(d.latime, 100))), inc = Math.min(40, Math.max(0, nr(d.inclinare, 20)));
-    const pupa = Math.min(BARCA.pupaMax, Math.max(0, nr(d.pupa, 0)));
+    const avert: string[] = [];
+    const z = campElice(avert, d.palete, 3, 5, 3, x => tr`O elice de barcă are între 3 și 5 palete: am făcut-o cu ${x}.`, Math.round);
+    const D = campElice(avert, d.diametru, 20, 120, 40, x => tr`Diametrul unei elice de barcă e între 20 și 120 mm: am făcut-o de ${x} mm.`), R = D / 2;
+    const pd = campElice(avert, d.pas, 0.5, 1.6, 1, x => tr`Pasul unei elice de barcă e între 0,5 și 1,6 × diametrul: am făcut-o cu ${x}.`), P = pd * D;
+    const lat = campElice(avert, d.latime, 40, 150, 100, x => tr`Lățimea paletei unei elice de barcă e între 40 și 150 % din rază: am făcut-o de ${x} %.`);
+    const inc = campElice(avert, d.inclinare, 0, 40, 20, x => tr`Înclinarea înapoi a unei elice de barcă e între 0 și 40°: am făcut-o de ${x}°.`);
+    const pupa = campElice(avert, d.pupa, 0, BARCA.pupaMax, 0, x => tr`Înclinarea spre pupa a unei elice de barcă e între 0 și 15°: am făcut-o de ${x}°.`);
     const rh = Math.max(BARCA.butucMin, Math.round(BARCA.butucRap * D * 10) / 10), r0 = rh - 0.4;
     // înclinarea spre pupa: cât urcă secțiunea de la raza r (la butuc, nimic)
     const urca = (r: number) => (pupa > 0 ? Math.max(0, r - rh) * Math.tan(pupa * Math.PI / 180) : 0);
@@ -2810,12 +2818,10 @@ var Lego = (function (glob: typeof globalThis) {
       const ra = Math.max(A.r, rh), la = A.r >= rh ? A.lat : A.lat + (B.lat - A.lat) * (rh - A.r) / (B.r - A.r);
       arie += (la + B.lat) / 2 * (B.r - ra);
     }
-    return { z, D, R, pd, P, lat, inc, pupa, urca: urca(R), rh, Hh, statii, bRad: beta(rh), bVarf: beta(R), consola: 0.2 / Math.tan(beta(R)), acoperire: z * arie / (Math.PI * R * R) };
+    return { z, D, R, pd, P, lat, inc, pupa, urca: urca(R), rh, Hh, statii, bRad: beta(rh), bVarf: beta(R), consola: 0.2 / Math.tan(beta(R)), acoperire: z * arie / (Math.PI * R * R), avert };
   }
   function eliceBarca(d: BarcaDef): Rezultat {
-    const avert: string[] = [], q = eliceBarcaCote(d), { rh, Hh } = q;
-    if (Number.isFinite(+(d.palete as number)) && q.z !== +(d.palete as number)) avert.push(tr`O elice de barcă are între 3 și 5 palete: am făcut-o cu ${q.z}.`);
-    if (Number.isFinite(+(d.diametru as number)) && q.D !== +(d.diametru as number)) avert.push(tr`Diametrul unei elice de barcă e între 20 și 120 mm: am făcut-o de ${q.D} mm.`);
+    const q = eliceBarcaCote(d), avert = [...q.avert], { rh, Hh } = q;
     const tri = paleteElice(q.statii, q.z, d.sens === "stanga" ? -1 : 1, true), butuc = butucElice(rh, Hh, d.gaura, d.capac === "da");
     tri.push(...butuc.tri);
     if (d.capac === "da") {
@@ -2851,12 +2857,14 @@ var Lego = (function (glob: typeof globalThis) {
   /** Câte laturi are cercul de rază R: săgeata cel mult 0,02 mm, cel puțin 48, multiplu de 8 (urechile cad pe vârfuri). */
   const laturiCerc = (R: number) => Math.max(N_CERC, 8 * Math.ceil(Math.PI / Math.acos(1 - VENT.sageata / R) / 8));
   function ventilatorCote(d: VentDef) {
-    const nr = (v: unknown, implicit: number) => (v !== null && v !== undefined && v !== "" && Number.isFinite(+(v as number)) ? +(v as number) : implicit);
-    const z = Math.round(Math.min(12, Math.max(3, nr(d.palete, 7))));
-    const D = Math.min(120, Math.max(24, nr(d.diametru, 40))), Ri = D / 2;
-    const joc = Math.min(2, Math.max(0.3, nr(d.joc, 0.8))), Rt = Ri - joc;
-    const pd = Math.min(1.5, Math.max(0.3, nr(d.pas, 0.8))), pasM = pd * D;
-    const lat = Math.min(60, Math.max(15, nr(d.latime, 45))), urechi = +(d.urechi as number) === 4 ? 4 : 2;
+    const avert: string[] = [];
+    const z = campElice(avert, d.palete, 3, 12, 7, x => tr`Un ventilator are între 3 și 12 palete: l-am făcut cu ${x}.`, Math.round);
+    const D = campElice(avert, d.diametru, 24, 120, 40, x => tr`Carcasa unui ventilator are între 24 și 120 mm în interior: am făcut-o de ${x} mm.`), Ri = D / 2;
+    const joc = campElice(avert, d.joc, 0.3, 2, 0.8, x => tr`Jocul de la vârful paletelor e între 0,3 și 2 mm: l-am făcut de ${x} mm.`), Rt = Ri - joc;
+    const pd = campElice(avert, d.pas, 0.3, 1.5, 0.8, x => tr`Pasul unui ventilator e între 0,3 și 1,5 × diametrul: l-am făcut cu ${x}.`), pasM = pd * D;
+    const lat = campElice(avert, d.latime, 15, 60, 45, x => tr`Lățimea paletei unui ventilator e între 15 și 60 % din rază: l-am făcut de ${x} %.`);
+    const urechi = +(d.urechi as number) === 4 ? 4 : 2;
+    if (d.urechi !== null && d.urechi !== undefined && d.urechi !== "" && Number.isFinite(+(d.urechi as number)) && urechi !== +(d.urechi as number)) avert.push(tr("Carcasa unui ventilator are 2 sau 4 urechi: am făcut-o cu 2."));
     const rh = Math.max(VENT.butucMin, Math.round(VENT.butucRap * Rt * 10) / 10), cmax = lat / 100 * Rt;
     const beta = (r: number) => Math.atan(pasM / (2 * Math.PI * r));
     // secțiunile, de la 0,4 mm în butuc la vârful paletei (Rb): (s, h) după rotirea cu β în jurul mijlocului corzii, cu punctul de
@@ -2885,7 +2893,7 @@ var Lego = (function (glob: typeof globalThis) {
     const Hc = Math.max(VENT.butucH, Math.ceil(fara.hb - 1e-9) + VENT.peste);
     const k = Math.ceil((Ri + VENT.rest + ef().lamajD / 2) / P.pas - 1e-9);
     return { z, D, Ri, joc, Rt, pd, P: pasM, lat, urechi, rh, inel, statii: cu.statii, Hh: Math.max(VENT.butucH, zecime(cu.hb)), Hinel: Math.max(VENT.inelH, zecime(cu.hb)), Hc, k,
-      bRad: beta(rh), bVarf: beta(Rt), consola: 0.2 / Math.tan(beta(Rt)) };
+      bRad: beta(rh), bVarf: beta(Rt), consola: 0.2 / Math.tan(beta(Rt)), avert };
   }
   /**
    * Ventilatorul ca trusă (ADR 0340, felia 3.Cm-3): sub carcasă, o grindă groasă cu 2k + 1 găuri rotunde, prinsă cu știfturi
@@ -2931,10 +2939,7 @@ var Lego = (function (glob: typeof globalThis) {
       ...prismaGauri(ext, gauri(e.lamajD), g - h, g), ...prismaGauri(tub, [gol], g - 0.01, q.Hc)];
   }
   function ventilator(d: VentDef): Rezultat {
-    const avert: string[] = [], q = ventilatorCote(d);
-    const dat = (v: unknown) => v !== null && v !== undefined && v !== "" && Number.isFinite(+(v as number));
-    if (dat(d.palete) && q.z !== +(d.palete as number)) avert.push(tr`Un ventilator are între 3 și 12 palete: l-am făcut cu ${q.z}.`);
-    if (dat(d.diametru) && q.D !== +(d.diametru as number)) avert.push(tr`Carcasa unui ventilator are între 24 și 120 mm în interior: am făcut-o de ${q.D} mm.`);
+    const q = ventilatorCote(d), avert = [...q.avert];
     if (d.piesa === "carcasa") {
       // prinderile carcasei: găurile de știft ale urechilor, pe grila axului, prin grosimea lor
       const xh = P.pas * q.k, urechi = Array.from({ length: q.urechi }, (_, j) => 2 * Math.PI * j / q.urechi);
@@ -4426,11 +4431,11 @@ var Lego = (function (glob: typeof globalThis) {
       return { z1: a.z, z2: b.z, R1: a.R, R2: b.R, d, L, zale, joc: tinta - L, intins: (lo + hi) / 2, aproape: false };
     },
     // elicea (ADR 0282): cotele din parametri (palete, diametrul, pasul, unghiul paletei la butuc și la vârf, consola la vârf)
-    eliceCote: (d: EliceDef) => { const q = eliceCote(d); return { z: q.z, D: q.D, P: q.P, pd: q.pd, lat: q.lat, plata: q.plata, bRad: q.bRad, bVarf: q.bVarf, consola: q.consola }; },
+    eliceCote: (d: EliceDef) => { const q = eliceCote(d); return { z: q.z, D: q.D, P: q.P, pd: q.pd, lat: q.lat, plata: q.plata, bRad: q.bRad, bVarf: q.bVarf, consola: q.consola, avert: q.avert }; },
     // elicea de barcă (ADR 0282): cotele din parametri (și butucul, unghiurile, consola la vârf, cât din disc acoperă paletele)
-    eliceBarcaCote: (d: BarcaDef) => { const q = eliceBarcaCote(d); return { z: q.z, D: q.D, P: q.P, pd: q.pd, lat: q.lat, inc: q.inc, pupa: q.pupa, urca: q.urca, rh: q.rh, Hh: q.Hh, bRad: q.bRad, bVarf: q.bVarf, consola: q.consola, acoperire: q.acoperire }; },
+    eliceBarcaCote: (d: BarcaDef) => { const q = eliceBarcaCote(d); return { z: q.z, D: q.D, P: q.P, pd: q.pd, lat: q.lat, inc: q.inc, pupa: q.pupa, urca: q.urca, rh: q.rh, Hh: q.Hh, bRad: q.bRad, bVarf: q.bVarf, consola: q.consola, acoperire: q.acoperire, avert: q.avert }; },
     // ventilatorul cu carcasă (ADR 0282): cotele din parametri (vârful paletelor, butucul, inelul, carcasa și urechile ei)
-    ventilatorCote: (d: VentDef) => { const q = ventilatorCote(d); return { z: q.z, D: q.D, joc: q.joc, Rt: q.Rt, pd: q.pd, P: q.P, lat: q.lat, rh: q.rh, Hh: q.Hh, Hinel: q.Hinel, Hc: q.Hc, k: q.k, urechi: q.urechi, bRad: q.bRad, bVarf: q.bVarf, consola: q.consola }; },
+    ventilatorCote: (d: VentDef) => { const q = ventilatorCote(d); return { z: q.z, D: q.D, joc: q.joc, Rt: q.Rt, pd: q.pd, P: q.P, lat: q.lat, rh: q.rh, Hh: q.Hh, Hinel: q.Hinel, Hc: q.Hc, k: q.k, urechi: q.urechi, bRad: q.bRad, bVarf: q.bVarf, consola: q.consola, avert: q.avert }; },
     // ventilatorul ca trusă (ADR 0340, 3.Cm-3): găurile grinzii de sub carcasă, axul (în pași), bucșa și unde stă rotorul
     ventilatorTrusa,
     cureaua: (a: FulieDef, b: FulieDef, C: unknown) => {

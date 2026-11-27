@@ -16853,3 +16853,21 @@ principală: auditul elicelor, felia 3, răspunsul 3a)
 - **DEVLOG-ul:** titlul gol și bulinele dublate la unirea lui e-5, scoase (`9e599576`; semnalat de linia frezelor).
 - **Pe test:** lotul 60 (16.A↑e-6), în drum; lotul 61 (28.8↑s), după el.
 - **Documentele:** decizia și Starea în `CLAUDE.md`; starea din `docs/linii/principala.md`; indexul liniilor.
+
+## 2026-11-27 — Felia 3.Cm-4: claritatea editorului elicelor (ADR 0340) (sesiune cloud)
+
+**Prompt:** „zi-le sesiunilor sa continue cu recomandarile, acolo unde inca asteapta” (owner-ul, transmis de sesiunea
+principală: auditul elicelor, felia 4, constatarea 5)
+**Started:** 27.11, 11:00. **Completed:** 27.11, HH:MM (orele, după ceasul containerului).
+
+- **Sensul:** sub „Dreapta / Stânga”, la elice, la elicea de barcă și la rotor, fraza care spune cum alegi după motor și cu
+  ce parte stă piesa pe ax; la rotor, sensul probat nou pe plasă.
+- **Valorile din afara plajei:** motorul, `campElice` (marginea și textul ei, în piesă și în cote, pentru fiecare câmp al
+  celor trei elice; un câmp gol nu mai spune nimic); editorul, marginea cu mesajul sub câmpuri, până la următoarea schimbare.
+- **„Repede” la elice:** Ø40, Ø56, Ø72, Ø96; rândul LEGO, „Piese LEGO”.
+- **Probele**, scrise întâi: `trenulet.claritate.test.ts` (6 teste); e2e, patru spec-uri ale elicelor și proba în engleză;
+  proba înclinării spre pupa din 3.Tt, adusă la regula nouă.
+- **Otrăvurile:** `3.Cm-4.py`, `3.Cm-4-en.py` (rezultatele, în registru).
+- **Mărimea:** Easy 3Draw 18.47.0; aplicația, neschimbată. Nimic pe server.
+- **Documentele:** ADR 0340, nota liniei, fișa etapei 3, registrul otrăvurilor, `CLAUDE.md`, traducerile roadmap-ului.
+- **Urmează:** 3.Cm-5 (grosimea paletelor peste Ø80).

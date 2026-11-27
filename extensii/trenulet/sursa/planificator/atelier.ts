@@ -145,6 +145,9 @@ var Atelier3D = (function () {
   // bifa trusei ventilatorului (ADR 0340, 3.Cm-3): a editorului, nu a piesei; „Fă ventilatorul” pune și grinda, axul, bucșa
   // și știfturile
   let trusaVentilator = false;
+  /** Un câmp al unei elice cerut în afara plajei (ADR 0340, 3.Cm-4): ce spune editorul sub câmpuri, până la următoarea
+   *  schimbare a piesei (sau până la altă piesă). */
+  let plaja: { tip: string; text: string } | null = null;
   // Piesele pe familii (ADR 0281): o singură tabelă, din care se fac filele de sus și galeriile de sub ele. Fiecare tip al
   // motorului stă într-o singură familie, afară de „dinCvs2”, care are fila lui (o probă unitară o cere, cu `Lego.tipuri`);
   // „placaTechnic” nu e un tip, ci o formă gata a cărămizii (o placă 2 × 6 cu găuri), deschisă în editorul ei. „Din cvs2” și
@@ -753,6 +756,19 @@ var Atelier3D = (function () {
     const a = Lego.dublaMontaj(d, pereche), strans = a.strans ? tr` La 90°, perechea asta se prinde strâns, poate fără joc: o roată de sub 12 dinți cu una de peste 2,5 ori mai mare.` : "";
     return tr`Pe axe paralele, axele la ${fmt(a.paralel, 2)} mm, ${textGrila(a.paralel)}. La 90°, cu axele întâlnite: planul de mijloc al acesteia la ${fmt(a.acesta, 2)} mm de axul perechii, ${textGrila(a.acesta)}; al perechii, la ${fmt(a.perechea, 2)} mm de axul acesteia, ${textGrila(a.perechea)}.` + strans;
   }
+  /** Un câmp numeric al unei elice (ADR 0340, 3.Cm-4): rotunjit la pasul lui; în plajă, intră; în afara ei, intră marginea, iar
+   *  editorul spune sub câmpuri ce a făcut, cu textul motorului (`cote`, cu doar acel câmp cerut); golit, rămâne ce era. */
+  function campElice(id: string, p: Record<string, unknown>, cheie: string, zec: number, a: number, b: number, cote: (d: Record<string, unknown>) => { avert: string[] }) {
+    $(id).onchange = ev => {
+      const s = (ev.target as HTMLInputElement).value;
+      if (s.trim() === "" || !Number.isFinite(+s)) { editor(); return; }
+      const v = Math.round(+s * 10 ** zec) / 10 ** zec, x = Math.min(b, Math.max(a, v));
+      plaja = x === v ? null : { tip: stare.tip, text: cote({ [cheie]: v }).avert.join(" ") };
+      p[cheie] = x; editor(); schimbat();
+    };
+  }
+  /** Mesajul de sub câmpurile unei elice (`editor` îl scoate când piesa e alta). */
+  const plajaHtml = () => (plaja ? `<p class="avert" id="at-plaja" role="status">${plaja.text}</p>` : "");
   function editor() {
     const e = $("#at-editor"), activ = document.activeElement;
     // un câmp al editorului în care omul tocmai a scris (valoarea încă neluată) se ia întâi. Redesenarea îl scoate din pagină,
@@ -760,6 +776,7 @@ var Atelier3D = (function () {
     // ce era înainte (o redesenare venită din altă parte: three.js sosit târziu, lista din baza artefactului)
     if (activ instanceof HTMLElement && e.contains(activ)) activ.blur();
     const t = stare.tip;
+    if (plaja && plaja.tip !== t) plaja = null;
     if (t === "caramida") {
       const p = stare.caramida;
       e.innerHTML = `<h2>Forma, pe grila de știfturi</h2>
@@ -1638,22 +1655,25 @@ var Atelier3D = (function () {
       const p = stare.elice, lego = Object.keys(ELICE_LEGO).find(k => Object.entries(ELICE_LEGO[k]!).every(([c, v]) => (p as Record<string, unknown>)[c] === v)) ?? "";
       e.innerHTML = `<h2>Elice</h2>
         <p class="mic">Elice pentru motoarele LEGO, pe un butuc ca la LEGO (Ø8, înalt cât un știft), cu gaura din calibrare. Se tipărește cu butucul și muchia de jos a fiecărei palete pe masă.</p>
-        <div class="at-rand"><span class="mic">Repede:</span>${seg("at-el-repede", [["6041", "Ca LEGO 6041"], ["92842", "Ca LEGO 92842"], ["15790", "Ca LEGO 15790"]], lego)}</div>
+        <div class="at-rand"><span class="mic">Repede:</span>${seg("at-el-grila", [["40", "Ø40"], ["56", "Ø56"], ["72", "Ø72"], ["96", "Ø96"]], String(p.diametru))}<span class="mic">${tr("5, 7, 9 și 12 știfturi")}</span></div>
+        <div class="at-rand"><span class="mic">Piese LEGO:</span>${seg("at-el-repede", [["6041", "Ca LEGO 6041"], ["92842", "Ca LEGO 92842"], ["15790", "Ca LEGO 15790"]], lego)}</div>
         <div class="at-campuri">
           <label for="at-el-palete">Paletele<input id="at-el-palete" type="number" min="2" max="8" step="1" value="${p.palete}"></label>
           <label for="at-el-diam">Diametrul (mm)<input id="at-el-diam" type="number" min="20" max="200" step="0.1" value="${p.diametru}"></label>
           <label for="at-el-pas">Pasul (× diametrul)<input id="at-el-pas" type="number" min="0.3" max="1.5" step="0.05" value="${p.pas}"></label>
           <label for="at-el-lat">Lățimea (% din rază)<input id="at-el-lat" type="number" min="15" max="60" step="1" value="${p.latime}"></label>
-        </div>
+        </div>${plajaHtml()}
         <div class="at-rand"><span class="mic">Forma:</span>${seg("at-el-forma", [["rot", "Rotunjită"], ["ingust", "Îngustată"], ["drept", "Dreaptă"]], p.forma)}</div>
         <div class="at-rand"><span class="mic">Paleta:</span>${seg("at-el-paleta", [["rasucita", "Răsucită"], ["plata", "Plată, ca LEGO"]], p.paleta)}</div>
         <div class="at-rand"><span class="mic">Profilul:</span>${seg("at-el-profil", [["placa", "Placă curbată"], ["aripa", "Profil de aripă"]], p.profil)}</div>
         <div class="at-rand"><span class="mic">Sensul:</span>${seg("at-el-sens", [["dreapta", "Dreapta"], ["stanga", "Stânga"]], p.sens)}</div>
+        <p class="mic" id="at-el-sensul">Pornește motorul și privește axul dinspre el: dacă se învârte în sensul acelor de ceasornic, alege „Dreapta”; invers, „Stânga”. Elicea stă pe ax cu partea de pe masă spre motor și suflă aerul spre el.</p>
         <div class="at-rand"><span class="mic">Gaura:</span>${seg("at-el-gaura", [["x", "Pentru ax"], ["r", "Rotundă"], ["b", "Pentru bară"], ["nu", "Fără"]], p.gaura)}</div>
         <div class="at-rand"><span class="mic">Conul:</span>${seg("at-el-con", [["nu", "Fără"], ["da", "Cu con"]], p.con)}</div>
         <p class="mic" id="at-el-info">${textElice(p)}</p>
         <div class="at-rand"><button class="btn" type="button" id="at-el-pereche">Fă perechea</button><span class="mic">${tr("pune în listă aceeași elice în ambele sensuri, pentru două motoare")}</span></div>`;
-      const alege = (id: string, f2: (v: string) => void) => { if (!$(id)) return; $(id).onclick = ev => { const b = (ev.target as Element).closest<HTMLElement>("[data-v]"); if (!b) return; f2(b.dataset.v!); editor(); schimbat(); }; };
+      const alege = (id: string, f2: (v: string) => void) => { if (!$(id)) return; $(id).onclick = ev => { const b = (ev.target as Element).closest<HTMLElement>("[data-v]"); if (!b) return; plaja = null; f2(b.dataset.v!); editor(); schimbat(); }; };
+      alege("#at-el-grila", v => { p.diametru = +v; });
       alege("#at-el-repede", v => { Object.assign(p, ELICE_LEGO[v]); });
       alege("#at-el-forma", v => { p.forma = v; });
       alege("#at-el-paleta", v => { p.paleta = v; });
@@ -1661,14 +1681,12 @@ var Atelier3D = (function () {
       alege("#at-el-sens", v => { p.sens = v; });
       alege("#at-el-gaura", v => { p.gaura = v; });
       alege("#at-el-con", v => { p.con = v; });
-      // câmpurile: doar valorile din plajă (altfel, ca la celelalte piese, rămâne ce era)
-      const camp = (id: string, zec: number, a: number, b: number, f2: (v: number) => void) => {
-        $(id).onchange = ev => { const v = Math.round(+(ev.target as HTMLInputElement).value * 10 ** zec) / 10 ** zec; if (v >= a && v <= b) { f2(v); editor(); schimbat(); } };
-      };
-      camp("#at-el-palete", 0, 2, 8, v => { p.palete = v; });
-      camp("#at-el-diam", 1, 20, 200, v => { p.diametru = v; });
-      camp("#at-el-pas", 2, 0.3, 1.5, v => { p.pas = v; });
-      camp("#at-el-lat", 0, 15, 60, v => { p.latime = v; });
+      // câmpurile: rotunjite la pasul lor; în afara plajei, marginea, cu mesajul sub câmpuri (ADR 0340, 3.Cm-4)
+      const cote = (d: Record<string, unknown>) => Lego.eliceCote(d);
+      campElice("#at-el-palete", p, "palete", 0, 2, 8, cote);
+      campElice("#at-el-diam", p, "diametru", 1, 20, 200, cote);
+      campElice("#at-el-pas", p, "pas", 2, 0.3, 1.5, cote);
+      campElice("#at-el-lat", p, "latime", 0, 15, 60, cote);
       $("#at-el-pereche").onclick = adaugaPerecheElice;
     } else if (t === "eliceBarca") {
       // elicea de barcă (ADR 0282, 3.Tr): paletele, diametrul (și repede, pe grila de știfturi), pasul, lățimea, înclinarea
@@ -1685,27 +1703,26 @@ var Atelier3D = (function () {
           <label for="at-eb-lat">Lățimea (% din rază)<input id="at-eb-lat" type="number" min="40" max="150" step="1" value="${p.latime}"></label>
           <label for="at-eb-inc">Înclinarea înapoi (°)<input id="at-eb-inc" type="number" min="0" max="40" step="1" value="${p.inclinare}"></label>
           <label for="at-eb-pupa">Înclinarea spre pupa (°)<input id="at-eb-pupa" type="number" min="0" max="15" step="1" value="${p.pupa}"></label>
-        </div>
+        </div>${plajaHtml()}
         <div class="at-rand"><span class="mic">Sensul:</span>${seg("at-eb-sens", [["dreapta", "Dreapta"], ["stanga", "Stânga"]], p.sens)}</div>
+        <p class="mic" id="at-eb-sensul">Pornește motorul ca pentru mers înainte și privește axul din spatele bărcii: dacă se învârte în sensul acelor de ceasornic, alege „Dreapta”; invers, „Stânga”. Elicea stă pe ax cu partea de pe masă spre barcă și o împinge înainte.</p>
         <div class="at-rand"><span class="mic">Gaura:</span>${seg("at-eb-gaura", [["x", "Pentru ax"], ["r", "Rotundă"], ["b", "Pentru bară"], ["nu", "Fără"]], p.gaura)}</div>
         <div class="at-rand"><span class="mic">Capacul:</span>${seg("at-eb-capac", [["nu", "Fără"], ["da", "Cu capac"]], p.capac)}</div>
         <p class="mic" id="at-eb-info">${textBarca(p)}</p>
         <div class="at-rand"><button class="btn" type="button" id="at-eb-pereche">Fă perechea</button><span class="mic">${tr("pune în listă aceeași elice în ambele sensuri, pentru două motoare")}</span></div>`;
-      const alege = (id: string, f2: (v: string) => void) => { if (!$(id)) return; $(id).onclick = ev => { const b = (ev.target as Element).closest<HTMLElement>("[data-v]"); if (!b) return; f2(b.dataset.v!); editor(); schimbat(); }; };
+      const alege = (id: string, f2: (v: string) => void) => { if (!$(id)) return; $(id).onclick = ev => { const b = (ev.target as Element).closest<HTMLElement>("[data-v]"); if (!b) return; plaja = null; f2(b.dataset.v!); editor(); schimbat(); }; };
       alege("#at-eb-repede", v => { p.diametru = +v; });
       alege("#at-eb-sens", v => { p.sens = v; });
       alege("#at-eb-gaura", v => { p.gaura = v; });
       alege("#at-eb-capac", v => { p.capac = v; });
-      // câmpurile: doar valorile din plajă (altfel, ca la celelalte piese, rămâne ce era)
-      const camp = (id: string, zec: number, a: number, b: number, f2: (v: number) => void) => {
-        $(id).onchange = ev => { const v = Math.round(+(ev.target as HTMLInputElement).value * 10 ** zec) / 10 ** zec; if (v >= a && v <= b) { f2(v); editor(); schimbat(); } };
-      };
-      camp("#at-eb-palete", 0, 3, 5, v => { p.palete = v; });
-      camp("#at-eb-diam", 1, 20, 120, v => { p.diametru = v; });
-      camp("#at-eb-pas", 2, 0.5, 1.6, v => { p.pas = v; });
-      camp("#at-eb-lat", 0, 40, 150, v => { p.latime = v; });
-      camp("#at-eb-inc", 0, 0, 40, v => { p.inclinare = v; });
-      camp("#at-eb-pupa", 0, 0, 15, v => { p.pupa = v; });
+      // câmpurile: rotunjite la pasul lor; în afara plajei, marginea, cu mesajul sub câmpuri (ADR 0340, 3.Cm-4)
+      const cote = (d: Record<string, unknown>) => Lego.eliceBarcaCote(d);
+      campElice("#at-eb-palete", p, "palete", 0, 3, 5, cote);
+      campElice("#at-eb-diam", p, "diametru", 1, 20, 120, cote);
+      campElice("#at-eb-pas", p, "pas", 2, 0.5, 1.6, cote);
+      campElice("#at-eb-lat", p, "latime", 0, 40, 150, cote);
+      campElice("#at-eb-inc", p, "inclinare", 0, 0, 40, cote);
+      campElice("#at-eb-pupa", p, "pupa", 0, 0, 15, cote);
       $("#at-eb-pereche").onclick = adaugaPerecheElice;
     } else if (t === "ventilator") {
       // ventilatorul cu carcasă (ADR 0282, 3.Ts): rotorul sau carcasa; paletele, diametrul (și repede, pe grila de știfturi),
@@ -1722,30 +1739,29 @@ var Atelier3D = (function () {
           <label for="at-ve-joc">Jocul la vârf (mm)<input id="at-ve-joc" type="number" min="0.3" max="2" step="0.1" value="${p.joc}"></label>
           <label for="at-ve-pas">Pasul (× diametrul)<input id="at-ve-pas" type="number" min="0.3" max="1.5" step="0.05" value="${p.pas}"></label>
           <label for="at-ve-lat">Lățimea (% din rază)<input id="at-ve-lat" type="number" min="15" max="60" step="1" value="${p.latime}"></label>
-        </div>
+        </div>${plajaHtml()}
         ${rotor ? `<div class="at-rand"><span class="mic">Sensul:</span>${seg("at-ve-sens", [["dreapta", "Dreapta"], ["stanga", "Stânga"]], p.sens)}</div>
+        <p class="mic" id="at-ve-sensul">Pornește motorul și privește axul dinspre partea spre care vrei să sufle: dacă se învârte în sensul acelor de ceasornic, alege „Dreapta”; invers, „Stânga”. Rotorul stă pe ax cu partea de pe masă spre acea parte.</p>
         <div class="at-rand"><span class="mic">Gaura:</span>${seg("at-ve-gaura", [["x", "Pentru ax"], ["r", "Rotundă"], ["b", "Pentru bară"], ["nu", "Fără"]], p.gaura)}</div>
         <div class="at-rand"><span class="mic">Inelul:</span>${seg("at-ve-inel", [["nu", "Fără"], ["da", "Cu inel"]], p.inel)}</div>`
           : `<div class="at-rand"><span class="mic">Urechile:</span>${seg("at-ve-urechi", [["2", "Două"], ["4", "Patru"]], String(p.urechi))}</div>`}
         <p class="mic" id="at-ve-info">${textVentilator(p)}</p>
         <div class="at-rand"><button class="btn" type="button" id="at-ve-fa">Fă ventilatorul</button><span class="mic">${tr("pune în listă rotorul și carcasa")}</span></div>
         <label class="bifa"><input type="checkbox" id="at-ve-trusa" ${trusaVentilator ? "checked" : ""}> Și trusa: grinda de sub carcasă, axul, o jumătate de bucșă și știfturile</label>`;
-      const alege = (id: string, f2: (v: string) => void) => { if (!$(id)) return; $(id).onclick = ev => { const b = (ev.target as Element).closest<HTMLElement>("[data-v]"); if (!b) return; f2(b.dataset.v!); editor(); schimbat(); }; };
+      const alege = (id: string, f2: (v: string) => void) => { if (!$(id)) return; $(id).onclick = ev => { const b = (ev.target as Element).closest<HTMLElement>("[data-v]"); if (!b) return; plaja = null; f2(b.dataset.v!); editor(); schimbat(); }; };
       alege("#at-ve-piesa", v => { p.piesa = v; });
       alege("#at-ve-repede", v => { p.diametru = +v; });
       alege("#at-ve-sens", v => { p.sens = v; });
       alege("#at-ve-gaura", v => { p.gaura = v; });
       alege("#at-ve-inel", v => { p.inel = v; });
       alege("#at-ve-urechi", v => { p.urechi = +v; });
-      // câmpurile: doar valorile din plajă (altfel, ca la celelalte piese, rămâne ce era)
-      const camp = (id: string, zec: number, a: number, b: number, f2: (v: number) => void) => {
-        $(id).onchange = ev => { const v = Math.round(+(ev.target as HTMLInputElement).value * 10 ** zec) / 10 ** zec; if (v >= a && v <= b) { f2(v); editor(); schimbat(); } };
-      };
-      camp("#at-ve-palete", 0, 3, 12, v => { p.palete = v; });
-      camp("#at-ve-diam", 1, 24, 120, v => { p.diametru = v; });
-      camp("#at-ve-joc", 1, 0.3, 2, v => { p.joc = v; });
-      camp("#at-ve-pas", 2, 0.3, 1.5, v => { p.pas = v; });
-      camp("#at-ve-lat", 0, 15, 60, v => { p.latime = v; });
+      // câmpurile: rotunjite la pasul lor; în afara plajei, marginea, cu mesajul sub câmpuri (ADR 0340, 3.Cm-4)
+      const cote = (d: Record<string, unknown>) => Lego.ventilatorCote(d);
+      campElice("#at-ve-palete", p, "palete", 0, 3, 12, cote);
+      campElice("#at-ve-diam", p, "diametru", 1, 24, 120, cote);
+      campElice("#at-ve-joc", p, "joc", 1, 0.3, 2, cote);
+      campElice("#at-ve-pas", p, "pas", 2, 0.3, 1.5, cote);
+      campElice("#at-ve-lat", p, "latime", 0, 15, 60, cote);
       $("#at-ve-fa").onclick = adaugaVentilator;
       $("#at-ve-trusa").onchange = ev => { trusaVentilator = (ev.target as HTMLInputElement).checked; };
     } else if (t === "suport") {
