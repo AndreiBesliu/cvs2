@@ -420,6 +420,15 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   e-3 … e-5. **Fereastra exportului face rând doar pentru frezele pe care le poate purta** (`operatieCuRand`: plata și
   V-ul; bila rămâne ca înainte), altfel Exportă ar scrie o plată în locul toroidalei. Fără frezele noi, programul de
   azi, octet cu octet. Nimic pe server. Felia: pornirea +0 (cu ușa +0,1), totalul +1,0 kB.
+  **Elicea cu bila și cu toroidala, simulată exact (ADR 0303, felia 16.A↑e-2)** gata pe 27.11, unită în `main` pe 27.11
+  (`0d2a8c2c`): în nucleul simulării, `eliceaRotunda` dă pe fiecare celulă exact cel mai jos punct al sculei pe toată
+  elicea (bila, ca o toroidală cu a = 0 și ρ = R; elicea care urcă, citită de la capăt; doar ultimele 2π; pragul prin
+  înjumătățire, maximul prin secțiunea de aur, cu un număr fix de pași și doar + − × ÷ √); `program.ts` nu mai refuză
+  elicea cu bila și cu toroidala, cea cu V-ul rămâne refuzată; oracolul simulării, neschimbat (eșantiona deja orice arc
+  cu Z liniar în unghi). **O formă nouă de freză pe elice se probează pe elice la întâmplare, față de o căutare densă**
+  (`test/unit/simulare.elice.test.ts`: două otrăvuri le prinde doar proba aceea). Lucrarea, neschimbată: programul de
+  azi, octet cu octet. Felia: pornirea +0, totalul +2,6 kB (nucleul se numără de două ori: workerul CAM și workerul
+  simulării).
   **Plafonul pornirii 120 kB (ADR 0145, decizia owner-ului din 24.11, „ok, ridica plafonul pornirii la 120 kB”):** după
   lotul al paisprezecelea, pornirea era 109,9 kB, cu ușa 114,4 și cu Atelierul 114,7 / 115, iar feliile următoare ale
   frezelor, exportului și aranjamentelor nu mai încăpeau în 0,3 kB. Poarta judecă tot trei măsuri sub același plafon
@@ -2064,6 +2073,27 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 27.11.2026, dimineața devreme (a șaizeci și una unire din cloud): **elicea cu bila și cu toroidala, simulată exact
+  (16.A↑e-2), unită în `main`** (sesiunea principală, ramura `unire-2711c`, din `8270aae7`). Linia frezelor, ramura
+  `wip/16.A-freze-e`, `e5bdde83` (cu `main` `8270aae7` adus), PR-ul `AndreiBesliu/cvs2#71` (ADR 0303, răspunsul 3a
+  aplicat), unită în `0d2a8c2c`: nucleul simulării dă, pe fiecare celulă, exact cel mai jos punct al sculei pe toată
+  elicea, cu bila (o toroidală cu a = 0 și ρ = R) și cu toroidala (`eliceaRotunda`: elicea care urcă se citește de la
+  capăt; doar ultimele 2π; pragul prin înjumătățire și maximul prin secțiunea de aur, cu un număr fix de pași și doar
+  + − × ÷ √, deci aceeași amprentă în Node și în browser); `program.ts` nu mai refuză elicea cu bila și cu toroidala,
+  iar cea cu V-ul rămâne refuzată. Pe bilă, structura căutării e demonstrată pe hârtie; pe toroidală, sondată pe
+  200 000 de cazuri, iar proba are 300 de elice la întâmplare, comparate cu o căutare densă (la un ulp de Float32);
+  oracolul simulării, neschimbat. **Lucrarea refuză mai departe toroidala pe orice operație și bila în afara
+  finisării reliefului: programul de azi, octet cu octet.** Otrăvurile 19 / 19. Documentul rămâne v31; nimic pe
+  server. `main` nu se mișcase, deci **arborele unirii e chiar al lui `e5bdde83`** și a intrat pe porțile lui: completul
+  45922114265, verde: unit 10 898 / 0 (12 sărite, pe Linux), e2e 1 008 / 1 008, funcțiile pe emulatoare 142 / 142,
+  paginile 62 / 62; rapidul, verde. **Mărimea:** totalul 936,4 / 1 000 kB (+2,6, peste ținta de +1 kB pe felie din
+  ADR 0303: nucleul e copiat și în workerul CAM, și în workerul simulării, deci codul nou se numără de două ori);
+  pornirea 111,7 kB (cu ușa 117,0, cu Atelierul 117,3 / 125), `/admin` 138,3 / 200. **Lotul 54 (balamaua, Easy 3Draw
+  18.44.0) e pe test din 27.11, 03:52** (`47b75d20`; completul pe `main` 45916956101, verde; proba de fum, bună);
+  lotul 55 (16.A↑e-1, `8270aae7`) e în drum, iar 16.A↑e-2 pleacă după el (lotul 56). Linia frezelor continuă cu
+  16.A↑e-3 (canelura cu bila și cu toroidala; toroidala iese din „în curând”, în lista „Freza” din Tăierea și pe
+  rândurile exportului), pe aceeași ramură; un câmp nou cere întâi numărul (v32). **La owner:** de încercat balamaua
+  pe test și de tipărit; restul listei, neschimbat.
 - 27.11.2026, noaptea (a șaizecea unire din cloud): **freza toroidală în document (v31) și în simulare (16.A↑e-1),
   unită în `main`** (sesiunea principală, ramura `unire-2711b`, din `47b75d20`). Linia frezelor, ramura
   `wip/16.A-freze-e`, `7c3f166b` (cu `main` `0df06eca` adus), PR-ul `AndreiBesliu/cvs2#69` (ADR 0303, propus de linie,
