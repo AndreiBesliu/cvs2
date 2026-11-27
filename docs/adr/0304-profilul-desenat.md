@@ -184,6 +184,54 @@ pe hârtie a fost scrisă întâi.
 - **Neschimbate:** nimic pe server; documentul rămâne v32; programul fără profil, octet cu octet. Elicea cu profilul rămâne
   refuzată de simulare (o rampă pe arce, cu profilul, nu se simulează, ca la V).
 
+## Implementarea (16.A↑f-3)
+
+Pe 27.11, pe `wip/16.A-freze-e`, din `main` cu f-1 și f-2 unite (`8906dedf`), cu întrebarea 5a aplicată, partea profilurilor
+parametrice (editorul siluetei desenate e f-5).
+
+- **Punctele** (`puncteProfil`, `src/model/profilFreza.ts`):
+  - fiecare arc al siluetei (`profilFreza`, cu pașii acum după raza și unghiul arcului) e împărțit cât coarda lui să stea la cel
+    mult 0,0009 mm de el (`ABATERE_PROFIL`, 0,001 mm, cu o margine de 10 %);
+  - punctele dublate pleacă, iar h nu scade (zgomotul lui sin la capete e tăiat);
+  - treapta verticală a ogee-ului roman primește 0,0001 mm pe r, ca r să crească strict (abaterea, sub 0,001);
+  - capătul e pus exact la raza frezei.
+
+  Rotunjirea R3 pe Ø12 are 35 de puncte. Cel mai mare profil, în marginile unei freze de Ø100 (ogee-ul roman cu raza 24,9), are
+  190, sub plafonul de 200.
+- **`inaltimeCon`** s-a mutat din `freza.ts` lângă siluetă, cu tipul `CampuriProfil` (câmpurile frezei, fără importul ei):
+  `freza.ts` cere acum punctele de acolo, iar regula `fara-cicluri` oprea cele două importuri unul spre altul. `freza.ts`
+  îl reexportă.
+- **Biblioteca:** profilurile au CAM (`FELURI_CU_CAM`), iar `sculaDinFreza` le copiază în proiect cu punctele lor. Tăierea
+  (`frezePotrivite`) și lista „Din frezele mele” le oferă pe canelură, nu pe o parte (regula din f-2). Conica și burghiul rămân
+  „în curând în proiect”.
+- **Fereastra exportului:**
+  - `FormaRand` are profilul cu punctele, iar rândul le ține (`Rand.profil`, opțional);
+  - forma se arată „profilată (din „Frezele mele”)”, ca opțiune doar cât rândul o are; altă formă aleasă o scoate;
+  - diametrul e doar de citit (e al siluetei), iar desenul frezei arată silueta, în oglindă, la scara corpului;
+  - pe o parte, în buzunar și la găurire, verdictul formei (`profilPermis`, comparat cu modelul) oprește exportul, cu
+    `motiv.profil`;
+  - două siluete sunt două freze pe T (`formeEgale`, cheia din fereastră);
+  - nota bibliotecii spune „înălțimea siluetei” când silueta s-a schimbat acolo;
+  - Exportă scrie profilul, cu numele „freza profilata” când se schimbă (fără schimbare, aceeași freză, la octet);
+  - „Pune-o înapoi în bibliotecă” nu se oferă pentru un profil: copia ține punctele, nu felul și valorile profilului
+    parametric.
+- **Probele:**
+  - `test/unit/profil.document.test.ts`, scrisă întâi:
+    - invariantele punctelor, pe 11 profiluri, de la R0,5 la cele mai mari de pe Ø100;
+    - abaterea în ambele sensuri față de silueta din arce foarte dese;
+    - felurile fără puncte;
+    - ușa și lucrarea pe fiecare.
+  - `test/unit/export.profil.test.ts`: forma pe rând, regula față de model, identitatea pe T, alegerea din bibliotecă, nota,
+    copia de readus, ce scrie Exportă și programul, listele.
+  - `test/e2e/export.profil.spec.ts`:
+    - o rotunjire R3 Ø12 din „Frezele mele”, pe canelura dreptunghiului;
+    - programul descărcat, judecat de oracolul simulării cu silueta pe hârtie (h(x) = √(9 − (6 − x)²)): secțiunea la 0,001 mm,
+      lățimea la față 2·(6 − √5), nimic tăiat dincolo de 6 mm;
+    - refuzul pe exterior.
+
+  Probele vechi care știau profilurile „în curând” au fost întoarse (catalogul, Tăierea pe canelură cu cele 11 rotunjiri).
+- **Neschimbate:** nimic pe server; documentul rămâne v32; programul fără profil, octet cu octet.
+
 ## Se redeschide dacă
 
 - o placă arată că marginea profilată sau canelura cu profilul nu ies ca pe hârtie;
