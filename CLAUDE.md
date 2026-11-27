@@ -1439,7 +1439,7 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   în CI): o piesă nouă își pune pasul în a doua, cea a galeriilor.**
   **Elicele după audit (ADR 0340, feliile 3.Cm-1…3.Cm-7; acceptat pe 27.11 cu recomandările auditului, 1a–4a, la
   cuvântul owner-ului transmis de sesiunea principală: „zi-le sesiunilor sa continue cu recomandarile, acolo unde inca
-  asteapta”)**, pe ramura liniei atelierului. **3.Cm-1** gata pe 27.11: listele de otrăvuri ale elicelor (`3.Tq`, `3.Tr`,
+  asteapta”)**, pe ramura liniei atelierului; 3.Cm-1 și 3.Cm-2, unite în `main` pe 27.11 (`6d8abb70`). **3.Cm-1** gata pe 27.11: listele de otrăvuri ale elicelor (`3.Tq`, `3.Tr`,
   `3.Ts`, `3.Tt` și cele în engleză, 472), rulate toate din nou pe codul de azi, cu `E2E_BUILD = False`. **3.Cm-2
   (tipărirea spusă cinstit)** gata pe 27.11: proba pe plasă a arătat că consola de la vârf din audit (0,2 / tan β) e doar
   o medie: pe paleta curbată, treapta dintre straturi crește spre muchia de sus (elicea implicită: 1,53 mm, nu 0,90), iar
@@ -2128,6 +2128,23 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 27.11.2026, după-amiaza (a șaizeci și opta unire din cloud): **elicele după audit: otrăvurile rulate din nou (3.Cm-1) și
+  tipărirea spusă cinstit (3.Cm-2), unite în `main`** (sesiunea principală, ramura `unire-2711l`, peste 16.A↑f-1 și f-2).
+  Linia atelierului, ramura `wip/3.Xh-biblioteca-ui`, `ca9577b2`, PR-ul `AndreiBesliu/cvs2#77` (ADR 0340, acceptat cu
+  recomandările auditului, 1a–4a), unită în `6d8abb70`. **3.Cm-1:** listele de otrăvuri ale elicelor (`3.Tq`, `3.Tr`,
+  `3.Ts`, `3.Tt` și cele în engleză), rulate din nou pe codul de azi: toate prinse. **3.Cm-2:** consola de la vârf din
+  audit (0,2 / tan β) era doar o medie; motorul măsoară treapta dintre straturi pe secțiuni și primul strat pe plasă,
+  iar editorul spune verdictul în panoul piesei (fără suport până la 0,5 mm; cu suport sub vârfuri când și treapta, și
+  consola trec de 1 mm; altfel, aspru pe alocuri; brim sub 10 % din disc); piesele, la octet (742 de plase). **Easy
+  3Draw 18.45.0** (584,8 kB); otrăvurile 42 / 42 și 6 / 6, plus 12 ancore mutate. Doar pachetul extensiei și probele;
+  nimic pe server; documentul rămâne v32. Pus peste frezele (unite înaintea lui), lotul s-a unit fără ciocniri, cu
+  completul lui: completul 45983011704 pe `6d8abb70`, verde: unit 10 983 / 0 (12 sărite, pe Linux), e2e 1 015 / 1 015,
+  funcțiile pe emulatoare 142 / 142, paginile 62 / 62; rapidul, verde; porțile liniei, verzi pe `ca9577b2`; aplicația,
+  neschimbată de felie (pornirea 111,8 kB, totalul 940,8 / 1 000). **Lotul 61 (28.8↑s) e pe test din 27.11, 13:29**
+  (`8e23171c`); lotul 62 (frezele) e în drum, iar felia aceasta pleacă după el (lotul 63). Linia atelierului continuă
+  cu 3.Cm-3 (ventilatorul ca trusă). **La owner:** verdictul tipăririi elicelor: a) ca acum (recomandarea liniei), b) doar
+  după treapta cea mai mare (atunci elicea implicită, 92842, 15790 și rotorul implicit ar cere suport), c) pragul de sus
+  mutat după o elice tipărită; până la cuvântul lui rămâne a.
 - 27.11.2026, la prânz (a șaizeci și șaptea unire din cloud): **profilul desenat al frezei (16.A↑f-1, documentul v32) și
   canelura cu el (16.A↑f-2), unite în `main`** (sesiunea principală, din `048ecc39`). Linia frezelor, ramura
   `wip/16.A-freze-e`, `36866d16` (cu `main` adus, cu 28.8↑s), PR-ul `AndreiBesliu/cvs2#74` (ADR 0304, propus, mers cu
