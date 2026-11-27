@@ -16658,3 +16658,14 @@ program. Dacă cere un câmp nou în document, v32 e liber și ți-l dau la cere
 - **Pe test:** lotul 57 (`3ecb5678`), din 07:08; lotul 58 (`72263843`), în drum.
 - **Linia frezelor** pornește e-5 (buzunarul cu bila și cu toroidala; oracolul întâi).
 - **Documentele:** decizia și Starea în `CLAUDE.md`; starea din `docs/linii/principala.md`; indexul liniilor.
+
+## 2026-11-27 — Sesiunea principală în cloud: liniile continuă cu recomandările (Model: Claude Opus 5.5)
+
+**Prompt:** „zi-le sesiunilor sa continue cu recomandarile, acolo unde inca asteapta”
+**Started:** 27.11, 07:38. **Completed:** 27.11, 08:38.
+
+- **Mesajele (07:45):** frezele (ADR 0303 confirmat; e-5, e-6, f, g), atelierul (balamaua, placa turnantă; auditul
+  elicelor, feliile 1–7), relieful (ADR 0313 §8; cele trei felii lăsate la owner, apoi finisarea cu toroidala), exportul
+  (ADR 0292 1a; lista, constatarea 14). Cotele n-au nimic de pornit.
+- **Sesiunea designului**, pe calculatorul owner-ului, nu primește din cloud (doar de pe un dispozitiv de încredere).
+- **Documentele:** decizia în `CLAUDE.md`; lista owner-ului și versiunea documentului (v31) în `docs/linii/principala.md`.

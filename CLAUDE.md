@@ -2089,6 +2089,30 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 27.11.2026, dimineața: **liniile continuă cu recomandările, acolo unde încă așteaptă** („zi-le sesiunilor sa continue
+  cu recomandarile, acolo unde inca asteapta”, în sesiunea principală). Sesiunea principală le-a scris celor patru linii
+  cu sesiune la 07:45. Alegerile lăsate owner-ului cu recomandarea aplicată sunt acum ale lui, cum sunt implementate:
+  - **frezele**: ADR 0303 1a, 2a, 4a, 5a (3a era făcută). Linia continuă cu e-5 (buzunarul cu formele rotunde; mișcă
+    mașina, oracolul întâi), e-6, apoi f și g, cu recomandările ADR 0300 și 0302 unde mai sunt întrebări; d, după placa 4;
+  - **atelierul**: alegerile balamalei și ale plăcii turnante; cele patru întrebări din auditul elicelor (1a, 2a, 3a, 4a),
+    deci feliile 1–7 din `docs/linii/audit-elice.md`, în ordinea recomandată (otrăvurile elicelor; tipărirea spusă
+    cinstit; ventilatorul ca trusă; claritatea editorului; grosimea după diametru, peste Ø80; curățenia motorului, singură,
+    la octet; duza Kort); alegerile construcțiilor (3.Ch, 3.Ci); pachetul Easy 3Draw peste 0,5 MB (ne uităm din nou la
+    1 MB); fondul semnului;
+  - **relieful**: ADR 0313 §8 (1–6) și liniile finisării plăcii 18 la 1,5 mm. Pornesc cele trei felii lăsate la cuvântul
+    owner-ului: freza din „Frezele mele” pe rândurile reliefului (cu bila), desenele grupurilor, „Dă-i T{n}”; după ele,
+    finisarea reliefului cu toroidala (ADR 0303 4a; mișcă mașina, oracolul întâi);
+  - **exportul**: ADR 0292 rămâne la 1a (începutul după export); pornește partea din listă a constatării 14 a auditului
+    (numele dat de om, locul pe al doilea rând, mai mic); 28.8↑m (cu Clasicul) și 9a (după placa 2), neschimbate;
+  - **cotele**: alegerile din 10.4↑d-1 și întrebarea 10 (cotele mărite în raport), cum sunt; linia n-are nimic de pornit
+    (ADR 0330 e întreg).
+
+  În fereastra exportului lucrează acum trei linii (frezele, relieful, exportul): cine raportează al doilea aduce `main`
+  întâi. **Rămân la owner:** încercările pe test, tipăririle, probele pe mașină, tăierea plăcii 18, verificarea juridică
+  (GDPR), „cine unește în `main`” și ce face sesiunea principală între loturi. **Sesiunea designului** („Variante design
+  CVS2”, pe calculatorul owner-ului) întreabă dacă pornește felia zoomului; din cloud nu se poate atinge (primește doar de
+  pe un dispozitiv de încredere al owner-ului), deci răspunsul i-l dă owner-ul acolo. Liniile fără sesiune (tăierea,
+  imprimanta, incrustațiile, planșele, trasarea, aranjamentele) cer câte o sesiune nouă, cu brief, la cuvântul owner-ului.
 - 27.11.2026, dimineața (a șaizeci și treia unire din cloud): **bila și toroidala în proiect (16.A↑e-4), unite în
   `main`** (sesiunea principală, ramura `unire-2711f`, din `621e0069`). Linia frezelor, ramura `wip/16.A-freze-e`,
   `ea528e7d` (cu `main` `3ecb5678` adus), PR-ul `AndreiBesliu/cvs2#73` (ADR 0303), unită în `72263843`: copia rândului
