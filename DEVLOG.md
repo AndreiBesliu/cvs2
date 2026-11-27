@@ -16599,3 +16599,36 @@ fiecare”: 16.A↑e pe sub-felii, ADR 0303); e-3 după e-2, raportată gata de 
   Probele vechi care cereau refuzul pe linie au fost întoarse.
 - **Otrăvurile:** 10 / 10 prinse (`test/otravuri/16.A-e3.py`).
 - **Neschimbate:** nimic pe server; documentul rămâne v31; programul fără forme rotunde, octet cu octet.
+
+## 2026-11-27 — 16.A↑e-4: bila și toroidala în proiect (fereastra exportului, Tăierea, biblioteca) (Model: Claude Opus 5.5)
+
+**Prompt:** sesiunea principală, după unirea lui e-3 (`db066160`): „Poți porni e-4 în `DialogExport.tsx`,
+`FisaOperatie.tsx` și `exportRand.ts`… E-4 schimbă ce scrie Exportă pentru formele rotunde, deci vine cu probele lui pe
+program. Dacă cere un câmp nou în document, v32 e liber și ți-l dau la cerere.” **Started:** 27.11, 03:55, pe
+`wip/16.A-freze-e`, peste `db066160`. **Completed:** 27.11 (în container; completul pe ramură, după push).
+
+- **Copia rândului:** fereastra exportului poartă acum bila și toroidala, cu raza colțului (`FormaRand`, `razaColt` pe
+  rând). `formaDinRand` o citește, iar `campuriForma` o scrie înapoi.
+- **Identitatea frezei:** numărul T, nota bibliotecii și recunoașterea „Scrisă de mână (ca „…”)” țin felul și raza. O bilă,
+  o toroidală cu altă rază și o plată de același Ø sunt trei freze.
+- **Exportă** scrie forma rotundă (`sculaScrisa`):
+  - fără nicio schimbare, iese aceeași freză, octet cu octet;
+  - pe același fel, câmpurile necunoscute ale formei vechi se păstrează;
+  - numele frezei se schimbă după formă doar când forma se schimbă.
+- **Fișa operației:**
+  - bila și toroidala apar în lista formei doar pe linie (sau când rândul le are deja);
+  - la toroidală apare câmpul „Raza colțului (mm)”, judecat (peste 0, sub Ø / 2);
+  - desenul frezei are capătul rotund;
+  - pe altă latură, Exportă se oprește, cu motivul și cu greșeala în grupul Freza.
+- **Frezele în plus** ale rândului (de rest, ale fundului plat, ale dopului, a benzii) rămân plate sau în V
+  (`operatieCuRand`).
+- **Biblioteca:** toroidala are CAM (`FELURI_CU_CAM`) și nu mai e „în curând în proiect”. Tăierea și rândurile exportului
+  o oferă, ca și bila, doar pe linie. Copia readusă în bibliotecă își păstrează felul.
+- **Probele:**
+  - scrise întâi: `test/unit/export.rotunda.test.ts` (copia, identitatea, numele, regula T, nota bibliotecii, programul
+    exportat cu fiecare formă) și `test/e2e/export.rotunda.spec.ts`;
+  - proba privirii are acum câmpul razei;
+  - probele vechi care cereau toroidala „în curând” sau bila fără rând au fost întoarse;
+  - manualul, în ambele limbi.
+- **Otrăvurile:** `test/otravuri/16.A-e4.py`.
+- **Neschimbate:** nimic pe server; documentul rămâne v31; programul fără forme rotunde, octet cu octet.
