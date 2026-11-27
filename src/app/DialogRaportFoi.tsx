@@ -39,7 +39,8 @@ const VALORI = 3;
 /** O operație a foii, în cuvinte: felul, freza, adâncimea cu trecerile și urechile („profil exterior, T1 Ø6, 18 mm, 3 treceri”). */
 function textOperatie(o: OperatieRaport, n: Intl.NumberFormat): string {
   const fel = o.despartire ? t('export.raport.op.despartire') : o.tip === 'profil' ? t(`export.raport.op.profil.${o.latura}`) : t(`export.raport.op.${o.tip}`);
-  const rotunda = o.scula.bila ? `${t('export.raport.bila')} ` : o.scula.toroidala !== undefined ? `${t('export.raport.toroidala', { raza: n.format(o.scula.toroidala) })} ` : '';
+  const rotunda = o.scula.bila ? `${t('export.raport.bila')} ` : o.scula.toroidala !== undefined ? `${t('export.raport.toroidala', { raza: n.format(o.scula.toroidala) })} `
+    : o.scula.profilata ? `${t('export.raport.profilata')} ` : '';
   const freza = `T${o.scula.numar} ${o.scula.unghi === null ? '' : `V ${n.format(o.scula.unghi)}° `}${rotunda}Ø${n.format(o.scula.diametru)}`;
   const parti = [fel, freza, t('export.raport.op.adancime', { adancime: n.format(o.adancime), n: o.treceri })];
   if (o.urechiLa === 'mijloc') parti.push(t('export.raport.op.urechi.mijloc'));

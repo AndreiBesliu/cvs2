@@ -1,8 +1,9 @@
 /**
  * Profilul desenat în lucrare (ADR 0304 §1, §3, felia 16.A↑f-1): ușa v32 îl primește pe orice freză a unei operații, simularea
- * îl taie (simulare.profil.test.ts), iar lucrarea îl refuză pe orice operație și pe orice freză în plus, cu motivul care
- * numește forma, T-ul și calea, până la CAM-ul lui (canelura în f-2, marginea profilată în f-3). Fereastra exportului nu-i face
- * rând (`formaPeRand`), deci Exportă nu scrie o plată în locul lui. Tabelul `motivFormaPeOperatie` pe hârtie.
+ * îl taie (simulare.profil.test.ts), iar lucrarea îl refuză pe orice freză în plus și pe orice operație afară de canelură (pe
+ * linie, din 16.A↑f-2: canelura.profil.test.ts), cu motivul care numește forma, T-ul și calea; marginea profilată vine pe o
+ * sub-felie a ei. Fereastra exportului nu-i face rând (`formaPeRand`), deci Exportă nu scrie o plată în locul lui. Tabelul
+ * `motivFormaPeOperatie` pe hârtie.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -45,10 +46,11 @@ const motiv = (d: Liber): string => {
   return r.ok ? '' : r.motiv;
 };
 
-test('motivFormaPeOperatie: profilul desenat nu merge încă nicăieri (f-1); restul, ca până acum', () => {
+test('motivFormaPeOperatie: profilul desenat merge doar pe linie (canelura, din 16.A↑f-2); restul, ca până acum', () => {
   const Pf: FormaSculaDoc = { tip: 'profil', puncte: [[0, 0], [1.5, 0], [4, 3]] };
+  assert.equal(motivFormaPeOperatie('profil', 'pe-linie', Pf, { adancime: 100 }, 8), null);
   const locuri: ReadonlyArray<readonly [TipOperatie, Latura]> = [
-    ['profil', 'pe-linie'], ['profil', 'exterior'], ['profil', 'interior'], ['profil', 'stanga'], ['buzunar', 'interior'],
+    ['profil', 'exterior'], ['profil', 'interior'], ['profil', 'stanga'], ['buzunar', 'interior'],
     ['gaurire', 'interior'], ['vcarve', 'interior'], ['finisare', 'pe-linie'], ['degrosare', 'pe-linie'],
   ];
   for (const [tip, latura] of locuri) {
@@ -59,9 +61,10 @@ test('motivFormaPeOperatie: profilul desenat nu merge încă nicăieri (f-1); re
   assert.equal(motivFormaPeOperatie('profil', 'exterior', undefined, { adancime: 1 }, 6), null);
 });
 
-test('lucrarea refuză profilul desenat pe orice operație și pe orice freză în plus, cu forma, T-ul și calea în motiv', () => {
+test('lucrarea refuză profilul desenat în afara canelurii și pe orice freză în plus, cu forma, T-ul și calea în motiv', () => {
+  // Canelura (pe linie) se taie din 16.A↑f-2: `canelura.profil.test.ts`.
+  assert.equal(motiv(doc([op({ scula: prof(1), latura: 'pe-linie', adancime: 1 })])), '');
   const cazuri: ReadonlyArray<readonly [string, Liber, string, number]> = [
-    ['canelura', op({ scula: prof(1), latura: 'pe-linie', adancime: 1 }), 'scula', 1],
     ['profilul pe o parte', op({ scula: prof(1) }), 'scula', 1],
     ['buzunarul', op({ tip: 'buzunar', scula: prof(1), pasLateral: 2 }), 'scula', 1],
     ['freza de rest', op({ tip: 'buzunar', pasLateral: 2, rest: [{ scula: prof(2, 3, [[0, 0], [1.5, 0.5]]), pasLateral: 1 }] }), 'rest[0]', 2],
@@ -72,7 +75,7 @@ test('lucrarea refuză profilul desenat pe orice operație și pe orice freză �
     const m = motiv(doc([o]));
     assert.match(m, /^p\/o: freza profilată/, `${nume}: ${m}`);
     assert.ok(m.includes(`(T${numar}, ${cale})`), `${nume}: motivul nu numește T${numar} și ${cale}: ${m}`);
-    assert.match(m, /nu se taie încă/, nume);
+    assert.match(m, /doar pe linie \(canelura\)/, nume);
   }
   // Fără profil, aceleași operații nu sunt refuzate de regula lui.
   assert.doesNotMatch(motiv(doc([op({})])), /profilat/);

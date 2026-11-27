@@ -402,6 +402,7 @@ export const roExport = {
   'export.raport.op.degrosare': 'degroșarea reliefului',
   'export.raport.bila': 'bilă',
   'export.raport.toroidala': 'toroidală r{raza}',
+  'export.raport.profilata': 'profilată',
   'export.raport.op.despartire': 'despărțirea foii',
   'export.raport.op.adancime': { one: '{adancime} mm, {n} trecere', few: '{adancime} mm, {n} treceri', other: '{adancime} mm, {n} de treceri' },
   'export.raport.op.urechi': { one: '{n} ureche', few: '{n} urechi', other: '{n} de urechi' },

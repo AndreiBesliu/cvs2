@@ -13,6 +13,8 @@
  *   (geometria lor e a frezei plate, întrebarea 5a) și fără incrustație cu pereți drepți (pereții și fundul dopului cer freza
  *   plată). Pe o parte, cu adâncimea cel puțin raza colțului ρ (întrebarea 2a): pe desen, silueta are raza R abia la ρ
  *   deasupra vârfului, deci mai puțin adânc peretele n-ar ajunge la desen. Toroidala pe relief e a liniei reliefului.
+ * - Profilul desenat (ADR 0304 §3) merge pe linie (canelura, 16.A↑f-2): centrul pe vector, ca la bilă, deci drumul frezei
+ *   plate de același Ø; secțiunea canelurii e oglinda siluetei.
  * - Freza plată merge în rest.
  */
 import type { FormaSculaDoc, Latura, Operatie, Scula, TipOperatie } from './document.ts';
@@ -23,8 +25,8 @@ import { razaColtului } from './creasta.ts';
  * V-carve), `bila` și `toroidala` (freza rotundă nu merge aici: azi, pe linie și în buzunar; bila și la finisarea
  * reliefului), `degrosare` (degroșarea reliefului cere o freză plată), `rotunda-rest` (un buzunar cu o freză rotundă nu are
  * freze de rest), `rotunda-incrustatie` (incrustația cu pereți drepți cere o freză plată), `rotunda-adancime` (pe o parte,
- * o freză rotundă cere adâncimea cel puțin raza colțului) și `profil` (profilul desenat nu se taie încă nicăieri: ADR 0304,
- * felia 16.A↑f-1; canelura vine în f-2, marginea profilată în f-3).
+ * o freză rotundă cere adâncimea cel puțin raza colțului) și `profil` (profilul desenat taie doar pe linie, canelura: ADR 0304
+ * §3, felia 16.A↑f-2; marginea profilată vine pe o sub-felie a ei).
  */
 export type MotivForma = 'vcarve' | 'v-pe-linie' | 'bila' | 'degrosare' | 'toroidala' | 'rotunda-rest' | 'rotunda-incrustatie' | 'rotunda-adancime' | 'profil';
 
@@ -46,8 +48,9 @@ export type RestulOperatiei = {
 export function motivFormaPeOperatie(
   tip: TipOperatie, latura: Latura, forma: FormaSculaDoc | undefined, o?: RestulOperatiei, diametru?: number,
 ): MotivForma | null {
-  // Profilul desenat (ADR 0304, 16.A↑f-1): în document și în simulare, fără CAM încă.
-  if (forma?.tip === 'profil') return 'profil';
+  // Profilul desenat (ADR 0304 §3): pe linie (canelura, 16.A↑f-2), cu centrul pe vector, ca bila; marginea profilată (pe o
+  // parte) vine pe o sub-felie a ei, iar buzunarul, găurirea, V-carve-ul și relieful îl refuză.
+  if (forma?.tip === 'profil') return tip === 'profil' && latura === 'pe-linie' ? null : 'profil';
   const rotunda = forma?.tip === 'bila' || forma?.tip === 'toroidala';
   // Canelura (ADR 0303 §4, 16.A↑e-3): bila și toroidala pe linie, cu centrul pe vector (drumul frezei plate de același Ø).
   if (rotunda && tip === 'profil' && latura === 'pe-linie') return null;
