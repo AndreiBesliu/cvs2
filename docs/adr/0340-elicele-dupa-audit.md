@@ -2,7 +2,7 @@
 
 **Starea:** acceptat pe 27.11.2026, cu recomandările auditului (1a, 2a, 3a, 4a), la cuvântul owner-ului transmis de
 sesiunea principală („zi-le sesiunilor sa continue cu recomandarile, acolo unde inca asteapta”). Feliile 3.Cm-1…3.Cm-7, în
-ordinea din audit, ale liniei atelierului (ramura `wip/3.Xh-biblioteca-ui`). **3.Cm-1…3.Cm-6 implementate pe 27.11**
+ordinea din audit, ale liniei atelierului (ramura `wip/3.Xh-biblioteca-ui`). **3.Cm-1…3.Cm-7 implementate pe 27.11: toate feliile ADR-ului**
 (mai jos).
 **Continuă:** ADR 0282 (elicele, feliile 3.Tq–3.Tt). **Pleacă de la:** `docs/linii/audit-elice.md` (auditul din 25.11, pe
 Easy 3Draw 18.30.0). Primul număr al intervalului 0340–0349 al liniei atelierului.
@@ -190,6 +190,38 @@ după). Otrăvurile: `3.Cm-6.py`, 9 / 9 (S03 și S08, echivalente, scoase cu mot
 mai sus).
 
 **Easy 3Draw 18.49.0** (pachetul are alte surse, deci altă versiune; piesele, aceleași).
+
+## Implementarea (3.Cm-7): duza Kort
+
+Răspunsul 4a: elicea de barcă într-un tub, ca la remorchere. Auditul o vedea „mai mult o potrivire a lor decât o piesă nouă”;
+așa s-a făcut:
+
+- **Piesa:** a doua piesă a elicei de barcă (`piesa: "duza"`), ca rotorul și carcasa ventilatorului: în editor, „Piesa: Elicea /
+  Duza Kort”. Câmpurile elicei (diametrul, paletele, pasul, lățimea, înclinările) dau elicea din duză; ale duzei sunt jocul la
+  vârf (0,3–2 mm, implicit 0,8), lungimea (0,3–0,8 × Ø, implicit 0,5, ca la duza Kort 19A) și urechile (2 sau 4). Definiția
+  elicei își păstrează exact cheile de dinainte (o listă salvată o adună pe linia ei).
+- **Profilul, tipăribil fără suport** (`duzaCote`, `duzaKort`): interiorul, Ri = R + jocul, drept pe toată elicea; gura dinspre
+  barcă, jos, pe masă, rotunjită pe 0,3 · L (raza crește spre masă cu f = 0,4 · 0,3 · L, cel mult 0,8 mm pe mm de înălțime);
+  peretele, jos cât o grindă de înalt (gulerul, gros de 0,08 · Ø, între 1,6 și 4), apoi subțiat până la 1,2 sus. Lungimea
+  crește singură cât să cuprindă elicea (bucșa + butucul + 1 mm), iar textul o spune.
+- **Montajul, ca la ventilator** (3.Cm-3): urechile pe grila axului (k · 8 mm, cu lamajul în afara gulerului), cu găuri de știft;
+  pe o grindă de 2k + 1 prinsă de ele, axul trece prin gaura din mijloc; pe grindă, o jumătate de bucșă, iar pe ea elicea, în
+  duză. „Fă elicea cu duza” le pune pe amândouă în listă.
+
+**Probele:** `test/unit/trenulet.duza.test.ts` (7 teste: cotele pe hârtie; corpul închis, cu volumul pozitiv, pe plajă; interiorul,
+gura și gulerul măsurate pe plasă; elicea cuprinsă; tipărirea fără suport, din pantele plasei; urechile pe grilă, prin toată
+grosimea; marginile) și amprenta elicei de barcă fără `piesa` (`trenulet.curatenie.test.ts`, neschimbată); e2e,
+`trenulet.duza.spec.ts` (editorul, câmpurile, marginile, „Fă elicea cu duza”, STL-ul închis) și duza în proba în engleză.
+Otrăvurile: `3.Cm-7.py`, 29 / 29 (22 / 29 la prima rulare: șapte goluri ale probelor, închise: urechile pe toată plaja
+și la distanțe egale, urechile 2 și 4 fără mesaj, gura și peretele pe hârtie, cheile vechi ale elicei, duza fără capac);
+`3.Cm-7-en.py`, 3 / 3.
+
+**Easy 3Draw 18.50.0.**
+
+**Alese de linie, cu recomandarea (la owner, dacă le vrea altfel):** (1) duza ca a doua piesă a elicei de barcă, nu ca piesă
+separată în galerie; (2) profilul simplificat, tipăribil fără suport (interiorul drept, gura rotunjită spre barcă, gulerul și
+peretele subțiat), nu profilul de aripă al duzei 19A, care cere suport; (3) montajul pe grindă, ca ventilatorul, nu un braț
+spre corpul bărcii; (4) lungimea implicită 0,5 × Ø, crescută singură cât să cuprindă elicea.
 
 **Rămâne la owner** (lista grupată, cu recomandarea întâi): verdictul după treapta cea mai mare, oricât de îngustă ar fi
 fâșia? a (recomandat): ca acum (suport doar când și consola de la vârf trece de 1 mm; elicea implicită, 92842, 15790 și

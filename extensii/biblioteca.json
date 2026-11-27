@@ -18,6 +18,12 @@
       ],
       "noutati": [
         {
+          "versiune": "18.50.0",
+          "data": "2026-11-27",
+          "ro": "Duza Kort: la elicea de barcă, „Piesa: Duza Kort” face tubul din jurul elicei, ca la remorchere, cu gura rotunjită și urechi pe grila axului; „Fă elicea cu duza” le pune pe amândouă în listă.",
+          "en": "Kort nozzle: on the boat propeller, “Piece: Kort nozzle” makes the duct around the propeller, as on tugboats, with a rounded mouth and lugs on the axle grid; “Make the propeller with the nozzle” adds both to the list."
+        },
+        {
           "versiune": "18.49.0",
           "data": "2026-11-27",
           "ro": "Curățenie în motorul elicelor: cele trei elice își fac paletele din aceeași funcție. Piesele rămân exact cum erau.",
@@ -244,8 +250,8 @@
           }
         }
       ],
-      "versiune": "18.49.0",
-      "continut": "abce015dabd006bb8f197a57970549024585bf92b3a669e5a04f841a9c71bb13"
+      "versiune": "18.50.0",
+      "continut": "ec6d2a47b6f17fa283e6a6d6435adc7a34943d43799164954c26f54253a3e9c4"
     }
   ]
 }

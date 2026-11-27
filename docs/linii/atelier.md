@@ -32,7 +32,8 @@ feliile făcute.** **Auditul elicelor (ADR 0340, acceptat pe 27.11 cu recomandă
 sesiunea principală): feliile 3.Cm-1…3.Cm-7; 3.Cm-1 (otrăvurile elicelor, rulate din nou) și 3.Cm-2 (tipărirea spusă
 cinstit; 18.45.0), raportate pe 27.11 (PR-ul `AndreiBesliu/cvs2#77`); 3.Cm-3 (ventilatorul ca trusă; 18.46.0) și 3.Cm-4
 (claritatea editorului elicelor; 18.47.0), 3.Cm-5 (grosimea paletelor peste Ø80; 18.48.0) și 3.Cm-6 (curățenia motorului, la
-octet; 18.49.0), pe ramură, la raport după unirea lor.** Versiunea următoare a pachetului: 18.50.0._
+octet; 18.49.0) și 3.Cm-7 (duza Kort; 18.50.0), pe ramură, la raport după unirea lor: cu ea, ADR 0340 are toate feliile
+făcute.** Versiunea următoare a pachetului: 18.51.0._
 
 ## Numerele liniei
 
@@ -799,4 +800,17 @@ octet; 18.49.0), pe ramură, la raport după unirea lor.** Versiunea următoare 
 - **O curățenie „la octet” se probează cu amprenta pieselor luată înaintea ei** (`trenulet.curatenie.test.ts`); ce ar schimba
   piese (cei 8 pași ai elicei, butucul roților) rămâne, cu motivul, nu se „îndreaptă” în aceeași felie.
 - **Easy 3Draw 18.49.0.**
+
+## 3.Cm-7, gata (27.11, în cloud): duza Kort (ADR 0340)
+
+- **Unde e:** motorul, `KORT`, `duzaCote` și `duzaKort` (înaintea lui `eliceBarca`, care cheamă `duzaKort` la `piesa: "duza"`;
+  `duzaCote` și în API); atelierul: câmpurile noi în `STARE0.eliceBarca` (`piesa`, `joc`, `lungime`, `urechi`), `defCurenta`
+  (elicea fără ele, duza fără sens, gaură și capac), `numeDef`, `textDuza`, `adaugaEliceCuDuza`, editorul elicei de barcă.
+- **O piesă a doua a unei piese existente (ca duza, ca rotorul și carcasa) păstrează exact cheile piesei de dinainte în
+  definiție** (`defCurenta` le scoate pe ale celeilalte): altfel o listă salvată nu mai adună elicea pe linia ei.
+- **Un corp de revoluție se face din profil, pe laturile lui `laturiFine`**, cu fețele orientate în afară (exteriorul, apoi
+  interiorul întors, jos și sus): proba îi cere muchiile cu pereche și volumul pozitiv.
+- **Un câmp nou în starea editorului unei piese atinge `trenulet.file.spec.ts`** (starea implicită, scrisă înapoi la deschiderea
+  unei liste vechi): lotul e2e al pluginului a prins-o.
+- **Easy 3Draw 18.50.0.**
 

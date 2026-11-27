@@ -16905,3 +16905,21 @@ principală: auditul elicelor, felia 6, singură, la octet)
   măsurat pe 5 040 de elice, doar în butuc sau cu cel mult 0,16 % peste ținta de 85 %, deci paletele nu se ating.
 - **Mărimea:** Easy 3Draw 18.49.0 (aceleași piese, alte surse); aplicația, neschimbată. Nimic pe server.
 - **Urmează:** 3.Cm-7 (duza Kort).
+
+## 2026-11-27 — Felia 3.Cm-7: duza Kort (ADR 0340) (sesiune cloud)
+
+**Prompt:** „zi-le sesiunilor sa continue cu recomandarile, acolo unde inca asteapta” (owner-ul, transmis de sesiunea
+principală: auditul elicelor, felia 7, răspunsul 4a)
+**Started:** 27.11, 14:00. **Completed:** 27.11, 14:55 (orele, după ceasul containerului).
+
+- **Motorul:** `duzaCote`, `duzaKort`: a doua piesă a elicei de barcă; interiorul R + jocul, drept pe elice; gura spre barcă,
+  rotunjită, tipăribilă fără suport; gulerul și peretele subțiat; lungimea cât să cuprindă elicea; urechile pe grila axului.
+- **Atelierul:** „Piesa: Elicea / Duza Kort”, jocul, lungimea și urechile; numele și textul duzei; „Fă elicea cu duza”;
+  definiția elicei, cu cheile de dinainte.
+- **Probele**, scrise întâi: `trenulet.duza.test.ts` (7 teste), `trenulet.duza.spec.ts` (3 scenarii), duza în engleză.
+- **Otrăvurile:** `3.Cm-7.py`, 29 / 29 (22 / 29 la prima rulare: șapte goluri ale probelor, închise); `3.Cm-7-en.py`, 3 / 3.
+- **Găsit de lotul e2e al pluginului:** starea implicită a elicei de barcă are câmpurile duzei, deci proba listei salvate de
+  18.14.0 (`trenulet.file.spec.ts`) cere starea nouă.
+- **Mărimea:** Easy 3Draw 18.50.0; aplicația, neschimbată. Nimic pe server.
+- **Cu ea, ADR 0340 are toate feliile făcute.** La owner: alegerile liniei la duză (cu recomandarea aplicată) și verdictul
+  tipăririi (a / b / c).

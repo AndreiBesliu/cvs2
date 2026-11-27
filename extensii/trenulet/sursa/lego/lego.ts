@@ -2778,7 +2778,8 @@ var Lego = (function (glob: typeof globalThis) {
   // Capacul rotunjit, la alegere, îl închide sus (spre pupa); axul intră de jos (dinspre barcă). Sensul „dreapta”: privită
   // dinspre pupa (de sus), se rotește în sensul acelor de ceasornic la mers înainte (același elicoid ca „dreapta” elicei).
   const BARCA = { butucMin: 4, butucRap: 0.09, butucH: 8, tRap: 0.04, tMin: 1.6, tMax: 3, tVarf: 0.8, muchie: 0.6, plin: 0.6, radacina: 0.6, umplere: 0.85, statii: 28, perSuprafata: 12, capac: 1.2, inele: 6, pupaMax: 15 };
-  type BarcaDef = { palete?: unknown; diametru?: unknown; pas?: unknown; latime?: unknown; inclinare?: unknown; pupa?: unknown; sens?: string; gaura?: string; capac?: string };
+  type BarcaDef = { palete?: unknown; diametru?: unknown; pas?: unknown; latime?: unknown; inclinare?: unknown; pupa?: unknown; sens?: string; gaura?: string; capac?: string;
+    piesa?: string; joc?: unknown; lungime?: unknown; urechi?: unknown };
   function sectiuneBarca(c: number, t: number): P2[] {
     // secțiunea ogivală în (u, v): u de-a lungul corzii, fața plată la v = 0, spatele sub ea (parabolă: muchiile de 0,6, t la
     // mijloc); pe față într-un sens, apoi pe spate înapoi (în sensul acelor, ca secțiunea elicei)
@@ -2826,7 +2827,65 @@ var Lego = (function (glob: typeof globalThis) {
     }
     return { z, D, R, pd, P, lat, inc, pupa, urca: urca(R), rh, Hh, statii, bRad: beta(rh), bVarf: beta(R), consola: 0.2 / Math.tan(beta(R)), acoperire: z * arie / (Math.PI * R * R), avert };
   }
+  // ---------------------------------------------------------------------------------------- duza Kort (ADR 0340, felia 3.Cm-7)
+  // Elicea de barcă într-un tub, ca la remorchere: a doua piesă a elicei de barcă (`piesa: "duza"`), din aceleași câmpuri
+  // (diametrul, paletele, pasul… dau elicea din ea) plus jocul la vârf (0,3–2 mm, implicit 0,8), lungimea (0,3–0,8 × Ø,
+  // implicit 0,5, ca la duza Kort 19A) și urechile (2 sau 4). Interiorul, Ri = R + jocul, drept pe toată elicea; gura dinspre
+  // barcă (jos, pe masă) rotunjită: pe zi = 0,3 · L, raza crește spre masă cu f = 0,4 · zi (cel mult 0,8 mm pe mm de înălțime:
+  // se tipărește fără suport). Peretele: jos, cât o grindă de înalt, gulerul (gros de tb = 0,08 · Ø, între 1,6 și 4, de la gură
+  // în afară), apoi subțiat până la 1,2 sus. Lungimea acoperă elicea: cel puțin bucșa + butucul elicei + 1. Urechile, pe grila
+  // axului (k · 8 mm, cu lamajul în afara gulerului), cu găuri de știft: pe o grindă de 2k + 1 prinsă de ele, axul trece prin
+  // gaura din mijloc; pe grindă, o jumătate de bucșă, iar pe ea elicea, în duză (ca ventilatorul, 3.Cm-3).
+  const KORT = { joc: 0.8, lungime: 0.5, gura: 0.3, evazare: 0.4, tbRap: 0.08, tbMin: 1.6, tbMax: 4, tSus: 1.2, peste: 1, laturiGura: 6 };
+  function duzaCote(d: BarcaDef) {
+    const e = eliceBarcaCote(d), avert = [...e.avert];
+    const joc = campElice(avert, d.joc, 0.3, 2, KORT.joc, x => tr`Jocul de la vârful paletelor e între 0,3 și 2 mm: l-am făcut de ${x} mm.`);
+    const lung = campElice(avert, d.lungime, 0.3, 0.8, KORT.lungime, x => tr`Lungimea unei duze Kort e între 0,3 și 0,8 × diametrul: am făcut-o de ${x}.`);
+    const urechi = +(d.urechi as number) === 4 ? 4 : 2;
+    if (d.urechi !== null && d.urechi !== undefined && d.urechi !== "" && Number.isFinite(+(d.urechi as number)) && urechi !== +(d.urechi as number)) avert.push(tr("O duză Kort are 2 sau 4 urechi: am făcut-o cu 2."));
+    const bucsa = P.pas / 2 - 0.2, Ri = e.R + joc, sus = bucsa + e.Hh;
+    const L = Math.ceil(Math.max(lung * e.D, sus + KORT.peste) * 10 - 1e-9) / 10, zi = KORT.gura * L, f = KORT.evazare * zi;
+    const tb = Math.min(KORT.tbMax, Math.max(KORT.tbMin, KORT.tbRap * e.D)), Rout0 = Ri + f + tb;
+    const k = Math.ceil((Rout0 + ef().lamajD / 2 + 0.4) / P.pas - 1e-9);
+    return { D: e.D, R: e.R, joc, lung, Ri, L, zi, f, tb, Rout0, k, urechi, gauri: 2 * k + 1, Hh: e.Hh, sus, avert };
+  }
+  function duzaKort(d: BarcaDef): Rezultat {
+    const q = duzaCote(d), e = ef(), g = P.grinda_groasa, h = P.lamaj_h, w = P.grinda_lat / 2, n = laturiFine(q.Rout0);
+    // profilul, de jos în sus: gura (raza interioară, pe o parabolă), gulerul (exteriorul drept până la g), apoi exteriorul
+    // subțiat liniar până la Ri + 1,2 sus; interiorul, Ri deasupra gurii
+    const zs = [...new Set([...Array.from({ length: KORT.laturiGura + 1 }, (_, j) => q.zi * j / KORT.laturiGura), g, q.L])].filter(z => z <= q.L + 1e-9).sort((a, b) => a - b);
+    const rin = (z: number) => (z < q.zi ? q.Ri + q.f * (1 - z / q.zi) ** 2 : q.Ri);
+    const rout = (z: number) => (z <= g ? q.Rout0 : q.Rout0 - (q.Rout0 - (q.Ri + KORT.tSus)) * (z - g) / (q.L - g));
+    const ang = Array.from({ length: n }, (_, i) => 2 * Math.PI * i / n);
+    const pt = (r: number, i: number, z: number): P3 => [r * Math.cos(ang[i % n]!), r * Math.sin(ang[i % n]!), z];
+    const tri: Tri[] = [], M = zs.length - 1;
+    for (let i = 0; i < n; i++) {
+      for (let j = 0; j < M; j++) {
+        const z0 = zs[j]!, z1 = zs[j + 1]!, o0 = rout(z0), o1 = rout(z1), i0 = rin(z0), i1 = rin(z1);
+        tri.push([pt(o0, i, z0), pt(o0, i + 1, z0), pt(o1, i + 1, z1)], [pt(o0, i, z0), pt(o1, i + 1, z1), pt(o1, i, z1)]);
+        tri.push([pt(i0, i, z0), pt(i1, i + 1, z1), pt(i0, i + 1, z0)], [pt(i0, i, z0), pt(i1, i, z1), pt(i1, i + 1, z1)]);
+      }
+      // jos (pe masă) și sus: inelele dintre interior și exterior
+      const zb = zs[0]!, zt = zs[M]!;
+      tri.push([pt(rout(zb), i, zb), pt(rin(zb), i + 1, zb), pt(rout(zb), i + 1, zb)], [pt(rout(zb), i, zb), pt(rin(zb), i, zb), pt(rin(zb), i + 1, zb)]);
+      tri.push([pt(rout(zt), i, zt), pt(rout(zt), i + 1, zt), pt(rin(zt), i + 1, zt)], [pt(rout(zt), i, zt), pt(rin(zt), i + 1, zt), pt(rin(zt), i, zt)]);
+    }
+    // urechile: o bară cu capătul rotund, din peretele gulerului până dincolo de gaura de pe grilă, cu gaura de știft și lamajul
+    // de ambele părți (ca o grindă groasă)
+    const xh = P.pas * q.k, rs = q.Ri + q.f + 0.6, prinderi: Prindere[] = [];
+    for (let j = 0; j < q.urechi; j++) {
+      const fi = 2 * Math.PI * j / q.urechi, rot = ([x, y]: P2): P2 => [x * Math.cos(fi) - y * Math.sin(fi), x * Math.sin(fi) + y * Math.cos(fi)];
+      const ureche: P2[] = [rot([rs, -w]), rot([xh, -w])];
+      for (let s2 = 1; s2 < 12; s2++) { const a = -Math.PI / 2 + Math.PI * s2 / 12; ureche.push(rot([xh + w * Math.cos(a), w * Math.sin(a)])); }
+      ureche.push(rot([xh, w]), rot([rs, w]));
+      const [cx, cy] = rot([xh, 0]), gaura = (diam: number) => [cerc(cx, cy, diam / 2)];
+      tri.push(...prismaGauri(ureche, gaura(e.lamajD), 0, h), ...prismaGauri(ureche, gaura(e.gauraD), h - 0.01, g - h + 0.01), ...prismaGauri(ureche, gaura(e.lamajD), g - h, g));
+      prinderi.push(...prinGaura("gauraStift", [cx, cy, g], [cx, cy, 0], undefined, P.lamaj_h));
+    }
+    return { tri, avert: q.avert, prinderi };
+  }
   function eliceBarca(d: BarcaDef): Rezultat {
+    if (d.piesa === "duza") return duzaKort(d);
     const q = eliceBarcaCote(d), avert = [...q.avert], { rh, Hh } = q;
     const tri = paleteElice(q.statii, q.z, d.sens === "stanga" ? -1 : 1, true), butuc = butucElice(rh, Hh, d.gaura, d.capac === "da");
     tri.push(...butuc.tri);
@@ -4434,6 +4493,8 @@ var Lego = (function (glob: typeof globalThis) {
     eliceCote: (d: EliceDef) => { const q = eliceCote(d); return { z: q.z, D: q.D, P: q.P, pd: q.pd, lat: q.lat, plata: q.plata, bRad: q.bRad, bVarf: q.bVarf, consola: q.consola, tRad: q.tRad, tVarf: q.tVarf, avert: q.avert }; },
     // elicea de barcă (ADR 0282): cotele din parametri (și butucul, unghiurile, consola la vârf, cât din disc acoperă paletele)
     eliceBarcaCote: (d: BarcaDef) => { const q = eliceBarcaCote(d); return { z: q.z, D: q.D, P: q.P, pd: q.pd, lat: q.lat, inc: q.inc, pupa: q.pupa, urca: q.urca, rh: q.rh, Hh: q.Hh, bRad: q.bRad, bVarf: q.bVarf, consola: q.consola, acoperire: q.acoperire, avert: q.avert }; },
+    // duza Kort (ADR 0340, 3.Cm-7): interiorul, lungimea, gura, gulerul, urechile pe grila axului, unde stă elicea
+    duzaCote: (d: BarcaDef) => { const q = duzaCote(d); return { D: q.D, R: q.R, joc: q.joc, lung: q.lung, Ri: q.Ri, L: q.L, zi: q.zi, f: q.f, tb: q.tb, Rout0: q.Rout0, k: q.k, urechi: q.urechi, gauri: q.gauri, Hh: q.Hh, sus: q.sus, avert: q.avert }; },
     // ventilatorul cu carcasă (ADR 0282): cotele din parametri (vârful paletelor, butucul, inelul, carcasa și urechile ei)
     ventilatorCote: (d: VentDef) => { const q = ventilatorCote(d); return { z: q.z, D: q.D, joc: q.joc, Rt: q.Rt, pd: q.pd, P: q.P, lat: q.lat, rh: q.rh, Hh: q.Hh, Hinel: q.Hinel, Hc: q.Hc, k: q.k, urechi: q.urechi, bRad: q.bRad, bVarf: q.bVarf, consola: q.consola, tRad: q.tRad, tVarf: q.tVarf, avert: q.avert }; },
     // ventilatorul ca trusă (ADR 0340, 3.Cm-3): găurile grinzii de sub carcasă, axul (în pași), bucșa și unde stă rotorul

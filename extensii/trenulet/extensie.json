@@ -3,7 +3,7 @@
   "api": 1,
   "id": "trenulet",
   "nume": "Easy 3Draw",
-  "versiune": "18.49.0",
+  "versiune": "18.50.0",
   "permisiuni": ["stocare", "descarcari", "masina", "cont", "forme"],
   "pictograma": "pictograma.svg"
 }
