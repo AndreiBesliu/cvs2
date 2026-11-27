@@ -268,12 +268,15 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
 - **La owner:**
   - de încercat virgula din numele elementelor (3.Av) și Escape cu focusul pe pagină în cele șapte ferestre (3.Aw),
     după lotul 52;
-  - cu recomandarea aplicată, cele cinci alegeri ale toroidalei din ADR 0303 (1a–5a: pasul lateral rămâne câmp, cu
-    creasta alături; profilul pe o parte cu adâncimea cel puțin raza; elicea simulată exact; finisarea reliefului, a
-    liniei reliefului; refuzată ca freză de rest, a fundului plat și a dopului);
+  - **alegerile cu recomandarea aplicată sunt ale owner-ului din 27.11, dimineața** („zi-le sesiunilor sa continue cu
+    recomandarile, acolo unde inca asteapta”): ADR 0303, balamaua, placa turnantă, ADR 0292 1a, cotele (d-1, întrebarea
+    10), ADR 0313 §8, auditul elicelor (1a–4a, feliile 1–7, la linia atelierului), construcțiile, pachetul Easy 3Draw
+    peste 0,5 MB, fondul semnului; mai jos rămân doar încercările, tipăririle, probele pe mașină și întrebările de proces;
+  - **sesiunea designului** („Variante design CVS2”, pe calculatorul owner-ului): întreabă dacă pornește felia zoomului
+    (Lipire și Grilă cu nume, zoomul de 64 px, gesturile); din cloud nu se poate atinge, deci răspunsul i-l dă owner-ul acolo;
   - după lotul 54: de tipărit balamaua (3.Ck-2: cât de ușor intră clema pe bolț, cât de greu se rotește); cu
     recomandarea aplicată, alegerile ei (două jumătăți, lățimea 1–2 și lungimea 1–4, axa la 4 mm după capătul plăcii,
-    jocul ca un câmp al clemei);
+    jocul ca un câmp al clemei, confirmate);
   - după lotul 53: de încercat începutul programului în Rezultat (28.8↑r), rândul editabil al finisării și al
     degroșării (18.1↑d-4), toleranțele, lungimile, Măsoară între foi și setările cotelor în cont (10.4↑e-1, e-2, f, g); de tipărit placa turnantă
     (3.Ck-1: cât de greu se rotește, cât de bine stă pe pivot); cu recomandarea aplicată, alegerile plăcii turnante
@@ -284,19 +287,9 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
     aici, iar felia era deja în lot: unirea a rămas aici);
   - proba pe mașină a centrului foii ca origine XY0 (28.8↑o): zero-ul în mijlocul foii, întâi în aer;
   - proba pe mașină a lui 28.8↑p (Z-ul sigur și parcarea; pe test din 26.11, 18:43), întâi în aer: un Z sigur nou și o parcare în afara foii;
-  - cele două alegeri ale cotelor din 10.4↑d-1, cu recomandarea liniei aplicată: pasul liniilor de bază (două
-    înălțimi de cifră, fără setare) și locul lui „Cotează selecția” (meniul de clic dreapta); și întrebarea 10, din
-    d-3: cotele din desenul raportului foilor, mărite cât să se citească (aplicat) sau la mărimea adevărată;
-  - alegerile reliefului din 18.1↑d (ADR 0313 §8), cu recomandarea liniei aplicată: strategia degroșării (trepte Z
-    pe liniile finisării), adaosul implicit (0,5 mm), freza doar plată, avertismentul la finisarea pusă înaintea
-    degroșării, finisarea pornită tot de la fața plăcii, liniile finisării la 1,5 mm pe placa 18; și una nepornită:
-    rotunjirea în jos a pasului lateral la liniile aliniate (azi, la cel mai apropiat număr de celule, deci și în
-    sus);
   - tăierea plăcii 18 (relieful: MDF de 18 mm, plata Ø6 și bila Ø6; `docs/etape/placa-18.md`);
   - de tipărit decorațiunile de Crăciun (fulgul, steaua, brăduțul; un glob decupat și unul în relief, în două culori;
     un ornament cu nume în relief și unul decupat; brăduțul LEGO);
-  - cele patru întrebări din auditul elicelor (recomandările 1a, 2a, 3a, 4a; `docs/linii/audit-elice.md`) și
-    arhivarea sesiunii elicelor;
   - de încercat în „Modelul” din Easy 3Draw 18.39.0, cu întrebările liniei (fișa etapei 3): se răstoarnă piesa cum
     te aștepți, sunt bune numele butoanelor („Răstoarnă ↓”, „Răstoarnă →”), ajung jumătățile de pas la piesele Technic;
   - de încercat verificarea din „Modelul” (18.40.0), cu întrebările liniei: cuvintele „plutește” și „intră în alta”,
@@ -307,11 +300,9 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
   - de încercat construcțiile gata din „Modelul” (18.42.0; pe test din 26.11, 17:35), cu alegerile liniei aplicate (ADR 0284, „Implementat
     (3.Ci)”): cele patru construcții și mărimile lor, roțile în trei mărimi, rapoartele cutiei, construcția deschisă ca
     una nouă; pentru 3.Ck (balamaua și placa turnantă), tipărirea bilei și a cupei;
-  - pachetul Easy 3Draw, 563,1 kB (18.42.0), peste pragul de 0,5 MB din ADR 0284 (recomandarea: mergem mai departe, ne uităm
-    din nou la 1 MB); tipărirea pieselor noi (cama, roata cu palete, cadrul, melcul cu roata de 24);
+  - tipărirea pieselor noi (cama, roata cu palete, cadrul, melcul cu roata de 24);
   - verificarea juridică (GDPR) a utilizării aplicației, înaintea live-ului (ADR 0262 §3); pe test, colectarea merge
     din 24.11;
-  - fondul semnului lui Easy 3Draw (gri-albăstrui, nu crem) și rândul de „ce e nou” al lui 18.20.0;
   - ce face sesiunea principală între loturi (întrebarea lui din 24.11, „tu ce poti sa faci intre timp?”): publicarea
     mai scurtă (fără al doilea complet pe `main` când codul e identic cu cel verificat; schimbă o regulă a porților),
     lista „ce e nou pe test, de încercat”, rezumatul pentru verificarea juridică, lista ramurilor unite de șters.
@@ -322,10 +313,10 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
   zile, totalul a crescut cu 87 kB (cotele 25,3, fereastra exportului 16,3, frezele 13,9, relieful 12,7). Regulile
   feliilor rămân: ce nu trebuie înaintea primei randări stă la cerere, calculul greu în worker, iar felia își spune
   în raport cât adaugă la total și la pornire.
-- **Documentul e v30** (degroșarea reliefului, 18.1↑d-1, în `main` din 26.11, ADR 0313: operația `degrosare`, cu
-  câmpul ei; v29, finisarea reliefului și freza bilă, 18.1↑c, din 25.11, ADR 0312; v28, forma `relief`, 18.1↑a,
-  din 24.11; v27, frezele, 16.A↑b-1). Cotele nu cer schemă. **Următorul liber e v31.** După el: toroidala și profilul
-  desenat ale frezelor; adaosul și finisarea pe profil (9a din ADR 0291): numărul se dă când felia ajunge la
+- **Documentul e v31** (forma toroidalei, 16.A↑e-1, în `main` din 27.11, ADR 0303; v30, degroșarea reliefului,
+  18.1↑d-1, din 26.11, ADR 0313: operația `degrosare`, cu câmpul ei; v29, finisarea reliefului și freza bilă, 18.1↑c, din 25.11, ADR 0312; v28, forma `relief`, 18.1↑a,
+  din 24.11; v27, frezele, 16.A↑b-1). Cotele nu cer schemă. **Următorul liber e v32.** După el: profilul desenat al
+  frezelor; adaosul și finisarea pe profil (9a din ADR 0291): numărul se dă când felia ajunge la
   migrare, iar unirile cu schemă intră în `main` în ordinea numerelor. O probă care citește documentul salvat cere
   versiunea curentă (`placute.spec.ts` a căzut cu `schema: 26` în completul liniei frezelor).
 - **De urmărit:** în panoul foii, la 1400 px, etichetele „Numele” și „Materialul” apar tăiate la o literă (văzut de

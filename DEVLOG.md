@@ -16696,3 +16696,14 @@ ramură, după push).
 - **Otrăvurile:** 17 / 17 prinse (`test/otravuri/16.A-e5.py`: 12 pe lucrare și fereastră, 4 pe oracol, 1 e2e).
 - **Mărimea:** totalul 937,8 / 1 000 kB (+0,4); pornirea neschimbată (111,7 kB; cu ușa 117,0, cu Atelierul 117,4 / 125).
 - **Neschimbate:** nimic pe server; documentul rămâne v31; programul fără forme rotunde, octet cu octet.
+
+## 2026-11-27 — Sesiunea principală în cloud: liniile continuă cu recomandările (Model: Claude Opus 5.5)
+
+**Prompt:** „zi-le sesiunilor sa continue cu recomandarile, acolo unde inca asteapta”
+**Started:** 27.11, 07:38. **Completed:** 27.11, 08:38.
+
+- **Mesajele (07:45):** frezele (ADR 0303 confirmat; e-5, e-6, f, g), atelierul (balamaua, placa turnantă; auditul
+  elicelor, feliile 1–7), relieful (ADR 0313 §8; cele trei felii lăsate la owner, apoi finisarea cu toroidala), exportul
+  (ADR 0292 1a; lista, constatarea 14). Cotele n-au nimic de pornit.
+- **Sesiunea designului**, pe calculatorul owner-ului, nu primește din cloud (doar de pe un dispozitiv de încredere).
+- **Documentele:** decizia în `CLAUDE.md`; lista owner-ului și versiunea documentului (v31) în `docs/linii/principala.md`.
