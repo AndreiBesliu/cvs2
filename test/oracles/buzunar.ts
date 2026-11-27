@@ -47,6 +47,13 @@
  *     R_a, drumul ei la adâncime cel puțin cât a lui q): dist(q, drum) > R_a − R − `TOL.rest` (altfel tot discul ei e în ce
  *     a scos aceea: taie aer), iar nicio bucată mai lungă de `TOL.restLungime` nu merge pe pragul R_a − R (pe lângă un
  *     perete deja tăiat).
+ *  7. FUNDUL CU BILA SAU CU TOROIDALA (ADR 0303 §4, felia 16.A↑e-5; silueta din `simulare.ts`, crescătoare în r): în zona
+ *     centrului, punctul de la distanța d de drumul frezei operației la adâncimea finală rămâne la h(d) deasupra fundului;
+ *     cum d ≤ s (pasul lateral), fundul nu stă mai sus de h(s) (`creasta` în măsuri, cel mai înalt punct al grilei). Între
+ *     două inele drepte, la s una de alta, punctul cel mai depărtat e la mijloc: h(s / 2) = ρ − √(ρ² − ((s − 2a) / 2)²),
+ *     cu a = R − ρ (la bilă a = 0); pe colțurile inelelor și pe mijlocul buzunarului, mai mult, până la h(s). Pereții: centrul
+ *     stă la cel puțin R de margine (2.), iar raza siluetei e cel mult R la orice înălțime, deci freza nu trece de desen;
+ *     racordarea de rază ρ de la fund e a frezei. După o freză rotundă, frezele de rest se refuză (și o freză de rest rotundă).
  * Plus refuzurile cerute lucrării de aceleași ADR-uri (0069 §6, 0073 §2, 0076 §1, 0093 §1, 0094 §1): `refuzuriAsteptate`
  * le prezice din document, iar proba le cere și aplicației.
  *
@@ -101,7 +108,7 @@ export type FormaO =
 export type NodO =
   | { readonly tip: 'element'; readonly id: string; readonly forma: FormaO; readonly matrice: MatO }
   | { readonly tip: 'grup'; readonly id: string; readonly matrice: MatO; readonly copii: readonly NodO[] };
-export type SculaO = { readonly numar: number; readonly diametru: number; readonly forma?: { readonly tip: string; readonly unghi?: number; readonly varf?: number } };
+export type SculaO = { readonly numar: number; readonly diametru: number; readonly forma?: { readonly tip: string; readonly unghi?: number; readonly varf?: number; readonly raza?: number } };
 export type CoborareO = { readonly fel: string; readonly unghi?: number; readonly lungime?: number; readonly raza?: number };
 export type FrezaRestO = { readonly scula: SculaO; readonly pasLateral: number };
 export type OperatieO = {
@@ -465,6 +472,9 @@ function refuzuriBucata(b: Bucata): string[] {
   const op = b.op;
   const R = op.scula.diametru / 2;
   if (op.scula.forma?.tip === 'v') rez.push(`${b.id}: freza în V pe un buzunar`);
+  // ADR 0303 §4 (felia 16.A↑e-5): după o bilă sau o toroidală, nicio freză de rest (geometria frezelor de rest e a frezei plate).
+  const rotunda = (f: SculaO['forma']): boolean => f?.tip === 'bila' || f?.tip === 'toroidala';
+  if (rotunda(op.scula.forma) && (op.rest ?? []).length > 0) rez.push(`${b.id}: frezele de rest după o freză ${op.scula.forma?.tip === 'bila' ? 'bilă' : 'toroidală'}`);
   if (op.pasLateral === undefined) rez.push(`${b.id}: buzunarul n-are pasul lateral`);
   else if (!(op.pasLateral > 0 && op.pasLateral <= R + 1e-9)) rez.push(`${b.id}: pasul lateral ${op.pasLateral} nu e în (0, ${R}]`);
   const c = op.coborare;
@@ -481,6 +491,7 @@ function refuzuriBucata(b: Bucata): string[] {
   let inainte = op.scula.diametru;
   for (const r of op.rest ?? []) {
     if (r.scula.forma?.tip === 'v') rez.push(`${b.id}: freza de rest T${r.scula.numar} e în V`);
+    if (rotunda(r.scula.forma)) rez.push(`${b.id}: freza de rest T${r.scula.numar} e ${r.scula.forma?.tip === 'bila' ? 'bilă' : 'toroidală'}`);
     if (!(r.scula.diametru < inainte)) rez.push(`${b.id}: freza de rest T${r.scula.numar} nu e mai mică decât cea dinainte`);
     if (!(r.pasLateral > 0 && r.pasLateral <= r.scula.diametru / 2 + 1e-9)) rez.push(`${b.id}: pasul frezei de rest T${r.scula.numar} e peste raza ei`);
     inainte = r.scula.diametru;
@@ -700,6 +711,9 @@ function profilScula(s: SculaO): Profil {
       ? { tip: 'profil', diametru: D, puncte: [[0, 0], [varf / 2, 0], [D / 2, (D / 2 - varf / 2) / Math.tan(((s.forma.unghi / 2) * Math.PI) / 180)]] }
       : { tip: 'v', diametru: D, unghi: s.forma.unghi };
   }
+  // ADR 0303: bila și toroidala (cu raza colțului ρ), cu silueta oracolului simulării.
+  if (s.forma?.tip === 'bila') so = { tip: 'bila', diametru: D };
+  if (s.forma?.tip === 'toroidala' && typeof s.forma.raza === 'number') so = { tip: 'toroidala', diametru: D, raza: s.forma.raza };
   return { raza: D / 2, h: silueta(so).h, plata: so.tip === 'plata' };
 }
 
@@ -811,7 +825,7 @@ function inGaleata(G: Galeti, q: Pt): readonly number[] {
 
 export type FelProblema =
   | 'program' | 'eticheta' | 'trecere' | 'rapida' | 'fund' | 'perete' | 'regiune' | 'acoperire' | 'pas-lateral' | 'nivel'
-  | 'linii' | 'sens' | 'coborare' | 'rest';
+  | 'linii' | 'sens' | 'coborare' | 'rest' | 'creasta';
 
 export type ProblemaBuzunar = { readonly fel: FelProblema; readonly buzunar: string; readonly mesaj: string };
 
@@ -836,6 +850,12 @@ export type MasuriBuzunar = {
   readonly bucleDePerete: number;
   /** Celulele deschiderii judecate, cele neacoperite și cele ale zonei centrului lăsate la peste s de drum. */
   readonly celule: { readonly deschidere: number; readonly neacoperite: number; readonly zona: number; readonly pesteS: number };
+  /**
+   * Cu bila sau cu toroidala (ADR 0303, felia 16.A↑e-5): cel mai înalt punct lăsat pe fund în zona centrului (δ ≥ R), la
+   * 0,001 mm: h(d), cu d distanța exactă la drumul frezei operației la adâncimea finală și h silueta frezei; lipsă la freza
+   * plată (fundul ei e plat oriunde ajunge drumul).
+   */
+  readonly creasta?: number;
   /** Cea mai mare pantă (Δz / L) a unei coborâri în material a frezei operației, și coborârile verticale în material. */
   readonly pantaMaxima: number;
   readonly plonjariInMaterial: number;
@@ -1071,6 +1091,18 @@ function judecaBucata(
   };
   let deschidere = 0, neacoperite = 0, zona = 0, pesteS = 0;
   let ultimA = -1, ultimS = -1;
+  // 7. Fundul cu bila sau cu toroidala (ADR 0303, felia 16.A↑e-5): în zona centrului, înălțimea lăsată deasupra fundului e
+  // h(d), cu d distanța la cel mai apropiat drum al frezei operației la adâncimea finală (silueta e crescătoare în r).
+  const ps = profilScula(op.scula);
+  const rotunda = op.scula.forma?.tip === 'bila' || op.scula.forma?.tip === 'toroidala';
+  let creasta = 0;
+  // Distanța se caută până la R (nu doar până la s): așa, un pas lateral mai mare decât cel din document se vede și aici.
+  const GR = rotunda ? galeti(cutieG, laFundPrincipala.map((m) => ({ prim: m.prim, raza: R }))) : GS;
+  const celMaiAproapeR = (q: Pt): number => {
+    let m = Infinity;
+    for (const k of inGaleata(GR, q)) m = Math.min(m, aproape(q, laFundPrincipala[k]!.prim).d);
+    return m;
+  };
   for (let j = 0; j < G.ny; j++) {
     for (let i = 0; i < G.nx; i++) {
       const d = G.delta[idx(i, j)]!;
@@ -1101,11 +1133,18 @@ function judecaBucata(
             if (pesteS <= 3) raport('pas-lateral', `punctul (${rot3(q.x)}, ${rot3(q.y)}) al zonei centrului e la peste ${s} mm de drumul frezei T${principala.numar}`);
           }
         }
+        if (rotunda) {
+          const dq = celMaiAproapeR(q);
+          if (dq <= R) creasta = Math.max(creasta, ps.h(dq));
+        }
       }
     }
   }
   if (neacoperite > 3) raport('acoperire', `în total ${neacoperite} din ${deschidere} celule ale deschiderii neacoperite`);
   if (pesteS > 3) raport('pas-lateral', `în total ${pesteS} din ${zona} celule ale zonei centrului la peste ${s} mm de drum`);
+  // Pe hârtie (ADR 0303 §4, e-5): orice punct al zonei centrului e la cel mult s de drum, deci fundul nu stă mai sus de h(s).
+  const creastaLimita = ps.h(Math.min(R, s + TOL.linie));
+  if (rotunda && creasta > creastaLimita + TOL.rotunjire) raport('creasta', `fundul lasă ${rot3(creasta)} mm, peste creasta de ${rot3(creastaLimita)} mm a pasului lateral de ${s} mm`);
 
   // 3'. Inelele pe niveluri, sau liniile. 4. Sensul.
   const pePerete = (m: Mutare): boolean => [0, 0.25, 0.5, 0.75, 1].every((t) => Math.abs(delta(xy(punctMutare(m, t)), b.prim) - R) <= TOL.perete);
@@ -1265,6 +1304,7 @@ function judecaBucata(
     treceri: [...treceri].sort((u, v) => v - u),
     niveluri, inele, linii: liniiUnice.map(rot3), perete, bucleDePerete,
     celule: { deschidere, neacoperite, zona, pesteS },
+    ...(rotunda ? { creasta: rot3(creasta) } : {}),
     pantaMaxima, plonjariInMaterial, rest,
   };
 }

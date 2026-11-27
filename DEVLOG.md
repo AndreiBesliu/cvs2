@@ -16646,3 +16646,40 @@ program. Dacă cere un câmp nou în document, v32 e liber și ți-l dau la cere
   probă cu raza 1,5.
 - **Mărimea:** totalul 937,4 / 1 000 kB (+0,9); pornirea neschimbată (111,7 kB; cu ușa 117,0, cu Atelierul 117,4 / 125).
 - **Neschimbate:** nimic pe server; documentul rămâne v31; programul fără forme rotunde, octet cu octet.
+
+## 2026-11-27 — 16.A↑e-5: buzunarul cu bila și cu toroidala (Model: Claude Opus 5.5)
+
+**Prompt:** sesiunea principală, după unirea lui e-4 (`72263843`): „Poți porni e-5 (buzunarul cu bila și cu toroidala) pe aceeași
+ramură, după ce aduci `main`: mișcă mașina, deci întâi oracolul (fundul și creasta pe hârtie, pasul pe trecere, peretele), apoi
+e-6.” **Started:** 27.11, 05:30, pe `wip/16.A-freze-e`, peste `72263843`. **Completed:** 27.11 (în container; completul pe
+ramură, după push).
+
+- **Oracolul întâi** (`test/oracles/buzunar.ts`, extins din ADR 0303):
+  - silueta bilei și a toroidalei pe câmpul trecerilor (pasul pe trecere);
+  - refuzurile rotunde: freze de rest după o freză rotundă, o freză de rest rotundă;
+  - judecata a 7-a, fundul: în zona centrului, h(d), cu d distanța exactă la drumul de la adâncimea finală, căutată până la R,
+    cel mult h(s).
+
+  Cazurile pe hârtie: bila pe dreptunghiul 100 × 60 (măsurat 0,321, între 0,3135 și 0,3498) și toroidala pe cercul R20 (0,063,
+  între 0,0627 și 0,0858). Perechea care pică e programul de 2,4 judecat față de un pas lateral de 1,2. Pereții îi judecă tot
+  regula centrului la R de margine.
+- **Creasta, precizată:** formula din ADR, h(s / 2), e doar creasta dintre două inele. Pe colțurile inelelor (0,586·s) și pe
+  mijlocul buzunarului (până la s), fundul ajunge până la h(s), deci fereastra le spune pe amândouă.
+- **Lucrarea:** buzunarul cu bila și cu toroidala ia drumul frezei plate de același Ø, mișcare cu mișcare (inelele, liniile,
+  elicea). `motivFormaPeOperatie` primește restul operației: o freză rotundă nu merge cu freze de rest (`rotunda-rest`) sau cu
+  o incrustație cu pereți drepți (`rotunda-incrustatie`). Refuzurile lucrării îi spun motivul, iar Tăierea nu le oferă acolo.
+- **Creasta pe hârtie:** `src/model/creasta.ts` (`inaltimeFreza`, `creastaBuzunar`). `creastaPePlan` a reliefului trece pe
+  aceeași siluetă, iar pentru toroidală dădea 0.
+- **Fereastra exportului:**
+  - bila și toroidala în lista formei și pe buzunar;
+  - regula rândului e `rotundaPermisa`, comparată într-o probă cu cea a modelului;
+  - creasta, sub pasul lateral, vine din rândul „pe hârtie” (`hartieRand`);
+  - motivul `rotunda` spune unde merg formele rotunde și ce le oprește.
+- **Probele:**
+  - `test/unit/buzunar.rotunda.test.ts`, scrisă întâi: regula, drumul, refuzurile, creasta pe hârtie, buzunarul simulat
+    (creasta dintre inele, racordarea, peretele, cel mai înalt punct), regula ferestrei;
+  - `test/e2e/export.rotunda.spec.ts` (buzunarul cu bila, cu oracolul simulării pe octeții din browser);
+  - probele vechi care cereau refuzul pe buzunar au fost întoarse;
+  - manualul, în ambele limbi.
+- **Otrăvurile:** `test/otravuri/16.A-e5.py`.
+- **Neschimbate:** nimic pe server; documentul rămâne v31; programul fără forme rotunde, octet cu octet.

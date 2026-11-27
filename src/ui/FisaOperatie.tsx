@@ -237,7 +237,9 @@ export function FisaOperatie({ cheie, loc, total: totalFisa, c: ctx }: {
   // Greșeala pe câmp (constatarea 15): doar câmpul frezei care nu trece se înroșește.
   const sculaRea = campuriSculaGresite(p);
   // Bila și toroidala se aleg doar pe linie (canelura, ADR 0303 §4): lucrarea le refuză în rest.
-  const peLinieRotunda = p.tip === 'profil' && p.latura === 'pe-linie';
+  // Bila și toroidala se oferă pe linie (canelura) și în buzunar (ADR 0303, feliile 16.A↑e-4 și e-5); cu freze de rest sau cu
+  // incrustație cu pereți drepți, alegerea se spune greșită (`rotundaPermisa`).
+  const peLinieRotunda = (p.tip === 'profil' && p.latura === 'pe-linie') || p.tip === 'buzunar';
   // Turația, avansul și plonjarea, doar pe o freză scrisă de mână (ADR 0291 §3, felia 28.8↑p); goale, cele implicite.
   const regimRau = p.origineScula === null ? campuriRegimGresite(p.regimMana) : [];
   // Rezumatul lor, pe rândul strâns: valorile cu care taie freza (cele scrise, cu golurile luate din lucrare).
@@ -583,6 +585,12 @@ export function FisaOperatie({ cheie, loc, total: totalFisa, c: ctx }: {
             <input type="text" inputMode="decimal" value={p.pasLateral} data-camp="pas-lateral" disabled={doarCitire}
               aria-invalid={!b.pasLateral} onChange={(ev) => { schimba(o.cheie, { pasLateral: ev.target.value }); }} />
           </label>
+          {/* Creasta de pe fund cu bila sau cu toroidala (ADR 0303 §4, felia 16.A↑e-5; întrebarea 1a: lângă pasul lateral). */}
+          {h.creasta && (
+          <span className="nota" data-nota="creasta-buzunar">{t('export.creasta-buzunar', {
+            intre: fmtFreza.format(h.creasta.intreInele), max: fmtFreza.format(h.creasta.maxima),
+          })}</span>
+          )}
           {p.strategie === 'paralel' && (
           <label title={t('export.paralel.unghi.titlu')}>
             {t('export.paralel.unghi')}

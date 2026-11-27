@@ -58,14 +58,19 @@ test('frezele oferite: doar cele care se potrivesc tuturor operațiilor alese, �
   // Un profil pe exterior și un V-carve: nicio freză nu merge la amândouă.
   assert.deepEqual(frezePotrivite(BIBLIOTECA, [op('profil', 'exterior'), op('vcarve', 'interior')]), []);
   assert.deepEqual(frezePotrivite(BIBLIOTECA, []), []);
-  // Felurile fără CAM încă (conica, burghiul) nu se oferă nicăieri; bila și toroidala (ADR 0303, felia 16.A↑e-4), doar pe linie
-  // (canelura), unde lucrarea le primește.
+  // Felurile fără CAM încă (conica, burghiul) nu se oferă nicăieri; bila și toroidala (ADR 0303), pe linie (canelura, felia
+  // 16.A↑e-4) și în buzunar (16.A↑e-5), unde lucrarea le primește: pe un buzunar cu freze de rest sau cu incrustație cu
+  // pereți drepți, nu.
   const rotunde = [{ ...BIBLIOTECA[0]!, id: 'b6', fel: 'bila' as const }, { ...BIBLIOTECA[0]!, id: 't6', fel: 'toroidala' as const, raza: 1 }];
   const fara = [{ ...BIBLIOTECA[0]!, id: 'c6', fel: 'conica' as const, unghi: 15, raza: 0.5 }, { ...BIBLIOTECA[0]!, id: 'u6', fel: 'burghiu' as const, unghi: 118 }];
-  for (const o2 of [op('profil', 'exterior'), op('vcarve', 'interior'), op('buzunar', 'interior'), op('gaurire', 'interior')]) {
-    assert.deepEqual(frezePotrivite([...fara, ...rotunde, ...BIBLIOTECA], [o2]), frezePotrivite(BIBLIOTECA, [o2]));
+  const toate = [...fara, ...rotunde, ...BIBLIOTECA];
+  for (const o2 of [op('profil', 'exterior'), op('vcarve', 'interior'), op('gaurire', 'interior')]) {
+    assert.deepEqual(frezePotrivite(toate, [o2]), frezePotrivite(BIBLIOTECA, [o2]));
   }
-  assert.deepEqual(frezePotrivite([...fara, ...rotunde, ...BIBLIOTECA], [op('profil', 'pe-linie')]).map((f) => f.id), ['b6', 't6', 'p6', 'p3', 'v60', 'g30']);
+  assert.deepEqual(frezePotrivite(toate, [op('profil', 'pe-linie')]).map((f) => f.id), ['b6', 't6', 'p6', 'p3', 'v60', 'g30']);
+  assert.deepEqual(frezePotrivite(toate, [op('buzunar', 'interior')]).map((f) => f.id), ['b6', 't6', 'p6', 'p3']);
+  assert.deepEqual(frezePotrivite(toate, [{ ...op('buzunar', 'interior'), rest: [{}] }]).map((f) => f.id), ['p6', 'p3']);
+  assert.deepEqual(frezePotrivite(toate, [{ ...op('buzunar', 'interior'), incrustatie: { fel: 'drept' } }]).map((f) => f.id), ['p6', 'p3']);
 });
 
 test('copia din bibliotecă: numărul dat, numele, diametrul, forma, originea (id, rev), valorile de lucru și tăișul', () => {

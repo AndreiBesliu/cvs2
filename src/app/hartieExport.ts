@@ -14,6 +14,7 @@
 import { felGaurire, pasiCiocanire, RETRAGERE_PARTIALA } from '../cam/gaurireFel.ts';
 import { adancimeTaiata } from '../cam/prinFoaie.ts';
 import { adancimiTreceri } from '../cam/treceri.ts';
+import { creastaBuzunar } from '../model/creasta.ts';
 import type { HartieRand, IntrareHartie } from '../ui/exportRand.ts';
 
 export function hartieRand(i: IntrareHartie): HartieRand {
@@ -23,6 +24,13 @@ export function hartieRand(i: IntrareHartie): HartieRand {
   else adancime = i.grosime === undefined ? i.adancime : adancimeTaiata({ tip: i.tip, adancime: i.adancime, incrustatie: i.incrustatie }, i.grosime, i.supracursa, i.prinFoaie);
   const t = adancime !== null && i.pas !== null ? adancimiTreceri(adancime, i.pas) : null;
   const treceri = t === null || typeof t === 'string' ? null : t;
+  if (i.tip === 'buzunar') {
+    // Creasta de pe fund (ADR 0303 §4, felia 16.A↑e-5): doar cu bila sau cu toroidala și cu freza și pasul citite.
+    const f = i.forma, D = i.diametruScula, s = i.pasLateral ?? null;
+    const rotunda = f?.tip === 'bila' || f?.tip === 'toroidala';
+    const creasta = rotunda && D !== null && s !== null ? creastaBuzunar({ numar: 0, nume: '', diametru: D, forma: f }, s) : null;
+    return { adancime, treceri, gaurire: null, creasta };
+  }
   if (i.tip !== 'gaurire') return { adancime, treceri, gaurire: null };
   const D = i.diametruScula;
   const cercuri = i.diametre.map((d) => ({ diametru: d, fel: D === null ? 'gresit' as const : felGaurire(d, D) }));

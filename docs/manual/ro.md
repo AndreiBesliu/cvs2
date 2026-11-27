@@ -1966,9 +1966,15 @@ mic liber. Roșii sunt doar frezele cu numărul ciocnit.
 **Bila și toroidala pe linie.** Pe o tăietură **pe linie** (o canelură), forma poate fi și **bilă** sau **toroidală**; la
 toroidală, **Raza colțului (mm)** e raza colțului rotunjit, peste 0 și sub jumătatea diametrului (cu raza cât jumătatea
 diametrului, freza e o bilă). Centrul frezei merge pe linie, ca la freza plată, iar canelura iese cu fundul rotund (la bilă) sau
-plat, cu colțurile rotunjite (la toroidală). Pe o parte, în buzunar, la găurire și în V-carve, bila și toroidala nu se taie
-încă: alege „pe linie” sau altă freză. Raportul foilor numește freza („bilă”, „toroidală r1,5”), ca la mașină să se monteze cea
-potrivită.
+plat, cu colțurile rotunjite (la toroidală). Pe o parte, la găurire și în V-carve, bila și toroidala nu se taie încă: alege
+„pe linie” sau altă freză. Raportul foilor numește freza („bilă”, „toroidală r1,5”), ca la mașină să se monteze cea potrivită.
+
+**Bila și toroidala în buzunar.** Și pe un **buzunar**, forma poate fi **bilă** sau **toroidală**. Inelele sunt ale frezei plate
+de același diametru (centrul la jumătatea diametrului de perete), deci pereții nu trec de desen, iar la fund rămâne colțul rotunjit
+al frezei. Fundul nu iese plat: între inele rămâne o creastă, spusă sub **Pasul lateral**, ca „Creasta pe fund: 0,25 mm între
+inele, cel mult 1,2 mm”. Pe colțurile inelelor și pe mijlocul buzunarului creasta e mai mare, până la valoarea a doua. Un pas
+lateral mai mic micșorează creasta. Cu o freză de rest sau cu o incrustație cu pereți drepți, exportul se oprește: frezele de rest
+și dopul cer o freză plată.
 
 Lista **Din frezele mele**, în grupul Freza, are frezele din biblioteca ta (vezi [Frezele mele](#freze)) care merg pe tăietura
 operației: plate pe un profil, un buzunar sau o găurire, în V la V-carve. Aleasă, freza își pune pe operație numărul T (al ei,
