@@ -437,6 +437,14 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   exportului) până când fereastra o poate purta** (`frezePotrivite`, `frezePeRanduri` cer `formaPeRand`): altfel
   Exportă ar scrie o plată în locul ei. Fără forme rotunde, programul de azi, octet cu octet. Sub-feliile din ADR 0303,
   renumerotate: e-4 intrarea în proiect, e-5 buzunarul, e-6 profilul pe o parte. Felia: pornirea +0, totalul +0,1 kB.
+  **Bila și toroidala în proiect (ADR 0303, felia 16.A↑e-4)** gata pe 27.11, unită în `main` pe 27.11 (`72263843`):
+  copia rândului din fereastra exportului poartă bila și toroidala, cu raza colțului (`FormaRand`, `razaColt`);
+  identitatea frezei (regula T, nota bibliotecii, recunoașterea) ține felul și raza; Exportă scrie forma rotundă, iar
+  fără nicio schimbare iese aceeași freză, octet cu octet; în fișa operației, bila și toroidala apar doar pe linie,
+  toroidala cu „Raza colțului (mm)”, judecată în (0, Ø/2); frezele în plus ale rândului rămân plate sau în V; toroidala
+  nu mai e „în curând”. **O formă de freză care intră pe rândurile exportului se probează scrisă în program, cu
+  comentariul sculei citit** (`test/e2e/export.rotunda.spec.ts`), **iar o probă a copiei folosește o valoare diferită de
+  implicit** (otrava F15 scăpa cu raza 1). Documentul rămâne v31; nimic pe server. Felia: pornirea +0, totalul +0,9 kB.
   **Plafonul pornirii 120 kB (ADR 0145, decizia owner-ului din 24.11, „ok, ridica plafonul pornirii la 120 kB”):** după
   lotul al paisprezecelea, pornirea era 109,9 kB, cu ușa 114,4 și cu Atelierul 114,7 / 115, iar feliile următoare ale
   frezelor, exportului și aranjamentelor nu mai încăpeau în 0,3 kB. Poarta judecă tot trei măsuri sub același plafon
@@ -2081,6 +2089,27 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 27.11.2026, dimineața (a șaizeci și treia unire din cloud): **bila și toroidala în proiect (16.A↑e-4), unite în
+  `main`** (sesiunea principală, ramura `unire-2711f`, din `621e0069`). Linia frezelor, ramura `wip/16.A-freze-e`,
+  `ea528e7d` (cu `main` `3ecb5678` adus), PR-ul `AndreiBesliu/cvs2#73` (ADR 0303), unită în `72263843`: copia rândului
+  din fereastra exportului poartă bila și toroidala, cu raza colțului (`FormaRand`, `razaColt`); identitatea frezei
+  (regula T, nota bibliotecii, recunoașterea) ține felul și raza, deci o bilă, o toroidală cu altă rază și o plată de
+  același Ø sunt trei freze; Exportă scrie forma rotundă, iar fără nicio schimbare iese aceeași freză, octet cu octet
+  (câmpurile necunoscute ale formei se păstrează); în fișa operației, bila și toroidala apar doar pe linie, toroidala
+  cu „Raza colțului (mm)”, judecată în (0, Ø/2), și cu capătul rotund în desen; pe altă latură, exportul se oprește,
+  cu motivul; frezele în plus ale rândului rămân plate sau în V; **toroidala iese din „în curând”**: Tăierea și
+  rândurile exportului oferă bila și toroidala doar pe linie. Probele, scrise întâi (`test/unit/export.rotunda.test.ts`,
+  `test/e2e/export.rotunda.spec.ts`: programul scris cu toroidala și cu bila, cu comentariul sculei citit); otrăvurile
+  19 / 19 (F15, copia toroidalei cu raza 1, scăpase cât proba folosea chiar raza 1, prinsă cu raza 1,5). Documentul
+  rămâne v31; nimic pe server; programul fără forme rotunde, octet cu octet. `main` adusese peste ramură doar
+  documente, deci **arborele unirii are exact codul lui `ea528e7d`** și a intrat pe porțile liniei: completul
+  45939708022 pe `8449ef46` (între el și `ea528e7d`, doar o probă unitară și documente), verde: unit 10 912 / 0 (12
+  sărite, pe Linux), e2e 1 009 / 1 009, funcțiile pe emulatoare 142 / 142, paginile 62 / 62; rapidul, verde pe
+  `ea528e7d`; totalul 937,4 / 1 000 kB (+0,9), pornirea 111,7 kB (cu ușa 117,0, cu Atelierul 117,4 / 125). **Lotul 57
+  (16.A↑e-3) e pe test din 27.11, 07:08** (`3ecb5678`); felia aceasta pleacă acum (lotul 58). Linia frezelor pornește
+  e-5 (buzunarul cu bila și cu toroidala; mișcă mașina, deci întâi oracolul), apoi e-6 (profilul pe o parte). **La
+  owner:** proba pe mașină a canelurii cu bila sau cu toroidala (acum se pot alege în proiect, pe linie); întrebările
+  ADR 0303 (1a, 2a, 4a, 5a), cu recomandarea aplicată; restul listei, neschimbat.
 - 27.11.2026, dimineața (a șaizeci și doua unire din cloud): **canelura cu bila și cu toroidala (16.A↑e-3), unită în
   `main`** (sesiunea principală, ramura `unire-2711d`, din `7f3938aa`). Linia frezelor, ramura `wip/16.A-freze-e`,
   `3a55a0c2` (cu `main` `7f3938aa` adus), PR-ul `AndreiBesliu/cvs2#72` (ADR 0303), unită în `db066160`: profilul pe
