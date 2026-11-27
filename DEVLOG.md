@@ -16693,5 +16693,6 @@ ramură, după push).
   - `test/e2e/export.rotunda.spec.ts` (buzunarul cu bila, cu oracolul simulării pe octeții din browser);
   - probele vechi care cereau refuzul pe buzunar au fost întoarse;
   - manualul, în ambele limbi.
-- **Otrăvurile:** `test/otravuri/16.A-e5.py`.
+- **Otrăvurile:** 17 / 17 prinse (`test/otravuri/16.A-e5.py`: 12 pe lucrare și fereastră, 4 pe oracol, 1 e2e).
+- **Mărimea:** totalul 937,8 / 1 000 kB (+0,4); pornirea neschimbată (111,7 kB; cu ușa 117,0, cu Atelierul 117,4 / 125).
 - **Neschimbate:** nimic pe server; documentul rămâne v31; programul fără forme rotunde, octet cu octet.
