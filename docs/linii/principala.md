@@ -272,8 +272,9 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
     recomandarile, acolo unde inca asteapta”): ADR 0303, balamaua, placa turnantă, ADR 0292 1a, cotele (d-1, întrebarea
     10), ADR 0313 §8, auditul elicelor (1a–4a, feliile 1–7, la linia atelierului), construcțiile, pachetul Easy 3Draw
     peste 0,5 MB, fondul semnului; mai jos rămân doar încercările, tipăririle, probele pe mașină și întrebările de proces;
-  - **sesiunea designului** („Variante design CVS2”, pe calculatorul owner-ului): întreabă dacă pornește felia zoomului
-    (Lipire și Grilă cu nume, zoomul de 64 px, gesturile); din cloud nu se poate atinge, deci răspunsul i-l dă owner-ul acolo;
+  - **sesiunea designului trece în cloud** (27.11, „Sesiunea designului o sa o aducem si pe ea in sesiune cloud”): brief-ul
+    nou e la owner; sesiunea veche, de pe calculatorul lui, comite și împinge întâi ce n-a ajuns pe GitHub, apoi se
+    arhivează; întrebarea ei (felia zoomului) o preia sesiunea cloud, cu recomandarea;
   - după lotul 54: de tipărit balamaua (3.Ck-2: cât de ușor intră clema pe bolț, cât de greu se rotește); cu
     recomandarea aplicată, alegerile ei (două jumătăți, lățimea 1–2 și lungimea 1–4, axa la 4 mm după capătul plăcii,
     jocul ca un câmp al clemei, confirmate);

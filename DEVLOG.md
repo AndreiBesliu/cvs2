@@ -16669,3 +16669,11 @@ program. Dacă cere un câmp nou în document, v32 e liber și ți-l dau la cere
   (ADR 0292 1a; lista, constatarea 14). Cotele n-au nimic de pornit.
 - **Sesiunea designului**, pe calculatorul owner-ului, nu primește din cloud (doar de pe un dispozitiv de încredere).
 - **Documentele:** decizia în `CLAUDE.md`; lista owner-ului și versiunea documentului (v31) în `docs/linii/principala.md`.
+
+## 2026-11-27 — Sesiunea principală în cloud: brief-ul liniei aranjamentelor, pentru o sesiune cloud (Model: Claude Opus 5.5)
+
+**Prompt:** „Sesiunea designului o sa o aducem si pe ea in sesiune cloud”
+**Started:** 27.11, 08:46. **Completed:** 27.11, 08:49.
+
+- **Brief-ul** liniei aranjamentelor (ramura `wip/28.1-aranjamente`, toată în `main`; canvas-ul; ADR-urile 0254–0259; canalul), dat owner-ului ca fișier.
+- **Documentele:** decizia în `CLAUDE.md`; lista owner-ului din `docs/linii/principala.md`.

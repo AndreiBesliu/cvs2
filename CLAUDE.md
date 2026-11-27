@@ -2089,6 +2089,15 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 27.11.2026, dimineața: **sesiunea designului trece în cloud** („Sesiunea designului o sa o aducem si pe ea in sesiune
+  cloud”). Linia aranjamentelor (ADR 0250, 0251) continuă într-o sesiune cloud nouă, pe `wip/28.1-aranjamente` (toată în
+  `main`: 28.1↑a–d, ultima unită pe 18.11 în `a88502ab`), cu brief-ul dat owner-ului ca fișier, ca la celelalte linii:
+  canvas-ul de pe claude.ai e referința (citit cu unealta Artifact), ADR-urile libere sunt 0254–0259, canalul
+  `aranjamente`, rapoartele merg la sesiunea principală. Prima ei treabă: nota liniei la zi, apoi felia următoare
+  spusă cu recomandarea (felia zoomului, restul ideilor lui 28.1↑ sau Clasicul), pornită după ordinul din aceeași
+  dimineață. **Pe calculatorul owner-ului**, sesiunea veche („Variante design CVS2”) comite și împinge întâi tot ce n-a
+  ajuns pe GitHub, apoi se arhivează; worktree-ul ei local se poate scoate după aceea.
+
 - 27.11.2026, dimineața: **liniile continuă cu recomandările, acolo unde încă așteaptă** („zi-le sesiunilor sa continue
   cu recomandarile, acolo unde inca asteapta”, în sesiunea principală). Sesiunea principală le-a scris celor patru linii
   cu sesiune la 07:45. Alegerile lăsate owner-ului cu recomandarea aplicată sunt acum ale lui, cum sunt implementate:
