@@ -1456,7 +1456,10 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   (amprenta a 742 de plase). Easy 3Draw 18.45.0. **3.Cm-3 (ventilatorul ca trusă)** gata pe 27.11: `ventilatorTrusa` (grinda
   de 2k + 1 găuri sub carcasă, prinsă de două urechi opuse, o jumătate de bucșă, rotorul în tub, axul cel mai scurt); la
   carcasă, rândul grinzii în „Se prinde cu”; bifa „Și trusa” la „Fă ventilatorul”; unită în `main` pe 27.11 (`f9b2bbc8`).
-  Easy 3Draw 18.46.0 (următoarea, 18.47.0). **O probă e2e care cere textul tipăririi îi ia
+  Easy 3Draw 18.46.0. **3.Cm-4 (claritatea
+  editorului)** gata pe 27.11: fraza sensului sub „Dreapta / Stânga” la toate trei; fiecare câmp numeric al elicelor trece
+  prin `campElice` (marginea și textul ei, în piesă și în cote); în editor, o valoare din afara plajei intră ca margine, cu
+  mesajul sub câmpuri (`#at-plaja`); „Repede” la elice (Ø40–Ø96). Easy 3Draw 18.47.0 (următoarea, 18.48.0). **O probă e2e care cere textul tipăririi îi ia
   cifrele din motor pentru starea exactă a editorului din probă. Un paragraf umplut după construire nu stă în editor deasupra
   unor butoane (apare după 90 ms și le mută: un clic se pierde sub încărcare).** La owner: verdictul a / b / c (fișa etapei 3).
   **Cotele pe desen: modelul și proba G-code-ului (ADR 0330, felia 10.4↑a-1, adusă din etapa 10)** gata pe 24.11, în

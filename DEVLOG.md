@@ -16989,3 +16989,24 @@ pe ramură, după push).
   e o decizie de cod; linia își aduce `main` și o rezolvă.
 - **Pe test:** lotul 64 (3.Cm-3), în drum; lotul 65 (f-3), după el.
 - **Documentele:** decizia și Starea în `CLAUDE.md`; starea din `docs/linii/principala.md`; indexul liniilor.
+
+## 2026-11-27 — Felia 3.Cm-4: claritatea editorului elicelor (ADR 0340) (sesiune cloud)
+
+**Prompt:** „zi-le sesiunilor sa continue cu recomandarile, acolo unde inca asteapta” (owner-ul, transmis de sesiunea
+principală: auditul elicelor, felia 4, constatarea 5)
+**Started:** 27.11, 11:00. **Completed:** 27.11, 12:44 (orele, după ceasul containerului).
+
+- **Sensul:** sub „Dreapta / Stânga”, la elice, la elicea de barcă și la rotor, fraza care spune cum alegi după motor și cu
+  ce parte stă piesa pe ax; la rotor, sensul probat nou pe plasă.
+- **Valorile din afara plajei:** motorul, `campElice` (marginea și textul ei, în piesă și în cote, pentru fiecare câmp al
+  celor trei elice; un câmp gol nu mai spune nimic); editorul, marginea cu mesajul sub câmpuri, până la următoarea schimbare.
+- **„Repede” la elice:** Ø40, Ø56, Ø72, Ø96; rândul LEGO, „Piese LEGO”.
+- **Probele**, scrise întâi: `trenulet.claritate.test.ts` (6 teste); e2e, patru spec-uri ale elicelor și proba în engleză;
+  proba înclinării spre pupa din 3.Tt, adusă la regula nouă.
+- **Otrăvurile:** `3.Cm-4.py`, 35 / 35 (C10 mutată pe setul ventilatorului, care o prinde); `3.Cm-4-en.py`, 5 / 5.
+- **Rapidul pe `7b6a82ed`, roșu, din două scăpări ale mele:** amprenta pachetului, înregistrată înaintea ultimei schimbări
+  din editor (refăcută: înregistrarea întoarsă la 18.46.0, apoi `biblioteca.ts --scrie`), și traducerile roadmap-ului,
+  necomise încă.
+- **Mărimea:** Easy 3Draw 18.47.0; aplicația, neschimbată. Nimic pe server.
+- **Documentele:** ADR 0340, nota liniei, fișa etapei 3, registrul otrăvurilor, `CLAUDE.md`, traducerile roadmap-ului.
+- **Urmează:** 3.Cm-5 (grosimea paletelor peste Ø80).

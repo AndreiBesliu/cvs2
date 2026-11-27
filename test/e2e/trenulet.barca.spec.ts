@@ -5,8 +5,9 @@
  *   cotele și textul (pasul 40 mm; 58° lângă butuc, 18° la vârf; paletele acoperă 55 % din disc; butucul Ø8 × 11,5; consola la
  *   vârf 0,6 mm pe strat);
  * - „Repede”: diametrele pe grila de știfturi (Ø24, Ø32, Ø40, Ø56);
- * - editorul: fiecare alegere (sensul, gaura, capacul) și fiecare câmp (rotunjit la pasul lui, doar în plajă) ajung în piesă;
- *   lățimea și înclinarea intră în nume doar când nu sunt cele obișnuite;
+ * - editorul: fiecare alegere (sensul, gaura, capacul) și fiecare câmp (rotunjit la pasul lui, adus în plajă) ajung în piesă;
+ *   lățimea și înclinarea intră în nume doar când nu sunt cele obișnuite; un câmp din afara plajei e adus la margine, iar
+ *   editorul o spune sub câmpuri (ADR 0340, 3.Cm-4); fraza sensului;
  * - STL-ul închis, cu raza cerută; „Fă perechea”: aceeași elice, pe dreapta și pe stânga, în listă.
  * Valorile „pe hârtie” sunt calculate separat de motor (formulele din ADR).
  */
@@ -69,10 +70,31 @@ test('elicea de barcă implicită, a doua piesă a filei Elice: 3 palete, Ø40, 
   for (const [camp, v] of [['palete', '3'], ['diam', '40'], ['pas', '1'], ['lat', '100'], ['inc', '20']] as const) await expect(page.locator(`#at-eb-${camp}`)).toHaveValue(v);
   for (const [grup, v] of [['repede', '40'], ['sens', 'dreapta'], ['gaura', 'x'], ['capac', 'nu']] as const)
     await expect(page.locator(`#at-eb-${grup} [aria-pressed="true"]`)).toHaveAttribute('data-v', v);
-  // un câmp în afara plajei nu schimbă piesa
-  for (const [camp, rau] of [['palete', '2'], ['palete', '6'], ['diam', '150'], ['pas', '2'], ['lat', '200'], ['inc', '60']] as const) {
+  // sensul, spus pentru omul care alege după motorul lui (ADR 0340, 3.Cm-4)
+  await expect(page.locator('#at-eb-sensul')).toHaveText('Pornește motorul ca pentru mers înainte și privește axul din spatele bărcii: dacă se învârte în sensul acelor de ceasornic, alege „Dreapta”; invers, „Stânga”. Elicea stă pe ax cu partea de pe masă spre barcă și o împinge înainte.');
+  // un câmp în afara plajei e adus la margine, iar editorul o spune sub câmpuri; înapoi la valoarea obișnuită, mesajul pleacă
+  const plaja = page.locator('#at-plaja');
+  for (const [camp, rau, margine, cum, obisnuit, mesaj] of [
+    ['palete', '2', '3', IMPLICIT, '3', 'O elice de barcă are între 3 și 5 palete: am făcut-o cu 3.'],
+    ['palete', '6', '5', 'Elice de barcă Ø40 cu 5 palete, pasul 1', '3', 'O elice de barcă are între 3 și 5 palete: am făcut-o cu 5.'],
+    ['diam', '150', '120', 'Elice de barcă Ø120 cu 3 palete, pasul 1', '40', 'Diametrul unei elice de barcă e între 20 și 120 mm: am făcut-o de 120 mm.'],
+    ['pas', '2', '1.6', 'Elice de barcă Ø40 cu 3 palete, pasul 1,6', '1', 'Pasul unei elice de barcă e între 0,5 și 1,6 × diametrul: am făcut-o cu 1,6.'],
+    ['lat', '200', '150', IMPLICIT + ', lățimea 150 %', '100', 'Lățimea paletei unei elice de barcă e între 40 și 150 % din rază: am făcut-o de 150 %.'],
+    ['inc', '60', '40', IMPLICIT + ', înclinarea 40°', '20', 'Înclinarea înapoi a unei elice de barcă e între 0 și 40°: am făcut-o de 40°.'],
+  ] as const) {
     await seteaza(page, `#at-eb-${camp}`, rau);
+    await expect(page.locator('#at-nume-piesa')).toHaveText(cum);
+    await expect(page.locator(`#at-eb-${camp}`)).toHaveValue(margine);
+    await expect(plaja).toHaveText(mesaj);
+    // înapoi la valoarea obișnuită; când e chiar marginea (paletele 2 → 3), câmpul nu se schimbă, deci mesajul rămâne până la
+    // o alegere
+    await seteaza(page, `#at-eb-${camp}`, obisnuit);
     await expect(page.locator('#at-nume-piesa')).toHaveText(IMPLICIT);
+    if (margine === obisnuit) {
+      await expect(plaja).toHaveText(mesaj);
+      await page.locator('#at-eb-sens [data-v="dreapta"]').click();
+    }
+    await expect(plaja).toHaveCount(0);
   }
   // elicea (3.Tq) rămâne prima piesă a filei, cu editorul ei
   await page.locator('#at-galerie [data-piesa="elice"]').click();
@@ -98,7 +120,7 @@ test('„Repede”: diametrele pe grila de știfturi; un diametru scris de mân�
   await expect(page.locator('#at-eb-repede [aria-pressed="true"]')).toHaveCount(0);
 });
 
-test('editorul: fiecare alegere și fiecare câmp ajung în piesă; câmpurile, rotunjite la pasul lor și doar în plajă', async ({ page }) => {
+test('editorul: fiecare alegere și fiecare câmp ajung în piesă; câmpurile, rotunjite la pasul lor și aduse în plajă', async ({ page }) => {
   await atelierBarca(page);
   const nume = page.locator('#at-nume-piesa'), apasat = (grup: string) => page.locator(`#at-eb-${grup} [aria-pressed="true"]`);
   // alegerile
@@ -150,7 +172,8 @@ test('editorul: fiecare alegere și fiecare câmp ajung în piesă; câmpurile, 
   await expect(page.locator('#at-eb-pas')).toHaveValue('0.75');
   await expect(nume).toHaveText('Elice de barcă Ø56,3 cu 4 palete, pasul 0,75');
   await seteaza(page, '#at-eb-pas', '1.2');
-  // marginile plajei: chiar pe margine intră, dincolo de ea nu (piesa rămâne; la redesenare, câmpul arată iar ce e în piesă)
+  // marginile plajei: chiar pe margine intră; dincolo de ea, câmpul e adus la margine (piesa rămâne cea de la margine), cu
+  // mesajul sub câmpuri, până la următoarea alegere
   for (const [camp, bun, rau, cum] of [
     ['palete', '5', '6', 'Elice de barcă Ø56,3 cu 5 palete, pasul 1,2'], ['palete', '3', '2', 'Elice de barcă Ø56,3 cu 3 palete, pasul 1,2'],
     ['diam', '120', '120.1', 'Elice de barcă Ø120 cu 3 palete, pasul 1,2'], ['diam', '20', '19.9', 'Elice de barcă Ø20 cu 3 palete, pasul 1,2'],
@@ -160,10 +183,14 @@ test('editorul: fiecare alegere și fiecare câmp ajung în piesă; câmpurile, 
   ] as const) {
     await seteaza(page, `#at-eb-${camp}`, bun);
     await expect(nume).toHaveText(cum);
+    await expect(page.locator('#at-plaja')).toHaveCount(0);
     await seteaza(page, `#at-eb-${camp}`, rau);
     await expect(nume).toHaveText(cum);
+    await expect(page.locator(`#at-eb-${camp}`)).toHaveValue(bun);
+    await expect(page.locator('#at-plaja')).toBeVisible();
     await page.locator('#at-eb-sens [data-v="dreapta"]').click();
     await expect(page.locator(`#at-eb-${camp}`)).toHaveValue(bun);
+    await expect(page.locator('#at-plaja')).toHaveCount(0);
   }
   // cea mai îngustă și mai culcată: Ø20, pasul 0,5 (P 10): atan(10 / 8π) = 21,7° la butuc, atan(0,5 / π) = 9,04° la vârf;
   // consola 0,2 · π / 0,5 = 1,257; acoperă 19,75 %; paletele încap sub un știft (butucul de 8)

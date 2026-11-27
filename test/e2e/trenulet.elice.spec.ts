@@ -6,8 +6,10 @@
  * - „Ca LEGO 15790” (cotele din LDraw, față de axa piesei): Ø73,9, paleta plată la 15°, gaura rotundă; cu 4 palete, STL-ul
  *   închis, cu raza 36,95;
  * - fiecare „Ca LEGO” cu cotele și cu sensul piesei LEGO (6041 e pe stânga; 92842 și 15790, pe dreapta);
- * - un câmp în afara plajei nu schimbă piesa;
- * - editorul: fiecare alegere (forma, paleta, profilul, sensul, gaura, conul) și fiecare câmp (rotunjit la pasul lui, doar în
+ * - un câmp în afara plajei e adus la margine, iar editorul o spune sub câmpuri, până la următoarea schimbare (ADR 0340,
+ *   3.Cm-4); un câmp golit rămâne cu ce era, fără mesaj;
+ * - fraza sensului (cum alegi „Dreapta” sau „Stânga” după motor) și „Repede”, diametrele pe grila de știfturi (3.Cm-4);
+ * - editorul: fiecare alegere (forma, paleta, profilul, sensul, gaura, conul) și fiecare câmp (rotunjit la pasul lui, adus în
  *   plajă) ajung în piesă;
  * - „Fă perechea”: aceeași elice, pe dreapta și pe stânga, în listă, câte bucăți sunt cerute.
  */
@@ -66,11 +68,70 @@ test('elicea implicită, în fila Elice: 3 palete, Ø72, pasul 0,7, răsucită; 
   for (const [grup, v] of [['forma', 'rot'], ['paleta', 'rasucita'], ['profil', 'placa'], ['sens', 'dreapta'], ['gaura', 'x'], ['con', 'nu']] as const)
     await expect(page.locator(`#at-el-${grup} [aria-pressed="true"]`)).toHaveAttribute('data-v', v);
   await expect(page.locator('#at-el-repede [aria-pressed="true"]')).toHaveCount(0);
-  // un câmp în afara plajei nu schimbă piesa
+  await expect(page.locator('#at-el-grila [aria-pressed="true"]')).toHaveAttribute('data-v', '72');
+  // sensul, spus pentru omul care alege după motorul lui (constatarea 5 a auditului)
+  await expect(page.locator('#at-el-sensul')).toHaveText('Pornește motorul și privește axul dinspre el: dacă se învârte în sensul acelor de ceasornic, alege „Dreapta”; invers, „Stânga”. Elicea stă pe ax cu partea de pe masă spre motor și suflă aerul spre el.');
+  // un câmp în afara plajei e adus la margine, iar editorul o spune sub câmpuri (ADR 0340, 3.Cm-4)
+  const nume = page.locator('#at-nume-piesa'), plaja = page.locator('#at-plaja');
+  await expect(plaja).toHaveCount(0);
   await seteaza(page, '#at-el-palete', '12');
-  await expect(page.locator('#at-nume-piesa')).toHaveText('Elice Ø72 cu 3 palete, pasul 0,7');
+  await expect(nume).toHaveText('Elice Ø72 cu 8 palete, pasul 0,7');
+  await expect(page.locator('#at-el-palete')).toHaveValue('8');
+  await expect(plaja).toHaveText('O elice are între 2 și 8 palete: am făcut-o cu 8.');
   await seteaza(page, '#at-el-diam', '250');
-  await expect(page.locator('#at-nume-piesa')).toHaveText('Elice Ø72 cu 3 palete, pasul 0,7');
+  await expect(nume).toHaveText('Elice Ø200 cu 8 palete, pasul 0,7');
+  await expect(page.locator('#at-el-diam')).toHaveValue('200');
+  await expect(plaja).toHaveText('Diametrul unei elice e între 20 și 200 mm: am făcut-o de 200 mm.');
+  // piesa e în plajă: sub ea, motorul n-are nimic de spus; mesajul rămâne după construire
+  await expect(page.locator('#at-tipar')).toContainText('Se tipărește');
+  await expect(page.locator('#at-avert')).toBeHidden();
+  await expect(plaja).toBeVisible();
+  // altă piesă (elicea de barcă) nu-l arată; înapoi la elice, nici ea
+  await page.locator('#at-galerie [data-piesa="eliceBarca"]').click();
+  await expect(nume).toHaveText('Elice de barcă Ø40 cu 3 palete, pasul 1');
+  await expect(plaja).toHaveCount(0);
+  await page.locator('#at-galerie [data-piesa="elice"]').click();
+  await expect(nume).toHaveText('Elice Ø200 cu 8 palete, pasul 0,7');
+  await expect(plaja).toHaveCount(0);
+  // o valoare din plajă îl scoate; un câmp golit rămâne cu ce era, fără mesaj
+  await seteaza(page, '#at-el-palete', '12');
+  await expect(plaja).toHaveText('O elice are între 2 și 8 palete: am făcut-o cu 8.');
+  await seteaza(page, '#at-el-diam', '72');
+  await expect(nume).toHaveText('Elice Ø72 cu 8 palete, pasul 0,7');
+  await expect(plaja).toHaveCount(0);
+  await seteaza(page, '#at-el-palete', '');
+  await expect(page.locator('#at-el-palete')).toHaveValue('8');
+  await expect(plaja).toHaveCount(0);
+  // pasul și lățimea, la fel; o alegere (aici sensul) scoate mesajul
+  await seteaza(page, '#at-el-pas', '3');
+  await expect(nume).toHaveText('Elice Ø72 cu 8 palete, pasul 1,5');
+  await expect(plaja).toHaveText('Pasul unei elice e între 0,3 și 1,5 × diametrul: am făcut-o cu 1,5.');
+  await seteaza(page, '#at-el-lat', '80');
+  await expect(page.locator('#at-el-lat')).toHaveValue('60');
+  await expect(plaja).toHaveText('Lățimea paletei unei elice e între 15 și 60 % din rază: am făcut-o de 60 %.');
+  await page.locator('#at-el-sens [data-v="stanga"]').click();
+  await expect(nume).toHaveText('Elice Ø72 cu 8 palete, pasul 1,5, stânga');
+  await expect(plaja).toHaveCount(0);
+});
+
+test('„Repede”: diametrele pe grila de știfturi (Ø40, Ø56, Ø72, Ø96); „Piese LEGO” rămân alături', async ({ page }) => {
+  await atelierElice(page);
+  const nume = page.locator('#at-nume-piesa'), grila = page.locator('#at-el-grila');
+  await expect(page.locator('#at-el-grila').locator('xpath=..')).toContainText('5, 7, 9 și 12 știfturi');
+  await expect(page.locator('#at-el-repede').locator('xpath=..')).toContainText('Piese LEGO:');
+  await expect(grila.locator('[data-v]')).toHaveText(['Ø40', 'Ø56', 'Ø72', 'Ø96']);
+  await grila.locator('[data-v="96"]').click();
+  await expect(nume).toHaveText('Elice Ø96 cu 3 palete, pasul 0,7');
+  await expect(page.locator('#at-el-diam')).toHaveValue('96');
+  await expect(grila.locator('[aria-pressed="true"]')).toHaveAttribute('data-v', '96');
+  // doar diametrul se schimbă
+  for (const [camp, v] of [['palete', '3'], ['pas', '0.7'], ['lat', '30']] as const) await expect(page.locator(`#at-el-${camp}`)).toHaveValue(v);
+  // o piesă LEGO (Ø73,9) nu e pe grilă; iar un diametru de pe grilă nu mai e piesa LEGO
+  await page.locator('#at-el-repede [data-v="15790"]').click();
+  await expect(grila.locator('[aria-pressed="true"]')).toHaveCount(0);
+  await grila.locator('[data-v="40"]').click();
+  await expect(nume).toHaveText('Elice Ø40 cu 3 palete, pasul 0,59, plată, gaură rotundă');
+  await expect(page.locator('#at-el-repede [aria-pressed="true"]')).toHaveCount(0);
 });
 
 test('tipărirea, pe praguri (ADR 0340): la pasul 0,3, cu suport sub vârfuri; o elice mică ține de masă cu butucul, fără margine', async ({ page }) => {
@@ -147,7 +208,7 @@ test('fiecare „Ca LEGO”, cu cotele piesei din LDraw, măsurate față de axa
   await expect(page.locator('#at-el-repede [aria-pressed="true"]')).toHaveCount(0);
 });
 
-test('editorul: fiecare alegere și fiecare câmp ajung în piesă; câmpurile, rotunjite la pasul lor și doar în plajă', async ({ page }) => {
+test('editorul: fiecare alegere și fiecare câmp ajung în piesă; câmpurile, rotunjite la pasul lor și aduse în plajă', async ({ page }) => {
   await atelierElice(page);
   const nume = page.locator('#at-nume-piesa'), apasat = (grup: string) => page.locator(`#at-el-${grup} [aria-pressed="true"]`);
   // alegerile
@@ -192,25 +253,29 @@ test('editorul: fiecare alegere și fiecare câmp ajung în piesă; câmpurile, 
   await expect(page.locator('#at-el-info')).toHaveText('Pasul 87 mm (1,2 × diametrul). Paleta răsucită: 74° lângă butuc, 21° la vârf.');
   await seteaza(page, '#at-el-lat', '44.6');
   await expect(page.locator('#at-el-lat')).toHaveValue('45');
-  // marginile plajei: chiar pe margine intră, dincolo de ea nu (piesa rămâne; la redesenare, câmpul arată iar ce e în piesă)
-  for (const [camp, bun, rau, cum] of [
-    ['palete', '8', '9', 'Elice Ø72,3 cu 8 palete, pasul 1,2'], ['palete', '2', '1', 'Elice Ø72,3 cu 2 palete, pasul 1,2'],
-    ['diam', '200', '200.1', 'Elice Ø200 cu 2 palete, pasul 1,2'], ['diam', '20', '19.9', 'Elice Ø20 cu 2 palete, pasul 1,2'],
-    ['pas', '1.5', '1.51', 'Elice Ø20 cu 2 palete, pasul 1,5'], ['pas', '0.3', '0.29', 'Elice Ø20 cu 2 palete, pasul 0,3'],
+  // marginile plajei: chiar pe margine intră, fără mesaj; dincolo de ea, câmpul e adus la margine (piesa rămâne cea de la
+  // margine) și editorul o spune, până la următoarea alegere
+  const plaja = page.locator('#at-plaja');
+  for (const [camp, bun, rau, cum, mesaj] of [
+    ['palete', '8', '9', 'Elice Ø72,3 cu 8 palete, pasul 1,2', 'O elice are între 2 și 8 palete: am făcut-o cu 8.'],
+    ['palete', '2', '1', 'Elice Ø72,3 cu 2 palete, pasul 1,2', 'O elice are între 2 și 8 palete: am făcut-o cu 2.'],
+    ['diam', '200', '200.1', 'Elice Ø200 cu 2 palete, pasul 1,2', 'Diametrul unei elice e între 20 și 200 mm: am făcut-o de 200 mm.'],
+    ['diam', '20', '19.9', 'Elice Ø20 cu 2 palete, pasul 1,2', 'Diametrul unei elice e între 20 și 200 mm: am făcut-o de 20 mm.'],
+    ['pas', '1.5', '1.51', 'Elice Ø20 cu 2 palete, pasul 1,5', 'Pasul unei elice e între 0,3 și 1,5 × diametrul: am făcut-o cu 1,5.'],
+    ['pas', '0.3', '0.29', 'Elice Ø20 cu 2 palete, pasul 0,3', 'Pasul unei elice e între 0,3 și 1,5 × diametrul: am făcut-o cu 0,3.'],
+    ['lat', '60', '61', 'Elice Ø20 cu 2 palete, pasul 0,3', 'Lățimea paletei unei elice e între 15 și 60 % din rază: am făcut-o de 60 %.'],
+    ['lat', '15', '14', 'Elice Ø20 cu 2 palete, pasul 0,3', 'Lățimea paletei unei elice e între 15 și 60 % din rază: am făcut-o de 15 %.'],
   ] as const) {
     await seteaza(page, `#at-el-${camp}`, bun);
     await expect(nume).toHaveText(cum);
+    await expect(plaja).toHaveCount(0);
     await seteaza(page, `#at-el-${camp}`, rau);
     await expect(nume).toHaveText(cum);
+    await expect(page.locator(`#at-el-${camp}`)).toHaveValue(bun);
+    await expect(plaja).toHaveText(mesaj);
     await page.locator('#at-el-forma [data-v="rot"]').click();
     await expect(page.locator(`#at-el-${camp}`)).toHaveValue(bun);
-  }
-  for (const [bun, rau] of [['60', '61'], ['15', '14']] as const) {
-    await seteaza(page, '#at-el-lat', bun);
-    await expect(page.locator('#at-el-lat')).toHaveValue(bun);
-    await seteaza(page, '#at-el-lat', rau);
-    await page.locator('#at-el-forma [data-v="rot"]').click();
-    await expect(page.locator('#at-el-lat')).toHaveValue(bun);
+    await expect(plaja).toHaveCount(0);
   }
 });
 

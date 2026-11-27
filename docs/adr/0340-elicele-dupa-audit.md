@@ -2,7 +2,7 @@
 
 **Starea:** acceptat pe 27.11.2026, cu recomandările auditului (1a, 2a, 3a, 4a), la cuvântul owner-ului transmis de
 sesiunea principală („zi-le sesiunilor sa continue cu recomandarile, acolo unde inca asteapta”). Feliile 3.Cm-1…3.Cm-7, în
-ordinea din audit, ale liniei atelierului (ramura `wip/3.Xh-biblioteca-ui`). **3.Cm-1, 3.Cm-2 și 3.Cm-3 implementate pe 27.11**
+ordinea din audit, ale liniei atelierului (ramura `wip/3.Xh-biblioteca-ui`). **3.Cm-1…3.Cm-4 implementate pe 27.11**
 (mai jos).
 **Continuă:** ADR 0282 (elicele, feliile 3.Tq–3.Tt). **Pleacă de la:** `docs/linii/audit-elice.md` (auditul din 25.11, pe
 Easy 3Draw 18.30.0). Primul număr al intervalului 0340–0349 al liniei atelierului.
@@ -112,6 +112,37 @@ de bucșă.
   în `trenulet.ventilator.spec.ts` (rândul, butonul, „Fă ventilatorul” cu bifa, numele pieselor din listă, bifa după o
   redesenare) și eticheta în proba în engleză. Otrăvurile: `3.Cm-3.py`, 23 / 23, la prima rulare; `3.Cm-3-en.py`, 2 / 2.
 - **Easy 3Draw 18.46.0.** Doar pachetul extensiei se schimbă.
+
+## Implementarea (3.Cm-4): claritatea editorului
+
+Constatarea 5 a auditului, fără desenul pasului (pe care auditul îl socotea separat, ~1 h):
+
+- **Sensul:** sub butoanele „Dreapta / Stânga” ale celor trei piese, o frază care spune cum alegi după motor: pornești
+  motorul și privești axul dinspre el (la elice), din spatele bărcii (la elicea de barcă) sau dinspre partea spre care vrei
+  să sufle (la rotor); în sensul acelor de ceasornic, „Dreapta”. Și cu ce parte stă piesa pe ax: partea de pe masă spre motor,
+  spre barcă, spre partea spre care suflă. Fraza stă pe geometrie: la elice și la elicea de barcă o probau deja testele lor
+  (muchia de sus în sensul rotației); la rotor, proba e nouă (`trenulet.claritate.test.ts`: la „dreapta”, muchia de sus spre
+  +θ, ca la elice).
+- **Valorile din afara plajei:** motorul nu le mai strânge în tăcere: fiecare câmp numeric al celor trei elice (paletele,
+  diametrul, pasul, lățimea, cele două înclinări ale elicei de barcă, jocul și urechile ventilatorului) trece prin același
+  cititor (`campElice`, ca `camp` din `roataPaleteCote`): ce nu e număr ia implicitul, fără nimic de spus; în afara plajei,
+  marginea, iar textul (cu valoarea făcută, cu zecimala limbii) intră în `avert`, în piesă și în `…Cote(d).avert`. Un câmp gol
+  nu mai spune „am făcut-o cu 3” (la elice și la elicea de barcă, `+""` era 0). **Editorul** nu mai ignoră o valoare din afara
+  plajei: pune marginea, câmpul o arată, iar sub câmpuri apare mesajul motorului pentru acel câmp (`#at-plaja`), până la
+  următoarea schimbare a piesei (o alegere, un câmp în plajă) sau până la altă piesă; un câmp golit rămâne cu ce era, fără
+  mesaj. Piesa făcută la margine e chiar piesa de la margine (aceeași plasă).
+- **„Repede” la elice:** diametrele pe grila de știfturi, Ø40, Ø56, Ø72 și Ø96 (5, 7, 9 și 12 știfturi), ca la elicea de barcă
+  și la ventilator; rândul pieselor LEGO se numește acum „Piese LEGO”.
+- Fraza elicei de barcă care se contrazicea fusese deja îndreptată în 3.Cm-2.
+
+**Probele:** `test/unit/trenulet.claritate.test.ts` (6 teste: fiecare câmp, de ambele părți ale plajei, la margine și fără număr,
+în piesă și în cote, la toate trei; ordinea textelor; plasa de la margine; sensul rotorului) și proba înclinării spre pupa din
+3.Tt (`trenulet.pupa.test.ts`), adusă la regula nouă (cerea strângerea fără avertisment); e2e, în `trenulet.elice.spec.ts`
+(fraza, mesajul, câmpul golit, altă piesă, „Repede”), `trenulet.barca.spec.ts`, `trenulet.ventilator.spec.ts` (și carcasa),
+`trenulet.pupa.spec.ts`, cu buclele marginilor aduse la regula nouă, și în proba în engleză din cvs2. Otrăvurile: `3.Cm-4.py`,
+35 / 35 (C10, pe setul greșit la prima rulare); `3.Cm-4-en.py`, 5 / 5.
+
+**Easy 3Draw 18.47.0.**
 
 **Rămâne la owner** (lista grupată, cu recomandarea întâi): verdictul după treapta cea mai mare, oricât de îngustă ar fi
 fâșia? a (recomandat): ca acum (suport doar când și consola de la vârf trece de 1 mm; elicea implicită, 92842, 15790 și
