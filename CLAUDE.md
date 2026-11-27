@@ -2155,6 +2155,18 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 27.11.2026, seara (a șaptezeci și cincea unire din cloud): **duza Kort a elicei de barcă (3.Cm-7), unită în `main`**
+  (sesiunea principală, ramura `unire-2711aa`, din `99a4a6b6`). Linia atelierului, ramura `wip/3.Xh-biblioteca-ui`,
+  `4b10af19` (cu `main` `99a4a6b6` adus), PR-ul `AndreiBesliu/cvs2#77` (ADR 0340, ultima felie), unită în `d2222923`:
+  elicea de barcă are a doua piesă, duza Kort (interiorul drept, la jocul vârfurilor, implicit 0,8 mm; lungimea 0,5 ×
+  diametrul, crescută singură cât să cuprindă elicea; gura dinspre barcă rotunjită, pe masă, deci fără suport; 2 sau 4
+  urechi pe grila axului, montată pe grindă, ca ventilatorul); „Fă elicea cu duza”. **Easy 3Draw 18.50.0**; otrăvurile
+  29 / 29 și 3 / 3. Cu ea, ADR 0340 are toate feliile. Doar pachetul extensiei și probele; nimic pe server. **Codul unirii
+  e identic cu al lui `4b10af19`**: completul 46032688842, verde (unit 11 050 / 0, e2e 1 028 / 1 028, funcțiile pe
+  emulatoare 142 / 142, paginile 62 / 62); rapidul, verde. Lotul 67 e în drum; felia aceasta pleacă după el (lotul 68).
+  **La owner, cu recomandarea liniei aplicată:** alegerile duzei (a doua piesă a elicei de barcă, profilul simplificat,
+  fără suport, montajul pe grindă, lungimea 0,5 × diametrul); verdictul tipăririi paletelor (a / b / c; până atunci a);
+  tipăririle din fișa etapei 3 (elicea implicită, ventilatorul ca trusă, o elice mare, duza).
 - 27.11.2026, seara (a șaptezeci și doua, a treia și a patra unire din cloud): **3.Cm-4 și 3.Cm-5 (claritatea
   editorului elicelor, grosimea paletelor peste Ø80), 16.A↑f-4 (marginea profilată pe o parte) și 3.Cm-6 (curățenia
   motorului elicelor, la octet), unite în `main`**, în loturi puse unul peste altul, fiecare pe completul lui (sesiunea
