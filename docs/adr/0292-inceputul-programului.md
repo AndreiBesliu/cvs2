@@ -2,7 +2,8 @@
 
 **Starea:** propus pe 26.11.2026, cu recomandările aplicate (cuvântul owner-ului, adus de sesiunea principală: „Zi-le ca pot
 continua cu ce urmeaza la fiecare”; o întrebare a owner-ului se pune grupată, cu recomandarea în față, iar linia merge mai
-departe cu ea). Al treilea număr al intervalului 0290–0299, al liniei exportului (ramura `wip/28.8-export`, canalul
+departe cu ea). **Acceptat pe 27.11.2026 cu recomandările** (owner-ul, adus de sesiunea principală: „zi-le sesiunilor sa continue
+cu recomandarile, acolo unde inca asteapta”): rămâne la 1a, 2a, 3a; începutul înaintea exportului (1b) nu se face. Al treilea număr al intervalului 0290–0299, al liniei exportului (ramura `wip/28.8-export`, canalul
 `export`). Completează ADR 0290 și ADR 0291; nu le schimbă.
 
 **De unde vine:** canvas-ul aranjamentelor (<https://claude.ai/artifact/VuzcaEYQsLoTvRBxpnSak2>, tabla „B · Fereastra

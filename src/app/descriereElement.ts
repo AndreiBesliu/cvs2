@@ -11,7 +11,9 @@ import type { ElementLume } from '../model/lume.ts';
 const doua = (x: number): string => x.toFixed(2);
 /** Un număr scris cu punct (`toFixed`), în formatul limbii de acum. */
 const inLimba = (s: string): string => (limba() === 'ro' ? s.replace('.', ',') : s);
-const nr = (x: number): string => inLimba(doua(x));
+/** Un număr din numele unui element: două zecimale, în formatul limbii de acum (și al rândului din lista exportului, 28.8↑s). */
+export const numarDescriere = (x: number): string => inLimba(doua(x));
+const nr = numarDescriere;
 
 /** Un element în lume, în cuvinte: forma și unde stă pe foaie. Calea, prin cutia ei exactă în lume (ADR 0034 §8). */
 export function descriere(e: Pick<ElementLume, 'forma' | 'matrice'>): string {
