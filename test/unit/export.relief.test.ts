@@ -7,9 +7,10 @@
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import type { Operatie } from '../../src/model/document.ts';
+import type { FormaSculaDoc, Operatie } from '../../src/model/document.ts';
 import { operatieReliefDinDialog } from '../../src/app/valoriOperatii.ts';
 import { campuriReliefGresite, cuPerechile, randRelief, valoriRelief, type RandRelief } from '../../src/ui/exportRelief.ts';
+import { formaPeRand, formaPeRandRelief, operatieCuRandRelief } from '../../src/model/formaFrezei.ts';
 import type { FinisareExport } from '../../src/ui/FisaFinisare.tsx';
 
 const fin: FinisareExport = {
@@ -25,8 +26,8 @@ const ro = (x: number): string => String(x).replace('.', ',');
 test('rândul ca text, din valorile documentului (cu virgula în română)', () => {
   const r = randRelief(fin, ro);
   assert.deepEqual(r, {
-    fel: 'finisare', numarScula: '2', diametruScula: '6', formaScula: 'bila', unghiV: '60', varfV: '0', pasLateral: '0,6', adaos: '0,5',
-    unghi: '0', aliniat: true, margine: 'perete', z: 'varf', planZero: '0', adancime: '18', pas: '3',
+    fel: 'finisare', numarScula: '2', diametruScula: '6', formaScula: 'bila', unghiV: '60', varfV: '0', razaColt: '1', pasLateral: '0,6', adaos: '0,5',
+    unghi: '0', aliniat: true, margine: 'perete', z: 'varf', planZero: '0', adancime: '18', pas: '3', origineScula: null,
   });
   const d = randRelief(deg, ro);
   assert.equal(d.fel, 'degrosare');
@@ -43,7 +44,7 @@ test('rândul ca text, din valorile documentului (cu virgula în română)', () 
 test('valorile citite din text (oricare separator) și câmpurile greșite: marginile ușii și ale lucrării', () => {
   const r = randRelief(fin, ro);
   assert.deepEqual(valoriRelief(r), {
-    fel: 'finisare', scula: { numar: 2, diametru: 6, forma: { tip: 'bila' } }, pasLateral: 0.6, adaos: 0.5, unghi: 0, aliniat: true,
+    fel: 'finisare', scula: { numar: 2, diametru: 6, forma: { tip: 'bila' }, origine: null }, pasLateral: 0.6, adaos: 0.5, unghi: 0, aliniat: true,
     margine: 'perete', planZero: null, adancime: 18, pas: 3,
   });
   assert.deepEqual(campuriReliefGresite(r), []);
@@ -105,11 +106,20 @@ const opDeg: Operatie = {
   id: 'd', tip: 'degrosare', noduri: ['r'], latura: 'pe-linie', adancime: 18, pas: 3, pasLateral: 2.5,
   scula: { numar: 1, nume: 'freza plata 6', diametru: 6 }, degrosare: { adaos: 0.5, unghi: 90, margine: 'trece', planZero: 2 },
 } as Operatie;
+/** Originea frezei din document, cum o citește fereastra (felia 18.1↑d-5, ca `origineDin` din `ExportConectat`). */
+const origineDin = (s: Operatie['scula']): { readonly origine?: NonNullable<RandRelief['origineScula']> } => (s.biblioteca ? {
+  origine: {
+    nume: s.nume, biblioteca: { id: s.biblioteca.id, rev: s.biblioteca.rev }, ...(s.regim ? { regim: s.regim } : {}),
+    ...(s.tais !== undefined ? { tais: s.tais } : {}),
+  },
+} : {});
 const finDin = (o: Operatie): FinisareExport => ({
   ...fin, cheie: `p/${o.id}`, fel: o.tip === 'degrosare' ? 'degrosare' : 'finisare', ...(o.tip === 'degrosare' ? { adaos: o.degrosare!.adaos } : {}),
   scula: o.scula.forma?.tip === 'v'
-    ? { numar: o.scula.numar, diametru: o.scula.diametru, forma: 'v', unghi: o.scula.forma.unghi, ...(o.scula.forma.varf !== undefined ? { varf: o.scula.forma.varf } : {}) }
-    : { numar: o.scula.numar, diametru: o.scula.diametru, forma: o.scula.forma?.tip === 'bila' ? 'bila' : 'plata' },
+    ? { numar: o.scula.numar, diametru: o.scula.diametru, forma: 'v', unghi: o.scula.forma.unghi, ...(o.scula.forma.varf !== undefined ? { varf: o.scula.forma.varf } : {}), ...origineDin(o.scula) }
+    : o.scula.forma?.tip === 'toroidala'
+    ? { numar: o.scula.numar, diametru: o.scula.diametru, forma: 'toroidala', razaColt: o.scula.forma.raza, ...origineDin(o.scula) }
+    : { numar: o.scula.numar, diametru: o.scula.diametru, forma: o.scula.forma?.tip === 'bila' ? 'bila' : 'plata', ...origineDin(o.scula) },
   pasLateral: o.pasLateral!, unghi: (o.tip === 'degrosare' ? o.degrosare : o.finisare)!.unghi,
   aliniat: o.finisare?.nealiniat !== true, margine: (o.tip === 'degrosare' ? o.degrosare : o.finisare)!.margine === 'trece' ? 'trece' : 'perete',
   ...((o.tip === 'degrosare' ? o.degrosare : o.finisare)!.planZero !== undefined ? { planZero: (o.tip === 'degrosare' ? o.degrosare : o.finisare)!.planZero! } : {}),
@@ -161,4 +171,55 @@ test('freza: alt T o păstrează; alt diametru sau altă formă o face scrisă d
   // Degroșarea: freza rămâne plată, oricare ar fi forma din text.
   const dg = scrie(opDeg, { diametruScula: '8', formaScula: 'bila' });
   assert.deepEqual(dg.scula, { numar: 1, nume: 'freza plata', diametru: 8 });
+});
+
+test('toroidala pe finisare (felia 18.1↑e, ADR 0319): rândul, raza colțului în (0, Ø / 2), citirea și ce scrie Exportă', () => {
+  // Din document: forma și raza colțului, ca text.
+  const tor: FinisareExport = { ...fin, scula: { numar: 3, diametru: 6, forma: 'toroidala', razaColt: 1.5 } };
+  const r = randRelief(tor, ro);
+  assert.deepEqual([r.formaScula, r.razaColt], ['toroidala', '1,5']);
+  assert.deepEqual(valoriRelief(r)?.scula.forma, { tip: 'toroidala', raza: 1.5 });
+  assert.deepEqual(campuriReliefGresite(r), []);
+  // Raza colțului: peste 0 și sub jumătatea diametrului (cu Ø / 2 e o bilă), ca la ușă.
+  const rau = (p: Partial<RandRelief>): readonly string[] => campuriReliefGresite({ ...r, ...p });
+  assert.deepEqual(rau({ razaColt: '0' }), ['raza-colt']);
+  assert.deepEqual(rau({ razaColt: '3' }), ['raza-colt']);
+  assert.deepEqual(rau({ razaColt: '2,999' }), []);
+  assert.deepEqual(rau({ razaColt: 'x' }), ['raza-colt']);
+  assert.deepEqual(rau({ diametruScula: '4', razaColt: '2' }), ['raza-colt']);
+  // Doar cu toroidala: pe bilă, raza scrisă nu se judecă.
+  assert.deepEqual(rau({ formaScula: 'bila', razaColt: '0' }), []);
+  assert.equal(valoriRelief({ ...r, razaColt: '' }), null);
+  // Degroșarea rămâne plată: o toroidală scrisă pe ea nu e citită ca formă.
+  assert.equal(valoriRelief({ ...randRelief(deg, ro), formaScula: 'toroidala', razaColt: '1' })?.scula.forma, null);
+  // Exportă: altă formă sau altă rază fac freza scrisă de mână, cu numele după formă; pe aceeași formă, un câmp necunoscut rămâne.
+  const t = scrie(opFin, { formaScula: 'toroidala', razaColt: '1.5' });
+  assert.deepEqual(t.scula, { numar: 2, nume: 'freza toroidala r1.5', diametru: 6, forma: { tip: 'toroidala', raza: 1.5 } });
+  const opT = { ...opFin, scula: { numar: 4, nume: 'Toro', diametru: 6, forma: { tip: 'toroidala', raza: 1, profil: 'x' } } } as Operatie;
+  assert.equal(JSON.stringify(scrie(opT)), JSON.stringify(opT));
+  const rc = scrie(opT, { razaColt: '2' });
+  assert.deepEqual(rc.scula, { numar: 4, nume: 'freza toroidala r2', diametru: 6, forma: { tip: 'toroidala', profil: 'x', raza: 2 } });
+  // De pe toroidală pe bilă: forma bilei, fără raza colțului.
+  assert.deepEqual(scrie(opT, { formaScula: 'bila' }).scula, { numar: 4, nume: 'freza bila', diametru: 6, forma: { tip: 'bila' } });
+});
+
+test('profilul desenat (documentul v32, ADR 0304) n-are rând pe relief: lucrarea îl refuză acolo, iar Exportă lasă operația neatinsă', () => {
+  // Rândul reliefului poartă plata, V-ul, bila și toroidala (felia 18.1↑e); un profil citit ca plată s-ar scrie înapoi ca plată.
+  const profil: FormaSculaDoc = { tip: 'profil', puncte: [[0, 0], [3, 1], [3, 12]] };
+  // Două reguli: rândul exportului poartă profilul (frezele, 16.A↑f-3), rândul reliefului nu.
+  assert.equal(formaPeRand(profil), true);
+  assert.equal(formaPeRandRelief(profil), false);
+  for (const f of [undefined, { tip: 'v', unghi: 60 }, { tip: 'bila' }, { tip: 'toroidala', raza: 1 }] as const) assert.equal(formaPeRandRelief(f), true);
+  assert.equal(formaPeRandRelief({ tip: 'conica' } as unknown as FormaSculaDoc), false);
+  for (const o of [opFin, opDeg]) {
+    assert.equal(operatieCuRandRelief(o), true);
+    const cuProfil = { ...o, scula: { numar: 5, nume: 'profilul meu', diametru: 6, forma: profil } } as Operatie;
+    assert.equal(operatieCuRandRelief(cuProfil), false);
+    // Chiar cu valorile unui rând (o fereastră veche, o cheie amestecată), Exportă nu-l atinge.
+    const v = valoriRelief(randRelief(finDin(o), String));
+    assert.ok(v);
+    assert.equal(operatieReliefDinDialog(cuProfil, v), cuProfil);
+  }
+  // Operațiile pe contur au rândul lor (`operatieCuRand`), nu pe al reliefului.
+  assert.equal(operatieCuRandRelief({ ...opFin, tip: 'profil' } as Operatie), false);
 });

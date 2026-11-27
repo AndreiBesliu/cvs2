@@ -16,7 +16,7 @@ import { t } from '../i18n/t.ts';
 import type {
   CerereExport, CopieRand, FormaRand, FrezaOferita, FrezaRestOperatie, OperatieExport, OrigineFreza, Rand, RezultatInapoi, SculaOperatie, SetariAer, StareExport,
 } from '../ui/exportRand.ts';
-import { frezeleOperatiei, operatieCuRand } from '../model/formaFrezei.ts';
+import { frezeleOperatiei, operatieCuRand, operatieCuRandRelief } from '../model/formaFrezei.ts';
 import { frezePeRanduri, frezePotrivite, pasLateralDin, sculaDinBiblioteca } from '../model/alegereFreza.ts';
 import { frezaDinCopie, type FrezaSalvata } from '../model/freza.ts';
 import type { FrezaRest, Scula } from '../model/document.ts';
@@ -121,8 +121,12 @@ function placuteIesite(d: Document, k?: number): { readonly nume: readonly strin
  */
 const peRand: (o: Operatie) => boolean = operatieCuRand;
 
-/** Operațiile reliefului (finisarea, ADR 0312; degroșarea, ADR 0313): un rând doar de citit. */
-const peRelief = (o: Operatie): boolean => o.tip === 'finisare' || o.tip === 'degrosare';
+/**
+ * Operațiile reliefului (finisarea, ADR 0312; degroșarea, ADR 0313), cu rândul lor, editabil din felia 18.1↑d-4: doar cu
+ * freza purtată de rând (`operatieCuRandRelief`). Un profil desenat (v32) n-are rând: Exportă îl lasă neatins, iar lucrarea
+ * îl refuză, cu motivul.
+ */
+const peRelief: (o: Operatie) => boolean = operatieCuRandRelief;
 
 /** Documentul fără rangurile operațiilor: ordinea automată a lucrării (ADR 0133 §3). */
 function faraRanguri(doc: Document): Document {
@@ -287,8 +291,13 @@ function randuriFoii(
       descriere: o.noduri.length > 1 ? `${baza} (+${o.noduri.length - 1})` : baza,
       ...(o.rang !== undefined ? { rang: o.rang } : {}),
       scula: {
-        numar: s.numar, diametru: s.diametru, forma: s.forma?.tip === 'bila' ? 'bila' : s.forma?.tip === 'v' ? 'v' : 'plata',
+        numar: s.numar, diametru: s.diametru,
+        forma: s.forma?.tip === 'bila' ? 'bila' : s.forma?.tip === 'v' ? 'v' : s.forma?.tip === 'toroidala' ? 'toroidala' : 'plata',
         ...(s.forma?.tip === 'v' ? { unghi: s.forma.unghi, ...(s.forma.varf !== undefined ? { varf: s.forma.varf } : {}) } : {}),
+        // Toroidala (felia 18.1↑e, ADR 0319): raza colțului.
+        ...(s.forma?.tip === 'toroidala' ? { razaColt: s.forma.raza } : {}),
+        // Originea din „Frezele mele” (felia 18.1↑d-5, ADR 0316): nota bibliotecii și Exportă o citesc, ca la celelalte rânduri.
+        ...((x) => (x ? { origine: x } : {}))(origineDin(s)),
       },
       pasLateral: o.pasLateral ?? 0, unghi: fin?.unghi ?? 0, aliniat: fin?.nealiniat !== true,
       margine: fin?.margine === 'trece' ? 'trece' : 'perete', ...(fin?.planZero !== undefined ? { planZero: fin.planZero } : {}),
@@ -409,6 +418,18 @@ export function ExportConectat({
       return lista;
     };
   }, [biblioteca.freze]);
+  // Frezele oferite rândurilor reliefului (felia 18.1↑d-5, ADR 0316): cele pe care lucrarea le primește pe finisare (plata, V-ul,
+  // bila și, din felia 18.1↑e, toroidala) și pe degroșare (doar plata).
+  const frezeRelief = useMemo(() => {
+    const dupaFel = new Map<string, readonly FrezaOferita[]>();
+    return (fel: 'finisare' | 'degrosare'): readonly FrezaOferita[] => {
+      const gata = dupaFel.get(fel);
+      if (gata) return gata;
+      const lista = frezePotrivite(biblioteca.freze, [{ tip: fel, latura: 'pe-linie' }]).map(oferita);
+      dupaFel.set(fel, lista);
+      return lista;
+    };
+  }, [biblioteca.freze]);
   // Toată biblioteca cu CAM (ADR 0300 §5, felia 16.A↑b-4), pentru nota „s-a schimbat în bibliotecă” și recunoașterea; null cât
   // nu e citită (fereastra nu spune „nu mai e în bibliotecă” înainte să știe).
   const bibliotecaToata = useMemo(() => (biblioteca.incarcata ? frezePeRanduri(biblioteca.freze).map(oferita) : null), [biblioteca]);
@@ -443,7 +464,7 @@ export function ExportConectat({
         const cheie = `${piesa.id}/${o.id}`;
         // Finisarea (ADR 0312 §7) și degroșarea (ADR 0313 §7): valorile rândului lor (felia 18.1↑d-4; fără schimbare, aceeași
         // operație, la octet), apoi rangul (sau fără el, în ordinea automată).
-        if (o.tip === 'finisare' || o.tip === 'degrosare') {
+        if (peRelief(o)) {
           const vr = c.valoriRelief?.get(cheie);
           const { rang: _r, ...fara } = vr ? operatieReliefDinDialog(o, vr) : o;
           void _r;
@@ -473,7 +494,8 @@ export function ExportConectat({
       finisari={exportFoaie.finisari}
       creasta={(sc, pas) => creastaPePlan({
         numar: sc.numar, nume: '', diametru: sc.diametru,
-        ...(sc.forma === 'bila' ? { forma: { tip: 'bila' as const } } : sc.forma === 'v' ? { forma: { tip: 'v' as const, unghi: sc.unghi ?? 0, ...(sc.varf !== undefined ? { varf: sc.varf } : {}) } } : {}),
+        ...(sc.forma === 'bila' ? { forma: { tip: 'bila' as const } } : sc.forma === 'v' ? { forma: { tip: 'v' as const, unghi: sc.unghi ?? 0, ...(sc.varf !== undefined ? { varf: sc.varf } : {}) } }
+          : sc.forma === 'toroidala' ? { forma: { tip: 'toroidala' as const, raza: sc.razaColt ?? 0 } } : {}),
       }, pas)}
       ordineAutomata={exportFoaie.automata}
       descrieri={exportFoaie.descrieri}
@@ -497,7 +519,7 @@ export function ExportConectat({
       {...(placuteToate ? { placuteToate } : {})}
       foi={toate.foi.length}
       {...(toateFoile ? { toateFoile } : {})}
-      {...(biblioteca.freze.length > 0 ? { frezeOferite } : {})}
+      {...(biblioteca.freze.length > 0 ? { frezeOferite, frezeRelief } : {})}
       bibliotecaToata={bibliotecaToata}
       onPuneInapoi={puneInapoi}
       {...(onRaport ? { onRaport } : {})}

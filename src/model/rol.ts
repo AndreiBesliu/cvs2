@@ -253,11 +253,16 @@ export function numereFreze(doc: Document, scule: readonly Scula[], inlocuite: R
  * T e al unei freze identice din proiect, altfel cel mai mic liber (`numarFreza`), iar numele urmează forma. Cu aceeași formă
  * și același diametru, freza rămâne (cu originea și valorile ei).
  */
-export function frezaFinisare(doc: Document, s: Scula, forma: 'bila' | 'plata' | 'v', diametru: number): Scula {
-  const acum = s.forma?.tip === 'bila' ? 'bila' : s.forma?.tip === 'v' ? 'v' : 'plata';
-  if (acum === forma && s.diametru === diametru) return s;
-  const f: FormaSculaDoc | undefined = forma === 'bila' ? { tip: 'bila' } : forma === 'v' ? { tip: 'v', unghi: s.forma?.tip === 'v' ? s.forma.unghi : UNGHI_V_IMPLICIT } : undefined;
-  const nume = forma === 'bila' ? 'freza bila' : forma === 'v' ? `freza V${f?.tip === 'v' ? f.unghi : UNGHI_V_IMPLICIT}` : 'freza plata';
+export function frezaFinisare(doc: Document, s: Scula, forma: 'bila' | 'plata' | 'v' | 'toroidala', diametru: number, razaColt?: number): Scula {
+  const acum = s.forma?.tip === 'bila' ? 'bila' : s.forma?.tip === 'v' ? 'v' : s.forma?.tip === 'toroidala' ? 'toroidala' : 'plata';
+  const razaVeche = s.forma?.tip === 'toroidala' ? s.forma.raza : undefined;
+  if (acum === forma && s.diametru === diametru && (forma !== 'toroidala' || razaColt === undefined || razaColt === razaVeche)) return s;
+  // Toroidala (18.1↑e-1, ADR 0319): raza colțului scrisă, ori cea de acum (cât încape sub Ø / 2), ori implicit cel mult 1 mm și
+  // Ø / 4.
+  const raza = razaColt ?? (razaVeche !== undefined && razaVeche < diametru / 2 ? razaVeche : Math.min(1, diametru / 4));
+  const f: FormaSculaDoc | undefined = forma === 'bila' ? { tip: 'bila' } : forma === 'v' ? { tip: 'v', unghi: s.forma?.tip === 'v' ? s.forma.unghi : UNGHI_V_IMPLICIT }
+    : forma === 'toroidala' ? { tip: 'toroidala', raza } : undefined;
+  const nume = forma === 'bila' ? 'freza bila' : forma === 'v' ? `freza V${f?.tip === 'v' ? f.unghi : UNGHI_V_IMPLICIT}` : forma === 'toroidala' ? `freza toroidala r${raza}` : 'freza plata';
   return { numar: numarFreza(doc, diametru, f), nume, diametru, ...(f ? { forma: f } : {}) };
 }
 
@@ -276,7 +281,8 @@ export function frezaPentruRol(doc: Document, s: Scula, rol: Rol): Scula {
   void _forma;
   // Finisarea reliefului (ADR 0312): cu o bilă de același diametru, dacă nu era deja una; bila nu merge altundeva.
   if (rol === 'finisare') {
-    if (s.forma?.tip === 'bila') return s;
+    // Toroidala (18.1↑e-1, ADR 0319) se taie și ea la finisare: rămâne, ca bila.
+    if (s.forma?.tip === 'bila' || s.forma?.tip === 'toroidala') return s;
     const forma: FormaSculaDoc = { tip: 'bila' };
     return { ...baza, numar: numarFreza(doc, s.diametru, forma), nume: 'freza bila', forma };
   }

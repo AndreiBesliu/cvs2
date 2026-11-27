@@ -115,8 +115,8 @@ export function cheieFreza(d: number, u: number | null, varf: number | null, bil
 }
 
 /**
- * O freză a ferestrei, pentru conflictele de T: numărul, identitatea (`cheieFreza`) și locul ei pe un rând; fără loc, freza unei
- * finisări a reliefului (ADR 0312 §7), care se schimbă din panou, nu de aici.
+ * O freză a ferestrei, pentru conflictele de T: numărul, identitatea (`cheieFreza`) și locul ei pe un rând (din felia 18.1↑d-7, și
+ * freza unei operații a reliefului, pe locul `scula` al rândului ei); fără loc, o freză pe care „Dă-i T{n}” n-o schimbă.
  */
 export type FrezaT = { readonly numar: number; readonly cheie: string; readonly loc?: LocFreza };
 
@@ -641,13 +641,24 @@ export type HartieRand = {
  * Ce trimite dialogul la Exportă: montajul, postul, valorile operațiilor cu frezele lor (se scriu în document), confirmarea și
  * ordinea tăierii (ADR 0133 §3): cheile rândurilor în ordinea omului, sau null pentru ordinea automată.
  */
-/** Forma frezei citită: bila, plata (`null`) sau V-ul, cu unghiul și vârful (vârful 0 nu se scrie, ADR 0092). */
-export type FormaRelief = { readonly tip: 'bila' } | { readonly tip: 'v'; readonly unghi: number; readonly varf?: number } | null;
+/**
+ * Forma frezei citită: bila, plata (`null`), V-ul, cu unghiul și vârful (vârful 0 nu se scrie, ADR 0092), sau toroidala, cu raza
+ * colțului (felia 18.1↑e, ADR 0319).
+ */
+export type FormaRelief =
+  | { readonly tip: 'bila' } | { readonly tip: 'v'; readonly unghi: number; readonly varf?: number } | { readonly tip: 'toroidala'; readonly raza: number } | null;
 
 /** Valorile rândului unei operații a reliefului, citite (felia 18.1↑d-4, `exportRelief.ts`); ce scrie Exportă în operație. */
 export type ValoriRelief = {
   readonly fel: 'finisare' | 'degrosare';
-  readonly scula: { readonly numar: number; readonly diametru: number; readonly forma: FormaRelief };
+  readonly scula: {
+    readonly numar: number; readonly diametru: number; readonly forma: FormaRelief;
+    /**
+     * Freza din „Frezele mele” a rândului (felia 18.1↑d-5, ADR 0316), ca la celelalte rânduri: `null` = scrisă de mână (originea
+     * pleacă din document); lipsă = rămâne cea din document.
+     */
+    readonly origine?: OrigineFreza | null;
+  };
   readonly pasLateral: number; readonly adaos: number; readonly unghi: number; readonly aliniat: boolean;
   readonly margine: 'perete' | 'trece';
   /** Planul zero (mm sub fața plăcii), sau `null`: vârful reliefului la fața plăcii. */

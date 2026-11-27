@@ -26,12 +26,22 @@ export type FrezaO =
   | { readonly fel: 'bila'; readonly R: number }
   | { readonly fel: 'plata'; readonly R: number }
   /** `alfa`: jumătate din unghiul inclus al V-ului, în radiani; `t`: raza vârfului plat (lipsă: 0, ascuțit). */
-  | { readonly fel: 'v'; readonly R: number; readonly alfa: number; readonly t?: number };
+  | { readonly fel: 'v'; readonly R: number; readonly alfa: number; readonly t?: number }
+  /**
+   * Toroidala (felia 18.1↑e-0, ADR 0303 §2): discul plat de rază a = R − ρ, cu sfertul de cerc de rază ρ (`rho`, raza colțului)
+   * în jurul lui; ρ = R e bila, ρ → 0 plata.
+   */
+  | { readonly fel: 'toroidala'; readonly R: number; readonly rho: number };
 
 /** Cât urcă fața frezei deasupra vârfului la raza r (r ≤ R). */
 export function urcareO(f: FrezaO, r: number): number {
   if (f.fel === 'bila') return f.R - Math.sqrt(Math.max(0, f.R * f.R - r * r));
   if (f.fel === 'plata') return 0;
+  if (f.fel === 'toroidala') {
+    // Pe sfertul de cerc, prin unghiul lui (scris altfel decât lucrarea, care ia rădăcina): ρ · (1 − cos(asin((r − a) / ρ))).
+    const a = f.R - f.rho;
+    return r <= a ? 0 : f.rho * (1 - Math.cos(Math.asin(Math.min(1, (r - a) / f.rho))));
+  }
   return Math.max(0, r - (f.t ?? 0)) / Math.tan(f.alfa);
 }
 
@@ -133,7 +143,7 @@ export function clExact(ix: IndexO, f: FrezaO, x: number, y: number, podea = -In
   const R = f.R, R2 = R * R, kc = f.fel === 'v' ? 1 / Math.tan(f.alfa) : 0;
   // Vârful plat al V-ului (conul trunchiat): raza lui; pe el, fața nu urcă.
   const tv = f.fel === 'v' ? f.t ?? 0 : 0;
-  const urcaR = f.fel === 'bila' ? R : f.fel === 'plata' ? 0 : (R - tv) * kc;
+  const urcaR = f.fel === 'bila' ? R : f.fel === 'plata' ? 0 : f.fel === 'toroidala' ? f.rho : (R - tv) * kc;
   const urca = (r: number): number => urcareO(f, r);
   let best = podea;
   const varf = (vx: number, vy: number, vz: number): void => {
@@ -157,6 +167,23 @@ export function clExact(ix: IndexO, f: FrezaO, x: number, y: number, podea = -In
     if (f.fel === 'bila') ss = (m * rho) / Math.sqrt(1 + m * m);
     else if (f.fel === 'v' && Math.abs(m) < kc) ss = (d * m) / Math.sqrt(kc * kc - m * m);
     if (ss >= lo && ss <= hi) v = Math.max(v, fe(z0, m, ss, d, rho));
+    // Toroidala: fe e concavă în s (urcarea, convexă și crescătoare, peste distanța, convexă), deci derivata ei scade; maximul
+    // e înăuntru doar cu derivata pozitivă la capătul de jos și negativă la cel de sus, și vine prin înjumătățirea derivatei
+    // (fără formula punctului staționar: o ecuație de gradul patru). Derivata urcării, panta sfertului de cerc: tan φ = u / √(1 − u²).
+    if (f.fel === 'toroidala') {
+      const a = R - f.rho;
+      const der = (x: number): number => {
+        const r = Math.sqrt(d * d + x * x), w = r - a;
+        if (w <= 0 || r === 0) return m;
+        const u = Math.min(1 - 1e-15, w / f.rho);
+        return m - (u / Math.sqrt(1 - u * u)) * (x / r);
+      };
+      if (der(lo) > 0 && der(hi) < 0) {
+        let p = lo, q = hi;
+        for (let it = 0; it < 64 && q - p > 1e-13; it++) { const mij = (p + q) / 2; if (der(mij) > 0) p = mij; else q = mij; }
+        v = Math.max(v, fe(z0, m, (p + q) / 2, d, rho));
+      }
+    }
     // Vârful plat: pe el funcția e liniară în s, deci maximul e și unde muchia iese de sub el (r = t).
     if (tv > d) {
       const st = Math.sqrt(tv * tv - d * d);
@@ -187,6 +214,13 @@ export function clExact(ix: IndexO, f: FrezaO, x: number, y: number, podea = -In
       const qx = x - R * nx, qy = y - R * ny;
       if (in3(qx, qy)) best = Math.max(best, zp(qx, qy) - (R - R * nz));
     }
+    // Toroidala: punctul de sprijin pe plan e pe tubul de rază ρ, cu centrul pe cercul de rază a, spre urcușul planului: în plan,
+    // la a de axă (pe direcția pantei) plus ρ · n; pe Z, cu ρ · (1 − n_z) peste vârf.
+    if (f.fel === 'toroidala') {
+      const gl0 = Math.hypot(nx, ny), a = R - f.rho;
+      const qx = x - (gl0 > 1e-15 ? (a * nx) / gl0 : 0) - f.rho * nx, qy = y - (gl0 > 1e-15 ? (a * ny) / gl0 : 0) - f.rho * ny;
+      if (in3(qx, qy)) best = Math.max(best, zp(qx, qy) - f.rho * (1 - nz));
+    }
     const gl = Math.hypot(nx, ny);
     if (gl > 1e-15) {
       const qx = x - (R * nx) / gl, qy = y - (R * ny) / gl;
@@ -206,6 +240,8 @@ export function clPlan(f: FrezaO, a: number, b: number, c: number, x: number, y:
   const z0 = a * x + b * y + c, g = Math.hypot(a, b);
   if (f.fel === 'bila') return z0 + f.R * (Math.sqrt(1 + g * g) - 1);
   if (f.fel === 'plata') return z0 + f.R * g;
+  // Toroidala: discul plat urcă panta cu a · g, iar tubul ca o bilă de rază ρ.
+  if (f.fel === 'toroidala') return z0 + (f.R - f.rho) * g + f.rho * (Math.sqrt(1 + g * g) - 1);
   const t = f.t ?? 0;
   return Math.max(z0 + t * g, z0 + f.R * g - (f.R - t) / Math.tan(f.alfa));
 }
@@ -219,6 +255,11 @@ export function clRadial(f: FrezaO, d: number, Rs: number): number {
   let z = -Infinity;
   if (f.fel === 'bila') { if (d <= Rs + R) z = Math.sqrt((Rs + R) ** 2 - d * d) - R; }
   else if (f.fel === 'plata') { if (d <= R) z = Rs; else if (d - R <= Rs) z = Math.sqrt(Rs * Rs - (d - R) ** 2); }
+  else if (f.fel === 'toroidala') {
+    // Discul plat peste axa semisferei stă pe vârful ei; altfel, centrul tubului cel mai apropiat de axă e la d − a.
+    const a = R - f.rho;
+    if (d <= a) z = Rs; else if (d - a <= Rs + f.rho) z = Math.sqrt((Rs + f.rho) ** 2 - (d - a) ** 2) - f.rho;
+  }
   else {
     const ca = Math.cos(f.alfa), sa = Math.sin(f.alfa), k = 1 / Math.tan(f.alfa), rc = d - Rs * ca;
     if (rc <= 0) z = Math.sqrt(Math.max(0, Rs * Rs - d * d));
@@ -232,6 +273,20 @@ export function clRadial(f: FrezaO, d: number, Rs: number): number {
 export function creastaPlan(R: number, s: number, teta = 0): number {
   const c = Math.cos(teta);
   return (R - Math.sqrt(R * R - (s / (2 * c)) ** 2)) / c;
+}
+
+/**
+ * Creasta pe un plan orizontal, între două linii la `s`, pe hârtie (felia 18.1↑e-0): bila R − √(R² − (s / 2)²); toroidala
+ * ρ − √(ρ² − ((s − 2a) / 2)²) peste 2a (discurile plate nu se mai ating), zero sub; plata zero. Pentru V-uri: NaN.
+ */
+export function creastaPlanFreza(f: FrezaO, s: number): number {
+  if (f.fel === 'bila') return creastaPlan(f.R, s);
+  if (f.fel === 'plata') return 0;
+  if (f.fel === 'toroidala') {
+    const a = f.R - f.rho, w = (s - 2 * a) / 2;
+    return w <= 0 ? 0 : f.rho - Math.sqrt(Math.max(0, f.rho * f.rho - w * w));
+  }
+  return Number.NaN;
 }
 
 /** Un punct al traseului (centrul vârfului frezei), în sistemul reliefului. */
@@ -254,6 +309,37 @@ export function suprafataBila(treceri: ReadonlyArray<readonly PunctO[]>, R: numb
     }
   }
   return z;
+}
+
+/**
+ * Suprafața lăsată de orice freză în (x, y) (felia 18.1↑e-0): cel mai jos punct al frezelor cu vârful în punctele date (și pe
+ * segmentele dintre ele, eșantionate la `pasEs`), cu urcarea ei la distanța în plan.
+ */
+export function suprafataFreza(treceri: ReadonlyArray<readonly PunctO[]>, f: FrezaO, x: number, y: number, pasEs: number): number {
+  let z = Infinity;
+  for (const t of treceri) {
+    for (let k = 0; k + 1 < t.length; k++) {
+      const a = t[k]!, b = t[k + 1]!, L = Math.hypot(b.x - a.x, b.y - a.y), n = Math.max(1, Math.ceil(L / pasEs));
+      for (let q = 0; q <= n; q++) {
+        const u = q / n, px = a.x + u * (b.x - a.x), py = a.y + u * (b.y - a.y), pz = a.z + u * (b.z - a.z);
+        const d = Math.hypot(x - px, y - py);
+        if (d <= f.R) z = Math.min(z, pz + urcareO(f, d));
+      }
+    }
+  }
+  return z;
+}
+
+/** Creasta măsurată cu orice freză (felia 18.1↑e-0): cel mai mult rămâne deasupra modelului `zModel` în punctele date. */
+export function creastaSimulataFreza(
+  treceri: ReadonlyArray<readonly PunctO[]>, f: FrezaO, puncte: ReadonlyArray<readonly [number, number]>, zModel: (x: number, y: number) => number, pasEs: number,
+): number {
+  let m = 0;
+  for (const [x, y] of puncte) {
+    const z = suprafataFreza(treceri, f, x, y, pasEs);
+    if (Number.isFinite(z)) m = Math.max(m, z - zModel(x, y));
+  }
+  return m;
 }
 
 /** Creasta măsurată: cel mai mult rămâne deasupra modelului `zModel` în punctele date. */

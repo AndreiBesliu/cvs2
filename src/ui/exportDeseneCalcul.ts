@@ -10,7 +10,7 @@
  * dopului, rezerva benzii și lățimea ei cea mai mică. Trecerile și ciocănirea nu mai stau aici: le dă rândul „pe hârtie”, din
  * funcțiile lucrării (ADR 0291, felia 28.8↑h).
  */
-import { latimeMinimaBanda, REZERVA_BANDA, SUB_FATA_DOPULUI } from './actiuniExportTipuri.ts';
+import { celuleAliniate, latimeMinimaBanda, REZERVA_BANDA, SUB_FATA_DOPULUI } from './actiuniExportTipuri.ts';
 
 /** Locurile urechilor pe care le desenează fereastra; „alese” și „unde ține” nu se pot ști fără desen, deci au locuri schițate. */
 export type LocuriUrechiDesen = 'egale' | 'lungi' | 'scurte' | 'mijloc';
@@ -138,4 +138,31 @@ export function dopDreptDesen(i: {
     inaltime = i.dop === 'ridicat' && i.sprijin === 'fata' ? D - (i.gaura ? 0 : g) : D + H;
   }
   return { inaltime, grosime: i.dop === 'decupat' ? inaltime : inaltime + SUB_FATA_DOPULUI, treapta };
+}
+
+/**
+ * Trecerile pe Z ale finisării și ale degroșării reliefului (felia 18.1↑d-6), ca lucrarea (`reliefFinisare.ts`): pe un model care
+ * coboară până la podea, n = ⌈P / pas⌉ treceri, unde P e podeaua A (la degroșare, ridicată cu adaosul: A − a); fundurile primelor
+ * n − 1 la k · pas sub față (mm, pozitive), iar ultima pe model, cel mult la P. Un model mai sus face mai puține (fundurile de sub
+ * el nu se taie). Fără valori bune (sau cu adaosul cât podeaua), nimic.
+ */
+export function treceriPodeaRelief(adancime: number, pas: number, adaos = 0): { readonly funduri: number[]; readonly n: number; readonly podea: number } {
+  const P = adancime - (Number.isFinite(adaos) && adaos > 0 ? adaos : 0);
+  if (!pozitiv(adancime) || !pozitiv(pas) || !pozitiv(P)) return { funduri: [], n: 0, podea: 0 };
+  const n = Math.max(1, Math.ceil(P / pas - 1e-9));
+  return { funduri: Array.from({ length: n - 1 }, (_, k) => (k + 1) * pas), n, podea: P };
+}
+
+/**
+ * Liniile reliefului (felia 18.1↑d-6): la 0° și 90°, prin centrele celulelor, la pasul folosit de lucrare (k celule întregi,
+ * `celuleAliniate`, ADR 0314); la alt unghi, nealiniate sau fără celulă, pasul cerut (lucrarea îl împarte egal pe lățimea
+ * reliefului, deci liniile stau cel mult la el). Un pas care nu e bun: nimic.
+ */
+export function liniiReliefDesen(
+  pas: number, celula: number | undefined, aliniat: boolean, unghi: number,
+): { readonly aliniate: boolean; readonly pas: number; readonly celule: number | null } | null {
+  if (!pozitiv(pas)) return null;
+  if (!aliniat || (unghi !== 0 && unghi !== 90) || celula === undefined || !pozitiv(celula)) return { aliniate: false, pas, celule: null };
+  const k = celuleAliniate(pas, celula);
+  return { aliniate: true, pas: k * celula, celule: k };
 }
