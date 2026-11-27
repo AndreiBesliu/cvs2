@@ -17182,3 +17182,15 @@ principală: auditul elicelor, felia 6, singură, la octet)
 - **Limita de folosire:** liniile au comis și împins tot (16:22); pașii de reluare stau în `docs/linii/principala.md`.
 - **Pe test:** loturile 64 (`30bcae13`) și 65 (`75ae7f50`), la 16:33 și 16:50; lotul 66 (relieful), în drum.
 - **Documentele:** decizia și Starea în `CLAUDE.md`; starea din `docs/linii/principala.md`; indexul liniilor.
+
+## 2026-11-27 — Sesiunea principală în cloud: a șaptezeci și doua, a treia și a patra unire (3.Cm-4, 3.Cm-5, 16.A↑f-4, 3.Cm-6) (Model: Claude Opus 5.5)
+
+**Prompt:** „zi-le sesiunilor sa continue cu recomandarile, acolo unde inca asteapta” (unirea, la rapoartele liniilor; ordinul „unește ce se poate”)
+**Started:** 27.11, 16:10. **Completed:** 27.11, 18:18.
+
+- **Loturile, puse unul peste altul:** `unire-2711w` (3.Cm-4, 3.Cm-5 și relieful; completul 46016058170, verde) unit la 17:34
+  (`90e9fc20`); `unire-2711x` (16.A↑f-4; 46019938355, verde) și `unire-2711y` (3.Cm-6; 46020109714, verde), unite la 18:17
+  (`154e8125`); codul, identic cu al loturilor. Completele separate ale lui 3.Cm-4 și 3.Cm-5 (verzi) nu mai cuprindeau
+  relieful, deci nu s-au folosit.
+- **Pe test:** lotul 66 (relieful, `b93fcd5a`), ~18:03; lotul 67, în drum.
+- **Documentele:** decizia și Starea în `CLAUDE.md`; starea din `docs/linii/principala.md`; indexul liniilor.

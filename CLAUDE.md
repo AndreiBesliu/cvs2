@@ -471,6 +471,10 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   silueta în desen și nota bibliotecii; un profil nu se pune înapoi în bibliotecă. **O regulă comună a rândului
   (`formaPeRand`) schimbată de o linie atinge rândurile altor linii (relieful): cine o schimbă spune în raport ce
   rânduri o citesc.** Felia: pornirea +0, totalul +0,7 kB.
+  **Marginea profilată pe o parte (ADR 0304 §4, felia 16.A↑f-4)** gata pe 27.11, unită în `main` pe 27.11 (`154e8125`):
+  centrul frezei la r(0) de desen (drumul frezei plate de 2·r(0)), muchia retrasă după siluetă cu r(d) − r(0), spusă sub
+  Adâncimea; adâncimea cel mult înălțimea profilului; motivele noi `profil-fund` și `profil-adancime`. Felia: pornirea
+  +0, totalul +0,7 kB.
   **Plafonul pornirii 120 kB (ADR 0145, decizia owner-ului din 24.11, „ok, ridica plafonul pornirii la 120 kB”):** după
   lotul al paisprezecelea, pornirea era 109,9 kB, cu ușa 114,4 și cu Atelierul 114,7 / 115, iar feliile următoare ale
   frezelor, exportului și aranjamentelor nu mai încăpeau în 0,3 kB. Poarta judecă tot trei măsuri sub același plafon
@@ -2149,6 +2153,27 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 27.11.2026, seara (a șaptezeci și doua, a treia și a patra unire din cloud): **3.Cm-4 și 3.Cm-5 (claritatea
+  editorului elicelor, grosimea paletelor peste Ø80), 16.A↑f-4 (marginea profilată pe o parte) și 3.Cm-6 (curățenia
+  motorului elicelor, la octet), unite în `main`**, în loturi puse unul peste altul, fiecare pe completul lui (sesiunea
+  principală). **3.Cm-4 și 3.Cm-5** (linia atelierului, `692bd0ab` și `609d1e5a`, PR-ul `AndreiBesliu/cvs2#77`; ADR 0340,
+  constatările 5 și 6): fraza sensului sub „Dreapta / Stânga” la cele trei elice, valorile din afara plajei spuse în motor
+  (`campElice`) și în editor, „Repede” la elice; peste Ø80, paleta elicei și a rotorului se îngroașă cu k = Ø / 80, iar
+  până la Ø80 piesele ies la octet; Easy 3Draw 18.48.0; otrăvurile 35 / 35, 5 / 5, 13 / 13, 2 / 2. Commit-urile n-aveau
+  frezele f-1…f-3, deci au intrat prin lotul `unire-2711w` (`3de94487`, cu relieful în el): completul 46016058170, verde
+  (unit 11 034 / 0, e2e 1 025 / 1 025, funcțiile pe emulatoare 142 / 142); unite la 17:34 (`90e9fc20`). **16.A↑f-4**
+  (linia frezelor, `4930de51`, codul lui `d03f1561`, PR-ul `AndreiBesliu/cvs2#79`; ADR 0304 §4, întrebările 2a și 3a;
+  **mișcă mașina**, proba secțiunii pe hârtie întâi): freza profilată taie și pe o parte, pe drumul frezei plate de 2·r(0),
+  cu muchia retrasă după siluetă mai sus și cu adâncimea cel mult înălțimea profilului; silueta fără fund plat, urechile,
+  degajările, intrările și despărțirea foii, refuzate deocamdată, cu motiv; otrăvurile 18 / 18. Lotul `unire-2711x`
+  (`aad08f65`, ciocnirea cu relieful doar în comentariul din `formaFrezei.ts`): completul 46019938355, verde (unit
+  11 040 / 0, e2e 1 025 / 1 025). **3.Cm-6** (`76911274`): cele trei generatoare de secțiuni pe `sectiunePaleta`, piesele
+  la octet (840), Easy 3Draw 18.49.0; otrăvurile 9 / 9; lotul `unire-2711y` (`9a9a4477`): completul 46020109714, verde.
+  f-4 și 3.Cm-6 unite la 18:17 (`154e8125`); documentul rămâne v32; nimic pe server. **Lotul 66 (relieful) e pe test din
+  27.11, ~18:03** (`b93fcd5a`); loturile acestea pleacă împreună (lotul 67). Liniile au tot lucrul împins și nu pornesc
+  nimic până la resetarea limitei (sâmbătă, 10:00); atelierul are 3.Cm-7 (duza Kort, 18.50.0) la porți. **La owner:**
+  proba pe mașină a marginii profilate (întâi în aer); de încercat editorul elicelor și o elice peste Ø80; restul listei,
+  neschimbat.
 - 27.11.2026, după-amiaza (a șaptezeci și una unire din cloud): **relieful: freza din „Frezele mele” pe rândurile lui
   (18.1↑d-5), desenele grupurilor (d-6), „Dă-i T{n}” (d-7) și finisarea cu toroidala (18.1↑e), unite în `main`**
   (sesiunea principală, ramura `unire-2711z`, din `11fe83e3`). Linia reliefului, ramura `wip/18.1-relief`, `45a05d93`
