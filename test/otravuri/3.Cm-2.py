@@ -22,7 +22,9 @@ o('T02', LG, TP, TP.replace('bine: 0.5', 'bine: 0.6'), 'tipar', 'pragul „făr�
 o('T03', LG, TP, TP.replace('aspru: 1,', 'aspru: 1.2,'), 'tipar', 'pragul suportului la 1,2')
 o('T04', LG, TP, TP.replace('brim: 0.1', 'brim: 0.05'), 'tipar', 'marginea sub 5 % din disc')
 # --- treapta, pe secțiuni
-o('S01', LG, '      if (st.r <= rh) continue;\n      const sec = st.sec, n = sec.length', '      if (st.r < 0) continue;\n      const sec = st.sec, n = sec.length', 'tipar', 'și secțiunile din butuc')
+# S01 (și secțiunile din butuc) și C02 (la fel, prin rh = 0), scoase după prima rulare: echivalente. Secțiunea din butuc e la
+# raza cea mai mică, deci cu β cel mai mare (dedesubtul cel mai drept) și cu coarda cea mai scurtă: treapta ei e mai mică
+# decât a primelor secțiuni din afară, la toate piesele din plajă; cea mai mare treaptă nu se schimbă.
 o('S02', LG, '        const h = TIPAR.strat / 2 + TIPAR.strat * k, xs: number[] = [];', '        const h = TIPAR.strat * (k + 1), xs: number[] = [];', 'tipar', 'straturile tăiate la margine, nu la mijloc')
 o('S03', LG, '          if ((a[1] - h) * (b[1] - h) < 0) xs.push(a[0] + (h - a[1]) / (b[1] - a[1]) * (b[0] - a[0]));\n        }\n        if (xs.length < 2) { inainte = null; continue; }',
   '          if ((a[1] - h) * (b[1] - h) < 0) xs.push(a[0]);\n        }\n        if (xs.length < 2) { inainte = null; continue; }', 'tipar', 'marginea, vârful muchiei tăiate, nu locul tăieturii')
@@ -46,7 +48,6 @@ o('V05', LG, FL, FL.replace('"aspru" : "bine"', '"bine" : "aspru"'), 'tipar', '�
 o('V06', LG, '    return { consola, treapta, fel, ridicata, aria, parte, brim: parte < TIPAR.brim };', '    return { consola, treapta, fel, ridicata, aria, parte, brim: parte > TIPAR.brim };', 'tipar', 'marginea, pe dos')
 # --- ce dau constructoarele
 o('C01', LG, 'prinderi: butuc.prinderi, tipar: tiparPalete(statii, rh, tri, q.consola, R) };', 'prinderi: butuc.prinderi, tipar: tiparPalete(statii, rh, tri, q.consola, q.D) };', 'tipar', 'elicea: discul cu diametrul ca rază')
-o('C02', LG, 'prinderi: butuc.prinderi, tipar: tiparPalete(statii, rh, tri, q.consola, R) };', 'prinderi: butuc.prinderi, tipar: tiparPalete(statii, 0, tri, q.consola, R) };', 'tipar', 'elicea: și secțiunea din butuc')
 o('C03', LG, 'tipar: tiparPalete(q.statii, rh, tri, q.consola, q.R, q.pupa > 0) };', 'tipar: tiparPalete(q.statii, rh, tri, q.consola, q.R, false) };', 'tipar', 'elicea de barcă înclinată spre pupa, fără suport')
 o('C04', LG, 'tipar: tiparPalete(q.statii, rh, tri, q.consola, q.R, q.pupa > 0) };', 'tipar: tiparPalete(q.statii, rh, tri, q.bVarf, q.R, q.pupa > 0) };', 'tipar', 'elicea de barcă: unghiul în locul consolei')
 o('C05', LG, 'tipar: tiparPalete(q.statii, q.rh, tri, q.consola, q.Rt) };', 'tipar: tiparPalete(q.statii, q.rh, tri, q.consola, q.Ri) };', 'tipar', 'rotorul: discul carcasei, nu al paletelor')

@@ -134,13 +134,18 @@ test('verdictul, pe praguri: treapta de cel mult 0,5 mm, fără suport; peste 1 
     [{ tip: 'elice' }, 'aspru', 'treapta 1,53, consola 0,90'],
     // consola de la vârf peste 1 (1,26), dar vârful jos nu iese peste nimic: treapta 0,66, aspru
     [{ tip: 'eliceBarca', diametru: 20, pas: 0.5, latime: 40, inclinare: 0 }, 'aspru', 'treapta 0,66, consola 1,26'],
-    // amândouă peste 1: cu suport
+    // amândouă peste 1: cu suport; pragul cade pe consola de la vârf între pasul 0,65 (0,2 · 2π · 36 / 46,8 = 0,967, aspru)
+    // și 0,6 (0,2 · 2π · 36 / 43,2 = 1,047, suport), cu treapta peste 1,6 la amândouă
+    [{ tip: 'elice', pas: 0.65 }, 'aspru', 'treapta 1,63, consola 0,97'],
+    [{ tip: 'elice', pas: 0.6 }, 'suport', 'treapta 2,03, consola 1,05'],
     [{ tip: 'elice', pas: 0.3 }, 'suport', 'treapta 4,7, consola 2,09'],
     [{ tip: 'ventilator', pas: 0.3 }, 'suport', 'treapta 3,0, consola 2,01'],
   ];
   for (const [d, fel, de] of cazuri) assert.equal(tipar(d).fel, fel, `${JSON.stringify(d)} (${de})`);
   // pragurile cad între valorile pieselor de mai sus
   assert.ok(tipar({ tip: 'eliceBarca', pas: 1.6 }).treapta <= 0.5 && tipar({ tip: 'eliceBarca', pas: 1.5 }).treapta > 0.5);
+  assert.ok(Math.abs(tipar({ tip: 'elice', pas: 0.6 }).consola - 0.2 * 2 * Math.PI * 36 / 43.2) < 1e-9);
+  assert.ok(tipar({ tip: 'elice', pas: 0.65 }).treapta > 1 && tipar({ tip: 'elice', pas: 0.6 }).treapta > 1);
   const jos = tipar({ tip: 'eliceBarca', diametru: 20, pas: 0.5, latime: 40, inclinare: 0 });
   assert.ok(jos.consola > 1 && jos.treapta < 1, `consola ${jos.consola}, treapta ${jos.treapta}`);
 });

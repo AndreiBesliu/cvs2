@@ -1,4 +1,4 @@
-# Atelierul Easy 3Draw: piese, prinderi, construcții, decorațiuni (3.Ca–3.Cl și 3.Tu; ADR 0284, ADR 0283, ADR 0285)
+# Atelierul Easy 3Draw: piese, prinderi, construcții, decorațiuni, elicele după audit (3.Ca–3.Cm și 3.Tu; ADR 0284, ADR 0283, ADR 0285, ADR 0340)
 
 _Linia pieselor noi, a punctelor de prindere și a Modelului ca asamblare, în atelierul Easy 3Draw. Pornită pe 24.11.2026,
 la cererea owner-ului („vreau sa adaugi mai multe tipuri de piese pentru fiecare categoire […] compatibile intre ele nu
@@ -27,7 +27,10 @@ unită în `main` pe 26.11 (`3bf86d15`, PR-ul `AndreiBesliu/cvs2#61`). 3.Ci (con
 cutia de angrenaje, brațul de macara, barca cu elice; 18.42.0), unită în `main` pe 26.11 (`57e58798`, PR-ul
 `AndreiBesliu/cvs2#63`). **3.Ck, pornită pe 26.11 la cuvântul owner-ului (prin sesiunea principală), cu jocul din
 calibrare, s-a despărțit: 3.Ck-1 (placa turnantă; 18.43.0), unită în `main` pe 27.11 (`0a1f26c8`, PR-ul
-`AndreiBesliu/cvs2#68`); 3.Ck-2 (balamaua; 18.44.0), gata pe ramură pe 26.11: ADR 0284 are toate feliile făcute.** Versiunea următoare a pachetului: 18.45.0._
+`AndreiBesliu/cvs2#68`); 3.Ck-2 (balamaua; 18.44.0), unită în `main` pe 27.11 (`439d0395`, PR-ul `AndreiBesliu/cvs2#70`): ADR 0284 are toate
+feliile făcute.** **Auditul elicelor (ADR 0340, acceptat pe 27.11 cu recomandările, 1a–4a, la cuvântul owner-ului prin
+sesiunea principală): feliile 3.Cm-1…3.Cm-7; 3.Cm-1 (otrăvurile elicelor, rulate din nou) și 3.Cm-2 (tipărirea spusă
+cinstit; 18.45.0), gata pe ramură pe 27.11.** Versiunea următoare a pachetului: 18.46.0._
 
 ## Numerele liniei
 
@@ -710,4 +713,36 @@ calibrare, s-a despărțit: 3.Ck-1 (placa turnantă; 18.43.0), unită în `main`
   „Modelul” și construcțiile. Fiecare pornește din `inEngleza` (instalarea, un nume scris în circuit, trecerea în
   engleză). **O piesă nouă își pune pasul în a doua** (în blocul filei ei); a treia își face singură starea de care are
   nevoie (placa cu găuri în Cărămizi, elicea ca LEGO 6041), deci nu depinde de drumul prin galerii.
+
+## 3.Cm-1, gata (27.11, în cloud): otrăvurile elicelor, rulate din nou (ADR 0340)
+
+- **Ce era:** auditul (25.11) găsise 22 de otrăvuri VOID în `3.Tq`, `3.Tr`, `3.Ts`; ancorele lor fuseseră aduse la zi pe
+  26.11, cu 3.Cf-2. De atunci, opt felii ale atelierului, deci toate listele elicelor (`3.Tq`, `3.Tr`, `3.Ts`, `3.Tt` și cele
+  în engleză, 472 de otrăvuri) au fost rulate din nou, în clonă, pe codul de azi.
+- **Listele primesc `E2E_BUILD = False`:** spec-urile elicelor își fac pagina din surse (`paginiPlanificator`), deci
+  build-ul aplicației înaintea fiecărei otrăvi nu schimba nimic din ce otrăvesc (doar ținea cu ~1 min mai mult).
+- **Două lucrări de otrăvuri deodată:** a doua clonă (`otravuri-cm2`, cu `node_modules` legat de prima și cu configul pe
+  portul 4175) lasă 3.Cm-2 să ruleze cât 3.Cm-1 încă rula pe 4173. Cât rulează amândouă, nicio altă probă e2e în arborele de
+  lucru: o probă căzută din încărcare ar număra o otravă prinsă degeaba.
+
+## 3.Cm-2, gata (27.11, în cloud): tipărirea elicelor spusă cinstit (ADR 0340)
+
+- **Unde e:** motorul, după `paleteElice`: `TIPAR`, `treaptaPalete`, `ariaFeliei`, `tiparPalete`; câmpul `tipar` din
+  `Rezultat`, dat de `elice`, `eliceBarca` și `ventilator` (rotorul); atelierul: `textTipar` (după `textVentilator`),
+  paragraful `#at-tipar` din cele trei editoare, umplut în `construiesteCurent` (ca `#at-p-unghi`), copiat de `pieseDin`.
+- **Consola de la vârf nu e treapta:** 0,2 / tan β e a corzii; pe paleta curbată, treapta crește spre muchia de sus (1,53
+  la elicea implicită), iar la un vârf jos, de un strat, scade (0,67 la elicea de barcă Ø20 cu pasul 0,5). Treapta se
+  măsoară pe secțiuni (s, h), cu straturile la 0,1 + 0,2k, pe amândouă marginile (sensul „stânga” iese pe cealaltă).
+- **Verdictul:** fără suport până la 0,5 mm (treapta); cu suport sub vârfuri doar când și treapta, și consola trec de 1 mm;
+  altfel, aspru pe alocuri; înclinată spre pupa, cu suport sub palete. Brim sub 10 % din disc pe primul strat. Pragurile,
+  în `TIPAR`; o schimbare a lor schimbă textele din e2e (care cer cifrele). Întrebarea a / b / c a verdictului e la owner
+  (fișa etapei 3).
+- **Probele:** unitară `trenulet.tipar.test.ts` (treapta și aria, din plasă, cu o reimplementare separată); e2e în cele
+  patru spec-uri ale elicelor și în proba în engleză (partea B). **O probă e2e care cere textul tipăririi îi ia cifrele din
+  motor pentru starea exactă a editorului:** la ventilator, lățimea paletelor schimbată mai sus în probă dă altă treaptă
+  (1,40, nu 2,96).
+- **Ancorele mutate:** 12, în `3.Tq`, `3.Tr`, `3.Tt` și listele lor în engleză (textele consolei au plecat în paragraful
+  tipăririi); cele două otrăvuri ale consolei la milimetru au fost înlocuite cu otrăvuri pe același text (fără paletă,
+  înclinarea și la 0°), cu motivul în listă.
+- **Easy 3Draw 18.45.0**, cu rândul de „ce e nou”. Doar pachetul extensiei se schimbă.
 
