@@ -36,8 +36,10 @@ o('G06', FF, "    if (tip !== 'profil') return 'profil';\n    if (latura === 'pe
 o('G07', JB, "t.latura !== 'pe-linie' ? fundProfil(t.scula.forma.puncte) : t.scula.diametru / 2);", "t.latura !== 'pe-linie' ? t.scula.diametru / 2 : t.scula.diametru / 2);", 'm',
   'drumul marginii cu raza frezei întregi (intră în piesă)')
 o('G08', JB, "diametruScula: 2 * razaTraseu(u),", "diametruScula: u.scula.diametru,", 'm', 'profilul tăieturii cu diametrul frezei, nu cu fundul plat')
-o('G09', JB, "pr.treceri[0]?.contururi ?? [], razaTraseu(t), pereti);", "pr.treceri[0]?.contururi ?? [], R * 0.1, pereti);", 'm',
-  'invarianta judecată cu o rază mai mică decât a drumului: o margine care intră în piesă nu se mai vede')
+# G09: o rază mai mică în verificare doar o slăbește (cu un drum bun nu se vede; a încercat-o autorul: scapă); otrava e raza
+# frezei întregi, ca înainte de felie: marginea, bună, ar fi refuzată ca intrând în piesă.
+o('G09', JB, "pr.treceri[0]?.contururi ?? [], razaTraseu(t), pereti);", "pr.treceri[0]?.contururi ?? [], R, pereti);", 'm',
+  'invarianta judecată cu raza frezei întregi: marginea profilată refuzată ca intrând în piesă')
 o('G10', JB, "        if (o.urechi || o.colturi || o.intrari || o.despartire === true) {", "        if (o.urechi) {", 'm',
   'degajările, intrările și despărțirea lăsate pe marginea profilată (calculate cu raza frezei)')
 o('G11', JB, "        if (motivRotunda === 'profil-adancime') {", "        if (motivRotunda === 'profil-adancime' && false) {", 'm',
@@ -59,5 +61,5 @@ o('G18', DE, "    if (m === 'adancime') return t('motiv.profil-adancime', { inal
 
 SETURI = {
     'm': ['test/unit/profil.margine.test.ts', 'test/unit/export.profil.test.ts', 'test/unit/canelura.profil.test.ts', 'test/unit/profil.lucrare.test.ts'],
-    'e2e': ['test/e2e/export.profil.spec.ts'],
 }
+E2E = ['test/e2e/export.profil.spec.ts']

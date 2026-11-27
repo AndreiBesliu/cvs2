@@ -232,6 +232,42 @@ parametrice (editorul siluetei desenate e f-5).
   Probele vechi care știau profilurile „în curând” au fost întoarse (catalogul, Tăierea pe canelură cu cele 11 rotunjiri).
 - **Neschimbate:** nimic pe server; documentul rămâne v32; programul fără profil, octet cu octet.
 
+## Implementarea (16.A↑f-4)
+
+Pe 27.11, pe `wip/16.A-freze-e`, peste f-3 (întrebările 2a și 3a aplicate, partea marginii). Mișcă mașina, deci proba secțiunii
+pe hârtie a fost scrisă întâi.
+
+- **Pe hârtie** (`src/model/profilMargine.ts`, pur): `fundProfil` (r(0), cel mai mare r cu h = 0), `inaltimeProfil` (h la
+  capăt) și `retragereMuchie` (r(d) − r(0), cu r(d) cel mai mic r cu h ≥ d, interpolat pe linia siluetei).
+- **Regula** (`motivFormaPeOperatie`): pe o parte, profilul merge cu fund plat (altfel `profil-fund`: centrul n-ar avea unde
+  sta de desen) și cu adâncimea cel mult înălțimea profilului (altfel `profil-adancime`, și când adâncimea lipsește). Pe linie,
+  ca în f-2; în buzunar, la găurire, în V-carve și pe relief, `profil`.
+- **Drumul** e al frezei plate de 2·r(0), mișcare cu mișcare (`razaTraseu` în `src/cam/job.ts`, dat profilului ca diametru),
+  pe exterior, interior, stânga și dreapta, cu rampa. Invarianta 2 se judecă tot cu raza drumului: deasupra fundului, freza
+  taie silueta în piesă, cum cere §4.
+- **Refuzurile lucrării**, cu T-ul frezei: fără fund plat; peste înălțimea profilului (cu înălțimea și adâncimea în motiv);
+  cu urechi, degajări, intrări sau despărțirea foii (le calculează lucrarea cu raza frezei, nu cu fundul siluetei: vin, dacă
+  e nevoie, pe o sub-felie a lor). Pe o freză în plus, profilul rămâne refuzat („taie doar ca profil”).
+- **Fereastra exportului:** aceeași regulă, pe rând (`motivProfilRand`, comparată cu modelul de o probă), cu motivul ei
+  (fundul, adâncimea cu înălțimea, opțiunile); sub **Adâncimea**, nota „La fund, peretele cade pe desen; muchia de sus se
+  retrage cu … mm, după silueta frezei” (`HartieRand.margine`, din `retragereMuchie`). Tăierea și lista „Din frezele mele”
+  oferă pe o parte doar profilurile destul de înalte pentru adâncimea scrisă (la 3 mm pe exterior, 10 din cele 11 rotunjiri
+  ale catalogului; r2 are profilul de 2 mm).
+- **Probele:**
+  - `test/unit/profil.margine.test.ts`, scrisă întâi: valorile pe hârtie; regula; drumul față de freza plată de 2·r(0)
+    (exterior, interior, rampa, stânga și dreapta pe o cale deschisă); secțiunea marginii simulate față de hârtie, celulă
+    cu celulă, la 0,01 mm (z = min(0, −d + h(ρ)), ρ fiind distanța de la centrul frezei), cu dinți pe retragerea muchiei și
+    nimic tăiat dincolo de ea; refuzurile.
+  - `test/unit/export.profil.test.ts`: regula ferestrei față de model, la 2, 3 și 3,5 mm; rândul „pe hârtie” (3 − √5 la
+    rotunjirea R3 Ø12, la 2 mm); listele pe o parte.
+  - `test/e2e/export.profil.spec.ts`: aceeași rotunjire pe exterior, la 2 mm: nota (0,764 mm), programul descărcat judecat
+    de oracolul simulării cu silueta pe hârtie (abaterea ≤ 0,001 mm, nimic tăiat în piesă dincolo de muchie); la 3,5 mm,
+    refuzul cu înălțimea.
+
+  Probele f-2 și f-3 care cereau profilul refuzat pe o parte cer acum `profil-adancime` peste înălțime;
+  `frezeTaiere.spec.ts` numără rotunjirile oferite pe exterior.
+- **Neschimbate:** nimic pe server; documentul rămâne v32; programul fără profil pe o parte, octet cu octet.
+
 ## Se redeschide dacă
 
 - o placă arată că marginea profilată sau canelura cu profilul nu ies ca pe hârtie;
