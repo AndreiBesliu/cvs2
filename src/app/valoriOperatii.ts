@@ -50,11 +50,15 @@ function cuRegimMana(x: Operatie['scula'], regim: ValoriLucru | null | undefined
   return { ...x, regim: { turatie: regim.turatie, avans: regim.avans, plonjare: regim.plonjare } };
 }
 
-/** Numele unei freze scrise de mână, după formă: „freza plata”, „freza V60”, „freza V30 varf 0.25”, „freza bila”, „freza toroidala r1”. */
+/**
+ * Numele unei freze scrise de mână, după formă: „freza plata”, „freza V60”, „freza V30 varf 0.25”, „freza bila”, „freza toroidala
+ * r1”, „freza profilata”.
+ */
 function numeDupaForma(f: FormaRand | undefined): string {
   if (!f) return 'freza plata';
   if (f.tip === 'bila') return 'freza bila';
   if (f.tip === 'toroidala') return `freza toroidala r${f.raza}`;
+  if (f.tip === 'profil') return 'freza profilata';
   return `freza V${f.unghi}${(f.varf ?? 0) > 0 ? ` varf ${f.varf}` : ''}`;
 }
 
@@ -76,6 +80,15 @@ function sculaScrisa(o: Operatie['scula'], s: SculaOperatie): Operatie['scula'] 
     const { varf: _v, ...formaVeche } = v ?? {};
     void _v;
     return cuOrigine(o, { ...baza, numar: s.numar, diametru: s.diametru, nume, forma: { ...formaVeche, tip: 'v', unghi: f.unghi, ...(varf > 0 ? { varf } : {}) } }, s.origine, numeMana, s.regim);
+  }
+  if (f?.tip === 'profil') {
+    // Profilul desenat (ADR 0304, felia 16.A↑f-3): punctele rândului (aceleași ca în document, cât nu vine altă freză); pe același
+    // fel, câmpurile necunoscute ale formei rămân, iar numele rămâne cât silueta e aceeași.
+    const vechiul = vechea?.tip === 'profil' ? vechea : undefined;
+    const puncte = f.puncte.map(([r, h]): [number, number] => [r, h]);
+    const aceeasi = vechiul !== undefined && vechiul.puncte.length === puncte.length
+      && vechiul.puncte.every(([r, h], i) => r === puncte[i]![0] && h === puncte[i]![1]);
+    return cuOrigine(o, { ...baza, numar: s.numar, diametru: s.diametru, nume: aceeasi ? o.nume : numeMana, forma: { ...(vechiul ?? {}), tip: 'profil', puncte } }, s.origine, numeMana, s.regim);
   }
   if (f) {
     // Bila și toroidala (ADR 0303, felia 16.A↑e-4): pe același fel, forma din document se îmbină (un câmp necunoscut rămâne),

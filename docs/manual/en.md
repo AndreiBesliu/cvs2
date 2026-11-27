@@ -1520,9 +1520,10 @@ catalogue bit shows its details; **Add to my bits** copies it to the library, wi
 a group, and **Add everything shown**, next to the title (after the search and the filter), add several at once. A bit you
 already have (same kind, diameter, angle, tip, radius and fillet) is not added twice: the details say **Already in my bits.**
 
-**Ball, bull nose, tapered and drill bits and the profiles** (roundover, ogee, Roman ogee, raised panel) sit in your library
-and in the catalogue, marked **coming to projects**: in the Cutting section you can pick them once the app can cut them.
-Until then, you keep them together with the others. A veining (core box) bit is a **Ball**.
+**Ball, bull nose and the profiles** (roundover, ogee, Roman ogee, raised panel) can be picked in projects too: ball and bull
+nose on the line, in a pocket and on one side, the profiles for now only on the line (a groove). **Tapered and drill bits** sit
+in your library and in the catalogue, marked **coming to projects**: in the Cutting section you can pick them once the app can
+cut them. A veining (core box) bit is a **Ball**.
 
 **New bit** opens the editor, with the fields:
 - **Name**: left empty, the bit gets the name proposed from its kind and diameter (“Flat Ø6”, “V60 Ø6”, “Engraving 30° tip
@@ -2057,6 +2058,14 @@ and the bit's rounded corner is left at the floor. The floor does not come out f
 under **Side step**, as "Scallop on the floor: 0.25 mm between the rings, at most 1.2 mm". At the ring corners and in the middle
 of the pocket the scallop is larger, up to the second value. A smaller side step makes the scallop smaller. With a rest cutter or
 a straight-walled inlay, the export stops: rest cutters and the plug need a flat bit.
+
+**The profile bit on the line.** A roundover, an ogee, a Roman ogee or a raised panel bit from **My bits** is picked on a cut
+**on the line**, from the **From my bits** list: the shape becomes **profile (from “My bits”)**, and the bit drawing shows its
+silhouette. The silhouette and the diameter belong to the bit in your library: the diameter cannot be changed by hand, and
+picking another shape removes the profile. The centre of the bit runs on the line, as with a flat bit, and the groove comes out
+with the silhouette's section, mirrored: at the depth you wrote, as far as the silhouette reaches below the face; deeper than
+the profile's height, the walls go down straight, at the bit's diameter. On one side, in a pocket, when drilling and in
+V-carving, the export stops, with the reason: the profiled edge comes later. The sheet report names the bit "profile".
 
 **The ball nose and the bull nose on one side.** On a profile **on one side** (outside, inside, left, right) too, the shape can
 be **ball nose** or **bull nose**, if the depth is at least the corner radius (for a ball nose, half the diameter). The path is

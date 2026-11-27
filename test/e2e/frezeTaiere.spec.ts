@@ -63,7 +63,7 @@ test('de la prima pornire, frezele standard: doar cele plate pe un profil; aleas
   await expect(page.getByTestId('jurnal')).toHaveText('0 erori în jurnalul local');
 });
 
-test('bila și toroidala se oferă pe linie (canelura, ADR 0303, 16.A↑e-4) și pe o parte de la adâncimea razei colțului (16.A↑e-6); felurile fără CAM încă (burghiul, profilurile), nicăieri', async ({ page }) => {
+test('bila și toroidala se oferă pe linie (canelura, ADR 0303, 16.A↑e-4) și pe o parte de la adâncimea razei colțului (16.A↑e-6); profilurile doar pe linie (16.A↑f-3); burghiul, nicăieri', async ({ page }) => {
   await page.goto('/');
   // Din catalogul ferestrei „Frezele mele”: bilele, toroidalele, burghiele și rotunjirile, în bibliotecă.
   await page.locator('[data-editare="cont"]').click();
@@ -94,13 +94,15 @@ test('bila și toroidala se oferă pe linie (canelura, ADR 0303, 16.A↑e-4) și
   await expect(oferite(page)).toHaveCount(3 + 3 + 4);
   pe = await oferite(page).allTextContents();
   expect(pe.filter((n) => /^Bilă Ø(3|4|6)/.test(n)), pe.join(' | ')).toEqual([]);
-  // Pe linie (canelura): plate, V-uri, cele 12 bile și cele 6 toroidale; burghiele și rotunjirile, tot nu.
+  // Pe linie (canelura): plate, V-uri, cele 12 bile, cele 6 toroidale și, din 16.A↑f-3 (ADR 0304), cele 11 rotunjiri;
+  // burghiele, tot nu.
   await taierea(page).locator('[data-camp="rol"]').selectOption('pe-linie');
-  await expect(oferite(page)).toHaveCount(6 + 12 + 6);
+  await expect(oferite(page)).toHaveCount(6 + 12 + 6 + 11);
   const nume = await oferite(page).allTextContents();
   expect(nume).toContain('Bilă Ø6');
   expect(nume.some((n) => n.startsWith('Toroidală Ø6')), nume.join(' | ')).toBe(true);
-  expect(nume.filter((n) => /Burghiu|Rotunjire/.test(n))).toEqual([]);
+  expect(nume.filter((n) => /Rotunjire/.test(n))).toHaveLength(11);
+  expect(nume.filter((n) => /Burghiu/.test(n))).toEqual([]);
 });
 
 test('V-carve: doar frezele în V, iar fereastra exportului arată unghiul frezei alese', async ({ page }) => {

@@ -202,13 +202,15 @@ export function cuFrezaAleasa(p: Rand, unde: UndeFreza, f: FrezaOferita, numar: 
 }
 
 /**
- * Forma unei freze pe rând: în V, cu unghiul și vârful (ADR 0090, 0092; lipsă = ascuțit), bila (ADR 0312) sau toroidala, cu raza
- * colțului (ADR 0303); lipsă = plată.
+ * Forma unei freze pe rând: în V, cu unghiul și vârful (ADR 0090, 0092; lipsă = ascuțit), bila (ADR 0312), toroidala, cu raza
+ * colțului (ADR 0303), sau profilul desenat, cu punctele lui (ADR 0304); lipsă = plată.
  */
 export type FormaRand =
   | { readonly tip: 'v'; readonly unghi: number; readonly varf?: number }
   | { readonly tip: 'bila' }
-  | { readonly tip: 'toroidala'; readonly raza: number };
+  | { readonly tip: 'toroidala'; readonly raza: number }
+  // Profilul desenat (ADR 0304, felia 16.A↑f-3): silueta ca puncte (r, h); pe rând doar de citit, vine din bibliotecă.
+  | { readonly tip: 'profil'; readonly puncte: readonly (readonly [number, number])[] };
 
 /** Raza colțului cu care pornește o toroidală aleasă pe rând (ADR 0303, felia 16.A↑e-4), în mm. */
 export const RAZA_COLT_IMPLICITA = 1;
@@ -219,7 +221,19 @@ export function formeEgale(a: FormaRand | undefined, b: FormaRand | undefined): 
   if (a === undefined || b === undefined) return a === b;
   if (a.tip === 'v') return b.tip === 'v' && egal(a.unghi, b.unghi) && egal(a.varf ?? 0, b.varf ?? 0);
   if (a.tip === 'toroidala') return b.tip === 'toroidala' && egal(a.raza, b.raza);
+  if (a.tip === 'profil') {
+    return b.tip === 'profil' && a.puncte.length === b.puncte.length
+      && a.puncte.every(([r, h], i) => egal(r, b.puncte[i]![0]) && egal(h, b.puncte[i]![1]));
+  }
   return b.tip === 'bila';
+}
+
+/**
+ * Profilul desenat pe rând (ADR 0304 §3): deocamdată doar pe linie (canelura, felia 16.A↑f-2); marginea profilată vine pe o
+ * sub-felie a ei. Aceeași regulă ca `motivFormaPeOperatie` din model (o probă le compară).
+ */
+export function profilPermis(p: Pick<Rand, 'tip' | 'latura' | 'formaScula'>): boolean {
+  return p.formaScula !== 'profil' || (p.tip === 'profil' && p.latura === 'pe-linie');
 }
 
 /**
@@ -253,9 +267,10 @@ export function razaColtRand(p: Pick<Rand, 'formaScula' | 'diametruScula' | 'raz
  * Forma frezei operației citită din rând (ADR 0303, felia 16.A↑e-4): `null` = plată; o formă; `undefined` = de necitit (un
  * unghi V sau o rază a colțului care nu e un număr, ori o rază ≤ 0). Vârful V de 0 (ascuțit) nu se scrie (ADR 0092).
  */
-export function formaDinRand(p: Pick<Rand, 'formaScula' | 'unghiV' | 'varfV' | 'razaColt'>): FormaRand | null | undefined {
+export function formaDinRand(p: Pick<Rand, 'formaScula' | 'unghiV' | 'varfV' | 'razaColt' | 'profil'>): FormaRand | null | undefined {
   if (p.formaScula === 'plata') return null;
   if (p.formaScula === 'bila') return { tip: 'bila' };
+  if (p.formaScula === 'profil') return p.profil !== undefined && p.profil.length >= 2 ? { tip: 'profil', puncte: p.profil } : undefined;
   if (p.formaScula === 'toroidala') {
     const r = citesteNumar(p.razaColt);
     return r !== null && r > 0 ? { tip: 'toroidala', raza: r } : undefined;
@@ -265,9 +280,10 @@ export function formaDinRand(p: Pick<Rand, 'formaScula' | 'unghiV' | 'varfV' | '
 }
 
 /** Câmpurile rândului care scriu forma `f` (inversa lui `formaDinRand`); celelalte câmpuri ale formei rămân cum sunt. */
-export function campuriForma(f: FormaRand | undefined, text: (x: number) => string = String): Partial<Pick<Rand, 'formaScula' | 'unghiV' | 'varfV' | 'razaColt'>> {
+export function campuriForma(f: FormaRand | undefined, text: (x: number) => string = String): Partial<Pick<Rand, 'formaScula' | 'unghiV' | 'varfV' | 'razaColt' | 'profil'>> {
   if (f === undefined) return { formaScula: 'plata' };
   if (f.tip === 'bila') return { formaScula: 'bila' };
+  if (f.tip === 'profil') return { formaScula: 'profil', profil: f.puncte };
   if (f.tip === 'toroidala') return { formaScula: 'toroidala', razaColt: text(f.raza) };
   return { formaScula: 'v', unghiV: text(f.unghi), varfV: text(f.varf ?? 0) };
 }
@@ -303,7 +319,7 @@ export function locuriFreze(p: Rand): LocFrezaRand[] {
 
 /** O valoare a frezei care diferă între proiect și bibliotecă (ADR 0300 §5): câmpul, valoarea de aici și cea din bibliotecă. */
 export type DiferentaFreza = {
-  readonly camp: 'nume' | 'diametru' | 'forma' | 'unghi' | 'varf' | 'raza' | 'turatie' | 'avans' | 'plonjare' | 'tais';
+  readonly camp: 'nume' | 'diametru' | 'forma' | 'unghi' | 'varf' | 'raza' | 'silueta' | 'turatie' | 'avans' | 'plonjare' | 'tais';
   readonly aici: number | string | null; readonly acolo: number | string | null;
 };
 
@@ -332,6 +348,11 @@ export function diferenteFreza(loc: LocFrezaRand, f: FrezaOferita): DiferentaFre
     pune('unghi', a?.unghi ?? null, b?.unghi ?? null);
     pune('varf', a ? a.varf ?? 0 : null, b ? b.varf ?? 0 : null);
     pune('raza', razaColt(loc.forma), razaColt(s.forma));
+    // Profilul desenat (ADR 0304): altă siluetă, spusă prin înălțimea ei (chiar egală: punctele diferă).
+    const pa = loc.forma, pb = s.forma;
+    if (pa?.tip === 'profil' && pb?.tip === 'profil' && !formeEgale(pa, pb)) {
+      rez.push({ camp: 'silueta', aici: pa.puncte[pa.puncte.length - 1]![1], acolo: pb.puncte[pb.puncte.length - 1]![1] });
+    }
   }
   pune('turatie', o?.regim?.turatie ?? null, r.regim?.turatie ?? null);
   pune('avans', o?.regim?.avans ?? null, r.regim?.avans ?? null);
@@ -396,7 +417,8 @@ export function cuValorileNoi(p: Rand, unde: UndeFreza, f: FrezaOferita, text: (
  */
 export type CopieRand = {
   readonly id: string; readonly rev: number; readonly nume: string; readonly numar: number; readonly diametru: number;
-  readonly forma?: FormaRand;
+  /** Forma copiei; fără profilul desenat: copia ține doar punctele, nu felul parametric, deci nu se pune înapoi (16.A↑f-3). */
+  readonly forma?: Exclude<FormaRand, { readonly tip: 'profil' }>;
   readonly regim?: { readonly turatie: number; readonly avans: number; readonly plonjare: number };
   readonly tais?: number;
   readonly pas: number | null; readonly pasLateral: number | null;
@@ -410,11 +432,17 @@ export type RezultatInapoi =
   | { readonly ok: true; readonly freza: FrezaOferita }
   | { readonly ok: false; readonly motiv: 'plina' | 'versiune' | 'valori' | 'exista' | 'eroare' };
 
-/** Copia frezei de pe locul `unde` al rândului; null fără origine, pe un loc care nu e pe rând sau cu T-ul ori Ø de necitit. */
+/**
+ * Copia frezei de pe locul `unde` al rândului; null fără origine, pe un loc care nu e pe rând, cu T-ul ori Ø de necitit, sau cu
+ * un profil desenat.
+ */
 export function copieDeReadus(p: Rand, unde: UndeFreza): CopieRand | null {
   const loc = locuriFreze(p).find((l) => acelasiLoc(l.unde, unde));
   const o = loc?.origine;
   if (!loc || !o) return null;
+  // Profilul desenat (ADR 0304): copia ține punctele, nu felul și valorile profilului parametric, deci n-are freză de pus înapoi
+  // (editorul siluetei desenate vine în f-5).
+  if (loc.forma?.tip === 'profil') return null;
   const numarText = unde === 'scula' ? p.numarScula : unde === 'fund' ? p.numarSculaFund : unde === 'dop' ? p.numarSculaDop
     : unde === 'banda' ? p.numarSculaBanda : (unde.rest === 'fund' ? p.restFund : unde.rest === 'dop' ? p.restDop : p.rest)[unde.k]?.numar;
   const pasLateralText = unde === 'scula' ? (p.tip === 'buzunar' ? p.pasLateral : null) : unde === 'fund' ? p.pasLateralFund
@@ -808,7 +836,9 @@ export type Rand = {
    * Forma frezei (ADR 0090): plată, în V (unghiul și diametrul vârfului plat, ADR 0092; 0 = ascuțit), bilă sau toroidală (raza
    * colțului, ADR 0303), ca text. Câmpurile celorlalte forme rămân scrise, ca o formă pusă la loc să nu le piardă.
    */
-  readonly formaScula: 'plata' | 'v' | 'bila' | 'toroidala'; readonly unghiV: string; readonly varfV: string; readonly razaColt: string;
+  readonly formaScula: 'plata' | 'v' | 'bila' | 'toroidala' | 'profil'; readonly unghiV: string; readonly varfV: string; readonly razaColt: string;
+  /** Punctele profilului desenat (ADR 0304), cât rândul are o freză profilată: vin din document sau din bibliotecă, doar de citit. */
+  readonly profil?: readonly (readonly [number, number])[];
   /** Direcția pe linie (ADR 0092 §4): „” = ca desenul. */
   readonly directie: '' | DirectieOperatie;
   readonly latura: Latura; readonly sens: Sens; readonly adancime: string; readonly pas: string;

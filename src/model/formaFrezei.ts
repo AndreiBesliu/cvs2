@@ -82,22 +82,25 @@ export function felFrezei(forma: FormaSculaDoc | undefined): 'plată' | 'în V' 
 
 /**
  * Forma pe care o poartă freza operației pe un rând editabil al ferestrei exportului (ADR 0290, `exportRand.ts`): plata (fără
- * formă), V-ul (cu vârful plat) și, din 16.A↑e-4, bila și toroidala (cu raza colțului, ADR 0303). O formă necunoscută (a unei
+ * formă), V-ul (cu vârful plat), din 16.A↑e-4 bila și toroidala (cu raza colțului, ADR 0303), iar din 16.A↑f-3 profilul desenat
+ * (cu punctele lui, doar de citit, ADR 0304). O formă necunoscută (a unei
  * versiuni mai noi) n-are rând: Exportă o lasă neschimbată, iar lucrarea o refuză cu motivul ei, deci o freză nu devine pe
  * tăcute o plată.
  */
 export function formaPeRand(forma: FormaSculaDoc | undefined): boolean {
-  return forma === undefined || forma.tip === 'v' || forma.tip === 'bila' || forma.tip === 'toroidala';
+  return forma === undefined || forma.tip === 'v' || forma.tip === 'bila' || forma.tip === 'toroidala' || forma.tip === 'profil';
 }
 
 /**
  * Operațiile cu un rând editabil în fereastra exportului: cele pe contur (nu finisarea și degroșarea reliefului, cu rândul lor
  * doar de citit), cu freza operației purtată de rând (`formaPeRand`) și cu frezele în plus (de rest, ale fundului plat, ale
- * dopului, a benzii) plate sau în V, ca până acum: rândul nu le poartă o formă rotundă, deci Exportă ar face din ea o plată.
+ * dopului, a benzii) plate sau în V, ca până acum: rândul nu le poartă o formă rotundă sau un profil, deci Exportă ar face din
+ * ea o plată.
  */
 export function operatieCuRand(o: Operatie): boolean {
   return o.tip !== 'finisare' && o.tip !== 'degrosare'
-    && frezeleOperatiei(o).every((f) => formaPeRand(f.scula.forma) && (f.cale === 'scula' || (f.scula.forma?.tip !== 'bila' && f.scula.forma?.tip !== 'toroidala')));
+    && frezeleOperatiei(o).every((f) => formaPeRand(f.scula.forma)
+      && (f.cale === 'scula' || (f.scula.forma?.tip !== 'bila' && f.scula.forma?.tip !== 'toroidala' && f.scula.forma?.tip !== 'profil')));
 }
 
 /**

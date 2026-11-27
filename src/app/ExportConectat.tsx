@@ -132,12 +132,15 @@ function faraRanguri(doc: Document): Document {
 
 /**
  * Forma frezei din document, cum o poartă rândul ferestrei (`FormaRand`): în V (unghiul, vârful), bila sau toroidala (raza
- * colțului, ADR 0303, felia 16.A↑e-4); câmpurile necunoscute ale formei rămân în document (Exportă le îmbină). Lipsă = plată.
+ * colțului, ADR 0303, felia 16.A↑e-4), profilul desenat (punctele, ADR 0304); câmpurile necunoscute ale formei rămân în document
+ * (Exportă le îmbină). Lipsă = plată.
  */
 function formaRand(f: Operatie['scula']['forma']): { readonly forma?: FormaRand } {
   if (f?.tip === 'v') return { forma: { tip: 'v', unghi: f.unghi, ...(f.varf !== undefined ? { varf: f.varf } : {}) } };
   if (f?.tip === 'bila') return { forma: { tip: 'bila' } };
   if (f?.tip === 'toroidala') return { forma: { tip: 'toroidala', raza: f.raza } };
+  // Profilul desenat (ADR 0304, felia 16.A↑f-3): punctele, doar de citit pe rând.
+  if (f?.tip === 'profil') return { forma: { tip: 'profil', puncte: f.puncte } };
   return {};
 }
 
