@@ -53,7 +53,7 @@ o('E04', A, NU, NU.replace('> 0 ?', '> 5 ?'), 'e2e', 'înclinarea mică nu apare
 o('E05', A, NU, NU.replace('tr`, spre pupa ${d.pupa}°`', 'tr`, spre pupa ${d.inclinare}°`'), 'e2e', 'numele spune înclinarea înapoi')
 o('E06', A, '${fmt(d.pas ?? 1, 2)}${l}${i}${pu}${s}${g}${c}`;', '${fmt(d.pas ?? 1, 2)}${l}${pu}${i}${s}${g}${c}`;', 'e2e', 'în nume, spre pupa înaintea înclinării înapoi')
 o('E07', A, '${fmt(d.pas ?? 1, 2)}${l}${i}${pu}${s}${g}${c}`;', '${fmt(d.pas ?? 1, 2)}${l}${i}${s}${g}${c}`;', 'e2e', 'numele fără înclinarea spre pupa (două piese diferite, același nume)')
-o('E08', A, '    if (c.pupa > 0) return tr`Pasul', '    if (c.pupa > 10) return tr`Pasul', 'e2e', 'textul nu spune de suport la 10°')
+o('E08', A, '    return c.pupa > 0 ? baza + " "', '    return c.pupa > 10 ? baza + " "', 'e2e', 'textul nu spune înclinarea la 10°')
 o('E09', A, 'urcă de pe masă până la ${fmt(c.urca, 1)} mm la vârf', 'urcă de pe masă până la ${fmt(c.urca, 0)} mm la vârf', 'e2e', 'cât urcă vârful, la întreg')
 o('E10', A, 'urcă de pe masă până la ${fmt(c.urca, 1)} mm la vârf', 'urcă de pe masă până la ${fmt(c.Hh - 8, 1)} mm la vârf', 'e2e', 'cât urcă vârful, din butuc')
 o('E11', A, 'Înclinată spre pupa cu ${fmt(c.pupa, 0)}°', 'Înclinată spre pupa cu ${fmt(c.inc, 0)}°', 'e2e', 'textul spune înclinarea înapoi')

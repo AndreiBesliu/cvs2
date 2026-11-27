@@ -18,6 +18,12 @@
       ],
       "noutati": [
         {
+          "versiune": "18.45.0",
+          "data": "2026-11-27",
+          "ro": "Elicele își spun cinstit tipărirea: cât iese un strat peste cel de dedesubt, măsurat pe palete, dacă iese aspru sau cere suport și când ajută o margine de aderență (brim).",
+          "en": "Propellers now tell you honestly how they print: how far a layer overhangs the one below, measured on the blades, whether it comes out rough or needs supports, and when a brim helps."
+        },
+        {
           "versiune": "18.44.0",
           "data": "2026-11-26",
           "ro": "Balamaua: o placă cu un bolț la capăt și una cu cleme, care se prind pe el și se rotesc, de 1 sau 2 știfturi lățime și 1–4 lungime. „Fă balamaua” pune amândouă jumătățile în listă.",
@@ -214,8 +220,8 @@
           }
         }
       ],
-      "versiune": "18.44.0",
-      "continut": "31d46e643aad5d6cce18ef43f4a2f9f1266d7af37f5ca5bbd72dff814f24bda4"
+      "versiune": "18.45.0",
+      "continut": "062a61b46781a5f46b98bb8e6f14302d651c56458affac78c875a9c819228496"
     }
   ]
 }

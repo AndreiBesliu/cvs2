@@ -60,12 +60,14 @@ test('înclinarea spre pupa: 0 la început; la întreg, doar 0–15; numele, but
   await expect(nume).toHaveText(IMPLICIT);
   await expect(camp).toHaveValue('0');
   await expect(page.locator('label[for="at-eb-pupa"]')).toContainText('Înclinarea spre pupa (°)');
-  await expect(info).toContainText('Se tipărește fără suport, cu partea dinspre barcă pe masă: la vârf, un strat iese cu 0,6 mm peste cel de dedesubt.');
+  const tipar = page.locator('#at-tipar');
+  await expect(tipar).toContainText('Se tipărește cu partea dinspre barcă pe masă, fără suport');
   // pe hârtie: 16 · tan 10° = 2,82; cel mai înalt vârf al paletelor, 12,157 → butucul de 12,2
   await seteaza(page, '#at-eb-pupa', '10');
   await expect(nume).toHaveText(IMPLICIT + ', spre pupa 10°');
   await expect(page.locator('#at-cote')).toContainText('× 12,2 mm');
-  await expect(info).toHaveText('Pasul 40 mm (1 × diametrul): paleta stă la 58° lângă butuc și la 18° la vârf. Paletele acoperă 55 % din disc; butucul e de Ø8 × 12,2 mm. Înclinată spre pupa cu 10°: muchia de jos a paletei urcă de pe masă până la 2,8 mm la vârf, deci se tipărește cu suport sub palete (îl pune programul de feliere), tot cu partea dinspre barcă pe masă.');
+  await expect(info).toHaveText('Pasul 40 mm (1 × diametrul): paleta stă la 58° lângă butuc și la 18° la vârf. Paletele acoperă 55 % din disc; butucul e de Ø8 × 12,2 mm. Înclinată spre pupa cu 10°: muchia de jos a paletei urcă de pe masă până la 2,8 mm la vârf.');
+  await expect(tipar).toHaveText('Se tipărește cu partea dinspre barcă pe masă, cu suport sub palete (îl pune programul de feliere): muchia lor de jos urcă de pe masă. Primul strat atinge masa doar pe 2,8 % din discul paletelor: pune o margine de aderență (brim) în programul de feliere.');
   // la întreg; dincolo de plajă, piesa rămâne (la redesenare, câmpul arată iar ce e în piesă)
   await seteaza(page, '#at-eb-pupa', '9.6');
   await expect(camp).toHaveValue('10');
@@ -88,7 +90,7 @@ test('înclinarea spre pupa: 0 la început; la întreg, doar 0–15; numele, but
   await seteaza(page, '#at-eb-pupa', '0');
   await expect(nume).toHaveText(IMPLICIT);
   await expect(page.locator('#at-cote')).toContainText('× 11,5 mm');
-  await expect(info).toContainText('Se tipărește fără suport, cu partea dinspre barcă pe masă');
+  await expect(tipar).toContainText('Se tipărește cu partea dinspre barcă pe masă, fără suport');
   // în nume, după lățime și înclinarea înapoi, înaintea sensului și a găurii
   await seteaza(page, '#at-eb-inc', '10');
   await seteaza(page, '#at-eb-pupa', '5');
