@@ -16642,5 +16642,7 @@ program. Dacă cere un câmp nou în document, v32 e liber și ți-l dau la cere
   - proba privirii are acum câmpul razei;
   - probele vechi care cereau toroidala „în curând” sau bila fără rând au fost întoarse;
   - manualul, în ambele limbi.
-- **Otrăvurile:** `test/otravuri/16.A-e4.py`.
+- **Otrăvurile:** 19 / 19 prinse (`test/otravuri/16.A-e4.py`); F15 (copia toroidalei cu raza 1) scăpase, prinsă după o
+  probă cu raza 1,5.
+- **Mărimea:** totalul 937,4 / 1 000 kB (+0,9); pornirea neschimbată (111,7 kB; cu ușa 117,0, cu Atelierul 117,4 / 125).
 - **Neschimbate:** nimic pe server; documentul rămâne v31; programul fără forme rotunde, octet cu octet.

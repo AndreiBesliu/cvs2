@@ -358,6 +358,8 @@ test('felurile noi (ADR 0302 §2, felia 16.A↑h-4): bila, toroidala, conica cu 
   // din documentul v31 și cu CAM-ul canelurii (ADR 0303, felia 16.A↑e-4): forma, cu raza colțului.
   assert.deepEqual(sculaDinFreza(BILA, 4), { numar: 4, nume: 'Bilă Ø6', diametru: 6, forma: { tip: 'bila' } });
   assert.deepEqual(sculaDinFreza(TOR, 5), { numar: 5, nume: 'Toroidală', diametru: 6, forma: { tip: 'toroidala', raza: 1 } });
+  // Raza copiei e a frezei, nu una implicită (otrava F15 din 16.A↑e-4: copia cu raza 1).
+  assert.deepEqual(sculaDinFreza({ ...TOR, raza: 1.5 }, 5).forma, { tip: 'toroidala', raza: 1.5 });
   for (const f of [CON, BUR]) assert.throws(() => sculaDinFreza(f), /CAM/u, f.nume);
 });
 
