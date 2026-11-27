@@ -16738,3 +16738,35 @@ după push).
 - **Otrăvurile:** 16 / 16 prinse (`test/otravuri/16.A-e6.py`: 12 pe lucrare și fereastră, 4 e2e).
 - **Mărimea:** totalul 938,3 / 1 000 kB (+0,5); pornirea neschimbată (111,7 kB; cu ușa 117,0, cu Atelierul 117,4 / 125).
 - **Neschimbate:** nimic pe server; documentul rămâne v31; programul fără forme rotunde, octet cu octet.
+- **Completul de pe `be3a08d7`** a căzut doar la `test/e2e/frezeTaiere.spec.ts:66`: proba Tăierii cerea pe exterior doar
+  frezele plate, adică regula de dinainte de e-6. Am rulat-o local abia după complet. Reparată în `f1866d2d`: la adâncimea 3
+  lista oferă și bila Ø6 și toroidala r1, iar la adâncimea 1 doar toroidala.
+
+## 2026-11-27 — 16.A↑f-1: profilul desenat în simulare și în documentul v32 (Model: Claude Opus 5.5)
+
+**Prompt:** sesiunea principală: „Continuă cu e-5 și e-6. Apoi vin f (profilul desenat) și g (valorile pe material), cu
+recomandările ADR 0300 și 0302 acolo unde mai sunt întrebări.” Apoi: „Pentru f: când ADR 0304 cere un câmp nou, numărul e
+v32. Spune-mi doar când ajungi la migrare.” **Started:** 27.11, după e-6, pe `wip/16.A-freze-e`. **Completed:** 27.11 (în
+container; completul pe ramură, după push).
+
+- **ADR 0304 propus** (profilul desenat), cu cinci întrebări pentru owner; linia merge cu recomandările (toate „a”).
+- **Simularea întâi:** IR-ul are forma `profil`, iar nucleul, silueta de felul 4 (linia frântă). Pe linia înclinată, fiecare
+  bucată e convexă, cu minimul în formă închisă (punctul staționar tăiat la intervalele ei, ca la conul V-ului), fără pași de
+  căutare. Simularea refuză un profil fără sens și elicea cu profilul.
+  - Proba (`test/unit/simulare.profil.test.ts`): nucleul față de oracolul simulării, pe trei profiluri și opt feluri de
+    mutări, plus 12 profiluri la întâmplare; pe hârtie, V-ul, plata, V-ul cu vârf plat, secțiunea canelurii; dinții (V-ul
+    pică).
+  - De la 391 s la 35 s: celula de 0,1 mm, oracolul judecat o dată pe caz.
+- **Documentul v32** (numărul dat de sesiunea principală):
+  - **Ușa:** perechile `[r, h]`, 2–200; primul (0, 0), r strict crescător, h nedescrescător, capătul la Ø / 2.
+  - **Migrarea** v31 → v32 schimbă doar numărul și refuză un v31 cu profil.
+  - **Oracolul documentului** are secțiunea v32 și cazurile pe hârtie (P01–P07, R01, RD0–RD12). Probele care țin versiunea
+    curentă s-au mutat pe v32, iar „mai nouă” e acum 33.
+  - **Corpusul de aur:** pasul v32 e o canelură cu „Rotunjire 8”; ieșirile s-au schimbat doar în `"schema": 32`.
+- **Lucrarea** refuză profilul pe orice operație și pe orice freză în plus, cu forma, T-ul și calea; fereastra exportului nu
+  face rând; panoul spune „profilată”.
+- **Otrăvurile:** 20 / 20 prinse (`test/otravuri/16.A-f1.py`). F15 (h ≥ 0 la ușă) a scăpat și e practic echivalentă: h
+  pornește din 0 și nu scade. Scoasă, cu motivul.
+- **Mărimea:** pornirea 111,9 kB (+0,2; cu ușa 117,3, cu Atelierul 117,7 / 125), totalul 940,4 / 1 000 kB (+2,1, peste ținta
+  de +2 kB pe toată felia f: nucleul se numără de două ori, iar schema și migrarea încă o dată).
+- **Neschimbate:** nimic pe server; programul fără profil, octet cu octet.

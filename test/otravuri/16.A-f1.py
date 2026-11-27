@@ -1,7 +1,7 @@
 # Lista de otrăvuri a feliei 16.A↑f-1 (profilul desenat în simulare și în documentul v32; ADR 0304 §1, §2), 27.11.2026, aleasă
 # de autor: nucleul (linia frântă: h, raza efectivă, pantele, minimul pe bucăți, punctul staționar, intervalele), validarea
-# simulării (h nedescrescător, elicea), ușa (primul punct, r strict crescător, capătul la rază, plafonul punctelor, perechile,
-# h ≥ 0), migrarea v31 → v32, regula formei și refuzul lucrării, oracolul documentului. Se rulează cu `scripts/otravuri.py`
+# simulării (h nedescrescător, elicea), ușa (primul punct, r strict crescător, capătul la rază, plafonul punctelor, perechile),
+# migrarea v31 → v32, regula formei și refuzul lucrării, oracolul documentului. Se rulează cu `scripts/otravuri.py`
 # (docs/otravuri.md), dintr-o clonă, după commit.
 # o(id, fis, vechi, nou, set, ce): `vechi` apare EXACT o dată în fișier; altfel VOID.
 O = []
@@ -49,8 +49,8 @@ o('F13', SD, "v.minLength(2), v.maxLength(PLAFON.puncteProfil)),", "v.minLength(
 o('F14', SD, "v.array(v.strictTuple([intre0(PLAFON.diametruScula), intre0(PLAFON.adancimeOperatie)]))",
   "v.array(v.tuple([intre0(PLAFON.diametruScula), intre0(PLAFON.adancimeOperatie)]))", 'd',
   'ușa primește un punct cu trei numere (și îl taie pe tăcute)')
-o('F15', SD, "v.array(v.strictTuple([intre0(PLAFON.diametruScula), intre0(PLAFON.adancimeOperatie)]))",
-  "v.array(v.strictTuple([intre0(PLAFON.diametruScula), v.pipe(v.number(), v.finite())]))", 'd', 'ușa primește h negativ')
+# F15 (ușa fără marginea de jos a lui h, „h ≥ 0”) a scăpat la prima rulare și e practic echivalentă: primul punct e (0, 0),
+# iar h e nedescrescător (`profilBun`), deci un h negativ e refuzat oricum (cazul RD10 o arată). Scoasă din listă.
 o('F16', MG, "        if (ob(s) && ob(s['forma']) && s['forma']['tip'] === 'profil') {", "        if (false) {", 'd',
   'migrarea face pe tăcute v32 dintr-un v31 cu un profil desenat')
 # ── Regula și lucrarea ───────────────────────────────────────────────────────────────────────────────────────────────
