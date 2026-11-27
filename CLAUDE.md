@@ -465,6 +465,12 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   întoarce `'profil'` întâi, deci și pe relief). **O formă nouă a frezei intră în tipul `FormaSculaDoc` și ajunge la orice
   cod care primește forma unei operații: un apel care cere o formă mai îngustă (`FormaRand`) se păzește înainte** (d-5 a
   reliefului a căzut așa, peste f-1). Nimic pe server. Feliile: pornirea +0,1 kB, totalul +0,5 kB.
+  **Profilurile parametrice în proiect (ADR 0304 §5, felia 16.A↑f-3)** gata pe 27.11, unită în `main` pe 27.11
+  (`05f1bdc9`): rotunjirea, ogee-ul, ogee-ul roman și panoul ridicat devin linii în document (`puncteProfil`, sub 0,001
+  mm, cel mult 200 de puncte), cu CAM pe canelură; rândul exportului poartă profilul (în `FormaRand`, doar de citit), cu
+  silueta în desen și nota bibliotecii; un profil nu se pune înapoi în bibliotecă. **O regulă comună a rândului
+  (`formaPeRand`) schimbată de o linie atinge rândurile altor linii (relieful): cine o schimbă spune în raport ce
+  rânduri o citesc.** Felia: pornirea +0, totalul +0,7 kB.
   **Plafonul pornirii 120 kB (ADR 0145, decizia owner-ului din 24.11, „ok, ridica plafonul pornirii la 120 kB”):** după
   lotul al paisprezecelea, pornirea era 109,9 kB, cu ușa 114,4 și cu Atelierul 114,7 / 115, iar feliile următoare ale
   frezelor, exportului și aranjamentelor nu mai încăpeau în 0,3 kB. Poarta judecă tot trei măsuri sub același plafon
@@ -2131,6 +2137,25 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 27.11.2026, după-amiaza (a șaptezecea unire din cloud): **profilurile parametrice în proiect (16.A↑f-3), unite în
+  `main`** (sesiunea principală, ramura `unire-2711p`, peste 3.Cm-3). Linia frezelor, ramura `wip/16.A-freze-e`,
+  `0a1fd1a4` (cu `main` `0f1e0766` adus), PR-ul `AndreiBesliu/cvs2#78` (ADR 0304 §5, întrebarea 5a), unită în `05f1bdc9`:
+  rotunjirea, ogee-ul, ogee-ul roman și panoul ridicat intră în document ca linii (`puncteProfil`, abaterea de la arce sub
+  0,001 mm, cel mult 200 de puncte), cu CAM pe canelură (Tăierea și „Din frezele mele” le oferă pe canelură, nu pe o
+  parte; conica și burghiul rămân „în curând”); rândul exportului poartă profilul (forma „profilată”, diametrul doar de
+  citit, silueta în desen), altă siluetă e altă freză pe același T, nota bibliotecii spune când silueta s-a schimbat acolo,
+  iar Exportă scrie profilul (fără nicio schimbare, aceeași freză, octet cu octet); un profil nu se pune înapoi în
+  bibliotecă (copia ține punctele, nu felul parametric). Proba e2e pe programul scris: o rotunjire R3 Ø12 pe canelură,
+  judecată de oracolul simulării cu arcul pe hârtie. Otrăvurile 17 / 17. Documentul rămâne v32; nimic pe server; programul
+  fără profil, octet cu octet. Pusă peste ventilator (raportat înaintea ei), unirea și-a făcut completul lotului, fără
+  ciocniri: completul 46001095921 pe `05f1bdc9`, verde: unit 10 997 / 0 (12 sărite, pe Linux), e2e 1 017 / 1 017,
+  funcțiile pe emulatoare 142 / 142, paginile 62 / 62; rapidul, verde; porțile liniei, verzi pe `0a1fd1a4`; totalul
+  941,5 / 1 000 kB (+0,7), pornirea 111,8 kB (cu ușa 117,3, cu Atelierul 117,6 / 125). **Relieful** (d-5…d-7, 18.1↑e,
+  cu reparația pentru v32: `dd855461`) se ciocnește cu ea la `formaPeRand` (f-3 o lărgește cu profilul, relieful o
+  strânsese ca gardă de tip, ca un profil să n-aibă rândul reliefului): o decizie de cod, lăsată liniei reliefului, care
+  își aduce `main` și o rezolvă cu proba ei. Lotul 64 (3.Cm-3) e în drum; felia aceasta pleacă după el (lotul 65). Linia
+  frezelor lucrează la f-4 (marginea profilată pe o parte; mișcă mașina); atelierul, la 3.Cm-4. **La owner:** lista,
+  neschimbată.
 - 27.11.2026, după-amiaza (a șaizeci și noua unire din cloud): **ventilatorul ca trusă (3.Cm-3), unit în `main`**
   (sesiunea principală, ramura `unire-2711o`, din `0f1e0766`). Linia atelierului, ramura `wip/3.Xh-biblioteca-ui`,
   `61eb3689`, PR-ul `AndreiBesliu/cvs2#77` (ADR 0340, răspunsul 3a din auditul elicelor), unită în `f9b2bbc8`: sub
