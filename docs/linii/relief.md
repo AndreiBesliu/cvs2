@@ -237,6 +237,17 @@ degroșarea și finisarea pe relief), unde stă relieful în document și unde s
 - **27.11, după unirea lui 16.A↑f-3 (profilul pe rândul exportului):** `main` adus din nou. `formaPeRand` e acum a frezelor și
   poartă profilul; rândul reliefului are garda lui, `formaPeRandRelief`. Pe rândul reliefului, alegerea și „Ia valorile noi” nu
   scriu un profil, iar nota și „Pe toate (N)” văd biblioteca fără profiluri (`bibliotecaRelief`, `stareOrigineRelief`).
+- **Unde am rămas (27.11, ~15:30; pauza pentru limita săptămânală, la cererea owner-ului prin sesiunea principală):**
+  - totul e comis și împins pe `wip/18.1-relief` (PR-ul `AndreiBesliu/cvs2#75`), fără nimic necomis: codul e cel din
+    `cc2be106`, cu `main` `75ae7f50` adus (16.A↑f-3, 3.Cm-3), d-5…d-7, 18.1↑e și reparațiile pentru v32 și pentru f-3;
+  - porțile pe `cc2be106`: rapidul verde (46011088772, push; 46011098184, PR); completul 46011101795 pornit la 13:54,
+    încă în lucru la pauză. După el, commit-ul acesta are doar nota;
+  - mărimea, din build-ul local: totalul 945,3 / 1 000 kB, pornirea 111,9 kB (cu ușa 117,4, cu Atelierul 117,7 / 125);
+  - neprobat cap-coadă: linia din `FisaFinisare` care cheamă `stareOrigineRelief` (fără o probă e2e cu o freză a
+    bibliotecii schimbată în profil sub un rând al reliefului);
+  - **ce urmează la reluare:** citește completul 46011101795; verde, raportează `cc2be106` sesiunii principale (codul
+    unirii, fără alt complet); roșu, cauza întâi, reparația pe ramură, porțile din nou. Dacă `main` s-a mișcat, adu-l
+    întâi (cine raportează al doilea aduce `main`). Linia n-are altă felie pornită.
 - **De ținut minte, din 18.1↑e:**
   - **O formă nouă de freză pe relief intră întâi în oracolul 3D** (`FrezaO`, `urcareO`, `clExact`, `clPlan`, `clRadial`), cu
     controalele negative, apoi în `urcare` (`src/cam/reliefFinisare.ts`); o siluetă mai jos decât freza adevărată sapă, una mai
