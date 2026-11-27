@@ -38,7 +38,8 @@ aduse la zi pe 26.11, cu 3.Cf-2 („30 de ancore în opt liste”, rulate din no
 atelierului (3.Cg–3.Ck-2, 3.Cl-1–4), deci 3.Cm-1 le rulează pe toate din nou, pe codul de azi: `3.Tq.py`, `3.Tr.py`,
 `3.Ts.py`, `3.Tt.py` și listele lor în engleză (472 de otrăvuri), fără să sară vreuna. Listele primesc `E2E_BUILD = False`
 (spec-urile elicelor își fac pagina din surse: build-ul aplicației înaintea fiecărei otrăvi nu schimbă nimic din ce
-otrăvesc), ca listele mai noi ale pluginului. Rezultatul, în registrul `docs/otravuri.md`.
+otrăvesc), ca listele mai noi ale pluginului. **Rezultatul: toate prinse** (`3.Tq` 138 / 138, `3.Tr` 141 / 141, `3.Ts`
+134 / 134, `3.Tt` 35 / 35, listele în engleză 24 / 24), în registrul `docs/otravuri.md`.
 
 ## Implementarea (3.Cm-2): tipărirea spusă cinstit
 
@@ -83,6 +84,9 @@ separată, egală cu a motorului, pe paisprezece piese, și mai mare decât cons
 piese și pe câte o piesă din fiecare fel; aria primului strat, tot pe plasă; carcasa fără verdict); e2e, în
 `trenulet.elice.spec.ts`, `trenulet.barca.spec.ts`, `trenulet.ventilator.spec.ts`, `trenulet.pupa.spec.ts` și în proba
 în engleză din cvs2. Plasele, neschimbate: amprenta a 742 de piese ale celor trei elice, aceeași înainte și după.
+Otrăvurile: `3.Cm-2.py`, 41 / 41 (două întăriri de probă după prima rulare: elicea cu pasul 0,6 și 0,65 pentru pragul de
+sus, proprietatea `hidden` a paragrafului la carcasă; două otrăvuri echivalente scoase cu motivul); `3.Cm-2-en.py`, 6 / 6;
+cele 12 ancore ale listelor `3.T*` mutate de felie, 12 / 12.
 
 **Easy 3Draw 18.45.0.**
 
