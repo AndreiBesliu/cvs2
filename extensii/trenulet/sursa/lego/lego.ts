@@ -2887,6 +2887,16 @@ var Lego = (function (glob: typeof globalThis) {
     return { z, D, Ri, joc, Rt, pd, P: pasM, lat, urechi, rh, inel, statii: cu.statii, Hh: Math.max(VENT.butucH, zecime(cu.hb)), Hinel: Math.max(VENT.inelH, zecime(cu.hb)), Hc, k,
       bRad: beta(rh), bVarf: beta(Rt), consola: 0.2 / Math.tan(beta(Rt)) };
   }
+  /**
+   * Ventilatorul ca trusă (ADR 0340, felia 3.Cm-3): sub carcasă, o grindă groasă cu 2k + 1 găuri rotunde, prinsă cu știfturi
+   * de două urechi opuse (găurile de la capete, la k · 8 mm de ax); prin gaura din mijloc trece axul. Pe grindă, o jumătate de
+   * bucșă (3,8 mm), apoi rotorul: paletele stau în tub, de la 3,8 în sus (carcasa e cât ele + 4), iar rotorul nu se freacă de
+   * grindă. Axul, cel mai scurt care trece prin grindă, prin bucșă și prin butucul rotorului, în pași de 8 mm.
+   */
+  function ventilatorTrusa(d: VentDef) {
+    const q = ventilatorCote(d), bucsa = P.pas / 2 - 0.2;
+    return { gauri: 2 * q.k + 1, ax: Math.ceil((P.grinda_groasa + bucsa + q.Hh) / P.pas - 1e-9), bucsa, jos: bucsa, sus: bucsa + q.Hh };
+  }
   function carcasaVentilator(q: ReturnType<typeof ventilatorCote>): Tri[] {
     // conturul de jos: tubul și urechile, unite (în sens trigonometric), cu golul tubului și găurile urechilor; în trei straturi
     // (lamajul, gaura, lamajul), ca grinzile. Deasupra urechilor, doar tubul, cu canalul lamajului tăiat în el (un știft intră și
@@ -4421,6 +4431,8 @@ var Lego = (function (glob: typeof globalThis) {
     eliceBarcaCote: (d: BarcaDef) => { const q = eliceBarcaCote(d); return { z: q.z, D: q.D, P: q.P, pd: q.pd, lat: q.lat, inc: q.inc, pupa: q.pupa, urca: q.urca, rh: q.rh, Hh: q.Hh, bRad: q.bRad, bVarf: q.bVarf, consola: q.consola, acoperire: q.acoperire }; },
     // ventilatorul cu carcasă (ADR 0282): cotele din parametri (vârful paletelor, butucul, inelul, carcasa și urechile ei)
     ventilatorCote: (d: VentDef) => { const q = ventilatorCote(d); return { z: q.z, D: q.D, joc: q.joc, Rt: q.Rt, pd: q.pd, P: q.P, lat: q.lat, rh: q.rh, Hh: q.Hh, Hinel: q.Hinel, Hc: q.Hc, k: q.k, urechi: q.urechi, bRad: q.bRad, bVarf: q.bVarf, consola: q.consola }; },
+    // ventilatorul ca trusă (ADR 0340, 3.Cm-3): găurile grinzii de sub carcasă, axul (în pași), bucșa și unde stă rotorul
+    ventilatorTrusa,
     cureaua: (a: FulieDef, b: FulieDef, C: unknown) => {
       const p = fulieCote(a), q = fulieCote(b), c = +(C as number), minim = Math.ceil((p.R + q.R + 0.5) * 10 - 1e-6) / 10;
       return { lungime: lungimeCurea(p.fund, q.fund, c), minim, atinge: !(c >= minim - 1e-9) };

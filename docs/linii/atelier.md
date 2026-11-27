@@ -30,7 +30,8 @@ calibrare, s-a despărțit: 3.Ck-1 (placa turnantă; 18.43.0), unită în `main`
 `AndreiBesliu/cvs2#68`); 3.Ck-2 (balamaua; 18.44.0), unită în `main` pe 27.11 (`439d0395`, PR-ul `AndreiBesliu/cvs2#70`): ADR 0284 are toate
 feliile făcute.** **Auditul elicelor (ADR 0340, acceptat pe 27.11 cu recomandările, 1a–4a, la cuvântul owner-ului prin
 sesiunea principală): feliile 3.Cm-1…3.Cm-7; 3.Cm-1 (otrăvurile elicelor, rulate din nou) și 3.Cm-2 (tipărirea spusă
-cinstit; 18.45.0), gata pe ramură pe 27.11.** Versiunea următoare a pachetului: 18.46.0._
+cinstit; 18.45.0), raportate pe 27.11 (PR-ul `AndreiBesliu/cvs2#77`); 3.Cm-3 (ventilatorul ca trusă; 18.46.0), gata local,
+la raport după unirea lor.** Versiunea următoare a pachetului: 18.47.0._
 
 ## Numerele liniei
 
@@ -749,4 +750,16 @@ cinstit; 18.45.0), gata pe ramură pe 27.11.** Versiunea următoare a pachetului
   tipăririi); cele două otrăvuri ale consolei la milimetru au fost înlocuite cu otrăvuri pe același text (fără paletă,
   înclinarea și la 0°), cu motivul în listă.
 - **Easy 3Draw 18.45.0**, cu rândul de „ce e nou”. Doar pachetul extensiei se schimbă.
+
+## 3.Cm-3, gata (27.11, în cloud): ventilatorul ca trusă (ADR 0340)
+
+- **Unde e:** motorul, `ventilatorTrusa` (lângă `ventilatorCote`, în API); atelierul: `trusaVentilator` (lângă `STARE0`,
+  starea bifei, a editorului, nu a piesei), bifa `#at-ve-trusa` sub „Fă ventilatorul”, `grindaVentilator` și
+  `adaugaGrindaVentilator` (lângă `adaugaVentilator`), rândul `data-rand="trusa"` din `randeazaPrinde` (doar la carcasă) cu
+  butonul `data-prinde-grinda-ventilator`.
+- **Piesele trusei se fac cu `defCurenta(tip, sursa)`** (axul, bucșa, știftul), ca în construcțiile gata: aceleași chei ca
+  din editoarele lor, deci se adună pe aceleași rânduri ale listei.
+- **O ancoră care cuprinde capătul unei funcții se mută când intră o funcție nouă după ea** (`3.Ts`, C55 și C56: coada
+  `}\n  function carcasaVentilator`); ancora a rămas doar pe rândul ei, care e unic.
+- **Easy 3Draw 18.46.0.**
 

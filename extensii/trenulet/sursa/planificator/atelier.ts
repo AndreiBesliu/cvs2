@@ -142,6 +142,9 @@ var Atelier3D = (function () {
   };
   /** Câmpurile editorului de la pornire (înaintea celor ținute minte): de aici își completează piesele construcțiile gata. */
   const STARE0: typeof stare = JSON.parse(JSON.stringify(stare));
+  // bifa trusei ventilatorului (ADR 0340, 3.Cm-3): a editorului, nu a piesei; „Fă ventilatorul” pune și grinda, axul, bucșa
+  // și știfturile
+  let trusaVentilator = false;
   // Piesele pe familii (ADR 0281): o singură tabelă, din care se fac filele de sus și galeriile de sub ele. Fiecare tip al
   // motorului stă într-o singură familie, afară de „dinCvs2”, care are fila lui (o probă unitară o cere, cu `Lego.tipuri`);
   // „placaTechnic” nu e un tip, ci o formă gata a cărămizii (o placă 2 × 6 cu găuri), deschisă în editorul ei. „Din cvs2” și
@@ -1725,7 +1728,8 @@ var Atelier3D = (function () {
         <div class="at-rand"><span class="mic">Inelul:</span>${seg("at-ve-inel", [["nu", "Fără"], ["da", "Cu inel"]], p.inel)}</div>`
           : `<div class="at-rand"><span class="mic">Urechile:</span>${seg("at-ve-urechi", [["2", "Două"], ["4", "Patru"]], String(p.urechi))}</div>`}
         <p class="mic" id="at-ve-info">${textVentilator(p)}</p>
-        <div class="at-rand"><button class="btn" type="button" id="at-ve-fa">Fă ventilatorul</button><span class="mic">${tr("pune în listă rotorul și carcasa")}</span></div>`;
+        <div class="at-rand"><button class="btn" type="button" id="at-ve-fa">Fă ventilatorul</button><span class="mic">${tr("pune în listă rotorul și carcasa")}</span></div>
+        <label class="bifa"><input type="checkbox" id="at-ve-trusa" ${trusaVentilator ? "checked" : ""}> Și trusa: grinda de sub carcasă, axul, o jumătate de bucșă și știfturile</label>`;
       const alege = (id: string, f2: (v: string) => void) => { if (!$(id)) return; $(id).onclick = ev => { const b = (ev.target as Element).closest<HTMLElement>("[data-v]"); if (!b) return; f2(b.dataset.v!); editor(); schimbat(); }; };
       alege("#at-ve-piesa", v => { p.piesa = v; });
       alege("#at-ve-repede", v => { p.diametru = +v; });
@@ -1743,6 +1747,7 @@ var Atelier3D = (function () {
       camp("#at-ve-pas", 2, 0.3, 1.5, v => { p.pas = v; });
       camp("#at-ve-lat", 0, 15, 60, v => { p.latime = v; });
       $("#at-ve-fa").onclick = adaugaVentilator;
+      $("#at-ve-trusa").onchange = ev => { trusaVentilator = (ev.target as HTMLInputElement).checked; };
     } else if (t === "suport") {
       const p = stare.suport;
       e.innerHTML = `<h2>Suport (bracket)</h2>
@@ -2913,6 +2918,11 @@ var Atelier3D = (function () {
       html += `<div data-rand="pereche"><span>${g.gauri ? tr`Cu perechea de ${g.z} dinți, axele stau la ${fmt(g.a)} mm: pe o grindă de ${g.gauri}, în găurile de la capete.`
         : tr`Cu perechea de ${g.z} dinți, axele stau la ${fmt(g.a)} mm: nu cad pe grila de 8 mm.`}</span>${g.gauri ? `<button class="btn" type="button" data-prinde-grinda>Pune grinda în listă</button>` : ""}</div>`;
     }
+    if (tip === "ventilator" && stare.ventilator.piesa === "carcasa") {
+      // carcasa ventilatorului (ADR 0340, 3.Cm-3): grinda de sub ea, prinsă de două urechi opuse, cu axul prin mijloc
+      const t = Lego.ventilatorTrusa(stare.ventilator);
+      html += `<div data-rand="trusa"><span>${tr`Pe o grindă de ${t.gauri}, prinsă cu știfturi de două urechi opuse, axul trece prin gaura din mijloc; pe grindă, o jumătate de bucșă, iar pe ea rotorul, în tub.`}</span><button class="btn" type="button" data-prinde-grinda-ventilator>Pune grinda în listă</button></div>`;
+    }
     $("#at-prinde-lista").innerHTML = html;
   }
   function deschidePrinsa(k: string) {
@@ -3118,12 +3128,33 @@ var Atelier3D = (function () {
     salveaza(); randeazaLista();
     toast(tr`${n} × placa turnantă (baza și partea de sus) în listă.`);
   }
+  /** Grinda dreaptă de sub carcasa ventilatorului (ADR 0340, 3.Cm-3): groasă, cu găuri de știft (axul se rotește în cea din
+   *  mijloc), cum ar face-o editorul grinzilor. */
+  const grindaVentilator = (gauri: number): Def => ({ tip: "grinda", celule: Array.from({ length: gauri }, (_, i): [number, number, string] => [i, 0, "r"]), groasa: true });
+  function adaugaGrindaVentilator() {
+    const def = grindaVentilator(Lego.ventilatorTrusa(stare.ventilator).gauri), n = bucatiCerute();
+    pune(def, n);
+    salveaza(); randeazaLista();
+    toast(tr`${n} × ${numeDef(def)} în listă.`);
+  }
   function adaugaVentilator() {
-    // rotorul și carcasa lui (aceleași palete, diametru, joc, pas și lățime), câte bucăți sunt cerute
+    // rotorul și carcasa lui (aceleași palete, diametru, joc, pas și lățime), câte bucăți sunt cerute; cu bifa trusei (ADR
+    // 0340, 3.Cm-3), și grinda de sub carcasă, axul cât trece prin grindă, bucșă și butuc, o jumătate de bucșă și cele două
+    // știfturi ale urechilor
     laZi();
     const n = bucatiCerute();
     pune(defVentilator("rotor"), n);
     pune(defVentilator("carcasa"), n);
+    if (trusaVentilator) {
+      const t = Lego.ventilatorTrusa(stare.ventilator);
+      pune(grindaVentilator(t.gauri), n);
+      pune(defCurenta("ax", { lung: t.ax }), n);
+      pune(defCurenta("bucsa", { lung: 0.5, gaura: "x" }), n);
+      pune(defCurenta("stiftTechnic", { fanta: true, lung: 2, capat: "stift" }), 2 * n);
+      salveaza(); randeazaLista();
+      toast(tr`${n} × ventilatorul (rotorul și carcasa), cu grinda de ${t.gauri}, axul de ${t.ax}, o jumătate de bucșă și 2 știfturi, în listă.`);
+      return;
+    }
     salveaza(); randeazaLista();
     toast(tr`${n} × ventilatorul (rotorul și carcasa) în listă.`);
   }
@@ -3562,6 +3593,7 @@ var Atelier3D = (function () {
       const t = ev.target as Element, b = t.closest<HTMLElement>("[data-prinde]");
       if (b) deschidePrinsa(b.dataset.prinde!);
       else if (t.closest("[data-prinde-grinda]")) adaugaGrindaPereche();
+      else if (t.closest("[data-prinde-grinda-ventilator]")) adaugaGrindaVentilator();
     };
     $("#at-unghi").onclick = ev => { const b = (ev.target as Element).closest<HTMLElement>("[data-u]"); if (b) alegeUnghi(b.dataset.u!); };
     $("#at-vedere-mod").onclick = ev => { const b = (ev.target as Element).closest<HTMLElement>("[data-v]"); if (b && b.dataset.v !== vedere) alegeVedere(b.dataset.v!); };
