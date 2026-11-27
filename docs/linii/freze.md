@@ -9,7 +9,8 @@ gata de unit pe 27.11 (`e5bdde83`, PR-ul #71), UNITĂ (`0d2a8c2c`); 16.A↑e-3 (
 (`db066160`); 16.A↑e-4 (bila și toroidala în proiect: fereastra exportului, Tăierea, biblioteca) UNITĂ pe 27.11 (`72263843`);
 16.A↑e-5 (buzunarul cu bila și cu toroidala, cu creasta pe fund) raportată gata de unit pe 27.11 (`106b4a51`, PR-ul #74);
 16.A↑e-6 (profilul pe o parte cu bila și cu toroidala, cu adâncimea cel puțin raza colțului) pe `wip/16.A-freze-e`, peste ea;
-ADR 0304 PROPUS pe 27.11 (profilul desenat), mers cu recomandările; 16.A↑f-1 (documentul v32, nucleul) pe aceeași ramură_
+ADR 0304 PROPUS pe 27.11 (profilul desenat), mers cu recomandările; 16.A↑f-1 (documentul v32, nucleul) și 16.A↑f-2 (canelura) pe
+aceeași ramură_
 
 Pornită pe 23.11.2026, în sesiunea cloud a liniei, la cererea owner-ului: „Vreau sa pot crea freze l sau profiluri de freze in
 aplicatie si sa le salvez in cont”. Rândurile din prag: „Bibliotecă de freze cu geometrie reală (dreaptă, bilă, toroidală, V,
@@ -221,6 +222,13 @@ gravare, profil, formă desenată)” și „Freze de profil desenate de utiliza
     pe 0,1 mm, cu judecata refolosită, 35 s. O probă nouă pe oracol se socotește întâi;
   - un h negativ la ușă e refuzat oricum de „primul punct (0, 0) și h nedescrescător”: marginea de jos a lui h nu se poate
     otrăvi (F15, echivalentă).
+- **27.11, 09:40–: 16.A↑f-2 pe `wip/16.A-freze-e`**, peste f-1. Canelura cu profilul desenat: regula (doar pe linie, ca freză a
+  operației), silueta în IR, identitatea pe T (cheia ține toate punctele), raportul foilor. Sub-feliile de după, renumerotate:
+  f-3 intrarea în proiect, f-4 marginea profilată, f-5 editorul. **Capcane:**
+  - fundul canelurii simulate e la −d + h(0,005), nu la −d: celula cea mai apropiată de linie e la 0,005 mm, iar o siluetă
+    care urcă de la axă (S-ul) e acolo deja cu 0,001 mm mai sus;
+  - listele de otrăvuri mai vechi rămân legate de commit-ul lor (ancorele lui e-3, e-5 și f-1 s-au mutat cu feliile de după):
+    `verifica` le arată VOID, fără să fie o greșeală.
 - **Feliile**, în ordine: 16.A↑a (biblioteca în browser, fereastra, fișierul), apoi b (alegerea în proiect, v27), c
   (contul), d (calibrarea), e (bila și toroidala), f (profilul desenat), g (valorile pe material).
 
