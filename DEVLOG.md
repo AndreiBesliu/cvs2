@@ -16675,3 +16675,19 @@ transmis liniei la 06:37): „întâi freza din „Frezele mele” pe rândurile
   clonă; A11 din `16.A-b2.py` mutată pe `cuPasLateral`, prinsă.
 - **De ținut minte:** configul Playwright al clonei otrăvurilor își scrie căile spre clonă (`testDir`, `cwd`); cu cele ale
   repo-ului, toate otrăvurile e2e ies „NEVALIDĂ” („No tests found”).
+
+## 2026-11-27 — Linia reliefului: feliile 18.1↑d-6 și 18.1↑d-7, desenele fișei reliefului și „Dă-i T{n}” (Model: Claude Opus 5.5)
+
+**Prompt:** același cuvânt al owner-ului (transmis la 06:37): „apoi desenele grupurilor; apoi „Dă-i T{n}” pe freza reliefului”.
+**Started:** 27.11, 07:00, peste 18.1↑d-5. **Completed:** 27.11, 07:30 (în container; CI-ul, pe commit-ul împins).
+
+- **18.1↑d-6, proba întâi:** `export.desene.relief.test.ts`: fundurile trecerilor desenate față de cotele Z ale programului (la
+  degroșare, adaosul ridică și podeaua: ultima trecere la A − a), pasul liniilor față de pasul folosit de lucrare.
+- **Desenele:** freza (desenul comun, cu cotele aprinse prin numele scurte), liniile de sus (prin centrele celulelor, la pasul
+  folosit; nealiniate, cel mult pasul cerut), adaosul în secțiune, marginea și înălțimea, podeaua cu trecerile; ADR 0317, e2e
+  `relief.desene.spec.ts`, manualul. Proba privirii a prins liniile oblice decupate cu `clipPath` (lungi, deci „ies”): acum se
+  taie exact la cadru. Otrăvurile 13 / 13 (5 unitare, 8 e2e).
+- **18.1↑d-7:** freza reliefului are locul ei între frezele ferestrei, deci „Dă-i T{n}” îi caută numărul ca la celelalte; butonul
+  în grupul Freza al fișei reliefului, T-ul și diametrul ciocnite înroșite. ADR 0318, e2e în `relief.export.spec.ts` (scrisă
+  întâi, roșie pe codul dinainte), otrăvurile 4 / 4.
+- **Mărimea, cu amândouă:** totalul 940,6 / 1 000 kB (+2,1), pornirea 111,7 kB, neschimbată (măsurat pe clonă, la `5444361f`).

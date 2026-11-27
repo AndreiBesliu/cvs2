@@ -220,4 +220,12 @@ degroșarea și finisarea pe relief), unde stă relieful în document și unde s
   - **T-ul unei freze alese numără frezele tuturor rândurilor** (`frezeRanduri` + `frezeRanduriRelief`), și pe rândurile
     obișnuite: o finisare cu T2 nu mai poate fi ciocnită de o freză aleasă pe un profil.
   - **„Pe toate (N)” vine din fereastră** (`ContextFisa.peToate`), cu rândurile reliefului; fișa o socotea singură doar pe ale ei.
+- **27.11: 18.1↑d-6 și 18.1↑d-7 gata pe ramură**: desenele grupurilor din fișa reliefului (ADR 0317) și „Dă-i T{n}” pe freza
+  reliefului (ADR 0318). Urmează 18.1↑e (finisarea cu toroidala, oracolul întâi).
+- **De ținut minte, din 18.1↑d-6 și d-7:**
+  - **Ce spune un desen al reliefului se socotește în `exportDeseneCalcul.ts`** (`treceriPodeaRelief`, `liniiReliefDesen`) și se
+    compară cu mișcările programului; la degroșare, adaosul ridică și podeaua, deci și ultima trecere.
+  - **Un desen cu linii oblice le taie exact la cadru:** proba privirii măsoară geometria, iar un `clipPath` lasă liniile lungi
+    (le vede ca „ies”).
+  - **Freza reliefului are loc între frezele ferestrei** (`FrezaT.loc`, pe `scula`): „Dă-i T{n}” o tratează ca pe celelalte.
 
