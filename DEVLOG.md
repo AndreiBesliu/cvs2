@@ -17222,3 +17222,23 @@ principală: auditul elicelor, felia 7, răspunsul 4a)
   46032688842, verde: unit 11 050 / 0, e2e 1 028 / 1 028, funcțiile pe emulatoare 142 / 142, paginile 62 / 62.
 - **Pe test:** lotul 67, în drum; lotul 68 (3.Cm-7), după el.
 - **Documentele:** decizia în `CLAUDE.md`; starea din `docs/linii/principala.md`; indexul liniilor.
+
+## 2026-11-28 — 3.Ay: Escape oriunde ar fi focusul, în dialogurile rămase (Model: Claude Opus 5.5)
+
+**Prompt:** „continua cu felia comună pentru Escape” (după 3.Aw). **Started:** 28.11, 00:20, pe `wip/3.Ax-escape`, din `main`
+`afce2d48`. **Completed:** 28.11, 00:53.
+
+- **Probele întâi:** `test/e2e/escape.spec.ts` (5 noi: „Din desen…”, fereastra Imprimanta ascunsă, captura mărită peste
+  bibliotecă, dialogul care nu s-a încărcat, fereastra fonturilor fără modul) și câte un pas, cu focusul pe `body`, în
+  `imprimanta.spec.ts` (Oprește, trimiterea, „Golește istoricul”) și `extensii.masina.spec.ts` (reluarea). Toate roșii pe
+  codul dinainte, afară de proba ferestrei ascunse (o pază).
+- **Ascultătorul comun** (`src/ui/escapeFereastra.ts`): cutia dialogului, ca al treilea argument (cât nu se vede, tasta
+  rămâne a ferestrei de acum), și stiva (Escape îl ia doar ultima fereastră deschisă dintre cele care se văd).
+- **Mutate pe el:** „Din desen…”, „Trimite un fișier…”, confirmările imprimantei, „Golește istoricul” (cu cutia: fereastra
+  Imprimanta rămâne montată și ascunsă), confirmarea senderului și captura mărită (cu `onKeyDown` păstrat pentru focusul din
+  ele), biblioteca, cele două dialoguri de rezervă.
+- **Local:** spec-urile vecine (imprimanta, extensiile, fonturile, manualul, ferestrele, Escape), 140 / 140. **CI:** rapidul
+  verde pe `3e97b921`; completul, pornit pe aceeași ramură.
+- **Otrăvurile** (`test/otravuri/3.Ay.py`): 11 / 11, din prima.
+- **Mărimea:** pornirea 111,8 → 112,0 kB (cu ușa și cu Atelierul 117,8 / 125), totalul 946,0 → 945,6 / 1 000.
+- **Documentele:** fișa etapei 3, registrul otrăvurilor, traducerile, `CLAUDE.md`.
