@@ -2,7 +2,9 @@
 
 **Starea:** propus pe 26.11.2026, în sesiunea cloud a liniei frezelor (ramura `wip/16.A-freze-e`), la cuvântul owner-ului
 transmis de sesiunea principală: „Zi-le ca pot continua cu ce urmeaza la fiecare” (16.A↑d cere placa 4 tăiată, deci urmează
-16.A↑e). Întrebările de la capăt merg la owner grupat; linia merge mai departe cu recomandările. **Completează:** ADR 0300 §9
+16.A↑e). Întrebările de la capăt merg la owner grupat; linia merge mai departe cu recomandările. **Acceptat** pe 27.11, cu
+recomandările (1a, 2a, 3a, 4a, 5a), la cuvântul owner-ului transmis de sesiunea principală: „zi-le sesiunilor sa continue cu
+recomandarile, acolo unde inca asteapta”. **Completează:** ADR 0300 §9
 (formele noi, ordinea: întâi simularea și oracolul, apoi CAM-ul), ADR 0302 §2 (felurile „în curând în proiect”), ADR 0312 §1
 (bila, documentul v29, doar la finisarea reliefului).
 
@@ -69,7 +71,7 @@ Frezele de rest, fundul plat al V-carve-ului, dopurile și banda rămân doar cu
 e-1 adaugă silueta în nucleu (în workerele simulării și CAM) și forma în schema ușii (în pornire, cu ușa): ținta e cel mult
 +0,2 kB în pornirea cu ușa și +1 kB în total; fiecare sub-felie își spune creșterea în raport.
 
-## Întrebările pentru owner (cu recomandarea întâi)
+## Întrebările pentru owner (cu recomandarea întâi; răspunse pe 27.11 cu recomandările)
 
 1. **Buzunarul cu bila sau cu toroidala: cum se alege pasul lateral?**
    a. Pasul lateral rămâne câmpul de azi, iar creasta rezultată se spune lângă el, pe hârtie (recomandat: aceeași fișă

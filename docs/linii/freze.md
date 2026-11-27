@@ -3,7 +3,7 @@
 _cncvs2, biblioteca de freze („Frezele mele”), felia 16.A↑ adusă din etapa 16: ramura `wip/16.A-freze` (din `main`
 `c8b235ab`), ADR-urile 0300–0309 (liber: 0304), canalul `freze`; ADR 0300 ACCEPTAT pe 23.11 („Da, 1a–6a”), ADR 0302 ACCEPTAT pe
 24.11 („Da, 1a–5a”); 16.A↑a … 16.A↑h-5 și 16.A↑b-1 … 16.A↑b-7 UNITE în `main`; ADR 0303 PROPUS pe 26.11 (bila și toroidala în
-proiect); 16.A↑e-1 (documentul v31, toroidala în simulare, refuzul lucrării) raportată gata de unit pe 26.11 (`7c3f166b`, cu
+proiect), ACCEPTAT pe 27.11 cu recomandările (1a–5a); 16.A↑e-1 (documentul v31, toroidala în simulare, refuzul lucrării) raportată gata de unit pe 26.11 (`7c3f166b`, cu
 `main` `0df06eca` adus), UNITĂ în `main` pe 27.11 (`8b92246d`); 16.A↑e-2 (elicea cu bila și cu toroidala în nucleu) raportată
 gata de unit pe 27.11 (`e5bdde83`, PR-ul #71), UNITĂ (`0d2a8c2c`); 16.A↑e-3 (canelura cu bila și cu toroidala) UNITĂ pe 27.11
 (`db066160`); 16.A↑e-4 (bila și toroidala în proiect: fereastra exportului, Tăierea, biblioteca) UNITĂ pe 27.11 (`72263843`);
