@@ -729,7 +729,11 @@ cinstit; 18.45.0), gata pe ramură pe 27.11.** Versiunea următoare a pachetului
 
 - **Unde e:** motorul, după `paleteElice`: `TIPAR`, `treaptaPalete`, `ariaFeliei`, `tiparPalete`; câmpul `tipar` din
   `Rezultat`, dat de `elice`, `eliceBarca` și `ventilator` (rotorul); atelierul: `textTipar` (după `textVentilator`),
-  paragraful `#at-tipar` din cele trei editoare, umplut în `construiesteCurent` (ca `#at-p-unghi`), copiat de `pieseDin`.
+  paragraful `#at-tipar` din panoul piesei (`body.html`, sub „Se prinde cu”), umplut în `construiesteCurent`, ascuns în
+  „Modelul”, la forma din cvs2, la piesele din circuit și la o eroare; câmpul copiat de `pieseDin`.
+- **Un paragraf umplut după construire nu stă în editor deasupra unor butoane:** editorul îl reface gol la fiecare
+  redesenare, iar când apare, după construire (90 ms mai târziu), mută butoanele de sub el; lotul e2e a prins, sub
+  încărcare, un clic pierdut pe „Fă perechea”. Locul lui e în panoul piesei, sub tot ce se apasă.
 - **Consola de la vârf nu e treapta:** 0,2 / tan β e a corzii; pe paleta curbată, treapta crește spre muchia de sus (1,53
   la elicea implicită), iar la un vârf jos, de un strat, scade (0,67 la elicea de barcă Ø20 cu pasul 0,5). Treapta se
   măsoară pe secțiuni (s, h), cu straturile la 0,1 + 0,2k, pe amândouă marginile (sensul „stânga” iese pe cealaltă).

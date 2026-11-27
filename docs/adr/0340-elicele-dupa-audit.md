@@ -69,9 +69,12 @@ din text”) a arătat că numărul acesta e doar o medie, greșită în ambele 
 3. **Marginea de aderență (brim):** când primul strat (felia plasei la 0,1 mm) acoperă sub 10 % din discul paletelor
    (elicea implicită: 1,3 %; 6041: 6,8 %; rotorul implicit: 6,7 %), editorul o cere. Elicele mici, care stau mai ales pe
    butuc (Ø20: 12–14 %), nu o primesc.
-4. **Editorul** (`atelier.ts`): textul din parametri al celor trei piese nu mai spune nimic de tipărire; paragraful nou de
-   sub el (`#at-tipar`), umplut după construire (ca unghiul pantei), spune verdictul, treapta cea mai mare (cu două
-   zecimale) și, la nevoie, marginea. Descrierile nu mai promit „fără suport” oricum, iar a elicei de barcă nu se mai
+4. **Editorul** (`atelier.ts`): textul din parametri al celor trei piese nu mai spune nimic de tipărire; paragraful nou
+   (`#at-tipar`), în panoul piesei, sub „Se prinde cu”, umplut după construire, spune verdictul, treapta cea mai mare (cu
+   două zecimale) și, la nevoie, marginea. Întâi stătea în editor, sub text: pornea ascuns la fiecare redesenare și apărea
+   după construire, deci muta butoanele de sub el, iar lotul e2e a prins, sub încărcare, un clic pierdut pe „Fă perechea”;
+   în panoul piesei nu mai e refăcut de editor. Se ascunde în vederea „Modelul”, la forma din cvs2, la piesele din circuit
+   și la o eroare. Descrierile nu mai promit „fără suport” oricum, iar a elicei de barcă nu se mai
    contrazice (fraza din constatarea 5 a auditului).
 
 **De ce verdictul nu stă doar pe treaptă:** pe paleta curbată, treapta de peste 1 mm e o fâșie îngustă, în ultimele unul–trei
@@ -84,8 +87,8 @@ separată, egală cu a motorului, pe paisprezece piese, și mai mare decât cons
 piese și pe câte o piesă din fiecare fel; aria primului strat, tot pe plasă; carcasa fără verdict); e2e, în
 `trenulet.elice.spec.ts`, `trenulet.barca.spec.ts`, `trenulet.ventilator.spec.ts`, `trenulet.pupa.spec.ts` și în proba
 în engleză din cvs2. Plasele, neschimbate: amprenta a 742 de piese ale celor trei elice, aceeași înainte și după.
-Otrăvurile: `3.Cm-2.py`, 41 / 41 (două întăriri de probă după prima rulare: elicea cu pasul 0,6 și 0,65 pentru pragul de
-sus, proprietatea `hidden` a paragrafului la carcasă; două otrăvuri echivalente scoase cu motivul); `3.Cm-2-en.py`, 6 / 6;
+Otrăvurile: `3.Cm-2.py`, 42 / 42 (două întăriri de probă după prima rulare: elicea cu pasul 0,6 și 0,65 pentru pragul de
+sus, proprietatea `hidden` a paragrafului la carcasă; două otrăvuri echivalente scoase cu motivul; A13, paragraful rămas la vedere în „Modelul”, adăugată odată cu mutarea lui); `3.Cm-2-en.py`, 6 / 6;
 cele 12 ancore ale listelor `3.T*` mutate de felie, 12 / 12.
 
 **Easy 3Draw 18.45.0.**

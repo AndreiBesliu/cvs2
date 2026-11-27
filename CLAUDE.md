@@ -1424,11 +1424,12 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   (tipărirea spusă cinstit)** gata pe 27.11: proba pe plasă a arătat că consola de la vârf din audit (0,2 / tan β) e doar
   o medie: pe paleta curbată, treapta dintre straturi crește spre muchia de sus (elicea implicită: 1,53 mm, nu 0,90), iar
   un vârf jos, de un strat, nu iese peste nimic. Motorul măsoară treapta pe secțiuni și primul strat pe plasă
-  (`treaptaPalete`, `ariaFeliei`, `tiparPalete`; câmpul `tipar` al elicei, al elicei de barcă și al rotorului); editorul o
-  spune sub textul fiecărei piese, pe praguri (fără suport până la 0,5 mm; cu suport sub vârfuri când și treapta, și
+  (`treaptaPalete`, `ariaFeliei`, `tiparPalete`; câmpul `tipar` al elicei, al elicei de barcă și al rotorului); atelierul o
+  spune în panoul piesei, sub „Se prinde cu”, pe praguri (fără suport până la 0,5 mm; cu suport sub vârfuri când și treapta, și
   consola trec de 1 mm; altfel, aspru pe alocuri), cu marginea de aderență (brim) sub 10 % din disc. Piesele, la octet
   (amprenta a 742 de plase). Easy 3Draw 18.45.0 (următoarea, 18.46.0). **O probă e2e care cere textul tipăririi îi ia
-  cifrele din motor pentru starea exactă a editorului din probă.** La owner: verdictul a / b / c (fișa etapei 3).
+  cifrele din motor pentru starea exactă a editorului din probă. Un paragraf umplut după construire nu stă în editor deasupra
+  unor butoane (apare după 90 ms și le mută: un clic se pierde sub încărcare).** La owner: verdictul a / b / c (fișa etapei 3).
   **Cotele pe desen: modelul și proba G-code-ului (ADR 0330, felia 10.4↑a-1, adusă din etapa 10)** gata pe 24.11, în
   sesiunea cloud a liniei (ramura `wip/10.4-cote`), unită în `main` pe 24.11 (`f25249cf`), fără interfață încă. ADR
   0330, acceptat de owner cu 1a–6a și cu nota lui: toate setările cotelor stau într-o fereastră nouă, „Setări”, nu în
