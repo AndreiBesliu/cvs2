@@ -79,7 +79,8 @@ test('grupurile operațiilor reliefului (felia 18.1↑d-4): adaosul doar la degr
   assert.deepEqual(GRUPURI_RELIEF.degrosare, ['freza-relief', 'linii', 'adaos', 'margine', 'podea']);
   const ale = new Set(GRUPURI_RELIEF.degrosare);
   const relief = Object.entries(GRUP_CAMP).filter(([c]) => c.startsWith('relief-'));
-  assert.equal(relief.length, 14);
+  // 14 din felia 18.1↑d-4, plus lista „Din frezele mele” (18.1↑d-5).
+  assert.equal(relief.length, 15);
   for (const [c, g] of relief) assert.ok(g.length === 1 && ale.has(g[0]!), `${c} → ${g.join(', ')}`);
   // Și invers: grupurile reliefului nu primesc câmpurile celorlalte operații.
   for (const [c, g] of Object.entries(GRUP_CAMP)) if (!c.startsWith('relief-')) assert.ok(g.every((x) => !['freza-relief', 'linii', 'adaos', 'margine', 'podea'].includes(x)), c);

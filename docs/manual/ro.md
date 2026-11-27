@@ -1075,7 +1075,10 @@ ei în ordinea tăierii, cu o fișă în care le schimbi și acolo: freza (numă
 liniile (pasul lateral, unghiul, prin centrele celulelor sau nealiniate), adaosul la degroșare, marginea și înălțimea, adâncimea
 și pasul pe trecere. Fișa spune pasul folosit (cu liniile prin centrele celulelor, rotunjit în jos la celule întregi) și, la
 finisare, creasta pe un plan. Marginea și înălțimea, schimbate pe un rând, se schimbă și pe celălalt rând al aceluiași relief;
-**Exportă** scrie valorile în proiect, iar secțiunea Tăierea le arată apoi. Cu **Ordinea tăierii: A mea**, rândul ei se mută ca oricare altul. În [vederea 3D](#vedere-3d), **Tăiat** arată
+**Exportă** scrie valorile în proiect, iar secțiunea Tăierea le arată apoi. Freza o poți lua și **Din frezele mele**: la
+finisare, o plată, o freză în V sau o bilă; la degroșare, doar o plată. Aleasă, freza își aduce numărul (cât e liber), diametrul,
+forma, pasul pe trecere și pasul lateral ei (o bilă de finisare are de obicei unul mic); schimbată apoi în bibliotecă, rândul
+spune ce diferă, cu **Ia valorile noi**, ca la celelalte rânduri. Cu **Ordinea tăierii: A mea**, rândul ei se mută ca oricare altul. În [vederea 3D](#vedere-3d), **Tăiat** arată
 placa după program. Freza rămâne puțin deasupra suprafeței ideale pe pante (cam 0,1 mm pe o pantă de 45°): e partea sigură a calculului,
 care nu sapă niciodată în relief. Exportul cere dalele reliefului din acest browser; pe alt calculator, le spune lipsă.
 

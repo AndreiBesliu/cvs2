@@ -26,7 +26,7 @@ test('rândul ca text, din valorile documentului (cu virgula în română)', () 
   const r = randRelief(fin, ro);
   assert.deepEqual(r, {
     fel: 'finisare', numarScula: '2', diametruScula: '6', formaScula: 'bila', unghiV: '60', varfV: '0', pasLateral: '0,6', adaos: '0,5',
-    unghi: '0', aliniat: true, margine: 'perete', z: 'varf', planZero: '0', adancime: '18', pas: '3',
+    unghi: '0', aliniat: true, margine: 'perete', z: 'varf', planZero: '0', adancime: '18', pas: '3', origineScula: null,
   });
   const d = randRelief(deg, ro);
   assert.equal(d.fel, 'degrosare');
@@ -43,7 +43,7 @@ test('rândul ca text, din valorile documentului (cu virgula în română)', () 
 test('valorile citite din text (oricare separator) și câmpurile greșite: marginile ușii și ale lucrării', () => {
   const r = randRelief(fin, ro);
   assert.deepEqual(valoriRelief(r), {
-    fel: 'finisare', scula: { numar: 2, diametru: 6, forma: { tip: 'bila' } }, pasLateral: 0.6, adaos: 0.5, unghi: 0, aliniat: true,
+    fel: 'finisare', scula: { numar: 2, diametru: 6, forma: { tip: 'bila' }, origine: null }, pasLateral: 0.6, adaos: 0.5, unghi: 0, aliniat: true,
     margine: 'perete', planZero: null, adancime: 18, pas: 3,
   });
   assert.deepEqual(campuriReliefGresite(r), []);
@@ -105,11 +105,18 @@ const opDeg: Operatie = {
   id: 'd', tip: 'degrosare', noduri: ['r'], latura: 'pe-linie', adancime: 18, pas: 3, pasLateral: 2.5,
   scula: { numar: 1, nume: 'freza plata 6', diametru: 6 }, degrosare: { adaos: 0.5, unghi: 90, margine: 'trece', planZero: 2 },
 } as Operatie;
+/** Originea frezei din document, cum o citește fereastra (felia 18.1↑d-5, ca `origineDin` din `ExportConectat`). */
+const origineDin = (s: Operatie['scula']): { readonly origine?: NonNullable<RandRelief['origineScula']> } => (s.biblioteca ? {
+  origine: {
+    nume: s.nume, biblioteca: { id: s.biblioteca.id, rev: s.biblioteca.rev }, ...(s.regim ? { regim: s.regim } : {}),
+    ...(s.tais !== undefined ? { tais: s.tais } : {}),
+  },
+} : {});
 const finDin = (o: Operatie): FinisareExport => ({
   ...fin, cheie: `p/${o.id}`, fel: o.tip === 'degrosare' ? 'degrosare' : 'finisare', ...(o.tip === 'degrosare' ? { adaos: o.degrosare!.adaos } : {}),
   scula: o.scula.forma?.tip === 'v'
-    ? { numar: o.scula.numar, diametru: o.scula.diametru, forma: 'v', unghi: o.scula.forma.unghi, ...(o.scula.forma.varf !== undefined ? { varf: o.scula.forma.varf } : {}) }
-    : { numar: o.scula.numar, diametru: o.scula.diametru, forma: o.scula.forma?.tip === 'bila' ? 'bila' : 'plata' },
+    ? { numar: o.scula.numar, diametru: o.scula.diametru, forma: 'v', unghi: o.scula.forma.unghi, ...(o.scula.forma.varf !== undefined ? { varf: o.scula.forma.varf } : {}), ...origineDin(o.scula) }
+    : { numar: o.scula.numar, diametru: o.scula.diametru, forma: o.scula.forma?.tip === 'bila' ? 'bila' : 'plata', ...origineDin(o.scula) },
   pasLateral: o.pasLateral!, unghi: (o.tip === 'degrosare' ? o.degrosare : o.finisare)!.unghi,
   aliniat: o.finisare?.nealiniat !== true, margine: (o.tip === 'degrosare' ? o.degrosare : o.finisare)!.margine === 'trece' ? 'trece' : 'perete',
   ...((o.tip === 'degrosare' ? o.degrosare : o.finisare)!.planZero !== undefined ? { planZero: (o.tip === 'degrosare' ? o.degrosare : o.finisare)!.planZero! } : {}),

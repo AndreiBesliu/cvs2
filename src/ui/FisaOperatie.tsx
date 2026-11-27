@@ -174,6 +174,11 @@ export interface ContextFisa {
   readonly iaValorileNoiPeToate: (f: FrezaOferita) => void;
   /** „Pune-o înapoi în bibliotecă” pe un loc al rândului (ADR 0300 §5, felia 16.A↑b-6); lipsă = fără buton. */
   readonly inapoi: (cheie: string, unde: UndeFreza) => InapoiNota | undefined;
+  /**
+   * „Pe toate (N)”: câte freze ale ferestrei vin din freza `id` a bibliotecii și diferă de ea, cu ale rândurilor reliefului (felia
+   * 18.1↑d-5); lipsă = doar rândurile acestor fișe (`cuAceeasiFreza`).
+   */
+  readonly peToate?: (id: string) => number;
 }
 
 /** „Dă-i T{n}” pe o freză ciocnită (ADR 0291 §2a, felia 28.8↑j): numărul nou și scrierea lui pe rând. */
@@ -188,7 +193,7 @@ export function FisaOperatie({ cheie, loc, total: totalFisa, c: ctx }: {
   const {
     dupaCheie, param, total, doarCitire, schimba, randBun, greseliRand, conflict, hartie, taieturaRand, text, fmtFreza, fmtTrecere,
     grosimeFoaie: grosimeActiva, supracursaCitita, cuSupracursa, onAlegeUrechi, frezeRest, grup, frezeOferite, alegeFreza, bibliotecaToata,
-    iaValorileNoi, iaValorileNoiPeToate, inapoi,
+    iaValorileNoi, iaValorileNoiPeToate, inapoi, peToate,
   } = ctx;
   const o = dupaCheie.get(cheie);
   const p = o ? param[o.cheie] : undefined;
@@ -221,7 +226,7 @@ export function FisaOperatie({ cheie, loc, total: totalFisa, c: ctx }: {
   const nota = (unde: UndeFreza, origine: OrigineFreza | null): ReactNode => {
     const st = stareLa(unde);
     return (
-      <NotaBiblioteca stare={st} origine={origine} peToate={st?.fel === 'schimbata' ? cuAceeasiFreza(param, bibliotecaToata, st.freza.id) : 0}
+      <NotaBiblioteca stare={st} origine={origine} peToate={st?.fel === 'schimbata' ? (peToate ?? ((id: string) => cuAceeasiFreza(param, bibliotecaToata, id)))(st.freza.id) : 0}
         oprit={doarCitire} fmt={fmtFreza} onIa={(f) => { iaValorileNoi(o.cheie, unde, f); }} onIaToate={iaValorileNoiPeToate}
         inapoi={st?.fel === 'stearsa' ? inapoi(o.cheie, unde) : undefined} />
     );

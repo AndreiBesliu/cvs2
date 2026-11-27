@@ -1107,7 +1107,11 @@ own row, in its place in the cutting order, with a sheet where you can change th
 shape; roughing, flat only), the lines (stepover, angle, through the cell centres or not aligned), the allowance for roughing,
 the edge and the height, the depth and the step down. The sheet tells the step used (with the lines through the cell centres,
 rounded down to whole cells) and, for finishing, the scallop on a flat. The edge and the height, changed on one row, change on
-the other row of the same relief too; **Export** writes the values into the project, and the Cutting section then shows them. With **Cutting order: Mine**, its row moves like any other. In the [3D view](#vedere-3d), **Cut** shows the
+the other row of the same relief too; **Export** writes the values into the project, and the Cutting section then shows them. You
+can also take the cutter **From my bits**: for finishing, a flat, a V or a ball cutter; for roughing, a flat one only. Once
+chosen, the cutter brings its number (while it is free), diameter, shape, step down and its own stepover (a finishing ball usually
+has a small one); changed later in the library, the row says what differs, with **Take the new values**, as on the other rows.
+With **Cutting order: Mine**, its row moves like any other. In the [3D view](#vedere-3d), **Cut** shows the
 sheet after the program. On slopes the cutter stays a little above the ideal surface (about 0.1 mm on a 45° slope): it is the safe side of the
 computation, which never digs into the relief. The export needs the relief's tiles from this browser; on another computer, it
 says they are missing.

@@ -571,7 +571,14 @@ export type FormaRelief = { readonly tip: 'bila' } | { readonly tip: 'v'; readon
 /** Valorile rândului unei operații a reliefului, citite (felia 18.1↑d-4, `exportRelief.ts`); ce scrie Exportă în operație. */
 export type ValoriRelief = {
   readonly fel: 'finisare' | 'degrosare';
-  readonly scula: { readonly numar: number; readonly diametru: number; readonly forma: FormaRelief };
+  readonly scula: {
+    readonly numar: number; readonly diametru: number; readonly forma: FormaRelief;
+    /**
+     * Freza din „Frezele mele” a rândului (felia 18.1↑d-5, ADR 0316), ca la celelalte rânduri: `null` = scrisă de mână (originea
+     * pleacă din document); lipsă = rămâne cea din document.
+     */
+    readonly origine?: OrigineFreza | null;
+  };
   readonly pasLateral: number; readonly adaos: number; readonly unghi: number; readonly aliniat: boolean;
   readonly margine: 'perete' | 'trece';
   /** Planul zero (mm sub fața plăcii), sau `null`: vârful reliefului la fața plăcii. */

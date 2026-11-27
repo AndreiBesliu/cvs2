@@ -5,7 +5,10 @@
  * aplicația scrie valorile în operație (`operatieReliefDinDialog`, `src/app/valoriOperatii.ts`).
  */
 import { ADAOS_IMPLICIT, MARGINI_OPERATIE, UNGHI_V_IMPLICIT } from './actiuniExportTipuri.ts';
-import { intregInMargini, inMargini, type FormaRelief, type ValoriRelief } from './exportRand.ts';
+import {
+  diferenteFreza, intregInMargini, inMargini, stareOrigine, type CopieRand, type FormaRand, type FormaRelief, type FrezaOferita,
+  type FrezaRand, type LocFrezaRand, type OrigineFreza, type ValoriRelief,
+} from './exportRand.ts';
 export type { FormaRelief, ValoriRelief } from './exportRand.ts';
 import { citesteNumar } from './numar.ts';
 
@@ -28,6 +31,8 @@ export type FinisareExport = {
   readonly scula: {
     readonly numar: number; readonly diametru: number; readonly forma: 'bila' | 'plata' | 'v';
     readonly unghi?: number; readonly varf?: number;
+    /** Originea frezei din „Frezele mele” (felia 18.1↑d-5, ADR 0316), dacă documentul o are. */
+    readonly origine?: OrigineFreza;
   };
   readonly pasLateral: number;
   /**
@@ -64,6 +69,11 @@ export type RandRelief = {
   readonly z: 'varf' | 'plan';
   readonly planZero: string;
   readonly adancime: string; readonly pas: string;
+  /**
+   * Freza din „Frezele mele” a rândului (felia 18.1↑d-5, ADR 0316): originea ei, ca la celelalte rânduri; `null` = scrisă de
+   * mână (un diametru sau o formă schimbate de mână o scot).
+   */
+  readonly origineScula: OrigineFreza | null;
 };
 
 /** Rândul din valorile documentului, cu numerele scrise de `text` (în română, cu virgulă). */
@@ -74,6 +84,7 @@ export function randRelief(f: FinisareExport, text: (x: number) => string): Rand
     unghiV: text(s.forma === 'v' ? s.unghi ?? UNGHI_V_IMPLICIT : UNGHI_V_IMPLICIT), varfV: text(s.forma === 'v' ? s.varf ?? 0 : 0),
     pasLateral: text(f.pasLateral), adaos: text(f.adaos ?? ADAOS_IMPLICIT), unghi: text(f.unghi), aliniat: f.aliniat, margine: f.margine,
     z: f.planZero === undefined ? 'varf' : 'plan', planZero: text(f.planZero ?? 0), adancime: text(f.adancime), pas: text(f.pas),
+    origineScula: f.scula.origine ?? null,
   };
 }
 
@@ -128,9 +139,110 @@ export function valoriRelief(r: RandRelief): ValoriRelief | null {
     forma = { tip: 'v', unghi: u, ...(vf > 0 ? { varf: vf } : {}) };
   }
   return {
-    fel: r.fel, scula: { numar, diametru, forma }, pasLateral, adaos, unghi, aliniat: r.fel === 'degrosare' || r.aliniat, margine: r.margine,
-    planZero, adancime, pas,
+    fel: r.fel, scula: { numar, diametru, forma, origine: r.origineScula }, pasLateral, adaos, unghi, aliniat: r.fel === 'degrosare' || r.aliniat,
+    margine: r.margine, planZero, adancime, pas,
   };
+}
+
+/*
+ * Freza din „Frezele mele” pe rândul reliefului (felia 18.1↑d-5, ADR 0316), cu aceleași reguli ca la celelalte rânduri (ADR 0300
+ * §4–§5): aleasă din listă, nota „s-a schimbat în bibliotecă”, „Ia valorile noi”, recunoașterea și „Pune-o înapoi în bibliotecă”.
+ */
+
+/** Forma frezei rândului, pentru bibliotecă: bila sau V-ul (cu vârful) doar la finisare; plata (lipsă) altfel. */
+function formaRandRelief(r: RandRelief): FormaRand | undefined {
+  if (r.fel !== 'finisare' || r.formaScula === 'plata') return undefined;
+  if (r.formaScula === 'bila') return { tip: 'bila' };
+  const u = citesteNumar(r.unghiV), v = citesteNumar(r.varfV);
+  return u !== null ? { tip: 'v', unghi: u, ...(v !== null && v > 0 ? { varf: v } : {}) } : undefined;
+}
+
+/** Freza rândului reliefului ca loc al bibliotecii (nota, recunoașterea), pe locul frezei operației. */
+export function locFrezaRelief(r: RandRelief): LocFrezaRand {
+  const forma = formaRandRelief(r);
+  return { unde: 'scula', origine: r.origineScula, diametru: r.diametruScula, ...(forma ? { forma } : {}) };
+}
+
+/**
+ * Frezele rândurilor reliefului, pentru numărul T al unei freze alese (regula rolurilor, ADR 0114 §5): numărul, diametrul,
+ * forma și turația originii, dacă o are; fără rândul `fara` (cel pe care îl înlocuim) și fără cele de necitit.
+ */
+export function frezeRanduriRelief(randuri: Readonly<Record<string, RandRelief>>, fara?: string): FrezaRand[] {
+  const rez: FrezaRand[] = [];
+  for (const [cheie, r] of Object.entries(randuri)) {
+    if (cheie === fara) continue;
+    const numar = citesteNumar(r.numarScula), diametru = citesteNumar(r.diametruScula), forma = formaRandRelief(r);
+    const turatie = r.origineScula?.regim?.turatie;
+    if (numar !== null && diametru !== null) rez.push({ numar, diametru, ...(forma ? { forma } : {}), ...(turatie !== undefined ? { turatie } : {}) });
+  }
+  return rez;
+}
+
+/** Câmpurile rândului care scriu forma `f` (finisarea: bila, V-ul, plata; degroșarea rămâne plată). */
+function campuriFormaRelief(r: RandRelief, f: FormaRand | undefined, text: (x: number) => string): Partial<RandRelief> {
+  if (r.fel === 'degrosare' || f === undefined) return { formaScula: 'plata' };
+  if (f.tip === 'bila') return { formaScula: 'bila' };
+  if (f.tip === 'v') return { formaScula: 'v', unghiV: text(f.unghi), varfV: text(f.varf ?? 0) };
+  return {};
+}
+
+/**
+ * Ce se schimbă pe rândul reliefului când freza `f` din bibliotecă e aleasă, cu numărul T dat (`numarPentruRand`): T-ul, Ø-ul,
+ * forma, pasul pe trecere, pasul lateral (al frezei, din procentul ei: o bilă de finisare își are pasul ei mic) și originea. O
+ * formă pe care rândul n-o poartă (toroidala, până la felia ei) nu schimbă nimic.
+ */
+export function cuFrezaAleasaRelief(r: RandRelief, f: FrezaOferita, numar: number, text: (x: number) => string = String): Partial<RandRelief> {
+  const s = f.scula;
+  if (r.fel === 'finisare' && s.forma?.tip === 'toroidala') return {};
+  return {
+    numarScula: text(numar), diametruScula: text(s.diametru), ...campuriFormaRelief(r, s.forma, text),
+    pas: text(f.pas), pasLateral: text(f.pasLateral), origineScula: s.origine,
+  };
+}
+
+/** „Ia valorile noi” pe rândul reliefului: diametrul, forma și originea frezei din bibliotecă; T-ul și pașii rămân ai rândului. */
+export function cuValorileNoiRelief(r: RandRelief, f: FrezaOferita, text: (x: number) => string = String): Partial<RandRelief> {
+  const s = f.scula;
+  if (r.fel === 'finisare' && s.forma?.tip === 'toroidala') return {};
+  return { diametruScula: text(s.diametru), ...campuriFormaRelief(r, s.forma, text), origineScula: s.origine };
+}
+
+/** Câte rânduri ale reliefului vin din freza `id` a bibliotecii și diferă de ea („Pe toate (N)”, cu celelalte rânduri). */
+export function reliefCuAceeasiFreza(randuri: Readonly<Record<string, RandRelief>>, biblioteca: readonly FrezaOferita[] | null, id: string): number {
+  let n = 0;
+  for (const r of Object.values(randuri)) {
+    const l = locFrezaRelief(r);
+    if (l.origine?.biblioteca.id === id && stareOrigine(l, biblioteca)?.fel === 'schimbata') n++;
+  }
+  return n;
+}
+
+/** Copia frezei rândului reliefului, de pus înapoi în bibliotecă (felia 16.A↑b-6); null fără origine sau cu T-ul ori Ø de necitit. */
+export function copieRelief(r: RandRelief): CopieRand | null {
+  const l = locFrezaRelief(r), o = l.origine;
+  const numar = citesteNumar(r.numarScula), diametru = citesteNumar(r.diametruScula);
+  if (!o || numar === null || diametru === null) return null;
+  return {
+    id: o.biblioteca.id, rev: o.biblioteca.rev, nume: o.nume, numar, diametru, ...(l.forma ? { forma: l.forma } : {}),
+    ...(o.regim ? { regim: o.regim } : {}), ...(o.tais !== undefined ? { tais: o.tais } : {}),
+    pas: citesteNumar(r.pas), pasLateral: citesteNumar(r.pasLateral),
+  };
+}
+
+/**
+ * Rândurile reliefului după ce freza ștearsă a rândului `cheie` a fost pusă înapoi ca `f` (felia 16.A↑b-6): rândul acela o ia
+ * (numele, poate liber, și versiunea ei); celelalte cu aceeași origine o iau doar dacă diferă de ea cel mult prin nume.
+ */
+export function cuFrezaPusaInapoiRelief(
+  randuri: Readonly<Record<string, RandRelief>>, cheie: string, f: FrezaOferita, text: (x: number) => string = String,
+): Record<string, RandRelief> {
+  const nou: Record<string, RandRelief> = { ...randuri };
+  for (const [k, r] of Object.entries(randuri)) {
+    const l = locFrezaRelief(r);
+    if (l.origine?.biblioteca.id !== f.id) continue;
+    if (k === cheie || diferenteFreza(l, f).every((d) => d.camp === 'nume')) nou[k] = { ...r, ...cuValorileNoiRelief(r, f, text) };
+  }
+  return nou;
 }
 
 /**

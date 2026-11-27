@@ -283,6 +283,8 @@ function randuriFoii(
       scula: {
         numar: s.numar, diametru: s.diametru, forma: s.forma?.tip === 'bila' ? 'bila' : s.forma?.tip === 'v' ? 'v' : 'plata',
         ...(s.forma?.tip === 'v' ? { unghi: s.forma.unghi, ...(s.forma.varf !== undefined ? { varf: s.forma.varf } : {}) } : {}),
+        // Originea din „Frezele mele” (felia 18.1↑d-5, ADR 0316): nota bibliotecii și Exportă o citesc, ca la celelalte rânduri.
+        ...((x) => (x ? { origine: x } : {}))(origineDin(s)),
       },
       pasLateral: o.pasLateral ?? 0, unghi: fin?.unghi ?? 0, aliniat: fin?.nealiniat !== true,
       margine: fin?.margine === 'trece' ? 'trece' : 'perete', ...(fin?.planZero !== undefined ? { planZero: fin.planZero } : {}),
@@ -401,6 +403,18 @@ export function ExportConectat({
       return lista;
     };
   }, [biblioteca.freze]);
+  // Frezele oferite rândurilor reliefului (felia 18.1↑d-5, ADR 0316): cele pe care lucrarea le primește pe finisare (plata, V-ul,
+  // bila) și pe degroșare (doar plata).
+  const frezeRelief = useMemo(() => {
+    const dupaFel = new Map<string, readonly FrezaOferita[]>();
+    return (fel: 'finisare' | 'degrosare'): readonly FrezaOferita[] => {
+      const gata = dupaFel.get(fel);
+      if (gata) return gata;
+      const lista = frezePotrivite(biblioteca.freze, [{ tip: fel, latura: 'pe-linie' }]).map(oferita);
+      dupaFel.set(fel, lista);
+      return lista;
+    };
+  }, [biblioteca.freze]);
   // Toată biblioteca cu CAM (ADR 0300 §5, felia 16.A↑b-4), pentru nota „s-a schimbat în bibliotecă” și recunoașterea; null cât
   // nu e citită (fereastra nu spune „nu mai e în bibliotecă” înainte să știe).
   const bibliotecaToata = useMemo(() => (biblioteca.incarcata ? frezePeRanduri(biblioteca.freze).map(oferita) : null), [biblioteca]);
@@ -489,7 +503,7 @@ export function ExportConectat({
       {...(placuteToate ? { placuteToate } : {})}
       foi={toate.foi.length}
       {...(toateFoile ? { toateFoile } : {})}
-      {...(biblioteca.freze.length > 0 ? { frezeOferite } : {})}
+      {...(biblioteca.freze.length > 0 ? { frezeOferite, frezeRelief } : {})}
       bibliotecaToata={bibliotecaToata}
       onPuneInapoi={puneInapoi}
       {...(onRaport ? { onRaport } : {})}
