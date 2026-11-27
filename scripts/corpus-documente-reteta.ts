@@ -294,6 +294,22 @@ const ADAUGIRI: Readonly<Record<number, (d: Obj) => void>> = {
     });
     d['rev'] += 2;
   },
+  // v32 (ADR 0304): o canelură pe linie cu o freză cu profilul desenat (o rotunjire Ø8, T11, fundul plat până la 1,5, apoi
+  // colțul până la (4, 3)), pe o linie dreaptă: 2 mm adâncimea, într-o trecere. Lucrarea o refuză încă (CAM-ul profilului
+  // vine pe sub-felii); ușa o primește.
+  32: (d) => {
+    const forma = {
+      tip: 'cale', inchis: false, varfuri: [
+        { p: { x: 0, y: 0 }, s: { tip: 'L' } },
+        { p: { x: 60, y: 0 }, s: { tip: 'L' } },
+      ],
+    };
+    adaugaPiesa(d, 'profilata', forma, 420, 380, {
+      latura: 'pe-linie', adancime: 2, pas: 2,
+      scula: { numar: 11, nume: 'Rotunjire 8', diametru: 8, forma: { tip: 'profil', puncte: [[0, 0], [1.5, 0], [2.2, 0.3], [3, 0.9], [3.6, 1.8], [4, 3]] } },
+    });
+    d['rev'] += 2;
+  },
 };
 
 let doc: Obj;

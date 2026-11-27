@@ -334,6 +334,7 @@ export const enCarcasa = {
   'prop.freza.valoare-v': 'T{numar}, V {unghi}°, Ø{diametru} mm',
   'prop.freza.valoare-bila': 'T{numar}, ball nose Ø{diametru} mm',
   'prop.freza.valoare-toroidala': 'T{numar}, bull nose Ø{diametru} mm, corner radius {raza} mm',
+  'prop.freza.valoare-profil': 'T{numar}, profile Ø{diametru} mm',
   'prop.fin.forma': 'Cutter',
   'prop.fin.forma.bila': 'ball nose',
   'prop.fin.forma.plata': 'flat',

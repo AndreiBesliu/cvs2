@@ -16,7 +16,7 @@ import { t } from '../i18n/t.ts';
 import type {
   CerereExport, CopieRand, FormaRand, FrezaOferita, FrezaRestOperatie, OperatieExport, OrigineFreza, Rand, RezultatInapoi, SculaOperatie, SetariAer, StareExport,
 } from '../ui/exportRand.ts';
-import { frezeleOperatiei, operatieCuRand } from '../model/formaFrezei.ts';
+import { frezeleOperatiei, operatieCuRand, operatieCuRandRelief } from '../model/formaFrezei.ts';
 import { frezePeRanduri, frezePotrivite, pasLateralDin, sculaDinBiblioteca } from '../model/alegereFreza.ts';
 import { frezaDinCopie, type FrezaSalvata } from '../model/freza.ts';
 import type { FrezaRest, Scula } from '../model/document.ts';
@@ -34,6 +34,7 @@ import { numarUrechiAlese } from '../model/urechiLocuri.ts';
 import { mesajeGata } from '../i18n/laCerere.ts';
 import { diametruCerc } from '../cam/gaurireFel.ts';
 import { hartieRand } from './hartieExport.ts';
+import { randLista } from './randListaExport.ts';
 
 /** Originea frezei din „Frezele mele” a unei scule din document (ADR 0300 §5): numele, id-ul, valorile de lucru, tăișul. */
 function origineDin(s: Scula): OrigineFreza | null {
@@ -120,8 +121,12 @@ function placuteIesite(d: Document, k?: number): { readonly nume: readonly strin
  */
 const peRand: (o: Operatie) => boolean = operatieCuRand;
 
-/** Operațiile reliefului (finisarea, ADR 0312; degroșarea, ADR 0313): un rând doar de citit. */
-const peRelief = (o: Operatie): boolean => o.tip === 'finisare' || o.tip === 'degrosare';
+/**
+ * Operațiile reliefului (finisarea, ADR 0312; degroșarea, ADR 0313), cu rândul lor, editabil din felia 18.1↑d-4: doar cu
+ * freza purtată de rând (`operatieCuRandRelief`). Un profil desenat (v32) n-are rând: Exportă îl lasă neatins, iar lucrarea
+ * îl refuză, cu motivul.
+ */
+const peRelief: (o: Operatie) => boolean = operatieCuRandRelief;
 
 /** Documentul fără rangurile operațiilor: ordinea automată a lucrării (ADR 0133 §3). */
 function faraRanguri(doc: Document): Document {
@@ -183,6 +188,8 @@ function randuriFoii(
     return {
       cheie: `${piesa.id}/${o.id}`,
       descriere: o.noduri.length > 1 ? `${baza} (+${o.noduri.length - 1})` : baza,
+      // Rândul din listă (felia 28.8↑s): numele piesei dat de om sau forma, apoi locul, pe rândul de dedesubt.
+      lista: randLista(e, piesa, o.noduri.length),
       ...(grosime !== undefined ? { grosime } : {}),
       // Câte căi deschise taie operația (ADR 0037 §12): dialogul nu oferă ce refuză exportul pe ele.
       deschise: o.noduri.filter((n) => {
@@ -454,7 +461,7 @@ export function ExportConectat({
         const cheie = `${piesa.id}/${o.id}`;
         // Finisarea (ADR 0312 §7) și degroșarea (ADR 0313 §7): valorile rândului lor (felia 18.1↑d-4; fără schimbare, aceeași
         // operație, la octet), apoi rangul (sau fără el, în ordinea automată).
-        if (o.tip === 'finisare' || o.tip === 'degrosare') {
+        if (peRelief(o)) {
           const vr = c.valoriRelief?.get(cheie);
           const { rang: _r, ...fara } = vr ? operatieReliefDinDialog(o, vr) : o;
           void _r;

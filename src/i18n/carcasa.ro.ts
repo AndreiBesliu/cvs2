@@ -351,6 +351,7 @@ export const roCarcasa = {
   'prop.freza.valoare-v': 'T{numar}, V {unghi}°, Ø{diametru} mm',
   'prop.freza.valoare-bila': 'T{numar}, bilă Ø{diametru} mm',
   'prop.freza.valoare-toroidala': 'T{numar}, toroidală Ø{diametru} mm, raza colțului {raza} mm',
+  'prop.freza.valoare-profil': 'T{numar}, profilată Ø{diametru} mm',
   'prop.fin.forma': 'Freza',
   'prop.fin.forma.bila': 'bilă',
   'prop.fin.forma.plata': 'plată',

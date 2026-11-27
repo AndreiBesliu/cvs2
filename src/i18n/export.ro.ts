@@ -402,6 +402,7 @@ export const roExport = {
   'export.raport.op.degrosare': 'degroșarea reliefului',
   'export.raport.bila': 'bilă',
   'export.raport.toroidala': 'toroidală r{raza}',
+  'export.raport.profilata': 'profilată',
   'export.raport.op.despartire': 'despărțirea foii',
   'export.raport.op.adancime': { one: '{adancime} mm, {n} trecere', few: '{adancime} mm, {n} treceri', other: '{adancime} mm, {n} de treceri' },
   'export.raport.op.urechi': { one: '{n} ureche', few: '{n} urechi', other: '{n} de urechi' },
@@ -546,6 +547,19 @@ export const roExport = {
   'export.fisa.loc': 'locul {n} din {total} în ordinea tăierii',
   'export.lista.z0.sus': 'Z0 pe față',
   'export.lista.z0.jos': 'Z0 pe masă',
+  // Rândul unei operații în listă (constatarea 14 a auditului, felia 28.8↑s): forma fără loc, apoi locul, pe rândul de dedesubt.
+  'export.lista.forma.dreptunghi': 'dreptunghi {latime} × {inaltime}',
+  'export.lista.forma.cerc': 'cerc R{raza}',
+  'export.lista.forma.relief': 'relief {latime} × {inaltime}',
+  'export.lista.forma.cale': {
+    one: 'cale {latime} × {inaltime}, {n} segment', few: 'cale {latime} × {inaltime}, {n} segmente', other: 'cale {latime} × {inaltime}, {n} de segmente',
+  },
+  'export.lista.forma.cale-deschisa': {
+    one: 'cale deschisă {latime} × {inaltime}, {n} segment', few: 'cale deschisă {latime} × {inaltime}, {n} segmente',
+    other: 'cale deschisă {latime} × {inaltime}, {n} de segmente',
+  },
+  'export.lista.unde': 'la X {x}, Y {y}',
+  'export.lista.unde.centru': 'cu centrul la X {x}, Y {y}',
   'export.du': 'Du-mă la {nume}',
   'export.treceri': { one: 'o trecere de {mm} mm', few: '{n} treceri de {mm} mm', other: '{n} de treceri de {mm} mm' },
   // Cu supracursa prin foaie (sau la gaura incrustației), lucrarea taie mai adânc decât câmpul (ADR 0291, felia 28.8↑h).

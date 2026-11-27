@@ -1,6 +1,7 @@
 import type { BandaDop, FrezaRest, FundPlat, Incrustatie, IncrustatieDreapta, IncrustatieV, Operatie, Urechi } from '../model/document.ts';
 import { cuDegrosare, cuFinisare, type SchimbareDegrosare, type SchimbareFinisare } from '../model/finisare.ts';
 import { PUNTI_DOP_DREPT } from '../model/incrustatie.ts';
+import { formaPeRand } from '../model/formaFrezei.ts';
 import type { ValoriRelief } from '../ui/exportRelief.ts';
 import type {
   BandaOperatie, FormaRand, FrezaRestOperatie, FundPlatOperatie, IncrustatieDreaptaOperatie, IncrustatieOperatie, OrigineFreza, SculaOperatie,
@@ -268,9 +269,10 @@ export function operatieDinDialog(o: Operatie, v: ValoriOperatie | undefined, sc
  * `cuDegrosare`), iar cele opționale lăsate la implicit pleacă. O operație de alt fel rămâne cum e.
  */
 export function operatieReliefDinDialog(o: Operatie, v: ValoriRelief): Operatie {
-  if (o.tip !== 'finisare' && o.tip !== 'degrosare') return o;
-  const deg = o.tip === 'degrosare';
+  // Doar o operație cu rândul reliefului (`operatieCuRandRelief`): un profil desenat (v32) sau o formă necunoscută rămân neatinse.
   const s = o.scula;
+  if ((o.tip !== 'finisare' && o.tip !== 'degrosare') || !formaPeRand(s.forma)) return o;
+  const deg = o.tip === 'degrosare';
   const formaNoua = deg ? null : v.scula.forma;
   const formaVeche = s.forma?.tip === 'bila' ? 'bila' : s.forma?.tip === 'v' ? 'v' : s.forma?.tip === 'toroidala' ? 'toroidala' : null;
   const aceeasiForma = formaNoua === null ? formaVeche === null : formaNoua.tip === 'bila' ? formaVeche === 'bila'

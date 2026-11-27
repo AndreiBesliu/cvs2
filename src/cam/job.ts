@@ -50,12 +50,15 @@ import { urechiLemnBucla, type FundLemn, type LaturaLemn } from './urechiLemn.ts
 
 /** Scula din operație, în IR: numărul, numele și diametrul (câmpurile necunoscute ale documentului rămân acolo). */
 // Forma frezei (ADR 0090) trece în IR: simularea și postul o citesc de acolo.
-// Bila (ADR 0312 §1) trece și ea, ca simularea s-o taie cu capătul ei; toroidala (ADR 0303 §4), cu raza colțului.
+// Bila (ADR 0312 §1) trece și ea, ca simularea s-o taie cu capătul ei; toroidala (ADR 0303 §4), cu raza colțului; profilul
+// desenat (ADR 0304), cu punctele lui.
 const sculaIR = (s: Taietura['scula']): Scula => ({
   numar: s.numar, nume: s.nume, diametru: s.diametru,
   ...(s.forma?.tip === 'v' ? { forma: { tip: 'v' as const, unghi: s.forma.unghi, ...(s.forma.varf !== undefined ? { varf: s.forma.varf } : {}) } } : {}),
   ...(s.forma?.tip === 'bila' ? { forma: { tip: 'bila' as const } } : {}),
   ...(s.forma?.tip === 'toroidala' ? { forma: { tip: 'toroidala' as const, raza: s.forma.raza } } : {}),
+  // Profilul desenat (ADR 0304 §1), cu punctele siluetei copiate: simularea o taie din ele.
+  ...(s.forma?.tip === 'profil' ? { forma: { tip: 'profil' as const, puncte: s.forma.puncte.map(([r, h]) => [r, h] as const) } } : {}),
 });
 
 /**
@@ -75,8 +78,15 @@ function refuzFinisareSiBila(doc: Document): string | null {
       // Bila și toroidala (ADR 0303 §4): ca freză a operației, pe linie (canelura, 16.A↑e-3), în buzunar (16.A↑e-5), pe o parte,
       // cu adâncimea cel puțin raza colțului (16.A↑e-6), și la finisarea reliefului (bila, ADR 0312; toroidala, 18.1↑e, ADR 0319).
       // Pe orice freză în plus și pe celelalte operații, refuzate.
-      const rotunda = (s: { readonly forma?: { readonly tip: string } | undefined }): boolean => s.forma?.tip === 'bila' || s.forma?.tip === 'toroidala';
       const motivRotunda = motivFormaPeOperatie(o.tip, o.latura, o.scula.forma, o, o.scula.diametru);
+      // Profilul desenat (ADR 0304 §3): ca freză a operației, pe linie (canelura, 16.A↑f-2); pe orice freză în plus și pe
+      // celelalte operații, refuzat (marginea profilată vine pe o sub-felie a ei).
+      for (const { cale, scula } of frezeleOperatiei(o)) {
+        if (scula.forma?.tip === 'profil' && !(cale === 'scula' && motivRotunda === null)) {
+          return `${unde}: freza profilată (T${scula.numar}, ${cale}) taie deocamdată doar pe linie (canelura), ca freză a operației: marginea profilată vine pe o sub-felie`;
+        }
+      }
+      const rotunda = (s: { readonly forma?: { readonly tip: string } | undefined }): boolean => s.forma?.tip === 'bila' || s.forma?.tip === 'toroidala';
       if (rotunda(o.scula) && motivRotunda === 'rotunda-adancime') {
         return `${unde}: pe o parte, freza ${felFrezei(o.scula.forma)} (T${o.scula.numar}) cere o adâncime de cel puțin raza colțului, `
           + `${razaColtului(o.scula.forma, o.scula.diametru)} mm (e ${o.adancime} mm): mai puțin adânc, peretele n-ar ajunge la desen`;
@@ -476,6 +486,9 @@ export function programDinDocument(
   const forma = (s: Taietura['scula']): string => (s.forma?.tip === 'v'
     ? `în V de ${s.forma.unghi}°${s.forma.varf ? ` cu vârful de ${s.forma.varf} mm` : ''}`
     : s.forma?.tip === 'toroidala' ? `toroidală cu raza colțului ${s.forma.raza} mm` : felFrezei(s.forma));
+  // Profilul desenat (ADR 0304): două siluete sunt două freze, oricât ar semăna; în motiv, „cu altă siluetă”.
+  const cheieForma = (s: Taietura['scula']): string => (s.forma?.tip === 'profil'
+    ? `profil ${s.forma.puncte.map(([r, h]) => `${r} ${h}`).join(';')}` : forma(s));
   const freze = new Map<number, Taietura['scula']>();
   // Frezele finisărilor (ADR 0312) intră și ele: același T, aceeași freză, ca la tăieturi.
   const deJudecat: ReadonlyArray<{ readonly idLume: string; readonly scule: readonly Taietura['scula'][] }> = [
@@ -495,8 +508,9 @@ export function programDinDocument(
       if (s.diametru !== u.diametru) {
         return { ok: false, motiv: `${t.idLume}: T${u.numar} are două diametre (${s.diametru} și ${u.diametru} mm): fiecare freză cere numărul ei` };
       }
-      if (forma(s) !== forma(u)) {
-        return { ok: false, motiv: `${t.idLume}: T${u.numar} are două freze de Ø${s.diametru} (${forma(s)} și ${forma(u)}): fiecare freză cere numărul ei` };
+      if (cheieForma(s) !== cheieForma(u)) {
+        const fu = forma(u) === forma(s) ? `${forma(u)} cu altă siluetă` : forma(u);
+        return { ok: false, motiv: `${t.idLume}: T${u.numar} are două freze de Ø${s.diametru} (${forma(s)} și ${fu}): fiecare freză cere numărul ei` };
       }
       // Turația e a frezei montate (ADR 0300 §5): același T cu două turații e un conflict, ca două diametre. Avansul și
       // plonjarea pot diferi de la o operație la alta.

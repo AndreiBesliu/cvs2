@@ -32,7 +32,7 @@ const piesa = (urechi: UrechiOperatie | null = alese({ e: SCURTE })): Piesa => (
 });
 /** Documentul v26 cu piesele date, fiecare pusă o dată. */
 const documentCu = (piese: readonly Piesa[]): Document => ({
-  schema: 31, rev: 0, piese: [...piese],
+  schema: 32, rev: 0, piese: [...piese],
   foi: [{ id: 'f1', stoc: { latime: 400, inaltime: 300, grosime: 18 }, instante: piese.map((p, k) => ({ id: `i${k}`, piesa: p.id, x: 50 + 100 * k, y: 50, rotire: 0 })) }],
 });
 /** Ușa primește documentul, iar fiecare operație are locurile doar pe nodurile ei. */

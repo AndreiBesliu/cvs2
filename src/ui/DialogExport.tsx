@@ -254,7 +254,9 @@ const RandListaOp = memo(function RandListaOp({ o, p, loc, nr, sus, jos, mana, t
       </span>
       <button type="button" className="dx-nav" data-nav={o.cheie} aria-current={curent} data-gresit={gresit ? '' : undefined}
         onClick={() => { a.du(o.cheie); }}>
-        <span className="dx-nume">{o.descriere}</span>
+        {/* Numele, apoi locul (felia 28.8↑s); fără rândul listei, numele întreg. */}
+        <span className="dx-nume">{o.lista?.nume ?? o.descriere}</span>
+        {o.lista && o.lista.unde !== '' && <span className="dx-unde">{o.lista.unde}</span>}
         <span className="dx-meta"><Poza k={`latura.${latura}`} />{nume} · T{sau(p.numarScula)} Ø{sau(p.diametruScula)} · {citesteNumar(p.adancime) === null ? '—' : `${p.adancime} mm`}</span>
       </button>
     </div>

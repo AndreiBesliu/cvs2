@@ -1867,7 +1867,9 @@ plin cât e în material. `Esc` sau **×** închid animația; dacă schimbi dese
 **Exportă G-code** deschide fereastra exportului, pentru foaia activă (cu mai multe [foi](#foile), titlul ferestrei spune
 care). Fereastra are trei părți:
 - **lista**, în stânga: **Foaia și originea**, **Mașina și fișierul**, apoi [operațiile](#operatii), în ordinea în care se
-  taie, fiecare cu ce taie, freza și adâncimea; după export, și **Rezultatul**, cu timpul estimat și câte avertismente are (un
+  taie. Rândul unei operații are pe primul rând numele piesei, dacă i l-ai dat (o piesă importată își ia numele din fișier),
+  altfel forma și mărimea ei; dedesubt, mai mic, locul ei pe foaie; apoi ce taie, freza și adâncimea. Fișa operației are în
+  titlu numele întreg, cu locul. După export, și **Rezultatul**, cu timpul estimat și câte avertismente are (un
   punct colorat, dacă are). Fișa lui are, în ordine: **De văzut înainte de tăiere** (avertismentele, doar când sunt), **Fișierele**
   (cu **Deschide în Mașina** și cu **începutul fiecărui fișier**: primele lui linii, cum le citește controlerul, până la
   prima mișcare de tăiere, întocmai ca în fișierul descărcat, cel mult 40; un rând pe fișier, primul desfăcut),

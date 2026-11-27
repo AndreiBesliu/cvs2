@@ -540,6 +540,11 @@ export type FundPlatOperatie = {
  */
 export type OperatieExport = {
   readonly cheie: string; readonly descriere: string; readonly deschise: number; readonly noduri: number; readonly valori: ValoriOperatie;
+  /**
+   * Rândul din listă (constatarea 14 a auditului, felia 28.8↑s): `nume`, numele piesei dat de om sau forma fără loc; `unde`,
+   * locul pe foaie, pe rândul de dedesubt. Lipsă: lista arată `descriere`, întreg.
+   */
+  readonly lista?: { readonly nume: string; readonly unde: string };
   /** Toate nodurile operației sunt cercuri: rândul oferă și găurirea (ADR 0087). */
   readonly cercuri?: boolean;
   /**

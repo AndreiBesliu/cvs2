@@ -14,19 +14,22 @@
  *   plată). Pe o parte, cu adâncimea cel puțin raza colțului ρ (întrebarea 2a): pe desen, silueta are raza R abia la ρ
  *   deasupra vârfului, deci mai puțin adânc peretele n-ar ajunge la desen. Toroidala merge și la finisarea reliefului
  *   (18.1↑e, ADR 0319).
+ * - Profilul desenat (ADR 0304 §3) merge pe linie (canelura, 16.A↑f-2): centrul pe vector, ca la bilă, deci drumul frezei
+ *   plate de același Ø; secțiunea canelurii e oglinda siluetei.
  * - Freza plată merge în rest.
  */
-import type { FormaSculaDoc, Latura, Operatie, Scula, TipOperatie } from './document.ts';
+import type { FormaBila, FormaSculaDoc, FormaToroidala, FormaV, Latura, Operatie, Scula, TipOperatie } from './document.ts';
 import { razaColtului } from './creasta.ts';
 
 /**
  * De ce forma nu merge: `vcarve` (V-carve-ul cere o freză în V), `v-pe-linie` (freza în V taie doar pe linie sau într-un
  * V-carve), `bila` și `toroidala` (freza rotundă nu merge aici: azi, pe linie, pe o parte, în buzunar și la finisarea
  * reliefului), `degrosare` (degroșarea reliefului cere o freză plată), `rotunda-rest` (un buzunar cu o freză rotundă nu are
- * freze de rest), `rotunda-incrustatie` (incrustația cu pereți drepți cere o freză plată) și `rotunda-adancime` (pe o parte,
- * o freză rotundă cere adâncimea cel puțin raza colțului).
+ * freze de rest), `rotunda-incrustatie` (incrustația cu pereți drepți cere o freză plată), `rotunda-adancime` (pe o parte,
+ * o freză rotundă cere adâncimea cel puțin raza colțului) și `profil` (profilul desenat taie doar pe linie, canelura: ADR 0304
+ * §3, felia 16.A↑f-2; marginea profilată vine pe o sub-felie a ei).
  */
-export type MotivForma = 'vcarve' | 'v-pe-linie' | 'bila' | 'degrosare' | 'toroidala' | 'rotunda-rest' | 'rotunda-incrustatie' | 'rotunda-adancime';
+export type MotivForma = 'vcarve' | 'v-pe-linie' | 'bila' | 'degrosare' | 'toroidala' | 'rotunda-rest' | 'rotunda-incrustatie' | 'rotunda-adancime' | 'profil';
 
 /**
  * Ce mai contează din operație pentru o freză rotundă: în buzunar, frezele de rest și incrustația (lipsă = fără ele); pe o
@@ -46,6 +49,9 @@ export type RestulOperatiei = {
 export function motivFormaPeOperatie(
   tip: TipOperatie, latura: Latura, forma: FormaSculaDoc | undefined, o?: RestulOperatiei, diametru?: number,
 ): MotivForma | null {
+  // Profilul desenat (ADR 0304 §3): pe linie (canelura, 16.A↑f-2), cu centrul pe vector, ca bila; marginea profilată (pe o
+  // parte) vine pe o sub-felie a ei, iar buzunarul, găurirea, V-carve-ul și relieful îl refuză.
+  if (forma?.tip === 'profil') return tip === 'profil' && latura === 'pe-linie' ? null : 'profil';
   const rotunda = forma?.tip === 'bila' || forma?.tip === 'toroidala';
   // Canelura (ADR 0303 §4, 16.A↑e-3): bila și toroidala pe linie, cu centrul pe vector (drumul frezei plate de același Ø).
   if (rotunda && tip === 'profil' && latura === 'pe-linie') return null;
@@ -71,9 +77,9 @@ export function motivFormaPeOperatie(
   return null;
 }
 
-/** Felul frezei în cuvinte, pentru motivele lucrării: „plată”, „în V”, „bilă” sau „toroidală” (un motiv numește forma). */
-export function felFrezei(forma: FormaSculaDoc | undefined): 'plată' | 'în V' | 'bilă' | 'toroidală' {
-  return forma === undefined ? 'plată' : forma.tip === 'bila' ? 'bilă' : forma.tip === 'toroidala' ? 'toroidală' : 'în V';
+/** Felul frezei în cuvinte, pentru motivele lucrării: „plată”, „în V”, „bilă”, „toroidală” sau „profilată” (un motiv numește forma). */
+export function felFrezei(forma: FormaSculaDoc | undefined): 'plată' | 'în V' | 'bilă' | 'toroidală' | 'profilată' {
+  return forma === undefined ? 'plată' : forma.tip === 'bila' ? 'bilă' : forma.tip === 'toroidala' ? 'toroidală' : forma.tip === 'profil' ? 'profilată' : 'în V';
 }
 
 /**
@@ -82,8 +88,18 @@ export function felFrezei(forma: FormaSculaDoc | undefined): 'plată' | 'în V' 
  * versiuni mai noi) n-are rând: Exportă o lasă neschimbată, iar lucrarea o refuză cu motivul ei, deci o freză nu devine pe
  * tăcute o plată.
  */
-export function formaPeRand(forma: FormaSculaDoc | undefined): boolean {
+export function formaPeRand(forma: FormaSculaDoc | undefined): forma is FormaV | FormaBila | FormaToroidala | undefined {
   return forma === undefined || forma.tip === 'v' || forma.tip === 'bila' || forma.tip === 'toroidala';
+}
+
+/**
+ * Operațiile cu un rând al reliefului în fereastra exportului (finisarea, ADR 0312; degroșarea, ADR 0313; editabil din felia
+ * 18.1↑d-4, ADR 0315): cu freza operației purtată de rând (`formaPeRand`). Profilul desenat (documentul v32, ADR 0304) sau o
+ * formă necunoscută n-au rând: rândul le-ar citi ca plată, iar Exportă le-ar scrie înapoi așa. Fără rând, Exportă le lasă
+ * neatinse, iar lucrarea le refuză cu motivul ei.
+ */
+export function operatieCuRandRelief(o: Operatie): boolean {
+  return (o.tip === 'finisare' || o.tip === 'degrosare') && formaPeRand(o.scula.forma);
 }
 
 /**

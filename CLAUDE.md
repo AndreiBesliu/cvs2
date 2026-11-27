@@ -451,6 +451,13 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   incrustația cu pereți drepți, refuzate cu motiv. **Creasta unei strategii noi cu forme rotunde se măsoară pe tot
   fundul, nu doar între treceri** (pe colțurile inelelor un punct stă la aproape s de drum). Documentul rămâne v31;
   nimic pe server. Felia: pornirea +0, totalul +0,4 kB.
+  **Profilul pe o parte cu bila și cu toroidala (ADR 0303, felia 16.A↑e-6)** gata pe 27.11, unită în `main` pe 27.11
+  (`e9790edb`): exteriorul, interiorul, stânga și dreapta, pe drumul frezei plate de același Ø, cu adâncimea de cel
+  puțin raza colțului ρ (la bilă, Ø / 2); peretele vertical până la d − ρ, cu racordarea de rază ρ la fund (prin foaie,
+  pe muchia de jos a piesei, spusă în fereastră); sub ρ, refuzul, cu motiv. **O probă a listei „Freza” care ține regula
+  unei laturi se schimbă odată cu regula** (`frezeTaiere.spec.ts` cerea încă doar frezele plate pe exterior).
+  Documentul rămâne v31; nimic pe server. Felia: pornirea +0, totalul +0,5 kB (cu primul pas din f-1, profilul în IR
+  și în simulare, +2,0).
   **Plafonul pornirii 120 kB (ADR 0145, decizia owner-ului din 24.11, „ok, ridica plafonul pornirii la 120 kB”):** după
   lotul al paisprezecelea, pornirea era 109,9 kB, cu ușa 114,4 și cu Atelierul 114,7 / 115, iar feliile următoare ale
   frezelor, exportului și aranjamentelor nu mai încăpeau în 0,3 kB. Poarta judecă tot trei măsuri sub același plafon
@@ -735,6 +742,12 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   (`src/post/inceput.ts`), fără comentariile dialectului postului; proba o judecă pe corpusul CAM, pe toate
   posturile, cu cititorul dialectelor. Programul și amprentele, octet cu octet; documentul rămâne v30. Felia:
   pornirea +0, totalul +0,5 kB.
+  **Numele, apoi locul, în lista exportului (ADR 0292, felia 28.8↑s)** gata pe 27.11, unită în `main` pe 27.11
+  (`fec801bc`), partea din listă a constatării 14 a auditului: rândul unei operații arată întâi numele piesei dat de om
+  (altfel forma și mărimea), dedesubt, mai mic, locul pe foaie, apoi rândul de până acum (`randLista`,
+  `src/app/randListaExport.ts`, cu numerele din `numarDescriere`). Titlul fișei și rândurile reliefului, neschimbate.
+  **O probă de mărime care compară un element cu el însuși de dinainte cere ce spune titlul ei** (banda telefonului
+  culcat: capul foii nu o înalță). Programul, octet cu octet. Felia: pornirea +0, totalul +0,4 kB.
   **Aldinul și cursivul sintetic (ADR 0123, felia 7.5↑, adusă din etapa 7)** gata pe 02.11, în worktree-ul `wip/7.5-text`:
   bifele **Aldin** și **Cursiv** din panoul textului, pentru orice font. Cursivul înclină fiecare literă față de linia ei de
   bază, exact; aldinul așază literele la înălțimea miezului (h − 2d), le îngroașă cu d prin fațada offsetului
@@ -2095,6 +2108,44 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 27.11.2026, la prânz (a șaizeci și șasea unire din cloud): **rândul unei operații în lista ferestrei „Exportă
+  G-code” (28.8↑s), unit în `main`** (sesiunea principală, ramura `unire-2711i`, peste unirea lui 16.A↑e-6). Linia
+  exportului, ramura `wip/28.8-export`, `cd2ed898`, PR-ul `AndreiBesliu/cvs2#76` (ADR 0292, acceptat cu recomandările:
+  1a, iar 1b nu se face; partea din listă a constatării 14 a auditului), unită în `fec801bc`: rândul unei operații
+  arată pe primul rând numele piesei dat de om (un import, „logo-80mm”), altfel forma și mărimea, fără loc; dedesubt,
+  mai mic, locul pe foaie; apoi rândul de până acum. Calculul e `randLista` (`src/app/randListaExport.ts`, adus doar de
+  fereastră), cu numerele din `numarDescriere`, comun cu 3.Av; titlul fișei, banda telefonului culcat și rândurile
+  reliefului, neschimbate. O probă veche, „pe telefon, banda rămâne cât era” (`export.toateFoile.spec.ts`), compara
+  banda cu ea însăși de dinainte: acum cere ce spune titlul ei, capul foii nu înalță banda. Otrăvurile 14 / 14.
+  Programul, octet cu octet; documentul rămâne v31; nimic pe server. Înaintea ei intrase 16.A↑e-6, care atinge și ea
+  fereastra exportului, deci unirea și-a făcut completul ei, fără ciocniri: completul 45969212819 pe `fec801bc`, verde:
+  unit 10 959 / 0 (12 sărite, pe Linux), e2e 1 014 / 1 014, funcțiile pe emulatoare 142 / 142, paginile 62 / 62;
+  rapidul, verde; porțile liniei, verzi pe `cd2ed898`. Totalul 940,3 / 1 000 kB (felia +0,4), pornirea 111,7 kB (cu ușa
+  117,0, cu Atelierul 117,3 / 125). Lotul 60 (16.A↑e-6) e în drum; felia aceasta pleacă după el (lotul 61). **Linia
+  exportului n-are felie pornită:** 28.8↑m vine cu Clasicul, 9a după placa 2. **La owner:** de încercat lista
+  exportului cu un import cu nume; restul listei, neschimbat.
+- 27.11.2026, dimineața (a șaizeci și cincea unire din cloud): **profilul pe o parte cu bila și cu toroidala
+  (16.A↑e-6), unit în `main`** (sesiunea principală, ramura `unire-2711h`, din `f4bac612`). Linia frezelor, ramura
+  `wip/16.A-freze-e`, `f1866d2d`, PR-ul `AndreiBesliu/cvs2#74` (ADR 0303, răspunsul 2a), unită în `e9790edb`; capul
+  ramurii mersese mai departe, cu 16.A↑f-1 (documentul v32) la porți, deci s-a unit commit-ul raportat. Profilul pe o
+  parte (exterior, interior, stânga, dreapta) cu bila și cu toroidala, cu adâncimea de cel puțin raza colțului ρ (la
+  bilă, Ø / 2): drumul frezei plate de același Ø, mișcare cu mișcare, cu urechile, rampa, intrările și degajările;
+  peretele, pe hârtie, vertical de la față până la d − ρ, cu racordarea de rază ρ la fund; prin foaie, când d − ρ e
+  sub grosime, racordarea rămâne pe muchia de jos a piesei, iar fereastra exportului o spune sub adâncime; sub ρ,
+  lucrarea refuză cu motiv (freza, raza, adâncimea), iar Tăierea oferă bila și toroidala pe o parte doar de la
+  adâncimea lor. **Mișcă mașina**; otrăvurile 16 / 16. Primul complet al liniei (pe `be3a08d7`) căzuse doar la
+  `frezeTaiere.spec.ts:66`, care cerea pe exterior doar frezele plate (regula de dinainte de e-6): proba, refăcută în
+  `f1866d2d`. În același commit: primul pas din 16.A↑f-1 (profilul desenat în IR și în nucleul simulării, nefolosit
+  cât documentul e v31) și documentele lui ADR 0304 (propus, mers cu recomandările). Documentul rămâne v31; nimic pe
+  server; fără forme rotunde, programul octet cu octet. Ciocnirea, doar în DEVLOG; **arborele unirii are exact codul
+  lui `f1866d2d`** și a intrat pe porțile liniei: completul 45960847118, verde: unit 10 953 / 0 (12 sărite, pe Linux),
+  e2e 1 011 / 1 011, funcțiile pe emulatoare 142 / 142, paginile 62 / 62; rapidul 45960847466, verde; totalul
+  939,8 / 1 000 kB (+2,0: e-6 +0,5, pasul simulării din f-1 +1,5), pornirea 111,7 kB (cu ușa 117,0, cu Atelierul
+  117,4 / 125). **Lotul 59 (16.A↑e-5) e pe test din 27.11, 10:35** (`a67ec32c`); felia aceasta pleacă acum (lotul
+  60). Linia exportului a raportat 28.8↑s (rândul unei operații în lista exportului, `cd2ed898`), pusă peste unirea
+  aceasta pe `unire-2711i`, cu completul ei. Linia frezelor are 16.A↑f-1 (forma `profil`, documentul v32) la porți.
+  **La owner:** proba pe mașină a profilului pe o parte cu bila sau cu toroidala (întâi în aer); restul listei,
+  neschimbat.
 - 27.11.2026, dimineața (a șaizeci și patra unire din cloud): **buzunarul cu bila și cu toroidala (16.A↑e-5), unit în
   `main`** (sesiunea principală, ramura `unire-2711g`, din `ecfd9f03`). Linia frezelor, ramura `wip/16.A-freze-e`,
   `106b4a51` (codul în `cf67e858`, cu `main` `72263843` adus în `c4435321`), PR-ul `AndreiBesliu/cvs2#74` (ADR 0303,

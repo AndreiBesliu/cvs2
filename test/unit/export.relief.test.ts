@@ -10,6 +10,7 @@ import assert from 'node:assert/strict';
 import type { Operatie } from '../../src/model/document.ts';
 import { operatieReliefDinDialog } from '../../src/app/valoriOperatii.ts';
 import { campuriReliefGresite, cuPerechile, randRelief, valoriRelief, type RandRelief } from '../../src/ui/exportRelief.ts';
+import { operatieCuRandRelief } from '../../src/model/formaFrezei.ts';
 import type { FinisareExport } from '../../src/ui/FisaFinisare.tsx';
 
 const fin: FinisareExport = {
@@ -200,4 +201,20 @@ test('toroidala pe finisare (felia 18.1↑e, ADR 0319): rândul, raza colțului 
   assert.deepEqual(rc.scula, { numar: 4, nume: 'freza toroidala r2', diametru: 6, forma: { tip: 'toroidala', profil: 'x', raza: 2 } });
   // De pe toroidală pe bilă: forma bilei, fără raza colțului.
   assert.deepEqual(scrie(opT, { formaScula: 'bila' }).scula, { numar: 4, nume: 'freza bila', diametru: 6, forma: { tip: 'bila' } });
+});
+
+test('profilul desenat (documentul v32, ADR 0304) n-are rând pe relief: lucrarea îl refuză acolo, iar Exportă lasă operația neatinsă', () => {
+  // Rândul reliefului poartă plata, V-ul, bila și toroidala (felia 18.1↑e); un profil citit ca plată s-ar scrie înapoi ca plată.
+  const profil = { tip: 'profil', puncte: [[0, 0], [3, 1], [3, 12]] };
+  for (const o of [opFin, opDeg]) {
+    assert.equal(operatieCuRandRelief(o), true);
+    const cuProfil = { ...o, scula: { numar: 5, nume: 'profilul meu', diametru: 6, forma: profil } } as Operatie;
+    assert.equal(operatieCuRandRelief(cuProfil), false);
+    // Chiar cu valorile unui rând (o fereastră veche, o cheie amestecată), Exportă nu-l atinge.
+    const v = valoriRelief(randRelief(finDin(o), String));
+    assert.ok(v);
+    assert.equal(operatieReliefDinDialog(cuProfil, v), cuProfil);
+  }
+  // Operațiile pe contur au rândul lor (`operatieCuRand`), nu pe al reliefului.
+  assert.equal(operatieCuRandRelief({ ...opFin, tip: 'profil' } as Operatie), false);
 });

@@ -16692,6 +16692,27 @@ transmis liniei la 06:37): „întâi freza din „Frezele mele” pe rândurile
   întâi, roșie pe codul dinainte), otrăvurile 4 / 4.
 - **Mărimea, cu amândouă:** totalul 940,6 / 1 000 kB (+2,1), pornirea 111,7 kB, neschimbată (măsurat pe clonă, la `5444361f`).
 
+## 2026-11-27 — Linia exportului: 28.8↑s, rândul unei operații în listă, numele, apoi locul
+
+**Prompt:** mesajul sesiunii principale (27.11, 08:37), cu cuvântul owner-ului („zi-le sesiunilor sa continue cu
+recomandarile, acolo unde inca asteapta”): „1. Partea din listă a constatării 14 (`docs/linii/audit-export.md`). Recomandarea
+ta: în listă, numele piesei când omul i-a dat unul (un import „logo-80mm”), iar locul pe al doilea rând, mai mic. Virgula e
+deja în `main`, din 3.Av. 2. ADR 0292 rămâne la 1a: începutul programului se arată după export. 1b nu se face. 3. 28.8↑m și
+9a rămân cum sunt”.
+**Started:** 27.11, 08:38.
+
+- **Rândul listei:** pe primul rând, numele piesei dat de om, altfel forma și mărimea, fără loc; dedesubt, mai mic, locul pe
+  foaie (`.dx-unde`). `randLista` (`src/app/randListaExport.ts`, textele în modulul exportului), pe `OperatieExport.lista`;
+  titlul fișei rămâne numele întreg; pe telefonul culcat, banda doar cu numele. Rândurile reliefului, neatinse. Programul,
+  octet cu octet.
+- **Probele:** `export.randLista.test.ts` (6), `export.lista.spec.ts` (3); proba benzii din `export.toateFoile.spec.ts`,
+  refăcută pe ce spune (capul foii nu înalță banda). Suita unitară întreagă: 10 918 / 0 (12 sărite); e2e-ul ferestrei,
+  verde. **Otrăvurile:** `28.8s.py`, 14 / 14. **Mărimea:** pornirea +0, totalul 937,8 / 1 000 (+0,4 kB).
+- **Documentele:** ADR 0292 acceptat cu recomandările (și indexul), manualul (ambele limbi), auditul (starea constatării 14),
+  fișa etapei 3, registrul otrăvurilor, nota liniei.
+
+**Completed:** 27.11, 09:23.
+
 ## 2026-11-27 — Sesiunea principală în cloud: liniile continuă cu recomandările (Model: Claude Opus 5.5)
 
 **Prompt:** „zi-le sesiunilor sa continue cu recomandarile, acolo unde inca asteapta”
@@ -16748,8 +16769,6 @@ ramură, după push).
 - **Otrăvurile:** 17 / 17 prinse (`test/otravuri/16.A-e5.py`: 12 pe lucrare și fereastră, 4 pe oracol, 1 e2e).
 - **Mărimea:** totalul 937,8 / 1 000 kB (+0,4); pornirea neschimbată (111,7 kB; cu ușa 117,0, cu Atelierul 117,4 / 125).
 - **Neschimbate:** nimic pe server; documentul rămâne v31; programul fără forme rotunde, octet cu octet.
-
-## 2026-11-27 — Sesiunea principală în cloud: liniile continuă cu recomandările (Model: Claude Opus 5.5)
 
 ## 2026-11-27 — Sesiunea principală în cloud: a șaizeci și patra unire (16.A↑e-5) (Model: Claude Opus 5.5)
 
@@ -16825,3 +16844,83 @@ după push).
 - **Otrăvurile:** 16 / 16 prinse (`test/otravuri/16.A-e6.py`: 12 pe lucrare și fereastră, 4 e2e).
 - **Mărimea:** totalul 938,3 / 1 000 kB (+0,5); pornirea neschimbată (111,7 kB; cu ușa 117,0, cu Atelierul 117,4 / 125).
 - **Neschimbate:** nimic pe server; documentul rămâne v31; programul fără forme rotunde, octet cu octet.
+- **Completul de pe `be3a08d7`** a căzut doar la `test/e2e/frezeTaiere.spec.ts:66`: proba Tăierii cerea pe exterior doar
+  frezele plate, adică regula de dinainte de e-6. Am rulat-o local abia după complet. Reparată în `f1866d2d`: la adâncimea 3
+  lista oferă și bila Ø6 și toroidala r1, iar la adâncimea 1 doar toroidala.
+
+## 2026-11-27 — 16.A↑f-1: profilul desenat în simulare și în documentul v32 (Model: Claude Opus 5.5)
+
+**Prompt:** sesiunea principală: „Continuă cu e-5 și e-6. Apoi vin f (profilul desenat) și g (valorile pe material), cu
+recomandările ADR 0300 și 0302 acolo unde mai sunt întrebări.” Apoi: „Pentru f: când ADR 0304 cere un câmp nou, numărul e
+v32. Spune-mi doar când ajungi la migrare.” **Started:** 27.11, după e-6, pe `wip/16.A-freze-e`. **Completed:** 27.11 (în
+container; completul pe ramură, după push).
+
+- **ADR 0304 propus** (profilul desenat), cu cinci întrebări pentru owner; linia merge cu recomandările (toate „a”).
+- **Simularea întâi:** IR-ul are forma `profil`, iar nucleul, silueta de felul 4 (linia frântă). Pe linia înclinată, fiecare
+  bucată e convexă, cu minimul în formă închisă (punctul staționar tăiat la intervalele ei, ca la conul V-ului), fără pași de
+  căutare. Simularea refuză un profil fără sens și elicea cu profilul.
+  - Proba (`test/unit/simulare.profil.test.ts`): nucleul față de oracolul simulării, pe trei profiluri și opt feluri de
+    mutări, plus 12 profiluri la întâmplare; pe hârtie, V-ul, plata, V-ul cu vârf plat, secțiunea canelurii; dinții (V-ul
+    pică).
+  - De la 391 s la 35 s: celula de 0,1 mm, oracolul judecat o dată pe caz.
+- **Documentul v32** (numărul dat de sesiunea principală):
+  - **Ușa:** perechile `[r, h]`, 2–200; primul (0, 0), r strict crescător, h nedescrescător, capătul la Ø / 2.
+  - **Migrarea** v31 → v32 schimbă doar numărul și refuză un v31 cu profil.
+  - **Oracolul documentului** are secțiunea v32 și cazurile pe hârtie (P01–P07, R01, RD0–RD12). Probele care țin versiunea
+    curentă s-au mutat pe v32, iar „mai nouă” e acum 33.
+  - **Corpusul de aur:** pasul v32 e o canelură cu „Rotunjire 8”; ieșirile s-au schimbat doar în `"schema": 32`.
+- **Lucrarea** refuză profilul pe orice operație și pe orice freză în plus, cu forma, T-ul și calea; fereastra exportului nu
+  face rând; panoul spune „profilată”.
+- **Otrăvurile:** 20 / 20 prinse (`test/otravuri/16.A-f1.py`). F15 (h ≥ 0 la ușă) a scăpat și e practic echivalentă: h
+  pornește din 0 și nu scade. Scoasă, cu motivul.
+- **Mărimea:** pornirea 111,9 kB (+0,2; cu ușa 117,3, cu Atelierul 117,7 / 125), totalul 940,4 / 1 000 kB (+2,1, peste ținta
+  de +2 kB pe toată felia f: nucleul se numără de două ori, iar schema și migrarea încă o dată).
+- **Neschimbate:** nimic pe server; programul fără profil, octet cu octet.
+
+
+
+## 2026-11-27 — 16.A↑f-2: canelura cu profilul desenat (Model: Claude Opus 5.5)
+
+**Prompt:** același mesaj al sesiunii principale ca la f-1 („Apoi vin f (profilul desenat) și g …”); felia urmează după f-1, pe
+ADR 0304 §3 (întrebarea 4a, partea canelurii). **Started:** 27.11, 09:40, pe `wip/16.A-freze-e`, peste f-1. **Completed:** 27.11
+(în container; completul pe ramură, cu `main` adus, după push).
+
+- **Proba secțiunii întâi** (`test/unit/canelura.profil.test.ts`): canelura simulată pe celule de 0,01 mm față de hârtie, celulă
+  cu celulă, z = min(0, −d + h(x)) cât x ≤ R, pe o rotunjire, un S și trepte, sub, la și peste înălțimea profilului; fundul și
+  lățimea la față ca dinți. Fundul e la −d + h(0,005): celula cea mai apropiată de linie e la 0,005 mm.
+- **Lucrarea:** profilul desenat merge pe linie, ca freză a operației: drumul frezei plate de același Ø, mișcare cu mișcare, și
+  cu urechile și rampa. `sculaIR` copiază punctele siluetei în IR. Pe o parte, în buzunar, la găurire, în V-carve, pe relief și
+  pe frezele în plus, refuzat cu motiv.
+- **Identitatea pe T:** cheia formei ține toate punctele, deci două siluete (și doar în h) sunt două freze, refuzate sub același
+  număr, cu „cu altă siluetă” în motiv.
+- **Raportul foilor** spune „profilată” (`profilata`, cu textul în ambele limbi).
+- **Sub-feliile** din ADR 0304, renumerotate ca la ADR 0303: f-3 intrarea în proiect, f-4 marginea profilată, f-5 editorul.
+- **Rapidul pe `ab6d5033`** a căzut doar la traducerile roadmap-ului (rândul lui f-2 din fișă); traducerea, în `b8b5be2f`.
+- **Otrăvurile:** 9 / 9 prinse (`test/otravuri/16.A-f2.py`).
+- **Mărimea** (rapidul pe `b3d6e273`, cu `main` adus): pornirea 111,8 kB (cu ușa 117,3, cu Atelierul 117,6 / 125), totalul
+  940,5 / 1 000 kB; f-2 singură, +0,1 kB.
+- **Neschimbate:** nimic pe server; documentul rămâne v32; programul fără profil, octet cu octet.
+## 2026-11-27 — Sesiunea principală în cloud: a șaizeci și cincea unire (16.A↑e-6) (Model: Claude Opus 5.5)
+
+**Prompt:** „zi-le sesiunilor sa continue cu recomandarile, acolo unde inca asteapta” (unirea, la raportul liniei; ordinul „unește ce se poate”)
+**Started:** 27.11, 10:52. **Completed:** 27.11, 10:54.
+
+- **Unirea:** `wip/16.A-freze-e` (`f1866d2d`, PR-ul #74; nu capul ramurii, cu 16.A↑f-1 la porți) în `e9790edb`, pe
+  `unire-2711h`, din `f4bac612`; codul, identic cu al lui `f1866d2d`. Completul 45960847118, verde: unit 10 953 / 0, e2e
+  1 011 / 1 011, funcțiile pe emulatoare 142 / 142, paginile 62 / 62. Totalul 939,8 / 1 000 kB.
+- **Exportul (28.8↑s, `cd2ed898`, PR-ul #76):** pus peste unire pe `unire-2711i` (`fec801bc`, fără ciocniri); completul
+  45969212819, în lucru.
+- **Pe test:** lotul 59 (`a67ec32c`, 16.A↑e-5), la 10:35; lotul 60 (16.A↑e-6), în drum.
+- **Documentele:** decizia și Starea în `CLAUDE.md`; starea din `docs/linii/principala.md`; indexul liniilor.
+
+## 2026-11-27 — Sesiunea principală în cloud: a șaizeci și șasea unire (28.8↑s) (Model: Claude Opus 5.5)
+
+**Prompt:** „zi-le sesiunilor sa continue cu recomandarile, acolo unde inca asteapta” (unirea, la raportul liniei; ordinul „unește ce se poate”)
+**Started:** 27.11, 10:52. **Completed:** 27.11, 12:03.
+
+- **Unirea:** `wip/28.8-export` (`cd2ed898`, PR-ul #76) în `fec801bc`, pe `unire-2711i`, peste 16.A↑e-6 (`e9790edb`), fără
+  ciocniri; `main` adus apoi (`276d99ab`, doar documente). Completul 45969212819 pe `fec801bc`, verde: unit 10 959 / 0, e2e
+  1 014 / 1 014, funcțiile pe emulatoare 142 / 142, paginile 62 / 62. Totalul 940,3 / 1 000 kB.
+- **DEVLOG-ul:** titlul gol și bulinele dublate la unirea lui e-5, scoase (`9e599576`; semnalat de linia frezelor).
+- **Pe test:** lotul 60 (16.A↑e-6), în drum; lotul 61 (28.8↑s), după el.
+- **Documentele:** decizia și Starea în `CLAUDE.md`; starea din `docs/linii/principala.md`; indexul liniilor.
