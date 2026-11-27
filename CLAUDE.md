@@ -104,7 +104,7 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   `test/oracles/document.ts` (peste partea v1–v10), cazurile pe hârtie la finalul lui `test/oracles/document.cazuri.ts`, proba
   cu ușa aplicației în `test/unit/document.v22.oracol.test.ts` (din 08.11, cu incrustațiile din v20–v22) și, pentru v23 (literele
   plăcuțelor, 11.4↑, în `main` din 13.11), în `test/unit/document.v23.oracol.test.ts`. **Un câmp nou al documentului
-  (v31; v30, cu degroșarea reliefului, ADR 0313, e în `main` din 26.11; v29, cu finisarea reliefului și freza bilă, ADR 0312, din 25.11; v28, cu forma `relief`, ADR
+  (v32; v31, cu forma toroidalei, ADR 0303, e în `main` din 27.11; v30, cu degroșarea reliefului, ADR 0313, din 26.11; v29, cu finisarea reliefului și freza bilă, ADR 0312, din 25.11; v28, cu forma `relief`, ADR
   0310, din 24.11; v27, cu `biblioteca`, `regim` și `tais` pe frezele
   operațiilor, ADR 0300) intră acolo, ca rangul și incrustația:** rândul
   lui în `CAMPURI_NOI_O` (ciocnirea migrării), judecata în `problemeOperatieO`, frontierele pe hârtie, iar probele care țin
@@ -323,7 +323,7 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   buzunarul, liniile paralele, frezele de rest, găurirea, V-ul, fundul plat, dopurile), turația primei freze montate
   și a celei noi la schimbare. **Fără valori, programul de azi, octet cu octet;** același T cu două turații și o
   adâncime peste tăiș se refuză. Fără interfață încă: urmează 16.A↑b-2 (lista „Freza” pe rândurile exportului și în
-  Tăierea) și 16.A↑b-3 (nota schimbării din bibliotecă). **Un câmp nou al documentului ia v31 (v28 e relieful, ADR 0310; v29, finisarea lui, ADR 0312; v30, degroșarea lui, ADR 0313). O probă e2e care
+  Tăierea) și 16.A↑b-3 (nota schimbării din bibliotecă). **Un câmp nou al documentului ia v32 (v28 e relieful, ADR 0310; v29, finisarea lui, ADR 0312; v30, degroșarea lui, ADR 0313; v31, forma toroidalei, ADR 0303). O probă e2e care
   citește documentul salvat cere versiunea curentă:** `placute.spec.ts` a căzut în completul liniei cu `schema: 26`.
   **Biblioteca de freze în cont (ADR 0300 §3, §7, felia 16.A↑c)** gata pe 24.11, unită în `main` pe 24.11
   (`6b74074d`), la „b, pornește 16.A↑c” al owner-ului: callable-ul `freze` (`functions/src/freze/`, contractul în
@@ -412,6 +412,14 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   apăsat a plecat sau s-a oprit** (aceeași scăpare, în celelalte șase ferestre, reparată în 3.Aw). Cu ea, linia frezelor n-are felie pornită: urmează, la
   cuvântul owner-ului, 16.A↑d (calibrarea, după placa 4), e (bila și toroidala, cu relieful), f (profilul desenat),
   g (valorile pe material). Felia: pornirea +0, totalul +0,1 kB.
+  **Freza toroidală în document și în simulare (ADR 0303, felia 16.A↑e-1; documentul v31)** gata pe 26.11, unită în
+  `main` pe 27.11 (`8b92246d`), la cuvântul owner-ului: forma `{ tip: 'toroidala', raza }` (0 < raza < Ø/2), în
+  schemă, cu migrarea v30 → v31 (doar numărul; un v30 care o are deja e o ciocnire); nucleul simulării o taie exact
+  (`src/sim/nucleu.ts`: linia înclinată, bisecție pe o funcție convexă), oracolul simulării o are pe hârtie. **Lucrarea
+  o refuză pe orice operație și pe orice freză a operației** (motivul numește forma, T-ul și calea): CAM-ul ei vine în
+  e-3 … e-5. **Fereastra exportului face rând doar pentru frezele pe care le poate purta** (`operatieCuRand`: plata și
+  V-ul; bila rămâne ca înainte), altfel Exportă ar scrie o plată în locul toroidalei. Fără frezele noi, programul de
+  azi, octet cu octet. Nimic pe server. Felia: pornirea +0 (cu ușa +0,1), totalul +1,0 kB.
   **Plafonul pornirii 120 kB (ADR 0145, decizia owner-ului din 24.11, „ok, ridica plafonul pornirii la 120 kB”):** după
   lotul al paisprezecelea, pornirea era 109,9 kB, cu ușa 114,4 și cu Atelierul 114,7 / 115, iar feliile următoare ale
   frezelor, exportului și aranjamentelor nu mai încăpeau în 0,3 kB. Poarta judecă tot trei măsuri sub același plafon
@@ -2056,6 +2064,26 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 27.11.2026, noaptea (a șaizecea unire din cloud): **freza toroidală în document (v31) și în simulare (16.A↑e-1),
+  unită în `main`** (sesiunea principală, ramura `unire-2711b`, din `47b75d20`). Linia frezelor, ramura
+  `wip/16.A-freze-e`, `7c3f166b` (cu `main` `0df06eca` adus), PR-ul `AndreiBesliu/cvs2#69` (ADR 0303, propus de linie,
+  cu recomandările 1a–5a aplicate; pornită la „Zi-le ca pot continua cu ce urmeaza la fiecare” al owner-ului), unită în
+  `8b92246d`: forma `{ tip: 'toroidala', raza }` a frezei (0 < raza < Ø/2); **documentul trece pe v31** (schema,
+  migrarea v30 → v31, care schimbă doar numărul, oracolul documentului, cazurile pe hârtie, corpusul de aur); nucleul
+  simulării o taie exact (linia înclinată, prin bisecție pe o funcție convexă), iar oracolul simulării o are pe hârtie;
+  lucrarea o refuză pe orice operație și pe orice freză a operației, cu un motiv care numește forma, T-ul și calea
+  (CAM-ul ei vine în e-3 … e-5); fereastra exportului face rând doar pentru frezele pe care le poate purta (plată, în
+  V), ca o toroidală să nu fie scrisă ca plată. **Fără frezele noi, programul de azi, octet cu octet** (corpusul CAM,
+  aurul plăcilor și al atelierelor); otrăvurile 23 / 24 (una, practic echivalentă). Nimic pe server. **Un câmp nou al
+  documentului ia de acum v32**, iar numărul îl dă sesiunea principală, la cerere. `main` primise între timp 10.4↑g și
+  3.Ck-2, deci unirea și-a făcut completul ei, fără nicio ciocnire în cod (DEVLOG-ul, fișa, registrul otrăvurilor și
+  traducerile, unite singure). Porțile unirii, în CI: completul 45915480549 pe `8b92246d`, verde la prima trecere (65 min): unit 10 887 / 0 (12 sărite, pe Linux), e2e 1 008 / 1 008, funcțiile pe emulatoare 142 / 142, paginile 62 / 62; rapidul, verde; completul liniei, verde pe `7c3f166b` (45908979628);
+  pornirea 111,7 kB (cu ușa 117,0, cu Atelierul 117,3 / 125), **totalul 933,8 / 1 000 kB** (+1,0), `/admin` 138,3 / 200, contul 30,3 / 32. **Alegerile din ADR 0303, cu recomandarea aplicată, la owner:** la buzunarul cu toroidala, pasul lateral
+  rămâne un câmp, cu creasta pe fund arătată alături (1a); profilul pe o parte, permis cu adâncimea cel puțin raza
+  colțului (2a); elicea cu toroidala, simulată exact (3a, felia e-2); finisarea reliefului cu toroidala, a liniei
+  reliefului (4a); toroidala, refuzată ca freză de rest, a fundului plat și a dopului (5a). Linia frezelor continuă cu
+  16.A↑e-2 (elicea cu toroidala), pe aceeași ramură; o schimbare a bilei se anunță întâi liniei reliefului. **La
+  owner:** cele cinci alegeri ale toroidalei; restul listei, neschimbat.
 - 27.11.2026, noaptea (a cincizeci și noua unire din cloud): **balamaua din atelierul Easy 3Draw (3.Ck-2), unită în
   `main`** (sesiunea principală, ramura `unire-2711a`, din `e656da6a`). Linia atelierului, ramura
   `wip/3.Xh-biblioteca-ui`, `bd7a0751` (felia `fba8ecbe`, cu `main` `e656da6a` adus), PR-ul `AndreiBesliu/cvs2#70`

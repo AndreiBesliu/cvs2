@@ -16521,3 +16521,13 @@ commit-ul împins).
   paginile 62 / 62. Easy 3Draw 18.44.0; aplicația neschimbată (totalul 932,8 / 1 000 kB).
 - **Proba în engleză a pluginului:** împărțită de linie în trei (5,0 s, 16,0 s, 11,6 s); bugetul de 90 s din 3.Ax a ieșit.
 - **Documentele:** decizia în `CLAUDE.md`; starea din `docs/linii/principala.md`; indexul liniilor.
+
+## 2026-11-27 — Sesiunea principală în cloud: a șaizecea unire (16.A↑e-1, documentul v31) (Model: Claude Opus 5.5)
+
+**Prompt:** „Zi-le ca pot continua cu ce urmeaza la fiecare” (unirea, la raportul liniei; ordinul „unește ce se poate”)
+**Started:** 27.11, 02:12. **Completed:** 27.11, 03:19.
+
+- **Unirea:** `wip/16.A-freze-e` (`7c3f166b`, PR-ul #69) în `8b92246d`, pe `unire-2711b`, din `47b75d20`; fără ciocniri în cod.
+  Completul unirii: completul 45915480549 pe `8b92246d`, verde la prima trecere (65 min): unit 10 887 / 0 (12 sărite, pe Linux), e2e 1 008 / 1 008, funcțiile pe emulatoare 142 / 142, paginile 62 / 62; rapidul, verde. pornirea 111,7 kB (cu ușa 117,0, cu Atelierul 117,3 / 125), **totalul 933,8 / 1 000 kB** (+1,0), `/admin` 138,3 / 200, contul 30,3 / 32.
+- **Schema:** documentul e v31 (forma toroidalei); un câmp nou ia v32.
+- **Documentele:** decizia și Starea în `CLAUDE.md`; starea din `docs/linii/principala.md`; indexul liniilor.
