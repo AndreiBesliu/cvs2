@@ -87,8 +87,9 @@ test('piesa: carcasa are urechile (2 sau 4), nu sensul, gaura sau inelul; creșt
   await atelierVentilator(page);
   await page.locator('#at-ve-piesa [data-v="carcasa"]').click();
   await expect(page.locator('#at-nume-piesa')).toHaveText(CARCASA);
-  // carcasa e un tub în picioare: n-are verdictul paletelor (ADR 0340)
+  // carcasa e un tub în picioare: n-are verdictul paletelor (ADR 0340); paragraful e ascuns, nu doar gol
   await expect(page.locator('#at-tipar')).toBeHidden();
+  await expect(page.locator('#at-tipar')).toHaveJSProperty('hidden', true);
   // pe hârtie: pe x, până la marginea urechii (24 + 3,6); pe y, tubul (Ø44)
   await expect(page.locator('#at-cote')).toContainText('55,2 × 44 × 9 mm');
   for (const grup of ['sens', 'gaura', 'inel']) await expect(page.locator(`#at-ve-${grup}`)).toHaveCount(0);
