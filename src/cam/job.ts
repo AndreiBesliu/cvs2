@@ -57,7 +57,8 @@ const sculaIR = (s: Taietura['scula']): Scula => ({
 });
 
 /**
- * ADR 0312, ADR 0313: ce refuză lucrarea din documentele v29 și v30, pe piesele foii: freza bilă pe altceva decât finisarea
+ * ADR 0312, ADR 0313, ADR 0303: ce refuză lucrarea din documentele v29–v31, pe piesele foii: freza toroidală pe orice
+ * operație (până la CAM-ul ei), freza bilă pe altceva decât finisarea
  * reliefului (`motivFormaPeOperatie`; și pe frezele de rest, ale fundului plat și ale dopului), o freză care nu e plată pe o
  * degroșare, câmpul `finisare` pe alt fel de operație decât finisarea și `degrosare` pe alt fel decât degroșarea, iar pe o
  * operație a reliefului ce e al altor operații (urechi, rampă, intrări, degajări, despărțire, câmpurile altor feluri) și o
@@ -69,6 +70,10 @@ function refuzFinisareSiBila(doc: Document): string | null {
     if (!pePlaca.has(p.id)) continue;
     for (const o of p.operatii) {
       const unde = `${p.id}/${o.id}`;
+      // Toroidala (ADR 0303 §4): pe orice operație și pe orice freză a ei, până la CAM-ul ei (16.A↑e-3 … e-5).
+      for (const { cale, scula } of frezeleOperatiei(o)) {
+        if (scula.forma?.tip === 'toroidala') return `${unde}: freza toroidală (T${scula.numar}, ${cale}) nu se taie încă: CAM-ul ei vine pe sub-felii (canelura, buzunarul, profilul)`;
+      }
       if (o.finisare !== undefined && o.tip !== 'finisare') return `${unde}: valorile finisării sunt doar ale unei finisări a reliefului`;
       if (o.degrosare !== undefined && o.tip !== 'degrosare') return `${unde}: valorile degroșării sunt doar ale unei degroșări a reliefului`;
       if (o.tip === 'degrosare' && motivFormaPeOperatie(o.tip, o.latura, o.scula.forma) === 'degrosare') {

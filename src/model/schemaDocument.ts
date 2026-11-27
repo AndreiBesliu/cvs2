@@ -123,7 +123,7 @@ const SchemaNod: v.GenericSchema<unknown, Nod> = v.variant('tip', [
   }),
 ]) as v.GenericSchema<unknown, Nod>;
 
-const SchemaScula = v.looseObject({
+const SchemaScula = v.pipe(v.looseObject({
   numar: v.pipe(v.number(), v.integer(), v.minValue(1), v.maxValue(PLAFON.numarScula)),
   nume: v.pipe(v.string(), v.maxLength(PLAFON.numeLungime)),
   diametru: pozitiv(PLAFON.diametruScula),
@@ -135,6 +135,8 @@ const SchemaScula = v.looseObject({
       varf: v.optional(pozitiv(PLAFON.diametruScula)),
     }),
     v.looseObject({ tip: v.literal('bila') }),
+    // ADR 0303 §1 (v31): toroidala, cu raza colțului; sub jumătatea diametrului o judecă scula (mai jos).
+    v.looseObject({ tip: v.literal('toroidala'), raza: pozitiv(PLAFON.diametruScula) }),
   ])),
   // ADR 0300 §5 (v27): originea copiei din bibliotecă, valorile de lucru și lungimea tăișului; adâncimea peste tăiș o refuză
   // lucrarea.
@@ -147,7 +149,10 @@ const SchemaScula = v.looseObject({
     plonjare: pozitiv(PLAFON.regimFreza),
   })),
   tais: v.optional(pozitiv(PLAFON.adancimeOperatie)),
-});
+}),
+// ADR 0303 §1: raza colțului toroidalei e sub jumătatea diametrului (o singură scriere: cât jumătatea lui e o bilă).
+v.forward(v.check((s) => s.forma?.tip !== 'toroidala' || s.forma.raza < s.diametru / 2,
+  'raza colțului toroidalei trebuie să fie sub jumătatea diametrului (o freză cu raza cât jumătatea lui se scrie ca bilă)'), ['forma', 'raza']));
 
 // ADR 0093: frezele de rest (v17), o listă nevidă; potrivirea (mai mică decât freza dinainte, plată, pasul cel mult raza ei) e
 // a lucrării.

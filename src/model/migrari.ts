@@ -783,6 +783,28 @@ function v29v30(doc: Brut): ReturnType<Migrare> {
 }
 
 /**
+ * v30 → v31 (ADR 0303 §1): freza toroidală, schimbă doar numărul. Un v30 cu o freză `{ tip: 'toroidala' }` (pe oricare
+ * freză a unei operații) nu e un v30 valid: migrarea îl refuză, ca să nu-l facă v31 pe tăcute (schema curentă l-ar primi).
+ */
+function v30v31(doc: Brut): ReturnType<Migrare> {
+  const ob = (x: unknown): x is Brut => typeof x === 'object' && x !== null && !Array.isArray(x);
+  const piese = doc['piese'];
+  for (const p of Array.isArray(piese) ? piese : []) {
+    if (!ob(p) || !Array.isArray(p['operatii'])) continue;
+    for (const o of p['operatii'] as unknown[]) {
+      if (!ob(o)) continue;
+      const unde = `operația v30 ${String(o['id'])} din piesa ${String(p['id'])}`;
+      for (const [cale, s] of frezeOperatieBrute(o)) {
+        if (ob(s) && ob(s['forma']) && s['forma']['tip'] === 'toroidala') {
+          return { ok: false, motiv: `${unde} are o freză toroidală (${cale}), pe care v31 o aduce: nu e un document v30 valid` };
+        }
+      }
+    }
+  }
+  return { ok: true, doc: { ...doc, schema: 31 } };
+}
+
+/**
  * Migrările pure, vN → vN+1. Cheia e versiunea de PLECARE. Lista crește; o migrare scrisă nu se mai schimbă. Fiecare
  * lucrează doar pe forma pe care o promite: v1 → v2 își validează intrarea cu schema v1 înghețată; v2 → v3 … v19 → v20
  * lucrează defensiv, iar schema curentă (care conține toate regulile de dinainte) judecă rezultatul.
@@ -828,5 +850,6 @@ export const MIGRARI: Readonly<Record<number, Migrare>> = {
   27: v27v28,
   28: v28v29,
   29: v29v30,
+  30: v30v31,
 };
 

@@ -10,6 +10,7 @@ import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import './limbi.ts';
 import { documentPlaca18, fisierePlaca18 } from '../placi/placa-18/genereaza.ts';
+import { VERSIUNE_SCHEMA } from '../../src/model/document.ts';
 
 const dosar = new URL('../placi/placa-18/', import.meta.url);
 const aur = (nume: string): Buffer => readFileSync(new URL(nume, dosar));
@@ -29,7 +30,7 @@ test('exportul de acum e fișierele de aur, octet cu octet (T1 degroșarea, T2 f
 
 test('documentul plăcii: rolul „Relief 3D” (degroșarea, apoi finisarea), cu valorile fișei, trece de ușă la versiunea curentă', async () => {
   const { doc } = await documentPlaca18();
-  assert.equal(doc.schema, 30);
+  assert.equal(doc.schema, VERSIUNE_SCHEMA);
   const ops = doc.piese[0]!.operatii;
   assert.deepEqual(ops.map((o) => o.tip), ['degrosare', 'finisare']);
   const [d, f] = ops;

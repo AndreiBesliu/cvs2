@@ -59,7 +59,7 @@ const degrosare = (v: Liber = {}): Liber => op({
 
 function doc(amprenta: string, operatii: readonly Liber[]): Document {
   const d = {
-    schema: 30, rev: 0,
+    schema: 31, rev: 0,
     piese: [{
       id: 'p',
       radacina: {

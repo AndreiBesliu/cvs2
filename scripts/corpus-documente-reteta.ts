@@ -278,6 +278,22 @@ const ADAUGIRI: Readonly<Record<number, (d: Obj) => void>> = {
     });
     d['rev'] += 1;
   },
+  // v31 (ADR 0303): o canelură pe linie, pe o cale deschisă cu un arc, cu o freză toroidală de Ø6 cu raza colțului de 1 mm
+  // (T10): 1,5 mm adâncimea, într-o trecere. Lucrarea o refuză încă (CAM-ul toroidalei vine pe sub-felii); ușa o primește.
+  31: (d) => {
+    const forma = {
+      tip: 'cale', inchis: false, varfuri: [
+        { p: { x: 0, y: 0 }, s: { tip: 'L' } },
+        { p: { x: 50, y: 0 }, s: { tip: 'A', bulge: 0.5 } },
+        { p: { x: 80, y: 30 }, s: { tip: 'L' } },
+      ],
+    };
+    adaugaPiesa(d, 'canelura', forma, 420, 330, {
+      latura: 'pe-linie', adancime: 1.5, pas: 1.5,
+      scula: { numar: 10, nume: 'Toroidală 6 r1', diametru: 6, forma: { tip: 'toroidala', raza: 1 } },
+    });
+    d['rev'] += 2;
+  },
 };
 
 let doc: Obj;

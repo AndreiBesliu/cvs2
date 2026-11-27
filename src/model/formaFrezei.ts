@@ -9,18 +9,22 @@
  * - Finisarea reliefului (ADR 0312 §2) merge cu freza plată, cu V-ul și cu bila; bila (ADR 0312 §1), doar acolo, până la felia
  *   bilei a liniei frezelor (16.A↑e): profilul, buzunarul și celelalte ar decala-o ca pe una plată.
  * - Degroșarea reliefului (ADR 0313 §1) cere freza plată: adaosul se socotește cu freza plată mărită cu el (ADR 0310 §4).
+ * - Freza toroidală (ADR 0303 §1, documentul v31) nu merge încă pe nicio operație, nici pe finisare: simularea o taie, dar
+ *   CAM-ul ei vine pe sub-felii (canelura în 16.A↑e-3, buzunarul în e-4, profilul în e-5), fiecare cu rândul ei aici.
  * - Freza plată merge în rest.
  */
 import type { FormaSculaDoc, Latura, Operatie, Scula, TipOperatie } from './document.ts';
 
 /**
  * De ce forma nu merge: `vcarve` (V-carve-ul cere o freză în V), `v-pe-linie` (freza în V taie doar pe linie sau într-un
- * V-carve), `bila` (freza bilă merge doar la finisarea reliefului), `degrosare` (degroșarea reliefului cere o freză plată).
+ * V-carve), `bila` (freza bilă merge doar la finisarea reliefului), `degrosare` (degroșarea reliefului cere o freză plată),
+ * `toroidala` (freza toroidală nu se taie încă, ADR 0303 §4).
  */
-export type MotivForma = 'vcarve' | 'v-pe-linie' | 'bila' | 'degrosare';
+export type MotivForma = 'vcarve' | 'v-pe-linie' | 'bila' | 'degrosare' | 'toroidala';
 
 /** Motivul pentru care o freză de forma dată nu merge pe operație, sau null dacă merge (lipsa formei = freza plată). */
 export function motivFormaPeOperatie(tip: TipOperatie, latura: Latura, forma: FormaSculaDoc | undefined): MotivForma | null {
+  if (forma?.tip === 'toroidala') return 'toroidala';
   if (tip === 'finisare') return null;
   if (tip === 'degrosare') return forma === undefined ? null : 'degrosare';
   if (forma?.tip === 'bila') return 'bila';
@@ -30,9 +34,27 @@ export function motivFormaPeOperatie(tip: TipOperatie, latura: Latura, forma: Fo
   return null;
 }
 
-/** Felul frezei în cuvinte, pentru motivele lucrării: „plată”, „în V” sau „bilă” (ADR 0312 §1: un motiv numește forma). */
-export function felFrezei(forma: FormaSculaDoc | undefined): 'plată' | 'în V' | 'bilă' {
-  return forma === undefined ? 'plată' : forma.tip === 'bila' ? 'bilă' : 'în V';
+/** Felul frezei în cuvinte, pentru motivele lucrării: „plată”, „în V”, „bilă” sau „toroidală” (un motiv numește forma). */
+export function felFrezei(forma: FormaSculaDoc | undefined): 'plată' | 'în V' | 'bilă' | 'toroidală' {
+  return forma === undefined ? 'plată' : forma.tip === 'bila' ? 'bilă' : forma.tip === 'toroidala' ? 'toroidală' : 'în V';
+}
+
+/**
+ * Forma pe care o poartă un rând editabil al ferestrei exportului: plata (fără formă) și V-ul (cu vârful plat), singurele pe
+ * care copia ferestrei le știe (ADR 0290, `exportRand.ts`). O operație cu altă freză (bila, toroidala, o formă necunoscută
+ * a unei versiuni mai noi) n-are rând: Exportă o lasă neschimbată, iar lucrarea o refuză cu motivul ei, deci o freză nu
+ * devine pe tăcute o plată.
+ */
+export function formaPeRand(forma: FormaSculaDoc | undefined): boolean {
+  return forma === undefined || forma.tip === 'v';
+}
+
+/**
+ * Operațiile cu un rând editabil în fereastra exportului: cele pe contur (nu finisarea și degroșarea reliefului, cu rândul lor
+ * doar de citit), cu toate frezele purtate de rând (`formaPeRand`).
+ */
+export function operatieCuRand(o: Operatie): boolean {
+  return o.tip !== 'finisare' && o.tip !== 'degrosare' && frezeleOperatiei(o).every((f) => formaPeRand(f.scula.forma));
 }
 
 /**

@@ -1,9 +1,9 @@
 # Frezele (16.A↑, ADR 0300–0309)
 
 _cncvs2, biblioteca de freze („Frezele mele”), felia 16.A↑ adusă din etapa 16: ramura `wip/16.A-freze` (din `main`
-`c8b235ab`), ADR-urile 0300–0309 (liber: 0303), canalul `freze`; ADR 0300 ACCEPTAT pe 23.11 („Da, 1a–6a”), ADR 0302 ACCEPTAT pe
-24.11 („Da, 1a–5a”); 16.A↑a, ADR 0301, 16.A↑b-1 și 16.A↑c UNITE în `main`; 16.A↑b-2 și 16.A↑a-2 GATA pe ramură (PR-ul #22);
-16.A↑h-1 și 16.A↑h-2 UNITE (lotul 21); 16.A↑h-3 și 16.A↑h-4 în lotul 23; 16.A↑h-5 și 16.A↑b-3 UNITE (lotul 26); 16.A↑b-5 în lucru pe `wip/16.A-freze`_
+`c8b235ab`), ADR-urile 0300–0309 (liber: 0304), canalul `freze`; ADR 0300 ACCEPTAT pe 23.11 („Da, 1a–6a”), ADR 0302 ACCEPTAT pe
+24.11 („Da, 1a–5a”); 16.A↑a … 16.A↑h-5 și 16.A↑b-1 … 16.A↑b-7 UNITE în `main`; ADR 0303 PROPUS pe 26.11 (bila și toroidala în
+proiect); 16.A↑e-1 (documentul v31, toroidala în simulare, refuzul lucrării) pe `wip/16.A-freze-e`_
 
 Pornită pe 23.11.2026, în sesiunea cloud a liniei, la cererea owner-ului: „Vreau sa pot crea freze l sau profiluri de freze in
 aplicatie si sa le salvez in cont”. Rândurile din prag: „Bibliotecă de freze cu geometrie reală (dreaptă, bilă, toroidală, V,
@@ -150,6 +150,16 @@ gravare, profil, formă desenată)” și „Freze de profil desenate de utiliza
   (`escapeLaPlecare`, în `freze.spec.ts`); Chrome ia focusul de pe un buton oprit abia la desenarea următoare (o probă așteaptă
   `:focus` gol). Același tipar (Escape doar pe `.dialog`) îl au și Așază, Setări, Raportul foilor, Lucrarea primită, Aspectul și
   ferestrele extensiilor: spus sesiunii principale.
+- **26.11, 20:16–: 16.A↑e-1 pe `wip/16.A-freze-e`** (din `main` `d1ab8ba5`), la cuvântul owner-ului transmis de sesiunea
+  principală („Zi-le ca pot continua cu ce urmeaza la fiecare”; 16.A↑d cere placa 4 tăiată). ADR 0303 propus (bila și
+  toroidala în proiect, sub-feliile e-1 … e-5, cinci întrebări). e-1: documentul v31 (`{ tip: 'toroidala', raza }`, v31 ținut
+  de sesiunea principală pentru linie), IR-ul, nucleul simulării (felul 3; linia înclinată prin înjumătățirea derivatei) și
+  oracolul cu h pe hârtie; lucrarea refuză toroidala pe orice operație, cu motiv; fereastra exportului nu-i face rând.
+  **Capcane:** pe o mutare înclinată, minimul cu toroidala nu are formă închisă (rădăcina unei ecuații de gradul patru), deci
+  înjumătățirea derivatei, cu un număr fix de pași (doar + − × ÷ √: aceeași amprentă în Node și în browser); proba nucleului
+  față de oracol are martorul unei bile de același diametru, care trebuie să cadă; o freză pe care copia ferestrei exportului
+  n-o poartă (bila, toroidala, o formă necunoscută) n-are rând, altfel Exportă scrie o plată în locul ei
+  (`operatieCuRand`); la `ISTORIE`, v30 primește părintele commit-ului care urcă schema (aceiași octeți ca vechiul a3f8f8f).
 - **Feliile**, în ordine: 16.A↑a (biblioteca în browser, fereastra, fișierul), apoi b (alegerea în proiect, v27), c
   (contul), d (calibrarea), e (bila și toroidala), f (profilul desenat), g (valorile pe material).
 

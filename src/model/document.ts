@@ -14,7 +14,7 @@
  * mai veche. Un câmp nou CU SENS (fața de jos, montajele, sculele) intră doar cu o schemă nouă și o migrare: o versiune
  * veche n-are voie să taie fără să înțeleagă un câmp.
  */
-export const VERSIUNE_SCHEMA = 30;
+export const VERSIUNE_SCHEMA = 31;
 
 /** Plafoanele stau pe artefact (T23): un document care le trece e refuzat la ușă, nu tăiat. */
 export const PLAFON = {
@@ -126,13 +126,19 @@ export type Nod = ElementNod | GrupNod;
  * `varf` (ADR 0092, documentul v16): diametrul vârfului plat al unei freze de gravare (conul trunchiat), în mm; lipsă = vârful
  * ascuțit. Potrivirea lui cu diametrul o judecă lucrarea.
  */
-export type FormaSculaDoc = FormaV | FormaBila;
+export type FormaSculaDoc = FormaV | FormaBila | FormaToroidala;
 export type FormaV = { tip: 'v'; unghi: number; varf?: number; [cheie: string]: unknown };
 /**
  * Freza bilă (ADR 0312 §1, documentul v29): capătul e o semisferă de rază diametru / 2. Ușa o primește pe orice freză; unde
  * se poate folosi o judecă lucrarea (`motivFormaPeOperatie`): azi, doar pe finisarea reliefului.
  */
 export type FormaBila = { tip: 'bila'; [cheie: string]: unknown };
+/**
+ * Freza toroidală (ADR 0303 §1, documentul v31): discul plat cu colțul rotunjit de rază `raza` (mm), 0 < raza < diametru / 2,
+ * judecată la ușă (o freză cu raza cât jumătatea diametrului e o bilă și se scrie așa). Unde se poate folosi o judecă lucrarea
+ * (`motivFormaPeOperatie`), ca la bilă.
+ */
+export type FormaToroidala = { tip: 'toroidala'; raza: number; [cheie: string]: unknown };
 /** De unde vine copia unei freze (ADR 0300 §5, v27): id-ul ei din biblioteca „Frezele mele” și versiunea copiată. */
 export type OrigineFreza = { id: string; rev: number; [cheie: string]: unknown };
 /**
@@ -433,7 +439,7 @@ export type Foaie = {
   cote?: Cota[];
   [cheie: string]: unknown;
 };
-export type Document = { schema: 30; rev: number; piese: Piesa[]; foi: Foaie[]; [cheie: string]: unknown };
+export type Document = { schema: 31; rev: number; piese: Piesa[]; foi: Foaie[]; [cheie: string]: unknown };
 
 /** Nodurile unei piese, în preordine, cu adâncimea lor (rădăcina are 1). Iterativ: arborele poate fi adânc. */
 export function noduriPiesa(radacina: Nod): Array<{ readonly nod: Nod; readonly adancime: number }> {

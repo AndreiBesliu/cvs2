@@ -16,7 +16,7 @@ import { t } from '../i18n/t.ts';
 import type {
   CerereExport, CopieRand, FrezaOferita, FrezaRestOperatie, OperatieExport, OrigineFreza, Rand, RezultatInapoi, SculaOperatie, SetariAer, StareExport,
 } from '../ui/exportRand.ts';
-import { frezeleOperatiei } from '../model/formaFrezei.ts';
+import { frezeleOperatiei, operatieCuRand } from '../model/formaFrezei.ts';
 import { frezePeRanduri, frezePotrivite, pasLateralDin, sculaDinBiblioteca } from '../model/alegereFreza.ts';
 import { frezaDinCopie, type FrezaSalvata } from '../model/freza.ts';
 import type { FrezaRest, Scula } from '../model/document.ts';
@@ -115,12 +115,10 @@ function placuteIesite(d: Document, k?: number): { readonly nume: readonly strin
 
 /**
  * Operațiile cu un rând editabil în fereastră: cele pe contur, cu frezele plate și în V. Finisarea reliefului (ADR 0312 §7) are
- * un rând doar de citit (`finisari`), iar Exportă îi scrie doar rangul. O freză bilă pe altă operație n-are rând: Exportă o lasă
- * neschimbată, iar lucrarea o refuză, cu motivul, deci nimic nu se taie pe tăcute altfel.
+ * un rând doar de citit (`finisari`), iar Exportă îi scrie doar rangul. O freză bilă sau toroidală pe altă operație n-are rând
+ * (`operatieCuRand`): Exportă o lasă neschimbată, iar lucrarea o refuză, cu motivul, deci nimic nu se taie pe tăcute altfel.
  */
-function peRand(o: Operatie): boolean {
-  return o.tip !== 'finisare' && o.tip !== 'degrosare' && frezeleOperatiei(o).every((f) => f.scula.forma?.tip !== 'bila');
-}
+const peRand: (o: Operatie) => boolean = operatieCuRand;
 
 /** Operațiile reliefului (finisarea, ADR 0312; degroșarea, ADR 0313): un rând doar de citit. */
 const peRelief = (o: Operatie): boolean => o.tip === 'finisare' || o.tip === 'degrosare';

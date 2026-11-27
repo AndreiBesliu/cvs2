@@ -327,7 +327,7 @@ export const COLTURI_IMPLICITE_O = null;
 /** ADR 0032 §1: tipurile degajărilor, exact. */
 export const TIPURI_COLTURI_O: readonly TipColturiO[] = ['dog-bone', 't-bone'];
 /** Versiunea curentă a contractului documentului, după oracol. */
-export const SCHEMA_CURENTA_O = 30;
+export const SCHEMA_CURENTA_O = 31;
 
 export const PLAFOANE_O = {
   latura: 10_000,
@@ -2283,7 +2283,7 @@ export type DocV21O = Liber & { schema: 21; rev: number; piese: PiesaV21O[]; foi
 export type DocV22O = Liber & { schema: 22; rev: number; piese: PiesaV22O[]; foi: FoaieO[] };
 
 /** Un document v11 … v24, după numărul lui. */
-export type DocNouO = DocV11O | DocV12O | DocV13O | DocV14O | DocV15O | DocV16O | DocV17O | DocV18O | DocV19O | DocV20O | DocV21O | DocV22O | DocV23O | DocV24O | DocV25O | DocV26O | DocV27O | DocV28O | DocV29O | DocV30O;
+export type DocNouO = DocV11O | DocV12O | DocV13O | DocV14O | DocV15O | DocV16O | DocV17O | DocV18O | DocV19O | DocV20O | DocV21O | DocV22O | DocV23O | DocV24O | DocV25O | DocV26O | DocV27O | DocV28O | DocV29O | DocV30O | DocV31O;
 
 // ---------------------------------------------------------------------------------------------------------------
 // Ajutoarele.
@@ -2331,13 +2331,20 @@ function instantele(doc: Liber): Array<{ readonly inst: Liber; readonly unde: st
 
 /**
  * ADR 0090 §1, ADR 0092 §1: forma frezei (`{ tip: 'v', unghi }`, de la v16 și `varf`); ADR 0312 §1 (v29): și bila,
- * `{ tip: 'bila' }`, fără alte câmpuri cerute (raza e diametrul / 2; câmpurile necunoscute rămân, nejudecate).
+ * `{ tip: 'bila' }`, fără alte câmpuri cerute (raza e diametrul / 2; câmpurile necunoscute rămân, nejudecate). ADR 0303 §1
+ * (v31): și toroidala, `{ tip: 'toroidala', raza }`, cu raza colțului în (0, plafonul diametrului]; sub jumătatea
+ * diametrului o judecă scula (`problemeSculaO`).
  */
 export function problemeFormaO(forma: unknown, versiune: number): string[] {
   if (!esteObiect(forma)) return [` = ${arata(forma)} nu e un obiect { tip: 'v', unghi }`];
   if (versiune >= 29 && forma['tip'] === 'bila') return [];
+  if (versiune >= 31 && forma['tip'] === 'toroidala') {
+    return pozitivPana(forma['raza'], PLAFOANE_O.sculaDiametru) ? []
+      : [`.raza = ${are(forma, 'raza') ? arata(forma['raza']) : '(lipsă)'} nu e în (0, ${PLAFOANE_O.sculaDiametru}]`];
+  }
   const rez: string[] = [];
-  if (forma['tip'] !== 'v') rez.push(`.tip = ${are(forma, 'tip') ? arata(forma['tip']) : '(lipsă)'} nu e ${versiune >= 29 ? "'v' / 'bila'" : "'v'"}`);
+  const felurile = versiune >= 31 ? "'v' / 'bila' / 'toroidala'" : versiune >= 29 ? "'v' / 'bila'" : "'v'";
+  if (forma['tip'] !== 'v') rez.push(`.tip = ${are(forma, 'tip') ? arata(forma['tip']) : '(lipsă)'} nu e ${felurile}`);
   if (!intre(forma['unghi'], PLAFOANE_V18_O.unghiVMin, PLAFOANE_V18_O.unghiVMax)) {
     rez.push(`.unghi = ${are(forma, 'unghi') ? arata(forma['unghi']) : '(lipsă)'} nu e în [${PLAFOANE_V18_O.unghiVMin}, ${PLAFOANE_V18_O.unghiVMax}]`);
   }
@@ -2363,8 +2370,21 @@ export function problemeSculaO(scula: unknown, versiune: number): string[] {
     rez.push(`.diametru = ${are(scula, 'diametru') ? arata(scula['diametru']) : '(lipsă)'} nu e în (0, ${p.sculaDiametru}]`);
   }
   if (versiune >= 14 && are(scula, 'forma')) rez.push(...problemeFormaO(scula['forma'], versiune).map((m) => `.forma${m}`));
+  rez.push(...problemeRazaToroidalaO(scula, versiune));
   if (versiune >= 27) rez.push(...problemeFrezaV27O(scula));
   return rez;
+}
+
+/**
+ * ADR 0303 §1 (v31): raza colțului toroidalei, strict sub jumătatea diametrului sculei (cât jumătatea lui e o bilă și se
+ * scrie așa). Doar când forma și diametrul sunt bune altfel (motivele lor le dau `problemeFormaO` și scula).
+ */
+export function problemeRazaToroidalaO(scula: Liber, versiune: number): string[] {
+  const f = scula['forma'], p = PLAFOANE_O;
+  if (versiune < 31 || !esteObiect(f) || f['tip'] !== 'toroidala') return [];
+  if (!pozitivPana(f['raza'], p.sculaDiametru) || !pozitivPana(scula['diametru'], p.sculaDiametru)) return [];
+  const raza = f['raza'] as number, jum = (scula['diametru'] as number) / 2;
+  return raza < jum ? [] : [`.forma.raza = ${arata(raza)} nu e sub diametru / 2 (${jum}): cât jumătatea lui e o bilă`];
 }
 
 /**
@@ -2559,6 +2579,7 @@ export function problemeOperatieO(op: Liber, versiune: number, unde: string): st
   }
   const scula = op['scula'];
   if (versiune >= 14 && esteObiect(scula) && are(scula, 'forma')) cu('scula', 'scula.forma', problemeFormaO(scula['forma'], versiune));
+  if (versiune >= 31 && esteObiect(scula)) cu('scula', 'scula', problemeRazaToroidalaO(scula, versiune));
   if (versiune >= 27 && esteObiect(scula)) cu('scula', 'scula', problemeFrezaV27O(scula));
   if (versiune >= 15 && are(op, 'fundPlat')) cu('fund-plat', 'fundPlat', problemeFundPlatO(op['fundPlat'], versiune));
   if (versiune >= 16 && are(op, 'directie') && !(DIRECTII_O as readonly unknown[]).includes(op['directie'])) {
@@ -2789,9 +2810,9 @@ export function verificaO(doc: unknown): string[] {
   return verificaPanaLaO(doc, SCHEMA_CURENTA_O);
 }
 
-/** Un document primit de ușa curentă, cum iese din ea: v30 (o copie; un v30 valid rămâne neschimbat). */
-export function ridicaO(doc: unknown): DocV30O {
-  return ridicaPanaLaO(doc, SCHEMA_CURENTA_O) as DocV30O;
+/** Un document primit de ușa curentă, cum iese din ea: v31 (o copie; un v31 valid rămâne neschimbat). */
+export function ridicaO(doc: unknown): DocV31O {
+  return ridicaPanaLaO(doc, SCHEMA_CURENTA_O) as DocV31O;
 }
 
 /**
@@ -3770,3 +3791,22 @@ export function ridicaV30O(doc: unknown): DocV30O { return ridicaPanaLaO(doc, SC
 export function usaCurentaV30O(doc: unknown): 'migrari' | 'usa' { return usaCurentaPanaLaO(doc, SCHEMA_V30_O); }
 export function migreazaV1V30O(v1: DocV1O): DocV30O { return ridicaPanaLaO(v1, SCHEMA_V30_O) as DocV30O; }
 export function migreazaV29V30O(v29: DocV29O): DocV30O { return ridicaPanaLaO(v29, SCHEMA_V30_O) as DocV30O; }
+
+// ---------------------------------------------------------------------------------------------------------------
+// v31 (ADR 0303): freza toroidală. Scris din ADR:
+// - forma frezei poate fi și `{ tip: 'toroidala', raza }`, pe orice freză, cu raza colțului în (0, diametru / 2) (cât
+//   jumătatea diametrului e o bilă și se scrie așa); câmpurile necunoscute ale formei rămân;
+// - unde se poate folosi o judecă lucrarea (ca la bilă);
+// - migrarea v30 → v31 schimbă doar numărul; un v30 cu o freză toroidală îl refuză chiar contractul v30 (felul formei e
+//   necunoscut la v30), deci nu e nevoie de o ciocnire de câmp nou.
+
+export const SCHEMA_V31_O = 31;
+/** v31 (ADR 0303): ca v30; o freză poate fi toroidală. */
+export type DocV31O = Liber & { schema: 31; rev: number; piese: PiesaV22O[]; foi: FoaieO[] };
+
+export function verificaV31(doc: unknown): string[] { return verificaVnO(doc, SCHEMA_V31_O); }
+export function verificaPanaLaV31O(doc: unknown): string[] { return verificaPanaLaO(doc, SCHEMA_V31_O); }
+export function ridicaV31O(doc: unknown): DocV31O { return ridicaPanaLaO(doc, SCHEMA_V31_O) as DocV31O; }
+export function usaCurentaV31O(doc: unknown): 'migrari' | 'usa' { return usaCurentaPanaLaO(doc, SCHEMA_V31_O); }
+export function migreazaV1V31O(v1: DocV1O): DocV31O { return ridicaPanaLaO(v1, SCHEMA_V31_O) as DocV31O; }
+export function migreazaV30V31O(v30: DocV30O): DocV31O { return ridicaPanaLaO(v30, SCHEMA_V31_O) as DocV31O; }
