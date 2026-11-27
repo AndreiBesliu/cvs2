@@ -16659,6 +16659,25 @@ program. Dacă cere un câmp nou în document, v32 e liber și ți-l dau la cere
 - **Linia frezelor** pornește e-5 (buzunarul cu bila și cu toroidala; oracolul întâi).
 - **Documentele:** decizia și Starea în `CLAUDE.md`; starea din `docs/linii/principala.md`; indexul liniilor.
 
+## 2026-11-27 — Sesiunea principală în cloud: liniile continuă cu recomandările (Model: Claude Opus 5.5)
+
+**Prompt:** „zi-le sesiunilor sa continue cu recomandarile, acolo unde inca asteapta”
+**Started:** 27.11, 07:38. **Completed:** 27.11, 08:38.
+
+- **Mesajele (07:45):** frezele (ADR 0303 confirmat; e-5, e-6, f, g), atelierul (balamaua, placa turnantă; auditul
+  elicelor, feliile 1–7), relieful (ADR 0313 §8; cele trei felii lăsate la owner, apoi finisarea cu toroidala), exportul
+  (ADR 0292 1a; lista, constatarea 14). Cotele n-au nimic de pornit.
+- **Sesiunea designului**, pe calculatorul owner-ului, nu primește din cloud (doar de pe un dispozitiv de încredere).
+- **Documentele:** decizia în `CLAUDE.md`; lista owner-ului și versiunea documentului (v31) în `docs/linii/principala.md`.
+
+## 2026-11-27 — Sesiunea principală în cloud: brief-ul liniei aranjamentelor, pentru o sesiune cloud (Model: Claude Opus 5.5)
+
+**Prompt:** „Sesiunea designului o sa o aducem si pe ea in sesiune cloud”
+**Started:** 27.11, 08:46. **Completed:** 27.11, 08:49.
+
+- **Brief-ul** liniei aranjamentelor (ramura `wip/28.1-aranjamente`, toată în `main`; canvas-ul; ADR-urile 0254–0259; canalul), dat owner-ului ca fișier.
+- **Documentele:** decizia în `CLAUDE.md`; lista owner-ului din `docs/linii/principala.md`.
+
 ## 2026-11-27 — 16.A↑e-5: buzunarul cu bila și cu toroidala (Model: Claude Opus 5.5)
 
 **Prompt:** sesiunea principală, după unirea lui e-4 (`72263843`): „Poți porni e-5 (buzunarul cu bila și cu toroidala) pe aceeași
@@ -16699,8 +16718,16 @@ ramură, după push).
 
 ## 2026-11-27 — Sesiunea principală în cloud: liniile continuă cu recomandările (Model: Claude Opus 5.5)
 
-**Prompt:** „zi-le sesiunilor sa continue cu recomandarile, acolo unde inca asteapta”
-**Started:** 27.11, 07:38. **Completed:** 27.11, 08:38.
+## 2026-11-27 — Sesiunea principală în cloud: a șaizeci și patra unire (16.A↑e-5) (Model: Claude Opus 5.5)
+
+**Prompt:** „zi-le sesiunilor sa continue cu recomandarile, acolo unde inca asteapta” (unirea, la raportul liniei; ordinul „unește ce se poate”)
+**Started:** 27.11, 09:07. **Completed:** 27.11, 09:08.
+
+- **Unirea:** `wip/16.A-freze-e` (`106b4a51`, PR-ul #74; nu capul ramurii, cu e-6 la porți) în `e412ebcc`, pe `unire-2711g`,
+  din `ecfd9f03`; codul, identic cu al lui `106b4a51`. Completul 45949673319 pe `c4435321`, verde: unit 10 919 / 0, e2e
+  1 010 / 1 010, funcțiile pe emulatoare 142 / 142, paginile 62 / 62. Totalul 937,8 / 1 000 kB.
+- **Pe test:** lotul 58 (`eac92d1c`, 16.A↑e-4), la 08:38; lotul 59 (`e412ebcc`), în drum.
+- **Documentele:** decizia și Starea în `CLAUDE.md`; starea din `docs/linii/principala.md`; indexul liniilor.
 
 - **Mesajele (07:45):** frezele (ADR 0303 confirmat; e-5, e-6, f, g), atelierul (balamaua, placa turnantă; auditul
   elicelor, feliile 1–7), relieful (ADR 0313 §8; cele trei felii lăsate la owner, apoi finisarea cu toroidala), exportul
@@ -16770,3 +16797,17 @@ container; completul pe ramură, după push).
 - **Mărimea:** pornirea 111,9 kB (+0,2; cu ușa 117,3, cu Atelierul 117,7 / 125), totalul 940,4 / 1 000 kB (+2,1, peste ținta
   de +2 kB pe toată felia f: nucleul se numără de două ori, iar schema și migrarea încă o dată).
 - **Neschimbate:** nimic pe server; programul fără profil, octet cu octet.
+
+
+## 2026-11-27 — Sesiunea principală în cloud: a șaizeci și cincea unire (16.A↑e-6) (Model: Claude Opus 5.5)
+
+**Prompt:** „zi-le sesiunilor sa continue cu recomandarile, acolo unde inca asteapta” (unirea, la raportul liniei; ordinul „unește ce se poate”)
+**Started:** 27.11, 10:52. **Completed:** 27.11, 10:54.
+
+- **Unirea:** `wip/16.A-freze-e` (`f1866d2d`, PR-ul #74; nu capul ramurii, cu 16.A↑f-1 la porți) în `e9790edb`, pe
+  `unire-2711h`, din `f4bac612`; codul, identic cu al lui `f1866d2d`. Completul 45960847118, verde: unit 10 953 / 0, e2e
+  1 011 / 1 011, funcțiile pe emulatoare 142 / 142, paginile 62 / 62. Totalul 939,8 / 1 000 kB.
+- **Exportul (28.8↑s, `cd2ed898`, PR-ul #76):** pus peste unire pe `unire-2711i` (`fec801bc`, fără ciocniri); completul
+  45969212819, în lucru.
+- **Pe test:** lotul 59 (`a67ec32c`, 16.A↑e-5), la 10:35; lotul 60 (16.A↑e-6), în drum.
+- **Documentele:** decizia și Starea în `CLAUDE.md`; starea din `docs/linii/principala.md`; indexul liniilor.
