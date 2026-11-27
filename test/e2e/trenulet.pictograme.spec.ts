@@ -17,7 +17,7 @@ import { intraIn3D, threeDinPachet } from './ajutor-atelier.ts';
 const PAGINA = 'http://easy3draw.test/';
 /** Familiile și piesele lor, în ordinea galeriilor (ca în `trenulet.file.spec.ts`). */
 const FAMILII: readonly (readonly [string, readonly (readonly [string, string])[]])[] = [
-  ['caramizi', [['caramida', 'Cărămidă / placă'], ['panta', 'Pantă'], ['pantaInversa', 'Pantă inversă'], ['pana', 'Pană / aripă'], ['rotund', 'Rotund / con'], ['arc', 'Arc'], ['cadru', 'Cadru / fereastră'], ['turnanta', 'Placă turnantă'],
+  ['caramizi', [['caramida', 'Cărămidă / placă'], ['panta', 'Pantă'], ['pantaInversa', 'Pantă inversă'], ['pana', 'Pană / aripă'], ['rotund', 'Rotund / con'], ['arc', 'Arc'], ['cadru', 'Cadru / fereastră'], ['turnanta', 'Placă turnantă'], ['balama', 'Balama'],
     ['lateral', 'Știfturi pe lateral'], ['suport', 'Suport (bracket)'], ['grinda', 'Grindă'], ['caramidaTechnic', 'Cărămidă Technic'], ['placaTechnic', 'Placă cu găuri']]],
   ['legaturi', [['stiftTechnic', 'Știft'], ['ax', 'Ax'], ['bucsa', 'Bucșă / conector'], ['conector', 'Conector perpendicular'], ['conectorUnghi', 'Conector în unghi'], ['clema', 'Clemă'], ['bara', 'Bară'], ['maner', 'Mâner'], ['bila', 'Bilă'],
     ['cupa', 'Cupă']]],
@@ -82,7 +82,7 @@ test('fiecare piesă, în fiecare galerie, are pictograma ei înaintea numelui, 
     // butonul se numește tot ca piesa: pictograma nu se citește
     for (const [k, n] of piese) await expect(page.locator('#at-galerie').getByRole('button', { name: n, exact: true }), k).toHaveAttribute('data-piesa', k);
   }
-  expect(desene.size).toBe(43);
+  expect(desene.size).toBe(44);
   const dupa = new Map<string, string>();
   for (const [k, d] of desene) {
     expect(dupa.get(d), `${k} are același desen ca ${dupa.get(d)}`).toBeUndefined();

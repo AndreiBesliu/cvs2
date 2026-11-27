@@ -16,7 +16,7 @@ import { faraEroriInJurnal } from './ajutor-jurnal.ts';
  * - „Salvează fișierul .json” din exportul CNC ajunge descărcare a browserului, din pagina lui cvs2, cu numele dat de
  *   planificator;
  * - ștergerea circuitului, cu confirmarea lui, rămâne și după reîncărcare; jurnalul local, fără erori;
- * - numele (ADR 0167): „Easy 3Draw” 18.43.0, instalat peste „Planificator Trenuleț” 18.6.0, îi ia locul (același id), cu
+ * - numele (ADR 0167): „Easy 3Draw” 18.44.0, instalat peste „Planificator Trenuleț” 18.6.0, îi ia locul (același id), cu
  *   circuitul lui;
  * - „Trimite la cvs2” (ADR 0160 §D): G-code-ul ovalului de exemplu ajunge în dialogul primirii, cu originea extensiei, iar după
  *   „Primește”, în „Lucrarea primită” din fereastra Mașina; planificatorul spune că cvs2 l-a primit;
@@ -31,7 +31,7 @@ import { faraEroriInJurnal } from './ajutor-jurnal.ts';
 test.use({ locale: 'ro-RO' });
 
 const PACHET = Buffer.from(pachetTrenulet().octeti);
-const ZIP = { name: 'trenulet-18.43.0.zip', mimeType: 'application/zip', buffer: PACHET };
+const ZIP = { name: 'trenulet-18.44.0.zip', mimeType: 'application/zip', buffer: PACHET };
 const cadru = (page: Page) => page.frameLocator('iframe.cadru-extensie');
 /**
  * Cât așteaptă probele cadrul extensiei până la „pornit”: un document separat, în procesul lui, cu pachetul adus din
@@ -82,7 +82,7 @@ test('instalat din fișier: pagina în cadru; circuitul, modul și culoarea păs
   await page.locator('[data-extensii="buton"]').click();
   await page.locator('[data-extensii="fisier-ales"]').setInputFiles(ZIP);
   await expect(page.getByTestId('extensii-instalare').locator('h2')).toHaveText('Instalezi „Easy 3Draw”?');
-  await expect(page.getByTestId('extensii-despre')).toHaveText(/^18\.43\.0 · din fișierul trenulet-18\.43\.0\.zip · \d+ (de )?fișiere, [\d,]+ MB$/);
+  await expect(page.getByTestId('extensii-despre')).toHaveText(/^18\.44\.0 · din fișierul trenulet-18\.44\.0\.zip · \d+ (de )?fișiere, [\d,]+ MB$/);
   await expect(page.getByTestId('extensii-permisiuni').locator('li')).toHaveText([
     'Mașina încarcă programe, le pornește sau le reia doar după confirmarea ta, pune pauză și oprește lucrarea',
     'Formele din desen primește formele pe care i le trimiți din desen și îți propune forme pentru desen (le adaugi tu, din Importă)',
@@ -180,7 +180,7 @@ async function pachetVechi(): Promise<Buffer> {
   })));
 }
 
-test('numele nou (ADR 0167): „Easy 3Draw” 18.43.0, instalat peste „Planificator Trenuleț” 18.6.0, îi ia locul, cu circuitul lui', async ({ page }) => {
+test('numele nou (ADR 0167): „Easy 3Draw” 18.44.0, instalat peste „Planificator Trenuleț” 18.6.0, îi ia locul, cu circuitul lui', async ({ page }) => {
   await page.goto('/');
   await page.locator('[data-extensii="buton"]').click();
   await page.locator('[data-extensii="fisier-ales"]').setInputFiles({ name: 'trenulet-18.6.0.zip', mimeType: 'application/zip', buffer: await pachetVechi() });
@@ -197,7 +197,7 @@ test('numele nou (ADR 0167): „Easy 3Draw” 18.43.0, instalat peste „Planifi
   await page.locator('[data-extensii="buton"]').click();
   await page.locator('[data-extensii="fisier-ales"]').setInputFiles(ZIP);
   await expect(page.getByTestId('extensii-instalare').locator('h2')).toHaveText('Instalezi „Easy 3Draw”?');
-  await expect(page.getByTestId('extensii-despre')).toContainText('18.43.0 · din fișierul trenulet-18.43.0.zip · ');
+  await expect(page.getByTestId('extensii-despre')).toContainText('18.44.0 · din fișierul trenulet-18.44.0.zip · ');
   await page.locator('[data-extensii="instaleaza"]').click();
   // același id: un singur rând în meniu, cu numele nou; circuitul de dinainte, redeschis
   await page.locator('[data-extensii="buton"]').click();
@@ -507,11 +507,12 @@ async function romanaRamasa(page: Page, numeUtilizator = ''): Promise<readonly s
   }, numeUtilizator);
 }
 
-test('în engleză (ADR 0165): limba lui cvs2, schimbată pe loc printr-o repornire fără pierderi; nicio română pe ecranele lui', async ({ page }) => {
-  // Proba trece prin fiecare ecran al pluginului, deci crește cu fiecare piesă nouă a atelierului: în CI, 18 s pe 26.11
-  // dimineața, 25 s seara, apoi 32,7 s în completul de pe `main` 45888136031, oprită de limita de 30 s la ultimul pas
-  // (felia 3.Ax). Bugetul ei e de trei ori cel obișnuit; o felie care o duce peste 60 s o împarte pe ecrane.
-  test.setTimeout(90_000);
+/**
+ * Easy 3Draw instalat din fișier și deschis, cu un nume scris în circuit, apoi cvs2 trecut în engleză: cadrul refăcut,
+ * pornit. Proba englezei e împărțită pe ecrane (felia 3.Ck-2: întreagă trecuse de 30 s în CI), iar fiecare parte începe
+ * de aici.
+ */
+async function inEngleza(page: Page): Promise<ReturnType<typeof cadru>> {
   await page.goto('/');
   await page.locator('[data-extensii="buton"]').click();
   await page.locator('[data-extensii="fisier-ales"]').setInputFiles(ZIP);
@@ -527,12 +528,17 @@ test('în engleză (ADR 0165): limba lui cvs2, schimbată pe loc printr-o reporn
   c = cadru(page);
   await expect(c.locator('#btn-circuite')).toHaveText('Layouts');
   await expect(page.getByTestId('spatiu-extensie')).toHaveAttribute('data-stare', 'pornit', PORNIRE);
+  return c;
+}
+
+test('în engleză (ADR 0165): limba lui cvs2, schimbată pe loc printr-o repornire fără pierderi; nicio română pe paletă, la circuite, la exportul CNC', async ({ page }) => {
+  let c = await inEngleza(page);
   await expect(c.locator('html')).toHaveAttribute('data-gazda', 'cvs2');
   await expect(c.locator('#nume')).toHaveValue('Păstrat la repornire');
   expect(await romanaRamasa(page, 'Păstrat la repornire')).toEqual([]);
   // cuvintele singure, fără diacritice, pe care proba de română nu le poate recunoaște: filele paletei
   await expect(c.locator('#grupe [data-grupa]')).toHaveText(['Straights', 'Curves', 'Custom', 'Junctions', 'Crossings', 'Double track', 'Bridge', 'Ends']);
-  // Circuitele, exportul CNC, cu secțiunile lui, atelierul 3D, cu fiecare fel de piesă
+  // Circuitele și exportul CNC, cu secțiunile lui (atelierul 3D, cu fiecare fel de piesă, în probele de mai jos)
   await c.locator('#btn-circuite').click();
   await expect(c.locator('#circ-unde')).toHaveText('The layouts save themselves, in this browser (through cvs2): they don’t show up on another computer or in another browser.');
   await expect(c.locator('[data-deschide]').first()).toHaveText('Open');
@@ -565,10 +571,19 @@ test('în engleză (ADR 0165): limba lui cvs2, schimbată pe loc printr-o reporn
   await expect(c.locator('#cnc-stare')).toContainText('does not fit on the 200 × 150 mm board (with the margin). Make the board bigger in the settings.', { timeout: 30_000 });
   await expect(c.locator('#cnc-stare')).toContainText(/^(Straight|Large curve|Small curve|Switch|Adapter|Female|Male)/);
   await c.locator('#foaie-export [data-inchide]').click();
+  // Înapoi la română: pagina repornește, iar textele ei sunt iar românești.
+  await page.getByRole('navigation', { name: 'Language' }).getByRole('button', { name: 'RO', exact: true }).click();
+  c = cadru(page);
+  await expect(c.locator('#btn-circuite')).toHaveText('Circuite');
+  await faraEroriInJurnal(page);
+});
+
+test('în engleză (ADR 0165): atelierul 3D, filă cu filă, fiecare piesă fără română; editoarele decorațiunilor, cărămizilor și elicelor', async ({ page }) => {
+  const c = await inEngleza(page);
   await intraIn3D(c);
   // filele (ADR 0281): familiile, cu câte piese au, apoi cele proprii; numele lor, aici (cuvinte fără diacritice, pe care
   // proba de română nu le recunoaște); apoi fiecare piesă a fiecărei familii și fiecare filă proprie, fără română
-  await expect(c.locator('#at-tipuri button:not([hidden])')).toHaveText(['Bricks 13', 'Joints 10', 'Wheels 10', 'Propeller 4', 'Christmas 6', 'From cvs2', 'Calibration']);
+  await expect(c.locator('#at-tipuri button:not([hidden])')).toHaveText(['Bricks 14', 'Joints 10', 'Wheels 10', 'Propeller 4', 'Christmas 6', 'From cvs2', 'Calibration']);
   // (fila „Crăciun” întâi, ca la capăt să rămână deschisă roata cu palete, ultima piesă a filei Elice)
   for (const fila of ['craciun', 'caramizi', 'legaturi', 'roti', 'propulsie']) {
     await c.locator(`#at-tipuri [data-fila="${fila}"]`).click();
@@ -704,6 +719,33 @@ test('în engleză (ADR 0165): limba lui cvs2, schimbată pe loc printr-o reporn
       await c.locator('#at-tu-joc').fill('0');
       await c.locator('#at-tu-joc').press('Tab');
       await expect(c.locator('#at-nume-piesa')).toHaveText('Turntable 2×2, base');
+      // balamaua (3.Ck-2), în engleză: numele (cuvântul „Balama”, fără diacritice, se cere aici), jumătățile, lățimea,
+      // lungimea, jocul clemei, textul (zecimalele, cu punct; cu un joc ales, „cu jocul ales”) și butonul; bolțul nu are
+      // jocul în nume. La capăt, bolțul, cum era
+      await c.locator('#at-galerie [data-piesa="balama"]').click();
+      await expect(c.locator('#at-editor h2')).toHaveText('Hinge');
+      await expect(c.locator('#at-galerie [data-piesa="balama"]')).toHaveText('Hinge');
+      await expect(c.locator('#at-nume-piesa')).toHaveText('Hinge 1×2, with the pin');
+      await expect(c.locator('#at-bm-piesa [data-v]')).toHaveText(['With the pin', 'With the clip']);
+      await expect(c.locator('.at-rand', { has: c.locator('#at-bm-piesa') }).locator('.mic')).toHaveText('Half:');
+      await expect(c.locator('.at-rand', { has: c.locator('#at-bm-latime') }).locator('.mic')).toHaveText('Width:');
+      await expect(c.locator('#at-bm-latime [data-v]')).toHaveText(['1 stud', '2 studs']);
+      await expect(c.locator('.at-rand', { has: c.locator('#at-bm-lungime') }).locator('.mic')).toHaveText('Length:');
+      const sfatClema = 'It folds from 110° down to 130° up. If the clip turns too stiffly, raise the clip clearance by 0.05 mm; if it does not stay where you leave it, lower it.';
+      await expect(c.locator('#at-bm-info')).toHaveText(`The pin is Ø3.2 mm and the clip from the calibration Ø3.3 mm: 0.05 mm all around. ${sfatClema}`);
+      await expect(c.locator('#at-bm-fa')).toHaveText('Make the hinge');
+      await c.locator('#at-bm-piesa [data-v="clema"]').click();
+      await expect(c.locator('#at-nume-piesa')).toHaveText('Hinge 1×2, with the clip');
+      await expect(c.locator('label[for="at-bm-joc"]')).toHaveText('Clip clearance (mm)');
+      await c.locator('#at-bm-joc').fill('0.1');
+      await c.locator('#at-bm-joc').press('Tab');
+      await expect(c.locator('#at-nume-piesa')).toHaveText('Hinge 1×2, with the clip, clearance 0.1');
+      await expect(c.locator('#at-bm-info')).toHaveText(`The pin is Ø3.2 mm and the clip, with the chosen clearance, Ø3.5 mm: 0.15 mm all around. ${sfatClema}`);
+      expect(await romanaRamasa(page, 'Păstrat la repornire'), 'balamaua').toEqual([]);
+      await c.locator('#at-bm-joc').fill('0');
+      await c.locator('#at-bm-joc').press('Tab');
+      await c.locator('#at-bm-piesa [data-v="bolt"]').click();
+      await expect(c.locator('#at-nume-piesa')).toHaveText('Hinge 1×2, with the pin');
       // fila ține minte ultima piesă deschisă: înapoi la ultima din galerie, ca la capătul drumului prin ea
       await c.locator('#at-galerie [data-piesa]').last().click();
     }
@@ -778,6 +820,20 @@ test('în engleză (ADR 0165): limba lui cvs2, schimbată pe loc printr-o reporn
   await expect(c.locator('#at-nume-piesa')).toHaveText('Propeller Ø27.4 with 3 blades, pitch 0.93, flat, left-hand');
   await expect(c.locator('#at-el-info')).toContainText('Flat blade, at 23° from hub to tip, like LEGO’s.');
   expect(await romanaRamasa(page, 'Păstrat la repornire'), 'elicea, ca LEGO 6041').toEqual([]);
+  await faraEroriInJurnal(page);
+});
+
+test('în engleză (ADR 0165): căutarea, „Se prinde cu”, vederea „Modelul”, construcțiile, lista de printat', async ({ page }) => {
+  const c = await inEngleza(page);
+  await intraIn3D(c);
+  // pregătirea, ca la capătul drumului prin galerii (partea de dinainte): în fila Cărămizi, placa cu găuri (o formă gata
+  // a cărămizii); în fila Elice, elicea, ca LEGO 6041
+  await c.locator('#at-tipuri [data-fila="caramizi"]').click();
+  await c.locator('#at-galerie [data-piesa="placaTechnic"]').click();
+  await c.locator('#at-tipuri [data-fila="propulsie"]').click();
+  await c.locator('#at-galerie [data-piesa="elice"]').click();
+  await c.locator('#at-el-repede [data-v="6041"]').click();
+  await expect(c.locator('#at-nume-piesa')).toHaveText('Propeller Ø27.4 with 3 blades, pitch 0.93, flat, left-hand');
   // căutarea (3.Tp↑a), pe numele din limba paginii: „bevel” găsește cele două roți conice; fără potrivire, mesajul în engleză
   await expect(c.locator('#at-cauta')).toHaveAttribute('placeholder', 'Find a piece');
   await c.locator('#at-cauta').fill('bevel');
@@ -982,10 +1038,6 @@ test('în engleză (ADR 0165): limba lui cvs2, schimbată pe loc printr-o reporn
   await expect(c.locator('#at-rez-lista')).toContainText(/ on \d+ beds? of /);
   // după adăugare: lista de printat și cipul ei (piesele și paturile), tot în engleză
   expect(await romanaRamasa(page, 'Păstrat la repornire')).toEqual([]);
-  // Înapoi la română: pagina repornește, iar textele ei sunt iar românești.
-  await page.getByRole('navigation', { name: 'Language' }).getByRole('button', { name: 'RO', exact: true }).click();
-  c = cadru(page);
-  await expect(c.locator('#btn-circuite')).toHaveText('Circuite');
   await faraEroriInJurnal(page);
 });
 

@@ -253,6 +253,12 @@ const MOSTRE: readonly (readonly [string, Def, Record<string, number>, { slab?: 
   ['baza plăcii turnante', { tip: 'turnanta' }, { locas: 4, stiftTechnic: 1 }],
   ['baza plăcii turnante 4 × 4, cu jocul 0,2', { tip: 'turnanta', marime: 4, joc: 0.2 }, { locas: 16, stiftTechnic: 1 }],
   ['partea de sus a plăcii turnante 4 × 4', { tip: 'turnanta', piesa: 'sus', marime: 4 }, { stift: 16, locas: 16, gauraStift: 2 }],
+  // balamaua (3.Ck-2): jumătatea cu bolțul are câte o bară liberă (în ambele sensuri) în dreptul fiecărui știft al lățimii,
+  // iar cea cu clema, câte o clemă cu două guri
+  ['balamaua 1 × 2, cu bolțul', { tip: 'balama' }, { stift: 2, locas: 2, bara: 2 }],
+  ['balamaua 2 × 3, cu bolțul', { tip: 'balama', latime: 2, lungime: 3 }, { stift: 6, locas: 6, bara: 4 }],
+  ['balamaua 1 × 2, cu clema', { tip: 'balama', piesa: 'clema' }, { stift: 2, locas: 2, clema: 2 }],
+  ['balamaua 2 × 1, cu clema, cu jocul 0,2', { tip: 'balama', piesa: 'clema', latime: 2, lungime: 1, joc: 0.2 }, { stift: 2, locas: 2, clema: 4 }],
   ['grinda de 3', { tip: 'grinda' }, { gauraStift: 6 }],
   ['grinda subțire, cu o gaură de ax și un pas plin', { tip: 'grinda', gauri: ['r', 'x', 'p', 'r'], groasa: false }, { gauraStift: 4, gauraAx: 2 }],
   ['grinda desenată, în L', { tip: 'grinda', celule: [[0, 0, 'r'], [1, 0, 'r'], [1, 1, 'x']] }, { gauraStift: 4, gauraAx: 2 }],

@@ -27,8 +27,8 @@ const are = (page: Page) => page.locator('#at-prinde-are');
 const rand = (page: Page, fel: string) => page.locator(`#at-prinde-lista [data-rand="${fel}"]`);
 const nume = (page: Page) => page.locator('#at-nume-piesa');
 
-const PE_STIFTURI = ['Pantă', 'Pantă inversă', 'Pană / aripă', 'Rotund / con', 'Arc', 'Cadru / fereastră', 'Placă turnantă', 'Știfturi pe lateral', 'Suport (bracket)', 'Cărămidă Technic', 'Clemă', 'Mâner', 'Bilă', 'Cupă', 'Cremalieră', 'Brăduț LEGO'];
-const IN_LOCASURI = ['Pantă', 'Pantă inversă', 'Pană / aripă', 'Rotund / con', 'Arc', 'Cadru / fereastră', 'Știfturi pe lateral', 'Suport (bracket)', 'Cărămidă Technic', 'Clemă', 'Mâner', 'Brăduț LEGO'];
+const PE_STIFTURI = ['Pantă', 'Pantă inversă', 'Pană / aripă', 'Rotund / con', 'Arc', 'Cadru / fereastră', 'Placă turnantă', 'Balama', 'Știfturi pe lateral', 'Suport (bracket)', 'Cărămidă Technic', 'Clemă', 'Mâner', 'Bilă', 'Cupă', 'Cremalieră', 'Brăduț LEGO'];
+const IN_LOCASURI = ['Pantă', 'Pantă inversă', 'Pană / aripă', 'Rotund / con', 'Arc', 'Cadru / fereastră', 'Balama', 'Știfturi pe lateral', 'Suport (bracket)', 'Cărămidă Technic', 'Clemă', 'Mâner', 'Brăduț LEGO'];
 const PE_AX = ['Grindă', 'Cărămidă Technic', 'Bucșă / conector', 'Conector perpendicular', 'Conector în unghi', 'Roată dințată', 'Șurub melc', 'Camă', 'Roată conică', 'Roată coroană', 'Conică dublă', 'Fulie',
   'Roată cu anvelopă', 'Șenilă', 'Elice', 'Elice de barcă', 'Ventilator cu carcasă', 'Roată cu palete'];
 
@@ -137,7 +137,8 @@ test('felurile se numără ca un om: mânerul are o bară, clema o clemă, conec
   await expect(are(page)).toHaveText('1 știft · 1 locaș · 1 clemă');
   await panou(page).locator('summary').click();
   await expect(rand(page, 'clema').locator('.at-prinde-unde')).toHaveText('În clemă');
-  await expect(rand(page, 'clema').locator('button')).toHaveText(['Bară', 'Mâner', 'Șenilă']);
+  // (bolțul balamalei e o bară)
+  await expect(rand(page, 'clema').locator('button')).toHaveText(['Balama', 'Bară', 'Mâner', 'Șenilă']);
   await expect(rand(page, 'stift').locator('.at-prinde-unde')).toHaveText('Pe știft');
   await expect(rand(page, 'locas').locator('.at-prinde-unde')).toHaveText('În locaș (dedesubt)');
   await piesa(page, 'legaturi', 'bila');
