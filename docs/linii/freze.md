@@ -25,9 +25,10 @@ Owner-ul, prin sesiunea principală, pe 27.11 la 14:25: limita săptămânală d
 
 - **16.A↑f-4 (marginea profilată pe o parte) e gata** pe `wip/16.A-freze-e`. Commit-ul de raportat e `d03f1561`, cu `main`
   adus (`75ae7f50`, f-3 unită). PR-ul e #79, ciornă. Rapidul e verde pe `99979e16` și pe `d03f1561`. **Completul 46010593843**,
-  pe `99979e16`, rula la 14:30; între `99979e16` și `d03f1561` e doar DEVLOG-ul, deci același cod.
+  pe `99979e16` (același cod ca `d03f1561`; între ele, doar DEVLOG-ul), e **verde**: unit 11 003 / 0, e2e 1 017 / 1 017,
+  emulatoarele 142 / 142, paginile 62 / 62. **Raportul a plecat** la sesiunea principală pe 27.11, la 14:55; unirea e a ei.
 - **De făcut, în ordine:**
-  1. Citește completul: `gh run view 46010593843 --json conclusion,jobs`.
+  1. (Făcut pe 27.11: completul verde, raportul trimis.) Citește completul: `gh run view 46010593843 --json conclusion,jobs`.
      - Verde: raportează f-4 sesiunii principale (`session_01QcxiUZLthXDrpYQ6KLNzAC`, cu `send_message`). Raportul are
        commit-ul `d03f1561`, PR-ul #79, porțile, mărimea (pornirea 111,8 kB neschimbată; totalul 942,2 / 1 000, +0,7),
        otrăvurile 18 / 18 și nota de mai jos despre `formaFrezei.ts`.
