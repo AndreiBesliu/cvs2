@@ -3,8 +3,8 @@ import { cuDegrosare, cuFinisare, type SchimbareDegrosare, type SchimbareFinisar
 import { PUNTI_DOP_DREPT } from '../model/incrustatie.ts';
 import type { ValoriRelief } from '../ui/exportRelief.ts';
 import type {
-  BandaOperatie, FrezaRestOperatie, FundPlatOperatie, IncrustatieDreaptaOperatie, IncrustatieOperatie, OrigineFreza, SculaOperatie, ValoriLucru,
-  ValoriOperatie,
+  BandaOperatie, FormaRand, FrezaRestOperatie, FundPlatOperatie, IncrustatieDreaptaOperatie, IncrustatieOperatie, OrigineFreza, SculaOperatie,
+  ValoriLucru, ValoriOperatie,
 } from '../ui/exportRand.ts';
 
 /**
@@ -50,26 +50,42 @@ function cuRegimMana(x: Operatie['scula'], regim: ValoriLucru | null | undefined
   return { ...x, regim: { turatie: regim.turatie, avans: regim.avans, plonjare: regim.plonjare } };
 }
 
+/** Numele unei freze scrise de mână, după formă: „freza plata”, „freza V60”, „freza V30 varf 0.25”, „freza bila”, „freza toroidala r1”. */
+function numeDupaForma(f: FormaRand | undefined): string {
+  if (!f) return 'freza plata';
+  if (f.tip === 'bila') return 'freza bila';
+  if (f.tip === 'toroidala') return `freza toroidala r${f.raza}`;
+  return `freza V${f.unghi}${(f.varf ?? 0) > 0 ? ` varf ${f.varf}` : ''}`;
+}
+
 /**
- * Scula scrisă de Exportă (ADR 0084, ADR 0090): numărul și diametrul rândului, forma lui (în V cu unghiul și vârful, sau
- * plată: câmpul pleacă); forma de pe același fel se ÎMBINĂ cu cea din document (un câmp necunoscut rămâne), iar vârful 0
- * (ascuțit) nu se scrie (ADR 0092). Numele urmează forma doar când ea se schimbă („freza V60”, „freza V30 varf 0.25”,
- * „freza plata”), ca un Exportă fără schimbare să nu scrie o comandă.
+ * Scula scrisă de Exportă (ADR 0084, ADR 0090, ADR 0303): numărul și diametrul rândului, forma lui (în V cu unghiul și vârful,
+ * bila, toroidala cu raza colțului, sau plată: câmpul pleacă); forma de pe același fel se ÎMBINĂ cu cea din document (un câmp
+ * necunoscut rămâne), iar vârful 0 (ascuțit) nu se scrie (ADR 0092). Numele urmează forma doar când ea se schimbă (`numeDupaForma`),
+ * ca un Exportă fără schimbare să nu scrie o comandă.
  */
 function sculaScrisa(o: Operatie['scula'], s: SculaOperatie): Operatie['scula'] {
   // Scrisă de mână (ADR 0300 §4, felia 16.A↑b-3): numele vechi era al frezei din bibliotecă, deci și el pleacă, după formă.
-  const numeMana = s.forma ? `freza V${s.forma.unghi}${(s.forma.varf ?? 0) > 0 ? ` varf ${s.forma.varf}` : ''}` : 'freza plata';
-  const { forma: _vechi, ...baza } = o;
-  void _vechi;
-  if (s.forma) {
-    const varf = s.forma.varf ?? 0;
-    const nume = o.forma && o.forma.unghi === s.forma.unghi && (o.forma.varf ?? 0) === varf ? o.nume
-      : `freza V${s.forma.unghi}${varf > 0 ? ` varf ${varf}` : ''}`;
-    const { varf: _v, ...formaVeche } = o.forma ?? {};
+  const numeMana = numeDupaForma(s.forma);
+  const { forma: vechea, ...baza } = o;
+  const f = s.forma;
+  if (f?.tip === 'v') {
+    const varf = f.varf ?? 0;
+    const v = vechea?.tip === 'v' ? vechea : undefined;
+    const nume = v && v.unghi === f.unghi && (v.varf ?? 0) === varf ? o.nume : numeMana;
+    const { varf: _v, ...formaVeche } = v ?? {};
     void _v;
-    return cuOrigine(o, { ...baza, numar: s.numar, diametru: s.diametru, nume, forma: { ...formaVeche, tip: 'v', unghi: s.forma.unghi, ...(varf > 0 ? { varf } : {}) } }, s.origine, numeMana, s.regim);
+    return cuOrigine(o, { ...baza, numar: s.numar, diametru: s.diametru, nume, forma: { ...formaVeche, tip: 'v', unghi: f.unghi, ...(varf > 0 ? { varf } : {}) } }, s.origine, numeMana, s.regim);
   }
-  return cuOrigine(o, { ...baza, numar: s.numar, diametru: s.diametru, nume: o.forma ? 'freza plata' : o.nume }, s.origine, numeMana, s.regim);
+  if (f) {
+    // Bila și toroidala (ADR 0303, felia 16.A↑e-4): pe același fel, forma din document se îmbină (un câmp necunoscut rămâne),
+    // iar numele rămâne cât forma e aceeași.
+    const acelasiFel = vechea?.tip === f.tip ? vechea : undefined;
+    const aceeasi = acelasiFel !== undefined && (f.tip === 'bila' || (acelasiFel.tip === 'toroidala' && acelasiFel.raza === f.raza));
+    const forma = f.tip === 'bila' ? { ...(acelasiFel ?? {}), tip: 'bila' as const } : { ...(acelasiFel ?? {}), tip: 'toroidala' as const, raza: f.raza };
+    return cuOrigine(o, { ...baza, numar: s.numar, diametru: s.diametru, nume: aceeasi ? o.nume : numeMana, forma }, s.origine, numeMana, s.regim);
+  }
+  return cuOrigine(o, { ...baza, numar: s.numar, diametru: s.diametru, nume: vechea ? 'freza plata' : o.nume }, s.origine, numeMana, s.regim);
 }
 
 /**

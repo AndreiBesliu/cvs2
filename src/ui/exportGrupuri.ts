@@ -63,7 +63,7 @@ export const GRUP_CAMP: Readonly<Record<string, readonly GrupExport[]>> = {
   // Z-ul sigur și parcarea (ADR 0291 §3, felia 28.8↑p): mișcările prin aer, ale mașinii.
   'z-sigur': ['aer'], parcare: ['aer'], 'parcare-x': ['aer'], 'parcare-y': ['aer'],
   latura: ['taietura'], directie: ['taietura'], despartire: ['taietura'],
-  scula: ['freza'], diametru: ['freza'], 'freza-biblioteca': ['freza'], 'forma-scula': ['freza'], 'unghi-v': ['freza'], 'varf-v': ['freza'],
+  scula: ['freza'], diametru: ['freza'], 'freza-biblioteca': ['freza'], 'forma-scula': ['freza'], 'unghi-v': ['freza'], 'varf-v': ['freza'], 'raza-colt': ['freza'],
   // Valorile de lucru ale unei freze scrise de mână (felia 28.8↑p).
   turatie: ['freza'], avans: ['freza'], plonjare: ['freza'],
   adancime: ['adancime'], pas: ['adancime'],
@@ -100,7 +100,7 @@ export const GRUP_CAMP: Readonly<Record<string, readonly GrupExport[]>> = {
 export type VerdictRand = {
   readonly scula: boolean; readonly adancime: boolean; readonly pas: boolean; readonly numar: boolean; readonly latime: boolean;
   readonly grosime: boolean; readonly rampa: boolean; readonly intrari: boolean; readonly pasLateral: boolean; readonly coborare: boolean;
-  readonly retragere: boolean; readonly vcarve: boolean; readonly fund: boolean; readonly varf: boolean; readonly vPeLinie: boolean;
+  readonly retragere: boolean; readonly vcarve: boolean; readonly fund: boolean; readonly varf: boolean; readonly vPeLinie: boolean; readonly rotunda: boolean;
   readonly rest: boolean; readonly strategie: boolean; readonly incrustatie: boolean; readonly dreapta: boolean; readonly frezaDop: boolean;
   readonly banda: boolean; readonly puntiDop: boolean;
 };
@@ -110,7 +110,7 @@ export type VerdictRand = {
  * Freza, nu la tăietură: acolo se repară (captura din 23.11, cu motivul sub tabel, departe de cauză).
  */
 export const GRUP_VERDICT: Readonly<Record<keyof VerdictRand, GrupExport>> = {
-  scula: 'freza', vcarve: 'freza', varf: 'freza', vPeLinie: 'freza',
+  scula: 'freza', vcarve: 'freza', varf: 'freza', vPeLinie: 'freza', rotunda: 'freza',
   adancime: 'adancime', pas: 'adancime',
   numar: 'urechi', latime: 'urechi', grosime: 'urechi',
   rampa: 'rampa', intrari: 'intrari',

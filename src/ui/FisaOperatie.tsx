@@ -52,9 +52,10 @@ export function ListaBiblioteca(props: {
 
 /** Numele câmpului unei diferențe, în propoziția notei (ADR 0300 §5). */
 const CAMP_DIFERENTA: Readonly<Record<DiferentaFreza['camp'], CheieSimpla>> = {
-  nume: 'export.biblioteca.camp.nume', diametru: 'export.biblioteca.camp.diametru', unghi: 'export.biblioteca.camp.unghi',
-  varf: 'export.biblioteca.camp.varf', turatie: 'export.biblioteca.camp.turatie', avans: 'export.biblioteca.camp.avans',
-  plonjare: 'export.biblioteca.camp.plonjare', tais: 'export.biblioteca.camp.tais',
+  nume: 'export.biblioteca.camp.nume', diametru: 'export.biblioteca.camp.diametru', forma: 'export.biblioteca.camp.forma',
+  unghi: 'export.biblioteca.camp.unghi', varf: 'export.biblioteca.camp.varf', raza: 'export.biblioteca.camp.raza',
+  turatie: 'export.biblioteca.camp.turatie', avans: 'export.biblioteca.camp.avans', plonjare: 'export.biblioteca.camp.plonjare',
+  tais: 'export.biblioteca.camp.tais',
 };
 
 /**
@@ -235,6 +236,8 @@ export function FisaOperatie({ cheie, loc, total: totalFisa, c: ctx }: {
   const ciocnit = (x: string): boolean => conflict !== undefined && citesteNumar(x) === conflict[0];
   // Greșeala pe câmp (constatarea 15): doar câmpul frezei care nu trece se înroșește.
   const sculaRea = campuriSculaGresite(p);
+  // Bila și toroidala se aleg doar pe linie (canelura, ADR 0303 §4): lucrarea le refuză în rest.
+  const peLinieRotunda = p.tip === 'profil' && p.latura === 'pe-linie';
   // Turația, avansul și plonjarea, doar pe o freză scrisă de mână (ADR 0291 §3, felia 28.8↑p); goale, cele implicite.
   const regimRau = p.origineScula === null ? campuriRegimGresite(p.regimMana) : [];
   // Rezumatul lor, pe rândul strâns: valorile cu care taie freza (cele scrise, cu golurile luate din lucrare).
@@ -261,7 +264,8 @@ export function FisaOperatie({ cheie, loc, total: totalFisa, c: ctx }: {
   const desen = (g: GrupExport): ((c: DesenComun) => ReactNode) | undefined => {
     switch (g) {
       case 'freza': return (c) => <DesenFreza c={c} numar={p.numarScula} diametru={citesteNumar(p.diametruScula)} v={p.formaScula === 'v'}
-        unghi={citesteNumar(p.unghiV)} varfPlat={citesteNumar(p.varfV)} />;
+        unghi={citesteNumar(p.unghiV)} varfPlat={citesteNumar(p.varfV)}
+        {...(p.formaScula === 'bila' || p.formaScula === 'toroidala' ? { rotunda: p.formaScula, razaColt: citesteNumar(p.razaColt) } : {})} />;
       case 'adancime': return (c) => <DesenAdancime c={c} adancime={h.adancime} treceri={h.treceri} grosime={grosimeFoaie}
         supracursa={cuSupracursa ? supracursaCitita ?? 0 : 0} />;
       case 'sens': return () => <DesenSens sens={p.sens}
@@ -382,15 +386,30 @@ export function FisaOperatie({ cheie, loc, total: totalFisa, c: ctx }: {
           <input type="text" inputMode="decimal" value={p.diametruScula} data-camp="diametru" disabled={doarCitire} aria-label={t('export.freza.diametru')}
             aria-invalid={sculaRea.includes('diametru') || ciocnit(p.numarScula) || gauraRea} onChange={(ev) => { schimba(o.cheie, { diametruScula: ev.target.value, origineScula: null }); }} />
         </label>
-        {/* Forma frezei (ADR 0090): plată sau în V, cu unghiul inclus. */}
+        {/* Forma frezei (ADR 0090): plată sau în V, cu unghiul inclus; bila și toroidala (ADR 0303, felia 16.A↑e-4) doar pe
+            linie (canelura), sau cât rândul le are deja (atunci greșeala spune de ce). */}
         <label>
           {t('export.freza.forma')}
           <select value={p.formaScula} data-camp="forma-scula" disabled={doarCitire} aria-label={t('export.freza.forma')}
-            aria-invalid={!b.vcarve || !b.vPeLinie} onChange={(ev) => { schimba(o.cheie, { formaScula: ev.target.value === 'v' ? 'v' : 'plata', origineScula: null }); }}>
+            aria-invalid={!b.vcarve || !b.vPeLinie || !b.rotunda} onChange={(ev) => {
+              const v = ev.target.value;
+              schimba(o.cheie, { formaScula: v === 'v' || v === 'bila' || v === 'toroidala' ? v : 'plata', origineScula: null });
+            }}>
             <option value="plata">{t('export.freza.plata')}</option>
             <option value="v">{t('export.freza.v')}</option>
+            {(peLinieRotunda || p.formaScula === 'bila') && <option value="bila">{t('export.freza.bila')}</option>}
+            {(peLinieRotunda || p.formaScula === 'toroidala') && <option value="toroidala">{t('export.freza.toroidala')}</option>}
           </select>
         </label>
+        {/* Raza colțului toroidalei (ADR 0303 §1): peste 0, sub jumătatea diametrului. */}
+        {p.formaScula === 'toroidala' && (
+        <label>
+          {t('export.freza.raza-colt')}
+          <input type="text" inputMode="decimal" value={p.razaColt} data-camp="raza-colt" disabled={doarCitire} aria-label={t('export.freza.raza-colt')}
+            title={t('export.freza.raza-colt.titlu')} className="unghi-v" aria-invalid={sculaRea.includes('raza')}
+            onChange={(ev) => { schimba(o.cheie, { razaColt: ev.target.value, origineScula: null }); }} />
+        </label>
+        )}
         {p.formaScula === 'v' && (
         <label>
           {t('export.freza.unghi')}

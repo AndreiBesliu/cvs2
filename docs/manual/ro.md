@@ -1963,6 +1963,13 @@ montată, ca schimbările să fie cât mai puține. Același număr cu două dia
 numărul ei. Lângă greșeală, **Dă-i T{n}** îi dă frezei alt număr: al aceleiași freze, dacă stă deja pe un alt T, altfel cel mai
 mic liber. Roșii sunt doar frezele cu numărul ciocnit.
 
+**Bila și toroidala pe linie.** Pe o tăietură **pe linie** (o canelură), forma poate fi și **bilă** sau **toroidală**; la
+toroidală, **Raza colțului (mm)** e raza colțului rotunjit, peste 0 și sub jumătatea diametrului (cu raza cât jumătatea
+diametrului, freza e o bilă). Centrul frezei merge pe linie, ca la freza plată, iar canelura iese cu fundul rotund (la bilă) sau
+plat, cu colțurile rotunjite (la toroidală). Pe o parte, în buzunar, la găurire și în V-carve, bila și toroidala nu se taie
+încă: alege „pe linie” sau altă freză. Raportul foilor numește freza („bilă”, „toroidală r1,5”), ca la mașină să se monteze cea
+potrivită.
+
 Lista **Din frezele mele**, în grupul Freza, are frezele din biblioteca ta (vezi [Frezele mele](#freze)) care merg pe tăietura
 operației: plate pe un profil, un buzunar sau o găurire, în V la V-carve. Aleasă, freza își pune pe operație numărul T (al ei,
 dacă nicio altă freză a ferestrei nu-l are; altfel al aceleiași freze, dacă e; altfel cel mai mic liber), diametrul, forma,

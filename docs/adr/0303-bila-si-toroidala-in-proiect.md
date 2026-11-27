@@ -182,6 +182,35 @@ formele rotunde).
   Probele vechi care cereau refuzul pe linie (`finisare.bila`, `toroidala.lucrare`) au fost întoarse.
 - **Programul de azi**, fără forme rotunde, iese octet cu octet.
 
+## Implementarea (16.A↑e-4)
+
+Pe 27.11, pe `wip/16.A-freze-e`, peste e-3 (unită în `main` prin `db066160`).
+
+- **Copia rândului** din fereastra exportului (`exportRand.ts`) poartă bila și toroidala: `FormaRand` are trei feluri (V, bilă,
+  toroidală cu raza colțului), iar rândul are `formaScula` cu patru valori și `razaColt`, cu `formaDinRand` și `campuriForma`
+  dus-întors. Identitatea frezei pentru T (`formeEgale`, `numarPentruRand`, `cheieFreza`) ține felul și raza: o bilă, o toroidală
+  cu altă rază și o plată de același Ø sunt trei freze. Nota bibliotecii (`diferenteFreza`) vede felul (`forma`) și raza;
+  recunoașterea cere forma întreagă; copia de readus (`CopieRand`, `CopieProiect`) ține forma rotundă, iar `frezaDinCopie` îi dă
+  felul ei, nu o plată (paza compilatorului din 16.A↑b-6 a căzut, cum spunea că va cădea). Marginile: raza colțului în (0, Ø / 2)
+  (`campuriSculaGresite`, câmpul `raza`, cu greșeala pe câmp).
+- **Exportă** (`sculaScrisa`, `src/app/valoriOperatii.ts`) scrie forma rotundă, cu numele după formă („freza bila”, „freza
+  toroidala r1.5”) doar când ea se schimbă; pe același fel, forma din document se îmbină (un câmp necunoscut rămâne), deci un
+  Exportă fără schimbare scrie aceeași freză, la octet. `ExportConectat` citește forma întreagă din document și din bibliotecă.
+- **Fișa** (`FisaOperatie.tsx`): lista formei arată bila și toroidala doar pe linie (sau cât rândul le are deja), câmpul **Raza
+  colțului (mm)** apare la toroidală (în grupul Freza, cu explicația și greșeala lui), iar desenul frezei are capătul rotund, cu
+  raza cotată. Pe altă latură, forma rotundă oprește exportul cu motivul ei (`rotunda`, „taie deocamdată doar pe linie”).
+- **Rândul operației** (`operatieCuRand`): freza operației poate fi rotundă; frezele în plus (de rest, ale fundului plat, ale
+  dopului, a benzii) rămân plate sau în V, fiindcă rândul nu le poartă forma.
+- **Biblioteca:** `FELURI_CU_CAM` are toroidala, deci nu mai e „în curând în proiect” în „Frezele mele” și în catalog;
+  `sculaDinFreza` îi dă forma cu raza. Lista „Freza” din Tăierea (`frezePotrivite`) și listele de pe rândurile exportului
+  (`frezePeRanduri`) oferă bila și toroidala doar unde lucrarea le primește (pe linie).
+- **Probele:** `test/unit/export.rotunda.test.ts` (scrisă întâi: forma pe rând, identitatea pentru T, alegerea și valorile noi,
+  nota și recunoașterea, copia de readus, marginile, ce scrie Exportă și forma din IR a programului, listele) și
+  `test/e2e/export.rotunda.spec.ts` (canelura cu toroidala și cu bila în fereastră: lista formelor pe latură, raza judecată,
+  Exportă scrie forma, cu numele în comentariul sculei, fereastra redeschisă o arată, exteriorul o oprește); proba privirii are
+  câmpul razei; probele vechi care cereau toroidala „în curând” sau bila fără rând au fost întoarse.
+- **Neschimbate:** nimic pe server; documentul rămâne v31; programul fără forme rotunde, octet cu octet.
+
 ## Se redeschide dacă
 
 - placa 4 (sau o placă a bilei) arată că secțiunea canelurii sau creasta din buzunar nu ies ca pe hârtie;

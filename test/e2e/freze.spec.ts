@@ -315,7 +315,7 @@ test('catalogul: grupurile cu mărimile lor, fișa unei freze din catalog, „Pu
   await expect(page.getByTestId('jurnal')).toHaveText('0 erori în jurnalul local');
 });
 
-test('felurile noi (16.A↑h-4): toroidala și burghiul în editor, cu câmpurile lor; „în curând în proiect” în listă, fișă și catalog', async ({ page }) => {
+test('felurile noi (16.A↑h-4): toroidala și burghiul în editor, cu câmpurile lor; „în curând în proiect” (burghiul) în catalog, toroidala aleasă în proiect (16.A↑e-4)', async ({ page }) => {
   await page.goto('/');
   const f = await deschideFrezele(page);
   await standard(f);
@@ -331,8 +331,9 @@ test('felurile noi (16.A↑h-4): toroidala și burghiul în editor, cu câmpuril
   await f.locator('[data-freze="salveaza"]').click();
   await expect(valoare(f, 'fel')).toHaveText('Toroidală');
   await expect(valoare(f, 'raza')).toHaveText('1,5 mm');
-  await expect(fisa(f).locator('[data-freze="curand"]')).toContainText('se va putea alege în proiect');
-  await expect(f.locator('[data-freza]').filter({ hasText: 'Toroidală Ø6 R1,5' })).toContainText('în curând în proiect');
+  // Din 16.A↑e-4 (ADR 0303), toroidala se alege în proiect (pe linie, canelura): nu mai e „în curând”.
+  await expect(fisa(f).locator('[data-freze="curand"]')).toHaveCount(0);
+  await expect(f.locator('[data-freza]').filter({ hasText: 'Toroidală Ø6 R1,5' })).not.toContainText('în curând în proiect');
   await expect(f.getByRole('heading', { name: 'Toroidale (1)' })).toBeVisible();
   // Burghiul: unghiul vârfului, 118° implicit; tăișul cel puțin cât vârful (3 / tan 59° = 1,8026).
   await f.locator('[data-freze="noua"]').click();
@@ -345,10 +346,12 @@ test('felurile noi (16.A↑h-4): toroidala și burghiul în editor, cu câmpuril
   await f.locator('[data-freze-fel="v"]').click();
   await expect(camp(f, 'unghi')).toHaveValue('60');
   await f.locator('[data-freze="renunta"]').click();
-  // Catalogul: grupurile noi, cu „în curând” (toroidala); bila se alege în proiect din documentul v29 (ADR 0312: finisarea
-  // reliefului), deci grupul și fișa ei nu mai spun „în curând”.
+  // Catalogul: grupurile noi, cu „în curând” (conica, burghiul); bila și toroidala se aleg în proiect (bila din documentul v29,
+  // ADR 0312; toroidala din 16.A↑e-4, ADR 0303), deci grupurile și fișele lor nu mai spun „în curând”.
   await f.locator('[data-freze="catalog-arata"]').click();
-  await expect(f.locator('[data-catalog-grup="toroidala"]')).toContainText('în curând în proiect');
+  await expect(f.locator('[data-catalog-grup="conica"]')).toContainText('în curând în proiect');
+  await expect(f.locator('[data-catalog-grup="burghiu"]')).toContainText('în curând în proiect');
+  await expect(f.locator('[data-catalog-grup="toroidala"] .freze-curand')).toHaveCount(0);
   await expect(f.locator('[data-catalog-grup="plata"] .freze-curand')).toHaveCount(0);
   await expect(f.locator('[data-catalog-grup="bila"] .freze-curand')).toHaveCount(0);
   await f.locator('[data-catalog="cat-bila-6"]').click();

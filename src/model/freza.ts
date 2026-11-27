@@ -18,12 +18,12 @@ import { PLAFON, UNGHI_V_MAXIM, UNGHI_V_MINIM, type Scula } from './document.ts'
 export const FELURI_FREZA = ['plata', 'v', 'gravare', 'bila', 'toroidala', 'conica', 'burghiu', 'rotunjire', 'ogee', 'ogee-roman', 'panou'] as const;
 export type FelFreza = (typeof FELURI_FREZA)[number];
 /**
- * Felurile pe care CAM-ul le taie azi (ADR 0302 §2): plata, V-ul, gravarea și, din documentul v29, bila (ADR 0312: pe
- * finisarea reliefului și, din 16.A↑e-3, pe linie; `motivFormaPeOperatie` o oprește în rest, iar listele care pun o freză pe
- * o operație cu rând în fereastra exportului cer și `formaPeRand`). Celelalte (toroidala, conica cu vârf rotund, burghiul,
- * profilurile) stau în bibliotecă și în catalog, „în curând”, dar nu se aleg în proiect până la CAM-ul lor.
+ * Felurile pe care CAM-ul le taie azi (ADR 0302 §2): plata, V-ul, gravarea, bila (ADR 0312: pe finisarea reliefului și, din
+ * 16.A↑e-3, pe linie) și, din 16.A↑e-4, toroidala (ADR 0303: pe linie); unde merge fiecare judecă `motivFormaPeOperatie`.
+ * Celelalte (conica cu vârf rotund, burghiul, profilurile) stau în bibliotecă și în catalog, „în curând”, dar nu se aleg în
+ * proiect până la CAM-ul lor.
  */
-export const FELURI_CU_CAM = ['plata', 'v', 'gravare', 'bila'] as const;
+export const FELURI_CU_CAM = ['plata', 'v', 'gravare', 'bila', 'toroidala'] as const;
 export const areCam = (fel: FelFreza): boolean => (FELURI_CU_CAM as readonly FelFreza[]).includes(fel);
 
 /** Câmpurile unei freze, fără nume (frezele de pornire își primesc numele de la fereastră, în limba omului). */
@@ -245,8 +245,10 @@ function curata<F extends Freza>(f: F): F {
 export function sculaDinFreza(f: Freza, numar: number = f.numar): Scula {
   const baza = { numar, nume: f.nume, diametru: f.diametru };
   if (!areCam(f.fel)) throw new Error(`felul ${f.fel} n-are încă CAM: nu se copiază în proiect`);
-  // Bila (ADR 0312): în proiect doar forma ei; lucrarea o primește doar pe o finisare a reliefului.
+  // Bila (ADR 0312) și toroidala (ADR 0303, cu raza colțului): în proiect doar forma lor; unde merg judecă lucrarea
+  // (`motivFormaPeOperatie`: finisarea reliefului, canelura).
   if (f.fel === 'bila') return { ...baza, forma: { tip: 'bila' } };
+  if (f.fel === 'toroidala') return { ...baza, forma: { tip: 'toroidala', raza: f.raza ?? 0 } };
   if (f.fel === 'plata' || !finit(f.unghi)) return baza;
   return { ...baza, forma: f.fel === 'gravare' && finit(f.varf) ? { tip: 'v', unghi: f.unghi, varf: f.varf } : { tip: 'v', unghi: f.unghi } };
 }
@@ -465,8 +467,11 @@ export function cuImport(
  */
 export type CopieProiect = {
   readonly nume: string; readonly numar: number; readonly diametru: number;
-  /** Forma în V a copiei (unghiul și vârful plat); lipsă = plată. */
-  readonly forma?: { readonly tip?: 'v'; readonly unghi: number; readonly varf?: number };
+  /** Forma copiei: în V (unghiul și vârful plat), bila sau toroidala (raza colțului, ADR 0303); lipsă = plată. */
+  readonly forma?:
+    | { readonly tip?: 'v'; readonly unghi: number; readonly varf?: number }
+    | { readonly tip: 'bila' }
+    | { readonly tip: 'toroidala'; readonly raza: number };
   readonly regim?: { readonly turatie: number; readonly avans: number; readonly plonjare: number };
   readonly tais?: number;
   readonly pas: number | null; readonly pasLateral: number | null;
@@ -479,8 +484,11 @@ export type CopieProiect = {
  * al frezelor de pornire).
  */
 export function frezaDinCopie(c: CopieProiect): Freza {
-  const forma = c.forma;
-  const fel: FelFreza = !forma ? 'plata' : forma.varf !== undefined && forma.varf > 0 ? 'gravare' : 'v';
+  const f = c.forma;
+  // Bila și toroidala (ADR 0303, felia 16.A↑e-4) rămân bilă și toroidală, nu devin o plată.
+  const rotunda = f?.tip === 'bila' ? 'bila' : f?.tip === 'toroidala' ? 'toroidala' : null;
+  const forma = f && f.tip !== 'bila' && f.tip !== 'toroidala' ? f : undefined;
+  const fel: FelFreza = rotunda ?? (!forma ? 'plata' : forma.varf !== undefined && forma.varf > 0 ? 'gravare' : 'v');
   const regim = c.regim ?? { turatie: LUCRU.turatie, avans: LUCRU.avans, plonjare: LUCRU.plonjare };
   const pas = c.pas !== null && c.pas > 0 ? c.pas : Math.min(MARGINI_FREZA.pas, c.diametru / 2);
   const pasLateral = c.pasLateral !== null && c.pasLateral > 0 && c.diametru > 0
@@ -488,6 +496,7 @@ export function frezaDinCopie(c: CopieProiect): Freza {
   return {
     nume: c.nume, fel, diametru: c.diametru,
     ...(forma ? { unghi: forma.unghi } : {}), ...(fel === 'gravare' ? { varf: forma!.varf } : {}),
+    ...(f?.tip === 'toroidala' ? { raza: f.raza } : {}),
     ...(c.tais !== undefined ? { tais: c.tais } : {}),
     numar: c.numar, turatie: regim.turatie, avans: regim.avans, plonjare: regim.plonjare, pas, pasLateral,
   };

@@ -129,7 +129,7 @@ test('Z-ul sigur și parcarea în fereastră: implicit, nimic trimis; marginile;
 
 /** Un rând de profil cu freza T1 Ø6 (doar câmpurile pe care le citește `frezeRanduri`). */
 const rand = (p: Partial<Rand>): Rand => ({
-  numarScula: '1', diametruScula: '6', origineScula: null, regimMana: REGIM_GOL, formaScula: 'plata', unghiV: '60', varfV: '0', tip: 'profil',
+  numarScula: '1', diametruScula: '6', origineScula: null, regimMana: REGIM_GOL, formaScula: 'plata', unghiV: '60', varfV: '0', razaColt: '1', tip: 'profil',
   fundPlat: false, incrustatieDreapta: false, frezaDop: false, incrustatie: false, jurDop: 'fata', decupareBanda: false, frezaBanda: false,
   rest: [], restFund: [], restDop: [], ...p,
 }) as unknown as Rand;

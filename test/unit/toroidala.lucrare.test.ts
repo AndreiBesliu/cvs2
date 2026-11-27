@@ -1,8 +1,8 @@
 /**
  * Freza toroidală în lucrare (ADR 0303 §1, §4, felia 16.A↑e-1): ușa v31 o primește pe orice freză a unei operații, simularea o
  * taie (simulare.toroidala.test.ts), iar lucrarea o refuză pe orice operație în afara canelurii (profilul pe linie, din
- * 16.A↑e-3, canelura.rotunda.test.ts), cu motivul care numește forma, T-ul și calea, până la CAM-ul ei (e-5, e-6). Fereastra exportului nu-i face rând (copia ei știe doar plata și V-ul: ar scrie la Exportă o
- * plată în locul toroidalei), deci o lasă neschimbată, ca pe bilă. Tabelul `motivFormaPeOperatie` pe hârtie.
+ * 16.A↑e-3, canelura.rotunda.test.ts), cu motivul care numește forma, T-ul și calea, până la CAM-ul ei (e-5, e-6). Fereastra exportului
+ * îi face rând din 16.A↑e-4 (copia rândului poartă bila și toroidala, export.rotunda.test.ts). Tabelul `motivFormaPeOperatie` pe hârtie.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -96,18 +96,19 @@ test('lucrarea refuză toroidala pe orice operație în afara canelurii și pe o
   assert.equal(motiv(doc([op({})])), '');
 });
 
-test('fereastra exportului: rând doar pentru frezele plate și în V (copia ei); bila, toroidala și o formă necunoscută, fără rând', () => {
+test('fereastra exportului: rândul poartă plata, V-ul, bila și toroidala (16.A↑e-4); o formă necunoscută, fără rând', () => {
   assert.equal(formaPeRand(undefined), true);
   assert.equal(formaPeRand({ tip: 'v', unghi: 60 }), true);
   assert.equal(formaPeRand({ tip: 'v', unghi: 30, varf: 0.2 }), true);
-  assert.equal(formaPeRand({ tip: 'bila' }), false);
-  assert.equal(formaPeRand({ tip: 'toroidala', raza: 1 }), false);
+  assert.equal(formaPeRand({ tip: 'bila' }), true);
+  assert.equal(formaPeRand({ tip: 'toroidala', raza: 1 }), true);
   assert.equal(formaPeRand({ tip: 'conica' } as unknown as FormaSculaDoc), false);
-  // Operația întreagă: toate frezele ei (aici, una de rest toroidală); finisarea și degroșarea au rândul lor, doar de citit.
+  // Operația întreagă: freza ei purtată de rând, iar frezele în plus (aici, una de rest toroidală) doar plate sau în V;
+  // finisarea și degroșarea au rândul lor, doar de citit.
   const cu = (v: Liber): Operatie => op(v) as unknown as Operatie;
   assert.equal(operatieCuRand(cu({})), true);
   assert.equal(operatieCuRand(cu({ scula: inV(1, 6, 60), latura: 'pe-linie' })), true);
-  assert.equal(operatieCuRand(cu({ scula: toro(1, 6, 1) })), false);
+  assert.equal(operatieCuRand(cu({ scula: toro(1, 6, 1) })), true);
   assert.equal(operatieCuRand(cu({ tip: 'buzunar', pasLateral: 2, rest: [{ scula: toro(2, 3, 0.5), pasLateral: 1 }] })), false);
   assert.equal(operatieCuRand(cu({ tip: 'buzunar', pasLateral: 2, rest: [{ scula: plata(2, 3), pasLateral: 1 }] })), true);
   assert.equal(operatieCuRand(cu({ tip: 'finisare', scula: plata(1, 6) })), false);
