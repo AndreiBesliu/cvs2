@@ -1643,6 +1643,11 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   schimbare, aceeași operație, octet cu octet; alt diametru sau altă formă fac freza scrisă de mână. Rămân: freza din
   „Frezele mele” pe rândurile reliefului, desenele grupurilor, „Dă-i T{n}”. Documentul rămâne v30; nimic pe server.
   Feliile: pornirea +0, totalul +3,3 kB.
+  **Freza din „Frezele mele” pe rândurile reliefului, desenele grupurilor, „Dă-i T{n}” (ADR 0316–0318, feliile
+  18.1↑d-5…d-7) și finisarea cu toroidala (ADR 0319, felia 18.1↑e)** gata pe 27.11, unite în `main` pe 27.11
+  (`9ce32063`). Rândul reliefului are garda lui, `formaPeRandRelief` (plata, V-ul, bila, toroidala: un profil n-are rândul
+  reliefului, deci Exportă nu-l scrie înapoi ca plată), iar `formaPeRand` rămâne a frezelor (cu profilul). **O formă nouă
+  a frezei se judecă pe fiecare fel de rând, cu garda rândului lui.** Feliile: pornirea +0,1 kB, totalul +3,8 kB.
   **Raportările (15.B↑b) și imprimanta (3.6g, 3.6h, 3.6i pașii 1–2; ADR 0191 acceptat, codul 3.6j încă pe ramură) unite în
   `main` pe 07.11**, peste biblioteca extensiilor (`b501571`, `6e61bee`, apoi `e9cf6ee` cu DEVLOG-ul bibliotecii): **pornirea
   101,7 (cu ușa 105,3 / 110 kB), totalul 535,0 / 550, /admin 106,5 / 200, contul 29,6 / 32.** **Pe test (și pe live), serverul
@@ -2142,6 +2147,24 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 27.11.2026, după-amiaza (a șaptezeci și una unire din cloud): **relieful: freza din „Frezele mele” pe rândurile lui
+  (18.1↑d-5), desenele grupurilor (d-6), „Dă-i T{n}” (d-7) și finisarea cu toroidala (18.1↑e), unite în `main`**
+  (sesiunea principală, ramura `unire-2711z`, din `11fe83e3`). Linia reliefului, ramura `wip/18.1-relief`, `45a05d93`
+  (codul lui `cc2be106`, cu `main` `75ae7f50` adus), PR-ul `AndreiBesliu/cvs2#75` (ADR 0316–0319; 18.1↑e e răspunsul 4a
+  din ADR 0303), unită în `9ce32063`. **d-5:** pe rândurile reliefului din fereastra exportului, lista „Din frezele mele”
+  (bila pe finisare, plata pe degroșare), cu T-ul, Ø-ul, forma, pasul lateral și originea; **d-6:** desenele grupurilor din
+  fișa reliefului, cu cota câmpului activ; **d-7:** „Dă-i T{n}” pe freza reliefului; **18.1↑e (mișcă mașina, oracolul
+  întâi):** finisarea reliefului cu toroidala (silueta în câmpul conservativ, creasta pe hârtie, „Raza colțului” în Tăierea
+  și pe rând). Peste frezele f-1…f-3, linia a reparat două ciocniri: tipurile cu profilul (v32) și regula rândului (rândul
+  reliefului are garda lui, `formaPeRandRelief`, fără profil; `formaPeRand` rămâne a frezelor), cu probele scrise întâi.
+  Otrăvurile: d-5 19 / 19, d-6 13 / 13, d-7 4 / 4, 18.1↑e 28 / 28, reparațiile 7 / 7. Documentul rămâne v32; nimic pe server.
+  **Arborele unirii are exact codul lui `cc2be106`** și a intrat pe porțile liniei: completul 46011101795, verde (63 min);
+  rapidul, verde. Totalul ~945,3 / 1 000 kB (+3,8), pornirea 111,9 kB (cu ușa 117,4, cu Atelierul 117,7 / 125).
+  **Nedovedit fără mașină:** creasta reală cu toroidala, suprafața tăiată față de model, timpul (placa 18 rămâne cu
+  bila; o variantă cu toroidala, la cuvântul owner-ului). **Loturile 64 (3.Cm-3) și 65 (16.A↑f-3) sunt pe test din
+  27.11, 16:33 și 16:50**; felia aceasta pleacă acum (lotul 66). În CI, peste ea: `unire-2711w` (3.Cm-4, 3.Cm-5, cu relieful
+  deja în el), `unire-2711x` (16.A↑f-4), `unire-2711y` (3.Cm-6), unite în ordine, fiecare pe completul lui. Linia
+  reliefului n-are felie pornită. **La owner:** lista, neschimbată.
 - 27.11.2026, după-amiaza (a șaptezecea unire din cloud): **profilurile parametrice în proiect (16.A↑f-3), unite în
   `main`** (sesiunea principală, ramura `unire-2711p`, peste 3.Cm-3). Linia frezelor, ramura `wip/16.A-freze-e`,
   `0a1fd1a4` (cu `main` `0f1e0766` adus), PR-ul `AndreiBesliu/cvs2#78` (ADR 0304 §5, întrebarea 5a), unită în `05f1bdc9`:
