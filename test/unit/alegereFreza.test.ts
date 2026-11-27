@@ -74,6 +74,13 @@ test('frezele oferite: doar cele care se potrivesc tuturor operațiilor alese, �
   // Pe finisarea reliefului (felia 18.1↑e, ADR 0319), și toroidala; pe degroșare, doar plata (ADR 0313 §1).
   assert.deepEqual(frezePotrivite(toate, [op('finisare', 'pe-linie')]).map((f) => f.id), ['b6', 't6', 'p6', 'p3', 'v60', 'g30']);
   assert.deepEqual(frezePotrivite(toate, [op('degrosare', 'pe-linie')]).map((f) => f.id), ['p6', 'p3']);
+  // Pe o parte (16.A↑e-6), cu adâncimea operației cel puțin raza colțului: bila Ø6 de la 3 mm, toroidala r1 de la 1 mm; fără
+  // adâncime, niciuna (diametrul e al frezei din bibliotecă).
+  assert.deepEqual(frezePotrivite(toate, [{ ...op('profil', 'exterior'), adancime: 3 }]).map((f) => f.id), ['b6', 't6', 'p6', 'p3']);
+  assert.deepEqual(frezePotrivite(toate, [{ ...op('profil', 'interior'), adancime: 2 }]).map((f) => f.id), ['t6', 'p6', 'p3']);
+  assert.deepEqual(frezePotrivite(toate, [{ ...op('profil', 'stanga'), adancime: 0.5 }]).map((f) => f.id), ['p6', 'p3']);
+  const bila3 = { ...BIBLIOTECA[1]!, id: 'b3', fel: 'bila' as const };
+  assert.deepEqual(frezePotrivite([bila3, ...toate], [{ ...op('profil', 'exterior'), adancime: 2 }]).map((f) => f.id), ['b3', 't6', 'p6', 'p3']);
 });
 
 test('copia din bibliotecă: numărul dat, numele, diametrul, forma, originea (id, rev), valorile de lucru și tăișul', () => {

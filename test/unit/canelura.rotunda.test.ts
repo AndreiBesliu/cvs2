@@ -3,8 +3,8 @@
  * Centrul frezei merge pe linie, deci drumul e al unei freze plate de același diametru, mișcare cu mișcare; doar scula din IR
  * își poartă forma (simularea și raportul o citesc de acolo). Pe hârtie, secțiunea canelurii simulate: la adâncimea d, lățimea
  * la față e 2·(a + √(ρ² − (ρ − d)²)) cât d < ρ și Ø de la d ≥ ρ (a = R − ρ; la bilă a = 0, ρ = R), iar fundul e plat pe 2·a.
- * Pe celelalte operații (pe o parte, buzunarul, găurirea, V-carve-ul) și pe frezele în plus (de rest, ale fundului plat, ale
- * dopului, a benzii), formele rotunde rămân refuzate, cu motiv; același T cu două raze ale colțului e două freze.
+ * Pe găurire, în V-carve și pe frezele în plus (de rest, ale fundului plat, ale dopului, a benzii), formele rotunde rămân
+ * refuzate, cu motiv (buzunarul vine în e-5, profilul pe o parte în e-6); același T cu două raze ale colțului e două freze.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -57,11 +57,12 @@ const motiv = (d: Liber): string => {
 const B: Liber = { tip: 'bila' };
 const T = (raza: number): Liber => ({ tip: 'toroidala', raza });
 
-test('motivFormaPeOperatie: bila și toroidala merg pe profilul pe linie (și, din 16.A↑e-5, în buzunar); în rest, ca până acum', () => {
+test('motivFormaPeOperatie: bila și toroidala merg pe profilul pe linie (și, din 16.A↑e-5, în buzunar; din e-6, pe o parte); în rest, ca până acum', () => {
   const b: FormaSculaDoc = { tip: 'bila' }, t: FormaSculaDoc = { tip: 'toroidala', raza: 1 };
   const randuri: ReadonlyArray<readonly [TipOperatie, Latura, FormaSculaDoc, string | null]> = [
     ['profil', 'pe-linie', b, null], ['profil', 'pe-linie', t, null],
-    ['profil', 'exterior', b, 'bila'], ['profil', 'interior', t, 'toroidala'], ['profil', 'stanga', b, 'bila'], ['profil', 'dreapta', t, 'toroidala'],
+    // Pe o parte, fără adâncime știută: refuzat (cu adâncimea cel puțin ρ merge, din 16.A↑e-6: `profil.rotunda.test.ts`).
+    ['profil', 'exterior', b, 'rotunda-adancime'], ['profil', 'interior', t, 'rotunda-adancime'], ['profil', 'stanga', b, 'rotunda-adancime'], ['profil', 'dreapta', t, 'rotunda-adancime'],
     // Buzunarul: din 16.A↑e-5 (`buzunar.rotunda.test.ts`).
     ['buzunar', 'interior', b, null], ['buzunar', 'interior', t, null], ['gaurire', 'interior', t, 'toroidala'],
     ['vcarve', 'interior', b, 'bila'], ['vcarve', 'interior', t, 'toroidala'],
@@ -87,11 +88,8 @@ test('canelura cu bila și cu toroidala: drumul frezei plate de același Ø, mi�
   treceri.forEach((v, k) => assert.ok(Math.abs(v + (4 * (k + 1)) / 3) < 1e-12, `trecerea ${k + 1} la ${v}`));
 });
 
-test('formele rotunde rămân refuzate pe o parte și pe frezele de rest, cu motiv (buzunarul: `buzunar.rotunda.test.ts`)', () => {
+test('formele rotunde rămân refuzate pe frezele de rest, cu motiv (buzunarul: `buzunar.rotunda.test.ts`; pe o parte: `profil.rotunda.test.ts`)', () => {
   const cazuri: ReadonlyArray<readonly [string, Liber, RegExp]> = [
-    ['bila pe exterior', op({ scula: scula(1, 6, B), latura: 'exterior' }), /freza bilă \(T1, scula\)/],
-    ['toroidala pe interior', op({ scula: scula(1, 6, T(1)), latura: 'interior' }), /freza toroidală \(T1, scula\)/],
-    ['toroidala pe stânga', op({ scula: scula(1, 6, T(1)), latura: 'stanga' }), /freza toroidală \(T1, scula\)/],
     ['toroidala de rest', op({ tip: 'buzunar', latura: 'interior', pasLateral: 2, rest: [{ scula: scula(2, 3, T(0.5)), pasLateral: 1 }] }), /freza toroidală \(T2, rest\[0\]\)/],
     ['bila de rest', op({ tip: 'buzunar', latura: 'interior', pasLateral: 2, rest: [{ scula: scula(2, 3, B), pasLateral: 1 }] }), /freza bilă \(T2, rest\[0\]\)/],
   ];

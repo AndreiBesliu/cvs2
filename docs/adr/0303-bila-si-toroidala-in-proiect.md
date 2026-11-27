@@ -2,7 +2,9 @@
 
 **Starea:** propus pe 26.11.2026, în sesiunea cloud a liniei frezelor (ramura `wip/16.A-freze-e`), la cuvântul owner-ului
 transmis de sesiunea principală: „Zi-le ca pot continua cu ce urmeaza la fiecare” (16.A↑d cere placa 4 tăiată, deci urmează
-16.A↑e). Întrebările de la capăt merg la owner grupat; linia merge mai departe cu recomandările. **Completează:** ADR 0300 §9
+16.A↑e). Întrebările de la capăt merg la owner grupat; linia merge mai departe cu recomandările. **Acceptat** pe 27.11, cu
+recomandările (1a, 2a, 3a, 4a, 5a), la cuvântul owner-ului transmis de sesiunea principală: „zi-le sesiunilor sa continue cu
+recomandarile, acolo unde inca asteapta”. **Completează:** ADR 0300 §9
 (formele noi, ordinea: întâi simularea și oracolul, apoi CAM-ul), ADR 0302 §2 (felurile „în curând în proiect”), ADR 0312 §1
 (bila, documentul v29, doar la finisarea reliefului).
 
@@ -69,7 +71,7 @@ Frezele de rest, fundul plat al V-carve-ului, dopurile și banda rămân doar cu
 e-1 adaugă silueta în nucleu (în workerele simulării și CAM) și forma în schema ușii (în pornire, cu ușa): ținta e cel mult
 +0,2 kB în pornirea cu ușa și +1 kB în total; fiecare sub-felie își spune creșterea în raport.
 
-## Întrebările pentru owner (cu recomandarea întâi)
+## Întrebările pentru owner (cu recomandarea întâi; răspunse pe 27.11 cu recomandările)
 
 1. **Buzunarul cu bila sau cu toroidala: cum se alege pasul lateral?**
    a. Pasul lateral rămâne câmpul de azi, iar creasta rezultată se spune lângă el, pe hârtie (recomandat: aceeași fișă
@@ -256,8 +258,42 @@ Pe 27.11, pe `wip/16.A-freze-e`, peste e-4 (unită în `main` prin `72263843`).
   - probele vechi care cereau refuzul pe buzunar au fost întoarse.
 - **Neschimbate:** nimic pe server; documentul rămâne v31; programul fără forme rotunde, octet cu octet.
 
+## Implementarea (16.A↑e-6)
+
+Pe 27.11, pe `wip/16.A-freze-e`, peste e-5, cu întrebarea 2a aplicată.
+
+- **Drumul:** profilul pe o parte (exterior, interior, stânga, dreapta) cu bila și cu toroidala e al frezei plate de același
+  Ø, mișcare cu mișcare, și cu urechile, rampa, intrările și degajările: centrul stă la R de desen. Silueta are raza cel mult R
+  la orice înălțime, deci nimic nu intră în piesă: invariantele frezei plate rămân, cu o margine în plus.
+- **Peretele, pe hârtie:** la δ de desen, spre deșeu, adâncimea e d − h(|R − δ|). Pe desen (δ = 0), silueta are raza R abia la ρ
+  deasupra vârfului, deci peretele e vertical de la față până la d − ρ, iar la fund rămâne racordarea de rază ρ. Prin foaie
+  (d ≥ grosimea g), cât d − ρ < g, racordarea rămâne pe muchia de jos a piesei, pe g − (d − ρ) mm. Regula e `peretePeOParte`
+  (`src/model/creasta.ts`, cu raza colțului în `razaColtului`: bila Ø / 2, toroidala ρ).
+- **Refuzul** (`motivFormaPeOperatie`, care primește acum adâncimea operației și diametrul frezei): pe o parte, sub raza
+  colțului, `rotunda-adancime` (peretele n-ar ajunge la desen). Fără adâncime știută sau, la bilă, fără diametru, refuzat.
+  Lucrarea spune freza, raza colțului și adâncimea; Tăierea (`frezePotrivite`) oferă bila și toroidala pe o parte doar cu
+  adâncimea operațiilor alese cel puțin raza colțului frezei din bibliotecă. Găurirea, V-carve-ul și frezele în plus rămân
+  refuzate.
+- **Fereastra exportului:**
+  - lista formei arată bila și toroidala pe orice profil;
+  - regula rândului (`rotundaPermisa`) cere adâncimea cel puțin raza colțului (`razaColtRand`), iar greșeala, în grupul Freza,
+    spune raza (`motiv.rotunda-adancime`); un număr de necitit își are greșeala pe câmpul lui;
+  - sub adâncime, nota peretelui (`hartieRand`, câmpul `perete`): „Peretele e vertical de la față până la … mm; la fund rămâne
+    racordarea de rază … mm”, cu marginea de jos prin foaie, când e;
+  - lista „Din frezele mele” a rândului nu cere adâncimea (ca frezele de rest ale buzunarului): greșeala o spune rândul.
+- **Probele:**
+  - `test/unit/profil.rotunda.test.ts`, scrisă întâi: regula formei cu adâncimea, drumul frezei plate (exterior, interior, cu
+    urechi, rampă, intrări, degajări, stânga, dreapta), refuzul sub ρ, secțiunea peretelui simulat față de hârtie (celulă cu
+    celulă, la 0,01 mm: nimic tăiat în piesă, totul tăiat cel puțin d − ρ între desen și centru), `peretePeOParte`, regula
+    ferestrei față de model;
+  - `test/e2e/export.rotunda.spec.ts`: nota peretelui pe exterior, cu bila și cu toroidala, și programul cu bila simulat de
+    oracol, pe octeții din browser;
+  - probele vechi care cereau refuzul pe o parte au fost întoarse.
+- **Neschimbate:** nimic pe server; documentul rămâne v31; programul fără forme rotunde, octet cu octet. Cu e-6, ADR-ul are
+  toate sub-feliile făcute.
+
 ## Se redeschide dacă
 
-- placa 4 (sau o placă a bilei) arată că secțiunea canelurii sau creasta din buzunar nu ies ca pe hârtie;
+- placa 4 (sau o placă a bilei) arată că secțiunea canelurii, creasta din buzunar sau peretele pe o parte nu ies ca pe hârtie;
 - owner-ul cere toroidala la finisarea reliefului înaintea liniei reliefului;
 - plafonul pornirii nu mai lasă loc formei în schema ușii.

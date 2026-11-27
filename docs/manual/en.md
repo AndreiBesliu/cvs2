@@ -2055,9 +2055,9 @@ already on another T, otherwise the lowest free one. Only the bits on the clashi
 **The ball nose and the bull nose on the line.** On a cut **on the line** (a groove), the shape can also be **ball nose** or
 **bull nose**; for a bull nose, **Corner radius (mm)** is the radius of the rounded corner, above 0 and below half the diameter
 (with the radius at half the diameter, the bit is a ball nose). The centre of the bit runs on the line, as with a flat bit, and
-the groove comes out with a round bottom (ball nose) or a flat one with rounded corners (bull nose). On one side, when
-drilling and in V-carving, the ball nose and the bull nose are not cut yet: pick "on the line" or another bit. The sheet report
-names the bit ("ball nose", "bull nose r1.5"), so the right one gets mounted at the machine.
+the groove comes out with a round bottom (ball nose) or a flat one with rounded corners (bull nose). When drilling and in
+V-carving, the ball nose and the bull nose are not cut yet: pick "on the line" or another bit. The sheet report names the bit
+("ball nose", "bull nose r1.5"), so the right one gets mounted at the machine.
 
 **The ball nose and the bull nose in a pocket.** On a **pocket** too, the shape can be **ball nose** or **bull nose**. The rings
 are those of a flat bit of the same diameter (the centre at half the diameter from the wall), so the walls stay on the drawing,
@@ -2065,6 +2065,14 @@ and the bit's rounded corner is left at the floor. The floor does not come out f
 under **Side step**, as "Scallop on the floor: 0.25 mm between the rings, at most 1.2 mm". At the ring corners and in the middle
 of the pocket the scallop is larger, up to the second value. A smaller side step makes the scallop smaller. With a rest cutter or
 a straight-walled inlay, the export stops: rest cutters and the plug need a flat bit.
+
+**The ball nose and the bull nose on one side.** On a profile **on one side** (outside, inside, left, right) too, the shape can
+be **ball nose** or **bull nose**, if the depth is at least the corner radius (for a ball nose, half the diameter). The path is
+that of a flat bit of the same diameter, with its tabs, ramp, lead-ins and dog-bones, so nothing cuts into the part. The wall
+comes out straight only down to the depth minus the corner radius: under **Depth**, the note says, for example, "The wall is
+vertical from the face down to 1 mm; at the floor a 3 mm radius fillet remains". On a cut through the sheet, with the overcut
+below the corner radius, the fillet stays on the bottom edge of the part, and the note says so. Shallower than the corner
+radius, the export stops: the wall would not reach the drawing.
 
 The **From my bits** list, in the Bit group, has the bits from your library (see [My bits](#freze)) that suit the operation's
 cut: flat ones on a profile, a pocket or drilling, V bits on a V-carve. Once picked, the bit puts on the operation its T number

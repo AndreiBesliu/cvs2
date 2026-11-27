@@ -7,9 +7,9 @@ test.use({ locale: 'ro-RO' });
 
 /**
  * Bila și toroidala în fereastra exportului (ADR 0303, felia 16.A↑e-4), pe dreptunghiul tăiat pe linie (canelura): forma se
- * alege pe rând doar pe linie; la toroidală, raza colțului apare (1 mm implicit) și se judecă (peste 0, sub Ø / 2); Exportă
- * scrie forma în document, cu numele după formă (comentariul sculei din program îl poartă), iar fereastra redeschisă o
- * arată. Pe exterior, forma rotundă oprește exportul, cu motivul.
+ * alege pe rând (din 16.A↑e-6, pe orice profil); la toroidală, raza colțului apare (1 mm implicit) și se judecă (peste 0, sub
+ * Ø / 2); Exportă scrie forma în document, cu numele după formă (comentariul sculei din program îl poartă), iar fereastra
+ * redeschisă o arată. Pe exterior, sub raza colțului, forma rotundă oprește exportul, cu motivul.
  */
 test('canelura cu toroidala și cu bila: forma pe rând, raza colțului judecată, Exportă o scrie în proiect', async ({ page }) => {
   await page.goto('/');
@@ -17,8 +17,8 @@ test('canelura cu toroidala și cu bila: forma pe rând, raza colțului judecat�
   await page.locator('[data-actiune="export.gcode"]').click();
   const rand = page.locator('[data-fisa="op"]').first();
   const forma = rand.locator('[data-camp="forma-scula"]');
-  // Pe exterior: doar plata și V-ul.
-  await expect(forma.locator('option')).toHaveText(['plată', 'în V']);
+  // Pe exterior (din 16.A↑e-6), toate patru, ca pe linie.
+  await expect(forma.locator('option')).toHaveText(['plată', 'în V', 'bilă', 'toroidală']);
   await rand.locator('input[data-camp="latura"][value="pe-linie"]').check();
   await expect(forma.locator('option')).toHaveText(['plată', 'în V', 'bilă', 'toroidală']);
   // Toroidala: raza colțului, 1 mm implicit; cât jumătatea diametrului (3 mm la Ø6) nu trece.
@@ -50,10 +50,13 @@ test('canelura cu toroidala și cu bila: forma pe rând, raza colțului judecat�
   await page.locator('[data-buton="exporta"]').click();
   text = readFileSync(await (await descarcare).path(), 'ascii');
   expect(text).toContain('freza bila D6');
-  // Pe exterior, bila oprește exportul, cu motivul (lucrarea o taie doar pe linie).
+  // Pe exterior, la 1 mm (sub raza bilei, 3 mm), exportul se oprește, cu motivul și raza în grupul frezei; de la 3 mm, merge.
   await rand.locator('input[data-camp="latura"][value="exterior"]').check();
   await expect(page.locator('[data-buton="exporta"]')).toBeDisabled();
-  await expect(page.getByTestId('export-invalid')).toContainText('taie deocamdată pe linie (canelura) și în buzunar');
+  await expect(page.getByTestId('export-invalid')).toContainText('pe o parte (cu adâncimea cel puțin raza colțului)');
+  await expect(rand.locator('[data-grup="freza"] [data-greseala]')).toContainText(['cere o adâncime de cel puțin raza colțului (3 mm)']);
+  await rand.locator('[data-camp="adancime"]').fill('3');
+  await expect(page.locator('[data-buton="exporta"]')).toBeEnabled();
   await expect(page.getByTestId('jurnal')).toHaveText('0 erori în jurnalul local');
 });
 
@@ -106,5 +109,54 @@ test('buzunarul cu bila: creasta lângă pasul lateral, refuzul cu o freză de r
   // Cel mai înalt punct al zonei centrului e cel mult h(s) = 1,2 deasupra fundului (cu marja de eșantionare a celulei).
   expect(zona - fund).toBeLessThanOrEqual(1.2 + 0.05);
   expect(zona - fund).toBeGreaterThan(0.2);
+  await expect(page.getByTestId('jurnal')).toHaveText('0 erori în jurnalul local');
+});
+
+/**
+ * Profilul pe o parte cu bila și cu toroidala (ADR 0303 §4, felia 16.A↑e-6; întrebarea 2a): pe exterior, la 4 mm, sub adâncime
+ * nota peretelui, pe hârtie (bila Ø6: vertical până la 4 − 3 = 1 mm, racordarea de 3 mm; toroidala Ø6 r1: până la 3 mm,
+ * racordarea de 1 mm); programul cu bila, simulat de oracol pe octeții din browser: în piesă (dreptunghiul 100 × 60 cu
+ * colțul în (20, 20)) nimic tăiat, iar pe fâșia dintre desen și centrul frezei, sub latura de jos, totul tăiat cel puțin până
+ * la 1 mm (peretele vertical).
+ */
+test('profilul pe exterior cu bila: nota peretelui, nimic tăiat în piesă, peretele vertical până la d − ρ', async ({ page }) => {
+  await page.goto('/');
+  await adauga(page, 'dreptunghi');
+  await page.locator('[data-actiune="export.gcode"]').click();
+  const rand = page.locator('[data-fisa="op"]').first();
+  const forma = rand.locator('[data-camp="forma-scula"]');
+  await rand.locator('[data-camp="adancime"]').fill('4');
+  // Cu freza plată, nicio notă a peretelui.
+  await expect(rand.locator('[data-nota="perete-rotunda"]')).toHaveCount(0);
+  await forma.selectOption('toroidala');
+  await expect(rand.locator('[data-nota="perete-rotunda"]')).toHaveText('Peretele e vertical de la față până la 3 mm; la fund rămâne racordarea de rază 1 mm.');
+  await forma.selectOption('bila');
+  await expect(rand.locator('[data-nota="perete-rotunda"]')).toHaveText('Peretele e vertical de la față până la 1 mm; la fund rămâne racordarea de rază 3 mm.');
+  await expect(page.locator('[data-buton="exporta"]')).toBeEnabled();
+  const descarcare = page.waitForEvent('download');
+  await page.locator('[data-buton="exporta"]').click();
+  const text = readFileSync(await (await descarcare).path(), 'ascii');
+  await expect(page.getByTestId('export-stare')).toContainText('SHA-256');
+  expect(text).toContain('freza bila D6');
+  const g = { x0: 10, y0: 10, latime: 120, inaltime: 80, celula: 0.25 };
+  const o = judeca(text, g, { tip: 'bila', diametru: 6 });
+  let inPiesa = 0, peFasie = 0, pestePerete = 0, fund = Infinity;
+  for (let j = 0; j < o.ny; j++) {
+    for (let i = 0; i < o.nx; i++) {
+      const x = g.x0 + (i + 0.5) * g.celula, y = g.y0 + (j + 0.5) * g.celula, z = o.z[j * o.nx + i]!;
+      fund = Math.min(fund, z);
+      if (x > 20.1 && x < 119.9 && y > 20.1 && y < 79.9 && z < -1e-9) inPiesa++;
+      // Sub latura de jos, între desen (y = 20) și centrul frezei (y = 17), departe de colțuri.
+      if (x > 30 && x < 110 && y > 17.1 && y < 19.9) {
+        peFasie++;
+        if (z > -1 + 0.01) pestePerete++;
+      }
+    }
+  }
+  expect(inPiesa).toBe(0);
+  expect(peFasie).toBeGreaterThan(3000);
+  expect(pestePerete).toBe(0);
+  expect(fund).toBeGreaterThan(-4 - 0.01);
+  expect(fund).toBeLessThan(-4 + 0.01);
   await expect(page.getByTestId('jurnal')).toHaveText('0 erori în jurnalul local');
 });

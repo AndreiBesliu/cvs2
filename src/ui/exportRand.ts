@@ -223,14 +223,30 @@ export function formeEgale(a: FormaRand | undefined, b: FormaRand | undefined): 
 }
 
 /**
- * Bila și toroidala pe rând (ADR 0303 §4): pe linie (canelura, felia 16.A↑e-3) și în buzunar (16.A↑e-5), fără freze de rest și
- * fără incrustație cu pereți drepți; plata și V-ul, mereu (V-ul își are regula lui, `vPeLinie`). Aceeași regulă ca
- * `motivFormaPeOperatie` din model (o probă le compară), scrisă aici fiindcă interfața nu importă modelul.
+ * Bila și toroidala pe rând (ADR 0303 §4): pe linie (canelura, felia 16.A↑e-3), în buzunar (16.A↑e-5), fără freze de rest și
+ * fără incrustație cu pereți drepți, și pe o parte (16.A↑e-6), cu adâncimea cel puțin raza colțului (`razaColtRand`); plata și
+ * V-ul, mereu (V-ul își are regula lui, `vPeLinie`). Aceeași regulă ca `motivFormaPeOperatie` din model (o probă le compară),
+ * scrisă aici fiindcă interfața nu importă modelul. Pe o parte, o adâncime, un diametru sau o rază de necitit nu se judecă
+ * aici: fiecare își are greșeala pe câmp.
  */
-export function rotundaPermisa(p: Pick<Rand, 'tip' | 'latura' | 'formaScula' | 'rest' | 'incrustatieDreapta'>): boolean {
+export function rotundaPermisa(p: Pick<Rand, 'tip' | 'latura' | 'formaScula' | 'rest' | 'incrustatieDreapta' | 'adancime' | 'diametruScula' | 'razaColt'>): boolean {
   if (p.formaScula !== 'bila' && p.formaScula !== 'toroidala') return true;
-  if (p.tip === 'profil') return p.latura === 'pe-linie';
+  if (p.tip === 'profil') {
+    if (p.latura === 'pe-linie') return true;
+    const d = citesteNumar(p.adancime), rho = razaColtRand(p);
+    return d === null || rho === null || d >= rho;
+  }
   return p.tip === 'buzunar' && p.rest.length === 0 && !p.incrustatieDreapta;
+}
+
+/**
+ * Raza colțului frezei rotunde a rândului (ADR 0303 §1): la bilă Ø / 2, la toroidală raza scrisă; null pentru plată și V, sau
+ * cu un număr de necitit (ori nepozitiv).
+ */
+export function razaColtRand(p: Pick<Rand, 'formaScula' | 'diametruScula' | 'razaColt'>): number | null {
+  const n = citesteNumar(p.formaScula === 'bila' ? p.diametruScula : p.formaScula === 'toroidala' ? p.razaColt : '');
+  if (n === null || !(n > 0)) return null;
+  return p.formaScula === 'bila' ? n / 2 : n;
 }
 
 /**
@@ -557,9 +573,9 @@ export type IntrareHartie = {
   readonly diametruScula: number | null; readonly retragere: number | null; readonly diametre: readonly number[];
   /**
    * Buzunarul (ADR 0303 §4, felia 16.A↑e-5): forma frezei scrisă (`formaDinRand`: null = plată, lipsă = de necitit) și pasul
-   * lateral, pentru creasta de pe fund.
+   * lateral, pentru creasta de pe fund. Profilul (16.A↑e-6): aceeași formă și dacă taie pe o parte, pentru perete.
    */
-  readonly forma?: FormaRand | null | undefined; readonly pasLateral?: number | null;
+  readonly forma?: FormaRand | null | undefined; readonly pasLateral?: number | null; readonly peOParte?: boolean;
 };
 /** Felul găuririi unui cerc (ADR 0087): ca `felGaurire` din lucrare. */
 export type FelGaurireRand = 'ciocanire' | 'elice' | 'mic' | 'mare' | 'gresit';
@@ -580,6 +596,12 @@ export type HartieRand = {
    * `creastaBuzunar` din lucrare: între două inele și cea mai mare (pe colțurile inelelor și pe mijloc); null altfel.
    */
   readonly creasta?: { readonly intreInele: number; readonly maxima: number } | null;
+  /**
+   * Doar pe un profil pe o parte cu bila sau cu toroidala (felia 16.A↑e-6): peretele, ca `peretePeOParte` din lucrare (vertical
+   * de la față până la `vertical`, racordarea de rază `raza` la fund, `margineJos` rămasă pe muchia de jos a piesei, prin
+   * foaie); null altfel.
+   */
+  readonly perete?: { readonly vertical: number; readonly raza: number; readonly margineJos: number } | null;
 };
 
 /**
