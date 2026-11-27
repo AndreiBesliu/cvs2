@@ -208,4 +208,16 @@ degroșarea și finisarea pe relief), unde stă relieful în document și unde s
   - **`npm ci` într-o clonă cu `node_modules` legat de repo** golește `node_modules` din repo (`tsc: not found`).
   - **`src/ui` ia din domeniu doar prin `src/ui/actiuni*`** (regula `interfata-prin-actiuni`): o funcție a CAM-ului de care are
     nevoie fișa (`celuleAliniate`) se reexportă din `actiuniExportTipuri.ts`.
+- **27.11, 06:37: cuvântul owner-ului** („zi-le sesiunilor sa continue cu recomandarile, acolo unde inca asteapta”, transmis de
+  sesiunea principală): alegerile din ADR 0313 §8 (1–6) și liniile plăcii 18 la 1,5 mm, confirmate cum sunt; pornesc, în
+  ordine, freza din bibliotecă pe rândurile reliefului (18.1↑d-5), desenele grupurilor (18.1↑d-6), „Dă-i T{n}” (18.1↑d-7), apoi
+  finisarea cu toroidala (18.1↑e, ADR 0303 răspunsul 4a, oracolul întâi). Documentul e v31; un câmp nou ia v32, cu numărul cerut.
+- **27.11, 07:10: 18.1↑d-5 gata pe ramură**: freza din „Frezele mele” pe rândurile reliefului (ADR 0316), otrăvurile 19 / 19
+  prinse (14 unitare, 5 e2e). Freza aleasă își aduce și pasul lateral (bila de finisare din catalog are 10 %), la fel în Tăierea.
+- **De ținut minte, din 18.1↑d-5:**
+  - **Originea frezei stă pe rândul reliefului** (`RandRelief.origineScula`, citită din document în `ExportConectat`): un câmp
+    al frezei schimbat de mână o scoate (`origineScula: null`), ca la celelalte rânduri; Exportă o scrie cu `cuOrigine`.
+  - **T-ul unei freze alese numără frezele tuturor rândurilor** (`frezeRanduri` + `frezeRanduriRelief`), și pe rândurile
+    obișnuite: o finisare cu T2 nu mai poate fi ciocnită de o freză aleasă pe un profil.
+  - **„Pe toate (N)” vine din fereastră** (`ContextFisa.peToate`), cu rândurile reliefului; fișa o socotea singură doar pe ale ei.
 

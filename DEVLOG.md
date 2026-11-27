@@ -16658,3 +16658,20 @@ program. Dacă cere un câmp nou în document, v32 e liber și ți-l dau la cere
 - **Pe test:** lotul 57 (`3ecb5678`), din 07:08; lotul 58 (`72263843`), în drum.
 - **Linia frezelor** pornește e-5 (buzunarul cu bila și cu toroidala; oracolul întâi).
 - **Documentele:** decizia și Starea în `CLAUDE.md`; starea din `docs/linii/principala.md`; indexul liniilor.
+
+## 2026-11-27 — Linia reliefului: felia 18.1↑d-5, freza din „Frezele mele” pe rândurile reliefului (Model: Claude Opus 5.5)
+
+**Prompt:** „zi-le sesiunilor sa continue cu recomandarile, acolo unde inca asteapta” (owner-ul, în sesiunea principală,
+transmis liniei la 06:37): „întâi freza din „Frezele mele” pe rândurile reliefului, cu bila”. **Started:** 27.11, 06:40, cu
+`main` `eac92d1c` adus (fast-forward). **Completed:** 27.11, 07:10 (în container; CI-ul, pe commit-ul împins).
+
+- **Proba întâi, pe hârtie:** `export.relief.biblioteca.test.ts` (alegerea pe finisare și pe degroșare, T-ul printre frezele
+  ferestrei, nota și „Ia valorile noi”, „Pune-o înapoi”, scrierea originii la Exportă, pasul lateral din Tăierea).
+- **Fereastra:** lista „Din frezele mele” în grupul Freza al fișei reliefului (finisarea: plata, V-ul, bila; degroșarea: plata),
+  nota bibliotecii, „Pe toate (N)” cu rândurile reliefului, „Pune-o înapoi”; T-ul unei freze alese, și pe rândurile obișnuite,
+  numără și frezele reliefului. Exportă scrie originea (`cuOrigine`), iar fără schimbare aceeași operație, la octet.
+- **Tăierea:** freza aleasă aduce pasul lateral și pe finisare și degroșare (`cuPasLateral`), ca fereastra.
+- **ADR 0316**, manualul (ro, en), e2e nou (`relief.biblioteca.spec.ts`); otrăvurile 19 / 19 prinse (14 unitare, 5 e2e), într-o
+  clonă; A11 din `16.A-b2.py` mutată pe `cuPasLateral`, prinsă.
+- **De ținut minte:** configul Playwright al clonei otrăvurilor își scrie căile spre clonă (`testDir`, `cwd`); cu cele ale
+  repo-ului, toate otrăvurile e2e ies „NEVALIDĂ” („No tests found”).
