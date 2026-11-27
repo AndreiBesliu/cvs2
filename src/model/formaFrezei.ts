@@ -22,10 +22,11 @@ import { razaColtului } from './creasta.ts';
  * De ce forma nu merge: `vcarve` (V-carve-ul cere o freză în V), `v-pe-linie` (freza în V taie doar pe linie sau într-un
  * V-carve), `bila` și `toroidala` (freza rotundă nu merge aici: azi, pe linie și în buzunar; bila și la finisarea
  * reliefului), `degrosare` (degroșarea reliefului cere o freză plată), `rotunda-rest` (un buzunar cu o freză rotundă nu are
- * freze de rest), `rotunda-incrustatie` (incrustația cu pereți drepți cere o freză plată) și `rotunda-adancime` (pe o parte,
- * o freză rotundă cere adâncimea cel puțin raza colțului).
+ * freze de rest), `rotunda-incrustatie` (incrustația cu pereți drepți cere o freză plată), `rotunda-adancime` (pe o parte,
+ * o freză rotundă cere adâncimea cel puțin raza colțului) și `profil` (profilul desenat nu se taie încă nicăieri: ADR 0304,
+ * felia 16.A↑f-1; canelura vine în f-2, marginea profilată în f-3).
  */
-export type MotivForma = 'vcarve' | 'v-pe-linie' | 'bila' | 'degrosare' | 'toroidala' | 'rotunda-rest' | 'rotunda-incrustatie' | 'rotunda-adancime';
+export type MotivForma = 'vcarve' | 'v-pe-linie' | 'bila' | 'degrosare' | 'toroidala' | 'rotunda-rest' | 'rotunda-incrustatie' | 'rotunda-adancime' | 'profil';
 
 /**
  * Ce mai contează din operație pentru o freză rotundă: în buzunar, frezele de rest și incrustația (lipsă = fără ele); pe o
@@ -45,6 +46,8 @@ export type RestulOperatiei = {
 export function motivFormaPeOperatie(
   tip: TipOperatie, latura: Latura, forma: FormaSculaDoc | undefined, o?: RestulOperatiei, diametru?: number,
 ): MotivForma | null {
+  // Profilul desenat (ADR 0304, 16.A↑f-1): în document și în simulare, fără CAM încă.
+  if (forma?.tip === 'profil') return 'profil';
   const rotunda = forma?.tip === 'bila' || forma?.tip === 'toroidala';
   // Canelura (ADR 0303 §4, 16.A↑e-3): bila și toroidala pe linie, cu centrul pe vector (drumul frezei plate de același Ø).
   if (rotunda && tip === 'profil' && latura === 'pe-linie') return null;
@@ -69,9 +72,9 @@ export function motivFormaPeOperatie(
   return null;
 }
 
-/** Felul frezei în cuvinte, pentru motivele lucrării: „plată”, „în V”, „bilă” sau „toroidală” (un motiv numește forma). */
-export function felFrezei(forma: FormaSculaDoc | undefined): 'plată' | 'în V' | 'bilă' | 'toroidală' {
-  return forma === undefined ? 'plată' : forma.tip === 'bila' ? 'bilă' : forma.tip === 'toroidala' ? 'toroidală' : 'în V';
+/** Felul frezei în cuvinte, pentru motivele lucrării: „plată”, „în V”, „bilă”, „toroidală” sau „profilată” (un motiv numește forma). */
+export function felFrezei(forma: FormaSculaDoc | undefined): 'plată' | 'în V' | 'bilă' | 'toroidală' | 'profilată' {
+  return forma === undefined ? 'plată' : forma.tip === 'bila' ? 'bilă' : forma.tip === 'toroidala' ? 'toroidală' : forma.tip === 'profil' ? 'profilată' : 'în V';
 }
 
 /**

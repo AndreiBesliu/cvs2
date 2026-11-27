@@ -14,7 +14,7 @@
  * mai veche. Un câmp nou CU SENS (fața de jos, montajele, sculele) intră doar cu o schemă nouă și o migrare: o versiune
  * veche n-are voie să taie fără să înțeleagă un câmp.
  */
-export const VERSIUNE_SCHEMA = 31;
+export const VERSIUNE_SCHEMA = 32;
 
 /** Plafoanele stau pe artefact (T23): un document care le trece e refuzat la ușă, nu tăiat. */
 export const PLAFON = {
@@ -50,6 +50,8 @@ export const PLAFON = {
   numarScula: 999,
   /** Diametrul sculei, în mm. */
   diametruScula: 100,
+  /** Punctele profilului desenat al unei freze (ADR 0304 §1). */
+  puncteProfil: 200,
   /**
    * Valorile de lucru ale unei freze (ADR 0300 §5, documentul v27): turația (rot/min), avansul și plonjarea (mm/min), fiecare
    * cel mult atât.
@@ -126,7 +128,7 @@ export type Nod = ElementNod | GrupNod;
  * `varf` (ADR 0092, documentul v16): diametrul vârfului plat al unei freze de gravare (conul trunchiat), în mm; lipsă = vârful
  * ascuțit. Potrivirea lui cu diametrul o judecă lucrarea.
  */
-export type FormaSculaDoc = FormaV | FormaBila | FormaToroidala;
+export type FormaSculaDoc = FormaV | FormaBila | FormaToroidala | FormaProfil;
 export type FormaV = { tip: 'v'; unghi: number; varf?: number; [cheie: string]: unknown };
 /**
  * Freza bilă (ADR 0312 §1, documentul v29): capătul e o semisferă de rază diametru / 2. Ușa o primește pe orice freză; unde
@@ -139,6 +141,12 @@ export type FormaBila = { tip: 'bila'; [cheie: string]: unknown };
  * (`motivFormaPeOperatie`): azi, doar pe linie (canelura, 16.A↑e-3).
  */
 export type FormaToroidala = { tip: 'toroidala'; raza: number; [cheie: string]: unknown };
+/**
+ * Profilul desenat (ADR 0304 §1, documentul v32): linii între puncte [r, h] (mm), de la (0, 0) la (diametru / 2, h_max), cu r
+ * strict crescător, h nedescrescător, 2 … `PLAFON.puncteProfil` puncte, judecate la ușă. Unde se poate folosi o judecă lucrarea
+ * (`motivFormaPeOperatie`): în f-1, nicăieri încă.
+ */
+export type FormaProfil = { tip: 'profil'; puncte: Array<[number, number]>; [cheie: string]: unknown };
 /** De unde vine copia unei freze (ADR 0300 §5, v27): id-ul ei din biblioteca „Frezele mele” și versiunea copiată. */
 export type OrigineFreza = { id: string; rev: number; [cheie: string]: unknown };
 /**
@@ -439,7 +447,7 @@ export type Foaie = {
   cote?: Cota[];
   [cheie: string]: unknown;
 };
-export type Document = { schema: 31; rev: number; piese: Piesa[]; foi: Foaie[]; [cheie: string]: unknown };
+export type Document = { schema: 32; rev: number; piese: Piesa[]; foi: Foaie[]; [cheie: string]: unknown };
 
 /** Nodurile unei piese, în preordine, cu adâncimea lor (rădăcina are 1). Iterativ: arborele poate fi adânc. */
 export function noduriPiesa(radacina: Nod): Array<{ readonly nod: Nod; readonly adancime: number }> {

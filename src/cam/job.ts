@@ -75,6 +75,12 @@ function refuzFinisareSiBila(doc: Document): string | null {
       // Bila și toroidala (ADR 0303 §4): ca freză a operației, pe linie (canelura, 16.A↑e-3), în buzunar (16.A↑e-5) și pe o parte,
       // cu adâncimea cel puțin raza colțului (16.A↑e-6); bila și la finisarea reliefului. Pe orice freză în plus și pe celelalte
       // operații, refuzate.
+      // Profilul desenat (ADR 0304, 16.A↑f-1): pe orice freză a operației, refuzat până la CAM-ul lui (f-2, f-3).
+      for (const { cale, scula } of frezeleOperatiei(o)) {
+        if (scula.forma?.tip === 'profil') {
+          return `${unde}: freza profilată (T${scula.numar}, ${cale}) nu se taie încă: canelura și marginea profilată vin pe sub-felii`;
+        }
+      }
       const rotunda = (s: { readonly forma?: { readonly tip: string } | undefined }): boolean => s.forma?.tip === 'bila' || s.forma?.tip === 'toroidala';
       const motivRotunda = motivFormaPeOperatie(o.tip, o.latura, o.scula.forma, o, o.scula.diametru);
       if (rotunda(o.scula) && motivRotunda === 'rotunda-adancime') {

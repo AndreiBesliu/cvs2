@@ -34,7 +34,7 @@ const op = (v: Liber): Liber => ({
 /** Dreptunghiul 60 × 40 cu colțul în (20, 20), pe o foaie de 100 × 80 × 18. */
 function doc(operatii: readonly Liber[]): Liber {
   return {
-    schema: 31, rev: 0,
+    schema: 32, rev: 0,
     piese: [{
       id: 'p',
       radacina: {

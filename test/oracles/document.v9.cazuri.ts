@@ -27,12 +27,12 @@ const inst = (id: string, p: string, x: number, y: number, rotire: number): Inst
  * Felia 5.1↑ (ADR 0069): 12, nu 11: ușa curentă e v11. Felia 5.9↑ (ADR 0133): 20, ușa curentă e v19. Felia 12.1↑ (ADR 0170): 21, ușa curentă e v20. Felia 12.1↑b (ADR 0171): 22, ușa curentă e v21. Felia 12.1↑c (ADR 0172): 23, ușa curentă e v22. Felia 11.4↑ (ADR 0210): 24, ușa curentă e v23. Felia 12.1↑b-2
  * (ADR 0174): 25, ușa curentă e v24. Felia 12.1↑f (ADR 0175): 26, ușa curentă e v25. Felia 11.3↑d (ADR 0211): 27, ușa
  * curentă e v26. Felia 16.A↑b (ADR 0300): 28, ușa curentă e v27. Felia 18.1↑a (ADR 0310): 29, ușa curentă e v28. Felia 18.1↑c (ADR 0312): 30, ușa curentă e v29. Felia 18.1↑d-1 (ADR 0313): 31, ușa curentă e v30. Felia
- * 16.A↑e-1 (ADR 0303): 32, ușa curentă e v31.
+ * 16.A↑e-1 (ADR 0303): 32, ușa curentă e v31. Felia 16.A↑f-1 (ADR 0304): 33, ușa curentă e v32.
  */
 const laV9 = (d: unknown): unknown => {
   if (!esteObiectL(d)) return d;
   if (d['schema'] === 8) d['schema'] = 9;
-  else if (d['schema'] === 9) d['schema'] = 32;
+  else if (d['schema'] === 9) d['schema'] = 33;
   else if (d['schema'] === '8') d['schema'] = '9';
   return d;
 };
