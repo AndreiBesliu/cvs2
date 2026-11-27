@@ -429,6 +429,14 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   (`test/unit/simulare.elice.test.ts`: două otrăvuri le prinde doar proba aceea). Lucrarea, neschimbată: programul de
   azi, octet cu octet. Felia: pornirea +0, totalul +2,6 kB (nucleul se numără de două ori: workerul CAM și workerul
   simulării).
+  **Canelura cu bila și cu toroidala (ADR 0303, felia 16.A↑e-3)** gata pe 27.11, unită în `main` pe 27.11
+  (`db066160`): profilul pe linie primește bila și toroidala, cu drumul frezei plate de același Ø; `sculaIR` trece
+  toroidala în IR, cu raza colțului; pe o parte, în buzunar, la găurire, în V-carve și pe frezele în plus, formele
+  rotunde rămân refuzate; același T cu altă rază a colțului se refuză; raportul foilor numește freza („toroidală r1,5
+  Ø6”). **O formă de freză permisă într-o lucrare nouă trebuie oprită și în listele „Freza” (Tăierea, rândurile
+  exportului) până când fereastra o poate purta** (`frezePotrivite`, `frezePeRanduri` cer `formaPeRand`): altfel
+  Exportă ar scrie o plată în locul ei. Fără forme rotunde, programul de azi, octet cu octet. Sub-feliile din ADR 0303,
+  renumerotate: e-4 intrarea în proiect, e-5 buzunarul, e-6 profilul pe o parte. Felia: pornirea +0, totalul +0,1 kB.
   **Plafonul pornirii 120 kB (ADR 0145, decizia owner-ului din 24.11, „ok, ridica plafonul pornirii la 120 kB”):** după
   lotul al paisprezecelea, pornirea era 109,9 kB, cu ușa 114,4 și cu Atelierul 114,7 / 115, iar feliile următoare ale
   frezelor, exportului și aranjamentelor nu mai încăpeau în 0,3 kB. Poarta judecă tot trei măsuri sub același plafon
@@ -2073,6 +2081,29 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 27.11.2026, dimineața (a șaizeci și doua unire din cloud): **canelura cu bila și cu toroidala (16.A↑e-3), unită în
+  `main`** (sesiunea principală, ramura `unire-2711d`, din `7f3938aa`). Linia frezelor, ramura `wip/16.A-freze-e`,
+  `3a55a0c2` (cu `main` `7f3938aa` adus), PR-ul `AndreiBesliu/cvs2#72` (ADR 0303), unită în `db066160`: profilul pe
+  linie primește bila și toroidala, cu drumul frezei plate de același Ø, mișcare cu mișcare; `sculaIR` trece toroidala
+  în IR, cu raza colțului; pe o parte, în buzunar, la găurire, în V-carve și pe frezele în plus, formele rotunde rămân
+  refuzate, cu motiv; același T cu altă rază a colțului se refuză (sunt două freze); raportul foilor numește freza
+  („toroidală r1,5 Ø6”, ca „bilă”), ca operatorul să nu monteze o plată. **O scăpare oprită înainte să ajungă undeva:**
+  bila, permisă pe linie, ar fi apărut pe canelură în lista „Freza” din Tăierea și pe rândurile exportului, iar Exportă
+  ar fi scris o plată în locul ei; `frezePotrivite` și `frezePeRanduri` cer acum și `formaPeRand` (le deschide e-4,
+  odată cu copia ferestrei). Probele, scrise întâi (`test/unit/canelura.rotunda.test.ts`), cu secțiunea canelurii
+  simulate pe hârtie: lățimea la față 2·(a + √(ρ² − (ρ − d)²)) sub raza colțului, Ø peste ea, fundul plat 2·a, pe bila
+  Ø6 și pe toroidala Ø6 r1 și r2,5, la șase adâncimi; otrăvurile 10 / 10. **Mișcă mașina** pentru formele rotunde pe
+  linie (o felie nouă, refuzată până acum); **fără forme rotunde, programul de azi, octet cu octet**. Sub-feliile din
+  ADR 0303 s-au renumerotat (id-urile primesc după cratimă doar cifre): e-3 canelura, e-4 intrarea în proiect, e-5
+  buzunarul, e-6 profilul pe o parte. Documentul rămâne v31; nimic pe server. `main` nu se mișcase, deci **arborele
+  unirii e chiar al lui `3a55a0c2`** și a intrat pe porțile lui: completul 45931240985, verde: unit 10 904 / 0 (12
+  sărite, pe Linux), e2e 1 008 / 1 008, funcțiile pe emulatoare 142 / 142, paginile 62 / 62; rapidul, verde; totalul
+  936,5 / 1 000 kB (+0,1), pornirea 111,7 kB (cu ușa 117,0, cu Atelierul 117,3 / 125). **Lotul 55 (16.A↑e-1, freza
+  toroidală, documentul v31) e pe test din 27.11, 04:58** (`8270aae7`; completul pe `main` 45925253880, verde; proba de
+  fum, bună); lotul 56 (16.A↑e-2, `7f3938aa`) e în drum, iar e-3 pleacă după el (lotul 57). Linia frezelor pornește
+  e-4 (bila și toroidala în proiect: biblioteca, lista „Freza” din Tăierea, rândurile exportului, cu copia ferestrei
+  care poartă formele rotunde), în fereastra exportului: linia exportului n-are felie pornită. **La owner:** proba pe
+  mașină a canelurii cu bila sau cu toroidala, după e-4 (când se pot alege în proiect); restul listei, neschimbat.
 - 27.11.2026, dimineața devreme (a șaizeci și una unire din cloud): **elicea cu bila și cu toroidala, simulată exact
   (16.A↑e-2), unită în `main`** (sesiunea principală, ramura `unire-2711c`, din `8270aae7`). Linia frezelor, ramura
   `wip/16.A-freze-e`, `e5bdde83` (cu `main` `8270aae7` adus), PR-ul `AndreiBesliu/cvs2#71` (ADR 0303, răspunsul 3a
