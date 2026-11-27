@@ -814,3 +814,15 @@ făcute.** Versiunea următoare a pachetului: 18.51.0._
   unei liste vechi): lotul e2e al pluginului a prins-o.
 - **Easy 3Draw 18.50.0.**
 
+### Unde am rămas (27.11, 15:00; limita săptămânală aproape)
+
+- **3.Cm-7 e comisă și împinsă** (`5190e662`), cu porțile locale verzi (unitarele pluginului, lotul e2e al pluginului 265 / 265,
+  documentele, otrăvurile 29 / 29 și 3 / 3). **Nu e raportată:** completul (46020418674) stătea la coadă; rapidul îl reia commit-ul
+  acesta de note (doar `.md`, același cod). Canalul `biblioteca` a refuzat publicarea cât rapidul nu era verde: se repornește după.
+- **Ce urmează, în ordine:** (1) completul și rapidul verzi; (2) `main` adus în ramură (după unirea lui 3.Cm-4…3.Cm-6, pe
+  `unire-2711t`, `unire-2711u`, `unire-2711y`), cu DEVLOG-ul prin `scripts/rezolva-devlog.py` și rândul atelierului din
+  `docs/linii/README.md` păstrat; (3) porțile pe commit-ul cu `main` adus (unitarele, lotul e2e al pluginului, documentele);
+  (4) raportul către sesiunea principală, cu commit-ul de unit, otrăvurile 29 / 29 (22 / 29 la prima rulare, 7 goluri închise)
+  și 3 / 3, cifrele CI, Easy 3Draw 18.50.0 și alegerile duzei, la owner; (5) canalul `biblioteca`, din nou.
+- **După 3.Cm-7, linia n-are felie pornită**; la owner: verdictul tipăririi (a / b / c; până atunci a), alegerile duzei,
+  tipăririle din fișa etapei 3.
