@@ -211,6 +211,51 @@ Pe 27.11, pe `wip/16.A-freze-e`, peste e-3 (unită în `main` prin `db066160`).
   câmpul razei; probele vechi care cereau toroidala „în curând” sau bila fără rând au fost întoarse.
 - **Neschimbate:** nimic pe server; documentul rămâne v31; programul fără forme rotunde, octet cu octet.
 
+## Implementarea (16.A↑e-5)
+
+Pe 27.11, pe `wip/16.A-freze-e`, peste e-4 (unită în `main` prin `72263843`).
+
+- **Drumul:** buzunarul cu bila și cu toroidala ia inelele și liniile frezei plate de același Ø, mișcare cu mișcare: centrul
+  stă la R de perete, iar inelele la R + k·s. Pereții nu trec de desen, fiindcă raza siluetei e cel mult R la orice înălțime.
+  La fund rămâne racordarea de rază ρ a frezei: la δ < R de perete, h(R − δ). Coborârea e plonjarea, rampa, zigzagul sau elicea
+  (simulată exact din e-2, întrebarea 3a). Scula din IR își poartă forma.
+- **Creasta, precizată față de tabelul de mai sus:** ADR-ul dă h(s / 2) = ρ − √(ρ² − ((s − 2a) / 2)²), care e creasta dintre
+  două inele drepte, la mijlocul lor. Un punct al fundului poate sta însă la aproape s de drum (ADR 0069 §3 garantează doar
+  „mai puțin de s”):
+  - pe colțurile inelelor unui dreptunghi, la √2·s / (1 + √2) ≈ 0,586·s;
+  - pe mijlocul buzunarului, după ultimul inel, până la s.
+
+  Deci fundul stă cel mult la h(s). Fișa le spune pe amândouă, sub pasul lateral (întrebarea 1a): „Creasta pe fund: h(s/2) mm
+  între inele, cel mult h(s) mm”. Pentru o creastă de pe tot fundul cât cea dintre inele, ar trebui o trecere în plus pe axa
+  medială, lucru pe care drumul de azi nu-l face. Regula e `creastaBuzunar` (`src/model/creasta.ts`, cu silueta în
+  `inaltimeFreza`). Tot pe ea trece acum și `creastaPePlan` a reliefului, care dădea 0 pentru toroidală.
+- **Refuzurile** (`motivFormaPeOperatie`, cu restul operației; lucrarea și listele):
+  - după o freză rotundă, nicio freză de rest (`rotunda-rest`, întrebarea 5a: geometria lor e a frezei plate);
+  - nicio incrustație cu pereți drepți (`rotunda-incrustatie`: pereții și fundul dopului cer fundul plat);
+  - o freză de rest rotundă, refuzată ca până acum.
+
+  Tăierea (`frezePotrivite`) nu oferă bila și toroidala pe un buzunar care are freze de rest sau o incrustație cu pereți drepți.
+- **Fereastra exportului:**
+  - lista formei arată bila și toroidala și pe buzunar;
+  - regula rândului e `rotundaPermisa` (`exportRand.ts`), scrisă în interfață fiindcă aceasta nu importă modelul; o probă o
+    compară cu modelul;
+  - creasta vine pe rândul „pe hârtie” (`hartieRand`, câmpul `creasta`), socotită de aplicație;
+  - motivul `rotunda` spune unde merg formele rotunde și ce le oprește.
+- **Oracolul buzunarului** (`test/oracles/buzunar.ts`, extins de linie din ADR-uri):
+  - silueta bilei și a toroidalei pe câmpul trecerilor;
+  - refuzurile rotunde;
+  - judecata a 7-a, fundul: în zona centrului, h(d), cu d distanța exactă la drumul de la adâncimea finală, căutată până la R, cel
+    mult h(s). Cazurile pe hârtie au bila pe dreptunghiul 100 × 60 (cele mai înalte puncte pe colțurile inelelor) și toroidala
+    pe cercul R20 (vârful în centru), iar perechea care pică e programul judecat față de un pas lateral mai mic.
+- **Probele:**
+  - `test/unit/buzunar.rotunda.test.ts`, scrisă întâi: regula formei, drumul frezei plate (inelele, liniile, elicea),
+    refuzurile, creasta pe hârtie, buzunarul simulat (creasta dintre inele, racordarea, peretele netrecut, cel mai înalt punct
+    pe colțurile inelelor), regula ferestrei față de model;
+  - `test/e2e/export.rotunda.spec.ts`: buzunarul cu bila din fereastră, cu nota crestei, refuzul cu o freză de rest și fundul
+    simulat de oracol, pe octeții din browser;
+  - probele vechi care cereau refuzul pe buzunar au fost întoarse.
+- **Neschimbate:** nimic pe server; documentul rămâne v31; programul fără forme rotunde, octet cu octet.
+
 ## Se redeschide dacă
 
 - placa 4 (sau o placă a bilei) arată că secțiunea canelurii sau creasta din buzunar nu ies ca pe hârtie;

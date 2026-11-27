@@ -107,6 +107,11 @@ function potriveste(m: MasuriBuzunar, a: AsteptatBuzunar, cine: string): void {
     assert.ok(x && x.lungime > 0, `${cine}: freza de rest T${r.numar} n-a tăiat nimic`);
     r.cutie.forEach((v, i) => assert.ok(aproape(x.cutie[i]!, v, 0.002), `${cine}: cutia frezei de rest T${r.numar}: ${JSON.stringify(x.cutie)}, pe hârtie ${JSON.stringify(r.cutie)}`));
   }
+  // Fundul cu bila sau cu toroidala (felia 16.A↑e-5): cel mai înalt punct al grilei, între valorile de pe hârtie.
+  if (a.creasta) {
+    assert.ok(m.creasta !== undefined, `${cine}: oracolul nu măsoară creasta`);
+    assert.ok(m.creasta >= a.creasta.min - 0.001 && m.creasta <= a.creasta.max + 0.001, `${cine}: creasta ${m.creasta}, pe hârtie în [${a.creasta.min}, ${a.creasta.max}]`);
+  }
 }
 
 test('(b) cazurile pe hârtie: verdictul curat și măsurile egale cu valorile socotite', async () => {
@@ -205,7 +210,8 @@ test('(e) fiecare verificare are o pereche care pică', async () => {
   const grile = { celulaCamp: 0.25, celulaAcoperire: 0.2 } as const;
   const dreptunghi = caz('dreptunghi-100x60'), rampa = caz('coborare-rampa'), linii = caz('paralel-30'), insula = caz('insula');
   const rest = CORPUS_CAM.find((c) => c.id === 'buzunar-paralel-rest')!.doc;
-  const [tD, tR, tL, tI, tRest] = await Promise.all([dreptunghi, rampa, linii, insula, rest].map(program));
+  const bila = caz('bila-dreptunghi-100x60');
+  const [tD, tR, tL, tI, tRest, tB] = await Promise.all([dreptunghi, rampa, linii, insula, rest, bila].map(program));
   const dupaCoborare = (l: readonly string[]): number => l.findIndex((x) => x.startsWith('G1 Z-6.000'));
   const perechi: ReadonlyArray<readonly [string, DocumentOracol, string, FelProblema]> = [
     ['sensul opus', cuOperatia(dreptunghi, { sens: 'opozitie' }), tD!, 'sens'],
@@ -222,6 +228,8 @@ test('(e) fiecare verificare are o pereche care pică', async () => {
     ['inelul de lângă perete scos la −6', oracol(dreptunghi), cuLinia(tD!, (l) => l.findLastIndex((x) => x.includes('X117.000')), () => ''), 'acoperire'],
     ['o trecere prin insulă', oracol(insula), tI!.replace('\nM5\n', '\nG0 X65.000 Y45.000\nG1 Z-1.000 F300.0\nG1 X75.000 Y55.000\nG0 Z5.000\nM5\n'), 'regiune'],
     ['freza de rest prin mijlocul buzunarului', oracol(rest), tRest!.replace('\nM5\nM30', '\nG0 X40.000 Y40.000\nG1 Z-5.000 F300.0\nG1 X80.000 Y40.000 F1000.0\nG0 Z5.000\nM5\nM30'), 'rest'],
+    // Bila (felia 16.A↑e-5): programul pasului de 2,4 judecat față de 1,2: colțurile inelelor lasă 0,32 mm, peste h(1,2) = 0,25.
+    ['bila: pasul lateral 1,2 în loc de 2,4', cuOperatia(bila, { pasLateral: 1.2 }), tB!, 'creasta'],
   ];
   for (const [nume, document, text, fel] of perechi) {
     const v = judecaBuzunarele({ document, program: text, ...grile });
