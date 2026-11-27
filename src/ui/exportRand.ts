@@ -115,8 +115,8 @@ export function cheieFreza(d: number, u: number | null, varf: number | null, bil
 }
 
 /**
- * O freză a ferestrei, pentru conflictele de T: numărul, identitatea (`cheieFreza`) și locul ei pe un rând; fără loc, freza unei
- * finisări a reliefului (ADR 0312 §7), care se schimbă din panou, nu de aici.
+ * O freză a ferestrei, pentru conflictele de T: numărul, identitatea (`cheieFreza`) și locul ei pe un rând (din felia 18.1↑d-7, și
+ * freza unei operații a reliefului, pe locul `scula` al rândului ei); fără loc, o freză pe care „Dă-i T{n}” n-o schimbă.
  */
 export type FrezaT = { readonly numar: number; readonly cheie: string; readonly loc?: LocFreza };
 

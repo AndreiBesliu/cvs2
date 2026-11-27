@@ -782,7 +782,9 @@ export function DialogExport(
     const n = r ? citesteNumar(r.numarScula) : null, d = r ? citesteNumar(r.diametruScula) : null;
     if (!r || n === null || d === null) continue;
     const v = r.fel === 'finisare' && r.formaScula === 'v';
-    adaugaFreza(n, d, v ? citesteNumar(r.unghiV) : null, v ? citesteNumar(r.varfV) : null, r.fel === 'finisare' && r.formaScula === 'bila');
+    // Cu locul ei (felia 18.1↑d-7): „Dă-i T{n}” îi caută numărul nou ca la celelalte freze.
+    adaugaFreza(n, d, v ? citesteNumar(r.unghiV) : null, v ? citesteNumar(r.varfV) : null, r.fel === 'finisare' && r.formaScula === 'bila',
+      { cheie: f.cheie, unde: 'scula' });
   }
   const conflict = [...scule].find(([, ds]) => ds.size > 1);
   /** O freză pe numărul ciocnit (felia 28.8↑j): doar câmpurile ei se înroșesc. */
@@ -883,11 +885,11 @@ export function DialogExport(
   const gresiteRelief = (cheie: string): readonly CampRelief[] => ((r) => (r ? campuriReliefGresite(r) : []))(paramRelief[cheie]);
   const reliefBun = finisari.every((f) => ((r) => r !== undefined && campuriReliefGresite(r).length === 0 && valoriRelief(r) !== null)(paramRelief[f.cheie]));
   /** Greșelile rândului unei operații a reliefului, fiecare cu grupul în care se spune (cel al câmpului de schimbat). */
-  const motiveRelief = (cheie: string): Array<readonly [string, GrupExport]> => {
+  const motiveRelief = (cheie: string): Array<readonly [string, GrupExport, ReparatieT?]> => {
     const r = paramRelief[cheie];
     if (!r) return [];
     const d = citesteNumar(r.diametruScula);
-    const out = gresiteRelief(cheie).map((c): readonly [string, GrupExport] => {
+    const out = gresiteRelief(cheie).map((c): readonly [string, GrupExport, ReparatieT?] => {
       switch (c) {
         case 'scula': return [t('motiv.camp.scula-numar', { n: fmtMargine.format(MARGINI_OPERATIE.numarScula) }), 'freza-relief'];
         case 'diametru': return [t('motiv.camp.scula-diametru', { max: fmtMargine.format(MARGINI_OPERATIE.diametru) }), 'freza-relief'];
@@ -903,9 +905,12 @@ export function DialogExport(
         case 'pas': return [t('motiv.camp.pas', { max: fmtMargine.format(MARGINI_OPERATIE.adancime) }), 'podea'];
       }
     });
-    // Un T folosit cu două freze se spune și aici, lângă freza reliefului.
+    // Un T folosit cu două freze se spune și aici, lângă freza reliefului, cu „Dă-i T{n}” (felia 18.1↑d-7): numărul nou, după
+    // regula rolurilor, printre toate frezele ferestrei (`numarDupaConflict`), scris pe rând.
     if (conflict && citesteNumar(r.numarScula) === conflict[0]) {
-      out.push([t('motiv.scula-conflict', { numar: conflict[0], diametre: [...conflict[1].values()].join(', ') }), 'freza-relief']);
+      const x = reparatiiT(cheie).get('freza');
+      const m = t('motiv.scula-conflict', { numar: conflict[0], diametre: [...conflict[1].values()].join(', ') });
+      out.push(x ? [m, 'freza-relief', { numar: x.numar, fa: () => { schimbaRelief(cheie, { numarScula: text(x.numar) }); } }] : [m, 'freza-relief']);
     }
     return out;
   };
@@ -1691,7 +1696,8 @@ export function DialogExport(
     if (fin) {
       const r = paramRelief[cheie];
       return r ? <FisaFinisare key={cheie} fin={fin} r={r} loc={poz.nr - 1} total={poz.n} c={contextRelief} greseli={motiveRelief(cheie)}
-        gresite={gresiteRelief(cheie)} onSchimba={(p) => { schimbaRelief(cheie, p); }} /> : null;
+        gresite={gresiteRelief(cheie)} ciocnit={conflict !== undefined && citesteNumar(r.numarScula) === conflict[0]}
+        onSchimba={(p) => { schimbaRelief(cheie, p); }} /> : null;
     }
     if (randata(cheie, loc)) return <FisaOperatie key={cheie} cheie={cheie} loc={poz.nr - 1} total={poz.n} c={contextFisa} />;
     // Locul unei fișe nerandate (28.8↑i): titlul și înălțimea ei, ca derularea și lista s-o găsească.

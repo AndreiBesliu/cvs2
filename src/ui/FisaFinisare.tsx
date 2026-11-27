@@ -10,7 +10,7 @@ import { GRUPURI_RELIEF } from './exportGrupuri.ts';
 import type { CampRelief, FinisareExport, RandRelief } from './exportRelief.ts';
 import { locFrezaRelief } from './exportRelief.ts';
 import { stareOrigine, type FrezaOferita } from './exportRand.ts';
-import { ListaBiblioteca, NotaBiblioteca, type InapoiNota } from './FisaOperatie.tsx';
+import { ListaBiblioteca, NotaBiblioteca, type Greseala, type InapoiNota, type ReparatieT } from './FisaOperatie.tsx';
 import { citesteNumar } from './numar.ts';
 
 export type { FinisareExport } from './exportRelief.ts';
@@ -36,7 +36,7 @@ export type ContextFisaRelief = {
    * Grupul unei întrebări, comun cu celelalte fișe (titlul, explicația câmpului activ, câmpurile, greșelile) și, din felia
    * 18.1↑d-6, desenul lui.
    */
-  readonly grup: (id: GrupExport, fisa: string, corp: ReactNode, greseli?: ReadonlyArray<string>, desen?: (c: DesenComun) => ReactNode) => ReactNode;
+  readonly grup: (id: GrupExport, fisa: string, corp: ReactNode, greseli?: ReadonlyArray<string | Greseala>, desen?: (c: DesenComun) => ReactNode) => ReactNode;
   /** Formatul numerelor (al frezelor: până la miime). */
   readonly f: (x: number) => string;
   /** Creasta lăsată pe un plan de freza dată, la pasul dat (regula aplicației, `creastaPePlan`); lipsă = fără notă. */
@@ -79,18 +79,25 @@ function Intrare({ 'data-camp': dc, eticheta, titlu, valoare, oprit, rau, mod = 
   );
 }
 
-export function FisaFinisare({ fin, r, loc, total, c, greseli, gresite, onSchimba }: {
+export function FisaFinisare({ fin, r, loc, total, c, greseli, gresite, ciocnit = false, onSchimba }: {
   readonly fin: FinisareExport; readonly r: RandRelief; readonly loc: number; readonly total: number; readonly c: ContextFisaRelief;
-  /** Greșelile rândului, fiecare cu grupul în care se spune. */
-  readonly greseli: ReadonlyArray<readonly [string, GrupExport]>;
+  /** Greșelile rândului, fiecare cu grupul în care se spune; la un T cu două freze, și „Dă-i T{n}” (felia 18.1↑d-7). */
+  readonly greseli: ReadonlyArray<readonly [string, GrupExport, ReparatieT?]>;
   /** Câmpurile greșite (se înroșesc; „Du-mă la …” pune focusul pe primul). */
   readonly gresite: readonly CampRelief[];
+  /** Freza e pe numărul unui conflict de T: câmpurile ei se înroșesc, ca la celelalte rânduri (felia 18.1↑d-7). */
+  readonly ciocnit?: boolean;
   readonly onSchimba: (p: Partial<RandRelief>) => void;
 }): ReactNode {
   const { doarCitire: oprit, grup, f } = c;
   const deg = fin.fel === 'degrosare';
   const rau = (x: CampRelief): boolean => gresite.includes(x);
-  const aici = (g: GrupExport): string[] => greseli.filter(([, x]) => x === g).map(([m]) => m);
+  const aici = (g: GrupExport): Greseala[] => greseli.filter(([, x]) => x === g).map(([m, , rep]) => ({
+    text: m,
+    ...(rep ? {
+      buton: <button type="button" className="dx-da-t" data-da-t={rep.numar} disabled={oprit} onClick={rep.fa}>{t('export.da-t', { n: rep.numar })}</button>,
+    } : {}),
+  }));
   // Pasul folosit (ADR 0314): cu liniile la 0° sau 90°, prin centrele celulelor, rotunjit în jos la celule întregi.
   const s = citesteNumar(r.pasLateral), u = citesteNumar(r.unghi), celula = fin.celula;
   // Cu pasul greșit (greșeala lui se spune în grup), notele pasului folosit și ale crestei tac.
@@ -114,10 +121,10 @@ export function FisaFinisare({ fin, r, loc, total, c, greseli, gresite, onSchimb
           fmt={c.fmtFreza} onIa={(x) => { c.ia(fin.cheie, x); }} onIaToate={c.iaToate}
           inapoi={st?.fel === 'stearsa' ? c.inapoi(fin.cheie) : undefined} />
         <div className="dx-rand">
-        <Intrare data-camp="relief-scula" eticheta={t('export.freza.numar')} titlu={t('export.relief.scula.titlu')} valoare={r.numarScula} oprit={oprit} rau={rau('scula')} mod="numeric"
+        <Intrare data-camp="relief-scula" eticheta={t('export.freza.numar')} titlu={t('export.relief.scula.titlu')} valoare={r.numarScula} oprit={oprit} rau={rau('scula') || ciocnit} mod="numeric"
           onText={(x) => { onSchimba({ numarScula: x }); }} />
         {/* Un diametru sau o formă schimbate de mână fac freza scrisă de mână (originea pleacă), ca la celelalte rânduri. */}
-        <Intrare data-camp="relief-diametru" eticheta={t('export.freza.diametru')} titlu={t('export.relief.diametru.titlu')} valoare={r.diametruScula} oprit={oprit} rau={rau('diametru')}
+        <Intrare data-camp="relief-diametru" eticheta={t('export.freza.diametru')} titlu={t('export.relief.diametru.titlu')} valoare={r.diametruScula} oprit={oprit} rau={rau('diametru') || ciocnit}
           onText={(x) => { onSchimba({ diametruScula: x, origineScula: null }); }} />
         {deg ? <p className="nota" data-nota="relief-plata">{t('export.degrosare.doar-plata')}</p> : (
         <label title={t('export.relief.forma.titlu')}>
