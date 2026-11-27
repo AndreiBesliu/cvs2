@@ -84,32 +84,44 @@ export function felFrezei(forma: FormaSculaDoc | undefined): 'plată' | 'în V' 
 
 /**
  * Forma pe care o poartă freza operației pe un rând editabil al ferestrei exportului (ADR 0290, `exportRand.ts`): plata (fără
- * formă), V-ul (cu vârful plat) și, din 16.A↑e-4, bila și toroidala (cu raza colțului, ADR 0303). O formă necunoscută (a unei
+ * formă), V-ul (cu vârful plat), din 16.A↑e-4 bila și toroidala (cu raza colțului, ADR 0303), iar din 16.A↑f-3 profilul desenat
+ * (cu punctele lui, doar de citit, ADR 0304). O formă necunoscută (a unei
  * versiuni mai noi) n-are rând: Exportă o lasă neschimbată, iar lucrarea o refuză cu motivul ei, deci o freză nu devine pe
  * tăcute o plată.
  */
-export function formaPeRand(forma: FormaSculaDoc | undefined): forma is FormaV | FormaBila | FormaToroidala | undefined {
+export function formaPeRand(forma: FormaSculaDoc | undefined): boolean {
+  return forma === undefined || forma.tip === 'v' || forma.tip === 'bila' || forma.tip === 'toroidala' || forma.tip === 'profil';
+}
+
+/**
+ * Forma pe care o poartă freza pe rândul reliefului (finisarea și degroșarea, ADR 0315; felia 18.1↑e): plata, V-ul, bila și
+ * toroidala. Profilul desenat (documentul v32, ADR 0304) stă pe rândul exportului (`formaPeRand`, 16.A↑f-3), dar nu pe al
+ * reliefului: lucrarea îl refuză pe relief, iar rândul l-ar citi ca plată și Exportă l-ar scrie înapoi așa.
+ */
+export function formaPeRandRelief(forma: FormaSculaDoc | undefined): forma is FormaV | FormaBila | FormaToroidala | undefined {
   return forma === undefined || forma.tip === 'v' || forma.tip === 'bila' || forma.tip === 'toroidala';
 }
 
 /**
  * Operațiile cu un rând al reliefului în fereastra exportului (finisarea, ADR 0312; degroșarea, ADR 0313; editabil din felia
- * 18.1↑d-4, ADR 0315): cu freza operației purtată de rând (`formaPeRand`). Profilul desenat (documentul v32, ADR 0304) sau o
+ * 18.1↑d-4, ADR 0315): cu freza operației purtată de rând (`formaPeRandRelief`). Profilul desenat (documentul v32, ADR 0304) sau o
  * formă necunoscută n-au rând: rândul le-ar citi ca plată, iar Exportă le-ar scrie înapoi așa. Fără rând, Exportă le lasă
  * neatinse, iar lucrarea le refuză cu motivul ei.
  */
 export function operatieCuRandRelief(o: Operatie): boolean {
-  return (o.tip === 'finisare' || o.tip === 'degrosare') && formaPeRand(o.scula.forma);
+  return (o.tip === 'finisare' || o.tip === 'degrosare') && formaPeRandRelief(o.scula.forma);
 }
 
 /**
- * Operațiile cu un rând editabil în fereastra exportului: cele pe contur (nu finisarea și degroșarea reliefului, cu rândul lor
- * doar de citit), cu freza operației purtată de rând (`formaPeRand`) și cu frezele în plus (de rest, ale fundului plat, ale
- * dopului, a benzii) plate sau în V, ca până acum: rândul nu le poartă o formă rotundă, deci Exportă ar face din ea o plată.
+ * Operațiile cu un rând editabil în fereastra exportului: cele pe contur (nu finisarea și degroșarea reliefului, cu rândul lor,
+ * `operatieCuRandRelief`), cu freza operației purtată de rând (`formaPeRand`) și cu frezele în plus (de rest, ale fundului plat, ale
+ * dopului, a benzii) plate sau în V, ca până acum: rândul nu le poartă o formă rotundă sau un profil, deci Exportă ar face din
+ * ea o plată.
  */
 export function operatieCuRand(o: Operatie): boolean {
   return o.tip !== 'finisare' && o.tip !== 'degrosare'
-    && frezeleOperatiei(o).every((f) => formaPeRand(f.scula.forma) && (f.cale === 'scula' || (f.scula.forma?.tip !== 'bila' && f.scula.forma?.tip !== 'toroidala')));
+    && frezeleOperatiei(o).every((f) => formaPeRand(f.scula.forma)
+      && (f.cale === 'scula' || (f.scula.forma?.tip !== 'bila' && f.scula.forma?.tip !== 'toroidala' && f.scula.forma?.tip !== 'profil')));
 }
 
 /**

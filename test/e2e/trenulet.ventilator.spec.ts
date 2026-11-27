@@ -251,3 +251,36 @@ test('„Fă ventilatorul”: rotorul și carcasa lui, în listă (cu inelul și
   await expect(page.locator('#at-lista tr td:first-child')).toHaveText([IMPLICIT + ', cu inel', 'Carcasă de ventilator Ø40 × 9, cu 4 urechi']);
   await expect(page.locator('#at-lista tr .pas-n')).toHaveText(['1', '2']);
 });
+
+test('ventilatorul ca trusă (ADR 0340, 3.Cm-3): la carcasă, „Se prinde cu” spune grinda de sub ea; „Fă ventilatorul”, la bifă, pune grinda, axul, bucșa și știfturile', async ({ page }) => {
+  await atelierVentilator(page);
+  const panou = page.locator('#at-prinde'), trusa = page.locator('#at-prinde [data-rand="trusa"]');
+  // la rotor nu e rândul grinzii (grinda ține carcasa)
+  await panou.locator('summary').click();
+  await expect(panou).toHaveAttribute('open', '');
+  await expect(trusa).toHaveCount(0);
+  // carcasa Ø40: găurile urechilor la 24 mm de ax (3 pași), deci o grindă de 7, cu axul prin gaura din mijloc
+  await page.locator('#at-ve-piesa [data-v="carcasa"]').click();
+  await expect(page.locator('#at-nume-piesa')).toHaveText(CARCASA);
+  await expect(trusa).toHaveText('Pe o grindă de 7, prinsă cu știfturi de două urechi opuse, axul trece prin gaura din mijloc; pe grindă, o jumătate de bucșă, iar pe ea rotorul, în tub.Pune grinda în listă');
+  await trusa.locator('button').click();
+  await expect(page.locator('#at-toast')).toHaveText('1 × Grindă 7 în listă.');
+  await expect(page.locator('#at-lista tr td:first-child')).toHaveText(['Grindă 7']);
+  // Ø48: urechile la 32 mm (4 pași), grinda de 9
+  await page.locator('#at-ve-repede [data-v="48"]').click();
+  await expect(trusa).toContainText('Pe o grindă de 9,');
+  // „Fă ventilatorul” fără bifă: rotorul și carcasa; cu bifa, și trusa: grinda, axul de 3 (7,8 + 3,8 + 8 = 19,6 mm), bucșa ½ și
+  // cele două știfturi ale urechilor
+  await page.locator('#at-ve-repede [data-v="40"]').click();
+  await page.locator('#at-ve-piesa [data-v="rotor"]').click();
+  await expect(page.locator('#at-ve-trusa')).not.toBeChecked();
+  await page.locator('#at-ve-trusa').check();
+  await page.locator('#at-ve-fa').click();
+  await expect(page.locator('#at-toast')).toHaveText('1 × ventilatorul (rotorul și carcasa), cu grinda de 7, axul de 3, o jumătate de bucșă și 2 știfturi, în listă.');
+  await expect(page.locator('#at-lista tr td:first-child')).toHaveText(['Grindă 7', IMPLICIT, CARCASA, 'Ax 3', 'Bucșă ½', 'Știft Technic']);
+  await expect(page.locator('#at-lista tr .pas-n')).toHaveText(['2', '1', '1', '1', '1', '2']);
+  // bifa e a editorului: rămâne după o redesenare (altă piesă, apoi înapoi)
+  await page.locator('#at-ve-piesa [data-v="carcasa"]').click();
+  await page.locator('#at-ve-piesa [data-v="rotor"]').click();
+  await expect(page.locator('#at-ve-trusa')).toBeChecked();
+});

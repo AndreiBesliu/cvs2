@@ -124,14 +124,26 @@ export function DesenZ0({ c, z0, supracursa, prinFoaie, gaura }: {
 }
 
 /** Profilul frezei: plată sau în V, cu T, diametrul, unghiul și vârful pe cote. */
-export function DesenFreza({ c, numar, diametru, v, unghi, varfPlat, rotunda, razaColt }: {
+export function DesenFreza({ c, numar, diametru, v, unghi, varfPlat, rotunda, razaColt, profil }: {
   c: DesenComun; numar: string; diametru: number | null; v: boolean; unghi: number | null; varfPlat: number | null;
   /** Bila sau toroidala (ADR 0303, felia 16.A↑e-4): capătul rotund, cu raza colțului (la toroidală) cotată. */
   rotunda?: 'bila' | 'toroidala'; razaColt?: number | null;
+  /** Profilul desenat (ADR 0304, felia 16.A↑f-3): silueta, la scara corpului (raza frezei = 20 px). */
+  profil?: readonly (readonly [number, number])[];
 }): ReactNode {
   const D = diametru === null ? '?' : c.fz(diametru);
   let corp: ReactNode;
-  if (v) {
+  if (profil && profil.length >= 2) {
+    // Silueta în oglindă: din capătul ei (R, h) pe dreapta, prin vârf, până la (R, h) pe stânga; sus, coada.
+    const R = profil[profil.length - 1]![0], k = 20 / Math.max(1e-9, R);
+    const y = (h: number): number => r(Math.max(44, 112 - h * k));
+    const dreapta = [...profil].reverse().map(([x, h]) => `L${r(130 + x * k)} ${y(h)}`).join('');
+    const stanga = profil.map(([x, h]) => `L${r(130 - x * k)} ${y(h)}`).join('');
+    corp = (<>
+      <path className="f" d={`M116 6H144V44H150${dreapta}${stanga}L110 44H116Z`} data-desen="profil" />
+      <Cota pentru="diametru" c={c} x1={110} y1={126} x2={150} y2={126} text={`Ø ${D} mm`} tx={130} ty={141} />
+    </>);
+  } else if (v) {
     const a = unghi !== null && unghi > 0 && unghi < 180 ? unghi : 60, h = Math.min(60, 34 / Math.tan((a * Math.PI) / 360));
     const vf = Math.min(varfPlat ?? 0, 2) * 4, s = Math.sin((a * Math.PI) / 360), co = Math.cos((a * Math.PI) / 360), yv = 44 + h;
     corp = (<>

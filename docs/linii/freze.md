@@ -9,8 +9,8 @@ gata de unit pe 27.11 (`e5bdde83`, PR-ul #71), UNITĂ (`0d2a8c2c`); 16.A↑e-3 (
 (`db066160`); 16.A↑e-4 (bila și toroidala în proiect: fereastra exportului, Tăierea, biblioteca) UNITĂ pe 27.11 (`72263843`);
 16.A↑e-5 (buzunarul cu bila și cu toroidala, cu creasta pe fund) raportată gata de unit pe 27.11 (`106b4a51`, PR-ul #74);
 16.A↑e-6 (profilul pe o parte cu bila și cu toroidala, cu adâncimea cel puțin raza colțului) pe `wip/16.A-freze-e`, peste ea;
-ADR 0304 PROPUS pe 27.11 (profilul desenat), mers cu recomandările; 16.A↑f-1 (documentul v32, nucleul) și 16.A↑f-2 (canelura) pe
-aceeași ramură_
+ADR 0304 PROPUS pe 27.11 (profilul desenat), mers cu recomandările; 16.A↑f-1 (documentul v32, nucleul) și 16.A↑f-2 (canelura) UNITE
+în `main` pe 27.11 (`8906dedf`, din `36866d16`, PR-ul #74); 16.A↑f-3 (profilurile parametrice în proiect) pe aceeași ramură_
 
 Pornită pe 23.11.2026, în sesiunea cloud a liniei, la cererea owner-ului: „Vreau sa pot crea freze l sau profiluri de freze in
 aplicatie si sa le salvez in cont”. Rândurile din prag: „Bibliotecă de freze cu geometrie reală (dreaptă, bilă, toroidală, V,
@@ -229,6 +229,15 @@ gravare, profil, formă desenată)” și „Freze de profil desenate de utiliza
     care urcă de la axă (S-ul) e acolo deja cu 0,001 mm mai sus;
   - listele de otrăvuri mai vechi rămân legate de commit-ul lor (ancorele lui e-3, e-5 și f-1 s-au mutat cu feliile de după):
     `verifica` le arată VOID, fără să fie o greșeală.
+- **27.11, 11:10–: 16.A↑f-3 pe `wip/16.A-freze-e`**, din `main` cu f-1 și f-2 unite (`8906dedf`, PR-ul #74 unit). Profilurile
+  parametrice în proiect: punctele (`puncteProfil`), CAM-ul în bibliotecă, Tăierea, rândul ferestrei cu silueta doar de citit,
+  identitatea pe T, nota bibliotecii, ce scrie Exportă. **Capcane:**
+  - **`freza.ts` și `profilFreza.ts` nu se pot importa una pe alta** (regula `fara-cicluri`, și cu importuri doar de tipuri):
+    `inaltimeCon` și silueta stau în `profilFreza.ts`, cu tipul `CampuriProfil`, iar `freza.ts` le reexportă;
+  - **cu forma aleasă, oracolul simulării în e2e e scump** (cost ≈ celule × mutări × puncte): cu 2 001 de puncte pe o grilă de
+    40 × 400, proba trecea de 30 s în procesul Playwright (pagina nu era blocată); cu 200 de pași și o fâșie de 10 × 400, 4 s;
+  - un profil nu se pune înapoi în bibliotecă din copia de pe rând (copia ține punctele, nu felul parametric): `copieDeReadus`
+    întoarce null, până la editorul siluetei desenate (f-5).
 - **Feliile**, în ordine: 16.A↑a (biblioteca în browser, fereastra, fișierul), apoi b (alegerea în proiect, v27), c
   (contul), d (calibrarea), e (bila și toroidala), f (profilul desenat), g (valorile pe material).
 

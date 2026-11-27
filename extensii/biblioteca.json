@@ -18,6 +18,12 @@
       ],
       "noutati": [
         {
+          "versiune": "18.46.0",
+          "data": "2026-11-27",
+          "ro": "Ventilatorul vine ca trusă: la carcasă, „Se prinde cu” spune grinda de sub ea și o pune în listă, iar „Fă ventilatorul” poate pune și grinda, axul de lungimea bună, bucșa și știfturile.",
+          "en": "The ducted fan comes as a kit: on the duct, “Fits with” names the beam under it and adds it to the list, and “Make the fan” can also add the beam, an axle of the right length, the bush and the pins."
+        },
+        {
           "versiune": "18.45.0",
           "data": "2026-11-27",
           "ro": "Elicele își spun cinstit tipărirea: cât iese un strat peste cel de dedesubt, măsurat pe palete, dacă iese aspru sau cere suport și când ajută o margine de aderență (brim).",
@@ -220,8 +226,8 @@
           }
         }
       ],
-      "versiune": "18.45.0",
-      "continut": "7271c7d8c04129978c4a8ba3798772880c3449c4465e94ac2a71e48b8120dbcb"
+      "versiune": "18.46.0",
+      "continut": "1873e39b635347adb4596a7a9e95916bb97919367b99eb0dce90a27f19b52a01"
     }
   ]
 }
