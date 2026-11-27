@@ -17170,3 +17170,15 @@ principală: auditul elicelor, felia 6, singură, la octet)
   măsurat pe 5 040 de elice, doar în butuc sau cu cel mult 0,16 % peste ținta de 85 %, deci paletele nu se ating.
 - **Mărimea:** Easy 3Draw 18.49.0 (aceleași piese, alte surse); aplicația, neschimbată. Nimic pe server.
 - **Urmează:** 3.Cm-7 (duza Kort).
+
+## 2026-11-27 — Sesiunea principală în cloud: a șaptezeci și una unire (relieful, 18.1↑d-5…d-7 și 18.1↑e) (Model: Claude Opus 5.5)
+
+**Prompt:** „zi-le sesiunilor sa continue cu recomandarile, acolo unde inca asteapta” (unirea, la raportul liniei; ordinul „unește ce se poate”)
+**Started:** 27.11, 12:08. **Completed:** 27.11, 16:58.
+
+- **Unirea:** `wip/18.1-relief` (`45a05d93`, codul lui `cc2be106`, PR-ul #75) în `9ce32063`, pe `unire-2711z`, din `11fe83e3`;
+  codul, identic cu al lui `cc2be106`. Completul liniei 46011101795, verde. Două încercări de dinainte, peste frezele, nu
+  treceau (tipurile cu profilul; regula `formaPeRand`): linia le-a reparat, cu probele întâi.
+- **Limita de folosire:** liniile au comis și împins tot (16:22); pașii de reluare stau în `docs/linii/principala.md`.
+- **Pe test:** loturile 64 (`30bcae13`) și 65 (`75ae7f50`), la 16:33 și 16:50; lotul 66 (relieful), în drum.
+- **Documentele:** decizia și Starea în `CLAUDE.md`; starea din `docs/linii/principala.md`; indexul liniilor.
