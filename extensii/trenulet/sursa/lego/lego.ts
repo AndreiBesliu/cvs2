@@ -2618,6 +2618,18 @@ var Lego = (function (glob: typeof globalThis) {
     return [...sus, ...jos.reverse()];
   }
   type StatieElice = { r: number; sec: P2[]; rot?: number };
+  /** Lățimea pe cerc a unei secțiuni (de la s cel mai mic la cel mai mare). */
+  const latimePeCerc = (sec: readonly P2[]) => Math.max(...sec.map(p => p[0])) - Math.min(...sec.map(p => p[0]));
+  /** Secțiunea unei palete la o rază (ADR 0340, 3.Cm-6; comună elicei, elicei de barcă și rotorului): profilul `profil(c)`, în
+   *  (u, v), rotit cu β în jurul mijlocului corzii; coarda pornește de la `c0` și se strânge până când lățimea pe cerc încape în
+   *  U (paletele nu se ating), câte un pas la 99,5 % din cât ar încăpea, nu sub `cMin`, cel mult `pasi` pași (8 la elice, 40 la
+   *  celelalte două: cât aveau, deci piesele rămân la octet). */
+  function sectiunePaleta(profil: (c: number) => P2[], b: number, c0: number, U: number, cMin: number, pasi: number): P2[] {
+    const roteste = (cc: number) => profil(cc).map(([u, v]): P2 => [(u - cc / 2) * Math.cos(b) - v * Math.sin(b), (u - cc / 2) * Math.sin(b) + v * Math.cos(b)]);
+    let c = c0, sec = roteste(c);
+    for (let k = 0; k < pasi && latimePeCerc(sec) > U; k++) { c = Math.max(cMin, c * U / latimePeCerc(sec) * 0.995); sec = roteste(c); }
+    return sec;
+  }
   function paleteElice(statii: readonly StatieElice[], z: number, semn: number, fasie = false): Tri[] {
     // z palete la fel, fiecare un corp închis, din secțiunile ei: (s, h) la raza r, cu s pe cerc de la unghiul paletei; `rot`
     // (radiani) mută toată secțiunea pe cerc (înclinarea înapoi a elicei de barcă). `fasie`: capetele se închid ca o fâșie
@@ -2729,14 +2741,7 @@ var Lego = (function (glob: typeof globalThis) {
       const t = q.tRad - (q.tRad - q.tVarf) * x;
       // coarda: cea cerută, dar secțiunea reală (cu grosimea și săgeata ei, rotită cu β) încape în 85 % din pasul dintre palete;
       // spre vârf, cel puțin 2,5 · t (vârful rotunjit nu se strânge într-un punct)
-      const U = ELICE.umplere * 2 * Math.PI * r / z, roteste = (cc: number) => sectiuneElice(cc, t, profil)
-        .map(([u, v]): P2 => [(u - cc / 2) * Math.cos(b) - v * Math.sin(b), (u - cc / 2) * Math.sin(b) + v * Math.cos(b)]);
-      let c = Math.max(x >= 0.5 ? 2.5 * t : t, cmax * g), sec = roteste(c);
-      for (let k = 0; k < 8; k++) {
-        const lat = Math.max(...sec.map(p => p[0])) - Math.min(...sec.map(p => p[0]));
-        if (lat <= U) break;
-        c = Math.max(t, c * U / lat * 0.995); sec = roteste(c);
-      }
+      const sec = sectiunePaleta(cc => sectiuneElice(cc, t, profil), b, Math.max(x >= 0.5 ? 2.5 * t : t, cmax * g), ELICE.umplere * 2 * Math.PI * r / z, t, 8);
       const zmin = Math.min(...sec.map(p => p[1]));
       return { r, sec: sec.map(([s, h]): P2 => [s, h - zmin]) };
     });
@@ -2802,16 +2807,12 @@ var Lego = (function (glob: typeof globalThis) {
       const r = r0 + (R - r0) * i / N, x = Math.max(0, (r - rh) / (R - rh)), b = beta(r);
       const g = x <= BARCA.plin ? Math.sqrt(1 - (1 - BARCA.radacina ** 2) * ((BARCA.plin - x) / BARCA.plin) ** 2) : Math.sqrt(Math.max(0, 1 - ((x - BARCA.plin) / (1 - BARCA.plin)) ** 2));
       const t = tRad - (tRad - BARCA.tVarf) * x;
-      const roteste = (cc: number) => sectiuneBarca(cc, t).map(([u, v]): P2 => [(u - cc / 2) * Math.cos(b) - v * Math.sin(b), (u - cc / 2) * Math.sin(b) + v * Math.cos(b)]);
-      const latime = (sec: P2[]) => Math.max(...sec.map(p => p[0])) - Math.min(...sec.map(p => p[0]));
       // coarda: cea a conturului, dar secțiunea reală (cu grosimea ei, rotită cu β) încape în 85 % din pasul dintre palete; spre
       // vârf, cel puțin 2,5 · t (vârful rotunjit nu se strânge într-un punct)
-      const U = BARCA.umplere * 2 * Math.PI * r / z;
-      let c = Math.max(x >= 0.5 ? 2.5 * t : t, cmax * g), sec = roteste(c);
-      for (let k = 0; k < 40 && latime(sec) > U; k++) { c = Math.max(t, c * U / latime(sec) * 0.995); sec = roteste(c); }
+      const sec = sectiunePaleta(cc => sectiuneBarca(cc, t), b, Math.max(x >= 0.5 ? 2.5 * t : t, cmax * g), BARCA.umplere * 2 * Math.PI * r / z, t, 40);
       // punctul cel mai de jos pe masă, apoi ridicată cu înclinarea spre pupa (fără ea, secțiunea e cea de dinainte, la octet)
       const zmin = Math.min(...sec.map(p => p[1])), u = urca(r);
-      return { r, sec: sec.map(([s, h]): P2 => [s, u > 0 ? h - zmin + u : h - zmin]), rot: inc * Math.PI / 180 * x * x, lat: latime(sec), h: Math.max(...sec.map(p => p[1])) - zmin + u };
+      return { r, sec: sec.map(([s, h]): P2 => [s, u > 0 ? h - zmin + u : h - zmin]), rot: inc * Math.PI / 180 * x * x, lat: latimePeCerc(sec), h: Math.max(...sec.map(p => p[1])) - zmin + u };
     });
     // butucul, cât cel mai înalt vârf al paletelor (la zecime în sus), cel puțin cât un știft
     const Hh = Math.max(BARCA.butucH, Math.ceil(Math.max(...statii.map(st => st.h)) * 10 - 1e-9) / 10);
@@ -2857,10 +2858,8 @@ var Lego = (function (glob: typeof globalThis) {
   // groase și late cât o grindă, cu gaura de știft din calibrare (cu lamajul, jos și sus) pe grila axului: la k · 8 mm de ax, cu
   // cel mai mic k la care lamajul lasă 0,8 din peretele carcasei. Pe un ax LEGO trecut prin gaura din mijlocul unei grinzi prinse
   // cu știfturi de urechi, rotorul stă în mijlocul carcasei.
-  const VENT = { butucMin: 4, butucRap: 0.25, butucH: 8, tRad: 1.2, tVarf: 0.8, radacina: 0.6, plin: 0.25, umplere: 0.85, statii: 28, perete: 2, inelGros: 1.2, inelIn: 0.4, inelH: 2, peste: 4, rest: 0.8, sageata: 0.02 };
+  const VENT = { butucMin: 4, butucRap: 0.25, butucH: 8, tRad: 1.2, tVarf: 0.8, radacina: 0.6, plin: 0.25, umplere: 0.85, statii: 28, perete: 2, inelGros: 1.2, inelIn: 0.4, inelH: 2, peste: 4, rest: 0.8 };
   type VentDef = { piesa?: string; palete?: unknown; diametru?: unknown; joc?: unknown; pas?: unknown; latime?: unknown; sens?: string; gaura?: string; inel?: string; urechi?: unknown };
-  /** Câte laturi are cercul de rază R: săgeata cel mult 0,02 mm, cel puțin 48, multiplu de 8 (urechile cad pe vârfuri). */
-  const laturiCerc = (R: number) => Math.max(N_CERC, 8 * Math.ceil(Math.PI / Math.acos(1 - VENT.sageata / R) / 8));
   function ventilatorCote(d: VentDef) {
     const avert: string[] = [];
     const z = campElice(avert, d.palete, 3, 12, 7, x => tr`Un ventilator are între 3 și 12 palete: l-am făcut cu ${x}.`, Math.round);
@@ -2880,12 +2879,8 @@ var Lego = (function (glob: typeof globalThis) {
       const statii = Array.from({ length: N + 1 }, (_, i) => {
         const r = r0 + (Rb - r0) * i / N, x = Math.max(0, (r - rh) / (Rb - rh)), b = beta(r);
         const g = VENT.radacina + (1 - VENT.radacina) * Math.min(1, x / VENT.plin), t = tRad - (tRad - tVarf) * x;
-        const roteste = (cc: number) => sectiuneElice(cc, t, "placa").map(([u, v]): P2 => [(u - cc / 2) * Math.cos(b) - v * Math.sin(b), (u - cc / 2) * Math.sin(b) + v * Math.cos(b)]);
-        const latime = (sec: P2[]) => Math.max(...sec.map(p => p[0])) - Math.min(...sec.map(p => p[0]));
         // coarda: cea cerută, dar secțiunea reală (cu grosimea și săgeata ei, rotită cu β) încape în 85 % din pasul dintre palete
-        const U = VENT.umplere * 2 * Math.PI * r / z;
-        let c = Math.max(t, cmax * g), sec = roteste(c);
-        for (let k = 0; k < 40 && latime(sec) > U; k++) { c = Math.max(t, c * U / latime(sec) * 0.995); sec = roteste(c); }
+        const sec = sectiunePaleta(cc => sectiuneElice(cc, t, "placa"), b, Math.max(t, cmax * g), VENT.umplere * 2 * Math.PI * r / z, t, 40);
         const zmin = Math.min(...sec.map(p => p[1]));
         hb = Math.max(hb, Math.max(...sec.map(p => p[1])) - zmin);
         return { r, sec: sec.map(([s, h]): P2 => [s, h - zmin]) };
@@ -2914,7 +2909,7 @@ var Lego = (function (glob: typeof globalThis) {
     // conturul de jos: tubul și urechile, unite (în sens trigonometric), cu golul tubului și găurile urechilor; în trei straturi
     // (lamajul, gaura, lamajul), ca grinzile. Deasupra urechilor, doar tubul, cu canalul lamajului tăiat în el (un știft intră și
     // de sus, iar gulerul lui are loc): lamajul trece de peretele de afară și lasă 0,8 mm spre interior
-    const e = ef(), R2 = q.Ri + VENT.perete, n = laturiCerc(R2), w = P.grinda_lat / 2, g = P.grinda_groasa, h = P.lamaj_h, rl = e.lamajD / 2;
+    const e = ef(), R2 = q.Ri + VENT.perete, n = laturiFine(R2), w = P.grinda_lat / 2, g = P.grinda_groasa, h = P.lamaj_h, rl = e.lamajD / 2;
     const xh = P.pas * q.k, xc = Math.sqrt(R2 * R2 - w * w), a0 = Math.asin(w / R2), u = q.urechi;
     // unde taie cercul lamajului peretele de afară: (xi, ±yi), la unghiul ai față de ureche (doar dacă lamajul ajunge la tub;
     // altfel, ca la Ø41, cu gaura la 32 mm, tubul de deasupra rămâne întreg)
@@ -2952,7 +2947,7 @@ var Lego = (function (glob: typeof globalThis) {
     }
     const tri = paleteElice(q.statii, q.z, d.sens === "stanga" ? -1 : 1, true), butuc = butucElice(q.rh, q.Hh, d.gaura);
     tri.push(...butuc.tri);
-    if (q.inel) { const n = laturiCerc(q.Rt); tri.push(...prismaGauri(cerc(0, 0, q.Rt, n), [cerc(0, 0, q.Rt - VENT.inelGros, n)], 0, q.Hinel)); }
+    if (q.inel) { const n = laturiFine(q.Rt); tri.push(...prismaGauri(cerc(0, 0, q.Rt, n), [cerc(0, 0, q.Rt - VENT.inelGros, n)], 0, q.Hinel)); }
     return { tri, avert, prinderi: butuc.prinderi, tipar: tiparPalete(q.statii, q.rh, tri, q.consola, q.Rt) };
   }
 

@@ -1461,7 +1461,9 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   prin `campElice` (marginea și textul ei, în piesă și în cote); în editor, o valoare din afara plajei intră ca margine, cu
   mesajul sub câmpuri (`#at-plaja`); „Repede” la elice (Ø40–Ø96). Easy 3Draw 18.47.0. **3.Cm-5 (grosimea paletelor)** gata pe
   27.11: peste Ø80, paleta elicei și a rotorului se îngroașă cu k = Ø / 80 (`GROS_PRAG`, `grosK`; elicea Ø200: 3 și 2 mm);
-  până la Ø80, la octet (amprenta, în `trenulet.grosime.test.ts`). Easy 3Draw 18.48.0 (următoarea, 18.49.0). **O probă e2e care cere textul tipăririi îi ia
+  până la Ø80, la octet (amprenta, în `trenulet.grosime.test.ts`). Easy 3Draw 18.48.0. **3.Cm-6 (curățenia motorului, la octet)**
+  gata pe 27.11: o singură funcție a secțiunilor paletei (`sectiunePaleta`), `laturiCerc` unit cu `laturiFine`; butucul roților,
+  separat (altă regulă a găurii). Easy 3Draw 18.49.0 (următoarea, 18.50.0). **O probă e2e care cere textul tipăririi îi ia
   cifrele din motor pentru starea exactă a editorului din probă. Un paragraf umplut după construire nu stă în editor deasupra
   unor butoane (apare după 90 ms și le mută: un clic se pierde sub încărcare).** La owner: verdictul a / b / c (fișa etapei 3).
   **Cotele pe desen: modelul și proba G-code-ului (ADR 0330, felia 10.4↑a-1, adusă din etapa 10)** gata pe 24.11, în
