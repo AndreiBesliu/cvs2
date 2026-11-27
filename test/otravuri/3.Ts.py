@@ -98,10 +98,10 @@ o('C52', E, KK, KK.replace('ef().lamajD / 2', 'ef().gauraD / 2'), 'vent', 'locul
 HR = 'Hh: Math.max(VENT.butucH, zecime(cu.hb)), Hinel: Math.max(VENT.inelH, zecime(cu.hb)), Hc, k,'
 o('C53', E, HR, HR.replace('Hh: Math.max(VENT.butucH, zecime(cu.hb))', 'Hh: VENT.butucH'), 'vent', 'butucul de 8, oricât de înalte ar fi paletele')
 o('C54', E, HR, HR.replace('Hinel: Math.max(VENT.inelH, zecime(cu.hb))', 'Hinel: Math.max(VENT.inelH, zecime(fara.hb))'), 'vent', 'inelul cât paletele fără inel')
-o('C55', E, 'bRad: beta(rh), bVarf: beta(Rt), consola: 0.2 / Math.tan(beta(Rt)) };\n  }\n  function carcasaVentilator',
-  'bRad: beta(rh - 0.4), bVarf: beta(Rt), consola: 0.2 / Math.tan(beta(Rt)) };\n  }\n  function carcasaVentilator', 'vent', 'unghiul de la butuc, la rădăcina din el')
-o('C56', E, 'bRad: beta(rh), bVarf: beta(Rt), consola: 0.2 / Math.tan(beta(Rt)) };\n  }\n  function carcasaVentilator',
-  'bRad: beta(rh), bVarf: beta(Rt), consola: 0.2 * Math.tan(beta(Rt)) };\n  }\n  function carcasaVentilator', 'vent', 'consola cu tangenta, nu cu cotangenta')
+o('C55', E, 'bRad: beta(rh), bVarf: beta(Rt), consola: 0.2 / Math.tan(beta(Rt)) };',
+  'bRad: beta(rh - 0.4), bVarf: beta(Rt), consola: 0.2 / Math.tan(beta(Rt)) };', 'vent', 'unghiul de la butuc, la rădăcina din el')
+o('C56', E, 'bRad: beta(rh), bVarf: beta(Rt), consola: 0.2 / Math.tan(beta(Rt)) };',
+  'bRad: beta(rh), bVarf: beta(Rt), consola: 0.2 * Math.tan(beta(Rt)) };', 'vent', 'consola cu tangenta, nu cu cotangenta')
 
 # Carcasa: `carcasaVentilator` (unitare).
 o('K01', E, K, K.replace('perete: 2,', 'perete: 1.6,'), 'vent', 'peretele carcasei de 1,6')

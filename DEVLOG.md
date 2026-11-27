@@ -16878,6 +16878,25 @@ ADR 0304 §3 (întrebarea 4a, partea canelurii). **Started:** 27.11, 09:40, pe `
 - **Pe test:** lotul 59 (`a67ec32c`, 16.A↑e-5), la 10:35; lotul 60 (16.A↑e-6), în drum.
 - **Documentele:** decizia și Starea în `CLAUDE.md`; starea din `docs/linii/principala.md`; indexul liniilor.
 
+## 2026-11-27 — Felia 3.Cm-3: ventilatorul ca trusă (ADR 0340) (sesiune cloud)
+
+**Prompt:** „zi-le sesiunilor sa continue cu recomandarile, acolo unde inca asteapta” (owner-ul, transmis de sesiunea
+principală: auditul elicelor, felia 3, răspunsul 3a)
+**Started:** 27.11, 09:50. **Completed:** 27.11, 10:55 (orele, după ceasul containerului).
+
+- **Motorul:** `ventilatorTrusa`: sub carcasă, o grindă groasă cu 2k + 1 găuri rotunde, prinsă cu știfturi de două urechi
+  opuse (găurile de la capete pe urechi, cea din mijloc pe ax; Ø40: 7, Ø48: 9); o jumătate de bucșă (3,8 mm) pe grindă și
+  rotorul pe ea, cu paletele toate în tub; axul, cel mai scurt care trece prin grindă, bucșă și butuc (Ø40: 3).
+- **Atelierul:** la carcasă, rândul grinzii din „Se prinde cu”, cu „Pune grinda în listă”; sub „Fă ventilatorul”, bifa „Și
+  trusa” (a editorului, oprită la început), care pune și grinda, axul, bucșa și cele două știfturi.
+- **Probele**, scrise întâi: `trenulet.trusa.test.ts` (3 teste, pe zece ventilatoare: găurile grinzii față de prinderile
+  carcasei, paletele măsurate pe plasă în tub, axul cel mai scurt); un scenariu e2e; eticheta în proba în engleză.
+- **Otrăvurile:** `3.Cm-3.py`, 23 / 23, din prima; `3.Cm-3-en.py`, 2 / 2; C55 și C56 din `3.Ts.py`, mutate, 2 / 2.
+- **Mărimea:** Easy 3Draw 18.46.0, 585,9 kB; aplicația, neschimbată. Nimic pe server.
+- **Documentele:** ADR 0340 (și indexul), nota liniei, indexul liniilor, fișa etapei 3, registrul otrăvurilor, `CLAUDE.md`,
+  traducerile roadmap-ului.
+- **Urmează:** 3.Cm-4 (claritatea editorului elicelor).
+
 ## 2026-11-27 — Sesiunea principală în cloud: a șaizeci și șasea unire (28.8↑s) (Model: Claude Opus 5.5)
 
 **Prompt:** „zi-le sesiunilor sa continue cu recomandarile, acolo unde inca asteapta” (unirea, la raportul liniei; ordinul „unește ce se poate”)
@@ -16943,3 +16962,30 @@ pe ramură, după push).
   142 / 142, paginile 62 / 62.
 - **Pe test:** lotul 61 (`8e23171c`, 28.8↑s), la 13:29; lotul 62 (frezele), în drum; lotul 63 (atelierul), după el.
 - **Documentele:** decizia în `CLAUDE.md`; starea din `docs/linii/principala.md`; indexul liniilor.
+
+## 2026-11-27 — Sesiunea principală în cloud: a șaizeci și noua unire (3.Cm-3) (Model: Claude Opus 5.5)
+
+**Prompt:** „zi-le sesiunilor sa continue cu recomandarile, acolo unde inca asteapta” (unirea, la raportul liniei; ordinul „unește ce se poate”)
+**Started:** 27.11, 14:25. **Completed:** 27.11, 15:29.
+
+- **Unirea:** `wip/3.Xh-biblioteca-ui` (`61eb3689`, PR-ul #77) în `f9b2bbc8`, pe `unire-2711o`, din `0f1e0766` (ciocnirea, doar
+  în indexul liniilor). Completul 45998645923 pe `f9b2bbc8`, verde: unit 10 986 / 0, e2e 1 016 / 1 016, funcțiile pe emulatoare
+  142 / 142, paginile 62 / 62.
+- **Frezele (16.A↑f-3, `0a1fd1a4`, PR-ul #78):** puse peste ventilator pe `unire-2711p` (`05f1bdc9`), fără ciocniri; completul
+  lotului 46001095921, în lucru.
+- **Pe test:** lotul 62 (`3fdb260d`, frezele f-1 și f-2), la 14:29; lotul 63 (`0f1e0766`, 3.Cm-1 și 3.Cm-2), la 14:42; lotul 64
+  (3.Cm-3), în drum.
+- **Documentele:** decizia și Starea în `CLAUDE.md`; starea din `docs/linii/principala.md`; indexul liniilor.
+
+## 2026-11-27 — Sesiunea principală în cloud: a șaptezecea unire (16.A↑f-3) (Model: Claude Opus 5.5)
+
+**Prompt:** „zi-le sesiunilor sa continue cu recomandarile, acolo unde inca asteapta” (unirea, la raportul liniei; ordinul „unește ce se poate”)
+**Started:** 27.11, 14:43. **Completed:** 27.11, 15:47.
+
+- **Unirea:** `wip/16.A-freze-e` (`0a1fd1a4`, PR-ul #78) în `05f1bdc9`, pe `unire-2711p`, peste 3.Cm-3 (`f9b2bbc8`), fără
+  ciocniri; `main` adus apoi (`53b85942`, doar documente). Completul lotului 46001095921, verde: unit 10 997 / 0, e2e
+  1 017 / 1 017, funcțiile pe emulatoare 142 / 142, paginile 62 / 62. Totalul 941,5 / 1 000 kB.
+- **Relieful** (`dd855461`, PR-ul #75, cu reparația pentru v32): peste f-3, ciocnirea la `formaPeRand` (`src/model/formaFrezei.ts`)
+  e o decizie de cod; linia își aduce `main` și o rezolvă.
+- **Pe test:** lotul 64 (3.Cm-3), în drum; lotul 65 (f-3), după el.
+- **Documentele:** decizia și Starea în `CLAUDE.md`; starea din `docs/linii/principala.md`; indexul liniilor.
