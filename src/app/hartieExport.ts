@@ -14,7 +14,7 @@
 import { felGaurire, pasiCiocanire, RETRAGERE_PARTIALA } from '../cam/gaurireFel.ts';
 import { adancimeTaiata } from '../cam/prinFoaie.ts';
 import { adancimiTreceri } from '../cam/treceri.ts';
-import { creastaBuzunar } from '../model/creasta.ts';
+import { creastaBuzunar, peretePeOParte } from '../model/creasta.ts';
 import type { HartieRand, IntrareHartie } from '../ui/exportRand.ts';
 
 export function hartieRand(i: IntrareHartie): HartieRand {
@@ -30,6 +30,14 @@ export function hartieRand(i: IntrareHartie): HartieRand {
     const rotunda = f?.tip === 'bila' || f?.tip === 'toroidala';
     const creasta = rotunda && D !== null && s !== null ? creastaBuzunar({ numar: 0, nume: '', diametru: D, forma: f }, s) : null;
     return { adancime, treceri, gaurire: null, creasta };
+  }
+  if (i.tip === 'profil') {
+    // Peretele pe o parte cu bila sau cu toroidala (ADR 0303 §4, felia 16.A↑e-6): la adâncimea tăiată, cu freza citită.
+    const f = i.forma, D = i.diametruScula;
+    const rotunda = f?.tip === 'bila' || f?.tip === 'toroidala';
+    const perete = rotunda && i.peOParte === true && D !== null && adancime !== null
+      ? peretePeOParte({ numar: 0, nume: '', diametru: D, forma: f }, adancime, i.grosime) : null;
+    return { adancime, treceri, gaurire: null, perete };
   }
   if (i.tip !== 'gaurire') return { adancime, treceri, gaurire: null };
   const D = i.diametruScula;

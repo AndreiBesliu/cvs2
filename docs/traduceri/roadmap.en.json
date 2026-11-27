@@ -1957,6 +1957,10 @@
       "ro": "Înclinarea cu arcele făcute curbe",
       "en": "Skewing with the arcs made into curves"
     },
+    "5d278f346ffbe971": {
+      "ro": "Profilul pe o parte cu bila și cu toroidala",
+      "en": "The one-side profile with the ball nose and the bull nose"
+    },
     "5d2f8f27f70ad030": {
       "ro": "25.6↑",
       "en": "25.6↑"
@@ -2132,6 +2136,10 @@
     "696ecb4953d33ecc": {
       "ro": "Plafonul total 500 kB",
       "en": "The 500 kB total cap"
+    },
+    "6996f27f4b38fc60": {
+      "ro": "**Profilul pe o parte cu bila și cu toroidala** (ADR 0303, „Implementarea (16.A↑e-6)”; întrebarea 2a; pe `wip/16.A-freze-e`, peste e-5; mișcă mașina, deci proba peretelui întâi). Permis cu adâncimea cel puțin raza colțului ρ (bila: Ø / 2); drumul frezei plate de același Ø, mișcare cu mișcare, și cu urechile, rampa, intrările și degajările (centrul la R de desen, deci nimic în piesă). Peretele vertical de la față până la d − ρ, racordarea de rază ρ la fund, iar prin foaie, cu supracursa sub ρ, racordarea rămasă pe muchia de jos a piesei (`peretePeOParte`), spuse sub adâncime în fereastra exportului. Sub ρ, refuzul cu motiv (`rotunda-adancime`: freza, raza, adâncimea); Tăierea oferă freza rotundă pe o parte doar de la adâncimea ei. Probele: unitare (regula cu adâncimea, drumul pe toate laturile și cu opțiunile, refuzul, secțiunea peretelui simulat față de hârtie, celulă cu celulă, regula ferestrei față de model), e2e (nota peretelui și programul cu bila simulat de oracol pe octeții din browser); manualul, în ambele limbi. Nimic pe server; documentul rămâne v31; programul fără forme rotunde, octet cu octet. Cu ea, ADR 0303 are toate sub-feliile.",
+      "en": "**The one-side profile with the ball nose and the bull nose** (ADR 0303, \"Implementation (16.A↑e-6)\"; question 2a; on `wip/16.A-freze-e`, on top of e-5; it moves the machine, so the wall probe first). Allowed with a depth of at least the corner radius ρ (ball nose: Ø / 2); the path of the flat bit of the same Ø, move by move, also with the tabs, the ramp, the lead-ins and the dog-bones (the centre at R from the drawing, so nothing in the part). The wall vertical from the face down to d − ρ, the ρ radius fillet at the floor and, through the sheet with the overcut below ρ, the fillet left on the bottom edge of the part (`peretePeOParte`), stated under the depth in the export window. Below ρ, the refusal with a reason (`rotunda-adancime`: the bit, the radius, the depth); Cutting offers the round bit on one side only from its depth. The probes: unit (the rule with the depth, the path on every side and with the options, the refusal, the section of the simulated wall against paper, cell by cell, the window rule against the model), e2e (the wall note and the ball nose program simulated by the oracle on the browser bytes); the manual, in both languages. Nothing on the server; the document stays v31; the program without round shapes, byte for byte. With it, ADR 0303 has all its sub-slices."
     },
     "699a709980c3e032": {
       "ro": "**Harta importurilor și o publicare care aduce doar ce s-a schimbat** (fără mașină; ADR 0098; „Da, repar-o”, după măsurătoarea de pe test: o publicare fără cod re-aducea 38 din 71 de fișiere, ~72 % din octeți). Bucățile se importă după nume stabile (`build.chunkImportMap`, Vite 8.3.3, experimental), traduse de harta din `index.html`; amprenta exactă a hărții intră în CSP (meta-ul și antetul de pe Hosting), tot fără `unsafe-inline`; versiunea stă în antetul paginii, nu în JavaScript. Proba din poartă: un build cu altă versiune schimbă doar `index.html` și `sw.js` (înainte: 78 de fișiere). Pornirea și totalul neschimbate (96,3 / 100, 326,1 / 400 kB). **Treceri:** (1) harta, CSP-ul, versiunea; găsit pe drum: Vite pune harta după transformările `post` ale paginii (amprenta se scrie în `generateBundle`), iar cu CSP-ul mai lung codarea paginii ajunsese la octetul 996 din 1 024 (meta-urile stau acum după `<meta charset>`). Mutațiile: **16 / 16** din prima (9 pe probele unitare, 5 pe poarta build-ului, 2 în fereastră, pe e2e).",

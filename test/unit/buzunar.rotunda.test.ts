@@ -78,8 +78,8 @@ test('motivFormaPeOperatie: bila și toroidala merg în buzunar, fără freze de
     assert.equal(motivFormaPeOperatie('buzunar', 'interior', f, { rest: [] }), null, `${f.tip}, lista de rest goală`);
     assert.equal(motivFormaPeOperatie('buzunar', 'interior', f, { rest: [{}] }), 'rotunda-rest', `${f.tip} cu rest`);
     assert.equal(motivFormaPeOperatie('buzunar', 'interior', f, { incrustatie: { fel: 'drept' } }), 'rotunda-incrustatie', `${f.tip} cu incrustație`);
-    // Pe o parte (e-6), la găurire și în V-carve, ca până acum.
-    assert.equal(motivFormaPeOperatie('profil', 'exterior', f), f.tip === 'bila' ? 'bila' : 'toroidala');
+    // Pe o parte fără adâncime știută: refuzat (cu adâncimea, `profil.rotunda.test.ts`, e-6); la găurire și în V-carve, ca până acum.
+    assert.equal(motivFormaPeOperatie('profil', 'exterior', f), 'rotunda-adancime');
     assert.equal(motivFormaPeOperatie('gaurire', 'interior', f), f.tip === 'bila' ? 'bila' : 'toroidala');
     assert.equal(motivFormaPeOperatie('vcarve', 'interior', f), f.tip === 'bila' ? 'bila' : 'toroidala');
   }
@@ -196,12 +196,13 @@ test('fereastra exportului: regula rândului (`rotundaPermisa`) e a modelului; c
     for (const [tip, latura] of locuri) {
       for (const [rest, incrustatieDreapta] of [[0, false], [1, false], [0, true]] as const) {
         const randRest: Rand['rest'] = Array.from({ length: rest }, () => ({}) as Rand['rest'][number]);
-        const model: boolean = motivFormaPeOperatie(tip, latura, forma, { rest: randRest, incrustatie: incrustatieDreapta ? { fel: 'drept' } : null }) === null;
-        assert.equal(rotundaPermisa({ tip, latura, formaScula: fel, rest: randRest, incrustatieDreapta }), model, `${fel} ${tip} ${latura} rest=${rest} drept=${incrustatieDreapta}`);
+        // Adâncimea 4 trece de raza colțului (bila Ø6: 3; toroidala: 1): pe o parte, ambele merg (adâncimea: `profil.rotunda.test.ts`).
+        const model: boolean = motivFormaPeOperatie(tip, latura, forma, { rest: randRest, incrustatie: incrustatieDreapta ? { fel: 'drept' } : null, adancime: 4 }, 6) === null;
+        assert.equal(rotundaPermisa({ tip, latura, formaScula: fel, rest: randRest, incrustatieDreapta, adancime: '4', diametruScula: '6', razaColt: '1' }), model, `${fel} ${tip} ${latura} rest=${rest} drept=${incrustatieDreapta}`);
       }
     }
   }
-  for (const fel of ['plata', 'v'] as const) assert.equal(rotundaPermisa({ tip: 'buzunar', latura: 'interior', formaScula: fel, rest: [{} as Rand['rest'][number]], incrustatieDreapta: true }), true);
+  for (const fel of ['plata', 'v'] as const) assert.equal(rotundaPermisa({ tip: 'buzunar', latura: 'interior', formaScula: fel, rest: [{} as Rand['rest'][number]], incrustatieDreapta: true, adancime: '4', diametruScula: '6', razaColt: '1' }), true);
   const intrare = { tip: 'buzunar' as const, adancime: 3, incrustatie: 'fara' as const, pas: 3, grosime: 18, supracursa: 0, prinFoaie: false, diametruScula: 6, retragere: null, diametre: [] };
   assert.deepEqual(hartieRand({ ...intrare, forma: { tip: 'bila' }, pasLateral: 2.4 }).creasta, creastaBuzunar({ numar: 0, nume: '', diametru: 6, forma: { tip: 'bila' } }, 2.4));
   const ct = hartieRand({ ...intrare, forma: { tip: 'toroidala', raza: 1.5 }, pasLateral: 2.4 }).creasta;
