@@ -2,7 +2,7 @@
 
 **Starea:** acceptat pe 27.11.2026, cu recomandările auditului (1a, 2a, 3a, 4a), la cuvântul owner-ului transmis de
 sesiunea principală („zi-le sesiunilor sa continue cu recomandarile, acolo unde inca asteapta”). Feliile 3.Cm-1…3.Cm-7, în
-ordinea din audit, ale liniei atelierului (ramura `wip/3.Xh-biblioteca-ui`). **3.Cm-1 și 3.Cm-2 implementate pe 27.11**
+ordinea din audit, ale liniei atelierului (ramura `wip/3.Xh-biblioteca-ui`). **3.Cm-1, 3.Cm-2 și 3.Cm-3 implementate pe 27.11**
 (mai jos).
 **Continuă:** ADR 0282 (elicele, feliile 3.Tq–3.Tt). **Pleacă de la:** `docs/linii/audit-elice.md` (auditul din 25.11, pe
 Easy 3Draw 18.30.0). Primul număr al intervalului 0340–0349 al liniei atelierului.
@@ -92,6 +92,26 @@ sus, proprietatea `hidden` a paragrafului la carcasă; două otrăvuri echivalen
 cele 12 ancore ale listelor `3.T*` mutate de felie, 12 / 12.
 
 **Easy 3Draw 18.45.0.**
+
+## Implementarea (3.Cm-3): ventilatorul ca trusă
+
+Răspunsul 3a: rândul grinzii în „Se prinde cu” al carcasei și, la bifă, „Fă ventilatorul” cu grinda, axul și o jumătate
+de bucșă.
+
+- **Motorul** (`ventilatorTrusa`, lângă `ventilatorCote`): sub carcasă, o grindă groasă cu **2k + 1** găuri rotunde (k,
+  câți pași sunt de la ax la găurile urechilor), prinsă cu știfturi de două urechi opuse: găurile de la capete cad pe
+  urechi, cea din mijloc pe ax (Ø40: 7 găuri; Ø48: 9). Pe grindă, o **jumătate de bucșă** (3,8 mm), apoi rotorul: paletele
+  stau toate în tub (carcasa e cât ele + 4 mm, cel puțin 8), iar rotorul nu se freacă de grindă. **Axul**, cel mai scurt
+  care trece prin grindă, bucșă și butucul rotorului, în pași de 8 mm (Ø40: 7,8 + 3,8 + 8 = 19,6 mm, deci 3).
+- **Atelierul:** la carcasă, „Se prinde cu” are rândul „Pe o grindă de N, prinsă cu știfturi de două urechi opuse, axul
+  trece prin gaura din mijloc; pe grindă, o jumătate de bucșă, iar pe ea rotorul, în tub.” și „Pune grinda în listă”. Sub
+  „Fă ventilatorul”, bifa „Și trusa: …” (a editorului, nu a piesei; oprită la început): cu ea, „Fă ventilatorul” pune și
+  grinda, axul, bucșa și cele două știfturi Technic ale urechilor, câte o trusă pe ventilator.
+- **Probele:** `test/unit/trenulet.trusa.test.ts` (3 teste, pe zece ventilatoare: găurile grinzii față de găurile urechilor
+  carcasei, măsurate pe prinderile ei; paletele rotorului, măsurate pe plasă, în tub; axul cel mai scurt); e2e, un scenariu
+  în `trenulet.ventilator.spec.ts` (rândul, butonul, „Fă ventilatorul” cu bifa, numele pieselor din listă, bifa după o
+  redesenare) și eticheta în proba în engleză. Otrăvurile: `3.Cm-3.py`, 23 / 23, la prima rulare; `3.Cm-3-en.py`, 2 / 2.
+- **Easy 3Draw 18.46.0.** Doar pachetul extensiei se schimbă.
 
 **Rămâne la owner** (lista grupată, cu recomandarea întâi): verdictul după treapta cea mai mare, oricât de îngustă ar fi
 fâșia? a (recomandat): ca acum (suport doar când și consola de la vârf trece de 1 mm; elicea implicită, 92842, 15790 și

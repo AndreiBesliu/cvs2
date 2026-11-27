@@ -16801,3 +16801,23 @@ după push).
   45969212819, în lucru.
 - **Pe test:** lotul 59 (`a67ec32c`, 16.A↑e-5), la 10:35; lotul 60 (16.A↑e-6), în drum.
 - **Documentele:** decizia și Starea în `CLAUDE.md`; starea din `docs/linii/principala.md`; indexul liniilor.
+
+## 2026-11-27 — Felia 3.Cm-3: ventilatorul ca trusă (ADR 0340) (sesiune cloud)
+
+**Prompt:** „zi-le sesiunilor sa continue cu recomandarile, acolo unde inca asteapta” (owner-ul, transmis de sesiunea
+principală: auditul elicelor, felia 3, răspunsul 3a)
+**Started:** 27.11, 09:50. **Completed:** 27.11, 10:55 (orele, după ceasul containerului).
+
+- **Motorul:** `ventilatorTrusa`: sub carcasă, o grindă groasă cu 2k + 1 găuri rotunde, prinsă cu știfturi de două urechi
+  opuse (găurile de la capete pe urechi, cea din mijloc pe ax; Ø40: 7, Ø48: 9); o jumătate de bucșă (3,8 mm) pe grindă și
+  rotorul pe ea, cu paletele toate în tub; axul, cel mai scurt care trece prin grindă, bucșă și butuc (Ø40: 3).
+- **Atelierul:** la carcasă, rândul grinzii din „Se prinde cu”, cu „Pune grinda în listă”; sub „Fă ventilatorul”, bifa „Și
+  trusa” (a editorului, oprită la început), care pune și grinda, axul, bucșa și cele două știfturi.
+- **Probele**, scrise întâi: `trenulet.trusa.test.ts` (3 teste, pe zece ventilatoare: găurile grinzii față de prinderile
+  carcasei, paletele măsurate pe plasă în tub, axul cel mai scurt); un scenariu e2e; eticheta în proba în engleză.
+- **Otrăvurile:** `3.Cm-3.py`, 23 / 23, din prima; `3.Cm-3-en.py`, 2 / 2; C55 și C56 din `3.Ts.py`, mutate, 2 / 2.
+- **Mărimea:** Easy 3Draw 18.46.0, 585,9 kB; aplicația, neschimbată. Nimic pe server.
+- **Documentele:** ADR 0340 (și indexul), nota liniei, indexul liniilor, fișa etapei 3, registrul otrăvurilor, `CLAUDE.md`,
+  traducerile roadmap-ului.
+- **Urmează:** 3.Cm-4 (claritatea editorului elicelor).
+

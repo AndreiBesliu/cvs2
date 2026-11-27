@@ -1434,7 +1434,9 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   (`treaptaPalete`, `ariaFeliei`, `tiparPalete`; câmpul `tipar` al elicei, al elicei de barcă și al rotorului); atelierul o
   spune în panoul piesei, sub „Se prinde cu”, pe praguri (fără suport până la 0,5 mm; cu suport sub vârfuri când și treapta, și
   consola trec de 1 mm; altfel, aspru pe alocuri), cu marginea de aderență (brim) sub 10 % din disc. Piesele, la octet
-  (amprenta a 742 de plase). Easy 3Draw 18.45.0 (următoarea, 18.46.0). **O probă e2e care cere textul tipăririi îi ia
+  (amprenta a 742 de plase). Easy 3Draw 18.45.0. **3.Cm-3 (ventilatorul ca trusă)** gata pe 27.11: `ventilatorTrusa` (grinda
+  de 2k + 1 găuri sub carcasă, prinsă de două urechi opuse, o jumătate de bucșă, rotorul în tub, axul cel mai scurt); la
+  carcasă, rândul grinzii în „Se prinde cu”; bifa „Și trusa” la „Fă ventilatorul”. Easy 3Draw 18.46.0 (următoarea, 18.47.0). **O probă e2e care cere textul tipăririi îi ia
   cifrele din motor pentru starea exactă a editorului din probă. Un paragraf umplut după construire nu stă în editor deasupra
   unor butoane (apare după 90 ms și le mută: un clic se pierde sub încărcare).** La owner: verdictul a / b / c (fișa etapei 3).
   **Cotele pe desen: modelul și proba G-code-ului (ADR 0330, felia 10.4↑a-1, adusă din etapa 10)** gata pe 24.11, în
