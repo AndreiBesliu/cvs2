@@ -6,26 +6,44 @@
  * - Freza în V (și cea de gravare, cu vârf plat) taie doar pe linie (centrul pe vector) sau într-un V-carve: pe o parte, într-un
  *   buzunar sau la găurire, lucrarea ar decala-o cu Ø / 2, ca pe una plată, iar peretele n-ar ieși unde e desenat.
  * - V-carve-ul sapă pe axa medială cu conul frezei, deci cere o freză în V.
- * - Finisarea reliefului (ADR 0312 §2) merge cu freza plată, cu V-ul și cu bila; bila (ADR 0312 §1), doar acolo, până la felia
- *   bilei a liniei frezelor (16.A↑e): profilul, buzunarul și celelalte ar decala-o ca pe una plată.
+ * - Finisarea reliefului (ADR 0312 §2) merge cu freza plată, cu V-ul și cu bila (ADR 0312 §1).
  * - Degroșarea reliefului (ADR 0313 §1) cere freza plată: adaosul se socotește cu freza plată mărită cu el (ADR 0310 §4).
- * - Freza toroidală (ADR 0303 §1, documentul v31) nu merge încă pe nicio operație, nici pe finisare: simularea o taie, dar
- *   CAM-ul ei vine pe sub-felii (canelura în 16.A↑e-3, buzunarul în e-5, profilul în e-6), fiecare cu rândul ei aici.
+ * - Bila și toroidala (ADR 0303 §4) merg pe linie (canelura, 16.A↑e-3) și în buzunar (16.A↑e-5): centrul frezei stă la R de
+ *   perete, ca la freza plată, iar fundul rămâne cu creasta lor. În buzunar, fără freze de rest (geometria lor e a frezei
+ *   plate, întrebarea 5a) și fără incrustație cu pereți drepți (pereții și fundul dopului cer freza plată). Profilul pe o
+ *   parte vine în e-6; toroidala pe relief e a liniei reliefului.
  * - Freza plată merge în rest.
  */
 import type { FormaSculaDoc, Latura, Operatie, Scula, TipOperatie } from './document.ts';
 
 /**
  * De ce forma nu merge: `vcarve` (V-carve-ul cere o freză în V), `v-pe-linie` (freza în V taie doar pe linie sau într-un
- * V-carve), `bila` (freza bilă merge doar la finisarea reliefului), `degrosare` (degroșarea reliefului cere o freză plată),
- * `toroidala` (freza toroidală nu se taie încă, ADR 0303 §4).
+ * V-carve), `bila` și `toroidala` (freza rotundă nu merge aici: azi, pe linie și în buzunar; bila și la finisarea
+ * reliefului), `degrosare` (degroșarea reliefului cere o freză plată), `rotunda-rest` (un buzunar cu o freză rotundă nu are
+ * freze de rest) și `rotunda-incrustatie` (incrustația cu pereți drepți cere o freză plată).
  */
-export type MotivForma = 'vcarve' | 'v-pe-linie' | 'bila' | 'degrosare' | 'toroidala';
+export type MotivForma = 'vcarve' | 'v-pe-linie' | 'bila' | 'degrosare' | 'toroidala' | 'rotunda-rest' | 'rotunda-incrustatie';
 
-/** Motivul pentru care o freză de forma dată nu merge pe operație, sau null dacă merge (lipsa formei = freza plată). */
-export function motivFormaPeOperatie(tip: TipOperatie, latura: Latura, forma: FormaSculaDoc | undefined): MotivForma | null {
+/** Ce mai contează din operație pentru o freză rotundă în buzunar: frezele de rest și incrustația (lipsă = fără ele). */
+export type RestulOperatiei = {
+  readonly rest?: readonly unknown[] | undefined;
+  readonly incrustatie?: { readonly fel: string } | null | undefined;
+};
+
+/**
+ * Motivul pentru care o freză de forma dată nu merge pe operație, sau null dacă merge (lipsa formei = freza plată). `o`:
+ * frezele de rest și incrustația operației, unde se știu (o freză rotundă în buzunar le refuză).
+ */
+export function motivFormaPeOperatie(tip: TipOperatie, latura: Latura, forma: FormaSculaDoc | undefined, o?: RestulOperatiei): MotivForma | null {
+  const rotunda = forma?.tip === 'bila' || forma?.tip === 'toroidala';
   // Canelura (ADR 0303 §4, 16.A↑e-3): bila și toroidala pe linie, cu centrul pe vector (drumul frezei plate de același Ø).
-  if ((forma?.tip === 'bila' || forma?.tip === 'toroidala') && tip === 'profil' && latura === 'pe-linie') return null;
+  if (rotunda && tip === 'profil' && latura === 'pe-linie') return null;
+  // Buzunarul (16.A↑e-5): inelele frezei plate de același Ø, fără freze de rest și fără incrustație cu pereți drepți.
+  if (rotunda && tip === 'buzunar') {
+    if ((o?.rest?.length ?? 0) > 0) return 'rotunda-rest';
+    if (o?.incrustatie?.fel === 'drept') return 'rotunda-incrustatie';
+    return null;
+  }
   if (forma?.tip === 'toroidala') return 'toroidala';
   if (tip === 'finisare') return null;
   if (tip === 'degrosare') return forma === undefined ? null : 'degrosare';
