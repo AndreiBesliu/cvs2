@@ -58,7 +58,8 @@ test('motivFormaPeOperatie: pe finisare merg plata, V-ul și bila; bila în rest
   const randuri: ReadonlyArray<readonly [TipOperatie, Latura, FormaSculaDoc | undefined, string | null]> = [
     ['finisare', 'pe-linie', undefined, null], ['finisare', 'pe-linie', V, null], ['finisare', 'pe-linie', B, null],
     ['finisare', 'exterior', B, null],
-    ['profil', 'pe-linie', B, null], ['profil', 'exterior', B, 'bila'], ['buzunar', 'interior', B, null],
+    // Pe o parte fără adâncime știută: refuzat (cu adâncimea cel puțin raza, din 16.A↑e-6: `profil.rotunda.test.ts`).
+    ['profil', 'pe-linie', B, null], ['profil', 'exterior', B, 'rotunda-adancime'], ['buzunar', 'interior', B, null],
     ['gaurire', 'interior', B, 'bila'], ['vcarve', 'interior', B, 'bila'],
     ['vcarve', 'interior', V, null], ['vcarve', 'interior', undefined, 'vcarve'], ['profil', 'pe-linie', V, null],
     ['profil', 'exterior', V, 'v-pe-linie'], ['buzunar', 'interior', undefined, null],
@@ -80,9 +81,9 @@ test('frezeleOperatiei: toate frezele, cu calea lor, în ordine', () => {
   assert.deepEqual(frezeleOperatiei(v).map((f) => f.cale), ['scula', 'incrustatie.banda.freza']);
 });
 
-test('lucrarea refuză bila oriunde nu e o finisare, o canelură (profilul pe linie) sau un buzunar, cu forma și calea în motiv', () => {
+test('lucrarea refuză bila oriunde nu e o finisare, o canelură (profilul pe linie), un buzunar sau un profil pe o parte, cu forma și calea în motiv', () => {
   const cazuri: ReadonlyArray<readonly [string, Liber, string]> = [
-    ['profilul', op({ scula: bila(1, 6) }), 'scula'],
+    ['V-carve-ul', op({ tip: 'vcarve', scula: bila(1, 6) }), 'scula'],
     ['freza de rest', op({ tip: 'buzunar', pasLateral: 2, rest: [{ scula: bila(2, 3), pasLateral: 1 }] }), 'rest[0]'],
     ['fundul plat', op({ tip: 'vcarve', scula: inV(1, 6, 90), fundPlat: { scula: bila(2, 3), pasLateral: 1 } }), 'fundPlat'],
     ['freza de rest a fundului', op({ tip: 'vcarve', scula: inV(1, 6, 90), fundPlat: { scula: plata(2, 3), pasLateral: 1, rest: [{ scula: bila(3, 2), pasLateral: 0.5 }] } }), 'fundPlat.rest[0]'],
@@ -93,9 +94,11 @@ test('lucrarea refuză bila oriunde nu e o finisare, o canelură (profilul pe li
     const m = motiv(doc([o]));
     assert.match(m, /freza bilă/, `${nume}: ${m}`);
     assert.ok(m.includes(`, ${cale})`), `${nume}: motivul nu numește ${cale}: ${m}`);
-    assert.match(m, /doar pe linie \(canelura\), în buzunar și la finisarea reliefului/, nume);
+    assert.match(m, /doar pe linie \(canelura\), în buzunar, pe o parte și la finisarea reliefului/, nume);
   }
-  // Canelura și buzunarul cu bila se taie (canelura.rotunda.test.ts, buzunar.rotunda.test.ts).
+  // Canelura, buzunarul și profilul pe o parte (adâncimea 6 trece de raza 3) cu bila se taie (canelura.rotunda.test.ts,
+  // buzunar.rotunda.test.ts, profil.rotunda.test.ts).
+  assert.equal(motiv(doc([op({ scula: bila(1, 6) })])), '');
   assert.equal(motiv(doc([op({ scula: bila(1, 6), latura: 'pe-linie' })])), '');
   assert.equal(motiv(doc([op({ tip: 'buzunar', scula: bila(1, 6), pasLateral: 2 })])), '');
   // Fără bilă, aceleași operații (acolo unde se taie) nu sunt refuzate de regula bilei.

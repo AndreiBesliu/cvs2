@@ -11,7 +11,9 @@
  *   (monotonă), cu un număr fix de pași;
  * - elicea cu bila și cu toroidala (ADR 0303 §2, felia 16.A↑e-2): pe ultima tură, pe fiecare bucată a cercului în care scula
  *   acoperă celula, minimul în distanța d (`eliceaRotunda`), cu un număr fix de pași.
- * Elicea cu V-ul n-are încă formă exactă: programul o refuză înainte (`program.ts`).
+ * - linia cu profilul desenat (ADR 0304 §2): pe fiecare bucată a liniei frânte, minimul funcției convexe în formă închisă
+ *   (ca la V), tăiat la intervalele bucății; cel mai mic dintre bucăți.
+ * Elicea cu V-ul și cu profilul n-are încă formă exactă: programul o refuză înainte (`program.ts`).
  *
  * Scula e o siluetă h(r) ≥ 0, nedescrescătoare, cu h(0) = 0: înălțimea muchiei deasupra vârfului la raza r ≤ R. Peste R,
  * coada sculei e un cilindru: peretele. Fără subtăieri (limita oricărui câmp de înălțimi).
@@ -39,26 +41,44 @@ export type DateScula = { readonly forma: FormaScula; readonly diametru: number 
 export type GrupSimulare = { readonly scula: DateScula; readonly mutari: Float64Array };
 
 /**
- * Silueta: felul (0 plată, 1 bilă, 2 V, 3 toroidală), raza, pătratul ei, panta V-ului și raza vârfului lui plat (ADR 0092;
- * 0 = ascuțit): h = k·max(0, r − a). La toroidală (ADR 0303 §2), `a` e raza discului plat (R − ρ), `rho` raza colțului:
- * h = 0 pe r ≤ a, ρ − √(ρ² − (r − a)²) dincolo.
+ * Silueta: felul (0 plată, 1 bilă, 2 V, 3 toroidală, 4 profilul desenat), raza, pătratul ei, panta V-ului și raza vârfului
+ * lui plat (ADR 0092; 0 = ascuțit): h = k·max(0, r − a). La toroidală (ADR 0303 §2), `a` e raza discului plat (R − ρ), `rho`
+ * raza colțului: h = 0 pe r ≤ a, ρ − √(ρ² − (r − a)²) dincolo. La profil (ADR 0304 §2), linia frântă: punctele (`pr`, `ph`)
+ * și panta fiecărei bucăți (`pp`, ≥ 0); celelalte feluri le au goale.
  */
 export type Silueta = {
-  readonly fel: 0 | 1 | 2 | 3; readonly R: number; readonly R2: number; readonly k: number; readonly a: number; readonly rho: number;
+  readonly fel: 0 | 1 | 2 | 3 | 4; readonly R: number; readonly R2: number; readonly k: number; readonly a: number; readonly rho: number;
+  readonly pr: Float64Array; readonly ph: Float64Array; readonly pp: Float64Array;
 };
+
+const GOL = new Float64Array(0);
 
 export function silueta(s: DateScula): Silueta {
   const R = s.diametru / 2;
   const f = s.forma;
-  if (f.tip === 'plata') return { fel: 0, R, R2: R * R, k: 0, a: 0, rho: 0 };
-  if (f.tip === 'bila') return { fel: 1, R, R2: R * R, k: 0, a: 0, rho: 0 };
-  if (f.tip === 'toroidala') return { fel: 3, R, R2: R * R, k: 0, a: R - f.raza, rho: f.raza };
-  return { fel: 2, R, R2: R * R, k: 1 / tanD((f.unghi * Math.PI) / 360), a: (f.varf ?? 0) / 2, rho: 0 };
+  const fara = { pr: GOL, ph: GOL, pp: GOL };
+  if (f.tip === 'plata') return { fel: 0, R, R2: R * R, k: 0, a: 0, rho: 0, ...fara };
+  if (f.tip === 'bila') return { fel: 1, R, R2: R * R, k: 0, a: 0, rho: 0, ...fara };
+  if (f.tip === 'toroidala') return { fel: 3, R, R2: R * R, k: 0, a: R - f.raza, rho: f.raza, ...fara };
+  if (f.tip === 'profil') {
+    const n = f.puncte.length, pr = new Float64Array(n), ph = new Float64Array(n), pp = new Float64Array(n > 1 ? n - 1 : 0);
+    for (let i = 0; i < n; i++) { pr[i] = f.puncte[i]![0]; ph[i] = f.puncte[i]![1]; }
+    // Ultimul r e raza (la 1e-9, judecat de `program.ts`): scris exact, ca bucățile să acopere [0, R].
+    if (n > 0) pr[n - 1] = R;
+    for (let i = 0; i + 1 < n; i++) pp[i] = (ph[i + 1]! - ph[i]!) / (pr[i + 1]! - pr[i]!);
+    return { fel: 4, R, R2: R * R, k: 0, a: 0, rho: 0, pr, ph, pp };
+  }
+  return { fel: 2, R, R2: R * R, k: 1 / tanD((f.unghi * Math.PI) / 360), a: (f.varf ?? 0) / 2, rho: 0, ...fara };
 }
 
 /** h(d), d în [0, R]. */
 function H(T: Silueta, d: number): number {
   if (T.fel === 0) return 0;
+  if (T.fel === 4) {
+    const pr = T.pr, n = pr.length;
+    for (let i = 0; i + 2 < n; i++) if (d <= pr[i + 1]!) return T.ph[i]! + T.pp[i]! * (d - pr[i]!);
+    return T.ph[n - 2]! + T.pp[n - 2]! * (d - pr[n - 2]!);
+  }
   if (T.fel === 1) {
     const q = T.R2 - d * d;
     return T.R - Math.sqrt(q > 0 ? q : 0);
@@ -85,7 +105,46 @@ export function raza(T: Silueta, adanc: number): number {
     const q = T.rho * T.rho - (T.rho - adanc) * (T.rho - adanc);
     return Math.min(T.R, T.a + Math.sqrt(q > 0 ? q : 0));
   }
+  if (T.fel === 4) {
+    // Prima bucată care ajunge la `adanc`: acolo h(r) = adanc (sub ea, h < adanc); dincolo de ultima, raza întreagă.
+    const ph = T.ph, n = ph.length;
+    for (let i = 0; i + 1 < n; i++) {
+      if (ph[i + 1]! >= adanc) return Math.min(T.R, T.pr[i]! + (adanc - ph[i]!) / T.pp[i]!);
+    }
+    return T.R;
+  }
   return Math.min(T.R, T.a + adanc / T.k);
+}
+
+/**
+ * Linia înclinată (sau orizontală) cu profilul desenat (ADR 0304 §2): cel mai jos punct al sculei deasupra celulei, pe
+ * [sa, sb], ca z(s) − z_P = m·s + h(√(s² + p²)) (p² = `perp2`), minim. Pe bucata k a siluetei (r_k ≤ d ≤ r_{k+1}),
+ * h = h_k + p_k·(d − r_k), deci m·s + p_k·√(s² + p²) e convexă: minimul liber e la s* = −m·p / √(p_k² − m²) cu |m| < p_k
+ * (0 pe axă), altfel la capătul spre care coboară; tăiat la cele două intervale ale bucății în s, ±[√(r_k² − p²),
+ * √(r_{k+1}² − p²)], și la [sa, sb]. Minimul pe celulă e cel mai mic dintre bucăți. Doar + − × ÷ √.
+ */
+function minimProfil(T: Silueta, m: number, perp2: number, sa: number, sb: number): number {
+  const pr = T.pr, ph = T.ph, pp = T.pp, n = pr.length, p = Math.sqrt(perp2);
+  let best = Infinity;
+  for (let i = 0; i + 1 < n; i++) {
+    const r0 = pr[i]!, r1 = pr[i + 1]!, r12 = r1 * r1;
+    if (r12 < perp2) continue;
+    const r02 = r0 * r0, s0 = r02 > perp2 ? Math.sqrt(r02 - perp2) : 0, s1 = Math.sqrt(r12 - perp2);
+    const k = pp[i]!, h0 = ph[i]!;
+    let stat: number;
+    if (k > m && k > -m) stat = p > 0 ? (-m * p) / Math.sqrt(k * k - m * m) : 0;
+    else stat = m > 0 ? -Infinity : m < 0 ? Infinity : 0;
+    for (let semn = 0; semn < 2; semn++) {
+      let lo = semn === 0 ? s0 : -s1, hi = semn === 0 ? s1 : -s0;
+      if (lo < sa) lo = sa;
+      if (hi > sb) hi = sb;
+      if (lo > hi) continue;
+      const sv = stat < lo ? lo : stat > hi ? hi : stat;
+      const z = m * sv + h0 + k * (Math.sqrt(sv * sv + perp2) - r0);
+      if (z < best) best = z;
+    }
+  }
+  return best;
 }
 
 /** Pașii înjumătățirii pe linia înclinată cu toroidala: intervalul (cel mult 2·R) ajunge sub 1e-15 mm. */
@@ -202,6 +261,8 @@ export function taieLinie(F: Camp, T: Silueta, ax: number, ay: number, az: numbe
         } else if (fel === 3) {
           const sa = (ta - tp) * L, sb = (tb - tp) * L, sv = minimToroidala(T, m, perp2, sa, sb);
           zs = az + dz * tp + m * sv + H(T, Math.sqrt(sv * sv + perp2));
+        } else if (fel === 4) {
+          zs = az + dz * tp + minimProfil(T, m, perp2, (ta - tp) * L, (tb - tp) * L);
         } else {
           // z(s) + k·max(0, √(s² + p²) − a), convexă în s: minimul liber, apoi tăiat la [sa, sb]. Cu vârful plat (a > 0,
           // ADR 0092) și p < a, pe discul vârfului (|s| ≤ c, c = √(a² − p²)) funcția e liniară (panta m); punctul staționar al
@@ -243,7 +304,7 @@ export function taieArc(
   if (az !== bz) {
     if (T.fel === 0) eliceaPlata(F, T, ax, ay, az, bz, cx, cy, trig, S);
     else if (T.fel === 1 || T.fel === 3) eliceaRotunda(F, T, ax, ay, az, bz, cx, cy, trig, S);
-    else throw new Error('elicea cu V-ul nu se simulează încă');
+    else throw new Error(T.fel === 4 ? 'elicea cu profilul nu se simulează încă' : 'elicea cu V-ul nu se simulează încă');
     return;
   }
   // Arcul orar de la A la B e arcul trigonometric de la B la A.

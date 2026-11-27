@@ -1,13 +1,14 @@
 # Frezele (16.A↑, ADR 0300–0309)
 
 _cncvs2, biblioteca de freze („Frezele mele”), felia 16.A↑ adusă din etapa 16: ramura `wip/16.A-freze` (din `main`
-`c8b235ab`), ADR-urile 0300–0309 (liber: 0304), canalul `freze`; ADR 0300 ACCEPTAT pe 23.11 („Da, 1a–6a”), ADR 0302 ACCEPTAT pe
+`c8b235ab`), ADR-urile 0300–0309 (liber: 0305), canalul `freze`; ADR 0300 ACCEPTAT pe 23.11 („Da, 1a–6a”), ADR 0302 ACCEPTAT pe
 24.11 („Da, 1a–5a”); 16.A↑a … 16.A↑h-5 și 16.A↑b-1 … 16.A↑b-7 UNITE în `main`; ADR 0303 PROPUS pe 26.11 (bila și toroidala în
-proiect); 16.A↑e-1 (documentul v31, toroidala în simulare, refuzul lucrării) raportată gata de unit pe 26.11 (`7c3f166b`, cu
+proiect), ACCEPTAT pe 27.11 cu recomandările (1a–5a); 16.A↑e-1 (documentul v31, toroidala în simulare, refuzul lucrării) raportată gata de unit pe 26.11 (`7c3f166b`, cu
 `main` `0df06eca` adus), UNITĂ în `main` pe 27.11 (`8b92246d`); 16.A↑e-2 (elicea cu bila și cu toroidala în nucleu) raportată
 gata de unit pe 27.11 (`e5bdde83`, PR-ul #71), UNITĂ (`0d2a8c2c`); 16.A↑e-3 (canelura cu bila și cu toroidala) UNITĂ pe 27.11
 (`db066160`); 16.A↑e-4 (bila și toroidala în proiect: fereastra exportului, Tăierea, biblioteca) UNITĂ pe 27.11 (`72263843`);
-16.A↑e-5 (buzunarul cu bila și cu toroidala, cu creasta pe fund) pe `wip/16.A-freze-e`, peste ea_
+16.A↑e-5 (buzunarul cu bila și cu toroidala, cu creasta pe fund) raportată gata de unit pe 27.11 (`106b4a51`, PR-ul #74);
+16.A↑e-6 (profilul pe o parte cu bila și cu toroidala, cu adâncimea cel puțin raza colțului) pe `wip/16.A-freze-e`, peste ea_
 
 Pornită pe 23.11.2026, în sesiunea cloud a liniei, la cererea owner-ului: „Vreau sa pot crea freze l sau profiluri de freze in
 aplicatie si sa le salvez in cont”. Rândurile din prag: „Bibliotecă de freze cu geometrie reală (dreaptă, bilă, toroidală, V,
@@ -198,6 +199,15 @@ gravare, profil, formă desenată)” și „Freze de profil desenate de utiliza
     R, iar perechea care pică e același program față de un pas lateral mai mic;
   - interfața nu importă modelul, deci regula formei rotunde stă de două ori (`motivFormaPeOperatie`, `rotundaPermisa`), cu o
     probă care le compară; creasta vine pe rândul „pe hârtie” (`hartieRand`), nu din formule în fișă.
+- **27.11, 06:30–: 16.A↑e-6 pe `wip/16.A-freze-e`**, peste e-5. Profilul pe o parte cu bila și cu toroidala, cu adâncimea
+  cel puțin raza colțului (2a): drumul frezei plate, peretele pe hârtie (`peretePeOParte`), refuzul `rotunda-adancime`, nota
+  peretelui în fereastră. **Capcane:**
+  - regula pe o parte cere adâncimea operației și diametrul frezei (la bilă, ρ = Ø / 2): `motivFormaPeOperatie` le primește
+    în `o` și ca al cincilea argument; fără ele, refuză (o pază: un apelant nou care uită adâncimea nu lasă bila să treacă);
+  - în Tăierea, diametrul e al frezei din bibliotecă, nu al frezei de acum a operației (`frezePotrivite`);
+  - lista „Din frezele mele” a rândului din fereastră nu cere adâncimea (ca frezele de rest ale buzunarului): greșeala o spune
+    rândul, iar lista nu se schimbă la fiecare tastă;
+  - urechile se socotesc de la fundul plăcii: o probă cu urechi pe o parte taie cât foaia, altfel lucrarea le refuză.
 - **Feliile**, în ordine: 16.A↑a (biblioteca în browser, fereastra, fișierul), apoi b (alegerea în proiect, v27), c
   (contul), d (calibrarea), e (bila și toroidala), f (profilul desenat), g (valorile pe material).
 

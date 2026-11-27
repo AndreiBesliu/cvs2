@@ -396,7 +396,9 @@ export function ExportConectat({
       const k = `${r.tip}/${r.latura}`;
       const gata = dupaFel.get(k);
       if (gata) return gata;
-      const lista = frezePotrivite(biblioteca.freze, [{ tip: r.tip, latura: r.latura }]).map(oferita);
+      // Adâncimea rândului nu se cere aici: pe o parte, o freză rotundă sub raza colțului își are greșeala pe rând (16.A↑e-6),
+      // ca frezele de rest ale buzunarului (16.A↑e-5); lista nu se schimbă la fiecare tastă a adâncimii.
+      const lista = frezePotrivite(biblioteca.freze, [{ tip: r.tip, latura: r.latura, adancime: Number.POSITIVE_INFINITY }]).map(oferita);
       dupaFel.set(k, lista);
       return lista;
     };
