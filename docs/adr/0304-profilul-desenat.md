@@ -36,8 +36,8 @@ exact ce stă în document, iar oracolul îl citește la fel.
 
 - plonjarea, arcul la Z constant și linia orizontală, ca la orice siluetă: h(distanța);
 - linia înclinată: pe fiecare bucată, m·s + h_k + p_k·(√(s² + q²) − r_k) e convexă în s (rădăcina e convexă, p_k ≥ 0),
-  deci minimul pe bucată vine prin înjumătățirea derivatei, cu un număr fix de pași, ca la toroidală (ADR 0303 §2); minimul
-  pe celulă e cel mai mic dintre bucăți;
+  deci minimul pe bucată e punctul ei staționar, tăiat la intervalele bucății (la implementare: în formă închisă, ca la conul
+  V-ului, nu prin înjumătățire; vezi „Implementarea (16.A↑f-1)”); minimul pe celulă e cel mai mic dintre bucăți;
 - elicea cu profilul: refuzată, cu motiv, ca elicea cu V-ul (`program.ts`), până la o felie a ei.
 
 Probele: nucleul față de oracolul simulării, pe linii, înclinate, arce și plonjări la întâmplare, pe profiluri la
@@ -75,14 +75,19 @@ refuză, cu motiv. Cu mai puțin, se taie doar partea de jos a siluetei (o rotun
 | Sub-felia | Ce aduce | Probele |
 | --- | --- | --- |
 | f-1 | documentul v32 (forma `profil`), IR-ul, nucleul (linia frântă) și oracolul; lucrarea refuză profilul pe orice operație, cu motiv | nucleul față de oracol (plonjarea, liniile orizontale și înclinate, arcele), pe profiluri la întâmplare; ușa și oracolul documentului; corpusul de aur |
-| f-2 | canelura cu profilul (pe linie) și intrarea în proiect: biblioteca (profilurile parametrice și cel desenat), Tăierea, rândurile exportului (silueta pe rând, doar de citit) | secțiunea canelurii simulate față de hârtie (oglinda siluetei); rândul poartă punctele, Exportă le scrie |
-| f-3 | marginea profilată pe o parte: centrul la r(0) de desen, adâncimea cel mult h_max, nota în fișă | secțiunea marginii simulate față de hârtie, celulă cu celulă; nimic tăiat dincolo de profil; refuzul peste h_max |
-| f-4 | editorul siluetei desenate în „Frezele mele” (tabelul, desenul, tragerea, „Pornește de la…”), CSV și JSON | marginile punctelor; dus-întors prin fișier; e2e pe editor |
+| f-2 | canelura cu profilul (pe linie), în lucrare: drumul frezei plate, silueta în IR, același T cu altă siluetă refuzat, raportul foilor | secțiunea canelurii simulate față de hârtie (oglinda siluetei), celulă cu celulă; drumul față de freza plată; refuzurile |
+| f-3 | intrarea în proiect: biblioteca (profilurile parametrice ca linii, sub 0,001 mm, și cel desenat), Tăierea, rândurile exportului (silueta pe rând, doar de citit) | abaterea liniilor de la arce; rândul poartă punctele, Exportă le scrie; e2e pe programul scris, simulat de oracol |
+| f-4 | marginea profilată pe o parte: centrul la r(0) de desen, adâncimea cel mult h_max, nota în fișă | secțiunea marginii simulate față de hârtie, celulă cu celulă; nimic tăiat dincolo de profil; refuzul peste h_max |
+| f-5 | editorul siluetei desenate în „Frezele mele” (tabelul, desenul, tragerea, „Pornește de la…”), CSV și JSON | marginile punctelor; dus-întors prin fișier; e2e pe editor |
+
+Sub-felia f-2 de la propunere (canelura și intrarea în proiect) s-a împărțit pe 27.11, ca e-3 și e-4 la ADR 0303: întâi CAM-ul,
+care mișcă mașina, apoi intrarea în proiect. Marginea profilată și editorul s-au mutat cu un număr (f-4, f-5).
 
 ### 7. Mărimea
 
-f-1 adaugă silueta în nucleu (în workerele simulării și CAM) și forma în schema ușii: ținta e cel mult +0,3 kB în pornirea cu
-ușa și +2 kB în total pe toată felia f; fiecare sub-felie își spune creșterea în raport.
+f-1 adaugă silueta în nucleu (în workerele simulării și CAM) și forma în schema ușii: ținta era cel mult +0,3 kB în pornirea cu
+ușa și +2 kB în total pe toată felia f; fiecare sub-felie își spune creșterea în raport (f-1 a luat singură +2,1 kB: vezi
+„Implementarea (16.A↑f-1)”).
 
 ## Întrebările pentru owner (cu recomandarea întâi)
 
@@ -104,6 +109,80 @@ ușa și +2 kB în total pe toată felia f; fiecare sub-felie își spune creșt
    a. Tabelul punctelor și desenul la scară, cu tragerea pe desen (lipirea la 0,1 mm) și „Pornește de la…” un profil
       parametric (recomandat).
    b. Doar tabelul.
+
+## Implementarea (16.A↑f-1)
+
+Pe 27.11, pe `wip/16.A-freze-e`, peste e-6, cu recomandările aplicate (întrebările de mai sus rămân la owner, grupat).
+Numărul v32 l-a dat sesiunea principală.
+
+- **IR-ul:** `FormaScula` primește `{ tip: 'profil', puncte }` (`src/ir/ir.ts`).
+- **Nucleul** (`src/sim/nucleu.ts`): silueta de felul 4 ține punctele (`pr`, `ph`) și pantele bucăților (`pp`); ultimul r e
+  pus exact pe R. Înălțimea la o distanță vine din bucata ei; raza efectivă la o adâncime, din bucata care o atinge
+  (celulele de dincolo sunt sărite).
+  - Plonjarea, arcul la Z constant și linia orizontală merg ca la orice siluetă.
+  - Linia înclinată merge prin `minimProfil`, pe fiecare bucată, pe cele două intervale ale ei în s (în fața proiecției și
+    în spatele ei): F(s) = m·s + h_k + p_k·(√(s² + p²) − r_k) e convexă, cu punctul staționar −m·p / √(p_k² − m²) când
+    |m| < p_k. Altfel F e monotonă, deci minimul e la capătul spre care coboară. Punctul se taie la interval. E aceeași
+    formulă ca la conul V-ului, fără pași de căutare, deci aceeași amprentă în Node și în browser.
+  - Elicea cu profilul e refuzată de nucleu și de `program.ts`, cu motiv, ca elicea cu V-ul.
+- **Simularea refuză** (`profilRefuzat`, `src/sim/program.ts`) un profil fără sens: sub două puncte, peste 200, primul care
+  nu e (0, 0), r care nu crește strict, h care scade sau capătul care nu e la rază.
+- **Documentul v32:**
+  - **Schema:** varianta `profil` a formei, cu perechi `[r, h]` stricte, finite, în [0, plafon], 2–200 de puncte
+    (`PLAFON.puncteProfil`), plus `profilBun`: primul punct (0, 0), r strict crescător, h nedescrescător, ultimul r la
+    1e-9 de Ø / 2.
+  - **Migrarea** v31 → v32 (`v31v32`) schimbă doar numărul; un v31 cu o formă `profil` e refuzat, cu calea frezei.
+  - **Oracolul documentului** (`test/oracles/document.ts`, secțiunea v32) și cazurile pe hârtie: `VALIDE_V32`, P01–P07, și
+    `REFUZATE_V32`, R01 plus RD0–RD12. Proba ușii e `test/unit/document.v32.oracol.test.ts`. Probele care țin versiunea
+    curentă s-au mutat pe v32, iar „versiunea mai nouă” e acum 33.
+  - **Corpusul de aur:** pasul v32 pune o canelură cu freza „Rotunjire 8” (T11). Ieșirile așteptate s-au schimbat doar în
+    `"schema": 32`.
+- **Lucrarea** (`src/cam/job.ts`, `motivFormaPeOperatie` cu motivul `profil`) refuză profilul pe orice operație și pe orice
+  freză în plus, cu forma, T-ul și calea. Fereastra exportului nu face rând unei operații cu profil (`operatieCuRand`).
+  Panoul de proprietăți spune „T{n}, profilată Ø{d} mm”.
+- **Probele:**
+  - `test/unit/simulare.profil.test.ts`, scrisă întâi: nucleul față de oracolul simulării, pe trei profiluri (o rotunjire,
+    un S, trepte) și opt feluri de mutări. Mutările sunt liniile la două adâncimi, linia oblică, rampele line și abrupte,
+    arcele și cercul întreg, plonjările. Profilurile sunt și 12 la întâmplare, cu trei mutări fiecare.
+    - Dinții probei: V-ul de același Ø și aceeași înălțime pică pe aceleași piese.
+    - Pe hârtie: profilul de două puncte e V-ul sau plata, iar cel cu fund plat e V-ul cu vârf plat, celulă cu celulă.
+      Secțiunea canelurii e silueta.
+    - Refuzurile simulării. Ține ~35 s, pe celule de 0,1 mm.
+  - `test/unit/profil.lucrare.test.ts`: regula formei, refuzul lucrării, fără rând în fereastră.
+- **Otrăvurile:** `test/otravuri/16.A-f1.py`, 20 / 20 prinse; F15 (h ≥ 0 la ușă), practic echivalentă, scoasă cu motivul.
+- **Mărimea:** pornirea +0,2 kB (cu ușa 117,3 / 125, +0,3), totalul +2,1 kB (940,4 / 1 000). Ținta de +2 kB pe toată felia f e
+  deja atinsă: nucleul se numără de două ori (workerul CAM și workerul simulării), iar schema ușii cu migrarea încă o dată. f-2…f-5
+  își spun creșterea; o creștere peste plafon cere decizia owner-ului.
+- **Neschimbate:** nimic pe server; programul fără profil, octet cu octet (corpusul CAM, aurul plăcilor și al atelierelor).
+
+## Implementarea (16.A↑f-2)
+
+Pe 27.11, pe `wip/16.A-freze-e`, peste f-1 (întrebarea 4a aplicată, partea canelurii). Mișcă mașina, deci proba secțiunii
+pe hârtie a fost scrisă întâi.
+
+- **Regula** (`motivFormaPeOperatie`): profilul desenat merge pe linie, ca freză a operației. Pe o parte, în buzunar, la
+  găurire, în V-carve și pe relief, `profil`. Pe orice freză în plus (de rest, a fundului plat, a dopului, a benzii), lucrarea îl
+  refuză, cu forma, T-ul și calea: „taie deocamdată doar pe linie (canelura), ca freză a operației: marginea profilată vine pe
+  o sub-felie”.
+- **Drumul** e al frezei plate de același Ø, mișcare cu mișcare, și cu urechile și rampa: centrul stă pe linie. Scula din IR
+  își poartă silueta (`sculaIR` copiază punctele), iar simularea și traseul o citesc de acolo.
+- **Secțiunea, pe hârtie:** la distanța x de linie, cât x ≤ R, z = min(0, −d + h(x)), cu h interpolată liniar între puncte;
+  dincolo de R, neatins. Peste înălțimea profilului, peretele e vertical la R (cilindrul frezei).
+- **Același T cu altă siluetă** (alte puncte, chiar doar în h) e altă freză: refuzat, cu „profilată și profilată cu altă
+  siluetă”. Aceeași siluetă pe două caneluri e o singură freză.
+- **Raportul foilor** numește freza „profilată” (`profilata` pe rândul operației), nu ca pe o plată de același Ø.
+- **Fereastra exportului** nu face încă rând unei operații cu profil (`formaPeRand`): Exportă o lasă neschimbată, iar
+  programul o taie. Rândul, cu silueta doar de citit, vine în f-3.
+- **Probele:** `test/unit/canelura.profil.test.ts`, scrisă întâi:
+  - regula pe toate locurile;
+  - drumul față de freza plată (simplu, cu rampa, cu urechile) pe trei profiluri;
+  - secțiunea simulată față de hârtie, celulă cu celulă, la 0,01 mm, sub, la și peste înălțimea profilului, cu fundul și
+    lățimea la față ca dinți;
+  - refuzurile, identitatea pe T, raportul.
+
+  Proba lucrării din f-1 (`profil.lucrare.test.ts`) a fost întoarsă pe canelură.
+- **Neschimbate:** nimic pe server; documentul rămâne v32; programul fără profil, octet cu octet. Elicea cu profilul rămâne
+  refuzată de simulare (o rampă pe arce, cu profilul, nu se simulează, ca la V).
 
 ## Se redeschide dacă
 

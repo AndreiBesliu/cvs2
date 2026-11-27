@@ -6733,3 +6733,52 @@ export const REFUZATE_V31: readonly RefuzV18[] = [
   rF('RT9 raza 2,6 pe Ø5 (peste 2,5)', docT31([peLinie31(toro31(2, 5, 2.6))]), 'scula', `${opT}.scula.forma.raza`, 'ADR 0303 §1: sub Ø / 2'),
   rF('RT10 o freză de rest toroidală cu raza cât jumătatea ei', docT31([buzunar({ rest: [{ scula: toro31(7, 2, 1), pasLateral: 0.5 }] })]), 'rest', `${opT}.rest.0.scula.forma.raza`, 'ADR 0303 §1: sub Ø / 2, pe orice freză'),
 ];
+
+// ---------------------------------------------------------------------------------------------------------------
+// v32 (ADR 0304): profilul desenat (`{ tip: 'profil', puncte }`: 2 … 200 de puncte [r, h], prima (0, 0), r strict crescător,
+// h nedescrescător, ultimul r cât raza sculei). Cazurile pe hârtie, scrise din ADR.
+
+const laV32 = (d: Liber): Liber => cuSchema(d, 32);
+/** Rotunjirea pe o freză Ø8 (raza 4): fundul plat până la 1,5, apoi colțul, până la (4, 3). */
+const PUNCTE_RUND = [[0, 0], [1.5, 0], [2.2, 0.3], [3, 0.9], [3.6, 1.8], [4, 3]];
+/** O freză cu profilul desenat dat (implicit rotunjirea Ø8). */
+const prof32 = (numar: number, diametru = 8, puncte: unknown = PUNCTE_RUND, v: Liber = {}): Liber => (
+  { numar, nume: 'freza profil', diametru, forma: { tip: 'profil', puncte }, ...v }
+);
+/** Documentul dreptunghiului `e`, cu profilul `o1` și operațiile date (implicit v32). */
+const docP32 = (alte: readonly Liber[] = [], schema = 32): Liber => docV18(dreptunghi(), [opV18(), ...alte], schema);
+/** Profilul `o2` pe linie al dreptunghiului, cu scula dată. */
+const peLinie32 = (scula: Liber): Liber => opV18({ id: 'o2', latura: 'pe-linie', adancime: 1, pas: 1, scula });
+/** 200 de puncte pe o freză Ø6: r de la 0 la 3, h urcă liniar. */
+const PUNCTE_200 = Array.from({ length: 200 }, (_, k) => [(3 * k) / 199, k / 199]);
+
+export const VALIDE_V32: readonly CazV18[] = [
+  ...VALIDE_V31.map((c) => ({ nume: `${c.nume} (v32)`, doc: laV32(c.doc) })),
+  { nume: 'P01 rotunjirea Ø8, pe un profil pe linie (ADR 0304 §1)', doc: docP32([peLinie32(prof32(2))]) },
+  { nume: 'P02 marginile: două puncte (o plată) și 200 de puncte', doc: docP32([peLinie32(prof32(2, 6, [[0, 0], [3, 0]])), opV18({ id: 'o3', latura: 'pe-linie', scula: prof32(3, 6, PUNCTE_200) })]) },
+  { nume: 'P03 profilul în fundul plat și ca freză de rest (ușa îl primește; lucrarea judecă)', doc: docP32([vcarve({ fundPlat: fund({ scula: prof32(6, 3.175, [[0, 0], [1.5875, 0.2]]) }) }), buzunar({ rest: [{ scula: prof32(7, 2, [[0, 0], [1, 0.5]]), pasLateral: 0.5 }] })]) },
+  { nume: 'P04 câmpuri necunoscute în forma profilului (rămân)', doc: docP32([peLinie32(prof32(2, 8, PUNCTE_RUND, { forma: { tip: 'profil', puncte: PUNCTE_RUND, nume: 'rotunjire 3', raza: 2 } }))]) },
+  { nume: 'P05 profilul cu valorile de lucru și originea din bibliotecă (v27)', doc: docP32([peLinie32({ ...freza27(2, 8), forma: { tip: 'profil', puncte: PUNCTE_RUND } })]) },
+  { nume: 'P06 profilul pe o finisare a reliefului (ușa îl primește; lucrarea îl refuză)', doc: docFin29(finisare29({ scula: prof32(4, 8) }), [], 32) },
+  { nume: 'P07 ultimul r la 5e-10 de rază și o bucată orizontală (h egal)', doc: docP32([peLinie32(prof32(2, 6, [[0, 0], [1, 0.5], [2, 0.5], [3 + 5e-10, 1]]))]) },
+];
+
+const opP = 'piese.0.operatii.1';
+
+export const REFUZATE_V32: readonly RefuzV18[] = [
+  ...REFUZATE_V31.filter((r) => !r.nume.startsWith('R01 ')),
+  { nume: 'R01 scris de o versiune mai nouă (v33)', doc: docP32([peLinie32(prof32(2))], 33), categorie: 'schema', camp: 'schema', motiv: 'ADR 0070 §2: o versiune mai veche refuză una mai nouă', text: 'versiune mai nouă' },
+  rF('RD0 un v31 cu profilul pe profil (forma, necunoscută la v31)', docP32([peLinie32(prof32(2))], 31), 'scula', `${opP}.scula.forma.tip`, 'ADR 0304 §1: profilul vine cu v32'),
+  rF('RD1 punctele lipsă', docP32([peLinie32({ numar: 2, nume: 'freza profil', diametru: 8, forma: { tip: 'profil' } })]), 'scula', `${opP}.scula.forma.puncte`, 'ADR 0304 §1: cerute'),
+  rF('RD2 un singur punct', docP32([peLinie32(prof32(2, 8, [[0, 0]]))]), 'scula', `${opP}.scula.forma.puncte`, 'ADR 0304 §1: cel puțin două'),
+  rF('RD3 201 de puncte', docP32([peLinie32(prof32(2, 6, Array.from({ length: 201 }, (_, k) => [(3 * k) / 200, k / 200])))]), 'scula', `${opP}.scula.forma.puncte`, 'ADR 0304 §1: cel mult 200'),
+  rF('RD4 primul punct nu e (0, 0)', docP32([peLinie32(prof32(2, 8, [[0, 0.1], [4, 3]]))]), 'scula', `${opP}.scula.forma.puncte.0`, 'ADR 0304 §1: de la (0, 0)'),
+  rF('RD5 r nu crește strict', docP32([peLinie32(prof32(2, 8, [[0, 0], [2, 1], [2, 1.5], [4, 3]]))]), 'scula', `${opP}.scula.forma.puncte.2`, 'ADR 0304 §1: r strict crescător'),
+  rF('RD6 h scade', docP32([peLinie32(prof32(2, 8, [[0, 0], [2, 1.5], [3, 1], [4, 3]]))]), 'scula', `${opP}.scula.forma.puncte.2`, 'ADR 0304 §1: h nedescrescător'),
+  rF('RD7 ultimul r nu e raza (3,9 pe Ø8)', docP32([peLinie32(prof32(2, 8, [[0, 0], [2, 1], [3.9, 3]]))]), 'scula', `${opP}.scula.forma.puncte.2`, 'ADR 0304 §1: până la diametru / 2'),
+  rF('RD8 un punct cu trei numere', docP32([peLinie32(prof32(2, 8, [[0, 0], [2, 1, 0], [4, 3]]))]), 'scula', `${opP}.scula.forma.puncte.1`, 'ADR 0304 §1: perechi [r, h]'),
+  rF('RD9 un punct cu h ca text', docP32([peLinie32(prof32(2, 8, [[0, 0], [2, '1'], [4, 3]]))]), 'scula', `${opP}.scula.forma.puncte.1`, 'ADR 0304 §1: numere'),
+  rF('RD10 h negativ', docP32([peLinie32(prof32(2, 8, [[0, 0], [2, -1], [4, 3]]))]), 'scula', `${opP}.scula.forma.puncte.1`, 'ADR 0304 §1: h ≥ 0'),
+  rF('RD11 un v31 cu profilul în fundul plat', docP32([vcarve({ fundPlat: fund({ scula: prof32(6, 3.175, [[0, 0], [1.5875, 0.2]]) }) })], 31), 'fund-plat', `${opP}.fundPlat.scula.forma.tip`, 'ADR 0304 §1: profilul vine cu v32'),
+  rF('RD12 o freză de rest cu profilul care se termină sub raza ei', docP32([buzunar({ rest: [{ scula: prof32(7, 2, [[0, 0], [0.8, 0.5]]), pasLateral: 0.5 }] })]), 'rest', `${opP}.rest.0.scula.forma.puncte.1`, 'ADR 0304 §1: pe orice freză'),
+];

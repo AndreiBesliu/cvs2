@@ -135,7 +135,7 @@ test('ce scrie Exportă: forma rotundă, cu numele după formă; fără schimbar
   assert.deepEqual(operatieDinDialog(cu, undefined, { numar: 2, diametru: 6 }).scula, { numar: 2, nume: 'freza plata', diametru: 6 });
   // Programul canelurii scrise așa are forma în IR.
   const doc = {
-    schema: 31, rev: 0,
+    schema: 32, rev: 0,
     piese: [{ id: 'p', radacina: { tip: 'grup', id: 'g', matrice: { ...I }, copii: [{ tip: 'element', id: 'e', forma: { tip: 'dreptunghi', latime: 60, inaltime: 40, razaColt: 0 }, matrice: { ...I, e: 20, f: 20 } }] }, operatii: [tor] }],
     foi: [{ id: 'f1', stoc: { latime: 100, inaltime: 80, grosime: 18 }, instante: [{ id: 'i', piesa: 'p', x: 0, y: 0, rotire: 0 }] }],
   };

@@ -15,7 +15,7 @@ import type { Document, FormaDoc, UrechiOperatie } from '../../src/model/documen
 const I = { a: 1, b: 0, c: 0, d: 1, e: 0, f: 0 };
 function documentCu(urechi: UrechiOperatie | null, id = 'e', forma: FormaDoc | null = null): Document {
   return {
-    schema: 31, rev: 0,
+    schema: 32, rev: 0,
     piese: [{
       id: 'p', radacina: { tip: 'element', id, forma: forma ?? { tip: 'dreptunghi', latime: 80, inaltime: 30, razaColt: 0 }, matrice: { ...I } },
       operatii: [{

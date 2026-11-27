@@ -24,7 +24,11 @@ export type OperatieRaport = {
   readonly tip: TipOperatie;
   readonly latura: Latura;
   /** Freza: `bila` la freza bilă, `toroidala` (raza colțului, mm) la cea toroidală (ADR 0303), ca să nu pară plată. */
-  readonly scula: { readonly numar: number; readonly diametru: number; readonly unghi: number | null; readonly bila?: true; readonly toroidala?: number };
+  readonly scula: {
+    readonly numar: number; readonly diametru: number; readonly unghi: number | null; readonly bila?: true; readonly toroidala?: number;
+    /** Freza profilată (ADR 0304): numită, nu ca o plată de același Ø. */
+    readonly profilata?: true;
+  };
   readonly adancime: number;
   readonly treceri: number;
   readonly urechi: number;
@@ -111,6 +115,7 @@ function operatieRaport(o: Operatie): OperatieRaport {
       // Freza bilă (ADR 0312 §1): numită, ca să nu pară plată.
       ...(o.scula.forma?.tip === 'bila' ? { bila: true as const } : {}),
       ...(o.scula.forma?.tip === 'toroidala' ? { toroidala: o.scula.forma.raza } : {}),
+      ...(o.scula.forma?.tip === 'profil' ? { profilata: true as const } : {}),
     },
     adancime: o.adancime, treceri: o.pas > 0 ? Math.max(1, Math.ceil(o.adancime / o.pas - 1e-9)) : 1,
     urechi: o.urechi ? (o.urechi.mod === 'alese' ? numarUrechiAlese(o) : o.urechi.mod === 'mijloc' ? 0 : o.urechi.numar) : 0,

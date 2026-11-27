@@ -15,6 +15,7 @@ import {
 
 const finit = v.pipe(v.number(), v.finite());
 const pozitiv = (max: number) => v.pipe(v.number(), v.finite(), v.gtValue(0), v.maxValue(max));
+const intre0 = (max: number) => v.pipe(v.number(), v.finite(), v.minValue(0), v.maxValue(max));
 const Id = v.pipe(v.string(), v.minLength(1), v.maxLength(PLAFON.idLungime), v.regex(/^[A-Za-z0-9_-]+$/));
 const Nume = v.optional(v.pipe(v.string(), v.maxLength(PLAFON.numeLungime)));
 
@@ -137,6 +138,11 @@ const SchemaScula = v.pipe(v.looseObject({
     v.looseObject({ tip: v.literal('bila') }),
     // ADR 0303 §1 (v31): toroidala, cu raza colțului; sub jumătatea diametrului o judecă scula (mai jos).
     v.looseObject({ tip: v.literal('toroidala'), raza: pozitiv(PLAFON.diametruScula) }),
+    // ADR 0304 §1 (v32): profilul desenat, punctele [r, h]; linia frântă și capătul la rază le judecă scula (mai jos).
+    v.looseObject({
+      tip: v.literal('profil'),
+      puncte: v.pipe(v.array(v.strictTuple([intre0(PLAFON.diametruScula), intre0(PLAFON.adancimeOperatie)])), v.minLength(2), v.maxLength(PLAFON.puncteProfil)),
+    }),
   ])),
   // ADR 0300 §5 (v27): originea copiei din bibliotecă, valorile de lucru și lungimea tăișului; adâncimea peste tăiș o refuză
   // lucrarea.
@@ -152,7 +158,16 @@ const SchemaScula = v.pipe(v.looseObject({
 }),
 // ADR 0303 §1: raza colțului toroidalei e sub jumătatea diametrului (o singură scriere: cât jumătatea lui e o bilă).
 v.forward(v.check((s) => s.forma?.tip !== 'toroidala' || s.forma.raza < s.diametru / 2,
-  'raza colțului toroidalei trebuie să fie sub jumătatea diametrului (o freză cu raza cât jumătatea lui se scrie ca bilă)'), ['forma', 'raza']));
+  'raza colțului toroidalei trebuie să fie sub jumătatea diametrului (o freză cu raza cât jumătatea lui se scrie ca bilă)'), ['forma', 'raza']),
+// ADR 0304 §1: profilul desenat pleacă din (0, 0), cu r strict crescător și h nedescrescător, și se termină la rază (1e-9).
+v.forward(v.check((s) => s.forma?.tip !== 'profil' || profilBun(s.forma.puncte, s.diametru),
+  'profilul frezei pleacă din (0, 0), cu r strict crescător și h nedescrescător, până la raza ei'), ['forma', 'puncte']));
+
+function profilBun(P: ReadonlyArray<readonly [number, number]>, diametru: number): boolean {
+  if (P[0]![0] !== 0 || P[0]![1] !== 0 || Math.abs(P[P.length - 1]![0] - diametru / 2) > 1e-9) return false;
+  for (let i = 1; i < P.length; i++) if (!(P[i]![0] > P[i - 1]![0] && P[i]![1] >= P[i - 1]![1])) return false;
+  return true;
+}
 
 // ADR 0093: frezele de rest (v17), o listă nevidă; potrivirea (mai mică decât freza dinainte, plată, pasul cel mult raza ei) e
 // a lucrării.

@@ -92,7 +92,7 @@
  */
 import {
   ridicaV9O, taieturiV8O, type ColturiO, type DocV3O, type DocV4O, type DocV5O, type DocV6O, type DocV7O, type DocV8O, type DocV9O, type IntrariO, type LaturaO,
-  type DocV10O, type DocV11O, type DocV12O, type DocV13O, type DocV14O, type DocV15O, type DocV16O, type DocV17O, type DocV18O, type DocV19O, type DocV20O, type DocV21O, type DocV22O, type DocV23O, type DocV24O, type DocV25O, type DocV26O, type DocV27O, type DocV28O, type DocV29O, type DocV30O, type DocV31O, type LaturaV10O, type MatriceO, type RampaO, type SensO, type UrechiO,
+  type DocV10O, type DocV11O, type DocV12O, type DocV13O, type DocV14O, type DocV15O, type DocV16O, type DocV17O, type DocV18O, type DocV19O, type DocV20O, type DocV21O, type DocV22O, type DocV23O, type DocV24O, type DocV25O, type DocV26O, type DocV27O, type DocV28O, type DocV29O, type DocV30O, type DocV31O, type DocV32O, type LaturaV10O, type MatriceO, type RampaO, type SensO, type UrechiO,
 } from './document.ts';
 import { esteDeschisaO, taieturiV10O, type TaieturaV10O } from './document.v10.ts';
 
@@ -786,7 +786,7 @@ export function regiuneDinInele(
  * v7 se aduce întâi la v8 (sensul `urcare`, ADR 0027 §5; urechile `null`, ADR 0028 §1; rampa `null`, ADR 0029 §1;
  * intrările `null`, ADR 0030 §1; degajările `null`, ADR 0032 §1). Un v10 (ADR 0037) se citește ca atare: vezi mai jos.
  */
-export function regiuneDinDocument(doc: DocV3O | DocV4O | DocV5O | DocV6O | DocV7O | DocV8O | DocV9O | DocV10O | DocV11O | DocV12O | DocV13O | DocV14O | DocV15O | DocV16O | DocV17O | DocV18O | DocV19O | DocV20O | DocV21O | DocV22O | DocV23O | DocV24O | DocV25O | DocV26O | DocV27O | DocV28O | DocV29O | DocV30O | DocV31O): Regiune {
+export function regiuneDinDocument(doc: DocV3O | DocV4O | DocV5O | DocV6O | DocV7O | DocV8O | DocV9O | DocV10O | DocV11O | DocV12O | DocV13O | DocV14O | DocV15O | DocV16O | DocV17O | DocV18O | DocV19O | DocV20O | DocV21O | DocV22O | DocV23O | DocV24O | DocV25O | DocV26O | DocV27O | DocV28O | DocV29O | DocV30O | DocV31O | DocV32O): Regiune {
   // ADR 0090 §4 (felia 8.1↑, scris de sesiunea aplicației): un V-carve nu e inel (sapă doar înăuntrul regiunii lui), deci
   // K nu se schimbă; un v14 se citește ca un v13, fără V-carve.
   // ADR 0091 (felia 8.2↑, scris de sesiunea aplicației): fundul plat e al V-carve-ului, deci un v15 se citește ca un v14.
@@ -814,6 +814,9 @@ export function regiuneDinDocument(doc: DocV3O | DocV4O | DocV5O | DocV6O | DocV
   }
   // ADR 0313 (felia 18.1↑d-1): degroșarea sapă tot doar în relief, deasupra modelului plus adaos: un v30 se citește ca un v29
   // fără degroșări.
+  // ADR 0304 (felia 16.A↑f-1): profilul desenat al frezei nu schimbă regiunea (lucrarea îl refuză în f-1): un v32 se citește
+  // ca un v31.
+  if (doc.schema === 32) return regiuneDinDocument({ ...doc, schema: 31 } as unknown as DocV31O);
   // ADR 0303 (felia 16.A↑e-1): forma toroidală a frezei nu schimbă regiunea (lucrarea o refuză în e-1): un v31 se citește
   // ca un v30.
   if (doc.schema === 31) return regiuneDinDocument({ ...doc, schema: 30 } as unknown as DocV30O);

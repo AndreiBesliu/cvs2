@@ -35,7 +35,7 @@ const CALE: Liber = {
 };
 function doc(operatii: readonly Liber[], forma: Liber = DREPTUNGHI): Liber {
   return {
-    schema: 31, rev: 0,
+    schema: 32, rev: 0,
     piese: [{
       id: 'p',
       radacina: {

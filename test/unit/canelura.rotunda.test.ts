@@ -27,7 +27,7 @@ const op = (v: Liber): Liber => ({
 });
 function doc(operatii: readonly Liber[]): Liber {
   return {
-    schema: 31, rev: 0,
+    schema: 32, rev: 0,
     piese: [{
       id: 'p',
       radacina: {
