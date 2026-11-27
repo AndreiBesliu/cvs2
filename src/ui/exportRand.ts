@@ -223,6 +223,17 @@ export function formeEgale(a: FormaRand | undefined, b: FormaRand | undefined): 
 }
 
 /**
+ * Bila și toroidala pe rând (ADR 0303 §4): pe linie (canelura, felia 16.A↑e-3) și în buzunar (16.A↑e-5), fără freze de rest și
+ * fără incrustație cu pereți drepți; plata și V-ul, mereu (V-ul își are regula lui, `vPeLinie`). Aceeași regulă ca
+ * `motivFormaPeOperatie` din model (o probă le compară), scrisă aici fiindcă interfața nu importă modelul.
+ */
+export function rotundaPermisa(p: Pick<Rand, 'tip' | 'latura' | 'formaScula' | 'rest' | 'incrustatieDreapta'>): boolean {
+  if (p.formaScula !== 'bila' && p.formaScula !== 'toroidala') return true;
+  if (p.tip === 'profil') return p.latura === 'pe-linie';
+  return p.tip === 'buzunar' && p.rest.length === 0 && !p.incrustatieDreapta;
+}
+
+/**
  * Forma frezei operației citită din rând (ADR 0303, felia 16.A↑e-4): `null` = plată; o formă; `undefined` = de necitit (un
  * unghi V sau o rază a colțului care nu e un număr, ori o rază ≤ 0). Vârful V de 0 (ascuțit) nu se scrie (ADR 0092).
  */
@@ -549,6 +560,11 @@ export type IntrareHartie = {
   readonly grosime: number | undefined; readonly supracursa: number; readonly prinFoaie: boolean;
   /** Găurirea: freza scrisă, ieșirea la al câtelea pas și diametrele cercurilor rândului. */
   readonly diametruScula: number | null; readonly retragere: number | null; readonly diametre: readonly number[];
+  /**
+   * Buzunarul (ADR 0303 §4, felia 16.A↑e-5): forma frezei scrisă (`formaDinRand`: null = plată, lipsă = de necitit) și pasul
+   * lateral, pentru creasta de pe fund.
+   */
+  readonly forma?: FormaRand | null | undefined; readonly pasLateral?: number | null;
 };
 /** Felul găuririi unui cerc (ADR 0087): ca `felGaurire` din lucrare. */
 export type FelGaurireRand = 'ciocanire' | 'elice' | 'mic' | 'mare' | 'gresit';
@@ -564,6 +580,11 @@ export type HartieRand = {
     readonly cercuri: readonly { readonly diametru: number; readonly fel: FelGaurireRand }[];
     readonly ciocanire: readonly PasCiocanireRand[] | null; readonly ridicare: number;
   } | null;
+  /**
+   * Doar pe un buzunar cu bila sau cu toroidala (ADR 0303 §4, felia 16.A↑e-5): creasta de pe fund la pasul lateral scris, ca
+   * `creastaBuzunar` din lucrare: între două inele și cea mai mare (pe colțurile inelelor și pe mijloc); null altfel.
+   */
+  readonly creasta?: { readonly intreInele: number; readonly maxima: number } | null;
 };
 
 /**

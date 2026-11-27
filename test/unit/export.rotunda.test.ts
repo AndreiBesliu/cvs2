@@ -152,7 +152,7 @@ const BILA6 = salvata({ ...PLATA6, nume: 'Bilă Ø6', fel: 'bila', tais: undefin
 const TOR6 = salvata({ ...PLATA6, nume: 'Toroidală Ø6 r1', fel: 'toroidala', raza: 1, tais: undefined }, 't6');
 const P6 = salvata(PLATA6, 'p6');
 
-test('listele: rândul poartă formele rotunde; Tăierea le oferă doar pe canelură; toroidala are CAM', () => {
+test('listele: rândul poartă formele rotunde; Tăierea le oferă pe canelură și (16.A↑e-5) în buzunar; toroidala are CAM', () => {
   assert.ok((FELURI_CU_CAM as readonly string[]).includes('toroidala'));
   assert.deepEqual(sculaDinFreza(TOR6).forma, { tip: 'toroidala', raza: 1 });
   for (const f of [undefined, { tip: 'v', unghi: 60 }, { tip: 'bila' }, { tip: 'toroidala', raza: 1 }] as const) assert.equal(formaPeRand(f), true);
@@ -162,5 +162,6 @@ test('listele: rândul poartă formele rotunde; Tăierea le oferă doar pe canel
   assert.deepEqual(frezePeRanduri([P6, BILA6, TOR6]).map((f) => f.id), ['p6', 'b6', 't6']);
   assert.deepEqual(frezePotrivite([P6, BILA6, TOR6], [{ tip: 'profil', latura: 'pe-linie' }]).map((f) => f.id), ['p6', 'b6', 't6']);
   assert.deepEqual(frezePotrivite([P6, BILA6, TOR6], [{ tip: 'profil', latura: 'exterior' }]).map((f) => f.id), ['p6']);
-  assert.deepEqual(frezePotrivite([P6, BILA6, TOR6], [{ tip: 'profil', latura: 'pe-linie' }, { tip: 'buzunar', latura: 'interior' }]).map((f) => f.id), ['p6']);
+  assert.deepEqual(frezePotrivite([P6, BILA6, TOR6], [{ tip: 'profil', latura: 'pe-linie' }, { tip: 'buzunar', latura: 'interior' }]).map((f) => f.id), ['p6', 'b6', 't6']);
+  assert.deepEqual(frezePotrivite([P6, BILA6, TOR6], [{ tip: 'profil', latura: 'pe-linie' }, { tip: 'gaurire', latura: 'interior' }]).map((f) => f.id), ['p6']);
 });

@@ -34,7 +34,7 @@ import {
   copieDeReadus, cuFrezaAleasa, cuFrezaPusaInapoi, cuValorileNoi, frezeRanduri, locuriFreze, numarPentruRand, oferitePentruRest, stareOrigine, type FrezaOferita, type OrigineFreza, type SculaOperatie, type StareExport,
   AER_IMPLICIT, campuriAerGresite, parametriAer, type SetariAer,
   type CopieRand, type RezultatInapoi, type UndeFreza, campuriRegimGresite, campuriSculaGresite, cheieFreza, regimDinRand, REGIM_GOL, cuNumarT, numarDupaConflict, type FrezaT, type LocFreza,
-  type ValoriOperatie, type HartieRand, type IntrareHartie, formaDinRand, RAZA_COLT_IMPLICITA,
+  type ValoriOperatie, type HartieRand, type IntrareHartie, formaDinRand, RAZA_COLT_IMPLICITA, rotundaPermisa,
 } from './exportRand.ts';
 
 type Props = {
@@ -685,8 +685,9 @@ export function DialogExport(
     varf: p !== undefined && (p.formaScula !== 'v' || ((v, d) => v !== null && d !== null && v >= 0 && v < d)(citesteNumar(p.varfV), citesteNumar(p.diametruScula))),
     // Freza în V (ADR 0092 §3) taie pe linie sau într-un V-carve; pe o parte, într-un buzunar sau la găurire, nu.
     vPeLinie: p !== undefined && (p.formaScula !== 'v' || p.tip === 'vcarve' || (p.tip === 'profil' && p.latura === 'pe-linie')),
-    // Bila și toroidala (ADR 0303, felia 16.A↑e-4) taie azi doar pe linie (canelura).
-    rotunda: p !== undefined && ((p.formaScula !== 'bila' && p.formaScula !== 'toroidala') || (p.tip === 'profil' && p.latura === 'pe-linie')),
+    // Bila și toroidala (ADR 0303): pe linie (canelura, 16.A↑e-4) și în buzunar, fără freze de rest și fără incrustație cu
+    // pereți drepți (16.A↑e-5).
+    rotunda: p !== undefined && rotundaPermisa(p),
     // Fundul plat (ADR 0091): doar cu bifa pusă; pasul lateral cel mult raza frezei drepte.
     fund: p !== undefined && (p.tip !== 'vcarve' || !p.fundPlat || (intregInMargini(p.numarSculaFund, MARGINI_OPERATIE.numarScula)
       && inMargini(p.diametruSculaFund, MARGINI_OPERATIE.diametru) && ((d) => d !== null && inMargini(p.pasLateralFund, d / 2))(citesteNumar(p.diametruSculaFund)))),
@@ -808,7 +809,7 @@ export function DialogExport(
   const funduriBune = randuri.every((b) => b.fund);
   const varfuriBune = randuri.every((b) => b.varf);
   const vPeLinie = randuri.every((b) => b.vPeLinie);
-  const rotundePeLinie = randuri.every((b) => b.rotunda);
+  const rotundeBune = randuri.every((b) => b.rotunda);
   const resturiBune = randuri.every((b) => b.rest);
   const strategiiBune = randuri.every((b) => b.strategie);
   const incrustatiiBune = randuri.every((b) => b.incrustatie);
@@ -837,6 +838,7 @@ export function DialogExport(
     incrustatie: p.tip === 'buzunar' && p.incrustatieDreapta ? (p.locasInc === 'gaura' ? 'gaura' : 'alta') : p.tip === 'vcarve' && p.incrustatie ? 'alta' : 'fara',
     grosime: grosimeRand.get(cheie) ?? grosimeFoaie, supracursa: cuSupracursa && supracursaCitita !== null ? supracursaCitita : 0, prinFoaie: cuSupracursa && prinFoaie,
     diametruScula: citesteNumar(p.diametruScula), retragere: citesteNumar(p.retragereCompleta), diametre: diametreRand.get(cheie) ?? [],
+    ...(p.tip === 'buzunar' ? { forma: formaDinRand(p), pasLateral: citesteNumar(p.pasLateral) } : {}),
   });
   /**
    * Cercurile unei găuriri pe care freza scrisă nu le poate găuri (ADR 0087): cel mai mare peste două diametre, cel mai mic sub
@@ -899,7 +901,7 @@ export function DialogExport(
     return out;
   };
   const valid = operatiiBune && urechiBune && rampeBune && intrariBune && pasiBuni && coborariBune && retrageriBune && vcarveBune && funduriBune
-    && varfuriBune && vPeLinie && rotundePeLinie && resturiBune && strategiiBune && incrustatiiBune && drepteBune && frezeDopBune && benziBune && puntiDopBune
+    && varfuriBune && vPeLinie && rotundeBune && resturiBune && strategiiBune && incrustatiiBune && drepteBune && frezeDopBune && benziBune && puntiDopBune
     && supracursaBuna && numeBun && aerBun && gauriBune && reliefBun;
   /**
    * Orice parametru schimbat face vechi rezultatul. Bifa nu mai trebuie ștearsă aici: cererea următoare e alt obiect, deci
@@ -1320,7 +1322,7 @@ export function DialogExport(
     ...(vcarveBune ? [] : [t('motiv.vcarve-freza')]),
     ...(varfuriBune ? [] : [t('motiv.varf-invalid')]),
     ...(vPeLinie ? [] : [t('motiv.v-pe-linie')]),
-    ...(rotundePeLinie ? [] : [t('motiv.rotunda-pe-linie')]),
+    ...(rotundeBune ? [] : [t('motiv.rotunda')]),
     ...(funduriBune ? [] : [t('motiv.fund-plat-invalid', { n: MARGINI_OPERATIE.numarScula, diametru: fmtFreza.format(MARGINI_OPERATIE.diametru) })]),
     ...(resturiBune ? [] : [t('motiv.rest-invalid', { n: MARGINI_OPERATIE.numarScula })]),
     ...(strategiiBune ? [] : [t('motiv.strategie-invalida')]),
@@ -1379,7 +1381,7 @@ export function DialogExport(
       case 'vcarve': return t('motiv.vcarve-freza');
       case 'varf': return t('motiv.varf-invalid');
       case 'vPeLinie': return t('motiv.v-pe-linie');
-      case 'rotunda': return t('motiv.rotunda-pe-linie');
+      case 'rotunda': return t('motiv.rotunda');
       case 'fund': return t('motiv.fund-plat-invalid', { n: MARGINI_OPERATIE.numarScula, diametru: fmtFreza.format(MARGINI_OPERATIE.diametru) });
       case 'rest': return t('motiv.rest-invalid', { n: MARGINI_OPERATIE.numarScula });
       case 'strategie': return t('motiv.strategie-invalida');

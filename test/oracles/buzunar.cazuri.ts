@@ -33,6 +33,15 @@
  *   deci δ maxim 7,5 și inelele la 3 și 6, fiecare cu cercul din afară (20 − d) și cel din jurul insulei (5 + d), orar.
  * - refuzurile: buzunarul de 4 mm cu freza de 6 (δ maxim 2 < 3), pasul lateral 3,5 > 3, liniile cu rampă, freza de rest cât
  *   cea dinainte.
+ * - `bila-dreptunghi-100x60` (ADR 0303 §4, felia 16.A↑e-5): același buzunar cu o bilă Ø6: drumul e al frezei plate de același
+ *   Ø (centrul la R de perete), deci aceleași inele și niveluri. Fundul: între două inele drepte, la mijloc, d = s / 2 = 1,2,
+ *   h = 3 − √(9 − 1,44) = 0,2505; pe colțul dintre inelul k (colțul în (d, d)) și k + 1, punctul (d + t, d + t) e la t de
+ *   inelul k și la √2 (s − t) de colțul lui k + 1, deci d_max = √2 s / (1 + √2) = 1,40589 și h = 3 − √(9 − 1,97653) =
+ *   0,34982; pe mijloc, după inelul de la 29,4, doar 0,6. Jos: h(1,40589 − 0,07071) = 0,31350.
+ * - `toroidala-cerc-R20` (ADR 0303 §4): cercul R20 cu o toroidală Ø6 r1,5 (a = 1,5, ρ = 1,5), s = 3: inelele cercului
+ *   R20 (razele 17, 14, …, 2). Între inele, d ≤ 1,5 = a, deci fundul e plat; în centru, la 2 de ultimul inel:
+ *   h = 1,5 − √(2,25 − 0,25) = 0,08579. Jos: h(2 − 0,07071) = 0,06274.
+ * - refuzurile rotunde (ADR 0303 §4, întrebarea 5a): bila cu o freză de rest, o freză de rest bilă.
  */
 import type { Montaj } from './buzunar.ts';
 
@@ -57,9 +66,12 @@ const piesa = (id: string, forme: readonly Forma[], operatii: readonly Rec[]): R
   operatii,
 });
 const FOAIE = { latime: 300, inaltime: 200, grosime: 18 };
-/** Documentul salvat (schema 18), cu fiecare piesă într-o instanță la (0, 0); eticheta unei tăieturi e `i-<piesă>/<element>`. */
-const documentul = (piese: readonly Rec[]): Rec => ({
-  schema: 18, rev: 1, piese, foi: [{ id: 'f1', stoc: { ...FOAIE }, instante: piese.map((p) => ({ id: `i-${String(p['id'])}`, piesa: p['id'], x: 0, y: 0, rotire: 0 })) }],
+/**
+ * Documentul salvat (schema 18; cu bila sau cu toroidala, 31, ADR 0303), cu fiecare piesă într-o instanță la (0, 0); eticheta
+ * unei tăieturi e `i-<piesă>/<element>`.
+ */
+const documentul = (piese: readonly Rec[], schema = 18): Rec => ({
+  schema, rev: 1, piese, foi: [{ id: 'f1', stoc: { ...FOAIE }, instante: piese.map((p) => ({ id: `i-${String(p['id'])}`, piesa: p['id'], x: 0, y: 0, rotire: 0 })) }],
 });
 
 /** O buclă așteptată: nivelul (dacă se cere), aria cu semn și cutia (dacă se cere). */
@@ -78,6 +90,11 @@ export type AsteptatBuzunar = {
   readonly panta?: number;
   readonly plonjariInMaterial?: number;
   readonly rest?: ReadonlyArray<{ readonly numar: number; readonly cutie: Cutie }>;
+  /**
+   * Cu bila sau cu toroidala (felia 16.A↑e-5): între ce valori stă cel mai înalt punct al fundului măsurat pe grila
+   * acoperirii (celula 0,1): sus, h(d_max) pe hârtie; jos, h(d_max − 0,1·√2 / 2) (cel mai apropiat centru de celulă).
+   */
+  readonly creasta?: { readonly min: number; readonly max: number };
 };
 
 export type CazBuzunar = {
@@ -106,6 +123,8 @@ const PARALEL = (unghi: number): Rec => documentul([piesa('p', [DR('a', 80, 40, 
 })])]);
 const Y_MIN_30 = -47 + 13 * Math.sqrt(3);
 const UNGHI_01 = (Math.atan(0.1) * 180) / Math.PI;
+const BILA6: Rec = { numar: 1, nume: 'bila 6', diametru: 6, forma: { tip: 'bila' } };
+const TOR6: Rec = { numar: 1, nume: 'toroidala 6 r1.5', diametru: 6, forma: { tip: 'toroidala', raza: 1.5 } };
 const COBORARE = (coborare: Rec): Rec => documentul([piesa('p', [DR('a', 100, 60, 40, 40)], [buzunar(['a'], { coborare })])]);
 
 export const CAZURI: readonly CazBuzunar[] = [
@@ -189,6 +208,31 @@ export const CAZURI: readonly CazBuzunar[] = [
       inele: [{ d: 3, aria: Math.PI * 17 * 17 }, { d: 3, aria: -Math.PI * 8 * 8 }, { d: 6, aria: Math.PI * 14 * 14 }, { d: 6, aria: -Math.PI * 11 * 11 }],
       perete: [{ aria: Math.PI * 17 * 17 }, { aria: -Math.PI * 8 * 8, cutie: [92, 92, 108, 108] }],
     }],
+  },
+  {
+    id: 'bila-dreptunghi-100x60',
+    document: documentul([piesa('p', [DR('a', 100, 60, 20, 20)], [buzunar(['a'], { scula: BILA6 })])], 31),
+    asteptat: [{ ...ASTEPTAT_100X60, creasta: { min: 0.3135, max: 0.34982 } }],
+  },
+  {
+    id: 'toroidala-cerc-R20',
+    document: documentul([piesa('p', [CERC('a', 20, 100, 100)], [buzunar(['a'], { scula: TOR6, pasLateral: 3 })])], 31),
+    asteptat: [{
+      id: 'i-p/a', treceri: [-3, -6], niveluri: [3, 6, 9, 12, 15, 18], numarInele: 6,
+      inele: [2, 5, 8, 11, 14, 17].map((r) => ({ d: 20 - r, aria: Math.PI * r * r })), creasta: { min: 0.06274, max: 0.08579 },
+    }],
+  },
+  {
+    id: 'refuz-bila-cu-rest',
+    document: documentul([piesa('p', [DR('a', 60, 40, 20, 20)], [buzunar(['a'], { scula: BILA6, rest: [{ scula: F(2, 3), pasLateral: 1.2 }] })])], 31),
+    refuz: /rest/,
+  },
+  {
+    id: 'refuz-rest-toroidala',
+    document: documentul([piesa('p', [DR('a', 60, 40, 20, 20)], [buzunar(['a'], {
+      scula: F(1, 8), pasLateral: 3, rest: [{ scula: { numar: 2, nume: 't4', diametru: 4, forma: { tip: 'toroidala', raza: 1 } }, pasLateral: 1.5 }],
+    })])], 31),
+    refuz: /rest/,
   },
   { id: 'refuz-prea-ingust', document: documentul([piesa('p', [DR('a', 4, 30, 20, 20)], [buzunar(['a'])])]), refuz: /încape/ },
   { id: 'refuz-pas-peste-raza', document: documentul([piesa('p', [DR('a', 60, 40, 20, 20)], [buzunar(['a'], { pasLateral: 3.5 })])]), refuz: /pasul lateral/ },

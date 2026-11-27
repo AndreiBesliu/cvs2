@@ -16679,3 +16679,71 @@ deja în `main`, din 3.Av. 2. ADR 0292 rămâne la 1a: începutul programului se
   fișa etapei 3, registrul otrăvurilor, nota liniei.
 
 **Completed:** 27.11, 09:23.
+
+## 2026-11-27 — Sesiunea principală în cloud: liniile continuă cu recomandările (Model: Claude Opus 5.5)
+
+**Prompt:** „zi-le sesiunilor sa continue cu recomandarile, acolo unde inca asteapta”
+**Started:** 27.11, 07:38. **Completed:** 27.11, 08:38.
+
+- **Mesajele (07:45):** frezele (ADR 0303 confirmat; e-5, e-6, f, g), atelierul (balamaua, placa turnantă; auditul
+  elicelor, feliile 1–7), relieful (ADR 0313 §8; cele trei felii lăsate la owner, apoi finisarea cu toroidala), exportul
+  (ADR 0292 1a; lista, constatarea 14). Cotele n-au nimic de pornit.
+- **Sesiunea designului**, pe calculatorul owner-ului, nu primește din cloud (doar de pe un dispozitiv de încredere).
+- **Documentele:** decizia în `CLAUDE.md`; lista owner-ului și versiunea documentului (v31) în `docs/linii/principala.md`.
+
+## 2026-11-27 — Sesiunea principală în cloud: brief-ul liniei aranjamentelor, pentru o sesiune cloud (Model: Claude Opus 5.5)
+
+**Prompt:** „Sesiunea designului o sa o aducem si pe ea in sesiune cloud”
+**Started:** 27.11, 08:46. **Completed:** 27.11, 08:49.
+
+- **Brief-ul** liniei aranjamentelor (ramura `wip/28.1-aranjamente`, toată în `main`; canvas-ul; ADR-urile 0254–0259; canalul), dat owner-ului ca fișier.
+- **Documentele:** decizia în `CLAUDE.md`; lista owner-ului din `docs/linii/principala.md`.
+
+## 2026-11-27 — 16.A↑e-5: buzunarul cu bila și cu toroidala (Model: Claude Opus 5.5)
+
+**Prompt:** sesiunea principală, după unirea lui e-4 (`72263843`): „Poți porni e-5 (buzunarul cu bila și cu toroidala) pe aceeași
+ramură, după ce aduci `main`: mișcă mașina, deci întâi oracolul (fundul și creasta pe hârtie, pasul pe trecere, peretele), apoi
+e-6.” **Started:** 27.11, 05:30, pe `wip/16.A-freze-e`, peste `72263843`. **Completed:** 27.11 (în container; completul pe
+ramură, după push).
+
+- **Oracolul întâi** (`test/oracles/buzunar.ts`, extins din ADR 0303):
+  - silueta bilei și a toroidalei pe câmpul trecerilor (pasul pe trecere);
+  - refuzurile rotunde: freze de rest după o freză rotundă, o freză de rest rotundă;
+  - judecata a 7-a, fundul: în zona centrului, h(d), cu d distanța exactă la drumul de la adâncimea finală, căutată până la R,
+    cel mult h(s).
+
+  Cazurile pe hârtie: bila pe dreptunghiul 100 × 60 (măsurat 0,321, între 0,3135 și 0,3498) și toroidala pe cercul R20 (0,063,
+  între 0,0627 și 0,0858). Perechea care pică e programul de 2,4 judecat față de un pas lateral de 1,2. Pereții îi judecă tot
+  regula centrului la R de margine.
+- **Creasta, precizată:** formula din ADR, h(s / 2), e doar creasta dintre două inele. Pe colțurile inelelor (0,586·s) și pe
+  mijlocul buzunarului (până la s), fundul ajunge până la h(s), deci fereastra le spune pe amândouă.
+- **Lucrarea:** buzunarul cu bila și cu toroidala ia drumul frezei plate de același Ø, mișcare cu mișcare (inelele, liniile,
+  elicea). `motivFormaPeOperatie` primește restul operației: o freză rotundă nu merge cu freze de rest (`rotunda-rest`) sau cu
+  o incrustație cu pereți drepți (`rotunda-incrustatie`). Refuzurile lucrării îi spun motivul, iar Tăierea nu le oferă acolo.
+- **Creasta pe hârtie:** `src/model/creasta.ts` (`inaltimeFreza`, `creastaBuzunar`). `creastaPePlan` a reliefului trece pe
+  aceeași siluetă, iar pentru toroidală dădea 0.
+- **Fereastra exportului:**
+  - bila și toroidala în lista formei și pe buzunar;
+  - regula rândului e `rotundaPermisa`, comparată într-o probă cu cea a modelului;
+  - creasta, sub pasul lateral, vine din rândul „pe hârtie” (`hartieRand`);
+  - motivul `rotunda` spune unde merg formele rotunde și ce le oprește.
+- **Probele:**
+  - `test/unit/buzunar.rotunda.test.ts`, scrisă întâi: regula, drumul, refuzurile, creasta pe hârtie, buzunarul simulat
+    (creasta dintre inele, racordarea, peretele, cel mai înalt punct), regula ferestrei;
+  - `test/e2e/export.rotunda.spec.ts` (buzunarul cu bila, cu oracolul simulării pe octeții din browser);
+  - probele vechi care cereau refuzul pe buzunar au fost întoarse;
+  - manualul, în ambele limbi.
+- **Otrăvurile:** 17 / 17 prinse (`test/otravuri/16.A-e5.py`: 12 pe lucrare și fereastră, 4 pe oracol, 1 e2e).
+- **Mărimea:** totalul 937,8 / 1 000 kB (+0,4); pornirea neschimbată (111,7 kB; cu ușa 117,0, cu Atelierul 117,4 / 125).
+- **Neschimbate:** nimic pe server; documentul rămâne v31; programul fără forme rotunde, octet cu octet.
+
+## 2026-11-27 — Sesiunea principală în cloud: a șaizeci și patra unire (16.A↑e-5) (Model: Claude Opus 5.5)
+
+**Prompt:** „zi-le sesiunilor sa continue cu recomandarile, acolo unde inca asteapta” (unirea, la raportul liniei; ordinul „unește ce se poate”)
+**Started:** 27.11, 09:07. **Completed:** 27.11, 09:08.
+
+- **Unirea:** `wip/16.A-freze-e` (`106b4a51`, PR-ul #74; nu capul ramurii, cu e-6 la porți) în `e412ebcc`, pe `unire-2711g`,
+  din `ecfd9f03`; codul, identic cu al lui `106b4a51`. Completul 45949673319 pe `c4435321`, verde: unit 10 919 / 0, e2e
+  1 010 / 1 010, funcțiile pe emulatoare 142 / 142, paginile 62 / 62. Totalul 937,8 / 1 000 kB.
+- **Pe test:** lotul 58 (`eac92d1c`, 16.A↑e-4), la 08:38; lotul 59 (`e412ebcc`), în drum.
+- **Documentele:** decizia și Starea în `CLAUDE.md`; starea din `docs/linii/principala.md`; indexul liniilor.

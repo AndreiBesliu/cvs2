@@ -445,6 +445,12 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   nu mai e „în curând”. **O formă de freză care intră pe rândurile exportului se probează scrisă în program, cu
   comentariul sculei citit** (`test/e2e/export.rotunda.spec.ts`), **iar o probă a copiei folosește o valoare diferită de
   implicit** (otrava F15 scăpa cu raza 1). Documentul rămâne v31; nimic pe server. Felia: pornirea +0, totalul +0,9 kB.
+  **Buzunarul cu bila și cu toroidala (ADR 0303, felia 16.A↑e-5)** gata pe 27.11, unită în `main` pe 27.11
+  (`e412ebcc`): inelele și liniile frezei plate de același Ø, mișcare cu mișcare, cu orice coborâre; creasta pe fund,
+  h(s / 2) între inele și cel mult h(s) pe colțurile inelelor și pe mijloc; frezele de rest după o freză rotundă și
+  incrustația cu pereți drepți, refuzate cu motiv. **Creasta unei strategii noi cu forme rotunde se măsoară pe tot
+  fundul, nu doar între treceri** (pe colțurile inelelor un punct stă la aproape s de drum). Documentul rămâne v31;
+  nimic pe server. Felia: pornirea +0, totalul +0,4 kB.
   **Plafonul pornirii 120 kB (ADR 0145, decizia owner-ului din 24.11, „ok, ridica plafonul pornirii la 120 kB”):** după
   lotul al paisprezecelea, pornirea era 109,9 kB, cu ușa 114,4 și cu Atelierul 114,7 / 115, iar feliile următoare ale
   frezelor, exportului și aranjamentelor nu mai încăpeau în 0,3 kB. Poarta judecă tot trei măsuri sub același plafon
@@ -2089,6 +2095,58 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 27.11.2026, dimineața (a șaizeci și patra unire din cloud): **buzunarul cu bila și cu toroidala (16.A↑e-5), unit în
+  `main`** (sesiunea principală, ramura `unire-2711g`, din `ecfd9f03`). Linia frezelor, ramura `wip/16.A-freze-e`,
+  `106b4a51` (codul în `cf67e858`, cu `main` `72263843` adus în `c4435321`), PR-ul `AndreiBesliu/cvs2#74` (ADR 0303,
+  răspunsurile 1a și 5a, confirmate de owner în aceeași dimineață), unită în `e412ebcc`; capul ramurii mersese mai
+  departe, cu e-6 la porți, deci s-a unit commit-ul raportat. Buzunarul cu formele rotunde ia inelele și liniile frezei
+  plate de același Ø, mișcare cu mișcare (centrul la R de perete, pereții nu trec de desen), cu orice coborâre, elicea
+  inclusă; creasta pe fund stă sub pasul lateral: h(s / 2) între inele și cel mult h(s) pe colțurile inelelor și pe
+  mijloc (măsurat pe dreptunghiul 100 × 60, bila Ø6, s = 2,4: 0,321 mm, față de 0,25 între inele; precizarea, scrisă în
+  ADR); frezele de rest după o freză rotundă (5a) și incrustația cu pereți drepți, refuzate cu motiv, iar Tăierea nu le
+  oferă acolo; oracolul buzunarului are silueta rotundă, refuzurile, judecata fundului, cazurile pe hârtie. **Mișcă
+  mașina**; otrăvurile 17 / 17. Documentul rămâne v31; nimic pe server; fără forme rotunde, programul octet cu octet.
+  `main` adusese peste ramură doar documente, deci **arborele unirii are exact codul lui `106b4a51`** și a intrat pe
+  porțile liniei: completul 45949673319 pe `c4435321` (între el și `106b4a51`, doar documente), verde: unit 10 919 / 0
+  (12 sărite, pe Linux), e2e 1 010 / 1 010, funcțiile pe emulatoare 142 / 142, paginile 62 / 62; rapidul, verde pe
+  `106b4a51`; totalul 937,8 / 1 000 kB (+0,4), pornirea 111,7 kB (cu ușa 117,0, cu Atelierul 117,4 / 125). **Lotul 58
+  (16.A↑e-4) e pe test din 27.11, 08:38** (`eac92d1c`; completul pe `main` 45946101842, verde); felia aceasta pleacă
+  acum (lotul 59). Linia frezelor are e-6 (profilul pe o parte, 2a) la porți, apoi pornește f (profilul desenat), întâi
+  cu ADR 0304 și cu numărul v32 cerut sesiunii principale. **La owner:** proba pe mașină a buzunarului cu bila sau cu
+  toroidala (întâi în aer); restul listei, neschimbat.
+- 27.11.2026, dimineața: **sesiunea designului trece în cloud** („Sesiunea designului o sa o aducem si pe ea in sesiune
+  cloud”). Linia aranjamentelor (ADR 0250, 0251) continuă într-o sesiune cloud nouă, pe `wip/28.1-aranjamente` (toată în
+  `main`: 28.1↑a–d, ultima unită pe 18.11 în `a88502ab`), cu brief-ul dat owner-ului ca fișier, ca la celelalte linii:
+  canvas-ul de pe claude.ai e referința (citit cu unealta Artifact), ADR-urile libere sunt 0254–0259, canalul
+  `aranjamente`, rapoartele merg la sesiunea principală. Prima ei treabă: nota liniei la zi, apoi felia următoare
+  spusă cu recomandarea (felia zoomului, restul ideilor lui 28.1↑ sau Clasicul), pornită după ordinul din aceeași
+  dimineață. **Pe calculatorul owner-ului**, sesiunea veche („Variante design CVS2”) comite și împinge întâi tot ce n-a
+  ajuns pe GitHub, apoi se arhivează; worktree-ul ei local se poate scoate după aceea.
+
+- 27.11.2026, dimineața: **liniile continuă cu recomandările, acolo unde încă așteaptă** („zi-le sesiunilor sa continue
+  cu recomandarile, acolo unde inca asteapta”, în sesiunea principală). Sesiunea principală le-a scris celor patru linii
+  cu sesiune la 07:45. Alegerile lăsate owner-ului cu recomandarea aplicată sunt acum ale lui, cum sunt implementate:
+  - **frezele**: ADR 0303 1a, 2a, 4a, 5a (3a era făcută). Linia continuă cu e-5 (buzunarul cu formele rotunde; mișcă
+    mașina, oracolul întâi), e-6, apoi f și g, cu recomandările ADR 0300 și 0302 unde mai sunt întrebări; d, după placa 4;
+  - **atelierul**: alegerile balamalei și ale plăcii turnante; cele patru întrebări din auditul elicelor (1a, 2a, 3a, 4a),
+    deci feliile 1–7 din `docs/linii/audit-elice.md`, în ordinea recomandată (otrăvurile elicelor; tipărirea spusă
+    cinstit; ventilatorul ca trusă; claritatea editorului; grosimea după diametru, peste Ø80; curățenia motorului, singură,
+    la octet; duza Kort); alegerile construcțiilor (3.Ch, 3.Ci); pachetul Easy 3Draw peste 0,5 MB (ne uităm din nou la
+    1 MB); fondul semnului;
+  - **relieful**: ADR 0313 §8 (1–6) și liniile finisării plăcii 18 la 1,5 mm. Pornesc cele trei felii lăsate la cuvântul
+    owner-ului: freza din „Frezele mele” pe rândurile reliefului (cu bila), desenele grupurilor, „Dă-i T{n}”; după ele,
+    finisarea reliefului cu toroidala (ADR 0303 4a; mișcă mașina, oracolul întâi);
+  - **exportul**: ADR 0292 rămâne la 1a (începutul după export); pornește partea din listă a constatării 14 a auditului
+    (numele dat de om, locul pe al doilea rând, mai mic); 28.8↑m (cu Clasicul) și 9a (după placa 2), neschimbate;
+  - **cotele**: alegerile din 10.4↑d-1 și întrebarea 10 (cotele mărite în raport), cum sunt; linia n-are nimic de pornit
+    (ADR 0330 e întreg).
+
+  În fereastra exportului lucrează acum trei linii (frezele, relieful, exportul): cine raportează al doilea aduce `main`
+  întâi. **Rămân la owner:** încercările pe test, tipăririle, probele pe mașină, tăierea plăcii 18, verificarea juridică
+  (GDPR), „cine unește în `main`” și ce face sesiunea principală între loturi. **Sesiunea designului** („Variante design
+  CVS2”, pe calculatorul owner-ului) întreabă dacă pornește felia zoomului; din cloud nu se poate atinge (primește doar de
+  pe un dispozitiv de încredere al owner-ului), deci răspunsul i-l dă owner-ul acolo. Liniile fără sesiune (tăierea,
+  imprimanta, incrustațiile, planșele, trasarea, aranjamentele) cer câte o sesiune nouă, cu brief, la cuvântul owner-ului.
 - 27.11.2026, dimineața (a șaizeci și treia unire din cloud): **bila și toroidala în proiect (16.A↑e-4), unite în
   `main`** (sesiunea principală, ramura `unire-2711f`, din `621e0069`). Linia frezelor, ramura `wip/16.A-freze-e`,
   `ea528e7d` (cu `main` `3ecb5678` adus), PR-ul `AndreiBesliu/cvs2#73` (ADR 0303), unită în `72263843`: copia rândului

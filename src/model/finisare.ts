@@ -5,6 +5,7 @@
  */
 import type { Document, FormaRelief, Matrice, Operatie, Scula } from './document.ts';
 import { elementeFoaie, grupeazaPeScula, taieturiFoaie, type Taietura } from './lume.ts';
+import { inaltimeFreza } from './creasta.ts';
 
 /**
  * O operație a reliefului de pe foaie, finisarea sau degroșarea (`operatie.tip`): operația, într-o instanță, cu reliefurile ei
@@ -125,21 +126,14 @@ export function nepotrivireDegrosare(doc: Document, indexFoaie = 0): string | nu
 }
 
 /**
- * Creasta lăsată pe un plan între două linii vecine (ADR 0310 §5), pe hârtie: bila de rază R, la pasul lateral s, lasă
- * R − √(R² − (s/2)²); V-ul de unghi θ, cu vârful plat v, lasă (s − v) / 2 / tan(θ/2) când s trece de v; freza plată, nimic.
- * Peste diametru, freza nu mai acoperă planul: `null`.
+ * Creasta lăsată pe un plan între două linii vecine (ADR 0310 §5), pe hârtie: mijlocul e la s / 2 de amândouă, deci silueta
+ * frezei acolo (`inaltimeFreza`): bila de rază R lasă R − √(R² − (s/2)²); toroidala (ADR 0303), ρ − √(ρ² − (s/2 − a)²)
+ * dincolo de discul ei plat a; V-ul de unghi θ, cu vârful plat v, (s − v) / 2 / tan(θ/2) când s trece de v; freza plată,
+ * nimic. Peste diametru, freza nu mai acoperă planul: `null`.
  */
 export function creastaPePlan(s: Scula, pasLateral: number): number | null {
   if (!(pasLateral > 0) || pasLateral > s.diametru) return null;
-  if (s.forma?.tip === 'bila') {
-    const R = s.diametru / 2, h = pasLateral / 2;
-    return R - Math.sqrt(Math.max(0, R * R - h * h));
-  }
-  if (s.forma?.tip === 'v') {
-    const v = s.forma.varf ?? 0;
-    return pasLateral <= v ? 0 : (pasLateral - v) / 2 / Math.tan((s.forma.unghi * Math.PI) / 360);
-  }
-  return 0;
+  return inaltimeFreza(s, pasLateral / 2);
 }
 
 /**
