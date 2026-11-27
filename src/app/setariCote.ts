@@ -319,14 +319,14 @@ export function schimbaSetariCote(s: SetariCote): void {
   for (const f of ascultatori) f();
 }
 
-function asculta(f: () => void): () => void {
+export function ascultaSetariCote(f: () => void): () => void {
   ascultatori.add(f);
   return () => { ascultatori.delete(f); };
 }
 
 /** Setările, ca stare React: o schimbare (din fereastra Setări, din altă parte a aplicației) redesenează pe loc. */
 export function useSetariCote(): SetariCote {
-  return useSyncExternalStore(asculta, setariCote, setariCote);
+  return useSyncExternalStore(ascultaSetariCote, setariCote, setariCote);
 }
 
 /** „Arată cotele” (`vedere.cote`, ADR 0330 §5): comută cotele pe pânză, aceeași setare ca în fereastra Setări. */

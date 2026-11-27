@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState, type ReactElement, type ReactNode } from 'react';
 import { dreptLaZi, NUME_MAX, ZILE_PROBA, zileRamase, type Drept, type RaspunsDeschide } from '../../shared/conturi.ts';
 import type { CerereFreze, RaspunsListaFreze, RaspunsScrieFreze } from '../../shared/freze.ts';
+import type { CererePreferinte, RaspunsCitestePreferinte, RaspunsScriePreferinte } from '../../shared/preferinte.ts';
 import {
-  apeleazaFrezele, codEroare, conecteazaContul, creeazaCont, deschideContul, iesi, intraCuGoogle, intraCuParola, primaStare, reconfirma,
+  apeleazaFrezele, apeleazaPreferintele, codEroare, conecteazaContul, creeazaCont, deschideContul, iesi, intraCuGoogle, intraCuParola, primaStare, reconfirma,
   retrimiteConfirmarea, schimbaNumele, trimiteLotul, trimiteResetarea, type ContEditor,
 } from '../cloud/contEditor.ts';
 import '../i18n/carcasa.ts';
@@ -80,6 +81,18 @@ export async function cheamaFrezele(c: Config, uid: string, cerere: CerereFreze)
   const u = await primaStare(x.cont);
   if (u?.uid !== uid) throw Object.assign(new Error('alt cont'), { code: 'cont/altul' });
   return apeleazaFrezele(x.cont, cerere);
+}
+
+/**
+ * O cerere a setărilor din cont (ADR 0330, felia 10.4↑g), cerută de sincronizarea setărilor cotelor: doar cu contul Firebase
+ * al setărilor deschis în browser (altul, sau niciunul, e refuzat cu `cont/altul`).
+ */
+export async function cheamaPreferintele(c: Config, uid: string, cerere: CererePreferinte): Promise<RaspunsCitestePreferinte | RaspunsScriePreferinte> {
+  const x = conecteazaContul(c);
+  if (!x.ok) throw Object.assign(new Error('instanța n-are contul'), { code: 'cont/indisponibil' });
+  const u = await primaStare(x.cont);
+  if (u?.uid !== uid) throw Object.assign(new Error('alt cont'), { code: 'cont/altul' });
+  return apeleazaPreferintele(x.cont, cerere);
 }
 
 /** Ieșirea din meniul contului (ADR 0120): contul Firebase se închide în browserul acesta, apoi pleacă și contul ținut. */

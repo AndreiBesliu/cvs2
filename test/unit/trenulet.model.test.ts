@@ -82,7 +82,7 @@ const DREPTE: readonly Def[] = [
   CARAMIDA24, { tip: 'caramida', celule: rand(2, 2), placi: 1 }, { tip: 'caramida', celule: rand(2) },
   { tip: 'caramida', celule: [[0, 0], [1, 0], [2, 0], [0, 1], [0, 2]], placi: 2 },
   { tip: 'lateral' }, { tip: 'lateral', lung: 2, fete: 'doua' }, { tip: 'panta' }, { tip: 'pantaInversa' }, { tip: 'pana' },
-  { tip: 'rotund' }, { tip: 'rotund', diam: 2 }, { tip: 'arc' }, { tip: 'cadru' }, { tip: 'turnanta' }, { tip: 'turnanta', piesa: 'sus', marime: 4 }, { tip: 'grinda' }, { tip: 'caramidaTechnic' },
+  { tip: 'rotund' }, { tip: 'rotund', diam: 2 }, { tip: 'arc' }, { tip: 'cadru' }, { tip: 'turnanta' }, { tip: 'turnanta', piesa: 'sus', marime: 4 }, { tip: 'balama' }, { tip: 'balama', piesa: 'clema', latime: 2, lungime: 3 }, { tip: 'grinda' }, { tip: 'caramidaTechnic' },
   { tip: 'ax', lung: 3 }, { tip: 'stiftTechnic' }, { tip: 'bucsa' }, { tip: 'conector' }, { tip: 'conectorUnghi' },
   { tip: 'suport' }, { tip: 'suport', lung: 2, adanc: 2, inalt: 2, invers: true }, { tip: 'clema' }, { tip: 'clema', lung: 2, axa: 'orizontala' },
   { tip: 'maner', lung: 2, axa: 'orizontala' }, { tip: 'maner', lung: 3, axa: 'orizontala' }, { tip: 'bara' },
@@ -90,10 +90,15 @@ const DREPTE: readonly Def[] = [
   { tip: 'fulg' }, { tip: 'stea' }, { tip: 'brad' }, { tip: 'glob' }, { tip: 'ornament', text: 'ANA' }, { tip: 'bradLego' }, { tip: 'bradLego', piesa: 'stea' },
   { tip: 'dinCvs2', contururi: [[[0, 0], [20, 0], [20, 10], [0, 10]]] },
 ];
-/** Așezarea de până la 18.32.0 (`corpModel` din sursele v18): mijlocul cutiei, sau placa piesei, în mijlocul amprentei. */
+/**
+ * Așezarea de până la 18.32.0 (`corpModel` din sursele v18): mijlocul cutiei, sau placa piesei, în mijlocul amprentei. Piesele
+ * de după, cu o placă și ceva ieșit din ea, stau după placa lor, ca clema și mânerul: balamaua (3.Ck-2), placa lungime ×
+ * lățime, fără balamaua de la capăt.
+ */
 function v18(def: Def, p: Corp): Asezare {
   const st = (v: number) => Math.max(1, Math.round((v + 0.2) / 8));
-  const placa = ({ lateral: [def.lung, 1], suport: [def.lung, def.adanc], clema: [def.lung, 1], maner: [def.lung, 1], bila: [def.baza, def.baza], cupa: [1, 1] } as Record<string, unknown[] | undefined>)[def.tip];
+  const dupa = def.tip === 'balama' ? [def.lungime ?? 2, def.latime ?? 1] : undefined;
+  const placa = ({ lateral: [def.lung, 1], suport: [def.lung, def.adanc], clema: [def.lung, 1], maner: [def.lung, 1], bila: [def.baza, def.baza], cupa: [1, 1] } as Record<string, unknown[] | undefined>)[def.tip] ?? dupa;
   if (placa) {
     const [gw, gd] = placa.map((v) => Math.max(1, Math.round(Number(v) || 1))) as [number, number];
     return { gw, gd, pivot: [gw * 4 - p.baza[0]!, gd * 4 - p.baza[1]!], ax: false };
@@ -198,6 +203,10 @@ test('piesele care nu sunt rotunde stau ca până acum: mijlocul cutiei, sau pla
   // piesele cu ceva ce iese din placă stau după placă: știfturile pe lateral, de 2 (placa 2 × 1), cupa (placa 1 × 1)
   assert.deepEqual([asez({ tip: 'lateral', lung: 2 }).gw, asez({ tip: 'lateral', lung: 2 }).gd], [2, 1]);
   assert.deepEqual([asez({ tip: 'cupa', baza: 2 }).gw, asez({ tip: 'cupa', baza: 2 }).gd], [1, 1]);
+  // balamaua (3.Ck-2) stă după placa ei, fără balamaua de la capăt: 1 × 2, cu pivotul în mijlocul plăcii (colțul ei, la
+  // jocul lateral); o lungime cerută peste margini e cea făcută de motor
+  assert.deepEqual({ ...asez({ tip: 'balama' }), pivot: asez({ tip: 'balama' }).pivot.map(r3) }, { gw: 2, gd: 1, pivot: [7.9, 3.9], ax: false });
+  assert.deepEqual([asez({ tip: 'balama', piesa: 'clema', lungime: 7, latime: 2 }).gw, asez({ tip: 'balama', piesa: 'clema', lungime: 7, latime: 2 }).gd], [4, 2]);
 });
 
 test('2a: o piesă nouă intră cu pivotul cât mai aproape de al celei alese; două rotunde, pe același ax', () => {

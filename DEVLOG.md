@@ -16322,6 +16322,43 @@ tipărire”); ADR 0284, felia 3.Ck (balamaua și placa turnantă), despărțit�
   designului, de pe calculatorul owner-ului.
 - **Documentele:** decizia în `CLAUDE.md`; starea din `docs/linii/principala.md` și indexul liniilor.
 
+## 2026-11-26 — Felia 3.Ck-2: balamaua atelierului Easy 3Draw (ADR 0284) (sesiune cloud)
+
+**Prompt:** „Poți porni 3.Ck-2 (balamaua).” (sesiunea principală, după raportul lui 3.Ck-1); ADR 0284, felia 3.Ck, partea
+a doua, tot cu jocul din calibrare, de verificat la tipărire
+**Started:** 26.11, 21:42. **Completed:** 26.11, 23:01 (felia, cu otrăvurile, cu proba în engleză împărțită; orele, după ceasul containerului).
+
+- **Ce face:** în fila Cărămizi, „Balama” de 1 sau 2 știfturi lățime și 1–4 lungime, din două jumătăți tipărite culcate:
+  una cu bolțul (o bară de Ø3,2 între obraji, la 4 mm după capătul plăcii, liberă pe 4,6 mm în dreptul fiecărui știft) și
+  una cu câte o clemă din calibrarea barei pe fiecare știft (gura în sus, legată de placă printr-un gât, inelul atinge
+  masa), care se prinde pe bolț de sus. Puse cap la cap, știfturile rămân pe grila de 8 mm; clema se pliază de la 110° în
+  jos până la 130° în sus fără să atingă nimic (plăcile se ating pe la 118° și 136°). „Fă balamaua” pune amândouă
+  jumătățile în listă.
+- **Jocul:** inelul e cel din calibrarea barei; clema are „Jocul clemei” (−0,1 … 0,2 mm, din 0,05 în 0,05), adunat la raza
+  de dinăuntru (axa rămâne la aceeași înălțime), cu textul care spune ce faci după prima tipărire. Cât de ușor intră și
+  cât de greu se rotește rămân de verificat la tipărire.
+- **Motorul:** `balamaCote`, `balama` (în `TIPURI`), `balamaMontaj`; bolțul se declară bară, clema clemă, deci alipirea și
+  verificarea din „Modelul” le folosesc fără nimic nou; în model, piesa se așază după placa ei. **Atelierul:** galeria,
+  pictograma, numele, editorul, „Fă balamaua”; jocul ținut doar în definiția clemei.
+- **Găsit în felie:** prefixul id-urilor editorului (`at-bl-`) era deja al brăduțului LEGO: balamaua are `at-bm-`. Textul
+  spunea „clema din calibrare” și cu un joc ales: acum spune „cu jocul ales”.
+- **Probele**, scrise întâi: unitară, 9 teste (au căzut cu „Lt.balamaCote is not a function”): plasele, prinderile,
+  montajul față de hârtie și grila, plierea fără pătrundere cu martori, jocul, calibrarea, verificarea, marginile; e2e, 4
+  scenarii; pasul în engleză din cvs2. Probele filelor, galeriilor, pictogramelor, căutării, prinderilor și modelului, la
+  zi.
+- **Otrăvurile:** `3.Ck-2.py`, la prima rulare 53 / 55 (M02, lățimea 1,5 făcută de 1, și M06, o lungime rotunjită fără
+  mesaj: proba marginilor cere acum și valorile dintre ele): 55 / 55. `3.Ck-2-en.py`: 8 / 8. Ancorele tuturor listelor
+  pluginului: 2 704 (cele din `3.Ck-1.py`, S08 din `3.Cl-4.py` și harta plăcilor din `3.Tu.py`, mutate: liniile balamalei
+  le repetau).
+- **Proba în engleză, împărțită:** trecuse de 30 s în CI (felia 3.Ax, cu bugetul de 90 s), deci e acum în trei, pe
+  ecrane, fiecare pornită din instalare și trecerea în engleză (`inEngleza`): paleta, circuitele și exportul CNC;
+  galeriile atelierului, filă cu filă (cu pasul balamalei); căutarea, „Se prinde cu”, „Modelul” și construcțiile. Local:
+  4,5, 12,9 și 8,9 s (întreagă, 25,4); bugetul de 90 s nu mai e nevoie.
+- **Mărimea:** Easy 3Draw 18.44.0, 582,8 kB (era 579,3); aplicația, neschimbată. Nimic pe server.
+- **Documentele:** ADR 0284 („Implementat (3.Ck-2)”), nota liniei, indexul liniilor, fișa etapei 3, registrul
+  otrăvurilor, `CLAUDE.md`, traducerile roadmap-ului.
+- **Urmează:** ADR 0284 are toate feliile făcute; o felie nouă a liniei pornește la cuvântul owner-ului.
+
 ## 2026-11-26 — Linia reliefului: felia 18.1↑d-3, pasul lateral aliniat, rotunjit în jos (Model: Claude Opus 5.5)
 
 **Prompt:** „Zi-le ca pot continua cu ce urmeaza la fiecare” (owner-ul, în sesiunea principală, transmis liniei la 20:16): „rotunjirea
@@ -16438,6 +16475,62 @@ DEVLOG). **Completed:** 26.11, 22:15 (în container; CI-ul, pe commit-ul împins
   spune, fără cotă.
 - Manualul (ro, en), e2e nou 1; otrăvurile 16 / 16, într-o clonă. Pornirea 111,7 kB (neschimbată), totalul 925,7 → 926,0 /
   1 000 kB (+0,3, măsurat local). Urmează g (setările în cont), cu mărimea bucății contului spusă întâi sesiunii principale.
+
+## 2026-11-26 — Felia 10.4↑g: setările cotelor în cont (ADR 0330)
+
+**Prompt:** sesiunea principală, 26.11, 22:15: „da, g pe varianta 14a, cum ai descris-o, după raportul lui f”, cu condițiile:
+callable-ul `preferinte` cu probele pe emulatoare, documentul închis clientului, fără `cloud` setările rămân în browser,
+sincronizarea în bucata ei, adusă la cerere; Z-ul sigur și parcarea nu se mută acolo.
+**Started:** 26.11, 22:16, în sesiunea cloud a liniei cotelor, după f. **Completed:** 26.11, 22:40 (în container; CI-ul, pe
+commit-ul împins).
+
+- **Proba întâi:** pe emulatorul Firestore, `preferinte.emulator.test.ts` (refuzurile, versiunea văzută, ciocnirea, fără
+  `cloud`, documentul stricat) și regula care ține documentul închis; pe hârtie, îmbinarea (`preferinte.sincron.test.ts`) și
+  trecerea pe un server și pe browsere închipuite (`preferinte.trecere.test.ts`).
+- **Serverul:** `functions/src/preferinte/actiuni.ts`, `shared/preferinte.ts`, exportul în `functions/src/index.ts`. **Aplicația:**
+  `src/model/preferinteSincron.ts` (pur), `src/app/preferinteSincronizare.ts` (la cerere), `cheamaPreferintele` /
+  `apeleazaPreferintele` în bucata contului, rândul stării și banda ciocnirii în Setări › Cotele.
+- Cap-coadă pe emulatoare, două browsere ale aceluiași cont și proba trecută (`setariCont.emulator.spec.ts`). Manualul (ro, en);
+  otrăvurile 32 / 32, într-o clonă. Pornirea 111,7 kB (neschimbată), totalul 928,9 / 1 000 kB (+2,9), contul 30,3 / 32 (+0,1),
+  măsurate local. Cu g, cele „mai târziu” din ADR 0330 sunt toate făcute.
+
+## 2026-11-26 — Sesiunea principală în cloud: a cincizeci și opta unire (28.8↑r, 3.Ck-1, 18.1↑d-3 și d-4, 10.4↑e-1, e-2, f și g, 3.Ax) (Model: Claude Opus 5.5)
+
+**Prompt:** „Zi-le ca pot continua cu ce urmeaza la fiecare” (unirile, la rapoartele liniilor; ordinul „unește ce se poate”)
+**Started:** 26.11, 22:03. **Completed:** 27.11, 01:02.
+
+- **Unirile, una peste alta, probate în paralel:** 28.8↑r (`9f442284`, #67) în `4532622d`, pe `unire-2611q`, din `f7964490`;
+  3.Ck-1 (`8292d7de`, #68) în `0a1f26c8`, pe `unire-2611r`; 18.1↑d-3 și d-4 (`7bddd762`, #65) în `709d3e2a`, pe `unire-2611s`;
+  10.4↑e-1, e-2 și f (`4c1f1c0d`, #64) în `602e5649`, pe `unire-2611t`; 3.Ax (`0df06eca`), pe `unire-2611u`; 10.4↑g (`f943406e`)
+  în `1d02dc1e`, pe `unire-2611v`, cu funcția nouă `preferinte` (serverul, publicat întâi). Ciocniri: DEVLOG,
+  traducerile roadmap-ului (ambele rânduri), catalogul controalelor (scris din nou). Completele: q 45889231745 și r 45891634795,
+  verzi; s: completul 45894771513, verde la prima trecere (60 min): unit 10 815 / 0, e2e 997 / 997, funcțiile pe emulatoare 136 / 136, paginile 60 / 60; t: completul 45897328832, verde la prima trecere (60 min): unit 10 837 / 0, e2e 1 002 / 1 002, funcțiile pe emulatoare 136 / 136, paginile 60 / 60; u: completul 45899016939, verde la prima trecere (63 min; proba în engleză, 28,8 s): unit 10 837 / 0, e2e 1 002 / 1 002, funcțiile pe emulatoare 136 / 136, paginile 60 / 60; v: completul 45899780194, verde la prima trecere (81 min; proba în engleză, 33,1 s): unit 10 853 / 0 (12 sărite, pe Linux), e2e 1 002 / 1 002, funcțiile pe emulatoare 142 / 142, paginile 62 / 62.
+- **Incidentul:** completul lotului 52 pe `main` (45888136031) a ieșit roșu doar la `trenulet.spec.ts:510` (32,7 s la limita de
+  30 s; proba crește cu fiecare piesă a atelierului: 18 → 25 s azi). 3.Ax îi dă 90 s, cu motivul; controlul local: 20 s cade,
+  90 s trece. Lotul 52 pleacă împreună cu lotul 53.
+- **Mărimea:** **totalul 932,8 / 1 000 kB**, pornirea 111,7 kB (cu ușa 116,9, cu Atelierul 117,3 / 125), `/admin` 138,3 / 200, contul 30,3 / 32; Easy 3Draw 18.43.0.
+- **Documentele:** decizia și Starea în `CLAUDE.md`; starea din `docs/linii/principala.md`; indexul liniilor.
+
+## 2026-11-27 — Sesiunea principală în cloud: a cincizeci și noua unire (3.Ck-2) (Model: Claude Opus 5.5)
+
+**Prompt:** „Zi-le ca pot continua cu ce urmeaza la fiecare” (unirea, la raportul liniei; ordinul „unește ce se poate”)
+**Started:** 27.11, 02:06. **Completed:** 27.11, 02:07.
+
+- **Unirea:** `wip/3.Xh-biblioteca-ui` (`bd7a0751`, PR-ul #70) în `439d0395`, pe `unire-2711a`, din `e656da6a`; arborele,
+  identic cu al ramurii. Completul 45908777625, verde: unit 10 862 / 0, e2e 1 008 / 1 008, funcțiile pe emulatoare 142 / 142,
+  paginile 62 / 62. Easy 3Draw 18.44.0; aplicația neschimbată (totalul 932,8 / 1 000 kB).
+- **Proba în engleză a pluginului:** împărțită de linie în trei (5,0 s, 16,0 s, 11,6 s); bugetul de 90 s din 3.Ax a ieșit.
+- **Documentele:** decizia în `CLAUDE.md`; starea din `docs/linii/principala.md`; indexul liniilor.
+
+## 2026-11-27 — Sesiunea principală în cloud: a șaizecea unire (16.A↑e-1, documentul v31) (Model: Claude Opus 5.5)
+
+**Prompt:** „Zi-le ca pot continua cu ce urmeaza la fiecare” (unirea, la raportul liniei; ordinul „unește ce se poate”)
+**Started:** 27.11, 02:12. **Completed:** 27.11, 03:19.
+
+- **Unirea:** `wip/16.A-freze-e` (`7c3f166b`, PR-ul #69) în `8b92246d`, pe `unire-2711b`, din `47b75d20`; fără ciocniri în cod.
+  Completul unirii: completul 45915480549 pe `8b92246d`, verde la prima trecere (65 min): unit 10 887 / 0 (12 sărite, pe Linux), e2e 1 008 / 1 008, funcțiile pe emulatoare 142 / 142, paginile 62 / 62; rapidul, verde. pornirea 111,7 kB (cu ușa 117,0, cu Atelierul 117,3 / 125), **totalul 933,8 / 1 000 kB** (+1,0), `/admin` 138,3 / 200, contul 30,3 / 32.
+- **Schema:** documentul e v31 (forma toroidalei); un câmp nou ia v32.
+- **Documentele:** decizia și Starea în `CLAUDE.md`; starea din `docs/linii/principala.md`; indexul liniilor.
 
 ## 2026-11-27 — 16.A↑e-2: elicea cu bila și cu toroidala în nucleul simulării (Model: Claude Opus 5.5)
 

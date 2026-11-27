@@ -86,7 +86,7 @@ test('fără diacritice și majuscule, la început de cuvânt, fiecare cuvânt; 
   // Escape golește: galeria familiei piesei de acum (cărămizile)
   await camp(page).press('Escape');
   await expect(camp(page)).toHaveValue('');
-  await expect(gasite(page)).toHaveCount(13);
+  await expect(gasite(page)).toHaveCount(14);
   await expect(page.locator('#at-galerie')).toHaveAttribute('aria-label', 'Cărămizi');
   // Enter alege prima piesă găsită, iar fila ei o ține minte
   await camp(page).fill('fu');

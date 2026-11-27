@@ -38,7 +38,7 @@ o('M22', LG, ST, ST.replace('Math.round(', 'Math.floor('), 'model', 'amprenta se
 o('M23', LG, ST, ST.replace('Math.round(', 'Math.ceil('), 'model', 'amprenta se rotunjește în sus')
 o('M24', LG, ST, ST.replace('Math.max(1,', 'Math.max(2,'), 'model', 'amprenta are cel puțin 2 știfturi')
 o('M25', LG, ST, ST.replace('/ P.pas))', '/ 10))'), 'model', 'amprenta socotită cu pasul de 10 mm')
-PL = 'const placa = ({ lateral: [d.lung, 1], suport: [d.lung, d.adanc], clema: [d.lung, 1], maner: [d.lung, 1], bila: [d.baza, d.baza], cupa: [1, 1] }'
+PL = 'const placa = bal ? [bal.lungime, bal.latime] : ({ lateral: [d.lung, 1], suport: [d.lung, d.adanc], clema: [d.lung, 1], maner: [d.lung, 1], bila: [d.baza, d.baza], cupa: [1, 1] }'
 o('M26', LG, PL, PL.replace('suport: [d.lung, d.adanc]', 'suport: [d.lung, 1]'), 'model', 'suportul are mereu placa de un știft adâncime')
 o('M27', LG, PL, PL.replace('cupa: [1, 1]', 'cupa: [d.baza, d.baza]'), 'model', 'cupa pe 2 × 2 se așază după placa ei, nu după primul știft (altfel decât până acum)')
 o('M28', LG, PL, PL.replace('lateral: [d.lung, 1], ', ''), 'model', 'știfturile pe lateral se așază după cutie, nu după placă')

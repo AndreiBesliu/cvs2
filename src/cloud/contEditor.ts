@@ -7,6 +7,7 @@ import {
 import { httpsCallable, type Functions } from 'firebase/functions';
 import type { CerereCont, RaspunsDeschide, RaspunsNume } from '../../shared/conturi.ts';
 import type { CerereFreze, RaspunsListaFreze, RaspunsScrieFreze } from '../../shared/freze.ts';
+import type { CererePreferinte, RaspunsCitestePreferinte, RaspunsScriePreferinte } from '../../shared/preferinte.ts';
 import type { CerereTichet, RaspunsRaportarileMele, RaspunsTichet } from '../../shared/tichete.ts';
 import type { CerereLot, Lot, RaspunsLot } from '../../shared/utilizare.ts';
 import { conecteazaBaza, type ConfigCloud, type MotivFaraConexiune } from './conexiuneBaza.ts';
@@ -205,6 +206,11 @@ export async function trimiteLotul(ce: ContEditor, lot: Lot): Promise<RaspunsLot
 /** Biblioteca de freze în cont (ADR 0300 §7), prin callable-ul `freze`; refuzurile vin cu motivul. */
 export async function apeleazaFrezele(ce: ContEditor, cerere: CerereFreze): Promise<RaspunsListaFreze | RaspunsScrieFreze> {
   return (await httpsCallable<CerereFreze, RaspunsListaFreze | RaspunsScrieFreze>(ce.functii, 'freze', { timeout: 60_000 })(cerere)).data;
+}
+
+/** Setările aplicației în cont (ADR 0330, felia 10.4↑g), prin callable-ul `preferinte`; refuzurile vin cu motivul. */
+export async function apeleazaPreferintele(ce: ContEditor, cerere: CererePreferinte): Promise<RaspunsCitestePreferinte | RaspunsScriePreferinte> {
+  return (await httpsCallable<CererePreferinte, RaspunsCitestePreferinte | RaspunsScriePreferinte>(ce.functii, 'preferinte', { timeout: 30_000 })(cerere)).data;
 }
 
 /**

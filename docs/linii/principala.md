@@ -153,9 +153,11 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
   printr-o schiță.
 - **Observabilitatea:** erorile ajung în jurnalul aplicației; joburile își lasă marcajul.
 
-## Starea pe 26.11.2026, seara (după a cincizeci și șaptea unire din cloud)
+## Starea pe 27.11.2026, noaptea (după a șaizecea unire din cloud)
 
-- **Pe test:** `77a036c0` (lotul 51: 28.8↑p, Z-ul sigur, parcarea și valorile frezei scrise de mână în fereastra
+- **Pe test:** `e656da6a` (lotul 53, cu lotul 52 în el: 3.Av și 3.Aw; 28.8↑r, 3.Ck-1, 18.1↑d-3 și d-4, 10.4↑e-1…g,
+  3.Ax; publicat pe 27.11 la 02:27, cu serverul întâi: funcția nouă `preferinte`, creată; completul pe `main`
+  45908600876, verde; proba de fum, bună). Înainte: `77a036c0` (lotul 51: 28.8↑p, Z-ul sigur, parcarea și valorile frezei scrise de mână în fereastra
   exportului; publicat pe 26.11 la 18:43, cu serverul neschimbat; completul pe `main` 45851263588, verde; proba de
   fum, bună). Înainte: `86881d4c` (lotul 50: 3.Ci, construcțiile gata din „Modelul”, Easy 3Draw 18.42.0), pe 26.11 la
   17:35; `e84651e3` (lotul 49: 3.Ch, construcțiile cu nume din „Modelul”, Easy 3Draw 18.41.0), la 15:27;
@@ -169,8 +171,9 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
   04:35; `7a754885` (lotul 40: 28.8↑i, viteza ferestrei exportului), la 03:15; `554b72cb` (lotul 39: 3.Cl-1, decorațiunile de Crăciun, Easy 3Draw 18.35.0), la 01:43; `c9911c14` (lotul 38: 3.Cf-1,
   alipirea la prinderi în vederea „Modelul”, Easy 3Draw 18.34.0), pe 25.11 la 23:28; `5649067c` (lotul 37: 16.A↑b-7, Escape în „Frezele mele”; 18.1↑c, finisarea reliefului, cu documentul
   v29; 28.8↑h, fereastra exportului „pe hârtie”), pe 25.11 la 22:23; `75bcf3fb` (lotul 36: „Pune-o înapoi în
-  bibliotecă”, cotele ca DIMENSION), la 20:54. **În `main`, nepublicate încă:** 3.Av și 3.Aw, numele cu virgula
-  limbii și Escape oriunde ar fi focusul (`3e1683f8`), unite pe 26.11 la 21:54: lotul 52.
+  bibliotecă”, cotele ca DIMENSION), la 20:54. **În `main`, nepublicate încă:** 3.Ck-2, balamaua, Easy 3Draw 18.44.0
+  (`439d0395`), unită pe 27.11 la 02:07: lotul 54, în drum (completul pe `main`); 16.A↑e-1, freza toroidală, cu
+  documentul v31 (`8b92246d`), unită pe 27.11 la 03:19: lotul 55.
 - **Modelul:** din 26.11, la prânz, sesiunea principală merge pe Opus („o sa folosim Opus de aici in colo”); sesiunile
   liniilor își păstrează modelul până îl schimbă owner-ul în fiecare.
 - **`main`, din cloud:** pe 23.11: 3.Tq (`0ae9c6c1`); 11.3↑e și A.4 (`ddaa7ead`); 3.Tr, unită de linia elicelor
@@ -186,14 +189,14 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
   (`9fd71053`); fereastra exportului, 28.8↑a–g (`c4ca5ec2`), și 3.Xk (`373699e6`); proba extensiilor, reparată
   (`13d9bcad`), 11.1↑d (`001b6325`) și 3.At (`cadac6c3`), scrise în sesiunea principală; 16.A↑h-5 (`4aee5405`) și
   16.A↑b-3 (`fdde5947`); 18.1↑a, relieful, cu documentul v28 (`c5b79526`); 10.4↑a-4 și 10.4↑b (`1eea83dd`). Pe
-  25.11: 3.Ca și 3.Cb, atelierul Easy 3Draw, 18.25.0 (`11877a3e`); 3.Cc și 3.Cd, 18.27.0 (`9815527f`); 3.Ce, 18.28.0 (`38ff9391`); 3.Cj-1 și 3.Cj-2, 18.30.0 (`e90edd2e`); plafoanele 1 000 / 125 (`caddd661`, ADR 0146); 18.1↑b, relieful în vederea 3D (`ef883ac1`); 10.4↑c-1, cotele în exportul vectorilor (`f2f6fc57`); 16.A↑b-5 (`03e64d33`), 3.Cj-3 și 3.Cj-4, 18.32.0 (`36559b49`), și 28.8↑n (`1eda6f0b`); 28.8↑o, centrul foii ca origine XY0 (`3fd3bf49`); 16.A↑b-4, nota „s-a schimbat în bibliotecă” (`9f18522e`), și 3.Au, starea lucrării imprimantei, scrisă în sesiunea principală (`307d4f9a`); 3.Tu, piesele rotunde pe același ax în „Modelul”, Easy 3Draw 18.33.0 (`f5cf10c8`); 16.A↑b-6, „Pune-o înapoi în bibliotecă” (`1d3882d9`), și 10.4↑c-2, cotele ca DIMENSION în DXF (`66b6b335`); 16.A↑b-7, Escape în „Frezele mele” (`581da353`); 18.1↑c, finisarea reliefului, cu documentul v29 (`f7ca20b6`); 28.8↑h, fereastra exportului „pe hârtie” (`7d74ade2`); 3.Cf-1, alipirea la prinderi în „Modelul”, Easy 3Draw 18.34.0 (`02ac0715`). Pe 26.11: 3.Cl-1, decorațiunile de Crăciun (fulgul, steaua, brăduțul), Easy 3Draw 18.35.0 (`41b1fb6f`); 28.8↑i, viteza ferestrei exportului (`953205a8`); 3.Cl-2, globul de Crăciun, Easy 3Draw 18.36.0 (`b6c9998d`), și 10.4↑d-1, cotele în lanț și „Cotează selecția” (`57888ad8`); 18.1↑d-1 și d-2, degroșarea reliefului, cu documentul v30, și fișa plăcii 18 (`3d0d0c15`); 10.4↑d-2 și d-3, „Fă desen din cotă” și cotele în raportul foilor (`67dfb777`); 28.8↑j, greșelile ferestrei exportului pe înțeles (`93ff3b29`); 3.Cl-3 și 3.Cl-4, ornamentul cu nume și brăduțul LEGO, Easy 3Draw 18.38.0 (`474b76fc`); 28.8↑k, curățenia vizuală a ferestrei exportului (`3cdd23f5`); 3.Cf-2, răsturnările și jumătățile de pas în „Modelul”, Easy 3Draw 18.39.0 (`3e56e8cf`); 28.8↑l, tastatura și cititorul de ecran în fereastra exportului (`c3a0c184`); 3.Cg, verificarea din „Modelul”, Easy 3Draw 18.40.0 (`75d8dde2`); 28.8↑q, „Toate foile” cu operațiile fiecărei foi, și titlurile grupurilor exportului (`d3da8953`); 3.Ch, construcțiile cu nume din „Modelul”, Easy 3Draw 18.41.0 (`3bf86d15`); 3.Ci, construcțiile gata din „Modelul”, Easy 3Draw 18.42.0 (`57e58798`); 28.8↑p, Z-ul sigur, parcarea și valorile frezei scrise de mână (`a234dba5`); 3.Av și 3.Aw, numele cu virgula limbii și Escape oriunde ar fi focusul, scrise de sesiunea principală (`3e1683f8`).
+  25.11: 3.Ca și 3.Cb, atelierul Easy 3Draw, 18.25.0 (`11877a3e`); 3.Cc și 3.Cd, 18.27.0 (`9815527f`); 3.Ce, 18.28.0 (`38ff9391`); 3.Cj-1 și 3.Cj-2, 18.30.0 (`e90edd2e`); plafoanele 1 000 / 125 (`caddd661`, ADR 0146); 18.1↑b, relieful în vederea 3D (`ef883ac1`); 10.4↑c-1, cotele în exportul vectorilor (`f2f6fc57`); 16.A↑b-5 (`03e64d33`), 3.Cj-3 și 3.Cj-4, 18.32.0 (`36559b49`), și 28.8↑n (`1eda6f0b`); 28.8↑o, centrul foii ca origine XY0 (`3fd3bf49`); 16.A↑b-4, nota „s-a schimbat în bibliotecă” (`9f18522e`), și 3.Au, starea lucrării imprimantei, scrisă în sesiunea principală (`307d4f9a`); 3.Tu, piesele rotunde pe același ax în „Modelul”, Easy 3Draw 18.33.0 (`f5cf10c8`); 16.A↑b-6, „Pune-o înapoi în bibliotecă” (`1d3882d9`), și 10.4↑c-2, cotele ca DIMENSION în DXF (`66b6b335`); 16.A↑b-7, Escape în „Frezele mele” (`581da353`); 18.1↑c, finisarea reliefului, cu documentul v29 (`f7ca20b6`); 28.8↑h, fereastra exportului „pe hârtie” (`7d74ade2`); 3.Cf-1, alipirea la prinderi în „Modelul”, Easy 3Draw 18.34.0 (`02ac0715`). Pe 26.11: 3.Cl-1, decorațiunile de Crăciun (fulgul, steaua, brăduțul), Easy 3Draw 18.35.0 (`41b1fb6f`); 28.8↑i, viteza ferestrei exportului (`953205a8`); 3.Cl-2, globul de Crăciun, Easy 3Draw 18.36.0 (`b6c9998d`), și 10.4↑d-1, cotele în lanț și „Cotează selecția” (`57888ad8`); 18.1↑d-1 și d-2, degroșarea reliefului, cu documentul v30, și fișa plăcii 18 (`3d0d0c15`); 10.4↑d-2 și d-3, „Fă desen din cotă” și cotele în raportul foilor (`67dfb777`); 28.8↑j, greșelile ferestrei exportului pe înțeles (`93ff3b29`); 3.Cl-3 și 3.Cl-4, ornamentul cu nume și brăduțul LEGO, Easy 3Draw 18.38.0 (`474b76fc`); 28.8↑k, curățenia vizuală a ferestrei exportului (`3cdd23f5`); 3.Cf-2, răsturnările și jumătățile de pas în „Modelul”, Easy 3Draw 18.39.0 (`3e56e8cf`); 28.8↑l, tastatura și cititorul de ecran în fereastra exportului (`c3a0c184`); 3.Cg, verificarea din „Modelul”, Easy 3Draw 18.40.0 (`75d8dde2`); 28.8↑q, „Toate foile” cu operațiile fiecărei foi, și titlurile grupurilor exportului (`d3da8953`); 3.Ch, construcțiile cu nume din „Modelul”, Easy 3Draw 18.41.0 (`3bf86d15`); 3.Ci, construcțiile gata din „Modelul”, Easy 3Draw 18.42.0 (`57e58798`); 28.8↑p, Z-ul sigur, parcarea și valorile frezei scrise de mână (`a234dba5`); 3.Av și 3.Aw, numele cu virgula limbii și Escape oriunde ar fi focusul, scrise de sesiunea principală (`3e1683f8`); 28.8↑r, începutul programului în Rezultat (`4532622d`), 3.Ck-1, placa turnantă, Easy 3Draw 18.43.0 (`0a1f26c8`), 18.1↑d-3 și d-4, pasul lateral aliniat rotunjit în jos și rândul editabil al reliefului (`709d3e2a`), 10.4↑e-1, e-2 și f, toleranțele, lungimile, Măsoară între foi (`602e5649`); 3.Ax, bugetul de timp al probei în engleză a pluginului, după completul roșu al lotului 52, scrisă de sesiunea principală (`0df06eca`); 10.4↑g, setările cotelor în cont, cu callable-ul `preferinte` (`1d02dc1e`); 3.Ck-2, balamaua, Easy 3Draw 18.44.0, cu proba în engleză a pluginului împărțită pe ecrane (`439d0395`); 16.A↑e-1, freza toroidală în document (v31) și în simulare (`8b92246d`).
 - **Liniile** (vezi [indexul](README.md)):
   - **în lucru, pe ramuri, repornite pe 25.11 la 09:32** (owner-ul, în sesiunea principală, după resetarea limitei
     săptămânale: „vreau sa pornesti si celelalte sub-sesiuni”):
     - frezele: 16.A↑b-5, unită la 13:18; 16.A↑b-4 (nota „s-a schimbat în bibliotecă”), unită la 17:00; 16.A↑b-6
       („Pune-o înapoi în bibliotecă”, pornită pe 25.11 la 14:16, la „ok, porneste 10.4↑c-2 si 16.A↑b-6” al
       owner-ului), unită la 19:42; 16.A↑b-7 (Escape în „Frezele mele”, reparația probelor instabile), unită la
-      20:11; 16.A↑e (bila și toroidala, cu CAM; v31 ținut pentru ea), pornită pe 26.11 la 20:16, la „Zi-le ca pot continua cu ce urmeaza la fiecare” al owner-ului; apoi f și g; d, după placa 4;
+      20:11; 16.A↑e (bila și toroidala, cu CAM), pornită pe 26.11 la 20:16, la „Zi-le ca pot continua cu ce urmeaza la fiecare” al owner-ului: e-1 (forma toroidalei, documentul v31, ADR 0303), unită pe 27.11 la 03:19; e-2 (elicea cu toroidala), în lucru; apoi f și g; d, după placa 4;
     - exportul: 28.8↑n, unită la 13:18; 28.8↑o (centrul foii ca origine XY0; mișcă mașina), unită la 14:21; 28.8↑h
       (desenele ferestrei, cu reparația 28.8↑h-2 a lui „Du-mă la …” și cu regula „cât foaia” unită cu relieful),
       unită la 21:13; 28.8↑i (viteza ferestrei), unită pe 26.11 la 02:07; 28.8↑j (greșelile pe înțeles),
@@ -201,12 +204,14 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
       ecran), unită la 10:14 (feliile h–l ale ferestrei, gata); 28.8↑q („Toate foile” cu operațiile fiecărei
       foi) și titlurile grupurilor, unite la 13:05; 28.8↑p (Z-ul sigur și parcarea; mișcă mașina, cu
       linia frezelor anunțată; ordinea confirmată de owner), unită la 17:29; din ADR 0291 nu mai rămâne nicio felie a
-      liniei; începutul G-code-ului la vedere în fereastră, pornită pe 26.11 la 20:16, la „Zi-le ca pot continua cu ce urmeaza la fiecare” al owner-ului; 9a, după placa 2; 28.8↑m, cu Clasicul;
+      liniei; 28.8↑r (începutul programului la vedere în Rezultat, ADR 0292; pornită pe 26.11 la 20:16, la „Zi-le ca pot continua cu ce urmeaza la fiecare” al owner-ului), unită pe 27.11 la 01:02; 9a, după placa 2; 28.8↑m, cu Clasicul;
     - relieful: 18.1↑b, unită la 11:02; 18.1↑c (finisarea, cu bila în document, v29; `AndreiBesliu/cvs2#39`), unită
       la 21:11, după ce linia a ținut bilele afară din lista bibliotecii a ferestrei exportului; 18.1↑d (pornită de owner pe
       25.11 la 23:37, „ok, porneste 10.4↑d si 18.1↑d”): d-1 (degroșarea, cu documentul v30, ADR 0313) și d-2 (fișa
       plăcii 18), unite pe 26.11 la 05:09 (`AndreiBesliu/cvs2#51`); rândul editabil al
-      finisării și al degroșării și rotunjirea în jos a pasului lateral, pornite pe 26.11 la 20:16, la cuvântul owner-ului;
+      finisării și al degroșării (18.1↑d-4, ADR 0315) și rotunjirea în jos a pasului lateral (18.1↑d-3, ADR 0314;
+      mișcă mașina), pornite pe 26.11 la 20:16, la cuvântul owner-ului, unite pe 27.11 la 01:02; nicio felie pornită: freza din
+      „Frezele mele” pe rândurile reliefului, desenele grupurilor și „Dă-i T{n}”, la cuvântul owner-ului;
     - atelierul: cama și roata cu palete, unite la 09:35; cadrul și melcul, la 13:18 (3.Cj, încheiată); 3.Tu
       (piesele rotunde pe același ax în „Modelul”, ADR 0283; Easy 3Draw 18.33.0; pornită de owner în sesiunea liniei,
       „1a, 2a, 3a la 3.Tu, pornește”), unită la 18:18; în lucru, 3.Cf (alipirea la prinderi în
@@ -218,12 +223,14 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
       (ADR 0285, încheiat); 3.Cf-2 (răsturnările și jumătățile de pas; 18.39.0), unită la 09:18; 3.Cg (verificarea:
       prinsă, plutește, intră în alta; 18.40.0), unită la 11:58; 3.Ch (construcțiile cu nume și lista lor de piese; 18.41.0), unită la 14:12; 3.Ci
       (construcțiile gata: șasiul cu patru roți, cutia de angrenaje, brațul de macara, barca cu elice; 18.42.0), unită la 16:26;
-      3.Ck (cu jocul din calibrare; tipărirea bilei și a cupei, încă de verificat) sau întâi feliile auditului elicelor fără decizie, pornită pe 26.11 la 20:16, la „Zi-le ca pot continua cu ce urmeaza la fiecare” al owner-ului; 18.43.0;
+      3.Ck (cu jocul din calibrare; tipărirea bilei și a cupei, încă de verificat), pornită pe 26.11 la 20:16, la „Zi-le ca pot continua cu ce urmeaza la fiecare” al owner-ului, despărțită în 3.Ck-1 (placa turnantă; 18.43.0), unită pe 27.11 la 01:02, și 3.Ck-2 (balamaua; 18.44.0, cu proba în engleză împărțită pe ecrane), unită pe 27.11 la 02:07: ADR 0284 are toate feliile făcute; nicio felie pornită;
     - cotele: 10.4↑c-1, unită la 12:20; c-2 (DIMENSION în DXF și cifrele ca text), unită la 19:42;
       10.4↑d (ultima felie a cotelor; pornită de owner pe 25.11 la 23:37), împărțită în trei: d-1 (lanțul, linia
       de bază, „Cotează selecția”), unită pe 26.11 la 03:26; d-2 („Fă desen din cotă”) și d-3 (cotele în raportul
       foilor), unite la 05:35; 10.4↑d, încheiată; cele „mai târziu” din ADR 0330 (toleranțele, lungimile, cota între foi, setările în cont),
-      pornite pe 26.11 la 20:16, la cuvântul owner-ului.
+      pornite pe 26.11 la 20:16, la cuvântul owner-ului: e-1 (toleranțele), e-2 (lungimile) și f (Măsoară între
+      foi), și g (setările cotelor în cont, 14a, prin callable-ul `preferinte`), unite pe 27.11 la 01:02; cele „mai târziu”,
+      toate făcute: linia, încheiată până la cuvântul owner-ului.
 
     Se unesc la raportul liniei, în ordinea rapoartelor. **Restul de mărime** (din 25.11, cu plafoanele noi; după
     lotul de la 13:18: 109,9 kB în total, 8,5 kB în pornire): fiecare linie își spune în raport cât adaugă, iar una
@@ -258,6 +265,17 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
 - **La owner:**
   - de încercat virgula din numele elementelor (3.Av) și Escape cu focusul pe pagină în cele șapte ferestre (3.Aw),
     după lotul 52;
+  - cu recomandarea aplicată, cele cinci alegeri ale toroidalei din ADR 0303 (1a–5a: pasul lateral rămâne câmp, cu
+    creasta alături; profilul pe o parte cu adâncimea cel puțin raza; elicea simulată exact; finisarea reliefului, a
+    liniei reliefului; refuzată ca freză de rest, a fundului plat și a dopului);
+  - după lotul 54: de tipărit balamaua (3.Ck-2: cât de ușor intră clema pe bolț, cât de greu se rotește); cu
+    recomandarea aplicată, alegerile ei (două jumătăți, lățimea 1–2 și lungimea 1–4, axa la 4 mm după capătul plăcii,
+    jocul ca un câmp al clemei);
+  - după lotul 53: de încercat începutul programului în Rezultat (28.8↑r), rândul editabil al finisării și al
+    degroșării (18.1↑d-4), toleranțele, lungimile, Măsoară între foi și setările cotelor în cont (10.4↑e-1, e-2, f, g); de tipărit placa turnantă
+    (3.Ck-1: cât de greu se rotește, cât de bine stă pe pivot); cu recomandarea aplicată, alegerile plăcii turnante
+    (pivotul ca știft Technic, mărimile 2 × 2 și 4 × 4, jocul în pași de 0,05 mm, plăcile înalte cât o placă) și a
+    începutului (după export, nu înainte);
   - de încercat „Toate foile” în fereastra exportului, pe un proiect cu mai multe foi (pe test din 26.11, 14:20);
   - „cine unește în `main`” (recomandarea: doar sesiunea principală; pe 23–24.11, biblioteca și frezele au scris întâi
     aici, iar felia era deja în lot: unirea a rămas aici);

@@ -759,7 +759,7 @@ judecă).
     - b: o cotă pe foaia activă cu un capăt pe altă foaie, măsurată în așezarea foilor de pe pânză (se schimbă când foile se
       mută în listă).
 14. Setările cotelor în cont (g):
-    - **a (recomandat):** ținute în cont, cu sincronizarea frezelor ca model (fără `cloud`, rămân în browser), cu mărimea bucății
+    - **a (recomandat, implementat în g):** ținute în cont, cu sincronizarea frezelor ca model (fără `cloud`, rămân în browser), cu mărimea bucății
       contului spusă întâi sesiunii principale;
     - b: doar „Exportă setările” și „Importă setările”, ca fișier, fără server.
 15. Unde se cere lungimea (e-2), fiindcă în bara de sus nu mai încape un buton (mai rămân 22 px în română, iar un buton are 34):
@@ -807,4 +807,28 @@ nimic nou în document (rămâne v30).
 - **Cifrele:** unitare noi 5 (`cote.foi.test.ts`, pe hârtie: foaia vecină la X ± 400 = 300 + 100, colțul foii vecine la
   `SPATIU_FOI` de al celei active), e2e nou 1 (`cote.foi.spec.ts`: 400 mm din vârful foii active până la al foii vecine);
   otrăvurile 16 / 16.
+
+## Implementarea (10.4↑g)
+
+26.11, pe ramura `wip/10.4-cote`, după f, cu acordul sesiunii principale pe mărime (contul ~30,4 / 32 kB, totalul ~928,5,
+pornirea +0). Întrebarea 14, varianta a. Documentul proiectului nu se schimbă: setările sunt ale aplicației, nu ale unui proiect.
+- **Serverul:** callable-ul `preferinte` (`functions/src/preferinte/actiuni.ts`, contractul în `shared/preferinte.ts`):
+  `citeste` (contul deschis, oricare ar fi planul) și `scrie` (cu capabilitatea `cloud` și cu versiunea văzută; altfel
+  ciocnire, cu ce e în cont). Documentul e `conturi/{uid}/preferinte/{cheie}`, cu textul JSON neatins, versiunea și momentul
+  scrierii; acum o singură cheie, `cote`. Nicio regulă nouă: documentul rămâne închis clientului (proba regulilor o cere).
+  Numele e generic, ca alte setări ale aplicației să poată sta acolo; Z-ul sigur și parcarea (28.8↑p) nu se mută în felia asta.
+- **Îmbinarea** (`imbinaPreferinte`, `cuValorileDinCont`, `src/model/preferinteSincron.ts`, pură): câmp cu câmp, față de
+  ultima versiune comună (la prima trecere a unui browser, implicitele); obiectele pe câmpuri, listele întregi; cheile ca date.
+- **Trecerea** (`treceSetarile`, `src/app/preferinteSincronizare.ts`, în bucata ei, adusă la cerere): citește, îmbină, pune aici
+  ce a venit, scrie ce s-a schimbat aici; ce a văzut ultima oară stă în browser (`cncvs2.cote.cont`). O ciocnire (același câmp,
+  altfel aici și în cont) rămâne ca aici și oprește scrierea până alege omul sau până pune el însuși valoarea din cont. Se trece
+  la deschiderea ferestrei Setări și la alegerea uneltei Cote (cu contul deschis), apoi la 2 s după o schimbare, cât bucata e
+  adusă, și la revenirea rețelei; niciodată la pornirea aplicației. Cererile pleacă prin bucata contului (`cheamaPreferintele`).
+- **Fereastra Setări › Cotele:** sub titlu, rândul stării (în cont, se sincronizează, doar citire, fără rețea, contul); la o
+  ciocnire, banda cu **Păstrează-le pe ale mele** și **Ia-le pe cele din cont**. Fără cont, fereastra e ca înainte.
+- **Câmpurile pe care versiunea aceasta nu le știe** (venite de la o versiune mai nouă) se pierd la o scriere a ei: textul se
+  normalizează înaintea comparației, ca o setare stricată să nu strice celelalte.
+- **Cifrele:** unitare noi 17 (`preferinte.sincron.test.ts`, `preferinte.trecere.test.ts`), pe emulatoare 5 + 1 regulă
+  (`functions/test/preferinte.emulator.test.ts`, `reguli.emulator.test.ts`) și 2 cap-coadă (`setariCont.emulator.spec.ts`);
+  otrăvurile 32 / 32.
 
