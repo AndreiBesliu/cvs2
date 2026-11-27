@@ -3,6 +3,8 @@ import '../i18n/export.ts';
 import { t } from '../i18n/t.ts';
 import { celuleAliniate } from './actiuniExportTipuri.ts';
 import { Cartonase } from './exportPoze.tsx';
+import { DesenAdaosRelief, DesenFreza, DesenLiniiRelief, DesenMargineRelief, DesenPodeaRelief, type DesenComun } from './exportDesene.tsx';
+import { liniiReliefDesen, treceriPodeaRelief } from './exportDeseneCalcul.ts';
 import type { GrupExport } from './exportGrupuri.ts';
 import { GRUPURI_RELIEF } from './exportGrupuri.ts';
 import type { CampRelief, FinisareExport, RandRelief } from './exportRelief.ts';
@@ -30,8 +32,11 @@ export function formaFinisareText(s: FinisareExport['scula'], f: (x: number) => 
 /** Ce îi dă fereastra fișei unei operații a reliefului (ca `ContextFisa` la celelalte operații). */
 export type ContextFisaRelief = {
   readonly doarCitire: boolean;
-  /** Grupul unei întrebări, comun cu celelalte fișe (titlul, explicația câmpului activ, câmpurile, greșelile). */
-  readonly grup: (id: GrupExport, fisa: string, corp: ReactNode, greseli?: ReadonlyArray<string>) => ReactNode;
+  /**
+   * Grupul unei întrebări, comun cu celelalte fișe (titlul, explicația câmpului activ, câmpurile, greșelile) și, din felia
+   * 18.1↑d-6, desenul lui.
+   */
+  readonly grup: (id: GrupExport, fisa: string, corp: ReactNode, greseli?: ReadonlyArray<string>, desen?: (c: DesenComun) => ReactNode) => ReactNode;
   /** Formatul numerelor (al frezelor: până la miime). */
   readonly f: (x: number) => string;
   /** Creasta lăsată pe un plan de freza dată, la pasul dat (regula aplicației, `creastaPePlan`); lipsă = fără notă. */
@@ -181,12 +186,36 @@ export function FisaFinisare({ fin, r, loc, total, c, greseli, gresite, onSchimb
       default: return null;
     }
   };
+  /*
+   * Desenul fiecărei întrebări (felia 18.1↑d-6, ADR 0317), din valorile rândului; trecerile pe Z și pasul liniilor, ca lucrarea
+   * (`exportDeseneCalcul.ts`). Desenul frezei e cel al celorlalte fișe: cotele lui poartă numele câmpurilor fără `relief-`.
+   */
+  const nr = (x: string, camp: CampRelief): number | null => (rau(camp) ? null : citesteNumar(x));
+  const desen = (g: GrupExport): ((dc: DesenComun) => ReactNode) | undefined => {
+    switch (g) {
+      case 'freza-relief': return (dc) => (
+        <DesenFreza c={{ ...dc, aprins: dc.aprins.map((x) => (x.startsWith('relief-') ? x.slice(7) : x)) }} numar={r.numarScula}
+          diametru={nr(r.diametruScula, 'diametru')} v={!deg && r.formaScula === 'v'} unghi={nr(r.unghiV, 'unghi-v')} varfPlat={nr(r.varfV, 'varf-v')}
+          {...(!deg && r.formaScula === 'bila' ? { rotunda: 'bila' as const } : {})} />
+      );
+      case 'linii': return (dc) => (
+        <DesenLiniiRelief c={dc} unghi={u} linii={((p) => (p === null ? null : liniiReliefDesen(p, celula, deg || r.aliniat, u ?? 0)))(nr(r.pasLateral, 'pas-lateral'))} />
+      );
+      case 'adaos': return (dc) => <DesenAdaosRelief c={dc} adaos={nr(r.adaos, 'adaos')} />;
+      case 'margine': return (dc) => <DesenMargineRelief c={dc} margine={r.margine} z={r.z} planZero={nr(r.planZero, 'plan-zero')} />;
+      case 'podea': return (dc) => {
+        const a = nr(r.adancime, 'adancime'), p = nr(r.pas, 'pas'), x = deg ? nr(r.adaos, 'adaos') ?? 0 : 0;
+        return <DesenPodeaRelief c={dc} adancime={a} pas={p} treceri={a === null || p === null ? { funduri: [], n: 0, podea: 0 } : treceriPodeaRelief(a, p, x)} />;
+      };
+      default: return undefined;
+    }
+  };
   return (
     <section className="dx-fisa" data-fisa="op" data-operatie={fin.cheie} data-fel={fin.fel}>
       <h3 tabIndex={-1}>{fin.descriere}</h3>
       {/* Felul, înaintea locului: degroșarea și finisarea aceluiași relief au același nume. */}
       <p className="dx-loc">{t(deg ? 'export.degrosare.lista' : 'export.finisare.lista')} · {t('export.fisa.loc', { n: loc + 1, total })}</p>
-      {GRUPURI_RELIEF[fin.fel].map((g) => grup(g, fin.cheie, corp(g), aici(g)))}
+      {GRUPURI_RELIEF[fin.fel].map((g) => grup(g, fin.cheie, corp(g), aici(g), desen(g)))}
     </section>
   );
 }

@@ -1111,7 +1111,9 @@ the other row of the same relief too; **Export** writes the values into the proj
 can also take the cutter **From my bits**: for finishing, a flat, a V or a ball cutter; for roughing, a flat one only. Once
 chosen, the cutter brings its number (while it is free), diameter, shape, step down and its own stepover (a finishing ball usually
 has a small one); changed later in the library, the row says what differs, with **Take the new values**, as on the other rows.
-With **Cutting order: Mine**, its row moves like any other. In the [3D view](#vedere-3d), **Cut** shows the
+Each group of the sheet has its drawing, made from your values: the bit, the lines seen from above (through the cell centres, at
+the stepover used), the allowance in section, the edge and the height, the floor with the passes in Z (the bottoms one step apart,
+the last on the model); the dimension of the field you are on lights up. With **Cutting order: Mine**, its row moves like any other. In the [3D view](#vedere-3d), **Cut** shows the
 sheet after the program. On slopes the cutter stays a little above the ideal surface (about 0.1 mm on a 45° slope): it is the safe side of the
 computation, which never digs into the relief. The export needs the relief's tiles from this browser; on another computer, it
 says they are missing.
