@@ -9,6 +9,10 @@
  * Câmpurile necunoscute ale unei freze (ale unei versiuni mai noi a aplicației) se păstrează la citire și la schimbare.
  */
 import { PLAFON, UNGHI_V_MAXIM, UNGHI_V_MINIM, type Scula } from './document.ts';
+import { inaltimeCon, puncteProfil } from './profilFreza.ts';
+
+// Capătul frezei stă lângă siluetă (`profilFreza.ts`), fără importul frezei: aici rămâne și pentru cine îl cere de la freză.
+export { inaltimeCon };
 
 /**
  * Felurile: plata (dreaptă), V-ul (ascuțit) și freza de gravare (V cu vârf plat), pe care CAM-ul le taie; apoi bila, toroidala,
@@ -23,7 +27,7 @@ export type FelFreza = (typeof FELURI_FREZA)[number];
  * Celelalte (conica cu vârf rotund, burghiul, profilurile) stau în bibliotecă și în catalog, „în curând”, dar nu se aleg în
  * proiect până la CAM-ul lor.
  */
-export const FELURI_CU_CAM = ['plata', 'v', 'gravare', 'bila', 'toroidala'] as const;
+export const FELURI_CU_CAM = ['plata', 'v', 'gravare', 'bila', 'toroidala', 'rotunjire', 'ogee', 'ogee-roman', 'panou'] as const;
 export const areCam = (fel: FelFreza): boolean => (FELURI_CU_CAM as readonly FelFreza[]).includes(fel);
 
 /** Câmpurile unei freze, fără nume (frezele de pornire își primesc numele de la fereastră, în limba omului). */
@@ -108,41 +112,6 @@ export const areTreapta = (fel: FelFreza): boolean => fel === 'ogee-roman';
 /** Numele, pentru unicitate: fără spațiile de la capete și dublate, cu literele compuse unite, fără deosebire de majuscule. */
 export function cheieNume(nume: string): string {
   return nume.normalize('NFC').trim().replace(/\s+/gu, ' ').toLocaleLowerCase('ro');
-}
-
-/**
- * Înălțimea capătului, în mm (ADR 0302, felia 16.A↑h-4), măsurată de la vârf până unde freza ajunge la diametrul ei: plata
- * 0; V-ul și gravarea (R − a)·cot(θ/2), cu a raza vârfului plat; bila R; toroidala r (raza colțului); conica
- * r(1 − sin α) + (R − r cos α) / tan α, cu α = θ/2 și r raza vârfului rotund; burghiul R / tan(θ/2); profilurile (16.A↑h-5):
- * rotunjirea r, ogee-ul 2r, ogee-ul roman 2r + t (treapta), panoul (R − a)·tan β (a raza fundului plat, β teșitura față de
- * fața plăcii), iar cu scobitura de rază r, r(1 − cos β) + (R − a − r sin β)·tan β. Tăișul nu poate fi mai scurt.
- */
-export function inaltimeCon(f: Pick<Freza, 'fel' | 'diametru' | 'unghi' | 'varf' | 'raza' | 'treapta'>): number {
-  const R = f.diametru / 2;
-  switch (f.fel) {
-    case 'plata': return 0;
-    case 'bila': return R;
-    case 'toroidala': case 'rotunjire': return finit(f.raza) ? f.raza : 0;
-    case 'ogee': return finit(f.raza) ? 2 * f.raza : 0;
-    case 'ogee-roman': return finit(f.raza) && finit(f.treapta) ? 2 * f.raza + f.treapta : 0;
-    case 'panou': {
-      if (!finit(f.unghi) || !finit(f.varf)) return 0;
-      const b = (f.unghi * Math.PI) / 180;
-      const a = f.varf / 2;
-      const r = finit(f.raza) ? f.raza : 0;
-      return r * (1 - Math.cos(b)) + (R - a - r * Math.sin(b)) * Math.tan(b);
-    }
-    case 'conica': {
-      if (!finit(f.unghi) || !finit(f.raza)) return 0;
-      const a = (f.unghi * Math.PI) / 360;
-      return f.raza * (1 - Math.sin(a)) + (R - f.raza * Math.cos(a)) / Math.tan(a);
-    }
-    default: {
-      if (!finit(f.unghi)) return 0;
-      const a = f.fel === 'gravare' && finit(f.varf) ? f.varf / 2 : 0;
-      return (R - a) / Math.tan((f.unghi * Math.PI) / 360);
-    }
-  }
 }
 
 function interval(x: unknown, max: number, intreg = false): MotivFreza | null {
@@ -249,6 +218,9 @@ export function sculaDinFreza(f: Freza, numar: number = f.numar): Scula {
   // (`motivFormaPeOperatie`: finisarea reliefului, canelura).
   if (f.fel === 'bila') return { ...baza, forma: { tip: 'bila' } };
   if (f.fel === 'toroidala') return { ...baza, forma: { tip: 'toroidala', raza: f.raza ?? 0 } };
+  // Profilurile parametrice (ADR 0304 §5, 16.A↑f-3): silueta lor ca linii, sub 0,001 mm (`puncteProfil`).
+  const puncte = puncteProfil(f);
+  if (puncte !== null) return { ...baza, forma: { tip: 'profil', puncte } };
   if (f.fel === 'plata' || !finit(f.unghi)) return baza;
   return { ...baza, forma: f.fel === 'gravare' && finit(f.varf) ? { tip: 'v', unghi: f.unghi, varf: f.varf } : { tip: 'v', unghi: f.unghi } };
 }

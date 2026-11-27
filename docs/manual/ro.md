@@ -1465,9 +1465,10 @@ catalog își arată fișa; **Pune în frezele mele** o copiază în bibliotecă
 grup, și **Pune tot ce vezi**, lângă titlu (după căutare și filtru), pun mai multe deodată. O freză care e deja la tine
 (același fel, diametru, unghi, vârf, rază și treaptă) nu se pune a doua oară: fișa spune **E deja în frezele mele.**
 
-**Bila, toroidala, conica, burghiul și profilurile** (rotunjirea, ogee-ul, ogee-ul roman, panoul ridicat) stau în biblioteca
-ta și în catalog, cu **în curând în proiect**: în secțiunea Tăierea se aleg abia când aplicația le va putea tăia. Până
-atunci, le ții la un loc cu celelalte. O freză de canelură (cu vârful rotund, „core box”) e o **Bilă**.
+**Bila, toroidala și profilurile** (rotunjirea, ogee-ul, ogee-ul roman, panoul ridicat) se aleg și în proiect: bila și
+toroidala pe linie, în buzunar și pe o parte, profilurile deocamdată doar pe linie (o canelură). **Conica și burghiul** stau
+în biblioteca ta și în catalog, cu **în curând în proiect**: în secțiunea Tăierea se aleg abia când aplicația le va putea
+tăia. O freză de canelură (cu vârful rotund, „core box”) e o **Bilă**.
 
 **Freză nouă** deschide editorul, cu câmpurile:
 - **Numele**: gol, freza primește numele propus din fel și diametru („Plată Ø6”, „V60 Ø6”, „Gravare 30° vârf 0,2 Ø3,175”).
@@ -1977,6 +1978,14 @@ al frezei. Fundul nu iese plat: între inele rămâne o creastă, spusă sub **P
 inele, cel mult 1,2 mm”. Pe colțurile inelelor și pe mijlocul buzunarului creasta e mai mare, până la valoarea a doua. Un pas
 lateral mai mic micșorează creasta. Cu o freză de rest sau cu o incrustație cu pereți drepți, exportul se oprește: frezele de rest
 și dopul cer o freză plată.
+
+**Freza profilată pe linie.** O rotunjire, un ogee, un ogee roman sau un panou ridicat din **Frezele mele** se alege pe o
+tăietură **pe linie**, din lista **Din frezele mele**: forma devine **profilată (din „Frezele mele”)**, iar desenul frezei îi
+arată silueta. Silueta și diametrul sunt ale frezei din bibliotecă: diametrul nu se schimbă de mână, iar altă formă aleasă
+scoate profilul. Centrul frezei merge pe linie, ca la freza plată, iar canelura iese cu secțiunea siluetei, în oglindă: la
+adâncimea scrisă, cât silueta ajunge sub fața plăcii; mai adânc decât înălțimea profilului, pereții coboară drept, cu
+diametrul frezei. Pe o parte, în buzunar, la găurire și în V-carve, exportul se oprește, cu motivul: marginea profilată vine
+mai târziu. Raportul foilor numește freza „profilată”.
 
 **Bila și toroidala pe o parte.** Și pe un profil **pe o parte** (exterior, interior, stânga, dreapta), forma poate fi **bilă**
 sau **toroidală**, dacă adâncimea e cel puțin raza colțului (la bilă, jumătatea diametrului). Drumul e al frezei plate de

@@ -2,8 +2,8 @@
  * Profilul desenat în lucrare (ADR 0304 §1, §3, felia 16.A↑f-1): ușa v32 îl primește pe orice freză a unei operații, simularea
  * îl taie (simulare.profil.test.ts), iar lucrarea îl refuză pe orice freză în plus și pe orice operație afară de canelură (pe
  * linie, din 16.A↑f-2: canelura.profil.test.ts), cu motivul care numește forma, T-ul și calea; marginea profilată vine pe o
- * sub-felie a ei. Fereastra exportului nu-i face rând (`formaPeRand`), deci Exportă nu scrie o plată în locul lui. Tabelul
- * `motivFormaPeOperatie` pe hârtie.
+ * sub-felie a ei. Din 16.A↑f-3, fereastra exportului îi face rând (`formaPeRand`), cu punctele doar de citit; pe o freză în
+ * plus, operația rămâne fără rând. Tabelul `motivFormaPeOperatie` pe hârtie.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -57,7 +57,8 @@ test('motivFormaPeOperatie: profilul desenat merge doar pe linie (canelura, din 
     assert.equal(motivFormaPeOperatie(tip, latura, Pf, { adancime: 100 }, 8), 'profil', `${tip} ${latura}`);
   }
   assert.equal(felFrezei(Pf), 'profilată');
-  assert.equal(formaPeRand(Pf), false);
+  // Din 16.A↑f-3, rândul ferestrei poartă profilul (doar de citit): `export.profil.test.ts`.
+  assert.equal(formaPeRand(Pf), true);
   assert.equal(motivFormaPeOperatie('profil', 'exterior', undefined, { adancime: 1 }, 6), null);
 });
 
@@ -81,10 +82,10 @@ test('lucrarea refuză profilul desenat în afara canelurii și pe orice freză 
   assert.doesNotMatch(motiv(doc([op({})])), /profilat/);
 });
 
-test('fereastra exportului nu face rând unei operații cu un profil desenat (Exportă n-ar purta forma)', () => {
+test('fereastra exportului face rând canelurii cu un profil desenat (din 16.A↑f-3), nu și unei operații cu profilul pe o freză în plus', () => {
   const d = deschis(doc([op({ scula: prof(1), latura: 'pe-linie', adancime: 1 })]));
   const o = d.piese[0]!.operatii[0] as Operatie;
-  assert.equal(operatieCuRand(o), false);
+  assert.equal(operatieCuRand(o), true);
   const cuRest = deschis(doc([op({ tip: 'buzunar', pasLateral: 2, rest: [{ scula: prof(2, 3, [[0, 0], [1.5, 0.5]]), pasLateral: 1 }] })]));
   assert.equal(operatieCuRand(cuRest.piese[0]!.operatii[0] as Operatie), false);
   assert.equal(operatieCuRand(deschis(doc([op({})])).piese[0]!.operatii[0] as Operatie), true);
