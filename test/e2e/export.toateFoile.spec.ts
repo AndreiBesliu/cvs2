@@ -180,11 +180,19 @@ test('pe telefon, banda listei rămâne cât era: capul foii e doar numele ei, p
   await deschide(page);
   await page.setViewportSize({ width: 390, height: 844 });
   const banda = page.locator('.dx-lista');
-  const inainte = (await banda.boundingBox())?.height ?? 0;
+  // Cât are banda peste cel mai înalt rând de operație: capul foii nu trebuie să-l mărească. Rândurile altor foi pot fi mai
+  // înalte decât ale foii active (din 28.8↑s, numele unui dreptunghi trece pe două rânduri, al unui cerc nu), deci banda
+  // se compară cu rândurile ei, nu cu ea de dinainte.
+  const pesteRanduri = (): Promise<number> => banda.evaluate((l) => l.getBoundingClientRect().height
+    - Math.max(...[...l.querySelectorAll('[data-nav-op]')].map((r) => r.getBoundingClientRect().height)));
+  const inainte = await pesteRanduri();
   await page.locator('[data-foi="toate"]').click();
   await expect(page.locator('[data-foaie-lista="f2"]')).toBeAttached();
-  const dupa = (await banda.boundingBox())?.height ?? Number.POSITIVE_INFINITY;
-  expect(dupa).toBeLessThanOrEqual(inainte + 2);
+  expect(await pesteRanduri()).toBeLessThanOrEqual(inainte + 2);
+  // Și capul foii nu e mai înalt decât un rând de operație.
+  const cap = (await page.locator('[data-foaie-lista="f2"]').boundingBox())?.height ?? Number.POSITIVE_INFINITY;
+  const rand = (await page.locator('[data-nav-op]').first().boundingBox())?.height ?? 0;
+  expect(cap).toBeLessThanOrEqual(rand);
   await expect(page.locator('[data-foaie-lista="f2"] [data-nota-foaie]')).toBeHidden();
   // Nota stă în capul din fișe.
   await expect(page.locator('[data-foaie-fise="f2"] [data-nota-foaie]')).toContainText('Foaia 1');

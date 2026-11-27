@@ -1927,7 +1927,9 @@ drawing, it closes by itself.
 **Export G-code** opens the export window, for the active sheet (with several [sheets](#foile), the window's title says
 which). The window has three parts:
 - the **list**, on the left: **Sheet and origin**, **Machine and file**, then the [operations](#operatii), in the order they
-  are cut, each with what it cuts, the bit and the depth; after the export, also the **Result**, with the estimated time and how
+  are cut. An operation's row shows on its first line the piece's name, if you gave it one (an imported piece takes its name
+  from the file), otherwise its shape and size; below, smaller, its place on the sheet; then what it cuts, the bit and the
+  depth. The operation's card has the full name, with the place, as its title. After the export, also the **Result**, with the estimated time and how
   many warnings it has (a coloured dot, if any). Its card holds, in order: **Check before cutting** (the warnings, only when
   there are some), **Files** (with **Open in Machine** and **the start of each file**: its first lines, as the controller
   reads them, up to the first cutting move, exactly as in the downloaded file, at most 40; one row per file, the first one

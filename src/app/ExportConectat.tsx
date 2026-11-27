@@ -34,6 +34,7 @@ import { numarUrechiAlese } from '../model/urechiLocuri.ts';
 import { mesajeGata } from '../i18n/laCerere.ts';
 import { diametruCerc } from '../cam/gaurireFel.ts';
 import { hartieRand } from './hartieExport.ts';
+import { randLista } from './randListaExport.ts';
 
 /** Originea frezei din „Frezele mele” a unei scule din document (ADR 0300 §5): numele, id-ul, valorile de lucru, tăișul. */
 function origineDin(s: Scula): OrigineFreza | null {
@@ -183,6 +184,8 @@ function randuriFoii(
     return {
       cheie: `${piesa.id}/${o.id}`,
       descriere: o.noduri.length > 1 ? `${baza} (+${o.noduri.length - 1})` : baza,
+      // Rândul din listă (felia 28.8↑s): numele piesei dat de om sau forma, apoi locul, pe rândul de dedesubt.
+      lista: randLista(e, piesa, o.noduri.length),
       ...(grosime !== undefined ? { grosime } : {}),
       // Câte căi deschise taie operația (ADR 0037 §12): dialogul nu oferă ce refuză exportul pe ele.
       deschise: o.noduri.filter((n) => {

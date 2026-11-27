@@ -132,6 +132,13 @@ vreau ca ficare setare sa fie insotita de o ilustratie sugestiva, ca sa ajute us
   Fișierele, începutul fiecărui fișier scris, din textul descărcat: primele linii, până la prima mișcare de tăiere, cel mult
   40; un rând pe fișier (pe freză, ale dopurilor; cu „Toate foile”, ale foii active, cu numele din arhivă), primul desfăcut.
   Programul, octet cu octet. Detaliile: ADR 0292, „Implementarea 28.8↑r”.
+- **27.11: 28.8↑s gata** (partea din listă a constatării 14 a auditului, cu recomandarea liniei, la „zi-le sesiunilor sa
+  continue cu recomandarile, acolo unde inca asteapta” al owner-ului, adus de sesiunea principală). Rândul unei operații din
+  listă: pe primul rând, numele piesei dat de om (un import, „logo-80mm”), altfel forma și mărimea, fără loc; dedesubt, mai
+  mic, locul pe foaie (`.dx-unde`); apoi rândul de până acum. Titlul fișei rămâne numele întreg. Pe telefonul culcat, banda,
+  doar cu numele. Calculul, în `src/app/randListaExport.ts` (`randLista`, textele în modulul exportului), pe
+  `OperatieExport.lista`. Rândurile reliefului (`FisaFinisare.tsx`, al liniei reliefului) arată încă numele întreg: îl pot lua
+  de acolo. Programul, octet cu octet.
 
 ## Ce s-a găsit (23.11)
 
@@ -314,8 +321,8 @@ vreau ca ficare setare sa fie insotita de o ilustratie sugestiva, ca sa ajute us
 ## Ce rămâne
 
 Din ADR 0290, nimic: toate feliile (a–f) și 28.8↑g sunt gata. Din ADR 0291 (după audit): toate feliile liniei sunt în `main`
-(28.8↑h–l, n–q). Din ADR 0292: 28.8↑r (începutul programului în Rezultat) e gata pe ramură; începutul **înaintea** exportului
-(1b) ar fi o felie a ei, la cuvântul owner-ului, cu un calcul întreg al lucrării la fiecare schimbare. Din ADR 0291 nu mai rămâne nicio felie a liniei: 28.8↑m (starea ca hook) vine la
+(28.8↑h–l, n–q). Din ADR 0292: 28.8↑r (începutul programului în Rezultat) e în `main`; începutul **înaintea** exportului (1b)
+nu se face (owner-ul, 27.11: ADR 0292 rămâne la 1a). Din audit, partea din listă a constatării 14 e 28.8↑s, gata pe ramură. Din ADR 0291 nu mai rămâne nicio felie a liniei: 28.8↑m (starea ca hook) vine la
 pornirea Clasicului, a lui Pas cu pas sau a pasului scurt din Atelier, iar adaosul și trecerea de finisare (9a), după placa 2,
 pe linia aleasă de sesiunea principală. Titlurile în
 română sunt, din 26.11, cele alese de owner: „Tăietura”, „Golirea”, „Coborârea”. Telefonul culcat (640 × 360) e rezolvat în 28.8↑l. Pentru alte linii, mai târziu:
