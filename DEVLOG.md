@@ -17069,3 +17069,21 @@ pe ramură, după push).
   e o decizie de cod; linia își aduce `main` și o rezolvă.
 - **Pe test:** lotul 64 (3.Cm-3), în drum; lotul 65 (f-3), după el.
 - **Documentele:** decizia și Starea în `CLAUDE.md`; starea din `docs/linii/principala.md`; indexul liniilor.
+
+## 2026-11-27 — Linia reliefului: `main` cu 16.A↑f-3 adus; garda rândului reliefului separată (Model: Claude Opus 5.5)
+
+**Prompt:** mesajul sesiunii principale (13:42): „după ce îți scriu că f-3 e în `main`: 1. adu `main` în `wip/18.1-relief`;
+2. rezolvă ciocnirea cu regulile ambelor linii; 3. refă porțile pe commit-ul cu `main` adus și raportează-l.” **Started:**
+27.11, 13:45 (unirea de probă, locală, peste `05f1bdc9`). **Completed:** 27.11, 14:40 (în container; CI-ul, pe commit-ul împins).
+
+- **Unirea:** `main` `75ae7f50` (16.A↑f-3, 3.Cm-3); ciocnirea din `formaFrezei.ts` (f-3 lărgea `formaPeRand` cu profilul, iar
+  aici era predicat fără el), rezolvată cu ambele reguli: `formaPeRand` a frezelor, `formaPeRandRelief` a reliefului.
+- **Proba întâi**, roșie peste unire: `export.relief.test.ts` (cele două reguli, Exportă) și `export.relief.biblioteca.test.ts`
+  (alegerea, „Ia valorile noi”, nota și „Pe toate (N)” cu un profil în bibliotecă).
+- **Reparația:** `valoriOperatii` cu `formaPeRandRelief`; în `exportRelief.ts`, `FormaPeRelief`, `bibliotecaRelief`,
+  `stareOrigineRelief`, iar `copieRelief` citește forma rândului (`FormaRand` are acum profilul); `FisaFinisare`, nota prin
+  `stareOrigineRelief`.
+- **Otrăvurile:** E31–E35 (`18.1e.py`), 5 / 5 prinse; E29, E30 și E04 (`18.1d.py`, e2e), mutate pe garda nouă și prinse.
+- **Neprobat cap-coadă:** linia din `FisaFinisare` care cheamă `stareOrigineRelief` (o probă e2e ar cere o freză a bibliotecii
+  schimbată în profil sub un rând al reliefului).
+- **Documentele:** ADR 0319, fișa etapei 3, registrul otrăvurilor, nota liniei, traducerea.

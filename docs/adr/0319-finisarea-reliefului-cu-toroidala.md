@@ -78,6 +78,14 @@ scris înapoi așa. De aceea rândul reliefului îl au doar operațiile cu freza
 operația neatinsă, iar lucrarea o refuză cu motivul ei, ca la rândurile operațiilor pe contur (`operatieCuRand`). Proba,
 scrisă întâi: `test/unit/export.relief.test.ts` (regula și Exportă cu valorile unui rând); otrăvurile E29 și E30, prinse.
 
+Din 16.A↑f-3 (ADR 0304 §5), profilul stă pe rândul exportului: `formaPeRand` îl poartă, deci rândul reliefului are garda lui,
+`formaPeRandRelief` (plata, V-ul, bila, toroidala; predicat de tip), citită de `operatieCuRandRelief` și de Exportă
+(`operatieReliefDinDialog`). Tot de atunci, freza aleasă pe rândul reliefului e o `FormaRand` care poate fi profil: alegerea și
+„Ia valorile noi” nu-l scriu acolo, iar nota bibliotecii și „Pe toate (N)” văd biblioteca fără profiluri (`bibliotecaRelief`,
+`stareOrigineRelief`, în `src/ui/exportRelief.ts`). Deci o freză din bibliotecă devenită profil apare, pe rândul reliefului,
+ștearsă, ca până la 16.A↑f-3. Proba, scrisă întâi: `export.relief.test.ts` și `export.relief.biblioteca.test.ts`; otrăvurile
+E31–E35, prinse, iar E29, E30 și E04 (`18.1d.py`), mutate pe garda nouă și prinse.
+
 ## Nedovedit fără mașină
 
 Creasta reală (raza adevărată a colțului, bătaia frezei), suprafața tăiată față de model și timpul: le măsoară o placă a

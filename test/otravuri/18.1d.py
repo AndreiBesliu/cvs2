@@ -121,8 +121,9 @@ o('E03', EC, "        if (peRelief(o)) {\n          const vr = c.valoriRelief?.g
   'Exportă nu scrie rangul degroșării în „A mea”')
 # Îndreptată în 18.1↑d-4: `peRelief` stă la nivelul modulului (fără indentare), deci lista o rata (VOID).
 # Mutată în 18.1↑e-2: `peRelief` e acum `operatieCuRandRelief` (src/model/formaFrezei.ts), cu forma frezei în regulă.
-o('E04', 'src/model/formaFrezei.ts', "  return (o.tip === 'finisare' || o.tip === 'degrosare') && formaPeRand(o.scula.forma);",
-  "  return o.tip === 'finisare' && formaPeRand(o.scula.forma);", 'e2e', 'rândul degroșării lipsește din fereastră')
+# Și pe `formaPeRandRelief` după 16.A↑f-3.
+o('E04', 'src/model/formaFrezei.ts', "  return (o.tip === 'finisare' || o.tip === 'degrosare') && formaPeRandRelief(o.scula.forma);",
+  "  return o.tip === 'finisare' && formaPeRandRelief(o.scula.forma);", 'e2e', 'rândul degroșării lipsește din fereastră')
 
 SETURI = {
     'doc': ['test/unit/document.v30.oracol.test.ts'],

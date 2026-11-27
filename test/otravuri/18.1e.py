@@ -100,10 +100,24 @@ o('E28', CF, "      {forma === 'toroidala' && rand(t('prop.fin.raza-colt')", "  
   'Tăierea nu arată raza colțului')
 
 # După unirea frezelor (documentul v32, profilul desenat; 27.11): profilul n-are rândul reliefului.
-o('E29', FZ, "  return (o.tip === 'finisare' || o.tip === 'degrosare') && formaPeRand(o.scula.forma);",
+# E29 și E30, mutate pe `formaPeRandRelief` după 16.A↑f-3 (`formaPeRand` poartă de acum profilul, pe rândul exportului).
+o('E29', FZ, "  return (o.tip === 'finisare' || o.tip === 'degrosare') && formaPeRandRelief(o.scula.forma);",
   "  return o.tip === 'finisare' || o.tip === 'degrosare';", 'unit', 'un profil desenat primește rândul reliefului (citit ca plată)')
-o('E30', VO, "  if ((o.tip !== 'finisare' && o.tip !== 'degrosare') || !formaPeRand(s.forma)) return o;",
+o('E30', VO, "  if ((o.tip !== 'finisare' && o.tip !== 'degrosare') || !formaPeRandRelief(s.forma)) return o;",
   "  if (o.tip !== 'finisare' && o.tip !== 'degrosare') return o;", 'unit', 'Exportă scrie un profil desenat ca plată')
+# 18.1↑e-3, după 16.A↑f-3 (profilul pe rândul exportului): garda rândului reliefului e separată, iar biblioteca văzută de
+# rândurile reliefului e fără profiluri.
+o('E31', FZ, "  return forma === undefined || forma.tip === 'v' || forma.tip === 'bila' || forma.tip === 'toroidala';\n}\n\n/**\n * Operațiile cu un rând al reliefului",
+  "  return forma === undefined || forma.tip === 'v' || forma.tip === 'bila' || forma.tip === 'toroidala' || forma.tip === 'profil';\n}\n\n/**\n * Operațiile cu un rând al reliefului",
+  'unit', 'garda reliefului ia regula frezelor: profilul primește rândul reliefului')
+o('E32', ER, "  return biblioteca === null ? null : biblioteca.filter((f) => f.scula.forma?.tip !== 'profil');",
+  "  return biblioteca;", 'unit', 'biblioteca reliefului păstrează profilurile')
+o('E33', ER, "  if (f?.tip === 'profil') return null;\n", "", 'unit', '„Ia valorile noi” scrie un profil pe rândul reliefului (ca V)')
+o('E34', ER, "  return stareOrigine(locFrezaRelief(r), bibliotecaRelief(biblioteca));",
+  "  return stareOrigine(locFrezaRelief(r), biblioteca);", 'unit', 'nota rândului reliefului vede o freză devenită profil ca schimbată')
+o('E35', ER, "    if (r.origineScula?.biblioteca.id === id && stareOrigineRelief(r, biblioteca)?.fel === 'schimbata') n++;",
+  "    if (r.origineScula?.biblioteca.id === id && stareOrigine(locFrezaRelief(r), biblioteca)?.fel === 'schimbata') n++;",
+  'unit', '„Pe toate (N)” numără rândul reliefului pentru un profil')
 
 
 # ---- Seturile ----
