@@ -16,6 +16,7 @@
  */
 import { useEffect, useMemo, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
 import { limba, t } from '../i18n/t.ts';
+import { useEscapeFereastra } from '../ui/escapeFereastra.ts';
 import type { Document } from '../model/document.ts';
 import { CAMPURI_AVANSATE, cuCalitate, cuMaterial, cuTemperatura, type CampAvansat } from '../cam/feliere/campuri.ts';
 import {
@@ -288,6 +289,8 @@ export function DialogDinDesen({ sursa, versiune, model, trimite, inchide, scrie
   }, [alese, s]);
   const cutie = useRef<HTMLDivElement | null>(null);
   useEffect(() => { cutie.current?.querySelector<HTMLElement>('[data-imprimanta="felie-renunta"]')?.focus(); }, []);
+  // Escape oriunde ar fi focusul, doar cât fereastra Imprimanta se vede (felia 3.Ay).
+  useEscapeFereastra(inchide, true, cutie);
 
   const g = rez?.gcode ?? null;
   const mt = material(s.material);
@@ -375,8 +378,7 @@ export function DialogDinDesen({ sursa, versiune, model, trimite, inchide, scrie
 
   return (
     <div className="imprimanta-dialog imprimanta-felie" role="dialog" aria-labelledby="imprimanta-felie-titlu" data-testid="imprimanta-felie"
-      data-stare={lucreaza ? 'lucreaza' : g === null ? 'gol' : 'gata'} ref={cutie} tabIndex={-1}
-      onKeyDown={(e) => { if (e.key === 'Escape') { e.stopPropagation(); inchide(); } }}>
+      data-stare={lucreaza ? 'lucreaza' : g === null ? 'gol' : 'gata'} ref={cutie} tabIndex={-1}>
       <h3 id="imprimanta-felie-titlu">{t('imprimanta.felie.titlu')}</h3>
       <div className="imprimanta-felie-corp">
         <div className="imprimanta-felie-setari">

@@ -22,6 +22,7 @@ import {
 } from '../ui/aranjament.ts';
 import { TEME, type IdAranjament, type Tema } from '../ui/alegereAranjament.ts';
 import { incarcaAranjament } from '../ui/incarcaAranjament.ts';
+import { useEscapeFereastra } from '../ui/escapeFereastra.ts';
 import { CipCursor, CipZoom, semnal, type PunctFoaie, type Semnal } from '../ui/CipuriVedere.tsx';
 import { ACTIUNI_VEDERE, type ContextVedere } from '../ui/actiuniVedere.ts';
 import { ACTIUNI_EXTENSII, type ContextExtensii } from '../ui/actiuniExtensii.ts';
@@ -95,6 +96,8 @@ function descarca(octeti: Uint8Array<ArrayBuffer>, nume: string): void {
  * filă deschisă de dinainte le cere degeaba. Proiectul e salvat; pagina reîncărcată ia versiunea nouă.
  */
 function DialogNeincarcat({ onInchide }: { readonly onInchide: () => void }) {
+  // Escape o închide, oriunde ar fi focusul, ca fereastra care n-a venit (3.Ay).
+  useEscapeFereastra(onInchide);
   return (
     <div className="dialog" role="dialog" aria-modal="true">
       <div className="dialog-cutie">

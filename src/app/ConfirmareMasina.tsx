@@ -7,6 +7,7 @@
 import { useEffect, useState, type KeyboardEvent, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { t } from '../i18n/t.ts';
+import { useEscapeFereastra } from '../ui/escapeFereastra.ts';
 import type { ProgramIncarcat } from '../machine/program.ts';
 
 /** O cerere care așteaptă omul; `raspunde` o închide (o singură dată). */
@@ -43,6 +44,8 @@ export function ConfirmareMasina({ cerere: c }: { readonly cerere: CerereConfirm
     e.stopPropagation();
     c.raspunde(false);
   };
+  // Și cu focusul căzut pe pagină (un clic pe textul ferestrei; 3.Ay). În fereastră, `tasta` o oprește întâi.
+  useEscapeFereastra(() => { c.raspunde(false); });
   const porneste = c.fel === 'porneste';
   return createPortal(
     <div className="dialog" role="dialog" aria-modal="true" aria-labelledby="confirmare-masina-titlu" data-testid="confirmare-masina"

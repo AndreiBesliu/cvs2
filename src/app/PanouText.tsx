@@ -13,6 +13,7 @@ import type { Font } from '../text/font.ts';
 import type { RezultatActiune } from '../ui/actiuni.ts';
 import type { CerereText } from '../ui/actiuniDocument.ts';
 import { citesteNumar, textNumar } from '../ui/numar.ts';
+import { useEscapeFereastra } from '../ui/escapeFereastra.ts';
 import { descarcaInBiblioteca } from './fonturiGoogleClient.ts';
 import { Previzualizare } from './PrevizualizareText.tsx';
 import { textIncarcare } from './texteFont.ts';
@@ -24,16 +25,22 @@ type FontSistem = import('../text/sistem.ts').FontSistem;
 type TextAsezat = import('../text/asezare.ts').TextAsezat;
 type Punct = { readonly x: number; readonly y: number };
 
-/** Fereastra fonturilor (ADR 0106 §5), la cerere: abia la primul „Fonturi…”. */
-const DialogFonturi = lazy(() => import('./DialogFonturi.tsx').then(cuMesaje).then((m) => ({ default: m.DialogFonturi }), () => ({
-  default: ({ onInchide }: { readonly onInchide: () => void }) => (
+/** Fereastra fonturilor, când modulul ei nu s-a putut aduce: Escape o închide, oriunde ar fi focusul (3.Ay). */
+function FonturiNeincarcate({ onInchide }: { readonly onInchide: () => void }): ReactElement {
+  useEscapeFereastra(onInchide);
+  return (
     <div className="dialog" role="dialog" aria-modal="true">
       <div className="dialog-cutie">
         <p role="alert">{t('editare.text.neincarcat')}</p>
         <div className="butoane"><button type="button" onClick={onInchide}>{t('editare.retea.inchide')}</button></div>
       </div>
     </div>
-  ),
+  );
+}
+
+/** Fereastra fonturilor (ADR 0106 §5), la cerere: abia la primul „Fonturi…”. */
+const DialogFonturi = lazy(() => import('./DialogFonturi.tsx').then(cuMesaje).then((m) => ({ default: m.DialogFonturi }), () => ({
+  default: FonturiNeincarcate,
 })));
 
 type PozitiePeCurba = (typeof POZITII_PE_CURBA)[number];

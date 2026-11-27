@@ -6,6 +6,7 @@
 import { useEffect, useRef, type KeyboardEvent, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { t } from '../i18n/t.ts';
+import { useEscapeFereastra } from '../ui/escapeFereastra.ts';
 
 export type CapturaAratata = { readonly adresa: string; readonly alt: string; readonly lat: number; readonly inalt: number };
 
@@ -14,6 +15,8 @@ export function CapturaMarita({ capturi, loc, onLoc, onInchide }: {
 }): ReactNode {
   const radacina = useRef<HTMLDivElement | null>(null);
   useEffect(() => { radacina.current?.focus(); }, []);
+  // Și cu focusul căzut pe pagină (3.Ay): deschisă după bibliotecă, captura ia Escape-ul înaintea ei.
+  useEscapeFereastra(onInchide);
   const n = capturi.length;
   const c = capturi[loc];
   if (!c) return null;

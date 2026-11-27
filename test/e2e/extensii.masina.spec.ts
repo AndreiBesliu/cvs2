@@ -140,6 +140,15 @@ test('senderul: încărcarea verificată; pornirea și reluarea confirmate de om
   await apasa(page, 'reia');
   await expect(confirmare).toHaveAttribute('data-fel', 'reia');
   await expect(confirmare).toContainText('Lucrarea stă în pauză: mașina continuă mișcarea de unde s-a oprit.');
+  // Escape e „Nu” și cu focusul căzut pe pagină (ca după un clic pe textul ferestrei; 3.Ay): nimic nu se reia.
+  await page.evaluate(() => { (document.activeElement as HTMLElement | null)?.blur(); });
+  expect(await page.evaluate(() => document.activeElement === document.body), 'focusul e pe pagină').toBe(true);
+  await page.keyboard.press('Escape');
+  await expect(confirmare).toHaveCount(0);
+  await expect(rezultat(page, 'reia')).toHaveText('reia: masina:renuntat');
+  await expect(stare(page)).toHaveAttribute('data-fel', 'pauza');
+  await apasa(page, 'reia');
+  await expect(confirmare).toHaveAttribute('data-fel', 'reia');
   await page.locator('[data-masina="confirma"]').click();
   await expect(rezultat(page, 'reia')).toHaveText('reia: null');
   await expect(stare(page)).toHaveAttribute('data-fel', 'ruleaza');

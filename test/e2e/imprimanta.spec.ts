@@ -43,6 +43,12 @@ const leaga = async (page: Page, ip: string): Promise<void> => {
   await page.locator('[data-imprimanta="conecteaza"]').click();
 };
 const stare = (page: Page) => page.getByTestId('imprimanta-stare');
+/** Focusul, căzut pe pagină (ca după un clic pe un text al dialogului), apoi Escape (felia 3.Ay): condiția, spusă înaintea tastei. */
+const escapePePagina = async (page: Page): Promise<void> => {
+  await page.evaluate(() => { (document.activeElement as HTMLElement | null)?.blur(); });
+  expect(await page.evaluate(() => document.activeElement === document.body), 'focusul e pe pagină').toBe(true);
+  await page.keyboard.press('Escape');
+};
 const comenziSet = (i: ImprimantaFalsa): readonly string[] => i.comenzi().filter((c) => !CITIRI.includes(c));
 
 /** Un PNG de 1 × 1, cum îl pune OrcaSlicer în antet (base64, pe linii de comentariu). */
@@ -127,6 +133,11 @@ test('Pauză și Reia pe loc; Oprește cere confirmarea, iar „Lasă-o să mear
   // Escape închide confirmarea, tot fără nimic trimis.
   await page.locator('[data-imprimanta="opreste"]').click();
   await page.keyboard.press('Escape');
+  await expect(page.getByTestId('imprimanta-oprire')).toHaveCount(0);
+  // Și cu focusul căzut pe pagină (3.Ay).
+  await page.locator('[data-imprimanta="opreste"]').click();
+  await expect(page.getByTestId('imprimanta-oprire')).toBeVisible();
+  await escapePePagina(page);
   await expect(page.getByTestId('imprimanta-oprire')).toHaveCount(0);
   await page.locator('[data-imprimanta="opreste"]').click();
   await page.locator('[data-imprimanta="oprire-confirma"]').click();
@@ -270,6 +281,13 @@ test('trimiterea: un fișier care nu e .gcode, refuzat; unul pentru altă imprim
   await expect(page.locator('[data-imprimanta="trimite-confirma"]')).toHaveCount(0);
   // Escape închide dialogul fără nimic trimis.
   await page.keyboard.press('Escape');
+  await expect(page.getByTestId('imprimanta-trimite')).toHaveCount(0);
+  expect(imp.urcate()).toEqual([]);
+  // Și cu focusul căzut pe pagină (3.Ay).
+  await alegeFisier(page, 'trimite', 'ender piesa.gcode', text);
+  // Fișierul citit: la fiecare pas, dialogul își pune focusul pe butonul fără urmări.
+  await expect(page.getByTestId('imprimanta-trimite')).toHaveAttribute('data-pas', 'gata');
+  await escapePePagina(page);
   await expect(page.getByTestId('imprimanta-trimite')).toHaveCount(0);
   expect(imp.urcate()).toEqual([]);
   await alegeFisier(page, 'trimite', 'ender piesa.gcode', text);
@@ -1284,6 +1302,11 @@ test('istoricul (3.6t): al imprimantei (Benchy-ul transcrierii) și o imprimare 
   // Golește istoricul cvs2: întâi „Păstrează-l”, apoi „Golește”; rămâne istoricul imprimantei, fără numele din cvs2.
   await card.locator('[data-imprimanta="istoric-goleste"]').click();
   await card.locator('[data-imprimanta="istoric-goleste-renunta"]').click();
+  await expect(page.getByTestId('imprimanta-istoric-goleste')).toHaveCount(0);
+  // Escape, și cu focusul căzut pe pagină (3.Ay), tot „Păstrează-l”.
+  await card.locator('[data-imprimanta="istoric-goleste"]').click();
+  await expect(page.getByTestId('imprimanta-istoric-goleste')).toBeVisible();
+  await escapePePagina(page);
   await expect(page.getByTestId('imprimanta-istoric-goleste')).toHaveCount(0);
   await expect(randuriIstoric(page).first()).toContainText('#1');
   await card.locator('[data-imprimanta="istoric-goleste"]').click();

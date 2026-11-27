@@ -6,8 +6,9 @@
  * înregistrarea merge și cât lucrezi în Proiectare. Din 3.6u (ADR 0194 §C, planșa C), coloana Filmul: filmul timelapse se
  * deschide de pe imprimantă, într-o filă nouă (în pagină ar fi conținut mixt), fără să trimită adresa cvs2.
  */
-import { useEffect, useRef, useState, useSyncExternalStore, type KeyboardEvent, type ReactNode } from 'react';
+import { useEffect, useRef, useState, useSyncExternalStore, type ReactNode } from 'react';
 import { limba, t } from '../i18n/t.ts';
+import { useEscapeFereastra } from '../ui/escapeFereastra.ts';
 import type { RezultatImprimare, StareLucrare } from '../machine/imprimanta/driver.ts';
 import type { StareImprimanta } from '../machine/imprimanta/sesiune.ts';
 import { citesteImprimari, golesteImprimari, tineImprimare } from './fisiereImprimanta.ts';
@@ -113,7 +114,9 @@ export function CardIstoric({ randuri, nCvs2, setari, schimba, durata, adresaFil
     const x = valoare(e.target.value, max);
     if (x !== undefined) pune(x);
   };
-  const tasta = (e: KeyboardEvent): void => { if (e.key === 'Escape') { e.stopPropagation(); setGoleste(false); } };
+  // Escape e „Păstrează-l”, oriunde ar fi focusul, doar cât fereastra Imprimanta se vede (felia 3.Ay).
+  const cutieGoleste = useRef<HTMLDivElement | null>(null);
+  useEscapeFereastra(() => { setGoleste(false); }, goleste, cutieGoleste);
   // Antetul coloanelor; pe telefon, fiecare celulă își poartă eticheta (`data-th`).
   const [eCand, eFisier, eRezultat, eDurata, eFilament, eCost, eFilm] = COLOANE.map((c) => t(`imprimanta.istoric.${c}`));
   return (
@@ -189,7 +192,7 @@ export function CardIstoric({ randuri, nCvs2, setari, schimba, durata, adresaFil
       </div>
       {goleste && (
         <div className="imprimanta-dialog" role="alertdialog" aria-labelledby="imprimanta-goleste-titlu" aria-describedby="imprimanta-goleste-text"
-          data-testid="imprimanta-istoric-goleste" onKeyDown={tasta}>
+          data-testid="imprimanta-istoric-goleste" ref={cutieGoleste}>
           <h3 id="imprimanta-goleste-titlu">{t('imprimanta.istoric.goleste.titlu')}</h3>
           <p id="imprimanta-goleste-text">{t('imprimanta.istoric.goleste.text')}</p>
           <div className="imprimanta-butoane">

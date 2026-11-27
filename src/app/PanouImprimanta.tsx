@@ -50,6 +50,7 @@ import { pauzaDeAcum } from './placaCalcul.ts';
 import { CardNotificari, Vestiri } from './VestiriImprimanta.tsx';
 import { Placa } from './PlacaImprimanta.tsx';
 import './imprimanta.css';
+import { useEscapeFereastra } from '../ui/escapeFereastra.ts';
 
 /** Mesajele modulului, ca date (ADR 0086): cine îl încarcă le așteaptă (`cuMesaje`). */
 export const mesaje = mesajeGata();
@@ -1101,6 +1102,8 @@ function DialogTrimitere({ fisier, st, stare, alt, inchide, porneste }: {
     );
   };
   const renunta = (): void => { oprire.current?.abort(); inchide(); };
+  // Escape oriunde ar fi focusul, doar cât fereastra Imprimanta se vede (felia 3.Ay).
+  useEscapeFereastra(renunta, true, cutie);
   const a = pas.fel === 'gata' || pas.fel === 'trimite' || pas.fel === 'esec' ? pas.a : null;
   const avert: string[] = [];
   if (a !== null) {
@@ -1124,7 +1127,7 @@ function DialogTrimitere({ fisier, st, stare, alt, inchide, porneste }: {
   const marime = marimeText(fisier.size);
   return (
     <div className="imprimanta-dialog" role="dialog" aria-labelledby="imprimanta-trimite-titlu" data-testid="imprimanta-trimite" data-pas={pas.fel}
-      ref={cutie} onKeyDown={(e) => { if (e.key === 'Escape') { e.stopPropagation(); renunta(); } }}>
+      ref={cutie}>
       <h3 id="imprimanta-trimite-titlu">{t('imprimanta.trimite.titlu')}</h3>
       <p className="imprimanta-trimite-fisier">
         <strong data-testid="imprimanta-trimite-nume">{fisier.name}</strong>
@@ -1181,13 +1184,13 @@ function DialogConfirmare({ c, piesaAcum, confirma, renunta }: {
   const [patGol, setPatGol] = useState(false);
   const primul = useRef<HTMLElement | null>(null);
   useEffect(() => { primul.current?.focus(); }, []);
-  const tasta = (e: KeyboardEvent): void => {
-    if (e.key === 'Escape') { e.stopPropagation(); renunta(); }
-  };
+  // Escape e „Renunță”, oriunde ar fi focusul, doar cât fereastra Imprimanta se vede (felia 3.Ay).
+  const cutie = useRef<HTMLDivElement | null>(null);
+  useEscapeFereastra(renunta, true, cutie);
   if (c.fel === 'oprire') {
     return (
       <div className="imprimanta-dialog" role="alertdialog" aria-labelledby="imprimanta-oprire-titlu" aria-describedby="imprimanta-oprire-text"
-        data-testid="imprimanta-oprire" onKeyDown={tasta}>
+        data-testid="imprimanta-oprire" ref={cutie}>
         <h3 id="imprimanta-oprire-titlu">{t('imprimanta.oprire.titlu')}</h3>
         <p id="imprimanta-oprire-text">{t('imprimanta.oprire.text')}</p>
         <div className="imprimanta-butoane">
@@ -1201,7 +1204,7 @@ function DialogConfirmare({ c, piesaAcum, confirma, renunta }: {
     // Anularea unei piese (ADR 0193 §C.11): restul merg mai departe; pentru piesa de acum, cererea așteaptă (răspunsul 3a).
     return (
       <div className="imprimanta-dialog" role="alertdialog" aria-labelledby="imprimanta-anulare-titlu" aria-describedby="imprimanta-anulare-text"
-        data-testid="imprimanta-anulare" onKeyDown={tasta}>
+        data-testid="imprimanta-anulare" ref={cutie}>
         <h3 id="imprimanta-anulare-titlu">{t('imprimanta.anulare.titlu', { piesa: c.eticheta })}</h3>
         <p id="imprimanta-anulare-text">{t('imprimanta.anulare.text')}</p>
         {piesaAcum?.toUpperCase() === c.nume.toUpperCase() && <p className="imprimanta-ajutor" data-testid="imprimanta-anulare-acum">{t('imprimanta.anulare.acum')}</p>}
@@ -1216,7 +1219,7 @@ function DialogConfirmare({ c, piesaAcum, confirma, renunta }: {
     // Homing-ul (ADR 0192 §B.11): la Z, duza coboară spre pat; doar după bifa „Patul e gol”, ca pornirea.
     return (
       <div className="imprimanta-dialog" role="alertdialog" aria-labelledby="imprimanta-homing-titlu" aria-describedby="imprimanta-homing-text"
-        data-testid="imprimanta-homing" onKeyDown={tasta}>
+        data-testid="imprimanta-homing" ref={cutie}>
         <h3 id="imprimanta-homing-titlu">{t('imprimanta.homing.titlu')}</h3>
         <p id="imprimanta-homing-text">{t('imprimanta.homing.text')}</p>
         <label className="imprimanta-bifa">
@@ -1233,7 +1236,7 @@ function DialogConfirmare({ c, piesaAcum, confirma, renunta }: {
   }
   const f = c.fisier;
   return (
-    <div className="imprimanta-dialog" role="alertdialog" aria-labelledby="imprimanta-pornire-titlu" data-testid="imprimanta-pornire" onKeyDown={tasta}>
+    <div className="imprimanta-dialog" role="alertdialog" aria-labelledby="imprimanta-pornire-titlu" data-testid="imprimanta-pornire" ref={cutie}>
       <h3 id="imprimanta-pornire-titlu">{t('imprimanta.pornire.titlu')}</h3>
       <dl className="imprimanta-cifre">
         <dt>{t('imprimanta.pornire.fisier')}</dt><dd data-testid="imprimanta-pornire-fisier">{f.nume}</dd>
