@@ -184,16 +184,15 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
   bibliotecă”, cotele ca DIMENSION), la 20:54. **În `main`, nepublicate încă:** 3.Cm-3, ventilatorul ca trusă, Easy
   3Draw 18.46.0 (`f9b2bbc8`, din `61eb3689`), unită pe 27.11 la 15:29: lotul 64, pe test de la 16:33; 16.A↑f-3, profilurile
   parametrice în proiect (`05f1bdc9`, din `0a1fd1a4`), unită pe 27.11 la 15:46: lotul 65, pe test de la 16:50. Relieful (18.1↑d-5…d-7 și 18.1↑e, `9ce32063`), unit pe 27.11 la 16:58:
-  lotul 66, pe test de la ~18:03. **În `main`, nepublicate încă:** 3.Cm-4 și 3.Cm-5 (`90e9fc20`), unite la 17:34;
-  16.A↑f-4 și 3.Cm-6 (`154e8125`), unite la 18:17: lotul 67, în drum; 3.Cm-7, duza Kort (`d2222923`, din `4b10af19`),
-  unită la 19:25: lotul 68, după el.
+  lotul 66, pe test de la ~18:03. 3.Cm-4 și 3.Cm-5 (`90e9fc20`), unite la 17:34; 16.A↑f-4 și 3.Cm-6
+  (`154e8125`), unite la 18:17: lotul 67 (`99a4a6b6`), pe test de la ~19:55; 3.Cm-7, duza Kort (`d2222923`), unită la
+  19:25: lotul 68 (`680801c7`), pe test de la ~20:45 (probele de fum, bune). **Pe test e tot ce e în `main`.**
   **Schema:** documentul e v32; un câmp nou ia v33.
 - **Limita de folosire (27.11, ~16:20):** owner-ul a spus că ne apropiem de limita săptămânală (94 %, se resetează
   sâmbătă, 28.11, la 10:00; comună tuturor sesiunilor): „vezi sa nu se piarda din progresul pe care il fac celelalte
   sesiuni”. Liniile (atelierul, frezele, relieful, exportul) au primit, la 16:22, cererea să comită și să împingă tot, ca
-  WIP unde nu e gata, cu starea scrisă în nota liniei. **Toate unirile raportate sunt în `main`** (ultima, 3.Cm-7, `d2222923`, la 19:25); loturile 67 și 68 se publică cu
-  `bash scripts/cloud/ci-si-publica.sh <sha-ul documentelor>`, în ordine. La reluare, liniile pornesc doar la cuvântul
-  owner-ului.
+  WIP unde nu e gata, cu starea scrisă în nota liniei. **Toate unirile raportate sunt în `main`** (ultima, 3.Cm-7, `d2222923`, la 19:25); loturile 67 și 68 sunt pe test. La reluare,
+  liniile pornesc doar la cuvântul owner-ului.
 - **Modelul:** din 26.11, la prânz, sesiunea principală merge pe Opus („o sa folosim Opus de aici in colo”); sesiunile
   liniilor își păstrează modelul până îl schimbă owner-ul în fiecare.
 - **`main`, din cloud:** pe 23.11: 3.Tq (`0ae9c6c1`); 11.3↑e și A.4 (`ddaa7ead`); 3.Tr, unită de linia elicelor
