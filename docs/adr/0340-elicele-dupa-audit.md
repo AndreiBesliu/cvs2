@@ -139,8 +139,8 @@ Constatarea 5 a auditului, fără desenul pasului (pe care auditul îl socotea s
 în piesă și în cote, la toate trei; ordinea textelor; plasa de la margine; sensul rotorului) și proba înclinării spre pupa din
 3.Tt (`trenulet.pupa.test.ts`), adusă la regula nouă (cerea strângerea fără avertisment); e2e, în `trenulet.elice.spec.ts`
 (fraza, mesajul, câmpul golit, altă piesă, „Repede”), `trenulet.barca.spec.ts`, `trenulet.ventilator.spec.ts` (și carcasa),
-`trenulet.pupa.spec.ts`, cu buclele marginilor aduse la regula nouă, și în proba în engleză din cvs2. Otrăvurile: `3.Cm-4.py` și
-`3.Cm-4-en.py`, în registrul `docs/otravuri.md`.
+`trenulet.pupa.spec.ts`, cu buclele marginilor aduse la regula nouă, și în proba în engleză din cvs2. Otrăvurile: `3.Cm-4.py`,
+35 / 35 (C10, pe setul greșit la prima rulare); `3.Cm-4-en.py`, 5 / 5.
 
 **Easy 3Draw 18.47.0.**
 

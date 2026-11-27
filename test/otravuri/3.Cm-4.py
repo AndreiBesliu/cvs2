@@ -26,7 +26,7 @@ o('C06', LG, '    const lat = campElice(avert, d.latime, 15, 60, 30,', '    cons
 o('C07', LG, '    const inc = campElice(avert, d.inclinare, 0, 40, 20,', '    const inc = campElice([], d.inclinare, 0, 40, 20,', 'claritate', 'înclinarea înapoi, strânsă în tăcere')
 o('C08', LG, '    const pupa = campElice(avert, d.pupa, 0, BARCA.pupaMax, 0,', '    const pupa = campElice([], d.pupa, 0, BARCA.pupaMax, 0,', 'claritate', 'înclinarea spre pupa, strânsă în tăcere')
 o('C09', LG, '    const joc = campElice(avert, d.joc, 0.3, 2, 0.8,', '    const joc = campElice([], d.joc, 0.3, 2, 0.8,', 'claritate', 'jocul ventilatorului, strâns în tăcere')
-o('C10', LG, '    const lat = campElice(avert, d.latime, 15, 60, 45,', '    const lat = campElice(avert, d.latime, 15, 60, 30,', 'claritate', 'implicitul lățimii ventilatorului, al elicei (30)')
+o('C10', LG, '    const lat = campElice(avert, d.latime, 15, 60, 45,', '    const lat = campElice(avert, d.latime, 15, 60, 30,', 'ventilator', 'implicitul lățimii ventilatorului, al elicei (30): îl cere proba ventilatorului (3.Ts)')
 o('C11', LG, ' && urechi !== +(d.urechi as number)) avert.push(tr("Carcasa unui ventilator are 2 sau 4 urechi: am făcut-o cu 2."));', ') avert.push(tr("Carcasa unui ventilator are 2 sau 4 urechi: am făcut-o cu 2."));', 'claritate', 'urechile spuse și la 2 sau 4')
 o('C12', LG, '    if (d.urechi !== null && d.urechi !== undefined && d.urechi !== "" && Number.isFinite(+(d.urechi as number)) && urechi', '    if (d.urechi !== null && d.urechi !== undefined && urechi', 'claritate', 'urechile „x” spuse')
 # --- motorul: textele ajung în piesă și în API
@@ -62,6 +62,7 @@ o('A18', AT, '<span class="mic">Piese LEGO:</span>', '<span class="mic">Repede:<
 SETURI = {
     'claritate': ['test/unit/trenulet.claritate.test.ts'],
     'elice': ['test/unit/trenulet.elice.test.ts'],
+    'ventilator': ['test/unit/trenulet.ventilator.test.ts'],
 }
 E2E = ['test/e2e/trenulet.elice.spec.ts', 'test/e2e/trenulet.barca.spec.ts', 'test/e2e/trenulet.ventilator.spec.ts', 'test/e2e/trenulet.pupa.spec.ts']
 # pagina se face din surse în spec: build-ul aplicației nu o schimbă (docs/otravuri.md)
