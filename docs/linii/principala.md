@@ -153,9 +153,11 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
   printr-o schiță.
 - **Observabilitatea:** erorile ajung în jurnalul aplicației; joburile își lasă marcajul.
 
-## Starea pe 27.11.2026, dimineața (după a șaizeci și doua unire din cloud)
+## Starea pe 27.11.2026, dimineața (după a șaizeci și doua unire din cloud; tot `main`-ul, pe test)
 
-- **Pe test:** `8270aae7` (lotul 55: 16.A↑e-1, freza toroidală, documentul v31; publicat pe 27.11 la 04:58, cu
+- **Pe test:** `3ecb5678` (lotul 57: 16.A↑e-3, canelura cu bila și cu toroidala; publicat pe 27.11 la 07:08, cu
+  serverul neschimbat; completul pe `main` 45937766970, verde; proba de fum, bună). Înainte: `7f3938aa` (lotul 56:
+  16.A↑e-2, elicea cu bila și cu toroidala, simulată exact), pe 27.11 la 06:03 (completul 45931468767); `8270aae7` (lotul 55: 16.A↑e-1, freza toroidală, documentul v31; publicat pe 27.11 la 04:58, cu
   serverul neschimbat; completul pe `main` 45925253880, verde; proba de fum, bună). Înainte: `47b75d20` (lotul 54: 3.Ck-2, balamaua, Easy 3Draw 18.44.0; publicat pe 27.11 la 03:52, cu serverul
   neschimbat; completul pe `main` 45916956101, verde; proba de fum, bună). Înainte: `e656da6a` (lotul 53, cu lotul 52 în el: 3.Av și 3.Aw; 28.8↑r, 3.Ck-1, 18.1↑d-3 și d-4, 10.4↑e-1…g,
   3.Ax; publicat pe 27.11 la 02:27, cu serverul întâi: funcția nouă `preferinte`, creată; completul pe `main`
@@ -173,9 +175,7 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
   04:35; `7a754885` (lotul 40: 28.8↑i, viteza ferestrei exportului), la 03:15; `554b72cb` (lotul 39: 3.Cl-1, decorațiunile de Crăciun, Easy 3Draw 18.35.0), la 01:43; `c9911c14` (lotul 38: 3.Cf-1,
   alipirea la prinderi în vederea „Modelul”, Easy 3Draw 18.34.0), pe 25.11 la 23:28; `5649067c` (lotul 37: 16.A↑b-7, Escape în „Frezele mele”; 18.1↑c, finisarea reliefului, cu documentul
   v29; 28.8↑h, fereastra exportului „pe hârtie”), pe 25.11 la 22:23; `75bcf3fb` (lotul 36: „Pune-o înapoi în
-  bibliotecă”, cotele ca DIMENSION), la 20:54. **În `main`, nepublicate încă:** 16.A↑e-2, elicea cu bila și cu toroidala,
-  simulată exact (`0d2a8c2c`), unită pe 27.11 la 04:45: lotul 56, în drum (completul pe `main`); 16.A↑e-3, canelura
-  cu bila și cu toroidala (`db066160`), unită pe 27.11 la 05:51: lotul 57.
+  bibliotecă”, cotele ca DIMENSION), la 20:54. **Pe test e tot ce e în `main`.**
 - **Modelul:** din 26.11, la prânz, sesiunea principală merge pe Opus („o sa folosim Opus de aici in colo”); sesiunile
   liniilor își păstrează modelul până îl schimbă owner-ul în fiecare.
 - **`main`, din cloud:** pe 23.11: 3.Tq (`0ae9c6c1`); 11.3↑e și A.4 (`ddaa7ead`); 3.Tr, unită de linia elicelor
