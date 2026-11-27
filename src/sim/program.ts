@@ -5,7 +5,7 @@
  * - rapidele se simulează ca tăieri: o rapidă prin material se vede pe simulare (poarta invariantelor o refuză oricum);
  * - eticheta, axul și pauza nu mișcă nimic; mutările întregi deasupra feței nu se trimit nucleului;
  * - arcele rămân arce (centrul, sensul și baleiajul, cu regula IR-ului: start = capăt înseamnă cercul întreg), nu se sparg
- *   în segmente; elicea (Z diferit la capete) doar cu freza plată;
+ *   în segmente; elicea (Z diferit la capete) cu freza plată, cu bila și cu toroidala (nu și cu V-ul);
  * - axa A e refuzată explicit (T22, ADR 0022: simularea e pe XYZ în v1);
  * - o schimbare a sculei (ADR 0084) începe un grup nou, cu scula ei: primul grup e `scula` + `mutari`, celelalte, în ordine,
  *   `apoi`; nucleul le taie pe același câmp, unul după altul.
@@ -84,9 +84,8 @@ export function pregatesteProgram(p: Program, sus: number): ProgramSimulat {
     if (m.tip === 'arc') {
       const r = arc(m, x, y, nx, ny);
       if (typeof r === 'string') return refuz(r, q);
-      if (z !== nz && forma.tip !== 'plata' && !inAer) {
-        const cu = forma.tip === 'bila' ? 'bila' : forma.tip === 'toroidala' ? 'toroidala' : 'V-ul';
-        return refuz(`elicea cu ${cu} nu se simulează încă (doar cu freza plată)`, q);
+      if (z !== nz && forma.tip === 'v' && !inAer) {
+        return refuz('elicea cu V-ul nu se simulează încă (doar cu freza plată, cu bila și cu toroidala)', q);
       }
       if (!inAer) out.push(m.sens === 'trigonometric' ? ARC_TRIG : ARC_ORAR, x, y, z, nx, ny, nz, m.centru.x, m.centru.y, r);
     } else if (!inAer) {
