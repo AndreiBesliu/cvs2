@@ -115,11 +115,14 @@ o('E01', CF, "  const scrieAmbele = (v: Pick<SchimbareFinisare, 'margine' | 'pla
 # Mutată în 18.1↑d-4: fișa e pe grupuri, iar adaosul are grupul lui, doar la degroșare.
 o('E02', 'src/ui/exportGrupuri.ts', "  degrosare: ['freza-relief', 'linii', 'adaos', 'margine', 'podea'],", "  degrosare: ['freza-relief', 'linii', 'margine', 'podea'],", 'e2e',
   'fișa degroșării fără adaos')
-o('E03', EC, "        if (o.tip === 'finisare' || o.tip === 'degrosare') {", "        if (o.tip === 'finisare') {", 'e2e',
+# Mutată în 18.1↑e-2 (după unirea frezelor, v32): ramura reliefului a Exportă întreabă `peRelief(o)` (`operatieCuRandRelief`).
+o('E03', EC, "        if (peRelief(o)) {\n          const vr = c.valoriRelief?.get(cheie);",
+  "        if (peRelief(o) && o.tip === 'finisare') {\n          const vr = c.valoriRelief?.get(cheie);", 'e2e',
   'Exportă nu scrie rangul degroșării în „A mea”')
 # Îndreptată în 18.1↑d-4: `peRelief` stă la nivelul modulului (fără indentare), deci lista o rata (VOID).
-o('E04', EC, "const peRelief = (o: Operatie): boolean => o.tip === 'finisare' || o.tip === 'degrosare';",
-  "const peRelief = (o: Operatie): boolean => o.tip === 'finisare';", 'e2e', 'rândul degroșării lipsește din fereastră')
+# Mutată în 18.1↑e-2: `peRelief` e acum `operatieCuRandRelief` (src/model/formaFrezei.ts), cu forma frezei în regulă.
+o('E04', 'src/model/formaFrezei.ts', "  return (o.tip === 'finisare' || o.tip === 'degrosare') && formaPeRand(o.scula.forma);",
+  "  return o.tip === 'finisare' && formaPeRand(o.scula.forma);", 'e2e', 'rândul degroșării lipsește din fereastră')
 
 SETURI = {
     'doc': ['test/unit/document.v30.oracol.test.ts'],
