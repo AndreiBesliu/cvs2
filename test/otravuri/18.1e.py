@@ -99,6 +99,12 @@ o('E27', CF, "          <option value=\"toroidala\">{t('prop.fin.forma.toroidala
 o('E28', CF, "      {forma === 'toroidala' && rand(t('prop.fin.raza-colt')", "      {false && rand(t('prop.fin.raza-colt')", 'e2e',
   'Tăierea nu arată raza colțului')
 
+# După unirea frezelor (documentul v32, profilul desenat; 27.11): profilul n-are rândul reliefului.
+o('E29', FZ, "  return (o.tip === 'finisare' || o.tip === 'degrosare') && formaPeRand(o.scula.forma);",
+  "  return o.tip === 'finisare' || o.tip === 'degrosare';", 'unit', 'un profil desenat primește rândul reliefului (citit ca plată)')
+o('E30', VO, "  if ((o.tip !== 'finisare' && o.tip !== 'degrosare') || !formaPeRand(s.forma)) return o;",
+  "  if (o.tip !== 'finisare' && o.tip !== 'degrosare') return o;", 'unit', 'Exportă scrie un profil desenat ca plată')
+
 
 # ---- Seturile ----
 SETURI = {
