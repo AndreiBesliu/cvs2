@@ -17551,3 +17551,13 @@ ce aveau la rand”): după f-5, „g (valorile pe material), tot cu recomandăr
 - **Frezele g:** puse peste relief pe `unire-2811h` (`47559857`), cu completul combinat 46141776092.
 - **Pe test:** lotul 71 (`b3b5d811`, 3.Cn) de la 13:57, proba de fum bună; lotul 72 (`f08f817b`, f-5) în drum.
 - **Documentele:** decizia, Stare, nota principală, indexul liniilor.
+
+## 2026-11-28 — Sesiunea principală în cloud: a optzeci și una unire (16.A↑g-1…g-3) (Model: Claude Opus 5.5)
+
+**Started:** 13:49 (raportul liniei frezelor; unirea combinată, pregătită înaintea porților).
+**Completed:** 15:00.
+
+- **Unirea:** `cb446b9d` (PR-ul #84) peste unirea reliefului, pe `unire-2811h` (`47559857`), cu completul combinat
+  46141776092 verde; completul liniei 46141657991, verde; documentele lui `main` aduse în `61fcd394`.
+- **Mărimea:** totalul 967,5 / 1 000 kB, pornirea 112,1 kB (din completul combinat).
+- **Documentele:** decizia, Stare, nota principală, indexul liniilor; cifra plafonului din decizia reliefului, îndreptată.
