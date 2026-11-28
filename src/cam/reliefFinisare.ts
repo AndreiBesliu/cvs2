@@ -151,7 +151,7 @@ export function float32Sus(x: number): number {
  * Cota unui segment se caută de sus în jos: un bloc al cărui maxim, minus urcarea la distanța de la segment la el, nu trece de
  * cea găsită, nu se mai desface (aceeași valoare ca parcurgerea tuturor celulelor, cu mult mai puține).
  */
-type Piramida = { readonly niv: ReadonlyArray<{ readonly v: Float32Array; readonly w: number; readonly hh: number }> };
+export type Piramida = { readonly niv: ReadonlyArray<{ readonly v: Float32Array; readonly w: number; readonly hh: number }> };
 
 function piramida(F: Float32Array, mx: number, my: number): Piramida {
   const niv: Array<{ v: Float32Array; w: number; hh: number }> = [{ v: F, w: mx, hh: my }];
@@ -266,13 +266,14 @@ export function distSegmentCutie(ax: number, ay: number, bx: number, by: number,
 }
 
 /** Un relief pregătit: câmpul conservativ pe celula de calcul (latura `h`, `mx` × `my`) și dreptunghiul lui. */
-type Pregatit = {
+export type Pregatit = {
   readonly r: ReliefCam; readonly P: Piramida; readonly h: number; readonly mx: number; readonly my: number; readonly W: number; readonly H: number;
   /** Celula maximului găsit la segmentul dinainte (indicele pe nivelul 0), sau −1: un candidat sigur pentru pornirea următorului. */
   ultima: number;
 };
 
-function pregateste(r: ReliefCam): Pregatit {
+/** Exportată pentru proba cotei (`reliefFinisare.cota.test.ts`), ca și `cotaSegment`. */
+export function pregateste(r: ReliefCam): Pregatit {
   const q = diviziune(r.celula), mx = r.nx * q, my = r.ny * q;
   return { r, P: piramida(campPeCelula(r.z, r.nx, r.ny, r.celula, q), mx, my), h: r.celula / q, mx, my, W: r.nx * r.celula, H: r.ny * r.celula, ultima: -1 };
 }
@@ -289,7 +290,7 @@ function inRelief(p: Pregatit, x: number, y: number): readonly [number, number] 
  * Cota conservativă a segmentului (în sistemul reliefului `p`): maximul, peste celulele lui din raza frezei, al câmpului minus
  * urcarea la distanța segment–celulă; cu `perete`, și fața plăcii din afara dreptunghiului. −Infinity dacă nu atinge nimic.
  */
-function cotaSegment(p: Pregatit, f: FrezaFinisare, ax: number, ay: number, bx: number, by: number, perete: boolean): number {
+export function cotaSegment(p: Pregatit, f: FrezaFinisare, ax: number, ay: number, bx: number, by: number, perete: boolean): number {
   const R = f.raza, h = p.h, niv = p.P.niv;
   let m = -Infinity;
   // Pornirea: celulele de sub capete (la distanța 0, urcarea 0) sunt deja o margine de jos a maximului; așa piramida taie din prima.
@@ -305,31 +306,47 @@ function cotaSegment(p: Pregatit, f: FrezaFinisare, ax: number, ay: number, bx: 
     const d = distSegmentCutie(ax, ay, bx, by, i * h, j * h, (i + 1) * h, (j + 1) * h);
     if (d <= R) { const v = F0.v[p.ultima]! - urcare(f, d); if (v > m) { m = v; arg = p.ultima; } }
   }
-  // Blocurile, de sus în jos: (nivel, i, j). Un bloc acoperă celulele [i·2^l, (i + 1)·2^l) × [j·2^l, (j + 1)·2^l), tăiate la grilă.
-  const stiva: number[] = [niv.length - 1, 0, 0];
+  // Blocurile, de sus în jos: (nivel, i, j, marginea de sus a valorii lui). Un bloc acoperă celulele [i·2^l, (i + 1)·2^l) ×
+  // [j·2^l, (j + 1)·2^l), tăiate la grilă. Tăierea folosește o margine de jos a distanței, ieftină (felia 18.1↑h-4): de la
+  // mijlocul segmentului la cutie, minus jumătatea lungimii lui (orice punct al segmentului e la cel mult atât de mijloc), minus
+  // o rezervă de 1e-9 mm pentru rotunjiri. Distanța exactă se socotește doar pe frunze, unde dă valoarea; un bloc tăiat are
+  // toate frunzele cel mult cât marginea, deci maximul e același cu al parcurgerii tuturor celulelor (proba:
+  // `reliefFinisare.cota.test.ts`). Copiii stau în cutia părintelui, deci marginea lui le e și lor margine.
+  const mx = (ax + bx) / 2, my = (ay + by) / 2, lh = Math.hypot(bx - ax, by - ay) / 2;
+  const stiva: number[] = [niv.length - 1, 0, 0, Infinity];
   while (stiva.length > 0) {
-    const j = stiva.pop()!, i = stiva.pop()!, l = stiva.pop()!;
+    const sus = stiva.pop()!, j = stiva.pop()!, i = stiva.pop()!, l = stiva.pop()!;
+    if (sus <= m) continue;
     const N = niv[l]!, F = N.v[j * N.w + i]!;
     if (F <= m) continue;
     const s = h * (1 << l);
-    const d = distSegmentCutie(ax, ay, bx, by, i * s, j * s, Math.min((i + 1) * s, p.mx * h), Math.min((j + 1) * s, p.my * h));
-    if (d > R) continue;
-    const v = F - urcare(f, d);
-    if (v <= m) continue;
-    if (l === 0) { m = v; arg = j * N.w + i; continue; }
+    const x0 = i * s, y0 = j * s, x1 = Math.min((i + 1) * s, p.mx * h), y1 = Math.min((j + 1) * s, p.my * h);
+    const ex = mx < x0 ? x0 - mx : mx > x1 ? mx - x1 : 0, ey = my < y0 ? y0 - my : my > y1 ? my - y1 : 0;
+    const jos = Math.sqrt(ex * ex + ey * ey) - lh - 1e-9;
+    const uj = urcare(f, jos > 0 ? jos : 0);
+    if (jos > R || F - uj <= m) continue;
+    if (l === 0) {
+      // Frunza: valoarea, cu distanța exactă.
+      const d = distSegmentCutie(ax, ay, bx, by, x0, y0, x1, y1);
+      if (d > R) continue;
+      const v = F - urcare(f, d);
+      if (v > m) { m = v; arg = j * N.w + i; }
+      continue;
+    }
+    const u = uj;
     // Copiii, puși pe stivă crescător după maxim: cel mai mare se desface primul, ca marginea găsită să taie restul.
-    const jos = niv[l - 1]!, i2 = 2 * i, j2 = 2 * j;
+    const sub = niv[l - 1]!, i2 = 2 * i, j2 = 2 * j;
     let n = 0;
     for (let k = 0; k < 4; k++) {
       const ci = i2 + (k & 1), cj = j2 + (k >> 1);
-      if (ci >= jos.w || cj >= jos.hh) continue;
-      const fv = jos.v[cj * jos.w + ci]!;
-      if (fv <= m) continue;
+      if (ci >= sub.w || cj >= sub.hh) continue;
+      const fv = sub.v[cj * sub.w + ci]!;
+      if (fv - u <= m) continue;
       let q = n++;
       while (q > 0 && copiiF[q - 1]! > fv) { copiiF[q] = copiiF[q - 1]!; copiiI[q] = copiiI[q - 1]!; copiiJ[q] = copiiJ[q - 1]!; q--; }
       copiiF[q] = fv; copiiI[q] = ci; copiiJ[q] = cj;
     }
-    for (let q = 0; q < n; q++) stiva.push(l - 1, copiiI[q]!, copiiJ[q]!);
+    for (let q = 0; q < n; q++) stiva.push(l - 1, copiiI[q]!, copiiJ[q]!, copiiF[q]! - u);
   }
   p.ultima = arg;
   if (perete) {
