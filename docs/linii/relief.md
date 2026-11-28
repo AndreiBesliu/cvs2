@@ -330,4 +330,10 @@ degroșarea și finisarea pe relief), unde stă relieful în document și unde s
   vârful memoriei la degroșare, 1 728 → 1 245 MB. La finisare, memoria e acum a mișcărilor (întrebarea 6 din ADR 0323).
   - **Pe o bandă, coordonatele frunzelor se fac din rândul global, întreg, apoi înmulțit** (`(j0 + j) · h`), ca să iasă la bit
     cele de pe tot relieful; marginea de jos a cutiilor e a reliefului, nu a benzii.
+- **28.11: 18.1↑h-6 gata pe ramură** (planul, cotele pe loturi, mișcările): loturile lipite = o bucată, bit cu bit; programele,
+  octet cu octet. Urmează 18.1↑h-7: bazinul cotelor (workerele, fiecare cu lotul și banda lui).
+  - **La degroșare, raza cotei e R + adaos, nu a frezei:** tot ce se socotește după rază (benzile, marginile) o ia din
+    `so.cota.raza`.
+  - **O margine de jos verificată doar pe un fund plat nu prinde o bandă prea îngustă:** proba ei cere și un loc unde bila nu
+    ajunge la fund (un șanț în V).
 

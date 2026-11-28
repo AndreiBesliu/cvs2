@@ -17396,3 +17396,14 @@ owner-ului); ordinul „unește ce se poate”
 - **Măsurat:** vârful memoriei la degroșare, la 4000², 1 728 → 1 245 MB. Sonda spune vârful procesului (`maxRSS`).
 - **ADR 0323:** implementarea 2a (banda) și întrebarea 6 (mișcările finisării ținute compact).
 
+## 2026-11-28 — 18.1↑h-6: finisarea în plan, cote pe loturi și mișcări (Model: Claude Opus 5.5)
+
+**Prompt:** același cuvânt; ADR 0323, 1a (liniile pe workere), cu recomandarea aplicată. **Started:** 28.11, 11:47, pe
+`wip/18.1-relief`, după 18.1↑h-5. **Completed:** 28.11, 12:02.
+
+- **CAM-ul** (`src/cam/reliefFinisare.ts`): `planTreceri`, `coteLot` (cu benzile lotului, după raza cotei), `miscariTreceri`;
+  `planFinisare` și `planDegrosare`, pentru probe și pentru bazin. Programele, octet cu octet.
+- **Proba:** `test/unit/reliefFinisare.loturi.test.ts` (2) și șanțul în V din `reliefFinisare.puncte.test.ts`.
+  **Otrăvurile:** `18.1h6.py`, 6 / 6.
+- **ADR 0323:** planul liniilor pe workere (18.1↑h-6, 18.1↑h-7) și implementarea lui 18.1↑h-6.
+

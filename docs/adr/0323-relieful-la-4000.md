@@ -162,3 +162,35 @@ punctelor (20 M) le ține sub ce cade o filă.
   pe mișcare, deci de ~5 ori mai puțin; programul scris, același, octet cu octet; plafonul punctelor urcă după ea.
 - b) Plafonul rămâne 20 M, iar mișcările, obiecte (azi).
 
+## Planul liniilor pe workere (feliile 18.1↑h-6, 18.1↑h-7)
+
+Tiparul e al bazinului simulării (ADR 0047 §4, `src/jobs/bazin.ts`): N workere fără stare (cel mult 8, după nuclee), oprite la
+capătul jobului; în Node, loturile rulează pe rând, prin aceeași funcție. Cotele se calculează înaintea programului, care rămâne
+sincron (exportul, traseul, simularea, potrivirea îl construiesc la fel).
+
+- **18.1↑h-6 (pur):** finisarea și degroșarea în trei părți: **planul** (liniile, refuzurile, avertismentele, marginea de jos a
+  trecerilor, fără câmpul întreg), **cotele unui lot de linii** (cu câmpul doar pe banda de rânduri de care are nevoie lotul, pe
+  fiecare relief) și **mișcările** (din cote). Proba: loturile lipite dau cotele dintr-o bucată, bit cu bit, oricum ar fi
+  împărțite liniile; programele, octet cu octet.
+- **18.1↑h-7 (bazinul):** workerul CAM face planul și împarte liniile în loturi; fiecare lot pleacă la un worker al cotelor cu
+  banda lui de relief (tablouri transferate), iar cotele se întorc tot transferate. Un calcul de relief mare are deci N workere,
+  nu unul (o completare a ADR 0109, „un worker pe calcul”). Pentru liniile la 0° și 90°, banda unui lot e îngustă (memoria
+  câmpului se împarte la N); la un unghi oarecare, un lot de linii întregi are nevoie de aproape tot relieful, deci acolo
+  loturile se fac pe bucăți de linie, nu pe linii întregi.
+
+## Implementarea 18.1↑h-6 (planul, cotele pe loturi, mișcările)
+
+`treceriRelief` e acum `planTreceri` (verificările, liniile, avertismentele, numărul punctelor și marginea de jos a trecerilor,
+cu câmpul doar pe benzile din jurul punctului ales), `coteLot` (cotele liniilor [k0, k1) ale unui relief: cu `cota` dată, pe
+câmpul întreg; fără, pe benzile de care are nevoie lotul, pe fiecare relief, după **raza cotei**, care la degroșare e a frezei
+plate de rază R + adaos) și `miscariTreceri` (din cote, cu legăturile dintre linii pe câmpul întreg). Finisarea dintr-o bucată
+le înșiră pe câmpul întreg, ca înainte: programele, octet cu octet (amprentele rezultatului pe reliefurile de 600², aurul plăcii
+18, probele finisării și degroșării, 106 / 106).
+
+- **Proba:** `test/unit/reliefFinisare.loturi.test.ts`: loturile lipite = cotele dintr-o bucată, bit cu bit, pe un relief și pe
+  două (al doilea rotit și mutat), la 0°, 90°, 30° și nealiniat, cu toate frezele, peretele și marginea trecută; degroșarea cu
+  adaosul 0, 0,5 și 2; împărțiri la întâmplare și câte o linie pe lot. Plus, în `reliefFinisare.puncte.test.ts`, un șanț în V
+  (bila nu ajunge la fund): marginea de jos rămâne strânsă, deci 97 de treceri ies.
+- **Găsit la scriere:** banda lotului după raza frezei, nu a cotei (la degroșare, cu adaos, cotele ieșeau prea jos pe marginea
+  benzii); reparat înaintea primului commit și pus ca otrava M01. **Otrăvurile:** `18.1h6.py`, 6 / 6.
+
