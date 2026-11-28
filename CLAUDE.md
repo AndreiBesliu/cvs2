@@ -1475,7 +1475,7 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   ca la ventilator; „Fă elicea cu duza”. Cu ea, ADR 0340 are toate feliile. Easy 3Draw 18.50.0 (următoarea, 18.51.0). **O probă e2e care cere textul tipăririi îi ia
   cifrele din motor pentru starea exactă a editorului din probă. Un paragraf umplut după construire nu stă în editor deasupra
   unor butoane (apare după 90 ms și le mută: un clic se pierde sub încărcare).** La owner: verdictul a / b / c (fișa etapei 3).
-  **3.Cn (ventilatorul în „Modelul”; ADR 0341, aleasă de linie pe 28.11, cu recomandările aplicate)** gata pe 28.11: a cincea
+  **3.Cn (ventilatorul în „Modelul”; ADR 0341, aleasă de linie pe 28.11, cu recomandările aplicate)** gata pe 28.11, unită în `main` pe 28.11 (`e1b2d6e6`): a cincea
   construcție gata, „Ventilator” (`constructieGata("ventilator")`: grinda de 2k + 1, știfturile în prima și în ultima gaură,
   carcasa pe ele, axul prin mijloc, bucșa și rotorul pe ax, la cotele trusei), și „Fă-l în model” în editorul ventilatorului, cu
   toate valorile lui. Nicio piesă schimbată. Easy 3Draw 18.51.0 (următoarea, 18.52.0). **Un șablon care pune o piesă pe
@@ -2168,6 +2168,22 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 28.11.2026, la prânz (a șaptezeci și opta unire din cloud): **ventilatorul pus în „Modelul” (3.Cn), unit în `main`**
+  (sesiunea principală, ramura `unire-2811e`, din `f0d031e7`). Linia atelierului, ramura `wip/3.Xh-biblioteca-ui`,
+  `240259ee` (felia `8fa270f2`, cu `main` `f0d031e7` adus), PR-ul `AndreiBesliu/cvs2#82` (ADR 0341, scris de linie, cu
+  recomandările aplicate; aleasă de ea la „Porneste sesiunile, pune-le sa continue cu ce aveau la rand” al owner-ului,
+  fiindcă n-avea o felie scrisă ca următoare), unită în `e1b2d6e6`: a cincea construcție gata, „Ventilator”: grinda de
+  2k + 1 găuri, câte un știft în prima și în ultima gaură, carcasa pe ele, axul prin gaura din mijloc, jumătatea de bucșă și
+  rotorul pe ax, la cotele trusei din 3.Cm-3; în editorul ventilatorului, „Fă-l în model”, cu toate valorile lui. Nicio
+  piesă schimbată (amprentele, aceleași); lista de printat a lui „Fă ventilatorul”, neschimbată. **Easy 3Draw 18.51.0**
+  (următoarea, 18.52.0); otrăvurile 24 / 24. Doar pachetul extensiei; nimic pe server; documentul rămâne v32. `main` nu se
+  mișcase, deci **arborele unirii e chiar al lui `240259ee`**: completul 46129637888, verde (unit 11 074 / 0, 12 sărite pe
+  Linux; e2e 1 036 / 1 036; funcțiile pe emulatoare 142 / 142; paginile 62 / 62); rapidul 46129638017, verde; aplicația,
+  neschimbată (pornirea 112,1 kB, totalul 947,5 / 1 000). Lotul 70 (18.1↑j) e în drum spre test; felia aceasta pleacă după el
+  (lotul 71). **Alegerile din ADR 0341, cu recomandarea aplicată, la owner:** ventilatorul e a cincea construcție gata și are
+  și butonul din editor; trusa întreagă, prinsă, nu doar carcasa și rotorul; o construcție nouă, nu adăugată în cea
+  deschisă. Linia atelierului n-are altă felie pornită. **La owner:** de încercat ventilatorul în „Modelul”; restul listei,
+  neschimbat.
 - 28.11.2026, la prânz (a șaptezeci și șaptea unire din cloud): **straturile reliefului (18.1↑j), unite în `main`**
   (sesiunea principală, ramura `unire-2811d`, din `09689d36`). Linia reliefului, ramura `wip/18.1-relief`, `936ee2d3`, PR-ul
   `AndreiBesliu/cvs2#81` (ADR 0320; pornită la „Porneste sesiunile, pune-le sa continue cu ce aveau la rand” al owner-ului),
