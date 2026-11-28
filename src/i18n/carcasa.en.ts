@@ -44,6 +44,7 @@ export const enCarcasa = {
   'prop.freza.mana': 'Entered by hand',
   'prop.freza.nicio': 'No cutter from the library fits',
   'prop.freza.numar': 'Here it is T{aici}: T{biblioteca} already belongs to another cutter in the project.',
+  'prop.freza.material': 'With the values for “{set}”, the sheet’s material.',
   'cont.titlu': 'Account',
   'cont.indisponibil': 'Accounts are not available on this instance (no Firebase configuration).',
   'cont.incarca': 'Opening the account…',

@@ -1598,7 +1598,9 @@ pe toate operațiile formelor alese, într-un pas de anulare, cu valorile ei de 
 tăișului, pasul pe trecere și, la buzunar, pasul lateral (din procentul ei); adâncimea, fundul plat și frezele de rest
 rămân. Numărul T e cel din bibliotecă, dacă e liber în proiect; altfel al unei freze identice (același diametru, aceeași
 formă, aceeași turație), altfel cel mai mic liber, iar o notă sub listă îl spune. Lista arată freza din bibliotecă a formelor
-alese, **Scrisă de mână** când au aceeași freză scrisă în fereastra exportului, sau „—” când au freze diferite.
+alese, **Scrisă de mână** când au aceeași freză scrisă în fereastra exportului, sau „—” când au freze diferite. Pe o foaie cu
+material, freza aleasă ia valorile setului ei potrivit (vezi **Valorile pe material** în [Frezele mele](#freze)), iar o notă
+sub listă spune setul.
 
 **Rolurile mele.** Un rol cu toate valorile lui (freza, sensul, adâncimea, pasul, urechile, rampa, intrările, degajările,
 coborârea, traseul buzunarului, frezele de rest, fundul plat) se păstrează cu **Salvează ca rol…**, sub câmpurile Tăierii:
@@ -2056,7 +2058,9 @@ operației: plate pe un profil, un buzunar sau o găurire, în V la V-carve. Ale
 dacă nicio altă freză a ferestrei nu-l are; altfel al aceleiași freze, dacă e; altfel cel mai mic liber), diametrul, forma,
 pasul pe trecere și, la buzunar, pasul lateral; **Exportă** o scrie în proiect cu valorile ei de lucru (turația, avansul,
 plonjarea) și cu tăișul. Un diametru sau o formă schimbate de mână o fac **Scrisă de mână**: proiectul nu mai ține că e din
-bibliotecă. Numărul T îl poți schimba fără să o pierzi.
+bibliotecă. Numărul T îl poți schimba fără să o pierzi. Pe o foaie cu material, lista dă valorile setului potrivit al frezei
+(„Cu valorile pentru „MDF”, materialul foii.”); un material schimbat după alegere nu schimbă freza singur: nota „s-a schimbat
+în bibliotecă” arată diferența, cu **Ia valorile noi**.
 
 O freză **Scrisă de mână** are în grupul Freza, chiar sub lista **Din frezele mele**, un rând strâns care spune cu ce turație,
 avans și plonjare taie (de pildă „Turația, avansul și plonjarea: ale lucrării (18.000 rot/min, 1.000 și 300 mm/min)”). Desfăcut cu

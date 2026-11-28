@@ -39,6 +39,7 @@ export const roExport = {
   'export.freza.titlu': 'Numărul sculei (T) și diametrul frezei plate, pe fiecare rând. Între rânduri cu freze diferite, programul schimbă freza.',
   'export.freza.numar': 'Numărul sculei (T)',
   'export.freza.biblioteca': 'Din frezele mele',
+  'export.freza.material': 'Cu valorile pentru „{set}”, materialul foii.',
   'export.freza.de-mana': 'Scrisă de mână',
   'export.freza.de-mana-ca': 'Scrisă de mână (ca „{nume}”)',
   'export.biblioteca.schimbata': 'În bibliotecă, „{nume}” are acum {ce}.',

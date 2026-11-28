@@ -19,7 +19,8 @@ import type {
 } from '../ui/exportRand.ts';
 import { frezeleOperatiei, operatieCuRand, operatieCuRandRelief } from '../model/formaFrezei.ts';
 import { frezePeRanduri, frezePotrivite, pasLateralDin, sculaDinBiblioteca } from '../model/alegereFreza.ts';
-import { frezaDinCopie, type FrezaSalvata } from '../model/freza.ts';
+import { frezaDinCopie, valoriPeMaterial, type FrezaSalvata } from '../model/freza.ts';
+import { materialFoaie } from '../model/foi.ts';
 import type { FrezaRest, Scula } from '../model/document.ts';
 import { useBibliotecaProiectCuCheie } from './bibliotecaProiect.ts';
 import type { Config } from './config.ts';
@@ -397,11 +398,27 @@ export function ExportConectat({
    */
   const { stare: biblioteca, cheie: cheieBiblioteca } = useBibliotecaProiectCuCheie();
   const uid = useContTinut()?.uid ?? null;
+  /**
+   * Frezele bibliotecii cu valorile setului potrivit materialului foii (ADR 0305 §3), și numele seturilor folosite: listele,
+   * nota bibliotecii și „Ia valorile noi” le văd așa.
+   */
+  const eticheta = doc.foi[0] ? materialFoaie(doc.foi[0]) : null;
+  const peMaterial = useMemo(() => {
+    const freze: FrezaSalvata[] = [];
+    const seturi = new Map<string, string>();
+    for (const f of biblioteca.freze) {
+      const r = valoriPeMaterial(f, eticheta);
+      freze.push(r.freza);
+      if (r.set !== null) seturi.set(f.id, r.set);
+    }
+    return { freze, seturi };
+  }, [biblioteca.freze, eticheta]);
   /** O freză din bibliotecă, cum o primește fereastra (ADR 0300 §4): copia ei, cu originea, pasul și pasul lateral. */
   const oferita = (f: FrezaSalvata): FrezaOferita => {
     const s = sculaDinBiblioteca(f, f.numar);
+    const set = peMaterial.seturi.get(f.id);
     return {
-      id: f.id, nume: f.nume, pas: f.pas, pasLateral: pasLateralDin(f),
+      id: f.id, nume: f.nume, pas: f.pas, pasLateral: pasLateralDin(f), ...(set !== undefined ? { set } : {}),
       scula: {
         // Forma întreagă (în V, bila, toroidala): rândul le poartă pe toate (felia 16.A↑e-4).
         numar: s.numar, diametru: s.diametru, ...formaRand(s.forma),
@@ -417,11 +434,11 @@ export function ExportConectat({
       if (gata) return gata;
       // Adâncimea rândului nu se cere aici: pe o parte, o freză rotundă sub raza colțului își are greșeala pe rând (16.A↑e-6),
       // ca frezele de rest ale buzunarului (16.A↑e-5); lista nu se schimbă la fiecare tastă a adâncimii.
-      const lista = frezePotrivite(biblioteca.freze, [{ tip: r.tip, latura: r.latura, adancime: Number.POSITIVE_INFINITY }]).map(oferita);
+      const lista = frezePotrivite(peMaterial.freze, [{ tip: r.tip, latura: r.latura, adancime: Number.POSITIVE_INFINITY }]).map(oferita);
       dupaFel.set(k, lista);
       return lista;
     };
-  }, [biblioteca.freze]);
+  }, [peMaterial]);
   // Frezele oferite rândurilor reliefului (felia 18.1↑d-5, ADR 0316): cele pe care lucrarea le primește pe finisare (plata, V-ul,
   // bila și, din felia 18.1↑e, toroidala) și pe degroșare (doar plata).
   const frezeRelief = useMemo(() => {
@@ -429,14 +446,14 @@ export function ExportConectat({
     return (fel: 'finisare' | 'degrosare'): readonly FrezaOferita[] => {
       const gata = dupaFel.get(fel);
       if (gata) return gata;
-      const lista = frezePotrivite(biblioteca.freze, [{ tip: fel, latura: 'pe-linie' }]).map(oferita);
+      const lista = frezePotrivite(peMaterial.freze, [{ tip: fel, latura: 'pe-linie' }]).map(oferita);
       dupaFel.set(fel, lista);
       return lista;
     };
-  }, [biblioteca.freze]);
+  }, [peMaterial]);
   // Toată biblioteca cu CAM (ADR 0300 §5, felia 16.A↑b-4), pentru nota „s-a schimbat în bibliotecă” și recunoașterea; null cât
   // nu e citită (fereastra nu spune „nu mai e în bibliotecă” înainte să știe).
-  const bibliotecaToata = useMemo(() => (biblioteca.incarcata ? frezePeRanduri(biblioteca.freze).map(oferita) : null), [biblioteca]);
+  const bibliotecaToata = useMemo(() => (biblioteca.incarcata ? frezePeRanduri(peMaterial.freze).map(oferita) : null), [biblioteca.incarcata, peMaterial]);
   /**
    * „Pune-o înapoi în bibliotecă” (ADR 0300 §5, felia 16.A↑b-6): freza din copia de pe rând, în biblioteca proiectului, cu
    * id-ul ei de dinainte și o versiune nouă; în biblioteca unui cont pleacă și în cont (fără dreptul de scriere, rămâne aici,

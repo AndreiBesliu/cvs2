@@ -41,6 +41,7 @@ export const roCarcasa = {
   'prop.freza.mana': 'Scrisă de mână',
   'prop.freza.nicio': 'Nicio freză din bibliotecă nu se potrivește',
   'prop.freza.numar': 'Aici e T{aici}: T{biblioteca} e deja al altei freze din proiect.',
+  'prop.freza.material': 'Cu valorile pentru „{set}”, materialul foii.',
   'cont.titlu': 'Contul',
   'cont.indisponibil': 'Contul nu e disponibil pe instanța asta (fără configurația Firebase).',
   'cont.incarca': 'Se deschide contul…',

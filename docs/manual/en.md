@@ -1661,7 +1661,8 @@ feed, plunge), its cutting length, its step down and, for a pocket, its stepover
 bottom and the rest bits stay. The T number is the library's, if it is free in the project; otherwise that of an identical
 bit (same diameter, same shape, same spindle speed), otherwise the smallest free one, and a note under the list says so. The
 list shows the chosen shapes' library bit, **Entered by hand** when they share a bit typed in the export window, or “—” when
-they have different bits.
+they have different bits. On a sheet with a material, the chosen bit takes the values of its matching set (see
+**Values per material** in [My bits](#freze)), and a note under the list names the set.
 
 **My roles.** A role with all its values (the cutter, the direction, the depth, the step down, the tabs, the ramp, the leads,
 the corners, the descent, the pocket toolpath, the rest cutters, the flat bottom) is kept with **Save as role…**, under
@@ -2139,7 +2140,10 @@ cut: flat ones on a profile, a pocket or drilling, V bits on a V-carve. Once pic
 (its own, if no other bit in the window has it; otherwise that of the same bit, if there is one; otherwise the lowest free one),
 the diameter, the shape, the step-down and, for a pocket, the stepover; **Export** writes it to the project with its working
 values (spindle speed, feed, plunge) and its cutting length. A diameter or shape changed by hand makes it **Entered by hand**:
-the project no longer records that it came from the library. You can change the T number without losing it.
+the project no longer records that it came from the library. You can change the T number without losing it. On a sheet with
+a material, the list gives the values of the bit’s matching set (“With the values for “MDF”, the sheet’s material.”); a
+material changed after the choice does not change the bit by itself: the “changed in the library” note shows the difference,
+with **Take the new values**.
 
 A bit **Entered by hand** has, in the Bit group, right under the **From my bits** list, a collapsed row that says the spindle
 speed, feed and plunge it cuts with (for example “Spindle speed, feed and plunge: the defaults (18,000 rpm, 1,000 and 300
