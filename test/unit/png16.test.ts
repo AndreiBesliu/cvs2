@@ -112,3 +112,11 @@ test('dus-întors: ce scrie scriitorul citește cititorul, exact', async () => {
   assert.deepEqual(r.text, { a: 'b' });
   for (let k = 0; k < 12; k++) assert.equal(Math.round(r.rgba[4 * k]! * 65535 / 255), v[k]);
 });
+
+test('Paeth la egalitate: cu pb = pc < pa ia b (sus), nu c (sus-stânga)', async () => {
+  // Gri pe 8 biți, 2 × 2. Al doilea rând, cu Paeth: la x = 1, a = 11 (stânga), b = 8 (sus), c = 10 (sus-stânga):
+  // p = 9, pa = 2, pb = 1, pc = 1, deci predicția e b = 8. La x = 0: a = 0, b = 10, c = 0, deci b = 10.
+  const r = await citestePng(png(ihdr(2, 2, 8, 0), Buffer.from([0, 10, 8, 4, 11 - 10, 50 - 8])));
+  if ('eroare' in r) assert.fail(r.eroare);
+  assert.deepEqual([r.rgba[0], r.rgba[4], r.rgba[8], r.rgba[12]], [10, 8, 11, 50]);
+});

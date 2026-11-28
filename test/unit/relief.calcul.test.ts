@@ -239,3 +239,13 @@ test('din PNG pe 16 biți, fără Z-ul din fișier: înălțimea și baza ferest
   // Griul de mijloc, 32768 / 65535 din 10 mm: 5,00008 (pe 8 biți ar fi fost 128 / 255 · 10 = 5,0196).
   assert.ok(Math.abs((z[1] ?? 0) - 32768 / 65535 * 10) < 1e-3, String(z[1]));
 });
+
+test('din PNG pe 16 biți: metadate de altă versiune sau cu o celulă rea nu se cred (scara ferestrei)', async () => {
+  const { scriePngGri16 } = await import('../../src/relief/png16.ts');
+  for (const meta of [{ v: 2, zMin: 0, zMax: 1, celula: 1 }, { v: 1, zMin: 0, zMax: 1, celula: -1 }, { v: 1, zMin: 3, zMax: 1, celula: 1 }]) {
+    const png = await scriePngGri16(Uint16Array.from([0, 65535]), 2, 1, { text: { 'cncvs2-relief': JSON.stringify(meta) } });
+    const r = ok(await reliefInBazin({ tip: 'din-imagine', imagine: new Blob([png.slice()]), optiuni: O, scara: { latimeMm: 4 }, zDinFisier: true }), 'din-imagine');
+    assert.equal(r.fisier?.celula, undefined, JSON.stringify(meta));
+    assert.equal(r.celula, 2, JSON.stringify(meta));
+  }
+});
