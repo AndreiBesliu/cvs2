@@ -153,7 +153,11 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
   printr-o schiță.
 - **Observabilitatea:** erorile ajung în jurnalul aplicației; joburile își lasă marcajul.
 
-## Starea pe 28.11.2026, dimineața (după a șaptezeci și șasea unire din cloud)
+## Starea pe 28.11.2026, la prânz (după a șaptezeci și șaptea unire din cloud)
+
+- **A șaptezeci și șaptea unire (28.11, ~11:20):** 18.1↑j, straturile reliefului (`385f792d`, din `936ee2d3`, PR-ul #81);
+  arborele, al lui `936ee2d3`, cu completul 46124373639 verde. Documentul rămâne v32 (v33, nefolosit). Lotul 70, spre test.
+  Pe ramura reliefului, după ea: 18.1↑f, g, i (porțile în lucru), apoi 18.1↑h.
 
 - **Liniile, repornite pe 28.11 la 09:40** („Porneste sesiunile, pune-le sa continue cu ce aveau la rand”): frezele, 16.A↑f-5
   (editorul siluetei desenate), apoi g; relieful, straturile și combinarea (rândul „18.1↑e” din tabelul ADR 0310, cu id nou),
@@ -195,7 +199,7 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
   19:25: lotul 68 (`680801c7`), pe test de la ~20:45 (probele de fum, bune). Nota frezelor (`afce2d48`, doar
   documente) și 3.Ay, Escape oriunde ar fi focusul, în dialogurile rămase (unită pe 28.11 la ~02:15, din
   `2c74dc2d`, PR-ul #80): lotul 69 (`1e818f88`), pe test de la 28.11, ~03:25 (completul pe `main` 46087138726,
-  verde; proba de fum, bună). **Pe test e tot ce e în `main`.**
+  verde; proba de fum, bună). 18.1↑j (`385f792d`): lotul 70, în drum.
   **Schema:** documentul e v32; un câmp nou ia v33.
 - **Limita de folosire (27.11, ~16:20):** owner-ul a spus că ne apropiem de limita săptămânală (94 %, se resetează
   sâmbătă, 28.11, la 10:00; comună tuturor sesiunilor): „vezi sa nu se piarda din progresul pe care il fac celelalte

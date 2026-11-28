@@ -17362,3 +17362,14 @@ e următoarea în ordinea din ADR 0310 §8). **Started:** 28.11, 10:08, pe `wip/
 - **Proba:** `test/unit/reliefFinisare.puncte.test.ts` (3). **Otrăvurile:** `18.1h3.py`, 6 / 6, martorul a scăpat.
 - Programele care ies, octet cu octet; nimic altceva în aplicație.
 
+## 2026-11-28 — Sesiunea principală în cloud: a șaptezeci și șaptea unire (18.1↑j) (Model: Claude Opus 5.5)
+
+**Prompt:** raportul liniei reliefului despre 18.1↑j (pornită la „Porneste sesiunile, pune-le sa continue cu ce aveau la rand” al
+owner-ului); ordinul „unește ce se poate”
+**Started:** 28.11, 11:12. **Completed:** 28.11, 11:20.
+
+- **Unirea:** `wip/18.1-relief` (`936ee2d3`, PR-ul #81) în `main`, din `09689d36`; arborele, al lui `936ee2d3`. Completul
+  46124373639, verde: unit 11 069 / 0, e2e 1 035 / 1 035, funcțiile pe emulatoare 142 / 142, paginile 62 / 62; rapidul, verde.
+- **Pe test:** lotul 70, după completul de pe `main`.
+- **Documentele:** decizia și rândul de stare în `CLAUDE.md`; starea din `docs/linii/principala.md`; rândul reliefului din
+  `docs/linii/README.md`.
