@@ -122,6 +122,11 @@ test('felul „Desenată”: tabelul punctelor, greșelile pe punct, tastele și
   await rand(f, 1).locator('[data-freze="punct-adauga"]').click();
   await r(f, 2).fill('3');
   await h(f, 2).fill('1,5');
+  // Pe alt fel și înapoi: diametrul e cel dat de ultimul punct, iar punctele rămân.
+  await f.locator('[data-freze-fel="plata"]').click();
+  await expect(camp(f, 'diametru')).toHaveValue('12');
+  await f.locator('[data-freze-fel="desenata"]').click();
+  expect(await puncte(f)).toEqual([['0', '0'], ['2', '0'], ['3', '1,5'], ['6', '4']]);
   await camp(f, 'nume').fill('Margine desenată');
   await f.locator('[data-freze="salveaza"]').click();
   // Fișa: felul, diametrul, înălțimea, punctele, silueta.

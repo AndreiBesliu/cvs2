@@ -10,7 +10,7 @@ gata de unit pe 27.11 (`e5bdde83`, PR-ul #71), UNITĂ (`0d2a8c2c`); 16.A↑e-3 (
 16.A↑e-5 (buzunarul cu bila și cu toroidala, cu creasta pe fund) raportată gata de unit pe 27.11 (`106b4a51`, PR-ul #74);
 16.A↑e-6 (profilul pe o parte cu bila și cu toroidala, cu adâncimea cel puțin raza colțului) pe `wip/16.A-freze-e`, peste ea;
 ADR 0304 PROPUS pe 27.11 (profilul desenat), mers cu recomandările; 16.A↑f-1 (documentul v32, nucleul) și 16.A↑f-2 (canelura) UNITE
-în `main` pe 27.11 (`8906dedf`, din `36866d16`, PR-ul #74); 16.A↑f-3 (profilurile parametrice în proiect) raportată pe 27.11 (`0a1fd1a4`, PR-ul #78), unită de sesiunea principală din acel commit; 16.A↑f-4 (marginea profilată pe o parte) pe aceeași ramură, peste ea_
+în `main` pe 27.11 (`8906dedf`, din `36866d16`, PR-ul #74); 16.A↑f-3 (profilurile parametrice în proiect) raportată pe 27.11 (`0a1fd1a4`, PR-ul #78), unită de sesiunea principală din acel commit; 16.A↑f-4 (marginea profilată pe o parte) pe aceeași ramură, peste ea, UNITĂ; 16.A↑f-5 (silueta desenată în „Frezele mele”) pe `wip/16.A-freze-f5`, din `main` `09689d36`_
 
 Pornită pe 23.11.2026, în sesiunea cloud a liniei, la cererea owner-ului: „Vreau sa pot crea freze l sau profiluri de freze in
 aplicatie si sa le salvez in cont”. Rândurile din prag: „Bibliotecă de freze cu geometrie reală (dreaptă, bilă, toroidală, V,
@@ -18,31 +18,23 @@ gravare, profil, formă desenată)” și „Freze de profil desenate de utiliza
 
 ## Starea
 
-### Unde am rămas (27.11, 14:30; pentru o sesiune nouă)
+### Unde am rămas (28.11; pentru o sesiune nouă)
 
-Owner-ul, prin sesiunea principală, pe 27.11 la 14:25: limita săptămânală de folosire e la 94 % (se resetează sâmbătă la
-10:00). Deci pași mici, fiecare cu commit și push, și **nicio felie nouă după f-4**.
+f-4 și 3.Ay sunt unite în `main`. Pe 28.11, la 09:40, sesiunea principală a transmis cuvântul owner-ului („Porneste
+sesiunile, pune-le sa continue cu ce aveau la rand”): f-5, apoi g (valorile pe material), cu recomandările acolo unde sunt
+întrebări; d rămâne după placa 4.
 
-- **16.A↑f-4 (marginea profilată pe o parte) e gata** pe `wip/16.A-freze-e`. Commit-ul de raportat e `d03f1561`, cu `main`
-  adus (`75ae7f50`, f-3 unită). PR-ul e #79, ciornă. Rapidul e verde pe `99979e16` și pe `d03f1561`. **Completul 46010593843**,
-  pe `99979e16` (același cod ca `d03f1561`; între ele, doar DEVLOG-ul), e **verde**: unit 11 003 / 0, e2e 1 017 / 1 017,
-  emulatoarele 142 / 142, paginile 62 / 62. **Raportul a plecat** la sesiunea principală pe 27.11, la 14:55; unirea e a ei.
+- **16.A↑f-5 (silueta desenată în „Frezele mele”)** pe `wip/16.A-freze-f5`, din `main` `09689d36`. ADR 0304, „Implementarea
+  (16.A↑f-5)”; fișa etapei 3, rândul 16.A↑f-5; otrăvurile `test/otravuri/16.A-f5.py`. Documentul rămâne v32.
 - **De făcut, în ordine:**
-  1. (Făcut pe 27.11: completul verde, raportul trimis.) Citește completul: `gh run view 46010593843 --json conclusion,jobs`.
-     - Verde: raportează f-4 sesiunii principale (`session_01QcxiUZLthXDrpYQ6KLNzAC`, cu `send_message`). Raportul are
-       commit-ul `d03f1561`, PR-ul #79, porțile, mărimea (pornirea 111,8 kB neschimbată; totalul 942,2 / 1 000, +0,7),
-       otrăvurile 18 / 18 și nota de mai jos despre `formaFrezei.ts`.
-     - Roșu: găsește cauza, repară cu proba, comite și împinge, apoi pornește din nou completul
-       (`gh workflow run complet.yml --ref wip/16.A-freze-e`).
-  2. După raport, **nu porni f-5** până nu spune sesiunea principală (sau owner-ul) că limita s-a resetat.
-- **Pentru raport:** f-4 schimbă în `src/model/formaFrezei.ts` funcția `motivFormaPeOperatie` și tipul `MotivForma`
-  (`profil-fund`, `profil-adancime`). Nu atinge `formaPeRand`, unde se ciocnește linia reliefului cu f-3.
-- **Ce urmează după reset:**
-  - f-5, editorul siluetei desenate în „Frezele mele” (ADR 0304 §5, recomandarea 5a): felul nou `desenata`, cu punctele
-    într-un tabel (r, h), desenul la scară, tragerea cu lipirea la 0,1 mm, „Pornește de la…” un profil parametric, CSV și JSON
-    cu punctele, apoi copia în proiect prin `sculaDinFreza` (forma `profil`). Probele întâi: marginile punctelor, dus-întors
-    prin fișier, e2e pe editor;
-  - apoi g (valorile pe material); d rămâne după placa 4.
+  1. completul pe vârful ramurii, verde (`gh workflow run complet.yml --ref wip/16.A-freze-f5`); roșu: cauza, proba,
+     commit, push, completul din nou;
+  2. raportul la sesiunea principală (`session_01QcxiUZLthXDrpYQ6KLNzAC`, cu `send_message`): commit-ul, PR-ul, porțile,
+     mărimea, otrăvurile; unirea e a ei;
+  3. apoi g (valorile pe material, ADR 0300 §11), cu un ADR propus întâi și recomandările aplicate; un câmp nou cere
+     numărul de la sesiunea principală (v33 e al reliefului).
+- **Ce urmează după f-5:** g; d după placa 4. Din f-5 a rămas, ca idee: „Pune-o înapoi în bibliotecă” pentru o copie cu profil
+  (ar putea reveni ca freză desenată), la cuvântul owner-ului.
 - **Unealta otrăvurilor:** spec-urile e2e ale unei liste stau în `E2E = [...]`, nu în `SETURI`. Altfel rulează toată suita.
   După o rulare oprită, un `vite preview` rămas din clonă ține portul 4173 și otrăvurile ies NEVALIDE; îl oprești cu
   `pkill -f "clona-otravuri/node_modules/.bin/vite preview"`.

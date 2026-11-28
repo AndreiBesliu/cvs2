@@ -176,8 +176,11 @@ function cuFel(c: Ciorna, x: FelFreza, ro: boolean): Ciorna {
   const treapta = areTreapta(x) && (gol(c.treapta) || x !== c.fel) ? textNumar(p?.treapta ?? 1.5, ro) : c.treapta;
   // Silueta desenată pornește de la silueta frezei din editor (o plată Ø6 dă (0, 0), (3, 0)); o freză încă greșită, de la una
   // obișnuită. Înapoi pe alt fel, punctele rămân în ciornă (se întorc dacă omul revine), dar nu intră în freză.
-  const puncte = x === 'desenata' && (x !== c.fel || c.puncte.length < 2) ? punctePornire(frezaDin(c, ro), ro) : c.puncte;
-  const n = { ...c, fel: x, unghi, varf, raza, treapta, puncte };
+  const puncte = x === 'desenata' && c.puncte.length < 2 ? punctePornire(frezaDin(c, ro), ro) : c.puncte;
+  // De pe „Desenată” pe alt fel, diametrul e cel dat de ultimul punct (câmpul lui nu se vedea), nu cel scris înainte.
+  const dDesenat = c.fel === 'desenata' && x !== 'desenata' ? frezaDin(c, ro).diametru : Number.NaN;
+  const diametru = Number.isFinite(dDesenat) ? textNumar(dDesenat, ro) : c.diametru;
+  const n = { ...c, fel: x, unghi, varf, raza, treapta, puncte, diametru };
   if (!p) return n;
   // Diametrul: cel scris, dacă profilul încape în el; altfel, cel obișnuit al profilului.
   const incape = (d: string): boolean => {

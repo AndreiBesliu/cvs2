@@ -17254,3 +17254,23 @@ principală: auditul elicelor, felia 7, răspunsul 4a)
 - **Înainte:** nota liniei frezelor (`5335aca0`) unită în `afce2d48`; PR-ul #79, închis ca unit.
 - **Pe test:** lotul 69, după completul de pe `main`.
 - **Documentele:** decizia în `CLAUDE.md`; starea din `docs/linii/principala.md`.
+
+## 2026-11-28 — 16.A↑f-5: silueta desenată în „Frezele mele” (Model: Claude Opus 5.5)
+
+**Prompt:** mesajul sesiunii principale din 28.11, 09:40, cu cuvântul owner-ului („Porneste sesiunile, pune-le sa continue cu
+ce aveau la rand”): f-5, editorul siluetei desenate (ADR 0304 §5, 5a), pe o ramură nouă din `main`. **Started:** 28.11, 09:45,
+pe `wip/16.A-freze-f5`, din `main` `09689d36`. **Completed:** 28.11.
+
+- **Probele întâi:** `test/unit/freza.desenata.test.ts` (judecata punctelor cu motivul și punctul fiecărei greșeli, rotunjirea,
+  copia și ușa documentului, cea mai mare freză desenată în 8 kB, „Pornește de la…” pe tot catalogul la cel mult 0,001 mm,
+  alegerea, datele, JSON-ul și CSV-ul) și `test/e2e/freze.desenata.spec.ts` (editorul, greșelile, tastele și tragerea, fișa
+  și reîncărcarea, „Pornește de la…”, exportul și importul, Tăierea, telefonul cu fontul lat).
+- **Modelul:** felul `desenata`, cu CAM; câmpul `puncte`, ținut rotunjit la 0,0001 mm (afară de raza capătului);
+  `problemaPuncte`, `puncteDesenate`; copia în proiect e forma `profil` (documentul rămâne v32). CSV-ul are coloana `puncte`.
+- **Editorul** (`src/app/SiluetaDesenata.tsx`): desenul la scară cu mânerele punctelor (lipite la 0,1 mm, ținute între vecini,
+  scara fixă cât ține tragerea, săgețile cu 0,1 / 1 mm), tabelul cu „+” și „✕”, „Pornește de la…”, diametrul din ultimul
+  punct, greșeala pe punctul ei; fișa cu înălțimea și punctele.
+- **Găsite pe drum:** la 320 px cu fontul lat, tabelul ieșea cu 26 px din fereastră (coloane fixe, butoanele unul sub altul pe
+  ecranul îngust); pe capturi, capul tabelului cu majuscule („R (MM)”, din `.dialog th`), mânerele dese suprapuse într-o bandă
+  și tabelul de zeci de puncte foarte lung (derulat acum în locul lui).
+- **Documentele:** ADR 0304, fișa etapei 3, nota liniei, manualul în ambele limbi, traducerile, registrul otrăvurilor.
