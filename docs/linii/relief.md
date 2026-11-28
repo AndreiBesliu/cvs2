@@ -304,7 +304,8 @@ degroșarea și finisarea pe relief), unde stă relieful în document și unde s
     linie e atinsă doar pe ecuator, iar oracolul o ia sau nu după rotunjirea fiecărei mutări; deplasează grila judecății cu o
     fracțiune de celulă (ramura plată are paza la 1 µm, cea a bilei nu).
 - **28.11: 18.1↑h-1 gata pe ramură** (relieful la 4000², măsurătorile; ADR 0323, **propus**): sonda `scripts/masura-relief.ts`.
-  Tot ce ține de relief până la CAM e fluid la 4000² (sub 2,3 s, într-un fir); finisarea nu e: 118 s la pasul 0,5 și 2,2 GB.
+  Tot ce ține de relief până la CAM e fluid la 4000² (sub 2,3 s, într-un fir); finisarea nu e: 118 s la pasul 0,5 și 2,2 GB, iar la pasul 0,3 (condiția din ADR 0310), 187 s de calcul și apoi refuzul
+  plafonului de 20 M de puncte.
   **Codul feliei următoare (liniile pe workere, memoria pe benzi) așteaptă răspunsul owner-ului** la cele patru întrebări din
   ADR 0323, plus măsurătoarea lui. Până atunci, linia poate face proba bătăilor (18.1↑h-2), care nu depinde de răspuns.
 - **De ținut minte, din 18.1↑h-1:**

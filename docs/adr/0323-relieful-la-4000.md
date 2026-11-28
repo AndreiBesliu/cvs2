@@ -25,8 +25,14 @@ capăt: relieful, dalele, compusul și calculul CAM, ca în workerul CAM).
 | PNG-ul pe 16 biți (ADR 0322) | 0,21 s | 0,63 s | 2,23 s |
 | degroșarea (plată Ø6, pasul lateral 2,5) | 1,22 s | 6,07 s | 27,44 s |
 | finisarea (bilă Ø3, pasul lateral 0,5) | 13,18 s | 38,62 s | 117,60 s |
+| finisarea (bilă Ø3, pasul lateral 0,3) | | | 186,97 s, apoi refuzul |
 | mișcările finisării | 389 198 | 1 577 185 | 6 351 155 |
 | RSS-ul cel mai mare | 341 MB | 697 MB | 2 235 MB |
+
+La 4000² cu pasul 0,3 (condiția din ADR 0310), finisarea **nu iese**: cotele liniilor (1 334 de linii) se calculează în 187 s,
+apoi lucrarea o refuză, fiindcă programul ar avea peste 20 de milioane de puncte (`PUNCTE_FINISARE_MAXIM`, ~10,7 M pe trecere,
+× 2 treceri). Plafonul se verifică abia după cote: numărul trecerilor vine din cea mai adâncă cotă. Plafonul ține memoria: la
+pasul 0,5, 6,35 M de mișcări au dus procesul la 2,2 GB, deci 21 M ar trece de 5 GB, peste ce ține o filă.
 
 **Unde se duce timpul finisării** (profilul pe 1000², `--cpu-prof`): 70 % în distanța de la segment la blocurile piramidei
 (`distSegmentCutie`), 21 % în cota segmentului (`cotaSegment`), sub 2 % în pregătirea câmpului (`campPeCelula`, `piramida`).
@@ -41,8 +47,9 @@ piramida maximelor peste ele; asta, plus mișcările (6,35 M), duce procesul la 
 ## Ce depășește pragurile
 
 1. **Finisarea:** pragul din ADR 0310 e 10 s, la pasul lateral 0,3. Aici, la 0,5 (mai rar), ia 118 s într-un fir; la 0,3,
-   măsurătoarea e în §„Completarea” de mai jos. Chiar împărțită pe 8 nuclee, rămâne peste 10 s.
+   cotele singure iau 187 s, iar programul e refuzat de plafonul punctelor. Chiar împărțită pe 8 nuclee, rămâne peste 10 s.
 2. **Memoria:** pragul e ~1 GB pentru 4 straturi; aici, un strat cu calculul CAM ia 2,2 GB.
+3. **Refuzul vine târziu:** la 4000² cu pasul 0,3, omul așteaptă 3 minute ca să afle că programul nu se poate face.
 
 ## Întrebările owner-ului (recomandarea întâi)
 
@@ -61,6 +68,13 @@ piramida maximelor peste ele; asta, plus mișcările (6,35 M), duce procesul la 
    0310); îmi trimiți ce scrie. Ea decide pragul, nu containerul liniei.
 4. **Plafonul 8192² (răspunsul 4a):** rămâne; la 8192², timpul și memoria ies de ~4 ori mai mari, deci un relief atât de mare
    cere 1a și 2a.
+5. **Plafonul punctelor (20 de milioane) și refuzul de după cote:**
+   - **a) Plafonul rămâne până la 2a, iar refuzul se spune înaintea cotelor, cât se poate (recomandat):** punctele unei treceri
+     se pot număra înaintea cotelor (azi se adună linie cu linie, odată cu ele); peste plafon chiar cu o singură trecere, refuzul
+     vine imediat; altfel, calculul și verdictul de azi, după cote. O felie mică, cu proba ei, fără nicio schimbare în programele
+     care ies. Cu 2a (mișcările scrise pe bucăți, nu ținute toate), plafonul urcă.
+   - b) Plafonul urcat acum (de exemplu 40 M), cu riscul ca fila să cadă din lipsă de memorie.
+   - c) Plafonul și refuzul, cum sunt.
 
 ## Bătăile (alinierea)
 

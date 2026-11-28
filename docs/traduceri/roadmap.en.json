@@ -377,6 +377,10 @@
       "ro": "Textul pe curbă și proba fonturilor",
       "en": "Text on a curve and the font samples"
     },
+    "100afa4ce99db7fd": {
+      "ro": "Relieful la 4000²: măsurătorile",
+      "en": "Relief at 4000²: the measurements"
+    },
     "1048f62a748ee3ca": {
       "ro": "Utilizarea aplicației: pașii dinaintea unei erori",
       "en": "App usage: the steps before an error"
@@ -1748,6 +1752,10 @@
     "4df95c07f33790be": {
       "ro": "3.S pe live (acolo primirea e oprită până atunci)",
       "en": "3.S on live (receiving is off there until then)"
+    },
+    "4dfd4fc0982a5ce9": {
+      "ro": "Relieful la 4000²",
+      "en": "Relief at 4000²"
     },
     "4e56c6f74c2be124": {
       "ro": "așezarea pe rânduri, vărsarea pe foaia 2, plăcuțele din CSV",
@@ -3312,6 +3320,10 @@
     "9fac1dff20d1f2ca": {
       "ro": "Planșele",
       "en": "Sheets"
+    },
+    "9fd99ff561e6bc2d": {
+      "ro": "**Relieful la 4000²: măsurătorile** (ADR 0323, propus; ramura `wip/18.1-relief`; după 18.1↑i). Sonda `scripts/masura-relief.ts` (un relief sintetic de N² celule de 0,1 mm, pe drumul aplicației, cu timpul și memoria fiecărei piese grele), măsurată în container, într-un fir: la 4000², stratul, citirea, compunerea, desenul și PNG-ul pe 16 biți stau sub 2,3 s; degroșarea ia 27 s; finisarea (bila Ø3) ia 118 s la pasul 0,5 și la pasul 0,3 calculează 187 s, apoi o refuză plafonul de 20 M de puncte (ar avea ~21 M); memoria, până la 2,2 GB. Profilul: 92 % în cota segmentelor, deci liniile se pot împărți pe workere. Sunt depășite două praguri „Se redeschide dacă” din ADR 0310 (finisarea peste 10 s; memoria peste ~1 GB), deci decizia e a owner-ului: recomandarea e întâi liniile pe workere și memoria pe benzi, fără GPU, apoi măsurătoarea pe calculatorul lui. Fără cod de produs.",
+      "en": "**Relief at 4000²: the measurements** (ADR 0323, proposed; branch `wip/18.1-relief`; after 18.1↑i). The probe `scripts/masura-relief.ts` (a synthetic relief of N² cells of 0.1 mm, along the application's own path, with the time and memory of each heavy step), measured in the container, on one thread: at 4000², the layer, the read-back, the composition, the drawing and the 16-bit PNG stay under 2.3 s; roughing takes 27 s; finishing (Ø3 ball) takes 118 s at a 0.5 step, and at a 0.3 step it computes for 187 s and is then refused by the 20 M point cap (it would have ~21 M); memory, up to 2.2 GB. Profile: 92 % in the segment heights, so the lines can be split across workers. Two \"Reopen if\" thresholds of ADR 0310 are exceeded (finishing above 10 s; memory above ~1 GB), so the decision is the owner's: the recommendation is lines on workers and memory in bands first, no GPU, then a measurement on the owner's computer. No product code."
     },
     "a0200c89a1cf4f47": {
       "ro": "Operațiile în document (schema v3, cu migrarea v2 → v3): profilul ca operație a piesei, cu scula și parametrii; exportul le citește din document",
