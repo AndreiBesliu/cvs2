@@ -1035,8 +1035,20 @@ mai mare. Ce vezi e calculat din relieful salvat, deci e exact ce se păstrează
 planul zero. O imagine toată transparentă, una mai mare de 8192 × 8192 pixeli sau o lățime care dă o celulă în afara
 marginilor (0,001 … 100 mm, cel mult 10 m pe latură) sunt refuzate, cu motivul.
 
-**În panou:** cu piesa aleasă, secțiunea **Relieful** arată mărimea, celula, celulele, înălțimile și straturile, de sus în
-jos, fiecare cu modul ei (în felia asta, relieful are un singur strat, „adună”).
+**În panou:** cu piesa aleasă, secțiunea **Relieful** arată mărimea, celula, celulele, înălțimile și **straturile**, de sus
+în jos, ca în compus. Relieful e suma straturilor lui, de jos în sus, fiecare cu modul lui: **adună**, **scade**, **păstrează
+înalt** (cel mai înalt dintre strat și ce e sub el), **păstrează jos**, **înlocuiește** sau **înmulțește**; un pixel gol al
+unui strat nu schimbă nimic acolo. Fiecare strat are:
+- ochiul: un strat ascuns nu intră în relief, deci nici în ce se taie (fereastra exportului o spune pe rândul reliefului);
+- numele (gol = arătat după id) și modul;
+- **↑** / **↓**: mai sus sau mai jos în compus; **×**: îl șterge (ultimul strat rămâne).
+
+Fiecare schimbare e un pas de anulare, iar anularea pune la loc stratul exact cum era.
+
+**Un strat nou din imagine:** cu un relief ales, fereastra „Relief din imagine” are și **Un strat nou pe „…”**, lângă **O piesă
+nouă** (implicit). Imaginea stă centrată pe relief, la **Lățimea imaginii pe relief** (implicit cât relieful): fiecare celulă
+ia pixelul în care îi cade centrul, ce iese din relief se taie, iar în jurul imaginii stratul e gol. **Importă** îl pune
+deasupra, cu modul „adună”, schimbat apoi din panou. Un relief are cel mult 32 de straturi.
 
 Relieful se ține în browser, lângă proiect, nu în document (documentul ține doar amprenta lui), ca imaginile foii: pe alt
 calculator ori în alt browser, panoul spune că straturile lipsesc. Ce nu mai folosește nicio versiune păstrată a proiectului

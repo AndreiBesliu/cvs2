@@ -56,8 +56,13 @@ test('o imagine ca strat nou pe relieful ales; ochiul, modul, anularea și ordin
   // Cu un relief ales, a doua alegere; implicit, piesa nouă (ca înainte).
   await expect(page.locator('[data-camp="relief-unde-piesa"]')).toBeChecked();
   await page.locator('[data-camp="relief-unde-strat"]').check();
+  // Fără lățime scrisă, imaginea e cât relieful (64 mm: un pixel de 4 mm), deci îl acoperă tot (64 × 64 mm, tăiată sus și jos):
+  // stratul singur e la 5 mm peste tot.
+  await expect(page.locator('[data-camp="relief-latime"]')).toHaveValue('64');
+  await expect(page.getByTestId('relief-z')).toHaveText('Înălțimile: de la 5 la 5 mm.');
   await page.locator('[data-camp="relief-latime"]').fill('16');
   await page.locator('[data-camp="relief-latime"]').press('Enter');
+  await expect(page.getByTestId('relief-z')).toHaveText('Înălțimile: de la 0 la 5 mm.');
   await expect(page.getByTestId('relief-grila')).toHaveText(
     'Pe „jumatati”: 64 × 32 celule de 1 mm (64 × 32 mm). Imaginea stă centrată; ce iese din relief se taie, iar în jurul ei stratul e gol.');
   await page.locator('[data-buton="importa"]').click();
@@ -91,6 +96,11 @@ test('o imagine ca strat nou pe relieful ales; ochiul, modul, anularea și ordin
   await s2.locator('[data-buton="strat-ochi"]').click();
   await expect(z).toHaveText('de la 0.00 la 10.00 mm');
   // Ordinea: stratul nou mutat sub cel dintâi (cu „adună”, același compus); numele, schimbat din câmp.
+  await s2.locator('[data-buton="strat-jos"]').click();
+  await expect(randuri.first()).toHaveAttribute('data-strat', 's1');
+  await expect(s2.locator('[data-buton="strat-jos"]')).toBeDisabled();
+  await s2.locator('[data-buton="strat-sus"]').click();
+  await expect(randuri.first()).toHaveAttribute('data-strat', 's2');
   await s2.locator('[data-buton="strat-jos"]').click();
   await expect(randuri.first()).toHaveAttribute('data-strat', 's1');
   await page.locator('[data-camp="strat-nume-s2"]').fill('logo');

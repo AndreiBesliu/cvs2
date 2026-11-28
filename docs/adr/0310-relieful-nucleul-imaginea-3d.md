@@ -179,6 +179,12 @@ nevoie de mai mult decât scrie aici.
 | 18.1↑h | Rezoluția 4000²: fluiditatea și memoria măsurate, plafonul (întrebarea 4), alinierea probată cu bătăile | un relief de 4000 × 4000 |
 | 18.1↑i | Fișa plăcii 18 (`docs/etape/placa-18.md`): pana de gri, calota, litofania, cu cotele pe hârtie, prezise de oracol | placa, tăiată de owner |
 
+**Îndreptat pe 28.11.2026 (ADR 0320):** id-urile feliilor unite rămân, deci tabelul de mai sus s-a mutat așa: **18.1↑e** a
+fost finisarea cu toroidala (ADR 0319); straturile și combinarea au id-ul **18.1↑j** (ADR 0320); fișa plăcii 18, cu pana de
+gri și calota, s-a făcut în **18.1↑d-2**, deci **18.1↑i** rămâne doar litofania pe placă; între ele, 18.1↑d-3…d-7 (ADR
+0314–0318) au adus rotunjirea pasului lateral, rândul editabil al reliefului în fereastra exportului, freza din bibliotecă,
+desenele grupurilor și „Dă-i T{n}”. Urmează **18.1↑f** (litofania), **18.1↑g** (16 biți), **18.1↑h** (4000²).
+
 ### 9. Mărimea
 
 - **Pornirea:** cel mult +0,6 kB pe toată linia: forma `relief` în validatorul ușii, acțiunile și verificarea „documentul
