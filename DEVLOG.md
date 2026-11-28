@@ -17258,8 +17258,8 @@ principală: auditul elicelor, felia 7, răspunsul 4a)
 ## 2026-11-28 — 18.1↑j: straturile reliefului, editabile, și imaginea ca strat nou (Model: Claude Opus 5.5)
 
 **Prompt:** „Porneste sesiunile, pune-le sa continue cu ce aveau la rand” (owner-ul, transmis liniei reliefului de sesiunea
-principală la 09:40: straturile și combinarea, cu un id liber și tabelul din ADR 0310 îndreptat). **Started:** 28.11, 09:45, pe
-`wip/18.1-relief`, din `main` `09689d36`. **Completed:** 28.11, 10:10.
+principală la 09:40: straturile și combinarea, cu un id liber și tabelul din ADR 0310 îndreptat). **Started:** 28.11, 09:42, pe
+`wip/18.1-relief`, din `main` `09689d36`. **Completed:** 28.11, 10:07.
 
 - **Editarea, pură:** `src/model/straturiRelief.ts` (ochiul, numele, modul, ordinea, ștergerea, stratul nou, câte sunt ascunse,
   relieful ales), cu probele întâi (`relief.straturi.test.ts`).
@@ -17280,7 +17280,7 @@ principală la 09:40: straturile și combinarea, cu un id liber și tabelul din 
 ## 2026-11-28 — 18.1↑f: litofania (Model: Claude Opus 5.5)
 
 **Prompt:** „Porneste sesiunile, pune-le sa continue cu ce aveau la rand” (același cuvânt, prin sesiunea principală; litofania
-e următoarea în ordinea din ADR 0310 §8). **Started:** 28.11, 10:15, pe `wip/18.1-relief`, după 18.1↑j. **Completed:** 28.11, 10:55.
+e următoarea în ordinea din ADR 0310 §8). **Started:** 28.11, 10:08, pe `wip/18.1-relief`, după 18.1↑j. **Completed:** 28.11, 10:24.
 
 - **ADR 0321**, cu alegerile owner-ului (recomandarea aplicată): lumina liniară acum, după material mai târziu; transparentul la
   grosimea maximă; rama implicit 0; planul zero spus, nu pus singur; din față implicit; 0,8 și 3 mm.
@@ -17298,7 +17298,7 @@ e următoarea în ordinea din ADR 0310 §8). **Started:** 28.11, 10:15, pe `wip/
 ## 2026-11-28 — 18.1↑g: relieful ca imagine gri pe 16 biți, dus și întors (Model: Claude Opus 5.5)
 
 **Prompt:** „Porneste sesiunile, pune-le sa continue cu ce aveau la rand” (același cuvânt; relieful ↔ gri pe 16 biți e următorul
-în ADR 0310 §8). **Started:** 28.11, 11:00, pe `wip/18.1-relief`, după 18.1↑f. **Completed:** 28.11, 11:50.
+în ADR 0310 §8). **Started:** 28.11, 10:25, pe `wip/18.1-relief`, după 18.1↑f. **Completed:** 28.11, 10:35.
 
 - **ADR 0322**, cu alegerile owner-ului (recomandarea aplicată): PNG acum, TIFF mai târziu; compusul vizibil; Z-ul din fișier
   implicit; simularea ca strat mai târziu.
@@ -17316,7 +17316,7 @@ e următoarea în ordinea din ADR 0310 §8). **Started:** 28.11, 10:15, pe `wip/
 ## 2026-11-28 — 18.1↑i: litofania pe placa 18 (Model: Claude Opus 5.5)
 
 **Prompt:** „Porneste sesiunile, pune-le sa continue cu ce aveau la rand” (același cuvânt; „restul plăcii 18”). **Started:**
-28.11, 11:55, pe `wip/18.1-relief`, după 18.1↑g. **Completed:** 28.11, 12:35.
+28.11, 10:36, pe `wip/18.1-relief`, după 18.1↑g. **Completed:** 28.11, 10:42.
 
 - **Generatorul:** `test/placi/placa-18/genereaza-litofanie.ts` (trei pătrate de gri, placa albă translucidă de 6 mm, „Relief 3D”
   cu planul zero la 6, freza plată Ø3 și bila Ø3), cu fișierele de aur `placa-18-litofanie-{1-T1,2-T2}.nc`.
