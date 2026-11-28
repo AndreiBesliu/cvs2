@@ -47,3 +47,29 @@ test('sub prag (implicit), bazinul cotelor nu lucrează: un relief mic se face �
   assert.ok(r.ok);
   assert.equal(loturi, -1);
 });
+
+test('programul chiar folosește cotele date (altele dau alt program), după cheia operației', async () => {
+  const { calculeazaExportul, planulCotelor } = await import('../../src/jobs/calculCam.ts');
+  const { cotePuncte } = await import('../../src/cam/reliefFinisare.ts');
+  const { doc, resurse } = await documentLitofanie();
+  const azi = await calculeazaExportul(doc, PARAMETRI_LIT, resurse);
+  const plan = planulCotelor(doc, 2, resurse);
+  assert.equal(plan.loturi.length, 2);
+  const cote = new Map(plan.loturi.map(({ cheie, cereri }) => [cheie, cereri.flatMap((c) => cotePuncte(c))]));
+  const la = await calculeazaExportul(doc, PARAMETRI_LIT, resurse, cote);
+  assert.ok(azi.ok && la.ok);
+  if (azi.ok && la.ok) assert.deepEqual(la.fisiere.map((f) => f.text), azi.fisiere.map((f) => f.text));
+  const altele = new Map([...cote].map(([k, z]) => [k, z.map((v) => v.map((x) => x - 0.2))]));
+  const alt = await calculeazaExportul(doc, PARAMETRI_LIT, resurse, altele);
+  assert.ok(alt.ok && azi.ok);
+  if (alt.ok && azi.ok) assert.notDeepEqual(alt.fisiere.map((f) => f.text), azi.fisiere.map((f) => f.text));
+});
+
+test('o anulare în timpul bazinului cotelor oprește calculul (nu merge mai departe fără cote)', async () => {
+  const { CalculAnulat } = await import('../../src/jobs/bazinCam.ts');
+  const { doc, resurse } = await documentLitofanie();
+  const ac = new AbortController();
+  const p = exportInBazin(doc, PARAMETRI_LIT, { fireCote: 3, pragCote: 0, semnal: ac.signal }, resurse);
+  ac.abort();
+  await assert.rejects(p, CalculAnulat);
+});
