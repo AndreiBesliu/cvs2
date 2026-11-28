@@ -23,6 +23,8 @@ o('S01', DS, "(s.z[py * s.latime + px] ?? NaN) - dz : NaN;", "(s.z[py * s.latime
   'dz cu semnul greșit: stratul iese sub (sau peste) tăietură cu de două ori planul zero')
 o('S02', DS, "      const x = (i + 0.5) * g.celula;", "      const x = i * g.celula;", 'unit',
   'colțul celulei în loc de centru: la un relief rotit, celula ia pixelul vecin')
+o('S12', DS, "    const y = (j + 0.5) * g.celula;", "    const y = j * g.celula;", 'unit',
+  'colțul celulei în loc de centru, pe y')
 o('S03', DS, "py = Math.floor((m.b * x + m.d * y + m.f - s.y0) / pas);", "py = Math.floor((m.d * x + m.b * y + m.f - s.y0) / pas);", 'unit',
   'matricea aplicată pe dos: la un relief rotit, celulele iau pixelii oglindiți')
 o('S04', DS, "  const out = new Float32Array(g.nx * g.ny), pas = s.celula * s.bloc;", "  const out = new Float32Array(g.nx * g.ny), pas = s.celula;", 'unit',

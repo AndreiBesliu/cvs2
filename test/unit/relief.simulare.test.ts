@@ -27,6 +27,14 @@ test('relieful drept, aliniat cu fereastra: fiecare celulă ia pixelul ei, minus
   for (let j = 0; j < 3; j++) for (let i = 0; i < 4; i++) assert.equal(v[j * 4 + i], Math.fround(Math.fround(Z(i, j)) + 2), `(${i}, ${j})`);
 });
 
+test('decalat cu un sfert de milimetru față de pixeli: centrul celulei decide pixelul, nu colțul ei', () => {
+  // Relieful 3 × 2 de 0,5 mm în (0,25, 0,25); fereastra de 0,5 mm în (0, 0). Colțul celulei (i, j) e la 0,25 + 0,5·i, în
+  // pixelul i; centrul, la 0,5 + 0,5·i, în pixelul i + 1 (la fel pe y).
+  const s = fereastra(0, 0, 0.5, 1, 4, 3, Z);
+  const v = valoriDinSimulare({ nx: 3, ny: 2, celula: 0.5 }, { a: 1, b: 0, c: 0, d: 1, e: 0.25, f: 0.25 }, 0, s);
+  for (let j = 0; j < 2; j++) for (let i = 0; i < 3; i++) assert.equal(v[j * 3 + i], Math.fround(Z(i + 1, j + 1)), `(${i}, ${j})`);
+});
+
 test('rotit cu 90° (în sens trigonometric): celula (i, j) e în lume la (e − (j + ½)c, f + (i + ½)c)', () => {
   // Matricea (a, b, c, d) = (0, 1, −1, 0): x' = −y + e, y' = x + f. Relieful 3 × 2, c = 1, în (10, 0): x' ∈ [8, 10], y' ∈ [0, 3].
   const s = fereastra(8, 0, 1, 1, 2, 3, Z);
