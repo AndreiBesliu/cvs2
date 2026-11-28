@@ -2158,6 +2158,14 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 28.11.2026, dimineața: **liniile pornesc ce aveau la rând** („Porneste sesiunile, pune-le sa continue cu ce aveau la rand”,
+  în sesiunea principală, la 09:37). Sesiunea principală le-a scris la 09:40: **frezele**, 16.A↑f-5 (editorul siluetei
+  desenate în „Frezele mele”, ADR 0304 §5, 5a), apoi g; **relieful**, straturile și combinarea (rândul numit „18.1↑e” în
+  tabelul ADR 0310; id-ul l-a luat finisarea cu toroidala, deci primește altul), apoi litofania, imaginea gri pe 16 biți și
+  4000²; **v33 e rezervat reliefului**, dacă straturile cer un câmp nou; **atelierul** n-avea o felie scrisă ca următoare, deci
+  și-o alege din nota liniei, cu recomandarea (ADR scurt în 0341–0349, dacă e o direcție nouă), pe Easy 3Draw 18.51.0;
+  verdictul tipăririi elicelor rămâne a. **Exportul n-are nimic de pornit** (28.8↑m vine cu Clasicul, 9a după placa 2).
+  Liniile fără sesiune (designul, tăierea, imprimanta, incrustațiile, planșele, trasarea) cer câte o sesiune nouă, cu brief.
 - 28.11.2026, noaptea (a șaptezeci și șasea unire din cloud): **Escape oriunde ar fi focusul, în dialogurile rămase
   (3.Ay), unită în `main`** (sesiunea principală, ramura `unire-2811a`, din `afce2d48`). Lucrată în sesiunea liniei
   frezelor, la cererea owner-ului („continua cu felia comună pentru Escape”), pe `wip/3.Ax-escape`, `2c74dc2d`, PR-ul

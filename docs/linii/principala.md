@@ -153,7 +153,13 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
   printr-o schiță.
 - **Observabilitatea:** erorile ajung în jurnalul aplicației; joburile își lasă marcajul.
 
-## Starea pe 28.11.2026, noaptea (după a șaptezeci și șasea unire din cloud)
+## Starea pe 28.11.2026, dimineața (după a șaptezeci și șasea unire din cloud)
+
+- **Liniile, repornite pe 28.11 la 09:40** („Porneste sesiunile, pune-le sa continue cu ce aveau la rand”): frezele, 16.A↑f-5
+  (editorul siluetei desenate), apoi g; relieful, straturile și combinarea (rândul „18.1↑e” din tabelul ADR 0310, cu id nou),
+  apoi litofania, imaginea gri pe 16 biți, 4000²; v33 e al lui; atelierul își alege felia din nota lui, cu recomandarea (ADR
+  scurt în 0341–0349 dacă e o direcție nouă), Easy 3Draw 18.51.0. Exportul n-are nimic de pornit (28.8↑m vine cu Clasicul,
+  9a după placa 2).
 
 - **Pe test:** `0f1e0766` (lotul 63: 3.Cm-1 și 3.Cm-2, elicele după audit, Easy 3Draw 18.45.0; publicat pe 27.11 la 14:42,
   cu serverul neschimbat; completul pe `main` 46000826509, verde; proba de fum, bună). Înainte: `3fdb260d` (lotul 62:
@@ -338,7 +344,7 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
 - **Documentul e v32** (forma `profil` a frezei, 16.A↑f-1, în `main` din 27.11, ADR 0304; v31, forma toroidalei,
   16.A↑e-1, din 27.11, ADR 0303; v30, degroșarea reliefului,
   18.1↑d-1, din 26.11, ADR 0313: operația `degrosare`, cu câmpul ei; v29, finisarea reliefului și freza bilă, 18.1↑c, din 25.11, ADR 0312; v28, forma `relief`, 18.1↑a,
-  din 24.11; v27, frezele, 16.A↑b-1). Cotele nu cer schemă. **Următorul liber e v33.** După el: adaosul și finisarea pe profil (9a din ADR 0291): numărul se dă când felia ajunge la
+  din 24.11; v27, frezele, 16.A↑b-1). Cotele nu cer schemă. **Următorul liber e v33, rezervat liniei reliefului (straturile, 28.11).** După el: adaosul și finisarea pe profil (9a din ADR 0291): numărul se dă când felia ajunge la
   migrare, iar unirile cu schemă intră în `main` în ordinea numerelor. O probă care citește documentul salvat cere
   versiunea curentă (`placute.spec.ts` a căzut cu `schema: 26` în completul liniei frezelor).
 - **De urmărit:** în panoul foii, la 1400 px, etichetele „Numele” și „Materialul” apar tăiate la o literă (văzut de
