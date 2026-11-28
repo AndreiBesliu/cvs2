@@ -17277,3 +17277,21 @@ principală la 09:40: straturile și combinarea, cu un id liber și tabelul din 
 - **Documentele:** ADR 0320 (cu alegerile owner-ului, recomandarea aplicată), nota în tabelul ADR 0310 §8, manualul (ro, en),
   fișa etapei 3, registrul otrăvurilor, nota liniei, traducerile. Documentul rămâne v32: v33 nefolosit.
 
+## 2026-11-28 — 18.1↑f: litofania (Model: Claude Opus 5.5)
+
+**Prompt:** „Porneste sesiunile, pune-le sa continue cu ce aveau la rand” (același cuvânt, prin sesiunea principală; litofania
+e următoarea în ordinea din ADR 0310 §8). **Started:** 28.11, 10:15, pe `wip/18.1-relief`, după 18.1↑j. **Completed:** 28.11, 10:55.
+
+- **ADR 0321**, cu alegerile owner-ului (recomandarea aplicată): lumina liniară acum, după material mai târziu; transparentul la
+  grosimea maximă; rama implicit 0; planul zero spus, nu pus singur; din față implicit; 0,8 și 3 mm.
+- **Probele pe hârtie întâi:** `src/relief/litofanie.ts` (grosimile, oglinda, rama, lumina din spate și imaginea ei),
+  `relief.litofanie.test.ts`.
+- **Workerul:** cererea `din-imagine` cu `litofanie` (rama în mm, refuzul grosimilor pe dos, previzualizarea cu lumina din spate).
+- **Fereastra:** „Litofanie” în capul ferestrei unei imagini (`AlegereRezultat`), câmpurile ei, nota tăierii.
+- **Programul:** `litofanie.program.test.ts`, trei pătrate de gri pe o placă de 6 mm, cu planul zero la grosimea plăcii: sub
+  fiecare rămâne grosimea lui, la 0,001 mm.
+- **E2e:** `relief.litofanie.spec.ts` (grila cu rama, grosimile, lumina, oglinda, amprenta ca în Node).
+- **Otrăvurile** (`test/otravuri/18.1f.py`): 19 / 19 prinse, martorul a scăpat; F10 și F17 scăpaseră, iar probele le cer acum.
+- **Mărimea:** pornirea +0 (112,1 / 125), totalul 947,6 → 948,4 / 1 000.
+- **Documentele:** manualul (ro, en), fișa etapei 3, registrul otrăvurilor, nota liniei, traducerile, indexul ADR.
+

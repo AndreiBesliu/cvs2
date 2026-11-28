@@ -275,3 +275,13 @@ degroșarea și finisarea pe relief), unde stă relieful în document și unde s
     straturilor ar intra în pornire.
   - **Un strat ascuns e sărit peste tot** (compusul, desenul, modelul 3D, resursele exportului, CAM-ul); o funcție nouă care
     citește straturile le sare la fel, iar proba ei pune un strat ascuns lipsă din resurse.
+- **28.11: 18.1↑f gata pe ramură** (litofania, ADR 0321), după 18.1↑j: „Litofanie” în capul ferestrei unei imagini; harta
+  grosimilor (lumina liniară), rama, fața, lumina din spate; se taie cu planul zero la grosimea plăcii. Documentul rămâne v32.
+  Rămâne **18.1↑f-2** (lumina după material, cu coeficientul măsurat pe o plăcuță de trepte tăiată de owner), apoi 18.1↑g și
+  18.1↑h.
+- **De ținut minte, din 18.1↑f:**
+  - **O litofanie e un relief obișnuit**: harta grosimilor, nu un fel nou de formă. Ce o face litofanie e doar cum se face
+    (`src/relief/litofanie.ts`) și cum se taie (planul zero = grosimea plăcii); fără câmp nou în document.
+  - **Rama se dă în mm și se rotunjește la celulele imaginii** (`ramaMm / pixel`): o probă pe un pixel de 1 mm n-o vede.
+  - **Fereastra reliefului e și a litofaniei** (`litofanie`, din `AlegereRezultat`; `esteRelief`): câmpurile reliefului (sensul,
+    înălțimea, baza) și „Un strat nou pe …” nu se arată la litofanie.
