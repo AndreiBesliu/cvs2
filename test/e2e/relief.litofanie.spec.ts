@@ -51,10 +51,13 @@ test('litofania: grosimile, rama, lumina din spate (și oglinda din spate), apoi
   await expect(page.locator('[data-camp="relief-inaltime"]')).toHaveCount(0);
   await expect(page.locator('[data-camp="litofanie-tmin"]')).toHaveValue('0,8');
   await expect(page.locator('[data-camp="litofanie-tmax"]')).toHaveValue('3');
-  await page.locator('[data-camp="relief-latime"]').fill('30');
-  await page.locator('[data-camp="relief-latime"]').press('Enter');
+  // Rama întâi, cu lățimea încă din DPI (30 px la 96 px pe țol = 7,9375 mm): câmpul arată lățimea imaginii, fără ramă.
   await page.locator('[data-camp="litofanie-rama"]').fill('2');
   await page.locator('[data-camp="litofanie-rama"]').press('Enter');
+  await expect(page.getByTestId('relief-grila')).toContainText('celule de 0,2646 mm');
+  await expect(page.locator('[data-camp="relief-latime"]')).toHaveValue('7,938');
+  await page.locator('[data-camp="relief-latime"]').fill('30');
+  await page.locator('[data-camp="relief-latime"]').press('Enter');
   await expect(page.getByTestId('relief-grila')).toHaveText('Grila: 34 × 14 celule de 1 mm (o celulă pe pixel); relieful are 34 × 14 mm.');
   // Lățimea e a imaginii, fără ramă.
   await expect(page.locator('[data-camp="relief-latime"]')).toHaveValue('30');
