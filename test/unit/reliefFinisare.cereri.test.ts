@@ -108,3 +108,31 @@ test('cu celula de 0,05 mm (diviziunea 1: câmpul pe 9 puncte), finisarea din co
   assert.ok(pl.ok);
   for (const k of [2, 5]) assert.equal(JSON.stringify(finisareRelief({ ...o, cote: coteDinLoturi(pl.plan, k) })), azi, `${k} loturi`);
 });
+
+test('workerul unui lot citește doar rândurile de relief primite (nicio citire în afara lor)', () => {
+  for (const [c, unghi] of [[0.5, 0], [0.25, 90], [0.05, 0]] as const) {
+    const R0 = relief(aleator(17), c === 0.05 ? 80 : 40, c === 0.05 ? 120 : 60, c, I);
+    const pl = planFinisare({
+      reliefuri: [R0], unghi, nealiniat: false, margine: 'perete', pas: 3, adancime: 8, zSigur: 5, avans: 1000, avansPlonjare: 300,
+      pasLateral: c === 0.05 ? 0.25 : 0.75, freza: { fel: 'bila', raza: 1 },
+    });
+    assert.ok(pl.ok);
+    for (const lot of loturiCote(pl.plan, 4)) {
+      let afara = 0;
+      const reliefuri = lot.reliefuri.map((r) => {
+        const z = r.z, n = z.length;
+        // Fiecare citire a unui index, urmărită: în afara [0, n) e o citire în afara rândurilor primite.
+        const urmarit = new Proxy(z as Float64Array, {
+          get(t, k) {
+            if (typeof k === 'string' && /^-?\d+$/.test(k)) { const i = Number(k); if (i < 0 || i >= n) afara++; return t[i]; }
+            return Reflect.get(t, k) as unknown;
+          },
+        });
+        return { ...r, z: urmarit };
+      });
+      const cu = cotePuncte({ ...lot, reliefuri }), fara = cotePuncte(lot);
+      assert.equal(afara, 0, `c ${c}, ${unghi}°: ${afara} citiri în afara rândurilor primite`);
+      assert.deepEqual(cu, fara);
+    }
+  }
+});
