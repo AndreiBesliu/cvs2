@@ -4,7 +4,7 @@
  * dă o formă nouă, cu forma veche neatinsă (jurnalul o pune la loc, cu hărțile ei: dalele rămân în bază după amprentă), sau
  * null când nu e nimic de făcut ori nu se poate (un strat care nu există, ultimul strat, plafonul de straturi).
  */
-import { PLAFON, STRATURI_RELIEF_MAXIM, type FormaRelief, type ModRelief, type StratRelief } from './document.ts';
+import { PLAFON, STRATURI_RELIEF_MAXIM, type Document, type Foaie, type FormaRelief, type ModRelief, type Nod, type StratRelief } from './document.ts';
 
 /** Ce se schimbă la un strat: ochiul, numele (gol = fără nume, arătat după id) și modul. */
 export type SchimbareStrat = { readonly vizibil?: boolean; readonly nume?: string; readonly mod?: ModRelief };
@@ -73,4 +73,23 @@ export function cuStratNou(f: FormaRelief, nou: { readonly dale: string; readonl
 /** Câte straturi sunt ascunse: nu intră în compus, deci nici în ce se taie (ADR 0310 §1). */
 export function straturiAscunse(f: FormaRelief): number {
   return f.straturi.reduce((n, s) => n + (s.vizibil ? 0 : 1), 0);
+}
+
+/**
+ * Relieful ales (ADR 0320): elementul-relief al singurei instanțe alese pe foaie, dacă piesa ei are exact unul (altfel nu se
+ * știe pe care se pune un strat nou), cu numele lui (al elementului, apoi al piesei, apoi id-ul elementului).
+ */
+export function reliefAles(doc: Document, alese: readonly string[], foaie: Foaie | undefined): { readonly nod: string; readonly forma: FormaRelief; readonly nume: string } | null {
+  if (alese.length !== 1 || !foaie) return null;
+  const i = foaie.instante.find((x) => x.id === alese[0]);
+  const p = i ? doc.piese.find((x) => x.id === i.piesa) : undefined;
+  if (!p) return null;
+  const gasite: Array<{ readonly id: string; readonly nume: string | undefined; readonly forma: FormaRelief }> = [];
+  const cauta = (n: Nod): void => {
+    if (n.tip === 'grup') for (const c of n.copii) cauta(c);
+    else if (n.forma.tip === 'relief') gasite.push({ id: n.id, nume: n.nume, forma: n.forma });
+  };
+  cauta(p.radacina);
+  const g = gasite.length === 1 ? gasite[0] : undefined;
+  return g ? { nod: g.id, forma: g.forma, nume: g.nume ?? p.nume ?? g.id } : null;
 }

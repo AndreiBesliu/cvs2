@@ -1786,6 +1786,13 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
             const c = context();
             return ruleaza(registru, 'foaie.imagini', { ...c, imaginiNoi: () => cuImagineaNoua(c, imagine) });
           }}
+          // Un strat nou pe relieful ales (ADR 0320, felia 18.1↑j), prin `document.forma`, ca straturile din panou; relieful ales
+          // îl află dialogul (adus la cerere), din document și selecție.
+          straturi={{
+            doc, alese: selectieValida, indexFoaie: indexActiva,
+            stare: (f, nod) => stare(registru, 'document.forma', context({ formaEditata: () => f, nodEditat: () => nod })),
+            ruleaza: (f, nod) => ruleaza(registru, 'document.forma', context({ formaEditata: () => f, nodEditat: () => nod })),
+          }}
           onInchide={() => { setCoadaImport(null); }}
         />
       )}

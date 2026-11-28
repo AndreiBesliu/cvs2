@@ -120,3 +120,25 @@ test('bazinul: o cerere anulată înainte de pornire e respinsă', async () => {
   ac.abort();
   await assert.rejects(reliefInBazin({ tip: 'desen', nx: 1, ny: 1, celula: 1, straturi: [] }, { semnal: ac.signal }), { name: 'ReliefAnulat' });
 });
+
+// Stratul nou pe un relief (ADR 0320, felia 18.1↑j): cu `pe`, imaginea (la scara ei) se așază centrat pe grila reliefului
+// ales; stratul are grila lui, golurile în afara imaginii, iar ce iese din relief se taie.
+test('stratul pe grila unui relief: grila țintei, imaginea centrată (așezarea nucleului), golul în afară', async () => {
+  const px = pixeli(2, 2, () => [255, 255, 255, 255]);
+  const pe = { nx: 4, ny: 4, celula: 1 };
+  const r = ok(await reliefInBazin({ tip: 'din-imagine', imagine: px, optiuni: O, scara: { latimeMm: 2 }, pe }), 'din-imagine');
+  assert.deepEqual([r.nx, r.ny, r.celula], [4, 4, 1]);
+  const { asezaPeGrila } = await import('../../src/relief/asezare.ts');
+  const st = await stratDinGrila(asezaPeGrila(reliefDinPixeli(px.rgba, 2, 2, O), 2, 2, 1, pe), 4, 4);
+  assert.equal(r.harta, st.text);
+  assert.equal(r.amprenta, st.amprenta);
+  assert.deepEqual(r.z, { min: 0, max: 10 });
+  assert.equal(r.umbrit.latime, 4);
+});
+
+test('stratul pe grila unui relief: o imagine care nu atinge nicio celulă e golul', async () => {
+  const px = pixeli(1, 1, () => [255, 255, 255, 255]);
+  // Un pixel de 0,1 mm, centrat pe 2 × 2 celule de 1 mm: stă în [0,95, 1,05], între centrele 0,5 și 1,5, deci nu ia nimic.
+  const r = await reliefInBazin({ tip: 'din-imagine', imagine: px, optiuni: O, scara: { latimeMm: 0.1 }, pe: { nx: 2, ny: 2, celula: 1 } });
+  assert.deepEqual(r, { ok: false, cod: 'gol' });
+});

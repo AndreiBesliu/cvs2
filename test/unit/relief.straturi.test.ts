@@ -88,3 +88,29 @@ test('câte straturi sunt ascunse (exportul le spune: nu se taie)', () => {
   assert.equal(straturiAscunse(relief()), 1);
   assert.equal(straturiAscunse(cuStrat(relief(), 's3', { vizibil: true })!), 0);
 });
+
+test('relieful ales: singura instanță aleasă a foii, cu exact un element-relief; altfel null', async () => {
+  const { reliefAles } = await import('../../src/model/straturiRelief.ts');
+  const I = { a: 1, b: 0, c: 0, d: 1, e: 0, f: 0 };
+  const r = relief();
+  const piesa = (id: string, copii: readonly object[], nume?: string) => ({ id, ...(nume ? { nume } : {}), operatii: [], radacina: { tip: 'grup', id: 'g', matrice: I, copii } });
+  const el = (id: string, forma: object, nume?: string) => ({ tip: 'element', id, ...(nume ? { nume } : {}), matrice: I, forma });
+  const doc = {
+    schema: 32, rev: 0,
+    piese: [
+      piesa('p1', [el('r1', r, 'medalion')]),
+      piesa('p2', [el('e1', { tip: 'cerc', raza: 5 })]),
+      piesa('p3', [el('r1', r), el('r2', r)]),
+    ],
+    foi: [{ id: 'f1', stoc: { latime: 300, inaltime: 200, grosime: 18 }, instante: [
+      { id: 'i1', piesa: 'p1', x: 0, y: 0, rotire: 0 }, { id: 'i2', piesa: 'p2', x: 0, y: 0, rotire: 0 }, { id: 'i3', piesa: 'p3', x: 0, y: 0, rotire: 0 },
+    ] }],
+  } as unknown as import('../../src/model/document.ts').Document;
+  const f = doc.foi[0]!;
+  assert.deepEqual(reliefAles(doc, ['i1'], f), { nod: 'r1', forma: r, nume: 'medalion' });
+  assert.equal(reliefAles(doc, ['i2'], f), null, 'fără relief');
+  assert.equal(reliefAles(doc, ['i3'], f), null, 'două reliefuri: care? niciunul');
+  assert.equal(reliefAles(doc, ['i1', 'i2'], f), null, 'două instanțe alese');
+  assert.equal(reliefAles(doc, [], f), null);
+  assert.equal(reliefAles(doc, ['nu-e'], f), null);
+});
