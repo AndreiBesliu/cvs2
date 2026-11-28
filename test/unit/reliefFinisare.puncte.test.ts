@@ -13,6 +13,8 @@
  *
  * - pasul 0,05: 200 de treceri, 40 960 000 de puncte: refuzul, fără cote (punctul ales e în groapă, CL = −10);
  * - pasul 10 / 96,5: 97 de treceri, 19 865 600 de puncte: programul iese (la marginea plafonului);
+ * - pasul 10 / 97,5: 98 de treceri, 20 070 400 de puncte: refuzul, tot fără cote (marginea de jos e strânsă: dintre celulele
+ *   fundului plat, toate la −10, punctul ales e cel din mijlocul lor, unde bila stă pe fund, nu lângă pantă);
  * - cu un ac (o celulă la −30) pe platou, cea mai joasă celulă e acolo, iar bila nu intră în el (CL ≈ −0,2): marginea de jos e câteva
  *   treceri, deci refuzul vine abia după cote, cu același motiv (pasul 0,05: tot 200 de treceri, din groapă).
  */
@@ -46,6 +48,7 @@ test('pe hârtie: 204 800 de puncte pe trecere; plafonul cade între 97 și 98 d
   assert.equal(PE_TRECERE, 204_800);
   assert.ok(97 * PE_TRECERE <= PUNCTE_FINISARE_MAXIM && 98 * PE_TRECERE > PUNCTE_FINISARE_MAXIM);
   assert.equal(Math.ceil(10 / (10 / 96.5) - 1e-9), 97);
+  assert.equal(Math.ceil(10 / (10 / 97.5) - 1e-9), 98);
 });
 
 test('la marginea plafonului (97 de treceri) programul iese; peste ea, refuzul vine fără cote, cu motivul de după ele', () => {
@@ -58,6 +61,12 @@ test('la marginea plafonului (97 de treceri) programul iese; peste ea, refuzul v
   if (!refuz.f.ok) assert.equal(refuz.f.motiv, MOTIV);
   // Fără cote: cât pregătirea câmpului și liniile, o mică parte din calculul întreg (cotele a 204 800 de puncte).
   assert.ok(refuz.t < 0.25 * bun.t, `refuzul în ${refuz.t.toFixed(0)} ms, programul întreg în ${bun.t.toFixed(0)} ms`);
+  // Chiar peste plafon (98 de treceri, 20 070 400 de puncte): marginea de jos e strânsă (punctul din mijlocul fundului plat, CL =
+  // −10), deci și acest refuz vine fără cote.
+  const peste = finiseaza(false, 10 / 97.5);
+  assert.equal(peste.f.ok, false);
+  if (!peste.f.ok) assert.equal(peste.f.motiv, MOTIV);
+  assert.ok(peste.t < 0.25 * bun.t, `refuzul la 98 de treceri în ${peste.t.toFixed(0)} ms, programul întreg în ${bun.t.toFixed(0)} ms`);
 });
 
 test('cu cea mai joasă celulă un ac în care bila nu intră, marginea de jos nu ajunge, deci refuzul vine după cote, același', () => {
