@@ -7,7 +7,7 @@
  *
  * Rulare: `node --expose-gc scripts/masura-relief.ts [N] [pasulLateral] [pasulPeTrecere]` (implicit 4000, 0,3 și 3; cu pasul 6,
  * finisarea are o singură trecere, deci la 4000² și 0,3 încape în plafonul punctelor). Memoria e RSS-ul procesului
- * după fiecare pas (se adună). Un singur fir: în aplicație, workerul CAM face tot acest calcul într-un worker.
+ * după fiecare pas (se adună), plus vârful procesului (`maxRSS`, cu memoria trecătoare din mijlocul pașilor). Un singur fir: în aplicație, workerul CAM face tot acest calcul într-un worker.
  */
 import { performance } from 'node:perf_hooks';
 import { finisareRelief, degrosareRelief } from '../src/cam/reliefFinisare.ts';
@@ -18,12 +18,14 @@ import { factorReducere, reduce, umbreste } from '../src/relief/umbrire.ts';
 
 const N = Number(process.argv[2] ?? 4000), S = Number(process.argv[3] ?? 0.3), PAS = Number(process.argv[4] ?? 3), C = 0.1;
 const mb = (): number => Math.round(process.memoryUsage().rss / 1048576);
+/** Vârful memoriei procesului de la pornire (și memoria trecătoare din mijlocul unui pas), în MB. */
+const varfProces = (): number => Math.round(process.resourceUsage().maxRSS / 1024);
 let varf = 0;
 async function pas<T>(nume: string, f: () => T | Promise<T>): Promise<T> {
   (globalThis as { gc?: () => void }).gc?.();
   const t0 = performance.now(), r = await f(), t = performance.now() - t0, m = mb();
   varf = Math.max(varf, m);
-  console.log(`${nume.padEnd(38)} ${(t / 1000).toFixed(2).padStart(8)} s   RSS ${String(m).padStart(6)} MB`);
+  console.log(`${nume.padEnd(38)} ${(t / 1000).toFixed(2).padStart(8)} s   RSS ${String(m).padStart(6)} MB   vârful ${String(varfProces()).padStart(6)} MB`);
   return r;
 }
 
@@ -50,4 +52,4 @@ const d = await pas('degroșarea (plată Ø6, pasul lateral 2,5)', () => degrosa
 console.log(`  ${d.ok ? `${d.miscari.length} mișcări, ${d.linii} linii, ${d.treceri} treceri` : d.motiv}`);
 const f = await pas(`finisarea (bilă Ø3, pasul lateral ${S})`, () => finisareRelief({ ...comune, pasLateral: S, freza: { fel: 'bila', raza: 1.5 }, nealiniat: false }));
 console.log(`  ${f.ok ? `${f.miscari.length} mișcări, ${f.linii} linii, ${f.treceri} treceri` : f.motiv}`);
-console.log(`Memoria cea mai mare (RSS): ${varf} MB.`);
+console.log(`Memoria cea mai mare (RSS după un pas): ${varf} MB; vârful procesului: ${varfProces()} MB.`);
