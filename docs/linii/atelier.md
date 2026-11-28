@@ -833,7 +833,7 @@ următoare a pachetului: 18.52.0._
 - **Probele:** `trenulet.sabloane.ventilator.test.ts` (pe hârtie, pe plasele reale: găurile grinzii, axa carcasei și a rotorului
   peste gaura din mijloc, înălțimile, paletele în tub, verificarea, valorile editorului pe piese, cu control negativ: o carcasă
   prea îngustă face rotorul să intre în ea) și `trenulet.sabloane.spec.ts` (panoul și butonul din editor), plus engleza în
-  `trenulet.spec.ts`. Otrăvurile: `3.Cn.py`.
+  `trenulet.spec.ts`. Otrăvurile: `3.Cn.py`, 24 / 24 (23 / 24 la prima rulare: A08, prinsă după ce proba e2e pornește cu panoul pe șasiu).
 - **Nu schimbă nicio piesă** (amprentele plaselor, aceleași) și nici lista de printat a lui „Fă ventilatorul”.
 - **Easy 3Draw 18.51.0.** Versiunea următoare: 18.52.0.
 

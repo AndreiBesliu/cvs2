@@ -1,6 +1,6 @@
 # ADR 0341: Ventilatorul în „Modelul”: a cincea construcție gata, cu trusa prinsă
 
-**Starea:** propus pe 28.11.2026 de linia atelierului, la cuvântul owner-ului transmis de sesiunea principală
+**Starea:** propus pe 28.11.2026 de linia atelierului și implementat în aceeași zi (felia 3.Cn, mai jos), la cuvântul owner-ului transmis de sesiunea principală
 („Porneste sesiunile, pune-le sa continue cu ce aveau la rand”), cu felia aleasă de linie din ce rămăsese deschis.
 Merge înainte cu recomandările de mai jos (regula din 27.11: o alegere a owner-ului se pune grupat, cu recomandarea în
 față, iar linia merge înainte cu recomandarea), până la cuvântul lui. Felia 3.Cn a liniei atelierului (ramura
@@ -65,5 +65,5 @@ rămâne cum e). Nimic în aplicație, nimic pe server: doar pachetul extensiei 
   urechile), face construcția nouă și trece în „Modelul”.
 - **Probele**, scrise întâi: `test/unit/trenulet.sabloane.ventilator.test.ts` (5 teste: implicitul, Ø48 cu 4 urechi, valorile
   editorului pe piese, marginile și mesajele, controlul negativ cu o carcasă prea îngustă), `test/e2e/trenulet.sabloane.spec.ts`
-  (panoul și butonul din editor), engleza în `test/e2e/trenulet.spec.ts`. Otrăvurile: `test/otravuri/3.Cn.py`.
+  (panoul și butonul din editor), engleza în `test/e2e/trenulet.spec.ts`. Otrăvurile: `test/otravuri/3.Cn.py`, 24 / 24 (23 / 24 la prima rulare: A08, prinsă după ce proba e2e pornește cu panoul pe șasiu).
 - Nicio piesă schimbată; lista de printat a lui „Fă ventilatorul”, neschimbată. Easy 3Draw 18.51.0.
