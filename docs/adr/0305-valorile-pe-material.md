@@ -145,5 +145,9 @@ Pe 28.11, pe `wip/16.A-freze-g` (din vârful lui 16.A↑f-5), cu recomandările 
   `test/e2e/freze.materiale.spec.ts` (6, cu fontul lat la 1280, 390, 360, 320 px), `test/e2e/freze.material.proiect.spec.ts`
   (2: programul cu turația, avansul și plonjarea setului; fără potrivire; materialul schimbat după alegere),
   `test/e2e/freze.calculator.spec.ts` (1).
+- **Otrăvurile:** `test/otravuri/16.A-g.py`, 36 / 36 (22 pe model, 14 e2e). G27 scăpase la prima rulare: proba cerea „niciun
+  tabel al seturilor” înainte să apară fișa de după „Salvează”, deci trecea în gol; acum cere întâi o valoare a fișei.
+- **Mărimea:** pornirea neschimbată (112,1 kB; cu ușa și cu Atelierul 117,9 / 125), totalul 951,1 → 953,8 / 1 000 (față de
+  vârful lui f-5).
 - **Limita, spusă:** o piesă pusă pe două foi cu materiale diferite are o singură copie a frezei (operațiile sunt ale
   piesei); cu „Toate foile”, nota bibliotecii se socotește cu materialul foii active.

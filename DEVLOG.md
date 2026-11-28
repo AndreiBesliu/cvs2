@@ -17360,7 +17360,8 @@ ce aveau la rand”): după f-5, „g (valorile pe material), tot cu recomandăr
 - **g-3:** calculatorul avansului (`src/model/calculatorAvans.ts`), sub valorile de lucru și în fiecare set.
 - **Găsit pe drum:** o înlocuire la import punea deja freza adusă peste cea din bibliotecă, deci un CSV păstra seturile fără
   nimic nou; parametrul `pastreaza`, scris întâi, a ieșit.
-- **Otrăvurile** (`test/otravuri/16.A-g.py`): 36, în lucru în clonă (22 / 22 pe model; pe e2e, G27 scăpase, iar proba e întărită).
+- **Otrăvurile** (`test/otravuri/16.A-g.py`): 36 / 36 (22 pe model, 14 e2e). G27 (ultimul set scos rămâne pe freza salvată)
+  scăpase: proba cerea „niciun tabel” înainte să apară fișa, deci trecea în gol; acum cere întâi fișa, și o prinde.
 - **Mărimea:** pornirea 112,1 kB, neschimbată (cu ușa și cu Atelierul 117,9 / 125); totalul 951,1 → 953,8 / 1 000 (față de vârful
   lui f-5).
 - **Documentele:** ADR 0305 (și indexul), fișa etapei 3, nota liniei, manualul în ambele limbi, traducerile, registrul
