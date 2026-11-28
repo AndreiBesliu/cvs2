@@ -5,7 +5,8 @@
  * finisarea (bilă Ø3). Condiția din ADR 0310 („Se redeschide dacă”) e finisarea unui relief de 4000², cu bila Ø3 și pasul de
  * 0,3 mm, peste 10 s **pe calculatorul owner-ului**: de aceea sonda stă în repo, ca s-o poată rula acolo.
  *
- * Rulare: `node --expose-gc scripts/masura-relief.ts [N] [pasulLateral]` (implicit 4000 și 0,3). Memoria e RSS-ul procesului
+ * Rulare: `node --expose-gc scripts/masura-relief.ts [N] [pasulLateral] [pasulPeTrecere]` (implicit 4000, 0,3 și 3; cu pasul 6,
+ * finisarea are o singură trecere, deci la 4000² și 0,3 încape în plafonul punctelor). Memoria e RSS-ul procesului
  * după fiecare pas (se adună). Un singur fir: în aplicație, workerul CAM face tot acest calcul într-un worker.
  */
 import { performance } from 'node:perf_hooks';
@@ -15,7 +16,7 @@ import { compune } from '../src/relief/compunere.ts';
 import { grilaDinDale, stratDinGrila } from '../src/relief/strat.ts';
 import { factorReducere, reduce, umbreste } from '../src/relief/umbrire.ts';
 
-const N = Number(process.argv[2] ?? 4000), S = Number(process.argv[3] ?? 0.3), C = 0.1;
+const N = Number(process.argv[2] ?? 4000), S = Number(process.argv[3] ?? 0.3), PAS = Number(process.argv[4] ?? 3), C = 0.1;
 const mb = (): number => Math.round(process.memoryUsage().rss / 1048576);
 let varf = 0;
 async function pas<T>(nume: string, f: () => T | Promise<T>): Promise<T> {
@@ -26,7 +27,7 @@ async function pas<T>(nume: string, f: () => T | Promise<T>): Promise<T> {
   return r;
 }
 
-console.log(`Relieful: ${N} × ${N} celule de ${C} mm (${N * C} mm pe latură); finisarea cu pasul lateral ${S} mm.`);
+console.log(`Relieful: ${N} × ${N} celule de ${C} mm (${N * C} mm pe latură); finisarea cu pasul lateral ${S} mm, pasul pe trecere ${PAS} mm.`);
 const valori = await pas(`grila ${N}²`, () => {
   const v = new Float32Array(N * N);
   for (let j = 0; j < N; j++) for (let i = 0; i < N; i++) {
@@ -43,7 +44,7 @@ await pas('PNG-ul pe 16 biți', () => raspundeRelief({ tip: 'spre-png', nx: N, n
 const z = Float64Array.from(compus, (v) => v - 5.6);
 const comune = {
   reliefuri: [{ nx: N, ny: N, celula: C, z, m: { a: 1, b: 0, c: 0, d: 1, e: 0, f: 0 } }],
-  unghi: 0, margine: 'perete' as const, pas: 3, adancime: 6, zSigur: 5, avans: 1000, avansPlonjare: 300,
+  unghi: 0, margine: 'perete' as const, pas: PAS, adancime: 6, zSigur: 5, avans: 1000, avansPlonjare: 300,
 };
 const d = await pas('degroșarea (plată Ø6, pasul lateral 2,5)', () => degrosareRelief({ ...comune, pasLateral: 2.5, raza: 3, adaos: 0.5 }));
 console.log(`  ${d.ok ? `${d.miscari.length} mișcări, ${d.linii} linii, ${d.treceri} treceri` : d.motiv}`);
