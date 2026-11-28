@@ -2158,6 +2158,18 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 28.11.2026, noaptea (a șaptezeci și șasea unire din cloud): **Escape oriunde ar fi focusul, în dialogurile rămase
+  (3.Ay), unită în `main`** (sesiunea principală, ramura `unire-2811a`, din `afce2d48`). Lucrată în sesiunea liniei
+  frezelor, la cererea owner-ului („continua cu felia comună pentru Escape”), pe `wip/3.Ax-escape`, `2c74dc2d`, PR-ul
+  `AndreiBesliu/cvs2#80`: „Din desen…”, „Trimite un fișier…”, confirmările imprimantei, „Golește istoricul”,
+  confirmarea senderului pentru extensii și captura mărită trec pe `useEscapeFereastra`; cele două dialoguri de rezervă
+  primesc Escape; ascultătorul comun are cutia dialogului (o fereastră montată și ascunsă nu ia tasta) și stiva
+  (Escape îl ia doar ultima fereastră deschisă care se vede). Probele întâi, roșii pe codul dinainte; otrăvurile 11 / 11.
+  **Arborele unirii e chiar al lui `2c74dc2d`**; completul 46078179526 pe `3e97b921`, verde (unit 11 050 / 0, e2e
+  1 033 / 1 033, funcțiile pe emulatoare 142 / 142, paginile 62 / 62); rapidul, verde pe `2c74dc2d` (între ele, doar
+  lista de otrăvuri și documente). Pornirea 112,0 kB (cu ușa și cu Atelierul 117,8 / 125), totalul 945,6 / 1 000.
+  Nimic pe server; documentul rămâne v32. Înainte, tot în noapte, nota liniei frezelor (`afce2d48`, doar documente),
+  care a închis PR-ul #79. Felia f-5 a frezelor nu e pornită.
 - 27.11.2026, seara (a șaptezeci și cincea unire din cloud): **duza Kort a elicei de barcă (3.Cm-7), unită în `main`**
   (sesiunea principală, ramura `unire-2711aa`, din `99a4a6b6`). Linia atelierului, ramura `wip/3.Xh-biblioteca-ui`,
   `4b10af19` (cu `main` `99a4a6b6` adus), PR-ul `AndreiBesliu/cvs2#77` (ADR 0340, ultima felie), unită în `d2222923`:

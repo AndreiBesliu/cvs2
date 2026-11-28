@@ -153,7 +153,7 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
   printr-o schiță.
 - **Observabilitatea:** erorile ajung în jurnalul aplicației; joburile își lasă marcajul.
 
-## Starea pe 27.11.2026, seara (după a șaptezeci și cincea unire din cloud)
+## Starea pe 28.11.2026, noaptea (după a șaptezeci și șasea unire din cloud)
 
 - **Pe test:** `0f1e0766` (lotul 63: 3.Cm-1 și 3.Cm-2, elicele după audit, Easy 3Draw 18.45.0; publicat pe 27.11 la 14:42,
   cu serverul neschimbat; completul pe `main` 46000826509, verde; proba de fum, bună). Înainte: `3fdb260d` (lotul 62:
@@ -186,12 +186,15 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
   parametrice în proiect (`05f1bdc9`, din `0a1fd1a4`), unită pe 27.11 la 15:46: lotul 65, pe test de la 16:50. Relieful (18.1↑d-5…d-7 și 18.1↑e, `9ce32063`), unit pe 27.11 la 16:58:
   lotul 66, pe test de la ~18:03. 3.Cm-4 și 3.Cm-5 (`90e9fc20`), unite la 17:34; 16.A↑f-4 și 3.Cm-6
   (`154e8125`), unite la 18:17: lotul 67 (`99a4a6b6`), pe test de la ~19:55; 3.Cm-7, duza Kort (`d2222923`), unită la
-  19:25: lotul 68 (`680801c7`), pe test de la ~20:45 (probele de fum, bune). **Pe test e tot ce e în `main`.**
+  19:25: lotul 68 (`680801c7`), pe test de la ~20:45 (probele de fum, bune). Nota frezelor (`afce2d48`, doar
+  documente) și 3.Ay, Escape oriunde ar fi focusul, în dialogurile rămase (unită pe 28.11 la ~02:15, din
+  `2c74dc2d`, PR-ul #80): lotul 69, publicat după completul de pe `main`.
   **Schema:** documentul e v32; un câmp nou ia v33.
 - **Limita de folosire (27.11, ~16:20):** owner-ul a spus că ne apropiem de limita săptămânală (94 %, se resetează
   sâmbătă, 28.11, la 10:00; comună tuturor sesiunilor): „vezi sa nu se piarda din progresul pe care il fac celelalte
   sesiuni”. Liniile (atelierul, frezele, relieful, exportul) au primit, la 16:22, cererea să comită și să împingă tot, ca
-  WIP unde nu e gata, cu starea scrisă în nota liniei. **Toate unirile raportate sunt în `main`** (ultima, 3.Cm-7, `d2222923`, la 19:25); loturile 67 și 68 sunt pe test. La reluare,
+  WIP unde nu e gata, cu starea scrisă în nota liniei. **Toate unirile raportate sunt în `main`** (ultima, 3.Ay, pe 28.11, lucrată în sesiunea frezelor la cererea
+  owner-ului); loturile 67 și 68 sunt pe test, 69 în drum. La reluare,
   liniile pornesc doar la cuvântul owner-ului.
 - **Modelul:** din 26.11, la prânz, sesiunea principală merge pe Opus („o sa folosim Opus de aici in colo”); sesiunile
   liniilor își păstrează modelul până îl schimbă owner-ul în fiecare.
