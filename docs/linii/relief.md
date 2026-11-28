@@ -340,4 +340,9 @@ degroșarea și finisarea pe relief), unde stă relieful în document și unde s
   de azi, octet cu octet. Urmează 18.1↑h-8 (protocolul cererilor `cote`, bazinul, orchestrarea în `bazinCam`).
   - **O citire în afara unui tablou dă `NaN`, iar piramida maximelor îl ignoră:** o bandă greșită nu se vede la ieșire, doar la
     memorie. Proba ei urmărește citirile (un `Proxy` pe tablou).
+- **28.11: 18.1↑h-8 gata pe ramură** (bazinul cotelor): peste 300 000 de puncte, cotele reliefului se fac pe N workere; același
+  program, octet cu octet; în browser, la 2000² cu 3 workere, 23–25 s → 17 s. Ce rămâne pe un fir (câmpul întreg pentru
+  legături, mișcările, postul) e acum partea mai mare; mișcările ținute compact sunt întrebarea 6 din ADR 0323.
+  - **O funcție a bazinului care devine asincronă înaintea calculului schimbă ordinea anulării:** cererea fără bazin pleacă pe loc
+    (proba telemetriei din `utilizare.dispozitive.test.ts` a prins-o).
 

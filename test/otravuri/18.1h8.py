@@ -24,7 +24,7 @@ o('P02', JB, "  const cu = cote ? { cote } : {};", "  const cu = {};", 'bazin',
 o('P03', BZ, "    return puncteRelief(document) >= (o.pragCote ?? PRAG_COTE);", "    return puncteRelief(document) < (o.pragCote ?? PRAG_COTE);", 'bazin',
   'pragul pe dos: bazinul lucrează pe reliefurile mici și nu pe cele mari')
 o('P04', BZ, "    if (e instanceof CalculAnulat) throw e;", "", 'bazin',
-  'o anulare în timpul bazinului e luată drept o cădere: calculul merge mai departe, fără cote')
+  'o anulare în timpul bazinului e luată drept o cădere (echivalentă: pasul următor verifică semnalul și se oprește tot, cu `CalculAnulat`)')
 o('P05', CC, "  return { loturi: planuriRelief(doc, reliefuri).map(({ cheie, plan }) => ({ cheie, cereri: loturiCote(plan, fire) })) };",
   "  return { loturi: planuriRelief(doc, reliefuri).map(({ cheie, plan }) => ({ cheie, cereri: loturiCote(plan, 1) })) };", 'bazin',
   'planul face un singur lot, oricâte workere ar fi')

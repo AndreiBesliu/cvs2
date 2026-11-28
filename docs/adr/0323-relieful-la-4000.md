@@ -209,3 +209,22 @@ linii și de puncte); altfel le socotește din nou. Modelul exact și câmpul ci
   planului se socotesc din nou; la 0°, rândurile trimise unui lot sunt cât banda lui (sub 90 din 400); workerul nu citește
   niciodată în afara rândurilor primite (o citire urmărită, pe fiecare index). **Otrăvurile:** `18.1h7.py`, 7 / 7.
 
+## Implementarea 18.1↑h-8 (bazinul cotelor)
+
+Pe firul principal, `bazinCam` (exportul, traseul, simularea, potrivirea): cu o operație a reliefului de pe foaie peste
+`PRAG_COTE` (300 000 de puncte estimate: aria / (pasul lateral · celula de calcul)) și cu cel puțin 2 workere (nucleele minus
+unul, cel mult 8), cere workerului CAM planul (`cote-plan`: loturile fiecărei operații, ca cereri de sine stătătoare, cu
+tablourile transferate), trimite fiecare lot la un worker al lui (`cote`, același `lucratorCam`, fără bucată nouă), în paralel,
+apoi dă cotele cererii programului (`cote`, după cheia operației: instanța, piesa, operația), transferate. Sub prag, cererea
+pleacă pe loc, ca înainte. Dacă bazinul cade, programul se face fără cote (le socotește singur); o anulare oprește tot. Cererile
+bazinului nu se spun utilizării aplicației (lista albă a felurilor de calcul rămâne neschimbată): sunt bucăți ale calculului care
+le-a cerut. Opțiunile `fireCote`, `pragCote` și `laCote` (câte loturi s-au făcut) sunt pentru probe și pentru o bară de progres.
+
+- **Proba:** `test/unit/bazinCote.test.ts`: pe litofania plăcii 18 (degroșarea și finisarea), cu pragul la 0 și 2, 3 sau 5
+  workere, exportul, traseul și simularea = fără bazin, octet cu octet, iar bazinul a făcut 2 · N loturi; sub prag, nu lucrează;
+  programul chiar folosește cotele date (altele dau alt program); o anulare în timpul bazinului oprește calculul.
+  **Otrăvurile:** `18.1h8.py`, 4 / 4 prinse, plus una echivalentă (fără rearuncarea anulării, pasul următor verifică semnalul).
+- **În browser** (Chromium, serverul de dezvoltare, un script în afara repo-ului): un relief de 2000² (200 mm, finisarea cu bila
+  Ø3, pasul lateral 0,5), exportul cu 3 workere pe 4 nuclee = cu 1, aceeași amprentă a celor 44 MB de G-code; 23–25 s → 17 s.
+  Restul exportului (câmpul întreg pentru legături, mișcările, postul, amprenta) rămâne pe un fir: el e acum partea cea mai mare.
+

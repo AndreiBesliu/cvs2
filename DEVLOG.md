@@ -17416,3 +17416,14 @@ owner-ului); ordinul „unește ce se poate”
   `ParametriFinisare.cote` (și la degroșare). Programele, octet cu octet.
 - **Proba:** `test/unit/reliefFinisare.cereri.test.ts` (6). **Otrăvurile:** `18.1h7.py`, 7 / 7.
 
+## 2026-11-28 — 18.1↑h-8: bazinul cotelor (Model: Claude Opus 5.5)
+
+**Prompt:** același cuvânt; ADR 0323, 1a. **Started:** 28.11, 12:14, pe `wip/18.1-relief`, după 18.1↑h-7. **Completed:** 28.11, 12:28.
+
+- **Bazinul** (`src/jobs/bazinCam.ts`): peste `PRAG_COTE`, planul (`cote-plan`), loturile pe N workere (`cote`), apoi cotele date
+  exportului, traseului, simulării și potrivirii; sub prag, ca înainte; la o cădere, fără cote.
+- **Lucrarea** (`src/cam/job.ts`): `parametriRelief`, `planuriRelief`, `cheieRelief`; `programDinDocument` primește cotele.
+  **Calculul** (`src/jobs/calculCam.ts`, `protocolCam.ts`): cererile `cote-plan` și `cote`.
+- **Proba:** `test/unit/bazinCote.test.ts` (5). **Otrăvurile:** `18.1h8.py`, 4 / 4, plus una echivalentă.
+- **În browser:** la 2000², cu 3 workere, aceeași amprentă a G-code-ului, 23–25 s → 17 s.
+

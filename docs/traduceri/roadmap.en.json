@@ -4317,6 +4317,10 @@
       "ro": "Degajările pe colțurile cu arce, ultimele rămase din etapa 2",
       "en": "Reliefs at corners with arcs, the last ones left from stage 2"
     },
+    "cd81daac8134900a": {
+      "ro": "Bazinul cotelor: liniile reliefului pe mai multe workere",
+      "en": "The height pool: the relief lines on several workers"
+    },
     "cd973072609fb1c1": {
       "ro": "**Litofania pe placa 18** (fișa plăcii, partea a doua; ADR 0321, răspunsul 6a la ADR 0310; după 18.1↑g). Trei pătrate de gri (alb, gri 128, negru) într-o placă albă translucidă de 6 mm, pe drumul aplicației (harta grosimilor ca din fereastra „Litofanie”, „Relief 3D” cu planul zero la grosimea plăcii, freza plată Ø3, apoi bila Ø3; `genereaza-litofanie.ts`). Oracolul simulării prezice grosimile: 0,80 / 1,90 / 3,00 după T2, cu adaosul de 0,3 în plus după T1; rama netăiată; nimic sub model; cel mult 2 mm pe trecere. Fișierele de aur, cu amprentele în fișă (`placa18.litofanie.aur.test.ts`). Găsit: pe grila aliniată a judecății materialului, o coloană cade fix pe ecuatorul bilei, iar oracolul o ia sau nu după rotunjire (3,38 mm „tăiați” într-o coloană de lățime zero); proba își deplasează grila cu 0,01 mm, cu motivul scris (ramura frezei plate are deja paza). Fără cod de produs; tăierea e a owner-ului.",
       "en": "**The lithophane on plate 18** (the plate card, part two; ADR 0321, answer 6a to ADR 0310; after 18.1↑g). Three grey squares (white, grey 128, black) in a white translucent 6 mm plate, along the app's path (the thickness map as from the “Lithophane” window, “Relief 3D” with the zero plane at the plate thickness, the flat Ø3 cutter, then the Ø3 ball; `genereaza-litofanie.ts`). The simulation oracle predicts the thicknesses: 0.80 / 1.90 / 3.00 after T2, with the 0.3 allowance more after T1; the frame uncut; nothing under the model; at most 2 mm per pass. The golden files, with the fingerprints in the card (`placa18.litofanie.aur.test.ts`). Found: on the aligned grid of the material judgment, a column falls exactly on the ball's equator, and the oracle takes it or not depending on rounding (3.38 mm “cut” in a zero-width column); the probe shifts its grid by 0.01 mm, with the reason written (the flat-cutter branch already has the guard). No product code; the cutting is the owner's."
@@ -5300,6 +5304,10 @@
     "fccd32764b724581": {
       "ro": "**Importul și exportul cu vectori reali**; reparațiile cavalier",
       "en": "**Import and export with real vectors**; the cavalier fixes"
+    },
+    "fcf8ea5e3484b48e": {
+      "ro": "**Bazinul cotelor: liniile reliefului pe mai multe workere** (ADR 0323, 1a cu recomandarea aplicată; ramura `wip/18.1-relief`; după 18.1↑h-7). Cu o operație a reliefului peste 300 000 de puncte estimate, exportul, traseul, simularea și potrivirea cer întâi planul (loturile, ca cereri), le calculează pe N workere în paralel (nucleele minus unul, cel mult 8; același `lucratorCam`), apoi primesc cotele, transferate; sub prag, ca înainte. Dacă bazinul cade, programul se face fără cote; o anulare oprește tot. Același program, octet cu octet. În browser, la 2000² cu 3 workere pe 4 nuclee: aceeași amprentă a celor 44 MB de G-code, 23–25 s → 17 s (restul exportului e pe un fir). **Proba:** `bazinCote.test.ts` (5). **Otrăvurile:** `18.1h8.py`, 4 / 4, plus una echivalentă, martorul a scăpat. Pornirea +0, totalul +1,1 kB.",
+      "en": "**The height pool: the relief lines on several workers** (ADR 0323, 1a with the recommendation applied; branch `wip/18.1-relief`; after 18.1↑h-7). With a relief operation above 300,000 estimated points, the export, the toolpath, the simulation and the fit first ask for the plan (the batches, as requests), compute them on N workers in parallel (the cores minus one, at most 8; the same `lucratorCam`), then receive the heights, transferred; below the threshold, as before. If the pool fails, the program is made without the heights; a cancel stops everything. The same program, byte for byte. In the browser, at 2000² with 3 workers on 4 cores: the same fingerprint of the 44 MB of G-code, 23–25 s → 17 s (the rest of the export is on one thread). **Probe:** `bazinCote.test.ts` (5). **Poisons:** `18.1h8.py`, 4 / 4, plus an equivalent one, the control escaped. Startup +0, total +1.1 kB."
     },
     "fd02174d3029dfc6": {
       "ro": "Plafonul pornirii, 115 → 120 kB",
