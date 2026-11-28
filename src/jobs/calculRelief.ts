@@ -13,6 +13,7 @@ import { dale as numarDale, LATURA_DALA } from '../relief/grila.ts';
 import { hartaDinText, type Harta } from '../relief/harta.ts';
 import { gri, netezeste, reliefDinPixeli, type OptiuniImagine } from '../relief/imagine.ts';
 import { imagineLumina, litofanieDinGri, luminaDinGrosimi } from '../relief/litofanie.ts';
+import { decodeazaTiffExact, marimeTiff } from '../trasare/tiff.ts';
 import { dalaModel, FACTORI_MODEL, type DalaModel, type TampoaneModel } from '../relief/model.ts';
 import { daleDinHarta, grilaDinDale, stratDinGrila } from '../relief/strat.ts';
 import { factorReducere, intervalZ, reduce, umbreste, type Umbrit } from '../relief/umbrire.ts';
@@ -90,7 +91,7 @@ export type CerereRelief =
   };
 
 /** De ce nu se face relieful: imaginea nu se decodează, are prea mulți pixeli, celula iese din margini, totul e transparent. */
-export type CodRefuzRelief = 'imagine-citire' | 'prea-mare' | 'celula' | 'gol' | 'dale-lipsa' | 'harta' | 'grosimi';
+export type CodRefuzRelief = 'imagine-citire' | 'tiff' | 'tiff-stricat' | 'prea-mare' | 'celula' | 'gol' | 'dale-lipsa' | 'harta' | 'grosimi';
 
 export type RefuzRelief = { readonly ok: false; readonly cod: CodRefuzRelief; readonly detaliu?: string };
 
@@ -121,10 +122,29 @@ export type PngRelief = { readonly ok: true; readonly tip: 'png'; readonly octet
 
 export type RaspunsRelief = ReliefDinImagine | DesenRelief | ModelRelief | PngRelief | RefuzRelief;
 
+/** Semnătura unui TIFF clasic (II*\0 sau MM\0*); BigTIFF ajunge și el la cititor, care îl refuză cu numele lui. */
+const esteTiff = (o: Uint8Array): boolean =>
+  (o[0] === 0x49 && o[1] === 0x49 && (o[2] === 42 || o[2] === 43) && o[3] === 0) || (o[0] === 0x4d && o[1] === 0x4d && o[2] === 0 && (o[3] === 42 || o[3] === 43));
+
+/**
+ * Un TIFF (ADR 0322 §5.1, felia 18.1↑g-2): browserul nu-l decodează, deci îl citește cititorul trasării (ADR 0229), cu
+ * eșantioanele întregi (pe 16 biți, v · 255 / 65 535, fără rotunjire). Prima pagină; mărimea, din antet, înaintea decodării.
+ */
+async function decodeazaTiff(o: Uint8Array): Promise<PixeliRelief | RefuzRelief> {
+  const m = marimeTiff(o);
+  if (m && (m.latime > LATURA_MAXIMA || m.inaltime > LATURA_MAXIMA)) return { ok: false, cod: 'prea-mare', detaliu: `${m.latime} × ${m.inaltime}` };
+  const t = await decodeazaTiffExact(o, { maxPixeli: LATURA_MAXIMA * LATURA_MAXIMA });
+  if (!t.ok) return { ok: false, cod: t.cod === 'nesprijinit' ? 'tiff' : 'tiff-stricat', detaliu: t.detaliu };
+  if (t.latime > LATURA_MAXIMA || t.inaltime > LATURA_MAXIMA) return { ok: false, cod: 'prea-mare', detaliu: `${t.latime} × ${t.inaltime}` };
+  return { latime: t.latime, inaltime: t.inaltime, rgba: t.rgba, ...(t.biti === 16 ? { fisier: { adancime: 16 } as const } : {}) };
+}
+
 /** Imaginea decodată de browser exact (fără conversie de culoare și fără alfa premultiplicat, ADR 0310 §3). */
 async function decodeaza(b: Blob): Promise<PixeliRelief | RefuzRelief> {
+  const cap = new Uint8Array(await b.slice(0, 33).arrayBuffer());
+  if (esteTiff(cap)) return decodeazaTiff(new Uint8Array(await b.arrayBuffer()));
   // Un PNG pe 16 biți (ADR 0322): browserul l-ar tăia la 8 biți, deci îl citește cititorul propriu.
-  if (adancimePng(new Uint8Array(await b.slice(0, 33).arrayBuffer())) === 16) {
+  if (adancimePng(cap) === 16) {
     const p = await citestePng(new Uint8Array(await b.arrayBuffer()));
     if ('eroare' in p) return { ok: false, cod: 'imagine-citire', detaliu: `png: ${p.eroare}` };
     if (p.latime > LATURA_MAXIMA || p.inaltime > LATURA_MAXIMA) return { ok: false, cod: 'prea-mare', detaliu: `${p.latime} × ${p.inaltime}` };

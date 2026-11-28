@@ -1059,7 +1059,8 @@ vizibile, compuse) ca PNG gri pe 16 biți: 65 536 de trepte între cea mai joas�
 scrise în fișier, ca relieful să poată pleca pe alt calculator sau în alt program. Adus înapoi prin „Importă…” ca relief,
 fereastra oferă **Z-ul și celula din fișier** (bifată implicit): relieful revine cum a plecat, iar exportat din nou dă exact
 același fișier. Orice PNG pe 16 biți (de la un scaner 3D sau alt program) se citește pe 16 biți, nu pe 8; fără Z în fișier,
-înălțimea și baza vin din fereastră.
+înălțimea și baza vin din fereastră. La fel un **TIFF** (pe 8 sau 16 biți, prima pagină, cu DPI-ul lui): browserul nu-l
+decodează, deci îl citește aplicația, cu toate treptele griului; ce nu știe citi încă (de exemplu JPEG în TIFF) spune de ce.
 
 **Un strat nou din imagine:** cu un relief ales, fereastra „Relief din imagine” are și **Un strat nou pe „…”**, lângă **O piesă
 nouă** (implicit). Imaginea stă centrată pe relief, la **Lățimea imaginii pe relief** (implicit cât relieful): fiecare celulă

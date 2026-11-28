@@ -439,6 +439,8 @@ export const roImport = {
   'import.relief.lucru': 'Se păstrează relieful…',
   'import.relief.nepastrat': 'Relieful n-a putut fi păstrat în browser.',
   'import.relief.refuz.imagine-citire': 'Imaginea nu se poate citi ca relief: browserul nu decodează formatul ăsta.',
+  'import.relief.refuz.tiff': 'TIFF-ul are ceva ce relieful nu citește încă ({ce}): salvează imaginea ca PNG (pe 16 biți, dacă are) și importă-l pe acela.',
+  'import.relief.refuz.tiff-stricat': 'TIFF-ul pare stricat ({ce}): deschide-l în alt program, salvează-l ca PNG și importă-l pe acela.',
   'import.relief.refuz.prea-mare': 'Imaginea are {marime} pixeli: un relief are cel mult 8192 × 8192 celule (una pe pixel). Micșorează imaginea.',
   'import.relief.refuz.celula': 'Lățimea asta dă o celulă în afara marginilor (0,001 … 100 mm) sau un relief mai mare de 10 m.',
   'import.relief.refuz.gol': 'Imaginea e toată transparentă: nimic de făcut relief.',

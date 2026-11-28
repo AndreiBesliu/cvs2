@@ -1091,7 +1091,9 @@ layers, composited) as a 16-bit grey PNG: 65,536 steps between the lowest and th
 the file, so the relief can go to another computer or another program. Brought back through “Import…” as a relief, the window
 offers **Z and cell from the file** (ticked by default): the relief comes back as it left, and exported again it gives exactly
 the same file. Any 16-bit PNG (from a 3D scanner or another program) is read on 16 bits, not 8; without Z in the file, the
-height and the base come from the window.
+height and the base come from the window. The same goes for a **TIFF** (8 or 16 bits, the first page, with its DPI): the
+browser does not decode it, so the application reads it, with every grey step; what it cannot read yet (JPEG in TIFF, for
+example) says why.
 
 **A new layer from an image:** with a relief selected, the “Relief from image” window also has **A new layer on “…”**, next to
 **A new part** (the default). The image is centred on the relief, at **Image width on the relief** (by default the relief's

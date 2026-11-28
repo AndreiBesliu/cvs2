@@ -425,6 +425,8 @@ export const enImport = {
   'import.relief.lucru': 'Saving the relief…',
   'import.relief.nepastrat': 'The relief could not be saved in the browser.',
   'import.relief.refuz.imagine-citire': 'The image cannot be read as a relief: the browser does not decode this format.',
+  'import.relief.refuz.tiff': 'The TIFF has something the relief does not read yet ({ce}): save the image as PNG (16-bit, if it has 16 bits) and import that.',
+  'import.relief.refuz.tiff-stricat': 'The TIFF looks damaged ({ce}): open it in another program, save it as PNG and import that.',
   'import.relief.refuz.prea-mare': 'The image has {marime} pixels: a relief has at most 8192 × 8192 cells (one per pixel). Make the image smaller.',
   'import.relief.refuz.celula': 'This width gives a cell outside its limits (0.001 to 100 mm) or a relief larger than 10 m.',
   'import.relief.refuz.gol': 'The image is fully transparent: nothing to make a relief from.',

@@ -7,6 +7,9 @@
  * numele lui (JPEG în TIFF, BigTIFF, virgula mobilă, YCbCr, CIELab …). O imagine peste plafon se reduce din mers, rând cu
  * rând (media blocurilor de k × k pixeli), deci o scanare mare nu se desface întreagă în memorie.
  *
+ * Relieful (ADR 0322 §5.1, felia 18.1↑g-2) cere eșantioanele întregi: `decodeazaTiffExact` dă RGBA-ul la 0 … 255 fără
+ * rotunjire (pe 16 biți, v · 255 / 65 535) și fără reducere, iar `marimeTiff` mărimea din antet, fără decodare.
+ *
  * Pur, fără importuri din aplicație (regula `trasare-izolat`).
  */
 import { decodeazaCcitt, EroareCcitt } from './ccitt.ts';
@@ -190,8 +193,13 @@ class Reducere {
  */
 export function orienteaza(img: ImagineRGBA, o: number): ImagineRGBA {
   if (!(o >= 2 && o <= 8)) return img;
-  const { latime: W, inaltime: H, date: d } = img, t = o >= 5, w2 = t ? H : W, h2 = t ? W : H;
-  const r = new Uint8ClampedArray(4 * W * H);
+  const t = o >= 5;
+  return { latime: t ? img.inaltime : img.latime, inaltime: t ? img.latime : img.inaltime, date: intoarce(img.date, img.latime, img.inaltime, o, new Uint8ClampedArray(img.date.length)) };
+}
+
+/** Pixelii RGBA (W × H) întorși după orientarea `o` (2–8), în `r` (de aceeași lungime). */
+function intoarce<T extends Uint8ClampedArray | Float64Array>(d: ArrayLike<number>, W: number, H: number, o: number, r: T): T {
+  const t = o >= 5, w2 = t ? H : W;
   for (let y = 0; y < H; y++) {
     for (let x = 0; x < W; x++) {
       let X = x, Y = y;
@@ -208,10 +216,18 @@ export function orienteaza(img: ImagineRGBA, o: number): ImagineRGBA {
       r[q] = d[s] ?? 0; r[q + 1] = d[s + 1] ?? 0; r[q + 2] = d[s + 2] ?? 0; r[q + 3] = d[s + 3] ?? 0;
     }
   }
-  return { latime: w2, inaltime: h2, date: r };
+  return r;
 }
 
-async function pagina(f: Uint8Array, e: Ifd, le: boolean, maxPixeli: number): Promise<{ img: ImagineRGBA; latime: number; inaltime: number; dpi: number | null }> {
+type Pagina = {
+  /** Imaginea pe 8 biți (redusă sub plafon), sau, cu `exact`, null. */
+  readonly img: ImagineRGBA | null;
+  /** Cu `exact`: RGBA-ul întreg, după orientare, la 0 … 255 fără rotunjire. */
+  readonly exact: Float64Array | null;
+  readonly latime: number; readonly inaltime: number; readonly dpi: number | null; readonly biti: number;
+};
+
+async function pagina(f: Uint8Array, e: Ifd, le: boolean, maxPixeli: number, exact = false): Promise<Pagina> {
   const g = (t: number, implicit: number, i = 0): number => e.get(t)?.[i] ?? implicit;
   const W = g(256, 0), H = g(257, 0);
   if (!(W > 0 && H > 0 && Number.isInteger(W) && Number.isInteger(H))) throw new Stricat(`mărimea ${W} × ${H}`);
@@ -242,11 +258,14 @@ async function pagina(f: Uint8Array, e: Ifd, le: boolean, maxPixeli: number): Pr
   const max = (1 << biti) - 1;
   const la8 = biti === 16 ? null : Uint8Array.from({ length: max + 1 }, (_, v) => Math.round((v * 255) / max));
   const opt = (v: number): number => (la8 ? la8[v] ?? 0 : Math.round(v / 257));
-  let harta: Uint8Array | null = null;
+  // Exact (relieful): eșantionul la 0 … 255, fără rotunjire.
+  const ex = (v: number): number => (v * 255) / max;
+  let harta: Uint8Array | null = null, hartaEx: Float64Array | null = null;
   if (foto === 3) {
     const cm = e.get(320), n = max + 1;
     if (!cm || cm.length < 3 * n) throw new Stricat('paleta (ColorMap) lipsește sau e scurtă');
     harta = Uint8Array.from({ length: 3 * n }, (_, k) => Math.round((cm[k] ?? 0) / 257));
+    if (exact) hartaEx = Float64Array.from({ length: 3 * n }, (_, k) => ((cm[k] ?? 0) * 255) / 65535);
   }
 
   // Bucățile: benzile, sau plăcile.
@@ -287,9 +306,34 @@ async function pagina(f: Uint8Array, e: Ifd, le: boolean, maxPixeli: number): Pr
     return tr;
   };
 
-  const k = W * H > maxPixeli ? Math.ceil(Math.sqrt((W * H) / maxPixeli)) : 1;
-  const red = new Reducere(W, H, k);
+  const k = !exact && W * H > maxPixeli ? Math.ceil(Math.sqrt((W * H) / maxPixeli)) : 1;
+  if (exact && W * H > maxPixeli) throw new Nesprijinit(`${W} × ${H} pixeli (peste ${maxPixeli})`);
+  const red = exact ? null : new Reducere(W, H, k);
   const es = new Int32Array(W * spp), rgba = new Uint8ClampedArray(4 * W);
+  const tot = exact ? new Float64Array(4 * W * H) : null;
+  /** Cu `exact`: rândul y al imaginii, la 0 … 255 fără rotunjire, scris direct în `tot`. */
+  const coloreazaExact = (y: number): void => {
+    if (!tot) return;
+    for (let x = 0; x < W; x++) {
+      const s = x * spp, q = 4 * (y * W + x);
+      let r: number, gg: number, b: number;
+      if (foto === 2) { r = ex(es[s] ?? 0); gg = ex(es[s + 1] ?? 0); b = ex(es[s + 2] ?? 0); }
+      else if (foto === 3 && hartaEx) { const i = es[s] ?? 0, n = max + 1; r = hartaEx[i] ?? 0; gg = hartaEx[n + i] ?? 0; b = hartaEx[2 * n + i] ?? 0; }
+      else if (foto === 5) {
+        const kk = 255 - ex(es[s + 3] ?? 0);
+        r = ((255 - ex(es[s] ?? 0)) * kk) / 255; gg = ((255 - ex(es[s + 1] ?? 0)) * kk) / 255; b = ((255 - ex(es[s + 2] ?? 0)) * kk) / 255;
+      } else { const v = ex(es[s] ?? 0); r = gg = b = foto === 0 ? 255 - v : v; }
+      let a = 255;
+      if (alfa >= 0) {
+        a = ex(es[s + alfa] ?? 0);
+        if (extra === 1) {
+          const f = (c: number): number => (a > 0 ? Math.min(255, (c * 255) / a) : 0);
+          r = f(r); gg = f(gg); b = f(b);
+        }
+      }
+      tot[q] = r; tot[q + 1] = gg; tot[q + 2] = b; tot[q + 3] = a;
+    }
+  };
   const coloreaza = (): void => {
     for (let x = 0; x < W; x++) {
       const s = x * spp, q = 4 * x;
@@ -329,38 +373,93 @@ async function pagina(f: Uint8Array, e: Ifd, le: boolean, maxPixeli: number): Pr
           else for (let x = 0; x < n; x++) es[(x0 + x) * spp + p] = t[x] ?? 0;
         }
       }
-      coloreaza();
-      red.rand(ty * th + r, rgba);
+      if (red) { coloreaza(); red.rand(ty * th + r, rgba); }
+      else coloreazaExact(ty * th + r);
     }
   }
-  const img = orienteaza({ latime: red.w, inaltime: red.h, date: red.date }, orient);
+  const img = red ? orienteaza({ latime: red.w, inaltime: red.h, date: red.date }, orient) : null;
   const t = orient >= 5 && orient <= 8;
+  const exactInt = tot && orient >= 2 && orient <= 8 ? intoarce(tot, W, H, orient, new Float64Array(tot.length)) : tot;
   const unitate = g(296, 2), rez = t ? g(283, g(282, 0)) : g(282, 0);
   const dpi = unitate === 1 || !(rez > 0) ? null : unitate === 3 ? rez * 2.54 : rez;
-  return { img, latime: t ? H : W, inaltime: t ? W : H, dpi };
+  return { img, exact: exactInt, latime: t ? H : W, inaltime: t ? W : H, dpi, biti };
+}
+
+/** Antetul și lista paginilor; aruncă `Stricat` / `Nesprijinit` ca decodarea. */
+function deschide(octeti: Uint8Array): { readonly v: DataView; readonly le: boolean; readonly lista: number[] } {
+  if (octeti.length < 8) throw new Stricat('mai scurt decât antetul');
+  const le = octeti[0] === 0x49 && octeti[1] === 0x49;
+  if (!le && !(octeti[0] === 0x4d && octeti[1] === 0x4d)) throw new Stricat('fără antetul II / MM');
+  const v = new DataView(octeti.buffer, octeti.byteOffset, octeti.byteLength), semn = v.getUint16(2, le);
+  if (semn === 43) throw new Nesprijinit('BigTIFF');
+  if (semn !== 42) throw new Stricat(`semnătura ${semn}`);
+  return { v, le, lista: paginile(v, le, v.getUint32(4, le)) };
+}
+
+/** Mărimea paginii `pagina` (de la 1) din antet, după orientare, fără decodare; null dacă antetul nu se poate citi. */
+export function marimeTiff(octeti: Uint8Array, pagina = 1): { readonly latime: number; readonly inaltime: number } | null {
+  try {
+    const { v, le, lista } = deschide(octeti);
+    const e = citesteIfd(v, le, lista[Math.min(lista.length, Math.max(1, Math.round(pagina))) - 1] ?? 0).e;
+    const W = e.get(256)?.[0] ?? 0, H = e.get(257)?.[0] ?? 0, o = e.get(274)?.[0] ?? 1;
+    if (!(W > 0 && H > 0)) return null;
+    return o >= 5 && o <= 8 ? { latime: H, inaltime: W } : { latime: W, inaltime: H };
+  } catch {
+    return null;
+  }
+}
+
+export type RezultatTiffExact =
+  | {
+    readonly ok: true;
+    /** RGBA-ul întreg (după orientare), rândurile de sus în jos, fiecare eșantion la 0 … 255, fără rotunjire. */
+    readonly rgba: Float64Array;
+    readonly latime: number; readonly inaltime: number;
+    /** Biții pe eșantion din fișier (1, 2, 4, 8, 16). */
+    readonly biti: number;
+    readonly pagini: number; readonly pagina: number; readonly dpi: number | null;
+  }
+  | { readonly ok: false; readonly cod: 'stricat' | 'nesprijinit'; readonly detaliu: string; readonly pagini?: number };
+
+/**
+ * Decodează pagina `pagina` cu eșantioanele întregi (relieful, ADR 0322 §5.1): fără reducere (peste `maxPixeli`, refuzul),
+ * fiecare eșantion la v · 255 / (2^biți − 1), alb-e-zero, paleta, CMYK și alfa asociat socotite fără rotunjire.
+ */
+export async function decodeazaTiffExact(octeti: Uint8Array, o: { readonly pagina?: number; readonly maxPixeli?: number } = {}): Promise<RezultatTiffExact> {
+  let pagini = 0;
+  try {
+    const { v, le, lista } = deschide(octeti);
+    pagini = lista.length;
+    const p = Math.min(pagini, Math.max(1, Math.round(o.pagina ?? 1)));
+    const r = await pagina(octeti, citesteIfd(v, le, lista[p - 1] ?? 0).e, le, o.maxPixeli ?? Number.MAX_SAFE_INTEGER, true);
+    if (!r.exact) throw new Error('decodarea exactă n-a dat pixeli');
+    return { ok: true, rgba: r.exact, latime: r.latime, inaltime: r.inaltime, biti: r.biti, pagini, pagina: p, dpi: r.dpi };
+  } catch (err) {
+    return refuzTiff(err, pagini);
+  }
+}
+
+/** O eroare a cititorului ca refuz (nesprijinit, stricat); altceva e un defect și se aruncă mai departe. */
+function refuzTiff(err: unknown, pagini: number): { readonly ok: false; readonly cod: 'stricat' | 'nesprijinit'; readonly detaliu: string; readonly pagini?: number } {
+  const detaliu = err instanceof Error ? err.message : String(err);
+  if (err instanceof Nesprijinit) return { ok: false, cod: 'nesprijinit', detaliu, ...(pagini ? { pagini } : {}) };
+  if (err instanceof Stricat || err instanceof EroareCcitt || err instanceof RangeError || err instanceof TypeError) {
+    return { ok: false, cod: 'stricat', detaliu, ...(pagini ? { pagini } : {}) };
+  }
+  throw err;
 }
 
 /** Decodează pagina `pagina` (de la 1; peste ultima, ultima) a unui TIFF, redusă sub `maxPixeli`. */
 export async function decodeazaTiff(octeti: Uint8Array, o: { readonly pagina?: number; readonly maxPixeli?: number } = {}): Promise<RezultatTiff> {
   let pagini = 0;
   try {
-    if (octeti.length < 8) throw new Stricat('mai scurt decât antetul');
-    const le = octeti[0] === 0x49 && octeti[1] === 0x49;
-    if (!le && !(octeti[0] === 0x4d && octeti[1] === 0x4d)) throw new Stricat('fără antetul II / MM');
-    const v = new DataView(octeti.buffer, octeti.byteOffset, octeti.byteLength), semn = v.getUint16(2, le);
-    if (semn === 43) throw new Nesprijinit('BigTIFF');
-    if (semn !== 42) throw new Stricat(`semnătura ${semn}`);
-    const lista = paginile(v, le, v.getUint32(4, le));
+    const { v, le, lista } = deschide(octeti);
     pagini = lista.length;
     const p = Math.min(pagini, Math.max(1, Math.round(o.pagina ?? 1)));
     const r = await pagina(octeti, citesteIfd(v, le, lista[p - 1] ?? 0).e, le, o.maxPixeli ?? MAX_IMPLICIT);
-    return { ok: true, ...r, pagini, pagina: p };
+    if (!r.img) throw new Error('decodarea n-a dat imaginea');
+    return { ok: true, img: r.img, latime: r.latime, inaltime: r.inaltime, dpi: r.dpi, pagini, pagina: p };
   } catch (err) {
-    const detaliu = err instanceof Error ? err.message : String(err);
-    if (err instanceof Nesprijinit) return { ok: false, cod: 'nesprijinit', detaliu, ...(pagini ? { pagini } : {}) };
-    if (err instanceof Stricat || err instanceof EroareCcitt || err instanceof RangeError || err instanceof TypeError) {
-      return { ok: false, cod: 'stricat', detaliu, ...(pagini ? { pagini } : {}) };
-    }
-    throw err;
+    return refuzTiff(err, pagini);
   }
 }

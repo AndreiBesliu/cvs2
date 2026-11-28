@@ -25,7 +25,8 @@ type Litofanie = { readonly tmin: number; readonly tmax: number; readonly ramaMm
 let tinuteLit: Litofanie = { tmin: 0.8, tmax: 3, ramaMm: 0, spate: false };
 
 const REFUZ: Readonly<Record<CodRefuzRelief, CheieSimpla>> = {
-  'imagine-citire': 'import.relief.refuz.imagine-citire', 'prea-mare': 'import.relief.refuz.prea-mare', celula: 'import.relief.refuz.celula',
+  'imagine-citire': 'import.relief.refuz.imagine-citire', tiff: 'import.relief.refuz.tiff', 'tiff-stricat': 'import.relief.refuz.tiff-stricat',
+  'prea-mare': 'import.relief.refuz.prea-mare', celula: 'import.relief.refuz.celula',
   gol: 'import.relief.refuz.gol', 'dale-lipsa': 'import.relief.refuz.altul', harta: 'import.relief.refuz.altul',
   grosimi: 'import.litofanie.refuz.grosimi',
 };
@@ -289,7 +290,7 @@ export function FereastraRelief({ nume, octeti, onAlege, stareImporta, importa, 
                 </>
               )}
               {rez !== 'calcul' && !rez.ok && (
-                <p role="alert" className="avertisment" data-testid="relief-refuz">{t(REFUZ[rez.cod], { marime: rez.detaliu ?? '?' })}</p>
+                <p role="alert" className="avertisment" data-testid="relief-refuz">{t(REFUZ[rez.cod], { marime: rez.detaliu ?? '?', ce: rez.detaliu ?? '?' })}</p>
               )}
               {motivImport && <p role="status" className="avertisment" data-testid="import-motiv">{t(motivImport)}</p>}
               {motiv && <p role="alert" className="avertisment" data-testid="relief-motiv">{t(motiv)}</p>}
