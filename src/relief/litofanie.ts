@@ -48,3 +48,16 @@ export function luminaDinGrosimi(z: ArrayLike<number>, tmin: number, tmax: numbe
   }
   return out;
 }
+
+/** Imaginea gri a unei grile de lumini (0 … 1), rândurile de sus în jos, ca desenul umbrit (`umbreste`). */
+export function imagineLumina(l: ArrayLike<number>, nx: number, ny: number): { readonly latime: number; readonly inaltime: number; readonly rgba: Uint8ClampedArray<ArrayBuffer> } {
+  const rgba = new Uint8ClampedArray(nx * ny * 4);
+  for (let j = 0; j < ny; j++) {
+    const rand = ny - 1 - j;
+    for (let i = 0; i < nx; i++) {
+      const g = Math.round(255 * (l[j * nx + i] ?? 0)), p = 4 * (rand * nx + i);
+      rgba[p] = g; rgba[p + 1] = g; rgba[p + 2] = g; rgba[p + 3] = 255;
+    }
+  }
+  return { latime: nx, inaltime: ny, rgba };
+}

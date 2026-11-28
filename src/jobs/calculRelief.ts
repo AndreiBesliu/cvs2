@@ -10,7 +10,8 @@ import { CELULA_MAXIMA, CELULA_MINIMA, LATURA_MAXIMA, LATURA_MM_MAXIMA, type Gri
 import { dalaDinOcteti, type Dala } from '../relief/dala.ts';
 import { dale as numarDale, LATURA_DALA } from '../relief/grila.ts';
 import { hartaDinText, type Harta } from '../relief/harta.ts';
-import { reliefDinPixeli, type OptiuniImagine } from '../relief/imagine.ts';
+import { gri, netezeste, reliefDinPixeli, type OptiuniImagine } from '../relief/imagine.ts';
+import { imagineLumina, litofanieDinGri, luminaDinGrosimi } from '../relief/litofanie.ts';
 import { dalaModel, FACTORI_MODEL, type DalaModel, type TampoaneModel } from '../relief/model.ts';
 import { daleDinHarta, grilaDinDale, stratDinGrila } from '../relief/strat.ts';
 import { factorReducere, intervalZ, reduce, umbreste, type Umbrit } from '../relief/umbrire.ts';
@@ -45,6 +46,11 @@ export type CerereRelief =
      * relief nou, cu o celulă pe pixel.
      */
     readonly pe?: Grila;
+    /**
+     * Litofania (ADR 0321, felia 18.1↑f): în locul înălțimilor, grosimile rămase (t_min … t_max, mm; lumina liniară), cu rama
+     * (mm, rotunjită la celule) și fața tăiată; previzualizarea arată lumina din spate. Nu se combină cu `pe`.
+     */
+    readonly litofanie?: { readonly tmin: number; readonly tmax: number; readonly ramaMm: number; readonly spate: boolean };
   }
   | {
     readonly tip: 'desen';
@@ -63,7 +69,7 @@ export type CerereRelief =
   };
 
 /** De ce nu se face relieful: imaginea nu se decodează, are prea mulți pixeli, celula iese din margini, totul e transparent. */
-export type CodRefuzRelief = 'imagine-citire' | 'prea-mare' | 'celula' | 'gol' | 'dale-lipsa' | 'harta';
+export type CodRefuzRelief = 'imagine-citire' | 'prea-mare' | 'celula' | 'gol' | 'dale-lipsa' | 'harta' | 'grosimi';
 
 export type RefuzRelief = { readonly ok: false; readonly cod: CodRefuzRelief; readonly detaliu?: string };
 
@@ -162,6 +168,15 @@ async function dinImagine(c: Extract<CerereRelief, { tip: 'din-imagine' }>): Pro
   if (nx > LATURA_MAXIMA || ny > LATURA_MAXIMA) return { ok: false, cod: 'prea-mare', detaliu: `${nx} × ${ny}` };
   const pixel = celulaDinScara(c.scara, nx, ny);
   if (pixel === 'celula') return { ok: false, cod: 'celula' };
+  if (c.litofanie) {
+    const L = c.litofanie;
+    if (!(L.tmin >= 0 && L.tmax > L.tmin && Number.isFinite(L.tmax) && L.ramaMm >= 0)) return { ok: false, cod: 'grosimi' };
+    const lit = litofanieDinGri(netezeste(gri(px.rgba, nx, ny, c.optiuni.sursa), nx, ny, c.optiuni.sigma), nx, ny,
+      { tmin: L.tmin, tmax: L.tmax, rama: L.ramaMm / pixel, spate: L.spate });
+    if (lit.nx > LATURA_MAXIMA || lit.ny > LATURA_MAXIMA) return { ok: false, cod: 'prea-mare', detaliu: `${lit.nx} × ${lit.ny}` };
+    if (lit.nx * pixel > LATURA_MM_MAXIMA || lit.ny * pixel > LATURA_MM_MAXIMA) return { ok: false, cod: 'celula' };
+    return dinValori(lit.valori, { nx: lit.nx, ny: lit.ny, celula: pixel }, { tmin: L.tmin, tmax: L.tmax });
+  }
   const valori = reliefDinPixeli(px.rgba, nx, ny, c.optiuni);
   // Pe un relief ales, grila e a lui, iar imaginea se așază pe ea; altfel, grila e a imaginii.
   const g: Grila = c.pe ?? { nx, ny, celula: pixel };
@@ -169,7 +184,9 @@ async function dinImagine(c: Extract<CerereRelief, { tip: 'din-imagine' }>): Pro
 }
 
 /** Stratul din valorile pe grila `g`, citit înapoi din dalele cuantizate: harta, octeții, Z-ul și desenul. */
-async function dinValori(valori: ArrayLike<number>, { nx, ny, celula }: Grila): Promise<ReliefDinImagine | RefuzRelief> {
+async function dinValori(
+  valori: ArrayLike<number>, { nx, ny, celula }: Grila, lumina?: { readonly tmin: number; readonly tmax: number },
+): Promise<ReliefDinImagine | RefuzRelief> {
   const st = await stratDinGrila(valori, nx, ny);
   // Ce se arată e citit din dalele cuantizate (ADR 0310 §2), ca un relief cu acest singur strat: compusul pornește de la 0,
   // deci celulele goale ale stratului (pixelii transparenți) sunt planul zero (ADR 0311 §7), cum se vor tăia.
@@ -180,7 +197,9 @@ async function dinValori(valori: ArrayLike<number>, { nx, ny, celula }: Grila): 
   const k = factorReducere(nx, ny), r = reduce(compus, nx, ny, k);
   const octeti: Record<string, Uint8Array<ArrayBuffer>> = {};
   for (const [h, o] of st.octeti) octeti[h] = o;
-  return { ok: true, tip: 'din-imagine', nx, ny, celula, harta: st.text, amprenta: st.amprenta, octeti, z, umbrit: umbreste(r.valori, r.nx, r.ny, celula * k) };
+  // Litofania (ADR 0321 §6): lumina din spate, citită tot din dalele cuantizate; altfel relieful umbrit.
+  const umbrit = lumina ? imagineLumina(luminaDinGrosimi(r.valori, lumina.tmin, lumina.tmax), r.nx, r.ny) : umbreste(r.valori, r.nx, r.ny, celula * k);
+  return { ok: true, tip: 'din-imagine', nx, ny, celula, harta: st.text, amprenta: st.amprenta, octeti, z, umbrit };
 }
 
 function desen(c: Extract<CerereRelief, { tip: 'desen' }>): DesenRelief | RefuzRelief {

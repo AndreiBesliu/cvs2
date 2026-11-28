@@ -142,3 +142,30 @@ test('stratul pe grila unui relief: o imagine care nu atinge nicio celulă e gol
   const r = await reliefInBazin({ tip: 'din-imagine', imagine: px, optiuni: O, scara: { latimeMm: 0.1 }, pe: { nx: 2, ny: 2, celula: 1 } });
   assert.deepEqual(r, { ok: false, cod: 'gol' });
 });
+
+// Litofania (ADR 0321, felia 18.1↑f): harta grosimilor, cu rama în mm (rotunjită la celule) și fața; previzualizarea arată
+// lumina din spate, nu relieful umbrit.
+test('litofania din pixeli: grosimile, rama în jur, din spate oglindită, lumina din spate în previzualizare', async () => {
+  const px = pixeli(2, 1, (x) => (x === 0 ? [255, 255, 255, 255] : [0, 0, 0, 255]));
+  const litofanie = { tmin: 0.8, tmax: 3, ramaMm: 1, spate: true };
+  const r = ok(await reliefInBazin({ tip: 'din-imagine', imagine: px, optiuni: O, scara: { latimeMm: 2 }, litofanie }), 'din-imagine');
+  // Un pixel de 1 mm, rama de 1 mm = o celulă în jur: 4 × 3.
+  assert.deepEqual([r.nx, r.ny, r.celula], [4, 3, 1]);
+  const { litofanieDinGri } = await import('../../src/relief/litofanie.ts');
+  const { gri } = await import('../../src/relief/imagine.ts');
+  const lit = litofanieDinGri(gri(px.rgba, 2, 1, 'l'), 2, 1, { tmin: 0.8, tmax: 3, rama: 1, spate: true });
+  const st = await stratDinGrila(lit.valori, 4, 3);
+  assert.equal(r.amprenta, st.amprenta);
+  assert.ok(Math.abs((r.z?.min ?? 0) - 0.8) < 1e-3 && Math.abs((r.z?.max ?? 0) - 3) < 1e-3, JSON.stringify(r.z));
+  // Lumina din spate: rama și negrul întunecate, albul (oglindit: a treia celulă a rândului din mijloc) luminos.
+  const g = (i: number, j: number): number => r.umbrit.rgba[4 * (j * 4 + i)] ?? -1;
+  assert.deepEqual([g(0, 1), g(1, 1), g(2, 1), g(3, 1)], [0, 0, 255, 0]);
+});
+
+test('litofania: grosimile pe dos sau negative sunt refuzate', async () => {
+  const px = pixeli(1, 1, () => [255, 255, 255, 255]);
+  for (const [tmin, tmax] of [[3, 0.8], [-1, 2], [1, 1]] as const) {
+    const r = await reliefInBazin({ tip: 'din-imagine', imagine: px, optiuni: O, scara: { latimeMm: 1 }, litofanie: { tmin, tmax, ramaMm: 0, spate: false } });
+    assert.deepEqual(r, { ok: false, cod: 'grosimi' }, `${tmin} … ${tmax}`);
+  }
+});

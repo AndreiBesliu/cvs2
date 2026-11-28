@@ -16,7 +16,7 @@ import { reliefAles } from '../model/straturiRelief.ts';
 import { citeste as citesteImaginea, OPACITATE_IMAGINE, pastreaza } from './imaginiFoaie.ts';
 import { asezarePeImagine, numeFisierImagine, zonaInPixeli, type ZonaRelativa } from './modImagineCalcul.ts';
 import { utilizarea } from './utilizare.ts';
-import type { RezultatImagine } from '../ui/AlegereRezultat.tsx';
+import { esteRelief, type RezultatImagine } from '../ui/AlegereRezultat.tsx';
 import { FereastraRelief, type TintaStrat } from './FereastraRelief.tsx';
 
 /** Mesajele modulului, ca date (ADR 0086): cine îl încarcă le așteaptă (`cuMesaje`); un refuz îl vede tot el. */
@@ -187,7 +187,7 @@ export function ImportConectat({ fisiere, punct, registruImport, contextImport, 
       if (c !== cerere.current) return;
       const fisier = { nume: f.name, octeti: new Uint8Array(b) };
       // O imagine făcută relief (ADR 0310 §7): fără trasare; fereastra reliefului își face singură calculul.
-      if (rezultatAcum.current === 'relief' && esteImagine(f.name)) setDialog({ fisier, nume: f.name, ...ALEGERI, pxAutomat: false, stare: 'citire' });
+      if (esteRelief(rezultatAcum.current) && esteImagine(f.name)) setDialog({ fisier, nume: f.name, ...ALEGERI, pxAutomat: false, stare: 'citire' });
       else citeste(fisier, ALEGERI, false);
     }, (e: unknown) => {
       if (c === cerere.current) setDialog({ fisier: null, nume: f.name, ...ALEGERI, pxAutomat: false, stare: { ok: false, cod: 'parsare', detaliu: String(e) } });
@@ -290,7 +290,7 @@ export function ImportConectat({ fisiere, punct, registruImport, contextImport, 
     rezultatTinut = r;
     rezultatAcum.current = r;
     setRezultat(r);
-    if (r === 'relief') {
+    if (esteRelief(r)) {
       cerere.current++;
       opresteCitirea();
     } else if (dialog.fisier && dialog.stare === 'citire') {
@@ -307,7 +307,7 @@ export function ImportConectat({ fisiere, punct, registruImport, contextImport, 
     citeste(dialog.fisier, a, dialog.pxAutomat, dialog.stare === 'citire' ? undefined : dialog.stare);
   };
   // Relieful din imagine (ADR 0310 §7): fereastra lui, cu fișierul citit; nu din imaginea de pe foaie (ADR 0272 §7).
-  if (rezultat === 'relief' && !dinFoaie && dialog.fisier && esteImagine(dialog.fisier.nume)) {
+  if (esteRelief(rezultat) && !dinFoaie && dialog.fisier && esteImagine(dialog.fisier.nume)) {
     const f = dialog.fisier;
     const ales = straturi ? reliefAles(straturi.doc, straturi.alese, straturi.doc.foi[straturi.indexFoaie]) : null;
     const tintaRelief: TintaStrat | null = ales && straturi ? {
@@ -318,7 +318,8 @@ export function ImportConectat({ fisiere, punct, registruImport, contextImport, 
         stareImporta={(p) => stareImporta(p, loc)} importa={(p) => importa(p, loc)} onImportat={urmatorul} onInchide={inchide}
         jurnal={(e) => { contextImport(f, ALEGERI, () => undefined).jurnal?.(e); }}
         {...(fisiere.length > 1 ? { coada: { k: k + 1, n: fisiere.length }, onSari: urmatorul } : {})}
-        {...(tintaRelief ? { tinta: tintaRelief } : {})}
+        {...(tintaRelief && rezultat === 'relief' ? { tinta: tintaRelief } : {})}
+        litofanie={rezultat === 'litofanie'}
         {...(de === undefined ? {} : { de })} />
     );
   }

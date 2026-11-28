@@ -45,3 +45,11 @@ test('litofania întreagă: grosimile, oglinda din spate, apoi rama (în jurul i
 test('lumina din spate: (t_max − t) / (t_max − t_min), între 0 și 1; golul întunecat', () => {
   aproape(luminaDinGrosimi(Float32Array.from([0.8, 3, 1.9, 5, 0, NaN]), 0.8, 3), [1, 0, 0.5, 0, 1, 0]);
 });
+
+test('imaginea luminii: gri cât lumina, rândul de sus al grilei primul', async () => {
+  const { imagineLumina } = await import('../../src/relief/litofanie.ts');
+  const im = imagineLumina([0, 1, 0.5, 0.25], 2, 2);
+  assert.deepEqual([im.latime, im.inaltime], [2, 2]);
+  // Rândul j = 1 (sus) e primul în imagine: 0,5 și 0,25.
+  assert.deepEqual([...im.rgba], [128, 128, 128, 255, 64, 64, 64, 255, 0, 0, 0, 255, 255, 255, 255, 255]);
+});
