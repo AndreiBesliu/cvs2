@@ -1066,6 +1066,16 @@ the sheet, selected, in one undo step; dropped on the board, with its centre at 
 height: there the relief is the zero plane. A fully transparent image, one larger than 8192 × 8192 pixels, or a width that
 gives a cell outside its limits (0.001 to 100 mm, at most 10 m a side) is refused, with the reason.
 
+**The lithophane:** choose **Lithophane** instead of **Relief**. A lithophane is a translucent plate whose thickness follows
+the image: thin where the image is light, thick where it is dark, so with light from behind the plate shows the image. The
+relief is the map of the remaining thicknesses (linear light): **Minimum thickness (white)** (0.8 mm by default) and
+**Maximum thickness (black)** (3 mm by default); a transparent pixel is at the maximum thickness. **Frame** (mm, 0 by default)
+adds a band around it at the maximum thickness; **Cut from**: **The front** (the default) or **The back (mirrored)**, so the
+image reads the right way from the uncut face. The preview shows the lithophane with light from behind. It is cut with the
+finishing (and the roughing) with **the zero plane at the plate thickness** (in Cutting, “Relief on Z”): exactly the
+thicknesses here then remain under the surface, and with “The wall stays” the plate around it is the frame. The plate must be
+at least as thick as the maximum thickness.
+
 **In the panel:** with the part selected, the **Relief** section shows the size, the cell, the cells, the heights and the
 **layers**, top to bottom, as in the composite. The relief is the sum of its layers, from the bottom up, each with its mode:
 **add**, **subtract**, **keep higher** (the higher of the layer and what is below it), **keep lower**, **replace** or
@@ -1075,6 +1085,20 @@ gives a cell outside its limits (0.001 to 100 mm, at most 10 m a side) is refuse
 - **↑** / **↓**: higher or lower in the composite; **×**: deletes it (the last layer stays).
 
 Each change is one undo step, and undo puts the layer back exactly as it was.
+
+**Layer from the simulation:** in the **Relief** section, the button simulates the sheet's cut (like the 3D view, “Cut”) over
+the relief, at its cell, and puts it as a new layer, hidden, “replace”, named “Simulated cut”: what is cut does not change.
+Shown with the eye, the relief shows what remains after cutting (the wood a ball leaves next to a wall, for example); exported
+as a 16-bit image, the cut can go to another program. With no operations on the sheet, nothing is cut, so no layer is made.
+
+**The relief as a 16-bit image:** in the **Relief** section, **Export as a 16-bit image…** downloads the relief (the visible
+layers, composited) as a 16-bit grey PNG: 65,536 steps between the lowest and the highest cell, with Z and the cell written in
+the file, so the relief can go to another computer or another program. Brought back through “Import…” as a relief, the window
+offers **Z and cell from the file** (ticked by default): the relief comes back as it left, and exported again it gives exactly
+the same file. Any 16-bit PNG (from a 3D scanner or another program) is read on 16 bits, not 8; without Z in the file, the
+height and the base come from the window. The same goes for a **TIFF** (8 or 16 bits, the first page, with its DPI): the
+browser does not decode it, so the application reads it, with every grey step; what it cannot read yet (JPEG in TIFF, for
+example) says why.
 
 **A new layer from an image:** with a relief selected, the “Relief from image” window also has **A new layer on “…”**, next to
 **A new part** (the default). The image is centred on the relief, at **Image width on the relief** (by default the relief's

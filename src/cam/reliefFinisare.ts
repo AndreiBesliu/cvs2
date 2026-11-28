@@ -43,7 +43,9 @@ export type FrezaFinisare =
  */
 export type ReliefCam = {
   readonly nx: number; readonly ny: number; readonly celula: number;
+  /** Cotele, rând cu rând; cu `zRand0`, doar rândurile de la el încolo (o bandă trimisă unui worker, felia 18.1↑h-7). */
   readonly z: ArrayLike<number>;
+  readonly zRand0?: number;
   readonly m: { readonly a: number; readonly b: number; readonly c: number; readonly d: number; readonly e: number; readonly f: number };
 };
 
@@ -62,6 +64,11 @@ export type ParametriFinisare = {
   readonly zSigur: number;
   readonly avans: number;
   readonly avansPlonjare: number;
+  /**
+   * Cotele tuturor liniilor, în ordinea planului, făcute dinainte (de bazinul cotelor, pe loturi, felia 18.1↑h-8): cu ele,
+   * liniile nu se mai socotesc aici. Altele decât ale planului (alt număr de linii sau de puncte), se socotesc din nou.
+   */
+  readonly cote?: readonly Float64Array[];
 };
 
 export type RezultatFinisare =
@@ -89,6 +96,8 @@ export type ParametriDegrosare = {
   readonly zSigur: number;
   readonly avans: number;
   readonly avansPlonjare: number;
+  /** Ca la finisare (`ParametriFinisare.cote`). */
+  readonly cote?: readonly Float64Array[];
 };
 
 /** Cel mai mare adaos al unei degroșări (mm), ca în ușa documentului (ADR 0313). */
@@ -151,7 +160,7 @@ export function float32Sus(x: number): number {
  * Cota unui segment se caută de sus în jos: un bloc al cărui maxim, minus urcarea la distanța de la segment la el, nu trece de
  * cea găsită, nu se mai desface (aceeași valoare ca parcurgerea tuturor celulelor, cu mult mai puține).
  */
-type Piramida = { readonly niv: ReadonlyArray<{ readonly v: Float32Array; readonly w: number; readonly hh: number }> };
+export type Piramida = { readonly niv: ReadonlyArray<{ readonly v: Float32Array; readonly w: number; readonly hh: number }> };
 
 function piramida(F: Float32Array, mx: number, my: number): Piramida {
   const niv: Array<{ v: Float32Array; w: number; hh: number }> = [{ v: F, w: mx, hh: my }];
@@ -171,8 +180,9 @@ function piramida(F: Float32Array, mx: number, my: number): Piramida {
 }
 
 /** Cota modelului exact (ADR 0310 §4) în (x, y), în sistemul reliefului: triunghiurile prin centre, cu rândul de margine. */
-export function cotaModel(z: ArrayLike<number>, nx: number, ny: number, c: number, x: number, y: number): number {
-  const v = (i: number, j: number): number => z[Math.min(ny - 1, Math.max(0, j)) * nx + Math.min(nx - 1, Math.max(0, i))]!;
+export function cotaModel(z: ArrayLike<number>, nx: number, ny: number, c: number, x: number, y: number, zj0 = 0): number {
+  // Cu `zj0`, `z` ține rândurile de la el încolo (o bandă): rândul global, minus începutul ei.
+  const v = (i: number, j: number): number => z[(Math.min(ny - 1, Math.max(0, j)) - zj0) * nx + Math.min(nx - 1, Math.max(0, i))]!;
   const fx = x / c - 0.5, fy = y / c - 0.5, k = Math.floor(fx), l = Math.floor(fy), u = fx - k, w = fy - l;
   const A = v(k, l), B = v(k + 1, l), C = v(k, l + 1), D = v(k + 1, l + 1);
   // Diagonala fixă, de la (k + 1, l) la (k, l + 1).
@@ -185,16 +195,17 @@ export function cotaModel(z: ArrayLike<number>, nx: number, ny: number, c: numbe
  * triunghiuri cu vârfurile în colțurile celulei: maximul e în cele 4 colțuri. Cu q = 1, maximul e într-unul din cele 9 puncte
  * (`campConservativ`).
  */
-export function campPeCelula(z: ArrayLike<number>, nx: number, ny: number, c: number, q: number): Float32Array {
-  if (q === 1) return Float32Array.from(campConservativ(z, nx, ny), float32Sus);
-  const mx = nx * q, my = ny * q, h = c / q, P = new Float64Array((mx + 1) * (my + 1));
-  for (let j = 0; j <= my; j++) for (let i = 0; i <= mx; i++) P[j * (mx + 1) + i] = cotaModel(z, nx, ny, c, i * h, j * h);
-  const F = new Float32Array(mx * my);
-  for (let j = 0; j < my; j++) {
-    for (let i = 0; i < mx; i++) {
-      const a = j * (mx + 1) + i;
-      F[j * mx + i] = float32Sus(Math.max(P[a]!, P[a + 1]!, P[a + mx + 1]!, P[a + mx + 2]!));
-    }
+export function campPeCelula(z: ArrayLike<number>, nx: number, ny: number, c: number, q: number, j0 = 0, j1 = ny * q, zj0 = 0): Float32Array {
+  if (q === 1) return Float32Array.from(campConservativ(z, nx, ny, j0, j1, zj0), float32Sus);
+  // Doar rândurile [j0, j1) (o bandă, ADR 0323 2a), cu nodurile pe două rânduri (nu tot tabloul, de (mx + 1)(my + 1)): un nod e
+  // cota modelului în colțul lui, deci aceeași pe bandă ca pe tot relieful.
+  const mx = nx * q, h = c / q, F = new Float32Array(mx * (j1 - j0));
+  let jos = new Float64Array(mx + 1), sus = new Float64Array(mx + 1);
+  for (let i = 0; i <= mx; i++) jos[i] = cotaModel(z, nx, ny, c, i * h, j0 * h, zj0);
+  for (let j = j0; j < j1; j++) {
+    for (let i = 0; i <= mx; i++) sus[i] = cotaModel(z, nx, ny, c, i * h, (j + 1) * h, zj0);
+    for (let i = 0; i < mx; i++) F[(j - j0) * mx + i] = float32Sus(Math.max(jos[i]!, jos[i + 1]!, sus[i]!, sus[i + 1]!));
+    const t = jos; jos = sus; sus = t;
   }
   return F;
 }
@@ -204,17 +215,17 @@ export function campPeCelula(z: ArrayLike<number>, nx: number, ny: number, c: nu
  * celulei; mijlocul unei laturi, media cu vecina (pe margine, vecina e ea însăși); un colț e mijlocul diagonalei fixe a
  * pătratului dintre centre, de la (k + 1, l) la (k, l + 1).
  */
-export function campConservativ(z: ArrayLike<number>, nx: number, ny: number): Float64Array {
-  const F = new Float64Array(nx * ny);
-  const v = (i: number, j: number): number => z[Math.min(ny - 1, Math.max(0, j)) * nx + Math.min(nx - 1, Math.max(0, i))]!;
-  for (let j = 0; j < ny; j++) {
+export function campConservativ(z: ArrayLike<number>, nx: number, ny: number, j0 = 0, j1 = ny, zj0 = 0): Float64Array {
+  const F = new Float64Array(nx * (j1 - j0));
+  const v = (i: number, j: number): number => z[(Math.min(ny - 1, Math.max(0, j)) - zj0) * nx + Math.min(nx - 1, Math.max(0, i))]!;
+  for (let j = j0; j < j1; j++) {
     for (let i = 0; i < nx; i++) {
       const c = v(i, j);
       let m = c;
       for (const [di, dj] of [[1, 0], [-1, 0], [0, 1], [0, -1]] as const) m = Math.max(m, (c + v(i + di, j + dj)) / 2);
       // Colțurile: pătratul dintre centrele (k, l)…(k + 1, l + 1) are colțul celulei în mijloc, pe diagonala (k + 1, l)–(k, l + 1).
       for (const [k, l] of [[i - 1, j - 1], [i, j - 1], [i - 1, j], [i, j]] as const) m = Math.max(m, (v(k + 1, l) + v(k, l + 1)) / 2);
-      F[j * nx + i] = m;
+      F[(j - j0) * nx + i] = m;
     }
   }
   return F;
@@ -266,15 +277,21 @@ export function distSegmentCutie(ax: number, ay: number, bx: number, by: number,
 }
 
 /** Un relief pregătit: câmpul conservativ pe celula de calcul (latura `h`, `mx` × `my`) și dreptunghiul lui. */
-type Pregatit = {
+export type Pregatit = {
   readonly r: ReliefCam; readonly P: Piramida; readonly h: number; readonly mx: number; readonly my: number; readonly W: number; readonly H: number;
+  /** Banda de rânduri de calcul pe care e câmpul: [j0, j1) (tot relieful: [0, my)); piramida e doar peste ea. */
+  readonly j0: number; readonly j1: number;
   /** Celula maximului găsit la segmentul dinainte (indicele pe nivelul 0), sau −1: un candidat sigur pentru pornirea următorului. */
   ultima: number;
 };
 
-function pregateste(r: ReliefCam): Pregatit {
-  const q = diviziune(r.celula), mx = r.nx * q, my = r.ny * q;
-  return { r, P: piramida(campPeCelula(r.z, r.nx, r.ny, r.celula, q), mx, my), h: r.celula / q, mx, my, W: r.nx * r.celula, H: r.ny * r.celula, ultima: -1 };
+/** Exportată pentru proba cotei (`reliefFinisare.cota.test.ts`), ca și `cotaSegment`. */
+export function pregateste(r: ReliefCam, banda?: { readonly j0: number; readonly j1: number }): Pregatit {
+  const q = diviziune(r.celula), mx = r.nx * q, my = r.ny * q, j0 = banda?.j0 ?? 0, j1 = banda?.j1 ?? my;
+  return {
+    r, P: piramida(campPeCelula(r.z, r.nx, r.ny, r.celula, q, j0, j1, r.zRand0 ?? 0), mx, j1 - j0), h: r.celula / q, mx, my,
+    W: r.nx * r.celula, H: r.ny * r.celula, j0, j1, ultima: -1,
+  };
 }
 
 const copiiF = new Float64Array(4), copiiI = new Int32Array(4), copiiJ = new Int32Array(4);
@@ -289,47 +306,66 @@ function inRelief(p: Pregatit, x: number, y: number): readonly [number, number] 
  * Cota conservativă a segmentului (în sistemul reliefului `p`): maximul, peste celulele lui din raza frezei, al câmpului minus
  * urcarea la distanța segment–celulă; cu `perete`, și fața plăcii din afara dreptunghiului. −Infinity dacă nu atinge nimic.
  */
-function cotaSegment(p: Pregatit, f: FrezaFinisare, ax: number, ay: number, bx: number, by: number, perete: boolean): number {
+export function cotaSegment(p: Pregatit, f: FrezaFinisare, ax: number, ay: number, bx: number, by: number, perete: boolean): number {
   const R = f.raza, h = p.h, niv = p.P.niv;
   let m = -Infinity;
   // Pornirea: celulele de sub capete (la distanța 0, urcarea 0) sunt deja o margine de jos a maximului; așa piramida taie din prima.
   const F0 = niv[0]!;
   let arg = -1;
   for (const [x, y] of [[ax, ay], [bx, by]] as const) {
-    const i = Math.floor(x / h), j = Math.floor(y / h);
-    if (i >= 0 && j >= 0 && i < p.mx && j < p.my && F0.v[j * F0.w + i]! - urcare(f, 0) > m) { m = F0.v[j * F0.w + i]! - urcare(f, 0); arg = j * F0.w + i; }
+    // Pe bandă, rândul local e cel global minus începutul benzii (cel de pe tot relieful, cu j0 = 0).
+    const i = Math.floor(x / h), j = Math.floor(y / h) - p.j0;
+    if (i >= 0 && j >= 0 && i < p.mx && j < p.j1 - p.j0 && F0.v[j * F0.w + i]! - urcare(f, 0) > m) { m = F0.v[j * F0.w + i]! - urcare(f, 0); arg = j * F0.w + i; }
   }
   // Și celula maximului de la segmentul dinainte (vecinul): de obicei aproape de maximul acestuia.
   if (p.ultima >= 0) {
-    const i = p.ultima % F0.w, j = (p.ultima - i) / F0.w;
+    const i = p.ultima % F0.w, j = (p.ultima - i) / F0.w + p.j0;
     const d = distSegmentCutie(ax, ay, bx, by, i * h, j * h, (i + 1) * h, (j + 1) * h);
     if (d <= R) { const v = F0.v[p.ultima]! - urcare(f, d); if (v > m) { m = v; arg = p.ultima; } }
   }
-  // Blocurile, de sus în jos: (nivel, i, j). Un bloc acoperă celulele [i·2^l, (i + 1)·2^l) × [j·2^l, (j + 1)·2^l), tăiate la grilă.
-  const stiva: number[] = [niv.length - 1, 0, 0];
+  // Blocurile, de sus în jos: (nivel, i, j, marginea de sus a valorii lui). Un bloc acoperă celulele [i·2^l, (i + 1)·2^l) ×
+  // [j·2^l, (j + 1)·2^l), tăiate la grilă. Tăierea folosește o margine de jos a distanței, ieftină (felia 18.1↑h-4): de la
+  // mijlocul segmentului la cutie, minus jumătatea lungimii lui (orice punct al segmentului e la cel mult atât de mijloc), minus
+  // o rezervă de 1e-9 mm pentru rotunjiri. Distanța exactă se socotește doar pe frunze, unde dă valoarea; un bloc tăiat are
+  // toate frunzele cel mult cât marginea, deci maximul e același cu al parcurgerii tuturor celulelor (proba:
+  // `reliefFinisare.cota.test.ts`). Copiii stau în cutia părintelui, deci marginea lui le e și lor margine.
+  const mx = (ax + bx) / 2, my = (ay + by) / 2, lh = Math.hypot(bx - ax, by - ay) / 2;
+  const stiva: number[] = [niv.length - 1, 0, 0, Infinity];
   while (stiva.length > 0) {
-    const j = stiva.pop()!, i = stiva.pop()!, l = stiva.pop()!;
+    const sus = stiva.pop()!, j = stiva.pop()!, i = stiva.pop()!, l = stiva.pop()!;
+    if (sus <= m) continue;
     const N = niv[l]!, F = N.v[j * N.w + i]!;
     if (F <= m) continue;
-    const s = h * (1 << l);
-    const d = distSegmentCutie(ax, ay, bx, by, i * s, j * s, Math.min((i + 1) * s, p.mx * h), Math.min((j + 1) * s, p.my * h));
-    if (d > R) continue;
-    const v = F - urcare(f, d);
-    if (v <= m) continue;
-    if (l === 0) { m = v; arg = j * N.w + i; continue; }
+    // Cutia în coordonatele reliefului: rândul global e începutul benzii plus cel local (întregi, apoi înmulțite: pe frunze, la
+    // fel cu cel de pe tot relieful, bit cu bit). Marginea de jos e cea a reliefului, nu a benzii.
+    const s = h * (1 << l), k = 1 << l;
+    const x0 = i * s, y0 = (p.j0 + j * k) * h, x1 = Math.min((i + 1) * s, p.mx * h), y1 = Math.min((p.j0 + (j + 1) * k) * h, p.my * h);
+    const ex = mx < x0 ? x0 - mx : mx > x1 ? mx - x1 : 0, ey = my < y0 ? y0 - my : my > y1 ? my - y1 : 0;
+    const jos = Math.sqrt(ex * ex + ey * ey) - lh - 1e-9;
+    const uj = urcare(f, jos > 0 ? jos : 0);
+    if (jos > R || F - uj <= m) continue;
+    if (l === 0) {
+      // Frunza: valoarea, cu distanța exactă.
+      const d = distSegmentCutie(ax, ay, bx, by, x0, y0, x1, y1);
+      if (d > R) continue;
+      const v = F - urcare(f, d);
+      if (v > m) { m = v; arg = j * N.w + i; }
+      continue;
+    }
+    const u = uj;
     // Copiii, puși pe stivă crescător după maxim: cel mai mare se desface primul, ca marginea găsită să taie restul.
-    const jos = niv[l - 1]!, i2 = 2 * i, j2 = 2 * j;
+    const sub = niv[l - 1]!, i2 = 2 * i, j2 = 2 * j;
     let n = 0;
     for (let k = 0; k < 4; k++) {
       const ci = i2 + (k & 1), cj = j2 + (k >> 1);
-      if (ci >= jos.w || cj >= jos.hh) continue;
-      const fv = jos.v[cj * jos.w + ci]!;
-      if (fv <= m) continue;
+      if (ci >= sub.w || cj >= sub.hh) continue;
+      const fv = sub.v[cj * sub.w + ci]!;
+      if (fv - u <= m) continue;
       let q = n++;
       while (q > 0 && copiiF[q - 1]! > fv) { copiiF[q] = copiiF[q - 1]!; copiiI[q] = copiiI[q - 1]!; copiiJ[q] = copiiJ[q - 1]!; q--; }
       copiiF[q] = fv; copiiI[q] = ci; copiiJ[q] = cj;
     }
-    for (let q = 0; q < n; q++) stiva.push(l - 1, copiiI[q]!, copiiJ[q]!);
+    for (let q = 0; q < n; q++) stiva.push(l - 1, copiiI[q]!, copiiJ[q]!, copiiF[q]! - u);
   }
   p.ultima = arg;
   if (perete) {
@@ -349,7 +385,7 @@ type Linie = number[];
  * celule, rotunjit în jos (felia 18.1↑d-3: liniile nu stau mai rar decât cere omul, deci nici creasta nu iese mai mare; sub o
  * celulă, o celulă); punctele pe linie la pasul celulei de calcul.
  */
-function linii(p: Pregatit, o: ParametriFinisare, inset = 0): { readonly linii: Linie[]; readonly pas: number; readonly aliniat: boolean } {
+function linii(p: Geometrie, o: ParametriFinisare, inset = 0): { readonly linii: Linie[]; readonly pas: number; readonly aliniat: boolean } {
   const c = p.r.celula, h = p.h, E = o.margine === 'trece' ? o.freza.raza : 0;
   const aliniat = !o.nealiniat && (o.unghi === 0 || o.unghi === 90);
   const rez: Linie[] = [];
@@ -431,8 +467,89 @@ export function degrosareRelief(o: ParametriDegrosare): RezultatFinisare {
  */
 type Socotire = { readonly cota: FrezaFinisare; readonly ridicare: number; readonly degrosare: boolean };
 
-/** Drumul comun al finisării și al degroșării: liniile, cotele, trecerile pe Z (vezi capul fișierului). */
-function treceriRelief(o: ParametriFinisare, so: Socotire): RezultatFinisare {
+/** Ce ține de geometria unui relief, fără câmp: destul pentru linii și pentru benzi (felia 18.1↑h-6). */
+type Geometrie = Pick<Pregatit, 'r' | 'h' | 'mx' | 'my' | 'W' | 'H'>;
+
+function geometrie(r: ReliefCam): Geometrie {
+  const q = diviziune(r.celula);
+  return { r, h: r.celula / q, mx: r.nx * q, my: r.ny * q, W: r.nx * r.celula, H: r.ny * r.celula };
+}
+
+/** O linie a traseului, în lume, cu vârful fiecărui punct. */
+export type LinieZ = { readonly ip: number; readonly x: Float64Array; readonly y: Float64Array; readonly z: Float64Array };
+
+/** Cota unui segment în lume (vezi `cotaPe`). */
+type Cota = (ip: number, ax: number, ay: number, bx: number, by: number) => number;
+
+/**
+ * Planul unei finisări sau degroșări (felia 18.1↑h-6): verificările, liniile fiecărui relief, avertismentele și numărul
+ * punctelor, fără câmpul întreg. Cotele vin pe loturi de linii (`coteLot`), apoi mișcările (`miscariTreceri`).
+ */
+export type PlanTreceri = {
+  readonly o: ParametriFinisare; readonly so: Socotire; readonly nume: string;
+  readonly geom: readonly Geometrie[];
+  readonly liniiPe: readonly { readonly ip: number; readonly linii: readonly Linie[] }[];
+  readonly puncte: number; readonly pasFolosit: number; readonly avertismente: string[];
+};
+
+/**
+ * Cota unui segment în lume, peste reliefurile pregătite: al lui `ip` cu marginea lui, celelalte doar înăuntru; podeaua e un
+ * plan al modelului. La degroșare, ridicată cu adaosul.
+ */
+function cotaPe(pregatite: readonly Pregatit[], o: Pick<ParametriFinisare, 'adancime' | 'margine'>, so: Pick<Socotire, 'cota' | 'ridicare'>): Cota {
+  const podea = -o.adancime;
+  return (ip, ax, ay, bx, by) => {
+    let m = podea;
+    pregatite.forEach((p, k) => {
+      const [x0, y0] = inRelief(p, ax, ay), [x1, y1] = inRelief(p, bx, by);
+      m = Math.max(m, cotaSegment(p, so.cota, x0, y0, x1, y1, k === ip && o.margine === 'perete'));
+    });
+    return m + so.ridicare;
+  };
+}
+
+/** Linia `k` a reliefului `g`, în lume, în ordinea parcurgerii (zigzag: liniile impare, invers). */
+function inLume(g: Geometrie, k: number, pts: Linie): { readonly x: Float64Array; readonly y: Float64Array } {
+  const n = pts.length / 2, x = new Float64Array(n), y = new Float64Array(n);
+  const { a, b, c, d, e, f } = g.r.m;
+  for (let i = 0; i < n; i++) {
+    const q = k % 2 === 0 ? i : n - 1 - i, lx = pts[2 * q]!, ly = pts[2 * q + 1]!;
+    x[i] = a * lx + c * ly + e; y[i] = b * lx + d * ly + f;
+  }
+  return { x, y };
+}
+
+/**
+ * Reliefurile pregătite doar pe benzile de care au nevoie punctele date, în lume (felia 18.1↑h-6): pe fiecare relief, rândurile
+ * de calcul din raza frezei de ele, plus unul de fiecare parte (ADR 0323, 2a). Cotele segmentelor dintre ele ies ca pe tot
+ * relieful, bit cu bit (`reliefFinisare.banda.test.ts`).
+ */
+function pregatiteInJur(geom: readonly Geometrie[], R: number, puncte: readonly { readonly x: ArrayLike<number>; readonly y: ArrayLike<number> }[]): Pregatit[] {
+  return benziInJur(geom, R, puncte).map((b, k) => pregateste(geom[k]!.r, b));
+}
+
+/** Benzile (rândurile de calcul) de care au nevoie punctele date, pe fiecare relief (vezi `pregatiteInJur`). */
+function benziInJur(geom: readonly Geometrie[], R: number, puncte: readonly { readonly x: ArrayLike<number>; readonly y: ArrayLike<number> }[]): { j0: number; j1: number }[] {
+  return geom.map((g) => {
+    const { c, d, e, f } = g.r.m;
+    let lo = Infinity, hi = -Infinity;
+    for (const { x, y } of puncte) {
+      for (let i = 0; i < x.length; i++) {
+        // Ca `inRelief`: inversa unei transformări rigide (rândul: c · X + d · Y).
+        const v = c * (x[i]! - e) + d * (y[i]! - f);
+        if (v < lo) lo = v;
+        if (v > hi) hi = v;
+      }
+    }
+    let j0 = Math.max(0, Math.floor((lo - R) / g.h) - 1), j1 = Math.min(g.my, Math.ceil((hi + R) / g.h) + 1);
+    // Departe de relief, o bandă de un rând (nicio celulă în rază: rămâne doar peretele, socotit din dreptunghi).
+    if (!(j1 > j0)) { j0 = Math.min(Math.max(0, j0), g.my - 1); j1 = j0 + 1; }
+    return { j0, j1 };
+  });
+}
+
+/** Planul (vezi `PlanTreceri`), sau refuzul. */
+function planTreceri(o: ParametriFinisare, so: Socotire): { readonly ok: false; readonly motiv: string } | { readonly ok: true; readonly plan: PlanTreceri } {
   const nume = so.degrosare ? 'degroșarea' : 'finisarea';
   const R = o.freza.raza;
   if (!(R > 0)) return { ok: false, motiv: 'freza n-are rază' };
@@ -442,30 +559,17 @@ function treceriRelief(o: ParametriFinisare, so: Socotire): RezultatFinisare {
   if (!(o.pas > 0)) return { ok: false, motiv: 'pasul pe trecere trebuie să fie pozitiv' };
   if (!(o.unghi >= 0 && o.unghi < 180)) return { ok: false, motiv: `unghiul liniilor, ${o.unghi}°, trebuie să fie în [0°, 180°)` };
   if (o.reliefuri.length === 0) return { ok: false, motiv: `${nume} n-are niciun relief` };
-  const pregatite: Pregatit[] = o.reliefuri.map(pregateste);
+  const geom = o.reliefuri.map(geometrie);
   const avertismente: string[] = [];
   // Degroșarea lucrează doar sub față (de la −pas în jos): partea de deasupra o spune finisarea.
-  if (!so.degrosare && pregatite.some((p) => { for (let k = 0; k < p.r.z.length; k++) if (p.r.z[k]! > EPS) return true; return false; })) {
+  if (!so.degrosare && geom.some((p) => { for (let k = 0; k < p.r.z.length; k++) if (p.r.z[k]! > EPS) return true; return false; })) {
     avertismente.push('o parte din relief iese deasupra feței plăcii: acolo se taie la față');
   }
-  const podea = -o.adancime;
-  /**
-   * Cota unui segment în lume, peste toate reliefurile: al lui `ip` cu marginea lui, celelalte doar înăuntru; podeaua e un
-   * plan al modelului. La degroșare, ridicată cu adaosul.
-   */
-  const cota = (ip: number, ax: number, ay: number, bx: number, by: number): number => {
-    let m = podea;
-    pregatite.forEach((p, k) => {
-      const [x0, y0] = inRelief(p, ax, ay), [x1, y1] = inRelief(p, bx, by);
-      m = Math.max(m, cotaSegment(p, so.cota, x0, y0, x1, y1, k === ip && o.margine === 'perete'));
-    });
-    return m + so.ridicare;
-  };
-  // Liniile, în lume, cu vârful fiecărui punct.
-  type LinieZ = { readonly ip: number; readonly x: Float64Array; readonly y: Float64Array; readonly z: Float64Array };
-  const toate: LinieZ[] = [];
   let pasFolosit = o.pasLateral, puncte = 0;
-  for (const [ip, p] of pregatite.entries()) {
+  // Liniile fiecărui relief, cu verificările lor și numărul punctelor, înaintea oricărei cote (felia 18.1↑h-3): un refuz al
+  // punctelor vine fără calcul (la 4000², cotele singure iau minute).
+  const liniiPe: { readonly ip: number; readonly linii: readonly Linie[] }[] = [];
+  for (const [ip, p] of geom.entries()) {
     const l = linii(p, o, so.degrosare && o.margine !== 'trece' ? so.cota.raza : 0);
     // Aliniate, liniile trec prin centrele celulelor: o celulă mai lată decât freza lasă dungi netăiate între ele.
     if (l.aliniat && l.pas > 2 * R + EPS) {
@@ -482,26 +586,175 @@ function treceriRelief(o: ParametriFinisare, so: Socotire): RezultatFinisare {
         ? `pasul lateral, mărit la o celulă a reliefului: ${mm} mm (liniile aliniate nu pot sta mai des; creasta iese mai mare decât cea cerută)`
         : `pasul lateral, rotunjit în jos la ${k} ${k === 1 ? 'celulă' : 'celule'} ale reliefului: ${mm} mm`);
     }
-    for (const [k, pts] of l.linii.entries()) {
-      const n = pts.length / 2;
-      puncte += n;
-      if (puncte > PUNCTE_FINISARE_MAXIM) return { ok: false, motiv: `${nume} ar avea peste ${PUNCTE_FINISARE_MAXIM} de puncte pe trecere: mărește pasul lateral` };
-      const x = new Float64Array(n), y = new Float64Array(n), z = new Float64Array(n);
-      const { a, b, c, d, e, f } = p.r.m;
-      for (let i = 0; i < n; i++) {
-        // Zigzag: liniile impare se parcurg invers.
-        const q = k % 2 === 0 ? i : n - 1 - i, lx = pts[2 * q]!, ly = pts[2 * q + 1]!;
-        x[i] = a * lx + c * ly + e; y[i] = b * lx + d * ly + f;
+    for (const pts of l.linii) puncte += pts.length / 2;
+    if (puncte > PUNCTE_FINISARE_MAXIM) return { ok: false, motiv: `${nume} ar avea peste ${PUNCTE_FINISARE_MAXIM} de puncte pe trecere: mărește pasul lateral` };
+    liniiPe.push({ ip, linii: l.linii });
+  }
+  // Numărul trecerilor are o margine de jos din orice punct al traseului: cea mai adâncă cotă e cel mult vârful lui. Punctul ales
+  // e, pe fiecare relief, cel mai apropiat de cea mai joasă celulă, cu vârful socotit exact ca mai jos (aceleași segmente, în
+  // aceeași ordine). Peste plafon chiar cu marginea de jos, refuzul de după cote vine acum; altfel, verdictul rămâne după ele.
+  if (puncte * Math.max(1, Math.ceil(o.adancime / o.pas - 1e-9)) > PUNCTE_FINISARE_MAXIM) {
+    let sus = Infinity;
+    for (const { ip, linii: ls } of liniiPe) {
+      const p = geom[ip]!;
+      // Dintre celulele cele mai joase (un fund plat le are pe toate egale), cea mai apropiată de centrul lor: marginea fundului e
+      // lângă pantă, deci bila stă acolo mai sus.
+      let jos = Infinity, sx = 0, sy = 0, nj = 0;
+      for (let k = 0; k < p.r.z.length; k++) if (p.r.z[k]! < jos) jos = p.r.z[k]!;
+      for (let j = 0; j < p.r.ny; j++) {
+        for (let i = 0; i < p.r.nx; i++) if (p.r.z[j * p.r.nx + i] === jos) { sx += i; sy += j; nj++; }
       }
-      const seg = new Float64Array(Math.max(0, n - 1));
-      for (let i = 0; i + 1 < n; i++) seg[i] = cota(ip, x[i]!, y[i]!, x[i + 1]!, y[i + 1]!);
-      for (let i = 0; i < n; i++) {
-        const v = n === 1 ? cota(ip, x[i]!, y[i]!, x[i]!, y[i]!) : Math.max(i > 0 ? seg[i - 1]! : -Infinity, i + 1 < n ? seg[i]! : -Infinity);
-        z[i] = v;
+      let cx = NaN, cy = NaN, cd = Infinity;
+      for (let j = 0; j < p.r.ny; j++) {
+        for (let i = 0; i < p.r.nx; i++) {
+          if (p.r.z[j * p.r.nx + i] !== jos) continue;
+          const d = (i - sx / nj) ** 2 + (j - sy / nj) ** 2;
+          if (d < cd) { cd = d; cx = (i + 0.5) * p.r.celula; cy = (j + 0.5) * p.r.celula; }
+        }
       }
-      toate.push({ ip, x, y, z });
+      let bk = -1, bq = -1, bd = Infinity;
+      for (const [k, pts] of ls.entries()) {
+        for (let q = 0; 2 * q < pts.length; q++) {
+          const d = (pts[2 * q]! - cx) ** 2 + (pts[2 * q + 1]! - cy) ** 2;
+          if (d < bd) { bd = d; bk = k; bq = q; }
+        }
+      }
+      if (bk < 0) continue;
+      const pts = ls[bk]!, n = pts.length / 2, { x, y } = inLume(p, bk, pts), i = bk % 2 === 0 ? bq : n - 1 - bq;
+      // Câmpul doar pe benzile din jurul punctului și al vecinilor lui (aceleași cote ca pe tot relieful).
+      const vec = { x: [x[Math.max(0, i - 1)]!, x[i]!, x[Math.min(n - 1, i + 1)]!], y: [y[Math.max(0, i - 1)]!, y[i]!, y[Math.min(n - 1, i + 1)]!] };
+      const cota = cotaPe(pregatiteInJur(geom, so.cota.raza, [vec]), o, so);
+      const v = n === 1 ? cota(ip, x[i]!, y[i]!, x[i]!, y[i]!)
+        : Math.max(i > 0 ? cota(ip, x[i - 1]!, y[i - 1]!, x[i]!, y[i]!) : -Infinity, i + 1 < n ? cota(ip, x[i]!, y[i]!, x[i + 1]!, y[i + 1]!) : -Infinity);
+      sus = Math.min(sus, v);
+    }
+    // Toleranța mai largă decât a numărului de mai jos (1e-9): o rotunjire a vârfului nu trece marginea peste el.
+    if (sus < -EPS && puncte * Math.ceil(-sus / o.pas - 1e-6) > PUNCTE_FINISARE_MAXIM) {
+      return { ok: false, motiv: `${nume} ar avea peste ${PUNCTE_FINISARE_MAXIM} de puncte: mărește pasul lateral sau pasul pe trecere` };
     }
   }
+  return { ok: true, plan: { o, so, nume, geom, liniiPe, puncte, pasFolosit, avertismente } };
+}
+
+/**
+ * Cotele liniilor [k0, k1) ale reliefului `ip` (felia 18.1↑h-6): pe fiecare punct, maximul cotelor celor două segmente ale lui.
+ * Cu `cota` dată, pe câmpul ei (întreg, în finisarea dintr-o bucată); fără, pe benzile de care are nevoie lotul (ADR 0323, 2a).
+ * Loturile lipite dau cotele dintr-o bucată, bit cu bit (`reliefFinisare.loturi.test.ts`).
+ */
+export function coteLot(plan: PlanTreceri, ip: number, k0: number, k1: number, cota?: Cota): LinieZ[] {
+  const xy = liniiInLume(plan, ip, k0, k1);
+  // Raza cotei: la degroșare, a frezei plate mărite cu adaosul (R + a), nu a frezei.
+  const c = cota ?? cotaPe(pregatiteInJur(plan.geom, plan.so.cota.raza, xy), plan.o, plan.so);
+  return coteLinii(xy, ip, c).map((z, q) => ({ ip, x: xy[q]!.x, y: xy[q]!.y, z }));
+}
+
+/** Liniile [k0, k1) ale reliefului `ip`, în lume, în ordinea parcurgerii. */
+function liniiInLume(plan: PlanTreceri, ip: number, k0: number, k1: number): { readonly x: Float64Array; readonly y: Float64Array }[] {
+  const g = plan.geom[ip]!, ls = plan.liniiPe.find((l) => l.ip === ip)?.linii ?? [];
+  return ls.slice(k0, k1).map((pts, q) => inLume(g, k0 + q, pts));
+}
+
+/** Vârful fiecărui punct al liniilor date: maximul cotelor celor două segmente ale lui. */
+function coteLinii(xy: readonly { readonly x: Float64Array; readonly y: Float64Array }[], ip: number, c: Cota): Float64Array[] {
+  return xy.map(({ x, y }) => {
+    const n = x.length, z = new Float64Array(n), seg = new Float64Array(Math.max(0, n - 1));
+    for (let i = 0; i + 1 < n; i++) seg[i] = c(ip, x[i]!, y[i]!, x[i + 1]!, y[i + 1]!);
+    for (let i = 0; i < n; i++) {
+      z[i] = n === 1 ? c(ip, x[i]!, y[i]!, x[i]!, y[i]!) : Math.max(i > 0 ? seg[i - 1]! : -Infinity, i + 1 < n ? seg[i]! : -Infinity);
+    }
+    return z;
+  });
+}
+
+/**
+ * Cererea unui lot de linii pentru un worker al cotelor (felia 18.1↑h-7), de sine stătătoare: punctele liniilor lotului, în
+ * lume și în ordinea parcurgerii, iar pe fiecare relief doar rândurile de relief de care are nevoie banda lui (cu `zRand0`) și
+ * banda însăși (rândurile de calcul). Plus ce ține de cotă: freza ei, ridicarea, podeaua, marginea.
+ */
+export type CerereCote = {
+  readonly cota: FrezaFinisare; readonly ridicare: number; readonly adancime: number; readonly margine: 'perete' | 'trece';
+  readonly reliefuri: readonly ReliefCam[];
+  readonly benzi: readonly { readonly j0: number; readonly j1: number }[];
+  readonly ip: number;
+  readonly x: readonly Float64Array[]; readonly y: readonly Float64Array[];
+};
+
+/**
+ * Liniile planului, în cel mult `k` loturi pe fiecare relief (cu cam aceleași puncte), ca cereri (`CerereCote`), în ordinea
+ * planului: cotele lor, înșirate, sunt cotele tuturor liniilor (`ParametriFinisare.cote`).
+ */
+export function loturiCote(plan: PlanTreceri, k: number): CerereCote[] {
+  const out: CerereCote[] = [], R = plan.so.cota.raza;
+  for (const { ip, linii: ls } of plan.liniiPe) {
+    // Granițele loturilor, după punctele adunate: lotul t se termină la prima linie unde s-au strâns t / n din puncte; cel puțin
+    // o linie pe lot.
+    const n = Math.max(1, Math.min(k, ls.length)), granite: number[] = [0];
+    const total = ls.reduce((a, l) => a + l.length / 2, 0);
+    let adunate = 0, urm = 0;
+    for (let t = 1; t < n; t++) {
+      while (urm < ls.length && (urm <= granite[t - 1]! || adunate < (t * total) / n)) { adunate += ls[urm]!.length / 2; urm++; }
+      if (urm >= ls.length) break;
+      granite.push(urm);
+    }
+    granite.push(ls.length);
+    for (let t = 0; t + 1 < granite.length; t++) {
+      const k0 = granite[t]!, k1 = granite[t + 1]!;
+      const xy = liniiInLume(plan, ip, k0, k1), benzi = benziInJur(plan.geom, R, xy);
+      const reliefuri = plan.geom.map((g, q) => {
+        const b = benzi[q]!, f = g.mx / g.r.nx, nx = g.r.nx;
+        // Rândurile de relief de care au nevoie nodurile benzii (și vecinii lor, pentru câmpul pe 9 puncte).
+        const r0 = Math.max(0, Math.floor(b.j0 / f) - 1), r1 = Math.min(g.r.ny, Math.ceil(b.j1 / f) + 2);
+        const z = new Float64Array(r1 * nx - r0 * nx);
+        for (let u = 0; u < z.length; u++) z[u] = g.r.z[r0 * nx + u]!;
+        return { nx, ny: g.r.ny, celula: g.r.celula, m: g.r.m, z, zRand0: r0 };
+      });
+      out.push({
+        cota: plan.so.cota, ridicare: plan.so.ridicare, adancime: plan.o.adancime, margine: plan.o.margine, reliefuri, benzi, ip,
+        x: xy.map((l) => l.x), y: xy.map((l) => l.y),
+      });
+    }
+  }
+  return out;
+}
+
+/** Cotele unui lot (`CerereCote`), linie cu linie: ce face un worker al cotelor. */
+export function cotePuncte(c: CerereCote): Float64Array[] {
+  const pregatite = c.reliefuri.map((r, q) => pregateste(r, c.benzi[q]));
+  return coteLinii(c.x.map((x, q) => ({ x, y: c.y[q]! })), c.ip, cotaPe(pregatite, c, c));
+}
+
+/** Planul unei finisări (pentru probe și pentru bazinul cotelor, felia 18.1↑h-8), sau refuzul. */
+export function planFinisare(o: ParametriFinisare): ReturnType<typeof planTreceri> {
+  return planTreceri(o, { cota: o.freza, ridicare: 0, degrosare: false });
+}
+
+/** Planul unei degroșări, ca `degrosareRelief` (fără verificarea adaosului), sau refuzul. */
+export function planDegrosare(o: ParametriDegrosare): ReturnType<typeof planTreceri> {
+  return planTreceri({ ...o, freza: { fel: 'plata', raza: o.raza }, nealiniat: false }, { cota: { fel: 'plata', raza: o.raza + o.adaos }, ridicare: o.adaos, degrosare: true });
+}
+
+/** Drumul comun al finisării și al degroșării: planul, cotele tuturor liniilor (pe câmpul întreg), apoi mișcările. */
+function treceriRelief(o: ParametriFinisare, so: Socotire): RezultatFinisare {
+  const pl = planTreceri(o, so);
+  if (!pl.ok) return pl;
+  const plan = pl.plan, cota = cotaPe(plan.geom.map((g) => pregateste(g.r)), o, so), toate: LinieZ[] = [];
+  // Cotele date (din bazinul cotelor), doar dacă sunt chiar ale planului: același număr de linii, cu aceleași puncte.
+  const date = o.cote, linii = plan.liniiPe.flatMap(({ ip, linii: ls }) => ls.map((pts, k) => ({ ip, k, n: pts.length / 2 })));
+  if (date && date.length === linii.length && linii.every((l, q) => date[q]!.length === l.n)) {
+    for (const [q, l] of linii.entries()) {
+      const { x, y } = liniiInLume(plan, l.ip, l.k, l.k + 1)[0]!;
+      toate.push({ ip: l.ip, x, y, z: date[q]! });
+    }
+  } else {
+    for (const { ip, linii: ls } of plan.liniiPe) toate.push(...coteLot(plan, ip, 0, ls.length, cota));
+  }
+  return miscariTreceri(plan, toate, cota);
+}
+
+/** Mișcările, din cotele tuturor liniilor (în ordinea planului); `cota` socotește legăturile dintre linii. */
+function miscariTreceri(plan: PlanTreceri, toate: readonly LinieZ[], cota: Cota): RezultatFinisare {
+  const { o, nume, puncte, pasFolosit } = plan, avertismente = [...plan.avertismente];
+  const so = plan.so;
   let adanc = 0;
   for (const l of toate) for (const v of l.z) if (v < adanc) adanc = v;
   const m: Miscare[] = [];

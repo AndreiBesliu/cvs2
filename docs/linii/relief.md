@@ -275,3 +275,90 @@ degroșarea și finisarea pe relief), unde stă relieful în document și unde s
     straturilor ar intra în pornire.
   - **Un strat ascuns e sărit peste tot** (compusul, desenul, modelul 3D, resursele exportului, CAM-ul); o funcție nouă care
     citește straturile le sare la fel, iar proba ei pune un strat ascuns lipsă din resurse.
+- **28.11: 18.1↑f gata pe ramură** (litofania, ADR 0321), după 18.1↑j: „Litofanie” în capul ferestrei unei imagini; harta
+  grosimilor (lumina liniară), rama, fața, lumina din spate; se taie cu planul zero la grosimea plăcii. Documentul rămâne v32.
+  Rămâne **18.1↑f-2** (lumina după material, cu coeficientul măsurat pe o plăcuță de trepte tăiată de owner), apoi 18.1↑g și
+  18.1↑h.
+- **De ținut minte, din 18.1↑f:**
+  - **O litofanie e un relief obișnuit**: harta grosimilor, nu un fel nou de formă. Ce o face litofanie e doar cum se face
+    (`src/relief/litofanie.ts`) și cum se taie (planul zero = grosimea plăcii); fără câmp nou în document.
+  - **Rama se dă în mm și se rotunjește la celulele imaginii** (`ramaMm / pixel`): o probă pe un pixel de 1 mm n-o vede.
+  - **Fereastra reliefului e și a litofaniei** (`litofanie`, din `AlegereRezultat`; `esteRelief`): câmpurile reliefului (sensul,
+    înălțimea, baza) și „Un strat nou pe …” nu se arată la litofanie.
+- **28.11: 18.1↑g gata pe ramură** (relieful ca imagine gri pe 16 biți, ADR 0322), după 18.1↑f: exportul din panou, importul cu
+  cititorul propriu și „Z-ul și celula din fișier”, dus-întors până la aceiași octeți. Rămân, din ADR 0322 §5: TIFF-ul pe 16
+  biți și simularea salvată ca strat; apoi **18.1↑h** (4000²).
+- **De ținut minte, din 18.1↑g:**
+  - **Codecul PNG stă în `src/relief/png16.ts`, cu CRC-ul lui:** workerul (`src/jobs`) nu importă ușile (`src/io`), iar
+    relieful nu importă din `io`. Același calcul ca `src/io/crc32.ts`, păstrat aici cu motivul.
+  - **Un PNG pe 16 biți ocolește `createImageBitmap`** (ar da 8 biți): `adancimePng` pe primii 33 de octeți, apoi `citestePng`.
+    Ieșirea e RGBA scalată la 0 … 255, cu zecimale, deci `gri`, netezirea și litofania merg neschimbate.
+  - **O probă a Z-ului din fișier schimbă întâi înălțimea ferestrei:** scara din `pHYs` și înălțimea implicită pot da din
+    coincidență același relief (otrava G17).
+- **28.11: 18.1↑i gata pe ramură** (litofania pe placa 18, partea a doua a fișei): trei pătrate de gri într-o placă albă
+  translucidă de 6 mm, cu grosimile prezise de oracol și fișierele de aur. Tăierea e a owner-ului (o placă albă translucidă de
+  6 mm, frezele Ø3). Din rândurile ADR 0310 §8 rămâne **18.1↑h** (4000²), plus 18.1↑f-2 (lumina după material, după plăcuța
+  owner-ului) și, din ADR 0322 §5, TIFF-ul pe 16 biți și simularea ca strat.
+- **De ținut minte, din 18.1↑i:**
+  - **Oracolul materialului (`materialSecventaO`), cu bila, pe o grilă aliniată cu liniile:** o coloană fix la raza bilei de o
+    linie e atinsă doar pe ecuator, iar oracolul o ia sau nu după rotunjirea fiecărei mutări; deplasează grila judecății cu o
+    fracțiune de celulă (ramura plată are paza la 1 µm, cea a bilei nu).
+- **28.11: 18.1↑h-1 gata pe ramură** (relieful la 4000², măsurătorile; ADR 0323, **propus**): sonda `scripts/masura-relief.ts`.
+  Tot ce ține de relief până la CAM e fluid la 4000² (sub 2,3 s, într-un fir); finisarea nu e: 118 s la pasul 0,5 și 2,2 GB, iar la pasul 0,3 (condiția din ADR 0310), 187 s de calcul și apoi refuzul
+  plafonului de 20 M de puncte.
+  **Codul feliei următoare (liniile pe workere, memoria pe benzi) așteaptă răspunsul owner-ului** la cele patru întrebări din
+  ADR 0323, plus măsurătoarea lui. Până atunci, linia poate face proba bătăilor (18.1↑h-2), care nu depinde de răspuns.
+- **De ținut minte, din 18.1↑h-1:**
+  - **Finisarea reliefului e 92 % cota segmentelor** (`distSegmentCutie` 70 %, `cotaSegment` 21 %): o optimizare care atinge
+    altceva nu mută timpul.
+  - **La celula de 0,1 mm, câmpul de calcul are 0,05** (`diviziune`): memoria crește cu (2 · N)², nu cu N².
+- **28.11: 18.1↑h-2 gata pe ramură** (proba bătăilor, doar probe): aliniat, fiecare linie prin centre, CL-ul pe hârtie, fără
+  bătăi; nealiniat, bătăile de 0,06 mm cu perioada de pe hârtie. Cu „mergi înainte cu recomandarea”, linia merge pe 5a
+  (refuzul înaintea cotelor), apoi 1a (liniile pe workere, distanța mai ieftină) și 2a (câmpul pe benzi), fără GPU.
+  - **Surplusul câmpului conservativ pe o creastă e exact urcarea(φ) − urcarea(φ − h)** (grila de calcul e aliniată cu a
+    reliefului): o probă pe CL care îl ia mai larg nu prinde o urcare greșită a bilei.
+- **28.11: 18.1↑h-3 gata pe ramură** (5a): refuzul punctelor vine înaintea cotelor (la 4000² cu pasul 0,3, în 2,9 s, nu în 187 s);
+  programele care ies, octet cu octet. Urmează 1a: liniile finisării pe workerele bazinului CAM.
+  - **O margine de jos a trecerilor dintr-un punct al traseului e sigură doar dacă vârful lui e socotit ca în bucla mare** (aceleași
+    segmente, aceeași ordine), cu indiciul piramidei pus la loc și cu toleranța mai largă decât a numărului adevărat.
+- **28.11: 18.1↑h-4 gata pe ramură** (1a, întâi distanța mai ieftină): finisarea la 4000² și 0,5, 117,6 → 43,5 s; la 0,3 într-o
+  trecere, 69,4 s, cu 3,1 GB. Programele, octet cu octet. Urmează liniile pe workere și memoria pe benzi (2a): mișcările ținute
+  toate sunt acum partea cea mai grea a memoriei.
+  - **Într-o căutare care ramifică și taie, distanța exactă trebuie doar pe frunze;** pe blocuri ajunge o margine de jos dovedită
+    (cu o rezervă pentru rotunjiri), iar proba e forța brută peste toate celulele, la `===`.
+- **28.11: 18.1↑h-5 gata pe ramură** (2a, întâi banda): câmpul și cota pe o bandă de rânduri, bit cu bit ca pe tot relieful;
+  vârful memoriei la degroșare, 1 728 → 1 245 MB. La finisare, memoria e acum a mișcărilor (întrebarea 6 din ADR 0323).
+  - **Pe o bandă, coordonatele frunzelor se fac din rândul global, întreg, apoi înmulțit** (`(j0 + j) · h`), ca să iasă la bit
+    cele de pe tot relieful; marginea de jos a cutiilor e a reliefului, nu a benzii.
+- **28.11: 18.1↑h-6 gata pe ramură** (planul, cotele pe loturi, mișcările): loturile lipite = o bucată, bit cu bit; programele,
+  octet cu octet. Urmează 18.1↑h-7 și 18.1↑h-8: loturile ca cereri, apoi bazinul cotelor (workerele, fiecare cu lotul și banda lui).
+  - **La degroșare, raza cotei e R + adaos, nu a frezei:** tot ce se socotește după rază (benzile, marginile) o ia din
+    `so.cota.raza`.
+  - **O margine de jos verificată doar pe un fund plat nu prinde o bandă prea îngustă:** proba ei cere și un loc unde bila nu
+    ajunge la fund (un șanț în V).
+- **28.11: 18.1↑h-7 gata pe ramură** (loturile ca cereri): programul din cotele loturilor, trecute prin `structuredClone`, e cel
+  de azi, octet cu octet. Urmează 18.1↑h-8 (protocolul cererilor `cote`, bazinul, orchestrarea în `bazinCam`).
+  - **O citire în afara unui tablou dă `NaN`, iar piramida maximelor îl ignoră:** o bandă greșită nu se vede la ieșire, doar la
+    memorie. Proba ei urmărește citirile (un `Proxy` pe tablou).
+- **28.11: 18.1↑h-8 gata pe ramură** (bazinul cotelor): peste 300 000 de puncte, cotele reliefului se fac pe N workere; același
+  program, octet cu octet; în browser, la 2000² cu 3 workere, 23–25 s → 17 s. Ce rămâne pe un fir (câmpul întreg pentru
+  legături, mișcările, postul) e acum partea mai mare; mișcările ținute compact sunt întrebarea 6 din ADR 0323.
+  - **O funcție a bazinului care devine asincronă înaintea calculului schimbă ordinea anulării:** cererea fără bazin pleacă pe loc
+    (proba telemetriei din `utilizare.dispozitive.test.ts` a prins-o).
+
+- **28.11: 18.1↑g-2 gata pe ramură** (TIFF-ul ca relief, ADR 0322 §5.1): un TIFF pe 8 sau 16 biți se face relief, citit în
+  workerul reliefului cu cititorul trasării, în modul exact (pe 16 biți, griul e v / 65 535); prima pagină, plafonul din antet,
+  refuzurile cu motiv. Exportul rămâne PNG (alegerile 5–7 din ADR 0322, cu recomandarea aplicată). Totalul +6,0 kB (959,4 /
+  1 000). Din ADR 0322 §5 rămâne simularea salvată ca strat.
+  - **Workerele se construiesc IIFE, fără bucăți la cerere:** un cititor adus într-un worker se numără întreg în total (aici,
+    `tiff.ts` cu `ccitt.ts`, 6 kB gzip), chiar dacă alt worker îl are deja.
+  - **Decodarea exactă a TIFF-ului e o ramură a aceleiași funcții (`pagina`, cu `exact`), nu o copie:** decodarea benzilor,
+    predictorul și compresiile rămân comune; doar culoarea și ținerea pixelilor diferă, iar probele trasării apără ramura veche.
+- **28.11: 18.1↑g-3 gata pe ramură** (simularea salvată ca strat, ADR 0322 §5.4): „Strat din simulare” pune tăietura simulată ca
+  strat nou, ascuns, „înlocuiește”, pe grila reliefului, în Z-ul lui (alegerile 8–11, cu recomandarea aplicată). Totalul +1,9 kB
+  (961,3 / 1 000). Cu ea, ADR 0322 e întreg; din rândurile ADR 0310 §8 rămân doar 18.1↑f-2 (după plăcuța owner-ului) și
+  întrebarea 6 din ADR 0323 (mișcările ținute compact), a owner-ului.
+  - **Un punct al grilei ia pixelul simulării după centrul celulei:** o probă cu relieful aliniat pe pixeli nu deosebește centrul
+    de colț (otrava S02); proba lui are relieful decalat cu un sfert de pixel.
+  - **Modelul reliefului e interpolat între centrele celulelor:** un perete „vertical” dintr-o imagine e o pantă de o celulă, deci
+    ce lasă o bilă lângă el iese ceva mai mult decât pe hârtie, cu peretele drept; proba e2e cere doar marginea de jos.

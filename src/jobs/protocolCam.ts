@@ -4,6 +4,8 @@
  * împachetat) se transferă, nu se copiază (ADR 0014).
  */
 import type { IesireFoaie } from '../cam/iesire.ts';
+import type { CoteRelief } from '../cam/job.ts';
+import type { CerereCote } from '../cam/reliefFinisare.ts';
 import type { Montaj, OrigineXY } from '../ir/montaj.ts';
 import type { Document } from '../model/document.ts';
 import type { ResurseRelief } from '../relief/resurse.ts';
@@ -108,17 +110,22 @@ export type ParteDesprinsa = { readonly instanta: string; readonly element: stri
 /**
  * Cererile cu un program (exportul, traseul, simularea) aduc și `reliefuri`: hărțile straturilor vizibile ale reliefurilor
  * finisate pe foaie și octeții dalelor lor (ADR 0310 §3, ADR 0312), citite de firul principal din baza lor; workerul face
- * compusul. Fără ele, o finisare se refuză cu motivul ei.
+ * compusul. Fără ele, o finisare se refuză cu motivul ei. Cu `cote` (felia 18.1↑h-8), cotele liniilor reliefului vin făcute de
+ * bazinul cotelor (cererile `cote-plan` și `cote`), după cheia operației.
  */
 export type CerereCam =
   /** Exportul (fereastra exportului): programul, fișierele, rezumatul, mutările simulării. */
-  | { readonly fel: 'export'; readonly document: Document; readonly parametri: ParametriExport; readonly reliefuri?: ResurseRelief }
+  | { readonly fel: 'export'; readonly document: Document; readonly parametri: ParametriExport; readonly reliefuri?: ResurseRelief; readonly cote?: CoteRelief }
   /** „Arată traseul” (ADR 0038 §2): programul, împachetat. */
-  | { readonly fel: 'traseu'; readonly document: Document; readonly reliefuri?: ResurseRelief }
+  | { readonly fel: 'traseu'; readonly document: Document; readonly reliefuri?: ResurseRelief; readonly cote?: CoteRelief }
   /** Vederea 3D (ADR 0057 §1): mutările simulării ale programului documentului, sau ale dopului cu numărul `dop` (ADR 0178). */
-  | { readonly fel: 'simulare'; readonly document: Document; readonly dop?: number; readonly reliefuri?: ResurseRelief }
+  | { readonly fel: 'simulare'; readonly document: Document; readonly dop?: number; readonly reliefuri?: ResurseRelief; readonly cote?: CoteRelief }
   /** „Împreună (secțiunea)” (ADR 0179): dopul cu numărul `dop` (în V, drept sau în trepte) în locașul lui, cu potrivirea măsurată. */
-  | { readonly fel: 'potrivire'; readonly document: Document; readonly dop: number; readonly reliefuri?: ResurseRelief }
+  | { readonly fel: 'potrivire'; readonly document: Document; readonly dop: number; readonly reliefuri?: ResurseRelief; readonly cote?: CoteRelief }
+  /** Planul cotelor (felia 18.1↑h-8): loturile operațiilor reliefului de pe foaie, în cel mult `fire` pe relief. */
+  | { readonly fel: 'cote-plan'; readonly document: Document; readonly fire: number; readonly reliefuri?: ResurseRelief }
+  /** Cotele unui lot (felia 18.1↑h-8), fără document: cererea lotului e de sine stătătoare. */
+  | { readonly fel: 'cote'; readonly cerere: CerereCote }
   /** Timpul jobului de lângă traseu (ADR 0046 §8) pentru un program deja calculat, fără CAM. */
   | { readonly fel: 'timp'; readonly program: ProgramImpachetat; readonly foaie: Montaj['foaie']; readonly setari: string | undefined }
   /** Verificarea vectorilor (ADR 0124): problemele contururilor foii, cu ce se poate repara din ele, fără să schimbe documentul. */
@@ -133,6 +140,9 @@ export type CerereCam =
   | { readonly fel: 'conversie'; readonly document: Document; readonly cerere: CerereConversie; readonly indexFoaie?: number }
   /** Legarea căilor (ADR 0182, felia 10.3↑o): piesele schimbate și instanțele de șters, pe documentul cererii. */
   | { readonly fel: 'legare'; readonly document: Document; readonly cerere: CerereLegare; readonly optiuni: OptiuniLegare; readonly indexFoaie?: number };
+
+/** Planul cotelor: loturile fiecărei operații a reliefului, după cheia ei (`cheieRelief`). */
+export type RaspunsCotePlan = { readonly loturi: readonly { readonly cheie: string; readonly cereri: readonly CerereCote[] }[] };
 
 export type RaspunsExport =
   | {

@@ -17298,8 +17298,8 @@ alege felia din nota ei, cu recomandarea, și scrie întâi un ADR scurt dacă e
 ## 2026-11-28 — 18.1↑j: straturile reliefului, editabile, și imaginea ca strat nou (Model: Claude Opus 5.5)
 
 **Prompt:** „Porneste sesiunile, pune-le sa continue cu ce aveau la rand” (owner-ul, transmis liniei reliefului de sesiunea
-principală la 09:40: straturile și combinarea, cu un id liber și tabelul din ADR 0310 îndreptat). **Started:** 28.11, 09:45, pe
-`wip/18.1-relief`, din `main` `09689d36`. **Completed:** 28.11, 10:10.
+principală la 09:40: straturile și combinarea, cu un id liber și tabelul din ADR 0310 îndreptat). **Started:** 28.11, 09:42, pe
+`wip/18.1-relief`, din `main` `09689d36`. **Completed:** 28.11, 10:07.
 
 - **Editarea, pură:** `src/model/straturiRelief.ts` (ochiul, numele, modul, ordinea, ștergerea, stratul nou, câte sunt ascunse,
   relieful ales), cu probele întâi (`relief.straturi.test.ts`).
@@ -17316,6 +17316,91 @@ principală la 09:40: straturile și combinarea, cu un id liber și tabelul din 
 - **Mărimea:** pornirea 112,0 → 112,1 kB (cu ușa 117,6, cu Atelierul 117,9 / 125), totalul 945,6 → 947,6 / 1 000.
 - **Documentele:** ADR 0320 (cu alegerile owner-ului, recomandarea aplicată), nota în tabelul ADR 0310 §8, manualul (ro, en),
   fișa etapei 3, registrul otrăvurilor, nota liniei, traducerile. Documentul rămâne v32: v33 nefolosit.
+
+## 2026-11-28 — 18.1↑f: litofania (Model: Claude Opus 5.5)
+
+**Prompt:** „Porneste sesiunile, pune-le sa continue cu ce aveau la rand” (același cuvânt, prin sesiunea principală; litofania
+e următoarea în ordinea din ADR 0310 §8). **Started:** 28.11, 10:08, pe `wip/18.1-relief`, după 18.1↑j. **Completed:** 28.11, 10:24.
+
+- **ADR 0321**, cu alegerile owner-ului (recomandarea aplicată): lumina liniară acum, după material mai târziu; transparentul la
+  grosimea maximă; rama implicit 0; planul zero spus, nu pus singur; din față implicit; 0,8 și 3 mm.
+- **Probele pe hârtie întâi:** `src/relief/litofanie.ts` (grosimile, oglinda, rama, lumina din spate și imaginea ei),
+  `relief.litofanie.test.ts`.
+- **Workerul:** cererea `din-imagine` cu `litofanie` (rama în mm, refuzul grosimilor pe dos, previzualizarea cu lumina din spate).
+- **Fereastra:** „Litofanie” în capul ferestrei unei imagini (`AlegereRezultat`), câmpurile ei, nota tăierii.
+- **Programul:** `litofanie.program.test.ts`, trei pătrate de gri pe o placă de 6 mm, cu planul zero la grosimea plăcii: sub
+  fiecare rămâne grosimea lui, la 0,001 mm.
+- **E2e:** `relief.litofanie.spec.ts` (grila cu rama, grosimile, lumina, oglinda, amprenta ca în Node).
+- **Otrăvurile** (`test/otravuri/18.1f.py`): 19 / 19 prinse, martorul a scăpat; F10 și F17 scăpaseră, iar probele le cer acum.
+- **Mărimea:** pornirea +0 (112,1 / 125), totalul 947,6 → 948,4 / 1 000.
+- **Documentele:** manualul (ro, en), fișa etapei 3, registrul otrăvurilor, nota liniei, traducerile, indexul ADR.
+
+## 2026-11-28 — 18.1↑g: relieful ca imagine gri pe 16 biți, dus și întors (Model: Claude Opus 5.5)
+
+**Prompt:** „Porneste sesiunile, pune-le sa continue cu ce aveau la rand” (același cuvânt; relieful ↔ gri pe 16 biți e următorul
+în ADR 0310 §8). **Started:** 28.11, 10:25, pe `wip/18.1-relief`, după 18.1↑f. **Completed:** 28.11, 10:35.
+
+- **ADR 0322**, cu alegerile owner-ului (recomandarea aplicată): PNG acum, TIFF mai târziu; compusul vizibil; Z-ul din fișier
+  implicit; simularea ca strat mai târziu.
+- **Codecul, pe hârtie întâi:** `src/relief/png16.ts` (scriitorul gri pe 16 biți cu `tEXt` și `pHYs`; cititorul pentru tipurile
+  0, 2, 4, 6 pe 8 și 16 biți, cu filtrele 0–4), față de `node:zlib` (`png16.test.ts`).
+- **Workerul:** `spre-png` (compusul vizibil, scalat, cu Z-ul și celula); la import, un PNG pe 16 biți ocolește browserul;
+  `zDinFisier` aduce relieful cum a plecat (exportul lui dă aceiași octeți).
+- **Interfața:** „Exportă ca imagine pe 16 biți…” în panou (adus la cerere, `reliefPng.ts`); „Z-ul și celula din fișier” în
+  fereastra reliefului.
+- **E2e:** `relief.png16.spec.ts` (dus, Z-ul din fișier peste înălțimea ferestrei, întors, aceiași octeți).
+- **Otrăvurile** (`test/otravuri/18.1g.py`): 17 / 17 prinse, martorul a scăpat; G01, G15 și G17 scăpaseră, iar probele le cer acum.
+- **Mărimea:** pornirea +0 (112,1 / 125), totalul 948,4 → 951,1 / 1 000.
+- **Documentele:** manualul (ro, en), fișa etapei 3, registrul otrăvurilor, nota liniei, traducerile, indexul ADR.
+
+## 2026-11-28 — 18.1↑i: litofania pe placa 18 (Model: Claude Opus 5.5)
+
+**Prompt:** „Porneste sesiunile, pune-le sa continue cu ce aveau la rand” (același cuvânt; „restul plăcii 18”). **Started:**
+28.11, 10:36, pe `wip/18.1-relief`, după 18.1↑g. **Completed:** 28.11, 10:42.
+
+- **Generatorul:** `test/placi/placa-18/genereaza-litofanie.ts` (trei pătrate de gri, placa albă translucidă de 6 mm, „Relief 3D”
+  cu planul zero la 6, freza plată Ø3 și bila Ø3), cu fișierele de aur `placa-18-litofanie-{1-T1,2-T2}.nc`.
+- **Predicțiile** (`placa18.litofanie.test.ts`, oracolul simulării): grosimile după T1 și T2, rama, nimic sub model, pasul pe
+  material, coborârea; **aurul** (`placa18.litofanie.aur.test.ts`).
+- **Găsit:** o coloană a grilei aliniate fix pe ecuatorul bilei dă o „tăietură” de 3,38 mm în oracolul materialului (lățime
+  zero); proba își deplasează grila cu 0,01 mm (pe două deplasări: 2,000 și 2,001 mm pe trecere).
+- **Fișa:** `docs/etape/placa-18.md`, partea a doua (materialul, pătratele, fișierele, tăierea, timpul, ce se măsoară).
+- **Documentele:** fișa etapei 3, nota liniei, traducerile. Fără cod de produs.
+
+## 2026-11-28 — 18.1↑h-1: relieful la 4000², măsurătorile (Model: Claude Opus 5.5)
+
+**Prompt:** „Porneste sesiunile, pune-le sa continue cu ce aveau la rand” (același cuvânt; 4000², următorul din ADR 0310 §8).
+**Started:** 28.11, 10:43, pe `wip/18.1-relief`, după 18.1↑i. **Completed:** 28.11, 10:55.
+
+- **Sonda:** `scripts/masura-relief.ts` (un relief sintetic de N², pe drumul aplicației: stratul, citirea, compunerea, desenul,
+  PNG-ul pe 16 biți, degroșarea, finisarea), cu timpul și memoria fiecăruia.
+- **Măsurat** (container, un fir): la 4000², tot ce ține de relief sub 2,3 s; degroșarea 27 s; finisarea 118 s la pasul 0,5 și
+  la pasul 0,3 187 s de calcul, apoi refuzul plafonului de 20 M de puncte, cu 2,2 GB. Profilul: 92 % în cota segmentelor.
+- **ADR 0323, propus:** sunt depășite două praguri „Se redeschide dacă” din ADR 0310; recomandarea e liniile pe workere și
+  memoria pe benzi, fără GPU, apoi măsurătoarea pe calculatorul owner-ului. Codul așteaptă răspunsul.
+- **Documentele:** fișa etapei 3, nota liniei, traducerile, indexul ADR. Fără cod de produs.
+
+## 2026-11-28 — 18.1↑h-2: proba bătăilor (Model: Claude Opus 5.5)
+
+**Prompt:** același cuvânt („Porneste sesiunile, pune-le sa continue cu ce aveau la rand”); rândul 18.1↑h din ADR 0310 §8 cere
+„alinierea probată cu bătăile”. **Started:** 28.11, 10:56, pe `wip/18.1-relief`, după 18.1↑h-1. **Completed:** 28.11, 11:03.
+
+- **Proba:** `test/unit/relief3d.batai.oracol.test.ts` (11): dungile de o celulă, finisate cu bila Ø3, aliniat și nealiniat;
+  CL-ul fiecărei linii pe hârtie, cu surplusul câmpului la valoarea exactă; fără bătăi aliniat, bătăile cu perioada de pe
+  hârtie nealiniat; suprafața din simulatorul oracolului.
+- **Otrăvurile:** `test/otravuri/18.1h2.py`, 5 / 5, martorul a scăpat.
+- **ADR 0323:** secțiunea bătăilor, plus „Ce urmează”: 5a, 1a, 2a, cu recomandarea aplicată, fără GPU.
+- Doar probe și documente; nimic în aplicație.
+
+## 2026-11-28 — 18.1↑h-3: plafonul punctelor, spus înaintea cotelor (Model: Claude Opus 5.5)
+
+**Prompt:** același cuvânt; ADR 0323, întrebarea 5a, cu recomandarea aplicată („mergi înainte cu recomandarea”). **Started:**
+28.11, 11:04, pe `wip/18.1-relief`, după 18.1↑h-2. **Completed:** 28.11, 11:20.
+
+- **CAM-ul** (`src/cam/reliefFinisare.ts`): liniile și punctele de pe trecere, înaintea cotelor; marginea de jos a trecerilor din
+  vârful punctului de lângă cea mai joasă celulă, socotit exact; refuzul la 4000² cu pasul 0,3, în 2,9 s (era 187 s).
+- **Proba:** `test/unit/reliefFinisare.puncte.test.ts` (3). **Otrăvurile:** `18.1h3.py`, 6 / 6, martorul a scăpat.
+- Programele care ies, octet cu octet; nimic altceva în aplicație.
 
 ## 2026-11-28 — Sesiunea principală în cloud: a șaptezeci și șaptea unire (18.1↑j) (Model: Claude Opus 5.5)
 
@@ -17341,3 +17426,81 @@ rand” al owner-ului); ordinul „unește ce se poate”
 - **Pe test:** lotul 71, după lotul 70 (18.1↑j).
 - **Documentele:** decizia și rândul de stare în `CLAUDE.md`; starea din `docs/linii/principala.md`; rândul atelierului din
   `docs/linii/README.md`.
+
+## 2026-11-28 — 18.1↑h-4: cota segmentului mai ieftină, exactă (Model: Claude Opus 5.5)
+
+**Prompt:** același cuvânt; ADR 0323, 1a, cu recomandarea aplicată (confirmată de sesiunea principală: „mergi cu recomandările
+(1a, 2a, 5a)”). **Started:** 28.11, 11:23, pe `wip/18.1-relief`, după 18.1↑h-3. **Completed:** 28.11, 11:36.
+
+- **CAM-ul** (`cotaSegment`, `src/cam/reliefFinisare.ts`): marginea de jos ieftină a distanței pe blocuri, distanța exactă doar
+  pe frunze; finisarea la 4000² și 0,5, 117,6 → 43,5 s; degroșarea, 27,4 → 12,6 s; programele, octet cu octet.
+- **Proba:** `test/unit/reliefFinisare.cota.test.ts` (forța brută). **Otrăvurile:** `18.1h4.py`, 7 / 7.
+- **Sonda** (`scripts/masura-relief.ts`) primește pasul pe trecere: la 0,3, într-o trecere, 69,4 s și 3,1 GB.
+- Cu `main` adus (`f0d031e7`, 18.1↑j unită).
+
+## 2026-11-28 — 18.1↑h-5: câmpul și cota pe o bandă de rânduri (Model: Claude Opus 5.5)
+
+**Prompt:** același cuvânt; ADR 0323, 2a, cu recomandarea aplicată (confirmată de sesiunea principală). **Started:** 28.11,
+11:37, pe `wip/18.1-relief`, după 18.1↑h-4. **Completed:** 28.11, 11:46.
+
+- **CAM-ul** (`src/cam/reliefFinisare.ts`): `campPeCelula` și `campConservativ` pe rândurile unei benzi, cu nodurile pe două
+  rânduri; `pregateste(r, { j0, j1 })`; `cotaSegment` cu rândul global al frunzelor. Fără bandă, programele, octet cu octet.
+- **Proba:** `test/unit/reliefFinisare.banda.test.ts` (3). **Otrăvurile:** `18.1h5.py`, 6 / 6.
+- **Măsurat:** vârful memoriei la degroșare, la 4000², 1 728 → 1 245 MB. Sonda spune vârful procesului (`maxRSS`).
+- **ADR 0323:** implementarea 2a (banda) și întrebarea 6 (mișcările finisării ținute compact).
+
+## 2026-11-28 — 18.1↑h-6: finisarea în plan, cote pe loturi și mișcări (Model: Claude Opus 5.5)
+
+**Prompt:** același cuvânt; ADR 0323, 1a (liniile pe workere), cu recomandarea aplicată. **Started:** 28.11, 11:47, pe
+`wip/18.1-relief`, după 18.1↑h-5. **Completed:** 28.11, 12:02.
+
+- **CAM-ul** (`src/cam/reliefFinisare.ts`): `planTreceri`, `coteLot` (cu benzile lotului, după raza cotei), `miscariTreceri`;
+  `planFinisare` și `planDegrosare`, pentru probe și pentru bazin. Programele, octet cu octet.
+- **Proba:** `test/unit/reliefFinisare.loturi.test.ts` (2) și șanțul în V din `reliefFinisare.puncte.test.ts`.
+  **Otrăvurile:** `18.1h6.py`, 6 / 6.
+- **ADR 0323:** planul liniilor pe workere (18.1↑h-6, 18.1↑h-7) și implementarea lui 18.1↑h-6.
+
+## 2026-11-28 — 18.1↑h-7: loturile de linii ca cereri de sine stătătoare (Model: Claude Opus 5.5)
+
+**Prompt:** același cuvânt; ADR 0323, 1a (liniile pe workere). **Started:** 28.11, 12:03, pe `wip/18.1-relief`, după 18.1↑h-6.
+**Completed:** 28.11, 12:13.
+
+- **CAM-ul** (`src/cam/reliefFinisare.ts`): `loturiCote`, `cotePuncte`, `CerereCote`; `ReliefCam.zRand0` (o bandă de rânduri);
+  `ParametriFinisare.cote` (și la degroșare). Programele, octet cu octet.
+- **Proba:** `test/unit/reliefFinisare.cereri.test.ts` (6). **Otrăvurile:** `18.1h7.py`, 7 / 7.
+
+## 2026-11-28 — 18.1↑h-8: bazinul cotelor (Model: Claude Opus 5.5)
+
+**Prompt:** același cuvânt; ADR 0323, 1a. **Started:** 28.11, 12:14, pe `wip/18.1-relief`, după 18.1↑h-7. **Completed:** 28.11, 12:28.
+
+- **Bazinul** (`src/jobs/bazinCam.ts`): peste `PRAG_COTE`, planul (`cote-plan`), loturile pe N workere (`cote`), apoi cotele date
+  exportului, traseului, simulării și potrivirii; sub prag, ca înainte; la o cădere, fără cote.
+- **Lucrarea** (`src/cam/job.ts`): `parametriRelief`, `planuriRelief`, `cheieRelief`; `programDinDocument` primește cotele.
+  **Calculul** (`src/jobs/calculCam.ts`, `protocolCam.ts`): cererile `cote-plan` și `cote`.
+- **Proba:** `test/unit/bazinCote.test.ts` (5). **Otrăvurile:** `18.1h8.py`, 4 / 4, plus una echivalentă.
+- **În browser:** la 2000², cu 3 workere, aceeași amprentă a G-code-ului, 23–25 s → 17 s.
+
+
+## 2026-11-28 — 18.1↑g-2: TIFF-ul ca relief, pe 8 și 16 biți (Model: Claude Opus 5.5)
+
+**Prompt:** același cuvânt („mergi înainte cu recomandarea”); ADR 0322 §5.1. **Started:** 28.11, 12:32, pe `wip/18.1-relief`,
+după 18.1↑h-8. **Completed:** 28.11, 12:46.
+
+- **Cititorul** (`src/trasare/tiff.ts`): `decodeazaTiffExact` (eșantioanele la 0 … 255 fără rotunjire, fără reducere) și
+  `marimeTiff` (mărimea din antet); decodarea pe 8 biți a trasării, aceeași.
+- **Workerul reliefului** (`src/jobs/calculRelief.ts`): un TIFF merge la cititorul exact, cu plafonul din antet și refuzurile
+  `tiff` / `tiff-stricat` (textele în ambele limbi); manualul, în ambele limbi.
+- **Proba:** `test/unit/relief.tiff.test.ts` (8, roșie pe codul de dinainte), `test/e2e/relief.tiff.spec.ts` (2).
+  **Otrăvurile:** `18.1g2.py`, 15 / 15. **Mărimea:** pornirea +0, totalul +6,0 kB (959,4 / 1 000).
+
+## 2026-11-28 — 18.1↑g-3: simularea salvată ca strat (Model: Claude Opus 5.5)
+
+**Prompt:** același cuvânt („mergi înainte cu recomandarea”); ADR 0322 §5.4. **Started:** 28.11, 12:47, pe `wip/18.1-relief`,
+după 18.1↑g-2. **Completed:** 28.11, 13:02.
+
+- **Pur** (`src/relief/dinSimulare.ts`): `valoriDinSimulare` (centrele celulelor, prin matricea reliefului, pe pixelii simulării),
+  `dzRelief` (ca la lucrare). **Workerul reliefului:** cererea `din-simulare`. **Aplicația** (`src/app/reliefSimulare.ts`, adusă
+  la primul clic): programul foii, fereastra reliefului, stratul nou, ascuns, „înlocuiește”; butonul „Strat din simulare” în
+  secțiunea Relieful; textele și manualul, în ambele limbi.
+- **Proba:** `test/unit/relief.simulare.test.ts` (7), `test/e2e/relief.simulare.spec.ts` (2). **Otrăvurile:** `18.1g3.py`,
+  12 / 12. **Mărimea:** pornirea +0, totalul +1,9 kB (961,3 / 1 000).

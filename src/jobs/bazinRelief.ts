@@ -25,6 +25,8 @@ type Raspuns = { readonly ok: true; readonly raspuns: RaspunsRelief } | { readon
 function transferabile(c: CerereRelief): ArrayBuffer[] {
   if (c.tip === 'din-imagine') return [];
   const t = new Set<ArrayBuffer>();
+  // Fereastra simulării (ADR 0322 §5.4): doar un tablou al ei (nu un `ArrayLike` oarecare) trece fără copie.
+  if (c.tip === 'din-simulare' && ArrayBuffer.isView(c.simulare.z) && c.simulare.z.buffer instanceof ArrayBuffer) t.add(c.simulare.z.buffer);
   for (const s of c.straturi) for (const o of Object.values(s.octeti)) t.add(o.buffer);
   return [...t];
 }

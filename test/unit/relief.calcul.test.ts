@@ -142,3 +142,110 @@ test('stratul pe grila unui relief: o imagine care nu atinge nicio celulă e gol
   const r = await reliefInBazin({ tip: 'din-imagine', imagine: px, optiuni: O, scara: { latimeMm: 0.1 }, pe: { nx: 2, ny: 2, celula: 1 } });
   assert.deepEqual(r, { ok: false, cod: 'gol' });
 });
+
+// Litofania (ADR 0321, felia 18.1↑f): harta grosimilor, cu rama în mm (rotunjită la celule) și fața; previzualizarea arată
+// lumina din spate, nu relieful umbrit.
+test('litofania din pixeli: grosimile, rama în jur, din spate oglindită, lumina din spate în previzualizare', async () => {
+  const px = pixeli(2, 1, (x) => (x === 0 ? [255, 255, 255, 255] : [0, 0, 0, 255]));
+  const litofanie = { tmin: 0.8, tmax: 3, ramaMm: 1, spate: true };
+  const r = ok(await reliefInBazin({ tip: 'din-imagine', imagine: px, optiuni: O, scara: { latimeMm: 2 }, litofanie }), 'din-imagine');
+  // Un pixel de 1 mm, rama de 1 mm = o celulă în jur: 4 × 3.
+  assert.deepEqual([r.nx, r.ny, r.celula], [4, 3, 1]);
+  const { litofanieDinGri } = await import('../../src/relief/litofanie.ts');
+  const { gri } = await import('../../src/relief/imagine.ts');
+  const lit = litofanieDinGri(gri(px.rgba, 2, 1, 'l'), 2, 1, { tmin: 0.8, tmax: 3, rama: 1, spate: true });
+  const st = await stratDinGrila(lit.valori, 4, 3);
+  assert.equal(r.amprenta, st.amprenta);
+  assert.ok(Math.abs((r.z?.min ?? 0) - 0.8) < 1e-3 && Math.abs((r.z?.max ?? 0) - 3) < 1e-3, JSON.stringify(r.z));
+  // Lumina din spate: rama și negrul întunecate, albul (oglindit: a treia celulă a rândului din mijloc) luminos.
+  const g = (i: number, j: number): number => r.umbrit.rgba[4 * (j * 4 + i)] ?? -1;
+  assert.deepEqual([g(0, 1), g(1, 1), g(2, 1), g(3, 1)], [0, 0, 255, 0]);
+});
+
+test('litofania: grosimile pe dos sau negative sunt refuzate', async () => {
+  const px = pixeli(1, 1, () => [255, 255, 255, 255]);
+  for (const [tmin, tmax] of [[3, 0.8], [-1, 2], [1, 1]] as const) {
+    const r = await reliefInBazin({ tip: 'din-imagine', imagine: px, optiuni: O, scara: { latimeMm: 1 }, litofanie: { tmin, tmax, ramaMm: 0, spate: false } });
+    assert.deepEqual(r, { ok: false, cod: 'grosimi' }, `${tmin} … ${tmax}`);
+  }
+});
+
+test('litofania: rama în mm, rotunjită la celule de alt pixel decât 1 mm (1 mm la un pixel de 0,5 mm = 2 celule)', async () => {
+  const px = pixeli(2, 1, () => [255, 255, 255, 255]);
+  const r = ok(await reliefInBazin({ tip: 'din-imagine', imagine: px, optiuni: O, scara: { latimeMm: 1 }, litofanie: { tmin: 0.8, tmax: 3, ramaMm: 1, spate: false } }), 'din-imagine');
+  assert.deepEqual([r.nx, r.ny, r.celula], [6, 5, 0.5]);
+});
+
+// Relieful ca imagine pe 16 biți (ADR 0322, felia 18.1↑g): exportul compusului și importul înapoi, cu Z-ul din fișier.
+test('spre PNG: compusul straturilor vizibile, scalat între z_min și z_max pe 16 biți, cu Z-ul și celula în fișier', async () => {
+  const st = await stratDinGrila(Float32Array.from([1, 2, 3, 4, 5, 6]), 3, 2);
+  const ascuns = await stratDinGrila(Float32Array.from([9, 9, 9, 9, 9, 9]), 3, 2);
+  const straturi = [
+    { mod: 'aduna' as const, vizibil: true, harta: st.text, octeti: Object.fromEntries(st.octeti) },
+    { mod: 'aduna' as const, vizibil: false, harta: ascuns.text, octeti: Object.fromEntries(ascuns.octeti) },
+  ];
+  const r = await reliefInBazin({ tip: 'spre-png', nx: 3, ny: 2, celula: 0.5, straturi });
+  if (!r.ok || r.tip !== 'png') assert.fail(JSON.stringify(r));
+  const { citestePng } = await import('../../src/relief/png16.ts');
+  const p = await citestePng(r.octeti);
+  if ('eroare' in p) assert.fail(p.eroare);
+  assert.deepEqual([p.latime, p.inaltime, p.adancime, p.pixeliPeMetru], [3, 2, 16, 2000]);
+  const m = JSON.parse(p.text['cncvs2-relief'] ?? '{}') as { v: number; zMin: number; zMax: number; celula: number };
+  assert.deepEqual([m.v, m.celula], [1, 0.5]);
+  assert.ok(Math.abs(m.zMin - 1) < 1e-3 && Math.abs(m.zMax - 6) < 1e-3, JSON.stringify(m));
+  // Rândul de sus al imaginii e rândul de sus al reliefului (j = 1: 4, 5, 6); valoarea (z − 1) / 5 · 65 535.
+  const v = (x: number, y: number): number => Math.round(p.rgba[4 * (y * 3 + x)]! * 65535 / 255);
+  assert.deepEqual([v(0, 0), v(1, 0), v(2, 0), v(0, 1), v(1, 1), v(2, 1)], [3, 4, 5, 0, 1, 2].map((k) => Math.round(k / 5 * 65535)));
+});
+
+test('din PNG pe 16 biți, cu Z-ul din fișier: relieful revine cum a plecat (celula și înălțimile), iar exportul lui e același', async () => {
+  const valori = Float32Array.from({ length: 12 }, (_, k) => 0.25 + k * 0.371);
+  const st = await stratDinGrila(valori, 4, 3);
+  const straturi = [{ mod: 'aduna' as const, vizibil: true, harta: st.text, octeti: Object.fromEntries(st.octeti) }];
+  const dus = await reliefInBazin({ tip: 'spre-png', nx: 4, ny: 3, celula: 0.2, straturi });
+  if (!dus.ok || dus.tip !== 'png') assert.fail(JSON.stringify(dus));
+  const intors = ok(await reliefInBazin({ tip: 'din-imagine', imagine: new Blob([dus.octeti.slice()]), optiuni: O, scara: { dpi: 96 }, zDinFisier: true }), 'din-imagine');
+  assert.deepEqual([intors.nx, intors.ny, intors.celula], [4, 3, 0.2]);
+  assert.deepEqual(intors.fisier && [intors.fisier.adancime, intors.fisier.celula], [16, 0.2]);
+  const { daleDinHarta, grilaDinDale } = await import('../../src/relief/strat.ts');
+  const { hartaDinText } = await import('../../src/relief/harta.ts');
+  const h = hartaDinText(intors.harta);
+  assert.ok(h);
+  const d = daleDinHarta(h, (a) => intors.octeti[a]);
+  if (!d.ok) assert.fail('dale');
+  const z = grilaDinDale(4, 3, d.dale), z0 = grilaDinDale(4, 3, st.dale);
+  // Cel mult o jumătate de treaptă a fișierului, plus cuantizarea dalelor.
+  const treapta = (Math.max(...z0) - Math.min(...z0)) / 65535;
+  for (let k = 0; k < 12; k++) assert.ok(Math.abs((z[k] ?? 0) - (z0[k] ?? 0)) <= treapta, `[${k}] ${z[k]} față de ${z0[k]}`);
+  // Punctul fix: exportul reliefului întors dă aceiași octeți.
+  const din2 = [{ mod: 'aduna' as const, vizibil: true, harta: intors.harta, octeti: intors.octeti }];
+  const dus2 = await reliefInBazin({ tip: 'spre-png', nx: 4, ny: 3, celula: 0.2, straturi: din2 });
+  if (!dus2.ok || dus2.tip !== 'png') assert.fail('dus2');
+  assert.deepEqual([...dus2.octeti], [...dus.octeti]);
+});
+
+test('din PNG pe 16 biți, fără Z-ul din fișier: înălțimea și baza ferestrei, pe griul de 16 biți', async () => {
+  const { scriePngGri16 } = await import('../../src/relief/png16.ts');
+  const png = await scriePngGri16(Uint16Array.from([0, 32768, 65535]), 3, 1);
+  const r = ok(await reliefInBazin({ tip: 'din-imagine', imagine: new Blob([png.slice()]), optiuni: O, scara: { latimeMm: 3 } }), 'din-imagine');
+  assert.equal(r.fisier?.adancime, 16);
+  assert.equal(r.fisier?.celula, undefined);
+  assert.ok(Math.abs((r.z?.max ?? 0) - 10) < 1e-3);
+  const { daleDinHarta, grilaDinDale } = await import('../../src/relief/strat.ts');
+  const { hartaDinText } = await import('../../src/relief/harta.ts');
+  const d = daleDinHarta(hartaDinText(r.harta)!, (a) => r.octeti[a]);
+  if (!d.ok) assert.fail('dale');
+  const z = grilaDinDale(3, 1, d.dale);
+  // Griul de mijloc, 32768 / 65535 din 10 mm: 5,00008 (pe 8 biți ar fi fost 128 / 255 · 10 = 5,0196).
+  assert.ok(Math.abs((z[1] ?? 0) - 32768 / 65535 * 10) < 1e-3, String(z[1]));
+});
+
+test('din PNG pe 16 biți: metadate de altă versiune sau cu o celulă rea nu se cred (scara ferestrei)', async () => {
+  const { scriePngGri16 } = await import('../../src/relief/png16.ts');
+  for (const meta of [{ v: 2, zMin: 0, zMax: 1, celula: 1 }, { v: 1, zMin: 0, zMax: 1, celula: -1 }, { v: 1, zMin: 3, zMax: 1, celula: 1 }]) {
+    const png = await scriePngGri16(Uint16Array.from([0, 65535]), 2, 1, { text: { 'cncvs2-relief': JSON.stringify(meta) } });
+    const r = ok(await reliefInBazin({ tip: 'din-imagine', imagine: new Blob([png.slice()]), optiuni: O, scara: { latimeMm: 4 }, zDinFisier: true }), 'din-imagine');
+    assert.equal(r.fisier?.celula, undefined, JSON.stringify(meta));
+    assert.equal(r.celula, 2, JSON.stringify(meta));
+  }
+});
