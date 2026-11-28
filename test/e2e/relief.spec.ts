@@ -96,7 +96,11 @@ test('logoul ca relief: grila cât imaginea, scara presupusă, amprenta ca în N
   await expect(page.getByTestId('prop-relief')).toBeVisible();
   await expect(page.getByTestId('prop-relief')).toContainText(`${n.latime} × ${n.inaltime}`);
   await expect(page.getByTestId('prop-relief')).toContainText('de la 0.00 la');
-  await expect(page.getByTestId('prop-relief-straturi').locator('li')).toHaveText(['logo-cvs.png · adună']);
+  // Straturile, editabile din felia 18.1↑j (ADR 0320): unul, cu numele fișierului și modul „adună”.
+  const straturi = page.getByTestId('prop-relief-straturi').locator('li');
+  await expect(straturi).toHaveCount(1);
+  await expect(straturi.locator('[data-camp="strat-nume-s1"]')).toHaveValue('logo-cvs.png');
+  await expect(straturi.locator('[data-camp="strat-mod"]')).toHaveValue('aduna');
   await expect(page.getByTestId('jurnal')).toHaveText('0 erori în jurnalul local');
 });
 

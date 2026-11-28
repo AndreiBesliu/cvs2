@@ -1664,6 +1664,11 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   (`9ce32063`). Rândul reliefului are garda lui, `formaPeRandRelief` (plata, V-ul, bila, toroidala: un profil n-are rândul
   reliefului, deci Exportă nu-l scrie înapoi ca plată), iar `formaPeRand` rămâne a frezelor (cu profilul). **O formă nouă
   a frezei se judecă pe fiecare fel de rând, cu garda rândului lui.** Feliile: pornirea +0,1 kB, totalul +3,8 kB.
+  **Straturile reliefului, editabile (ADR 0320, felia 18.1↑j)** gata pe 28.11, unită în `main` pe 28.11 (`385f792d`): în
+  panou, ochiul, numele, modul, ↑ / ↓ și × fiecărui strat, prin `document.forma` cu `nodEditat` (câte un pas de anulare);
+  cu un relief ales, „Un strat nou pe „…”” în „Relief din imagine”, centrat pe grila reliefului (`asezaPeGrila`); fișa
+  reliefului din export spune straturile ascunse. **Un strat ascuns, chiar lipsă din browser, dă exact programul fără
+  el.** Straturile erau deja în schema din v28: documentul rămâne v32. Felia: pornirea +0,1 kB, totalul +1,9 kB.
   **Raportările (15.B↑b) și imprimanta (3.6g, 3.6h, 3.6i pașii 1–2; ADR 0191 acceptat, codul 3.6j încă pe ramură) unite în
   `main` pe 07.11**, peste biblioteca extensiilor (`b501571`, `6e61bee`, apoi `e9cf6ee` cu DEVLOG-ul bibliotecii): **pornirea
   101,7 (cu ușa 105,3 / 110 kB), totalul 535,0 / 550, /admin 106,5 / 200, contul 29,6 / 32.** **Pe test (și pe live), serverul
@@ -2163,6 +2168,23 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 28.11.2026, la prânz (a șaptezeci și șaptea unire din cloud): **straturile reliefului (18.1↑j), unite în `main`**
+  (sesiunea principală, ramura `unire-2811d`, din `09689d36`). Linia reliefului, ramura `wip/18.1-relief`, `936ee2d3`, PR-ul
+  `AndreiBesliu/cvs2#81` (ADR 0320; pornită la „Porneste sesiunile, pune-le sa continue cu ce aveau la rand” al owner-ului),
+  unită în `385f792d`: în panou, straturile unui relief se editează (ochiul, numele, modul, ↑ / ↓, ×), câte un pas de
+  anulare; cu un relief ales, „Relief din imagine” pune imaginea ca strat nou, centrată pe grila reliefului; fișa reliefului
+  din export spune câte straturi sunt ascunse. Programul nu se schimbă: un strat ascuns dă exact programul fără el.
+  Otrăvurile 23 / 23. Id-ul e 18.1↑j (18.1↑e e toroidala; nota din ADR 0310 §8). **v33 nu e folosit:** straturile erau deja
+  în schema reliefului, deci documentul rămâne v32. Alegerile owner-ului, cu recomandarea aplicată, sunt în ADR 0320
+  (ordinea cu săgeți; imaginea centrată la o lățime aleasă; implicit „O piesă nouă”; previzualizarea arată doar stratul;
+  modul „adună”; fără mutarea sau rotirea unui strat, care ar cere v33). `main` nu se mișcase, deci **arborele unirii e
+  chiar al lui `936ee2d3`** și a intrat pe porțile lui: completul 46124373639, verde (unit 11 069 / 0, 12 sărite pe Linux;
+  e2e 1 035 / 1 035; funcțiile pe emulatoare 142 / 142; paginile 62 / 62); rapidul, verde. Pornirea 112,1 kB (cu ușa
+  117,6, cu Atelierul 117,9 / 125), totalul 947,5 / 1 000. Nimic pe server. Pe ramură, după ea, cu porțile în lucru:
+  18.1↑f (litofania, ADR 0321), 18.1↑g (relieful ca PNG gri pe 16 biți, ADR 0322), 18.1↑i (litofania pe placa 18), apoi
+  18.1↑h (4000², ADR 0323 propus; linia merge cu recomandările: liniile finisării pe workerele bazinului CAM, câmpul pe
+  benzi, refuzul plafonului de puncte înaintea cotelor). **La owner:** măsurătoarea la 4000² pe calculatorul lui (`node
+  --expose-gc scripts/masura-relief.ts`), care decide pragul de 10 s; restul listei, neschimbat.
 - 28.11.2026, dimineața: **liniile pornesc ce aveau la rând** („Porneste sesiunile, pune-le sa continue cu ce aveau la rand”,
   în sesiunea principală, la 09:37). Sesiunea principală le-a scris la 09:40: **frezele**, 16.A↑f-5 (editorul siluetei
   desenate în „Frezele mele”, ADR 0304 §5, 5a), apoi g; **relieful**, straturile și combinarea (rândul numit „18.1↑e” în

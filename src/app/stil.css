@@ -4190,6 +4190,25 @@ main h1 {
 .prop-straturi li[data-vizibil='false'] {
   opacity: 0.6;
 }
+/* Un strat editabil (ADR 0320): ochiul, numele, modul, ordinea și ștergerea pe un rând, care se rupe pe ecranele înguste. */
+.prop-straturi .prop-strat {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-1);
+  margin-bottom: var(--sp-1);
+}
+/* Ascuns, rândul se estompează, afară de ochi: el e butonul care îl aduce înapoi. */
+.prop-straturi .prop-strat[data-vizibil='false'] {
+  opacity: 1;
+}
+.prop-straturi .prop-strat[data-vizibil='false'] > :not([data-buton='strat-ochi']) {
+  opacity: 0.6;
+}
+.prop-straturi .prop-strat-ascuns {
+  font-size: 0.85em;
+  color: var(--t-slab);
+}
 /* Relieful umbrit (ADR 0310 §7): toată imaginea, cu proporțiile ei, fără tragere. */
 .trasare-panza.relief-previz {
   object-fit: contain;

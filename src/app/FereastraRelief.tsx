@@ -8,6 +8,8 @@ import { AlegereRezultat, type RezultatImagine } from '../ui/AlegereRezultat.tsx
 import { CampNumeric } from '../ui/CampNumeric.tsx';
 import type { ImportPregatit } from '../ui/actiuniImport.ts';
 import { useLimba } from '../ui/useLimba.ts';
+import type { FormaRelief } from '../model/document.ts';
+import { cuStratNou } from '../model/straturiRelief.ts';
 import { pregatitRelief } from './reliefImport.ts';
 
 /** Alegerile implicite (ADR 0310 §7, §12): luminanța, alb = sus, 5 mm, baza 0, fără netezire. */
@@ -21,6 +23,17 @@ let tinute: OptiuniImagine = IMPLICITE;
 const REFUZ: Readonly<Record<CodRefuzRelief, CheieSimpla>> = {
   'imagine-citire': 'import.relief.refuz.imagine-citire', 'prea-mare': 'import.relief.refuz.prea-mare', celula: 'import.relief.refuz.celula',
   gol: 'import.relief.refuz.gol', 'dale-lipsa': 'import.relief.refuz.altul', harta: 'import.relief.refuz.altul',
+};
+
+/**
+ * Relieful ales pe foaie (ADR 0320, felia 18.1↑j): imaginea poate deveni un strat nou al lui, prin `document.forma` (starea și
+ * rularea, pe forma nouă), în locul unei piese noi.
+ */
+export type TintaStrat = {
+  readonly nume: string;
+  readonly forma: FormaRelief;
+  readonly stare: (f: FormaRelief) => RezultatActiune;
+  readonly adauga: (f: FormaRelief) => RezultatActiune;
 };
 
 type Props = {
@@ -39,6 +52,8 @@ type Props = {
   readonly de?: string;
   /** O excepție (un defect, nu o imagine greșită): în jurnalul de erori. */
   readonly jurnal: (e: unknown) => void;
+  /** Relieful ales, dacă e unul: „Un strat nou pe …” devine a doua alegere. */
+  readonly tinta?: TintaStrat;
 };
 
 /**
@@ -46,11 +61,17 @@ type Props = {
  * netezirea), relieful umbrit în dreapta, calculat în workerul reliefului din dalele cuantizate (ce se vede e ce se salvează).
  * „Importă” păstrează întâi dalele în baza reliefurilor, apoi adaugă piesa prin `document.importa`.
  */
-export function FereastraRelief({ nume, octeti, onAlege, stareImporta, importa, onImportat, onInchide, coada, onSari, de, jurnal }: Props) {
+export function FereastraRelief({ nume, octeti, onAlege, stareImporta, importa, onImportat, onInchide, coada, onSari, de, jurnal, tinta }: Props) {
   const limba = useLimba();
   const nr = (x: number, z = 3): string => new Intl.NumberFormat(limba === 'ro' ? 'ro-RO' : 'en-GB', { maximumFractionDigits: z }).format(x);
   const [optiuni, setOptiuni] = useState<OptiuniImagine>(tinute);
-  /** Lățimea scrisă (mm); null: din DPI-ul fișierului (sau 96 px pe țol). */
+  /**
+   * Unde merge imaginea (ADR 0320): o piesă nouă (implicit, ca înainte) sau un strat nou pe relieful ales; strat doar cu un
+   * relief ales.
+   */
+  const [unde, setUnde] = useState<'piesa' | 'strat'>('piesa');
+  const pe = unde === 'strat' && tinta ? tinta.forma : null;
+  /** Lățimea scrisă (mm); null: din DPI-ul fișierului (sau 96 px pe țol), ori, pe un strat, lățimea reliefului. */
   const [latime, setLatime] = useState<number | null>(null);
   const dpi = useMemo(() => dpiImagine(octeti) ?? 96, [octeti]);
   const [rez, setRez] = useState<RaspunsRelief | 'calcul'>('calcul');
@@ -79,8 +100,9 @@ export function FereastraRelief({ nume, octeti, onAlege, stareImporta, importa, 
     const ac = new AbortController();
     setRez('calcul');
     const ceas = setTimeout(() => {
-      const scara = latime === null ? { dpi } : { latimeMm: latime };
-      reliefInBazin({ tip: 'din-imagine', imagine: new Blob([octeti.slice()]), optiuni, scara }, { semnal: ac.signal }).then((r) => {
+      const scara = latime !== null ? { latimeMm: latime } : pe ? { latimeMm: pe.nx * pe.celula } : { dpi };
+      const grila = pe ? { pe: { nx: pe.nx, ny: pe.ny, celula: pe.celula } } : {};
+      reliefInBazin({ tip: 'din-imagine', imagine: new Blob([octeti.slice()]), optiuni, scara, ...grila }, { semnal: ac.signal }).then((r) => {
         if (!ac.signal.aborted) setRez(r);
       }, (e: unknown) => {
         if (e instanceof ReliefAnulat || ac.signal.aborted) return;
@@ -89,11 +111,14 @@ export function FereastraRelief({ nume, octeti, onAlege, stareImporta, importa, 
       });
     }, ASTEPTARE_MS);
     return () => { clearTimeout(ceas); ac.abort(); };
-  }, [octeti, optiuni, latime, dpi]);
+  }, [octeti, optiuni, latime, dpi, pe]);
 
   const ok: ReliefDinImagine | null = rez !== 'calcul' && rez.ok && rez.tip === 'din-imagine' ? rez : null;
-  const pregatit = useMemo(() => (ok ? pregatitRelief(ok, nume) : null), [ok, nume]);
-  const stare = pregatit ? stareImporta(pregatit) : null;
+  const pregatit = useMemo(() => (ok && !pe ? pregatitRelief(ok, nume) : null), [ok, nume, pe]);
+  // Pe un strat: forma nouă a reliefului ales, doar cu stratul făcut pe grila lui (altfel e încă cel de dinainte de alegere).
+  const peGrila = ok !== null && pe !== null && ok.nx === pe.nx && ok.ny === pe.ny && ok.celula === pe.celula;
+  const formaNoua = useMemo(() => (peGrila && pe ? cuStratNou(pe, { dale: ok.amprenta, nume }) : null), [peGrila, pe, ok, nume]);
+  const stare = pregatit ? stareImporta(pregatit) : formaNoua && tinta ? tinta.stare(formaNoua) : peGrila ? { ok: false, motiv: 'import.relief.straturi-plin' } as const : null;
   const motivImport = stare && !stare.ok ? stare.motiv : null;
 
   // Relieful umbrit, pe pânza previzualizării (mărimea imaginii; CSS-ul o încape în loc).
@@ -106,11 +131,11 @@ export function FereastraRelief({ nume, octeti, onAlege, stareImporta, importa, 
   }, [ok]);
 
   const importaAcum = (): void => {
-    if (!ok || !pregatit || lucru || motivImport) return;
+    if (!ok || !(pregatit || (formaNoua && tinta)) || lucru || motivImport) return;
     setLucru(true);
     setMotiv(null);
     import('./reliefStocare.ts').then((m) => m.pastreazaStrat({ text: ok.harta, amprenta: ok.amprenta }, ok.octeti)).then(() => {
-      const r = importa(pregatit);
+      const r = pregatit ? importa(pregatit) : formaNoua && tinta ? tinta.adauga(formaNoua) : { ok: false, motiv: 'import.relief.straturi-plin' } as const;
       setLucru(false);
       if (r.ok) onImportat();
       else setMotiv(r.motiv);
@@ -135,6 +160,17 @@ export function FereastraRelief({ nume, octeti, onAlege, stareImporta, importa, 
             <div className="trasare-comenzi" data-testid="relief-setari">
               <AlegereRezultat ales="relief" onAlege={onAlege} dezactivat={lucru} />
               <p className="mic">{t('import.relief.sfat')}</p>
+              {tinta && (
+                <div className="segmentat" role="radiogroup" aria-label={t('import.relief.unde')}>
+                  {(['piesa', 'strat'] as const).map((u) => (
+                    <label key={u}>
+                      <input type="radio" name="relief-unde" checked={unde === u} data-camp={`relief-unde-${u}`} disabled={lucru}
+                        onChange={() => { setUnde(u); setLatime(null); }} />
+                      {u === 'piesa' ? t('import.relief.unde.piesa') : t('import.relief.unde.strat', { nume: tinta.nume })}
+                    </label>
+                  ))}
+                </div>
+              )}
               <label>
                 {t('import.relief.sursa')}
                 <select value={optiuni.sursa} data-camp="relief-sursa" onChange={(e) => {
@@ -164,8 +200,8 @@ export function FereastraRelief({ nume, octeti, onAlege, stareImporta, importa, 
                   onAplica={(x) => (Math.abs(x) <= 1000 ? (schimba({ baza: x }), { ok: true }) : { ok: false, motiv: 'motiv.valoare-invalida' })} />
               </label>
               <label className="rand">
-                {t('import.relief.latime')}
-                <CampNumeric eticheta={t('import.relief.latime')} valoare={latime ?? (latimeMm === null ? null : Math.round(latimeMm * 1000) / 1000)} unitate="mm" camp="relief-latime"
+                {t(pe ? 'import.relief.latime.strat' : 'import.relief.latime')}
+                <CampNumeric eticheta={t(pe ? 'import.relief.latime.strat' : 'import.relief.latime')} valoare={latime ?? (latimeMm === null ? null : Math.round(latimeMm * 1000) / 1000)} unitate="mm" camp="relief-latime"
                   onAplica={(x) => (x > 0 ? (setLatime(x), { ok: true }) : { ok: false, motiv: 'motiv.valoare-invalida' })} />
               </label>
               <label className="rand">
@@ -188,7 +224,9 @@ export function FereastraRelief({ nume, octeti, onAlege, stareImporta, importa, 
               {ok && (
                 <>
                   <p data-testid="relief-grila">
-                    {t('import.relief.grila', { nx: ok.nx, ny: ok.ny, celula: nr(ok.celula, 4), latime: nr(ok.nx * ok.celula, 2), inaltime: nr(ok.ny * ok.celula, 2) })}
+                    {t(pe && tinta ? 'import.relief.grila.strat' : 'import.relief.grila', {
+                      nx: ok.nx, ny: ok.ny, celula: nr(ok.celula, 4), latime: nr(ok.nx * ok.celula, 2), inaltime: nr(ok.ny * ok.celula, 2), nume: tinta?.nume ?? '',
+                    })}
                   </p>
                   {ok.z && <p data-testid="relief-z">{t('import.relief.z', { min: nr(ok.z.min), max: nr(ok.z.max) })}</p>}
                 </>
