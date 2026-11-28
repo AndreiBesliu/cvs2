@@ -1086,6 +1086,11 @@ at least as thick as the maximum thickness.
 
 Each change is one undo step, and undo puts the layer back exactly as it was.
 
+**Layer from the simulation:** in the **Relief** section, the button simulates the sheet's cut (like the 3D view, “Cut”) over
+the relief, at its cell, and puts it as a new layer, hidden, “replace”, named “Simulated cut”: what is cut does not change.
+Shown with the eye, the relief shows what remains after cutting (the wood a ball leaves next to a wall, for example); exported
+as a 16-bit image, the cut can go to another program. With no operations on the sheet, nothing is cut, so no layer is made.
+
 **The relief as a 16-bit image:** in the **Relief** section, **Export as a 16-bit image…** downloads the relief (the visible
 layers, composited) as a 16-bit grey PNG: 65,536 steps between the lowest and the highest cell, with Z and the cell written in
 the file, so the relief can go to another computer or another program. Brought back through “Import…” as a relief, the window

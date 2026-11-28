@@ -14,6 +14,7 @@ import { hartaDinText, type Harta } from '../relief/harta.ts';
 import { gri, netezeste, reliefDinPixeli, type OptiuniImagine } from '../relief/imagine.ts';
 import { imagineLumina, litofanieDinGri, luminaDinGrosimi } from '../relief/litofanie.ts';
 import { decodeazaTiffExact, marimeTiff } from '../trasare/tiff.ts';
+import { dzRelief, valoriDinSimulare, type MatriceRelief, type SimulareGrila } from '../relief/dinSimulare.ts';
 import { dalaModel, FACTORI_MODEL, type DalaModel, type TampoaneModel } from '../relief/model.ts';
 import { daleDinHarta, grilaDinDale, stratDinGrila } from '../relief/strat.ts';
 import { factorReducere, intervalZ, reduce, umbreste, type Umbrit } from '../relief/umbrire.ts';
@@ -67,6 +68,18 @@ export type CerereRelief =
      * fișier (scara, înălțimea, baza și netezirea ferestrei nu contează); fără Z în fișier, ca o imagine oarecare.
      */
     readonly zDinFisier?: boolean;
+  }
+  | {
+    /**
+     * Simularea salvată ca strat (ADR 0322 §5.4, felia 18.1↑g-3): suprafața tăiată din `simulare`, citită pe centrele celulelor
+     * reliefului (prin `matrice`, pe foaie) și dusă în Z-ul lui (dz ca la lucrare: −planZero, ori −vârful compusului
+     * straturilor vizibile). Răspunsul e al unui strat nou (`din-imagine`), ca relieful dintr-o imagine.
+     */
+    readonly tip: 'din-simulare';
+    readonly nx: number; readonly ny: number; readonly celula: number;
+    readonly matrice: MatriceRelief; readonly planZero?: number;
+    readonly straturi: readonly StratDeDesenat[];
+    readonly simulare: SimulareGrila;
   }
   | {
     /** Relieful ca imagine pe 16 biți (ADR 0322 §1): compusul straturilor vizibile, scris ca PNG gri pe 16 biți. */
@@ -264,6 +277,18 @@ async function dinValori(
   return { ok: true, tip: 'din-imagine', nx, ny, celula, harta: st.text, amprenta: st.amprenta, octeti, z, umbrit, ...(fisier ? { fisier } : {}) };
 }
 
+/** Stratul din simulare (ADR 0322 §5.4): dz din planul zero sau din compusul straturilor vizibile, apoi valorile pe grilă. */
+async function dinSimulare(c: Extract<CerereRelief, { tip: 'din-simulare' }>): Promise<ReliefDinImagine | RefuzRelief> {
+  let dz: number;
+  if (c.planZero !== undefined) dz = dzRelief(c.planZero, []);
+  else {
+    const compus = compusCerere(c);
+    if ('ok' in compus) return compus;
+    dz = dzRelief(undefined, compus);
+  }
+  return dinValori(valoriDinSimulare(c, c.matrice, dz, c.simulare), c);
+}
+
 /** Compusul straturilor vizibile ale unei cereri, întreg, sau de ce nu se poate (o hartă greșită, dale lipsă). */
 function compusCerere(c: { readonly nx: number; readonly ny: number; readonly straturi: readonly StratDeDesenat[] }): Float32Array | RefuzRelief {
   const straturi = [];
@@ -352,7 +377,8 @@ function model(c: Extract<CerereRelief, { tip: 'model' }>): ModelRelief | RefuzR
 
 /** Răspunsul unei cereri, cu tablourile de transferat (ADR 0014). */
 export async function raspundeRelief(c: CerereRelief): Promise<{ readonly raspuns: RaspunsRelief; readonly transfer: ArrayBuffer[] }> {
-  const raspuns = c.tip === 'din-imagine' ? await dinImagine(c) : c.tip === 'desen' ? desen(c) : c.tip === 'spre-png' ? await sprePng(c) : model(c);
+  const raspuns = c.tip === 'din-imagine' ? await dinImagine(c) : c.tip === 'din-simulare' ? await dinSimulare(c) : c.tip === 'desen' ? desen(c)
+    : c.tip === 'spre-png' ? await sprePng(c) : model(c);
   const transfer: ArrayBuffer[] = [];
   if (raspuns.ok) {
     if (raspuns.tip === 'model') for (const d of raspuns.dale) transfer.push(d.z.buffer);

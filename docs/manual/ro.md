@@ -1054,6 +1054,11 @@ unui strat nu schimbă nimic acolo. Fiecare strat are:
 
 Fiecare schimbare e un pas de anulare, iar anularea pune la loc stratul exact cum era.
 
+**Strat din simulare:** în secțiunea **Relieful**, butonul simulează tăierea foii (ca vederea 3D, „Tăiat”) pe locul reliefului,
+la celula lui, și o pune ca strat nou, ascuns, „înlocuiește”, numit „Tăietura simulată”: ce se taie nu se schimbă. Arătat cu
+ochiul, relieful arată ce rămâne după tăiere (de exemplu lemnul lăsat de bilă lângă un perete); exportat ca imagine pe 16 biți,
+tăietura poate pleca în alt program. Fără operații pe foaie, nimic nu se taie, deci nici stratul nu se face.
+
 **Relieful ca imagine pe 16 biți:** în secțiunea **Relieful**, **Exportă ca imagine pe 16 biți…** descarcă relieful (straturile
 vizibile, compuse) ca PNG gri pe 16 biți: 65 536 de trepte între cea mai joasă și cea mai înaltă celulă, cu Z-ul și celula
 scrise în fișier, ca relieful să poată pleca pe alt calculator sau în alt program. Adus înapoi prin „Importă…” ca relief,
