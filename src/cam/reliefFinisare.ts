@@ -507,11 +507,19 @@ function treceriRelief(o: ParametriFinisare, so: Socotire): RezultatFinisare {
     const ultime = pregatite.map((p) => p.ultima);
     let sus = Infinity;
     for (const { ip, p, linii: ls } of liniiPe) {
-      let jos = Infinity, cx = NaN, cy = NaN;
+      // Dintre celulele cele mai joase (un fund plat le are pe toate egale), cea mai apropiată de centrul lor: marginea fundului e
+      // lângă pantă, deci bila stă acolo mai sus.
+      let jos = Infinity, sx = 0, sy = 0, nj = 0;
+      for (let k = 0; k < p.r.z.length; k++) if (p.r.z[k]! < jos) jos = p.r.z[k]!;
+      for (let j = 0; j < p.r.ny; j++) {
+        for (let i = 0; i < p.r.nx; i++) if (p.r.z[j * p.r.nx + i] === jos) { sx += i; sy += j; nj++; }
+      }
+      let cx = NaN, cy = NaN, cd = Infinity;
       for (let j = 0; j < p.r.ny; j++) {
         for (let i = 0; i < p.r.nx; i++) {
-          const v = p.r.z[j * p.r.nx + i]!;
-          if (v < jos) { jos = v; cx = (i + 0.5) * p.r.celula; cy = (j + 0.5) * p.r.celula; }
+          if (p.r.z[j * p.r.nx + i] !== jos) continue;
+          const d = (i - sx / nj) ** 2 + (j - sy / nj) ** 2;
+          if (d < cd) { cd = d; cx = (i + 0.5) * p.r.celula; cy = (j + 0.5) * p.r.celula; }
         }
       }
       let bk = -1, bq = -1, bd = Infinity;

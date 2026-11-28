@@ -22,6 +22,9 @@ o('H02', RF, "    if (sus < -EPS && puncte * Math.ceil(-sus / o.pas - 1e-6) > PU
   'marginea de jos cu o trecere în plus: refuză un program care încape în plafon')
 o('H03', RF, "          if (d < bd) { bd = d; bk = k; bq = q; }", "          if (bk < 0) { bd = d; bk = k; bq = q; }", 'puncte',
   'punctul ales e primul de pe prima linie (lângă perete), nu cel de lângă cea mai joasă celulă: marginea nu mai ajunge')
+o('H04', RF, "          if (d < cd) { cd = d; cx = (i + 0.5) * p.r.celula; cy = (j + 0.5) * p.r.celula; }",
+  "          if (cd === Infinity) { cd = d; cx = (i + 0.5) * p.r.celula; cy = (j + 0.5) * p.r.celula; }", 'puncte',
+  'prima celulă cea mai joasă, nu cea din mijlocul lor: pe fundul plat, lângă pantă, marginea de jos nu mai e strânsă')
 o('H05', RF, "  if (puncte * n > PUNCTE_FINISARE_MAXIM) return { ok: false, motiv:", "  if (false) return { ok: false, motiv:", 'puncte',
   'verdictul de după cote scos: acolo unde marginea de jos nu ajunge, programul trece de plafon')
 o('H06', RF, "    for (const pts of l.linii) puncte += pts.length / 2;", "    for (const pts of l.linii) puncte += 1;", 'puncte',
