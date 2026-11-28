@@ -17277,6 +17277,24 @@ pe `wip/16.A-freze-f5`, din `main` `09689d36`. **Completed:** 28.11.
 - **Mărimea:** pornirea 112,0 kB, neschimbată (cu ușa și cu Atelierul 117,8 / 125); totalul 945,6 → 949,2 / 1 000.
 - **Documentele:** ADR 0304, fișa etapei 3, nota liniei, manualul în ambele limbi, traducerile, registrul otrăvurilor.
 
+## 2026-11-28 — Felia 3.Cn: ventilatorul în „Modelul” (ADR 0341) (sesiune cloud)
+
+**Prompt:** „Porneste sesiunile, pune-le sa continue cu ce aveau la rand” (owner-ul, transmis de sesiunea principală: linia își
+alege felia din nota ei, cu recomandarea, și scrie întâi un ADR scurt dacă e o direcție nouă)
+**Started:** 28.11, 07:42. **Completed:** 28.11, 08:07 (orele, după ceasul containerului).
+
+- **De ce 3.Cn:** ventilatorul în model era cerut de două ori (auditul elicelor, constatarea 4; nota deschisă din ADR 0283), fără
+  server, numai din ce e gata (trusa din 3.Cm-3, alipirea, verificarea, construcțiile gata). ADR 0341, cu trei alegeri și
+  recomandările aplicate.
+- **Motorul:** al cincilea șablon, `constructieGata("ventilator")`: grinda de 2k + 1, știfturile în prima și în ultima gaură,
+  carcasa pe ele, axul prin mijloc, bucșa și rotorul alunecate pe ax, la cotele trusei; valorile duse în margini, cu mesaj.
+- **Atelierul:** „Ventilator” în „Construcții gata” (diametrul, paletele, urechile); „Fă-l în model” în editorul ventilatorului,
+  cu toate valorile lui.
+- **Probele**, scrise întâi: `trenulet.sabloane.ventilator.test.ts` (5 teste pe plasele reale, cu control negativ),
+  `trenulet.sabloane.spec.ts` (panoul și butonul), engleza în `trenulet.spec.ts`.
+- **Otrăvurile:** `3.Cn.py`, 24 / 24 (23 / 24 la prima rulare: A08, „Fă-l în model” fără felul ales, scăpa cât panoul era deja pe ventilator; prinsă după ce proba pornește cu panoul pe șasiu).
+- **Mărimea:** Easy 3Draw 18.51.0; aplicația, neschimbată. Nimic pe server; nicio piesă schimbată.
+
 ## 2026-11-28 — 18.1↑j: straturile reliefului, editabile, și imaginea ca strat nou (Model: Claude Opus 5.5)
 
 **Prompt:** „Porneste sesiunile, pune-le sa continue cu ce aveau la rand” (owner-ul, transmis liniei reliefului de sesiunea
@@ -17309,4 +17327,17 @@ owner-ului); ordinul „unește ce se poate”
   46124373639, verde: unit 11 069 / 0, e2e 1 035 / 1 035, funcțiile pe emulatoare 142 / 142, paginile 62 / 62; rapidul, verde.
 - **Pe test:** lotul 70, după completul de pe `main`.
 - **Documentele:** decizia și rândul de stare în `CLAUDE.md`; starea din `docs/linii/principala.md`; rândul reliefului din
+  `docs/linii/README.md`.
+
+## 2026-11-28 — Sesiunea principală în cloud: a șaptezeci și opta unire (3.Cn) (Model: Claude Opus 5.5)
+
+**Prompt:** raportul liniei atelierului despre 3.Cn (aleasă de ea la „Porneste sesiunile, pune-le sa continue cu ce aveau la
+rand” al owner-ului); ordinul „unește ce se poate”
+**Started:** 28.11, 12:18. **Completed:** 28.11, 12:25.
+
+- **Unirea:** `wip/3.Xh-biblioteca-ui` (`240259ee`, PR-ul #82) în `main`, din `f0d031e7`; arborele, al lui `240259ee`.
+  Completul 46129637888, verde: unit 11 074 / 0, e2e 1 036 / 1 036, funcțiile pe emulatoare 142 / 142, paginile 62 / 62;
+  rapidul 46129638017, verde.
+- **Pe test:** lotul 71, după lotul 70 (18.1↑j).
+- **Documentele:** decizia și rândul de stare în `CLAUDE.md`; starea din `docs/linii/principala.md`; rândul atelierului din
   `docs/linii/README.md`.

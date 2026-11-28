@@ -18,6 +18,12 @@
       ],
       "noutati": [
         {
+          "versiune": "18.51.0",
+          "data": "2026-11-28",
+          "ro": "Ventilatorul în „Modelul”: în „Construcții gata”, „Ventilator” pune trusa întreagă, prinsă (grinda, știfturile, carcasa, axul, bucșa și rotorul în tub); în editorul ventilatorului, „Fă-l în model” face la fel, cu valorile tale.",
+          "en": "The fan in the “Model” view: in “Ready-made builds”, “Fan” puts the whole kit together (beam, pins, housing, axle, bush and the rotor in the duct); in the fan editor, “Make it in the model” does the same, with your values."
+        },
+        {
           "versiune": "18.50.0",
           "data": "2026-11-27",
           "ro": "Duza Kort: la elicea de barcă, „Piesa: Duza Kort” face tubul din jurul elicei, ca la remorchere, cu gura rotunjită și urechi pe grila axului; „Fă elicea cu duza” le pune pe amândouă în listă.",
@@ -250,8 +256,8 @@
           }
         }
       ],
-      "versiune": "18.50.0",
-      "continut": "ec6d2a47b6f17fa283e6a6d6435adc7a34943d43799164954c26f54253a3e9c4"
+      "versiune": "18.51.0",
+      "continut": "b359880beac6e87c9c52203daa832a7344c05d8d25322ec5ff2dce74340d3284"
     }
   ]
 }

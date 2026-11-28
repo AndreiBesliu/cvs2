@@ -1,4 +1,4 @@
-# Atelierul Easy 3Draw: piese, prinderi, construcții, decorațiuni, elicele după audit (3.Ca–3.Cm și 3.Tu; ADR 0284, ADR 0283, ADR 0285, ADR 0340)
+# Atelierul Easy 3Draw: piese, prinderi, construcții, decorațiuni, elicele după audit (3.Ca–3.Cn și 3.Tu; ADR 0284, ADR 0283, ADR 0285, ADR 0340, ADR 0341)
 
 _Linia pieselor noi, a punctelor de prindere și a Modelului ca asamblare, în atelierul Easy 3Draw. Pornită pe 24.11.2026,
 la cererea owner-ului („vreau sa adaugi mai multe tipuri de piese pentru fiecare categoire […] compatibile intre ele nu
@@ -32,14 +32,16 @@ feliile făcute.** **Auditul elicelor (ADR 0340, acceptat pe 27.11 cu recomandă
 sesiunea principală): feliile 3.Cm-1…3.Cm-7; 3.Cm-1 (otrăvurile elicelor, rulate din nou) și 3.Cm-2 (tipărirea spusă
 cinstit; 18.45.0), unite în `main` (`6d8abb70`); 3.Cm-3 (ventilatorul ca trusă; 18.46.0), unită (`f9b2bbc8`); 3.Cm-4
 (claritatea editorului elicelor; 18.47.0) și 3.Cm-5 (grosimea paletelor peste Ø80; 18.48.0), unite (`90e9fc20`); 3.Cm-6
-(curățenia motorului, la octet; 18.49.0), unită (`154e8125`); 3.Cm-7 (duza Kort; 18.50.0), pe ramură, cu `main` adus, la
-raport după complet: cu ea, ADR 0340 are toate feliile făcute.** Versiunea următoare a pachetului: 18.51.0._
+(curățenia motorului, la octet; 18.49.0), unită (`154e8125`); 3.Cm-7 (duza Kort; 18.50.0), unită (`d2222923`): ADR 0340 are
+toate feliile făcute.** **3.Cn (ventilatorul în „Modelul”, ADR 0341; 18.51.0), aleasă de linie pe 28.11, la „Porneste
+sesiunile, pune-le sa continue cu ce aveau la rand” al owner-ului, cu recomandările aplicate; pe ramură.** Versiunea
+următoare a pachetului: 18.52.0._
 
 ## Numerele liniei
 
 - **ADR-urile:** 0280–0289 sunt ale pluginului (0280 roțile, 0281 filele, 0282 elicele, **0283 pentru 3.Tu**, **0284
   construcțiile**, **0285 decorațiunile de Crăciun**); sesiunea principală a dat liniei și intervalul **0340–0349**,
-  pentru ADR-urile de după.
+  pentru ADR-urile de după (**0340 elicele după audit**, **0341 ventilatorul în „Modelul”**; următorul liber, 0342).
 - **Feliile:** 3.Ca–3.Cj (planul din ADR 0284, zece felii: literele rămase după 3.Tu, v–z, nu ajungeau) și 3.Tu.
   Sesiunea principală propusese „de la 3.Tv” înainte să afle că ADR-ul fusese deja acceptat de owner ca 0284, cu feliile
   3.C; numerotarea rămâne de confirmat cu ea la unirea lui 3.Ca (dacă cere 0340 și 3.Tv…, redenumirea e mecanică).
@@ -814,14 +816,31 @@ raport după complet: cu ea, ADR 0340 are toate feliile făcute.** Versiunea urm
   unei liste vechi): lotul e2e al pluginului a prins-o.
 - **Easy 3Draw 18.50.0.**
 
-### Unde am rămas (27.11, 15:00; limita săptămânală aproape)
+## 3.Cn, gata (28.11, în cloud): ventilatorul în „Modelul” (ADR 0341)
 
-- **3.Cm-7 e comisă și împinsă** (`5190e662`), cu porțile locale verzi (unitarele pluginului, lotul e2e al pluginului 265 / 265,
-  documentele, otrăvurile 29 / 29 și 3 / 3). **Nu e raportată:** completul (46020418674) stătea la coadă; rapidul îl reia commit-ul
-  acesta de note (doar `.md`, același cod). Canalul `biblioteca` a refuzat publicarea cât rapidul nu era verde: se repornește după.
-- **Ce urmează, în ordine:** (1) completul și rapidul verzi; (2) `main` adus în ramură (făcut la 16:20, după unirea lui 3.Cm-4…3.Cm-6, la
-  `99a4a6b6`), cu DEVLOG-ul prin `scripts/rezolva-devlog.py`; (3) porțile pe commit-ul cu `main` adus (unitarele, lotul e2e al pluginului, documentele);
-  (4) raportul către sesiunea principală, cu commit-ul de unit, otrăvurile 29 / 29 (22 / 29 la prima rulare, 7 goluri închise)
-  și 3 / 3, cifrele CI, Easy 3Draw 18.50.0 și alegerile duzei, la owner; (5) canalul `biblioteca`, din nou.
-- **După 3.Cm-7, linia n-are felie pornită**; la owner: verdictul tipăririi (a / b / c; până atunci a), alegerile duzei,
-  tipăririle din fișa etapei 3.
+- **De ce felia aceasta:** la „Porneste sesiunile, pune-le sa continue cu ce aveau la rand” (28.11), linia n-avea o felie scrisă
+  ca următoare; dintre cele deschise, ventilatorul în model era cerut de două ori (auditul elicelor, constatarea 4; ADR 0283, nota
+  „pune perechea în lista de printat, nu și în model”), nu cere server și folosește doar ce e gata (trusa din 3.Cm-3, alipirea,
+  verificarea, construcțiile gata). Lanțul și întinzătorul șenilei, știfturile pe o formă liberă și semnul din bară rămân.
+- **Unde e:** motorul, al cincilea șablon din `SABLOANE` (`constructieGata("ventilator")`, după `barca` în listă, înaintea ei în
+  cod): grinda groasă de 2k + 1 găuri pe grilă, câte un știft Technic în prima și în ultima gaură, carcasa pe știftul din stânga
+  (urechea ei de pe −x, căutată după `corp.ax`), axul prin gaura din mijloc, de jos, bucșa și rotorul alunecate pe ax (`alunec`)
+  la cotele trusei (`ventilatorTrusa`: grosimea grinzii, jumătatea de bucșă, `jos`, butucul). Atelierul: `gata.valori.ventilator`,
+  `CAMPURI_GATA.ventilator` (diametrul, paletele, urechile), textul din `infoGata`, rândul „Fă-l în model” din editorul
+  ventilatorului (`faVentilatorInModel`: duce toate valorile editorului în șablon, apoi „Modelul”).
+- **Valorile duse în margini se spun:** diametrul și paletele prin `ventilatorCote` (cu avertismentele lui), gaura rotorului: pe
+  ax trebuie una de ax (`x`) sau rotundă (`r`); alta devine `x`, cu mesaj.
+- **Probele:** `trenulet.sabloane.ventilator.test.ts` (pe hârtie, pe plasele reale: găurile grinzii, axa carcasei și a rotorului
+  peste gaura din mijloc, înălțimile, paletele în tub, verificarea, valorile editorului pe piese, cu control negativ: o carcasă
+  prea îngustă face rotorul să intre în ea) și `trenulet.sabloane.spec.ts` (panoul și butonul din editor), plus engleza în
+  `trenulet.spec.ts`. Otrăvurile: `3.Cn.py`, 24 / 24 (23 / 24 la prima rulare: A08, prinsă după ce proba e2e pornește cu panoul pe șasiu).
+- **Nu schimbă nicio piesă** (amprentele plaselor, aceleași) și nici lista de printat a lui „Fă ventilatorul”.
+- **Easy 3Draw 18.51.0.** Versiunea următoare: 18.52.0.
+
+### Reguli și capcane (3.Cn)
+
+- **Un șablon care pune o piesă pe o prindere a altei piese caută prinderea după geometria plasei (`corp.ax`, fețele), nu după
+  presupuneri despre originea locală**: axa carcasei nu e în originea ei, iar găurile grinzii sunt deplasate față de originea ei.
+- **Știftul Technic iese 0,1 mm sub grindă**, deci baza șablonului se ridică singură cu o placă (3,2): proba cere înălțimile față
+  de fața de jos a grinzii, nu față de masă.
+- **Tablourile venite din motor (alt context `vm`) se copiază (`Array.from`) înaintea lui `deepEqual`.**

@@ -2,7 +2,7 @@
  * Construcțiile gata ale atelierului Easy 3Draw (ADR 0284, partea E; felia 3.Ci), pe funcția pură a motorului
  * `constructieGata(fel, valori)`: piesele unei construcții făcute din parametri, gata de pus în vederea „Modelul”. Prima
  * piesă stă pe grilă; celelalte sunt prinse, prindere în prindere, de una de dinaintea lor, deci construcția întreagă își
- * urmează baza. Patru șabloane:
+ * urmează baza. Cinci șabloane (al cincilea, ventilatorul, are proba lui: `trenulet.sabloane.ventilator.test.ts`):
  * - **șasiul cu patru roți**: placa L × W, două cărămizi Technic 1 × L sub marginile ei, două axe prin prima și ultima gaură,
  *   câte o roată la fiecare capăt de ax și câte o bucșă ½ lângă fiecare cărămidă (axul nu alunecă);
  * - **cutia de angrenaje**: placa, doi pereți (cărămizi 1 × L și deasupra o cărămidă Technic), axele cu bucșe pe fețele de
@@ -94,8 +94,8 @@ function centru(g: Gata, T: Transf[], i: number): { c: P3; n: P3 } {
   return { c: aplica(T[i]!, [c.ax![0]!, c.ax![1]!, c.dim[2]! / 2]), n: roteste(T[i]!, [0, 0, 1]) };
 }
 
-test('SABLOANE: cele patru construcții gata, în ordinea din atelier; un fel necunoscut e refuzat', () => {
-  assert.deepEqual([...Lm.SABLOANE], ['sasiu', 'angrenaje', 'macara', 'barca']);
+test('SABLOANE: cele cinci construcții gata, în ordinea din atelier; un fel necunoscut e refuzat', () => {
+  assert.deepEqual([...Lm.SABLOANE], ['sasiu', 'angrenaje', 'macara', 'barca', 'ventilator']);
   assert.throws(() => Lm.constructieGata('pod'));
   for (const fel of Lm.SABLOANE) {
     const g = Lm.constructieGata(fel);
@@ -108,6 +108,7 @@ test('SABLOANE: cele patru construcții gata, în ordinea din atelier; un fel ne
   assert.equal(Lm.constructieGata('angrenaje').nume, 'Cutie de angrenaje');
   assert.equal(Lm.constructieGata('macara').nume, 'Braț de macara');
   assert.equal(Lm.constructieGata('barca').nume, 'Barcă cu elice');
+  assert.equal(Lm.constructieGata('ventilator').nume, 'Ventilator');
 });
 
 // ---------------------------------------------------------------------------------------------------- șasiul
