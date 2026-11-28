@@ -96,6 +96,12 @@ test('seturile pe material: un set nou pornește de la valorile frezei; greșeli
   await g.locator('[data-freze="salveaza"]').click();
   await expect(fisa(g).locator('[data-freze-fisa-set]')).toHaveCount(1);
   await expect(fisa(g).locator('[data-freze-fisa-set="0"] td').first()).toHaveText('Acril');
+  // Scos și ultimul set, freza rămâne fără seturi: fișa n-are tabelul.
+  await fisa(g).locator('[data-freze="editeaza"]').click();
+  await set(g, 0).locator('[data-freze="set-scoate"]').click();
+  await expect(g.locator('[data-freze="set-adauga"]')).toBeFocused();
+  await g.locator('[data-freze="salveaza"]').click();
+  await expect(fisa(g).locator('[data-freze="fisa-materiale"]')).toHaveCount(0);
   await expect(page.getByTestId('jurnal')).toHaveText('0 erori în jurnalul local');
 });
 
