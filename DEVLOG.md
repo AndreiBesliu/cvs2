@@ -17273,4 +17273,6 @@ pe `wip/16.A-freze-f5`, din `main` `09689d36`. **Completed:** 28.11.
 - **Găsite pe drum:** la 320 px cu fontul lat, tabelul ieșea cu 26 px din fereastră (coloane fixe, butoanele unul sub altul pe
   ecranul îngust); pe capturi, capul tabelului cu majuscule („R (MM)”, din `.dialog th`), mânerele dese suprapuse într-o bandă
   și tabelul de zeci de puncte foarte lung (derulat acum în locul lui).
+- **Otrăvurile** (`test/otravuri/16.A-f5.py`): 36 / 36 (22 pe model, 14 e2e); D14 scăpase și e prinsă de proba nouă.
+- **Mărimea:** pornirea 112,0 kB, neschimbată (cu ușa și cu Atelierul 117,8 / 125); totalul 945,6 → 949,2 / 1 000.
 - **Documentele:** ADR 0304, fișa etapei 3, nota liniei, manualul în ambele limbi, traducerile, registrul otrăvurilor.

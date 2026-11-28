@@ -312,6 +312,10 @@ v32: forma `profil` era deja acolo.
     reîncărcarea, „Pornește de la…” cu exportul și importul JSON, alegerea pe canelură în Tăierea, editorul la 1280, 390, 360
     și 320 px cu fontul lat. La 320 px, proba a prins tabelul ieșit cu 26 px din fereastră: coloanele au acum lățimi fixe, iar
     pe ecranul îngust „+” și „✕” stau unul sub altul.
+- **Otrăvurile:** `test/otravuri/16.A-f5.py`, 36 / 36 prinse (22 pe model, 14 e2e); D14 scăpase la prima rulare și e prinsă
+  de proba nouă.
+- **Mărimea:** pornirea neschimbată, 112,0 kB (cu ușa și cu Atelierul 117,8 / 125); totalul 945,6 → 949,2 / 1 000 (+3,6 kB:
+  editorul stă în bucata ferestrei „Frezele mele”, la cerere).
 - **Neschimbate:** nimic pe server (frezele stau în cont ca text JSON, fără judecata felului); documentul rămâne v32;
   programul, octet cu octet.
 
