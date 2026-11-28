@@ -46,3 +46,32 @@ Indirect: un relief importat se taie. CAM-ul nu se schimbă; probele fixează c�
 3. **Z-ul din fișier, la import:** implicit, când fișierul îl are (recomandat). Alternativa: implicit înălțimea și baza din
    fereastră, ca la orice imagine.
 4. **Simularea salvată ca strat** (din rândul 18.1↑g al ADR 0310): într-o felie a ei, după PNG (recomandat). Alternativa: acum.
+
+## Implementarea 18.1↑g-2 (28.11): TIFF-ul ca relief
+
+La alegerea 1 (recomandarea aplicată), peste cititorul TIFF al trasării (ADR 0229):
+
+1. **Citirea exactă:** `decodeazaTiffExact` (`src/trasare/tiff.ts`) dă RGBA-ul întreg (după orientare), cu fiecare eșantion
+   la v · 255 / (2^biți − 1), fără rotunjire și fără reducere; alb-e-zero, paleta (pe 16 biți), CMYK și alfa asociat sunt
+   socotite tot fără rotunjire. `marimeTiff` dă mărimea din antet, după orientare, fără decodare. Decodarea pe 8 biți a
+   trasării rămâne aceeași (probele ei, neschimbate); întoarcerea după orientare e acum comună celor două.
+2. **În workerul reliefului:** un fișier cu semnătura TIFF merge la cititorul exact (browserul nu decodează TIFF, deci până
+   acum „Relief din imagine” îl refuza cu „browserul nu decodează formatul”). Prima pagină (miniaturile nu sunt pagini); peste
+   8192 pe o latură, „prea mare”, spus din antet; ce nu știe cititorul (JPEG în TIFF, virgula mobilă …) e refuzul `tiff`, cu
+   numele lui, iar un fișier stricat, `tiff-stricat`. Un TIFF pe 16 biți e `fisier.adancime: 16` (nota ferestrei); celula
+   vine din DPI-ul fișierului, ca la orice imagine.
+3. **Z-ul din fișier rămâne al PNG-ului:** exportul scrie PNG, deci un TIFF nu are blocul aplicației; înălțimea și baza vin
+   din fereastră.
+
+**Mărimea:** cititorul intră în workerul reliefului (workerele se construiesc IIFE, fără bucăți la cerere): totalul +6,0 kB
+(959,4 / 1 000), pornirea +0.
+
+**Alegerile owner-ului (cu recomandarea aplicată):**
+
+5. **Exportul:** rămâne PNG (recomandat: orice program citește un PNG pe 16 biți). Alternativa: și TIFF (scriitorul din
+   `src/io/tiffScrie.ts` ar trebui adus lângă relief).
+6. **Pagina unui TIFF cu mai multe:** prima (recomandat: o hartă de înălțimi are una). Alternativa: alegerea paginii în
+   fereastra reliefului, ca la vectori.
+7. **Unde se decodează:** în workerul reliefului, +6,0 kB (recomandat: aceeași cale ca PNG-ul, fără pixelii trecuți între
+   workere). Alternativa: workerul trasării decodează și dă pixelii reliefului (~+1 kB, dar pixelii, Float64 RGBA, de două ori
+   în memorie pe drum).

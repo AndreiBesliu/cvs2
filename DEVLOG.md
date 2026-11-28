@@ -17427,3 +17427,15 @@ owner-ului); ordinul „unește ce se poate”
 - **Proba:** `test/unit/bazinCote.test.ts` (5). **Otrăvurile:** `18.1h8.py`, 4 / 4, plus una echivalentă.
 - **În browser:** la 2000², cu 3 workere, aceeași amprentă a G-code-ului, 23–25 s → 17 s.
 
+
+## 2026-11-28 — 18.1↑g-2: TIFF-ul ca relief, pe 8 și 16 biți (Model: Claude Opus 5.5)
+
+**Prompt:** același cuvânt („mergi înainte cu recomandarea”); ADR 0322 §5.1. **Started:** 28.11, 12:32, pe `wip/18.1-relief`,
+după 18.1↑h-8. **Completed:** 28.11, 12:46.
+
+- **Cititorul** (`src/trasare/tiff.ts`): `decodeazaTiffExact` (eșantioanele la 0 … 255 fără rotunjire, fără reducere) și
+  `marimeTiff` (mărimea din antet); decodarea pe 8 biți a trasării, aceeași.
+- **Workerul reliefului** (`src/jobs/calculRelief.ts`): un TIFF merge la cititorul exact, cu plafonul din antet și refuzurile
+  `tiff` / `tiff-stricat` (textele în ambele limbi); manualul, în ambele limbi.
+- **Proba:** `test/unit/relief.tiff.test.ts` (8, roșie pe codul de dinainte), `test/e2e/relief.tiff.spec.ts` (2).
+  **Otrăvurile:** `18.1g2.py`, 15 / 15. **Mărimea:** pornirea +0, totalul +6,0 kB (959,4 / 1 000).

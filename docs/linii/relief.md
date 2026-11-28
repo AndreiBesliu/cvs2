@@ -346,3 +346,11 @@ degroșarea și finisarea pe relief), unde stă relieful în document și unde s
   - **O funcție a bazinului care devine asincronă înaintea calculului schimbă ordinea anulării:** cererea fără bazin pleacă pe loc
     (proba telemetriei din `utilizare.dispozitive.test.ts` a prins-o).
 
+- **28.11: 18.1↑g-2 gata pe ramură** (TIFF-ul ca relief, ADR 0322 §5.1): un TIFF pe 8 sau 16 biți se face relief, citit în
+  workerul reliefului cu cititorul trasării, în modul exact (pe 16 biți, griul e v / 65 535); prima pagină, plafonul din antet,
+  refuzurile cu motiv. Exportul rămâne PNG (alegerile 5–7 din ADR 0322, cu recomandarea aplicată). Totalul +6,0 kB (959,4 /
+  1 000). Din ADR 0322 §5 rămâne simularea salvată ca strat.
+  - **Workerele se construiesc IIFE, fără bucăți la cerere:** un cititor adus într-un worker se numără întreg în total (aici,
+    `tiff.ts` cu `ccitt.ts`, 6 kB gzip), chiar dacă alt worker îl are deja.
+  - **Decodarea exactă a TIFF-ului e o ramură a aceleiași funcții (`pagina`, cu `exact`), nu o copie:** decodarea benzilor,
+    predictorul și compresiile rămân comune; doar culoarea și ținerea pixelilor diferă, iar probele trasării apără ramura veche.
