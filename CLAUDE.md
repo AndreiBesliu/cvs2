@@ -475,6 +475,11 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   centrul frezei la r(0) de desen (drumul frezei plate de 2·r(0)), muchia retrasă după siluetă cu r(d) − r(0), spusă sub
   Adâncimea; adâncimea cel mult înălțimea profilului; motivele noi `profil-fund` și `profil-adancime`. Felia: pornirea
   +0, totalul +0,7 kB.
+  **Silueta desenată în „Frezele mele” (ADR 0304 §5, felia 16.A↑f-5)** gata pe 28.11, unită în `main` pe 28.11
+  (`6d593c2a`): felul nou „Desenată”, cu silueta din punctele omului ((0, 0) la vârf, r crescător, h care nu scade, 2–200
+  de puncte, ținute la 0,0001 mm), editorul cu desenul la scară, punctele trase sau mutate cu săgețile, tabelul,
+  „Pornește de la…” și greșeala pe punctul ei; diametrul îl dă ultimul punct; în proiect intră ca forma `profil` din f-1;
+  CSV-ul are coloana `puncte`. Documentul rămâne v32; nimic pe server. Felia: pornirea +0, totalul +3,6 kB.
   **Plafonul pornirii 120 kB (ADR 0145, decizia owner-ului din 24.11, „ok, ridica plafonul pornirii la 120 kB”):** după
   lotul al paisprezecelea, pornirea era 109,9 kB, cu ușa 114,4 și cu Atelierul 114,7 / 115, iar feliile următoare ale
   frezelor, exportului și aranjamentelor nu mai încăpeau în 0,3 kB. Poarta judecă tot trei măsuri sub același plafon
@@ -2168,6 +2173,21 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 28.11.2026, la prânz (a șaptezeci și noua unire din cloud): **silueta desenată în „Frezele mele” (16.A↑f-5), unită în
+  `main`** (sesiunea principală, ramura `unire-2811g`, din `57ea24f5`). Linia frezelor, ramura `wip/16.A-freze-f5`,
+  `f5bcb2b9` (cu `main` `e1b2d6e6` adus), PR-ul `AndreiBesliu/cvs2#83` (ADR 0304 §5, răspunsul 5a; pornită la „Porneste
+  sesiunile, pune-le sa continue cu ce aveau la rand” al owner-ului), unită în `6d593c2a`: felul nou de freză „Desenată”,
+  cu silueta din punctele omului, editorul cu desenul la scară (punctele trase, lipite la 0,1 mm, sau mutate cu săgețile),
+  tabelul cu „+” și „✕”, „Pornește de la…” (o freză din bibliotecă sau un profil din catalog), greșeala pe punctul ei; în
+  proiect intră ca forma `profil` (pe linie și pe o parte); CSV-ul are coloana `puncte`. Otrăvurile 36 / 36. Documentul
+  rămâne v32; nimic pe server; programul fără freze desenate, octet cu octet. `main` primise după el doar documente, deci
+  **arborele unirii are exact codul lui `f5bcb2b9`** și a intrat pe porțile lui: completul 46134777174, verde (unit
+  11 085 / 0, 12 sărite pe Linux; e2e 1 043 / 1 043; funcțiile pe emulatoare 142 / 142; paginile 62 / 62); rapidul
+  46134760638, verde. Totalul 951,1 / 1 000 kB (felia +3,6), pornirea 112,1 kB (cu ușa și cu Atelierul 117,9 / 125).
+  Pe test pleacă după lotul 71. Linia frezelor are pe ramura următoare 16.A↑g-1…g-3 (valorile frezei pe material și
+  calculatorul avansului; ADR 0305 propus, cu recomandările 1a–4a aplicate, `AndreiBesliu/cvs2#84`), la porți. Relieful
+  (18.1↑f, g, i, h, g-2, g-3) e pe `unire-2811f`, refăcută peste aceasta, cu completul în lucru. **La owner:** de încercat
+  editorul siluetei; restul listei, neschimbat.
 - 28.11.2026, la prânz (a șaptezeci și opta unire din cloud): **ventilatorul pus în „Modelul” (3.Cn), unit în `main`**
   (sesiunea principală, ramura `unire-2811e`, din `f0d031e7`). Linia atelierului, ramura `wip/3.Xh-biblioteca-ui`,
   `240259ee` (felia `8fa270f2`, cu `main` `f0d031e7` adus), PR-ul `AndreiBesliu/cvs2#82` (ADR 0341, scris de linie, cu
