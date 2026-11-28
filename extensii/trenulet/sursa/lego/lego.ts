@@ -4151,11 +4151,11 @@ var Lego = (function (glob: typeof globalThis) {
   }
 
   // ---------------------------------------------------------------------------------------------- construcțiile gata (ADR 0284, 3.Ci)
-  // Patru construcții de pornire, făcute din parametri: șasiul cu patru roți, cutia de angrenaje, brațul de macara, barca cu
-  // elice. Prima piesă stă pe grilă (x = y = 0, ridicată cât să atingă masa cea mai de jos piesă); celelalte sunt prinse,
+  // Cinci construcții de pornire, făcute din parametri: șasiul cu patru roți, cutia de angrenaje, brațul de macara, barca cu
+  // elice și ventilatorul (ADR 0341, felia 3.Cn). Prima piesă stă pe grilă (x = y = 0, ridicată cât să atingă masa cea mai de jos piesă); celelalte sunt prinse,
   // prindere în prindere (`montaj`), de una de dinaintea lor, deci construcția își urmează baza. Piesele au doar câmpurile
   // care le deosebesc de implicitele motorului (atelierul le completează ca editorul).
-  const SABLOANE = ["sasiu", "angrenaje", "macara", "barca"] as const;
+  const SABLOANE = ["sasiu", "angrenaje", "macara", "barca", "ventilator"] as const;
   type PiesaSablon = { def: DefPiesa; x: number; y: number; z: number; rot: number; culoare: string; prins?: { de: number; a: number; b: number; unghi: number; alunec: number } };
   /** Culorile pieselor din construcțiile gata (aceleași ca mostrele atelierului). */
   const CULOARE = { rosu: "#c8322b", albastru: "#1f5fbf", galben: "#f2c12e", verde: "#2e8b4a", alb: "#f1f1ee", negru: "#2b2b2b", gri: "#9aa3ab" } as const;
@@ -4294,6 +4294,36 @@ var Lego = (function (glob: typeof globalThis) {
       pune({ tip: "bucsa", lung: 0.5 } as DefPiesa, "rosu", { de: ax, a: 1, b: 1, alunec: 3 * s - 0.2 - (groasa + 0.3) - P.grinda_groasa - j0 - (s / 2 - 0.2) });
       const pivot = P.placa + H * (inalt - 1) + h, u = unghi * Math.PI / 180;
       cote.pivot = pivot; cote.raza = s * (brat - 1) * Math.cos(u); cote.varf = pivot + s * (brat - 1) * Math.sin(u);
+    } else if (fel === "ventilator") {
+      // ventilatorul (ADR 0341, felia 3.Cn): trusa din 3.Cm-3, prinsă. Grinda groasă de 2k + 1 găuri pe grilă; câte un știft
+      // Technic în prima și în ultima gaură; carcasa pe știfturi (urechea de la −x pe primul), deci cu axul peste gaura din
+      // mijloc; axul prin gaura din mijloc (rotundă: se rotește în ea), de la fața de jos a grinzii; jumătatea de bucșă pe
+      // ax, pe fața de sus a grinzii; rotorul pe ax, deasupra ei. Valorile, ale editorului, duse în margini de cotele lui.
+      nume = tr("Ventilator");
+      const q = ventilatorCote(d as VentDef), t = ventilatorTrusa(d as VentDef), g = P.grinda_groasa, k = q.k;
+      avert.push(...q.avert);
+      const gaura = d.gaura === "r" ? "r" : "x";
+      if (d.gaura !== undefined && d.gaura !== "x" && d.gaura !== "r") avert.push(tr("Pe ax, rotorul are nevoie de o gaură de ax: i-am pus-o."));
+      const comune = { palete: q.z, diametru: q.D, joc: q.joc, pas: q.pd, latime: q.lat };
+      const carcasaDef = { tip: "ventilator", piesa: "carcasa", ...comune, urechi: q.urechi } as DefPiesa;
+      const rotorDef = { tip: "ventilator", piesa: "rotor", ...comune, sens: d.sens === "stanga" ? "stanga" : "dreapta", gaura, inel: q.inel ? "da" : "nu" } as DefPiesa;
+      const grinda = pune({ tip: "grinda", celule: Array.from({ length: t.gauri }, (_, i) => [i, 0, "r"]), groasa: true } as DefPiesa, "gri");
+      const sus = (i: number) => prindere(grinda, "gauraStift", [s * i, 0, g], SUS), stiftDef = { tip: "stiftTechnic", fanta: true, lung: 2, capat: "stift" } as DefPiesa;
+      const stift0 = pune(stiftDef, "negru", { de: grinda, a: sus(0), b: 1 });
+      pune(stiftDef, "negru", { de: grinda, a: sus(2 * k), b: 1 });
+      // urechea carcasei de la −x (față de axul ei), gura de jos: pe capătul de sus al primului știft
+      const cc = corp(carcasaDef), cax = cc.ax!, ureche = cc.prinderi.findIndex(c => c.fel === "gauraStift" && c.d[2] < 0
+        && Math.abs(c.p[1] - cax[1]!) < 1e-6 && c.p[0] < cax[0]! - 1e-6);
+      pune(carcasaDef, "alb", { de: stift0, a: 0, b: ureche });
+      // axul: capătul 0 în gura de jos a găurii din mijloc, deci de la fața de jos a grinzii în sus, lung de n · 8 − 0,2
+      const ax = pune({ tip: "ax", lung: t.ax } as DefPiesa, "negru", { de: grinda, a: prindere(grinda, "gauraStift", [s * k, 0, 0], JOS), b: 0 });
+      const varf = s * t.ax - 0.2;
+      // bucșa și rotorul, pe capătul de sus al axului (gura lor de sus), glisate în jos până la locul lor
+      const gura = (def: DefPiesa) => corp(def).prinderi.findIndex(c => c.d[2] > 0 && Math.abs(c.p[2] - Math.max(...corp(def).prinderi.map(x => x.p[2]))) < 1e-6);
+      const bucsaDef = { tip: "bucsa", lung: 0.5, gaura: "x" } as DefPiesa;
+      pune(bucsaDef, "rosu", { de: ax, a: 1, b: gura(bucsaDef), alunec: varf - (g + t.bucsa) });
+      pune(rotorDef, "albastru", { de: ax, a: 1, b: gura(rotorDef), alunec: varf - (g + t.jos + q.Hh) });
+      cote.gauri = t.gauri; cote.axul = t.ax; cote.diametru = q.D;
     } else {
       nume = tr("Barcă cu elice");
       const lung = intregSablon(d.lung, 8, 16, 10, avert, x => tr`O barcă are între 8 și 16 știfturi lungime: am făcut-o de ${x}.`);
