@@ -728,7 +728,8 @@ export function FrezeleMele({ onInchide, focusInapoi, config }: {
     if (!freza || !arePuncte(freza.fel)) return null;
     if (vizibila('puncte') && probleme.puncte) return textMotiv('puncte', probleme.puncte);
     const vazute = toateProblemele || (ciorna !== null && initiala !== null && JSON.stringify(ciorna.puncte) !== JSON.stringify(initiala.puncte));
-    return vazute && probleme.diametru ? `${t('freze.diametru')}: ${textMotiv('diametru', probleme.diametru)}` : null;
+    return vazute && probleme.diametru
+      ? t('freze.motiv.puncte.diametru', { r: textNumar(MARGINI_FREZA.diametru / 2, ro), max: textNumar(MARGINI_FREZA.diametru, ro) }) : null;
   })();
 
   /** Fișa frezei alese, doar de citit (vederea „Listă”, ADR 0302 §3): felul, silueta, geometria, valorile de lucru, nota. */

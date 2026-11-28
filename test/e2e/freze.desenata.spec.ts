@@ -91,6 +91,11 @@ test('felul „Desenată”: tabelul punctelor, greșelile pe punct, tastele și
   await expect(r(f, 2)).toHaveAttribute('aria-invalid', 'true');
   await r(f, 2).fill('3');
   await expect(f.locator('#freze-eroare-puncte')).toHaveCount(0);
+  // Diametrul dat de ultimul punct are marginea lui (cel mult 100 mm), spusă sub tabel.
+  await r(f, 3).fill('60');
+  await expect(f.locator('#freze-eroare-puncte')).toHaveText('Ultimul punct dă diametrul: r-ul lui e cel mult 50 mm (diametrul, cel mult 100 mm).');
+  await r(f, 3).fill('6');
+  await expect(f.locator('#freze-eroare-puncte')).toHaveCount(0);
   // Săgețile mută punctul cu 0,1 mm; cu Shift, cu 1 mm.
   await maner(f, 2).focus();
   await page.keyboard.press('ArrowRight');

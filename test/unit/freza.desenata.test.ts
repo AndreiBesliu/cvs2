@@ -100,6 +100,10 @@ test('copia în proiect: forma `profil`, cu punctele și capătul exact la rază
   assert.ok(operatieInMargini({ ...operatieImplicita('e', forma), scula: s }));
   // Copia nu e aceeași listă cu a bibliotecii: o schimbare a ei nu atinge freza.
   assert.notEqual((s.forma as { puncte: unknown }).puncte, DESENATA.puncte);
+  // Capătul la cel mult 1e-9 de rază e bun, iar copia îl pune exact pe rază.
+  const aproape: Freza = { ...DESENATA, puncte: [[0, 0], [3, 1], [6 + 5e-10, 4]] };
+  assert.deepEqual(problemeFreza(aproape), {});
+  assert.equal((sculaDinFreza(aproape).forma as { puncte: Pct[] }).puncte[2]![0], 6);
   // La marginile ușii: 200 de puncte, Ø100, h până la plafon.
   const mare: Pct[] = Array.from({ length: PLAFON.puncteProfil }, (_, i) => [(50 * i) / (PLAFON.puncteProfil - 1), (999.9999 * i) / (PLAFON.puncteProfil - 1)]);
   const fm: Freza = { ...DESENATA, diametru: 100, puncte: mare };
@@ -171,6 +175,12 @@ test('„Pornește de la…”: silueta oricărei freze dă puncte bune, rotunji
   }
 });
 
+test('„Pornește de la…”: punctele care s-ar contopi la rotunjire pleacă; silueta rămâne bună', () => {
+  const p = puncteDesenate({ ...DESENATA, puncte: [[0, 0], [1.00001, 0], [1.00003, 0], [6, 1]] });
+  assert.deepEqual(p, [[0, 0], [1, 0], [6, 1]]);
+  assert.equal(problemaPuncte(p, 12), null);
+});
+
 test('alegerea: desenata merge pe canelură și, cu fund plat și destul de înaltă, pe o parte; nu în buzunar', () => {
   const lista = [salvata(DESENATA, 'd')];
   assert.equal(frezePotrivite(lista, [{ tip: 'profil', latura: 'pe-linie' }]).length, 1);
@@ -186,6 +196,10 @@ test('datele: o freză desenată ținută sau adusă din fișier se citește; pu
   assert.equal(frezaImportata({ ...DESENATA, puncte: [[0, 0], ['3', 1], [6, 4]] }), null);
   assert.equal(frezaImportata({ ...DESENATA, puncte: { 0: [0, 0], 1: [6, 4] } }), null);
   assert.equal(frezaImportata({ ...DESENATA, puncte: [[0, 0], [6, 4, 1]] }), null);
+  // Și pe o freză de alt fel, câmpul `puncte` cu altă formă o face greșită (ca orice câmp cunoscut); cu forma bună, rămâne.
+  const plata: Freza = { ...DESENATA, fel: 'plata', diametru: 6, puncte: undefined };
+  assert.equal(frezaImportata({ ...plata, puncte: 'x' }), null);
+  assert.ok(frezaImportata({ ...plata, puncte: [[0, 0], [3, 0]] }));
 });
 
 test('fișierul: JSON-ul poartă punctele dus-întors; CSV-ul le citește din coloana `puncte`', () => {

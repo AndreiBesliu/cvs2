@@ -113,6 +113,7 @@ export const roFreze = {
   'freze.motiv.puncte.r': 'Punctul {n}: r trebuie să fie mai mare decât la punctul de dinainte.',
   'freze.motiv.puncte.h': 'Punctul {n}: h nu poate fi mai mic decât la punctul de dinainte (silueta nu coboară).',
   'freze.motiv.puncte.capat': 'Ultimul punct dă diametrul: r-ul lui e jumătatea diametrului.',
+  'freze.motiv.puncte.diametru': 'Ultimul punct dă diametrul: r-ul lui e cel mult {r} mm (diametrul, cel mult {max} mm).',
   'freze.raza': 'Raza',
   'freze.raza.toroidala': 'Raza colțului',
   'freze.raza.conica': 'Raza vârfului',

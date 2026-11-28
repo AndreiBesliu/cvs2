@@ -98,6 +98,7 @@ export const enFreze = {
   'freze.motiv.puncte.r': 'Point {n}: r must be greater than at the point before.',
   'freze.motiv.puncte.h': 'Point {n}: h cannot be lower than at the point before (the outline does not turn down).',
   'freze.motiv.puncte.capat': 'The last point gives the diameter: its r is half of it.',
+  'freze.motiv.puncte.diametru': 'The last point gives the diameter: its r is at most {r} mm (a diameter of at most {max} mm).',
   'freze.raza': 'Radius',
   'freze.raza.toroidala': 'Corner radius',
   'freze.raza.conica': 'Tip radius',
