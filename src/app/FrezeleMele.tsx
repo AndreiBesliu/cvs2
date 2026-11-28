@@ -39,7 +39,7 @@ import { CHEIE_LOCALA, cheieCont, frezeMele, useFrezeMele, type ProblemeLista } 
 import { useSincronizare } from './frezeSincronizare.ts';
 import { cuFrezeleStandard, frezeleStandard, numePropus } from './frezeStandard.ts';
 import { EditorPuncte, PuncteFisa, type PunctText, type SursaSilueta } from './SiluetaDesenata.tsx';
-import { EditorMateriale, etichetaSet, MaterialeFisa, seturiNumere, seturiText, type SetText } from './MaterialeFreza.tsx';
+import { CalculatorAvans, EditorMateriale, etichetaSet, MaterialeFisa, seturiNumere, seturiText, type SetText } from './MaterialeFreza.tsx';
 import './freze.css';
 
 /** Mesajele modulului, ca date (ADR 0086): cine îl încarcă le așteaptă (`cuMesaje`). */
@@ -1126,9 +1126,11 @@ export function FrezeleMele({ onInchide, focusInapoi, config }: {
                   {camp('pas', t('freze.pas'), t('freze.unitate.mm'))}
                   {camp('pasLateral', t('freze.pas-lateral'), t('freze.unitate.procent'))}
                 </div>
+                <CalculatorAvans unde="lucru" diametru={freza.diametru} taisuri={freza.taisuri} turatie={ciorna.turatie} dezactivat={doarCitire} ro={ro}
+                  onScrie={(n, f) => { setCiorna((c) => (c ? { ...c, turatie: n, avans: f } : c)); setMesaj(''); }} />
                 <p className="freze-ajutor">{t('freze.lucru.nota')}</p>
               </fieldset>
-              <EditorMateriale seturi={ciorna.materiale} dezactivat={doarCitire} sugestii={sugestiiMaterial}
+              <EditorMateriale seturi={ciorna.materiale} dezactivat={doarCitire} sugestii={sugestiiMaterial} diametru={freza.diametru} taisuri={freza.taisuri} ro={ro}
                 implicit={{ turatie: ciorna.turatie, avans: ciorna.avans, plonjare: ciorna.plonjare, pas: ciorna.pas, pasLateral: ciorna.pasLateral }}
                 problema={problemaSet} textProblema={textMateriale}
                 onSeturi={(m) => { setCiorna((c) => (c ? { ...c, materiale: m } : c)); setMesaj(''); }} />

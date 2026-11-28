@@ -1538,6 +1538,12 @@ ordinea cuvintelor nu contează. Dacă se potrivesc mai multe, câștigă cel cu
 „MDF”), iar la egalitate primul din listă. Pe o foaie fără material sau fără potrivire, freza taie cu valorile de lucru. Fișa
 arată seturile într-un tabel.
 
+**Calculatorul avansului**, strâns sub valorile de lucru și în fiecare set, scrie avansul din **Avansul pe dinte (fz)**:
+avansul = turația × tăișurile × fz, rotunjit la 1 mm/min. Cu **Viteza de așchiere (Vc)** scrisă, scrie și turația, din
+diametru: turația = Vc × 1000 / (π × diametrul), rotunjită la 10 rot/min (Vc = 300 m/min pe Ø6 dă 15 920 rot/min; cu 2 tăișuri
+și fz = 0,05 mm, avansul 1 592 mm/min). Plonjarea rămâne a ta. Fără numărul de tăișuri (la Geometria) sau cu un rezultat în
+afara marginilor, spune de ce și nu scrie nimic; fz și Vc nu se țin.
+
 **Frezele standard** vin singure: la prima deschidere a ferestrei sau a panoului de proprietăți, biblioteca primește șase
 freze obișnuite (plate Ø3,175, Ø6 și Ø12, V60 Ø6, V90 Ø12 și gravare 30° cu vârful 0,2 și Ø3,175), cu valorile implicite ale
 aplicației (18 000 rot/min, avansul 1 000 mm/min, plonjarea 300 mm/min). Le schimbi apoi după frezele tale. Se pun o singură

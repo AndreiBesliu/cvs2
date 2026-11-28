@@ -1595,6 +1595,12 @@ order do not matter. If several match, the one with the most words wins (“MDF 
 the list. On a sheet without a material or without a match, the bit cuts with the working values. The card shows the sets in a
 table.
 
+**The feed calculator**, folded under the working values and in each set, fills in the feed from the **Chip load (fz)**:
+feed = spindle speed × flutes × fz, rounded to 1 mm/min. With a **Cutting speed (Vc)** typed, it also fills in the spindle
+speed, from the diameter: spindle speed = Vc × 1000 / (π × diameter), rounded to 10 rpm (Vc = 300 m/min on Ø6 gives 15,920 rpm;
+with 2 flutes and fz = 0.05 mm, a feed of 1,592 mm/min). The plunge stays yours. Without the number of flutes (under
+Geometry) or with a result outside the limits, it says why and fills in nothing; fz and Vc are not kept.
+
 **The standard bits** come by themselves: the first time the window or the properties panel opens, the library gets six common
 bits (flat Ø3.175, Ø6 and Ø12, V60 Ø6, V90 Ø12 and an engraving bit of 30° with a 0.2 tip and Ø3.175), with the app’s
 default values (18,000 rpm, a feed of 1,000 mm/min, a plunge of 300 mm/min). Change them afterwards to match your bits. They

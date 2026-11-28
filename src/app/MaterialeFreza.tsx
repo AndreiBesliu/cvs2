@@ -6,8 +6,9 @@
  * pornește de la valorile frezei de acum, cu materialul gol; „✕” îl scoate. Câmpurile necunoscute ale unui set (ale unei
  * versiuni mai noi) rămân, în `brut`.
  */
-import { useEffect, useRef, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { t } from '../i18n/t.ts';
+import { calculeazaAvans, MARGINI_FZ, MARGINI_VC, type MotivAvans } from '../model/calculatorAvans.ts';
 import { CAMPURI_SET, MARGINI_FREZA, type CampSet, type MotivFreza, type SetMaterial } from '../model/freza.ts';
 import { citesteNumar, textNumar } from '../ui/numar.ts';
 
@@ -56,7 +57,76 @@ function unitateSet(c: CampSet): string {
 /** Greșeala de arătat: motivul, setul și câmpul ei (null: a listei întregi sau a setului întreg). */
 export type ProblemaSet = { readonly motiv: MotivFreza; readonly set: number | null; readonly camp: 'material' | CampSet | null };
 
-export function EditorMateriale({ seturi, onSeturi, implicit, problema, textProblema, dezactivat, sugestii }: {
+/** Textul motivului unui calcul care nu se poate scrie (ADR 0305 §4). */
+function textMotivAvans(m: MotivAvans, ro: boolean): string {
+  switch (m) {
+    case 'taisuri': return t('freze.calculator.taisuri');
+    case 'fz': return t('freze.calculator.fz.margini', { max: textNumar(MARGINI_FZ, ro) });
+    case 'vc': return t('freze.calculator.vc.margini', { max: textNumar(MARGINI_VC, ro) });
+    case 'diametru': return t('freze.calculator.diametru');
+    case 'turatie': return t('freze.calculator.turatie');
+    case 'margini-turatie': return t('freze.calculator.margini-turatie', { max: textNumar(MARGINI_FREZA.turatie, ro) });
+    case 'margini-avans': return t('freze.calculator.margini-avans', { max: textNumar(MARGINI_FREZA.avans, ro) });
+  }
+}
+
+/**
+ * Calculatorul avansului (ADR 0305 §4), strâns la început: avansul pe dinte și, la alegere, viteza de așchiere; „Calculează”
+ * scrie turația (doar cu viteza) și avansul în câmpurile de deasupra, sau spune de ce nu poate. `unde` deosebește calculatorul
+ * valorilor de lucru de al unui set.
+ */
+export function CalculatorAvans({ unde, diametru, taisuri, turatie, dezactivat, ro, onScrie }: {
+  readonly unde: string;
+  readonly diametru: number;
+  readonly taisuri: number | undefined;
+  /** Turația de acum, ca text (fără viteza de așchiere, avansul pleacă de la ea). */
+  readonly turatie: string;
+  readonly dezactivat: boolean;
+  readonly ro: boolean;
+  readonly onScrie: (turatie: string, avans: string) => void;
+}): ReactNode {
+  const [fz, setFz] = useState('');
+  const [vc, setVc] = useState('');
+  const [rezultat, setRezultat] = useState<{ readonly ok: boolean; readonly text: string } | null>(null);
+  const calculeaza = (): void => {
+    const r = calculeazaAvans({ diametru, taisuri, fz: numar(fz), vc: vc.trim() === '' ? null : numar(vc), turatie: numar(turatie) });
+    if (!r.ok) { setRezultat({ ok: false, text: textMotivAvans(r.motiv, ro) }); return; }
+    onScrie(textNumar(r.turatie, ro), textNumar(r.avans, ro));
+    setRezultat({ ok: true, text: t('freze.calculator.scrise', { turatie: textNumar(r.turatie, ro), avans: textNumar(r.avans, ro) }) });
+  };
+  return (
+    <details className="freze-calculator" data-freze="calculator" data-unde={unde}>
+      <summary>{t('freze.calculator')}</summary>
+      <p className="freze-ajutor">{t('freze.calculator.nota')}</p>
+      <div className="freze-grila">
+        <label className="freze-camp">
+          <span>{t('freze.calculator.fz')}</span>
+          <span className="freze-unitate">
+            <input type="text" inputMode="decimal" data-freze-calc="fz" value={fz} disabled={dezactivat}
+              onChange={(e) => { setFz(e.currentTarget.value); setRezultat(null); }} />
+            <span>{t('freze.unitate.mm')}</span>
+          </span>
+        </label>
+        <label className="freze-camp">
+          <span>{t('freze.calculator.vc')}</span>
+          <span className="freze-unitate">
+            <input type="text" inputMode="decimal" data-freze-calc="vc" value={vc} disabled={dezactivat} placeholder={t('freze.calculator.vc.gol')}
+              onChange={(e) => { setVc(e.currentTarget.value); setRezultat(null); }} />
+            <span>{t('freze.unitate.m-min')}</span>
+          </span>
+        </label>
+      </div>
+      <div className="freze-materiale-jos">
+        <button type="button" data-freze="calculeaza" disabled={dezactivat} onClick={calculeaza}>{t('freze.calculator.calculeaza')}</button>
+        {rezultat ? (
+          <small className={rezultat.ok ? 'freze-ajutor' : 'freze-eroare'} data-freze-calc="rezultat" role={rezultat.ok ? 'status' : 'alert'}>{rezultat.text}</small>
+        ) : null}
+      </div>
+    </details>
+  );
+}
+
+export function EditorMateriale({ seturi, onSeturi, implicit, problema, textProblema, dezactivat, sugestii, diametru, taisuri, ro }: {
   readonly seturi: readonly SetText[];
   readonly onSeturi: (s: readonly SetText[]) => void;
   /** Valorile frezei de acum, ca text: un set nou pornește de la ele. */
@@ -67,6 +137,10 @@ export function EditorMateriale({ seturi, onSeturi, implicit, problema, textProb
   readonly dezactivat: boolean;
   /** Materialele scrise pe alte freze ale bibliotecii (lista de sugestii a câmpului). */
   readonly sugestii: readonly string[];
+  /** Diametrul și tăișurile frezei, pentru calculatorul fiecărui set. */
+  readonly diametru: number;
+  readonly taisuri: number | undefined;
+  readonly ro: boolean;
 }): ReactNode {
   const refGrup = useRef<HTMLFieldSetElement>(null);
   const deFocus = useRef<string | null>(null);
@@ -126,6 +200,8 @@ export function EditorMateriale({ seturi, onSeturi, implicit, problema, textProb
                   </label>
                 ))}
               </div>
+              <CalculatorAvans unde={`set-${i}`} diametru={diametru} taisuri={taisuri} turatie={s.turatie} dezactivat={dezactivat} ro={ro}
+                onScrie={(n, f) => { onSeturi(seturi.map((x, j) => (j === i ? { ...x, turatie: n, avans: f } : x))); }} />
             </li>
           ))}
         </ol>

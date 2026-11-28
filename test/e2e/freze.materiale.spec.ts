@@ -112,7 +112,7 @@ test('cel mult 16 seturi: „Un set pe material” se oprește la al 16-lea; o f
 });
 
 for (const latime of [1280, 390, 360, 320]) {
-  test(`la ${latime} px, cu fontul lat: seturile pe material încap, fără derulare pe orizontală`, async ({ page }) => {
+  test(`la ${latime} px, cu fontul lat: seturile pe material și calculatorul încap, fără derulare pe orizontală`, async ({ page }) => {
     await page.setViewportSize({ width: latime, height: 800 });
     await page.goto('/');
     await page.evaluate(() => { document.documentElement.style.setProperty('--font', "Verdana, 'DejaVu Sans', sans-serif"); });
@@ -123,6 +123,10 @@ for (const latime of [1280, 390, 360, 320]) {
     await campSet(f, 0, 'material').fill('Placaj de mesteacăn, calitatea întâi');
     await campSet(f, 1, 'pasLateral').fill('12345,678');
     await expect(f.locator('#freze-eroare-materiale')).toBeVisible();
+    // Calculatorul avansului (16.A↑g-3), deschis în set și sub valorile de lucru, încape și el.
+    await set(f, 1).locator('[data-freze="calculator"] summary').click();
+    await f.locator('[data-freze="calculator"][data-unde="lucru"] summary').click();
+    await expect(set(f, 1).locator('[data-freze="calculeaza"]')).toBeVisible();
     await set(f, 1).scrollIntoViewIfNeeded();
     await expect(set(f, 1).locator('[data-freze="set-scoate"]')).toBeInViewport();
     await faraDepasire(page);
