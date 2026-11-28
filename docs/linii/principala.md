@@ -220,7 +220,8 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
   `2c74dc2d`, PR-ul #80): lotul 69 (`1e818f88`), pe test de la 28.11, ~03:25 (completul pe `main` 46087138726,
   verde; proba de fum, bună). 18.1↑j (`385f792d`): lotul 70 (`f0d031e7`), pe test de la 28.11, ~12:30 (completul pe `main` 46130228060,
   verde; proba de fum, bună). 3.Cn (`e1b2d6e6`): lotul 71 (`b3b5d811`), pe test de la 28.11, ~13:57 (completul pe `main` 46135640519,
-  verde; proba de fum, bună). 16.A↑f-5 (`6d593c2a`): lotul 72 (`f08f817b`), în drum. Relieful (`b414cfe6`) și frezele g (`47559857`), cu nota frezelor: lotul 73, împreună, după el.
+  verde; proba de fum, bună). 16.A↑f-5 (`6d593c2a`): lotul 72 (`f08f817b`), pe test de la 28.11, ~15:06 (completul pe `main` 46142386955,
+  verde; proba de fum, bună). Relieful (`b414cfe6`) și frezele g (`47559857`), cu nota frezelor: lotul 73 (`c12525b7`), în drum.
   **Schema:** documentul e v32; un câmp nou ia v33.
 - **Limita de folosire (27.11, ~16:20):** owner-ul a spus că ne apropiem de limita săptămânală (94 %, se resetează
   sâmbătă, 28.11, la 10:00; comună tuturor sesiunilor): „vezi sa nu se piarda din progresul pe care il fac celelalte
