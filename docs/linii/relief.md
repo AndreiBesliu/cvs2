@@ -285,3 +285,13 @@ degroșarea și finisarea pe relief), unde stă relieful în document și unde s
   - **Rama se dă în mm și se rotunjește la celulele imaginii** (`ramaMm / pixel`): o probă pe un pixel de 1 mm n-o vede.
   - **Fereastra reliefului e și a litofaniei** (`litofanie`, din `AlegereRezultat`; `esteRelief`): câmpurile reliefului (sensul,
     înălțimea, baza) și „Un strat nou pe …” nu se arată la litofanie.
+- **28.11: 18.1↑g gata pe ramură** (relieful ca imagine gri pe 16 biți, ADR 0322), după 18.1↑f: exportul din panou, importul cu
+  cititorul propriu și „Z-ul și celula din fișier”, dus-întors până la aceiași octeți. Rămân, din ADR 0322 §5: TIFF-ul pe 16
+  biți și simularea salvată ca strat; apoi **18.1↑h** (4000²).
+- **De ținut minte, din 18.1↑g:**
+  - **Codecul PNG stă în `src/relief/png16.ts`, cu CRC-ul lui:** workerul (`src/jobs`) nu importă ușile (`src/io`), iar
+    relieful nu importă din `io`. Același calcul ca `src/io/crc32.ts`, păstrat aici cu motivul.
+  - **Un PNG pe 16 biți ocolește `createImageBitmap`** (ar da 8 biți): `adancimePng` pe primii 33 de octeți, apoi `citestePng`.
+    Ieșirea e RGBA scalată la 0 … 255, cu zecimale, deci `gri`, netezirea și litofania merg neschimbate.
+  - **O probă a Z-ului din fișier schimbă întâi înălțimea ferestrei:** scara din `pHYs` și înălțimea implicită pot da din
+    coincidență același relief (otrava G17).

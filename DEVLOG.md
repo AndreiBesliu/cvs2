@@ -17295,3 +17295,21 @@ e următoarea în ordinea din ADR 0310 §8). **Started:** 28.11, 10:15, pe `wip/
 - **Mărimea:** pornirea +0 (112,1 / 125), totalul 947,6 → 948,4 / 1 000.
 - **Documentele:** manualul (ro, en), fișa etapei 3, registrul otrăvurilor, nota liniei, traducerile, indexul ADR.
 
+## 2026-11-28 — 18.1↑g: relieful ca imagine gri pe 16 biți, dus și întors (Model: Claude Opus 5.5)
+
+**Prompt:** „Porneste sesiunile, pune-le sa continue cu ce aveau la rand” (același cuvânt; relieful ↔ gri pe 16 biți e următorul
+în ADR 0310 §8). **Started:** 28.11, 11:00, pe `wip/18.1-relief`, după 18.1↑f. **Completed:** 28.11, 11:50.
+
+- **ADR 0322**, cu alegerile owner-ului (recomandarea aplicată): PNG acum, TIFF mai târziu; compusul vizibil; Z-ul din fișier
+  implicit; simularea ca strat mai târziu.
+- **Codecul, pe hârtie întâi:** `src/relief/png16.ts` (scriitorul gri pe 16 biți cu `tEXt` și `pHYs`; cititorul pentru tipurile
+  0, 2, 4, 6 pe 8 și 16 biți, cu filtrele 0–4), față de `node:zlib` (`png16.test.ts`).
+- **Workerul:** `spre-png` (compusul vizibil, scalat, cu Z-ul și celula); la import, un PNG pe 16 biți ocolește browserul;
+  `zDinFisier` aduce relieful cum a plecat (exportul lui dă aceiași octeți).
+- **Interfața:** „Exportă ca imagine pe 16 biți…” în panou (adus la cerere, `reliefPng.ts`); „Z-ul și celula din fișier” în
+  fereastra reliefului.
+- **E2e:** `relief.png16.spec.ts` (dus, Z-ul din fișier peste înălțimea ferestrei, întors, aceiași octeți).
+- **Otrăvurile** (`test/otravuri/18.1g.py`): 17 / 17 prinse, martorul a scăpat; G01, G15 și G17 scăpaseră, iar probele le cer acum.
+- **Mărimea:** pornirea +0 (112,1 / 125), totalul 948,4 → 951,1 / 1 000.
+- **Documentele:** manualul (ro, en), fișa etapei 3, registrul otrăvurilor, nota liniei, traducerile, indexul ADR.
+
