@@ -76,6 +76,13 @@ function bun(d: Record<string, unknown>, ce: string, kHartie?: number): void {
   assert.equal(g.piese[0]!.prins, undefined, ce);
   g.piese.slice(1).forEach((p, j) => assert.ok(p.prins && p.prins.de >= 0 && p.prins.de <= j, `${ce}: piesa ${j + 1} e prinsă de una de dinaintea ei`));
   assert.equal((g.piese[0]!.def.celule as unknown[]).length, 2 * k + 1, `${ce}: grinda de 2k + 1 găuri`);
+  // valorile editorului ajung la piesele lor: sensul, gaura și inelul, la rotor; urechile, la carcasă
+  const rot = g.piese.find(p => p.def.piesa === 'rotor')!.def, car = g.piese.find(p => p.def.piesa === 'carcasa')!.def;
+  assert.equal(rot.sens, d.sens === 'stanga' ? 'stanga' : 'dreapta', `${ce}: sensul rotorului`);
+  assert.equal(rot.gaura, d.gaura === 'r' ? 'r' : 'x', `${ce}: gaura rotorului`);
+  assert.equal(rot.inel, d.inel === 'da' ? 'da' : 'nu', `${ce}: inelul rotorului`);
+  assert.equal(car.urechi, +(d.urechi ?? 2) === 4 ? 4 : 2, `${ce}: urechile carcasei`);
+  for (const c of ['diametru', 'palete', 'joc', 'pas', 'latime'] as const) assert.equal(rot[c], car[c], `${ce}: ${c}, același la rotor și la carcasă`);
   assert.equal(t.gauri, 2 * k + 1, ce);
   const T = asezari(g), v = verifica(g.piese, T);
   v.piese.forEach((p, i) => {
