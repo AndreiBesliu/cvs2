@@ -188,13 +188,14 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
   (`154e8125`), unite la 18:17: lotul 67 (`99a4a6b6`), pe test de la ~19:55; 3.Cm-7, duza Kort (`d2222923`), unită la
   19:25: lotul 68 (`680801c7`), pe test de la ~20:45 (probele de fum, bune). Nota frezelor (`afce2d48`, doar
   documente) și 3.Ay, Escape oriunde ar fi focusul, în dialogurile rămase (unită pe 28.11 la ~02:15, din
-  `2c74dc2d`, PR-ul #80): lotul 69, publicat după completul de pe `main`.
+  `2c74dc2d`, PR-ul #80): lotul 69 (`1e818f88`), pe test de la 28.11, ~03:25 (completul pe `main` 46087138726,
+  verde; proba de fum, bună). **Pe test e tot ce e în `main`.**
   **Schema:** documentul e v32; un câmp nou ia v33.
 - **Limita de folosire (27.11, ~16:20):** owner-ul a spus că ne apropiem de limita săptămânală (94 %, se resetează
   sâmbătă, 28.11, la 10:00; comună tuturor sesiunilor): „vezi sa nu se piarda din progresul pe care il fac celelalte
   sesiuni”. Liniile (atelierul, frezele, relieful, exportul) au primit, la 16:22, cererea să comită și să împingă tot, ca
   WIP unde nu e gata, cu starea scrisă în nota liniei. **Toate unirile raportate sunt în `main`** (ultima, 3.Ay, pe 28.11, lucrată în sesiunea frezelor la cererea
-  owner-ului); loturile 67 și 68 sunt pe test, 69 în drum. La reluare,
+  owner-ului); loturile 67–69 sunt pe test. La reluare,
   liniile pornesc doar la cuvântul owner-ului.
 - **Modelul:** din 26.11, la prânz, sesiunea principală merge pe Opus („o sa folosim Opus de aici in colo”); sesiunile
   liniilor își păstrează modelul până îl schimbă owner-ul în fiecare.
