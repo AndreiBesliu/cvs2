@@ -17340,3 +17340,15 @@ e următoarea în ordinea din ADR 0310 §8). **Started:** 28.11, 10:08, pe `wip/
   memoria pe benzi, fără GPU, apoi măsurătoarea pe calculatorul owner-ului. Codul așteaptă răspunsul.
 - **Documentele:** fișa etapei 3, nota liniei, traducerile, indexul ADR. Fără cod de produs.
 
+## 2026-11-28 — 18.1↑h-2: proba bătăilor (Model: Claude Opus 5.5)
+
+**Prompt:** același cuvânt („Porneste sesiunile, pune-le sa continue cu ce aveau la rand”); rândul 18.1↑h din ADR 0310 §8 cere
+„alinierea probată cu bătăile”. **Started:** 28.11, 10:56, pe `wip/18.1-relief`, după 18.1↑h-1. **Completed:** 28.11, 11:03.
+
+- **Proba:** `test/unit/relief3d.batai.oracol.test.ts` (11): dungile de o celulă, finisate cu bila Ø3, aliniat și nealiniat;
+  CL-ul fiecărei linii pe hârtie, cu surplusul câmpului la valoarea exactă; fără bătăi aliniat, bătăile cu perioada de pe
+  hârtie nealiniat; suprafața din simulatorul oracolului.
+- **Otrăvurile:** `test/otravuri/18.1h2.py`, 5 / 5, martorul a scăpat.
+- **ADR 0323:** secțiunea bătăilor, plus „Ce urmează”: 5a, 1a, 2a, cu recomandarea aplicată, fără GPU.
+- Doar probe și documente; nimic în aplicație.
+

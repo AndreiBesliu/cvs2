@@ -76,8 +76,28 @@ piramida maximelor peste ele; asta, plus mișcările (6,35 M), duce procesul la 
    - b) Plafonul urcat acum (de exemplu 40 M), cu riscul ca fila să cadă din lipsă de memorie.
    - c) Plafonul și refuzul, cum sunt.
 
-## Bătăile (alinierea)
+## Bătăile (alinierea): proba, felia 18.1↑h-2
 
-Proba „o imagine cu linii fine, finisată aliniat (fără bătăi) și nealiniat (bătăile măsurate)” (ADR 0310 §5) e o felie a ei,
-18.1↑h-2, după răspunsuri: se face pe oracolul 3D (creasta măsurată pe linii fine aliniate cu celula și pe cele nealiniate) și nu
-depinde de mărime.
+Proba din ADR 0310 §5 („o imagine cu linii fine, finisată aliniat (fără bătăi) și nealiniat (bătăile măsurate)”) e
+`test/unit/relief3d.batai.oracol.test.ts` și nu depinde de mărime. Relieful: dungi paralele cu liniile, o celulă de 0,5 mm
+creastă și una vale (perioada P = 1 mm), bila Ø3; suprafața tăiată vine din simulatorul oracolului, nu din CAM.
+
+- **Pe hârtie:** o linie la distanța φ de creastă se sprijină pe creastă, deci CL = −1 − (R − √(R² − φ²)); câmpul conservativ
+  adaugă cel mult urcarea(P / 2) − urcarea(P / 2 − h) = 0,0206 mm (h = 1/16 mm), atinsă exact pe liniile de pe vale.
+- **Aliniat** (0° și 90°, pașii de 1, 2 și 3 celule): fiecare linie trece printr-un centru (φ = 0 sau P / 2), CL-ul e cel de pe
+  hârtie, iar media suprafeței pe o fereastră cât perioada comună (P, sau 3 · P la 3 celule) e aceeași peste tot, la 1e-9: fără
+  bătăi.
+- **Nealiniat** (pașii ceruți 0,9 și 0,95): CL-ul fiecărei linii e tot cel de pe hârtie, dar faza alunecă de la o linie la alta,
+  deci media suprafeței pe o perioadă urcă și coboară cu 0,06 mm, cu perioada de pe hârtie, s · P / |s − P · rotunjit(s / P)|
+  (8,33 mm la 0,8929, 16,7 mm la 0,9434), la 3 %.
+- **Otrăvurile** (`test/otravuri/18.1h2.py`): 5 / 5 prinse (liniile aliniate mutate cu o zecime de celulă, pasul care sare o
+  celulă, „Nealiniat” ignorat, liniile nealiniate mai rare decât pasul spus, urcarea bilei prea mică), martorul scapă.
+
+## Ce urmează, cu recomandarea aplicată
+
+La cuvântul owner-ului transmis de sesiunea principală („mergi înainte cu recomandarea” la întrebările lui, pe 28.11), linia
+merge pe 1a, 2a și 5a, fără GPU (ADR 0011 rămâne), în felii mici, fiecare cu proba întâi și cu programul octet cu octet:
+ADR 0310 §4 punea deja bazinul de workere la 4000² („Fluiditatea la 4000² (bazinul, maximul glisant pe linii aliniate) e a
+feliei 18.1↑h”), deci liniile pe workere nu redeschid nimic. Ordinea: refuzul punctelor înaintea cotelor (5a); liniile pe
+workerele bazinului CAM; distanța la blocurile piramidei mai ieftină; câmpul pe benzi (2a). Măsurătoarea pe calculatorul
+owner-ului (3) rămâne a lui: ea spune dacă, după ele, pragul de 10 s e trecut (atunci, abia atunci, GPU-ul, cu ADR-ul lui).

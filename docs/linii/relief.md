@@ -312,3 +312,8 @@ degroșarea și finisarea pe relief), unde stă relieful în document și unde s
   - **Finisarea reliefului e 92 % cota segmentelor** (`distSegmentCutie` 70 %, `cotaSegment` 21 %): o optimizare care atinge
     altceva nu mută timpul.
   - **La celula de 0,1 mm, câmpul de calcul are 0,05** (`diviziune`): memoria crește cu (2 · N)², nu cu N².
+- **28.11: 18.1↑h-2 gata pe ramură** (proba bătăilor, doar probe): aliniat, fiecare linie prin centre, CL-ul pe hârtie, fără
+  bătăi; nealiniat, bătăile de 0,06 mm cu perioada de pe hârtie. Cu „mergi înainte cu recomandarea”, linia merge pe 5a
+  (refuzul înaintea cotelor), apoi 1a (liniile pe workere, distanța mai ieftină) și 2a (câmpul pe benzi), fără GPU.
+  - **Surplusul câmpului conservativ pe o creastă e exact urcarea(φ) − urcarea(φ − h)** (grila de calcul e aliniată cu a
+    reliefului): o probă pe CL care îl ia mai larg nu prinde o urcare greșită a bilei.
