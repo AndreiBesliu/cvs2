@@ -9,25 +9,28 @@
  * Câmpurile necunoscute ale unei freze (ale unei versiuni mai noi a aplicației) se păstrează la citire și la schimbare.
  */
 import { PLAFON, UNGHI_V_MAXIM, UNGHI_V_MINIM, type Scula } from './document.ts';
-import { inaltimeCon, puncteProfil } from './profilFreza.ts';
+import { inaltimeCon, PAS_PUNCT, puncteDesenate, puncteProfil, puncteRotunjite } from './profilFreza.ts';
 
-// Capătul frezei stă lângă siluetă (`profilFreza.ts`), fără importul frezei: aici rămâne și pentru cine îl cere de la freză.
-export { inaltimeCon };
+// Capătul frezei și punctele siluetei desenate stau lângă siluetă (`profilFreza.ts`), fără importul frezei: aici rămân și pentru
+// cine le cere de la freză.
+export { inaltimeCon, PAS_PUNCT, puncteDesenate };
 
 /**
  * Felurile: plata (dreaptă), V-ul (ascuțit) și freza de gravare (V cu vârf plat), pe care CAM-ul le taie; apoi bila, toroidala,
  * conica cu vârf rotund și burghiul (16.A↑h-4) și profilurile parametrice (16.A↑h-5): rotunjirea (roundover), ogee-ul,
- * ogee-ul roman și panoul ridicat. Canelura (veining, core box) are silueta bilei: nu e un fel separat.
+ * ogee-ul roman și panoul ridicat; apoi silueta desenată de om (16.A↑f-5, ADR 0304 §5), din punctele ei. Canelura (veining,
+ * core box) are silueta bilei: nu e un fel separat.
  */
-export const FELURI_FREZA = ['plata', 'v', 'gravare', 'bila', 'toroidala', 'conica', 'burghiu', 'rotunjire', 'ogee', 'ogee-roman', 'panou'] as const;
+export const FELURI_FREZA = ['plata', 'v', 'gravare', 'bila', 'toroidala', 'conica', 'burghiu', 'rotunjire', 'ogee', 'ogee-roman', 'panou', 'desenata'] as const;
 export type FelFreza = (typeof FELURI_FREZA)[number];
 /**
  * Felurile pe care CAM-ul le taie azi (ADR 0302 §2): plata, V-ul, gravarea, bila (ADR 0312: pe finisarea reliefului și, din
- * 16.A↑e-3, pe linie) și, din 16.A↑e-4, toroidala (ADR 0303: pe linie); unde merge fiecare judecă `motivFormaPeOperatie`.
+ * 16.A↑e-3, pe linie) și, din 16.A↑e-4, toroidala (ADR 0303: pe linie); profilurile (16.A↑f-3) și silueta desenată (16.A↑f-5),
+ * ca profil desenat (ADR 0304); unde merge fiecare judecă `motivFormaPeOperatie`.
  * Celelalte (conica cu vârf rotund, burghiul, profilurile) stau în bibliotecă și în catalog, „în curând”, dar nu se aleg în
  * proiect până la CAM-ul lor.
  */
-export const FELURI_CU_CAM = ['plata', 'v', 'gravare', 'bila', 'toroidala', 'rotunjire', 'ogee', 'ogee-roman', 'panou'] as const;
+export const FELURI_CU_CAM = ['plata', 'v', 'gravare', 'bila', 'toroidala', 'rotunjire', 'ogee', 'ogee-roman', 'panou', 'desenata'] as const;
 export const areCam = (fel: FelFreza): boolean => (FELURI_CU_CAM as readonly FelFreza[]).includes(fel);
 
 /** Câmpurile unei freze, fără nume (frezele de pornire își primesc numele de la fereastră, în limba omului). */
@@ -43,6 +46,11 @@ export type FrezaFaraNume = {
   readonly raza?: number | undefined;
   /** Treapta ogee-ului roman, în mm: jos (dreaptă, în sus) și sus (dreaptă, în afară). */
   readonly treapta?: number | undefined;
+  /**
+   * Silueta desenată (felul `desenata`, ADR 0304 §5): punctele (r, h) în mm, de la (0, 0) la (Ø / 2, capătul), r strict
+   * crescător, h nedescrescător, 2 … 200; ținute rotunjite la `PAS_PUNCT` (afară de raza capătului).
+   */
+  readonly puncte?: ReadonlyArray<readonly [number, number]> | undefined;
   /** Lungimea tăișului, în mm (la V și la gravare, cel puțin conul). */
   readonly tais?: number | undefined;
   /** Numărul de tăișuri (pentru calculatorul avansului, felia g). */
@@ -90,9 +98,14 @@ export const MARGINI_FREZA = {
 } as const;
 
 export type CampFreza = 'nume' | 'diametru' | 'unghi' | 'varf' | 'tais' | 'taisuri' | 'numar' | 'turatie' | 'avans' | 'plonjare'
-  | 'pas' | 'pasLateral' | 'nota' | 'grup' | 'raza' | 'treapta';
+  | 'pas' | 'pasLateral' | 'nota' | 'grup' | 'raza' | 'treapta' | 'puncte';
+/**
+ * Ce nu e bine la punctele siluetei desenate: lipsesc (sau nu sunt o listă), sunt sub 2 sau peste 200, un punct nu e o pereche
+ * de numere în margini, primul nu e (0, 0), r nu crește strict, h scade, ultimul r nu e jumătatea diametrului.
+ */
+export type MotivPuncte = 'lipsa' | 'puncte-putine' | 'puncte-multe' | 'puncte-numar' | 'puncte-inceput' | 'puncte-r' | 'puncte-h' | 'puncte-capat';
 export type MotivFreza = 'lipsa' | 'margini' | 'intreg' | 'varf' | 'con' | 'nume-gol' | 'nume-lung' | 'nume-caractere'
-  | 'nume-folosit' | 'nota-lunga' | 'grup-lung' | 'grup-caractere';
+  | 'nume-folosit' | 'nota-lunga' | 'grup-lung' | 'grup-caractere' | MotivPuncte;
 export type ProblemeFreza = Readonly<Partial<Record<CampFreza, MotivFreza>>>;
 
 const finit = (x: unknown): x is number => typeof x === 'number' && Number.isFinite(x);
@@ -108,6 +121,34 @@ export const areRaza = (fel: FelFreza): boolean => fel === 'toroidala' || fel ==
   || fel === 'ogee-roman' || fel === 'panou';
 /** Felurile cu treaptă: ogee-ul roman. */
 export const areTreapta = (fel: FelFreza): boolean => fel === 'ogee-roman';
+/** Felurile cu puncte: silueta desenată. */
+export const arePuncte = (fel: FelFreza): boolean => fel === 'desenata';
+
+/**
+ * Prima greșeală a punctelor unei siluete desenate (ADR 0304 §1, §5), cu punctul la care e (null: e a listei întregi), sau null
+ * dacă sunt bune. Marginile sunt ale ușii documentului: r în [0, Ø maxim], h în [0, adâncimea maximă], 2 … 200 de puncte.
+ * Ordinea se judecă pe punctele rotunjite (`puncteRotunjite`): ce se judecă e ce se ține. Capătul (ultimul r la jumătatea
+ * diametrului, la 1e-9) se judecă doar cu un diametru dat (`null`: diametrul e greșit, și-l spune el).
+ */
+export function problemaPuncte(puncte: unknown, diametru: number | null): { readonly motiv: MotivPuncte; readonly punct: number | null } | null {
+  if (!Array.isArray(puncte)) return { motiv: 'lipsa', punct: null };
+  if (puncte.length < 2) return { motiv: 'puncte-putine', punct: null };
+  if (puncte.length > PLAFON.puncteProfil) return { motiv: 'puncte-multe', punct: null };
+  for (let i = 0; i < puncte.length; i++) {
+    const p: unknown = puncte[i];
+    if (!Array.isArray(p) || p.length !== 2 || !finit(p[0]) || !finit(p[1]) || p[0] < 0 || p[1] < 0
+      || p[0] > PLAFON.diametruScula || p[1] > PLAFON.adancimeOperatie) return { motiv: 'puncte-numar', punct: i };
+  }
+  const P = puncteRotunjite(puncte as ReadonlyArray<readonly [number, number]>);
+  if (P[0]![0] !== 0 || P[0]![1] !== 0) return { motiv: 'puncte-inceput', punct: 0 };
+  for (let i = 1; i < P.length; i++) {
+    if (!(P[i]![0] > P[i - 1]![0])) return { motiv: 'puncte-r', punct: i };
+    if (P[i]![1] < P[i - 1]![1]) return { motiv: 'puncte-h', punct: i };
+  }
+  const k = P.length - 1;
+  if (diametru !== null && Math.abs(P[k]![0] - diametru / 2) > 1e-9) return { motiv: 'puncte-capat', punct: k };
+  return null;
+}
 
 /** Numele, pentru unicitate: fără spațiile de la capete și dublate, cu literele compuse unite, fără deosebire de majuscule. */
 export function cheieNume(nume: string): string {
@@ -165,10 +206,11 @@ export function problemeFreza(f: Freza, alte: readonly FrezaSalvata[] = [], id: 
     if (!finit(f.treapta)) p.treapta = 'lipsa';
     else if (!(f.treapta > 0) || (!p.diametru && !p.raza && !(2 * f.raza! + f.treapta < f.diametru / 2))) p.treapta = 'margini';
   }
+  if (arePuncte(f.fel)) pune('puncte', problemaPuncte(f.puncte, p.diametru ? null : f.diametru)?.motiv ?? null);
   if (f.tais !== undefined) {
     const m = interval(f.tais, MARGINI_FREZA.tais);
     if (m) p.tais = m;
-    else if (!p.diametru && !p.unghi && !p.varf && !p.raza && !p.treapta && f.tais! < inaltimeCon(f) - 1e-9) p.tais = 'con';
+    else if (!p.diametru && !p.unghi && !p.varf && !p.raza && !p.treapta && !p.puncte && f.tais! < inaltimeCon(f) - 1e-9) p.tais = 'con';
   }
   if (f.taisuri !== undefined) pune('taisuri', interval(f.taisuri, MARGINI_FREZA.taisuri, true));
   pune('turatie', interval(f.turatie, MARGINI_FREZA.turatie, true));
@@ -191,8 +233,8 @@ function problemaGrup(g: unknown): MotivFreza | null {
 
 /** Freza cu doar câmpurile felului ei (plata fără unghi și vârf, V-ul fără vârf), cu numele curățat la capete. */
 function curata<F extends Freza>(f: F): F {
-  const { unghi: _u, varf: _v, raza: _r, treapta: _t, ...rest } = f;
-  void _u; void _v; void _r; void _t;
+  const { unghi: _u, varf: _v, raza: _r, treapta: _t, puncte: _p, ...rest } = f;
+  void _u; void _v; void _r; void _t; void _p;
   const c: Record<string, unknown> = {
     ...rest,
     nume: f.nume.normalize('NFC').trim(),
@@ -201,6 +243,8 @@ function curata<F extends Freza>(f: F): F {
     ...(areVarf(f.fel) ? { varf: f.varf } : {}),
     ...(areRaza(f.fel) ? { raza: f.raza } : {}),
     ...(areTreapta(f.fel) ? { treapta: f.treapta } : {}),
+    // Punctele siluetei desenate, rotunjite la `PAS_PUNCT`: încap în cont, iar judecata le-a văzut deja așa.
+    ...(arePuncte(f.fel) && Array.isArray(f.puncte) ? { puncte: puncteRotunjite(f.puncte) } : {}),
   };
   // Un câmp opțional golit (tăișul, nota) pleacă de tot, nu rămâne ca `undefined`.
   for (const k of Object.keys(c)) if (c[k] === undefined) delete c[k];
@@ -218,6 +262,13 @@ export function sculaDinFreza(f: Freza, numar: number = f.numar): Scula {
   // (`motivFormaPeOperatie`: finisarea reliefului, canelura).
   if (f.fel === 'bila') return { ...baza, forma: { tip: 'bila' } };
   if (f.fel === 'toroidala') return { ...baza, forma: { tip: 'toroidala', raza: f.raza ?? 0 } };
+  // Silueta desenată (ADR 0304 §5, 16.A↑f-5): chiar punctele ei, cu capătul exact la rază (o copie: proiectul nu ține lista
+  // bibliotecii).
+  if (f.fel === 'desenata') {
+    const P = (f.puncte ?? []).map(([r, h]): [number, number] => [r, h]);
+    if (P.length > 0) P[P.length - 1]![0] = f.diametru / 2;
+    return { ...baza, forma: { tip: 'profil', puncte: P } };
+  }
   // Profilurile parametrice (ADR 0304 §5, 16.A↑f-3): silueta lor ca linii, sub 0,001 mm (`puncteProfil`).
   const puncte = puncteProfil(f);
   if (puncte !== null) return { ...baza, forma: { tip: 'profil', puncte } };
@@ -234,7 +285,9 @@ function formaFreza(x: Record<string, unknown>): boolean {
     && ['diametru', 'numar', 'turatie', 'avans', 'plonjare', 'pas', 'pasLateral'].every((k) => finit(x[k]))
     && ['unghi', 'varf', 'raza', 'treapta', 'tais', 'taisuri'].every((k) => opt(x[k]))
     && (x['nota'] === undefined || typeof x['nota'] === 'string')
-    && (x['grup'] === undefined || typeof x['grup'] === 'string');
+    && (x['grup'] === undefined || typeof x['grup'] === 'string')
+    && (x['puncte'] === undefined || (Array.isArray(x['puncte'])
+      && x['puncte'].every((p: unknown) => Array.isArray(p) && p.length === 2 && finit(p[0]) && finit(p[1]))));
 }
 
 /** O freză ținută (cu id, versiune și dată), din datele bibliotecii; null dacă nu are forma sau marginile ei. */

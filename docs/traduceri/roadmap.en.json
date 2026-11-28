@@ -3041,6 +3041,10 @@
       "ro": "Imprimanta 3D pe imprimanta owner-ului, după ghid (`docs/masina/imprimanta-k1c.md`): starea, pauza și reluarea pe o imprimare scurtă, trimiterea unui fișier; transcrierea cadrelor, rejucată pe imprimanta falsă",
       "en": "The 3D printer on the owner’s printer, following the guide (`docs/masina/imprimanta-k1c.md`): the status, pausing and resuming a short print, sending a file; the transcript of the frames, replayed on the fake printer"
     },
+    "933493ae3463d845": {
+      "ro": "**Silueta desenată în „Frezele mele”** (fără mașină; ADR 0304 §5, „Implementarea (16.A↑f-5)”; întrebarea 5a; pe `wip/16.A-freze-f5`, din `main` `09689d36`, la „Porneste sesiunile, pune-le sa continue cu ce aveau la rand” al owner-ului, transmis de sesiunea principală). Felul nou „Desenată”: silueta din punctele omului, (r, h) de la vârf, (0, 0), până la diametru, cu r crescător și h care nu scade, 2–200 de puncte, ținute la 0,0001 mm, ca să încapă în cont. În editor, desenul la scară cu punctele trase (lipite la 0,1 mm, ținute între vecini) sau mutate cu săgețile, tabelul punctelor cu „+” și „✕”, „Pornește de la…” o freză din bibliotecă sau un profil din catalog, greșeala pe punctul ei; diametrul îl dă ultimul punct. În proiect, ca profilul desenat (forma `profil` din f-1): pe linie și pe o parte. CSV-ul are coloana `puncte`. Probele întâi: unitare (judecata, rotunjirea, copia și ușa, mărimea în cont, „Pornește de la…” pe tot catalogul, fișierul) și e2e (editorul, tragerea, fișa, fișierul, Tăierea, telefonul cu fontul lat, unde a prins tabelul ieșit cu 26 px din fereastră la 320 px). Otrăvuri 36 / 36. Nimic pe server; documentul rămâne v32; programul, octet cu octet. Pornirea neschimbată (112,0 kB; cu ușa și cu Atelierul 117,8 / 125), totalul 945,6 → 949,2 / 1 000.",
+      "en": "**Drawn outline in “My bits”** (no machine; ADR 0304 §5, “Implementation (16.A↑f-5)”; question 5a; on `wip/16.A-freze-f5`, from `main` `09689d36`, at the owner’s “Start the sessions, have them continue with what was next”, passed on by the main session). A new kind, “Drawn”: the outline from the user’s points, (r, h) from the tip, (0, 0), up to the diameter, with r growing and h never going down, 2–200 points, kept to 0.0001 mm so that it fits in the account. In the editor, the drawing to scale with the points dragged (snapped to 0.1 mm, kept between their neighbours) or moved with the arrow keys, the table of points with “+” and “✕”, “Start from…” a bit from the library or a catalogue profile, the mistake on its point; the last point gives the diameter. In projects, as the drawn profile (the `profil` shape from f-1): on the line and on one side. The CSV has a `puncte` column. Tests first: unit (the checks, the rounding, the copy and the door, the size in the account, “Start from…” on the whole catalogue, the file) and e2e (the editor, dragging, the details, the file, Cutting, the phone with a wide font, where it caught the table sticking 26 px out of the window at 320 px). Poisons 36 / 36. Nothing on the server; the document stays v32; the program, byte for byte. Startup unchanged (112.0 kB; with the door and the Workshop 117.8 / 125), total 945.6 → 949.2 / 1,000."
+    },
     "9349481461342270": {
       "ro": "Offsetul formelor în desen, adus din etapa 6",
       "en": "Offsetting shapes in drawing, brought forward from stage 6"
@@ -4256,6 +4260,10 @@
     "cd409d4e8f7a4c4a": {
       "ro": "Degajările pe colțurile cu arce, ultimele rămase din etapa 2",
       "en": "Reliefs at corners with arcs, the last ones left from stage 2"
+    },
+    "cd43bce0128f8d6d": {
+      "ro": "Silueta desenată în „Frezele mele”",
+      "en": "Drawn outline in “My bits”"
     },
     "ce2abc46f6aaa52c": {
       "ro": "Utilizarea aplicației: fluxurile",

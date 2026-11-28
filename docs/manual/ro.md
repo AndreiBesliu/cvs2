@@ -1491,6 +1491,23 @@ toroidala pe linie, în buzunar și pe o parte, profilurile pe linie (o canelur�
 în biblioteca ta și în catalog, cu **în curând în proiect**: în secțiunea Tăierea se aleg abia când aplicația le va putea
 tăia. O freză de canelură (cu vârful rotund, „core box”) e o **Bilă**.
 
+**Desenată** e o freză cu silueta desenată de tine, punct cu punct: o freză de profil pe care n-o are catalogul (o margine
+făcută la comandă, o freză cu trepte). Se alege în proiect ca profilurile: pe linie (o canelură) și pe o parte (o margine
+profilată, cu fundul plat). În editor, **Silueta desenată** are desenul la scară, lista **Pornește de la…** și tabelul
+punctelor:
+- fiecare punct are **r**, distanța de la axa frezei, și **h**, înălțimea de la vârf, în mm. Primul punct e vârful frezei, fix
+  în (0, 0); r crește de la un punct la altul, iar h nu scade (silueta nu coboară). Ultimul punct dă diametrul: r-ul lui e
+  jumătatea diametrului. Între 2 și 200 de puncte;
+- **+** adaugă un punct după cel de pe rând (la mijloc între două puncte; după ultimul, cu 1 mm mai departe), iar **✕** scoate
+  punctul;
+- pe desen, un punct se trage cu mausul (sau cu degetul): se lipește la 0,1 mm și rămâne între vecinii lui. Cu focusul pe un
+  punct, săgețile îl mută cu 0,1 mm, iar cu Shift, cu 1 mm;
+- **Pornește de la…** copiază silueta unei freze din biblioteca ta sau a unui profil din catalog (rotunjire, ogee, ogee roman,
+  panou ridicat), pe care o schimbi apoi. Un arc devine linii, la cel mult 0,001 mm de el;
+- o greșeală (r care nu crește, h care scade) se spune sub tabel, cu numărul punctului, iar rândul lui e roșu.
+
+Punctele se țin la 0,0001 mm. Fișa unei freze desenate arată diametrul, **Înălțimea siluetei** și **Punctele siluetei**.
+
 **Freză nouă** deschide editorul, cu câmpurile:
 - **Numele**: gol, freza primește numele propus din fel și diametru („Plată Ø6”, „V60 Ø6”, „Gravare 30° vârf 0,2 Ø3,175”).
   Două freze nu pot avea același nume (fără deosebire de majuscule);
@@ -1520,8 +1537,8 @@ dată: una ștearsă nu revine singură. Cu biblioteca goală, **Adaugă frezele
 
 **Exportă…** salvează biblioteca în fișierul `frezele-mele.cvs2freze.json`, pe care îl aduci cu **Importă…** pe alt
 calculator. **Importă…** citește și un CSV (salvat, de exemplu, din Excel), cu un rând de antet și coloanele `nume`, `fel`
-(`plata`, `v`, `gravare`, `bila`, `toroidala`, `conica`, `burghiu`, `rotunjire`, `ogee`, `ogee-roman` sau `panou`), `diametru`, `unghi`, `varf`, `raza`, `treapta`, `numar` (T-ul), `turatie`, `avans`, `plonjare`, `pas`,
-`pas_lateral`, `tais`, `taisuri`, `nota` și `grup`, în orice ordine (`raza` la toroidală, conică și profiluri, `treapta` la ogee-ul roman, `varf` la gravare și panou). Doar `nume`, `fel` și `diametru` sunt necesare; fără celelalte,
+(`plata`, `v`, `gravare`, `bila`, `toroidala`, `conica`, `burghiu`, `rotunjire`, `ogee`, `ogee-roman`, `panou` sau `desenata`), `diametru`, `unghi`, `varf`, `raza`, `treapta`, `numar` (T-ul), `turatie`, `avans`, `plonjare`, `pas`,
+`pas_lateral`, `tais`, `taisuri`, `nota`, `grup` și `puncte`, în orice ordine (`raza` la toroidală, conică și profiluri, `treapta` la ogee-ul roman, `varf` la gravare și panou). O freză desenată (`fel` `desenata`) își are punctele în `puncte`, perechi r și h despărțite de „|” (de exemplu `0 0 | 2 0 | 3 1,5 | 6 4`); diametrul ei, lipsă, vine din ultimul punct. Doar `nume`, `fel` și `diametru` sunt necesare; fără celelalte,
 T-ul e 1, turația 18 000, avansul 1 000, plonjarea 300, pasul cât raza (la freza plată) sau 1 mm, iar pasul lateral 40 %.
 Separatorul (`;`, `,` sau tab) se găsește singur; cu `;`, numerele pot avea virgula zecimală. Înainte de import alegi ce se
 întâmplă cu un nume care există deja: **Păstrează-le pe amândouă** (implicit; cea nouă primește „(2)”), **Înlocuiește** sau

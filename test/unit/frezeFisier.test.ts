@@ -121,7 +121,7 @@ test('CSV-ul cu profilurile (ADR 0302, 16.A↑h-5): rotunjirea, ogee-ul, ogee-ul
 });
 
 test('coloanele CSV, în ordinea din manual', () => {
-  assert.deepEqual(COLOANE_CSV, ['nume', 'fel', 'diametru', 'unghi', 'varf', 'numar', 'turatie', 'avans', 'plonjare', 'pas', 'pas_lateral', 'tais', 'taisuri', 'nota', 'grup', 'raza', 'treapta']);
+  assert.deepEqual(COLOANE_CSV, ['nume', 'fel', 'diametru', 'unghi', 'varf', 'numar', 'turatie', 'avans', 'plonjare', 'pas', 'pas_lateral', 'tais', 'taisuri', 'nota', 'grup', 'raza', 'treapta', 'puncte']);
 });
 
 function farăNedefinite(f: Freza): Freza {

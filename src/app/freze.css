@@ -557,3 +557,177 @@
   font-size: var(--fs-1);
 }
 
+
+/* Silueta desenată (ADR 0304 §5, felia 16.A↑f-5): desenul la scară cu mânerele punctelor, „Pornește de la…” și diametrul
+   alături; dedesubt, tabelul punctelor. Sub 40 rem, desenul deasupra uneltelor. Mânerele au focusul vizibil și culoarea
+   greșelii; desenul nu derulează pagina cât tragi (`touch-action`). */
+.freze-ascuns {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.freze-puncte-sus {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 13rem);
+  gap: var(--sp-3);
+  align-items: start;
+}
+
+.freze-puncte-unelte {
+  display: grid;
+  gap: var(--sp-2);
+  min-width: 0;
+}
+
+.freze-puncte-unelte select {
+  width: 100%;
+  min-height: var(--tinta);
+}
+
+.freze-puncte-desen {
+  width: 100%;
+  max-width: 26rem;
+  height: auto;
+  display: block;
+  border: 1px solid var(--l-margine);
+  border-radius: var(--r-2);
+  background: var(--s-peste);
+  touch-action: none;
+}
+
+.freze-puncte-desen .grila {
+  stroke: color-mix(in oklab, var(--t) 12%, transparent);
+  stroke-width: 0.5;
+}
+
+.freze-puncte-desen .axa {
+  stroke: var(--t-slab);
+  stroke-width: 1;
+}
+
+.freze-puncte-desen .corp {
+  fill: color-mix(in oklab, var(--a) 18%, var(--s-panou));
+}
+
+.freze-puncte-desen .profil {
+  fill: none;
+  stroke: var(--a);
+  stroke-width: 2;
+  stroke-linejoin: round;
+}
+
+.freze-puncte-desen .varf {
+  fill: var(--t-slab);
+}
+
+.freze-puncte-desen .cota-text {
+  fill: var(--t-slab);
+  font-size: 11px;
+}
+
+.freze-puncte-desen .maner {
+  fill: var(--s-panou);
+  stroke: var(--a);
+  stroke-width: 2;
+  cursor: grab;
+}
+
+/* Puncte dese: mânere mici, cu linie subțire (altfel s-ar suprapune într-o bandă). */
+.freze-puncte-desen .maner[data-des] {
+  stroke-width: 1;
+}
+
+.freze-puncte-desen .maner:focus-visible {
+  outline: none;
+  stroke: var(--t);
+  stroke-width: 3;
+}
+
+.freze-puncte-desen .maner[data-tras] {
+  fill: var(--a);
+  cursor: grabbing;
+}
+
+.freze-puncte-desen .maner[data-gresit] {
+  stroke: var(--rosu);
+}
+
+.freze-puncte-tabel {
+  border-collapse: collapse;
+  width: 100%;
+  table-layout: fixed;
+}
+
+.freze-puncte-tabel .col-nr {
+  width: 2.75rem;
+}
+
+.freze-puncte-tabel .col-unelte {
+  width: calc(2 * var(--tinta) + var(--sp-1) + 0.75rem);
+}
+
+.freze-puncte-tabel th,
+.freze-puncte-tabel td {
+  padding: 2px var(--sp-1);
+  text-align: start;
+  font-variant-numeric: tabular-nums;
+}
+
+/* „r” și „h” rămân cu literă mică (cu majuscule, r s-ar citi R, raza frezei); capul stă sus cât lista se derulează. */
+.dialog .freze-puncte-tabel thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--s-panou);
+  color: var(--t-slab);
+  font-weight: 600;
+  font-size: var(--fs-1);
+  letter-spacing: normal;
+  text-transform: none;
+}
+
+/* Lista punctelor: cu multe puncte (un profil din catalog are zeci), se derulează în locul ei. */
+.freze-puncte-lista {
+  max-height: min(24rem, 60vh);
+  overflow-y: auto;
+}
+
+.dialog-freze .freze-puncte-tabel input[type='text'] {
+  width: 100%;
+  min-width: 0;
+  max-width: none;
+  min-height: var(--tinta);
+}
+
+.freze-puncte-butoane > span {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-1);
+}
+
+.freze-puncte-butoane button {
+  min-width: var(--tinta);
+  min-height: var(--tinta);
+}
+
+.freze-fisa-puncte summary {
+  cursor: pointer;
+  font-weight: 650;
+}
+
+@media (max-width: 40rem) {
+  .freze-puncte-sus {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* Pe telefonul îngust, „+” și „✕” stau unul sub altul: r și h își păstrează loc de scris. */
+@media (max-width: 24rem) {
+  .freze-puncte-tabel .col-unelte {
+    width: calc(var(--tinta) + 0.75rem);
+  }
+}

@@ -268,6 +268,57 @@ pe hârtie a fost scrisă întâi.
   `frezeTaiere.spec.ts` numără rotunjirile oferite pe exterior.
 - **Neschimbate:** nimic pe server; documentul rămâne v32; programul fără profil pe o parte, octet cu octet.
 
+## Implementarea (16.A↑f-5)
+
+Pe 28.11, pe `wip/16.A-freze-f5`, din `main` `09689d36`, cu întrebarea 5a aplicată (editorul siluetei desenate), la cuvântul
+owner-ului transmis de sesiunea principală („Porneste sesiunile, pune-le sa continue cu ce aveau la rand”). Documentul rămâne
+v32: forma `profil` era deja acolo.
+
+- **Felul nou `desenata`** (`src/model/freza.ts`), cu CAM, la capătul listei felurilor, și câmpul `puncte` al frezei: (r, h)
+  în mm, de la (0, 0) la (Ø / 2, capătul), r strict crescător, h nedescrescător, 2–200 de puncte, în marginile ușii (r până la
+  Ø-ul maxim, h până la adâncimea maximă). `problemaPuncte` dă prima greșeală, cu punctul ei: `lipsa`, `puncte-putine`,
+  `puncte-multe`, `puncte-numar`, `puncte-inceput`, `puncte-r`, `puncte-h`, `puncte-capat`. Capătul (`inaltimeCon`) e h-ul
+  ultimului punct, iar silueta (`profilFreza`), chiar punctele.
+- **Punctele se țin rotunjite la 0,0001 mm** (`PAS_PUNCT`, `puncteRotunjite`), afară de raza capătului (jumătatea
+  diametrului, cu oricâte zecimale): cea mai mare freză desenată (200 de puncte, toate câmpurile la margine) încape în cont
+  (`OCTETI_FREZA`, 8 kB; cu dublele întregi, un profil mare trecea de 7 kB doar cu punctele). Rotunjirea aduce cel mult
+  0,00007 mm. Judecata se face pe punctele rotunjite: ce se judecă e ce se ține.
+- **Copia în proiect** (`sculaDinFreza`): forma `profil`, cu o copie a punctelor și capătul pus exact pe rază. Unde merge,
+  judecă regula de azi (`motivFormaPeOperatie`): pe linie și pe o parte (cu fund plat, cât de înaltă cere adâncimea), nu în
+  buzunar.
+- **„Pornește de la…”** (`puncteDesenate`, în `src/model/profilFreza.ts`): silueta oricărei freze ca puncte bune: arcele ca
+  linii sub 0,001 mm (aceeași împărțire ca `puncteProfil`, scoasă în `liniiSilueta`), rotunjite; un punct care nu mai crește pe
+  r după rotunjire pleacă. Pe tot catalogul și pe frezele de pornire, la cel mult 0,001 mm de silueta din arce dese
+  (Hausdorff pe vârfuri).
+- **Fișierul:** JSON-ul poartă punctele dus-întors. CSV-ul are coloana `puncte` („0 0 | 2 0 | 3 1,5 | 6 4”: perechi
+  despărțite de „|”, r și h de spații, cu virgula zecimală cum o ia separatorul), doar pe felul `desenata`; diametrul nescris
+  vine din ultimul punct.
+- **Editorul** (`src/app/SiluetaDesenata.tsx`): în editorul frezei, „Silueta desenată” are:
+  - desenul la scară, cu un mâner pe fiecare punct (afară de vârf). Tras, punctul se lipește la 0,1 mm și rămâne între vecini
+    (r la cel puțin 0,1 mm de ei, h între h-urile lor), deci silueta rămâne bună; cât ține tragerea, scara rămâne cea de la
+    început. Cu săgețile, 0,1 mm; cu Shift, 1 mm. Mânerele dese se micșorează, ca să nu se suprapună;
+  - „Pornește de la…”, cu frezele bibliotecii și profilurile catalogului;
+  - diametrul, dat de ultimul punct (câmpul lui nu se arată la felul desenat);
+  - tabelul punctelor: primul fix în (0, 0), „+” (la mijloc între două puncte; după ultimul, cu 1 mm mai departe) și „✕”; cu
+    multe puncte, tabelul se derulează în locul lui;
+  - greșeala sub tabel, cu numărul punctului, și câmpul ei marcat; un diametru peste 100 mm are mesajul lui.
+
+  Trecută pe „Desenată”, freza pornește de la silueta ei de până atunci (o plată Ø6 dă (0, 0), (3, 0)). Fișa arată
+  înălțimea siluetei și punctele (strânse peste 12).
+- **Probele:**
+  - `test/unit/freza.desenata.test.ts`, scrisă întâi: judecata (fiecare motiv și punctul lui), rotunjirea, copia și ușa
+    documentului, mărimea în cont, „Pornește de la…” pe tot catalogul, alegerea, datele, fișierul;
+  - `test/e2e/freze.desenata.spec.ts`: editorul (tabelul, greșelile, tastele, tragerea cu lipirea și vecinii), fișa și
+    reîncărcarea, „Pornește de la…” cu exportul și importul JSON, alegerea pe canelură în Tăierea, editorul la 1280, 390, 360
+    și 320 px cu fontul lat. La 320 px, proba a prins tabelul ieșit cu 26 px din fereastră: coloanele au acum lățimi fixe, iar
+    pe ecranul îngust „+” și „✕” stau unul sub altul.
+- **Otrăvurile:** `test/otravuri/16.A-f5.py`, 36 / 36 prinse (22 pe model, 14 e2e); D14 scăpase la prima rulare și e prinsă
+  de proba nouă.
+- **Mărimea:** pornirea neschimbată, 112,0 kB (cu ușa și cu Atelierul 117,8 / 125); totalul 945,6 → 949,2 / 1 000 (+3,6 kB:
+  editorul stă în bucata ferestrei „Frezele mele”, la cerere).
+- **Neschimbate:** nimic pe server (frezele stau în cont ca text JSON, fără judecata felului); documentul rămâne v32;
+  programul, octet cu octet.
+
 ## Se redeschide dacă
 
 - o placă arată că marginea profilată sau canelura cu profilul nu ies ca pe hârtie;
