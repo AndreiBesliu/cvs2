@@ -10,7 +10,7 @@ gata de unit pe 27.11 (`e5bdde83`, PR-ul #71), UNITĂ (`0d2a8c2c`); 16.A↑e-3 (
 16.A↑e-5 (buzunarul cu bila și cu toroidala, cu creasta pe fund) raportată gata de unit pe 27.11 (`106b4a51`, PR-ul #74);
 16.A↑e-6 (profilul pe o parte cu bila și cu toroidala, cu adâncimea cel puțin raza colțului) pe `wip/16.A-freze-e`, peste ea;
 ADR 0304 PROPUS pe 27.11 (profilul desenat), mers cu recomandările; 16.A↑f-1 (documentul v32, nucleul) și 16.A↑f-2 (canelura) UNITE
-în `main` pe 27.11 (`8906dedf`, din `36866d16`, PR-ul #74); 16.A↑f-3 (profilurile parametrice în proiect) raportată pe 27.11 (`0a1fd1a4`, PR-ul #78), unită de sesiunea principală din acel commit; 16.A↑f-4 (marginea profilată pe o parte) pe aceeași ramură, peste ea, UNITĂ; 16.A↑f-5 (silueta desenată în „Frezele mele”) pe `wip/16.A-freze-f5`, din `main` `09689d36` (PR-ul #83); 16.A↑g-1…g-3 (valorile pe material, calculatorul avansului; ADR 0305) pe `wip/16.A-freze-g`, din vârful lui f-5_
+în `main` pe 27.11 (`8906dedf`, din `36866d16`, PR-ul #74); 16.A↑f-3 (profilurile parametrice în proiect) raportată pe 27.11 (`0a1fd1a4`, PR-ul #78), unită de sesiunea principală din acel commit; 16.A↑f-4 (marginea profilată pe o parte) pe aceeași ramură, peste ea, UNITĂ; 16.A↑f-5 (silueta desenată în „Frezele mele”) pe `wip/16.A-freze-f5`, din `main` `09689d36` (PR-ul #83); 16.A↑g-1…g-3 (valorile pe material, calculatorul avansului; ADR 0305) pe `wip/16.A-freze-g`, unită în `47559857` (cu relieful, din `cb446b9d`); linia n-are felie pornită_
 
 Pornită pe 23.11.2026, în sesiunea cloud a liniei, la cererea owner-ului: „Vreau sa pot crea freze l sau profiluri de freze in
 aplicatie si sa le salvez in cont”. Rândurile din prag: „Bibliotecă de freze cu geometrie reală (dreaptă, bilă, toroidală, V,
@@ -18,24 +18,21 @@ gravare, profil, formă desenată)” și „Freze de profil desenate de utiliza
 
 ## Starea
 
-### Unde am rămas (28.11; pentru o sesiune nouă)
+### Unde am rămas (28.11, după-amiaza; pentru o sesiune nouă)
 
-f-4 și 3.Ay sunt unite în `main`. Pe 28.11, la 09:40, sesiunea principală a transmis cuvântul owner-ului („Porneste
-sesiunile, pune-le sa continue cu ce aveau la rand”): f-5, apoi g (valorile pe material), cu recomandările acolo unde sunt
-întrebări; d rămâne după placa 4.
+**Linia n-are felie pornită.** Pe 28.11, la cuvântul owner-ului („Porneste sesiunile, pune-le sa continue cu ce aveau la
+rand”), au intrat în `main` f-5 și g:
 
-- **16.A↑f-5 (silueta desenată în „Frezele mele”)** pe `wip/16.A-freze-f5` (PR-ul `AndreiBesliu/cvs2#83`), cu `main` adus
-  de două ori (18.1↑j, 3.Cn; ciocnirile doar în DEVLOG). ADR 0304, „Implementarea (16.A↑f-5)”; otrăvurile
-  `test/otravuri/16.A-f5.py`. Documentul rămâne v32. Se raportează cu rapidul și completul verzi pe vârful ramurii.
-- **16.A↑g-1…g-3 (valorile pe material, calculatorul avansului)** pe `wip/16.A-freze-g`, din vârful lui f-5. ADR 0305 (propus,
-  mers cu recomandările), „Implementarea”; fișa etapei 3, rândurile 16.A↑g-1…g-3; otrăvurile `test/otravuri/16.A-g.py`.
-  Documentul rămâne v32; nimic pe server.
-- **De făcut, în ordine:** porțile pe vârful lui g (rapidul la push, completul cu `gh workflow run complet.yml --ref
-  wip/16.A-freze-g`), PR-ul ciornă, raportul la sesiunea principală (`session_01QcxiUZLthXDrpYQ6KLNzAC`, cu
-  `send_message`), după raportul lui f-5. Unirea e a ei.
-- **Ce urmează după g:** d (calibrarea), după placa 4. Ideile rămase, la cuvântul owner-ului: „Pune-o înapoi în bibliotecă”
-  pentru o copie cu profil; un material per foaie cu „Toate foile” (azi, nota se socotește cu foaia activă); fz și Vc ținute
-  în set (3b din ADR 0305).
+- **16.A↑f-5 (silueta desenată în „Frezele mele”)**, unită în `6d593c2a`, din `f5bcb2b9` (PR-ul #83). ADR 0304,
+  „Implementarea (16.A↑f-5)”; otrăvurile `test/otravuri/16.A-f5.py`, 36 / 36.
+- **16.A↑g-1…g-3 (valorile pe material, calculatorul avansului)**, unită în `47559857`, cu relieful, din `cb446b9d` (PR-ul #84).
+  ADR 0305, cu alegerile 1a–4a ale owner-ului (recomandarea aplicată); otrăvurile `test/otravuri/16.A-g.py`, 36 / 36.
+- Documentul rămâne v32; nimic pe server.
+- **Ce urmează:** d (calibrarea), după placa 4. Orice altceva pornește la cuvântul owner-ului. Idei rămase: „Pune-o înapoi în
+  bibliotecă” pentru o copie cu profil; un material per foaie cu „Toate foile” (azi, nota se socotește cu foaia activă); fz și
+  Vc ținute în set (3b din ADR 0305).
+- **De ținut minte de pe 28.11:** sesiunea principală poate pune o felie peste o altă unire, pe ramura ei de unire, și cere
+  porțile pe un commit anume. Atunci `main` nu se mai aduce în ramură până nu spune ea.
 - **Unealta otrăvurilor:** spec-urile e2e ale unei liste stau în `E2E = [...]`, nu în `SETURI`. Altfel rulează toată suita.
   După o rulare oprită, un `vite preview` rămas din clonă ține portul 4173 și otrăvurile ies NEVALIDE; îl oprești cu
   `pkill -f "clona-otravuri/node_modules/.bin/vite preview"`.
